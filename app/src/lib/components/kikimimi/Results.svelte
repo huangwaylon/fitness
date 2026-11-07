@@ -36,6 +36,9 @@
   import { SPEEDS, climbs, laddersIn, speedAt } from '#lib/kikimimi/ladder.ts';
   import { sx } from './look.ts';
   import { loadLetters } from '#lib/kikimimi/pool.ts';
+  import { cardKind, lessonRounds, rightAt } from '#lib/kikimimi/games/lesson/recipe.ts';
+  import { lessonOpts } from '#lib/kikimimi/games/lesson/def.ts';
+  import type { CallCard } from '#lib/kikimimi/games/call/def.ts';
 
   let { game, onagain, onmissed, ondone, onnext, hostLine, extra }: {
     game: QuizGame; onagain: () => void; onmissed: () => void; ondone: () => void; onnext?: (l: Lesson) => void; hostLine?: string; extra?: Snippet;
@@ -50,9 +53,12 @@
   const best = $derived(mine.length ? Math.max(...mine) : 0);
   /** しずえ's line on a ladder game (solo or co-op): how high I climbed; else the frame's. */
   const line = $derived(ladders.length && (v.players.length <= 1 || coop) ? (best ? t('kiki.hostLadder', { x: sx(speedAt(best)!) }) : t('kiki.hostLadderNone')) : undefined);
-  const ok = (i: number) => !!v.answers[i] && v.answers[i]!.k === items[i]?.answer;
+  /** A recipe-2 lesson's rounds (its cards graded by their games: games/lesson/recipe.ts), else null (each a choice). */
+  const cardRounds = $derived(v.gm === 'lesson' && items.some((it) => cardKind(it)) ? lessonRounds(items, v.seed, lessonOpts.decode(v.o)?.tier, v.timer, () => undefined) : null);
+  const ok = (i: number) => (cardRounds ? rightAt(items, cardRounds, i, v.answers[i]) : !!v.answers[i] && v.answers[i]!.k === items[i]?.answer);
   const tally = $derived(items.filter((_, i) => ok(i)).length);
-  const misses = $derived(items.length - tally);
+  /** The misses again are quiz items only (a card plays in its own game). */
+  const misses = $derived(items.filter((it, i) => !ok(i) && !cardKind(it)).length);
   /** いっぱつ: right with no replay or slow play (a stamp; no points). */
   const first = (i: number) => firstListen(ok(i), !!v.answers[i]?.rp, v.same);
   const firsts = $derived(items.filter((_, i) => first(i)).length);
@@ -202,6 +208,40 @@
           {@const [pre, focus, post] = splitFocus(r.it)}
           {@const open = opened.includes(r.i)}
           {@const dlg = isDialogue(r.it) ? r.it : null}
+          {@const kind = cardKind(r.it)}
+          {#if kind}
+            <!-- a recipe-2 card (docs/curriculum-units.md §16): its sentence or situation; open, the tile's line, the call's or
+                 the conversation's transcript, the note and 解説, ▶︎ (a memo round's: its call's) -->
+            {@const call = kind === 'call' ? (r.it as CallCard).call : null}
+            {@const hearIt = call ? items[r.i - call.part] : r.it}
+            <li class="item card" data-review={r.i} data-ok={r.ok} data-open={open} data-kiki-card={kind}>
+              <button type="button" class="head" aria-expanded={open} data-kiki-row={r.i} data-sfx="tick" onclick={() => toggle(r.i)}>
+                <span class="sym" class:ok={r.ok}><span aria-hidden="true">{r.ok ? '○' : '×'}</span><span class="sr-only">{r.ok ? t('kiki.right') : t('kiki.wrong')}</span></span>
+                <span class="sum">{#if kind === 'tile'}<span class="en" lang="en">{r.it.en}</span>{:else}<span class="en">{r.it.ctx ?? r.it.en}</span>{/if}</span>
+                {#if first(r.i)}<span class="stamp sm obj-cream">{t('kiki.firstTry')}</span>{/if}
+                <span class="chev" aria-hidden="true">{open ? '▴' : '▾'}</span>
+              </button>
+              {#if open}
+                <div class="txt" data-kiki-detail={r.i}>
+                  {#if call}
+                    {#await Promise.all([import('./call/CallLog.svelte'), import('#lib/i18n/kiki-call.ts')]) then [{ default: CallLog }]}<CallLog info={call.info} />{/await}
+                  {:else if dlg}
+                    <Transcript it={dlg} talk={game.talk?.i === -1 && game.talk.at === dlg.id ? game.talk.k : -1} from={game.talk?.from ?? null} clock={() => game.clock()} />
+                  {:else}
+                    <span class="en big" data-kiki-review-en><SoundLine en={r.it.en} marks={r.it.marks} clip={r.it.id} from={playing(r.it)} clock={() => game.clock()} /></span>
+                    {#if r.it.ja}<p class="ja">{r.it.ja}</p>{/if}
+                  {/if}
+                  {#if r.it.note}<p class="note" data-kiki-note>{r.it.note}</p>{/if}
+                  {#if r.it.why}<Why text={r.it.why} />{/if}
+                  {#if hearIt}
+                    <div class="hear">
+                      <button type="button" class="ib tile-btn" aria-label={t('kiki.play')} data-kiki-hear={r.i} data-sfx="tick" onclick={() => game.hear(hearIt)}>▶︎</button>
+                    </div>
+                  {/if}
+                </div>
+              {/if}
+            </li>
+          {:else}
           <li class="item card" data-review={r.i} data-ok={r.ok} data-open={open}>
             <button type="button" class="head" aria-expanded={open} data-kiki-row={r.i} data-sfx="tick" onclick={() => toggle(r.i)}>
               <span class="sym" class:ok={r.ok}><span aria-hidden="true">{r.ok ? '○' : '×'}</span><span class="sr-only">{r.ok ? t('kiki.right') : t('kiki.wrong')}</span></span>
@@ -248,6 +288,7 @@
               </div>
             {/if}
           </li>
+          {/if}
         {/each}
       </ul>
     {/if}

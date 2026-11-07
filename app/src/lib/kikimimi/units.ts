@@ -11,13 +11,21 @@ import { CHANNELS, DIALOGUE_TYPES, ITEM_TYPES, REGISTERS, SCENE_IDS, clipIds, he
 import type { Ladder } from './ladder.ts';
 import { letterWords, type LetterText } from './letters.ts';
 import { CAST_IDS } from './speech.ts';
-import { CORE, DOMAINS, LESSONS, LESSON_QS, STAGES, type Domain, type Lesson, type Stage } from './stages.ts';
+import { CORE, DOMAINS, KIND_KEYS, LESSONS, LESSON_QS, RECIPE2, STAGES, STAGE_IDS, type Domain, type KindKey, type Lesson, type Stage } from './stages.ts';
 
 export { DOMAINS, LESSONS, LESSON_QS, STAGES, type Stage } from './stages.ts';
 
-/** The lesson recipes this build knows (plan §3: the version on the recipe; v1 the interim チェック, a mixed check on
- *  held-out items behind a "phone errand" card, until ようじ でんわ and たちぎき are built). */
-const RECIPES = [1] as const;
+/** The lesson recipes this build knows (plan §3: the version on the recipe). v1: every lesson from the unit's quiz
+ *  items (the interim チェック, a mixed check on held-out items behind a "phone errand" card). v2 (docs/curriculum-wave2.md
+ *  §3.1, W2-9): v1's lists, plus the listening content its おと, じっせん and チェック play once it's `listened`
+ *  (stages.ts RECIPE2; `lessons.tiles`, `tachi`, `call`). */
+const RECIPES = [1, 2] as const;
+/** Recipe 2's kinds' bounds: おと's tiles (one game of 6), じっせん's conversations (3 rounds each), チェック's call. */
+const KIND_COUNT: Readonly<Record<KindKey, readonly [number, number]>> = { tiles: [LESSON_QS, 40], tachi: [1, 2], call: [1, 1] };
+/** A kind's game (listen.ts `kind`). */
+const KIND_GAME: Readonly<Record<KindKey, string>> = Object.fromEntries(Object.values(RECIPE2).map((r) => [r.key, r.game])) as Record<KindKey, string>;
+/** A lesson of a kind (recipe 2): its recipe-1 list is its fallback. */
+const KIND_LESSON: Readonly<Record<KindKey, Lesson>> = Object.fromEntries(Object.entries(RECIPE2).map(([l, r]) => [r.key, l])) as Record<KindKey, Lesson>;
 
 const STATUSES = ['draft', 'voiced', 'listened'] as const;
 type Status = (typeof STATUSES)[number];
@@ -86,7 +94,7 @@ export interface UnitManifest {
   review?: string[];
   /** Its new items, in the bank's shape. */
   items?: Item[];
-  lessons: { v: number } & Partial<Record<Lesson, string[]>>;
+  lessons: { v: number } & Partial<Record<Lesson, string[]>> & Partial<Record<KindKey, string[]>>;
   tiers?: Record<string, { easy?: ChoiceSet; hard?: ChoiceSet }>;
   /** The host villager's letter when I stamp the unit (U7): 40-60 words of American English, using one or two of its
    *  phrases, and a Japanese gloss. */
@@ -221,7 +229,17 @@ export function manifestOf(raw: unknown, file: string): { unit: UnitManifest | n
   if (!isObj(ls)) at('lessons: {v, deai, bamen, check, oto?, jissen?}');
   else {
     if (!(RECIPES as readonly unknown[]).includes(ls.v)) at(`lessons.v ${String(ls.v)}: a recipe this build knows (${RECIPES.join(', ')})`);
-    for (const k of Object.keys(ls)) if (k !== 'v' && !(LESSONS as readonly string[]).includes(k)) at(`lessons: unknown lesson ${k}`);
+    for (const k of Object.keys(ls)) if (k !== 'v' && !(LESSONS as readonly string[]).includes(k) && !(KIND_KEYS as readonly string[]).includes(k)) at(`lessons: unknown lesson ${k}`);
+    // recipe 2: the listening content each kind's lesson plays (its recipe-1 list the fallback)
+    const kinds = KIND_KEYS.filter((k) => ls[k] !== undefined);
+    if (ls.v === 2 && !kinds.length) at(`lessons: recipe 2 names its listening content (${KIND_KEYS.join(', ')})`);
+    if (ls.v !== 2 && kinds.length) at(`lessons.${kinds[0]}: recipe 2's (lessons.v: 2)`);
+    if (kinds.length && raw.stage === 'hoshi') at(`lessons.${kinds[0]}: no listening game plays at ほし yet`);
+    for (const k of kinds) {
+      const ids = ls[k], [lo, hi] = KIND_COUNT[k];
+      if (!strs(ids) || ids.length < lo || ids.length > hi || new Set(ids).size !== ids.length) at(`lessons.${k}: ${lo === hi ? lo : `${lo}-${hi}`} distinct ${KIND_GAME[k]} ids (content/listen/)`);
+      if (ls[KIND_LESSON[k]] === undefined) at(`lessons.${k}: needs lessons.${KIND_LESSON[k]} too (what it plays till its content is listened)`);
+    }
     for (const l of LESSONS) {
       const ids = ls[l];
       if (ids === undefined) {
@@ -295,17 +313,58 @@ const MIN_RECYCLED = 0.2;
 const PHRASE_ITEMS = 3;
 const PHRASE_VOICES = 2;
 
+/** A listening item a unit's recipe 2 may name (listenRefs): its game, its file and the file's stage (1-5: S0-S4), and
+ *  a call's memo rows. */
+export interface ListenRef {
+  kind: string;
+  file: string;
+  stage: number;
+  rows: number;
+}
+
+/** The listening files' items as recipe 2 names them, from the files as parsed (content/listen/*.yaml: their own
+ *  checker is listen.ts's). */
+export function listenRefs(sources: readonly { raw: unknown }[]): Map<string, ListenRef> {
+  const out = new Map<string, ListenRef>();
+  for (const { raw } of sources) {
+    if (!isObj(raw) || !isStr(raw.unit) || !Number.isInteger(raw.stage) || !Array.isArray(raw.items)) continue;
+    for (const it of raw.items) {
+      if (!isObj(it) || !isStr(it.id) || !isStr(it.kind)) continue;
+      const rows = Array.isArray(it.memo) ? it.memo.reduce((n: number, m) => n + (isObj(m) && Array.isArray(m.slots) ? m.slots.length : 0), 0) : 0;
+      out.set(it.id, { kind: it.kind, file: raw.unit, stage: raw.stage as number, rows });
+    }
+  }
+  return out;
+}
+
+/** A unit's stage as the listening files number theirs (1-5: S0 はまべ … S4 ほし). */
+const listenStage = (s: Stage): number => STAGE_IDS.indexOf(s) + 1;
+
+/** The files each recipe-2 lesson of a unit draws from (the index's `units[<id>].kinds`: the phone loads them before
+ *  the lesson's deck), by name; none: recipe 1, or ids not found (the check's error). */
+export function kindFiles(u: Pick<UnitManifest, 'lessons'>, listen: ReadonlyMap<string, ListenRef>): Partial<Record<Lesson, string[]>> {
+  if (u.lessons.v !== 2) return {};
+  const out: Partial<Record<Lesson, string[]>> = {};
+  for (const [l, r] of Object.entries(RECIPE2) as [Lesson, (typeof RECIPE2)[keyof typeof RECIPE2]][]) {
+    const files = [...new Set((u.lessons[r.key] ?? []).flatMap((id) => listen.get(id)?.file ?? []))].sort();
+    if (files.length) out[l] = files;
+  }
+  return out;
+}
+
 /** Every unit's lesson items in order, each once. */
 export const lessonIds = (u: UnitManifest): string[] => [...new Set(LESSONS.flatMap((l) => u.lessons[l] ?? []))];
 
 /**
  * The units together, against the bank (`bank`, every item as authored) and the ladders: ids unique, every reference
  * found, ≤ 1 home per item, the stage's band, the lesson recipe (であい has a dialogue, チェック held out with ≥ 2
- * voices, おと on words), the tiers on the unit's own items, every clip of a unit past draft (`clips`), the phrases (each in ≥ 3 items by ≥ 2 voices: an error past
+ * voices, おと on words; recipe 2's listening ids in `listen`, at its stage), the tiers on the unit's own items, every clip of a unit past draft (`clips`), the phrases (each in ≥ 3 items by ≥ 2 voices: an error past
  * draft, a warning before), recycling (≥ 20 %: a warning till wave 1 is past draft) and coverage (≥ 7 of 9 domains a
  * stage, none over 25 %: a warning till the stage has its planned units).
  */
-export function checkUnits(units: readonly UnitManifest[], bank: readonly Item[], ladders: readonly Ladder[] = [], clips?: Readonly<Record<string, unknown>>): UnitsCheck {
+export function checkUnits(
+  units: readonly UnitManifest[], bank: readonly Item[], ladders: readonly Ladder[] = [], clips?: Readonly<Record<string, unknown>>, listen: ReadonlyMap<string, ListenRef> = new Map()
+): UnitsCheck {
   const errors: string[] = [], warnings: string[] = [];
   const BANK_IDS = new Map(bank.map((it) => [it.id, it]));
   const LADDER_IDS = new Map(ladders.map((l) => [l.id, l]));
@@ -364,6 +423,14 @@ export function checkUnits(units: readonly UnitManifest[], bank: readonly Item[]
       if (!all.includes(id) || !it) at(`tiers.${id}: not one of the unit's lesson items`);
       else if (it.type === 'pic') at(`tiers.${id}: a pic item's choices are pictures`);
     }
+    // recipe 2: each kind's ids are that game's items in content/listen/, at the unit's stage (a call with 2 memo rows)
+    for (const k of KIND_KEYS)
+      for (const id of u.lessons[k] ?? []) {
+        const ref = listen.get(id);
+        if (!ref || ref.kind !== KIND_GAME[k]) at(`lessons.${k}: ${id} isn't a ${KIND_GAME[k]} in content/listen/`);
+        else if (ref.stage !== listenStage(u.stage)) at(`lessons.${k}: ${id} (${ref.file}) is at stage ${ref.stage}, not ${u.stage}'s ${listenStage(u.stage)}`);
+        else if (k === 'call' && ref.rows < 2) at(`lessons.call: ${id} has fewer than 2 memo rows`);
+      }
     if (clips && u.status !== 'draft')
       for (const id of all) {
         const it = itemFor(id);

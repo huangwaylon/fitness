@@ -8,7 +8,7 @@ import INDEX_JSON from './levels/index.json';
 import type { Accent, Entry, Feature, Item, ItemType, Level, Tags } from './bank.ts';
 import { addClips, type ChunkClip, type Words } from './clips.ts';
 import type { Ladder } from './ladder.ts';
-import type { UnitChunk, UnitPlay } from './lesson.ts';
+import type { Lesson, UnitChunk, UnitPlay } from './lesson.ts';
 import type { LetterText } from './letters.ts';
 import type { ListenEntry, ListenPart } from './listen.ts';
 import type { Chapter, StoryEntry } from './story.ts';
@@ -37,8 +37,9 @@ export type PathEntry = [id: string, name: string, stage: string, domain: string
 
 /** levels/index.json (compile.ts). */
 export interface Index {
-  /** Each level's (and 'ladder''s, and each unit's) parts in order, its items (ladders) and its content version. */
-  units: Record<string, { parts: string[]; n: number; cv: string }>;
+  /** Each level's (and 'ladder''s, and each unit's) parts in order, its items (ladders) and its content version; a
+   *  recipe-2 unit's, the listening files each of its kinds' lessons draws from (units.ts kindFiles). */
+  units: Record<string, { parts: string[]; n: number; cv: string; kinds?: Partial<Record<Lesson, string[]>> }>;
   /** Each game's content version by its deck's content (`<gm>:<unit>`: quiz:4, ladder:ladder, lesson:tr-hotel), the
    *  `play` open's `cv` (compile.ts gameCv). */
   games: Record<string, string>;
@@ -103,6 +104,11 @@ let LADDERS: Ladder[] | null = null;
 const EXTRA = new Map<string, string>();
 /** Their lessons' content versions, when given. */
 const EXTRA_CV = new Map<string, string>();
+/** Their recipe-2 lessons' listening files, when given. */
+const EXTRA_KINDS = new Map<string, Partial<Record<Lesson, string[]>>>();
+
+/** The listening files a unit's recipe-2 lessons draw from (the index's, a fixture's), by lesson; none: recipe 1. */
+export const unitKinds = (u: string): Partial<Record<Lesson, string[]>> => INDEX.units[u]?.kinds ?? EXTRA_KINDS.get(u) ?? {};
 
 /** A game's content version over a unit of content (a level, the ladders, a unit: the `play` open's cv); undefined:
  *  this build hasn't it. */
@@ -212,13 +218,15 @@ export function unitPart(id: string): Required<UnitChunk> | undefined {
 
 /** A unit's chunk put in at run time, as if loaded (the lessons' unit tests, the e2e's fixture through the dev hook:
  *  docs/curriculum-units.md §8 U2-U3), and its lessons' content version (`cv`: a co-op lesson's, on every phone alike).
- *  Its id must not be a build's. */
-export function addUnit(id: string, part: { unit: UnitPlay; items: Item[]; ladders?: Ladder[] }, cv?: string): void {
+ *  Its id must not be a build's; `kinds`, its recipe-2 lessons' listening files (the index's `units[<id>].kinds`). */
+export function addUnit(id: string, part: { unit: UnitPlay; items: Item[]; ladders?: Ladder[] }, cv?: string, kinds?: Partial<Record<Lesson, string[]>>): void {
   if (INDEX.units[id]) throw new Error(`kikimimi: unit ${id} is this build's`);
   const name = `u-${id}`;
   EXTRA.set(id, name);
   if (cv !== undefined) EXTRA_CV.set(id, cv);
   else EXTRA_CV.delete(id);
+  if (kinds) EXTRA_KINDS.set(id, kinds);
+  else EXTRA_KINDS.delete(id);
   take(name, { ...part, packs: [], clips: {}, words: {} });
 }
 

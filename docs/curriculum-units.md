@@ -168,12 +168,13 @@ ph:                         # 1-10 key phrases (6-10 once written), ids unique a
 review: [m4-be-good]        # existing items the lessons reuse without homing them here
 items: [...]                # new items, in the bank's Item shape (lv, type, en, ja, speaker, voice, cast, choices, answer, lines…)
 lessons:
-  v: 1                      # the recipe's version (v1: the interim チェック, a mixed check on held-out items)
+  v: 1                      # the recipe's version (v1: the interim チェック, a mixed check on held-out items; v2: §16)
   deai: [d4-hotel-suite, r4-room-ready, …]   # ≥ 6 ids each; であい has a dialogue
   bamen: [...]
   check: [...]              # held out of であい and ばめん, ≥ 2 voices
   oto: [...]                # optional, mostly word items
   jissen: [...]             # optional, items or ladder ids
+  # tiles / tachi / call     # v2 only: the listening content おと, じっせん and チェック play (§16)
 tiers:                      # optional, per item: an easier and a harder choice set (same audio, each player's tier)
   r4-room-ready: { easy: { choices: [...], answer: 0 }, hard: { choices: [...], answer: 0 } }
 letter:                     # optional (U7): the host's letter at my stamp, 40-60 words, one of its phrases in it
@@ -336,4 +337,49 @@ docs/kikimimi-ux.md §6.3 (the path), §6.3b (a unit's page), §6.5 (the lobby's
 docs/kikimimi-ux.md's U7 line has the whole of it. In short:
 - **Letters:** the unit's optional `letter: {en, ja}` (units.ts: `{en, ja}` only, 40-60 words of English, one of the unit's phrases heard in it). The compiler writes them all into `parts/letters.json` (the unit chunks don't change); pool.ts `loadLetters`. `letters.ts lettersOf` is mine: a letter per unit I stamped (my row's stamp, solo or co-op), newest first. The 7 wave-1 units have theirs; units.test requires one past draft.
 - **Landmarks:** path.ts `landmarksOf`: a stage is cleared when each of its units has my stamp. The placement is no input and the partner's stamps don't count, so a stage the check skipped is open, never cleared. Cosmetic only.
+
+## 16. W2-9 as built (2026-11-07): recipe 2
+
+docs/curriculum-wave2.md §3.1: once tiles, たちぎき and calls exist, a unit's おと is tiles, its じっせん a たちぎき and its チェック a phone call plus 4 quiz items. A unit opts in per lesson; each lesson falls back to recipe 1 on its own.
+
+**The contract** (what a unit's YAML carries to opt in):
+
+```yaml
+lessons:
+  v: 2
+  deai: [...]                   # as v1
+  bamen: [...]                  # as v1
+  check: [...]                  # as v1 (≥ 6, held out): recipe 1's チェック, and v2's 4 quiz items come from it
+  oto: [...]                    # as v1: required when `tiles` is given (what おと plays till they're listened)
+  jissen: [...]                 # as v1: required when `tachi` is given
+  tiles: [tile-…, …]            # おと: 6-40 tile ids from content/listen/ (6 are dealt by the seed, the shortest first)
+  tachi: [tachi-…]              # じっせん: 1-2 たちぎき ids (2: 6 rounds; 1: its 3 rounds, then 3 of `jissen`'s items)
+  call: [call-…]                # チェック: 1 call id with ≥ 2 memo rows (its 2 rounds, then 4 of `check`'s items)
+```
+
+- **Any subset of the three.** `v: 2` needs at least one; `v: 1` may have none.
+- **Each id** must be that game's item in a content/listen/ file at the unit's stage. The file's `stage` is the unit's place + 1: かわ 2, もり 3.
+- **ほし** has no listening game yet.
+- **Checks:** units.ts (`manifestOf`, and `checkUnits` against `listenRefs` of the files) runs in `npm run kikimimi:levels` and units.test.
+- **The index:** the compiler writes each recipe-2 lesson's files to `units[<id>].kinds`, e.g. `{check: ['s2-call-c']}`.
+- **The cv:** the unit's lesson cv takes in only those files that are `listened`. A v2 unit whose content is still a draft has the same cv as on v1.
+
+**On the phone:**
+- **Loading:** a lesson's chunks are its unit's, then its kind's `listened` files (games/lesson/lane.ts `lessonChunks`). `playLesson` and a heard `open` both wait for them, so the deck is dealt only once they're in.
+- **The deal:** games/lesson/recipe.ts `recipeDeck`. The kind's cards come first, from the files filtered to the unit's ids by the game's own deal (`tileDeal`, `callDeal`, `tachiDeal`). They're topped up to 6 with the lesson's recipe-1 deck.
+- **The rounds:** each round is its kind's. A quiz item gets the quiz's round. A card gets its game's rules (games/listened.ts) at the player's tier: my lesson tier becomes an ear a step below (easy) or above (hard) the card's place. `lessonRoundDeck` times and grades each round by its kind.
+- **Co-op:** the games' own shares (わけて メモ, the tile halves, たんとう).
+- **The pages:** a lesson's round is components/kikimimi/lesson/LessonPlay. A quiz item goes on the quiz's Play. A card goes on its game's page (TilePlay, CallPlay, TachiPlay), shown the lesson's game through `cardGame`: a view whose options and tiers are the card's place and ears.
+- **The results:** the quiz's Results. A card is graded by its game (`rightAt`), and its review row shows its sentence or situation, then its transcript (CallLog for a call), note and 解説. 「まちがえた もんだい」 replays quiz items only.
+- **The row:** still a lesson's (`u`, `l`, no `gm`). A card's answer is its game's `[round id, ok, pick, rp]` (lane.ts `record`), so `stampsUnit` reads a チェック's 6 answers as before: 5 of 6 on the first listen.
+
+**The fallback** (recipe.ts `kindCards` returns null) plays the lesson's recipe-1 deck. That deck is byte-identical to before (lesson.ts `lessonDeck`). It applies when:
+- the unit is on v1, or the lesson has no kind;
+- a kind's file isn't `listened` (a draft, or only voiced: none of wave 2's is yet);
+- the file isn't loaded, or isn't that game's;
+- one of its ids isn't found.
+
+The decision reads the index's statuses only, so every phone of a build deals the same deck. recipe.test covers the deal, the fallback, the checks, the rounds, the grading and the row. e2e kikimimi-recipe2 covers a チェック with s2-call-a flipped to listened as served (the call's 2 memo rounds, 4 quiz items, the stamp, the row, the review), the fallback while it's a draft, and おと on the listened s2-tile-bank.
+
+**Not yet:** じっせん as a ladder (§13: its ladders still play only in はしご), and an easier tier at はまべ or a harder one at やま for the cards (the ears stop at 0-3). The 7 wave-1 units stay on v1 until they have calls (wave 3).
 

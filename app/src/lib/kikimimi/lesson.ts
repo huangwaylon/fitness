@@ -5,7 +5,7 @@
 import { mulberry32, shuffle } from '#lib/random.ts';
 import { isDialogue, levelAt, shuffleChoices, type Item, type Level } from './bank.ts';
 import type { Ladder } from './ladder.ts';
-import { LESSONS, LESSON_QS, STAGES, type Lesson, type Stage } from './stages.ts';
+import { LESSONS, LESSON_QS, STAGES, type KindKey, type Lesson, type Stage } from './stages.ts';
 
 export type { Lesson };
 export type Tier = 'easy' | 'hard';
@@ -23,7 +23,9 @@ export interface UnitPlay {
   status: string;
   /** The can-do: the template's sentence, its one line (`short`, past draft) and its English. */
   cando: { ja: string; short?: string; en: string };
-  lessons: { v: number } & Partial<Record<Lesson, string[]>>;
+  /** Its recipe (`v`), each lesson's items, and recipe 2's listening content (stages.ts RECIPE2: tile, たちぎき and call
+   *  ids in content/listen/; games/lesson/recipe.ts). */
+  lessons: { v: number } & Partial<Record<Lesson, string[]>> & Partial<Record<KindKey, string[]>>;
   /** The lesson items whose home is this unit. */
   home: string[];
   tiers?: Record<string, Partial<Record<Tier, { choices: string[]; answer: number; cja?: string[] }>>>;

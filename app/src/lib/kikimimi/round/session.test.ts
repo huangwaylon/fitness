@@ -80,7 +80,7 @@ function sourceOf(deckOf: TestDeckOf): QuizSource {
 /** The quiz's GameDefs over a test deck. */
 const defsOf = (deckOf: TestDeckOf) => {
   const src = sourceOf(deckOf);
-  return registry([quizGame(src), ladderGame(src), lessonGame(src)]);
+  return registry([quizGame(src), ladderGame(src), lessonGame({ rounds: (seed, enc, u) => src.rounds('lesson', seed, enc, u), cv: () => CV })]);
 };
 
 /** A QuizRounds on the `quiz` wire (round/wire.ts both ways), as the scenarios drive a session. `raw`: the last call's

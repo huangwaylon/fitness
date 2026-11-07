@@ -32,7 +32,7 @@ import { clipPlaces, type PackRef, type Packs } from './packing.ts';
 import type { Index, PathEntry } from './pool.ts';
 import { joined } from './source.ts';
 import { tagsOf } from './tags.ts';
-import { LESSONS, candoText, checkUnits, lessonIds, manifestOf, type UnitManifest, type UnitsCheck } from './units.ts';
+import { LESSONS, candoText, checkUnits, kindFiles, lessonIds, listenRefs, manifestOf, type UnitManifest, type UnitsCheck } from './units.ts';
 import { BUILD_V } from './games/versions.ts';
 import { chapterPart, chapters, type ChapterEntry, type StoryEntry, type StorySource } from './story.ts';
 import { PAIR_UNIT, pairsFile } from './games/pair/pairs.ts';
@@ -82,16 +82,19 @@ export function unitItems(sources: readonly UnitSource[] = readUnits()): Item[] 
   return sources.flatMap(({ raw }) => ((raw as { items?: unknown }).items as Item[] | undefined) ?? []);
 }
 
-/** The units read and checked (units.ts: each manifest, then all of them against the bank, the ladders and the
- *  clips): the manifests that read, and the problems (errors stop the compiler; warnings are printed). */
-export function checkUnitSources(sources: readonly UnitSource[], clips: Readonly<Record<string, unknown>>, bank: readonly Item[] = joined(clips)): UnitsCheck & { units: UnitManifest[] } {
+/** The units read and checked (units.ts: each manifest, then all of them against the bank, the ladders, the clips and
+ *  the listening files recipe 2 names): the manifests that read, and the problems (errors stop the compiler; warnings
+ *  are printed). */
+export function checkUnitSources(
+  sources: readonly UnitSource[], clips: Readonly<Record<string, unknown>>, bank: readonly Item[] = joined(clips), listen: readonly ListenSource[] = readListen()
+): UnitsCheck & { units: UnitManifest[] } {
   const units: UnitManifest[] = [], errors: string[] = [];
   for (const { file, raw } of sources) {
     const m = manifestOf(raw, file);
     errors.push(...m.errors);
     if (m.unit) units.push(m.unit);
   }
-  const all = checkUnits(units, bank, LADDERS, clips);
+  const all = checkUnits(units, bank, LADDERS, clips, listenRefs(listen));
   const us = units.flatMap((u) => (u.items ?? []).flatMap((it) => usProblems(it).map((p) => `${u.unit} ${it.id}: ${p}`)));
   return { ...all, errors: [...errors, ...all.errors, ...us], units };
 }
@@ -270,7 +273,7 @@ export const oneClipBank = (clips: Readonly<Record<string, unknown>>, bank: read
 export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>, sources: readonly UnitSource[] = readUnits(), packs: Readonly<Packs> = readPacks(), warn?: (w: string) => void, stories: readonly StorySource[] = readStories(), listen: readonly ListenSource[] = readListen(), pairs: unknown = readPairs()): Map<string, string> {
   const out = new Map<string, string>();
   const places = clipPlaces(packs);
-  const BANK = joined(clips), check = checkUnitSources(sources, clips, BANK);
+  const BANK = joined(clips), check = checkUnitSources(sources, clips, BANK, listen);
   if (check.errors.length) throw new Error(`kikimimi: the units don't check:\n${check.errors.join('\n')}`);
   const us = BANK.flatMap((it) => usProblems(it).map((p) => `${it.id}: ${p}`));
   if (us.length) throw new Error(`kikimimi: the bank isn't US English:\n${us.join('\n')}`);
@@ -332,7 +335,13 @@ export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<R
   const games: Index['games'] = {};
   for (const lv of levels) games[`quiz:${lv}`] = gameCv('quiz', units[lv].cv);
   games['ladder:ladder'] = gameCv('ladder', units.ladder.cv);
-  for (const u of check.units) games[`lesson:${u.unit}`] = gameCv('lesson', units[u.unit].cv);
+  // (a recipe-2 unit's lesson cv takes in its kinds' files that are listened: those its lessons play)
+  const refs = listenRefs(listen);
+  for (const u of check.units) {
+    const kinds = kindFiles(u, refs), files = [...new Set(Object.values(kinds).flat())].filter((f) => listenIndex[f]?.[2] === 'listened').sort();
+    if (Object.keys(kinds).length) units[u.unit].kinds = kinds;
+    games[`lesson:${u.unit}`] = gameCv('lesson', [units[u.unit].cv, ...files.map((f) => `${f}:${listenCv.get(f)}`)].join(','));
+  }
   // the weekend tournament deals from every level by the items' places in them (games/taikai/pick.ts numbering)
   games['taikai:all'] = gameCv('taikai', levels.map((lv) => units[lv].cv).join(','));
   // a listening file's game (`tile:s1-tile-a`), once the registry has the game (games/versions.ts BUILD_V)
