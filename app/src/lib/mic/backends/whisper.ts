@@ -36,9 +36,24 @@ export async function whisperServed(): Promise<boolean> {
 
 /** The model and the runtime into the STT cache (what's missing; `progress` in bytes); the bytes fetched. */
 export async function downloadWhisper(progress?: (got: number, of: number) => void): Promise<number> {
-  if (stub() !== null) return progress?.(1, 1), 0;
-  return ensureStt({ root: root(), cache: await caches.open(STT_CACHE), fetch: (u) => fetch(u), extra: [new URL(sttWorker, location.href).href], progress });
+  const cache = await caches.open(STT_CACHE);
+  // the stub: one marker entry stands for the files (whisperCached, せってい's 削除)
+  if (stub() !== null) return await cache.put(`${root()}e2e`, new Response('1')), progress?.(1, 1), 0;
+  return ensureStt({ root: root(), cache, fetch: (u) => fetch(u), extra: [new URL(sttWorker, location.href).href], progress });
 }
+
+/** Whether the model and the runtime are all in the STT cache (せってい: downloaded, 削除 offered). */
+export async function whisperCached(): Promise<boolean> {
+  try {
+    const cache = await caches.open(STT_CACHE);
+    return stub() !== null ? (await cache.keys()).length > 0 : await sttCached(root(), cache);
+  } catch {
+    return false;
+  }
+}
+
+/** せってい's 削除: the STT cache deleted (the model, the runtime, the worker's script). */
+export const deleteWhisper = (): Promise<boolean> => caches.delete(STT_CACHE).catch(() => false);
 
 export interface Whisper {
   /** The pipeline on `device` (the last one let go): its load ms. */

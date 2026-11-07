@@ -10,6 +10,7 @@
 //   eventJingle(['turkey-cooking-start', …])             // a cut-in of my own (events.ts CutInId: Franklin's)
 //   setPlace('shop') · setPlace(null)                     // a building's room plays its own track (places.ts)
 //   voiceSession(true) · loadVoice(key, bytes) · playVoice(buf, …)  // ききみみ's spoken clips, even with sound set silent
+//   micSession(true) · audioCtx()                         // ききみみ's mic open: play-and-record on the voice's context
 import { untrack } from 'svelte';
 import type { SoundId } from './ids.ts';
 import { Engine, applySession } from './engine.ts';
@@ -43,8 +44,22 @@ export const sound = $state<{ settings: SoundSettings; weather: Weather; heavy: 
  *  'suspended', WebKit's 'interrupted'; null: none). On and not running after a lock or an app switch: the game shows
  *  its 「タップして つづける」 card, whose tap (any tap does) resumes it. */
 export const voice = $state<{ on: boolean; state: string | null }>({ on: false, state: null });
-/** The audio session's type before the game set 'playback' (null: not set by it, or not supported). */
+/** The audio session's type before ききみみ set one (null: none set, or not supported). */
 let sessionWas: string | null = null;
+/** ききみみ's mic is open (micSession): the session is 'play-and-record' over the game's 'playback'. */
+let micOn = false;
+/** The session type ききみみ wants now ('play-and-record' with the mic open, 'playback' with a game on, else none): set
+ *  it, and once none is wanted put back the one from before the first. One owner of the session type. */
+function layerSession(): void {
+  const want = micOn ? 'play-and-record' : voice.on ? 'playback' : null;
+  if (want) {
+    const was = applySession(want);
+    sessionWas ??= was;
+  } else if (sessionWas !== null) {
+    applySession(sessionWas);
+    sessionWas = null;
+  }
+}
 const watched = new WeakSet<AudioContext>();
 
 /** The cut-in playing (choose.ts CutIn): it ends by itself (a one-shot's end, a loop's `loopMs`) or is cleared. */
@@ -203,9 +218,8 @@ export function voiceSession(on: boolean): boolean {
     if (!voice.on) return true;
     voice.on = false;
     e.clearVoice();
-    e.holdAwake(false);
-    if (sessionWas !== null) applySession(sessionWas);
-    sessionWas = null;
+    e.holdAwake(micOn);
+    layerSession();
     apply();
     return true;
   }
@@ -216,13 +230,33 @@ export function voiceSession(on: boolean): boolean {
     ctx.addEventListener('statechange', () => (voice.state = ctx.state));
   }
   e.holdAwake(true);
-  if (!voice.on) sessionWas = applySession('playback');
+  const was = voice.on;
   voice.on = true;
+  if (!was) layerSession();
   // a resume asked for in a tap counts as running (session.ts canSound); if it didn't take, the card shows
   voice.state = 'running';
   setTimeout(() => (voice.state = ctx.state), QUEUED_DROP_MS);
   apply();
   return true;
+}
+
+/** ききみみ's mic open (`true`, inside the tap that opens it) or closed: the audio session 'play-and-record' while it
+ *  is (WebKit: the clips play on while the mic records), the music held ducked and the context awake; closed, the
+ *  session back to the game's 'playback' (or to what it was before) and the music up again. */
+export function micSession(on: boolean): void {
+  if (typeof window === 'undefined' || on === micOn) return;
+  micOn = on;
+  layerSession();
+  engine?.holdAwake(on || voice.on);
+  engine?.holdDuck(on);
+}
+
+/** The voice's audio context (made or woken: call it inside a tap), for the mic's capture: one clock for the clips and
+ *  the mic. Null where Web Audio is missing. */
+export function audioCtx(): AudioContext | null {
+  if (typeof window === 'undefined') return null;
+  const e = eng();
+  return e.wakeVoice() ? e.ctx : null;
 }
 
 /** A voice clip decoded from the bytes `fetchBytes` gives (ききみみ's: a slice of its pack, components/kikimimi/packs.ts),
