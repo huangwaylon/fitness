@@ -3,8 +3,8 @@
   // in its colour, its stops as numbered NH pins (one spot's stops one pin, '2·6'; the selected one tagged with its
   // name), the candidate layers, and the location dot behind the locate button. This component is light: the map's
   // library (engine.ts: maplibre-gl, its worker, the fonts) is its own chunk, fetched only when a map is drawn and
-  // never precached, so offline it may not come: a 「もういちど」 panel then, and a map whose tiles don't come shows
-  // its route with a note. Under drawOff() (the e2e's logic tier) no map is made: a stub with the same pins as buttons.
+  // kept by the service worker from then on (with the tiles it drew: docs/travel.md "Offline"); offline before it came: a
+  // 「もういちど」 panel, and a map whose tiles don't come shows its route with a note. Under drawOff() (the e2e's logic tier) no map is made: a stub with the same pins as buttons.
   // `window.__travelMap` (hooks on) is the specs' view.
   import { onMount } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
@@ -13,6 +13,7 @@
   import { drawOff } from '#lib/ui-state/testMode.ts';
   import { pick } from '../text.ts';
   import { LocWatch } from './geo.ts';
+  import { engineReady } from './cached.ts';
   import { candidatesOf, farFrom, layersOn, legsData, pinLabel, pinsOf } from './overlay.ts';
   import { dayColor, type MapState, type TripMapProps } from './types.ts';
   import type { Engine } from './engine.ts';
@@ -65,12 +66,11 @@
   /** Back to the day's route (its chip tapped again). */
   export const fit = () => engine?.fit();
 
-  /** Offline the chunk isn't asked for at all (Safari keeps a failed import for the page's life, so a retry would
-   *  fail too): 'failed' till the phone is back online (then drawn by itself) or the retry is tapped. */
+  /** Offline, the chunk is asked for only if the service worker holds it (cached.ts engineReady): else 'failed' till
+   *  the phone is back online (then drawn by itself) or the retry is tapped. */
   function draw() {
-    if (!navigator.onLine) return void (mode = 'failed');
     mode = 'loading';
-    loadEngine().then(
+    engineReady().then((ok) => (ok ? loadEngine() : Promise.reject(new Error('offline')))).then(
       ({ createEngine }) => {
         if (gone) return;
         try {
@@ -206,7 +206,7 @@
     white-space: pre-line; pointer-events: none;
     box-shadow: inset 0 0 0 2px var(--c-edge, #937047), 0 3px 0 var(--c-edge, #937047);
   }
-  /* the map's chunk or its WebGL didn't come (offline, the chunk never precached): the paper, a word, a retry */
+  /* the map's chunk or its WebGL didn't come (offline before a map ever drew): the paper, a word, a retry */
   .failed {
     position: absolute; inset: 0; z-index: 1001; display: grid; place-content: center; justify-items: center; gap: 12px; padding: 16px;
     background: var(--c-paper, #F5E4BC); color: var(--c-ink-soft, #6B5544); font: 700 var(--fs-body, 15px)/1.4 var(--font-ui); text-align: center;

@@ -177,7 +177,7 @@ test('drawn, offline: the map chunk never asked for, a retry; back online, drawn
   await drawn(page);
   await page.route('https://tiles.openfreemap.org/**', (r) => r.abort('internetdisconnected'));
   await gotoTrip(page, 'nz', 'days');
-  // offline (the chunk is never precached): a word and a retry, no locate button
+  // offline before a map ever drew (no service worker here: the chunk in no cache): a word and a retry, no locate button
   await context.setOffline(true);
   await page.locator('dialog[open] [data-trip-tab="map"]').click();
   const map = pane(page).locator('[data-travel-map]');
