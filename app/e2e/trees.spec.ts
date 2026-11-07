@@ -98,6 +98,7 @@ test('the popup’s 朝 / 昼 / 夜: a meal logged in ごはん fills its circle
   const rice = sheet.locator('[data-food-results] button', { hasText: 'ごはん（精白米）' }).first();
   await expect(rice).toBeVisible({ timeout: 15_000 }); // the catalog's first fetch
   await rice.click(); // opened in place
+  await sheet.evaluate((d) => Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => {})))); // (its height in)
   await sheet.locator('[data-food-open-add]').click();
   await sheet.locator('[data-food-finish]').click();
   await page.keyboard.press('Escape');
