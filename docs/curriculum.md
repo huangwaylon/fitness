@@ -1,6 +1,6 @@
-# ききみみ curriculum: listening English on the island (v1, 2026-11-05)
+# ききみみ curriculum: listening English on the island (v1, 2026-11-05; status 2026-11-07)
 
-This is the lead curriculum designer's synthesis of six round-1 proposals (linguist, teacher, Japanese learner panel, curriculum designer, game designer, engineer; drafts in /tmp/curriculum/round1/) and the user's decisive input of 2026-11-05. It builds on the shipped game, ききみみ クイズ (docs/kikimimi.md). Builders follow this document and update it as they go. Choices settled here move into docs/decisions.md as they land.
+This is the lead curriculum designer's synthesis of six round-1 proposals (linguist, teacher, Japanese learner panel, curriculum designer, game designer, engineer) and the user's decisive input of 2026-11-05. It is the **why and the plan**; what's built is described in docs/kikimimi.md (the quiz, audio, sync, progress), docs/kikimimi-framework.md (the engine and the games), docs/kikimimi-ux.md (the screens), docs/curriculum-units.md (units) and docs/curriculum-wave2.md (wave 2). Where the build differs from the plan, the section says so in an **As built** line. Settled choices are in docs/decisions.md.
 
 **The user's input overrides the brief.** The learner is at "high school level and higher": TOEIC 700+ years ago, and listening "quite proficient". So the core band is **B1+ → B2 → C1**. A1/A2 material is only a warm-up and a placement floor. The user wants (a) lots of realistic, harder content, (b) a systematic way to make harder, more useful daily-life scenarios, (c) new visuals, (d) incremental releases that show study progress, and (e) natural neural TTS with a large, consistent cast.
 
@@ -16,7 +16,7 @@ This is the lead curriculum designer's synthesis of six round-1 proposals (lingu
 | **Second learner** | うめ, level unknown (open question 1). The design keeps a floor (はまべ) and **parallel decks**, so two levels can share one scene. |
 | **Guest** | Plays with their own private record and appears in no couple summary. |
 | **Goal (12 months)** | Understand natural-speed daily conversation, service calls, meetings and announcements on the first listen, then podcasts and the news at C1. |
-| **Focus** | Listening. Speaking appears only as optional private shadowing. |
+| **Focus** | Listening. Speaking only in the opt-in mic modes (docs/kikimimi-mic.md). |
 | **Sessions** | 3–10 minutes, solo or 2–3 live, on iPhone 15/16 Safari. No push notifications (the app's rule); the hook is in the app (しずえ's morning line, a villager's ♪ bubble). |
 
 **What "harder" means for this learner.** It isn't rarer words. It's the **conditions** and the **pragmatics**: speed, reduction, overlap, noise, channel, accent, hesitation and self-repair, and meaning that isn't said outright (an implied refusal, sarcasm, hedging, a joke). All six proposals agree that the sentence and its delivery carry the difficulty, never an obscure noun.
@@ -46,7 +46,7 @@ Stages are named after places, never やさしい/むずかしい (the panel fou
 | **S3 やま** ★★★★ | B2+ | Core | follow fast group talk with interruptions, workplace meetings, voicemail and support calls with complications; catch sarcasm, hedging and humour; cope with a less familiar accent | 5.0–5.8 | 3 speakers, interruptions, SNR to +5 dB; mostly US, UK/AU as tagged exposure (≤ 10%) |
 | **S4 ほし** ★★★★★ | C1 | Stretch | follow podcasts, news, lectures and debates on unfamiliar topics; infer stance; take notes on structure; follow non-native speakers | casual 5.5–6.2, news ~4.5 dense | long-form (2–6 min, segmented); mostly US, UK/AU (later non-native) as tagged exposure (≤ 10%) |
 
-**The existing levels map** as L1 → S0, L2 → S0 high, L3 → S1 low. The first increment adds **L4 = S1/S2** content to the existing quiz (§14).
+**The quiz levels map** onto the stages (bank.ts `levelRank`, kikimimi-ux.md §4): L1 and L2 → はまべ 1 and 2, L3 → かわ, L4 → もり (S1/S2 material), L6 → やま, L7 → ほし; L5 is the アナウンス pack beside もり, not a stage.
 
 **The sound-feature sequence** (one primary per unit, earlier ones reviewed):
 
@@ -264,89 +264,70 @@ Personality keeps register memorable and casts lines naturally: jock (gym, healt
 
 Each game reuses ききみみ's seeded deck, host clock, presence intents and lazy sheet, then the shared `RoundSession`/`GameDef` framework (§12). The game designer's picks are re-weighed for an advanced learner: phonemic drills move down to the floor; tasks with complications, overheard talk and long-form move up.
 
-| # | Game | Trains | Modes | Effort | Priority |
-|---|---|---|---|---|---|
-| 1 | **ききみみ クイズ** (existing) + L4/L5 and the new types `mean` (what do they mean?), `gist`, `next` (best next line after a 2–4-line dialogue) | replies, pragmatics, numbers in real contexts | co-op, solo, たいせん | S per step | **now** |
-| 2 | **スピード はしご** (speed ladder): one line at rising speeds, a different question at each rung (as built: 4 rungs, 0.8× → 1.4× by time-stretch, a flat 100 a rung climbed in order on the first listen, not a top-weighted payout) | reductions, rate tolerance | solo, co-op, たいせん | S | 2 (built) |
-| 3 | **ことば タイル** with reductions: rebuild what was said from tiles, with decoys *to/the/a, I'd/I'll, can/can't, should've/shouldn't have*; the reveal shows the spoken shape | segmentation, weak forms | solo, co-op (half the tiles each) | S | 3 |
-| 4 | **ようじ でんわ** (phone errands with complications): a NookPhone call asks for something, then changes it ("oh, actually, make that…"), you act on the pocket grid or fill a memo | multi-step detail, self-repair, phone audio | solo, co-op (each hears half) | M | 4 |
-| 5 | **たちぎき** (overheard): 2–3 villagers talk, overlap and interrupt; match opinions to faces, then who changed their mind, the mood, the plan | tracking speakers, attitude, inference | co-op, solo | S UI, content-heavy | 5 |
-| 6 | **しずえの ニュース** (daily broadcast): 45–90 s at S1, a full bulletin with corrections at S3; gist + 2 details | long-form, news register | solo daily, co-op | M | 6 |
-| 7 | **アナウンス** pack: PA, voicemail, IVR menus (a ladder of channel and noise) | channel and noise tolerance | solo | S (pipeline) | 7 |
-| 8 | **フータ／ラジオ** long-form: segmented talks, podcasts, debates; a comprehension map fills as you answer; notes | structure, stance | solo | M | 8 |
-| 9 | **ジョニーの たび** (story serial): one chapter a day, predict the next | extensive listening | solo, co-op unlock | M | 9 |
-| 10 | **ふたりで ジグソー** (jigsaw): each phone hears half (earphones), they must talk | information gap | co-op only | S on top of 4/5 | 10 |
-| 11 | **フータの なぞなぞ** (buzz-in riddles) | inference, fun party game | たいせん | S–M | later (a party game, not core) |
-| 12 | **まねっこ エコー** (shadowing, private, no scoring) | prosody | solo | M (iOS audio session) | later |
-| 13 | **つり ききわけ** (minimal-pair fishing) | phonemes | solo | S–M | floor only |
-| — | ラベルの コーデ, ケケの チャント, Redd's fakes | — | — | — | parked (low transfer, fragile timing) |
+| # | Game | Trains | Status (2026-11-07) |
+|---|---|---|---|
+| 1 | **ききみみ クイズ** + L4/L5 and the types `mean`, `gist`, `next` | replies, pragmatics, numbers in real contexts | built (co-op, solo, たいせん; kikimimi.md) |
+| 2 | **スピード はしご**: one line at rising speeds, a different question a rung | reductions, rate tolerance | built: 4 rungs, 0.8× → 1.4× by time-stretch, a flat 100 a rung climbed in order on the first listen (kikimimi.md "スピード はしご") |
+| 3 | **ことば タイル** with reductions: rebuild what was said, decoys *to/the/a, I'd/I'll, can/can't* | segmentation, weak forms | built (W2-1, kikimimi-framework.md) |
+| 4 | **ようじ でんわ**: a call asks for something, then changes it; fill a memo | multi-step detail, self-repair, phone audio | built (W2-3) |
+| 5 | **たちぎき**: 2–3 villagers talk, overlap and interrupt | tracking speakers, attitude, inference | built (W2-2) |
+| 6 | **しずえの ニュース**: a bulletin, gist + 2 details | long-form, news register | built (W2-5): evergreen bulletins and the real Tokyo weather |
+| 7 | **アナウンス** pack: PA, voicemail, IVR menus | channel and noise tolerance | built: quiz level 5 |
+| 8 | **フータ／ラジオ** long-form with a comprehension map | structure, stance | partly: ほし (level 7) has talks, news and debates as 2–4-sentence clips; segmented long-form and the map not built |
+| 9 | **ジョニーの たび** (story serial) | extensive listening | built as おやすみ ものがたり (§7.1): st-johnny, st-cafe, st-tokyo |
+| 10 | **ふたりで ジグソー**: each phone hears half | information gap | folded into the listening games' co-op (two roles, each hears half: games/listened.ts) |
+| 11 | **フータの なぞなぞ** (buzz-in riddles) | inference | cut: no clear listening target |
+| 12 | **まねっこ エコー** (shadowing) | prosody | revisited as the mic modes (docs/kikimimi-mic.md), private and opt-in |
+| 13 | **つり ききわけ** (minimal-pair fishing) | phonemes | cut: barely transfers at TOEIC 700+ |
+| — | ラベルの コーデ, ケケの チャント, Redd's fakes | — | parked (low transfer, fragile timing) |
 
 ### 7.1 New modes from the second team round (2026-11-06)
 
-The learning scientist (`/tmp/modes/science.md`), the EFL teacher with the curriculum designer (`teaching.md`) and the game designer with the Japanese panel (`games.md`) proposed 24 modes. Duplicates are merged here and ranked by learning value × fun × cost. All of them run on the increment 8 framework (`GameDef`).
+The learning scientist, the EFL teacher with the curriculum designer, and the game designer with the Japanese panel proposed 24 modes, merged here and ranked by learning value × fun × cost. All run on the framework (`GameDef`). The user's order: たいかい and おやすみ ものがたり first, then the rest of Tier 1.
 
-**Tier 1: build first. Cheap and high value, they reuse content or generate it from templates.**
+**Tier 1 (all built by 2026-11-07).**
 
-| Mode | What it is | Why |
-|---|---|---|
-| **しずえの しゅうまつ たいかい** | A Sunday quiz show built from the week's misses: interleaved (まぜまぜ), levelled per player so the B1+ partner can win, with a confidence wager round (かけて ききみみ: bet the round's own chips on how sure you are; no かいがら). Logic built 2026-11-07 (kikimimi-framework.md "G-たいかい logic as built") | Retrieval + spacing + interleaving + hypercorrection; a weekly ritual; the panel's top pick with the bedtime story |
-| **おやすみ ものがたり** | A bedtime story in the tent: no score, a sleep timer, chapters (the serial's form) | Extensive listening at 95%+ comprehension; the panel: 「これは毎日やる」 |
-| **すうじ ラッシュ** | A café rush of orders full of numbers and dates with mid-stream corrections | Numbers under pressure; fully template-generated |
-| **よみきき サンド** | Listen blind → read the transcript → listen blind again, over any item | Vandergrift's metacognitive cycle; no new content |
-| **みんなで ディクトグロス** | Co-op: hear a 20–40 s passage twice, rebuild it together on one tile board | Merged into ことば タイル (increment 10) as its co-op mode |
+| Mode | What it is | Why | Status |
+|---|---|---|---|
+| **しずえの しゅうまつ たいかい** | A Sunday quiz show from the week's misses: interleaved, levelled per player so the B1+ partner can win, a confidence wager round (かけて ききみみ: the round's own chips, no かいがら) | retrieval, spacing, interleaving, hypercorrection; a weekly ritual | built (kikimimi-framework.md "G-たいかい logic as built"; components/kikimimi/taikai/) |
+| **おやすみ ものがたり** | A bedtime story in the tent: no score, a sleep timer, chapters | extensive listening at 95%+ comprehension; the panel: 「これは毎日やる」 | built: 3 serials (kikimimi-ux.md §6.8) |
+| **すうじ ラッシュ** | A café rush of orders full of numbers, with mid-stream corrections | numbers under pressure; template-generated | built (W2-4) |
+| **よみきき サンド** | Listen blind → read → listen blind again, over any item | the metacognitive cycle; no new content | built (W2-0): solo reveals and review rows only |
+| **みんなで ディクトグロス** | Co-op: rebuild a passage together on one tile board | | not built as its own mode; ことば タイル's co-op splits the tiles |
 
-**Tier 2: next. Medium effort, strong curriculum fit.**
-- **トーン あて:** one line said sincere / sarcastic / resigned; match each to a face or to what happens next. Risk: test first whether the Qwen clone can vary tone on demand.
-- **うわさの でんごん:** a rumour drifting over 4 villagers; tap what changed. Narrow listening over many voices.
-- **めいたんてい フータ:** a museum whodunit; cross-examine alibis and spot the contradiction.
-- **かいぎの ぎじろく:** a video-call meeting; fill the minutes: decisions, owners, deadlines, objections.
-- **ざつだん パーティ:** small talk and turn-taking; tap when the turn is really yours.
-- **いいまわし ずかん + なかよし:** an idiom and phrasal-verb museum answered by consequence, plus villager friendship that grows as you understand them. The meta layer over every mode; friendship never drops.
-- **ピーッ！ かいしゅう:** an earlier line replays with a bleep over the idiom to recall. Folded into the SRS fold (increment 12).
-- **でんごん リレー:** one hears a call and tells the other what to do. Folded into ふたりで ジグソー (increment 19).
+**Tier 2.**
+- **トーン あて** (one line sincere / sarcastic / resigned): pending its spike (curriculum-wave2.md §2.6, W2-6: ships only if the clone holds its voice and the user tells the tones apart).
+- **いいまわし ずかん + なかよし**: built as ずかん and なかよし (kikimimi-ux.md §6.10, §7.7); friendship never drops.
+- **ピーッ！ かいしゅう**: folded into the SRS. **でんごん リレー**: folded into the games' co-op halves.
+- Not built: うわさの でんごん, めいたんてい フータ, かいぎの ぎじろく, ざつだん パーティ.
 
-**Tier 3: later or seasonal.**
-- とたけけの よふかしラジオ (a call-in show);
-- いっしょに クッキング (recipes, tied to the food log);
-- ウィスプの なぞとき (a seasonal audio escape room);
-- わらいどころ (sitcom banter; humour is hard for TTS);
-- フータの ノート (folded into long-form, increment 17);
-- おなじ はなし、3にん (folded into たちぎき / long-form as an accent variant).
+**Tier 3 (later or seasonal, none built):** とたけけの よふかしラジオ, いっしょに クッキング, ウィスプの なぞとき, わらいどころ (humour is hard for TTS); フータの ノート and おなじ はなし、3にん fold into long-form and たちぎき.
 
-**Cut or parked, with reasons:**
-- minimal-pair fishing: barely transfers at TOEIC 700+;
-- riddles: no clear listening target;
-- karaoke and the K.K. chant: song research is about recall, and singing is embarrassing (the panel);
-- mic-based modes (アフレコ, まねっこ エコー): strong evidence (Hamada's shadowing studies), but iOS mic fragility and embarrassment. Revisit only as a private, unscored option.
+**Cut:** minimal-pair fishing (barely transfers at TOEIC 700+), riddles (no listening target), karaoke and the K.K. chant (recall, and singing is embarrassing). Mic modes were parked for iOS fragility and shyness, then designed as private, opt-in modes and approved 2026-11-07 (docs/kikimimi-mic.md; the user's phone probe comes first).
 
-**Two design changes the scientist flagged:**
-- the speed ladder must reward rungs climbed in order and stop at the first miss, not pay out top-heavy;
-- the 「いっぱつ」 +30 bonus discourages replaying, which helps learning. **The user's decision (2026-11-06): a badge only, no points.**
-
-**The user's order (2026-11-06):** once the framework (increment 8) lands, しずえの しゅうまつ たいかい and おやすみ ものがたり come first, then the rest of Tier 1.
+**Two changes the scientist flagged, both adopted:** the speed ladder rewards rungs climbed in order and stops at the first miss; 「いっぱつ」 is a badge, not +30 points (the user's decision, 2026-11-06), so replaying isn't discouraged.
 
 ## 8. The visual system
 
 Everything uses the app's paper theme (cream paper, rounded cards, the NH brown ink, soft drop shadows) and stays lazy-loaded.
 
-| Element | What it is | How it's built |
+| Element | What it is | As built (2026-11-07) |
 |---|---|---|
-| **Scene card** | A 16:9 card shown *before* the clip: the setting (station platform, café counter, phone screen, office, airport desk), the speakers' icons, a one-line Japanese task (`ask`). It gives context the way real life does, without giving words away. | **SVG/CSS scene kit**: ~20 flat paper-style backdrops drawn as SVG (≤ 6 KB each), composited with the existing NH art (880 villager images, hosts, reactions, items). Cheap, tiny, consistent. |
-| **Channel frames** | The NookPhone call screen (signal bars that drop on a bad line), a PA speaker with a reverb ripple, a video-call grid with a "muted" icon, a voicemail tape. They show the condition, which is part of the scenario. | SVG components |
-| **Dialogue bubbles** | NH-style bubbles per speaker, empty (「♪…」) while playing; bubbles overlap when speech overlaps; the speaker's icon bobs. | existing SpeakerBubble, extended |
-| **Transcript karaoke** | At the reveal, the transcript highlights word by word as the clip replays; tap a sentence to replay it. | word timestamps from forced alignment in the pipeline |
-| **Sound marks** | Over the revealed text: linking arcs (‿) between words, stress dots (● strong ○ weak), elided letters greyed (nex<s>t</s> week), a flap marked (wa**d**er), the reduced shape above the spelling (going to → *gonna*), an intonation contour line for attitude items. One mark type per item, the item's `feature`. | CSS over spans; marks generated from `features` and alignment |
-| **Comprehension map** | For dialogues and long-form: a small node map (who, where, when, what changed) or a timeline that fills in as questions are answered; the review shows it complete. | Svelte + SVG |
-| **Stamp card and ずかん** | Can-do stamps per stage (Nook Miles style); a phrase ずかん filled when a chunk is heard in 3 contexts; a "sounds I can hear" collection. | existing paper components |
-| **Generated illustrations** (optional) | Richer backdrops for news and podcasts. | Feasible offline on the M5 Max (an open-weights image model), styled as paper watercolour backgrounds only. **Licence:** never generate NH characters or imitate Nintendo assets; check the model's licence for the outputs. The NH art itself is Nintendo's and stays as the app already uses it (a private app; the repo goes private after the hosting move). Start with the SVG kit; add generated backdrops only if the kit feels thin. |
+| **Scene card** | The setting and the speakers, from the lead-in until the reveal: context the way real life gives it, never the words | built: 8 painted backdrops (generated paper-gouache, Z-Image-Turbo, Apache-2.0, not the planned SVG kit), the villagers' NH art composited over them (docs/kikimimi.md "Visuals"); wave 2's 7 more (ART) pending |
+| **Channel frames** | The phone call screen, a PA horn with reverb ripples, a video-call grid, a voicemail | built in CSS/SVG (PhoneFrame, PaFrame, VideoFrame) |
+| **Dialogue bubbles** | NH-style bubbles per speaker, empty (「♪…」) while playing; the talker bobs | built |
+| **Transcript karaoke** | At the reveal the words light as the clip replays | built, timed by whisper's word alignment (words.json) |
+| **Sound marks** | Over the revealed text: the said shape above a reduced run (going to → *gonna*), linking arcs, swallowed letters, stress dots | built: `say`, `link`, `drop`, `stress`, authored per clip (`MARKS` or the sets' `marks`); intonation contours not built |
+| **Comprehension map** | A node map or timeline for long-form that fills as you answer | not built (no segmented long-form yet) |
+| **Stamps and ずかん** | Can-do stamps, a phrase ずかん, sounds I can hear | built (kikimimi-ux.md §6.10) |
 
-**As built (increment 5, 2026-11-06):** the backdrops are painted (Z-Image-Turbo, Apache-2.0; 8 scenes, docs/kikimimi.md "Visuals") rather than the SVG kit, with the channel frames in CSS/SVG and the karaoke timed by whisper's word alignment.
+Generated art never shows an NH character or imitates Nintendo's look; the NH art itself stays as the app already uses it (a private app).
 
 **Rule:** no visual may show the answer before the reveal. Scene cards show the setting, never the outcome; transcripts and marks appear only at the reveal.
 
 ## 9. Audio and script rules for TTS
 
-**Resolution (slow clips).** The linguist wanted a separate careful-speech take; the engineer, a time-stretch. Adopted: S0–S1 🐢 is a **separate careful take** (「ゆっくり ていねいに」), never a stretch (stretching undoes reductions). From S2 there's no 🐢: support is **segment replay** (one sentence) and the transcript.
+**Resolution (slow clips).** The linguist wanted a separate careful-speech take; the engineer, a time-stretch. Adopted: S0–S1 🐢 is a **separate careful take** (「ゆっくり ていねいに」), never a stretch (stretching undoes reductions). From S2 there's no 🐢: support is **segment replay** (one sentence) and the transcript. **As built:** 🐢 is an atempo stretch at 0.75 for L1 and L2 only (the careful takes weren't made; the stretch kept UTMOS in the pilot), and no 🐢 from L3 up.
 
 **The cast (American first, 2026-11-06).** 18 voices: **12 US** (`us-f1…f6`, `us-m1…m6`: ages early twenties to sixties, bright to deep, brisk to unhurried; ten General American, `us-f6` a light Southern and `us-m6` a light New York accent for variety), and 6 kept only for exposure (`uk-f1`, `uk-m1`, `uk-m2`, `au-f1`, `au-m1`, `au-m2`). Nearly every villager's one voice for good (`CAST`: villager → cast) is a US voice; the handful of UK/AU villagers speak only the やま/ほし `accent-exposure` items (≤ 10% of each stage; none at はまべ/かわ/もり or in units). ≥ 4 voices per minimal-pair contrast and per target phrase, from the US cast. Later exposure voices (Irish, Scottish, Indian, non-native English) only at S3–S4, tagged the same way, where the model does them convincingly. A cast "announcer" (PA) and a "newsreader" voice are US. Designed voices only; no cloning of real people without their consent.
 
@@ -369,7 +350,7 @@ Everything uses the app's paper theme (cream paper, rounded cards, the NH brown 
 | Japanese | `ja` and an optional `note` (≤ 40 字) that explains the trap; from S2 the Japanese is collapsed at the reveal, tap to open. |
 | Licence | all scripts original. No copyrighted lyrics, broadcasts or news audio: the news is written news-style by us. |
 
-**The model choice** (being made now) should be judged on: reductions and flaps on demand, natural two-voice dialogue, accent stability across a long script (a UK/AU exposure voice not drifting towards US), disfluency that sounds real, and speed on the M5 Max for ~16 hours of audio.
+**As built** (docs/kikimimi.md "Audio"): the engine is Qwen3-TTS 1.7B Base, cloning each cast voice's reference; up to 5 seeds a line, re-rolled by the gate. The gate is whisper word for word plus ECAPA voice similarity, UTMOS measured; the forced-alignment checks of reductions weren't built (whisper normalises them), so reductions are a person's to hear in the listening check. Dialogue lines play in turn (a 0.3 s gap); たちぎき's lines may overlap on the audio clock. The Japanese isn't collapsed at the reveal: the user asked for more Japanese help instead (2026-11-07: `cja`, `why`, `ctx`; kikimimi.md "Japanese help").
 
 ## 10. Placement, adaptivity and spaced repetition
 
@@ -379,16 +360,17 @@ Everything uses the app's paper theme (cream paper, rounded cards, the NH brown 
 
 **Spaced repetition.** The card is a **chunk, a feature or a scenario skill** ("self-correction in numbers"), never a clip. FSRS-lite intervals 1 / 3 / 7 / 16 / 35 / 90 days. Right first play = good; right after a replay = hard; wrong = again. Each review uses a different clip (voice, accent or condition). 「しずえの おさらい」 is a 3-minute due-only session, capped at 20 cards a day. No streak guilt: a missed day only means more due cards.
 
-**As built (2026-11-07, kikimimi/games/check/).** The bands are the quiz levels as places (はまべ 1, はまべ 2, かわ, もり, やま, ほし), and the walk starts at かわ, the B1+ band. The check is 8 to 12 items, about 3 minutes. The sampled skills are this build's (すうじ, つながる おと, へんじ・ほんね, にた おと, one gist); accent and phone clips wait for their content. The placed band is the reversals' mean, rounded down. Each skill's band (its answers' bands, a miss a band lower) gives the とくい / これから chips. The result is a `listen` row with `gm: 'check'`, the placed `lv` and the profile as `u`. Re-checks: せってい's 「みみ チェックを もういちど」 only (no stage-boundary offer yet).
-
-**Resolutions.** Placement length: 12 items (between the linguist's 10–12 and the curriculum designer's 14–18), with long gist as one item. Storage: the engineer's one row per person per day (below) rather than one row per answer, but each entry keeps the pick, so distractors still diagnose.
+**As built.**
+- **Placement** (kikimimi/games/check/): the bands are the quiz levels as places (はまべ 1, はまべ 2, かわ, もり, やま, ほし), starting at かわ. 8 to 12 items, about 3 minutes, over this build's skills (すうじ, つながる おと, へんじ・ほんね, にた おと, one gist; accent and phone clips wait for content). The placed band is the reversals' mean, rounded down; each skill's band gives the とくい / これから chips. The result is a `listen` row with `gm: 'check'`. Re-check: せってい's 「みみ チェックを もういちど」 only (no stage-boundary offer yet).
+- **Adaptivity and SRS** (docs/kikimimi.md "Progress & feedback"): one Elo-style θ per player (not per lever), the comfortable level at 80 %; Leitner boxes 0 / 1 / 3 / 7 / 16 / 35 / 90 days over item cards (a missed item) and feature cards, folded from the rows, never stored. 「おさらい」 is the due-only mode (🔁 in あそぶ).
+- **Storage:** one `listen` row per person **per game**, not per day (a retry is a duplicate, two phones never overwrite each other); each answer keeps its pick, so distractors still diagnose.
 
 ## 11. Progress and the couple experience
 
 | Who sees it | What |
 |---|---|
 | **Me only** | my answers, review lists, feature profile (bars), placement result, due cards, minutes, the can-do stamps and my ずかん |
-| **Both members** (shared summaries) | that a person listened today and for how long (`listen_day {date, n, min}`), co-op game scores, shared stamps (units both cleared), phrases both know, a weekly line in しずえ's broadcast that's always positive ("ふたりで 42ふん きいたよ") |
+| **Both members** (shared summaries) | that a person played and for how long (each row's summary `{d, g, n, ms}`, server-enforced by `rowsFor`), co-op game scores, shared stamps (units both cleared), phrases both know, a weekly line in しずえ's broadcast that's always positive ("ふたりで 42ふん きいたよ") |
 | **Never shown** | who picked what in a live game (only ✓ chips and 「2にん せいかい」), one partner's level next to the other's (unless both opt in), the guest's data |
 
 **Live play.**
@@ -397,22 +379,24 @@ Everything uses the app's paper theme (cream paper, rounded cards, the NH brown 
 - **Asynchronous:** 「ウェイは もう きいたよ」 shows that a set was played, never the score; the same daily set waits for the other.
 - **Review together** (optional): ▶︎ synced between phones on the shared review, showing items, not who missed them.
 
-**Rewards** stay light: stamps, ずかん, a K.K. song when the couple reaches shared listening goals. No economy tie yet.
+**Rewards** stay light: stamps, ずかん, letters, なかよし, ふたりの クエスト (kikimimi-ux.md §7). No economy tie.
+
+**As built:** co-op default and the たいせん toggle (kikimimi.md "Co-op and たいせん"); たいせん ranks plain points, since expectation scoring waits for per-player stages. Per-player tiers exist in co-op lessons (curriculum-units.md §13) and the listening games' ears, not in the quiz. The asynchronous 「もう きいたよ」 and synced review aren't built.
 
 ## 12. The platform
 
-The engineer's proposal is adopted as the target, reached step by step (§14).
+The engineer's proposal was the target; as built (docs/kikimimi-framework.md):
 
-| Piece | Decision |
+| Piece | Plan → as built |
 |---|---|
-| Content source | `content/listen/<unit>.yaml` (zod schema) → lazy JSON per unit. Types: Cast, Voices, Unit, Script (line/dialogue/monologue/announcement), Phrase, Item with `tags`, `tier`, `conditions`. bank.ts converts into 3 units. |
-| Pipeline | `npm run listen:build` on the M5 Max: draft → lint (schema, refs, minimal pairs per accent, CEFR-J vocabulary, rate per stage) → agent review → TTS adapter per engine → ASR + forced-alignment gate (3 retries) → mix conditions → normalise (−16 LUFS, mono 24 kHz AAC 48 kbps) → pack → `/dev/listen` check page. Ships `listened` units only. |
-| Packs | `audio/listen/<unit>.<hash>.pak` (concatenated m4a, sliced and decoded just in time), served immutable; normal ≤ 1.2 MB, careful-take pack ≤ 0.8 MB. Needed because Pages caps a deploy at 20,000 files (11,627 used). Move packs to R2 behind a same-origin route past 50 MB. |
-| Cache | SW cache `island-listen-v1`: cache-first, LRU by unit, byte cap ≤ 30 MB, nothing precached. |
-| Sync | One generic intent `play {g, gm, op, …}`; `open` carries `gm`, unit, `cv` (content version) and optional review `ids`. A `cv` mismatch shows 「アプリを こうしんしてね」. The relay validates shape only, so new games need no relay deploy. `quiz` stays accepted until both phones migrate. |
-| Framework | `RoundSession` (session.ts minus quiz specifics) + `GameDef {build, rounds, grade, encode, decode, Input, Reveal}`; shared SpeakerBubble, ChoiceGrid, TileOrder, Transcript, Lobby, Results; `PackStore` and `playSequence` (gapless on the audio clock). |
-| Records | slot `listen|<who>|<date>` {r: [[card, pick, grade, ms]…]}; `rowsFor` sends a person's rows to its owner only; `listen_day` is public. SRS state is folded deterministically, never stored. Never compacted. |
-| Budgets | hub ≤ 25 KB gz, each game ≤ 15 KB gz, always loaded +0.5 KB; long-form as 3–12 s segments, never one big buffer. |
+| Content source | YAML per unit → units in `content/units/*.yaml` and the listening games and stories in `content/listen/`; the level banks stay TypeScript (`source.ts`). `kikimimi/compile.ts` (`npm run kikimimi:levels`) writes a lazy JSON chunk per level, unit, listening file and chapter. |
+| Pipeline | `npm run audio:kikimimi` on the M5 Max: TTS → whisper and ECAPA gate (5 seeds) → conditions mixed → −16 LUFS, mono AAC 48 kbps 24 kHz → packs. The drafting lint is the content tests (bank.test, units.ts, near-dupes.test). `/dev/listen` wasn't built: the listening check uses `--listen` and the phone. Listening files show once `listened`, units and serials from `voiced`. |
+| Packs | `static/audio/listen/<pack>.<hash>.pak` (whole m4a files end to end, sliced and decoded just in time), immutable; ≤ 1.2 MB a pack, slow ≤ 0.8 MB. 144 packs: the games' 89.3 MiB, the stories' 21.4 MiB. **Pending: W2-R**, the packs on R2 behind a same-origin route (`PACK_BASE`), waits for the user to enable R2 in the Cloudflare dashboard; till then bank.test's lines (92 and 23 MiB) are raised per batch as a stopgap (curriculum-wave2.md §5). |
+| Cache | the SW's `island-listen-v1`: cache-first, least recently used past 30 MB, nothing precached. |
+| Sync | the generic `play {g, gm, op, …}` intent with `cv` (a mismatch shows 「アプリを こうしんしてね」); lessons and every later game go out on it. The quiz and スピード はしご still send `quiz` (`QUIZ_ON_PLAY` off, pending: both phones on a build that hears `play`). |
+| Framework | `RoundSession` + `GameDef`, shared frames (RoundFrame, RevealFrame, ChoiceGrid, Transcript…), `playSequence` on the audio clock. |
+| Records | one `listen` row per person per game (§10), owner-only but its summary; SRS folded, never stored, never compacted. |
+| Budgets | the sheet ≤ 80 KB gzipped, the hub ≤ 25 KB, each page or game view ≤ 15 KB, each level's chunk ≤ 60 KB (scripts/kikimimi-budget.ts fails the build). |
 
 ## 13. Content volume
 
@@ -429,33 +413,35 @@ Rebased to the user's level: the floor stays at today's size, and the volume con
 
 Plus variants: each chunk in ≥ 3 clips (voices and conditions), counted above. Condition re-mixes of the same clean master cost no synthesis. The human listening check is the bottleneck: the checks gate, people listen to flags plus 20%.
 
+**As of 2026-11-07:** the level banks hold 862 items (L1–L7: 46 / 49 / 89 / 297 / 30 / 236 / 115, bank.test), plus 30 ladders, 21 units (かわ 10, もり 11), 26 listening files and 3 serials; 144 packs, ~111 MiB (§12).
+
 ## 14. Phased release plan
 
-Each increment takes 1–3 agent-days, lands on main green, and ships something the user can play. Each also adds content, so every few days there's new listening.
+Each increment took 1–3 agent-days, landed on main green and shipped something playable. Status on 2026-11-07:
 
-| # | Increment | Ships | Days |
-|---|---|---|---|
-| **1** | **ききみみ L4 「かわ・もり」: realistic, harder content in the existing quiz.** ~64 new items from §5.5 seeds (travel, phone, health, work, plans): `reply` with indirect and implied answers, `num` at natural speed in real contexts (platforms, flight numbers, prices in yen/dollars, self-corrected times), `word` with reductions in context (should've/shouldn't have, I'd/I'll, can/can't by vowel and stress), and the new `mean` type (what do they really mean? English paraphrases). `tts` respellings, `note` lines, Japanese collapsed at L4. Contract `lv` 1–3 → 1–5 (relay deploys first; 5 is headroom). Voices: the neural candidate if picked, else the best `say` voices (the `src` hash re-voices it later automatically). | 2–3 |
-| 2 | Neural cast v1: the engine adapter, 12 core voices (18 since 2026-11-06, 12 of them US), villager → voice map, forced-alignment check; re-voice all items; careful takes for S0. | 2–3 |
-| 3 | Co-op default and privacy: 「ふたりで n/8」 results, たいせん toggle, copy fixes (おしい！, いっぱつ せいかい！, ★ level names); log each answer to the `listen` day row (owner-only). Progress data starts accruing. | 2 |
-| 4 | Dialogue items in the quiz: `gist` / `next` over 2–4-line dialogues (`playSequence`), 24 overheard and service dialogues. | 2–3 |
-| 5 | Visuals v1: the SVG scene kit (8 backdrops), channel frames, transcript karaoke and sound marks at the reveal. | 2–3 |
-| 6 | ✅ **Done 2026-11-06.** Conditions in the pipeline: noise beds, phone band, PA reverb; the アナウンス pack (30 PA, voicemail and IVR items) as a quiz level mix. As built: level 5 「アナウンス」; beds synthesised from our own clips (no third-party audio) at +15 / +10 dB; 79 level-4 clips re-mixed (docs/kikimimi.md "Conditions", "The アナウンス pack"). | 2 |
-| 7 | ✅ **Done 2026-11-06.** スピード はしご as a quiz mode: 30 ladders (0.8× → 1.4× by atempo, a different question a rung, the score the rungs climbed in order on the first listen; the mode on the seed's bit 1, no relay change; きろく's fastest comfortable speed; docs/kikimimi.md "スピード はしご"). | 1–2 |
-| — | ✅ **Content sprint, 2026-11-06.** More content and variety in the harder levels (the user: "too much repetition"): もり +170 items into level 4 (261 in all), やま 200 as level 6, ほし 115 as level 7 (news, talks, debates; 2-4 sentences); `lv` 1-8; the host's seed with the least overlap with its last 6 games, solo and にがて れんしゅう decks fresh first; a cross-bank near-duplicate test (docs/kikimimi.md "Levels 6 and 7", "Variety"). | 1 |
-| 8 | Framework: `RoundSession`, `GameDef`, `play` intent (relay first), the quiz migrated. | 3 |
-| 9 | YAML content compiler and packs, SW cache class, `/dev/listen`. | 3 |
-| 10 | ことば タイル with reductions: 60 sentences. | 2 |
-| 11 | Placement みみ チェック and per-player stage; tiers in shared games. | 2–3 |
-| 12 | SRS fold and 「しずえの おさらい」. | 2–3 |
-| 13 | ききとり page: stamps, feature bars, minutes; the couple summary and しずえ's weekly line. | 2 |
-| 14 | ようじ でんわ with complications: 20 calls. | 3 |
-| 15 | たちぎき: 20 three-person dialogues. | 2–3 |
-| 16 | しずえの ニュース: a weekly generated batch with the real weather. | 2–3 |
-| 17 | Long-form: segmented talks and podcasts, the comprehension map, notes. | 3 |
-| 18 | ジョニーの たび serial, chapter by chapter. | 2 + content |
-| 19 | ふたりで ジグソー on errands and overheard dialogues. | 2 |
-| 20+ | Content drip: one unit pack (S1 → S4) every 2–3 days; seasonal packs; R2 past 50 MB; shadowing if wanted. | ongoing |
+| # | Increment | Status |
+|---|---|---|
+| 1 | ききみみ L4 「かわ・もり」: harder, realistic content in the quiz (`mean`, `tts`, `note`) | built (kikimimi.md "Level 4"); the Japanese not collapsed (§9) |
+| 2 | Neural cast | built: Qwen3-TTS, 18 voices (12 US); careful takes for S0 not made (§9) |
+| 3 | Co-op default, たいせん, the `listen` row | built (a row per game, §10) |
+| 4 | Dialogue items (`gist` / `next`, `playSequence`) | built |
+| 5 | Visuals: backdrops, channel frames, karaoke, sound marks | built (painted, not the SVG kit: §8) |
+| 6 | Conditions in the pipeline and the アナウンス pack | built (kikimimi.md "Conditions", "The アナウンス pack") |
+| 7 | スピード はしご | built |
+| — | Content sprint: もり +170, やま (L6), ほし (L7), less repetition | built (kikimimi.md "Levels 6 and 7", "Variety") |
+| 8 | Framework: `RoundSession`, `GameDef`, `play` | built (8b, 8c); `QUIZ_ON_PLAY` off, pending (§12) |
+| 9 | Compiler, packs, the SW cache | built; `/dev/listen` dropped (§12); R2 pending (W2-R) |
+| 10 | ことば タイル | built (W2-1) |
+| 11 | Placement みみ チェック; tiers in shared games | placement built (§10); tiers in co-op lessons and the listening games only |
+| 12 | SRS fold and おさらい | built |
+| 13 | きろく: stamps, bars, minutes, the couple summary | built |
+| 14 | ようじ でんわ | built (W2-3) |
+| 15 | たちぎき | built (W2-2) |
+| 16 | しずえの ニュース | built (W2-5): evergreen, not a weekly batch (curriculum-wave2.md §5) |
+| 17 | Long-form: segmented talks, the comprehension map | not built (ほし's clips cover talks in short) |
+| 18 | The story serial | built as おやすみ ものがたり |
+| 19 | ふたりで ジグソー | folded into the games' co-op halves (§7) |
+| 20+ | Content drip: unit packs, seasonal packs, R2, shadowing | units by wave (curriculum-units.md, curriculum-wave2.md); R2 pending; the mic modes (docs/kikimimi-mic.md) |
 
 **Every increment's gate:** the listening check passes, CI is green, and after real play the logs show 75–85% success; otherwise re-tune the levers before writing more.
 
@@ -464,29 +450,32 @@ Each increment takes 1–3 agent-days, lands on main green, and ships something 
 | Conflict | Resolution |
 |---|---|
 | Level band A2–B1+ (brief) vs the user's B1+–C1 | Rebased; A2 is the floor only (S0). |
-| Ranking (existing results) vs co-op (panel) | Co-op default; たいせん opt-in with expectation scoring. |
-| Slow = stretch (engineer) vs careful take (linguist) | Careful take at S0–S1; segment replay from S2. |
+| Ranking (existing results) vs co-op (panel) | Co-op default; たいせん opt-in (expectation scoring later). |
+| Slow = stretch (engineer) vs careful take (linguist) | Careful take at S0–S1 planned; as built, a stretch at L1–L2 (§9). |
 | Unit shape (curriculum) vs session shape (teacher) | Unit = 5 lessons; each lesson = the 4-beat session. |
 | Build-first games (game designer) | Re-weighed: quiz expansion, speed ladder, tiles, phone errands, overheard, news first; riddles and fishing later. |
-| Per-answer rows (curriculum) vs day rows (engineer) | Day rows, with the pick kept. |
+| Per-answer rows (curriculum) vs day rows (engineer) | Neither: a row per game, with the pick kept (§10). |
 | Placement length (10–18) | 12 adaptive items, starting at S1. |
-| Japanese shown | After the reveal only; collapsed from S2; `note` explains the trap. |
+| Japanese shown | After the reveal only (`ctx` before it); `note`, `cja` and `why` explain the trap; not collapsed (§9). |
 | L/R and vowel drills | A floor warm-up and a side drill (みみ トレーニング), not the core quiz. |
 | Island currency vs real | Real currencies and places in real-world scenarios; ベル only in island content. |
 | US/UK/AU mix (v1) vs the user's American focus (2026-11-06) | American English everywhere; UK/AU only as tagged accent exposure at やま/ほし (≤ 10%). |
 
 ## 16. Open questions for the user
 
-1. **うめ's level.** Is the partner also around B1+, or lower? This decides how much S0 and parallel-deck work comes early.
-2. ~~**Accents.**~~ Answered 2026-11-06: American English. UK/AU only as tagged exposure at やま/ほし (≤ 10%).
-3. **Work content.** What's your field? Meeting and client scenarios can use your real domain's vocabulary.
-4. **Realism of language.** Is mild swearing ("damn", "crap", "pissed off") in realistic speech fine at S3–S4?
-5. **Real-world vs island framing.** Are real currencies and places (yen, dollars, Haneda, a doctor's office in Seattle) in scenarios fine, with ベル only for island content?
-6. **Japanese at the reveal.** Collapsed by default from S2 (tap to open): OK?
-7. **Generated illustrations.** Are local AI-generated backdrops fine, or should we stay with NH art plus the SVG scene kit?
-8. **たいせん mode.** Do you want a ranking mode at all, or co-op only?
-9. **The news.** Should it be news-style originals on current topics (written by us, dated), or evergreen topics only?
-10. **The listening check.** With ~16 h of audio, may people check only what the automatic checks flag plus a 20% sample per unit?
-11. **Shadowing.** Is a private microphone echo mode wanted, given the iOS audio-session risk?
-12. **The daily hook.** With no push notifications, is しずえ's in-app morning line plus a villager's ♪ bubble enough, or would you like a fixed daily set?
-13. **The guest.** Should the guest get placement and a progress page, or only play live games?
+**Open:**
+- Q1. **うめ's level.** Around B1+, or lower? みみ チェック (§10) now measures it; it decides how much はまべ and parallel-deck work comes early.
+- Q3. **Work content.** What's your field? Meeting and client scenarios can use your real domain's vocabulary.
+- Q4. **Realism of language.** Is mild swearing ("damn", "crap", "pissed off") fine at やま and ほし?
+
+**Settled** (an answer, or the default taken and built; say if you want otherwise):
+- Q2. Accents: American English; UK/AU only as tagged exposure at やま/ほし (the user, 2026-11-06).
+- Q5. Real currencies and places in real-world scenarios, ベル only in island content (built).
+- Q6. Japanese at the reveal: shown, with more help (the user, 2026-11-07), not collapsed.
+- Q7. Generated backdrops: built (§8).
+- Q8. たいせん: an opt-in toggle, co-op the default (the user's choice).
+- Q9. The news: evergreen bulletins plus today's real Tokyo weather (curriculum-wave2.md §5).
+- Q10. The listening check: the gate's flags, heard by the user on the phone after each batch.
+- Q11. Shadowing: the mic modes, approved 2026-11-07 (docs/kikimimi-mic.md).
+- Q12. The daily hook: the hub's daily menu (kikimimi-ux.md §7.1), no push.
+- Q13. The guest: its own きろく, no couple summary.
