@@ -103,10 +103,10 @@ export interface QuizView {
   notice: RoundNotice | null;
 }
 
-/** An answer value as the quiz reads it: its choice (a wager's `[choice, bet / 10]`: the choice, and the bet), and as
- *  given when it's neither (a later game's). */
-const answerOf = (a: AnswerValue) => {
-  const w = typeof a === 'number' ? null : wagerOf(a);
+/** An answer value as the quiz reads it: its choice (the tournament's wager `[choice, bet / 10]`: the choice, and the
+ *  bet), and as given when it's neither (a later game's, whose two ints are never a wager: a memo of two rows). */
+const answerOf = (a: AnswerValue, wager: boolean) => {
+  const w = typeof a === 'number' || !wager ? null : wagerOf(a);
   return { k: choiceOf(a), ...(typeof a !== 'number' && !w && { a }), ...(w && { bet: w.bet }) };
 };
 
@@ -121,8 +121,8 @@ export function quizView(v: RoundView): QuizView {
     lv: q?.lv ?? 1,
     timer: q?.timer ?? (v.gm === 'taikai' ? (TIMERS[v.o[1] ?? 0] ?? 30) : 30),
     ladder: v.gm === 'ladder',
-    players: players.map(({ pick, ...p }) => ({ ...p, ...(pick && { pick: { ...answerOf(pick.a), ok: pick.ok } }) })),
-    answers: answers.map((a) => a && { ...answerOf(a.a), rp: a.rp > 0, t: a.t }),
+    players: players.map(({ pick, ...p }) => ({ ...p, ...(pick && { pick: { ...answerOf(pick.a, v.gm === 'taikai'), ok: pick.ok } }) })),
+    answers: answers.map((a) => a && { ...answerOf(a.a, v.gm === 'taikai'), rp: a.rp > 0, t: a.t }),
     invite: invite && {
       g: invite.g, host: invite.host, gm: invite.gm, ...(invite.u !== undefined && { u: invite.u }), ...(lesson && { lesson }), ...(invite.blocked && { blocked: invite.blocked }),
       lv: inv?.lv ?? 1, ladder: invite.gm === 'ladder', same: invite.same, started: invite.started

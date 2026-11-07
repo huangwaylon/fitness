@@ -1,23 +1,27 @@
 <script lang="ts">
   // The phone channel (docs/kikimimi.md "Visuals"): a paper phone standing in the scene's (blurred) room, the caller's
-  // head and name, 「つうわちゅう」 or 「るすでん」 (a voicemail), full signal bars, and a voice wave that moves while the
-  // line plays (still under reduced motion), the clip's bar under it. Pure CSS.
+  // head and name, 「つうわちゅう」 or 「るすでん」 (a voicemail), its signal bars (full; `bars` fewer while a line breaks up:
+  // ようじ でんわ's `signal` lines), and a voice wave that moves while the line plays (still under reduced motion), the
+  // clip's bar under it. Pure CSS.
   import OfficialArt from '../../characters/OfficialArt.svelte';
   import ClipBar from './ClipBar.svelte';
   import { villagerArt } from '#lib/art.ts';
   import type { RosterId } from '#lib/villagers/roster.ts';
   import { t } from '#lib/i18n/index.ts';
 
-  let { who, name, voicemail = false, bar, now }: { who: RosterId; name: string; voicemail?: boolean; bar: { from: number; until: number; key: string } | null; now: number } = $props();
+  let { who, name, voicemail = false, bars = 4, bar, now }: {
+    who: RosterId; name: string; voicemail?: boolean; bars?: number; bar: { from: number; until: number; key: string } | null; now: number;
+  } = $props();
   const WAVE = [10, 20, 14, 22, 8, 18, 12, 24, 10];
+  const SIG = [5, 8, 11, 14];
 </script>
 
-<div class="phone" class:live={!!bar} data-kiki-frame="phone" data-voicemail={voicemail || undefined}>
+<div class="phone" class:live={!!bar} class:weak={bars < SIG.length} data-kiki-frame="phone" data-voicemail={voicemail || undefined} data-bars={bars}>
   <span class="cam" aria-hidden="true"></span>
   <span class="who">{#key who}<OfficialArt key={villagerArt(who, true)} alt="" size={60} eager />{/key}</span>
   <span class="nm">{name}</span>
   <span class="tm">{voicemail ? t('kiki.chan.voicemail') : t('kiki.chan.calling')}</span>
-  <span class="sig" aria-hidden="true"><i style:height="5px"></i><i style:height="8px"></i><i style:height="11px"></i><i style:height="14px"></i></span>
+  <span class="sig" aria-hidden="true">{#each SIG as h, k (k)}<i class:off={k >= bars} style:height="{h}px"></i>{/each}</span>
   <span class="wave" aria-hidden="true">{#each WAVE as h, k (k)}<i style:height="{h}px" style:animation-delay="{-k * 90}ms"></i>{/each}</span>
   <span class="bar"><ClipBar {bar} {now} /></span>
 </div>
@@ -33,11 +37,15 @@
   .nm { font: 700 var(--fs-body)/1.2 var(--font-ui); color: var(--c-ink); }
   .tm { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--c-ink-soft); letter-spacing: .04em; }
   .sig { display: flex; align-items: end; gap: 3px; height: 14px; }
-  .sig i { width: 4px; border-radius: 2px; background: var(--c-leaf-edge); }
+  .sig i { width: 4px; border-radius: 2px; background: var(--c-leaf-edge); transition: background var(--dur-quick); }
+  .sig i.off { background: color-mix(in srgb, var(--c-edge) 30%, transparent); }
+  .weak .sig i:not(.off) { background: var(--c-coral); }
+  /* a line breaking up: the wave stutters */
+  .live.weak .wave i { animation-duration: 180ms; animation-timing-function: steps(2); }
   .wave { display: flex; align-items: center; gap: 3px; height: 26px; }
   .wave i { width: 4px; border-radius: 3px; background: color-mix(in srgb, var(--c-edge) 35%, transparent); transform: scaleY(.3); transition: transform var(--dur-quick); }
   .live .wave i { background: var(--c-leaf); transform: none; animation: wv 640ms ease-in-out infinite alternate; }
   .bar { width: 100%; }
   @keyframes wv { from { transform: scaleY(.35); } to { transform: scaleY(1); } }
-  @media (prefers-reduced-motion: reduce) { .live .wave i { animation: none; } .wave i { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .live .wave i { animation: none; } .wave i, .sig i { transition: none; } }
 </style>

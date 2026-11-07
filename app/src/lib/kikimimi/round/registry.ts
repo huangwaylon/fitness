@@ -95,6 +95,7 @@ const LATER: Readonly<Record<GameId, Later>> = {
   // one line a game (Later)
   tile: { lane: () => import('../games/tile/lane.ts') },
   tachi: { lane: () => import('../games/tachi/lane.ts') },
+  call: { lane: () => import('../games/call/lane.ts') },
 };
 
 /** The levels of the places a game's listened files are at (catalog.ts contentLevels over this build's index). */

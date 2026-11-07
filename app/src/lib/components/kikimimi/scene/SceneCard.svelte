@@ -18,8 +18,10 @@
   import type { RosterId } from '#lib/villagers/roster.ts';
   import { t } from '#lib/i18n/index.ts';
 
-  let { it, talker, bar, now, pop = false, name }: {
+  let { it, talker, bar, now, pop = false, name, bars }: {
     it: Item; talker: RosterId | null; bar: { from: number; until: number; key: string } | null; now: number; pop?: boolean; name: (id: RosterId) => string;
+    /** A phone's signal bars (PhoneFrame's; fewer while a line breaks up). */
+    bars?: number;
   } = $props();
   const channel = $derived(channelOf(it));
   const who = $derived(speakersOf(it));
@@ -42,7 +44,7 @@
   {/if}
 
   {#if channel === 'phone'}
-    <PhoneFrame who={speaking} name={name(speaking)} {voicemail} {bar} {now} />
+    <PhoneFrame who={speaking} name={name(speaking)} {voicemail} {bars} {bar} {now} />
   {:else if channel === 'pa'}
     <PaFrame {bar} {now} />
   {:else if channel === 'video'}

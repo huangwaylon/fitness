@@ -418,6 +418,17 @@ Every game goes through `kikimimi/round/registry.ts` as a **lane**. The quiz, la
 - **Co-op 「たんとう」:** `roles: 2`; role 0 follows the first speaker, role 1 the second, the third is shared (the seats say 「あなたの担当」「ふたりで」「相手の担当」); in opinions each places their own face and the shared one; everyone answers changed and plan. The results' 「ふたりで k / n」 is `team.all`.
 - **Row:** `gm: 'tachi'`, each round I had `[row id, ok, pick, rp]`: the pick a choice, or opinions in base 4 (3 none; `opinionsOf` reads it back).
 - **e2e** kikimimi-tachi (solo, night shots, co-op): s2-tachi-a/b flipped to `listened` as served; nothing ships listened.
+### ようじ でんわ as built (W2-3, 2026-11-07)
+
+`games/call/` (def.ts pure, lane.ts) and `components/kikimimi/call/` (CallPlay, CallResults, MemoPad, Basket, CallLog, board.ts); strings in i18n/kiki-call.*.
+- **Deck:** options `[lv, timer, ear]` (ことば タイル's); the `listened` call files at the lobby's place (`callFiles`), 3 calls by the seed, **2 rounds each**. Round 1 is the call itself (an Item with `lines`, its clips `<id>-<n>`, played on the relay clock as a dialogue; its `play` the lines plus LINE_GAP, 2 s a line while unvoiced); round 2 is `<id>-memo`, no clip and `play` 0, so nothing sounds. Two memo rounds play as authored; one memo is split, its first half in round 1.
+- **Tiers** (ear against the place, tile's `tierAt`): easy 2 rows, as authored 3, hard 4 plus a sound-trap chip on a number's row (`trapOf`: teen ↔ -ty, else two digits swapped; placed in order among ascending numbers).
+- **Answer:** the chip per row, `EMPTY` (63) for none; right: every filled row right, and they're the whole memo or one role's share. The chips take taps while the call plays; 「メモできた」 sends once it ends. 🔁 in round 2 is `game.hear` (not counted as a replay).
+- **Co-op 「わけて メモ」:** `roles: 2`, both hear the whole call; a round's rows split by place (role 0 the 1st, 3rd…), a round of one row both's. The team's memo (`unionOf`, by the row's place in the call) shows a wrong chip over a right one; a co-op reveal shows the partner's own rows too.
+- **Reveal:** the right chip (○) and its `cja` when it reads otherwise, a wrong pick struck, the errand's basket (`basketOf`: every row of the call at my tier, caught, missed or still to come), and at round 2 the `note`, 解説 (a split memo's at round 2, two memos' each at its own) and the transcript (言い直し, 途切れた). PhoneFrame's `bars` drop to 1 while a `signal` line ("...") plays.
+- **Row:** `gm: 'call'`, each round I had `[call id, ok, wrong-rows mask over the call's memo, rp]` (`callRecord`; `wrongRows` reads it back).
+- **Shared fix:** quiz/view.ts reads a two-int answer as a wager only in the tournament (a two-row memo was taken for one).
+- **e2e** kikimimi-call (solo, night, co-op): the built index's s1-call flipped to `listened` as the test serves it; nothing ships listened.
 
 ## 10. Risks
 
