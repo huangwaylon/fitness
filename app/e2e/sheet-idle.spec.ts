@@ -1,4 +1,4 @@
-// Under a full-height sheet (けんこう, ごはん: docs/design.md "Island scene") the island does nothing: the 3D island
+// Under a full-height sheet (けんこう, ごはん, ずかん, せってい: docs/design.md "Island scene") the island does nothing: the 3D island
 // draws no frame (its engine paused) and no CSS animation runs in the page but the sheet's own, so nothing behind the
 // sheet asks the compositor for frames while someone reads their charts; closed, the island runs again.
 import { expect, test, type Page } from './fixtures.ts';
@@ -16,11 +16,18 @@ const runningBehind = (page: Page) => page.evaluate(() => document.getAnimations
   .filter((a) => a.playState === 'running' && !(a.effect as KeyframeEffect | null)?.target?.closest('dialog[open]'))
   .map((a) => `${(a as CSSAnimation).animationName ?? a.constructor.name} on .${String(((a.effect as KeyframeEffect).target as Element).className).split(' ')[0]}`));
 
-for (const [name, ready] of [['けんこう', '.health .mc'], ['ごはん', '[data-food-summary]']] as const)
+/** The HUD's own sheets: how each opens, and what shows once it's up. */
+const hudSheets: [string, (page: Page) => Promise<unknown>, string][] = [
+  ['けんこう', (page) => page.getByRole('button', { name: 'けんこう', exact: true }).click(), '.health .mc'],
+  ['ごはん', (page) => page.getByRole('button', { name: 'ごはん', exact: true }).click(), '[data-food-summary]'],
+  ['ずかん', (page) => fromMenu(page, 'zukan'), '[data-zukan-sheet]'],
+  ['せってい', (page) => fromMenu(page, 'settings'), '[data-settings]']
+];
+for (const [name, open, ready] of hudSheets)
   test(`under ${name} the island draws no frames and no animation runs behind the sheet; closed, it draws again`, async ({ page }) => {
     await page.goto('?demo&date=2026-11-04T12:30');
     await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
-    await page.getByRole('button', { name, exact: true }).click();
+    await open(page);
     await expect(sheet(page).locator(ready).first()).toBeVisible();
     await sheet(page).evaluate((d) => Promise.all(d.getAnimations().map((a) => a.finished)));
     expect(await w3(page, (w) => w.stats().paused)).toBe(true);
