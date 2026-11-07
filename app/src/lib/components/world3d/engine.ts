@@ -16,7 +16,7 @@
 // Plain TS; world3d/Island3D.svelte drives it.
 import {
   Box3, Color, DirectionalLight, Fog, Frustum, HemisphereLight, Matrix4, Mesh, PerspectiveCamera, Scene, Sphere, SRGBColorSpace, Texture, Vector3,
-  WebGLRenderer, PCFSoftShadowMap, type Material, type Object3D
+  WebGLRenderer, PCFSoftShadowMap, MeshDepthMaterial, RGBADepthPacking, FrontSide, BackSide, DoubleSide, type Material, type MeshLambertMaterial, type Object3D, type Side
 } from 'three';
 import { bend, bendPoint, bendU, unbendRay } from './bend.ts';
 import { waterFog, waterU } from './water.ts';
@@ -30,6 +30,7 @@ import { drawOff, shaderChecks } from '../../ui-state/testMode.ts';
 import { releaseAll, resourcesOf } from './release.ts';
 import { frameRate } from '#lib/store/frameRate.svelte.ts';
 import { pacer } from './pace.ts';
+import { createWarmup, texturesOf } from './warmup.ts';
 import { log } from '#lib/sync/log.ts';
 import { SEA_X, midXOf } from '#lib/layout/model.ts';
 import { PITCH } from '#lib/layout/hides.ts';
@@ -141,8 +142,10 @@ const LEAN = 0.42;
 const REST_MS = 2000, REST_FPS = 12, REST_SHADOW_MS = 250;
 /** A fling faster than this (px/ms) rushes (Island3['rushing']): a touch on it only stops it, as iOS's scroll. */
 const RUSH_V = 0.1;
-/** Up to this many objects with a new material are compiled alone (engine hold), more the whole scene. */
-const FRESH_FEW = 4;
+/** The flourishes' warm-up waits this long after the last held-back batch was drawn (ms): its programs' first uses
+ *  are sync reads that wait for the GPU, which is still busy with the island's first whole frames (a 70-84 ms frame
+ *  in the iOS Simulator right after the island appeared). */
+const FX_CALM_MS = 1500;
 /** The screen's samples (columns × rows, below the horizon) where the camera's view is looked for water. */
 const WATER_COLS = 12, WATER_ROWS = 20;
 const now = () => performance.now();
@@ -835,54 +838,111 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       kick();
     };
   }
-  // ---- the programs, compiled ahead: what's new in view is compiled before its first draw and not drawn until the GPU
-  // has linked its programs (KHR_parallel_shader_compile: off the main thread). Drawn at once, a new material's link
-  // was waited for in the frame (three's first use: its uniforms), 108-129 ms long tasks as the island loaded ----
+  // ---- what's new, made ready ahead: what's new in view is compiled before its first draw and not drawn until the GPU
+  // has linked its programs (KHR_parallel_shader_compile: off the main thread), their first use is primed and its
+  // textures are uploaded, a few a frame (warmup.ts). Drawn at once, a new material's link was waited for in the frame
+  // (three's first use: its uniforms), 108-129 ms long tasks as the island loaded, and the island's ~180 textures went
+  // up in the frame it appeared (255-533 ms in the iOS Simulator) ----
   const parallel = !noDraw && renderer.extensions.has('KHR_parallel_shader_compile');
   /** A kick since the last frame's look (a model in, a card, a flourish: maybe a new material). */
   let fresh = true;
-  /** Compiled, its programs still linking: what uses them is held back. */
-  const linking = new Set<Material>();
+  /** Compiled, not ready to draw yet (linking, its first use, its textures): what uses them is held back. */
+  const warm = createWarmup(renderer);
   const heldBack: Object3D[] = [];
-  let compiles = 0, holding = false;
-  const unlinked = (m: Material) => {
-    const ps = (renderer.properties.get(m) as { programs?: Map<string, { isReady(): boolean }> }).programs;
-    if (!ps) return true;
-    for (const p of ps.values()) if (!p.isReady()) return true;
-    return false;
-  };
+  let compiles = 0, holding = false, calmAt = 0;
   const materialsOf = (o: Object3D): Material[] => {
     const m = (o as Mesh).material as Material | Material[] | undefined;
     return !m || !((o as Mesh).isMesh || (o as unknown as { isPoints?: boolean }).isPoints || (o as unknown as { isLine?: boolean }).isLine) ? [] : Array.isArray(m) ? m : [m];
   };
-  /** Before a frame draws: a new material in view compiles (the whole scene's at once: what's coming too), and what's
-   *  still linking is hidden for this frame (hold's list, shown again after it). True: some is held back. */
+  const programList = () => (renderer.info.programs ?? []) as object[];
+  /** `root`'s meshes compiled with the island's lights and fog, and what they need handed to the warm-up: its new
+   *  materials (`news`; all of them when absent), and any whose program is new. */
+  function prepare(root: Object3D, news?: Set<Material>) {
+    const had = new Set(programList());
+    const ms = renderer.compile(root, camera, scene);
+    // (no parallel compile, or nothing drawn: no warm-up, its textures uploaded at once as before)
+    if (!parallel) return void ms.forEach((m) => texturesOf(m).forEach((t) => renderer.initTexture(t)));
+    const depths = news ? shadowsAhead(root) : [];
+    const made = programList().filter((p) => !had.has(p));
+    warm.add([...ms].filter((m) => !news || news.has(m) || made.includes((renderer.properties.get(m) as { currentProgram?: object }).currentProgram!)), made);
+    warm.add(depths, []);
+    kick(false);
+  }
+  /** The shadow map's depth materials, as its pass sets them up (three's WebGLShadowMap getDepthMaterial: a mesh's own
+   *  customDepthMaterial or a plain RGBA one, its side, cut-out and map from the mesh's material), compiled ahead
+   *  for `root`'s casters with the shadow map bound (its target's colour space: the same program keys): the pass
+   *  compiled and linked them in the frame the island appeared, ~40 ms in the iOS Simulator. Its programs' links and
+   *  first uses go through the warm-up too. None before the map exists (the first frame's). */
+  const plainDepth = new Map<string, MeshDepthMaterial>();
+  /** The pass draws into no scene of its own (three's empty one: no fog), with the island's lights. */
+  const noScene = new Scene();
+  const SHADOW_SIDE: Record<number, Side> = { [FrontSide]: BackSide, [BackSide]: FrontSide, [DoubleSide]: DoubleSide };
+  function shadowsAhead(root: Object3D): Material[] {
+    const map = sun.shadow.map;
+    if (!opts.shadows || !map) return [];
+    const out = new Set<Material>(), casters: [Mesh, Material][] = [];
+    root.traverse((o) => {
+      if (!(o as Mesh).isMesh || !o.castShadow) return;
+      for (const m of materialsOf(o)) casters.push([o as Mesh, m]);
+    });
+    if (!casters.length) return [];
+    const was = renderer.getRenderTarget();
+    renderer.setRenderTarget(map);
+    // (one pass: each caster seen with its depth material as the pass sets it up, its own put back after)
+    renderer.compile({
+      traverse(fn: (x: Object3D) => void) {
+        for (const [o, m] of casters) {
+          const s = m as MeshLambertMaterial;
+          let d = o.customDepthMaterial as MeshDepthMaterial | undefined;
+          if (!d) {
+            const k = `${s.side}|${s.alphaTest > 0 && !!s.map}`;
+            if (!plainDepth.has(k)) plainDepth.set(k, new MeshDepthMaterial({ depthPacking: RGBADepthPacking }));
+            d = plainDepth.get(k)!;
+          }
+          Object.assign(d, { side: m.shadowSide ?? SHADOW_SIDE[m.side], alphaTest: m.alphaTest, map: s.map ?? null, alphaMap: s.alphaMap ?? null });
+          const own = o.material;
+          o.material = d;
+          fn(o);
+          o.material = own;
+          out.add(d);
+        }
+      },
+      traverseVisible: (fn: (x: Object3D) => void) => scene.traverseVisible(fn)
+    } as unknown as Object3D, camera, noScene);
+    renderer.setRenderTarget(was);
+    return [...out];
+  }
+  /** Before a frame draws: a new material compiles (in view or not yet: what's coming too, prepare); what's
+   *  waiting gets this frame's step (warmup.ts), and what uses it is hidden for this frame (hold's list, shown again
+   *  after it). Held back together: what was waiting is drawn in one frame, as it all came. True: some is held back. */
   function hold(): boolean {
-    if (!parallel || (!fresh && !linking.size)) return false;
+    if (!parallel || (!fresh && !warm.size())) return false;
     let any = fresh;
     fresh = false;
     if (any) {
-      const fresh: Object3D[] = [];
-      scene.traverseVisible((o) => {
-        for (const m of materialsOf(o)) if (!renderer.properties.has(m)) return void fresh.push(o);
+      // (every new one, in view or not yet: what's coming too; its materials new to this renderer)
+      const fresh: Object3D[] = [], news = new Set<Material>();
+      scene.traverse((o) => {
+        let is = false;
+        for (const m of materialsOf(o)) if (!renderer.properties.has(m)) (news.add(m), (is = true));
+        if (is) fresh.push(o);
       });
       any = fresh.length > 0;
       if (any) {
         compiles++;
-        // (a few: theirs alone, a flourish's or a leaf's new material, most on a program already linked; more, a model
-        // in: the whole scene's, what isn't in view yet too)
-        for (const at of fresh.length <= FRESH_FEW ? fresh : [scene])
-          for (const m of renderer.compile(at, camera, scene)) if (unlinked(m)) linking.add(m);
+        // (theirs alone, in one pass: three's compile of the whole scene worked out every material's program again,
+        // ~350 of them, a 79 ms frame in the iOS Simulator for a flourish's few; a material drawn before (a model's
+        // shared one) waits only for a new program)
+        prepare({ traverse: (fn: (o: Object3D) => void) => fresh.forEach(fn), traverseVisible: () => {} } as unknown as Object3D, news);
       }
     }
-    for (const m of linking) if (!unlinked(m)) linking.delete(m);
-    if (!linking.size) {
+    if (!warm.size() || warm.step()) {
       // (what was held back is drawn now, its shadow too, at once)
-      if (holding) (shadowed(), (shadowsNow = true));
+      if (holding) (shadowed(), (shadowsNow = true), (calmAt = now()));
       return (holding = false);
     }
     scene.traverseVisible((o) => {
-      for (const m of materialsOf(o)) if (linking.has(m)) return void heldBack.push(o);
+      for (const m of materialsOf(o)) if (warm.has(m)) return void heldBack.push(o);
     });
     for (const o of heldBack) o.visible = false;
     return (holding = true);
@@ -1146,7 +1206,11 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     },
     add: addObj,
     placedGroups: () => [...groupsPlaced.keys()],
-    warmFx: () => effects.warm(renderer, camera),
+    // (once nothing has waited for FX_CALM_MS: the island's own first, whole and drawn, then the flourishes', a few a frame)
+    warmFx: () => new Promise<void>((done, fail) => {
+      const go = () => (disposed ? done() : parallel && (warm.size() || fresh || now() - calmAt < FX_CALM_MS) ? setTimeout(go, 100) : effects.warm((s) => prepare(s)).then(done, fail));
+      go();
+    }),
     fxWarmed: () => effects.warmed(),
     bite: (slot, at) => marks.set(slot, at),
     biteState: (slot) => marks.state(slot),
@@ -1192,14 +1256,15 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       return {
         fps: stamps.length, cpu: [pctl(cpu, 0.5), pctl(cpu, 0.95)], gap: [pctl(gaps, 0.5), pctl(gaps, 0.95)],
         calls: renderer.info.render.calls, tris: renderer.info.render.triangles, textures: renderer.info.memory.textures,
-        geometries: renderer.info.memory.geometries, programs: renderer.info.programs?.length ?? 0, shadows: shadowsDrawn, compiles, linking: linking.size, dpr: renderer.getPixelRatio(), frames,
+        geometries: renderer.info.memory.geometries, programs: renderer.info.programs?.length ?? 0, shadows: shadowsDrawn, compiles, linking: warm.size(), dpr: renderer.getPixelRatio(), frames,
         loading: things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps, fx: effects.count(),
         fxShown: effects.shown(), why: [...why], paused, drawn: !noDraw
       };
     },
     dispose() {
       disposed = true;
-      linking.clear();
+      warm.clear();
+      for (const d of plainDepth.values()) d.dispose();
       pace.stop();
       if (wakeTimer) clearTimeout(wakeTimer);
       document.removeEventListener('visibilitychange', onVis);

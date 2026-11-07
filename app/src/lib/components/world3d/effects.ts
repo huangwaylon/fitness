@@ -8,7 +8,7 @@
 // (island/fx3d.ts), whose art then goes invisible.
 import {
   NormalBlending, Scene, BufferGeometry, CanvasTexture, Color, DoubleSide, Float32BufferAttribute, Group, Matrix4, Mesh, MeshBasicMaterial, PlaneGeometry, Quaternion,
-  RingGeometry, SphereGeometry, SRGBColorSpace, type Camera, type MeshStandardMaterial, type Side, type Texture, type WebGLRenderer
+  RingGeometry, SphereGeometry, SRGBColorSpace, type Camera, type MeshStandardMaterial, type Side, type Texture
 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
@@ -86,8 +86,9 @@ export interface Effects {
   /** How many play (with this tag). */
   count(tag?: string): number;
   /** Load every flourish's model now and put its textures and shaders on the GPU (the island's start, once idle): the
-   *  first high five's sparkles draw whole in their first frame, not late or as blank quads. Resolves when done. */
-  warm(renderer: WebGLRenderer, camera: Camera): Promise<void>;
+   *  first high five's sparkles draw whole in their first frame, not late or as blank quads. `prepare`: the engine's
+   *  compile and upload of a scene of them, a few a frame (warmup.ts). Resolves once they're handed over. */
+  warm(prepare: (warmScene: Scene) => void): Promise<void>;
   /** Every source loaded and its textures uploaded (the test hook's). */
   warmed(): boolean;
   dispose(): void;
@@ -221,7 +222,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     return mat;
   };
   let warmed = false, warmMats: MeshBasicMaterial[] = [];
-  async function warm(renderer: WebGLRenderer, camera: Camera) {
+  async function warm(prepare: (warmScene: Scene) => void) {
     const names = [...new Set([...Object.keys(MODEL), 'ring', 'bubble', 'glow', 'star'])];
     const srcs = (await Promise.all(names.map(load))).filter((x): x is Src => !!x);
     if (disposed) return;
@@ -231,7 +232,6 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     warmScene.fog = scene.fog;
     const mats: MeshBasicMaterial[] = [];
     for (const src of srcs) for (const s of src) {
-      if (s.map) renderer.initTexture(s.map);
       // (in its colours, and tinted: the two shaders)
       for (const m of s.vc ? [matFor(s), matFor(s, '#ffffff')] : [matFor(s)]) {
         mats.push(m);
@@ -244,10 +244,10 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
         warmScene.add(mesh);
       }
     }
-    // (with the island's lights, `scene`: a program's key has the lights and their shadows, so one compiled without them
+    // (with the island's lights: a program's key has the lights and their shadows, so one compiled without them
     // was another program, and each burst's, each leaf's own material compiled the real one afresh: 28 builds in 90 s
     // idle on the iOS Simulator, a 28-31 ms frame each)
-    renderer.compile(warmScene, camera, scene);
+    prepare(warmScene);
     // (kept: disposing them would free the very programs just compiled, mid their parallel compile's status check)
     warmMats = mats;
     warmed = true;
