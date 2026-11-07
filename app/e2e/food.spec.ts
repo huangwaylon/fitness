@@ -613,8 +613,7 @@ test('whose day sits in the title bar, left of ごはん; a level’s ‹ takes 
   const [tabs, today, per] = await Promise.all([sheet(page).locator('[data-tab=chart]'), sheet(page).locator('[data-nav=today]'),
     sheet(page).locator('select[data-pick=period]')].map(async (l) => (await l.boundingBox())!));
   const back = (await sheet(page).locator('[data-nav=back]').boundingBox())!;
-  const pressed = (await sheet(page).locator('[data-nav=back]').getAttribute('aria-disabled')) === 'true' ? 4 : 0; // (off: 4px lower)
-  expect(Math.abs(per.y + per.height / 2 - (back.y + back.height / 2 - pressed))).toBeLessThan(3); // in the range row
+  expect(Math.abs(per.y + per.height / 2 - (back.y + back.height / 2))).toBeLessThan(3); // in the range row
   expect(per.x).toBeGreaterThan(today.x + today.width); // right of きょう
   expect(Math.abs(per.x + per.width - (tabs.x + tabs.width))).toBeLessThan(3); // at the row's right end
   expect(per.height).toBeGreaterThanOrEqual(44);
