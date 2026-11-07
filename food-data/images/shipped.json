@@ -30509,6 +30509,19 @@
 "checked": false
 },
 {
+"key": "mext-07128",
+"ja": "ホワイトサポテ 生",
+"desc": "white sapote: a round green thin-skinned fruit, cut to show creamy pale yellow custard flesh and large seeds",
+"items": [
+"mext:07128"
+],
+"roll": 0,
+"seed": 17182,
+"prompt": "50375d67ef",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-07129",
 "ja": "ぽんかん 生",
 "desc": "ponkan, round bright orange mandarins with loose bumpy peel",
@@ -30518,6 +30531,32 @@
 "roll": 0,
 "seed": 41512,
 "prompt": "5a1e0b391a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-07130",
+"ja": "まくわうり 黄肉種 生",
+"desc": "makuwauri: a small oval yellow melon with faint pale stripes, cut to show pale orange flesh",
+"items": [
+"mext:07130"
+],
+"roll": 0,
+"seed": 94861,
+"prompt": "4104565745",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-07131",
+"ja": "マルメロ 生",
+"desc": "quince: a large lumpy golden yellow pear-shaped fruit with light fuzz, cut to show hard cream flesh",
+"items": [
+"mext:07131"
+],
+"roll": 0,
+"seed": 67963,
+"prompt": "189d3efe8f",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -30575,6 +30614,19 @@
 "checked": false
 },
 {
+"key": "mext-07137",
+"ja": "もも 30%果汁入り飲料",
+"desc": "peach nectar: a glass of thick opaque pale peach-coloured drink",
+"items": [
+"mext:07137"
+],
+"roll": 0,
+"seed": 23342,
+"prompt": "fb9f2e12d3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-07138",
 "ja": "もも缶詰（白桃）",
 "desc": "canned white peach halves, glossy pale cream peach halves in syrup in a glass dish",
@@ -30588,6 +30640,19 @@
 "checked": false
 },
 {
+"key": "mext-07139",
+"ja": "もも 缶詰 液汁",
+"desc": "canned peach syrup: clear pale golden syrup in a small glass dish, no fruit",
+"items": [
+"mext:07139"
+],
+"roll": 0,
+"seed": 4425,
+"prompt": "d1fd562b42",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-07140",
 "ja": "ネクタリン 生",
 "desc": "nectarines, smooth glossy red and yellow peaches, one cut showing yellow flesh",
@@ -30597,6 +30662,19 @@
 "roll": 0,
 "seed": 70154,
 "prompt": "fe042a136f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-07141",
+"ja": "やまもも 生",
+"desc": "yamamomo: round dark red-purple bumpy-surfaced berries",
+"items": [
+"mext:07141"
+],
+"roll": 0,
+"seed": 54396,
+"prompt": "9b1e91da75",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -30654,6 +30732,19 @@
 "checked": false
 },
 {
+"key": "mext-07147",
+"ja": "りゅうがん 乾",
+"desc": "dried longan: round brown shelled longans, a few peeled showing sticky dark brown flesh",
+"items": [
+"mext:07147"
+],
+"roll": 0,
+"seed": 56201,
+"prompt": "0836aaac8f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-07148",
 "ja": "りんご 皮なし",
 "desc": "peeled apple wedges, crisp pale cream flesh without skin, on a small plate",
@@ -30678,6 +30769,33 @@
 "seed": 74670,
 "prompt": "efd44d9bba",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-07151",
+"ja": "りんご 50%果汁入り飲料",
+"desc": "apple juice drink: a glass of pale yellow apple drink",
+"items": [
+"mext:07151",
+"mext:07152"
+],
+"roll": 0,
+"seed": 37565,
+"prompt": "f6604403c9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-07153",
+"ja": "りんご 缶詰",
+"desc": "canned apple: pale cream apple slices in syrup in a small glass bowl",
+"items": [
+"mext:07153"
+],
+"roll": 0,
+"seed": 8721,
+"prompt": "95d0112fb9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -30902,6 +31020,45 @@
 "checked": false
 },
 {
+"key": "mext-07173",
+"ja": "まくわうり 白肉種 生",
+"desc": "white makuwauri: a small oval pale green-white melon, cut to show white flesh with seeds",
+"items": [
+"mext:07173"
+],
+"roll": 0,
+"seed": 60627,
+"prompt": "8eb8886126",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-07174",
+"ja": "露地メロン 赤肉種 生",
+"desc": "red-fleshed melon: a netted melon with a wedge cut to show orange flesh and seeds",
+"items": [
+"mext:07174"
+],
+"roll": 0,
+"seed": 22768,
+"prompt": "ffe610ff2a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-07175",
+"ja": "もも 缶詰 黄肉種",
+"desc": "canned yellow peaches: glossy golden yellow peach halves in syrup in a small glass bowl",
+"items": [
+"mext:07175"
+],
+"roll": 0,
+"seed": 39526,
+"prompt": "7bff7d8af3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-07176",
 "ja": "りんご 皮つき",
 "desc": "a whole red apple with a short stem and a wedge cut from it, glossy red skin and crisp pale cream flesh",
@@ -30954,6 +31111,19 @@
 "checked": false
 },
 {
+"key": "mext-07180",
+"ja": "りんご 皮つき 焼き",
+"desc": "baked apple: a whole red apple baked soft and wrinkled, juices around it, on a plate",
+"items": [
+"mext:07180"
+],
+"roll": 0,
+"seed": 15814,
+"prompt": "436a0ac842",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-07181",
 "ja": "アサイー（冷凍・無糖）",
 "desc": "an acai bowl, thick deep purple acai puree topped with sliced banana, granola and berries",
@@ -30989,6 +31159,19 @@
 "roll": 0,
 "seed": 8444,
 "prompt": "3e0c0b435b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-07184",
+"ja": "もも 黄肉種 生",
+"desc": "yellow peach: a peach with yellow-orange skin and red blush, cut to show yellow flesh around a red-tinged stone",
+"items": [
+"mext:07184"
+],
+"roll": 0,
+"seed": 39519,
+"prompt": "123c638573",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -31045,6 +31228,19 @@
 "checked": false
 },
 {
+"key": "mext-08002",
+"ja": "えのきたけ ゆで",
+"desc": "boiled enoki: soft limp white thin enoki strands with tiny caps in a small dish",
+"items": [
+"mext:08002"
+],
+"roll": 0,
+"seed": 53283,
+"prompt": "6886dc1b2a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-08003",
 "ja": "なめたけ（えのき味付け瓶詰）",
 "desc": "a small dish of nametake, enoki mushroom pieces in a glossy thick brown soy sauce",
@@ -31054,6 +31250,32 @@
 "roll": 0,
 "seed": 52629,
 "prompt": "1b8bde7a23",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08004",
+"ja": "あらげきくらげ 乾",
+"desc": "dried wood ear: hard shrivelled dark brown-black curled pieces in a small dish",
+"items": [
+"mext:08004"
+],
+"roll": 0,
+"seed": 54742,
+"prompt": "2d88404007",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08005",
+"ja": "あらげきくらげ ゆで",
+"desc": "rehydrated wood ear: glossy dark brown rubbery ear-shaped pieces, some sliced, in a small dish",
+"items": [
+"mext:08005"
+],
+"roll": 0,
+"seed": 67392,
+"prompt": "82fa8e68d2",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -31084,6 +31306,45 @@
 "checked": false
 },
 {
+"key": "mext-08008",
+"ja": "しろきくらげ 乾",
+"desc": "dried white fungus: a pale cream-yellow frilly coral-like brittle ball",
+"items": [
+"mext:08008"
+],
+"roll": 0,
+"seed": 68669,
+"prompt": "c80addd640",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08009",
+"ja": "しろきくらげ ゆで",
+"desc": "rehydrated white fungus: soft translucent white frilly jelly-like pieces in a small bowl",
+"items": [
+"mext:08009"
+],
+"roll": 0,
+"seed": 49323,
+"prompt": "a6186caea5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08010",
+"ja": "くろあわびたけ 生",
+"desc": "kuroawabitake: abalone mushrooms with thick fleshy grey-brown caps, dark gills and short stout stems, raw",
+"items": [
+"mext:08010"
+],
+"roll": 0,
+"seed": 73422,
+"prompt": "208d910b0b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-08013",
 "ja": "干ししいたけ（乾）",
 "desc": "dried shiitake mushrooms, thick wrinkled dark brown caps with deeply cracked tops and pale gills",
@@ -31093,6 +31354,32 @@
 "roll": 0,
 "seed": 95604,
 "prompt": "0a5469889d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08014",
+"ja": "乾しいたけ ゆで",
+"desc": "simmered dried shiitake: plump rehydrated dark brown caps with cracked tops, soft and glossy, in a small dish",
+"items": [
+"mext:08014"
+],
+"roll": 0,
+"seed": 12791,
+"prompt": "c19d831290",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08015",
+"ja": "はたけしめじ 生",
+"desc": "hatakeshimeji: a cluster of grey-brown capped mushrooms on stout white stems, raw",
+"items": [
+"mext:08015"
+],
+"roll": 0,
+"seed": 91169,
+"prompt": "8bd1e5f14a",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -31111,6 +31398,32 @@
 "checked": false
 },
 {
+"key": "mext-08018",
+"ja": "ほんしめじ 生",
+"desc": "honshimeji: plump thick white stems with small round grey-brown caps, a few together, raw",
+"items": [
+"mext:08018"
+],
+"roll": 0,
+"seed": 86396,
+"prompt": "a4600b36b1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08019",
+"ja": "たもぎたけ 生",
+"desc": "tamogitake: clusters of bright golden yellow oyster-like mushrooms, raw",
+"items": [
+"mext:08019"
+],
+"roll": 0,
+"seed": 48202,
+"prompt": "23fcaf06e9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-08020",
 "ja": "なめこ 生",
 "desc": "a small bowl of nameko mushrooms, small glossy slippery orange-brown caps",
@@ -31121,6 +31434,58 @@
 "seed": 8237,
 "prompt": "eadbbac745",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08021",
+"ja": "なめこ 株採り ゆで",
+"desc": "boiled nameko: small glossy slimy orange-brown caps in a small dish",
+"items": [
+"mext:08021"
+],
+"roll": 0,
+"seed": 35547,
+"prompt": "bd30a8f646",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08022",
+"ja": "なめこ 水煮缶詰",
+"desc": "canned nameko: small glossy slimy orange-brown caps in cloudy liquid in a small glass dish",
+"items": [
+"mext:08022"
+],
+"roll": 0,
+"seed": 48769,
+"prompt": "3ff4b2587c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08023",
+"ja": "ぬめりすぎたけ 生",
+"desc": "numerisugitake: slimy yellow-brown caps with small scales on slender stems, raw",
+"items": [
+"mext:08023"
+],
+"roll": 0,
+"seed": 82391,
+"prompt": "67f30e646a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08024",
+"ja": "うすひらたけ 生",
+"desc": "usuhiratake: thin delicate pale grey-beige fan-shaped oyster mushrooms, raw",
+"items": [
+"mext:08024"
+],
+"roll": 0,
+"seed": 76276,
+"prompt": "acfc4280e9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -31137,6 +31502,32 @@
 "checked": false
 },
 {
+"key": "mext-08026",
+"ja": "ひらたけ 生",
+"desc": "hiratake: clusters of grey-brown fan-shaped oyster mushrooms with pale gills, raw",
+"items": [
+"mext:08026"
+],
+"roll": 0,
+"seed": 34936,
+"prompt": "5524d4bb70",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08027",
+"ja": "ひらたけ ゆで",
+"desc": "boiled hiratake: soft grey-brown oyster mushroom pieces in a small dish",
+"items": [
+"mext:08027"
+],
+"roll": 0,
+"seed": 42862,
+"prompt": "e84537c295",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-08028",
 "ja": "まいたけ 生",
 "desc": "a cluster of maitake mushrooms, ruffled overlapping grey-brown frond-like caps",
@@ -31150,6 +31541,32 @@
 "checked": false
 },
 {
+"key": "mext-08029",
+"ja": "まいたけ ゆで",
+"desc": "boiled maitake: soft frilly dark grey-brown fronds of hen of the woods in a small dish",
+"items": [
+"mext:08029"
+],
+"roll": 0,
+"seed": 15241,
+"prompt": "5e3520d500",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08030",
+"ja": "まいたけ 乾",
+"desc": "dried maitake: shrivelled brittle grey-brown frilly mushroom pieces in a small dish",
+"items": [
+"mext:08030"
+],
+"roll": 0,
+"seed": 94476,
+"prompt": "f1632766c1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-08031",
 "ja": "マッシュルーム 生",
 "desc": "white button mushrooms, smooth round white caps, one cut in half",
@@ -31159,6 +31576,19 @@
 "roll": 0,
 "seed": 39674,
 "prompt": "8dc1e90b0f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08032",
+"ja": "マッシュルーム ゆで",
+"desc": "boiled button mushrooms: halved white mushrooms turned soft and greyish in a small dish",
+"items": [
+"mext:08032"
+],
+"roll": 0,
+"seed": 26144,
+"prompt": "29fe2bcc93",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -31189,6 +31619,45 @@
 "checked": false
 },
 {
+"key": "mext-08036",
+"ja": "やなぎまつたけ 生",
+"desc": "yanagimatsutake: clusters of light brown caps on long slender pale stems with a ring, raw",
+"items": [
+"mext:08036"
+],
+"roll": 0,
+"seed": 40377,
+"prompt": "036596993b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08037",
+"ja": "えのきたけ 油いため",
+"desc": "stir-fried enoki: glossy wilted white enoki strands on a small plate",
+"items": [
+"mext:08037"
+],
+"roll": 0,
+"seed": 55855,
+"prompt": "805cc03300",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08038",
+"ja": "あらげきくらげ 油いため",
+"desc": "stir-fried wood ear: glossy dark brown rubbery strips on a small plate",
+"items": [
+"mext:08038"
+],
+"roll": 0,
+"seed": 57886,
+"prompt": "d2a4064bfc",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-08039",
 "ja": "しいたけ 生",
 "desc": "fresh shiitake mushrooms, brown domed caps with pale cream gills underneath and short stems",
@@ -31202,6 +31671,151 @@
 "checked": false
 },
 {
+"key": "mext-08040",
+"ja": "生しいたけ 菌床栽培 ゆで",
+"desc": "boiled shiitake: soft brown-capped mushrooms with pale gills, moist, in a small dish",
+"items": [
+"mext:08040",
+"mext:08043"
+],
+"roll": 0,
+"seed": 17963,
+"prompt": "47c5401d8b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08041",
+"ja": "生しいたけ 菌床栽培 油いため",
+"desc": "stir-fried shiitake: sliced brown shiitake caps glossy with oil on a small plate",
+"items": [
+"mext:08041",
+"mext:08044"
+],
+"roll": 0,
+"seed": 4701,
+"prompt": "37ba6bde6e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08042",
+"ja": "生しいたけ 原木栽培 生",
+"desc": "log-grown shiitake: thick dark brown caps with whitish cracked patterns and white gills, raw",
+"items": [
+"mext:08042"
+],
+"roll": 0,
+"seed": 95335,
+"prompt": "d1a85de5c3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08045",
+"ja": "はたけしめじ ゆで",
+"desc": "boiled hatakeshimeji: soft grey-brown capped mushrooms with white stems in a small dish",
+"items": [
+"mext:08045"
+],
+"roll": 0,
+"seed": 48516,
+"prompt": "ce9aef28fc",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08046",
+"ja": "ぶなしめじ 油いため",
+"desc": "stir-fried bunashimeji: separated small brown-capped mushrooms on thin white stems, glossy, on a small plate",
+"items": [
+"mext:08046"
+],
+"roll": 0,
+"seed": 81214,
+"prompt": "5ad09cb3e6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08047",
+"ja": "ほんしめじ ゆで",
+"desc": "boiled honshimeji: soft plump white stems and grey-brown caps in a small dish",
+"items": [
+"mext:08047"
+],
+"roll": 0,
+"seed": 24200,
+"prompt": "2fe1269c08",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08048",
+"ja": "エリンギ ゆで",
+"desc": "boiled eringi: soft pale cream king oyster mushroom slices in a small dish",
+"items": [
+"mext:08048"
+],
+"roll": 0,
+"seed": 89273,
+"prompt": "fc51ccc7d2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08049",
+"ja": "エリンギ 焼き",
+"desc": "grilled eringi: thick lengthwise king oyster mushroom slices with golden grill marks on a plate",
+"items": [
+"mext:08049"
+],
+"roll": 0,
+"seed": 18319,
+"prompt": "465c2e1412",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08050",
+"ja": "エリンギ 油いため",
+"desc": "stir-fried eringi: glossy lightly browned king oyster mushroom slices on a small plate",
+"items": [
+"mext:08050"
+],
+"roll": 0,
+"seed": 98858,
+"prompt": "3cd9f5ffd1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08051",
+"ja": "まいたけ 油いため",
+"desc": "stir-fried maitake: glossy browned frilly maitake fronds on a small plate",
+"items": [
+"mext:08051"
+],
+"roll": 0,
+"seed": 4604,
+"prompt": "f78f222f46",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08052",
+"ja": "マッシュルーム 油いため",
+"desc": "stir-fried button mushrooms: golden browned white mushroom slices on a small plate",
+"items": [
+"mext:08052"
+],
+"roll": 0,
+"seed": 14182,
+"prompt": "6a4588a538",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-08053",
 "ja": "しいたけ 甘煮",
 "desc": "sweet simmered shiitake mushrooms, glossy dark brown whole caps in sweet soy glaze",
@@ -31211,6 +31825,84 @@
 "roll": 0,
 "seed": 5744,
 "prompt": "995c7acfa8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08054",
+"ja": "あらげきくらげ 生",
+"desc": "aragekikurage: thick rubbery dark brown ear-shaped wood ear fungus with a fuzzy pale underside, fresh",
+"items": [
+"mext:08054"
+],
+"roll": 0,
+"seed": 45011,
+"prompt": "c9b98b7d63",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08055",
+"ja": "ぶなしめじ 素揚げ",
+"desc": "deep-fried bunashimeji: small brown-capped mushrooms fried crisp and golden without batter on a small plate",
+"items": [
+"mext:08055"
+],
+"roll": 0,
+"seed": 23205,
+"prompt": "2d6dd90e69",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08056",
+"ja": "ぶなしめじ 天ぷら",
+"desc": "bunashimeji tempura: clusters of small mushrooms in light crisp pale golden batter on a plate",
+"items": [
+"mext:08056"
+],
+"roll": 0,
+"seed": 25279,
+"prompt": "6c011c4d5b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08057",
+"ja": "生しいたけ 菌床栽培 天ぷら",
+"desc": "shiitake tempura: whole shiitake caps in light crisp pale golden batter on a plate",
+"items": [
+"mext:08057"
+],
+"roll": 0,
+"seed": 91049,
+"prompt": "d8feadf4a0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08058",
+"ja": "カットなめこ 生",
+"desc": "cut nameko: small slippery orange-brown caps with short trimmed stems in a jelly-like coat, raw",
+"items": [
+"mext:08058"
+],
+"roll": 0,
+"seed": 57912,
+"prompt": "8fdbb12f1a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08059",
+"ja": "マッシュルーム ブラウン種 生",
+"desc": "brown mushrooms: brown cremini button mushrooms, one cut to show white flesh, raw",
+"items": [
+"mext:08059"
+],
+"roll": 0,
+"seed": 68110,
+"prompt": "af535e94b5",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -31237,6 +31929,19 @@
 "roll": 0,
 "seed": 69574,
 "prompt": "f9a013ac84",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09003",
+"ja": "あまのり ほしのり",
+"desc": "hoshinori: dried laver, thin crisp glossy dark green-black square sheets stacked",
+"items": [
+"mext:09003"
+],
+"roll": 0,
+"seed": 31920,
+"prompt": "5ebf351eae",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -31280,6 +31985,71 @@
 "checked": false
 },
 {
+"key": "mext-09007",
+"ja": "いわのり 素干し",
+"desc": "Dried iwanori rock laver: a thick, rough, blackish-green sheet of coarse wild seaweed with irregular torn edges and a crinkly, matted texture, on a small plate, not smooth nori",
+"items": [
+"mext:09007"
+],
+"roll": 0,
+"seed": 50633,
+"prompt": "76230f4b51",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09008",
+"ja": "えごのり 素干し",
+"desc": "Dried egonori seaweed: a small tangled pile of thin, wiry, branching strands, dark reddish-brown to purplish, dry and brittle, on a small plate",
+"items": [
+"mext:09008"
+],
+"roll": 0,
+"seed": 33976,
+"prompt": "5d54cd74ba",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09009",
+"ja": "えごのり おきうと",
+"desc": "Okyuto: thin flat sheets of firm seaweed jelly, translucent dark olive-brown, rolled up and cut into short strips on a small dish, topped with grated ginger and soy sauce",
+"items": [
+"mext:09009"
+],
+"roll": 0,
+"seed": 9806,
+"prompt": "8dc4949d79",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09010",
+"ja": "おごのり 塩蔵 塩抜き",
+"desc": "Ogonori seaweed, desalted: bright green thin round strands like tangled glossy noodles, crisp and springy, heaped in a small dish",
+"items": [
+"mext:09010"
+],
+"roll": 0,
+"seed": 73515,
+"prompt": "e643f97fe4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09011",
+"ja": "かわのり 素干し",
+"desc": "Dried kawanori river laver: paper-thin, slightly translucent sheets of vivid deep green, folded and stacked on a small plate",
+"items": [
+"mext:09011"
+],
+"roll": 0,
+"seed": 65181,
+"prompt": "e38fc374c4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-09012",
 "ja": "海ぶどう",
 "desc": "sea grapes (umibudo), stalks covered in tiny glossy bright green bubble-like beads",
@@ -31293,6 +32063,58 @@
 "checked": false
 },
 {
+"key": "mext-09013",
+"ja": "えながおにこんぶ 素干し",
+"desc": "Dried oni kelp (kombu): long, wide, flat strips of dark brown-black kelp with a white powdery bloom on the surface, stiff and leathery, folded on a plate",
+"items": [
+"mext:09013"
+],
+"roll": 0,
+"seed": 19537,
+"prompt": "c76ed26deb",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09014",
+"ja": "がごめこんぶ 素干し",
+"desc": "Dried gagome kombu: a wide flat dark brown kelp blade with a distinctive raised, bumpy honeycomb pattern on its surface and white powdery bloom",
+"items": [
+"mext:09014"
+],
+"roll": 0,
+"seed": 25010,
+"prompt": "21fd79e1c6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09015",
+"ja": "ながこんぶ 素干し",
+"desc": "Dried naga kombu: very long, narrow, dark blackish-green kelp strips folded into a bundle, matte with faint white bloom",
+"items": [
+"mext:09015"
+],
+"roll": 0,
+"seed": 24580,
+"prompt": "44d759a5c8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09016",
+"ja": "ほそめこんぶ 素干し",
+"desc": "Dried hosome kombu: slender, thin, dark green-brown kelp strips with slightly wavy edges, tied in a small bundle",
+"items": [
+"mext:09016"
+],
+"roll": 0,
+"seed": 23966,
+"prompt": "eca1677691",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-09017",
 "ja": "昆布（まこんぶ・素干し）",
 "desc": "a sheet of dried kombu kelp, a thick wide dark olive-green strip with a white powdery bloom",
@@ -31302,6 +32124,58 @@
 "roll": 0,
 "seed": 10184,
 "prompt": "b03c9a5a23",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09018",
+"ja": "みついしこんぶ 素干し",
+"desc": "Dried hidaka (mitsuishi) kombu: flat, medium-width, dark greenish-black kelp strips, stiff, with faint white bloom, folded on a plate",
+"items": [
+"mext:09018"
+],
+"roll": 0,
+"seed": 47801,
+"prompt": "083940e44d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09019",
+"ja": "りしりこんぶ 素干し",
+"desc": "Dried rishiri kombu: a thick, broad, flat rectangle of dark brown kelp with a white powdery surface bloom, stiff and leathery",
+"items": [
+"mext:09019"
+],
+"roll": 0,
+"seed": 79375,
+"prompt": "425b10c69d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09020",
+"ja": "刻み昆布",
+"desc": "Kizami kombu, shredded kelp: a loose heap of very thin dark green-black dried kelp threads, like fine tangled noodles, on a small plate",
+"items": [
+"mext:09020"
+],
+"roll": 0,
+"seed": 15752,
+"prompt": "310e03c6e0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09021",
+"ja": "削り昆布",
+"desc": "Tororo kombu, shaved kelp: a fluffy, airy pile of very fine, wispy, pale greenish-brown kelp shavings, soft like cotton, in a small dish",
+"items": [
+"mext:09021"
+],
+"roll": 0,
+"seed": 47902,
+"prompt": "c837bfdc74",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -31332,6 +32206,32 @@
 "checked": false
 },
 {
+"key": "mext-09024",
+"ja": "すいぜんじのり 素干し 水戻し",
+"desc": "Suizenjinori, rehydrated: thick, soft, gelatinous irregular pieces of freshwater algae, translucent dark green jelly, in a small dish of water",
+"items": [
+"mext:09024"
+],
+"roll": 0,
+"seed": 67569,
+"prompt": "143a10b103",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09025",
+"ja": "てんぐさ 素干し",
+"desc": "Dried tengusa seaweed: a tangled bunch of fine, branching, wiry strands, pale reddish-purple fading to bleached yellowish-white, dry and crisp",
+"items": [
+"mext:09025"
+],
+"roll": 0,
+"seed": 27207,
+"prompt": "d59c3a2e5c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-09026",
 "ja": "ところてん",
 "desc": "tokoroten, long translucent pale noodles of agar jelly in a glass dish with a little vinegar sauce and nori",
@@ -31342,6 +32242,19 @@
 "roll": 0,
 "seed": 89725,
 "prompt": "2d0af40cbd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09027",
+"ja": "てんぐさ 角寒天",
+"desc": "Kaku-kanten agar bars: long square sticks of dried agar, white, light and porous, with a crinkled spongy honeycomb texture, not bread or tofu",
+"items": [
+"mext:09027"
+],
+"roll": 0,
+"seed": 86059,
+"prompt": "0b09badd6a",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -31369,6 +32282,32 @@
 "roll": 0,
 "seed": 15148,
 "prompt": "dca9d1e5b3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09032",
+"ja": "ひとえぐさ 素干し",
+"desc": "Dried hitoegusa green laver: thin, papery, vivid green flakes of crumbled seaweed sheet, light and crisp, on a small plate",
+"items": [
+"mext:09032"
+],
+"roll": 0,
+"seed": 19141,
+"prompt": "d80a5ce7f4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09033",
+"ja": "ひとえぐさ つくだ煮",
+"desc": "Nori tsukudani: a glossy, thick, dark blackish-green seaweed paste simmered in soy and sugar, jam-like, in a small dish",
+"items": [
+"mext:09033"
+],
+"roll": 0,
+"seed": 41523,
+"prompt": "a694ed201d",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -31440,6 +32379,19 @@
 "checked": false
 },
 {
+"key": "mext-09049",
+"ja": "てんぐさ 粉寒天",
+"desc": "Powdered agar (kona-kanten): a fine, dry, off-white powder in a small dish, matte like flour",
+"items": [
+"mext:09049"
+],
+"roll": 0,
+"seed": 83658,
+"prompt": "e067fc805d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-09050",
 "ja": "ひじき（乾）",
 "desc": "dried hijiki seaweed, small twig-like black pieces in a small dish",
@@ -31462,6 +32414,59 @@
 "roll": 0,
 "seed": 80345,
 "prompt": "fb4880dd71",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09052",
+"ja": "ほしひじき ステンレス釜 油いため",
+"desc": "Stir-fried hijiki: short glossy black seaweed sprigs like tiny black twigs and grains, shiny with oil, heaped in a small bowl",
+"items": [
+"mext:09052",
+"mext:09055"
+],
+"roll": 0,
+"seed": 2531,
+"prompt": "a95708244c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09053",
+"ja": "ほしひじき 鉄釜 乾",
+"desc": "Dried hijiki: a small heap of short, thin, dry black seaweed twigs, matte, brittle and wrinkled, on a small plate",
+"items": [
+"mext:09053"
+],
+"roll": 0,
+"seed": 31093,
+"prompt": "f4b4ebe130",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09054",
+"ja": "ほしひじき 鉄釜 ゆで",
+"desc": "Boiled hijiki: rehydrated short black seaweed sprigs, plump, soft and moist with a slight sheen, in a small bowl",
+"items": [
+"mext:09054"
+],
+"roll": 0,
+"seed": 3798,
+"prompt": "30445d7533",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09056",
+"ja": "まこんぶ 素干し 水煮",
+"desc": "Boiled kombu: soft, glossy, dark olive-green rehydrated kelp cut into flat squares, slick and supple, in a small bowl",
+"items": [
+"mext:09056"
+],
+"roll": 0,
+"seed": 18458,
+"prompt": "18f2555083",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
