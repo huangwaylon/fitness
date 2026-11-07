@@ -25202,6 +25202,32 @@
 "checked": false
 },
 {
+"key": "mext-06073",
+"ja": "みずな ゆで",
+"desc": "boiled mizuna: soft slender green stems and feathery leaves cut into lengths in a small dish",
+"items": [
+"mext:06073"
+],
+"roll": 0,
+"seed": 35457,
+"prompt": "fe5936b2e0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06074",
+"ja": "みずな 塩漬",
+"desc": "salted mizuna: limp thin pale green stems and jagged feathery leaves, chopped, in a small dish",
+"items": [
+"mext:06074"
+],
+"roll": 0,
+"seed": 39202,
+"prompt": "38abedabb6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06075",
 "ja": "キンサイ 生",
 "desc": "kinsai Chinese celery: a bunch of thin hollow pale green stalks with flat parsley-like leaves, slender and leafy, not thick celery ribs, raw",
@@ -26868,6 +26894,19 @@
 "checked": false
 },
 {
+"key": "mext-06216",
+"ja": "にんじん 冷凍",
+"desc": "frozen carrot: frosty orange carrot dice with ice crystals in a small bowl",
+"items": [
+"mext:06216"
+],
+"roll": 0,
+"seed": 84422,
+"prompt": "a510971739",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06217",
 "ja": "にんじんジュース",
 "desc": "a glass of carrot juice, opaque bright orange",
@@ -26877,6 +26916,59 @@
 "roll": 0,
 "seed": 97456,
 "prompt": "7bdcdab47d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06218",
+"ja": "きんとき 皮つき 生",
+"desc": "kintoki carrot: a long slender deep crimson red carrot, a cut piece showing red all the way through, raw",
+"items": [
+"mext:06218"
+],
+"roll": 0,
+"seed": 87745,
+"prompt": "5f2a9ad6f2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06219",
+"ja": "きんとき 皮つき ゆで",
+"desc": "boiled kintoki carrot: soft deep crimson red carrot rounds in a small dish",
+"items": [
+"mext:06219",
+"mext:06221"
+],
+"roll": 0,
+"seed": 40023,
+"prompt": "8face84603",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06220",
+"ja": "きんとき 皮なし 生",
+"desc": "peeled kintoki carrot: smooth peeled deep red carrot pieces, crisp, raw, on a small plate",
+"items": [
+"mext:06220"
+],
+"roll": 0,
+"seed": 85616,
+"prompt": "3b2909e630",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06222",
+"ja": "ミニキャロット 生",
+"desc": "baby carrots: small slender bright orange carrots with short green tops, raw",
+"items": [
+"mext:06222"
+],
+"roll": 0,
+"seed": 19804,
+"prompt": "62cf78f6f9",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -27000,6 +27092,19 @@
 "checked": false
 },
 {
+"key": "mext-06234",
+"ja": "はくさい ゆで",
+"desc": "boiled napa cabbage: soft translucent white stems and pale green leaf tops cut into squares, in a small bowl",
+"items": [
+"mext:06234"
+],
+"roll": 0,
+"seed": 25928,
+"prompt": "7a5f1d0793",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06235",
 "ja": "はくさい 塩漬",
 "desc": "salt-pickled napa cabbage, soft pale green and white pieces in a small dish",
@@ -27025,6 +27130,19 @@
 "seed": 98436,
 "prompt": "80235385b2",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06237",
+"ja": "パクチョイ 生",
+"desc": "pak choi: thick bright white stems with round dark green leaves, a small head, raw",
+"items": [
+"mext:06237"
+],
+"roll": 0,
+"seed": 52498,
+"prompt": "28afadf04e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -27077,6 +27195,19 @@
 "roll": 0,
 "seed": 23680,
 "prompt": "050829aeb2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06242",
+"ja": "はやとうり 白色種 塩漬",
+"desc": "salted chayote: pale green pear-shaped ridged squash, sliced, pale translucent pickled slices in a small dish",
+"items": [
+"mext:06242"
+],
+"roll": 0,
+"seed": 22362,
+"prompt": "f752317f86",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -27134,6 +27265,19 @@
 "checked": false
 },
 {
+"key": "mext-06248",
+"ja": "赤ピーマン 油いため",
+"desc": "stir-fried red bell pepper: glossy bright red pepper strips on a small plate",
+"items": [
+"mext:06248"
+],
+"roll": 0,
+"seed": 98244,
+"prompt": "d2db43592b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06249",
 "ja": "パプリカ（黄） 生",
 "desc": "a whole yellow bell pepper, glossy bright yellow with a green stem, one cut in strips",
@@ -27143,6 +27287,71 @@
 "roll": 0,
 "seed": 54610,
 "prompt": "481c14cd37",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06250",
+"ja": "黄ピーマン 油いため",
+"desc": "stir-fried yellow bell pepper: glossy yellow pepper strips on a small plate",
+"items": [
+"mext:06250"
+],
+"roll": 0,
+"seed": 23223,
+"prompt": "6c6ed8e3ad",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06251",
+"ja": "トマピー 生",
+"desc": "tomapi: a small flattened ribbed glossy red pepper shaped like a tomato, one cut to show thick flesh, raw",
+"items": [
+"mext:06251"
+],
+"roll": 0,
+"seed": 80129,
+"prompt": "abee97353e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06252",
+"ja": "ひのな 生",
+"desc": "hinona: slender turnips with long thin roots, purple-red at the top shading to white, with green leaves, raw",
+"items": [
+"mext:06252"
+],
+"roll": 0,
+"seed": 47163,
+"prompt": "64ac430f09",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06253",
+"ja": "ひのな 甘酢漬",
+"desc": "hinona sweet vinegar pickle: sliced roots and leaves pickled bright pink-red, in a small dish",
+"items": [
+"mext:06253"
+],
+"roll": 0,
+"seed": 34221,
+"prompt": "b01e9ee625",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06254",
+"ja": "ひろしまな 生",
+"desc": "hiroshimana: a large loose head of broad wavy green leaves with thick white ribs, raw",
+"items": [
+"mext:06254"
+],
+"roll": 0,
+"seed": 55502,
+"prompt": "35b7028866",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -27171,6 +27380,45 @@
 "roll": 0,
 "seed": 73253,
 "prompt": "4041731299",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06260",
+"ja": "ふじまめ 生",
+"desc": "hyacinth beans: flat broad crescent-shaped pods, green with purple edges, raw",
+"items": [
+"mext:06260"
+],
+"roll": 0,
+"seed": 34388,
+"prompt": "2a26c975c0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06261",
+"ja": "ふだんそう 生",
+"desc": "Swiss chard: large glossy crinkled green leaves on thick colourful stems in red, yellow and white, raw",
+"items": [
+"mext:06261"
+],
+"roll": 0,
+"seed": 19138,
+"prompt": "74d28d345d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06262",
+"ja": "ふだんそう ゆで",
+"desc": "boiled Swiss chard: soft green leaves and colourful stems chopped in a small dish",
+"items": [
+"mext:06262"
+],
+"roll": 0,
+"seed": 55704,
+"prompt": "bc98dd3986",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -27242,6 +27490,19 @@
 "checked": false
 },
 {
+"key": "mext-06269",
+"ja": "ほうれんそう 冷凍",
+"desc": "frozen spinach: a clump of frosty dark green chopped spinach with ice crystals in a small bowl",
+"items": [
+"mext:06269"
+],
+"roll": 0,
+"seed": 76208,
+"prompt": "3061ed4531",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06270",
 "ja": "ホースラディシュ 生",
 "desc": "a horseradish root, a long thick tan root, a little grated white horseradish",
@@ -27251,6 +27512,32 @@
 "roll": 0,
 "seed": 72821,
 "prompt": "40dad68066",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06271",
+"ja": "まこも 生",
+"desc": "makomo water bamboo: a pale green husked stalk peeled to show a smooth ivory white cylindrical stem, a cut piece showing white flesh, raw",
+"items": [
+"mext:06271"
+],
+"roll": 0,
+"seed": 65123,
+"prompt": "d36e4017fe",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06272",
+"ja": "みずかけな 生",
+"desc": "mizukakena: a bunch of smooth soft light green elongated leaves, raw",
+"items": [
+"mext:06272"
+],
+"roll": 0,
+"seed": 28217,
+"prompt": "d558d5c65e",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -27269,6 +27556,46 @@
 "checked": false
 },
 {
+"key": "mext-06276",
+"ja": "根みつば 生",
+"desc": "ne-mitsuba: Japanese wild parsley with three-part leaves on long pale stems and white roots attached, raw",
+"items": [
+"mext:06276"
+],
+"roll": 0,
+"seed": 88480,
+"prompt": "5480402db6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06277",
+"ja": "根みつば ゆで",
+"desc": "boiled mitsuba: soft green three-part leaves and thin stems cut into lengths in a small dish",
+"items": [
+"mext:06277",
+"mext:06279"
+],
+"roll": 0,
+"seed": 61462,
+"prompt": "c34bae0805",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06278",
+"ja": "糸みつば 生",
+"desc": "ito-mitsuba: a bundle of thin long green stems with small three-part leaves, raw",
+"items": [
+"mext:06278"
+],
+"roll": 0,
+"seed": 72423,
+"prompt": "9c991a3747",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06280",
 "ja": "みょうが",
 "desc": "two myoga ginger buds, plump pinkish-red and cream tear-shaped buds, one sliced thin",
@@ -27278,6 +27605,19 @@
 "roll": 0,
 "seed": 13914,
 "prompt": "8ae87d00a2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06281",
+"ja": "みょうがたけ 生",
+"desc": "myogatake: slender pale pink-white to green shoots of myoga with sheathed bamboo-like stems, raw",
+"items": [
+"mext:06281"
+],
+"roll": 0,
+"seed": 33132,
+"prompt": "4f970ac998",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -27309,6 +27649,19 @@
 "checked": false
 },
 {
+"key": "mext-06285",
+"ja": "めたで 生",
+"desc": "metade: tiny reddish purple water pepper sprouts with small seed leaves, a delicate garnish in a small dish",
+"items": [
+"mext:06285"
+],
+"roll": 0,
+"seed": 20373,
+"prompt": "21919123a5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06286",
 "ja": "アルファルファもやし 生",
 "desc": "alfalfa sprouts, a fine nest of thin white stems with tiny green leaves",
@@ -27331,6 +27684,45 @@
 "roll": 0,
 "seed": 53241,
 "prompt": "d940a4af56",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06288",
+"ja": "だいずもやし ゆで",
+"desc": "boiled soybean sprouts: pale white stems with large yellow bean heads, soft, in a small dish",
+"items": [
+"mext:06288"
+],
+"roll": 0,
+"seed": 8616,
+"prompt": "ed3e04ed11",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06289",
+"ja": "ブラックマッペもやし 生",
+"desc": "black matpe bean sprouts: long thin white sprouts with small yellowish heads, crisp, raw, in a small bowl",
+"items": [
+"mext:06289"
+],
+"roll": 0,
+"seed": 47678,
+"prompt": "1be256e286",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06290",
+"ja": "ブラックマッペもやし ゆで",
+"desc": "boiled bean sprouts: limp translucent white thin sprouts with small heads in a small dish",
+"items": [
+"mext:06290"
+],
+"roll": 0,
+"seed": 77691,
+"prompt": "b30d4fcb56",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -27358,6 +27750,32 @@
 "roll": 0,
 "seed": 90241,
 "prompt": "d8078b16bc",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06294",
+"ja": "モロヘイヤ ゆで",
+"desc": "boiled molokhia: chopped dark green leaves, slimy and sticky, in a small dish",
+"items": [
+"mext:06294"
+],
+"roll": 0,
+"seed": 62594,
+"prompt": "359b184389",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06295",
+"ja": "やまごぼう みそ漬",
+"desc": "miso-pickled yamagobo: long thin orange-brown root sticks, firm and glossy, in a small dish",
+"items": [
+"mext:06295"
+],
+"roll": 0,
+"seed": 32148,
+"prompt": "d7c54452c8",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -27758,6 +28176,97 @@
 "checked": false
 },
 {
+"key": "mext-06346",
+"ja": "にんじん 皮なし 素揚げ",
+"desc": "deep-fried carrot: peeled carrot sticks fried glossy with slightly darkened edges, on a small plate",
+"items": [
+"mext:06346"
+],
+"roll": 0,
+"seed": 16884,
+"prompt": "6590dfc263",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06347",
+"ja": "にんじん 皮 生",
+"desc": "carrot peel: thin curled orange carrot peelings in a small dish, raw",
+"items": [
+"mext:06347"
+],
+"roll": 0,
+"seed": 61762,
+"prompt": "8d8f639cf9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06348",
+"ja": "にんじん グラッセ",
+"desc": "carrot glace: rounded orange carrot pieces in a shiny butter and sugar glaze, on a plate",
+"items": [
+"mext:06348"
+],
+"roll": 0,
+"seed": 52083,
+"prompt": "eb014c56ce",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06349",
+"ja": "にんにく 油いため",
+"desc": "fried garlic: thin garlic slices fried golden in a little oil, in a small dish",
+"items": [
+"mext:06349"
+],
+"roll": 0,
+"seed": 17093,
+"prompt": "b07f9e7436",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06350",
+"ja": "根深ねぎ ゆで",
+"desc": "boiled long white negi: thick white leek chunks, soft and translucent, in a small dish",
+"items": [
+"mext:06350"
+],
+"roll": 0,
+"seed": 63264,
+"prompt": "0978e615cb",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06351",
+"ja": "根深ねぎ 油いため",
+"desc": "stir-fried negi: diagonal slices of thick white leek, glossy and lightly browned, on a small plate",
+"items": [
+"mext:06351"
+],
+"roll": 0,
+"seed": 87254,
+"prompt": "f2977df67f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06352",
+"ja": "葉ねぎ 油いため",
+"desc": "stir-fried green onion: wilted glossy green scallion lengths on a small plate",
+"items": [
+"mext:06352"
+],
+"roll": 0,
+"seed": 75980,
+"prompt": "a0f890fa79",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06354",
 "ja": "ブロッコリースプラウト",
 "desc": "a bunch of broccoli sprouts, thin white stems with tiny green leaves",
@@ -27767,6 +28276,62 @@
 "roll": 0,
 "seed": 19769,
 "prompt": "c864be1263",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06355",
+"ja": "ほうれんそう 夏採り 生",
+"desc": "spinach: a bunch of dark green spade-shaped leaves with pinkish red roots, raw",
+"items": [
+"mext:06355",
+"mext:06356"
+],
+"roll": 0,
+"seed": 96079,
+"prompt": "e3c5046ccb",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06357",
+"ja": "ほうれんそう 夏採り ゆで",
+"desc": "boiled spinach: dark green spinach squeezed into a neat log and cut into lengths, in a small dish",
+"items": [
+"mext:06357",
+"mext:06358",
+"mext:06372"
+],
+"roll": 0,
+"seed": 13315,
+"prompt": "389e8bb5d2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06359",
+"ja": "ほうれんそう 油いため",
+"desc": "stir-fried spinach: wilted glossy dark green spinach leaves and stems on a small plate",
+"items": [
+"mext:06359",
+"mext:06373"
+],
+"roll": 0,
+"seed": 44068,
+"prompt": "8da262c4a1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06360",
+"ja": "みぶな 生",
+"desc": "mibuna: a bunch of long narrow smooth strap-like green leaves with rounded untoothed edges, raw",
+"items": [
+"mext:06360"
+],
+"roll": 0,
+"seed": 88259,
+"prompt": "bbc746247f",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -27966,6 +28531,32 @@
 "checked": false
 },
 {
+"key": "mext-06380",
+"ja": "にんじん 冷凍 ゆで",
+"desc": "boiled frozen carrot: soft moist bright orange carrot dice in a small bowl",
+"items": [
+"mext:06380"
+],
+"roll": 0,
+"seed": 62381,
+"prompt": "c592fdad2c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06381",
+"ja": "にんじん 冷凍 油いため",
+"desc": "stir-fried frozen carrot: glossy orange carrot dice with oil sheen on a small plate",
+"items": [
+"mext:06381"
+],
+"roll": 0,
+"seed": 14587,
+"prompt": "c294cbbd08",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06382",
 "ja": "ミックスベジタブル（冷凍）",
 "desc": "a bowl of mixed vegetables, small diced orange carrot, yellow corn kernels and green peas",
@@ -28070,6 +28661,98 @@
 "checked": false
 },
 {
+"key": "mext-06392",
+"ja": "はなっこりー 生",
+"desc": "hanakkori: slender green stalks with small green flower buds, a few yellow flowers and small leaves, raw",
+"items": [
+"mext:06392"
+],
+"roll": 0,
+"seed": 24000,
+"prompt": "e2feecf388",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06393",
+"ja": "オレンジピーマン 生",
+"desc": "orange bell pepper: a glossy orange bell pepper, one halved to show white ribs and seeds, raw",
+"items": [
+"mext:06393"
+],
+"roll": 0,
+"seed": 50102,
+"prompt": "3b3e4c45e1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06394",
+"ja": "オレンジピーマン 油いため",
+"desc": "stir-fried orange bell pepper: glossy orange pepper strips on a small plate",
+"items": [
+"mext:06394"
+],
+"roll": 0,
+"seed": 33781,
+"prompt": "3f702012d6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06395",
+"ja": "ブロッコリー 電子レンジ調理",
+"desc": "microwaved broccoli: bright green florets, moist, in a small dish",
+"items": [
+"mext:06395"
+],
+"roll": 0,
+"seed": 79203,
+"prompt": "eee599cf78",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06396",
+"ja": "ブロッコリー 焼き",
+"desc": "grilled broccoli: green florets with charred browned edges on a small plate",
+"items": [
+"mext:06396"
+],
+"roll": 0,
+"seed": 68217,
+"prompt": "60267d6e94",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06397",
+"ja": "ブロッコリー 油いため",
+"desc": "stir-fried broccoli: glossy bright green florets on a small plate",
+"items": [
+"mext:06397"
+],
+"roll": 0,
+"seed": 66767,
+"prompt": "3bb24d6502",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06398",
+"ja": "ブラックマッペもやし 油いため",
+"desc": "stir-fried bean sprouts: glossy thin white sprouts, lightly wilted, on a small plate",
+"items": [
+"mext:06398",
+"mext:06413"
+],
+"roll": 0,
+"seed": 10142,
+"prompt": "434ed6f91f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06399",
 "ja": "野菜ジュース",
 "desc": "a glass of vegetable juice, opaque deep orange-red",
@@ -28081,6 +28764,19 @@
 "seed": 38984,
 "prompt": "fd169713c1",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06401",
+"ja": "やぶまめ 生",
+"desc": "yabumame: small flat mottled beige and brown wild beans, a few pods beside, raw",
+"items": [
+"mext:06401"
+],
+"roll": 0,
+"seed": 11350,
+"prompt": "cee934e936",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -28137,6 +28833,20 @@
 "checked": false
 },
 {
+"key": "mext-06407",
+"ja": "にんじん 皮なし カット 常法洗浄",
+"desc": "cut carrot: raw bright orange peeled carrot sticks and julienne in a small bowl, crisp",
+"items": [
+"mext:06407",
+"mext:06408"
+],
+"roll": 0,
+"seed": 74499,
+"prompt": "835bf6d3dc",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06409",
 "ja": "島にんじん 皮なし 生",
 "desc": "Okinawan shima ninjin, long thin pale yellow carrots",
@@ -28159,6 +28869,32 @@
 "roll": 0,
 "seed": 68257,
 "prompt": "dcd3f1ee2f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06411",
+"ja": "めねぎ 生",
+"desc": "menegi: very fine thread-like dark green onion sprouts in a small neat bundle, raw",
+"items": [
+"mext:06411"
+],
+"roll": 0,
+"seed": 90167,
+"prompt": "299833e2e2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06412",
+"ja": "だいずもやし 油いため",
+"desc": "stir-fried soybean sprouts: glossy pale stems with large yellow bean heads, on a small plate",
+"items": [
+"mext:06412"
+],
+"roll": 0,
+"seed": 18221,
+"prompt": "193789ccdb",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
