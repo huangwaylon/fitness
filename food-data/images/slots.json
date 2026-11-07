@@ -63,7 +63,26 @@
 "mext-13055",
 "mext-13056",
 "mext-13004",
-"mext-13013"
+"mext-13013",
+"mext-13057",
+"mext-13031",
+"mext-13032",
+"mext-13048",
+"mext-13015",
+"mext-13021",
+"mext-13023",
+"mext-13041",
+"mext-13050",
+"mext-13039",
+"mext-13018",
+"mext-13058",
+"mext-13059",
+"mext-13011",
+"mext-13051",
+"mext-13009",
+"mext-13012",
+"mext-13001",
+"mext-13002"
 ],
 "don": [
 "dishes-gyudon",
@@ -218,7 +237,8 @@
 "mext-07098",
 "mext-06400",
 "mext-07137",
-"mext-07151"
+"mext-07151",
+"mext-13030"
 ],
 "eatout": [
 "eatout-curry_pork_chain",
@@ -292,7 +312,16 @@
 "mext-12014",
 "mext-12017",
 "dishes-omelette",
-"dishes-onsen-tamago"
+"dishes-onsen-tamago",
+"mext-12001",
+"mext-12009",
+"mext-12016",
+"mext-12013",
+"mext-12007",
+"mext-12008",
+"mext-12012",
+"mext-12015",
+"mext-12011"
 ],
 "fish": [
 "mext-10154",
@@ -1431,7 +1460,18 @@
 "mext-11313",
 "mext-11312",
 "mext-11174",
-"mext-11114"
+"mext-11114",
+"mext-11241",
+"mext-11242",
+"mext-11243",
+"mext-11244",
+"mext-11238",
+"mext-11240",
+"mext-11217",
+"mext-11216",
+"mext-11298",
+"mext-11299",
+"mext-11226"
 ],
 "noodle": [
 "mext-01039",
@@ -1915,7 +1955,17 @@
 "mext-07010",
 "mext-07024",
 "mext-07123",
-"mext-07047"
+"mext-07047",
+"mext-14032",
+"mext-14007",
+"mext-14028",
+"mext-14004",
+"mext-14022",
+"mext-14010",
+"mext-14009",
+"mext-14033",
+"mext-14015",
+"mext-14003"
 ],
 "side": [
 "dishes-green-salad",
@@ -2842,7 +2892,35 @@
 "maff_kyodo-wakasa_no_oyaki_tottori",
 "maff_kyodo-warabi_mochi_nara",
 "mext-07127",
-"mext-07103"
+"mext-07103",
+"mext-15006",
+"mext-15147",
+"mext-15007",
+"mext-15149",
+"mext-15010",
+"mext-15011",
+"mext-15012",
+"mext-15014",
+"mext-15015",
+"mext-15016",
+"mext-15013",
+"mext-15151",
+"mext-15122",
+"mext-15121",
+"mext-15020",
+"mext-15143",
+"mext-15144",
+"mext-13046",
+"mext-15123",
+"mext-15146",
+"mext-15152",
+"mext-15153",
+"mext-15001",
+"mext-15002",
+"mext-15003",
+"mext-15124",
+"mext-15154",
+"mext-15150"
 ],
 "veg": [
 "mext-08001",
@@ -3414,7 +3492,8 @@
 "mext-11296",
 "mext-11093",
 "mext-11102",
-"mext-11100"
+"mext-11100",
+"mext-14015"
 ],
 "beer": [
 "mext-16006",
@@ -3514,7 +3593,14 @@
 "mext-13056",
 "mext-15135",
 "eatout-double_cheeseburger",
-"dishes-cheese-hamburg"
+"dishes-cheese-hamburg",
+"mext-13057",
+"mext-13031",
+"mext-13032",
+"mext-13041",
+"mext-13050",
+"mext-13039",
+"mext-13058"
 ],
 "chicken": [
 "mext-11227",
@@ -3592,7 +3678,12 @@
 "mext-10392",
 "mext-11214",
 "mext-11215",
-"mext-11212"
+"mext-11212",
+"mext-11217",
+"mext-11216",
+"mext-11298",
+"mext-11299",
+"mext-11226"
 ],
 "curry": [
 "eatout-curry_pork_chain",
@@ -3623,7 +3714,19 @@
 "mext-13010",
 "mext-13017",
 "mext-13055",
-"mext-13013"
+"mext-13013",
+"mext-13048",
+"mext-13015",
+"mext-13021",
+"mext-13023",
+"mext-13018",
+"mext-13059",
+"mext-13011",
+"mext-13051",
+"mext-13009",
+"mext-13012",
+"mext-13001",
+"mext-13002"
 ],
 "don": [
 "dishes-gyudon",
@@ -3741,7 +3844,8 @@
 "mext-07063",
 "mext-07157",
 "mext-07098",
-"mext-06400"
+"mext-06400",
+"mext-13030"
 ],
 "eatout": [
 "eatout-hamburger",
@@ -3798,7 +3902,16 @@
 "maff_kyodo-31_3_tochigi",
 "dishes-onsen-tamago",
 "maff_kyodo-34_11_tokyo",
-"mext-12023"
+"mext-12023",
+"mext-12001",
+"mext-12009",
+"mext-12016",
+"mext-12013",
+"mext-12007",
+"mext-12008",
+"mext-12012",
+"mext-12015",
+"mext-12011"
 ],
 "fish": [
 "mext-10281",
@@ -4719,7 +4832,13 @@
 "mext-11201",
 "mext-11210",
 "mext-11106",
-"mext-11114"
+"mext-11114",
+"mext-11241",
+"mext-11242",
+"mext-11243",
+"mext-11244",
+"mext-11238",
+"mext-11240"
 ],
 "milk": [
 "mext-13003",
@@ -4761,7 +4880,10 @@
 "mext-04114",
 "maff_kyodo-ama_nattou_no_osekihan_yama_nashi",
 "maff_kyodo-nattomochi_kyoto",
-"dishes-natto"
+"dishes-natto",
+"mext-15001",
+"mext-15002",
+"mext-15003"
 ],
 "noodle": [
 "mext-01044",
@@ -5293,7 +5415,16 @@
 "mext-07010",
 "mext-07024",
 "mext-07123",
-"mext-07047"
+"mext-07047",
+"mext-14032",
+"mext-14007",
+"mext-14028",
+"mext-14004",
+"mext-14022",
+"mext-14010",
+"mext-14009",
+"mext-14033",
+"mext-14003"
 ],
 "shrimp": [
 "mext-18003",
@@ -6153,7 +6284,32 @@
 "maff_kyodo-33_21_saitama",
 "maff_kyodo-onimanju_aichi",
 "mext-07127",
-"mext-07103"
+"mext-07103",
+"mext-15006",
+"mext-15147",
+"mext-15007",
+"mext-15149",
+"mext-15010",
+"mext-15011",
+"mext-15012",
+"mext-15014",
+"mext-15015",
+"mext-15016",
+"mext-15013",
+"mext-15151",
+"mext-15122",
+"mext-15121",
+"mext-15020",
+"mext-15143",
+"mext-15144",
+"mext-13046",
+"mext-15123",
+"mext-15146",
+"mext-15152",
+"mext-15153",
+"mext-15124",
+"mext-15154",
+"mext-15150"
 ],
 "tofu": [
 "mext-04032",
