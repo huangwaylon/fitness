@@ -14,14 +14,14 @@
    "by": "atempo"
   },
   "l1Tempo": 0.92,
-  "at": "2026-11-07T01:19:10.398Z",
-  "wallSeconds": 66,
-  "spokenNow": 11,
+  "at": "2026-11-07T02:13:42.816Z",
+  "wallSeconds": 11,
+  "spokenNow": 8,
   "clips": 2239,
   "perfect": 2155,
   "contentClean": 2168,
   "rerolled": 215,
-  "conditioned": 739,
+  "conditioned": 731,
   "condWer": 0.009,
   "flagged": [
    "call-bag-found-5",
@@ -151,7 +151,7 @@
    "contentClean": 323
   },
   "files": 2334,
-  "kb": 63172,
+  "kb": 63174,
   "perVoice": {
    "au-f1": {
     "n": 9,
@@ -34361,7 +34361,7 @@
    "mos": 4.34
   },
   "tachi-pub-quiz-1": {
-   "src": "6989bd882d",
+   "src": "6437849b07",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "Question seven. Which country has the most time zones? We've got thirty seconds.",
@@ -34375,13 +34375,10 @@
    "content": 0,
    "sim": 0.7,
    "rtf": 0.488,
-   "cond": "party:light",
-   "condHyp": "Question 7. Which country has the most time zones? We've got 30 seconds.",
-   "condWer": 0,
    "mos": 4.47
   },
   "tachi-pub-quiz-2": {
-   "src": "3f2860376a",
+   "src": "8fd1817032",
    "cast": "us-f2",
    "engine": "qwen3",
    "text": "Russia. Easy. It's huge.",
@@ -34395,13 +34392,10 @@
    "content": 0,
    "sim": 0.624,
    "rtf": 1.423,
-   "cond": "party:light",
-   "condHyp": "Russia. Easy. It's huge.",
-   "condWer": 0,
    "mos": 3.867
   },
   "tachi-pub-quiz-3": {
-   "src": "8776660257",
+   "src": "02d032445f",
    "cast": "us-m2",
    "engine": "qwen3",
    "text": "It's France, actually. Because of all the overseas territories. Twelve, I think.",
@@ -34415,13 +34409,10 @@
    "content": 0,
    "sim": 0.759,
    "rtf": 1.672,
-   "cond": "party:light",
-   "condHyp": "It's France, actually. Because of all the overseas territories. Twelve, I think.",
-   "condWer": 0,
    "mos": 4.364
   },
   "tachi-pub-quiz-4": {
-   "src": "b9e6f10739",
+   "src": "d40720c6ce",
    "cast": "us-f2",
    "engine": "qwen3",
    "text": "France? Come on. That's a trick answer.",
@@ -34435,13 +34426,10 @@
    "content": 0,
    "sim": 0.76,
    "rtf": 1.469,
-   "cond": "party:light",
-   "condHyp": "France? Come on. That's a trick answer.",
-   "condWer": 0,
    "mos": 4.274
   },
   "tachi-pub-quiz-5": {
-   "src": "282de06780",
+   "src": "3ab3b9fd94",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "No, I think he's right. I read that somewhere. Tahiti an' stuff.",
@@ -34455,13 +34443,10 @@
    "content": 0,
    "sim": 0.754,
    "rtf": 0.423,
-   "cond": "party:light",
-   "condHyp": "No, I think he's right. I read that somewhere. Tahiti and stuff.",
-   "condWer": 0,
    "mos": 4.41
   },
   "tachi-pub-quiz-6": {
-   "src": "3162c78e5b",
+   "src": "c59be897a5",
    "cast": "us-f2",
    "engine": "qwen3",
    "text": "Ugh, fine. But if it's Russia, you're both buyin' the next round.",
@@ -34475,13 +34460,10 @@
    "content": 0,
    "sim": 0.783,
    "rtf": 1.847,
-   "cond": "party:light",
-   "condHyp": "Ugh, fine. But if it's Russia, you're both buying the next round.",
-   "condWer": 0,
    "mos": 4.267
   },
   "tachi-pub-quiz-7": {
-   "src": "f48c8c80e2",
+   "src": "781f7e5896",
    "cast": "us-m2",
    "engine": "qwen3",
    "text": "Deal. Writing France.",
@@ -34495,13 +34477,10 @@
    "content": 0,
    "sim": 0.691,
    "rtf": 0.854,
-   "cond": "party:light",
-   "condHyp": "Deal. Writing France.",
-   "condWer": 0,
    "mos": 4.278
   },
   "tachi-pub-quiz-8": {
-   "src": "eb39f944b4",
+   "src": "1a2f7b77b7",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "Quick, quick, they're collecting the answer sheets!",
@@ -34515,9 +34494,6 @@
    "content": 0,
    "sim": 0.739,
    "rtf": 0.939,
-   "cond": "party:light",
-   "condHyp": "Quick! Quick! They're collecting the answer sheets.",
-   "condWer": 0,
    "mos": 4.22
   },
   "tachi-shibuya-dinner-1": {

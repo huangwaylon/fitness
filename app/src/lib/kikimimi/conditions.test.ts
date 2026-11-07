@@ -117,12 +117,12 @@ describe('kikimimi conditions: which clips, and their hashes', () => {
     expect(condOf({})).toBeNull();
   });
 
-  it("a signal call's line that breaks off breaks up, its other lines a plain phone line; a party file's lines over the party, under the speech", () => {
+  it("a signal call's line that breaks off breaks up, its other lines a plain phone line; a party file's lines clean (the game loops the bed under them)", () => {
     const tags = (conditions: string[]) => ({ seed: 1, register: 'service', pragmatic: 'literal', conditions }) as unknown as Parameters<typeof condOf>[0]['tags'];
     expect(condOf({ channel: 'phone', tags: tags(['phone', 'signal']), en: "So the back wheel's... and that's why." })).toEqual(c('signal'));
     expect(condOf({ channel: 'phone', tags: tags(['phone', 'signal']), en: "It's bent." })).toEqual(c('phone'));
     expect(condOf({ channel: 'phone', tags: tags(['phone']), en: 'So that is 090-2861...' })).toEqual(c('phone'));
-    expect(condOf({ tags: tags(['party']), en: 'Okay, so who is bringing what?' })).toEqual({ kind: 'party', level: 'light', under: true });
+    expect(condOf({ tags: tags(['party']), en: 'Okay, so who is bringing what?' })).toBeNull();
     expect(condOf({ tags: tags(['street']) })).toBeNull();
   });
 

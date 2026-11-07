@@ -12,8 +12,8 @@
 // caller's café, before the phone line) and at the listener for a PA (the platform, after the hall).
 //   A line breaking up (`signal`: a call's line that trails off, "the back wheel's... and"): the phone band, then
 // dropouts (silences, and packet-loss stutters: the 20 ms before repeated, fading), then G.726 at 24 kbps (heavy: 16 kbps,
-// with hiss) for the codec's warble. The party bed (reversed talkers of our own clips, glasses, a groove in the next
-// room) under a たちぎき's lines sits under the speech only (`under`: no lead-in or tail), so the lines' offsets hold.
+// with hiss) for the codec's warble. A bed `under` the speech has no lead-in or tail (a clip keeps its length).
+// A たちぎき's lines are mixed clean: the game loops the party bed under the whole conversation.
 import { createHash } from 'node:crypto';
 import { seeded } from '#lib/random.ts';
 import { channelOf, type Bed, type Cond, type Item } from './bank.ts';
@@ -116,14 +116,14 @@ export function condPlan(c: Cond): CondPlan {
 const BREAKS = /\.\.\.|…/;
 
 /** A clip's condition: its own; else a phone or PA channel's light one (a voicemail's when its conditions say so; on
- *  a `signal` call, `signal` for a line that breaks off); else a listening file's `party`, under the speech (a
- *  たちぎき's lines); else none (studio clean; a video call stays clean). */
+ *  a `signal` call, `signal` for a line that breaks off); else none (studio clean; a video call stays clean). A
+ *  listening file tagged `party` (a たちぎき) is mixed clean too: the game loops the party bed under the whole
+ *  conversation (clipPlayer.svelte.ts), so a bed baked under each line would play twice. */
 export function condOf(it: Pick<Item, 'cond' | 'channel' | 'tags'> & { en?: string }): Cond | null {
   if (it.cond) return it.cond;
   const ch = channelOf(it), conds: readonly string[] = it.tags?.conditions ?? [];
   if (ch === 'phone') return { kind: conds.includes('voicemail') ? 'voicemail' : conds.includes('signal') && BREAKS.test(it.en ?? '') ? 'signal' : 'phone', level: 'light' };
   if (ch === 'pa') return { kind: 'pa', level: 'light' };
-  if (conds.includes('party')) return { kind: 'party', level: 'light', under: true };
   return null;
 }
 
