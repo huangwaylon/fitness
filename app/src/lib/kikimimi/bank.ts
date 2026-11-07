@@ -172,9 +172,6 @@ export interface Cond {
   level: 'light' | 'heavy';
   /** A channel's background (a bed kind is its own). */
   bed?: Bed;
-  /** The bed under the speech only, no lead-in or tail: a line of a conversation whose lines overlap (たちぎき), so
-   *  its clip's length and the lines' offsets hold. */
-  under?: true;
 }
 
 /** An item's channel: its own, else from its conditions (a phone or voicemail, a PA, a video call), else face to face. */

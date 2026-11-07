@@ -80,10 +80,6 @@ describe('kikimimi conditions: the plan per condition', () => {
     expect(condPlan(c('phone', 'light', 'street')).bed).toEqual({ id: 'street', snr: 15, at: 'source' });
     expect(condPlan(c('pa', 'heavy', 'station')).bed).toEqual({ id: 'station', snr: 10, at: 'listener' });
     expect(() => condPlan(c('cafe', 'light', 'street'))).toThrow();
-    // under the speech only: no lead-in or tail (a たちぎき's line keeps its length), a plan of its own
-    const u = condPlan({ kind: 'party', level: 'light', under: true });
-    expect([u.pre, u.post, u.bed]).toEqual([0, 0, { id: 'party', snr: 15, at: 'listener' }]);
-    expect(condSource('abcdef0123', u)).not.toBe(condSource('abcdef0123', condPlan(c('party'))));
   });
 
   it('every kind and level has a plan with its loose WER bound and a key', () => {
