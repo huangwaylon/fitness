@@ -341,7 +341,8 @@ test('fish shadows: one teardrop each, NH’s sizes reading apart (a clownfish t
   const len = async (id: string) => {
     await open(page, `&critter=${id}`);
     await expect(page.locator('[data-critter=fish] .fin svg')).toHaveCount(1);
-    return (await page.locator('[data-critter=fish] .fin').boundingBox())!.width;
+    // (its own width: its box on screen turns with its heading and wags)
+    return page.locator('[data-critter=fish] .fin').evaluate((el) => parseFloat(getComputedStyle(el).width));
   };
   const small = await len('clownfish'), big = await len('whale-shark');
   expect(big / small).toBeGreaterThan(2.8); // 46u against 14u
