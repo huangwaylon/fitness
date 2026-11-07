@@ -97,6 +97,9 @@ export const DEVICE = {
   says: 'island.says',
   /** localStorage: `[code…]`: the tent's pieces I picked last, newest first (tent/TentEdit.svelte's さいきん tab). */
   tentRecent: 'island.tentRecent',
+  /** localStorage: `{ <food id>: <category> }`: the latest logged foods' categories from the catalog (components/food/foodUi.ts
+   *  loggedCat), so ごはん's rows show their tiles on open, before the catalog is in. */
+  foodCats: 'island.foodCats',
   /** localStorage: `{ [who]: day }`: the Tokyo day this phone last showed the tent's HHA letter, by who I am (the demo's
    *  tabs share it; tent/TentRoom.svelte). */
   tentRated: 'island.tentRated',

@@ -13,18 +13,48 @@ import { loadFoodImages, type FoodImageIndex } from '#lib/food/images.ts';
 import { searchKey } from '#lib/food/text.ts';
 import { formatNum, t } from '#lib/i18n/index.ts';
 import { nextChance } from '#lib/ui-state/retry.ts';
+import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 
 let dbP: Promise<FoodDb> | null = null;
 let ready: FoodDb | null = null;
-/** The food catalog, fetched on the first search of the session (a failure lets the next one try again). */
+const waiting = new Set<(db: FoodDb) => void>();
+/** The food catalog, fetched when the search or an amount first needs it, or at idle once a day is up (foodDbSoon); a
+ *  failure lets the next call try again. */
 export function foodDb(): Promise<FoodDb> {
   return (dbP ??= loadFoodDb(nextChance).then(
-    (db) => (ready = db),
+    (db) => {
+      ready = db;
+      for (const f of waiting) f(db);
+      waiting.clear();
+      return db;
+    },
     (e: unknown) => {
       dbP = null;
       throw e;
     }
   ));
+}
+/** The catalog into `set` once it is in, whoever loads it (never loading it itself); a component's $effect. */
+export function whenFoodDb(set: (db: FoodDb) => void): () => void {
+  if (ready) {
+    set(ready);
+    return () => {};
+  }
+  waiting.add(set);
+  return () => void waiting.delete(set);
+}
+/** After the sheet's open (its 90 ms wait and 280 ms zoom) and once the page is idle (Safari: no requestIdleCallback),
+ *  the catalog, never on the open's path: the rows' tiles and 最新の値にする come with it, and it is the search's. */
+const OPEN_MS = 600;
+export function foodDbSoon(): () => void {
+  if (ready || dbP) return () => {};
+  let idle = 0;
+  const go = () => void foodDb().catch(() => {});
+  const wait = setTimeout(() => (typeof requestIdleCallback === 'function' ? (idle = requestIdleCallback(go, { timeout: 2000 })) : go()), OPEN_MS);
+  return () => {
+    clearTimeout(wait);
+    if (idle) cancelIdleCallback(idle);
+  };
 }
 /** The pictures' index into `set` once it is in (none: every food keeps its tile); a component's $effect. */
 export function withImages(set: (ix: FoodImageIndex) => void): () => void {
@@ -85,6 +115,31 @@ export const catalogOf = itemById;
 
 /** A food's category tile (FoodThumb) by its id: the catalog item's, a recipe's レシピ (`c…`), else none (その他). */
 export const catOf = (db: FoodDb | null, id: string): string | undefined => catalogOf(db, id)?.cat ?? (/^c[0-9a-z]+$/.test(id) ? 'レシピ' : undefined);
+
+/** The latest logged foods' categories this phone has seen in the catalog (sync/storage.ts DEVICE.foodCats), at most: a
+ *  logged row's tile on open, before the catalog is in. */
+const CATS_KEPT = 500;
+let cats: Map<string, string> | null = null;
+let catsSave: ReturnType<typeof setTimeout> | undefined;
+function seenCats(): Map<string, string> {
+  if (cats) return cats;
+  const kept = readJson<unknown>(localKV(), DEVICE.foodCats);
+  cats = new Map(kept && typeof kept === 'object' ? Object.entries(kept).filter((e): e is [string, string] => typeof e[1] === 'string') : []);
+  return cats;
+}
+/** A logged row's tile: catOf, remembered on this phone; the catalog not in yet, as remembered (none: その他 till it is). */
+export function loggedCat(db: FoodDb | null, id: string): string | undefined {
+  const c = catOf(db, id), seen = seenCats();
+  if (!db || !c || seen.get(id) === c) return c ?? seen.get(id);
+  seen.delete(id);
+  seen.set(id, c);
+  for (const k of seen.keys()) if (seen.size > CATS_KEPT) seen.delete(k);
+  catsSave ??= setTimeout(() => {
+    catsSave = undefined;
+    writeJson(localKV(), DEVICE.foodCats, Object.fromEntries(seenCats()));
+  }, 1000);
+  return c;
+}
 
 /** A name's head: up to its first space or bracket (「鶏もも肉 皮つき 生」 → 鶏もも肉). */
 const nameHead = (s: string): string => s.trim().split(/[\s　（(［[]/)[0];

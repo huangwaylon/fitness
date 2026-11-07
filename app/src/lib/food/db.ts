@@ -46,6 +46,12 @@ export async function addDataset(db: FoodDb, meta: FoodIndex['datasets'][number]
   }
 }
 
+/** A product's barcode back from its id (`off:<jan>`; scripts/food-data.ts drops it), for the search's keys. */
+export function withJan(d: Dataset): Dataset {
+  for (const it of d.items) if (it.jan === undefined && it.id.startsWith('off:')) it.jan = it.id.slice(4);
+  return d;
+}
+
 /** The catalog's item of an id, if the catalog is in and has it. */
 export const itemById = (db: FoodDb | null, id: string): Item | undefined => db?.byId.get(id);
 

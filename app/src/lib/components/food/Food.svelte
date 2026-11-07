@@ -52,7 +52,7 @@
   import FoodRecipe from './FoodRecipe.svelte';
   import FoodCustom from './FoodCustom.svelte';
   import {
-    customDraft, customItem, customOf, DAYS, foodDb, foodDbNow, foodLast, inState, itemOf, portionLabel, recentOf, recipeItem,
+    customDraft, customItem, customOf, DAYS, foodDb, foodDbNow, foodDbSoon, foodLast, whenFoodDb, inState, itemOf, portionLabel, recentOf, recipeItem,
     quickDraft, quickSnap, recipeServing, sameItems, servingOnly, type CustomDraft, type RecipeDraft
   } from './foodUi.ts';
 
@@ -493,17 +493,18 @@
   }
 
   // ---- 最新の値にする (fresh.ts): my own day's entries (not a いつもの's) whose food has changed since they were logged
-  // (the data fixed, the recipe or custom food edited). The catalogue loads for it once my day shows an entry of it,
-  // a moment after the day (it is the search's data too); the products when they come. Never updated by itself.
+  // (the data fixed, the recipe or custom food edited). The catalogue comes once a day with an entry of it shows, at
+  // idle after the open (foodUi.ts foodDbSoon: never on the open's path; it is the search's data too, and the rows'
+  // tiles); the products when they come. Never updated by itself.
   let catalog = $state.raw<FoodDb | null>(foodDbNow());
   let catalogRev = $state(0);
+  $effect(() => (catalog ? undefined : whenFoodDb((db) => {
+    catalog = db;
+    void db.more.then(() => catalogRev++);
+  })));
   $effect(() => {
-    if (catalog || !mine || !day?.entries.some((e) => !e.rep && !/^(recipe|custom):/.test(e.f.id))) return;
-    const wait = setTimeout(() => foodDb().then((db) => {
-      catalog = db;
-      void db.more.then(() => catalogRev++);
-    }, () => {}), 600);
-    return () => clearTimeout(wait);
+    if (catalog || !day?.entries.some((e) => !/^(recipe|custom):/.test(e.f.id))) return;
+    return foodDbSoon();
   });
   /** Entry id → its food as it is now, for my day's entries whose food changed. */
   const fresh = $derived.by(() => {
