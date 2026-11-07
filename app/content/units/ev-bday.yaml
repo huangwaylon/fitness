@@ -406,6 +406,7 @@ items:
     note: "at my は「アッマイ」と つながる。plate と 区別"
     choices: ["at my place", "at my plate", "and my place"]
     answer: 0
+    ctx: "誕生日会の場所を決めています"
     cja: ["うちで", "私のお皿で", "そして私の家"]
     why: "at my はつながって「アッマイ」。place の最後は「ス」で、plate の「ト」とは違う。パーティーの場所なので「うちで」。"
     focus: "at my place"
@@ -422,6 +423,7 @@ items:
     note: "bring anything が つながる"
     choices: [anything, everything, nothing]
     answer: 0
+    ctx: "誕生日会に招かれた友だちが"
     cja: ["何か", "全部", "何も"]
     why: "bring anything はつながって「ブリンゲニシン」のように聞こえる。Should I bring〜? と聞くときは anything が自然。"
     focus: anything
@@ -437,6 +439,7 @@ items:
     note: "chip in は「チッピン」"
     choices: ["chip in", "cheap in", "ship in"]
     answer: 0
+    ctx: "同僚へのプレゼントを相談中"
     cja: ["お金を出し合う", "安く入る", "船で送る"]
     why: "chip in はつながって「チッピン」。chip の「イ」は短く、cheap の長い「イー」とは違う。みんなでお金を出す意味。"
     focus: "chip in"
@@ -452,6 +455,7 @@ items:
     note: "Here's to と Here's two は 同じ 音。意味で 判断"
     choices: ["Here's to", "Here's two", "He's two"]
     answer: 0
+    ctx: "誕生日会の途中、友だちが"
     cja: ["〜に乾杯", "ここに2つ", "彼は2歳"]
     why: "to と two は同じ音。Here's to＋人の名前は「〜に乾杯」なので、意味で判断する。"
     focus: "Here's to"
@@ -467,6 +471,7 @@ items:
     note: "It's a surprise が ひと続き"
     choices: [surprise, supplies, sunrise]
     answer: 0
+    ctx: "誕生日会の計画を相談中"
     cja: ["サプライズ", "用品", "日の出"]
     why: "It's a surprise はひと続きで「イッツァサプライズ」。keep it quiet（ないしょにね）とも合う。"
     focus: surprise
@@ -482,6 +487,7 @@ items:
     note: "wouldn't は t が 消え「ウドゥン」。n で would と 区別"
     choices: ["wouldn't", would, "won't"]
     answer: 0
+    ctx: "誕生日会に誘ったら、友だちが"
     cja: ["〜しないだろう", "〜するだろう", "〜しない"]
     why: "wouldn't は t が消えて「ウドゥン」。最後の n の音で would と区別する。I wouldn't miss it は「絶対行く」。"
     focus: "wouldn't"

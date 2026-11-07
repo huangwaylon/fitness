@@ -265,14 +265,16 @@ export const oneClipBank = (clips: Readonly<Record<string, unknown>>, bank: read
 
 /** levels/'s files (paths under it → contents) for these clips and word timings, these units (app/content/units/:
  *  a unit that fails its checks stops it; its warnings go to `warn`), these packs (packs.json: a clip in none stops it)
- *  these bedtime serials (content/listen/story/) and these listening files (content/listen/: a problem stops it). The
- *  bank's US-lint hits are warnings (wave 2 §3.4, until B7 clears them). */
+ *  these bedtime serials (content/listen/story/) and these listening files (content/listen/: a problem stops it). So
+ *  does a US-lint hit in the bank (wave 2 §3.4; B7 cleared the last). */
 export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>, sources: readonly UnitSource[] = readUnits(), packs: Readonly<Packs> = readPacks(), warn?: (w: string) => void, stories: readonly StorySource[] = readStories(), listen: readonly ListenSource[] = readListen(), pairs: unknown = readPairs()): Map<string, string> {
   const out = new Map<string, string>();
   const places = clipPlaces(packs);
   const BANK = joined(clips), check = checkUnitSources(sources, clips, BANK);
   if (check.errors.length) throw new Error(`kikimimi: the units don't check:\n${check.errors.join('\n')}`);
-  if (warn) for (const w of [...check.warnings, ...BANK.flatMap((it) => usProblems(it).map((p) => `${it.id}: ${p}`))]) warn(w);
+  const us = BANK.flatMap((it) => usProblems(it).map((p) => `${it.id}: ${p}`));
+  if (us.length) throw new Error(`kikimimi: the bank isn't US English:\n${us.join('\n')}`);
+  if (warn) for (const w of check.warnings) warn(w);
   const dialogues = dialoguesVoiced(clips, BANK), mix = mixFor(dialogues);
   const units: Index['units'] = {};
   const levels = [...new Set(BANK.map((it) => it.lv))].sort((a, b) => a - b);

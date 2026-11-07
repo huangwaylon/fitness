@@ -383,6 +383,7 @@ items:
     cast: us-m3
     choices: [ grab lunch, grab a bunch, have lunch ]
     answer: 0
+    ctx: "職場の廊下で、同僚が"
     cja: ["ランチでも行く", "たくさんつかむ", "ランチを食べる"]
     why: "grab lunch は「さっとランチに行く」のくだけた言い方。have lunch とは最初の音（グ）で区別する。"
     focus: grab lunch
@@ -400,6 +401,7 @@ items:
     cast: us-f2
     choices: [ Are you going to go, Are you going, Did you go ]
     answer: 0
+    ctx: "職場で、同僚が声をかけてきました"
     cja: ["行くつもり？", "行く？", "行った？"]
     why: "Are you going to go はくずれて「アーヤガナゴー」。gonna の後に go まで聞こえる。金曜の予定なので、過去の Did you go は合わない。"
     focus: Are you going to go
@@ -416,6 +418,7 @@ items:
     cast: us-m1
     choices: [ Keeping busy, Keeping fit, Getting busy ]
     answer: 0
+    ctx: "久しぶりに、職場で知り合いに会いました"
     cja: ["忙しくしてる", "体を鍛えてる", "忙しくなってきた"]
     why: "Keeping busy? は「最近どう？」の決まり文句。後半の giving you a break（休ませてくれる）と合うのは busy。"
     focus: Keeping busy
@@ -432,6 +435,7 @@ items:
     cast: us-m5
     choices: [ Thursday, Tuesday, Saturday ]
     answer: 0
+    ctx: "職場で、同僚が予定を聞いてきます"
     cja: ["木曜日", "火曜日", "土曜日"]
     why: "Thursday は舌を歯にあてる th の音、Tuesday は「チューズ」。曜日つきの誘いは本気のことが多い。"
     focus: Thursday

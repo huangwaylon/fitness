@@ -289,6 +289,7 @@ items:
     cast: us-m5
     choices: [ can't, can, couldn't ]
     answer: 0
+    ctx: "ホテルのフロントで、スタッフが"
     cja: [ "〜できない", "〜できる", "〜できなかった" ]
     why: "can't は強くはっきり「キャン(ト)」、can は弱く「クン」。I'm afraid は悪い知らせの合図なので、ここは can't。couldn't は過去の言い方です。"
     focus: can't
@@ -304,6 +305,7 @@ items:
     cast: us-f4
     choices: [ send someone up, sent someone up, send someone out ]
     answer: 0
+    ctx: "部屋から、フロントに電話しました"
     cja: [ "人を部屋に向かわせる", "人を部屋に向かわせた", "人を外に出す" ]
     why: "I'll の後なので現在形の send。sent なら過去です。up は「客室へ」、out は「外へ」で、意味が変わります。"
     focus: send someone up
@@ -320,6 +322,7 @@ items:
     cast: us-m6
     choices: [ In the meantime, In the morning, In a minute ]
     answer: 0
+    ctx: "チェックインの時、フロントで"
     cja: [ "それまでの間", "午前中に", "すぐに" ]
     why: "in the meantime は「それまでの間」。部屋や修理を待つ間の提案でよく使います。in the morning、in a minute は始まりが同じでも後ろが違います。"
     focus: In the meantime
@@ -336,6 +339,7 @@ items:
     cast: us-f4
     choices: [ would've, would, wouldn't ]
     answer: 0
+    ctx: "ホテルに着くと、スタッフが"
     cja: [ "〜したはずだった", "〜するだろう", "〜しないだろう" ]
     why: "would've は弱く「ウダヴ」と聞こえ、「電話するつもりだったが、しなかった」。but の後で、番号がつながらなかった理由を話しています。"
     focus: would've
@@ -351,6 +355,7 @@ items:
     cast: us-m4
     choices: [ till Sunday, this Sunday, on Sunday ]
     answer: 0
+    ctx: "ホテルに、延泊を頼みました"
     cja: [ "日曜まで", "今度の日曜", "日曜に" ]
     why: "till Sunday は「日曜までずっと」。今夜から日曜まで満室ということです。on Sunday なら日曜の一日だけになります。"
     focus: till Sunday
@@ -366,6 +371,7 @@ items:
     cast: us-m5
     choices: [ waive, raise, charge ]
     answer: 0
+    ctx: "フロントで、追加料金の話をしています"
     cja: [ "免除する", "値上げする", "請求する" ]
     why: "waive は「免除する」で、this time（今回は）とよく一緒に使います。raise（値上げ）や charge（請求）だと逆の意味になります。"
     focus: waive
