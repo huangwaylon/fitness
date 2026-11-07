@@ -1,0 +1,60 @@
+// The island's startup, cold, N runs (a sibling of leak-probe.ts): each run a fresh
+// context (no service worker, nothing cached), its time to the first contentful paint, to window.__world3d, to the
+// island's first frame and to loaded(); over its first 10 s the main thread's gaps (rAF intervals over 50 ms, their
+// blocking time past 50 ms, before and after the first frame), Chromium's long tasks, and the engine's frames; then
+// the medians. WebKit as an iPhone 15 (default), or Chromium as an iPhone 13 (THROTTLE=4: its CPU 4x slower). A
+// desktop's numbers, for an A/B of two builds (two serve-build ports): the phone's are the iOS Simulator's
+// (npm run ios:check) and the phone's own. Never in CI.
+//   npm run perf:start -- <port> [runs] [webkit|chromium]     (the build served: node scripts/serve-build.ts <port>)
+import { chromium, devices, webkit } from '@playwright/test';
+
+const [port = '4693', runs = '5', eng = 'webkit'] = process.argv.slice(2);
+const Q = process.env.Q ?? '?demo&date=2026-11-04T12:00';
+const browser = await (eng === 'chromium' ? chromium : webkit).launch();
+type Row = Record<string, number | string>;
+const out: Row[] = [];
+for (let i = 0; i < Number(runs); i++) {
+  const ctx = await browser.newContext({ ...devices[eng === 'chromium' ? 'iPhone 13' : 'iPhone 15'], serviceWorkers: 'block' });
+  const page = await ctx.newPage();
+  if (eng === 'chromium' && process.env.THROTTLE) await (await ctx.newCDPSession(page)).send('Emulation.setCPUThrottlingRate', { rate: Number(process.env.THROTTLE) });
+  await page.addInitScript(() => {
+    type W3 = { stats(): { frames: number }; loaded(): boolean };
+    const P = { raf: [] as number[], lt: [] as number[], first: 0, loaded: 0, w0: 0, done: false, frames: 0 };
+    (window as unknown as { __perf: typeof P }).__perf = P;
+    try {
+      new PerformanceObserver((l) => l.getEntries().forEach((e) => P.lt.push(e.duration))).observe({ type: 'longtask', buffered: true });
+    } catch {
+      /* WebKit: no long tasks */
+    }
+    const loop = (t: number) => {
+      P.raf.push(t);
+      const w = (window as unknown as { __world3d?: W3 }).__world3d;
+      if (w) {
+        P.w0 ||= t;
+        if (!P.first && w.stats().frames > 0) P.first = t;
+        if (!P.loaded && w.loaded()) P.loaded = t;
+      }
+      if (t < 10_000) requestAnimationFrame(loop);
+      else (P.done = true), (P.frames = w?.stats().frames ?? 0);
+    };
+    requestAnimationFrame(loop);
+  });
+  await page.goto(`http://127.0.0.1:${port}/${Q}`);
+  await page.waitForFunction(() => (window as unknown as { __perf: { done: boolean } }).__perf.done, null, { timeout: 60_000 });
+  const r = await page.evaluate(() => {
+    const P = (window as unknown as { __perf: { raf: number[]; lt: number[]; first: number; loaded: number; w0: number; frames: number } }).__perf;
+    const gaps = P.raf.slice(1).map((t, i) => [P.raf[i], t - P.raf[i]]).filter(([, d]) => d > 50);
+    const block = (from: number) => Math.round(gaps.filter(([t]) => t >= from).reduce((s, [, d]) => s + d - 50, 0));
+    return {
+      fcp: Math.round(performance.getEntriesByName('first-contentful-paint')[0]?.startTime ?? 0), world: Math.round(P.w0), first: Math.round(P.first), loaded: Math.round(P.loaded),
+      gaps50: gaps.length, maxGap: Math.round(Math.max(0, ...gaps.map(([, d]) => d))), block: block(0), blockAfterFirst: block(P.first),
+      longTasks: Math.round(P.lt.reduce((s, d) => s + d, 0)), frames: P.frames
+    };
+  });
+  out.push(r);
+  console.log(JSON.stringify(r));
+  await ctx.close();
+}
+await browser.close();
+const median = (k: string) => out.map((o) => Number(o[k])).sort((a, b) => a - b)[out.length >> 1];
+console.log(`median (${eng}, ${out.length} runs):`, JSON.stringify(Object.fromEntries(Object.keys(out[0]).map((k) => [k, median(k)]))));
