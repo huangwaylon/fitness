@@ -640,6 +640,7 @@ lessons:
   check: [wg-rsvp-call, wg-r-raise, wg-m-save-date, wg-n-photos, wg-couch-joke, wg-r-how-know]
   oto: [wg-w-tie-knot, wg-w-happier, wg-w-raise, wg-w-registry, wg-w-dress-code, wg-w-rsvp-first]
   jissen: [wg-fast-order, wg-fast-band, wg-fast-r-roommate, wg-fast-n-afterparty, wg-fast-chairs, wg-fast-m-leave]
+  tiles: [tile-wed-tying-the-knot, tile-wed-couldnt-be-happier, tile-wed-raise-your-glasses, tile-wed-rsvp-by-the-first, tile-wed-bride-and-groom, tile-wed-no-tux]
   call: [call-wedding-weekend]
 tiers:
   wg-invite-news:

@@ -1,0 +1,612 @@
+# ことば タイル S2 もり (c): the おと tiles of wave 2b's seven units (docs/curriculum-wave2.md §3.1, curriculum-units.md
+# §16), six each, built from the units' own sentences and wired into each unit's `lessons.tiles`: ev-wedding, fd-dinner
+# (chains), hl-doctor (stress), hm-repair (h-dropping), sh-phone (assimilation), fr-catchup (self-repair), mc-tickets
+# (numbers).
+schema: 1
+unit: s2-tile-c
+game: tile
+stage: 3
+track: life
+seeds: [15, 18, 22, 24, 30, 54, 57]
+features: { primary: chain, review: h-drop }
+cando: "結婚式・食事・病院・修理・お店の 会話の 文を、くずれた 音ごと 組み立てられる"
+status: draft
+items:
+  # ---- ev-wedding: 結婚式に 出る ----
+  - kind: tile
+    id: tile-wed-tying-the-knot
+    speaker: punchy
+    en: "I can't believe they're tying the knot!"
+    tts: "I can't believe they're tyin' the knot!"
+    ja: "あの二人が結婚するなんて信じられない！"
+    tiles: ["I", "can't", "believe", "they're", "tying", "the", "knot"]
+    decoys: ["can", "not"]
+    marks: [[drop, "tying", "g"], [stress, "can't"]]
+    note: "tie the knot＝結婚する"
+    ctx: "結婚式の招待状を見て、友だちが"
+    why: "can't は「キャーン」と長く強く、can ではない。knot（結び目）は not と同じ音だが、the の後なので名詞。tie the knot＝結婚する。"
+    tags: { seed: 54, register: friend, pragmatic: attitude, features: [intonation, idiom] }
+
+  - kind: tile
+    id: tile-wed-couldnt-be-happier
+    speaker: sterling
+    en: "I couldn't be happier, honestly."
+    tts: "I couldn' be happier, honestly."
+    ja: "正直、これ以上ないくらい幸せだよ。"
+    tiles: ["I", "couldn't", "be", "happier", "honestly"]
+    decoys: ["could", "happy"]
+    marks: [[say, "couldn't", "couldn'"]]
+    note: "couldn't be happier＝最高に幸せ"
+    ctx: "披露宴で、新郎が友人に話しています"
+    why: "couldn't の t は落ちるが、n は残る。could be happier なら「もっと幸せになれる」で意味が逆。happier（ハピア）で happy ではない。"
+    tags: { seed: 54, register: friend, pragmatic: formula, features: [intonation, elision] }
+
+  - kind: tile
+    id: tile-wed-raise-your-glasses
+    speaker: marshal
+    en: "Okay, everybody, raise your glasses!"
+    tts: "Okay, everybody, raise yer glasses!"
+    ja: "さあ、みなさん、グラスを上げて！"
+    tiles: ["Okay", "everybody", "raise", "your", "glasses"]
+    decoys: ["race", "you're"]
+    marks: [[say, "your", "yer"]]
+    note: "raise your glasses＝乾杯の合図"
+    ctx: "披露宴で、乾杯の音頭が始まります"
+    why: "raise は「レイズ」と z の音で、race（レイス）ではない。your は「ヤ」と弱く、you're ではない。グラスを上げての乾杯の合図。"
+    tags: { seed: 54, register: friend, pragmatic: ritual, conditions: [party], features: [weak-form] }
+
+  - kind: tile
+    id: tile-wed-rsvp-by-the-first
+    speaker: whitney
+    en: "Can you RSVP by the first?"
+    tts: "Can ya R S V P by the first?"
+    ja: "1日までに出欠の返事をもらえる？"
+    tiles: ["Can", "you", "RSVP", "by", "the", "first"]
+    decoys: ["fast", "buy"]
+    marks: [[say, "you", "ya"], [say, "RSVP", "R S V P"]]
+    note: "RSVP＝出欠の返事"
+    ctx: "結婚する友だちが、電話で頼んでいます"
+    why: "RSVP は1字ずつ「アーエスヴィーピー」。by the first＝1日までに。first（ファースト）は fast と母音がちがう。buy（買う）ではない。"
+    tags: { seed: 54, register: friend, pragmatic: literal, conditions: [phone], features: [weak-form, numbers] }
+
+  - kind: tile
+    id: tile-wed-bride-and-groom
+    speaker: kid-cat
+    en: "So, how do you know the bride and groom?"
+    tts: "So, how d'you know the bride an' groom?"
+    ja: "で、新郎新婦とはどういうご関係？"
+    tiles: ["So", "how", "do", "you", "know", "the", "bride", "and", "groom"]
+    decoys: ["did", "bright"]
+    marks: [[say, "do you", "d'you"], [say, "and", "an'"]]
+    note: "the bride and groom＝新郎新婦"
+    ctx: "披露宴で、同じテーブルの人が"
+    why: "do you は「ジュ」と短い。did なら過去の話。bride（花嫁）は d で終わり、bright ではない。and は「ン」と弱い。"
+    tags: { seed: 54, register: stranger, pragmatic: ritual, conditions: [party], features: [weak-form, yod] }
+
+  - kind: tile
+    id: tile-wed-no-tux
+    speaker: diana
+    en: "So, no jeans, but you don't need a tux either."
+    tts: "So, no jeans, but ya don't need a tux either."
+    ja: "だからジーンズはだめ。でもタキシードまではいらない。"
+    tiles: ["So", "no", "jeans", "but", "you", "don't", "need", "a", "tux", "either"]
+    decoys: ["won't", "tax"]
+    marks: [[say, "you", "ya"], [stress, "no jeans"]]
+    note: "tux＝タキシード。そこまでは不要"
+    ctx: "友だちが、結婚式の服装を説明しています"
+    why: "don't は「ドウン」で、won't（ウォウン）とはちがう。tux（タックス）はタキシードの略。tax（税金）とは母音がちがう。"
+    tags: { seed: 54, register: friend, pragmatic: literal, features: [weak-form, vowel] }
+
+  # ---- fd-dinner: 食事で 決める ----
+  - kind: tile
+    id: tile-din-feel-like-tonight
+    speaker: cherry
+    en: "What do you feel like tonight?"
+    tts: "Whaddaya feel like tonight?"
+    ja: "今夜は何が食べたい？"
+    tiles: ["What", "do", "you", "feel", "like", "tonight"]
+    decoys: ["did", "fill"]
+    marks: [[say, "What do you", "Whaddaya"]]
+    note: "What do you feel like?＝何が食べたい？"
+    ctx: "夕方、友だちと夕食を決めています"
+    why: "Whaddaya は What do you。did you なら過去の話。feel like＝〜の気分。fill（満たす）は短い「イ」。"
+    tags: { seed: 18, register: friend, pragmatic: literal, features: [chain] }
+
+  - kind: tile
+    id: tile-din-nuts-in-it
+    speaker: kid-cat
+    en: "Does it have nuts in it?"
+    tts: "Does it have nuts innit?"
+    ja: "これ、ナッツ入ってますか？"
+    tiles: ["Does", "it", "have", "nuts", "in", "it"]
+    decoys: ["Is", "not"]
+    marks: [[say, "in it", "innit"], [link, "Does it"]]
+    note: "in it は「イニッ」とつながる"
+    ctx: "レストランで、アレルギーのある客が"
+    why: "in it は「イニッ」と一続き。nuts（ナッツ）は not とちがい s で終わる。Does it have～? の質問で、Is ではない。"
+    tags: { seed: 18, register: service, pragmatic: literal, features: [chain, linking] }
+
+  - kind: tile
+    id: tile-din-share-a-few
+    speaker: judy
+    en: "Let's share a few plates."
+    tts: "Let's sharea few plates."
+    ja: "何皿かシェアしよう。"
+    tiles: ["Let's", "share", "a", "few", "plates"]
+    decoys: ["chair", "the"]
+    marks: [[link, "share a few"]]
+    note: "share a few は「シェアラフュー」"
+    ctx: "レストランで、友だちが注文の仕方を提案しています"
+    why: "share a few は「シェアラ」とつながる。chair（チェア）ではない。a few plates＝何皿か。the ではない。"
+    tags: { seed: 18, register: friend, pragmatic: literal, features: [linking, chain] }
+
+  - kind: tile
+    id: tile-din-good-with-whatever
+    speaker: punchy
+    en: "I'm good with whatever."
+    tts: "I'm goodwith whatever."
+    ja: "何でもいいよ。"
+    tiles: ["I'm", "good", "with", "whatever"]
+    decoys: ["I", "water"]
+    marks: [[link, "good with whatever"]]
+    note: "I'm good with whatever＝何でもいいよ"
+    ctx: "何を食べるか聞かれた友だちが"
+    why: "good with whatever は一続きで、whatever の t は弾む。water（ウォーター）ではない。I'm good with～＝〜で大丈夫、で「何でもいい」。"
+    tags: { seed: 18, register: friend, pragmatic: hedge, features: [linking, flap] }
+
+  - kind: tile
+    id: tile-din-split-it
+    speaker: kid-cat
+    en: "Should we just split it?"
+    tts: "Should we jus' splid it?"
+    ja: "半分こしようか？"
+    tiles: ["Should", "we", "just", "split", "it"]
+    decoys: ["Shouldn't", "spit"]
+    marks: [[drop, "just", "t"], [say, "split it", "splid it"]]
+    note: "split it は「スプリディッ」"
+    ctx: "デザートを前に、友だちが"
+    why: "split の t は弾んで「スプリディ」。spit（つばを吐く）ではない。Shouldn't なら n と t が残る。just の t は落ちる。"
+    tags: { seed: 18, register: friend, pragmatic: literal, features: [flap, elision] }
+
+  - kind: tile
+    id: tile-din-mood-for-burgers
+    speaker: punchy
+    en: "I'm kind of in the mood for burgers."
+    tts: "I'm kinda in the mood fer burgers."
+    ja: "なんかハンバーガーの気分なんだよね。"
+    tiles: ["I'm", "kind", "of", "in", "the", "mood", "for", "burgers"]
+    decoys: ["a", "food"]
+    marks: [[say, "kind of", "kinda"], [say, "for", "fer"]]
+    note: "in the mood for＝〜の気分"
+    ctx: "夕食に何を食べるか、友だちが言っています"
+    why: "kind of は「カインダ」。in the mood for＝〜が食べたい気分。mood（ムード）は food とは最初の音がちがう。for は「ファ」と弱い。"
+    tags: { seed: 18, register: friend, pragmatic: hedge, features: [kinda, chain] }
+
+  # ---- hl-doctor: 診察で ----
+  - kind: tile
+    id: tile-doc-on-and-off
+    speaker: bea
+    en: "It's been on and off all week."
+    tts: "It's been on an' off all week."
+    ja: "今週ずっと、出たり治まったりなんです。"
+    tiles: ["It's", "been", "on", "and", "off", "all", "week"]
+    decoys: ["in", "of"]
+    marks: [[say, "and", "an'"], [link, "on and off"], [stress, "on off"]]
+    note: "on and off＝出たり引いたり"
+    ctx: "診察室で、患者が症状を話しています"
+    why: "on and off は「オネノフ」と一続きで、on と off が強い。and は「ン」と弱く in とまぎらわしい。off（オフ）で of ではない。"
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress, linking] }
+
+  - kind: tile
+    id: tile-doc-how-long
+    speaker: phoebe
+    en: "And how long has this been going on?"
+    tts: "An' how long has this been goin' on?"
+    ja: "それで、これはいつから続いていますか？"
+    tiles: ["And", "how", "long", "has", "this", "been", "going", "on"]
+    decoys: ["is", "in"]
+    marks: [[say, "And", "An'"], [drop, "going", "g"], [stress, "long"]]
+    note: "how long has this been going on?＝いつから？"
+    ctx: "診察室で、看護師が問診をしています"
+    why: "how long が強く、期間を聞いている。has this been は弱く速い。is ではない。going on＝続いている。in ではない。"
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress, weak-form] }
+
+  - kind: tile
+    id: tile-doc-take-it-easy
+    speaker: julian
+    en: "So, take it easy for a few days. No gym, okay?"
+    tts: "So, take it easy fer a few days. No gym, okay?"
+    ja: "じゃあ数日は無理しないで。ジムはなし、いいね？"
+    tiles: ["So", "take", "it", "easy", "for", "a", "few", "days", "No", "gym", "okay"]
+    decoys: ["four", "the"]
+    marks: [[say, "for", "fer"], [link, "take it easy"], [stress, "No gym"]]
+    note: "take it easy＝無理しないで"
+    ctx: "ねんざの診察の最後に、医者が"
+    why: "take it easy は「テイキディージー」と一続き。for は「ファ」と弱く、four（4）ではない。a few days＝数日。No gym が強い。"
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress, flap] }
+
+  - kind: tile
+    id: tile-doc-hurt-swallow
+    speaker: phoebe
+    en: "Does it hurt when you swallow?"
+    tts: "Does it hurt when ya swallow?"
+    ja: "飲み込むと痛みますか？"
+    tiles: ["Does", "it", "hurt", "when", "you", "swallow"]
+    decoys: ["heart", "follow"]
+    marks: [[say, "you", "ya"], [stress, "hurt swallow"]]
+    note: "Does it hurt when～?＝〜すると痛む？"
+    ctx: "診察室で、医者がのどを診ています"
+    why: "hurt は口をあまり開けない「ハー」で、heart（ハート）は口を大きく開ける。swallow（飲み込む）は s の音で、follow ではない。"
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress, vowel] }
+
+  - kind: tile
+    id: tile-doc-push-it-back
+    speaker: julian
+    en: "Push it back a week, if you can."
+    tts: "Push it back a week, if ya can."
+    ja: "できれば1週間延ばしてください。"
+    tiles: ["Push", "it", "back", "a", "week", "if", "you", "can"]
+    decoys: ["weeks", "can't"]
+    marks: [[link, "Push it back a"], [say, "you", "ya"]]
+    note: "push back＝延期する"
+    ctx: "旅行を控えた患者に、医者が答えています"
+    why: "Push it back a は一続き。push back＝後ろにずらす。a week で1週間なので weeks ではない。文末の can は弱く、can't ではない。"
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress, linking, can-cant] }
+
+  - kind: tile
+    id: tile-doc-keep-an-eye
+    speaker: julian
+    en: "Keep an eye on it, and come back in a week."
+    tts: "Keep an eye on it, an' come back in a week."
+    ja: "様子を見て、1週間後にまた来てください。"
+    tiles: ["Keep", "an", "eye", "on", "it", "and", "come", "back", "in", "a", "week"]
+    decoys: ["I", "at"]
+    marks: [[link, "Keep an eye on it"], [say, "and", "an'"]]
+    note: "keep an eye on it＝様子を見る"
+    ctx: "湿疹を診た医者が、指示を出しています"
+    why: "Keep an eye on it は「キーパナイオニッ」と一続き。eye（目）は I と同じ音。come back in a week＝1週間後にまた来る。at ではない。"
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress, linking] }
+
+  # ---- hm-repair: 修理を 頼む ----
+  - kind: tile
+    id: tile-rep-have-him-call
+    speaker: cyd
+    en: "I'll have him call you."
+    tts: "I'll have 'im call ya."
+    ja: "彼から電話させます。"
+    tiles: ["I'll", "have", "him", "call", "you"]
+    decoys: ["them", "I"]
+    marks: [[say, "him", "'im"], [say, "you", "ya"], [link, "have him"]]
+    note: "have 'im call＝彼に電話させる"
+    ctx: "電話で、大家さんが修理の手配を話しています"
+    why: "have 'im は h が落ちて「ハヴィム」。them なら「エム」。I'll（アル）はこれからの約束で、I だけではない。"
+    tags: { seed: 30, register: neighbour, pragmatic: hedge, conditions: [phone], features: [h-drop] }
+
+  - kind: tile
+    id: tile-rep-tell-her
+    speaker: cyd
+    en: "I'll tell her you called."
+    tts: "I'll tell 'er you called."
+    ja: "あなたから電話があったと、彼女に伝えます。"
+    tiles: ["I'll", "tell", "her", "you", "called"]
+    decoys: ["him", "call"]
+    marks: [[say, "her", "'er"], [link, "tell her"]]
+    note: "'er は her。「テラ」と聞こえる"
+    ctx: "電話で、大家さんが伝言を受けています"
+    why: "tell 'er は h が落ちて「テラ」。him なら「イム」。called の ed は小さいが、電話はもうあったので過去。"
+    tags: { seed: 30, register: neighbour, pragmatic: formula, conditions: [phone], features: [h-drop] }
+
+  - kind: tile
+    id: tile-rep-his-truck
+    speaker: lily
+    en: "Is that his truck out front?"
+    tts: "Is that 'is truck out front?"
+    ja: "表にあるの、彼のトラック？"
+    tiles: ["Is", "that", "his", "truck", "out", "front"]
+    decoys: ["this", "track"]
+    marks: [[say, "his", "'is"], [link, "that his"]]
+    note: "that 'is は「ザディズ」"
+    ctx: "窓の外を見て、住人が"
+    why: "that 'is は h が落ちて「ザディズ」。this なら th で始まる。truck（トラック）は track（線路）と母音がちがう。"
+    scene: living
+    tags: { seed: 30, register: friend, pragmatic: literal, features: [h-drop, flap] }
+
+  - kind: tile
+    id: tile-rep-run-you
+    speaker: tex
+    en: "That's going to run you about two hundred."
+    tts: "That's gonna run ya about two hundred."
+    ja: "だいたい200ドルかかりますね。"
+    tiles: ["That's", "going", "to", "run", "you", "about", "two", "hundred"]
+    decoys: ["want", "rent"]
+    marks: [[say, "going to", "gonna"], [say, "you", "ya"]]
+    note: "run you＝（費用が）かかる"
+    ctx: "修理屋が、見積もりを伝えています"
+    why: "gonna は going to で、want to ではない。run you about＝だいたい〜かかる。run（ラン）は rent（レント）ではない。"
+    scene: living
+    tags: { seed: 30, register: service, pragmatic: literal, features: [gonna, numbers] }
+
+  - kind: tile
+    id: tile-rep-truck-broke-down
+    speaker: cyd
+    en: "Tex's truck broke down, so he can't make it today."
+    tts: "Tex's truck broke down, so 'e can't make it today."
+    ja: "テックスのトラックが故障して、今日は来られないって。"
+    tiles: ["Tex's", "truck", "broke", "down", "so", "he", "can't", "make", "it", "today"]
+    decoys: ["she", "can"]
+    marks: [[say, "he", "'e"], [stress, "can't"]]
+    note: "so 'e は「ソウイ」。h が落ちる"
+    ctx: "電話で、大家さんが悪い知らせを伝えています"
+    why: "so 'e は he の h が落ちて「ソウイ」。she ではない。can't は「キャーン」と長く強く、can ではない。broke down＝故障した。"
+    tags: { seed: 30, register: neighbour, pragmatic: literal, conditions: [phone], features: [h-drop, can-cant] }
+
+  - kind: tile
+    id: tile-rep-on-his-way
+    speaker: tammy
+    en: "I'll have him text you when he's on his way."
+    tts: "I'll have 'im text ya when 'e's on 'is way."
+    ja: "向かうときに、彼からメッセージを送らせます。"
+    tiles: ["I'll", "have", "him", "text", "you", "when", "he's", "on", "his", "way"]
+    decoys: ["them", "test"]
+    marks: [[say, "him", "'im"], [say, "he's", "'e's"], [say, "his", "'is"]]
+    note: "'im、'e's、'is と h が三つ落ちる"
+    ctx: "修理会社の受付が、電話で説明しています"
+    why: "him, he's, his の h が全部落ちて「ハヴィム」「ウェニーズ」「オニズ」。them ではない。text（テクスト）は test とちがう。"
+    tags: { seed: 30, register: service, pragmatic: literal, conditions: [phone], features: [h-drop] }
+
+  # ---- sh-phone: スマホの トラブル ----
+  - kind: tile
+    id: tile-phn-back-it-up
+    speaker: kid-cat
+    en: "You'd have to back it up first."
+    tts: "You'd hafta back it up first."
+    ja: "まずバックアップを取っていただく必要があります。"
+    tiles: ["You'd", "have", "to", "back", "it", "up", "first"]
+    decoys: ["You", "fast"]
+    marks: [[say, "have to", "hafta"], [link, "back it up"]]
+    note: "back it up＝バックアップを取る"
+    ctx: "携帯ショップで、店員が修理の前に"
+    why: "You'd の d は弱いが「〜する必要があるでしょう」。have to は「ハフタ」。back it up は「バキダップ」と一続き。fast ではなく first。"
+    tags: { seed: 22, register: service, pragmatic: literal, features: [assimilation, linking] }
+
+  - kind: tile
+    id: tile-phn-in-person
+    speaker: audie
+    en: "You have to do it in person."
+    tts: "Ya hafta do it im person."
+    ja: "ご本人が来店していただく必要があります。"
+    tiles: ["You", "have", "to", "do", "it", "in", "person"]
+    decoys: ["had", "on"]
+    marks: [[say, "in person", "im person"], [say, "have to", "hafta"]]
+    note: "in person は「イムパーソン」"
+    ctx: "携帯ショップで、店員が手続きを説明しています"
+    why: "in の n は p の前で m になり「イムパーソン」。on なら「オン」。have to（ハフタ）で、had to（ハッタ）ではない。"
+    tags: { seed: 22, register: service, pragmatic: literal, features: [assimilation, weak-form] }
+
+  - kind: tile
+    id: tile-phn-ten-bucks
+    speaker: punchy
+    en: "It's only ten bucks a month."
+    tts: "It's only tem bucks a month."
+    ja: "月たった10ドルだよ。"
+    tiles: ["It's", "only", "ten", "bucks", "a", "month"]
+    decoys: ["then", "box"]
+    marks: [[say, "ten bucks", "tem bucks"]]
+    note: "ten bucks は「テムバックス」"
+    ctx: "友だちが、スマホの保険をすすめています"
+    why: "ten の n は b の前で m になり「テムバックス」。then ではない。bucks＝ドル。box（ボックス）とは母音がちがう。"
+    tags: { seed: 22, register: friend, pragmatic: literal, features: [assimilation, numbers] }
+
+  - kind: tile
+    id: tile-phn-case-with-that
+    speaker: kid-cat
+    en: "Would you like a case with that?"
+    tts: "Wouldja like a case with that?"
+    ja: "ケースもご一緒にいかがですか？"
+    tiles: ["Would", "you", "like", "a", "case", "with", "that"]
+    decoys: ["Do", "cash"]
+    marks: [[say, "Would you", "Wouldja"], [link, "like a"]]
+    note: "Wouldja＝Would you。d と y が混ざる"
+    ctx: "携帯ショップのレジで、店員が"
+    why: "Would you は d と y が混ざって「ウジャ」。Do you ではない。case（ケース）は cash（キャッシュ）と最後の音がちがう。"
+    tags: { seed: 22, register: service, pragmatic: formula, features: [assimilation, yod] }
+
+  - kind: tile
+    id: tile-phn-why-dontcha
+    speaker: audie
+    en: "Why don't you try restarting it?"
+    tts: "Why doncha try restartin' it?"
+    ja: "再起動してみたらどうですか？"
+    tiles: ["Why", "don't", "you", "try", "restarting", "it"]
+    decoys: ["didn't", "starting"]
+    marks: [[say, "don't you", "doncha"], [drop, "restarting", "g"]]
+    note: "Why doncha～?＝〜してみたら？"
+    ctx: "携帯ショップで、店員がまず提案しています"
+    why: "don't you は t と y が混ざって「ドンチャ」。didn't ではない。理由ではなく提案。restarting（再起動）で、starting ではない。"
+    tags: { seed: 22, register: service, pragmatic: indirect, features: [assimilation] }
+
+  - kind: tile
+    id: tile-phn-green-button
+    speaker: kid-cat
+    en: "Just tap the green button."
+    tts: "Just tap the greem button."
+    ja: "緑のボタンを押すだけです。"
+    tiles: ["Just", "tap", "the", "green", "button"]
+    decoys: ["top", "bottom"]
+    marks: [[say, "green button", "greem button"]]
+    note: "green button は「グリームバトゥン」"
+    ctx: "携帯ショップで、店員が操作を教えています"
+    why: "green の n は b の前で m になり「グリーム」。tap（タップ）は top（トップ）と母音がちがう。button（ボタン）で bottom ではない。"
+    tags: { seed: 22, register: service, pragmatic: literal, features: [assimilation, vowel] }
+
+  # ---- fr-catchup: 久しぶりに 会う ----
+  - kind: tile
+    id: tile-cu-how-ya-been
+    speaker: marshal
+    en: "How have you been?"
+    tts: "How ya been?"
+    ja: "元気にしてた？"
+    tiles: ["How", "have", "you", "been"]
+    decoys: ["are", "being"]
+    marks: [[say, "have you", "ya"]]
+    note: "How ya been?＝元気にしてた？"
+    ctx: "久しぶりに会った友だちが"
+    why: "have you はほぼ消えて「ハウヤビン」。How are you とちがい、会っていなかった間のこと。been で being ではない。"
+    scene: cafe
+    tags: { seed: 57, register: friend, pragmatic: ritual, features: [chain, weak-form] }
+
+  - kind: tile
+    id: tile-cu-ran-into
+    speaker: maple
+    en: "Okay, you'll never guess who I ran into yesterday."
+    tts: "Okay, you'll never guess who I ran inta yesterday."
+    ja: "ねえ、昨日だれにばったり会ったと思う？"
+    tiles: ["Okay", "you'll", "never", "guess", "who", "I", "ran", "into", "yesterday"]
+    decoys: ["you", "run"]
+    marks: [[say, "into", "inta"]]
+    note: "ran into＝偶然会った"
+    ctx: "カフェで、友だちが話し始めます"
+    why: "you'll の ll は弱いが「当てられないよ」という未来。ran into＝偶然会った。run（ラン）なら現在で、yesterday と合わない。"
+    scene: cafe
+    tags: { seed: 57, register: friend, pragmatic: literal, conditions: [cafe], features: [weak-form, contraction] }
+
+  - kind: tile
+    id: tile-cu-back-up
+    speaker: bob
+    en: "Wait, back up. You're moving? Since when?"
+    tts: "Wait, back up. You're movin'? Since when?"
+    ja: "待って、話を戻して。引っ越すの？いつから？"
+    tiles: ["Wait", "back", "up", "You're", "moving", "Since", "when"]
+    decoys: ["Your", "then"]
+    marks: [[drop, "moving", "g"], [link, "back up"]]
+    note: "Wait, back up＝ちょっと待って、話を戻して"
+    ctx: "近況を聞いていた友だちが、驚いて"
+    why: "back up＝話を少し戻して。You're（ユア）で「あなたは」、Your ではない。movin' の g は落ちる。Since when?＝いつから？ then ではない。"
+    tags: { seed: 57, register: friend, pragmatic: attitude, features: [intonation, linking] }
+
+  - kind: tile
+    id: tile-cu-move-out-by-march
+    speaker: goldie
+    en: "So I have to move out by March."
+    tts: "So I hafta move out by March."
+    ja: "だから3月までに引っ越さなきゃいけないの。"
+    tiles: ["So", "I", "have", "to", "move", "out", "by", "March"]
+    decoys: ["had", "buy"]
+    marks: [[say, "have to", "hafta"], [link, "move out"]]
+    note: "move out＝引っ越して出ていく"
+    ctx: "カフェで、友だちが近況を話しています"
+    why: "have to は「ハフタ」で、had to（ハッタ）なら過去。move out は「ムーヴァウ」とつながる。by March＝3月までに。buy ではない。"
+    tags: { seed: 57, register: friend, pragmatic: literal, features: [weak-form, linking] }
+
+  - kind: tile
+    id: tile-cu-whatever-happened
+    speaker: bob
+    en: "Whatever happened with your car? Did you get it fixed?"
+    tts: "Whatever happened with yer car? Didja get it fixed?"
+    ja: "そういえば車、どうなった？直した？"
+    tiles: ["Whatever", "happened", "with", "your", "car", "Did", "you", "get", "it", "fixed"]
+    decoys: ["Do", "fix"]
+    marks: [[say, "your", "yer"], [say, "Did you", "Didja"]]
+    note: "Whatever happened with～?＝あれ、どうなった？"
+    ctx: "久しぶりに会った友だちが"
+    why: "Whatever happened with＝あの件どうなった？ Did you は「ディジャ」で Do you ではない。fixed の ed は小さいが、直したかを聞く過去形。"
+    tags: { seed: 57, register: friend, pragmatic: literal, features: [yod, weak-form] }
+
+  - kind: tile
+    id: tile-cu-sorry-i-meant
+    speaker: whitney
+    en: "I moved in on the 13th. Sorry, I meant the 30th."
+    tts: "I moved in on the thirteenth. Sorry, I meant the thirtieth."
+    ja: "13日に引っ越したの。ごめん、30日だった。"
+    tiles: ["I", "moved", "in", "on", "the", "13th", "Sorry", "I", "meant", "the", "30th"]
+    decoys: ["move", "3rd"]
+    marks: [[stress, "30th"]]
+    note: "Sorry, I meant＝言い直し。後ろが正しい"
+    ctx: "カフェで、友だちが新居の話をしています"
+    why: "thirteenth（13日）は後ろが強く、thirtieth（30日）は前が強い。Sorry, I meant の後が正しい日付。moved で過去、move ではない。"
+    tags: { seed: 57, register: friend, pragmatic: literal, features: [self-repair, teen-ty] }
+
+  # ---- mc-tickets: チケットを 取る ----
+  - kind: tile
+    id: tile-tix-aisle-seat
+    speaker: tia
+    en: "Would you like an aisle seat?"
+    tts: "Wouldja like an aisle seat?"
+    ja: "通路側のお席にしますか？"
+    tiles: ["Would", "you", "like", "an", "aisle", "seat"]
+    decoys: ["I'll", "sit"]
+    marks: [[say, "Would you", "Wouldja"], [link, "an aisle"]]
+    note: "aisle seat＝通路側の席"
+    ctx: "チケット売り場で、係の人が"
+    why: "an aisle は「アナイル」とつながる。aisle（通路）は I'll と同じ音だが、an の後なので名詞。seat（シート）は sit と長さがちがう。"
+    tags: { seed: 24, register: service, pragmatic: formula, features: [yod, linking] }
+
+  - kind: tile
+    id: tile-tix-the-matinee
+    speaker: kicks
+    en: "Let's just do the matinee."
+    tts: "Let's jus' do the matinee."
+    ja: "昼の公演にしよう。"
+    tiles: ["Let's", "just", "do", "the", "matinee"]
+    decoys: ["Let me", "a"]
+    marks: [[drop, "just", "t"]]
+    note: "matinee＝昼の公演"
+    ctx: "友だちと、観劇の時間を決めています"
+    why: "Let's（レッツ）で、Let me（レミ）ではない。just の t は落ちる。matinee（マチネ）は昼の公演。the matinee で a ではない。"
+    tags: { seed: 24, register: friend, pragmatic: literal, features: [elision] }
+
+  - kind: tile
+    id: tile-tix-plus-fees
+    speaker: curt
+    en: "That's $50, plus fees."
+    tts: "That's fifty, plus fees."
+    ja: "50ドル、プラス手数料です。"
+    tiles: ["That's", "$50", "plus", "fees"]
+    decoys: ["$15", "fee"]
+    marks: [[stress, "$50"]]
+    note: "plus fees＝手数料は別"
+    ctx: "電話で、チケットの値段を聞いています"
+    why: "fifty（50）は前が強く、fifteen（15）は後ろが強い。plus fees＝手数料は別。fees の s で手数料は複数。"
+    tags: { seed: 24, register: service, pragmatic: literal, conditions: [phone], features: [numbers, teen-ty] }
+
+  - kind: tile
+    id: tile-tix-standing-room
+    speaker: pekoe
+    en: "It's standing room only tonight."
+    tts: "It's standin' room only tonight."
+    ja: "今夜は立ち見のみです。"
+    tiles: ["It's", "standing", "room", "only", "tonight"]
+    decoys: ["stand", "lonely"]
+    marks: [[drop, "standing", "g"]]
+    note: "standing room only＝立ち見のみ"
+    ctx: "劇場の窓口で、係の人が"
+    why: "standin' の g は落ちる。standing room＝立ち見席。only（オウンリー）は lonely ではない。"
+    tags: { seed: 24, register: service, pragmatic: literal, features: [elision] }
+
+  - kind: tile
+    id: tile-tix-four-ticket-limit
+    speaker: tia
+    en: "Just so you know, there's a four-ticket limit per person."
+    tts: "Just so ya know, there's a four-ticket limit per person."
+    ja: "念のためですが、お一人様4枚までです。"
+    tiles: ["Just", "so", "you", "know", "there's", "a", "four-ticket", "limit", "per", "person"]
+    decoys: ["for", "their"]
+    marks: [[say, "you", "ya"]]
+    note: "a four-ticket limit＝1人4枚まで"
+    ctx: "チケット売り場で、係の人が説明しています"
+    why: "four-ticket は数字の4で、for（ファ）ではない。there's で their ではない。limit per person＝1人あたりの上限。"
+    tags: { seed: 24, register: service, pragmatic: literal, features: [numbers, weak-form] }
+
+  - kind: tile
+    id: tile-tix-face-value
+    speaker: kicks
+    en: "My cousin can't go, so he's selling his ticket at face value."
+    tts: "My cousin can't go, so he's sellin' his ticket at face value."
+    ja: "いとこが行けなくなって、チケットを定価で売るって。"
+    tiles: ["My", "cousin", "can't", "go", "so", "he's", "selling", "his", "ticket", "at", "face", "value"]
+    decoys: ["can", "base"]
+    marks: [[stress, "can't"], [drop, "selling", "g"]]
+    note: "face value＝定価"
+    ctx: "友だちが、チケットを譲る話をしています"
+    why: "can't は「キャーン」と強く長く、can ではない。face value＝券面の値段、つまり定価。base ではない。"
+    tags: { seed: 24, register: friend, pragmatic: literal, features: [can-cant, elision] }

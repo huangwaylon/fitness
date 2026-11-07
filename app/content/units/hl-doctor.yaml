@@ -626,6 +626,7 @@ lessons:
   check: [dr-negative, dr-r-swallow, dr-m-back-to-work, dr-n-follow-up, dr-trip-next, dr-r-dizzy]
   oto: [dr-w-symptoms, dr-w-nothing-serious, dr-w-not-better, dr-w-gets-worse, dr-w-fifty, dr-w-on-off]
   jissen: [dr-fast-results, dr-fast-m-stomach, dr-fast-r-same, dr-fast-n-14th, dr-fast-soccer, dr-fast-m-urgent]
+  tiles: [tile-doc-on-and-off, tile-doc-how-long, tile-doc-take-it-easy, tile-doc-hurt-swallow, tile-doc-push-it-back, tile-doc-keep-an-eye]
   call: [call-doctor-chart]
 tiers:
   dr-throat-virus:

@@ -633,6 +633,7 @@ lessons:
   check: [cu-biscuit, cu-r-landlord, cu-m-kicks, cu-n-moved-in, cu-car-next, cu-r-half]
   oto: [cu-w-never-guess, cu-w-long-story, cu-w-back-up, cu-w-how-been, cu-w-cousin, cu-w-sounds-rough]
   jissen: [cu-fast-july, cu-fast-m-boss, cu-fast-r-promotion, cu-fast-n-boulder, cu-fast-second, cu-fast-m-run]
+  tiles: [tile-cu-how-ya-been, tile-cu-ran-into, tile-cu-back-up, tile-cu-move-out-by-march, tile-cu-whatever-happened, tile-cu-sorry-i-meant]
   call: [call-brunch-moved]
 tiers:
   cu-yoga:

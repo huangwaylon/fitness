@@ -646,6 +646,7 @@ lessons:
   check: [sm-water-damage, sm-r-sign-in, sm-m-in-person, sm-n-plan, sm-eighty-next, sm-r-three]
   oto: [sm-w-hafta, sm-w-in-person, sm-w-ten-bucks, sm-w-would-you, sm-w-dont-you, sm-w-green-button]
   jissen: [sm-fast-lint, sm-fast-m-roaming, sm-fast-r-reset, sm-fast-n-monthly, sm-fast-ready, sm-fast-m-part]
+  tiles: [tile-phn-back-it-up, tile-phn-in-person, tile-phn-ten-bucks, tile-phn-case-with-that, tile-phn-why-dontcha, tile-phn-green-button]
   call: [call-screen-ready]
 tiers:
   sm-battery:
