@@ -1,12 +1,12 @@
 # ようじ でんわ S2 もり (c): the calls of wave 2b's もり units (docs/curriculum-wave2.md §3.1, §3.2: one per unit, its
-# チェック from recipe v2), each with one complication: a wedding weekend whose rehearsal dinner moves (ev-wedding).
-# Unvoiced: batch A4.
+# チェック from recipe v2), each with one complication: a wedding weekend whose rehearsal dinner moves (ev-wedding),
+# a dinner booking that grows to six and moves later (fd-dinner). Unvoiced: batch A4.
 schema: 1
 unit: s2-call-c
 game: call
 stage: 3
 track: life
-seeds: [48, 54, 55]
+seeds: [18, 48, 50, 54, 55]
 features: { primary: self-repair, review: numbers }
 cando: "電話で 予定や 用件の 変更と 条件を 聞き取って メモできる"
 status: draft
@@ -36,3 +36,28 @@ items:
           - { ask: "お祝いは？", options: ["リストから 贈る", "現金を 包む", "当日 持っていく"], answer: 0, cja: ["ほしい物リストから贈る", "現金を包む", "当日、会場に持っていく"] }
     note: "Molly just texted me の あとが 新しい 時間"
     tags: { seed: 54, register: friend, pragmatic: literal, conditions: [phone], features: [self-repair, intonation, numbers] }
+
+  - kind: call
+    id: call-dinner-six
+    ask: "チェリーから 電話。メモしよう"
+    ctx: "土曜の夕食を予約した友だちから電話です"
+    scene: living
+    channel: phone
+    lines:
+      - { who: cherry, en: "Hey! So I booked dinner for Saturday. Rosa's, the Italian place on Pine Street. Seven-thirty, for five of us.", tts: "Hey! So I booked dinner fer Saturday. Rosa's, the Italian place on Pine Street. Seven-thirty, fer five of us.", ja: "もしもし！ 土曜の夕食、予約したよ。パイン通りのイタリアン、ローザズ。7時半に5人で。" }
+      - { who: me, en: "Nice! Who's coming?", ja: "いいね！ 誰が来るの？" }
+      - { who: cherry, en: "You, me, Punchy, Judy and Kid Cat. Oh, and Kid Cat's allergic to nuts, so remind the server, 'cause I'll forget.", tts: "You, me, Punchy, Judy an' Kid Cat. Oh, an' Kid Cat's allergic ta nuts, so remind the server, 'cause I'll forget.", ja: "あなた、私、パンチー、ジュディ、キッド・キャット。あ、キッド・キャットはナッツのアレルギーだから、店員さんに言ってね。私、忘れちゃうから。" }
+      - { who: me, en: "Got it. Nuts. Anything else?", ja: "了解、ナッツね。ほかには？" }
+      - { who: cherry, en: "Oh, Judy just texted. She's bringing her sister, so we're six now. And they can't do six at seven-thirty.", tts: "Oh, Judy just texted. She's bringin' her sister, so we're six now. An' they can't do six at seven-thirty.", ja: "あ、今ジュディからメッセージ。妹を連れてくるから、6人になった。でもお店、7時半に6人は無理なんだって。", repair: true }
+      - { who: cherry, en: "So I moved it to eight-fifteen. Sorry, I know that's kind of late.", tts: "So I moved it ta eight-fifteen. Sorry, I know that's kinda late.", ja: "だから8時15分にずらした。ごめん、ちょっと遅いよね。" }
+      - { who: me, en: "Eight-fifteen's fine. See you there!", ja: "8時15分で大丈夫。じゃあお店で！" }
+    half: [0, 0, 0, 0, 1, 1, 1]
+    memo:
+      - why: "最初は7時半に5人だったが、ジュディが妹を連れてきて6人に。7時半に6人は無理なので8時15分にずらした。店員にはナッツのアレルギーを伝える。"
+        slots:
+          - { ask: "何人？", options: ["5人", "6人", "7人"], answer: 1, cja: ["5人", "6人", "7人"] }
+          - { ask: "何時に 行く？", options: ["7:30", "8:15", "8:50"], answer: 1, cja: ["7時半", "8時15分", "8時50分"] }
+          - { ask: "店員に 伝えるのは？", options: ["ナッツの アレルギー", "辛いのが だめ", "乳製品が だめ"], answer: 0, cja: ["ナッツのアレルギー", "辛いものがだめ", "乳製品がだめ"] }
+          - { ask: "お店は？", options: ["パイン通りの イタリアン", "パイン通りの タイ料理", "駅前の イタリアン"], answer: 0, cja: ["パイン通りのイタリア料理の店", "パイン通りのタイ料理の店", "駅前のイタリア料理の店"] }
+    note: "Judy just texted の あとで 人数と 時間が 変わる"
+    tags: { seed: 50, register: friend, pragmatic: literal, conditions: [phone], features: [self-repair, chain, numbers] }
