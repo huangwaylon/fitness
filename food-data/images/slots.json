@@ -787,7 +787,23 @@
 "maff_kyodo-maruyaki_saba_fukui",
 "maff_kyodo-matsu_yama_zushi_ehime",
 "maff_kyodo-makononitsuke_ishikawa",
-"maff_kyodo-masunoankake_yamagata"
+"maff_kyodo-masunoankake_yamagata",
+"maff_kyodo-obiten_miyazaki",
+"maff_kyodo-namerou_chiba",
+"maff_kyodo-nigui_fukuoka",
+"maff_kyodo-nishinnasu_kyoto",
+"maff_kyodo-noppe_niigata",
+"maff_kyodo-mitama_ishikawa",
+"maff_kyodo-mosaebi_no_sashimi_tottori",
+"maff_kyodo-nameta_gareino_nitsuke_miyagi",
+"maff_kyodo-nishinsoba_hokkaido",
+"maff_kyodo-misodengaku_aichi",
+"maff_kyodo-muroranyakitori_hokkaido",
+"maff_kyodo-onomino_sashimi_wakayama",
+"maff_kyodo-nama_yuba_yama_nashi",
+"maff_kyodo-nama_bushi_to_negi_no_nimono_nara",
+"maff_kyodo-mushidai_kochi",
+"maff_kyodo-okiaramenoitameni_shimane"
 ],
 "meat": [
 "mext-11227",
@@ -979,7 +995,9 @@
 "maff_kyodo-hegisoba_niigata_niigata",
 "maff_kyodo-houtou_yama_nashi",
 "maff_kyodo-izumosoba_shimane",
-"maff_kyodo-kishimen_aichi"
+"maff_kyodo-kishimen_aichi",
+"maff_kyodo-nasu_soumen_kagawa",
+"maff_kyodo-misonikomiudon_aichi"
 ],
 "other": [
 "mext-02034",
@@ -1115,7 +1133,9 @@
 "maff_kyodo-maze_meshi_kumamoto",
 "maff_kyodo-matsutakegohan_kyoto",
 "maff_kyodo-kurigohan_kyoto",
-"maff_kyodo-mame_gohan_wakayama"
+"maff_kyodo-mame_gohan_wakayama",
+"maff_kyodo-mossou_meshi_kagawa",
+"maff_kyodo-ohantoohankayaku_oita"
 ],
 "season": [
 "mext-17007",
@@ -1424,7 +1444,30 @@
 "maff_kyodo-korokakinamasu_kyoto",
 "maff_kyodo-kurenonimono_kochi",
 "maff_kyodo-kurumafu_no_nimono_niigata",
-"maff_kyodo-kurodaseritohorensonoohitashi_shimane"
+"maff_kyodo-kurodaseritohorensonoohitashi_shimane",
+"maff_kyodo-oaedango_shiga",
+"maff_kyodo-okaisan_wakayama",
+"maff_kyodo-okahijikinokarashiae_yamagata",
+"maff_kyodo-oquto_fukuoka",
+"maff_kyodo-okuzu_kake_miyagi",
+"maff_kyodo-obaku_yama_nashi",
+"maff_kyodo-nasunoorandani_ishikawa",
+"maff_kyodo-nasuno_akasiso_maki_aomori",
+"maff_kyodo-nasuiri_miyagi",
+"maff_kyodo-namagusa_kouko_niigata",
+"maff_kyodo-namakonosunomono_ishikawa",
+"maff_kyodo-nutaimo_miyazaki",
+"maff_kyodo-negitosatsumaimononuta_kochi",
+"maff_kyodo-nerikomi_aomori",
+"maff_kyodo-mimi_yama_nashi",
+"maff_kyodo-myouga_no_hayaki_miyagi",
+"maff_kyodo-nana_iro_oae_nara",
+"maff_kyodo-mibunanokarashiae_kyoto",
+"maff_kyodo-nara_noppei_nara",
+"maff_kyodo-ogurarenkon_ibaraki",
+"maff_kyodo-minazuki_kyoto",
+"maff_kyodo-niaekko_aomori",
+"maff_kyodo-niai_ibaraki"
 ],
 "soup": [
 "dishes-miso-tofu-wakame",
@@ -1548,7 +1591,14 @@
 "maff_kyodo-kyuuri_no_hiyajiru_mie",
 "maff_kyodo-kujira_jiru_niigata",
 "maff_kyodo-megisunodangojiru_ishikawa",
-"maff_kyodo-kujirajiru_hokkaido"
+"maff_kyodo-kujirajiru_hokkaido",
+"maff_kyodo-namagusa_jiru_fukui",
+"maff_kyodo-mettajiru_ishikawa",
+"maff_kyodo-mizuikanomadajiru_kagoshima",
+"maff_kyodo-misooden_aichi",
+"maff_kyodo-miso_shiru_ehime",
+"maff_kyodo-mosojiru_yamagata",
+"maff_kyodo-niwatorijiru_oita"
 ],
 "soy": [
 "mext-04032",
@@ -1712,7 +1762,13 @@
 "maff_kyodo-kankan_zushi_kagawa",
 "maff_kyodo-kakinoha_zushi_nara",
 "maff_kyodo-kono_shirono_sugata_zushi_kumamoto",
-"maff_kyodo-mehari_zushi_wakayama"
+"maff_kyodo-mehari_zushi_wakayama",
+"maff_kyodo-okatazushi_oita",
+"maff_kyodo-nishin_sushi_fukui",
+"maff_kyodo-mikan_zushi_ehime",
+"maff_kyodo-nanatoko_zushi_miyazaki",
+"maff_kyodo-nankan_ageno_maki_zushi_kumamoto",
+"maff_kyodo-mossozushi_oita"
 ],
 "sweet": [
 "mext-15103",
@@ -1891,7 +1947,19 @@
 "maff_kyodo-meno_mochi_arare_miyazaki",
 "maff_kyodo-memaki_yama_nashi",
 "maff_kyodo-makigaki_kumamoto",
-"maff_kyodo-kuzu_mochi_nara"
+"maff_kyodo-kuzu_mochi_nara",
+"maff_kyodo-oiri_tottori",
+"maff_kyodo-ohagi_kyoto",
+"maff_kyodo-naisho_meshi_mie",
+"maff_kyodo-nishinnokobumaki_ishikawa",
+"maff_kyodo-nira_senbei_nagano",
+"maff_kyodo-nerikuri_miyazaki",
+"maff_kyodo-nota_mochi_nagano",
+"maff_kyodo-mikan_mochi_wakayama",
+"maff_kyodo-mitsumenobotamochi_ibaraki",
+"maff_kyodo-mitori_manjyu_fukuoka",
+"maff_kyodo-nattomochi_kyoto",
+"maff_kyodo-onimanju_aichi"
 ],
 "veg": [
 "mext-08001",
@@ -2896,7 +2964,22 @@
 "maff_kyodo-maruyaki_saba_fukui",
 "maff_kyodo-matsu_yama_zushi_ehime",
 "maff_kyodo-makononitsuke_ishikawa",
-"maff_kyodo-masunoankake_yamagata"
+"maff_kyodo-masunoankake_yamagata",
+"maff_kyodo-obiten_miyazaki",
+"maff_kyodo-namerou_chiba",
+"maff_kyodo-nigui_fukuoka",
+"maff_kyodo-nishinnasu_kyoto",
+"maff_kyodo-noppe_niigata",
+"maff_kyodo-mitama_ishikawa",
+"maff_kyodo-nameta_gareino_nitsuke_miyagi",
+"maff_kyodo-nishinsoba_hokkaido",
+"maff_kyodo-misodengaku_aichi",
+"maff_kyodo-muroranyakitori_hokkaido",
+"maff_kyodo-onomino_sashimi_wakayama",
+"maff_kyodo-nama_yuba_yama_nashi",
+"maff_kyodo-nama_bushi_to_negi_no_nimono_nara",
+"maff_kyodo-mushidai_kochi",
+"maff_kyodo-okiaramenoitameni_shimane"
 ],
 "meat": [
 "mext-11279",
@@ -2942,14 +3025,16 @@
 "maff_kyodo-44_19_tokushima",
 "maff_kyodo-45_21_saga",
 "maff_kyodo-ebi_miso_shiru_kagawa",
-"maff_kyodo-gu_dakusan_miso_shiru_nagano"
+"maff_kyodo-gu_dakusan_miso_shiru_nagano",
+"maff_kyodo-miso_shiru_ehime"
 ],
 "natto": [
 "mext-04046",
 "mext-04047",
 "mext-04114",
 "dishes-natto",
-"maff_kyodo-ama_nattou_no_osekihan_yama_nashi"
+"maff_kyodo-ama_nattou_no_osekihan_yama_nashi",
+"maff_kyodo-nattomochi_kyoto"
 ],
 "noodle": [
 "mext-01044",
@@ -2972,7 +3057,8 @@
 "maff_kyodo-fukumen_ehime",
 "maff_kyodo-azuki_houtou_yama_nashi",
 "maff_kyodo-houtou_yama_nashi",
-"maff_kyodo-kishimen_aichi"
+"maff_kyodo-kishimen_aichi",
+"maff_kyodo-nasu_soumen_kagawa"
 ],
 "onigiri": [
 "dishes-onigiri-tunamayo",
@@ -3181,7 +3267,9 @@
 "maff_kyodo-maze_meshi_kumamoto",
 "maff_kyodo-matsutakegohan_kyoto",
 "maff_kyodo-kurigohan_kyoto",
-"maff_kyodo-mame_gohan_wakayama"
+"maff_kyodo-mame_gohan_wakayama",
+"maff_kyodo-mossou_meshi_kagawa",
+"maff_kyodo-ohantoohankayaku_oita"
 ],
 "saba": [
 "mext-10154",
@@ -3317,7 +3405,8 @@
 "maff_kyodo-ebiten_ehime",
 "maff_kyodo-ebimame_shiga",
 "maff_kyodo-ebibochi_miyagi",
-"maff_kyodo-kyuritokawaebinonimono_kochi"
+"maff_kyodo-kyuritokawaebinonimono_kochi",
+"maff_kyodo-mosaebi_no_sashimi_tottori"
 ],
 "side": [
 "dishes-hiyayakko",
@@ -3527,7 +3616,30 @@
 "maff_kyodo-korokakinamasu_kyoto",
 "maff_kyodo-kurenonimono_kochi",
 "maff_kyodo-kurumafu_no_nimono_niigata",
-"maff_kyodo-kurodaseritohorensonoohitashi_shimane"
+"maff_kyodo-kurodaseritohorensonoohitashi_shimane",
+"maff_kyodo-oaedango_shiga",
+"maff_kyodo-okaisan_wakayama",
+"maff_kyodo-okahijikinokarashiae_yamagata",
+"maff_kyodo-oquto_fukuoka",
+"maff_kyodo-okuzu_kake_miyagi",
+"maff_kyodo-obaku_yama_nashi",
+"maff_kyodo-nasunoorandani_ishikawa",
+"maff_kyodo-nasuno_akasiso_maki_aomori",
+"maff_kyodo-nasuiri_miyagi",
+"maff_kyodo-namagusa_kouko_niigata",
+"maff_kyodo-namakonosunomono_ishikawa",
+"maff_kyodo-nutaimo_miyazaki",
+"maff_kyodo-negitosatsumaimononuta_kochi",
+"maff_kyodo-nerikomi_aomori",
+"maff_kyodo-mimi_yama_nashi",
+"maff_kyodo-myouga_no_hayaki_miyagi",
+"maff_kyodo-nana_iro_oae_nara",
+"maff_kyodo-mibunanokarashiae_kyoto",
+"maff_kyodo-nara_noppei_nara",
+"maff_kyodo-ogurarenkon_ibaraki",
+"maff_kyodo-minazuki_kyoto",
+"maff_kyodo-niaekko_aomori",
+"maff_kyodo-niai_ibaraki"
 ],
 "soba": [
 "dishes-zaru-soba",
@@ -3676,7 +3788,13 @@
 "maff_kyodo-kyuuri_no_hiyajiru_mie",
 "maff_kyodo-kujira_jiru_niigata",
 "maff_kyodo-megisunodangojiru_ishikawa",
-"maff_kyodo-kujirajiru_hokkaido"
+"maff_kyodo-kujirajiru_hokkaido",
+"maff_kyodo-namagusa_jiru_fukui",
+"maff_kyodo-mettajiru_ishikawa",
+"maff_kyodo-mizuikanomadajiru_kagoshima",
+"maff_kyodo-misooden_aichi",
+"maff_kyodo-mosojiru_yamagata",
+"maff_kyodo-niwatorijiru_oita"
 ],
 "soy": [
 "mext-05018",
@@ -3821,7 +3939,13 @@
 "maff_kyodo-kankan_zushi_kagawa",
 "maff_kyodo-kakinoha_zushi_nara",
 "maff_kyodo-kono_shirono_sugata_zushi_kumamoto",
-"maff_kyodo-mehari_zushi_wakayama"
+"maff_kyodo-mehari_zushi_wakayama",
+"maff_kyodo-okatazushi_oita",
+"maff_kyodo-nishin_sushi_fukui",
+"maff_kyodo-mikan_zushi_ehime",
+"maff_kyodo-nanatoko_zushi_miyazaki",
+"maff_kyodo-nankan_ageno_maki_zushi_kumamoto",
+"maff_kyodo-mossozushi_oita"
 ],
 "sweet": [
 "mext-15103",
@@ -3993,7 +4117,18 @@
 "maff_kyodo-meno_mochi_arare_miyazaki",
 "maff_kyodo-memaki_yama_nashi",
 "maff_kyodo-makigaki_kumamoto",
-"maff_kyodo-kuzu_mochi_nara"
+"maff_kyodo-kuzu_mochi_nara",
+"maff_kyodo-oiri_tottori",
+"maff_kyodo-ohagi_kyoto",
+"maff_kyodo-naisho_meshi_mie",
+"maff_kyodo-nishinnokobumaki_ishikawa",
+"maff_kyodo-nira_senbei_nagano",
+"maff_kyodo-nerikuri_miyazaki",
+"maff_kyodo-nota_mochi_nagano",
+"maff_kyodo-mikan_mochi_wakayama",
+"maff_kyodo-mitsumenobotamochi_ibaraki",
+"maff_kyodo-mitori_manjyu_fukuoka",
+"maff_kyodo-onimanju_aichi"
 ],
 "tofu": [
 "mext-04032",
@@ -4081,7 +4216,8 @@
 "dishes-nabeyaki-udon",
 "maff_kyodo-41_19_okayama",
 "maff_kyodo-46_12_nagasaki",
-"maff_kyodo-46_7_nagasaki"
+"maff_kyodo-46_7_nagasaki",
+"maff_kyodo-misonikomiudon_aichi"
 ],
 "veg": [
 "mext-08001",
