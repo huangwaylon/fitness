@@ -92,7 +92,9 @@ async function serve(req: IncomingMessage, res: ServerResponse) {
   const served = hit ?? join(root, '404.html');
   let body = await readFile(served);
   if (deploys && path.endsWith('/service-worker.js')) body = Buffer.concat([body, Buffer.from(`\n// e2e deploy ${deploys}\n`)]);
-  const headers = { ...headersFor(path), 'content-type': TYPES[extname(served)] ?? 'application/octet-stream', 'cache-control': 'no-store', 'accept-ranges': 'bytes' };
+  // (a type of _headers' over the file's: the models')
+  const ruled = Object.fromEntries(Object.entries(headersFor(path)).map(([k, v]) => [k.toLowerCase(), v]));
+  const headers = { 'content-type': TYPES[extname(served)] ?? 'application/octet-stream', ...ruled, 'cache-control': 'no-store', 'accept-ranges': 'bytes' };
   // WebKit's media elements ask for byte ranges (as Pages answers them)
   const range = hit && /^bytes=(\d*)-(\d*)$/.exec(req.headers.range ?? '');
   if (range && (range[1] || range[2])) {
