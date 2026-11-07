@@ -458,7 +458,8 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   FOOD_CAT: a leaf and 野菜, never a particular food's picture; night tints darker; マイ食品 その他, マイレシピ レシピ), a fixed box over 4 px
   of the row's padding so the row is no taller; a name wraps to 2 lines at most. A food with a picture (`lib/food/images.ts`
   imgOf: generated イメージ of generic foods in static/food-img sprite sheets, by the id as logged; products keep their
-  tile) shows its cell there, faded in over the tint, the tile again on error;
+  tile) shows its cell there, faded in over the tint, the tile again on error (at night dimmed a little, brightness .85:
+  its cream paper glared on the navy cards; the enlarged one too);
   one row per name and kcal (`search.ts`; a brand's copy of another's too). ー counts (カレー is not かれい). Offline: 「データを よみこめませんでした
   （オフライン？）」, もういちど, and さいきん still under it (a recent pick keeps its portion). **Ranking** (`food/search.ts`
   tierOf, each curated pop level worth 0.6 of a tier): the name exact, or its head (up to a bracket or space: 水 finds
