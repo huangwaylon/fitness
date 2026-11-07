@@ -24455,6 +24455,19 @@
 "checked": false
 },
 {
+"key": "mext-06009",
+"ja": "アスパラガス 水煮缶詰",
+"desc": "canned white asparagus: soft pale ivory asparagus spears in liquid, in a small dish",
+"items": [
+"mext:06009"
+],
+"roll": 0,
+"seed": 74744,
+"prompt": "eb912b2912",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06010",
 "ja": "さやいんげん 生",
 "desc": "a small heap of fresh green beans, long slender pods",
@@ -24464,6 +24477,19 @@
 "roll": 0,
 "seed": 12477,
 "prompt": "e73ed734cf",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06011",
+"ja": "いんげんまめ さやいんげん ゆで",
+"desc": "boiled green beans: slender bright green pods cut into lengths, tender, in a small dish",
+"items": [
+"mext:06011"
+],
+"roll": 0,
+"seed": 56107,
+"prompt": "39902503d2",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -24479,6 +24505,19 @@
 "roll": 0,
 "seed": 21361,
 "prompt": "71b8563209",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06015",
+"ja": "えだまめ 生",
+"desc": "raw edamame: fuzzy plump green pods, one opened showing bright green beans",
+"items": [
+"mext:06015"
+],
+"roll": 0,
+"seed": 52306,
+"prompt": "657521d013",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -24543,6 +24582,19 @@
 "checked": false
 },
 {
+"key": "mext-06021",
+"ja": "さやえんどう ゆで",
+"desc": "boiled snow peas: flat bright green pods with small bumps of peas inside, in a small dish",
+"items": [
+"mext:06021"
+],
+"roll": 0,
+"seed": 20424,
+"prompt": "8e0a1461a7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06022",
 "ja": "スナップえんどう",
 "desc": "a small heap of sugar snap peas, plump round crisp green pods",
@@ -24556,6 +24608,33 @@
 "checked": false
 },
 {
+"key": "mext-06023",
+"ja": "グリンピース 生",
+"desc": "raw green peas: bright green round peas spilling from a split pod",
+"items": [
+"mext:06023"
+],
+"roll": 0,
+"seed": 35620,
+"prompt": "780537c4ab",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06024",
+"ja": "グリンピース ゆで",
+"desc": "boiled green peas: a small bowl of soft bright green round peas",
+"items": [
+"mext:06024",
+"mext:06374"
+],
+"roll": 0,
+"seed": 90503,
+"prompt": "ff18371fcd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06025",
 "ja": "グリンピース 冷凍",
 "desc": "a small bowl of green peas, round bright green peas",
@@ -24565,6 +24644,58 @@
 "roll": 0,
 "seed": 85777,
 "prompt": "ea5686ae9c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06026",
+"ja": "グリンピース 水煮缶詰",
+"desc": "canned green peas: soft dull olive-green round peas in liquid, in a small dish",
+"items": [
+"mext:06026"
+],
+"roll": 0,
+"seed": 93899,
+"prompt": "8d98e883d5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06027",
+"ja": "おおさかしろな 生",
+"desc": "raw osaka shirona: a leafy green with flat white stems and round smooth bright green leaves, like small bok choy",
+"items": [
+"mext:06027"
+],
+"roll": 0,
+"seed": 34301,
+"prompt": "98fff64c3d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06028",
+"ja": "おおさかしろな ゆで",
+"desc": "boiled osaka shirona: limp dark green leaves and soft white stems, cut and squeezed, in a small dish",
+"items": [
+"mext:06028"
+],
+"roll": 0,
+"seed": 78060,
+"prompt": "348de1cf86",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06029",
+"ja": "おおさかしろな 塩漬",
+"desc": "salted osaka shirona pickle: wilted dull olive-green leaves and pale stems, chopped, in a small dish",
+"items": [
+"mext:06029"
+],
+"roll": 0,
+"seed": 41338,
+"prompt": "d16f287049",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -24609,6 +24740,59 @@
 "checked": false
 },
 {
+"key": "mext-06034",
+"ja": "かぶ 葉 生",
+"desc": "raw turnip greens: long bright green leafy tops with slender pale stems",
+"items": [
+"mext:06034"
+],
+"roll": 0,
+"seed": 89286,
+"prompt": "9caaebc2c9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06035",
+"ja": "かぶ 葉 ゆで",
+"desc": "boiled turnip greens: chopped soft dark green leaves, squeezed, in a small dish",
+"items": [
+"mext:06035"
+],
+"roll": 0,
+"seed": 70640,
+"prompt": "d944bd3a97",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06036",
+"ja": "かぶ 皮つき 生",
+"desc": "raw turnip, skin on: a round smooth white turnip root, one cut half showing crisp white flesh",
+"items": [
+"mext:06036"
+],
+"roll": 0,
+"seed": 27786,
+"prompt": "50fe7b4a8a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06037",
+"ja": "かぶ 皮つき ゆで",
+"desc": "boiled turnip: wedges of soft slightly translucent white turnip in a small dish",
+"items": [
+"mext:06037",
+"mext:06039"
+],
+"roll": 0,
+"seed": 11324,
+"prompt": "8b6fb866ae",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06038",
 "ja": "かぶ 皮なし 生",
 "desc": "a Japanese white turnip (kabu), round smooth white root with green leafy stalks, one cut showing white flesh",
@@ -24618,6 +24802,86 @@
 "roll": 0,
 "seed": 36525,
 "prompt": "064c1de457",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06040",
+"ja": "かぶ 塩漬 葉",
+"desc": "salted turnip greens pickle: chopped wilted dark green leaves and stems, in a small dish",
+"items": [
+"mext:06040"
+],
+"roll": 0,
+"seed": 18040,
+"prompt": "c94f2c6358",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06041",
+"ja": "かぶ 塩漬 皮つき",
+"desc": "salted turnip pickle: thin wedges of crisp white pickled turnip, slightly translucent, in a small dish",
+"items": [
+"mext:06041",
+"mext:06042"
+],
+"roll": 0,
+"seed": 82990,
+"prompt": "38df4d481c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06043",
+"ja": "かぶ ぬかみそ漬 葉",
+"desc": "nukazuke turnip greens: wilted olive-green leaves with traces of tan rice bran, chopped, in a small dish",
+"items": [
+"mext:06043"
+],
+"roll": 0,
+"seed": 85698,
+"prompt": "6ef6a6a5f5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06044",
+"ja": "かぶ ぬかみそ漬 皮つき",
+"desc": "nukazuke turnip: slices of slightly yellowed translucent turnip with tan rice bran clinging, in a small dish",
+"items": [
+"mext:06044",
+"mext:06045"
+],
+"roll": 0,
+"seed": 52193,
+"prompt": "c2ffefb4e1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06046",
+"ja": "日本かぼちゃ 生",
+"desc": "raw Japanese pumpkin: a deeply ribbed bumpy dark green squash, a cut wedge showing pale yellow-orange flesh and seeds",
+"items": [
+"mext:06046"
+],
+"roll": 0,
+"seed": 15917,
+"prompt": "f13a37d1be",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06047",
+"ja": "日本かぼちゃ ゆで",
+"desc": "boiled Japanese pumpkin: soft wedges with dull dark green skin and yellow flesh, in a small dish",
+"items": [
+"mext:06047"
+],
+"roll": 0,
+"seed": 15739,
+"prompt": "fe2a6afcb8",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -24650,6 +24914,19 @@
 "checked": false
 },
 {
+"key": "mext-06050",
+"ja": "西洋かぼちゃ 冷凍",
+"desc": "frozen kabocha: frosty chunks of squash with dark green skin and orange flesh",
+"items": [
+"mext:06050"
+],
+"roll": 0,
+"seed": 98073,
+"prompt": "4ae06e36b6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06051",
 "ja": "そうめんかぼちゃ 生",
 "desc": "a spaghetti squash, an oval yellow squash cut open with stringy pale yellow flesh pulled into noodles",
@@ -24676,6 +24953,19 @@
 "checked": false
 },
 {
+"key": "mext-06053",
+"ja": "からしな 塩漬",
+"desc": "salted mustard greens pickle: wilted dark green jagged-edged leaves, chopped, in a small dish",
+"items": [
+"mext:06053"
+],
+"roll": 0,
+"seed": 30115,
+"prompt": "bcd008a4a7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06054",
 "ja": "カリフラワー 生",
 "desc": "a head of white cauliflower with pale green leaves, a few florets cut off",
@@ -24685,6 +24975,45 @@
 "roll": 0,
 "seed": 95296,
 "prompt": "5b88815a3a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06055",
+"ja": "カリフラワー ゆで",
+"desc": "boiled cauliflower: soft white florets in a small dish",
+"items": [
+"mext:06055"
+],
+"roll": 0,
+"seed": 73782,
+"prompt": "6d4f594269",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06056",
+"ja": "かんぴょう 乾",
+"desc": "dried kanpyo: long flat ribbons of dried gourd, creamy beige, coiled into a loose bundle",
+"items": [
+"mext:06056"
+],
+"roll": 0,
+"seed": 53004,
+"prompt": "060cb95253",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06057",
+"ja": "かんぴょう ゆで",
+"desc": "boiled kanpyo: soft pale translucent flat gourd ribbons in a small dish",
+"items": [
+"mext:06057"
+],
+"roll": 0,
+"seed": 97082,
+"prompt": "8ec2cae84e",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -24742,6 +25071,32 @@
 "checked": false
 },
 {
+"key": "mext-06063",
+"ja": "グリーンボール 生",
+"desc": "green ball cabbage: a small round cabbage head with deep green tight leaves, one half cut to show densely packed layers that stay green to the core, raw",
+"items": [
+"mext:06063"
+],
+"roll": 0,
+"seed": 44448,
+"prompt": "63301c6d60",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06064",
+"ja": "レッドキャベツ 生",
+"desc": "red cabbage: a round purple-red cabbage head, one half cut to show tight wavy purple and white layered veins inside, raw",
+"items": [
+"mext:06064"
+],
+"roll": 0,
+"seed": 91331,
+"prompt": "12115fdf0e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06065",
 "ja": "きゅうり",
 "desc": "two fresh green cucumbers, long slim bumpy dark green, one cut in slices",
@@ -24795,6 +25150,32 @@
 "checked": false
 },
 {
+"key": "mext-06069",
+"ja": "きゅうり ピクルス スイート型",
+"desc": "sweet pickles: small whole and sliced gherkins, glossy olive green with bumpy skin, in clear sweet brine with mustard seeds in a small glass dish",
+"items": [
+"mext:06069"
+],
+"roll": 0,
+"seed": 69854,
+"prompt": "bb42bbfa60",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06070",
+"ja": "きゅうり ピクルス サワー型",
+"desc": "sour dill pickles: whole cucumbers and spears, dull olive green with translucent flesh, in cloudy brine with dill sprigs and garlic cloves in a small glass dish",
+"items": [
+"mext:06070"
+],
+"roll": 0,
+"seed": 99483,
+"prompt": "50533136b9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06071",
 "ja": "ぎょうじゃにんにく 生",
 "desc": "gyoja ninniku (wild garlic), broad smooth bright green leaves on reddish-purple stems",
@@ -24818,6 +25199,32 @@
 "seed": 3127,
 "prompt": "8b894dca6d",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06075",
+"ja": "キンサイ 生",
+"desc": "kinsai Chinese celery: a bunch of thin hollow pale green stalks with flat parsley-like leaves, slender and leafy, not thick celery ribs, raw",
+"items": [
+"mext:06075"
+],
+"roll": 0,
+"seed": 53076,
+"prompt": "30c082f40c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06076",
+"ja": "キンサイ ゆで",
+"desc": "boiled Chinese celery: thin soft deep green stalks and leaves cut into short lengths, piled in a small dish",
+"items": [
+"mext:06076"
+],
+"roll": 0,
+"seed": 28366,
+"prompt": "9325175925",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -24901,6 +25308,19 @@
 "checked": false
 },
 {
+"key": "mext-06085",
+"ja": "ごぼう ゆで",
+"desc": "boiled burdock root: thin brown-skinned root cut into diagonal slices and sticks, greyish tan fibrous flesh, soft, in a small dish",
+"items": [
+"mext:06085"
+],
+"roll": 0,
+"seed": 59131,
+"prompt": "32b800b674",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06086",
 "ja": "こまつな 生",
 "desc": "a bunch of fresh komatsuna, dark green smooth spoon-shaped leaves on pale green stems",
@@ -24941,6 +25361,45 @@
 "checked": false
 },
 {
+"key": "mext-06089",
+"ja": "さんとうさい 生",
+"desc": "santousai: a loose non-heading Chinese cabbage, bright green crinkled leaves on flat white stems, a bunch, raw",
+"items": [
+"mext:06089"
+],
+"roll": 0,
+"seed": 57264,
+"prompt": "a73b645965",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06090",
+"ja": "さんとうさい ゆで",
+"desc": "boiled santousai: soft light green leaves with white stems, squeezed and cut into short lengths in a small dish",
+"items": [
+"mext:06090"
+],
+"roll": 0,
+"seed": 74741,
+"prompt": "f3c9e9ea30",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06091",
+"ja": "さんとうさい 塩漬",
+"desc": "salt-pickled leafy greens: limp dull olive green leaves and pale stems, chopped and heaped in a small dish",
+"items": [
+"mext:06091"
+],
+"roll": 0,
+"seed": 65795,
+"prompt": "b7769b37dd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06092",
 "ja": "しかくまめ 生",
 "desc": "winged beans, bright green pods with four frilly wings along their length",
@@ -24967,6 +25426,19 @@
 "checked": false
 },
 {
+"key": "mext-06094",
+"ja": "ししとう 油いため",
+"desc": "stir-fried shishito: small slender wrinkled green shishito peppers, glossy with oil and blistered brown spots, on a small plate",
+"items": [
+"mext:06094"
+],
+"roll": 0,
+"seed": 34636,
+"prompt": "48e08a49da",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06095",
 "ja": "大葉（しそ）",
 "desc": "a few fresh green shiso (ooba) leaves, broad leaves with serrated edges and visible veins",
@@ -24980,6 +25452,45 @@
 "checked": false
 },
 {
+"key": "mext-06096",
+"ja": "しそ 実 生",
+"desc": "shiso seeds: tiny round green shiso seed pods clustered on short stems, fresh green sprigs in a small dish",
+"items": [
+"mext:06096"
+],
+"roll": 0,
+"seed": 14432,
+"prompt": "ea2c8a5881",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06097",
+"ja": "じゅうろくささげ 生",
+"desc": "yardlong beans: very long thin green bean pods coiled in loops in a bundle, smooth and slender, raw",
+"items": [
+"mext:06097"
+],
+"roll": 0,
+"seed": 75830,
+"prompt": "cf00519985",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06098",
+"ja": "じゅうろくささげ ゆで",
+"desc": "boiled yardlong beans: thin bright deep green bean pods cut into short even lengths, soft, in a small dish",
+"items": [
+"mext:06098"
+],
+"roll": 0,
+"seed": 46791,
+"prompt": "0642d9f428",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06099",
 "ja": "しゅんぎく 生",
 "desc": "a bunch of shungiku chrysanthemum greens, deeply lobed bright green leaves",
@@ -24989,6 +25500,19 @@
 "roll": 0,
 "seed": 53521,
 "prompt": "63cbf15094",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06100",
+"ja": "しゅんぎく ゆで",
+"desc": "boiled shungiku: chrysanthemum greens, dark green deeply serrated leaves squeezed into a neat log and cut into lengths, in a small dish",
+"items": [
+"mext:06100"
+],
+"roll": 0,
+"seed": 34571,
+"prompt": "9bec781341",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -25072,6 +25596,19 @@
 "checked": false
 },
 {
+"key": "mext-06107",
+"ja": "しろうり 塩漬",
+"desc": "salted shirouri melon: pale green pickling melon halved lengthwise with seeds scooped out, translucent pale flesh, sliced into crescents on a small dish",
+"items": [
+"mext:06107"
+],
+"roll": 0,
+"seed": 64968,
+"prompt": "080c551265",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06108",
 "ja": "しろうり 奈良漬",
 "desc": "narazuke, slices of gourd pickled in sake lees, glossy deep amber-brown translucent",
@@ -25095,6 +25632,58 @@
 "roll": 0,
 "seed": 94127,
 "prompt": "5f06521bde",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06111",
+"ja": "干しずいき 乾",
+"desc": "dried zuiki: dried taro stems, long twisted flat brown-grey strips tied in a bundle, papery and dry",
+"items": [
+"mext:06111"
+],
+"roll": 0,
+"seed": 6332,
+"prompt": "151d46980b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06112",
+"ja": "干しずいき ゆで",
+"desc": "rehydrated zuiki: soft pale brown translucent taro stem strips cut into short lengths, moist, in a small bowl",
+"items": [
+"mext:06112"
+],
+"roll": 0,
+"seed": 84294,
+"prompt": "93a2294ce1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06113",
+"ja": "すぐきな 葉 生",
+"desc": "sugukina leaves: long deeply lobed bright green turnip leaves on pale stems, a bunch, raw",
+"items": [
+"mext:06113"
+],
+"roll": 0,
+"seed": 25136,
+"prompt": "3f98cb5dd3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06114",
+"ja": "すぐきな 根 生",
+"desc": "sugukina root: an elongated conical white turnip root, one piece cut to show crisp white flesh, raw",
+"items": [
+"mext:06114"
+],
+"roll": 0,
+"seed": 23155,
+"prompt": "7a51ec63a0",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -25166,6 +25755,32 @@
 "checked": false
 },
 {
+"key": "mext-06122",
+"ja": "干しぜんまい 干し若芽 乾",
+"desc": "dried zenmai: dried royal fern shoots, a tangled bundle of thin wrinkled dark brown curled stems",
+"items": [
+"mext:06122"
+],
+"roll": 0,
+"seed": 10021,
+"prompt": "e809aa3ddb",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06123",
+"ja": "干しぜんまい 干し若芽 ゆで",
+"desc": "rehydrated zenmai: soft plump olive-brown fern shoot stems cut into short lengths in a small bowl",
+"items": [
+"mext:06123"
+],
+"roll": 0,
+"seed": 10899,
+"prompt": "0942cb8136",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06124",
 "ja": "そらまめ 生",
 "desc": "fava beans (soramame), long fat green pods, one open showing large flat pale green beans in white fluff",
@@ -25203,6 +25818,19 @@
 "roll": 0,
 "seed": 20155,
 "prompt": "1b60a0b228",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06129",
+"ja": "葉だいこん 生",
+"desc": "ha-daikon: young radish greens, a bunch of bright green rough leaves with tiny thin white roots, raw",
+"items": [
+"mext:06129"
+],
+"roll": 0,
+"seed": 74733,
+"prompt": "ea8e0afe63",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -26451,6 +27079,32 @@
 "checked": false
 },
 {
+"key": "mext-06328",
+"ja": "アロエ 生",
+"desc": "raw aloe: a thick spiky green leaf cut open showing clear jelly flesh, with cubes of translucent gel",
+"items": [
+"mext:06328"
+],
+"roll": 0,
+"seed": 67957,
+"prompt": "03e24c2961",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06332",
+"ja": "西洋かぼちゃ 焼き",
+"desc": "grilled kabocha: wedge slices with dark green skin and deep orange flesh with browned grill marks, on a plate",
+"items": [
+"mext:06332"
+],
+"roll": 0,
+"seed": 64010,
+"prompt": "11442c4315",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06333",
 "ja": "キャベツ 油いため",
 "desc": "stir-fried cabbage, glossy soft green cabbage pieces with lightly browned edges on a plate",
@@ -26529,6 +27183,19 @@
 "checked": false
 },
 {
+"key": "mext-06364",
+"ja": "かんぴょう 甘煮",
+"desc": "sweet-simmered kanpyo: glossy caramel-brown flat gourd ribbons simmered in soy sauce and sugar, in a small dish",
+"items": [
+"mext:06364"
+],
+"roll": 0,
+"seed": 93338,
+"prompt": "b4f279c7a0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06365",
 "ja": "おろししょうが",
 "desc": "a small mound of grated ginger, moist pale yellow fibrous paste on a small dish",
@@ -26538,6 +27205,19 @@
 "roll": 0,
 "seed": 66188,
 "prompt": "3498b11dee",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06366",
+"ja": "しょうが 皮なし 生 おろし汁",
+"desc": "ginger juice: pale yellow cloudy juice in a small glass dish, beside a little mound of grated ginger and a peeled tan knob of ginger",
+"items": [
+"mext:06366"
+],
+"roll": 0,
+"seed": 82454,
+"prompt": "71d5df1537",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -26577,6 +27257,19 @@
 "roll": 0,
 "seed": 19028,
 "prompt": "9a22fe9ab6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06375",
+"ja": "グリンピース 冷凍 油いため",
+"desc": "stir-fried green peas: glossy oily bright green peas, slightly wrinkled, in a small dish",
+"items": [
+"mext:06375"
+],
+"roll": 0,
+"seed": 70349,
+"prompt": "f9a6155a78",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -26682,6 +27375,20 @@
 "roll": 0,
 "seed": 48556,
 "prompt": "bc90bb0f64",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06403",
+"ja": "キャベツ カット 常法洗浄",
+"desc": "shredded cabbage: a heap of fine raw pale green and white cabbage shreds in a small bowl, crisp, fresh and slightly curly",
+"items": [
+"mext:06403",
+"mext:06404"
+],
+"roll": 0,
+"seed": 72698,
+"prompt": "1c78b97347",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
