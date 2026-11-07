@@ -8,7 +8,7 @@ unit: s1-call-b
 game: call
 stage: 2
 track: life
-seeds: [13, 14, 16, 26, 27, 32, 36, 37, 48, 49, 50, 51]
+seeds: [13, 14, 16, 26, 27, 32, 36, 37, 48, 49, 50, 51, 53]
 features: { primary: self-repair, review: weak-form }
 cando: "電話で 注文や 予約の 確認と 変更を 聞き取って メモできる"
 status: draft
@@ -138,3 +138,28 @@ items:
           - { ask: "持っていくのは？", options: ["現金", "カード", "かさ"], answer: 0, cja: ["現金", "クレジットカード", "かさ"] }
     note: "Oh, wait, no の あとが 本当の 集合場所"
     tags: { seed: 36, register: friend, pragmatic: literal, conditions: [phone], features: [self-repair, lemme] }
+
+  - kind: call
+    id: call-plus-one
+    ask: "友だちから 電話。メモしよう"
+    ctx: "土曜にパーティーを開く前、友だちから電話です"
+    scene: living
+    channel: phone
+    lines:
+      - { who: marshal, en: "Hey, it's Marshal. Quick question about your party on Saturday. Is it cool if I bring a friend?", tts: "Hey, it's Marshal. Quick question about yer party on Saturday. Is it cool if I bring a friend?", ja: "もしもし、マーシャルだよ。土曜のパーティーのことでちょっと聞きたいんだけど。友だちを連れていってもいい？" }
+      - { who: me, en: "Of course! Who is it?", ja: "もちろん！ 誰？" }
+      - { who: marshal, en: "His name's Kenji. We went to college together. He just moved back to Tokyo.", ja: "ケンジっていうんだ。大学の同級生で。東京に戻ってきたばかりなんだよ。" }
+      - { who: marshal, en: "You'll love him. He's super into board games, just like you.", tts: "You'll love 'im. He's super inta board games, just like you.", ja: "きっと気に入るよ。君と同じで、ボードゲームが大好きなんだ。" }
+      - { who: marshal, en: "Oh, and he's vegetarian. Actually, no, sorry, he's vegan. So no cheese or eggs.", ja: "あ、それとベジタリアンで…いや、違った、ヴィーガンだ。だからチーズも卵もだめ。", repair: true }
+      - { who: me, en: "Got it. No problem.", ja: "わかった。大丈夫だよ。" }
+      - { who: marshal, en: "Great. We'll be there around seven. Talk soon!", ja: "よかった。7時ごろに行くね。じゃあまた！" }
+    half: [0, 0, 0, 0, 1, 1, 1]
+    memo:
+      - why: "ケンジは大学の同級生で、共通点はボードゲーム。Actually, no でベジタリアンからヴィーガンに訂正したので、チーズも卵もなし。7時ごろに来る。"
+        slots:
+          - { ask: "ケンジとの 関係は？", options: ["大学の 同級生", "会社の 同僚", "いとこ"], answer: 0, cja: ["大学の同級生", "会社の同僚", "いとこ"] }
+          - { ask: "共通の 趣味は？", options: ["ボードゲーム", "サッカー", "料理"], answer: 0, cja: ["ボードゲーム", "サッカー", "料理"] }
+          - { ask: "食事は？", options: ["ヴィーガン", "ベジタリアン", "何でも OK"], answer: 0, cja: ["ヴィーガン", "ベジタリアン", "何でも食べられる"] }
+          - { ask: "何時ごろ 来る？", options: ["7時", "7時半", "6時"], answer: 0, cja: ["7時ごろ", "7時半ごろ", "6時ごろ"] }
+    note: "Actually, no の あとが 本当の 食事"
+    tags: { seed: 53, register: friend, pragmatic: literal, conditions: [phone], features: [self-repair, yod] }
