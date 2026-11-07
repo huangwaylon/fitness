@@ -13,7 +13,7 @@
   // row (with the kcal it goes from and to): a tap re-snapshots it.
   import type { FoodEntry, FoodSnap, Meal } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
-  import { amountText, catOf, daysText, foodDb, foodDbNow, withImages } from './foodUi.ts';
+  import { amountText, daysText, foodDbNow, loggedCat, whenFoodDb, withImages } from './foodUi.ts';
   import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
   import type { FoodDb } from '#lib/food/index.ts';
   import FoodThumb from './FoodThumb.svelte';
@@ -47,19 +47,16 @@
   // the total rounds the sum once: a row each rounded may differ from it by ±1 (itemsKcal)
   const total = $derived(itemsKcal(entries));
   const label = $derived(t(`food.meal.${meal}`));
-  /** The pictures and, for the tiles, the catalog (loaded once a meal holds an entry; both shared, both cached). */
+  /** The pictures (loaded once a meal holds an entry) and, for the tiles, the catalog once it is in (never loaded here:
+   *  Food.svelte's foodDbSoon, after the open; till then each row's category as this phone remembers it, loggedCat). */
   let imgs = $state.raw<FoodImageIndex | null>(null);
   let db = $state.raw<FoodDb | null>(foodDbNow());
-  $effect(() => {
-    if (!entries.length) return;
-    const off = withImages((ix) => (imgs = ix));
-    if (!db) void foodDb().then((d) => (db = d), () => {});
-    return off;
-  });
+  $effect(() => (entries.length ? withImages((ix) => (imgs = ix)) : undefined));
+  $effect(() => (db ? undefined : whenFoodDb((d) => (db = d))));
 </script>
 
 {#snippet cells(e: FoodEntry & { rep?: string })}
-  <span class="th"><FoodThumb cat={catOf(db, e.f.id)} size={40} img={imgOf(imgs, e.f.id, 40)} /></span>
+  <span class="th"><FoodThumb cat={loggedCat(db, e.f.id)} size={40} img={imgOf(imgs, e.f.id, 40)} /></span>
   <span class="nm">{e.f.n}</span>
   <small class="amt">{#if e.rep}<i class="rm" role="img" aria-label={t('food.rep.mark')}><RepeatMark size={12} /></i>{/if}{amountText(e)}</small>
   <b class="kc money">{formatNum(kcalOf(e))}<span class="sr-only"> kcal</span></b>

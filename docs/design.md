@@ -358,7 +358,10 @@ Health data over time for the personal trainer, one person at a time, computed o
 `items/dinner`, set 3px below the pill's centre so the bowl, not its nori, sits mid-pill) grows it out
 of the bowl like けんこう (full height; whose day, title ごはん and ✕; ‹ in whose place while a level is open). What each of us ate, typed in by hand; it never earns ベル.
 Everyone sees everyone's meals, the guest's phone too; only the owner changes an entry. Its code, its strings
-(`i18n/food.*.json`) and the food data load with the first opening (the data with the first search, or a moment after my day shows a catalogue entry: 最新の値にする).
+(`i18n/food.*.json`) load with the first opening. The day renders from its entries' snapshots and never waits on the
+food data: the catalogue loads with the first search or amount, or at idle after the open (`foodUi.ts` foodDbSoon: 600 ms,
+then an idle moment) once a day shows a catalogue entry, fetched and parsed in a worker (`food/dataset.worker.ts`), its
+items handed over in slices so no task is a whole file's (docs/perf-plan.md A4).
 
 - **Tabs:** first, right under the title bar (stable across tabs), けんこう's group switch (`ui/Segmented`, a list
   of tabs: `Food.svelte` TABS): きろく (on each opening; its icon NH's rice cooker, `art.ts` FOOD_TAB_ART) · グラフ (`FoodChart`). Under it, per tab: きろく the day row, グラフ the range row
@@ -399,7 +402,8 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   グラフ's kcal chip). Never coral, never blocking: けってい still saves it. No note for the other goals.
 - **Meals:** 朝ごはん · 昼ごはん · 夜ごはん · おやつ, a card each with its kcal, under its header (with entries) its protein as
   a chip (「たんぱく質 28g」, the leaf's once at the per-meal aim: `profile.ts` mealProteinTarget, a third of the day's
-  protein goal, at least 20 g; 25 g with none; the aim in its spoken words), and a row per entry (its 40px picture box, FoodThumb: the picture, else the category's tile; the food, its
+  protein goal, at least 20 g; 25 g with none; the aim in its spoken words), and a row per entry (its 40px picture box, FoodThumb: the picture, else the category's tile, from the catalogue or, before it is in, as this
+  phone last saw it: `foodUi.ts` loggedCat, the latest 500 logged foods' in `island.foodCats`; the food, its
   amount in one format, a weight once: 「茶碗1杯（150g）」, 「1パック（110g）」, 「中ジョッキ×2（700ml）」; kcal). On my
   day ＋ → the search (its field focused in the same tap, so the iPhone's keyboard comes up), an entry → its amount
   at once (from its snapshot: its own portion; the catalog's portions swapped in when they come); anyone else's day is
@@ -413,9 +417,8 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   past 0.05 g or become known or unknown; fibre and alcohol only when both know them, so an entry from before them isn't
   flagged for that alone; not when it now logs by the serving or by weight instead) has a small leaf-text link under its
   row, 「最新の値にする（729→765 kcal）」: a tap re-snapshots it (its day, meal, grams and portion kept: an ordinary edit,
-  `refreshFood`), 「「…」を 最新の値に しました」. Nothing is ever updated by itself; anyone else's day never offers it. The
-  catalogue loads for it a moment after my day shows an entry of it (it is the search's data too; the products when
-  they come).
+  `refreshFood`), 「「…」を 最新の値に しました」. Nothing is ever updated by itself; anyone else's day never offers it. It
+  shows once the catalogue is in (loaded at idle after the open; the products when they come).
   **Several foods a trip** (the user approved, 2026-11-05): a new entry logged from a meal's search (its amount's
   ついか, a recipe's or a custom food's) comes back to that search, not the day: the field cleared and focused in the
   same tap (the keyboard stays up), and under it 「ついかした もの（n）」, this trip's entries (each with ✕: removed at
