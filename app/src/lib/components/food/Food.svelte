@@ -21,7 +21,7 @@
   import '#lib/i18n/kenkou.ts'; // けんこう's: the period dropdown
   import { flushSync, tick, type Snippet } from 'svelte';
   import type { LocalDate, Who } from '#lib/types.ts';
-  import { customGrams, customSnap, FOOD_GOAL_OF, MEALS, newFoodId, type FoodCustom as Custom, type FoodEntry, type FoodGoalOf, type FoodSnap, type Meal } from '#lib/contract/food.ts';
+  import { customGrams, customSnap, FOOD_GOAL_OF, MEALS, newFoodId, RECIPE, type FoodCustom as Custom, type FoodEntry, type FoodGoalOf, type FoodSnap, type Meal } from '#lib/contract/food.ts';
   import { copySources, customs, foodDay, foodEntries, foodGoal, recipes, repeatOn, repeats, type CopySource, type Recipe } from '#lib/model/food.ts';
   import { mealProteinTarget } from '#lib/model/profile.ts';
   import {
@@ -120,7 +120,7 @@
     | { k: 'quick'; meal: Meal }
     | { k: 'repeat'; meal: Meal }
     | { k: 'recipe'; id: string | null }
-    | { k: 'rsearch' }
+    | { k: 'rsearch'; from: number }
     | ({ k: 'ritem'; g0?: number; u0?: string; i?: number } & Picked)
     | { k: 'rlog'; r: Recipe; meal: Meal };
   let stack = $state<Level[]>([]);
@@ -207,16 +207,19 @@
   }
   /** A row's own ＋ (one tap, no amount): its default portion, or a recent one's amount as I had it. */
   function quick(item: Item, meal: Meal, g?: number, u?: string, f?: FoodSnap) {
-    const p = pickOf(item, f);
-    const d = g === undefined ? (p.sv && p.item.portions?.length ? p.item.portions : portionsOf(p.item))[0] : null;
-    const gg = d ? d.g : g!;
-    const uu = d ? portionLabel(d, 1) : (u ?? null);
+    const { p, gg, uu } = asItComes(item, g, u, f);
     const r = p.cid ? logCustom({ customId: p.cid, d: date, m: meal, g: gg, u: uu ?? undefined }) : logFood({ d: date, m: meal, g: gg, f: snapOf(p, uu) });
     if (r.ok && r.id) {
       said('food.added', { meal: t(`food.meal.${meal}`) });
       const l = top;
       if (l?.k === 'search') l.added = [...l.added, r.id];
     }
+  }
+  /** A food as a row's ＋ takes it: its default portion (a serving's for one with no weight), or a recent one's amount. */
+  function asItComes(item: Item, g?: number, u?: string, f?: FoodSnap) {
+    const p = pickOf(item, f);
+    const d = g === undefined ? (p.sv && p.item.portions?.length ? p.item.portions : portionsOf(p.item))[0] : null;
+    return { p, gg: d ? d.g : g!, uu: d ? portionLabel(d, 1) : (u ?? null) };
   }
   // ---- クイック: one entry of kcal (and what else is known), no food saved (foodUi.ts quickSnap: an `sv` snapshot)
   let qdraft = $state<CustomDraft>(quickDraft());
@@ -242,8 +245,8 @@
     }
   }
   /** ✕ on one of this trip's: removed (it was only just logged; no とりけす). */
-  function unadd(e: FoodEntry) {
-    if (removeFood(e.id).ok) cue('undo');
+  function unadd(id: string) {
+    if (removeFood(id).ok) cue('undo');
   }
 
   function add(item: Item, meal: Meal, g0?: number, u0?: string, f?: FoodSnap) {
@@ -361,12 +364,25 @@
     savedAs = r ? JSON.stringify(draft) : null;
     go({ k: 'recipe', id: r?.id ?? null }, r ? '[data-amount-open]' : '[data-recipe-new]');
   }
+  /** A new ingredient from the ingredient search (its amount's 追加, a custom food made for it) comes back to that
+   *  search, its field focused, for the next (as a meal's trip); a changed one, to the recipe. */
   function itemDone(l: Extract<Level, { k: 'ritem' }>, v: { g: number; u: string | null }) {
     const x = { g: v.g, f: snapOf(l, v.u) };
     if (l.i === undefined) draft.it.push(x);
     else draft.it[l.i] = x;
-    toRecipeLevel();
+    const i = stack.findIndex((s) => s.k === 'rsearch');
+    if (l.i !== undefined || i < 0) return toRecipeLevel();
+    backTo(i + 1);
+    focusQ();
   }
+  /** A row's ＋ in the ingredient search: into the recipe as it comes, the search kept for the next. */
+  function itemNow(item: Item, g?: number, u?: string, f?: FoodSnap) {
+    if (draft.it.length >= RECIPE.items) return;
+    const { p, gg, uu } = asItComes(item, g, u, f);
+    draft.it.push({ g: gg, f: snapOf(p, uu) });
+  }
+  /** This trip's ingredients (`from` on), each with its index in the draft as its id (✕ takes it out). */
+  const tripOf = (from: number) => draft.it.slice(from).map((x, i) => ({ id: String(from + i), ...x }));
   function itemRemove(i: number) {
     draft.it.splice(i, 1);
     toRecipeLevel();
@@ -376,9 +392,22 @@
     const sv = servingOnly(x.f);
     openSnap({ k: 'ritem', item: itemOf(x.f, foodDbNow(), x.g), ...(sv ? { sv, snap: x.f } : {}), g0: x.g, u0: x.f.u, i }, x, `[data-recipe-item="${i}"]`);
   }
+  /** The meal a new recipe is being made from (its search under it), to log one serving into on 保存して追加. */
+  const madeFor = (id: string | null): Meal | null => {
+    const l = id ? null : stack.find((x) => x.k === 'search');
+    return l?.k === 'search' ? l.meal : null;
+  };
   function recipeSave(id: string | null) {
-    if (saveRecipe({ id: id ?? undefined, n: draft.n, sv: draft.sv, it: draft.it }).ok) said('food.rcp.saved', { name: draft.n.trim() });
-    toSearch();
+    const res = saveRecipe({ id: id ?? undefined, n: draft.n, sv: draft.sv, it: draft.it });
+    if (res.ok) said('food.rcp.saved', { name: draft.n.trim() });
+    const meal = madeFor(id);
+    const r = meal && res.ok && res.id && m ? recipes(m.state).find((x) => x.id === res.id) : undefined;
+    if (!meal || !r) return toSearch();
+    // 保存して追加: one serving (1人前) logged too, back to the meal's search
+    const one = recipeItem(r).portions![0];
+    const lr = logRecipe({ recipeId: r.id, d: date, m: meal, g: one.g, u: one.label });
+    if (lr.ok) said('food.added', { meal: mealName(meal) });
+    logged(lr.id);
   }
   function recipeRemove(id: string) {
     if (removeRecipe(id).ok) said('food.rcp.removed', { name: draft.n }, true);
@@ -508,13 +537,16 @@
       {@const r = id ? allRecipes.find((x) => x.id === id) : undefined}
       {@const theirs = r && r.who !== me ? r : null}
       {#key id}
-        <FoodRecipe bind:draft owner={theirs ? ownerOf(theirs) : null} saved={!!r && !theirs} clean={clean} onadd={() => go({ k: 'rsearch' }, '[data-recipe-add]')}
+        <FoodRecipe bind:draft owner={theirs ? ownerOf(theirs) : null} saved={!!r && !theirs} clean={clean} onadd={() => { go({ k: 'rsearch', from: draft.it.length }, '[data-recipe-add]'); focusQ(); }} andLog={!!madeFor(id)}
           onitem={editItem} onsave={() => recipeSave(id)} onremove={() => id && recipeRemove(id)} oncopy={recipeCopy}
           onlog={up} />
       {/key}
     {:else if top?.k === 'rsearch'}
+      {@const room = draft.it.length < RECIPE.items}
       <FoodSearch {recent} onpick={(item, g, u, f) => go({ k: 'ritem', ...pickOf(item, f), g0: g, u0: u })} {names} customs={allCustoms}
-        oncustom={(c) => go({ k: 'ritem', ...pickOf(customItem(c)) })} oncreate={(n) => openCustom(null, { ingredient: true }, '[data-custom-new]', n)} />
+        oncustom={(c) => go({ k: 'ritem', ...pickOf(customItem(c)) })} oncreate={(n) => openCustom(null, { ingredient: true }, '[data-custom-new]', n)}
+        onquick={room ? itemNow : undefined} oncustomquick={room ? (c) => itemNow(customItem(c)) : undefined}
+        added={tripOf(top.from)} onunadd={(id) => draft.it.splice(Number(id), 1)} addedHead="food.rcp.addedHead" onfinish={toRecipeLevel} />
     {:else if top?.k === 'custom'}
       {@const l = top}
       {@const c = l.id ? allCustoms.find((x) => x.id === l.id) : undefined}

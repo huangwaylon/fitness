@@ -453,23 +453,31 @@ test('マイレシピ: made from a meal’s search (2 ingredients, 2人前), lis
   await expect(lv.locator('[data-recipe-remove]')).toHaveCount(0);
   await lv.locator('[data-recipe-n]').fill('テストごはん');
   await expect(lv.locator('[data-recipe-sv]')).toHaveText('2人前');
-  const pick = async (grams?: string) => {
-    await sheet(page).locator('[data-recipe-add]').click();
-    await expect(h2).toHaveText('材料を追加');
-    await expect(sheet(page).locator('[data-food-recipes], [data-recipe-new]')).toHaveCount(0); // no recipe in a recipe
-    await sheet(page).locator('[data-food-q]').fill('ごはん');
-    const rice = sheet(page).locator('[data-food-results] button', { hasText: 'ごはん（精白米）' }).first();
-    await expect(rice).toBeVisible({ timeout: 15_000 });
-    await rice.click();
-    await expect(sheet(page).locator('[data-pick-meal]')).toHaveCount(0); // an ingredient: no meal
-    if (grams) await sheet(page).locator('[data-grams]').fill(grams);
-    await expect(sheet(page).locator('[data-done]')).toHaveText('追加');
-    expect(await overflowOf(page)).toEqual([]);
-    await sheet(page).locator('[data-done]').click();
-    await expect(h2).toHaveText('新しいレシピ');
-  };
-  await pick();
-  await pick('100');
+  // 材料を追加: a trip, as a meal's: a row's ＋ puts it in as it comes, the amount's 追加 comes back here; 完了 the recipe
+  await sheet(page).locator('[data-recipe-add]').click();
+  await expect(h2).toHaveText('材料を追加');
+  await expect(sheet(page).locator('[data-food-q]')).toBeFocused();
+  await expect(sheet(page).locator('[data-food-recipes], [data-recipe-new]')).toHaveCount(0); // no recipe in a recipe
+  const q = sheet(page).locator('[data-food-q]');
+  const trip = sheet(page).locator('[data-food-added]');
+  await q.fill('ごはん');
+  const riceRow = sheet(page).locator('[data-food-results] li:has([data-item="mext:01088"])');
+  await riceRow.locator('[data-quick]').click({ timeout: 15_000 });
+  await expect(h2).toHaveText('材料を追加'); // still here
+  await expect(trip.locator('h3')).toHaveText('追加した材料（1）');
+  await expect(trip.locator('[data-added]')).toContainText('茶碗1杯（150g）');
+  await q.fill('ごはん');
+  await riceRow.locator('button.it').click();
+  await expect(sheet(page).locator('[data-pick-meal]')).toHaveCount(0); // an ingredient: no meal
+  await sheet(page).locator('[data-grams]').fill('100');
+  await expect(sheet(page).locator('[data-done]')).toHaveText('追加');
+  expect(await overflowOf(page)).toEqual([]);
+  await sheet(page).locator('[data-done]').click();
+  await expect(h2).toHaveText('材料を追加');
+  await expect(trip.locator('[data-added]')).toHaveCount(2);
+  await expect(q).toBeFocused();
+  await trip.locator('[data-food-finish]').click();
+  await expect(h2).toHaveText('新しいレシピ');
   await expect(lv.locator('[data-recipe-item]')).toHaveCount(2);
   await expect(lv.locator('[data-recipe-item]').first()).toContainText('茶碗1杯（150g）');
   await expect(lv.locator('[data-recipe-n]')).toHaveValue('テストごはん'); // the draft kept across the levels
@@ -480,10 +488,14 @@ test('マイレシピ: made from a meal’s search (2 ingredients, 2人前), lis
   await expect(lv.locator('[data-recipe-live-per]')).toHaveText('130 kcal');
   await lv.locator('[data-sv-step="-1"]').click();
   expect(await overflowOf(page)).toEqual([]);
+  // made from 昼ごはん's search: 保存して追加, one serving logged too
+  await expect(lv.locator('[data-recipe-save]')).toHaveText('保存して追加');
   await lv.locator('[data-recipe-save]').click();
 
-  // back in the search: listed first (the latest changed), a serving's kcal
+  // back in the search, the serving on this trip; the recipe listed first (the latest changed), a serving's kcal
   await expect(h2).toHaveText('昼ごはん');
+  await expect(sheet(page).locator('[data-food-added] [data-added]')).toHaveCount(1);
+  await expect(sheet(page).locator('[data-food-added] [data-added]')).toContainText('テストごはん');
   const row = sheet(page).locator('[data-food-recipes] [data-recipe]').first();
   await expect(row.locator('.nm')).toHaveText('テストごはん');
   await expect(row).toContainText('195 kcal');
@@ -497,7 +509,7 @@ test('マイレシピ: made from a meal’s search (2 ingredients, 2人前), lis
   await sheet(page).locator('[data-done]').click();
   await sheet(page).locator('[data-food-finish]').click(); // 完了: the day
   await expect(h2).toHaveText('ごはん');
-  await expect.poll(() => kcalOf(page)).toBe(before + 195);
+  await expect.poll(() => kcalOf(page)).toBe(before + 390); // 保存して追加's serving and this one
   await expect(sheet(page).locator('section[data-meal=l] [data-entry]').last()).toContainText('テストごはん');
   await expect(sheet(page).locator('section[data-meal=l] [data-entry]').last()).toContainText('1人前（125g）');
 
@@ -1126,6 +1138,8 @@ test('マイ食品 with a weight, made while adding a recipe ingredient: P/F/C, 
   await expect(sheet(page).locator('[data-food-live]')).toContainText('20.0');
   await expect(sheet(page).locator('[data-pick-meal]')).toHaveCount(0);
   await sheet(page).locator('[data-done]').click();
+  await expect(h2).toHaveText('材料を追加'); // back to the ingredient search's trip; 完了: the recipe
+  await sheet(page).locator('[data-food-finish]').click();
 
   await expect(h2).toHaveText('新しいレシピ');
   await expect(rl.locator('[data-recipe-n]')).toHaveValue('バーと ごはん'); // the draft kept across the levels

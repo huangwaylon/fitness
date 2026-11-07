@@ -130,6 +130,7 @@
   "food.rcp.mine": "My recipes",
   "food.rcp.title": "Recipe",
   "food.rcp.addItem": "Add an ingredient",
+  "food.rcp.addedHead": "Ingredients added ({n})",
   "food.rcp.item": "Ingredient",
   "food.rcp.itemAdd": "Add",
   "food.rcp.itemRemove": "Remove",

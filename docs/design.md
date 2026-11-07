@@ -522,9 +522,11 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   the amount for the recipe as a food (1人前 first, ぜんぶ, 100 g; the search's meal), logging an ordinary entry of mine
   on the day shown; its 「レシピを ひらく」 (left of ついか) opens it. ＋ レシピを つくる (under the search's field) opens a
   new one. Mine opens in the editor (`FoodRecipe`): on top its picture (the first four of its ingredients with one, 2 × 2; one alone 160 px; none: nothing), the name, なん人前 (−/＋, 1–20), the ingredients (each a row like a
-  meal's; a tap → the amount: ほぞん / けす), ＋ ざいりょうを ついか (the search and the amount, no meal: ついか puts it in
+  meal's; a tap → the amount: ほぞん / けす), ＋ ざいりょうを ついか (a trip, as a meal's search's: each row's ＋ puts it in as
+  it comes, a row → the amount, no meal, whose ついか comes back to the search; 「追加した材料（n）」 with ✕ and 完了 back to
   the recipe), 1人前あたり and ぜんぶで live, then けす (asked twice: ほんとうに けす？) and ほぞん (waiting until something
-  changed); both go back to the meal's search. Anyone else's: the same read-only, 「〇〇の レシピ」, with 「コピーして
+  changed); both go back to the meal's search. A new one made from a meal's search saves as 「保存して追加」: one
+  serving (1人前) logged to that meal too, on its trip. Anyone else's: the same read-only, 「〇〇の レシピ」, with 「コピーして
   へんしゅう」 (a recipe of mine, opened in the editor) and 「ごはんに ついか」 (back to its amount).
 - **マイ食品 (the user: "create my own food and record its calories for future use in case there's a food not in the
   existing database"):** everyone's custom foods (`food_custom`, contract/food.ts `customSnap`), a food typed in as one

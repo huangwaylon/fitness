@@ -29,8 +29,10 @@
     onremove?: () => void;
     oncopy?: () => void;
     onlog?: () => void;
+    /** A new recipe made from a meal's search: 保存して追加 (saved, and one serving logged to that meal). */
+    andLog?: boolean;
   }
-  let { draft = $bindable(), owner = null, saved = false, clean = false, onadd, onitem, onsave, onremove, oncopy, onlog }: Props = $props();
+  let { draft = $bindable(), owner = null, saved = false, clean = false, onadd, onitem, onsave, onremove, oncopy, onlog, andLog = false }: Props = $props();
 
   const ro = $derived(owner !== null);
   const tot = $derived(recipeTotals(draft.it));
@@ -136,7 +138,7 @@
       {#if saved}
         <button type="button" class="btn paper small" data-sfx={removing ? 'undo' : 'tick'} data-recipe-remove onclick={remove}>{t(removing ? 'food.rcp.removeSure' : 'food.rcp.remove')}</button>
       {/if}
-      <button type="submit" class="btn small" data-sfx="confirm" data-recipe-save aria-disabled={!ok}>{t('food.rcp.save')}</button>
+      <button type="submit" class="btn small" data-sfx="confirm" data-recipe-save aria-disabled={!ok}>{t(andLog ? 'food.my.saveLog' : 'food.rcp.save')}</button>
     {/if}
   </div>
 </form>
