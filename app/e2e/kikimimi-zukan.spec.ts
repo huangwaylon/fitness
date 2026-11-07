@@ -57,7 +57,8 @@ test('from the hub: ことば, こえ, なかま and スタンプ over the seede
   await expect(words.locator('[data-kiki-phrase="ph-rain-check"]')).toHaveAttribute('data-caught', 'true');
   const sec = words.locator('[data-kiki-zukan-sec="tomodachi"]');
   await expect(sec.locator('[data-kiki-phrase][data-caught]')).toHaveCount(5);
-  await expect(sec.locator('.shead small')).toHaveText('5 / 8');
+  // (of all the section's phrases: the draft units' too under ?demo, so the count follows the content)
+  await expect(sec.locator('.shead small')).toHaveText(`5 / ${await sec.locator('[data-kiki-phrase]').count()}`);
   await expect(sec.locator('[data-kiki-new]')).toHaveCount(5);
   await expect(sec.locator('[data-kiki-phrase="ph-still-on"]')).not.toHaveAttribute('data-caught');
   // the bedtime serial's: chapter 1 heard to the end, its phrases caught (no ★)
