@@ -6,9 +6,11 @@
   // plays it, the marks' key, the Japanese, the trap's note, 解説 and the words I heard wrong. もういっかい: the host a new
   // deal of the same place (solo at once, shared re-invited), another back to the invite.
   import type { QuizGame } from '../game.svelte.ts';
-  import { tileOk, slotOk, EMPTY, type TileCard } from '#lib/kikimimi/games/tile/def.ts';
+  import { EMPTY } from '#lib/kikimimi/games/listened.ts';
+  import { tileOk, slotOk, type TileCard } from '#lib/kikimimi/games/tile/def.ts';
   import { firstListen } from '#lib/kikimimi/score.ts';
-  import { boardFor, isCoop, mySlots } from './board.ts';
+  import { boardFor, mySlots } from './board.ts';
+  import { isCoop } from '../listenView.ts';
   import ResultsFrame from '../frame/Results.svelte';
   import ReviewList from '../frame/ReviewList.svelte';
   import Why from '../frame/Why.svelte';

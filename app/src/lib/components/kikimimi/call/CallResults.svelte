@@ -5,7 +5,8 @@
   // call, tapped open, with its basket, the rows I heard wrong, the trap's note, 解説, ▶︎ and its transcript.
   // もういっかい: the host a new deal of the same place (solo at once, shared re-invited), another back to the invite.
   import type { QuizGame } from '../game.svelte.ts';
-  import { EMPTY, callOk, rowOk, type CallCard } from '#lib/kikimimi/games/call/def.ts';
+  import { EMPTY } from '#lib/kikimimi/games/listened.ts';
+  import { callOk, rowOk, type CallCard } from '#lib/kikimimi/games/call/def.ts';
   import { firstListen } from '#lib/kikimimi/score.ts';
   import { basketOf, myRows, roundFor, whyOf } from './board.ts';
   import Basket from './Basket.svelte';

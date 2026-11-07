@@ -10,9 +10,11 @@
   // there: co-op the team's), then 解説 (`why`).
   import type { QuizGame } from '../game.svelte.ts';
   import type { TileCard } from '#lib/kikimimi/games/tile/def.ts';
-  import { EMPTY, slotOk, tileOk } from '#lib/kikimimi/games/tile/def.ts';
+  import { EMPTY } from '#lib/kikimimi/games/listened.ts';
+  import { slotOk, tileOk } from '#lib/kikimimi/games/tile/def.ts';
   import { RIGHT, firstListen } from '#lib/kikimimi/score.ts';
-  import { blank, boardFor, easy, isCoop, mySlots, teamWords } from './board.ts';
+  import { boardFor, mySlots, teamWords } from './board.ts';
+  import { blank, easy, isCoop } from '../listenView.ts';
   import RoundFrame from '../frame/RoundFrame.svelte';
   import RevealFrame from '../frame/RevealFrame.svelte';
   import Why from '../frame/Why.svelte';

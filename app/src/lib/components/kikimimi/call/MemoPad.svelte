@@ -5,7 +5,7 @@
   // shows its right chip (○), a wrong pick struck (×: mine, or co-op the team's), and the right chip's Japanese when it
   // reads otherwise (`cja`).
   import type { AskedRow } from '#lib/kikimimi/games/call/def.ts';
-  import { EMPTY } from '#lib/kikimimi/games/call/def.ts';
+  import { EMPTY } from '#lib/kikimimi/games/listened.ts';
   import { t } from '#lib/i18n/index.ts';
 
   let { rows, mine, placed, open, reveal, team, ja, onpick }: {

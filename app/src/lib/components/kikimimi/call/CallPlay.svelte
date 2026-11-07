@@ -9,9 +9,11 @@
   // filling with what we caught (the rows still to come blank), then the trap's note, 解説 and the call's transcript.
   import type { QuizGame } from '../game.svelte.ts';
   import type { CallCard } from '#lib/kikimimi/games/call/def.ts';
-  import { EMPTY, callOk, rowOk } from '#lib/kikimimi/games/call/def.ts';
+  import { EMPTY } from '#lib/kikimimi/games/listened.ts';
+  import { callOk, rowOk } from '#lib/kikimimi/games/call/def.ts';
   import { RIGHT, firstListen } from '#lib/kikimimi/score.ts';
-  import { basketOf, blank, hear, isCoop, myRows, revealRows, rightJa, roundFor, teamMemo, whyOf } from './board.ts';
+  import { basketOf, hear, myRows, revealRows, rightJa, roundFor, teamMemo, whyOf } from './board.ts';
+  import { blank, isCoop } from '../listenView.ts';
   import MemoPad from './MemoPad.svelte';
   import Basket from './Basket.svelte';
   import CallLog from './CallLog.svelte';

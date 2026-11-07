@@ -10,9 +10,9 @@ import type { ListenEntry, ListenPart } from '../../listen.ts';
 import { RoundSession, WINDOWS } from '../../round/session.ts';
 import { registry } from '../../round/registry.ts';
 import { playIn, playOut, type PlayIn, type RoundOut } from '../../round/wire.ts';
+import { EMPTY, filesOf, listenOpts, rawOf } from '../listened.ts';
 import {
-  EMPTY, SHARED, TACHI_QS, facesOf, givenClaim, opinionsOf, pickOf, rawOf, tachiDeal, tachiFiles, tachiGame, tachiOk, tachiOpts, tachiRecord,
-  tachiRounds, tachiValid, type TachiCard
+  SHARED, TACHI_QS, facesOf, givenClaim, opinionsOf, pickOf, tachiDeal, tachiGame, tachiOk, tachiRecord, tachiRounds, tachiValid, type TachiCard
 } from './def.ts';
 
 const FILES = Object.keys(INDEX.listen).filter((u) => INDEX.listen[u][0] === 'tachi');
@@ -28,10 +28,10 @@ const answerFor = (c: TachiCard, faces = [0, 1, 2]): number | number[] =>
 describe('たちぎき: the deal', () => {
   it('deals the listened files at the lobby’s place only', () => {
     const listen: Record<string, ListenEntry> = { 's2-tachi-a': ['tachi', 3, 'listened'], 's2-tachi-b': ['tachi', 3, 'draft'], 's3-tachi-a': ['tachi', 4, 'listened'], 's2-tile': ['tile', 3, 'listened'] };
-    expect(tachiFiles(4, listen)).toEqual(['s2-tachi-a']);
-    expect(tachiFiles(6, listen)).toEqual(['s3-tachi-a']);
-    expect(tachiFiles(3, listen)).toEqual([]);
-    expect([4, 6].map((lv) => tachiFiles(lv, INDEX.listen))).toEqual([[], []]); // (this build: every tachi file a draft)
+    expect(filesOf('tachi', 4, listen)).toEqual(['s2-tachi-a']);
+    expect(filesOf('tachi', 6, listen)).toEqual(['s3-tachi-a']);
+    expect(filesOf('tachi', 3, listen)).toEqual([]);
+    expect([4, 6].map((lv) => filesOf('tachi', lv, INDEX.listen))).toEqual([[], []]); // (this build: every tachi file a draft)
   });
 
   it('is the same for a seed: two conversations, three rounds each in order, another seed another deal', () => {
@@ -163,7 +163,7 @@ describe('たちぎき: a co-op game over two phones', () => {
   it('each places their own face and the shared one; the team has a round when both are right, the same on both phones', () => {
     const r = pair();
     // A (ear かわ) opens もり: easy for A (the shared claim placed); B (ear もり) joins: as authored
-    r.act('A', (x) => x.open({ gm: 'tachi', o: tachiOpts.encode({ lv: 4, timer: 30, ear: 1 }) }, T0));
+    r.act('A', (x) => x.open({ gm: 'tachi', o: listenOpts.encode({ lv: 4, timer: 30, ear: 1 }) }, T0));
     r.act('A', (x) => x.invite(T0));
     r.act('B', (x) => x.join(T0, undefined, 2));
     expect(r.s.B.view(T0)).toMatchObject({ phase: 'lobby', gm: 'tachi', tiers: { A: 1, B: 2 } });
