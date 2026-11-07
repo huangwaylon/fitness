@@ -469,7 +469,9 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   top ten holds no wash). A secondary dataset's items rank 1.5 tiers lower, a packaged product's (Open Food
   Facts, JBFD) 2. `food/load.test.ts`'s golden queries (55 common ones: ご飯 · みそ汁 · 卵 · 納豆 · 鶏むね · サラダチキン ·
   プロテイン · おにぎり · ラーメン · うどん · 水 …) pin the first result, and no product above a generic food in the top
-  three. A keystroke's search over the 20k items takes ~0.7 ms in Playwright's WebKit on a Mac (expect 2–3× on an iPhone).
+  three. A keystroke's search over the 20k items takes ~0.7 ms in Playwright's WebKit on a Mac (expect 2–3× on an iPhone);
+  its frame is the rows': the first 24 are drawn, the rest once the list's end is 400 px away (Chrome at 4× CPU, the
+  first keystroke's input to frame: ~77 → ~58 ms).
 - **Amount:** the food's picture when it has one (160 px, centred, alt 「…の イメージ」, the イメージ badge at its top
   left: every picture is generated; none: no picture area; a tap, `FoodPhoto`: it enlarged in a small modal of its own,
   min(100vw − 64, 360) px, with the badge, the name, the 「これは…」 line and 「AI生成の イメージ
