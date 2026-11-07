@@ -442,8 +442,9 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   right end of 最近's heading, one short row of chips: ＋ レシピ (a meal's search only), ＋ マイ食品 and ⚡ クイック (named in
   full for a screen reader: レシピを作る, 食品を作る, クイック追加), hidden once something is typed (room for the results over
   the keyboard; nothing found, its card has じぶんで つくる): four さいきん rows show over the iPhone's keyboard; empty,
-  さいきん (my latest entry of each food, as I had it); typed, the best matches: the name, 「✓n 一致」 when n independent
-  sources agree on its kcal (in words on the row: an iPhone never shows a title; on the second line when nothing else is there, so a row is two lines), a product's brand, the food's
+  さいきん (my latest entry of each food, as I had it); typed, the best matches: the name, 「✓ 2つの資料で一致」 when n independent
+  sources agree on its kcal (on the second line when nothing else is there; else a ✓ beside the name, its words its
+  label: a row two lines, never three; the amount says it under the name), a product's brand, the food's
   everyday name in Japanese (`foodUi.ts` glossOf: an older snapshot's catalogue name now, 若どり もも → 鶏もも肉; else the
   food data's vetted `gloss`; never a raw alias or English: mostly none; one line, cut short), and its default
   portion (with its weight) and kcal (さいきん: the amount as I had it, then the everyday name; the 100 g values on the
@@ -482,12 +483,13 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   chip per state (乾 生 ゆで … in process order) with its kcal at the amount it would take, picking one swaps the food
   (its values follow; its name keeps the cut's words, 豚ロース 脂身つき 焼き, and the raw one's portions carry over through
   the yield of a pair they share, 1枚（とんかつ用） 120 g → 90 g, 薄切り1枚 → 15 g: `foodUi.ts` stateItem; a portion label
-  it also has stays picked at its own grams, 1/2枚 125 g 生 → 90 g 焼き; typed grams stay; else its default), one leaf line for 生 (パックの重さなら 生) and for 乾 beside ゆで (ゆでる前の重さなら
+  it also has stays picked at its own grams, 1/2枚 125 g 生 → 90 g 焼き; typed grams stay; else its default), one leaf line for a meat's or fish's 生 (パックの重さなら 生) and for 乾 beside ゆで (ゆでる前の重さなら
   乾); on my entry a ほぞん (`editFood` f), a recipe's ingredient alike; its portions as chips (100 g last), −/＋ by a whole portion for the things
   counted (本 · 個 · 杯 · 缶 · 枚 · 切れ · 貫 · パック · ジョッキ …, and the 1人前 of a food eaten by the piece: おにぎり,
   むすび, ゆで卵, 目玉焼き, ハンバーグ …: foodUi.ts PIECE) and by half for 茶碗, 人前 and weights (±10 g once
   grams are typed), a grams field (ml for a drink; typing grams leaves the portions); kcal and P/F/C/salt live; which
-  meal; ついか, or ほぞん / けす for my entry (けす at once, its banner's とりけす logs it again).
+  meal (a row above 量, clear of the foot's ついか); ついか, or ほぞん / けす for my entry (a いつもの's: 「変更はこの日だけです
+  （いつものはそのまま）」 above them) (けす at once, its banner's とりけす logs it again).
 - **A level's actions** (the amount, マイ食品, マイレシピ, いつもの; theme.css `.level-acts`): at its end, held at the
   sheet's foot while the level runs past the screen and over the keyboard while a field is typed in; the action (leaf)
   takes the row's room, the cream ones (けす, レシピを ひらく, コピーして へんしゅう) their own.
@@ -519,7 +521,7 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   (so the goals are set before the first meal).
 - **マイレシピ:** everyone's recipes (`food_recipe`), in a meal's search: all after さいきん (the latest changed first),
   the matching ones above the catalog's; a row: its name, who set it and how many servings, a serving's kcal. One →
-  the amount for the recipe as a food (1人前 first, ぜんぶ, 100 g; the search's meal), logging an ordinary entry of mine
+  the amount for the recipe as a food (1人前 first, ぜんぶ, 100 g; the search's meal, its title too), logging an ordinary entry of mine
   on the day shown; its 「レシピを ひらく」 (left of ついか) opens it. ＋ レシピを つくる (under the search's field) opens a
   new one. Mine opens in the editor (`FoodRecipe`): on top its picture (the first four of its ingredients with one, 2 × 2; one alone 160 px; none: nothing), the name, なん人前 (−/＋, 1–20), the ingredients (each a row like a
   meal's; a tap → the amount: ほぞん / けす), ＋ ざいりょうを ついか (a trip, as a meal's search's: each row's ＋ puts it in as

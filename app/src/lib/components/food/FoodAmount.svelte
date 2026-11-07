@@ -17,7 +17,7 @@
   import { untrack } from 'svelte';
   import type { Meal } from '#lib/contract/food.ts';
   import { FOOD_GRAMS, MEALS } from '#lib/contract/food.ts';
-  import { nutrientsFor, portionsOf, unitOf, variantsOf, type FoodDb, type Item } from '#lib/food/index.ts';
+  import { nutrientsFor, portionsOf, unitOf, variantsOf, verifyOf, type FoodDb, type Item } from '#lib/food/index.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
   import FoodThumb from './FoodThumb.svelte';
@@ -40,10 +40,12 @@
     onremove?: () => void;
     /** What the food came from, to open (a recipe, a custom food). */
     open?: { label: string; run: () => void } | null;
+    /** A いつもの's entry: 保存 / 削除 change this day only (said above them). */
+    once?: boolean;
     /** Another state of the food picked (じょうたい): log that one instead. */
     onitem?: (it: Item) => void;
   }
-  let { item, meal, g0, u0, editing = false, pick = false, serving = false, ondone, onremove, open = null, onitem }: Props = $props();
+  let { item, meal, g0, u0, editing = false, pick = false, serving = false, ondone, onremove, open = null, onitem, once = false }: Props = $props();
 
   const ps = $derived(serving ? (item.portions?.length ? item.portions : [{ label: t('food.my.one'), g: 100 }]) : portionsOf(item));
   /** g or ml: a drink's portions are in ml (100 ml counts as 100 g). */
@@ -93,6 +95,11 @@
   let pictured = $state(false);
   let picBtn: HTMLButtonElement | undefined = $state();
   const gloss = $derived(glossOf(catalogOf(db, item.id) ?? item, item.name));
+  /** How many independent sources agree on its kcal (2 or more: said under its name). */
+  const agree = $derived.by(() => {
+    const v = db ? verifyOf(db, item.id) : null;
+    return v && v.n >= 2 ? v.n : 0;
+  });
   const per = (v: number | null | undefined) => (v === null || v === undefined ? '–' : v.toFixed(1));
 
   function portion(i: number) {
@@ -136,7 +143,8 @@
   const why = $derived.by(() => {
     if (!states.length) return null;
     const has = (s: string) => states.some((x) => x.st === s);
-    if (item.st === '生' && states.some((x) => x.st !== '生' && x.st !== '乾')) return t('food.st.rawWhy');
+    // a pack's weight is raw meat's or fish's (a vegetable's is weighed as it comes)
+    if (item.st === '生' && (item.cat === '肉' || item.cat === '魚介') && states.some((x) => x.st !== '生' && x.st !== '乾')) return t('food.st.rawWhy');
     if (item.st === '乾' && has('ゆで')) return t('food.st.dryWhy');
     return null;
   });
@@ -155,8 +163,17 @@
     {/if}
     <h3>{item.name}</h3>
     {#if gloss || item.desc}<p class="gl" data-food-about>{#if gloss}<span data-gloss>{gloss}</span>{/if}{#if gloss && item.desc}{' — '}{/if}{#if item.desc}<span data-desc>{item.desc}</span>{/if}</p>{/if}
+    {#if agree}<p class="vf" data-verified={agree}>{t('food.verifiedBadge', { n: agree })}</p>{/if}
     <p class="per money">{serving ? t('food.my.per', { u: ps[0].label, k: formatNum(item.kcal) }) : t('food.per100', { k: formatNum(item.kcal) })} · P {per(item.p)} · F {per(item.f)} · C {per(item.c)} · {t('food.s')} {per(item.salt)}</p>
   </section>
+
+  {#if !pick}
+    <div class="seg" role="group" aria-label={t('food.whichMeal')}>
+      {#each MEALS as id (id)}
+        <button type="button" class="sb" aria-pressed={m === id} data-pick-meal={id} data-sfx={m === id ? 'none' : 'tick'} onclick={() => (m = id)}>{t(`food.meal.${id}`)}</button>
+      {/each}
+    </div>
+  {/if}
 
   <section class="card">
     {#if states.length}
@@ -199,14 +216,8 @@
     </dl>
   </section>
 
-  {#if !pick}
-    <div class="seg" role="group" aria-label={t('food.whichMeal')}>
-      {#each MEALS as id (id)}
-        <button type="button" class="sb" aria-pressed={m === id} data-pick-meal={id} data-sfx={m === id ? 'none' : 'tick'} onclick={() => (m = id)}>{t(`food.meal.${id}`)}</button>
-      {/each}
-    </div>
-  {/if}
 
+  {#if once}<p class="once" data-once>{t('food.rep.once')}</p>{/if}
   <div class="acts level-acts">
     {#if open}<button type="button" class="btn paper small open" data-sfx="page" data-amount-open onclick={open.run}>{open.label}</button>{/if}
     {#if editing}<button type="button" class="btn paper small" data-sfx="undo" data-remove onclick={() => onremove?.()}>{t(pick ? 'food.rcp.itemRemove' : 'food.remove')}</button>{/if}
@@ -229,6 +240,8 @@
   .gl { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text); line-height: 1.4; }
   h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; overflow-wrap: anywhere; }
   h4 { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  .vf { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--leaf-text); }
+  .once { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .per { margin: 0; font-size: var(--fs-s); color: var(--text-soft); line-height: 1.4; }
   .why { margin: -2px 2px 4px; font-size: var(--fs-s); font-weight: 700; color: var(--leaf-text); }
   /* the portions: theme.css .chip.big */
