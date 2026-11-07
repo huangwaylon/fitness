@@ -1,0 +1,636 @@
+# 診察で (hl-doctor): wave 2b, もり, からだ (docs/curriculum-wave2.md §3.1). A doctor asking about symptoms ("how long
+# has this been going on?", "does it hurt when…?", "any other symptoms?") and giving instructions ("it's nothing
+# serious", "take it easy", "if it gets worse", "come back in a week"). Catch how often, for how long, and when to come
+# back. The sound: stress (it's NOT broken, it's SPRAINED; TEN days, not until you feel better; if it's NOT better;
+# SYMPtoms, FIFty). The patients who recur: Bea's sore throat and cough (a virus), Dom's ankle (sprained, no sport for
+# two weeks). 受付と 薬局's "twice a day", "with food", "allergic to", "the soonest", 近所の 人's "keep an eye on",
+# よていを かえる's "push it back" and ききかえす's "did you say" and "I mean" are recycled.
+# Its call: call-doctor-chart (content/listen/s2-call-c.yaml).
+# きょうの ひとこと: "Take it easy. And if it gets worse, call me." (無理しないでね。悪くなったら 電話して。)
+schema: 1
+unit: hl-doctor
+name: 診察で
+stage: mori
+domain: karada
+host: julian
+scene: clinic
+sound: stress
+cando:
+  who: 医者
+  does: 症状を 聞いて 指示を 出す
+  cond: 診察室の 早口で
+  catch: 回数・期間・次に 来る 目安
+  short: 医者の 指示と 次に 来る 目安が わかる
+  en: "I can follow a doctor asking about my symptoms and telling me what to do, in fast speech in the exam room, and catch how often, for how long, and when to come back."
+status: draft
+letter:
+  en: "Doctor's orders: you're doing great. You caught how long, how often, and when to come back, even when I talked fast. It's nothing serious, but take it easy this week, okay? If it gets worse, call me. If it gets better, come back in a month and tell me all about it."
+  ja: "いしゃとして いうよ。きみは ちょうしが いい。どのくらい つづいているか、なんかい のむか、いつ また くるか、ぼくが はやくちでも ちゃんと ききとれたね。たいした ことは ないけど、こんしゅうは むりしないでね。わるく なったら でんわして。よく なったら、1かげつごに きて、ぜんぶ きかせてね。"
+ph:
+  - { id: ph-how-long, en: "how long has this been going on?", ja: "いつから ですか？", match: "\\bhow long ha(s|ve) (this|it|that|you)\\b", register: service, scene: "the doctor's first questions", trap: "長さ ではなく「いつから」。期間で 答える" }
+  - { id: ph-nothing-serious, en: "it's nothing serious", ja: "たいした ことは ない", match: "\\bnothing (too )?serious\\b", register: service, scene: "the diagnosis", trap: "nothing を 聞き逃すと 逆の 意味に なる" }
+  - { id: ph-if-it-gets-worse, en: "if it gets worse", ja: "悪くなったら", match: "\\bif (it|this|the [a-z]+|things) gets? worse\\b", register: service, scene: "what to watch for", trap: "worse＝もっと 悪く。worst とは 違う" }
+  - { id: ph-come-back-in, en: "come back in a week", ja: "1週間後に また 来て", match: "\\bcome back (in|after) (a|an|one|two|three|four|five|six|ten|a couple of|a few) (days?|weeks?|months?)\\b", register: service, scene: "the follow-up", trap: "in a week＝1週間後。1週間 以内 ではない" }
+  - { id: ph-take-it-easy, en: "take it easy", ja: "無理しないで", match: "\\btake it easy\\b", register: service, scene: "after a diagnosis", trap: "気楽に ではなく「安静に、無理しない」" }
+  - { id: ph-other-symptoms, en: "any other symptoms?", ja: "ほかに 症状は？", match: "\\b(any )?other symptoms\\b", register: service, scene: "the doctor's questions", trap: "SYMPtoms は 前を 強く。熱・だるさなどを 答える" }
+  - { id: ph-on-and-off, en: "on and off", ja: "ときどき・出たり 消えたり", match: "\\b(on and off|off and on)\\b", register: friend, scene: "describing a symptom", trap: "ずっと ではなく「出たり 止んだり」" }
+  - { id: ph-hurt-when, en: "does it hurt when…?", ja: "〜すると 痛みますか？", match: "\\b(does|did|do) (it|that|this) hurt (when|if|here|there)\\b", register: service, scene: "an exam", trap: "when＝〜すると。時間を 聞いて いない" }
+items:
+  # ---- であい: a sore throat, an ankle ----
+  - id: dr-throat-virus
+    lv: 4
+    type: gist
+    speaker: julian
+    voice: us
+    cast: us-m5
+    en: "So, what brings you in today? I've had a sore throat and a cough. Okay. How long has this been going on? About five days. It's worse at night. Let me take a look. Good news, it's nothing serious. Just a virus. Rest, lots of fluids, and come back in a week if it's not better."
+    ja: "ただのウイルス。休んで、1週間でよくならなければまた来る。"
+    note: "if it's not better＝よくならなければ"
+    choices: ["It's a virus. Rest, and come back in a week if it's not better.", "It's serious. Come back tomorrow.", "It's nothing, so she can skip the rest."]
+    answer: 0
+    cja: ["ウイルス。休んで、1週間でよくならなければまた来る。", "深刻。明日また来る。", "たいしたことないので、休まなくていい。"]
+    why: "ただのウイルスで nothing serious。休んで水分をとり、come back in a week if it's not better（1週間で治らなければ来る）。"
+    ctx: "のどが痛くて、クリニックで診てもらいます"
+    focus: "Rest, lots of fluids, and come back in a week if it's not better."
+    ask: "先生の 話は？"
+    scene: pharmacy
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress] }
+    lines:
+      - { who: julian, cast: us-m5, en: "So, what brings you in today?", ja: "今日はどうされましたか？" }
+      - { who: bea, cast: us-f1, en: "I've had a sore throat and a cough.", ja: "のどが痛くて、せきが出るんです。" }
+      - { who: julian, cast: us-m5, en: "Okay. How long has this been going on?", ja: "なるほど。いつからですか？" }
+      - { who: bea, cast: us-f1, en: "About five days. It's worse at night.", ja: "5日くらい前から。夜がひどいんです。" }
+      - { who: julian, cast: us-m5, en: "Let me take a look. Good news, it's nothing serious. Just a virus. Rest, lots of fluids, and come back in a week if it's not better.", tts: "Lemme take a look. Good news, it's nothing serious. Just a virus. Rest, lotsa fluids, an' come back in a week if it's not better.", ja: "診てみましょう。よかった、たいしたことはありません。ただのウイルスです。休んで、水分をたくさんとって、1週間でよくならなければまた来てください。" }
+  - id: dr-hurt-here
+    lv: 4
+    type: next
+    speaker: julian
+    voice: us
+    cast: us-m5
+    en: "Does it hurt when I press here? Ow! Yeah, right there. Okay. And how about here?"
+    ja: "そこはあまり。痛いのはさっきのところです。"
+    note: "And how about here?＝こっちは どう？"
+    choices: ["Not really. It's mostly that first spot.", "Yeah, press harder. It feels good.", "It hurts when I walk to work."]
+    answer: 0
+    cja: ["そこはあまり。痛いのはさっきのところです。", "はい、もっと強く押して。気持ちいい。", "仕事に歩いていくとき痛いです。"]
+    why: "does it hurt when I press here? は「ここを押すと痛い？」。最初の場所は痛かった。次の場所を聞かれているので、痛むかどうかを答える。"
+    ctx: "足首をひねって、医者に診てもらっています"
+    focus: "Okay. And how about here?"
+    ask: "次の ひとことは？"
+    scene: pharmacy
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress] }
+    lines:
+      - { who: julian, cast: us-m5, en: "Does it hurt when I press here?", ja: "ここを押すと痛みますか？" }
+      - { who: dom, cast: us-m1, en: "Ow! Yeah, right there.", ja: "いたっ！ はい、そこです。" }
+      - { who: julian, cast: us-m5, en: "Okay. And how about here?", tts: "Okay. An' how about here?", ja: "わかりました。では、ここはどうですか？" }
+  - id: dr-r-how-long
+    lv: 4
+    type: reply
+    speaker: phoebe
+    voice: us
+    cast: us-f5
+    en: "And how long has this been going on?"
+    tts: "An' how long has this been goin' on?"
+    ja: "それで、いつからですか？ →「月曜からなので、4日くらいです。」"
+    note: "how long has this been going on＝いつから？"
+    choices: ["Since Monday, so about four days.", "About twenty minutes from here.", "It'll go on until Friday, I think."]
+    answer: 0
+    cja: ["月曜からなので、4日くらいです。", "ここから20分くらいです。", "金曜まで続くと思います。"]
+    why: "how long has this been going on? は「いつから続いている？」。今までの期間を答える。ここからの距離や、これからいつまで続くかの話ではない。"
+    ctx: "クリニックで、医者に症状を話しました"
+    scene: pharmacy
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress] }
+  - id: dr-m-sprain
+    lv: 4
+    type: mean
+    speaker: julian
+    voice: us
+    cast: us-m5
+    en: "It's nothing serious. It's just a sprain, but you'll need to take it easy for a couple of weeks."
+    tts: "It's nothing serious. It's just a sprain, but you'll need ta take it easy for a couple of weeks."
+    ja: "たいしたことはありません。ただの捻挫です。でも、2週間ほど無理しないでください。 → つまり、軽い捻挫だが、2週間は安静に。"
+    note: "take it easy＝無理しない。気楽に ではない"
+    choices: ["It's minor, but he should rest it for about two weeks.", "It's serious, so he needs surgery.", "He can go running tomorrow."]
+    answer: 0
+    cja: ["軽いけれど、2週間ほど安静にする。", "深刻なので手術が必要。", "明日から走っていい。"]
+    why: "nothing serious で、ただの捻挫（sprain）。でも take it easy for a couple of weeks（2週間ほど無理しない）。明日走るのは逆。"
+    ctx: "足首のレントゲンを見ながら、医者が"
+    ask: "つまり、どういう こと？"
+    scene: pharmacy
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress] }
+  - id: dr-n-ten-days
+    lv: 4
+    type: num
+    speaker: julian
+    voice: us
+    cast: us-m5
+    en: "Are you allergic to penicillin? No? Okay. Take these for 10 days, even if you feel better after 3."
+    tts: "Are you allergic ta penicillin? No? Okay. Take these for ten days, even if ya feel better after three."
+    ja: "ペニシリンのアレルギーはありますか？ ない？ わかりました。3日でよくなっても、10日間飲んでください。"
+    note: "even if＝たとえ〜でも。10日は 続ける"
+    choices: ["10 days", "3 days", "13 days"]
+    answer: 0
+    cja: ["10日間", "3日間", "13日間"]
+    why: "TEN を強く言って、10日間飲み切るように指示した。after three は「3日でよくなっても」で、そこでやめてはいけない。13日は足し算の罠。"
+    ctx: "診察のあと、医者が薬について説明します"
+    ask: "何日間 飲む？"
+    scene: pharmacy
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress, numbers] }
+  - id: dr-m-fever
+    lv: 4
+    type: mean
+    speaker: pashmina
+    voice: us
+    cast: us-f5
+    en: "If it gets worse, or the fever goes over 101, don't wait. Come back in right away."
+    tts: "If it gets worse, or the fever goes over a hundred and one, don't wait. Come back in right away."
+    ja: "悪くなったり、熱が101度（約38度）を超えたりしたら、待たずにすぐ来てください。 → つまり、悪化したらすぐ来る。"
+    note: "101＝華氏。約 38度"
+    choices: ["Come back right away if it gets worse.", "Wait a week, even if it gets worse.", "Her fever is 101 right now."]
+    answer: 0
+    cja: ["悪くなったら、すぐまた来る。", "悪くなっても1週間待つ。", "今、熱が101度ある。"]
+    why: "if it gets worse は「悪くなったら」。熱が101度（華氏、約38度）を超えても同じで、don't wait（待たない）ですぐ来る。今の体温の話ではない。"
+    ctx: "診察のあと、看護師が注意を伝えています"
+    ask: "つまり、どう する？"
+    scene: pharmacy
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress, numbers] }
+  # ---- ばめん: the ankle, a headache, tired ----
+  - id: dr-ankle-sprained
+    lv: 4
+    type: gist
+    speaker: julian
+    voice: us
+    cast: us-m5
+    en: "I twisted it playing basketball on Saturday. Okay. Does it hurt when you put weight on it? A little. It hurts on and off. Well, the X-ray looks fine. It's not broken. It's sprained. Ice it, keep it up, and take it easy. No basketball for two weeks."
+    ja: "骨折ではなく捻挫。2週間はバスケ禁止。"
+    note: "NOT broken, SPRAINED。強い 語が 答え"
+    choices: ["It's sprained, not broken. No basketball for two weeks.", "It's broken, so he needs a cast.", "It's fine. He can play this weekend."]
+    answer: 0
+    cja: ["骨折ではなく捻挫。2週間バスケ禁止。", "骨折なのでギプスが必要。", "大丈夫。今週末プレーできる。"]
+    why: "It's not BROKEN. It's SPRAINED. と強く言い分けた。骨折ではなく捻挫。冷やして足を上げ、take it easy で2週間バスケはなし。"
+    ctx: "バスケで足首をひねって、病院に来ました"
+    focus: "It's not broken. It's sprained."
+    ask: "どう だった？"
+    scene: pharmacy
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress, contrast] }
+    lines:
+      - { who: dom, cast: us-m1, en: "I twisted it playing basketball on Saturday.", tts: "I twisted it playin' basketball on Saturday.", ja: "土曜にバスケをしていて、ひねったんです。" }
+      - { who: julian, cast: us-m5, en: "Okay. Does it hurt when you put weight on it?", tts: "Okay. Does it hurt when ya put weight on it?", ja: "なるほど。体重をかけると痛みますか？" }
+      - { who: dom, cast: us-m1, en: "A little. It hurts on and off.", tts: "A little. It hurts on an' off.", ja: "少し。痛くなったり、ならなかったりです。" }
+      - { who: julian, cast: us-m5, en: "Well, the X-ray looks fine. It's not broken. It's sprained. Ice it, keep it up, and take it easy. No basketball for two weeks.", tts: "Well, the X-ray looks fine. It's not broken. It's sprained. Ice it, keep it up, an' take it easy. No basketball for two weeks.", ja: "レントゲンは大丈夫ですね。骨折ではありません。捻挫です。冷やして、足を高くして、無理しないこと。2週間はバスケ禁止です。" }
+  - id: dr-r-take-easy
+    lv: 4
+    type: reply
+    speaker: julian
+    voice: us
+    cast: us-m5
+    en: "So, take it easy for a few days. No gym, okay?"
+    tts: "So, take it easy fer a few days. No gym, okay?"
+    ja: "では、何日か無理しないでくださいね。ジムはなしですよ。 →「わかりました、休みます。ジムはなしで。」"
+    note: "take it easy＝無理しない・安静に"
+    choices: ["Okay, I'll rest. No gym.", "Easy? Great, then just a light workout.", "Thanks, I'll take it to the gym."]
+    answer: 0
+    cja: ["わかりました、休みます。ジムはなしで。", "軽く？ じゃあ軽い運動だけ。", "ありがとう、ジムに持っていきます。"]
+    why: "take it easy は「無理しない」。No gym と念を押しているので、休むと答えるのが自然。軽い運動ならいいという意味ではない。"
+    ctx: "腰を痛めて、医者に診てもらいました"
+    scene: pharmacy
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress] }
+  - id: dr-m-headaches
+    lv: 4
+    type: mean
+    speaker: bea
+    voice: us
+    cast: us-f1
+    en: "The headaches come and go. They're on and off, mostly in the afternoon."
+    tts: "The headaches come an' go. They're on an' off, mostly in the afternoon."
+    ja: "頭痛は出たり消えたりします。ときどきで、たいてい午後です。 → つまり、頭痛はずっとではなく、ときどき起きる。"
+    note: "on and off＝出たり 止んだり"
+    choices: ["They come and go, mostly in the afternoon.", "She has a headache all day, every day.", "The headaches have stopped completely."]
+    answer: 0
+    cja: ["出たり消えたりで、たいてい午後。", "一日中、毎日頭痛がする。", "頭痛はすっかり治まった。"]
+    why: "come and go も on and off も「出たり消えたり」。ずっと続いているわけでも、治まったわけでもない。たいてい午後に起きる。"
+    ctx: "クリニックで、友だちが医者に症状を話しています"
+    ask: "つまり、どういう こと？"
+    scene: pharmacy
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress] }
+  - id: dr-n-hours
+    lv: 4
+    type: num
+    speaker: julian
+    voice: us
+    cast: us-m5
+    en: "Take two tablets every 6 hours, but no more than 8 in a day."
+    tts: "Take two tablets every six hours, but no more than eight in a day."
+    ja: "6時間ごとに2錠飲んでください。ただし1日8錠までです。"
+    note: "every の 後が 間隔"
+    choices: ["6 hours", "2 hours", "8 hours"]
+    answer: 0
+    cja: ["6時間", "2時間", "8時間"]
+    why: "every six hours は「6時間ごと」。two は1回の錠数、no more than eight は1日の上限。数字が三つ出るので役割を聞き分ける。"
+    ctx: "診察の終わりに、痛み止めの飲み方を聞いています"
+    ask: "何時間 おき？"
+    scene: pharmacy
+    tags: { seed: 15, register: service, pragmatic: literal, features: [numbers] }
+  - id: dr-tired-next
+    lv: 4
+    type: next
+    speaker: lily
+    voice: us
+    cast: us-f1
+    en: "Any other symptoms? Fever, chills? No fever. But I've been really tired. How tired? Like, sleeping more than usual?"
+    ja: "はい、毎晩10時間くらい寝てて、それでも疲れてます。"
+    note: "more than usual＝いつもより 多く"
+    choices: ["Yeah, about ten hours a night, and I'm still tired.", "No fever, like I said.", "More than usual? No, I eat less."]
+    answer: 0
+    cja: ["はい、毎晩10時間くらい寝て、それでも疲れてます。", "熱はないって言ったでしょ。", "いつもより？ いえ、食べる量は減りました。"]
+    why: "疲れの程度を聞かれた。sleeping more than usual? は「いつもより寝ている？」なので、睡眠時間で答える。熱の話はもう済んでいる。"
+    ctx: "疲れがとれず、クリニックで診てもらいます"
+    focus: "How tired? Like, sleeping more than usual?"
+    ask: "次の ひとことは？"
+    scene: pharmacy
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress] }
+    lines:
+      - { who: julian, cast: us-m5, en: "Any other symptoms? Fever, chills?", ja: "ほかに症状はありますか？ 熱とか、寒気とか？" }
+      - { who: lily, cast: us-f1, en: "No fever. But I've been really tired.", ja: "熱はないです。でも、すごく疲れていて。" }
+      - { who: julian, cast: us-m5, en: "How tired? Like, sleeping more than usual?", tts: "How tired? Like, sleepin' more than usual?", ja: "どのくらい？ いつもより長く寝ているとか？" }
+  - id: dr-m-keep-eye
+    lv: 4
+    type: mean
+    speaker: julian
+    voice: us
+    cast: us-m5
+    en: "Keep an eye on it, and come back in a week if it's not better. If it is better, don't bother."
+    tts: "Keep an eye on it, an' come back in a week if it's not better. If it is better, don't bother."
+    ja: "様子を見て、1週間でよくならなければまた来てください。よくなっていれば、来なくて大丈夫です。 → つまり、よくならないときだけ1週間後に来る。"
+    note: "NOT better と IS better の 強さで 分かれる"
+    choices: ["Only come back if it's not better in a week.", "Come back in a week no matter what.", "Don't come back. It won't get better."]
+    answer: 0
+    cja: ["1週間でよくならないときだけ、また来る。", "どうであれ1週間後に来る。", "もう来なくていい。よくならないから。"]
+    why: "not better なら1週間後に来る。is better なら don't bother（来なくていい）。not と is を強く言い分けている。"
+    ctx: "腕の発疹を見せたあと、医者が"
+    ask: "つまり、どう する？"
+    scene: pharmacy
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress, contrast] }
+  # ---- チェック ----
+  - id: dr-negative
+    lv: 4
+    type: gist
+    speaker: phoebe
+    voice: us
+    cast: us-f5
+    en: "So the test came back negative. It's not strep. Oh, good. So what is it? Probably just a cold. Nothing serious. But if it gets worse, or you get a fever, call us. Got it. Do I need to come back? Only if it's not better in ten days."
+    ja: "ただの風邪。悪くなったら電話し、10日でよくならなければ来る。"
+    note: "negative＝陰性。いい 知らせ"
+    choices: ["A cold. Call if it gets worse; come back only if it's not better in 10 days.", "It's strep. Come back in 10 days.", "A cold. Come back in 10 days for a checkup."]
+    answer: 0
+    cja: ["風邪。悪くなったら電話、10日でよくならなければ来る。", "溶連菌。10日後にまた来る。", "風邪。10日後に検診に来る。"]
+    why: "negative は「陰性」で、溶連菌（strep）ではない。ただの風邪。悪くなったら電話、Only if it's not better（よくならないときだけ）10日後に来る。"
+    ctx: "のどの検査の結果を、医者が伝えます"
+    focus: "Only if it's not better in ten days."
+    ask: "先生の 話は？"
+    scene: pharmacy
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress] }
+    lines:
+      - { who: phoebe, cast: us-f5, en: "So the test came back negative. It's not strep.", ja: "検査は陰性でした。溶連菌ではありません。" }
+      - { who: kid-cat, cast: us-m1, en: "Oh, good. So what is it?", ja: "よかった。じゃあ何なんですか？" }
+      - { who: phoebe, cast: us-f5, en: "Probably just a cold. Nothing serious. But if it gets worse, or you get a fever, call us.", tts: "Probably just a cold. Nothing serious. But if it gets worse, or ya get a fever, call us.", ja: "たぶんただの風邪です。たいしたことはありません。でも悪くなったり、熱が出たりしたら電話してください。" }
+      - { who: kid-cat, cast: us-m1, en: "Got it. Do I need to come back?", ja: "わかりました。また来る必要はありますか？" }
+      - { who: phoebe, cast: us-f5, en: "Only if it's not better in ten days.", tts: "only if it's not better in ten days.", ja: "10日たってもよくならない場合だけです。" }
+  - id: dr-r-swallow
+    lv: 4
+    type: reply
+    speaker: phoebe
+    voice: us
+    cast: us-f5
+    en: "Does it hurt when you swallow?"
+    tts: "Does it hurt when ya swallow?"
+    ja: "飲み込むと痛みますか？ →「はい、少し。特に朝です。」"
+    note: "hurt when＝〜すると 痛い"
+    choices: ["Yeah, a little. Mostly in the morning.", "No, I already took the pill.", "Only when you press on it."]
+    answer: 0
+    cja: ["はい、少し。特に朝です。", "いいえ、もう薬は飲みました。", "押されたときだけです。"]
+    why: "does it hurt when you swallow? は「飲み込むと痛い？」。のどの痛みの具合を答える。swallow を薬を飲む話ととるのも、押したときの話も的外れ。"
+    ctx: "のどの痛みで、医者に口の中を見てもらいました"
+    scene: pharmacy
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress] }
+  - id: dr-m-back-to-work
+    lv: 4
+    type: mean
+    speaker: phoebe
+    voice: us
+    cast: us-f5
+    en: "You can go back to work tomorrow. Just take it easy. No heavy lifting for a week."
+    tts: "You can go back ta work tomorrow. Just take it easy. No heavy liftin' for a week."
+    ja: "明日から仕事に戻って大丈夫です。ただ無理はしないで。1週間は重いものを持たないでください。 → つまり、仕事はいいが、重い物は1週間だめ。"
+    note: "No heavy lifting＝重い 物を 持たない"
+    choices: ["Work is okay, but no heavy lifting for a week.", "He needs a week off work.", "He can lift anything, starting tomorrow."]
+    answer: 0
+    cja: ["仕事はいいが、1週間は重い物を持たない。", "1週間仕事を休む必要がある。", "明日から何でも持っていい。"]
+    why: "仕事は明日からいい。ただし take it easy、No heavy lifting for a week（1週間は重い物を持たない）。仕事を休む必要はない。"
+    ctx: "腰を痛めた人が、医者に仕事のことを聞きました"
+    ask: "つまり、どう する？"
+    scene: pharmacy
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress] }
+  - id: dr-n-follow-up
+    lv: 4
+    type: num
+    speaker: pashmina
+    voice: us
+    cast: us-f5
+    en: "Dr. Julian wants to see you again in two weeks. The soonest he has is Tuesday the 18th at 3:40."
+    tts: "Dr. Julian wants ta see you again in two weeks. The soonest he has is Tuesday the eighteenth at three-forty."
+    ja: "ジュリアン先生が2週間後にまた診たいそうです。いちばん早いのは18日の火曜、3時40分です。"
+    note: "eighTEENth は 後ろが 強い"
+    choices: ["the 18th", "the 8th", "the 28th"]
+    answer: 0
+    cja: ["18日", "8日", "28日"]
+    why: "the eighteenth は後ろの teen を強く長く言う。eighth（8日）は一音節で短く、twenty-eighth なら twenty が付く。時間は3時40分。"
+    ctx: "診察のあと、受付で次の予約を取ります"
+    ask: "次の 予約は 何日？"
+    scene: pharmacy
+    tags: { seed: 14, register: service, pragmatic: literal, features: [numbers, stress] }
+  - id: dr-trip-next
+    lv: 4
+    type: next
+    speaker: bea
+    voice: us
+    cast: us-f1
+    en: "Can I still go on my trip Friday? Honestly? I'd wait. You're still contagious for a few more days. Ugh. So, cancel? Push it back a week, if you can."
+    ja: "わかりました。来週にずらします。"
+    note: "push it back＝後ろに ずらす"
+    choices: ["Okay. I'll move it to next week.", "Great, so I can still go Friday.", "Okay, I'll cancel it for good."]
+    answer: 0
+    cja: ["わかりました。来週にずらします。", "よかった、じゃあ金曜に行けるんだ。", "わかりました、もう完全にやめます。"]
+    why: "I'd wait は「待ったほうがいい」。まだうつる（contagious）ので、push it back a week（1週間ずらす）。キャンセルまではしなくていい。"
+    ctx: "インフルエンザで、医者に旅行のことを聞きます"
+    focus: "Push it back a week, if you can."
+    ask: "次の ひとことは？"
+    scene: pharmacy
+    tags: { seed: 15, register: service, pragmatic: hedge, features: [stress] }
+    lines:
+      - { who: bea, cast: us-f1, en: "Can I still go on my trip Friday?", ja: "金曜の旅行、まだ行けますか？" }
+      - { who: julian, cast: us-m5, en: "Honestly? I'd wait. You're still contagious for a few more days.", tts: "Honestly? I'd wait. You're still contagious fer a few more days.", ja: "正直に言うと？ 待ったほうがいいですね。あと数日はまだうつりますから。" }
+      - { who: bea, cast: us-f1, en: "Ugh. So, cancel?", ja: "うう。じゃあ、キャンセル？" }
+      - { who: julian, cast: us-m5, en: "Push it back a week, if you can.", tts: "Push it back a week, if ya can.", ja: "できれば、1週間ずらしてください。" }
+  - id: dr-r-dizzy
+    lv: 4
+    type: reply
+    speaker: julian
+    voice: us
+    cast: us-m5
+    en: "Any other symptoms I should know about?"
+    ja: "ほかに知っておくべき症状はありますか？ →「立ち上がると、少しめまいがします。」"
+    note: "other symptoms＝ほかの 症状"
+    choices: ["I get a little dizzy when I stand up.", "No, I don't know any.", "Other doctors? No, just you."]
+    answer: 0
+    cja: ["立ち上がると、少しめまいがします。", "いいえ、一つも知りません。", "ほかの医者？ いえ、先生だけです。"]
+    why: "Any other symptoms? は「ほかに症状は？」。めまいなど、自分の体の様子を答える。知っている症状の数でも、ほかの医者の話でもない。"
+    ctx: "クリニックで、症状を一通り話しました"
+    scene: pharmacy
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress] }
+  # ---- おと: the stressed words ----
+  - id: dr-w-symptoms
+    lv: 4
+    type: word
+    speaker: phoebe
+    voice: us
+    cast: us-f5
+    en: "Any other symptoms?"
+    ja: "ほかに症状はありますか？"
+    note: "SYMPtoms。前を 強く、後ろは 弱い"
+    choices: ["symptoms", "sometimes", "systems"]
+    answer: 0
+    cja: ["症状", "ときどき", "仕組み"]
+    why: "symptoms は前の symp を強く「シンプトムズ」。sometimes は「サムタイムズ」、systems は「システムズ」で、真ん中の音が違う。"
+    ctx: "クリニックで、医者が質問を続けます"
+    focus: "symptoms"
+    marks: [[stress, "symptoms"]]
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress] }
+  - id: dr-w-nothing-serious
+    lv: 4
+    type: word
+    speaker: julian
+    voice: us
+    cast: us-m5
+    en: "Don't worry. It's nothing serious."
+    ja: "心配いりません。たいしたことはありませんよ。"
+    note: "nothing と something は 最初の 音で 逆に"
+    choices: ["nothing serious", "something serious", "nothing curious"]
+    answer: 0
+    cja: ["たいしたことない", "深刻なこと", "不思議なことはない"]
+    why: "nothing は「ナッシン」、something は「サムシン」。最初の音で意味が逆になる。Don't worry とも合う。curious は「キュリアス」で別の語。"
+    ctx: "診察のあと、医者が結果を伝えます"
+    focus: "nothing serious"
+    marks: [[stress, "nothing"]]
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress] }
+  - id: dr-w-not-better
+    lv: 4
+    type: word
+    speaker: julian
+    voice: us
+    cast: us-m5
+    en: "Come back if it's not better."
+    ja: "よくならなければ、また来てください。"
+    note: "not は 強く はっきり。消えない"
+    choices: ["if it's not better", "if it's better", "if it's not bad"]
+    answer: 0
+    cja: ["よくならなければ", "よくなったら", "悪くなければ"]
+    why: "not が強く入るので「よくならなければ」。if it's better なら逆の意味。bad（悪い）と better（よりよい）は最後の音が違う。"
+    ctx: "診察の最後に、医者が"
+    focus: "if it's not better"
+    marks: [[stress, "not"]]
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress, contrast] }
+  - id: dr-w-gets-worse
+    lv: 4
+    type: word
+    speaker: julian
+    voice: us
+    cast: us-m5
+    en: "Call us if it gets worse."
+    ja: "悪くなったら電話してください。"
+    note: "worse は「ワース」。worst は 最後に t"
+    choices: ["gets worse", "gets well", "gets worst"]
+    answer: 0
+    cja: ["悪くなる", "よくなる", "最悪になる"]
+    why: "worse は口をすぼめた「ワース」。well（よくなる）は l で終わる。worst は最後に t が付くが、gets の後では使わない。"
+    ctx: "薬を出したあと、医者が注意します"
+    focus: "gets worse"
+    marks: [[stress, "worse"]]
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress] }
+  - id: dr-w-fifty
+    lv: 4
+    type: word
+    speaker: phoebe
+    voice: us
+    cast: us-f5
+    en: "Take 50 milligrams twice a day."
+    tts: "Take fifty milligrams twice a day."
+    ja: "50ミリグラムを1日2回飲んでください。"
+    note: "FIFty は 前が 強い。fifTEEN は 後ろ"
+    choices: ["50 milligrams", "15 milligrams", "500 milligrams"]
+    answer: 0
+    cja: ["50ミリグラム", "15ミリグラム", "500ミリグラム"]
+    why: "fifty は前の fif を強く、最後は短い「ティ」。fifteen なら後ろの teen が強く長い。500 なら five hundred と言う。"
+    ctx: "医者が、薬の量を説明しています"
+    focus: "50 milligrams"
+    marks: [[say, "50", "FIFty"]]
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress, numbers, teen-ty] }
+  - id: dr-w-on-off
+    lv: 4
+    type: word
+    speaker: bea
+    voice: us
+    cast: us-f1
+    en: "It's been on and off all week."
+    tts: "It's been on an' off all week."
+    ja: "今週はずっと、出たり消えたりしています。"
+    note: "on and off が「オンノフ」と つながる"
+    choices: ["on and off", "on and on", "on or off"]
+    answer: 0
+    cja: ["出たり消えたり", "ずっと続いて", "ついているか消えているか"]
+    why: "on and off は and が弱く「オンノフ」とつながる。on and on は「延々と」。on or off は「オンかオフか」で、症状の言い方ではない。"
+    ctx: "友だちが、医者にせきの話をしています"
+    focus: "on and off"
+    marks: [[link, "on and off"]]
+    tags: { seed: 15, register: friend, pragmatic: literal, features: [stress] }
+  # ---- じっせん: fast, a phone and a busy office ----
+  - id: dr-fast-results
+    lv: 4
+    type: gist
+    speaker: pashmina
+    voice: us
+    cast: us-f5
+    en: "Hi, Bea, it's Pashmina from Dr. Julian's office. Your blood test came back, and everything looks normal. Oh, thank goodness. So, nothing serious? Nothing serious. He just wants you to cut back on coffee and come back in three months for another one. Did you say three months? Sorry, I mean six months. Six months. Got it."
+    ja: "結果は正常。コーヒーを控え、6か月後にまた検査。"
+    note: "I mean の 後が 正しい 期間"
+    choices: ["Results normal; less coffee; another test in six months.", "Results normal; another test in three months.", "Results not normal; come back right away."]
+    answer: 0
+    cja: ["結果は正常。コーヒーを控え、6か月後にまた検査。", "結果は正常。3か月後にまた検査。", "結果に問題あり。すぐ来る。"]
+    why: "検査は normal（正常）。コーヒーを減らし（cut back on coffee）、次の検査は3か月と言ったが、I mean で6か月に訂正した。"
+    ctx: "外出中、クリニックから検査結果の電話です"
+    focus: "Sorry, I mean six months."
+    ask: "電話の 内容は？"
+    scene: street
+    channel: phone
+    cond: { kind: phone, level: heavy, bed: street }
+    tags: { seed: 14, register: service, pragmatic: literal, conditions: [phone, street], features: [stress, self-repair] }
+    lines:
+      - { who: pashmina, cast: us-f5, en: "Hi, Bea, it's Pashmina from Dr. Julian's office. Your blood test came back, and everything looks normal.", tts: "Hi, Bea, it's Pashmina from Dr. Julian's office. Yer blood test came back, an' everything looks normal.", ja: "もしもし、ビーさん、ジュリアン先生のクリニックのパシュミナです。血液検査の結果が出て、すべて正常でした。" }
+      - { who: bea, cast: us-f1, en: "Oh, thank goodness. So, nothing serious?", ja: "ああ、よかった。じゃあ、たいしたことないんですね？" }
+      - { who: pashmina, cast: us-f5, en: "Nothing serious. He just wants you to cut back on coffee and come back in three months for another one.", tts: "Nothing serious. He just wants ya ta cut back on coffee an' come back in three months fer another one.", ja: "たいしたことはありません。先生はただ、コーヒーを控えて、3か月後にもう一度検査に来てほしいそうです。" }
+      - { who: bea, cast: us-f1, en: "Did you say three months?", ja: "3か月って言いました？" }
+      - { who: pashmina, cast: us-f5, en: "Sorry, I mean six months.", ja: "すみません、6か月です。" }
+      - { who: bea, cast: us-f1, en: "Six months. Got it.", ja: "6か月ですね。わかりました。" }
+  - id: dr-fast-m-stomach
+    lv: 4
+    type: mean
+    speaker: julian
+    voice: us
+    cast: us-m5
+    en: "Okay, so, one in the morning, one at night, with food, and if your stomach gets upset, call me. Don't just stop taking it."
+    tts: "Okay, so, one in the mornin', one at night, with food, an' if yer stomach gets upset, call me. Don't just stop takin' it."
+    ja: "では、朝1錠、夜1錠、食事と一緒に。胃の調子が悪くなったら電話してください。勝手にやめないで。 → つまり、胃がおかしくても自分でやめず、電話する。"
+    note: "Don't just stop＝勝手に やめない"
+    choices: ["If his stomach gets upset, he should call, not just stop.", "He should stop taking it if his stomach hurts.", "He should take it on an empty stomach."]
+    answer: 0
+    cja: ["胃の調子が悪くなったら、自分でやめずに電話する。", "胃が痛くなったら飲むのをやめる。", "空腹のときに飲む。"]
+    why: "朝と夜に1錠ずつ、with food（食事と一緒に）。胃の調子が悪くなったら call me、Don't just stop は「勝手にやめないで」。空腹で飲むのは逆。"
+    ctx: "混んだクリニックで、医者が早口で説明します"
+    ask: "つまり、どう する？"
+    scene: pharmacy
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress] }
+  - id: dr-fast-r-same
+    lv: 4
+    type: reply
+    speaker: julian
+    voice: us
+    cast: us-m5
+    en: "So how long has this been going on, and is it getting worse, or is it about the same?"
+    tts: "So how long's this been goin' on, an' is it gettin' worse, or is it about the same?"
+    ja: "それで、いつからですか？ 悪くなっていますか、それとも同じくらい？ →「1週間くらいで、だいたい同じです。」"
+    note: "A, or B? の 二択。期間も 答える"
+    choices: ["About a week. It's pretty much the same.", "About the same as you, I guess.", "Since next week, I think."]
+    answer: 0
+    cja: ["1週間くらい。だいたい同じです。", "先生と同じくらいだと思います。", "来週からだと思います。"]
+    why: "質問は二つ。how long は「いつから」、worse or about the same は「悪化か、変わらないか」。期間と様子の両方を答える。来週は未来なので合わない。"
+    ctx: "混んだクリニックで、医者が早口で質問します"
+    scene: pharmacy
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress] }
+  - id: dr-fast-n-14th
+    lv: 4
+    type: num
+    speaker: pashmina
+    voice: us
+    cast: us-f5
+    en: "So your follow-up's on the 13th at 2:30. Oh, wait, he's out that day. Let's do the 14th, same time, and come in ten minutes early."
+    tts: "So yer follow-up's on the thirteenth at two-thirty. Oh, wait, he's out that day. Let's do the fourteenth, same time, an' come in ten minutes early."
+    ja: "次の診察は13日の2時半…あ、待って、先生その日はお休みでした。14日の同じ時間にしましょう。10分早めに来てくださいね。"
+    note: "Oh, wait の 後で 日にちが 変わる"
+    choices: ["the 14th", "the 13th", "the 30th"]
+    answer: 0
+    cja: ["14日", "13日", "30日"]
+    why: "最初は13日だったが、Oh, wait で先生が休みと気づき、14日の同じ時間（2時半）に変えた。thirteenth と thirtieth も聞き分ける。"
+    ctx: "騒がしい受付で、次の予約を取っています"
+    ask: "次の 予約は 何日？"
+    scene: pharmacy
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 14, register: service, pragmatic: literal, features: [numbers, self-repair] }
+  - id: dr-fast-soccer
+    lv: 4
+    type: next
+    speaker: julian
+    voice: us
+    cast: us-m5
+    en: "So no running for two weeks. Swimming's fine, biking's fine, just nothing with impact. What about my soccer game Sunday? That's a no. Sorry."
+    ja: "わかりました。今回は休みます。"
+    note: "That's a no＝それは だめ"
+    choices: ["Okay. I'll sit this one out.", "Great, I'll play, then.", "So swimming's a no too?"]
+    answer: 0
+    cja: ["わかりました。今回は休みます。", "よかった、じゃあ出ます。", "じゃあ水泳もだめ？"]
+    why: "走るのは2週間だめ、水泳と自転車はいい。日曜のサッカーには That's a no（だめ）。sit this one out は「今回は休む」。水泳はいいと言われている。"
+    ctx: "足首の捻挫で、医者が早口で注意します"
+    focus: "What about my soccer game Sunday? That's a no. Sorry."
+    ask: "次の ひとことは？"
+    scene: pharmacy
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress] }
+    lines:
+      - { who: julian, cast: us-m5, en: "So no running for two weeks. Swimming's fine, biking's fine, just nothing with impact.", tts: "So no running for two weeks. Swimming's fine, biking's fine, just nothin' with impact.", ja: "では、2週間は走らないこと。水泳と自転車は大丈夫、衝撃のある運動だけだめです。" }
+      - { who: dom, cast: us-m1, en: "What about my soccer game Sunday?", ja: "日曜のサッカーの試合は？" }
+      - { who: julian, cast: us-m5, en: "That's a no. Sorry.", ja: "それはだめです。ごめんなさいね。" }
+  - id: dr-fast-m-urgent
+    lv: 4
+    type: mean
+    speaker: phoebe
+    voice: us
+    cast: us-f5
+    en: "If it gets worse over the weekend, don't wait for Monday. Go to urgent care. They're open till nine."
+    tts: "If it gets worse over the weekend, don't wait fer Monday. Go ta urgent care. They're open till nine."
+    ja: "週末に悪くなったら、月曜まで待たないで。急患クリニックに行ってください。9時までやっています。 → つまり、週末に悪化したら、急患クリニックへ。"
+    note: "urgent care＝予約なしの 急患クリニック"
+    choices: ["If it gets worse this weekend, go to urgent care.", "Wait until Monday, even if it gets worse.", "The clinic is open until nine on Monday."]
+    answer: 0
+    cja: ["週末に悪くなったら、急患クリニックへ行く。", "悪くなっても月曜まで待つ。", "このクリニックは月曜は9時まで。"]
+    why: "週末に悪くなったら、don't wait for Monday（月曜を待たず）に urgent care（急患クリニック）へ。9時まで開いているのはそこ。"
+    ctx: "金曜の夕方、混んだクリニックで医者が"
+    ask: "つまり、どう する？"
+    scene: pharmacy
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 15, register: service, pragmatic: literal, features: [stress] }
+lessons:
+  v: 1
+  deai: [dr-throat-virus, dr-hurt-here, dr-r-how-long, dr-m-sprain, dr-n-ten-days, dr-m-fever]
+  bamen: [dr-ankle-sprained, dr-r-take-easy, dr-m-headaches, dr-n-hours, dr-tired-next, dr-m-keep-eye]
+  check: [dr-negative, dr-r-swallow, dr-m-back-to-work, dr-n-follow-up, dr-trip-next, dr-r-dizzy]
+  oto: [dr-w-symptoms, dr-w-nothing-serious, dr-w-not-better, dr-w-gets-worse, dr-w-fifty, dr-w-on-off]
+  jissen: [dr-fast-results, dr-fast-m-stomach, dr-fast-r-same, dr-fast-n-14th, dr-fast-soccer, dr-fast-m-urgent]
+tiers:
+  dr-throat-virus:
+    easy: { choices: ["It's a virus. Rest, and come back in a week if it's not better.", "It's serious. Come back tomorrow."], answer: 0, cja: ["ウイルス。休んで、1週間でよくならなければまた来る。", "深刻。明日また来る。"] }
+    hard: { choices: ["It's a virus. Rest, and come back in a week if it's not better.", "It's a virus. Rest, and come back in a week either way.", "It's a virus. Rest, and come back in five days if it's not better.", "It's nothing serious, so she doesn't need to rest."], answer: 0, cja: ["ウイルス。休んで、1週間でよくならなければまた来る。", "ウイルス。休んで、どちらにしても1週間後に来る。", "ウイルス。休んで、5日でよくならなければまた来る。", "たいしたことないので、休まなくていい。"] }
+  dr-n-hours:
+    easy: { choices: ["6 hours", "8 hours"], answer: 0, cja: ["6時間", "8時間"] }
+  dr-fast-results:
+    hard: { choices: ["Results normal; less coffee; another test in six months.", "Results normal; less coffee; another test in three months.", "Results normal; no coffee at all; another test in six months.", "Results not normal; less coffee; another test in six months."], answer: 0, cja: ["結果は正常。コーヒーを控え、6か月後にまた検査。", "結果は正常。コーヒーを控え、3か月後にまた検査。", "結果は正常。コーヒーは完全にやめ、6か月後にまた検査。", "結果に問題あり。コーヒーを控え、6か月後にまた検査。"] }

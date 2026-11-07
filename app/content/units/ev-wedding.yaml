@@ -542,7 +542,7 @@ items:
     voice: us
     cast: us-m6
     en: "Oh, sure, the band's amazing. They've played the same song, like, three times now."
-    tts: "Oh, sure, the band's amaaazing. They've played the same song, like, three times now."
+    tts: "Oh, sure, the band's... amazing. They've played the same song, like, three times now."
     ja: "ああ、そうだね、バンドは「最高」だよ。もう同じ曲を3回くらいやってる。 → つまり、バンドにうんざりしている（皮肉）。"
     note: "Oh, sure＋大げさな ほめ言葉＝皮肉"
     choices: ["He thinks the band is boring and repetitive.", "He loves the band and wants more songs.", "The band only knows three songs."]

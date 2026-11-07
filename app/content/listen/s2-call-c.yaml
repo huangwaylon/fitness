@@ -1,12 +1,13 @@
 # ようじ でんわ S2 もり (c): the calls of wave 2b's もり units (docs/curriculum-wave2.md §3.1, §3.2: one per unit, its
 # チェック from recipe v2), each with one complication: a wedding weekend whose rehearsal dinner moves (ev-wedding),
-# a dinner booking that grows to six and moves later (fd-dinner). Unvoiced: batch A4.
+# a dinner booking that grows to six and moves later (fd-dinner), a clinic reading the wrong chart (hl-doctor).
+# Unvoiced: batch A4.
 schema: 1
 unit: s2-call-c
 game: call
 stage: 3
 track: life
-seeds: [18, 48, 50, 54, 55]
+seeds: [14, 15, 18, 48, 50, 54, 55]
 features: { primary: self-repair, review: numbers }
 cando: "電話で 予定や 用件の 変更と 条件を 聞き取って メモできる"
 status: draft
@@ -61,3 +62,28 @@ items:
           - { ask: "お店は？", options: ["パイン通りの イタリアン", "パイン通りの タイ料理", "駅前の イタリアン"], answer: 0, cja: ["パイン通りのイタリア料理の店", "パイン通りのタイ料理の店", "駅前のイタリア料理の店"] }
     note: "Judy just texted の あとで 人数と 時間が 変わる"
     tags: { seed: 50, register: friend, pragmatic: literal, conditions: [phone], features: [self-repair, chain, numbers] }
+
+  - kind: call
+    id: call-doctor-chart
+    ask: "クリニックから 電話。メモしよう"
+    ctx: "診察の翌日、クリニックから電話です"
+    scene: living
+    channel: phone
+    lines:
+      - { who: pashmina, en: "Hi, this is Pashmina from Dr. Julian's office. I'm calling about your prescription and your follow-up.", tts: "Hi, this is Pashmina from Dr. Julian's office. I'm callin' about yer prescription an' yer follow-up.", ja: "もしもし、ジュリアン先生のクリニックのパシュミナです。お薬と、次の診察の件でお電話しました。" }
+      - { who: me, en: "Oh, great. Thanks for calling.", ja: "あ、どうも。お電話ありがとうございます。" }
+      - { who: pashmina, en: "So, we sent the prescription to the pharmacy on Main Street. It's one tablet twice a day, for seven days.", tts: "So, we sent the prescription ta the pharmacy on Main Street. It's one tablet twice a day, fer seven days.", ja: "お薬はメイン通りの薬局に送りました。1回1錠、1日2回、7日間です。" }
+      - { who: me, en: "Okay. And when should I come back?", ja: "わかりました。次はいつ行けばいいですか？" }
+      - { who: pashmina, en: "He wants to see you in two weeks. The soonest we have is Thursday the twentieth, at nine-fifteen.", tts: "He wants ta see you in two weeks. The soonest we have is Thursday the twentieth, at nine-fifteen.", ja: "先生は2週間後に診たいそうです。いちばん早いのは20日の木曜、9時15分です。" }
+      - { who: pashmina, en: "Oh, sorry, I was looking at the wrong chart. Yours is for ten days, not seven. And it went to the pharmacy by the station, not Main Street.", tts: "Oh, sorry, I was lookin' at the wrong chart. Yours is fer ten days, not seven. An' it went to the pharmacy by the station, not Main Street.", ja: "あ、すみません、別の方のカルテを見ていました。あなたのは7日ではなく10日間です。それと、お薬はメイン通りではなく、駅のそばの薬局に送っています。", repair: true }
+      - { who: me, en: "Ten days, the one by the station, and Thursday at nine-fifteen. Got it.", ja: "10日間、駅のそばの薬局、それと木曜の9時15分ですね。わかりました。" }
+    half: [0, 0, 0, 0, 1, 1, 1]
+    memo:
+      - why: "別の人のカルテを見ていたと訂正。薬は7日ではなく10日間で、送り先は駅のそばの薬局。飲み方は1日2回。次の診察は20日の木曜、9時15分。"
+        slots:
+          - { ask: "何日間 飲む？", options: ["7日間", "10日間", "14日間"], answer: 1, cja: ["7日間", "10日間", "14日間"] }
+          - { ask: "1日 何回？", options: ["1回", "2回", "3回"], answer: 1, cja: ["1日1回", "1日2回", "1日3回"] }
+          - { ask: "薬局は？", options: ["駅の そば", "メイン通り", "クリニックの 中"], answer: 0, cja: ["駅のそばの薬局", "メイン通りの薬局", "クリニックの中の薬局"] }
+          - { ask: "次の 診察は？", options: ["木曜 9:15", "木曜 9:50", "火曜 9:15"], answer: 0, cja: ["木曜の9時15分", "木曜の9時50分", "火曜の9時15分"] }
+    note: "wrong chart の あとで 日数と 薬局が 変わる"
+    tags: { seed: 15, register: service, pragmatic: literal, conditions: [phone], features: [self-repair, stress, numbers] }

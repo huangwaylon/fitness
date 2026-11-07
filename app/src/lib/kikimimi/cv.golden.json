@@ -16,8 +16,8 @@
   "decks": "40a579a98762d069"
  },
  "call:s2-call-c": {
-  "cv": "a1de76",
-  "decks": "ad9dcd26430d6573"
+  "cv": "64a05f",
+  "decks": "a313fc8980e59fbe"
  },
  "call:s3-call": {
   "cv": "fef082",
@@ -66,6 +66,10 @@
  "lesson:hl-clinic": {
   "cv": "b5f400",
   "decks": "e9f717c14151780a"
+ },
+ "lesson:hl-doctor": {
+  "cv": "62404f",
+  "decks": "c7831049fe249721"
  },
  "lesson:hm-neighbor": {
   "cv": "4d32d1",
