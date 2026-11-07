@@ -1108,7 +1108,7 @@ learning-science review: a rung counts only when climbed in order on the first l
 replay, a flat 100 each. Rejected: a payout weighted to the top (invites guessing), separate faster takes per rung (not
 the same line, and the engine's pace isn't steerable), a level value for the mode (contends with increment 6).
 
-### The trip map: MapLibre on OpenFreeMap's tiles, our own style, online only (2026-11-06)
+### The trip map: MapLibre on OpenFreeMap's tiles, our own style, online only (2026-11-06; offline phase A below)
 The trips' maps (docs/travel.md "Maps") are MapLibre GL JS 6 drawing OpenFreeMap's public vector tiles (OpenMapTiles
 schema, OpenStreetMap data) in a NookPhone style of our own, every label in the app's Zen Maru Gothic through the
 style's `font-faces` (the @fontsource slices we already ship; no glyphs URL). Online only: no tile download, and
@@ -1133,3 +1133,13 @@ only, and there is no speaking leaderboard. The Permissions-Policy allows `micro
 about speaking and the voice is the most personal data the app would touch. Rejected: server-first recognition
 (simplest, but every utterance leaves the phone), a pronunciation score (noise from ASR, and it shames), free LLM
 conversation (the user: no).
+
+### Offline: the guides and the maps seen, phase A (2026-11-07)
+The user: "we'd like some offline functionality for the app in general … also need access to travel, hike, and
+wedding even if offline." This reverses the trip map's "online only" and the past trips' "download nothing" for what
+the phone has already shown (docs/backend.md "Service worker" › Offline): the trips' covers and heroes, the trails'
+tracks and the common font slices are precached; the guides' photos, MapLibre and the map tiles drawn are kept on
+first view, bounded, never prefetched. Saving a map area ahead of time is phase B, separate. Why: a trip is read where
+the signal is worst (a ferry, a trailhead), and these are a few MB. Rejected: precaching every photo and MapLibre at
+install (≈ 6 MB more on every phone and every deploy for screens one phone may never open), prefetching a trip's
+tiles (tens of MB, OpenFreeMap's goodwill).
