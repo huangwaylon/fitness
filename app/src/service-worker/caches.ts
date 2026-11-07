@@ -113,8 +113,8 @@ export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, k
  *  (an index of each pack's bytes and last use kept in the cache), so a few levels' and units' packs stay offline. */
 export const LISTEN_CACHE = 'island-listen-v1';
 export const isListenPack = (path: string): boolean => path.includes('/audio/listen/') && path.endsWith('.pak');
-/** The listen cache's bound: past it, the least recently used packs go (all the packs are ~40 MB; a level-4 game's
- *  eight ~9 MB). */
+/** The listen cache's bound: past it, the least recently used packs go (the 144 packs are ~111 MiB: the games' 89.3,
+ *  the stories' 21.4, bank.test's stopgap lines till W2-R moves them to R2; a level-4 game's eight ~9 MB). */
 export const LISTEN_CAP_BYTES = 30_000_000;
 /** A pack used within this is never evicted (a game in progress keeps its packs; a page still on the last build its
  *  packs' older versions). */

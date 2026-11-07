@@ -380,12 +380,11 @@ describe('kikimimi bank', () => {
       .flatMap((it) => clipIds(it).flatMap((id) => [[id, it.lv], [`${id}-slow`, it.lv]] as const)));
     const kb = (f: string) => (rungs.has(f) ? 80 : PAIR_IDS.has(f) ? 20 : STORY_IDS.has(f) || LISTEN_IDS.has(f) ? 100 : ({ 4: 80, 5: 100, 6: 100, 7: 160 } as Partial<Record<Level, number>>)[lvOf.get(f)!] ?? 60);
     for (const [f, bytes] of clips) expect(bytes, f).toBeLessThan(kb(f) * 1024);
-    // (raised from 14 MB for the content sprint's ~700 clips, 40 MB for the loose files; in packs, a file a pack, so
-    // Pages' 20,000 files no longer bind: past 50 MB the packs move to R2 behind PACK_BASE, docs/kikimimi-framework.md §6;
-    // the bedtime stories, ~35 minutes of speech fetched a chapter at a time, have their own 20 MB beside them: 70 in all.
-    // A stopgap (docs/curriculum-wave2.md §5, open question 3): wave 2's audio batches outgrow these before R2 is
-    // enabled, so each line is raised to its batch's total and a little margin (the games' A2 60.5 MiB, A3 75.5, A4 89.3; the
-    // stories' A5, st-tokyo, 21.4). Pages takes files of up to 25 MiB and a pack is ≤ 1.2 MB, so the total isn't Pages'
+    // (The packs, 144 now, are the games' 89.3 MiB and the stories' 21.4 MiB (the bedtime stories fetched a chapter at a
+    // time), under these lines of 92 and 23. A stopgap (docs/curriculum-wave2.md §5, open question 3): the packs were to
+    // move to R2 behind PACK_BASE (docs/kikimimi-framework.md §6) past 50 MB, but wave 2's audio batches outgrew that
+    // before R2 is enabled, so each line is raised to its batch's total and a little margin (the games' A2 60.5 MiB, A3
+    // 75.5, A4 89.3; the stories' A5, st-tokyo, 21.4). Pages takes files of up to 25 MiB and a pack is ≤ 1.2 MB, so the total isn't Pages'
     // limit; the real fix is W2-R, the packs on R2 behind PACK_BASE, after which these lines measure what Pages serves.)
     const size = (story: boolean) => Object.entries(PACKS).filter(([, e]) => e.clips.some(([id]) => STORY_IDS.has(id)) === story)
       .reduce((n, [name, e]) => n + statSync(join(STATIC, 'audio/listen', packFile(name, e))).size, 0);
