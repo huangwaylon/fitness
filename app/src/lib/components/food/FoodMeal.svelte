@@ -1,6 +1,7 @@
 <script lang="ts">
   // One meal of a person's day (朝ごはん · 昼ごはん · 夜ごはん · おやつ): its kcal, then a row per entry (the food,
-  // its amount, its kcal). On my own day ＋ opens the search for this meal, and an entry opens its amount to change or
+  // its amount, its kcal; on its left the food's picture box, FoodThumb at 40px: its picture, else its category's tile,
+  // the user 2026-11-07: "show the images in the main lists in kiroku"). On my own day ＋ opens the search for this meal, and an entry opens its amount to change or
   // remove it; anyone else's day is read-only (only the owner changes an entry). いつもの (a repeat): its weekdays as a
   // chip in the header (my day: a tap manages it; else only shown), its entries marked 🔁 (a day taken out of it shows
   // its own entries, unmarked, under the same chip); on my today a meal with entries and no repeat ends with a small
@@ -12,7 +13,10 @@
   // row (with the kcal it goes from and to): a tap re-snapshots it.
   import type { FoodEntry, FoodSnap, Meal } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
-  import { amountText, daysText } from './foodUi.ts';
+  import { amountText, catOf, daysText, foodDb, foodDbNow, withImages } from './foodUi.ts';
+  import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
+  import type { FoodDb } from '#lib/food/index.ts';
+  import FoodThumb from './FoodThumb.svelte';
   import { entryKcal, itemsKcal } from '#lib/food/index.ts';
   import { mealProtein } from '#lib/model/food.ts';
   import RepeatMark from './RepeatMark.svelte';
@@ -43,9 +47,19 @@
   // the total rounds the sum once: a row each rounded may differ from it by ±1 (itemsKcal)
   const total = $derived(itemsKcal(entries));
   const label = $derived(t(`food.meal.${meal}`));
+  /** The pictures and, for the tiles, the catalog (loaded once a meal holds an entry; both shared, both cached). */
+  let imgs = $state.raw<FoodImageIndex | null>(null);
+  let db = $state.raw<FoodDb | null>(foodDbNow());
+  $effect(() => {
+    if (!entries.length) return;
+    const off = withImages((ix) => (imgs = ix));
+    if (!db) void foodDb().then((d) => (db = d), () => {});
+    return off;
+  });
 </script>
 
 {#snippet cells(e: FoodEntry & { rep?: string })}
+  <span class="th"><FoodThumb cat={catOf(db, e.f.id)} size={40} img={imgOf(imgs, e.f.id, 40)} /></span>
   <span class="nm">{e.f.n}</span>
   <small class="amt">{#if e.rep}<i class="rm" role="img" aria-label={t('food.rep.mark')}><RepeatMark size={12} /></i>{/if}{amountText(e)}</small>
   <b class="kc money">{formatNum(kcalOf(e))}<span class="sr-only"> kcal</span></b>
@@ -135,12 +149,13 @@
   li + li { border-top: 1px dashed color-mix(in srgb, var(--lip) 70%, transparent); }
   .row {
     appearance: none; border: 0; background: none; color: inherit; font: inherit; text-align: left; width: 100%;
-    display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'nm kc' 'amt kc'; align-items: center;
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: 'th nm kc' 'th amt kc'; align-items: center;
     column-gap: 10px; min-height: var(--row-obj); padding: 6px 2px;
   }
   button.row { cursor: pointer; border-radius: var(--r-chip); }
   button.row:active { background: color-mix(in srgb, var(--lip) 30%, transparent); }
   button.row:focus-visible { outline: 3px solid var(--focus); outline-offset: 0; }
+  .th { grid-area: th; display: flex; }
   .nm { grid-area: nm; font-weight: 700; font-size: var(--fs-body); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .amt { grid-area: amt; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .kc { grid-area: kc; font-size: var(--fs-body); }
