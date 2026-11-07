@@ -208,13 +208,31 @@
   /** A row's own ＋ (one tap, no amount): its default portion, or a recent one's amount as I had it. */
   function quick(item: Item, meal: Meal, g?: number, u?: string, f?: FoodSnap) {
     const { p, gg, uu } = asItComes(item, g, u, f);
-    const r = p.cid ? logCustom({ customId: p.cid, d: date, m: meal, g: gg, u: uu ?? undefined }) : logFood({ d: date, m: meal, g: gg, f: snapOf(p, uu) });
+    tripLog(p, meal, gg, uu);
+  }
+  /** A picked food logged as a new entry of mine (a custom food still there afresh, by logCustom). */
+  const logPicked = (p: Picked, meal: Meal, g: number, u: string | null) =>
+    p.cid ? logCustom({ customId: p.cid, d: date, m: meal, g, u: u ?? undefined }) : logFood({ d: date, m: meal, g, f: snapOf(p, u) });
+  /** Logged from the search itself (a row's ＋, a row opened in place): its banner, and on this trip's list. */
+  function tripLog(p: Picked, meal: Meal, g: number, u: string | null) {
+    const r = logPicked(p, meal, g, u);
     if (r.ok && r.id) {
       said('food.added', { meal: t(`food.meal.${meal}`) });
       const l = top;
       if (l?.k === 'search') l.added = [...l.added, r.id];
     }
   }
+  /** A food row of a meal's search opened in place (FoodOpen): what it logs as, its 追加 (the state set kept: `v.item`),
+   *  and くわしく (the amount level at what was set). */
+  const inlineOf = (meal: Meal) => ({
+    of: (item: Item, f?: FoodSnap) => {
+      const p = pickOf(item, f);
+      return { item: p.item, serving: !!p.sv, swap: !(p.cid || p.snap) };
+    },
+    add: (item: Item, f: FoodSnap | undefined, v: { item: Item; g: number; u: string | null }) => tripLog({ ...pickOf(item, f), item: v.item }, meal, v.g, v.u),
+    more: (item: Item, f: FoodSnap | undefined, v: { item: Item; g: number; u: string | null }) =>
+      go({ k: 'amount', meal, ...pickOf(item, f), item: v.item, g0: v.g, u0: v.u ?? undefined })
+  });
   /** A food as a row's ＋ takes it: its default portion (a serving's for one with no weight), or a recent one's amount. */
   function asItComes(item: Item, g?: number, u?: string, f?: FoodSnap) {
     const p = pickOf(item, f);
@@ -299,7 +317,7 @@
       if (e && editFood(e.id, { m: v.m, g: v.g, u: v.u, ...(f ? { f } : {}) }).ok) said('food.saved');
       return home();
     }
-    const r = l.cid ? logCustom({ customId: l.cid, d: date, m: v.m, g: v.g, u: v.u ?? undefined }) : logFood({ d: date, m: v.m, g: v.g, f: snapOf(l, v.u) });
+    const r = logPicked(l, v.m, v.g, v.u);
     if (r.ok) said('food.added', { meal: t(`food.meal.${v.m}`) });
     logged(r.id);
   }
@@ -520,7 +538,7 @@
         onnewrecipe={() => openRecipe(null)} customs={allCustoms} oncustom={(c) => go({ k: 'amount', meal, ...pickOf(customItem(c)) })}
         oncreate={(n) => openCustom(null, { meal }, '[data-custom-new]', n)} onquick={(item, g, u, f) => quick(item, meal, g, u, f)}
         oncustomquick={(c) => quick(customItem(c), meal)} added={addedOf(top.added)} onunadd={unadd} onfinish={home}
-        onquicknew={(k) => openQuick(meal, k)} onquicklog={(k) => quickNow(meal, k)} />
+        onquicknew={(k) => openQuick(meal, k)} onquicklog={(k) => quickNow(meal, k)} inline={inlineOf(meal)} />
     {:else if top?.k === 'quick'}
       {@const l = top}
       <FoodCustom bind:draft={qdraft} quick onsave={() => quickDone(l)} />

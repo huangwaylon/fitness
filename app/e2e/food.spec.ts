@@ -1,7 +1,7 @@
 // ごはん (docs/design.md "Gohan"): the meal log, the HUD cluster's bowl (between the dumbbell and the leaf). Open it, search ごはん, add
 // 茶碗1杯 to 朝ごはん and see the day's total go up; another person's day is read-only (no ＋, no entry to tap), and the
 // guest sees the members' meals and logs its own. On `?demo` (its meal rows: model/food.ts over store/demo/rows.ts).
-import { expect, test, type Page } from './fixtures.ts';
+import { expect, test, type Locator, type Page } from './fixtures.ts';
 
 const DATE = '2026-11-04T12:30';
 const sheet = (page: Page) => page.locator('dialog[open]');
@@ -16,6 +16,12 @@ async function openFood(page: Page, as = '', date = `&date=${DATE}`) {
   await bowl.click();
   await expect(sheet(page).locator('[data-food-summary]')).toBeVisible();
   await sheet(page).evaluate((d) => Promise.all(d.getAnimations().map((a) => a.finished))); // the zoom in has played
+}
+
+/** A meal search's row → its amount level: the row opened in place, then its くわしく. */
+async function amountOf(page: Page, row: Locator) {
+  await row.click({ timeout: 15_000 });
+  await sheet(page).locator('[data-food-open-more]').click();
 }
 
 /** What sticks out past the open sheet's right edge (its first three, by class): nothing, on every level (once a
@@ -48,10 +54,9 @@ test('the bowl sits in the top-right cluster, between the dumbbell and the leaf;
   const rice = sheet(page).locator('[data-food-results] button', { hasText: 'ごはん（精白米）' }).first();
   await expect(rice).toBeVisible({ timeout: 15_000 }); // the catalog's first fetch
   await rice.click();
-  await expect(sheet(page).locator('.chip[aria-pressed=true]')).toContainText('茶碗1杯'); // its default portion
-  await expect(sheet(page).locator('[data-pick-meal=b]')).toHaveAttribute('aria-pressed', 'true');
-  await expect(sheet(page).locator('[data-food-live] .k')).toContainText('234');
-  await sheet(page).locator('[data-done]').click();
+  await expect(sheet(page).locator('.chip[aria-pressed=true]')).toContainText('茶碗1杯'); // its default portion, opened in place under its row
+  await expect(sheet(page).locator('[data-food-open-add]')).toContainText('234 kcal'); // 追加 says what it adds
+  await sheet(page).locator('[data-food-open-add]').click();
   // back in the meal's search for the next food, this one listed at its top; 完了 → the day
   await expect(sheet(page).locator('.navbar h2')).toHaveText('朝ごはん');
   await expect(sheet(page).locator('[data-food-added] [data-added]')).toHaveCount(1);
@@ -108,6 +113,9 @@ test('the day, the search and the amount all fit the sheet’s width', async ({ 
   await expect(rice).toBeVisible({ timeout: 15_000 });
   expect(await overflowOf(page)).toEqual([]);
   await rice.click();
+  await expect(sheet(page).locator('[data-food-open-add]')).toBeVisible();
+  expect(await overflowOf(page)).toEqual([]);
+  await sheet(page).locator('[data-food-open-more]').click(); // くわしく: the amount level
   await expect(sheet(page).locator('[data-done]')).toBeVisible();
   expect(await overflowOf(page)).toEqual([]);
 });
@@ -689,7 +697,6 @@ test('＋ focuses the search; counted portions step whole, rice by half; drinks 
   await sheet(page).locator('[data-step="-1"]').click();
   await sheet(page).locator('[data-step="-1"]').click();
   await expect(sheet(page).locator('.mult')).toHaveText('×1'); // never under one
-  await sheet(page).getByRole('button', { name: '戻る' }).click();
 
   await sheet(page).locator('[data-food-q]').fill('ごはん');
   const rice = sheet(page).locator('[data-food-results] button', { hasText: 'ごはん（精白米）' }).first();
@@ -698,7 +705,6 @@ test('＋ focuses the search; counted portions step whole, rice by half; drinks 
   await rice.click();
   await sheet(page).locator('[data-step="1"]').click();
   await expect(sheet(page).locator('.mult')).toHaveText('×1.5'); // 茶碗: by half
-  await sheet(page).getByRole('button', { name: '戻る' }).click();
 
   // a piece food's 1人前 steps by the piece: おにぎり ＋ is two of them, not ×1.5
   await sheet(page).locator('[data-food-q]').fill('おにぎり');
@@ -706,16 +712,15 @@ test('＋ focuses the search; counted portions step whole, rice by half; drinks 
   await expect(sheet(page).locator('.chip[aria-pressed=true]')).toContainText('1人前');
   await sheet(page).locator('[data-step="1"]').click();
   await expect(sheet(page).locator('.mult')).toHaveText('×2');
-  await sheet(page).getByRole('button', { name: '戻る' }).click();
 
-  await sheet(page).locator('[data-food-q]').fill('生ビール');
+  await sheet(page).locator('[data-food-q]').fill('生ビール'); // (a new query closes the row open)
   const beer = sheet(page).locator('[data-food-results] button', { hasText: '生ビール' }).first();
   await expect(beer).toBeVisible();
   await beer.click();
   await expect(sheet(page).locator('.grams .u')).toHaveText('ml');
   await sheet(page).locator('[data-step="1"]').click();
   await expect(sheet(page).locator('.mult')).toHaveText('×2'); // a whole ジョッキ
-  await sheet(page).locator('[data-done]').click();
+  await sheet(page).locator('[data-food-open-add]').click();
   const banner = sheet(page).locator('.banner');
   await expect(banner).toHaveText(/夜ごはんに追加しました/);
   const [bb, d] = [(await banner.boundingBox())!, (await sheet(page).boundingBox())!];
@@ -825,7 +830,7 @@ test('the amount: the compact card while there are no pictures, its 「これは
   await openFood(page);
   await sheet(page).locator('[data-add=s]').click();
   await sheet(page).locator('[data-food-q]').fill('キャッサバでん粉');
-  await sheet(page).locator('[data-food-results] button.it', { hasText: 'キャッサバでん粉' }).first().click({ timeout: 15_000 });
+  await amountOf(page, sheet(page).locator('[data-food-results] button.it', { hasText: 'キャッサバでん粉' }).first());
   const head = sheet(page).locator('.card.head');
   await expect(head.locator('h3')).toHaveText('キャッサバでん粉');
   await expect(head.locator('[data-food-about] [data-desc]')).toHaveText('キャッサバの根のでん粉。タピオカとも');
@@ -834,14 +839,14 @@ test('the amount: the compact card while there are no pictures, its 「これは
   await openFood(page);
   await sheet(page).locator('[data-add=s]').click();
   await sheet(page).locator('[data-food-q]').fill('THE 餅');
-  await sheet(page).locator('[data-food-results] button.it', { hasText: 'THE 餅' }).first().click({ timeout: 15_000 });
+  await amountOf(page, sheet(page).locator('[data-food-results] button.it', { hasText: 'THE 餅' }).first());
   await expect(head.locator('h3')).toHaveText('THE 餅');
   await expect(head.locator('[data-thumb]')).toHaveCount(0);
   await openFood(page);
   await sheet(page).locator('[data-add=s]').click();
   await sheet(page).locator('[data-food-q]').fill('キャベツ');
   // (one row for キャベツ in its states: 生 shown)
-  await sheet(page).locator('[data-food-results] button.it').filter({ has: page.locator('.nm', { hasText: /^キャベツ(✓|$)/ }) }).click({ timeout: 15_000 });
+  await amountOf(page, sheet(page).locator('[data-food-results] button.it').filter({ has: page.locator('.nm', { hasText: /^キャベツ(✓|$)/ }) }));
   await expect(head.locator('h3')).toHaveText('キャベツ 生');
   await expect(head.locator('[data-food-about]')).toHaveCount(0); // an everyday food: no line
 });
@@ -856,7 +861,7 @@ test('the amount: 豚ロース fits on the screen, kcal in the head, 100gあた�
     await openFood(page);
     await sheet(page).locator('[data-add=l]').click();
     await sheet(page).locator('[data-food-q]').fill('豚ロース');
-    await sheet(page).locator('[data-food-results] button.it').filter({ has: page.locator('.nm', { hasText: /^豚ロース 脂身つき(✓|$)/ }) }).click({ timeout: 15_000 });
+    await amountOf(page, sheet(page).locator('[data-food-results] button.it').filter({ has: page.locator('.nm', { hasText: /^豚ロース 脂身つき(✓|$)/ }) }));
     await expect(sheet(page).locator('[data-food-pic] [data-thumb]')).toHaveAttribute('data-thumb', /img|under/);
   };
   await open();
@@ -915,7 +920,7 @@ test('pictures: ごはん’s row and amount show its イメージ (badge, alt),
   await expect(th).toHaveAttribute('data-thumb', 'img', { timeout: 15_000 });
   const b = (await th.boundingBox())!;
   expect([b.width, b.height].map(Math.round)).toEqual([48, 48]);
-  await rice.click();
+  await amountOf(page, rice);
   const pic = sheet(page).locator('[data-food-pic]');
   await expect(pic.locator('[data-thumb]')).toHaveAttribute('data-thumb', 'img');
   await expect(pic).toHaveAccessibleName('ごはん（精白米）のイメージを拡大');
@@ -962,7 +967,7 @@ test('pictures: the amount shows the row’s thumbnail until its own picture is 
   await sheet(page).locator('[data-food-q]').fill('ごはん');
   const rice = sheet(page).locator('[data-food-results] button.it', { hasText: 'ごはん（精白米）' }).first();
   await expect(rice.locator('[data-thumb]')).toHaveAttribute('data-thumb', 'img', { timeout: 15_000 });
-  await rice.click();
+  await amountOf(page, rice);
   const pic = sheet(page).locator('[data-food-pic]');
   await expect(pic.locator('[data-thumb]')).toHaveAttribute('data-thumb', 'under');
   await expect(pic.locator('.badge')).toHaveText('イメージ');
@@ -989,7 +994,7 @@ test('状態: 鶏もも 皮つき 生 → 焼き keeps 1/2枚 at 90 g, logs 焼�
   await openFood(page);
   await sheet(page).locator('[data-add=s]').click();
   await sheet(page).locator('[data-food-q]').fill('鶏もも');
-  await sheet(page).locator('[data-food-results] button.it').filter({ has: page.locator('.nm', { hasText: /^鶏もも肉 皮つき(✓|$)/ }) }).click({ timeout: 15_000 });
+  await amountOf(page, sheet(page).locator('[data-food-results] button.it').filter({ has: page.locator('.nm', { hasText: /^鶏もも肉 皮つき(✓|$)/ }) }));
   const chips = sheet(page).locator('[data-states] [data-state]');
   await expect(chips).toHaveText([/^生/, /^ゆで/, /^焼き/]);
   await expect(sheet(page).locator('[data-state=生]')).toHaveAttribute('aria-pressed', 'true');
@@ -1020,12 +1025,12 @@ test('状態: 鶏もも 皮つき 生 → 焼き keeps 1/2枚 at 90 g, logs 焼�
   await sheet(page).locator('[data-food-q]').fill('');
   const recent = sheet(page).locator('[data-food-recent] button.it').first();
   await expect(recent.locator('.nm')).toHaveText('鶏もも肉 皮つき 焼き');
-  await recent.click();
+  await amountOf(page, recent);
   await expect(sheet(page).locator('[data-state=焼き]')).toHaveAttribute('aria-pressed', 'true');
   await sheet(page).getByRole('button', { name: '戻る' }).click();
   // スパゲッティ: ゆで by default, no line; 乾 first, its line
   await sheet(page).locator('[data-food-q]').fill('スパゲッティ');
-  await sheet(page).locator('[data-food-results] button.it').filter({ has: page.locator('.nm', { hasText: /^スパゲッティ(✓|$)/ }) }).first().click();
+  await amountOf(page, sheet(page).locator('[data-food-results] button.it').filter({ has: page.locator('.nm', { hasText: /^スパゲッティ(✓|$)/ }) }).first());
   await expect(chips.first()).toHaveText(/^乾/);
   await expect(sheet(page).locator('[data-state=ゆで]')).toHaveAttribute('aria-pressed', 'true');
   await expect(sheet(page).locator('[data-state-why]')).toHaveCount(0);
@@ -1035,13 +1040,13 @@ test('状態: 鶏もも 皮つき 生 → 焼き keeps 1/2枚 at 90 g, logs 焼�
   // キャベツ 生: no パックの重さ line (only meat's and fish's)
   await sheet(page).getByRole('button', { name: '戻る' }).click();
   await sheet(page).locator('[data-food-q]').fill('キャベツ');
-  await sheet(page).locator('[data-food-results] [data-item="mext:06061"]').click();
+  await amountOf(page, sheet(page).locator('[data-food-results] [data-item="mext:06061"]'));
   await expect(sheet(page).locator('[data-state=生]')).toHaveAttribute('aria-pressed', 'true');
   await expect(sheet(page).locator('[data-state-why]')).toHaveCount(0);
   // 豚ロース 脂身つき 生 → 焼き: the cut's words stay (MEXT's own name drops them), its portions through the yield
   await sheet(page).getByRole('button', { name: '戻る' }).click();
   await sheet(page).locator('[data-food-q]').fill('豚ロース');
-  await sheet(page).locator('[data-food-results] [data-item="mext:11123"]').click();
+  await amountOf(page, sheet(page).locator('[data-food-results] [data-item="mext:11123"]'));
   await expect(sheet(page).locator('.chip[aria-pressed=true][data-portion]')).toContainText('1枚（とんかつ用）');
   await sheet(page).locator('[data-state=焼き]').click();
   await expect(sheet(page).locator('.card.head h3')).toHaveText('豚ロース 脂身つき 焼き');
@@ -1133,7 +1138,7 @@ test('マイ食品: made from a search that finds nothing (no weight), logged at
   await expect(sheet(page).locator('[data-custom-make]')).toHaveCount(0); // something found: the ＋ under the field only
 
   // its amount → my editor (保存 waits; 削除 asked twice), back to the search
-  await mine.click();
+  await amountOf(page, mine);
   await expect(sheet(page).locator('[data-amount-open]')).toHaveText('マイ食品を開く');
   expect(await overflowOf(page)).toEqual([]);
   await sheet(page).locator('[data-amount-open]').click();
@@ -1221,7 +1226,7 @@ test('マイ食品: someone else’s is read-only from its amount, logged and co
   const teishoku = sheet(page).locator('[data-food-customs] [data-custom]', { hasText: '社食の日替わり定食' });
   await expect(teishoku).toHaveCount(1);
   await expect(teishoku).toContainText('1個');
-  await teishoku.click();
+  await amountOf(page, teishoku);
   await sheet(page).locator('[data-amount-open]').click();
   const view = sheet(page).locator('[data-custom-level=view]');
   await expect(view.locator('[data-custom-name]')).toHaveText('社食の日替わり定食');
@@ -1245,7 +1250,7 @@ test('マイ食品: someone else’s is read-only from its amount, logged and co
   await page.mouse.move(0, 0); // (a pointer resting on the banner holds it)
   await expect(sheet(page).locator('.banner')).toHaveCount(0, { timeout: 10_000 }); // docked low, it covers the search's rows
   await sheet(page).locator('[data-add=d]').click();
-  await teishoku.click();
+  await amountOf(page, teishoku);
   await sheet(page).locator('[data-amount-open]').click();
   await view.locator('[data-custom-copy]').click();
   const lv = sheet(page).locator('[data-custom-level=edit]');
@@ -1262,15 +1267,15 @@ test('マイ食品: someone else’s is read-only from its amount, logged and co
   await sheet(page).locator('[data-food-q]').fill('おにぎり');
   const oni = sheet(page).locator('[data-food-customs] [data-custom]', { hasText: '手作りおにぎり（鮭）' });
   await expect(oni).toContainText('1個（110g）');
-  await oni.click();
+  await oni.click(); // opened in place: by weight
   await expect(sheet(page).locator('[data-grams]')).toHaveValue('110');
-  await expect(sheet(page).locator('[data-food-live] .k')).toContainText('180');
+  await expect(sheet(page).locator('[data-food-open-kcal]')).toHaveText('180 kcal');
 });
 
 // Several foods a trip (the user approved, 2026-11-05: "after 追加, stay in the meal's search"): a row's own ＋ logs
-// it as it comes (its default portion), the field cleared and focused for the next; 追加 from an amount comes back
+// it as it comes (its default portion), the field cleared and focused for the next; 追加 of a row opened in place stays
 // to the search too; the trip's foods are listed under the field, ✕ takes one back; 完了 → the day.
-test('several foods a trip: a row’s ＋ logs it at once, 追加 comes back to the search, ✕ takes one back, 完了 ends it', async ({ page }) => {
+test('several foods a trip: a row’s ＋ logs it at once, 追加 in place stays in the search, ✕ takes one back, 完了 ends it', async ({ page }) => {
   await openFood(page);
   const s = sheet(page);
   const dinner = s.locator('section[data-meal=d] [data-entry]');
@@ -1291,11 +1296,11 @@ test('several foods a trip: a row’s ＋ logs it at once, 追加 comes back to 
   await q.fill('みそ汁');
   await quickOf('dishes:miso-tofu-wakame').click();
   await expect(added).toHaveCount(2);
-  // one by its amount: 追加 comes back here, the field focused
+  // one set up in place: its 追加 stays here, the field cleared and focused
   await q.fill('卵');
   await s.locator('[data-food-results] [data-item="mext:12004"]').click();
   await s.locator('[data-step="1"]').click();
-  await s.locator('[data-done]').click();
+  await s.locator('[data-food-open-add]').click();
   await expect(s.locator('.navbar h2')).toHaveText('夜ごはん');
   await expect(added).toHaveCount(3);
   await expect(added.last()).toContainText('1個（M）×2（100g）');
@@ -1311,6 +1316,95 @@ test('several foods a trip: a row’s ＋ logs it at once, 追加 comes back to 
   await expect(dinner).toHaveCount(n0 + 2);
   await expect(dinner.nth(n0)).toContainText('ごはん（精白米）');
   await expect(dinner.nth(n0 + 1)).toContainText('卵（全卵・生）');
+});
+
+// A row opened in place (the user, 2026-11-07: "see and configure settings right away instead of having to add first
+// and then edit"; docs/design.md "Gohan" Search): a food row's tap opens the amount's controls under it, kept on the
+// screen; 焼き ×2 there and 追加 logs 180 g, 558 kcal on this trip, the field cleared and focused; くわしく opens the amount
+// level at what was set; one row at a time, closed by Esc (the sheet stays), its row again or a new query; ＋ still
+// logs in one tap. 豚ロース 焼き ×2 + ごはん 大盛り in one trip: 9 taps, no level.
+test('a row opened in place: 焼き ×2 and 追加 in the search; くわしく carries it; one at a time; Esc; ＋ still one tap', async ({ page }) => {
+  await page.setViewportSize({ width: 393, height: 852 });
+  await openFood(page);
+  const s = sheet(page);
+  const q = s.locator('[data-food-q]');
+  const added = s.locator('[data-food-added] [data-added]');
+  const box = s.locator('[data-food-open]');
+  const c = { taps: 0 };
+  const tap = async (l: Locator) => { c.taps++; await l.click({ timeout: 15_000 }); };
+  await tap(s.locator('[data-add=d]'));
+  await q.fill('豚ロース');
+  const pork = s.locator('[data-food-results] [data-item="mext:11123"]');
+  await tap(pork);
+  await expect(pork).toHaveAttribute('aria-expanded', 'true');
+  await expect(box).toHaveCount(1);
+  await expect(q).not.toBeFocused(); // the keyboard down: room for it
+  await expect(s.locator('.navbar h2')).toHaveText('夜ごはん'); // no level
+  await tap(box.locator('[data-state=焼き]'));
+  await tap(box.locator('[data-step="1"]'));
+  await expect(box.locator('.mult')).toHaveText('×2');
+  await expect(box.locator('[data-grams]')).toHaveValue('180');
+  const add = s.locator('[data-food-open-add]');
+  await expect(add).toBeInViewport({ ratio: 1 }); // kept on the screen
+  await expect(add).toContainText('558 kcal');
+  await tap(add);
+  await expect(added).toHaveCount(1);
+  await expect(added.first()).toContainText('豚ロース 脂身つき 焼き');
+  await expect(added.first()).toContainText('1枚（とんかつ用）×2（180g）');
+  await expect(added.first()).toContainText('558 kcal');
+  await expect(box).toHaveCount(0);
+  await expect(q).toHaveValue('');
+  await expect(q).toBeFocused(); // in the tap: the keyboard up for the next food
+  await q.fill('ごはん');
+  const rice = s.locator('[data-food-results] [data-item="mext:01088"]');
+  await tap(rice);
+  await tap(box.locator('[data-portion=大盛り]'));
+  await expect(add).toContainText('390 kcal');
+  await tap(add);
+  await tap(s.locator('[data-food-finish]'));
+  expect(c.taps).toBe(9);
+  const dinner = s.locator('section[data-meal=d] [data-entry]');
+  await expect(dinner.filter({ hasText: '豚ロース 脂身つき 焼き' })).toContainText('558');
+  await expect(dinner.filter({ hasText: 'ごはん（精白米）' })).toContainText('大盛り（250g）');
+
+  // くわしく: the amount level at what was set (the state, ×2, the grams, the meal)
+  await s.locator('[data-add=d]').click();
+  await q.fill('豚ロース');
+  await pork.click({ timeout: 15_000 });
+  await box.locator('[data-state=焼き]').click();
+  await box.locator('[data-step="1"]').click();
+  await s.locator('[data-food-open-more]').click();
+  await expect(s.locator('.card.head h3')).toHaveText('豚ロース 脂身つき 焼き');
+  await expect(s.locator('[data-food-live] .k')).toContainText('558');
+  await expect(s.locator('.mult')).toHaveText('×2');
+  await expect(s.locator('[data-grams]')).toHaveValue('180');
+  await expect(s.locator('[data-pick-meal=d]')).toHaveAttribute('aria-pressed', 'true');
+  await s.getByRole('button', { name: '戻る' }).click();
+
+  // one at a time; its row again, Esc (the sheet stays) and a new query close it
+  await q.fill('豚ロース');
+  const lean = s.locator('[data-food-results] button.it').nth(1);
+  await pork.click({ timeout: 15_000 });
+  await lean.click();
+  await expect(box).toHaveCount(1);
+  await expect(pork).toHaveAttribute('aria-expanded', 'false');
+  await expect(lean).toHaveAttribute('aria-expanded', 'true');
+  await lean.click();
+  await expect(box).toHaveCount(0);
+  await pork.click();
+  await expect(box).toHaveCount(1);
+  await page.keyboard.press('Escape');
+  await expect(box).toHaveCount(0);
+  await expect(page.locator('dialog[open]')).toHaveCount(1);
+  await pork.click();
+  await q.fill('ごはん');
+  await expect(box).toHaveCount(0);
+
+  // ＋ still logs as it comes, in one tap, nothing opened
+  await s.locator('[data-food-results] li:has([data-item="mext:01088"]) [data-quick]').click();
+  await expect(added).toHaveCount(1);
+  await expect(added.first()).toContainText('茶碗1杯（150g）');
+  await expect(box).toHaveCount(0);
 });
 
 // The balance views (docs/design.md "Gohan", the food review's approved features): each meal's protein chip (the leaf's at
@@ -1544,7 +1638,7 @@ test('tap counts: the same meal as yesterday in 1, a new 3-item meal in 5, a kon
     await tap('[data-food-results] [data-item="dishes:onigiri-shake"]');
     await tap('[data-step="1"]');
     await expect(s.locator('.mult')).toHaveText('×2');
-    await tap('[data-done]');
+    await tap('[data-food-open-add]');
     await type('サラダチキン');
     await tap('[data-food-results] li:has([data-item="eatout:saladchicken"]) [data-quick]');
     await tap('[data-food-finish]');

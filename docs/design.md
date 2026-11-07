@@ -422,6 +422,15 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   once, it was only just logged) and おわり (the day). Each food row of a meal's search (the catalog's, さいきん's,
   マイ食品's) has its own ＋ beside it (FoodMeal's ＋ object): one tap logs it as it comes, its default portion (a recent
   one as I had it; a custom food by its serving), no amount level.
+  **Set up in place** (the user, 2026-11-07: "see and configure settings right away instead of having to add first and
+  then edit"): in a meal's search a food row's tap (not a recipe's) opens it under the row (`FoodOpen`): the amount's
+  controls (`FoodPortion`: 状態, 量, −/＋, grams, the same rules), one line P · F · C, くわしく › (the amount level at what
+  is set: picture, 100 g values, another meal) and 「追加 558 kcal」, logged in the search's meal on this trip, the row
+  closed, the field cleared and focused in the tap. One row at a time (another closes at once, the scroll made up so
+  nothing jumps); its row again, Esc (the sheet stays) or a new query close it; height and fade over 150 ms (none with
+  reduced motion). Opening blurs the field (the keyboard down) and, when it would run past the screen, scrolls the row
+  under the field. 豚ロース 焼き ×2 + ごはん 大盛り in one trip: 9 taps, no level (was 9 taps and 4 slides, or 11 by ＋
+  then fixing). A recipe's ingredient search keeps the amount level.
   **Copy a meal** (the user approved, 2026-11-05): on my day an empty meal offers, as small links under its header
   (いつものに する's weight), 「きのうと おなじ」 (my own the day before; 「前の日と おなじ」 on a past day) and 「〇〇と おなじ」 for
   each other person whose same meal that day has something (the partner, the guest: everyone sees every meal), each
@@ -475,7 +484,7 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   its frame is the rows': the first 24 are drawn, the rest once the list's end is 400 px away (Chrome at 4× CPU, the
   first keystroke's input to frame: ~77 → ~58 ms).
 - **Amount:** one screen on an iPhone 15 for the common case (豚ロース: picture, 3 states, 4 portions), in the order it's
-  decided. (Its controls are `FoodPortion`, their rules `amount.svelte.ts` AmountPick: one picker.) The head: the food's picture when it has one (104 px beside the name, alt 「…の イメージ」, the イメージ badge
+  decided. (Its controls are `FoodPortion`, their rules `amount.svelte.ts` AmountPick: one picker, shared with a search row set up in place.) The head: the food's picture when it has one (104 px beside the name, alt 「…の イメージ」, the イメージ badge
   at its top left: every picture is generated; until its cell is in, the row's thumbnail, cached, scaled up, the badge
   only over a picture; none: the name the whole width; a tap, `FoodPhoto`: it enlarged in a small modal of its own,
   min(100vw − 64, 360) px, with the badge, the name, the 「これは…」 line and 「AI生成のイメージ…」; ✕, Esc or a tap
