@@ -34701,6 +34701,32 @@
 "checked": false
 },
 {
+"key": "mext-10180",
+"ja": "ししゃも 生干し 生",
+"desc": "Shishamo, raw: whole small lightly dried smelt with roe-swollen bellies, silvery-grey, lined up on a plate",
+"items": [
+"mext:10180"
+],
+"roll": 0,
+"seed": 68303,
+"prompt": "e9e4995c1f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10181",
+"ja": "ししゃも 生干し 焼き",
+"desc": "Grilled shishamo: whole small smelt, browned skin and plump roe-filled bellies, lined up on a plate",
+"items": [
+"mext:10181"
+],
+"roll": 0,
+"seed": 80857,
+"prompt": "090d7a19a4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10182",
 "ja": "ししゃも（からふとししゃも） 生干し 生",
 "desc": "a few raw capelin (shishamo), small slim silver fish with plump bellies",
@@ -34727,6 +34753,58 @@
 "checked": false
 },
 {
+"key": "mext-10184",
+"ja": "したびらめ 生",
+"desc": "Raw sole: a whole elongated tongue-shaped brown flatfish, beside a white fillet",
+"items": [
+"mext:10184"
+],
+"roll": 0,
+"seed": 41654,
+"prompt": "73170d8fe0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10185",
+"ja": "しまあじ 養殖 生",
+"desc": "Raw striped jack (shimaaji): pale pink-white sashimi slices with silver skin showing a yellow stripe",
+"items": [
+"mext:10185"
+],
+"roll": 0,
+"seed": 62112,
+"prompt": "dbddb1d895",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10186",
+"ja": "しらうお 生",
+"desc": "Raw icefish (shirauo): small slender clear translucent fish with black eyes, heaped in a small dish",
+"items": [
+"mext:10186"
+],
+"roll": 0,
+"seed": 42426,
+"prompt": "845912bf20",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10187",
+"ja": "シルバー 生",
+"desc": "Raw silver warehou: a white raw fillet with grey skin, on a plate",
+"items": [
+"mext:10187"
+],
+"roll": 0,
+"seed": 82316,
+"prompt": "dca76bc1f2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10188",
 "ja": "すずき 生",
 "desc": "a raw sea bass fillet, white flesh with silver skin",
@@ -34736,6 +34814,45 @@
 "roll": 0,
 "seed": 68093,
 "prompt": "9ca16a4617",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10189",
+"ja": "きだい 生",
+"desc": "Raw yellowback seabream (kidai): a whole pink-red sea bream with a yellow patch on its back",
+"items": [
+"mext:10189"
+],
+"roll": 0,
+"seed": 20555,
+"prompt": "3c3582e6a3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10190",
+"ja": "くろだい 生",
+"desc": "Raw black seabream (kurodai): a whole dark grey-black sea bream, beside a white fillet",
+"items": [
+"mext:10190"
+],
+"roll": 0,
+"seed": 76270,
+"prompt": "0d433b1a50",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10191",
+"ja": "ちだい 生",
+"desc": "Raw crimson seabream (chidai): a whole pink sea bream with a red edge on its tail fin",
+"items": [
+"mext:10191"
+],
+"roll": 0,
+"seed": 53432,
+"prompt": "53b2715081",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -34754,6 +34871,58 @@
 "checked": false
 },
 {
+"key": "mext-10194",
+"ja": "まだい 養殖 皮つき 水煮",
+"desc": "Boiled sea bream, skin on: a plain cooked fillet, white flaky flesh with pink-red skin, no sauce",
+"items": [
+"mext:10194"
+],
+"roll": 0,
+"seed": 24407,
+"prompt": "7c8cb4532d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10195",
+"ja": "まだい 養殖 皮つき 焼き",
+"desc": "Salt-grilled sea bream fillet: white flesh with browned pink-red skin, on a plate",
+"items": [
+"mext:10195"
+],
+"roll": 0,
+"seed": 62753,
+"prompt": "574f21cba6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10196",
+"ja": "たかさご 生",
+"desc": "Raw fusilier (takasago): a slender fish, blue-green back, pink belly and a yellow line along its side",
+"items": [
+"mext:10196"
+],
+"roll": 0,
+"seed": 17339,
+"prompt": "767dce6090",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10197",
+"ja": "たかべ 生",
+"desc": "Raw takabe: small whole fish, olive-coloured with a yellow stripe along the body",
+"items": [
+"mext:10197"
+],
+"roll": 0,
+"seed": 18061,
+"prompt": "a3ba63afd5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10198",
 "ja": "たちうお 生",
 "desc": "a piece of cutlassfish, long ribbon-like shiny silver fish",
@@ -34763,6 +34932,32 @@
 "roll": 0,
 "seed": 25948,
 "prompt": "80842832c1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10199",
+"ja": "すけとうだら 生",
+"desc": "Raw Alaska pollock: a white raw fillet with grey-brown skin, on a plate",
+"items": [
+"mext:10199"
+],
+"roll": 0,
+"seed": 80874,
+"prompt": "f1f43aefea",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10201",
+"ja": "すけとうだら すきみだら",
+"desc": "Sukimidara: thin, flat, stiff salted dried pollock fillets, pale ivory, in strips on a plate",
+"items": [
+"mext:10201"
+],
+"roll": 0,
+"seed": 39528,
+"prompt": "676abfdf56",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -34820,6 +35015,19 @@
 "checked": false
 },
 {
+"key": "mext-10206",
+"ja": "まだら 焼き",
+"desc": "Grilled cod: a fillet of white flaky flesh with browned surface and grey skin, on a plate",
+"items": [
+"mext:10206"
+],
+"roll": 0,
+"seed": 37643,
+"prompt": "71a65b45f2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10207",
 "ja": "白子（たら）",
 "desc": "cod milt (shirako), soft creamy white brain-like folds in a small dish with ponzu",
@@ -34829,6 +35037,175 @@
 "roll": 0,
 "seed": 5117,
 "prompt": "d9522c49fa",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10209",
+"ja": "まだら 干しだら",
+"desc": "Dried cod (hoshidara): a stiff, flat, pale greyish split cod, hard as wood, on a plate",
+"items": [
+"mext:10209"
+],
+"roll": 0,
+"seed": 98650,
+"prompt": "cebd828944",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10210",
+"ja": "たら でんぶ",
+"desc": "Fish denbu: a fluffy heap of fine, pale beige-brown fish floss in a small dish",
+"items": [
+"mext:10210"
+],
+"roll": 0,
+"seed": 3423,
+"prompt": "a62c150b8b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10211",
+"ja": "ちか 生",
+"desc": "Raw chika smelt: small slender silver fish with translucent bodies, on a plate",
+"items": [
+"mext:10211"
+],
+"roll": 0,
+"seed": 91785,
+"prompt": "65edc6f9b2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10212",
+"ja": "ナイルティラピア 生",
+"desc": "Raw tilapia: a whole grey fish with faint dark vertical bars, beside a white raw fillet",
+"items": [
+"mext:10212"
+],
+"roll": 0,
+"seed": 84659,
+"prompt": "1e5fa59533",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10213",
+"ja": "どじょう 生",
+"desc": "Raw loach (dojo): small slender eel-like brown fish with whiskers, heaped in a small bowl",
+"items": [
+"mext:10213"
+],
+"roll": 0,
+"seed": 60613,
+"prompt": "2817aa334a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10214",
+"ja": "どじょう 水煮",
+"desc": "Boiled loach: whole small eel-like fish, plain cooked, soft and brown, in a small bowl",
+"items": [
+"mext:10214"
+],
+"roll": 0,
+"seed": 95974,
+"prompt": "3883ce023c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10215",
+"ja": "とびうお 生",
+"desc": "Raw flying fish: a whole fish with a blue back and large wing-like pectoral fins spread out",
+"items": [
+"mext:10215"
+],
+"roll": 0,
+"seed": 49744,
+"prompt": "a0b72c7a00",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10216",
+"ja": "なまず 生",
+"desc": "Raw catfish (namazu): a whole dark fish with a broad head and long whiskers, beside a white fillet",
+"items": [
+"mext:10216"
+],
+"roll": 0,
+"seed": 46762,
+"prompt": "7f23a050c0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10217",
+"ja": "にぎす 生",
+"desc": "Raw nigisu (deep-sea smelt): slender silver fish with very large eyes, on a plate",
+"items": [
+"mext:10217"
+],
+"roll": 0,
+"seed": 86364,
+"prompt": "db8023631d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10218",
+"ja": "にしん 生",
+"desc": "Raw herring: a whole bluish-silver fish with a slim body, on a plate",
+"items": [
+"mext:10218"
+],
+"roll": 0,
+"seed": 17101,
+"prompt": "39fb711b14",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10219",
+"ja": "身欠きにしん",
+"desc": "Migaki nishin: dried split herring fillets, hard, stiff and dark golden-brown, on a plate",
+"items": [
+"mext:10219"
+],
+"roll": 0,
+"seed": 63163,
+"prompt": "116928e207",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10220",
+"ja": "にしん 開き干し",
+"desc": "Butterflied dried herring: a whole fish split open flat, glossy pale flesh, on a plate",
+"items": [
+"mext:10220"
+],
+"roll": 0,
+"seed": 18908,
+"prompt": "cd39dcbbeb",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10221",
+"ja": "にしん くん製",
+"desc": "Smoked herring: golden-brown smoked fillets with glossy skin, on a plate",
+"items": [
+"mext:10221"
+],
+"roll": 0,
+"seed": 88810,
+"prompt": "f4f0ea7cb8",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -34848,6 +35225,123 @@
 "checked": false
 },
 {
+"key": "mext-10223",
+"ja": "にしん かずのこ 乾",
+"desc": "Dried kazunoko: hard, pale yellowish-beige herring roe skeins with a dense grainy texture, on a plate",
+"items": [
+"mext:10223"
+],
+"roll": 0,
+"seed": 65350,
+"prompt": "48ee1e1412",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10225",
+"ja": "はぜ 生",
+"desc": "Raw goby (haze): small whole brown mottled fish with big heads, on a plate",
+"items": [
+"mext:10225"
+],
+"roll": 0,
+"seed": 23475,
+"prompt": "e9cb11dc15",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10227",
+"ja": "はぜ 甘露煮",
+"desc": "Goby kanroni: whole small fish simmered in syrupy sweet soy, glossy dark amber, in a small dish",
+"items": [
+"mext:10227"
+],
+"roll": 0,
+"seed": 96799,
+"prompt": "9f8dd11c30",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10228",
+"ja": "はたはた 生",
+"desc": "Raw sandfish (hatahata): whole scaleless pale brown mottled fish with large mouths and big pectoral fins",
+"items": [
+"mext:10228"
+],
+"roll": 0,
+"seed": 26350,
+"prompt": "db2831999e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10229",
+"ja": "はたはた 生干し",
+"desc": "Semi-dried sandfish: whole scaleless fish lightly dried, glossy pale brown, on a plate",
+"items": [
+"mext:10229"
+],
+"roll": 0,
+"seed": 98360,
+"prompt": "6ba1abf739",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10230",
+"ja": "はまふえふき 生",
+"desc": "Raw spangled emperor: a whole silver fish with blue lines on its face, beside a white fillet",
+"items": [
+"mext:10230"
+],
+"roll": 0,
+"seed": 74621,
+"prompt": "edfbf381f5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10231",
+"ja": "はも 生",
+"desc": "Raw pike conger (hamo): a long silvery eel beside white fillet pieces finely scored so they bloom open like flowers",
+"items": [
+"mext:10231"
+],
+"roll": 0,
+"seed": 45835,
+"prompt": "d99333c098",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10232",
+"ja": "みなみくろたち 生",
+"desc": "Raw snoek: a long, slender silver fish beside a white fillet",
+"items": [
+"mext:10232"
+],
+"roll": 0,
+"seed": 76593,
+"prompt": "b1f8b449d0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10233",
+"ja": "ひらまさ 生",
+"desc": "Raw yellowtail amberjack (hiramasa): pale pinkish-white glossy sashimi slices, on a plate",
+"items": [
+"mext:10233"
+],
+"roll": 0,
+"seed": 28391,
+"prompt": "55d97031a3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10234",
 "ja": "ひらめ（天然） 生",
 "desc": "thin slices of hirame flounder sashimi, translucent white, fanned on a plate",
@@ -34857,6 +35351,72 @@
 "roll": 0,
 "seed": 73252,
 "prompt": "300df8c37b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10235",
+"ja": "ひらめ 養殖 皮つき 生",
+"desc": "Raw flounder (hirame), skin on: a white fillet with dark brown skin on one side, on a plate",
+"items": [
+"mext:10235"
+],
+"roll": 0,
+"seed": 43570,
+"prompt": "cc98d3f44e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10236",
+"ja": "とらふぐ 養殖 生",
+"desc": "Raw tiger puffer (fugu): paper-thin translucent sashimi slices arranged like a chrysanthemum on a plate",
+"items": [
+"mext:10236",
+"mext:10237"
+],
+"roll": 0,
+"seed": 44008,
+"prompt": "a28046e1fa",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10238",
+"ja": "ふな 生",
+"desc": "Raw crucian carp (funa): a whole golden-silver deep-bodied fish, on a plate",
+"items": [
+"mext:10238"
+],
+"roll": 0,
+"seed": 62159,
+"prompt": "523cb84fc4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10239",
+"ja": "ふな 水煮",
+"desc": "Boiled crucian carp: a whole plain cooked fish, opaque grey-white with scales, in a shallow dish",
+"items": [
+"mext:10239"
+],
+"roll": 0,
+"seed": 49049,
+"prompt": "e60aeb6b2d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10240",
+"ja": "ふな 甘露煮",
+"desc": "Crucian carp kanroni: a whole small carp simmered in sweet soy, glossy dark brown, on a small plate",
+"items": [
+"mext:10240"
+],
+"roll": 0,
+"seed": 63578,
+"prompt": "59eeb410fb",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -34900,6 +35460,58 @@
 "checked": false
 },
 {
+"key": "mext-10244",
+"ja": "ほうぼう 生",
+"desc": "Raw red gurnard (houbou): a whole red fish with large blue-green wing-like pectoral fins",
+"items": [
+"mext:10244"
+],
+"roll": 0,
+"seed": 10691,
+"prompt": "9c80008b0b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10245",
+"ja": "ホキ 生",
+"desc": "Raw hoki: a white raw fillet, on a plate",
+"items": [
+"mext:10245"
+],
+"roll": 0,
+"seed": 65557,
+"prompt": "f15a103b46",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10246",
+"ja": "ほっけ 生",
+"desc": "Raw atka mackerel (hokke): a whole yellowish-brown fish with dark bands, on a plate",
+"items": [
+"mext:10246"
+],
+"roll": 0,
+"seed": 53487,
+"prompt": "ed8f836d88",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10247",
+"ja": "塩ほっけ",
+"desc": "Salted hokke: a butterflied dried fish, opened flat, pale flesh with yellowish-brown striped skin edge",
+"items": [
+"mext:10247"
+],
+"roll": 0,
+"seed": 4793,
+"prompt": "efce22c40c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10248",
 "ja": "ほっけ開き干し 生",
 "desc": "a raw butterflied dried atka mackerel (hokke), large split flat fish showing pale flesh",
@@ -34909,6 +35521,45 @@
 "roll": 0,
 "seed": 16520,
 "prompt": "5b02726f5c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10249",
+"ja": "ぼら 生",
+"desc": "Raw grey mullet (bora): a whole silver-grey fish with dark lengthwise lines, on a plate",
+"items": [
+"mext:10249"
+],
+"roll": 0,
+"seed": 79102,
+"prompt": "5f1cb359b1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10250",
+"ja": "ぼら からすみ",
+"desc": "Karasumi: dried mullet roe, a flat translucent amber-orange slab, cut into thin slices on a plate",
+"items": [
+"mext:10250"
+],
+"roll": 0,
+"seed": 78843,
+"prompt": "13a2ee3914",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10251",
+"ja": "ほんもろこ 生",
+"desc": "Raw honmoroko: small slender silvery minnows, on a plate",
+"items": [
+"mext:10251"
+],
+"roll": 0,
+"seed": 67405,
+"prompt": "efd82583f0",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -34957,6 +35608,46 @@
 "checked": false
 },
 {
+"key": "mext-10256",
+"ja": "みなみまぐろ 赤身 生",
+"desc": "Raw lean southern bluefin tuna (akami): a deep red glossy block cut into sashimi slices",
+"items": [
+"mext:10256"
+],
+"roll": 0,
+"seed": 10670,
+"prompt": "0c168d8398",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10257",
+"ja": "みなみまぐろ 脂身 生",
+"desc": "Raw fatty tuna (toro): a pale pink block marbled with white fat streaks, cut into sashimi slices",
+"items": [
+"mext:10257",
+"mext:10426"
+],
+"roll": 0,
+"seed": 34104,
+"prompt": "bc79cbecf8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10258",
+"ja": "めじまぐろ 生",
+"desc": "Raw young bluefin tuna (meji): a deep red block of raw flesh, cut into sashimi slices",
+"items": [
+"mext:10258"
+],
+"roll": 0,
+"seed": 84745,
+"prompt": "d22f1a8e88",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10260",
 "ja": "ツナ缶（水煮・ライト）",
 "desc": "an open round tin of canned tuna, pale beige-pink flaked tuna chunks, with a little flaked tuna on a small plate",
@@ -34970,6 +35661,97 @@
 "seed": 84280,
 "prompt": "9d42e71d9c",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10261",
+"ja": "まぐろ 缶詰 水煮 フレーク ホワイト",
+"desc": "Canned white tuna flakes in water: pale cream-white flaked fish in clear liquid, in an open can",
+"items": [
+"mext:10261"
+],
+"roll": 0,
+"seed": 22158,
+"prompt": "617c6a6429",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10265",
+"ja": "マジェランあいなめ 生",
+"desc": "Raw Patagonian toothfish: a thick, rich white fillet with dark skin, on a plate",
+"items": [
+"mext:10265"
+],
+"roll": 0,
+"seed": 64151,
+"prompt": "a227e8de07",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10266",
+"ja": "まながつお 生",
+"desc": "Raw silver pomfret (managatsuo): a whole flat diamond-shaped silver fish, on a plate",
+"items": [
+"mext:10266"
+],
+"roll": 0,
+"seed": 48141,
+"prompt": "07107090a8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10267",
+"ja": "みなみだら 生",
+"desc": "Raw southern blue whiting: a white raw fillet, on a plate",
+"items": [
+"mext:10267"
+],
+"roll": 0,
+"seed": 75547,
+"prompt": "9370cce4fb",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10268",
+"ja": "むつ 生",
+"desc": "Raw gnomefish (mutsu): a whole dark purplish-black fish with very large eyes, beside a white fillet",
+"items": [
+"mext:10268"
+],
+"roll": 0,
+"seed": 81098,
+"prompt": "15dbeabde7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10269",
+"ja": "むつ 水煮",
+"desc": "Boiled gnomefish: a plain cooked fillet, soft white flesh with dark skin, no sauce, on a plate",
+"items": [
+"mext:10269"
+],
+"roll": 0,
+"seed": 85628,
+"prompt": "f56244a8c9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10270",
+"ja": "めじな 生",
+"desc": "Raw opaleye (mejina): a whole dark blue-black fish, beside a white fillet",
+"items": [
+"mext:10270"
+],
+"roll": 0,
+"seed": 89081,
+"prompt": "185ef2fd62",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -35653,6 +36435,58 @@
 "checked": false
 },
 {
+"key": "mext-10408",
+"ja": "まだい 養殖 皮なし 生",
+"desc": "Raw sea bream, skinless: translucent white sashimi slices with a pink tinge, on a plate",
+"items": [
+"mext:10408"
+],
+"roll": 0,
+"seed": 43230,
+"prompt": "376edd57f6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10409",
+"ja": "すけとうだら フライ",
+"desc": "Pollock fry: a breaded deep-fried white fish fillet in golden crust, on a plate",
+"items": [
+"mext:10409"
+],
+"roll": 0,
+"seed": 8584,
+"prompt": "0d3411bde6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10410",
+"ja": "ひらめ 養殖 皮なし 生",
+"desc": "Raw flounder, skinless: thin translucent white sashimi slices fanned out on a plate",
+"items": [
+"mext:10410"
+],
+"roll": 0,
+"seed": 46829,
+"prompt": "24bac8d227",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10411",
+"ja": "ぶり はまち 養殖 皮なし 生",
+"desc": "Raw young yellowtail (hamachi), skinless: glossy pinkish-cream sashimi slices with a darker red edge",
+"items": [
+"mext:10411"
+],
+"roll": 0,
+"seed": 54619,
+"prompt": "41a594fab4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10412",
 "ja": "ほっけ開き干し 焼き",
 "desc": "a grilled butterflied atka mackerel (hokke), a large split fish with golden-brown flesh, on a long plate with grated daikon",
@@ -35694,6 +36528,32 @@
 "roll": 0,
 "seed": 77496,
 "prompt": "8094351167",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10421",
+"ja": "とびうお 煮干し",
+"desc": "Dried flying fish (niboshi): whole boiled and dried flying fish, stiff and dull grey, on a plate",
+"items": [
+"mext:10421"
+],
+"roll": 0,
+"seed": 85016,
+"prompt": "51484bb5a8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10422",
+"ja": "とびうお 焼き干し",
+"desc": "Yaki-ago: grilled then dried flying fish, smoky brown and stiff, on bamboo skewers",
+"items": [
+"mext:10422"
+],
+"roll": 0,
+"seed": 96258,
+"prompt": "b116836829",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -35849,6 +36709,86 @@
 "checked": false
 },
 {
+"key": "mext-10448",
+"ja": "たら 桜でんぶ",
+"desc": "Sakura denbu: a fluffy heap of fine bright pink sweet fish floss in a small dish",
+"items": [
+"mext:10448"
+],
+"roll": 0,
+"seed": 86202,
+"prompt": "4400be0f6f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10449",
+"ja": "ふなずし",
+"desc": "Funazushi: fermented crucian carp cut in slices, translucent amber flesh with bright orange roe and pasty white rice, on a small plate",
+"items": [
+"mext:10449"
+],
+"roll": 0,
+"seed": 3180,
+"prompt": "f2d29427d5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10451",
+"ja": "くろまぐろ 養殖 赤身 水煮",
+"desc": "Boiled lean bluefin tuna: a plain cooked block, opaque grey-brown, firm and dry, on a plate",
+"items": [
+"mext:10451",
+"mext:10452",
+"mext:10453"
+],
+"roll": 0,
+"seed": 8927,
+"prompt": "2f3856e758",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10454",
+"ja": "くろまぐろ 養殖 赤身 焼き",
+"desc": "Grilled lean tuna: a block with browned seared surface and grill marks, grey-brown inside, on a plate",
+"items": [
+"mext:10454"
+],
+"roll": 0,
+"seed": 75248,
+"prompt": "f9c50f0aac",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10455",
+"ja": "くろまぐろ 養殖 赤身 ソテー",
+"desc": "Sauteed lean tuna: a pan-fried steak with golden-brown seared edges, glossy with oil, on a plate",
+"items": [
+"mext:10455"
+],
+"roll": 0,
+"seed": 26694,
+"prompt": "755638b615",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10456",
+"ja": "くろまぐろ 養殖 赤身 天ぷら",
+"desc": "Tuna tempura: pieces of tuna in light, crisp, pale golden lacy batter, on a plate",
+"items": [
+"mext:10456"
+],
+"roll": 0,
+"seed": 28,
+"prompt": "4b12bbe942",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10457",
 "ja": "にしまあじ 開き干し 生",
 "desc": "Butterflied semi-dried horse mackerel (aji no hiraki), raw: a whole fish split open flat with head attached, glossy pale flesh side up",
@@ -35872,6 +36812,60 @@
 "roll": 0,
 "seed": 63739,
 "prompt": "61731831c3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10460",
+"ja": "くろまぐろ 養殖 脂身 水煮",
+"desc": "Boiled fatty tuna (toro): a plain cooked piece, pale greyish-beige with visible fat layers, soft, on a plate",
+"items": [
+"mext:10460",
+"mext:10461",
+"mext:10462"
+],
+"roll": 0,
+"seed": 8458,
+"prompt": "d2ba53ffb5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10463",
+"ja": "くろまぐろ 養殖 脂身 焼き",
+"desc": "Grilled fatty tuna: a piece with browned, glistening surface and pale fat-layered flesh, on a plate",
+"items": [
+"mext:10463"
+],
+"roll": 0,
+"seed": 94384,
+"prompt": "121492e5c4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10464",
+"ja": "くろまぐろ 養殖 脂身 ソテー",
+"desc": "Sauteed fatty tuna: a pan-fried piece, golden-brown seared, glossy with rendered fat, on a plate",
+"items": [
+"mext:10464"
+],
+"roll": 0,
+"seed": 21491,
+"prompt": "ac69629f90",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10465",
+"ja": "くろまぐろ 養殖 脂身 天ぷら",
+"desc": "Fatty tuna tempura: pieces in light, crisp, pale golden batter, on a plate",
+"items": [
+"mext:10465"
+],
+"roll": 0,
+"seed": 29253,
+"prompt": "8e50a90edb",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
