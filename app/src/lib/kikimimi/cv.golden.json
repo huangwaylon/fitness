@@ -16,8 +16,8 @@
   "decks": "40a579a98762d069"
  },
  "call:s2-call-c": {
-  "cv": "0743ad",
-  "decks": "4292c2cc0a3cc033"
+  "cv": "d21b13",
+  "decks": "b94b8785d554f2b6"
  },
  "call:s3-call": {
   "cv": "fef082",
@@ -42,6 +42,10 @@
  "lesson:fd-order": {
   "cv": "4625b7",
   "decks": "0ef8e53afacfef4a"
+ },
+ "lesson:fr-catchup": {
+  "cv": "a04734",
+  "decks": "0c126da98e27f368"
  },
  "lesson:fr-replan": {
   "cv": "3521f0",

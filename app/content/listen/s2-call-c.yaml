@@ -1,14 +1,15 @@
 # ようじ でんわ S2 もり (c): the calls of wave 2b's もり units (docs/curriculum-wave2.md §3.1, §3.2: one per unit, its
 # チェック from recipe v2), each with one complication: a wedding weekend whose rehearsal dinner moves (ev-wedding),
 # a dinner booking that grows to six and moves later (fd-dinner), a clinic reading the wrong chart (hl-doctor), a
-# repair visit pushed a day by a part on back order (hm-repair), a phone ready on a Sunday that closes early (sh-phone).
+# repair visit pushed a day by a part on back order (hm-repair), a phone ready on a Sunday that closes early (sh-phone),
+# a brunch that moves day, time and address (fr-catchup).
 # Unvoiced: batch A4.
 schema: 1
 unit: s2-call-c
 game: call
 stage: 3
 track: life
-seeds: [14, 15, 18, 25, 26, 48, 50, 54, 55]
+seeds: [14, 15, 18, 25, 26, 48, 50, 54, 55, 57]
 features: { primary: self-repair, review: numbers }
 cando: "電話で 予定や 用件の 変更と 条件を 聞き取って メモできる"
 status: draft
@@ -138,3 +139,28 @@ items:
           - { ask: "直したのは？", options: ["画面", "電池", "充電口"], answer: 0, cja: ["画面", "電池", "充電口"] }
     note: "Oh, wait, sorry の あとで 受け取りの 時間が 変わる"
     tags: { seed: 26, register: service, pragmatic: literal, conditions: [phone], features: [self-repair, assimilation, numbers] }
+
+  - kind: call
+    id: call-brunch-moved
+    ask: "ロージーから 電話。メモしよう"
+    ctx: "久しぶりの集まりを計画している友だちから電話です"
+    scene: living
+    channel: phone
+    lines:
+      - { who: rosie, en: "Hey! So I finally got everyone together for brunch. Sunday at eleven, at the Bluebird Café.", tts: "Hey! So I finally got everyone together fer brunch. Sunday at eleven, at the Bluebird Café.", ja: "もしもし！ やっとみんなでブランチできることになったよ。日曜の11時、ブルーバード・カフェで。" }
+      - { who: me, en: "Yay! Who's coming?", ja: "やった！ 誰が来るの？" }
+      - { who: rosie, en: "Maple, Goldie, Marshal, and you, of course. Oh, and Goldie's bringing her new boyfriend. I know! Long story short, they met at physical therapy.", tts: "Maple, Goldie, Marshal, an' you, of course. Oh, an' Goldie's bringin' her new boyfriend. I know! Long story short, they met at physical therapy.", ja: "メイプル、ゴールディ、マーシャル、もちろんあなたも。あ、それとゴールディが新しい彼氏を連れてくるの。でしょ！ 手短に言うと、リハビリで出会ったんだって。" }
+      - { who: me, en: "Ha! I can't wait to hear that one.", ja: "はは！ その話、早く聞きたい。" }
+      - { who: rosie, en: "Oh, and a heads-up, Bluebird moved. It's on Fifth Avenue now, across from the library.", tts: "Oh, an' a heads-up, Bluebird moved. It's on Fifth Avenue now, across from the library.", ja: "あ、それと一応言っておくと、ブルーバードは移転したの。今は5番街で、図書館の向かい。" }
+      - { who: rosie, en: "Oh, wait. Maple just texted. She can't do Sunday. So let's make it Saturday, eleven-thirty. Same place.", ja: "あ、待って。今メイプルからメッセージ。日曜はだめだって。じゃあ土曜の11時半にしよう。場所は同じ。", repair: true }
+      - { who: me, en: "Saturday, eleven-thirty, Fifth Avenue. Got it!", ja: "土曜の11時半、5番街ね。了解！" }
+    half: [0, 0, 0, 0, 1, 1, 1]
+    memo:
+      - why: "日曜の11時だったが、メイプルが日曜はだめで土曜の11時半に変更。ブルーバードは移転して5番街の図書館の向かい。ゴールディが新しい彼氏を連れてくる。"
+        slots:
+          - { ask: "何曜日？", options: ["金曜", "土曜", "日曜"], answer: 1, cja: ["金曜日", "土曜日", "日曜日"] }
+          - { ask: "何時？", options: ["11:00", "11:30", "12:30"], answer: 1, cja: ["11時", "11時半", "12時半"] }
+          - { ask: "場所は？", options: ["5番街、図書館の 向かい", "前の 場所", "図書館の 中"], answer: 0, cja: ["5番街の、図書館の向かい", "前と同じ場所", "図書館の中"] }
+          - { ask: "新しく 来るのは？", options: ["ゴールディの 彼氏", "メイプルの 兄", "マーシャルの 妹"], answer: 0, cja: ["ゴールディの彼氏", "メイプルのお兄さん", "マーシャルの妹"] }
+    note: "Maple just texted の あとで 曜日と 時間が 変わる"
+    tags: { seed: 57, register: friend, pragmatic: literal, conditions: [phone], features: [self-repair] }
