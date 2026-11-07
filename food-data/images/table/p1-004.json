@@ -609,7 +609,8 @@
   "desc": "hire katsu, small round breaded pork fillet cutlets in a crisp golden panko crust, one cut showing white lean pork, with shredded cabbage",
   "items": [
    "mext:11279",
-   "dishes:hirekatsu"
+   "dishes:hirekatsu",
+   "eatout:hirekatsu_teishoku"
   ]
  },
  {

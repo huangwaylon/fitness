@@ -109,7 +109,8 @@
   "ja": "油淋鶏（ユーリンチー）",
   "desc": "yurinchi, crisp fried chicken slices on lettuce topped with a soy vinegar sauce with chopped green onion",
   "items": [
-   "dishes:yurinchi"
+   "dishes:yurinchi",
+   "eatout:yuurinchi"
   ]
  },
  {

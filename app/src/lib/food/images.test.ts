@@ -120,3 +120,14 @@ describe('sheet locality', () => {
     expect(rows.filter((r) => r.sheets > MAX_SHEETS)).toEqual([]);
   });
 });
+
+describe('the picture table (food-data/images/table)', () => {
+  it('names every generic food, so a new catalogue item is never silently left without a row', () => {
+    const tdir = join(import.meta.dirname, '../../../../food-data/images/table');
+    const inTable = new Set(readdirSync(tdir).filter((f) => f.endsWith('.json')).flatMap((f) => (JSON.parse(readFileSync(join(tdir, f), 'utf8')) as { items: string[] }[]).flatMap((r) => r.items)));
+    const food = join(STATIC, 'food');
+    const fi = JSON.parse(readFileSync(join(food, 'index.json'), 'utf8')) as FoodIndex;
+    const ids = fi.datasets.filter((d) => !d.lazy).flatMap((d) => (JSON.parse(readFileSync(join(food, d.file), 'utf8')) as Dataset).items.map((it) => it.id));
+    expect(ids.filter((id) => !inTable.has(id))).toEqual([]);
+  });
+});

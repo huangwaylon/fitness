@@ -1650,7 +1650,8 @@
   "ja": "回鍋肉（ホイコーロー）",
   "desc": "twice-cooked pork (hoikoro), stir-fried pork belly slices with cabbage and green pepper in a glossy red-brown miso sauce",
   "items": [
-   "dishes:hoikoro"
+   "dishes:hoikoro",
+   "eatout:hoikoro"
   ]
  },
  {
@@ -1658,7 +1659,8 @@
   "ja": "青椒肉絲（チンジャオロース）",
   "desc": "pepper steak (chinjao rosu), thin strips of beef, green pepper and bamboo shoot stir-fried in glossy brown sauce",
   "items": [
-   "dishes:chinjao"
+   "dishes:chinjao",
+   "eatout:chinjao"
   ]
  },
  {

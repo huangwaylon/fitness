@@ -382,7 +382,8 @@
 "ja": "青椒肉絲（チンジャオロース）",
 "desc": "pepper steak (chinjao rosu), thin strips of beef, green pepper and bamboo shoot stir-fried in glossy brown sauce",
 "items": [
-"dishes:chinjao"
+"dishes:chinjao",
+"eatout:chinjao"
 ],
 "roll": 0,
 "seed": 67395,
@@ -868,7 +869,8 @@
 "ja": "回鍋肉（ホイコーロー）",
 "desc": "twice-cooked pork (hoikoro), stir-fried pork belly slices with cabbage and green pepper in a glossy red-brown miso sauce",
 "items": [
-"dishes:hoikoro"
+"dishes:hoikoro",
+"eatout:hoikoro"
 ],
 "roll": 0,
 "seed": 36554,
@@ -3563,7 +3565,8 @@
 "ja": "油淋鶏（ユーリンチー）",
 "desc": "yurinchi, crisp fried chicken slices on lettuce topped with a soy vinegar sauce with chopped green onion",
 "items": [
-"dishes:yurinchi"
+"dishes:yurinchi",
+"eatout:yuurinchi"
 ],
 "roll": 0,
 "seed": 48572,
@@ -34455,7 +34458,8 @@
 "eatout:saba_shio_teishoku",
 "toyonaka:117813",
 "kumagaya:2195",
-"kumagaya:02195"
+"kumagaya:02195",
+"dishes:teishoku-saba-shioyaki"
 ],
 "roll": 0,
 "seed": 37399,
@@ -35755,6 +35759,71 @@
 "checked": false
 },
 {
+"key": "mext-10271",
+"ja": "めばる 生",
+"desc": "Raw rockfish (mebaru): a whole dark brown fish with very large eyes, on a plate",
+"items": [
+"mext:10271"
+],
+"roll": 0,
+"seed": 28271,
+"prompt": "177af933bc",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10272",
+"ja": "メルルーサ 生",
+"desc": "Raw hake (merluza): a white raw fillet, on a plate",
+"items": [
+"mext:10272"
+],
+"roll": 0,
+"seed": 42709,
+"prompt": "f2d34f9d62",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10273",
+"ja": "やつめうなぎ 生",
+"desc": "Raw lamprey: a long eel-like dark fish with a round sucker mouth and a row of small gill holes behind the eye",
+"items": [
+"mext:10273"
+],
+"roll": 0,
+"seed": 26531,
+"prompt": "85dd7ec205",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10274",
+"ja": "やつめうなぎ 干しやつめ",
+"desc": "Dried lamprey: long stiff dark brown dried eel-like strips, on a plate",
+"items": [
+"mext:10274"
+],
+"roll": 0,
+"seed": 84768,
+"prompt": "0a662801c6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10275",
+"ja": "やまめ 養殖 生",
+"desc": "Raw yamame trout: a slim whole fish with olive back and dark oval parr marks along its silver side, no red spots",
+"items": [
+"mext:10275"
+],
+"roll": 0,
+"seed": 36182,
+"prompt": "cb8ebd5e81",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10276",
 "ja": "わかさぎ 生",
 "desc": "a few small fresh wakasagi smelt, slim translucent silvery little fish",
@@ -35764,6 +35833,45 @@
 "roll": 0,
 "seed": 51916,
 "prompt": "2d4bfa634d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10277",
+"ja": "わかさぎ つくだ煮",
+"desc": "Wakasagi tsukudani: small whole pond smelt simmered in soy and sugar, dark brown and glossy, in a small dish",
+"items": [
+"mext:10277"
+],
+"roll": 0,
+"seed": 52570,
+"prompt": "b75433e273",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10279",
+"ja": "あかがい 生",
+"desc": "Raw ark shell (akagai): bright orange-red raw clam flesh cut open, beside a thick ribbed white-brown shell",
+"items": [
+"mext:10279"
+],
+"roll": 0,
+"seed": 88253,
+"prompt": "f2450b2d8e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10280",
+"ja": "あげまき 生",
+"desc": "Raw agemaki clam: long rectangular thin shells, with plump pale cream raw meat, on a plate",
+"items": [
+"mext:10280"
+],
+"roll": 0,
+"seed": 91702,
+"prompt": "c9878b8f89",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -35781,6 +35889,19 @@
 "checked": false
 },
 {
+"key": "mext-10282",
+"ja": "あさり つくだ煮",
+"desc": "Asari tsukudani: small clam meats simmered in soy, dark brown and glossy, in a small dish",
+"items": [
+"mext:10282"
+],
+"roll": 0,
+"seed": 34618,
+"prompt": "2a68375e9d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10283",
 "ja": "あさり 水煮缶詰",
 "desc": "shelled boiled asari clam meat, small soft beige-brown clams in a little dish",
@@ -35790,6 +35911,97 @@
 "roll": 0,
 "seed": 82156,
 "prompt": "fd5df0d997",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10284",
+"ja": "あさり 缶詰 味付け",
+"desc": "Canned seasoned asari: small brown clam meats in a sweet soy sauce, in an open can",
+"items": [
+"mext:10284"
+],
+"roll": 0,
+"seed": 52911,
+"prompt": "377d767b68",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10286",
+"ja": "あわび 干し",
+"desc": "Dried abalone: hard, oval, translucent amber-brown dried abalone, on a plate",
+"items": [
+"mext:10286"
+],
+"roll": 0,
+"seed": 65347,
+"prompt": "58b70932b1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10287",
+"ja": "あわび 塩辛",
+"desc": "Abalone shiokara: chopped salted abalone flesh and innards, a chunky greenish-brown paste in a tiny dish",
+"items": [
+"mext:10287"
+],
+"roll": 0,
+"seed": 85397,
+"prompt": "54506335d1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10288",
+"ja": "あわび 水煮缶詰",
+"desc": "Canned abalone: a whole cream-coloured cooked abalone in clear liquid, in an open can",
+"items": [
+"mext:10288"
+],
+"roll": 0,
+"seed": 63716,
+"prompt": "4e5ed9d6a6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10289",
+"ja": "いがい 生",
+"desc": "Raw mussel (igai): blue-black shells opened to show bright orange meat, on a plate",
+"items": [
+"mext:10289"
+],
+"roll": 0,
+"seed": 46834,
+"prompt": "e33a7c1ad6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10290",
+"ja": "いたやがい 養殖 生",
+"desc": "Raw Japanese baking scallop (itayagai): a ribbed fan-shaped shell holding a white adductor muscle and orange roe",
+"items": [
+"mext:10290"
+],
+"roll": 0,
+"seed": 70135,
+"prompt": "7a0f382be6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10291",
+"ja": "エスカルゴ 水煮缶詰",
+"desc": "Canned escargot: shell-less boiled snail meats, small dark grey-brown curled coils, soft and glistening, piled in a small dish with a little clear brine",
+"items": [
+"mext:10291"
+],
+"roll": 0,
+"seed": 43777,
+"prompt": "72e08b6fee",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -35807,6 +36019,32 @@
 "checked": false
 },
 {
+"key": "mext-10293",
+"ja": "かき 養殖 水煮",
+"desc": "Boiled farmed oysters: plump shucked oysters, shrunken and opaque cream-grey with ruffled dark frilly edges, a few in a small bowl, no shells",
+"items": [
+"mext:10293"
+],
+"roll": 0,
+"seed": 79533,
+"prompt": "4083437770",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10294",
+"ja": "かき くん製油漬缶詰",
+"desc": "Smoked oysters in oil: small shucked oysters smoked to a deep amber-brown, wrinkled and glossy, packed in golden oil in a small shallow dish",
+"items": [
+"mext:10294"
+],
+"roll": 0,
+"seed": 6126,
+"prompt": "9640709dfc",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10295",
 "ja": "さざえ 生",
 "desc": "a turban shell (sazae), a spiky dark green-brown conical sea snail shell",
@@ -35816,6 +36054,19 @@
 "roll": 0,
 "seed": 7320,
 "prompt": "a1dc296796",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10296",
+"ja": "さざえ 焼き",
+"desc": "Grilled sazae turban shell: a heavy knobbly spiked grey-green spiral shell sitting upright, its opening bubbling with broth, a curled dark green-grey meat peeking out",
+"items": [
+"mext:10296"
+],
+"roll": 0,
+"seed": 53666,
+"prompt": "64353a8e70",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -35833,6 +36084,97 @@
 "checked": false
 },
 {
+"key": "mext-10298",
+"ja": "たいらがい 貝柱 生",
+"desc": "Raw pen shell adductor (tairagai): large round thick ivory-white muscle discs like big scallops, semi-translucent and smooth, a few sliced in a small dish",
+"items": [
+"mext:10298"
+],
+"roll": 0,
+"seed": 67749,
+"prompt": "ecd8c77d1d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10299",
+"ja": "たにし 生",
+"desc": "Raw tanishi: small freshwater mud snails with dark olive-brown conical spiral shells, smooth and wet, a handful in a small dish",
+"items": [
+"mext:10299"
+],
+"roll": 0,
+"seed": 61235,
+"prompt": "731e106295",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10300",
+"ja": "つぶ 生",
+"desc": "Raw tsubu whelk: firm cream-white sliced whelk meat with a yellowish rim, crunchy-looking, laid beside a brown spiral whelk shell",
+"items": [
+"mext:10300"
+],
+"roll": 0,
+"seed": 35337,
+"prompt": "1858fcc990",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10301",
+"ja": "とこぶし 生",
+"desc": "Raw tokobushi: small abalone with a flat oval brown-green shell showing a row of small holes, tan muscular meat underneath",
+"items": [
+"mext:10301"
+],
+"roll": 0,
+"seed": 13567,
+"prompt": "55f2f86068",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10303",
+"ja": "とりがい 斧足 生",
+"desc": "Raw torigai cockle foot: opened flat curved triangles, glossy purple-black on the outer face and creamy white beneath, laid in a small dish",
+"items": [
+"mext:10303"
+],
+"roll": 0,
+"seed": 65011,
+"prompt": "8dfbc60f3b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10304",
+"ja": "ばい 生",
+"desc": "Raw bai whelk: small smooth spiral shells, creamy white with neat brown spots, pointed tips, a few on a plate",
+"items": [
+"mext:10304"
+],
+"roll": 0,
+"seed": 4112,
+"prompt": "c56cc44fe9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10305",
+"ja": "ばかがい 生",
+"desc": "Raw bakagai (aoyagi): bright orange-red tongue-shaped clam feet, glossy and pointed, curled on a small dish, with a pale smooth clam shell",
+"items": [
+"mext:10305"
+],
+"roll": 0,
+"seed": 9830,
+"prompt": "4b285f51a4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10306",
 "ja": "はまぐり 生",
 "desc": "two large hamaguri clams, smooth glossy cream and brown patterned shells, one open showing the clam",
@@ -35842,6 +36184,32 @@
 "roll": 0,
 "seed": 220,
 "prompt": "aa4b44825c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10307",
+"ja": "はまぐり 水煮",
+"desc": "Boiled hamaguri clams: plump cream and pale orange cooked clam meats sitting in their opened smooth glossy patterned shells in a small bowl",
+"items": [
+"mext:10307"
+],
+"roll": 0,
+"seed": 91754,
+"prompt": "6baf36d557",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10308",
+"ja": "はまぐり 焼き",
+"desc": "Grilled hamaguri clams: large smooth glossy clams with brown-grey patterned shells, popped open on a grill, juicy plump meats bubbling inside",
+"items": [
+"mext:10308"
+],
+"roll": 0,
+"seed": 98459,
+"prompt": "fe7b0c6e7c",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -35881,6 +36249,19 @@
 "roll": 0,
 "seed": 58119,
 "prompt": "6ec94891cb",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10318",
+"ja": "さるぼう 味付け缶詰",
+"desc": "Canned seasoned ark clam (saruboo): small shell-less clam meats simmered in sweet soy, glossy reddish-brown morsels in a small dish with thick sauce",
+"items": [
+"mext:10318"
+],
+"roll": 0,
+"seed": 14938,
+"prompt": "c92a7a7f51",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -36504,6 +36885,19 @@
 "checked": false
 },
 {
+"key": "mext-10413",
+"ja": "しじみ 水煮",
+"desc": "Boiled shijimi clams: tiny glossy black-brown clams with shells open showing small cream meats, a heap of them in a small bowl",
+"items": [
+"mext:10413"
+],
+"roll": 0,
+"seed": 83639,
+"prompt": "1b7f3899b9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10415",
 "ja": "バナメイえび 生",
 "desc": "raw prawns, grey translucent shrimp with shells and tails, a few peeled",
@@ -36567,6 +36961,33 @@
 "roll": 0,
 "seed": 38743,
 "prompt": "8bc53b9acd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10427",
+"ja": "くろあわび 生",
+"desc": "Raw abalone: an abalone in its oval ear-shaped shell with a row of holes, the thick dark black-green muscular foot on top",
+"items": [
+"mext:10427",
+"mext:10428"
+],
+"roll": 0,
+"seed": 47501,
+"prompt": "c305900689",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10429",
+"ja": "めがいあわび 生",
+"desc": "Raw megai abalone: an abalone with reddish-brown foot in its oval ear-shaped shell with a row of holes",
+"items": [
+"mext:10429"
+],
+"roll": 0,
+"seed": 67370,
+"prompt": "36fdbc4729",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -36866,6 +37287,19 @@
 "roll": 0,
 "seed": 29253,
 "prompt": "8e50a90edb",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10466",
+"ja": "あさり 蒸し",
+"desc": "Steamed asari clams: small clams with patterned shells opened to show plump cream-orange meat, in a shallow bowl",
+"items": [
+"mext:10466"
+],
+"roll": 0,
+"seed": 17695,
+"prompt": "e2e0ffd41f",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -37775,7 +38209,8 @@
 "desc": "hire katsu, small round breaded pork fillet cutlets in a crisp golden panko crust, one cut showing white lean pork, with shredded cabbage",
 "items": [
 "mext:11279",
-"dishes:hirekatsu"
+"dishes:hirekatsu",
+"eatout:hirekatsu_teishoku"
 ],
 "roll": 0,
 "seed": 22360,
