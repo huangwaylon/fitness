@@ -163,3 +163,28 @@ items:
           - { ask: "何時ごろ 来る？", options: ["7時", "7時半", "6時"], answer: 0, cja: ["7時ごろ", "7時半ごろ", "6時ごろ"] }
     note: "Actually, no の あとが 本当の 食事"
     tags: { seed: 53, register: friend, pragmatic: literal, conditions: [phone], features: [self-repair, yod] }
+
+  - kind: call
+    id: call-housewarming
+    ask: "友だちから 電話。メモしよう"
+    ctx: "引っ越し祝いのパーティーに誘った友だちから電話です"
+    scene: living
+    channel: phone
+    lines:
+      - { who: maple, en: "Hey! I just saw your invite for Saturday. Your new place! I'm so excited.", ja: "もしもし！ 土曜の招待、今見たよ。新しい家！ すごく楽しみ。" }
+      - { who: me, en: "Yay! So, can you come?", ja: "やった！ で、来られる？" }
+      - { who: maple, en: "Count me in! But I've got a work thing till eight, so I'll be a little late.", tts: "Count me in! But I've got a work thing till eight, so I'll be a liddle late.", ja: "もちろん行く！ でも8時まで仕事の用事があるから、ちょっと遅れるね。" }
+      - { who: maple, en: "Kicks is gonna pass, though. He's got a cold.", ja: "キックスは今回やめとくって。風邪をひいてて。" }
+      - { who: maple, en: "Oh, I'll bring dessert. Actually, no, you said someone's bringing a cake, right? So I'll bring drinks.", ja: "あ、デザート持っていくね。いや、違う、誰かがケーキを持ってくるって言ってたよね？ じゃあ飲み物を持っていく。", repair: true }
+      - { who: me, en: "Perfect. See you Saturday!", ja: "ばっちり。じゃあ土曜に！" }
+      - { who: maple, en: "See you then! Anyway, I'll let you go. Bye!", ja: "じゃあね！ それじゃ、そろそろ切るね。バイバイ！" }
+    half: [0, 0, 0, 0, 1, 1, 1]
+    memo:
+      - why: "メイプルは count me in で来るが、8時まで仕事なので少し遅れる。キックスは gonna pass（来ない）。Actually, no でデザートから飲み物に変えた。"
+        slots:
+          - { ask: "メイプルは？", options: ["遅れて 来る", "来ない", "早めに 来る"], answer: 0, cja: ["遅れて来る", "来ない", "早めに来る"] }
+          - { ask: "何時まで 仕事？", options: ["8時", "6時", "9時"], answer: 0, cja: ["8時まで", "6時まで", "9時まで"] }
+          - { ask: "キックスは？", options: ["来ない", "遅れて 来る", "来る"], answer: 0, cja: ["来ない", "遅れて来る", "来る"] }
+          - { ask: "持ってくるのは？", options: ["飲み物", "デザート", "ケーキ"], answer: 0, cja: ["飲み物", "デザート", "ケーキ"] }
+    note: "Actually, no の あとが 本当の 持ち物"
+    tags: { seed: 48, register: friend, pragmatic: literal, conditions: [phone], features: [self-repair, gonna] }
