@@ -8,6 +8,7 @@
   import type { FoodSnap, Meal } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { amountText, DAYS, daysText } from './foodUi.ts';
+  import { entryKcal, itemsKcal } from '#lib/food/index.ts';
 
   interface Props {
     meal: Meal;
@@ -28,8 +29,8 @@
 
   let w = $state(untrack(() => w0));
   let stopping = $state(false);
-  const kcal = (it: { g: number; f: FoodSnap }) => Math.round((it.f.k * it.g) / 100);
-  const total = $derived(items.reduce((s, it) => s + (it.f.k * it.g) / 100, 0));
+  const kcal = entryKcal;
+  const total = $derived(itemsKcal(items));
   const presets = Object.entries(DAYS) as [keyof typeof DAYS, number][];
 
   /** A day on or off; the last one stays on (a repeat comes on some day). */

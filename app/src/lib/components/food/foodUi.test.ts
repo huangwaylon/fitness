@@ -1,14 +1,14 @@
 // ごはん's helpers (foodUi.ts): a portion in words, the snapshot's own portion, the amount's start and step, the 最近
-// list, a row's everyday name, the kcal goal field and its chip, the repeat's days and the same-items check, the search's duplicates.
+// list, a row's everyday name, the kcal goal field and its chip, the repeat's days and the same-items check.
 import { describe, expect, it } from 'vitest';
 import '#lib/i18n/food.ts';
 import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from '#lib/food/index.ts';
 import {
   amountText, customDraft, customErrors, customItem, customOf, DAYS, daysText, defaultPortion, glossOf, goalChip, itemOf, matchPortion,
-  parseAmount, portionLabel, portionText, quickDraft, quickErrors, quickSnap, recentOf, sameItems, servingText, startOf, stateItem, stepOf, typedKcal,
-  uniqueItems, unitOf
+  parseAmount, portionLabel, portionText, quickDraft, quickErrors, quickSnap, recentOf, sameItems, servingText, startOf, stateItem, stepOf, typedKcal
 } from './foodUi.ts';
+import { unitOf } from '#lib/food/index.ts';
 import { foodOp } from '#lib/contract/food.ts';
 
 const snap = (id: string, u?: string): FoodSnap => ({ id, n: id, k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0, ...(u ? { u } : {}) });
@@ -126,11 +126,6 @@ describe('lists', () => {
     const a = entry('1', snap('a'), 10), b = entry('2', snap('b'), 20), a2 = entry('3', snap('a'), 30);
     expect(recentOf([a2, b, a]).map((e) => e.id)).toEqual(['3', '2']);
     expect(recentOf([a2, b, a], 1).map((e) => e.id)).toEqual(['3']);
-  });
-  it('the same name, brand and kcal once', () => {
-    const it = (id: string, name: string, kcal: number, brand?: string): Item => ({ id, name, kcal, brand });
-    expect(uniqueItems([it('1', 'サラダチキン', 104), it('2', 'サラダチキン', 104), it('3', 'サラダチキン', 104, 'X'), it('4', 'サラダチキン', 120)]).map((i) => i.id))
-      .toEqual(['1', '3', '4']);
   });
   it('a meal is its repeat’s when the foods and amounts are, not the ids', () => {
     const x = [{ g: 150, f: { id: 'a' } }, { g: 45, f: { id: 'b' } }];

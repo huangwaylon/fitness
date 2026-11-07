@@ -39,7 +39,7 @@
   import Pick from '../health/Pick.svelte';
   import FoodChart from './FoodChart.svelte';
   import { cue } from '#lib/sound/cues.ts';
-  import { portionsOf, toSnap, type FoodDb, type Item } from '#lib/food/index.ts';
+  import { itemsKcal, portionsOf, toSnap, type FoodDb, type Item } from '#lib/food/index.ts';
   import { latestSnap } from './fresh.ts';
   import { dayTitle } from '../kiroku/fmt.ts';
   import FoodSummary from './FoodSummary.svelte';
@@ -306,7 +306,7 @@
     return copySources(m.state, me, order, date, meal).map((src) => ({
       key: src.who === me ? 'prev' : src.who,
       label: src.who !== me ? t('food.copy.of', { name: names[src.who] }) : t(date === today ? 'food.copy.yesterday' : 'food.copy.prev'),
-      meta: t('food.copy.meta', { n: src.items.length, k: formatNum(Math.round(src.items.reduce((a, x) => a + (x.f.k * x.g) / 100, 0))) }),
+      meta: t('food.copy.meta', { n: src.items.length, k: formatNum(itemsKcal(src.items)) }),
       run: () => copy(src, meal)
     }));
   }

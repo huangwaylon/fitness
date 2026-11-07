@@ -17,12 +17,12 @@
   import { untrack } from 'svelte';
   import type { Meal } from '#lib/contract/food.ts';
   import { FOOD_GRAMS, MEALS } from '#lib/contract/food.ts';
-  import { nutrientsFor, portionsOf, variantsOf, type FoodDb, type Item } from '#lib/food/index.ts';
+  import { nutrientsFor, portionsOf, unitOf, variantsOf, type FoodDb, type Item } from '#lib/food/index.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
   import FoodThumb from './FoodThumb.svelte';
   import FoodPhoto from './FoodPhoto.svelte';
-  import { catalogOf, foodDb, foodDbNow, glossOf, inState, gramsText, hasWeight, parseAmount, portionLabel, startOf, stepOf, unitOf, withImages } from './foodUi.ts';
+  import { catalogOf, foodDb, foodDbNow, glossOf, inState, gramsText, hasWeight, parseAmount, portionLabel, startOf, stepOf, withImages } from './foodUi.ts';
 
   interface Props {
     item: Item;

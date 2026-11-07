@@ -13,6 +13,7 @@
   import type { FoodEntry, FoodSnap, Meal } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { amountText, daysText } from './foodUi.ts';
+  import { entryKcal, itemsKcal } from '#lib/food/index.ts';
   import { mealProtein } from '#lib/model/food.ts';
   import RepeatMark from './RepeatMark.svelte';
 
@@ -38,8 +39,9 @@
   }
   let { meal, entries, mine, days, onrepeat, onadd, onpick, ptarget, copies = [], fresh, onfresh }: Props = $props();
   const protein = $derived(mealProtein(entries));
-  const kcalOf = (e: FoodEntry) => Math.round((e.f.k * e.g) / 100);
-  const total = $derived(entries.reduce((s, e) => s + (e.f.k * e.g) / 100, 0));
+  const kcalOf = entryKcal;
+  // the total rounds the sum once: a row each rounded may differ from it by ±1 (itemsKcal)
+  const total = $derived(itemsKcal(entries));
   const label = $derived(t(`food.meal.${meal}`));
 </script>
 
@@ -79,7 +81,7 @@
             </button>
             {@const f = fresh?.get(e.id)}
             {#if f && onfresh}
-              {@const k1 = Math.round((f.k * e.g) / 100)}
+              {@const k1 = entryKcal({ g: e.g, f })}
               <button type="button" class="fresh" data-fresh={e.id} data-sfx="page" onclick={() => onfresh(e, f)}>
                 {k1 === kcalOf(e) ? t('food.fresh.act') : t('food.fresh.actK', { from: formatNum(kcalOf(e)), to: formatNum(k1) })}
               </button>

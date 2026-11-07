@@ -11,6 +11,7 @@
   import { kcalText } from '../kiroku/fmt.ts';
   import Avatar from '../characters/Avatar.svelte';
   import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
+  import { entryKcal } from '#lib/food/index.ts';
   import FoodThumb from './FoodThumb.svelte';
   import { amountText, catalogOf, catOf, foodDbNow, glossOf, itemOf, servingOnly, withImages, type RecipeDraft } from './foodUi.ts';
 
@@ -34,7 +35,7 @@
   const ro = $derived(owner !== null);
   const tot = $derived(recipeTotals(draft.it));
   const per = (v: number | null) => (v === null ? '–' : (v / draft.sv).toFixed(1));
-  const kcalOf = (it: RepeatItem) => Math.round((it.f.k * it.g) / 100);
+  const kcalOf = entryKcal;
   const ok = $derived(draft.n.trim().length > 0 && draft.it.length > 0 && !clean);
   let removing = $state(false);
   let imgs = $state.raw<FoodImageIndex | null>(null);

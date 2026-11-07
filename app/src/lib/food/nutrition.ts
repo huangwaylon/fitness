@@ -4,14 +4,15 @@ import { cleanLine } from '#lib/contract/text.ts';
 import { FOOD_NAME_CHARS, FOOD_PORTION_CHARS, round1, type FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from './types.ts';
 
+/** A portion label's measure: ml for a drink's (「中ジョッキ（350ml）」, 「200ml」), else g. */
+export const unitOf = (label: string | null | undefined): 'g' | 'ml' => (label && /\d\s*ml|ミリリットル/i.test(label.normalize('NFKC')) ? 'ml' : 'g');
 /** 'ml' when the item's portions are measured in ml (a drink). */
-const unitOf = (item: Pick<Item, 'portions'>): 'g' | 'ml' =>
-  (item.portions ?? []).some((p) => /\d\s*ml|ミリリットル/i.test(p.label.normalize('NFKC'))) ? 'ml' : 'g';
+const itemUnit = (item: Pick<Item, 'portions'>): 'g' | 'ml' => ((item.portions ?? []).some((p) => unitOf(p.label) === 'ml') ? 'ml' : 'g');
 
 /** The item's portions (the first the default), and a 100 g (100 ml) one after them unless it has one. */
 export function portionsOf(item: Pick<Item, 'portions'>): Portion[] {
   const ps = (item.portions ?? []).slice();
-  if (!ps.some((p) => p.g === 100 && /^100\s*(g|ml)$/i.test(p.label.normalize('NFKC')))) ps.push({ label: `100${unitOf(item)}`, g: 100 });
+  if (!ps.some((p) => p.g === 100 && /^100\s*(g|ml)$/i.test(p.label.normalize('NFKC')))) ps.push({ label: `100${itemUnit(item)}`, g: 100 });
   return ps;
 }
 
@@ -31,6 +32,11 @@ export function nutrientsFor(food: FoodSnap | Item, g: number): Nutrients {
   const x = (v: number | null | undefined) => round1((v ?? 0) * r);
   return { kcal: Math.round((k ?? 0) * r), p: x(p), fa: x(fa), c: x(c), s: x(s) };
 }
+
+/** An entry's (or a recipe's, a いつもの's item's) kcal: `g` grams of its snapshot, whole (nutrientsFor's). */
+export const entryKcal = (e: { g: number; f: Pick<FoodSnap, 'k'> }): number => Math.round((e.f.k * e.g) / 100);
+/** A list's kcal, the sum rounded once (its rows, each rounded, may differ from it by ±1). */
+export const itemsKcal = (list: readonly { g: number; f: Pick<FoodSnap, 'k'> }[]): number => Math.round(list.reduce((a, x) => a + (x.f.k * x.g) / 100, 0));
 
 /** The item per 100 g as an entry keeps it (contract/food.ts FoodSnap): unrounded, so a 300 g serving of 216.67 kcal
  *  / 100 g logs 650 kcal; `u` the portion it was picked by. */
