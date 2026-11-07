@@ -414,6 +414,7 @@ items:
     note: "or は「アー」と 弱く。つながって「スーパー」"
     choices: ["soup or salad", "super salad", "soup and salad"]
     answer: 0
+    ctx: "レストランで、店員がメインの注文のあとに"
     cja: ["スープかサラダ", "スーパーサラダ", "スープとサラダ"]
     why: "or は弱く「ア」になり、soup とつながって「スーパーサラダ」に聞こえる。and なら「ン」になる。両方付くわけではない。"
     focus: "soup or salad"
@@ -430,6 +431,7 @@ items:
     note: "for は「ファ」、to は「タ」と 弱く なる"
     choices: ["for here", "for her", "from here"]
     answer: 0
+    ctx: "カフェのレジで、注文のあとに"
     cja: ["店内で", "彼女のために", "ここから"]
     why: "for は弱く「ファ」、here とつながって「ファヒア」。for her（彼女に）とは最後の音が違う。to go の to も「タ」と弱い。"
     focus: "for here"
@@ -446,6 +448,7 @@ items:
     note: "on the が つながって「オンザ」。the は ほぼ 聞こえない"
     choices: ["on the side", "on this side", "and the side"]
     answer: 0
+    ctx: "レストランで、客が注文しながら"
     cja: ["別添えで", "こちら側に", "そしてサイドを"]
     why: "on the side は「オンザサイド」とひと息。the は弱くて短い。this なら「ディス」とはっきり聞こえる。can も弱く「クン」になる。"
     focus: "on the side"
@@ -462,6 +465,7 @@ items:
     note: "working on は「ワーキノン」と つながる"
     choices: ["working on", "walking on", "waiting on"]
     answer: 0
+    ctx: "食事の途中で、店員がお皿を見て"
     cja: ["まだ食べている", "歩いている", "待っている"]
     why: "working の g は落ちて on とつながり「ワーキノン」。walking（ウォーキン）とは母音が違う。お皿を下げていいかの決まり文句。"
     focus: "working on"
@@ -478,6 +482,7 @@ items:
     note: "I'll は「アル」と 短い。I'd と まぎらわしい"
     choices: ["I'll be", "I'd be", "I've been"]
     answer: 0
+    ctx: "席に着くと、店員が注文を取って"
     cja: ["すぐ〜します", "〜だろう", "〜していた"]
     why: "I'll be は「アルビ」と短く、l の音がわずかに残る。I'd be なら d で止まる。これから飲み物を持ってくる約束なので未来の I'll。"
     focus: "I'll be"
@@ -494,6 +499,7 @@ items:
     note: "of は「ア」だけ。a side of で「アサイダ」"
     choices: ["a side of", "outside of", "the side of"]
     answer: 0
+    ctx: "ダイナーで、メニューの説明を聞いて"
     cja: ["付け合わせの", "〜の外に", "〜の横に"]
     why: "of は弱く「ア」だけになり、a side of が「アサイダ」とひと続き。outside（アウトサイド）と似ているが、a side of fries は「付け合わせのポテト」。"
     focus: "a side of"
