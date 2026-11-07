@@ -33,7 +33,7 @@
 {"id":"dmw-which-friday","lv":4,"type":"gist","en":"Dinner next Friday, then? I'll make a reservation somewhere. Sounds good. Wait, do you mean this Friday or the one after? Not tomorrow, the one after. The fourteenth. Oh good, I'm away this weekend anyway.","ja":"明日から1週間後の14日。","speaker":"shep","voice":"us","cast":"us-m6","choices":["A week from tomorrow, the 14th.","Tomorrow, Friday.","This weekend, while she's away."],"answer":0,"focus":"Not tomorrow, the one after","ask":"2人の 食事は いつ？","note":"next Friday はあいまい。the one after＝その次の金曜","tags":{"seed":56,"register":"partner","pragmatic":"literal","features":["contrast"]},"lines":[{"who":"shep","cast":"us-m6","en":"Dinner next Friday, then? I'll make a reservation somewhere.","ja":"じゃあ来週の金曜に夕食ね？ どこか予約しとく。"},{"who":"agnes","cast":"us-f5","en":"Sounds good. Wait, do you mean this Friday or the one after?","ja":"いいわね。待って、今週の金曜？ それともその次？"},{"who":"shep","cast":"us-m6","en":"Not tomorrow, the one after. The fourteenth.","ja":"明日じゃなくて、その次。14日。"},{"who":"agnes","cast":"us-f5","en":"Oh good, I'm away this weekend anyway.","ja":"よかった、どのみち今週末は留守なの。"}],"scene":"living","cja":["明日から1週間後、14日の金曜。","明日の金曜。","彼女が留守にしている今週末。"],"why":"next Friday は今週か来週かあいまい。Not tomorrow, the one after（明日じゃなくてその次）で14日に決まった。今週末は彼女が留守。","ctx":"木曜の夜、カップルが食事の予定を決めています"}
 ],
 "ladders":[],
-"packs":["u-gl-clarify.7e3b8075","lv4.ede2fdf6","lv5-2.feec54d8","lv3.8faccc2d","u-gl-clarify-2.04b352ac","lv4-8.67833784"],
+"packs":["u-gl-clarify.7e3b8075","lv4.ede2fdf6","lv5-2.feec54d8","lv3.91cd97d7","u-gl-clarify-2.04b352ac","lv4-8.67833784"],
 "clips":{
 "dk-gig-date-1":[529,"4cb9df38",0,0,33268],
 "dk-gig-date-2":[276,"a6cac0b8",0,33268,17888],

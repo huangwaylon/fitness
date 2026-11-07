@@ -17,11 +17,14 @@ const SHOTS = '/tmp/kikimimi-shots/call';
 const DAY = 'date=2026-11-07T10:00&critter=none&visitor=none&kikimimi=fast';
 const NIGHT = 'date=2026-11-07T21:30&critter=none&visitor=none&kikimimi=fast';
 
-/** s1-call as compiled: each memo row's right chip, by call and row. */
-const PART = JSON.parse(readFileSync(join(import.meta.dirname, '..', 'src', 'lib', 'kikimimi', 'levels', 'parts', 's1-call.json'), 'utf8')) as {
-  listen: { items: { id: string; memo: { slots: { options: string[]; answer: number }[] }[] }[] };
-};
-const RIGHT = new Map(PART.listen.items.map((it) => [it.id, it.memo.flatMap((m) => m.slots).map((s) => s.options[s.answer])]));
+const LEVELS = join(import.meta.dirname, '..', 'src', 'lib', 'kikimimi', 'levels');
+/** かわ's (stage 2) listened call files, as this build ships them (s1-call and, since A2, s1-call-b). */
+const FILES = Object.entries((JSON.parse(readFileSync(join(LEVELS, 'index.json'), 'utf8')) as { listen: Record<string, [string, number, string]> }).listen)
+  .filter(([, [gm, stage, status]]) => gm === 'call' && stage === 2 && status === 'listened').map(([u]) => u);
+type Part = { listen: { items: { id: string; memo: { slots: { options: string[]; answer: number }[] }[] }[] } };
+/** Those files as compiled: each memo row's right chip, by call and row. */
+const RIGHT = new Map(FILES.flatMap((u) => (JSON.parse(readFileSync(join(LEVELS, 'parts', `${u}.json`), 'utf8')) as Part).listen.items)
+  .map((it) => [it.id, it.memo.flatMap((m) => m.slots).map((s) => s.options[s.answer])]));
 
 type Kiki = { view(): { phase: string; i: number; gm: string | null; roles: Record<string, number> }; items(): string[]; recorded(): { gm?: string; r: [string, number, number, number][] } | null };
 const kiki = <R,>(p: Page, fn: (k: Kiki) => R) => p.evaluate(`(${fn.toString()})(window.__kiki)`) as Promise<R>;

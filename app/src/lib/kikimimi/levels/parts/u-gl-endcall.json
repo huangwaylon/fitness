@@ -33,7 +33,7 @@
 {"id":"dk-fast-agree","lv":3,"type":"next","speaker":"frett","voice":"us","cast":"us-m3","en":"So that's the cookout at my place, Saturday, from two. Bring a chair if you have one. Sorry, did you say a chair? Ha, okay, I've got a camping one. Anything else? Nah, that's it. Okay, I'll let you go. See you Saturday!","ja":"ありがとう、じゃあそのときに！","note":"cookout＝外で バーベキュー。あいさつで かえす","choices":["Thanks, see you then!","Saturday? I thought Sunday.","A chair? How many?"],"answer":0,"ctx":"友だちがバーベキューに誘う電話です","cja":["ありがとう、じゃあそのときに！","土曜？ 日曜だと思ってた。","椅子？ 何脚？"],"why":"I'll let you go. See you Saturday! で電話を終える流れ。椅子の確認ももう済んでいるので、あいさつで返すのが自然です。","focus":"I'll let you go","ask":"つぎの ひとことは？","scene":"living","channel":"phone","cond":{"kind":"phone","level":"heavy"},"tags":{"seed":49,"register":"friend","pragmatic":"ritual","conditions":["phone"],"features":["yod"]},"lines":[{"who":"frett","cast":"us-m3","en":"So that's the cookout at my place, Saturday, from two. Bring a chair if you have one.","ja":"じゃあ土曜の2時から、うちでバーベキューね。椅子があったら持ってきて。"},{"who":"poppy","cast":"us-f6","en":"Sorry, did you say a chair? Ha, okay, I've got a camping one. Anything else?","ja":"え、椅子って言った？ はは、了解、キャンプ用のがある。ほかには？"},{"who":"frett","cast":"us-m3","en":"Nah, that's it. Okay, I'll let you go. See you Saturday!","tts":"Nah, that's it. Okay, I'll letcha go. See you Saturday!","ja":"いや、それだけ。じゃあ、そろそろ切るね。土曜にね！"}]}
 ],
 "ladders":[],
-"packs":["u-gl-endcall.d8e61eb9","lv3.8faccc2d"],
+"packs":["u-gl-endcall.d8e61eb9","lv3.91cd97d7"],
 "clips":{
 "dk-catch-up-1":[462,"5a479ddd",0,0,30879],
 "dk-catch-up-2":[404,"99226964",0,30879,26746],

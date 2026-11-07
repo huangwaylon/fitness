@@ -78,11 +78,14 @@ describe('ききみみ content versions', () => {
     expect(Object.keys(INDEX.games).sort()).toEqual([...levels.map((l) => `quiz:${l}`), 'ladder:ladder', ...units.map((u) => `lesson:${u}`), 'taikai:all',
       ...files('tile').map((u) => `tile:${u}`), ...files('tachi').map((u) => `tachi:${u}`), ...files('call').map((u) => `call:${u}`), ...files('rush').map((u) => `rush:${u}`), ...files('news').map((u) => `news:${u}`),
       ...(INDEX.units['mic-pairs'] ? ['pair:mic-pairs'] : [])].sort());
+    // (a recipe-2 unit's lesson takes in its kinds' listened files too: compile.ts)
+    const listened = (u: string) => [...new Set(Object.values(INDEX.units[u].kinds ?? {}).flat())].filter((f) => INDEX.listen[f]?.[2] === 'listened').sort();
     for (const [key, cv] of Object.entries(INDEX.games)) {
       const [gm, unit] = key.split(':');
       expect(cv).toMatch(/^[0-9a-f]{6}$/);
       expect(gameCvOf(gm, (/^\d+$/.test(unit) ? Number(unit) : unit) as Level)).toBe(cv);
-      expect(cv).toBe(gameCv(gm, unit === 'all' ? levels.map((l) => INDEX.units[l].cv).join(',') : INDEX.units[unit].cv));
+      expect(cv).toBe(gameCv(gm, unit === 'all' ? levels.map((l) => INDEX.units[l].cv).join(',')
+        : gm === 'lesson' ? [INDEX.units[unit].cv, ...listened(unit).map((f) => `${f}:${INDEX.units[f].cv}`)].join(',') : INDEX.units[unit].cv));
     }
     expect(gameCvOf('lesson', 'zz-none')).toBeUndefined();
   });

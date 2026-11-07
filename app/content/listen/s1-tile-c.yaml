@@ -9,7 +9,7 @@ track: life
 seeds: [13, 14, 26, 27, 32, 36, 38, 48, 51]
 features: { primary: weak-form, review: yod }
 cando: "お店・近所・誘いの 決まり文句を 聞いて、弱く なる 音ごと 文に 組み立てられる"
-status: draft
+status: listened
 items:
   # ---- fd-order: 注文する ----
   - kind: tile

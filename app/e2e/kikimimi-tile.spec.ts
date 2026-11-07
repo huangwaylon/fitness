@@ -17,8 +17,12 @@ const SHOTS = '/tmp/kikimimi-shots/tile';
 const DAY = 'date=2026-11-07T10:00&critter=none&visitor=none&kikimimi=fast';
 const NIGHT = 'date=2026-11-07T21:30&critter=none&visitor=none&kikimimi=fast';
 
-/** かわ's tile files as compiled: each sentence's words by the clip it plays. */
-const WORDS = new Map(['s1-tile-a', 's1-tile-b'].flatMap((u) => (JSON.parse(readFileSync(join(import.meta.dirname, '..', 'src', 'lib', 'kikimimi', 'levels', 'parts', `${u}.json`), 'utf8')) as {
+const LEVELS = join(import.meta.dirname, '..', 'src', 'lib', 'kikimimi', 'levels');
+/** かわ's (stage 2) listened tile files, as this build ships them (s1-tile-a, -b and, since A2, -c). */
+const FILES = Object.entries((JSON.parse(readFileSync(join(LEVELS, 'index.json'), 'utf8')) as { listen: Record<string, [string, number, string]> }).listen)
+  .filter(([, [gm, stage, status]]) => gm === 'tile' && stage === 2 && status === 'listened').map(([u]) => u);
+/** Those files as compiled: each sentence's words by the clip it plays. */
+const WORDS = new Map(FILES.flatMap((u) => (JSON.parse(readFileSync(join(LEVELS, 'parts', `${u}.json`), 'utf8')) as {
   listen: { items: { id: string; clip: string; tiles: string[]; decoys: string[] }[] };
 }).listen.items.map((it) => [it.clip, it] as const)));
 
