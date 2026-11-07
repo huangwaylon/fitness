@@ -112,9 +112,10 @@ export class IslandRoom extends DurableObject<Env> {
         // the heartbeat's last answer (the runtime's: HB_PING never wakes the room), for the ghosts' watch
         heardAt: (s) => ctx.getWebSocketAutoResponseTimestamp(s)?.getTime() ?? null,
         // the test copy has no cron: a hello fetches the weather when it's due (production's safety net too)
-        onHello: (who, v, build) => {
-          // each phone's protocol version and build (the log's ws.hello: which phones speak what)
-          this.log([{ e: 'ws.hello', l: 1, role: who, d: { v, ...(build ? { build } : {}) } }]);
+        onHello: (who, v, build, rep) => {
+          // each phone's protocol version and build (the log's ws.hello: which phones speak what), and a socket it
+          // replaced
+          this.log([{ e: 'ws.hello', l: 1, role: who, d: { v, ...(build ? { build } : {}), ...(rep ? { rep } : {}) } }]);
           // the ghosts' watch (room.ts sweepSilent) while anyone is in
           void this.alarmBy(Date.now() + SILENT_MS).catch((e) => console.warn('alarm', errName(e)));
           void this.weatherTick().catch((e) => console.warn('wx-fail', e));

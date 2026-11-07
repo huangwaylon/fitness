@@ -335,7 +335,9 @@ describe('ききみみ session: the lobby', () => {
     r.here.add('A');
     const n = r.sent.length;
     r.presence();
-    expect(r.sent.slice(n).map((x) => [x.from, x.m.op])).toEqual([['A', 'open'], ['B', 'join']]);
+    // (B's join twice: for A back, and for its re-sent open, which is all a phone sees when the relay replaced A's
+    // socket unseen; the second changes nothing)
+    expect(r.sent.slice(n).map((x) => [x.from, x.m.op])).toEqual([['A', 'open'], ['B', 'join'], ['B', 'join']]);
     expect(r.view('G').invite).not.toBeNull();
     // gone for good
     r.here.delete('A');
@@ -1265,6 +1267,40 @@ describe('ききみみ session: the host is the clock', () => {
     expect(r.view('B')).toMatchObject({ phase: 'reveal', i: 0, canNext: false });
     // back: B's join again, and its answer (the others may have missed what it sent)
     expect(r.s.B.presence(['A', 'G'], r.now)).toEqual([{ kind: 'quiz', g: expect.any(String), op: 'join' }, expect.objectContaining({ op: 'a', i: 0, k: 0 })]);
+  });
+
+  it('the host’s socket replaced in the room unseen (no presence off and on for the others): its re-sent go brings the answers it missed', () => {
+    // an untimed game (なし): the reveal waits for every answer, so a host that missed one waited for ever
+    const r = room(['A', 'B', 'G']);
+    const s0 = started(r, ['B', 'G'], 0);
+    r.now = s0 + OPEN + 1000;
+    r.act('A', (x, n) => x.answer(0, false, n));
+    // A's socket dies quietly; B and G answer into it (A hears nothing), and their presence never changes
+    expect(r.s.A.presence(null, r.now)).toEqual([]);
+    r.act('B', (x, n) => x.answer(1, false, n), ['A']);
+    r.act('G', (x, n) => x.answer(0, false, n), ['A']);
+    expect(r.view('B')).toMatchObject({ phase: 'reveal', i: 0 });
+    expect(r.view('A')).toMatchObject({ phase: 'answer', i: 0 });
+    // A's new socket replaces the old one: only A sees everyone back, and re-sends its open, go and position
+    r.now += 2000;
+    r.deliver('A', r.s.A.presence(['B', 'G'], r.now));
+    expect(r.view('A')).toMatchObject({ phase: 'reveal', i: 0 });
+    expect(r.view('A').players.map((p) => p.answered)).toEqual([true, true, true]);
+    // and the re-sends settle (nothing goes round and round)
+    const n = r.sent.length;
+    r.deliver('A', r.s.A.presence(['B', 'G'], r.now));
+    expect(r.sent.length).toBe(n);
+  });
+
+  it('a lobby’s host back with its socket replaced: a join it missed comes again with its re-sent open', () => {
+    const r = room(['A', 'B']);
+    r.act('A', (x, n) => x.open({ lv: 1 }, n));
+    r.act('A', (x, n) => x.invite(n));
+    r.s.A.presence(null, r.now);
+    r.act('B', (x, n) => x.join(n), ['A']);
+    expect(r.view('A').players.map((p) => p.who)).toEqual(['A']);
+    r.deliver('A', r.s.A.presence(['B'], r.now));
+    expect(r.view('A').players.map((p) => p.who)).toEqual(['A', 'B']);
   });
 
   it('the host’s つぎへ on the last question ends the game on every phone', () => {

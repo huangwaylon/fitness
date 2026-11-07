@@ -219,8 +219,11 @@ export class RoundSession {
         this.blocked.delete(m.g);
         const set: Setup = { gm: m.gm, seed: m.seed, o: m.o, f: m.f, ...(m.u !== undefined && { u: m.u }), ...(m.ids !== undefined && { ids: m.ids }) };
         if (gm) {
-          // the host's re-send, or its lobby's game, options or おなじへや changed
-          if (gm.host === m.who && gm.goAt === undefined && !sameSetup(gm, set)) this.setup(gm, set);
+          // its lobby's game, options or おなじへや changed, or the host's re-send: its socket back (see `go`), so my join
+          // again (a lobby I'm in), which it may have missed
+          if (gm.host !== m.who || gm.goAt !== undefined) return [];
+          if (!sameSetup(gm, set)) this.setup(gm, set);
+          else if (gm.joined.has(this.me)) return this.mineAgain(gm, now);
           return [];
         }
         // a host has one lobby: an older one of theirs not started goes
@@ -256,12 +259,18 @@ export class RoundSession {
         if (gm && m.who === gm.host && !this.over(gm, now)) this.drop(gm, 'cancelled');
         return [];
       case 'go':
-        if (gm && m.who === gm.host && gm.goAt === undefined) {
+        if (!gm || m.who !== gm.host) return [];
+        if (gm.goAt === undefined) {
           this.adopt(gm, 0, m.at, now);
           gm.goAt = m.at;
           if (m.pl !== undefined) gm.pl = m.pl;
+          return [];
         }
-        return [];
+        // the host's `go` again: its socket came back. The relay lets a phone's new socket replace its old one without a
+        // word to the others (no presence off and on), so this is the one sign here that it may have missed what I
+        // sent meanwhile: my join, my answer and よみおわった for the round under way (an untimed round's host waited for
+        // my answer for ever)
+        return gm.joined.has(this.me) ? this.mineAgain(gm, now) : [];
       case 'skip':
         if (!gm || m.i > gm.n) return [];
         if (m.who === gm.host) {
@@ -313,13 +322,13 @@ export class RoundSession {
     const gm = this.mine();
     if (!gm || this.over(gm, now)) return out;
     if (back.length && !gm.local) {
-      if (gm.host !== this.me) out.push(this.joining(gm), ...this.events(gm));
+      if (gm.host !== this.me) out.push(...this.mineAgain(gm, now));
       else {
         out.push(this.opening(gm));
         if (gm.goAt !== undefined) out.push(this.going(gm, gm.goAt), this.beacon(gm, now));
+        out.push(...this.resend(gm, now));
       }
-      // and what the one back may have missed: my answer and よみおわった now, where we moved on with the host gone
-      out.push(...this.resend(gm, now));
+      // and where we moved on with the host gone
       if (gm.advance && gm.host !== this.me) out.push(this.advancing(gm, gm.advance));
     }
     if (gone.length) this.checkNow(gm, now);
@@ -822,6 +831,13 @@ export class RoundSession {
   /** A player's つぎへ with the host gone: its skip to the next round. */
   private advancing(gm: Game, p: { i: number; at: number }): RoundOut {
     return { g: gm.g, gm: gm.gm, op: 'skip', i: p.i, at: p.at };
+  }
+
+  /** A player's state again, for a phone that may have missed it (someone back, the host's re-sent `open` or `go`): my
+   *  join, my game events, and my answer and よみおわった for the round under way. Idempotent: heard twice, it changes
+   *  nothing. */
+  private mineAgain(gm: Game, now: number): RoundOut[] {
+    return [this.joining(gm), ...this.events(gm), ...this.resend(gm, now)];
   }
 
   /** What a phone back or joining may have missed of mine for the round under way: my answer, my よみおわった. */

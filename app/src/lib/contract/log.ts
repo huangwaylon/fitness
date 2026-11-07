@@ -45,7 +45,8 @@ export const LOG_EVENTS = {
   "queue.retry": { src: 'c', f: { type: EV_TYPES, err: LOG_STATUS, tries: 'n', n: 'n' } },
   "queue.drop": { src: 'c', f: { type: EV_TYPES, err: LOG_STATUS, tries: 'n' } },
   "ws.open": { src: 'c', f: { ms: 'n', retries: 'n' } },
-  "ws.close": { src: 'c', f: { code: 'n', secs: 'n', welcomed: 'b' } },
+  // why: sync/live.ts CloseWhy; quiet: s since the socket last heard anything; rtt: its shortest ping round trip (ms)
+  "ws.close": { src: 'c', f: { code: 'n', secs: 'n', welcomed: 'b', why: ['hidden', 'offline', 'stale', 'late', 'stuck', 'rekey', 'stop', 'closed'], quiet: 'n', rtt: 'n' } },
   "ws.park": { src: 'c', f: { code: 'n' } },
   "ws.unacked": { src: 'c', f: { kind: 't', tries: 'n' } },
   "gl.lost": { src: 'c', f: { where: ['island', 'tent', 'other'], restored: 'b' } },
@@ -62,7 +63,9 @@ export const LOG_EVENTS = {
   req: { src: 'r', f: { action: LOG_ACTIONS, st: LOG_STATUS, ms: 'n', inB: 'n', outB: 'n', n: 'n', rej: 'n', why: 't', m: 'n', sk: 'n', w: 'n', dup: 'n', exc: 't', pg: 'n' } },
   "room.close": { src: 'r', f: { code: 'n', secs: 'n', socks: 'n' } },
   "room.full": { src: 'r', f: { socks: 'n' } },
-  "ws.hello": { src: 'r', f: { v: 'n', build: 't' } },
+  // rep: that person's sockets the hello replaced (a phone back before the room saw its old socket go: the others
+  // hear no presence off and on)
+  "ws.hello": { src: 'r', f: { v: 'n', build: 't', rep: 'n' } },
   "cron.wx": { src: 'r', f: { ok: 'b', fetched: 'b', fail: 't', hours: 'n', age: 'n', ms: 'n' } },
   "cron.compact": { src: 'r', f: { dates: 'n', deleted: 'n', more: 'b', metrics: 'n', ms: 'n' } },
   "do.error": { src: 'r', f: { where: 't', name: 't', msg: 'msg' } },

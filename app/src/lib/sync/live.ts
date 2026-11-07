@@ -167,8 +167,9 @@ export interface Live {
   onAck?(fn: (i: Intent, ok: boolean, t: number) => void): () => void;
 }
 
-/** Reconnect delays: 1 s doubling to 60 s, ±25 % jitter. */
-const BACKOFF = { base: 1000, max: 60_000 } as const;
+/** Reconnect delays: 1 s doubling to 15 s, ±25 % jitter. Only while the app is on screen and online (a hidden one has
+ *  no socket), so the cap is how long a game waits, at worst, for a link that came back: a try costs a handshake. */
+const BACKOFF = { base: 1000, max: 15_000 } as const;
 /** Pings: right after the welcome, again 2 s later (the clock), then whenever the socket was quiet this long: a socket
  *  that died without closing (a half-open TCP after a sleep, a train's tunnel) is found out within PING_EVERY_MS +
  *  PONG_WAIT_MS. */
@@ -202,8 +203,11 @@ const DRAIN_MS = 30;
  *  so a relay without the ticket costs one page load two failed handshakes, not every one. */
 const TICKET_TRIES = 2;
 const TICKET_OFF_MS = 6 * 3_600_000;
-/** Offset samples kept; the one with the shortest round trip wins. */
+/** Offset samples kept (across sockets: the clocks don't move with a reconnect); the one with the shortest round trip
+ *  wins. */
 const SAMPLES = 8;
+/** A measured offset still holds at a welcome when it is within this much of the welcome's own bounds (welcome). */
+const OFFSET_SLACK_MS = 250;
 /** Beyond this much unsent, send() drops (a stalled socket never piles up). */
 const MAX_BUFFERED = 4096;
 /** Kept intents waiting for their ack at most: past it, the oldest layout op goes first (an editor's big save must
@@ -477,8 +481,6 @@ export function createLive(o: LiveOptions): Live {
   /** The socket is open but carries nothing: closed here (its own close may take minutes) and replaced at once; the
    *  welcome sends the outbox again. */
   const stale = () => {
-    // (the log's ws.close, its code the client's own)
-    log('ws.close', { code: STALE, secs: Math.round((Date.now() - (welcomedAt || madeAt)) / 1000), welcomed: welcomedAt > 0 });
     mx.closed = STALE;
     drop(STALE, 'stale');
     fails = 0;
@@ -573,19 +575,31 @@ export function createLive(o: LiveOptions): Live {
     armAcks();
   };
 
-  const drop = (code = 1000, reason = 'bye') => {
+  /** Close the socket here (`why`: the log's, its reason too). */
+  const drop = (code = 1000, why: CloseWhy = 'stop') => {
     clearTimers();
     const s = ws;
     ws = null;
     if (s) {
+      closed(code, why);
       s.onopen = s.onmessage = s.onclose = s.onerror = null;
       try {
-        s.close(code, reason);
+        s.close(code, why);
       } catch {
         /* already closing */
       }
     }
     setStatus({ connected: false, peer: false, here: [], rec: undefined, gone: undefined });
+  };
+
+  /** A socket's end, as the log's ws.close: its code (a close of this phone's own: 1000, STALE, NO_WELCOME), how long
+   *  it lived (from its welcome, else from its making), why, how long it had heard nothing, and its best round trip. */
+  const closed = (code: number, why: CloseWhy) => {
+    const now = Date.now();
+    log('ws.close', {
+      code, secs: Math.round((now - (welcomedAt || madeAt)) / 1000), welcomed: welcomedAt > 0, why,
+      ...(heardAt >= madeAt ? { quiet: (now - heardAt) / 1000 } : {}), ...(sockRtt < Infinity ? { rtt: sockRtt } : {})
+    });
   };
 
   const wanted = () => running && !parked && !!url && !!WS && env.visible() && env.online() && !!o.key();
@@ -598,8 +612,9 @@ export function createLive(o: LiveOptions): Live {
     }, backoff(fails++));
   };
 
-  /** When this socket was made, and when its welcome came (0: not yet): the log's ws.open and ws.close. */
-  let madeAt = 0, welcomedAt = 0;
+  /** When this socket was made, and when its welcome came (0: not yet): the log's ws.open and ws.close; its shortest
+   *  ping round trip (ws.close). */
+  let madeAt = 0, welcomedAt = 0, sockRtt = Infinity;
 
   /** A ticket being made for the next socket (Web Crypto: a tick or two), and the ticketed sockets in a row that failed
    *  before they opened. */
@@ -638,6 +653,7 @@ export function createLive(o: LiveOptions): Live {
     ws = s;
     madeAt = Date.now();
     welcomedAt = 0;
+    sockRtt = Infinity;
     let opened = false;
     // no welcome in time (a handshake or a hello lost on a bad link, a socket iOS froze while it opened): another
     welcomeTimer = setTimeout(() => {
@@ -649,7 +665,7 @@ export function createLive(o: LiveOptions): Live {
     s.onopen = () => {
       opened = true;
       const key = o.key();
-      if (!key) return drop();
+      if (!key) return drop(1000, 'rekey');
       // a new Tokyo day since the page loaded: that day's whole world
       lastWorld = Math.max(lastWorld, dayStart(tokyoDay(Date.now() + offset)));
       const build = o.build?.();
@@ -676,10 +692,17 @@ export function createLive(o: LiveOptions): Live {
           welcomeTimer = null;
           log('ws.open', { ms: welcomedAt - madeAt, retries: fails });
           fails = 0;
-          offset = m.t - Date.now(); // a first guess until the pings refine it
+          // the welcome left the relay at m.t: the offset is between `guess` (no time on the way) and guess + this
+          // socket's age. The pings' measure from before (an earlier socket's) holds while it's within that, so a
+          // reconnect never moves the clock a game runs on; none, or outside it (the device's clock moved since): the
+          // welcome's guess until the pings measure again
+          const guess = m.t - welcomedAt, was = samples.length ? bestOffset(samples) : null;
+          if (was === null || was < guess - OFFSET_SLACK_MS || was > guess + (welcomedAt - madeAt) + OFFSET_SLACK_MS) {
+            offset = guess;
+            samples = [];
+          } else offset = was;
           hbOk = m.hb === true;
           keepOffset();
-          samples = [];
           setStatus({ connected: true, me: m.me, peer: m.peer, here: m.here ?? (m.peer ? [partnerOf(m.me)] : []), rec: m.rec, gone: m.gone ?? {} });
           for (const at of PING_MS) pings.push(setTimeout(ping, at));
           // a quiet socket is asked whether it's alive (a second welcome on one socket: the one timer still)
@@ -726,6 +749,7 @@ export function createLive(o: LiveOptions): Live {
         case 'pong': {
           if (!sent.delete(m.c)) return;
           const rtt = Date.now() - m.c;
+          sockRtt = Math.min(sockRtt, rtt);
           samples = [...samples, { rtt, off: m.t - (m.c + rtt / 2) }].slice(-SAMPLES);
           offset = bestOffset(samples);
           keepOffset();
@@ -777,7 +801,7 @@ export function createLive(o: LiveOptions): Live {
       ws = null;
       clearTimers();
       setStatus({ connected: false, peer: false, here: [], rec: undefined, gone: undefined });
-      log('ws.close', { code: e.code, secs: Math.round((Date.now() - (welcomedAt || madeAt)) / 1000), welcomed: welcomedAt > 0 });
+      closed(e.code, 'closed');
       if (e.code === CLOSE.unauthorized || e.code === CLOSE.replaced || e.code === CLOSE.version) {
         parked = true;
         log('ws.park', { code: e.code }, e.code === CLOSE.replaced ? 1 : 2);
@@ -789,9 +813,8 @@ export function createLive(o: LiveOptions): Live {
     };
   }
 
-  /** The socket's welcome never came: given up on (logged as a close of the client's own). */
-  const noWelcome = (why: string) => {
-    log('ws.close', { code: NO_WELCOME, secs: Math.round((Date.now() - madeAt) / 1000), welcomed: false });
+  /** The socket's welcome never came: given up on. */
+  const noWelcome = (why: 'late' | 'stuck') => {
     mx.closed = NO_WELCOME;
     drop(NO_WELCOME, why);
   };
@@ -803,7 +826,7 @@ export function createLive(o: LiveOptions): Live {
       fails = 0;
     }
     wasVisible = vis;
-    if (!wanted()) return drop(1000, 'hidden');
+    if (!wanted()) return drop(1000, !vis ? 'hidden' : !env.online() ? 'offline' : 'stop');
     if (retry) {
       clearTimeout(retry);
       retry = null;
@@ -886,6 +909,11 @@ export function createLive(o: LiveOptions): Live {
     return outbox.keys().next().value!;
   }
 }
+
+/** Why a socket ended (the log's ws.close `why`, contract/log.ts): the page hidden, offline, a socket found dead (no
+ *  answer to a probe), its welcome late or stuck, another key, stopped, or closed from the other end (the relay, the
+ *  network). */
+type CloseWhy = 'hidden' | 'offline' | 'stale' | 'late' | 'stuck' | 'rekey' | 'stop' | 'closed';
 
 /** A kept intent waiting for its ack (the outbox's): `at` when it last went (0: not yet), `due` when its ack is
  *  overdue, `n` how often it went again on this socket. */

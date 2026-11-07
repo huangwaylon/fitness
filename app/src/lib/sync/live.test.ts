@@ -3,6 +3,11 @@ import { LIVE_URL, backoff, bestOffset, createLive, type KeptOut, type Live, typ
 import { dayStart, tokyoDay, type Relayed } from '../contract/live-protocol.ts';
 import { configureStorage, type KV } from './storage.ts';
 import { ROOM_PROTOCOL, ticketOwner } from '../contract/ticket.ts';
+import { log } from './log.ts';
+
+// the phone's log, watched (ws.close: why a socket ended)
+vi.mock('./log.ts', async (orig) => ({ ...(await orig<typeof import('./log.ts')>()), log: vi.fn() }));
+const closes = () => vi.mocked(log).mock.calls.filter((c) => c[0] === 'ws.close').map((c) => c[1]);
 
 const KEY = 'ab'.repeat(32);
 
@@ -459,6 +464,29 @@ describe('live: the relay clock', () => {
     expect(ws.sent.length).toBe(before + 3);
   });
 
+  it('a reconnect keeps the measured clock (a game’s never jumps by the welcome’s trip), unless the device’s clock moved', () => {
+    live.start();
+    let ws = last();
+    ws.welcome(true, Date.now() + 3000);
+    vi.advanceTimersByTime(0);
+    const p = ws.sent.at(-1)!;
+    vi.advanceTimersByTime(40);
+    ws.recv({ kind: 'pong', c: p.c, t: (p.c as number) + 20 + 3010 });
+    expect(live.serverNow() - Date.now()).toBe(3010);
+    // the socket drops; the next one's welcome took 60 ms to come: its guess (2950) is no measure, the pings' holds
+    ws.drop();
+    vi.advanceTimersByTime(1300);
+    ws = last();
+    expect(FakeWS.all).toHaveLength(2);
+    ws.welcome(true, Date.now() + 2950);
+    expect(live.serverNow() - Date.now()).toBe(3010);
+    // the device's clock set 10 s back while away: the welcome says so, and the pings measure again
+    ws.drop();
+    vi.advanceTimersByTime(1300);
+    last().welcome(true, Date.now() + 13_010);
+    expect(live.serverNow() - Date.now()).toBe(13_010);
+  });
+
   it('points at the relay\'s room by default', () => {
     expect(LIVE_URL).toMatch(/^wss:\/\/.+\/room$/);
   });
@@ -466,7 +494,7 @@ describe('live: the relay clock', () => {
   it('backoff and offset helpers', () => {
     expect(backoff(0, 0.5)).toBe(1000);
     expect(backoff(3, 0.5)).toBe(8000);
-    expect(backoff(20, 0.5)).toBe(60_000);
+    expect(backoff(20, 0.5)).toBe(15_000); // (on screen only: a game waits at most this for a link back)
     expect(backoff(0, 0)).toBe(750);
     expect(backoff(0, 0.999)).toBe(1250);
     expect(bestOffset([])).toBe(0);
@@ -1040,5 +1068,36 @@ describe('live: the room’s admission ticket', () => {
   it('none without knowing whose key it is (the demo’s test relays)', () => {
     live.start();
     expect(last().protocols).toBeUndefined();
+  });
+});
+
+describe('live: why a socket ended (the log’s ws.close)', () => {
+  beforeEach(() => vi.mocked(log).mockClear());
+
+  it('hidden, closed from the other end, found dead: once each, with how long it heard nothing and its best round trip', () => {
+    live.start();
+    let ws = last();
+    ws.welcome();
+    vi.advanceTimersByTime(0);
+    const p = ws.sent.at(-1)!;
+    vi.advanceTimersByTime(80);
+    ws.recv({ kind: 'pong', c: p.c, t: Date.now() });
+    vi.advanceTimersByTime(1000);
+    visible = false;
+    fire();
+    expect(closes()).toEqual([{ code: 1000, secs: 1, welcomed: true, why: 'hidden', quiet: 1, rtt: 80 }]);
+    // shown again; the network drops it
+    visible = true;
+    fire();
+    ws = last();
+    ws.welcome();
+    ws.drop(1006);
+    expect(closes().at(-1)).toMatchObject({ code: 1006, welcomed: true, why: 'closed' });
+    // a socket that stops answering: given up on (4000), logged once
+    vi.advanceTimersByTime(1300);
+    last().welcome();
+    vi.advanceTimersByTime(2100 + 20_000 + 10_000);
+    expect(closes().filter((c) => c?.why === 'stale')).toEqual([expect.objectContaining({ code: 4000, welcomed: true })]);
+    expect(closes()).toHaveLength(3);
   });
 });
