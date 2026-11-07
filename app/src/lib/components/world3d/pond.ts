@@ -7,6 +7,7 @@ import {
   CircleGeometry, Color, DodecahedronGeometry, DoubleSide, Group, Mesh, MeshLambertMaterial, RingGeometry, ShaderMaterial
 } from 'three';
 import { BEND_GLSL, bendU } from './bend.ts';
+import { withMaps } from './blank.ts';
 import { waterU } from './water.ts';
 import type { PondPlace } from '#lib/layout/ponds.ts';
 
@@ -58,7 +59,7 @@ const waterMat = () => {
   water.userData.bent = true;
   return water;
 };
-const lambert = (c: number) => new MeshLambertMaterial({ color: c, emissive: new Color(c), emissiveIntensity: 0.18 });
+const lambert = (c: number) => withMaps(new MeshLambertMaterial({ color: c, emissive: new Color(c), emissiveIntensity: 0.18 }));
 const oval = (geo: CircleGeometry | RingGeometry, rx: number, rz: number, y: number) => {
   geo.rotateX(-Math.PI / 2);
   geo.scale(rx, 1, rz);

@@ -18,6 +18,7 @@ import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { lean } from '../world3d/release.ts';
+import { withMaps } from '../world3d/blank.ts';
 import { ACTION_MS, FADE_MS, action, base, isGym, mix, over, poseBuf, strideOf, type Action, type Body, type Pose, type State } from './poses.ts';
 import { cellTransform, eyeAt, faceChangeIn, mouthAt, type Face } from './faces.ts';
 import { rigOf, type Rig, type RigOpts } from './rig.ts';
@@ -115,7 +116,7 @@ function load(url: string): Promise<GLTF> {
         });
         l.userData = { ...s.userData };
         s.dispose();
-        m.material = l;
+        m.material = withMaps(l);
       });
       return lean(g);
     });
@@ -257,7 +258,7 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
     // (in the model's own frame: before it's put in the scaled group)
     model.updateMatrixWorld(true);
     head.worldToLocal(at);
-    lump = new Mesh(new SphereGeometry(1, 16, 12), new MeshLambertMaterial({ color: 0xf2a6b6, emissive: new Color(0xf2a6b6), emissiveIntensity: 0.25 }));
+    lump = new Mesh(new SphereGeometry(1, 16, 12), withMaps(new MeshLambertMaterial({ color: 0xf2a6b6, emissive: new Color(0xf2a6b6), emissiveIntensity: 0.25 })));
     const r = 0.2 * w * (kind.lumpScale ?? 1);
     lump.scale.set(r, r * 0.85, r * 0.6);
     lump.position.copy(at);
@@ -281,7 +282,7 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
   group.name = `villager3d:${id}`;
   group.add(inner);
   // the blob of shadow on the ground (NH's walkers have one: no shadow map to redraw as they move)
-  const blobMat = new MeshBasicMaterial({ color: 0x2a3a2a, transparent: true, opacity: 0.22, depthWrite: false });
+  const blobMat = withMaps(new MeshBasicMaterial({ color: 0x2a3a2a, transparent: true, opacity: 0.22, depthWrite: false }));
   const blob = new Mesh(BLOB, blobMat);
   blob.scale.setScalar(17);
   blob.position.y = 0.6;

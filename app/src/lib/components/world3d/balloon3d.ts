@@ -12,6 +12,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { keyModel, MODELS } from './models3d.ts';
 import { softDisc } from './cards.ts';
 import { bend } from './bend.ts';
+import { withMaps } from './blank.ts';
 import { RIG, flying, rigAt } from '../island/balloonFlight.ts';
 
 export interface Balloon3 {
@@ -51,7 +52,7 @@ export function createBalloon3(add: (o: Object3D) => () => void, heightOf: (x: n
           const mat = new MeshLambertMaterial({ map: s0.map, color: s0.color, alphaTest: s0.alphaTest, side: s0.side, emissive: s0.map ? new Color(0xffffff) : s0.color.clone(), emissiveMap: s0.map, emissiveIntensity: liftL });
           mats.push(mat);
           // (in after the group was added: bent here, as engine.ts add() bends what's in it then)
-          m.material = bend(mat);
+          m.material = bend(withMaps(mat));
           m.castShadow = false;
           m.frustumCulled = false;
         });

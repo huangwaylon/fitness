@@ -17,6 +17,7 @@ import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { lean } from '../world3d/release.ts';
+import { WHITE, withMaps } from '../world3d/blank.ts';
 import { keepUsed } from '../world3d/keepUsed.ts';
 import { animateModel, type Villager3D } from '../villager3d/villager3d.ts';
 import { PARTS, bodyUrl, covers, faceUrl, irisUrl, loadParts, meshUrl, texUrl, type ItemSpec, type PartTable, type TexSpec } from './parts.ts';
@@ -200,7 +201,7 @@ function partMaterial(name: string, map: Texture | null, spec: { color?: string;
     ...(spec.glass !== undefined ? { transparent: true, opacity: spec.glass, depthWrite: false } : {})
   });
   m.emissive = tint ?? (map ? new Color(0xffffff) : color.clone().multiplyScalar(0.5));
-  return m;
+  return withMaps(m);
 }
 
 interface Worn { key: string; url: string | null; meshes: SkinnedMesh[]; bones: Bone[]; mats: Material[] }
@@ -444,7 +445,7 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
         // a near-black garment (B's polo and long skirt): its self-light a flat charcoal, not its texture's (black: no
         // light of its own at all, a black hole on a phone's island at dusk; NH's blacks read as charcoal)
         if (map && !spec.tint && item.sw && luma(item.sw) < 0.12) {
-          mat.emissiveMap = null;
+          mat.emissiveMap = WHITE;
           mat.emissive = new Color(DARK_LIFT);
         }
       }
