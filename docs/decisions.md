@@ -1020,13 +1020,13 @@ menu for customizing user and choosing villager more intuitive. maybe tabbed wit
 the villager was a second level sent on tap while the look was sent on leaving, two commit models on one screen.
 
 ### ききみみ クイズ: a lazy sheet, a tiny invite listener (2026-11-05)
-The listening game's sheet is its own chunk (the bank, the deck, the session, its strings: ~30 KB gzipped) loaded on
-the first あそぶ or さんか; the island's first load only gains the listener and the banner (`KikimimiHost`,
+The listening game's sheet is its own chunk loaded on the first tap (since 2026-11-06 its content is a chunk per level
+and the audio is in packs: docs/kikimimi.md "Loading"); the island's first load only gains the listener and the banner (`KikimimiHost`,
 `invite.svelte.ts`, a few hundred bytes) and two strings. The listener keeps the quiz intents heard in the last 10
 minutes and hands them to the sheet's session as it opens, rather than the session living in the first load or the host
 re-sending on a sheet's opening: the relay's quiz intent is presence only, so a phone that opens the sheet later would
-otherwise never hear the lobby. The session's scoring is score.ts's (one `points`). With the host gone mid-game each
-phone moves on by itself once everyone left has answered (a reveal's length later), as no skip will come. Mid-game the
+otherwise never hear the lobby. The session's scoring is score.ts's (one `points`). With the host gone mid-game every
+phone gets つぎへ (since the untimed reveal, 2026-11-06, below), as no skip will come. Mid-game the
 sheet isn't closed by a backdrop tap or Esc (Sheet's `ondismiss`); ✕ asks first. Why: the user's game for several
 players, with nothing heavy before it's opened (docs/kikimimi.md "Performance").
 
@@ -1099,7 +1099,8 @@ played), a feature flag (the clips themselves are the readiness signal, nothing 
 ### ききみみ スピード はしご: a quiz mode on the seed, rungs by time-stretch, climbs scored flat (2026-11-06)
 スピード はしご (docs/curriculum.md §14, increment 7) is the quiz's session with another deck: 2 ladders × 4 rungs = 8
 questions, so the protocol, the relay and the co-op / たいせん code are the quiz's. The mode rides on the `open`'s seed's
-bit 1 beside たいせん's bit 0: no new field and no relay deploy; `lv` 5 stays the next level's room. The rungs are one take
+bit 1 beside たいせん's bit 0: no new field and no relay deploy; `lv` 5 stays the next level's room (it became the
+アナウンス pack). The rungs are one take
 per line stretched with ffmpeg atempo to 0.8-1.4 × 4.3 syllables a second, pre-rendered: the voice path's Web Audio
 `playbackRate` shifts pitch, and atempo measured nearly free to 1.25× and about −0.35 UTMOS at 1.4×. Each rung asks a
 different question (Japanese for rungs 1-3, so no English is read before a faster listen; the top a dictation-lite pick
@@ -1132,7 +1133,26 @@ daily cap and `STT_OFF`) as disclosed fallbacks; no transcript or speaking score
 only, and there is no speaking leaderboard. The Permissions-Policy allows `microphone=(self)`. Why: the panel is shy
 about speaking and the voice is the most personal data the app would touch. Rejected: server-first recognition
 (simplest, but every utterance leaves the phone), a pronunciation score (noise from ASR, and it shames), free LLM
-conversation (the user: no).
+conversation (the user: no). All six modes were built the same day (docs/kikimimi-mic.md §4); the probe's run on the
+user's phones, which sets the recogniser's thresholds, is pending.
+
+### ききみみ's audio: whole-file packs on Pages, R2 when enabled (2026-11-06, 2026-11-07)
+The clips ship as packs, whole m4a files end to end with a byte index (docs/kikimimi-framework.md §6), not ~10,000
+loose files: Pages takes 20,000 files a deploy, and a pack is fetched once per game and cached whole (the listen cache,
+30 MB LRU). A clip is sliced from its pack and decoded as is (WebKit decodes the slice to the file's very samples). A
+re-spoken clip changes only its own pack (stable splits), so phones refetch little. The plan was to move the packs to
+R2 behind a same-origin `PACK_BASE` past 50 MB (games) and 20 MB (stories); wave 2 took them to 89.3 and 21.4 MiB before
+R2 was enabled, so bank.test's lines are raised per batch as a stopgap (Pages limits files to 25 MiB and a pack is
+≤ 1.2 MB, so the total isn't Pages' limit). W2-R waits on the user enabling R2 in the Cloudflare dashboard; the mic's
+model (`/stt/`, ~70 MB) waits on the same bucket and is copied into the deploy meanwhile. Rejected: ADTS streams (not
+needed), capping wave 2 at ~30 MB by cutting the news and st-tokyo (curriculum-wave2.md §5).
+
+### ききみみ's wire: `play` beside `quiz`, the quiz moved last (2026-11-06)
+Later games (lessons, the listening games, たいかい) send a general `play` intent with a content version (`cv`) and
+options (docs/kikimimi-framework.md §4); the relay learned it first. The quiz and スピード はしご keep sending `quiz`
+(`QUIZ_ON_PLAY` off) so a phone from before 8b still plays them; a `play` invite whose `cv` this build doesn't have is
+blocked with 「アプリを こうしんしてね」 instead of dealing a different deck. Flip `QUIZ_ON_PLAY` once both phones run an
+8c build (the `ws.hello` log shows it). Rejected: one switch-over (a phone not yet updated would hear nothing).
 
 ### Offline: the guides and the maps seen, phase A (2026-11-07)
 The user: "we'd like some offline functionality for the app in general … also need access to travel, hike, and
