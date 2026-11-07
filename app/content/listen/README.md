@@ -195,7 +195,9 @@ items:
 - `pragmatic`: literal, indirect, refusal, hedge, understatement, sarcasm, humour, formula, ritual, attitude,
   deception.
 - `conditions`: bank.ts's `phone voicemail pa video cafe station desk`, plus new ones from these drafts: `signal` (a
-  phone line breaking up), `street`, `train`, `party` (bar or crowd noise).
+  phone line breaking up), `street`, `train`, `party` (bar or crowd noise). On a `signal` call, each line with `...`
+  is mixed breaking up (dropouts), so the next line is the player asking again and no answer is said in it; `party`
+  puts the party bed under every line (docs/kikimimi.md "Conditions").
 - `features`: bank.ts `Feature`, plus new ones from these drafts: `linking`, `h-drop`, `chain` (reduction chains:
   whatcha, whaddaya, wouldja've), `elision` (t/d dropped: jus'), `assimilation`, `overlap`, `filler`, `stress`.
 

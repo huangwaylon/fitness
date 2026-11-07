@@ -1,13 +1,13 @@
-// ききみみ クイズ: the noise beds for the speech conditions (docs/kikimimi.md "Conditions"): a café, a street and a
-// station, each 24 s, looping without a seam, into scripts/tts/beds/<id>.m4a (committed) with scripts/tts/beds/beds.json
+// ききみみ クイズ: the noise beds for the speech conditions (docs/kikimimi.md "Conditions"): a café, a street, a
+// station and a party, each 24 s, looping without a seam, into scripts/tts/beds/<id>.m4a (committed) with scripts/tts/beds/beds.json
 // (how each was made). Silent: it never plays a sound.
-//   node scripts/kikimimi-beds.ts [--only cafe,street,station]
+//   node scripts/kikimimi-beds.ts [--only cafe,street,station,party]
 // No third-party audio, so no licence to track: every sound is made here. The babble is our own TTS clips (levels 1-3's
 // normal clips, unpacked from their packs into .cache/tts/clips/, spoken by the cast) reversed, started part-way in and layered many deep at
 // low levels, so no word is intelligible (whisper is run over each bed to check: it should hear nothing). The rest is
 // seeded shaped noise and simple synthesis: cup clinks and spoon taps, a steam wand, footsteps, cars passing, a train
-// arriving, air handling hum. A room or hall impulse response (dsp.ts impulse) pushes each bed back. Deterministic: the
-// same seed and clips give the same bed.
+// arriving, air handling hum, glasses, a groove from the next room. A room or hall impulse response (dsp.ts impulse)
+// pushes each bed back. Deterministic: the same seed and clips give the same bed.
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
@@ -173,6 +173,39 @@ const BUILD: Record<Bed, { what: string; make: (r: () => number) => Float32Array
         whine[i] *= e;
       }
       return mix([[filter(hall, 'lowpass=f=3500,highpass=f=100').slice(0, N), 0], [train, -4], [whine, -16], [noise(N, r, 250, 40), -14]]);
+    }
+  },
+  party: {
+    what: '16 reversed talkers of our own TTS clips, some close, in a living room (RT60 0.7 s); glasses clinking; a 120 bpm groove from the next room (bass, kick, a soft pad: synthesised, 24 s a whole number of bars so it loops)',
+    make: (r) => {
+      const talk = filter(convolve(babble(r, 16, [-12, 1]), impulse({ rt60: 0.7, wet: 0.8, predelay: 0.008 }, 14)), 'lowpass=f=5000,highpass=f=110').slice(0, N);
+      const glass = new Float32Array(N);
+      scatter(glass, r, 0.5, () => clink(2600 + r() * 1600, 0.12 + r() * 0.1, r), [-14, -4]);
+      const music = new Float32Array(N), beat = 0.5, roots = [110, 87.31, 130.81, 98]; // A F C G, a bar (4 beats) each
+      for (let k = 0; k * beat < LEN + XF; k++) {
+        const t0 = Math.round(k * beat * SR), f = roots[Math.floor(k / 4) % 4];
+        const kick = new Float32Array(Math.round(0.25 * SR)), bass = new Float32Array(Math.round(0.45 * SR));
+        for (let i = 0, ph = 0; i < kick.length; i++) {
+          ph += (2 * Math.PI * (50 + 70 * Math.exp(-i / SR / 0.03))) / SR;
+          kick[i] = Math.sin(ph) * Math.exp(-i / SR / 0.08);
+        }
+        for (let i = 0; i < bass.length; i++) {
+          const t = i / SR;
+          bass[i] = (Math.sin(2 * Math.PI * f * t) + 0.3 * Math.sin(4 * Math.PI * f * t)) * Math.min(1, t / 0.01) * Math.exp(-t / 0.25);
+        }
+        add(music, kick, t0, 0.8);
+        add(music, bass, t0, 0.5);
+        if (k % 4 === 0) {
+          const pad = new Float32Array(Math.round(4 * beat * SR));
+          for (let i = 0; i < pad.length; i++) {
+            const t = i / SR, env = Math.min(1, t / 0.3, (pad.length / SR - t) / 0.3);
+            for (const m of [2, 2.52, 3]) pad[i] += Math.sin(2 * Math.PI * f * m * t) * env * 0.08;
+          }
+          add(music, pad, t0);
+        }
+      }
+      const next = filter(convolve(music, impulse({ rt60: 0.5, wet: 0.6, predelay: 0.012 }, 15)), 'lowpass=f=900,highpass=f=40').slice(0, N);
+      return mix([[talk, 0], [glass, -11], [next, -10], [noise(N, r, 200, 30), -26]]);
     }
   }
 };

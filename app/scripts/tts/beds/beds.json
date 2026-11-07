@@ -28,5 +28,15 @@
   "licence": "ours: synthesised by scripts/kikimimi-beds.ts from seeded noise and the project's own TTS clips; no third-party audio",
   "whisper": "so",
   "kb": 121
+ },
+ "party": {
+  "seconds": 24,
+  "seed": 2029,
+  "lufs": -30,
+  "made": "16 reversed talkers of our own TTS clips, some close, in a living room (RT60 0.7 s); glasses clinking; a 120 bpm groove from the next room (bass, kick, a soft pad: synthesised, 24 s a whole number of bars so it loops)",
+  "voices": "144 of our own level 1-3 clips (the work folder's, a3a038d577), reversed",
+  "licence": "ours: synthesised by scripts/kikimimi-beds.ts from seeded noise and the project's own TTS clips; no third-party audio",
+  "whisper": "so",
+  "kb": 121
  }
 }
