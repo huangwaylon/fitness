@@ -8,7 +8,7 @@ track: people
 seeds: [18, 32, 50, 54, 57]
 features: { primary: overlap, review: h-drop }
 cando: "3人の かいわで えんきょくな ことわりと 心がわりを ききとれる"
-status: draft
+status: listened
 items:
   - kind: tachi
     id: tachi-leaving-gift

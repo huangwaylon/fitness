@@ -7,7 +7,7 @@ track: work
 seeds: [4, 7, 8, 13, 17, 27, 32, 34, 36, 41, 42, 44, 46, 51, 53]
 features: { primary: chain, review: flap }
 cando: "しゅくやくが いくつも ある はやい かいわを ことばごとに ききわけられる"
-status: draft
+status: listened
 items:
   - kind: tile
     id: tile-been-going-on

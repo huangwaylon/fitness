@@ -31,7 +31,7 @@ describe('たちぎき: the deal', () => {
     expect(filesOf('tachi', 4, listen)).toEqual(['s2-tachi-a']);
     expect(filesOf('tachi', 6, listen)).toEqual(['s3-tachi-a']);
     expect(filesOf('tachi', 3, listen)).toEqual([]);
-    expect([4, 6].map((lv) => filesOf('tachi', lv, INDEX.listen))).toEqual([[], []]); // (this build: every tachi file a draft)
+    expect([4, 6].map((lv) => filesOf('tachi', lv, INDEX.listen))).toEqual([['s2-tachi-a', 's2-tachi-b'], ['s3-tachi-a', 's3-tachi-b']]); // (this build: all listened)
   });
 
   it('is the same for a seed: two conversations, three rounds each in order, another seed another deal', () => {

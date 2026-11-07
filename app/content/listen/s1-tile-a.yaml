@@ -8,7 +8,7 @@ track: life
 seeds: [5, 13, 24, 25, 35, 37, 38, 48, 49, 58, 1, 3, 17]
 features: { primary: weak-form, review: contraction }
 cando: "and・to・your など よわく なる ことばを ききとって ぶんを くみたてられる"
-status: draft
+status: listened
 items:
   - kind: tile
     id: tile-gonna-pour

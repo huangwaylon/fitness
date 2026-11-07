@@ -8,7 +8,7 @@ track: life
 seeds: [8, 21, 22, 29, 33]
 features: { primary: self-repair, review: chain }
 cando: "サポートの でんわで 条件と 最終的な 結論を ききとって メモできる"
-status: draft
+status: listened
 cast: { me: us-m3 }
 items:
   - kind: call

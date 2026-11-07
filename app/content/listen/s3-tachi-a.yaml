@@ -8,7 +8,7 @@ track: work
 seeds: [12, 40, 44, 53, 54]
 features: { primary: overlap, review: chain }
 cando: "わりこみの ある 速い 3人の かいわで 結論と 心がわりを ききとれる"
-status: draft
+status: listened
 items:
   - kind: tachi
     id: tachi-standup-blocked

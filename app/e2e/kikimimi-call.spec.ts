@@ -1,13 +1,11 @@
-// ようじ でんわ (docs/curriculum-wave2.md §2.3): the mode shows once a call file is `listened` (here only in the test: the
-// built index's s1-call, flipped to listened as it's served; the shipped files stay drafts till A1 and the listening
-// check), on あそぶ's まちで・でんわで shelf and its page at かわ; a solo game (the call on the phone with the memo under it,
-// a chip picked while it plays and changed, メモできた once it ends; round 2 the rest of the memo from memory), one
-// round wrong, the reveal's right chips, the basket, 解説 and the transcript, the results' errands, review and my row
-// (gm call, the wrong rows as the pick); then two phones in co-op over the demo's relay: each fills its own rows of one
-// memo, the reveal shows the team's, the results count the rounds done whole. The calls play their voiced length
-// (A1), silent: Playwright's Chromium is muted. Screenshots (KIKI_SHOTS=1) into /tmp/kikimimi-shots/call/,
-// by day and at night.
-import { readFileSync, readdirSync } from 'node:fs';
+// ようじ でんわ (docs/curriculum-wave2.md §2.3): the mode shows once a call file is `listened` (s1-call, shipped listened),
+// on あそぶ's まちで・でんわで shelf and its page at かわ; a solo game (the call on the phone with the memo under it, a chip picked
+// while it plays and changed, メモできた once it ends; round 2 the rest of the memo from memory), one round wrong, the
+// reveal's right chips, the basket, 解説 and the transcript, the results' errands, review and my row (gm call, the wrong
+// rows as the pick); then two phones in co-op over the demo's relay: each fills its own rows of one memo, the reveal
+// shows the team's, the results count the rounds done whole. The calls play their voiced length (A1), silent:
+// Playwright's Chromium is muted. Screenshots (KIKI_SHOTS=1) into /tmp/kikimimi-shots/call/, by day and at night.
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
@@ -24,23 +22,6 @@ const PART = JSON.parse(readFileSync(join(import.meta.dirname, '..', 'src', 'lib
   listen: { items: { id: string; memo: { slots: { options: string[]; answer: number }[] }[] }[] };
 };
 const RIGHT = new Map(PART.listen.items.map((it) => [it.id, it.memo.flatMap((m) => m.slots).map((s) => s.options[s.answer])]));
-
-/** The built index with s1-call `listened` (the fixture: the shipped file stays a draft): the chunk that holds the index
- *  (build-pages/, as served), its line flipped as it's served. */
-const LINE = /("s1-call":\[[`"']call[`"'],2,[`"'])draft/;
-const CHUNKS = join(import.meta.dirname, '..', 'build-pages', '_app', 'immutable', 'chunks');
-/** (read when a test runs: `playwright test --list` loads this file before any build exists) */
-const indexChunk = () => readdirSync(CHUNKS).find((f) => f.endsWith('.js') && LINE.test(readFileSync(join(CHUNKS, f), 'utf8')));
-async function listened(ctx: BrowserContext) {
-  const INDEX_CHUNK = indexChunk();
-  expect(INDEX_CHUNK, 'the built index').toBeTruthy();
-  await ctx.route(`**/_app/immutable/chunks/${INDEX_CHUNK}`, async (route) => {
-    const res = await route.fetch();
-    // (the body as served, decoded: its encoding and length headers dropped)
-    const headers = Object.fromEntries(Object.entries(res.headers()).filter(([k]) => k !== 'content-encoding' && k !== 'content-length'));
-    await route.fulfill({ status: res.status(), headers, body: (await res.text()).replace(LINE, '$1listened') });
-  });
-}
 
 type Kiki = { view(): { phase: string; i: number; gm: string | null; roles: Record<string, number> }; items(): string[]; recorded(): { gm?: string; r: [string, number, number, number][] } | null };
 const kiki = <R,>(p: Page, fn: (k: Kiki) => R) => p.evaluate(`(${fn.toString()})(window.__kiki)`) as Promise<R>;
@@ -94,7 +75,6 @@ async function send(p: Page) {
 
 test('solo: the mode once listened, the call with its memo, a chip changed, メモできた; round 2 from memory; the reveal and the results; my row', async ({ context }) => {
   test.setTimeout(300_000); // (the calls play their voiced length, 20-40 s each)
-  await listened(context);
   const page = await phone(context, DAY);
   await toCall(page);
   await snap(page, 'mode');
@@ -169,7 +149,6 @@ test('solo: the mode once listened, the call with its memo, a chip changed, メ�
 test('night: the phone and the memo in the night palette', async ({ context }) => {
   test.skip(!process.env.KIKI_SHOTS, 'screenshots only');
   test.setTimeout(150_000);
-  await listened(context);
   const page = await phone(context, NIGHT);
   await toCall(page);
   await sheet(page).locator('[data-kiki-start]').click();
@@ -190,7 +169,6 @@ test('night: the phone and the memo in the night palette', async ({ context }) =
 test('co-op on two phones: each fills its own rows of one memo; the reveal shows the team’s; the results count the rounds done whole', async ({ browser }) => {
   test.setTimeout(360_000);
   const ctx = await browser.newContext();
-  await listened(ctx);
   const a = await phone(ctx, DAY, 'A'), b = await phone(ctx, DAY, 'B');
   await a.bringToFront();
   await toCall(a);

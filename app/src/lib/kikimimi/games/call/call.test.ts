@@ -30,7 +30,7 @@ describe('ようじ でんわ: the deal', () => {
     expect(filesOf('call', 4, listen)).toEqual(['s2-call-a']);
     expect(filesOf('call', 3, listen)).toEqual(['s1-call']);
     expect(filesOf('call', 6, listen)).toEqual([]);
-    expect(filesOf('call', 4, INDEX.listen)).toEqual([]); // (this build: every call file a draft till A1 and the listening check)
+    expect(filesOf('call', 4, INDEX.listen)).toEqual(['s2-call-a', 's2-call-b']); // (this build: A1's listened, wave 2's s2-call-c a draft)
   });
 
   it('is the same for a seed: 3 calls, each its call (its lines’ clips) then its memo’s second round (no clip of its own)', () => {
