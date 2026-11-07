@@ -44,6 +44,8 @@ export interface ModeMeta {
   game?: string;
   /** Its page offers the ばしょ (ひとこと クイズ: the levels this build offers; a lane's game: its content's places). */
   places?: boolean;
+  /** Its game's own answer window (s), whatever the lobby's こたえる じかん but なし: its pages offer just that and なし. */
+  window?: number;
   /** Playable by this build and this player (not a lane's game). */
   ok?(c: Ctx): boolean;
   /** Shown only while this is true on this phone (a mic mode's: the mic on and its recogniser ready), beside the rest. */
@@ -58,7 +60,7 @@ const MODES: ModeMeta[] = [
   { id: 'ladder', group: 'quick', icon: '🪜', mins: 3, qs: 8, coop: true, ok: (c) => c.ladder },
   { id: 'review', group: 'quick', icon: '🔁', mins: 3, qs: 8, coop: false, ok: (c) => c.review },
   { id: 'tile', group: 'quick', icon: '🧩', mins: 3, qs: 6, coop: true, game: 'tile', places: true },
-  { id: 'rush', group: 'quick', icon: '☕', mins: 2, qs: 8, coop: true, game: 'rush', places: true },
+  { id: 'rush', group: 'quick', icon: '☕', mins: 2, qs: 8, coop: true, game: 'rush', places: true, window: 8 },
   { id: 'announce', group: 'scene', icon: '📢', mins: 4, qs: 8, coop: true, ok: (c) => c.levels.includes(5) },
   { id: 'call', group: 'scene', icon: '📞', mins: 3, qs: 6, coop: true, game: 'call', places: true },
   { id: 'tachi', group: 'scene', icon: '👂', mins: 3, qs: 6, coop: true, game: 'tachi', places: true },

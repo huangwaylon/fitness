@@ -420,6 +420,7 @@
   "kiki.timer.20": "20 s",
   "kiki.timer.30": "30 s",
   "kiki.timer.60": "60 s",
+  "kiki.timer.s": "{n} s",
   "kiki.timer.0": "None",
   "kiki.timerNone": "Waits till everyone answers",
   "kiki.readyTap": "Done reading",

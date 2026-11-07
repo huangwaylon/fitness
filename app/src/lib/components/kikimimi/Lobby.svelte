@@ -86,7 +86,7 @@
   {:else if places?.length}
     <StageRow lv={v.lv} levels={places} readonly={!v.amHost} onpick={level} />
   {/if}
-  <TimerRow timer={v.timer} readonly={!v.amHost} onpick={timer} />
+  <TimerRow timer={v.timer} window={modeOf(now).window} readonly={!v.amHost} onpick={timer} />
 
   <section class="sec" aria-labelledby="kk-who" data-kiki-players>
     <h3 id="kk-who" class="sec-label">{t('kiki.players')}</h3>
