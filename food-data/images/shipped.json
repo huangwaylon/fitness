@@ -23191,6 +23191,19 @@
 "checked": false
 },
 {
+"key": "mext-04058",
+"ja": "繊維状大豆たんぱく",
+"desc": "textured soy protein: beige-tan fibrous chunks resembling shredded meat, in a small dish",
+"items": [
+"mext:04058"
+],
+"roll": 0,
+"seed": 40256,
+"prompt": "8f6409d288",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-04059",
 "ja": "湯葉（生）",
 "desc": "fresh yuba tofu skin, soft thin wrinkled pale yellow sheets folded and layered, glistening, in a small dish",
@@ -23217,6 +23230,32 @@
 "checked": false
 },
 {
+"key": "mext-04061",
+"ja": "金山寺みそ",
+"desc": "kinzanji miso: chunky brown lick-miso with visible koji grains and diced eggplant, cucumber and ginger, in a small dish",
+"items": [
+"mext:04061"
+],
+"roll": 0,
+"seed": 81767,
+"prompt": "1349b15795",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04062",
+"ja": "ひしおみそ",
+"desc": "hishio miso: coarse dark brown chunky miso with soybeans, barley grains and chopped vegetables, in a small dish",
+"items": [
+"mext:04062"
+],
+"roll": 0,
+"seed": 83901,
+"prompt": "b4f88f3959",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-04063",
 "ja": "テンペ",
 "desc": "a block of tempeh, compact pale beige fermented soybeans bound by white mould, sliced to show whole beans",
@@ -23226,6 +23265,32 @@
 "roll": 0,
 "seed": 62091,
 "prompt": "7e0bcd68b3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04064",
+"ja": "つるあずき 乾",
+"desc": "dried rice beans: a small dish of small slender reddish-brown beans",
+"items": [
+"mext:04064"
+],
+"roll": 0,
+"seed": 20712,
+"prompt": "6ec9604f25",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04065",
+"ja": "ひよこまめ 乾",
+"desc": "dried chickpeas: a small dish of round beige chickpeas with little beaked tips",
+"items": [
+"mext:04065"
+],
+"roll": 0,
+"seed": 12286,
+"prompt": "68b698c8a4",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -23243,6 +23308,19 @@
 "checked": false
 },
 {
+"key": "mext-04067",
+"ja": "ひよこまめ フライ 味付け",
+"desc": "fried seasoned chickpeas: a small dish of crunchy golden-brown fried chickpeas, salted",
+"items": [
+"mext:04067"
+],
+"roll": 0,
+"seed": 27666,
+"prompt": "1f3d07683a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-04068",
 "ja": "べにばないんげん 乾",
 "desc": "dry scarlet runner beans (hanamame), large purple beans speckled with black",
@@ -23256,6 +23334,32 @@
 "checked": false
 },
 {
+"key": "mext-04069",
+"ja": "べにばないんげん ゆで",
+"desc": "boiled runner beans: a small dish of large plump purple-black beans with mottled speckles, glossy",
+"items": [
+"mext:04069"
+],
+"roll": 0,
+"seed": 56213,
+"prompt": "4a53462c34",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04070",
+"ja": "らいまめ 乾",
+"desc": "dried lima beans: a small dish of large flat white kidney-shaped beans",
+"items": [
+"mext:04070"
+],
+"roll": 0,
+"seed": 82832,
+"prompt": "51cec4be5a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-04071",
 "ja": "りょくとう 乾",
 "desc": "dry mung beans, small glossy olive-green round beans",
@@ -23265,6 +23369,32 @@
 "roll": 0,
 "seed": 25830,
 "prompt": "17afb9c1e8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04072",
+"ja": "りょくとう ゆで",
+"desc": "boiled mung beans: a small bowl of small soft olive-green beans, some skins split",
+"items": [
+"mext:04072"
+],
+"roll": 0,
+"seed": 58588,
+"prompt": "f472d2430a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04073",
+"ja": "レンズまめ 乾",
+"desc": "dried lentils: a small dish of small flat lens-shaped greenish-brown discs",
+"items": [
+"mext:04073"
+],
+"roll": 0,
+"seed": 71050,
+"prompt": "2e8e2a5342",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -23468,6 +23598,45 @@
 "checked": false
 },
 {
+"key": "mext-04091",
+"ja": "湯葉 干し 湯戻し",
+"desc": "rehydrated dried yuba: soft thin wrinkled layered sheets of soy milk skin, translucent pale yellow, in a small dish",
+"items": [
+"mext:04091"
+],
+"roll": 0,
+"seed": 89640,
+"prompt": "cb8db39cb8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04092",
+"ja": "つるあずき ゆで",
+"desc": "boiled rice beans: a small bowl of soft slender reddish-brown beans",
+"items": [
+"mext:04092"
+],
+"roll": 0,
+"seed": 21874,
+"prompt": "db68ecd425",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04093",
+"ja": "らいまめ ゆで",
+"desc": "boiled lima beans: a small bowl of large soft creamy white flat beans",
+"items": [
+"mext:04093"
+],
+"roll": 0,
+"seed": 80676,
+"prompt": "363bdbb34c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-04094",
 "ja": "レンズ豆（ゆで）",
 "desc": "a small bowl of cooked lentils, small flat round brown-green lentils",
@@ -23588,6 +23757,19 @@
 "checked": false
 },
 {
+"key": "mext-04108",
+"ja": "やぶまめ 乾",
+"desc": "dried yabumame, hog peanut: a small dish of small flat mottled brown-black beans",
+"items": [
+"mext:04108"
+],
+"roll": 0,
+"seed": 42802,
+"prompt": "207976dbe4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-04111",
 "ja": "あずき つぶし生あん",
 "desc": "tsubushi nama-an: a small dish of coarse mashed red bean paste with bean skins visible, dull reddish-brown",
@@ -23670,6 +23852,19 @@
 "checked": false
 },
 {
+"key": "mext-05003",
+"ja": "あさ 乾",
+"desc": "dried hemp seeds: a small dish of small round grey-green speckled seeds with shiny shells",
+"items": [
+"mext:05003"
+],
+"roll": 0,
+"seed": 45608,
+"prompt": "1040fdad88",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-05004",
 "ja": "えごま 乾",
 "desc": "egoma perilla seeds, tiny round grey-brown seeds in a small dish",
@@ -23696,6 +23891,32 @@
 "checked": false
 },
 {
+"key": "mext-05006",
+"ja": "かぼちゃ いり 味付け",
+"desc": "roasted seasoned pumpkin seeds: a small dish of flat oval white-shelled seeds, toasted and salted",
+"items": [
+"mext:05006"
+],
+"roll": 0,
+"seed": 34727,
+"prompt": "e9c12199e0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-05007",
+"ja": "かや いり",
+"desc": "roasted kaya nuts: elongated oval nuts with brown shells, one cracked showing a pale yellow kernel",
+"items": [
+"mext:05007"
+],
+"roll": 0,
+"seed": 10161,
+"prompt": "0faf5a7a3f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-05008",
 "ja": "ぎんなん 生",
 "desc": "ginkgo nuts (ginnan), cream oval shells, a few cracked open showing glossy jade-green nuts, a few on a pine needle skewer",
@@ -23706,6 +23927,19 @@
 "roll": 0,
 "seed": 76832,
 "prompt": "c91851f191",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-05010",
+"ja": "日本ぐり 生",
+"desc": "raw Japanese chestnuts: glossy dark brown chestnuts, one peeled showing pale yellow flesh",
+"items": [
+"mext:05010"
+],
+"roll": 0,
+"seed": 38419,
+"prompt": "a47c5636ed",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -23762,6 +23996,45 @@
 "checked": false
 },
 {
+"key": "mext-05015",
+"ja": "けし 乾",
+"desc": "poppy seeds: a small dish of tiny round pale ivory seeds",
+"items": [
+"mext:05015"
+],
+"roll": 0,
+"seed": 6332,
+"prompt": "09fc653ea8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-05016",
+"ja": "ココナッツパウダー",
+"desc": "coconut powder: a small dish of fine soft white dried coconut powder",
+"items": [
+"mext:05016"
+],
+"roll": 0,
+"seed": 61190,
+"prompt": "151a657bf3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-05017",
+"ja": "ごま 乾",
+"desc": "sesame seeds: a small dish of tiny flat teardrop-shaped pale beige seeds, unhulled",
+"items": [
+"mext:05017"
+],
+"roll": 0,
+"seed": 93328,
+"prompt": "cb545ccf28",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-05018",
 "ja": "いりごま",
 "desc": "a small dish of toasted white sesame seeds, small flat oval golden-cream seeds",
@@ -23772,6 +24045,45 @@
 "seed": 28897,
 "prompt": "2e3b674649",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-05019",
+"ja": "ごま むき",
+"desc": "hulled sesame seeds: a small dish of tiny flat teardrop-shaped pure white seeds",
+"items": [
+"mext:05019"
+],
+"roll": 0,
+"seed": 58647,
+"prompt": "50fa385165",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-05020",
+"ja": "しい 生",
+"desc": "raw shii nuts: small pointed acorn-like nuts with dark brown shells, one cracked showing a cream kernel",
+"items": [
+"mext:05020"
+],
+"roll": 0,
+"seed": 21008,
+"prompt": "dd8f4662e7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-05021",
+"ja": "すいか いり 味付け",
+"desc": "roasted seasoned watermelon seeds: a small dish of flat glossy black seeds, salted",
+"items": [
+"mext:05021"
+],
+"roll": 0,
+"seed": 7238,
+"prompt": "bdcf81fae4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -23797,6 +24109,19 @@
 "roll": 0,
 "seed": 6122,
 "prompt": "03008c8256",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-05024",
+"ja": "はす 成熟 乾",
+"desc": "dried lotus seeds: a small dish of hard round ivory seeds, some split showing a groove",
+"items": [
+"mext:05024"
+],
+"roll": 0,
+"seed": 84937,
+"prompt": "ee71516ac7",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -23906,6 +24231,19 @@
 "checked": false
 },
 {
+"key": "mext-05034",
+"ja": "らっかせい 大粒種 乾",
+"desc": "dried large peanuts: a small dish of large raw peanut kernels with pinkish-red papery skins",
+"items": [
+"mext:05034"
+],
+"roll": 0,
+"seed": 72552,
+"prompt": "cb1473e346",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-05035",
 "ja": "ピーナッツ（いり）",
 "desc": "roasted peanuts in their shells, beige wrinkled pods, a few shelled red-skinned peanuts",
@@ -23971,6 +24309,45 @@
 "checked": false
 },
 {
+"key": "mext-05043",
+"ja": "はす 成熟 ゆで",
+"desc": "boiled lotus seeds: a small dish of soft round creamy white seeds",
+"items": [
+"mext:05043"
+],
+"roll": 0,
+"seed": 46924,
+"prompt": "a215164a76",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-05044",
+"ja": "らっかせい 小粒種 乾",
+"desc": "dried small peanuts: a small dish of small raw peanut kernels with pinkish-red papery skins",
+"items": [
+"mext:05044"
+],
+"roll": 0,
+"seed": 26799,
+"prompt": "b39f3f4a7c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-05045",
+"ja": "らっかせい 小粒種 いり",
+"desc": "roasted peanuts in the shell: beige ridged peanut shells, one cracked open showing reddish-skinned kernels",
+"items": [
+"mext:05045"
+],
+"roll": 0,
+"seed": 65337,
+"prompt": "d6a4aa3e53",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-05046",
 "ja": "チアシード",
 "desc": "a small dish of chia seeds, tiny oval seeds speckled grey, black and white",
@@ -23980,6 +24357,32 @@
 "roll": 0,
 "seed": 90883,
 "prompt": "ddd2f1a605",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-05047",
+"ja": "とうびし 生",
+"desc": "raw water caltrop: dark nuts shaped like a bull's head with two curved horns, one cut showing white starchy flesh",
+"items": [
+"mext:05047"
+],
+"roll": 0,
+"seed": 50165,
+"prompt": "07555cc103",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-05048",
+"ja": "とうびし ゆで",
+"desc": "boiled water caltrop: black two-horned shells, one split open showing soft white starchy flesh like chestnut",
+"items": [
+"mext:05048"
+],
+"roll": 0,
+"seed": 52228,
+"prompt": "58d9b083ce",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -26031,6 +26434,19 @@
 "roll": 0,
 "seed": 72990,
 "prompt": "55605d07dc",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06327",
+"ja": "アスパラガス 油いため",
+"desc": "stir-fried asparagus: green asparagus spears glossy with oil and lightly browned, on a plate",
+"items": [
+"mext:06327"
+],
+"roll": 0,
+"seed": 24932,
+"prompt": "cfc5e7be1b",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
