@@ -86,6 +86,17 @@ test('the summary folds its details: every meal’s ＋ on screen at 393 × 852;
   await expect(more.locator('[data-nutrient=p]')).toBeVisible();
 });
 
+// A keystroke draws 24 rows (its frame's cost is the rows', not the search's), the rest once the list's end nears.
+test('search: 24 rows drawn first, the rest as the list’s end comes near', async ({ page }) => {
+  await openFood(page);
+  await sheet(page).locator('[data-add=d]').click();
+  await sheet(page).locator('[data-food-q]').fill('さ');
+  const rows = sheet(page).locator('[data-food-results] > li');
+  await expect(rows).toHaveCount(24, { timeout: 15_000 });
+  await rows.last().scrollIntoViewIfNeeded();
+  await expect.poll(() => rows.count()).toBeGreaterThan(24);
+});
+
 // WebKit's text field is ~20 characters wide by itself: in an auto grid track it pushed the search box and the rows past
 // the sheet's right edge on an iPhone 15 (the sheet clips them). Each level is checked: nothing wider than the sheet.
 test('the day, the search and the amount all fit the sheet’s width', async ({ page }) => {

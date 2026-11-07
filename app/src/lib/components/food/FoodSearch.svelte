@@ -93,6 +93,22 @@
     void more;
     return db && q.trim() ? uniqueItems(searchFoods(db, q, 40)) : [];
   });
+  /** The rows drawn: the first FIRST of a new query (a keystroke's frame, about six over the keyboard), the rest once the
+   *  list's end nears the screen (`more`'s sentinel). */
+  const FIRST = 24;
+  let drawn = $state(FIRST);
+  $effect.pre(() => {
+    void results;
+    drawn = FIRST;
+  });
+  /** The list's end within 400 px of the screen: every row. */
+  function rest(node: HTMLElement) {
+    const io = new IntersectionObserver((es) => {
+      if (es.some((e) => e.isIntersecting)) drawn = Infinity;
+    }, { root: node.closest('[data-food-sheet]'), rootMargin: '400px 0px' }); // the sheet scrolls (the margin is its)
+    io.observe(node);
+    return { destroy: () => io.disconnect() };
+  }
   /** The recipes and custom foods whose names hold every word typed (all of them with nothing typed). */
   const words = $derived(q.trim().split(/[\s　]+/).map(searchKey).filter(Boolean));
   const hits = (n: string) => words.every((w) => searchKey(n).includes(w));
@@ -128,6 +144,7 @@
         </button>{#if oncustomquick}{@render qa(c.n, () => oncustomquick(c))}{/if}</li>
       {/each}
     </ul>
+    {#if results.length > drawn}<div class="more" use:rest aria-hidden="true"></div>{/if}
   {/if}
 {/snippet}
 
@@ -153,6 +170,7 @@
         </button></li>
       {/each}
     </ul>
+    {#if results.length > drawn}<div class="more" use:rest aria-hidden="true"></div>{/if}
   {/if}
 {/snippet}
 
@@ -264,7 +282,7 @@
     {/if}
   {:else}
     <ul class="list" data-food-results>
-      {#each results as it (it.id)}
+      {#each results.slice(0, drawn) as it (it.id)}
         {@const p = defaultPortion(it)}
         {@const v = verifyOf(db, it.id)}
         {@const gl = glossOf(it, it.name)}
@@ -280,6 +298,7 @@
         </button>{#if onquick}{@render qa(it.name, () => onquick(it))}{/if}</li>
       {/each}
     </ul>
+    {#if results.length > drawn}<div class="more" use:rest aria-hidden="true"></div>{/if}
   {/if}
 {/snippet}
 
@@ -381,5 +400,6 @@
   .un:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
   .none { display: grid; gap: 8px; padding: 12px 14px; }
   .none .note { margin: 0 2px; }
+  .more { height: 1px; }
   .note { margin: 4px 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
 </style>
