@@ -464,7 +464,9 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   tierOf, each curated pop level worth 0.6 of a tier): the name exact, or its head (up to a bracket or space: 水 finds
   水（ミネラルウォーター）, ごはん finds ごはん（精白米）); then its prefix, level with an alias exact (a hair under it: たまご
   finds 卵 first, 鶏むね finds 鶏むね肉 before サラダチキン, whose alias it is); a substring of the name; an alias's prefix,
-  a substring of one; any other field. A secondary dataset's items rank 1.5 tiers lower, a packaged product's (Open Food
+  a substring of one; any other field. A rare or lab form the data flags pop −1 (a cut vegetable's washes, 素揚げ, a
+  meat's 脂身 alone, a story-named school lunch) ranks 2.5 tiers lower (`RARE_FORM`: under the name substrings, so キャベツ's
+  top ten holds no wash). A secondary dataset's items rank 1.5 tiers lower, a packaged product's (Open Food
   Facts, JBFD) 2. `food/load.test.ts`'s golden queries (55 common ones: ご飯 · みそ汁 · 卵 · 納豆 · 鶏むね · サラダチキン ·
   プロテイン · おにぎり · ラーメン · うどん · 水 …) pin the first result, and no product above a generic food in the top
   three. A keystroke's search over the 20k items takes ~0.7 ms in Playwright's WebKit on a Mac (expect 2–3× on an iPhone).
