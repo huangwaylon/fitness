@@ -141,6 +141,8 @@ const LEAN = 0.42;
 const REST_MS = 2000, REST_FPS = 12, REST_SHADOW_MS = 250;
 /** A fling faster than this (px/ms) rushes (Island3['rushing']): a touch on it only stops it, as iOS's scroll. */
 const RUSH_V = 0.1;
+/** Up to this many objects with a new material are compiled alone (engine hold), more the whole scene. */
+const FRESH_FEW = 4;
 /** The screen's samples (columns × rows, below the horizon) where the camera's view is looked for water. */
 const WATER_COLS = 12, WATER_ROWS = 20;
 const now = () => performance.now();
@@ -856,13 +858,17 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     let any = fresh;
     fresh = false;
     if (any) {
-      any = false;
+      const fresh: Object3D[] = [];
       scene.traverseVisible((o) => {
-        if (!any) for (const m of materialsOf(o)) if (!renderer.properties.has(m)) any = true;
+        for (const m of materialsOf(o)) if (!renderer.properties.has(m)) return void fresh.push(o);
       });
+      any = fresh.length > 0;
       if (any) {
         compiles++;
-        for (const m of renderer.compile(scene, camera)) if (unlinked(m)) linking.add(m);
+        // (a few: theirs alone, a flourish's or a leaf's new material, most on a program already linked; more, a model
+        // in: the whole scene's, what isn't in view yet too)
+        for (const at of fresh.length <= FRESH_FEW ? fresh : [scene])
+          for (const m of renderer.compile(at, camera, scene)) if (unlinked(m)) linking.add(m);
       }
     }
     for (const m of linking) if (!unlinked(m)) linking.delete(m);
