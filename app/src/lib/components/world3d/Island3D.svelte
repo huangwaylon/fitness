@@ -943,7 +943,7 @@
     }
     eng = e;
     // (the launch timed: the page's first mount)
-    const watch = watchBoot(() => ({ progs: e.stats().programs, fieldsMs: Math.round(fieldsMs), fields }));
+    const watch = watchBoot(() => ({ progs: e.stats().programs, fieldsMs: Math.round(fieldsMs), fields }), () => e.isPaused());
     boot = watch?.clock ?? null;
     boot?.mount(mountAt);
     if (boot) e.onDrawn(boot.frame);
