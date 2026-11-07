@@ -60,6 +60,8 @@
   let game = $state.raw<QuizGame | null>(null);
   /** ✕ (or a backdrop tap, Esc) mid-game: 「ここで やめる？」; ✕ with others in my lobby: 「みんなの へやが なくなります」. */
   let asking = $state<false | 'quit' | 'close'>(false);
+  /** A mic game's さんか asked first (role/MicJoin.svelte: joining is consenting): its game, and whether the mic is on. */
+  let micJoin = $state<{ g: string; on: boolean } | null>(null);
   const v = $derived(game?.view ?? null);
   const MID: readonly QuizPhase[] = ['countdown', 'lead', 'play', 'answer', 'reveal'];
   const mid = $derived(!!v && MID.includes(v.phase));
@@ -145,10 +147,8 @@
         });
         g = it;
         untrack(() => {
-          if (joining) {
-            it.join(joining);
-            pages = inviteStack();
-          } else if (!it.view.invite) it.open(lastLv(), { timer: lastTimer(), same: sameDefault() });
+          if (joining) joinIt(joining, it);
+          else if (!it.view.invite) it.open(lastLv(), { timer: lastTimer(), same: sameDefault() });
         });
         game = it;
         // (tests: `deck(ids, help?)` starts my lobby kept alone on these items, as おさらい does: a dialogue before its
@@ -174,6 +174,7 @@
       if (hooksOn()) delete (window as unknown as { __kiki?: unknown }).__kiki;
       game = null;
       asking = false;
+      micJoin = null;
       pages = [];
       story = null;
       welcome = false;
@@ -279,15 +280,25 @@
     const iv = v.invite;
     if (v.phase === 'idle' && iv) {
       const named = iv.gm === 'taikai' ? 'taikai' : modeOfGame(iv.gm)?.id;
-      const what = iv.blocked ? t('kiki.update.why') : named ? t(`kiki.mode.${named}`) : iv.lesson && iv.u ? `${unitName(iv.u)} · ${t(`kiki.lesson.${iv.lesson}`)}`
+      const what = iv.blocked ? t('kiki.update.why') : named ? `${t(`kiki.mode.${named}`)}${micMode(iv.gm) ? ` · 🎤 ${t('kiki.micGame')}` : ''}` : iv.lesson && iv.u ? `${unitName(iv.u)} · ${t(`kiki.lesson.${iv.lesson}`)}`
         : iv.ladder ? t('kiki.mode.ladder') : iv.lv === 5 ? t('kiki.mode.announce') : `${t('kiki.mode.quiz')} · ${levelMark(iv.lv)} ${t(`kiki.lv.${iv.lv}`)}`;
       return { g: iv.g, name: hostName(iv.host), what: iv.started ? `${what} · ${t('kiki.started')}` : what, blocked: !!iv.blocked };
     }
     const live = hosting && v.local ? liveInvite() : null;
     return live && !been.has(live.g) ? { g: live.g, name: hostName(live.host), what: '', blocked: false } : null;
   });
-  function joinIt(g: string) {
-    game?.join(g);
+  /** A game's mode when it uses the mic (ロールプレイ: its invitee asked first). */
+  const micMode = (gm: string) => {
+    const m = modeOfGame(gm);
+    return m?.requires === 'mic' ? m : null;
+  };
+  /** さんか (the hub's card, the banner's): a mic game's asked first (MicJoin), any other joined. */
+  function joinIt(g: string, it = game) {
+    const gm = it?.view.invite?.g === g ? it.view.invite.gm : heardQuiz().map(gameIn).find((m) => m?.op === 'open' && m.g === g)?.gm;
+    const mic = gm ? micMode(gm) : null;
+    if (mic && !micJoin) return void (micJoin = { g, on: mic.gate?.() ?? true });
+    micJoin = null;
+    it?.join(g);
     pages = inviteStack();
   }
   /** A bedtime chapter played at once (StoryFrame; from an invite's idle hub: my own lobby first, for after it). */
@@ -418,6 +429,11 @@
     {/if}
   </div>
 
+  {#if micJoin}
+    {#await import('./role/MicJoin.svelte') then { default: MicJoin }}
+      <MicJoin on={micJoin.on} onjoin={() => micJoin && joinIt(micJoin.g)} oncancel={() => (micJoin = null)} />
+    {/await}
+  {/if}
   {#if asking}
     <div class="veil" role="alertdialog" aria-modal="true" aria-labelledby="kk-quit" data-kiki-quit={asking}>
       <div class="ask card">
