@@ -3,7 +3,7 @@
 // the row's `r` stays empty). Its round and results are its own pages (components/kikimimi/mane/views.ts), its strings
 // with them.
 import type { Item } from '../../bank.ts';
-import { clipDur } from '../../clips.ts';
+import { clipDur, itemMs } from '../../clips.ts';
 import { levelItems, type Unit } from '../../pool.ts';
 import type { Lane, Phone } from '../../round/registry.ts';
 import { quizOpts, type QuizOpts } from '../quiz/def.ts';
@@ -11,13 +11,9 @@ import { maneDeal, maneGame, maneLevel } from './def.ts';
 
 const levelOf = (o: readonly number[]) => maneLevel(quizOpts.decode(o)?.lv ?? 1);
 const chunks = ({ o }: { o: readonly number[] }): Unit[] => [levelOf(o)];
-const playMs = (id: string): number | undefined => {
-  const s = clipDur(id);
-  return s === undefined ? undefined : Math.round(s * 1000);
-};
 const source = (phone: Phone) => ({
   items: (seed: number, o: QuizOpts): readonly Item[] => phone.items({ gm: 'mane', seed, o: quizOpts.encode(o) }),
-  playMs
+  playMs: (id: string) => itemMs({ id })
 });
 
 export const lane: Lane<QuizOpts> = {

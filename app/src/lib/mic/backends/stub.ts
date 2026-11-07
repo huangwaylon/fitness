@@ -3,7 +3,7 @@
 // (whisper's candidate scores; a Miss such as 'capped'). Inert without it (recogniser() picks it only then). A take still
 // opens the mic and ends as any other (the fake device's clip, the VAD, stop, cancel), so the flow is the real one;
 // whatever the capture got, the script answers, but a cancel is `aborted`. Nothing is fetched, no Worker runs.
-import { localKV } from '#lib/sync/storage.ts';
+import { stubNext } from '../pick.ts';
 import { isMiss, type Capture, type Miss, type Outcome, type Recogniser } from '../stt.ts';
 
 type Line = string | { text?: string; cand?: number[]; miss?: Miss };
@@ -11,10 +11,8 @@ type Line = string | { text?: string; cand?: number[]; miss?: Miss };
 /** The script's next entry as an outcome (the list rotated), or a miss when there's none. */
 function next(): Outcome {
   try {
-    const kv = localKV(), list = JSON.parse(kv?.getItem('e2e.stt') ?? 'null') as Line[] | null;
-    if (!Array.isArray(list) || !list.length) return { miss: 'other', be: 'stub' };
-    kv?.setItem('e2e.stt', JSON.stringify([...list.slice(1), list[0]]));
-    const l = list[0];
+    const l = stubNext() as Line | undefined;
+    if (l === undefined) return { miss: 'other', be: 'stub' };
     if (typeof l === 'string') return { text: l, ms: 1, be: 'stub' };
     if (l?.miss) return { miss: l.miss, be: 'stub' };
     return { text: String(l?.text ?? ''), ...(Array.isArray(l?.cand) ? { cand: l.cand.map(Number) } : {}), ms: 1, be: 'stub' };

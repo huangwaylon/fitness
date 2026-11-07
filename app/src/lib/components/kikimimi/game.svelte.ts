@@ -58,9 +58,6 @@ const wants = (m: RoundIn | null): Unit[] | Promise<unknown> => (m?.op === 'open
 /** The tournament's wager round now (its last: a bet, then the choice). */
 export const isWager = (v: Pick<QuizView, 'gm' | 'i' | 'n'>): boolean => v.gm === 'taikai' && v.n > 1 && v.i === v.n - 1;
 
-/** The games whose lobby the quiz's settings drive (QuizRounds.configure); a later game's goes back to the quiz first. */
-const QUIZ_LOBBY: ReadonlySet<GameId> = new Set(['quiz', 'ladder', 'lesson', 'taikai', 'check']);
-
 /** The longest between wake-ups (the host's beacon is every 3 s: round/session.ts WINDOWS.beacon). */
 const WAKE = 3000;
 
@@ -240,7 +237,9 @@ export class QuizGame {
    *  game for a level, こたえる じかん, おなじへや or たいせん, and goes back to the quiz for a quiz-family pick (`ladder`). */
   configure(o: { lv?: Level; same?: boolean; vs?: boolean; ladder?: boolean; timer?: QuizTimer }): void {
     const own = () => {
-      const v = this.view, lane = v?.gm && !QUIZ_LOBBY.has(v.gm) && o.ladder === undefined ? LANES.of(v.gm) : undefined;
+      // (the quiz's settings drive the sheet's games' lobbies, QuizRounds.configure; a later game's goes back to the quiz
+      // for a quiz-family pick)
+      const v = this.view, lane = LANES.isLater(v?.gm) && o.ladder === undefined ? LANES.of(v?.gm) : undefined;
       return lane && { gm: lane.id, o: laneOpts(lane, { lv: o.lv ?? v.lv, timer: o.timer ?? v.timer, level: this.#level() }) };
     };
     this.#queue.then(() => {
@@ -250,7 +249,7 @@ export class QuizGame {
       this.#act((s, now) => {
         const g = own(), v = s.view(now);
         if (g) return s.round.configure({ o: g.o, same: o.same, vs: o.vs }, now);
-        const back = v.gm && !QUIZ_LOBBY.has(v.gm) ? s.round.configure({ gm: 'quiz', o: quizOpts.encode({ lv: o.lv ?? 1, timer: o.timer ?? v.timer }) }, now) : [];
+        const back = LANES.isLater(v.gm) ? s.round.configure({ gm: 'quiz', o: quizOpts.encode({ lv: o.lv ?? 1, timer: o.timer ?? v.timer }) }, now) : [];
         return [...back, ...s.configure(o, now)];
       })
     );

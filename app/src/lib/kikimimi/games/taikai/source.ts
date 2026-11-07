@@ -2,7 +2,7 @@
 // index: no chunk needed), the pool the fillers come from (the levels this phone offers), the levels a deck's ids need
 // loaded, and the game's source (def.ts TaikaiSource: the rounds from a seed and ids once their levels are in, the cv).
 // The UI's wiring (the decks, the registry) goes through here.
-import { itemDur } from '../../clips.ts';
+import { itemMs } from '../../clips.ts';
 import type { Item, Level } from '../../bank.ts';
 import { ENTRIES, INDEX, itemOf } from '../../pool.ts';
 import type { Who } from '../../../types.ts';
@@ -44,10 +44,7 @@ export const taikaiSource: TaikaiSource = {
     let rs = DEALT.get(key);
     if (!rs) {
       const items = taikaiDeck(seed, ids);
-      rs = taikaiRounds(items, (it) => {
-        const s = itemDur(it);
-        return s === undefined ? undefined : Math.round(s * 1000);
-      });
+      rs = taikaiRounds(items, itemMs);
       if (items.length < ids.length) return rs; // (a level not in yet: dealt again once it is)
       DEALT.set(key, rs);
       if (DEALT.size > 4) DEALT.delete(DEALT.keys().next().value!);

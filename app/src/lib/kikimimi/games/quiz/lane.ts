@@ -2,7 +2,7 @@
 // whose deck overlaps my last games least, and a game I start alone its own deck (the items not heard lately first).
 // Here too the quiz family's source over the phone's decks (スピード はしご's and a lesson's lanes share it).
 import { deck } from '../../deck.ts';
-import { itemDur } from '../../clips.ts';
+import { itemMs } from '../../clips.ts';
 import type { Item, Level } from '../../bank.ts';
 import type { Unit } from '../../pool.ts';
 import { agesOf, freshSeed, seedWith } from '../../recent.ts';
@@ -16,10 +16,7 @@ const ROUNDS = new WeakMap<readonly Item[], readonly QuizRound[]>();
 function roundsOf(items: readonly Item[]): readonly QuizRound[] {
   let rs = ROUNDS.get(items);
   if (!rs) {
-    rs = items.map((it) => {
-      const s = itemDur(it);
-      return roundOf(it, s === undefined ? undefined : Math.round(s * 1000));
-    });
+    rs = items.map((it) => roundOf(it, itemMs(it)));
     ROUNDS.set(items, rs);
   }
   return rs;

@@ -12,9 +12,9 @@ import { checkListen, listenClipItems, listenClipIds, wxSentences, type ListenIt
 import { RoundSession, WINDOWS } from '../../round/session.ts';
 import { registry } from '../../round/registry.ts';
 import { playIn, playOut, type PlayIn, type RoundOut } from '../../round/wire.ts';
-import { filesOf, rawOf } from '../listened.ts';
+import { filesOf, listenRecord, rawOf } from '../listened.ts';
 import { alertsOf, newsWxOf, skyOf, tailKeys, umbrella, wxBytes, wxOfBytes, type NewsWx } from './weather.ts';
-import { NEWS, bulletinOf, dayOf, newsDeal, newsGame, newsOpts, newsRecord, newsRounds, shownOf } from './def.ts';
+import { NEWS, bulletinOf, dayOf, newsDeal, newsGame, newsOpts, newsRounds, shownOf } from './def.ts';
 
 const FILES = ['news-a', 'news-b'];
 const parts = (): ListenPart[] => FILES.map((u) => listenOf(u)!);
@@ -163,7 +163,7 @@ describe('しずえの ニュース: rounds and grading', () => {
     expect([NEWS.valid(r, r.answer), NEWS.valid(r, hidden), NEWS.valid(r, [1])]).toEqual([true, false, false]);
     expect([NEWS.ok(r, r.answer), NEWS.ok(r, r.shown.find((k) => k !== r.answer)!)]).toEqual([true, false]);
     const wrong = rs[1].shown.find((k) => k !== rs[1].answer)!;
-    expect(newsRecord(rs, [r.answer, wrong, null], [true, true, true], [1, 0, 0], true)).toEqual([[r.id, 1, r.answer, 1], [rs[1].id, 0, wrong, 0], [rs[2].id, 0, -1, 0]]);
+    expect(listenRecord(NEWS, rs, [r.answer, wrong, null], [true, true, true], [1, 0, 0], true)).toEqual([[r.id, 1, r.answer, 1], [rs[1].id, 0, wrong, 0], [rs[2].id, 0, -1, 0]]);
     expect(rawOf({ k: r.answer })).toBe(r.answer);
   });
 });

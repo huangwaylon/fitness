@@ -1,7 +1,7 @@
 // みみ チェック over this build's content (pool.ts): every voiced item of the places' levels (not アナウンス's), numbered
 // as the tournament's are (taikai/source.ts TAIKAI_IDS: the open's `ids`), each with the skill it samples; and the
 // game's source (def.ts CheckSource: the rounds of the ids dealt, the next id over the loaded levels).
-import { itemDur } from '../../clips.ts';
+import { itemMs } from '../../clips.ts';
 import type { Entry, Feature, Level } from '../../bank.ts';
 import { ENTRIES, loaded } from '../../pool.ts';
 import { roundOf, type QuizRound } from '../quiz/kinds.ts';
@@ -49,10 +49,7 @@ export const checkSource: CheckSource = {
     let rs = DEALT.get(key);
     if (!rs) {
       const items = taikaiDeck(seed, ids);
-      rs = items.map((it) => {
-        const s = itemDur(it);
-        return roundOf(it, s === undefined ? undefined : Math.round(s * 1000));
-      });
+      rs = items.map((it) => roundOf(it, itemMs(it)));
       if (items.length < ids.length) return rs; // (a level not in yet)
       DEALT.set(key, rs);
       if (DEALT.size > 4) DEALT.delete(DEALT.keys().next().value!);

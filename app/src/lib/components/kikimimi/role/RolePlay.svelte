@@ -14,6 +14,7 @@
   import { SCENES } from '#lib/kikimimi/games/role/scenes.ts';
   import { rawOf } from '#lib/kikimimi/games/listened.ts';
   import type { Miss, Recogniser } from '#lib/mic/stt.ts';
+  import { sttRound } from '../mic/sttRound.ts';
   import { currentReport } from '../progress.svelte.ts';
   import { easyFor, heardKeys, keepSaid, partsOf, roleHere, roleOfWho } from './board.ts';
   import RoleMic from './RoleMic.svelte';
@@ -50,18 +51,13 @@
 
   /** The phone's recogniser: looking, ready, or none can run here. */
   let rec = $state<Recogniser | 'none' | null>(null);
-  /** The recogniser's module (lazy: the mic core's chunk), its release() when the game goes (whisper's Worker ends). */
-  const stt = import('#lib/mic/stt.ts');
+  const stt = sttRound();
   onMount(() => {
     let gone = false;
-    void stt.then(async ({ recogniser }) => {
-      const r = await recogniser();
-      const ok = !!r && (await r.ready());
-      if (!gone) rec = ok ? r : 'none';
-    }, () => !gone && (rec = 'none'));
+    void stt.ready().then((r) => !gone && (rec = r ?? 'none'));
     return () => (gone = true);
   });
-  onDestroy(() => void stt.then(({ release }) => release(), () => {}));
+  onDestroy(stt.release);
 
   let mic = $state<'idle' | 'listening' | 'checking'>('idle');
   /** This turn's takes: the phrases said so far (they add up), the last thing heard, or why nothing came. */

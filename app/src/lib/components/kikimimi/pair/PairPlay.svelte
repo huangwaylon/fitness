@@ -13,6 +13,7 @@
   import { SAID, UNSURE, sayOf } from '#lib/kikimimi/games/pair/def.ts';
   import type { PairCard } from '#lib/kikimimi/games/pair/pairs.ts';
   import type { Outcome, Recogniser } from '#lib/mic/stt.ts';
+  import { sttRound } from '../mic/sttRound.ts';
   import { heardOf, mySay, wordItem, type Heard } from './board.ts';
   import { isCoop } from '../listenView.ts';
   import SayButton from './SayButton.svelte';
@@ -38,19 +39,19 @@
   const key = $derived(`${v.g}:${v.i}`);
 
   /** The recogniser (solo only), once ready; `readied`: the asking is over (null then: none on this phone). */
-  const stt = import('#lib/mic/stt.ts');
+  const stt = sttRound();
   let r = $state.raw<Recogniser | null>(null);
   let readied = $state(false);
   let gone = false;
   onMount(async () => {
     if (isCoop(v)) return void (readied = true);
-    const x = await (await stt).recogniser();
-    if (x && (await x.ready()) && !gone) r = x;
+    const x = await stt.ready();
+    if (x && !gone) r = x;
     readied = true;
   });
   onDestroy(() => {
     gone = true;
-    void stt.then((m) => m.release());
+    stt.release();
   });
 
   /** This card's tries and what the villager made of the last one (this page's memory only). */

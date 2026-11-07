@@ -8,6 +8,7 @@ import { asset } from '$app/paths';
 import sttWorker from './whisper.worker.ts?worker&url';
 import { STT_CACHE } from '../../../service-worker/caches.ts';
 import { STT_ID, ensureStt, sttCached } from '../models.ts';
+import { stubScript } from '../pick.ts';
 import type { Device, WIn, WOut } from './whisper.worker.ts';
 import type { Capture, Recogniser } from '../stt.ts';
 
@@ -15,13 +16,10 @@ export type { Device };
 
 const root = (): string => new URL(asset('stt/' as Parameters<typeof asset>[0]), location.href).href;
 
+/** The tests' stub: what every take hears (its script's first line), else null. */
 function stub(): string | null {
-  try {
-    const list = JSON.parse(localStorage.getItem('e2e.stt') ?? 'null') as unknown;
-    return Array.isArray(list) && list.length ? String(list[0]) : null;
-  } catch {
-    return null;
-  }
+  const list = stubScript();
+  return list ? String(list[0]) : null;
 }
 
 /** Whether the model can be had: the site serves this build's files (`/stt/manifest.json`), or they're all cached. */

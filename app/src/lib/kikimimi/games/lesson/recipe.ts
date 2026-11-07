@@ -8,7 +8,7 @@
 import type { ListenRow } from '../../../contract/listen.ts';
 import type { Item } from '../../bank.ts';
 import { PLACES } from '../../catalog.ts';
-import { itemDur } from '../../clips.ts';
+import { itemMs } from '../../clips.ts';
 import { lessonDeck, type Lesson, type Tier, type UnitChunk } from '../../lesson.ts';
 import type { ListenEntry, ListenPart } from '../../listen.ts';
 import { LESSON_QS, RECIPE2, type Recipe2Lesson } from '../../stages.ts';
@@ -17,7 +17,7 @@ import { points } from '../../score.ts';
 import type { AnswerValue, Graded, Round, RoundDeck, RoundWindows } from '../../round/types.ts';
 import { QUIZ_MAX_S, QUIZ_QS } from '../../../contract/live-protocol.ts';
 import { PLAY_UNKNOWN, QUIZ_KINDS, roundOf } from '../quiz/kinds.ts';
-import { rawOf, type ListenOpts, type ListenRules } from '../listened.ts';
+import { EARS, placeOf, rawOf, type ListenOpts, type ListenRules } from '../listened.ts';
 import { TILE, tileDeal } from '../tile/def.ts';
 import { CALL, callDeal } from '../call/def.ts';
 import { TACHI, tachiDeal } from '../tachi/def.ts';
@@ -66,18 +66,12 @@ export function recipeDeck(c: UnitChunk, lesson: Lesson, seed: number, tier: Tie
  *  its place's level, and that place's ear a step down for easy, up for hard (within the places' ears, 0-3: はまべ has
  *  no easier, やま no harder). */
 export function listenAt(lv: number, tier: Tier | undefined, timer: QuizTimer): ListenOpts {
-  const at = Math.max(0, PLACES.findIndex((p) => p.lvs.includes(lv)));
-  return { lv: PLACES[at].lvs[0] as ListenOpts['lv'], timer, ear: Math.max(0, Math.min(3, at + (tier === 'easy' ? -1 : tier === 'hard' ? 1 : 0))) };
+  const at = Math.max(0, placeOf(lv));
+  return { lv: PLACES[at].lvs[0] as ListenOpts['lv'], timer, ear: Math.max(0, Math.min(EARS - 1, at + (tier === 'easy' ? -1 : tier === 'hard' ? 1 : 0))) };
 }
 
-/** An item's clip length as played (ms; unknown: undefined): the quiz's (games/quiz/lane.ts). */
-const playMs = (it: Item): number | undefined => {
-  const s = itemDur(it);
-  return s === undefined ? undefined : Math.round(s * 1000);
-};
-
 /** A deck's rounds at a tier: a quiz item's the quiz's (games/quiz/kinds.ts roundOf), a card's its game's at that tier. */
-export function lessonRounds(items: readonly Item[], seed: number, tier: Tier | undefined, timer: QuizTimer, ms: (it: Item) => number | undefined = playMs): Round[] {
+export function lessonRounds(items: readonly Item[], seed: number, tier: Tier | undefined, timer: QuizTimer, ms: (it: Item) => number | undefined = itemMs): Round[] {
   return items.map((it) => {
     const k = cardKind(it);
     return k ? RULES[k].rounds([it], seed, listenAt(it.lv, tier, timer), ms)[0] : roundOf(it, ms(it));

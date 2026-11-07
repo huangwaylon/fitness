@@ -5,6 +5,7 @@
 // memory until its step ends.
 import { applySession } from '#lib/sound/engine.ts';
 import { postWav } from '../backends/relay.ts';
+import { stubNext } from '../pick.ts';
 import { webkitOnce as webkitUtterance } from '../backends/webkit.ts';
 import { dbfs, inputClass, onset, silenceAfterSpeech, type Inp, type SttErr } from './steps.ts';
 
@@ -225,22 +226,12 @@ export async function builtinMic(): Promise<string | undefined> {
 
 export type Heard = { text: string; ms: number; audS: number } | { err: SttErr };
 
-function stubbed(): string | null {
-  try {
-    const list = JSON.parse(localStorage.getItem('e2e.stt') ?? 'null') as string[] | null;
-    if (!Array.isArray(list) || !list.length) return null;
-    localStorage.setItem('e2e.stt', JSON.stringify([...list.slice(1), list[0]]));
-    return String(list[0]);
-  } catch {
-    return null;
-  }
-}
 
 /** One utterance through Safari's recogniser (backends/webkit.ts): its text, ms from the speech's end to the result,
  *  the speech's length; or its error code. `withCapture`: our own capture open meanwhile (do both work at once?). */
 export async function webkitOnce(withCapture: boolean): Promise<Heard> {
-  const stub = stubbed();
-  if (stub !== null) return { text: stub, ms: 1, audS: 1 };
+  const stub = stubNext();
+  if (stub !== undefined) return { text: String(stub), ms: 1, audS: 1 };
   if (!('webkitSpeechRecognition' in window)) return { err: 'other' };
   const cap = withCapture ? await openRec({ aec: true }).catch(() => null) : null;
   try {

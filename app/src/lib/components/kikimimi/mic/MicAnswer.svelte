@@ -12,6 +12,7 @@
   import { audioCtx } from '#lib/sound/sound.svelte.ts';
   import { choose } from '#lib/mic/match.ts';
   import type { Miss, Recogniser, Take } from '#lib/mic/stt.ts';
+  import { sttRound } from './sttRound.ts';
 
   let { voice, choices, open, reveal, onpick }: {
     /** This round is a reply round (else nothing shows). */
@@ -24,7 +25,7 @@
   } = $props();
 
   /** The recogniser's module, imported (not bundled here): the mic core under it stays its own chunk (load-budget). */
-  const stt = import('#lib/mic/stt.ts');
+  const stt = sttRound();
   /** idle, a take under way, its speech being recognised, matched (answered), unclear (−1), or nothing heard. */
   type St = 'idle' | 'listening' | 'hearing' | 'matched' | 'unsure' | 'missed';
   let r = $state.raw<Recogniser | null>(null);
@@ -41,14 +42,14 @@
   const live = $derived(st === 'listening' || st === 'hearing');
 
   onMount(async () => {
-    const m = await stt, x = await m.recogniser();
-    toLevel = m.level01;
-    if (x && (await x.ready()) && !gone) r = x;
+    void stt.stt.then((m) => (toLevel = m.level01), () => {});
+    const x = await stt.ready();
+    if (x && !gone) r = x;
   });
   onDestroy(() => {
     gone = true;
     take?.cancel();
-    void stt.then((m) => m.release());
+    stt.release();
   });
 
   /** The take under way, dropped (what's been heard kept). */

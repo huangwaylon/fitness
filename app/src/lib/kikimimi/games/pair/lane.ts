@@ -2,7 +2,7 @@
 // solo or あてっこ (co-op: both phones deal the same deck, its content version the chunk's); my row is my minutes only (no
 // answers: `record` gives none). Its round and results are its own pages (components/kikimimi/pair/views.ts), its
 // strings with them.
-import { itemDur } from '../../clips.ts';
+import { itemMs } from '../../clips.ts';
 import { partItems, type Unit } from '../../pool.ts';
 import type { Lane, Phone } from '../../round/registry.ts';
 import { quizOpts, type QuizOpts } from '../quiz/def.ts';
@@ -10,13 +10,9 @@ import { pairDeal, pairGame } from './def.ts';
 import { PAIR_UNIT, type PairCard } from './pairs.ts';
 
 const UNIT = PAIR_UNIT as Unit;
-const playMs = (c: PairCard): number | undefined => {
-  const s = itemDur(c);
-  return s === undefined ? undefined : Math.round(s * 1000);
-};
 const source = (phone: Phone) => ({
   cards: (seed: number, o: QuizOpts) => phone.items({ gm: 'pair', seed, o: quizOpts.encode(o) }) as PairCard[],
-  playMs,
+  playMs: itemMs,
   cv: () => phone.cv('pair', UNIT)
 });
 
