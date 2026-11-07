@@ -110,6 +110,15 @@ test('the mic opt-in: off by default, on after the permission, a check that stop
   await expect(optin.locator('[data-mic-heard]')).toHaveAttribute('data-mic-heard', 'no');
   expect(await live(page)).toBe(0);
 
+  // the four choices on one row, each one line (このiPhone was two)
+  const tops = await chips.locator('[data-be]').evaluateAll((bs) => bs.map((b) => {
+    const r = document.createRange();
+    r.selectNodeContents(b);
+    return [b.getBoundingClientRect().top, new Set([...r.getClientRects()].map((x) => Math.round(x.top))).size];
+  }));
+  expect(new Set(tops.map(([y]) => Math.round(y))).size).toBe(1);
+  expect(tops.map(([, lines]) => lines)).toEqual([1, 1, 1, 1]);
+
   // the other choices: each one's disclosure; the relay needs a paired phone (this one isn't)
   await chips.locator('[data-be="webkit"]').click();
   await expect(optin.locator('[data-mic-disclose]')).toContainText('Appleに送られる');

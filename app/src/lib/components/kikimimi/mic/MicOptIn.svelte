@@ -152,7 +152,7 @@
   .res { font: 700 var(--fs-body)/1.4 var(--font-ui); text-align: center; }
   .hint { margin: 0 4px; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   .warn, .hint.warn { color: var(--coral-text); }
-  .chips .chip { flex: 1; padding: 0 8px; }
+  .chips .chip { flex: 1 1 auto; padding: 0 6px; white-space: nowrap; } /* (このiPhone on one line) */
   .btn.small { justify-self: start; }
   .btn.small.del { width: 100%; }
   progress { width: 100%; height: 8px; accent-color: var(--c-leaf); }
