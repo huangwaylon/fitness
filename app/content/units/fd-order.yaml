@@ -18,7 +18,7 @@ cando:
   catch: 何が 来るか・追加の 料金
   short: 注文の 確認が 聞き取れる
   en: "I can follow a server checking my order and asking questions, over a busy restaurant at natural speed, and catch what's coming and any extra charge."
-status: draft
+status: voiced
 letter:
   en: "You ordered like a regular today. Soup or salad, for here or to go, dressing on the side: you caught every question, even with the lunch crowd. Next time, try the pie. It comes with a little extra whipped cream, on the house. I'll have a cup ready for you. Coo."
   ja: "きょうは じょうれんさん みたいに ちゅうもん できたね。スープか サラダか、てんないか もちかえりか、ドレッシングは べつで。おひるの こみあいの なかでも、ぜんぶの しつもんが きこえてた。こんどは パイを ためして みて。ホイップクリームを すこし おおめに、おみせからの サービスで。コーヒーも 1ぱい よういして おくよ。クルッ。"

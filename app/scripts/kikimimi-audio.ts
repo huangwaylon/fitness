@@ -153,6 +153,13 @@ const PINNED: Readonly<Record<string, number>> = {
   'tachi-hanami-spot-2': 4000, 'tachi-im-easy-6': 4000, 'tile-leave-it-out-front': 4000, 'tachi-film-verdict-1': 4000,
   'tachi-film-verdict-7': 5000, 'call-next-friday-1': 4000, 'call-next-friday-4': 3000, 'tachi-noisy-neighbour-5': 5000,
   'tachi-standup-blocked-5': 3000, 'call-handouts-favour-5': 2000,
+  // wave 2's batch A2 (2026-11-07), each the best of five seed runs: takes heard as written (soup er salad, fer here er
+  // ta go, oudda, ten ta two, jus' so ya know, large in black, yer prescription's, Rah-men), and takes nearer their voice
+  // or cleaner (UTMOS) than the default's (short lines: Hmm how early 2.74 → 3.49, keep an eye on 'im 2.86 → 3.81)
+  'kw-soup-or': 4001, 'kr-fast-combo': 3002, 'dk-fast-sweater-1': 5001, 'kr-heads-up': 3000, 'call-neighbor-cat-6': 3000,
+  'dk-jacket-size-3': 4004, 'kw-prescription': 3000, 'kw-im-down': 1238, 'dk-hike-dinner-2': 2002, 'kw-keep-an-eye': 2000,
+  'dk-for-here-1': 2000, 'kw-meetcha': 2000, 'dk-cookies-2': 3000, 'dk-rain-sunday-3': 3000, 'dk-dentist-day-4': 5002,
+  'kw-great-on': 3004,
   // はつおん's words (M6, 2026-11-07), each the best of ten seed runs by UTMOS among the takes heard as written (a word
   // alone is too short for ECAPA: these are kept with --retries 0, never re-rolled for their similarity)
   'pr-13-2': 2000, 'pr-14-1': 3000, 'pr-14-2': 1238, 'pr-15-1': 2000, 'pr-15-2': 1237, 'pr-16-2': 1237, 'pr-17-1': 1235,
@@ -207,9 +214,12 @@ const REPORT = SCRATCH ? join(SCRATCH, 'report.json') : join(TTS, 'report.json')
 /** The bedtime serials' segments, a clip each (story.ts storyItems): spoken whatever --levels says (never by say). */
 const STORY_ITEMS = storyItems(readStories());
 const STORY: ReadonlySet<string> = new Set(STORY_ITEMS.map((it) => it.id));
-/** The stories' loudness: a little softer than the quiz's −16. */
+/** The stories' loudness: a little softer than the quiz's −16. しずえの ニュース's lines and weather sentences are read
+ *  at it too (a bulletin heard whole, like a chapter: kikimimi-framework.md "しずえの ニュース as built"). */
 const STORY_LUFS = -18;
-const lufsOf = (it: Item): number => (STORY.has(it.id) ? STORY_LUFS : -16);
+const SOFT: ReadonlySet<string> = new Set([...STORY, ...readListen().filter(({ raw }) => (raw as { game: string }).game === 'news')
+  .flatMap(({ raw }) => listenClipItems(raw)).map((it) => it.id)]);
+const lufsOf = (it: Item): number => (SOFT.has(it.id) ? STORY_LUFS : -16);
 /** The listening kinds' clips (content/listen/*.yaml, listen.ts listenClipItems: a tile's own, each line of a call or a
  *  たちぎき, `<item>-<n>`, at its stage's level): a draft file's only when --only names them (it's voiced after its
  *  review, wave 2 §3.4). */
@@ -523,7 +533,7 @@ function planOf(it: Item): Plan {
   const voice = CLONES(engine) ? [cast, refHash(cast), entry.ref.text] : [entry.kokoro];
   const tempo = it.lv === 1 ? L1_TEMPO : 1;
   const master = sha(JSON.stringify([engine, MODEL[engine], voice, text, seedOf(it.id), hasSlow(it) && [SLOW, STRETCH], tempo !== 1 && [tempo, STRETCH], PIPELINE,
-    ...(STORY.has(it.id) ? [['story', STORY_LUFS]] : [])]), 10);
+    ...(SOFT.has(it.id) ? [['story', STORY_LUFS]] : [])]), 10);
   const c = condOf(it), cond = c && condPlan(c);
   if (cond && hasSlow(it)) throw new Error(`${it.id}: no conditions at levels 1-2 (their slow clip is the clean take)`);
   return { it, cast, engine, text, master, cond, src: condSource(master, cond, cond ? condAssets(cond) : {}) };

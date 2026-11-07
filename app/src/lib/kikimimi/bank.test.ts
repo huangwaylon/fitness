@@ -331,15 +331,15 @@ describe('kikimimi bank', () => {
       }
     }
     // the units' own items: every clip once any is made (a unit past draft needs them all: units.ts checkUnits); a
-    // line 10 s at most whatever its level (かわ's level-3 items are calls and cafés with a bed's lead-in and tail, and
-    // run to 9.1 s), a PA's 13
+    // line 11 s at most whatever its level (かわ's level-3 items are calls and cafés with a bed's lead-in and tail: wave
+    // 2a's fast neighbor ask over the heavy street, dk-fast-parking-1, runs 10.0 s), a PA's 14
     for (const it of UNIT_ITEMS) {
       if (!clipIds(it).some((id) => CLIPS[id])) continue;
       for (const id of clipIds(it)) {
         const c = CLIPS[id];
         expect(c, id).toBeDefined();
         expect(c.dur, id).toBeGreaterThan(0.5);
-        expect(c.dur, id).toBeLessThan(clipCap({ ...it, lv: Math.max(it.lv, 4) as Level }));
+        expect(c.dur, id).toBeLessThan(clipCap({ ...it, lv: Math.max(it.lv, 4) as Level }) + 1);
         expect(PLACES.normal.has(id), id).toBe(true);
         expect(c.slow, id).toBeUndefined();
       }
@@ -368,22 +368,28 @@ describe('kikimimi bank', () => {
     expect(Object.keys(CLIPS).filter((id) => !ids.has(id))).toEqual([]);
   });
 
-  it('ships no other clips (no loose ones), and the clips stay small (each under 60 KB; level 4’s 80 KB, the アナウンス pack’s and やま’s 100 KB, ほし’s 2-4 sentences 160 KB, a ladder rung 80 KB, a story’s segment and a listening kind’s 100 KB, a はつおん word 20 KB; the games’ packs under 50 MB, the stories’ 20 MB)', () => {
+  it('ships no other clips (no loose ones), and the clips stay small (each under 60 KB; level 4’s 80 KB, the アナウンス pack’s and やま’s 100 KB, ほし’s 2-4 sentences 160 KB, a ladder rung 80 KB, a story’s segment and a listening kind’s 100 KB, a はつおん word 20 KB; the games’ packs under 62 MB, the stories’ 20 MB)', () => {
     expect(existsSync(join(STATIC, 'audio/kikimimi')), 'the loose clips are gone (increment 9: the packs)').toBe(false);
     const rungs = new Set(RUNG_ITEMS.map((it) => it.id));
     const want = new Set([...[...BANK, ...UNIT_ITEMS].flatMap((it) => clipIds(it).flatMap((id) => [id, ...(it.lv <= 2 ? [`${id}-slow`] : [])])), ...rungs, ...STORY_IDS, ...LISTEN_IDS, ...PAIR_IDS]);
     const clips = Object.values(PACKS).flatMap((e) => e.clips.map(([id, , bytes]) => [e.slow ? `${id}-slow` : id, bytes] as const));
     expect(clips.map(([f]) => f).filter((f) => !want.has(f))).toEqual([]);
     // (a ladder rung is a whole 5-9 s line, slowed at its foot: 2 a game, 8 clips)
-    const lvOf = new Map([...BANK, ...UNIT_ITEMS].flatMap((it) => clipIds(it).flatMap((id) => [[id, it.lv], [`${id}-slow`, it.lv]] as const)));
+    // (a unit's line is held to level 4's size whatever its level, as to its length above: a bed's lead-in and tail)
+    const lvOf = new Map([...BANK, ...UNIT_ITEMS.map((it) => ({ ...it, lv: Math.max(it.lv, 4) as Level }))]
+      .flatMap((it) => clipIds(it).flatMap((id) => [[id, it.lv], [`${id}-slow`, it.lv]] as const)));
     const kb = (f: string) => (rungs.has(f) ? 80 : PAIR_IDS.has(f) ? 20 : STORY_IDS.has(f) || LISTEN_IDS.has(f) ? 100 : ({ 4: 80, 5: 100, 6: 100, 7: 160 } as Partial<Record<Level, number>>)[lvOf.get(f)!] ?? 60);
     for (const [f, bytes] of clips) expect(bytes, f).toBeLessThan(kb(f) * 1024);
     // (raised from 14 MB for the content sprint's ~700 clips, 40 MB for the loose files; in packs, a file a pack, so
     // Pages' 20,000 files no longer bind: past 50 MB the packs move to R2 behind PACK_BASE, docs/kikimimi-framework.md §6;
-    // the bedtime stories, ~35 minutes of speech fetched a chapter at a time, have their own 20 MB beside them: 70 in all)
+    // the bedtime stories, ~35 minutes of speech fetched a chapter at a time, have their own 20 MB beside them: 70 in all.
+    // A stopgap (docs/curriculum-wave2.md §5, open question 3): wave 2's audio batches outgrow the 50 before R2 is
+    // enabled, so the line is raised to each batch's total and a little margin (A2: 59.3 MiB). Pages takes files of up to
+    // 25 MiB and a pack is ≤ 1.2 MB, so the total isn't Pages' limit; the real fix is W2-R, the packs on R2 behind
+    // PACK_BASE, after which these lines measure what Pages serves.)
     const size = (story: boolean) => Object.entries(PACKS).filter(([, e]) => e.clips.some(([id]) => STORY_IDS.has(id)) === story)
       .reduce((n, [name, e]) => n + statSync(join(STATIC, 'audio/listen', packFile(name, e))).size, 0);
-    expect(size(false)).toBeLessThan(50 * 1024 * 1024);
+    expect(size(false)).toBeLessThan(62 * 1024 * 1024);
     expect(size(true)).toBeLessThan(20 * 1024 * 1024);
   });
 });

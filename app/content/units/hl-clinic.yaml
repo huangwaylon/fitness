@@ -20,7 +20,7 @@ cando:
   catch: 日時・回数・注意
   short: 予約と 薬の 飲み方が わかる
   en: "I can follow a receptionist or a pharmacist explaining an appointment and how to take a medicine, on the phone or at the counter, and catch the day and time, how often, and what to watch out for."
-status: draft
+status: voiced
 letter:
   en: "Your prescription's ready, and so are you! You caught the soonest appointment, a quarter after ten, and twice a day with food, even on a noisy phone line. Next time, come in a few minutes early and bring your insurance card. And take care of yourself, okay? I mean it!"
   ja: "おくすり できたよ、あなたも ばっちりね！ いちばん はやい よやくも、10じ 15ふんも、1にち 2かい しょくじと いっしょにも、ざつおんの おおい でんわで ちゃんと ききとれた。こんどは すこし はやめに きて、ほけんしょうも もってきてね。それと、からだを だいじに してね。ほんとうよ！"
