@@ -154,9 +154,9 @@ export const texStats = () => ({ held: uses.size, refs: [...uses.values()].reduc
 if (typeof window !== 'undefined' && hooksOn(new URLSearchParams(location.search)))
   (window as unknown as { __player3d: unknown }).__player3d = { glbs: glbStats, texs: texStats };
 /** The textures a material draws: its maps, and those its shader takes from elsewhere (userData: the iris, the bare
- *  legs; world3d/release.ts resourcesOf finds them there too). */
+ *  legs; world3d/release.ts resourcesOf finds them there too). Not the shared white stand-in (blank.ts): no player's. */
 function texturesOf(m: Material, into: Set<Texture>) {
-  for (const v of [...Object.values(m), ...Object.values(m.userData ?? {})]) if (v instanceof Texture) into.add(v);
+  for (const v of [...Object.values(m), ...Object.values(m.userData ?? {})]) if (v instanceof Texture && v !== WHITE) into.add(v);
 }
 
 /** A material whose texture's alpha says where it takes the tint (255 − 127 × the tint's share: never 0, where a
