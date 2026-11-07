@@ -3,6 +3,7 @@
   // for the type: the big countdown (「あと 336 日」, 「今日」 on the day, 「12 日前」 after it), the two names on a yuzu
   // plate, the day, time and venue; at the right the rose ring on a paper disc (the board's percent round a posy), the
   // percent and done / total under it. (設定 is the sheet's third tab.)
+  import { photoFallback } from '../ui/photoFallback.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { asset } from '$app/paths';
   import { formatDate } from '#lib/i18n/format.ts';
@@ -28,7 +29,7 @@
 </script>
 
 <section class="band" data-wed-top aria-label={t('wed.title')}>
-  <img src={asset('wedding/hero.webp')} alt={t('wed.photo')} width="1200" height="563" decoding="async" />
+  <img src={asset('wedding/hero.webp')} alt={t('wed.photo')} width="1200" height="563" decoding="async" {@attach photoFallback} />
   <div class="in">
     <div class="who">
       <p class="days" data-wed-days={days ?? ''} aria-label={label}>

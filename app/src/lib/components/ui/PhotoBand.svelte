@@ -3,6 +3,7 @@
   // card 120), a soft dark gradient at its foot for the words over it (`children`), and `nav` laid over its top (a
   // NavBar over). The wedding banner keeps its own markup on this frame.
   //   <PhotoBand src={trip.photo} height={150}>{#snippet nav()}<NavBar over … />{/snippet}<h2>{trip.title}</h2></PhotoBand>
+  import { photoFallback } from './photoFallback.ts';
   import type { Snippet } from 'svelte';
 
   interface Props {
@@ -21,7 +22,7 @@
 </script>
 
 <div class="band" class:edge style:--h="{height}px">
-  <img {src} {alt} loading={edge ? 'eager' : 'lazy'} decoding="async" style:object-position={focus} />
+  <img {src} {alt} loading={edge ? 'eager' : 'lazy'} decoding="async" style:object-position={focus} {@attach photoFallback} />
   {#if nav}<div class="nav">{@render nav()}</div>{/if}
   {#if children}<div class="foot">{@render children()}</div>{/if}
 </div>

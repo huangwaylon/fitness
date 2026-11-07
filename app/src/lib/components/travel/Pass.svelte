@@ -4,6 +4,7 @@
   // area, the place and its year, its dates; torn off down the right along a stitch, the stub: 「あと 97 日」, 「明日」,
   // 「いま 2 日目」 (yuzu), or, a trip gone by, the coral 「行ってきた」 stamp with its year. The whole pass is the
   // button into the trip.
+  import { photoFallback } from '../ui/photoFallback.ts';
   import type { TripMeta } from '#lib/travel/trips/meta.ts';
   import { asset } from '$app/paths';
   import { i18n, t } from '#lib/i18n/index.ts';
@@ -21,7 +22,7 @@
   aria-label="{title} {year}, {span}, {phaseLabel(phase)}">
   <span class="main" aria-hidden="true">
     <span class="cover">
-      <img src={asset(trip.cover.src as Parameters<typeof asset>[0])} alt="" width={trip.cover.w} height={trip.cover.h} loading="eager" decoding="async" />
+      <img src={asset(trip.cover.src as Parameters<typeof asset>[0])} alt="" width={trip.cover.w} height={trip.cover.h} loading="eager" decoding="async" {@attach photoFallback} />
       <span class="band"><span class="air">✈ {t('travel.air')}</span><span class="route">TYO <i>✈</i> {trip.code}</span></span>
     </span>
     <span class="txt">
