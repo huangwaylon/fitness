@@ -2,8 +2,7 @@
   // けっこんしき's banner (docs/wedding.md): our own photo (static/wedding/hero.webp) darkened toward its foot and left
   // for the type: the big countdown (「あと 336 日」, 「今日」 on the day, 「12 日前」 after it), the two names on a yuzu
   // plate, the day, time and venue; at the right the rose ring on a paper disc (the board's percent round a posy), the
-  // percent and done / total under it; a member's ⚙ in the corner. The guest sees the same, without ⚙.
-  import Icon from '../ui/Icon.svelte';
+  // percent and done / total under it. (設定 is the sheet's third tab.)
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { asset } from '$app/paths';
   import { formatDate } from '#lib/i18n/format.ts';
@@ -17,10 +16,8 @@
     days: number | null;
     /** The board's percent and its done / total (the store's overall). */
     sum: Overall;
-    /** A member's ⚙ (none for the guest). */
-    onsettings?: (() => void) | null;
   }
-  let { config, days, sum, onsettings = null }: Props = $props();
+  let { config, days, sum }: Props = $props();
   const label = $derived(days === null ? t('wed.noDate') : days > 0 ? t('wed.daysLabel', { n: formatNum(days) }) : days === 0 ? t('wed.dayOfLabel') : t('wed.pastLabel', { n: formatNum(-days) }));
   const names = $derived(config.p1 || config.p2 ? t('wed.names', { a: config.p1 || '…', b: config.p2 || '…' }) : '');
   const when = $derived([config.date ? `${formatDate(config.date)}${config.time ? ` ${config.time}` : ''}` : '', config.venue].filter(Boolean).join(' · '));
@@ -32,9 +29,6 @@
 
 <section class="band" data-wed-top aria-label={t('wed.title')}>
   <img src={asset('wedding/hero.webp')} alt={t('wed.photo')} width="1200" height="563" decoding="async" />
-  {#if onsettings}
-    <button type="button" class="gear" aria-label={t('wed.settings')} data-wed-gear data-sfx="open" onclick={onsettings}><Icon name="gear" size={18} /></button>
-  {/if}
   <div class="in">
     <div class="who">
       <p class="days" data-wed-days={days ?? ''} aria-label={label}>
@@ -74,14 +68,6 @@
     content: ''; position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(180deg, rgb(30 20 16 / 0) 25%, rgb(30 20 16 / .6) 100%), linear-gradient(90deg, rgb(30 20 16 / .45), rgb(30 20 16 / 0) 50%);
   }
-  .gear {
-    appearance: none; border: 0; cursor: pointer; position: absolute; top: 10px; right: 12px; z-index: 2; width: 32px; height: 32px; padding: 0;
-    border-radius: 50%; display: grid; place-items: center; background: rgb(30 24 18 / .35); color: #fff;
-    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); -webkit-tap-highlight-color: transparent;
-  }
-  .gear::after { content: ''; position: absolute; inset: -6px; }
-  .gear:active { opacity: .7; }
-  .gear:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
   .in { position: absolute; left: 16px; right: 14px; bottom: 12px; z-index: 1; display: flex; align-items: flex-end; gap: 12px; }
   .in p { margin: 0; }
   .who { flex: 1; min-width: 0; display: grid; justify-items: start; gap: 7px; text-shadow: 0 1px 8px rgb(0 0 0 / .35); }

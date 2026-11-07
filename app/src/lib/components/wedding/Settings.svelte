@@ -1,5 +1,5 @@
 <script lang="ts">
-  // けっこんしき's 設定 (members; a level behind the band's ⚙), grouped dense cards: ふたり (the two names), 式 (the day, the
+  // けっこんしき's 設定 (members; the sheet's third tab), grouped dense cards: ふたり (the two names), 式 (the day, the
   // time, the venue, the time zone the board's today is read in), カテゴリ (chips with ×: とりけす on the banner, which
   // says how many tasks wear it; a field to add one), 削除したやること (each with 戻す: a task, or a checklist item
   // removed on its own; one deleted with its task comes back with it) and 完全に削除 (for good, after an action
@@ -23,7 +23,7 @@
   const ZONES = ['Asia/Tokyo', 'Asia/Seoul', 'Asia/Taipei', 'Asia/Shanghai', 'Asia/Singapore', 'Australia/Sydney', 'Pacific/Honolulu', 'America/Los_Angeles', 'America/New_York', 'Europe/London', 'Europe/Paris', 'UTC'];
   const zones = $derived(ZONES.includes(config.tz) || !config.tz ? ZONES : [config.tz, ...ZONES]);
 
-  /** The banners docked low: never over the title bar's ‹ (a field's save lands mid-tap when ‹ is what blurred it). */
+  /** The banners docked low: never over the title bar's ✕ (a field's save lands mid-tap when ✕ is what blurred it). */
   const LOW = { low: true };
   type Key = 'p1' | 'p2' | 'date' | 'time' | 'venue' | 'tz';
   /** One setting, saved as its field is left ('' clears it: the default again). */
