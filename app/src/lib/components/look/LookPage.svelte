@@ -484,10 +484,10 @@
   /* the six tabs: an icon and its name, the picked one yuzu with the edge and lip (not colour alone) */
   .tabs {
     flex: none; position: relative; z-index: 1; display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; padding: 5px; border-radius: 20px;
-    background: var(--c-cream); box-shadow: 0 var(--lip-h) 0 var(--c-lip);
+    background: var(--c-cream); box-shadow: 0 var(--lip-s) 0 var(--c-lip);
   }
   .tabs::after {
-    content: ''; position: absolute; left: -8px; right: -8px; top: calc(100% + var(--lip-h)); height: 10px; pointer-events: none;
+    content: ''; position: absolute; left: -8px; right: -8px; top: calc(100% + var(--lip-s)); height: 10px; pointer-events: none;
     background: linear-gradient(var(--surface), transparent);
   }
   .tab {
@@ -497,7 +497,7 @@
   }
   .tab svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
   .tab svg .fill { fill: currentColor; stroke: none; }
-  .tab[aria-selected='true'] { background: var(--c-yuzu); box-shadow: inset 0 0 0 2px var(--c-edge), 0 3px 0 var(--c-edge); }
+  .tab[aria-selected='true'] { background: var(--c-yuzu); box-shadow: inset 0 0 0 1.5px var(--c-edge), 0 2px 0 var(--c-edge); }
   .tab:active { transform: translateY(1px); }
   .tab:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
 
@@ -523,10 +523,11 @@
   }
   .subs::-webkit-scrollbar { display: none; }
   .sb {
-    appearance: none; border: 0; background: none; cursor: pointer; flex: 1 0 auto; min-height: 44px; padding: 0 5px; border-radius: var(--r-pill);
+    appearance: none; border: 0; background: none; cursor: pointer; position: relative; flex: 1 0 auto; min-height: 36px; padding: 0 5px; border-radius: var(--r-pill);
     font: 700 var(--fs-s)/1 var(--font-ui); color: var(--c-ink-soft); white-space: nowrap; letter-spacing: -.02em;
   }
-  .sb[aria-checked='true'] { background: var(--c-card); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 3px 0 var(--c-edge); }
+  .sb::after { content: ''; position: absolute; inset: -4px 0; }
+  .sb[aria-checked='true'] { background: var(--c-card); color: var(--c-ink); box-shadow: inset 0 0 0 1.5px var(--c-edge), 0 2px 0 var(--c-edge); }
   .sb:focus-visible { outline: 3px solid var(--focus); outline-offset: -1px; }
 
   /* the colour filter: すべて, then the nine hues, sideways; the end fades when there's more */
@@ -536,9 +537,10 @@
   }
   .hues::-webkit-scrollbar { display: none; }
   .hue {
-    appearance: none; border: 0; cursor: pointer; flex: none; width: 44px; height: 44px; border-radius: var(--r-pill); display: grid; place-items: center;
+    appearance: none; border: 0; cursor: pointer; flex: none; position: relative; width: 36px; height: 36px; border-radius: var(--r-pill); display: grid; place-items: center;
     background: var(--ctl); box-shadow: var(--sh-ctl); font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text);
   }
+  .hue::after { content: ''; position: absolute; inset: -4px -3px; }
   .hue.all { width: auto; padding: 0 14px; }
   .hue[aria-checked='true'] { background: var(--ctl-sel); color: var(--c-ink); }
   .hd { width: 20px; height: 20px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px rgb(0 0 0 / .45); display: block; }

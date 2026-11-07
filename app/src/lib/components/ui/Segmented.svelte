@@ -20,23 +20,24 @@
 <div class="seg" class:s={size === 's'} role="group" aria-label={label}>
   {#each items as it (it.id)}
     <button type="button" class="sb" aria-pressed={value === it.id} {...{ [`data-${attr}`]: it.id }} data-sfx={value === it.id ? 'none' : 'tick'}
-      onclick={() => onpick(it.id)}>{#if it.art}<span class="gi" aria-hidden="true"><OfficialArt key={it.art} size={22} /></span>{/if}{it.label}</button>
+      onclick={() => onpick(it.id)}>{#if it.art}<span class="gi" aria-hidden="true"><OfficialArt key={it.art} size={20} /></span>{/if}{it.label}</button>
   {/each}
 </div>
 
 <style>
   .seg { display: flex; gap: 6px; }
   .sb {
-    appearance: none; border: 0; cursor: pointer; flex: 1 1 0; min-width: 0; min-height: var(--hit); padding: 0 4px; border-radius: var(--r-pill);
+    appearance: none; border: 0; cursor: pointer; position: relative; flex: 1 1 0; min-width: 0; min-height: 36px; padding: 0 4px; border-radius: var(--r-pill);
     display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap;
     font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
   }
-  .sb[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); }
+  /* 36px drawn in the 44px hit (docs/design.md "Sizes") */
+  .sb::after { content: ''; position: absolute; inset: -4px -2px; }
+  .sb[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 2px 0 var(--c-edge); }
   .sb:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .s { gap: 4px; }
-  .s .sb { position: relative; flex: none; min-height: 32px; padding: 0 10px; font: 700 var(--fs-s)/1 var(--font-num); box-shadow: var(--sh-ctl-s); }
-  .s .sb::after { content: ''; position: absolute; inset: -6px -2px; }
-  .s .sb[aria-pressed='true'] { box-shadow: inset 0 0 0 2px var(--c-edge), 0 2px 0 var(--c-edge); }
+  .s .sb { flex: none; min-height: 32px; padding: 0 10px; font: 700 var(--fs-s)/1 var(--font-num); box-shadow: var(--sh-ctl-s); }
+  .s .sb::after { inset: -6px -2px; }
   .s .sb:active { box-shadow: var(--sh-ctl-s-press); }
-  .gi { display: inline-flex; width: 22px; height: 22px; flex: none; line-height: 0; }
+  .gi { display: inline-flex; width: 20px; height: 20px; flex: none; line-height: 0; }
 </style>

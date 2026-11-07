@@ -38,15 +38,19 @@
 <style>
   .nav {
     position: sticky; top: -6px; z-index: 2; display: flex; align-items: center; gap: 8px; min-width: 0;
-    margin: 0 -8px; padding: 6px 8px calc(var(--lip-h) + 6px); background: var(--surface);
+    margin: 0 -8px; padding: 2px 8px 4px; background: var(--surface);
   }
   .nav::after { content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 12px; pointer-events: none; background: linear-gradient(var(--surface), transparent); }
+  /* the kit's control (docs/design.md "Sizes"): drawn at 32px in the 44px hit, the small edge */
   .nb {
-    appearance: none; border: 0; cursor: pointer; flex: none; min-width: var(--hit); height: var(--hit); padding: 0 10px; border-radius: var(--r-pill);
-    display: inline-flex; align-items: center; justify-content: center;
-    font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
+    appearance: none; border: 0; cursor: pointer; flex: none; position: relative; min-width: var(--hit); height: var(--hit); padding: 0 12px;
+    border-radius: var(--r-pill); display: inline-flex; align-items: center; justify-content: center; background: none; isolation: isolate;
+    font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text);
   }
-  .nb svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
-  .nb:active:not([aria-disabled='true']) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  .nb[aria-disabled='true'] { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; transform: translateY(4px); cursor: default; }
+  .nb::before { content: ''; position: absolute; z-index: -1; inset: 6px 0; border-radius: inherit; background: var(--ctl); box-shadow: var(--sh-ctl); }
+  .nb:not(.today)::before { inset: 6px; }
+  .nb svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .nb:active:not([aria-disabled='true'])::before { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+  .nb[aria-disabled='true'] { color: var(--text-soft); cursor: default; }
+  .nb[aria-disabled='true']::before { background: var(--ctl-off); box-shadow: none; }
 </style>
