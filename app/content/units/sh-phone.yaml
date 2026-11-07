@@ -23,7 +23,7 @@ cando:
   catch: 原因・選択肢・料金
   short: スマホの 修理と 料金が わかる
   en: "I can follow a phone-store clerk explaining what's wrong with a phone or a plan, over the noise of a busy store, and catch the cause, the options and the price."
-status: draft
+status: voiced
 letter:
   en: "Your phone's fixed, and so is your ear! You caught the warranty, what wasn't covered, and how long it'd take, even with the whole store talking. Next time, back it up first, okay? And if anything acts weird, have you tried restarting it? Ha. Come see me anytime. No charge for advice."
   ja: "スマホも なおったし、きみの みみも ばっちり！ ほしょうの ことも、たいしょうがいの ことも、どのくらい かかるかも、みせじゅう ざわざわ してるのに ききとれたね。こんどは さきに バックアップを とってね。へんな うごきを したら、さいきどう してみた？ なんてね。いつでも きて。そうだんは むりょうだよ。"

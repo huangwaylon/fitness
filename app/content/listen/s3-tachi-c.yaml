@@ -9,7 +9,7 @@ track: people
 seeds: [8, 15, 33, 36, 42]
 features: { primary: overlap, review: idiom }
 cando: "3人の 速い 話し合いから 立場・心変わり・結論を 聞き取れる"
-status: draft
+status: listened
 items:
   - kind: tachi
     id: tachi-deposit-letter

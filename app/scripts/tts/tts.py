@@ -117,6 +117,12 @@ FOLD = [(r"\bgonna\b", 'going to'), (r"\bwanna\b", 'want to'), (r"\bgotta\b", 'g
         # st-tokyo's Gayle and wasshoi as whisper writes them, and its g'morning / g'night
         (r"\bg(?:ail|ale|ayle)\b", 'gayle'), (r"\bwa(?:sh|ssh|s)oy\b", 'wasshoi'), (r"\bg'morning\b", 'good morning'),
         (r"\bg'night\b|\bg(?:ee,?)?[ -]night\b", 'good night'),
+        # wave 2b's: Cyd and Kid Cat as whisper writes them, and the respellings couldja, whaddaya, tanight, sharea,
+        # 'e, 'is, 'im, 'er
+        (r"\bsid\b", 'cyd'), (r"\bki[dt][ -]?kat\b", 'kid cat'), (r"\bcouldja\b", 'could you'), (r"\bwhaddaya\b", 'what do you'),
+        (r"\btanight\b", 'tonight'), (r"\bsharea\b", 'share a'), (r"(?<![\w'])'e\b", 'he'), (r"(?<![\w'])'is\b", 'his'),
+        (r"(?<![\w'])'im\b", 'him'), (r"(?<![\w'])'er\b", 'her'), (r"\br s v p\b", 'rsvp'), (r"\ba c\b", 'ac'),
+        (r"\bninth\b", '9th'),  # (the normaliser makes every other ordinal a figure, "ninth" it misses)
         (r"\bbells\b", 'bell'), (r"\bokay\b", 'ok')]
 # not "content": articles and fillers (a dropped "the" or an added "oh" isn't a mishearing of the line)
 MINOR = {'a', 'an', 'the', 'um', 'uh', 'er', 'ah', 'aw', 'oh', 'hm', 'hmm', 'mm', 'so', 'well'}

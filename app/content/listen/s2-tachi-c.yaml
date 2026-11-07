@@ -8,7 +8,7 @@ track: life
 seeds: [7, 15, 22, 33, 50]
 features: { primary: overlap, review: numbers }
 cando: "3人の 話から だれが 何を 言い、何が 決まったかを 聞き取れる"
-status: draft
+status: listened
 items:
   - kind: tachi
     id: tachi-urgent-care

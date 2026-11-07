@@ -10,7 +10,7 @@ track: life
 seeds: [5, 15, 27, 30, 35, 38, 43, 44, 49, 52, 53, 54, 57, 58]
 features: { primary: h-drop, review: chain }
 cando: "落ちる 音・つながる 音・つなぎ言葉の 入った 文を 聞いて 組み立てられる"
-status: draft
+status: listened
 items:
   # ---- h-drop ----
   - kind: tile
