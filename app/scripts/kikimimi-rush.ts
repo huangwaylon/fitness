@@ -21,7 +21,6 @@ const DIR = join(import.meta.dirname, '../content/listen');
 
 type Kind = 'qty' | 'yen' | 'usd' | 'time' | 'num' | 'date' | 'mins' | 'age' | 'digits';
 const WORDS_UP_TO = 10;
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const ONE = ['oh', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
 const hm = (t: number) => [Math.floor(t / 60), t % 60] as const;
 const comma = (n: number) => n.toLocaleString('en-US');
@@ -178,7 +177,6 @@ const pick = <T,>(xs: readonly T[], r: () => number): T => xs[Math.floor(r() * x
 const T = (h: number, m: number) => h * 60 + m;
 const times = (...hm: [number, number][]) => hm.map(([h, m]) => T(h, m));
 const TEENS = [13, 14, 15, 16, 17, 18, 19];
-const TYS = [30, 40, 50, 60, 70, 80, 90];
 
 /** かわ (S1): one number a line, short orders, plain corrections. */
 const KAWA: readonly Frame[] = [

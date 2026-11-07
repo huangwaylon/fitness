@@ -21,7 +21,7 @@ import type { Tier } from '../../lesson.ts';
 import type { AnswerValue, GameDef, Round, RoundDeck } from '../../round/types.ts';
 import { PLAY_UNKNOWN } from '../quiz/kinds.ts';
 import { questionPoints } from '../taikai/def.ts';
-import { ROLES, listenGame, listenRecord, tierAt, type ListenOpts, type ListenRules, type ListenSource } from '../listened.ts';
+import { ROLES, listenGame, listenRecord, placeOf, tierAt, type ListenOpts, type ListenRules, type ListenSource } from '../listened.ts';
 
 /** A game's customers. */
 export const RUSH_QS = 8;
@@ -42,8 +42,6 @@ export interface RushCard extends Item {
   rush: { ask: string; at: Counter; was?: number; b: number };
 }
 
-/** A level's place (0 はまべ … 4 ほし). */
-const placeOf = (lv: number): number => PLACES.findIndex((p) => p.lvs.includes(lv));
 
 function cardOf(it: RushYaml, stage: number): RushCard {
   const lv = PLACES[stage - 1]?.lvs[0] as Level;
@@ -153,7 +151,7 @@ function expecting(d: RoundDeck, ear: number): RoundDeck {
 }
 
 /** The listening games' GameDef with しょうぶ, its points by expectation. */
-export function rushGame(base: GameDef<ListenOpts>): GameDef<ListenOpts> {
+function rushGame(base: GameDef<ListenOpts>): GameDef<ListenOpts> {
   return { ...base, modes: { ...base.modes, vs: true }, deck: (seed, o, ctx) => expecting(base.deck(seed, o, ctx), o.ear) };
 }
 

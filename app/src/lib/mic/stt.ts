@@ -2,14 +2,14 @@
 // - whisper: on the phone, in a Worker (WebGPU, else the WASM runtime); the only one 自動 uses;
 // - webkit: Safari's own recogniser (the audio may go to Apple), only when picked by hand in せってい;
 // - relay: our relay's `/stt` (Workers AI; nothing kept), only when picked by hand;
-// - stub: the tests' (`localStorage['e2e.stt']`), inert without it.
+// - stub: the tests' (its script: pick.ts stubScript), inert without it.
 // recogniser() gives this phone's (the mic on, the choice in せってい, what can run here), its backend loaded lazily;
 // one recogniser at a time, one take at a time. A take is started inside a tap and ends on stop, cancel, the VAD's
 // silence, its cap or the app hiding (session.ts). The expected sentence is never given to a recogniser: Hint has only
 // the take's cap and, for はつおん, the two candidate words. What was heard lives in the caller's round only: never
 // stored, logged, sent to the partner, or put into an Error.
 import { localKV } from '#lib/sync/storage.ts';
-import { pickBackend, readMic, type Backend as Picked, type Can } from './pick.ts';
+import { pickBackend, readMic, stubbed, type Backend as Picked, type Can } from './pick.ts';
 import { takeMic, type Got } from './session.ts';
 import type { VadState } from './vad.ts';
 
@@ -144,13 +144,6 @@ function one(r: Recogniser): Recogniser {
   return w;
 }
 
-function stubbed(): boolean {
-  try {
-    return localKV()?.getItem('e2e.stt') != null;
-  } catch {
-    return false;
-  }
-}
 
 /** What can run on this phone for a game: whisper's model on the phone (no download in a round), Safari's
  *  recogniser, the relay (paired). */

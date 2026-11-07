@@ -3,8 +3,6 @@
 // (i18n/kiki-tachi.ts: kikimimi/ may not import i18n).
 import '#lib/i18n/kiki-tachi.ts';
 import type { Item } from '#lib/kikimimi/bank.ts';
-import type { QuizView } from '#lib/kikimimi/games/quiz/view.ts';
-import type { Who } from '#lib/types.ts';
 import { EMPTY, ROLES, rawOf } from '#lib/kikimimi/games/listened.ts';
 import { SHARED, givenClaim, tachiOk, type TachiCard } from '#lib/kikimimi/games/tachi/def.ts';
 

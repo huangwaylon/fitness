@@ -17,7 +17,7 @@ export const EMPTY = 63;
 /** The roles of a co-op game (two halves, two speakers). */
 export const ROLES = 2;
 /** The places' `ear` (0 はまべ … 3 やま). */
-const EARS = 4;
+export const EARS = 4;
 
 /** A listening game's lobby options: its level (a place's first: 3 かわ, 4 もり, 6 やま), こたえる じかん, the host's ear
  *  (each player's own on their join: GameDef.tier). */
@@ -28,7 +28,7 @@ export interface ListenOpts {
 }
 
 /** A level's place (0 はまべ … 4 ほし; -1 none: アナウンス's 5). */
-const placeOf = (lv: number): number => PLACES.findIndex((p) => p.lvs.includes(lv));
+export const placeOf = (lv: number): number => PLACES.findIndex((p) => p.lvs.includes(lv));
 
 export const listenOpts = {
   encode: (o: ListenOpts): number[] => [o.lv, Math.max(0, TIMERS.indexOf(o.timer)), o.ear],

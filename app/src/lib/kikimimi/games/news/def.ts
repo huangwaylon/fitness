@@ -8,13 +8,12 @@
 // Tiers per player on the same audio (GameDef.tier, ことば タイル's tierAt): easy, each question offers the answer and its
 // trap only; else all four choices. Co-op: everyone answers every question, the team's count the questions both got
 // (the session's `team.all`).
-import type { ListenRow } from '../../../contract/listen.ts';
 import type { CastId, Item, Level, Line, Tags } from '../../bank.ts';
 import { PLACES } from '../../catalog.ts';
 import { WEEKDAYS, newsLines, type ListenItem, type ListenPart, type WxSentence } from '../../listen.ts';
-import type { AnswerValue, GameDef, Round } from '../../round/types.ts';
+import type { GameDef, Round } from '../../round/types.ts';
 import { PLAY_UNKNOWN } from '../quiz/kinds.ts';
-import { listenGame, listenOpts, listenRecord, tierAt, type ListenOpts, type ListenRules, type ListenSource } from '../listened.ts';
+import { listenGame, listenOpts, tierAt, type ListenOpts, type ListenRules, type ListenSource } from '../listened.ts';
 import { tailKeys, umbrella, wxBytes, wxOfBytes, type NewsWx } from './weather.ts';
 
 type NewsYaml = Extract<ListenItem, { kind: 'news' }>;
@@ -149,7 +148,3 @@ export function newsGame(src: ListenSource<NewsCard>): GameDef<NewsOpts> {
   const g = listenGame(NEWS, src);
   return { ...g, opts: newsOpts, tier: { of: (o) => o.ear, with: (o, tr) => ({ ...o, ...g.tier!.with(o, tr) }) } };
 }
-
-/** My answers of a game as its `listen` row's: my choice as `pick`. */
-export const newsRecord = (rounds: readonly NewsRound[], answers: readonly (AnswerValue | null)[], had: readonly boolean[], rp: readonly number[], done: boolean): ListenRow['r'] =>
-  listenRecord(NEWS, rounds, answers, had, rp, done);

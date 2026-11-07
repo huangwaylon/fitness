@@ -18,7 +18,6 @@ import { SR, convolve, filter, gain, impulse, lufs, noise, readPcm, scratch, wri
 import { WORK, unpackClips } from './kikimimi-packs.ts';
 import { FFMPEG, WHISPER_MODEL as MODEL } from './tts/tools.ts';
 
-const APP = join(import.meta.dirname, '..');
 /** The clips as loose files (the packs unpacked into the work folder: kikimimi-packs.ts). */
 const CLIPS = WORK;
 const OUT = join(import.meta.dirname, 'tts/beds');

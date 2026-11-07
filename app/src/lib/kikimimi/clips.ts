@@ -74,6 +74,12 @@ export function itemDur(it: Pick<Item, 'id' | 'lines'>, clips: Readonly<Record<s
   return Math.max(...starts.map((s, k) => s + (durs[k] as number) * 1000)) / 1000;
 }
 
+/** An item's length as played, ms (itemDur, rounded): a round's `play`; undefined while a clip is missing. */
+export const itemMs = (it: Pick<Item, 'id' | 'lines'>): number | undefined => {
+  const s = itemDur(it);
+  return s === undefined ? undefined : Math.round(s * 1000);
+};
+
 /** A sequence's start times (relay ms) from `at`, its lines' lengths `durs` (s): each its gap (s, `gaps[k - 1]`, else
  *  LINE_GAP) after the end of the one before. Heard late (`now` past `at`), a line already over is skipped (-1) and
  *  one under way plays whole from now, the ones after it moving on by as much. */

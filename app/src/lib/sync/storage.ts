@@ -158,6 +158,9 @@ export const DEVICE = {
   /** localStorage: `{ on, be }`: ききみみ's mic on this phone (off by default; lib/mic/pick.ts MicPrefs: the switch and
    *  the 音声認識 picked, `auto` by default). Never synced; no recording is ever kept (docs/kikimimi-mic.md §5). */
   mic: 'island.mic',
+  /** localStorage, the e2e's only: a JSON list of what the tests' recogniser "hears", one entry a take (lib/mic/pick.ts
+   *  stubScript, backends/stub.ts); set at all, the stub is this phone's recogniser. */
+  sttStub: 'e2e.stt',
   /** localStorage: `km` | `mi`: りょこう's distances on this phone (components/travel/units.ts; km by default). */
   travelUnits: 'island.travel.units',
   /** localStorage: `1` | `0`: けっこんしき's plan shows the finished tasks under すべて on this phone (hidden by default). */

@@ -4,7 +4,7 @@
 // (record: none, so the recorder keeps a mic game's answerless row: nothing heard or counted is in it). Its round and results are its own pages
 // (components/kikimimi/kuri/views.ts).
 import type { Item, Level } from '../../bank.ts';
-import { clipDur } from '../../clips.ts';
+import { clipDur, itemMs } from '../../clips.ts';
 import { itemOf, levelItems, loaded, type Unit } from '../../pool.ts';
 import type { Lane } from '../../round/registry.ts';
 import { quizOpts, type QuizOpts } from '../quiz/def.ts';
@@ -13,10 +13,6 @@ import { TAIKAI_IDS } from '../taikai/source.ts';
 import { eligible, kuriGame, kuriNext, syllables, type KuriItem, type KuriRound, type KuriSource } from './def.ts';
 
 const levelOf = (o: readonly number[]): Level => (quizOpts.decode(o)?.lv ?? 1) as Level;
-const ms = (id: string): number | undefined => {
-  const s = clipDur(id);
-  return s === undefined ? undefined : Math.round(s * 1000);
-};
 
 /** A level's sentences the run can draw (its chunk loaded), by level. */
 const POOLS = new Map<Level, KuriItem[]>();
@@ -40,7 +36,7 @@ const itemsOfIds = (ids: readonly number[]): Item[] => ids.flatMap((n) => {
 });
 
 const source: KuriSource = {
-  rounds: (_seed, _o, ids) => itemsOfIds(ids).map((it): KuriRound => ({ kind: 'kuri', id: it.id, play: ms(it.id) ?? PLAY_UNKNOWN })),
+  rounds: (_seed, _o, ids) => itemsOfIds(ids).map((it): KuriRound => ({ kind: 'kuri', id: it.id, play: itemMs({ id: it.id }) ?? PLAY_UNKNOWN })),
   next: (seed, o: QuizOpts, done) =>
     kuriNext(seed, done.map((d) => ({ ...d, n: TAIKAI_IDS.num(d.id) ?? -1 })), poolOf(o.lv as Level))
 };
