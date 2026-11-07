@@ -1,4 +1,6 @@
-# ききみみ: units (plan v2, 2026-11-06)
+# ききみみ: units (plan v2, 2026-11-06; status 2026-11-07)
+
+**Status:** 21 units, all `voiced` and playable: wave 1's 7 (§9, on recipe 1) and wave 2's 14 (curriculum-wave2.md §3.1, on recipe 2, §16); かわ 10, もり 11, none yet at やま or ほし. §1–§10 are the plan; §11 on is as built.
 
 v1 was reviewed by four people: a curriculum designer, an EFL teacher with a Japanese learner panel, the UX designer, and the engineering lead (/tmp/units-review/*.md). v2 resolves their reviews and adds the user's two decisions:
 - "Keep lessons fun, engaging and short, targeted at a short attention span, someone who doesn't like homework."
@@ -51,14 +53,14 @@ v1 was reviewed by four people: a curriculum designer, an EFL teacher with a Jap
   - **おと:** catch the chunks in connected speech (word / ことば タイル).
   - **じっせん:** faster, over noise, other American voices (はしご / conditions / アナウンス).
 - **Notes and transcripts** fold under 「くわしく」 on the reveal screen.
-- **Until ようじ でんわ / たちぎき are built,** チェック is a mixed check on held-out items behind a "phone errand" intro card. Lesson recipes carry a version number.
+- **Recipes carry a version.** Recipe 1's チェック is a mixed check on held-out items behind a "phone errand" intro card; recipe 2 (§16) plays a real call, tiles and a たちぎき.
 - **Skipping:** 「とばして チェック」 lets you go straight to the check. Each stamped unit returns once, after about 30 days, as a 6-question recheck.
 - **Ends with 「きょうの ひとこと」:** one line for the couple to say to each other.
 
 ## 4. Playing together, and two levels
 
 - **Write once, play at both levels.** A unit is written once at its stage. Both phones hear the same audio, and each player gets answer choices at their own tier: the B1+ partner an easier set, the stronger player an extra challenge item.
-- **Lobby:** a new 「しまの みち」 entry where the host picks a unit and a lesson. Co-op is the default.
+- **Lobby:** a 「しまの みち」 entry where the host picks a unit and a lesson (built, §13–§14). Co-op is the default.
 - **Shared passes (the user's decision):**
   - a co-op チェック at ≥ 5/6 as a pair stamps both players;
   - each person's stamps are visible to the partner;
@@ -80,7 +82,7 @@ v1 was reviewed by four people: a curriculum designer, an EFL teacher with a Jap
 
 ## 7. Size and the existing content
 
-- **48 units:** かわ 10, もり 14, やま 14, ほし 10.
+- **48 units planned:** かわ 10, もり 14, やま 14, ほし 10 (21 written by 2026-11-07: かわ 10, もり 11).
 - **Re-tagging what we have:**
   - About 22 units at もり and やま come from existing situational items. Refunds, meetings and partner plans are split across stages.
   - Each re-tagged unit needs `ph` phrase ids and 10–15 new items, because phrase overlap inside a situation is near zero.
@@ -105,8 +107,8 @@ v1 was reviewed by four people: a curriculum designer, an EFL teacher with a Jap
   3. Solo lessons, then stamps.
   4. The しまの みち UI: the path, the unit page, the results strip. This is a UX doc §6–7 update plus a WebKit prototype pass.
   5. Co-op lessons, after framework 8c.
-  6. The TS → YAML move with 9b, and per-unit packs with 9c.
-- **Effort:** about 6 agent-days of code plus about 2 of UI. Content waves start after U1.
+  6. Per-unit packs with 9c (built). The TS → YAML move of the level banks was dropped: the banks stay TypeScript, and only units and the listening content are YAML.
+- Steps 1–5 are built (§11, §13, §14).
 
 ## 9. The pilot before scaling
 
@@ -121,7 +123,7 @@ v1 was reviewed by four people: a curriculum designer, an EFL teacher with a Jap
 | 5 | ホテルで こまった (a hotel problem) | もり | たび |
 | 6 | しごとの ざつだん (small talk with coworkers) | もり | しごと |
 
-Both partners play wave 1 for a week. We tune from the listen rows and the user's feedback, then write the rest in waves of about 6.
+Both partners play wave 1 for a week. We tune from the listen rows and the user's feedback, then write the rest in waves of about 6. Wave 1 (with §10's 7th unit) was voiced 2026-11-06; wave 2 added 14 units (curriculum-wave2.md §3.1).
 
 ## 10. v2.1 amendments (the reviewers' sign-off notes)
 
@@ -211,11 +213,11 @@ Every lesson id that isn't under `review` is homed in the unit. The unit's own i
 - The levels' chunks are byte-identical with and without units.
 - `kikimimi/decks.golden.json` holds a digest of the decks for seeds 0–99 per level. A re-tagging commit must leave it unchanged. A deliberate change to the bank's content updates it with `vitest -u`.
 
-Wave 1 is written (draft, §12): もり's app/content/units/tr-guide.yaml, tr-hotel.yaml and wk-chat.yaml, and かわ's gl-clarify.yaml, gl-endcall.yaml, fr-replan.yaml and ev-bday.yaml (about 30 items each, mostly new and inline; the bank's under `review`, so no level item changes home). Each file's header comment carries its 「きょうの ひとこと」 (the schema has no field for it). The もり re-tag dry run is `npm run kikimimi:units-dry-run` (scripts/kikimimi-units-dry-run.ts), and its report is docs/reviews/2026-11-06-mori-retag-dry-run.md.
+Wave 1 (§12) is もり's tr-guide, tr-hotel and wk-chat and かわ's gl-clarify, gl-endcall, fr-replan and ev-bday (about 30 items each, mostly inline; the bank's under `review`, so no level item changes home), voiced 2026-11-06. Each file's header comment carries its 「きょうの ひとこと」 (the schema has no field for it). The もり re-tag dry run is `npm run kikimimi:units-dry-run` (scripts/kikimimi-units-dry-run.ts), and its report is docs/reviews/2026-11-06-mori-retag-dry-run.md.
 
-## 12. Wave-1 can-dos (draft, 2026-11-06)
+## 12. Wave-1 can-dos (2026-11-06)
 
-These are written to the §2 template before any content (§10). units.test checks every one against it (units.ts `candoProblems`). They follow the user's brief: each is one everyday moment the couple would really meet, small enough for three 2½-minute games. The English and Japanese copy goes to the EFL teacher and the Japanese panel before voicing (§10).
+Written to the §2 template before any content (§10; units.test checks each with units.ts `candoProblems`): each one everyday moment the couple would really meet, small enough for three 2½-minute games. The unit YAMLs carry them now; this block stays as the もり re-tag dry run's input (scripts/kikimimi-units-dry-run.ts reads it).
 
 ```yaml
 - unit: gl-clarify
@@ -308,7 +310,7 @@ These are written to the §2 template before any content (§10). units.test chec
 
 **Solo play** goes through the quiz's session and UI: `QuizGame.playLesson(unit, lesson)` deals the deck into my lobby kept alone (since framework 8b as the game `lesson`, games/lesson/def.ts, the lobby's seed kept) and shows the lesson's intro card (LessonIntro.svelte). The チェック's card is the phone errand: 「{host}から でんわ！ ようじを ききとろう」, with the 5-of-6 rule. A reveal in a lesson folds the note and a dialogue's transcript under 「くわしく」. Results add a strip: the unit's dots, the next core lesson, and on a チェック the stamp with my own first-listen tally (and the team's). もういっかい deals the lesson again at once.
 
-**The row** carries `u`, `l` and the stage's level; a co-op lesson would add `tm` from the session's `teamFirst` (questions someone got right on the first listen), wired but unused until 8c.
+**The row** carries `u`, `l` and the stage's level; a co-op lesson adds `tm` (below).
 
 **Stamps** (`kikimimi/stamps.ts` `unitsOf`, from gamesOf's games, which keep a lesson row's `u`, `l`, `tm`, every answer and `stampsUnit`):
 - a lesson's dot: a row of it with a whole game's answers (quick play never moves dots);
@@ -318,18 +320,18 @@ These are written to the §2 template before any content (§10). units.test chec
 
 **The phrase ずかん** (srs.ts): `phrasesOf` (caught: right on the first listen in 3 different items on ≥ 2 days, any mode) and `phraseReview` (a Leitner card per phrase, a new clip each, ≤ 8 a day, counting those reviewed today).
 
-**The test entry** (`?units`, UnitList.svelte) was replaced by しまの みち in U4 (§14). The e2e puts a fixture unit in through `__kiki.unit` (pool.ts `addUnit`).
+The e2e puts a fixture unit in through `__kiki.unit` (pool.ts `addUnit`).
 
-**Co-op lessons (framework 8c, 2026-11-06).** In a shared lobby the host's しまの みち card opens the path, and the lesson the host picks there (a unit page's lesson, とばして チェック) is everyone's: the game `lesson` goes out as `play` (the only wire that carries `u`) with its `cv`. The other phones take it as heard (game.svelte.ts: the lesson from the view, its intro card with 「{host}が はじめるのを まっています」) and send their tier for the unit (`tierFor` over きろく's level, as a `join`'s `tr`), so everyone hears the same items and audio with their own tier's choices; each phone grades each player against their tier (round/session.ts `deckFor`), so the team's tally and `tm` are the same on every phone. The intro card shows who's in it and, on a チェック, 「ふたりなら チームで いっぱつ 5もん でも、ふたりとも スタンプ」. Each phone writes its own row with `tm` (`teamFirst`, questions someone got right on the first listen), so `stampsUnit` (own ≥ 5 or `tm` ≥ 5) stamps everyone who played a co-op チェック the team passed; the results' strip shows the shared stamp with my own tally beside it (「じぶん いっぱつ 2/6 · チーム 6/6」), never the partner's. The 30-day recheck stays solo. A unit this phone's build doesn't have (or other content: its cv) is an update offered, not an invite. e2e kikimimi-coop (both stamped with B at 2/6, on the default wire and B on `?wire=quiz`; the update card).
+**Co-op lessons (framework 8c, 2026-11-06).** In a shared lobby the lesson the host picks on しまの みち is everyone's: the game `lesson` goes out as `play` (the only wire that carries `u`) with its `cv`. Each other phone sends its tier for the unit (`tierFor`, as a `join`'s `tr`), so everyone hears the same audio with their own tier's choices, and each phone grades each player against their tier (round/session.ts `deckFor`), so the team's tally and `tm` (`teamFirst`: questions someone got right on the first listen) match on every phone. Each phone writes its own row with `tm`, so `stampsUnit` stamps everyone in a co-op チェック the team passed; the strip shows the shared stamp beside my own tally (「じぶん いっぱつ 2/6 · チーム 6/6」), never the partner's. The recheck stays solo. A unit or cv this build lacks is an update offered, not an invite. e2e kikimimi-coop.
 
-**Left for later:** the phone-band condition on the チェック's audio; hub cards (with the hub); じっせん's ladders as a lesson.
+**Left for later:** じっせん's ladders as a lesson (they play only in はしご). Recipe 2's call brings the phone band to the チェック (§16).
 
 ## 14. U4 as built (2026-11-06): しまの みち
 
 docs/kikimimi-ux.md §6.3 (the path), §6.3b (a unit's page), §6.5 (the lobby's card), §6.7 (the results' strip) and §6.10 (a minimal phrase ずかん) describe what's built. In short:
 - **The model** is `kikimimi/path.ts` (pure, path.test): the stages as the spine, the anchors first in a stage, the current unit (the last one played and unstamped, else the first open one from my comfortable stage up), `nextLesson`, domain filters (other domains collapse to a dot; the anchors stay), a stage more than a step above my level shown softly but playable. progress.svelte.ts `pathUnits` / `currentPath` feed it from the index's path lines (and a fixture's chunk); a `draft` unit shows only with the dev hooks on.
-- **The UI** is `components/kikimimi/path/`: PathCard (in the lobby, until the hub), IslandPath, UnitPage (lazy chunks; the phrase ずかん is ずかん › ことば since U5: components/kikimimi/zukan/, docs/kikimimi-ux.md §6.10, ≤ 15 KB gzipped each by kikimimi-budget.ts), LessonDots (shared with the results' strip). The sheet keeps one stack over my lobby (path › unit, ずかん); a lesson's おわる comes back to it; the results' strip offers the next core lesson. In a shared lobby the host's lesson is everyone's (co-op lessons, §13, since 8c).
-- **Hub card 1's recheck** is a banner on the path until the hub exists.
+- **The UI** is `components/kikimimi/path/`: PathCard (in あそぶ and the lobby), IslandPath, UnitPage (lazy chunks; the phrase ずかん is ずかん › ことば since U5: components/kikimimi/zukan/, docs/kikimimi-ux.md §6.10, ≤ 15 KB gzipped each by kikimimi-budget.ts), LessonDots (shared with the results' strip). The sheet keeps one stack over my lobby (path › unit, ずかん); a lesson's おわる comes back to it; the results' strip offers the next core lesson. In a shared lobby the host's lesson is everyone's (co-op lessons, §13, since 8c).
+- **The 30-day recheck** shows on the hub (Hub.svelte, `rechecksDue`) and as a banner on the path.
 - **Tests:** path.test (ordering, the current unit, filters, the soft stage, the next lesson); e2e kikimimi-units (the path from the lobby, a unit's page, であい played solo moving its dot on the page and the path, a filter; とばして チェック's mission card and stamp on the results, the unit page and the path; the ずかん on the unit's phrases). `KIKI_SHOTS=1` writes /tmp/kikimimi-shots/u4/.
 
 ## 15. U7 as built (2026-11-07): letters and landmarks
@@ -375,11 +377,11 @@ lessons:
 
 **The fallback** (recipe.ts `kindCards` returns null) plays the lesson's recipe-1 deck. That deck is byte-identical to before (lesson.ts `lessonDeck`). It applies when:
 - the unit is on v1, or the lesson has no kind;
-- a kind's file isn't `listened` (a draft, or only voiced: none of wave 2's is yet);
+- a kind's file isn't `listened` (a draft, or only voiced; all 26 files are listened since 2026-11-07);
 - the file isn't loaded, or isn't that game's;
 - one of its ids isn't found.
 
-The decision reads the index's statuses only, so every phone of a build deals the same deck. recipe.test covers the deal, the fallback, the checks, the rounds, the grading and the row. e2e kikimimi-recipe2 covers a チェック with s2-call-a flipped to listened as served (the call's 2 memo rounds, 4 quiz items, the stamp, the row, the review), the fallback while it's a draft, and おと on the listened s2-tile-bank.
+The decision reads the index's statuses only, so every phone of a build deals the same deck. recipe.test covers the deal, the fallback, the checks, the rounds, the grading and the row. e2e kikimimi-recipe2 covers a チェック on a call (its 2 memo rounds, 4 quiz items, the stamp, the row, the review), the fallback on a draft, and おと on tiles.
 
 **Not yet:** じっせん as a ladder (§13: its ladders still play only in はしご), and an easier tier at はまべ or a harder one at やま for the cards (the ears stop at 0-3). The 7 wave-1 units stay on v1 until they have calls (wave 3).
 
