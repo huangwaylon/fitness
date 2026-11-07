@@ -776,7 +776,18 @@
 "maff_kyodo-kofuku_mame_shiga",
 "maff_kyodo-kogyono_tenpura_shiga",
 "maff_kyodo-koinomani_yamagata",
-"maff_kyodo-koinokaraage_ibaraki"
+"maff_kyodo-koinokaraage_ibaraki",
+"maff_kyodo-kyuritokawaebinonimono_kochi",
+"maff_kyodo-kujaku_oita",
+"maff_kyodo-kutuzoko_no_nituke_fukuoka",
+"maff_kyodo-kurumi_gobou_shiga",
+"maff_kyodo-kounago_no_kugini_mie",
+"maff_kyodo-mehikari_no_karaage_miyazaki",
+"maff_kyodo-kushiasari_aichi",
+"maff_kyodo-maruyaki_saba_fukui",
+"maff_kyodo-matsu_yama_zushi_ehime",
+"maff_kyodo-makononitsuke_ishikawa",
+"maff_kyodo-masunoankake_yamagata"
 ],
 "meat": [
 "mext-11227",
@@ -1098,7 +1109,13 @@
 "maff_kyodo-kashiwa_meshi_fukuoka",
 "maff_kyodo-karaimogohan_kagoshima",
 "maff_kyodo-kirasumameshi_oita",
-"maff_kyodo-kiinaiokowa_aichi"
+"maff_kyodo-kiinaiokowa_aichi",
+"maff_kyodo-kujiragohan_shimane",
+"maff_kyodo-koshimeshi_kochi",
+"maff_kyodo-maze_meshi_kumamoto",
+"maff_kyodo-matsutakegohan_kyoto",
+"maff_kyodo-kurigohan_kyoto",
+"maff_kyodo-mame_gohan_wakayama"
 ],
 "season": [
 "mext-17007",
@@ -1397,7 +1414,17 @@
 "maff_kyodo-kensan_yaki_niigata",
 "maff_kyodo-kenchan_oita",
 "maff_kyodo-konchin_kochi",
-"maff_kyodo-kamonasunodengaku_kyoto"
+"maff_kyodo-kamonasunodengaku_kyoto",
+"maff_kyodo-koneri_oita",
+"maff_kyodo-konnyaku_no_hachihai_kagawa",
+"maff_kyodo-konnyaku_no_shiraae_kagawa",
+"maff_kyodo-mana_mehari_nara",
+"maff_kyodo-manbano_kenchan_kagawa",
+"maff_kyodo-manganzitougarashitojakonotaitan_kyoto",
+"maff_kyodo-korokakinamasu_kyoto",
+"maff_kyodo-kurenonimono_kochi",
+"maff_kyodo-kurumafu_no_nimono_niigata",
+"maff_kyodo-kurodaseritohorensonoohitashi_shimane"
 ],
 "soup": [
 "dishes-miso-tofu-wakame",
@@ -1517,7 +1544,11 @@
 "maff_kyodo-iwashino_dango_jiru_chiba",
 "maff_kyodo-kabocya_no_dango_jiru_fukuoka",
 "maff_kyodo-kanimaki_jiru_miyazaki",
-"maff_kyodo-kenojiru_aomori"
+"maff_kyodo-kenojiru_aomori",
+"maff_kyodo-kyuuri_no_hiyajiru_mie",
+"maff_kyodo-kujira_jiru_niigata",
+"maff_kyodo-megisunodangojiru_ishikawa",
+"maff_kyodo-kujirajiru_hokkaido"
 ],
 "soy": [
 "mext-04032",
@@ -1679,7 +1710,9 @@
 "maff_kyodo-kokera_sushi_wakayama",
 "maff_kyodo-kobuzushi_kochi",
 "maff_kyodo-kankan_zushi_kagawa",
-"maff_kyodo-kakinoha_zushi_nara"
+"maff_kyodo-kakinoha_zushi_nara",
+"maff_kyodo-kono_shirono_sugata_zushi_kumamoto",
+"maff_kyodo-mehari_zushi_wakayama"
 ],
 "sweet": [
 "mext-15103",
@@ -1851,7 +1884,14 @@
 "maff_kyodo-kibimochi_kyoto",
 "maff_kyodo-kirazumochi_kochi",
 "maff_kyodo-kinka_mochi_aomori",
-"maff_kyodo-keiran_aomori"
+"maff_kyodo-keiran_aomori",
+"maff_kyodo-kujiramochi_yamagata",
+"maff_kyodo-koppa_mochi_kumamoto",
+"maff_kyodo-kone_tsuke_nagano",
+"maff_kyodo-meno_mochi_arare_miyazaki",
+"maff_kyodo-memaki_yama_nashi",
+"maff_kyodo-makigaki_kumamoto",
+"maff_kyodo-kuzu_mochi_nara"
 ],
 "veg": [
 "mext-08001",
@@ -2269,7 +2309,8 @@
 "maff_kyodo-46_13_nagasaki",
 "maff_kyodo-jidori_no_miso_koro_bakashi_miyazaki",
 "maff_kyodo-kappo_dori_miyazaki",
-"maff_kyodo-koinokaraage_ibaraki"
+"maff_kyodo-koinokaraage_ibaraki",
+"maff_kyodo-mehikari_no_karaage_miyazaki"
 ],
 "curry": [
 "eatout-curry_pork_chain",
@@ -2846,7 +2887,16 @@
 "maff_kyodo-kobunano_kanroni_nagano",
 "maff_kyodo-kofuku_mame_shiga",
 "maff_kyodo-kogyono_tenpura_shiga",
-"maff_kyodo-koinomani_yamagata"
+"maff_kyodo-koinomani_yamagata",
+"maff_kyodo-kujaku_oita",
+"maff_kyodo-kutuzoko_no_nituke_fukuoka",
+"maff_kyodo-kurumi_gobou_shiga",
+"maff_kyodo-kounago_no_kugini_mie",
+"maff_kyodo-kushiasari_aichi",
+"maff_kyodo-maruyaki_saba_fukui",
+"maff_kyodo-matsu_yama_zushi_ehime",
+"maff_kyodo-makononitsuke_ishikawa",
+"maff_kyodo-masunoankake_yamagata"
 ],
 "meat": [
 "mext-11279",
@@ -3125,7 +3175,13 @@
 "maff_kyodo-kashiwa_meshi_fukuoka",
 "maff_kyodo-karaimogohan_kagoshima",
 "maff_kyodo-kirasumameshi_oita",
-"maff_kyodo-kiinaiokowa_aichi"
+"maff_kyodo-kiinaiokowa_aichi",
+"maff_kyodo-kujiragohan_shimane",
+"maff_kyodo-koshimeshi_kochi",
+"maff_kyodo-maze_meshi_kumamoto",
+"maff_kyodo-matsutakegohan_kyoto",
+"maff_kyodo-kurigohan_kyoto",
+"maff_kyodo-mame_gohan_wakayama"
 ],
 "saba": [
 "mext-10154",
@@ -3260,7 +3316,8 @@
 "maff_kyodo-ebisu_ishikawa",
 "maff_kyodo-ebiten_ehime",
 "maff_kyodo-ebimame_shiga",
-"maff_kyodo-ebibochi_miyagi"
+"maff_kyodo-ebibochi_miyagi",
+"maff_kyodo-kyuritokawaebinonimono_kochi"
 ],
 "side": [
 "dishes-hiyayakko",
@@ -3460,7 +3517,17 @@
 "maff_kyodo-kensan_yaki_niigata",
 "maff_kyodo-kenchan_oita",
 "maff_kyodo-konchin_kochi",
-"maff_kyodo-kamonasunodengaku_kyoto"
+"maff_kyodo-kamonasunodengaku_kyoto",
+"maff_kyodo-koneri_oita",
+"maff_kyodo-konnyaku_no_hachihai_kagawa",
+"maff_kyodo-konnyaku_no_shiraae_kagawa",
+"maff_kyodo-mana_mehari_nara",
+"maff_kyodo-manbano_kenchan_kagawa",
+"maff_kyodo-manganzitougarashitojakonotaitan_kyoto",
+"maff_kyodo-korokakinamasu_kyoto",
+"maff_kyodo-kurenonimono_kochi",
+"maff_kyodo-kurumafu_no_nimono_niigata",
+"maff_kyodo-kurodaseritohorensonoohitashi_shimane"
 ],
 "soba": [
 "dishes-zaru-soba",
@@ -3605,7 +3672,11 @@
 "maff_kyodo-iwashino_dango_jiru_chiba",
 "maff_kyodo-kabocya_no_dango_jiru_fukuoka",
 "maff_kyodo-kanimaki_jiru_miyazaki",
-"maff_kyodo-kenojiru_aomori"
+"maff_kyodo-kenojiru_aomori",
+"maff_kyodo-kyuuri_no_hiyajiru_mie",
+"maff_kyodo-kujira_jiru_niigata",
+"maff_kyodo-megisunodangojiru_ishikawa",
+"maff_kyodo-kujirajiru_hokkaido"
 ],
 "soy": [
 "mext-05018",
@@ -3748,7 +3819,9 @@
 "maff_kyodo-kokera_sushi_wakayama",
 "maff_kyodo-kobuzushi_kochi",
 "maff_kyodo-kankan_zushi_kagawa",
-"maff_kyodo-kakinoha_zushi_nara"
+"maff_kyodo-kakinoha_zushi_nara",
+"maff_kyodo-kono_shirono_sugata_zushi_kumamoto",
+"maff_kyodo-mehari_zushi_wakayama"
 ],
 "sweet": [
 "mext-15103",
@@ -3913,7 +3986,14 @@
 "maff_kyodo-kibimochi_kyoto",
 "maff_kyodo-kirazumochi_kochi",
 "maff_kyodo-kinka_mochi_aomori",
-"maff_kyodo-keiran_aomori"
+"maff_kyodo-keiran_aomori",
+"maff_kyodo-kujiramochi_yamagata",
+"maff_kyodo-koppa_mochi_kumamoto",
+"maff_kyodo-kone_tsuke_nagano",
+"maff_kyodo-meno_mochi_arare_miyazaki",
+"maff_kyodo-memaki_yama_nashi",
+"maff_kyodo-makigaki_kumamoto",
+"maff_kyodo-kuzu_mochi_nara"
 ],
 "tofu": [
 "mext-04032",
