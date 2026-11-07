@@ -1,0 +1,40 @@
+# ようじ でんわ S1 かわ (b): the calls of wave 2a's かわ units (docs/curriculum-wave2.md §3.1, §3.2: one per unit, its
+# チェック from recipe v2), each with one complication: a pizza place out of an ingredient and running late (fd-order),
+# a shop calling about a size it's out of (sh-shop), a neighbor's favor that grows (hm-neighbor), a clinic moving an
+# appointment and a pharmacy's directions (hl-clinic), a weekend plan that changes on the line (mc-weekend), a friend
+# who's bringing someone (gl-intro), an invitation half-declined (gl-invite). Unvoiced: batch A2.
+schema: 1
+unit: s1-call-b
+game: call
+stage: 2
+track: life
+seeds: [14, 26, 27, 32, 36, 48, 51]
+features: { primary: self-repair, review: weak-form }
+cando: "電話で 注文や 予約の 確認と 変更を 聞き取って メモできる"
+status: draft
+cast: { me: us-m3 }
+items:
+  - kind: call
+    id: call-pizza-order
+    ask: "ピザ屋から 電話。メモしよう"
+    ctx: "持ち帰りのピザを頼んだ店から電話です"
+    scene: living
+    channel: phone
+    lines:
+      - { who: tangy, en: "Hi, this is Tangy from Slice House. I'm calling about your pickup order, the large veggie and the garlic knots?", tts: "Hi, this is Tangy from Slice House. I'm callin' about yer pickup order, the large veggie an' the garlic knots?", ja: "もしもし、スライスハウスのタンジーです。お持ち帰りのご注文、ベジタブルのLとガーリックノットの件でお電話しました。" }
+      - { who: me, en: "Yes, that's me. Is everything okay?", ja: "はい、私です。何かありました？" }
+      - { who: tangy, en: "So, we're all out of mushrooms tonight. Can we do green peppers instead, or would you rather skip them?", tts: "So, we're all outta mushrooms tonight. Can we do green peppers instead, or wouldja rather skip 'em?", ja: "実は今夜マッシュルームを切らしていて。代わりにピーマンでいいですか、それともなしにしますか？" }
+      - { who: me, en: "Green peppers are fine.", ja: "ピーマンで大丈夫です。" }
+      - { who: tangy, en: "Great. The knots come with marinara, and ranch is a dollar extra, if you want it.", tts: "Great. The knots come with marinara, an' ranch is a dollar extra, if ya want it.", ja: "ありがとうございます。ガーリックノットにはマリナーラが付きます。ランチソースは1ドル追加でお付けできます。" }
+      - { who: tangy, en: "Oh, and sorry, I had the time wrong. It won't be ready at seven-fifteen. It'll be more like seven-forty. The oven's backed up.", tts: "Oh, an' sorry, I had the time wrong. It won't be ready at seven-fifteen. It'll be more like seven-forty. The oven's backed up.", ja: "あ、すみません、時間を間違えていました。7時15分には間に合いません。7時40分ごろになります。オーブンが詰まっていて。", repair: true }
+      - { who: me, en: "Seven-forty. Got it. See you then.", ja: "7時40分ですね。了解です。ではそのときに。" }
+    half: [0, 0, 0, 0, 1, 1, 1]
+    memo:
+      - why: "all out of mushrooms でマッシュルームの代わりにピーマン。マリナーラは付くが、ランチは a dollar extra。受け取りは言い直した7時40分。"
+        slots:
+          - { ask: "マッシュルームの 代わりは？", options: ["ピーマン", "なし", "オリーブ"], answer: 0, cja: ["ピーマン", "何ものせない", "オリーブ"] }
+          - { ask: "ガーリックノットに 付くのは？", options: ["マリナーラ", "ランチ", "何も 付かない"], answer: 0, cja: ["マリナーラソース", "ランチソース", "何も付かない"] }
+          - { ask: "ランチソースは？", options: ["1ドル 追加", "無料", "品切れ"], answer: 0, cja: ["1ドル追加", "無料", "品切れ"] }
+          - { ask: "受け取りは 何時？", options: ["7:14", "7:15", "7:40"], answer: 2, cja: ["7時14分", "7時15分", "7時40分"] }
+    note: "I had the time wrong の あとが 正しい 時間"
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: [phone], features: [self-repair, weak-form, numbers] }
