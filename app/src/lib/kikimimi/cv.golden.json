@@ -167,6 +167,10 @@
   "cv": "41a9d4",
   "decks": "d121f7d4e20e2026"
  },
+ "tachi:s2-tachi-c": {
+  "cv": "1e77a3",
+  "decks": "bfe5a86b26f21d50"
+ },
  "tachi:s3-tachi-a": {
   "cv": "a0e8ad",
   "decks": "78808b362f7293a2"
@@ -174,6 +178,10 @@
  "tachi:s3-tachi-b": {
   "cv": "6edc36",
   "decks": "09d2a91bd371e181"
+ },
+ "tachi:s3-tachi-c": {
+  "cv": "05409c",
+  "decks": "1d8083ada9afdf82"
  },
  "taikai:all": {
   "cv": "631d74",
