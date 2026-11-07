@@ -371,7 +371,7 @@ The listening kinds (`tile`, `call`, `tachi`; content/listen/*.yaml, not story/)
 - **Gate:** every status compiles. Past `draft`, every clip must exist, or the compiler fails; the games show `listened` only (§6).
 - **Clip ids** (`listenClipIds`): a tile's id, or its `clip`; a call's or a たちぎき's lines are `<id>-<n>` (n from 1). The audio script speaks them at level stage + 1 (S1 かわ → 3: no slow take), a call's `me` in the file's `cast.me`, a call in its phone band. It reads a draft file only under `--only`. Each file's clips go in its own pack (`s1-tile-a`, kikimimi-packs.ts).
 - **Checks** (beyond the README's): US voices only; the US-only lint (`notUs`, over `en`, lines and plan choices, never `tts`; `accent-exposure` exempt), an error on content/listen and on the units' items and a warning on the bank (none today); ids apart from every bank, unit and rung clip. **Japanese help** (bank.ts helpProblems) is checked wherever it appears, and required past draft at these places: a tile's `ctx` and `why`; a call's `ctx`, each memo round's `why` and each slot's `cja` (one per option); each たちぎき round's `ctx` and `why` (the plan round's `cja`, one per choice, optional).
-- **Not yet:** `rush` and `news`, which their lanes add to listen.ts as kinds (W2-4, W2-5).
+- **Not yet:** `news`, which its lane adds to listen.ts as a kind (W2-5). `rush` came with W2-4 ("すうじ ラッシュ as built").
 
 ### The registry as built (W2-C2, 2026-11-07)
 
@@ -434,6 +434,19 @@ Every game goes through `kikimimi/round/registry.ts` as a **lane**. The quiz, la
 - **Row:** `gm: 'call'`, each round I had `[call id, ok, wrong-rows mask over the call's memo, rp]` (`callRecord`; `wrongRows` reads it back).
 - **Shared fix:** quiz/view.ts reads a two-int answer as a wager only in the tournament (a two-row memo was taken for one).
 - **e2e** kikimimi-call (solo, night, co-op): the built index's s1-call flipped to `listened` as the test serves it; nothing ships listened.
+
+### すうじ ラッシュ as built (W2-4, 2026-11-07)
+
+`games/rush/` (def.ts pure, lane.ts over listenLane) and `components/kikimimi/rush/` (RushPlay, RushResults, Counter, board.ts); strings in i18n/kiki-rush.*.
+- **Content:** `scripts/kikimimi-rush.ts` (`npm run kikimimi:rush`; `--check`, `--clips`) expands 60 frames (30 かわ, 30 もり; six counters: café, konbini, ticket window, deli on a trip in dollars, taxi stand, pharmacy) four times each, by four of the 12 US voices, into s1-rush.yaml and s2-rush.yaml: 240 customers, one clip each, a third corrected at seeded random places. A frame's line comes plain or with a slip (`w`, then the cue: make that, I mean, sorry, no wait, scratch that, hang on, did I say…), sometimes with a second number (`o`). The four chips are the answer, the slip, `o`, the -teen / -ty twin and near values, ascending, with `cja`, `why` and `note` written from the frame. listen.ts kind `rush`: `at`, `speaker`, `en`/`tts`/`ja`, `ask`, 4 `options`, `answer`, `was` (with the self-repair feature), the help required past draft (`ctx`, `cja`, `why`). Its shape for the cv holds the chips, since a tier keeps them by their numbers. rush.test checks the files are as generated and kept apart from the bank (near-duplicates among rush items are exempt).
+- **Deck:** options `[lv, timer, ear]`; 8 customers by the seed, never two of one frame. A card is an Item (`type: 'num'`, choices the authored chips), `rush: {ask, at, was, b}`.
+- **Tiers** (the ear against the place): hard all 4; as authored 3, the farthest from the answer dropped, but never `was` or the -teen / -ty twin (`twins`); easy 3, `was` dropped. The row's pick is the chip as authored.
+- **Timing:** the answers open when the order ends; 8 s (`WINDOW`) whatever こたえる じかん, none with なし.
+- **Points:** a right ticket pays `questionPoints(ear, b)`, with b the place plus 0.5 for a correction (the tournament's rule), so しょうぶ (`modes.vs`) works against expectation. Co-op results count customers, not points.
+- **Co-op 「ふたつの レジ」:** `roles: 2`; customer i goes to register `i % 2`. The other phone answers `PASS` (99) as its window opens. PASS is valid, never right and has no row, so the team's `team.right` is the customers served. The partner's pick is shown on my chips at the reveal.
+- **Combo:** customers served right on the first listen in a row (mine without a replay; co-op the partner's as each reveal showed them, board.ts `HEARD`). A miss resets it, the customer says the line again (one replay at the reveal), and the line goes on. The results show the best combo.
+- **Audio:** none yet. Both files stay `draft`. Batch A3 voices them with `npm run audio:kikimimi -- --only '^rush-'` (240 clips; `--clips` lists them), the café, konbini and deli lines on the café bed and the ticket window on the station one. bank.test's every-clip rule now applies per file.
+- **e2e** kikimimi-rush (solo with one miss, night shots, co-op on two phones): both files flipped to `listened` as served; unvoiced, each order plays 2 s of silence.
 
 ## 10. Risks
 

@@ -340,9 +340,9 @@ describe('kikimimi bank', () => {
         expect(c.slow, id).toBeUndefined();
       }
     }
-    // the listening kinds': every clip once any is made, a call's or a たちぎき's whole turn 14 s at most (a call's
-    // correction comes inside a long turn: 12.9 s)
-    if ([...LISTEN_IDS].some((id) => CLIPS[id])) for (const id of LISTEN_IDS) {
+    // the listening kinds': every clip of a file once any of its is made (a file is voiced whole: すうじ ラッシュ's wait for
+    // A3), a call's or a たちぎき's whole turn 14 s at most (a call's correction comes inside a long turn: 12.9 s)
+    for (const ids of readListen().map(({ raw }) => listenClipItems(raw).map((it) => it.id))) if (ids.some((id) => CLIPS[id])) for (const id of ids) {
       const c = CLIPS[id];
       expect(c, id).toBeDefined();
       expect(c.dur, id).toBeGreaterThan(0.5);

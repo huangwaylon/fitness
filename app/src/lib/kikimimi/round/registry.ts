@@ -101,6 +101,7 @@ const LATER: Readonly<Record<GameId, Later>> = {
   tile: { lane: () => import('../games/tile/lane.ts') },
   tachi: { lane: () => import('../games/tachi/lane.ts') },
   call: { lane: () => import('../games/call/lane.ts') },
+  rush: { lane: () => import('../games/rush/lane.ts') },
   mane: { lane: () => import('../games/mane/lane.ts'), content: () => true, mode: { id: 'mane', group: 'koe', icon: '🦜', mins: 2, qs: 4, coop: false, game: 'mane', requires: 'mic', gate: micOn } },
   kuri: { lane: () => import('../games/kuri/lane.ts'), content: () => true, mode: KURI_MODE },
 };

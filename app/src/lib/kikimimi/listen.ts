@@ -1,5 +1,5 @@
 // ききみみ's listening kinds (docs/curriculum-wave2.md §3.4, kikimimi-framework.md §8 and "Listen parts", content/listen/
-// README.md): the schema of app/content/listen/*.yaml (ことば タイル `tile`, ようじ でんわ `call`, たちぎき `tachi`), its
+// README.md): the schema of app/content/listen/*.yaml (ことば タイル `tile`, ようじ でんわ `call`, たちぎき `tachi`, すうじ ラッシュ `rush`), its
 // checker (the README's rules, the Japanese help on each kind, the US-only lint), the kinds' clip ids and the clips as
 // the audio script speaks them, and each file as compiled (compile.ts: `parts/<unit>.json`, the index's `listen` and
 // `games`). The compiler's, the audio scripts' and the tests' (it reads the roster); the phone imports its types only.
@@ -8,7 +8,7 @@ import { CHANNELS, PRAGMATICS, REGISTERS, SCENE_IDS, accentOf, helpProblems, typ
 import { CAST } from './cast.ts';
 import { CAST_IDS } from './speech.ts';
 
-const LISTEN_KINDS = ['tile', 'call', 'tachi'] as const;
+const LISTEN_KINDS = ['tile', 'call', 'tachi', 'rush'] as const;
 type ListenKind = (typeof LISTEN_KINDS)[number];
 type ListenStatus = 'draft' | 'voiced' | 'listened';
 
@@ -86,7 +86,30 @@ interface TachiItem extends Common {
   rounds: TachiRound[];
 }
 
-export type ListenItem = TileItem | CallItem | TachiItem;
+/** すうじ ラッシュ: one customer's order (one clip, its id; written by scripts/kikimimi-rush.ts) and the ticket it asks
+ *  for (`ask`): its 4 chips, ascending, the right one and the one said before a self-correction (`was`). */
+interface RushItem extends Common {
+  kind: 'rush';
+  /** The counter (the stage's sign). */
+  at: (typeof RUSH_AT)[number];
+  speaker: RosterId;
+  en: string;
+  tts?: string;
+  ja: string;
+  ask: string;
+  options: string[];
+  answer: number;
+  was?: number;
+  cja?: string[];
+  why?: string;
+  /** Compiled: its clip id (its own id). */
+  clip?: string;
+}
+
+/** すうじ ラッシュ's counters. */
+export const RUSH_AT = ['cafe', 'konbini', 'ticket', 'deli', 'taxi', 'pharmacy'] as const;
+
+export type ListenItem = TileItem | CallItem | TachiItem | RushItem;
 
 /** A file's header (content/listen/README.md "Header"). */
 interface ListenHead {
@@ -110,7 +133,7 @@ export type ListenEntry = [game: ListenKind, stage: number, status: ListenStatus
 
 /** An item's clip ids: a tile's own id (or its bank item's), a call's or a たちぎき's one per line, `<id>-<n>` (n from 1). */
 export const listenClipIds = (it: ListenItem): string[] =>
-  it.kind === 'tile' ? [it.clip ?? it.id] : it.lines.map((_, n) => `${it.id}-${n + 1}`);
+  it.kind === 'tile' ? [it.clip ?? it.id] : it.kind === 'rush' ? [it.id] : it.lines.map((_, n) => `${it.id}-${n + 1}`);
 
 /** A file as parsed (compile.ts readListen). */
 export interface ListenSource {
@@ -162,7 +185,7 @@ export const usProblems = (it: Parameters<typeof shownEnglish>[0]): string[] =>
 
 // ---- the checker (content/listen/README.md "Checks") ------------------------------------------------------------------
 
-const GAMES = ['quiz', 'ladder', 'tile', 'call', 'tachi', 'news', 'long', 'serial'];
+const GAMES = ['quiz', 'ladder', 'tile', 'call', 'tachi', 'rush', 'news', 'long', 'serial'];
 const TRACKS = ['life', 'people', 'work', 'broadcast'];
 const STATUSES: readonly ListenStatus[] = ['draft', 'voiced', 'listened'];
 /** bank.ts Tags conditions, plus the drafts' new ones (README "Vocabulary"). */
@@ -185,7 +208,7 @@ const hasWords = (en: string, at: string) => new RegExp(`(^|[^A-Za-z'])${at.repl
 
 /** One file's problems (empty: fine). `bank` holds the voiced items a derived tile may name (by id). Past `draft`
  *  the Japanese help is required (wave 2 §3.4: tile ctx, why; call ctx, cja per chip, why per memo round; たちぎき ctx
- *  and why per round); present, it's checked whatever the status. */
+ *  and why per round; rush ctx, cja, why); present, it's checked whatever the status. */
 export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<string, Pick<Item, 'en' | 'speaker'>> = new Map()): string[] {
   const u = (raw ?? {}) as Obj & { unit: string; seeds: number[]; cast?: Record<string, string>; items: Obj[] };
   const bad: string[] = [];
@@ -307,6 +330,19 @@ export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<strin
       }
     }
 
+    if (it.kind === 'rush') {
+      speaker(where, it.speaker);
+      spoken(where, it);
+      if (!isStr(it.ask)) at(where, 'ask');
+      if (!(RUSH_AT as readonly unknown[]).includes(it.at)) at(where, `at ${it.at}`);
+      const opts = it.options;
+      if (!strs(opts) || opts.length !== 4 || new Set(opts).size !== 4 || !isInt(it.answer, 0, 3)) at(where, 'options: 4 distinct chips, answer in range');
+      if (it.was !== undefined && (!isInt(it.was, 0, 3) || it.was === it.answer)) at(where, 'was: another chip');
+      const repair = strs((it.tags as Obj | undefined)?.features) && ((it.tags as Obj).features as string[]).includes('self-repair');
+      if ((it.was !== undefined) !== repair) at(where, 'a `was` and the self-repair feature go together');
+      help(where, { choices: opts, cja: it.cja, why: it.why, ctx: it.ctx }, ['ctx', 'why', 'cja']);
+    }
+
     if (it.kind === 'tachi') {
       const lines = (it.lines ?? []) as Obj[];
       if (!Array.isArray(it.lines) || lines.length < 6) at(where, 'a tachi needs ≥ 6 lines');
@@ -364,8 +400,8 @@ export function listenClipItems(raw: unknown): Item[] {
   const castOf = (who: string): CastId => (u.cast?.[who] ?? CAST[who as RosterId]) as CastId;
   return u.items.flatMap((it): Item[] => {
     const base = { lv: levelOf(u.stage), type: 'gist' as const, choices: [], answer: 0, tags: it.tags as Tags, ...(it.channel && { channel: it.channel }) };
-    if (it.kind === 'tile') {
-      if (it.clip) return [];
+    if (it.kind === 'tile' || it.kind === 'rush') {
+      if (it.kind === 'tile' && it.clip) return [];
       const cast = castOf(it.speaker);
       return [{ ...base, id: it.id, en: it.en, ja: it.ja, speaker: it.speaker, voice: accentOf(cast), cast, ...(it.tts && { tts: it.tts }) }];
     }
@@ -388,15 +424,17 @@ export function listenPart(raw: unknown, bank: ReadonlyMap<string, Pick<Item, 's
       const ids = listenClipIds(it);
       return (it.kind === 'tile'
         ? { ...drop(it), ...(it.clip && { speaker: bank.get(it.clip)!.speaker }), clip: ids[0] }
-        : { ...it, lines: it.lines.map((l, n) => ({ ...drop(l), clip: ids[n] })) }) as ListenItem;
+        : it.kind === 'rush' ? { ...drop(it), clip: ids[0] }
+          : { ...it, lines: it.lines.map((l, n) => ({ ...drop(l), clip: ids[n] })) }) as ListenItem;
     })
   };
 }
 
 /** What shapes a file's decks (its content version's input, compile.ts): each item's id, kind and answer shape (a
  *  tile's tiles and decoys; a call's halves and its memo's option counts and answers; a たちぎき's speakers, offsets
- *  and answers). No Japanese, notes or marks. */
+ *  and answers; a rush's chips (a tier keeps them by their numbers), answer and `was`). No Japanese, notes or marks. */
 export const listenShape = (it: ListenItem): unknown =>
   it.kind === 'tile' ? [it.id, it.kind, it.tiles, it.decoys]
+    : it.kind === 'rush' ? [it.id, it.kind, it.options, it.answer, it.was ?? -1]
     : it.kind === 'call' ? [it.id, it.kind, it.half, it.memo.map((r) => r.slots.map((s) => [s.options.length, s.answer]))]
       : [it.id, it.kind, it.lines.map((l) => [l.who, l.at]), it.rounds.map((r) => [r.type, r.answer, r.type === 'plan' ? r.choices.length : 0])];
