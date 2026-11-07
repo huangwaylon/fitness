@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { cleanData } from '#lib/contract/log.ts';
-import { createBootClock, modelFetches, swState } from './boot.ts';
+import { bootReport, createBootClock, modelFetches, swState, watchBoot } from './boot.ts';
 
 describe('the launch clock (perf.boot)', () => {
   it('times the first frame, the models in, the island whole and the frames meanwhile', () => {
@@ -39,6 +39,29 @@ describe('the launch clock (perf.boot)', () => {
     c.tick(500);
     expect(c.spoiled()).toBe(true);
     expect(c.done()).toBe(false);
+  });
+
+  it('the watch asks for no more frames once the island is paused before it stood whole (a sheet over it)', () => {
+    const frames: FrameRequestCallback[] = [];
+    vi.stubGlobal('requestAnimationFrame', (f: FrameRequestCallback) => frames.push(f));
+    vi.stubGlobal('cancelAnimationFrame', () => {});
+    vi.stubGlobal('document', { hidden: false, addEventListener() {}, removeEventListener() {} });
+    try {
+      let paused = false;
+      const w = watchBoot(() => ({ progs: 1, fieldsMs: 0, fields: 'cache' }), () => paused);
+      w!.clock.frame(0, 10, false);
+      w!.clock.loaded(20);
+      frames.shift()!(16);
+      frames.shift()!(33);
+      expect(frames).toHaveLength(1);
+      paused = true;
+      frames.shift()!(50);
+      expect(frames).toHaveLength(0);
+      expect(w!.clock.spoiled()).toBe(true);
+      expect(bootReport()).toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('counts the models from the network, and reads the service worker', () => {

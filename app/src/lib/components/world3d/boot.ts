@@ -7,6 +7,8 @@ import { log } from '#lib/sync/log.ts';
 
 /** After `shown`, the frames are watched this much longer (the follow-up frames: the shadows, the flourishes' warm-up). */
 const SETTLE_MS = 1000;
+/** A watch not over by then is let go, unreported (it asks for a frame each display frame while it runs). */
+const WATCH_MAX_MS = 30_000;
 
 export interface BootReport {
   /** ms since the navigation's start: the island's mount (after the ground's fields), its first frame, the models in,
@@ -55,7 +57,8 @@ export function modelFetches(entries: readonly { name: string; transferSize?: nu
 type Clocked = Omit<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'sw' | 'warm' | 'net'>;
 
 /** The launch's clock: the engine's frames (`frame`), the page's display frames (`tick`), the marks. `done` once
- *  SETTLE_MS past `shown`; spoiled (never done) by the page hidden meanwhile: its frames say nothing then. */
+ *  SETTLE_MS past `shown`; spoiled (never done) by the page hidden or the island paused meanwhile: its frames say
+ *  nothing then. */
 export function createBootClock(settleMs = SETTLE_MS) {
   const c: Clocked = { mount: 0, first: 0, loaded: 0, shown: 0, long: 0, draw: 0, appear: 0, steps: 0 };
   let lastTick = 0, done = false, spoiled = false;
@@ -78,10 +81,10 @@ export function createBootClock(settleMs = SETTLE_MS) {
         if (settled) c.shown = r(t1);
       }
     },
-    /** A display frame (rAF), or the page hidden (`hidden`). */
-    tick(t: number, hidden = false) {
+    /** A display frame (rAF), or the launch interrupted (`spoil`: the page hidden, the island paused). */
+    tick(t: number, spoil = false) {
       if (done) return;
-      if (hidden) spoiled = true;
+      if (spoil) spoiled = true;
       if (spoiled) return;
       if (lastTick && c.first) c.long = Math.max(c.long, r(t - lastTick));
       lastTick = t;
@@ -103,9 +106,10 @@ export const bootReport = (): BootReport | null => report;
 /**
  * The launch's watch, from the island's mount (null: not the page's first): its clock for the engine's frames and the
  * marks, the display frames counted here; at the end, the report logged (`perf.boot`) and kept. `extra()` at the end:
- * the programs, the fields' wait and source. Nothing logged when the page was hidden meanwhile.
+ * the programs, the fields' wait and source. Nothing logged when the page was hidden or the island paused meanwhile, or
+ * the watch ran past WATCH_MAX_MS.
  */
-export function watchBoot(extra: () => Pick<BootReport, 'progs' | 'fieldsMs' | 'fields'>): { clock: BootClock; stop(): void } | null {
+export function watchBoot(extra: () => Pick<BootReport, 'progs' | 'fieldsMs' | 'fields'>, paused: () => boolean): { clock: BootClock; stop(): void } | null {
   if (launched || typeof requestAnimationFrame === 'undefined') return null;
   launched = true;
   const clock = createBootClock(), sw = swState();
@@ -120,7 +124,10 @@ export function watchBoot(extra: () => Pick<BootReport, 'progs' | 'fieldsMs' | '
     stop();
   };
   const loop = (t: number) => {
-    clock.tick(t);
+    // (a sheet over the island before it stood whole: no engine frame comes, so no `shown`; the watch ends there, or
+    // it would ask for a frame under the sheet each display frame, e2e/sheet-idle)
+    clock.tick(t, paused());
+    if (clock.spoiled() || t > WATCH_MAX_MS) return stop();
     if (!clock.done()) return void (raf = requestAnimationFrame(loop));
     stop();
     const { n, net } = modelFetches(performance.getEntriesByType?.('resource') ?? []);
