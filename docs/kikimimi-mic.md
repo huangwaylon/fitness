@@ -216,6 +216,7 @@ Every mode draws from these. The only new audio is はつおん's isolated pair 
 - **What it trains:** producing a reply in the time a real one takes; the reply's formulae.
 - **Grading:** the existing reply kind's. The answer **is a choice index**, so the session, the wire, co-op and the rows are untouched. The partner sees your choice like a tap. They hear you only live, never a recording.
 - **Where:** the chip only. No tile and no new mode. Off unless the mic is on. The chip remembers a 「声で」 / 「タップで」 preference per phone.
+- **As built (M5, 2026-11-07):** Play passes `voice` for a reply round outside a game's own frame (not たいかい, not みみ チェック). ChoiceGrid lazily mounts mic/MicAnswer at the first such round with the mic on and keeps it to the game's end (the recogniser loaded and readied once, `release()` when it goes; stt.ts imported dynamically so the mic core stays its own chunk). 「🎤 声で答える」 under the choices, dim until they open; tap, then tap to stop (or the VAD ends it). `choose` ≥ 0 answers through ChoiceGrid's `onpick`, as a tap; −1: 「その言い方も通じるかも。選ぶなら？」 with what was heard; a miss says why (none, denied, capped, other); a tap on a choice mid-take drops the take. What was heard shows under the choices once answered and at the reveal, on this phone only, and is dropped at the next round. Not built: the best guess's 「これ？」 (choose has no middle band) and the 「声で」 / 「タップで」 preference.
 
 ### 2.4 はつおん ききわけ (production minimal pairs)
 

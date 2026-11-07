@@ -3,11 +3,14 @@
   // final tap; mine marked as picked; at the reveal ○ on the right one and × on my wrong pick (`onlyMarked`: only those
   // two, a dialogue's, so the transcript under them is never under the sticky つぎへ). Text, or pictures (art keys) in a
   // 2×2 grid, each named for VoiceOver (`label`: the English never given away). At the reveal each text choice's
-  // Japanese (`ja`, the item's cja) under it, smaller.
+  // Japanese (`ja`, the item's cja) under it, smaller. A reply round (`voice`) with the mic on: こたえて！ under them
+  // (mic/MicAnswer.svelte, its own chunk, loaded at the first such round and kept to the game's end).
   import OfficialArt from '../../characters/OfficialArt.svelte';
   import { t } from '#lib/i18n/index.ts';
+  import { localKV } from '#lib/sync/storage.ts';
+  import { readMic } from '#lib/mic/pick.ts';
 
-  let { choices, right, pics = false, label, english = true, ja, open, reveal, dim, picked, onlyMarked = false, onpick }: {
+  let { choices, right, pics = false, label, english = true, ja, open, reveal, dim, picked, onlyMarked = false, voice = false, onpick }: {
     choices: readonly string[];
     /** The right one (marked at the reveal). */
     right: number;
@@ -28,6 +31,8 @@
     picked: number | null;
     /** Only the marked ones (a dialogue's reveal). */
     onlyMarked?: boolean;
+    /** A reply round: the answer may be said (こたえて！, docs/kikimimi-mic.md §2.3). */
+    voice?: boolean;
     onpick: (k: number) => void;
   } = $props();
   /** A choice's look: mine (picked, before the reveal), right (○), wrong (my pick, ×), or none. */
@@ -35,6 +40,12 @@
     if (reveal) return k === right ? 'right' : picked === k ? 'wrong' : null;
     return picked === k ? 'mine' : null;
   }
+  const micOn = readMic(localKV()).on;
+  /** こたえて！ mounted: a reply round has come with the mic on. */
+  let answering = $state(false);
+  $effect.pre(() => {
+    if (voice && micOn) answering = true;
+  });
 </script>
 
 <div class="choices" class:pics class:dim role="group" aria-label={t('kiki.pick')}>
@@ -50,6 +61,9 @@
     {/if}
   {/each}
 </div>
+{#if answering}
+  {#await import('../mic/MicAnswer.svelte') then { default: MicAnswer }}<MicAnswer {voice} {choices} {open} {reveal} {onpick} />{/await}
+{/if}
 
 <style>
   .choices { display: grid; gap: 10px; transition: opacity var(--dur-quick); }

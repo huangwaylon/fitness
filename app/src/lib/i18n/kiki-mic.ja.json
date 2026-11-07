@@ -106,5 +106,11 @@
   "kiki.mic.model.have": "ダウンロード済み（約{mb}MB）",
   "kiki.mic.model.fail": "ダウンロードできませんでした。電波の良い所でもう一度どうぞ",
   "kiki.mic.del": "音声認識データを削除（{mb}MB）",
-  "kiki.mic.deleted": "削除しました"
+  "kiki.mic.deleted": "削除しました",
+  "kiki.mic.reply.say": "声で答える",
+  "kiki.mic.reply.hearing": "聞き取っています…",
+  "kiki.mic.reply.unsure": "その言い方も通じるかも。選ぶなら？",
+  "kiki.mic.reply.heard": "聞き取り",
+  "kiki.mic.reply.capped": "今日はここまで（サーバーの上限）。タップで選んでね",
+  "kiki.mic.reply.other": "うまく聞き取れませんでした。タップで選んでね"
 }

@@ -106,5 +106,11 @@
   "kiki.mic.model.have": "Downloaded (about {mb} MB)",
   "kiki.mic.model.fail": "Couldn't download. Try again with a better connection",
   "kiki.mic.del": "Delete the speech data ({mb} MB)",
-  "kiki.mic.deleted": "Deleted"
+  "kiki.mic.deleted": "Deleted",
+  "kiki.mic.reply.say": "Say it",
+  "kiki.mic.reply.hearing": "Working it out…",
+  "kiki.mic.reply.unsure": "That might work too. Which would you pick?",
+  "kiki.mic.reply.heard": "Heard",
+  "kiki.mic.reply.capped": "That's all for today (the server's limit). Tap to choose",
+  "kiki.mic.reply.other": "Couldn't make that out. Tap to choose"
 }
