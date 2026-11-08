@@ -139,7 +139,12 @@ E2E_SWIFTSHADER=1 npm run e2e -- e2e/world3d.spec.ts --project=chromium   # soft
 E2E_RENDER=none npm run e2e -- --project=chromium   # the logic tier: the 3D engines draw nothing
 npm run e2e -- --project=chromium-mic   # the mic's specs (kikimimi-mic*.spec.ts): a fake mic fed our clip, muted
 npm run e2e:ci-like -- e2e/world3d.spec.ts --repeat 5   # as CI runs it (below)
+npm run e2e -- e2e/csp.spec.ts --project=webkit --workers=8   # a worker a test (below)
 ```
+`csp.spec.ts` in WebKit on a Mac: a test with the sound on (its `watch`), then another in the same browser, and the
+next page's WebGL context is lost as it's made (`getShaderPrecisionFormat` null: the island shows `[data-no3d]`, `is3d`
+times out), so at `--workers=1` every second test fails. Local only (CI's macOS runners pass): give each test its own
+worker.
 
 ## Before you push (a new or changed spec, or a change to the 3D engines, the tent or sync)
 1. `npm run verify` (~25 s): `checks` as CI runs it, all at once, the first red printed and the rest stopped: the lockfile
