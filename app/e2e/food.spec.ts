@@ -1,25 +1,28 @@
-// ごはん (docs/design.md "Gohan"): the meal log, the HUD cluster's bowl (between the dumbbell and the leaf). Open it, search ごはん, add
+// ごはん (docs/design.md "Gohan"): the meal log, けんこう's sheet's second tab (the HUD's dumbbell). Open it, search ごはん, add
 // 茶碗1杯 to 朝ごはん and see the day's total go up; another person's day is read-only (no ＋, no entry to tap), and the
 // guest sees the members' meals and logs its own. On `?demo` (its meal rows: model/food.ts over store/demo/rows.ts).
 import { expect, test, type Locator, type Page } from './fixtures.ts';
+import { openKenkou } from './hud.ts';
 
 const DATE = '2026-11-04T12:30';
-const sheet = (page: Page) => page.locator('dialog[open]');
+/** The open sheet (its banner, its box). */
+const dlg = (page: Page) => page.locator('dialog[open]');
+/** ごはん's tab in it: the title bar and ごはん's scroller (健康's, hidden beside it, left out). */
+const sheet = (page: Page) => page.locator('dialog[open] :is(.titlebar, [data-food-sheet])');
 const total = (page: Page) => sheet(page).locator('[data-food-total]');
 const kcalOf = async (page: Page) => Number((await total(page).textContent())!.replace(/[^\d]/g, ''));
 
 /** `date`: the scene clock's (none: the page's own, e.g. `page.clock.install`). */
 async function openFood(page: Page, as = '', date = `&date=${DATE}`) {
   await page.goto(`?demo${date}&critter=none&visitor=none${as}`);
-  const bowl = page.getByRole('button', { name: 'ごはん', exact: true });
-  await expect(bowl).toBeVisible({ timeout: 15_000 });
-  await bowl.click();
+  await expect(page.getByRole('button', { name: 'けんこう', exact: true })).toBeVisible({ timeout: 15_000 });
+  await openKenkou(page, 'food');
   await expect(sheet(page).locator('[data-food-summary]')).toBeVisible();
 }
 
 /** A row opened in place has come to rest: its 150 ms height and fade played, and the sheet's scroll (smooth, when it
  *  brings the row under the field) still, so a tap inside it lands where it was aimed. */
-const settled = (page: Page) => sheet(page).evaluate(async (d) => {
+const settled = (page: Page) => dlg(page).evaluate(async (d) => {
   await Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => {})));
   const sc = d.querySelector('[data-food-sheet]');
   const frame = () => new Promise((ok) => requestAnimationFrame(ok));
@@ -35,21 +38,19 @@ async function amountOf(page: Page, row: Locator) {
 
 /** What sticks out past the open sheet's right edge (its first three, by class): nothing, on every level (once a
  *  level's slide-in has played). */
-const overflowOf = (page: Page) => sheet(page).evaluate(async (d) => {
+const overflowOf = (page: Page) => dlg(page).evaluate(async (d) => {
   await Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => {}))); // (one cancelled: done too)
   const right = d.getBoundingClientRect().right;
   return [...d.querySelectorAll('*')].filter((e) => e.getBoundingClientRect().right > right + 0.5).map((e) => e.className).slice(0, 3);
 });
 
-test('the bowl sits in the top-right cluster, between the dumbbell and the leaf; search ごはん, add 茶碗1杯 to 朝ごはん, the day’s total goes up', async ({ page }) => {
+test('ごはん is けんこう’s second tab (no bowl in the HUD); search ごはん, add 茶碗1杯 to 朝ごはん, the day’s total goes up', async ({ page }) => {
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
-  const [leaf, bowl, bell] = await Promise.all(['[data-hud-menu]', '.hud-food', '.hud-health'].map((s) => page.locator(s).boundingBox()));
-  expect(bell!.x + bell!.width).toBeLessThan(bowl!.x);
-  expect(bowl!.x + bowl!.width).toBeLessThan(leaf!.x);
-  expect(Math.abs(bowl!.y - bell!.y)).toBeLessThan(1); // one row
-  expect(bowl!.height).toBeGreaterThanOrEqual(44);
+  await expect(page.locator('.hud-health')).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('.hud-food')).toHaveCount(0);
 
   await openFood(page);
+  await expect(dlg(page).locator('[data-kenkou-tab]')).toHaveText(['健康', 'ごはん']);
   await expect(sheet(page).locator('.navbar h2')).toHaveText('ごはん');
   await expect(sheet(page).locator('select[data-pick=who]')).toHaveValue('A');
   await expect(sheet(page).locator('[data-meal] h3')).toHaveText(['朝ごはん', '昼ごはん', '夜ごはん', 'おやつ']);
@@ -379,8 +380,8 @@ test('the goals: set in place on my cards (kcal, protein, salt), shown on the da
   await tray.getByRole('button', { name: '増やす' }).click();
   await tray.getByRole('button', { name: '決定' }).click();
   await expect(kcal).toHaveText('目標 2,250 kcal 前後');
-  await expect(sheet(page).getByRole('status')).toContainText('カロリーの目標を変更しました');
-  await sheet(page).getByRole('status').getByRole('button', { name: '閉じる' }).click();
+  await expect(dlg(page).getByRole('status')).toContainText('カロリーの目標を変更しました');
+  await dlg(page).getByRole('status').getByRole('button', { name: '閉じる' }).click();
   // the nutrient tiles: protein's default goal (1.6 g × ウェイ's weigh-in), salt's from the demo's profile (a man: 7.5 g,
   // model/profile.ts saltDefault), fat and carbs none yet
   await expect(sheet(page).locator('[data-nutrient=p] small')).toHaveText(/^目標 \d+\sg\s以上$/); // (no-break spaces: it wraps only after 目標)
@@ -592,7 +593,7 @@ test('マイレシピ: someone else’s recipe in the meal search is read-only f
   await expect(lv.locator('[data-recipe-item]')).toHaveCount(6);
   await expect(lv.locator('[data-recipe-remove]')).toHaveCount(1);
   // its banner above the level's 削除 / 保存, never on them; ‹ takes it away with the level
-  const banner = sheet(page).locator('.banner');
+  const banner = dlg(page).locator('.banner');
   await expect(banner).toBeVisible();
   await banner.evaluate((b) => Promise.all(b.getAnimations().map((a) => a.finished))); // slid in
   const [bb, acts] = [(await banner.boundingBox())!, (await lv.locator('.level-acts').boundingBox())!];
@@ -622,7 +623,7 @@ test('whose day sits in the title bar, left of ごはん; a level’s ‹ takes 
   const who = bar.locator('select[data-pick=who]');
   await expect(who).toHaveValue('A');
   await expect(who).toHaveAccessibleName('誰のごはん');
-  const [w, ttl, x, d] = await Promise.all([who, bar.locator('h2'), bar.locator('button.close'), sheet(page)].map(async (l) => (await l.boundingBox())!));
+  const [w, ttl, x, d] = await Promise.all([who, bar.locator('h2'), bar.locator('button.close'), dlg(page)].map(async (l) => (await l.boundingBox())!));
   expect(w.x + w.width).toBeLessThanOrEqual(ttl.x + 1);
   expect(Math.abs(w.y + w.height / 2 - (ttl.y + ttl.height / 2))).toBeLessThan(4);
   expect(Math.abs(ttl.x + ttl.width / 2 - (d.x + d.width / 2))).toBeLessThan(3); // centred
@@ -675,9 +676,9 @@ test('a いつもの’s entry: opened and ‹ leaves the day the repeat’s; �
   await b.locator('[data-entry]').first().click();
   await sheet(page).locator('[data-remove]').click();
   await expect(b.locator('[data-entry]')).toHaveCount(n - 1);
-  const banner = sheet(page).locator('.banner');
+  const banner = dlg(page).locator('.banner');
   await expect(banner).toContainText(`「${first}」を削除しました`);
-  const [bb, d] = [(await banner.boundingBox())!, (await sheet(page).boundingBox())!];
+  const [bb, d] = [(await banner.boundingBox())!, (await dlg(page).boundingBox())!];
   expect(bb.y).toBeGreaterThan(d.y + d.height / 2); // docked low, off the day's top
   await banner.getByRole('button', { name: '取り消す' }).click();
   await expect(b.locator('[data-entry]')).toHaveCount(n);
@@ -736,9 +737,9 @@ test('＋ focuses the search; counted portions step whole, rice by half; drinks 
   await sheet(page).locator('[data-step="1"]').click();
   await expect(sheet(page).locator('.mult')).toHaveText('×2'); // a whole ジョッキ
   await sheet(page).locator('[data-food-open-add]').click();
-  const banner = sheet(page).locator('.banner');
+  const banner = dlg(page).locator('.banner');
   await expect(banner).toHaveText(/夜ごはんに追加しました/);
-  const [bb, d] = [(await banner.boundingBox())!, (await sheet(page).boundingBox())!];
+  const [bb, d] = [(await banner.boundingBox())!, (await dlg(page).boundingBox())!];
   expect(bb.y).toBeGreaterThan(d.y + d.height / 2);
   await sheet(page).locator('[data-food-finish]').click(); // 完了: the day
   await expect(sheet(page).locator('section[data-meal=d] [data-entry] .amt').last()).not.toHaveText(/）（/); // never a weight twice
@@ -749,8 +750,8 @@ test('whose day is kept for the session; an empty past day says きろく なし
   const who = sheet(page).locator('select[data-pick=who]');
   await who.selectOption('B');
   await page.keyboard.press('Escape');
-  await expect(sheet(page)).toHaveCount(0);
-  await page.getByRole('button', { name: 'ごはん', exact: true }).click();
+  await expect(dlg(page)).toHaveCount(0);
+  await page.getByRole('button', { name: 'けんこう', exact: true }).click(); // (on ごはん: the tab shown last)
   await expect(who).toHaveValue('B'); // kept, as けんこう's
   await who.selectOption('A');
 
@@ -831,7 +832,7 @@ test('search rows: a category tile, no raw alias or English under the name, the 
   await sheet(page).locator('[data-amount-open]').click();
   const th = sheet(page).locator('[data-recipe-level=view] [data-recipe-items] [data-thumb]');
   await expect(th).toHaveCount(6);
-  await sheet(page).evaluate((d) => Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished))); // the level's slide-in
+  await dlg(page).evaluate((d) => Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished))); // the level's slide-in
   const b = await th.first().boundingBox();
   expect([b!.width, b!.height].map(Math.round)).toEqual([40, 40]);
   await expect(th.first()).toHaveAttribute('data-cat', '肉');
@@ -880,7 +881,7 @@ test('the amount: 豚ロース fits on the screen, kcal in the head, 100gあた�
     await expect(sheet(page).locator('[data-food-pic] [data-thumb]')).toHaveAttribute('data-thumb', /img|under/);
   };
   await open();
-  expect(await sheet(page).locator('.fs-body').evaluate((b) => b.scrollHeight - b.clientHeight)).toBeLessThanOrEqual(0);
+  expect(await dlg(page).locator('[data-food-sheet]').evaluate((b) => b.scrollHeight - b.clientHeight)).toBeLessThanOrEqual(0);
   await expect(sheet(page).locator('[data-food-live] .k')).toContainText('298');
   const per = sheet(page).locator('[data-food-per]');
   await expect(per).toHaveAttribute('aria-expanded', 'false');
@@ -1263,7 +1264,7 @@ test('マイ食品: someone else’s is read-only from its amount, logged and co
 
   // the copy: うめ's own, in the editor (削除 there), in the search beside ウェイ's
   await page.mouse.move(0, 0); // (a pointer resting on the banner holds it)
-  await expect(sheet(page).locator('.banner')).toHaveCount(0, { timeout: 10_000 }); // docked low, it covers the search's rows
+  await expect(dlg(page).locator('.banner')).toHaveCount(0, { timeout: 10_000 }); // docked low, it covers the search's rows
   await sheet(page).locator('[data-add=d]').click();
   await amountOf(page, teishoku);
   await sheet(page).locator('[data-amount-open]').click();
@@ -1516,7 +1517,7 @@ test('copy a meal: the members’ on the guest’s phone, 昨日と同じ on min
   await expect(lunch.locator('[data-entry]')).toHaveCount(1);
   await expect(lunch.locator('[data-entry]')).toContainText('カレーライス（チキン）');
   await expect(lunch.locator('[data-copy]')).toHaveCount(0); // not empty any more
-  const banner = s.locator('.banner');
+  const banner = dlg(page).locator('.banner');
   await expect(banner).toContainText('昼ごはんに1品コピーしました');
   await expect.poll(() => kcalOf(page)).toBeGreaterThan(before);
   await banner.getByRole('button', { name: '取り消す' }).click();
@@ -1565,7 +1566,7 @@ test('最新の値にする: an entry whose food was corrected since offers its 
   await expect(fresh).toHaveCount(1, { timeout: 15_000 });
   await expect(lunch.locator('[data-fresh]')).toHaveText('最新の値にする（729→765 kcal）');
   await lunch.locator('[data-fresh]').click();
-  await expect(s.getByRole('status')).toContainText('「カレーライス（チキン）」を最新の値にしました');
+  await expect(dlg(page).getByRole('status')).toContainText('「カレーライス（チキン）」を最新の値にしました');
   await expect(curry).toContainText('765');
   await expect(fresh).toHaveCount(0);
   expect(await kcalOf(page)).toBe(before + 36);

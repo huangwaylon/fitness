@@ -1,4 +1,5 @@
-// The HUD's top-right cluster (docs/design.md "Island"): [the health button] [the meal button] [the menu]. The menu
+// The HUD's top-right cluster (docs/design.md "Island"): [the health button] [the menu]. The health button opens
+// けんこう and ごはん's sheet (two tabs: openKenkou). The menu
 // (NH's leaf, at the screen's side) drops 「ベル 121」 (→ the panel, ごほうび), 旅行, 結婚式, トレイル, 英語 (ききみみ) and 設定; each opens
 // its own sheet.
 // Shared by the specs that reach any of them.
@@ -44,6 +45,14 @@ export async function fromMenu(page: Page, which: keyof typeof SHEET, how: 'clic
   await expect(pill).toBeVisible();
   await pill[how]();
   await expect(page.locator(SHEET[which])).toBeVisible();
+}
+
+/** けんこう and ごはん's sheet, from the HUD's dumbbell, on that tab (it opens on the one shown last). */
+export async function openKenkou(page: Page, tab: 'health' | 'food' = 'health') {
+  await page.getByRole('button', { name: 'けんこう', exact: true }).click();
+  const t = page.locator(`dialog[open] [data-kenkou-tab=${tab}]`);
+  await t.click();
+  await expect(t).toHaveAttribute('aria-current', 'page');
 }
 
 /** The panel (ごほうび), from the menu's ベル row. */

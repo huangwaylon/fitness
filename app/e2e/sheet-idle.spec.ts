@@ -2,7 +2,7 @@
 // draws no frame (its engine paused) and no CSS animation runs in the page but the sheet's own, so nothing behind the
 // sheet asks the compositor for frames while someone reads their charts; closed, the island runs again.
 import { expect, test, type Page } from './fixtures.ts';
-import { fromMenu } from './hud.ts';
+import { fromMenu, openKenkou } from './hud.ts';
 import { drawn, fixtureTiles, mapReady } from './trips.ts';
 
 /** A blank topo tile (トレイル's map: hiking.spec's). */
@@ -19,7 +19,7 @@ const runningBehind = (page: Page) => page.evaluate(() => document.getAnimations
 /** The HUD's own sheets: how each opens, and what shows once it's up. */
 const hudSheets: [string, (page: Page) => Promise<unknown>, string][] = [
   ['けんこう', (page) => page.getByRole('button', { name: 'けんこう', exact: true }).click(), '.health .mc'],
-  ['ごはん', (page) => page.getByRole('button', { name: 'ごはん', exact: true }).click(), '[data-food-summary]'],
+  ['ごはん', (page) => openKenkou(page, 'food'), '[data-food-summary]'],
   ['ずかん', (page) => fromMenu(page, 'zukan'), '[data-zukan-sheet]'],
   ['せってい', (page) => fromMenu(page, 'settings'), '[data-settings]']
 ];

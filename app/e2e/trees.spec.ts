@@ -4,7 +4,7 @@
 // goals settled by 23:00). The popup's 朝 / 昼 / 夜 fill as meals are logged in ごはん.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
-import { hudBells } from './hud.ts';
+import { hudBells, openKenkou } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -90,8 +90,8 @@ test('the popup’s 朝 / 昼 / 夜: a meal logged in ごはん fills its circle
   expect(meal).toBeTruthy();
   await expect(page.locator(`.detail [data-meal=${meal}] .ok.todo`)).toBeVisible();
 
-  // log it in ごはん (the bowl), then back on the island the popup shows it ✓
-  await page.getByRole('button', { name: 'ごはん', exact: true }).click();
+  // log it in ごはん (the dumbbell's sheet, its tab), then back on the island the popup shows it ✓
+  await openKenkou(page, 'food');
   const sheet = page.locator('dialog[open]');
   await sheet.locator(`[data-add=${meal}]`).click();
   await sheet.locator('[data-food-q]').fill('ごはん');

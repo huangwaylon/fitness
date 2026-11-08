@@ -35,14 +35,14 @@ const sea = (page: Page) =>
 test('folded by default; the leaf unfolds it and folds it again; a tap elsewhere and Esc fold it too', async ({ page }) => {
   await open(page);
   await folded(page);
-  // the HUD's order: the dumbbell, the bowl, the leaf (a 44px target, at the screen's side, in their row); no jar
-  const m = (await hudMenu(page).boundingBox())!, f = (await page.locator('.hud-food').boundingBox())!, h = (await page.locator('.hud-health').boundingBox())!;
+  // the HUD's order: the dumbbell, the leaf (a 44px target, at the screen's side, in their row); no jar, no bowl
+  const m = (await hudMenu(page).boundingBox())!, h = (await page.locator('.hud-health').boundingBox())!;
   expect(m.width).toBeGreaterThanOrEqual(44);
   expect(m.height).toBeGreaterThanOrEqual(44);
-  expect(h.x + h.width).toBeLessThanOrEqual(f.x);
-  expect(f.x + f.width).toBeLessThanOrEqual(m.x);
+  expect(h.x + h.width).toBeLessThanOrEqual(m.x);
   expect(Math.abs(393 - m.x - m.width - 14)).toBeLessThan(1.5);
-  expect(Math.abs(m.y + m.height / 2 - (f.y + f.height / 2))).toBeLessThan(2);
+  expect(Math.abs(m.y + m.height / 2 - (h.y + h.height / 2))).toBeLessThan(2);
+  await expect(page.locator('.hud-food')).toHaveCount(0);
   await expect(page.locator('.hud-jar')).toHaveCount(0);
   await hudMenu(page).click();
   await expect(hudMenu(page)).toHaveAttribute('aria-expanded', 'true');

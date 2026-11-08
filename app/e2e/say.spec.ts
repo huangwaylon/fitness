@@ -36,7 +36,7 @@ async function open(page: Page, at = '2026-11-04T12:00', said?: string[]) {
   await quiet(page); // the opening beats are over
 }
 
-/** The picker's box clear of the HUD (the dumbbell, the bowl, the leaf) and inside the screen. */
+/** The picker's box clear of the HUD (the dumbbell, the leaf) and inside the screen. */
 const clearOfHud = (page: Page) =>
   page.evaluate(() => {
     const p = document.querySelector('[data-say-picker]')!.getBoundingClientRect();

@@ -45,5 +45,6 @@
   "health.bmi.obese": "Obese",
   "health.bmi.std.asia": "Asian cut-offs",
   "health.bmi.std.who": "WHO cut-offs",
-  "health.body.dayKey": "Measurements"
+  "health.body.dayKey": "Measurements",
+  "health.tabs": "Health and meals pages"
 }

@@ -23,7 +23,7 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 
 ## Simplicity rules
 
-- No tab bar: 島 (the island), the health popup (tap the dumbbell: けんこう), the meal log (tap the bowl: ごはん), and
+- No app tab bar: 島 (the island), the health popup (tap the dumbbell: 健康 and ごはん, its two tabs), and
   behind the HUD menu's leaf the one panel for the ベル (its 「ベル 121」 row: ごほうび, no tabs), ききみみ
   (English listening: ききみみ クイズ), りょこう ([Trips](#trips)), けっこんしき (the wedding board: [wedding.md](wedding.md)), トレイル (the hiking trails:
   [hiking.md](hiking.md)) and せってい (the ずかん its last row), each its own sheet.
@@ -46,26 +46,27 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
   steps first, then Move, Exercise, Stand) today's amount against the goal (「14,164 / 8,000歩」), ✓ once met and a yuzu
   「がんばり」 chip at 1.5× ([Goals](#goals)); no ベル on the rows. Until then each holds its place faintly: a dashed
   ring where the ✓ comes and a dashed ghost of the chip (gone once the day's がんばり cap is paid), so an early morning's
-  popup shows what will fill in. Under the goals one ごはん row (the bowl): 朝 / 昼 / 夜, each the same dashed ring
+  popup shows what will fill in. Under the goals one ごはん row: 朝 / 昼 / 夜, each the same dashed ring
   until that person's meal log has anything in that meal today (a いつもの on its day too; おやつ never counts), then ✓
-  (2026-11-06, the user: "it's too easy to forget"; `island/mealChecks.ts`; display only: the bowl opens the log).
+  (2026-11-06, the user: "it's too easy to forget"; `island/mealChecks.ts`; display only: the dumbbell's ごはん tab is the log).
   Everyone's meals are seen by all three, so the guest sees them too. Then the ledger, always all three lines, a zero faint: 「もくひょう +3」, 「がんばり +1」
   (「がんばり（上限 2） +2」 when three or four were reached) and this person's total 「うめの きょう +6 ベル」; then
   ふたりでぜんぶ (「ふたりで ぜんぶ まで：あと 2つ」 or 「ふたりで ぜんぶ！ +2 ふたりに」), outside either total, so both
   totals plus it make today's total (ごほうび's 「きょう +N ベル」). The last line says when that person's data last arrived (「15:24 に とどいた」), with
   a dot once it is over 6 hours old.
-- **HUD row:** [the health button] [the meal button] [the menu], one cluster right-aligned in the top-right corner,
+- **HUD row:** [the health button] [the menu] (the meal button folded into the health popup's ごはん tab: the user,
+  2026-11-08), one cluster right-aligned in the top-right corner,
   the leaf at the very right (2026-11-03, the user: "move the leaf drop down button to the very right … kenkou, gohan,
   then finally dropdown menu"; [decisions](decisions.md#the-jar-goes-into-the-leaf-ごほうび-is-the-panel-2026-11-03)),
   at `--hud-top` (10px under the safe area: clear of iOS 27's top-edge blur, the Dynamic Island clear above it), inset
-  14px or the safe area's side, 6px apart. The dumbbell and the bowl are the same width (60px, `--hud-side`), the menu
+  14px or the safe area's side, 6px apart. The dumbbell is 60px wide (`--hud-side`), the menu
   a 44px disc. No jar and no ribbon in the sky: NH's island view keeps its sky clear and its UI tucked away, and the
   sky's left (a third of it from 393px up) stays free for the sun, the moon and the stars. Every target
   is 44px or more. No View Transition anywhere in it (the stripes bug); day and night are the same art (the buttons
   cream with their lip), both reading on either sky.
 - **Menu** (`island/HudMenu.svelte`, `e2e/hud-menu.spec.ts`): the cluster's right end, at the screen's side, a 40px
   cream disc with the lip in a 44px target, NH's leaf mark in it (drawn inline: two greens either side of a pale vein, a dark outline, a curled stem; NH's art has no flat one, `money/leaf` is the 3D item); `aria-expanded`, `aria-controls` its
-  pills. Folded by default: the sky shows only the dumbbell, the bowl and the menu. A tap unfolds it: the disc turns
+  pills. Folded by default: the sky shows only the dumbbell and the menu. A tap unfolds it: the disc turns
   NH's yellow, the leaf tips (−40°, as if it flicked the menu down) and six cream pills show at once (no drop: the
   user found it slow; they fold away in a 100ms fade), right-aligned under the leaf (along the screen's side), the same width:
   **ベル 121** (the shared wallet's balance in the app's number font, no icon: the number is the picture) →
@@ -89,7 +90,7 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
   - Why (the design pass, 2026-11-03): a game UI view (NH's island view keeps its corners to a few objects; a
     phone-style drawer, not a second row), an iOS HIG view (one cluster at the thumb's reach of the top, ≥ 44pt
     targets, the safe area, a disclosure that says so with `aria-expanded`, labels beside icons, outside tap and
-    Esc to dismiss) and an accessibility view (focus order = reading order: the dumbbell, the bowl, the leaf, then
+    Esc to dismiss) and an accessibility view (focus order = reading order: the dumbbell, the leaf, then
     its pills; nothing hidden reachable; reduced motion honoured; text on cream, never on the sky).
     The pills drop down rather than slide left: sliding left would cover the sky's middle (the sun, the moon) and
     put the pills before the leaf in the reading order; under the leaf they're over the island for a moment only.
@@ -97,18 +98,17 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
 - **Health button** (`island/HudHealth.svelte`): a small cream pill 44px tall with the cream lip, 60px wide, NH's red
   dumbbell (`items/dumbbell`, NH's catalogue icon) across it, its plates a little over the ends; no number (the numbers
   live in the popup), the cluster's left end. Tap → the villagers glance up at it
-  (R18, to the right) and [けんこう](#kenkou) opens at once (`health/HealthSheet.svelte`, Sheet's `pop`: no motion, no View
-  Transition).
-- **Meal button** (`island/HudFood.svelte`): the health button's pill with NH's ramen bowl (`items/dinner`), between
-  the dumbbell and the leaf. Tap → the villagers glance up at it (R18) and [ごはん](#gohan) grows out of
-  the bowl (`food/FoodSheet.svelte`, Sheet's `pop`).
+  (R18, to the right) and the health popup opens at once (`health/HealthSheet.svelte`, Sheet's `pop`: no motion, no
+  View Transition) on the tab shown last: [健康](#kenkou) or [ごはん](#gohan) (the bottom tab bar, `ui/TabBar`; the tab kept
+  for the session, `healthLast.ts`). One kept sheet (Sheet's `keep`), one chunk with both pages' code; ごはん mounts the
+  first time its tab shows and stays (hidden) after, so its pictures and catalogue never load for 健康 alone.
 - **Coins** (`island/HudCoins.svelte`): each newly met goal flies up as a +1 coin from its fruit into the leaf (+2 with
   its がんばり; `CoinFlow`), the leaf squashing as each lands (the menu open: into the ベル row's number, which squashes
   instead); the ベル row's number holds while coins are in the air (`coinsInFlight`) and counts up by each one as it
   lands. As each lands, today's ベル so far pop up just under the leaf, right-aligned to the screen's side, in a small
   yuzu bubble (「+3」, counting up with the coins; the menu open: left of the ベル row), hold ~1 s and fade (reduced
   motion: a plain fade; aria-hidden: the label says it); only coins landing flash it, never a 取り消す's refund. All of
-  it waits while something covers the scene. The leaf, not the bowl or the dumbbell: it is where the ベル live now,
+  it waits while something covers the scene. The leaf, not the dumbbell: it is where the ベル live now,
   and the corner it sits in is where NH's own bells pickup flies (up to the phone's corner).
 - **Centre stage:** the plaza (`world.ts` `CENTRE_STAGE`, ひろば: `layout/spots.ts` `stageOf`, where the members put
   the visitors' spot in the editor, else a clear patch of lawn behind the villagers' spots, in view as the island
@@ -270,8 +270,9 @@ The ベル ledger (`model/history.ts`, `components/kiroku/*`), read-only, in [�
 
 ### Kenkou
 
-けんこう (`model/health.ts`, `components/health/*`, `e2e/health.spec.ts`): the health popup (the HUD's dumbbell; full
-height like the panel, title けんこう and ✕; ✕, the backdrop and Esc close it): the
+けんこう (`model/health.ts`, `components/health/*`, `e2e/health.spec.ts`): the health popup's first tab, 健康 (the HUD's
+dumbbell; full height like the panel, title 健康 and ✕, the tab bar 健康 · ごはん at its foot; ✕, the backdrop and Esc close
+it): the
 Health data over time for the personal trainer, one person at a time, computed on read, each card with its goal. Its code and strings load with the first opening.
 
 - **The selectors** (the user: "move the user selector to the left of the title in the same row … move the time
@@ -353,11 +354,11 @@ Health data over time for the personal trainer, one person at a time, computed o
 ### Gohan
 
 ごはん, the meal log (`model/food.ts`, `components/food/*`, `lib/food/`, `e2e/food.spec.ts`; the data in
-`static/food/`, built by `food-data/`: [food data](food-data.md)): the HUD's bowl button (NH's ramen bowl,
-`items/dinner`, set 3px below the pill's centre so the bowl, not its nori, sits mid-pill) grows it out
-of the bowl like けんこう (full height; whose day, title ごはん and ✕; ‹ in whose place while a level is open). What each of us ate, typed in by hand; it never earns ベル.
-Everyone sees everyone's meals, the guest's phone too; only the owner changes an entry. Its code, its strings
-(`i18n/food.*.json`) load with the first opening. The day renders from its entries' snapshots and never waits on the
+`static/food/`, built by `food-data/`: [food data](food-data.md)): the health popup's second tab (the HUD's dumbbell, then
+ごはん on its tab bar; since 2026-11-08 no bowl in the HUD) (whose day, title ごはん and ✕; ‹ in whose place while a level is
+open). Each time it shows (an opening on it, or its tab) it starts on 記録, today, the day at its top. What each of us ate, typed in by hand; it never earns ベル.
+Everyone sees everyone's meals, the guest's phone too; only the owner changes an entry. Its code is in the popup's chunk; its strings
+(`i18n/food.*.json`) load with it. The day renders from its entries' snapshots and never waits on the
 food data: the catalogue loads with the first search or amount, or at idle after the open (`foodUi.ts` foodDbSoon: 600 ms,
 then an idle moment) once a day shows a catalogue entry, fetched and parsed in a worker (`food/dataset.worker.ts`), its
 items handed over in slices so no task is a whole file's (docs/perf-plan.md A4). Kept mounted between openings (Sheet's

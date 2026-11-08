@@ -634,7 +634,8 @@ test('navigation: every sheet and level has a visible ✕ (top-right) or ‹ (to
   await settled(page);
   const hclose = sheet(page).locator('.titlebar .close');
   await expect(hclose).toBeVisible();
-  await expect(sheet(page).locator('.titlebar .back, .tabs')).toHaveCount(0);
+  await expect(sheet(page).locator('.titlebar .back')).toHaveCount(0);
+  await expect(sheet(page).locator('[data-kenkou-tab]')).toHaveText(['健康', 'ごはん']); // its two tabs at the foot
   const h = await box(hclose);
   expect(h.width).toBeGreaterThanOrEqual(44);
   expect(h.x + h.width).toBeGreaterThan(vw - 40);
@@ -801,7 +802,7 @@ const HUD_NOTCH = () => document.addEventListener('DOMContentLoaded', () => {
 });
 for (const [w, h] of [[393, 852], [402, 874], [320, 568]])
   for (const at of ['2026-10-28T12:00', '2026-10-28T22:00'])
-test(`the HUD row at ${w}, ${at.slice(11)}: [the dumbbell] [the bowl] [the menu] in the top-right corner, the leaf at the screen's side, no jar, the sky's left clear, every target ≥ 44px, under a notch`, { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ page }) => {
+test(`the HUD row at ${w}, ${at.slice(11)}: [the dumbbell] [the menu] in the top-right corner, the leaf at the screen's side, no jar, the sky's left clear, every target ≥ 44px, under a notch`, { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ page }) => {
   // an iPhone 15/16's top inset (59px): the row stays where it was, under it
   await page.addInitScript(HUD_NOTCH);
   await page.setViewportSize({ width: w, height: h });
@@ -810,17 +811,16 @@ test(`the HUD row at ${w}, ${at.slice(11)}: [the dumbbell] [the bowl] [the menu]
   await expect(page.locator('.ribbon, .hud-jar')).toHaveCount(0);
   await expect(page.getByRole('button', { name: /^きょう / })).toHaveCount(0);
   const btn = page.getByRole('button', { name: 'けんこう', exact: true });
-  const [mb, fb, bb] = [(await hudMenu(page).boundingBox())!, (await page.locator('.hud-food').boundingBox())!, (await btn.boundingBox())!];
-  for (const b of [mb, fb, bb]) {
+  await expect(page.locator('.hud-food')).toHaveCount(0); // ごはん: the dumbbell's sheet's tab
+  const [mb, bb] = [(await hudMenu(page).boundingBox())!, (await btn.boundingBox())!];
+  for (const b of [mb, bb]) {
     expect(b.height).toBeGreaterThanOrEqual(44);
     expect(b.width).toBeGreaterThanOrEqual(44);
     expect(b.y).toBeGreaterThanOrEqual(59);
     expect(Math.abs(b.y - mb.y)).toBeLessThan(1); // one row
   }
-  // one cluster, right-aligned: the dumbbell, the bowl, the menu, in that order, apart, the leaf 14px in
-  expect(bb.x + bb.width).toBeLessThanOrEqual(fb.x);
-  expect(fb.x + fb.width).toBeLessThanOrEqual(mb.x);
-  expect(Math.abs(fb.width - bb.width)).toBeLessThan(1);
+  // one cluster, right-aligned: the dumbbell, the menu, in that order, 6px apart, the leaf 14px in
+  expect(Math.abs(mb.x - bb.x - bb.width - 6)).toBeLessThan(1.5);
   expect(Math.abs(w - mb.x - mb.width - 14)).toBeLessThan(1.5);
   // the sky's left clear (the sun, the moon, the balloon: a third of it from 393 up), and the menu's pills folded away
   expect(bb.x).toBeGreaterThan(w >= 393 ? w / 3 : w / 6);
@@ -860,7 +860,7 @@ test('the HUD row\'s taps stay apart: the ベル row opens the panel (ごほう�
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await page.getByRole('button', { name: 'けんこう', exact: true }).click();
   await expect(sheet(page).locator('[data-health-sheet] .health')).toBeVisible();
-  await expect(sheet(page).locator('.tabs')).toHaveCount(0);
+  await expect(sheet(page).locator('[data-kenkou-tab=health]')).toHaveAttribute('aria-current', 'page');
 });
 
 test('the menu\'s 「ベル」 row shows ごほうび\'s balance, follows a buy and its とりけす, and the day\'s coins land in the leaf (the number never drops while they fly, today\'s +N flashing under the leaf)', async ({ page }) => {

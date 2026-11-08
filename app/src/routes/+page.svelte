@@ -28,11 +28,10 @@
 
   let panelOpen = $state(false);
   let healthOpen = $state(false);
-  let foodOpen = $state(false);
   let zukanOpen = $state(false);
   let settingsOpen = $state(false);
   /** A full-height sheet is open: the island pauses under it, no coins fly. */
-  const sheetOpen = $derived(panelOpen || healthOpen || foodOpen || zukanOpen || settingsOpen || trips.open || weddingSheet.open || hiking.open);
+  const sheetOpen = $derived(panelOpen || healthOpen || zukanOpen || settingsOpen || trips.open || weddingSheet.open || hiking.open);
   /** しずえ's box's height while it shows: the island's say button (bottom right) stands over it. */
   let newsH = $state(0);
 
@@ -104,7 +103,7 @@
     <!-- DOM order = focus / VoiceOver order = the visual order: the heading, today's ベル, the health button beside it, the scene (trees,
          villagers), then しずえ's box at the bottom. All are absolutely placed, so the order costs no layout; the stacking
          comes from the --z-* scale (tokens.css). -->
-    <Hud today={view.wallet.today} balance={view.wallet.balance} bind:panelOpen bind:healthOpen bind:foodOpen bind:zukanOpen bind:settingsOpen {later} />
+    <Hud today={view.wallet.today} balance={view.wallet.balance} bind:panelOpen bind:healthOpen bind:zukanOpen bind:settingsOpen {later} />
     <HudCoins {view} covered={sheetOpen || quiz.open || ui.overlay} {later} />
     <div class="top">
       <IslandScene {view} onhighfive={sendHighFive} onhighfivegot={(who) => (gotFive = who)} onguest={guestArrived} paused={sheetOpen} />

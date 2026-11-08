@@ -45,5 +45,6 @@
   "health.bmi.obese": "肥満",
   "health.bmi.std.asia": "アジア基準",
   "health.bmi.std.who": "WHO基準",
-  "health.body.dayKey": "測った日"
+  "health.body.dayKey": "測った日",
+  "health.tabs": "健康とごはんのページ"
 }
