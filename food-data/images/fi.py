@@ -549,7 +549,7 @@ QUALITY = 72
 # word sits with that word's family, the rest with its first item's category (BUCKET). Dish-type words rank before
 # ingredient words (チキンサラダ is a salad, 卵スープ a soup, 鮭おにぎり an onigiri), then the more specific ingredient
 # (牛乳 before 牛); first match wins. Detail sheets go by category only. FAMILY_V: a change lays the sheets out again.
-FAMILY_V = 3  # 3: スープ apart from the 汁 (the MAFF 汁 had put スープ's top 20 on 5 sheets)
+FAMILY_V = 4  # 4: the first ingredient word in the name wins (トマトと卵: トマト); 3: スープ apart from the 汁 (the MAFF 汁 had put スープ's top 20 on 5 sheets)
 FAMILY = [('curry', 'カレー'), ('sushi', '寿司 軍艦 手巻 鉄火巻 かっぱ巻 かんぴょう巻 納豆巻 太巻 恵方巻 ネギトロ巻 サラダ巻'),
           ('salad', 'サラダ'), ('ramen', 'ラーメン 中華めん 中華そば つけ麺 担々麺 ちゃんぽん'), ('udon', 'うどん'), ('soba', 'そば'),
           ('pasta', 'スパゲッティ パスタ マカロニ ナポリタン カルボナーラ ペペロンチーノ ボンゴレ'), ('onigiri', 'おにぎり むすび'),
@@ -585,11 +585,16 @@ def model_of(png):
 
 
 def family_of(row, byid):
-    """A row's thumbnail neighbourhood: its search word's family, else its first item's category."""
-    names = [row['ja']] + [byid[i]['name'] for i in row['items'] if i in byid]
+    """A row's thumbnail neighbourhood: a dish-type word's family (FAMILY up to 'milk', in order), else the ingredient
+    word that comes first in the name (トマトと卵の炒め物: トマト; 鶏肉とトマトの煮込み: 鶏), else its first item's category."""
+    name = row['ja']
+    dish = [f for f, _ in FAMILY][:[f for f, _ in FAMILY].index('milk')]
     for fam, words in FAMILY:
-        if any(w in n for n in names[:1] for w in words.split()):
+        if fam in dish and any(w in name for w in words.split()):
             return fam
+    hits = [(name.find(w), i, fam) for i, (fam, words) in enumerate(FAMILY) if fam not in dish for w in words.split() if w in name]
+    if hits:
+        return min(hits)[2]
     return BUCKET.get(byid[row['items'][0]]['cat'], 'other')
 
 
