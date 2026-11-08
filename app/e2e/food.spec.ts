@@ -560,7 +560,7 @@ test('マイレシピ: someone else’s recipe in the meal search is read-only f
   await expect(curry).toHaveCount(1);
   await expect(curry).toContainText('4人前');
   await curry.click();
-  const per = Number((await sheet(page).locator('[data-food-live] .k').textContent())!.replace(/[^\d]/g, ''));
+  const per = Number((await sheet(page).locator('[data-food-live] .k').textContent())!.replace(/（.*/, '').replace(/[^\d]/g, '')); // (not its grams)
   expect(per).toBeGreaterThan(0);
   await sheet(page).locator('[data-amount-open]').click();
   const view = sheet(page).locator('[data-recipe-level=view]');
