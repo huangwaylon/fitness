@@ -1,7 +1,7 @@
 // けっこんしき's categories in Japanese (health plan C8; docs/wedding.md "Categories"). The starter list was the old
-// board's English (Budget, Venue, …); the board's own words are Japanese now. The record's rows still name the English
-// ones until the one-time rename (`catsRenameOps`, run by relay/scripts/wedding-cats.ts after a bookmark) has gone
-// through: till then the board reads them in Japanese (`catName`). Once the record holds none, the read map can go.
+// board's English (Budget, Venue, …); the board's own words are Japanese now. The record's rows were renamed once
+// (`catsRenameOps`: relay/scripts/wedding-cats.ts, run on 2026-11-09 after a bookmark; idempotent, should an old
+// phone's queued op bring an English one back).
 import type { WConf, WTaskSet, WedBook } from './wedding.ts';
 
 /** The starter categories, in the order the board offers them. */
@@ -14,10 +14,10 @@ const LEGACY_CATS: Readonly<Record<string, string>> = {
 };
 
 const has = (c: string): boolean => Object.hasOwn(LEGACY_CATS, c);
-/** A category as the board shows it: an old starter name in Japanese, any other as typed. */
-export const catName = (c: string): string => (has(c) ? LEGACY_CATS[c] : c);
-/** A category list as the board shows it (renamed, each once, in its order). */
-export const catNames = (cs: readonly string[]): string[] => [...new Set(cs.map(catName))];
+/** A category renamed: an old starter name in Japanese, any other as typed. */
+const catName = (c: string): string => (has(c) ? LEGACY_CATS[c] : c);
+/** A category list renamed (each once, in its order). */
+const catNames = (cs: readonly string[]): string[] => [...new Set(cs.map(catName))];
 
 export type RenameOp = { type: 'wtask'; data: WTaskSet } | { type: 'wconf'; data: WConf };
 

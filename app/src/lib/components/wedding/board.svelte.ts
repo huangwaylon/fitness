@@ -19,7 +19,6 @@ import { boardConfig, type BoardConfig } from '#lib/wedding/config.ts';
 import { week } from '#lib/store/week.svelte.ts';
 import { opClock, world } from '#lib/store/world.svelte.ts';
 import type { Who } from '#lib/types.ts';
-import { catName } from '#lib/contract/wedCats.ts';
 
 /** A version of the notes: its text, when it was saved and by whom (`imported`: the old Sheet's, never saved since). */
 interface NoteVersion { md: string; at: number; who: Who; imported?: true }
@@ -62,8 +61,7 @@ class WeddingBoard {
 
   /** Every task held but the purged (the deleted too), as the old board's rows. */
   get #all(): WedTask[] {
-    // (an old English starter category read in Japanese till the record's rename: contract/wedCats.ts)
-    return wedTasks(this.#book).map((x) => (x.category === catName(x.category) ? x : { ...x, category: catName(x.category) }));
+    return wedTasks(this.#book);
   }
 
   get config(): BoardConfig {

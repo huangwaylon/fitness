@@ -1,10 +1,9 @@
-// けっこんしき's categories in Japanese (contract/wedCats.ts): the board reads an old English starter name in Japanese,
-// and the record's one-time rename is ops a phone could send: the record's rules take every one, and once they're in
-// there is nothing left to rename.
+// けっこんしき's categories in Japanese (contract/wedCats.ts): the starter list, and the record's one-time rename as ops
+// a phone could send: the record's rules take every one, and once they're in there is nothing left to rename.
 import { describe, expect, it } from 'vitest';
 import { WedBook, wedOpOf, wedRowOf, type WedRow } from '#lib/contract/wedding.ts';
 import { boardConfig } from './config.ts';
-import { CATEGORIES, catName, catNames, catsRenameOps } from '#lib/contract/wedCats.ts';
+import { CATEGORIES, catsRenameOps } from '#lib/contract/wedCats.ts';
 
 const T = Date.parse('2026-11-08T03:00:00.000Z');
 const row = (type: string, d: Record<string, unknown>, who: 'A' | 'B' = 'A'): WedRow => wedRowOf(type, d, who)!;
@@ -21,16 +20,11 @@ function legacy(): WedBook {
 }
 
 describe('wedding categories', () => {
-  it('the starter list is Japanese; an old name reads in Japanese, a typed one as typed', () => {
+  it('the starter list is Japanese (招待客, 手続き)', () => {
     expect(boardConfig({}).cats).toEqual([...CATEGORIES]);
     expect(CATEGORIES).toContain('招待客');
     expect(CATEGORIES).toContain('手続き');
-    expect(catName('Guests')).toBe('招待客');
-    expect(catName('Paperwork')).toBe('手続き');
-    expect(catName('ドリンク')).toBe('ドリンク');
-    expect(catName('toString')).toBe('toString'); // (own keys only)
-    expect(boardConfig({ cats: ['Budget', 'ドリンク', '予算'] }).cats).toEqual(['予算', 'ドリンク']);
-    expect(catNames(['Other', 'その他'])).toEqual(['その他']);
+    expect(boardConfig({ cats: ['予算', 'ドリンク'] }).cats).toEqual(['予算', 'ドリンク']);
   });
 
   it('the rename: every task with an old name (deleted and subtasks too) and the list, each taken by the record; again: nothing', () => {
@@ -52,7 +46,6 @@ describe('wedding categories', () => {
       expect('row' in v, JSON.stringify(v)).toBe(true);
     }
     expect(catsRenameOps(book, T + 100)).toEqual([]);
-    expect(boardConfig({ cats: ['予算'] }).cats).toEqual(['予算']);
   });
 
   it('a record with nothing to rename (the list never set, every name Japanese): no ops', () => {

@@ -219,7 +219,7 @@ describe('the board', () => {
     expect(board.setConfig('p1', ' たろう ')).toBe(true);
     expect(board.setConfig('cats', ['Venue', 'Food'])).toBe(true);
     expect(board.setConfig('date', 'someday')).toBe(false);
-    expect(board.config).toMatchObject({ p1: 'たろう', cats: ['会場', '料理'] }); // (an old English name read in Japanese: contract/wedCats.ts)
+    expect(board.config).toMatchObject({ p1: 'たろう', cats: ['Venue', 'Food'] });
   });
 
   it('the guest reads it all and changes nothing', () => {

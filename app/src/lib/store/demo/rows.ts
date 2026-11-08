@@ -102,10 +102,9 @@ const DEMO_NOTE_DAYS = 20;
 const WED_DAYS = 40;
 /** A task: its id, title, category, due (days from today; null: the day before the wedding), start (days), subtasks
  *  [id, title, done], done, deleted.
- *  The first came from the old Sheet (the admin's load: imported, its tick too, who unknown), with the old board's
- *  English category (Venue: the board reads it 会場 till the record's rename, contract/wedCats.ts). */
+ *  The first came from the old Sheet (the admin's load: imported, its tick too, who unknown). */
 const WED_TASKS: [string, string, string, number | null, number | null, [string, string, boolean][], boolean, boolean][] = [
-  ['wdemo01', '式場を決める', 'Venue', -20, null, [], true, false],
+  ['wdemo01', '式場を決める', '会場', -20, null, [], true, false],
   ['wdemo02', '招待客リストを作る', '招待客', -3, -30, [['wdemo02a', '親族', true], ['wdemo02b', '友人', false], ['wdemo02c', '返信フォーム https://example.com/form', false]], false, false],
   ['wdemo03', 'カメラマンを予約', '写真', 9, null, [], false, false],
   ['wdemo04', 'ドレスの試着', '衣装', 45, 5, [['wdemo04a', '一軒目', true], ['wdemo04b', '二軒目', false], ['wdemo04c', '決める', false]], false, false],
