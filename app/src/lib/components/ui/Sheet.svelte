@@ -25,6 +25,8 @@
   // resets what each opening resets itself.
   // `timed`: its openings timed for the log (`perf.sheet`, ui-state/sheetTiming.ts).
   // A full-height sheet (top, pop, full) joins ui.up once its first frame is out: the island hides under it then.
+  // A half-filled form in it (`dirty`, or one registered inside it: ui/discard.svelte.ts) makes every close ask first,
+  // 「入力した内容を破棄しますか？」 [破棄する] [編集を続ける], in a paper sheet over it; a caller's own ✕ goes through `guard`.
   import { untrack, type Snippet } from 'svelte';
   import { onScrim } from './scrim.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
@@ -39,6 +41,9 @@
   import type { LogSheet } from '#lib/contract/log.ts';
   import { timeSheet } from '#lib/ui-state/sheetTiming.ts';
   import { keepSheet, unkeepSheet } from '#lib/ui-state/keptSheets.ts';
+  import { t } from '#lib/i18n/index.ts';
+  import { provideDiscard } from './discard.svelte.ts';
+  import Self from './Sheet.svelte';
 
   interface Props {
     open: boolean;
@@ -57,8 +62,26 @@
     keep?: boolean;
     /** Time its openings for the log, by this name. */
     timed?: LogSheet;
+    /** A form with input not saved (a form that is the sheet itself; forms inside it register: guardForm). */
+    dirty?: () => boolean;
   }
-  let { open = $bindable(), label, title, variant = 'paper', onclose, ondismiss, children, footer, focusField = false, keep = false, timed }: Props = $props();
+  let { open = $bindable(), label, title, variant = 'paper', onclose, ondismiss, children, footer, focusField = false, keep = false, timed, dirty }: Props = $props();
+
+  /** The forms inside it (guardForm), and the close waiting on 破棄する while the question is up. */
+  const forms = new Set<() => boolean>();
+  let asking = $state<(() => void) | null>(null);
+  const unsaved = () => !!dirty?.() || [...forms].some((f) => f());
+  provideDiscard({ form: (f) => (forms.add(f), () => void forms.delete(f)), ask: (run) => (asking = run) });
+  /** Close (or anything else that throws the input away) once nothing is unsaved, else after 破棄する. */
+  export function guard(run: () => void) {
+    if (unsaved()) asking = run;
+    else run();
+  }
+  function discard() {
+    const run = asking;
+    asking = null;
+    run?.();
+  }
   const cls = $derived(variant === 'full' ? 'pop full kit' : variant);
   let dlg: HTMLDialogElement | undefined = $state();
   const id = ++seq;
@@ -150,6 +173,11 @@
       e?.preventDefault();
       return false;
     }
+    if (unsaved()) {
+      e?.preventDefault();
+      asking = () => dlg?.close();
+      return false;
+    }
     cue('back');
     return true;
   }
@@ -165,10 +193,21 @@
   {#if open || kept}
     {#if hosts}<ToastHost />{/if}
     <div class="inner">
-      {#if variant === 'paper'}<div class="bar"><NavBar {title} onclose={() => dlg?.close()} /></div>{/if}
+      {#if variant === 'paper'}<div class="bar"><NavBar {title} onclose={() => guard(() => dlg?.close())} /></div>{/if}
       {@render children()}
     </div>
     {#if footer}<div class="foot">{@render footer()}</div>{/if}
+    {#if asking}
+      <Self bind:open={() => true, (v) => { if (!v) asking = null; }} label={t('common.discard.q')}>
+        <div class="ask" data-discard-ask>
+          <p>{t('common.discard.q')}</p>
+          <div class="two">
+            <button type="button" class="btn danger" data-sfx="undo" data-discard-yes onclick={discard}>{t('common.discard.yes')}</button>
+            <button type="button" class="btn paper" data-sfx="back" data-discard-keep onclick={() => (asking = null)}>{t('common.discard.keep')}</button>
+          </div>
+        </div>
+      </Self>
+    {/if}
   {/if}
 </dialog>
 
@@ -230,4 +269,9 @@
   dialog.full { border-radius: 0; font: 400 var(--fs-body)/1.45 var(--font-body); font-variant-numeric: tabular-nums; }
   dialog.full > .inner { padding: 0; }
   @keyframes up { from { transform: translateY(100%); } to { transform: none; } }
+  /* the question before throwing input away: its line, then 破棄する · 編集を続ける */
+  .ask { display: grid; gap: 16px; padding: 0 0 8px; text-align: center; }
+  .ask p { margin: 0; font: 700 var(--fs-talk)/1.4 var(--font-ui); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .two .btn { margin: 0; }
 </style>

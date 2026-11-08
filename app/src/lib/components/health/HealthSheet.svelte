@@ -4,7 +4,7 @@
   // day) over the shown tab's scroller, the bottom tab bar under them (健康 · ごはん; the last one shown kept for the
   // session: healthLast's `tab`). 健康 is Health.svelte and ごはん Food.svelte, both in this chunk; ごはん is mounted the
   // first time its tab shows and kept (hidden) after, so the food's pictures and catalogue never load for 健康 alone.
-  // ✕, the backdrop and Esc close it; kept mounted between openings (Sheet's `keep`: a reopening shows it at once).
+  // ✕, the backdrop and Esc close it (ごはん's editor changed: they ask first, as leaving the tab does); kept mounted between openings (Sheet's `keep`: a reopening shows it at once).
   // Each opening starts 健康 at 1週 on かつどう at its top (whose data kept for the session); each time ごはん shows (an
   // opening on it, or its tab) it starts on 記録, today, the day at its top (Food's `open`: its reset, and its
   // catalogue's idle load while it shows). A tree popup's ごはん button (kenkouAsk) opens it on ごはん, today, on the
@@ -42,12 +42,19 @@
     { id: 'food' as const, label: t('island.food'), icon: 'utensils' as const }
   ]);
 
+  /** The sheet (its `guard`: ごはん's editor changed, ✕ and leaving the tab ask first). */
+  let sheet: ReturnType<typeof Sheet> | undefined = $state();
   function pick(id: KenkouTab) {
     if (id === tab) return;
-    closeGoalEdit();
-    tab = last.tab = id;
-    if (id === 'food') foodSeen = true;
+    const go = () => {
+      closeGoalEdit();
+      tab = last.tab = id;
+      if (id === 'food') foodSeen = true;
+    };
+    if (sheet) sheet.guard(go);
+    else go();
   }
+  const close = () => (sheet ? sheet.guard(() => (open = false)) : (open = false));
 
   /** Bumped to remount Food on another person's day (a tree's ask). */
   let foodKey = $state(0);
@@ -92,12 +99,12 @@
   });
 </script>
 
-<Sheet bind:open label={t('title.health')} variant="pop" onclose={closed} timed="health" keep>
+<Sheet bind:this={sheet} bind:open label={t('title.health')} variant="pop" onclose={closed} timed="health" keep>
   <div class="titlebar">
     {#if tab === 'food'}
-      <NavBar title={foodTitle || t('island.food')} onback={back} lead={foodLead} onclose={() => (open = false)} sfx="self" />
+      <NavBar title={foodTitle || t('island.food')} onback={back} lead={foodLead} onclose={close} sfx="self" />
     {:else}
-      <NavBar title={t('title.health')} lead={healthLead} onclose={() => (open = false)} sfx="self" />
+      <NavBar title={t('title.health')} lead={healthLead} onclose={close} sfx="self" />
     {/if}
   </div>
   <div class="body" data-health-sheet bind:this={healthBody} hidden={tab !== 'health'}>

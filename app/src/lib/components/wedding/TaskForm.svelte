@@ -3,7 +3,8 @@
   // Enter in a field saves, the checklist's adds an item): the title, the category (the board's
   // list as chips; one no longer in it stays a chip while it's this task's; a tap on the picked one clears it), the
   // start day (optional, クリア) and the due day (必須), the checklist (renamed, removed and added here, all applied on
-  // 保存), and in 編集 the task's 削除 (the banner's とりけす brings it back). Every missing field is said at once. A
+  // 保存), and in 編集 the task's 削除 (the banner's とりけす brings it back). ✕, the backdrop or Esc with anything changed
+  // ask first (破棄する / 編集を続ける). Every missing field is said at once. A
   // task promoted from a checklist (it names a parent the board no longer holds) has no dates and no checklist.
   import { tick } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
@@ -42,6 +43,10 @@
   const promoted = $derived(!!task?.parentId);
   const options = $derived(draft.cat && !cats.includes(draft.cat) ? [...cats, draft.cat] : cats);
   const uid = $props.id();
+  /** Anything typed or changed since it opened: a close asks first (ui/Sheet's `dirty`). */
+  // svelte-ignore state_referenced_locally
+  const start = JSON.stringify([draft, items]);
+  const unsaved = () => !!sub.trim() || JSON.stringify([draft, items]) !== start;
 
   async function addItem() {
     const title = sub.trim();
@@ -96,7 +101,7 @@
   <button type="submit" form="{uid}-f" class="btn" data-wed-save data-sfx="confirm">{t('common.save')}</button>
 {/snippet}
 
-<Sheet bind:open label={task ? t('wed.editTask') : t('wed.newTask')} title={task ? t('wed.editTask') : t('wed.newTask')} focusField {footer}>
+<Sheet bind:open label={task ? t('wed.editTask') : t('wed.newTask')} title={task ? t('wed.editTask') : t('wed.newTask')} focusField {footer} dirty={unsaved}>
   <form class="form" id="{uid}-f" data-wed-form onsubmit={submit}>
     <label class="f">
       <span class="fl">{t('wed.field.title')}<b class="req">{t('wed.field.required')}</b></span>

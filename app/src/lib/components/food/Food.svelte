@@ -7,6 +7,7 @@
   // (けす with とりけす in its banner; a いつもの's entry: the day leaves the repeat only then, detachDay, so ‹ changes
   // nothing); the kcal goal at the summary's upper right (GoalEdit, in place); a meal's 🔁 → いつもの (its repeat, or a new one from the day's entries). Those push a
   // level (HealthSheet's title bar: its ‹; back where it was scrolled, the focus on what opened it, as けんこう's).
+  // An editor's draft changed (マイレシピ, マイ食品, クイック): its ‹ and the sheet's ✕, backdrop and Esc ask first (ui/discard).
   // Anyone else's day is read-only. データの出典 at the foot. Whose day sits in the title bar (`lead`, HealthSheet's
   // NavBar; kept for the session as けんこう's); under it the tabs (TABS, けんこう's group switch): きろく (the day,
   // on each opening) and グラフ (FoodChart: the kcal over a period, its range row with けんこう's period dropdown beside
@@ -52,6 +53,7 @@
   import FoodRepeat from './FoodRepeat.svelte';
   import FoodRecipe from './FoodRecipe.svelte';
   import FoodCustom from './FoodCustom.svelte';
+  import { askDiscard, guardForm } from '../ui/discard.svelte.ts';
   import {
     customDraft, customItem, customOf, DAYS, foodDb, foodDbNow, foodDbSoon, foodLast, whenFoodDb, inState, itemOf, portionLabel, recentOf, recipeItem,
     quickDraft, quickSnap, recipeServing, sameItems, servingOnly, type CustomDraft, type RecipeDraft
@@ -164,9 +166,13 @@
     if (toasts.current && !toasts.current.code) toasts.dismiss();
   }
   function up() {
-    cue('back');
-    leave();
-    backTo(stack.length - 1);
+    const pop = () => {
+      cue('back');
+      leave();
+      backTo(stack.length - 1);
+    };
+    if (top && (top.k === 'recipe' || top.k === 'custom' || top.k === 'quick') && changed(top.k)) ask(pop);
+    else pop();
   }
   const home = () => backTo(0);
   /** データの出典 opened (closed at each opening). */
@@ -257,9 +263,16 @@
   }
   // ---- クイック: one entry of kcal (and what else is known), no food saved (foodUi.ts quickSnap: an `sv` snapshot)
   let qdraft = $state<CustomDraft>(quickDraft());
+  /** Each editor's draft as it opened: changed, leaving it (its ‹, the sheet's ✕, backdrop or Esc) asks first. */
+  let started = { recipe: '', custom: '', quick: '' };
+  const drafts = () => ({ recipe: draft, custom: cdraft, quick: qdraft });
+  const changed = (k: keyof typeof started) => stack.some((l) => l.k === k) && JSON.stringify(drafts()[k]) !== started[k];
+  guardForm(() => changed('recipe') || changed('custom') || changed('quick'));
+  const ask = askDiscard();
   /** The quick form, its kcal field focused in the tap (`k`: a kcal typed in the search). */
   function openQuick(meal: Meal, k?: number) {
     qdraft = quickDraft(k === undefined ? '' : String(k));
+    started.quick = JSON.stringify(qdraft);
     go({ k: 'quick', meal }, k === undefined ? '[data-quick-new]' : '[data-quick-row]');
     flushSync();
     root?.querySelector<HTMLInputElement>('[data-custom-k]')?.focus({ preventScroll: true });
@@ -396,6 +409,7 @@
   function openRecipe(r: Recipe | null) {
     draft = r ? { n: r.n, sv: r.sv, it: r.it.map((x) => ({ ...x })) } : { n: '', sv: 2, it: [] };
     savedAs = r ? JSON.stringify(draft) : null;
+    started.recipe = JSON.stringify(draft);
     go({ k: 'recipe', id: r?.id ?? null }, r ? '[data-amount-open]' : '[data-recipe-new]');
   }
   /** A new ingredient from the ingredient search (its amount's 追加, a custom food made for it) comes back to that
@@ -451,7 +465,7 @@
   function recipeCopy() {
     const res = saveRecipe({ n: draft.n, sv: draft.sv, it: draft.it });
     if (!res.ok || !res.id) return;
-    savedAs = JSON.stringify(draft);
+    savedAs = started.recipe = JSON.stringify(draft);
     stack = [...stack.slice(0, -1), { k: 'recipe', id: res.id }];
     said('food.rcp.copied');
   }
@@ -472,6 +486,7 @@
   function openCustom(c: Custom | null, then: Then, focus: string, name = '') {
     cdraft = customDraft(c, name);
     csaved = c ? JSON.stringify(cdraft) : null;
+    started.custom = JSON.stringify(cdraft);
     go({ k: 'custom', id: c?.id ?? null, then }, focus);
   }
   /** Swap the level on top for another (the editor for the amount it goes on to, a copy's editor). */
@@ -503,7 +518,7 @@
   function customCopy(l: Extract<Level, { k: 'custom' }>) {
     const res = saveCustom(customOf(cdraft));
     if (!res.ok || !res.id) return;
-    csaved = JSON.stringify(cdraft);
+    csaved = started.custom = JSON.stringify(cdraft);
     swap({ k: 'custom', id: res.id, then: l.then });
     said('food.my.copied');
   }
