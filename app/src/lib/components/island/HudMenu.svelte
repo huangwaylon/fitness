@@ -1,8 +1,8 @@
 <script lang="ts">
   // The HUD menu, the cluster's right end (docs/design.md "Island"): a small round cream button with NH's leaf (the
-  // toggle; aria-expanded) that drops seven pills down under it, right-aligned, one after the other on a small spring:
-  // 「ベル 121」 (the shared wallet's balance, no icon: the number is the picture) → the panel (ごほうび), ずかん (NH's
-  // agrias butterfly), ききみみ with its small えいご (しずえ's head: ききみみ's sheet opened here, the voice session begun in the
+  // toggle; aria-expanded) that drops six pills down under it, right-aligned, one after the other on a small spring:
+  // 「ベル 121」 (the shared wallet's balance, no icon: the number is the picture) → the panel (ごほうび) (ずかん is
+  // 設定's: its last section), ききみみ with its small えいご (しずえ's head: ききみみ's sheet opened here, the voice session begun in the
   // tap itself; 「さそわれています！」 on it, and a dot on the leaf, while someone's invite is live), りょこう (Orville's
   // head: the trips' sheet, travel/open.svelte.ts), けっこんしき (パニエル's
   // head: the wedding board, its sheet opened here: components/wedding), トレイル (a mountain: the hiking trails,
@@ -14,7 +14,7 @@
   // The goals' coins fly into it (HudCoins): into the leaf while it's folded, into the ベル row's number while it's
   // open; the number holds while they are in the air and counts up as each lands, and today's +N flashes by where
   // they land (a yuzu bubble that fades: earnings only, never a とりけす's refund).
-  //   <HudMenu bells={…} today={…} expanded={panelOpen} onbells={() => …} onzukan={() => …} onsettings={() => …} {later} />
+  //   <HudMenu bells={…} today={…} expanded={panelOpen} onbells={() => …} onsettings={() => …} {later} />
   import { tick, untrack } from 'svelte';
   import { Tween } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
@@ -41,14 +41,12 @@
     expanded?: boolean;
     /** The ベル row picked (open the panel on ごほうび), at once. */
     onbells?: () => void;
-    /** ずかん picked (open the ずかん), at once. */
-    onzukan?: () => void;
     /** せってい picked (open せってい), at once. */
     onsettings?: () => void;
     /** The page's timer (cleared with the page). */
     later: (fn: () => void, ms: number) => void;
   }
-  let { bells, today, expanded = false, onbells, onzukan, onsettings, later }: Props = $props();
+  let { bells, today, expanded = false, onbells, onsettings, later }: Props = $props();
 
   let open = $state(false);
   /** Someone's ききみみ invite is live. */
@@ -191,10 +189,6 @@
       <span class="lbl" aria-hidden="true">{t('island.bellsRow')}</span>
       <b class="num money" aria-hidden="true" onanimationend={(e) => e.currentTarget.classList.remove('catch')}>{formatNum(Math.round(shown.current))}</b>
       {#if open}{@render plus()}{/if}
-    </button>
-    <button type="button" class="item" data-hud-zukan aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('zukan')} onclick={(e) => pick(e, onzukan)}>
-      <span class="lbl">{t('zukan.title')}</span>
-      <span class="ic"><OfficialArt key="critters/agrias-butterfly" size={30} eager /></span>
     </button>
     <!-- the voice session begins in the tap itself (iOS: the clips play with the silent switch on) -->
     <button type="button" class="item" data-hud-kikimimi aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('kikimimi')}

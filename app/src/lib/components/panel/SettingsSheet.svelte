@@ -2,8 +2,8 @@
   // 設定 (docs/design.md "Settings"): the HUD's menu's せってい button opens it, full height like the island panel,
   // grown out of the button (Sheet's `pop`, as けんこう out of the dumbbell). One scroller: 姿 (the look's portrait,
   // the よびな; 変更 → the 姿 level: the closet and the villagers, one dresser), プロフィール (性別, 生年月日, the BMI
-  // standard: ProfileSection), サウンド, 言語 (one dropdown) and 季節 (the seasonal preview, its fold opening on 島の天気);
-  // the guest's the same (2026-11-06), with a line saying it's visiting. The island is arranged in /editor, not here.
+  // standard: ProfileSection), サウンド, 言語 (one dropdown), 季節 (the seasonal preview, its fold opening on 島の天気) and
+  // 図鑑 (one row: this closes, the ずかん's sheet grown out of the row in its place); the guest's the same (2026-11-06), with a line saying it's visiting. The island is arranged in /editor, not here.
   // 姿 pushes a level with ‹ (its edits are sent as it's left, with a 取り消す banner here);
   // ✕, the backdrop and Esc close it, and the next opening starts at its top.
   import { tick } from 'svelte';
@@ -11,6 +11,9 @@
   import NavBar from '../ui/NavBar.svelte';
   import LookPage from '../look/LookPage.svelte';
   import LookPortrait from '../look/LookPortrait.svelte';
+  import OfficialArt from '../characters/OfficialArt.svelte';
+  import { popFrom } from '../island/popFrom.ts';
+  import { prefetchSheet } from '../island/sheetChunks.ts';
   import SoundSection from './SoundSection.svelte';
   import LangSection from './LangSection.svelte';
   import SeasonSection from './SeasonSection.svelte';
@@ -25,7 +28,7 @@
   import { cue } from '#lib/sound/cues.ts';
   import { isGuest, mine } from '#lib/ui-state/viewer.ts';
 
-  let { open = $bindable() }: { open: boolean } = $props();
+  let { open = $bindable(), onzukan }: { open: boolean; onzukan: () => void } = $props();
 
   /** The levels pushed: すがた. */
   let stack = $state<'look'[]>([]);
@@ -102,6 +105,15 @@
       <section class="sec" aria-labelledby="sec-sound"><h2 id="sec-sound" class="sec-label">{t('panel.sound')}</h2><SoundSection /></section>
       <section class="sec" aria-labelledby="sec-lang"><h2 id="sec-lang" class="sec-label">{t('panel.lang')}</h2><LangSection /></section>
       <section class="sec" aria-labelledby="sec-season"><h2 id="sec-season" class="sec-label">{t('panel.season')}</h2><SeasonSection {view} /></section>
+      <section class="sec" aria-labelledby="sec-zukan">
+        <h2 id="sec-zukan" class="sec-label">{t('title.zukan')}</h2>
+        <button type="button" class="prow zukan" data-settings-zukan aria-haspopup="dialog" data-sfx="tick" onpointerdown={() => void prefetchSheet('zukan')}
+          onclick={(e) => (popFrom(e.currentTarget.querySelector('.ic')), (open = false), onzukan())}>
+          <span class="ic"><OfficialArt key="critters/agrias-butterfly" size={36} /></span>
+          <span class="prl">{t('zukan.open')}</span>
+          <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+        </button>
+      </section>
       {#if week.demo}<span class="demo">{t('demo.badge')}</span>{/if}
     {/if}
   </div>
@@ -125,6 +137,8 @@
   .sec { display: grid; gap: 8px; }
   .me .prl small { display: block; margin-top: 2px; font-size: var(--fs-s); color: var(--text-soft); }
   .me .btn { flex: none; }
+  .zukan .ic { flex: none; display: flex; width: 40px; justify-content: center; }
+  .zukan .chev { flex: none; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; color: var(--text-soft); }
   .guest { margin: 6px 4px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
   .demo { align-self: center; background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-chip); padding: 4px 10px; font: 700 var(--fs-s)/1 var(--font-ui); }
 

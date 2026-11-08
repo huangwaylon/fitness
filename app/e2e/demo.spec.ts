@@ -825,8 +825,8 @@ test(`the HUD row at ${w}, ${at.slice(11)}: [the dumbbell] [the bowl] [the menu]
   expect(Math.abs(w - mb.x - mb.width - 14)).toBeLessThan(1.5);
   // the sky's left clear (the sun, the moon, the balloon: a third of it from 393 up), and the menu's pills folded away
   expect(bb.x).toBeGreaterThan(w >= 393 ? w / 3 : w / 6);
-  await expect(page.locator('[data-hud-bells], [data-hud-zukan], [data-hud-settings]')).toHaveCount(3);
-  for (const pill of await page.locator('[data-hud-bells], [data-hud-zukan], [data-hud-settings]').all()) await expect(pill).toBeHidden();
+  await expect(page.locator('[data-hud-bells], [data-hud-settings]')).toHaveCount(2);
+  for (const pill of await page.locator('[data-hud-bells], [data-hud-settings]').all()) await expect(pill).toBeHidden();
   // NH's dumbbell, a little taller than the pill; no number, no ▶ dot
   const img = btn.locator('img');
   await expect(img).toHaveAttribute('src', /items\/dumbbell\.webp/);
