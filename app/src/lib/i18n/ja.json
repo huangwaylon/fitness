@@ -73,7 +73,7 @@
   "error.home": "島へ戻る",
   "error.notFound": "このページは見つかりませんでした",
   "pair.keyHint": "16文字以上の英数字のキーです",
-  "kiroku.range": "{a}–{b}",
+  "kiroku.range": "{a}〜{b}",
   "kiroku.me": "あなた",
   "kiroku.min": "{n}分",
   "kiroku.ok": "決定",

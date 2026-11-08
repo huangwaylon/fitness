@@ -77,6 +77,23 @@ describe('ja copy: the sheets are normal Japanese', () => {
   });
 });
 
+// The terms the health review found spelt two ways across sheets (health plan C6), for every sheet's key, ききみみ's
+// too: 図鑑 (not ずかん), 捕まえる, 作る, a range with 〜 (10/29〜11/4, 3〜60%: never – or ～), 取り消す for an undo,
+// 資料 for food data's sources (「{n}件の資料で一致」). The world keeps its kana (「ずかんに のったよ！」).
+describe('ja copy: one spelling per term, every sheet (ききみみ too)', () => {
+  const sheets = Object.entries(ja).filter(([k]) => !isWorld(k));
+  const bad = (re: RegExp) => sheets.filter(([, v]) => re.test(v)).map(([k, v]) => `${k}: ${v}`);
+  it('図鑑, 捕まえた, 作る, 取り消す', () => {
+    expect(bad(/ずかん|つかまえ|つくる|つくり|つくっ|とりけ|元に戻した/)).toEqual([]);
+  });
+  it('a range is 〜', () => {
+    expect(bad(/～|[\d}）)]\s?[–—-]\s?[\d{]/)).toEqual([]);
+  });
+  it('food data\'s sources are 資料, counted 件', () => {
+    expect(bad(/件のデータ|\d*つの資料|\}つの資料/)).toEqual([]);
+  });
+});
+
 describe('catalog text', () => {
   it('has no broken characters (U+FFFD) in either language', async () => {
     const en = { ...(await import('./en.json')).default, ...(await import('./catch.en.json')).default, ...(await import('./food.en.json')).default } as Record<string, string>;

@@ -290,7 +290,7 @@ Health data over time for the personal trainer, one person at a time, computed o
   dropdown are ごはん's (`Segmented` 36, `Pick` `compact` as グラフ's period: one size in both tabs). 1週 and
   かつどう on every opening; switching either keeps the other, the range and whose data; the guest has no switch
   (かつどう only), the period alone at the row's right end.
-- **Then** a sticky row: ‹ the visible range (「10/2–10/31」; 「1日ごと」 / 「1週ごとの 1日平均」 / 「1か月ごとの 1日平均」
+- **Then** a sticky row: ‹ the visible range (「10/2〜10/31」; 「1日ごと」 / 「1週ごとの 1日平均」 / 「1か月ごとの 1日平均」
   under it) › and きょう.
 - **Cards, per group** (`model/health.ts` GROUPS and CARDS, the user's "activity metrics and body metrics"): かつどう
   🍎 歩数, 🍐 ムーブ, 🍑 エクササイズ, 🍒 スタンド (no footnote under them: the user, 2026-11-08); からだ 体重, 体脂肪率, BMI, 除脂肪体重 (what a
@@ -464,7 +464,7 @@ the day at its top, no level (no search, query, row opened in place, amount or e
   right end of 最近's heading, one short row of chips: ＋ レシピ (a meal's search only), ＋ マイ食品 and ⚡ クイック (named in
   full for a screen reader: レシピを作る, 食品を作る, クイック追加), hidden once something is typed (room for the results over
   the keyboard; nothing found, its card has じぶんで つくる): four さいきん rows show over the iPhone's keyboard; empty,
-  さいきん (my latest entry of each food, as I had it); typed, the best matches: the name, 「✓ 2つの資料で一致」 when n independent
+  さいきん (my latest entry of each food, as I had it); typed, the best matches: the name, 「✓ 2件の資料で一致」 when n independent
   sources agree on its kcal (on the second line when nothing else is there; else a ✓ beside the name, its words its
   label: a row two lines, never three; the amount says it under the name), a product's brand, the food's
   everyday name in Japanese (`foodUi.ts` glossOf: an older snapshot's catalogue name now, 若どり もも → 鶏もも肉; else the
@@ -557,7 +557,7 @@ the day at its top, no level (no search, query, row opened in place, amount or e
   meal's; a tap → the amount: ほぞん / けす), ＋ ざいりょうを ついか (a trip, as a meal's search's: each row's ＋ puts it in as
   it comes, a row → the amount, no meal, whose ついか comes back to the search; 「追加した材料（n）」 with ✕ and 完了 back to
   the recipe), 1人前あたり and ぜんぶで live, then けす (asked twice: ほんとうに けす？) and ほぞん (waiting until something
-  changed); both go back to the meal's search. A new one made from a meal's search saves as 「保存して追加」: one
+  changed; with no name or no ingredient yet 「名前と材料を入れてください」 says why); both go back to the meal's search. A new one made from a meal's search saves as 「保存して追加」: one
   serving (1人前) logged to that meal too, on its trip. Anyone else's: the same read-only, 「〇〇の レシピ」, with 「コピーして
   へんしゅう」 (a recipe of mine, opened in the editor) and 「ごはんに ついか」 (back to its amount).
 - **マイ食品 (the user: "create my own food and record its calories for future use in case there's a food not in the
@@ -2869,11 +2869,13 @@ Two zones (the user, 2026-11-07), by where a string shows (`i18n/linebreaks.test
   「ここに置く」. `dialog`, `[role=dialog]` and `.sheet-copy` are `word-break: normal` (kinsoku by `line-break:
   strict`); a bubble is keep-all wherever it is.
 - **One spelling a term** in every sheet: 設定 · 記録 · 目標 · 歩数 · 体重 · 完了 · 削除 · 取り消す · 保存 · 編集 · 決定 ·
-  キャンセル (not やめる) · 閉じる · 戻る · 元に戻す · もう一度 · 今日 · 変更 · 同期 · オフライン · 住民 · お客さん · 姿 ·
-  模様替え · 片付ける · 季節 · 天気; the game's own words stay as the game says them (ベル, かいがら, がんばり, ふたりで全部,
+  キャンセル (not やめる) · 閉じる · 戻る · 元に戻す (restore; an undo is 取り消す, the editor's too) · もう一度 · 今日 · 変更 ·
+  同期 · オフライン · 住民 · お客さん · 姿 · 模様替え · 片付ける · 季節 · 天気 · 図鑑 (ききみみ's too) · 捕まえた · 作る ·
+  資料 (「✓ 2件の資料で一致」) · a range with 〜 (「10/29〜11/4」, 「3〜60%」); the game's own words stay as the game says them (ベル, かいがら, がんばり, ふたりで全部,
   いつもの, ごはん, ごほうび) and official names as NH writes them. A sheet's title may differ from its HUD button's name (けんこう → 健康)
   or its pill (英語 → ききみみ). linebreaks.test checks the sheets' keys for a
-  space between two Japanese characters and for the kana spellings of the list.
+  space between two Japanese characters and for the kana spellings of the list (ききみみ's sheet keys too for 図鑑,
+  捕まえた, 作る, 取り消す, 〜 and 資料).
 
 ## Small screens
 

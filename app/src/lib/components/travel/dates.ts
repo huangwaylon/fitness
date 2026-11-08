@@ -27,11 +27,11 @@ function en(date: string, o: Intl.DateTimeFormatOptions): string {
   return f.format(Date.UTC(y, m - 1, d, 12));
 }
 
-/** A trip's span in the list: '2月11日(木) – 16日(火)' (the month again when it changes), 'Thu, Feb 11 – Tue, Feb 16'. */
+/** A trip's span in the list: '2月11日(木)〜16日(火)' (the month again when it changes), 'Thu, Feb 11 – Tue, Feb 16'. */
 export function listSpan(start: string, end: string, locale: Locale): string {
   if (locale !== 'ja') return `${en(start, { weekday: 'short', month: 'short', day: 'numeric' })} – ${en(end, { weekday: 'short', month: 'short', day: 'numeric' })}`;
   const [y1, m1, d1] = parts(start), [y2, m2, d2] = parts(end);
-  return `${m1}月${d1}日(${WD_JA[wdOf(y1, m1, d1)]}) – ${m2 !== m1 ? `${m2}月` : ''}${d2}日(${WD_JA[wdOf(y2, m2, d2)]})`;
+  return `${m1}月${d1}日(${WD_JA[wdOf(y1, m1, d1)]})〜${m2 !== m1 ? `${m2}月` : ''}${d2}日(${WD_JA[wdOf(y2, m2, d2)]})`;
 }
 
 /** A day's date in its card's head: the day of the month, the month ('10月', 'Oct') and the weekday ('土', 'Sat'). */

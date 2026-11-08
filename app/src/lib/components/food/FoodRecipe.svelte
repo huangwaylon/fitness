@@ -138,6 +138,7 @@
       {#if saved}
         <button type="button" class="btn paper small" data-sfx={removing ? 'undo' : 'tick'} data-recipe-remove onclick={remove}>{t(removing ? 'food.rcp.removeSure' : 'food.rcp.remove')}</button>
       {/if}
+      {#if !clean && !ok}<p class="why" data-recipe-why>{t('food.rcp.why')}</p>{/if}
       <button type="submit" class="btn small" data-sfx="confirm" data-recipe-save aria-disabled={!ok}>{t(andLog ? 'food.my.saveLog' : 'food.rcp.save')}</button>
     {/if}
   </div>
@@ -173,6 +174,8 @@
   .ih b { font-size: var(--fs-body); white-space: nowrap; }
   .ih .big { font-size: var(--fs-title); }
   ul { list-style: none; margin: 0; padding: 0; }
+  /* why 保存 waits (a name or an ingredient missing), a line of its own over it */
+  .why { flex: 1 1 100%; margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); text-align: center; }
   li + li { border-top: 1px dashed color-mix(in srgb, var(--lip) 70%, transparent); }
   /* FoodMeal's rows */
   .row {

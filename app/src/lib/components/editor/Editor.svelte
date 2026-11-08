@@ -78,7 +78,7 @@
     undoStack = undoStack.slice(0, -1);
     send(revert(store.current, a.before, a.after));
     redoStack = [...redoStack, a];
-    say(`元に戻した: ${a.label}`);
+    say(`取り消した: ${a.label}`);
   }
   function redo(): void {
     const a = redoStack.at(-1);
@@ -650,7 +650,7 @@
 
   <aside class="side">
     <div class="bar">
-      <button type="button" onclick={undo} disabled={!undoStack.length} title="Cmd+Z">↶ 元に戻す</button>
+      <button type="button" onclick={undo} disabled={!undoStack.length} title="Cmd+Z">↶ 取り消す</button>
       <button type="button" onclick={redo} disabled={!redoStack.length} title="Cmd+Shift+Z">↷ やり直す</button>
     </div>
     <label class="row small"><input type="checkbox" bind:checked={show3d} /> 3D</label>
