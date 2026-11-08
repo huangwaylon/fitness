@@ -9,7 +9,7 @@
 // with とりけす, the deleted list, 完全に削除 after its ask) and the guest's read-only board (`?demo&as=G`). Logic tier:
 // nothing here is drawn 3D. Pictures under SHOTS=<dir>.
 import { expect, test, type Locator, type Page } from './fixtures.ts';
-import { fromMenu, fromMenuAfterReload, hudMenu, unfoldMenu } from './hud.ts';
+import { fromMenu, hudMenu, unfoldMenu } from './hud.ts';
 import { islandUp } from './island.ts';
 import { shot } from './shots.ts';
 
@@ -444,11 +444,12 @@ test('the island paused under the board; offline before the first opening: the b
   await expect(page.getByText('オフラインです')).toBeVisible();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await context.setOffline(false);
-  // Chromium fetches the chunk again; WebKit keeps a failed import for the page's life, so it reloads: the pill again
-  // (fromMenuAfterReload: a tap the moment after it can still find the old page's failed loads)
-  const how = Promise.race([page.waitForEvent('load').then(() => 'reload'), sheet(page).waitFor().then(() => 'open')]);
+  // (offline, the chunk wasn't asked for: lazySheet's unreachable; WebKit would keep its failed preloads, and the
+  // retry reloaded the page) back online, もういちど opens it in place, no reload
+  let reloads = 0;
+  page.on('load', () => reloads++);
   await page.getByRole('button', { name: 'もういちど' }).click();
-  if ((await how) === 'reload') await fromMenuAfterReload(page, 'wedding');
   await expect(sheet(page).locator('[data-wed-top]')).toBeVisible();
+  expect(reloads).toBe(0);
   await expect(page.locator('[data-covered][data-sheet]')).toHaveCount(1);
 });

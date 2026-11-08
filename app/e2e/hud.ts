@@ -47,17 +47,6 @@ export async function fromMenu(page: Page, which: keyof typeof SHEET, how: 'clic
   await expect(page.locator(SHEET[which])).toBeVisible();
 }
 
-/** fromMenu right after a reload that a chunk failed offline (lazySheet's もういちど): WebKit hands the new page the old
- *  one's failed loads of the chunk from its memory cache, with no request, for a moment after the reload (the old
- *  document not yet gone), so a tap then says offline again; the next tap opens it, as a player's would. */
-export async function fromMenuAfterReload(page: Page, which: 'travel' | 'wedding' | 'hiking') {
-  await expect(async () => {
-    await unfoldMenu(page);
-    await page.locator(PILL[which]).click();
-    await expect(page.locator(SHEET[which])).toBeVisible({ timeout: 2000 });
-  }).toPass({ timeout: 20_000 });
-}
-
 /** けんこう and ごはん's sheet, from the HUD's dumbbell, on that tab (it opens on the one shown last). */
 export async function openKenkou(page: Page, tab: 'health' | 'food' = 'health') {
   await page.getByRole('button', { name: 'けんこう', exact: true }).click();
