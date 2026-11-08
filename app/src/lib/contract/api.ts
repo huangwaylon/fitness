@@ -77,7 +77,7 @@ export const PROFILE_PREF_KEYS: readonly string[] = ['sex', 'birth', 'bmiStd'];
 /** The island's weather (`pref weatherMode`, docs/design.md "Weather"): Tokyo's real sky by the hour (`real`, the
  *  default) or the game's seeded one. One for the whole island (no `person`; the last one set wins), so both phones
  *  agree on the rain-only critters; a member sets it, the guest's phone only shows it. */
-export const WEATHER_MODES = ['real', 'game'] as const;
+const WEATHER_MODES = ['real', 'game'] as const;
 export type WeatherMode = (typeof WEATHER_MODES)[number];
 export const isWeatherMode = (v: unknown): v is WeatherMode => v === 'real' || v === 'game';
 

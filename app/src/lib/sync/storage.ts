@@ -109,9 +109,6 @@ export const DEVICE = {
   /** localStorage: `1` | `0`: this device's WebGL is a software renderer (asked once: a throwaway context costs
    *  seconds under SwiftShader; world3d/Island3D.svelte draws at its lightest on one). */
   softGL: 'island.softGL',
-  /** localStorage: `{ day, event, season, weather, tod }`: せってい's きせつ, the scene's seasonal preview on this phone
-   *  for that Tokyo day (ui-state/preview.svelte.ts; a look only, never synced or sent). */
-  preview: 'island.preview',
   /** localStorage: `1` | `0`: the rooms' and the museum's first-person view (store/firstPerson.svelte.ts; off by default). */
   fpv: 'island.fpv',
   /** localStorage: the Tokyo date whose midnight Happy New Year! this phone played (lib/sound/sound.svelte.ts: once,

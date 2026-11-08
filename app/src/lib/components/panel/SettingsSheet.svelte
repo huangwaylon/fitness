@@ -2,7 +2,7 @@
   // 設定 (docs/design.md "Settings"): the HUD's menu's せってい button opens it, full height like the island panel,
   // at once (Sheet's `pop`). One scroller: 姿 (the look's portrait,
   // the よびな; 変更 → the 姿 level: the closet and the villagers, one dresser), プロフィール (性別, 生年月日, the BMI
-  // standard: ProfileSection), サウンド, 言語 (one dropdown), 季節 (the seasonal preview, its fold opening on 島の天気) and
+  // standard: ProfileSection), サウンド, 言語 (one dropdown), 季節 (the whole island's look: SeasonSection) and
   // 図鑑 (one row: this closes, the ずかん's sheet in its place); the guest's the same (2026-11-06), with a line saying it's visiting. The island is arranged in /editor, not here.
   // 姿 pushes a level with ‹ (its edits are sent as it's left, with a 取り消す banner here);
   // ✕, the backdrop and Esc close it, and the next opening starts at its top.
@@ -141,7 +141,7 @@
   .guest { margin: 6px 4px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
   .demo { align-self: center; background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-chip); padding: 4px 10px; font: 700 var(--fs-s)/1 var(--font-ui); }
 
-  /* Rows shared by the sections (サウンド, 島の天気). */
+  /* Rows shared by the sections (サウンド). */
   .panel-body :global(.prows) { display: grid; gap: 10px; }
   .panel-body :global(.prow) {
     appearance: none; cursor: pointer; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 12px;

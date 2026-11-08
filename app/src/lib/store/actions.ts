@@ -7,7 +7,7 @@ import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { newId } from '#lib/sync/queue.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
 import type { LocalDate, ShopItemId, Who } from '#lib/types.ts';
-import { isWeatherMode, nextDay, type FindKind, type WeatherMode } from '#lib/contract/api.ts';
+import { isWeatherMode, nextDay, type FindKind, type SeasonLook, type WeatherMode } from '#lib/contract/api.ts';
 import { findKey, findsView } from '#lib/model/finds.ts';
 import { addToTally, dayTallies } from '#lib/model/tally.ts';
 import { localDateAt } from '#lib/time/dates.ts';
@@ -118,6 +118,12 @@ export function setVillagerName(name: string): SendResult {
 export function setWeatherMode(mode: WeatherMode): SendResult {
   if (!isWeatherMode(mode)) return { ok: false };
   return week.send('pref', { key: 'weatherMode', value: mode });
+}
+
+/** The island's look (設定 → 季節: ui-state/preview.svelte.ts setPreview): an event, a season, a weather and a time of
+ *  day every phone shows, or null (自動). Anyone's, the guest's too (the last set wins). */
+export function setSeasonLook(look: SeasonLook | null): SendResult {
+  return week.send('pref', { key: 'seasonLook', value: look });
 }
 
 /** Villager from the roster (せってい → むらびと), e.g. 'goldie' (lib/villagers/roster.ts). */

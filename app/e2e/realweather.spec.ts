@@ -1,7 +1,7 @@
 // Tokyo's real weather on the island (docs/design.md "Weather"): the relay's timeline (here a `?wx=` fixture on the
 // scene clock, or one planted in the phone's cache as the relay would have left it) sets the sky by the hour, the same
 // on two phones; offline the cached one serves until it no longer covers the hour or is 36 hours old, then the seeded
-// day; せってい's てんき switches the island between ほんもの and ゲーム, with the data's credit; the guest's phone only shows it.
+// day; 設定 → 季節's 天気 switches the island between 自動 (Tokyo's) and ゲーム, with the data's credit; the guest's too.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu, weatherSection } from './hud.ts';
@@ -95,7 +95,7 @@ test.describe('the real weather', () => {
     await expect(scene(page)).toHaveAttribute('data-sky', seeded);
   });
 
-  test("設定 → 季節's 島の天気: ほんもの or ゲーム for the island, what it is now and the credit; the guest's phone changes it as a member's", async ({ page }) => {
+  test("設定 → 季節's 天気: 自動 (Tokyo's) or ゲーム for the island, what it is now and the credit; the guest's phone changes it as a member's", async ({ page }) => {
     const seeded = await seededSky(page);
     const real = seeded === 'heavy' ? 'c' : 'h';
     const realSky = real === 'h' ? 'heavy' : 'clear';

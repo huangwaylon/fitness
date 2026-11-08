@@ -1,6 +1,7 @@
-// The seasonal preview (docs/design.md "Seasonal preview"; ui-state/preview.svelte.ts): せってい's きせつ shows another day's
-// look on this phone for today: an event, a season, the weather, the time of day. The HUD's chip says it's on and a
-// tap on it goes back; it lapses with the day. Read by state (data-* and <html>'s data-tod/-season), not pixels.
+// The island's look (docs/design.md "Seasonal look"; ui-state/preview.svelte.ts): 設定's 季節 shows another day's look on
+// the whole island (`pref seasonLook`, the record's: the two-phone case is season-shared.spec): an event, a season, the
+// weather, the time of day. The HUD's chip says it's on and a tap on it goes back; it stays until someone does.
+// Read by state (data-* and <html>'s data-tod/-season), not pixels.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
@@ -42,8 +43,8 @@ test('ハロウィン in せってい brings Halloween night now; the chip shows
   await expect(html(page)).toHaveAttribute('data-season', 'autumn');
   await expect(page.locator('[data-halloween="night"]')).toHaveCount(1);
   await expect(page.locator('[data-visitor="jack"]')).toHaveCount(1);
-  // kept on this phone only, for the day it was set on
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('island.preview') ?? 'null'))).toMatchObject({ day: '2026-11-19', event: 'halloween' });
+  // kept in the island's record, not on the phone
+  expect(await page.evaluate(() => localStorage.getItem('island.preview'))).toBeNull();
 
   await page.reload();
   await expect(chip(page)).toBeVisible();
@@ -54,10 +55,9 @@ test('ハロウィン in せってい brings Halloween night now; the chip shows
   await expect(page.locator('[data-halloween]')).toHaveCount(0);
   await expect(page.locator('[data-visitor="jack"]')).toHaveCount(0);
   await expect(html(page)).toHaveAttribute('data-tod', 'day');
-  expect(await page.evaluate(() => localStorage.getItem('island.preview'))).toBeNull();
 });
 
-test('a season, the weather and the time of day; もどす is the real day again', async ({ page }) => {
+test('a season, the weather and the time of day; 自動に戻す is the real day again', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&critter=none');
   await islandUp(page);
   await expect(html(page)).toHaveAttribute('data-season', 'autumn');
@@ -81,11 +81,38 @@ test('a season, the weather and the time of day; もどす is the real day again
   await expect(html(page)).toHaveAttribute('data-tod', 'day');
 });
 
-test('it lapses when the day it was set on is over', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('island.preview', JSON.stringify({ day: '2026-11-03', event: 'halloween', season: null, weather: null, tod: null })));
+test("a look an older build kept on the phone is ignored", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('island.preview', JSON.stringify({ day: '2026-11-04', event: 'halloween', season: null, weather: null, tod: null })));
   await page.goto('?demo&date=2026-11-04T12:00&critter=none');
   await islandUp(page);
   await expect(chip(page)).toHaveCount(0);
   await expect(page.locator('[data-halloween]')).toHaveCount(0);
   await expect(html(page)).toHaveAttribute('data-tod', 'day');
+});
+
+test('天気: 自動 (Tokyo\'s, its line and credit), ゲーム, or a forced sky; one heading, and 自動に戻す sets the weather back too', async ({ page }) => {
+  await page.goto('?demo&date=2026-11-04T12:00&critter=none');
+  await islandUp(page);
+  await fromMenu(page, 'settings');
+  await unfold(page);
+  await expect(page.locator('dialog[open] h3', { hasText: '天気' })).toHaveCount(1);
+  const sec = page.locator('[data-weather-section]');
+  await expect(sec.locator('[data-preview="weather:auto"]')).toHaveAttribute('aria-checked', 'true');
+  await expect(sec.locator('[data-wx-credit]')).toBeVisible();
+  await expect(page.locator('[data-preview-reset]')).toHaveCount(0);
+  await sec.locator('[data-preview="weather:game"]').click();
+  await expect(sec.locator('[data-preview="weather:game"]')).toHaveAttribute('aria-checked', 'true');
+  await expect(sec.locator('[data-wx-game]')).toBeVisible();
+  await expect(page.locator('[data-preview-summary]')).toHaveText('ゲームの天気');
+  await sec.locator('[data-preview="weather:rain"]').click();
+  await expect(sec.locator('[data-preview="weather:rain"]')).toHaveAttribute('aria-checked', 'true');
+  await expect(sec.locator('[data-preview="weather:game"]')).toHaveAttribute('aria-checked', 'false');
+  await expect(sec.locator('[data-wx-credit]')).toHaveCount(0);
+  await expect(page.locator('[data-preview-summary]')).toHaveText('雨');
+  await expect(page.locator('.if-scene')).toHaveAttribute('data-sky', 'rain');
+  await page.locator('[data-preview-reset]').click();
+  await expect(page.locator('[data-preview-summary]')).toHaveText('自動');
+  await expect(sec.locator('[data-preview="weather:auto"]')).toHaveAttribute('aria-checked', 'true');
+  await expect(sec).toHaveAttribute('data-weather-section', '');
+  await expect(page.locator('[data-weather-mode]')).toHaveAttribute('data-weather-mode', 'real');
 });

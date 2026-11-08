@@ -963,8 +963,15 @@ each phone's own. Its frames are the ambience's (a slow drift), its clock the is
 Why: the user ("implement it as a real 3d model flying directly over the world, in 3d space … it should consistently
 drop to the front area, somewhere open").
 
+### The island's look is shared (2026-11-08)
+設定's 季節 is one setting for the whole island (`pref seasonLook` in the record, the last anyone set, the guest too),
+not this phone's for a day: every phone's sky, lighting, ground and music follow it at once, and it stays until someone
+sets it back (自動に戻す). Its 天気 merges the look's weather with the real/game switch (`pref weatherMode`), so there
+is one 天気. Why: the user ("make the 季節 settings apply to the whole island, shared with everyone - anyone can change
+it and force the override if desired").
+
 ### The seasonal preview is a look, not a date (2026-11-04)
-せってい's きせつ (design.md "Seasonal preview") forces what the scene shows (an event, a season, the weather, the time
+せってい's きせつ (design.md "Seasonal look") forces what the scene shows (an event, a season, the weather, the time
 of day) instead of moving the scene clock as `?date=` does: the clock also keys the records (the shared world's day, the
 day items, the tallies), so a moved clock could file real catches and picks under another day. Whatever the island
 yields stays the real day's (critters by the real weather and month, no eggs in place of a find, no fragment from a
