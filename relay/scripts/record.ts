@@ -1,4 +1,4 @@
-// The record's admin tool (docs/ops/runbook.md#13-the-record), run from a Mac with the two person keys in the
+// The record's admin tool (docs/ops/runbook.md#9-the-record), run from a Mac with the two person keys in the
 // environment (never on the command line of a shared shell, never logged):
 //   KEY_A=… KEY_B=… node scripts/record.ts <command> [--test]
 // --test: the test relay (island-fund-relay-test) instead of production. Keys: KEY_A / KEY_B, else KEYS_FILE, else

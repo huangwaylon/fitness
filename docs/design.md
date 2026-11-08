@@ -812,7 +812,7 @@ picked up is gone on all, what a shake drops lies on all, each villager stands w
 
 `contract/guest.ts`, `ui-state/cast.ts`, `ui-state/viewer.ts`, `e2e/guest.spec.ts` ([backend](backend.md#the-guest),
 [decisions](decisions.md#the-guest)). A third person, 「おきゃくさん」: a visitor to our
-island, NH's way, with its own key (pairing: [runbook](ops/runbook.md) "Pair a phone"). `?demo&as=G` is its phone.
+island, NH's way, with its own key (pairing: [runbook "Pair a phone"](ops/runbook.md#10-pair-a-phone)). `?demo&as=G` is its phone.
 
 - **What it sees:** our island, the trees and their popups, the menu's ベル row and ごほうび view-only (「ちょきんばこは
   ふたりの もの。」 in place of the shop), the ずかん, けんこう's かつどう (either member's, goals read-only) and everyone's

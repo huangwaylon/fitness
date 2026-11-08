@@ -267,7 +267,7 @@ describe('the record’s compaction', () => {
 
 describe('the user’s hold on compaction (2026-11-05: keep every Health row)', () => {
   it('nothing turns the cron’s compaction on: no COMPACT_CRON in wrangler.toml, production’s or the test env’s, nor in a deploy', async () => {
-    // health A9 (2026-11-08): the code stays, gated; only the user lifts the hold (docs/ops/runbook.md §13)
+    // health A9 (2026-11-08): the code stays, gated; only the user lifts the hold (docs/ops/runbook.md §9)
     const { readFileSync, readdirSync } = await import('node:fs');
     const { join } = await import('node:path');
     const root = join(import.meta.dirname, '..', '..');

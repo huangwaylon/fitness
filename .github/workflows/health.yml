@@ -1,4 +1,4 @@
-# Backend monitor (docs/ops/runbook.md §3): the relay's /health (the Worker and the room) and a keyless
+# Backend monitor (docs/ops/runbook.md §2): the relay's /health (the Worker and the room) and a keyless
 # {"action":"health"} to the record's /api (its Durable Object). It fails, so GitHub e-mails the owner, unless both
 # answer JSON with ok:true; and the app's site (https://island-fund.pages.dev: a build, its CSP header, the relay's
 # CORS for its origin). Then the log's alert (docs/ops/observability.md "The alert"): /health/log's counts (with the
@@ -24,12 +24,12 @@ jobs:
           relay=https://island-fund-relay.island-fund-relay.workers.dev
           body=$(curl -sS --max-time 30 "$relay/health")
           echo "$body" | head -c 300; echo
-          echo "$body" | jq -e '.ok == true' > /dev/null || { echo "::error::the relay's /health did not answer ok (docs/ops/runbook.md §10)"; exit 1; }
+          echo "$body" | jq -e '.ok == true' > /dev/null || { echo "::error::the relay's /health did not answer ok (docs/ops/runbook.md §8)"; exit 1; }
           # the real weather (docs/backend.md "The real weather"): a warning only, the phones fall back on their own
-          echo "$body" | jq -e '(.wx.age // 9999) <= 180' > /dev/null || echo "::warning::the real weather is over 3 hours old or missing (docs/ops/runbook.md §3): $(echo "$body" | jq -c '.wx')"
+          echo "$body" | jq -e '(.wx.age // 9999) <= 180' > /dev/null || echo "::warning::the real weather is over 3 hours old or missing (docs/ops/runbook.md §2): $(echo "$body" | jq -c '.wx')"
           body=$(curl -sS --max-time 30 -H 'Content-Type: text/plain' --data '{"action":"health"}' "$relay/api")
           echo "$body" | head -c 300; echo
-          echo "$body" | jq -e '.ok == true' > /dev/null || { echo "::error::the record's /api did not answer ok (docs/ops/runbook.md §13)"; exit 1; }
+          echo "$body" | jq -e '.ok == true' > /dev/null || { echo "::error::the record's /api did not answer ok (docs/ops/runbook.md §9)"; exit 1; }
           echo "healthy, record build $(echo "$body" | jq -r '.build')"
       - name: The app's site (Cloudflare Pages), its headers, and the relay admitting its origin
         run: |

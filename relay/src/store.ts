@@ -1261,7 +1261,7 @@ export class StoreCore {
     return { metrics: n('metrics'), events: n('events'), ids: n('ids'), uploads: n('uploads') };
   }
 
-  /** Every row, as `load` takes them (the backup, docs/ops/runbook.md#7-backups): the load of a dump is the record. */
+  /** Every row, as `load` takes them (the backup, docs/ops/runbook.md#6-backups): the load of a dump is the record. */
   dump(): { rows: DumpRows } {
     return { rows: { ...this.rowsSince(''), uploads: this.uploadRows(), ...this.heldDump() } };
   }
