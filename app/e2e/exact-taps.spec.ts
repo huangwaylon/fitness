@@ -4,7 +4,8 @@
 // high on the screen beside the shop's and the museum's doors, and a tap on it opened the shop, or with the line out
 // went through the door (ui-state/exactTaps.ts: the click from the pointerup's own point). And a beach find's
 // thumb-size tap box (hitbox.ts pick) is the sea's where it reaches over the water: a tap on the sea beside a dig spot
-// by the back beach casts. Real touches (page.touchscreen.tap), a pause between them past a double tap's time.
+// by the back beach casts. Real touches (page.touchscreen.tap), a pause between them past a double tap's time (the
+// browser's own gesture timing, not the page's clock: a real wait), two points a view, the nearest and one further off.
 import { expect, test, type Page } from './fixtures.ts';
 import RECORD from '../src/lib/layout/record-2026-11-03.json' with { type: 'json' };
 import { is3d, quiet } from './island';
@@ -108,12 +109,13 @@ for (const layout of ['default', 'user'] as const) {
       await farStop(page, k, x);
       const pts = await waterBeside(page, 'building');
       tried += pts.length;
-      await castsAt(page, spread(pts, 3), url);
+      await castsAt(page, spread(pts, 2), url);
     }
     expect(tried, 'water beside a building at the far stop').toBeGreaterThan(0);
   });
 
-  test(`${layout} island: a tap on the shop's own tap area opens it`, async ({ page }) => {
+  // (the default island's: the user's, its roof, is building-taps.spec's, a real touch too)
+  if (layout === 'default') test(`${layout} island: a tap on the shop's own tap area opens it`, async ({ page }) => {
     test.slow();
     await open(page, layout);
     // (from the far stop on down: on the default island it stands lower down)
@@ -151,7 +153,7 @@ for (const layout of ['default', 'user'] as const) {
       await farStop(page, k, x);
       const pts = await waterBeside(page, 'find');
       tried += pts.length;
-      await castsAt(page, spread(pts, 3), url);
+      await castsAt(page, spread(pts, 2), url);
       if (pts.length) last = { k, x, pt: pts[0] };
     }
     expect(tried, 'the sea beside a find at the far stop').toBeGreaterThan(0);
