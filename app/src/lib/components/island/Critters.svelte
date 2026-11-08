@@ -13,8 +13,8 @@
   //   sound and NH's 「！」. While the line is out any tap is the reel: on the bite it catches the fish; any earlier
   //   with a fish at it scares it off; with none it just reels in. No tap in time and it gets away (the float stays
   //   out). 1 in 14 the line brings up a boot, a tire or a can.
-  //   Diving (island/sea.ts, loaded with the first bubble spot): 1 sea turn in 4 brings a spot of bubbles rising instead
-  //   of a shadow; a tap on it is a dive (a splash, a ripple): a slow sea creature is caught; a quick one darts off as a
+  //   Diving (island/sea.ts, loaded with the first bubble spot): now and then a spot of bubbles rises off the front beach
+  //   (its own turns, beside the shadow there); a tap on it is a dive (a splash, a ripple): a slow sea creature is caught; a quick one darts off as a
   //   shadow and a second tap on it in time catches it, or it gets away. Now and then the spot holds NH's pearl.
   //   Bugs (NH's by month and hour, where NH keeps them: critters.ts bugPlace): cicadas and beetles on the trunks of the
   //   goal trees, the oaks and the cedars, NH's palm beetles on the palms, butterflies and the bee over the flowers
@@ -880,7 +880,7 @@
    *  creature (or a pearl) under it. */
   async function spawnBubbles(stay: boolean | number = true, want?: string, pinned = false, r = rand, o: Shared & { month?: number; hour?: number } = {}) {
     const m = await loadSea().catch(() => null);
-    if (!m || fishes.sea || bubbles || diving) return;
+    if (!m || bubbles || diving) return;
     const ok = (x: number, z: number) => inWater('sea', x, z) && seen(x, z, 0, guards(8), 16, 6);
     // the shared world's spot (from its seed, on both phones), else one on screen
     const p = o.path ? bubblesAt(o.path.seed) : freeSwim(SEA_SWIM, ok) ?? (pinned ? { x: SEA_SWIM.cx, z: SHORE_Z - 24 } : null);
@@ -1345,10 +1345,10 @@
     const o = { cid, path: { seed: c.seed, t0, total: end - t0 }, month: +date.slice(5, 7), hour: Math.floor(c.slot / 360) };
     const r = spawnRand(c);
     if (c.kind === 'fish') {
-      // (off its stretch of coast; the front's waits on a dive there)
-      if (!fishes[seaPool(c.coast)] && (c.coast || (!bubbles && !diving))) void spawnFish('sea', stay, undefined, false, r, { ...o, coast: c.coast });
+      // (off its stretch of coast; the front's waits on a dive there, never on its bubbles: every stretch's shadow alike)
+      if (!fishes[seaPool(c.coast)] && (c.coast || !diving)) void spawnFish('sea', stay, undefined, false, r, { ...o, coast: c.coast });
     } else if (c.kind === 'bubbles') {
-      if (!fishes.sea && !bubbles && !diving) void spawnBubbles(stay, undefined, false, r, o);
+      if (!bubbles && !diving) void spawnBubbles(stay, undefined, false, r, o);
     } else if (c.kind === 'fresh') {
       const wt = freshWater(c);
       if (!fishes[wt]) void spawnFish(wt, stay, undefined, false, r, o);

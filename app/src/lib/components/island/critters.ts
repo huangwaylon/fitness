@@ -331,9 +331,9 @@ export function stalkTap(state: StalkState, swing: 'catch' | 'startle' | 'none')
 
 // ---------- timing ----------
 
-/** The share of the sea's turns that bring a bubble spot to dive at instead of a fish shadow (island/sea.ts; the turns
- *  themselves: island/ambient.ts). */
-export const BUBBLE_SHARE = 0.25;
+/** Per slot, the chance the front sea's bubbles (a spot to dive at: island/sea.ts) come when none are there: their own
+ *  channel (island/ambient.ts), beside the front's shadow, about as many a day as when they took 1 sea turn in 4. */
+export const BUBBLE_ODDS = 0.07;
 
 /** How long an ambient critter stays if nobody plays with it (ms). */
 export const STAY_MS = { fish: 45_000, bug: 18_000 } as const;
