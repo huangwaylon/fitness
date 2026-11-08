@@ -3,7 +3,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { configureStorage, type KV } from './storage.ts';
 import { configureTransport } from './transport.ts';
-import { enqueue, flush, queued, ackedEvents, nextRetryAt, PARK_AFTER, unpark } from './queue.ts';
+import { enqueue, flush, queued, ackedEvents, nextRetryAt, PARK_AFTER, releaseHeld, unpark } from './queue.ts';
 import { setKey } from './pairing.ts';
 
 class Mem implements KV {
@@ -171,5 +171,16 @@ describe('a queue that never wedges (health A3: sync #1, #18, #19)', () => {
     expect(queued().map((e) => e.id)).toEqual([t3.id, sell.id, other.id, i2.id, t4.id]);
     release();
     await p;
+  });
+
+  it('a keepalive flush (the page hidden) keeps each request under the browser’s 64 KB; one larger waits for the next open', async () => {
+    for (let i = 0; i < 6; i++) enqueue('island', { date: `2026-11-1${i}`, taken: [], pad: 'x'.repeat(20_000) }, T, 120_000);
+    expect(releaseHeld(T)).toBe(true);
+    enqueue('wnote', wnote(9), T);
+    const r = await flush(() => T, { keepalive: true });
+    expect(bodies.map((b) => b.body.events.length)).toEqual([2, 2, 2]);
+    expect(bodies.every((b) => JSON.stringify(b.body).length < 64_000)).toBe(true);
+    expect(r.remaining).toBe(1); // the note: its own next flush
+    expect(releaseHeld(T)).toBe(false);
   });
 });

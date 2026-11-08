@@ -261,8 +261,13 @@ at once; one event alone so refused is set aside.
   until a snapshot holds their id (given up 5 minutes after the ack). `bad_request` / `too_large` → dropped with a
   message. `unauthorized` → pairing. Other errors keep the event and all after it, with backoff 1 s, 2 s, 4 s … ≤ 5
   min, ±20%.
-- **Retry now:** the `online` event, a sync tap and the re-read after an ack send backed-off events at once (a
-  background refresh on becoming visible keeps the backoff).
+- **Retry now:** the `online` event, a sync tap and the re-read after an ack send backed-off events at once; so do
+  becoming visible and the socket's welcome (2026-11-08: iOS often skips `online` after a suspend), at most once per
+  30 s.
+- **Hidden:** on `visibilitychange` to hidden and `pagehide`, the day rows still in their hold (a tally's 60 s, an island
+  day's 120 s) go at once in `keepalive` requests (≤ 60,000 chars each, the browser's 64 KB cap): a phone locked right
+  after a catch no longer leaves the record and the partner behind until the next open. A buy's undo window keeps its
+  time.
 
 ### Optimistic view
 

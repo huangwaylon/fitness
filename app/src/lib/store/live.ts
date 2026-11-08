@@ -6,7 +6,7 @@ import type { EventRow, EventType } from '#lib/contract/api.ts';
 import { t } from '#lib/i18n/index.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { getKey, getStoredMe, onStorageProblem, type StorageProblem } from '#lib/sync/storage.ts';
-import { ackedEvents, enqueue, enqueueAll, flush, holdEvent, keepAcked, nextRetryAt, queued, retryNow, unqueue, type QueuedEvent } from '#lib/sync/queue.ts';
+import { ackedEvents, enqueue, enqueueAll, flush, holdEvent, keepAcked, nextRetryAt, queued, releaseHeld, retryNow, unqueue, type QueuedEvent } from '#lib/sync/queue.ts';
 import { addOwnRows, loadCache, refreshSnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
 import { keyFromHash } from '#lib/sync/pairing.ts';
 import { LIVE_URL, liveRelay, type Live, type SheetChange } from '#lib/sync/live.ts';
@@ -19,6 +19,9 @@ import { persistOnce } from '#lib/sync/persist.ts';
 
 /** Background refreshes (app becoming visible) at most this often. */
 const REFRESH_FLOOR_MS = 30_000;
+/** Back on screen or the socket back: the write queue's backoff is cut short at most this often (a head the record
+ *  keeps failing never retries faster). */
+const KICK_FLOOR_MS = 30_000;
 /** After acked writes the record stored no row for (a duplicate), re-read so server rows replace the optimistic ones. */
 const RECONCILE_MS = 1500;
 /** Sheet changes arriving together (a burst of pushes) make one refresh. */
@@ -84,6 +87,9 @@ export class LiveBackend implements Backend {
     this.#started = true;
     // back online: also what backed off while offline goes now (refresh → retryNow)
     addEventListener('online', () => void this.refresh({}));
+    // hidden (the phone locked, another app) or left: the day rows still held go now, in a request that outlives the page
+    addEventListener('pagehide', () => this.#hidden());
+    if (typeof document !== 'undefined') document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && this.#hidden());
     // The relay: while the app is on screen, a change to the record (the partner's tap, a Shortcut's upload) is fetched
     // at once instead of on the next open. Polling stays as it was, so a relay outage only loses the immediacy.
     if (LIVE_URL) {
@@ -93,7 +99,10 @@ export class LiveBackend implements Backend {
       // was written while the socket was down is fetched now, not at the next open (docs/backend.md#live-sync)
       let up = false;
       this.#live.onStatus((s) => {
-        if (s.connected && !up) this.#welcomed();
+        if (s.connected && !up) {
+          this.#kick();
+          this.#welcomed();
+        }
         up = s.connected;
       });
       // the shared island hears the partner even while another tab of the app is on screen (docs/backend.md#shared-world)
@@ -119,6 +128,7 @@ export class LiveBackend implements Backend {
       return;
     }
     this.#start();
+    if (opts.background) this.#kick();
     if (!this.#cache) {
       const c = await loadCache();
       if (c && !this.#cache) {
@@ -340,6 +350,23 @@ export class LiveBackend implements Backend {
       this.#reconcileTimer = setTimeout(() => void this.refresh({ fresh: true }), RECONCILE_MS);
     }
     if (r.remaining > 0) this.#scheduleRetry();
+  }
+
+  /** The page is being hidden: the held tally and island rows go (queue.ts releaseHeld), keepalive. */
+  #hidden(): void {
+    if (!releaseHeld()) return;
+    void flush(Date.now, { keepalive: true });
+  }
+
+  #kickedAt = -Infinity;
+  /** Back on screen or reconnected (iOS often skips `online` after a suspend): what backed off goes now, not after up
+   *  to 5 minutes with the network up. At most once per KICK_FLOOR_MS. */
+  #kick(): void {
+    const now = Date.now();
+    if (now - this.#kickedAt < KICK_FLOOR_MS || !queued().some((x) => x.tries > 0 && !x.parked && x.nextAt > now)) return;
+    this.#kickedAt = now;
+    retryNow(now);
+    void this.#flush(true);
   }
 
   /** Wake the queue when its next event is due (a backoff, or the end of an undo window). */
