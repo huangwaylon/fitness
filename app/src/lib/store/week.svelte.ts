@@ -105,7 +105,7 @@ class WeekStore implements Host {
   }
 
   /** Paint from cache, then flush queued writes and fetch new rows. `background` refreshes respect a 30 s floor. */
-  async refresh(opts: { background?: boolean } = {}): Promise<void> {
+  async refresh(opts: { background?: boolean; unpark?: boolean } = {}): Promise<void> {
     if (this.status === 'unconfigured') return;
     const b = await this.#getBackend();
     this.#start();

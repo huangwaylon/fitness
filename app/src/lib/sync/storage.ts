@@ -15,6 +15,8 @@ export const LIVE = {
   queue: 'island.queue',
   /** Events the server acked whose rows the snapshot cache hasn't fetched back yet (queue.ts `ackedEvents()`). */
   acked: 'island.acked',
+  /** `{ at }`: when the record last acked one of this phone's events (queue.ts lastSentAt: 設定's 未送信 row). */
+  sentAt: 'island.sentAt',
   /** `{ day, t }`: the relay time of the last shared-world change this phone heard that Tokyo day (sync/live.ts: the
    *  hello's `since`, so a reload hears only what's new). */
   since: 'island.liveSince',

@@ -166,6 +166,22 @@ export function releaseHeld(now = Date.now()): boolean {
   return true;
 }
 
+/** How long a write waits, not held, before the island says it hasn't gone (A10: an online queue stuck was invisible). */
+export const STUCK_MS = 120_000;
+
+/** The events not sent yet when one of them has waited STUCK_MS past its hold (backed off, set aside or blocked):
+ *  their count, else 0. */
+export function unsentStuck(now = Date.now()): number {
+  const q = queued();
+  return q.some((x) => !isHeld(x, now) && now - Math.max(x.queuedAt, x.tries ? 0 : x.nextAt) >= STUCK_MS) ? q.length : 0;
+}
+
+/** When the record last acked one of this phone's events (ms), or null. */
+export function lastSentAt(): number | null {
+  const v = readJson<{ at?: unknown }>(localKV(), LIVE.sentAt);
+  return v && typeof v.at === 'number' ? v.at : null;
+}
+
 /** 1 s, 2 s, 4 s … capped at 5 min, ±20 % jitter. */
 export function backoffMs(tries: number, rand = Math.random): number {
   const base = Math.min(300_000, 1000 * 2 ** Math.max(0, tries - 1));
@@ -343,6 +359,7 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean 
       if (stop) break;
     }
     out.remaining = queued().length;
+    if (out.sent) writeJson(localKV(), LIVE.sentAt, { at: now() });
     return out;
   })();
   flushing = p;

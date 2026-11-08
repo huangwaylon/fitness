@@ -3,7 +3,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { configureStorage, type KV } from './storage.ts';
 import { configureTransport } from './transport.ts';
-import { enqueue, flush, queued, ackedEvents, nextRetryAt, PARK_AFTER, releaseHeld, unpark } from './queue.ts';
+import { enqueue, flush, queued, ackedEvents, lastSentAt, nextRetryAt, PARK_AFTER, releaseHeld, STUCK_MS, unpark, unsentStuck } from './queue.ts';
 import { setKey } from './pairing.ts';
 
 class Mem implements KV {
@@ -184,3 +184,22 @@ describe('a queue that never wedges (health A3: sync #1, #18, #19)', () => {
     expect(releaseHeld(T)).toBe(false);
   });
 });
+
+describe('what the unsent line counts (health A10)', () => {
+  it('nothing while every write is held or fresh; all of them once one has waited STUCK_MS past its hold', async () => {
+    enqueue('tally', { date: '2026-11-18', counts: { a: 1 } }, T, 60_000);
+    expect(unsentStuck(T + 60_000 + STUCK_MS - 1)).toBe(0);
+    expect(unsentStuck(T + 60_000 + STUCK_MS)).toBe(1);
+    enqueue('pref', { key: 'moveGoal', value: 450 }, T);
+    answer = () => ({ ok: false, error: 'unavailable' });
+    await flush(() => T);
+    expect(unsentStuck(T + 1000)).toBe(0);
+    expect(unsentStuck(T + STUCK_MS)).toBe(2); // backed off that long: counted
+    expect(lastSentAt()).toBeNull();
+    answer = (b) => ({ ok: true, results: b.events.map((e: { id: string }) => ({ id: e.id, ok: true })) });
+    await flush(() => T + STUCK_MS + 60_000);
+    expect(lastSentAt()).toBe(T + STUCK_MS + 60_000);
+    expect(unsentStuck(T + 10 * STUCK_MS)).toBe(0);
+  });
+});
+
