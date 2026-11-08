@@ -28,7 +28,7 @@ permissions:
 # was tried: in a burst nothing finished.) A pull request's runs: one at a time on its branch, as before. The full
 # logic tier is its own workflow after this one (e2e-logic-full.yml): this run's result is the gate's alone.
 concurrency:
-  group: pages-${{ github.ref }}
+  group: ${{ github.event_name == 'pull_request' && format('pages-{0}', github.ref) || format('pages-run-{0}', github.run_id) }}
   cancel-in-progress: false
 
 jobs:

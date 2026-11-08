@@ -22,11 +22,13 @@ After a deploy, never holding one back:
 | · `timings` | the tier's test times folded into `e2e/timings.json` (the `e2e-timings` artifact) and the shards' spread in the summary: when they drift apart, `npm run e2e:timings` and commit it |
 | *e2e full tier* (`e2e-full.yml`) ×10 | **everything drawn**, nightly (02:30 Tokyo) and on demand: the whole suite with real GL (the quarantine too), one browser a runner, `E2E_SLOW=1` (a test 90 s, an expect 20 s: drawn under software GL the game itself runs slower); its failures in its summary and on their specs |
 
-- **Red main never deploys, and the newest green does.** One run at a time on `main`, never cancelled: a newer push
-  waits, and one still waiting is replaced by the newest. So in a burst of pushes the running one finishes and
-  deploys, then the newest runs (a deploy that has started is never cancelled either). The full logic tier likewise
-  runs one at a time to the end (a newer one waits; one waiting is replaced by the newest): when its runs cancelled
-  each other, a burst of pushes left it never finishing, red for hours unseen.
+- **Red main never deploys, never older over newer, and the newest green does.** Pushes' runs overlap, never
+  cancelled: a push's gate starts at once. Only `deploy` is one at a time (`cloudflare-deploy`; a newer one waiting
+  replaces an older one waiting, so that run ends cancelled), and its order guard (`scripts/deploy-order.ts`) checks
+  the live commit just before wrangler: older or the same, it deploys nothing (green, a notice); not sure, red. In a
+  burst a few gate jobs can queue for a runner (GitHub Free's 20, the full logic tier's 7 among them). The full
+  logic tier runs one at a time to the end (a newer one waits; one waiting is replaced by the newest): when its runs
+  cancelled each other, a burst of pushes left it never finishing, red for hours unseen.
 - **The gate** (`scripts/e2e-impact.ts`, `npm run e2e:impact` shows what it would run here): push to live in ~4 min, so
   not every test. It runs (1) the **gate set**, `e2e/gate.json`: ~16 fast, stable spec files over the core flows (boot,
   the HUD, the tent, fishing, 健康 · ごはん, ききみみ, the shop, two phones, the editor, りょこう, the service worker,
