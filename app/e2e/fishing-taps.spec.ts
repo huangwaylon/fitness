@@ -39,9 +39,10 @@ async function open(page: Page, o: { layout?: 'default' | 'user'; q?: string; op
 const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
 
 // The whole of it in each water, on both islands: the cast where the tap was, a shadow noticing
-// the float, its nibbles, the bite and the catch.
+// the float, its nibbles, the bite and the catch (the default island's sea, river and pond: fishing3d.spec, each with
+// its real touch, the float where the tap was and these cues).
 for (const layout of ['default', 'user'] as const)
-  for (const water of ['sea', 'pond', 'river', 'mouth', 'clifftop'] as const)
+  for (const water of layout === 'default' ? (['mouth', 'clifftop'] as const) : (['sea', 'pond', 'river', 'mouth', 'clifftop'] as const))
     test(`${layout} island: a tap on the ${water} by my villager casts there, the shadow bites, a tap catches it`, async ({ page }) => {
       test.slow();
       await open(page, { layout, q: `&critter=${water === 'sea' ? 'fish' : water}` });
