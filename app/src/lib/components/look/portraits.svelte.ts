@@ -6,6 +6,7 @@
 // (KEEP at most, the least recently asked for let go: each a 10-20 KB data URL). Nothing is read as the module loads:
 // a head's own entry the first time it's asked for. A look with none yet shows the caller's stand-in until it's drawn.
 import type { PlayerLook } from '#lib/contract/look.ts';
+import { fnv1a } from '#lib/random.ts';
 
 /** Pixels a side (the strip's 60px chips at 2×; the せってい row's 48 px). */
 const PORTRAIT_PX = 128;
@@ -18,9 +19,7 @@ export type Painter = (look: PlayerLook, px: number) => Promise<string | null>;
 /** A look's key: its fields in a fixed order, hashed (FNV-1a 32). */
 function lookHash(l: PlayerLook): string {
   const s = [l.hair, l.hairColor, l.eye, l.eyeColor, l.mouth, l.mouthFrame, l.skin, l.cheek, l.nose, l.top, l.bottom, l.socks, l.shoes, l.glasses, l.ornament, l.hat ?? null].join('|');
-  let h = 0x811c9dc5;
-  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193);
-  return (h >>> 0).toString(36);
+  return fnv1a(s).toString(36);
 }
 
 const PREFIX = 'look.portrait.';

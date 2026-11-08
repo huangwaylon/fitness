@@ -97,3 +97,86 @@ describe('the feeding', () => {
     expect(fd.hunter).toBe(null);
   });
 });
+
+describe('the seeded feeding', () => {
+  test('pinned: a seed gives the same first wait and rest, and the same feeders after a minute', () => {
+    const t = TANKS.find((x) => x.id === 'sea')!, w = openOf(t), id = [...PREDATORS][0];
+    const b = modelBounds(`critters/fish/${id}`)!, body = bodyIn(t, b.min, b.max);
+    const pin = (seed: number) => {
+      const f = feedingOf(seed), sharks = [spawn(w, body.r, body.reach, cruiseOf(body.r), seed, bandOf(id))];
+      const first = [f.next, f.rest];
+      for (let k = 0; k < 120 * FPS; k++) (stepSchool(sharks, w, 1 / FPS, k / FPS), stepFeeding(f, sharks, w, 1 / FPS));
+      return [...first, f.hunts, f.bites, f.escapes, ...f.feeders.flatMap((x) => (x.alive ? x.p.map((v) => v.toFixed(6)) : []))];
+    };
+    expect([pin(1), pin(7), pin(0)]).toMatchInlineSnapshot(`
+      [
+        [
+          9.38951758411713,
+          0.021885769441723824,
+          4,
+          2,
+          2,
+          "89.624518",
+          "26.982249",
+          "-52.470315",
+          "87.185382",
+          "26.982569",
+          "-52.165894",
+          "84.042371",
+          "26.982351",
+          "-52.106369",
+          "93.273165",
+          "27.328391",
+          "-56.080076",
+        ],
+        [
+          5.081933272071183,
+          0.4956660605967045,
+          5,
+          5,
+          0,
+          "188.278645",
+          "21.170704",
+          "-53.544631",
+          "192.686555",
+          "21.837079",
+          "-52.466999",
+          "191.915447",
+          "21.153722",
+          "-56.789623",
+          "191.647652",
+          "21.495405",
+          "-52.943130",
+          "192.365751",
+          "21.837662",
+          "-52.542530",
+          "193.180550",
+          "21.491094",
+          "-52.270858",
+          "191.709897",
+          "21.847124",
+          "-55.773331",
+        ],
+        [
+          9.38951758411713,
+          0.021885769441723824,
+          4,
+          2,
+          2,
+          "92.883465",
+          "27.073374",
+          "-59.027109",
+          "90.991082",
+          "27.424809",
+          "-61.405171",
+          "93.103021",
+          "27.064220",
+          "-64.395448",
+          "98.213076",
+          "27.417420",
+          "-55.825332",
+        ],
+      ]
+    `);
+  });
+});

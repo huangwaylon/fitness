@@ -19,6 +19,7 @@
   import { drawOff, shaderChecks } from '#lib/ui-state/testMode.ts';
   import type { EditStage } from '../layoutEdit/IslandEdit.svelte';
   import type { Material, Mesh, Object3D } from 'three';
+  import { clamp } from '#lib/math.ts';
 
   let { layout, mode = 'orbit', look, camZ = $bindable(300), stage = $bindable() }: {
     layout: Layout;
@@ -241,7 +242,7 @@
         controls.addEventListener('change', () => {
           const t = controls.target, b = bounds();
           was.copy(t);
-          t.set(C.clamp(t.x, b.x0, b.x1), C.clamp(t.y, -40, 400), -C.clamp(-t.z, b.z0, b.z1));
+          t.set(clamp(t.x, b.x0, b.x1), clamp(t.y, -40, 400), -clamp(-t.z, b.z0, b.z1));
           if (!was.equals(t)) {
             camera.position.add(was.subVectors(t, was));
             inertia._panOffset?.set(0, 0, 0);

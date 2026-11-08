@@ -20,6 +20,7 @@ import {
   Mesh, MeshBasicMaterial, MeshLambertMaterial, PlaneGeometry, Points, Quaternion, ShaderMaterial, Sphere, Vector3, AdditiveBlending,
   type Material, type Texture
 } from 'three';
+import { smallHash } from '#lib/random.ts';
 import type { Exhibit, Kit } from './engine.ts';
 import { WALKERS, onDisplay, type Specimen, type TankId } from './species.ts';
 import { ditherMaterial, fadeMaterial, fadeStep, hourWatch } from './hourFader.ts';
@@ -294,7 +295,7 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
     const pts = new Points(pg, puff);
     pts.renderOrder = 3;
     group.add(pts);
-    feeds.set(t.id, { fd: feedingOf(hash(t.id) + 1), slot: k * FEEDERS, puff, pts, predators: [], drawn: false });
+    feeds.set(t.id, { fd: feedingOf(smallHash(t.id) + 1), slot: k * FEEDERS, puff, pts, predators: [], drawn: false });
   }
   /** A tank's feeders into their slots (each one's yaw, then its pitch to its climb, its fade its scale: the matrix
    *  written straight into the mesh's array, nothing composed); nothing to write while none's in, nor was. */
@@ -373,7 +374,7 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
       mesh.userData.specimen = sp.id;
       // a big fish slow for its length, a little one quicker (u/s, at its drawn size: boids.ts cruiseOf), at its depth
       const speed = cruiseOf(body.r);
-      const f = spawn(s.water, body.r, body.reach, s.walk ? speed * 0.6 : speed, hash(sp.id), bandOf(sp.id));
+      const f = spawn(s.water, body.r, body.reach, s.walk ? speed * 0.6 : speed, smallHash(sp.id), bandOf(sp.id));
       // a walker on the sand (its own height off it), else among the tank's swimmers
       if (s.walk) f.p[1] = s.water.y0 + body.half[1] * body.s;
       (s.walk ? walkers : swimmers).get(tank.id)!.push(f);
@@ -515,8 +516,3 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
   };
 }
 
-function hash(s: string): number {
-  let h = 7;
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 100003;
-  return h;
-}

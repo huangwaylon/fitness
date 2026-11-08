@@ -8,6 +8,7 @@
 //     never hidden.
 import type { WedTask } from '#lib/contract/wedding.ts';
 import { daysBetween } from '#lib/time/dates.ts';
+import { clamp01 } from '#lib/math.ts';
 
 /** 'YYYY-MM' of a day ('' for none: it groups with the undated rows). */
 export const monthOf = (day: string): string => day.slice(0, 7);
@@ -53,7 +54,6 @@ function byCreated(a: TaskRow, b: TaskRow): number {
   return a.createdAt < b.createdAt ? -1 : 1;
 }
 
-const clamp01 = (value: number): number => Math.min(1, Math.max(0, value));
 
 interface TaskProgress {
   /** 0–1. */

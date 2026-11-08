@@ -14,6 +14,7 @@ import {
   Box3, Matrix4, Quaternion, CircleGeometry, Color, Mesh, MeshBasicMaterial, MeshLambertMaterial, Object3D, SphereGeometry, Vector3, type Bone, type Material,
   type MeshStandardMaterial, type SkinnedMesh, Texture
 } from 'three';
+import { smooth01 } from '#lib/math.ts';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { ktx2Plugin } from '../world3d/ktx2.ts';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
@@ -304,10 +305,6 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
   /** The last step moved it only for its gym piece's loop (looping()). */
   let loopOnly = false;
   const tfOf = (): Tf => ({ x: group.position.x, y: group.position.y, z: group.position.z, yaw: group.rotation.y });
-  const ease3 = (v: number) => {
-    const k = Math.max(0, Math.min(1, v));
-    return k * k * (3 - 2 * k);
-  };
   /** Where the group goes on its anchor: sitting, its hips (the group's origin under them) a back's depth out from
    *  the seat's back (the middle of a seat with none), on the seat's top; lying, its feet's end (the pivot) along the
    *  bed from the head's end, lifted by its back's depth. */
@@ -326,7 +323,7 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
   };
   /** a → b by k, the turn first, an arc over what's in the way (a seat's back from behind it, onto a bed). */
   const between = (a: Tf, b: Tf, k: number, hop: number): Tf => {
-    const e = ease3(k), ey = ease3(k * 1.7);
+    const e = smooth01(k), ey = smooth01(k * 1.7);
     let d = b.yaw - a.yaw;
     while (d > Math.PI) d -= Math.PI * 2;
     while (d < -Math.PI) d += Math.PI * 2;

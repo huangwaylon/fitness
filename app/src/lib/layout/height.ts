@@ -8,6 +8,7 @@
 import { GRID, TIER_H, TILE, idx, kindOf, onGrid, tileAt, tileX, tileZ, type Kind } from './grid.ts';
 import { facingVec, footOf, type Layout } from './model.ts';
 import { Ch, fieldsOf, masks, roundedIn, type Fields } from './fields.ts';
+import { clamp01, smoothstep } from '#lib/math.ts';
 
 export const GRASS_Y = 3;
 const SAND_Y = 1.2;
@@ -26,11 +27,6 @@ export const edgeDist = (x: number, z: number): number =>
 const MOUTH_Y = -1.5;
 const DECK_Y = 6;
 
-const sat = (v: number) => Math.max(0, Math.min(1, v));
-const smooth = (a: number, b: number, v: number) => {
-  const t = sat((v - a) / (b - a));
-  return t * t * (3 - 2 * t);
-};
 
 export interface Field {
   layout: Layout;
@@ -80,16 +76,16 @@ function build(layout: Layout): Field {
       // its bed meets the seabed, the user's 2026-11-06 hard line at the shore)
       // (and by the grid's edge the seabed is down at the deep plane's level, terrain.ts: no ledge where the mesh ends)
       if (dL > 0) {
-        const bed = Math.min(-Math.min(dL * 0.3, 1.5 + dL * 0.14, 7.5), MOUTH_Y * smooth(1, -8, dW));
-        return bed + (DEEP_Y - bed) * smooth(EDGE_FADE, 0, edgeDist(x, z));
+        const bed = Math.min(-Math.min(dL * 0.3, 1.5 + dL * 0.14, 7.5), MOUTH_Y * smoothstep(1, -8, dW));
+        return bed + (DEEP_Y - bed) * smoothstep(EDGE_FADE, 0, edgeDist(x, z));
       }
       const shore = Math.min(SAND_Y, -dL * 0.12);
-      y = shore + (GRASS_Y - shore) * smooth(-1, 5, dS);
-    } else y = SAND_Y + (GRASS_Y - SAND_Y) * smooth(-1, 5, dS);
-    y -= 0.35 * smooth(2, -3, dP);
+      y = shore + (GRASS_Y - shore) * smoothstep(-1, 5, dS);
+    } else y = SAND_Y + (GRASS_Y - SAND_Y) * smoothstep(-1, 5, dS);
+    y -= 0.35 * smoothstep(2, -3, dP);
     // a river's or a pond's banks down to its bed; on the sea's level the bed shallows to MOUTH_Y at the shore
-    const bed = GRASS_Y - CARVE + (tier === 0 ? (MOUTH_Y - GRASS_Y + CARVE) * smooth(-14, 0, dL) : 0);
-    return y + (bed - y) * smooth(1, -8, dW);
+    const bed = GRASS_Y - CARVE + (tier === 0 ? (MOUTH_Y - GRASS_Y + CARVE) * smoothstep(-14, 0, dL) : 0);
+    return y + (bed - y) * smoothstep(1, -8, dW);
   }
   function surfaceAt(x: number, z: number): Kind {
     if (F.at(Ch.land, x, z) > 0) return 'sea';
@@ -121,7 +117,7 @@ function build(layout: Layout): Field {
       const [fx, fz] = facingVec(p.f);
       // rising away from its facing: f 0 (facing the camera) climbs toward +z
       const t = fz !== 0 ? (fz < 0 ? (z - p.z0) / (p.z1 - p.z0) : (p.z1 - z) / (p.z1 - p.z0)) : fx > 0 ? (p.x1 - x) / (p.x1 - p.x0) : (x - p.x0) / (p.x1 - p.x0);
-      return p.y0 + TIER_H * sat(t);
+      return p.y0 + TIER_H * clamp01(t);
     }
     for (const b of decks) {
       if (x < b.x0 || x > b.x1 || z < b.z0 || z > b.z1) continue;

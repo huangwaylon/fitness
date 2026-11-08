@@ -40,3 +40,6 @@ export function shuffle<T>(xs: T[], r: () => number): T[] {
   }
   return xs;
 }
+
+/** A small string hash (h·31 + code mod 100003, from 7; by code point): the museum's bug and swimmer seeds. */
+export const smallHash = (s: string): number => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 100003, 7);

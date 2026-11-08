@@ -5,7 +5,7 @@ import { findKey, findsView, type FirstFind } from '#lib/model/finds.ts';
 import { reduce } from '#lib/model/state.ts';
 import type { EventRow } from '#lib/contract/api.ts';
 import { entries } from '../kiroku/zukan.ts';
-import { BUG_IDS, FISH_IDS, HUNTED, PER_TANK, habitatOf, hourOf, onDisplay, onShow, tankOf, type Specimen } from './species.ts';
+import { BUG_IDS, FISH_IDS, HUNTED, PER_TANK, habitatOf, hourOf, hourShuffle, onDisplay, onShow, tankOf, type Specimen } from './species.ts';
 import { PREDATORS } from './feeding.ts';
 import { TANKS } from './tanks.ts';
 
@@ -136,5 +136,19 @@ describe('the garden (how each bug lives)', () => {
     expect(habitatOf('mole-cricket')).toBe('terrarium');
     expect(habitatOf('tiger-beetle')).toBe('ground');
     expect(habitatOf('bagworm')).toBe('dangle');
+  });
+});
+
+describe('the hour\'s shuffle', () => {
+  test('pinned: the same order on every phone for an hour and a place (saved screenshots and both phones rely on it)', () => {
+    const list = FISH_IDS.slice(0, 12).map((id) => ({ id }) as Specimen);
+    const at = (iso: string, what: string) => hourShuffle(list, hourOf(Date.parse(iso)), what).map((s) => s.id).join(' ');
+    expect([at('2026-11-09T07:30:00+09:00', 'sea'), at('2026-11-09T08:00:00+09:00', 'sea'), at('2026-11-09T07:30:00+09:00', 'bug')]).toMatchInlineSnapshot(`
+      [
+        "dace bitterling pale-chub crawfish killifish pop-eyed-goldfish goldfish soft-shelled-turtle ranchu-goldfish koi crucian-carp carp",
+        "bitterling pale-chub killifish carp pop-eyed-goldfish soft-shelled-turtle dace koi ranchu-goldfish crawfish crucian-carp goldfish",
+        "soft-shelled-turtle crawfish carp bitterling goldfish koi crucian-carp pop-eyed-goldfish ranchu-goldfish killifish pale-chub dace",
+      ]
+    `);
   });
 });

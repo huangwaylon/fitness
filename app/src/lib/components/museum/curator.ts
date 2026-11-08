@@ -17,6 +17,7 @@ import { CURATOR } from './lines.ts';
 import { createVillager, VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
 import type { Joint, Pose } from '../villager3d/poses.ts';
 import type { Face } from '../villager3d/faces.ts';
+import { clamp, smooth01 } from '#lib/math.ts';
 
 /** Where he stands and his scale (world units a model unit): behind his desk (plan.ts DESK), far enough back that no
  *  pose of his (the bob, the doze's droop, the hop, the wings) reaches into it (it was 2 behind its back, his belly and
@@ -75,13 +76,8 @@ export const RANGE: Record<(typeof POSED)[number], readonly [Lim, Lim, Lim]> = {
   Crest_R: [[-0.25, 0.6], [0, 0], [0, 0]]
 };
 const TAU = Math.PI * 2;
-const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
-const ease = (v: number) => {
-  const k = clamp(v, 0, 1);
-  return k * k * (3 - 2 * k);
-};
 /** An envelope over `ms`: in over `a`, out over `b`. */
-const env = (u: number, ms: number, a: number, b: number) => Math.min(ease(u / a), ease((ms - u) / b));
+const env = (u: number, ms: number, a: number, b: number) => Math.min(smooth01(u / a), smooth01((ms - u) / b));
 /** Toward a target by a rate a second over dt ms (frame-rate independent). */
 const toward = (v: number, to: number, rate: number, dt: number) => v + (to - v) * (1 - Math.exp((-rate * dt) / 1000));
 
@@ -184,7 +180,7 @@ export function mind(seed = 1): Mind {
       pose.sq = 1 + 0.014 * deep * b;
       // nodding off: the droop deepens, then the little catch
       const cyc = ((t - dozeT0) % 5600) / 5600;
-      const nod = cyc < 0.86 ? ease(cyc / 0.86) : 1 - ease((cyc - 0.86) / 0.14);
+      const nod = cyc < 0.86 ? smooth01(cyc / 0.86) : 1 - smooth01((cyc - 0.86) / 0.14);
       const pu = t - perk, pk = pu < 700 ? Math.sin((Math.PI * pu) / 700) : 0;
       const talkNod = talkW * speaking * 0.05 * Math.sin((t / 1000) * TAU * 2.4);
       let down = ARMS + 0.07 * dz - 0.4 * pk, crest = -0.2 * dz + 0.4 * pk + 0.12 * talkW;

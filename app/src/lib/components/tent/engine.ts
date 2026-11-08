@@ -10,6 +10,7 @@ import {
   Box3, Object3D, PCFSoftShadowMap, PerspectiveCamera, Plane, PlaneGeometry, PointLight, Raycaster, RepeatWrapping, Scene, Sprite,
   SpriteMaterial, SRGBColorSpace, Texture, DataTexture, TextureLoader, Vector3, WebGLRenderer, type MeshStandardMaterial, type SkinnedMesh
 } from 'three';
+import { cubicOut } from '#lib/math.ts';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { HALF, ROOM, TILE, centreOf, isSurface, isWallItem, onTop, wallSpot, type Facing, type Pt, type Spot } from './grid.ts';
@@ -190,7 +191,6 @@ export interface Tent {
 }
 
 const now = () => performance.now();
-const ease = (t: number) => 1 - Math.pow(1 - t, 3);
 
 function softDisc(): CanvasTexture {
   const c = document.createElement('canvas');
@@ -1557,7 +1557,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
         else {
           // a little overshoot: popping in
           const e = 1 + Math.sin(k * Math.PI) * 0.12 * (1 - k);
-          sx = sy = 0.7 + 0.3 * ease(k);
+          sx = sy = 0.7 + 0.3 * cubicOut(k);
           sy *= e;
           more = true;
         }
@@ -1587,7 +1587,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     }
     if (ghostTurn) {
       const k = Math.min(1, (t - ghostTurn.t0) / 160);
-      ghostRoot.rotation.y = ghostTurn.from + (ghostTurn.to - ghostTurn.from) * ease(k);
+      ghostRoot.rotation.y = ghostTurn.from + (ghostTurn.to - ghostTurn.from) * cubicOut(k);
       if (k >= 1) ghostTurn = null;
       else more = true;
     }
@@ -1616,7 +1616,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     }
     if (framing) {
       // to the new framing (the edit tray opening or closing): the room glides to the middle of what's left
-      const k = Math.min(1, (t - framing.t0) / 320), e = ease(k);
+      const k = Math.min(1, (t - framing.t0) / 320), e = cubicOut(k);
       baseD = framing.from[0] + (framing.to[0] - framing.from[0]) * e;
       shiftY = framing.from[1] + (framing.to[1] - framing.from[1]) * e;
       offset();
@@ -1626,7 +1626,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     }
     if (easing) {
       // back to NH's view, or back inside the limits
-      const k = Math.min(1, (t - easing.t0) / (easing.to ? 240 : 420)), e = ease(k), f = easing.from, to = easing.to ?? DEF;
+      const k = Math.min(1, (t - easing.t0) / (easing.to ? 240 : 420)), e = cubicOut(k), f = easing.from, to = easing.to ?? DEF;
       const dAz = Math.atan2(Math.sin(to.az - f.az), Math.cos(to.az - f.az));
       view.az = f.az + dAz * e;
       view.pitch = f.pitch + (to.pitch - f.pitch) * e;

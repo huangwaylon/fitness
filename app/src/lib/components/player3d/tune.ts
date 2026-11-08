@@ -19,6 +19,7 @@ import { Box3, Euler, Matrix4, Quaternion, Vector3, type Bone, type Object3D, ty
 import { action as villagerAction, type Action, type Body, type Pose, type State } from '../villager3d/poses.ts';
 import type { Face } from '../villager3d/faces.ts';
 import type { Kind } from '../villager3d/villager3d.ts';
+import { smooth01 } from '#lib/math.ts';
 
 type V3 = readonly [number, number, number];
 const CHAINS = ['LF', 'LC', 'LB', 'RF', 'RC', 'RB'] as const;
@@ -61,10 +62,6 @@ export function playerCell(part: 'eye' | 'mouth', i: number, face: Face, rest = 
 
 interface J { bone: Bone; rest: Quaternion; w: Quaternion; wi: Quaternion }
 const e = new Euler(0, 0, 0, 'XYZ'), r = new Quaternion(), d = new Quaternion();
-const ease = (v: number) => {
-  const t = Math.max(0, Math.min(1, v));
-  return t * t * (3 - 2 * t);
-};
 
 /** A player's Kind for villager3d.ts animateModel: `model` the assembled player at rest (its skinned parts bound),
  *  `rest` its look's resting mouth frame. The drivers find whatever cloth and hair joints the outfit has; `rebind()`
@@ -325,7 +322,7 @@ export function playerKind(model: Object3D, rest = 0): Kind & { rebind(): void }
         if (a2) res.p.j.Arm_2_R = [a2[0], FISH_ARM[1][1] + (a2[1] - VILLAGER_FISH[3]), a2[2]];
       }
       if (a === 'cast') {
-        const k = u / 620, back = k < 0.4 ? ease(k / 0.4) : 1 - ease((k - 0.4) / 0.3);
+        const k = u / 620, back = k < 0.4 ? smooth01(k / 0.4) : 1 - smooth01((k - 0.4) / 0.3);
         const a1 = res.p.j.Arm_1_R;
         if (a1) res.p.j.Arm_1_R = [a1[0], a1[1] + 0.25 * back, a1[2] - 0.55 * back];
       }

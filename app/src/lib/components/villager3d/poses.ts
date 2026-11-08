@@ -8,6 +8,7 @@
 //   pose, a T, whatever the upper arm does. The arms are lowered from the T by ARMS (each pose says how far).
 //   Base states loop (idle, walk, sit, lie, nap, doze, prone); actions play once over a base (hop, wave, high five, the
 //   surprise, the sting's wobble, a sleeper's twitch) and hand back; a state change crossfades over FADE_MS.
+import { clamp01, smooth01 } from '#lib/math.ts';
 
 type V3 = readonly [number, number, number];
 export const JOINTS = [
@@ -60,11 +61,6 @@ export const reachOf = (speed: number): number => Math.sqrt(Math.max(1, speed / 
 /** A cycle's length (model units) at `speed` (u/s). */
 export const strideOf = (speed: number): number => STRIDE * reachOf(speed);
 const TAU = Math.PI * 2;
-const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
-const ease = (v: number) => {
-  const t = clamp01(v);
-  return t * t * (3 - 2 * t);
-};
 /** A smooth, slow wander in −1 … 1 (two sines out of step: no randomness, so a frame is reproducible). */
 const drift = (t: number, seed: number) => 0.6 * Math.sin(t * 0.00041 + seed * 1.7) + 0.4 * Math.sin(t * 0.00097 + seed * 4.1);
 
@@ -221,7 +217,7 @@ function doze(t: number, seed = 0): Pose {
   const b = breathe(p, t, 4600, 2);
   const cyc = ((t + seed * 1000) % 7000) / 7000;
   // the droop deepens over the cycle and snaps back at its end (the nod)
-  const nod = cyc < 0.92 ? ease(cyc / 0.92) : 1 - ease((cyc - 0.92) / 0.08);
+  const nod = cyc < 0.92 ? smooth01(cyc / 0.92) : 1 - smooth01((cyc - 0.92) / 0.08);
   p.j.Head = [0.28 + 0.22 * nod + 0.03 * b, 0, 0.06 * Math.sin(t / 2300)];
   p.j.Spine_1 = [0.08 + 0.05 * nod, 0, 0.03 * Math.sin(t / 2300)];
   p.y = -0.05 * nod;
@@ -255,7 +251,7 @@ const cyc = (t: number, ms: number, seed = 0) => ((((t + seed * 137) % ms) + ms)
 function press(t: number, seed = 0): Pose {
   const p = lie(t, seed);
   // 0 at the chest, 1 locked out: up quicker than down
-  const k = cyc(t, REP_MS.press, seed), up = k < 0.4 ? ease(k / 0.4) : k < 0.55 ? 1 : 1 - ease((k - 0.55) / 0.45);
+  const k = cyc(t, REP_MS.press, seed), up = k < 0.4 ? smooth01(k / 0.4) : k < 0.55 ? 1 : 1 - smooth01((k - 0.55) / 0.45);
   // (lying, the body's forward is up: the arms forward point at the sky)
   const fwd = -0.75 - 0.8 * up, down = ARMS * (0.45 + 0.45 * up), elbow = 1.35 * (1 - up);
   p.j.Arm_1_L = [fwd, 0, -down];
@@ -304,7 +300,7 @@ function punch(t: number, seed = 0): Pose {
   breathe(p, t, 1800, 1);
   const k = cyc(t, REP_MS.punch, seed), half = k < 0.5 ? 0 : 1, u = (k % 0.5) / 0.5;
   // out fast, back slower
-  const hit = u < 0.18 ? ease(u / 0.18) : u < 0.45 ? 1 - ease((u - 0.18) / 0.27) : 0;
+  const hit = u < 0.18 ? smooth01(u / 0.18) : u < 0.45 ? 1 - smooth01((u - 0.18) / 0.27) : 0;
   const L = half ? 0 : hit, R = half ? hit : 0;
   p.j.Arm_1_L = [-1.0 - 0.6 * L, 0, -(ARMS - 0.15) + 0.2 * L];
   p.j.Arm_1_R = [-1.0 - 0.6 * R, 0, ARMS - 0.15 - 0.2 * R];
@@ -336,7 +332,7 @@ function bounce(t: number, body: Body, h: number, seed = 0): Pose {
 function pullup(t: number, seed = 0): Pose {
   const p = rest();
   const k = cyc(t, REP_MS.pullup, seed);
-  const step = (a: number, b: number, c: number, d: number) => (k < a || k > d ? 0 : k < b ? ease((k - a) / (b - a)) : k <= c ? 1 : 1 - ease((k - c) / (d - c)));
+  const step = (a: number, b: number, c: number, d: number) => (k < a || k > d ? 0 : k < b ? smooth01((k - a) / (b - a)) : k <= c ? 1 : 1 - smooth01((k - c) / (d - c)));
   const up = Math.max(step(0, 0.08, 0.16, 0.24), step(0.32, 0.4, 0.48, 0.56));
   // (out wide, up and forward to the bar's ends beside its head; the elbows bend as it pulls)
   p.j.Arm_1_L = [-2.0 + 0.3 * up, 0, -0.6 + 0.3 * up];
@@ -377,12 +373,12 @@ export function base(state: State, t: number, o: { phase: number; speed: number;
  *  replace the base's (by its weight); its lift adds, its squash multiplies. */
 export function action(a: Action, u: number): { p: Pose; w: number } {
   const T = ACTION_MS[a], p = rest();
-  const w = Math.min(ease(u / FADE_MS), ease((T - u) / FADE_MS));
+  const w = Math.min(smooth01(u / FADE_MS), smooth01((T - u) / FADE_MS));
   switch (a) {
     case 'hop': {
       // a squash to gather, up (stretched, legs tucked, arms flung up), a squash on landing, back
       const k = u / T;
-      if (k < 0.17) p.sq = 1 - 0.2 * ease(k / 0.17);
+      if (k < 0.17) p.sq = 1 - 0.2 * smooth01(k / 0.17);
       else if (k < 0.66) {
         const f = (k - 0.17) / 0.49;
         p.y = 3.4 * 4 * f * (1 - f);
@@ -403,7 +399,7 @@ export function action(a: Action, u: number): { p: Pose; w: number } {
     case 'wave': {
       // the right arm out to the side and forward (NH's villagers' heads are big: straight up, it would hide behind),
       // the forearm up, waving side to side three times
-      const up = Math.min(ease(u / 220), ease((T - u) / 260));
+      const up = Math.min(smooth01(u / 220), smooth01((T - u) / 260));
       const wag = Math.sin((u / 260) * TAU) * up;
       p.j.Arm_1_R = [0, 0.3 * up, ARMS - (ARMS + 0.2) * up];
       p.j.Arm_2_R = [0, 0, -0.85 * up + 0.35 * wag];
@@ -415,7 +411,7 @@ export function action(a: Action, u: number): { p: Pose; w: number } {
     case 'highfive': {
       // up on its toes, the right arm up and out (straight up, NH's big head would hide it: its hand clears the head's
       // side), the slap at 45 % (a little hop), back
-      const up = Math.min(ease(u / 160), ease((T - u) / 240));
+      const up = Math.min(smooth01(u / 160), smooth01((T - u) / 240));
       const slap = Math.exp(-(((u - 0.45 * T) / 70) ** 2));
       p.j.Arm_1_R = [0, 0.35 * up, ARMS - (ARMS + 0.45) * up];
       p.j.Arm_2_R = [0, 0, -0.45 * up + 0.25 * slap];
@@ -438,7 +434,7 @@ export function action(a: Action, u: number): { p: Pose; w: number } {
     }
     case 'cast': {
       // the cast (NH's): the rod's arm up and back over the shoulder, then the whip forward and out, the body with it
-      const k = u / T, back = k < 0.4 ? ease(k / 0.4) : 1 - ease((k - 0.4) / 0.3), out = k < 0.4 ? 0 : Math.sin(clamp01((k - 0.4) / 0.6) * Math.PI);
+      const k = u / T, back = k < 0.4 ? smooth01(k / 0.4) : 1 - smooth01((k - 0.4) / 0.3), out = k < 0.4 ? 0 : Math.sin(clamp01((k - 0.4) / 0.6) * Math.PI);
       p.j.Arm_1_R = [ROD_X - 1.3 * back + 0.3 * out, 0.25, ARMS - 0.55];
       p.j.Arm_2_R = [0, 0.75 - 0.4 * back, 0];
       p.j.Spine_1 = [-0.12 * back + 0.12 * out, 0.12 * back, 0];
@@ -476,7 +472,7 @@ export function action(a: Action, u: number): { p: Pose; w: number } {
     }
     case 'sidebend': {
       // NH's Side Bends: the arms up, the body bent to one side and the other, twice
-      const up = Math.min(ease(u / 300), ease((T - u) / 300)), bend = Math.sin((u / T) * 2 * TAU) * up;
+      const up = Math.min(smooth01(u / 300), smooth01((T - u) / 300)), bend = Math.sin((u / T) * 2 * TAU) * up;
       arms(p, ARMS - (ARMS + 0.5) * up, 0.1 * up, 0.15);
       p.j.Spine_1 = [0, 0, 0.3 * bend];
       p.j.Spine_2 = [0, 0, 0.12 * bend];
@@ -486,7 +482,7 @@ export function action(a: Action, u: number): { p: Pose; w: number } {
     case 'jump': {
       // NH's Jump: two hops on the spot, the arms flung out and up at the top of each
       const k = ((u / T) * 2) % 1;
-      if (k < 0.2) p.sq = 1 - 0.16 * ease(k / 0.2);
+      if (k < 0.2) p.sq = 1 - 0.16 * smooth01(k / 0.2);
       else if (k < 0.72) {
         const f = (k - 0.2) / 0.52;
         p.y = 3 * 4 * f * (1 - f);

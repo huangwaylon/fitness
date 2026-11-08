@@ -6,6 +6,7 @@
 // in the island's frames (nothing reactive: the frames poll it).
 //   cast   the line flies out (the cast's swing)        wait   the float is on the water (bobbing; a nibble dips it)
 //   bite   the float went under (the rod's tip yanked)   reel   reeled in (a catch or nothing): the rod comes up
+import { hermite } from '#lib/math.ts';
 export type Phase = 'cast' | 'wait' | 'bite' | 'reel';
 
 /** A villager's line: its step, where its float is (world x, z) and a count of steps; when the float landed, its last
@@ -69,7 +70,6 @@ function dip(k: number): number {
   if (k < 0.55) return -0.9 + 0.7 * ((k - 0.25) / 0.3);
   return -0.2 * (1 - (k - 0.55) / 0.45);
 }
-const ease = (k: number) => k * k * (3 - 2 * k);
 
 /** The float's height over the water at `t` (ms): bobbing gently while it waits, a quick dip at each nibble; at the bite
  *  a little hop and a plunge under (and under it stays). */
@@ -78,7 +78,7 @@ export function floatLift(t: number, slot = 'mine'): number {
   if (a.phase === 'bite') {
     const k = (t - a.bite) / PLUNGE_MS;
     if (!(k < 1)) return UNDER_U;
-    return k < 0.3 ? 1.6 * ease(k / 0.3) : 1.6 + (UNDER_U - 1.6) * ease((k - 0.3) / 0.7);
+    return k < 0.3 ? 1.6 * hermite(k / 0.3) : 1.6 + (UNDER_U - 1.6) * hermite((k - 0.3) / 0.7);
   }
   if (a.phase !== 'wait') return 0;
   const since = t - a.landed;

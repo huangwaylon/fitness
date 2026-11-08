@@ -3,6 +3,7 @@
 // never turns it), and the short glide between it and the room's own camera. Its math is plain; the camera's blend is three's.
 // The engine places the room's camera first (its orbit), then apply() takes it toward the eyes by the blend.
 import { Euler, Vector3, type PerspectiveCamera } from 'three';
+import { hermite } from '#lib/math.ts';
 
 /** The lens (vertical degrees): a head's, not the rooms' long 32°. */
 export const FOV = 70;
@@ -116,7 +117,6 @@ export interface FirstPerson {
   apply(camera: PerspectiveCamera, fov: number, near: number, target: Vector3): void;
 }
 
-const smooth = (k: number) => k * k * (3 - 2 * k);
 /** How far ahead of the eyes the glide's camera looks (model units: about the room's middle from a wall). */
 const LOOK_AT = 30;
 
@@ -196,7 +196,7 @@ export function firstPerson(): FirstPerson {
     inside: () => on && mix >= 1,
     busy: () => mix !== (on ? 1 : 0) || easing,
     apply(camera, fov, near, target) {
-      const k = smooth(mix);
+      const k = hermite(mix);
       if (k >= 1) {
         camera.position.copy(eye);
         camera.quaternion.setFromEuler(e.set(pitch, yaw + Math.PI, 0));
