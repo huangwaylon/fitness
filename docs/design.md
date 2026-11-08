@@ -286,7 +286,7 @@ Health data over time for the personal trainer, one person at a time, computed o
 - **Then** a sticky row: ‹ the visible range (「10/2–10/31」; 「1日ごと」 / 「1週ごとの 1日平均」 / 「1か月ごとの 1日平均」
   under it) › and きょう.
 - **Cards, per group** (`model/health.ts` GROUPS and CARDS, the user's "activity metrics and body metrics"): かつどう
-  🍎 歩数, 🍐 ムーブ, 🍑 エクササイズ, 🍒 スタンド (then the footnote); からだ 体重, 体脂肪率, BMI, 除脂肪体重 (what a
+  🍎 歩数, 🍐 ムーブ, 🍑 エクササイズ, 🍒 スタンド (no footnote under them: the user, 2026-11-08); からだ 体重, 体脂肪率, BMI, 除脂肪体重 (what a
   scale writes at one weigh-in). As each activity card has its fruit, each からだ card has a catalogue icon
   (`art.ts` BODY_ART, 24px, decorative: the heading names it): 体重 the red kitchen scale (a scale, but NH's, and
   readable on the cream and the night cards), 体脂肪率 the protein shaker, BMI the exercise bike, 除脂肪体重 the
@@ -295,7 +295,7 @@ Health data over time for the personal trainer, one person at a time, computed o
   with nothing recorded yet, 「まだ記録がありません」 under it). **A card per activity metric** (`BarCard`): 1日の平均 with 前の期間より ↑/↓ %;
   目標 n/N日（%）, ベスト and 記録なし n日; the chart; a one-line key.
 - **No Health data yet** (a new couple, `?demo&health=none`): every card is still there with its goal chip (set from it),
-  over one line, 「まだ記録がありません」: no numbers, chart or footnote.
+  over one line, 「まだ記録がありません」: no numbers or chart.
 - **Chart** (`BarChart` in `ChartFrame`, SVG; the frame is every chart's: the grid, the dates, the goal line and its words, the
   slide and drag, the picked bucket's band and callout): a bar per day (1週, 1か月), per week (3か月: 13) or per calendar month (1年), each
   the bucket's daily average, in the person's colour (ウェイ blue `--person-a`, うめ orange `--person-b`); solid when
@@ -337,7 +337,7 @@ Health data over time for the personal trainer, one person at a time, computed o
   words, the bar shading, 目標 n/N日, ごはん's tiles and the goal month all follow it.
 - **Rules:** a day's value is Health's latest, as reported: every day with a row counts, whatever its value; 記録なし is
   a day with no row (counted from the first activity record); today is drawn but not counted; the previous period is
-  the same length just before. The footnote says so.
+  the same length just before.
 - **A day without the Watch** (the user, 2026-11-05: "treat as missing"; [decisions](decisions.md#no-watch-days)): the
   Shortcut sends `0` when Health has no samples, so such a day arrives as Move 0, Exercise 0, Stand 0 with the phone's
   steps. A day whose three watch metrics are all 0 or absent is read as no data for them (`model/health.ts` `noWatch`,

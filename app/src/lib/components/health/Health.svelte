@@ -130,7 +130,6 @@
           selected={pager.selected(k)} onselect={(i) => pager.pick(k, i)} onsave={saver(k)} />
       {/if}
     {/each}
-    {#if group === 'activity' && hs.any}<p class="note">{t('health.note')}</p>{/if}
   {/if}
 </div>
 
@@ -139,5 +138,4 @@
   /* かつどう · からだ, the period pill beside them at its own width (the guest's: the pill alone, at the right) */
   .sel { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
   .sel > :global(:only-child) { grid-column: 2; }
-  .note { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
 </style>

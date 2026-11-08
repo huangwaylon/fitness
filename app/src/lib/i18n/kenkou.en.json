@@ -45,6 +45,5 @@
   "health.bmi.obese": "Obese",
   "health.bmi.std.asia": "Asian cut-offs",
   "health.bmi.std.who": "WHO cut-offs",
-  "health.body.dayKey": "Measurements",
-  "health.note": "Apple Health's numbers as they are: a 0- or 66-step day is a day like any other, in the averages, best days and goal days. No data means nothing arrived for that day, or, for Move, Exercise and Stand, a day without the Watch (all three 0; steps come from the iPhone and stay): a hatched stub on the chart, left out of the averages. Today, still running, is drawn but not counted. The previous period is the same length, just before."
+  "health.body.dayKey": "Measurements"
 }

@@ -63,11 +63,10 @@ test('the tab: one person at a time, a card per metric; かつどう (steps, the
   await expect(sheet(page).locator('.mc[data-metric=steps] header [data-goal]')).toHaveText('目標 8,000歩 以上');
   await expect(sheet(page).locator('.mc header button[data-goal]')).toHaveCount(4); // every card's goal is set there
   await expect(sheet(page).locator('.mc[data-metric=stand] header button[data-goal]')).toHaveText('目標 120分 以上'); // the ring's 120 until set
-  await expect(sheet(page).locator('.health > .note')).toContainText('数字をそのまま');
   // one series: every bar in this phone's person's colour
   await expect(sheet(page).locator('.mc path.bar.pB')).toHaveCount(0);
   expect(await sheet(page).locator('.mc path.bar.pA').count()).toBeGreaterThan(100);
-  // からだ: the body cards, the same period and range; no activity footnote
+  // からだ: the body cards, the same period and range
   await expect(sheet(page).locator('[data-group=body]')).toHaveAttribute('data-sfx', 'tick');
   await sheet(page).locator('[data-group=body]').click();
   await expect(sheet(page).locator('[data-group=body]')).toHaveAttribute('aria-pressed', 'true');
@@ -76,7 +75,6 @@ test('the tab: one person at a time, a card per metric; かつどう (steps, the
   await expect(sheet(page).locator('.health .mc')).toHaveCount(0);
   await expect(periodSel(page)).toHaveValue('month');
   await expect(range(page)).toHaveText('10/2–10/31');
-  await expect(sheet(page).locator('.health > .note')).toHaveCount(0);
   await sheet(page).locator('[data-group=activity]').click();
   await expect(sheet(page).locator('.health section.card h3')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド']);
 });
@@ -325,7 +323,6 @@ test('no Health data yet (a new couple): every card is there with its goal, sayi
   await expect(cards.locator('[data-health-empty]')).toHaveCount(4);
   await expect(cards.locator('[data-health-empty]').first()).toHaveText('まだ記録がありません');
   await expect(sheet(page).locator('.health svg[role=img]')).toHaveCount(0); // no empty charts
-  await expect(sheet(page).locator('.health .note')).toHaveCount(0);
   const steps = sheet(page).locator('button[data-goal=steps-goal]');
   await expect(steps).toHaveText(/8,000歩\s以上/);
   await steps.click();
