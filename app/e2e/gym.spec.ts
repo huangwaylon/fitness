@@ -4,7 +4,7 @@
 // standing still on its spot is on it, island/sitting.ts).
 import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu } from './hud.ts';
-import { geo, islandUp, openEditor, openNear, tapOn } from './island.ts';
+import { camTo, geo, islandUp, openEditor, openNear, tapOn } from './island.ts';
 import { HELD_SCALE } from '../src/lib/components/world3d/benchBar.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -18,7 +18,6 @@ const ids = (page: Page, k: string) => page.evaluate((k) => (window as unknown a
 const where = (page: Page, id: string) => page.evaluate((id) => { const o = (window as unknown as { __layout: L }).__layout.obj(id); return o ? [o.x, o.z] : null; }, id);
 /** The 3D villager's state (villager3d: 'run' on the treadmill), null before its model is in. */
 const v3 = (page: Page, slot: string) => page.evaluate((s) => (window as unknown as { __villagers3?: { state(s: string): string | null } }).__villagers3?.state(s) ?? null, slot);
-const go = (page: Page, z: number) => page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z);
 
 async function open(page: Page, q = '') {
   await page.goto(`?demo&date=${DATE}${q}`);
@@ -37,9 +36,10 @@ async function putDown(page: Page, kind: string): Promise<string> {
   await expect.poll(() => ie(ed, (e) => e.sel())).toBeNull();
   const id = (await ids(ed, kind)).at(-1)!;
   await ed.close();
-  // the island's camera a little up the lawn, by it
+  // the island's camera a little up the lawn, by it (and at rest: the pieces' tap areas placed for it, not where the
+  // last camera had them, so a tap read off them next lands on the piece, not on the ground beside it)
   await page.bringToFront();
-  await go(page, 300);
+  await camTo(page, 300);
   return id;
 }
 /** The first tile from (c, r) on along its row where the held piece may stand (a tap on the ground moves it there). */
@@ -79,7 +79,7 @@ test('the ジム tab lists the gym; a treadmill put down stays and is on the oth
   await expect.poll(() => b.evaluate((id) => (window as unknown as { __world3d: { where(id: string): { model: string } | null } }).__world3d.where(id)?.model ?? null, id)).toBe('decor/treadmill');
   // A taps it: my villager walks up to it and runs on it; B sees A's villager (its partner) running there
   await a.bringToFront();
-  await go(a, 300);
+  await camTo(a, 300);
   await tapOn(a, a.locator(`[data-decor="${id}"]`));
   await expect.poll(() => v3(a, 'mine'), { timeout: 15_000 }).toBe('run');
   await b.bringToFront();
@@ -98,8 +98,7 @@ test('the default island\'s pull-up bar is the gym\'s: a tap walks up to it and 
   test.setTimeout(60_000);
   await open(page);
   const d = (await geo(page)).DECOR_SLOTS.find((s) => s.id === 'pullup')!;
-  await go(page, d.z - 110);
-  await expect.poll(() => page.evaluate(() => (window as unknown as { __world: { idle(): boolean } }).__world.idle()), { timeout: 5000 }).toBe(true);
+  await camTo(page, d.z - 110);
   await tapOn(page, page.locator('[data-sit="pullup"]'));
   await expect.poll(() => v3(page, 'mine'), { timeout: 15_000 }).toBe('pullup');
 });
@@ -123,6 +122,9 @@ const GRIP = 12 * 3 * HELD_SCALE;
 /** Over a rep (1.8 s), on `page`: the gym's barbell in the hands and the bench's small bar off its rack; the barbell's
  *  middle at the hands' middle, pressed up and down, the hands on its grip. */
 async function rep(page: Page, slot: string, id: string) {
+  // (the barbell's model loads as it's first lifted (things.ts heldModel): till it's in, nothing is drawn off the
+  // rack, and under the full tier's software GL that's after the hands have the bar)
+  await expect.poll(async () => (await part(page, id))?.model ?? null, { message: 'the barbell\'s model in' }).toBe('decor/barbell');
   const ys: number[] = [], spans: number[] = [];
   for (let i = 0; i < 20; i++) {
     const [h, p] = await page.evaluate(([s, id]) => {
