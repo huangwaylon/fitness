@@ -141,6 +141,7 @@ describe('the record and the guest', () => {
       ev('x6s', 'pref', { key: 'standGoal', value: 100, person: 'A' }),
       ev('x7', 'pref', { key: 'villagerName', value: 'うめ', person: 'B' }),
       ev('x7w', 'pref', { key: 'weatherMode', value: 'game', person: 'A' }), // never a `person`
+      ev('x7l', 'pref', { key: 'seasonLook', value: null, person: 'A' }),
       ev('x8', 'trip_note', { trip: 'okinawa', at: T0, v: { ref: 'ABC123' } }),
       ev('x9', 'wtask', { id: 't1', at: T0, c: T0, title: 'venue', cat: 'party' })
     ];
@@ -158,11 +159,12 @@ describe('the record and the guest', () => {
       ev('g3', 'decor', { sc: 'c', id: 'c0x0', at: T0, g: 'g'.repeat(64) }),
       ev('g4', 'island', island),
       ev('g5', 'pref', { key: 'weatherMode', value: 'game' }),
-      ev('g6', 'decor', { sc: 'h', id: 'hG', at: T0, m: 'log' })
+      ev('g6', 'decor', { sc: 'h', id: 'hG', at: T0, m: 'log' }),
+      ev('g6l', 'pref', { key: 'seasonLook', value: { event: 'halloween', tod: null } })
     ] });
-    expect(r.results.map((x: { ok: boolean; error?: string }) => x.error ?? x.ok)).toEqual([true, true, true, true, true, true]);
+    expect(r.results.map((x: { ok: boolean; error?: string }) => x.error ?? x.ok)).toEqual([true, true, true, true, true, true, true]);
     const rows = (a('snapshot').rows.events as unknown[][]).map((x) => [x[1], x[2], x[3]]);
-    expect(rows).toEqual([['G', 'g1', 'decor'], ['G', 'g2', 'decor'], ['G', 'g3', 'decor'], ['G', 'g4', 'island'], ['G', 'g5', 'pref'], ['G', 'g6', 'decor']]);
+    expect(rows).toEqual([['G', 'g1', 'decor'], ['G', 'g2', 'decor'], ['G', 'g3', 'decor'], ['G', 'g4', 'island'], ['G', 'g5', 'pref'], ['G', 'g6', 'decor'], ['G', 'g6l', 'pref']]);
     // a reset of the outdoors too, as a member's
     tick();
     expect(g('event', ev('g7', 'decor', { sc: 'r', id: 'reset', at: now }))).toMatchObject({ ok: true });

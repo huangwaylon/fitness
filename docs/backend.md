@@ -576,6 +576,10 @@ Tokyo's sky by the hour for the island ([design](design.md#weather); decisions: 
   the last anyone set, the guest too) the hour's sky comes from the timeline while it serves, else from the
   seeded day; winter's snow, the event nights held fine, the seeded fog and aurora, and the rainbow are the phone's
   rules (pure, by the date: both phones agree).
+- **The island's look** (`pref seasonLook`, 設定 → 季節, 2026-11-08): `{event, season, weather, tod}` (each a lowercase
+  id or null) or `null` (自動), one island-wide row (slot `pref|island|seasonLook`, the last anyone set, the guest too).
+  The record checks the field names and that each value is `[a-z0-9-]{1,24}` or null; the phones read the values they
+  know (an older phone ignores the key, a newer value shows as the real day's).
 - **Ops:** `GET /health` → `wx {at, src, age (min), hours (ahead), fails}`. The signed `/admin` op `wx` (via the
   record's object): `{refresh: true}` fetches now, `{s, fx?}` puts a fixture timeline in from the current hour (the
   smoke test), `{}` says how it is. Weather is never written to the record; only the mode is.
@@ -610,7 +614,7 @@ decorations, its island day, the flowers, the stars and the visitors, the weathe
   `food_recipe` and a `food_custom` (its own meals, repeats, recipes and custom foods; only its own to edit, end and
   remove; anyone's recipe or custom food it logs as its own entry), its ききみみ games (`listen`), its own `pref`
   `locale` / `villagerName` / `villager` / `look` / `savedLooks`, the meal log's goals, its profile (`sex`, `birth`,
-  `bmiStd`) and the island's `weatherMode` (no `person`). Not the economy (`spend`, `spend_void`, `harvest`), a
+  `bmiStd`) and the island's `weatherMode` and `seasonLook` (no `person`). Not the economy (`spend`, `spend_void`, `harvest`), a
   member's or an activity / からだ goal, a `trip_note` or the wedding board (`wtask`, `wdone`, `wconf`, `wnote`), nor
   `ingest` / `uploads`: `forbidden` (the queue drops it). Its rows are the record's like anyone's: one tally per day (`tally|G|<date>`), its prefs' own slots, the tent's
   merge order A < B < G; the dump carries them with `person = G`.

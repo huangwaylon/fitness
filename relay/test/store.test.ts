@@ -291,6 +291,17 @@ describe('events', () => {
     expect(events().map((r) => r[1])).toEqual(['m2', 'm3']);
   });
 
+  it("the island's look: one row for the island, the last anyone set (null: 自動); a malformed one refused", () => {
+    expect(a('event', ev('l1', 'pref', { key: 'seasonLook', value: { event: 'halloween', season: null, weather: 'snow', tod: 'night' } }))).toEqual({ ok: true });
+    expect(b('event', ev('l2', 'pref', { key: 'seasonLook', value: { season: 'winter' } }))).toEqual({ ok: true });
+    expect(events().map((r) => r[1])).toEqual(['l2']);
+    expect(a('event', ev('l3', 'pref', { key: 'seasonLook', value: null }))).toEqual({ ok: true });
+    expect(events().map((r) => [r[1], (r[3] as { value: unknown }).value])).toEqual([['l3', null]]);
+    for (const [i, value] of [{ colour: 'red' }, { season: 'Winter!' }, { tod: 3 }, 'winter', ['night']].entries())
+      expect(a('event', ev(`bad${i}`, 'pref', { key: 'seasonLook', value })), JSON.stringify(value)).toMatchObject({ ok: false, error: 'bad_request' });
+    expect(events().map((r) => r[1])).toEqual(['l3']);
+  });
+
   it('decor keeps each item’s latest op: a beaten op is a duplicate, a removal final, a new item past the cap refused', () => {
     const P = T0 - 60_000;
     const set = (id: string, at: number, x = 10) => ev(`e-${id}-${at}`, 'decor', { id, at, item: 'birdbath', x, z: 10, f: 0, p: P });

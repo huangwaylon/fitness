@@ -3,7 +3,7 @@
 // store's slots: a tally and an island day per person and day, a cosmetic pref per person, a goal per person and
 // Tokyo day, a board post, a meal entry, a repeat, a recipe and a custom food per id). Pure, over the contract only (relative imports), since the relay imports it from here (deps.test: the relay imports
 // only contract/).
-import { isFind, isId, isLocalDate, isWeatherMode, nextDay, PREF_KEYS, type EventType } from './api.ts';
+import { isFind, isId, isLocalDate, isSeasonLook, isWeatherMode, nextDay, PREF_KEYS, type EventType } from './api.ts';
 import { GOAL_IDS, GOALS, goalOfKey, goalPrefTaken } from './goals.ts';
 import { isTally } from './tally.ts';
 import { isIslandDay } from './island.ts';
@@ -47,7 +47,7 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
       // a goal a day keeps may say the phone's Tokyo day it was set on (`day`: goalDay)
       return (PREF_KEYS as readonly unknown[]).includes(d.key) && d.value !== undefined && (!isProfileKey(d.key) || profileValueOk(d.key, d.value, localDateAt(now)))
         && (d.day === undefined || (isDailyGoalKey(d.key) && isLocalDate(d.day)))
-        && (d.key !== 'look' || lookPrefOk(d.value)) && (d.key !== 'savedLooks' || savedLooksOk(d.value));
+        && (d.key !== 'look' || lookPrefOk(d.value)) && (d.key !== 'savedLooks' || savedLooksOk(d.value)) && (d.key !== 'seasonLook' || isSeasonLook(d.value));
     case 'harvest':
       return isLocalDate(d.week);
     case 'spend_void':
@@ -138,6 +138,7 @@ export function prefTaken(key: unknown, v: unknown): boolean {
     case 'look': return lookPrefRead(v);
     case 'savedLooks': return Array.isArray(v);
     case 'weatherMode': return isWeatherMode(v);
+    case 'seasonLook': return isSeasonLook(v);
     case 'sex': return v === null || isSex(v);
     // (a birth date's upper bound is the record's check when it's set: validEventData)
     case 'birth': return v === null || isBirth(v, '9999-12-31');
@@ -157,7 +158,7 @@ export function prefTaken(key: unknown, v: unknown): boolean {
  *   `latest`: the body and meal-log goals): its subject and key;
  * - a goal a day keeps (history `daily`: `stepsGoal`, `moveGoal`, `exerciseGoal`, `standGoal`): its subject, key and the Tokyo day it was made (goalDay: its `day`, else `at`'s), so the goal in
  *   force on each past day stays (a goal applies from the day it's made; the last of a day is the one that counts);
- * - the island's `weatherMode`: one for the island, whoever set it (the last one wins);
+ * - the island's `weatherMode` and `seasonLook`: one each for the island, whoever set it (the last one wins);
  * - a `decor` op: its scope and item id (`decorAccept` / `tentAccept` decide whether it replaces), a room light's switch
  *   (`lt`) its own beside its piece's;
  * - a `board` op: its post's id (`boardAccept` decides whether it replaces);
@@ -190,7 +191,7 @@ export function eventSlot(type: EventType | string, sender: Who, subject: Who, d
       return typeof d.id === 'string' ? `${type}|${d.id}` : null;
     case 'pref':
       if (!prefTaken(d.key, d.value)) return null;
-      if (d.key === 'weatherMode') return 'pref|island|weatherMode';
+      if (d.key === 'weatherMode' || d.key === 'seasonLook') return `pref|island|${d.key}`;
       return LATEST_PREFS.includes(d.key) ? `pref|${subject}|${d.key}` : `pref|${subject}|${d.key}|${goalDay(d, at)}`;
     default:
       return null;
