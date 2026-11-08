@@ -1,6 +1,7 @@
 <script lang="ts">
   // A row of chips (docs/design.md "Unified kit"): one line that scrolls sideways, its end fading while there is more
-  // to the right; 44px high, 12px from the sheet's sides. `children`: ui/Chip (or a Segmented at its end).
+  // to the right; 44px high, 12px from the sheet's sides, its chips' 44px hits inside it (its scroll clips them).
+  // `children`: ui/Chip (or a Segmented at its end).
   //   <ChipRow label="日"> <Chip … /> … </ChipRow>
   import type { Snippet } from 'svelte';
 
@@ -23,7 +24,7 @@
 
 <style>
   .chip-row {
-    display: flex; align-items: center; gap: 6px; min-height: var(--hit); padding: 0 12px 2px;
+    display: flex; align-items: center; gap: 6px; min-height: var(--hit); padding: 6px 12px; box-sizing: border-box;
     overflow: auto hidden; scrollbar-width: none; white-space: nowrap; overscroll-behavior-x: contain;
   }
   .chip-row::-webkit-scrollbar { display: none; }

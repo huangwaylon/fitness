@@ -629,8 +629,9 @@ The kit's sizes are every sheet's (the user, 2026-11-07: "unify the size of the 
 the new pages"): one scope, `:is(dialog, .sheet-copy)` in theme.css (every sheet, panel, level, pairing, the board,
 the trays, the shop's menu), sets `--sh-ctl` to the small edge (1.5px, a 2px lip), cards to `--r-row` 14 with the small
 lip (ききみみ's always-cream game cards too: `--sh-lip-cream`, the tan lip), `--side` 12. In it: the title bar 48 (title 18) and its 32px discs ("Navigation"); controls drawn 32–36px in a
-44px hit (`.chip` 32, `Segmented` 36, the range arrows, a ＋, the closet's hues; `.chip.big` the 44 for a level's
-main choice); rows 44–52 (`.prow` 52, a dense row 44+); the action `.btn` keeps its 4px lip (`.small` 44). Text sizes
+44px hit (`.chip` 32, `Segmented` 36 (its small one 32 × 40, りょこう's km | mi), the range arrows, a ＋, the closet's hues;
+`.chip.big` the 44 for a level's main choice; a `ChipRow` is 44 high so its scroll never clips a chip's hit:
+e2e/sheet-hits.spec); rows 44–52 (`.prow` 52, a dense row 44+); the action `.btn` keeps its 4px lip (`.small` 44). Text sizes
 are unchanged (ききみみ's 13px floor: readability.test). The world (the HUD, the leaf menu, the rooms, the
 dialogue) keeps the game's sizes: the 2px edge and the 4px lip.
 
