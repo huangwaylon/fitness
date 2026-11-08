@@ -16,6 +16,8 @@ on:
   pull_request:
     paths: ['app/**', '.github/workflows/pages.yml']
   workflow_dispatch:
+    inputs:
+      gate_test: { type: boolean, default: false, description: "TEMPORARY (deploy-review): shard 1 fails on attempt 1; no wrangler on attempt 2" }
 
 # Least privilege: the build job (which runs dependency code: vite plugins, svelte-check, Playwright) can only read;
 # only the deploy job can publish.
@@ -170,6 +172,8 @@ jobs:
           cache: npm
           cache-dependency-path: app/package-lock.json
       - run: npm ci --ignore-scripts --no-audit --no-fund
+      - if: inputs.gate_test && matrix.shard == 1 && github.run_attempt == 1
+        run: exit 1
       - id: pw
         run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
       - id: browsers
@@ -316,7 +320,7 @@ jobs:
             sleep 3
           done
           echo "::error::the gate not done in 20 min (${verdict:-no answer}): nothing deployed"; exit 1
-      - if: steps.ready.outputs.go == 'true'
+      - if: steps.ready.outputs.go == 'true' && !(inputs.gate_test && github.run_attempt > 1)
         working-directory: app
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -324,7 +328,7 @@ jobs:
         run: |
           "$RUNNER_TEMP/wrangler/node_modules/.bin/wrangler" pages deploy ../site --project-name island-fund --branch main --commit-hash "$GITHUB_SHA" --commit-message "${GITHUB_SHA::12}"
       # the site answers this commit's build (the version SvelteKit polls), with its headers (looked at every 2 s, a minute)
-      - if: steps.ready.outputs.go == 'true'
+      - if: steps.ready.outputs.go == 'true' && !(inputs.gate_test && github.run_attempt > 1)
         run: |
           want=$(node -p "require('./site/_app/version.json').version")
           for _ in $(seq 30); do
