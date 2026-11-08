@@ -95,8 +95,23 @@ export function parseShortcut(body: unknown): ParsedBody {
   const metrics: ParsedMetric[] = [];
   const days = body.dates === undefined ? [] : lines(body.dates, 'dates').map(shortcutDate);
   const sent = COLUMNS.filter(({ field }) => body[field] !== undefined);
-  /** The index in `metrics` of each day's steps, so the iPhone's and the Watch's lists merge into one value (the max). */
-  const stepsAt = new Map<string, number>();
+  /** The index in `metrics` of each (metric, day): one value a day and metric (the record keeps one row per ingest of
+   *  each; a repeat broke its key and lost the whole run). The iPhone's and the Watch's steps merge into one (the max);
+   *  a date repeated within a list (dates crossing a time-zone change) keeps the max of an activity metric (a day's
+   *  total only grows), the last line of a weigh-in. */
+  const seen = new Map<string, number>();
+  const put = (m: ParsedMetric, keep: 'max' | 'last'): void => {
+    const k = `${m.metric}|${m.date}`;
+    const at = seen.get(k);
+    if (at === undefined) {
+      seen.set(k, metrics.length);
+      metrics.push(m);
+    } else metrics[at].value = keep === 'max' ? Math.max(metrics[at].value, m.value) : m.value;
+  };
+
+  const dated = days.filter((d) => d !== null);
+  const repeats = dated.length - new Set(dated).size;
+  if (repeats) warnings.push(`dates: ${repeats} repeat a date; one value a day kept (activity the largest, a weigh-in the last line)`);
 
   for (const { field, metric } of sent) {
     const values = lines(body[field], field);
@@ -113,19 +128,14 @@ export function parseShortcut(body: unknown): ParsedBody {
         // a ceiling: one bad line must not reach the ベル (it would earn until the next sync)
         const v = Math.round(n);
         if (v > METRIC_BOUNDS[metric]) { skipped++; warnings.push(`${field}: ${v} on ${day} is above ${METRIC_BOUNDS[metric]}; skipped`); return; }
-        if (metric === 'steps') {
-          const at = stepsAt.get(day);
-          if (at !== undefined) { metrics[at].value = Math.max(metrics[at].value, v); return; }
-          stepsAt.set(day, metrics.length);
-        }
-        metrics.push({ date: day, metric, value: v });
+        put({ date: day, metric, value: v }, 'max');
         return;
       }
       if (n === 0) return; // no weigh-in (no sample) that day
       const v = roundKg(metric === 'body_fat_pct' && n <= 1 && !raw.endsWith('%') ? n * 100 : n);
       const { min, max } = metric === 'weight' ? WEIGHT_KG : BODY_BOUNDS[metric];
       if (v < min || v > max) { skipped++; warnings.push(`${field}: ${v} on ${day} is outside ${min}–${max}; skipped`); return; }
-      metrics.push({ date: day, metric, value: v });
+      put({ date: day, metric, value: v }, 'last');
     });
   }
 

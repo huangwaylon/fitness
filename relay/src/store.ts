@@ -490,7 +490,27 @@ export class StoreCore {
       this.io.tx(() => this.audit(auditRow(this.nextAt(), me, 'error', bytes, msg, body)));
       return fail('bad_request', msg);
     }
-    const added = this.io.tx(() => {
+    let added: { n: number; at: string | null; act: boolean };
+    try {
+      added = this.ingestRows(me, parsed, bytes, body);
+    } catch (err) {
+      // the run rolled back, its audit row with it: an `error` row of its own after, so the failure is seen
+      // (`unavailable`, the Shortcut's next run sends it again)
+      this.io.tx(() => this.audit(auditRow(this.nextAt(), me, 'error', bytes, `not saved: ${errName(err)}`, body)));
+      throw err;
+    }
+    // (the guest hears of it only when it brought rows the guest sees: room.ts guestNotice)
+    if (added.at) this.io.notify({ what: 'ingest', who: me, at: added.at, rev: this.rev() }, added.act);
+    return {
+      ok: true, metrics: added.n,
+      ...(parsed.skipped ? { skipped: parsed.skipped } : {}),
+      ...(parsed.warnings.length ? { warnings: parsed.warnings } : {})
+    };
+  }
+
+  /** An ingest's rows and its audit row, in one transaction. */
+  private ingestRows(me: PersonId, parsed: ReturnType<typeof parseShortcut>, bytes: number, body: Rec): { n: number; at: string | null; act: boolean } {
+    return this.io.tx(() => {
       const at = this.nextAt();
       // Apple Health's current total is the truth: a day's value is its latest row, and a different one is appended
       // (up or down). Read from metrics_latest over the body's days only (one row a day and metric, never the history).
@@ -525,13 +545,6 @@ export class StoreCore {
       this.audit(auditRow(at, me, parsed.skipped ? 'partial' : 'ok', bytes, notes, body));
       return n ? { n, at, act } : { n, at: null, act };
     });
-    // (the guest hears of it only when it brought rows the guest sees: room.ts guestNotice)
-    if (added.at) this.io.notify({ what: 'ingest', who: me, at: added.at, rev: this.rev() }, added.act);
-    return {
-      ok: true, metrics: added.n,
-      ...(parsed.skipped ? { skipped: parsed.skipped } : {}),
-      ...(parsed.warnings.length ? { warnings: parsed.warnings } : {})
-    };
   }
 
   /** A held value (metrics_held) seen at `at` (`n` times; a load's row brings its own `last`, `n` and mark). */
