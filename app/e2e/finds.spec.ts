@@ -53,12 +53,8 @@ test('shells lie on the front beach (the newest three); a tap picks one up, and 
 
 test('a fossil dig spot: a tap digs it up (「化石を ほりだした！」 and its name); the next one waits a little', async ({ page }) => {
   const before = await open(page, '&date=2026-11-04T12:00');
-  const spots = page.locator('[data-digs]');
+  // (2–4 at a time, the day's: beach.test's digSpots)
   await expect(page.locator('[data-find="fossil"]').first()).toBeAttached();
-  // (the island's, wherever they are: on the layout they lie all over the long island, a few out of view)
-  const n = Number(await spots.getAttribute('data-digs'));
-  expect(n).toBeGreaterThanOrEqual(2);
-  expect(n).toBeLessThanOrEqual(4);
   const p = await fossilOnScreen(page);
   const shown = page.locator('[data-find="fossil"]'), m = await shown.count();
   expect(await control(page, p)).toBe('');
@@ -248,10 +244,8 @@ test('mushroom season: November mushrooms beside the trees, clear of every contr
   await expect(mush).toHaveCount(n - 1);
 });
 
-test('no mushrooms out of season (September); the rare mushroom comes out of a November dig spot', async ({ page }) => {
-  await open(page, '&date=2026-09-10T10:00');
-  await expect(page.locator('[data-find="fossil"]').first()).toBeAttached();
-  await expect(page.locator('[data-find="mushroom"]')).toHaveCount(0);
+// (none out of season, September or January: mushrooms.test's edges)
+test('the rare mushroom comes out of a November dig spot', async ({ page }) => {
   const before = await open(page, '&date=2026-11-04T12:00&find=rare-mushroom');
   const p = await fossilOnScreen(page);
   await page.mouse.click(p.x, p.y);
