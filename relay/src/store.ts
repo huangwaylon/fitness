@@ -623,6 +623,9 @@ export class StoreCore {
   private keep(me: Who, body: Rec): Reply & { at?: string } {
     const id = body.id;
     if (!isId(id)) return fail('bad_request');
+    // a retry of an event already kept is acknowledged before any check: its time rules may have lapsed since (a buy
+    // retried two days on), and a refusal would drop it on the phone with an error while the record holds it
+    if (this.known(id)) return { ok: true, duplicate: true };
     if (typeof body.type !== 'string' || !(EVENT_TYPES as readonly string[]).includes(body.type)) return fail('bad_request');
     const sent = body.data === undefined ? {} : body.data;
     if (!isRec(sent)) return fail('bad_request');
