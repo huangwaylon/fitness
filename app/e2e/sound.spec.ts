@@ -76,22 +76,23 @@ const sea = (page: Page) =>
   });
 
 test.describe('the first tap starts the music', () => {
-  for (const [wait, perSrc] of [[1800, false], [0, false], [1800, true]] as const) {
-    test(`a tap on plain scenery, no click (iOS), ${wait ? 'hour prefetched' : 'straight after launch'}${perSrc ? ', strict per-source policy' : ''}`, async ({ page }) => {
+  for (const [prefetched, perSrc] of [[true, false], [false, false], [true, true]] as const) {
+    test(`a tap on plain scenery, no click (iOS), ${prefetched ? 'hour prefetched' : 'straight after launch'}${perSrc ? ', strict per-source policy' : ''}`, async ({ page }) => {
       await instrument(page, { sound: { music: true, sfx: false, volume: 0.8 }, noClick: true, perSrc });
       await page.goto('?demo&date=2026-11-04T12:00');
       await expect(page.locator('.if-scene .stage')).toBeVisible();
-      await page.waitForTimeout(wait);
+      // prefetched: the hour's file in (the engine's blob of it), not a time (1.8 s was short of it on the macOS runner)
+      if (prefetched) await expect.poll(() => page.evaluate(() => (window as unknown as { __probe: Probe }).__probe.music.size), { message: 'the hour prefetched' }).toBeGreaterThan(0);
       expect((await probe(page)).contexts).toBe(0); // nothing before the tap
       const { x, y } = await sea(page);
       await page.touchscreen.tap(x, y);
-      await expect.poll(async () => (await probe(page)).playing, { timeout: wait ? 1000 : 4000 }).toBe(1);
+      await expect.poll(async () => (await probe(page)).playing, { timeout: prefetched ? 1000 : 4000 }).toBe(1);
       const p = await probe(page);
       if (process.env.DEBUG_SOUND) console.log(JSON.stringify(p.plays));
       expect(p.contexts).toBe(1);
       expect(p.plays.filter((x) => x.music).every((x) => x.ok)).toBe(true); // never refused
       // prefetched: the hour itself started inside the tap
-      if (wait) expect(p.plays.some((x) => x.music && x.gesture && x.ok)).toBe(true);
+      if (prefetched) expect(p.plays.some((x) => x.music && x.gesture && x.ok)).toBe(true);
     });
   }
 });
@@ -102,7 +103,12 @@ test('strict per-source policy, tapped before the file is in: a refused start is
   await expect(page.locator('.if-scene .stage')).toBeVisible();
   const { x, y } = await sea(page);
   await page.touchscreen.tap(x, y);
-  await page.waitForTimeout(1500);
+  // the hour's start tried since its file came in (refused outside the tap, or playing), not a time: a refused one is
+  // the next tap's to retry
+  await expect.poll(async () => {
+    const p = await probe(page);
+    return p.playing > 0 || p.plays.some((x) => x.music && !x.ok);
+  }, { message: 'the hour\'s start tried' }).toBe(true);
   if ((await probe(page)).playing === 0) await page.touchscreen.tap(x, y);
   await expect.poll(async () => (await probe(page)).playing, { timeout: 1000 }).toBe(1);
 });

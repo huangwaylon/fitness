@@ -326,6 +326,25 @@ describe('files fetched ahead (prefetch)', () => {
   });
 });
 
+describe('a refused start', () => {
+  it('a play() refused while the track still starts (its file loading) is the next tap\'s to retry, inside it', async () => {
+    const { e, decks } = await unlocked();
+    // (outside a tap the browser refuses: paused it stays)
+    const refuse = (d: FakeAudio) => (d.play = () => Promise.reject(new DOMException('not allowed', 'NotAllowedError')));
+    decks.forEach((d) => ((d.readyState = 0), refuse(d)));
+    void e.setTrack('10', HOUR);
+    await vi.advanceTimersByTimeAsync(0);
+    const deck = decks.find((d) => d.src === vi.mocked(URL.createObjectURL).mock.results.at(-1)!.value)!;
+    expect(deck.paused).toBe(true);
+    // the next tap, its metadata not in yet: the unlock plays it inside the tap
+    expect(e.needsUnlock(true)).toBe(true);
+    const play = vi.fn(() => ((deck.paused = false), Promise.resolve()));
+    deck.play = play;
+    e.unlock(true);
+    expect(play).toHaveBeenCalled();
+  });
+});
+
 describe('the idle suspend', () => {
   it('a track held from outside (⏸ on the lock screen) lets the context sleep; the playing one never does', async () => {
     const { e, ctx } = await unlocked();
