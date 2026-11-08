@@ -10,7 +10,7 @@
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { atHub, kikiSheet as sheet } from './kikimimi-nav.ts';
+import { atHub, kikiSheet as sheet, runToQuestion, runToSee } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const SHOTS = '/tmp/kikimimi-shots/pair';
@@ -52,7 +52,9 @@ const willHear = (p: Page, line: string | { miss: string }) => p.evaluate((l) =>
 type Kiki = { view(): { phase: string; i: number; n: number; gm: string | null; roles: Record<string, number> }; items(): string[]; recorded(): { gm?: string; ms: number; r: unknown[] } | null };
 const kiki = <R,>(p: Page, fn: (k: Kiki) => R) => p.evaluate(`(${fn.toString()})(window.__kiki)`) as Promise<R>;
 
+/** A phone on the context's clock (installed once, before its first page: both tabs step together). */
 async function phone(ctx: BrowserContext, q: string, as: 'A' | 'B' = 'A'): Promise<Page> {
+  if (!ctx.pages().length) await ctx.clock.install();
   const page = await ctx.newPage();
   await page.goto(`?demo&${q}${as === 'A' ? '' : `&as=${as}`}`);
   await islandUp(page);
@@ -70,10 +72,11 @@ async function toPair(p: Page) {
   await expect(sheet(p).locator('[data-kiki-mode-page="pair"]')).toBeVisible();
 }
 
-/** Card i's answer window (both words played). */
+/** Card i's answer window (both words played: the page's clock stepped through them, kikimimi-nav.ts runUntil; a take
+ *  is on the clock as it flows, the stand-in mic's audio in real time). */
 async function atCard(p: Page, i: number) {
-  await expect.poll(() => kiki(p, (k) => k.view().i), { timeout: 20_000 }).toBe(i);
-  await expect(sheet(p).locator(`[data-type="pair"][data-kiki-q="${i}"][data-phase="answer"]`)).toBeVisible({ timeout: 20_000 });
+  await runToQuestion(p, i);
+  await runToSee(p, sheet(p).locator(`[data-type="pair"][data-kiki-q="${i}"][data-phase="answer"]`));
 }
 /** The word to say on this phone's card (its picture's index and its English), and the other one's. */
 async function words(p: Page): Promise<{ say: number; it: string; other: string }> {
@@ -105,10 +108,11 @@ test('off: no 声に出す shelf, no はつおん while the mic is off', async (
 
 for (const [when, q] of [['day', DAY], ['night', NIGHT]] as const) {
   test(`solo (${when}): hear both, say one; the joke and a second try, 通じた！; 聞いて選んでね; nothing heard; 飛ばす; the end`, async ({ page, context }) => {
-    test.slow();
+    test.slow(); // (four takes of the stand-in mic's 4.5 s clip, in real time: ~26 s here)
     await fakeMic(context, true);
     const posts: string[] = [];
     page.on('request', (r) => r.method() === 'POST' && posts.push(r.url()));
+    await page.clock.install();
     await page.goto(`?demo&${q}`);
     await islandUp(page);
     await toAsobu(page);
@@ -124,7 +128,7 @@ for (const [when, q] of [['day', DAY], ['night', NIGHT]] as const) {
     expect(await kiki(page, (k) => k.view().n)).toBe(8);
 
     // both words first, no mic yet
-    await expect(sheet(page).locator('[data-type="pair"][data-phase="play"]')).toBeVisible({ timeout: 15_000 });
+    await runToSee(page, sheet(page).locator('[data-type="pair"][data-phase="play"]'));
     await expect(sheet(page).locator('[data-pair-listen]')).toBeVisible();
     await expect(sheet(page).locator('[data-mic-button]')).toHaveCount(0);
     await snap(page, `${when}-3-hear`);
@@ -191,7 +195,7 @@ for (const [when, q] of [['day', DAY], ['night', NIGHT]] as const) {
 }
 
 test('あてっこ on two phones: the speaker by turns sees the word and says it, the other taps the picture; no recogniser, no mic', async ({ browser }) => {
-  test.setTimeout(240_000);
+  test.setTimeout(60_000); // two phones, eight cards (their words stepped through)
   const ctx = await browser.newContext();
   await fakeMic(ctx, true);
   const posts: string[] = [];
