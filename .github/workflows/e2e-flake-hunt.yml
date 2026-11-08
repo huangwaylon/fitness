@@ -1,4 +1,7 @@
-# The flake hunt (docs/ops/testing.md): the whole e2e suite in WebKit, every test run several times over, retries off.
+# The flake hunt (docs/ops/testing.md): the whole logic tier in WebKit, every test run several times over, retries off.
+# Logic mode (E2E_RENDER=none), as the gate: what WebKit can tell us is its DOM, events and JS; the macOS VM's software
+# GL isn't the phones' Metal (docs/ops/test-strategy.md), and drawn, the logic specs time out on it (and the travel
+# map's stub specs draw a real map instead).
 # Weekly (Monday 03:30 Tokyo) and on demand (Actions → e2e flake hunt → Run workflow, with how many runs each). It
 # gates no deploy: it goes red when any test failed even once, and its summary lists them, worst first, to fix at the
 # cause.
@@ -58,6 +61,8 @@ jobs:
     defaults:
       run:
         working-directory: app
+    env:
+      E2E_RENDER: none
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
@@ -83,7 +88,7 @@ jobs:
           path: app/build-pages
       - id: e2e
         continue-on-error: true
-        run: npx playwright test --project=webkit --repeat-each=${{ inputs.repeat || '3' }} --retries=0 --shard=${{ matrix.shard }}/5
+        run: npx playwright test --project=webkit --repeat-each=${{ inputs.repeat || '3' }} --retries=0 --grep-invert "@render|@quarantine" --shard=${{ matrix.shard }}/5
       - name: Report
         if: always()
         run: |
