@@ -5,7 +5,9 @@ import {
   DECIDE_MS, HOLD_SLOTS, SLOT_MS, SLOTS_PER_DAY, WANDER_REACH_U, crittersAt, held, msToNextSlot, slotAt, slotRand, slotStart, spawnRand, spawnsIn,
   bugRivals, villagerBeats, type AmbientWorld, type Poi, type Spawn, type VillagerBeat
 } from './ambient.ts';
-import { BUBBLE_SHARE, pickBug, pickFish } from './critters.ts';
+import { FISH, pickBug, pickFish } from './critters.ts';
+import { POND_FISH, pickFresh } from './pondFish.ts';
+import { addDays } from '#lib/time/dates.ts';
 import { pickAct } from './visitorLife.ts';
 import { SPOT_MIN, bugPath, critterId } from './critterPath.ts';
 
@@ -185,7 +187,7 @@ describe('ambient life: the critters', () => {
     const fresh = (w: string) => (x: Spawn) => x.kind === 'fresh' && x.water === w;
     // (failures collected, one expect: an expect a spawn is ~56k calls)
     const fails: string[] = [];
-    for (const [name, of] of [['sea', (x: Spawn) => x.kind === 'fish' || x.kind === 'bubbles'], ...['pond', 'river', 'mouth', 'clifftop'].map((w) => [w, fresh(w)] as const), ['bug', (x: Spawn) => x.kind === 'bug' && !x.lane], ['bug2', (x: Spawn) => x.kind === 'bug' && x.lane === 2]] as const) {
+    for (const [name, of] of [['sea', (x: Spawn) => x.kind === 'fish' && !x.coast], ['bubbles', (x: Spawn) => x.kind === 'bubbles'], ...['pond', 'river', 'mouth', 'clifftop'].map((w) => [w, fresh(w)] as const), ['bug', (x: Spawn) => x.kind === 'bug' && !x.lane], ['bug2', (x: Spawn) => x.kind === 'bug' && x.lane === 2]] as const) {
       const s = all.filter(of);
       if (!(s.length > 100)) fails.push(`${name}: only ${s.length}`);
       for (let i = 1; i < s.length; i++) if (!(s[i].slot >= s[i - 1].slot + s[i - 1].slots)) fails.push(`${name}: two at once at slot ${s[i].slot}`);
@@ -200,9 +202,12 @@ describe('ambient life: the critters', () => {
     }
     expect(fails.slice(0, 10)).toEqual([]);
     const busy = (k: string[]) => all.filter((x) => k.includes(x.kind)).reduce((n, x) => n + x.slots, 0) / SLOTS_PER_DAY;
-    expect(busy(['fish', 'bubbles'])).toBeGreaterThan(0.6); // a fish is basically always there
+    expect(busy(['fish'])).toBeGreaterThan(0.75); // a fish is basically always there
     expect(busy(['bug'])).toBeGreaterThan(0.6); // two lanes: about twice the one lane's 0.3+
-    expect(all.filter((x) => x.kind === 'bubbles').length / all.filter((x) => x.kind === 'fish' || x.kind === 'bubbles').length).toBeCloseTo(BUBBLE_SHARE, 1);
+    // the front's bubbles about as many a day as when they took 1 sea turn in 4 (~500)
+    const bubbles = all.filter((x) => x.kind === 'bubbles').length;
+    expect(bubbles).toBeGreaterThan(400);
+    expect(bubbles).toBeLessThan(650);
   });
 
   it('the rest of the coast (coast.ts): a channel per stretch, fish only, one at a time each; the front and the rest as with one', () => {
@@ -235,6 +240,31 @@ describe('ambient life: the critters', () => {
     const bug = all.find((x) => x.kind === 'bug')!;
     expect(pickBug(11, 13, spawnRand(bug))).toBe(pickBug(11, 13, spawnRand(structuredClone(bug))));
   });
+
+  it('a fish’s odds are its water’s and the hour’s, month’s and sky’s, never its stretch’s: the rare ones as often off every stretch of coast (the front’s too) and in every fresh water as its kind', () => {
+    // 40 days through the year (every 9th from 2026-01-01; 1 in 5 rainy: the coelacanth's), every slot, 9 stretches:
+    // per stretch ~75k shadows, ~4,300 of them rare (NH's rarest: weight ≤ 0.5); within 8% of the sea's own share
+    const n: Record<string, { all: number; rare: number }> = {};
+    const add = (k: string, rare: boolean) => ((n[k] ??= { all: 0, rare: 0 }).all++, rare && n[k].rare++);
+    for (let d = 0; d < 40; d++) {
+      const date = addDays('2026-01-01', d * 9), month = +date.slice(5, 7), sky = d % 5 === 0 ? 'rain' : 'clear';
+      for (let slot = 0; slot < SLOTS_PER_DAY; slot++)
+        for (const c of spawnsIn(date, slot, 9)) {
+          const hour = Math.floor(slot / 360);
+          if (c.kind === 'fish') add(`sea${c.coast ?? 0}`, FISH[pickFish(month, hour, spawnRand(c), sky)].weight <= 0.5);
+          else if (c.kind === 'fresh') add(c.water!, POND_FISH[pickFresh(c.water!, month, hour, spawnRand(c))].weight <= 0.4);
+        }
+    }
+    const sea = Array.from({ length: 9 }, (_, k) => n[`sea${k}`]);
+    const all = sea.reduce((s, x) => s + x.all, 0), share = sea.reduce((s, x) => s + x.rare, 0) / all;
+    for (const [k, x] of sea.entries()) {
+      expect(x.all / (all / 9), `stretch ${k}: its shadows`).toBeCloseTo(1, 1);
+      expect(x.rare / x.all / share, `stretch ${k}: its rare share`).toBeGreaterThan(0.92);
+      expect(x.rare / x.all / share, `stretch ${k}: its rare share`).toBeLessThan(1.08);
+    }
+    // each fresh water by its own kind (NH's: the mouth and the clifftop add their own to the river's)
+    for (const w of ['pond', 'river', 'mouth', 'clifftop']) expect(n[w].rare, w).toBeGreaterThan(0);
+  }, 20_000);
 
   it('two roaming bugs at once (two lanes, the same per-slot odds and stays), never on one spot, the same on every phone', () => {
     let both = 0, pairs = 0;

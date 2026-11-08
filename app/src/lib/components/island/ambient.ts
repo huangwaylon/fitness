@@ -11,7 +11,7 @@ import type { LocalDate } from '#lib/types.ts';
 import type { PersonId as Who, Who as Islander } from '#lib/types.ts';
 import { mulberry32, pickOne } from '#lib/random.ts';
 import { IDLE_POOL, type IdleAction } from '../motion/reactions.ts';
-import { BUBBLE_SHARE } from './critters.ts';
+import { BUBBLE_ODDS } from './critters.ts';
 import { dayRand } from './daySeed.ts';
 import { MAX_HOPS, POI_LINGER } from './wander.ts';
 import type { FreshWhere, Pt } from './world.ts';
@@ -327,12 +327,15 @@ function nearBench(pois: readonly Poi[]): string | null {
 // ---------- the critters ----------
 
 /** Per slot, the chance a channel with room brings someone; how long each stays (slots: a fish ~45 s, bubbles 30 s,
- *  a bug ~18 s, critters.ts STAY_MS and sea.ts BUBBLE_STAY_MS); BUBBLE_SHARE of the sea's turns bring bubbles. Each
+ *  a bug ~18 s, critters.ts STAY_MS and sea.ts BUBBLE_STAY_MS). The front's bubbles are a channel of their own (they
+ *  took 1 in 4 of its turns once: its shadow 0.8× the other stretches', its rare fish with it), so every stretch's shadow
+ *  is alike: a fish's odds are its water's and the hour's, the month's and the sky's, never its stretch's. Each
  *  fresh water is a channel of its own (the pond, the river, its mouth, the clifftop): a shadow in each nearly all
  *  the time, as NH's (one channel for all four left each a quarter of the turns: a pond on screen stood empty most
  *  of the time). */
 const CHANNELS = {
   sea: { odds: 0.9 },
+  bubbles: { odds: BUBBLE_ODDS },
   pond: { odds: 0.9 },
   river: { odds: 0.9 },
   mouth: { odds: 0.9 },
@@ -342,7 +345,7 @@ const CHANNELS = {
   bug2: { odds: 0.9 }
 } as const;
 /** The sea round the rest of the coast past the front's (`sea`): a channel per stretch (coast.ts), `sea1`, `sea2`…,
- *  as the front's but never bubbles (the dive spots stay off the front beach). */
+ *  as the front's (the dive spots stay off the front beach: `bubbles`). */
 type Channel = keyof typeof CHANNELS | `sea${number}`;
 const FRESH_CH: ReadonlySet<Channel> = new Set(['pond', 'river', 'mouth', 'clifftop']);
 const coastOfCh = (ch: Channel): number => (/^sea\d+$/.test(ch) ? +ch.slice(3) : 0);
@@ -364,7 +367,8 @@ function chain(date: LocalDate, block: number, ch: Channel): Spawn[] {
     const r = slotRand(date, s, `critter:${ch}`), coast = coastOfCh(ch);
     if (r() >= (coast ? CHANNELS.sea : CHANNELS[ch as keyof typeof CHANNELS]).odds || s < freeAt) continue;
     const fresh = FRESH_CH.has(ch);
-    const kind: CritterKind = ch === 'sea' ? (r() < BUBBLE_SHARE ? 'bubbles' : 'fish') : coast ? (r(), 'fish') : fresh ? 'fresh' : 'bug';
+    // (a sea channel's second draw kept: the chains as they were)
+    const kind: CritterKind = ch === 'bubbles' ? 'bubbles' : ch === 'sea' || coast ? (r(), 'fish') : fresh ? 'fresh' : 'bug';
     const slots = Math.min(between(r, STAY[kind]), end - s);
     out.push({ kind, slot: s, slots, at: Math.floor(r() * SPAWN_AT_MAX), seed: Math.floor(r() * 2 ** 32), ...(fresh ? { water: ch as FreshWhere } : {}), ...(coast ? { coast } : {}), ...(ch === 'bug2' ? { lane: 2 } : {}) });
     freeAt = s + slots;
@@ -376,7 +380,7 @@ function chain(date: LocalDate, block: number, ch: Channel): Spawn[] {
 
 /** The critters there in `slot`: those that come in it and those still staying from before (a phone opening mid-stay
  *  shows them too, `slot - spawn.slot` slots in). One at a time off each of the island's `coasts` stretches of coast
- *  (coast.ts: the front's a shadow or bubbles) and in each fresh water, two among the bugs (`bug`, `bug2`); the phone skips a channel it
+ *  (coast.ts), the front's bubbles, in each fresh water, two among the bugs (`bug`, `bug2`); the phone skips a channel it
  *  has no room for (no such water, no bug about at this hour). */
 export function crittersAt(date: LocalDate, slot: number, coasts = 1): Spawn[] {
   const out: Spawn[] = [];

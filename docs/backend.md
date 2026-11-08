@@ -674,7 +674,7 @@ show the same island without a message (decisions: *Ambient life from the clock*
 - **Visitor:** `Visitor.svelte beat(r)` runs `visitorLife.ts pickAct`, `pickEmote` and `strollSpots` on the slot's
   `visitor` PRNG; a phone whose visitor is speaking skips it.
 - **Critters** (`spawnsIn(date, slot, coasts)`, `crittersAt(date, slot, coasts)`): per channel (the sea off the front
-  beach, `sea`: a shadow or bubbles, `BUBBLE_SHARE`; the rest of the coast a channel per stretch, `sea1`…, shadows
+  beach, `sea`: a shadow, as every stretch's; its bubbles a channel of their own, `bubbles`, odds `BUBBLE_ODDS`; the rest of the coast a channel per stretch, `sea1`…, shadows
   only, their count the layout's, `island/coast.ts coasts()`; each fresh water, the pond, the river, its mouth and the clifftop, a channel of its own; the bugs two, `bug` and `bug2`: two roaming at once, the second's spot off the first's, `bugRivals`) a slot
   brings one with odds 0.9 when the last one's stay is over, at
   `at` ms into the slot, staying 4–5 slots (bubbles 3, a bug 2); the stays are chained per 10-minute block from the date

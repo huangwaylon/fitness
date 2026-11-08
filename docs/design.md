@@ -1757,9 +1757,11 @@ clock, for fun and frequent, and the same on both phones (ambient life's 10-seco
 docs/backend.md "Ambient life"): the sea holds a shadow off every stretch of the coast most of the time (NH's all round
 the island: `island/coast.ts` cuts the sea within 3 tiles of the shore that the camera can show into one stretch per
 450u of coastline, the front beach's 15 tiles' worth, each a sector round the island's middle from the layout's tiles,
-so both phones cut the same; the front's is 1 turn in 4 bubbles instead), each fresh water
+so both phones cut the same; the front's bubbles come on turns of their own, beside its shadow), each fresh water
 (the pond, the river, its mouth, the clifftop) its own shadow most of the time too ([Pond](#pond)), and bugs come by, up to two roaming at once (each on its own spot: another trunk or flower, or 40u apart), each of the same kind and species on both phones and
-leaving at the same boundary. **Where it is, is the world's** ([Shared world](#shared-world)): its seed picks the swim
+leaving at the same boundary. A fish's odds are its water's (NH's: the sea; the pond; the river, whose mouth and
+clifftop pools add their own fish to the river's) and the month's, hour's and sky's alone, the same off every stretch of
+coast and in every reach (`ambient.test.ts`, measured over seeded days). **Where it is, is the world's** ([Shared world](#shared-world)): its seed picks the swim
 patch (a pond's on the island's ponds, painted or put down), the trunk, the flower head or the patch of grass, and every glide, hop, dart, rest and landing
 at its time after it came (`critterPath.ts`), so both phones have it at the same spot doing the same thing, and a phone
 opening mid-stay finds it where the other shows it; each phone shows it when its camera sees that spot (covered or
@@ -1838,8 +1840,9 @@ northern-hemisphere months; hours still hold.
   life's sits where its seed puts it (a tap on it comes first, before a control under it). Left out: the blue weevil beetle, the giraffe stag
   and the horned hercules (no icons), the dung beetle, the ant and the fly
   ([decisions.md](decisions.md#the-rest-of-nhs-bugs-what-the-island-can-hold)).
-- **Diving** (`island/sea.ts`, NH's 40 sea creatures, loaded with the first bubble spot; `e2e/dive.spec.ts`): 1 turn in
-  4 the sea holds a spot of bubbles instead of a shadow (gone after 30 s). A tap dives: still and slow creatures are
+- **Diving** (`island/sea.ts`, NH's 40 sea creatures, loaded with the first bubble spot; `e2e/dive.spec.ts`): now and
+  then (1 in 14 a slot with none there: about as often as when they took 1 sea turn in 4) a spot of bubbles rises off
+  the front beach, beside its shadow (gone after 30 s). A tap dives: still and slow creatures are
   caught at once; a medium one half the time, else, like a fast one, its shadow darts off and a second tap on it in
   time (1.6 / 1.3 / 1.0 s) catches it; a very fast one gets clean away 1 time in 3. 1 spot in 25 is a pearl (a shell
   in the ずかん).
