@@ -2716,7 +2716,7 @@ Read on each call by `island/devHooks.ts` (the seasonal ones by `ui-state/previe
 | `?shake=nest\|branch\|bagworm\|spider` | The next shake drops that |
 | `?rock=clonk\|sparkle\|bug` | Every rock tap has that outcome |
 | `?find=bottle\|fragment\|mushroom\|rare-mushroom\|earth-egg` | A beach find now / every dig spot that |
-| `?balloon`, `?fireworks`, `?shower`, `?stretch`, `?hybrid` | A balloon; a show (`?event=fireworks`); a meteor shower's night at any hour (`?event=shower`); the tape deck; a hybrid flower (the partner's outing: `__world.wander()`) |
+| `?balloon`, `?fireworks`, `?shower`, `?stretch`, `?hybrid` | A balloon (`?balloon=none`: none ever floats by); a show (`?event=fireworks`); a meteor shower's night at any hour (`?event=shower`); the tape deck; a hybrid flower (the partner's outing: `__world.wander()`) |
 | `?hit` | Every tap target drawn over the island (magenta: the scene's elements; cyan: the boxes a module tests) |
 | `?fpv=1\|0` | The rooms' first-person view for the tab, not kept ([First person](#first-person)) |
 | `?awake` | The villagers never doze (22:00–05:00 otherwise) |

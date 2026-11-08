@@ -1,7 +1,7 @@
 // The island's life, outside the scene's markup: reactions from the view diff, the greeting and startup
 // beats, naps at night, the motion bus, idle life, the balloon present's schedule and the page-visibility pause. Create one per
 // live scene during its init (`new IslandLife(...)`); it cleans up with the component.
-import { hookFlag } from './devHooks.ts';
+import { hook, hookFlag } from './devHooks.ts';
 import { onMount, untrack } from 'svelte';
 import type { PersonId, RingFruit, WeekView } from '#lib/types.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
@@ -101,9 +101,11 @@ export class IslandLife {
     // Balloon present (NH): one floats by in the daytime every 2–3 minutes of on-screen time, the first after 30–60 s.
     // A countdown of the time the island is in the day, on screen (not covered, the page visible) and without a
     // balloon already up: it holds otherwise and resumes where it was. No cap per session.
+    // `?balloon=none` (dev or ?demo only): none floats by (a spec tapping where one would drift over)
+    const noBalloons = hook('balloon') === 'none';
     let remaining = balloonMs(true);
     $effect(() => {
-      if (!ctx.day() || ctx.covered() || this.hidden || this.balloon) return;
+      if (noBalloons || !ctx.day() || ctx.covered() || this.hidden || this.balloon) return;
       const started = performance.now();
       let fired = false;
       const id = setTimeout(() => {
@@ -255,7 +257,7 @@ export class IslandLife {
     });
 
     // `?balloon` (dev or ?demo only): float one now, at any time of day, to look at it.
-    if (hookFlag('balloon')) this.later(() => (this.balloon = true), 400);
+    if (hookFlag('balloon') && hook('balloon') !== 'none') this.later(() => (this.balloon = true), 400);
 
     const onVis = () => (this.hidden = document.hidden);
     document.addEventListener('visibilitychange', onVis);
