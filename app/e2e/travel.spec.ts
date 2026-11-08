@@ -8,7 +8,7 @@
 // app). The logic tier: the photos may come late, nothing waits on them. Pictures (SHOTS=<dir>) of each screen, by
 // day and at night.
 import { expect, test, type Page } from './fixtures.ts';
-import { fromMenu, unfoldMenu } from './hud.ts';
+import { fromMenu, fromMenuAfterReload, unfoldMenu } from './hud.ts';
 import { islandQuery, islandUp } from './island.ts';
 import { shot } from './shots.ts';
 import { gotoTrips, pickTrip, tripsSheet as sheet } from './trips.ts';
@@ -244,9 +244,10 @@ test('offline before the first opening: the pill says so, もういちど opens 
   await shot(page, 'offline-pill');
   await context.setOffline(false);
   // Chromium fetches the chunk again; WebKit keeps a failed import for the page's life, so it reloads: the pill again
+  // (fromMenuAfterReload: a tap the moment after it can still find the old page's failed loads)
   const how = Promise.race([page.waitForEvent('load').then(() => 'reload'), sheet(page).waitFor().then(() => 'open')]);
   await page.getByRole('button', { name: 'もういちど' }).click();
-  if ((await how) === 'reload') await fromMenu(page, 'travel');
+  if ((await how) === 'reload') await fromMenuAfterReload(page, 'travel');
   await expect(rows(page)).toHaveCount(3);
 });
 
