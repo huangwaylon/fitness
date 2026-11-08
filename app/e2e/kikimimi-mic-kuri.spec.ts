@@ -11,7 +11,7 @@ import { join } from 'node:path';
 import { expect, test, type Locator, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { atHub, kikiSheet as sheet } from './kikimimi-nav.ts';
+import { atHub, kikiSheet as sheet, runToSee } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const SHOTS = '/tmp/kikimimi-shots/kuri';
@@ -63,6 +63,7 @@ async function micOn(page: Page, on = true) {
 }
 
 async function toAsobu(page: Page) {
+  await page.clock.install(); // (the clips stepped through: kikimimi-nav.ts runUntil; a take on the clock as it flows)
   await page.goto(Q);
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
@@ -75,9 +76,9 @@ const sentence = async (p: Page) => EN.get(await kiki(p, (k) => k.items()[k.view
 /** What the stub hears on the next take. */
 const willHear = (p: Page, line: string | { miss: string }) => p.evaluate((l) => localStorage.setItem('e2e.stt', JSON.stringify([l])), line);
 
-/** The round's turn: the mic shown. */
+/** The round's turn: the mic shown (the clip and the beat stepped through). */
 async function myTurn(p: Page) {
-  await expect(sheet(p).locator('[data-kuri-mic="idle"]')).toBeVisible({ timeout: 20_000 });
+  await runToSee(p, sheet(p).locator('[data-kuri-mic="idle"]'));
 }
 /** A take: a tap, the clip into the mic, the silence after it ends it. */
 async function talk(p: Page) {
@@ -96,7 +97,7 @@ test('くりかえし チャレンジ: hidden with the mic off', async ({ page }
 });
 
 test('くりかえし チャレンジ: a solo run, said, heard again, nothing heard, two misses, the results and a minutes-only row', async ({ page }) => {
-  test.setTimeout(180_000);
+  test.setTimeout(90_000); // (its takes of the stand-in mic's clip in real time: ~30 s here; the clips stepped through)
   const posts: string[] = [];
   page.on('request', (r) => r.method() === 'POST' && posts.push(r.url()));
   await micOn(page);
@@ -114,7 +115,7 @@ test('くりかえし チャレンジ: a solo run, said, heard again, nothing he
   await sheet(page).locator('[data-kiki-start]').click();
 
   // 1: the clip once, then the beat; said whole: a rung up, every word lit
-  await expect(sheet(page).locator('[data-kuri-once]')).toBeVisible({ timeout: 20_000 });
+  await runToSee(page, sheet(page).locator('[data-kuri-once]'));
   await expect(sheet(page).locator('[data-kuri-rung]')).toHaveAttribute('data-kuri-rung', '0');
   await shot(page, '3-listen');
   await myTurn(page);

@@ -8,7 +8,7 @@
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { openStage } from './kikimimi-nav.ts';
+import { openStage, runToQuestion } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -78,10 +78,10 @@ async function sayIt(p: Page, shotName?: string) {
 }
 
 test('こたえて！ solo: a clear reply answers as its tap, an unclear one 「通じるかも」, nothing heard, a tap mid-take', async ({ page, context }) => {
-  test.slow();
   await micOn(context);
   const posts: string[] = [];
   page.on('request', (r) => r.method() === 'POST' && posts.push(r.url()));
+  await page.clock.install(); // (the clips stepped through: kikimimi-nav.ts runUntil; a take on the clock as it flows)
   await page.goto(`?demo&${Q}`);
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
@@ -91,13 +91,12 @@ test('こたえて！ solo: a clear reply answers as its tap, an unclear one 「
   const answer = sheet(page).locator('[data-mic-answer]');
   const heard = sheet(page).locator('[data-mic-heard]');
   const atAnswer = async (i: number) => {
-    await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 15_000 }).toBe(i);
-    await expect(sheet(page)).toHaveAttribute('data-phase', 'answer', { timeout: 30_000 });
+    await runToQuestion(page, i, 'answer');
     return kiki(page, (k) => k.right());
   };
 
   // 1, clear: answered as that choice's tap; what was heard under the choices at the reveal; the track released
-  await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 15_000 }).toBe(0);
+  await runToQuestion(page, 0);
   await expect(sheet(page).locator('[data-mic-say]')).toHaveAttribute('aria-disabled', 'true');
   let right = await atAnswer(0);
   await shot(page, '1-chip');
@@ -169,9 +168,9 @@ const UNIT = {
 };
 
 test('こたえて！ co-op: A says the reply round’s answer, B taps; the team counts it, and what A said stays on A’s phone', async ({ browser }) => {
-  test.slow();
   const ctx = await browser.newContext();
   await micOn(ctx);
+  await ctx.clock.install(); // (both tabs step together)
   const posts: string[] = [];
   ctx.on('request', (r) => r.method() === 'POST' && posts.push(r.url()));
   const phone = async (as: 'A' | 'B') => {
@@ -208,8 +207,7 @@ test('こたえて！ co-op: A says the reply round’s answer, B taps; the team
     let reply = false;
     for (const p of [a, b]) {
       await p.bringToFront();
-      await expect.poll(() => kiki(p, (k) => k.view().i), { timeout: 45_000 }).toBe(i);
-      await expect(sheet(p)).toHaveAttribute('data-phase', 'answer', { timeout: 45_000 });
+      await runToQuestion(p, i, 'answer');
       const right = await kiki(p, (k) => k.right());
       reply = (await sheet(p).locator('[data-kiki-q]').getAttribute('data-type')) === 'reply';
       if (p === a && reply) {

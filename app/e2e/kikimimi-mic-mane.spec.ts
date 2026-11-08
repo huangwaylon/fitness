@@ -8,7 +8,7 @@
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { atHub, kikiSheet as sheet } from './kikimimi-nav.ts';
+import { atHub, kikiSheet as sheet, runToSee } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const SHOTS = '/tmp/kikimimi-shots/mane';
@@ -47,6 +47,7 @@ type Kiki = { view(): { phase: string; i: number; n: number; gm: string | null }
 const kiki = <R,>(p: Page, fn: (k: Kiki) => R) => p.evaluate(`(${fn.toString()})(window.__kiki)`) as Promise<R>;
 
 async function toAsobu(page: Page, q: string) {
+  await page.clock.install(); // (the lines' plays stepped through: kikimimi-nav.ts runUntil; a take on the clock as it flows)
   await page.goto(`?demo&${q}`);
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
@@ -57,7 +58,7 @@ async function toAsobu(page: Page, q: string) {
 
 /** The current line's page, its clip read (the mic ready). */
 async function atLine(page: Page, i: number) {
-  await expect(sheet(page).locator(`[data-type="mane"][data-kiki-q="${i}"][data-phase="answer"]`)).toBeVisible({ timeout: 20_000 });
+  await runToSee(page, sheet(page).locator(`[data-type="mane"][data-kiki-q="${i}"][data-phase="answer"]`));
   await expect(sheet(page).locator('[data-mane-ready="1"]')).toBeVisible({ timeout: 15_000 });
 }
 /** A take: the mic tapped, the clip heard, the take over by itself; the try's lines shown. */
@@ -78,7 +79,6 @@ test('off: no 声に出す shelf while the mic is off', async ({ page }) => {
 
 for (const [when, q] of [['day', DAY], ['night', NIGHT]] as const) {
   test(`a solo game (${when}): listen, say it along, the two lines and a tip, again, after, skip; the end; minutes only`, async ({ page }) => {
-    test.slow();
     await fakeMic(page, true);
     const posts: string[] = [];
     page.on('request', (r) => r.method() === 'POST' && posts.push(r.url()));
@@ -96,7 +96,7 @@ for (const [when, q] of [['day', DAY], ['night', NIGHT]] as const) {
     expect(await kiki(page, (k) => k.view().n)).toBe(4);
 
     // the line once, listen only (no text, no mic)
-    await expect(sheet(page).locator('[data-type="mane"][data-phase="play"]')).toBeVisible({ timeout: 15_000 });
+    await runToSee(page, sheet(page).locator('[data-type="mane"][data-phase="play"]'));
     await expect(sheet(page).locator('[data-mic-button]')).toHaveCount(0);
     await expect(sheet(page).locator('[data-kiki-en]')).toHaveCount(0);
     await snap(page, `${when}-3-listen`);

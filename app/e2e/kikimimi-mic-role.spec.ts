@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import { expect, test, type BrowserContext, type Locator, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { atHub, kikiSheet as sheet, toTile } from './kikimimi-nav.ts';
+import { atHub, kikiSheet as sheet, runToQuestion, toTile } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const SHOTS = '/tmp/kikimimi-shots/role';
@@ -35,6 +35,9 @@ async function shot(p: Page, name: string, at?: Locator) {
 
 /** A phone: the mic on (as せってい › マイク leaves it), the stub recogniser, the fake mic (its tracks kept). */
 async function phone(ctx: BrowserContext, as: 'A' | 'B'): Promise<Page> {
+  // (on the context's clock, installed before its first page: both tabs step together through the lines' plays,
+  // kikimimi-nav.ts runUntil; a take on the clock as it flows, the stand-in mic's audio in real time)
+  if (!ctx.pages().length) await ctx.clock.install();
   const page = await ctx.newPage();
   await page.addInitScript(() => {
     if (!localStorage.getItem('e2e.stt')) {
@@ -76,8 +79,7 @@ async function talk(p: Page) {
 /** The turn now on either phone: its dialogue, line and the phone whose turn it is. */
 async function turnNow(a: Page, b: Page, k: number): Promise<{ id: string; line: number; me: Page; other: Page }> {
   const speak = (p: Page) => sheet(p).locator('[data-role-me="speak"][data-role-turn]');
-  const at = (p: Page) => p.evaluate(() => (window as unknown as { __kiki: { view(): { i: number; phase: string } } }).__kiki.view()).then((x) => `${x.i}:${x.phase}`);
-  for (const p of [a, b]) await expect.poll(() => at(p), { timeout: 20_000 }).toBe(`${k}:answer`);
+  for (const p of [a, b]) await runToQuestion(p, k, 'answer');
   await expect.poll(async () => (await speak(a).count()) + (await speak(b).count()), { timeout: 20_000 }).toBe(1);
   const me = (await speak(a).count()) ? a : b, other = me === a ? b : a;
   const [id, line] = (await speak(me).getAttribute('data-role-turn'))!.split(':');
@@ -87,7 +89,7 @@ async function turnNow(a: Page, b: Page, k: number): Promise<{ id: string; line:
 }
 
 test('ロールプレイ: in the みんなで picker only; さんか asks for the mic; a scene on two phones, the ✓ chips, the team’s phrases, お手本', async ({ browser }) => {
-  test.setTimeout(300_000);
+  test.setTimeout(150_000); // (seven takes of the stand-in mic's clip in real time: ~60 s here; the lines stepped through)
   const ctx = await browser.newContext();
   await ctx.route('**/__e2e/mic.wav', (route) => route.fulfill({ path: `${import.meta.dirname}/fixtures/mic/ladder-line.wav`, contentType: 'audio/wav' }));
   const posts: string[] = [];
