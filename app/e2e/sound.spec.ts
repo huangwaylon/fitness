@@ -86,7 +86,9 @@ test.describe('the first tap starts the music', () => {
       expect((await probe(page)).contexts).toBe(0); // nothing before the tap
       const { x, y } = await sea(page);
       await page.touchscreen.tap(x, y);
-      await expect.poll(async () => (await probe(page)).playing, { timeout: prefetched ? 1000 : 4000 }).toBe(1);
+      // (a wait on state, not the proof: the gesture checks below say the hour started inside the tap, never refused.
+      // A 1 s cap for the prefetched ones went red 5 times on CI's loaded runners, 2026-11-08, the 4 s one never)
+      await expect.poll(async () => (await probe(page)).playing, { timeout: 4000 }).toBe(1);
       const p = await probe(page);
       if (process.env.DEBUG_SOUND) console.log(JSON.stringify(p.plays));
       expect(p.contexts).toBe(1);

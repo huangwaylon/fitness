@@ -180,10 +180,27 @@ for (const c of POPS)
     await expect(page.locator('[data-fx="present-open"]')).toHaveCount(1, { timeout: 3000 });
   });
 
+/** A point on the sea well away from the float and the shadow, on the screen's other side at the float's height or
+ *  just above, with no control over it: the float low on the screen put 366 on the say button (its sheet opened, the
+ *  line stayed out: 4 in 20 under load). */
+const awayFromFloat = async (page: Page): Promise<[number, number]> => {
+  const b = await at(page, '[data-bobber]');
+  const pt = await page.evaluate(([bx, by]) => {
+    const w = window as unknown as { __world3d: { ground(x: number, y: number): { x: number; z: number } | null }; __world: { ground(x: number, z: number): { surface: string } } };
+    for (let dy = 0; dy <= 160; dy += 8)
+      for (let dx = 0; dx <= 120; dx += 8) {
+        const x = bx < 195 ? 366 - dx : 24 + dx, y = by - dy, g = w.__world3d.ground(x, y);
+        if (g && w.__world.ground(g.x, g.z).surface === 'sea' && document.elementFromPoint(x, y)?.matches('.stage, canvas')) return [x, y] as [number, number];
+      }
+    return null;
+  }, [b.x, b.y] as const);
+  expect(pt, 'the sea away from the float, no control over it').not.toBeNull();
+  return pt!;
+};
 /** A tap on the sea well away from the float and the shadow (any tap is the reel while the line is out). */
 async function seaTap(page: Page) {
-  const b = await at(page, '[data-bobber]');
-  await page.mouse.click(b.x < 195 ? 366 : 24, b.y);
+  const [x, y] = await awayFromFloat(page);
+  await page.mouse.click(x, y);
 }
 /** My villager on the beach by the shadow and a cast beside it (NH casts from where it stands): the float out. */
 async function castBy(page: Page) {
@@ -207,7 +224,7 @@ test('fishing: react to the 「！」 and a tap anywhere on the sea catches the 
   await castBy(page);
   // the 「！」 a human's reaction after it shows (400 ms, in the page: a round trip back from here takes longer on a
   // loaded runner), small (≤ 28px) and inside the screen; nobody walked; then a tap on the sea reels it in
-  const b = await at(page, '[data-bobber]'), tx = b.x < 195 ? 366 : 24;
+  const [tx, ty] = await awayFromFloat(page);
   const bang = await page.evaluate(([x, y]) => new Promise<{ x: number; width: number; under: boolean; walking: number }>((ok, no) => {
     const t = setTimeout(() => no(new Error('no bite')), 15_000);
     const look = () => {
@@ -221,7 +238,7 @@ test('fishing: react to the 「！」 and a tap anywhere on the sea catches the 
       }, 400);
     };
     look();
-  }), [tx, b.y] as const);
+  }), [tx, ty] as const);
   expect(await page.locator('[data-bite]').count()).toBe(0);
   expect(bang.width).toBeLessThanOrEqual(28.5);
   expect(bang.x).toBeGreaterThanOrEqual(7.5);
@@ -276,8 +293,8 @@ test('a shark: a fin cuts the surface (NH), and the catch names it', async ({ pa
   const fish = page.locator('[data-critter="fish"].is-fin');
   await expect(fish).toBeAttached();
   await castBy(page);
-  const b = await at(page, '[data-bobber]');
-  await reelOnBite(page, b.x < 195 ? 366 : 24, b.y, 15_000);
+  const [x, y] = await awayFromFloat(page);
+  await reelOnBite(page, x, y, 15_000);
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('great-white-shark'));
   await unchanged(page, before);
 });
