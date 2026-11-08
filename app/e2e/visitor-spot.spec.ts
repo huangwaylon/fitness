@@ -1,8 +1,8 @@
 // The visitors' spot (docs/design.md "Visitors", docs/island-layout.md "Phone editing"): the もようがえ's おきゃくさん tab
-// puts down the plaza's mark (one on the island: the tray's item picks up the one there), a layout op every phone holds;
+// puts down the plaza's mark (one on the island: the tray’s item picks up the one there), a layout op every phone holds;
 // the visitors stand on it on both phones, move with it, and go back to the island's usual spot when it's taken away.
 // The editor's phone view without WebGL (`preview=0`), as island-edit.spec's.
-import { expect, test, type Page } from './fixtures.ts';
+import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { geo, offFrom } from './island.ts';
 import { GRID, TILE } from '../src/lib/layout/grid.ts';
 
@@ -27,13 +27,16 @@ async function visitorAt(page: Page, want: readonly number[]) {
   await expect.poll(() => offFrom(page, '[data-visitor="kicks"]', want[0], want[1])).toBeLessThan(2);
 }
 
-test('put the visitors’ spot down, move it, take it away: Kicks stands there on both phones, then where he did', async ({ context }) => {
+/** The two island tabs (mine and the partner's), up; the island's usual spot (no plaza yet). */
+async function phones(context: BrowserContext) {
   const a = await context.newPage(), b = await context.newPage();
   await a.goto(ISLAND);
   await b.goto(`${ISLAND}&as=B`);
-  await a.reload();
-  const usual = (await geo(a)).CENTRE_STAGE;
-  await visitorAt(a, usual);
+  return { a, b, usual: (await geo(a)).CENTRE_STAGE };
+}
+
+/** The editor's phone view: the おきゃくさん tab's mark put down on the clear tile nearest the view's middle, ✓. */
+async function placed(context: BrowserContext) {
   const ed = await context.newPage();
   await ed.goto(`editor/${Q}&view=phone&edit&cam=300`);
   await ed.waitForFunction(() => (window as unknown as { __islandEdit?: unknown }).__islandEdit);
@@ -41,24 +44,33 @@ test('put the visitors’ spot down, move it, take it away: Kicks stands there o
   await expect(ed.locator('[data-mark="usual"]')).toHaveCount(1);
   await ed.locator('[data-tab="visitor"]').click();
   await ed.locator('[data-island-item="plaza"]').click();
-  // down on the clear tile nearest the view's middle, ✓
   await expect.poll(() => ie(ed, (e) => e.sel()?.k ?? null)).toBe('plaza');
   expect(await ie(ed, (e) => e.sel()!.why)).toBeNull();
   await ed.locator('[data-act="place"]').click();
   await expect.poll(() => plaza(ed)).not.toBeNull();
-  const first = (await plaza(ed))!;
   await expect(ed.locator('[data-mark="plaza"][data-mark-ok="true"]')).toHaveCount(1);
   await expect(ed.locator('[data-mark="usual"]')).toHaveCount(0);
+  return { ed, first: (await plaza(ed))! };
+}
+
+// One test each (place, move, take away): each reloads the phones only for its own end state (the one long test, six
+// reloads and the editor, ran out of its 30 s on a loaded runner).
+test('put the visitors’ spot down: Kicks stands there on both phones', async ({ context }) => {
+  const { a, b } = await phones(context);
+  const { first } = await placed(context);
   for (const p of [a, b]) {
     await p.bringToFront();
     await visitorAt(p, mid(first));
   }
+});
 
-  // the tray's item again picks up the one there; a tap a few tiles off moves it (a clear tile: no red)
-  await ed.bringToFront();
+test('move the visitors’ spot: the tray’s item picks up the one there, a tap a few tiles off moves it; Kicks follows on both phones', async ({ context }) => {
+  const { a, b } = await phones(context);
+  const { ed, first } = await placed(context);
   await ed.locator('[data-island-item="plaza"]').click();
   await expect.poll(() => ie(ed, (e) => e.sel()?.id ?? null)).not.toBeNull();
   let moved: [number, number] | null = null;
+  // a clear tile: no red
   for (const [dc, dr] of [[3, 0], [-3, 0], [0, 3], [0, -3], [4, 2], [-4, 2]] as const) {
     const at = await ed.evaluate(([c, r]) => (window as unknown as { __islandEdit: IE }).__islandEdit.tileScreen(c, r), [first[0] + dc, first[1] + dr] as const);
     if (!at) continue;
@@ -77,8 +89,14 @@ test('put the visitors’ spot down, move it, take it away: Kicks stands there o
     await p.bringToFront();
     await visitorAt(p, mid(moved!));
   }
+});
 
-  // 🗑: the usual spot again
+test('take the visitors’ spot away (🗑): Kicks back where he stood before on both phones', async ({ context }) => {
+  const { a, b, usual } = await phones(context);
+  await visitorAt(a, usual);
+  const { ed, first } = await placed(context);
+  await a.bringToFront();
+  await visitorAt(a, mid(first));
   await ed.bringToFront();
   await ed.locator('[data-island-item="plaza"]').click();
   await ed.locator('[data-act="remove"]').click();
