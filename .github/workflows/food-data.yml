@@ -20,5 +20,7 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
+          # (only its own folder: not the app's 521 MB of static files)
+          sparse-checkout: food-data
       - run: python3 --version
       - run: python3 -I -m unittest discover -s food-data/scripts/tests

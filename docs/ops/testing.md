@@ -8,7 +8,7 @@ The tiers and why: [test-strategy.md](test-strategy.md).
 | Job | What | Gates the deploy |
 |---|---|---|
 | `build` | `npm run build` once (its budgets: the kikimimi budget, the headers, the precache limit); its `build-pages/` is the `site` artifact `deploy` ships | yes |
-| `checks` | `npm run check`, `npm run knip`, `npx vitest run`, beside the build; the quarantine listed in the summary (`scripts/e2e-quarantine.ts`: red when a quarantined test has no owner) | yes |
+| `checks`, `unit` | `checks`: `npm run check`, `npm run knip` and the quarantine listed in the summary (`scripts/e2e-quarantine.ts`: red when a quarantined test has no owner); `unit`: `npx vitest run`; both beside the build | yes |
 | `select` | what the gate's e2e runs, once for all its shards (`gate-plan` artifact): the selection (`scripts/e2e-impact.ts`), the auto-quarantine (`scripts/e2e-flakes.ts`) and the shards' plan (`scripts/e2e-shards.ts plan`, the committed `e2e/timings.json`); ~16 s, beside the shards' own build (they wait for its artifact, not the job) | yes |
 | `e2e-gate` ×4 | **the gate's e2e** ("The gate" below): Playwright in Chromium (iPhone 13 profile) in logic mode (`E2E_RENDER=none`), `@render` and `@quarantine` left out, on `site` served as Pages serves it (`scripts/serve-build.ts`): `select`'s plan (the gate set, the changed specs ×3 and the specs the push reaches); 3 workers each (4 made the short waits flaky on the 4-core runners); each shard builds the commit itself (no waiting for `build`) | yes |
 | `deploy` | `site` to Cloudflare Pages (`wrangler pages deploy`, project `island-fund`), once all of the above are green (it starts after `build` and gets the artifact, the models and wrangler ready meanwhile, then waits on the gate: `scripts/deploy-gate.ts`, every job in its `GATE` list once and `success`, else red); then checks https://island-fund.pages.dev answers this build (`_app/version.json`) with its CSP header. No `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` secret: a warning, nothing deployed | — |
@@ -174,7 +174,7 @@ that morning.
   rebase: `npx vitest run --clearCache`.
 
 ## Guardrails
-`src/lib/e2e-budgets.test.ts` (vitest, so the `checks` job) counts the flaky patterns per file in `e2e/*.ts`; today's
+`src/lib/e2e-budgets.test.ts` (vitest, so the `unit` job) counts the flaky patterns per file in `e2e/*.ts`; today's
 counts are the ceilings in `e2e/budgets.json`. A file over its ceiling, or a new file with any, fails, saying what to do
 instead:
 

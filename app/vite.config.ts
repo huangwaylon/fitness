@@ -272,6 +272,8 @@ export default defineConfig({
     // The two phones it's for: an iPhone 15 and an iPhone 16 (shipped with iOS 17 and 18), on Safari.
     target: ['safari17', 'ios17'],
     cssTarget: ['safari17', 'ios17'],
+    // (no gzip of every chunk for the size table: ~1 s of each build, 5 a push; the load budget measures what matters)
+    reportCompressedSize: false,
     // Fonts ship as separate files (fetched per unicode-range subset) instead of base64 in the blocking CSS; the mic's
     // AudioWorklet too (lib/mic/capture.worklet.js: the CSP's script-src takes 'self', never a data: URL).
     assetsInlineLimit: (file) => (/\.woff2?$|\.worklet\.js$/.test(file) ? false : undefined)
