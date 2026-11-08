@@ -39,12 +39,22 @@ function at(root: HTMLElement, p: { x: number; y: number } | null) {
   root.style.setProperty('--door-y', `${Math.round(p?.y ?? innerHeight * 0.75)}px`);
 }
 
-/** Call once from the root layout. */
+/** Call once from the root layout. A navigation started while a door's is held for its close (a back swipe, a second
+ *  tap) waits for that one to land first: SvelteKit applies a navigation once its onNavigate callbacks resolve, without
+ *  asking whether a newer one has started, so the held one, landing last, left `/` showing the tent. */
 export function doorTransition(): void {
   let timer: ReturnType<typeof setTimeout> | undefined;
+  /** The door navigation held for its close, until it has landed (or been aborted). */
+  let held: Promise<void> | null = null;
   onNavigate((nav) => {
+    const before = held;
     const way = wayOf(nav.from ? routeOf(nav.from.url.pathname) : null, nav.to ? routeOf(nav.to.url.pathname) : null);
-    if (!way) return;
+    if (!way) return before ?? undefined;
+    const mine = nav.complete.catch(() => {});
+    held = mine;
+    void mine.then(() => {
+      if (held === mine) held = null;
+    });
     const root = document.documentElement;
     clearTimeout(timer);
     opened = null;
@@ -73,6 +83,7 @@ export function doorTransition(): void {
       },
       () => delete root.dataset.door
     );
-    return new Promise<void>((done) => setTimeout(done, CLOSE_MS));
+    const close = new Promise<void>((done) => setTimeout(done, CLOSE_MS));
+    return before ? Promise.all([before, close]).then(() => {}) : close;
   });
 }
