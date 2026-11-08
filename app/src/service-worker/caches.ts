@@ -578,3 +578,15 @@ export async function tileJsonFetch(req: Request, cache: SwrCache, net: (r: Requ
   clearTimeout(timer);
   return first?.ok ? first : hit;
 }
+
+/**
+ * A cache-first miss: fetched, and a good answer kept in the background (`keep`, through `waitUntil`): storage full
+ * (cache.put's quota error) costs only the copy, never the answer (2026-11-08: awaited, it failed the asset). Pure but
+ * for its three functions, so it's tested without a worker.
+ */
+export async function fetchKeep(req: Request, get: (r: Request) => Promise<Response>, keep: (res: Response) => Promise<unknown>, waitUntil: (p: Promise<unknown>) => void): Promise<Response> {
+  const res = await get(req);
+  if (res.ok) waitUntil(keep(res.clone()).catch(() => {}));
+  return res;
+}
+
