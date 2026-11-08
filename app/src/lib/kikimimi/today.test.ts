@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { finished, finishedStory, isNight, pickMenu, whimOf, type MenuIn, type Session } from './today.ts';
-import { dayNum } from './progress.ts';
+import { dayNum } from '../contract/tokyo.ts';
 
 const BASE: MenuIn = { day: '2026-11-04', due: 14, recheck: null, next: null, lv: 3, whims: ['quiz', 'ladder', 'announce'], sessions: [] };
 const quiz: Session = { p: false, ladder: false, lv: 3 };

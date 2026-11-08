@@ -4,9 +4,10 @@
 // shooting stars and where their villager stands. The phone sends all of it again when it grows (held two minutes,
 // store/world.svelte.ts); the server keeps one row per person and day (a newer one replaces it, as a tally's), and the
 // model reads each person's latest. Shared by the record (relay/src/store.ts) and the model; pure.
-import { isLocalDate, isRec, nextDay } from './api.ts';
+import { isLocalDate, isRec } from './api.ts';
 import type { LocalDate } from '../types.ts';
 import { isInt } from './ops.ts';
+import { nextDay } from './tokyo.ts';
 
 export interface IslandDayData {
   date: LocalDate;

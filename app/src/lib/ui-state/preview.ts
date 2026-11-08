@@ -5,6 +5,7 @@
 // event implies (Halloween: an autumn night). Only the look follows it: the scene clock (`?date=` moves it), the day's
 // keys and whatever the island yields (critters, finds, eggs, ベル) stay the real day's. Pure.
 import { foliageFor, seasonFor, SEASONS, type Foliage, type Season, type TimeOfDay } from './season.ts';
+import { ZONE_OFFSET_MS, localDateAt } from '#lib/time/dates.ts';
 
 /** The events the preview can bring on: NH's dated ones (island/events.ts EventId), ours and the sky's. */
 export const PREVIEW_EVENTS = ['birthday-B', 'bunny-day', 'cherry', 'fireworks', 'birthday-A', 'wedding', 'halloween', 'maple', 'turkey-day', 'toy-day', 'shower'] as const;
@@ -90,8 +91,8 @@ const TOD_HOUR: Record<TimeOfDay, number> = { dawn: 6, day: 12, dusk: 17, night:
 export function shownAt(at: Date, s: Pick<Scene, 'event' | 'tod'>): Date {
   const md = s.event ? EVENT_DAY[s.event].md : undefined;
   if (!md && !s.tod) return at;
-  const tokyo = new Date(at.getTime() + 9 * 3600_000), minutes = tokyo.getUTCMinutes();
-  const day = md ? `2026-${md}` : tokyo.toISOString().slice(0, 10);
+  const tokyo = new Date(at.getTime() + ZONE_OFFSET_MS), minutes = tokyo.getUTCMinutes();
+  const day = md ? `2026-${md}` : localDateAt(at.getTime());
   const hour = s.tod ? TOD_HOUR[s.tod] : tokyo.getUTCHours();
   return new Date(`${day}T${String(hour).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00+09:00`);
 }

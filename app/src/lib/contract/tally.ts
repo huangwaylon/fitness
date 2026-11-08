@@ -3,8 +3,9 @@
 // one row per person and day (a new one replaces the day's older row) and the model sums the latest row of each day
 // (model/tally.ts). The first find of an entry (who and when) stays the `find` event's. Shared by the record
 // (relay/src/store.ts) and the model; pure.
-import { isFind, isFindId, isLocalDate, isRec, nextDay } from './api.ts';
+import { isFind, isFindId, isLocalDate, isRec } from './api.ts';
 import type { LocalDate } from '../types.ts';
+import { nextDay } from './tokyo.ts';
 
 /** `kind:id` (model/finds.ts findKey) → how many that day. */
 export type Tally = Record<string, number>;

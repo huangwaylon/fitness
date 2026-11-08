@@ -21,3 +21,12 @@ export function localDateAt(ms: number): LocalDate {
   if (d === undefined) LOCAL_DAY.set(day, (d = ymd(new Date(day * DAY_MS))));
   return d;
 }
+
+/** A `YYYY-MM-DD`'s day number (days since 1970-01-01): calendar arithmetic without Date's zone. */
+export const dayNum = (d: string): number => Math.round(Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) / DAY_MS);
+/** dayNum's inverse. */
+export const dayOf = (n: number): LocalDate => new Date(n * DAY_MS).toISOString().slice(0, 10);
+/** The calendar day after `date`. */
+export const nextDay = (date: string): LocalDate => dayOf(dayNum(date) + 1);
+/** The calendar day before `date`. */
+export const prevDay = (date: string): LocalDate => dayOf(dayNum(date) - 1);

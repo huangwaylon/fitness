@@ -9,6 +9,7 @@ import { levelRank, type Accent, type Entry, type Feature, type Item, type ItemT
 import { SKILLS, skillsOf, tagsOf, type Skill } from './tags.ts';
 import { SPEEDS, climb } from './ladder.ts';
 import { entryOf, isRungId, itemOf as loadedItem, rungAt } from './pool.ts';
+import { dayNum, dayOf } from '../contract/tokyo.ts';
 
 /** One of my answers, with its game's context. */
 export interface Answer {
@@ -145,13 +146,6 @@ export function listenAnswers(
 
 /** An answer's score: right on the first listen 1, right after a replay 0.6, wrong 0 (curriculum §10). */
 export const scoreOf = (a: Pick<Answer, 'ok' | 'rp'>): number => (a.ok ? (a.rp === 0 ? 1 : 0.6) : 0);
-
-/** A day as a number (days since 1970-01-01), for ages and weeks. */
-export function dayNum(d: LocalDate): number {
-  return Math.round(Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) / 86_400_000);
-}
-/** dayNum's inverse. */
-export const dayOf = (n: number): LocalDate => new Date(n * 86_400_000).toISOString().slice(0, 10);
 
 /** Mastery's recency half-life (days), its prior and the prior's weight (answers). */
 const HALF_LIFE = 21;

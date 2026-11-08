@@ -3,7 +3,7 @@
 // store's slots: a tally and an island day per person and day, a cosmetic pref per person, a goal per person and
 // Tokyo day, a board post, a meal entry, a repeat, a recipe and a custom food per id). Pure, over the contract only (relative imports), since the relay imports it from here (deps.test: the relay imports
 // only contract/).
-import { isFind, isId, isLocalDate, isSeasonLook, isWeatherMode, nextDay, PREF_KEYS, type EventType } from './api.ts';
+import { isFind, isId, isLocalDate, isSeasonLook, isWeatherMode, PREF_KEYS, type EventType } from './api.ts';
 import { GOAL_IDS, GOALS, goalOfKey, goalPrefTaken } from './goals.ts';
 import { isTally } from './tally.ts';
 import { isIslandDay } from './island.ts';
@@ -20,7 +20,7 @@ import { listenOf } from './listen.ts';
 import { LIMITS, shopPrice } from './rules.ts';
 import { isBirth, isBmiStd, isProfileKey, isSex, profileValueOk } from './profile.ts';
 import { lookPrefOk, lookPrefRead, savedLooksOk } from './look.ts';
-import { localDateAt } from './tokyo.ts';
+import { localDateAt, nextDay } from './tokyo.ts';
 import type { LocalDate, Who } from '../types.ts';
 
 type Rec = Record<string, unknown>;
