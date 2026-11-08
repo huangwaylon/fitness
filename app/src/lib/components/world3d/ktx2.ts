@@ -10,7 +10,7 @@ import type { GLTFLoader, GLTFParser } from 'three/examples/jsm/loaders/GLTFLoad
 import meta from './ktx2.json';
 import { pickTarget, type Target, type Transcoded } from './ktx2Format.ts';
 import type { Answer, Ask } from './ktx2.worker.ts';
-import { readTex, writeTex } from './texCache.ts';
+import { hasTex, readTex, writeTex } from './texCache.ts';
 import { texHash } from './texHash.ts';
 
 /** Bumped when what's kept changes shape or meaning (the encoder's settings and the transcoder are in the key anyway). */
@@ -30,13 +30,16 @@ const FORMATS: Record<Target, [PixelFormat | CompressedPixelFormat, PixelFormat 
 
 /** This page's GPU format (set by the island's renderer: ktx2Target), or null: the plugin stands aside. */
 let target: Target | null = null;
-/** The island's renderer takes KTX2 textures (`on` false: `?ktx2=0`, the WebPs as before, for an A/B). */
+/** The island's renderer takes KTX2 textures (`on` false: `?ktx2=0`, the WebPs as before, for an A/B). The cache is
+ *  opened now, ahead of the models' textures; none kept (a first launch, a new pipeline), the transcoder starts too,
+ *  while the models download. */
 export function ktx2Target(r: Pick<WebGLRenderer, 'extensions'>, on = true): void {
   target = on ? pickTarget((e) => r.extensions.has(e)) : null;
   ktx2Stats.target = target;
+  if (target && !worker) void hasTex(PIPE).then((kept) => kept || post());
 }
 
-// ---- the transcoder's worker: made on the first miss, let go of when idle ----
+// ---- the transcoder's worker: made on the first miss (or ahead, on a first launch), let go of when idle ----
 let worker: Worker | null = null, idle: ReturnType<typeof setTimeout> | 0 = 0, stall: ReturnType<typeof setTimeout> | 0 = 0, seq = 0;
 /** The worker failed (an error, or silent past STALL_MS): misses draw their WebPs from then on. */
 let broken = false;
@@ -44,27 +47,35 @@ const asks = new Map<number, (t: Transcoded | null) => void>();
 /** Waiting this long (ms) for the worker's next answer, it's given up on. */
 const STALL_MS = 8000;
 const fail = () => ((broken = true), stop());
+/** To the worker (made if need be): a file to transcode, or with none its transcoder loaded (no answer). */
+function post(buf?: ArrayBuffer, t?: Target, ok?: (t: Transcoded | null) => void) {
+  if (!worker) {
+    worker = new Worker(new URL('./ktx2.worker.ts', import.meta.url), { type: 'module' });
+    worker.onmessage = ({ data }: MessageEvent<Answer>) => {
+      asks.get(data.id)?.(data.tex);
+      asks.delete(data.id);
+      clearTimeout(stall);
+      if (asks.size) stall = setTimeout(fail, STALL_MS);
+      else idle = setTimeout(stop, IDLE_MS);
+    };
+    worker.onerror = fail;
+  }
+  clearTimeout(idle);
+  const wasm = new URL(`room/basis/basis_transcoder.wasm?v=${meta.wasm}`, new URL(document.baseURI)).href;
+  if (!buf || !t || !ok) {
+    if (!asks.size) idle = setTimeout(stop, IDLE_MS);
+    return worker.postMessage({ id: 0, wasm } satisfies Ask);
+  }
+  if (!asks.size) stall = setTimeout(fail, STALL_MS);
+  const id = ++seq;
+  asks.set(id, ok);
+  worker.postMessage({ id, wasm, buf, target: t } satisfies Ask, [buf]);
+}
 function transcode(buf: ArrayBuffer, t: Target): Promise<Transcoded | null> {
   return new Promise((ok) => {
     if (broken) return ok(null);
     try {
-      if (!worker) {
-        worker = new Worker(new URL('./ktx2.worker.ts', import.meta.url), { type: 'module' });
-        worker.onmessage = ({ data }: MessageEvent<Answer>) => {
-          asks.get(data.id)?.(data.tex);
-          asks.delete(data.id);
-          clearTimeout(stall);
-          if (asks.size) stall = setTimeout(fail, STALL_MS);
-          else idle = setTimeout(stop, IDLE_MS);
-        };
-        worker.onerror = fail;
-      }
-      clearTimeout(idle);
-      if (!asks.size) stall = setTimeout(fail, STALL_MS);
-      const id = ++seq;
-      asks.set(id, ok);
-      const wasm = new URL(`room/basis/basis_transcoder.wasm?v=${meta.wasm}`, new URL(document.baseURI)).href;
-      worker.postMessage({ id, wasm, buf, target: t } satisfies Ask, [buf]);
+      post(buf, t, ok);
     } catch {
       ok(null);
     }

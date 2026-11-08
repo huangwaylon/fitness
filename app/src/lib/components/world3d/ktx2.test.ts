@@ -105,6 +105,13 @@ describe('the transcoded textures kept (texCache.ts)', () => {
     expect(await readTex('p.etc.third')).not.toBeNull();
   });
 
+  it('writes many in several transactions, all read back', async () => {
+    for (let i = 0; i < 6; i++) writeTex(`p.etc.${i}`, tex(300_000), 'p.');
+    await flushTexWrites('p.');
+    const got = await Promise.all([0, 1, 2, 3, 4, 5].map((i) => readTex(`p.etc.${i}`)));
+    expect(got.every((g) => g?.mips[0].data.byteLength === 300_000)).toBe(true);
+  });
+
   it('answers null with no IndexedDB', async () => {
     configureTexCache({ indexedDB: null });
     writeTex('p.etc.a', tex(8), 'p.');
