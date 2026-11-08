@@ -8,7 +8,8 @@ import ranges from '@fontsource/zen-maru-gothic/unicode.json';
 
 export const FONT = 'Zen Maru Gothic Bold';
 
-const files = import.meta.glob('../../../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-*-700-normal.woff2', {
+// (not the whole-font `japanese` file, 1.5 MB: no unicode.json range names it, so it was only ever deployed)
+const files = import.meta.glob(['../../../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-*-700-normal.woff2', '!**/zen-maru-gothic-japanese-700-normal.woff2'], {
   query: '?url', import: 'default', eager: true
 }) as Record<string, string>;
 
