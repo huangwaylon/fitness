@@ -201,4 +201,22 @@ describe('a claim the room refused (its winner never heard here)', () => {
     expect(caught(world.day, 'fresh:3')?.who).toBe('B');
     world.lost = null;
   });
+  it('a shake the room refused (a nest too soon after the last) is taken back: off the day, off my row, gone after a reload', async () => {
+    const r = fakeRelay();
+    let refuse: ((i: Intent) => void) | null = null;
+    const live: Live = { ...r.live, onAck: (fn) => ((refuse = (i) => fn(i, false, 0)), () => (refuse = null)) };
+    world.attach(live, 'A');
+    const rows: { shakes: unknown[] }[] = [];
+    world.sink = (_date, row) => rows.push(row);
+    expect(world.share({ kind: 'shake', tree: 'oak-p1', drop: 'nest' }).fresh).toBe(true);
+    const sent = r.sent.at(-1)!;
+    expect(world.day.shakes).toHaveLength(1);
+    refuse!(sent);
+    expect(world.day.shakes).toEqual([]);
+    expect(rows.at(-1)?.shakes).toEqual([]);
+    await Promise.resolve();
+    world.reset();
+    world.attach(fakeRelay().live, 'A');
+    expect(world.day.shakes).toEqual([]);
+  });
 });
