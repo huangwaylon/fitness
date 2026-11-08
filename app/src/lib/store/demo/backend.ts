@@ -54,6 +54,7 @@ export class DemoBackend implements Backend {
     }
     this.#host.changed();
     this.#host.status = 'ready';
+    this.#host.current = true;
     this.#host.lastSync = new Date();
   }
 

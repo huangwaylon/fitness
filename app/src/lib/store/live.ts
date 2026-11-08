@@ -147,6 +147,7 @@ export class LiveBackend implements Backend {
     if ((opening || opts.background) && !opts.fresh && (await this.#current())) {
       this.#lastFetch = Date.now();
       await this.#flush(true);
+      h.current = true;
       h.status = 'ready';
       return;
     }
@@ -181,6 +182,7 @@ export class LiveBackend implements Backend {
     if (r.ok) {
       this.#cache = r.cache;
       h.offline = false;
+      h.current = true;
       h.lastSync = new Date();
       persistOnce().catch(() => {});
       h.status = 'ready';
@@ -202,6 +204,7 @@ export class LiveBackend implements Backend {
 
   reset(): void {
     this.#cache = null;
+    this.#host.current = false;
     this.#opened = false;
     keepAcked([]);
     this.#lastFetch = 0;

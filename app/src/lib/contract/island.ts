@@ -38,6 +38,22 @@ const isPt = (p: unknown): p is [number, number] => Array.isArray(p) && p.length
 const list = (x: unknown, max: number, ok: (v: unknown) => boolean): boolean => Array.isArray(x) && x.length <= max && x.every(ok);
 
 /**
+ * The row the record keeps when `sent` replaces `held` (one person's same day, health A8, 2026-11-08): only what can
+ * only grow is merged: each morning's wishes their max, the flowers watered both rows' (within ISLAND_MAX), the
+ * villager's spot the sent one's, else the held one's. `taken`, `puts` and `shakes` are the sent row's: leaving a
+ * claim out is how a phone gives back a race it lost (store/world.svelte.ts #refused), and a row has no list of what
+ * it gave back. @public (relay/src/store.ts)
+ */
+export function mergeIslandDay(held: IslandDayData, sent: IslandDayData): IslandDayData {
+  const wishes: Record<string, number> = { ...held.wishes };
+  for (const [k, n] of Object.entries(sent.wishes)) wishes[k] = Math.max(wishes[k] ?? 0, n);
+  const mornings = Object.keys(wishes).sort().slice(-ISLAND_MAX.wishes);
+  const watered = [...held.watered.filter((id) => !sent.watered.includes(id)), ...sent.watered].slice(-ISLAND_MAX.watered);
+  const at = sent.at ?? held.at;
+  return { ...sent, watered, wishes: Object.fromEntries(mornings.map((k) => [k, wishes[k]])), ...(at ? { at } : {}) };
+}
+
+/**
  * An `island`'s data: `{date, taken, puts, shakes, watered, wishes, at?}` and nothing else, a real date (not after
  * tomorrow when `today`, the server's Tokyo date, is given), within ISLAND_MAX, each entry well-formed.
  */

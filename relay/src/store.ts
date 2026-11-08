@@ -37,6 +37,7 @@ import { keyOwner, type Keys } from './auth.ts';
 import { guestMayWrite, rowsFor } from '../../app/src/lib/contract/guest.ts';
 import { buyOf, reowe, sellOf, shopLedger, shopRefusal, shopStep, type Ledger, type ShopRow } from '../../app/src/lib/contract/shop.ts';
 import { backCovered, isTally, mergeTally } from '../../app/src/lib/contract/tally.ts';
+import { isIslandDay, mergeIslandDay } from '../../app/src/lib/contract/island.ts';
 import type { PersonId, Who } from '../../app/src/lib/contract/api.ts';
 
 type Rec = Record<string, unknown>;
@@ -730,6 +731,7 @@ export class StoreCore {
       // a day's tally only grows: the slot keeps each entry's larger count of the held row and this one, so a stale
       // lower send (a second phone's, a queue that waited) never takes back a catch a sale counted (contract/tally.ts)
       if (type === 'tally') kept = this.tallyKept(me, data);
+      if (type === 'island') kept = this.islandKept(me, data);
       // what's given back of a day (a claim race lost after its tally came in): only grows, and only what that day's
       // tally holds (contract/tally.ts backCovered)
       if (type === 'tally_back') {
@@ -965,6 +967,15 @@ export class StoreCore {
     return JSON.stringify({ date: d.date, counts: mergeTally(h.counts, d.counts) });
   }
 
+  /** An island day as kept over the row of the same person and day it replaces (contract/island.ts mergeIslandDay:
+   *  what only grows, merged). */
+  private islandKept(who: Who, d: Rec): string {
+    const held = this.io.sql.exec<{ data: string }>('SELECT data FROM events WHERE slot = ?', `island|${who}|${String(d.date)}`).toArray()[0];
+    const h = held ? this.rowRec(held.data, 'island') : null;
+    if (!h || !isIslandDay(h) || !isIslandDay(d)) return JSON.stringify(d);
+    return JSON.stringify(mergeIslandDay(h, d));
+  }
+
   /** `who`'s tally of `date` the record holds (its counts; none: empty). */
   private heldTally(who: Who, date: string): Record<string, number> {
     const held = this.io.sql.exec<{ data: string }>('SELECT data FROM events WHERE slot = ?', `tally|${who}|${date}`).toArray()[0];
@@ -1192,6 +1203,7 @@ export class StoreCore {
         return 'had';
       }
       if (type === 'tally' || type === 'tally_back') json = this.tallyKept(person, d, type); // with the larger counts of the row it replaces
+      if (type === 'island') json = this.islandKept(person, d);
     }
     this.put(id, at, person, type, json, slot, this.seeAt(at) ? arrived : null);
     if (type === 'decor') this.decorNote(person, d, wasDecor); // (the caps right within the load's batch)

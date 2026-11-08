@@ -41,7 +41,7 @@ class Mem implements KV {
   setItem(k: string, v: string) { this.m.set(k, v); }
   removeItem(k: string) { this.m.delete(k); }
 }
-const host = (): Host => ({ status: 'loading', syncing: false, offline: false, lastSync: null, changed() {} });
+const host = (): Host => ({ status: 'loading', syncing: false, offline: false, lastSync: null, current: false, changed() {} });
 
 let kv: Mem;
 let sends = 0;

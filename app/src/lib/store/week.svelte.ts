@@ -26,6 +26,7 @@ class WeekStore implements Host {
   syncing = $state(false);
   offline = $state(false);
   lastSync = $state<Date | null>(null);
+  current = $state(false);
   demo = $state<false | DemoMode>(false);
 
   /** This phone is the guest's (docs/design.md "The guest"): paired with KEY_C, or the demo's `as=G`. */
