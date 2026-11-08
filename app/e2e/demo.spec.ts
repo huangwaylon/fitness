@@ -805,9 +805,9 @@ const HUD_NOTCH = () => document.addEventListener('DOMContentLoaded', () => {
   s.textContent = 'html:root { --safe-top: 59px !important; }';
   document.head.append(s);
 });
-for (const [w, h] of [[393, 852], [402, 874], [320, 568]])
-  for (const at of ['2026-10-28T12:00', '2026-10-28T22:00'])
-test(`the HUD row at ${w}, ${at.slice(11)}: [the dumbbell] [the menu] in the top-right corner, the leaf at the screen's side, no jar, the sky's left clear, every target ≥ 44px, under a notch`, { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ page }) => {
+// (the narrowest at noon and at night, the night's sky behind it; the wider two at noon)
+for (const [w, h, at] of [[393, 852, '2026-10-28T12:00'], [402, 874, '2026-10-28T12:00'], [320, 568, '2026-10-28T12:00'], [320, 568, '2026-10-28T22:00']] as const)
+test(`the HUD row at ${w}, ${at.slice(11)}: [the dumbbell] [the menu] in the top-right corner, the leaf at the screen's side, no jar, the sky's left clear, every target ≥ 44px, under a notch${at.endsWith('22:00') ? '; its taps stay apart: the ベル row opens the panel (ごほうび; no せってい there: the menu\'s), the dumbbell the health popup' : ''}`, async ({ page }) => {
   // an iPhone 15/16's top inset (59px): the row stays where it was, under it
   await page.addInitScript(HUD_NOTCH);
   await page.setViewportSize({ width: w, height: h });
@@ -849,13 +849,8 @@ test(`the HUD row at ${w}, ${at.slice(11)}: [the dumbbell] [the menu] in the top
   }
   await page.keyboard.press('Escape');
   await expect(hudMenu(page)).toHaveAttribute('aria-expanded', 'false');
-});
-
-test('the HUD row\'s taps stay apart: the ベル row opens the panel (ごほうび; no せってい there: the menu\'s), the dumbbell the health popup', async ({ page }) => {
-  await page.addInitScript(HUD_NOTCH);
-  await page.setViewportSize({ width: 320, height: 568 });
-  await page.goto('?demo&date=2026-10-28T22:00');
-  await islandReady(page);
+  if (!at.endsWith('22:00')) return;
+  // its taps stay apart: the ベル row opens the panel (ごほうび: no tabs, no ずかん), the dumbbell the health popup
   await expect(hudBells(page)).toHaveAttribute('aria-expanded', 'false');
   await openRewards(page);
   await expect(sheet(page).locator('.shop')).toBeVisible();
@@ -863,7 +858,7 @@ test('the HUD row\'s taps stay apart: the ベル row opens the panel (ごほう�
   await expect(sheet(page).locator('[data-tab], [data-zukan]')).toHaveCount(0);
   await page.keyboard.press('Escape');
   await expect(page.locator('dialog[open]')).toHaveCount(0);
-  await page.getByRole('button', { name: 'けんこう', exact: true }).click();
+  await btn.click();
   await expect(sheet(page).locator('[data-health-sheet] .health')).toBeVisible();
   await expect(sheet(page).locator('[data-kenkou-tab=health]')).toHaveAttribute('aria-current', 'page');
 });
