@@ -18,6 +18,7 @@ npm run build      # → build-pages/
 npm run e2e        # Playwright, WebKit and Chromium (--project= picks one), against the build (npm run build first; docs/ops/testing.md)
 npm run bench      # model timing at years 1 and 3
 npm run knip       # unused files, exports, dependencies
+npm run verify     # every check CI runs but e2e, at once (before a push)
 ```
 Needs Node ≥ 24.
 
@@ -50,6 +51,24 @@ python3 -I -m unittest discover -s food-data/scripts/tests
 | `docs/` | Below |
 
 ## Docs
-- [Design](docs/design.md) · [Backend](docs/backend.md) · [Decisions](docs/decisions.md) · [Food data](docs/food-data.md)
-- [Island layout](docs/island-layout.md) · [3D assets](docs/world3d-assets.md) · [Bulletin board](docs/board.md)
-- [Runbook](docs/ops/runbook.md) · [Observability](docs/ops/observability.md) · [Testing](docs/ops/testing.md) · [Test strategy](docs/ops/test-strategy.md) · [Health sync Shortcut](docs/ops/shortcut-health-sync.md)
+One home per topic; the others link to it. If a doc and the code disagree, the code wins (and the doc gets fixed).
+
+| Doc | Owns |
+|---|---|
+| [design.md](docs/design.md) | What the app is and how it behaves: screens, the HUD and menu (the one home of the menu order), economy, the island's behaviour, sound |
+| [decisions.md](docs/decisions.md) | The decisions in force, each with its one-line why |
+| [backend.md](docs/backend.md) | The relay: the record (Durable Object SQLite), the wire contract, the client's sync and queue, the live room |
+| [island-layout.md](docs/island-layout.md) | The editable layout: grid, ops, default, nav, checks, homes and rooms; the /editor |
+| [world3d-assets.md](docs/world3d-assets.md) | The 3D model and texture pipeline (NH models → GLB/KTX2) |
+| [food-data.md](docs/food-data.md) | ごはん's food catalog and pictures: sources, build, shipping |
+| [sound-sync.md](docs/sound-sync.md) | How music and sounds stay in step across phones |
+| [board.md](docs/board.md) · [travel.md](docs/travel.md) · [wedding.md](docs/wedding.md) · [hiking.md](docs/hiking.md) | The bulletin board, りょこう, けっこんしき, トレイル |
+| [kikimimi.md](docs/kikimimi.md) | ききみみ クイズ, the English listening games, as the player sees them |
+| [kikimimi-framework.md](docs/kikimimi-framework.md) · [kikimimi-ux.md](docs/kikimimi-ux.md) · [kikimimi-mic.md](docs/kikimimi-mic.md) | ききみみ's engine and packs, hub and progression, mic modes |
+| [curriculum.md](docs/curriculum.md) · [curriculum-units.md](docs/curriculum-units.md) · [curriculum-wave2.md](docs/curriculum-wave2.md) | What ききみみ teaches: stages, scenarios, units, content rules |
+| [app/content/listen/README.md](app/content/listen/README.md) | The listening units' YAML format |
+| [perf-plan.md](docs/perf-plan.md) | Performance: the open items |
+| [ops/runbook.md](docs/ops/runbook.md) | Running it: hosting, deploys, keys, the relay, recovery |
+| [ops/testing.md](docs/ops/testing.md) · [ops/test-strategy.md](docs/ops/test-strategy.md) | CI (the gate, shards, flaky ledger) and how to write a stable spec; the test tiers |
+| [ops/observability.md](docs/ops/observability.md) | The log, its reader, the alert, the costs |
+| [ops/shortcut-health-sync.md](docs/ops/shortcut-health-sync.md) | The iOS Shortcut that sends Health data |
