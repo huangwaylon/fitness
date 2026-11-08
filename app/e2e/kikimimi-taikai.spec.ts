@@ -8,7 +8,7 @@
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { atHub, kikiSheet as sheet } from './kikimimi-nav.ts';
+import { atHub, kikiSheet as sheet, runToPhase, runToQuestion } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const SHOTS = '/tmp/kikimimi-shots/taikai';
@@ -29,7 +29,10 @@ async function snap(p: Page, name: string, fullPage = false, settle = true) {
   }).length)).toBe(0);
   await p.screenshot({ path: `${SHOTS}/${name}.png`, fullPage });
 }
+/** A phone on its page's clock (a context's installed before its first page: both tabs step together; the rounds'
+ *  plays stepped through: kikimimi-nav.ts runUntil). */
 async function phone(ctx: BrowserContext | Page, as: 'A' | 'B' = 'A'): Promise<Page> {
+  if (!('newPage' in ctx) || !ctx.pages().length) await ctx.clock.install();
   const page = 'newPage' in ctx ? await ctx.newPage() : ctx;
   await page.goto(`?demo&${Q}${as === 'A' ? '' : `&as=${as}`}`);
   await islandUp(page);
@@ -46,13 +49,13 @@ async function toTaikai(p: Page) {
 }
 /** One round: the right choice or (`wrong`) another; the wager's bet first. */
 async function round(p: Page, i: number, wrong: boolean, bet?: number) {
-  await expect.poll(() => kiki(p, (k) => k.view().i), { timeout: 20_000 }).toBe(i);
+  await runToQuestion(p, i);
   if (bet) {
     await expect(sheet(p).locator('[data-kiki-wager]')).toBeVisible();
     await sheet(p).locator(`[data-kiki-bet="${bet}"]`).click();
     await expect(sheet(p).locator(`[data-kiki-bet="${bet}"]`)).toHaveAttribute('aria-checked', 'true');
   }
-  await expect(sheet(p)).toHaveAttribute('data-phase', 'answer', { timeout: 40_000 });
+  await runToPhase(p, 'answer');
   const right = await kiki(p, (k) => k.right());
   const k = wrong ? (right + 1) % (await sheet(p).locator('[data-choice]').count()) : right;
   await sheet(p).locator(`[data-choice="${k}"]`).click();
@@ -60,7 +63,6 @@ async function round(p: Page, i: number, wrong: boolean, bet?: number) {
 }
 
 test('solo: the Saturday banner, the lobby, seven rounds and the wager (a confident miss) to the trophy; the banner and きろく keep it', async ({ page }) => {
-  test.slow();
   await phone(page);
   await fromMenu(page, 'kikimimi');
   await atHub(page);
@@ -92,9 +94,9 @@ test('solo: the Saturday banner, the lobby, seven rounds and the wager (a confid
     await sheet(page).locator('[data-kiki-next]').click();
   }
   // the wager: the choices wait for a bet; 80 of the round's 100 chips, missed
-  await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 20_000 }).toBe(7);
+  await runToQuestion(page, 7);
   await expect(sheet(page).locator('[data-kiki-taikai-bar]')).toContainText('かけの問題');
-  await expect(sheet(page)).toHaveAttribute('data-phase', 'answer', { timeout: 40_000 });
+  await runToPhase(page, 'answer');
   await expect(sheet(page).locator('[data-choice="0"]')).toHaveAttribute('aria-disabled', 'true');
   await sheet(page).locator('[data-kiki-bet="80"]').click();
   await snap(page, 'wager-bet', false, false);
@@ -131,7 +133,6 @@ test('solo: the Saturday banner, the lobby, seven rounds and the wager (a confid
 });
 
 test('co-op on two phones: B’s misses offered as it joins, A’s deck picked again with them, the same rounds on both, the team’s trophy on both', async ({ browser }) => {
-  test.slow();
   const ctx = await browser.newContext();
   // B's misses this week (its phone's own rows: one context's storage, so only B's)
   await ctx.addInitScript(() => {

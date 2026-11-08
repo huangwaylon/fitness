@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { openStage } from './kikimimi-nav.ts';
+import { openStage, runToQuestion } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -48,6 +48,7 @@ const UNIT = {
 
 /** The hub, the fixture unit put in, しまの みち opened from あそぶ's card. */
 async function toPath(page: Page) {
+  await page.clock.install(); // (the lessons' plays stepped through: kikimimi-nav.ts runUntil)
   await page.goto(`?demo&${Q}`);
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
@@ -62,8 +63,7 @@ async function toPath(page: Page) {
 async function playAllRight(page: Page) {
   await expect(sheet(page)).toHaveAttribute('data-phase', 'countdown');
   for (let i = 0; i < 6; i++) {
-    await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 45_000 }).toBe(i);
-    await expect(sheet(page)).toHaveAttribute('data-phase', 'answer', { timeout: 45_000 });
+    await runToQuestion(page, i, 'answer');
     await sheet(page).locator(`[data-choice="${await kiki(page, (k) => k.right())}"]`).click();
     await expect(sheet(page)).toHaveAttribute('data-phase', 'reveal');
     await sheet(page).locator('[data-kiki-next]').click();
@@ -72,7 +72,6 @@ async function playAllRight(page: Page) {
 }
 
 test('しまの みち: a unit’s stop, its page, であい played solo moves its dot; the filter collapses other domains', async ({ page }) => {
-  test.slow();
   await toPath(page);
   const stop = sheet(page).locator('[data-kiki-stop="tr-testinn"]');
   await expect(stop).toBeVisible();
@@ -132,7 +131,6 @@ test('しまの みち: a unit’s stop, its page, であい played solo moves i
 });
 
 test('とばして チェック: the mission card, the stamp on the results, the unit page and the path; the ずかん', async ({ page }) => {
-  test.slow();
   await toPath(page);
   await sheet(page).locator('[data-kiki-stop="tr-testinn"] [data-kiki-stop-open]').click();
   const unit = sheet(page).locator('[data-kiki-unit-page="tr-testinn"]');

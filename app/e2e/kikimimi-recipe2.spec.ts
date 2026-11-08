@@ -11,7 +11,7 @@ import { join } from 'node:path';
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { openStage } from './kikimimi-nav.ts';
+import { openStage, runToQuestion, runToSee } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -90,7 +90,7 @@ async function startCheck(page: Page) {
 }
 /** The memo's rows filled with their right chips, sent once the call allows. */
 async function memo(p: Page) {
-  await expect(sheet(p).locator('[data-kiki-memo] [data-own]').first()).toBeVisible({ timeout: 40_000 });
+  await runToSee(p, sheet(p).locator('[data-kiki-memo] [data-own]'));
   const right = RIGHT.get(CALL)!, rows = sheet(p).locator('[data-kiki-memo] [data-own]');
   for (let j = 0; j < (await rows.count()); j++) {
     const row = rows.nth(j), want = right[Number(await row.getAttribute('data-n'))];
@@ -98,15 +98,15 @@ async function memo(p: Page) {
     const chip = row.locator(`[data-chip="${texts.indexOf(want)}"]`);
     if ((await chip.getAttribute('aria-pressed')) !== 'true') await chip.click();
   }
-  const done = sheet(p).locator('[data-kiki-call-done]');
-  await expect(done).toHaveAttribute('aria-disabled', 'false', { timeout: 60_000 });
-  await done.click();
+  // (once the call has ended)
+  await runToSee(p, sheet(p).locator('[data-kiki-call-done][aria-disabled="false"]'));
+  await sheet(p).locator('[data-kiki-call-done]').click();
   await expect(sheet(p)).toHaveAttribute('data-phase', 'reveal');
   await expect(sheet(p).locator('[data-kiki-verdict="right"]')).toBeVisible();
 }
 
 test('recipe 2’s チェック, its call listened: the call and its memo, then 4 quiz items; the stamp, my row, the review', async ({ page }) => {
-  test.setTimeout(300_000); // (the call plays its voiced length)
+  await page.clock.install(); // (the call plays its voiced length: stepped through, kikimimi-nav.ts runUntil)
   await toUnit(page);
   await startCheck(page);
   const items = await kiki(page, (k) => k.items());
@@ -115,17 +115,16 @@ test('recipe 2’s チェック, its call listened: the call and its memo, then 
   for (const id of items.slice(2)) expect(LESSONS.check).toContain(id);
 
   // the call on the phone (the lesson's game, the call's page), its memo; round 2 from memory
-  await expect(sheet(page).locator('[data-kiki-frame="phone"]')).toBeVisible({ timeout: 20_000 });
+  await runToSee(page, sheet(page).locator('[data-kiki-frame="phone"]'));
   await memo(page);
   await sheet(page).locator('[data-kiki-next]').click();
-  await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 20_000 }).toBe(1);
+  await runToQuestion(page, 1);
   await expect(sheet(page).locator('[data-kiki-call-ended="1"]')).toBeVisible();
   await memo(page);
   await sheet(page).locator('[data-kiki-next]').click();
   // then the quiz's page for its 4 items
   for (let i = 2; i < 6; i++) {
-    await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 45_000 }).toBe(i);
-    await expect(sheet(page)).toHaveAttribute('data-phase', 'answer', { timeout: 45_000 });
+    await runToQuestion(page, i, 'answer');
     await sheet(page).locator(`[data-choice="${await kiki(page, (k) => k.right())}"]`).click();
     await expect(sheet(page)).toHaveAttribute('data-phase', 'reveal');
     await sheet(page).locator('[data-kiki-next]').click();
@@ -148,7 +147,7 @@ test('recipe 2’s チェック, its call listened: the call and its memo, then 
 });
 
 test('recipe 2 falls back to recipe 1 while the call is a draft; its おと plays the listened tiles', async ({ page, context }) => {
-  test.slow();
+  await page.clock.install(); // (the plays stepped through)
   await asDraft(context);
   await toUnit(page, DRAFT);
   await startCheck(page);
@@ -162,7 +161,7 @@ test('recipe 2 falls back to recipe 1 while the call is a draft; its おと play
   expect(items).toHaveLength(6);
   for (const id of items) expect(WORDS.has(id)).toBe(true);
   // round 1 on the tiles' page: the sentence built from the board, できた, right
-  await expect(sheet(page).locator('[data-kiki-tile-pool]')).toBeVisible({ timeout: 40_000 });
+  await runToSee(page, sheet(page).locator('[data-kiki-tile-pool]'));
   const words = WORDS.get(items[0])!;
   const open = await sheet(page).locator('button[data-slot]').evaluateAll((bs) => bs.filter((b) => !b.hasAttribute('data-filled')).map((b) => Number(b.getAttribute('data-slot'))));
   for (const j of open) await sheet(page).locator(`[data-tile][data-word="${words[j].replace(/"/g, '\\"')}"]:not([data-used])`).first().click();

@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { atHub, kikiSheet as sheet, toMode } from './kikimimi-nav.ts';
+import { atHub, kikiSheet as sheet, runToPhase, toMode } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 }, kikiFirstRun: true });
 const SHOTS = '/tmp/kikimimi-shots/check';
@@ -31,6 +31,7 @@ async function snap(p: Page, name: string, settle = true) {
 }
 /** The guest's phone on the demo: no ききみみ games yet. */
 async function guest(page: Page) {
+  await page.clock.install(); // (the rounds' plays stepped through: kikimimi-nav.ts runUntil)
   await page.goto(`?demo&as=G&${Q}`);
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
@@ -41,7 +42,6 @@ const HARD = /^d?(ya|yb|vy|ho)-/;
 const LV3 = new Set((JSON.parse(readFileSync(join(import.meta.dirname, '..', 'src', 'lib', 'kikimimi', 'levels', 'parts', 'lv3.json'), 'utf8')) as { items: { id: string }[] }).items.map((it) => it.id));
 
 test('the first run: welcome, the sound check, みみ チェック to its result; then おまかせ at the placed stage', async ({ page }) => {
-  test.slow();
   await guest(page);
   await expect(sheet(page)).toHaveAttribute('data-kiki-at', 'welcome');
   await expect(sheet(page).locator('[data-kiki-step="1"]')).toBeVisible();
@@ -57,7 +57,7 @@ test('the first run: welcome, the sound check, みみ チェック to its result
   await expect(page.locator('dialog[open] .navbar h2')).toHaveText('みみ チェック');
   const heard: string[] = [];
   for (let i = 0; i < 12; i++) {
-    await expect(sheet(page)).toHaveAttribute('data-phase', /answer|results/, { timeout: 40_000 });
+    await runToPhase(page, /answer|results/);
     if ((await sheet(page).getAttribute('data-phase')) === 'results') break;
     expect(await kiki(page, (k) => k.view().i)).toBe(i);
     const id = await kiki(page, (k) => k.items()[k.view().i]);
