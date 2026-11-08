@@ -193,3 +193,28 @@ test('the catalogue and the recipes: found entries with their counts, in all and
   await expect(head.locator('[data-zukan-detail="mush-lamp"]')).toContainText('キノコのランプ');
   if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/recipes-390.png` });
 });
+
+// From 設定's 図鑑 row: on the rows ‹ goes back to 設定 (reopened where it was scrolled, the row focused); a kind's ‹
+// back to the rows; ✕ to the island.
+test('ずかん from 設定: ‹ back to 設定 where it was, ✕ to the island', async ({ page }) => {
+  await page.goto('?demo');
+  await islandUp(page);
+  await fromMenu(page, 'zukan');
+  const settings = page.locator('dialog[open] [data-settings]');
+  const back = page.locator('dialog[open] .navbar button.nav.back');
+  await expect(back).toHaveCount(1);
+  await back.click();
+  await expect(settings).toBeVisible();
+  await expect(page.locator('dialog[open]')).toHaveCount(1);
+  await expect(page.locator('[data-settings-zukan]')).toBeFocused();
+  await expect.poll(() => settings.evaluate((el) => el.scrollTop)).toBeGreaterThan(0); // at the row, not the top
+  await expect(back).toHaveCount(0); // 設定's top level: no ‹
+
+  // a kind's ‹ is the rows', then ✕ closes to the island
+  await page.locator('[data-settings-zukan]').click();
+  await page.locator('[data-zukan="fish"]').click();
+  await back.click();
+  await expect(page.locator('[data-zukan="fish"]')).toBeVisible();
+  await page.locator('dialog[open] .navbar button.nav.close').click();
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+});

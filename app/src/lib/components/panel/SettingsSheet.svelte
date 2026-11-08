@@ -3,10 +3,10 @@
   // at once (Sheet's `pop`). One scroller: 姿 (the look's portrait,
   // the よびな; 変更 → the 姿 level: the closet and the villagers, one dresser), プロフィール (性別, 生年月日, the BMI
   // standard: ProfileSection), サウンド, 言語 (one dropdown), 季節 (the whole island's look: SeasonSection) and
-  // 図鑑 (one row: this closes, the ずかん's sheet in its place); the guest's the same (2026-11-06), with a line saying it's visiting. The island is arranged in /editor, not here.
+  // 図鑑 (one row: this closes, the ずかん's sheet in its place; its ‹ reopens this where it was); the guest's the same (2026-11-06), with a line saying it's visiting. The island is arranged in /editor, not here.
   // 姿 pushes a level with ‹ (its edits are sent as it's left, with a 取り消す banner here);
   // ✕, the backdrop and Esc close it, and the next opening starts at its top.
-  import { tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
   import LookPage from '../look/LookPage.svelte';
@@ -27,13 +27,16 @@
   import { cue } from '#lib/sound/cues.ts';
   import { isGuest, mine } from '#lib/ui-state/viewer.ts';
 
-  let { open = $bindable(), onzukan }: { open: boolean; onzukan: () => void } = $props();
+  /** `resume`: this opening is ずかん's ‹ back (Hud): at 図鑑's row again, where the list was scrolled to. */
+  let { open = $bindable(), onzukan, resume = $bindable(false) }: { open: boolean; onzukan: () => void; resume?: boolean } = $props();
 
   /** The levels pushed: すがた. */
   let stack = $state<'look'[]>([]);
   const push = $derived(stack.at(-1) ?? null);
   let body: HTMLElement | undefined = $state();
   let savedTop = 0;
+  /** The list's scroll as 図鑑's row opened ずかん (its ‹ comes back to it). */
+  let zukanTop = 0;
 
   const view = $derived(week.view);
   const title = $derived(push ? t(`panel.${push}`) : t('title.settings'));
@@ -82,7 +85,20 @@
     if (o === wasOpen) return;
     wasOpen = o;
     cue(o ? 'panel-open' : 'panel-close');
+    if (o && untrack(() => resume)) {
+      resume = false;
+      void tick().then(() => {
+        body?.scrollTo({ top: zukanTop });
+        document.querySelector<HTMLElement>('[data-settings-zukan]')?.focus({ preventScroll: true });
+      });
+    }
   });
+
+  function toZukan() {
+    zukanTop = body?.scrollTop ?? 0;
+    open = false;
+    onzukan();
+  }
 </script>
 
 <Sheet bind:open label={t('title.settings')} variant="pop" onclose={closed} timed="settings">
@@ -107,7 +123,7 @@
       <section class="sec" aria-labelledby="sec-zukan">
         <h2 id="sec-zukan" class="sec-label">{t('title.zukan')}</h2>
         <button type="button" class="prow zukan" data-settings-zukan aria-haspopup="dialog" data-sfx="tick" onpointerdown={() => void prefetchSheet('zukan')}
-          onclick={() => ((open = false), onzukan())}>
+          onclick={toZukan}>
           <span class="ic"><OfficialArt key="critters/agrias-butterfly" size={36} /></span>
           <span class="prl">{t('zukan.open')}</span>
           <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>

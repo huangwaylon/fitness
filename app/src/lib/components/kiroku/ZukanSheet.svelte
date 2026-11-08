@@ -1,7 +1,7 @@
 <script lang="ts">
   // ずかん (docs/design.md "Zukan"): 設定's 図鑑 row opens it (設定 closing), full height, at once
   // (Sheet's `pop`). Its first screen: one row per kind with how many either of us has
-  // found (ZukanCard); a row pushes that kind's page (Zukan.svelte) with ‹. ✕, the backdrop and Esc close it, and the
+  // found (ZukanCard); a row pushes that kind's page (Zukan.svelte) with ‹; on the rows ‹ goes back to 設定 (`onback`). ✕, the backdrop and Esc close it, and the
   // next opening starts on the rows. The guest's phone has it too (a shared museum, the guest's finds under its name).
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
@@ -16,7 +16,8 @@
   import { t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
 
-  let { open = $bindable() }: { open: boolean } = $props();
+  /** `onback`: opened from 設定 (Hud): ‹ on the rows goes back there (this closes, 設定 reopens where it was). */
+  let { open = $bindable(), onback = null }: { open: boolean; onback?: (() => void) | null } = $props();
   /** The kind whose page is open (null: the rows). */
   let kind = $state<ZukanKind | null>(null);
 
@@ -39,6 +40,12 @@
     void Promise.resolve().then(() => document.querySelector<HTMLElement>(`[data-zukan="${from}"]`)?.focus({ preventScroll: true }));
   }
 
+  /** ‹ on the rows (opened from 設定): back to it (its own open tune, this one's close). */
+  function toSettings() {
+    open = false;
+    onback?.();
+  }
+
   function closed() {
     if (toasts.current) toasts.dismiss();
     kind = null;
@@ -55,7 +62,7 @@
 </script>
 
 <Sheet bind:open label={t('title.zukan')} variant="pop" onclose={closed} timed="zukan">
-  <div class="titlebar"><NavBar title={kind ? t(`zukan.kind.${kind}`) : t('title.zukan')} onback={kind ? back : null} onclose={() => (open = false)} sfx="self" /></div>
+  <div class="titlebar"><NavBar title={kind ? t(`zukan.kind.${kind}`) : t('title.zukan')} onback={kind ? back : onback ? toSettings : null} onclose={() => (open = false)} sfx="self" /></div>
   <div class="zs-body" class:fill={kind !== null} data-zukan-sheet>
     {#if m && finds}
       {#key kind}

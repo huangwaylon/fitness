@@ -40,6 +40,8 @@
   let healthMounted = $state(false);
   let zukanMounted = $state(false);
   let settingsMounted = $state(false);
+  /** ずかん (opened from 設定's row, its only door) going back by ‹: 設定 reopens where it was. */
+  let settingsResume = $state(false);
   // the old /jar page (`?panel=rewards`): the panel open at once
   // every sheet's chunk ahead of its first tap, once the island is in and the worker serves them
   onMount(prefetchSheets);
@@ -75,10 +77,10 @@
   {#await loadPanel() then { default: IslandPanel }}<IslandPanel bind:open={panelOpen} />{/await}
 {/if}
 {#if zukanMounted}
-  {#await loadZukan() then { default: ZukanSheet }}<ZukanSheet bind:open={zukanOpen} />{/await}
+  {#await loadZukan() then { default: ZukanSheet }}<ZukanSheet bind:open={zukanOpen} onback={() => (settingsResume = settingsOpen = true)} />{/await}
 {/if}
 {#if settingsMounted}
-  {#await loadSettings() then { default: SettingsSheet }}<SettingsSheet bind:open={settingsOpen} onzukan={() => { zukanMounted = true; zukanOpen = true; }} />{/await}
+  {#await loadSettings() then { default: SettingsSheet }}<SettingsSheet bind:open={settingsOpen} bind:resume={settingsResume} onzukan={() => { zukanMounted = true; zukanOpen = true; }} />{/await}
 {/if}
 <!-- 旅行's and 結婚式's sheets, lazySheets from their first opening (the menu's pills) -->
 {#if trips.Sheet}<trips.Sheet bind:open={trips.open} />{/if}
