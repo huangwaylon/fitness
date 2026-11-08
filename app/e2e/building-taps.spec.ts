@@ -45,15 +45,20 @@ type Hooks = {
 };
 
 /** The screen's water points (every 6 px) that a building's tap area takes though it can't stand in front of them (the
- *  water before it, or beside it at its own depth): (x, y) → the building and the ground under it. */
+ *  water before it, or beside it at its own depth): (x, y) → the building and the ground under it. Only the points
+ *  inside a tap area's boxes are looked at (each [data-building]'s and its descendants' client rects, 8 px round them:
+ *  a child or a transform reaching past its box too), the rest can't be a building's. */
 const strayWater = (page: Page, feet: Record<string, Box>) =>
   page.evaluate((feet) => {
     const h = window as unknown as Hooks;
     // (its eaves and roof reach a little past its footprint: 20u either side)
-    const MARGIN = 20;
+    const MARGIN = 20, PAD = 8;
+    const boxes = [...document.querySelectorAll('[data-building], [data-building] *')].flatMap((e) => [...e.getClientRects()]).filter((r) => r.width || r.height);
+    const near = (x: number, y: number) => boxes.some((r) => x >= r.left - PAD && x <= r.right + PAD && y >= r.top - PAD && y <= r.bottom + PAD);
     const out: string[] = [];
     for (let y = 0; y < innerHeight; y += 6)
       for (let x = 0; x < innerWidth; x += 6) {
+        if (!near(x, y)) continue;
         const b = document.elementFromPoint(x, y)?.closest('[data-building]')?.getAttribute('data-building');
         if (!b) continue;
         const g = h.__world3d.ground(x, y);
@@ -101,6 +106,7 @@ test('on the user’s island the shop’s tap area covers its roof and walls, as
     return w.client((f.x0 + f.x1) / 2, f.y0 + (f.y1 - f.y0) * 0.6, 100);
   }, FEET.shop);
   await expect.poll(() => page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.closest('[data-building]')?.getAttribute('data-building') ?? null, roof)).toBe('shop');
-  await page.mouse.click(roof[0], roof[1]);
-  await expect(page).toHaveURL(/\/shop/, { timeout: 15_000 });
+  // (a real touch: exactTaps.ts sends its click to the finger's own point; my villager walks up to it first)
+  await page.touchscreen.tap(roof[0], roof[1]);
+  await expect(page).toHaveURL(/\/shop/, { timeout: 30_000 });
 });
