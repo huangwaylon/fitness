@@ -11,11 +11,12 @@ import type { Dataset, FoodIndex } from './types.ts';
 
 const STATIC = join(import.meta.dirname, '../../../static');
 const DIR = join(STATIC, 'food-img');
-/** The budget: files in food-img/, its bytes, one sheet's bytes, and every file under static/ (Pages' cap is 20,000). */
-const MAX_FILES = 1_800; // ~5,000 pictures: 2 × 2 detail sheets (~1,250) and 4 × 4 thumbnail sheets (~350)
+/** The budget: files in food-img/, its bytes, one sheet's bytes, and static/'s file cap (static-files.test.ts's
+ *  STATIC_MAX_FILES: Pages takes 20,000 a deploy, the build adds its chunks). */
+const MAX_FILES = 1_100; // ~5,000 pictures: 3 × 3 detail sheets (~560) and 4 × 4 thumbnail sheets (~350)
 const MAX_BYTES = 90_000_000;
 const MAX_SHEET = 400_000;
-const MAX_STATIC_FILES = 19_000;
+const STATIC_MAX_FILES = 15_000;
 
 /** A webp's canvas size from its header (VP8, VP8L or VP8X). */
 function webpSize(b: Buffer): [number, number] {
@@ -91,9 +92,14 @@ describe('static/food-img', () => {
     for (const k of Object.values(index.ids)) expect(index.keys[k]).toBeDefined();
   });
 
-  it('keeps the whole site under the Pages file cap', () => {
-    const count = (d: string): number => readdirSync(d, { withFileTypes: true }).reduce((n, e) => n + (e.isDirectory() ? count(join(d, e.name)) : 1), 0);
-    expect(count(STATIC)).toBeLessThanOrEqual(MAX_STATIC_FILES);
+  it("fits the whole table's pictures in static/'s file cap (projected from what is shipped)", () => {
+    const count = (d: string): number => readdirSync(d, { withFileTypes: true }).reduce((n, e) => n + (e.isDirectory() ? count(join(d, e.name)) : e.name === '.DS_Store' ? 0 : 1), 0);
+    const tdir = join(import.meta.dirname, '../../../../food-data/images/table');
+    const rows = readdirSync(tdir).filter((f) => f.endsWith('.json')).reduce((n, f) => n + (JSON.parse(readFileSync(join(tdir, f), 'utf8')) as unknown[]).length, 0);
+    const now = files.length;
+    const projected = Math.ceil((now * rows) / index.keys.length) + 60; // (+ the families' and categories' part-filled last sheets)
+    expect(projected).toBeLessThanOrEqual(MAX_FILES);
+    expect(count(STATIC) - now + projected).toBeLessThanOrEqual(STATIC_MAX_FILES);
   });
 });
 

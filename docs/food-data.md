@@ -191,12 +191,12 @@ not drawn yet keep their category's tile. `food-data/images/fi.py` (its docstrin
   then goes back to the tile. Every verdict is appended to `verdicts.jsonl`.
 - **Pack** (`pack`, PIL): it evens the background to the paper colour (#F5E4BC, a per-channel gain from the border's median), then
   writes webp q72 sprite sheets into `app/static/food-img/`. Thumbnail sheets hold 4 × 4 cells of 128 px (webp q65) (rows, 40–64 px
-  at 3×). Detail sheets hold 2 × 2 cells of 384 px (the amount's 160 px picture: one open fetches ~48 KB and decodes 2.4 MB). Thumbnail sheets are per search
+  at 3×). Detail sheets hold 3 × 3 cells of 384 px (the amount's 160 px picture: one open fetches ~100 KB and decodes 5.3 MB). Thumbnail sheets are per search
   neighbourhood (`FAMILY`: a row whose name holds a common search word, e.g. カレー or 卵, sits with that word's family,
   else with its category), so a common search's top 20 download about 100 KB of thumbnails; detail sheets go by category. Popular
   items come first. `slots.json` is append-only, so a full sheet never changes. The names carry the content hash (cached for a year, `scripts/headers.ts`).
   `index.json` maps each food id to its picture's two cells (`lib/food/images.ts` `imgOf`).
-- **Budget** (`lib/food/images.test.ts`): ≤ 1,800 files and 90 MB in food-img/, a common search's top 20 ≤ 120 KB of thumbnails on average (350 at most), ≤ 400 KB a sheet, ≤ 19,000 files under
+- **Budget** (`lib/food/images.test.ts`): ≤ 1,100 files and 90 MB in food-img/ (projected over the whole table, within static/'s 15,000-file cap), a common search's top 20 ≤ 120 KB of thumbnails on average (350 at most), ≤ 400 KB a sheet, ≤ 19,000 files under
   static/ (Cloudflare Pages takes 20,000 a deploy), and every generic food in a table row (a new catalogue item fails the test until it has one). The service worker caches the sheets on first use (`FOOD_IMG_CACHE`),
   never at install.
 
