@@ -197,7 +197,10 @@ Most red runs so far were the spec, not the app. Before pushing a new or changed
 3. **Fix the clock.** It's pinned already (above, "Hermetic"); `?date=2026-11-04T12:00` when the day and hour matter; `page.clock.install({ time })` when the app's
    timers matter, `page.clock.runFor(ms)` to skip an animation's wait instead of sleeping through it. The clock fakes
    `requestAnimationFrame` too, so `runFor` steps the 3D engines frame by frame: in logic mode that's quick (drawn under
-   software GL it took minutes, hence `fastForward` there).
+   software GL it took minutes, hence `fastForward` there). ききみみ's schedule (a clip's window is its clips.json
+   length, a timer, never the audio's) runs on it: install the clock before the goto and step to the state
+   (e2e/kikimimi-nav.ts `runToQuestion`, `runToPhase`, `runToSee`) instead of waiting out a play; never step while a
+   mic take listens (its stand-in audio is real time).
 4. **Find things by role or test id**, not by position or `nth()`: `getByRole('button', { name })`, `[data-tab=…]`,
    `[data-critter]`. Add a `data-*` hook to the component when there is none.
 5. **WebKit is the browser.** It scrolls by whole px (a camera z is within a px of what `go(z)` asked: compare with a
