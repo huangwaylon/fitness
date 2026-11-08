@@ -28,7 +28,7 @@ const SELF: Record<string, string> = {
   'lib/components/island/HudHealth.svelte': 'the dumbbell → jar-tap (R18: both look up at it), then the popup plays panel-open',
   'lib/components/island/HudMenu.svelte': 'ベル / 旅行 / 結婚式 / トレイル / 英語 / 設定 → jar-tap (R18: both look up at it), then the panel or its sheet plays panel-open',
   'lib/components/shop/ShopRoom.svelte': 'a catch or a piece → tick; うる / かう → purchase, or the boop when nothing is picked or it can\'t be had; ‹ 島へ → scene-bench (out of the door)',
-  'lib/components/island/FruitTree.svelte': 'canopy → tree-shake; the fruit row and closing the popup → tick',
+  'lib/components/island/FruitTree.svelte': 'canopy → tree-shake; the fruit row and closing the popup → tick; the popup\'s ごはん button → its sheet plays panel-open',
   'lib/components/island/TreeShakes.svelte': 'a branch → scene-twig; the wasps → scene-net, then scene-catch (too late: nothing)',
   'lib/components/island/Balloon.svelte': 'scene-balloon',
   'lib/components/island/Scenery.svelte': 'the campsite’s door → tick as its line about today’s guest is said',

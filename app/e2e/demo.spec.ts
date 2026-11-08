@@ -388,7 +388,7 @@ test('tree popup: the four goals (steps first), today’s amount / the goal with
     const row = rows.nth(i);
     // today's amount against the goal, met or not; ✓ before it once met
     await expect(row.locator('.amt')).toHaveText(new RegExp(`^[\\d,]+ / [\\d,]+ ?${units[i].source}`));
-    await expect(row.locator('.amt svg.ok')).toHaveCount(await row.locator('.amt.met').count());
+    await expect(row.locator('.ck svg.ok')).toHaveCount(await row.locator('.amt.met').count());
     // no ベル on a row; a chip only at 1.5× (e2e/stretch.spec.ts has the rule's edges and the cap)
     await expect(row.locator('b')).toHaveCount(0);
     await expect(row.locator('.chip')).toHaveCount(await row.getAttribute('data-stretched') ? 1 : 0);
@@ -457,7 +457,7 @@ test('けんこう: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, f
   await page.keyboard.press('Escape');
   await page.locator('button.canopy').nth(0).click();
   await expect(page.locator('.detail .row[data-row=pear] .amt')).toHaveText(/^[\d,]+ \/ 2,000 kcal$/);
-  await expect(page.locator('.detail .row[data-row=pear] .amt svg')).toHaveCount(0);
+  await expect(page.locator('.detail .row[data-row=pear] svg.ok')).toHaveCount(0);
   // the partner's goal: the popup's person dropdown switches the cards, and the chip sets the partner's
   await page.keyboard.press('Escape');
   await toHealth(page);
@@ -501,7 +501,7 @@ test('けんこう: the steps goal, 8,000 for both by default, 1,000–30,000 by
   await page.keyboard.press('Escape');
   await page.locator('button.canopy').nth(0).click();
   await expect(page.locator('.detail .row[data-row=apple] .amt')).toHaveText(/^[\d,]+ \/ 30,000歩$/);
-  await expect(page.locator('.detail .row[data-row=apple] .amt svg')).toHaveCount(0);
+  await expect(page.locator('.detail .row[data-row=apple] svg.ok')).toHaveCount(0);
   await page.keyboard.press('Escape');
   await toHealth(page);
   await expect(chip).toHaveText('目標 30,000歩 以上');

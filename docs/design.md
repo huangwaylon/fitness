@@ -48,8 +48,12 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
   ring where the ✓ comes and a dashed ghost of the chip (gone once the day's がんばり cap is paid), so an early morning's
   popup shows what will fill in. Under the goals one ごはん row: 朝 / 昼 / 夜, each the same dashed ring
   until that person's meal log has anything in that meal today (a いつもの on its day too; おやつ never counts), then ✓
-  (2026-11-06, the user: "it's too easy to forget"; `island/mealChecks.ts`; display only: the dumbbell's ごはん tab is the log).
-  Everyone's meals are seen by all three, so the guest sees them too. Then the ledger, always all three lines, a zero faint: 「もくひょう +3」, 「がんばり +1」
+  (2026-11-06, the user: "it's too easy to forget"; `island/mealChecks.ts`). At the row's end, in the chip column, one
+  button (the user, 2026-11-08): 「きろく」 (leaf) on my own tree, 「みる」 (cream) on anyone else's; it opens the dumbbell's
+  sheet on ごはん, today, on that tree's person's day (`island/kenkouAsk.svelte.ts`), in place (no walk; the island
+  pauses under the sheet). Everyone's meals are seen by all three, so the guest sees them (and the button) too. The popup is
+  one grid (2026-11-08): icon · ✓ · amount (right-aligned) · がんばり, the meals on the same columns, the ledger inset as
+  the rows, so every edge lines up. Then the ledger, always all three lines, a zero faint: 「もくひょう +3」, 「がんばり +1」
   (「がんばり（上限 2） +2」 when three or four were reached) and this person's total 「うめの きょう +6 ベル」; then
   ふたりでぜんぶ (「ふたりで ぜんぶ まで：あと 2つ」 or 「ふたりで ぜんぶ！ +2 ふたりに」), outside either total, so both
   totals plus it make today's total (ごほうび's 「きょう +N ベル」). The last line says when that person's data last arrived (「15:24 に とどいた」), with

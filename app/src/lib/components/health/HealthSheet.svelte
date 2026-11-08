@@ -7,7 +7,8 @@
   // ✕, the backdrop and Esc close it; kept mounted between openings (Sheet's `keep`: a reopening shows it at once).
   // Each opening starts 健康 at 1週 on かつどう at its top (whose data kept for the session); each time ごはん shows (an
   // opening on it, or its tab) it starts on 記録, today, the day at its top (Food's `open`: its reset, and its
-  // catalogue's idle load while it shows).
+  // catalogue's idle load while it shows). A tree popup's ごはん button (kenkouAsk) opens it on ごはん, today, on the
+  // tree's owner's day (Food remounted, hidden, when whose day changes: it takes whose from foodLast as it mounts).
   import { untrack, type Snippet } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
@@ -20,6 +21,8 @@
   import { cue } from '#lib/sound/cues.ts';
   import { last, resetHealth, type KenkouTab } from './healthLast.ts';
   import { closeGoalEdit } from './GoalEdit.svelte';
+  import { foodLast } from '../food/foodUi.ts';
+  import { kenkouAsk, shown } from '../island/kenkouAsk.svelte.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
   let tab = $state<KenkouTab>(last.tab);
@@ -45,6 +48,22 @@
     tab = last.tab = id;
     if (id === 'food') foodSeen = true;
   }
+
+  /** Bumped to remount Food on another person's day (a tree's ask). */
+  let foodKey = $state(0);
+  $effect.pre(() => {
+    const n = kenkouAsk.n;
+    if (n === shown.n) return;
+    shown.n = n;
+    untrack(() => {
+      pick('food');
+      const who = kenkouAsk.who;
+      if (who && who !== (foodLast.who ?? week.view?.viewer)) {
+        foodLast.who = who;
+        foodKey++;
+      }
+    });
+  });
 
   function closed() {
     if (toasts.current) toasts.dismiss();
@@ -89,7 +108,7 @@
   {#if foodSeen}
     <div class="body" data-food-sheet bind:this={foodBody} hidden={tab !== 'food'}>
       {#if week.view}
-        <Food bind:title={foodTitle} bind:back bind:lead={foodLead} open={food} />
+        {#key foodKey}<Food bind:title={foodTitle} bind:back bind:lead={foodLead} open={food} />{/key}
       {/if}
     </div>
   {/if}

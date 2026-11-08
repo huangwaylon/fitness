@@ -6,7 +6,7 @@
   // 結婚式, トレイル, 英語, 設定) each open their own sheet, at once (each sheet's chunk fetched ahead: sheetChunks.ts).
   // Only when sync is not ok, the sync chip centred under the row; under it, while 設定's 季節 is on, its chip. The
   // panel, the popups and every sheet are their own chunks, loaded on first open.
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { replaceState } from '$app/navigation';
   import { page } from '$app/state';
   import SyncPill from '../ui/SyncPill.svelte';
@@ -16,6 +16,7 @@
   import { trips } from '../travel/open.svelte.ts';
   import { weddingSheet } from '../wedding/open.svelte.ts';
   import { hiking } from '../hiking/open.svelte.ts';
+  import { kenkouAsk } from './kenkouAsk.svelte.ts';
   import { loadHealth, loadPanel, loadSettings, loadZukan, prefetchSheets } from './sheetChunks.ts';
 
   interface Props {
@@ -48,6 +49,14 @@
     const q = location.search.replace(/([?&])panel=rewards(&|$)/, (_, a: string, b: string) => (b ? a : '')).replace(/^\?$/, '');
     replaceState(location.pathname + q + location.hash, page.state);
     opened = panelOpen = true;
+  });
+  // a tree popup's ごはん button (kenkouAsk): the sheet opens as from the dumbbell (HealthSheet picks ごはん and whose day)
+  let seenAsk = kenkouAsk.n;
+  $effect(() => {
+    const n = kenkouAsk.n;
+    if (n === seenAsk) return;
+    seenAsk = n;
+    untrack(() => (healthMounted = healthOpen = true));
   });
 </script>
 
