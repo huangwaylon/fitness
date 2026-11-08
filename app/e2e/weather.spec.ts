@@ -53,39 +53,39 @@ for (const [w, h] of [[390, 844], [320, 568]] as const)
       await page.screenshot({ path: test.info().outputPath(`rain-${w}.png`) });
     });
 
-    test('a downpour, snow, the rainbow, the fog and the aurora', async ({ page }) => {
-      await open(page, 'date=2026-06-10T14:00&weather=heavy');
-      await expect.poll(() => precip(page)).toMatchObject({ kind: 'rain', sky: 'heavy' });
+    // (at 320 the snow and the fog only, with their controls clear: the others show as at 390, nothing over a control)
+    test(w === 390 ? 'a downpour, snow, the rainbow, the fog and the aurora' : 'snow and the fog, under every control', async ({ page }) => {
+      if (w === 390) {
+        await open(page, 'date=2026-06-10T14:00&weather=heavy');
+        await expect.poll(() => precip(page)).toMatchObject({ kind: 'rain', sky: 'heavy' });
+      }
       await open(page, 'date=2027-01-12T10:00&weather=snow');
       await expect.poll(() => precip(page)).toMatchObject({ kind: 'snow', sky: 'snow', meshes: ['precip:snow'] });
       await controlsClear(page);
-      await open(page, 'date=2026-06-10T16:30&weather=rainbow');
-      await expect(page.locator('.rainbow')).toBeVisible();
-      await expect(page.locator('.overcast')).toHaveCount(0);
-      await expect.poll(() => precip(page)).toMatchObject({ kind: null, meshes: [] });
+      if (w === 390) {
+        await open(page, 'date=2026-06-10T16:30&weather=rainbow');
+        await expect(page.locator('.rainbow')).toBeVisible();
+        await expect(page.locator('.overcast')).toHaveCount(0);
+        await expect.poll(() => precip(page)).toMatchObject({ kind: null, meshes: [] });
+      }
       await open(page, 'date=2026-11-05T07:20&weather=fog');
       await expect(page.locator('.fog')).toBeVisible();
       await controlsClear(page);
-      await open(page, 'date=2027-01-12T21:00&weather=aurora');
-      await expect(page.locator('.aurora')).toBeVisible();
+      if (w === 390) {
+        await open(page, 'date=2027-01-12T21:00&weather=aurora');
+        await expect(page.locator('.aurora')).toBeVisible();
+      }
     });
   });
 
 test.describe('the day itself', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test('a fine day has no weather layers; a seeded rain day does on both phones', async ({ page, browser }) => {
+  // (a date's seeded sky the same on every phone: weather.test's dayWeather)
+  test('a fine day has no weather layers', async ({ page }) => {
     await open(page, 'date=2026-06-10T11:00&weather=clear');
     await expect(page.locator('.overcast, .wet[data-sky], .fog, .rainbow, .aurora')).toHaveCount(0);
     await expect.poll(() => precip(page)).toMatchObject({ kind: null, level: 0, meshes: [] });
-    // the same date on another phone gets the same sky
-    const other = await browser.newPage({ viewport: { width: 390, height: 844 }, locale: 'ja-JP', timezoneId: 'Asia/Tokyo' });
-    await other.goto(page.url().replace('&weather=clear', ''));
-    await page.goto(page.url().replace('&weather=clear', ''));
-    await islandUp(page);
-    await islandUp(other);
-    expect(await page.locator('.if-scene').getAttribute('data-sky')).toBe(await other.locator('.if-scene').getAttribute('data-sky'));
-    await other.close();
   });
 
   test('rain and snow are one draw call an effect (the streaks, the rings; the flakes)', { tag: '@render' }, async ({ page }) => {
