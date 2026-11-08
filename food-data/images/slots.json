@@ -1711,7 +1711,47 @@
 "kumagaya-2601",
 "kumagaya-3644",
 "kumagaya-3642",
-"kumagaya-3539"
+"kumagaya-3539",
+"kumagaya-3019",
+"kumagaya-2378",
+"kumagaya-03391",
+"kumagaya-844",
+"kumagaya-3636",
+"kumagaya-3196",
+"kumagaya-00414",
+"kumagaya-02402",
+"kumagaya-3254",
+"kumagaya-03626",
+"kumagaya-3212",
+"kumagaya-02629",
+"kumagaya-3186",
+"kumagaya-3244",
+"kumagaya-3631",
+"kumagaya-2989",
+"kumagaya-2465",
+"kumagaya-03153",
+"kumagaya-2045",
+"kumagaya-03364",
+"kumagaya-3548",
+"kumagaya-2289",
+"kumagaya-2980",
+"kumagaya-2178",
+"kumagaya-3600",
+"kumagaya-2237",
+"kumagaya-03563",
+"kumagaya-344",
+"kumagaya-00440",
+"kumagaya-2505",
+"kumagaya-856",
+"kumagaya-03624",
+"kumagaya-03556",
+"kumagaya-03623",
+"kumagaya-754",
+"kumagaya-2035",
+"kumagaya-02977",
+"kumagaya-03336",
+"kumagaya-396",
+"kumagaya-3628"
 ],
 "meat": [
 "mext-11227",
@@ -3013,7 +3053,16 @@
 "kumagaya-3509",
 "kumagaya-3441",
 "kumagaya-2914",
-"kumagaya-3292"
+"kumagaya-3292",
+"kumagaya-2815",
+"kumagaya-1983",
+"kumagaya-2071",
+"kumagaya-1985",
+"kumagaya-520",
+"kumagaya-2849",
+"kumagaya-3097",
+"kumagaya-831",
+"kumagaya-2599"
 ],
 "soup": [
 "dishes-miso-tofu-wakame",
@@ -3294,7 +3343,30 @@
 "kumagaya-3355",
 "kumagaya-2557",
 "kumagaya-3645",
-"kumagaya-2093"
+"kumagaya-2093",
+"kumagaya-3483",
+"kumagaya-50",
+"kumagaya-3448",
+"kumagaya-2932",
+"kumagaya-2661",
+"kumagaya-3236",
+"kumagaya-2810",
+"kumagaya-00239",
+"kumagaya-3613",
+"kumagaya-02103",
+"kumagaya-3169",
+"kumagaya-3373",
+"kumagaya-2444",
+"kumagaya-2593",
+"kumagaya-2658",
+"kumagaya-2292",
+"kumagaya-3630",
+"kumagaya-02040",
+"kumagaya-2326",
+"kumagaya-00231",
+"kumagaya-03384",
+"kumagaya-3510",
+"kumagaya-02693"
 ],
 "soy": [
 "mext-04032",
@@ -4610,7 +4682,8 @@
 "mext-06409",
 "mext-06211",
 "mext-06407",
-"mext-06346"
+"mext-06346",
+"kumagaya-02402"
 ],
 "cheese": [
 "mext-13040",
@@ -4776,7 +4849,13 @@
 "kumagaya-3563",
 "kumagaya-2879",
 "kumagaya-746",
-"kumagaya-3539"
+"kumagaya-3539",
+"kumagaya-3186",
+"kumagaya-2465",
+"kumagaya-03563",
+"kumagaya-2505",
+"kumagaya-03336",
+"kumagaya-3628"
 ],
 "curry": [
 "eatout-curry_pork_chain",
@@ -4822,7 +4901,10 @@
 "toyonaka-268113",
 "toyonaka-268163",
 "kumagaya-453",
-"kumagaya-3447"
+"kumagaya-3447",
+"kumagaya-02629",
+"kumagaya-00239",
+"kumagaya-2178"
 ],
 "dairy": [
 "mext-13020",
@@ -4894,7 +4976,8 @@
 "dishes-teishoku-gyoza",
 "dishes-mabodon",
 "toyonaka-271605",
-"kumagaya-3552"
+"kumagaya-3552",
+"kumagaya-2989"
 ],
 "drink": [
 "eatout-cafe_latte",
@@ -5666,7 +5749,11 @@
 "kumagaya-3646",
 "kumagaya-3446",
 "kumagaya-3240",
-"kumagaya-2557"
+"kumagaya-2557",
+"kumagaya-3483",
+"kumagaya-3373",
+"kumagaya-3630",
+"kumagaya-02040"
 ],
 "konbini": [
 "eatout-bento_makunouchi",
@@ -6175,7 +6262,25 @@
 "kumagaya-3350",
 "kumagaya-3052",
 "kumagaya-2554",
-"kumagaya-3644"
+"kumagaya-3644",
+"kumagaya-2378",
+"kumagaya-844",
+"kumagaya-3636",
+"kumagaya-00414",
+"kumagaya-3254",
+"kumagaya-03626",
+"kumagaya-3212",
+"kumagaya-3631",
+"kumagaya-2045",
+"kumagaya-03364",
+"kumagaya-2289",
+"kumagaya-2980",
+"kumagaya-2237",
+"kumagaya-344",
+"kumagaya-03623",
+"kumagaya-754",
+"kumagaya-2035",
+"kumagaya-396"
 ],
 "meat": [
 "mext-11279",
@@ -6227,7 +6332,8 @@
 "mext-13008",
 "eatout-protein_whey_milk",
 "mext-13004",
-"mext-15136"
+"mext-15136",
+"kumagaya-856"
 ],
 "miso": [
 "dishes-miso-tofu-wakame",
@@ -6276,7 +6382,12 @@
 "kumagaya-3108",
 "kumagaya-4",
 "kumagaya-2971",
-"kumagaya-2520"
+"kumagaya-2520",
+"kumagaya-2932",
+"kumagaya-2810",
+"kumagaya-2444",
+"kumagaya-2292",
+"kumagaya-03384"
 ],
 "natto": [
 "mext-04046",
@@ -6436,7 +6547,8 @@
 "toyonaka-276472",
 "toyonaka-131072",
 "toyonaka-285528",
-"kumagaya-3648"
+"kumagaya-3648",
+"kumagaya-3244"
 ],
 "pork": [
 "mext-11276",
@@ -6560,7 +6672,9 @@
 "toyonaka-127707",
 "toyonaka-131136",
 "toyonaka-285572",
-"kumagaya-2696"
+"kumagaya-2696",
+"kumagaya-3196",
+"kumagaya-03556"
 ],
 "ramen": [
 "dishes-ramen-shoyu",
@@ -6774,7 +6888,9 @@
 "toyonaka-125959",
 "kumagaya-2933",
 "kumagaya-151",
-"kumagaya-118"
+"kumagaya-118",
+"kumagaya-00440",
+"kumagaya-02977"
 ],
 "saba": [
 "mext-10154",
@@ -6797,7 +6913,8 @@
 "takatsuki-r22",
 "mext-10403",
 "mext-10155",
-"toyonaka-268726"
+"toyonaka-268726",
+"kumagaya-03391"
 ],
 "salad": [
 "dishes-green-salad",
@@ -6888,7 +7005,15 @@
 "kumagaya-3509",
 "kumagaya-3441",
 "kumagaya-2914",
-"kumagaya-3292"
+"kumagaya-3292",
+"kumagaya-2815",
+"kumagaya-1983",
+"kumagaya-2071",
+"kumagaya-1985",
+"kumagaya-520",
+"kumagaya-2849",
+"kumagaya-3097",
+"kumagaya-831"
 ],
 "salmon": [
 "mext-10139",
@@ -7478,7 +7603,8 @@
 "kumagaya-2506",
 "kumagaya-2217",
 "kumagaya-909",
-"kumagaya-2151"
+"kumagaya-2151",
+"kumagaya-2599"
 ],
 "soba": [
 "dishes-zaru-soba",
@@ -7661,7 +7787,18 @@
 "kumagaya-2512",
 "kumagaya-3355",
 "kumagaya-3645",
-"kumagaya-2093"
+"kumagaya-2093",
+"kumagaya-3448",
+"kumagaya-2661",
+"kumagaya-3613",
+"kumagaya-02103",
+"kumagaya-3169",
+"kumagaya-2593",
+"kumagaya-2658",
+"kumagaya-2326",
+"kumagaya-00231",
+"kumagaya-3510",
+"kumagaya-02693"
 ],
 "soy": [
 "mext-05018",
@@ -7891,7 +8028,8 @@
 "maff_kyodo-sabano_bouzushi_shiga",
 "maff_kyodo-36_8_shizuoka",
 "maff_kyodo-40_11_hyogo",
-"maff_kyodo-41_24_okayama"
+"maff_kyodo-41_24_okayama",
+"kumagaya-3019"
 ],
 "sweet": [
 "mext-15103",
@@ -8320,7 +8458,9 @@
 "toyonaka-285560",
 "kumagaya-3612",
 "kumagaya-2230",
-"kumagaya-2601"
+"kumagaya-2601",
+"kumagaya-3548",
+"kumagaya-03624"
 ],
 "tomato": [
 "mext-06182",
@@ -8341,7 +8481,8 @@
 "dishes-hiyashi-tomato",
 "mext-06391",
 "toyonaka-122179",
-"toyonaka-131719"
+"toyonaka-131719",
+"kumagaya-03153"
 ],
 "tuna": [
 "mext-10260",
@@ -8369,7 +8510,8 @@
 "toyonaka-267598",
 "toyonaka-285530",
 "kumagaya-3306",
-"kumagaya-932"
+"kumagaya-932",
+"kumagaya-3600"
 ],
 "udon": [
 "mext-01039",
@@ -8413,7 +8555,9 @@
 "kumagaya-114",
 "toyonaka-131647",
 "toyonaka-131646",
-"kumagaya-1963"
+"kumagaya-1963",
+"kumagaya-50",
+"kumagaya-3236"
 ],
 "veg": [
 "mext-08001",
