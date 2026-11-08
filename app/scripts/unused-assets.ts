@@ -8,8 +8,9 @@
 // 3D island has no model: world3d/assets.json keys), the app beyond the island (stays), a dev page or a build script
 // (keeps nothing). The built chunks (build-pages/, when there is a build) are read too: a key in the shipped JS that the
 // source scan missed is "unsure".
-//   The modules: the import graph from the routes and the service worker; what it doesn't reach is listed (already
-// dead or dev-only).
+//   The modules: the import graph from the routes, the service worker and vite.config.ts (imports, import(),
+// import.meta.glob, new URL(…, import.meta.url)); what it doesn't reach is listed: dead, or only the tests' and the
+// build scripts' (fixtures, ききみみ's content sources compiled to levels/*.json).
 //
 // Usage (from app/): npm run unused [-- --json] [-- --list=safe|used|unsure] [-- --seen=/tmp/seen.txt]
 //   (the probe that writes --seen's file: node scripts/unused-probe.ts <port>, with the build served)
@@ -144,20 +145,41 @@ function resolveImport(from: string, spec: string): string | null {
   if (spec.startsWith('#lib/') || spec.startsWith('$lib/')) p = join('lib', spec.slice(5));
   else if (spec.startsWith('.')) p = relative(SRC, resolve(SRC, dirname(from), spec));
   else return null;
+  p = p.replace(/\?.*$/, ''); // Vite's queries: ?worker, ?url, ?raw
   for (const c of [p, `${p}.ts`, `${p}.svelte`, `${p}/index.ts`]) if (modSet.has(c)) return c;
   return null;
 }
+/** An import.meta.glob pattern (relative to `from`, or #lib/) → the modules it matches: `*` within a path segment,
+ *  `**` across them, `{a,b}`; a negated one (`!…`) matches nothing (the scan errs toward reached). */
+function globImports(from: string, pat: string): string[] {
+  if (pat.startsWith('!')) return [];
+  const abs = pat.startsWith('#lib/') || pat.startsWith('$lib/') ? join('lib', pat.slice(5)) : pat.startsWith('.') ? relative(SRC, resolve(SRC, dirname(from), pat)) : null;
+  if (!abs || abs.startsWith('..')) return [];
+  const re = new RegExp(`^${abs.split('**/').map((s) => esc(s).replace(/\\\*/g, '[^/]*').replace(/\\\{([^}]*)\\\}/g, (_, a: string) => `(?:${a.split(',').join('|')})`)).join('(?:.*/)?')}$`);
+  return modFiles.filter((m) => re.test(m));
+}
 const edges = new Map<string, { to: string }[]>();
-for (const f of modFiles) {
-  if (f.endsWith('.json')) continue;
-  const text = readFileSync(join(SRC, f), 'utf8'), out: { to: string }[] = [];
-  for (const m of text.matchAll(/(?:import|export)\s[^'"`;]*?from\s*['"]([^'"]+)['"]|import\(\s*['"]([^'"]+)['"]\s*\)|import\s+['"]([^'"]+)['"]/g)) {
-    const to = resolveImport(f, m[1] ?? m[2] ?? m[3]);
+const importsIn = (f: string, text: string): { to: string }[] => {
+  const out: { to: string }[] = [];
+  // static and dynamic imports, and `new URL('./x', import.meta.url)` (a Worker's, a worklet's)
+  for (const m of text.matchAll(/(?:import|export)\s[^'"`;]*?from\s*['"]([^'"]+)['"]|import\(\s*['"]([^'"]+)['"]\s*\)|import\s+['"]([^'"]+)['"]|new URL\(\s*['"]([^'"]+)['"]\s*,\s*import\.meta\.url/g)) {
+    const to = resolveImport(f, m[1] ?? m[2] ?? m[3] ?? m[4]);
     if (to) out.push({ to });
   }
-  edges.set(f, out);
+  // import.meta.glob('…') and import.meta.glob(['…', '…'])
+  for (const m of text.matchAll(/import\.meta\.glob\s*(?:<[^(]*>)?\(\s*(\[[^\]]*\]|'[^']*'|"[^"]*")/g))
+    for (const p of m[1].matchAll(/['"]([^'"]+)['"]/g)) for (const to of globImports(f, p[1])) out.push({ to });
+  return out;
+};
+for (const f of modFiles) {
+  if (f.endsWith('.json')) continue;
+  edges.set(f, importsIn(f, readFileSync(join(SRC, f), 'utf8')));
 }
-const roots = modFiles.filter((f) => /^routes\/.*\+(page|layout|error)(\.server)?\.(svelte|ts)$/.test(f) || f === 'service-worker/index.ts' || /^hooks/.test(f));
+// vite.config.ts is a root too (its plugins import src modules: world3d/basisModule.ts); `from` as if it sat in src/
+// one level up, so its ./src/… specs resolve
+const viteRoot = '../vite.config.ts';
+edges.set(viteRoot, importsIn('x', readFileSync(join(APP, 'vite.config.ts'), 'utf8').replace(/(['"])\.\/src\//g, '$1./')));
+const roots = [viteRoot, ...modFiles.filter((f) => /^routes\/.*\+(page|layout|error)(\.server)?\.(svelte|ts)$/.test(f) || f === 'service-worker/index.ts' || /^hooks/.test(f))];
 function reach(): Set<string> {
   const seen = new Set<string>(), stack = [...roots];
   while (stack.length) {
@@ -176,7 +198,7 @@ for (const f of modFiles) {
   for (const e of edges.get(f) ?? []) if (/^lib\/components\/(island|board)\/.*\.(ts|json)$/.test(e.to) && e.to !== 'lib/components/island/world.ts' && kindOf0(e.to) === 'world') SHARED.add(e.to);
 }
 const now = reach();
-const unreachedNow = modFiles.filter((f) => !now.has(f) && !f.endsWith('.json') && !f.startsWith('service-worker/') && f !== 'app.d.ts').sort();
+const unreachedNow = modFiles.filter((f) => !now.has(f) && !f.endsWith('.json') && !f.startsWith('service-worker/') && !f.endsWith('.d.ts')).sort();
 /** world.ts's exports and who still reads each. */
 const worldTs = readFileSync(join(SRC, 'lib/components/island/world.ts'), 'utf8');
 const worldExports = [...worldTs.matchAll(/^export (?:const|function|type|interface) ([A-Za-z_]\w*)/gm)].map((m) => m[1]);
@@ -302,7 +324,7 @@ if (asJson) {
     }
     for (const [dir, e] of [...g].sort((a, b) => b[1].b - a[1].b)) console.log(`  ${dir.padEnd(30)} ${String(e.n).padStart(5)}  ${MB(e.b).padStart(9)}  ${[...e.why].slice(0, 3).join(' | ')}`);
   }
-  console.log('\n## modules no route reaches (already dead or dev-only)');
+  console.log('\n## modules the app never reaches (dead, or only the tests\' and the build scripts\')');
   for (const f of unreachedNow) console.log(`  ${f}`);
   console.log('\n## world.ts exports still read');
   for (const [x, rs] of Object.entries(readers)) console.log(`  ${x.padEnd(16)} ${rs.length ? rs.join(', ') : '— (nobody: world.ts-internal)'}`);
