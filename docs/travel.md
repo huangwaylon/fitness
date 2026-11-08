@@ -29,7 +29,7 @@ flight home.
 
 | Trip | Dates (local) | tz | Days | Has |
 |---|---|---|---|---|
-| okinawa (ja + en) | 2026-10-10 → 10-12 | Asia/Tokyo | 3 | logistics, map (23 stops; candidates 26 camp / 9 nature / 11 food), 26 campsites, packing 6 / 35 |
+| okinawa (ja + en) | 2026-10-10 → 10-12 | Asia/Tokyo | 3 | logistics, map (23 stops; candidates 26 camp / 9 nature / 11 food), 35 campsites, packing 6 / 35 |
 | seattle (en only) | 2026-07-02 → 07-19 | America/Los_Angeles | 18 (8 hikes) | packing 4 / 19; no map |
 | nz (en + ja) | 2027-02-11 → 02-16 (flight out 02-17 00:10) | Pacific/Auckland | 6 | logistics, map (39 stops), packing 6 / 29 |
 
@@ -201,9 +201,13 @@ island's centroid).
   other campsite fee (the directory prices only two).
 - **Two claims were wrong and are corrected:** King Tacos is not the 1984 original (taco rice began at Parlour Senri in
   Kin), and Daisekirinzan was renamed **ASMUI** in Dec 2024 and charges ¥2,500.
-- **The campsites** are the 26 drivable main-island sites of the **Evertrail directory**
-  (https://directory.evertrailokinawa.com/, a React SPA over Airtable; its `Hot spot` / `Dining` records sourced
-  itinerary stops). Nine ferry-only outer-island sites are deliberately excluded.
+- **The campsites** are the **Evertrail directory**'s (https://directory.evertrailokinawa.com/, a React SPA over
+  Airtable; its `Hot spot` / `Dining` records sourced itinerary stops): the 26 drivable main-island sites, ordered by
+  road time, then its 9 ferry-only outer-island sites (Tokashiki, Zamami, Izena ×4, Iheya ×3; added 2026-11-08 for the
+  record). A ferry-only site has no drive time, no map pin (the map's box and its offline tiles stay the main island)
+  and no photo (Evertrail's own, not copied: its row shows a tent); its fields are the directory's only. Their kana
+  names where the kanji is unconfirmed (アケチハラ, マテラ, スガハマ). Azama (night 2) is no longer listed in the
+  directory (checked 2026-11-08); its entry stays.
 
 ### Seattle 2026 (Jul 2–19, en only)
 

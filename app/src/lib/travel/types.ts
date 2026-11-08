@@ -108,7 +108,7 @@ export interface Card {
 interface Chip { text: L; pick?: true }
 
 export interface Camp {
-  /** The Evertrail directory name's slug: its photo's file name, its map pin (Place.id). */
+  /** The Evertrail directory name's slug: its photo's file name, its map pin (Place.id; a drivable site's only). */
   id: string;
   name: L;
   sub: L;
@@ -116,13 +116,14 @@ export interface Camp {
   beach: boolean;
   toilet: boolean;
   shower: boolean;
-  photo: Photo;
+  /** None for the outer-island sites (their photos are Evertrail's: not copied). */
+  photo?: Photo;
   desc: L;
   /** In the source's order; `pick` the highlighted ones (1泊目 / 2泊目 / 候補). */
   chips: Chip[];
-  /** Free-flow road time and distance from the Evertrail office (the source's order). */
-  fromMin: number;
-  fromKm: number;
+  /** Free-flow road time and distance from the Evertrail office (the source's order); none for a ferry-only site. */
+  fromMin?: number;
+  fromKm?: number;
   fee: L;
   maps: string;
 }

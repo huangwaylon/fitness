@@ -1,8 +1,8 @@
 <script lang="ts">
-  // キャンプ場 (docs/design.md §Trips; a trip with campsites: Okinawa's 26): the intro, one ChipRow filter (すべて 26 ·
+  // キャンプ場 (docs/design.md §Trips; a trip with campsites: Okinawa's 35): the intro, one ChipRow filter (すべて 35 ·
   // 無料 · 有料 · ビーチ · トイレ · シャワー: one criterion at a time), the sites in one dense card (a row each: the photo
-  // thumb, the name, kind · town and the drive from the office, our nights' sticker, its amenities' icons), a row
-  // opening its card (CampSheet), then the source's foot.
+  // thumb (a tent for a site with none), the name, kind · town and the drive from the office (or ferry only), our
+  // nights' sticker, its amenities' icons), a row opening its card (CampSheet), then the source's foot.
   //   <CampList {trip} {note} />
   import { photoFallback } from '../ui/photoFallback.ts';
   import type { Camp, Trip } from '#lib/travel/types.ts';
@@ -43,10 +43,10 @@
       {@const nights = c.chips.filter((x) => x.pick)}
       <li>
         <button type="button" class="row camp" data-camp={c.id} data-sfx="open" onclick={() => show(c)}>
-          <img class="th" src={asset(c.photo.src as Parameters<typeof asset>[0])} alt="" width="48" height="48" loading="lazy" decoding="async" {@attach photoFallback} />
+          {#if c.photo}<img class="th" src={asset(c.photo.src as Parameters<typeof asset>[0])} alt="" width="48" height="48" loading="lazy" decoding="async" {@attach photoFallback} />{:else}<span class="th none-ph"><Icon name="tent" size={20} /></span>{/if}
           <span class="tx">
             <span class="nm guide"><Txt l={c.name} {note} />{#each nights as n, i (i)}<span class="sticker"><Txt l={n.text} {note} /></span>{/each}</span>
-            <span class="sb guide"><Txt l={c.sub} {note} /> · {t('travel.camps.drive', { min: c.fromMin })}</span>
+            <span class="sb guide"><Txt l={c.sub} {note} /> · {c.fromMin === undefined ? t('travel.camps.ferry') : t('travel.camps.drive', { min: c.fromMin })}</span>
           </span>
           <span class="am">{#each amenities(c) as a (a)}<span title={t(`travel.camps.${a}`)}><Icon name={ICON[a]} size={16} /></span>{/each}</span>
         </button>
@@ -71,6 +71,8 @@
   .list li + li::before { content: ''; position: absolute; top: 0; left: 12px; right: 12px; border-top: 1.5px dashed var(--stitch); z-index: 1; pointer-events: none; }
   .camp { width: 100%; }
   .th { width: 48px; height: 48px; flex: none; border-radius: var(--r-chip); object-fit: cover; background: var(--ctl-off); }
+  /* an outer-island site: no photo of ours */
+  .none-ph { display: grid; place-items: center; color: var(--text-soft); }
   .tx { flex: 1; min-width: 0; display: grid; gap: 2px; text-align: start; }
   .nm { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; font: 700 var(--fs-body)/1.3 var(--font-ui); }
   .sb { font-size: var(--fs-s); color: var(--text-soft); }

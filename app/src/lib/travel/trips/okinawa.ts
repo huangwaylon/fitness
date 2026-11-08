@@ -1086,11 +1086,221 @@ export const okinawa: Trip = {
       fromKm: 95.4,
       fee: { ja: "現地で確認", en: "Ask on site" },
       maps: "https://maps.app.goo.gl/NFrjgX2ypCiQRxbq8"
+    },
+    {
+      id: "tokashiki-island-youth-travel-village",
+      name: { ja: "渡嘉敷村青少年旅行村", en: "Tokashiki Island - Youth Travel Village" },
+      sub: { ja: "有料キャンプ場 · 渡嘉敷村", en: "Paid camp · Tokashiki" },
+      type: "paid",
+      beach: true,
+      toilet: true,
+      shower: true,
+      desc: {
+        ja: "阿波連ビーチの隣。炊事場、シャワー、トイレ。ビーチを見渡す展望台。",
+        en: "Next to Aharen Beach. Cooking facilities, showers, toilets; a lookout over the beach."
+      },
+      chips: [
+        { text: { ja: "離島", en: "Outer island" } },
+        { text: { ja: "ビーチ", en: "Beach" } },
+        { text: { ja: "オーシャンビュー", en: "Ocean view" } },
+        { text: { ja: "夕日", en: "Sunset" } },
+        { text: { ja: "星空", en: "Stargazing" } },
+        { text: { ja: "トイレ", en: "Toilet" } },
+        { text: { ja: "シャワー", en: "Shower" } }
+      ],
+      fee: { ja: "現地で確認", en: "Ask on site" },
+      maps: "https://maps.app.goo.gl/rttdQoqNBK42j2tr6"
+    },
+    {
+      id: "zamami-island-ama-beach",
+      name: { ja: "座間味島 阿真ビーチ", en: "Zamami Island - Ama Beach" },
+      sub: { ja: "有料キャンプ場 · 座間味村", en: "Paid camp · Zamami" },
+      type: "paid",
+      beach: true,
+      toilet: true,
+      shower: true,
+      desc: {
+        ja: "座間味港から歩いてすぐ。澄んだ海、ウミガメによく会え、シュノーケルに。日陰あり、キャンプ用品のレンタルあり。",
+        en: "A short walk from Zamami Port. Clear water, frequent sea turtles, snorkelling. Shade; camping gear for rent."
+      },
+      chips: [
+        { text: { ja: "離島", en: "Outer island" } },
+        { text: { ja: "ビーチ", en: "Beach" } },
+        { text: { ja: "オーシャンビュー", en: "Ocean view" } },
+        { text: { ja: "夕日", en: "Sunset" } },
+        { text: { ja: "星空", en: "Stargazing" } },
+        { text: { ja: "トイレ", en: "Toilet" } },
+        { text: { ja: "シャワー", en: "Shower" } }
+      ],
+      fee: { ja: "現地で確認", en: "Ask on site" },
+      maps: "https://maps.app.goo.gl/CtibYnS1ZoUaU9e48"
+    },
+    {
+      id: "izena-island-akechihara-park-camping-ground",
+      name: { ja: "伊是名島 アケチハラ公園キャンプ場", en: "Izena Island - Akechihara Park Camping Ground" },
+      sub: { ja: "有料キャンプ場 · 伊是名村", en: "Paid camp · Izena" },
+      type: "paid",
+      beach: true,
+      toilet: true,
+      shower: true,
+      desc: {
+        ja: "木陰の多い林間サイト。トイレ、シャワー、ビーチ。夕日がきれい。",
+        en: "Wooded and shady. Toilets, showers, a beach. Fine sunsets."
+      },
+      chips: [
+        { text: { ja: "離島", en: "Outer island" } },
+        { text: { ja: "ビーチ", en: "Beach" } },
+        { text: { ja: "オーシャンビュー", en: "Ocean view" } },
+        { text: { ja: "夕日", en: "Sunset" } },
+        { text: { ja: "星空", en: "Stargazing" } },
+        { text: { ja: "トイレ", en: "Toilet" } },
+        { text: { ja: "シャワー", en: "Shower" } }
+      ],
+      fee: { ja: "現地で確認", en: "Ask on site" },
+      maps: "https://maps.app.goo.gl/JAqtW9dmccTbmrTB6"
+    },
+    {
+      id: "izena-island-izena-beach",
+      name: { ja: "伊是名島 伊是名ビーチ", en: "Izena Island - Izena Beach" },
+      sub: { ja: "野営地 · 伊是名村", en: "Wild camp · Izena" },
+      type: "wild",
+      beach: true,
+      toilet: true,
+      shower: true,
+      desc: {
+        ja: "白い砂浜と澄んだ海、泳ぎやシュノーケルに。仲田港から自転車ですぐ。シャワー、トイレ。近くに居酒屋が2軒。",
+        en: "White sand, clear water for swimming and snorkelling. A short bike ride from Nakada Port. Showers, toilets; two izakaya nearby."
+      },
+      chips: [
+        { text: { ja: "離島", en: "Outer island" } },
+        { text: { ja: "ビーチ", en: "Beach" } },
+        { text: { ja: "オーシャンビュー", en: "Ocean view" } },
+        { text: { ja: "夕日", en: "Sunset" } },
+        { text: { ja: "星空", en: "Stargazing" } },
+        { text: { ja: "トイレ", en: "Toilet" } },
+        { text: { ja: "シャワー", en: "Shower" } }
+      ],
+      fee: { ja: "記載なし", en: "None posted" },
+      maps: "https://maps.app.goo.gl/zgZHxMVgU6Ldeu5q6"
+    },
+    {
+      id: "izena-island-matela-camp-spot",
+      name: { ja: "伊是名島 マテラの野営地", en: "Izena Island - Matela Camp Spot" },
+      sub: { ja: "野営地 · 伊是名村", en: "Wild camp · Izena" },
+      type: "wild",
+      beach: true,
+      toilet: false,
+      shower: false,
+      desc: {
+        ja: "島の南側。大きな岩に日が沈み、反対側の岩から朝日が昇る。魚の多いビーチ。",
+        en: "South side of the island. The sun sets behind one big rock and rises behind another. A beach full of fish."
+      },
+      chips: [
+        { text: { ja: "離島", en: "Outer island" } },
+        { text: { ja: "ビーチ", en: "Beach" } },
+        { text: { ja: "オーシャンビュー", en: "Ocean view" } },
+        { text: { ja: "朝日", en: "Sunrise" } },
+        { text: { ja: "星空", en: "Stargazing" } }
+      ],
+      fee: { ja: "記載なし", en: "None posted" },
+      maps: "https://maps.app.goo.gl/RD77DCDw7DP2zTZP8"
+    },
+    {
+      id: "izena-island-uchihana-camp-spot",
+      name: { ja: "伊是名島 内花の野営地", en: "Izena Island - Uchihana Camp Spot" },
+      sub: { ja: "野営地 · 伊是名村", en: "Wild camp · Izena" },
+      type: "wild",
+      beach: false,
+      toilet: true,
+      shower: true,
+      desc: {
+        ja: "ディレクトリでは無料。シャワー、トイレ、ベンチ、BBQ炉。星空。",
+        en: "Free, per the directory. Showers, toilets, seating, a BBQ pit. Stargazing."
+      },
+      chips: [
+        { text: { ja: "離島", en: "Outer island" } },
+        { text: { ja: "オーシャンビュー", en: "Ocean view" } },
+        { text: { ja: "夕日", en: "Sunset" } },
+        { text: { ja: "星空", en: "Stargazing" } },
+        { text: { ja: "トイレ", en: "Toilet" } },
+        { text: { ja: "シャワー", en: "Shower" } }
+      ],
+      fee: { ja: "記載なし", en: "None posted" },
+      maps: "https://maps.app.goo.gl/A9GucdiPGTx5ibUWA"
+    },
+    {
+      id: "iheya-island-sugahama-beach",
+      name: { ja: "伊平屋島 スガハマビーチ", en: "Iheya Island - Sugahama Beach" },
+      sub: { ja: "野営地 · 伊平屋村", en: "Wild camp · Iheya" },
+      type: "wild",
+      beach: true,
+      toilet: false,
+      shower: false,
+      desc: {
+        ja: "浜辺のサイト、夕日と星空。浜に車で入らない。吹きさらし — 北風の強い日は避ける。",
+        en: "Beachside; big sunsets and stars. Don’t drive on the beach. Very exposed: avoid in a strong north wind."
+      },
+      chips: [
+        { text: { ja: "離島", en: "Outer island" } },
+        { text: { ja: "ビーチ", en: "Beach" } },
+        { text: { ja: "オーシャンビュー", en: "Ocean view" } },
+        { text: { ja: "夕日", en: "Sunset" } },
+        { text: { ja: "星空", en: "Stargazing" } }
+      ],
+      fee: { ja: "記載なし", en: "None posted" },
+      maps: "https://maps.app.goo.gl/HmmX4g51P9sM1rSn6"
+    },
+    {
+      id: "iheya-island-south-island-spot",
+      name: { ja: "伊平屋島 南の野営地", en: "Iheya Island South Island Spot" },
+      sub: { ja: "野営地 · 伊平屋村", en: "Wild camp · Iheya" },
+      type: "wild",
+      beach: true,
+      toilet: false,
+      shower: false,
+      desc: {
+        ja: "南海岸、海のすぐそば。砂にはまらないよう、またウミガメの産卵を守るため、浜の手前に駐車。",
+        en: "South coast, right by the sea. Park at the beach’s edge: soft sand, and sea turtles nest here."
+      },
+      chips: [
+        { text: { ja: "離島", en: "Outer island" } },
+        { text: { ja: "ビーチ", en: "Beach" } },
+        { text: { ja: "オーシャンビュー", en: "Ocean view" } },
+        { text: { ja: "夕日", en: "Sunset" } },
+        { text: { ja: "星空", en: "Stargazing" } }
+      ],
+      fee: { ja: "記載なし", en: "None posted" },
+      maps: "https://maps.app.goo.gl/2B2wxqpCLxw6YZBk8"
+    },
+    {
+      id: "iheya-island-yonezaki",
+      name: { ja: "伊平屋島 米崎", en: "Iheya Island Yonezaki" },
+      sub: { ja: "有料キャンプ場 · 伊平屋村", en: "Paid camp · Iheya" },
+      type: "paid",
+      beach: true,
+      toilet: true,
+      shower: true,
+      desc: {
+        ja: "両側を海に囲まれ、目の前に海が広がる。",
+        en: "Sea on both sides, the ocean right in front."
+      },
+      chips: [
+        { text: { ja: "離島", en: "Outer island" } },
+        { text: { ja: "ビーチ", en: "Beach" } },
+        { text: { ja: "オーシャンビュー", en: "Ocean view" } },
+        { text: { ja: "夕日", en: "Sunset" } },
+        { text: { ja: "朝日", en: "Sunrise" } },
+        { text: { ja: "星空", en: "Stargazing" } },
+        { text: { ja: "トイレ", en: "Toilet" } },
+        { text: { ja: "シャワー", en: "Shower" } }
+      ],
+      fee: { ja: "現地で確認", en: "Ask on site" },
+      maps: "https://maps.app.goo.gl/PHo9xSh5YiSeBjNY6"
     }
   ],
   campsIntro: {
-    ja: "Evertrail のディレクトリに載る、車で行けるキャンプ場のすべて — 全26か所を、車を受け取る沖縄市の Evertrail営業所からの所要時間順に並べています。料金が明記されているのは2か所だけなので、 「記載なし」は無料ではなく不明と考えてください。有料キャンプ場は必ず予約を — 10月10–12日はスポーツの日の三連休です。「やんばる」のチップが付く場所はやんばる国立公園内 — 現地掲示の火気ルールを確認してください。",
-    en: "All 26 drivable sites in the Evertrail directory, ordered by road time from the Evertrail office in Okinawa City — where we collect the car. The directory prices only two of them, so “none posted” means unknown, not free. Book the paid ones: Oct 10–12 is the Sports Day weekend. A site chipped ‘Yanbaru’ is inside the national park — check the fire rules posted there."
+    ja: "全35か所。車で行ける26か所を、車を受け取る沖縄市の Evertrail営業所からの所要時間順に、続いて Evertrail のディレクトリに載る離島の9か所（フェリーのみ。記録用で、地図には出しません）を並べています。料金が明記されているのは2か所だけなので、 「記載なし」は無料ではなく不明と考えてください。有料キャンプ場は必ず予約を — 10月10–12日はスポーツの日の三連休です。「やんばる」のチップが付く場所はやんばる国立公園内 — 現地掲示の火気ルールを確認してください。",
+    en: "All 35 sites: the 26 we can drive to, ordered by road time from the Evertrail office in Okinawa City — where we collect the car — then the Evertrail directory’s 9 outer-island sites (ferry only; for the record, not on the map). The directory prices only two of them, so “none posted” means unknown, not free. Book the paid ones: Oct 10–12 is the Sports Day weekend. A site chipped ‘Yanbaru’ is inside the national park — check the fire rules posted there."
   },
   campsFoot: {
     ja: "所要時間はEvertrail営業所からのOSRMによる渋滞なしの値 — 連休の渋滞時は20–40分を 加えてください。データ出典 directory.evertrailokinawa.com",
