@@ -2,7 +2,7 @@
 // seeded by the week (2026-11-12 is one), Celeste comes to watch from 20:00 to 04:00 and shooting stars cross every
 // 3–8 s; each wish that night is a star fragment the next morning (the season's zodiac one likelier). No ベル.
 import { expect, test } from './fixtures.ts';
-import { camTo, controlsUnder, is3d, islandUp, stageCam, tapFigure } from './island.ts';
+import { camTo, controlsUnder, is3d, islandUp, stageCam, tapFigure, watchComings } from './island.ts';
 import { hudBells } from './hud.ts';
 
 test("a meteor shower's night: Celeste at centre stage, clear of every control, explains wishes", async ({ page }) => {
@@ -31,18 +31,12 @@ test('shooting stars every 3–8 s on a shower night (a clear night: 15–40 s)'
   // (the 3D island's whole-island view leaves the night sky a sliver under the HUD: there a streak crosses on down over
   // the island's far end)
   await is3d(page);
-  await page.evaluate(() => {
-    const w = window as { __stars?: number };
-    w.__stars = 0;
-    new MutationObserver((ms) => {
-      for (const m of ms) for (const n of m.addedNodes) if (n instanceof HTMLElement && n.dataset.fx === 'shoot') w.__stars!++;
-    }).observe(document.body, { childList: true, subtree: true });
-  });
+  // (every streak counted, two crossing at once too)
+  const came = await watchComings(page, { star: { sel: '[data-fx="shoot"]', each: true } });
   // at least two in 24 s (a clear night would bring one at most; a streak with no clear path is skipped now and then):
   // the page's clock run on a second at a time
-  const stars = () => page.evaluate(() => (window as { __stars?: number }).__stars ?? 0);
-  for (let s = 0; s < 24 && (await stars()) < 2; s++) await page.clock.runFor(1000);
-  expect(await stars()).toBeGreaterThanOrEqual(2);
+  for (let s = 0; s < 24 && (await came('star')) < 2; s++) await page.clock.runFor(1000);
+  expect(await came('star')).toBeGreaterThanOrEqual(2);
 });
 
 test('not a shower night: no Celeste; each wish is a fragment the next morning, a shower night’s like any other', async ({ page }) => {
