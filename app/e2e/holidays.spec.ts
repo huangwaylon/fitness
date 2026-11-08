@@ -21,30 +21,19 @@ async function readAll(page: Page) {
   }
 }
 
-test('each host on its day, at centre stage clear of every control, introducing themselves', async ({ page }) => {
-  for (const [date, id, name] of [
-    ['2026-11-26T10:00', 'franklin', 'フランクリン'], ['2026-12-24T12:00', 'jingle', 'ジングル'],
-    ['2027-03-21T09:00', 'zipper', 'ぴょんたろう']
-  ] as const) {
-    await page.goto(`?demo&date=${date}`);
-    await islandUp(page);
-    const sel = `[data-visitor="${id}"] .art`;
-    await camTo(page, await stageCam(page), false);
-    await expect(page.locator(sel)).toBeVisible();
-    expect(await controlsUnder(page, sel), id).toEqual([]);
-    await tapFigure(page, sel);
-    await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText(name, { timeout: 4000 });
-  }
-});
-
-test('Turkey Day: Franklin asks for a fish; the next catch makes him happy, and he stays happy after a reload', async ({ page }) => {
+// (each host on its day: events.test's 'holiday hosts in the visitor slot'; Franklin and Jingle at centre stage clear of
+// every control, introducing themselves, on their own days below)
+test('Turkey Day: Franklin at centre stage clear of every control asks for a fish; the next catch makes him happy, and he stays happy after a reload', async ({ page }) => {
   test.setTimeout(45_000);
   await page.goto('?demo&date=2026-11-26T10:00&critter=sea-bass');
   await islandUp(page);
   const bells = await hudBells(page).getAttribute('aria-label');
-  // he stands at centre stage; the sea is at まえ
+  // he stands at centre stage, nothing of the HUD over him; the sea is at まえ
   await camTo(page, await stageCam(page), false);
+  await expect(page.locator('[data-visitor="franklin"] .art')).toBeVisible();
+  expect(await controlsUnder(page, '[data-visitor="franklin"] .art')).toEqual([]);
   await tapFigure(page, '[data-visitor="franklin"] .art');
+  await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('フランクリン', { timeout: 4000 });
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('サンクスギビング', { timeout: 4000 });
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('さかなが 1ぴき');
   await readAll(page);
@@ -69,13 +58,19 @@ test('Turkey Day: Franklin asks for a fish; the next catch makes him happy, and 
   await expect(page.locator('[data-fx="talk"] .sr')).not.toContainText('さかなが 1ぴき');
 });
 
-test('Toy Day: two presents beside the goal trees (まえ)', async ({ page }) => {
+test('Toy Day: two presents beside the goal trees (まえ); Jingle at centre stage clear of every control, introducing himself', async ({ page }) => {
   await page.goto('?demo&date=2026-12-24T12:00');
   await islandUp(page);
   await camTo(page, 114);
   await expect(page.locator('[data-toy]')).toHaveCount(2);
   await expect(page.locator('[data-toy] .art').first()).toBeVisible();
   expect(await controlsUnder(page, '[data-toy] .art')).toEqual([]);
+  const sel = '[data-visitor="jingle"] .art';
+  await camTo(page, await stageCam(page), false);
+  await expect(page.locator(sel)).toBeVisible();
+  expect(await controlsUnder(page, sel)).toEqual([]);
+  await tapFigure(page, sel);
+  await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('ジングル', { timeout: 4000 });
 });
 
 test('Bunny Day week: no Zipper mid-week, and a dig spot can hold an earth egg (no ずかん find)', async ({ page }) => {
