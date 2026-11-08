@@ -48,6 +48,7 @@
   import { buildGround, type Ground as LayoutGround, type Look } from './terrain.ts';
   import { fieldsFrom, fieldsSoon } from '#lib/layout/fieldsPrime.ts';
   import { bootReport, watchBoot, type BootClock } from './boot.ts';
+  import { ktx2Stats } from './ktx2.ts';
   import { placeObjects, type Inst, type Standin } from './objects.ts';
   import { homeTod } from './home.ts';
   import { createBuilt } from './built.ts';
@@ -934,7 +935,8 @@
       e = createIsland(canvas, (renderer) => (lground = buildGround(layoutNow(), { renderer, look: lookNow(), stairs: false, px: groundPx(soft) })), {
         dpr: num('dpr') ?? (soft ? 0.5 : Math.min(2, window.devicePixelRatio || 1)),
         shadows: soft ? q.get('shadows') === '1' : q.get('shadows') !== '0',
-        aa: q.get('aa') !== null ? q.get('aa') !== '0' : !soft
+        aa: q.get('aa') !== null ? q.get('aa') !== '0' : !soft,
+        ktx2: q.get('ktx2') !== '0'
       });
     } catch (err) {
       console.warn('world3d', err);
@@ -1088,6 +1090,8 @@
       precipCalls: () => p3?.calls() ?? 0,
       /** The launch timed (boot.ts), once its watch is over; null before (or not the page's first mount). */
       boot: () => bootReport(),
+      /** The models' textures: from the KTX2 cache, transcoded, from their WebP; the GPU format (ktx2.ts). */
+      ktx2: () => ({ ...ktx2Stats }),
       /** The GPU programs (three's): each one's shader, cache key and how many materials use it (the perf plan's
        *  program count, docs/perf-plan.md). */
       programs: () => ((e.renderer().info.programs ?? []) as unknown as { name: string; cacheKey: string; usedTimes: number }[]).map((p) => ({ name: p.name, key: p.cacheKey, used: p.usedTimes }))

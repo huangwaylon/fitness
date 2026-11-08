@@ -5,6 +5,7 @@ import { execSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { carried, contentHash, precachable } from './src/service-worker/caches.ts';
+import { basisModuleCode } from './src/lib/components/world3d/basisModule.ts';
 
 /** The app version (the log's `build`, names the SW cache, and in _app/version.json for Kit's update check): the build date (UTC) + the commit, e.g. `2026-10-29.ef93d8b`. Deterministic per commit and day. */
 function appVersion(): string {
@@ -211,6 +212,14 @@ const sttNames: Plugin = {
   }
 };
 
+/** three's Basis transcoder as an ES module without eval, for the island's KTX2 worker (components/world3d/ktx2.worker.ts;
+ *  world3d/basisModule.ts). Its wasm isn't bundled: static/room/basis/ (scripts/world3d-ktx2.ts), fetched on first use,
+ *  never precached. */
+const basisModule: Plugin = {
+  name: 'basis-module',
+  transform: (code, id) => (id.endsWith('/three/examples/jsm/libs/basis/basis_transcoder.js') ? { code: basisModuleCode(code), map: null } : null)
+};
+
 // A static SPA (GitHub Pages). The backend is the relay: the record at its /api (lib/sync/transport.ts), the room at /room.
 // Output goes to build-pages/.
 export default defineConfig({
@@ -221,6 +230,7 @@ export default defineConfig({
     swPrecacheOnly,
     globsUncached,
     mapLibreNames,
+    basisModule,
     kikiPartNames,
     sveltekit({
       adapter: adapterStatic({ pages: 'build-pages', assets: 'build-pages', fallback: 'index.html', strict: false }),
@@ -257,7 +267,7 @@ export default defineConfig({
   // (lib/mic/backends/whisper.worker.ts: `/stt/ort/<ver>/`), not the bundle's, which names its 27 MB wasm for Vite to
   // emit (over Pages' 25 MiB a file, and into the precache).
   resolve: { alias: [{ find: /^onnxruntime-web\/webgpu$/, replacement: `${import.meta.dirname}/node_modules/onnxruntime-web/dist/ort.webgpu.min.mjs` }] },
-  worker: { format: 'es', plugins: () => [sttNames] },
+  worker: { format: 'es', plugins: () => [sttNames, basisModule] },
   build: {
     // The two phones it's for: an iPhone 15 and an iPhone 16 (shipped with iOS 17 and 18), on Safari.
     target: ['safari17', 'ios17'],

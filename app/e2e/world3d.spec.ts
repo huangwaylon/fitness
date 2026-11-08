@@ -15,6 +15,7 @@ type W3 = {
   limits(): { min: number; max: number };
   client(x: number, z: number, lift?: number): [number, number];
   go(z: number, k?: number, x?: number): void;
+  ktx2(): { kept: number; made: number; webp: number; target: string | null };
 };
 const w3 = <R,>(page: Page, fn: (w: W3) => R) => page.evaluate(`(${fn.toString()})(window.__world3d)`) as Promise<R>;
 const ready = (page: Page) => page.waitForFunction(() => (window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded(), null, { timeout: 30_000 });
@@ -35,6 +36,10 @@ test('the island draws in 3D and a tap on the lawn walks my villager', { tag: '@
   const s = await w3(page, (w) => w.stats());
   expect(s.calls).toBeGreaterThan(10);
   expect(s.dpr).toBeLessThanOrEqual(2);
+  // the models' textures from their KTX2, transcoded in the worker under the CSP (world3d/ktx2.ts), none from a WebP
+  const k = await w3(page, (w) => w.ktx2());
+  expect(k.made + k.kept).toBeGreaterThan(20);
+  expect(k.webp).toBe(0);
 
   // a tap on open lawn between the villagers' homes and the stream (near world 200, 300) walks mine there
   const { at: [lx, lz], x, y } = await lawnTap(page, 200, 300);
