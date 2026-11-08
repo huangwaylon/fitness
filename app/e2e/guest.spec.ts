@@ -56,13 +56,12 @@ test('the guest’s phone: the members’ activity and ベル, never a からだ
   for (const text of ['体重', '体脂肪率', 'kg', '%']) await expect(panel, text).not.toContainText(text);
   await page.keyboard.press('Escape');
   await expect(panel).toHaveCount(0);
-  // せってい (the HUD menu's): the villager, the sound, the language, the weather, つうしん and もようがえ as a member's
+  // せってい (the HUD menu's): the villager, the sound, the language, the weather and もようがえ as a member's
   // (no つうち: gone for everyone)
   await fromMenu(page, 'settings');
   await expect(panel.locator('[data-guest-note]')).toBeVisible();
   await expect(panel.locator('[data-push="look"]')).toBeVisible();
   await expect(panel.locator('[data-decor-start]')).toBeVisible();
-  await expect(panel.locator('#sec-sync')).toBeVisible();
   await expect(panel.locator('#sec-notify')).toHaveCount(0);
   await expect(panel.locator('#sec-lang')).toBeVisible();
   await expect(panel.locator('[data-wx-mode="game"]')).not.toHaveAttribute('aria-disabled', 'true');

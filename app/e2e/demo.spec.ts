@@ -47,7 +47,7 @@ async function toPanel(page: Page) {
   await closeSheets(page);
   await openPanel(page);
 }
-/** The せってい sheet, from the HUD menu (むらびと, サウンド, ことば, つうしん), from wherever we are. */
+/** The せってい sheet, from the HUD menu (すがた, サウンド, ことば…), from wherever we are. */
 async function openSettings(page: Page) {
   await closeSheets(page);
   await fromMenu(page, 'settings');

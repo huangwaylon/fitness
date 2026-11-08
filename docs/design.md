@@ -161,7 +161,7 @@ scrolled where it was); ✕, the backdrop and Esc close the panel.
 **せってい** (`panel/SettingsSheet.svelte`): the HUD menu's せってい pill → its own sheet, full height, grown out of the
 pill (Sheet's `pop`), title せってい: **すがた** (the look's portrait, the よびな and what's worn: いつもの, a コーデ's name
 or the villager's; かえる → [the すがた level](#sugata): the closet and the villagers in one dresser), **プロフィール** ([Profile](#profile)), **サウンド** ([Sound settings](#sound-settings)), **ことば** (日本語 /
-English), **季節** ([Seasonal preview](#seasonal-preview)), **天気** (実際の天気 / ゲーム: [Weather](#weather)), **同期** (when each of us last synced; 今すぐ同期), and **模様替え** (one row with its
+English), **季節** ([Seasonal preview](#seasonal-preview)), **天気** (実際の天気 / ゲーム: [Weather](#weather)), and **模様替え** (one row with its
 はじめる); the guest's the same (2026-11-06), with a line saying it's visiting. すがた pushes a level with ‹; ✕, the backdrop and Esc close it,
 and the next opening starts at its top. Its own chunk, loaded on the first tap.
 
