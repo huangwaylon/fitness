@@ -2,5 +2,5 @@
   "name": "none",
   "version": "0.0.0",
   "private": true,
-  "description": "Empty: stands in for @huggingface/transformers' Node-only dependencies (onnxruntime-node, sharp: ~310 MB unpacked in every CI job), which its browser build never imports. package.json overrides; docs/kikimimi-mic.md "Hosting and the service worker"."
+  "description": "Empty: stands in for @huggingface/transformers' Node-only dependencies (onnxruntime-node, sharp: ~310 MB unpacked in every CI job), which its browser build never imports. package.json overrides; docs/kikimimi-mic.md, Hosting and the service worker."
 }
