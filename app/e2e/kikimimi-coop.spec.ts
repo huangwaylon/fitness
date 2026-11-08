@@ -7,7 +7,7 @@
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { openStage } from './kikimimi-nav.ts';
+import { openStage, runToQuestion } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -36,7 +36,10 @@ const UNIT = {
   ph: [{ id: 'ph-co-room', en: 'the room is ready', register: 'service', scene: 'hotel desk', trap: 'ready = もう はいれる', in: ['r4-room-ready'] }]
 };
 
+/** A phone on the context's clock (installed once, before its first page: both tabs step together; the lesson's plays
+ *  stepped through: kikimimi-nav.ts runUntil). */
 async function phone(ctx: BrowserContext, as: 'A' | 'B', extra = ''): Promise<Page> {
+  if (!ctx.pages().length) await ctx.clock.install();
   const page = await ctx.newPage();
   await page.goto(`?demo&${Q}${as === 'A' ? '' : `&as=${as}`}${extra}`);
   await islandUp(page);
@@ -75,7 +78,6 @@ async function pickCheck(a: Page) {
 
 for (const wireB of ['', 'quiz'] as const) {
   test(`co-op lesson: A picks a unit’s チェック for both, B waits on its intro card; B scores 2 but the team’s first listens are 6: both stamped${wireB ? ' (the dual stack: B on ?wire=quiz)' : ''}`, async ({ browser }) => {
-    test.slow();
     const ctx = await browser.newContext();
     const [a, b] = await together(ctx, { wireB });
     await pickCheck(a);
@@ -95,8 +97,7 @@ for (const wireB of ['', 'quiz'] as const) {
     for (let i = 0; i < 6; i++) {
       for (const p of [a, b]) {
         await p.bringToFront();
-        await expect.poll(() => kiki(p, (k) => k.view().i), { timeout: 45_000 }).toBe(i);
-        await expect(sheet(p)).toHaveAttribute('data-phase', 'answer', { timeout: 45_000 });
+        await runToQuestion(p, i, 'answer');
         const right = await kiki(p, (k) => k.right());
         const k = p === b && i >= 2 ? (right + 1) % (await sheet(p).locator('[data-choice]').count()) : right;
         await sheet(p).locator(`[data-choice="${k}"]`).click();

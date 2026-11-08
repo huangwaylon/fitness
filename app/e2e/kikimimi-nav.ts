@@ -49,9 +49,12 @@ const STEP = 250;
 /** `l` visible, the clock stepped to it (a state's selector: `[data-kiki-call-done][aria-disabled="false"]`). */
 export const runToSee = (p: Page, l: Locator) => runUntil(p, () => l.first().isVisible(), String(l));
 
-/** The sheet's game at `phase`, the clock stepped to it. */
-export const runToPhase = (p: Page, phase: string) =>
-  runUntil(p, async () => (await kikiSheet(p).getAttribute('data-phase')) === phase, `data-phase ${phase}`);
+/** The sheet's game at `phase` (or one matching), the clock stepped to it. */
+export const runToPhase = (p: Page, phase: string | RegExp) =>
+  runUntil(p, async () => {
+    const at = (await kikiSheet(p).getAttribute('data-phase')) ?? '';
+    return typeof phase === 'string' ? at === phase : phase.test(at);
+  }, `data-phase ${String(phase)}`);
 
 /** Question i on (`__kiki.view()`; at `phase` if given: 'answer', its window), the clock stepped through its
  *  countdown, lead and clip. */
