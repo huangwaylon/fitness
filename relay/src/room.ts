@@ -93,7 +93,7 @@ export type Kept = Relayed & { c?: number; sk?: string };
  *  minutes) is never closed for its silence: it isn't told apart from a ghost. */
 export const SILENT_MS = 60_000;
 /** The watchdog's alarm at most this often (the room wakes for it: cheap, but not every second). */
-export const WATCH_MIN_MS = 30_000;
+const WATCH_MIN_MS = 30_000;
 /** A message's time is kept in the socket's attachment at most this often. */
 const HEARD_EVERY_MS = 10_000;
 

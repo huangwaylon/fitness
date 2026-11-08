@@ -42,7 +42,7 @@ const DAY = 86_400_000;
 export const LOG_CAPS = { client: 1_000, clientErrors: 200, relay: 4_000, relayErrors: 500, all: 8_000 } as const;
 const PRUNE_CHUNK = 5_000, PRUNE_CHUNKS = 4;
 /** A query's rows at most. */
-export const QUERY_MAX = 1_000;
+const QUERY_MAX = 1_000;
 const KEY_RE = /^[0-9a-fA-F]{32,128}$/;
 const WORD = /^[\w.-]{1,40}$/;
 

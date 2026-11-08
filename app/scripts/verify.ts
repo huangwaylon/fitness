@@ -8,12 +8,14 @@
 //   check       svelte-check (npm run check without its svelte-kit sync: that runs once first, before every step,
 //               as knip and vitest read .svelte-kit/ while check runs)
 //   knip        npm run knip
+//   knip-relay  relay/'s knip (its unused files and exports, as relay.yml runs it; skipped, with a note, before
+//               `npm ci` in relay/)
 //   vitest      npx vitest run (--quick: only the tests this branch's changes reach, `--changed` from where it left origin/main)
 //   quarantine  scripts/e2e-quarantine.ts: every quarantined test has an owner
 //   build       --build: npm run build (the kikimimi budget, the headers, load-budget's precache limit)
 // No e2e: that's `npm run e2e:ci-like`.
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
-import { copyFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -28,10 +30,13 @@ for (const f of ['package.json', 'package-lock.json']) copyFileSync(f, join(deps
 const since = quick ? spawnSync('git', ['merge-base', 'origin/main', 'HEAD'], { encoding: 'utf8' }).stdout.trim() || 'origin/main' : '';
 
 type Step = { name: string; cmd: string[]; cwd?: string };
+const relayKnip = existsSync('../relay/node_modules/.bin/knip');
+if (!relayKnip) console.log('skip  knip-relay (no relay/node_modules: npm ci in relay/)');
 const steps: Step[] = [
   { name: 'deps', cmd: ['npm', 'ci', '--dry-run', '--ignore-scripts', '--no-audit', '--no-fund'], cwd: deps },
   { name: 'check', cmd: ['npx', 'svelte-check', '--tsconfig', './tsconfig.json'] },
   { name: 'knip', cmd: ['npm', 'run', 'knip'] },
+  ...(relayKnip ? [{ name: 'knip-relay', cmd: ['npm', 'run', 'knip'], cwd: '../relay' }] : []),
   { name: 'vitest', cmd: ['npx', 'vitest', 'run', ...(quick ? ['--changed', since] : [])] },
   { name: 'quarantine', cmd: ['node', 'scripts/e2e-quarantine.ts'] },
   ...(build ? [{ name: 'build', cmd: ['npm', 'run', 'build'] }] : []),

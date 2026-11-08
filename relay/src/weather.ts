@@ -6,19 +6,19 @@
 import { WX_MAX_HOURS, tokyoDay, type Wx, type WxSky } from '../../app/src/lib/contract/live-protocol.ts';
 
 /** Hours the timeline holds from the current one, and before it. */
-export const WX_HOURS = 36;
-export const WX_PAST = 12;
+const WX_HOURS = 36;
+const WX_PAST = 12;
 const HOUR_MS = 3600_000;
 /** A good fetch is fresh this long; then the next cron (or hello) fetches again. */
-export const FRESH_MS = 30 * 60_000;
+const FRESH_MS = 30 * 60_000;
 /** From this minute of an hour the next hour is locked (its first fetch from then on sets it). */
-export const LOCK_MIN = 45;
+const LOCK_MIN = 45;
 /** After a failure, wait this long before the next try (the 1st, the 2nd, the 3rd and on). */
 export const BACKOFF_MS = [30 * 60_000, 60 * 60_000, 120 * 60_000] as const;
 /** A fetch gives up after this long. */
-export const FETCH_MS = 5000;
+const FETCH_MS = 5000;
 /** A timeline at most this old (its fetch) is still served. */
-export const STALE_MS = 36 * HOUR_MS;
+const STALE_MS = 36 * HOUR_MS;
 
 /** Where the weather is fetched for (wrangler.toml [vars] WX_LAT / WX_LON: central Tokyo, by the 東京 AMeDAS station). */
 export const TOKYO = { lat: 35.69, lon: 139.75 } as const;
@@ -138,7 +138,7 @@ export function mapHours(hours: readonly Hour[], before: WxSky | null): Sk[] {
 }
 
 /** The letter and fog of hour `h` in a timeline, or null when it doesn't cover it. */
-export function hourOf(wx: Wx | null, h: number): { sky: WxSky; fog: boolean } | null {
+function hourOf(wx: Wx | null, h: number): { sky: WxSky; fog: boolean } | null {
   if (!wx) return null;
   const i = h - wx.h0;
   if (i < 0 || i >= wx.s.length) return null;

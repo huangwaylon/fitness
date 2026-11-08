@@ -1,4 +1,4 @@
-# The live relay's checks (docs/ops/runbook.md §10): type-check and unit tests of relay/ and the shared protocol.
+# The live relay's checks (docs/ops/runbook.md §10): type-check, knip (unused files and exports) and unit tests of relay/ and the shared protocol.
 # Deploying stays manual (`npm run deploy` from relay/, needs the Cloudflare login).
 name: Relay checks
 
@@ -34,4 +34,5 @@ jobs:
           cache-dependency-path: relay/package-lock.json
       - run: npm ci --ignore-scripts
       - run: npm run check
+      - run: npm run knip
       - run: npm test

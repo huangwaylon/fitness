@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "check": "tsc --noEmit",
+    "knip": "knip",
     "test": "vitest run",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
@@ -16,6 +17,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261031.1",
     "@types/node": "^26.6.5",
+    "knip": "^6.44.0",
     "typescript": "^6.0.3",
     "vitest": "^5.0.5",
     "wrangler": "^4.156.0"
