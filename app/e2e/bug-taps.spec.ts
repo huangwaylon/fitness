@@ -9,7 +9,17 @@ import { is3d } from './island';
 test.use({ viewport: { width: 393, height: 852 } });
 
 type W3 = { client(x: number, z: number, lift?: number): [number, number]; where(id: string): { x: number; y: number; z: number; hidden: boolean } | null };
-type Fx3 = { live(name: string): unknown[] };
+type Fx3 = { live(name: string): { x: number; z: number }[] };
+/** The 「！」s live over the bug (within 30 u of it): a villager's own 「！」 mark is a 'bang' part too (effects.ts mark),
+ *  over its head wherever it stands (a partner surprised by the second roaming bug: two at the first look). */
+const bangsAtBug = (page: Page) => page.evaluate(() => {
+  const w = window as unknown as { __world3d: W3; __fx3: Fx3 };
+  for (let n = 0; n < 60; n++) {
+    const p = w.__world3d.where(`bug-${n}`);
+    if (p) return w.__fx3.live('bang').filter((b) => Math.hypot(b.x - p.x, b.z + p.z) < 30).length;
+  }
+  return 0;
+});
 
 async function open(page: Page, q: string) {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
@@ -51,20 +61,23 @@ test('a tarantula rears up in 3D under a 「！」 at the first tap; settled, a 
   await expect.poll(async () => (at = await drawn(page)), { timeout: 15_000 }).not.toBeNull();
   await page.waitForTimeout(800); // (under way)
   at = (await drawn(page))!;
-  // its rear (REAR_MS, 1.6 s) watched in the page from before the tap, a look every 16 ms: the most 「！」s at once and
-  // its highest point (a look a round trip from here came after it on a loaded runner, the front back down)
+  // its rear (REAR_MS, 1.6 s) watched in the page from before the tap, a look every 16 ms: the most 「！」s over it at
+  // once and its highest point (a look a round trip from here came after it on a loaded runner, the front back down)
   const y0 = await page.evaluate(() => {
-    const w = (window as unknown as { __world3d: W3; __fx3: Fx3; __rear?: { bangs: number; y: number; stop: () => void } }), y = () => {
+    const w = (window as unknown as { __world3d: W3; __fx3: Fx3; __rear?: { bangs: number; y: number; stop: () => void } });
+    const bug = () => {
       for (let n = 0; n < 60; n++) {
         const p = w.__world3d.where(`bug-${n}`);
-        if (p) return p.y;
+        if (p) return p;
       }
-      return NaN;
+      return null;
     };
+    // (bangsAtBug's count, here)
+    const bangs = () => ((p) => (p ? w.__fx3.live('bang').filter((b) => Math.hypot(b.x - p.x, b.z + p.z) < 30).length : 0))(bug());
     const r = { bangs: 0, y: -Infinity, stop: () => clearInterval(id) };
-    const id = setInterval(() => ((r.bangs = Math.max(r.bangs, w.__fx3.live('bang').length)), (r.y = Math.max(r.y, y()))), 16);
+    const id = setInterval(() => ((r.bangs = Math.max(r.bangs, bangs())), (r.y = Math.max(r.y, bug()?.y ?? -Infinity))), 16);
     w.__rear = r;
-    return y();
+    return bug()?.y ?? NaN;
   });
   const rear = () => page.evaluate(() => ((r) => ({ bangs: r.bangs, y: r.y }))((window as unknown as { __rear: { bangs: number; y: number } }).__rear));
   await page.mouse.click(at[0], at[1]);
@@ -77,7 +90,7 @@ test('a tarantula rears up in 3D under a 「！」 at the first tap; settled, a 
   // settled (the 「！」 gone): a tap nets it
   // (the expect's own time, 10 s on CI, not 4: the 「！」 goes in the island's next frame after REAR_MS, and drawn in
   // software GL that's ~1 a second, so it was still up at 4 s: gone at 4.8 s here, 1 left at 4 s on a loaded CI)
-  await expect.poll(() => page.evaluate(() => (window as unknown as { __fx3: Fx3 }).__fx3.live('bang').length)).toBe(0);
+  await expect.poll(() => bangsAtBug(page)).toBe(0);
   at = (await drawn(page))!;
   await page.mouse.click(at[0], at[1]);
   await expect.poll(() => cues(page)).toContain('scene-catch');
