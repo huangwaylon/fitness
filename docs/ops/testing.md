@@ -95,11 +95,11 @@ After a deploy, never holding one back:
 cd app
 npm run build                       # the e2e test the build, not the dev server
 npx playwright install webkit       # once per Playwright version
-E2E_PORT=4391 npm run e2e -- --project=webkit   # a free port (--project=chromium: the installed Chrome)
-E2E_PORT=4391 npm run e2e -- e2e/demo.spec.ts --project=webkit --repeat-each=10   # hunt a flake
-E2E_SWIFTSHADER=1 E2E_PORT=4391 npm run e2e -- e2e/world3d.spec.ts --project=chromium   # software GL, as CI's Linux draws
-E2E_RENDER=none E2E_PORT=4391 npm run e2e -- --project=chromium   # the logic tier: the 3D engines draw nothing
-E2E_PORT=4391 npm run e2e -- --project=chromium-mic   # the mic's specs (kikimimi-mic*.spec.ts): a fake mic fed our clip, muted
+npm run e2e -- --project=webkit   # this checkout's own port (from its path; E2E_PORT=… to pick one); --project=chromium: the installed Chrome
+npm run e2e -- e2e/demo.spec.ts --project=webkit --repeat-each=10   # hunt a flake
+E2E_SWIFTSHADER=1 npm run e2e -- e2e/world3d.spec.ts --project=chromium   # software GL, as CI's Linux draws
+E2E_RENDER=none npm run e2e -- --project=chromium   # the logic tier: the 3D engines draw nothing
+npm run e2e -- --project=chromium-mic   # the mic's specs (kikimimi-mic*.spec.ts): a fake mic fed our clip, muted
 npm run e2e:ci-like -- e2e/world3d.spec.ts --repeat 5   # as CI runs it (below)
 ```
 
