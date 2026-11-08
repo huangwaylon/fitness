@@ -64,7 +64,7 @@
     "sound.spec.ts": 11,
     "stale.spec.ts": 3,
     "stretch.spec.ts": 3,
-    "sw-update.spec.ts": 3,
+    "sw-update.spec.ts": 2,
     "sync-harness.spec.ts": 15,
     "tapwalk.spec.ts": 7,
     "tent-hold.spec.ts": 1,

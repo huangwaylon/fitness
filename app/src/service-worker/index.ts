@@ -37,10 +37,12 @@ self.addEventListener('install', (event) => {
     (async () => {
       const cache = await caches.open(CACHE);
       // a hashed chunk an older shell holds is the very same file: copied over, not downloaded again (each deploy
-      // fetched every chunk and font anew, ~3 MB; now only what changed)
+      // fetched every chunk and font anew, ~3 MB; now only what changed); one this version's own cache holds already
+      // (a worker reinstalled under the same version: the e2e's deploy) kept as it is (it fetched all ~650 again)
       const olds = await Promise.all(olderShells(await caches.keys(), CACHE).map((k) => caches.open(k)));
       const chunks: string[] = [];
       for (const p of CHUNKS) {
+        if (await cache.match(p)) continue;
         let hit: Response | undefined;
         for (const c of olds) if ((hit = await c.match(p))) break;
         if (hit) await cache.put(p, hit);
