@@ -1,4 +1,4 @@
-// The games' content versions (docs/kikimimi-framework.md §4.2): `play`'s `cv`, compiled per game into levels/index.json
+// The games' content versions (docs/kikimimi-engine.md "cv, the content version"): `play`'s `cv`, compiled per game into levels/index.json
 // (compile.ts gameCv) from what shapes a deck and its schedule, never its text. cv.golden.json keeps, per game and
 // content, the cv and a digest of its decks (seeds 0-19; a lesson's every lesson and tier): decks that change while the
 // cv doesn't fail with a reminder to bump the game's BUILD_V (games/versions.ts); a cv that changes with the same decks

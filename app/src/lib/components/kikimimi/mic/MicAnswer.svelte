@@ -1,5 +1,5 @@
 <script lang="ts">
-  // こたえて！ (docs/kikimimi-mic.md §2.3): in a reply round, with a recogniser ready on this phone, a 🎤 chip under the
+  // こたえて！ (docs/kikimimi-mic.md "こたえて！"): in a reply round, with a recogniser ready on this phone, a 🎤 chip under the
   // choices. Tap, say the reply, and match.ts `choose` maps it to a choice, answered as that tap (`onpick`: the same
   // path, so the session, co-op and the wire are unchanged). Unclear (−1): 「その言い方も通じるかも」 with what was heard,
   // the choices still open. A tap on a choice always works (a take under way is dropped). What was heard stays on this

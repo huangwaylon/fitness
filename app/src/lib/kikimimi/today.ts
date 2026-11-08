@@ -1,4 +1,4 @@
-// ききみみ's daily menu (docs/kikimimi-ux.md §6.1, §7.1): しずえ's three cards for the Tokyo day — 1 おさらい (the
+// ききみみ's daily menu (docs/kikimimi.md "The hub", "The daily menu"): しずえ's three cards for the Tokyo day — 1 おさらい (the
 // due cards, ≤ 8; the 30-day recheck takes its place when one's due; none due: 「おさらいは ぜんぶ おわり！」), 2 きょうの
 // いっぽ (the current unit's next lesson; before units, ひとこと クイズ at my place), 3 きまぐれ (one playable mode seeded
 // in turn by the day, never yesterday's; a mode with its hours only then, else the next in turn: ニュース in the morning;
@@ -69,7 +69,7 @@ const CAP = 8;
 
 /** A finished session: ≥ 4 answers. */
 export const finished = (answers: number): boolean => answers >= 4;
-/** A bedtime story heard long enough to count as a session (docs/kikimimi-ux.md §7.1): ≥ 3 min. */
+/** A bedtime story heard long enough to count as a session (docs/kikimimi.md "The daily menu"): ≥ 3 min. */
 export const finishedStory = (ms: number): boolean => ms >= 180_000;
 /** The night (Tokyo hours): きまぐれ becomes おやすみ ものがたり from 21:00 until 04:00. */
 export const isNight = (hour: number): boolean => hour >= 21 || hour < 4;

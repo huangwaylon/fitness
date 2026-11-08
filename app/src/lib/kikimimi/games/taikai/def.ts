@@ -1,4 +1,4 @@
-// しずえの しゅうまつ たいかい as a GameDef (docs/curriculum.md §7.1; docs/kikimimi-ux.md §5, §6.4, §7.1): the weekend
+// しずえの しゅうまつ たいかい as a GameDef (docs/curriculum.md "Modes"; docs/kikimimi.md "Navigation", "Mode detail", "The daily menu"): the weekend
 // quiz show over the week's misses (pick.ts: who offers what, the host's pick, the `open`'s `ids`), each round an item
 // of the quiz's banks with its choices shuffled by the seed, the last one the wager: each player bets 10-100 of the
 // round's own chips (CHIPS, worth nothing outside it: no かいがら, the user's decision) on being right, then answers.
@@ -35,7 +35,7 @@ export const tierLevel = (tier: number): number => levelAt(tier + 2);
  *  level is where it expects 80 %). */
 export const expected = (tier: number, b: number): number => 1 / (1 + Math.exp(-(tier + Math.log(4) - b)));
 /** A right answer's points at a tier: 100 × (1.5 − expected), 50 for a sure thing up to 150 for a stretch (a hard item
- *  for you earns more: curriculum §11's たいせん against expectation). Wrong: 0. A replay costs nothing. */
+ *  for you earns more: curriculum.md "The couple"'s たいせん against expectation). Wrong: 0. A replay costs nothing. */
 export const questionPoints = (tier: number, b: number): number => Math.round(100 * (1.5 - expected(tier, b)));
 
 // ---------- the wager ----------

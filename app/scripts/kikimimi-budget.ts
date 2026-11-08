@@ -1,4 +1,4 @@
-// ききみみ's chunk budget (docs/kikimimi.md "Loading"; docs/curriculum-wave2.md §4 W2-C2), after `vite build` (npm run
+// ききみみ's chunk budget (docs/kikimimi-engine.md "Loading", "The registry" W2-C2), after `vite build` (npm run
 // build runs it): the sheet's own chunk ≤ 80 KB gzipped (the code, the strings and the index: no items), the hub ≤ 25 KB,
 // every other page (あそぶ, a mode, きろく, せってい, しまの みち's, frame/Sandwich once it's built) ≤ 15 KB each; each
 // game's folder (src/lib/kikimimi/games/<id>/: a later game's lane.ts, its own chunk) and its views
@@ -15,7 +15,7 @@ const CLIENT = join(ROOT, '.svelte-kit/output/client');
 const SHEET_MAX = 80 * 1024;
 const PART_MAX = 60 * 1024;
 const LISTEN_MAX = 32 * 1024;
-/** The lazy pages (docs/kikimimi-ux.md §10): the hub ≤ 25 KB gzipped, each other ≤ 15 KB; a game's lane and views too. */
+/** The lazy pages (docs/kikimimi-engine.md "Files"): the hub ≤ 25 KB gzipped, each other ≤ 15 KB; a game's lane and views too. */
 const HUB_MAX = 25 * 1024;
 const PAGE_MAX = 15 * 1024;
 const GAME_MAX = 15 * 1024;

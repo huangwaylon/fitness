@@ -1,4 +1,4 @@
-// ききみみ's whisper (docs/kikimimi-mic.md §3.2, §3.6), the worker half: transformers.js's speech recognition on
+// ききみみ's whisper (docs/kikimimi-mic.md "The Recogniser", "Hosting and the service worker"), the worker half: transformers.js's speech recognition on
 // whisper tiny.en q8, on WebGPU or the WASM runtime (single-threaded: the page isn't cross-origin isolated). Every file
 // it reads comes from the STT cache the page filled (lib/mic/models.ts ensureStt): the model through transformers.js's
 // custom cache, the runtime's wasm handed over as bytes, its script from `/stt/ort/<ver>/` (the service worker answers

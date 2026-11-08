@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A round's choices (docs/kikimimi.md "The game"; framework §5 ChoiceGrid): dimmed until the first play ends, then one
+  // A round's choices (docs/kikimimi.md "The game"; kikimimi-engine.md "Shared UI" ChoiceGrid): dimmed until the first play ends, then one
   // final tap; mine marked as picked; at the reveal ○ on the right one and × on my wrong pick (`onlyMarked`: only those
   // two, a dialogue's, so the transcript under them is never under the sticky つぎへ). Text, or pictures (art keys) in a
   // 2×2 grid, each named for VoiceOver (`label`: the English never given away). At the reveal each text choice's
@@ -32,7 +32,7 @@
     picked: number | null;
     /** Only the marked ones (a dialogue's reveal). */
     onlyMarked?: boolean;
-    /** A reply round: the answer may be said (こたえて！, docs/kikimimi-mic.md §2.3). */
+    /** A reply round: the answer may be said (こたえて！, docs/kikimimi-mic.md "こたえて！"). */
     voice?: boolean;
     onpick: (k: number) => void;
   } = $props();

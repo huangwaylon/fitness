@@ -91,7 +91,7 @@
   });
   const trips = $derived(recorded ? tripsOf({ r: recorded.r.map(([id, ok]) => ({ id, ok: ok === 1 })) }) : []);
   const tripLabel = (key: string) => (key.startsWith('f:') ? t(`kiki.f.${key.slice(2)}`) : t(`kiki.skill.${key.slice(2)}`));
-  /** A unit's lesson (docs/curriculum-units.md §3, §4, §10): the strip with its unit's dots and the next core lesson; a
+  /** A unit's lesson (docs/curriculum.md "Lessons", "Playing together"): the strip with its unit's dots and the next core lesson; a
    *  チェック's stamp from my row (contract/listen.ts stampsUnit), the double stamp when the partner's summary has it too,
    *  and my own first-listen tally next to it (the team's too, in co-op). */
   const ls = $derived(game.lesson);
@@ -214,7 +214,7 @@
           {@const dlg = isDialogue(r.it) ? r.it : null}
           {@const kind = cardKind(r.it)}
           {#if kind}
-            <!-- a recipe-2 card (docs/curriculum-units.md §16): its sentence or situation; open, ▶︎ (a memo round's: its call's),
+            <!-- a recipe-2 card (docs/curriculum.md "Recipe 2"): its sentence or situation; open, ▶︎ (a memo round's: its call's),
                  the tile's line, the call's or the conversation's transcript, the note and 解説 -->
             {@const call = kind === 'call' ? (r.it as CallCard).call : null}
             {@const hearIt = call ? items[r.i - call.part] : r.it}

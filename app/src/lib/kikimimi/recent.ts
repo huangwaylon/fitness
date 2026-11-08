@@ -1,4 +1,4 @@
-// ききみみ クイズ: less repetition (docs/kikimimi.md "Variety"; the user, 2026-11-06: "there's too much repetition right
+// ききみみ クイズ: less repetition (docs/kikimimi-engine.md "Variety"; the user, 2026-11-06: "there's too much repetition right
 // now"). Each phone keeps the item ids of its last few games (DEVICE.kikimimiRecent, newest first). Pure.
 //   A shared game: the host's phone picks the game's seed by trying SEED_TRIES seeds and keeping the deck that overlaps
 // its recent games least (the more recent, the more it counts); the seed's low bits are the lobby's flags (seed.ts: bit 0 たいせん,

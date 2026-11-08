@@ -107,7 +107,7 @@ export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, k
   }
   return [...out];
 }
-/** ききみみ's audio packs (static/audio/listen/<pack>.<hash>.pak: lib/kikimimi/packing.ts, docs/kikimimi.md "Audio"),
+/** ききみみ's audio packs (static/audio/listen/<pack>.<hash>.pak: lib/kikimimi/packing.ts, docs/kikimimi-engine.md "Audio"),
  *  fetched whole as a game needs them and cached on first use in a cache of their own that outlives builds: cache first,
  *  never revalidated (the hash is in the name: a re-spoken clip makes a new pack name), bounded by bytes like the room
  *  (an index of each pack's bytes and last use kept in the cache), so a few levels' and units' packs stay offline. */
@@ -394,7 +394,7 @@ export async function installStatics(files: readonly StaticFile[], cache: Pick<C
  *  slices (rare kanji, the map's labels) are cached on first use (FONTS). */
 export const PRECACHED_FONT_SLICES = ['119', '117', '116', '115', '114', '113', '112', '111', '110', '109', '108', '118', '107', '106', '105', '104', '103', '102', '101', '100', '99', '98', '97', '96', '95', '94', '92', 'latin'];
 const PRECACHED_FONT = new RegExp(`/(zen-maru-gothic-(${PRECACHED_FONT_SLICES.join('|')})-[57]00-normal|fredoka-latin-[67]00-normal)\\.[\\w-]+\\.woff2$`);
-/** ききみみ's recogniser (docs/kikimimi-mic.md §3.6): the model and the ONNX runtime under `/stt/`, and the worker that
+/** ききみみ's recogniser (docs/kikimimi-mic.md "Hosting and the service worker"): the model and the ONNX runtime under `/stt/`, and the worker that
  *  runs them (`_app/immutable/workers/stt.<hash>.js` and its chunks, named so by vite.config.ts stt-names): never
  *  precached (~67 MB; only a phone that opted in fetches any of it). The page fills STT_CACHE itself on the probe's
  *  tap (lib/mic/models.ts ensureStt: the parts assembled and checked); the worker serves `/stt/` and the chunk from it

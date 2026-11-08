@@ -1,4 +1,4 @@
-// すうじ ラッシュ as a GameDef (docs/curriculum-wave2.md §2.4): 8 customers from the `listened` rush files at the
+// すうじ ラッシュ as a GameDef (docs/kikimimi-engine.md "すうじ ラッシュ"): 8 customers from the `listened` rush files at the
 // lobby's place (content/listen/s*-rush.yaml, written by scripts/kikimimi-rush.ts; pool.ts listenOf), each a round: an
 // order with a number in it (a price, a time, a count, a table, a date), about a third corrected mid-line, then the
 // ticket's chips, 8 s to tap the right one (the lobby's なし: no limit). The answer is the chip's index. Pure.

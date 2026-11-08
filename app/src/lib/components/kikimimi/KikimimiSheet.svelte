@@ -10,7 +10,7 @@
 </script>
 
 <script lang="ts">
-  // ききみみ's sheet (docs/kikimimi-ux.md §5; docs/kikimimi.md "UI"), its own chunk with the bank, the deck, the session
+  // ききみみ's sheet (docs/kikimimi.md "Navigation", "UI details"), its own chunk with the bank, the deck, the session
   // and the strings: full height (Sheet's `pop`), one title bar (the page's name, the game's question 3 / 8; ‹ and ✕,
   // ⚙ at the root) over one scroller. The root is the hub (an invite on top while one waits); its pages are pushed on
   // one stack (nav.ts): あそぶ › a mode, みんなで, きろく, せってい, しまの みち › a unit › the ずかん (ことば · こえ · なかま · スタンプ), the weekend's
@@ -94,7 +94,7 @@
   let story = $state<{ unit: string; ch: number; seg: number } | null>(null);
   /** The hub shows: my lobby with nothing pushed, or no game of mine yet (an invite waiting). */
   const atHub = $derived(!story && !!v && !v.notice && ((hosting && !page) || v.phase === 'idle'));
-  /** The first run's welcome in the hub's place (docs/kikimimi-ux.md §6.12): once per player on this phone, never for one
+  /** The first run's welcome in the hub's place (docs/kikimimi.md "First run"): once per player on this phone, never for one
    *  who has played (their stage is their rows'). */
   let welcome = $state(false);
   /** The game's lane (round/registry.ts), and its own view for this phase (null: the quiz's). */

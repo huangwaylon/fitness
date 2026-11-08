@@ -1,4 +1,4 @@
-// ききみみ クイズ's content on the phone (docs/kikimimi.md "Loading"): the compiled levels (compile.ts → levels/). The
+// ききみみ クイズ's content on the phone (docs/kikimimi-engine.md "Loading"): the compiled levels (compile.ts → levels/). The
 // index comes with the sheet: each level's parts, the gates, the sound check's clip, and every item's id, level, type,
 // accent and tags (ENTRIES: きろく's stats and advice, にがて れんしゅう's picks, with no level loaded). A level's items,
 // clips and word timings are a chunk of their own (the ladders' too), loaded when a game needs them (`load`): the
@@ -31,7 +31,7 @@ interface Part {
   words: Record<string, Words>;
 }
 
-/** A unit on the island path (docs/curriculum-units.md, units.ts): id, name, stage, domain, host, status, and its
+/** A unit on the island path (docs/curriculum.md "Units", units.ts): id, name, stage, domain, host, status, and its
  *  lessons as a bitmask in units.ts LESSONS' order (the 3 core always; 8 おと, 16 じっせん), and the can-do's one line when it has one. */
 export type PathEntry = [id: string, name: string, stage: string, domain: string, host: string, status: string, lessons: number, short?: string];
 
@@ -65,7 +65,7 @@ export interface Index {
 
 export const INDEX = INDEX_JSON as unknown as Index;
 
-/** A chunk's owner: a level's items, the ladders, or a unit's (docs/curriculum-units.md: `<domain2>-<slug>`). */
+/** A chunk's owner: a level's items, the ladders, or a unit's (docs/curriculum.md "Units": `<domain2>-<slug>`). */
 export type Unit = Level | 'ladder' | `${string}-${string}`;
 
 const PARTS = import.meta.glob<Part>('./levels/parts/*.json', { import: 'default' });
@@ -217,7 +217,7 @@ export function unitPart(id: string): Required<UnitChunk> | undefined {
 }
 
 /** A unit's chunk put in at run time, as if loaded (the lessons' unit tests, the e2e's fixture through the dev hook:
- *  docs/curriculum-units.md §8 U2-U3), and its lessons' content version (`cv`: a co-op lesson's, on every phone alike).
+ *  docs/curriculum.md "The unit file" U2-U3), and its lessons' content version (`cv`: a co-op lesson's, on every phone alike).
  *  Its id must not be a build's; `kinds`, its recipe-2 lessons' listening files (the index's `units[<id>].kinds`). */
 export function addUnit(id: string, part: { unit: UnitPlay; items: Item[]; ladders?: Ladder[] }, cv?: string, kinds?: Partial<Record<Lesson, string[]>>): void {
   if (INDEX.units[id]) throw new Error(`kikimimi: unit ${id} is this build's`);

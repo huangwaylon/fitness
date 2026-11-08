@@ -1,4 +1,4 @@
-// The mic modes' metas (docs/kikimimi-mic.md §2.6; round/registry.ts's lines bring them, catalog.ts addMode), each
+// The mic modes' metas (docs/kikimimi-mic.md "Where they show"; round/registry.ts's lines bring them, catalog.ts addMode), each
 // shown only while this phone could play it (its gate): the mic on in せってい. まねっこ and はつおん on the 声に出す
 // shelf; くりかえし there too, and only with a recogniser that can run here (the tests' stub; Safari's only where it
 // exists: for 自動 and サーバー that is known only when a take starts, and the round says so in Japanese if not);

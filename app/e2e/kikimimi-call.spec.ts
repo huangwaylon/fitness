@@ -1,4 +1,4 @@
-// ようじ でんわ (docs/curriculum-wave2.md §2.3): the mode shows once a call file is `listened` (s1-call, shipped listened),
+// ようじ でんわ (docs/kikimimi-engine.md "ようじ でんわ"): the mode shows once a call file is `listened` (s1-call, shipped listened),
 // on あそぶ's まちで・でんわで shelf and its page at かわ; a solo game (the call on the phone with the memo under it, a chip picked
 // while it plays and changed, メモできた once it ends; round 2 the rest of the memo from memory), one round wrong, the
 // reveal's right chips, the basket, 解説 and the transcript, the results' errands, review and my row (gm call, the wrong

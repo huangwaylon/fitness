@@ -1,5 +1,5 @@
 <script lang="ts">
-  // よみきき サンド's way in (docs/curriculum-wave2.md §2.0): 「読んでから もう一度」 on a review row (frame/ReviewList) and
+  // よみきき サンド's way in (docs/kikimimi-engine.md "よみきき サンド"): 「読んでから もう一度」 on a review row (frame/ReviewList) and
   // at a solo reveal (frame/RevealFrame), opening the lazy frame/Sandwich.svelte over the game.
   import Lazy from '#lib/components/ui/Lazy.svelte';
   import type { Item } from '#lib/kikimimi/bank.ts';

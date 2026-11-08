@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A unit's page (docs/kikimimi-ux.md §6.3b; the UX review's sketch B), pushed from a stop on しまの みち: its scene with
+  // A unit's page (docs/kikimimi.md "A unit's page"; the UX review's sketch B), pushed from a stop on しまの みち: its scene with
   // the host villager, the domain, the can-do's one line (the template's sentence folded under 「くわしく」), the stamps (mine and the partner's, the double), the 3
   // core lessons as big cards (6もん・2ぷん; ✓ once played to the end; the next one carries the only green あそぶ; the
   // チェック its 5-of-6 rule), the extras (☆ おと, ☆ じっせん) never blocking anything, the key phrases (caught or not:

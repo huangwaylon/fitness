@@ -1,7 +1,7 @@
 <script lang="ts">
-  // The lobby's way onto しまの みち (docs/kikimimi-ux.md §6.2's path card, in the lobby until the hub is built; the UX
+  // The lobby's way onto しまの みち (docs/kikimimi.md "あそぶ"'s path card, in the lobby until the hub is built; the UX
   // review's sketch D): the current unit's host, its name, domain icon and dots, › to the path. In a shared lobby the
-  // host picks a unit's lesson there for everyone (a co-op lesson, docs/curriculum-units.md §4).
+  // host picks a unit's lesson there for everyone (a co-op lesson, docs/curriculum.md "Playing together").
   import type { Path } from '#lib/kikimimi/path.ts';
   import { domainIcon } from '../look.ts';
   import OfficialArt from '../../characters/OfficialArt.svelte';

@@ -1,5 +1,5 @@
 <script lang="ts">
-  // しずえの ニュース's results (docs/curriculum-wave2.md §2.5), its own chunk, in the frame's (frame/Results.svelte: しずえ's
+  // しずえの ニュース's results (docs/kikimimi-engine.md "しずえの ニュース"), its own chunk, in the frame's (frame/Results.svelte: しずえ's
   // line, the team's tally, how many I got right, おわる / もういっかい): co-op's 「ふたりで k / n」 counts the questions both
   // got (the session's `team.all`). Then the review list (frame/ReviewList.svelte), a row per question, the misses first
   // open: the right answer and mine in Japanese, 解説; and the whole bulletin under them with ▶︎ (the karaoke as it

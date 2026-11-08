@@ -10,7 +10,7 @@
 </script>
 
 <script lang="ts">
-  // ききみみ's hub, the sheet's root (docs/kikimimi-ux.md §6.1): an invite on top while one waits (さんか joins it; an
+  // ききみみ's hub, the sheet's root (docs/kikimimi.md "The hub"): an invite on top while one waits (さんか joins it; an
   // invite of content this build hasn't offers こうしんする instead), しずえ's line, today's menu (today.ts: おさらい ·
   // きょうの いっぽ · きまぐれ; a done card folds to a stamp, the first undone one has the only green button; any one
   // means 「きょうは OK」), then the four entry tiles (あそぶ · みんなで · ずかん · きろく, each with one live line), the

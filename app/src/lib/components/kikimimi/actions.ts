@@ -1,8 +1,8 @@
-// What the ききみみ sheet's buttons start (docs/kikimimi.md "UI"), over the sheet's game: もういっかい, a lesson again or
+// What the ききみみ sheet's buttons start (docs/kikimimi.md "UI details"), over the sheet's game: もういっかい, a lesson again or
 // the next one, おわる (back to the hub), はまべ's quick quiz, the hub's today card, the ずかん's phrase review, the
 // misses again, おさらい, a recommendation's start, a unit's lesson, みみ チェック, a lobby of my own. The sheet keeps its own state
 // (open, its stack of pages: nav.ts) and hands it in as `ui`; what's solo (a practice deck, the recheck) only in my own lobby kept alone, a
-// unit's lesson in any lobby I host (shared: a co-op lesson, docs/curriculum-units.md §4).
+// unit's lesson in any lobby I host (shared: a co-op lesson, docs/curriculum.md "Playing together").
 import type { QuizGame } from './game.svelte.ts';
 import { cardKind } from '#lib/kikimimi/games/lesson/recipe.ts';
 import type { Item, Level } from '#lib/kikimimi/bank.ts';

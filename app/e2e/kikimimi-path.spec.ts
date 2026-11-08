@@ -1,4 +1,4 @@
-// しまの みち's polish, U7 (docs/kikimimi-ux.md U7, §6.3, §6.3b): a built unit's チェック (tr-hotel's, from とばして
+// しまの みち's polish, U7 (docs/kikimimi.md "Stamps, letters and landmarks", "しまの みち", "A unit's page"): a built unit's チェック (tr-hotel's, from とばして
 // チェック, all right on the first listen) stamps it, and its host's letter arrives on the results (open, the English
 // first, 「にほんごやく」 its gloss); the unit's page has it folded under the stamps, and ずかん lists it. Then a phone
 // with a みみ チェック placed at かわ and every かわ unit stamped one by one (rows kept on the phone): 「ここから」 on

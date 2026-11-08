@@ -1,4 +1,4 @@
-// ききみみ's one stack (docs/kikimimi-ux.md §5, SettingsSheet's pattern): the hub is the root (an empty stack) and each
+// ききみみ's one stack (docs/kikimimi.md "Navigation", SettingsSheet's pattern): the hub is the root (an empty stack) and each
 // page is pushed over it; ‹ pops one, ✕ closes the sheet, and a deep link builds the whole stack (the invite: the hub,
 // then みんなで; the たいかい banner: its lobby). Pages are at most three deep. Pure: the sheet keeps the stack in its state.
 import type { ModeId } from '#lib/kikimimi/catalog.ts';

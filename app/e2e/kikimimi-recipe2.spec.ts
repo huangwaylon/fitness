@@ -1,4 +1,4 @@
-// Recipe 2 (docs/curriculum-units.md §16; docs/curriculum-wave2.md §3.1, W2-9): a fixture unit on recipe 2 (put in
+// Recipe 2 (docs/curriculum.md "Recipe 2", "The 21 units", W2-9): a fixture unit on recipe 2 (put in
 // through the dev hook with its kinds' files, never shipped). Its チェック, its call's file `listened` (s2-call-a, as
 // shipped), is the call on the phone with its memo (2 rounds) then 4 of its quiz items: all right, the stamp, my row a
 // lesson's with the call's rounds in it, the call's rows in the review with its transcript. With its call in a file

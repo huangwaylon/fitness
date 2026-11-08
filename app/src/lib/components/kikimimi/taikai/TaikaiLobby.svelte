@@ -1,5 +1,5 @@
 <script lang="ts">
-  // しずえの しゅうまつ たいかい's lobby (docs/kikimimi-ux.md §6.4, §7.1; curriculum §7.1), its own chunk: しずえ's welcome,
+  // しずえの しゅうまつ たいかい's lobby (docs/kikimimi.md "Mode detail", "The daily menu"; curriculum.md "Modes"), its own chunk: しずえ's welcome,
   // the show's three rules (7 rounds of everyone's misses mixed, the wager's round-only chips, her target and the
   // trophies), who's in with how many misses each offered (never which: the items stay a surprise), きょうりょく ／ しょうぶ
   // (co-op by default) and the foot: alone, 「ひとりで はじめる」 or 「みんなを さそう」 (the primary when someone's on the

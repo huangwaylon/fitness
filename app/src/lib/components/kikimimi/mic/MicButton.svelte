@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The mic's tap-to-talk button (docs/kikimimi-mic.md §2, the rules): 72 px, round, a ring meter of the voice's level
+  // The mic's tap-to-talk button (docs/kikimimi-mic.md "The modes", the rules): 72 px, round, a ring meter of the voice's level
   // around it. A tap starts a take (lib/mic/session.ts; the audio context woken inside the tap), a tap stops it; it
   // also stops by itself on silence after speech, at the cap, with no speech in a while, or when the app hides. Never
   // starts on its own. The speech goes to `onheard` (null: none) and is kept nowhere here; leaving cancels the take.

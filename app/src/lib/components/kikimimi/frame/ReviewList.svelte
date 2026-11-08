@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A game's review list (docs/kikimimi.md "Results"; framework §5 ReviewList), the main learning moment: 「まちがえた
+  // A game's review list (docs/kikimimi.md "Results"; kikimimi-engine.md "Shared UI" ReviewList), the main learning moment: 「まちがえた
   // だけ」 (the misses only: the game's rows read it), a game's retry above the rows (`retry`: the misses again), all right
   // said when no row is left, then the game's rows (`children`). Any game's. A row puts よみきき サンド's way in where
   // it likes (`children`'s `sand(item)`: 「読んでから もう一度」, frame/SandButton; nothing without a `player`).

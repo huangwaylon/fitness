@@ -1,5 +1,5 @@
 // kikimimi/bedtime.ts: おやすみ ものがたり's timeline, the sleep timer's fade, the chapters' unlocking, つづき and the
-// morning-after prediction (docs/kikimimi-ux.md §6.8).
+// morning-after prediction (docs/kikimimi.md "おやすみ ものがたり").
 import { describe, expect, it } from 'vitest';
 import {
   FADE_MS, fadeCurve, fadeGain, finish, finishesOnTimer, gapAfter, guess, keepPlace, later, morningCard, nextOf, pickSerial, revealOf, timeline, timerLeft, unlocked,

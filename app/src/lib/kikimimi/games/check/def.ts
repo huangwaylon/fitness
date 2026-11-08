@@ -1,5 +1,5 @@
-// みみ チェック, the placement check, as a GameDef (docs/curriculum.md §10; docs/kikimimi-framework.md §7 #11;
-// docs/kikimimi-ux.md §6.12): about 12 items drawn from the levels' voiced items across the places and sub-skills,
+// みみ チェック, the placement check, as a GameDef (docs/curriculum.md "Placement and spaced repetition"; docs/kikimimi-engine.md "The games" #11;
+// docs/kikimimi.md "First run"): about 12 items drawn from the levels' voiced items across the places and sub-skills,
 // adaptive (GameDef.next: each round picked from the answers so far), solo, nothing on the wire.
 //
 // The walk: it starts at かわ (B1+), goes up a band after 2 right in a row and down after 1 wrong, and stops after two
@@ -18,7 +18,7 @@ import type { QuizRound } from '../quiz/kinds.ts';
 
 /** The bands, easiest first: each one's quiz level (はまべ 1, はまべ 2, かわ, もり, やま, ほし). */
 export const BANDS: readonly number[] = [1, 2, 3, 4, 6, 7];
-/** Where the walk starts: かわ (B1+, the learners' level: curriculum §10). */
+/** Where the walk starts: かわ (B1+, the learners' level: curriculum.md "Placement and spaced repetition"). */
 export const START_BAND = 2;
 /** The check's length: at least this many items, at most that many. */
 export const CHECK_MIN = 8;

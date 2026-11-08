@@ -1,5 +1,5 @@
 <script lang="ts">
-  // はつおん ききわけ's end (docs/kikimimi-mic.md §2.4), its own chunk: しずえ's word, 「通じた k / n」 (solo mine; あてっこ the
+  // はつおん ききわけ's end (docs/kikimimi-mic.md "はつおん ききわけ"), its own chunk: しずえ's word, 「通じた k / n」 (solo mine; あてっこ the
   // team's, never who), the cards with both words (▶︎ each) and the one I was to say, that only my minutes are kept, and
   // おわる / もういっかい (8 new cards).
   import '#lib/i18n/kiki-pair.ts';

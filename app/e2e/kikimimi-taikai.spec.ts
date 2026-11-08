@@ -1,4 +1,4 @@
-// しずえの しゅうまつ たいかい (docs/kikimimi-ux.md §7.1; curriculum §7.1): on a Saturday evening (the scene clock pinned
+// しずえの しゅうまつ たいかい (docs/kikimimi.md "The daily menu"; curriculum.md "Modes"): on a Saturday evening (the scene clock pinned
 // inside its Fri 18:00 – Mon 05:00 window) the hub's banner opens the tournament's lobby; a solo run through the seven
 // rounds and the wager (a bet of 80, missed: the confident-miss reveal) to the trophy, its review list, the banner and
 // きろく's shelf showing it; and two phones in co-op over the demo's relay (`?demo`, `?demo&as=B`): B's misses (seeded on

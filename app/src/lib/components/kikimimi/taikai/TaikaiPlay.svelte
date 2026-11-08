@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A round of しずえの しゅうまつ たいかい (docs/kikimimi-ux.md §7.1; curriculum §7.1), its own chunk over Play (the round
+  // A round of しずえの しゅうまつ たいかい (docs/kikimimi.md "The daily menu"; curriculum.md "Modes"), its own chunk over Play (the round
   // itself: the speaker, the clip, the choices): しずえ's show bar on top (the round, 「かけの もんだい」 last), co-op's team
   // against her target (a pip a round, filled as the team gets them; her line and gold's marked) or しょうぶ's chips; the
   // wager round's bet first (10-100 of the round's own 100 chips, never kept: no かいがら), its choices waiting for it;

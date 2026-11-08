@@ -27,7 +27,7 @@ const UNIT_ITEMS = unitItems();
 /** The bedtime stories' segments, a clip each (story.ts; stories.test checks them). */
 const STORY_IDS = new Set(storyItems(readStories()).map((it) => it.id));
 /** The listening kinds' clips (content/listen/*.yaml: a tile's own, each line of a call or a たちぎき), drafts included
- *  once voiced (they're voiced before the listening check: wave 2 §3.4). */
+ *  once voiced (they're voiced before the listening check: curriculum.md "Authoring pipeline"). */
 const LISTEN_IDS = new Set(readListen().flatMap(({ raw }) => listenClipItems(raw)).map((it) => it.id));
 
 /** はつおん's words (content/mic/pairs.yaml): each said alone, `<pair>-1`, `<pair>-2`. */
@@ -381,8 +381,8 @@ describe('kikimimi bank', () => {
     const kb = (f: string) => (rungs.has(f) ? 80 : PAIR_IDS.has(f) ? 20 : STORY_IDS.has(f) || LISTEN_IDS.has(f) ? 100 : ({ 4: 80, 5: 100, 6: 100, 7: 160 } as Partial<Record<Level, number>>)[lvOf.get(f)!] ?? 60);
     for (const [f, bytes] of clips) expect(bytes, f).toBeLessThan(kb(f) * 1024);
     // (The packs, 144 now, are the games' 89.3 MiB and the stories' 21.4 MiB (the bedtime stories fetched a chapter at a
-    // time), under these lines of 92 and 23. A stopgap (docs/curriculum-wave2.md §5, open question 3): the packs were to
-    // move to R2 behind PACK_BASE (docs/kikimimi-framework.md §6) past 50 MB, but wave 2's audio batches outgrew that
+    // time), under these lines of 92 and 23. A stopgap (docs/kikimimi.md "Open items", open question 3): the packs were to
+    // move to R2 behind PACK_BASE (docs/kikimimi-engine.md "Loading") past 50 MB, but wave 2's audio batches outgrew that
     // before R2 is enabled, so each line is raised to its batch's total and a little margin (the games' A2 60.5 MiB, A3
     // 75.5, A4 89.3; the stories' A5, st-tokyo, 21.4). Pages takes files of up to 25 MiB and a pack is ≤ 1.2 MB, so the total isn't Pages'
     // limit; the real fix is W2-R, the packs on R2 behind PACK_BASE, after which these lines measure what Pages serves.)

@@ -1,4 +1,4 @@
-// ききみみ's hub and its one stack (docs/kikimimi-ux.md §5, §6.1, §6.2, §6.4, §6.5): the sheet opens on the hub (しずえ,
+// ききみみ's hub and its one stack (docs/kikimimi.md "Navigation", "The hub", "あそぶ", "Mode detail", "みんなで"): the sheet opens on the hub (しずえ,
 // today's card, the four tiles, ⚙); あそぶ lists the playable modes by situation; a mode's page has its settings and
 // さそう / はじめる; ‹ pops one page, a backdrop tap or Esc too, ✕ closes from any page; さそう pushes みんなで with my
 // lobby shared, and ‹ from it cancels it (the invite gone from B's island). B's さんか lands on みんなで over the hub, and

@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A round's frame (docs/kikimimi.md "The game"; framework §5 RoundFrame): each player's chip (✓ as they answer; at the
+  // A round's frame (docs/kikimimi.md "The game"; kikimimi-engine.md "Shared UI" RoundFrame): each player's chip (✓ as they answer; at the
   // reveal co-op only ✓, たいせん ○ / × and points), the game's stage (what's shown while it plays) and input (its
   // choices, or the verdict over them at the reveal), the answer window's bar when it's timed, the status line (しずえ's
   // word on the verdict, sat out, waiting for the others, listening), what follows (a transcript), and the foot: the

@@ -1,10 +1,10 @@
-// ききみみ クイズ's compiler (docs/kikimimi.md "Loading"): source.ts's items, ladders.ts's ladders, clips.json and
+// ききみみ クイズ's compiler (docs/kikimimi-engine.md "Loading"): source.ts's items, ladders.ts's ladders, clips.json and
 // words.json into levels/, which the sheet loads a level at a time (pool.ts): a chunk per level (its items in the bank's
 // order, their clips and word timings; a level past the budget split, in order, into parts), the ladders' chunk, and
 // the index the sheet opens with (each level's parts, count and content version; the gates; the sound check's clip;
 // every item's id, level, type, accent and tags for きろく; the rungs' ids). `npm run kikimimi:levels` writes them (the
 // audio scripts too, at their end); levels.test fails while the committed files differ. Node and tests only.
-//   The units (docs/curriculum-units.md §8, units.ts) extend it, with no second loader: each manifest in
+//   The units (docs/curriculum.md "The unit file", units.ts) extend it, with no second loader: each manifest in
 // app/content/units/ is checked against the bank and becomes a chunk of its own (`parts/u-<id>.json`: the unit, its
 // lessons' items as authored, their clips and timings) and an entry in the index (`units[<id>]` beside the levels',
 // and a line in `paths`, the island path's). The levels' chunks and decks don't change for any unit (units.test).
@@ -226,14 +226,14 @@ function listenChunk({ file, raw }: ListenSource, bank: ReadonlyMap<string, Item
   return { head, text, cv: createHash('sha256').update(JSON.stringify(shape)).digest('hex').slice(0, 6) };
 }
 
-/** A unit's content version (docs/kikimimi-framework.md §4.2): what shapes its decks and schedule (ids, order, choice
+/** A unit's content version (docs/kikimimi-engine.md "cv, the content version"): what shapes its decks and schedule (ids, order, choice
  *  counts, answers, the clips' lengths to 10 ms, the mix), 6 hex. */
 function cv(items: readonly Item[], mix: unknown, clips: Readonly<Record<string, Clip>>): string {
   const shape = items.map((it) => [it.id, it.type, it.choices.length, it.answer, clipIds(it).map((id) => Math.round((clips[id]?.dur ?? 0) * 100))]);
   return createHash('sha256').update(JSON.stringify([mix, shape])).digest('hex').slice(0, 6);
 }
 
-/** A game's content version (docs/kikimimi-framework.md §4.2), `play`'s `cv`: its deck's content's (cv above), the game
+/** A game's content version (docs/kikimimi-engine.md "cv, the content version"), `play`'s `cv`: its deck's content's (cv above), the game
  *  and its build's version (games/versions.ts BUILD_V), 6 hex. */
 export function gameCv(gm: string, content: string): string {
   const v = BUILD_V[gm];
@@ -269,7 +269,7 @@ export const oneClipBank = (clips: Readonly<Record<string, unknown>>, bank: read
 /** levels/'s files (paths under it → contents) for these clips and word timings, these units (app/content/units/:
  *  a unit that fails its checks stops it; its warnings go to `warn`), these packs (packs.json: a clip in none stops it)
  *  these bedtime serials (content/listen/story/) and these listening files (content/listen/: a problem stops it). So
- *  does a US-lint hit in the bank (wave 2 §3.4; B7 cleared the last). */
+ *  does a US-lint hit in the bank (curriculum.md "Authoring pipeline"; B7 cleared the last). */
 export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>, sources: readonly UnitSource[] = readUnits(), packs: Readonly<Packs> = readPacks(), warn?: (w: string) => void, stories: readonly StorySource[] = readStories(), listen: readonly ListenSource[] = readListen(), pairs: unknown = readPairs()): Map<string, string> {
   const out = new Map<string, string>();
   const places = clipPlaces(packs);

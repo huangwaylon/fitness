@@ -144,19 +144,19 @@ export const DEVICE = {
    *  the sleep timer last set). */
   kikiStory: 'island.kikiStory',
   /** localStorage: `{[who]: 1}`: ききみみ's first-run welcome seen (or put off: あとで) by that player on this phone
-   *  (docs/kikimimi-ux.md §6.12). */
+   *  (docs/kikimimi.md "First run"). */
   kikiOnboarded: 'island.kikiOnboarded',
   /** localStorage: `{[mode]: level}`: a ばしょ picked over おまかせ on a mode's page on this phone (none: おまかせ, the
    *  placed stage). */
   kikiStage: 'island.kikiStage',
   /** localStorage: `{[who]: stage[]}`: the しまの みち landmarks whose celebration that player has seen on this phone
-   *  (docs/kikimimi-ux.md U7; the badge stays, from the stamps). */
+   *  (docs/kikimimi.md "Stamps, letters and landmarks"; the badge stays, from the stamps). */
   kikiLandmarks: 'island.kikiLandmarks',
   /** localStorage: `{[who]: [itemId, day][]}`: よみきき サンド's まだ on this phone, folded in as "hard" (kikimimi/srs.ts
    *  madaOf; no row, nothing on the wire; the newest 200 a player). */
   kikiMada: 'island.kikiMada',
   /** localStorage: `{ on, be }`: ききみみ's mic on this phone (off by default; lib/mic/pick.ts MicPrefs: the switch and
-   *  the 音声認識 picked, `auto` by default). Never synced; no recording is ever kept (docs/kikimimi-mic.md §5). */
+   *  the 音声認識 picked, `auto` by default). Never synced; no recording is ever kept (docs/kikimimi-mic.md "The privacy rule"). */
   mic: 'island.mic',
   /** localStorage, the e2e's only: a JSON list of what the tests' recogniser "hears", one entry a take (lib/mic/pick.ts
    *  stubScript, backends/stub.ts); set at all, the stub is this phone's recogniser. */

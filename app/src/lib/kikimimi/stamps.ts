@@ -1,4 +1,4 @@
-// ききみみ's unit stamps (docs/curriculum-units.md §3, §4, §10; U3): each unit's lesson dots, its stamp, the partner's
+// ききみみ's unit stamps (docs/curriculum.md "Lessons", "Playing together"; docs/kikimimi.md "Stamps, letters and landmarks"): each unit's lesson dots, its stamp, the partner's
 // and the 30-day solo recheck, folded from the `listen` rows (progress.ts gamesOf: mine whole, the partner's as
 // summaries), never stored. A stamp is contract/listen.ts stampsUnit's: a チェック (l 3) with ≥ 5 of my answers right on
 // the first listen, or a co-op one whose team got ≥ 5 (tm); retakeable, it never locks and is never taken away. Quick

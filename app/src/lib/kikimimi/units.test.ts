@@ -1,4 +1,4 @@
-// ききみみ's units (docs/curriculum-units.md, units.ts, compile.ts): the manifest's schema (good and bad), the checks
+// ききみみ's units (docs/curriculum.md "Units", units.ts, compile.ts): the manifest's schema (good and bad), the checks
 // against the bank (homes, references, the band, the lesson recipe, tiers, phrases, recycling, coverage), the compiled
 // chunks and index entries (budgets, determinism), and the level decks, which no unit may change: the levels' chunks
 // byte for byte with and without units, and a golden digest of seeds 0-99 per level.

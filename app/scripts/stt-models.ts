@@ -1,4 +1,4 @@
-// The recogniser's files for `/stt/` (docs/kikimimi-mic.md §3.6; the pins in src/lib/mic/models.ts): whisper tiny.en
+// The recogniser's files for `/stt/` (docs/kikimimi-mic.md "Hosting and the service worker"; the pins in src/lib/mic/models.ts): whisper tiny.en
 // from Hugging Face at the pinned revision and the ONNX runtime's wasm from the pinned onnxruntime-web on npm, each
 // checked against its sha256, split into parts of ≤ 20 MiB, written under the out folder as the site serves them
 // (`<dir>/<path>.<sha8>.p0…`, a whole file at its path, `manifest.json`). Files already there and right are kept, the

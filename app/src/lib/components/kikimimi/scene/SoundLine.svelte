@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The revealed English (docs/kikimimi.md "Visuals", docs/curriculum.md §8): its words with the item's focus marked and
+  // The revealed English (docs/kikimimi.md "Visuals", docs/curriculum.md "Visual rules"): its words with the item's focus marked and
   // its sound marks over them (marks.ts soundLine: the shape it's said in above a reduced run, ‿ arcs where words join,
   // swallowed letters greyed, ● over a stressed word), and the karaoke while its clip replays: the words said so far in
   // ink, the one being said underlined, the rest softer (65%) but the focus (clips.ts wordTimes: whisper's alignment, else the clip spread over

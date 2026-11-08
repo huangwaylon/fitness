@@ -1,4 +1,4 @@
-// The quiz family's view of a round game (docs/kikimimi.md "UI"): the session's view (round/session.ts RoundView) as
+// The quiz family's view of a round game (docs/kikimimi.md "UI details"): the session's view (round/session.ts RoundView) as
 // the quiz's sheet reads it: its level, こたえる じかん and mode (スピード はしご) from the game and its options, each
 // answer a choice `k` replayed or not. Pure.
 import type { QuizLv, Who } from '../../../contract/live-protocol.ts';

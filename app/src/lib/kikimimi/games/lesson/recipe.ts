@@ -1,4 +1,4 @@
-// Recipe 2 (docs/curriculum-wave2.md §3.1, W2-9; docs/curriculum-units.md §16): a unit's おと, じっせん and チェック play
+// Recipe 2 (docs/curriculum.md "The 21 units", W2-9; docs/curriculum.md "Recipe 2"): a unit's おと, じっせん and チェック play
 // the wave-2 listening games where the unit names that content (`lessons.tiles`, `tachi`, `call`: ids in content/listen/)
 // and its files are `listened`: おと 6 ことば タイル, じっせん たちぎき (two conversations, or one and 3 of its quiz items),
 // チェック one ようじ でんわ call (its 2 memo rounds) then 4 of its held-out quiz items. Anything short of that (recipe 1, a

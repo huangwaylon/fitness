@@ -1,4 +1,4 @@
-// ききみみ's week (docs/kikimimi-ux.md §7.3, §7.4): the stamp card (a day stamped by one finished session, against my
+// ききみみ's week (docs/kikimimi.md "The weekly stamp card", "ふたりの クエスト"): the stamp card (a day stamped by one finished session, against my
 // target of 3, 5 or 7 days; Monday starts a new card with nothing lost and nothing said: never a streak) and ふたりの
 // クエスト (the members' minutes heard together this week, one bar, never who added what; the guest's own solo quest).
 // Pure.

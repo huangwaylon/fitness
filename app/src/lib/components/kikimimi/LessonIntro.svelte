@@ -1,9 +1,9 @@
 <script lang="ts">
-  // A lesson's intro card (docs/curriculum-units.md §3; the UX review's P1-6): the lesson's name, the unit's, its host
+  // A lesson's intro card (docs/curriculum.md "Lessons"; the UX review's P1-6): the lesson's name, the unit's, its host
   // villager and what I'll be able to do (the can-do's one line, else its sentence), 6 もん · 2ぷんはん, and one green はじめる. The チェック is framed as
   // a mission until ようじ でんわ and たちぎき are built: 「{host}から でんわ！ ようじを ききとろう」 over a phone, with its
   // rule (5 of 6 right on the first listen stamps the unit; try again any time). The 30-day recheck is 「おさらい チェック」.
-  // A co-op lesson (`shared`, docs/curriculum-units.md §4): who's in it, the team's way to the stamp on a チェック, and
+  // A co-op lesson (`shared`, docs/curriculum.md "Playing together"): who's in it, the team's way to the stamp on a チェック, and
   // はじめる（Nにん） for the host; the others wait for it (their choices at their own tier, never shown).
   import type { Lesson, UnitPlay } from '#lib/kikimimi/lesson.ts';
   import type { Who } from '#lib/types.ts';

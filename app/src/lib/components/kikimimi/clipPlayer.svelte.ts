@@ -1,4 +1,4 @@
-// A ききみみ game's clips on this phone (docs/kikimimi.md "Audio"; game.svelte.ts): each question's played at its start
+// A ききみみ game's clips on this phone (docs/kikimimi-engine.md "Audio"; game.svelte.ts): each question's played at its start
 // on the relay's clock (playVoice's relayAt), the next one fetched meanwhile, the reveal's replay, the player's 🔁 / 🐢
 // and a review row's ▶︎. A dialogue's lines are a sequence of clips (playSequence: each line scheduled on the relay's
 // clock after the one before, its offset apart: LINE_GAP, or a たちぎき line's `at`, negative an overlap; the session's

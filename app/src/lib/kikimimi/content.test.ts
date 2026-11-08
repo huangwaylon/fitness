@@ -1,4 +1,4 @@
-// The listening content (app/content/listen/*.yaml, content/listen/README.md, docs/curriculum-wave2.md §3.4): every
+// The listening content (app/content/listen/*.yaml, content/listen/README.md, docs/curriculum.md "Authoring pipeline"): every
 // file passes listen.ts's checker (the README's rules, the Japanese help, the US-only lint), as compile.ts requires;
 // the checker catches what it's for; the kinds' clip ids and the clips the audio script speaks.
 import { describe, expect, it } from 'vitest';
@@ -36,7 +36,7 @@ describe('listen content', () => {
     expect(bad([tile])).toBe('');
   });
 
-  it('US English only (wave 2 §3.4), accent exposure aside', () => {
+  it('US English only (curriculum.md "Authoring pipeline"), accent exposure aside', () => {
     expect(notUs("Cheers for that, mate, see you in a fortnight. I reckon the queue's long.")).toEqual(['mate', 'cheers for thanks', 'queue (line)', 'fortnight', 'reckon']);
     expect(notUs('My neighbour said to realise it, at half nine, by the lift? The flat is big.')).toEqual(['flat (apartment)', 'lift (elevator)', 'half nine', 'UK -our spelling', 'UK -ise spelling']);
     expect(notUs('Cheers! I got a flat tire on the way to a fancy place, so I took the elevator. Raise your glasses!')).toEqual([]);

@@ -1,4 +1,4 @@
-// すうじ ラッシュ's content (docs/curriculum-wave2.md §2.4, content/listen/README.md "rush"): seeded frames (a setting's
+// すうじ ラッシュ's content (docs/kikimimi-engine.md "すうじ ラッシュ", content/listen/README.md "rush"): seeded frames (a setting's
 // line with its number, by a customer, with or without a self-correction) expanded into content/listen/s1-rush.yaml
 // (かわ) and s2-rush.yaml (もり). Each frame is an order said the American way at one of six counters (a café, a
 // konbini, a ticket window, a deli on a trip, a taxi stand, a pharmacy); each item one customer's 1-2 lines, one clip,

@@ -1,4 +1,4 @@
-// A phone's decks (docs/kikimimi-framework.md §2): the items of each game heard of, by its game, seed, options and unit
+// A phone's decks (docs/kikimimi-engine.md "Files"): the items of each game heard of, by its game, seed, options and unit
 // (`gameKey`), built once and kept for the last few; the deck of the game I'm in held (never dealt again mid-game,
 // whatever other phones' lobbies build meanwhile), and a deck settled on this phone alone (にがて れんしゅう's, the
 // misses again, a solo game's freshest) standing in for its lobby's own. Generic over what a deck holds; pure but for its

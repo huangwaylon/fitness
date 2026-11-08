@@ -4,7 +4,7 @@
 </script>
 
 <script lang="ts">
-  // A line of まねっこ シャドーイング (docs/kikimimi-mic.md §2.1; games/mane/def.ts), its own chunk. The villager pops in
+  // A line of まねっこ シャドーイング (docs/kikimimi-mic.md "まねっこ シャドーイング"; games/mane/def.ts), its own chunk. The villager pops in
   // and says it once (the session's clip: listen only, the situation under them). Then, untimed: the line and its
   // Japanese, 重ねて言う (earphones: the mic's tap plays the line and I speak over it) or あとから言う (hear it with お手本,
   // then tap the mic and say it); my take ends by itself on the silence after it (MicButton). Then my melody and timing

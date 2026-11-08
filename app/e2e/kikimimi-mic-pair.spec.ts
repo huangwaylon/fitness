@@ -1,4 +1,4 @@
-// はつおん ききわけ (docs/kikimimi-mic.md §2.4, §2.6, §5) in the chromium-mic project: the stand-in mic (one of our clips
+// はつおん ききわけ (docs/kikimimi-mic.md "はつおん ききわけ", "Where they show", "The privacy rule") in the chromium-mic project: the stand-in mic (one of our clips
 // once per take, then silence, through a getUserMedia shim), the stub recogniser (`e2e.stt`, set before each take: it
 // "hears" the word given), nothing played out loud, no network. Off: no 声に出す shelf. Solo, 8 cards: both words play
 // first; then the word to say and the mic: a wrong word heard is the joke (「え、 …？！」) with the tip and a second try,

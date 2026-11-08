@@ -1,4 +1,4 @@
-// ききみみ's games on the wire (docs/kikimimi-framework.md §4.3, step 8b): the session speaks its own ops (RoundOut out,
+// ききみみ's games on the wire (docs/kikimimi-engine.md "Wire migration", step 8b): the session speaks its own ops (RoundOut out,
 // RoundIn heard: the `play` intent's shape, kind left off), and this file maps them to and from the two intents a phone
 // may hear, `quiz` (the quiz's own, every build since 2026-11-05) and `play` (every game's, from 8c on). An 8b phone
 // hears both and still sends `quiz` (SEND_PLAY false): it plays with a phone from before over `quiz`, and with an 8c one

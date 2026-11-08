@@ -8,7 +8,7 @@ import { GM_RE, QUIZ_LVS, UNIT_RE } from './live-protocol.ts';
 import type { LocalDate, Who } from '../types.ts';
 
 /** One answer: the item's id, right (1) or not (0), the authored choice picked (−1: timed out; another game's, up to
- *  4095: a tile round's bitmask of wrong slots, a memo's per-slot result, docs/kikimimi-framework.md §4.4), the replays
+ *  4095: a tile round's bitmask of wrong slots, a memo's per-slot result, docs/kikimimi-engine.md "The listen row"), the replays
  *  before it (🔁 and 🐢 alike; 0 is a first listen). */
 type ListenAnswer = [id: string, ok: 0 | 1, pick: number, rp: number];
 
@@ -22,11 +22,11 @@ export interface ListenRow {
   d: LocalDate;
   /** The game (the session's id). */
   g: string;
-  /** Which game (docs/kikimimi-framework.md §4.4, the protocol's `gm`); absent: the quiz. */
+  /** Which game (docs/kikimimi-engine.md "The listen row", the protocol's `gm`); absent: the quiz. */
   gm?: string;
-  /** Its unit, if the game has units (a ききみみ unit's lesson: docs/curriculum-units.md). */
+  /** Its unit, if the game has units (a ききみみ unit's lesson: docs/curriculum.md "Units"). */
   u?: string;
-  /** The unit's lesson (docs/curriculum-units.md §3, §8): 1 であい, 2 ばめん, 3 チェック, 4 おと, 5 じっせん; only with `u`. */
+  /** The unit's lesson (docs/curriculum.md "Lessons", "The unit file"): 1 であい, 2 ばめん, 3 チェック, 4 おと, 5 じっせん; only with `u`. */
   l?: number;
   /** The team's first-listen right answers in a co-op lesson (§10: the session's team tally, the same number on both
    *  phones), 0-6; only with `l`. */
@@ -43,17 +43,17 @@ export interface ListenRow {
   r: ListenAnswer[];
 }
 
-/** おやすみ ものがたり's `gm` (docs/kikimimi-ux.md §6.8): a bedtime story has no questions, so its row's `r` is empty and
+/** おやすみ ものがたり's `gm` (docs/kikimimi.md "おやすみ ものがたり"): a bedtime story has no questions, so its row's `r` is empty and
  *  only its minutes count (the week's stamp at ≥ 3 min, the couple quest); `u` its serial. */
 export const STORY_GM = 'story';
-/** The mic's games (docs/kikimimi-mic.md §3.4, §5): a row of theirs carries minutes only, never an answer (nothing of a
+/** The mic's games (docs/kikimimi-mic.md "In the registry", "The privacy rule"): a row of theirs carries minutes only, never an answer (nothing of a
  *  speaking game leaves the phone but how long it took). */
 const MIC_GMS: ReadonlySet<string> = new Set(['mane', 'kuri', 'pair', 'role']);
 /** A row of this game has no answers (a story's, a mic game's: its `r` empty). */
 export const minutesOnly = (gm: string | undefined): boolean => gm === STORY_GM || (gm !== undefined && MIC_GMS.has(gm));
 
 /** What the other member sees of a row (docs/kikimimi.md "Storage"): never the level, the answers or the score. A
- *  unit's passed チェック adds the unit and `stamped` (docs/curriculum-units.md §4: each person's stamps are the partner's
+ *  unit's passed チェック adds the unit and `stamped` (docs/curriculum.md "Playing together": each person's stamps are the partner's
  *  to see, the answers never). */
 export type ListenSummary = Pick<ListenRow, 'd' | 'g' | 'n' | 'ms'> & { u?: string; stamped?: 1 };
 
@@ -61,7 +61,7 @@ export type ListenSummary = Pick<ListenRow, 'd' | 'g' | 'n' | 'ms'> & { u?: stri
 export const CHECK_LESSON = 3;
 export const STAMP_MIN = 5;
 
-/** Whether a row stamps its unit (docs/curriculum-units.md §3, §10): a チェック with ≥ 5 of my answers right on the
+/** Whether a row stamps its unit (docs/curriculum.md "Lessons", "Playing together"): a チェック with ≥ 5 of my answers right on the
  *  first listen, or a co-op one whose team got ≥ 5. Derived, never stored. */
 export const stampsUnit = (row: Pick<ListenRow, 'u' | 'l' | 'tm' | 'r'>): boolean =>
   row.u !== undefined && row.l === CHECK_LESSON && ((row.tm ?? 0) >= STAMP_MIN || row.r.filter(firstListenRight).length >= STAMP_MIN);
@@ -69,7 +69,7 @@ export const stampsUnit = (row: Pick<ListenRow, 'u' | 'l' | 'tm' | 'r'>): boolea
 /** The most answers a row holds (a game is 8), and the most replays an answer counts. */
 export const LISTEN_MAX_Q = 12;
 export const LISTEN_MAX_RP = 99;
-/** A lesson is one 6-question game (docs/curriculum-units.md §3): a co-op lesson's team tally `tm` is 0-6. */
+/** A lesson is one 6-question game (docs/curriculum.md "Lessons"): a co-op lesson's team tally `tm` is 0-6. */
 export const LESSON_QS = 6;
 const LISTEN_MAX_MS = 60 * 60 * 1000;
 const GAME_RE = /^[a-z0-9]{4,12}$/;

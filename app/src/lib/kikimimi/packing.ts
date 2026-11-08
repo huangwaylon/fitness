@@ -1,4 +1,4 @@
-// ききみみ's audio packs (docs/kikimimi-framework.md §6, docs/kikimimi.md "Audio"): every finished clip (mono AAC m4a,
+// ききみみ's audio packs (docs/kikimimi-engine.md "Loading", "Audio"): every finished clip (mono AAC m4a,
 // whole, as the audio script makes it) concatenated into a few files under static/audio/listen/, `<pack>.<hash>.pak`,
 // one file per pack where there were hundreds of loose clips (Cloudflare Pages caps a deploy at 20,000 files). A clip
 // has one home: its level's pack (`lv4`), the ladders' (`ladder`) or its unit's (`u-<unit>`), and its slow take the

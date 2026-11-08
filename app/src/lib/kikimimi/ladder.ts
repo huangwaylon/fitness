@@ -1,4 +1,4 @@
-// ききみみ クイズ's スピード はしご (docs/kikimimi.md "スピード はしご", docs/curriculum.md §7 game 2): one line heard at
+// ききみみ クイズ's スピード はしご (docs/kikimimi.md "スピード はしご", docs/curriculum.md "Modes" game 2): one line heard at
 // rising speeds, a different question at each rung (ladders.ts), the score the rungs climbed in order on the first
 // listen. A game is 2 ladders of 4 rungs: the quiz's 8 questions, so the session, the protocol and the relay are the
 // quiz's own. The mode rides on the `open`'s seed (bit 1, beside たいせん's bit 0: round/wire.ts quizIn): every phone
@@ -9,7 +9,7 @@ import { shuffleChoices, type Item } from './bank.ts';
 
 /** Each rung's speed, × natural speech (NATURAL_RATE): careful, natural, brisk, fast casual. */
 export const SPEEDS = [0.8, 1, 1.2, 1.4] as const;
-/** Natural speech at 1.0× (syllables a second: curriculum §3 S1 かわ, 3.8-4.5; 1.4× is 6.0, S4 fast casual). The pipeline
+/** Natural speech at 1.0× (syllables a second: curriculum.md "Stages and can-dos" S1 かわ, 3.8-4.5; 1.4× is 6.0, S4 fast casual). The pipeline
  *  stretches each line's take to SPEEDS × this, whatever pace the engine spoke it at, so a speed means the same on every
  *  ladder (and "the fastest comfortable speed" is a real rate). */
 export const NATURAL_RATE = 4.3;

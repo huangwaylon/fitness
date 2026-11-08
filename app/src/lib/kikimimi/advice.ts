@@ -27,7 +27,7 @@ export type Rec =
 const WEAK = 0.75;
 const STRONG = 0.85;
 const MAX_RECS = 3;
-/** スピード はしご's nudge until this speed is comfortable (brisk: S2-S3's pace, curriculum §3). */
+/** スピード はしご's nudge until this speed is comfortable (brisk: S2-S3's pace, curriculum.md "Stages and can-dos"). */
 const SPEED_TARGET = 1.2;
 
 /** The skills the offered levels' items train. */

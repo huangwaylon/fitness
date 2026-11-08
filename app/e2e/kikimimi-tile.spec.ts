@@ -1,4 +1,4 @@
-// ことば タイル (docs/curriculum-wave2.md §2.1): the mode shows once a tile file is `listened` (かわ's s1-tile-a and s1-tile-b,
+// ことば タイル (docs/kikimimi-engine.md "ことば タイル"): the mode shows once a tile file is `listened` (かわ's s1-tile-a and s1-tile-b,
 // shipped listened), on あそぶ's さくっと shelf and its page at かわ; a solo game (the clip first with no tiles, then tap the
 // tiles into their slots, tap a placed one back, できた), one sentence wrong, the reveal's spoken shape, Japanese and 解説,
 // the results' review and my row (gm tile, the wrong slots as the pick); then two phones in co-op over the demo's

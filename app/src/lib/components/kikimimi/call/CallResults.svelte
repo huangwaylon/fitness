@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ようじ でんわ's results (docs/curriculum-wave2.md §2.3), its own chunk, in the frame's (frame/Results.svelte: しずえ's
+  // ようじ でんわ's results (docs/kikimimi-engine.md "ようじ でんわ"), its own chunk, in the frame's (frame/Results.svelte: しずえ's
   // line, the team's tally, my rounds right, my いっぱつ, おわる / もういっかい), with the errands done over it (a call's
   // basket all caught: co-op, the team's memo). Then the review list (frame/ReviewList.svelte), the misses first: each
   // call, tapped open, with its basket, the rows I heard wrong, the trap's note, 解説, ▶︎ and its transcript.

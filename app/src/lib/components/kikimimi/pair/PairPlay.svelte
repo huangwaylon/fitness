@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A card of はつおん ききわけ (docs/kikimimi-mic.md §2.4; games/pair/def.ts), its own chunk, in the round's frame. Two
+  // A card of はつおん ききわけ (docs/kikimimi-mic.md "はつおん ききわけ"; games/pair/def.ts), its own chunk, in the round's frame. Two
   // pictures with their labels and words; both words play first (each lit as it's said). Then, solo: 「rice と言ってみよう」,
   // the mic (SayButton: the two words are the recogniser's candidates), and the villager shows what they heard, the
   // wrong word a joke (「え、 しらみ？！」), never a ✗; two tries a card, とばす. Hard to tell, nothing to tell it with

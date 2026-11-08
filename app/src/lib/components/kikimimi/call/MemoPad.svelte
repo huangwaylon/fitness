@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ようじ でんわ's memo (docs/curriculum-wave2.md §2.3): a card of chip rows, each its question (いくつ？ なんじ？) and its
+  // ようじ でんわ's memo (docs/kikimimi-engine.md "ようじ でんわ"): a card of chip rows, each its question (いくつ？ なんじ？) and its
   // chips; a tap picks a row's chip, another tap on it takes it back, a tap on another changes it (the call's "oh,
   // actually…": no drag, no typing). Co-op, the partner's rows dashed with their question only. At the reveal each row
   // shows its right chip (○), a wrong pick struck (×: mine, or co-op the team's), and the right chip's Japanese when it

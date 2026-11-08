@@ -8,7 +8,7 @@
 // "gonna" is heard where "going to" is shown, a number may come as digits or words), and the shown words it didn't
 // match are spread between their neighbours by their letters. Only the normal clips (the karaoke replays those) and
 // スピード はしご's rungs. A clip
-// mixed with a speech condition (noise, a phone line, a PA's hall: docs/kikimimi.md "Conditions") is aligned on its
+// mixed with a speech condition (noise, a phone line, a PA's hall: docs/kikimimi-engine.md "Conditions") is aligned on its
 // clean take, which the audio script keeps under .cache/tts/clean/ with the speech's offset in the mixed clip.
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -98,7 +98,7 @@ function align(shown: string[], heard: { w: string; from: number; to: number }[]
   return [...out.map((t) => Math.min(t, dur)), dur];
 }
 
-if (todo.length && !existsSync(MODEL)) throw new Error(`${MODEL} missing: the one-time setup in docs/kikimimi.md "Audio" (or WHISPER_MODEL)`);
+if (todo.length && !existsSync(MODEL)) throw new Error(`${MODEL} missing: the one-time setup in docs/kikimimi-engine.md "Audio" (or WHISPER_MODEL)`);
 if (todo.length) {
   unpackClips(); // the clips as loose files (from the packs, where the work folder hasn't them)
   const tmp = mkdtempSync(join(tmpdir(), 'kiki-words-'));
@@ -141,4 +141,4 @@ const keep = new Set(clips.map((c) => c.id));
 const sorted = Object.fromEntries(Object.entries(words).filter(([id]) => keep.has(id) || (only && !only.test(id) && CLIPS[id])).sort(([a], [b]) => a.localeCompare(b)));
 writeFileSync(OUT, '{\n' + Object.entries(sorted).map(([id, r]) => `  ${JSON.stringify(id)}: ${JSON.stringify(r)}`).join(',\n') + '\n}\n');
 console.log(`words.json: ${Object.keys(sorted).length} clips`);
-writeLevels(true); // the levels' chunks with the new timings (docs/kikimimi.md "Loading")
+writeLevels(true); // the levels' chunks with the new timings (docs/kikimimi-engine.md "Loading")

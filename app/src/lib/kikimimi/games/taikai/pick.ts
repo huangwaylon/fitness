@@ -1,4 +1,4 @@
-// しずえの しゅうまつ たいかい's deck, chosen (docs/curriculum.md §7.1): the week's misses of everyone in the lobby,
+// しずえの しゅうまつ たいかい's deck, chosen (docs/curriculum.md "Modes"): the week's misses of everyone in the lobby,
 // interleaved (まぜまぜ: no two of a type or level side by side where the picks allow), the hardest last as the wager.
 //
 // How the phones agree on it. Each phone knows only its own player's answers in full (the partner's rows reach it as

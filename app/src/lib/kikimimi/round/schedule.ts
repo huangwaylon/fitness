@@ -1,4 +1,4 @@
-// A round game's schedule (docs/kikimimi.md "Sync", "The host is the clock"): pure, from what every phone has alike.
+// A round game's schedule (docs/kikimimi-engine.md "Sync", "The host is the clock"): pure, from what every phone has alike.
 // Round 0 starts at `go`'s `at`; within a round every phone computes the lead-in, the clip and the answer window from
 // the round's timing (RoundDeck.timing); the reveal is untimed, so a later round's start is only ever known from the
 // host's つぎへ (its skip) unless the round's reveal moves on by itself (RoundTiming.auto).

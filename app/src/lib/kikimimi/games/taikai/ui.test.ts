@@ -1,4 +1,4 @@
-// しずえの しゅうまつ たいかい as the sheet plays it (docs/kikimimi-framework.md "G-たいかい logic as built"; the UI in
+// しずえの しゅうまつ たいかい as the sheet plays it (docs/kikimimi-engine.md "しゅうまつ たいかい"; the UI in
 // components/kikimimi/taikai/): source.ts's helpers over this build's content (my offer, the host's pick from its lobby's
 // view, the outcome on any phone), the quiz family's lobby opening and answering it (games/quiz/session.ts, view.ts), and
 // its row kept in my games for the trophy shelf (progress.ts gamesOf, def.ts trophiesOf).

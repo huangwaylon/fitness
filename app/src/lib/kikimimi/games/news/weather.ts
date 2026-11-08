@@ -1,4 +1,4 @@
-// しずえの ニュース's weather tail (docs/curriculum-wave2.md §2.5): today's real Tokyo weather read as whole sentences,
+// しずえの ニュース's weather tail (docs/kikimimi-engine.md "しずえの ニュース"): today's real Tokyo weather read as whole sentences,
 // each a clip voiced ahead (content/listen/news-a.yaml's `weather` item: 8 skies, the high for −2…38 °C in Celsius as
 // Tokyo reports it, 6 alerts, the sign-off), joined only between sentences. From the relay's timeline (live-protocol.ts
 // Wx, sync/wx.ts): the sky over the day's waking hours, any fog, the day's high. The host packs it into the lobby's

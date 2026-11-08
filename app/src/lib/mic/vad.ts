@@ -1,4 +1,4 @@
-// The mic's pure signal half (docs/kikimimi-mic.md §3.1, capture.ts uses it): the capture brought to 16 kHz mono as it
+// The mic's pure signal half (docs/kikimimi-mic.md "Files", capture.ts uses it): the capture brought to 16 kHz mono as it
 // comes (a box-filter decimator), a buffer that never grows past its cap, and the voice activity detector: 20 ms frames,
 // their energy (dBFS) against a noise floor that follows the room, their zero-crossing rate (hiss crosses zero at
 // nearly every other sample, a voice far less), speech held on through 300 ms gaps (the hang) and "done" once speech

@@ -1,4 +1,4 @@
-// The quiz family's rounds (docs/kikimimi-framework.md §3.3): one round per item, its kind by the item's type (a
+// The quiz family's rounds (docs/kikimimi-engine.md "The quiz as a GameDef"): one round per item, its kind by the item's type (a
 // スピード はしご rung its own), each a choice of 3-4 graded right or wrong (points.ts: 100 a right one; いっぱつ a badge).
 // The round carries what the session needs of its item: the right choice (after the deck's shuffle), its clip's length
 // as played (clips.json: a dialogue's lines and the gaps), the rung. Pure.

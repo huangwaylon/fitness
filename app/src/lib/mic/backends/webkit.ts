@@ -1,4 +1,4 @@
-// ききみみ's Safari recogniser (docs/kikimimi-mic.md §3.2): webkitSpeechRecognition, en-US, final results only, one
+// ききみみ's Safari recogniser (docs/kikimimi-mic.md "The Recogniser"): webkitSpeechRecognition, en-US, final results only, one
 // utterance. It runs its own capture (not ours) and may send the audio to Apple, so it's used only when picked by hand
 // in せってい, after its disclosure. No level meter, no word times. Ends on its own at the utterance's end, on stop (the
 // result so far), cancel (aborted), or 15 s.

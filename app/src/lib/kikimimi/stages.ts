@@ -1,9 +1,9 @@
-// ききみみ's units' stages and lessons (docs/curriculum-units.md §1, §3): the constants the compiler (units.ts) and the
+// ききみみ's units' stages and lessons (docs/curriculum.md "The spine", "Lessons"): the constants the compiler (units.ts) and the
 // phone (lesson.ts, stamps.ts) share, apart so the phone's chunk never carries the compiler's checks. Pure.
 
 /** The curriculum's stages (§3; plan §1), はまべ → ほし: each one's place on levelRank's scale (a unit's items may be one
  *  step from it; きろく's comfortable level falls in a stage within half a step of it), its ★s and CEFR band (きろく),
- *  and the sound features a unit's main one is taken from (curriculum §3's sequence, in the bank's and the drafts'
+ *  and the sound features a unit's main one is taken from (curriculum.md "Stages and can-dos"'s sequence, in the bank's and the drafts'
  *  vocabulary). */
 export const STAGES = {
   hama: { rank: 2, stars: 1, cefr: 'A2–B1', sounds: ['l-r', 'vowel', 'teen-ty', 'can-cant', 'ending', 'katakana', 'numbers', 'clock'] },
@@ -43,7 +43,7 @@ export const isUnitDomain = (d: string): d is UnitDomain => d === 'glue' || (DOM
 /** A lesson is one 6-question game (plan §3; the `listen` row's bound). */
 export { LESSON_QS } from '../contract/listen.ts';
 
-/** Recipe 2 (docs/curriculum-wave2.md §3.1, W2-9): the lessons that play a listening game when the unit names that
+/** Recipe 2 (docs/curriculum.md "The 21 units", W2-9): the lessons that play a listening game when the unit names that
  *  content (`lessons.<key>`, ids in content/listen/) and it's `listened`: おと 6 ことば タイル, じっせん たちぎき (1-2
  *  conversations, 3 rounds each), チェック 1 ようじ でんわ call (its 2 memo rounds) and 4 of its own quiz items. Each
  *  lesson's recipe-1 list stays: what it plays while its content isn't ready. */

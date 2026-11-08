@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A round of a unit's lesson (docs/curriculum-units.md §3, §16): a quiz item on the quiz's page (Play.svelte), a
+  // A round of a unit's lesson (docs/curriculum.md "Lessons", "Recipe 2"): a quiz item on the quiz's page (Play.svelte), a
   // recipe-2 card on its listening game's (ことば タイル, ようじ でんわ, たちぎき: each its own chunk, loaded when the
   // first of its cards comes), shown the lesson's game at the card's place and my tier (board.ts cardGame).
   import type { Component } from 'svelte';

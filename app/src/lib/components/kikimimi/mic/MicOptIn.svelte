@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ききみみ's せってい › マイク (docs/kikimimi-mic.md §2.6, §5): 「マイクを使う」 (off by default; turning it on asks the
+  // ききみみ's せってい › マイク (docs/kikimimi-mic.md "Where they show", "The privacy rule"): 「マイクを使う」 (off by default; turning it on asks the
   // permission first), kept on this phone (DEVICE.mic). On: the rule (nothing kept or sent, earphones), 「マイクのチェック」
   // (a take through MicButton, only its length shown), 「音声認識」 (自動 / このiPhone / Safari / サーバー, each with its
   // disclosure; one that can't run here is off), the model's download with progress when whisper is the one, and

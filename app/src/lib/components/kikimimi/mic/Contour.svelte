@@ -1,5 +1,5 @@
 <script lang="ts">
-  // まねっこ's two melody lines (docs/kikimimi-mic.md §2.1 step 4): the villager's (thick, leaf) and mine (coral) on one
+  // まねっこ's two melody lines (docs/kikimimi-mic.md "まねっこ シャドーイング" step 4): the villager's (thick, leaf) and mine (coral) on one
   // time axis from each one's first sound, in semitones from each speaker's own middle (a low voice and a high one
   // compare fairly), the syllables as dots on both, the line's words under theirs at their times (words.json, the
   // karaoke's). Only the tracks (lib/mic/prosody.ts: pitch and loudness per 10 ms) come here, never the voice. SVG.

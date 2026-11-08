@@ -1,4 +1,4 @@
-// ききみみ's audio packs (docs/kikimimi.md "Audio"): the lobby fetches its deck's pack(s) whole from /audio/listen/
+// ききみみ's audio packs (docs/kikimimi-engine.md "Audio"): the lobby fetches its deck's pack(s) whole from /audio/listen/
 // (no Range, no loose clip), and a clip sliced from a pack as built decodes to its length in the page (the 9a spike's
 // check, kept: WebKit is the users' Safari). Silent: nothing is played (an OfflineAudioContext decodes; the sound check
 // is never tapped). The logic tier.

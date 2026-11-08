@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ふたりで ロールプレイ's lobby (docs/kikimimi-mic.md §2.5), its own chunk: what it is (a scene acted out in English,
+  // ふたりで ロールプレイ's lobby (docs/kikimimi-mic.md "ふたりで ロールプレイ"), its own chunk: what it is (a scene acted out in English,
   // each on their own turn; the voice heard only on this phone), the scene (the host picks one of the units', the others
   // see it), the two role cards (each role's name, its villagers and goal in each part, its key phrases with their
   // Japanese; mine marked あなた, by our places among those joined: A, then B), who's in, and the foot: alone, さそう;

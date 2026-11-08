@@ -1,4 +1,4 @@
-// ききみみ's mic probe (docs/kikimimi-mic.md §1.1, §3.8): せってい's 「マイク診断（テスト）」 on a paired phone (`?log=on`:
+// ききみみ's mic probe (docs/kikimimi-mic.md "The probe", "Tests"): せってい's 「マイク診断（テスト）」 on a paired phone (`?log=on`:
 // the log is off under automation otherwise), in the chromium-mic project: a fake mic fed one of our clips through a
 // getUserMedia shim (e2e/fixtures/mic/ladder-line.wav: sp-cat-2's slice of the ladder pack, `ffmpeg -i <clip>.m4a -ac 1
 // -ar 16000 -c:a pcm_s16le`), nothing played out loud, no network. Safari's recogniser is the stub (`localStorage['e2e.stt']`),

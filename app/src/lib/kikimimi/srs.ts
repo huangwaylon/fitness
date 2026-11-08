@@ -1,8 +1,8 @@
-// ききみみ クイズ's spaced repetition and にがて れんしゅう (docs/kikimimi.md "Adaptivity", curriculum §10): Leitner cards
+// ききみみ クイズ's spaced repetition and にがて れんしゅう (docs/kikimimi.md "Adaptivity", curriculum.md "Placement and spaced repetition"): Leitner cards
 // for the items I missed (or got only after a replay) and for every feature I answered, folded from my answers in
 // order (never stored), and a solo deck of my weak spots. The shared deck (deck.ts) stays deterministic for every
 // multiplayer game; this is solo only. Pure over the index (pool.ts ENTRIES): only the picks' levels are loaded to deal
-// them (report.ts practiceFor). よみきき サンド's まだ (docs/curriculum-wave2.md §2.0) is a mark on this phone only
+// them (report.ts practiceFor). よみきき サンド's まだ (docs/kikimimi-engine.md "よみきき サンド") is a mark on this phone only
 // (DEVICE.kikiMada), folded in as a "hard" answer on its day: no row changes, nothing goes on the wire.
 import { mulberry32, shuffle } from '#lib/random.ts';
 import type { LocalDate, Who } from '../types.ts';
@@ -170,7 +170,7 @@ export function practicePicks(o: PracticeOpts): { ids: string[]; deal: (item: (i
   };
 }
 
-// ---- the phrase ずかん (docs/curriculum-units.md §2) ---------------------------------------------------------------------
+// ---- the phrase ずかん (docs/curriculum.md "A unit") ---------------------------------------------------------------------
 
 /** A phrase is caught once right on the first listen in this many different clips (items), on at least this many days. */
 export const CAUGHT_CLIPS = 3;

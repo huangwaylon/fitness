@@ -1,4 +1,4 @@
-// ききみみ's round engine, its shapes (docs/kikimimi-framework.md §3.1): a game (GameDef) deals rounds from a seed and
+// ききみみ's round engine, its shapes (docs/kikimimi-engine.md "Types"): a game (GameDef) deals rounds from a seed and
 // its options, every phone the same; each round's kind (RoundKind) says how long it plays, which answers it takes and
 // how they're graded. The session (session.ts) runs any game's rounds on the host's clock and never looks inside one.
 // Pure types, no Svelte.
@@ -116,7 +116,7 @@ export interface GameDef<O = unknown> {
   seedBits?: { mask: number; of(o: O, f: number): number };
   /** Its deck: pure, deterministic for the seed, options and unit. */
   deck(seed: number, o: O, ctx: DeckCtx): RoundDeck;
-  /** Its content version for these options and unit (docs/kikimimi-framework.md §4.2: compiled, levels/index.json's
+  /** Its content version for these options and unit (docs/kikimimi-engine.md "cv, the content version": compiled, levels/index.json's
    *  `games`), sent on a `play` open; undefined: this build hasn't that content. A heard open whose cv isn't this is
    *  blocked (an update offered). */
   cv?(o: O, u?: string): string | undefined;

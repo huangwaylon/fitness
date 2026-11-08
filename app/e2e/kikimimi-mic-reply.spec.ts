@@ -1,4 +1,4 @@
-// こたえて！ (docs/kikimimi-mic.md §2.3, §5): a reply round's 🎤 chip with the mic on, in the chromium-mic project: the
+// こたえて！ (docs/kikimimi-mic.md "こたえて！", "The privacy rule"): a reply round's 🎤 chip with the mic on, in the chromium-mic project: the
 // stand-in mic (one of our clips through a getUserMedia shim, as kikimimi-mic-optin's), the stub recogniser
 // (`e2e.stt`, set before each take), nothing played out loud, no network. Solo: a clear reply answers as its tap and
 // what was heard shows at the reveal; an unclear one says 「通じるかも」 with it and the choices stay open; nothing heard

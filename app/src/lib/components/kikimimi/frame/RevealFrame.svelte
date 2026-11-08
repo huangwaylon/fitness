@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A round's verdict at its reveal (docs/kikimimi.md "The game"; framework §5 RevealFrame): sat out, ○ right (+its
+  // A round's verdict at its reveal (docs/kikimimi.md "The game"; kikimimi-engine.md "Shared UI" RevealFrame): sat out, ○ right (+its
   // points) or × wrong / time up, and the 「いっぱつ！」 stamp (a badge, no points); co-op, how many of us got it (never
   // who). A game may say its own line in place of ○ / × (`line`: スピード はしご's climb) and add under it (`extra`).
   // Solo, よみきき サンド's 「読んでから もう一度」 under it (`sand`: never in a game of several, it'd hold up their つぎへ).

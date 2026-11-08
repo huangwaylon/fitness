@@ -1,4 +1,4 @@
-// Recipe 2 (games/lesson/recipe.ts, docs/curriculum-units.md §16; W2-9): a unit's manifest naming its listening
+// Recipe 2 (games/lesson/recipe.ts, docs/curriculum.md "Recipe 2"; W2-9): a unit's manifest naming its listening
 // content (checked against content/listen/, its files in the index), the lesson that loads its kind's files before its
 // deck, the deck of tiles, a call with 4 quiz items or a たちぎき, and the fallback to recipe 1, exactly, whenever a
 // kind's content isn't listened (a draft, or only voiced), isn't loaded or has lost an id; the mixed deck's rounds and

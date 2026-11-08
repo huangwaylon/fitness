@@ -1,4 +1,4 @@
-// The mic session (docs/kikimimi-mic.md §3.7, §5): one take at a time, from a tap to its end. A take opens the mic on
+// The mic session (docs/kikimimi-mic.md "Audio session", "The privacy rule"): one take at a time, from a tap to its end. A take opens the mic on
 // the voice's context with the audio session 'play-and-record' (sound.svelte.ts micSession: the music held ducked) and
 // ends on the first of: the caller's stop() (the speech kept) or cancel(), the VAD's silence after speech, the cap
 // (MAX_S), no speech within WAIT_S, a new take, the app hidden or the page hidden (pagehide). Each end releases the

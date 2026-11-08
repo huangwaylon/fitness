@@ -1,4 +1,4 @@
-// ききみみ クイズ: a game's 8 questions from {seed, lv} (docs/kikimimi.md "Content"). Deterministic: every phone builds
+// ききみみ クイズ: a game's 8 questions from {seed, lv} (docs/kikimimi-engine.md "Content"). Deterministic: every phone builds
 // the same deck from the `open` intent's seed and level, so no text goes on the wire. It draws from the level's items as
 // loaded (pool.ts levelItems: the level's chunk must be in first, game.svelte.ts waits for it).
 import { mulberry32, shuffle } from '#lib/random.ts';
@@ -13,7 +13,7 @@ export const DECK_SIZE = 8;
 export const MIX: Mixes = mixFor(INDEX.dialogues);
 
 /** The levels a phone offers (the lobby's): those with a mix and every clip of the items it draws, so a level whose
- *  audio isn't made yet (level 4 till the neural cast, docs/curriculum.md §14) stays hidden and main stays shippable
+ *  audio isn't made yet (level 4 till the neural cast, docs/curriculum.md "Modes") stays hidden and main stays shippable
  *  (compile.ts playable, in the index). */
 export const LEVELS: readonly Level[] = INDEX.offered;
 /** Whether this phone offers スピード はしご (the lobby's mode choice): once every rung of every ladder has its clip. */

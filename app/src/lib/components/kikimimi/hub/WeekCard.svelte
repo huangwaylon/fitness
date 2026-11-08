@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The hub's week card (docs/kikimimi-ux.md §6.1, §7.3, §7.4): こんしゅう きいた ひ, my days stamped against my target
+  // The hub's week card (docs/kikimimi.md "The hub", "The weekly stamp card", "ふたりの クエスト"): こんしゅう きいた ひ, my days stamped against my target
   // (月 … 日, today ringed; met: a coral stamp, never a streak or a missed-day count), and ふたりの クエスト: the minutes
   // heard together this week as one bar (never who added what); the guest's own solo quest instead.
   import type { WeekCard } from '#lib/kikimimi/week.ts';

@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A round of ことば タイル (docs/curriculum-wave2.md §2.1; games/tile/def.ts), its own chunk, in the round's frame
+  // A round of ことば タイル (docs/kikimimi-engine.md "ことば タイル"; games/tile/def.ts), its own chunk, in the round's frame
   // (frame/RoundFrame.svelte: the players' chips, the timer, the status line, つぎへ / よみおわった). The speaker pops in and
   // the clip plays once with no tiles (the situation, `ctx`, under the bubble); then the sentence's slots and the board's
   // tiles: a tap puts a tile in my next empty slot, a tap on a placed one takes it back (no drag), 「できた」 sends it once

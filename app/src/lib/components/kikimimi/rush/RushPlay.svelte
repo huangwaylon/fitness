@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A round of すうじ ラッシュ (docs/curriculum-wave2.md §2.4; games/rush/def.ts), its own chunk, in the round's frame
+  // A round of すうじ ラッシュ (docs/kikimimi-engine.md "すうじ ラッシュ"; games/rush/def.ts), its own chunk, in the round's frame
   // (frame/RoundFrame.svelte: the players' chips, the 8 s bar, the status line, つぎへ / よみおわった). A customer steps up
   // to the counter (Counter.svelte: the sign, the combo meter, the line) and orders; the ticket's chips (frame/ChoiceGrid)
   // wait for the order's end, then one tap. 🔁 as often as wanted (a replay: the combo needs a first listen). Co-op

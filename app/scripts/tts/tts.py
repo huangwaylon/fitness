@@ -1,4 +1,4 @@
-"""ききみみ TTS helper for scripts/kikimimi-audio.ts (docs/kikimimi.md "Audio"). Silent: it writes files, never plays one.
+"""ききみみ TTS helper for scripts/kikimimi-audio.ts (docs/kikimimi-engine.md "Audio"). Silent: it writes files, never plays one.
 
 Each subcommand reads a JSON job list and writes a JSON result; the heavy imports are per subcommand, so each runs in
 its own venv (the TS side picks the python: KIKIMIMI_TTS_PY, KIKIMIMI_PHONON_PY, KIKIMIMI_KOKORO_PY, KIKIMIMI_QA_PY,

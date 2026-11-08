@@ -1,4 +1,4 @@
-// ききみみ's audio packs (docs/kikimimi.md "Audio", docs/kikimimi-framework.md §6; src/lib/kikimimi/packing.ts): every
+// ききみみ's audio packs (docs/kikimimi-engine.md "Audio", "Loading"; src/lib/kikimimi/packing.ts): every
 // clip in clips.json (and its slow take) into static/audio/listen/<pack>.<hash>.pak, a pack per home (a level, the
 // ladders, a unit, a bedtime story's chapter; the slow takes their home's `-slow` pack), split past 1.2 MB (slow 0.8 MB) as stably as can be (a
 // pack whose clips didn't change keeps its bytes, name and hash: packing.ts planHome), packs.json written (each pack's

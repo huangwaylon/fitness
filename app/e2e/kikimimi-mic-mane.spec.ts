@@ -1,4 +1,4 @@
-// まねっこ シャドーイング (docs/kikimimi-mic.md §2.1, §2.6, §5) in the chromium-mic project: a fake mic fed one of our
+// まねっこ シャドーイング (docs/kikimimi-mic.md "まねっこ シャドーイング", "Where they show", "The privacy rule") in the chromium-mic project: a fake mic fed one of our
 // clips once per take (then silence) through a getUserMedia shim, nothing played out loud, no network. The mode is on
 // あそぶ's 声に出す shelf only with the mic on; a solo game of 4 lines: the line once (listen only), then 重ねて言う (the
 // mic's tap plays the line, the take ends on the silence after it) with the two melody lines and at most two feedback

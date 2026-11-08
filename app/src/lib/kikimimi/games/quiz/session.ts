@@ -1,4 +1,4 @@
-// The quiz family's lobby on a round session (docs/kikimimi.md "UI"): the quiz's sheet opens and configures a lobby in
+// The quiz family's lobby on a round session (docs/kikimimi.md "UI details"): the quiz's sheet opens and configures a lobby in
 // its own terms (a level, おなじへや, たいせん, スピード はしご, こたえる じかん; a unit's lesson dealt into my lobby kept
 // alone), answers with a choice, and reads the quiz's view; underneath it's a RoundSession over the quiz, スピード はしご
 // and lesson GameDefs. Pure.

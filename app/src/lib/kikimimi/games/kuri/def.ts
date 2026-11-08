@@ -1,4 +1,4 @@
-// くりかえし チャレンジ (elicited imitation, docs/kikimimi-mic.md §2.2) as a GameDef: a sentence plays once, a beat, then
+// くりかえし チャレンジ (elicited imitation, docs/kikimimi-mic.md "くりかえし チャレンジ") as a GameDef: a sentence plays once, a beat, then
 // you say it back; the phone's recogniser hears it and the view counts the content words you got (lib/mic/match.ts
 // recall: no prompt is given to the recogniser). Solo, adaptive (GameDef.next), nothing on the wire. Pure.
 //

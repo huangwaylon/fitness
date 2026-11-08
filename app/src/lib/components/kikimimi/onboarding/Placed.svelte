@@ -1,5 +1,5 @@
 <script lang="ts">
-  // みみ チェック's result (docs/kikimimi-ux.md §6.12; curriculum §10), no score: しずえ's 「〇〇から はじめましょう」 over
+  // みみ チェック's result (docs/kikimimi.md "First run"; curriculum.md "Placement and spaced repetition"), no score: しずえ's 「〇〇から はじめましょう」 over
   // the five places with the placed one lit, the strongest skill (とくい) and the one to grow (これから), that it's mine
   // alone, and ききみみへ (the hub). Its own chunk: the check's results view (games/check/lane.ts).
   import type { QuizGame } from '../game.svelte.ts';

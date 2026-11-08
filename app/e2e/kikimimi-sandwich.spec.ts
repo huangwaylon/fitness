@@ -1,4 +1,4 @@
-// よみきき サンド (docs/curriculum-wave2.md §2.0): listen blind → read → listen blind again → 聞き取れた / まだ, from a
+// よみきき サンド (docs/kikimimi-engine.md "よみきき サンド"): listen blind → read → listen blind again → 聞き取れた / まだ, from a
 // solo reveal and from a review row. まだ is a mark on this phone only (island.kikiMada); 聞き取れた keeps nothing. The
 // logic tier: a headless browser's audio is a null sink, the clip's length the relay clock's.
 import { expect, test, type Page } from './fixtures.ts';

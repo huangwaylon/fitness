@@ -1,4 +1,4 @@
-// ききみみ クイズ: the lobby's flags, carried in the `open`'s seed's low bits (docs/kikimimi.md "Sync"). No wire field
+// ききみみ クイズ: the lobby's flags, carried in the `open`'s seed's low bits (docs/kikimimi-engine.md "Sync"). No wire field
 // of their own, so no relay deploy (the relay passes known fields only); every phone reads the same flags from the
 // `open`, and changing one deals a new deck, never seen yet. The other bits are the deck's (recent.ts seedWith).
 //   bit 0     たいせん (ranking); clear: co-op, a new lobby's default.

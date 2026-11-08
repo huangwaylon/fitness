@@ -1,4 +1,4 @@
-// ききみみ's lessons and stamps (docs/curriculum-units.md §2-§4, §10; U2-U3): a lesson's 6-question deck from a unit's
+// ききみみ's lessons and stamps (docs/curriculum.md "A unit", "Playing together"; U2-U3): a lesson's 6-question deck from a unit's
 // chunk (deterministic by seed, the チェック held out, a player's tier), the stamps folded from rows (mine ≥ 5/6 on the
 // first listen, or a co-op team's ≥ 5: a pair pass where one player scored low), the partner's stamp and the double
 // stamp, the 30-day solo recheck, and the phrase ずかん's caught rule and daily review. Over a fixture unit compiled

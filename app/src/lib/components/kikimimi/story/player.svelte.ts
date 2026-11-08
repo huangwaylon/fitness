@@ -1,4 +1,4 @@
-// おやすみ ものがたり's player (docs/kikimimi-ux.md §6.8): a chapter's segments one after another through the voice
+// おやすみ ものがたり's player (docs/kikimimi.md "おやすみ ものがたり"): a chapter's segments one after another through the voice
 // path (packs.ts voiceClip → sound.svelte.ts playVoice), each started when the one before ends plus a natural gap
 // (bedtime.ts gapAfter), the next one decoded meanwhile. It moves on by the clips' lengths (a clip that can't sound —
 // no voice yet, offline — is waited for up to 3 s, then its length passes in silence), so the story keeps its place

@@ -1,4 +1,4 @@
-// ききみみ's mic probe, the pure half (docs/kikimimi-mic.md §1.1): the pinned sentences, the input's class from its label,
+// ききみみ's mic probe, the pure half (docs/kikimimi-mic.md "The probe"): the pinned sentences, the input's class from its label,
 // levels in dB, a click's onset (the round trip), a take as a 16 kHz WAV, the closed sets of the log's `mic.*` events.
 // The label, the heard text and the audio never leave these functions' callers: only numbers and closed sets do.
 

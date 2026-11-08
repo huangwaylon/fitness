@@ -55,7 +55,7 @@ export function keepJa(m: JaMode): void {
   }
 }
 
-/** The first-run welcome (docs/kikimimi-ux.md §6.12) seen or put off by `who` on this phone. */
+/** The first-run welcome (docs/kikimimi.md "First run") seen or put off by `who` on this phone. */
 export const onboarded = (who: Who): boolean => readJson<Record<string, unknown>>(localKV(), DEVICE.kikiOnboarded)?.[who] === 1;
 export function keepOnboarded(who: Who): void {
   const v = readJson<Record<string, unknown>>(localKV(), DEVICE.kikiOnboarded);

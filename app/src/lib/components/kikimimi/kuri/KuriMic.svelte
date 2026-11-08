@@ -1,5 +1,5 @@
 <script lang="ts">
-  // くりかえし チャレンジ's tap-to-talk (docs/kikimimi-mic.md §2, the rules): 80 px, round, a ring meter of the voice's level.
+  // くりかえし チャレンジ's tap-to-talk (docs/kikimimi-mic.md "The modes", the rules): 80 px, round, a ring meter of the voice's level.
   // A tap starts a take on the phone's recogniser (lib/mic/stt.ts, loaded by the round; inside the tap: the audio context
   // woken), a tap
   // ends it; it also ends by itself on silence after speech, at its cap, with no speech in a while, or when the app

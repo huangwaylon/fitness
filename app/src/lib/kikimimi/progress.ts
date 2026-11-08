@@ -38,7 +38,7 @@ export interface Game extends Omit<ListenRow, 'r' | 'p'> {
 }
 
 /** A game of another member's, as its summary (contract/listen.ts): never its level or answers; a unit's passed チェック
- *  its unit and `stamped` (docs/curriculum-units.md §4). */
+ *  its unit and `stamped` (docs/curriculum.md "Playing together"). */
 export interface OtherGame {
   who: Who;
   d: LocalDate;
@@ -95,7 +95,7 @@ export function gamesOf(rows: readonly EventRow[], me: Who): { mine: Game[]; oth
         continue;
       }
       const p = x.p === 1;
-      // only the items this build knows: a newer game's row (docs/kikimimi-framework.md §4.4) leaves the stats as they were (a スピード はしご rung is known: speedOf);
+      // only the items this build knows: a newer game's row (docs/kikimimi-engine.md "The listen row") leaves the stats as they were (a スピード はしご rung is known: speedOf);
       // a ききみみ unit's lesson keeps every answer (its own items are in its chunk, not the index: the stats pass them by, the phrase ずかん reads them)
       const lesson = x.u !== undefined && x.l !== undefined && x.gm === undefined;
       const r = x.r.filter(([id]) => lesson || !!entryOf(id) || isRungId(id)).map(([id, ok, pick, rp]): Answer => ({ id, ok: ok === 1, pick, rp, d: x.d, g: x.g, lv: x.lv, p }));
@@ -144,7 +144,7 @@ export function listenAnswers(
   return r;
 }
 
-/** An answer's score: right on the first listen 1, right after a replay 0.6, wrong 0 (curriculum §10). */
+/** An answer's score: right on the first listen 1, right after a replay 0.6, wrong 0 (curriculum.md "Placement and spaced repetition"). */
 export const scoreOf = (a: Pick<Answer, 'ok' | 'rp'>): number => (a.ok ? (a.rp === 0 ? 1 : 0.6) : 0);
 
 /** Mastery's recency half-life (days), its prior and the prior's weight (answers). */
@@ -273,7 +273,7 @@ export function trendOf(games: readonly Game[], n = 12): number[] {
 /** The ladders a speed reading takes (the last this many climbed) and the fewest it's read from. */
 const SPEED_RECENT = 8;
 export const SPEED_MIN = 4;
-/** A speed is comfortable when at least this share of the recent ladders climbed past it (curriculum §10's 75-85 %). */
+/** A speed is comfortable when at least this share of the recent ladders climbed past it (curriculum.md "Placement and spaced repetition"'s 75-85 %). */
 const SPEED_COMFORT = 0.75;
 
 /** The fastest comfortable speed (docs/kikimimi.md "スピード はしご"): over my last SPEED_RECENT ladders, the share

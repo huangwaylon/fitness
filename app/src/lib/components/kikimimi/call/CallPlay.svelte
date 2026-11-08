@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A round of ようじ でんわ (docs/curriculum-wave2.md §2.3; games/call/def.ts), its own chunk, in the round's frame
+  // A round of ようじ でんわ (docs/kikimimi-engine.md "ようじ でんわ"; games/call/def.ts), its own chunk, in the round's frame
   // (frame/RoundFrame.svelte). Round 1 of a call: the NookPhone (scene/SceneCard's PhoneFrame over the room, its bars
   // dropping while a line breaks up) with the situation (`ctx`) under it, and the memo under that, its chips tappable
   // while the call plays; 「メモできた」 sends it once the call has ended and my rows are filled. Round 2: the call over

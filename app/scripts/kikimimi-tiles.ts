@@ -1,4 +1,4 @@
-// ことば タイル from the voiced quiz (docs/curriculum-wave2.md §2.1, content/listen/README.md "Derived tiles"): every
+// ことば タイル from the voiced quiz (docs/kikimimi-engine.md "ことば タイル", content/listen/README.md "Derived tiles"): every
 // one-clip bank item in play that makes a fair tile (a US voice, a `tts` that reduces, 3-12 words, no digits, tagged
 // with a reduction) becomes a `tile` in content/listen/s<n>-tile-bank.yaml, its stage the level's (levelRank: level 4
 // もり, 6 and above やま). It plays the item's clip (`clip`, with its speaker): no new audio, so no `speaker` or `tts` of

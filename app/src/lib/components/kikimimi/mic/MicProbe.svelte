@@ -1,5 +1,5 @@
 <script lang="ts">
-  // せってい's 「マイク診断（テスト）」 (docs/kikimimi-mic.md §1.1): the probe, a screen a step, each with one button,
+  // せってい's 「マイク診断（テスト）」 (docs/kikimimi-mic.md "The probe"): the probe, a screen a step, each with one button,
   // 「スキップ」 and a plain result line. 1 the page's capabilities; 2 the permission (2b, after a reopen: was it asked
   // again?); 3 play and record per earphone route (bleed with echo cancellation on and off, a click's round trip, the
   // user's rating); 4 whisper on this phone (the download on a tap, with progress; its load on WebGPU, then on the WASM

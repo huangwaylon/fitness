@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ずかん › なかま (docs/kikimimi-ux.md §6.10, §7.7): the villagers I've heard, the closest first, each with NH's hearts
+  // ずかん › なかま (docs/kikimimi.md "ずかん", "なかよし"): the villagers I've heard, the closest first, each with NH's hearts
   // (its level, never the points: friendship.ts) and the next reward; a level reached since ずかん last showed it is
   // announced once with a heart. A tap opens the rewards it has opened: their greeting (L1), their letter (L2), the
   // でんわ ともだち badge (L3), the silver frame on the card (L4), their photo in a gold frame (L5); English first, its

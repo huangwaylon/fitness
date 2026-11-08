@@ -60,7 +60,7 @@ describe('ja copy: the sheets (word-break: normal)', () => {
   });
 });
 
-/** ききみみ zones its own keys (its しずえ and NPC lines inside the sheet are the world's: docs/kikimimi-ux.md): out of the
+/** ききみみ zones its own keys (its しずえ and NPC lines inside the sheet are the world's: docs/kikimimi.md): out of the
  *  sheets' spelling rules. */
 const PENDING = /^kiki\./;
 const sheet = Object.entries(ja).filter(([k]) => !isWorld(k) && !PENDING.test(k));

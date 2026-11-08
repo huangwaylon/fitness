@@ -1,4 +1,4 @@
-// What the mic heard against what was to be said (docs/kikimimi-mic.md §3.1). Pure. Both sides go through the same
+// What the mic heard against what was to be said (docs/kikimimi-mic.md "Files"). Pure. Both sides go through the same
 // normaliser (words): US contractions and reductions folded both ways (`gonna` = `going to`), numbers, times, money and
 // ordinals read as words, the recogniser's tags (`[BLANK_AUDIO]`, `(laughs)`) and fillers out (scripts/tts/tts.py's
 // normaliser, made for the clips' whisper gate, is where most of these come from). On top of it:

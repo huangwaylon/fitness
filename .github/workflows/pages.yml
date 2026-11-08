@@ -241,7 +241,7 @@ jobs:
   # (`needs` on the gate put all that after it: ~30 s of every push→live.) Its group holds while it waits, so a newer
   # run's deploy waits for it (or, still waiting, replaces an older one waiting): the deploys go in push order, and the
   # order guard, just before wrangler, skips one (green, a notice) whose commit is live already or older than the live.
-  # With the site: ききみみ's recogniser under stt/ (docs/kikimimi-mic.md §3.6, the stopgap till R2): whisper tiny.en and
+  # With the site: ききみみ's recogniser under stt/ (docs/kikimimi-mic.md "Hosting and the service worker", the stopgap till R2): whisper tiny.en and
   # the ONNX runtime, ~67 MiB in parts ≤ 20 MiB, never in git nor in the `site` artifact, from an Actions cache keyed on
   # their pins (app/src/lib/mic/models.ts), which scripts/stt-models.ts fills on a miss (Hugging Face at the pinned
   # revision, npm; every file's sha256 checked; an older entry restored first, so only what changed is fetched). Pages

@@ -1,4 +1,4 @@
-// しまの みち's model (docs/kikimimi-ux.md §6.3; docs/curriculum-units.md §1, §3; the UX review's sketch A): the stages
+// しまの みち's model (docs/kikimimi.md "しまの みち"; docs/curriculum.md "The spine", "Lessons"; the UX review's sketch A): the stages
 // as the spine (はまべ → かわ → もり → やま → ほし), each unit a stop on it with its lesson dots and stamps, a domain as a
 // tag (an icon, a tint and a filter chip, never a second map), the anchor (glue) units first under 「はじめに おすすめ」,
 // and the one current unit with 「つづける」. Every stage stays playable: one far above my level (みみ チェック's placed
@@ -68,7 +68,7 @@ export interface Path {
   open: Stage;
 }
 
-/** The landmark a stage cleared unit by unit builds (docs/kikimimi-ux.md §7.2; cosmetic: no economy). */
+/** The landmark a stage cleared unit by unit builds (docs/kikimimi.md "No かいがら"; cosmetic: no economy). */
 export const LANDMARKS: Record<Stage, string> = { hama: '📻', kawa: '🛶', mori: '🏮', yama: '🔭', hoshi: '🌌' };
 
 /** Each stage cleared unit by unit: every one of its units (≥ 1) stamped by me, on the day of the last stamp. The

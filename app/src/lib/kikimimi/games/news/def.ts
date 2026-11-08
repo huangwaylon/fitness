@@ -1,4 +1,4 @@
-// しずえの ニュース as a GameDef (docs/curriculum-wave2.md §2.5): one bulletin a day from the news files (content/listen/
+// しずえの ニュース as a GameDef (docs/kikimimi-engine.md "しずえの ニュース"): one bulletin a day from the news files (content/listen/
 // news-a.yaml, news-b.yaml; pool.ts listenOf), picked by the date (the lobby's seed is the Tokyo day: lane.ts) among
 // those of its season, a weekday's only on that day. しずえ reads it as one sequence of clips: an island or seasonal
 // item, a Tokyo-life one, today's real weather (weather.ts, the host's, in the options) and the sign-off. Then the

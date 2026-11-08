@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A villager's letter (docs/kikimimi-ux.md U7): the host of a unit I stamped writes a few lines of English on island
+  // A villager's letter (docs/kikimimi.md "Stamps, letters and landmarks"): the host of a unit I stamped writes a few lines of English on island
   // paper, signed; 「にほんごやく」 shows the gloss under it (hidden by default: the English first). Folded, it's an
   // envelope row (the villager's face, 「{name}から てがみ」, the day) that opens it in place. Text only: nothing plays.
   // Shared: the results' strip (open), a unit's page and ずかん's スタンプ (folded; letters.ts lettersOf lists them).

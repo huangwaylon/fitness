@@ -1,4 +1,4 @@
-// `POST /stt` (docs/kikimimi-mic.md §3.5): one utterance to text through Workers AI, for ききみみ's mic (the probe's step
+// `POST /stt` (docs/kikimimi-mic.md "The relay endpoint"): one utterance to text through Workers AI, for ききみみ's mic (the probe's step
 // 6; later the relay backend). Free of the Workers runtime, so it is unit-testable (test/stt.test.ts).
 // - Auth: a person's key in `Authorization: Bearer <key>` (never in the URL); CORS for our origins, preflight answered
 //   (audio/wav is not a simple request).

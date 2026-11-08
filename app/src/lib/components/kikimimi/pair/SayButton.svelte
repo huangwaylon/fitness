@@ -1,5 +1,5 @@
 <script lang="ts">
-  // はつおん's tap-to-talk (docs/kikimimi-mic.md §2.4): MicButton's 80 px button and ring, over the recogniser instead of
+  // はつおん's tap-to-talk (docs/kikimimi-mic.md "はつおん ききわけ"): MicButton's 80 px button and ring, over the recogniser instead of
   // the bare capture. A tap starts a take with the pair's two words as the candidates (whisper scores each; the others
   // transcribe), a tap stops it, the VAD's silence ends it; `onheard` gets what the recogniser made of it (never kept
   // here). Never starts on its own; leaving drops the take.

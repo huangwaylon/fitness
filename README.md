@@ -63,9 +63,9 @@ One home per topic; the others link to it. If a doc and the code disagree, the c
 | [food-data.md](docs/food-data.md) | ごはん's food catalog and pictures: sources, build, shipping |
 | [sound-sync.md](docs/sound-sync.md) | How music and sounds stay in step across phones |
 | [board.md](docs/board.md) · [travel.md](docs/travel.md) · [wedding.md](docs/wedding.md) · [hiking.md](docs/hiking.md) | The bulletin board, りょこう, けっこんしき, トレイル |
-| [kikimimi.md](docs/kikimimi.md) | ききみみ クイズ, the English listening games, as the player sees them |
-| [kikimimi-framework.md](docs/kikimimi-framework.md) · [kikimimi-ux.md](docs/kikimimi-ux.md) · [kikimimi-mic.md](docs/kikimimi-mic.md) | ききみみ's engine and packs, hub and progression, mic modes |
-| [curriculum.md](docs/curriculum.md) · [curriculum-units.md](docs/curriculum-units.md) · [curriculum-wave2.md](docs/curriculum-wave2.md) | What ききみみ teaches: stages, scenarios, units, content rules |
+| [kikimimi.md](docs/kikimimi.md) | ききみみ, the English listening games, as the player sees them: games, hub, progress, rewards; its open items |
+| [kikimimi-engine.md](docs/kikimimi-engine.md) · [kikimimi-mic.md](docs/kikimimi-mic.md) | ききみみ's round engine, wire, content loading and packs; the mic modes and their privacy rule |
+| [curriculum.md](docs/curriculum.md) | What ききみみ teaches: stages, scenarios, units, content and TTS rules, the listening check, its backlog |
 | [app/content/listen/README.md](app/content/listen/README.md) | The listening units' YAML format |
 | [perf-plan.md](docs/perf-plan.md) | Performance: the open items |
 | [ops/runbook.md](docs/ops/runbook.md) | Running it: hosting, deploys, keys, the relay, recovery |

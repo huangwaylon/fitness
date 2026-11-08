@@ -1,4 +1,4 @@
-// ふたりで ロールプレイ's scenes (docs/kikimimi-mic.md §2.5): each a unit's two voiced dialogues chained, 8-10 turns,
+// ふたりで ロールプレイ's scenes (docs/kikimimi-mic.md "ふたりで ロールプレイ"): each a unit's two voiced dialogues chained, 8-10 turns,
 // two roles. A role is its part's speaker: `a`, the villager who plays role A in that dialogue (the other plays B).
 // The role's name and each part's goal are sheet text (kanji Japanese); the lines, their Japanese and the key phrases
 // are the unit's own (its chunk, its `ph`). A scene's place in this list is its number on the wire (the options'

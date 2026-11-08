@@ -1,4 +1,4 @@
-// スピード はしご as a GameDef (docs/kikimimi-framework.md §3.3; docs/kikimimi.md "スピード はしご"): two ladders of four
+// スピード はしご as a GameDef (docs/kikimimi-engine.md "The quiz as a GameDef"; docs/kikimimi.md "スピード はしご"): two ladders of four
 // rungs from a seed (ladder.ts ladderDeck), each rung a round (`ladder.rung`) whose reveal below the top moves on by
 // itself; the points the rungs climbed in order on the first listen (ladder.ts ladderPoints), counted over the whole
 // deck. Its options are the quiz's (`[lv, timer]`: the lobby's level is kept for the クイズ switch back and the `quiz`

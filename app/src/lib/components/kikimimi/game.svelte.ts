@@ -1,4 +1,4 @@
-// ききみみ's game on this phone (docs/kikimimi.md "Sync", "Audio"): the round session (kikimimi/round/session.ts, pure)
+// ききみみ's game on this phone (docs/kikimimi-engine.md "Sync", "Audio"): the round session (kikimimi/round/session.ts, pure)
 // over the games' GameDefs (each game's lane: round/registry.ts, through games/quiz/session.ts's lobby) wired to the
 // island's Live (or to nothing: solo without a relay), its view refreshed at each phase's end and at each message; the
 // clips it calls for (clipPlayer.svelte.ts), my record of it (recorder.ts). A deck is built only from loaded chunks
@@ -86,7 +86,7 @@ export class QuizGame {
   practicing = $state<false | 'weak' | 'missed'>(false);
   /** My answers of the last game, as recorded (the results' feedback), or null. */
   recorded = $state.raw<ListenRow | null>(null);
-  /** A unit's lesson (docs/curriculum-units.md §3): its unit, which lesson, my tier, whether it's the 30-day recheck;
+  /** A unit's lesson (docs/curriculum.md "Lessons"): its unit, which lesson, my tier, whether it's the 30-day recheck;
    *  its deck dealt into my lobby (the game `lesson`, games/lesson/def.ts: kept alone, or shared, a co-op lesson, §4),
    *  which shows its intro card till はじめる; a co-op lesson's host's pick, as heard, on the other phones. Null: a
    *  quiz. */
@@ -174,7 +174,7 @@ export class QuizGame {
   /** A unit's lesson (lesson.ts): once the unit's chunk is in, my lobby (a quiz's, not a ladder's) becomes the lesson's
    *  game (its 6 questions by the lobby's seed, at my tier: `tier`), and waits on the lesson's intro card for はじめる
    *  (`go`). `recheck`: the 30-day おさらい チェック (a チェック like any). Kept alone: nothing on the wire; shared: a
-   *  co-op lesson (docs/curriculum-units.md §4), everyone's at their own tier. */
+   *  co-op lesson (docs/curriculum.md "Playing together"), everyone's at their own tier. */
   playLesson(unit: string, lesson: Lesson, o: { tier?: Tier | ((stage: Stage) => Tier | undefined); recheck?: boolean } = {}): void {
     // (its unit's chunk, and on recipe 2 its kind's listening files: games/lesson/lane.ts)
     this.#queue.then(() => lessonChunks(unit, lesson), () => {

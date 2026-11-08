@@ -1,4 +1,4 @@
-// ききみみ クイズ 「やま」 (S3, B2+; docs/curriculum.md §3), content set B: work, money and grown-up life at natural speed.
+// ききみみ クイズ 「やま」 (S3, B2+; docs/curriculum.md "Stages and can-dos"), content set B: work, money and grown-up life at natural speed.
 // A step past もり: denser turns, hedges and implied meaning in business and service talk, numbers buried in fast
 // speech (rent, salary, tax, bills, splitting costs), and opinions on current-life topics (housing, remote work, AI at
 // work, overtourism in Japan, health trends). Families (FAMILY): negotiation and persuasion, complaints that escalate,

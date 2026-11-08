@@ -1,4 +1,4 @@
-// `/stt/*` from R2 (docs/kikimimi-mic.md §3.6): ききみみ's recogniser files (the model's parts, the ONNX runtime,
+// `/stt/*` from R2 (docs/kikimimi-mic.md "Hosting and the service worker"): ききみみ's recogniser files (the model's parts, the ONNX runtime,
 // manifest.json), uploaded under `stt/` by `node scripts/stt-models.ts --r2 <bucket>`, served same-origin and immutable
 // (every path carries its revision or version; manifest.json is revalidated). Inert until the Pages project has the
 // bucket bound as STT_BUCKET (W2-R's bucket, the user's Cloudflare step): without the binding, or for a key R2 hasn't

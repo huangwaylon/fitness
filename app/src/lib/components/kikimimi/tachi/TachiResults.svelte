@@ -1,5 +1,5 @@
 <script lang="ts">
-  // たちぎき's results (docs/curriculum-wave2.md §2.2), its own chunk, in the frame's (frame/Results.svelte: しずえ's line,
+  // たちぎき's results (docs/kikimimi-engine.md "たちぎき"), its own chunk, in the frame's (frame/Results.svelte: しずえ's line,
   // the team's tally, how many I got right, おわる / もういっかい): co-op's 「ふたりで k / n」 counts the rounds both got right
   // (the session's `team.all`: the opinions round's two halves). Then the review list (frame/ReviewList.svelte), a card
   // per conversation, the ones with a miss first: its three rounds ○ / ×; tapped open, the whole transcript (three seats,

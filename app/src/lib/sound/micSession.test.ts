@@ -1,4 +1,4 @@
-// ききみみ's audio session in sound.svelte.ts (docs/kikimimi-mic.md §3.7) against a fake engine and a fake WebKit
+// ききみみ's audio session in sound.svelte.ts (docs/kikimimi-mic.md "Audio session") against a fake engine and a fake WebKit
 // `navigator.audioSession`: a game sets 'playback', the mic 'play-and-record' over it and back, and the type from
 // before comes back once both are over, in either order; the music held ducked and the context awake while the mic is
 // open.

@@ -7,7 +7,7 @@
 </script>
 
 <script lang="ts">
-  // しまの みち (docs/kikimimi-ux.md §6.3; the UX review's sketch A): the stages as the spine, はまべ → ほし, each unit a
+  // しまの みち (docs/kikimimi.md "しまの みち"; the UX review's sketch A): the stages as the spine, はまべ → ほし, each unit a
   // stop on it. A stop: the host villager (the domain's tint behind, its icon on a badge), the unit's name, the can-do's
   // one line (else the host and the domain), the lesson dots, my stamp (✓ on the face; two when both of us have it, with
   // 「ふたりで スタンプ！」 under the dots; the partner's alone a soft one). The current unit has the green edge and
