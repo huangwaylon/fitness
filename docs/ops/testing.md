@@ -122,15 +122,28 @@ that morning.
 - **Silent**: Chromium runs with `--mute-audio` and `--disable-audio-output` (the music, K.K. and the effects never
   sound on a dev's Mac, and the page's audio clock is a fake output's, as on CI's Linux: the Mac's own device stalled
   it, the decks frozen, kk-sync red locally); WebKit headless makes no sound.
-- **No new fixed wait.** `page.waitForTimeout` or a `setTimeout` promise needs `// hold: <why>` on its line (a wait
-  proving nothing happens for a while); the older ones are counted per file in `e2e/waits.json` and may only go down:
-  fix one, lower its count.
+- **No new fixed wait**, wall-clock sampling or long test: ratcheted ("Guardrails" below).
 - **Wait for what an action loads.** A tap that deals a deck, opens a sheet or enters a room may load a chunk first
   (ききみみ loads a level at a time): wait for the state it ends in (the game's countdown, the sheet open) before
   reading what it made (kikimimi-progress read the lobby's deck before にがて れんしゅう's came).
 - **Vitest's module cache** (node_modules/.vitest-cache) never keeps a module with an `import.meta.glob`
   (vite.config.ts `globsUncached`), so a file added under a glob is seen at once; anything else odd after a big
   rebase: `npx vitest run --clearCache`.
+
+## Guardrails
+`src/lib/e2e-budgets.test.ts` (vitest, so the `checks` job) counts the flaky patterns per file in `e2e/*.ts`; today's
+counts are the ceilings in `e2e/budgets.json`. A file over its ceiling, or a new file with any, fails, saying what to do
+instead:
+
+| Rule | Counts | Instead |
+|---|---|---|
+| `waits` | `waitForTimeout(`, a `setTimeout` promise (a `// hold:` too) | wait on state; prove "nothing happens" with `page.clock.runFor` |
+| `wallClock` | `performance.now(`, `requestAnimationFrame(` in a spec | the speed/step rule in vitest with an explicit dt; step `page.clock` |
+| `longTests` | `test.setTimeout(` over 30 s, `test.slow(` | split the test; its rule parts into vitest |
+| `textSelectors` | `getByText(`, `hasText:` in a spec | `getByRole` or a `data-*` hook (text is copy) |
+
+Fixed one? `UPDATE_BUDGETS=1 npx vitest run src/lib/e2e-budgets` writes the ceilings down to the counts (it never
+raises one: that's a hand edit to explain in the commit).
 
 ## A changed spec, five times
 CI's `e2e-changed` job (pages.yml, the deploy waits for it) runs the specs a push adds or edits, each test 5× over in

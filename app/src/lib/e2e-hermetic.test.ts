@@ -1,8 +1,6 @@
 // The e2e stay hermetic and wait on state (docs/ops/testing.md "Hermetic"): a lint over app/e2e/*.ts.
 // - Playwright comes from e2e/fixtures.ts (the pinned scene clock, the network guard), never '@playwright/test';
-// - no fixed wait (`page.waitForTimeout`, a `setTimeout` promise) without a reason: a wait that proves nothing happens
-//   for a while says so on its line, `// hold: <why>`; the older ones are counted per file in e2e/waits.json and may
-//   only go down (fix one: lower its count);
+// - fixed waits, wall-clock sampling, long tests: ratcheted in e2e-budgets.test.ts;
 // - no randomness and no real time in what a spec asks for: `Math.random` (seed it), a `?date=` built from the real
 //   clock (`Date.now()` / `new Date()` beside `date=`);
 // - no URL off the local preview but a relay the spec routes itself (ROUTED).
@@ -13,12 +11,6 @@ import { join } from 'node:path';
 const E2E = join(import.meta.dirname, '../../e2e');
 const files = readdirSync(E2E).filter((f) => f.endsWith('.ts')).sort();
 const src = (f: string) => readFileSync(join(E2E, f), 'utf8');
-const WAITS = JSON.parse(readFileSync(join(E2E, 'waits.json'), 'utf8')) as Record<string, number>;
-
-/** The un-reasoned fixed waits in a file's source. */
-function fixedWaits(text: string): number {
-  return text.split('\n').filter((l) => /\bwaitForTimeout\(|new Promise\(\s*\(?\w+\)?\s*=>\s*setTimeout\(\s*\w+\s*,\s*[1-9]/.test(l) && !/\/\/ hold:/.test(l) && !/^\s*(\/\/|\*)/.test(l)).length;
-}
 
 // a relay URL that every spec naming it routes (page.route / context.route: fulfilled in the test, never fetched), or
 // the real relay's harness (RELAY_E2E=1, its own opt-in)
@@ -42,15 +34,6 @@ describe('the e2e are hermetic', () => {
     expect(bad, 'import { test, expect, type Page } from "./fixtures.ts"').toEqual([]);
   });
 
-  it('wait on state: no new fixed wait without `// hold: <why>`', () => {
-    const over = files.map((f) => [f, fixedWaits(src(f)), WAITS[f] ?? 0] as const).filter(([, n, max]) => n > max);
-    expect(over.map(([f, n, max]) => `${f}: ${n} fixed waits, ${max} allowed (wait on the app's state; or \`// hold: why\` for one proving nothing happens)`)).toEqual([]);
-  });
-
-  it('e2e/waits.json names only files there are', () => {
-    expect(Object.keys(WAITS).filter((f) => !files.includes(f))).toEqual([]);
-  });
-
   it('no Math.random, no ?date= from the real clock', () => {
     const bad: string[] = [];
     for (const f of files)
@@ -71,9 +54,5 @@ describe('the e2e are hermetic', () => {
       });
     }
     expect(bad).toEqual([]);
-  });
-
-  it('the fixed-wait count reads lines, not comments', () => {
-    expect(fixedWaits('await page.waitForTimeout(300);\nawait page.waitForTimeout(3000); // hold: the toast stays\n// page.waitForTimeout(1)\nawait new Promise((r) => setTimeout(r, 50));\nawait new Promise((r) => setTimeout(r, 0));')).toBe(2);
   });
 });
