@@ -18,7 +18,7 @@ import { bend, BEND_GLSL, bendU } from './bend.ts';
 import { withMaps } from './blank.ts';
 import { waterU } from './water.ts';
 import { CHUNK, CHUNKS_X, CHUNKS_Z, GRID, TILE, chunkOf, idx, kindOf } from '#lib/layout/grid.ts';
-import { chunkMesh, stairsMesh, type Part, type WallPart, type WaterPart } from '#lib/layout/mesh.ts';
+import { chunkMesh, meshKeyOf, stairsMesh, type Part, type WallPart, type WaterPart } from '#lib/layout/mesh.ts';
 import { FAR, STEP, fieldsOf } from '#lib/layout/fields.ts';
 import { SWASH_GLSL } from '#lib/layout/swash.ts';
 import { DEEP_Y, EDGE_FADE, SEA_Y, fieldOf } from '#lib/layout/height.ts';
@@ -551,6 +551,20 @@ const WASH_SAND = /* glsl */ `
 const GW = GRID.cols * TILE, GD = GRID.rows * TILE;
 const FW = GW / STEP, FD = GD / STEP;
 
+/** A band's built ground, CPU-side (each mount's GPU copies go with its renderer): its top with its uvs and normals,
+ *  its walls, falls and water; null for open sea. */
+export interface BandArrays { top: Part & { uv: Float32Array; normal: Float32Array }; walls: WallPart; falls: WallPart; water: WaterPart }
+/** The bands' arrays kept page-wide for one layout (mesh.ts meshKeyOf: its tiles, pieces and homes), as the models'
+ *  loads are (things.ts `loaded`): back from a room the island's ground takes them again instead of building every
+ *  chunk and its normals (~140 of a return's ~350 ms main-thread stretch at 4x CPU). Another layout's build (an
+ *  editor stroke's, a もようがえ) replaces the set. */
+let kept: { key: string; rows: (BandArrays | null | undefined)[] } | null = null;
+/** The kept set's size (bytes: perf's and the tests'). */
+export const keptBytes = (): number =>
+  (kept?.rows ?? []).reduce((n, b) => n + (b ? [b.top, b.walls, b.falls, b.water].reduce((m, p) => m + Object.values(p).reduce((k, a: ArrayLike<number> & { byteLength: number }) => k + a.byteLength, 0), 0) : 0), 0);
+/** Tests: forget the kept set. */
+export const forgetBands = (): void => void (kept = null);
+
 export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   const { renderer } = opts;
   const px = opts.px ?? 1.6;
@@ -669,14 +683,9 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     for (const k of extra) r[k as string] = cat(parts.map((p) => p[k] as unknown as Float32Array), Float32Array);
     return r as unknown as P;
   }
-  function geometry(p: Part, uvOf?: (x: number, z: number) => [number, number]): BufferGeometry {
+  function geometry(p: Part): BufferGeometry {
     const g = new BufferGeometry();
     g.setAttribute('position', new Float32BufferAttribute(p.pos, 3));
-    if (uvOf) {
-      const uv = new Float32Array((p.pos.length / 3) * 2);
-      for (let k = 0; k < p.pos.length / 3; k++) [uv[k * 2], uv[k * 2 + 1]] = uvOf(p.pos[k * 3], -p.pos[k * 3 + 2]);
-      g.setAttribute('uv', new Float32BufferAttribute(uv, 2));
-    }
     g.setIndex(new Uint32BufferAttribute(p.index, 1));
     return g;
   }
@@ -713,11 +722,33 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     renderer.render(bakeScene, bakeCam);
     renderer.setRenderTarget(was);
   }
+  /** A band's arrays: kept (the same layout's, built on an earlier mount) or built now (and kept). */
+  function arrays(b: Band): BandArrays | null {
+    const key = meshKeyOf(lay);
+    if (kept?.key !== key) kept = { key, rows: [] };
+    const had = kept.rows[b.row];
+    if (had !== undefined) return had;
+    if (openSea(b.row)) return (kept.rows[b.row] = null);
+    const ms = Array.from({ length: CHUNKS_X }, (_, cx) => chunkMesh(lay, b.row * CHUNKS_X + cx));
+    const top = join(ms.map((m) => m.top), []);
+    const n = top.pos.length / 3, uv = new Float32Array(n * 2);
+    for (let k = 0; k < n; k++) (uv[k * 2] = (top.pos[k * 3] - GRID.x0) / GW), (uv[k * 2 + 1] = (-top.pos[k * 3 + 2] - b.z0) / BAND_D);
+    const g = geometry(top);
+    g.computeVertexNormals();
+    const normal = (g.getAttribute('normal').array as Float32Array).slice();
+    g.dispose();
+    return (kept.rows[b.row] = {
+      top: { ...top, uv, normal },
+      walls: join(ms.map((m) => m.walls), ['nrm', 'uv']),
+      falls: join(ms.map((m) => m.falls), ['nrm', 'uv']),
+      water: join(ms.map((m) => m.water), ['flow', 'path'])
+    });
+  }
   function build(b: Band) {
     for (const mesh of [b.top, b.walls, b.falls, b.water]) mesh.geometry.dispose();
-    const sea = openSea(b.row);
-    for (const mesh of [b.top, b.walls, b.falls, b.water]) mesh.visible = !sea;
-    if (sea) {
+    const a = arrays(b);
+    for (const mesh of [b.top, b.walls, b.falls, b.water]) mesh.visible = !!a;
+    if (!a) {
       for (const mesh of [b.top, b.walls, b.falls, b.water]) mesh.geometry = new BufferGeometry();
       b.rt?.dispose();
       b.rt = null;
@@ -728,12 +759,12 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
       (b.top.material as MeshLambertMaterial).map = b.rt.texture;
       (b.top.material as MeshLambertMaterial).needsUpdate = true;
     }
-    const ms = Array.from({ length: CHUNKS_X }, (_, cx) => chunkMesh(lay, b.row * CHUNKS_X + cx));
-    b.top.geometry = geometry(join(ms.map((m) => m.top), []), (x, z) => [(x - GRID.x0) / GW, (z - b.z0) / BAND_D]);
-    b.top.geometry.computeVertexNormals();
-    b.walls.geometry = wallGeometry(join(ms.map((m) => m.walls), ['nrm', 'uv']));
-    b.falls.geometry = wallGeometry(join(ms.map((m) => m.falls), ['nrm', 'uv']));
-    b.water.geometry = waterGeometry(join(ms.map((m) => m.water), ['flow', 'path']));
+    b.top.geometry = geometry(a.top);
+    b.top.geometry.setAttribute('uv', new Float32BufferAttribute(a.top.uv, 2));
+    b.top.geometry.setAttribute('normal', new Float32BufferAttribute(a.top.normal, 3));
+    b.walls.geometry = wallGeometry(a.walls);
+    b.falls.geometry = wallGeometry(a.falls);
+    b.water.geometry = waterGeometry(a.water);
   }
   for (let row = 0; row < CHUNKS_Z; row++) {
     const tm = bend(washed(withMaps(new MeshLambertMaterial({ color: 0xf4f4f4 })), washU));

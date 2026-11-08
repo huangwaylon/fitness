@@ -194,7 +194,7 @@ const segDist = (e: FallEdge, x: number, z: number) => {
 /** What a layout's ground is built from, as a key: its tiles, its pieces and its homes (two layouts alike there have
  *  the same chunks). Kept a layout. */
 const meshKeys = new WeakMap<Layout, string>();
-const meshKeyOf = (l: Layout): string => {
+export const meshKeyOf = (l: Layout): string => {
   let k = meshKeys.get(l);
   if (k === undefined) {
     k = '';
