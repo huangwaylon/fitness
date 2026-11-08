@@ -12,6 +12,7 @@ import {
   BUGS, FRESH, SEA_SWIM, bugPlace, freshAreas, patches, perches, swimPick, swimmable, waterAt,
   type BugId, type BugPlace, type Flight, type Patch, type Swim, type Water
 } from './critters.ts';
+import { clamp } from '#lib/math.ts';
 import { FLOWERS, surfaceAt, type FreshWhere } from './world.ts';
 import { FLOWER_U } from './scene.ts';
 import { coastOf } from './coast.ts';
@@ -26,7 +27,6 @@ export const critterId = (s: Spawn): string =>
 const subRand = (seed: number, salt: number): (() => number) => mulberry32((seed ^ Math.imul(salt + 1, 0x9e3779b1)) >>> 0);
 
 const between = (r: () => number, a: number, b: number) => a + r() * (b - a);
-export const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const dist = (ax: number, az: number, bx: number, bz: number) => Math.sqrt((ax - bx) ** 2 + (az - bz) ** 2);
 
 /** A world point and its height above the ground. */
