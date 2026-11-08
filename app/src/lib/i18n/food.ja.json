@@ -10,6 +10,7 @@
   "food.add": "{meal}に追加",
   "food.kcalHead": "この日のカロリー",
   "food.details": "くわしく",
+  "food.nutrients": "栄養成分",
   "food.left": "あと {n} kcal",
   "food.over": "{n} kcal オーバー",
   "food.under": "目標より {n} kcal 少なめ",

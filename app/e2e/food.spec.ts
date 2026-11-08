@@ -29,7 +29,7 @@ const settled = (page: Page) => dlg(page).evaluate(async (d) => {
   for (let last = -1; sc && sc.scrollTop !== last; await frame(), await frame()) last = sc.scrollTop;
 });
 
-/** A meal search's row → its amount level: the row opened in place, then its くわしく. */
+/** A meal search's row → its amount level: the row opened in place, then its 栄養成分 ›. */
 async function amountOf(page: Page, row: Locator) {
   await row.click({ timeout: 15_000 });
   await settled(page);
@@ -127,7 +127,7 @@ test('the day, the search and the amount all fit the sheet’s width', async ({ 
   await settled(page);
   await expect(sheet(page).locator('[data-food-open-add]')).toBeVisible();
   expect(await overflowOf(page)).toEqual([]);
-  await sheet(page).locator('[data-food-open-more]').click(); // くわしく: the amount level
+  await sheet(page).locator('[data-food-open-more]').click(); // 栄養成分 ›: the amount level
   await expect(sheet(page).locator('[data-done]')).toBeVisible();
   expect(await overflowOf(page)).toEqual([]);
 });
@@ -869,8 +869,8 @@ test('the amount: the compact card while there are no pictures, its 「これは
 
 // The amount's layout (docs/design.md "Gohan" Amount) on an iPhone 15's whole screen: the most a raw food shows (its
 // picture, 3 states and their line, 4 portions) without a scroll; the kcal with its grams, the per-100 g values closed
-// behind 「100gあたりの栄養」 under P · F · C (closed again on the next open); the meal in the foot over 追加, gone while grams are typed, when 追加
-// says the kcal.
+// behind 「100gあたりの栄養」 under P · F · C (closed again on the next open); the meal in the foot over 「追加 298 kcal」,
+// gone while grams are typed.
 test('the amount: 豚ロース fits on the screen, kcal（g） in the head, 100gあたりの栄養 closed, the meal in the foot but while typing', async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 852 });
   const open = async () => {
@@ -900,7 +900,7 @@ test('the amount: 豚ロース fits on the screen, kcal（g） in the head, 100g
   await expect(sheet(page).locator('[data-done-kcal]')).toHaveText('298 kcal');
   await sheet(page).locator('[data-grams]').blur();
   await expect(meals).toHaveCount(4);
-  await expect(sheet(page).locator('[data-done-kcal]')).toHaveCount(0);
+  await expect(sheet(page).locator('[data-done]')).toHaveText('追加 298 kcal'); // every add says its kcal
   expect(await overflowOf(page)).toEqual([]);
   await open(); // nothing remembered
   await expect(sheet(page).locator('[data-food-per]')).toHaveAttribute('aria-expanded', 'false');
@@ -1342,10 +1342,10 @@ test('several foods a trip: a row’s ＋ logs it at once, 追加 in place stays
 
 // A row opened in place (the user, 2026-11-07: "see and configure settings right away instead of having to add first
 // and then edit"; docs/design.md "Gohan" Search): a food row's tap opens the amount's controls under it, kept on the
-// screen; 焼き ×2 there and 追加 logs 180 g, 558 kcal on this trip, the field cleared and focused; くわしく opens the amount
-// level at what was set; one row at a time, closed by Esc (the sheet stays), its row again or a new query; ＋ still
+// screen (its own ＋ hidden meanwhile); 焼き ×2 there and 追加 logs 180 g, 558 kcal on this trip, the field cleared and
+// focused; 栄養成分 › opens the amount level at what was set; one row at a time, closed by Esc (the sheet stays), its row again or a new query; ＋ still
 // logs in one tap. 豚ロース 焼き ×2 + ごはん 大盛り in one trip: 9 taps, no level.
-test('a row opened in place: 焼き ×2 and 追加 in the search; くわしく carries it; one at a time; Esc; ＋ still one tap', async ({ page }) => {
+test('a row opened in place: 焼き ×2 and 追加 in the search, its ＋ hidden; 栄養成分 carries it; one at a time; Esc; ＋ still one tap', async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 852 });
   await openFood(page);
   const s = sheet(page);
@@ -1372,6 +1372,10 @@ test('a row opened in place: 焼き ×2 and 追加 in the search; くわしく c
   await expect(add).toContainText('558 kcal');
   await expect(pork.locator('.kc')).toBeHidden(); // the row's own 生 298 kcal steps aside: nothing contradicts
   await expect(pork.locator('[data-states]')).toBeHidden();
+  // one add for an open row: its own ＋ (the default portion) hidden, back once it's closed
+  const porkPlus = s.locator('li', { has: pork }).locator('[data-quick]');
+  await expect(porkPlus).toBeHidden();
+  await expect(s.locator('[data-food-open-more]')).toHaveText('栄養成分›');
   await tap(add);
   await expect(added).toHaveCount(1);
   await expect(added.first()).toContainText('豚ロース 脂身つき 焼き');
@@ -1380,6 +1384,8 @@ test('a row opened in place: 焼き ×2 and 追加 in the search; くわしく c
   await expect(box).toHaveCount(0);
   await expect(q).toHaveValue('');
   await expect(q).toBeFocused(); // in the tap: the keyboard up for the next food
+  await q.fill('豚ロース');
+  await expect(porkPlus).toBeVisible();
   await q.fill('ごはん');
   const rice = s.locator('[data-food-results] [data-item="mext:01088"]');
   await tap(rice);
@@ -1393,7 +1399,7 @@ test('a row opened in place: 焼き ×2 and 追加 in the search; くわしく c
   await expect(dinner.filter({ hasText: '豚ロース 脂身つき 焼き' })).toContainText('558');
   await expect(dinner.filter({ hasText: 'ごはん（精白米）' })).toContainText('大盛り（250g）');
 
-  // くわしく: the amount level at what was set (the state, ×2, the grams, the meal)
+  // 栄養成分 ›: the amount level at what was set (the state, ×2, the grams, the meal); its 追加 says the kcal too
   await s.locator('[data-add=d]').click();
   await q.fill('豚ロース');
   await pork.click({ timeout: 15_000 });
@@ -1406,6 +1412,7 @@ test('a row opened in place: 焼き ×2 and 追加 in the search; くわしく c
   await expect(s.locator('.mult')).toHaveText('×2');
   await expect(s.locator('[data-grams]')).toHaveValue('180');
   await expect(s.locator('[data-pick-meal=d]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(s.locator('[data-done]')).toHaveText('追加 558 kcal');
   await s.getByRole('button', { name: '戻る' }).click();
 
   // one at a time; its row again, Esc (the sheet stays) and a new query close it
