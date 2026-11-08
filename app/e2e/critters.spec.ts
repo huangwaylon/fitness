@@ -148,7 +148,7 @@ for (const c of POPS)
     }, { cam: c.cam, over: c.over });
     await page.waitForTimeout(300);
     await page.evaluate(() => (window as unknown as W3b).__balloon!.pop());
-    await expect.poll(() => W3b(page), { timeout: 300 }).toBeNull();
+    await expect.poll(() => W3b(page)).toBeNull(); // (popped: gone, however long a loaded runner's round trips take)
     const to = (await page.evaluate(() => (window as unknown as W3b).__lands![0]))!;
     expect(to).not.toBeNull();
     const at = await page.evaluate(([x, z]) => {

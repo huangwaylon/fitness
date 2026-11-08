@@ -4,7 +4,7 @@
 // Every tree shakes (NH's three quick taps): an oak's branch, a palm's coconuts; the partner's tab sees the shake,
 // their villager turns to it where it stands, and what's picked up on one tab is gone on the other.
 import { expect, test, type Page } from './fixtures.ts';
-import { geo, islandUp, openNear, plateOnly, quiet } from './island.ts';
+import { geo, islandUp, openNear, pauseNow, plateOnly, quiet } from './island.ts';
 import { SPEED } from '../src/lib/components/island/speed.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -16,7 +16,9 @@ const atRest = (...ps: Page[]) =>
   Promise.all(ps.map((p) => expect.poll(() => p.evaluate(() => (window as unknown as { __world: { idle(): boolean } }).__world.idle()), { timeout: 5000 }).toBe(true)));
 const DATE = '2026-11-04T12:00';
 
-async function open(page: Page, q = '') {
+async function open(page: Page, q = '', o: { clock?: boolean } = {}) {
+  // (`clock`: the page's own clock, running, for shake's taps on it)
+  if (o.clock) await page.clock.install({ time: new Date(`${DATE}:00+09:00`) }), await page.clock.resume();
   await page.goto(`?demo&date=${DATE}${q}`);
   await islandUp(page);
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
@@ -34,16 +36,23 @@ const leaves = (page: Page, id: string) =>
   });
 /** The camera in front of a tree (world.ts SCENERY as the page has it). */
 const toTree = async (page: Page, id: string) => go(page, (await geo(page)).SCENERY.find((s) => s.id === id)!.z - 114);
+/** NH's three quick taps, 140 ms of the page's time apart (its clock installed by open's `clock`, paused for the taps:
+ *  on a loaded runner's wall clock the round trips spread them past SHAKE_WINDOW_MS, and nothing fell). */
 async function shake(page: Page, id: string) {
-  for (let i = 0; i < 3; i++) {
-    const p = await leaves(page, id);
-    await page.mouse.click(p.x, p.y);
-    await page.waitForTimeout(140); // (NH's three quick taps: the gesture's own pace)
+  await pauseNow(page);
+  try {
+    for (let i = 0; i < 3; i++) {
+      if (i) await page.clock.runFor(140);
+      const p = await leaves(page, id);
+      await page.mouse.click(p.x, p.y);
+    }
+  } finally {
+    await page.clock.resume();
   }
 }
 
 test('every tree shakes: three quick taps on an oak drop a branch beside it; one tap only rustles', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
-  await open(page, '&shake=branch');
+  await open(page, '&shake=branch', { clock: true });
   await toTree(page, 'oak-m1');
   await atRest(page);
   const p = await leaves(page, 'oak-m1');
@@ -64,7 +73,7 @@ test('every tree shakes: three quick taps on an oak drop a branch beside it; one
 });
 
 test('a palm drops its two coconuts, once a day: a tap picks one up (NH’s line)', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
-  await open(page, '&shake=coconut');
+  await open(page, '&shake=coconut', { clock: true });
   await shake(page, 'palm-3');
   const nuts = page.locator('button[data-coconut]');
   await expect(nuts).toHaveCount(2, { timeout: 3000 });
@@ -218,7 +227,7 @@ test('two players: a shake on one tab plays on the other (their villager stays w
   test.setTimeout(60_000);
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const a = await ctx.newPage(), b = await ctx.newPage();
-  await open(a, '&shake=branch');
+  await open(a, '&shake=branch', { clock: true });
   await open(b, '&as=B');
   for (const p of [a, b]) await toTree(p, 'oak-m1');
   await atRest(a, b);

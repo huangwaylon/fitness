@@ -3,7 +3,7 @@
 // API that acts on the game by what it knows, not by pixels (e2e/island.ts): `tapThing` taps a model by its id where
 // the camera puts it, `settled` waits for the island at rest, `step` runs the page's clock (the engines' frames with it).
 import { expect, test, type Page } from './fixtures.ts';
-import { lawnTap, settled, step, tapThing, w3 } from './island.ts';
+import { lawnTap, pauseNow, settled, step, tapThing, w3 } from './island.ts';
 
 const Q = 'demo&date=2026-11-04T12:00&rock=clonk&render=none';
 const ready = (page: Page) => page.waitForFunction(() => (window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded(), null, { timeout: 30_000 });
@@ -30,9 +30,11 @@ test('the sim step: on the page\'s clock a ground tap walks my villager only as 
   await step(page, 3000);
   const { at: [lx, lz], x, y } = await lawnTap(page, 200, 300);
   await expect.poll(async () => (await step(page, 200), page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.matches('.stage'), [x, y]))).toBe(true);
+  // the clock held (paused: installed, it ran on with the wall clock between the round trips, 15 px on a loaded runner)
+  await pauseNow(page);
   const from = await mine(page);
   await page.mouse.click(x, y);
-  // the clock held: my villager hasn't gone far
+  // my villager hasn't gone far
   const held = await mine(page);
   expect(Math.hypot(held[0] - from[0], held[1] - from[1])).toBeLessThan(14);
   // ten seconds of the game's time, frame by frame (quick: nothing is drawn)
