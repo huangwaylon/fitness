@@ -141,10 +141,15 @@ jobs:
   # The gate's e2e (docs/ops/testing.md "The gate"): `select`'s plan in logic mode (E2E_RENDER=none: nothing drawn),
   # @render and @quarantine left out; the changed specs 3× and never retried, any other test retried once (failing
   # again: red; passing: flaky, in the summary and the ledger, flaky-<shard>). Each shard builds the commit itself.
+  # Not `needs: select`: a shard waits for its artifact after its own build, so select (~16 s) isn't on the way to the
+  # deploy (needing it cost ~35 s: the job, then a runner for each shard).
   e2e-gate:
-    needs: select
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # (select's artifact, looked for in this run)
+    permissions:
+      contents: read
+      actions: read
     strategy:
       fail-fast: false
       matrix:
@@ -174,6 +179,18 @@ jobs:
       - if: steps.browsers.outputs.cache-hit != 'true'
         run: npx playwright install --only-shell chromium
       - run: npm run build
+      # select's plan, once it's uploaded (red if select failed, or none in 3 min)
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          api="repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          for _ in $(seq 60); do
+            [ "$(gh api "$api/artifacts?name=gate-plan" --jq .total_count 2>/dev/null)" = 1 ] && exit 0
+            state=$(gh api "$api/attempts/$GITHUB_RUN_ATTEMPT/jobs?per_page=100" --jq '.jobs[] | select(.name == "select") | .conclusion' 2>/dev/null || true)
+            case "$state" in failure|cancelled|skipped) echo "::error::the select job: $state, no plan"; exit 1 ;; esac
+            sleep 3
+          done
+          echo "::error::no gate-plan from the select job in 3 min"; exit 1
       # (sel/: specs.txt, x3.txt (the changed specs: E2E_X3), quarantine.txt; shards/: the plan)
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -209,7 +226,7 @@ jobs:
   # uploads a file once (by its hash): an unchanged model costs a deploy a cache restore (~2 s). And app/functions/
   # (functions/stt/[[path]].ts: R2 under /stt/ once the bucket is bound; till then it passes to the static files).
   deploy:
-    needs: [build, checks, e2e-gate]
+    needs: [build, checks, select, e2e-gate]
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     concurrency:
