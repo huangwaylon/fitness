@@ -3,7 +3,8 @@
 // WebGL contexts still alive (WeakRefs), intervals, document.fonts' faces, rAF callbacks a second, the window's/document's listeners and the
 // island's renderer.info.
 //   npm run leak -- <flow> [cycles] [--snap] [--path=<name>]     (the build served at E2E_PORT, default 4693)
-// flows: shop tent home museum fpv (the museum in first person) editor (the island ⇄ there), all (the four rooms), food
+// flows: shop tent home museum fpv (the museum in first person) editor (the island ⇄ there), all (the four rooms), abort
+// (the island's mount left 30-250 ms in, for the shop), food
 // health zukan settings bells sheets (open, close), trips okinawa wedding trails info (the info sheets, their maps drawn on
 // fixture tiles: NZ's pages, Okinawa's 地図, a task and メモ, three trails; info: all four), look (すがた: a villager's look, then いつもの), clothes (すがた: four
 // tops and their colours worn, then いつもの; the island's and the room's textures must not grow), picker (いえを かえる; Q='&as=B'), vis (hidden ⇄ visible), sim (the
@@ -208,12 +209,18 @@ const ROOMS: Record<string, [string, () => Promise<unknown>]> = {
   editor: [`${PATH}/editor/${Q}`, () => page.waitForFunction(() => !!(window as unknown as { __editor?: unknown }).__editor, null, { timeout: 30_000 })]
 };
 const SHEETS: Record<string, () => Promise<void>> = {
-  food: async () => { await page.getByRole('button', { name: 'ごはん', exact: true }).click(); },
-  health: async () => { await page.getByRole('button', { name: 'けんこう', exact: true }).click(); },
-  zukan: async () => { await menu(); await page.locator('[data-hud-zukan]').click(); },
+  // (健康 and ごはん: one sheet from the dumbbell, a tab each; e2e/hud.ts openKenkou)
+  food: async () => { await kenkou('food'); },
+  health: async () => { await kenkou('health'); },
+  // (ずかん: 設定's last row; e2e/hud.ts fromMenu)
+  zukan: async () => { await menu(); await page.locator('[data-hud-settings]').click(); await sel('dialog[open] [data-settings-zukan]'); await page.locator('dialog[open] [data-settings-zukan]').click(); await sel('dialog[open] [data-zukan-sheet]'); },
   settings: async () => { await menu(); await page.locator('[data-hud-settings]').click(); },
   bells: async () => { await menu(); await page.locator('[data-hud-bells]').click(); }
 };
+async function kenkou(tab: 'health' | 'food') {
+  await page.getByRole('button', { name: 'けんこう', exact: true }).click();
+  await page.locator(`dialog[open] [data-kenkou-tab=${tab}]`).click();
+}
 async function menu() {
   const m = page.locator('[data-hud-menu]');
   if ((await m.getAttribute('aria-expanded')) !== 'true') await m.click();
@@ -314,8 +321,17 @@ let stereoTurn = 0;
 const idleRafs: number[] = [];
 if (flow === 'dressrace') await page.route(/\/room\/player\/(mesh|tex)\//, async (r) => { await new Promise((ok) => setTimeout(ok, 600)); await r.continue(); });
 let snap0: Map<string, [number, number]> | null = SNAP && process.env.SNAP_AT === '0' ? new Map() : null;
+let aborts = 0;
 const cycle = async () => {
-  if (flow in ROOMS) {
+  if (flow === 'abort') {
+    // the island's mount cut short: to the shop, back to the island and away again 30-250 ms into its mount, then back
+    // for good (the cycle's measure is the island whole, as the shop flow's)
+    const shop = ROOMS.shop;
+    await nav(shop[0]); await shop[1]();
+    await nav(`${PATH}/${Q}`); await page.waitForTimeout([30, 80, 150, 250][aborts++ % 4]);
+    await nav(shop[0]); await shop[1](); await page.waitForTimeout(800);
+    await nav(`${PATH}/${Q}`); await islandUp(); await page.waitForTimeout(1500);
+  } else if (flow in ROOMS) {
     const [p, up] = ROOMS[flow];
     await nav(p); await up();
     // (FILL=1: the room furnished with the starter set first, kept: its models come back from the page-wide cache)
