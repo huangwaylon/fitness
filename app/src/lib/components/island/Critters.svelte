@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The island's critters (docs/design.md "Scene interactions", "Critters"), after NH, in the rolling-log world
+  // The island's critters (docs/design.md "Scene interactions", "Critters"), after NH
   // (world.ts units: x across, z into the island): now and then (ambient life's slots, island/ambient.ts: the same on both phones) a fish
   // shadow swims off each stretch of the coast (island/coast.ts), another in each fresh water, NH's fresh
   // water by where it is (the pond, the river's reaches, the river mouth on the west beach, the falls' pool (clifftop) and the
