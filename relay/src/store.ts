@@ -747,7 +747,6 @@ export class StoreCore {
       this.put(id, at, me, type, kept, slot, null);
       if (type === 'tally' || type === 'tally_back' || type === 'sell' || type === 'buy') this.shopNote(me, type, kept, was);
       if (type === 'decor') this.decorNote(me, data, wasDecor);
-      if (type === 'board' && data.rm === true) this.pruneBoard();
       return { ok: true, at };
     });
   }
@@ -885,13 +884,6 @@ export class StoreCore {
   /** A board op against the posts the record holds (contract/board.ts boardAccept): who may, and the cap. */
   private boardTarget(me: Who, d: Rec): ReturnType<typeof boardAccept> {
     return boardAccept(this.boardRows(), { ...boardOpOf(d)!, who: me });
-  }
-
-  /** The removed posts' rows past BOARD_MAX (the oldest removals) are dropped: a removal only has to outlive the ops
-   *  that could still arrive for it (their ids stay known; an edit of a post the record doesn't hold is dropped). */
-  private pruneBoard(): void {
-    const gone = this.boardRows().filter((r) => r.rm).sort((a, b) => b.at - a.at || b.seq - a.seq);
-    for (const r of gone.slice(BOARD_MAX)) this.io.sql.exec('DELETE FROM events WHERE seq = ?', r.seq);
   }
 
   /** A trip's packing rows (its list's ops, everyone's ticks and resets, its note), each slot's latest. */
@@ -1220,7 +1212,8 @@ export class StoreCore {
 
   /** What a phone's op would have dropped with a row a load took as it was (the live path's drops, after the whole
    *  batch, so the order its rows came in doesn't matter): a purged wedding task's tick, a removed packing item's
-   *  ticks, the board's removals past BOARD_MAX. */
+   *  ticks. (A removal's own row is never dropped, 2026-11-08: a phone that cached the post before it would show it for
+   *  good, its delta saying nothing of it.) */
   private pruneLoaded(): void {
     const sql = this.io.sql;
     const gone = (type: string): Rec[] =>
@@ -1228,7 +1221,6 @@ export class StoreCore {
         .map((r) => this.rowRec(r.data, type)).filter((x): x is Rec => x !== null && x.rm === true);
     for (const t of gone('wtask')) sql.exec('DELETE FROM events WHERE slot = ?', `wdone|${String(t.id)}`);
     for (const p of gone('pack')) sql.exec('DELETE FROM events WHERE slot GLOB ?', `pack_chk|${String(p.trip)}|${String(p.id)}|*`);
-    this.pruneBoard();
   }
 
   private importHeld(r: unknown[]): 'added' | 'skipped' {

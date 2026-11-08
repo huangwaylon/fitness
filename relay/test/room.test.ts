@@ -672,6 +672,19 @@ describe('the shared world (docs/backend.md#shared-world)', () => {
     ]);
   });
 
+  it('a decor op stamped over a day ahead is refused (acked false), never relayed nor kept (health A6)', () => {
+    const a = join(KEY_A), b = join(KEY_B);
+    b.sent = [];
+    say(a, { kind: 'decor', sc: 'r', id: 'reset', at: now + 2 * 86_400_000, c: 7 });
+    say(a, { kind: 'decor', id: 'dmh1abc2a', at: now + 25 * 3_600_000, item: 'tanuki', x: 120, z: 480, f: 1, p: now, c: 8 });
+    expect(a.sent.filter((m) => m.kind === 'ack')).toEqual([expect.objectContaining({ c: 7, ok: false }), expect.objectContaining({ c: 8, ok: false })]);
+    expect(b.sent).toEqual([]);
+    // within the day: as before
+    say(a, { kind: 'decor', id: 'dmh1abc2a', at: now + 23 * 3_600_000, item: 'tanuki', x: 120, z: 480, f: 1, p: now, c: 9 });
+    expect(b.kinds()).toEqual(['decor']);
+    expect(join(KEY_B, 0).kinds().filter((k) => k === 'decor')).toHaveLength(1);
+  });
+
   it('the tent: its decor ops are kept with their scope; a drag and a villager inside are relayed live, never kept', () => {
     const T = 1_793_000_000_000;
     const a = join(KEY_A), b = join(KEY_B);
