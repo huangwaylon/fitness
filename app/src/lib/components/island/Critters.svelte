@@ -47,7 +47,7 @@
   import { showCatch } from './catchCard.ts';
   import { timers } from './timers.ts';
   import { fnv1a as seedOf, pickOne } from '#lib/random.ts';
-  import { hook, hookFlag, hooksOn } from './devHooks.ts';
+  import { hook, hookFlag, hooksOn, islandSeed } from './devHooks.ts';
   import { skyAt, yieldSky } from './weatherNow.svelte.ts';
   import type { Sky } from './weather.ts';
   import { onMount, untrack } from 'svelte';
@@ -65,20 +65,20 @@
   import { clearAt, guardsU, stageGeo } from './placement.ts';
   import { recordFind, recordGoods } from '#lib/store/actions.ts';
   import { catchLine, loadLines, loadNames } from './catchLine.ts';
-  import { findArt } from './beach.ts';
+  import { digSpots, findArt } from './beach.ts';
   import { eggTime, eventNow } from './events.ts';
   import { eggOnLine } from './eggs.ts';
   import { partnerTurnTo, sendTo, turnTo } from './avatar.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
-  import { caught } from '#lib/sync/world-day.ts';
+  import { caught, lying } from '#lib/sync/world-day.ts';
   import type { FishPhase, How, Relayed, Who } from '#lib/contract/live-protocol.ts';
-  import { GLIDE_U, STILL, bubblesAt, bugAt, bugPath, clamp, critterId, fishPath, freshWater, groundOk, inWater, legAt, type BugOpts, type Leg } from './critterPath.ts';
+  import { GLIDE_U, STILL, bubblesAt, bugAt, bugPath, clamp, clearOf, critterId, fishPath, freshWater, groundOk, inWater, legAt, type BugOpts, type Leg } from './critterPath.ts';
   import { tellPartner } from './partnerNews.ts';
   import { actors, holdNaps, inMotion, livePos, wake as wakeUp } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import type { DiveItem } from './sea.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
-  import { GOAL_TREES, ROCK, SEA_BOX, SHORE_Z, flowerById } from './world.ts';
+  import { GOAL_TREES, ROCK, SEA_BOX, SHORE_Z, flowerById, offBuildingsAt } from './world.ts';
   import {
     BUGS, bushes, FISH, FRESH, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS,
     bugPlace, bushBug, critterArt, findKind, fleesFrom, freshAreas, shadowLen, fleaJumps, hookItem, landing, netSwing,
@@ -675,7 +675,7 @@
   /** A bug comes on where NH keeps it and the camera can see it (`pinned`: or at its place anyway); false when there's
    *  nowhere clear for it right now. `from`: it flies (or hops) in from there (a shaken bush, my villager, the rock),
    *  keeping to `area`. */
-  function spawnBug(id: BugId | null, o: { from?: P3; area?: Patch; avoid?: Patch[]; taken?: P3[]; stay?: boolean | number; pinned?: boolean } & Shared = {}): boolean {
+  function spawnBug(id: BugId | null, o: { from?: P3; area?: Patch; avoid?: Patch[]; taken?: P3[]; stay?: boolean | number; pinned?: boolean; keep?: BugOpts['keep'] } & Shared = {}): boolean {
     const { from, area, stay = true, pinned = false } = o;
     if (!id || bugs.length >= MAX_BUGS) return bugs.length > 0;
     void loadSprite();
@@ -1335,6 +1335,15 @@
   /** A slot's critter comes now, staying until the end of its last slot (`end`, the relay's ms), where its seed puts it
    *  in the world (critterPath.ts: the same on both phones; this camera shows it if it sees it), unless one of us has
    *  caught it (or it got away) today. */
+  /** What lies on the ground to be tapped today, as the shared day has it on both phones (world x, z): the puts lying
+   *  (presents, wood) where they're drawn, and the day's dig spots (dug or not: the same on both). */
+  function tapSpots(date: string): { x: number; z: number }[] {
+    const puts = lying(shared.day).filter((p) => !p.what.startsWith('bug:')).map((p) => {
+      const [x, z] = offBuildingsAt(p.at[0], p.at[1]);
+      return { x, z };
+    });
+    return [...puts, ...digSpots(date, new Set(), islandSeed()).map((d) => ({ x: d.x, z: d.y }))];
+  }
   function visit(c: Spawn, date: string, end: number) {
     const stay = end - shared.now();
     if (stay < 1000) return;
@@ -1354,12 +1363,14 @@
       if (!fishes[wt]) void spawnFish(wt, stay, undefined, false, r, o);
     } else if (!bugs.some((b) => b.cid === cid)) {
       // (the second lane's spot keeps off the first lane's bugs about in its stay: ambient.ts bugRivals)
+      // (clear of what lies to be tapped: a bug hovering over a present took the finger meant for it; its rivals' too)
+      const keep = clearOf(tapSpots(date));
       const taken = bugRivals(date, c).flatMap((q) => {
         const id = pickBug(o.month, Math.floor(q.slot / 360), spawnRand(q), skyAt(slotStart(date, q.slot) + q.at));
-        const p = id && bugPath(id, q.seed, 0, { white: whiteHeads() });
+        const p = id && bugPath(id, q.seed, 0, { white: whiteHeads(), keep });
         return p ? [p.spot] : [];
       });
-      spawnBug(pickBug(o.month, o.hour, r, o.sky), { stay, ...o, taken });
+      spawnBug(pickBug(o.month, o.hour, r, o.sky), { stay, ...o, taken, keep });
     }
   }
   $effect(() => {

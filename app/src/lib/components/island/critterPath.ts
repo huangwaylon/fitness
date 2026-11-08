@@ -169,6 +169,14 @@ export interface BugOpts {
   taken?: readonly P3[];
 }
 
+/** How far a roaming bug keeps from a thing lying to be tapped (u: a present, wood, a dig spot): hovering over one, it
+ *  took the finger meant for it (the two roaming lanes made that twice as common). */
+export const TAP_CLEAR = 24;
+/** A bug's keep (BugOpts.keep) clear of `things` (world x, z) by `r`: its spot and every move of its stay. Both phones
+ *  build it from the shared day (its puts, the day's dig spots), so a shared bug keeps the same path on both. */
+export const clearOf = (things: readonly { x: number; z: number }[], r = TAP_CLEAR) => (p: P3): boolean =>
+  things.every((t) => (t.x - p.x) ** 2 + (t.z - p.z) ** 2 >= r * r);
+
 /** How far a roaming bug's spot keeps from another's (u), where its place has the room (a trunk or a flower head of
  *  its own, a spot of its patch that far off), else at least SPOT_MIN (the rock's little patch: side by side). */
 const SPOT_GAP = 40;
