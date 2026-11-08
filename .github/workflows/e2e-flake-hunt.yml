@@ -41,10 +41,13 @@ jobs:
           cache-dependency-path: app/package-lock.json
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm run build
+      # the site, and the client manifest boot.spec finds the 3D island's chunk by (its name is a hash)
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: site
-          path: app/build-pages
+          path: |
+            app/build-pages
+            app/.svelte-kit/output/client/.vite/manifest.json
           include-hidden-files: true
           compression-level: 0
           retention-days: 1
@@ -85,7 +88,7 @@ jobs:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: site
-          path: app/build-pages
+          path: app
       - id: e2e
         continue-on-error: true
         run: npx playwright test --project=webkit --repeat-each=${{ inputs.repeat || '3' }} --retries=0 --grep-invert "@render|@quarantine" --shard=${{ matrix.shard }}/5
