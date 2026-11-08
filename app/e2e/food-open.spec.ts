@@ -50,9 +50,11 @@ test('the dumbbell opens on the tab shown last; 健康 again hides ごはん (ke
   await expect(tab('food')).toHaveAttribute('aria-current', 'page');
   await expect(sheet.locator('.navbar h2')).toHaveText('ごはん');
   await expect(sheet.locator('[data-health-sheet]')).toBeHidden();
-  // a level (a meal's search), then 健康 and back: ごはん on its day again, its ‹ gone
+  // a level (a meal's search): ‹ and its title in the switch's place; ‹, then 健康 and back: ごはん on its day again
   await sheet.locator('[data-add=b]').click();
   await expect(sheet.locator('[data-food-q]')).toBeVisible();
+  await expect(tab('health')).toHaveCount(0);
+  await sheet.locator('.navbar button.back').click();
   await tab('health').click();
   await expect(sheet.locator('.navbar h2')).toHaveText('健康');
   await expect(sheet.locator('.health .mc').first()).toBeVisible();

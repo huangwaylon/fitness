@@ -1,8 +1,7 @@
 // ごはん's small helpers (docs/design.md "Gohan"): the catalog loaded once a session, an entry's amount in words, the
 // food an entry was logged from (its catalog item when the catalog has it, for its portions; else its own portion), a
-// row's everyday name, the さいきん list, a portion's start and step, whose day kept for the session, a repeat's weekdays in words, and a recipe
+// row's everyday name, the さいきん list, a portion's start and step, a repeat's weekdays in words, and a recipe
 // as a food (マイレシピ: its portions), and a custom food as a food and its editor's fields (マイ食品).
-import type { Who } from '#lib/types.ts';
 import {
   CUSTOM, customDensityOk, customPortions, customSnap, FOOD_GRAMS, recipePortion, recipeSnap, type FoodCustom,
   type FoodEntry, type FoodSnap, type RepeatItem
@@ -66,9 +65,8 @@ export function withImages(set: (ix: FoodImageIndex) => void): () => void {
 /** The catalog if it is in already (else null: open from the snapshot, swap the catalog's portions in later). */
 export const foodDbNow = (): FoodDb | null => ready;
 
-/** Whose day ごはん shows (null: this phone's person), kept for the session as けんこう's (healthLast); the summary's
- *  くわしく open or not, likewise. */
-export const foodLast: { who: Who | null; more: boolean } = { who: null, more: false };
+/** The summary's くわしく open or not, kept for the session (whose day: health/whose.svelte.ts). */
+export const foodLast: { more: boolean } = { more: false };
 
 /** Grams as typed: one decimal at most, no trailing `.0`. */
 export const gramsText = (g: number): string => String(Math.round(g * 10) / 10);

@@ -7,6 +7,7 @@
   "health.group": "データ",
   "health.group.activity": "活動",
   "health.group.body": "体",
+  "health.noGuest": "{guest}の健康データはありません。{name}を表示しています",
   "health.who": "誰のデータ",
   "health.earlier": "前の期間",
   "health.later": "次の期間",

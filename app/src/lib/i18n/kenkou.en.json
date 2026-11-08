@@ -7,6 +7,7 @@
   "health.group": "Which data",
   "health.group.activity": "Activity",
   "health.group.body": "Body",
+  "health.noGuest": "{guest} has no health data: showing {name}",
   "health.who": "Whose data",
   "health.earlier": "Earlier",
   "health.later": "Later",

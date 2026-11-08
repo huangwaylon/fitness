@@ -2,8 +2,10 @@
   // One native dropdown pill (けんこう's row 1, ごはん's whose day, グラフ's period and 設定's 言語): iOS's own picker, a cream pill
   // ≥ 44px with a chevron, 16px type so Safari doesn't zoom. `kind` names it (`.dd.who`, `data-pick="who"`, `data-who`
   // the value: what the specs read). With `person` it is whose data: their avatar and a stroke of their colour.
-  // `compact`: the title bar's (NavBar's lead, left of けんこう / ごはん) and a row's period (ごはん's グラフ, けんこう's: one size
-  // in both tabs): drawn 34px in the 44px hit, a smaller avatar, the name as wide as it is.
+  // `compact`: the title bar's (NavBar's lead, left of 健康 | ごはん) and a row's period (ごはん's グラフ, 健康's: one size
+  // in both tabs): drawn 34px in the 44px hit. Whose data in the title bar is the avatar alone (the name in iOS's
+  // picker and in its accessible name, 「誰のデータ：ウェイ」); `note` adds to that name, `away` dashes its edge (健康
+  // showing a member while the guest is picked: HealthSheet's one whose).
   import type { Who } from '#lib/types.ts';
   import Avatar from '../characters/Avatar.svelte';
 
@@ -17,15 +19,19 @@
     /** Whose data: the avatar and the swatch. */
     person?: { p: Who; villager: string | null } | null;
     compact?: boolean;
+    /** Said after the name (the accessible name only). */
+    note?: string;
+    /** Not the person picked on the other tab (a dashed edge). */
+    away?: boolean;
   }
-  let { kind, value, options, label, onpick, person = null, compact = false }: Props = $props();
-  /** The title bar's whose-data pill with a long name (おきゃくさん): the avatar alone (the name in the picker), so it
-   *  never ends in 「おきゃく…」 or crowds the title. */
-  const only = $derived(compact && !!person && [...(options.find((o) => o.id === value)?.label ?? '')].length > 4);
+  let { kind, value, options, label, onpick, person = null, compact = false, note = '', away = false }: Props = $props();
+  /** The title bar's whose: the avatar alone, the same width for every name. */
+  const only = $derived(compact && !!person);
+  const name = $derived(person ? `${label}：${options.find((o) => o.id === value)?.label ?? ''}${note ? `（${note}）` : ''}` : label);
 </script>
 
-<label class="dd {kind}" class:compact class:only {...{ [`data-${kind}`]: value }}>
-  <span class="sr-only">{label}</span>
+<label class="dd {kind}" class:compact class:only class:away {...{ [`data-${kind}`]: value }}>
+  <span class="sr-only">{name}</span>
   {#if person}<span class="av" aria-hidden="true"><Avatar worn person={person.p} villager={person.villager} size={compact ? 24 : 28} /></span>{/if}
   <select data-pick={kind} class:withav={!!person} {value} data-sfx="none" onchange={(e) => onpick(e.currentTarget.value as T)}>
     {#each options as o (o.id)}<option value={o.id}>{o.label}</option>{/each}
@@ -72,13 +78,6 @@
   /* the avatar alone (a long name): the select's text hidden, the pill as wide as the avatar and the chevron */
   .only select.withav { width: 64px; padding-right: 0; color: transparent; }
   .only .sw { left: 12px; }
-  /* a narrow phone (320): the name before the avatar (the stroke still says whose colour) */
-  @container navbar (max-width: 340px) {
-    .compact .av { display: none; }
-    .compact select.withav { padding: 0 24px 0 12px; }
-    .compact .sw { left: 12px; }
-    .compact .chev { right: 8px; }
-    .compact.only .av { display: flex; }
-    .compact.only select.withav { padding: 0 0 0 38px; }
-  }
+  /* 健康 showing a member while the guest is picked: the edge dashed (the note under the bar says why) */
+  .away::before { box-shadow: none; outline: 2px dashed var(--text-soft); outline-offset: -2px; }
 </style>

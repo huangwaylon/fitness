@@ -647,15 +647,15 @@ test('マイレシピ: someone else’s recipe in the meal search is read-only f
 });
 
 // The title bar (the user: "move the user selector to the left of the title in the same row"): whose day left of
-// ごはん, the title still centred, ✕ at the right; a level's ‹ takes the pill's place.
+// 健康 | ごはん (centred), ✕ at the right; a level's ‹ and title take the pill's and the switch's place.
 // グラフ's period sits in the range row, right of きょう, at the row's right end.
-test('whose day sits in the title bar, left of ごはん; a level’s ‹ takes its place; グラフ’s period beside きょう; きろく’s art', async ({ page }) => {
+test('whose day sits in the title bar, left of 健康 | ごはん; a level’s ‹ takes its place; グラフ’s period beside きょう; きろく’s art', async ({ page }) => {
   await openFood(page);
   const bar = sheet(page).locator('.navbar');
   const who = bar.locator('select[data-pick=who]');
   await expect(who).toHaveValue('A');
-  await expect(who).toHaveAccessibleName('誰のごはん');
-  const [w, ttl, x, d] = await Promise.all([who, bar.locator('h2'), bar.locator('button.close'), dlg(page)].map(async (l) => (await l.boundingBox())!));
+  await expect(who).toHaveAccessibleName('誰のごはん：ウェイ');
+  const [w, ttl, x, d] = await Promise.all([who, bar.locator('nav'), bar.locator('button.close'), dlg(page)].map(async (l) => (await l.boundingBox())!));
   expect(w.x + w.width).toBeLessThanOrEqual(ttl.x + 1);
   expect(Math.abs(w.y + w.height / 2 - (ttl.y + ttl.height / 2))).toBeLessThan(4);
   expect(Math.abs(ttl.x + ttl.width / 2 - (d.x + d.width / 2))).toBeLessThan(3); // centred
@@ -664,9 +664,10 @@ test('whose day sits in the title bar, left of ごはん; a level’s ‹ takes 
   await expect(sheet(page).locator('.food select[data-pick=who]')).toHaveCount(0); // not under the tabs any more
   await expect.poll(() => sheet(page).locator('[data-tab=log] img').evaluate((i: HTMLImageElement) => i.dataset.src ?? i.src)).toContain('rice-cooker');
 
-  await sheet(page).locator('[data-add=b]').click(); // a level: ‹, no pill
+  await sheet(page).locator('[data-add=b]').click(); // a level: ‹, no pill, no switch
   await expect(bar.locator('h2')).toHaveText('朝ごはん');
   await expect(who).toHaveCount(0);
+  await expect(bar.locator('[data-kenkou-tab]')).toHaveCount(0);
   await expect(bar.getByRole('button', { name: '戻る' })).toBeVisible();
   await bar.getByRole('button', { name: '戻る' }).click();
   await expect(who).toBeVisible();
