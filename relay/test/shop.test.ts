@@ -34,6 +34,14 @@ describe('the shop in the record', () => {
   const buy = (who: 'A' | 'B' | 'G', it = item, price = buyPrice(it)!, d = D) => send(who, 'buy', { item: it, price, d });
   const refused = (detail?: string) => ({ ok: false, error: 'bad_request', ...(detail ? { detail } : {}) });
 
+  it('a retry of a buy already kept is a duplicate even once its stock day has passed (not refused)', () => {
+    tally('A', { 'fish:koi': Math.ceil(buyPrice(item)! / K) });
+    sell('A', 'fish:koi', Math.ceil(buyPrice(item)! / K), Math.ceil(buyPrice(item)! / K) * K);
+    expect(send('A', 'buy', { item, price: buyPrice(item)!, d: D }, 'buy-late')).toEqual({ ok: true });
+    now += 3 * 86_400_000; // the ack lost; the phone retries three days on
+    expect(send('A', 'buy', { item, price: buyPrice(item)!, d: D }, 'buy-late')).toEqual({ ok: true, duplicate: true });
+  });
+
   it('sells what the pocket holds, at its price, and no more', () => {
     expect(tally('A', { 'fish:koi': 2 })).toMatchObject({ ok: true });
     expect(tally('A', { 'fish:koi': 3 })).toMatchObject({ ok: true }); // the day's tally grows (one row)
