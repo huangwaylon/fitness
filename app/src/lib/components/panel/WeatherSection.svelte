@@ -1,5 +1,5 @@
 <script lang="ts">
-  // せってい → てんき (docs/design.md "Weather"): ほんもの (Tokyo's real sky by the hour, the default) | ゲーム (the island's
+  // 設定 → 季節's fold → 島の天気 (docs/design.md "Weather"): ほんもの (Tokyo's real sky by the hour, the default) | ゲーム (the island's
   // seeded days), one for the whole island (`pref weatherMode`: the last anyone set, the guest too). Under it what the island has now (「いま: とうきょう あめ」, the time it was fetched when that's a
   // while ago, or that no real weather is to be had: the game's then), and the data's credit.
   import { roving } from '../ui/roving.ts';
@@ -19,7 +19,7 @@
   };
 </script>
 
-<div class="prows" role="radiogroup" aria-label={t('panel.weather')} data-weather-mode={weatherSource.mode} {@attach roving}>
+<div class="prows" role="radiogroup" aria-label={t('wx.title')} data-weather-mode={weatherSource.mode} {@attach roving}>
   {#each WEATHER_MODES as m (m)}
     {@const on = weatherSource.mode === m}
     <button type="button" class="prow" role="radio" aria-checked={on} tabindex={on ? 0 : -1} data-wx-mode={m} data-sfx={on ? 'none' : 'tick'} onclick={() => pick(m)}>

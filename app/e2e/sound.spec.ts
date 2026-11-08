@@ -229,7 +229,6 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('すがた', 'もどす', () => dlg.locator('[data-look-revert]').tap(), ['back']);
   await step('すがた', 'back (‹)', () => dlg.locator('.titlebar .back').tap(), ['back']);
   await step('サウンド', '音量 slider (change)', () => dlg.locator('input[type=range]').fill('6'), ['tick']);
-  await step('ことば', '日本語 (already chosen)', () => dlg.getByRole('radio', { name: '日本語' }).tap(), []);
   await step('せってい', 'close (×)', () => dlg.locator('.titlebar .close').tap(), ['panel-close']);
   await expect(dlg).toHaveCount(0);
   await page.waitForTimeout(400);

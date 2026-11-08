@@ -160,9 +160,9 @@ scrolled where it was); ✕, the backdrop and Esc close the panel.
 
 **せってい** (`panel/SettingsSheet.svelte`): the HUD menu's せってい pill → its own sheet, full height, grown out of the
 pill (Sheet's `pop`), title せってい: **すがた** (the look's portrait, the よびな and what's worn: いつもの, a コーデ's name
-or the villager's; かえる → [the すがた level](#sugata): the closet and the villagers in one dresser), **プロフィール** ([Profile](#profile)), **サウンド** ([Sound settings](#sound-settings)), **ことば** (日本語 /
-English), **季節** ([Seasonal preview](#seasonal-preview)), **天気** (実際の天気 / ゲーム: [Weather](#weather)), and **模様替え** (one row with its
-はじめる); the guest's the same (2026-11-06), with a line saying it's visiting. すがた pushes a level with ‹; ✕, the backdrop and Esc close it,
+or the villager's; かえる → [the すがた level](#sugata): the closet and the villagers in one dresser), **プロフィール** ([Profile](#profile)), **サウンド** ([Sound settings](#sound-settings)), **言語** (one dropdown, health/Pick's:
+日本語 by default / English), **季節** ([Seasonal preview](#seasonal-preview); its fold opens on **島の天気**, 実際の天気 / ゲーム:
+[Weather](#weather)), and **模様替え** (one row with its はじめる); the guest's the same (2026-11-06), with a line saying it's visiting. すがた pushes a level with ‹; ✕, the backdrop and Esc close it,
 and the next opening starts at its top. Its own chunk, loaded on the first tap.
 
 <a id="sugata"></a>**すがた** (`look/LookPage.svelte`, `look/LookStage.svelte`, `look/tabs.ts`, `look/ClosetGrid.svelte`,
@@ -1159,7 +1159,7 @@ an hour's extra.
   all day (light, or a downpour), a wet morning, or heavy rain that clears at 16:00 and leaves a rainbow 16:00–17:00.
   In December–February a wet day snows instead (about one in four). Fog and the aurora come on fine days only.
   Fireworks days and meteor shower nights are always fine.
-- **The switch:** せってい → **てんき**: **ほんもの** (「とうきょうの いまの てんき」) or **ゲーム**. It's one setting for the
+- **The switch:** 設定 → 季節's fold → **島の天気**: **ほんもの** (「とうきょうの いまの てんき」) or **ゲーム**. It's one setting for the
   whole island (`pref weatherMode`, the last anyone set, the guest too, kept in the record), so the two phones never disagree on
   the rain-only critters. Under it is what the island has now (「いま: とうきょう あめ」, the fetch's time when it's
   over 2 h old, or 「ほんものの てんきが とれません（ゲームの てんき）」), and the credit 「天気: Open-Meteo（気象庁モデル）」.

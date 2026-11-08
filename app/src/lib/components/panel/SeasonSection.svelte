@@ -4,7 +4,8 @@
   // day's. A look only (ui-state/preview.svelte.ts): never synced, never sent, and the island's finds, critters and
   // ベル stay the real day's. もどす (or the HUD's chip) ends it; it ends on its own when the day does. Folded to one row
   // (what's showing, おまかせ or 「ハロウィン · ふゆ」, and a chevron: aria-expanded, Purchases' grow) for compactness;
-  // もどす stays in that row while a preview is on.
+  // もどす stays in that row while a preview is on. Its fold opens on 島の天気 first (WeatherSection: real or the game's,
+  // for the whole island, unlike the preview), then the preview's groups.
   import { roving } from '../ui/roving.ts';
   import { t } from '#lib/i18n/index.ts';
   import type { WeekView } from '#lib/types.ts';
@@ -12,6 +13,7 @@
   import { SEASONS } from '#lib/ui-state/season.ts';
   import { clearPreview, previewChoice, setPreview } from '#lib/ui-state/preview.svelte.ts';
   import { previewLabel } from './previewLabel.ts';
+  import WeatherSection from './WeatherSection.svelte';
 
   let { view }: { view: WeekView } = $props();
 
@@ -39,6 +41,10 @@
     {#if on}<button type="button" class="btn small paper" data-preview-reset data-sfx="back" onclick={clearPreview}>{t('preview.reset')}</button>{/if}
   </div>
   <div class="fold" id="preview-body" inert={!open}><div class="fold-in"><div class="body">
+    <div class="group" data-weather-section>
+      <h3>{t('wx.title')}</h3>
+      <WeatherSection />
+    </div>
     {#each GROUPS as g (g.key)}
       <div class="group">
         <h3 id="preview-{g.key}">{t(`preview.${g.key}`)}</h3>
