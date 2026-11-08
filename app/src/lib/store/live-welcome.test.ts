@@ -42,7 +42,7 @@ class Mem implements KV {
   setItem(k: string, v: string) { this.m.set(k, v); }
   removeItem(k: string) { this.m.delete(k); }
 }
-const host = (): Host => ({ status: 'loading', syncing: false, offline: false, lastSync: null, changed() {} });
+const host = (): Host => ({ status: 'loading', syncing: false, offline: false, lastSync: null, current: false, changed() {} });
 
 let snapshots = 0;
 /** The record's newest row: what a snapshot brings (`since`). */

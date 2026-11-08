@@ -52,6 +52,12 @@ class SharedWorld {
   #prev: { day: number; watered: string[] } | null = null;
   /** Where my part of the day goes to the sheet (store/actions.ts sendIslandDay: held, one row per person and day). */
   #sink: ((date: string, row: DayRow) => void) | null = null;
+  /** The day the record's rows were last folded in from a fetch of this session (`rows`, `current`): my row is sent
+   *  only after that (health A8, 2026-11-08: the record replaces a day's row whole, so a row rebuilt before the
+   *  record's was read would erase claims a row of mine from another device or an earlier session holds). */
+  #recordDay: string | null = null;
+  /** My row changed before then: it goes once they are. */
+  #rowWaits = false;
 
   /** The island's clock on the relay's (a `?date=` preview moves it; the relay's offset from the pings). */
   now(): number {
@@ -180,9 +186,22 @@ class SharedWorld {
    *  happened): store/actions.ts lostRace takes back what my claim put in my pocket. */
   lost: ((claim: string, who: Who, live: boolean, kind: DayEvent['kind']) => void) | null = null;
 
+  /** My part of today for the record (held: store/actions.ts sendIslandDay), once its rows are in (#recordDay). */
+  #sendRow(): void {
+    if (!this.#me || !this.#sink) return;
+    const today = this.#date();
+    if (this.#recordDay !== today) {
+      this.#rowWaits = true;
+      return;
+    }
+    this.#rowWaits = false;
+    this.#sink(today, rowOf(this.#today(), this.#me));
+  }
+
   /** The sheet's island days (model/state.ts islandDays, each person's latest by day): today's folded in (what the
-   *  relay didn't bring: both apps were closed, an outage), yesterday's watering and wishes kept for today. */
-  rows(rows: readonly { at: number; person: Who; data: DayRow & { date: string } }[]): void {
+   *  relay didn't bring: both apps were closed, an outage), yesterday's watering and wishes kept for today. `current`:
+   *  the rows are the record's as fetched this session (week.current), so my row may go now (#sendRow). */
+  rows(rows: readonly { at: number; person: Who; data: DayRow & { date: string } }[], current = true): void {
     const d = this.#today(), today = this.#date(), yesterday = this.#date(-86_400_000);
     const latest = new Map<string, (typeof rows)[number]>();
     for (const r of rows) {
@@ -216,6 +235,10 @@ class SharedWorld {
       }
     }
     if (changed) this.rev++;
+    if (current) {
+      this.#recordDay = today;
+      if (this.#rowWaits) this.#sendRow();
+    }
   }
 
   #wishKey(): string {
@@ -372,7 +395,7 @@ class SharedWorld {
         // the sheet keeps my part of the day (when the relay has nothing: both apps closed past its day; a catch made
         // offline, which the partner mustn't catch again); a walk's row waits for the next change or the hold (where my
         // villager stands is the relay's to carry)
-        if (e.kind !== 'walk' && this.#me) this.#sink?.(this.#date(), rowOf(d, this.#me));
+        if (e.kind !== 'walk') this.#sendRow();
       }
     }
     return a;
@@ -394,6 +417,8 @@ class SharedWorld {
     this.#day = null;
     this.#wishes = null;
     this.#prev = null;
+    this.#recordDay = null;
+    this.#rowWaits = false;
     this.#events = [];
     this.#subs.clear();
     this.#hearSubs.clear();

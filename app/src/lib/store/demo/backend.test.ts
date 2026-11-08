@@ -14,7 +14,7 @@ class Mem implements KV {
   removeItem(k: string) { this.m.delete(k); }
 }
 
-const host = (): Host & { changes: number } => ({ status: 'loading', syncing: false, offline: false, lastSync: null, changes: 0, changed() { this.changes++; } });
+const host = (): Host & { changes: number } => ({ status: 'loading', syncing: false, offline: false, lastSync: null, current: false, changes: 0, changed() { this.changes++; } });
 
 let kv: Mem;
 const fetchSpy = vi.fn(async () => new Response('{"ok":true}'));

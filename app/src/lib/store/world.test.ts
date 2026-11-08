@@ -44,6 +44,7 @@ describe('the shared island on this phone', () => {
     world.attach(r.live, 'A');
     const rows: unknown[] = [];
     world.sink = (date, row) => rows.push({ date, ...row });
+    world.rows([]); // the record's rows in (my row waits for them)
     expect(world.share({ kind: 'pick', id: 's1000', what: 'shell:conch', at: [150, 40] }).fresh).toBe(true);
     expect(r.sent).toEqual([{ kind: 'pick', id: 's1000', what: 'shell:conch', at: [150, 40] }]);
     expect(rows).toEqual([expect.objectContaining({ date: '2026-11-01', taken: ['s1000'] })]);
@@ -58,6 +59,7 @@ describe('the shared island on this phone', () => {
     world.attach(r.live, 'A');
     const rows: { taken: string[] }[] = [];
     world.sink = (_date, row) => rows.push(row);
+    world.rows([]);
     expect(world.share({ kind: 'catch', what: 'koi', id: 'fresh:7', how: 'net' }).fresh).toBe(true);
     expect(rows.at(-1)?.taken).toEqual(['catch:fresh:7']);
     // B caught fresh:8 offline; its row reached the record, its intent not yet the relay
@@ -70,6 +72,24 @@ describe('the shared island on this phone', () => {
     // the relay's own word on it (B's catch, at last) is still B's
     r.hear({ kind: 'catch', what: 'koi', id: 'fresh:8', how: 'net', who: 'B', t: T0 - 6000 });
     expect(caught(world.day, 'fresh:8')).toMatchObject({ who: 'B', what: 'koi' });
+  });
+
+  it('my day row waits for the record’s rows of this session; then it holds what they had (health A8)', () => {
+    // the record replaces a day's row whole: one rebuilt before the record's was read (a phone's second key, an
+    // earlier session's catches) would erase the claims it held
+    const r = fakeRelay();
+    world.attach(r.live, 'A');
+    const rows: { date: string; taken: string[] }[] = [];
+    world.sink = (date, row) => rows.push({ date, ...row });
+    const mine = [{ at: T0 - 9000, person: 'A' as const, data: { date: '2026-11-01', taken: ['catch:old:1', 'w1'], puts: [], shakes: [], watered: [], wishes: {} } }];
+    world.rows(mine, false); // the cache, not yet this session's fetch
+    expect(world.share({ kind: 'pick', id: 'w2', what: 'weed' }).fresh).toBe(true);
+    expect(r.sent).toHaveLength(1); // the relay hears it at once
+    expect(rows).toEqual([]);
+    world.rows(mine, true);
+    expect(rows).toEqual([expect.objectContaining({ date: '2026-11-01', taken: expect.arrayContaining(['catch:old:1', 'w1', 'w2']) })]);
+    world.share({ kind: 'pick', id: 'w3', what: 'weed' });
+    expect(rows).toHaveLength(2);
   });
 
   it('the Tokyo day of the sheet’s rows and the wishes is the relay’s, not a device clock running a day ahead', () => {

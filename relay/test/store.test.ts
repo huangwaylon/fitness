@@ -260,6 +260,15 @@ describe('events', () => {
     expect(events().map((r) => [r[0], r[1]])).toEqual([['A', 'a1'], ['B', 'b1'], ['A', 'a3'], ['A', 'i2'], ['B', 'i3']]);
   });
 
+  it('an island day replacing one merges only what grows: wishes, watering, the spot; the claims are the new row’s (health A8)', () => {
+    const row = (id: string, o: object) => ev(id, 'island', { date: '2026-11-02', taken: [], puts: [], shakes: [], watered: [], wishes: {}, ...o });
+    a('event', row('i1', { taken: ['catch:a', 'catch:b'], watered: ['fl:1:2'], wishes: { '2026-11-03': 3 }, at: [10, 20] }));
+    a('event', row('i2', { taken: ['catch:a'], watered: ['fl:3:4'], wishes: { '2026-11-03': 1 } })); // a stale send
+    const kept = events().filter((r) => r[1] === 'i2').map((r) => r[3])[0];
+    expect(kept).toEqual({ date: '2026-11-02', taken: ['catch:a'], puts: [], shakes: [], watered: ['fl:1:2', 'fl:3:4'], wishes: { '2026-11-03': 3 }, at: [10, 20] });
+    expect(events().filter((r) => r[2] === 'island')).toHaveLength(1);
+  });
+
   it('a cosmetic pref keeps its latest per person; a goal its last per person and Tokyo day; one the model ignores replaces nothing', () => {
     a('event', ev('n1', 'pref', { key: 'villagerName', value: 'ウェイ' }));
     a('event', ev('n2', 'pref', { key: 'villagerName', value: '   ' })); // ignored by the model: kept, replaces nothing

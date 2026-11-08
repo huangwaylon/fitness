@@ -850,17 +850,20 @@
     };
   });
   // (only for a new State or a new day: the minute tick replaces the model but keeps its State, and these rows with it)
+  // (and once the rows are the record's as of this session: my day's row waits for that, store/world.svelte.ts)
   let fed = '';
   let fedState: unknown = null;
+  let fedCurrent = false;
   $effect(() => {
     const m = week.model;
     if (!m) return;
-    const day = dayKey(now());
-    if (m.state === fedState && day === fed) return;
+    const day = dayKey(now()), current = week.current;
+    if (m.state === fedState && day === fed && current === fedCurrent) return;
     fedState = m.state;
     fed = day;
+    fedCurrent = current;
     untrack(() => {
-      shared.rows(m.state.islandDays.map((r) => ({ at: r.at, person: r.person, data: r.data })));
+      shared.rows(m.state.islandDays.map((r) => ({ at: r.at, person: r.person, data: r.data })), current);
       decor.rows(m.state.decor);
       islandLayout.rows(m.state.layout);
       // the old もようがえ's decorations, mine, into the layout once (layout/migrate.ts)

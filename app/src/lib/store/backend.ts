@@ -30,6 +30,9 @@ export interface Host {
   syncing: boolean;
   offline: boolean;
   lastSync: Date | null;
+  /** The rows are the record's as of this session: a snapshot came, or the relay's welcome said the cache has its last
+   *  change (the demo: always). False until then, and again after pairing as someone else. */
+  current: boolean;
   /** The rows or events changed: recompute the view. */
   changed(): void;
 }

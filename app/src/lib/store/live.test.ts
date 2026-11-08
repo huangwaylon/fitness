@@ -28,7 +28,7 @@ class Mem implements KV {
   removeItem(k: string) { this.m.delete(k); }
 }
 
-const host = (): Host => ({ status: 'loading', syncing: false, offline: false, lastSync: null, changed() {} });
+const host = (): Host => ({ status: 'loading', syncing: false, offline: false, lastSync: null, current: false, changed() {} });
 
 // LiveBackend schedules retries and re-reads (setTimeout): fake them, so none fires into a later test.
 const TIMERS = ['setTimeout', 'clearTimeout'] as const;

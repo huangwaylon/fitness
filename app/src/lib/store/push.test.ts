@@ -42,7 +42,7 @@ class Mem implements KV {
   removeItem(k: string) { this.m.delete(k); }
 }
 
-const host = (): Host => ({ status: 'loading', syncing: false, offline: false, lastSync: null, changed() {} });
+const host = (): Host => ({ status: 'loading', syncing: false, offline: false, lastSync: null, current: false, changed() {} });
 const AT = '2026-11-01T01:00:00.000Z';
 const LATER = '2026-11-01T01:05:00.000Z';
 const change = (c: SheetChange) => relay.listeners.forEach((f) => f(c));
