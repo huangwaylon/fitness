@@ -454,7 +454,7 @@ export async function watchComings(page: Page, things: Record<string, Coming>) {
       }
     });
     W.__comingsMO.observe(document.body, {
-      childList: true, subtree: true, attributes: true, attributeFilter: ['class'],
+      childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'data-act'], // (data-act: a villager's motion)
       characterData: Object.values(things).some((t) => typeof t !== 'string')
     });
   }, things);
