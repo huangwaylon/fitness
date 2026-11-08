@@ -31,6 +31,7 @@ import { releaseAll, resourcesOf } from './release.ts';
 import { frameRate } from '#lib/store/frameRate.svelte.ts';
 import { pacer } from './pace.ts';
 import { createWarmup, texturesOf } from './warmup.ts';
+import { ktx2Target } from './ktx2.ts';
 import { log } from '#lib/sync/log.ts';
 import { SEA_X, midXOf } from '#lib/layout/model.ts';
 import { PITCH } from '#lib/layout/hides.ts';
@@ -69,6 +70,8 @@ export interface Options {
   shadows: boolean;
   /** Frames a second while only the ambience moves (the water, the fall, a flicker): 0 none (it holds still). */
   ambient: number;
+  /** The models' textures from their KTX2 (ktx2.ts; default on): off, their WebPs (`?ktx2=0`, an A/B). */
+  ktx2?: boolean;
 }
 interface Stats {
   fps: number;
@@ -286,6 +289,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   const renderer = new WebGLRenderer({ canvas, antialias: init.aa ?? true, alpha: true, premultipliedAlpha: true, powerPreference: 'high-performance', stencil: false });
   // (no per-program link check on a live phone: testMode.ts shaderChecks)
   renderer.debug.checkShaderErrors = shaderChecks();
+  ktx2Target(renderer, opts.ktx2 ?? true);
   renderer.setPixelRatio(opts.dpr);
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = SRGBColorSpace;

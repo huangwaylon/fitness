@@ -11,6 +11,7 @@ import {
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { lean } from './release.ts';
+import { ktx2Plugin } from './ktx2.ts';
 import { bend } from './bend.ts';
 import { withMaps } from './blank.ts';
 import { twoPass } from './sides.ts';
@@ -209,7 +210,7 @@ let loader: GLTFLoader | null = null;
 function load(url: string, name: string): Promise<GLTF | null> {
   let p = loaded.get(url);
   if (p) return p;
-  if (!loader) (loader = new GLTFLoader()).setMeshoptDecoder(MeshoptDecoder);
+  if (!loader) (loader = ktx2Plugin(new GLTFLoader())).setMeshoptDecoder(MeshoptDecoder);
   p = loader.loadAsync(url).then(lean, (e: unknown) => {
     console.warn('world3d: model', name, e);
     loaded.delete(url);
