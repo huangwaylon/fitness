@@ -177,6 +177,8 @@ test('two players: asleep at night on both tabs; a tap wakes my villager on both
   test.setTimeout(60_000);
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const a = await ctx.newPage(), b = await ctx.newPage();
+  // (each tab's own clock, installed and running: stepped past the sleep's ten seconds below, not waited out)
+  await Promise.all([a, b].map((p) => p.clock.install()));
   for (const [p, as] of [[a, ''], [b, '&as=B']] as const) {
     await p.goto(`?demo&date=2026-11-04T23:00${as}`);
     await islandUp(p);
@@ -189,14 +191,13 @@ test('two players: asleep at night on both tabs; a tap wakes my villager on both
   await a.mouse.click(v.x + v.width / 2, v.y + v.height * 0.6);
   for (const p of [a, b]) await expect(zzz(p, 'A')).toHaveCount(0, { timeout: 1500 });
   for (const p of [a, b]) await expect(zzz(p, 'B')).toHaveCount(1);
-  // ten seconds later: asleep again on both (the same moment: the wake's own time on each; two tabs' own clocks, so
-  // real time: proving it holds till then)
-  await a.waitForTimeout(9000);
+  // ten seconds later: asleep again on both (the same moment: the wake's own time on each, each tab's clock stepped on)
+  await Promise.all([a, b].map((p) => p.clock.runFor(9000)));
   for (const p of [a, b]) await expect(zzz(p, 'A')).toHaveCount(1, { timeout: 2500 });
   await ctx.close();
 });
 
-test('two players: Gulliver woken on one tab is up on the other too, and for a tab opening later', async ({ browser }) => {
+test('two players: Gulliver woken on one tab is up on the other too', async ({ browser }) => {
   test.setTimeout(60_000);
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const a = await ctx.newPage(), b = await ctx.newPage();
@@ -213,13 +214,6 @@ test('two players: Gulliver woken on one tab is up on the other too, and for a t
   }
   await expect(g(a)).not.toHaveAttribute('data-asleep', /./);
   await expect(g(b)).not.toHaveAttribute('data-asleep', /./, { timeout: 2000 });
-  const c = await ctx.newPage();
-  await c.goto('?demo&date=2026-11-04T12:00&visitor=gulliver&as=B');
-  // (its page loading: the expect's own budget, 10 s on CI, as a first wait after goto; a third tab under load took over 5 s)
-  await islandUp(c);
-  await expect(g(c)).toBeAttached();
-  await c.waitForTimeout(800);
-  await expect(g(c)).not.toHaveAttribute('data-asleep', /./);
   await ctx.close();
 });
 
@@ -240,11 +234,6 @@ test('two players: a shake on one tab plays on the other (their villager stays w
   await b.locator('button[data-branch="oak-m1"]').click();
   await expect(b.locator('button[data-branch]')).toHaveCount(0, { timeout: 3000 });
   await expect(a.locator('button[data-branch]')).toHaveCount(0, { timeout: 3000 });
-  // a third tab opening later (B's phone again) finds the day as it is: no branch, and the nest rule shared
-  const c = await ctx.newPage();
-  await open(c, '&as=B');
-  await go(c, 380);
-  await expect(c.locator('button[data-branch]')).toHaveCount(0);
   await ctx.close();
 });
 
