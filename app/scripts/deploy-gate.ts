@@ -1,4 +1,4 @@
-// The deploy's gate (.github/workflows/pages.yml, `deploy`): is every gate job of this run attempt green?
+// The deploy's gate (.github/workflows/pages.yml, `deploy`): is every job of the gate in this run attempt green?
 // `GATE=a,b,… node scripts/deploy-gate.ts jobs.json` (jobs.json: the attempt's jobs, from the API) prints `green`,
 // `wait: …` (one still running or not there yet) or `red: …`. It fails closed: each job in GATE exactly once, each
 // `completed` with the conclusion `success`; any other conclusion, a job twice, or a job of the workflow in neither
