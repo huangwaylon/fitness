@@ -96,6 +96,19 @@ test('overspending is refused: too dear, かう only boops and the twins say so;
   await expect(page.locator('[data-shop-item="f7047"]')).toHaveAttribute('data-owned', 'false');
 });
 
+// Nothing to sell: the shop opens on かう (health plan C7: an empty うる was a dead end, its bar's 売る disabled under
+// 500 px of nothing); うる then says why, with no bar.
+test('an empty pocket opens the shop on かう; うる says it’s empty, no 売る bar', async ({ page }) => {
+  await seed(page, []);
+  await page.goto(`shop${Q}`);
+  await expect(page.locator('[data-shop-tab="buy"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-shop-stock] [data-shop-item]').first()).toBeVisible();
+  await expect(page.locator('[data-shop-say]')).toHaveAttribute('data-shop-say', 'stock');
+  await page.locator('[data-shop-tab="sell"]').click();
+  await expect(page.locator('[data-shop-empty]')).toHaveText('ポケットは空です。魚や虫、かいがらや木材を拾ったら、ここで売れます');
+  await expect(page.locator('[data-shop-sell], [data-shop-offer]')).toHaveCount(0);
+});
+
 test('the guest’s pocket and かいがら are its own', async ({ browser }) => {
   const ctx = await browser.newContext({ viewport: { width: 393, height: 852 } });
   const g = await ctx.newPage();

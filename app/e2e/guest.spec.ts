@@ -7,7 +7,7 @@
 // members' islands only while its app is open, moving only when it's moved.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
-import { fromMenu, hudBells, openRewards } from './hud.ts';
+import { fromMenu, hudBells, openKenkou, openRewards } from './hud.ts';
 
 const VIEW = { width: 393, height: 659 };
 test.use({ viewport: VIEW });
@@ -78,6 +78,26 @@ test('the guest’s phone: the members’ activity and ベル, never a からだ
   await expect(panel.locator('[data-spend]').first()).toBeVisible();
   await expect(panel.locator('[data-spend] .x')).toHaveCount(0);
   await expect(panel.locator('.hero .today')).toBeVisible();
+});
+
+// The guest's 健康 and ごはん leave no hole (health plan C7): no かつどう / からだ to pick, so the period sits at the
+// range row's end (no row of its own); its long name (おきゃくさん) in the title bar's pill is its avatar alone, the
+// title centred.
+test('the guest’s 健康: the period on the range row; ごはん: its pill the avatar alone, the title centred', async ({ page }) => {
+  await page.setViewportSize({ width: 393, height: 852 });
+  await page.goto(`?demo&date=${DATE}&critter=none&visitor=none&as=G`);
+  await expect(page.getByRole('button', { name: 'けんこう', exact: true })).toBeVisible({ timeout: 15_000 });
+  await openKenkou(page, 'health');
+  const h = page.locator('dialog[open] [data-health-sheet]');
+  await expect(h.locator('.nav [data-pick=period]')).toBeVisible();
+  await expect(h.locator('.sel')).toHaveCount(0);
+  await page.locator('dialog[open] [data-kenkou-tab=food]').click();
+  const pill = page.locator('dialog[open] .titlebar .dd.who');
+  await expect(pill).toHaveClass(/\bonly\b/);
+  expect((await pill.boundingBox())!.width).toBeLessThanOrEqual(72);
+  const t = (await page.locator('dialog[open] .titlebar h2').boundingBox())!;
+  expect(Math.abs(t.x + t.width / 2 - 393 / 2)).toBeLessThan(3);
+  await expect(pill.locator('select option:checked')).toHaveText('おきゃくさん'); // (its name in the picker)
 });
 
 test('the guest’s ごほうび shows today’s ベル under the balance: the members’ jar’s (both of them, ふたりでぜんぶ in), as a member’s phone has it', async ({ browser }) => {

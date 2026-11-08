@@ -289,7 +289,8 @@ Health data over time for the personal trainer, one person at a time, computed o
   period beside them, a dropdown as wide as its longest option (「きかん」: 1週 · 1か月 · 3か月 · 1年); the pills and the
   dropdown are ごはん's (`Segmented` 36, `Pick` `compact` as グラフ's period: one size in both tabs). 1週 and
   かつどう on every opening; switching either keeps the other, the range and whose data; the guest has no switch
-  (かつどう only), the period alone at the row's right end.
+  (かつどう only, no row of its own: the period at the range row's end, as ごはん's グラフ's). In the title bar a long
+  name (おきゃくさん) is the pill's avatar alone (`Pick` `only`; the name in the picker), the title centred.
 - **Then** a sticky row: ‹ the visible range (「10/2〜10/31」; 「1日ごと」 / 「1週ごとの 1日平均」 / 「1か月ごとの 1日平均」
   under it) › and きょう.
 - **Cards, per group** (`model/health.ts` GROUPS and CARDS, the user's "activity metrics and body metrics"): かつどう
@@ -2241,7 +2242,8 @@ too.
   in sections (虫, 魚, 海の幸, かいがら, 資源, 果物, 化石, その他: `shop/pocket.ts`), each dearest first:
   its icon, name, price and ×n. A tap picks one more (past the pocket: none again), − one less, ぜんぶ all; the bar
   says 「3こで 120 かいがら」 and うる sells them (one `sell` a kind). Selling never takes anything out of the ずかん or
-  the museum. A present's furniture or recipe never sells (it's もようがえ's), nor a message bottle.
+  the museum. A present's furniture or recipe never sells (it's もようがえ's), nor a message bottle. An empty pocket
+  opens the shop on かう; うる then says 「ポケットは空です。…ここで売れます」 with no bar.
 - **What a pocket holds** (`contract/pocket.ts`, one table: kind, id, names, icon, price): the fish, bugs and sea
   creatures; the beach's shells (the pearl and coral among them), fossils and star fragments (the ずかん's, counted in
   the tallies since they first turned up); and the goods, `goods:<id>` tally keys with no ずかん page: a tree's wood

@@ -586,7 +586,7 @@
   "shop.sec.other": "その他",
   "shop.catchLabel": "{name} ×{n} · 1個 {v}かいがら · {c}個選択",
   "shop.less": "{name}を1つ減らす",
-  "shop.emptyPocket": "ポケットは空です。魚や虫、かいがらや木材を拾ったらここで売れます",
+  "shop.emptyPocket": "ポケットは空です。魚や虫、かいがらや木材を拾ったら、ここで売れます",
   "shop.offer": "{n}個で{v}かいがら",
   "shop.pickHint": "売りたいものを選んでください",
   "shop.all": "全部",

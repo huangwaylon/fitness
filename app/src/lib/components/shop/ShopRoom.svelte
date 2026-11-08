@@ -5,12 +5,13 @@
   // I sold: model/shop.ts; by its sections, shop/pocket.ts) and
   // かう (buy: the day's stock, the same on every phone: contract/shop.ts stockOf). Prices and my かいがら in NH's shell
   // (the cowrie). A sell or a buy shows at once with もとに戻す (store/actions.ts sell, buyPiece); a bought piece joins
-  // my もようがえ. The guest's pocket and かいがら are its own. Never ベル. ‹ 島へ goes back out, just out of its door.
+  // my もようがえ; an empty pocket opens it on かう (no うる bar). The guest's pocket and かいがら are its own. Never ベル.
+  // ‹ 島へ goes back out, just out of its door.
   // While I'm in here the others' islands show my villager nowhere, as in the museum and the rooms (the rooms' `tent`
   // presence with `sc: 's'`: store/where.svelte.ts); out of the door they see it there.
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import NavButton from '../ui/NavButton.svelte';
   import Segmented from '../ui/Segmented.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -140,6 +141,14 @@
     say = { k: 'thanks' };
   }
 
+  // an empty pocket (once the record is in): the shop opens on かう, nothing to sell (no うる bar either)
+  let opened = false;
+  $effect(() => {
+    if (opened || !week.model) return;
+    opened = true;
+    if (!shop.pocket.size) untrack(() => ((tab = 'buy'), (say = { k: 'stock' })));
+  });
+
   function switchTab(id: Tab) {
     tab = id;
     picks = {};
@@ -168,7 +177,6 @@
   // the island's again out of the door
   onMount(() => (setPlace('shop'), () => setPlace(null)));
   onMount(() => {
-    if (!shop.pocket.size) say = { k: 'empty' };
     requestAnimationFrame(() => doorReady());
     shared.attach(relay, me, demo);
     own?.start();
@@ -241,11 +249,13 @@
       {:else}
         <p class="empty" data-shop-empty>{t('shop.emptyPocket')}</p>
       {/if}
-      <div class="bar">
-        <p class="sum" data-shop-offer={pickedV}>{pickedN ? t('shop.offer', { n: String(pickedN), v: formatNum(pickedV) }) : t('shop.pickHint')}</p>
-        {#if pocket.length}<button type="button" class="btn small paper" data-shop-all data-sfx="tick" onclick={all}>{t('shop.all')}</button>{/if}
-        <button type="button" class="btn small" data-shop-sell data-sfx="self" aria-disabled={!pickedN} onclick={sellPicked}>{t('shop.sell')}</button>
-      </div>
+      {#if pocket.length}
+        <div class="bar">
+          <p class="sum" data-shop-offer={pickedV}>{pickedN ? t('shop.offer', { n: String(pickedN), v: formatNum(pickedV) }) : t('shop.pickHint')}</p>
+          <button type="button" class="btn small paper" data-shop-all data-sfx="tick" onclick={all}>{t('shop.all')}</button>
+          <button type="button" class="btn small" data-shop-sell data-sfx="self" aria-disabled={!pickedN} onclick={sellPicked}>{t('shop.sell')}</button>
+        </div>
+      {/if}
     {:else}
       <h2 class="sec-label">{t('shop.today')}</h2>
       <ul class="grid" data-shop-stock>

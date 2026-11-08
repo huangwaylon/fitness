@@ -256,7 +256,7 @@ test('a half-filled task form asks before ✕, the backdrop or Esc throw it away
   await expect(sheet(page)).toBeVisible(); // only the form went
 });
 
-test('the ＋ sits over the tab bar, clear of every row\'s tick (659 px tall)', async ({ page }) => {
+test('the ＋ sits over the tab bar, clear of every row\'s tick and heading\'s count (659 px tall)', async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 659 });
   await board(page);
   const add = (await root(page).locator('[data-wed-add]').boundingBox())!;
@@ -266,6 +266,8 @@ test('the ＋ sits over the tab bar, clear of every row\'s tick (659 px tall)', 
     const b = await tick.boundingBox();
     if (b) expect(b.y >= add.y + add.height || b.y + b.height <= add.y || b.x >= add.x + add.width || b.x + b.width <= add.x).toBe(true);
   }
+  // each heading's count beside its title, never at the right edge under ＋ (health plan C7)
+  for (const n of await sheet(page).locator('[data-wed-group-tally]').all()) expect((await n.boundingBox())!.x + 40).toBeLessThan(add.x);
   // the last row scrolls clear of it
   await sheet(page).evaluate((el) => el.scrollTo({ top: el.scrollHeight }));
   const last = (await sheet(page).locator('[data-wed-task]').last().boundingBox())!;
