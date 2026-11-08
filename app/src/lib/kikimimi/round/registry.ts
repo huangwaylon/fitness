@@ -1,10 +1,10 @@
-// The games a phone knows (docs/kikimimi-framework.md §2; docs/curriculum-wave2.md §4 W2-C2): each game is a lane, what
+// The games a phone knows (docs/kikimimi-engine.md "Files", "The registry" W2-C2): each game is a lane, what
 // it plugs into the sheet with: its GameDef, the chunks its deck needs, how its items are dealt from them, the host's
 // seed, a solo game's own deck (its pages, if any: components/kikimimi/<gm>/views.ts). The games built before wave 2
 // (the quiz, スピード はしご, a unit's lesson, the tournament, みみ チェック) ride the sheet's chunk (EAGER); a later game is
 // one line in LATER, its folder's lane.ts by import(), its own chunk with its strings (its i18n file, addCatalog), and
 // its pages loaded only when one is played: the session takes a game's `open` only once its lane is in (game.svelte.ts
-// `wants`: framework §3.2 "Content before the deck"). Its mode (catalog.ts, or its line's own) shows once this build
+// `wants`: kikimimi-engine.md "RoundSession" "Content before the deck"). Its mode (catalog.ts, or its line's own) shows once this build
 // has its lane and content (`ready`).
 import type { Item } from '../bank.ts';
 import type { Tier } from '../lesson.ts';
@@ -78,8 +78,8 @@ export interface Lane<O = any> {
 
 /**
  * A later game: its lane by import() (its own chunk); its mode when the catalog hasn't one for it (a mic mode's,
- * docs/kikimimi-mic.md §3.4: catalog.ts addMode); whether this build has its content (none: a `listened` file of its
- * game in the index, as wave 2's: kikimimi-framework.md "Listen parts as built"). One line each, e.g.
+ * docs/kikimimi-mic.md "In the registry": catalog.ts addMode); whether this build has its content (none: a `listened` file of its
+ * game in the index, as wave 2's: kikimimi-engine.md "Listen parts"). One line each, e.g.
  *   tile: { lane: () => import('../games/tile/lane.ts') },
  *   mane: { lane: () => import('../games/mane/lane.ts'), content: () => true, mode: { id: 'mane', group: 'koe', …, requires: 'mic', gate: micReady } },
  */
@@ -91,7 +91,7 @@ export interface Later {
 
 /** The games built into the sheet's chunk. */
 const EAGER: readonly Lane[] = [quizLane, ladderLane, lessonLane, taikaiLane, checkLane];
-/** The games of their own chunks, by id (docs/curriculum-wave2.md §2: tile, tachi, call, rush, news; the mic modes). */
+/** The games of their own chunks, by id (docs/kikimimi-engine.md "The listening games": tile, tachi, call, rush, news; the mic modes). */
 const LATER: Readonly<Record<GameId, Later>> = {
   // one line a game (Later)
   tile: { lane: () => import('../games/tile/lane.ts') },

@@ -1,4 +1,4 @@
-// ききみみ クイズ: how level 4's items are staged (docs/kikimimi.md "Visuals", docs/curriculum.md §8): where each is heard
+// ききみみ クイズ: how level 4's items are staged (docs/kikimimi.md "Visuals", docs/curriculum.md "Visual rules"): where each is heard
 // (its scene backdrop) and how (its channel), and the sound marks shown over the revealed text. bank4.ts and
 // dialogues.ts fold these into their items (`scene`, `channel`, `marks`; a dialogue line's marks by its clip id).
 //   Scenes: the 8 painted backdrops. A setting with none of its own (a hotel desk, the gym, a ferry terminal, a repair
@@ -9,7 +9,7 @@
 // Where the item's `tags.conditions` already say it (bank.ts channelOf), the channel isn't repeated here.
 //   Marks: every item or line with a `tts` respelling has them: the reduced shape above the spelling (`say`: lemme,
 // gonna, a number as said), the joins (`link`), the swallowed letters (`drop`), the stressed words (`stress`).
-//   Noise (`NOISE`): a speech condition where the scene has one (docs/kikimimi.md "Conditions"): a café's murmur, a
+//   Noise (`NOISE`): a speech condition where the scene has one (docs/kikimimi-engine.md "Conditions"): a café's murmur, a
 // street, a station or an airport concourse; mostly light (+15 dB), heavy (+10 dB) only where the noise is the scene's
 // point (Thanksgiving plans over a packed café) or the meaning survives it (a ferry PA in the wind: what it means, not a
 // number). `word` items stay clean: their contrasts are fine detail, and level 4 stays fair. A phone or PA channel

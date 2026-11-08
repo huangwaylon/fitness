@@ -1,4 +1,4 @@
-// ききみみ クイズ: every bank item spoken (docs/kikimimi.md "Audio"), each clip a loose m4a in the work folder
+// ききみみ クイズ: every bank item spoken (docs/kikimimi-engine.md "Audio"), each clip a loose m4a in the work folder
 // (.cache/tts/clips/), then packed into static/audio/listen/ (scripts/kikimimi-packs.ts: only the packs whose clips
 // changed get a new hash). Silent: never plays a sound itself except `--listen`, which a person runs.
 //   node scripts/kikimimi-audio.ts [options]       make what's new or changed (by each clip's source hash), print a report
@@ -22,7 +22,7 @@
 //   node scripts/kikimimi-audio.ts --list           the listen-through list (each clip with its cast voice and text)
 //   node scripts/kikimimi-audio.ts --listen [--only <regex>]   play each clip (afplay) with its text: a person's check
 //
-// The cast (docs/curriculum.md §9): scripts/tts/cast.json, 18 voices (US 6 a gender; UK and AU 3, only for the やま/ほし
+// The cast (docs/curriculum.md "Audio and script rules"): scripts/tts/cast.json, 18 voices (US 6 a gender; UK and AU 3, only for the やま/ほし
 // accent-exposure items), each villager one US voice for good (cast.ts CAST, EXPOSURE; speech.ts castOf). Every voice is a reference clip with its exact transcript, cloned for
 // every line: US voices designed by Qwen3-TTS VoiceDesign from a text description (no real person), UK voices spoken by
 // Phonon's synthetic catalogue voices, AU voices from the VCTK corpus (CC BY 4.0; credited in docs/kikimimi.md).
@@ -31,7 +31,7 @@
 // edge silence trimmed, loudness gain to −16 LUFS (true peak ≤ −1.5 dBTP via a limiter), mono AAC ~48 kbps at 24 kHz,
 // +faststart. Levels 1-2 get `<id>-slow.m4a`: the take as spoken time-stretched to 0.75 by ffmpeg atempo (the same take,
 // not a re-synthesis; level 1's normal clips are slowed to 0.92 the same way).
-// Conditions (docs/kikimimi.md "Conditions", src/lib/kikimimi/conditions.ts): a clip with a speech condition (its `cond`,
+// Conditions (docs/kikimimi-engine.md "Conditions", src/lib/kikimimi/conditions.ts): a clip with a speech condition (its `cond`,
 // or a phone or PA channel's light one: condOf) is mixed after the clean take passed the gate: a phone band and codec, a
 // line breaking up (its dropouts), a voicemail's room, a PA hall with its chime, a noise bed (scripts/tts/beds/,
 // scripts/kikimimi-beds.ts) at its SNR. The
@@ -61,7 +61,7 @@
 // pythons in KIKIMIMI_TTS_PY (mlx-audio), KIKIMIMI_PHONON_PY (ptts), KIKIMIMI_KOKORO_PY, KIKIMIMI_QA_PY (jiwer,
 // whisper-normalizer, torch for UTMOS), KIKIMIMI_SV_PY (speechbrain); KIKIMIMI_TTS_EVAL=/tmp/tts-eval takes the TTS
 // evaluation's venvs. whisper-cli and its model (~/.cache/whisper/ggml-large-v3-turbo.bin, or WHISPER_MODEL) are needed;
-// the one-time setup is in docs/kikimimi.md "Audio" (a preflight names what's missing).
+// the one-time setup is in docs/kikimimi-engine.md "Audio" (a preflight names what's missing).
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
@@ -222,7 +222,7 @@ const ENGINE = engines(opt('--engine') ?? 'qwen3');
 const SAY = ENGINE.us === 'say';
 if (SAY && (ENGINE.uk !== 'say' || ENGINE.au !== 'say')) throw new Error('--engine say is all or nothing');
 const LEVELS = (opt('--levels') ?? (SAY ? '1,2,3' : '1,2,3,4,5,6,7')).split(',').map(Number);
-if (SAY && LEVELS.some((lv) => lv > 3)) throw new Error('levels 4-7 are never spoken by say (docs/curriculum.md §9)');
+if (SAY && LEVELS.some((lv) => lv > 3)) throw new Error('levels 4-7 are never spoken by say (docs/curriculum.md "Audio and script rules")');
 
 const SCRATCH = opt('--out') ? resolve(opt('--out')!) : null;
 const OUT = SCRATCH ?? WORK;
@@ -233,14 +233,14 @@ const REPORT = SCRATCH ? join(SCRATCH, 'report.json') : join(TTS, 'report.json')
 const STORY_ITEMS = storyItems(readStories());
 const STORY: ReadonlySet<string> = new Set(STORY_ITEMS.map((it) => it.id));
 /** The stories' loudness: a little softer than the quiz's −16. しずえの ニュース's lines and weather sentences are read
- *  at it too (a bulletin heard whole, like a chapter: kikimimi-framework.md "しずえの ニュース as built"). */
+ *  at it too (a bulletin heard whole, like a chapter: kikimimi-engine.md "しずえの ニュース"). */
 const STORY_LUFS = -18;
 const SOFT: ReadonlySet<string> = new Set([...STORY, ...readListen().filter(({ raw }) => (raw as { game: string }).game === 'news')
   .flatMap(({ raw }) => listenClipItems(raw)).map((it) => it.id)]);
 const lufsOf = (it: Item): number => (SOFT.has(it.id) ? STORY_LUFS : -16);
 /** The listening kinds' clips (content/listen/*.yaml, listen.ts listenClipItems: a tile's own, each line of a call or a
  *  たちぎき, `<item>-<n>`, at its stage's level): a draft file's only when --only names them (it's voiced after its
- *  review, wave 2 §3.4). */
+ *  review, curriculum.md "Authoring pipeline"). */
 const LISTEN_ITEMS = readListen().filter(({ raw }) => only || (raw as { status: string }).status !== 'draft').flatMap(({ raw }) => listenClipItems(raw));
 /** はつおん's words (content/mic/pairs.yaml, games/pair/pairs.ts): each alone, `<pair>-1`, `<pair>-2`, in the pair's
  *  villager's voice; a draft file's only under --only, as the listening kinds'. */
@@ -826,8 +826,8 @@ function run(): void {
     writeAtomic(SRCS, JSON.stringify(sorted(srcs), null, 1) + '\n');
   }
   if (!SCRATCH) {
-    writePacks(); // the packs whose clips changed (docs/kikimimi.md "Audio")
-    writeLevels(true); // the levels' chunks with the new clips and their packs (docs/kikimimi.md "Loading")
+    writePacks(); // the packs whose clips changed (docs/kikimimi-engine.md "Audio")
+    writeLevels(true); // the levels' chunks with the new clips and their packs (docs/kikimimi-engine.md "Loading")
   }
   const files = readdirSync(OUT).filter((f) => f.endsWith('.m4a'));
   const bytes = files.reduce((s, f) => s + statSync(join(OUT, f)).size, 0);
@@ -876,12 +876,12 @@ function run(): void {
   console.log(`${files.length} files in ${OUT}, ${(bytes / 1024).toFixed(0)} KB; report ${REPORT}`);
 }
 
-/** The tools a run needs, checked before minutes of synthesis (the one-time setup: docs/kikimimi.md "Audio"). */
+/** The tools a run needs, checked before minutes of synthesis (the one-time setup: docs/kikimimi-engine.md "Audio"). */
 function preflight(): void {
   const uv = (Object.keys(PY_ENV) as Py[]).some(needsVenv) ? ['uv'] : []; // only to make a venv no env var names
   const missing = [FFMPEG, FFPROBE, 'whisper-cli', ...uv].filter((b) => spawnSync(b, ['-h'], { stdio: 'ignore' }).error);
   if (!existsSync(WHISPER_MODEL)) missing.push(WHISPER_MODEL);
-  if (missing.length) throw new Error(`missing ${missing.join(', ')}: see the one-time setup in docs/kikimimi.md "Audio"`);
+  if (missing.length) throw new Error(`missing ${missing.join(', ')}: see the one-time setup in docs/kikimimi-engine.md "Audio"`);
 }
 
 if (flag('--refs')) { preflight(); makeRefs(); }

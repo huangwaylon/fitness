@@ -1,5 +1,5 @@
 <script lang="ts">
-  // みんなで, the lobby (docs/kikimimi-ux.md §6.5; docs/kikimimi.md "UI"): the game to play together (ひとこと クイズ,
+  // みんなで, the lobby (docs/kikimimi.md "みんなで", "UI details"): the game to play together (ひとこと クイズ,
   // スピード はしご, アナウンス, a lane's game: catalog.ts sharable; the host picks, the others see it) with its ばしょ (the
   // quiz's levels, a lane's game's content places) or the ladder's speeds and こたえる じかん,
   // who's in (joined, or on the island and not yet), 「きょうりょく ／ しょうぶ」 (co-op by default: one team score, never

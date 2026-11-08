@@ -1,4 +1,4 @@
-// はつおん ききわけ's content (docs/kikimimi-mic.md §2.4): app/content/mic/pairs.yaml checked and made into cards. A
+// はつおん ききわけ's content (docs/kikimimi-mic.md "はつおん ききわけ"): app/content/mic/pairs.yaml checked and made into cards. A
 // card is an Item of two lines, the pair's words (its clips `<id>-1`, `<id>-2`, both in the listening villager's
 // voice: the session plays both, perception before production), with the pictures, labels, the mouth tips and the
 // example lines under `pair`. compile.ts makes them the chunk `parts/mic-pairs.json` (not while the file is a draft),

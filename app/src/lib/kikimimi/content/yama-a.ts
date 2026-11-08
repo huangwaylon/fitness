@@ -1,4 +1,4 @@
-// ききみみ クイズ stage やま (B2+, docs/curriculum.md §3 S3), set A: harder than もり (bank4.ts, dialogues.ts) in the
+// ききみみ クイズ stage やま (B2+, docs/curriculum.md "Stages and can-dos" S3), set A: harder than もり (bank4.ts, dialogues.ts) in the
 // listening and the pragmatics, not in the vocabulary. American idioms and phrasal verbs in context (play it by ear, throw
 // under the bus, on your watch, hang a left), slang and casual speech (yeah, no; ghosted; a parking lot of a freeway;
 // when pigs fly), sitcom- and movie-style sarcasm, banter, teasing,

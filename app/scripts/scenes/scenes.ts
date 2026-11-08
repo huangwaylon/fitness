@@ -1,4 +1,4 @@
-// ききみみ クイズ's scene backdrops (docs/kikimimi.md "Visuals", docs/curriculum.md §8): each scene of scenes.json painted
+// ききみみ クイズ's scene backdrops (docs/kikimimi.md "Visuals", docs/curriculum.md "Visual rules"): each scene of scenes.json painted
 // by an open-weights image model, then cut to the scene card's 393:224 and encoded at 1x / 2x / 3x into
 // static/art/scene/<id>{,@2x,@3x}.webp, registered in static/art/manifest.json (its 1x size; the card's srcset names the
 // others). Silent and offline: nothing is downloaded.

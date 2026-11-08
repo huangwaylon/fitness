@@ -1,4 +1,4 @@
-// ききみみ's compiled levels (docs/kikimimi.md "Loading"): levels/ is what compile.ts makes of the bank, the ladders,
+// ききみみ's compiled levels (docs/kikimimi-engine.md "Loading"): levels/ is what compile.ts makes of the bank, the ladders,
 // clips.json and words.json (else: npm run kikimimi:levels); each level loaded is the bank's own items in the bank's
 // order (so every phone's decks are the ones the bank gives); the index is the bank's; each chunk under its budget.
 import { readFileSync, readdirSync } from 'node:fs';

@@ -1,4 +1,4 @@
-// ききみみ クイズ: how many of each type a level's game draws (docs/kikimimi.md "Content"). Pure: the deck (deck.ts) and
+// ききみみ クイズ: how many of each type a level's game draws (docs/kikimimi-engine.md "Content"). Pure: the deck (deck.ts) and
 // the compiler's gate (compile.ts) read it alike.
 import type { Item, ItemType, Level } from './bank.ts';
 

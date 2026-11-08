@@ -1,4 +1,4 @@
-// ようじ でんわ as a GameDef (docs/curriculum-wave2.md §2.3): 3 calls from the `listened` call files at the lobby's place
+// ようじ でんわ as a GameDef (docs/kikimimi-engine.md "ようじ でんわ"): 3 calls from the `listened` call files at the lobby's place
 // (content/listen/s*-call*.yaml, pool.ts listenOf), each 2 rounds of a memo of chip rows (what, how many, when, where):
 // the call plays in round 1 (its memo filled while it plays), round 2 has no play (the rest of the memo, remembered).
 // A call with two memo rounds plays them as authored; one memo is split, its first half in round 1. The answer is the
@@ -41,7 +41,7 @@ export interface MemoRow {
   cja?: readonly string[];
 }
 /** A call's line as shown: mine or the caller's, its Japanese, a mid-call change (`repair`), a line breaking up
- *  (`drop`: a `signal` call's line with "...", docs/kikimimi.md "Conditions"). */
+ *  (`drop`: a `signal` call's line with "...", docs/kikimimi-engine.md "Conditions"). */
 interface CallLine {
   me: boolean;
   en: string;

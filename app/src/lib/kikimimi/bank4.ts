@@ -1,4 +1,4 @@
-// ききみみ クイズ level 4 「かわ・もり」 (B1+ → B2; docs/curriculum.md §14 increment 1): real daily life in island
+// ききみみ クイズ level 4 「かわ・もり」 (B1+ → B2; docs/curriculum.md "Modes" increment 1): real daily life in island
 // clothes. Each item is cut from a scenario seed (§5.5: setting × goal × complication) with a register, speech
 // conditions and a pragmatic layer (`tags`), written for an adult learner whose listening is already good: natural
 // speed, reductions, indirect answers, self-corrections, understatement and sarcasm. Never childish: real places and

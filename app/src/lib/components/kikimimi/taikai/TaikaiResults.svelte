@@ -1,5 +1,5 @@
 <script lang="ts">
-  // しずえの しゅうまつ たいかい's results (docs/kikimimi-ux.md §7.1; curriculum §7.1), its own chunk over the quiz's
+  // しずえの しゅうまつ たいかい's results (docs/kikimimi.md "The daily menu"; curriculum.md "Modes"), its own chunk over the quiz's
   // (Results: the team's tally or しょうぶ's ranking by points and chips, my feedback, the review list of what was missed):
   // the trophy on top, bronze / silver / gold by the team's rounds against しずえ's target (the same on every phone), her
   // line on it, the wager's outcome, and where the trophy went (きろく's shelf).

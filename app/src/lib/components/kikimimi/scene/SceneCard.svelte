@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The scene card (docs/kikimimi.md "Visuals", docs/curriculum.md §8): where and how a level-4 clip is heard, in place
+  // The scene card (docs/kikimimi.md "Visuals", docs/curriculum.md "Visual rules"): where and how a level-4 clip is heard, in place
   // of the plain stage from the lead-in until the reveal. The painted backdrop (srcset at the phone's scale, decoded off
   // the main thread; one image at a time), its place's name, and the channel: face to face the speakers stand in it on
   // their ground shadows, the one talking bobbing with the empty 「♪…」 bubble and the clip's bar over them (a dialogue's

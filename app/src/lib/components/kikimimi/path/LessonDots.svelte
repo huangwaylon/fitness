@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A unit's lesson dots (docs/curriculum-units.md §3; the UX review's sketches A–C): the 3 core lessons as dots (filled
+  // A unit's lesson dots (docs/curriculum.md "Lessons"; the UX review's sketches A–C): the 3 core lessons as dots (filled
   // once played to the end), the extras as small stars (☆ → ★), the next one ringed in yuzu. Decorative: the caller
   // says it in words.
   import { CORE } from '#lib/kikimimi/stages.ts';

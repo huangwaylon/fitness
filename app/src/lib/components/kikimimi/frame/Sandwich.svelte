@@ -10,7 +10,7 @@
 </script>
 
 <script lang="ts">
-  // よみきき サンド (docs/curriculum-wave2.md §2.0): listen → read → listen, in a sheet over the game. The clip blind (no
+  // よみきき サンド (docs/kikimimi-engine.md "よみきき サンド"): listen → read → listen, in a sheet over the game. The clip blind (no
   // words: it always plays blind first), then its transcript at my own pace (the sound marks, the karaoke as ▶︎ plays it,
   // the Japanese, each choice's cja, 解説), then the clip blind again and one tap: 聞き取れた or まだ. まだ is a mark on this
   // phone (srs.ts, "hard" on its day); 聞き取れた keeps nothing. Lazy: its own chunk (≤ 15 KB, kikimimi-budget.ts).

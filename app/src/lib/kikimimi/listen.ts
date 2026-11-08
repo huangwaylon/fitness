@@ -1,4 +1,4 @@
-// ききみみ's listening kinds (docs/curriculum-wave2.md §3.4, kikimimi-framework.md §8 and "Listen parts", content/listen/
+// ききみみ's listening kinds (docs/curriculum.md "Authoring pipeline", kikimimi-engine.md "Listen parts", content/listen/
 // README.md): the schema of app/content/listen/*.yaml (ことば タイル `tile`, ようじ でんわ `call`, たちぎき `tachi`,
 // すうじ ラッシュ `rush`, しずえの ニュース `news` and its weather sentences `weather`), its
 // checker (the README's rules, the Japanese help on each kind, the US-only lint), the kinds' clip ids and the clips as
@@ -113,7 +113,7 @@ interface RushItem extends Common {
 /** すうじ ラッシュ's counters. */
 export const RUSH_AT = ['cafe', 'konbini', 'ticket', 'deli', 'taxi', 'pharmacy'] as const;
 
-// ---- しずえの ニュース (wave 2 §2.5) ----
+// ---- しずえの ニュース (kikimimi-engine.md "しずえの ニュース") ----
 
 /** A bulletin's line, read by しずえ (the file's `cast.isabelle`); compiled with its clip, `<item>-<n>` (n from 1 over
  *  the bulletin). */
@@ -223,7 +223,7 @@ export interface ListenSource {
   raw: unknown;
 }
 
-// ---- the US-only lint (curriculum.md "American English first", wave 2 §3.4) ----------------------------------------
+// ---- the US-only lint (curriculum.md "American English first", "Authoring pipeline") ----------------------------------------
 
 /** UK and AU words, spellings and phrasings, each with what it's taken for. Phrases rather than words where a word is
  *  also American (a flat tire, a lift ticket, a fancy place, cheers as a toast). */
@@ -289,7 +289,7 @@ const tileWords = (s: string) => s.replace(/[.,?!;:"“”—…]/g, ' ').split(
 const hasWords = (en: string, at: string) => new RegExp(`(^|[^A-Za-z'])${at.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![A-Za-z'])`).test(en);
 
 /** One file's problems (empty: fine). `bank` holds the voiced items a derived tile may name (by id). Past `draft`
- *  the Japanese help is required (wave 2 §3.4: tile ctx, why; call ctx, cja per chip, why per memo round; たちぎき ctx
+ *  the Japanese help is required (curriculum.md "Authoring pipeline": tile ctx, why; call ctx, cja per chip, why per memo round; たちぎき ctx
  *  and why per round; rush ctx, cja, why); present, it's checked whatever the status. */
 export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<string, Pick<Item, 'en' | 'speaker'>> = new Map()): string[] {
   const u = (raw ?? {}) as Obj & { unit: string; seeds: number[]; cast?: Record<string, string>; items: Obj[] };

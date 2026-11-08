@@ -1,5 +1,5 @@
 <script lang="ts">
-  // しずえ at her news desk (docs/curriculum-wave2.md §2.5; the PA frame's kin): the 放送中 lamp lit while the bulletin
+  // しずえ at her news desk (docs/kikimimi-engine.md "しずえの ニュース"; the PA frame's kin): the 放送中 lamp lit while the bulletin
   // plays, しずえ behind the desk with her microphone, the bulletin's bar, and its stories in order (島 or 季節, 東京, 天気),
   // the one being read lifted. After the first play the desk shrinks and each story is a chip that plays it again.
   import type { NewsSeg } from '#lib/kikimimi/games/news/def.ts';

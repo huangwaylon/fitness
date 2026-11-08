@@ -1,4 +1,4 @@
-// A lesson's recipe-2 card on its listening game's page (LessonPlay; docs/curriculum-units.md §16): the pages read a
+// A lesson's recipe-2 card on its listening game's page (LessonPlay; docs/curriculum.md "Recipe 2"): the pages read a
 // game's view as theirs (options `[lv, timer, ear]`, each player's ear: games/listened.ts), so the lesson's game is
 // shown to them through a view at the card's place, my tier as my ear and each player's join tier as theirs. Everything
 // else is the game itself (its taps, clips and clock).

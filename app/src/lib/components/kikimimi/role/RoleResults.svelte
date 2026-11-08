@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ふたりで ロールプレイ's results (docs/kikimimi-mic.md §2.5), its own chunk: しずえ's line; the team's phrases
+  // ふたりで ロールプレイ's results (docs/kikimimi-mic.md "ふたりで ロールプレイ"), its own chunk: しずえ's line; the team's phrases
   // (「ふたりで k / n フレーズ」: the players' running totals added up, never one person's), with the row's privacy line;
   // the scene's key phrases, each ✓ where it came through on the turn this phone saw (mine as I said them, the
   // partner's at their reveals), with its Japanese; then お手本, each part's dialogue by the villagers (▶︎, its karaoke:

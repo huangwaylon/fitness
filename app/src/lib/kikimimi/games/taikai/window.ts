@@ -1,4 +1,4 @@
-// しずえの しゅうまつ たいかい's window (docs/kikimimi-ux.md §5, §7.1: the hub's banner, Fri 18:00 – Mon 05:00 Tokyo):
+// しずえの しゅうまつ たいかい's window (docs/kikimimi.md "Navigation", "The daily menu": the hub's banner, Fri 18:00 – Mon 05:00 Tokyo):
 // when the weekend tournament is offered, which one an instant or a row's day belongs to (its Friday names it), and the
 // days its misses are drawn from (that week's Monday on). Tokyo is UTC+9 with no DST, so fixed offsets are exact. Pure.
 import { dayNum, dayOf, localDateAt, ZONE_OFFSET_MS } from '../../../contract/tokyo.ts';

@@ -1,4 +1,4 @@
-// The mic's AudioWorkletProcessor (docs/kikimimi-mic.md §3.1; capture.ts loads it by its own same-origin URL, never a
+// The mic's AudioWorkletProcessor (docs/kikimimi-mic.md "Files"; capture.ts loads it by its own same-origin URL, never a
 // blob:): the input's first channel posted to the page in blocks of 1024 frames (≈ 21 ms at 48 kHz), each block's
 // buffer transferred. Nothing is kept here; 'stop' ends it. (Unchecked: the worklet scope's globals aren't in the DOM's
 // types.)

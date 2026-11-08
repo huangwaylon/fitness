@@ -1,4 +1,4 @@
-// ききみみ's units (docs/curriculum-units.md, §10's amendments; the engineering review's manifest overlay): a unit is a
+// ききみみ's units (docs/curriculum.md "Playing together"'s amendments; the engineering review's manifest overlay): a unit is a
 // manifest, `app/content/units/<id>.yaml`, over the bank's items. It references existing item ids (kept where they are,
 // each keeping its `lv`, so the level quizzes and their decks never change) and defines only its new items, inline, in
 // the bank's item shape. This file reads and checks the manifests (one at a time, then all of them against the bank:
@@ -16,7 +16,7 @@ import { CORE, DOMAINS, KIND_KEYS, LESSONS, LESSON_QS, RECIPE2, STAGES, STAGE_ID
 export { DOMAINS, LESSONS, LESSON_QS, STAGES, type Stage } from './stages.ts';
 
 /** The lesson recipes this build knows (plan §3: the version on the recipe). v1: every lesson from the unit's quiz
- *  items (the interim チェック, a mixed check on held-out items behind a "phone errand" card). v2 (docs/curriculum-wave2.md
+ *  items (the interim チェック, a mixed check on held-out items behind a "phone errand" card). v2 (docs/curriculum.md
  *  §3.1, W2-9): v1's lists, plus the listening content its おと, じっせん and チェック play once it's `listened`
  *  (stages.ts RECIPE2; `lessons.tiles`, `tachi`, `call`). */
 const RECIPES = [1, 2] as const;

@@ -1,6 +1,6 @@
 // What a deploy uploads (docs/ops/runbook.md §1): Cloudflare Pages takes at most 20,000 files a deployment, and the
 // build adds Kit's chunks (~400) and the 404 copy to static/. ききみみ's 1,559 loose clips went into packs (increment
-// 9: docs/kikimimi.md "Audio") when static/ stood at 12,969; this keeps static/ well under the cap, so content can grow
+// 9: docs/kikimimi-engine.md "Audio") when static/ stood at 12,969; this keeps static/ well under the cap, so content can grow
 // for a while without a deploy failing: past 15,000, move something into a pack or off to R2 first.
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';

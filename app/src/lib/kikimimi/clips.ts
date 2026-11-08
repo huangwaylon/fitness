@@ -1,4 +1,4 @@
-// ききみみ クイズ: the spoken clips (docs/kikimimi.md "Audio"). clips.json is written by scripts/kikimimi-audio.ts:
+// ききみみ クイズ: the spoken clips (docs/kikimimi-engine.md "Audio"). clips.json is written by scripts/kikimimi-audio.ts:
 // each item's clip length (`dur`, s: the schedule is computed from it) and its files' content hashes. The clips ship
 // in packs (packing.ts: static/audio/listen/<pack>.<hash>.pak, a re-spoken clip a new pack hash). The app never
 // imports clips.json whole: each level's chunk (compile.ts) carries its clips (length, hash, and where each is in its

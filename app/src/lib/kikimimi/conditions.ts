@@ -1,12 +1,12 @@
-// ききみみ クイズ: the speech conditions mixed offline over a clip's clean take (docs/kikimimi.md "Conditions",
-// docs/curriculum.md §5.3 and §9). Pure: what each condition does (its steps, its bed and SNR, its chime) and the source
+// ききみみ クイズ: the speech conditions mixed offline over a clip's clean take (docs/kikimimi-engine.md "Conditions",
+// docs/curriculum.md "Difficulty levers", "Audio and script rules"). Pure: what each condition does (its steps, its bed and SNR, its chime) and the source
 // hash it gives a clip. scripts/kikimimi-audio.ts carries the steps out with ffmpeg; used by it and the tests only,
 // never by the game (its clips are mixed already), so nothing in the client bundle imports this.
 //   A phone line: band-passed 300-3400 Hz, lightly compressed, through G.711 µ-law at 8 kHz (the codec's grit); heavy, a
 // narrower band, harder compression, G.726 at 24 kbps and a little line hiss. A voicemail: the caller's small room first,
 // then the phone line. A PA: a horn's band, compressed, in a hall (a synthetic impulse response: exponentially decaying
 // noise, RT60 1.0 s light, 1.6 s heavy), after a two-tone chime. A noise bed (café, street, station: scripts/tts/beds/,
-// made by scripts/kikimimi-beds.ts) at a target SNR (light +15 dB, heavy +10: curriculum §5.3's steps 1-2, fair for
+// made by scripts/kikimimi-beds.ts) at a target SNR (light +15 dB, heavy +10: curriculum.md "Difficulty levers"'s steps 1-2, fair for
 // levels 4-5; +5 dB waits for S3), its loudness against the speech's (integrated LUFS), starting before the speech
 // and ending after it, so the noise is there before the first word. A channel's bed sits at the source for a call (the
 // caller's café, before the phone line) and at the listener for a PA (the platform, after the hall).
@@ -22,7 +22,7 @@ import { channelOf, type Bed, type Cond, type Item } from './bank.ts';
  *  are in each clip's plan, so changing one re-mixes only the clips it touches). */
 const COND_VERSION = 1;
 
-/** A bed's SNR (dB, speech over noise) by level: curriculum §5.3's noise lever, steps 1-2 (S1-S2). */
+/** A bed's SNR (dB, speech over noise) by level: curriculum.md "Difficulty levers"'s noise lever, steps 1-2 (S1-S2). */
 export const SNR: Readonly<Record<Cond['level'], number>> = { light: 15, heavy: 10 };
 
 /** The loose check on a conditioned clip (the clean take passed the strict gate): whisper's WER over it may be up to

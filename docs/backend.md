@@ -404,7 +404,7 @@ intents, never data of record: the record still catches an offline phone up.
     [Villager taps](design.md#villager-taps); `cleanSay`: ≤ 20 code points; one a second a person).
   - `quiz {g, op, …}` (ききみみ クイズ) and `play {g, gm, op, …}` (ききみみ's games, its successor): presence only,
     relayed live to everyone else here, never kept, replayed, acked or written; ≤ 210 bytes sent. Their ops and fields:
-    [kikimimi-framework.md](kikimimi-framework.md#41-wire-contractlive-protocolts); the phones compute the game's schedule from `go`.
+    [kikimimi-engine.md](kikimimi-engine.md#the-play-wire); the phones compute the game's schedule from `go`.
   - `music {src, at, song?, ms?, pc?}` (a music stage: `isl` the island or a room's stereo `t` / `u` / `v`;
     [design](design.md#shared-music)): numbered and acked, never in the ring; the room keeps the last record per
     source (the later `at` winning, `newerMusic`, the phones' rule too), refuses a stale or finished one (`ack ok:
@@ -702,7 +702,7 @@ None ([decisions](decisions.md#no-notifications); `e2e/no-notify.spec.ts`: nothi
   [kikimimi.md](kikimimi.md) "Audio"): cache first, never revalidated, outliving builds; `listenEvict`: a pack's older
   version once unused for 10 minutes, then the least recently used past 30 MB, never a pack used in the last 10 minutes.
   Range requests pass through.
-- **STT cache** (`island-stt-v1`: ききみみ's recogniser, [kikimimi-mic.md](kikimimi-mic.md) §3.6): the whisper model and
+- **STT cache** (`island-stt-v1`: ききみみ's recogniser, [kikimimi-mic.md "Hosting and the service worker"](kikimimi-mic.md#hosting-and-the-service-worker)): the whisper model and
   its ONNX runtime under `/stt/` (~70 MB) and its worker (`vite.config.ts stt-names`). Never precached: the page fills
   it after the mic opt-in (`lib/mic/models.ts ensureStt`); the worker serves `/stt/` from it and never stores.
 - **Offline:** what a phone has shown once reads offline; nothing is prefetched unasked.

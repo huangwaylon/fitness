@@ -1,4 +1,4 @@
-// ききみみ's relay recogniser (docs/kikimimi-mic.md §3.2, §3.5): a take as 16 kHz 16-bit WAV (≤ 10 s, ≤ 340 KB) POSTed
+// ききみみ's relay recogniser (docs/kikimimi-mic.md "The Recogniser", "The relay endpoint"): a take as 16 kHz 16-bit WAV (≤ 10 s, ≤ 340 KB) POSTed
 // to the relay's `/stt` with this phone's key (Workers AI; the relay keeps nothing and logs sizes and times only). Used
 // only when picked by hand in せってい, after its disclosure. Its answers: 429 the day's calls spent (「今日は ここまで」),
 // 503 switched off (STT_OFF), 401 not paired here; a timeout of 20 s, and cancel aborts the request.

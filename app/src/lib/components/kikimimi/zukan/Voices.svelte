@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ずかん › こえ (docs/kikimimi-ux.md §6.10, §7.6): the cast's 18 voices (speech.ts CAST_IDS: 12 American, the few UK and
+  // ずかん › こえ (docs/kikimimi.md "ずかん"): the cast's 18 voices (speech.ts CAST_IDS: 12 American, the few UK and
   // AU ones of the accent-exposure items) as villager cards: the voice's face (its first villager), its accent and kind,
   // the villagers who speak with it, the items heard in it, and caught after 10 understood (zukan.ts voicesOf). Unheard
   // ones are silhouettes. A tap plays a sample: a clip I've heard in it first, else any (the levels loaded for one if

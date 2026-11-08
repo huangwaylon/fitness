@@ -1,4 +1,4 @@
-// The villagers' letters (docs/kikimimi-ux.md U7, §7.2; docs/curriculum-units.md §6): a unit stamped by me brings a
+// The villagers' letters (docs/kikimimi.md "Stamps, letters and landmarks", "No かいがら", "Stamps, letters and landmarks"): a unit stamped by me brings a
 // short English letter from its host villager (40-60 words, using one or two of the unit's phrases, a Japanese gloss
 // behind a toggle). Text only: no audio, no かいがら. The letters are the units' `letter` (app/content/units/*.yaml),
 // compiled into one small chunk (compile.ts: parts/letters.json, pool.ts loadLetters). Pure: who has which letter is a

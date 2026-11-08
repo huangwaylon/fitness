@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The villagers' letters, newest first (docs/kikimimi-ux.md U7, §6.10 ずかん › スタンプ): one for each unit I've
+  // The villagers' letters, newest first (docs/kikimimi.md "Stamps, letters and landmarks", "ずかん" ずかん › スタンプ): one for each unit I've
   // stamped (letters.ts lettersOf over my stamps and the letters chunk, loaded here), each a folded envelope that opens in
   // place. None yet: a quiet line. In ずかん › スタンプ (zukan/Stamps.svelte), under the can-do stamps.
   import { lettersOf, type LetterText } from '#lib/kikimimi/letters.ts';

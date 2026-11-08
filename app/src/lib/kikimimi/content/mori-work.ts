@@ -1,4 +1,4 @@
-// ききみみ クイズ content 「もり」 (B2, level 4): work and people (docs/curriculum.md §3 S2, §5.5 seeds 17-18, 27, 35-36,
+// ききみみ クイズ content 「もり」 (B2, level 4): work and people (docs/curriculum.md "Stages and can-dos" S2, "The scenario bank" seeds 17-18, 27, 35-36,
 // 39-57). Workplace: meetings, deadlines, feedback and hinting, declining politely, onboarding, remote calls, IT, client
 // calls, job interviews. Social: friends making and changing plans, gossip, advice, dating, family, parties, sports,
 // hobbies, movies and food, apologies, compliments. American English throughout (US words, spelling, money, dates and

@@ -105,7 +105,7 @@ export function guestRows(rows: SnapshotRows): SnapshotRows {
 /**
  * A `listen` row (ききみみ クイズ's answers, contract/listen.ts) as `me` gets it: its owner's whole; anyone else's
  * summary only (`{d, g, n, ms}`: a game played, never the level or the answers; a passed unit チェック adds `{u, stamped}`,
- * docs/curriculum-units.md §4), the guest's and the members' alike; null for a row that isn't one. Any other row as it is.
+ * docs/curriculum.md "Playing together"), the guest's and the members' alike; null for a row that isn't one. Any other row as it is.
  */
 function listenFor(me: Who, r: EventRow): EventRow | null {
   if (r[3] !== 'listen') return r;

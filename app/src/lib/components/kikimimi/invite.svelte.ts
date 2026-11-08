@@ -1,6 +1,6 @@
-// ききみみ クイズ's always-loaded part (docs/kikimimi.md "UI"): whether the game's sheet is open, and a tiny listener
+// ききみみ クイズ's always-loaded part (docs/kikimimi.md "UI details"): whether the game's sheet is open, and a tiny listener
 // on the island's shared Live (IslandScene's `relay ?? demoRelay`: never a second one). It keeps the game intents heard
-// lately (either wire: `quiz`, and `play` from 8c, docs/kikimimi-framework.md §4.3), so a sheet opened later (さんか on
+// lately (either wire: `quiz`, and `play` from 8c, docs/kikimimi-engine.md "Wire migration"), so a sheet opened later (さんか on
 // the banner, せってい's あそぶ) hands them to its session as if it had heard
 // them itself (a host re-sends only when someone comes back), calls `invited` for a new lobby someone here opened, and
 // keeps whether an invite is live (せってい's row: 「さそわれています！」). Nothing of the game itself (the bank, the

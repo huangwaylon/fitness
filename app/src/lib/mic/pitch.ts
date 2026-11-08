@@ -1,4 +1,4 @@
-// A voice's pitch and loudness, frame by frame (docs/kikimimi-mic.md §3.3): YIN's f0 (de Cheveigné & Kawahara 2002)
+// A voice's pitch and loudness, frame by frame (docs/kikimimi-mic.md "Pitch and timing"): YIN's f0 (de Cheveigné & Kawahara 2002)
 // over a 32 ms window every 10 ms, 70–400 Hz, threshold 0.15 (none under it: the deepest dip if under 0.4, as our
 // compressed clips need); each frame's level in dB; then a 5-point median and the
 // octave jumps folded back toward the speaker's median. The same code reads the take (16 kHz) and the villager's clip

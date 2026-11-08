@@ -1,7 +1,7 @@
 # Listening content (`content/listen/`)
 
-Source units for the ききみみ games, one YAML file per unit (docs/kikimimi-framework.md §6, §8 and "Listen parts as
-built", docs/curriculum.md §5 and §9, docs/curriculum-wave2.md §2.1–2.5). `npm run kikimimi:levels` checks them
+Source units for the ききみみ games, one YAML file per unit (docs/kikimimi-engine.md "Loading",
+"Listen parts", "ことば タイル"; docs/curriculum.md "Scenarios", "Audio and script rules"). `npm run kikimimi:levels` checks them
 (src/lib/kikimimi/listen.ts) and compiles each, whatever its status, into `levels/parts/<unit>.json`, with its game,
 stage and status in the index's `listen`; a problem in any file stops it, and content.test runs the same checker. The
 games show `listened` files only (a story shows from `voiced`); a draft plays only with the dev hooks. All 25 files
@@ -24,7 +24,7 @@ unit: s2-call-a
 game: call                       # the GameDef that shows it: tile | call | tachi | rush | news | quiz | ladder | long | serial
 stage: 3                         # 1-5 = S0-S4
 track: life                      # life | people | work | broadcast
-seeds: [3, 10, 14, 25, 30]       # curriculum §5.5 (1-66); every item's tags.seed is one of these
+seeds: [3, 10, 14, 25, 30]       # curriculum.md "The scenario bank" (1-66); every item's tags.seed is one of these
 features: { primary: self-repair, review: numbers }
 cando: "でんわで 番号や 日時の 訂正を ききとって メモできる"
 status: draft                    # draft | voiced | listened (the games show listened only)
@@ -63,7 +63,7 @@ The help (bank.ts `helpProblems`) is checked wherever it is, and required once a
 | `rush` | `ctx`, `why`, `cja` |
 | `news` | `ctx`; the gist's and the detail's `cja` and `why`; each sky's umbrella `why` |
 
-## Text rules (curriculum §9)
+## Text rules (curriculum.md "Audio and script rules")
 
 - `en` is what the reveal shows, in standard American spelling (neighbor, realize). Digits
   are fine in `en` (`¥3,000`, `090-2816-4473`, `the 14th`).
@@ -74,7 +74,7 @@ The help (bank.ts `helpProblems`) is checked wherever it is, and required once a
 - `ja` is natural written Japanese with no spaces between Japanese words, like bank4.ts.
 - `ask`, `cando`, the memo `ask`s and options, and the たちぎき `claims` are UI copy: kanji with spaces between
   phrases, like the app's other Japanese copy (「何時に 行く？」).
-- Adult, real life: yen and real places, villagers playing people, no island currency (curriculum §5.4).
+- Adult, real life: yen and real places, villagers playing people, no island currency (curriculum.md "The island frame").
 
 ## `tile` (ことば タイル, W2-1)
 
@@ -201,7 +201,7 @@ there, never the files. `--check` fails when a file is stale, and `--clips` list
 - `weather` (one item in all, news-a's): `sky` (8, each with the umbrella question's `why`), `high` (`en`, `one`, `ja`
   with `{n}`), `alerts` (6), `end`. The compiler makes its 56 sentences (games/news/weather.ts says which are read).
 
-## Stories (`story/`, おやすみ ものがたり, curriculum §7.1)
+## Stories (`story/`, おやすみ ものがたり, curriculum.md "Modes")
 
 Bedtime serials in the framework's `serial` shape, one file per serial (`st-johnny` and `st-cafe` voiced, `st-tokyo` listened): extensive listening
 at ~95 % comprehension, so no score, no questions, no notes or tags. They live in `story/` so content.test doesn't
@@ -227,7 +227,7 @@ items:
 
 - `who` is `narrator` or a roster villager. Every voice is US (`us-*`), of the speaker's gender, and distinct within
   a chapter. No digits in `en` either: the narrator reads it. `tts` only where a character speaks casually.
-- `ph`: 5–8 per chapter (curriculum-units.md's phrase shape). Its `match` (or `en`) must be heard in the chapter; ids
+- `ph`: 5–8 per chapter (curriculum.md "Units"'s phrase shape). Its `match` (or `en`) must be heard in the chapter; ids
   are unique across stories and units.
 - `predict` is for the morning after, never during the story; `answer` is what the next chapter tells. The last
   chapter has none.
@@ -249,7 +249,7 @@ items:
 - `conditions`: bank.ts's `phone voicemail pa video cafe station desk`, plus new ones from these drafts: `signal` (a
   phone line breaking up), `street`, `train`, `party` (bar or crowd noise). On a `signal` call, each line with `...`
   is mixed breaking up (dropouts), so the next line is the player asking again and no answer is said in it; `party`
-  puts the party bed under every line (docs/kikimimi.md "Conditions").
+  puts the party bed under every line (docs/kikimimi-engine.md "Conditions").
 - `features`: bank.ts `Feature`, plus new ones from these drafts: `linking`, `h-drop`, `chain` (reduction chains:
   whatcha, whaddaya, wouldja've), `elision` (t/d dropped: jus'), `assimilation`, `overlap`, `filler`, `stress`.
 
@@ -276,4 +276,4 @@ listen.ts `checkListen` (the compiler and content.test) checks:
 
 It doesn't check whether the English is natural, whether a decoy is fair, or whether a claim really belongs to one
 speaker. Those need an English reviewer and a Japanese reviewer, then the listening check once the items are voiced
-(`npm run audio:kikimimi -- --listen --only <regex>`; what's still flagged: docs/curriculum-wave2.md §4.1).
+(`npm run audio:kikimimi -- --listen --only <regex>`; what's still flagged: docs/curriculum.md "Listening check").

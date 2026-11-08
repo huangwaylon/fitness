@@ -1,4 +1,4 @@
-// ききみみ's lessons (docs/curriculum-units.md §3, §10; U2-U3): a lesson is one game of 6 questions (about 2½ min) drawn
+// ききみみ's lessons (docs/curriculum.md "Lessons", "Playing together"; U2-U3): a lesson is one game of 6 questions (about 2½ min) drawn
 // from its unit's chunk (compile.ts unitChunk, loaded by pool.ts like a level). Deterministic by seed, as a level's deck
 // is (deck.ts), so a co-op lesson (later, framework 8c) builds the same deck on every phone; each player's answer
 // choices may be their own tier's (same audio). Pure.

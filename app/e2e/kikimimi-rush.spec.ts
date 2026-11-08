@@ -1,4 +1,4 @@
-// すうじ ラッシュ (docs/curriculum-wave2.md §2.4): the mode shows once a rush file is `listened` (s1-rush and s2-rush, shipped
+// すうじ ラッシュ (docs/kikimimi-engine.md "すうじ ラッシュ"): the mode shows once a rush file is `listened` (s1-rush and s2-rush, shipped
 // listened since audio batch A3), on あそぶ's さくっと shelf; a solo queue of 8 (the counter, the line, the ticket's chips
 // waiting for the order's end, one tap), one ticket wrong (the customer says it again, the combo starts over, the run
 // goes on), the results' served count, best combo, review and my row (gm rush, the picks as authored); then two phones

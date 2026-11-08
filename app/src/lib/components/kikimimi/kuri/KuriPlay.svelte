@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A sentence of くりかえし チャレンジ (docs/kikimimi-mic.md §2.2; games/kuri/def.ts), its own chunk, in the round's frame
+  // A sentence of くりかえし チャレンジ (docs/kikimimi-mic.md "くりかえし チャレンジ"; games/kuri/def.ts), its own chunk, in the round's frame
   // (frame/RoundFrame.svelte). Over the stage, the ladder (8 steps by length, this sentence's lit) and the speaker. The
   // clip plays once, then a one-second beat; then your turn: the mic (KuriMic: tap, say it, it stops on the silence
   // after), 「もう一回聞く」 (free, but that sentence can't climb) and, after a miss, the reason in Japanese, 「もう一度話す」

@@ -1,4 +1,4 @@
-// A unit's lesson as a GameDef (docs/curriculum-units.md §3, §13, §16; docs/kikimimi-framework.md §3.3): 6 questions of
+// A unit's lesson as a GameDef (docs/curriculum.md "Lessons", "Lesson decks and stamps", "Recipe 2"; docs/kikimimi-engine.md "The quiz as a GameDef"): 6 questions of
 // a unit's lesson from a seed (recipe.ts recipeDeck, over the unit's chunk: `u`), each a quiz round, or on recipe 2 a
 // listening game's round where the unit has that content (tiles, a たちぎき, a call: recipe.ts); a player's tier
 // swaps in that item's easier or harder choices (the same audio). Its options: the lobby's level and こたえる じかん
@@ -47,7 +47,7 @@ export function lessonGame(src: LessonSource): GameDef<LessonOpts> {
     seedBits: quizSeedBits(false),
     deck: (seed, o, ctx) => lessonRoundDeck(() => src.rounds(seed, ctx.enc, ctx.u), o, ctx.w),
     cv: (o, u) => src.cv?.(lessonOpts.encode(o), u),
-    // each player's own choices over the same audio (docs/curriculum-units.md §4): the host's tier in `o`, a player's on
+    // each player's own choices over the same audio (docs/curriculum.md "Playing together"): the host's tier in `o`, a player's on
     // their join
     tier: {
       of: (o) => tierIndex(o.tier),

@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ききみみ's first run (docs/kikimimi-ux.md §6.12), once per player on this phone, in the hub's place: 1 しずえ's hello
+  // ききみみ's first run (docs/kikimimi.md "First run"), once per player on this phone, in the hub's place: 1 しずえ's hello
   // and three points (1にち 3ぷんから · ふたりで いっしょに · まず みみ チェック), あとで / はじめる; 2 the sound check (🔊
   // 「きこえる？」 through the game's voice, the volume-0 line), then みみ チェック (the game itself: step 3). あとで goes to
   // the hub, which keeps a card for the check. Its own chunk.

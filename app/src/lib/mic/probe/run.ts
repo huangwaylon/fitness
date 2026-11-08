@@ -1,4 +1,4 @@
-// ききみみ's mic probe, the browser half (docs/kikimimi-mic.md §1.1): what the page can do, the permission, a capture on
+// ききみみ's mic probe, the browser half (docs/kikimimi-mic.md "The probe"): what the page can do, the permission, a capture on
 // the probe's own context (one clock for a click, a clip and the mic), the play-and-record measurement per earphone
 // route, Safari's recogniser, the relay's `/stt`. Each returns numbers and closed sets for the log's `mic.*` events;
 // the heard text is returned only to the screen (the WER is computed there and nothing of it is kept). A take lives in

@@ -1,8 +1,8 @@
-// ききみみ's modes as the hub shows them (docs/kikimimi-ux.md §6.2, §6.4, §10; docs/curriculum-wave2.md §2): each
+// ききみみ's modes as the hub shows them (docs/kikimimi.md "あそぶ", "Mode detail"; docs/kikimimi-engine.md "Files", "The listening games"): each
 // mode's shelf (grouped by situation), icon, length, question count, whether it can be shared and whether its page offers
 // the ばしょ; which are playable on this build (only those show: never a 「もうすぐ」 wall, an empty group hidden; a lane's
 // game once this build has its lane and the index its content; a mode with a `gate` only while it opens on this phone:
-// the mic's, docs/kikimimi-mic.md §2.6); and the ばしょ ladder over the contract's levels (§4:
+// the mic's, docs/kikimimi-mic.md "Where they show"); and the ばしょ ladder over the contract's levels (docs/kikimimi.md "Places":
 // はまべ 1 / 2, かわ, もり, やま, ほし; level 5 is the アナウンス mode, not a place). Pure.
 import { levelAt } from './bank.ts';
 
@@ -129,7 +129,7 @@ export function contentLevels(gm: string, listen: Readonly<Record<string, readon
 /** The level a mode opens at: アナウンス 5; the quiz the one remembered unless that's アナウンス's (then はまべ 1). */
 export const lvForMode = (id: ModeId, last: number): number => (id === 'announce' ? 5 : last === 5 ? 1 : last);
 
-/** おまかせ's level (§4, kikimimi-ux.md §6.12): みみ チェック's placed one; before a check, my comfortable level
+/** おまかせ's level (kikimimi.md "Places", "First run"): みみ チェック's placed one; before a check, my comfortable level
  *  (progress.ts, levelRank's scale); before any data はまべ 2. One this build offers (not アナウンス's). */
 export function omakaseLv(placed: number | null, level: number | null, levels: readonly number[]): number {
   const quiz = levels.filter((x) => x !== 5);

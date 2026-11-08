@@ -1,7 +1,7 @@
-# 受付と 薬局 (hl-clinic): wave 2a, かわ, からだ (docs/curriculum-wave2.md §3.1). A clinic's front desk on the phone and at
+# 受付と 薬局 (hl-clinic): wave 2a, かわ, からだ (docs/curriculum.md "The 21 units"). A clinic's front desk on the phone and at
 # the counter (the soonest slot, coming in early, the insurance card) and a pharmacist explaining how to take a medicine
 # (twice a day, with food) and whether you're allergic. The numbers: times (ten-fifteen / ten-fifty), the 13th / 30th,
-# doses, a callback number. "Your prescription's ready" replaces the overused drowsy line (wave 2 §3.1 †).
+# doses, a callback number. "Your prescription's ready" replaces the overused drowsy line (curriculum.md "The 21 units" †).
 # ききかえす's "did you say", "so that's", "Sorry?" and "I meant" and でんわを おえる's "see you then" are recycled.
 # Its call: call-clinic-move (content/listen/s1-call-b.yaml).
 # きょうの ひとこと: "Take care of yourself, twice a day. With food." (1日2回、ちゃんと 自分を 大事にしてね。ごはんと 一緒に。)

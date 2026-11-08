@@ -1,4 +1,4 @@
-// ききみみ クイズ: levels 1-3's items (docs/kikimimi.md "Question types", "Content"), as authored. Written for Japanese
+// ききみみ クイズ: levels 1-3's items (docs/kikimimi.md "Question types"; docs/kikimimi-engine.md "Content"), as authored. Written for Japanese
 // adult learners. `pic` tests the sentence, not the noun: the words are ones players know (or katakana traps), and the
 // wrong pictures are heard in the sentence too or sound close. `word` gives 3 near-sound choices that all fit the
 // sentence, so meaning can't give it away. `num` comes from templates (speaker × phrase × number) with close

@@ -1,4 +1,4 @@
-// ききみみ's アナウンス pack (docs/kikimimi.md "The アナウンス pack", docs/curriculum.md §14 increment 6): level 5 in the
+// ききみみ's アナウンス pack (docs/kikimimi.md "The アナウンス pack", docs/curriculum.md "Modes" increment 6): level 5 in the
 // lobby (📢, a row of its own), and an announcement through its channel: a PA's final call at the gate and a phone menu
 // at home, each card's frame while it plays, at the reveal the English with its marks, the note and the answer's
 // Japanese, then the review list. A test hook (`__kiki.deck(ids)`, as にがて れんしゅう) deals the items. The logic

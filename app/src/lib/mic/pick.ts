@@ -1,4 +1,4 @@
-// The mic's choices on this phone (docs/kikimimi-mic.md §2.6, §3.2): the switch and the 音声認識 picked in せってい
+// The mic's choices on this phone (docs/kikimimi-mic.md "Where they show", "The Recogniser"): the switch and the 音声認識 picked in せってい
 // (DEVICE.mic), and which recogniser that means here. 自動 is the phone's own whisper only: Safari's and the relay's
 // send the voice off the phone, so they are used only when picked by hand (after their disclosure). The probe's
 // numbers may refine 自動 once the user has run it (M0's step); until then this rule stands. Pure but for the store
@@ -32,7 +32,7 @@ export function sanitizeMic(v: unknown): MicPrefs {
 export const readMic = (kv: KV | null): MicPrefs => sanitizeMic(readJson(kv, DEVICE.mic));
 export const keepMic = (kv: KV | null, p: MicPrefs): boolean => writeJson(kv, DEVICE.mic, p);
 
-// ---- the tests' recogniser (backends/stub.ts, docs/kikimimi-mic.md §3.8): its script, read here only ----------------
+// ---- the tests' recogniser (backends/stub.ts, docs/kikimimi-mic.md "Tests"): its script, read here only ----------------
 
 const STUB_KEY = DEVICE.sttStub;
 

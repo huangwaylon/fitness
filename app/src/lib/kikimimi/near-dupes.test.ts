@@ -1,4 +1,4 @@
-// Near-duplicates across every bank (docs/kikimimi.md "Variety"): the user's "there's too much repetition". Every clip's
+// Near-duplicates across every bank (docs/kikimimi-engine.md "Variety"): the user's "there's too much repetition". Every clip's
 // English (an item's, a dialogue line's, a スピード はしご line's) against every other's by normalised token overlap
 // (Jaccard over the content words: lower case, punctuation and the commonest function words out), and every written
 // right answer (reply, mean, gist, next) against the others', the same normalisation. A pair over the threshold is

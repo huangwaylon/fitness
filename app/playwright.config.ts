@@ -58,7 +58,7 @@ const chromium: Project = {
     }
   }
 };
-// the mic's specs (docs/kikimimi-mic.md §3.8): Chromium's fake media (the permission granted without a prompt; the
+// the mic's specs (docs/kikimimi-mic.md "Tests"): Chromium's fake media (the permission granted without a prompt; the
 // capture fed one of our clips), else as `chromium` (muted, no audio out, no host but the preview). On a Mac headless
 // Chrome's capture waits on the OS's mic permission, so the specs feed the same clip through a getUserMedia shim too
 const chromiumMic: Project = {

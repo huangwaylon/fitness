@@ -1,4 +1,4 @@
-// ききみみ クイズ: the noise beds for the speech conditions (docs/kikimimi.md "Conditions"): a café, a street, a
+// ききみみ クイズ: the noise beds for the speech conditions (docs/kikimimi-engine.md "Conditions"): a café, a street, a
 // station and a party, each 24 s, looping without a seam, into scripts/tts/beds/<id>.m4a (committed) with scripts/tts/beds/beds.json
 // (how each was made). Silent: it never plays a sound.
 //   node scripts/kikimimi-beds.ts [--only cafe,street,station,party]

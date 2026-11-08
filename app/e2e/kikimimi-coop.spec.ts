@@ -1,4 +1,4 @@
-// ききみみ's co-op lessons, framework 8c (docs/curriculum-units.md §4, §10; docs/kikimimi-framework.md §4): two phones
+// ききみみ's co-op lessons, framework 8c (docs/curriculum.md "Playing together"; docs/kikimimi-engine.md "Sync"): two phones
 // over the demo's relay (`?demo` and `?demo&as=B`: sync/live-local.ts), a fixture unit put in on both through the dev
 // hook with the same content version. A's shared lobby picks the unit's チェック on しまの みち for everyone, B waits on
 // its intro card, they play it, and both are stamped though B gets only 2 right: the team's first listens (`tm`) are 6.

@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ききみみ クイズ's always-loaded host (docs/kikimimi.md "UI"), in the island scene beside its shared Live: the invite
+  // ききみみ クイズ's always-loaded host (docs/kikimimi.md "UI details"), in the island scene beside its shared Live: the invite
   // banner (「ウェイが ききみみに さそっています」 [さんか], through the one toast host) and the game's sheet, its
   // own chunk, mounted from its first opening (せってい's あそぶ, the banner's さんか: invite.svelte.ts openQuiz).
   import type { Live } from '#lib/sync/live.ts';

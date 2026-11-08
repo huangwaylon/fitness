@@ -1,4 +1,4 @@
-// ふたりで ロールプレイ (docs/kikimimi-mic.md §2.5, M7) in the chromium-mic project: two phones (A and B) in one context
+// ふたりで ロールプレイ (docs/kikimimi-mic.md "ふたりで ロールプレイ", M7) in the chromium-mic project: two phones (A and B) in one context
 // over the demo's relay, each with a fake mic (one of our clips once per take, then silence, through a getUserMedia
 // shim) and the stub recogniser (`e2e.stt`: what it "hears" set before each take from the line as compiled), nothing
 // played out loud, no network. A picks ロールプレイ in the みんなで picker (it's on no shelf), its lobby (the scene, the two

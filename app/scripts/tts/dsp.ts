@@ -1,4 +1,4 @@
-// ききみみ クイズ: the small DSP the speech conditions and their noise beds need (docs/kikimimi.md "Conditions"), for
+// ききみみ クイズ: the small DSP the speech conditions and their noise beds need (docs/kikimimi-engine.md "Conditions"), for
 // scripts/kikimimi-audio.ts and scripts/kikimimi-beds.ts. Mono float PCM at 24 kHz; ffmpeg decodes, convolves (afir as a
 // plain convolution) and measures loudness. Deterministic: every random draw is seeded. Silent: nothing here plays.
 import { execFileSync } from 'node:child_process';

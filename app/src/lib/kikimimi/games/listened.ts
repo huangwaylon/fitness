@@ -1,4 +1,4 @@
-// What wave 2's listening games share (ことば タイル, たちぎき, ようじ でんわ: docs/curriculum-wave2.md §2.1-2.3): their
+// What wave 2's listening games share (ことば タイル, たちぎき, ようじ でんわ: docs/kikimimi-engine.md "ことば タイル"): their
 // files at the lobby's place, their lobby options (a place's level, こたえる じかん, the host's ear), a player's tier by
 // their ear, a co-op share, and a game over its own rules (each game's def.ts: its rounds at an ear, their timing,
 // valid and right, the row's `pick`) as a GameDef and as its `listen` row. Pure.

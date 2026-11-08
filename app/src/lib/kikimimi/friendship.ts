@@ -1,4 +1,4 @@
-// ききみみ's なかよし (docs/kikimimi-ux.md §7.7, ずかん › なかま): a friendship with each villager that grows as I understand
+// ききみみ's なかよし (docs/kikimimi.md "なかよし", ずかん › なかま): a friendship with each villager that grows as I understand
 // their lines and never drops. +1 for an item of theirs understood after a replay, +2 on the first listen (a dialogue
 // counts for each villager in it); a wrong answer adds nothing and takes nothing. The points are never shown: the levels
 // are (NH's hearts), at 10 / 30 / 70 / 150 / 300, each with its reward. The rewards are cosmetic here, because the

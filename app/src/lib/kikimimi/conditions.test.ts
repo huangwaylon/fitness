@@ -1,4 +1,4 @@
-// ききみみ's speech conditions (docs/kikimimi.md "Conditions"): what each condition does (conditions.ts condPlan), which
+// ききみみ's speech conditions (docs/kikimimi-engine.md "Conditions"): what each condition does (conditions.ts condPlan), which
 // clips get one (condOf: their own, or a phone or PA channel's), the source hash they give a clip, the noise beds on
 // disk, and the report showing every conditioned clip mixed as its plan says.
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';

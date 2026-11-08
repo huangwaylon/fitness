@@ -1,4 +1,4 @@
-// おやすみ ものがたり (docs/curriculum.md §7.1, content/listen/README.md "Stories"): the bedtime serials' chapters as the
+// おやすみ ものがたり (docs/curriculum.md "Modes", content/listen/README.md "Stories"): the bedtime serials' chapters as the
 // audio scripts voice them and as a StoryFrame loads them. Every segment of a chapter is a clip of its own, `<chapter>-<n>`
 // (n from 1, like a dialogue's lines), spoken by the narrator's voice (the serial's cast.narrator) or the villager's
 // CAST voice, at the stories' own loudness and with no noise bed (scripts/kikimimi-audio.ts). Each chapter compiles
@@ -17,7 +17,7 @@ interface SegmentSource {
   en: string;
   tts?: string;
 }
-/** A glossed phrase as authored (curriculum-units.md's phrase shape). */
+/** A glossed phrase as authored (curriculum.md "Units"'s phrase shape). */
 interface PhraseSource {
   id: string;
   en: string;

@@ -1,4 +1,4 @@
-// ききみみ's first run and みみ チェック (docs/kikimimi-ux.md §6.12; curriculum §10): the guest (no games yet) opens the
+// ききみみ's first run and みみ チェック (docs/kikimimi.md "First run"; curriculum.md "Placement and spaced repetition"): the guest (no games yet) opens the
 // sheet on the welcome (しずえ's hello, the sound check), goes on into みみ チェック and answers it as a listener at もり
 // (every item right but やま's and ほし's): the walk climbs from かわ, turns at やま and stops after its reversals, and
 // the result says 「もりから はじめましょう！」 with its とくい / これから; the hub has no check card then, ひとこと クイズ's

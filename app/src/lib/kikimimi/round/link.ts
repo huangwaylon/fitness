@@ -1,4 +1,4 @@
-// A round session wired to the island's Live (docs/kikimimi.md "Sync"; IslandScene's `relay ?? demoRelay`, never a
+// A round session wired to the island's Live (docs/kikimimi-engine.md "Sync"; IslandScene's `relay ?? demoRelay`, never a
 // second one): the game intents heard on either wire (round/wire.ts) and who's here go in, the session's ops go out on
 // the wire (`play` from 8c, the quiz family on `quiz` while the rollout is guarded), `changed` after each.
 import type { Live } from '../../sync/live.ts';

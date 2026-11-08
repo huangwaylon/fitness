@@ -1721,7 +1721,7 @@ pitch.
 - **Music off:** the fade-out, then every music file in memory released (`Engine.release`); the next on fetches again
   (from the service worker's cache).
 - **iOS session:** `ambient`: it mixes with other apps' audio and follows the Ring/Silent switch.
-- **Voice session (ききみみ, [kikimimi.md](kikimimi.md#audio)):** `voiceSession(true)` inside a game's tap creates or
+- **Voice session (ききみみ, [kikimimi.md](kikimimi-engine.md#audio)):** `voiceSession(true)` inside a game's tap creates or
   wakes the context even with sound set silent, holds it awake (the background still suspends it), and sets the session
   to `playback`; `false` stops the clips, drops the decoded ones (an LRU of 4) and hands back to the settings.
   `playVoice(buf, {relayAt, now})` schedules at `currentTime + (relayAt − now())/1000`.

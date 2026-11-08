@@ -1,4 +1,4 @@
-// ききみみ's mic opt-in (docs/kikimimi-mic.md §2.6, §3.7, §5): せってい › マイク in the chromium-mic project, a fake mic
+// ききみみ's mic opt-in (docs/kikimimi-mic.md "Where they show", "Audio session", "The privacy rule"): せってい › マイク in the chromium-mic project, a fake mic
 // fed one of our clips once (then silence) through a getUserMedia shim (headless Chrome's own fake capture waits on the
 // OS's permission on a Mac), nothing played out loud, no network. Off by default with the probe's row under it; on
 // after the permission; the check's take stops by itself on the silence after the clip and releases the track; the

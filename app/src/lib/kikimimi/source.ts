@@ -1,4 +1,4 @@
-// ききみみ クイズ: every item as authored (docs/kikimimi.md "Content"), levels 1-3 (bank1.ts), level 4 (bank4.ts, its
+// ききみみ クイズ: every item as authored (docs/kikimimi-engine.md "Content"), levels 1-3 (bank1.ts), level 4 (bank4.ts, its
 // dialogues: dialogues.ts), the アナウンス pack (bank5.ts) and the content sprint's sets (content/). The compiler's input
 // (compile.ts → levels/), the audio scripts' and the tests': never in the app's bundle (the sheet loads the compiled
 // levels a chunk at a time: pool.ts). Its order is the bank's: each level's items in it are the deck's pool in order.

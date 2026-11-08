@@ -1,5 +1,5 @@
 <script lang="ts">
-  // あそぶ (docs/kikimimi-ux.md §6.2): しまの みち's card on top, then the playable modes grouped by situation (さくっと,
+  // あそぶ (docs/kikimimi.md "あそぶ"): しまの みち's card on top, then the playable modes grouped by situation (さくっと,
   // まちで・でんわで, じっくり, ねる まえに), a 2-column grid per group: each mode's name, its one-line subtitle, its
   // minutes and 👥 when it can be shared (catalog.ts: each mode's shelf and icon; a lane's game once this build has its
   // lane and content). Only what this build can play shows; an empty group is hidden. Its own chunk.

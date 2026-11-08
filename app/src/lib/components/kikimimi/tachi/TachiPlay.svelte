@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A round of たちぎき (docs/curriculum-wave2.md §2.2; games/tachi/def.ts), its own chunk, in the round's frame
+  // A round of たちぎき (docs/kikimimi-engine.md "たちぎき"; games/tachi/def.ts), its own chunk, in the round's frame
   // (frame/RoundFrame.svelte: the players' chips, the timer, the status line, つぎへ / よみおわった). Three seats, the
   // speakers by first line, each face bobbing while its line plays (two at once where they overlap: clipPlayer's
   // `talk.all`); co-op, each face says whose it is (mine, the shared one, my partner's). The conversation plays before

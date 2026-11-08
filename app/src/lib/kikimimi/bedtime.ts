@@ -1,4 +1,4 @@
-// おやすみ ものがたり's rules (docs/kikimimi-ux.md §6.8, docs/curriculum.md §7.1): no score and no questions, a chapter's
+// おやすみ ものがたり's rules (docs/kikimimi.md "おやすみ ものがたり", docs/curriculum.md "Modes"): no score and no questions, a chapter's
 // segments played in turn with natural gaps, the sleep timer (10 / 20 / 30 minutes of listening, or ぜんぶ: to the
 // chapter's end) and its fade over the last 20 s, each serial's chapters unlocked one by one as they're finished
 // (reached the end, or the timer ran out in the last third), where to pick up (つづき), and the morning-after

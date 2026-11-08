@@ -1,4 +1,4 @@
-// ききみみ's ずかん (docs/kikimimi-ux.md §6.10, §7.6; docs/curriculum-units.md §2): what the four sections fold from my
+// ききみみ's ずかん (docs/kikimimi.md "ずかん"; docs/curriculum.md "A unit"): what the four sections fold from my
 // answers and this phone's story progress, never stored. ことば: each key phrase seen or caught (srs.ts phrasesOf: right on
 // the first listen in 3 clips on ≥ 2 days) with its ★ (caught; +1 for first listens in 2 accents; +1 for one under a
 // condition: a phone, a PA, a noise bed), and a bedtime chapter's phrases collected by hearing the chapter (a story has

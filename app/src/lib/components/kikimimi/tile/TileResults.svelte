@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ことば タイル's results (docs/curriculum-wave2.md §2.1), its own chunk, in the frame's (frame/Results.svelte: しずえ's
+  // ことば タイル's results (docs/kikimimi-engine.md "ことば タイル"), its own chunk, in the frame's (frame/Results.svelte: しずえ's
   // line, the team's tally, how many I got right, my いっぱつ, おわる / もういっかい): co-op's 「ふたりで k / n」 counts the
   // sentences the team built whole (each half right: the session's `team.all`). Then the review list
   // (frame/ReviewList.svelte), the misses first: each sentence, tapped open, with its sound marks and the karaoke as ▶︎

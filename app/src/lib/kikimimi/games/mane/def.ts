@@ -1,4 +1,4 @@
-// まねっこ シャドーイング as a GameDef (docs/kikimimi-mic.md §2.1, §3.4): 4 villager lines at my level, each a round of
+// まねっこ シャドーイング as a GameDef (docs/kikimimi-mic.md "まねっこ シャドーイング", "In the registry"): 4 villager lines at my level, each a round of
 // kind `mic.shadow`: its clip plays once, blind; then, untimed, I speak along with it (shadowing, with earphones) or
 // after it, see my melody and timing over the villager's and try again or go on (the view: components/kikimimi/mane/).
 // Nothing is graded and nothing of my voice leaves the round: the answer is a bare "done" (0), and the row has my

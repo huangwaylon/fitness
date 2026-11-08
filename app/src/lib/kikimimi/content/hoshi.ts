@@ -1,4 +1,4 @@
-// ききみみ クイズ: stage ほし (S4, C1; docs/curriculum.md §3 "S4 ほし": podcasts, news, lectures and debates on
+// ききみみ クイズ: stage ほし (S4, C1; docs/curriculum.md "S4 ほし": podcasts, news, lectures and debates on
 // unfamiliar topics; infer stance; follow argument structure). Content sprint 2026-11-06 (track D, Broadcast, with
 // some Work and People). Written by a former NPR producer and EAP lecturer's eye, in American media style (public
 // radio news, local TV and traffic, podcasts, TED-style talks, US panels; 2026-11-06): news-reader density, fast
@@ -23,7 +23,7 @@ import type { RosterId } from '#lib/villagers/roster.ts';
 import type { Channel, Item, ItemType, Level, SceneId, SoundMark, Tags } from '../bank.ts';
 import { MEAN_ASK, NEXT_ASK, dialogueOf, g, line, single, tg, type DialogueRow } from './build.ts';
 
-/** ほし's level (docs/kikimimi.md "Levels 6 and 7"): 7, above やま (6). */
+/** ほし's level (docs/kikimimi-engine.md "The sets"): 7, above やま (6). */
 const HOSHI_LV: Level = 7;
 
 export type Family = 'news' | 'radio' | 'lecture' | 'documentary' | 'debate' | 'interview' | 'talk' | 'culture' | 'stats' | 'stance';

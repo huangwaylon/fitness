@@ -1,4 +1,4 @@
-// `POST /stt` (src/sttRoute.ts, docs/kikimimi-mic.md §3.5): auth, CORS, sizes, the WAV check, the day's cap (the log
+// `POST /stt` (src/sttRoute.ts, docs/kikimimi-mic.md "The relay endpoint"): auth, CORS, sizes, the WAV check, the day's cap (the log
 // object's caps table), the off switch, the model's answer; and nothing of the audio or its text kept or logged.
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { STT_MAX, STT_MODEL, sttRoute, type SttAi, type SttEnv } from '../src/sttRoute.ts';

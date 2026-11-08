@@ -1,4 +1,4 @@
-// ふたりで ロールプレイ (docs/kikimimi-mic.md §2.5) as a GameDef: one scene (scenes.ts: a unit's two dialogues chained),
+// ふたりで ロールプレイ (docs/kikimimi-mic.md "ふたりで ロールプレイ") as a GameDef: one scene (scenes.ts: a unit's two dialogues chained),
 // a round a turn, each turn a line of the dialogue said by the player in its speaker's role. The speaker sees the line
 // in Japanese and its key phrases in English (the unit's `ph` found in the line), taps the mic and says it; their own
 // phone hears it and lights the phrases said (lib/mic/match.ts phrases). Only that bitmask goes on the wire (the

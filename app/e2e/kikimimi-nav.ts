@@ -1,4 +1,4 @@
-// ききみみ's hub and its pages, shared by the specs (docs/kikimimi-ux.md §5): the sheet, and the way from the hub to a
+// ききみみ's hub and its pages, shared by the specs (docs/kikimimi.md "Navigation"): the sheet, and the way from the hub to a
 // mode's page (あそぶ › the mode), みんなで, きろく.
 import { expect, type Locator, type Page } from './fixtures.ts';
 

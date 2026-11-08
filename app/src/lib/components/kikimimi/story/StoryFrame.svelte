@@ -1,5 +1,5 @@
 <script lang="ts">
-  // おやすみ ものがたり's frame (docs/kikimimi-ux.md §6.8): a calm night page, whatever the island's hour (the sheet
+  // おやすみ ものがたり's frame (docs/kikimimi.md "おやすみ ものがたり"): a calm night page, whatever the island's hour (the sheet
   // takes the night palette while it's up: data-kiki-night). The serial and chapter, the scene dimmed with the heads of
   // who's in it (the one speaking lit, nothing bobbing), the English title and its Japanese caption, the bar with the
   // time, ⏮ ⏯ ⏭, the おやすみ タイマー (10 / 20 / 30 ぷん of listening, or ぜんぶ: to the chapter's end) and, hidden by

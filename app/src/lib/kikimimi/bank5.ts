@@ -1,8 +1,8 @@
-// ききみみ クイズ level 5 「アナウンス」 (docs/curriculum.md §7 game 7 and §14 increment 6): the announcements pack, B1+ →
+// ききみみ クイズ level 5 「アナウンス」 (docs/curriculum.md "Modes" game 7): the announcements pack, B1+ →
 // B2. Real station and train announcements (Tokyo's JR and Metro English, US rail and subway), airport PA (boarding,
 // gate changes, final calls), voicemails, phone menus (IVR: "press 3 for…"), store announcements and a radio weather
 // blurb, each heard
-// through its channel: the speech conditions (docs/kikimimi.md "Conditions") are the point of the pack, a ladder of
+// through its channel: the speech conditions (docs/kikimimi-engine.md "Conditions") are the point of the pack, a ladder of
 // channel and noise: a PA's hall (heavy on a busy concourse), a phone line, a voicemail, a station's or a café's noise.
 // Formal, scripted register mostly (announcers read), with casual voicemails reduced as people speak (`tts`: gonna,
 // lemme, 'cause); every number written out in `tts`, never a digit. American English: US announcement style, spelling

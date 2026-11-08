@@ -1,4 +1,4 @@
-// ききみみ content: かわ's breadth set (level 3, docs/curriculum-wave2.md §3.2, B4, 2026-11-07). The situations level 3
+// ききみみ content: かわ's breadth set (level 3, docs/curriculum.md "What's written", B4, 2026-11-07). The situations level 3
 // was thin on, in American English with US voices: introductions, invitations, compliments, weather small talk, and
 // the emergencies a newcomer to Tokyo meets (a lost wallet, a koban, an earthquake drill). Level 3's own shapes
 // (bank1.ts): `reply` with TOEIC Part 2 traps (a repeated sound, another question's answer, yes to an or-question),

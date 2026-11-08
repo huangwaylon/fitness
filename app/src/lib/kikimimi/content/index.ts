@@ -1,9 +1,9 @@
-// ききみみ クイズ: the content sprint's sets (2026-11-06; docs/kikimimi.md "Levels 6 and 7"), folded into the bank
+// ききみみ クイズ: the content sprint's sets (2026-11-06; docs/kikimimi-engine.md "The sets"), folded into the bank
 // (source.ts BANK): もり's two (level 4, beside bank4.ts and dialogues.ts), やま's two (level 6), ほし (level 7) and the
 // variety set's two (levels 4 and 6) and かわ's breadth set (level 3, kawa-b.ts), waiting for their voices (WAITING). Each set
 // writes its items' staging in place (`scene`, `channel`, `marks`: staging.ts's rules, its PLACES and MARKS are the
 // older banks'); here each live item heard in a noisy scene (a café, a street, a platform or an airport gate) gets
-// that scene's bed, light (+15 dB: docs/kikimimi.md "Conditions"), as staging.ts NOISE does for bank4.ts. `word` items
+// that scene's bed, light (+15 dB: docs/kikimimi-engine.md "Conditions"), as staging.ts NOISE does for bank4.ts. `word` items
 // stay clean (their contrasts are fine detail).
 import type { Bed, Item, SceneId } from '../bank.ts';
 import * as moriLife from './mori-life.ts';

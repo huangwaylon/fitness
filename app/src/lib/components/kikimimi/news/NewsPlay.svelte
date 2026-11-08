@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A round of しずえの ニュース (docs/curriculum-wave2.md §2.5; games/news/def.ts), its own chunk, in the round's frame
+  // A round of しずえの ニュース (docs/kikimimi-engine.md "しずえの ニュース"; games/news/def.ts), its own chunk, in the round's frame
   // (frame/RoundFrame.svelte). しずえ at her desk (NewsStage) reads the bulletin before the first question: an island or
   // seasonal story, a Tokyo one, today's weather; nothing to answer while it plays. Then a question a round, one tap
   // on an English choice (ChoiceGrid; easy, the answer and its trap only): the gist, a detail, 「傘は いる？」 (only with

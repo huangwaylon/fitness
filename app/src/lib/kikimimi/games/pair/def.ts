@@ -1,4 +1,4 @@
-// はつおん ききわけ as a GameDef (docs/kikimimi-mic.md §2.4, §3.4): 8 minimal pairs (content/mic/pairs.yaml, pairs.ts),
+// はつおん ききわけ as a GameDef (docs/kikimimi-mic.md "はつおん ききわけ", "In the registry"): 8 minimal pairs (content/mic/pairs.yaml, pairs.ts),
 // each a round of kind `mic.pair`: both words play (perception before production), then one of them is mine to say,
 // untimed. Solo, the villager hears it (whisper's two candidates, else the transcript; two tries a card: the view) and
 // my answer is the word they heard, 0 or 1 (UNSURE: neither, or skipped). Co-op あてっこ (`roles: 2`): round i's word is

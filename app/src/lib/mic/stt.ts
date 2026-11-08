@@ -1,4 +1,4 @@
-// ききみみ's recogniser (docs/kikimimi-mic.md §3.2): one interface over the backends, so swapping one changes no game.
+// ききみみ's recogniser (docs/kikimimi-mic.md "The Recogniser"): one interface over the backends, so swapping one changes no game.
 // - whisper: on the phone, in a Worker (WebGPU, else the WASM runtime); the only one 自動 uses;
 // - webkit: Safari's own recogniser (the audio may go to Apple), only when picked by hand in せってい;
 // - relay: our relay's `/stt` (Workers AI; nothing kept), only when picked by hand;

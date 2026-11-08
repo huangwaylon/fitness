@@ -1,4 +1,4 @@
-// ききみみ's round session (docs/kikimimi-framework.md §3.2; docs/kikimimi.md "Sync"): any game's state machine, pure (no
+// ききみみ's round session (docs/kikimimi-engine.md "RoundSession", "Sync"): any game's state machine, pure (no
 // I/O, no timers, no clock of its own). It folds the game ops heard (round/wire.ts, from either wire), who is here
 // (live status().here) and the relay's clock (live.serverNow(), passed in as `now` to every call) into a view: {phase,
 // players, answers, scores, i, …}. The host is the clock: every phone computes a round's lead-in, clip and answer window
@@ -114,7 +114,7 @@ export interface RoundView {
   canReady: boolean;
   /** In a reveal: how many of the others here (not the host) have tapped よみおわった, of how many (the host's つぎへ). */
   ready: { n: number; of: number };
-  /** Each player's role once it's going (framework §3.1): their place among the players at `go` (`pl`), modulo the
+  /** Each player's role once it's going (kikimimi-engine.md "Types"): their place among the players at `go` (`pl`), modulo the
    *  game's roles; a late joiner's, their place among those and them. The same on every phone. */
   roles: Partial<Record<Who, number>>;
   /** Each joined player's tier (GameDef.tier: the host's from the options, a player's from their join), for a game with
@@ -621,7 +621,7 @@ export class RoundSession {
     return gm.def.next(gm.seed, opts, gm.goAt === undefined ? [] : done);
   }
 
-  /** An adaptive game of mine alone (framework §3.2): at the last round's reveal, its next round is dealt (its item added
+  /** An adaptive game of mine alone (kikimimi-engine.md "RoundSession"): at the last round's reveal, its next round is dealt (its item added
    *  to the ids), once; none: the reveal's つぎへ goes to the results. */
   private adapt(gm: Game, now: number): void {
     if (!gm.local || !gm.def.next || gm.goAt === undefined || gm.n === 0 || gm.adapted === gm.n - 1) return;
@@ -795,7 +795,7 @@ export class RoundSession {
     return [...(gm.evs.get(this.me)?.values() ?? [])].map((v) => this.evOut(gm, v));
   }
 
-  /** Each joined player's role (framework §3.1) once the game is going: their place among the players at `go` (`pl`;
+  /** Each joined player's role (kikimimi-engine.md "Types") once the game is going: their place among the players at `go` (`pl`;
    *  a `quiz` go has none: those in it by then), modulo the game's roles (default: one each); a late joiner's, their
    *  place among those and them. */
   private roles(gm: Game): Partial<Record<Who, number>> {

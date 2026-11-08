@@ -1,4 +1,4 @@
-// ききみみ クイズ: the revealed text as words with its sound marks (docs/kikimimi.md "Visuals", docs/curriculum.md §8), pure:
+// ききみみ クイズ: the revealed text as words with its sound marks (docs/kikimimi.md "Visuals", docs/curriculum.md "Visual rules"), pure:
 // Play.svelte and Transcript.svelte render it (SoundLine.svelte) with the karaoke over its words. The words are `en`'s
 // whitespace-separated tokens, numbered from 0 (the karaoke's timings, clips.ts wordTimes, count the same way).
 import type { SoundMark } from './bank.ts';

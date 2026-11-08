@@ -102,7 +102,7 @@
 </script>
 
 {#snippet fold(body: Snippet)}
-  <!-- a lesson's reveal folds the depth (the trap's note, a dialogue's transcript) under 「くわしく」 (docs/curriculum-units.md §3: depth optional) -->
+  <!-- a lesson's reveal folds the depth (the trap's note, a dialogue's transcript) under 「くわしく」 (docs/curriculum.md "Lessons": depth optional) -->
   {#if game.lesson}<details class="more" data-kiki-more><summary data-sfx="tick">{t('kiki.more')}</summary>{@render body()}</details>
   {:else}{@render body()}{/if}
 {/snippet}

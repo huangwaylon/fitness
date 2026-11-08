@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The morning after a bedtime chapter (docs/kikimimi-ux.md §6.8; kikimimi/bedtime.ts morningCard): under the menu,
+  // The morning after a bedtime chapter (docs/kikimimi.md "おやすみ ものがたり"; kikimimi/bedtime.ts morningCard): under the menu,
   // by day, 「きのうの つづき、どうなると おもう？」 with the chapter's three guesses (its `predict`), or あとで. Optional and
   // light: nothing is scored, the guess is kept on this phone and revealed when the next chapter is finished
   // (StoryFrame's end card). Shown only while a chapter waits for its guess.

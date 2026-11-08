@@ -1,4 +1,4 @@
-// ききみみ クイズ's スピード はしご (docs/kikimimi.md "スピード はしご", docs/curriculum.md §7 game 2, §14 increment 7): 30
+// ききみみ クイズ's スピード はしご (docs/kikimimi.md "スピード はしご", docs/curriculum.md "Modes" game 2): 30
 // ladders, each one line of real daily life (B1+ → B2) heard four times, faster each time (ladder.ts SPEEDS: 0.8× →
 // 1.4× natural speech), with a different question at each rung, so the climb is never the same question again:
 //   1 (0.8×) the gist: what's going on (Japanese choices: nothing English to read before the next rung);

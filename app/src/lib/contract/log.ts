@@ -70,7 +70,7 @@ export const LOG_EVENTS = {
   "storage.fail": { src: 'c', f: { store: ['ls', 'idb', 'log'], kind: ['full', 'unavailable', 'blocked', 'other'] } },
   use: { src: 'c', f: { '*': 'n' } },
   "log.drop": { src: 'c', f: { n: 'n', why: ['cap', 'full', 'day', 'pending'] } },
-  // ききみみ's mic probe (docs/kikimimi-mic.md §1.1): numbers and closed sets only, never heard text
+  // ききみみ's mic probe (docs/kikimimi-mic.md "The probe"): numbers and closed sets only, never heard text
   "mic.env": { src: 'c', f: { pwa: 'b', coi: 'b', gpu: 'b', gpuW: 'b', f16: 'b', arch: 't', wks: 'b', ses: 'b', mr: ['mp4', 'webm', 'none'], wl: 'b' } },
   "mic.perm": { src: 'c', f: { st: ['granted', 'denied', 'prompt', 'unsupported'], ms: 'n', again: 'b', asked: 'b', ec: 'b', sr: 'n', inp: ['builtin', 'bluetooth', 'wired', 'other'] } },
   "mic.duplex": { src: 'c', f: { ear: ['none', 'wired', 'bluetooth'], aec: 'b', bleed: 'n', rtl: 'n', loud: ['none', 'quiet', 'ok'], pick: 'b', restored: 'b', err: 't' } },

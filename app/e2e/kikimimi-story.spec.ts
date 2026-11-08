@@ -1,4 +1,4 @@
-// おやすみ ものがたり (docs/kikimimi-ux.md §6.8): at 21:30 the hub's きまぐれ card is the bedtime story and plays it at
+// おやすみ ものがたり (docs/kikimimi.md "おやすみ ものがたり"): at 21:30 the hub's きまぐれ card is the bedtime story and plays it at
 // once in the night frame (no ‹, no score); ⏸ / ▶, the sleep timer, the words shown, ⏭ to the last segment, and the
 // chapter's end: its end card, the next chapter unlocked in the list. By day, after a chapter finished the night
 // before, the morning card asks what happens next; the guess is revealed at the next chapter's end. Screenshots

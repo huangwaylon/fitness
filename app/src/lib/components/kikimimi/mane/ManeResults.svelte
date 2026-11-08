@@ -1,5 +1,5 @@
 <script lang="ts">
-  // まねっこ シャドーイング's end (docs/kikimimi-mic.md §2.1), its own chunk: しずえ's word (no score, no tally), the lines
+  // まねっこ シャドーイング's end (docs/kikimimi-mic.md "まねっこ シャドーイング"), its own chunk: しずえ's word (no score, no tally), the lines
   // I said, each with ▶︎ to hear it again and its Japanese, that only my minutes are kept, and おわる / もういっかい (4 new
   // lines at the same level, at once).
   import '#lib/i18n/kiki-mane.ts';

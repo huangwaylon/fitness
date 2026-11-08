@@ -1,5 +1,5 @@
 <script lang="ts">
-  // くりかえし チャレンジ's results (docs/kikimimi-mic.md §2.2), its own chunk: しずえ's line, how far the run got
+  // くりかえし チャレンジ's results (docs/kikimimi-mic.md "くりかえし チャレンジ"), its own chunk: しずえ's line, how far the run got
   // (「ここまで 14語！」: the longest sentence said) and how many sentences came through, shown only to you; then the run's
   // sentences, each with ○ / × (– skipped), its Japanese and ▶︎. What was heard isn't here: it went with the round. もういっかい: a new run at the same level, at once.
   import type { QuizGame } from '../game.svelte.ts';

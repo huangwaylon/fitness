@@ -1,4 +1,4 @@
-// ことば タイル as a GameDef (docs/curriculum-wave2.md §2.1; kikimimi-framework.md §7 #10): 6 sentences from the
+// ことば タイル as a GameDef (docs/kikimimi-engine.md "ことば タイル", "The games" #10): 6 sentences from the
 // `listened` tile files at the lobby's place (content/listen/s*-tile*.yaml, pool.ts listenOf), each a round: its clip
 // plays once with no tiles, then its words and a few sound decoys (weak forms, contractions, near sounds) to tap into
 // order. The answer is the board's index per slot (≤ 12 ints; EMPTY a slot not filled). Pure.
@@ -51,7 +51,7 @@ export function tileDeal(seed: number, parts: readonly ListenPart[]): TileCard[]
 
 // ---------- tiers and boards ----------
 
-/** What a Japanese ear hears for a word (wave 2 §2.1's decoys: weak forms, contractions, near sounds), lower case. */
+/** What a Japanese ear hears for a word (kikimimi-engine.md "ことば タイル"'s decoys: weak forms, contractions, near sounds), lower case. */
 const SWAPS: Readonly<Record<string, readonly string[]>> = {
   a: ['the', 'uh'], the: ['a'], an: ['and'], and: ['in', 'an'], in: ['and'], to: ['the', 'two'], for: ['four'], of: ['have', 'a'], have: ['of'],
   "i'd": ["i'll"], "i'll": ["i'd"], i: ["i've"], "i've": ['i'], "we'll": ['we'], "you'll": ['you'], "they'll": ['they'], "it's": ['is'],

@@ -58,12 +58,12 @@ describe('ききみみ progress rows', () => {
     ok(game('ab26', { r: [['W3 gotta', 1, 0, 0]] }), false);
     ok(game('ab27', { r: [['w3-gotta', 1, 0, 100]] }), false);
     ok(game('ab28', { score: 1040 }), false);
-    // a later game's row (docs/kikimimi-framework.md §4.4): `gm`, `u`, a pick up to 4095 (a tile round's bitmask)
+    // a later game's row (docs/kikimimi-engine.md "The listen row"): `gm`, `u`, a pick up to 4095 (a tile round's bitmask)
     ok(game('ab29', { gm: 'tile', u: 'u03-kawa', r: [['w3-gotta', 0, 4095, 0]] }), true);
     ok(game('ab30', { r: [['w3-gotta', 1, 4, 0]] }), true);
     ok(game('ab31', { gm: 'T' }), false);
     ok(game('ab32', { u: 'a'.repeat(13) }), false);
-    // a unit's lesson (docs/curriculum-units.md §10): `l` 1-5 with `u`, `tm` 0-6 with `l`
+    // a unit's lesson (docs/curriculum.md "Playing together"): `l` 1-5 with `u`, `tm` 0-6 with `l`
     ok(game('ab33', { gm: 'unit', u: 'tr-hotel', l: 3, tm: 6 }), true);
     ok(game('ab34', { u: 'tr-hotel', l: 1 }), true);
     ok(game('ab35', { l: 1 }), false);

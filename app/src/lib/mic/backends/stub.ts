@@ -1,4 +1,4 @@
-// ききみみ's test recogniser (docs/kikimimi-mic.md §3.8): what it "hears" is scripted in `localStorage['e2e.stt']`, a
+// ききみみ's test recogniser (docs/kikimimi-mic.md "Tests"): what it "hears" is scripted in `localStorage['e2e.stt']`, a
 // JSON list, one entry a take, taken in turn (the list rotates): a string (the text heard), or `{ text?, cand?, miss? }`
 // (whisper's candidate scores; a Miss such as 'capped'). Inert without it (recogniser() picks it only then). A take still
 // opens the mic and ends as any other (the fake device's clip, the VAD, stop, cancel), so the flow is the real one;

@@ -55,7 +55,7 @@ export function team(gm: Game, upto: number, win: RoundWindows): Team {
 }
 
 /** The rounds 0 … upto − 1 someone who has played got right on the first listen (no replay): a co-op lesson's `tm`
- *  (docs/curriculum-units.md §10, contract/listen.ts), the same on every phone. */
+ *  (docs/curriculum.md "Playing together", contract/listen.ts), the same on every phone. */
 export function teamFirst(gm: Pick<Game, 'answers' | 'deckFor' | 'played' | 'n'>, upto: number): number {
   const first = (w: Who, i: number) => rightOf(gm, w, i) && !gm.answers.get(w)!.get(i)!.rp;
   let n = 0;

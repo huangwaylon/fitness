@@ -1,4 +1,4 @@
-// ききみみ クイズ: what the neural TTS is given for an item (docs/kikimimi.md "Audio", docs/curriculum.md §9): its cast
+// ききみみ クイズ: what the neural TTS is given for an item (docs/kikimimi-engine.md "Audio", docs/curriculum.md "Audio and script rules"): its cast
 // voice and the text to speak. Used by scripts/kikimimi-audio.ts and the tests only; never by the game (its clips are
 // made already), so nothing in the client bundle imports this.
 import { ROSTER } from '#lib/villagers/roster.ts';

@@ -1,4 +1,4 @@
-// ききみみ's units on しまの みち, U4 (docs/curriculum-units.md §13; docs/kikimimi-ux.md §6.3, §6.3b): a fixture unit
+// ききみみ's units on しまの みち, U4 (docs/curriculum.md "Lesson decks and stamps"; docs/kikimimi.md "しまの みち", "A unit's page"): a fixture unit
 // put in through the dev hook (the bank's items, never shipped) shows on the path from the lobby's card, the can-do's
 // one line its subtitle; its page has the one line (the template's sentence under 「くわしく」) and the three core lessons; であい played solo moves its dot (the unit page's and the path's); the チェック
 // from 「とばして チェック」 opens on the phone errand's mission card and, all right on the first listen, stamps the unit:

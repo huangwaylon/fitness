@@ -1,4 +1,4 @@
-// たちぎき as a GameDef (docs/curriculum-wave2.md §2.2): two conversations overheard, three speakers each, from the
+// たちぎき as a GameDef (docs/kikimimi-engine.md "たちぎき"): two conversations overheard, three speakers each, from the
 // `listened` tachi files at the lobby's place (content/listen/s*-tachi*.yaml, pool.ts listenOf). Each conversation is
 // three rounds: opinions (whose claim is whose: three faces to three claims), changed (who changed their mind: a face)
 // and plan (what happens next: 3-4 English choices). Its clip plays before the opinions round only (the lines in turn,

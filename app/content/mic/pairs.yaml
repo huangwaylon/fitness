@@ -1,4 +1,4 @@
-# はつおん ききわけ (docs/kikimimi-mic.md §2.4): production minimal pairs, the contrasts Japanese speakers merge.
+# はつおん ききわけ (docs/kikimimi-mic.md "はつおん ききわけ"): production minimal pairs, the contrasts Japanese speakers merge.
 # One card a pair: two pictures with their labels, both words heard first (a US voice), then one to say; the villager
 # shows what they heard. Checked by src/lib/kikimimi/games/pair/pairs.ts (npm run kikimimi:levels; content.test).
 #

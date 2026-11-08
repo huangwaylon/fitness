@@ -1,4 +1,4 @@
-// よみきき サンド's まだ (docs/curriculum-wave2.md §2.0): a mark on this phone, folded into srs.ts's cards as a "hard"
+// よみきき サンド's まだ (docs/kikimimi-engine.md "よみきき サンド"): a mark on this phone, folded into srs.ts's cards as a "hard"
 // answer on its day. Pure, over a made-up store.
 import { describe, expect, it } from 'vitest';
 import type { KV } from '../sync/storage.ts';

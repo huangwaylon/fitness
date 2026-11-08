@@ -1,4 +1,4 @@
-// しずえの ニュース (docs/curriculum-wave2.md §2.5): the mode shows once a news file is `listened` (news-a and news-b, shipped
+// しずえの ニュース (docs/kikimimi-engine.md "しずえの ニュース"): the mode shows once a news file is `listened` (news-a and news-b, shipped
 // listened since audio batch A3), on あそぶ's じっくり shelf, its page without places; a solo game on the day's bulletin with
 // today's weather pinned (a timeline planted in the phone's cache as the relay leaves it: dry, then rain from 15:00, a
 // high of 17 °C on the `?date=` day): しずえ at her desk reads it (the 放送中 lamp, its stories), then the gist right,

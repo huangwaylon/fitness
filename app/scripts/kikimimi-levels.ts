@@ -1,6 +1,6 @@
-// ききみみ クイズ: the levels compiled for the app (docs/kikimimi.md "Loading"): src/lib/kikimimi/compile.ts over the
+// ききみみ クイズ: the levels compiled for the app (docs/kikimimi-engine.md "Loading"): src/lib/kikimimi/compile.ts over the
 // bank, the ladders, clips.json and words.json, written into src/lib/kikimimi/levels/ (index.json and parts/, the old
-// parts removed), and the units (app/content/units/*.yaml, docs/curriculum-units.md: their checks' errors stop it,
+// parts removed), and the units (app/content/units/*.yaml, docs/curriculum.md "Units": their checks' errors stop it,
 // their warnings are listed). Run after changing an item, a ladder or a unit; the audio scripts run it at their end.
 // levels.test fails while the committed files differ. Silent: no sound.
 //   node scripts/kikimimi-levels.ts

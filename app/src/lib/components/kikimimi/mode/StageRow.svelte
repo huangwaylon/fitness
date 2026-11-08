@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The ばしょ row (docs/kikimimi-ux.md §4, §6.4): the five places はまべ → ほし with their ★s, the picked one yuzu, a
+  // The ばしょ row (docs/kikimimi.md "Places", "Mode detail"): the five places はまべ → ほし with their ★s, the picked one yuzu, a
   // place this build has no level for sunk (aria-disabled); はまべ's two sub-steps (1 · 2) under it while it's picked.
   // `readonly`: another's lobby (the host picks; the others see it). `omakase` (a mode's page): 「おまかせ」 by the label
   // while the place is the suggested one (みみ チェック's), else 「おまかせに もどす」.

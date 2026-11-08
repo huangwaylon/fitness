@@ -1,4 +1,4 @@
-// くりかえし チャレンジ (docs/kikimimi-mic.md §2.2, M4) in the chromium-mic project: a fake mic fed one of our clips once
+// くりかえし チャレンジ (docs/kikimimi-mic.md "くりかえし チャレンジ", M4) in the chromium-mic project: a fake mic fed one of our clips once
 // per take (then silence) through a getUserMedia shim, the stub recogniser (`e2e.stt`: what it "hears" set before each
 // take from the sentence as compiled), nothing played out loud, no network. With the mic off the 声に出す shelf has no
 // tile. On: its page, then a solo run: the clip once and the beat, the mic, a sentence said whole (one rung up, every word

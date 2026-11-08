@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A game's results (docs/kikimimi.md "Results"; framework §5 Results), in the shell every game's results share
+  // A game's results (docs/kikimimi.md "Results"; kikimimi-engine.md "Shared UI" Results), in the shell every game's results share
   // (frame/ResultsShell: しずえ reads them out like the morning broadcast, 終わる / もう一度遊ぶ): the headline card
   // (frame/ScoreCard: solo how many I got right; co-op, the default with several players, the team's 「ふたりで 7/8」 and
   // 「そろって正解」 over mine, no ranking, no one's points; a game's own lines in it, `more`; my 一発 stamp), a game's

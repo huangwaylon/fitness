@@ -1,4 +1,4 @@
-// ききみみ content: もり (S2, B2; docs/curriculum.md §3), daily life, services and travel. 70 single items (reply, mean,
+// ききみみ content: もり (S2, B2; docs/curriculum.md "Stages and can-dos"), daily life, services and travel. 70 single items (reply, mean,
 // word, num) and 15 dialogues (gist, next), written for listeners who are already good (TOEIC 700+): shops and
 // drugstores, restaurants and bars, hotels, flights, Amtrak and the subway, doctors and urgent care, banks, landlords and
 // repairs, deliveries, the ward office, gyms, hair salons, neighbors and emergencies. American English throughout (US

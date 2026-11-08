@@ -1,4 +1,4 @@
-// ききみみ's audio packs on the phone (docs/kikimimi.md "Audio", docs/kikimimi-framework.md §6): a clip is a slice of
+// ききみみ's audio packs on the phone (docs/kikimimi-engine.md "Audio", "Loading"): a clip is a slice of
 // its pack (static/audio/listen/<pack>.<hash>.pak, kikimimi/packing.ts), where its loaded chunk says (clips.ts clipAt).
 // A pack is fetched whole, never by Range (the service worker passes a Range request through uncached: caches.ts
 // LISTEN_CACHE keeps whole packs), held in memory among the most recently used (HOLD_BYTES), and each clip's bytes

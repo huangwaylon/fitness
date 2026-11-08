@@ -1,9 +1,9 @@
 <script lang="ts">
-  // ききみみ's せってい (docs/kikimimi-ux.md §6.11), pushed from the hub's ⚙: 🔊 「きこえる？」 (a clip through the game's
+  // ききみみ's せってい (docs/kikimimi.md "せってい"), pushed from the hub's ⚙: 🔊 「きこえる？」 (a clip through the game's
   // voice, with the earphones tip and the volume-0 line); 「おとを 1だいに まとめる」 as a new lobby's default; にほんごやく
   // (when the Japanese shows: いつも / まちがえた とき / みない); こんしゅうの めあて (3 / 5 / 7 にち). Each kept on this
   // phone; 「みみ チェックを もういちど」 (the placement check again, at once; the place it gave me under it); last, マイク
-  // (docs/kikimimi-mic.md §2.6: MicOptIn, a lazy chunk, with the probe's row under it, which opens MicProbe in this
+  // (docs/kikimimi-mic.md "Where they show": MicOptIn, a lazy chunk, with the probe's row under it, which opens MicProbe in this
   // page's place, another). Its own chunk.
   import Lazy from '#lib/components/ui/Lazy.svelte';
   import type { QuizGame } from '../game.svelte.ts';

@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A turn of ふたりで ロールプレイ (docs/kikimimi-mic.md §2.5; games/role/def.ts), its own chunk, in the round's frame
+  // A turn of ふたりで ロールプレイ (docs/kikimimi-mic.md "ふたりで ロールプレイ"; games/role/def.ts), its own chunk, in the round's frame
   // (frame/RoundFrame.svelte). Over the stage: where we are (場面 p · k / n), the part's two villagers (the speaker's
   // lifted, mine marked あなた), my role and its goal for this part. My turn: the line in Japanese, its key phrases as
   // chips (English, with their Japanese), the English faded on easy (else 「英文を見る」), the mic (RoleMic: tap, say it,

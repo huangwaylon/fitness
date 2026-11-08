@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ずかん › ことば (docs/kikimimi-ux.md §6.10; docs/curriculum-units.md §2): every unit's key phrases by domain, then each
+  // ずかん › ことば (docs/kikimimi.md "ずかん"; docs/curriculum.md "A unit"): every unit's key phrases by domain, then each
   // bedtime serial's (🌙), a section's caught count and bar. A card: caught (srs.ts phrasesOf: right on the first listen
   // in 3 clips on 2 days; a story's: its chapter heard to the end) shows the phrase, its Japanese and its ★ (zukan.ts
   // phraseBook: ★ caught, ★★ in 2 accents, ★★★ on a phone or in noise too; a story's none) and NEW until seen once;

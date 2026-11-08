@@ -1,4 +1,4 @@
-// ききみみ クイズ: dialogue items (docs/kikimimi.md "Dialogues", docs/curriculum.md §14 increment 4), level 4 「かわ・もり」
+// ききみみ クイズ: dialogue items (docs/kikimimi.md "Dialogues", docs/curriculum.md "Modes" increment 4), level 4 「かわ・もり」
 // (B1+ → B2). Two villagers, 2-4 lines, overheard and service talk cut from the scenario seeds (§5.5): a coffee order
 // going wrong, a canceled train, a dog groomer's waitlist, a friend canceling, a coworker hinting, a contractor who
 // won't commit, a tip screen, Thanksgiving. American English throughout. Two types (TOEIC Part 3 in spirit, for

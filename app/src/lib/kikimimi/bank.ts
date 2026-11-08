@@ -1,8 +1,8 @@
-// ききみみ クイズ: the question bank's shape (docs/kikimimi.md "Question types", "Content"): an item's type, its staging
+// ききみみ クイズ: the question bank's shape (docs/kikimimi.md "Question types"; docs/kikimimi-engine.md "Content"): an item's type, its staging
 // and the small helpers the game reads it through. No items here: those are authored in bank1.ts (levels 1-3), bank4.ts,
 // dialogues.ts, bank5.ts and content/ (all of them in source.ts BANK), and compiled into levels/ (compile.ts), which the
 // sheet loads a level at a time (pool.ts).
-//   Every item is spoken by scripts/kikimimi-audio.ts (the neural cast, docs/kikimimi.md "Audio") into
+//   Every item is spoken by scripts/kikimimi-audio.ts (the neural cast, docs/kikimimi-engine.md "Audio") into
 // a slice of its pack (static/audio/listen/, packing.ts); changing an item's `en`, `tts`, `voice` or speaker's voice regenerates its clip. Ids
 // key the clips in their packs: keep them stable. The lobby offers a level only once every item of it has a clip (compile.ts
 // playable). Level 4's dialogues (`gist`, `next`: dialogues.ts) are one clip per line and have a gate of their own.
@@ -27,7 +27,7 @@ export type Accent = 'us' | 'uk' | 'au';
 export const levelRank = (lv: number): number => (lv === 5 ? 4 : lv > 5 ? lv - 1 : lv);
 /** The stage's level at a place on the ladder (levelRank's inverse, never the pack). */
 export const levelAt = (rank: number): Level => (rank > 4 ? rank + 1 : rank) as Level;
-/** A cast voice of the neural TTS (docs/curriculum.md §9; 18 voices, 12 of them US: speech.ts SLOTS lists the ones that
+/** A cast voice of the neural TTS (docs/curriculum.md "Audio and script rules"; 18 voices, 12 of them US: speech.ts SLOTS lists the ones that
  *  exist, scripts/tts/cast.json describes them): accent, gender, slot. Each villager speaks with a US one for good
  *  (cast.ts CAST), a few with a UK or AU one too on the やま/ほし accent-exposure items (EXPOSURE). */
 export type CastId = `${Accent}-${'f' | 'm'}${1 | 2 | 3 | 4 | 5 | 6}`;
@@ -38,20 +38,20 @@ export const accentOf = (cast: CastId): Accent => cast.slice(0, 2) as Accent;
 export const REGISTERS = ['service', 'colleague', 'boss', 'friend', 'partner', 'neighbour', 'stranger', 'official', 'broadcast'] as const;
 export const PRAGMATICS = ['literal', 'indirect', 'refusal', 'hedge', 'understatement', 'sarcasm', 'humour', 'formula', 'ritual', 'attitude', 'deception'] as const;
 
-/** The scenario generator's dimensions an item was made from (docs/curriculum.md §5): they drive the levers, review
+/** The scenario generator's dimensions an item was made from (docs/curriculum.md "Scenarios"): they drive the levers, review
  *  and coverage later. */
 export interface Tags {
-  /** The scenario seed (docs/curriculum.md §5.5, 1-66): its setting, goal and complication. */
+  /** The scenario seed (docs/curriculum.md "The scenario bank", 1-66): its setting, goal and complication. */
   seed: number;
   register: (typeof REGISTERS)[number];
   pragmatic: (typeof PRAGMATICS)[number];
   /** Speech conditions for the mix (none: studio clean). */
   conditions?: readonly ('phone' | 'voicemail' | 'pa' | 'video' | 'cafe' | 'station' | 'street' | 'desk')[];
-  /** The sound features it trains (curriculum §3). */
+  /** The sound features it trains (curriculum.md "Stages and can-dos"). */
   features?: readonly Feature[];
 }
 
-/** The sound and listening features an item trains (curriculum §3): level 4's (bank4.ts `tags`) and S0's segmentals
+/** The sound and listening features an item trains (curriculum.md "Stages and can-dos"): level 4's (bank4.ts `tags`) and S0's segmentals
  *  (levels 1-3, tags.ts): L/R, the vowel contrasts, b/v/f/p, th, s/sh/ch, f/h, word endings (-s, -ed), katakana
  *  traps, a "not X but Y" contrast, clock talk (a quarter after, a quarter of); `accent-exposure`, a UK or AU voice heard on
  *  purpose (やま and ほし only, about a tenth of each, standard English without slang; American is the default). */
@@ -97,7 +97,7 @@ export interface Item {
   focus?: string;
   /** The question shown in Japanese while it plays (`pic`, `num`): what to listen for. */
   ask?: string;
-  /** What's spoken, when it isn't `en` as written (docs/curriculum.md §9): reductions spelled as said (gonna, lemme,
+  /** What's spoken, when it isn't `en` as written (docs/curriculum.md "Audio and script rules"): reductions spelled as said (gonna, lemme,
    *  d'you), numbers written out. */
   tts?: string;
   /** Level 4: why the sound or the logic fools you, in Japanese (≤ 40 字), shown at the reveal. */
@@ -150,7 +150,7 @@ export type SceneId = (typeof SCENE_IDS)[number];
 export const CHANNELS = ['live', 'phone', 'pa', 'video'] as const;
 export type Channel = (typeof CHANNELS)[number];
 /**
- * A sound mark over the revealed text (docs/curriculum.md §8), on whole words of the line (`at`, its first whole-word
+ * A sound mark over the revealed text (docs/curriculum.md "Visual rules"), on whole words of the line (`at`, its first whole-word
  * match): `say` the shape it's said in above the spelling (going to → gonna, 14 → fourTEEN); `link` arcs between the
  * words of `at` (pick‿it‿up); `drop` the letters swallowed, greyed (the last `drop` in the word: tryin(g)); `stress` ●
  * over each word of `at` (space-separated, each its first whole-word match).
@@ -158,7 +158,7 @@ export type Channel = (typeof CHANNELS)[number];
 export type SoundMark = readonly ['say', at: string, said: string] | readonly ['link', at: string] | readonly ['drop', at: string, letters: string] | readonly ['stress', words: string];
 
 /**
- * A speech condition, mixed offline over the clean take (docs/kikimimi.md "Conditions", docs/curriculum.md §5.3 and §9;
+ * A speech condition, mixed offline over the clean take (docs/kikimimi-engine.md "Conditions", docs/curriculum.md "Difficulty levers", "Audio and script rules";
  * scripts/kikimimi-audio.ts with conditions.ts): a channel (a phone line, one breaking up, a voicemail, a PA in a hall)
  * or a noise bed (a café, a street, a station, a party), `light` or `heavy` (the beds' SNR +15 / +10 dB), and a
  * channel's `bed` behind it (a PA on a platform, a caller in a café). Part of the clip's source hash; the clean master

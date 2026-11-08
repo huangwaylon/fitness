@@ -1,4 +1,4 @@
-// ききみみ's whisper (docs/kikimimi-mic.md §3.2, §3.6), the page half: whether the site serves the model, its download
+// ききみみ's whisper (docs/kikimimi-mic.md "The Recogniser", "Hosting and the service worker"), the page half: whether the site serves the model, its download
 // (only on a tap: the parts fetched, assembled and checked into the STT cache, with progress; lib/mic/models.ts), and
 // a dedicated Worker running it (whisper.worker.ts), one request at a time, terminated when done or when a request
 // times out. The probe drives it a device at a time; whisperRecogniser (stt.ts's whisper) loads WebGPU, else the WASM

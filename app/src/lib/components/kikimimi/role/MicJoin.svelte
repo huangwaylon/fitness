@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A mic game's さんか (docs/kikimimi-mic.md §2.5 "Consent", §5): before joining another's ロールプレイ, what it asks of
+  // A mic game's さんか (docs/kikimimi-mic.md "Consent", "The privacy rule"): before joining another's ロールプレイ, what it asks of
   // this phone. With the mic on: 「マイクを使います」, that my voice never goes to the partner's phone, 参加する / やめる
   // (joining is the consent: nothing more on the wire). With the mic off: it says so and how to turn it on, 閉じる; no
   // join. Its own chunk (the sheet's veil, loaded at the tap).

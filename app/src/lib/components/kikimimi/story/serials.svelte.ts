@@ -1,4 +1,4 @@
-// おやすみ ものがたり on this phone (docs/kikimimi-ux.md §6.8): the bedtime serials this build has (the index's
+// おやすみ ものがたり on this phone (docs/kikimimi.md "おやすみ ものがたり"): the bedtime serials this build has (the index's
 // `stories`: a voiced one, or a draft with the dev hooks on) and each serial's progress kept here (DEVICE.kikiStory, by
 // who I am: kikimimi/bedtime.ts SerialProgress), with the sleep timer last set. Loaded with the sheet only.
 import { INDEX } from '#lib/kikimimi/pool.ts';

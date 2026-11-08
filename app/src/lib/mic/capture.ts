@@ -1,4 +1,4 @@
-// The mic's capture (docs/kikimimi-mic.md §3.1, §3.7): getUserMedia, its stream into the voice's audio context (one
+// The mic's capture (docs/kikimimi-mic.md "Files", "Audio session"): getUserMedia, its stream into the voice's audio context (one
 // clock for the clips and the mic: sound.svelte.ts audioCtx) through the capture worklet (capture.worklet.js), brought
 // to 16 kHz mono, kept up to the take's cap, its level and the VAD (vad.ts) frame by frame. stop() releases the track
 // at once (the orange dot goes off) and drops what was kept but what it returns. The browser half: session.ts owns

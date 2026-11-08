@@ -22,7 +22,7 @@ const MANIFEST = join(APP, '.svelte-kit/output/client/.vite/manifest.json');
 const FIRST_JS = 400 * 1024;
 const FIRST_CSS = 70 * 1024;
 const PRECACHE = 3 * 1024 * 1024;
-/** ききみみ's recogniser (docs/kikimimi-mic.md §3.6): its worker (`workers/stt.<hash>.js`: transformers.js and the ONNX
+/** ききみみ's recogniser (docs/kikimimi-mic.md "Hosting and the service worker"): its worker (`workers/stt.<hash>.js`: transformers.js and the ONNX
  *  runtime's JS) is one file ≤ STT_JS gzipped, never precached, never in the first load; 2026-11-07: 136 KB. */
 const STT_JS = 450 * 1024;
 /** ききみみ's mic core (§3.6: lib/mic/session.ts, its capture and VAD, the worklet): a lazy chunk and what it alone

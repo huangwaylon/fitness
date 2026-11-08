@@ -1,4 +1,4 @@
-// The quiz as a GameDef (docs/kikimimi-framework.md §3.3; docs/kikimimi.md "The game"): 8 questions from a seed and a
+// The quiz as a GameDef (docs/kikimimi-engine.md "The quiz as a GameDef"; docs/kikimimi.md "The game"): 8 questions from a seed and a
 // level (deck.ts on the phone), each a round of its item's type, graded right or wrong (100 a right one); its options
 // the level and こたえる じかん (`o: [lv, timer]`, the timer TIMERS' index). On the `quiz` wire its flags ride the
 // seed's low bits (seed.ts: たいせん, スピード はしご, こたえる じかん), so the family's seeds carry them (seedBits) and

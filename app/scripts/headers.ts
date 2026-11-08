@@ -59,7 +59,7 @@ const permissions = ['camera', 'payment', 'usb', 'serial', 'bluetooth', 'hid', '
   .map((f) => `${f}=()`)
   // the trip map's location dot (docs/travel.md "Maps"): our own origin only, asked when its button is tapped
   .concat('geolocation=(self)')
-  // ききみみ's mic (docs/kikimimi-mic.md §3.6): our own origin only, opened only from a tap
+  // ききみみ's mic (docs/kikimimi-mic.md "Hosting and the service worker"): our own origin only, opened only from a tap
   .concat('microphone=(self)')
   .join(', ');
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A mode's page (docs/kikimimi-ux.md §6.4): what it is (its subtitle, a line about it, its questions, minutes and
+  // A mode's page (docs/kikimimi.md "Mode detail"): what it is (its subtitle, a line about it, its questions, minutes and
   // whether it can be shared), its settings (ひとこと クイズ: the ばしょ row; スピード はしご: its speeds and rule; アナウンス
   // and the quiz: こたえる じかん; a lane's game: the places its content has, if its mode offers them, and こたえる じかん),
   // the volume-0 line when the sound is off, and the foot: さそう (the みんなで page, this game in it) and はじめる.

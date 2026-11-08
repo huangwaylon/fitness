@@ -1,4 +1,4 @@
-// たちぎき (docs/curriculum-wave2.md §2.2): the mode shows once a tachi file is `listened` (s2-tachi-a and -b, shipped
+// たちぎき (docs/kikimimi-engine.md "たちぎき"): the mode shows once a tachi file is `listened` (s2-tachi-a and -b, shipped
 // listened after A1 and the listening check), on あそぶ's まちで・でんわで shelf and its page at もり; a solo game: the conversation
 // first (three seats, nothing to answer), then the opinions round (a face on each claim, できた), who changed their mind
 // (a face) and the plan (a choice); a line replayed alone; the last round's reveal with the whole transcript in three

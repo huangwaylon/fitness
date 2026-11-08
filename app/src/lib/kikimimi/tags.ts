@@ -1,6 +1,6 @@
 // ききみみ クイズ: what each item trains (docs/kikimimi.md "Progress & feedback"): its features and sub-skills, the
 // dimensions きろく measures and にがて れんしゅう draws from. Level 4 carries its own `tags` (bank4.ts); levels 1-3 are
-// tagged here, keyed by item id, with the same vocabulary plus S0's segmentals (curriculum §3) and, for replies, the
+// tagged here, keyed by item id, with the same vocabulary plus S0's segmentals (curriculum.md "Stages and can-dos") and, for replies, the
 // pragmatic layer. bank.test checks every item of levels 1-3 has an entry. Pure.
 import { PRAGMATICS, type Entry, type Feature, type Tags } from './bank.ts';
 

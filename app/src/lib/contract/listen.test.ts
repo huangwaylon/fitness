@@ -15,7 +15,7 @@ describe('listenOf', () => {
       { ...row, p: true }, { ...row, r: 'x' }, { ...row, r: [['w2-read', 1, 0]] }, { ...row, r: [['w2-read', 1, -2, 0]] }, { ...row, d: '2026-11-31' }])
       expect(listenOf(bad), JSON.stringify(bad)).toBeNull();
   });
-  it('a later game’s row (docs/kikimimi-framework.md §4.4): `gm` and `u` optional, `pick` −1…4095, `lv` and `ok` as they were', () => {
+  it('a later game’s row (docs/kikimimi-engine.md "The listen row"): `gm` and `u` optional, `pick` −1…4095, `lv` and `ok` as they were', () => {
     const tile = { ...row, gm: 'tile', u: 'u03-kawa', r: [['w2-read', 0, 4095, 0], ['n2-price-1', 1, -1, 99]] };
     expect(listenOf(tile)).toEqual(tile);
     expect(listenOf({ ...row, gm: 'quiz' })).toEqual({ ...row, gm: 'quiz' });
@@ -38,7 +38,7 @@ describe('listenOf', () => {
     expect(listenOf({ ...story, gm: 'kuri', u: undefined })).toEqual({ ...story, gm: 'kuri', u: undefined });
     expect(JSON.parse(listenSummaryJson(JSON.stringify(story))!)).toEqual({ d: '2026-11-05', g: 'st12ab', n: 1, ms: 600_000 });
   });
-  it('a unit’s lesson (docs/curriculum-units.md §10): `l` 1-5 with `u`, `tm` 0-6 with `l`', () => {
+  it('a unit’s lesson (docs/curriculum.md "Playing together"): `l` 1-5 with `u`, `tm` 0-6 with `l`', () => {
     const lesson = { ...row, gm: 'unit', u: 'tr-hotel', l: 3, tm: 5 };
     expect(listenOf(lesson)).toEqual(lesson);
     for (const l of [1, 5]) expect(listenOf({ ...row, u: 'tr-hotel', l }), String(l)).toEqual({ ...row, u: 'tr-hotel', l });

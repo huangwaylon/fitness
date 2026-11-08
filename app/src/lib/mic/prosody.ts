@@ -1,4 +1,4 @@
-// まねっこ シャドーイング's comparison (docs/kikimimi-mic.md §2.1, §3.3): a voice as a track (pitch.ts's frames: the
+// まねっこ シャドーイング's comparison (docs/kikimimi-mic.md "まねっこ シャドーイング", "Pitch and timing"): a voice as a track (pitch.ts's frames: the
 // melody in semitones from the speaker's own median, so a man and a woman compare fairly; the level; the speech's span;
 // the syllable nuclei, de Jong & Wempe's loudness peaks), then the learner's track against the villager's: the timing
 // aligned by DTW over the melody and the level (a ±25% band), and the rate, the range, the last 300 ms' direction, the

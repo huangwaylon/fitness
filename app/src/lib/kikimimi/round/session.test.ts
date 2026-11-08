@@ -1,5 +1,5 @@
 // The round session over the quiz's GameDefs (round/session.ts, games/quiz/), on the `quiz` wire (round/wire.ts both
-// ways): QuizSession's scenarios (docs/kikimimi.md "Sync"), ported in framework step 8b with parity checked call by
+// ways): QuizSession's scenarios (docs/kikimimi-engine.md "Sync"), ported in framework step 8b with parity checked call by
 // call against QuizSession before it went; and what's new with it: a unit's lesson as a game of its own, an 8c phone's
 // `play` heard.
 import { describe, expect, it } from 'vitest';

@@ -1,5 +1,5 @@
 <script lang="ts">
-  // すうじ ラッシュ's results (docs/curriculum-wave2.md §2.4), its own chunk, in the frame's (frame/Results.svelte: しずえ's
+  // すうじ ラッシュ's results (docs/kikimimi-engine.md "すうじ ラッシュ"), its own chunk, in the frame's (frame/Results.svelte: しずえ's
   // line, co-op's 「ふたりで k / n」 the customers served, how many of mine I got right, my いっぱつ, おわる / もういっかい),
   // the best combo, then the review list (frame/ReviewList.svelte), the misses first: each customer's question and the
   // right chip; tapped open, ▶︎, what they said and its Japanese, the pick when it was wrong (co-op the register's), the

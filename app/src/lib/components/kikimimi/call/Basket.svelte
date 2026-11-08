@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ようじ でんわ's payoff (docs/curriculum-wave2.md §2.3, "the basket"): the errand's basket filling with what was caught,
+  // ようじ でんわ's payoff (docs/kikimimi-engine.md "ようじ でんわ"): the errand's basket filling with what was caught,
   // a tag a memo row: caught (popping in, its right answer in Japanese), missed (set back, dashed), or still to come
   // (round 2's before its reveal: a blank tag); only the round just revealed drops in. No reward of any kind: the round
   // is its own payoff.

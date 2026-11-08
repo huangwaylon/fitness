@@ -121,10 +121,10 @@ export type Intent =
    *  phrase: never kept or replayed; a phone that comes while it's out hears the step again (its angler's phone sends
    *  it when it sees them come), and an angler whose phone goes is no longer fishing. */
   | { kind: 'fish'; ph: FishPhase; id?: string; pt?: Pt; from?: Pt; s?: number }
-  /** ききみみ クイズ (docs/kikimimi.md "Sync"), presence only: never kept, acked or replayed, to everyone here. `g` the
+  /** ききみみ クイズ (docs/kikimimi-engine.md "Sync"), presence only: never kept, acked or replayed, to everyone here. `g` the
    *  game; QuizWire's ops. */
   | ({ kind: 'quiz' } & QuizWire)
-  /** ききみみ's games, every one (docs/kikimimi-framework.md §4, 2026-11-06): the quiz's successor, the same presence
+  /** ききみみ's games, every one (docs/kikimimi-engine.md "Sync", 2026-11-06): the quiz's successor, the same presence
    *  only (never kept, acked or replayed, to everyone here); `gm` names the game, which the relay never checks against
    *  a list. PlayWire's ops. */
   | ({ kind: 'play' } & PlayWire)
@@ -161,7 +161,7 @@ export const musicBeats = (m: { song?: string | null; at: number; ms?: number; w
 export const musicAt = (at: number, t: number): number => (Math.abs(at - t) > MUSIC_SKEW_MS ? t : at);
 const SONG = /^[a-z0-9-]{1,32}$/;
 
-/** A quiz op (docs/kikimimi.md "Sync"): `open` a lobby (the host: `seed` and `lv` make the deck on every phone, the
+/** A quiz op (docs/kikimimi-engine.md "Sync"): `open` a lobby (the host: `seed` and `lv` make the deck on every phone, the
  *  seed's low bits the lobby's flags: kikimimi/seed.ts, bit 0 たいせん, 1 スピード はしご, 2-3 こたえる じかん; `same` おなじへや: only the host's phone speaks), `join` / `leave`
  *  it or the game, `go` the game starts at `at` (the relay's clock), `a` my answer to question `i` (choice `k`, `rp`
  *  replayed or slowed, `s` my running total), `skip` the host's position: question `i` starts at `at` (0-8; 8: the
@@ -174,7 +174,7 @@ export type QuizWire =
   | { g: string; op: 'go'; at: number }
   | { g: string; op: 'a'; i: number; k: number; rp: boolean; s: number }
   | { g: string; op: 'skip'; i: number; at: number };
-/** A quiz's level: 1-3 the first bank, 4 もり (docs/curriculum.md §14), 5 the アナウンス pack, 6 やま, 7 ほし, 8 room for
+/** A quiz's level: 1-3 the first bank, 4 もり (docs/curriculum.md "Modes"), 5 the アナウンス pack, 6 やま, 7 ほし, 8 room for
  *  the next without a relay deploy (a phone offers only the levels it has every clip of: kikimimi/deck.ts LEVELS).
  *  @public (kikimimi/) */
 export const QUIZ_LVS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
@@ -186,7 +186,7 @@ export const QUIZ_QS = 8;
 /** @public (kikimimi/) */
 export const QUIZ_MAX_S = 1040;
 
-/** A game op (docs/kikimimi-framework.md §4.1): `g` the game's id, `gm` which game (`quiz`, `ladder`, `tile`...).
+/** A game op (docs/kikimimi-engine.md "The play wire"): `g` the game's id, `gm` which game (`quiz`, `ladder`, `tile`...).
  *  `open` a lobby: `cv` the content version (a phone with another can't join), `seed`, `f` flags (bit 0 おなじへや,
  *  bit 1 たいせん, bit 2 reserved), `o` the game's options (≤ 4 ints 0-255), `u` a unit, `ids` a shared review deck's
  *  item ids (≤ 8). `join` (`tr` the player's tier), `leave`, `end`; `go` at `at` with the players `pl` (A 1, B 2, G 4);
@@ -588,7 +588,7 @@ function quizOf(o: Obj): Intent | null {
   }
 }
 
-/** A game's kind (`gm`: docs/kikimimi-framework.md §4.4) and a unit's id (`u`), on the wire and in a `listen` row.
+/** A game's kind (`gm`: docs/kikimimi-engine.md "The listen row") and a unit's id (`u`), on the wire and in a `listen` row.
  *  @public (contract/listen.ts) */
 export const GM_RE = /^[a-z][a-z0-9]{1,7}$/;
 const PLAY_CV = /^[0-9a-f]{6}$/;
@@ -596,7 +596,7 @@ export const UNIT_RE = /^[a-z0-9-]{1,12}$/;
 const PLAY_OPS: readonly unknown[] = ['open', 'join', 'leave', 'go', 'a', 'skip', 'end', 'ev'];
 const ints = (x: unknown, lo: number, hi: number, min: number, max: number): x is number[] =>
   Array.isArray(x) && x.length >= min && x.length <= max && x.every((n) => within(n, [lo, hi]));
-/** A game op's fields (known ones only, by its op), or null (docs/kikimimi-framework.md §4.1). `gm` is a shape only:
+/** A game op's fields (known ones only, by its op), or null (docs/kikimimi-engine.md "The play wire"). `gm` is a shape only:
  *  the relay doesn't know the games. */
 function playOf(o: Obj): Intent | null {
   if (typeof o.g !== 'string' || !QUIZ_G.test(o.g) || typeof o.gm !== 'string' || !GM_RE.test(o.gm) || !PLAY_OPS.includes(o.op)) return null;
