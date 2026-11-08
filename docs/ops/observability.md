@@ -47,6 +47,7 @@ A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepal
 | `auth.lost` | warn | `from` (refresh, flush, ws), `code` | the key was refused (→ pairing) |
 | `sync.fail` | info offline / warn | `err`, `cached` | a refresh failed |
 | `queue.retry` / `queue.drop` | warn / error | `type`, `err`, `tries` | the write queue backs off (1st and every 5th) / drops an event |
+| `queue.poison` / `queue.split` | error / warn | `type`, `err`, `tries` / `n`, `err` | the write queue sets an event aside (kept: [backend](../backend.md#write-queue)) / halves a batch refused whole |
 | `ws.open` / `ws.close` / `ws.park` | info / info / warn | `ms`, `retries`; `code`, `secs`, `welcomed`, `why`, `quiet`, `rtt`; `code` | the live socket. `ws.close` for every socket's end (2026-11-07; before, only the relay's or the network's and 4000 / 4010): `why` `hidden`, `offline`, `stale` (4000: no answer to a probe), `late` / `stuck` (4010: no welcome in time), `rekey`, `stop` (the phone's own, 1000) or `closed` (the relay or the network); `quiet` s since it last heard anything; `rtt` its shortest ping round trip (ms) |
 | `ws.unacked` | warn | `kind`, `tries` | a kept intent dropped: its ack never came on a socket that answered, 4 tries (sync/live.ts) |
 | `gl.lost` | warn | `where`, `restored` | WebGL context lost / back |

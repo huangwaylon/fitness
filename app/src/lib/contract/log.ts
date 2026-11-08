@@ -55,6 +55,9 @@ export const LOG_EVENTS = {
   "sync.fail": { src: 'c', f: { err: LOG_STATUS, cached: 'b' } },
   "queue.retry": { src: 'c', f: { type: EV_TYPES, err: LOG_STATUS, tries: 'n', n: 'n' } },
   "queue.drop": { src: 'c', f: { type: EV_TYPES, err: LOG_STATUS, tries: 'n' } },
+  // (2026-11-08) an event set aside (the record failed it 30 times, or too large alone) / a batch refused whole, halved
+  "queue.poison": { src: 'c', f: { type: EV_TYPES, err: LOG_STATUS, tries: 'n' } },
+  "queue.split": { src: 'c', f: { n: 'n', err: LOG_STATUS } },
   "ws.open": { src: 'c', f: { ms: 'n', retries: 'n' } },
   // why: sync/live.ts CloseWhy; quiet: s since the socket last heard anything; rtt: its shortest ping round trip (ms)
   "ws.close": { src: 'c', f: { code: 'n', secs: 'n', welcomed: 'b', why: ['hidden', 'offline', 'stale', 'late', 'stuck', 'rekey', 'stop', 'closed'], quiet: 'n', rtt: 'n' } },

@@ -243,7 +243,15 @@ Every `food_repeat` op stays: its fold (`repeatAccept`) takes every op's skipped
 ### Write queue
 
 `sync/queue.ts`: events in `island.queue`, sent in order until acked. To the record, everything that may go now goes in
-one `events` request (≤ 50, in queue order, the holds and subjects below kept), each answered by id.
+one `events` request (≤ 50 and ≤ 900,000 chars: the record's body cap is 1,000,000; in queue order, the holds and
+subjects below kept), each answered by id. A request refused whole (`too_large`, `bad_request`) is halved and sent again
+at once; one event alone so refused is set aside.
+
+- **Day rows** (`tally`, `island`): a newer row of the same day replaces the queued ones (not in flight) in the first
+  one's place: a day's tally only grows and an island day is sent whole, so it carries all they did.
+- **Set aside** (`parked`, 2026-11-08): an event the record fails (`unavailable`: its write threw) 30 times, ~2 h, is
+  kept and shown but no longer sent, and no longer blocks the queue (later events on its subject wait with it). Logged
+  `queue.poison`; a sync tap (`unpark`) tries it again. Never dropped.
 
 - **Holds:** a held event (`holdMs`, the undo window) is skipped, not waited for; `unqueue` takes it back, `holdEvent`
   moves its time.

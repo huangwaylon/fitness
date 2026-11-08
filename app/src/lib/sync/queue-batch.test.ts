@@ -3,7 +3,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { configureStorage, type KV } from './storage.ts';
 import { configureTransport } from './transport.ts';
-import { enqueue, flush, queued, ackedEvents } from './queue.ts';
+import { enqueue, flush, queued, ackedEvents, nextRetryAt, PARK_AFTER, unpark } from './queue.ts';
 import { setKey } from './pairing.ts';
 
 class Mem implements KV {
@@ -95,5 +95,81 @@ describe('a batch to the record', () => {
     await flush(() => T + 60_000);
     expect(bodies[1].body.events.map((e: { id: string }) => e.id)).toEqual([parent.id, sub.id]);
     expect(queued()).toEqual([]);
+  });
+});
+
+describe('a queue that never wedges (health A3: sync #1, #18, #19)', () => {
+  const wnote = (i: number) => ({ id: `w${i}`, at: T, t: 'あ'.repeat(130_000) });
+
+  it('keeps each request under the record’s body cap: 8 large notes and a pref all go', async () => {
+    // the record refuses a body over 1,000,000 chars whole (storeRoute.ts): one batch of all 9 was refused forever
+    answer = (b) => JSON.stringify(b).length > 1_000_000
+      ? { ok: false, error: 'too_large' }
+      : { ok: true, results: b.events.map((e: { id: string }) => ({ id: e.id, ok: true })) };
+    for (let i = 0; i < 8; i++) enqueue('wnote', wnote(i), T);
+    enqueue('pref', { key: 'moveGoal', value: 450 }, T);
+    const r = await flush(() => T);
+    expect(r).toMatchObject({ sent: 9, remaining: 0 });
+    expect(bodies.every((b) => JSON.stringify(b.body).length <= 1_000_000)).toBe(true);
+  });
+
+  it('a batch refused whole is halved and sent again at once (order kept); one alone is set aside, kept', async () => {
+    const evs = ['a', 'b', 'c', 'd'].map((x) => enqueue('find', { kind: 'fish', id: x }, T));
+    answer = (b) => (b.events.some((e: { id: string }) => e.id === evs[2].id) ? { ok: false, error: 'too_large' } : { ok: true, results: b.events.map((e: { id: string }) => ({ id: e.id, ok: true })) });
+    const r = await flush(() => T);
+    expect(bodies.map((b) => b.body.events.length)).toEqual([4, 2, 2, 1, 1]);
+    expect(r.acked.map((e) => e.id)).toEqual([evs[0].id, evs[1].id, evs[3].id]);
+    expect(queued()).toEqual([expect.objectContaining({ id: evs[2].id, parked: true })]);
+  });
+
+  it('an event the record keeps failing is set aside after PARK_AFTER answers, never dropped, and the rest go', async () => {
+    const bad = enqueue('find', { kind: 'fish', id: 'bad' }, T);
+    const next = enqueue('find', { kind: 'fish', id: 'ok' }, T);
+    answer = (b) => ({ ok: true, results: b.events.map((e: { id: string }) => (e.id === bad.id ? { id: e.id, ok: false, error: 'unavailable' } : { id: e.id, ok: true })) });
+    let t = T;
+    for (let i = 0; i < PARK_AFTER; i++) await flush(() => (t += 400_000));
+    expect(queued().map((e) => [e.id, !!e.parked])).toEqual([[bad.id, true]]);
+    expect(ackedEvents().map((e) => e.id)).toEqual([next.id]);
+    expect(nextRetryAt(t)).toBeNull(); // no timer for it
+    unpark(t);
+    answer = (b) => ({ ok: true, results: b.events.map((e: { id: string }) => ({ id: e.id, ok: true })) });
+    await flush(() => t);
+    expect(queued()).toEqual([]);
+  });
+
+  it('a later sell waits behind a set-aside tally (its subject)', async () => {
+    const tally = enqueue('tally', { date: '2026-11-18', counts: { 'fish:koi': 1 } }, T);
+    const sell = enqueue('sell', { species: 'fish:koi', n: 1, v: 10 }, T);
+    answer = () => ({ ok: false, error: 'too_large' });
+    await flush(() => T);
+    expect(queued().map((e) => [e.id, !!e.parked])).toEqual([[tally.id, true], [sell.id, false]]);
+    expect(bodies.map((b) => b.body.events.length)).toEqual([2, 1]); // then the tally alone: the sell never passes it
+  });
+
+  it('a newer day row replaces the same day’s queued ones in the first one’s place (a tried one too); one in flight stays', async () => {
+    const t1 = enqueue('tally', { date: '2026-11-18', counts: { a: 1 } }, T, 60_000);
+    const sell = enqueue('sell', { species: 'a', n: 1, v: 10 }, T);
+    const other = enqueue('tally', { date: '2026-11-17', counts: { a: 1 } }, T, 60_000);
+    const t2 = enqueue('tally', { date: '2026-11-18', counts: { a: 2 } }, T, 60_000);
+    const i1 = enqueue('island', { date: '2026-11-18', taken: [] }, T);
+    const i2 = enqueue('island', { date: '2026-11-18', taken: ['catch:a'] }, T);
+    expect(queued().map((e) => e.id)).toEqual([t2.id, sell.id, other.id, i2.id]);
+    expect([t1.id, i1.id]).not.toContain(queued()[0].id);
+    answer = () => ({ ok: false, error: 'offline' });
+    await flush(() => T + 60_000); // t2 tried (offline): still replaced by a newer row, in its place
+    expect(queued()[0].tries).toBe(1);
+    const t3 = enqueue('tally', { date: '2026-11-18', counts: { a: 3 } }, T + 60_000);
+    expect(queued().map((e) => e.id)).toEqual([t3.id, sell.id, other.id, i2.id]);
+    // in flight: kept (its answer is on its way)
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    answer = (b) => ({ ok: true, results: b.events.map((e: { id: string }) => ({ id: e.id, ok: true })) });
+    configureTransport({ url: RECORD, fetch: (async (_u: unknown, init?: RequestInit) => { const b = JSON.parse(String(init?.body)); await gate; return new Response(JSON.stringify(answer(b))); }) as typeof fetch });
+    const p = flush(() => T + 200_000);
+    await Promise.resolve();
+    const t4 = enqueue('tally', { date: '2026-11-18', counts: { a: 4 } }, T + 200_000);
+    expect(queued().map((e) => e.id)).toEqual([t3.id, sell.id, other.id, i2.id, t4.id]);
+    release();
+    await p;
   });
 });
