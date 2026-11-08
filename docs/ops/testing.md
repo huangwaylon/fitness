@@ -129,6 +129,16 @@ that morning.
 - **The weather is pinned.** With the clock pinned the island never takes a relay's or a cached timeline: its sky is
   the pinned day's seeded one, or a fixture: `?wx=rain-pm|typhoon|snow|cloudy|clears` (a timeline on the scene clock),
   `?weather=` (forced). The demo has no relay timeline at all; never assert on whatever sky the day happens to have.
+- **Ambient life is off.** Nothing spawns or wanders on its own: no critter visits (fish, bubbles, fresh-water
+  shadows, bugs), no day's visitor (an event's host still comes: Jack, Franklin, Reese, Celeste), no balloon, no idle
+  beats of the villagers, しずえ or a visitor (looks, hops, tree shakes, strolls, outings), no ordinary night's
+  shooting stars. The villagers are all there, where they stand, and doze at night; the opening beats, the events and
+  everything a tap starts are as ever. It's `localStorage['e2e.ambient'] = 'off'` (every context, a second phone's
+  too), read with the hooks on (`?demo` or a dev build: island/devHooks.ts) as `critter=none`, `visitor=events`,
+  `balloon=none`, `idle=none` and `stars=none`. A URL's own param wins (`?critter=fish`, `?visitor=jack`, `?balloon`): say what
+  the test is about. A test of the ambient life itself opts back in: `test.use({ ambient: 'on' })` (visitors.spec,
+  visitor-life.spec; a single test in an anonymous `test.describe`: critters.spec's balloon, pond.spec's fresh-water
+  visits, guest.spec's idle guest).
 - **The tests' own relay agrees with its phones.** liveRoom.ts and record.ts run on the pinned time and shift their
   phones' device clock (`Date`) there too (a phone and its relay agree on the time: tickets, the day's replay); read
   the time as they do: `island.now()`, `rec.now()`, never `Date.now()`.
@@ -136,8 +146,8 @@ that morning.
   preview that went out (Chromium refused it; WebKit: a server answered) fails the test at its end, naming it. Mock a
   relay with `page.route` / `context.route` and fulfil it (board.spec, record.ts, liveRoom.ts). The real relay's
   harness (`RELAY_E2E=1`, sync-harness.spec) is the one opt-out (`test.use({ network: 'any' })`).
-- **No randomness**: no `Math.random` in a spec (a counter for ids); pin the island's with `?seed=`, `?critter=`,
-  `?visitor=`, `&rock=`, `&shake=` (docs/design.md "Dev params").
+- **No randomness**: no `Math.random` in a spec (a counter for ids); pin the island's with `?seed=`, `&rock=`,
+  `&shake=`, and a critter or a visitor with `?critter=` / `?visitor=` (docs/design.md "Dev params").
 - **Storage**: each test has its own context (Playwright's), service workers blocked; two phones in one context share
   `localStorage` and a BroadcastChannel (the demo's relay). In Chromium every tab is visible and focused (Playwright
   emulates it: rAF runs at 60 in both), so a tab that missed a tap didn't miss it for being behind; still
@@ -190,8 +200,8 @@ Most red runs so far were the spec, not the app. Before pushing a new or changed
 
 1. **Never tap where something can wander.** The villagers walk about, critters come and go (a flea off a villager,
    a bug from under the rock), visitors stroll, balloons drift. Tap a point only once it is *that* thing's: poll
-   `document.elementFromPoint(x, y)` until it's inside the target, or pin the scene: `?critter=none`, `?visitor=none`,
-   `&rock=clonk`, `&shake=…`, `?weather=…`, `?seed=` (docs/design.md "Dev params"). Prefer a locator's own click
+   `document.elementFromPoint(x, y)` until it's inside the target, or pin the scene: ambient life is off already
+   ("Hermetic"), then `&rock=clonk`, `&shake=…`, `?weather=…`, `?seed=` (docs/design.md "Dev params"). Prefer a locator's own click
    (Playwright checks what receives it) to `page.mouse.click(x, y)` when the island isn't the target.
 2. **Wait on the app's state, not on time.** `expect(…).toBeVisible()`, `expect.poll(() => window.__world.cam())`,
    `__world.idle()`, `__tent.stats().frames`, `data-*` attributes (`__world3d.camStill()` once the camera's last move is

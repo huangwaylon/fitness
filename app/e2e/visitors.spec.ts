@@ -7,6 +7,9 @@ import { expect, test, type Page } from './fixtures.ts';
 import { camTo, controlsUnder, geo, islandUp, offFrom, quiet, tapFigure } from './island.ts';
 import { hudBells } from './hud.ts';
 
+// the day's visitor and their life are ambient life (e2e/fixtures.ts): on here; a test pins its own with ?visitor=
+test.use({ ambient: 'on' });
+
 /** Press a balloon's choice where it is on screen (a locator click would first scroll it "into view": the stage is
  *  sticky in the camera's scroller, so that moves the camera). */
 async function choose(page: Page, choice: ReturnType<Page['locator']>) {

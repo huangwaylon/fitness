@@ -164,32 +164,35 @@ test('a piece the guest puts in the tent is in both members’ tents', async ({ 
   await ctx.close();
 });
 
-test('the members see the guest’s villager while its app is open, never after; it stays put unless moved', async ({ browser }) => {
-  test.setTimeout(60_000);
-  const ctx = await browser.newContext({ viewport: VIEW });
-  const a = await open(ctx, 'A');
-  const b = await open(ctx, 'B');
-  expect(await who(a, 'G')).toBeNull();
-  expect(await who(b, 'G')).toBeNull();
-  const g = await open(ctx, 'G');
-  // it comes ashore and walks up to its spot by the campsite: on both members' islands
-  for (const p of [a, b]) await expect.poll(() => who(p, 'G'), { timeout: 6000 }).not.toBeNull();
-  await expect.poll(() => walking(g, 'G'), { timeout: 20_000 }).toBe(false);
-  for (const p of [a, b]) await expect.poll(() => walking(p, 'G'), { timeout: 6000 }).toBe(false);
-  const there = await who(g, 'G');
-  for (const p of [a, b]) await expect.poll(async () => {
-    const at = await who(p, 'G');
-    return at && there ? Math.hypot(at[0] - there[0], at[1] - there[1]) : 999;
-  }, { timeout: 4000 }).toBeLessThan(2);
-  // idle: nobody's life moves it, on its own phone or theirs (a fixed wait: proving that nothing happens, two of ambient
-  // life's 10 s slots)
-  await g.waitForTimeout(11_000);
-  for (const p of [g, a, b]) {
-    const at = await who(p, 'G');
-    expect(at && there ? Math.hypot(at[0] - there[0], at[1] - there[1]) : 999).toBeLessThan(2);
-  }
-  // the guest closes its app: gone from both islands
-  await g.close();
-  for (const p of [a, b]) await expect.poll(() => who(p, 'G'), { timeout: 15_000 }).toBeNull();
-  await ctx.close();
+test.describe(() => {
+  test.use({ ambient: 'on' }); // (idle life about it, which must leave it put: ambient life, e2e/fixtures.ts)
+  test('the members see the guest’s villager while its app is open, never after; it stays put unless moved', async ({ browser }) => {
+    test.setTimeout(60_000);
+    const ctx = await browser.newContext({ viewport: VIEW });
+    const a = await open(ctx, 'A');
+    const b = await open(ctx, 'B');
+    expect(await who(a, 'G')).toBeNull();
+    expect(await who(b, 'G')).toBeNull();
+    const g = await open(ctx, 'G');
+    // it comes ashore and walks up to its spot by the campsite: on both members' islands
+    for (const p of [a, b]) await expect.poll(() => who(p, 'G'), { timeout: 6000 }).not.toBeNull();
+    await expect.poll(() => walking(g, 'G'), { timeout: 20_000 }).toBe(false);
+    for (const p of [a, b]) await expect.poll(() => walking(p, 'G'), { timeout: 6000 }).toBe(false);
+    const there = await who(g, 'G');
+    for (const p of [a, b]) await expect.poll(async () => {
+      const at = await who(p, 'G');
+      return at && there ? Math.hypot(at[0] - there[0], at[1] - there[1]) : 999;
+    }, { timeout: 4000 }).toBeLessThan(2);
+    // idle: nobody's life moves it, on its own phone or theirs (a fixed wait: proving that nothing happens, two of ambient
+    // life's 10 s slots)
+    await g.waitForTimeout(11_000);
+    for (const p of [g, a, b]) {
+      const at = await who(p, 'G');
+      expect(at && there ? Math.hypot(at[0] - there[0], at[1] - there[1]) : 999).toBeLessThan(2);
+    }
+    // the guest closes its app: gone from both islands
+    await g.close();
+    for (const p of [a, b]) await expect.poll(() => who(p, 'G'), { timeout: 15_000 }).toBeNull();
+    await ctx.close();
+  });
 });

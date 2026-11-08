@@ -14,7 +14,12 @@
 //   relay's harness only, RELAY_E2E=1);
 // - storage: each test's own context (Playwright's), service workers blocked; two phones in one context share it.
 //   ききみみ's first-run welcome counts as seen for every player (DEVICE.kikiOnboarded, unless the test set it):
-//   `test.use({ kikiFirstRun: true })` keeps it for the onboarding spec.
+//   `test.use({ kikiFirstRun: true })` keeps it for the onboarding spec;
+// - ambient life: off (`localStorage['e2e.ambient'] = 'off'`, read with the hooks on, `?demo`: island/devHooks.ts),
+//   as if the URL said `?critter=none&visitor=none&balloon=none&idle=none&stars=none`: no critter visits, no visitor,
+//   no balloon, no idle beats of the villagers or しずえ (they stand where they are), no ordinary night's shooting
+//   stars. Nothing wanders into a tap. A URL's own param wins (`?critter=fish`, `?visitor=jack`);
+//   `test.use({ ambient: 'on' })` brings it all back for a test or file.
 import { test as base, type BrowserContext, type Page } from '@playwright/test';
 
 export * from '@playwright/test';
@@ -64,25 +69,30 @@ type Options = {
   network: 'local' | 'any';
   /** ききみみ's first-run welcome shows (else it counts as seen: every other spec opens on the hub). */
   kikiFirstRun: boolean;
+  /** The island's ambient life ('off': none, island/devHooks.ts AMBIENT; 'on': as on a phone). */
+  ambient: 'off' | 'on';
 };
 
 export const test = base.extend<Options & { hermetic: void }>({
   ownClock: [false, { option: true }],
   network: ['local', { option: true }],
   kikiFirstRun: [false, { option: true }],
+  ambient: ['off', { option: true }],
   hermetic: [
-    async ({ context, browser, ownClock, network, kikiFirstRun }, use) => {
+    async ({ context, browser, ownClock, network, kikiFirstRun, ambient }, use) => {
       const seen: string[] = [];
       const watch = async (c: BrowserContext) => {
         // (before any page script, every load: a fresh context's storage, or one the test changed)
-        await c.addInitScript((d) => {
+        await c.addInitScript(([d, a]) => {
           try {
             if (d) localStorage.setItem('e2e.date', d);
             else localStorage.removeItem('e2e.date');
+            if (a === 'off') localStorage.setItem('e2e.ambient', a);
+            else localStorage.removeItem('e2e.ambient');
           } catch {
             /* about:blank: no storage */
           }
-        }, ownClock ? null : PINNED_DATE);
+        }, [ownClock ? null : PINNED_DATE, ambient] as const);
         if (!kikiFirstRun)
           await c.addInitScript(() => {
             try {

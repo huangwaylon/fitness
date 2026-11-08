@@ -119,18 +119,21 @@ test("NH's own waters: the salmon at the river mouth, the char on the clifftop, 
   }
 });
 
-test('fresh-water fish come by on their own, in the fresh water their seed picks (the chunk loads with the first)', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await open(page, '');
-  // no fresh-water shadow yet: its table isn't loaded with the island
-  const chunks = await page.evaluate(() => performance.getEntriesByType('resource').map((e) => e.name).filter((n) => /pondFish/.test(n)));
-  expect(chunks).toEqual([]);
-  // within a couple of visits a shadow swims in a fresh water: the one its seed picks, the same on both phones, in
-  // view or not (the camera shows it when it sees that water: docs/backend.md#shared-world)
-  // (the first: by then more than one fresh water may have its shadow, one a water at most)
-  await expect(page.locator('[data-critter="pond"]').first()).toBeAttached({ timeout: 40_000 });
-  const water = await page.locator('[data-critter="pond"]').first().getAttribute('data-water');
-  expect(['pond', 'river', 'mouth', 'clifftop']).toContain(water);
+test.describe(() => {
+  test.use({ ambient: 'on' }); // (the critters' own visits: ambient life, e2e/fixtures.ts)
+  test('fresh-water fish come by on their own, in the fresh water their seed picks (the chunk loads with the first)', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await open(page, '');
+    // no fresh-water shadow yet: its table isn't loaded with the island
+    const chunks = await page.evaluate(() => performance.getEntriesByType('resource').map((e) => e.name).filter((n) => /pondFish/.test(n)));
+    expect(chunks).toEqual([]);
+    // within a couple of visits a shadow swims in a fresh water: the one its seed picks, the same on both phones, in
+    // view or not (the camera shows it when it sees that water: docs/backend.md#shared-world)
+    // (the first: by then more than one fresh water may have its shadow, one a water at most)
+    await expect(page.locator('[data-critter="pond"]').first()).toBeAttached({ timeout: 40_000 });
+    const water = await page.locator('[data-critter="pond"]').first().getAttribute('data-water');
+    expect(['pond', 'river', 'mouth', 'clifftop']).toContain(water);
+  });
 });
 
 test('the ずかん lists every fish, the fresh waters’ and the sea’s, in NH’s order', async ({ page }) => {
