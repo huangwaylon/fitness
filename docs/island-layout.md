@@ -233,8 +233,8 @@ for their spots with no visual change (the default's offsets); the 3D island rea
   whole island on a desktop, a few hundred on a phone). Built once per tiles and bridges (a new layout object with the
   same ones shares them); on `/` a worker builds them as the app starts (`fieldsPrime.ts`, `fields.worker.ts`: the
   same `computeFields`, bit for bit, `fields.test.ts`), from the layout kept in localStorage, so the 3D island finds
-  them built as it mounts; it never waits for the worker (if the worker is late or the island's layout another, the
-  main thread builds them, as before).
+  them built as it mounts; the mount waits for that job (or starts it, if it runs first), and the main thread builds
+  them only if the worker can't (none, an error, stalled) or the island's layout is another.
 - **Soft edges** (the user, 2026-11-02: "smooth the coast and grass edges", NH's coast is round): the terrain data
   and the objects stay on tiles, only the drawn edge is round. The coast (land/sea), the beach's sand (grass/sand),
   the fresh water and the paths are rounded on **half a tile**; a convex corner whose two diagonal neighbours carry the

@@ -46,7 +46,9 @@
   import { site } from '../island/site.svelte.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { buildGround, type Ground as LayoutGround, type Look } from './terrain.ts';
-  import { fieldsFrom, fieldsSoon } from '#lib/layout/fieldsPrime.ts';
+  import { fieldsFrom, primeFields } from '#lib/layout/fieldsPrime.ts';
+  import { hasFields } from '#lib/layout/fields.ts';
+  import { version } from '$app/env';
   import { bootReport, watchBoot, type BootClock } from './boot.ts';
   import { ktx2Stats } from './ktx2.ts';
   import { placeObjects, type Inst, type Standin } from './objects.ts';
@@ -872,10 +874,6 @@
     }
   }
 
-  /** How long the mount waits for the ground's fields from their worker (layout/fieldsPrime.ts) before building them
-   *  itself: the worker's ~200 ms (4× CPU) saved off the main thread before the first frame, never a launch held up.
-   *  (Not in the e2e's logic mode: nothing's drawn there, and its tests read the island's projection as the HUD shows.) */
-  const FIELDS_WAIT_MS = 300;
   /** The launch's clock (boot.ts: the page's first mount only), and how long the mount waited for the fields. */
   let boot: BootClock | null = null, fieldsMs = 0;
   onMount(() => {
@@ -885,9 +883,11 @@
       fieldsMs = performance.now() - t0;
       if (!gone) stop = mount();
     };
-    const soon = drawOff() ? null : fieldsSoon(layoutNow(), FIELDS_WAIT_MS);
-    if (soon) void soon.then(go);
-    else go();
+    // the ground's fields first (layout/fieldsPrime.ts: the cache's, or the worker's; the launch's prime if it has
+    // started, else this one starts it), and the e2e's logic mode alike; built (a mount after the first): at once
+    const l = layoutNow();
+    if (hasFields(l)) go();
+    else void primeFields(l, version).then(go);
     return () => {
       gone = true;
       stop?.();
