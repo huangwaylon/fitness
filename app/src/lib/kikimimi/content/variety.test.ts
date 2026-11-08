@@ -25,7 +25,7 @@ describe('kikimimi variety set', () => {
   it('the thin situations, each in both sets', () => {
     for (const fam of [MORI_FAMILY, YAMA_FAMILY])
       expect(new Set(Object.values(fam))).toEqual(new Set(['event', 'town', 'social', 'home', 'tech', 'dating', 'family', 'tokyo']));
-    // none of the overused settings (docs/reviews/2026-11-06-us-english-proofread.md)
+    // none of the overused settings (the variety clusters: docs/curriculum.md "Backlog")
     expect(spoken).not.toMatch(/refund|Osaka|oat milk|key code|Kyoto|hotel|landlord|clinic|pharmacy|doctor/i);
   });
 
