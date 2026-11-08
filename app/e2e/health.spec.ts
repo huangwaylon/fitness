@@ -268,6 +268,27 @@ test('a tap on a bar shows that day’s one value (and again closes it)', async 
   await expect(tip).toHaveCount(0); // another person closes the callout
 });
 
+// Today's bar (still running: outlined dashed) is drawn by the goal as every day is: pale while under it, solid once
+// it's met (it was pale all day, 未達成 at 9.7k against 8,000).
+test('today’s bar turns solid (達成) once its goal is met, pale under it', async ({ page }) => {
+  await openHealth(page);
+  await pickPeriod(page, 'week');
+  const steps = sheet(page).locator('.mc[data-metric=steps]');
+  const now = steps.locator('path.bar.now');
+  const fill = () => now.evaluate((e) => Number(getComputedStyle(e).fillOpacity).toFixed(2));
+  const goal = async (v: string) => {
+    await steps.locator('button[data-goal]').click();
+    await steps.locator('form.tray').getByRole('textbox').fill(v);
+    await steps.locator('form.tray').getByRole('button', { name: '決定' }).click();
+    await expect(steps.locator('form.tray')).toHaveCount(0);
+  };
+  await goal('1000');
+  await expect.poll(fill).toBe('1.00');
+  await goal('30000');
+  await expect.poll(fill).toBe('0.34');
+  await expect(steps.locator('[data-goal-line]')).toHaveCount(0); // the goal's words: the chip and the legend, not the plot
+});
+
 test('the dumbbell opens it at 1週, every time; whose data is kept for the session; its code loads with the popup, not the island', async ({ page }) => {
   const js: string[] = [];
   page.on('response', (r) => r.url().endsWith('.js') && js.push(r.url()));
@@ -362,7 +383,7 @@ for (const [w, h] of [[390, 844], [320, 568]]) {
   });
 }
 
-test('every chart has its goal: a chip at the card’s upper right with its direction, set in place, labelled on the chart the same way', async ({ page }) => {
+test('every chart has its goal: a chip at the card’s upper right with its direction, set in place, the chart’s label worded the same way', async ({ page }) => {
   await openHealth(page);
   const chips = sheet(page).locator('.health section.card > header button[data-goal]');
   await expect(chips).toHaveText(['目標 8,000歩 以上', '目標 600 kcal 以上', '目標 60分 以上', '目標 120分 以上']);
@@ -379,7 +400,7 @@ test('every chart has its goal: a chip at the card’s upper right with its dire
   await ex.locator('form.tray').getByRole('button', { name: '決定' }).click();
   await expect(ex.locator('button[data-goal]')).toHaveText('目標 30分 以上');
   await expect(sheet(page).getByRole('status')).toContainText('エクササイズの目標を変更しました');
-  await expect(ex.locator('[data-goal-line]')).toHaveText(/^目標 30分\s以上$/); // the chart's line, worded as the chip
+  await expect(ex.locator('[data-goal-line]')).toHaveCount(0); // its words: the chip's, never over the bars
   await expect(ex.locator('svg[role=img]')).toHaveAttribute('aria-label', /目標 30分\s以上/);
   // からだ: each its own, its direction (weight and BMI near a value, body fat at most, lean mass at least)
   await sheet(page).locator('[data-group=body]').click();

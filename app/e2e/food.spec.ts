@@ -397,7 +397,7 @@ test('the goals: set in place on my cards (kcal, protein, salt), shown on the da
   // each its direction: kcal near a value, protein at least, fat at most, carbs near a value, salt at most, fibre at
   // least, alcohol at most
   expect(await cards.evaluateAll((cs) => cs.map((c) => c.getAttribute('data-goal-dir')))).toEqual(['target', 'atLeast', 'atMost', 'target', 'atMost', 'atLeast', 'atMost']);
-  await expect(sheet(page).locator('[data-food-chart=k] [data-goal-line]')).toHaveText(/^目標 2,250\skcal\s前後$/);
+  await expect(sheet(page).locator('[data-food-chart=k] [data-goal-line]')).toHaveCount(0); // (the chip says it)
   await expect(sheet(page).locator('[data-food-chart=k] button[data-goal]')).toHaveText('目標 2,250 kcal 前後');
   const protein = sheet(page).locator('[data-food-chart=p]');
   await expect(protein.locator('[data-intake-avg]')).toHaveText(/^\d+\.\d g$/);

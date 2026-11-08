@@ -26,6 +26,7 @@
   --c-lilac:#CDB4F2;                                     /* the guest's chip (おきゃくさん) */
   --c-coral:#FF8F7A;                                     /* errors only */
   --person-a:#2F86BD; --person-b:#D2701F;           /* けんこう's charts: ウェイ blue, うめ orange (CVD-safe pair, >= 3:1 on the card) */
+  --bar-floor: .34;                                      /* a chart's bar that met no goal: its fill's opacity (BarChart) */
   --c-sky:#4F9BE0;                                       /* the info sheets' sky: the airline strip, map water, the "now" marker (fills) */
   --c-rose:#E88FAE;                                      /* the wedding's rose: the ring, the letter's band and rules, the heart stamp */
 
@@ -160,6 +161,7 @@
   --ctl:#4858A0; --ctl-off:#34417C; --edge:#B9C3F0;   /* edge 3.8:1 on a control, 5:1 on the panel */
   --text:#FFF6E0; --text-soft:#DDE3FA; --focus:#FFF6E0; --leaf-text:#9EE6A6; --coral-text:#FFD0C6;
   --person-a:#7EC8F0; --person-b:#FFB066;             /* the same pair lightened for the navy card (>= 3:1) */
+  --bar-floor: .5;                                    /* (and a pale bar's edge in full colour) */
   --scrim: rgba(30, 36, 80, .45); --hl: rgba(255, 246, 224, .14);
   --sky-text:#9CCBF5;
   color-scheme: dark;

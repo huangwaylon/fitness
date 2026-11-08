@@ -105,7 +105,7 @@
   .key.pB { --pc: var(--person-b); }
   .key.pG { --pc: var(--c-lilac); }
   .k-met, .k-miss, .k-mid { width: 8px; height: 11px; border-radius: 2px 2px 0 0; background: var(--pc); }
-  .k-miss { opacity: .34; }
+  .k-miss { opacity: var(--bar-floor); }
   .k-mid { opacity: .67; margin-left: -3px; }
   .k-mid + .k-met { margin-left: -3px; }
   /* the goal: dashed (ChartFrame's .goal.soft), the average: solid (BarChart's .avg) */
