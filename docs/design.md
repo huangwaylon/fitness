@@ -1100,7 +1100,8 @@ the render server 60–70 % of a core against 17 by day; without, 20 (iOS Simula
 
 **At rest** (the user's call, 2026-11-07: engine.ts REST_MS, REST_FPS) the island draws its ambience at **12** a second:
 no finger on it for 2 s, and the last frame wanting only the ambience (no fling, spring back or focus under way, nothing
-at the full rate: a walk, a fast critter, a flourish, a jiggle). Any of those, or a touch, draws at the full rate at
+at the full rate: a walk, a critter fast on screen (≥ 60 px/s: world3d/pace.ts moveFast; a dart or a hop too, which never
+pause), a flourish, a jiggle). Any of those, or a touch, draws at the full rate at
 once. On those frames the shadow map redraws at most every 250 ms (once more after the last change; a change from
 outside a frame, a model in, at once). Under the 3D island a fish shadow's own swim, its invisible sprite's CSS
 transition, is off (the canvas moves the model by the same curves and its taps go by the model's spot): the shadows'
