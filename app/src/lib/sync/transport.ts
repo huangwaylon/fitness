@@ -34,12 +34,12 @@ const KNOWN: ApiError[] = ['unauthorized', 'forbidden', 'busy', 'unavailable', '
 
 /** POST `{key, action, ...body}` as text/plain (a simple request: no CORS preflight). Never throws. Each carries a request
  *  id (`rid`) and the app session's (`sid`): the relay's log joins its `req` to the phone's `api.*` (sync/log.ts). */
-export async function post<T extends object = object>(action: string, body: Record<string, unknown> = {}, opts: { key?: string; timeoutMs?: number } = {}): Promise<ApiResult<T>> {
+export async function post<T extends object = object>(action: string, body: Record<string, unknown> = {}, opts: { key?: string; timeoutMs?: number; keepalive?: boolean } = {}): Promise<ApiResult<T>> {
   const key = opts.key ?? getKey();
   if (!key) return { ok: false, error: 'unauthorized' };
   if (!url) return { ok: false, error: 'unavailable', detail: 'no record URL' };
   const rid = logId(), t0 = performance.now();
-  const r = await send<T>(action, key, rid, body, opts.timeoutMs);
+  const r = await send<T>(action, key, rid, body, opts.timeoutMs, opts.keepalive);
   const ms = Math.round(performance.now() - t0);
   if (r.ok) log('api.ok', { action, ms }, 1, { r: rid, sample: API_OK_SAMPLE });
   else {
@@ -51,7 +51,8 @@ export async function post<T extends object = object>(action: string, body: Reco
   return r;
 }
 
-async function send<T extends object>(action: string, key: string, rid: string, body: Record<string, unknown>, timeoutMs?: number): Promise<ApiResult<T>> {
+/** `keepalive`: the request outlives the page (hidden, left: ≤ 64 KB of body, the browser's cap). */
+async function send<T extends object>(action: string, key: string, rid: string, body: Record<string, unknown>, timeoutMs?: number, keepalive?: boolean): Promise<ApiResult<T>> {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs ?? TIMEOUT_MS);
   let res: Response;
@@ -60,7 +61,8 @@ async function send<T extends object>(action: string, key: string, rid: string, 
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ ...body, key, action, rid, sid: sessionId() }),
-      signal: ctrl.signal
+      signal: ctrl.signal,
+      ...(keepalive ? { keepalive: true } : {})
     });
   } catch {
     clearTimeout(timer);

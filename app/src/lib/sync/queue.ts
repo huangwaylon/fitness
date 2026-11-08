@@ -155,6 +155,17 @@ export function unpark(now = Date.now()): void {
   saveQueue(q.map(({ parked, served: _s, ...x }) => (parked ? { ...x, tries: 0, nextAt: now } : x)));
 }
 
+/** The day rows (`tally`, `island`) still in their hold go now: the page is being hidden (store/live.ts). Their hold
+ *  only gathers a busy stretch into one request; a phone locked right after a catch would otherwise leave the record
+ *  and the partner behind until the next open. An undo window (a buy's) keeps its time. */
+export function releaseHeld(now = Date.now()): boolean {
+  const q = queued();
+  const go = (x: QueuedEvent) => dayRow(x) !== null && isHeld(x, now) && !flushingIds.has(x.id);
+  if (!q.some(go)) return false;
+  saveQueue(q.map((x) => (go(x) ? { ...x, nextAt: now } : x)));
+  return true;
+}
+
 /** 1 s, 2 s, 4 s … capped at 5 min, ±20 % jitter. */
 export function backoffMs(tries: number, rand = Math.random): number {
   const base = Math.min(300_000, 1000 * 2 ** Math.max(0, tries - 1));
@@ -172,6 +183,8 @@ const BATCH_MAX = 50;
 /** At most this many characters of events in one request: the record's body cap is 1,000,000 (storeRoute.ts
  *  MAX_BODY_CHARS), and one event may be 20k (a wedding note 140k). */
 const BATCH_CHARS = 900_000;
+/** A request that outlives the page (`keepalive`): the browser's cap is 64 KB of body. */
+const KEEPALIVE_CHARS = 60_000;
 /** The record's failures (`unavailable`) one event takes before it is set aside (~2 h at the 5 min backoff). */
 export const PARK_AFTER = 30;
 /** One event's answer in an `events` reply. */
@@ -231,8 +244,9 @@ function due(q: QueuedEvent[], now: number, skip: (ev: QueuedEvent) => boolean =
  * (`parked`, kept). A batch is at most BATCH_MAX events and BATCH_CHARS; one refused whole is halved. `unauthorized`
  * stops the flush.
  */
-export function flush(now: () => number = Date.now): Promise<FlushResult> {
+export function flush(now: () => number = Date.now, opts: { keepalive?: boolean } = {}): Promise<FlushResult> {
   if (flushing) return flushing;
+  const most = opts.keepalive ? KEEPALIVE_CHARS : BATCH_CHARS;
   const p = (async (): Promise<FlushResult> => {
     const out: FlushResult = { sent: 0, acked: [], stored: [], dropped: [], remaining: 0 };
     const body = (ev: QueuedEvent) => ({ id: ev.id, type: ev.type, data: ev.data });
@@ -282,7 +296,8 @@ export function flush(now: () => number = Date.now): Promise<FlushResult> {
         const { ev } = due(queued(), now(), (x) => tried.has(x.id));
         if (!ev) break;
         const n = size(ev);
-        if (batch.length && chars + n > BATCH_CHARS) break;
+        // (one alone may go over BATCH_CHARS: the record caps an event below its body's; never over a keepalive's)
+        if ((batch.length || opts.keepalive) && chars + n > most) break;
         tried.add(ev.id);
         batch.push(ev);
         chars += n;
@@ -290,7 +305,7 @@ export function flush(now: () => number = Date.now): Promise<FlushResult> {
       if (!batch.length) break;
       for (const ev of batch) flushingIds.add(ev.id);
       const key = getKey();
-      const r = await post<{ results: EventResult[] }>('events', { events: batch.map(body) });
+      const r = await post<{ results: EventResult[] }>('events', { events: batch.map(body) }, opts.keepalive ? { keepalive: true } : {});
       flushingIds.clear();
       // Paired as someone else meanwhile (setKey cleared the queue): the reply is the old person's, not ours to show.
       if (getKey() !== key) break;
