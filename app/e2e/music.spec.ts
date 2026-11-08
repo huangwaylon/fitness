@@ -52,11 +52,16 @@ test('the wasps: Chased by Bees cuts in as they come out, Stung by Bees after th
   await quiet(page); // the opening beats are over
   await tapSky(page);
   await expect.poll(() => audio).toContain('music/hour-12.m4a');
+  // the swarm seen as it comes out (watched from before the shake: it's gone once they sting, 1.5 s on)
+  await page.evaluate(() => {
+    const W = window as unknown as { __swarm?: boolean };
+    new MutationObserver((_, mo) => document.querySelector('button[data-swarm]') && ((W.__swarm = true), mo.disconnect())).observe(document.body, { childList: true, subtree: true });
+  });
   // (where the popup leaves the canopy open: the first tap opens it over the canopy's middle)
-  await shakeTree(page);
-  await expect(page.locator('button[data-swarm]')).toBeVisible({ timeout: 2000 });
+  await shakeTree(page, { onClock: true });
+  await expect.poll(() => page.evaluate(() => !!(window as unknown as { __swarm?: boolean }).__swarm), { message: 'the wasps came out' }).toBe(true);
   await expect.poll(() => audio).toContain('music/bee-chase.m4a');
-  await expect(page.locator('[data-stung]')).toHaveCount(1, { timeout: 3000 }); // no tap: stung
+  await expect(page.locator('[data-stung]')).toHaveCount(1); // no tap: stung
   await expect.poll(() => audio).toContain('music/bee-stung.m4a');
   // the hour's file was kept for the hand back: not fetched again (13 s of the page's clock, run on at once)
   await page.clock.fastForward(13_000); // (its timers, not its every frame: the 3D island would draw each, in software on CI)
