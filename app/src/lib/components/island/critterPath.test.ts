@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { crittersAt, slotStart, SLOTS_PER_DAY } from './ambient.ts';
 import { BUGS, FRESH, bugPlace, patches, perches, type BugId } from './critters.ts';
-import { FLY_UPS, flowerHeads, bubblesAt, bugAt, bugPath, critterId, fishPath, freshWater, groundOk, inWater, legAt } from './critterPath.ts';
+import { FLY_UPS, TAP_CLEAR, flowerHeads, bubblesAt, bugAt, bugPath, clearOf, critterId, fishPath, freshWater, groundOk, inWater, legAt } from './critterPath.ts';
 import { worldOf } from './layoutWorld.ts';
 import { setWorld } from './world.ts';
 import { defaultLayout } from '#lib/layout/model.ts';
@@ -69,6 +69,25 @@ describe('the critters where both phones see them (from the spawn alone)', () =>
       expect(bubblesAt(s * 7919)).toEqual(p);
       expect(inWater('sea', p.x, p.z)).toBe(true);
     }
+  });
+
+  it('a roaming bug keeps clear of what lies to be tapped (a present where it would have hovered): its spot and every move', () => {
+    const roam = (Object.keys(BUGS) as BugId[]).filter((id) => ['flutter', 'dart', 'drift', 'hop', 'crawl'].includes(BUGS[id].flight));
+    let checked = 0;
+    for (const id of roam)
+      for (const seed of [3, 77, 4242]) {
+        const free = bugPath(id, seed, 18_000);
+        // (a patch with room off it: a rock's little patch has none, its bug stays on it)
+        if (!free || Math.max(free.patch.x1 - free.patch.x0, free.patch.z1 - free.patch.z0) < 4 * TAP_CLEAR) continue;
+        // a present right on its spot
+        const present = { x: free.spot.x, z: free.spot.z }, keep = clearOf([present]);
+        const kept = bugPath(id, seed, 18_000, { keep })!;
+        const far = (p: { x: number; z: number }) => Math.hypot(p.x - present.x, p.z - present.z) >= TAP_CLEAR - 1e-9;
+        expect(far(kept.spot), `${id} ${seed} spot`).toBe(true);
+        for (const l of kept.legs) if (!l.sat) expect(far(l), `${id} ${seed} ${l.x},${l.z}`).toBe(true);
+        checked++;
+      }
+    expect(checked).toBeGreaterThan(10);
   });
 
   it('a bug: where NH keeps it (a trunk, a flower, its ground), every move the same from the same seed, kept to its patch', () => {
