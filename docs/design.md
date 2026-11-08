@@ -2730,7 +2730,7 @@ Read on each call by `island/devHooks.ts` (the seasonal ones by `ui-state/previe
 | `?wx=real\|game` | The island's weather mode for this load ([Weather](#weather)) |
 | `?wx=rain-pm\|clears\|typhoon\|snow\|fog\|cloudy\|stale` | A canned real-weather timeline on the scene clock's hours (`island/wxFixtures.ts`): rain 12:00–18:00; rain until 14:00 then fine (a rainbow); a downpour; snow; foggy mornings; overcast; one fetched 37 h ago (the seeded day) |
 | `?event=<id>` | Show an event (the preview's ids: `halloween`, `cherry`, `birthday-A`, `wedding`…; its main part on; Bunny Day's eggs too) |
-| `?visitor=<id>\|none\|events`, `?arrive`, `?leave=<ms>`, `?stroll`, `?meet` | A visitor (`events`: an event's host only, never the day's); its arrival; its departure; a stroll; the partner's hello |
+| `?visitor=<id>\|none\|events`, `?arrive`, `?leave=<ms>`, `?stroll[=<ms>]`, `?meet` | A visitor (`events`: an event's host only, never the day's); its arrival; its departure; a stroll (3 s after it shows, or `<ms>`); the partner's hello |
 | `?kk=show`, `?kk=day`, `?kk=asleep` | K.K. on his stool: his show, his day, asleep (whatever the clock) |
 | `?critter=fish\|pond\|<fish>\|<pond fish>\|<bug>\|none`, `&coast=front\|back\|left\|right`, `?sea=<id>\|pearl`, `?flea` | A critter now (kept until caught; ambient visits off), a sea fish off that side; a dive spot; a flea on every villager tap |
 | `?shake=nest\|branch\|bagworm\|spider` | The next shake drops that |

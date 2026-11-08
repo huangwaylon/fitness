@@ -59,13 +59,19 @@ test('Gulliver sleeps face down until the fifth nudge (NH), then stands and intr
 });
 
 test('a stroll, and back on her spot before a line: the balloon anchors next to her', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-01T08:00&critter=none&stroll'); // Sunday morning: Daisy Mae
+  // (her stroll 8 s after she shows: her spot read first, once she stands still on it; at 3 s a slow CI runner's
+  // first read was mid-stroll, runs 42493608069 and 42495987780)
+  await page.goto('?demo&date=2026-11-01T08:00&critter=none&stroll=8000'); // Sunday morning: Daisy Mae
   await islandUp(page);
   const v = page.locator('[data-visitor="daisy-mae"]');
   await expect(v.locator('.art')).toBeVisible();
-  const home = await feet(page, 'daisy-mae');
+  let home = '';
+  await expect.poll(async () => {
+    const [a] = [await feet(page, 'daisy-mae'), await page.waitForTimeout(250)];
+    return a === (home = await feet(page, 'daisy-mae'));
+  }).toBe(true);
   // off on a stroll and standing somewhere else
-  await expect.poll(() => feet(page, 'daisy-mae'), { timeout: 8000 }).not.toBe(home);
+  await expect.poll(() => feet(page, 'daisy-mae'), { timeout: 15_000 }).not.toBe(home);
   await expect(v).not.toHaveClass(/walking/, { timeout: 4000 });
   // a tap on her where she stands now: she walks back, turns to my villager, then speaks
   await tapFigure(page, '[data-visitor="daisy-mae"] .art');
