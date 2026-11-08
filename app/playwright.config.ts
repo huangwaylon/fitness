@@ -10,9 +10,8 @@ const PORT = Number(process.env.E2E_PORT ?? 4173);
 const BASE = process.env.BASE_PATH ?? '';
 // Each test's phone starts with these in localStorage:
 // E2E_RENDER=none: the logic mode, the 3D engines run every frame but draw nothing (src/lib/ui-state/testMode.ts,
-// docs/ops/test-strategy.md): CI's software GL then costs nothing;
-// island.fps 60: the 3D engines at 60 (せってい's default is 30), as the specs' timings were made (a spec of 30's own sets it)
-const local = [{ name: 'island.fps', value: '60' }, ...(process.env.E2E_RENDER === 'none' ? [{ name: 'e2e.render', value: 'none' }] : [])];
+// docs/ops/test-strategy.md): CI's software GL then costs nothing
+const local = process.env.E2E_RENDER === 'none' ? [{ name: 'e2e.render', value: 'none' }] : [];
 const ISLAND = { storageState: { cookies: [], origins: [{ origin: `http://127.0.0.1:${PORT}`, localStorage: local }] } };
 
 // E2E_SLOW=1 (the full tier: everything drawn under CI's software GL, a frame ~0.5 s): 3× the test's time, 2× an expect's

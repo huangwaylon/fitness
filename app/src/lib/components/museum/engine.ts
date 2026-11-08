@@ -19,7 +19,7 @@ import type { Person3 } from '../person3d/person3d.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
 import { drawOff, shaderChecks } from '../../ui-state/testMode.ts';
 import { decal } from './geometry.ts';
-import { frameRate } from '#lib/store/frameRate.svelte.ts';
+import { FPS } from '#lib/store/frameRate.ts';
 import { pacer } from '../world3d/pace.ts';
 import { plainImages } from '../world3d/gltf.ts';
 import M from './models.json' with { type: 'json' };
@@ -1197,7 +1197,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   let drawn: (() => void) | null = null;
   function frame(vsync = now()) {
     // (the frame rate's pacing, せってい's, a gesture's too; the ambience's own time)
-    if (disposed || holding() || !pace.due(vsync, frameRate.fps)) return;
+    if (disposed || holding() || !pace.due(vsync, FPS)) return;
     const t = now(), dt = lastT ? Math.min(100, t - lastT) : 16;
     let full = false;
     // the camera: eased back to NH's view, following my villager
@@ -1271,7 +1271,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     if (full) invalidate();
     // (one ambient timer at a time, and a frame for anything else in between — a tap, a load — brings it forward: two
     // chains side by side ran on together at 60 a second)
-    else if (ambient) pace.later(Math.min(t - lastInput > REST_MS ? (near ? REST_FPS : REST_FAR_FPS) : AMBIENT, frameRate.fps));
+    else if (ambient) pace.later(Math.min(t - lastInput > REST_MS ? (near ? REST_FPS : REST_FAR_FPS) : AMBIENT, FPS));
   }
 
   fit();

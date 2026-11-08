@@ -99,7 +99,6 @@ async function contextFor(browser: Browser, name: string): Promise<BrowserContex
   await ctx.addInitScript(() => {
     type W = Window & { __m?: Record<string, number>; __world3d?: { stats(): { frames: number }; loaded(): boolean } };
     const w = window as W, m: Record<string, number> = (w.__m = {});
-    localStorage.setItem('island.fps', '60');
     navigator.serviceWorker?.addEventListener('controllerchange', () => (m.sw ??= performance.now()));
     const tick = () => {
       const s = w.__world3d;

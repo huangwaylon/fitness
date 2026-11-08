@@ -35,7 +35,7 @@ A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepal
 ### What we log
 | Event | Level | Fields | When |
 |---|---|---|---|
-| `app.open` | info | `nav`, `route`, `pwa`, `w`, `h`, `dpr`, `crashed` (the last load died while shown), `lt` (long-frame API there), `q`/`qAgeS` (the write queue), `fpsPref` | each load |
+| `app.open` | info | `nav`, `route`, `pwa`, `w`, `h`, `dpr`, `crashed` (the last load died while shown), `lt` (long-frame API there), `q`/`qAgeS` (the write queue) | each load |
 | `app.ready` | info | `ms` (navigation start → the 3D island loaded), `route` | once a load |
 | `app.show` | info | `awayS`, `route` | shown again |
 | `app.reload` | info | `why` (update, chunk) | the app reloads itself |

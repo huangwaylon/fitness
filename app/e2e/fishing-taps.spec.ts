@@ -29,9 +29,8 @@ type Hooks = {
 const hooks = <R,>(page: Page, fn: (h: Hooks) => R) => page.evaluate(`(${fn.toString()})(window)`) as Promise<R>;
 const line = (page: Page) => hooks(page, (h) => h.__fish.line());
 
-async function open(page: Page, o: { layout?: 'default' | 'user'; fps?: number; q?: string; ops?: object[] } = {}) {
+async function open(page: Page, o: { layout?: 'default' | 'user'; q?: string; ops?: object[] } = {}) {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
-  if (o.fps) await page.addInitScript((fps) => localStorage.setItem('island.fps', String(fps)), o.fps);
   const ops = o.ops ?? (o.layout === 'user' ? USER_LAYOUT : null);
   if (ops) await page.addInitScript((ops) => localStorage.setItem('island-demo.layout', ops), JSON.stringify(ops));
   await page.goto(`?demo&visitor=none&date=2026-11-04T12:00${o.q ?? ''}`);
@@ -39,35 +38,34 @@ async function open(page: Page, o: { layout?: 'default' | 'user'; fps?: number; 
 }
 const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
 
-// The whole of it in each water, on both islands, at both frame rates: the cast where the tap was, a shadow noticing
+// The whole of it in each water, on both islands: the cast where the tap was, a shadow noticing
 // the float, its nibbles, the bite and the catch.
 for (const layout of ['default', 'user'] as const)
-  for (const fps of [30, 60])
-    for (const water of ['sea', 'pond', 'river', 'mouth', 'clifftop'] as const)
-      test(`${layout} island, ${fps} fps: a tap on the ${water} by my villager casts there, the shadow bites, a tap catches it`, async ({ page }) => {
-        test.slow();
-        await open(page, { layout, fps, q: `&critter=${water === 'sea' ? 'fish' : water}` });
-        await expect.poll(() => hooks(page, (h) => h.__fish.fish().map((f) => f.water)), { timeout: 15_000 }).toContain(water);
-        const [x, y] = await toTheWater(page, water);
-        // (the ground under the finger: where the float must land. Not the shadow's spot read after the cast: it swims,
-        // and fish()[0] may be another water's; that was 21 flaky runs in a day, 2026-11-05)
-        const tapped = (await page.evaluate(([x, y]) => (window as unknown as Hooks).__world3d.ground(x, y), [x, y] as const))!;
-        await page.touchscreen.tap(x, y);
-        // (the river's lower reach and its mouth are one channel: a tap by a shadow at the seam may land in either)
-        const ok = water === 'river' || water === 'mouth' ? ['cast in the river', 'cast in the mouth'] : [`cast in the ${water}`];
-        await expect.poll(async () => ok.includes(await hooks(page, (h) => h.__fish.why()))).toBe(true);
-        const l = (await line(page))!;
-        expect(l).not.toBeNull();
-        // where the tap was (pulled in off the bank a little at most), and on that water
-        expect(Math.hypot(l.x - tapped.x, l.z - tapped.z)).toBeLessThan(40);
-        // the shadow notices the float and comes; it bites; the reel the moment it does
-        await expect.poll(async () => (await line(page))?.fish ?? null, { timeout: 8000 }).not.toBeNull();
-        await reelOnBite(page, x, y, 15_000);
-        await expect(page.locator('[data-fx="catch"]')).toBeVisible({ timeout: 5000 });
-        expect(await line(page)).toBeNull();
-        expect(await hooks(page, (h) => h.__fish.why())).toBe('caught');
-        expect(await cues(page)).toEqual(expect.arrayContaining(['scene-cast', 'scene-plop', 'scene-nibble', 'scene-bite', 'scene-reel', 'scene-catch']));
-      });
+  for (const water of ['sea', 'pond', 'river', 'mouth', 'clifftop'] as const)
+    test(`${layout} island: a tap on the ${water} by my villager casts there, the shadow bites, a tap catches it`, async ({ page }) => {
+      test.slow();
+      await open(page, { layout, q: `&critter=${water === 'sea' ? 'fish' : water}` });
+      await expect.poll(() => hooks(page, (h) => h.__fish.fish().map((f) => f.water)), { timeout: 15_000 }).toContain(water);
+      const [x, y] = await toTheWater(page, water);
+      // (the ground under the finger: where the float must land. Not the shadow's spot read after the cast: it swims,
+      // and fish()[0] may be another water's; that was 21 flaky runs in a day, 2026-11-05)
+      const tapped = (await page.evaluate(([x, y]) => (window as unknown as Hooks).__world3d.ground(x, y), [x, y] as const))!;
+      await page.touchscreen.tap(x, y);
+      // (the river's lower reach and its mouth are one channel: a tap by a shadow at the seam may land in either)
+      const ok = water === 'river' || water === 'mouth' ? ['cast in the river', 'cast in the mouth'] : [`cast in the ${water}`];
+      await expect.poll(async () => ok.includes(await hooks(page, (h) => h.__fish.why()))).toBe(true);
+      const l = (await line(page))!;
+      expect(l).not.toBeNull();
+      // where the tap was (pulled in off the bank a little at most), and on that water
+      expect(Math.hypot(l.x - tapped.x, l.z - tapped.z)).toBeLessThan(40);
+      // the shadow notices the float and comes; it bites; the reel the moment it does
+      await expect.poll(async () => (await line(page))?.fish ?? null, { timeout: 8000 }).not.toBeNull();
+      await reelOnBite(page, x, y, 15_000);
+      await expect(page.locator('[data-fx="catch"]')).toBeVisible({ timeout: 5000 });
+      expect(await line(page)).toBeNull();
+      expect(await hooks(page, (h) => h.__fish.why())).toBe('caught');
+      expect(await cues(page)).toEqual(expect.arrayContaining(['scene-cast', 'scene-plop', 'scene-nibble', 'scene-bite', 'scene-reel', 'scene-catch']));
+    });
 
 // The sea all round the island (island/coast.ts: a shadow off every stretch of coast, not just the front beach's): off a
 // side and the back beach, a cast by my villager there brings the shadow up and a tap catches it.
@@ -110,7 +108,7 @@ const waterPoints = (page: Page, step: number) => page.evaluate((step) => {
 for (const layout of ['default', 'user'] as const)
   test(`${layout} island: every tap on water casts, near or far, and every tap with the line out reels it in`, async ({ page }) => {
     test.slow();
-    await open(page, { layout, fps: 30, q: '&critter=river' });
+    await open(page, { layout, q: '&critter=river' });
     await expect.poll(() => hooks(page, (h) => h.__fish.fish().length), { timeout: 15_000 }).toBeGreaterThan(0);
     // my villager on the river's bank (some water near it, the rest far off)
     await toTheWater(page, 'river');
@@ -208,11 +206,12 @@ test('a far cast: from across the island the float lands where the tap was, the 
     const w = window as unknown as { __world3d: { line(id?: string): L3; where(id: string): { x: number; y: number; z: number } | null; water(x: number, z: number): number[] }; __villagers3: { tip(s: string): number[] | null } };
     return { line: w.__world3d.line(), tip: w.__villagers3.tip('mine'), float: w.__world3d.where('bobber'), bed: (w.__world3d.line()?.pts ?? []).map(([x, , z]) => Math.max(...w.__world3d.water(x, -z))) };
   });
-  await expect.poll(async () => { const d = await drawn(); return !!d.line?.visible && !!d.tip && !!d.float; }, { timeout: 15_000 }).toBe(true);
-  const d = await drawn(), pts = d.line!.pts, bad: string[] = [];
   const dist = (p: number[], q: number[]) => Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
+  // (the tip is read after the line's frame, which drew it from the frame before's pose: while the cast's swing settles
+  // it's a frame's swing off (at 30 frames a second up to ~10u), then the fishing pose's breathing moves it a little)
+  await expect.poll(async () => { const d = await drawn(); return !!d.line?.visible && !!d.tip && !!d.float && dist(d.line.pts[0], d.tip) <= 6; }, { timeout: 15_000 }).toBe(true);
+  const d = await drawn(), pts = d.line!.pts, bad: string[] = [];
   if (!d.line!.bent) bad.push('unbent');
-  // (the tip is read after the line's frame: the cast's swing settling, the fishing pose's breathing move it a little)
   if (dist(pts[0], d.tip!) > 6) bad.push(`start ${pts[0]} vs tip ${d.tip}`);
   if (dist(pts.at(-1)!, [d.float!.x, d.float!.y, d.float!.z]) > 3) bad.push(`end ${pts.at(-1)} vs float ${JSON.stringify(d.float)}`);
   const len = dist(pts[0], pts.at(-1)!);
