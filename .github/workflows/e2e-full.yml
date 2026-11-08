@@ -2,7 +2,7 @@
 # gate was until Nov 2026), the quarantine included, after each run of *Deploy UI* on main (the nightly
 # one too) and on demand. It never holds a deploy back, and its own workflow keeps the deploy run's result the gate's
 # alone. Its failures are in its summary and annotated on their specs; a red full tier is the next push's to fix. A
-# failed test is run once more (flaky or broken?). One at a time, never cancelled: a newer one waits, and one still
+# failed test is retried once (playwright.config.ts): passing then, it's flaky, named in the summary. One at a time, never cancelled: a newer one waits, and one still
 # waiting is replaced by the newest (cancelling the running one, with agents pushing every few minutes, left the full
 # tier never finishing: red for hours and nobody saw it).
 name: e2e full tier
@@ -62,18 +62,6 @@ jobs:
         run: npx playwright install --only-shell chromium
       - run: npm run build
       - id: e2e
-        continue-on-error: true
         run: npx playwright test --project=chromium --workers=1 --grep-invert @logic --shard=${{ matrix.shard }}/10
-      - name: A failed test, once more (flaky or broken?)
-        if: steps.e2e.outcome == 'failure'
-        run: |
-          node scripts/e2e-report.ts playwright-results.json "Failed in the full tier (drawn), shard ${{ matrix.shard }}" >> "$GITHUB_STEP_SUMMARY"
-          cp playwright-results.json first-run.json 2>/dev/null || true
-          n=$(node -p "try { require('./test-results/.last-run.json').failedTests.length } catch { 0 }")
-          if [ "$n" -eq 0 ] || [ "$n" -gt 5 ]; then
-            echo "::error::$n tests failed: broken, not flaky (no rerun)"; exit 1
-          fi
-          npx playwright test --project=chromium --workers=1 --grep-invert @logic --last-failed
-          echo "::warning::$n flaky e2e test(s) in the full tier, shard ${{ matrix.shard }}: failed, then passed; see the summary (docs/ops/testing.md)"
-          ANNOTATE=1 node scripts/e2e-report.ts first-run.json "Flaky e2e (full tier)"
-          node scripts/e2e-report.ts first-run.json "Flaky e2e (failed, then passed on a rerun): quarantine it and fix the cause, docs/ops/testing.md" >> "$GITHUB_STEP_SUMMARY"
+      - if: failure() && steps.e2e.outcome == 'failure'
+        run: node scripts/e2e-report.ts playwright-results.json "Failed in the full tier (drawn), shard ${{ matrix.shard }}" >> "$GITHUB_STEP_SUMMARY"

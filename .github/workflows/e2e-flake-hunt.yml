@@ -82,7 +82,7 @@ jobs:
           path: app/build-pages
       - id: e2e
         continue-on-error: true
-        run: npx playwright test --project=webkit --repeat-each=${{ inputs.repeat || '3' }} --shard=${{ matrix.shard }}/5
+        run: npx playwright test --project=webkit --repeat-each=${{ inputs.repeat || '3' }} --retries=0 --shard=${{ matrix.shard }}/5
       - name: Report
         if: always()
         run: |
