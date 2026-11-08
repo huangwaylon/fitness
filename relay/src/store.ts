@@ -1,6 +1,6 @@
 // The record (docs/backend.md#the-record): metrics, events and the ingest audit in the store Durable Object's SQLite,
-// free of the Workers runtime so it is unit-testable (test/store.test.ts runs it on node:sqlite). The same API as the
-// Apps Script web app had (`{key, action, ...}` → `{ok, ...}`), so the app and the Shortcut only change the URL.
+// free of the Workers runtime so it is unit-testable (test/store.test.ts runs it on node:sqlite). One API for the app
+// and the Shortcut: `{key, action, ...}` → `{ok, ...}`.
 //
 // - `at` is the record's clock: strictly increasing (max(now, last + 1 ms)), shared by the rows of one ingest.
 // - An event id is accepted once, forever (`ids`: a replaced event's id still dedupes a late retry).
@@ -10,9 +10,9 @@
 //   post, a meal entry, a repeat, a recipe and a custom food one per id (each one's latest op).
 // - A `sell` or a `buy` (the shop, contract/shop.ts) is kept only when the sender's own rows cover it: their tallies'
 //   catches less their sells (the pocket), their sells' かいがら less their buys (shopLedger), a piece bought once.
-// - `since` is answered from the `at` index. A row that arrived out of `at` order (only while Apps Script mirrored
-//   its writes here: two requests' copies racing) is marked `late` with its arrival time, and a poll also returns
-//   the late rows that arrived after `since` (less a margin for the two servers' clocks), so no phone misses one.
+// - `since` is answered from the `at` index. A row that arrives out of `at` order (an admin `load` of rows older
+//   than the record's) is marked `late` with its arrival time, and a poll also returns the late rows that arrived after
+//   `since` (less LATE_MARGIN_MS), so no phone misses one.
 import { parseShortcut } from './parse.ts';
 import { auditNotes, auditRow } from './audit.ts';
 import { eventSlot, validEventData } from '../../app/src/lib/contract/record.ts';
@@ -148,7 +148,7 @@ const MIGRATIONS: readonly ((sql: Sql) => void)[] = [
 ];
 export const SCHEMA_V = MIGRATIONS.length;
 
-/** The rows a load brings (the admin `load`: a dump's; once the sheet's history and Apps Script's copies), each with its `at`. */
+/** The rows a load brings (the admin `load`: a dump's), each with its `at`. */
 export interface ImportRows {
   metrics?: unknown[][];
   events?: unknown[][];
@@ -1105,7 +1105,7 @@ export class StoreCore {
   // ---------------------------------------------------------------- import
 
   /**
-   * Take rows that already have their `at` (the sheet's history, or Apps Script's copy of a write it just made), by
+   * Take rows that already have their `at` (a dump's, restored by the admin `load`), by
    * the same rules as the record's own writes: an event id once, a slot's latest (by `at`) kept, a decor op by the
    * merge's rules, a board post's, a packing list's and the wedding board's row as the record had it (unless its slot's
    * row beats it: a restore is faithful), then what a phone's op would have dropped with them (pruneLoaded); rows the
