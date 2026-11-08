@@ -1,4 +1,4 @@
-// The deploy's order guard (.github/workflows/pages.yml, `deploy`, inside its `cloudflare-deploy` group, just before
+// The deploy's order guard (.github/workflows/pages.yml, `deploy`, in its `cloudflare-deploy` group, right before
 // wrangler): never older code over newer. Runs overlap (no workflow-level group), so an older run can reach its deploy
 // after a newer one deployed. `node scripts/deploy-order.ts` reads what is live (Cloudflare Pages' canonical production
 // deployment, its commit hash: what wrangler's --commit-hash gave it) and how it stands to this commit and to main
