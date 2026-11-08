@@ -9,7 +9,8 @@ The tiers and why: [test-strategy.md](test-strategy.md).
 |---|---|---|
 | `build` | `npm run build` once (its budgets: the kikimimi budget, the headers, the precache limit); its `build-pages/` is the `site` artifact `deploy` ships | yes |
 | `checks` | `npm run check`, `npm run knip`, `npx vitest run`, beside the build; the quarantine listed in the summary (`scripts/e2e-quarantine.ts`: red when a quarantined test has no owner) | yes |
-| `e2e-gate` ×4 | **the gate's e2e** ("The gate" below): Playwright in Chromium (iPhone 13 profile) in logic mode (`E2E_RENDER=none`), `@render` and `@quarantine` left out, on `site` served as Pages serves it (`scripts/serve-build.ts`): the gate set, the changed specs ×3 and the specs the push reaches; 3 workers each (4 made the short waits flaky on the 4-core runners), shards balanced by each test's time (`scripts/e2e-shards.ts plan`, the committed `e2e/timings.json`); each shard builds the commit itself (no waiting for `build`) | yes |
+| `select` | what the gate's e2e runs, once for all its shards (`gate-plan` artifact): the selection (`scripts/e2e-impact.ts`), the auto-quarantine (`scripts/e2e-flakes.ts`) and the shards' plan (`scripts/e2e-shards.ts plan`, the committed `e2e/timings.json`); ~25 s | yes |
+| `e2e-gate` ×4 | **the gate's e2e** ("The gate" below): Playwright in Chromium (iPhone 13 profile) in logic mode (`E2E_RENDER=none`), `@render` and `@quarantine` left out, on `site` served as Pages serves it (`scripts/serve-build.ts`): `select`'s plan (the gate set, the changed specs ×3 and the specs the push reaches); 3 workers each (4 made the short waits flaky on the 4-core runners); each shard builds the commit itself (no waiting for `build`) | yes |
 | `deploy` | `site` to Cloudflare Pages (`wrangler pages deploy`, project `island-fund`), once all of the above are green; then checks https://island-fund.pages.dev answers this build (`_app/version.json`) with its CSP header. No `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` secret: a warning, nothing deployed | — |
 
 After a deploy, never holding one back:
@@ -34,15 +35,19 @@ After a deploy, never holding one back:
   changed e2e helper's importers (not island.ts or hud.ts: nearly every spec's), a src or content file's by
   `e2e/impact.json` (path globs to spec names; else the file's own name: `fishing3d.ts` → `fishing3d*.spec.ts`). A file
   nothing maps (a store, the config, a fixture, `package.json`) adds nothing. The changes are counted from the commit
-  live on the site (the `cloudflare-pages` deployments), not the push before: runs get superseded. Over the budget
-  (~1300 s of tests, ~110 s a shard) the changed specs run once, then the reached ones drop out: the gate set only.
+  live on the site (the `cloudflare-pages` deployments; that API down, the last green *Deploy UI* run's), not the push
+  before: runs get superseded; force-pushed away, from where it and HEAD meet; no base at all, the gate set and more
+  specs up to the budget, with a warning. Over the budget (~1300 s of tests, ~110 s a shard) the reached specs drop
+  out first, then the changed ones run once each: a changed spec always runs.
   Add a rule to `e2e/impact.json` when a src area's spec missed a break the full logic tier caught.
 - **Flakes: one retry, and a ledger.** On CI `retries: 1`: a test that fails twice is red; one that fails, then passes
   on its retry, is green but **flaky**: e2e/reporters/flaky.ts names it in the job summary, puts a warning on its spec,
   and writes it to the run's `flaky.json`, uploaded as `flaky-<shard>`: the **flaky ledger** (`npm run e2e:flakes`
-  prints the last 48 h). **Auto-quarantine:** a test flaky in 2 runs or more in 48 h (the gate's shards and the full
-  logic tier both count) is left out of the gate (`--test-list-invert`), listed in its summary as *auto-quarantined*
-  with why, and still run by the full logic tier; it comes back by itself after 48 h without a flake. No commit: the
+  prints the last 48 h). **Auto-quarantine:** a test flaky in runs of 2 commits or more in 48 h (the gate's shards and
+  the full logic tier both count; only this repo's own runs on main, never a fork's pull request: the repo is public)
+  is left out of the gate (`--test-list-invert`), listed in its summary as *auto-quarantined* with why, and still run
+  by the full logic tier; it comes back by itself after 48 h without a flake. Never a gate set test (a warning: fix it
+  now), and never more than 5: more is the runners, not the tests (an error, nothing left out). No commit: the
   gate reads the ledger from the API each run (best effort: the API down, nothing is left out). Fix a flaky test at
   its cause; one that's broken goes to the **quarantine** (below) with an owner. Locally (`npm run e2e:ci-like`)
   there's no retry: a flake is red.

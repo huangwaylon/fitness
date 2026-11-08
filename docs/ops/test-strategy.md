@@ -101,13 +101,15 @@ apart (`RELAY_E2E=1`, on demand: `e2e/sync-harness.spec.ts`), not on every push.
   6 shards) and the drawn smoke (1 runner, advisory). Its failures are loud: an error on the spec, the summary, the
   workflow red. **Nightly**, everything drawn (`e2e-full.yml`, 10 runners) and, weekly, the WebKit flake hunt: off the
   push path, since GitHub Free runs 20 jobs at once and the full tier after every deploy queued the next push's gate.
-- **Shards by time, not count** (scripts/e2e-shards.ts): each shard plans Playwright test lists from the committed
-  `e2e/timings.json`, longest first onto the emptiest shard, so every shard gets the same plan. The full logic tier's
-  `timings` job folds each run's times into an artifact and reports the spread; `npm run e2e:timings` refreshes the
-  file. Each shard builds the commit itself (~30 s), rather than waiting ~60 s for `build` and its artifact.
+- **Shards by time, not count** (scripts/e2e-shards.ts): Playwright test lists planned from the committed
+  `e2e/timings.json`, longest first onto the emptiest shard (the gate's once, by its `select` job, for every shard).
+  The full logic tier's `timings` job folds each run's times into an artifact and reports the spread;
+  `npm run e2e:timings` refreshes the file. Each shard builds the commit itself (~30 s), rather than waiting ~60 s
+  for `build` and its artifact.
 - **Flakes: one retry and a ledger.** CI retries a failed test once: failing twice is red; passing on the retry, it's
   green and **flaky**, recorded in the flaky ledger (each run's `flaky-<shard>` artifact, scripts/e2e-flakes.ts). A test
-  flaky in 2+ runs in 48 h is **auto-quarantined**: out of the gate, listed in its summary, still run after the deploy,
+  flaky in runs of 2+ commits in 48 h is **auto-quarantined** (never a gate set test, never more than 5): out of the
+  gate, listed in its summary, still run after the deploy,
   back by itself after 48 h without a flake. A test that's broken goes to `@quarantine` by hand, with an owner and the
   failure: out of both logic tiers, run nightly drawn until fixed. Neither is a place tests go to be forgotten.
 - **Newest green deploys:** one run at a time on `main` (a workflow-level concurrency group), never cancelled. A
