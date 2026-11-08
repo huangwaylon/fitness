@@ -2,9 +2,10 @@
 # Pages, https://huangwaylon.github.io/fitness/, until 2026-11-05).
 # The backend is the relay (relay/: the record at /api, the room at /room); its URLs are in the app (lib/sync/live.ts).
 # The layout (docs/ops/testing.md, docs/ops/test-strategy.md): the gate, lean (the user, 2026-11-08: two people use the
-# app, fix-forward is cheap): `build` (the `site` artifact: what is deployed, its budgets), `checks` and `e2e-gate` (the
-# core e2e and what the push changed or reaches) all at once, then `deploy` once all are green. After it, never holding
-# it back: the full logic tier and the drawn smoke (e2e-logic-full.yml); nightly, everything drawn (e2e-full.yml).
+# app, fix-forward is cheap): `build` (the `site` artifact: what is deployed, its budgets), `checks` and `select` →
+# `e2e-gate` (the core e2e and what the push changed or reaches) all at once, then `deploy` once all are green.
+# After it, never holding it back: the full logic tier and the drawn smoke (e2e-logic-full.yml); nightly, everything
+# drawn (e2e-full.yml).
 name: Deploy UI
 
 on:
@@ -81,26 +82,69 @@ jobs:
       # the e2e quarantine in the summary; red when a quarantined test has no owner (docs/ops/testing.md "Tags")
       - run: node scripts/e2e-quarantine.ts >> "$GITHUB_STEP_SUMMARY"
 
-  # The gate's e2e (docs/ops/testing.md "The gate"), the logic tier's way: the 3D engines drawing nothing (E2E_RENDER=none,
-  # src/lib/ui-state/testMode.ts: the gameplay, cameras and tap areas all run, CI's software GL costs nothing), @render
-  # and @quarantine left out. Not every test: the core gate set (e2e/gate.json), the specs this push changed, each test
-  # 3× and never retried (one failure in three is a flake the push brought: red), and the specs its files reach
-  # (scripts/e2e-impact.ts, e2e/impact.json), all against the commit live on the site (runs get superseded: never the
-  # push before), within a budget of ~110 s of tests a shard. The full logic tier runs everything after the deploy
-  # (e2e-logic-full.yml). A test flaky in 2+ runs in 48 h is auto-quarantined: left out here, run there (the flaky ledger:
-  # scripts/e2e-flakes.ts, best effort). A failed test is retried once (playwright.config.ts): failing again, red; passing
-  # then, green but flaky: named in the summary, a warning on its spec, uploaded to the ledger (flaky-<shard>).
-  # --max-failures: a broken run stops early. Shards balanced by time (scripts/e2e-shards.ts, the committed
-  # e2e/timings.json: every shard the same plan); each builds the commit itself (~30 s: no waiting for `build`). Chromium
-  # gates the deploy until WebKit (e2e-flake-hunt.yml, on macOS) is green across the board.
-  e2e-gate:
+  # What the gate's e2e runs, chosen once for all 4 shards (each choosing its own, an API call failing in one gave it
+  # another selection and plan: tests in no shard, the gate green): the selection (scripts/e2e-impact.ts: the gate set,
+  # the changed specs, the reached ones), the auto-quarantine (scripts/e2e-flakes.ts) and the shards' plan
+  # (scripts/e2e-shards.ts), as the `gate-plan` artifact. Without app/static/: the plan lists the tests, never serves.
+  select:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
     # (the flaky ledger's artifacts, and the deployments: the commit live on the site)
     permissions:
       contents: read
       actions: read
       deployments: read
+    defaults:
+      run:
+        working-directory: app
+    env:
+      E2E_RENDER: none
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+          # (the base to diff against, and where a force-pushed one meets HEAD: the history, without its blobs)
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout: |
+            /*
+            !/app/static/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          node scripts/e2e-impact.ts ${BASE:+--base "$BASE"} --out sel >> "$GITHUB_STEP_SUMMARY"
+          node scripts/e2e-flakes.ts --out sel/quarantine.txt >> "$GITHUB_STEP_SUMMARY"
+      # (playwright's --list loads the specs: the deps, not the build)
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      # (the selected files unquoted: the list splits into them; chromium* takes in chromium-x3 and chromium-mic-x3)
+      - run: |
+          E2E_X3="$(tr '\n' ' ' < sel/x3.txt)"
+          export E2E_X3
+          # shellcheck disable=SC2046
+          node scripts/e2e-shards.ts plan 4 shards e2e/timings.json -- --project='chromium*' --grep-invert "@render|@quarantine" --test-list-invert sel/quarantine.txt $(cat sel/specs.txt sel/x3.txt)
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: gate-plan
+          path: |
+            app/sel
+            app/shards
+          if-no-files-found: error
+          retention-days: 1
+
+  # The gate's e2e (docs/ops/testing.md "The gate"): `select`'s plan in logic mode (E2E_RENDER=none: nothing drawn),
+  # @render and @quarantine left out; the changed specs 3× and never retried, any other test retried once (failing
+  # again: red; passing: flaky, in the summary and the ledger, flaky-<shard>). Each shard builds the commit itself.
+  e2e-gate:
+    needs: select
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -114,24 +158,11 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
-          # (the base to diff against: the history, without its blobs)
-          fetch-depth: 0
-          filter: blob:none
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 24
           cache: npm
           cache-dependency-path: app/package-lock.json
-      # what this run tests (sel/specs.txt, sel/x3.txt: the changed specs, as E2E_X3) and leaves out
-      # (sel/quarantine.txt); in the summary once
-      - env:
-          GH_TOKEN: ${{ github.token }}
-          BASE: ${{ github.event.pull_request.base.sha }}
-        run: |
-          node scripts/e2e-impact.ts ${BASE:+--base "$BASE"} --out sel > sel.md
-          node scripts/e2e-flakes.ts --out sel/quarantine.txt >> sel.md
-          if [ "${{ matrix.shard }}" = 1 ]; then cat sel.md >> "$GITHUB_STEP_SUMMARY"; fi
-          echo "E2E_X3=$(tr '\n' ' ' < sel/x3.txt)" >> "$GITHUB_ENV"
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - id: pw
         run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
@@ -143,15 +174,17 @@ jobs:
       - if: steps.browsers.outputs.cache-hit != 'true'
         run: npx playwright install --only-shell chromium
       - run: npm run build
-      # (the selected files unquoted: the list splits into them; chromium* takes in chromium-x3 and chromium-mic-x3)
-      - run: |
-          # shellcheck disable=SC2046
-          node scripts/e2e-shards.ts plan 4 shards e2e/timings.json -- --project='chromium*' --grep-invert "@render|@quarantine" --test-list-invert sel/quarantine.txt $(cat sel/specs.txt sel/x3.txt)
+      # (sel/: specs.txt, x3.txt (the changed specs: E2E_X3), quarantine.txt; shards/: the plan)
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: gate-plan
+          path: app
+      - run: echo "E2E_X3=$(tr '\n' ' ' < sel/x3.txt)" >> "$GITHUB_ENV"
       - id: e2e
         # (the plan leaves them out, but a whole spec file in a shard list (e2e-shards.ts: serial or ›-titled) brings its
         # quarantined tests back in: 32266e9a ran kikimimi-path:113; so filter here too)
         run: |
-          if [ ! -s shards/${{ matrix.shard }}.txt ]; then echo "nothing in this shard"; exit 0; fi
+          if ! grep -q . shards/${{ matrix.shard }}.txt; then echo "nothing in this shard"; exit 0; fi
           npx playwright test --project='chromium*' --test-list shards/${{ matrix.shard }}.txt --test-list-invert sel/quarantine.txt --grep-invert "@render|@quarantine" --max-failures=10
         env:
           E2E_FLAKY_FILE: flaky.json
@@ -185,11 +218,12 @@ jobs:
     environment:
       name: cloudflare-pages
       url: https://island-fund.pages.dev/
-    env:
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    # (the secrets only in the steps that use them: stt-models.ts fetches from Hugging Face and npm)
     steps:
       - id: ready
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
             echo "::warning::no CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID secret: Cloudflare Pages not deployed (docs/ops/runbook.md §1)"
@@ -228,12 +262,15 @@ jobs:
           cp -R stt site/stt
       - if: steps.ready.outputs.go == 'true'
         working-directory: app
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npx --yes wrangler@4.156.0 pages deploy ../site --project-name island-fund --branch main --commit-hash "$GITHUB_SHA" --commit-message "${GITHUB_SHA::12}"
       # the site answers this commit's build (the version SvelteKit polls), with its headers
       - if: steps.ready.outputs.go == 'true'
         run: |
           want=$(node -p "require('./site/_app/version.json').version")
-          for i in 1 2 3 4 5 6; do
+          for _ in 1 2 3 4 5 6; do
             got=$(curl -sS --max-time 20 "https://island-fund.pages.dev/_app/version.json?t=$(date +%s)" | node -p "JSON.parse(require('fs').readFileSync(0)).version" 2>/dev/null || true)
             [ "$got" = "$want" ] && break
             sleep 10
