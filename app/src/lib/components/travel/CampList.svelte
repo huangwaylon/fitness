@@ -1,5 +1,5 @@
 <script lang="ts">
-  // キャンプ場 (docs/design.md §Trips; a trip with campsites: Okinawa's 35): the intro, one ChipRow filter (すべて 35 ·
+  // キャンプ場 (docs/design.md §Trips; a trip with campsites: Okinawa's 35): one ChipRow filter (すべて 35 ·
   // 無料 · 有料 · ビーチ · トイレ · シャワー: one criterion at a time), the sites in one dense card (a row each: the photo
   // thumb (a tent for a site with none), the name, kind · town and the drive from the office (or ferry only), our
   // nights' sticker, its amenities' icons), a row opening its card (CampSheet), then the source's foot.
@@ -30,7 +30,6 @@
 </script>
 
 <div class="camps" data-camps>
-  {#if trip.campsIntro}<p class="intro guide"><Txt l={trip.campsIntro} {note} /></p>{/if}
   <div class="ctl">
     <ChipRow label={t('travel.camps.filter')}>
       {#each CAMP_FILTERS as f (f)}
@@ -63,7 +62,6 @@
 <style>
   .camps { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
   p { margin: 0; }
-  .intro { padding: 2px 4px; font-size: var(--fs-s); line-height: 1.55; color: var(--text-soft); }
   /* the filter held under the title bar as the sites scroll */
   .ctl { position: sticky; top: 0; z-index: 3; margin: 0 -12px; padding: 4px 0 2px; background: var(--surface); }
   .list { list-style: none; margin: 0; padding: 0; }

@@ -2633,7 +2633,7 @@ menu's 「りょこう」 pill (Orville's head) opens a full-height sheet (`comp
   the area saved, the map's note 「保存した範囲のみ」; the credit stays visible (the trail's above the sheet's peek;
   GSI's 「出典：国土地理院」). Beside a saved area (一部のみ and 消えました too) a trash pill deletes it (「…を削除」, at once);
   there's no list of them in 設定 (removed 2026-11-08).
-- **キャンプ場** (`CampList.svelte`, `camps.ts`; Okinawa's 35): the source's intro, one ChipRow (すべて 35 · 無料 · 有料 ·
+- **キャンプ場** (`CampList.svelte`, `camps.ts`; Okinawa's 35): one ChipRow (すべて 35 · 無料 · 有料 ·
   ビーチ · トイレ · シャワー: one criterion at a time) held at the top, the sites in one dense card (a row each: a 48 px
   photo thumb (a tent for an outer-island site), the name with our nights' yellow stickers, kind · town · the drive
   from the office (フェリーのみ for an outer-island site), the amenities' icons), the source's foot. A row opens its card (`CampSheet.svelte`, the kit's sheet: the photo, kind and town, the

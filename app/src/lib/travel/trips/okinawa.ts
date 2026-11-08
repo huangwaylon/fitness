@@ -1298,10 +1298,6 @@ export const okinawa: Trip = {
       maps: "https://maps.app.goo.gl/PHo9xSh5YiSeBjNY6"
     }
   ],
-  campsIntro: {
-    ja: "全35か所。車で行ける26か所を、車を受け取る沖縄市の Evertrail営業所からの所要時間順に、続いて Evertrail のディレクトリに載る離島の9か所（フェリーのみ。記録用で、地図には出しません）を並べています。料金が明記されているのは2か所だけなので、 「記載なし」は無料ではなく不明と考えてください。有料キャンプ場は必ず予約を — 10月10–12日はスポーツの日の三連休です。「やんばる」のチップが付く場所はやんばる国立公園内 — 現地掲示の火気ルールを確認してください。",
-    en: "All 35 sites: the 26 we can drive to, ordered by road time from the Evertrail office in Okinawa City — where we collect the car — then the Evertrail directory’s 9 outer-island sites (ferry only; for the record, not on the map). The directory prices only two of them, so “none posted” means unknown, not free. Book the paid ones: Oct 10–12 is the Sports Day weekend. A site chipped ‘Yanbaru’ is inside the national park — check the fire rules posted there."
-  },
   campsFoot: {
     ja: "所要時間はEvertrail営業所からのOSRMによる渋滞なしの値 — 連休の渋滞時は20–40分を 加えてください。データ出典 directory.evertrailokinawa.com",
     en: "Free-flow drive times from the Evertrail office via OSRM — add 20–40 min in holiday traffic. Data from directory.evertrailokinawa.com"
