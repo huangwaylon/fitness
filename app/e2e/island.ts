@@ -411,8 +411,9 @@ export const canopyAt = (page: Page) =>
 /** The popup where it stays (or none): it's placed, then placed again as its rows come in and it grows (FruitTree
  *  fitPopup), so a canopy point it left open a frame ago may be under it now (the next tap the popup's). Three frames
  *  unmoved, at most 400 ms. */
-const popupStill = (page: Page) =>
-  page.evaluate(() => new Promise<void>((ok) => {
+const popupStill = async (page: Page) => {
+  await poppedIn(page);
+  await page.evaluate(() => new Promise<void>((ok) => {
     const t0 = performance.now();
     let last = '', same = 0;
     const frame = () => {
@@ -425,6 +426,12 @@ const popupStill = (page: Page) =>
     };
     frame();
   }));
+};
+/** The popup's pop-in over (FruitTree's `if-pop`, 360 ms: a CSS animation, on the wall clock, which an installed clock
+ *  doesn't hold): while it plays the popup is smaller than it ends, so a canopy point it leaves open then is under it
+ *  after (the next tap the popup's, the shake's run a tap short). */
+const poppedIn = (page: Page) =>
+  page.evaluate(() => Promise.all((document.querySelector('.detail')?.getAnimations() ?? []).map((a) => a.finished.catch(() => {}))).then(() => {}));
 /** A thing watched for: a selector, or a selector with this text in one of its nodes (only those nodes read). */
 export type Coming = string | { sel: string; text: string };
 /** Watches, from now, for each thing's comings (it there after it wasn't): a transient effect (a sparkle, the tap's
@@ -476,8 +483,9 @@ const popupBox = (page: Page) =>
   });
 /** NH's shake of the left goal tree: three quick taps on its canopy, each where the popup leaves it open. `onClock`:
  *  on the page's own clock (installed by the caller; left running after): paused for the taps, so they come 120 ms
- *  of the page's time apart (and the popup's placing a few frames of it), however long a round trip takes (the full
- *  tier's software-GL frames spread the wall-clock taps past SHAKE_WINDOW_MS). */
+ *  of the page's time apart (the popup's pop-in waited out on the wall clock, its placing a few frames of the page's),
+ *  however long a round trip takes (the full tier's software-GL frames spread the wall-clock taps past
+ *  SHAKE_WINDOW_MS). */
 export async function shakeTree(page: Page, o: { onClock?: boolean } = {}) {
   if (o.onClock) {
     await pauseNow(page);
@@ -485,6 +493,7 @@ export async function shakeTree(page: Page, o: { onClock?: boolean } = {}) {
       for (let i = 0; i < 3; i++) {
         if (i) {
           await page.clock.runFor(120);
+          await poppedIn(page);
           // the popup at rest (it's placed again as its rows come in): unmoved over a frame or so, at most 5 tries
           for (let k = 0, was = await popupBox(page); k < 5; k++) {
             await page.clock.runFor(50);
