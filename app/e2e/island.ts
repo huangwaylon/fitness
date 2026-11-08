@@ -259,15 +259,18 @@ export async function toTheWater(page: Page, water: string, zoom = 1, away = 40)
   // (and the camera still again: a put may bring it after my villager, and a tap mid-move lands on what was there)
   await expect.poll(() => w3(page, (w) => w.camStill()), { message: 'the camera still' }).toBe(true);
   // the shadow's spot, or the water nearest it a finger can tap (nothing of the island's over it: a canopy, a door, a
-  // bush on the bank), within 60 px
+  // bush on the bank), within 60 px, else further off but within 90 u of it
   const find = () => page.evaluate((water) => {
     const w = window as unknown as Fishing & { __world3d: { ground(cx: number, cy: number): { x: number; z: number } | null }; __world: { ground(x: number, z: number): { surface: string } } };
     const f = w.__fish.fish().find((f) => f.water === water)!, [cx, cy] = w.__world.at(f.x, f.z);
     const TAPS = 'button, a, [role="button"], [data-bush], [data-tree], [data-flower], [data-sit], [data-fixture], [data-campfire], [data-building], [data-decor], [data-actor], [data-visitor], [data-fx="talk"]';
-    for (let r = 0; r <= 60; r += 6)
+    for (let r = 0; r <= 150; r += 6)
       for (let a = 0, n = r ? 16 : 1; a < n; a++) {
         const x = cx + Math.cos((a / n) * Math.PI * 2) * r, y = cy + Math.sin((a / n) * Math.PI * 2) * r;
         const g = w.__world3d.ground(x, y), s = g && w.__world.ground(g.x, g.z).surface;
+        // (past 60 px, within 90 u of it, half the way a shadow notices a float from (fishing.ts NOTICE_U): off the
+        // back beach the sea round it lies under the doors' tap areas at the camera's far stop)
+        if (r > 60 && (!g || Math.hypot(g.x - f.x, g.z - f.z) > 90)) continue;
         // (on screen; for the sea, the sea's: a clifftop pool by the back beach is water too)
         if (x < 8 || x > innerWidth - 8 || y < 8 || y > innerHeight - 8) continue;
         // (K.K.'s art takes no pointer, the scene asks him: a tap within his box is his)
