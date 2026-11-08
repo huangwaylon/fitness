@@ -5,8 +5,8 @@
 // intervals over 50 ms, their blocking time past 50 ms, before and after the first frame), Chromium's long tasks, and
 // the engine's frames; the launch's own clock (world3d/boot.ts, the log's perf.boot: the island whole on screen, the
 // longest frames, the frame it appears in); then the medians. WebKit as an iPhone 15 (default), or Chromium as an
-// iPhone 13 (THROTTLE=4: its CPU 4x slower; Apple's GPU under it: ANGLE on Metal, never SwiftShader, docs/perf-plan.md
-// §0). The demo without its shader checks (`checks=0`: a sync readback per program). A desktop's numbers, for an A/B
+// iPhone 13 (THROTTLE=4: its CPU 4x slower; Apple's GPU under it: ANGLE on Metal, never SwiftShader, docs/ops/perf.md
+// "Measuring"). The demo without its shader checks (`checks=0`: a sync readback per program). A desktop's numbers, for an A/B
 // of two builds (two serve-build ports): the phone's are the iOS Simulator's (npm run ios:check) and the phone's own.
 // Never in CI.
 //   [WARM=1] npm run perf:start -- <port> [runs] [webkit|chromium]     (the build served: node scripts/serve-build.ts <port>)

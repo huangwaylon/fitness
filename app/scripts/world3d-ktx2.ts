@@ -1,4 +1,4 @@
-// The island's model textures as GPU-compressed KTX2 (docs/perf-plan.md C1, world3d/ktx2.ts): each image embedded in
+// The island's model textures as GPU-compressed KTX2 (world3d/ktx2.ts): each image embedded in
 // the island's GLBs (static/room/world3d/, homes/, structures/, villagers3d/, player/: a WebP) encoded with Basis
 // Universal (UASTC, its mipmaps built here), a model's in one pack (world3d/ktx2Pack.ts: static/room/tex/<id>.ktx2p,
 // its id from its images' hashes, world3d/texHash.ts: the same images in two models are one pack); and each loose WebP

@@ -1,4 +1,4 @@
-// A pack of KTX2 files (docs/perf-plan.md C1): what's drawn together in one file, so static/ stays under Cloudflare
+// A pack of KTX2 files: what's drawn together in one file, so static/ stays under Cloudflare
 // Pages' file cap (src/lib/static-files.test.ts): a model's embedded textures (static/room/tex/<id>.ktx2p, its id
 // from its images' hashes: packId), a home's colour (its materials' albedos). The build script writes them
 // (scripts/world3d-ktx2.ts), the island reads an entry out (ktx2.ts).

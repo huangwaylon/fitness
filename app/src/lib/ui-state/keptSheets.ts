@@ -1,4 +1,4 @@
-// The sheets kept mounted after a close (Sheet's `keep`; docs/perf-plan.md A5): the next opening shows the content at
+// The sheets kept mounted after a close (Sheet's `keep`): the next opening shows the content at
 // once instead of building it again. A few at most, the least recently opened let go first; every closed one let go
 // on pagehide (the page put away, maybe for good) and on a lost WebGL context (iOS short of memory takes those first).
 // An open sheet is never let go.

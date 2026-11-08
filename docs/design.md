@@ -1,7 +1,7 @@
 # Island Fund: design
 
 What the app is and how it behaves. The backend is in [backend.md](backend.md), the reasons in
-[decisions.md](decisions.md), performance budgets and the backlog in [perf-plan.md](perf-plan.md). Numbers come from
+[decisions.md](decisions.md), performance budgets and the backlog in [ops/perf.md](ops/perf.md). Numbers come from
 `app/src/lib/config/rules.ts`, which wins if they disagree.
 
 ## Product
@@ -585,11 +585,11 @@ season's kinds in turn (`scene.ts` WILD); each flower's id is where it stands (`
   as an SVG colour-matrix filter on what it draws, never on a wrapper; a light takes none. The 3D island's light is its
   own scene's.
 - **Cost:** nothing runs when still: a camera move, a walk or a change places what moved; style writes only when a
-  value changes. Budgets: [perf-plan.md](perf-plan.md).
+  value changes. Budgets: [ops/perf.md](ops/perf.md).
 
 ### Startup
 
-What a launch waits for, and what it doesn't (budgets and measurements: [perf-plan.md](perf-plan.md)):
+What a launch waits for, and what it doesn't (budgets and measurements: [ops/perf.md](ops/perf.md)):
 - **The shell:** a second visit's page is the service worker's cached shell at once ([backend](backend.md) "Service
   worker").
 - **The players:** drawn from the bundled part table; the whole one (~1.1 MB) only for a part it lacks

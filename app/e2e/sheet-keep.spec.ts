@@ -1,4 +1,4 @@
-// The sheets kept mounted between openings (Sheet's `keep`, ui-state/keptSheets.ts; docs/perf-plan.md A5): けんこう,
+// The sheets kept mounted between openings (Sheet's `keep`, ui-state/keptSheets.ts): けんこう,
 // ごはん, けっこんしき, りょこう and トレイル's list. A reopening is the same content, not built again, and still as an opening
 // should be (けんこう on 1週 · かつどう at its top, its charts drawn in the first frame); at most three kept, the least
 // recently opened let go; a level holding a map (りょこう's 地図, a trail) let go at the close.

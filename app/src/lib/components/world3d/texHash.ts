@@ -1,4 +1,4 @@
-// A texture's name in static/room/tex/ (docs/perf-plan.md C1): a 64-bit hash of the image as the model carries it (its
+// A texture's name in static/room/tex/: a 64-bit hash of the image as the model carries it (its
 // WebP's bytes), the same in the build script (scripts/world3d-ktx2.ts) and on the phone (ktx2.ts). Synchronous and
 // the same everywhere (no SubtleCrypto: none on a LAN address): two 32-bit lanes of a multiply-xorshift (cyrb53's).
 export function texHash(b: Uint8Array): string {

@@ -133,7 +133,7 @@
   });
 
   /** The sheet is up once its first frame is out (in ui.up while it stays open: the island hidden under it then, not in
-   *  the tap's frame, where restyling the island held up the sheet's first frame: docs/perf-plan.md A6). */
+   *  the tap's frame, where restyling the island held up the sheet's first frame). */
   function whenUp(d: HTMLDialogElement) {
     requestAnimationFrame(() => requestAnimationFrame(() => {
       if (d.open && !ui.up.includes(id)) ui.up = [...ui.up, id];

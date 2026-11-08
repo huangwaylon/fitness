@@ -1,4 +1,4 @@
-// The island's launch, timed (docs/perf-plan.md B4; the log's `perf.boot`, once a page load): when its first frame
+// The island's launch, timed (the log's `perf.boot`, once a page load): when its first frame
 // was drawn, when the models were in (place() resolved), when the island first stood whole on screen (`shown`: a frame
 // with nothing held back: no model loading, no program linking, no texture still to upload), the longest display frame
 // meanwhile and the engine's longest frame, and how the launch was served (the service worker, the network). Real

@@ -1,4 +1,4 @@
-// ごはん's open never waits on the food catalog (docs/perf-plan.md A4): the day renders from its entries' snapshots, the
+// ごはん's open never waits on the food catalog: the day renders from its entries' snapshots, the
 // catalog (index.json, then the datasets, parsed in a worker) comes at idle once ごはん has shown 600 ms (foodUi.ts
 // foodDbSoon), never while the sheet shows 健康 alone, and the search works the moment it's opened.
 import { expect, test } from './fixtures.ts';

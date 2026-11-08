@@ -115,7 +115,7 @@ try {
 
 /** `--boots N`: warm launches (the service worker controlling, its caches full: the first load registered it), each
  *  the launch's own clock (world3d/boot.ts, the log's perf.boot) as the island reports it; then their medians. Use a
- *  URL with `checks=0` (no shader checks: docs/perf-plan.md §0). */
+ *  URL with `checks=0` (no shader checks: docs/ops/perf.md "Measuring"). */
 async function bootRuns(n: number) {
   for (let i = 0; i < 60 && !(await run<boolean>('return !!navigator.serviceWorker && !!navigator.serviceWorker.controller;')); i++) {
     if (i % 10 === 9) await wd('POST', `/session/${sid}/url`, { url: URL_ });
