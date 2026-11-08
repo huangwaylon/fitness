@@ -1,11 +1,12 @@
 # The flake hunt (docs/ops/testing.md): the whole e2e suite in WebKit, every test run several times over, retries off.
-# Nightly (03:30 Tokyo) and on demand (Actions → e2e flake hunt → Run workflow, with how many runs each). It gates no
-# deploy: it goes red when any test failed even once, and its summary lists them, worst first, to fix at the cause.
+# Weekly (Monday 03:30 Tokyo) and on demand (Actions → e2e flake hunt → Run workflow, with how many runs each). It
+# gates no deploy: it goes red when any test failed even once, and its summary lists them, worst first, to fix at the
+# cause.
 name: e2e flake hunt
 
 on:
   schedule:
-    - cron: '30 18 * * *'
+    - cron: '30 18 * * 0'
   workflow_dispatch:
     inputs:
       repeat:

@@ -1,0 +1,21 @@
+{
+  "//": "The gate's core e2e (docs/ops/testing.md \"The gate\"): these spec files run on every push before the deploy, with the specs the push changed (×3) and those its files reach (e2e/impact.json); the full logic tier runs everything after the deploy. Fast and stable files that cover the core flows, ~490 s of tests (e2e/timings.json). A file, not its tests: a renamed test stays in.",
+  "specs": {
+    "boot.spec.ts": "the app boots: /pair unpaired, the demo's island",
+    "logic-mode.spec.ts": "the logic mode the gate runs in: the island's game without drawing, the test API",
+    "hermetic.spec.ts": "the e2e's sealed world: the pinned clock, no network",
+    "hud-menu.spec.ts": "the HUD and the menu",
+    "tent.spec.ts": "the tent: in, walk, back out",
+    "fishing3d.spec.ts": "fishing to the catch, in every water",
+    "food-open.spec.ts": "the 健康 · ごはん sheet",
+    "kikimimi-hub.spec.ts": "ききみみ's entry: the hub, a mode, an invite",
+    "kikimimi-packs.spec.ts": "ききみみ's packs load",
+    "shop.spec.ts": "the shop: sell, buy",
+    "season-shared.spec.ts": "two phones on the relay's room: one sets, both show",
+    "editor.spec.ts": "the editor, a phone holding its layout live",
+    "travel-map.spec.ts": "りょこう: a trip's sheet and its map",
+    "sw-update.spec.ts": "the service worker: the cached shell, a deploy's reload",
+    "stale.spec.ts": "a deploy's stale chunks recover",
+    "csp.spec.ts": "no CSP violation across the app"
+  }
+}

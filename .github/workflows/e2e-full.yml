@@ -1,17 +1,14 @@
-# The full tier (docs/ops/test-strategy.md, docs/ops/testing.md): the whole e2e suite drawn (real software GL, as the
-# gate was until Nov 2026), the quarantine included, after each run of *Deploy UI* on main (the nightly
-# one too) and on demand. It never holds a deploy back, and its own workflow keeps the deploy run's result the gate's
-# alone. Its failures are in its summary and annotated on their specs; a red full tier is the next push's to fix. A
-# failed test is retried once (playwright.config.ts): passing then, it's flaky, named in the summary. One at a time, never cancelled: a newer one waits, and one still
-# waiting is replaced by the newest (cancelling the running one, with agents pushing every few minutes, left the full
-# tier never finishing: red for hours and nobody saw it).
+# The full tier, drawn (docs/ops/test-strategy.md, docs/ops/testing.md): the whole e2e suite with real (software) GL,
+# the quarantine included, nightly (02:30 Tokyo) and on demand (Actions → e2e full tier → Run workflow). Ten runners:
+# after every deploy it held half of GitHub Free's 20 jobs and queued the next push's gate (the user, 2026-11-08: the
+# full logic tier runs after each deploy instead, e2e-logic-full.yml). It gates nothing. Its failures are in its
+# summary and annotated on their specs. A failed test is retried once (playwright.config.ts): passing then, it's
+# flaky, named in the summary. One at a time, never cancelled.
 name: e2e full tier
 
 on:
-  workflow_run:
-    workflows: ['Deploy UI']
-    types: [completed]
-    branches: [main]
+  schedule:
+    - cron: '30 17 * * *'
   workflow_dispatch:
 
 permissions:
@@ -23,8 +20,6 @@ concurrency:
 
 jobs:
   e2e-full:
-    # (not after a cancelled run: a newer one is on its way)
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion != 'cancelled'
     runs-on: ubuntu-latest
     # (one browser a runner, ten runners: three drawing tabs on a 4-core runner took 0.5–2 s a frame under SwiftShader,
     # and 185 of ~530 tests ran out their 30 s or their waits, the game itself slowed, Nov 4; E2E_SLOW gives a drawn
@@ -43,7 +38,6 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 24

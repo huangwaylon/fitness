@@ -11,7 +11,7 @@
 //   node scripts/e2e-shards.ts spread <report.json…>
 //     how long each shard's tests ran, as Markdown (the run's summary).
 //   node scripts/e2e-shards.ts refresh   (npm run e2e:timings)
-//     e2e/timings.json from the newest green run on main (its `e2e-timings` artifact, the timings job's): commit it
+//     e2e/timings.json from the newest green full logic tier (e2e-logic-full.yml: its `e2e-timings` artifact): commit it
 //     when the shards drift apart (the run's summary says how far), or after renaming or deleting tests: it keeps only
 //     the tests there are now (the fold never forgets a key). The plan reads the committed file, so every shard
 //     of a run has the same plan (a cache restored by each shard could differ between them).
@@ -101,7 +101,7 @@ if (cmd === 'timings') {
   console.log(ds.length ? `### The logic tier's shards\n\n${ds.length} shards ran ${s(Math.min(...ds))} to ${s(Math.max(...ds))} (${ds.map(s).join(', ')}).${Math.max(...ds) > 1.3 * Math.min(...ds) ? ' Far apart: `npm run e2e:timings` and commit e2e/timings.json.' : ''}` : 'No shard reports.');
 } else if (cmd === 'refresh') {
   const gh = (...a: string[]) => execFileSync('gh', a, { encoding: 'utf8' }).trim();
-  const id = gh('run', 'list', '--workflow', 'pages.yml', '--branch', 'main', '--status', 'success', '--limit', '1', '--json', 'databaseId', '--jq', '.[0].databaseId');
+  const id = gh('run', 'list', '--workflow', 'e2e-logic-full.yml', '--status', 'success', '--limit', '1', '--json', 'databaseId', '--jq', '.[0].databaseId');
   const dir = mkdtempSync(join(tmpdir(), 'e2e-timings-'));
   gh('run', 'download', id, '--name', 'e2e-timings', '--dir', dir);
   // (the fold keeps every key it ever saw: a renamed or deleted test's time stays unless pruned to today's tests)
