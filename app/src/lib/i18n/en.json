@@ -59,6 +59,7 @@
   "panel.villager.villagers": "Villagers",
   "host.nook": "Tom Nook",
   "island.balloon": "Balloon present",
+  "common.loadFailed": "Couldn't load",
   "common.undo": "Undo",
   "harvest.done": "Into your wallet!",
   "harvest.doneHost": "What a harvest!",

@@ -18,7 +18,7 @@
   // current unit's stage is open (U7), the placed one says 「ここから」, every one a filter shows is open; on opening,
   // the current stop is scrolled to. A stage whose units I've all stamped one by one has its landmark on its head and,
   // the first time, a celebration in it (seen once per player on this phone: prefs.ts; cosmetic, no economy). A stamped
-  // unit's 30-day おさらい チェック, when due, is a small banner on top. Its own chunk (`{#await import()}` in the sheet).
+  // unit's 30-day おさらい チェック, when due, is a small banner on top. Its own chunk (a <Lazy> in the sheet).
   import { onMount } from 'svelte';
   import { LANDMARKS, type Filter, type Path, type Stop } from '#lib/kikimimi/path.ts';
   import { CORE, type Lesson, type Stage } from '#lib/kikimimi/stages.ts';

@@ -5,6 +5,7 @@
   // 2×2 grid, each named for VoiceOver (`label`: the English never given away). At the reveal each text choice's
   // Japanese (`ja`, the item's cja) under it, smaller. A reply round (`voice`) with the mic on: こたえて！ under them
   // (mic/MicAnswer.svelte, its own chunk, loaded at the first such round and kept to the game's end).
+  import Lazy from '#lib/components/ui/Lazy.svelte';
   import OfficialArt from '../../characters/OfficialArt.svelte';
   import { t } from '#lib/i18n/index.ts';
   import { localKV } from '#lib/sync/storage.ts';
@@ -62,7 +63,7 @@
   {/each}
 </div>
 {#if answering}
-  {#await import('../mic/MicAnswer.svelte') then { default: MicAnswer }}<MicAnswer {voice} {choices} {open} {reveal} {onpick} />{/await}
+  <Lazy load={() => import('../mic/MicAnswer.svelte')}>{#snippet children(MicAnswer)}<MicAnswer {voice} {choices} {open} {reveal} {onpick} />{/snippet}</Lazy>
 {/if}
 
 <style>

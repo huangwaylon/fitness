@@ -1,4 +1,5 @@
 <script module lang="ts">
+  import Lazy from '#lib/components/ui/Lazy.svelte';
   import { load as loadUnits } from '#lib/kikimimi/pool.ts';
   import { lastLv as rememberedLv } from './prefs.ts';
   /** Ahead of an opening (island/sheetChunks.ts, a quiet moment): the hub's chunk and the remembered level's items,
@@ -356,13 +357,15 @@
   <div class="kk-body" data-kikimimi data-phase={v?.phase} data-host={v?.amHost || undefined} data-kiki-at={story ? 'story-frame' : atHub ? (welcome ? 'welcome' : 'hub') : hosting && page ? page.k : guest ? 'lobby' : undefined} data-kiki-night={story ? '' : undefined}
     data-kiki-ja={ja} data-kiki-right={right || undefined}>
     {#if game && v}
+      {@const g = game}
       {#if story}
-        {#await import('./story/StoryFrame.svelte') then { default: StoryFrame }}
-          {#key `${story.unit}:${story.ch}`}
-            <StoryFrame me={game.me} unit={story.unit} ch={story.ch} seg={story.seg} onclose={() => (open = false)}
+        {@const s = story}
+        <Lazy load={() => import('./story/StoryFrame.svelte')}>{#snippet children(StoryFrame)}
+          {#key `${s.unit}:${s.ch}`}
+            <StoryFrame me={g.me} unit={s.unit} ch={s.ch} seg={s.seg} onclose={() => (open = false)}
               onlist={() => ((story = null), (pages = [{ k: 'story' }]))} />
           {/key}
-        {/await}
+        {/snippet}</Lazy>
       {:else if v.notice}
         <div class="center" data-kiki-notice={v.notice}>
           <Host pose="bow" size={96} />
@@ -370,53 +373,53 @@
           <button type="button" class="btn small" data-sfx="back" onclick={act.toHub}>{t('kiki.back')}</button>
         </div>
       {:else if atHub && welcome}
-        {#await import('./onboarding/Welcome.svelte') then { default: Welcome }}
-          <Welcome {game} onlater={() => welcomed(false)} onstart={() => welcomed(true)} />
-        {/await}
+        <Lazy load={() => import('./onboarding/Welcome.svelte')}>{#snippet children(Welcome)}
+          <Welcome game={g} onlater={() => welcomed(false)} onstart={() => welcomed(true)} />
+        {/snippet}</Lazy>
       {:else if atHub}
-        {#await import('./hub/Hub.svelte') then { default: Hub }}
-          <Hub here={game.here} me={game.me} invite={hubInvite} onjoin={joinIt} onupdate={() => void reloadForUpdate()} ontile={tile} onact={act.menu} ontaikai={act.taikai}
+        <Lazy load={() => import('./hub/Hub.svelte')}>{#snippet children(Hub)}
+          <Hub here={g.here} me={g.me} invite={hubInvite} onjoin={joinIt} onupdate={() => void reloadForUpdate()} ontile={tile} onact={act.menu} ontaikai={act.taikai}
             oncheck={act.check} />
-        {/await}
+        {/snippet}</Lazy>
       {:else if hosting && page}
         {#if page.k === 'asobu'}
-          {#await import('./asobu/Asobu.svelte') then { default: Asobu }}
+          <Lazy load={() => import('./asobu/Asobu.svelte')}>{#snippet children(Asobu)}
             <Asobu {path} onpath={() => enter({ k: 'path' })} onmode={(m) => enter(m === 'story' ? { k: 'story' } : { k: 'mode', m })} />
-          {/await}
+          {/snippet}</Lazy>
         {:else if page.k === 'mode'}
-          {#await import('./mode/ModeDetail.svelte') then { default: ModeDetail }}
-            {#key page.m}<ModeDetail {game} m={page.m} oninvite={() => (game?.invite(), enter({ k: 'lobby' }))} onpractice={() => act.practice()} />{/key}
-          {/await}
+          <Lazy load={() => import('./mode/ModeDetail.svelte')}>{#snippet children(ModeDetail)}
+            {#key page.m}<ModeDetail game={g} m={page.m} oninvite={() => (game?.invite(), enter({ k: 'lobby' }))} onpractice={() => act.practice()} />{/key}
+          {/snippet}</Lazy>
         {:else if page.k === 'lobby'}
           {#if path && path.stages.some((s) => s.stops.length)}<PathCard {path} onopen={() => enter({ k: 'path' })} />{/if}
           {#if own}{@render ownView(own)}{:else}<Lobby {game} onlevel={keepLv} ontimer={keepTimer} />{/if}
         {:else if page.k === 'record'}
-          {#await import('./Progress.svelte') then { default: Progress }}
+          <Lazy load={() => import('./Progress.svelte')}>{#snippet children(Progress)}
             {#if report}<Progress {report} onplay={() => (pages = [])} />{/if}
-          {/await}
+          {/snippet}</Lazy>
         {:else if page.k === 'settings'}
-          {#await import('./settings/KikiSettings.svelte') then { default: KikiSettings }}
-            <KikiSettings {game} {ja} onja={(m) => ((ja = m), keepJa(m))} oncheck={act.check} />
-          {/await}
+          <Lazy load={() => import('./settings/KikiSettings.svelte')}>{#snippet children(KikiSettings)}
+            <KikiSettings game={g} {ja} onja={(m) => ((ja = m), keepJa(m))} oncheck={act.check} />
+          {/snippet}</Lazy>
         {:else if page.k === 'path' && path}
-          {#await import('./path/IslandPath.svelte') then { default: IslandPath }}
+          <Lazy load={() => import('./path/IslandPath.svelte')}>{#snippet children(IslandPath)}
             <IslandPath {path} bind:filter={pathFilter} {due} onunit={(id) => enter({ k: 'unit', id })} onlesson={act.startLesson}
               onquiz={act.quickQuiz} onzukan={() => enter({ k: 'zukan', unit: null })} />
-          {/await}
+          {/snippet}</Lazy>
         {:else if page.k === 'unit'}
-          {#await import('./path/UnitPage.svelte') then { default: UnitPage }}
+          <Lazy load={() => import('./path/UnitPage.svelte')}>{#snippet children(UnitPage)}
             {#key page.id}<UnitPage id={page.id} onlesson={act.startLesson} onzukan={(unit) => enter({ k: 'zukan', unit })} />{/key}
-          {/await}
+          {/snippet}</Lazy>
         {:else if page.k === 'story'}
-          {#await import('./story/StoryList.svelte') then { default: StoryList }}
-            <StoryList me={game.me} onplay={playStory} />
-          {/await}
+          <Lazy load={() => import('./story/StoryList.svelte')}>{#snippet children(StoryList)}
+            <StoryList me={g.me} onplay={playStory} />
+          {/snippet}</Lazy>
         {:else if page.k === 'taikai'}
           {@render ownView(viewOf('taikai', 'lobby')!)}
         {:else if page.k === 'zukan'}
-          {#await import('./zukan/KikiZukan.svelte') then { default: KikiZukan }}
-            <KikiZukan me={game.me} unit={page.unit} onreview={act.reviewPhrases} />
-          {/await}
+          <Lazy load={() => import('./zukan/KikiZukan.svelte')}>{#snippet children(KikiZukan)}
+            <KikiZukan me={g.me} unit={page.unit} onreview={act.reviewPhrases} />
+          {/snippet}</Lazy>
         {/if}
       {:else if v.phase === 'lobby' && lesson}
         <LessonIntro unit={lesson.unit} lesson={lesson.lesson} recheck={lesson.recheck} {shared} onstart={() => game?.go()} onback={back} />
@@ -443,9 +446,10 @@
   </div>
 
   {#if micJoin}
-    {#await import('./role/MicJoin.svelte') then { default: MicJoin }}
-      <MicJoin on={micJoin.on} onjoin={() => micJoin && joinIt(micJoin.g)} oncancel={() => (micJoin = null)} />
-    {/await}
+    {@const mj = micJoin}
+    <Lazy load={() => import('./role/MicJoin.svelte')}>{#snippet children(MicJoin)}
+      <MicJoin on={mj.on} onjoin={() => micJoin && joinIt(micJoin.g)} oncancel={() => (micJoin = null)} />
+    {/snippet}</Lazy>
   {/if}
   <ActionSheet bind:open={() => !!asking, (o) => { if (!o) asking = false; }} title={t(asking === 'close' ? 'kiki.closeAsk' : 'kiki.quit')}
     note={t(asking === 'close' ? 'kiki.closeAskBody' : 'kiki.quitBody')} groups={[[{ id: 'kiki-quit', label: t(asking === 'close' ? 'kiki.closeYes' : 'kiki.quitYes') }]]} onpick={quit} />

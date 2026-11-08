@@ -3,7 +3,8 @@
 // every load fails), nor offline, nor when the build deployed is the one running (a reload into it cures nothing).
 import { expect, test } from './fixtures.ts';
 import { is3d, islandUp } from './island.ts';
-import { hudBells, openRewards, unfoldMenu } from './hud.ts';
+import { fromMenu, hudBells, openRewards, unfoldMenu } from './hud.ts';
+import { atHub, kikiSheet } from './kikimimi-nav.ts';
 
 // (in Chromium: playwright.config.ts)
 test('a failed panel chunk reloads the page once, then the panel opens', { tag: '@chromium' }, async ({ page }) => {
@@ -76,4 +77,21 @@ test('a chunk that loads but throws as it runs reloads nothing, even with a newe
   await page.waitForTimeout(2000);
   expect(navs).toEqual([]);
   expect(await page.evaluate(() => sessionStorage.getItem('island.reloadAt'))).toBeNull();
+});
+
+test('a sheet’s lazy part that fails to load says so with もういちど, which loads it', { tag: '@chromium' }, async ({ page }) => {
+  await page.goto('?demo&date=2026-11-04T12:00&kikimimi=fast');
+  await islandUp(page);
+  await fromMenu(page, 'kikimimi');
+  await atHub(page);
+  // あそぶ's chunk 404s, and the deployed build is this one (no reload cures it)
+  const stale = (route: import('@playwright/test').Route) => route.fulfill({ status: 404, body: '' });
+  await page.route('**/_app/immutable/**/*.js', stale);
+  await kikiSheet(page).locator('[data-kiki-tile="asobu"]').click();
+  const failed = kikiSheet(page).locator('[data-lazy-failed]');
+  await expect(failed).toContainText('読み込めませんでした');
+  await page.unroute('**/_app/immutable/**/*.js', stale);
+  await failed.getByRole('button').click();
+  await expect(kikiSheet(page).locator('[data-kiki-mode-tile="quiz"]')).toBeVisible();
+  await expect(failed).toHaveCount(0);
 });
