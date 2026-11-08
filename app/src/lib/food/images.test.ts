@@ -12,7 +12,7 @@ import type { Dataset, FoodIndex } from './types.ts';
 const STATIC = join(import.meta.dirname, '../../../static');
 const DIR = join(STATIC, 'food-img');
 /** The budget: files in food-img/, its bytes, one sheet's bytes, and every file under static/ (Pages' cap is 20,000). */
-const MAX_FILES = 1_600; // ~5,000 pictures: 2 × 2 detail sheets (~1,250) and ~110 thumbnail sheets
+const MAX_FILES = 1_800; // ~5,000 pictures: 2 × 2 detail sheets (~1,250) and 4 × 4 thumbnail sheets (~350)
 const MAX_BYTES = 90_000_000;
 const MAX_SHEET = 400_000;
 const MAX_STATIC_FILES = 19_000;
@@ -101,10 +101,11 @@ describe('sheet locality', () => {
   /** Common searches: the thumbnail sheets their top 20 touch, and those sheets' bytes. */
   const QUERIES = ['豚', '鶏', '牛', 'ごはん', 'うどん', 'そば', 'ラーメン', 'さけ', 'まぐろ', 'さば', '卵', '豆腐', '納豆', 'キャベツ', 'トマト', 'たまねぎ', 'にんじん',
     'カレー', '丼', '味噌汁', 'サラダ', 'パン', 'りんご', 'バナナ', '牛乳', 'ヨーグルト', 'チーズ', 'おにぎり', '寿司', 'ビール', 'スープ', 'サンド', 'えび'];
-  /** At most this many thumbnail sheets for one search's top 20. */
-  const MAX_SHEETS = 4;
+  /** A search's top 20's thumbnail download (the sheets they touch, 4 × 4 cells each): on average, and at most. */
+  const MEAN_KB = 120;
+  const MAX_KB = 350;
 
-  it('keeps a common search on a few thumbnail sheets', async () => {
+  it('keeps a common search\'s thumbnail download small', async () => {
     const food = join(STATIC, 'food');
     const fi = JSON.parse(readFileSync(join(food, 'index.json'), 'utf8')) as FoodIndex;
     const db = emptyDb(fi);
@@ -117,7 +118,8 @@ describe('sheet locality', () => {
     });
     const avg = (k: 'sheets' | 'kb') => (rows.reduce((n, r) => n + r[k], 0) / rows.length).toFixed(1);
     console.log(`thumbnail sheets per search (top 20): mean ${avg('sheets')}, ${avg('kb')} KB; ${rows.map((r) => `${r.q} ${r.sheets}/${r.kb}KB`).join(', ')}`);
-    expect(rows.filter((r) => r.sheets > MAX_SHEETS)).toEqual([]);
+    expect(Number(avg('kb'))).toBeLessThanOrEqual(MEAN_KB);
+    expect(rows.filter((r) => r.kb > MAX_KB)).toEqual([]);
   });
 });
 
