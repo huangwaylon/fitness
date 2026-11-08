@@ -276,5 +276,7 @@ export default defineConfig({
     // AudioWorklet too (lib/mic/capture.worklet.js: the CSP's script-src takes 'self', never a data: URL).
     assetsInlineLimit: (file) => (/\.woff2?$|\.worklet\.js$/.test(file) ? false : undefined)
   },
-  test: { include: ['src/**/*.test.ts'] }
+  // (worker threads, not forked processes: the same isolation per file, a third to almost half less wall time at
+  // CI's 4 vCPU, 2026-11-08)
+  test: { include: ['src/**/*.test.ts'], pool: 'threads' }
 });
