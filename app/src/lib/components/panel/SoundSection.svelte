@@ -1,16 +1,14 @@
 <script lang="ts">
   // The panel's サウンド (docs/design.md "Sound settings"): ミュージック and 効果音 as two ON/OFF rows (NH's yellow
   // highlight when on, the button tiers) and one 音量 slider. Both start OFF; turning one on plays a taste of it (the
-  // opening theme, a confirm). Kept on this phone only (not synced like the language).
-  import { playingLabel, setSound, sound } from '#lib/sound/sound.svelte.ts';
-  import { hasMusic } from '#lib/sound/manifest.ts';
-  import { jst, minuteNow } from '#lib/time/clock.ts';
+  // opening theme, a confirm). Kept on this phone only (not synced like the language). No note under them (the user,
+  // 2026-11-08).
+  import { setSound, sound } from '#lib/sound/sound.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
 
   const ROWS = ['music', 'sfx'] as const;
   const s = $derived(sound.settings);
-  const hour = $derived(jst(minuteNow()).hour);
   const volume = $derived(Math.round(s.volume * 10));
   const off = $derived(!s.music && !s.sfx);
 </script>
@@ -33,11 +31,6 @@
     <input type="range" min="0" max="10" step="1" value={volume} disabled={off} data-sfx="self" style:--v="{volume * 10}%"
       oninput={(e) => setSound({ volume: Number(e.currentTarget.value) / 10 })} onchange={() => cue('tick')} />
   </label>
-
-  <p class="note">
-    {#if s.music}{(sound.playing && playingLabel(sound.playing, hour)) || (hasMusic() ? t('sound.nowPlaying', { hour }) : t('sound.noMusic'))}<br />{/if}
-    {t('sound.silentNote')}
-  </p>
 </div>
 
 <style>
@@ -85,5 +78,4 @@
   }
   input[type='range']:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: var(--r-pill); }
 
-  .note { margin: 4px 6px 0; font-size: var(--fs-s); font-weight: 700; line-height: 1.5; color: var(--text-soft); }
 </style>
