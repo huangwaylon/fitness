@@ -425,6 +425,14 @@ const popupStill = (page: Page) =>
     };
     frame();
   }));
+/** The page's installed clock paused about now: a moment ahead of the page's time, which runs on during the round
+ *  trip (pauseAt can't go back: again further ahead if the page got there first). */
+export async function pauseNow(page: Page) {
+  for (let ahead = 250; ; ahead *= 2) {
+    const at = await page.evaluate((ms) => Date.now() + ms, ahead);
+    if (await page.clock.pauseAt(at).then(() => true, (e: Error) => (/to the past/.test(e.message) && ahead < 8000 ? false : Promise.reject(e)))) return;
+  }
+}
 /** The popup's box (or ''), read once. */
 const popupBox = (page: Page) =>
   page.evaluate(() => {
@@ -437,11 +445,7 @@ const popupBox = (page: Page) =>
  *  tier's software-GL frames spread the wall-clock taps past SHAKE_WINDOW_MS). */
 export async function shakeTree(page: Page, o: { onClock?: boolean } = {}) {
   if (o.onClock) {
-    // (a moment ahead of the page's now, which runs on during the round trip: again further ahead if it got there)
-    for (let ahead = 250; ; ahead *= 2) {
-      const at = await page.evaluate((ms) => Date.now() + ms, ahead);
-      if (await page.clock.pauseAt(at).then(() => true, (e: Error) => (/to the past/.test(e.message) && ahead < 8000 ? false : Promise.reject(e)))) break;
-    }
+    await pauseNow(page);
     for (let i = 0; i < 3; i++) {
       if (i) {
         await page.clock.runFor(120);

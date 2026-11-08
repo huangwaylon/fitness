@@ -3,6 +3,7 @@
 // sheet asks the compositor for frames while someone reads their charts; closed, the island runs again.
 import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, openKenkou } from './hud.ts';
+import { pauseNow } from './island.ts';
 import { drawn, fixtureTiles, mapReady } from './trips.ts';
 
 /** A blank topo tile (トレイル's map: hiking.spec's). */
@@ -80,7 +81,7 @@ for (const [k, settle] of Object.entries(infoSheets))
     // the clock paused: from here the page's time moves only as stepped. At rest once a second and a half of it asks
     // for no frame (the map's last tiles in and faded, the villagers' turn to the menu's tap (R18) over: however long
     // a loaded runner took), then a second and a half more asks for none (a loop never gets there)
-    await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 50);
+    await pauseNow(page);
     for (let i = 0, n = await rafs(page); ; i++) {
       expect(i, 'at rest within 12 s of the page\'s time').toBeLessThan(8);
       await page.clock.runFor(1500);
