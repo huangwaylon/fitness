@@ -17,9 +17,10 @@ import { FLOWER_U } from './scene.ts';
 import { coastOf } from './coast.ts';
 import { site } from './site.svelte.ts';
 
-/** A critter's shared id: its kind and the slot it came in (one a channel at a time, so unique for the day). */
+/** A critter's shared id: its kind, its channel past the first (a water, a coast, the second bug's lane) and the slot
+ *  it came in (one a channel at a time, so unique for the day). */
 export const critterId = (s: Spawn): string =>
-  s.water ? `${s.kind}:${s.water}:${s.slot}` : s.coast ? `${s.kind}:c${s.coast}:${s.slot}` : `${s.kind}:${s.slot}`;
+  s.water ? `${s.kind}:${s.water}:${s.slot}` : s.coast ? `${s.kind}:c${s.coast}:${s.slot}` : s.lane ? `${s.kind}:l${s.lane}:${s.slot}` : `${s.kind}:${s.slot}`;
 
 /** A seeded stream of one spawn for one purpose (`salt`): the species pickers keep `spawnRand`'s own. */
 const subRand = (seed: number, salt: number): (() => number) => mulberry32((seed ^ Math.imul(salt + 1, 0x9e3779b1)) >>> 0);
@@ -163,7 +164,15 @@ export interface BugOpts {
   at?: { spot: P3; patch: Patch | null };
   /** Where else it mustn't go (this phone's own: off screen, under a control). */
   keep?: (p: P3) => boolean;
+  /** The other roaming bugs' spots while it's about (ambient.ts bugRivals): never its spot too (another trunk or
+   *  flower head, or SPOT_GAP clear of them). */
+  taken?: readonly P3[];
 }
+
+/** How far a roaming bug's spot keeps from another's (u), where its place has the room (a trunk or a flower head of
+ *  its own, a spot of its patch that far off), else at least SPOT_MIN (the rock's little patch: side by side). */
+const SPOT_GAP = 40;
+export const SPOT_MIN = 12;
 
 /** NH's paces in flight (u/s, at random between; an 80u villager strolls at 90 and runs at 300): a butterfly flutters
  *  by slower than one strolls, a bee a little quicker, a firefly drifts; a dragonfly darts quick and short, then
@@ -188,26 +197,36 @@ export function bugPath(id: BugId, seed: number, stayMs: number, o: BugOpts = {}
     ? () => true
     : (p: P3) => groundOk(place, p.x, p.z) && !off.some((a) => p.x >= a.x0 && p.x <= a.x1 && p.z >= a.z0 && p.z <= a.z1) && (!o.keep || o.keep(p));
   let spot: P3 | null = o.at?.spot ?? null, patch: Patch | null = o.at?.patch ?? null;
+  // (another roaming bug's spot: a trunk or a head of its own, else SPOT_GAP clear; with nothing else, any)
+  const taken = o.taken ?? [];
+  const gaps = taken.length ? [SPOT_GAP, SPOT_MIN] : [];
+  const clear = (gap: number) => (p: P3) => taken.every((t) => (t.x - p.x) ** 2 + (t.z - p.z) ** 2 >= gap ** 2);
+  const free = <T extends P3>(xs: readonly T[]): readonly T[] => {
+    for (const gap of gaps) if (xs.some(clear(gap))) return xs.filter(clear(gap));
+    return xs;
+  };
   if (o.at) {
     // (chosen already)
   } else if (flight === 'perch') {
-    const all = perches(BUGS[id].tree === 'palm');
-    const p = all.length ? pickOne(all, r) : null;
-    if (p) spot = { x: p.x + p.dx, z: p.z - 1, lift: p.lift };
+    const all = free(perches(BUGS[id].tree === 'palm').map((p) => ({ x: p.x + p.dx, z: p.z - 1, lift: p.lift })));
+    spot = all.length ? pickOne(all, r) : null;
   } else if (flight === 'flower') {
-    const heads = id === 'orchid-mantis' && o.white?.length ? flowerHeads().filter((h) => o.white!.includes(h.id)) : flowerHeads();
+    const heads = free(id === 'orchid-mantis' && o.white?.length ? flowerHeads().filter((h) => o.white!.includes(h.id)) : flowerHeads());
     const h = pickOne(heads, r);
     if (h) spot = { x: h.x, z: h.z, lift: h.lift };
   } else {
     const list = o.area ? [o.area] : patches(place);
     const order = list.map((a) => [a, r()] as const).sort((a, b) => a[1] - b[1]).map(([a]) => a);
-    for (const a of order) {
-      const p = freeIn(a, ok, r);
-      if (p) {
-        spot = p;
-        patch = a;
-        break;
+    for (const test of [...gaps.map((gap) => (p: P3) => ok(p) && clear(gap)(p)), ok]) {
+      for (const a of order) {
+        const p = freeIn(a, test, r);
+        if (p) {
+          spot = p;
+          patch = a;
+          break;
+        }
       }
+      if (spot) break;
     }
     if (!spot && list.length) {
       patch = list[0];

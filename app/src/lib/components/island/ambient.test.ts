@@ -3,11 +3,11 @@ import { shuffle, seeded } from '#lib/random.ts';
 import type { PersonId as Who } from '#lib/types.ts';
 import {
   DECIDE_MS, HOLD_SLOTS, SLOT_MS, SLOTS_PER_DAY, WANDER_REACH_U, crittersAt, held, msToNextSlot, slotAt, slotRand, slotStart, spawnRand, spawnsIn,
-  villagerBeats, type AmbientWorld, type Poi, type Spawn, type VillagerBeat
+  bugRivals, villagerBeats, type AmbientWorld, type Poi, type Spawn, type VillagerBeat
 } from './ambient.ts';
 import { BUBBLE_SHARE, pickBug, pickFish } from './critters.ts';
 import { pickAct } from './visitorLife.ts';
-import { critterId } from './critterPath.ts';
+import { SPOT_MIN, bugPath, critterId } from './critterPath.ts';
 
 const DATE = '2026-11-01';
 const T0 = Date.parse('2026-11-01T00:00:00+09:00');
@@ -181,11 +181,11 @@ describe('ambient life: the villagers', () => {
 describe('ambient life: the critters', () => {
   const all = Array.from({ length: SLOTS_PER_DAY }, (_, s) => spawnsIn(DATE, s)).flat();
 
-  it('never brings two at once to the sea, a fresh water or the bugs, each staying its time within its block', () => {
+  it('never brings two at once to the sea, a fresh water or a bug lane, each staying its time within its block', () => {
     const fresh = (w: string) => (x: Spawn) => x.kind === 'fresh' && x.water === w;
     // (failures collected, one expect: an expect a spawn is ~56k calls)
     const fails: string[] = [];
-    for (const [name, of] of [['sea', (x: Spawn) => x.kind === 'fish' || x.kind === 'bubbles'], ...['pond', 'river', 'mouth', 'clifftop'].map((w) => [w, fresh(w)] as const), ['bug', (x: Spawn) => x.kind === 'bug']] as const) {
+    for (const [name, of] of [['sea', (x: Spawn) => x.kind === 'fish' || x.kind === 'bubbles'], ...['pond', 'river', 'mouth', 'clifftop'].map((w) => [w, fresh(w)] as const), ['bug', (x: Spawn) => x.kind === 'bug' && !x.lane], ['bug2', (x: Spawn) => x.kind === 'bug' && x.lane === 2]] as const) {
       const s = all.filter(of);
       if (!(s.length > 100)) fails.push(`${name}: only ${s.length}`);
       for (let i = 1; i < s.length; i++) if (!(s[i].slot >= s[i - 1].slot + s[i - 1].slots)) fails.push(`${name}: two at once at slot ${s[i].slot}`);
@@ -201,7 +201,7 @@ describe('ambient life: the critters', () => {
     expect(fails.slice(0, 10)).toEqual([]);
     const busy = (k: string[]) => all.filter((x) => k.includes(x.kind)).reduce((n, x) => n + x.slots, 0) / SLOTS_PER_DAY;
     expect(busy(['fish', 'bubbles'])).toBeGreaterThan(0.6); // a fish is basically always there
-    expect(busy(['bug'])).toBeGreaterThan(0.3);
+    expect(busy(['bug'])).toBeGreaterThan(0.6); // two lanes: about twice the one lane's 0.3+
     expect(all.filter((x) => x.kind === 'bubbles').length / all.filter((x) => x.kind === 'fish' || x.kind === 'bubbles').length).toBeCloseTo(BUBBLE_SHARE, 1);
   });
 
@@ -234,6 +234,38 @@ describe('ambient life: the critters', () => {
     expect(new Set(names).size).toBeGreaterThan(3);
     const bug = all.find((x) => x.kind === 'bug')!;
     expect(pickBug(11, 13, spawnRand(bug))).toBe(pickBug(11, 13, spawnRand(structuredClone(bug))));
+  });
+
+  it('two roaming bugs at once (two lanes, the same per-slot odds and stays), never on one spot, the same on every phone', () => {
+    let both = 0, pairs = 0;
+    const bad: string[] = [];
+    for (let d = 0; d < 3; d++) {
+      const date = `2026-07-${String(d + 1).padStart(2, '0')}`;
+      for (let slot = 0; slot < SLOTS_PER_DAY; slot++) {
+        const now = crittersAt(date, slot).filter((x) => x.kind === 'bug');
+        if (now.length === 2) both++;
+        for (const c of now) {
+          if (c.lane !== 2 || c.slot !== slot) continue;
+          const hour = Math.floor(slot / 360), id = pickBug(7, hour, spawnRand(c));
+          if (!id) continue;
+          const taken = bugRivals(date, c).flatMap((q) => {
+            const rid = pickBug(7, Math.floor(q.slot / 360), spawnRand(q));
+            const p = rid && bugPath(rid, q.seed, 0);
+            return p ? [p.spot] : [];
+          });
+          const p = bugPath(id, c.seed, 0, { taken })!;
+          // (both phones: the same spot from the same inputs)
+          expect(bugPath(id, c.seed, 0, { taken: structuredClone(taken) })!.spot).toEqual(p.spot);
+          for (const t of taken) {
+            pairs++;
+            if ((t.x - p.spot.x) ** 2 + (t.z - p.spot.z) ** 2 < SPOT_MIN ** 2) bad.push(`${date} slot ${slot} ${id}`);
+          }
+        }
+      }
+    }
+    expect(both / (3 * SLOTS_PER_DAY)).toBeGreaterThan(0.3);
+    expect(pairs).toBeGreaterThan(300);
+    expect(bad).toEqual([]);
   });
 });
 

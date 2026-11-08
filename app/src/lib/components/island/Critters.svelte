@@ -54,7 +54,7 @@
   import { SHOWN, bodyRect, grow, hitSources, inside, type Seen } from './hitbox.ts';
   import { artUrl } from '#lib/art.ts';
   import { jst, now } from '#lib/time/clock.ts';
-  import { crittersAt, msToNextSlot, slotAt, slotStart, spawnRand, type Spawn } from './ambient.ts';
+  import { bugRivals, crittersAt, msToNextSlot, slotAt, slotStart, spawnRand, type Spawn } from './ambient.ts';
   import { relayOffset } from './ambientClock.ts';
   import { coasts } from './coast.ts';
   import { site } from './site.svelte.ts';
@@ -144,7 +144,15 @@
   $effect(() => {
     if (floatOut && w.rest.three) return w.moveStart();
   });
-  let bug = $state<Bug | null>(null);
+  /** The bugs about (ambient life's two roaming ones, one out of a bush, from under the rock, off a villager), at
+   *  most MAX_BUGS. */
+  let bugs = $state<Bug[]>([]);
+  const MAX_BUGS = 2;
+  const isBug = (b: Bug) => bugs.includes(b);
+  const dropBug = (b: Bug) => void (isBug(b) && (bugs = bugs.filter((x) => x !== b)));
+  /** Each bug's sprite and hopper (by its `n`). */
+  const bugEls = $state<Record<number, HTMLElement>>({});
+  const hopEls = $state<Record<number, HTMLElement>>({});
   let net = $state<Net | null>(null);
   /** A spot of bubbles in the sea: something to dive for. */
   let bubbles = $state<{ n: number; item: DiveItem; x: number; z: number; cid?: string } | null>(null);
@@ -157,16 +165,14 @@
   /** Earth flying up where a mole cricket was dug up. */
   let dig = $state<Net | null>(null);
   let seq = 0;
-  let bugEl = $state<HTMLElement>();
   $effect(() => {
-    const list = () => {
-      const r = bug && !bug.gone && bugEl && bugBox(bug, bugEl);
-      return r ? [{ box: grow(r), kind: 'bug' }] : [];
-    };
+    const list = () => bugs.flatMap((b) => {
+      const el = bugEls[b.n];
+      return !b.gone && el ? [{ box: grow(bugBox(b, el)), kind: 'bug' }] : [];
+    });
     hitSources.add(list);
     return () => void hitSources.delete(list);
   });
-  let hopEl = $state<HTMLElement>();
   let chaseEl = $state<HTMLElement>();
   const night = $derived(tod === 'night');
 
@@ -176,7 +182,8 @@
     pending.clear();
     clearTimeout(tickT);
     fishes = none();
-    line = bug = net = dig = bubbles = diving = bang = null;
+    bugs = [];
+    line = net = dig = bubbles = diving = bang = null;
   }
 
   // ---------- geometry ----------
@@ -575,8 +582,7 @@
       void f.x, void f.z, void f.ms;
       if (f.dash) full3(f.ms + 200);
     }
-    const b = bug;
-    if (b) {
+    for (const b of bugs) {
       ids.add(bugId(b));
       void b.x, void b.z, void b.lift, void b.flip, void b.gone;
       if (untrack(() => bugFast(b))) full3(b.ms + 200);
@@ -670,9 +676,9 @@
   /** A bug comes on where NH keeps it and the camera can see it (`pinned`: or at its place anyway); false when there's
    *  nowhere clear for it right now. `from`: it flies (or hops) in from there (a shaken bush, my villager, the rock),
    *  keeping to `area`. */
-  function spawnBug(id: BugId | null, o: { from?: P3; area?: Patch; avoid?: Patch[]; stay?: boolean | number; pinned?: boolean } & Shared = {}): boolean {
+  function spawnBug(id: BugId | null, o: { from?: P3; area?: Patch; avoid?: Patch[]; taken?: P3[]; stay?: boolean | number; pinned?: boolean } & Shared = {}): boolean {
     const { from, area, stay = true, pinned = false } = o;
-    if (!id || bug) return !!bug;
+    if (!id || bugs.length >= MAX_BUGS) return bugs.length > 0;
     void loadSprite();
     preload(critterArt(id));
     void loadLines().catch(() => {});
@@ -727,39 +733,40 @@
   const KEPT_MS = 30 * 60_000;
   /** A bug on its itinerary (critterPath.ts bugPath: a shared one's from its seed, wherever that is: the projector
    *  shows it when the camera sees it), where in its stay it is now. */
-  function placeBug(id: BugId, o: { from?: P3; area?: Patch; avoid?: Patch[]; stay?: boolean | number; at?: BugOpts['at']; keep?: BugOpts['keep'] } & Shared, p: NonNullable<Shared['path']>): boolean {
-    const white = flowerHeads().filter((h) => h.white).map((h) => h.fid);
-    const path = bugPath(id, p.seed, p.total, { from: o.from, area: o.area, white, avoid: o.avoid, at: o.at, keep: o.keep });
+  function placeBug(id: BugId, o: { from?: P3; area?: Patch; avoid?: Patch[]; taken?: P3[]; stay?: boolean | number; at?: BugOpts['at']; keep?: BugOpts['keep'] } & Shared, p: NonNullable<Shared['path']>): boolean {
+    const path = bugPath(id, p.seed, p.total, { from: o.from, area: o.area, white: whiteHeads(), avoid: o.avoid, taken: o.taken, at: o.at, keep: o.keep });
     if (!path) return false;
     const e = shared.now() - p.t0, at = bugAt(path.flight, path.legs, path.start, e);
     const k = path.legs.findLastIndex((l) => l.t <= e), spot = path.spot, last = k >= 0 ? path.legs[k] : null;
-    bug = {
+    bugs.push({
       n: ++seq, id, flight: path.flight, place: path.place, x: at.x, z: at.z, lift: at.lift, ax: spot.x, az: spot.z, g: Math.max(0.2, w.screenAt(spot.x, spot.z).ground), ms: 0,
       flip: spot.x >= site.midX, gone: false, sat: !!last?.sat && e >= last.t + last.ms,
       ...(path.flight === 'stalk' && { stalk: 'calm' as const }), cid: o.cid, legs: path.legs, start: path.start, t0: p.t0
-    };
-    later(fly, 60);
+    });
+    const b = bugs.at(-1)!; // (the state's proxy: the timers compare against it)
+    later(() => fly(b), 60);
     const stay = o.stay ?? true;
-    if (stay) later(() => bugLeave(), stay === true ? STAY_MS.bug : stay);
+    if (stay) later(() => bugLeave(b), stay === true ? STAY_MS.bug : stay);
     return true;
   }
+  /** The white flowers' ids (the orchid mantis's). */
+  const whiteHeads = () => flowerHeads().filter((h) => h.white).map((h) => h.fid);
   /** Its next move, at its time (critterPath.ts): a shared one's the same moves at the same moments on both phones.
    *  The 3D model follows the itinerary's own curve (bug3); the invisible sprite, the tap box's fallback, its legs. */
-  function fly() {
-    const b = bug;
-    if (!b || b.gone || b.held || !b.legs || b.t0 === undefined) return;
-    if (b.stalk === 'rear') return later(fly, 600); // reared up at my tap: it holds still
+  function fly(b: Bug) {
+    if (!isBug(b) || b.gone || b.held || !b.legs || b.t0 === undefined) return;
+    if (b.stalk === 'rear') return later(() => fly(b), 600); // reared up at my tap: it holds still
     const e = shared.now() - b.t0;
     const k = b.legs.findIndex((l) => l.t + l.ms > e);
     if (k < 0) return;
     const l = b.legs[k];
-    if (l.t > e) return later(fly, l.t - e);
+    if (l.t > e) return later(() => fly(b), l.t - e);
     const left = Math.max(0, l.t + l.ms - e);
     b.sat = false;
     Object.assign(b, { ms: left, flip: l.x > b.x, x: l.x, z: l.z, lift: l.lift });
-    if (l.hop) hopEl?.animate([{ translate: '0 0' }, { translate: '0 calc(-9 * var(--u))', offset: 0.45 }, { translate: '0 0' }], { duration: Math.max(120, left), easing: 'ease-out' });
-    if (l.sat) later(() => bug === b && !b.gone && !b.held && (b.sat = true), left);
-    later(fly, left + 20);
+    if (l.hop) hopEls[b.n]?.animate([{ translate: '0 0' }, { translate: '0 calc(-9 * var(--u))', offset: 0.45 }, { translate: '0 0' }], { duration: Math.max(120, left), easing: 'ease-out' });
+    if (l.sat) later(() => isBug(b) && !b.gone && !b.held && (b.sat = true), left);
+    later(() => fly(b), left + 20);
   }
   /** Off its itinerary, from where it's drawn now (a startle, a charge, a rear, the net take it from there). */
   function offLegs(b: Bug) {
@@ -768,9 +775,8 @@
     Object.assign(b, { x: p.x, z: p.z, lift: p.lift, ms: 0, legs: undefined });
   }
   /** Off to the nearer side, up a little, fading (a firefly or a cricket just fades where it is). */
-  function bugLeave(fast = false, away?: number) {
-    const b = bug;
-    if (!b || b.gone || b.held) return;
+  function bugLeave(b: Bug, fast = false, away?: number) {
+    if (!isBug(b) || b.gone || b.held) return;
     offLegs(b);
     b.gone = true;
     b.goneAt = performance.now();
@@ -787,32 +793,35 @@
     } else {
       Object.assign(b, { ms: 2000, sat: false, flip: dir > 0, x: b.x + dir * 90, lift: b.lift + 30 });
     }
-    later(() => bug === b && (bug = null), b.ms + 50);
+    later(() => dropBug(b), b.ms + 50);
   }
 
   // my villager running at a flier, a percher or a hopper sends it off (on both phones), as in NH; walked up to slowly
   // or netted from where it stands, it stays (critters.ts fleesFrom). Looked at 5 times a second while one is about.
   $effect(() => {
-    const b = bug;
-    if (!b || b.gone || b.held || !fleesFrom(b.flight, 0, Infinity)) return;
+    const list = bugs.filter((b) => !b.gone && !b.held && fleesFrom(b.flight, 0, Infinity));
+    if (!list.length) return;
     let last = livePos('mine'), lt = performance.now();
     const id = setInterval(() => {
-      const p = livePos('mine'), t = performance.now(), m = mos.get(bugId(b));
-      const qx = m?.g.started ? m.xyz[0] : b.x, qz = m?.g.started ? m.xyz[1] : b.z;
+      const p = livePos('mine'), t = performance.now();
       const ups = (Math.hypot(p[0] - last[0], p[1] - last[1]) / Math.max(1, t - lt)) * 1000;
       [last, lt] = [p, t];
-      if (bug !== b || b.gone || b.held || theirs(b.cid) || !inMotion('mine')) return;
-      if (!fleesFrom(b.flight, Math.hypot(p[0] - qx, p[1] - qz), ups)) return;
-      claim(b.cid, b.id, b.x, b.z, 'flee');
-      sceneSfx('bug-flee');
-      bugLeave(true, Math.sign(qx - p[0]) || 1);
+      if (!inMotion('mine')) return;
+      for (const b of list) {
+        if (!isBug(b) || b.gone || b.held || theirs(b.cid)) continue;
+        const m = mos.get(bugId(b)), qx = m?.g.started ? m.xyz[0] : b.x, qz = m?.g.started ? m.xyz[1] : b.z;
+        if (!fleesFrom(b.flight, Math.hypot(p[0] - qx, p[1] - qz), ups)) continue;
+        claim(b.cid, b.id, b.x, b.z, 'flee');
+        sceneSfx('bug-flee');
+        bugLeave(b, true, Math.sign(qx - p[0]) || 1);
+      }
     }, 200);
     return () => clearInterval(id);
   });
 
   /** A pill bug (or, in its hours, a centipede) crawls out from under the rock (Care's rock tap). */
   export function fromRock(_x?: number, _y?: number) {
-    if (bug) return;
+    if (bugs.length >= MAX_BUGS) return;
     const { hour } = jst(now());
     const id: BugId = oddsAt(BUGS.centipede, 1, hour) > 0 ? 'centipede' : 'pill-bug';
     // a little patch of lawn in front of the rock's foot
@@ -845,7 +854,7 @@
   /** A tap on my villager (IslandScene via SceneTaps): now and then a flea hops off it (NH's fleas) into the grass
    *  round its feet. */
   export function fromVillager(_el?: Element) {
-    if (bug || !(forceFlea || fleaJumps(jst(now()).month, rand))) return;
+    if (bugs.length >= MAX_BUGS || !(forceFlea || fleaJumps(jst(now()).month, rand))) return;
     flea();
   }
   function flea(stay = true) {
@@ -857,7 +866,7 @@
   /** A shaken bush lets a bug out now and then (SceneTaps' bush tap: its scenery id, 'hedge-<i>', or the hedge's
    *  index): it flutters round that bush. */
   export function fromBush(which: string | number) {
-    if (bug) return;
+    if (bugs.length >= MAX_BUGS) return;
     const id = typeof which === 'number' ? `hedge-${which}` : which;
     const b = bushes().find((s) => s.id === id);
     if (!b) return;
@@ -979,7 +988,7 @@
   function theirCatch(e: { what: string; id?: string; at?: readonly [number, number]; how?: How; who?: Who }, live: boolean, beat: boolean) {
     const id = e.id, how = e.how;
     const f = allFish().find((x) => x.cid === id) ?? null;
-    const b = bug && bug.cid === id ? bug : null;
+    const b = bugs.find((x) => x.cid === id) ?? null;
     const bb = bubbles && bubbles.cid === id ? bubbles : null;
     const dv = diving && diving.cid === id ? diving : null;
     // my line was out for it: it's theirs now (my float waits on: the next step finds it gone)
@@ -992,7 +1001,7 @@
         swimTo(f, p.x + (f.flip ? 30 : -30), p.z, 650);
         later(() => fishes[f.pool] === f && (fishes[f.pool] = null), 700);
       }
-      if (b && bug === b) bugLeave(true);
+      if (b) bugLeave(b, true);
       if (bb && bubbles === bb) bubbles = null;
       if (dv) getAway(dv.n, true);
       return;
@@ -1003,7 +1012,7 @@
         f.gone = true;
         later(() => fishes[f.pool] === f && (fishes[f.pool] = null), 500);
       }
-      if (b && bug === b) bug = null;
+      if (b) dropBug(b);
       if (bb && bubbles === bb) bubbles = null;
       if (dv && diving === dv) diving = null;
     };
@@ -1029,7 +1038,7 @@
    *  out here too, along the same itinerary (from its id), while its stay lasts. */
   function theirBug(e: { id: string; what: string; at: readonly [number, number]; t: number }) {
     const [, bid, src] = e.what.split(':');
-    if (!bid || !(bid in BUGS) || bug) return;
+    if (!bid || !(bid in BUGS) || bugs.length >= MAX_BUGS || bugs.some((b) => b.cid === e.id)) return;
     const left = STAY_MS.bug - (shared.now() - e.t);
     if (left < 1000 || caught(shared.day, e.id)) return;
     spawnBug(bid as BugId, { ...putFrom(src ?? 'bush', e.at[0], e.at[1]), stay: left, cid: e.id, path: { seed: seedOf(e.id), t0: e.t, total: STAY_MS.bug } });
@@ -1057,9 +1066,9 @@
     }
     const g = geo();
     if (!g) return false;
-    const b = bug;
     // (the partner has it already, their villager on the way: it's theirs, the tap goes on to whatever else is there)
-    if (b && !b.gone && bugEl && !theirs(b.cid) && seen(b.x, b.z)) {
+    const b = nearestBug(px, py, seen), bugEl = b && bugEls[b.n];
+    if (b && bugEl) {
       // what it draws (its mover is a 0 × 0 point): on its tap box (hitbox.ts, at least 44px) it's caught
       const r = bugBox(b, bugEl);
       const d = Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2));
@@ -1076,8 +1085,8 @@
           full3(REAR_MS + 200); // (its front lifted, drawn at once: it may have been resting, its model still)
           // reared up, on the 3D island too: it lifts its front (bug3) under NH's 「！」 till it settles (the 3D model
           // had no rear: the first tap showed nothing, the second came while it was reared and it always charged off)
-          fx3d('bang', b.x, b.z, b.lift + 12, { ms: REAR_MS, held: () => bug === b && b.stalk === 'rear' });
-          later(() => bug === b && b.stalk === 'rear' && (b.stalk = 'settled'), REAR_MS);
+          fx3d('bang', b.x, b.z, b.lift + 12, { ms: REAR_MS, held: () => isBug(b) && b.stalk === 'rear' });
+          later(() => isBug(b) && b.stalk === 'rear' && (b.stalk = 'settled'), REAR_MS);
           return true;
         }
         if (act === 'charge') {
@@ -1087,7 +1096,7 @@
           const dx = Math.sign(to.x - b.x) || 1;
           b.stalk = 'calm';
           Object.assign(b, { ms: 220, flip: dx > 0, x: b.x + clamp(to.x - b.x, -16, 16), z: b.z + clamp(to.z - b.z, -8, 8) });
-          later(() => bugLeave(true, -dx), 260);
+          later(() => bugLeave(b, true, -dx), 260);
           return true;
         }
       }
@@ -1102,7 +1111,7 @@
         const p = (bugEl && stageOf(bugEl)) ?? at;
         dig = { n: ++seq, ...p, in3d: fx3d('swing', b.x, b.z, 0, { v: 'shovel' }) && fx3d('dust', b.x, b.z, 0, { v: '#b48a5a' }) };
         sceneSfx('dig');
-        if (bug === b) bug = null;
+        dropBug(b);
         later(() => {
           sceneSfx('catch');
           show(b.id, p.x, p.y, b.cid);
@@ -1123,7 +1132,7 @@
         net = { n: ++seq, ...p, in3d: fx3d('swing', b.x, b.z, b.lift, { v: 'net', dir: b.x < site.midX ? -1 : 1 }) };
         sceneSfx('net');
         later(() => {
-          if (bug === b) bug = null;
+          dropBug(b);
           sceneSfx('catch');
           show(b.id, p.x, p.y, b.cid);
         }, 160);
@@ -1134,7 +1143,7 @@
         // it flies off (on both phones); the tap still lands where it was meant (a visitor, a shell, the grass)
         claim(b.cid, b.id, b.x, b.z, 'flee');
         sceneSfx('bug-flee');
-        bugLeave(true, px < r.left + r.width / 2 ? 1 : -1);
+        bugLeave(b, true, px < r.left + r.width / 2 ? 1 : -1);
       }
     }
     const dv = diving;
@@ -1201,9 +1210,22 @@
    *  flies or crawls in front of my villager, a canopy, a door). A fish's shadow lies on the water, behind them all: a
    *  button over it hides it, and the button keeps its tap (a canopy over the pond shakes its tree). */
   export function onCritter(px: number, py: number): boolean {
-    const b = bug;
-    if (line || !b || b.gone || !bugEl || theirs(b.cid)) return false;
-    return inside(grow(bugBox(b, bugEl), 0, 0), px, py);
+    if (line) return false;
+    return bugs.some((b) => {
+      const el = bugEls[b.n];
+      return !b.gone && !!el && !theirs(b.cid) && inside(grow(bugBox(b, el), 0, 0), px, py);
+    });
+  }
+  /** The bug a tap is for: of those mine to catch and shown, the one nearest it as drawn (null: none about). */
+  function nearestBug(px: number, py: number, seen: Seen): Bug | null {
+    let best: Bug | null = null, bd = Infinity;
+    for (const b of bugs) {
+      const el = bugEls[b.n];
+      if (b.gone || !el || theirs(b.cid) || !seen(b.x, b.z)) continue;
+      const r = bugBox(b, el), d = Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2));
+      if (d < bd) (best = b), (bd = d);
+    }
+    return best;
   }
   // ---------- the others' lines (docs/design.md "Shared world") ----------
   // Each step of my line goes to the others' phones (`fish`: presence only), and theirs come here: their villager's rod,
@@ -1330,7 +1352,15 @@
     } else if (c.kind === 'fresh') {
       const wt = freshWater(c);
       if (!fishes[wt]) void spawnFish(wt, stay, undefined, false, r, o);
-    } else if (!bug) spawnBug(pickBug(o.month, o.hour, r, yieldSky.sky), { stay, ...o });
+    } else if (!bugs.some((b) => b.cid === cid)) {
+      // (the second lane's spot keeps off the first lane's bugs about in its stay: ambient.ts bugRivals)
+      const taken = bugRivals(date, c).flatMap((q) => {
+        const id = pickBug(o.month, Math.floor(q.slot / 360), spawnRand(q), yieldSky.sky);
+        const p = id && bugPath(id, q.seed, 0, { white: whiteHeads() });
+        return p ? [p.spot] : [];
+      });
+      spawnBug(pickBug(o.month, o.hour, r, yieldSky.sky), { stay, ...o, taken });
+    }
   }
   $effect(() => {
     if (!scene || !enabled() || pinned) return;
@@ -1462,13 +1492,12 @@
       {/if}
     {/key}
   {/if}
-  {#if bug}
-    {@const b = bug}
+  {#each bugs as b (b.n)}
     <!-- (its moves and its turns: bug3, each frame; it fades in where it comes, and out over its leave's end) -->
-    <i class="m3n" {@attach w.at({ bare: true, x: b.ax, z: b.az, lift: 0, h: 4, always: true, live: () => bug3(b), m3: { key: `critters/${b.id}`, id: bugId(b), get yaw() { return bugYaw(b); }, get flap() { return mos.get(srcBug(b).id)?.flap ?? 0; }, get off() { return bugOff(b); }, art: () => bugEl,
+    <i class="m3n" {@attach w.at({ bare: true, x: b.ax, z: b.az, lift: 0, h: 4, always: true, live: () => bug3(b), m3: { key: `critters/${b.id}`, id: bugId(b), get yaw() { return bugYaw(b); }, get flap() { return mos.get(srcBug(b).id)?.flap ?? 0; }, get off() { return bugOff(b); }, art: () => bugEls[b.n],
       // perched on a trunk: flat on its bark, its back to the camera
       pitch: b.sat && (b.place === 'trunk' || b.place === 'palm') ? (b.flip ? -1 : 1) * Math.PI / 2 : 0 } })} {@attach mirrorBug(b)}></i>
-  {/if}
+  {/each}
   {/if}
   {#each Object.entries(fishes) as [pk, f] (pk)}
     {#if f}
@@ -1536,21 +1565,18 @@
       </div>
     {/if}
   {/if}
-  {#if bug}
-    {@const b = bug}
-    {#key b.n}
+  {#each bugs as b (b.n)}
       <div class="node" {@attach w.at({ x: b.ax, z: b.az, h: 80, dz: -16, light: night })}>
-        <span class="mover bug {b.flight} {b.id}" class:night class:gone={b.gone} class:fled={b.fled} class:sat={b.sat} data-critter={b.id} data-place={b.place} bind:this={bugEl}
+        <span class="mover bug {b.flight} {b.id}" class:night class:gone={b.gone} class:fled={b.fled} class:sat={b.sat} data-critter={b.id} data-place={b.place} bind:this={bugEls[b.n]}
           style:translate={b.freeze ?? bugLoc(b)} style:transition-duration={b.fled ? null : `${b.ms}ms`} style:--ms="{b.ms}ms">
-          <span class="hopper" bind:this={hopEl}>
+          <span class="hopper" bind:this={hopEls[b.n]}>
             <span class="face" class:flip={b.flip}>
               {#if Sprite}<Sprite id={b.id} flight={b.flight} sat={b.sat} stalk={b.stalk} />{/if}
             </span>
           </span>
         </span>
       </div>
-    {/key}
-  {/if}
+  {/each}
 </div>
 
 <div class="held">
