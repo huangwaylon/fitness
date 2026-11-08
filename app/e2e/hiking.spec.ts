@@ -7,7 +7,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from './fixtures.ts';
-import { BASE } from './island.ts';
+import { BASE, islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
 import { drawn } from './trips.ts';
 import { toTrack } from '../src/lib/hiking/track.ts';
@@ -22,7 +22,9 @@ async function openTrails(page: Page, draw = false) {
   if (!draw) await page.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   await page.route('**/hiking/tracks/*.json', (r) => r.fulfill({ json: TRACK }));
   await page.goto(`${BASE}/?demo&date=2026-11-04T12:00&critter=none&visitor=none`);
-  await page.waitForFunction(() => !!(window as unknown as { __world?: unknown }).__world, null, { timeout: 30_000 });
+  // (the island up first, as after any goto: drawn, the menu unfolded while the island was still mounting never had
+  // its pills in place)
+  await islandUp(page);
   await fromMenu(page, 'hiking');
   await expect(cards(page)).toHaveCount(10);
 }
