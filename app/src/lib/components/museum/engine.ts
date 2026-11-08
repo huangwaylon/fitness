@@ -22,6 +22,7 @@ import { decal } from './geometry.ts';
 import { FPS } from '#lib/store/frameRate.ts';
 import { pacer } from '../world3d/pace.ts';
 import { plainImages } from '../world3d/gltf.ts';
+import { ktx2Plugin } from '../world3d/ktx2.ts';
 import M from './models.json' with { type: 'json' };
 import { modelBounds } from '../world3d/models3d.ts';
 import { along, roomScreen, walkLens, type Walk } from '../rooms/view.ts';
@@ -405,15 +406,18 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     disposables.push(m);
     return m;
   };
-  const loader = plainImages(new GLTFLoader());
+  // (the island's models, the catches among them, drawn from their KTX2s as on the island: world3d/ktx2.ts; the
+  // museum's own keep their WebPs)
+  const loader = plainImages(new GLTFLoader()), islandLoader = ktx2Plugin(plainImages(new GLTFLoader()));
   loader.setMeshoptDecoder(MeshoptDecoder);
+  islandLoader.setMeshoptDecoder(MeshoptDecoder);
   const glbs = new Map<string, Promise<GLTF | null>>();
   let pending = 0;
-  const load = (url: string) => {
+  const load = (url: string, from = loader) => {
     let p = glbs.get(url);
     if (!p) {
       pending++;
-      p = loader.loadAsync(url).then((g) => {
+      p = from.loadAsync(url).then((g) => {
         // NH's soft look, the island's: Lambert, a little lit by its own colour (no metal, no specular)
         g.scene.traverse((n) => {
           const m = n as Mesh;
@@ -465,7 +469,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     critter: (kind, id) => kit.island(`critters/${kind}/${id}`),
     island: (name) => {
       const b = modelBounds(name);
-      return b ? load(`${o.world}${name}.glb?v=${b.v}`) : Promise.resolve(null);
+      return b ? load(`${o.world}${name}.glb?v=${b.v}`, islandLoader) : Promise.resolve(null);
     },
     islandBounds: (name) => modelBounds(name)
   };
