@@ -53,7 +53,7 @@
     "say-rooms.spec.ts": 4,
     "say.spec.ts": 8,
     "scenery.spec.ts": 4,
-    "scroll.spec.ts": 4,
+    "scroll.spec.ts": 3,
     "seats3d.spec.ts": 3,
     "shake.spec.ts": 13,
     "shared-world.spec.ts": 11,
