@@ -107,18 +107,23 @@
 
 <div class="health">
   {#if hs && range}
-    <!-- one row: which cards, and the period beside them (a native dropdown: iOS's own picker; the guest's: the period alone) -->
-    <div class="sel">
-      {#if !guest}
-        <Segmented items={GROUPS.map((id) => ({ id, label: t(`health.group.${id}`), art: GROUP_ART[id] }))} value={group} label={t('health.group')} attr="group" onpick={setGroup} />
-      {/if}
+    <!-- one row: which cards, and the period beside them (a native dropdown: iOS's own picker); the guest has no cards to
+         pick, so its period sits at the range row's end, as ごはん's グラフ's (no row left empty) -->
+    {#snippet periodPick()}
       <Pick kind="period" value={period} options={PERIODS.map((id) => ({ id, label: t(`health.period.${id}`) }))} label={t('health.period')} onpick={setPeriod} compact />
-    </div>
+    {/snippet}
+    {#if !guest}
+      <div class="sel">
+        <Segmented items={GROUPS.map((id) => ({ id, label: t(`health.group.${id}`), art: GROUP_ART[id] }))} value={group} label={t('health.group')} attr="group" onpick={setGroup} />
+        {@render periodPick()}
+      </div>
+    {/if}
 
     <RangeNav earlier={t('health.earlier')} later={t('health.later')} today={t('health.today')} canBack={pager.can.back} canOn={pager.can.on} atToday={pager.anchor === null}
-      onback={() => pager.go(-1)} onon={() => pager.go(1)} ontoday={() => pager.jumpToday()}>
+      onback={() => pager.go(-1)} onon={() => pager.go(1)} ontoday={() => pager.jumpToday()} end={guest ? periodEnd : undefined}>
       <RangeLabel {range} {today} />
     </RangeNav>
+    {#snippet periodEnd()}<span class="per">{@render periodPick()}</span>{/snippet}
 
     {#each CARDS[group] as k (k)}
       {#if k === 'steps' || k === 'move' || k === 'exercise' || k === 'stand'}
@@ -138,5 +143,5 @@
   /* かつどう · からだ, the period pill beside them at its own width (the guest's: the pill alone, at the right); centred,
      not stretched: the pills ごはん's きろく · グラフ (Segmented's 36), the dropdown its グラフ's (Pick compact) */
   .sel { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
-  .sel > :global(:only-child) { grid-column: 2; }
+  .per { flex: none; display: flex; }
 </style>

@@ -34,7 +34,7 @@ member's only: clipboard, file, gear), ＋ over it on プラン (a member's 48px
 - **プラン** (`Head`, `Plan`, `TaskRow`): one banner, our photo (`static/wedding/hero.webp`) under the big 「あと 336 日」,
   the names on a yuzu plate, the day · venue, the rose ring (percent, done / total) on a paper disc;
   one ChipRow of filters; pinned month heads (`.sec-label.head`: 期限切れ coral, 今月 leaf, the year only where it
-  changes) over one dense card per month, each row Tick · month over day · title, category tag, ☑ count · the relative
+  changes; the count beside the title, clear of ＋) over one dense card per month, each row Tick · month over day · title, category tag, ☑ count · the relative
   due. A row opens in place: its checklist Ticks (who ticked each), who finished it (「うめ が完了」; the old Sheet's
   「前のボードで完了」), 編集 / 完了.
 - **The form** (`TaskForm`, the kit's form sheet for ＋ and 編集: ✕, 保存 at its foot): title, start, due, category

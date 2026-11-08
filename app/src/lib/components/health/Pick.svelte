@@ -19,9 +19,12 @@
     compact?: boolean;
   }
   let { kind, value, options, label, onpick, person = null, compact = false }: Props = $props();
+  /** The title bar's whose-data pill with a long name (おきゃくさん): the avatar alone (the name in the picker), so it
+   *  never ends in 「おきゃく…」 or crowds the title. */
+  const only = $derived(compact && !!person && [...(options.find((o) => o.id === value)?.label ?? '')].length > 4);
 </script>
 
-<label class="dd {kind}" class:compact {...{ [`data-${kind}`]: value }}>
+<label class="dd {kind}" class:compact class:only {...{ [`data-${kind}`]: value }}>
   <span class="sr-only">{label}</span>
   {#if person}<span class="av" aria-hidden="true"><Avatar worn person={person.p} villager={person.villager} size={compact ? 24 : 28} /></span>{/if}
   <select data-pick={kind} class:withav={!!person} {value} data-sfx="none" onchange={(e) => onpick(e.currentTarget.value as T)}>
@@ -66,11 +69,16 @@
   .compact .av { left: 8px; }
   .compact .chev { right: 9px; width: 14px; height: 14px; }
   .compact .sw { left: 38px; width: 20px; }
+  /* the avatar alone (a long name): the select's text hidden, the pill as wide as the avatar and the chevron */
+  .only select.withav { width: 64px; padding-right: 0; color: transparent; }
+  .only .sw { left: 12px; }
   /* a narrow phone (320): the name before the avatar (the stroke still says whose colour) */
   @container navbar (max-width: 340px) {
     .compact .av { display: none; }
     .compact select.withav { padding: 0 24px 0 12px; }
     .compact .sw { left: 12px; }
     .compact .chev { right: 8px; }
+    .compact.only .av { display: flex; }
+    .compact.only select.withav { padding: 0 0 0 38px; }
   }
 </style>

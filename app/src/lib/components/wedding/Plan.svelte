@@ -104,5 +104,7 @@
   .filters { position: sticky; top: 0; z-index: 3; margin: 0 -12px; background: var(--surface); }
   .empty { margin: 32px 4px; text-align: center; color: var(--text-soft); }
   .group { display: flex; flex-direction: column; }
+  /* the heading's count beside its title, never at the right edge, where ＋ floats over the list */
+  .group > .head > :global(.n) { margin-left: 0; }
   .more { align-self: center; margin: 14px 0 0; }
 </style>
