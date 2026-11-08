@@ -1612,7 +1612,39 @@
 "toyonaka-268632",
 "toyonaka-269149",
 "toyonaka-276429",
-"toyonaka-125968"
+"toyonaka-125968",
+"toyonaka-125094",
+"toyonaka-129161",
+"toyonaka-268244",
+"toyonaka-113543",
+"toyonaka-130613",
+"toyonaka-127574",
+"toyonaka-127551",
+"toyonaka-125096",
+"toyonaka-278120",
+"toyonaka-278119",
+"toyonaka-278393",
+"toyonaka-131088",
+"toyonaka-268113",
+"toyonaka-127162",
+"toyonaka-268163",
+"toyonaka-131748",
+"toyonaka-278254",
+"toyonaka-131111",
+"toyonaka-268088",
+"toyonaka-131687",
+"toyonaka-278391",
+"toyonaka-268245",
+"toyonaka-276165",
+"toyonaka-113541",
+"toyonaka-125548",
+"toyonaka-130610",
+"toyonaka-129157",
+"toyonaka-268130",
+"toyonaka-127707",
+"toyonaka-131136",
+"toyonaka-268089",
+"toyonaka-278173"
 ],
 "meat": [
 "mext-11227",
@@ -1980,7 +2012,9 @@
 "toyonaka-271203",
 "toyonaka-122636",
 "toyonaka-276444",
-"toyonaka-268495"
+"toyonaka-268495",
+"toyonaka-131719",
+"toyonaka-131072"
 ],
 "other": [
 "mext-02034",
@@ -2854,7 +2888,30 @@
 "toyonaka-276472",
 "toyonaka-276160",
 "toyonaka-125970",
-"toyonaka-267983"
+"toyonaka-267983",
+"toyonaka-127185",
+"toyonaka-127186",
+"toyonaka-268090",
+"toyonaka-131112",
+"toyonaka-127576",
+"toyonaka-125090",
+"toyonaka-127575",
+"toyonaka-131100",
+"toyonaka-126784",
+"toyonaka-277950",
+"toyonaka-278121",
+"toyonaka-131721",
+"toyonaka-268246",
+"toyonaka-127161",
+"toyonaka-131101",
+"toyonaka-129150",
+"toyonaka-127130",
+"toyonaka-131075",
+"toyonaka-127125",
+"toyonaka-125549",
+"toyonaka-126862",
+"toyonaka-127552",
+"toyonaka-131119"
 ],
 "soup": [
 "dishes-miso-tofu-wakame",
@@ -3099,7 +3156,18 @@
 "toyonaka-125955",
 "toyonaka-269147",
 "toyonaka-125967",
-"toyonaka-268546"
+"toyonaka-268546",
+"toyonaka-129148",
+"toyonaka-129141",
+"toyonaka-276163",
+"toyonaka-125087",
+"toyonaka-268161",
+"toyonaka-127549",
+"toyonaka-127122",
+"toyonaka-278257",
+"toyonaka-277948",
+"toyonaka-278171",
+"toyonaka-125093"
 ],
 "soy": [
 "mext-04032",
@@ -3709,7 +3777,11 @@
 "toyonaka-127442",
 "toyonaka-278196",
 "toyonaka-276406",
-"toyonaka-268733"
+"toyonaka-268733",
+"toyonaka-278172",
+"toyonaka-126786",
+"toyonaka-129164",
+"toyonaka-127708"
 ],
 "veg": [
 "mext-08001",
@@ -4383,7 +4455,8 @@
 "mext-06403",
 "toyonaka-122019",
 "toyonaka-122680",
-"toyonaka-268633"
+"toyonaka-268633",
+"toyonaka-127161"
 ],
 "carrot": [
 "mext-06214",
@@ -4426,7 +4499,9 @@
 "dishes-cheese-hamburg",
 "mext-13050",
 "mext-13039",
-"mext-13058"
+"mext-13058",
+"toyonaka-131088",
+"toyonaka-127125"
 ],
 "chicken": [
 "mext-11227",
@@ -4557,7 +4632,10 @@
 "toyonaka-268567",
 "toyonaka-269149",
 "toyonaka-276429",
-"toyonaka-125968"
+"toyonaka-125968",
+"toyonaka-127186",
+"toyonaka-131112",
+"toyonaka-278173"
 ],
 "curry": [
 "eatout-curry_pork_chain",
@@ -4598,7 +4676,10 @@
 "toyonaka-271198",
 "toyonaka-269501",
 "toyonaka-127428",
-"toyonaka-278194"
+"toyonaka-278194",
+"toyonaka-126784",
+"toyonaka-268113",
+"toyonaka-268163"
 ],
 "dairy": [
 "mext-13020",
@@ -4821,7 +4902,9 @@
 "maff_kyodo-34_11_tokyo",
 "mext-12023",
 "toyonaka-121671",
-"toyonaka-124170"
+"toyonaka-124170",
+"toyonaka-131111",
+"toyonaka-268245"
 ],
 "fish": [
 "mext-10281",
@@ -5425,7 +5508,10 @@
 "toyonaka-268582",
 "toyonaka-269147",
 "toyonaka-125967",
-"toyonaka-268546"
+"toyonaka-268546",
+"toyonaka-276163",
+"toyonaka-268161",
+"toyonaka-127549"
 ],
 "konbini": [
 "eatout-bento_makunouchi",
@@ -5884,7 +5970,21 @@
 "toyonaka-127439",
 "toyonaka-128871",
 "toyonaka-275089",
-"toyonaka-268632"
+"toyonaka-268632",
+"toyonaka-125094",
+"toyonaka-129161",
+"toyonaka-268244",
+"toyonaka-113543",
+"toyonaka-127574",
+"toyonaka-127551",
+"toyonaka-278120",
+"toyonaka-278119",
+"toyonaka-278393",
+"toyonaka-127162",
+"toyonaka-131748",
+"toyonaka-278254",
+"toyonaka-278391",
+"toyonaka-276165"
 ],
 "meat": [
 "mext-11279",
@@ -5976,7 +6076,8 @@
 "kurume-184",
 "toyonaka-119462",
 "toyonaka-267606",
-"toyonaka-127513"
+"toyonaka-127513",
+"toyonaka-125087"
 ],
 "natto": [
 "mext-04046",
@@ -6132,7 +6233,8 @@
 "takatsuki-r20",
 "toyonaka-267631",
 "toyonaka-122636",
-"toyonaka-276472"
+"toyonaka-276472",
+"toyonaka-131072"
 ],
 "pork": [
 "mext-11276",
@@ -6245,7 +6347,16 @@
 "toyonaka-267982",
 "toyonaka-268584",
 "toyonaka-268569",
-"toyonaka-125956"
+"toyonaka-125956",
+"toyonaka-125096",
+"toyonaka-131100",
+"toyonaka-131721",
+"toyonaka-126862",
+"toyonaka-130610",
+"toyonaka-129157",
+"toyonaka-268130",
+"toyonaka-127707",
+"toyonaka-131136"
 ],
 "ramen": [
 "dishes-ramen-shoyu",
@@ -6549,7 +6660,13 @@
 "toyonaka-127434",
 "toyonaka-125946",
 "toyonaka-128872",
-"toyonaka-267983"
+"toyonaka-267983",
+"toyonaka-268090",
+"toyonaka-278121",
+"toyonaka-268246",
+"toyonaka-127130",
+"toyonaka-131075",
+"toyonaka-125549"
 ],
 "salmon": [
 "mext-10139",
@@ -6579,7 +6696,8 @@
 "dishes-chanchanyaki",
 "dishes-sake-meuniere",
 "maff_kyodo-sakeno_kasuni_nagano",
-"dishes-chazuke-shake"
+"dishes-chazuke-shake",
+"toyonaka-268089"
 ],
 "season": [
 "mext-17007",
@@ -7115,7 +7233,16 @@
 "toyonaka-276446",
 "toyonaka-125945",
 "toyonaka-276160",
-"toyonaka-125970"
+"toyonaka-125970",
+"toyonaka-127185",
+"toyonaka-127576",
+"toyonaka-125090",
+"toyonaka-127575",
+"toyonaka-277950",
+"toyonaka-131101",
+"toyonaka-129150",
+"toyonaka-127552",
+"toyonaka-131119"
 ],
 "soba": [
 "dishes-zaru-soba",
@@ -7280,7 +7407,14 @@
 "toyonaka-268651",
 "toyonaka-268557",
 "toyonaka-267981",
-"toyonaka-125955"
+"toyonaka-125955",
+"toyonaka-129148",
+"toyonaka-129141",
+"toyonaka-127122",
+"toyonaka-278257",
+"toyonaka-277948",
+"toyonaka-278171",
+"toyonaka-125093"
 ],
 "soy": [
 "mext-05018",
@@ -7848,7 +7982,11 @@
 "toyonaka-127442",
 "toyonaka-278196",
 "toyonaka-276406",
-"toyonaka-268733"
+"toyonaka-268733",
+"toyonaka-278172",
+"toyonaka-126786",
+"toyonaka-129164",
+"toyonaka-127708"
 ],
 "tofu": [
 "mext-04032",
@@ -7921,7 +8059,12 @@
 "dishes-teishoku-mabo",
 "toyonaka-271204",
 "toyonaka-269366",
-"toyonaka-127515"
+"toyonaka-127515",
+"toyonaka-130613",
+"toyonaka-268088",
+"toyonaka-131687",
+"toyonaka-113541",
+"toyonaka-125548"
 ],
 "tomato": [
 "mext-06182",
@@ -7941,7 +8084,8 @@
 "mext-06370",
 "dishes-hiyashi-tomato",
 "mext-06391",
-"toyonaka-122179"
+"toyonaka-122179",
+"toyonaka-131719"
 ],
 "tuna": [
 "mext-10260",
