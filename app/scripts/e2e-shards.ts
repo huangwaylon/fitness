@@ -7,16 +7,17 @@
 //     A spec file that runs serially, or has a title with `›` in it (the list's own delimiter), goes whole to one shard.
 //   node scripts/e2e-shards.ts timings <out.json> <report.json…>
 //     the tests' times from Playwright JSON reports (failed and skipped runs left out), folded into <out.json>'s
-//     (a new time counts half: one slow run doesn't swing it).
+//     (a new time counts half: one slow run doesn't swing it; over 2× off, it replaces).
 //   node scripts/e2e-shards.ts spread <report.json…>
 //     how long each shard's tests ran, as Markdown (the run's summary).
 //   node scripts/e2e-shards.ts refresh   (npm run e2e:timings)
-//     e2e/timings.json from the newest green full logic tier (e2e-logic-full.yml: its `e2e-timings` artifact): commit it
+//     e2e/timings.json from the newest green full logic tier (e2e-logic-full.yml: its shards' `timings-*` folded into
+//     the committed times, or after a day its `e2e-timings` artifact): commit it
 //     when the shards drift apart (the run's summary says how far), or after renaming or deleting tests: it keeps only
 //     the tests there are now (the fold never forgets a key). The plan reads the committed file, so every shard
 //     of a run has the same plan (a cache restored by each shard could differ between them).
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -39,9 +40,10 @@ function tests(report: Report) {
 const key = (file: string, titles: string[]) => [file, ...titles].join(' › ');
 
 const [cmd, ...rest] = process.argv.slice(2);
-if (cmd === 'timings') {
-  const [outFile, ...reports] = rest;
-  const old: Record<string, number> = existsSync(outFile) ? JSON.parse(readFileSync(outFile, 'utf8')) : {};
+/** Reports' passed runs folded into `old` (in place): a new time counts half, so one slow run doesn't swing it, unless
+ *  it is over 2× off (a test made faster or slower: halving left kikimimi-scenes at 48 s for its ~8.5 s): then it
+ *  replaces. */
+function fold(old: Record<string, number>, reports: string[]) {
   const fresh = new Map<string, number[]>();
   for (const f of reports) {
     if (!existsSync(f)) continue;
@@ -50,10 +52,18 @@ if (cmd === 'timings') {
   }
   for (const [k, ds] of fresh) {
     const d = Math.round(ds.reduce((a, b) => a + b, 0) / ds.length);
-    old[k] = old[k] ? Math.round((old[k] + d) / 2) : d;
+    old[k] = old[k] && d <= 2 * old[k] && 2 * d >= old[k] ? Math.round((old[k] + d) / 2) : d;
   }
-  writeFileSync(outFile, JSON.stringify(Object.fromEntries(Object.entries(old).sort(([a], [b]) => a.localeCompare(b))), null, 1) + '\n');
-  console.log(`${fresh.size} tests timed (${Object.keys(old).length} in ${outFile})`);
+  return fresh.size;
+}
+const sorted = (o: Record<string, number>) => JSON.stringify(Object.fromEntries(Object.entries(o).sort(([a], [b]) => a.localeCompare(b))), null, 1) + '\n';
+
+if (cmd === 'timings') {
+  const [outFile, ...reports] = rest;
+  const old: Record<string, number> = existsSync(outFile) ? JSON.parse(readFileSync(outFile, 'utf8')) : {};
+  const n = fold(old, reports);
+  writeFileSync(outFile, sorted(old));
+  console.log(`${n} tests timed (${Object.keys(old).length} in ${outFile})`);
 } else if (cmd === 'plan') {
   const dash = rest.indexOf('--');
   const [nArg, outDir, timingsFile] = dash < 0 ? rest : rest.slice(0, dash);
@@ -103,13 +113,21 @@ if (cmd === 'timings') {
   const gh = (...a: string[]) => execFileSync('gh', a, { encoding: 'utf8' }).trim();
   const id = gh('run', 'list', '--workflow', 'e2e-logic-full.yml', '--status', 'success', '--limit', '1', '--json', 'databaseId', '--jq', '.[0].databaseId');
   const dir = mkdtempSync(join(tmpdir(), 'e2e-timings-'));
-  gh('run', 'download', id, '--name', 'e2e-timings', '--dir', dir);
-  // (the fold keeps every key it ever saw: a renamed or deleted test's time stays unless pruned to today's tests)
-  const got = JSON.parse(readFileSync(join(dir, 'e2e-timings.json'), 'utf8')) as Record<string, number>;
+  // its shards' own reports (kept a day) folded into the committed times; older, its folded `e2e-timings`
+  let got: Record<string, number>;
+  try {
+    gh('run', 'download', id, '--pattern', 'timings-*', '--dir', dir);
+    got = JSON.parse(readFileSync('e2e/timings.json', 'utf8'));
+    fold(got, readdirSync(dir).map((d) => join(dir, d, `${d}.json`)));
+  } catch {
+    gh('run', 'download', id, '--name', 'e2e-timings', '--dir', dir);
+    got = JSON.parse(readFileSync(join(dir, 'e2e-timings.json'), 'utf8'));
+  }
   rmSync(dir, { recursive: true });
+  // (the fold keeps every key it ever saw: a renamed or deleted test's time stays unless pruned to today's tests)
   const json = execFileSync('npx', ['playwright', 'test', '--list', '--reporter=json', '--project=chromium', '--project=chromium-mic'], { encoding: 'utf8', maxBuffer: 64 << 20 });
   const now = new Set(tests(JSON.parse(json.slice(json.indexOf('{'))) as Report).map((t) => key(t.file, t.titles)));
   const kept = Object.fromEntries(Object.entries(got).filter(([k]) => now.has(k)));
-  writeFileSync('e2e/timings.json', JSON.stringify(kept, null, 1) + '\n');
+  writeFileSync('e2e/timings.json', sorted(kept));
   console.log(`e2e/timings.json from run ${id}: ${Object.keys(kept).length} tests (${Object.keys(got).length - Object.keys(kept).length} gone dropped, ${[...now].filter((k) => !(k in kept)).length} without a time yet)`);
 } else throw new Error('usage: e2e-shards.ts plan|timings|spread|refresh …');
