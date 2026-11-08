@@ -188,8 +188,20 @@ for (const water of ['pond', 'river', 'mouth', 'sea'] as const)
 // the rod and a hat, put on after the villager was added to the island, were drawn unbent (engine.ts bend), off the
 // bent hand and the line's start by the bend's drop, and slid as a pinch or a scroll moved the camera. Everything on the
 // villager is bent with the island, and the rod's tip (the line's start) stays where it is against the villager's feet.
+type G = { view(): { camZ: number }; go(z: number, k: number): void; camStill(): boolean };
+/** The camera to zoom `k` at `camZ`, stepped to rest on the page's paused clock (pauseNow) a frame at a time: the pose's
+ *  breathing moves on only those frames between reads, not however long a loaded runner's round trips took. */
+async function zoomToRest(page: Page, camZ: number, k: number) {
+  await page.evaluate(([z, k]) => (window as unknown as { __world3d: G }).__world3d.go(z, k), [camZ, k]);
+  for (let i = 0; !(await page.evaluate(() => (window as unknown as { __world3d: G }).__world3d.camStill())); i++) {
+    expect(i, 'the camera still within 3 s of the page’s time').toBeLessThan(90);
+    await page.clock.runFor(33);
+  }
+}
 test('3D fishing: the rod stays in the hand, its tip where the line starts, at every zoom', async ({ page }) => {
   test.setTimeout(60_000);
+  // (the page's clock ours, set to its ?date and running till the tip's reads: pauseNow)
+  await page.clock.install({ time: new Date('2026-11-04T12:00:00+09:00') });
   await page.goto('?demo&visitor=none&critter=fish&date=2026-11-04T12:00');
   await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
   await expect.poll(() => v3(page, (v) => v.state('mine')), { timeout: 30_000 }).not.toBeNull();
@@ -213,24 +225,17 @@ test('3D fishing: the rod stays in the hand, its tip where the line starts, at e
   await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 8000 });
   await expect.poll(() => v3(page, (v) => [v.tool('mine'), v.state('mine')]), { timeout: 15_000 }).toEqual(['tools/rod', 'fish']);
   type V = V3 & { last(slot: string): { x: number; z: number }; unbent(slot: string): string[] };
-  type G = { view(): { camZ: number }; go(z: number, k: number): void; camStill(): boolean };
   /** The rod's tip against the villager's feet (three's space: the feet's world z turned), and what's drawn unbent. */
   const tipNow = () => page.evaluate(() => {
     const v = (window as unknown as { __villagers3: V }).__villagers3, t = v.tip('mine'), l = v.last('mine');
     return t && { d: [t[0] - l.x, t[1], t[2] + l.z], unbent: v.unbent('mine') };
   });
   const camZ = await page.evaluate(() => (window as unknown as { __world3d: G }).__world3d.view().camZ);
-  // each zoom read on the page's clock, paused: the camera stepped to rest a frame at a time, so the pose's breathing
-  // moves on only those frames between reads (not however long a loaded runner's round trips took)
+  // each zoom read on the page's clock, paused (zoomToRest)
   await pauseNow(page);
-  const still = () => page.evaluate(() => (window as unknown as { __world3d: G }).__world3d.camStill());
   let first: number[] | null = null;
   for (const k of [1, 2, 3.2, 1]) {
-    await page.evaluate(([z, k]) => (window as unknown as { __world3d: G }).__world3d.go(z, k), [camZ, k]);
-    for (let i = 0; !(await still()); i++) {
-      expect(i, 'the camera still within 3 s of the page’s time').toBeLessThan(90);
-      await page.clock.runFor(33);
-    }
+    await zoomToRest(page, camZ, k);
     const t = (await tipNow())!;
     expect(t.unbent).toEqual([]);
     first ??= t.d;
@@ -267,23 +272,16 @@ test(`3D fishing as a human player in the ${water}: facing, rod and line in one 
   if (water !== 'sea') return;
   await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 8000 });
   type V = V3 & { last(slot: string): { x: number; z: number } };
-  type G = { view(): { camZ: number }; go(z: number, k: number): void; camStill(): boolean };
   const tipNow = () => page.evaluate(() => {
     const v = (window as unknown as { __villagers3: V }).__villagers3, t = v.tip('mine'), l = v.last('mine');
     return t && [t[0] - l.x, t[1], t[2] + l.z];
   });
   const camZ = await page.evaluate(() => (window as unknown as { __world3d: G }).__world3d.view().camZ);
-  // each zoom read on the page's clock, paused: the camera stepped to rest a frame at a time, so the pose's breathing
-  // moves on only those frames between reads (not however long a loaded runner's round trips took)
+  // each zoom read on the page's clock, paused (zoomToRest)
   await pauseNow(page);
-  const still = () => page.evaluate(() => (window as unknown as { __world3d: G }).__world3d.camStill());
   let first: number[] | null = null;
   for (const k of [1, 2, 3.2, 1]) {
-    await page.evaluate(([z, k]) => (window as unknown as { __world3d: G }).__world3d.go(z, k), [camZ, k]);
-    for (let i = 0; !(await still()); i++) {
-      expect(i, 'the camera still within 3 s of the page’s time').toBeLessThan(90);
-      await page.clock.runFor(33);
-    }
+    await zoomToRest(page, camZ, k);
     const t = (await tipNow())!;
     first ??= t;
     expect(Math.hypot(t[0] - first[0], t[1] - first[1], t[2] - first[2])).toBeLessThan(8);
