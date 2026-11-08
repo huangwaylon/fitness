@@ -1,10 +1,10 @@
 // The map areas saved on this phone (offline phase B, docs/backend.md "Service worker" › Offline): their state for the
-// save buttons (SaveButton.svelte) and せってい's オフラインの地図 (OfflineSection.svelte). A registry in localStorage
+// save buttons (SaveButton.svelte: each area's save, and its 削除). A registry in localStorage
 // mirrors each area's manifest (save.ts), so an area whose cache Safari evicted is still listed, as gone. One save at a
 // time; it goes on while the phone shows anything else in the app (the page's), and a reload resumes it on the next tap.
 import type { L } from '#lib/travel/types.ts';
 import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
-import { overCaps, planTrail, planTrip, TOTAL_CAP_BYTES, type Plan, type Source } from './plan.ts';
+import { overCaps, TOTAL_CAP_BYTES, type Plan, type Source } from './plan.ts';
 import { deleteArea, readManifest, saveArea, type Manifest } from './save.ts';
 
 interface Entry {
@@ -59,9 +59,9 @@ class Areas {
     return n;
   }
 
-  /** Each listed area's cache still there (and its manifest's numbers): once per page, or when asked. */
-  async refresh(force = false): Promise<void> {
-    if ((this.checked && !force) || typeof caches === 'undefined') return;
+  /** Each listed area's cache still there (and its manifest's numbers): once per page. */
+  async refresh(): Promise<void> {
+    if (this.checked || typeof caches === 'undefined') return;
     this.checked = true;
     const gone: Record<string, true> = {};
     for (const id of Object.keys(this.list)) {
@@ -130,21 +130,3 @@ class Areas {
 }
 
 export const areas = new Areas();
-
-/** An area's plan and name, from its id (せってい's もう一度保存 and 更新: the trip's data or the trail's track loaded). */
-export async function planOf(id: string): Promise<{ plan: Plan; name: L } | null> {
-  if (id.startsWith('trip-')) {
-    const { loadTrip, TRIP_IDS } = await import('#lib/travel/trips/index.ts');
-    const tid = TRIP_IDS.find((t) => t === id.slice(5));
-    if (!tid) return null;
-    const trip = await loadTrip(tid);
-    return { plan: planTrip(trip), name: trip.title };
-  }
-  if (id.startsWith('trail-')) {
-    const [{ trailOf }, { loadTrack }] = await Promise.all([import('#lib/hiking/trails.ts'), import('#lib/hiking/load.ts')]);
-    const t = trailOf(id.slice(6));
-    const r = t ? await loadTrack(t.slug) : null;
-    return t && r?.k === 'ok' ? { plan: planTrail(t.slug, t.tiles, r.track.pts), name: t.name } : null;
-  }
-  return null;
-}

@@ -195,7 +195,7 @@ test.describe('a map area saved ahead', () => {
     await expect(save).toContainText(/保存済み · \d+\.\d MB/);
   }
 
-  test('saved in its own cache, never the seen tiles; listed in せってい; 削除 frees it', { tag: '@chromium' }, async ({ page, context }) => {
+  test('saved in its own cache, never the seen tiles; its trash pill frees it', { tag: '@chromium' }, async ({ page, context }) => {
     test.setTimeout(120_000);
     await page.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
     const net = await usgs(context);
@@ -206,18 +206,12 @@ test.describe('a map area saved ahead', () => {
     expect(net.headers).toEqual([]);
     const manifest = await page.evaluate(async (n) => (await (await caches.open(n)).match('https://island-fund.invalid/__manifest'))!.json(), AREA);
     expect(manifest).toMatchObject({ id: 'trail-talapus-lake', source: 'usgs', tileVersion: null, tiles: 91, stored: 91, done: true });
-    await page.keyboard.press('Escape');
-    await expect(page.locator('dialog[open]')).toHaveCount(0);
-
-    await fromMenu(page, 'settings');
-    const row = page.locator('dialog[open] [data-offline-area="trail-talapus-lake"]');
-    await row.scrollIntoViewIfNeeded();
-    await expect(row).toHaveAttribute('data-offline-state', 'saved');
-    await expect(row).toContainText('タラパス');
-    await expect(page.locator('dialog[open] [data-offline-total]')).toContainText('/ 150 MB');
-    await row.locator('[data-offline-delete]').click();
-    await expect(row).toHaveCount(0);
-    await expect(page.locator('dialog[open] [data-offline-none]')).toBeVisible();
+    // 削除 beside it: gone, the pill back to its save
+    const del = trail(page).locator('[data-offline-delete="trail-talapus-lake"]');
+    await expect(del).toHaveAttribute('aria-label', /タラパス.*を削除/);
+    await del.click();
+    await expect(del).toHaveCount(0);
+    await expect(trail(page).locator('[data-offline-save]')).toHaveAttribute('data-offline-save', 'none');
     expect(await count(page, AREA)).toBe(-1);
     expect(await page.evaluate(() => localStorage.getItem('island.offlineAreas'))).toBe('{}');
   });

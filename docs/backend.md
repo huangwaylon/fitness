@@ -1000,13 +1000,13 @@ went on 2026-11-05, once both phones ran builds from after (their `/push/*` woul
     `{id, source, tileVersion, tiles, stored, empty, bytes, done, at}`. Resumable (stored tiles skipped); a failed
     tile asked again over 3 more passes, then `done: false` (「一部のみ」); a 404/204 is none there. An OpenFreeMap area
     keeps its week's build; a save at another build starts it again whole (更新, offered past 30 days: never two builds
-    in one area). Before it starts: online, ≤ 3,000 tiles and ≤ 50 MB an area, all areas ≤ 150 MB (`TOTAL_CAP_BYTES`,
-    a warning past 80 %), `storage.estimate()` free ≥ 1.2× the plan; the first save asks `storage.persist()`.
+    in one area). Before it starts: online, ≤ 3,000 tiles and ≤ 50 MB an area, all areas ≤ 150 MB (`TOTAL_CAP_BYTES`),
+    `storage.estimate()` free ≥ 1.2× the plan; the first save asks `storage.persist()`.
     `localStorage island.offlineAreas` mirrors the manifests, so an area Safari evicted shows 「消えました」.
     `serveTile` asks the saved areas first (never revalidated), then the seen tiles; offline, a tile in neither isn't
     asked of the network. Offline with no TileJSON kept, an area's copy answers. `activate` never deletes an
     `island-offline-*` cache (`caches.ts isSavedArea`) and the 60 MB bound indexes only `island-tiles-v1`.
-    `e2e/offline.spec.ts`: a trail saved on fixture tiles, its cache, せってい's row and 削除; drawn (@render), offline
+    `e2e/offline.spec.ts`: a trail saved on fixture tiles, its cache and its trash pill's 削除; drawn (@render), offline
     from the area alone, no tile asked of the network.
   - *Storage kept:* the installed app asks `navigator.storage.persist()` once, after its first sync that worked
     (`sync/persist.ts`), and logs `storage.persist` (granted, already, MB used and quota).
