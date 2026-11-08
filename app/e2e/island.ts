@@ -425,6 +425,24 @@ const popupStill = (page: Page) =>
     };
     frame();
   }));
+/** Watches, from now, for each selector's comings (it there after it wasn't): a transient effect (a sparkle, the tap's
+ *  ring, hearts) seen however late a loaded runner looks, and a second coming counted. Returns how many came of `k`. */
+export async function watchComings(page: Page, sels: Record<string, string>) {
+  await page.evaluate((sels) => {
+    const W = window as unknown as { __came: Record<string, number> };
+    const on: Record<string, boolean> = {};
+    W.__came = {};
+    for (const k in sels) (W.__came[k] = 0), (on[k] = !!document.querySelector(sels[k]));
+    new MutationObserver(() => {
+      for (const k in sels) {
+        const now = !!document.querySelector(sels[k]);
+        if (now && !on[k]) W.__came[k]++;
+        on[k] = now;
+      }
+    }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+  }, sels);
+  return (k: string) => page.evaluate((k) => (window as unknown as { __came: Record<string, number> }).__came[k], k);
+}
 /** The page's installed clock paused about now: a moment ahead of the page's time, which runs on during the round
  *  trip (pauseAt can't go back: again further ahead if the page got there first). */
 export async function pauseNow(page: Page) {
