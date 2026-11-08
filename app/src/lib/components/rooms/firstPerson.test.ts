@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PerspectiveCamera, Vector3 } from 'three';
 import { BLEND_MS, EYE_MARGIN, FOV, NEAR, PITCH_LIMIT, SETTLE_MS, START_PITCH, camAz, clampEye, clampPitch, firstPerson, headAnchor, lookPerPx, wrapAngle, type Rect } from './firstPerson.ts';
-import { due } from '#lib/store/frameRate.svelte.ts';
+import { due } from '#lib/store/frameRate.ts';
 
 const deg = (d: number) => (d * Math.PI) / 180;
 /** Steps a first person at 30 a second for `ms` toward `eye`, the frames that moved. */

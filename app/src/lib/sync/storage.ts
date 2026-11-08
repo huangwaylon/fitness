@@ -112,8 +112,6 @@ export const DEVICE = {
   /** localStorage: `{ day, event, season, weather, tod }`: せってい's きせつ, the scene's seasonal preview on this phone
    *  for that Tokyo day (ui-state/preview.svelte.ts; a look only, never synced or sent). */
   preview: 'island.preview',
-  /** localStorage: `30` | `60`: the 3D engines' full frame rate (store/frameRate.svelte.ts; 30 by default). */
-  fps: 'island.fps',
   /** localStorage: `1` | `0`: the rooms' and the museum's first-person view (store/firstPerson.svelte.ts; off by default). */
   fpv: 'island.fpv',
   /** localStorage: the Tokyo date whose midnight Happy New Year! this phone played (lib/sound/sound.svelte.ts: once,

@@ -1,7 +1,7 @@
 <script lang="ts">
   // せってい (docs/design.md "Settings"): the HUD's menu's せってい button opens it, full height like the island panel,
   // grown out of the button (Sheet's `pop`, as けんこう out of the dumbbell). One scroller: すがた (the look's portrait,
-  // the よびな; かえる → the すがた level: the closet and the villagers, one dresser), プロフィール (せいべつ, たんじょうび, the BMI standard: ProfileSection), サウンド, ことば, きせつ (the seasonal preview), てんき (the island's: real or the game's), フレームレート, つうしん, オフラインの地図 (the map areas saved: OfflineSection), えいご
+  // the よびな; かえる → the すがた level: the closet and the villagers, one dresser), プロフィール (せいべつ, たんじょうび, the BMI standard: ProfileSection), サウンド, ことば, きせつ (the seasonal preview), てんき (the island's: real or the game's), つうしん, オフラインの地図 (the map areas saved: OfflineSection), えいご
   // ききとり (one row: あそぶ → ききみみ クイズ's sheet, its voice session started in the tap) and もようがえ (one row: はじめる);
   // the guest's the same (2026-11-06), with a line saying it's visiting.
   // Each pushes a level with ‹ (すがた's edits are sent as it's left, with a とりけす banner here);
@@ -15,7 +15,6 @@
   import LangSection from './LangSection.svelte';
   import SeasonSection from './SeasonSection.svelte';
   import WeatherSection from './WeatherSection.svelte';
-  import FpsSection from './FpsSection.svelte';
   import SyncSection from './SyncSection.svelte';
   import ProfileSection from './ProfileSection.svelte';
   import OfflineSection from './OfflineSection.svelte';
@@ -108,7 +107,6 @@
       <section class="sec" aria-labelledby="sec-lang"><h2 id="sec-lang" class="sec-label">{t('panel.lang')}</h2><LangSection /></section>
       <section class="sec" aria-labelledby="sec-season"><h2 id="sec-season" class="sec-label">{t('panel.season')}</h2><SeasonSection {view} /></section>
       <section class="sec" aria-labelledby="sec-weather" data-weather-section><h2 id="sec-weather" class="sec-label">{t('panel.weather')}</h2><WeatherSection /></section>
-      <section class="sec" aria-labelledby="sec-fps"><h2 id="sec-fps" class="sec-label">{t('panel.fps')}</h2><FpsSection /></section>
       <section class="sec" aria-labelledby="sec-sync"><h2 id="sec-sync" class="sec-label">{t('panel.sync')}</h2><SyncSection {view} /></section>
       <section class="sec" aria-labelledby="sec-offline" data-offline-section><h2 id="sec-offline" class="sec-label">{t('panel.offline')}</h2><OfflineSection /></section>
       <div class="prow static decor">

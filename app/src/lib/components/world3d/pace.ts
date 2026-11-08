@@ -7,7 +7,7 @@ export const pace = { ambient: 0, full: 0, slow: true };
 /** A move slower than this on screen (px/s) is ambience: drawn at the ambient rate, not the full one. */
 export const SLOW_PX = 60;
 
-/** Half a 60 Hz vsync's slack (ms): a display frame this early is on time (frameRate.svelte.ts due()'s). */
+/** Half a 60 Hz vsync's slack (ms): a display frame this early is on time (store/frameRate.ts due()'s). */
 const SLACK = 6;
 /** What the pacer runs on (the page's; a test's own clock). */
 export interface PaceClock {

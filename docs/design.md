@@ -161,7 +161,7 @@ scrolled where it was); ✕, the backdrop and Esc close the panel.
 **せってい** (`panel/SettingsSheet.svelte`): the HUD menu's せってい pill → its own sheet, full height, grown out of the
 pill (Sheet's `pop`), title せってい: **すがた** (the look's portrait, the よびな and what's worn: いつもの, a コーデ's name
 or the villager's; かえる → [the すがた level](#sugata): the closet and the villagers in one dresser), **プロフィール** ([Profile](#profile)), **サウンド** ([Sound settings](#sound-settings)), **ことば** (日本語 /
-English), **季節** ([Seasonal preview](#seasonal-preview)), **天気** (実際の天気 / ゲーム: [Weather](#weather)), **フレームレート** (30 / 60: [Frame rate](#frame-rate)), **同期** (when each of us last synced; 今すぐ同期), and **模様替え** (one row with its
+English), **季節** ([Seasonal preview](#seasonal-preview)), **天気** (実際の天気 / ゲーム: [Weather](#weather)), **同期** (when each of us last synced; 今すぐ同期), and **模様替え** (one row with its
 はじめる); the guest's the same (2026-11-06), with a line saying it's visiting. すがた pushes a level with ‹; ✕, the backdrop and Esc close it,
 and the next opening starts at its top. Its own chunk, loaded on the first tap.
 
@@ -1047,10 +1047,9 @@ with gzip at Fast 4G, Chromium 393 × 852 at 4× CPU, `?demo`):
 
 ### Frame rate
 
-せってい → **フレームレート**: **30** (the default) or **60**, kept on this phone only (`store/frameRate.svelte.ts`,
-localStorage `island.fps`; `?fps=` for a tab). It is the full rate of every 3D engine (the island, the rooms, the
-museum; the shop has none) while something moves, a finger's gesture included; the ambience stays at ≤ 30 and a still
-scene draws nothing, either way. At 30 on the phones' 60 Hz screens each engine draws every other display frame
+The game draws at most **30** frames a second (`store/frameRate.ts` FPS; the 60 option was removed 2026-11-08, a stored
+`island.fps` is ignored). It is the full rate of every 3D engine (the island, the rooms, the museum; the shop has none)
+while something moves, a finger's gesture included; a still scene draws nothing. At 30 on the phones' 60 Hz screens each engine draws every other display frame
 (`due()`: the rAF's vsync time against the last drawn, half a vsync's slack: an even 33 ms, never a 2-3 mix); the
 skipped frames cost a callback. One pacer runs the island's and the museum's frames (world3d/pace.ts `pacer`): the
 ambience's next frame is a timer to just before it's due, then the display frame it's due on, each due time
@@ -2706,7 +2705,6 @@ Read on each call by `island/devHooks.ts` (the seasonal ones by `ui-state/previe
 | `?find=bottle\|fragment\|mushroom\|rare-mushroom\|earth-egg` | A beach find now / every dig spot that |
 | `?balloon`, `?fireworks`, `?shower`, `?stretch`, `?hybrid` | A balloon; a show (`?event=fireworks`); a meteor shower's night at any hour (`?event=shower`); the tape deck; a hybrid flower (the partner's outing: `__world.wander()`) |
 | `?hit` | Every tap target drawn over the island (magenta: the scene's elements; cyan: the boxes a module tests) |
-| `?fps=30\|60` | The 3D scenes' frame rate for the tab, not kept (the e2e pin 60 in storage: `playwright.config.ts`) |
 | `?fpv=1\|0` | The rooms' first-person view for the tab, not kept ([First person](#first-person)) |
 | `?awake` | The villagers never doze (22:00–05:00 otherwise) |
 | `?relay=<wss url>&key=<key>` | The demo over a real relay (the island and the rooms; `e2e/sync-harness.spec.ts`, the test relay) |

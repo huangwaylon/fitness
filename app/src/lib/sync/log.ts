@@ -379,8 +379,6 @@ export interface LogStart {
   ready(): boolean;
   /** The write queue: how many wait and the oldest's age (ms). */
   queue(): { n: number; ageMs: number };
-  /** The frame rate chosen (store/frameRate). */
-  fpsPref(): number;
 }
 
 /** Start: the error listeners, the lifecycle (open, ready, shown, hidden), the frames sample. Returns the stop. */
@@ -410,7 +408,7 @@ export function startLog(o: LogStart): () => void {
   log('app.open', {
     nav, route: route(), pwa: matchMedia('(display-mode: standalone)').matches || (navigator as { standalone?: boolean }).standalone === true,
     w: innerWidth, h: innerHeight, dpr: devicePixelRatio, crashed, lt: types.includes('long-animation-frame') || types.includes('longtask'),
-    q: q.n, qAgeS: Math.round(q.ageMs / 1000), fpsPref: o.fpsPref()
+    q: q.n, qAgeS: Math.round(q.ageMs / 1000)
   });
   const isLeaving = { now: false };
   const err = (e: ErrorEvent) => logError('error', e.error ?? e.message, { file: e.filename, line: e.lineno, route: o.route(), leaving: isLeaving.now || document.hidden });

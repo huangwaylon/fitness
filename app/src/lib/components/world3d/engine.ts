@@ -8,7 +8,7 @@
 //   The ground: the layout's (terrain.ts buildGround: its land, cliffs and water, bent here).
 //   The things: NH's models (things.ts); the villagers and what has no model yet: cards (cards.ts).
 //   The lights: lights.ts (always-on emissive and halos, faded point lights). Shadows on by default.
-//   The frames: せってい's frame rate (30 or 60: store/frameRate.svelte.ts) while anything moves; while only the
+//   The frames: the frame rate (30: store/frameRate.ts) while anything moves; while only the
 //   ambience does (the water, the season's fall, a fire's flicker, a sleeper's zzz, a blink) `ambient` a second (30 at
 //   most; a software renderer's few; REST_FPS at rest: REST_MS), the water's only while some
 //   is on screen; none when nothing does, none hidden or paused (a sheet over the island). The
@@ -28,7 +28,7 @@ import { createLights, lampFog, type LampSpot } from './lights.ts';
 import type { Inst } from './objects.ts';
 import { drawOff, shaderChecks } from '../../ui-state/testMode.ts';
 import { releaseAll, resourcesOf } from './release.ts';
-import { frameRate } from '#lib/store/frameRate.svelte.ts';
+import { FPS } from '#lib/store/frameRate.ts';
 import { pacer } from './pace.ts';
 import { createWarmup, texturesOf } from './warmup.ts';
 import { ktx2Target } from './ktx2.ts';
@@ -981,7 +981,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     if (disposed || document.hidden || paused) return;
     const t = now();
     const active = touch || t < activeUntil || busy;
-    if (!pace.due(vsync, active ? frameRate.fps : 0)) return;
+    if (!pace.due(vsync, active ? FPS : 0)) return;
     inFrame = true;
     busy = ambience = groundAmb = false;
     why.clear();
@@ -996,7 +996,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     else {
       if (groundAmb && !ambience && waterSeen()) (ambience = true), why.add('~ground');
       const fps = resting(now()) ? Math.min(opts.ambient, REST_FPS) : opts.ambient;
-      if (ambience && fps > 0) pace.later(Math.min(fps, frameRate.fps));
+      if (ambience && fps > 0) pace.later(Math.min(fps, FPS));
       // (a shadow held back at rest, with no frame coming to draw it: one of its own)
       if (shadowsDirty && opts.shadows && !pace.queued()) wake(REST_SHADOW_MS - (now() - shadowAt));
     }

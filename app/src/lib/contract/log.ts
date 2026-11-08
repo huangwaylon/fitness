@@ -35,7 +35,7 @@ const API = { action: LOG_ACTIONS, err: LOG_STATUS, http: 'n', ms: 'n', tries: '
 // (the dotted names in double quotes: they are not i18n keys, which usage.test reads in single quotes)
 export const LOG_EVENTS = {
   // ---- the phones
-  "app.open": { src: 'c', f: { nav: ['navigate', 'reload', 'back_forward', 'prerender', 'other'], route: LOG_ROUTES, pwa: 'b', w: 'n', h: 'n', dpr: 'n', crashed: 'b', lt: 'b', q: 'n', qAgeS: 'n', fpsPref: 'n' } },
+  "app.open": { src: 'c', f: { nav: ['navigate', 'reload', 'back_forward', 'prerender', 'other'], route: LOG_ROUTES, pwa: 'b', w: 'n', h: 'n', dpr: 'n', crashed: 'b', lt: 'b', q: 'n', qAgeS: 'n' } },
   "app.ready": { src: 'c', f: { ms: 'n', route: LOG_ROUTES } },
   "app.show": { src: 'c', f: { awayS: 'n', route: LOG_ROUTES } },
   "app.reload": { src: 'c', f: { why: ['update', 'chunk', 'stale', 'other'] } },

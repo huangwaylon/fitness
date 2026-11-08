@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { due } from './frameRate.svelte.ts';
+import { due } from './frameRate.ts';
 
 /** The display frames drawn of `n` vsyncs at `hz` (jittered by up to `jit` ms) under a cap of `fps`. */
 function drawn(hz: number, fps: number, n = 120, jit = 0): number[] {

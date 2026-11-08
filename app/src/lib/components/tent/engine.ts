@@ -23,7 +23,7 @@ import { drawOff, shaderChecks } from '../../ui-state/testMode.ts';
 import { lean } from '../world3d/release.ts';
 import { keepUsed } from '../world3d/keepUsed.ts';
 import { plainImages } from '../world3d/gltf.ts';
-import { due, frameRate } from '#lib/store/frameRate.svelte.ts';
+import { due, FPS } from '#lib/store/frameRate.ts';
 import { along, roomScreen, walkLens, type Walk } from '../rooms/view.ts';
 import { EYE_MARGIN, camAz, clampEye, firstPerson as createFirstPerson, headAnchor, type Rect } from '../rooms/firstPerson.ts';
 
@@ -1538,7 +1538,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   function frame(vsync = now()) {
     raf = 0;
     if (disposed || holding()) return;
-    if (!due(vsync, lastVsync, frameRate.fps)) {
+    if (!due(vsync, lastVsync, FPS)) {
       raf = requestAnimationFrame(frame);
       return;
     }

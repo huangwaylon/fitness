@@ -35,7 +35,6 @@
   import { count, startLog } from '#lib/sync/log.ts';
   import { logUrl } from '#lib/sync/transport.ts';
   import { queued } from '#lib/sync/queue.ts';
-  import { frameRate } from '#lib/store/frameRate.svelte.ts';
   import { version } from '$app/env';
   import { setLiveBuild } from '#lib/sync/live.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -134,8 +133,7 @@
       queue: () => {
         const q = queued();
         return { n: q.length, ageMs: q.length ? Date.now() - Math.min(...q.map((e) => e.queuedAt)) : 0 };
-      },
-      fpsPref: () => frameRate.fps
+      }
     });
     return () => {
       stopLog();
