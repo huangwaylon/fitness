@@ -1065,7 +1065,7 @@
       /** The models' textures: from the KTX2 cache, transcoded, from their WebP; the GPU format (ktx2.ts). */
       ktx2: () => ({ ...ktx2Stats }),
       /** The GPU programs (three's): each one's shader, cache key and how many materials use it (the perf plan's
-       *  program count, docs/perf-plan.md). */
+       *  program count, docs/ops/perf.md). */
       programs: () => ((e.renderer().info.programs ?? []) as unknown as { name: string; cacheKey: string; usedTimes: number }[]).map((p) => ({ name: p.name, key: p.cacheKey, used: p.usedTimes }))
     };
     setDrawnFps(() => e.stats().fps);

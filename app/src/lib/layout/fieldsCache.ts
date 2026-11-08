@@ -1,5 +1,5 @@
 // The ground's fields and chunks as the worker made them (fieldsPrime.ts, fields.worker.ts), kept in IndexedDB for the
-// next launch (docs/perf-plan.md A2): a warm start reads them back (typed arrays: a structured clone, no work) instead
+// next launch: a warm start reads them back (typed arrays: a structured clone, no work) instead
 // of waiting for the worker (75-140 ms in the iOS Simulator, ~200 ms on a phone, before the island's first frame).
 // One record, keyed by what the worker was given (the layout's tiles, pieces and homes) and the build (the code that
 // made them): a layout edit or a deploy misses, and the next answer replaces it. Never needed: no IndexedDB, an error,

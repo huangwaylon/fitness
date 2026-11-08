@@ -1,4 +1,4 @@
-// The island's textures as the transcoder made them (docs/perf-plan.md C1, ktx2.ts), kept in IndexedDB: a warm start
+// The island's textures as the transcoder made them (ktx2.ts), kept in IndexedDB: a warm start
 // reads a texture's GPU-ready mip levels back (a structured clone, no work) instead of fetching its KTX2, loading the
 // transcoder and transcoding. Keyed by the texture (its WebP's hash), its GPU format and the pipeline (the encoder's
 // settings and the transcoder's hash, ktx2.json; not the app's build: a deploy keeps them). Reads asked in the same

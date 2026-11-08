@@ -1,4 +1,4 @@
-// The island's sheets' chunks (docs/perf-plan.md A3): each loaded once (ui-state/reload.ts lazy), by its first opening
+// The island's sheets' chunks: each loaded once (ui-state/reload.ts lazy), by its first opening
 // or ahead of it: one a quiet moment once the island is in and the service worker controls the page (its caches
 // serve them: never a second download, never a failed fetch Safari would keep for the page's life), and the one a
 // HUD button is touched down for. けんこう's chunk holds ごはん's code, never its food data (that loads on use). ききみみ's warm() also

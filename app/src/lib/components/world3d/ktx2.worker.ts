@@ -1,4 +1,4 @@
-// Transcodes the island's KTX2 textures (docs/perf-plan.md C1, ktx2.ts) off the main thread: three's Basis transcoder
+// Transcodes the island's KTX2 textures (ktx2.ts) off the main thread: three's Basis transcoder
 // (its JS bundled here, its wasm fetched from static/room/basis/ on the first message), each file's mip levels into
 // the GPU format the page asked for. Only on a miss: a texture transcoded once is kept (texCache.ts).
 import BASIS, { type Basis } from 'three/examples/jsm/libs/basis/basis_transcoder.js';

@@ -24,7 +24,7 @@ export function drawOff(): boolean {
 /** Whether three checks each shader program as it links (renderer.debug.checkShaderErrors): a sync readback of the
  *  link status and the info logs, per program, on the first frames. In development and the demo (the e2e's builds:
  *  world3d.spec's render tier fails on a THREE error), never on a live phone. `?checks=0` turns them off (the perf
- *  scripts' timing runs: docs/perf-plan.md §0, ~350 ms of sync readbacks a launch in the iOS Simulator). */
+ *  scripts' timing runs: docs/ops/perf.md "Measuring", ~350 ms of sync readbacks a launch in the iOS Simulator). */
 export function shaderChecks(): boolean {
   if (typeof location !== 'undefined' && new URLSearchParams(location.search).get('checks') === '0') return false;
   return import.meta.env.DEV || (typeof location !== 'undefined' && new URLSearchParams(location.search).has('demo'));

@@ -175,7 +175,7 @@
   const covered = $derived(paused || ui.overlay || quiz.open);
   /** Its CSS (data-covered, data-sheet: every animation held, the island hidden): under a sheet only once the sheet is
    *  up (its first frame out, ui.up), not in the tap's frame, where restyling the island's 600 elements held up the
-   *  sheet's first frame (docs/perf-plan.md A6). (data-sheet: never for ききみみ's alone, whose sheet is in the scene
+   *  sheet's first frame. (data-sheet: never for ききみみ's alone, whose sheet is in the scene
    *  and animates.) */
   const up = $derived(ui.up.length > 0);
   // The island in 3D (world3d/Island3D.svelte: its own chunk with three.js); the DOM island runs over its canvas as the

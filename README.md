@@ -67,7 +67,7 @@ One home per topic; the others link to it. If a doc and the code disagree, the c
 | [kikimimi-engine.md](docs/kikimimi-engine.md) · [kikimimi-mic.md](docs/kikimimi-mic.md) | ききみみ's round engine, wire, content loading and packs; the mic modes and their privacy rule |
 | [curriculum.md](docs/curriculum.md) | What ききみみ teaches: stages, scenarios, units, content and TTS rules, the listening check, its backlog |
 | [app/content/listen/README.md](app/content/listen/README.md) | The listening units' YAML format |
-| [perf-plan.md](docs/perf-plan.md) | Performance: the open items |
+| [ops/perf.md](docs/ops/perf.md) | Performance: the budgets, how to measure, the open items |
 | [ops/runbook.md](docs/ops/runbook.md) | Running it: hosting, deploys, keys, the relay, recovery |
 | [ops/testing.md](docs/ops/testing.md) · [ops/test-strategy.md](docs/ops/test-strategy.md) | CI (the gate, shards, flaky ledger) and how to write a stable spec; the test tiers |
 | [ops/observability.md](docs/ops/observability.md) | The log, its reader, the alert, the costs |

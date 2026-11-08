@@ -1,4 +1,4 @@
-// The island's model textures as GPU-compressed KTX2 (docs/perf-plan.md C1): a GLTFLoader plugin that draws an
+// The island's model textures as GPU-compressed KTX2: a GLTFLoader plugin that draws an
 // embedded WebP from its KTX2 (in its model's pack, static/room/tex/<id>.ktx2p: scripts/world3d-ktx2.ts) transcoded for this GPU
 // (ktx2Format.ts: ASTC on an iPhone, a quarter of the WebP's RGBA in GPU memory, no decode, no mipmap pass). A warm
 // start reads the transcoded mip levels from IndexedDB (texCache.ts): no fetch, no transcoder. A miss fetches the

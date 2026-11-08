@@ -1,4 +1,4 @@
-// The GPU formats the island's KTX2 textures become (docs/perf-plan.md C1): shared by the page (ktx2.ts) and the
+// The GPU formats the island's KTX2 textures become: shared by the page (ktx2.ts) and the
 // transcoding worker (ktx2.worker.ts), no three.js here (the worker stays small).
 
 /** What this GPU takes, best first for UASTC: ASTC 4x4 (an iPhone; near lossless from UASTC, 1 byte a pixel), BC7,

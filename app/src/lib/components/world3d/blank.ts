@@ -1,4 +1,4 @@
-// One white pixel, the island's stand-in map (docs/perf-plan.md A1, fewer program variants): a Lambert or Basic
+// One white pixel, the island's stand-in map (fewer program variants): a Lambert or Basic
 // material with no texture of its own takes it as its map (and a Lambert as its emissive map), so it shares its GPU
 // program with the textured ones (three keys a program on whether it has a map: with and without were two programs
 // each, compiled and linked at the island's start). The same pixels: a colour times white is the colour, and the

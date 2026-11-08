@@ -1,4 +1,4 @@
-// A sheet's opening timed for the log (`perf.sheet`, contract/log.ts; docs/perf-plan.md B4): the tap that asked for it
+// A sheet's opening timed for the log (`perf.sheet`, contract/log.ts): the tap that asked for it
 // (`sheetTap`, a HUD button's), then from Sheet's showModal (`timeSheet`) its chunk in and the dialog shown, its content
 // ready, its open animation's end, and the frames from the tap on. The opening is done at its animation's end, or at
 // its first frame when it has none (the island's full-height sheets open at once: with no animation to wait for, the

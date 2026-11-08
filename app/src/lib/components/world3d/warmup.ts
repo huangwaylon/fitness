@@ -1,4 +1,4 @@
-// What a new material needs before its first draw, done ahead over frames (docs/perf-plan.md A1): its programs
+// What a new material needs before its first draw, done ahead over frames: its programs
 // linked (KHR_parallel_shader_compile: off the main thread), each new program's first use primed (three's
 // getUniforms: a sync ACTIVE_UNIFORMS read that waits for the GPU process to drain everything queued before it), and
 // its textures uploaded (renderer.initTexture: the image's upload and its mipmaps), a budget a frame. Drawn at once,
