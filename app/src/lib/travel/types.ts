@@ -147,7 +147,6 @@ export interface Trip {
   days: Day[];
   logistics: Card[];
   camps?: Camp[];
-  campsIntro?: L;
   campsFoot?: L;
   places: Place[];
   legs: Leg[];
