@@ -90,6 +90,23 @@ describe('ingest', () => {
     expect(a('uploads').rows[0]).toMatchObject({ status: 'partial' });
   });
 
+  it('a date repeated in the lists (a time-zone change) keeps one value a day and metric, never losing the run', () => {
+    // health A2 (sync #2): a repeat broke UNIQUE(person, date, metric, at): unavailable, nothing kept, no audit row
+    const r = a('ingest', { dates: 'Nov 1, 2026 at 11:00 PM\nNov 1, 2026 at 1:00 AM\nOct 31, 2026 at 9:00 AM', calories: '300\n420\n250', weight: '68.4\n68.1\n0', steps: '9000\n8000\n7000' });
+    expect(r).toMatchObject({ ok: true, metrics: 5, warnings: [expect.stringMatching(/^dates: 1 repeat a date/)] });
+    const m = (a('snapshot').rows.metrics as unknown[][]).map((x) => [x[2], x[3], x[4]]);
+    expect(m).toEqual(expect.arrayContaining([['2026-11-01', 'move_kcal', 420], ['2026-11-01', 'weight', 68.1], ['2026-11-01', 'steps', 9000], ['2026-10-31', 'move_kcal', 250], ['2026-10-31', 'steps', 7000]]));
+    expect(m).toHaveLength(5);
+    expect(a('uploads').rows[0]).toMatchObject({ status: 'ok', notes: expect.stringMatching(/^dates: 1 repeat/) });
+  });
+
+  it('a run whose write fails leaves an error audit row (written after the rollback)', () => {
+    (store as unknown as { addMetric: () => void }).addMetric = () => { throw new Error('boom'); };
+    expect(a('ingest', body)).toEqual({ ok: false, error: 'unavailable' });
+    expect(a('uploads').rows).toEqual([expect.objectContaining({ status: 'error', notes: expect.stringMatching(/^not saved: Error \|/) })]);
+    expect(a('snapshot').rows.metrics).toEqual([]);
+  });
+
   it('tells the room whether the guest may hear of it: an ingest that brought activity rows, never one of からだ rows alone', () => {
     const told: [Notice, boolean | undefined][] = [];
     store = new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B }, now: () => now, notify: (n, g) => void told.push([n, g]) });

@@ -156,7 +156,10 @@ Japanese; only the day is used), `steps` (the iPhone's), `steps_watch` (the Appl
 `dates` is dropped with a warning; an unreadable line, an activity value above `METRIC_BOUNDS`, a weight
 outside 20–300 kg or a body value outside `BODY_BOUNDS` (body fat 2–70 %, BMI 10–60, lean 10–150 kg) is skipped (out of
 bounds: with a warning). A body with none of the fields is `bad_request` (audited as `error`); a Shortcut that doesn't
-send the body lists yet is ingested as before.
+send the body lists yet is ingested as before. **A date repeated** in `dates` (a time-zone change, 2026-11-08) keeps one
+value a day and metric: an activity metric's largest, a weigh-in's last line, with a `dates: N repeat a date` warning
+(until then the run failed whole). A run whose write throws still leaves an `error` audit row (`not saved: <class>`,
+written after the rollback) and answers `unavailable`.
 
 **Body metrics** (`body_fat_percentage`, `body_mass_index`, `lean_body_mass`): aligned to `dates` like `weight`, stored with one decimal, latest
 wins, never earn. Body fat may come as Shortcuts writes Health's percentage: a fraction (`0.223`) or a percent (`22.3`,
