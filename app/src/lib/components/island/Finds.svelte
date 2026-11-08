@@ -29,7 +29,8 @@
   import { onMount, tick } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { i18n, t } from '#lib/i18n/index.ts';
-  import { dayKey, jst, minuteNow, now } from '#lib/time/clock.ts';
+  import { jst, minuteNow } from '#lib/time/clock.ts';
+  import { islandDay } from './ambientClock.ts';
   import { addDays } from '#lib/time/dates.ts';
   import { recordFind, recordGoods } from '#lib/store/actions.ts';
   import { hitWorld, sceneSfx, shownNow } from './sceneTaps.ts';
@@ -38,7 +39,7 @@
   import { SHOWN, bareOf, hitOf, hitSources, pick, type HitBox, type Seen } from './hitbox.ts';
   import { bottleAt, bottleNow, digSpots, findArt, fragmentsOn, shellsAt, type Bottle, type DigSpot, type Fragment, type Shell } from './beach.ts';
   import { take, takenOn, wish as addWish, wishes } from './sceneDay.ts';
-  import { fragmentDay, fragmentsDue } from './stars.ts';
+  import { fragmentsDue, wishDays } from './stars.ts';
   import { showerNight } from './meteor.ts';
   import { eggTime, eventNow } from './events.ts';
   import { eggInDig } from './eggs.ts';
@@ -80,12 +81,12 @@
   let taken = $state(0);
 
   const clock = $derived(minuteNow());
-  const date = $derived(dayKey(clock));
+  const date = $derived(islandDay());
   /** What's gone today: what this phone took, and every claim in the shared day (mine too: a phone that lost its own
    *  record gets them back in the relay's replay; world-day.ts takenIds). */
   const goneOn = (d: string): Set<string> => {
     const mine = takenOn(d);
-    return d === dayKey() ? mine.union(takenIds(shared.day)) : mine;
+    return d === islandDay() ? mine.union(takenIds(shared.day)) : mine;
   };
   /** Both people's wishes for a morning (stars.ts: one fragment each): mine and the partner's. */
   const allWishes = () => {
@@ -482,9 +483,8 @@
   /** A wish on a shooting star (SceneTaps, a tap in the sky while one crosses; client px): one more star fragment on the
    *  beach the next morning (before dawn: this morning, from 5:00), and a brief caption by the tap. */
   export function wish(px: number, py: number): void {
-    const { hour } = jst(now());
-    const morning = fragmentDay(date, hour, (d) => addDays(d, 1));
-    addWish(morning, date);
+    const { day, morning } = wishDays(shared.now(), (d) => addDays(d, 1));
+    addWish(morning, day);
     // the partner's beach gets its fragment too (both people's wishes count: the shared world)
     shared.share({ kind: 'world', op: 'wished', id: morning });
     taken++;

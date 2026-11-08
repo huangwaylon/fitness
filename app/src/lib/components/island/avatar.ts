@@ -23,6 +23,9 @@ import { planTap, standAt, type TapPlan } from './tapWalk.ts';
 import { localKV, readJson, remove, writeJson } from '#lib/sync/storage.ts';
 import { actorOf, castMe, guestPhone, islandActors, othersOf, whoOf } from '#lib/ui-state/cast.ts';
 import type { Who } from '#lib/types.ts';
+import { relayOffset } from './ambientClock.ts';
+import { slotAt, slotRand } from './ambient.ts';
+import { now } from '#lib/time/clock.ts';
 
 export interface AvatarCtx {
   geo: () => WalkGeo;
@@ -57,6 +60,15 @@ const guests = (id: Villager): boolean => whoOf(id) === 'G';
 /** The members' villagers besides `id` (one of theirs is out at a time). */
 const otherMembers = (id: Villager): Villager[] => othersOf(id).filter((o) => !guests(o));
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
+/** When the partner's change on the relay (`t`, the relay's ms) was, on this device's clock (steered's): the same instant
+ *  on both phones, not each one's arrival time (ambient.ts held()'s window then differed per phone). */
+const steeredAt = (t: number | undefined): number => (t === undefined ? Date.now() : t - relayOffset());
+/** A linger after an event before wandering home, LINGER's, the same on both phones: the slot's seeded roll for that
+ *  person's villager (Math.random put an absent person's villager somewhere else on each phone for a few seconds). */
+function lingerMs(id: Villager, kind: string): number {
+  const s = slotAt(now().getTime(), relayOffset());
+  return LINGER[0] + slotRand(s.date, s.slot, `linger:${kind}:${whoOf(id)}`)() * (LINGER[1] - LINGER[0]);
+}
 
 /** Where a tap sent my villager (spec §4): it rests there, not wandering home, and the partner's phone shows it there
  *  too, however long my phone is gone (the relay keeps each person's last walk: docs/backend.md#shared-world). And where it stands (`pos`: the end of its latest move, whoever made it),
@@ -227,12 +239,12 @@ function run(from: Pt, pts: readonly Pt[], to: Pt, face: Facing | undefined, the
 
 /** The partner tapped somewhere on their phone (the relay's `walk`, world units): their villager here runs there too,
  *  by the same planner from where it stands (no positions are sent), and rests there for the day, as on their phone. */
-export function partnerTo(x: number, z: number, id: Villager = 'partner'): boolean {
+export function partnerTo(x: number, z: number, id: Villager = 'partner', t?: number): boolean {
   const c = ctx;
   if (!c || !c.enabled() || actors[id].asleep) return false;
   const from = c.where(id), p = planTap(walkNav(), from, x, z, c.geo().extra);
   if (!p) return false;
-  steered[id] = Date.now();
+  steered[id] = steeredAt(t);
   stays[id] = restAt(p.to, actors[id].home);
   clearTimeout(homeTimers[id]);
   walkTo(id, p.pts, { speed: SPEED.run, from, face: p.snap.face, remote: true });
@@ -258,10 +270,10 @@ export function setPartnerRest(x: number, z: number, id: Villager = 'partner'): 
 const restAt = (p: Pt, home: Pt): Pt | null => (Math.hypot(p[0] - home[0], p[1] - home[1]) <= 8 ? null : [p[0], p[1]]);
 /** The partner did something on their phone (the shared world: a catch, a pick-up, a shake): their villager here turns
  *  to it where it stands (no walking over, as on their own phone) and the result plays at the target. */
-export function partnerTurnTo(tx: number, who?: Who): void {
+export function partnerTurnTo(tx: number, who?: Who, t?: number): void {
   const id = who ? actorOf(who) : 'partner';
   if (!ctx?.enabled() || actors[id].asleep || id === 'mine') return;
-  steered[id] = Date.now();
+  steered[id] = steeredAt(t);
   faceToward(id, tx);
 }
 
@@ -408,7 +420,7 @@ export function goalWalk(id: Villager): number {
   const { ms } = p;
   clearTimeout(homeTimers[id]);
   walkTo(id, p.pts, { ms, from, face: tx[0] < (p.pts.at(-1) ?? from)[0] ? 'l' : 'r' });
-  goHomeLater(id, ms + 2600 + rand(LINGER[0], LINGER[1]));
+  goHomeLater(id, ms + 2600 + lingerMs(id, 'goal'));
   return ms;
 }
 
@@ -440,7 +452,7 @@ export function meetUp(): number {
     walkTo(w.id, w.pts!, { ms, from: w.from, face: face(w.id) });
   }
   setTimeout(() => highFive(go.map((w) => w.id), face), ms);
-  for (const w of go) goHomeLater(w.id, ms + 2400 + rand(LINGER[0], LINGER[1]));
+  for (const w of go) goHomeLater(w.id, ms + 2400 + lingerMs(w.id, 'meet'));
   return ms;
 }
 

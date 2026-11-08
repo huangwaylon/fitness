@@ -40,7 +40,8 @@
   import { waspMusic } from '#lib/sound/sound.svelte.ts';
   import { critterArt, type BugId } from './critters.ts';
   import { catchLine, loadLines, loadNames } from './catchLine.ts';
-  import { dayKey, jst } from '#lib/time/clock.ts';
+  import { jst } from '#lib/time/clock.ts';
+  import { islandDay } from './ambientClock.ts';
   import { artUrl } from '#lib/art.ts';
   import {
     DANGLE_MS, SWARM_DELAY_MS, SWARM_MS, WOODS, bearsCoconuts, dropAt, dropIds, fallen, lastNestOf, netsSwarm, shakeDrop, wireDrop,
@@ -129,7 +130,7 @@
     const force = bugForced ? 'bug' : woodForced ? null : (forced as ShakeDrop | undefined);
     // this shake's place among the tree's shakes today (both of ours): its wood's seed
     const nth = d.shakes.filter((s) => s.tree === tree.id).length;
-    const gift = holdsGift(dayKey(), tree.id, d.puts, islandSeed());
+    const gift = holdsGift(islandDay(), tree.id, d.puts, islandSeed());
     let drop: ShakeDrop = shakeDrop(Math.random, now, lastNestOf(d.shakes, tree.id), force, tree.kind, bearsCoconuts(d.shakes, tree.id), gift);
     forced = undefined;
     // one thing of a kind at a tree at a time; while its present lies unopened under it, only a rustle (its spot clear)
@@ -146,7 +147,7 @@
     play(tree, 'mine', wire);
     // NH's wood without an axe: now and then a piece, three a tree a day (treeShake.ts woodFall); put for both, first
     // wins (the partner's phone may have knocked the same piece out a moment before); none with its present
-    const wood = (giftLies || drop === 'gift') && !woodForced ? null : woodFall(dayKey(), tree.id, nth, woodOut(d.puts, tree.id), islandSeed(), woodForced);
+    const wood = (giftLies || drop === 'gift') && !woodForced ? null : woodFall(islandDay(), tree.id, nth, woodOut(d.puts, tree.id), islandSeed(), woodForced);
     if (wood) {
       const [x, z] = woodAt(tree, woodOut(d.puts, tree.id));
       if (world.share({ kind: 'put', id: wood.id, what: wood.what, at: [x, z] }).fresh) woodFalls(wood.id);
@@ -318,7 +319,7 @@
       if (e.kind === 'shake') {
         const tree = treeOf(e.tree);
         if (!tree || !live) return;
-        partnerTurnTo(tree.x, e.who);
+        partnerTurnTo(tree.x, e.who, e.t);
         rustle?.(tree);
         play(tree, actorOf(e.who), e.drop);
       } else if (e.kind === 'catch' && e.id && /^(dg|ws):/.test(e.id)) {
@@ -326,7 +327,7 @@
         if (d?.id === e.id) {
           dangler = null;
           if (live) {
-            partnerTurnTo(d.x, e.who);
+            partnerTurnTo(d.x, e.who, e.t);
             net = { n: ++seq, x: d.x, z: d.y, lift: DANGLE_UP };
             later(() => (net = null), 420);
             tellPartner({ who: e.who, art: critterArt(d.bug), verb: 'caught', name: `critter.name.${d.bug}`, x: d.x, z: d.y, lift: DANGLE_UP });
@@ -346,11 +347,11 @@
         woodFalls(e.id, tr ? [tr.x, tr.z] : undefined);
       } else if (e.kind === 'pick' && /^wd:/.test(e.id) && live) {
         const p = world.day.puts[e.id];
-        if (p) partnerTurnTo(p.at[0], e.who);
+        if (p) partnerTurnTo(p.at[0], e.who, e.t);
       } else if (e.kind === 'pick' && /^(br|co):/.test(e.id) && live) {
         const b = fallen(world.day.shakes, treeOf, () => false).find((x) => x.id === e.id);
         if (!b) return;
-        partnerTurnTo(b.x, e.who);
+        partnerTurnTo(b.x, e.who, e.t);
         if (b.what === 'coconut') tellPartner({ who: e.who, art: 'finds/coconut', verb: 'picked', name: 'beach.name.coconut', x: b.x, z: b.z });
       }
     })

@@ -94,6 +94,23 @@ describe('the ring', () => {
     expect(evs().map((e) => e.e)).toEqual(['js.error', 'log.drop']);
   });
 
+  it('a day on the phone is Tokyo’s: the cap reopens at 00:00 JST, not 09:00', async () => {
+    const capped = (at: string) => {
+      configureLog({ reset: true, on: true });
+      now = Date.parse(at);
+      kv.setItem(LIVE.log, JSON.stringify({ v: 1, s: 'old0000001', build: 'b', os: 'o', ring: [], pending: [], day: { d: '2026-11-05', n: DAY_MAX } }));
+      restoreLog();
+      log('app.show');
+    };
+    capped('2026-11-05T14:30:00Z'); // 23:30 on the 5th
+    await flushLog();
+    expect(evs().map((e) => e.e)).toEqual(['log.drop']);
+    sent = [];
+    capped('2026-11-05T15:30:00Z'); // 00:30 on the 6th (still the 5th in UTC)
+    await flushLog();
+    expect(evs().map((e) => e.e)).toEqual(['app.show']);
+  });
+
   it('a usage counter is summed into one event a flush; sampling keeps a share', async () => {
     count('sheet:island.food');
     count('sheet:island.food');

@@ -20,7 +20,7 @@ import { heldWx, onWx } from '#lib/sync/wx.ts';
 import type { Wx } from '#lib/contract/live-protocol.ts';
 import { isWeatherMode, type WeatherMode } from '#lib/contract/api.ts';
 import { hook, hookOneOf, islandSeed } from './devHooks.ts';
-import { FORCED, isRain, musicWeather, realWeatherAt, weatherAt, type Forced, type Sky, type WeatherNow } from './weather.ts';
+import { FORCED, isRain, musicWeather, realWeatherAt, weatherAt, yieldSkyAt, type Forced, type Sky, type WeatherNow } from './weather.ts';
 import { WX_FIXTURES, wxFixture } from './wxFixtures.ts';
 
 export const weather = $state<WeatherNow>({ sky: 'clear', fog: false, rainbow: 0, aurora: false });
@@ -29,6 +29,12 @@ export const yieldSky = $state<{ sky: Sky }>({ sky: 'clear' });
 /** Where the island's weather comes from now (せってい's てんき): the mode, whether Tokyo's real sky is the one shown
  *  (false: the seeded day's, the mode's `game` or no timeline that serves), and when the timeline held was fetched. */
 export const weatherSource = $state<{ mode: WeatherMode; real: boolean; at: number | null }>({ mode: 'real', real: false, at: null });
+
+/** What yieldSky was last worked out from (apply), for skyAt. */
+let yieldIn: { seed: string; real: boolean; wx: Wx | null; dev: Forced | null } | null = null;
+/** The sky the critters come by at instant `ms` (a shared critter's slot start: weather.ts yieldSkyAt), on the inputs
+ *  of yieldSky's; yieldSky's own before the weather started. */
+export const skyAt = (ms: number): Sky => (yieldIn ? yieldSkyAt(ms, yieldIn.seed, yieldIn.real, yieldIn.wx, yieldIn.dev) : yieldSky.sky);
 
 /** Raining now (the ground is wet: footsteps splash, the rain-only critters are about). */
 export const raining = (): boolean => isRain(weather.sky);
@@ -48,6 +54,7 @@ function apply(at: Date, seed: string, shown: Forced | null, mode: WeatherMode, 
   const w = shown ? weatherAt(date, hour, seed, shown) : day;
   if (w.sky !== weather.sky || w.fog !== weather.fog || w.rainbow !== weather.rainbow || w.aurora !== weather.aurora) Object.assign(weather, w);
   const dev = hookOneOf('weather', FORCED);
+  yieldIn = { seed, real: mode === 'real', wx, dev };
   const yields = dev ? weatherAt(date, hour, seed, dev).sky : day.sky;
   if (yieldSky.sky !== yields) yieldSky.sky = yields;
   if (weatherSource.mode !== mode || weatherSource.real !== !!real || weatherSource.at !== (wx?.at ?? null)) Object.assign(weatherSource, { mode, real: !!real, at: wx?.at ?? null });

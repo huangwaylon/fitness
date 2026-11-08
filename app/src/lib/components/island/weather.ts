@@ -201,3 +201,12 @@ function rainbowAt(wx: Wx, h: number, seed: string): boolean {
 
 /** The music's arrangement and the ambience's rain for a sky (sound/hourly.ts Weather). */
 export const musicWeather = (sky: Sky): 'sunny' | 'rain' | 'snow' => (isRain(sky) ? 'rain' : sky === 'snow' ? 'snow' : 'sunny');
+
+/** The sky the critters come by at `ms` (yieldSky's, for any instant): the dev hook's, else Tokyo's real one in `real`
+ *  mode while the timeline serves, else the seeded day's. A shared critter's species is picked by the sky at its slot's
+ *  start, so both phones pick the same one across a change of weather (each phone's live sky turned at its own minute). */
+export function yieldSkyAt(ms: number, seed: string, real: boolean, wx: Wx | null, dev: Forced | null = null): Sky {
+  const t = new Date(ms + TOKYO_MS), date = t.toISOString().slice(0, 10), hour = t.getUTCHours();
+  if (dev) return weatherAt(date, hour, seed, dev).sky;
+  return ((real ? realWeatherAt(wx, ms, seed) : null) ?? weatherAt(date, hour, seed)).sky;
+}

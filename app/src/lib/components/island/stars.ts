@@ -4,6 +4,7 @@
 // run (sky only, never over the UI), and the wishes' ledger (sceneDay.ts keeps it in localStorage per phone).
 import type { Box } from './geom.ts';
 import { inHours } from './critters.ts';
+import { localDateAt, ZONE_OFFSET_MS } from '#lib/contract/tokyo.ts';
 
 /** NH's shooting-star hours (Tokyo clock). */
 const STAR_HOURS = [19, 4] as const;
@@ -76,9 +77,13 @@ const MORNING_HOUR = 5;
 /** This phone's wishes: the morning (Tokyo date) they bring fragments to → how many wishes. */
 export type Wishes = Record<string, number>;
 
-/** The morning a wish brings its fragment: before dawn (5:00) that morning, after dusk the next (NH: the day after). */
-export const fragmentDay = (wishDate: string, hour: number, next: (d: string) => string): string =>
-  hour < MORNING_HOUR ? wishDate : next(wishDate);
+/** A wish made at `ms`: its Tokyo day, and the morning it brings its fragment to: before dawn (5:00) that morning,
+ *  after dusk the next (NH: the day after). Both from the one instant: the minute tick's day with a live hour put a
+ *  wish in the first moments after midnight on the morning just gone, its fragment lost. */
+export function wishDays(ms: number, next: (d: string) => string): { day: string; morning: string } {
+  const day = localDateAt(ms), hour = Math.floor((ms + ZONE_OFFSET_MS) / 3_600_000) % 24;
+  return { day, morning: hour < MORNING_HOUR ? day : next(day) };
+}
 
 /** One more wish for `day`'s morning; mornings before `today` are dropped (their fragments are gone with the day). */
 export function addWish(w: Wishes, day: string, today: string): Wishes {

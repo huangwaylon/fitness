@@ -520,7 +520,7 @@
       if (e.kind === 'act' && e.act === 'bush' && e.id) {
         const b = bushAt(e.id), el = scene?.querySelector<HTMLElement>(`[data-bush="${e.id}"]`);
         if (!b) return;
-        partnerTurnTo(b.x, e.who);
+        partnerTurnTo(b.x, e.who, e.t);
         jiggle(el, RUSTLE, 520, BUSH_ORIGIN);
         spawn({ kind: 'bush', x: b.x, y: b.z, lift: b.h * 0.62, v: shed(season) });
         sceneSfx('bush', [b.x, b.z]);
@@ -528,7 +528,7 @@
         const f = flowerById(e.id);
         if (!f) return;
         const el = scene?.querySelector<HTMLElement>(`[data-flower="${f.id}"]`);
-        partnerTurnTo(f.x, e.who);
+        partnerTurnTo(f.x, e.who, e.t);
         jiggle(el, WIGGLE, 620, FLOWER_ORIGIN);
         spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, color: petalOf(wildFlower(f, season)), flip: f.x > site.midX });
         sceneSfx('water', [f.x, f.z]);

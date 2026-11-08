@@ -11,7 +11,7 @@ import { eventSlot, prefTaken } from '#lib/contract/record.ts';
 import { guestMayWrite } from '#lib/contract/guest.ts';
 import type { EventRow } from '#lib/contract/api.ts';
 import { addDays } from '#lib/time/dates.ts';
-import { dayWeather, heldFine, isRain, musicWeather, realWeatherAt, snowSeason, WX_TTL_MS, type Sky } from './weather.ts';
+import { dayWeather, heldFine, weatherAt, isRain, musicWeather, realWeatherAt, snowSeason, WX_TTL_MS, yieldSkyAt, type Sky } from './weather.ts';
 import { BUGS, FISH, oddsAt, type Seasonal } from './critters.ts';
 import { showerNight } from './meteor.ts';
 import { WX_FIXTURES, wxFixture } from './wxFixtures.ts';
@@ -236,5 +236,18 @@ describe("the island's mode (pref weatherMode)", () => {
       guestMayWrite('pref', { key: 'weatherMode', value: 'game', person: 'A' }),
       guestMayWrite('pref', { key: 'villagerName', value: 'x' })
     ]).toEqual(['pref|island|weatherMode', 'pref|island|weatherMode', 'pref|island|weatherMode', null, true, false, true, false, true]);
+  });
+});
+
+describe('the critters’ sky at an instant (yieldSkyAt: a shared critter’s slot start)', () => {
+  it('is the sky of that instant’s hour, not the live one: a slot started before the rain is a clear slot', () => {
+    const now = tokyo('2026-06-10', '12:00') + 30_000;
+    // 12 hours back clear, then rain from 12:00 on
+    const wx = tl(now, 'c'.repeat(12) + 'r'.repeat(36));
+    expect(yieldSkyAt(tokyo('2026-06-10', '12:00') - 10_000, 'seed', true, wx)).toBe('clear');
+    expect(yieldSkyAt(now, 'seed', true, wx)).toBe('rain');
+    // `game` mode: the seeded day's; the dev hook over all
+    expect(yieldSkyAt(now, 'seed', false, wx)).toBe(weatherAt('2026-06-10', 12, 'seed').sky);
+    expect(yieldSkyAt(now, 'seed', true, wx, 'snow')).toBe('snow');
   });
 });

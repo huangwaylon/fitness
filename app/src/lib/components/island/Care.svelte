@@ -15,7 +15,8 @@
   import { su } from './scene.ts';
   import { useWorld } from './camera.svelte.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
+  import { jst, minuteNow } from '#lib/time/clock.ts';
+  import { islandDay } from './ambientClock.ts';
   import { sceneSfx, shownNow } from './sceneTaps.ts';
   import { clearAt, guardsU, stageGeo } from './placement.ts';
   import { digSpots, findArt } from './beach.ts';
@@ -44,13 +45,13 @@
 
   let pulled = $state(0);
   const clock = $derived(minuteNow());
-  const date = $derived(dayKey(clock));
+  const date = $derived(islandDay());
   const weeds = $derived.by<Weed[]>(() => {
     void pulled;
     void site.rev;
     const { hour, minute } = jst(clock);
     // what was taken today: this phone's own record, and every claim in the shared day (mine too: world-day.ts takenIds)
-    const gone = date === dayKey() ? takenOn(date).union(takenIds(shared.day)) : takenOn(date);
+    const gone = date === islandDay() ? takenOn(date).union(takenIds(shared.day)) : takenOn(date);
     const dug = new Set(digSpots(date, gone, seed).map((s) => `${s.x},${s.y}`));
     return weedsAt(date, (hour * 60 + minute) * 60_000, seed, dug).filter((w) => !gone.has(w.uid));
   });
@@ -150,11 +151,11 @@
       if (!live || !enabled()) return;
       if (e.kind === 'pick' && e.what === 'weed' && e.at) {
         const [x, z] = e.at;
-        partnerTurnTo(x, e.who);
+        partnerTurnTo(x, e.who, e.t);
         sceneSfx('weed', [x, z]);
         spawn({ kind: 'pull', x, y: z }, 700);
       } else if (e.kind === 'act' && e.act === 'rock') {
-        partnerTurnTo(ROCK.x, e.who);
+        partnerTurnTo(ROCK.x, e.who, e.t);
         strike(() => clonk('clonk', [ROCK.x, ROCK.y]));
       }
     })
