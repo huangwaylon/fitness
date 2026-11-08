@@ -49,9 +49,8 @@ export const SAVED_MAX_Z = 16;
 /** OpenFreeMap's asks (its terms): an area at most this many tiles and bytes. */
 export const OFM_MAX_TILES = 3000;
 export const OFM_MAX_BYTES = 50_000_000;
-/** All saved areas together (the user, 2026-11-07); a warning past WARN_AT of it. */
+/** All saved areas together (the user, 2026-11-07). */
 export const TOTAL_CAP_BYTES = 150_000_000;
-export const WARN_AT = 0.8;
 
 const R = 6_371_008.8;
 const rad = (d: number) => (d * Math.PI) / 180;

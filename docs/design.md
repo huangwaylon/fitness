@@ -2632,8 +2632,8 @@ menu's 「りょこう」 pill (Orville's head) opens a full-height sheet (`comp
   and 「消えました · もう一度保存」 are taps; an OpenFreeMap area past 30 days 「保存済み · 更新」. A save that can't start
   says why for 4 s (オフライン, 合計 150 MB, 空き容量, ほかの地図を保存中). Offline with nothing saved: no pill. Offline with
   the area saved, the map's note 「保存した範囲のみ」; the credit stays visible (the trail's above the sheet's peek;
-  GSI's 「出典：国土地理院」). せってい › オフラインの地図 (`panel/OfflineSection.svelte`): a row per area (name, MB · date,
-  削除; 続きを保存 / もう一度保存 / 更新 when due), the total's bar against 150 MB, coral past 80 %.
+  GSI's 「出典：国土地理院」). Beside a saved area (一部のみ and 消えました too) a trash pill deletes it (「…を削除」, at once);
+  there's no list of them in 設定 (removed 2026-11-08).
 - **キャンプ場** (`CampList.svelte`, `camps.ts`; Okinawa's 26): the source's intro, one ChipRow (すべて 26 · 無料 · 有料 ·
   ビーチ · トイレ · シャワー: one criterion at a time) held at the top, the sites in one dense card (a row each: a 48 px
   photo thumb, the name with our nights' yellow stickers, kind · town · the drive from the office, the amenities'

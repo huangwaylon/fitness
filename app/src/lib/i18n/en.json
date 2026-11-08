@@ -906,7 +906,6 @@
   "season.tod.day": "Day",
   "season.tod.dusk": "Evening",
   "season.tod.night": "Night",
-  "panel.offline": "Offline maps",
   "offline.save": "Save for offline ({mb} MB)",
   "offline.saving": "Saving… {pct}%",
   "offline.stop": "Stop saving",
@@ -920,16 +919,5 @@
   "offline.refuse.limit": "Area too large",
   "offline.refuse.busy": "Another map is saving",
   "offline.savedOnly": "Saved area only",
-  "offline.none": "No maps saved. Save one from a trip's or a trail's map.",
-  "offline.total": "{mb} / 150 MB in all",
-  "offline.warn": "Nearly full",
-  "offline.row": "{mb} MB · {date}",
-  "offline.rowPartial": "Partly saved · {mb} MB",
-  "offline.rowGone": "Gone",
-  "offline.rowSaving": "Saving… {pct}%",
-  "offline.delete": "Delete",
-  "offline.deleteAria": "Delete {name}",
-  "offline.again": "Save again",
-  "offline.more": "Finish saving",
-  "offline.updateBtn": "Update"
+  "offline.deleteAria": "Delete {name}"
 }
