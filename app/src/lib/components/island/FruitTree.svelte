@@ -692,8 +692,9 @@
     font: 500 var(--fs-s)/1.2 var(--font-ui); color: var(--c-ink-soft);
   }
   .sync.late::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: color-mix(in srgb, var(--c-ink-soft) 55%, transparent); }
-  /* narrow stages: the word goes (the fruit art says which), so the popup fits over its own tree */
-  @container (max-width: 400px) {
+  /* phone stages (iPhone 15/16 and their Pro sizes, to 440): the word goes (the fruit art says which), so the popup fits
+     over its own tree, clear of the other's middle */
+  @container (max-width: 440px) {
     .detail { grid-template-columns: 20px 18px auto auto; column-gap: 10px; }
     .lbl { display: none; }
     .mls { grid-column: 2 / -2; }
