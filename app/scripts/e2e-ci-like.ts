@@ -1,6 +1,7 @@
 // The e2e as CI runs them, on this machine (docs/ops/testing.md "Before you push"): the built app served as Pages serves
 // it, Chromium in software GL (SwiftShader, as GitHub's Linux runners draw), CI's 3 workers a shard, CI's reporter and
-// timeouts (CI=1), no retries; and a spec run N times over, under load (more workers than cores is what a shard is).
+// timeouts (CI=1), but no retry (CI retries once: here a flake is red); and a spec run N times over, under load (more
+// workers than cores is what a shard is).
 //
 //   npm run e2e:ci-like -- [--tier logic|render|full] [--repeat N] [--workers N] [--port P] [spec files / playwright args…]
 //
@@ -68,7 +69,7 @@ const free = (p: number): Promise<boolean> => new Promise((ok) => {
 if (!port) for (let p = 4600; p < 4700; p++) if (await free(p)) { port = String(p); break; }
 
 const env: NodeJS.ProcessEnv = { ...process.env, CI: '1', E2E_SWIFTSHADER: '1', E2E_PORT: port };
-const pw = ['playwright', 'test', '--project=chromium', '--project=chromium-mic', `--workers=${workers}`, `--repeat-each=${repeat}`, '--reporter=list'];
+const pw = ['playwright', 'test', '--project=chromium', '--project=chromium-mic', `--workers=${workers}`, `--repeat-each=${repeat}`, '--retries=0', '--reporter=list'];
 if (tier === 'logic') env.E2E_RENDER = 'none', pw.push('--grep-invert', '@render|@quarantine');
 if (tier === 'render') pw.push('--grep', '@render|@smoke', '--grep-invert', '@quarantine');
 if (tier === 'full') env.E2E_SLOW = '1', pw.push('--grep-invert', '@quarantine|@logic');

@@ -84,9 +84,9 @@ jobs:
   # The logic tier, the gate's e2e (docs/ops/test-strategy.md): every test but the drawn ones (@render) and the
   # quarantined (@quarantine), with the 3D engines drawing nothing (E2E_RENDER=none, src/lib/ui-state/testMode.ts: the
   # gameplay, cameras and tap areas all run, CI's software GL costs nothing), in shards balanced by time (the build's
-  # plan, from the committed e2e/timings.json: every shard the same). No silent retries: a test that fails is run once more in its own step; passing then, it is named in the job
-  # summary and annotated on its spec as flaky (the deploy goes on: quarantine it), failing again (or more than a few
-  # failed: something is broken, not flaky) the job is red. docs/ops/testing.md.
+  # plan, from the committed e2e/timings.json: every shard the same). A failed test is retried once (playwright.config.ts):
+  # failing again, the job is red; passing then, it's green but flaky: named in the summary, annotated on its spec, and
+  # uploaded to the flaky ledger (flaky-<shard>: scripts/e2e-flakes.ts). --max-failures: a broken run stops early.
   # Chromium gates the deploy until WebKit (e2e-flake-hunt.yml, on macOS: nightly and on demand) is green across the board.
   e2e-logic:
     runs-on: ubuntu-latest
@@ -122,11 +122,14 @@ jobs:
       - run: npm run build
       - run: node scripts/e2e-shards.ts plan 12 shards e2e/timings.json -- --project=chromium --project=chromium-mic --grep-invert "@render|@quarantine"
       - id: e2e
-        continue-on-error: true
         # (the plan leaves them out, but a whole spec file in a shard list (e2e-shards.ts: serial or ›-titled) brings its
         # quarantined tests back in: 32266e9a ran kikimimi-path:113; so filter here too)
-        run: npx playwright test --project=chromium --project=chromium-mic --test-list shards/${{ matrix.shard }}.txt --grep-invert "@render|@quarantine"
-      # (each test's time, for the next run's plan: the first run's report)
+        run: npx playwright test --project=chromium --project=chromium-mic --test-list shards/${{ matrix.shard }}.txt --grep-invert "@render|@quarantine" --max-failures=10
+        env:
+          E2E_FLAKY_FILE: flaky.json
+      - if: failure() && steps.e2e.outcome == 'failure'
+        run: node scripts/e2e-report.ts playwright-results.json "Failed in the logic tier, shard ${{ matrix.shard }}" >> "$GITHUB_STEP_SUMMARY"
+      # (each test's time, for the next run's plan)
       - if: always() && steps.e2e.outcome != 'skipped'
         run: cp playwright-results.json timings-${{ matrix.shard }}.json 2>/dev/null || true
       - if: always() && steps.e2e.outcome != 'skipped'
@@ -136,19 +139,14 @@ jobs:
           path: app/timings-${{ matrix.shard }}.json
           if-no-files-found: ignore
           retention-days: 1
-      - name: A failed test, once more (flaky or broken?)
-        if: steps.e2e.outcome == 'failure'
-        run: |
-          node scripts/e2e-report.ts playwright-results.json "Failed in the logic tier, shard ${{ matrix.shard }}" >> "$GITHUB_STEP_SUMMARY"
-          cp playwright-results.json first-run.json 2>/dev/null || true
-          n=$(node -p "try { require('./test-results/.last-run.json').failedTests.length } catch { 0 }")
-          if [ "$n" -eq 0 ] || [ "$n" -gt 5 ]; then
-            echo "::error::$n tests failed: broken, not flaky (no rerun)"; exit 1
-          fi
-          npx playwright test --project=chromium --project=chromium-mic --last-failed
-          echo "::warning::$n flaky e2e test(s) in logic shard ${{ matrix.shard }}: failed, then passed; quarantine it (docs/ops/testing.md)"
-          ANNOTATE=1 node scripts/e2e-report.ts first-run.json "Flaky e2e (logic tier)"
-          node scripts/e2e-report.ts first-run.json "Flaky e2e (failed, then passed on a rerun): quarantine it and fix the cause, docs/ops/testing.md" >> "$GITHUB_STEP_SUMMARY"
+      # the flaky ledger's entry (a run with a flaky test writes one)
+      - if: always() && steps.e2e.outcome != 'skipped'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: flaky-${{ matrix.shard }}
+          path: app/flaky.json
+          if-no-files-found: ignore
+          retention-days: 3
 
   # A changed spec, five times (docs/ops/testing.md): the e2e specs this push (or pull request) added or edited, each
   # test 5× over in the logic tier (scripts/e2e-changed.ts; none when over 8 changed: a sweep, the logic tier runs them
@@ -205,7 +203,7 @@ jobs:
         env:
           SPECS: ${{ steps.specs.outputs.list }}
         # ($SPECS unquoted: the list splits into its files)
-        run: npx playwright test --project=chromium --project=chromium-mic --grep-invert "@render|@quarantine" --repeat-each=5 --shard=${{ matrix.shard }}/3 --pass-with-no-tests $SPECS
+        run: npx playwright test --project=chromium --project=chromium-mic --grep-invert "@render|@quarantine" --repeat-each=5 --retries=0 --shard=${{ matrix.shard }}/3 --pass-with-no-tests $SPECS
       - if: failure()
         run: |
           node scripts/e2e-report.ts playwright-results.json "A changed spec failed in its 5 runs (a flake the push brought: fix its cause)" >> "$GITHUB_STEP_SUMMARY"
@@ -241,21 +239,9 @@ jobs:
         run: npx playwright install --only-shell chromium
       - run: npm run build
       - id: e2e
-        continue-on-error: true
         run: npx playwright test --project=chromium --grep "@render|@smoke" --grep-invert "@quarantine"
-      - name: A failed test, once more (flaky or broken?)
-        if: steps.e2e.outcome == 'failure'
-        run: |
-          node scripts/e2e-report.ts playwright-results.json "Failed in the drawn smoke (e2e-render)" >> "$GITHUB_STEP_SUMMARY"
-          cp playwright-results.json first-run.json 2>/dev/null || true
-          n=$(node -p "try { require('./test-results/.last-run.json').failedTests.length } catch { 0 }")
-          if [ "$n" -eq 0 ] || [ "$n" -gt 2 ]; then
-            echo "::error::$n tests failed: broken, not flaky (no rerun)"; exit 1
-          fi
-          npx playwright test --project=chromium --project=chromium-mic --last-failed
-          echo "::warning::$n flaky drawn smoke test(s): failed, then passed; quarantine it (docs/ops/testing.md)"
-          ANNOTATE=1 node scripts/e2e-report.ts first-run.json "Flaky e2e (drawn smoke)"
-          node scripts/e2e-report.ts first-run.json "Flaky e2e (failed, then passed on a rerun): quarantine it and fix the cause, docs/ops/testing.md" >> "$GITHUB_STEP_SUMMARY"
+      - if: failure() && steps.e2e.outcome == 'failure'
+        run: node scripts/e2e-report.ts playwright-results.json "Failed in the drawn smoke (e2e-render)" >> "$GITHUB_STEP_SUMMARY"
 
   # The logic tier's test times folded into the committed e2e/timings.json, as an artifact (`npm run e2e:timings` takes
   # the newest green run's into the repo) and how far apart this run's shards ended, in its summary.

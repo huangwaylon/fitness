@@ -20,10 +20,11 @@ The tiers and why: [test-strategy.md](test-strategy.md).
   deploys, then the newest runs (a deploy that has started is never cancelled either). The full tier likewise runs
   one at a time to the end (a newer one waits; one waiting is replaced by the newest): when its runs cancelled each
   other, a burst of pushes left it never finishing, red for hours unseen.
-- **No silent retries.** `retries: 0`. A test that fails is run once more in its own step: passing then, it's named in the
-  job summary and annotated on its spec as **flaky**, and the deploy goes on; failing again, or more than 5 failing in a
-  shard (broken, not flaky), the job is red. A flaky test goes to the **quarantine** at once (below), and its owner
-  fixes it at its cause; don't wait for it to fail twice.
+- **Flakes: one retry, and a ledger.** On CI `retries: 1`: a test that fails twice is red; one that fails, then passes
+  on its retry, is green but **flaky**: e2e/reporters/flaky.ts names it in the job summary, puts a warning on its spec,
+  and writes it to the run's `flaky.json`, uploaded as `flaky-<shard>`: the **flaky ledger** (`npm run e2e:flakes`
+  prints the last 48 h). Fix a flaky test at its cause; one that's broken goes to the **quarantine** (below) with an
+  owner. Locally (`npm run e2e:ci-like`) there's no retry: a flake is red.
 - **Tags** (`test('…', { tag: '@render' }, …)`): `@render` needs real drawing (draw calls, pixels, the canvas's alpha):
   the drawn smoke only, never the logic tier. `@smoke` is a whole 3D flow worth drawing too: both tiers. `@quarantine`
   is flaky: out of the gate, run in the full tier until fixed. A quarantined test carries who owns it and why:

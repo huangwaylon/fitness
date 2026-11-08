@@ -16,6 +16,7 @@
     "e2e:shards": "node scripts/e2e-shards.ts",
     "e2e:timings": "node scripts/e2e-shards.ts refresh",
     "e2e:quarantine": "node scripts/e2e-quarantine.ts",
+    "e2e:flakes": "node scripts/e2e-flakes.ts",
     "ios:check": "node scripts/ios-sim-check.ts",
     "ios:indoor": "node scripts/ios-sim-indoor.ts",
     "prepare": "svelte-kit sync || true",
