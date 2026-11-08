@@ -33,7 +33,6 @@
   import Fx from '../characters/Fx.svelte';
   import { villagerEmote, type EmoteIcon } from '#lib/art.ts';
   import { actors, addFx, awayFromHome, cancel, faceToward, later, livePos, place as placeActor, removeFx, setEmote, setMotion, walkTo } from '../motion/director.svelte.ts';
-  import type { Motion } from '../motion/reactions.ts';
   import { BEHAVIOUR, EDGE_FADE_MS, MUMBLES, POP_MS, VISITOR_SPEED, WAY_MS, nudge, pickAct, pickEmote, strollSpots, tapMotion, wayMs, type Way } from './visitorLife.ts';
   import type { Pt } from './walkGraph.ts';
   import { t } from '#lib/i18n/index.ts';

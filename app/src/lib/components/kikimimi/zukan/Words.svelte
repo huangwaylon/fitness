@@ -10,7 +10,7 @@
   import { untrack } from 'svelte';
   import { itemOf } from '#lib/kikimimi/pool.ts';
   import type { Item } from '#lib/kikimimi/bank.ts';
-  import { DOMAINS, isUnitDomain } from '#lib/kikimimi/stages.ts';
+  import { DOMAINS } from '#lib/kikimimi/stages.ts';
   import { phraseReview } from '#lib/kikimimi/srs.ts';
   import { PHRASE_FILTERS, STAR_MAX, passes, phraseBook, phraseClip, storyPhrases, type PhraseFilter } from '#lib/kikimimi/zukan.ts';
   import type { Who } from '#lib/types.ts';

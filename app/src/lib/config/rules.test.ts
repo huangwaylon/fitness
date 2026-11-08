@@ -1,6 +1,6 @@
 // The rules as data: the order of the fruits, the two rewards and their lookup.
 import { describe, expect, it } from 'vitest';
-import { PEOPLE, RING_FRUITS } from './rules.ts';
+import { RING_FRUITS } from './rules.ts';
 import { SHOP, shopPrice } from '../contract/rules.ts';
 
 describe('rules', () => {

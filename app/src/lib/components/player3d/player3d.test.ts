@@ -44,7 +44,7 @@ describe('the rig for a player (rig.ts RigOpts)', () => {
     wrist.add(hand);
     root.add(extra);
     let seen = 0;
-    const rig = rigOf(root, { alias: { Hand_L: 'Wrist_L' }, after: (p, turn) => { seen++; turn('Hand_L', [0, 0, 0.5]); } });
+    const rig = rigOf(root, { alias: { Hand_L: 'Wrist_L' }, after: (_p, turn) => { seen++; turn('Hand_L', [0, 0, 0.5]); } });
     rig.apply({ ...idle(0), j: { Hand_L: [0.3, 0, 0] } });
     expect(seen).toBe(1);
     // Hand_L's pose turned Wrist_L (then the after hook's turn), and bone() still finds the tool's socket by name

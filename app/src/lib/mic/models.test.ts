@@ -119,7 +119,7 @@ describe('ensureStt', () => {
   });
 
   it('fetches only what is missing and deletes what another version left', async () => {
-    await withSite(async ({ served, content }) => {
+    await withSite(async ({ served }) => {
       const cache = fakeCache(), asked: string[] = [];
       const fetch = async (u: string) => (asked.push(u), new Response(served.get(u)!.slice()));
       await ensureStt({ root: ROOT, cache, fetch });

@@ -65,7 +65,7 @@ for (const [w, h] of [[390, 844]] as const)
       await open(page, 'date=2026-11-04T21:00&critter=sea-bass');
       await expect(page.locator('[data-critter="fish"]')).toBeAttached();
       // from the beach by the shadow (NH casts from where it stands)
-      const [fx, fy] = await castIn(page, 'sea');
+      await castIn(page, 'sea');
       // the reel, the moment it bites (the bobber's where the cast put it)
       await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 }); // landed
       const b = await centre(page, '[data-bobber]');

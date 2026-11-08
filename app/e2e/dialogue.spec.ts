@@ -64,7 +64,7 @@ test('the catch plate pages NH’s catch line (two lines a page) and, on a first
   await islandUp(page);
   await expect(page.locator('[data-critter="fish"]')).toBeAttached();
   // from the beach by the shadow (NH casts from where it stands)
-  const [fx, fy] = await castIn(page, 'sea');
+  await castIn(page, 'sea');
   const bobber = page.locator('[data-bobber]');
   // the reel the moment it bites (e2e/island.ts reelOnBite)
   await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 }); // landed

@@ -4,11 +4,9 @@
   // host picks a unit's lesson there for everyone (a co-op lesson, docs/curriculum-units.md §4).
   import type { Path } from '#lib/kikimimi/path.ts';
   import { domainIcon } from '../look.ts';
-  import type { RosterId } from '#lib/villagers/roster.ts';
   import OfficialArt from '../../characters/OfficialArt.svelte';
   import LessonDots from './LessonDots.svelte';
   import { villagerArt } from '#lib/art.ts';
-  import { rosterName } from '../scene/stage.ts';
   import { t } from '#lib/i18n/index.ts';
 
   let { path, onopen }: { path: Path; onopen: () => void } = $props();
