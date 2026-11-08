@@ -87,16 +87,16 @@ test('a tap on my villager sends a flea hopping off into the grass; a tap on it 
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('flea'));
 });
 
-test('a stink bug on the flowers and a long-horned beetle on a trunk are netted, clear of every control', async ({ page }) => {
-  for (const id of ['man-faced-stink-bug', 'citrus-long-horned-beetle'] as const) {
-    await open(page, `&date=2026-05-10T21:00&critter=${id}`);
-    await expect(page.locator(`[data-critter="${id}"]`)).toBeAttached();
-    await page.waitForTimeout(1800);
-    const p = await at(page, `[data-critter="${id}"]`);
-    expect(await clear(page, p), id).toBe('');
-    await page.mouse.click(p.x, p.y);
-    await expect(page.locator('[data-fx="catch"]')).toContainText(said(id));
-  }
+// (a bug on a trunk netted where it's drawn: the 3D perch test below; where each kind is: critters.test)
+test('a stink bug on the flowers is netted, clear of every control', async ({ page }) => {
+  const id = 'man-faced-stink-bug';
+  await open(page, `&date=2026-05-10T21:00&critter=${id}`);
+  await expect(page.locator(`[data-critter="${id}"]`)).toBeAttached();
+  await page.waitForTimeout(1800);
+  const p = await at(page, `[data-critter="${id}"]`);
+  expect(await clear(page, p), id).toBe('');
+  await page.mouse.click(p.x, p.y);
+  await expect(page.locator('[data-fx="catch"]')).toContainText(said(id));
 });
 
 /** Whether a flower's head (its top third) is under the point. */
@@ -107,19 +107,19 @@ const onFlowerHead = (page: Page, p: { x: number; y: number }) =>
     return x > r.left && x < r.right && y > r.top - Math.max(6, r.height * 0.5) && y < r.top + r.height * 0.35;
   }), p);
 
-test('NH’s flower bugs: a ladybug and a mantis sit still on a flower’s head (and are netted there)', async ({ page }) => {
-  for (const id of ['ladybug', 'orchid-mantis']) {
-    await open(page, `&date=2026-05-10T12:00&critter=${id}`);
-    await expect(page.locator(`[data-critter="${id}"]`)).toBeAttached();
-    await page.waitForTimeout(900);
-    const p = await at(page, `[data-critter="${id}"]`);
-    expect(await onFlowerHead(page, p), id).toBe(true);
-    // clear of every control (a wandering villager may pass in front of it for a moment)
+// (NH's flower bugs, a ladybug's the same: one of them here; where each sits: critters.test)
+test('NH’s flower bugs: a mantis sits still on a flower’s head (and is netted there)', async ({ page }) => {
+  const id = 'orchid-mantis';
+  await open(page, `&date=2026-05-10T12:00&critter=${id}`);
+  await expect(page.locator(`[data-critter="${id}"]`)).toBeAttached();
+  await page.waitForTimeout(900);
+  const p = await at(page, `[data-critter="${id}"]`);
+  expect(await onFlowerHead(page, p), id).toBe(true);
+  // clear of every control (a wandering villager may pass in front of it for a moment)
   await expect.poll(() => clear(page, p), { timeout: 8000 }).toBe('');
-    await page.waitForTimeout(1500);
-    const q = await at(page, `[data-critter="${id}"]`);
-    expect(Math.hypot(q.x - p.x, q.y - p.y), 'it sits still (a 1u bob)').toBeLessThan(3);
-  }
+  await page.waitForTimeout(1500);
+  const q = await at(page, `[data-critter="${id}"]`);
+  expect(Math.hypot(q.x - p.x, q.y - p.y), 'it sits still (a 1u bob)').toBeLessThan(3);
   const m = await at(page, '[data-critter="orchid-mantis"]');
   await expect.poll(() => clear(page, m), { timeout: 8000 }).toBe('');
   await page.mouse.click(m.x, m.y);
@@ -165,8 +165,9 @@ test('a dragonfly darts near the water (NH: flying near water), clear of every c
 type W3 = { __world3d?: { loaded(): boolean; where(id: string): { x: number; y: number; z: number; hidden: boolean } | null; client(x: number, z: number, lift?: number): [number, number] } };
 test('on the 3D island a bug perched on a trunk sits on its bark, in view under the canopy, and a tap where it\'s drawn nets it (by day and at night)', async ({ page }) => {
   test.setTimeout(75_000);
-  // (NH's palm beetles on the palms at night, a horned atlas and a golden stag; a stag on a hardwood trunk)
-  for (const [date, id, palm] of [['2026-07-10T12:00', 'robust-cicada', false], ['2026-07-10T22:00', 'saw-stag', false], ['2026-07-10T22:00', 'horned-atlas', true], ['2026-07-10T22:00', 'golden-stag', true]] as const) {
+  // (a cicada on a hardwood trunk by day, NH's palm beetle on a palm at night: which kind perches where is critters.test's,
+  // a golden stag and a cicada flying in to their trunks bug-taps.spec's)
+  for (const [date, id, palm] of [['2026-07-10T12:00', 'robust-cicada', false], ['2026-07-10T22:00', 'horned-atlas', true]] as const) {
     await open(page, `&date=${date}&critter=${id}`);
     await page.waitForFunction(() => (window as unknown as W3).__world3d?.loaded(), null, { timeout: 30_000 });
     await expect(page.locator(`[data-critter="${id}"]`)).toHaveAttribute('data-place', palm ? 'palm' : 'trunk');
