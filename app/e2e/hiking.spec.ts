@@ -70,7 +70,7 @@ test('a trail: the peek shows the whole chart; the scrub moves the map\'s dot an
   await expect(map).toHaveAttribute('data-mode', 'stub');
   await expect(view.locator('[data-map-stub] polyline')).toHaveCount(1);
   await expect(elev).toBeVisible();
-  await expect(elev.locator('[data-elev-range]')).toHaveText(/^\d+～\d+ m$/);
+  await expect(elev.locator('[data-elev-range]')).toHaveText(/^\d+〜\d+ m$/);
   // the peek reaches just under the chart: the chart all on screen, the sheet's top above it
   // (once the sheet has eased up to it)
   await expect.poll(async () => ((b) => b.y + b.height)((await elev.boundingBox())!)).toBeLessThanOrEqual(852);

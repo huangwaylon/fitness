@@ -49,7 +49,7 @@ test('from the hub: ことば, こえ, なかま and スタンプ over the seede
   await seeded(page);
   await fromMenu(page, 'kikimimi');
   await toTile(page, 'zukan');
-  await expect(page.locator('dialog[open] .navbar h2')).toHaveText('ずかん');
+  await expect(page.locator('dialog[open] .navbar h2')).toHaveText('図鑑');
   const z = sheet(page).locator('[data-kiki-page="zukan"]');
 
   // ことば: fr-replan's five phrases right on the first listen in 3 clips on ≥ 2 days (still on: 2 clips), NEW the first time
@@ -72,7 +72,7 @@ test('from the hub: ことば, こえ, なかま and スタンプ over the seede
   await expect(z.locator('[data-kiki-phrase-hear]')).toBeVisible();
   await entry.scrollIntoViewIfNeeded();
   await snap(page, 'words-entry');
-  // まだ: none of the caught; つかまえた: only them
+  // まだ: none of the caught; 捕まえた: only them
   await words.locator('[data-kiki-zukan-filter="notyet"]').click();
   await expect(words.locator('[data-kiki-phrase="ph-rain-check"]')).toHaveCount(0);
   await expect(words.locator('[data-kiki-phrase="ph-still-on"]')).toBeVisible();

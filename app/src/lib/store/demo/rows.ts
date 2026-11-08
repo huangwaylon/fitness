@@ -105,7 +105,7 @@ const WED_DAYS = 40;
  *  The first came from the old Sheet (the admin's load: imported, its tick too, who unknown). */
 const WED_TASKS: [string, string, string, number | null, number | null, [string, string, boolean][], boolean, boolean][] = [
   ['wdemo01', '式場を決める', 'Venue', -20, null, [], true, false],
-  ['wdemo02', '招待客リストをつくる', 'Guests', -3, -30, [['wdemo02a', '親族', true], ['wdemo02b', '友人', false], ['wdemo02c', '返信フォーム https://example.com/form', false]], false, false],
+  ['wdemo02', '招待客リストを作る', 'Guests', -3, -30, [['wdemo02a', '親族', true], ['wdemo02b', '友人', false], ['wdemo02c', '返信フォーム https://example.com/form', false]], false, false],
   ['wdemo03', 'カメラマンを予約', 'Photo', 9, null, [], false, false],
   ['wdemo04', 'ドレスの試着', 'Attire', 45, 5, [['wdemo04a', '一軒目', true], ['wdemo04b', '二軒目', false], ['wdemo04c', '決める', false]], false, false],
   ['wdemo05', '招待状を送る', 'Stationery', 70, null, [], false, false],

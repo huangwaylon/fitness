@@ -23,7 +23,7 @@
   const range = $derived.by(() => {
     const ft = units.current === 'mi';
     const n = (m: number) => Math.round(ft ? m * 3.28084 : m).toLocaleString('en-US');
-    return `${n(prep.lo)}${i18n.locale === 'ja' && !ft ? '～' : '–'}${n(prep.hi)} ${ft ? 'ft' : 'm'}`;
+    return `${n(prep.lo)}${i18n.locale === 'ja' && !ft ? '〜' : '–'}${n(prep.hi)} ${ft ? 'ft' : 'm'}`;
   });
 
   // the gesture: a press reveals (an empty chart), a drag past 6px moves, a clean tap on a held readout clears

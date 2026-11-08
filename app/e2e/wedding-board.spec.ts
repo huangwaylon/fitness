@@ -150,7 +150,7 @@ test('a row opens in place: its checklist ticks (links safe), 完了 and back', 
   await board(page);
   await open(page, 'wdemo02');
   await expect(card(page, 'wdemo02').locator('.head')).toHaveAttribute('aria-expanded', 'true');
-  await expect(card(page, 'wdemo02').locator('[data-wed-title]')).toHaveText('招待客リストをつくる');
+  await expect(card(page, 'wdemo02').locator('[data-wed-title]')).toHaveText('招待客リストを作る');
   // a URL in an item is a link, safely
   const link = sheet(page).locator('[data-wed-sub="wdemo02c"] a');
   await expect(link).toHaveAttribute('href', 'https://example.com/form');

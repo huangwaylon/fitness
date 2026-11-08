@@ -175,7 +175,7 @@ test('とばして チェック: the mission card, the stamp on the results, the
   await snap(page, 'path-stamped');
 });
 
-test('a built unit’s page counts all its key phrases: tr-hotel’s 「つかまえた 0 / 9」 (the fixture above, with the same name, has 2)', async ({ page }) => {
+test('a built unit’s page counts all its key phrases: tr-hotel’s 「捕まえた 0 / 9」 (the fixture above, with the same name, has 2)', async ({ page }) => {
   const ph = (JSON.parse(readFileSync(join(import.meta.dirname, '..', 'src', 'lib', 'kikimimi', 'levels', 'parts', 'u-tr-hotel.json'), 'utf8')) as { unit: { ph: unknown[] } }).unit.ph;
   expect(ph.length).toBeGreaterThan(2);
   await page.goto(`?demo&${Q}`);

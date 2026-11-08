@@ -470,6 +470,7 @@ test('マイレシピ: made from a meal’s search (2 ingredients, 2人前), lis
   await expect(h2).toHaveText('新しいレシピ');
   const lv = sheet(page).locator('[data-recipe-level=edit]');
   await expect(lv.locator('[data-recipe-save]')).toHaveAttribute('aria-disabled', 'true'); // no name, no ingredient yet
+  await expect(lv.locator('[data-recipe-why]')).toHaveText('名前と材料を入れてください'); // and says why
   await expect(lv.locator('[data-recipe-remove]')).toHaveCount(0);
   await lv.locator('[data-recipe-n]').fill('テストごはん');
   await expect(lv.locator('[data-recipe-sv]')).toHaveText('2人前');
@@ -510,6 +511,7 @@ test('マイレシピ: made from a meal’s search (2 ingredients, 2人前), lis
   expect(await overflowOf(page)).toEqual([]);
   // made from 昼ごはん's search: 保存して追加, one serving logged too
   await expect(lv.locator('[data-recipe-save]')).toHaveText('保存して追加');
+  await expect(lv.locator('[data-recipe-why]')).toHaveCount(0); // a name and ingredients: nothing to say
   await lv.locator('[data-recipe-save]').click();
 
   // back in the search, the serving on this trip; the recipe listed first (the latest changed), a serving's kcal
@@ -815,8 +817,8 @@ test('search rows: a product’s brand on its second line, the same name, brand 
   await expect(rows.first()).toBeVisible({ timeout: 15_000 });
   // ✓n in words on the row itself (a title alone never shows on an iPhone)
   const agree = sheet(page).locator('[data-food-results] [data-verified]').first();
-  await expect(agree).toHaveAttribute('aria-label', /^\d+件のデータで同じ値$/);
-  await expect(agree).toHaveText(/^✓( \d+つの資料で一致)?$/); // in words on a free second line, else a ✓ beside the name
+  await expect(agree).toHaveAttribute('aria-label', /^\d+件の資料で同じ値$/);
+  await expect(agree).toHaveText(/^✓( \d+件の資料で一致)?$/); // in words on a free second line, else a ✓ beside the name
   await expect.poll(() => sheet(page).locator('[data-food-results] [data-brand]').count(), { timeout: 20_000 }).toBeGreaterThan(0); // the products, lazily
   const keys = await rows.evaluateAll((bs) => bs.map((b) => `${b.querySelector('.nm')?.textContent}|${b.querySelector('[data-brand]')?.textContent ?? ''}|${b.getAttribute('data-per100')}`));
   expect(new Set(keys).size).toBe(keys.length);
@@ -825,7 +827,7 @@ test('search rows: a product’s brand on its second line, the same name, brand 
   await sheet(page).locator('[data-food-q]').fill('豚ロース 赤肉');
   const lean = rows.filter({ has: page.locator('.nm', { hasText: /^豚ロース 赤肉 生$/ }) });
   await expect(lean.locator('.meta [data-verified]')).toHaveCount(1);
-  await expect(lean.locator('.meta [data-verified]')).toHaveText('✓ 2つの資料で一致');
+  await expect(lean.locator('.meta [data-verified]')).toHaveText('✓ 2件の資料で一致');
   expect((await lean.boundingBox())!.height).toBeLessThanOrEqual(72);
 });
 

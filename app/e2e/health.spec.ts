@@ -54,7 +54,7 @@ test('the tab: one person at a time, a card per metric; かつどう (steps, the
   await expect(whoSel(page)).toHaveAccessibleName('誰のデータ');
   await expect(sheet(page).locator('.health .wk')).toHaveCount(0); // no week card: the charts carry the trends
   await expect(sheet(page).locator('.health section.card h3')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド']);
-  await expect(range(page)).toHaveText('10/2–10/31'); // 1か月 = the 30 days to today
+  await expect(range(page)).toHaveText('10/2〜10/31'); // 1か月 = the 30 days to today
   const move = sheet(page).locator('.mc[data-metric=move]');
   await expect(move.locator('.srow')).toHaveCount(1);
   await expect(move.locator('.lab')).toHaveText('1日の平均');
@@ -76,7 +76,7 @@ test('the tab: one person at a time, a card per metric; かつどう (steps, the
   await expect(sheet(page).locator('.health section.card h3')).toHaveText(['体重', '体脂肪率', 'BMI', '除脂肪体重']);
   await expect(sheet(page).locator('.health .mc')).toHaveCount(0);
   await expect(periodSel(page)).toHaveValue('month');
-  await expect(range(page)).toHaveText('10/2–10/31');
+  await expect(range(page)).toHaveText('10/2〜10/31');
   await sheet(page).locator('[data-group=activity]').click();
   await expect(sheet(page).locator('.health section.card h3')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド']);
 });
@@ -91,7 +91,7 @@ test('whose data: this phone’s person by default; switching changes the number
   await expect(steps.locator('path.bar.pA')).toHaveCount(0);
   await pickPeriod(page, 'week');
   await sheet(page).locator('[data-nav=back]').click();
-  await expect(range(page)).toHaveText('10/18–10/24');
+  await expect(range(page)).toHaveText('10/18〜10/24');
   const avgB = (await steps.locator('.avg').textContent())!;
   const fill = () => steps.locator('path.bar').first().evaluate((e) => getComputedStyle(e).fill);
   const barB = await fill();
@@ -104,12 +104,12 @@ test('whose data: this phone’s person by default; switching changes the number
   await expect(steps.locator('.avg')).not.toHaveText(avgB);
   expect(await fill()).not.toBe(barB);
   await sheet(page).locator('[data-group=body]').click(); // the body cards: still ウェイ's, the same range
-  await expect(range(page)).toHaveText('10/18–10/24');
+  await expect(range(page)).toHaveText('10/18〜10/24');
   await expect(sheet(page).locator('.bc[data-metric=weight]')).toHaveAttribute('data-person', 'A');
   await expect(sheet(page).locator('.bc[data-metric=weight]').getByRole('img', { name: /^ウェイの体重 / })).toHaveCount(1);
   // the same period and visible range
   await expect(periodSel(page)).toHaveValue('week');
-  await expect(range(page)).toHaveText('10/18–10/24');
+  await expect(range(page)).toHaveText('10/18〜10/24');
 });
 
 // (a day without the Watch, the Shortcut's Move 0, Exercise 0, Stand 0, is 記録なし as a day with no rows, steps staying:
@@ -196,25 +196,25 @@ test('period: 1週 by day, 3か月 by week, 1年 by month; ‹ › page through 
   await openHealth(page);
   const bars = (p: string) => sheet(page).locator(`.mc[data-metric=steps] path.bar.p${p}`);
   await pickPeriod(page, 'week');
-  await expect(range(page)).toHaveText('10/25–10/31');
+  await expect(range(page)).toHaveText('10/25〜10/31');
   await expect(bars('A')).toHaveCount(7);
   await pickPeriod(page, 'quarter');
   await expect(sheet(page).locator('.health .nav .rl small')).toHaveText('1週ごとの1日平均');
   await expect(bars('A')).toHaveCount(9); // 13 weeks, the demo's data in the last 9
   await pickPeriod(page, 'year');
-  await expect(range(page)).toHaveText('2025/11–2026/10');
+  await expect(range(page)).toHaveText('2025/11〜2026/10');
   await pickPeriod(page, 'week');
   const on = sheet(page).locator('[data-nav=on]');
   await expect(on).toHaveAttribute('aria-disabled', 'true'); // nothing after today
   await sheet(page).locator('[data-nav=back]').click();
-  await expect(range(page)).toHaveText('10/18–10/24');
+  await expect(range(page)).toHaveText('10/18〜10/24');
   await expect(on).toHaveAttribute('aria-disabled', 'false');
   await sheet(page).locator('[data-nav=back]').click();
-  await expect(range(page)).toHaveText('10/11–10/17');
+  await expect(range(page)).toHaveText('10/11〜10/17');
   await on.click();
-  await expect(range(page)).toHaveText('10/18–10/24');
+  await expect(range(page)).toHaveText('10/18〜10/24');
   await sheet(page).locator('[data-nav=today]').click();
-  await expect(range(page)).toHaveText('10/25–10/31');
+  await expect(range(page)).toHaveText('10/25〜10/31');
   await expect(sheet(page).locator('[data-nav=today]')).toHaveAttribute('aria-disabled', 'true');
 });
 
@@ -232,11 +232,11 @@ test('a drag across a chart turns the page (right = older); a short one doesn’
     await page.mouse.up();
   };
   await drag(24);
-  await expect(range(page)).toHaveText('10/25–10/31');
+  await expect(range(page)).toHaveText('10/25〜10/31');
   await drag(120);
-  await expect(range(page)).toHaveText('10/18–10/24');
+  await expect(range(page)).toHaveText('10/18〜10/24');
   await drag(-120);
-  await expect(range(page)).toHaveText('10/25–10/31');
+  await expect(range(page)).toHaveText('10/25〜10/31');
   await expect(sheet(page).locator('.chart .tip')).toHaveCount(0); // a drag never opens a callout
 });
 

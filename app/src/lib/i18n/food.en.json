@@ -146,6 +146,7 @@
   "food.rcp.howMany": "Makes",
   "food.rcp.items": "Ingredients",
   "food.rcp.noItems": "Add an ingredient",
+  "food.rcp.why": "Add a name and ingredients",
   "food.rcp.perOne": "Per serving",
   "food.rcp.copy": "Copy and edit",
   "food.rcp.saved": "Saved “{name}”",

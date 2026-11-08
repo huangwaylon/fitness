@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The middle of the charts' range row (RangeNav): the visible range (「10/2–10/31」, wrapping after its dash when a
+  // The middle of the charts' range row (RangeNav): the visible range (「10/2〜10/31」, wrapping before its 〜 when a
   // long one doesn't fit beside the buttons) and its unit under it (「1日ごと」, 「1週ごとの 1日平均」).
   import type { LocalDate } from '#lib/types.ts';
   import type { Range } from '#lib/model/health.ts';
@@ -10,7 +10,7 @@
 </script>
 
 <span class="rl" aria-live="polite">
-  <b class="money" data-range>{#each rangeLabel(range, today).split('–') as part, i (i)}{#if i}–<wbr />{/if}<span>{part}</span>{/each}</b>
+  <b class="money" data-range>{#each rangeLabel(range, today).split(/(?=[–〜])/) as part, i (i)}{#if i}<wbr />{/if}<span>{part}</span>{/each}</b>
   <small>{t(`health.unit.${range.unit}`)}</small>
 </span>
 
