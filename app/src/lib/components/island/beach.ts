@@ -1,8 +1,8 @@
-// The island's day items (docs/design.md "Beach finds"): seashells washing up on the front beach, fossil dig spots on
-// the lawn, a message bottle now and then, star fragments the morning after a wish. Pure and deterministic: everything
-// derives from the Tokyo date and the time of day plus a seed, so both phones broadly see the same island; what one
-// phone picked up is hidden there only (the caller keeps that list). Nothing here counts for anything: a pick-up is a
-// caption, an icon and (the first time) a ずかん `find`, never ベル.
+// The island's day items (docs/design.md "Beach finds"): seashells washing up on the front beach, four fossil dig spots
+// a day on the lawn, a message bottle now and then, star fragments the morning after a wish. Pure and deterministic:
+// everything derives from the Tokyo date and the time of day plus a seed, so both phones see the same island; what
+// either took (the shared day's claims) the caller leaves out. A pick-up is a caption, an icon, a pocket item to sell
+// and (the first time) a ずかん `find`.
 import { pickOne, shuffle, weighted } from '#lib/random.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
 import { BEACH_BOX, DIG_SPOTS as DIGS, LAWN_SPOTS, SHORE_Z, offBuildingsAt, onBuildingAt, worldGen } from './world.ts';
@@ -186,25 +186,19 @@ function beachDay(date: string, seed: string, fragments: readonly Fragment[]): {
 
 export interface DigSpot { uid: string; fossil: FossilId; x: number; y: number }
 
-/** The day's fossils, in the order they turn up: 2–4 dig spots at a time (seeded per day), each on its own lawn
- *  spot; the next comes after one is dug (the caller adds a short wait). `dug`: uids already dug on this phone. */
+/** NH's fossils a day: four dig spots each morning (a dug one stays gone till tomorrow, nothing turns up after it). NH
+ *  carries undug ones over (up to six); here each day stands alone, since neither phone knows the other's yesterday
+ *  (the relay keeps only today: docs/design.md "Beach finds"). */
+export const DIGS_A_DAY = 4;
+/** The day's fossils: DIGS_A_DAY dig spots (uids f0…f3), each on its own spot of the day's dig spots (seeded per day),
+ *  less those in `dug` (uids dug today, on either phone). */
 export function digSpots(date: string, dug: ReadonlySet<string>, seed = ISLAND_SEED): DigSpot[] {
   const r = dayRand(date, 'fossils', seed);
-  const atOnce = 2 + Math.floor(r() * 3);
-  const out: DigSpot[] = [];
-  const used = new Set<number>();
-  for (let i = 0; i < 60 && out.length < atOnce; i++) {
-    const fossil = pickOne(FOSSILS, r);
-    const spots = spotsOn(date, seed).dig;
-    let spot = Math.floor(r() * spots.length);
-    const uid = `f${i}`;
-    if (dug.has(uid)) continue;
-    while (used.has(spot)) spot = (spot + 1) % spots.length;
-    used.add(spot);
-    const [x, y] = spots[spot];
-    out.push({ uid, fossil, x, y });
-  }
-  return out;
+  const spots = spotsOn(date, seed).dig;
+  const order = shuffle([...spots.keys()], r).slice(0, DIGS_A_DAY);
+  return order
+    .map((spot, i) => ({ uid: `f${i}`, fossil: pickOne(FOSSILS, r), x: spots[spot][0], y: spots[spot][1] }))
+    .filter((s) => !dug.has(s.uid));
 }
 
 export interface Bottle { uid: string; note: number; x: number; y: number; at: number }

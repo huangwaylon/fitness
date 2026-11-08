@@ -1,7 +1,7 @@
 // Island care (docs/design.md "Island care"): weeds that sprout over the day, the hybrid a watered flower can grow the
-// next day, the rock by the hedge. Pure and seeded by the date (beach.ts dayRand), so both
-// phones broadly see the same weeds and hybrids; what a phone pulled or watered is its own (sceneDay.ts). Nothing here
-// counts for anything: no ベル, no find.
+// next day, the rock by the hedge. Pure and seeded by the date (daySeed.ts dayRand), so both phones see the same weeds
+// and hybrids; what either pulled or watered is gone or glitters on both (the shared day's claims and `watered`, kept
+// by Care.svelte). No ベル, no find.
 import { pickOne } from '#lib/random.ts';
 import type { FlowerId, FlowerKind } from '#lib/art.ts';
 import { spotsOn } from './beach.ts';

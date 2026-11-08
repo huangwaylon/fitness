@@ -51,17 +51,20 @@ test('shells lie on the front beach (the newest three); a tap picks one up, and 
   await expect(shells).toHaveCount(2);
 });
 
-test('a fossil dig spot: a tap digs it up (「化石を ほりだした！」 and its name); the next one waits a little', async ({ page }) => {
+test('a fossil dig spot: a tap digs it up (「化石を ほりだした！」 and its name); it stays gone, nothing turns up after it', async ({ page }) => {
   const before = await open(page, '&date=2026-11-04T12:00');
-  // (2–4 at a time, the day's: beach.test's digSpots)
+  // (four a day, the day's: beach.test's digSpots)
+  const digs = page.locator('[data-digs]');
+  await expect(digs).toHaveAttribute('data-digs', '4');
   await expect(page.locator('[data-find="fossil"]').first()).toBeAttached();
   const p = await fossilOnScreen(page);
   const shown = page.locator('[data-find="fossil"]'), m = await shown.count();
   expect(await control(page, p)).toBe('');
   await page.mouse.click(p.x, p.y);
   await expect(page.locator('[data-fx="catch"]')).toContainText(/化石を ほりだした！ .+だ！/);
-  // the one dug gone, the next one waiting a little (the others where they were)
+  // the one dug gone for the day, no other in its place (the others where they were)
   await expect(shown).toHaveCount(m - 1);
+  await expect(digs).toHaveAttribute('data-digs', '3');
   expect(await cues(page)).toEqual(expect.arrayContaining(['scene-dig', 'scene-catch']));
   expect((await finds(page))[0]).toMatchObject({ kind: 'fossil' });
   await unchanged(page, before);

@@ -27,7 +27,7 @@ from the renderer and test the simulation without drawing.** Pixels are the slow
 so assert them rarely and in one place.
 
 **1. Logic (vitest).** If an e2e asserts a rule ("a fish comes in 9 slots of 10", "Celeste one night in ten, at most
-one a week", "Bunny Day hides an egg in a dig spot", "a fossil's replacement waits 20–40 s"), the rule belongs in a unit
+one a week", "Bunny Day hides an egg in a dig spot", "four dig spots a day, none after a dig"), the rule belongs in a unit
 test of the function that decides it (beach.ts, critters.ts, events.ts, meteor.ts, daySeed.ts), driven by a seed and a
 date. Then the e2e only checks the wiring (one fish shows, one catch). Candidates to move down: the rule parts of
 holidays.spec, celeste.spec, finds.spec (timing and counts), critters.spec and bugs.spec (who spawns when), weather.spec

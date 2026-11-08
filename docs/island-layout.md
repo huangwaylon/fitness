@@ -446,7 +446,7 @@ way to turn its own house).
 
 ## The day's spots, the structures, the old decorations
 
-- **Weeds and fossils** (`layout/spots.ts` daySpots): 15 weed spots and 6 dig spots a day from the layout's open
+- **Weeds and fossils** (`layout/spots.ts` daySpots): 15 weed spots and 8 dig spots a day (beach.ts digSpots uses four of them) from the layout's open
   grass (a grass tile nothing stands on, off the paths, the water and the banks, away from a door, a board's front,
   a named spot and the stairs, off a building's ground (`layout/clear.ts`: its door's step and the strip behind it its
   model hides), one a walker reaches), spread out, seeded by the date and the island's seed: the same
