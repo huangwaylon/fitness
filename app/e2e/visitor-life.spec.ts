@@ -66,10 +66,7 @@ test('a stroll, and back on her spot before a line: the balloon anchors next to 
   const v = page.locator('[data-visitor="daisy-mae"]');
   await expect(v.locator('.art')).toBeVisible();
   let home = '';
-  await expect.poll(async () => {
-    const [a] = [await feet(page, 'daisy-mae'), await page.waitForTimeout(250)];
-    return a === (home = await feet(page, 'daisy-mae'));
-  }).toBe(true);
+  await expect.poll(async () => home === (home = await feet(page, 'daisy-mae')), { intervals: [250] }).toBe(true);
   // off on a stroll and standing somewhere else
   await expect.poll(() => feet(page, 'daisy-mae'), { timeout: 15_000 }).not.toBe(home);
   await expect(v).not.toHaveClass(/walking/, { timeout: 4000 });
