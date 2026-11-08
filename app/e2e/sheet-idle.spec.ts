@@ -52,11 +52,15 @@ const infoSheets = {
     await expect.poll(() => page.evaluate(() => (window as unknown as { __trailMap?: { state(): { mode: string } } }).__trailMap?.state().mode), { timeout: 30_000 }).toBe('ready');
   }
 } as const;
+/** Non-MapLibre animation frames asked for so far (the probe below). */
+const rafs = (page: Page) => page.evaluate(() => (window as unknown as { __rafs: string[] }).__rafs.length);
 for (const [k, settle] of Object.entries(infoSheets))
   test(`under ${k}'s sheet at rest the island draws no frames, nothing animates behind it, no frame is asked for`, async ({ page }) => {
+    // the page's clock ours (it runs as it loads, paused for the proof), installed first so the probe wraps its rAF
+    await page.clock.install({ time: new Date('2026-11-04T12:30:00+09:00') });
     await page.addInitScript(() => {
       // (each one's caller, MapLibre's left out)
-      const W = window as unknown as { __rafs: string[] }, raf = requestAnimationFrame;
+      const W = window as unknown as { __rafs: string[] }, raf = window.requestAnimationFrame.bind(window);
       W.__rafs = [];
       window.requestAnimationFrame = (f) => {
         const at = new Error().stack?.split('\n').slice(2, 6).join(' | ') ?? '';
@@ -69,15 +73,28 @@ for (const [k, settle] of Object.entries(infoSheets))
     await page.route(/^https:\/\/(basemap\.nationalmap\.gov|cyberjapandata\.gsi\.go\.jp)\//, (r) => r.fulfill({ contentType: 'image/png', body: TILE, headers: { 'access-control-allow-origin': '*' } }));
     await page.goto('?demo&date=2026-11-04T12:30&critter=none&visitor=none');
     await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
+    expect(await rafs(page), 'the probe sees the island\'s frames').toBeGreaterThan(0);
     await fromMenu(page, k as 'travel' | 'wedding' | 'hiking');
     await settle(page);
-    await page.waitForTimeout(1500); // hold: the map's last tiles in and faded, the sheet's own spring over
     await sheet(page).evaluate((d) => Promise.all(d.getAnimations().map((a) => a.finished)));
+    // the clock paused: from here the page's time moves only as stepped. At rest once a second and a half of it asks
+    // for no frame (the map's last tiles in and faded, the villagers' turn to the menu's tap (R18) over: however long
+    // a loaded runner took), then a second and a half more asks for none (a loop never gets there)
+    await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 50);
+    for (let i = 0, n = await rafs(page); ; i++) {
+      expect(i, 'at rest within 12 s of the page\'s time').toBeLessThan(8);
+      await page.clock.runFor(1500);
+      const now = await rafs(page);
+      if (now === n) break;
+      n = now;
+    }
     expect(await w3(page, (w) => w.stats().paused)).toBe(true);
-    const f0 = await w3(page, (w) => w.stats().frames), r0 = await page.evaluate(() => (window as unknown as { __rafs: string[] }).__rafs.length);
-    await page.waitForTimeout(1500); // hold: proving no frame is drawn or asked for
+    const f0 = await w3(page, (w) => w.stats().frames), r0 = await rafs(page);
+    await page.clock.runFor(1500);
     expect(await w3(page, (w) => w.stats().frames)).toBe(f0);
     expect(await page.evaluate((n) => (window as unknown as { __rafs: string[] }).__rafs.slice(n), r0), 'animation frames asked for at rest (by whom)').toEqual([]);
-    expect(await runningBehind(page)).toEqual([]);
-    expect(await page.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running').map((a) => (a as CSSAnimation).animationName ?? a.constructor.name)), 'animations running at all').toEqual([]);
+    // (CSS animations run on the compositor's own time, not the page's clock: one that ends is let end; one that loops
+    // never does)
+    await expect.poll(() => runningBehind(page)).toEqual([]);
+    await expect.poll(() => page.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running').map((a) => (a as CSSAnimation).animationName ?? a.constructor.name)), { message: 'animations running at all' }).toEqual([]);
   });
