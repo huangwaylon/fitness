@@ -2,25 +2,24 @@
 // villager's is hidden by it; just in front it covers the trunk while the canopy covers its head; a building likewise),
 // and taps land on the tap areas far up near the horizon.
 import { expect, test, type Page } from './fixtures.ts';
-import { geo, type Geo, islandUp } from './island.ts';
+import { geo, type Geo, islandUp, settled } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
 type W = { go(z: number): void; cam(): number; stops(): number[]; idle(): boolean; at(x: number, z: number): [number, number]; put(x: number, z: number): void };
-const world = async (page: Page) => {
-  await islandUp(page);
-  await page.waitForTimeout(500);
-};
 const call = <T,>(page: Page, fn: (w: W, a: number[]) => T, args: number[] = []) =>
   page.evaluate(([f, a]) => new Function('w', 'a', `return (${f})(w, a)`)((window as unknown as { __world: W }).__world, a), [fn.toString(), args] as const) as Promise<T>;
 
 /** `cam`: a camera z, or one from the page's island's places (world.ts's: the layout's on it). */
 async function open(page: Page, cam: number | ((g: Geo) => number)) {
   await page.goto('?demo&season=summer&date=2026-07-01T10:00');
-  await world(page);
+  await islandUp(page);
   const z = typeof cam === 'number' ? cam : cam(await geo(page));
   await call(page, (w, [z]) => w.go(z), [z]);
-  await page.waitForTimeout(400);
+  // my villager's 3D model in (its tap area the model's core, [data-v3]: till then the 2D figure's, taller, and the
+  // canopy didn't cover its head: CI's red now and then, ~1 s of fixed waits short of it), then the island at rest
+  await expect(page.locator('[data-actor="mine"][data-v3]'), 'my villager drawn in 3D').toBeAttached();
+  await settled(page);
 }
 
 /** Put my villager at (x, z) and say who is on top at a point of it (fy: 0 its head … 1 its feet). */
@@ -28,7 +27,7 @@ async function topAt(page: Page, x: number, z: number, fy: number) {
   await call(page, (w, [x, z]) => w.put(x, z), [x, z]);
   // the scenery's art lets taps through (pointer-events: none): make it hit-testable for the probe
   await page.addStyleTag({ content: '[data-scenery-id] .art, [data-building] .door { pointer-events: auto !important; }' });
-  await page.waitForTimeout(150);
+  await settled(page);
   // (its figure: its tap area, its model's own box: Island3D's [data-v3])
   const r = (await page.locator('[data-actor="mine"] .vil').first().boundingBox())!;
   return page.evaluate(([px, py]) => {

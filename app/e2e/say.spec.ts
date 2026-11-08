@@ -260,7 +260,9 @@ test('mid-pinch my villager’s balloon stays whole (its box, not only its text)
   await page.waitForTimeout(300); // (its pop-in)
   const near = (await balloonState(page, '[data-say="mine"]', '[data-actor="mine"] .vil'))!.dist + 8;
   await fingers(page, spreading(200, 420, 8, 6));
-  await page.waitForTimeout(50);
+  // (the fingers held there, still mid-pinch: the balloon is placed a frame or two after its speaker moves, up to
+  // ~70 ms at 30 fps and more on a loaded runner, so its tail is waited back by it, not read 50 ms on: CI's red 26 > 22)
+  await expect.poll(async () => (await balloonState(page, '[data-say="mine"]', '[data-actor="mine"] .vil'))?.dist ?? Infinity, { message: 'its tail back by the speaker, mid-pinch' }).toBeLessThanOrEqual(near);
   await expectWhole(page, '[data-say="mine"]', '[data-actor="mine"] .vil', near);
   await liftFingers(page);
   await page.waitForTimeout(400);

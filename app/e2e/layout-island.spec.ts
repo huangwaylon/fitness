@@ -1,7 +1,7 @@
 // The island on its editable layout (docs/island-layout.md "How the 3D island reads it"; island/site.svelte.ts):
 // the gameplay reads the long layout: the doors, the homes, the walk, the waters.
 import { expect, test, type Page } from './fixtures.ts';
-import { geo, is3d, openNear, quiet, reelOnBite, settled, tapOn } from './island';
+import { castIn, geo, is3d, openNear, quiet, reelOnBite, settled, tapOn } from './island';
 
 type Site = { on: boolean; doors: Record<string, [number, number]>; homes: { A: [number, number]; B: [number, number] }; stage: [number, number]; named: Record<string, [number, number]>; grass: [number, number][] };
 const site = (page: Page) => page.evaluate(() => (window as unknown as { __world: { site(): Site } }).__world.site());
@@ -77,44 +77,16 @@ for (const water of ['sea', 'pond', 'river', 'mouth', 'clifftop'] as const)
   });
 
 test('a pond fish on the long layout: cast beside it, the bite, a tap catches it', async ({ page }) => {
-  await page.goto(`${ISLAND.replace('', '')}&critter=carp`);
+  await page.goto(`${ISLAND}&critter=carp`);
   expect(await is3d(page)).toBe(true);
-  const node = page.locator('[data-shadow-of="pond"]');
-  await expect(node).toBeAttached();
-  const [x, z] = await node.evaluate((el) => [Number((el as HTMLElement).dataset.ax), Number((el as HTMLElement).dataset.az)]);
-  // my villager on the pond's back bank (within a line's reach), the camera on the pond
-  await world(page, `put(${x}, ${z + 45})`);
-  await world(page, `go(${z - 140})`);
-  await expect.poll(() => page.evaluate('window.__world3d.camStill()')).toBe(true);
-  // the shadow drawn on the layout's pond (its model, where its tap area is): a tap beside it
-  const where = () => page.evaluate(() => {
-    const w = (window as unknown as { __world3d: { where(id: string): { x: number; y: number; z: number; hidden: boolean } | null; client(x: number, z: number, y?: number): [number, number] } }).__world3d;
-    for (let n = 0; n < 200; n++) {
-      const p = w.where(`fish-pond-${n}`);
-      if (p && !p.hidden) {
-        const [x, y] = w.client(p.x, -p.z, p.y);
-        return y > 0 && y < innerHeight ? { x, y } : null;
-      }
-    }
-    return null;
-  });
-  await expect.poll(where).not.toBeNull();
-  await page.waitForTimeout(600); // (pond.spec's: the shadow settles into its swim)
-  const f = (await where())!;
-  // beside it, on its water: never a bank's flower or anything else a tap would be (the shadow by the edge: +6px was a
-  // cosmos on the bank now and then)
-  const [tx, ty] = await page.evaluate(({ x, y }) => {
-    const h = window as unknown as { __world3d: { ground(cx: number, cy: number): { x: number; z: number } | null }; __world: { ground(x: number, z: number): { surface: string } } };
-    for (const [dx, dy] of [[6, 0], [-6, 0], [0, 6], [0, -6], [10, 0], [-10, 0], [0, 10], [0, -10], [6, 6], [-6, 6], [6, -6], [-6, -6]]) {
-      const g = h.__world3d.ground(x + dx, y + dy), el = document.elementFromPoint(x + dx, y + dy);
-      if (g && h.__world.ground(g.x, g.z).surface === 'water' && !el?.closest('button, a, [data-flower], [data-tree], [data-bush], [data-care], [data-find], [data-decor], [data-sit], [data-fixture]')) return [x + dx, y + dy];
-    }
-    return [x + 6, y];
-  }, f);
-  await page.mouse.click(tx, ty);
+  await expect(page.locator('[data-shadow-of="pond"]')).toBeAttached();
+  // beside it on the layout's pond from its bank (e2e/island.ts castIn: my villager put there, the camera on it, the
+  // point checked clear and tapped in one step, again where the shadow swam: a fixed offset from where it was drawn
+  // landed on the bank now and then, no cast, 1 in 20 under load)
+  const [x, y] = await castIn(page, 'pond');
   await expect(page.locator('[data-bobber]')).toBeAttached();
-  // the reel the moment it bites (a tap before it scares it off: e2e/island.ts reelOnBite)
-  await reelOnBite(page, 196, 420);
+  // the reel the moment it bites, where it cast (a tap before it scares it off: e2e/island.ts reelOnBite)
+  await reelOnBite(page, x, y);
   await expect(page.locator('[data-fx="catch"]')).toBeAttached({ timeout: 5000 });
 });
 

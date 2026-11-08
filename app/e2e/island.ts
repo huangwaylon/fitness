@@ -268,9 +268,11 @@ export async function toTheWater(page: Page, water: string, zoom = 1, away = 40)
       for (let a = 0, n = r ? 16 : 1; a < n; a++) {
         const x = cx + Math.cos((a / n) * Math.PI * 2) * r, y = cy + Math.sin((a / n) * Math.PI * 2) * r;
         const g = w.__world3d.ground(x, y), s = g && w.__world.ground(g.x, g.z).surface;
-        // (past 60 px, within 90 u of it, half the way a shadow notices a float from (fishing.ts NOTICE_U): off the
-        // back beach the sea round it lies under the doors' tap areas at the camera's far stop)
-        if (r > 60 && (!g || Math.hypot(g.x - f.x, g.z - f.z) > 90)) continue;
+        // (within 130 u of it, however near on screen, so the shadow notices the float (fishing.ts NOTICE_U, 180 u;
+        // the rest the shadow's swim while the float flies): off the back beach, high on the screen at the camera's
+        // far stop, 60 px was 182 u and it never did (fishing-taps' back beach, flaky in 5 runs); and past 60 px the
+        // sea round it lies under the doors' tap areas there)
+        if (!g || Math.hypot(g.x - f.x, g.z - f.z) > 130) continue;
         // (on screen; for the sea, the sea's: a clifftop pool by the back beach is water too)
         if (x < 8 || x > innerWidth - 8 || y < 8 || y > innerHeight - 8) continue;
         // (K.K.'s art takes no pointer, the scene asks him: a tap within his box is his)

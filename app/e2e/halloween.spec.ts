@@ -47,7 +47,9 @@ test('Oct 31 by day: pumpkins on the lawn and round the campsite, clear of every
   expect(await page.locator('.pumpkin').count()).toBeGreaterThanOrEqual(3);
   await expect.poll(() => under(page, '.pumpkin .art')).toEqual([]); // (re-measured where the camera settled)
   await camera(page, (await geo(page)).CAMS.oku);
-  expect(await page.locator('.pumpkin .art').evaluateAll((els) => els.filter((e) => getComputedStyle(e).visibility !== 'hidden' && e.getBoundingClientRect().top > 140).length)).toBeGreaterThanOrEqual(3);
+  // (polled: Halloween.svelte measures which spots a control covers 300 ms after the camera rests, so a read straight
+  // after camTo could still have the last camera's set: CI's 2 of 3 now and then)
+  await expect.poll(() => page.locator('.pumpkin .art').evaluateAll((els) => els.filter((e) => getComputedStyle(e).visibility !== 'hidden' && e.getBoundingClientRect().top > 140).length), { message: 'the pumpkins round the campsite, on screen' }).toBeGreaterThanOrEqual(3);
   await expect.poll(() => under(page, '.pumpkin .art')).toEqual([]); // (re-measured where the camera settled)
   await expect(page.locator('[data-visitor="jack"]')).toHaveCount(0);
   await expect(page.locator('.pumpkin .glow')).toHaveCount(0);

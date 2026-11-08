@@ -38,7 +38,8 @@ test('a navigation is the cached shell at once; a deploy reloads once its worker
   // a deploy: a changed worker, and version.json naming a new version
   // (the server's stand-in for a deploy: the worker's script changes; scripts/serve-build.ts)
   await page.request.get('/__e2e/deploy');
-  await context.route('**/_app/version.json', (route) => route.fulfill({ contentType: 'application/json', body: '{"version":"next"}' }));
+  let asked = 0;
+  await context.route('**/_app/version.json', (route) => (asked++, route.fulfill({ contentType: 'application/json', body: '{"version":"next"}' })));
   await page.evaluate(() => {
     // (the first: Chromium may install the same worker again as the reload starts, a second claim after it)
     navigator.serviceWorker.addEventListener('controllerchange', () => sessionStorage.getItem('e2e.swChanged') ?? sessionStorage.setItem('e2e.swChanged', String(Date.now())));
@@ -47,7 +48,15 @@ test('a navigation is the cached shell at once; a deploy reloads once its worker
   // (Kit checks version.json as the app comes back to the front)
   await page.evaluate(() => window.dispatchEvent(new Event('focus')));
   // reloaded: a new page (not the one marked), by the app (its reloadAt), the HUD up
-  await expect.poll(() => page.evaluate(() => !(window as unknown as { __before?: boolean }).__before && !!sessionStorage.getItem('island.reloadAt')).catch(() => false), { timeout: 60_000, message: 'the app reloaded into the new worker' }).toBe(true);
+  // (red now and then on CI, the reload never came in 60 s, never here: what the page was waiting on, said with it)
+  await expect.poll(() => page.evaluate(() => !(window as unknown as { __before?: boolean }).__before && !!sessionStorage.getItem('island.reloadAt')).catch(() => false), { timeout: 60_000, message: 'the app reloaded into the new worker' }).toBe(true).catch(async (e: Error) => {
+    const why = await page.evaluate(async () => {
+      const reg = await navigator.serviceWorker.getRegistration();
+      const w = (x?: ServiceWorker | null) => x && `${x.state} ${x.scriptURL === navigator.serviceWorker.controller?.scriptURL ? '(in control)' : ''}`;
+      return { installing: w(reg?.installing), waiting: w(reg?.waiting), active: w(reg?.active), reloadAt: sessionStorage.getItem('island.reloadAt'), swChanged: sessionStorage.getItem('e2e.swChanged'), open: document.querySelectorAll('dialog[open]').length };
+    }).catch((x: Error) => x.message);
+    throw new Error(`${e.message}\n(version.json asked ${asked}×; ${JSON.stringify(why)})`);
+  });
   await context.unroute('**/_app/version.json');
   await expect(hudMenu(page)).toBeVisible();
   const [changed, reloadAt] = await page.evaluate(() => [sessionStorage.getItem('e2e.swChanged'), sessionStorage.getItem('island.reloadAt')]);
@@ -89,7 +98,8 @@ const notCached = (page: Page) => page.evaluate(async () => {
 /** A deploy seen as the app comes back to the front (the first test's stand-ins). */
 async function deploy(page: Page, context: import('@playwright/test').BrowserContext) {
   await page.request.get('/__e2e/deploy');
-  await context.route('**/_app/version.json', (route) => route.fulfill({ contentType: 'application/json', body: '{"version":"next"}' }));
+  let asked = 0;
+  await context.route('**/_app/version.json', (route) => (asked++, route.fulfill({ contentType: 'application/json', body: '{"version":"next"}' })));
   await page.evaluate(() => {
     // (the first: Chromium may install the same worker again as the reload starts, a second claim after it)
     navigator.serviceWorker.addEventListener('controllerchange', () => sessionStorage.getItem('e2e.swChanged') ?? sessionStorage.setItem('e2e.swChanged', String(Date.now())));

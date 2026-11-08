@@ -74,17 +74,27 @@ for (const layout of ['default', 'user'] as const)
   for (const side of ['left', 'right', 'back'] as const)
     test(`${layout} island: a cast off the ${side} beach, the shadow there bites, a tap catches it`, async ({ page }) => {
       test.slow();
-      await open(page, { layout, q: `&critter=fish&coast=${side}` });
-      await expect.poll(() => hooks(page, (h) => h.__fish.fish().map((f) => f.water)), { timeout: 15_000 }).toContain('sea');
-      const f = (await hooks(page, (h) => h.__fish.fish()))[0];
-      // (off that side: left or right of the land, or round the back)
-      if (side === 'left') expect(f.x).toBeLessThan(-30);
-      else if (side === 'right') expect(f.x).toBeGreaterThan(420);
-      else expect(f.z).toBeGreaterThan(1400);
       // (zoomed in, the view panned to it: a side's sea shows only so, world3d/engine.ts xRoom.) Off the back beach the
       // camera's far stop leaves the sea high on the screen beside the doors and the beach's finds: a touch there is
-      // the sea's (exact-taps.spec), a real tap.
-      const [x, y] = await toTheWater(page, 'sea', 3);
+      // the sea's (exact-taps.spec), a real tap. The shadow's spot along that coast is the page's Math.random: one
+      // straight behind the user island's back-beach building has no sea a finger can reach near it (its tap area
+      // over all of it, 2 in 30 under load): then the island again, a new spot, twice at most
+      let x = 0, y = 0;
+      for (let tries = 0; ; tries++) {
+        await open(page, { layout, q: `&critter=fish&coast=${side}` });
+        await expect.poll(() => hooks(page, (h) => h.__fish.fish().map((f) => f.water)), { timeout: 15_000 }).toContain('sea');
+        const f = (await hooks(page, (h) => h.__fish.fish()))[0];
+        // (off that side: left or right of the land, or round the back)
+        if (side === 'left') expect(f.x).toBeLessThan(-30);
+        else if (side === 'right') expect(f.x).toBeGreaterThan(420);
+        else expect(f.z).toBeGreaterThan(1400);
+        try {
+          [x, y] = await toTheWater(page, 'sea', 3);
+          break;
+        } catch (e) {
+          if (tries >= 2 || !/water a finger can tap/.test(String(e))) throw e;
+        }
+      }
       await page.touchscreen.tap(x, y);
       await expect.poll(() => hooks(page, (h) => h.__fish.why())).toBe('cast in the sea');
       await expect.poll(async () => (await line(page))?.fish ?? null, { timeout: 8000 }).not.toBeNull();
