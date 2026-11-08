@@ -6,6 +6,7 @@
 // says where each model is (__world3d.where: its spot, its fade, its scale), sampled every frame in the page.
 import { expect, test, type Page } from './fixtures.ts';
 import { castIn, is3d, w3 } from './island.ts';
+import { FPS } from '../src/lib/store/frameRate.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -19,13 +20,15 @@ async function modelId(page: Page, prefix: string): Promise<string> {
   return (await find())!;
 }
 
-/** `id`'s spot, fade and scale every frame for `ms` (in the page: a sample from the test would skip frames). */
+/** `id`'s spot, fade and scale every frame drawn for `ms` (in the page: a sample from the test would skip frames). */
 const sample = (page: Page, id: string, ms: number) => page.evaluate(([id, ms]) => new Promise<Sample[]>((ok) => {
-  const w = (window as unknown as { __world3d: { where(id: string): { x: number; z: number; fade: number; scale: number; hidden: boolean } | null } }).__world3d;
+  const w = (window as unknown as { __world3d: { where(id: string): { x: number; z: number; fade: number; scale: number; hidden: boolean } | null; stats(): { frames: number } } }).__world3d;
   const out: Sample[] = [], t0 = performance.now();
+  let drawn = -1;
   const frame = () => {
-    const p = w.where(id);
-    out.push(p && { t: performance.now() - t0, x: p.x, z: p.z, fade: p.fade, scale: p.scale, hidden: p.hidden, line: !!document.querySelector('[data-bobber="bite"]') });
+    const p = w.where(id), n = w.stats().frames;
+    if (n !== drawn) out.push(p && { t: performance.now() - t0, x: p.x, z: p.z, fade: p.fade, scale: p.scale, hidden: p.hidden, line: !!document.querySelector('[data-bobber="bite"]') });
+    drawn = n;
     if (performance.now() - t0 < ms) requestAnimationFrame(frame);
     else ok(out);
   };
@@ -35,32 +38,35 @@ const sample = (page: Page, id: string, ms: number) => page.evaluate(([id, ms]) 
 /** The first model `prefix`N's spot, fade and scale every frame from the frame it comes for `ms` after (in the page, from
  *  before it's there: a poll from the test found it late, now and then 0.8 faded in already under CI's load). */
 const sampleFirst = (page: Page, prefix: string, ms: number) => page.evaluate(([prefix, ms]) => new Promise<Sample[]>((ok, no) => {
-  const w = (window as unknown as { __world3d: { where(id: string): { x: number; z: number; fade: number; scale: number; hidden: boolean } | null } }).__world3d;
+  const w = (window as unknown as { __world3d: { where(id: string): { x: number; z: number; fade: number; scale: number; hidden: boolean } | null; stats(): { frames: number } } }).__world3d;
   const out: Sample[] = [], start = performance.now();
-  let id: string | null = null, t0 = 0;
+  let id: string | null = null, t0 = 0, drawn = -1;
   const frame = () => {
     if (!id) {
       for (let n = 0; n < 400 && !id; n++) if (w.where(prefix + n)) id = prefix + n;
       if (!id) return performance.now() - start > 30_000 ? no(new Error(`no model ${prefix}N`)) : void requestAnimationFrame(frame);
       t0 = performance.now();
     }
-    const p = w.where(id);
-    out.push(p && { t: performance.now() - t0, x: p.x, z: p.z, fade: p.fade, scale: p.scale, hidden: p.hidden });
+    const p = w.where(id), n = w.stats().frames;
+    if (n !== drawn) out.push(p && { t: performance.now() - t0, x: p.x, z: p.z, fade: p.fade, scale: p.scale, hidden: p.hidden });
+    drawn = n;
     if (performance.now() - t0 < ms) requestAnimationFrame(frame);
     else ok(out);
   };
   frame();
 }), [prefix, ms] as const);
 
-/** The biggest move between two frames (u), at 60 frames a second (a slow frame of a busy runner moves it further:
- *  speed, not a jump). */
+/** The biggest move between two frames drawn (u), as speed in u per 60th of a second (a slow frame of a busy runner
+ *  moves it further: speed, not a jump). The game draws at most 30 a second (store/frameRate.ts, its due(): ~27 ms
+ *  apart at the least) and the samplers keep only frames it drew (its frame count moved): a 30th's move seen a
+ *  60th after the last (the page's rAF and the engine's in either order) is still one frame's, not twice the speed. */
 const maxStep = (s: Sample[]) => {
   let m = 0;
   // (one faded out to nothing has no spot)
   const on = (p: Sample): p is NonNullable<Sample> => !!p && p.fade > 0;
   for (let i = 1; i < s.length; i++) {
     const a = s[i - 1], b = s[i];
-    if (on(a) && on(b)) m = Math.max(m, (Math.hypot(b.x - a.x, b.z - a.z) * (1000 / 60)) / Math.max(1000 / 60, b.t - a.t));
+    if (on(a) && on(b)) m = Math.max(m, (Math.hypot(b.x - a.x, b.z - a.z) * (1000 / 60)) / Math.max(1000 / FPS, b.t - a.t));
   }
   return m;
 };
@@ -115,11 +121,13 @@ async function baited(page: Page): Promise<boolean> {
   const id = await castAtFish(page);
   // every frame till the bite: the nose (the model's spot: the shadow's head) to the float, and the nibbles' times
   const s = await page.evaluate((id) => new Promise<{ t: number; d: number }[]>((ok) => {
-    const w = (window as unknown as { __world3d: { where(id: string): { x: number; z: number; hidden: boolean } | null } }).__world3d;
+    const w = (window as unknown as { __world3d: { where(id: string): { x: number; z: number; hidden: boolean } | null; stats(): { frames: number } } }).__world3d;
     const out: { t: number; d: number }[] = [];
+    let drawn = -1;
     const frame = () => {
-      const f = w.where(id), b = w.where('bobber');
-      if (f && b && !f.hidden && !b.hidden) out.push({ t: performance.now(), d: Math.hypot(f.x - b.x, f.z - b.z) });
+      const f = w.where(id), b = w.where('bobber'), n = w.stats().frames, fresh = n !== drawn;
+      drawn = n;
+      if (fresh && f && b && !f.hidden && !b.hidden) out.push({ t: performance.now(), d: Math.hypot(f.x - b.x, f.z - b.z) });
       if (document.querySelector('[data-bobber="bite"]') || !document.querySelector('[data-bobber]')) ok(out);
       else requestAnimationFrame(frame);
     };
