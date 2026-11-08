@@ -40,9 +40,9 @@ headers. Daily totals, one line per day, every field **Text**. The parser (`rela
 | `body_mass_index` | That day's **Body Mass Index**, `0` = no sample; 10–60 | `bmi` (one decimal) |
 | `lean_body_mass` | That day's **Lean Body Mass** in **kg**, `0` = no sample; 10–150 kg | `lean_kg` (one decimal) |
 
-- Lists are optional (at least one); other fields are ignored. A Shortcut without `body_fat_percentage`, `body_mass_index` and `lean_body_mass`
-  (set up before they existed) keeps working; add them (§2 steps 8a–8c) to see them in けんこう. A list whose line count differs from `dates` is
-  dropped with a warning; an unreadable or over-max line is skipped.
+- Lists are optional (at least one); other fields are ignored. Without the body lists (§2 steps 8a–8c) けんこう shows
+  no body fat, BMI or lean mass. A list whose line count differs from `dates` is dropped with a warning; an unreadable
+  or over-max line is skipped.
 - Why two step lists: Find Health Samples adds up every source's samples, so the iPhone's and the Watch's steps of the
   same walk would count twice (Health's own total de-duplicates them; Shortcuts doesn't). Move, Exercise and Stand
   are not affected. The server keeps the larger of the two per day, which is close to Health's total.
@@ -50,7 +50,7 @@ headers. Daily totals, one line per day, every field **Text**. The parser (`rela
   and a corrected day is fixed by the next run. A locked week's ベル (after its Wednesday 04:00) never move.
 - Reply: `{"ok":true,"metrics":8}` (rows added), plus `skipped` / `warnings`. Errors: `unauthorized`,
   `bad_request` (with a `detail`), `too_large` (over 1 MB), `busy` (over 120 requests/min), `unavailable`.
-- Every run leaves a row in the `uploads` tab ([runbook §6](runbook.md#6-when-sync-fails)).
+- Every run leaves an audit row in the record's `uploads` table, read with the `uploads` action ([runbook §5](runbook.md#5-when-sync-fails)).
 
 ## 2. Build the Shortcut
 Shortcuts → **+** → name it **しまの同期** [U: action names]:
@@ -91,29 +91,9 @@ only a day where all three are 0: a worn day's Exercise 0 is real. [U: action na
 2. **If** **Repeat Item** is `0` and `Ex` is `0` and `Stand` is `0` (three nested **If**s, or **Calculate** Repeat Item
    + Ex + Stand and **If** the result is `0`): **Text** with nothing in it → **Add to Variable** `CalOut`, `ExOut`,
    `StandOut`. **Otherwise**: **Add to Variable** Repeat Item → `CalOut`, `Ex` → `ExOut`, `Stand` → `StandOut`.
-3. After the repeat, **Combine Text** `CalOut` with **New Lines** �� `CalValues`; the same for `ExOut` → `ExValues` and
+3. After the repeat, **Combine Text** `CalOut` with **New Lines** → `CalValues`; the same for `ExOut` → `ExValues` and
    `StandOut` → `StandValues` (each list keeps one line per date, so nothing is dropped).
 4. Step 9 sends them as before. Tap ▶: on a day without the Watch the reply's `skipped` grows by 3, with no `warnings`.
-
-### Adding body fat, BMI and lean body mass to an existing Shortcut
-On each iPhone, open **しまの同期** and:
-
-1. Below the **Body Mass** (体重) query (step 8) and its **Get Details of Health Sample** → **Value**, add **Find Health
-   Samples** → Type **Body Fat Percentage** (体脂肪率). Set it up exactly like the Body Mass one: filter **Start Date**
-   is in the last **1 month** (the same range as the others), no Source filter, **Group by Day**, **Fill Missing**,
-   and the same sort as the others (if they say Sort by Start Date, Oldest First, so does this one).
-2. Add **Get Details of Health Sample** on it → **Value**. Rename the variable **BodyFatValues** (or add **Set
-   Variable** BodyFatValues).
-3. Repeat 1–2 with **Body Mass Index** (ボディマス指数) → **BMIValues**, and with **Lean Body Mass** (除脂肪体重) →
-   **LeanValues**.
-4. In **Get Contents of URL** (step 9), under Request Body, tap **Add new field** → **Text** three times: key
-   `body_fat_percentage`, value **BodyFatValues**; key `body_mass_index`, value **BMIValues**; key `lean_body_mass`, value **LeanValues**. Each
-   must be **Text** (not Number or Array), like `weight`.
-5. Tap ▶. When asked, allow Shortcuts to read Body Fat Percentage, Body Mass Index and Lean Body Mass. Expect
-   `{"ok":true,…}` with no `warnings`. A day without a measurement is `0` and simply has no point in けんこう.
-
-If the scale doesn't write BMI or lean body mass to Health, those lists are all `0`: harmless. To fill the past, run the
-§5 baseline with the three new queries set to 84 days too.
 
 ## 3. The automation
 Shortcuts → **Automation** → **+** → **App** → **LINE** (or the app you open most) → **Is Opened** → **Run
@@ -125,7 +105,7 @@ settings (ⓘ) → **Setup** → **Import Questions** → add a question for the
 Fund key") [U: menu names]. The Source filters (steps 2 and 4) name your own iPhone and Watch: the other person
 re-picks theirs in both after importing. Clear the key text, Share → **Copy iCloud Link**, send it. Importing asks the other
 person for their key. Put your own key back, and they add the automation (§3). If a link with a key in it was ever
-shared, rotate that key ([runbook §4](runbook.md#4-rotate-a-key)).
+shared, rotate that key ([runbook §3](runbook.md#3-rotate-a-key)).
 
 ## 5. One-time baseline (optional)
 Duplicate the Shortcut, set the range in steps 2 and 4–8c to the last **84 days**, run it once, delete the copy.

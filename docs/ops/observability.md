@@ -1,7 +1,7 @@
 # Observability: the log, its reader, the alert
 
-What the phones and the relay log, where it goes, how to read it, what it costs. The decisions and why:
-[decisions](../decisions.md#logging-and-observability). Code: `app/src/lib/contract/log.ts` (the schema),
+What the phones and the relay log, where it goes, how to read it, and what the relay costs against the Free plan
+([Request budget](#request-budget)). Why: [decisions](../decisions.md). Code: `app/src/lib/contract/log.ts` (the schema),
 `app/src/lib/sync/log.ts` (the phone), `relay/src/log.ts` · `logRoute.ts` · `reqMeta.ts` · `logObject.ts` (the relay),
 `relay/scripts/logs.ts` (the reader).
 
@@ -48,7 +48,7 @@ A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepal
 | `sync.fail` | info offline / warn | `err`, `cached` | a refresh failed |
 | `queue.retry` / `queue.drop` | warn / error | `type`, `err`, `tries` | the write queue backs off (1st and every 5th) / drops an event |
 | `queue.poison` / `queue.split` | error / warn | `type`, `err`, `tries` / `n`, `err` | the write queue sets an event aside (kept: [backend](../backend.md#write-queue)) / halves a batch refused whole |
-| `ws.open` / `ws.close` / `ws.park` | info / info / warn | `ms`, `retries`; `code`, `secs`, `welcomed`, `why`, `quiet`, `rtt`; `code` | the live socket. `ws.close` for every socket's end (2026-11-07; before, only the relay's or the network's and 4000 / 4010): `why` `hidden`, `offline`, `stale` (4000: no answer to a probe), `late` / `stuck` (4010: no welcome in time), `rekey`, `stop` (the phone's own, 1000) or `closed` (the relay or the network); `quiet` s since it last heard anything; `rtt` its shortest ping round trip (ms) |
+| `ws.open` / `ws.close` / `ws.park` | info / info / warn | `ms`, `retries`; `code`, `secs`, `welcomed`, `why`, `quiet`, `rtt`; `code` | the live socket. `ws.close` for every socket's end: `why` `hidden`, `offline`, `stale` (4000: no answer to a probe), `late` / `stuck` (4010: no welcome in time), `rekey`, `stop` (the phone's own, 1000) or `closed` (the relay or the network); `quiet` s since it last heard anything; `rtt` its shortest ping round trip (ms) |
 | `ws.unacked` | warn | `kind`, `tries` | a kept intent dropped: its ack never came on a socket that answered, 4 tries (sync/live.ts) |
 | `gl.lost` | warn | `where`, `restored` | WebGL context lost / back |
 | `chunk.fail` | warn | | a chunk failed to load |
@@ -59,7 +59,7 @@ A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepal
 | `mic.env` / `mic.perm` / `mic.duplex` / `mic.stt` | info | the mic probe's numbers and closed sets (docs/kikimimi-mic.md §1.1): the page's capabilities; the permission (`st`, `ms`, `again`, `asked`, `ec`, `sr`, `inp`); per earphone route the bleed (dB), round trip (ms), loudness and restore; per recogniser and step its `ms`, `mb`, `audS`, `wer` (%, computed on the phone), `ok`, `err`. **Never heard text, a device label or a sentence** | せってい's 「マイク診断（テスト）」, on 「結果を送信」 |
 | `req` (relay) | info; warn refused; error `unavailable` | `action`, `st` (ok or the error code), `ms` (the Worker's wall time), `inB`, `outB`, `n`, `rej`, `dup`, `why` (the first refusal's rule: `buy.pocket_short`, `spend_void.no_such_spend`, `ingest.parse`), ingest's `m` (added), `sk` (skipped), `w` (warnings: a count); a snapshot's `pg` (its page size; 0: unpaged, an app from before paging); `exc` (a thrown class) | every `/api` request: the Shortcut's ingests, rate-limit hits (`busy`), validation refusals |
 | `room.close` / `room.full` | info / warn | `code`, `secs`, `socks` | the live room |
-| `ws.hello` (relay) | info | `v` (the protocol version), `build` (the app's, from the hello; none before 2026-11-05), `rep` (2026-11-07: that person's sockets it replaced, the others told nothing); who | each welcomed hello: which phone speaks what (`report`'s *Live hellos*) |
+| `ws.hello` (relay) | info | `v` (the protocol version), `build` (the app's, from the hello), `rep` (that person's sockets it replaced, the others told nothing); who | each welcomed hello: which phone speaks what (`report`'s *Live hellos*) |
 | `store.corrupt` (relay) | warn | `where` (the fold: spend, board, food, tally, shop, decor) | a stored row of the record that isn't a JSON object, skipped by that fold (store.ts `rowRec`), once a request a place |
 | `cron.wx` | info; warn failed | `ok`, `fetched`, `fail`, `hours`, `age`, `ms` | a weather fetch (the cron at :15, :45) |
 | `cron.compact` | info | `dates`, `deleted`, `more`, `metrics`, `ms` | the record's compaction (the cron at 04:15 Tokyo when COMPACT_CRON=1, on hold; `more`: a backlog left for the next day; a failure is `do.error` `where: compact`) |
@@ -144,7 +144,7 @@ npm run logs -- --test ...                                 # the test relay
 5. The Free plan's use: dashboard → Workers & Pages → the relay's Metrics (requests), Durable Objects (rows
    written/read against 100k / 5M a day).
 6. Off switch: `LOG_OFF = "1"` in `wrangler.toml` `[vars]` and deploy (`STT_OFF = "1"` for `/stt`).
-   The mic probe's results (pending: the user's run on both phones): `npm run logs -- --event mic. --since 1d --json` and `--event stt`.
+   The mic probe's results: `npm run logs -- --event mic. --since 1d --json` and `--event stt`.
 7. Close the alert's issue with the cause.
 
 ## The alert
@@ -155,10 +155,11 @@ changes) when, in the last 6 hours, errors > 20 (not counting errors while leavi
 prune is dead); it closes the issue on a green run. The issue holds counts and a link here, never a message (the repo
 is public). A failing `/health` still fails the job (GitHub's e-mail). Scheduled workflows stop after 60 days without
 a commit in a public repo: re-enable it in Actions.
-Set up once (done 2026-11-05): `openssl rand -hex 32` → `npx wrangler secret put HEALTH_TOKEN` (and `--env test`) and
+Set up once: `openssl rand -hex 32` → `npx wrangler secret put HEALTH_TOKEN` (and `--env test`) and
 `gh secret set HEALTH_TOKEN`.
 
-## Costs (Free plan, developers.cloudflare.com, checked 2026-11-05)
+## Costs
+### The log (Free plan)
 | | Free limit | The log adds (typical / worst) |
 |---|---|---|
 | Worker requests | 100k/day | ~100 `/log` / ~1k |
@@ -170,3 +171,26 @@ Set up once (done 2026-11-05): `openssl rand -hex 32` → `npx wrangler secret p
 | Workers Logs | 200k/day, 3 days | a few hundred lines |
 | Workers AI (`/stt`) | 10k neurons/day | whisper-large-v3-turbo, ~47 neurons an audio minute: the probe a few; the cap (300 × ≤ 10 s a person) ~2.3k |
 | The phone | — | `log()` ~µs; a flush: one JSON.stringify of ≤ 32 KB and one fetch; a persist ≤ 24 KB, debounced |
+
+### Request budget
+The whole relay against the Free plan's daily limits: Workers 100,000 requests; Durable Objects 100,000 requests (a
+WebSocket connect is one, incoming messages count 20:1, outgoing are free), 13,000 GB-s of duration (an idle
+hibernatable object isn't billed), 5 M rows read, 100,000 rows written, 5 GB storage. A generous day for two phones and
+the guest:
+
+| Source | Count/day | Worker req | DO req | DO GB-s | Rows read | Rows written |
+|---|---|---|---|---|---|---|
+| Sockets (each show of the app) | 2 × 60 | 120 | 120 | ~150 (10 s awake each, 128 MB) | | |
+| Liveness (a quiet socket every 20 s while shown, 2 × 2 h): the heartbeat, answered by the runtime without waking the room, and a timed ping for the clock every 5 minutes | 720 (672 heartbeats, 48 pings) | 0 | ≤ 36 | ~60 | | |
+| Intents kept for the day (the room's ring), nudges | ~2,000 | 0 | 100 | ~100 | | ~2,000 |
+| Record reads: snapshots (opens not current, pushes, taps; ~5 rows each; a full one is the whole record, [backend](../backend.md#the-record) "Snapshot size") | ~300 | 300 | 300 | ~30 | ~3,000 (+ the record per full fetch) | |
+| Record writes: `events` batches (~100 events) and their notice to the room | ~100 | 100 | 200 | ~10 | ~1,000 (ids, slots, decor) | ~1,000 (a row, its id, its indexes, `last_at`) |
+| Shortcut ingests (2 phones, ~24 runs each; ≤ ~260 latest rows read for 32 days) | ~50 | 50 | 100 | ~5 | ~15,000 | ~1,500 |
+| The real weather (the cron's room tick, a fetch at :15 and :45, a `wx` on change) | 96 ticks, ~48 fetches | 0 | 96 | ~10 | | ~48 (one storage key) |
+| The log (above) | ~600 RPCs, ~60 batches | ~60 | ~700 | ~10 | ~2,000 (queries) | ~2,500 |
+| **Total** | | **~630 (0.6 %)** | **~1,650 (1.7 %)** | **~380 (2.9 %)** | **~22,000 (0.4 %)** | **~7,050 (7 %)** |
+
+Duration is the binding limit and stays under a tenth of it even with the island's presence ten times busier. A busy
+day of the shared world (~550 incoming messages: walks, catches, pick-ups, shakes) is ~28 DO requests and ~550 storage
+writes; nothing is sent per frame. The record's compaction, were it turned on ([backend](../backend.md#the-record)
+"Compaction"), adds ~8,000 rows written on a Wednesday.
