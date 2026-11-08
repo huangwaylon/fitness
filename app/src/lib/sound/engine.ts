@@ -229,7 +229,9 @@ export class Engine {
 
   #unlockState(music: boolean) {
     const f = this.#decks[this.#front];
-    return { state: this.ctx?.state ?? null, music, decksReady: this.#decksReady, frontStalled: !!f?.key && f.el.paused && !f.starting };
+    // (a deck still starting but paused had its play() refused: stalled too, the tap's to retry, not the fade-in's
+    // later play(), outside any tap and refused again)
+    return { state: this.ctx?.state ?? null, music, decksReady: this.#decksReady, frontStalled: !!f?.key && f.el.paused };
   }
 
   /** Waiting for a tap (session.ts needsUnlock). */
