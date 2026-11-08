@@ -15,6 +15,7 @@ import {
   type MeshStandardMaterial, type SkinnedMesh, Texture
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { ktx2Plugin } from '../world3d/ktx2.ts';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { lean } from '../world3d/release.ts';
@@ -96,7 +97,7 @@ export interface Villager3D {
   dispose(): void;
 }
 
-const loader = new GLTFLoader();
+const loader = ktx2Plugin(new GLTFLoader());
 loader.setMeshoptDecoder(MeshoptDecoder);
 const cache = new Map<string, Promise<GLTF>>();
 

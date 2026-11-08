@@ -36,7 +36,8 @@ test('the island draws in 3D and a tap on the lawn walks my villager', { tag: '@
   const s = await w3(page, (w) => w.stats());
   expect(s.calls).toBeGreaterThan(10);
   expect(s.dpr).toBeLessThanOrEqual(2);
-  // the models' textures from their KTX2, transcoded in the worker under the CSP (world3d/ktx2.ts), none from a WebP
+  // the models' textures (the homes', the villagers' and the players' too) from their KTX2, transcoded in the worker
+  // under the CSP (world3d/ktx2.ts), none from a WebP
   const k = await w3(page, (w) => w.ktx2());
   expect(k.made + k.kept).toBeGreaterThan(20);
   expect(k.webp).toBe(0);

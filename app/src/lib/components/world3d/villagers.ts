@@ -9,6 +9,7 @@
 // wears (a birthday hat, the party glasses: assets.json `joint` models, their origin NH's head joint) rides its head bone.
 import { MeshLambertMaterial, Color, Matrix4, Vector3 as V3, type Vector3, type Material, type Mesh, type MeshStandardMaterial, type Object3D } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { ktx2Plugin } from './ktx2.ts';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { keyModel, MODELS } from './models3d.ts';
 import { VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
@@ -293,7 +294,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     return w;
   }
 
-  const loader = new GLTFLoader();
+  const loader = ktx2Plugin(new GLTFLoader());
   loader.setMeshoptDecoder(MeshoptDecoder);
   const wearBase = new URL('room/world3d/', new URL(document.baseURI)).href;
   /** A worn model (once per key; each villager its own copy), its materials the villagers' Lambert. */

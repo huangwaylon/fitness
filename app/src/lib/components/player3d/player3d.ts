@@ -10,10 +10,11 @@
 //   - Colours are tints: the skin (its texture's alpha says where), the hair, the hair-coloured parts.
 //   - dress(look) swaps what changed in place: a colour or a texture is a material's change, a new shape a mesh's.
 import {
-  Bone, Box3, Color, DoubleSide, Matrix4, MeshLambertMaterial, Quaternion, RepeatWrapping, SRGBColorSpace, Sphere, Texture, TextureLoader, Vector3,
+  Bone, Box3, Color, DoubleSide, Matrix4, MeshLambertMaterial, Quaternion, RepeatWrapping, SRGBColorSpace, Sphere, Texture, Vector3,
   type Material, type Mesh, type MeshStandardMaterial, type Object3D, type SkinnedMesh, type WebGLProgramParametersWithUniforms
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { ktx2Plugin, loadTexture } from '../world3d/ktx2.ts';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { lean } from '../world3d/release.ts';
@@ -64,11 +65,17 @@ const LIFT = 0.32;
  *  or hat 3.6 over it, its body at most 2.3 in any state or action (a hop's lift moves the sphere with it), with room. */
 const REACH = 10;
 
-const loader = new GLTFLoader();
+const loader = ktx2Plugin(new GLTFLoader());
 loader.setMeshoptDecoder(MeshoptDecoder);
 const glbs = new Map<string, Promise<GLTF>>();
 const texs = new Map<string, Promise<Texture>>();
-const texLoader = new TextureLoader();
+/** The files with a KTX2 beside them (world3d/texHash.ts looseTextures: the bundled table's faces and garments; a part
+ *  only the whole table has keeps its WebP), by their address under room/player (`/face/…webp?v=…`). */
+const KTX2 = new Set([
+  ...Object.keys(PARTS.face).flatMap((id) => [faceUrl(id, ''), irisUrl(id, '')]),
+  ...PARTS.cheek.map((_, i) => faceUrl(`cheek${i}`, '')),
+  ...Object.values(PARTS.items).flatMap((it) => Object.values(it.tex).map((t) => texUrl(t, '')))
+]);
 
 function glb(url: string): Promise<GLTF> {
   let p = glbs.get(url);
@@ -110,11 +117,12 @@ function freeGlb(g: GLTF) {
 }
 /** @public (tests) The parts' GLBs kept: in use (worn), and decoded but worn by none. */
 export const glbStats = () => ((s) => ({ cached: glbs.size, worn: s.used, idle: s.idle }))(glbUse.stats());
-/** A texture (once per address, while some player wears it: `uses`). */
+/** A texture (once per address, while some player wears it: `uses`): a KTX2's if it has one (the bundled table's: KTX2),
+ *  else its WebP (as TextureLoader draws it: flipped, the KTX2 encoded so). */
 function tex(url: string): Promise<Texture> {
   let p = texs.get(url);
   if (!p) {
-    p = texLoader.loadAsync(url).then((t) => {
+    p = loadTexture(url, { flipY: true, ktx2: KTX2.has(url.slice(url.lastIndexOf('/player/') + 7)) }).then((t) => {
       // (NH's uvs run past 0–1, a face patch's below 0: repeated, as the GLBs' own textures are)
       t.wrapS = t.wrapT = RepeatWrapping;
       t.colorSpace = SRGBColorSpace;

@@ -11,6 +11,7 @@ import {
   RingGeometry, SphereGeometry, SRGBColorSpace, type Camera, type MeshStandardMaterial, type Side, type Texture
 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { ktx2Plugin } from './ktx2.ts';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { bend, glow as addLight } from './bend.ts';
 import { WHITE, withMaps } from './blank.ts';
@@ -180,7 +181,7 @@ function glow(): Texture {
 
 /** `onLoad`: a part's model is in (a frame to show it). */
 export function createEffects(scene: Scene, ground: (x: number, z: number) => number, onLoad?: () => void): Effects {
-  const loader = new GLTFLoader();
+  const loader = ktx2Plugin(new GLTFLoader());
   loader.setMeshoptDecoder(MeshoptDecoder);
   const base = new URL(`room/world3d/`, new URL(document.baseURI)).href;
   const got = new Map<string, Promise<Src | null>>();

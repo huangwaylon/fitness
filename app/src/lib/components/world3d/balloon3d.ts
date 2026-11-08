@@ -8,6 +8,7 @@ import {
   MeshLambertMaterial, type MeshStandardMaterial, type Object3D
 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { ktx2Plugin } from './ktx2.ts';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { keyModel, MODELS } from './models3d.ts';
 import { softDisc } from './cards.ts';
@@ -32,7 +33,7 @@ const BLOB = 13;
 const STRING_N = 6;
 
 export function createBalloon3(add: (o: Object3D) => () => void, heightOf: (x: number, z: number) => number, kick: () => void): Balloon3 {
-  const loader = new GLTFLoader();
+  const loader = ktx2Plugin(new GLTFLoader());
   loader.setMeshoptDecoder(MeshoptDecoder);
   const base = new URL('room/world3d/', new URL(document.baseURI)).href;
   let liftL = 0.32, disposed = false;
