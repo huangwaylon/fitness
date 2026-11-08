@@ -2,12 +2,13 @@
 // lobby (📢, a row of its own), and an announcement through its channel: a PA's final call at the gate and a phone menu
 // at home, each card's frame while it plays, at the reveal the English with its marks, the note and the answer's
 // Japanese, then the review list. A test hook (`__kiki.deck(ids)`, as にがて れんしゅう) deals the items. The logic
-// tier: the clips may or may not sound (headless, muted), the schedule is the relay clock's.
+// tier: the clips may or may not sound (headless, muted), the schedule is the relay clock's, on the page's clock
+// (stepped through: kikimimi-nav.ts runUntil).
 // KIKI_SHOTS=1 writes screenshots (393×852) into /tmp/kikimimi-shots/inc6/.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { kikiSheet } from './kikimimi-nav.ts';
+import { kikiSheet, runToPhase, runToQuestion } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -23,7 +24,7 @@ const ITEMS = [
 ] as const;
 
 test('アナウンス: level 5 in the lobby; an announcement through its frame, its marks, note and answer at the reveal, the review', async ({ page }) => {
-  test.slow();
+  await page.clock.install();
   await page.goto(`?demo&${Q}`);
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
@@ -39,7 +40,7 @@ test('アナウンス: level 5 in the lobby; an announcement through its frame, 
   await kiki(page, (k) => k.deck(['a5-final-call', 'a5-press-three']));
   await expect.poll(() => kiki(page, (k) => k.items())).toEqual(ITEMS.map((x) => x.id));
   for (const [i, x] of ITEMS.entries()) {
-    await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 15_000 }).toBe(i);
+    await runToQuestion(page, i);
     const card = sheet(page).locator('[data-kiki-card] [data-kiki-scene]');
     await expect(card).toHaveAttribute('data-kiki-scene', x.scene);
     await expect(card).toHaveAttribute('data-channel', x.channel);
@@ -48,7 +49,7 @@ test('アナウンス: level 5 in the lobby; an announcement through its frame, 
     await expect(sheet(page).locator('[data-kiki-en]')).toHaveCount(0);
     await expect(sheet(page).locator('.ask')).not.toBeEmpty();
     // (a long announcement, a chime first: the answer window opens when its first play ends)
-    await expect(sheet(page)).toHaveAttribute('data-phase', 'answer', { timeout: 40_000 });
+    await runToPhase(page, 'answer');
     if (SHOTS) await page.screenshot({ path: `${SHOTS}/${String(i + 1)}-${x.id}-play.png` });
     const right = await kiki(page, (k) => k.right());
     await sheet(page).locator(`[data-choice="${right}"]`).click();

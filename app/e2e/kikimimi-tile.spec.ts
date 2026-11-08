@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { atHub, kikiSheet as sheet } from './kikimimi-nav.ts';
+import { atHub, kikiSheet as sheet, runToQuestion, runToSee } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const SHOTS = '/tmp/kikimimi-shots/tile';
@@ -35,7 +35,10 @@ async function snap(p: Page, name: string, fullPage = false) {
   await p.screenshot({ path: `${SHOTS}/${name}.png`, fullPage });
 }
 
+/** A phone on the context's clock (installed once, before its first page: both tabs step together; the clips
+ *  stepped through: kikimimi-nav.ts runUntil). */
 async function phone(ctx: BrowserContext, q: string, as: 'A' | 'B' = 'A'): Promise<Page> {
+  if (!ctx.pages().length) await ctx.clock.install();
   const page = await ctx.newPage();
   await page.goto(`?demo&${q}${as === 'A' ? '' : `&as=${as}`}`);
   await islandUp(page);
@@ -57,7 +60,7 @@ async function sentence(p: Page): Promise<string[]> {
 }
 /** My slots filled from the board in order (each word's first tile not yet placed); `wrong`: my last slot a decoy. */
 async function build(p: Page, wrong = false) {
-  await expect(sheet(p).locator('[data-kiki-tile-pool]')).toBeVisible({ timeout: 40_000 });
+  await runToSee(p, sheet(p).locator('[data-kiki-tile-pool]'));
   const words = await sentence(p);
   const mine = await sheet(p).locator('button[data-slot]').evaluateAll((bs) => bs.map((b) => [Number(b.getAttribute('data-slot')), b.hasAttribute('data-filled')] as const));
   const open = mine.filter(([, f]) => !f).map(([j]) => j);
@@ -72,19 +75,18 @@ async function build(p: Page, wrong = false) {
 }
 
 test('solo: the mode once listened, the clip before the tiles, tap to place and take back, できた; the reveal and the results; my row', async ({ context }) => {
-  test.slow();
   const page = await phone(context, DAY);
   await toTile(page);
   await snap(page, 'mode');
   await sheet(page).locator('[data-kiki-start]').click();
   await expect.poll(() => kiki(page, (k) => k.view().gm)).toBe('tile');
   // the clip first, with no tiles
-  await expect(sheet(page).locator('[data-kiki-tile-wait]')).toBeVisible({ timeout: 15_000 });
+  await runToSee(page, sheet(page).locator('[data-kiki-tile-wait]'));
   await expect(sheet(page).locator('[data-kiki-tile-pool]')).toHaveCount(0);
   await expect(sheet(page).locator('[data-kiki-ctx]')).toBeVisible();
   await snap(page, 'listen');
   // round 1: a tile placed, taken back, then the sentence built; できた
-  await expect(sheet(page).locator('[data-kiki-tile-pool]')).toBeVisible({ timeout: 20_000 });
+  await runToSee(page, sheet(page).locator('[data-kiki-tile-pool]'));
   await expect(sheet(page).locator('[data-kiki-tile-done]')).toHaveAttribute('aria-disabled', 'true');
   const empty = sheet(page).locator('button[data-slot]:not([data-filled])').first();
   const j = Number(await empty.getAttribute('data-slot'));
@@ -106,7 +108,7 @@ test('solo: the mode once listened, the clip before the tiles, tap to place and 
   await sheet(page).locator('[data-kiki-next]').click();
   // the rest: round 2 with a decoy in my last slot
   for (let i = 1; i < 6; i++) {
-    await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 20_000 }).toBe(i);
+    await runToQuestion(page, i);
     await build(page, i === 1);
     await sheet(page).locator('[data-kiki-tile-done]').click();
     await expect(sheet(page)).toHaveAttribute('data-phase', 'reveal');
@@ -138,7 +140,7 @@ test('night: the board in the night palette', async ({ context }) => {
   const page = await phone(context, NIGHT);
   await toTile(page);
   await sheet(page).locator('[data-kiki-start]').click();
-  await expect(sheet(page).locator('[data-kiki-tile-pool]')).toBeVisible({ timeout: 20_000 });
+  await runToSee(page, sheet(page).locator('[data-kiki-tile-pool]'));
   await build(page, true);
   await snap(page, 'night-built');
   await sheet(page).locator('[data-kiki-tile-done]').click();
@@ -147,7 +149,7 @@ test('night: the board in the night palette', async ({ context }) => {
 });
 
 test('co-op on two phones: each fills its own half of one sentence; the reveal shows the team’s; the results count the sentences built whole', async ({ browser }) => {
-  test.setTimeout(240_000);
+  test.setTimeout(60_000); // two phones (the clips stepped through)
   const ctx = await browser.newContext();
   const a = await phone(ctx, DAY, 'A'), b = await phone(ctx, DAY, 'B');
   await a.bringToFront();
@@ -168,11 +170,11 @@ test('co-op on two phones: each fills its own half of one sentence; the reveal s
   for (let i = 0; i < 6; i++) {
     for (const [p, who] of [[a, 'A'], [b, 'B']] as const) {
       await p.bringToFront();
-      await expect.poll(() => kiki(p, (k) => k.view().i), { timeout: 20_000 }).toBe(i);
+      await runToQuestion(p, i);
       if (i === 0) {
         const roles = await kiki(p, (k) => k.view().roles);
         expect(roles).toEqual({ A: 0, B: 1 });
-        await expect(sheet(p).locator('[data-kiki-tile-pool]')).toBeVisible({ timeout: 40_000 });
+        await runToSee(p, sheet(p).locator('[data-kiki-tile-pool]'));
         const theirs = sheet(p).locator('[data-kiki-tile-sentence] .theirs');
         await expect(theirs.first()).toBeVisible();
         if (who === 'B') await snap(p, 'coop-build');
