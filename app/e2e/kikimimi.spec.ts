@@ -4,11 +4,12 @@
 // 「やめますか？」 path (mid-game a backdrop tap or Esc keeps the sheet; ✕ asks first). The reveal is untimed: solo taps
 // つぎへ, B taps よみおわった and A's つぎへ counts it. `?kikimimi=fast` shortens the answer window (session.ts
 // FAST_WINDOWS: 8 s, a tab behind is throttled) on every phone. The logic tier: no clip has to sound (a
-// headless browser's audio is a null sink), the schedule is the relay clock's.
+// headless browser's audio is a null sink), the schedule is the relay clock's, on the page's clock: stepped through
+// (kikimimi-nav.ts runUntil).
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { atHub, toMode, toTile } from './kikimimi-nav.ts';
+import { atHub, runToPhase, runToQuestion, toMode, toTile } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -23,7 +24,9 @@ async function snap(p: Page, path: string, fullPage = false) {
   await p.screenshot({ path, fullPage });
 }
 
+/** A phone on its page's clock (a context's installed before its first page: both tabs step together). */
 async function open(ctx: BrowserContext | Page, as: 'A' | 'B' = 'A'): Promise<Page> {
+  if (!('newPage' in ctx) || !ctx.pages().length) await ctx.clock.install();
   const page = 'newPage' in ctx ? await ctx.newPage() : ctx;
   await page.goto(`?demo&${Q}${as === 'A' ? '' : `&as=${as}`}`);
   await islandUp(page);
@@ -33,8 +36,8 @@ async function open(ctx: BrowserContext | Page, as: 'A' | 'B' = 'A'): Promise<Pa
 const play = (page: Page) => fromMenu(page, 'kikimimi');
 /** Answer the current question: the right choice, or (`wrong`) another; waits for the answer window first. */
 async function answer(page: Page, wrong = false) {
-  // (a dialogue's lines play first: 10-20 s of real clips)
-  await expect(sheet(page)).toHaveAttribute('data-phase', 'answer', { timeout: 40_000 });
+  // (a dialogue's lines play first: 10-20 s of the page's clock)
+  await runToPhase(page, 'answer');
   const right = await kiki(page, (k) => k.right());
   const k = wrong ? (right + 1) % (await sheet(page).locator('[data-choice]').count()) : right;
   await sheet(page).locator(`[data-choice="${k}"]`).click();
@@ -42,7 +45,6 @@ async function answer(page: Page, wrong = false) {
 }
 
 test('solo: the lobby, eight questions answered, the reveal, the results and the review list', async ({ page }) => {
-  test.slow();
   await open(page);
   await play(page);
   // my own lobby at once (no one's invite waiting), on this phone alone: the hub; ひとこと クイズ's page from あそぶ
@@ -69,7 +71,7 @@ test('solo: the lobby, eight questions answered, the reveal, the results and the
   await expect(sheet(page)).toHaveAttribute('data-phase', 'countdown');
   // each question: the choices dimmed while the clip plays, one final tap in the answer window, the reveal
   for (let i = 0; i < 8; i++) {
-    await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 15_000 }).toBe(i);
+    await runToQuestion(page, i);
     // levels 1-3: the plain stage, never a scene card
     await expect(sheet(page).locator('[data-kiki-card]')).toHaveCount(0);
     await answer(page, i === 3);
@@ -83,7 +85,7 @@ test('solo: the lobby, eight questions answered, the reveal, the results and the
     if (i !== 3) await expect(sheet(page).locator('[data-kiki-bonus]')).toHaveText('一発！');
     // the reveal waits (no timer) till my つぎへ
     if (i === 0) {
-      await page.waitForTimeout(2500);
+      await page.clock.runFor(2500);
       await expect(sheet(page)).toHaveAttribute('data-phase', 'reveal');
     }
     await sheet(page).locator('[data-kiki-next]').click();
@@ -153,7 +155,6 @@ test('mid-game, Esc and the backdrop keep the sheet; ✕ asks 「やめますか
 });
 
 test('dialogues (gist, next): both speakers while it plays, the two-sided transcript at the reveal (a next’s answer as the next line), the review’s transcripts', async ({ page }) => {
-  test.slow();
   await open(page);
   await play(page);
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
@@ -163,7 +164,7 @@ test('dialogues (gist, next): both speakers while it plays, the two-sided transc
   await expect.poll(() => kiki(page, (k) => k.items())).toEqual(['d4-oat-latte', 'd4-train-cancelled']);
   const shots = process.env.KIKI_SHOTS ? '/tmp/kikimimi-shots/inc34' : null;
   for (const [i, lines, next] of [[0, 3, true], [1, 4, false]] as const) {
-    await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 40_000 }).toBe(i);
+    await runToQuestion(page, i);
     await expect(sheet(page).locator(`[data-kiki-q="${i}"]`)).toHaveAttribute('data-type', next ? 'next' : 'gist');
     // while it plays: both speakers standing in its scene (level 4's scene card, kikimimi-scenes.spec), no text
     await expect(sheet(page).locator('[data-kiki-card] [data-vill]')).toHaveCount(2);
@@ -249,7 +250,7 @@ async function rounds(a: Page, b: Page, miss: (who: 'A' | 'B', i: number) => boo
   for (let i = 0; i < 8; i++) {
     for (const [p, who] of [[a, 'A'], [b, 'B']] as const) {
       await p.bringToFront();
-      await expect.poll(() => kiki(p, (k) => k.view().i), { timeout: 20_000 }).toBe(i);
+      await runToQuestion(p, i);
       await answer(p, miss(who, i));
     }
     await expect(sheet(a)).toHaveAttribute('data-phase', 'reveal');
@@ -274,7 +275,6 @@ async function rounds(a: Page, b: Page, miss: (who: 'A' | 'B', i: number) => boo
 }
 
 test('two players, co-op (the default): A’s lobby invites B, they play together, the team’s tally on both phones and never who missed', async ({ browser }) => {
-  test.slow();
   const ctx = await browser.newContext();
   const [a, b] = await together(ctx);
   // A misses 3, B the odd ones: 3 is nobody's (7/8); both right on 0, 2, 4, 6 (そろって 4)
@@ -299,7 +299,6 @@ test('two players, co-op (the default): A’s lobby invites B, they play togethe
 });
 
 test('two players, たいせん: the host’s toggle reaches B, the reveal shows each one’s mark, the results rank them, the same on each phone', async ({ browser }) => {
-  test.slow();
   const ctx = await browser.newContext();
   const [a, b] = await together(ctx, true);
   await rounds(a, b, (who, i) => who === 'B' && i % 2 === 1, async (i) => {
