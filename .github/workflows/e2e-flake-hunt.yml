@@ -1,6 +1,6 @@
 # The flake hunt (docs/ops/testing.md): the whole logic tier in WebKit, every test run several times over, retries off.
 # Logic mode (E2E_RENDER=none), as the gate: what WebKit can tell us is its DOM, events and JS; the macOS VM's software
-# GL isn't the phones' Metal (docs/ops/test-strategy.md), and drawn, the logic specs time out on it (and the travel
+# GL isn't the phones' Metal (docs/ops/testing.md), and drawn, the logic specs time out on it (and the travel
 # map's stub specs draw a real map instead). 2 workers: the runner is a 3-core VM, and at 3 each test ran 3-6× its time.
 # Weekly (Monday 03:30 Tokyo) and on demand (Actions → e2e flake hunt → Run workflow, with how many runs each). It
 # gates no deploy: it goes red when any test failed even once, and its summary lists them, worst first, to fix at the

@@ -1,4 +1,4 @@
-// The e2e's logic mode (docs/ops/test-strategy.md "Logic mode", src/lib/ui-state/testMode.ts): with drawing off the 3D
+// The e2e's logic mode (docs/ops/testing.md "Logic mode", src/lib/ui-state/testMode.ts): with drawing off the 3D
 // island runs its game (its frames, the camera, the tap areas, the World's step) and makes no draw call; and the test
 // API that acts on the game by what it knows, not by pixels (e2e/island.ts): `tapThing` taps a model by its id where
 // the camera puts it, `settled` waits for the island at rest, `step` runs the page's clock (the engines' frames with it).

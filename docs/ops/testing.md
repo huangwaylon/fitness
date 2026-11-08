@@ -1,9 +1,46 @@
-# Testing: CI and stable e2e specs
+# Testing: the tiers, CI and stable e2e specs
+
+The single description of how the app is tested and what gates a deploy. The relay's own checks: [runbook §8](runbook.md#8-deploy-the-live-relay).
+
+## Why the tiers
+CI's Linux runners have no GPU: Chromium draws WebGL in software (SwiftShader), and one `renderer.render` takes
+hundreds of ms to seconds. The island's gameplay step runs inside the 3D engine's frame, so a drawn spec there tests
+SwiftShader's speed more than the game. So the gate runs the game without drawing (**logic mode**), and drawing is
+judged on the iOS Simulator and the phones (iPhone 15/16 Safari, Metal). GPU runners aren't worth it: GitHub's are
+paid, and its macOS VMs draw in software too.
+
+| Tier | What | Where |
+|---|---|---|
+| Unit | pure rules and simulations: spawns, seeds, schedules, paths, scoring, sync merges | vitest (`src/**/*.test.ts`, ~340 files), the `unit` job |
+| Logic-mode e2e | the real app in a browser, gameplay and DOM tap areas live, the 3D engines drawing nothing | Playwright: the gate (a selection) and the full logic tier after each deploy (all) |
+| Drawn smoke | real WebGL: it draws, the camera, a tap lands on the model (`@render`, `@smoke`: ~16 tests) | after each deploy, advisory; everything drawn nightly |
+
+- **A rule belongs in a unit test.** If an e2e asserts a rule ("four dig spots a day", "Celeste one night in ten"),
+  test the function that decides it (beach.ts, critters.ts, events.ts, meteor.ts, daySeed.ts) with a seed and a date;
+  the e2e checks only the wiring. Determinism makes this work: `?seed=`, `?date=`, the day's seeded RNG, no
+  `Math.random` in a rule.
+- **The game clock.** The island's life runs on time, not frames: every position is a function of the time, and the
+  World steps itself every 33 ms while anything moves when no drawn frame has (camera.svelte.ts `simTick`), so a slow
+  or seldom-drawn picture never slows the game.
+- **The test API.** Specs act and query by id through hooks, not pixels: `__world3d.where(id)`, `client`, `ground`,
+  `things`, `go`, `zoom`, `camStill`, `idle`, `stats`; `__world.put/go/mine`; `__villagers3.*`; `__tent.*`, wrapped by
+  e2e/island.ts (`is3d`, `w3`, `tapOn`, `tapThing`). A new interaction comes with its hook and a `data-*` on its DOM
+  node; a spec reaching for `elementFromPoint` or a fixed coordinate means a hook is missing.
+- **Two phones** are two tabs of one context, synced through `sync/live-local.ts` (a BroadcastChannel plays the
+  relay's room in-process): no network, deterministic, and in logic mode neither tab draws. Never two drawn 3D tabs in
+  one test. The real relay is checked on demand (`RELAY_E2E=1`, `e2e/sync-harness.spec.ts`).
+- **A lean gate, fixed forward.** Two people use the app and a bad deploy is fixed in minutes (or the last green run's
+  deploy re-run), so the gate is lean (push to live in ~4 min) and the heavier tiers run after the deploy. A red gate
+  or a red full logic tier is the next push's first job.
+- **Ownership.** Each spec's header names its area; its owner is whoever last changed that area's code. Fix a flake
+  at its cause (a missing hook, a wait on time, a tap where something wanders); never loosen an assertion.
+
+Open: the rule parts of holidays, celeste, finds, critters, bugs, weather and seasonal specs into vitest; visual
+snapshots (`toHaveScreenshot` at a fixed camera, date and seed, baselines made on CI's image) in the full tier; the
+layout specs drawn in the full tier.
 
 ## CI (`.github/workflows/pages.yml`)
 A push to `main` that touches `app/**` (docs-only and relay-only pushes don't run it; relay changes run *Relay checks*):
-
-The tiers and why: [test-strategy.md](test-strategy.md).
 
 | Job | What | Gates the deploy |
 |---|---|---|
@@ -64,8 +101,9 @@ After a deploy, never holding one back:
   frames are 16 ms. List them: `npx playwright test --list --grep @logic`.
 - **Logic mode** (`E2E_RENDER=none`; src/lib/ui-state/testMode.ts): the island's and the tent's 3D engines run every
   frame (the scene, cameras, gestures, the World's step, the villagers' poses, effects, the tap areas) but never call
-  `renderer.render`. `__world3d.stats().drawn` is false and `stats().calls` 0. Specs need no change; one that reads draw
-  calls or pixels is `@render`.
+  `renderer.render` or the shadow map: a frame costs ~1 ms. Set by `localStorage['e2e.render'] = 'none'` (the config does
+  it for `E2E_RENDER=none`) or `?render=none&demo`. `__world3d.stats().drawn` is false and `stats().calls` 0. Specs need
+  no change; one that reads draw calls or pixels is `@render`.
 - **WebKit, the users' browser** (Playwright's WebKit as an iPhone 15: the users' phones are an iPhone 15 and an iPhone 16
   on Safari, and Playwright's two profiles have the same viewport), runs in **the flake hunt**
   (`.github/workflows/e2e-flake-hunt.yml`) on **macOS** runners (Safari's own WebKit; Linux's draws the island at about
@@ -116,9 +154,7 @@ npm run e2e:ci-like -- e2e/world3d.spec.ts --repeat 5   # as CI runs it (below)
    gate, or a red full logic tier, is yours to fix first, before anything else.
 
 ## Hermetic
-Every e2e runs in a sealed world (e2e/fixtures.ts), so a run today and a run in a month see the same island. The
-demo's red hours of 2026-11-06 were the wall clock: demo.spec read the real day and hour, and the seeded day rained
-that morning.
+Every e2e runs in a sealed world (e2e/fixtures.ts), so a run today and a run in a month see the same island.
 
 - **Import Playwright from `./fixtures.ts`**, never `'@playwright/test'` (`import { expect, test, type Page } from
   './fixtures.ts'`): that's what brings the rest. The lint (`src/lib/e2e-hermetic.test.ts`, in vitest) checks.
@@ -162,8 +198,7 @@ that morning.
   (`ready3d`); a spec reading `__world3d` straight after `goto` waits on `is3d` first.
 - **The island after the HUD**: after a `goto` or `reload` wait with `islandUp` (e2e/island.ts), not the HUD alone. The
   3D island mounts up to 300 ms after the HUD shows (it waits for the ground's fields from their worker), and until
-  then every island target sits hidden at the scene's corner: a box read or a tap there missed (the full tier's ~20
-  red tests from 1a786b48 on).
+  then every island target sits hidden at the scene's corner: a box read or a tap there misses.
 - **Silent**: Chromium runs with `--mute-audio` and `--disable-audio-output` (the music, K.K. and the effects never
   sound on a dev's Mac, and the page's audio clock is a fake output's, as on CI's Linux: the Mac's own device stalled
   it, the decks frozen, kk-sync red locally); WebKit headless makes no sound.
@@ -197,7 +232,7 @@ it, not the next ten runs. Before pushing: `npm run e2e:ci-like -- --changed` (t
 committed or not, 5× each).
 
 ## Writing a stable spec
-Most red runs so far were the spec, not the app. Before pushing a new or changed spec, run it with
+Most red runs are the spec, not the app. Before pushing a new or changed spec, run it with
 `--repeat-each=10` (and the whole file with `--workers=8`: a loaded machine is what CI is).
 
 1. **Never tap where something can wander.** The villagers walk about, critters come and go (a flea off a villager,
@@ -298,7 +333,7 @@ default 5 runs, WebKit as an iPhone 15; Chromium as an iPhone 13, `THROTTLE=4` f
 by `node scripts/serve-build.ts <port>`: each run cold (no service worker), or warm with `WARM=1` (the service worker
 installed by a first load, then reloads), its first contentful paint, the island's first frame and loaded(), the main
 thread's gaps over its first 10 s, the launch's own clock (`boot.*`: world3d/boot.ts, the log's `perf.boot`), then the
-medians. The demo runs without its shader checks there (`checks=0`: docs/perf-plan.md §0). The phone's numbers come from
+medians. The demo runs without its shader checks there (`checks=0`: [perf.md](perf.md#measuring)). The phone's numbers come from
 the iOS Simulator (`npm run ios:check -- --boots 8 --url 'http://127.0.0.1:<port>/?demo&checks=0'`: warm launches'
 `perf.boot` and their medians) and the phones' own `perf.boot` (`npm run logs -- report`).
 
