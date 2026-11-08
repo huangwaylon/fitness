@@ -58,8 +58,8 @@ jobs:
           compression-level: 0
           retention-days: 1
 
-  # Red main never deploys: the type-check (`check` runs svelte-kit sync first), knip and the quarantine's owners in
-  # `checks`; the unit tests (golden fixtures included) in `unit`, beside it (one after the other, `checks` was the
+  # Red main never deploys: the type-check (`check` runs svelte-kit sync first), knip, the quarantine's owners and the
+  # docs' pointers in `checks`; the unit tests (golden fixtures included) in `unit`, beside it (one after the other, `checks` was the
   # last job of the gate in half the runs). Both with app/static/: Kit types asset() by its files, the tests read it.
   checks:
     runs-on: ubuntu-latest
@@ -80,6 +80,8 @@ jobs:
       - run: npm run knip
       # the e2e quarantine in the summary; red when a quarantined test has no owner (docs/ops/testing.md "Tags")
       - run: node scripts/e2e-quarantine.ts >> "$GITHUB_STEP_SUMMARY"
+      # the docs' links, anchors and paths, and the code's citations of them (docs/ops/testing.md "Before you push")
+      - run: node scripts/docs-check.ts
 
   unit:
     runs-on: ubuntu-latest
