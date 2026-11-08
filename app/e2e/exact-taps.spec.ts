@@ -28,7 +28,8 @@ type Pt = [number, number, number];
 async function open(page: Page, layout: 'default' | 'user', date = '2026-11-04') {
   if (layout === 'user') await page.addInitScript((ops) => localStorage.setItem('island-demo.layout', ops), JSON.stringify(USER_LAYOUT));
   await page.addInitScript(() => ((window as unknown as Hooks).__cues = []));
-  await page.goto(`?demo&visitor=none&critter=none&date=${date}T12:00`);
+  // (no balloon: one drifting over the sea took a tap meant for the water)
+  await page.goto(`?demo&visitor=none&critter=none&balloon=none&date=${date}T12:00`);
   expect(await is3d(page)).toBe(true);
   await quiet(page);
 }
