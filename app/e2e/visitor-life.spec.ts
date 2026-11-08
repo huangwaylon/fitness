@@ -6,7 +6,8 @@ import { campDoor, camTo, geo, is3d, islandUp, sawIt, stageCam, tapFigure, watch
 
 /** The campsite's door, where the visitors come from and go back to (world x, z). */
 
-test.use({ viewport: { width: 390, height: 844 } });
+// the visitors' strolls, arrivals and hellos are ambient life (e2e/fixtures.ts): on here
+test.use({ viewport: { width: 390, height: 844 }, ambient: 'on' });
 /** The visitor's 3D model's state (world3d/villagers.ts: villager3d's idle, walk, prone…), or null till it's in. */
 const model = (page: Page) => page.evaluate(() => (window as unknown as { __villagers3: { state(s: string): string | null } }).__villagers3.state('visitor'));
 const NIGHT = new Set(['wisp', 'celeste', 'jack']);

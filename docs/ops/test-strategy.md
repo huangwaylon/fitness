@@ -54,7 +54,7 @@ night glows keep the canvas alpha; and the tent opens and its floor tap walks. T
 draw" and "the projection is off". They're few, so they get one quiet runner and generous timeouts.
 
 **4. Visual snapshots (to add).** A handful of `toHaveScreenshot` tests, each one scene at a fixed camera
-(`__world3d.go(z, k)`), `?date=` and `?seed=`, `?critter=none&visitor=none`, ambience off (`?ambient=0`), and
+(`__world3d.go(z, k)`), `?date=` and `?seed=`, ambient life off (the e2e's default: testing.md "Hermetic"), and
 DPR 1 at a small viewport, with `maxDiffPixelRatio` ~1 %. Candidates: the island by day and at night, the tent with a
 few pieces, a villager's face. They run in the full tier only, against baselines made on the same CI image (software GL
 renders differently from a Mac's GPU: never compare across the two). They catch lighting, material and shader
@@ -69,8 +69,9 @@ regressions that no hook sees.
   the game. Playwright's clock also fakes `requestAnimationFrame` and `performance.now`, so `runFor` *is* the sim-step
   API: each faked frame runs the engine's frame. Drawn under SwiftShader, a minute of frames took minutes (which is why
   specs used `fastForward`). In logic mode, `runFor(60_000)` is quick and deterministic.
-- **Pin the ambience:** `?critter=none&visitor=none`, `?weather=`, `&rock=`, `?ambient=0`. Nothing should wander
-  into a tap.
+- **Pin the ambience:** ambient life is off in every e2e (critters, visitors, the balloon, idle beats, shooting
+  stars: testing.md "Hermetic"; `test.use({ ambient: 'on' })` to test it), then `?weather=`, `&rock=`. Nothing should
+  wander into a tap.
 
 ## The test API
 

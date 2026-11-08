@@ -322,19 +322,22 @@ test('a hermit crab crawls on the beach at night, clear of every control, and a 
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('hermit-crab'));
 });
 
-test('a balloon floats by on its own in the daytime (the first in 20–40 s), across the island under the HUD', async ({ page }) => {
-  await page.clock.install();
-  await open(page, '');
-  await expect(page.locator('.if-scene .balloon')).toHaveCount(0);
-  await page.clock.fastForward(61_000); // (its timers, not its every frame: the 3D island would draw each, in software on CI)
-  const balloon = page.locator('.if-scene .balloon');
-  await expect(balloon).toBeAttached();
-  // its tap area (on the balloon and its present) under the HUD and over the island's foot, whatever x it's at
-  await expect.poll(() => page.evaluate(() => {
-    const rib = document.querySelector('.ribbon-wrap')!.getBoundingClientRect(), b = document.querySelector('.if-scene .balloon')!.getBoundingClientRect();
-    const s = document.querySelector('.if-scene')!.getBoundingClientRect();
-    return b.top + b.height / 2 > rib.bottom + 10 && b.bottom < s.bottom && b.height >= 44;
-  }), { timeout: 5000 }).toBe(true);
+test.describe(() => {
+  test.use({ ambient: 'on' }); // (the balloon's own schedule: ambient life, e2e/fixtures.ts)
+  test('a balloon floats by on its own in the daytime (the first in 20–40 s), across the island under the HUD', async ({ page }) => {
+    await page.clock.install();
+    await open(page, '');
+    await expect(page.locator('.if-scene .balloon')).toHaveCount(0);
+    await page.clock.fastForward(61_000); // (its timers, not its every frame: the 3D island would draw each, in software on CI)
+    const balloon = page.locator('.if-scene .balloon');
+    await expect(balloon).toBeAttached();
+    // its tap area (on the balloon and its present) under the HUD and over the island's foot, whatever x it's at
+    await expect.poll(() => page.evaluate(() => {
+      const rib = document.querySelector('.ribbon-wrap')!.getBoundingClientRect(), b = document.querySelector('.if-scene .balloon')!.getBoundingClientRect();
+      const s = document.querySelector('.if-scene')!.getBoundingClientRect();
+      return b.top + b.height / 2 > rib.bottom + 10 && b.bottom < s.bottom && b.height >= 44;
+    }), { timeout: 5000 }).toBe(true);
+  });
 });
 
 test('fish shadows: one teardrop each, NH’s sizes reading apart (a clownfish tiny, a whale shark huge)', async ({ page }) => {

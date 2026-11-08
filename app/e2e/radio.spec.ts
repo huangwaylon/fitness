@@ -39,7 +39,7 @@ const acts = (page: Page) =>
 test('a morning: the tape deck is out, clear of every control; a tap and everyone stretches in sync', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
-  await page.goto('?demo&date=2026-11-01T07:00&critter=none'); // a Sunday morning: Daisy Mae is on the beach
+  await page.goto('?demo&date=2026-11-01T07:00&visitor=daisy-mae'); // a Sunday morning: Daisy Mae is on the beach
   await islandUp(page);
   const bells = await hudBells(page).getAttribute('aria-label');
   await expect(deck(page)).toBeVisible();
@@ -100,7 +100,7 @@ test.describe('the layout’s deck', () => {
   });
 
   test('its day (a morning): a tap on the deck and everyone stretches; done, a tap says so', async ({ page }) => {
-    await page.goto('?demo&date=2026-11-01T07:00&critter=none&visitor=none');
+    await page.goto('?demo&date=2026-11-01T07:00');
     await is3d(page);
     await expect(page.locator('[data-stretch="ready"]')).toBeAttached();
     // the model stands where its tap area is, NH's size beside the villagers: about half a villager's height (at DECOR_U, a
@@ -121,7 +121,7 @@ test.describe('the layout’s deck', () => {
   });
 
   test('not its day: the deck stands, no ♪, and a tap says when it plays', async ({ page }) => {
-    await page.goto('?demo&date=2026-11-02T09:00&critter=none&visitor=none');
+    await page.goto('?demo&date=2026-11-02T09:00');
     await is3d(page);
     await expect(page.locator('[data-stretch="idle"]')).toBeAttached();
     await expect(page.locator('[data-stretch] .hint')).toHaveCount(0);
@@ -158,7 +158,7 @@ async function allStretched(page: Page, n: number) {
 }
 
 test('the guest’s phone: a tap on the deck and its villager stretches with both members’', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-01T07:00&critter=none&visitor=none&as=G');
+  await page.goto('?demo&date=2026-11-01T07:00&as=G');
   await islandUp(page);
   await expect(deck(page)).toBeVisible();
   await expect(page.locator('[data-actor] .vil')).toHaveCount(3);
@@ -175,7 +175,7 @@ test('a member’s tap with the guest here: the guest’s villager stretches on 
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const open = async (more: string) => {
     const p = await ctx.newPage();
-    await p.goto(`?demo&date=2026-11-01T07:00&critter=none&visitor=none${more}`);
+    await p.goto(`?demo&date=2026-11-01T07:00${more}`);
     await islandUp(p);
     return p;
   };
