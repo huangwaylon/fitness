@@ -4,7 +4,7 @@
 // day; せってい's てんき switches the island between ほんもの and ゲーム, with the data's credit; the guest's phone only shows it.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
-import { fromMenu } from './hud.ts';
+import { fromMenu, weatherSection } from './hud.ts';
 
 const H = 3600_000;
 /** 2026-06-10 11:20 Tokyo: no event night, not the snowy season. */
@@ -75,7 +75,7 @@ test.describe('the real weather', () => {
     await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d?: { precip(): { kind: string | null } | null } }).__world3d?.precip())).toMatchObject({ kind: null });
     // ゲーム: the seeded day's (2026-06-10 is fine) sky; the grey eases out, then its layers are gone
     await fromMenu(page, 'settings');
-    await page.locator('dialog[open] [data-wx-mode="game"]').click();
+    await (await weatherSection(page)).locator('[data-wx-mode="game"]').click();
     await expect(scene(page)).toHaveAttribute('data-sky', 'clear');
     await expect(oc).toHaveAttribute('style', /opacity: 0;?$/);
     await page.clock.fastForward(61_000);
@@ -95,7 +95,7 @@ test.describe('the real weather', () => {
     await expect(scene(page)).toHaveAttribute('data-sky', seeded);
   });
 
-  test("せってい's てんき: ほんもの or ゲーム for the island, what it is now and the credit; the guest's phone changes it as a member's", async ({ page }) => {
+  test("設定 → 季節's 島の天気: ほんもの or ゲーム for the island, what it is now and the credit; the guest's phone changes it as a member's", async ({ page }) => {
     const seeded = await seededSky(page);
     const real = seeded === 'heavy' ? 'c' : 'h';
     const realSky = real === 'h' ? 'heavy' : 'clear';
@@ -103,8 +103,7 @@ test.describe('the real weather', () => {
     await open(page, '');
     await expect(scene(page)).toHaveAttribute('data-sky', realSky);
     await fromMenu(page, 'settings');
-    const sec = page.locator('dialog[open] [data-weather-section]');
-    await sec.scrollIntoViewIfNeeded();
+    const sec = await weatherSection(page);
     await expect(sec.locator('[data-wx-mode="real"]')).toHaveAttribute('aria-checked', 'true');
     await expect(sec.locator('[data-wx-now="real"]')).toHaveText(`現在: 東京 ${realSky === 'heavy' ? '大雨' : '晴れ'}`);
     await expect(sec.locator('[data-wx-credit]')).toHaveText('天気: Open-Meteo（気象庁モデル）');
@@ -119,16 +118,14 @@ test.describe('the real weather', () => {
     // the guest's phone: the island's mode, its to change as a member's (2026-11-06)
     await open(page, '&as=G');
     await fromMenu(page, 'settings');
-    const g = page.locator('dialog[open] [data-weather-section]');
-    await g.scrollIntoViewIfNeeded();
+    const g = await weatherSection(page);
     await expect(g.locator('[data-wx-mode="game"]')).toHaveAttribute('aria-checked', 'true');
     await g.locator('[data-wx-mode="real"]').click();
     await expect(g.locator('[data-wx-mode="real"]')).toHaveAttribute('aria-checked', 'true');
     // kept in the record: a member's phone has it
     await open(page, '');
     await fromMenu(page, 'settings');
-    const m = page.locator('dialog[open] [data-weather-section]');
-    await m.scrollIntoViewIfNeeded();
+    const m = await weatherSection(page);
     await expect(m.locator('[data-wx-mode="real"]')).toHaveAttribute('aria-checked', 'true');
   });
 });

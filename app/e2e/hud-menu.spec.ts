@@ -145,7 +145,14 @@ test('ずかん opens the ずかん (its kinds, a kind\'s page with ‹), せっ
   await fromMenu(page, 'settings');
   await folded(page);
   await expect(dlg.locator('.navbar')).toContainText('設定');
-  for (const id of ['#sec-look', '[data-decor-start]', '#sec-sound', '#sec-lang']) await expect(dlg.locator(id)).toBeAttached(); // (もようがえ one row since fd2966b1: its はじめる)
+  for (const id of ['#sec-look', '#sec-profile', '#sec-sound', '#sec-lang', '#sec-season']) await expect(dlg.locator(id)).toBeAttached();
+  // 言語: one dropdown, 日本語 by default; English turns the sheet English, and back
+  const lang = dlg.locator('select[data-pick="lang"]');
+  await expect(lang).toHaveValue('ja');
+  await lang.selectOption('en');
+  await expect(dlg.locator('.navbar')).toContainText('Settings');
+  await lang.selectOption('ja');
+  await expect(dlg.locator('.navbar')).toContainText('設定');
   await dlg.locator('.titlebar .close').click();
   await expect(dlg).toHaveCount(0);
 });

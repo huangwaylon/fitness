@@ -299,7 +299,7 @@
   "profile.needs": "性別・生年月日・体重とBMIがそろうと、基礎代謝とごはんの目安が出ます",
   "profile.private": "ふたりだけに見えます（お客さんには見えません）",
   "profile.private.guest": "自分だけに見えます",
-  "panel.weather": "天気",
+  "wx.title": "島の天気",
   "wx.real": "実際の天気",
   "wx.real.hint": "東京の今の天気",
   "wx.game": "ゲーム",

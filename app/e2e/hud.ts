@@ -39,3 +39,13 @@ export async function fromMenu(page: Page, which: keyof typeof PILL, how: 'click
 /** The panel (ごほうび), from the menu's ベル row. */
 export const openRewards = (page: Page) => fromMenu(page, 'bells');
 
+
+/** 設定's 島の天気 (in 季節's fold: unfolded here), with 設定 open. */
+export async function weatherSection(page: Page) {
+  const tg = page.locator('dialog[open] [data-preview-toggle]');
+  if ((await tg.getAttribute('aria-expanded')) !== 'true') await tg.click();
+  const sec = page.locator('dialog[open] [data-weather-section]');
+  await sec.scrollIntoViewIfNeeded();
+  await expect(sec.locator('[data-wx-mode="real"]')).toBeVisible();
+  return sec;
+}

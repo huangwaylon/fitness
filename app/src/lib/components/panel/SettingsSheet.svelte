@@ -14,7 +14,6 @@
   import SoundSection from './SoundSection.svelte';
   import LangSection from './LangSection.svelte';
   import SeasonSection from './SeasonSection.svelte';
-  import WeatherSection from './WeatherSection.svelte';
   import ProfileSection from './ProfileSection.svelte';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
@@ -104,7 +103,6 @@
       <section class="sec" aria-labelledby="sec-sound"><h2 id="sec-sound" class="sec-label">{t('panel.sound')}</h2><SoundSection /></section>
       <section class="sec" aria-labelledby="sec-lang"><h2 id="sec-lang" class="sec-label">{t('panel.lang')}</h2><LangSection /></section>
       <section class="sec" aria-labelledby="sec-season"><h2 id="sec-season" class="sec-label">{t('panel.season')}</h2><SeasonSection {view} /></section>
-      <section class="sec" aria-labelledby="sec-weather" data-weather-section><h2 id="sec-weather" class="sec-label">{t('panel.weather')}</h2><WeatherSection /></section>
       <div class="prow static decor">
         <span class="prl">{t('panel.decor')}</span>
         <button type="button" class="btn small paper" data-decor-start data-sfx="open" onclick={() => ((ui.decorating = true), (open = false))}>{t('panel.decorStart')}</button>

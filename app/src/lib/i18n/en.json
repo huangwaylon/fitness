@@ -299,7 +299,7 @@
   "profile.needs": "With sex, birthday, weight and BMI, it works out the BMR and Meals' suggested goals",
   "profile.private": "Only the two of you see this (never the guest)",
   "profile.private.guest": "Only you see this",
-  "panel.weather": "Weather",
+  "wx.title": "Island weather",
   "wx.real": "Real",
   "wx.real.hint": "Tokyo's weather right now",
   "wx.game": "Game",
