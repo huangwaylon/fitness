@@ -54,6 +54,19 @@ async function track(page: Page, ms = 8000): Promise<[number, number][]> {
   }, ms);
 }
 
+/** Watches for the tap's ring from now (it shows ~400 ms: a poll after a loaded runner's round trip can miss it):
+ *  how many came. */
+async function ringWatch(page: Page) {
+  await page.evaluate(() => {
+    const W = window as unknown as { __rings: number };
+    W.__rings = 0;
+    new MutationObserver((l) => {
+      for (const m of l) for (const n of m.addedNodes) if (n instanceof Element && (n.matches('.tap-ring') || n.querySelector('.tap-ring'))) W.__rings++;
+    }).observe(document.body, { childList: true, subtree: true });
+  });
+  return () => page.evaluate(() => (window as unknown as { __rings: number }).__rings);
+}
+
 test('a tap by the campsite runs my villager up the path, never through the water; a ring marks the spot', async ({ page }) => {
   await open(page);
   const g = await geo(page), door = campDoor(g);
@@ -62,8 +75,9 @@ test('a tap by the campsite runs my villager up the path, never through the wate
   await camTo(page, door[1] - 408, false);
   const to = await openNear(page, door[0], door[1] - 108, 45, true);
   const [x, y] = await call(page, (w, [x, z]) => w.at(x, z), to);
+  const rings = await ringWatch(page);
   await page.mouse.click(x, y);
-  await expect(page.locator('.tap-ring')).toHaveCount(1);
+  await expect.poll(rings, { message: 'a ring marks the spot' }).toBe(1);
   await shot(page, 'tap-ring');
   const path = await track(page);
   const end = path.at(-1)!;
@@ -109,10 +123,13 @@ test('the camera never moves for a walk: a run up the island leaves it where the
   await open(page);
   const [front] = await call(page, (w) => w.stops());
   expect(await call(page, (w) => w.cam())).toBe(front);
-  const { x, y } = await lawnTap(page, 230, 500);
+  const { at, x, y } = await lawnTap(page, 230, 500);
+  const rings = await ringWatch(page);
   await page.mouse.click(x, y);
-  await expect(page.locator('.tap-ring')).toHaveCount(1);
-  await page.waitForTimeout(2500);
+  await expect.poll(rings, { message: 'a walk: its ring' }).toBe(1);
+  // there (the run over, however long a loaded runner took), the camera still where the finger left it
+  const end = (await track(page)).at(-1)!;
+  expect(Math.hypot(end[0] - at[0], end[1] - at[1])).toBeLessThan(3);
   expect(await call(page, (w) => w.cam())).toBe(front);
 });
 
