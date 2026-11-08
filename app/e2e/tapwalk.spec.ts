@@ -3,7 +3,7 @@
 // day, the camera stays where the finger left it; a tap on the water acts in place (no walk): a ripple. The tent's door
 // is the one exception: my villager walks up to it, then goes in.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, campDoor, geo, lawnTap, openNear, tapOn, watchComings } from './island.ts';
+import { camTo, campDoor, geo, lawnTap, openNear, quiet, tapOn, watchComings } from './island.ts';
 import { mkdirSync } from 'node:fs';
 
 /** A tap on the tent where it is the tent's (a villager may stand in front of its door). */
@@ -29,7 +29,9 @@ const shot = async (page: Page, name: string) => {
 async function open(page: Page, q = '&date=2026-07-01T10:00', cam?: number) {
   await page.goto(`?demo&season=summer${q}`);
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
-  await page.waitForTimeout(600);
+  // the opening beats over (islandLife: the greeting 700 ms in takes my villager, a walk under way stopped at its next
+  // corner): a tap before then, on a quick machine, walked only part of the way
+  await quiet(page);
   if (cam !== undefined) await camTo(page, cam, false);
 }
 
