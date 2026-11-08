@@ -4,13 +4,13 @@
 // reveal's right chips, the basket, 解説 and the transcript, the results' errands, review and my row (gm call, the wrong
 // rows as the pick); then two phones in co-op over the demo's relay: each fills its own rows of one memo, the reveal
 // shows the team's, the results count the rounds done whole. The calls play their voiced length (A1), silent:
-// Playwright's Chromium is muted. Screenshots (KIKI_SHOTS=1) into /tmp/kikimimi-shots/call/, by day and at night.
+// Playwright's Chromium is muted; on the page's clock, stepped through (kikimimi-nav.ts runUntil). Screenshots (KIKI_SHOTS=1) into /tmp/kikimimi-shots/call/, by day and at night.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { atHub, kikiSheet as sheet } from './kikimimi-nav.ts';
+import { atHub, kikiSheet as sheet, runToQuestion, runToSee } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const SHOTS = '/tmp/kikimimi-shots/call';
@@ -35,7 +35,9 @@ async function snap(p: Page, name: string, fullPage = false) {
   await p.screenshot({ path: `${SHOTS}/${name}.png`, fullPage });
 }
 
+/** A phone on the context's clock (installed once, before its first page: both tabs step together). */
 async function phone(ctx: BrowserContext, q: string, as: 'A' | 'B' = 'A'): Promise<Page> {
+  if (!ctx.pages().length) await ctx.clock.install();
   const page = await ctx.newPage();
   await page.goto(`?demo&${q}${as === 'A' ? '' : `&as=${as}`}`);
   await islandUp(page);
@@ -57,7 +59,7 @@ async function callNow(p: Page): Promise<string> {
 }
 /** My rows filled with their right chips (`wrong`: my last row another chip). */
 async function fill(p: Page, wrong = false) {
-  await expect(sheet(p).locator('[data-kiki-memo] [data-own]').first()).toBeVisible({ timeout: 40_000 });
+  await runToSee(p, sheet(p).locator('[data-kiki-memo] [data-own]'));
   const right = RIGHT.get(await callNow(p))!;
   const rows = sheet(p).locator('[data-kiki-memo] [data-own]');
   const n = await rows.count();
@@ -71,22 +73,21 @@ async function fill(p: Page, wrong = false) {
   }
 }
 async function send(p: Page) {
-  const done = sheet(p).locator('[data-kiki-call-done]');
-  await expect(done).toHaveAttribute('aria-disabled', 'false', { timeout: 60_000 });
-  await done.click();
+  // (it waits for the call's end)
+  await runToSee(p, sheet(p).locator('[data-kiki-call-done][aria-disabled="false"]'));
+  await sheet(p).locator('[data-kiki-call-done]').click();
 }
 
 test('solo: the mode once listened, the call with its memo, a chip changed, メモできた; round 2 from memory; the reveal and the results; my row', async ({ context }) => {
-  test.setTimeout(300_000); // (the calls play their voiced length, 20-40 s each)
   const page = await phone(context, DAY);
   await toCall(page);
   await snap(page, 'mode');
   await sheet(page).locator('[data-kiki-start]').click();
   await expect.poll(() => kiki(page, (k) => k.view().gm)).toBe('call');
   // round 1: the call on the phone, the situation, the memo under it; a chip picked while it plays, then changed
-  await expect(sheet(page).locator('[data-kiki-frame="phone"]')).toBeVisible({ timeout: 15_000 });
+  await runToSee(page, sheet(page).locator('[data-kiki-frame="phone"]'));
   await expect(sheet(page).locator('[data-kiki-ctx]')).toBeVisible();
-  await expect(sheet(page).locator('[data-kiki-call-after]')).toBeVisible({ timeout: 15_000 });
+  await runToSee(page, sheet(page).locator('[data-kiki-call-after]'));
   const first = sheet(page).locator('[data-kiki-memo] [data-own]').first();
   await first.locator('[data-chip="0"]').click();
   await expect(first.locator('[data-chip="0"]')).toHaveAttribute('aria-pressed', 'true');
@@ -96,7 +97,7 @@ test('solo: the mode once listened, the call with its memo, a chip changed, メ�
   await snap(page, 'listen');
   // the send waits for the call's end
   await fill(page);
-  await expect(sheet(page).locator('[data-kiki-call-done]')).toBeVisible({ timeout: 60_000 });
+  await runToSee(page, sheet(page).locator('[data-kiki-call-done]'));
   await expect(sheet(page).locator('[data-kiki-call-ended="0"]')).toBeVisible();
   await snap(page, 'memo');
   await send(page);
@@ -108,7 +109,7 @@ test('solo: the mode once listened, the call with its memo, a chip changed, メ�
   await sheet(page).locator('[data-kiki-next]').click();
 
   // round 2: no call, the rest from memory; my last row wrong
-  await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 20_000 }).toBe(1);
+  await runToQuestion(page, 1);
   await expect(sheet(page).locator('[data-kiki-call-ended="1"]')).toBeVisible();
   await expect(sheet(page).locator('[data-kiki-frame="phone"]')).toHaveCount(0);
   await fill(page, true);
@@ -127,7 +128,7 @@ test('solo: the mode once listened, the call with its memo, a chip changed, メ�
 
   // the rest right
   for (let i = 2; i < 6; i++) {
-    await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 20_000 }).toBe(i);
+    await runToQuestion(page, i);
     await fill(page);
     await send(page);
     await expect(sheet(page)).toHaveAttribute('data-phase', 'reveal');
@@ -151,11 +152,10 @@ test('solo: the mode once listened, the call with its memo, a chip changed, メ�
 
 test('night: the phone and the memo in the night palette', async ({ context }) => {
   test.skip(!process.env.KIKI_SHOTS, 'screenshots only');
-  test.setTimeout(150_000);
   const page = await phone(context, NIGHT);
   await toCall(page);
   await sheet(page).locator('[data-kiki-start]').click();
-  await expect(sheet(page).locator('[data-kiki-call-after]')).toBeVisible({ timeout: 20_000 });
+  await runToSee(page, sheet(page).locator('[data-kiki-call-after]'));
   await fill(page);
   await snap(page, 'night-listen');
   await send(page);
@@ -170,7 +170,7 @@ test('night: the phone and the memo in the night palette', async ({ context }) =
 });
 
 test('co-op on two phones: each fills its own rows of one memo; the reveal shows the team’s; the results count the rounds done whole', async ({ browser }) => {
-  test.setTimeout(360_000);
+  test.setTimeout(60_000); // two phones, six rounds each: ~25 s here under load, the plays stepped through
   const ctx = await browser.newContext();
   const a = await phone(ctx, DAY, 'A'), b = await phone(ctx, DAY, 'B');
   await a.bringToFront();
@@ -191,12 +191,12 @@ test('co-op on two phones: each fills its own rows of one memo; the reveal shows
   for (let i = 0; i < 6; i++) {
     for (const [p, who] of [[a, 'A'], [b, 'B']] as const) {
       await p.bringToFront();
-      await expect.poll(() => kiki(p, (k) => k.view().i), { timeout: 20_000 }).toBe(i);
+      await runToQuestion(p, i);
       if (i === 0) {
         expect(await kiki(p, (k) => k.view().roles)).toEqual({ A: 0, B: 1 });
         // my rows filled by me, the partner's dashed (a round of one row: both's)
         const rows = sheet(p).locator('[data-kiki-memo] [data-row]');
-        await expect(rows.first()).toBeVisible({ timeout: 40_000 });
+        await runToSee(p, rows);
         const [all, own] = [await rows.count(), await sheet(p).locator('[data-kiki-memo] [data-own]').count()];
         expect(own).toBe(all === 1 ? 1 : Math.ceil(all / 2) - (who === 'B' && all % 2 ? 1 : 0));
         await expect(sheet(p).locator('[data-kiki-memo] .theirs')).toHaveCount(all - own);

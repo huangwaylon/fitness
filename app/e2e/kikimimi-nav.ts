@@ -1,6 +1,6 @@
 // ききみみ's hub and its pages, shared by the specs (docs/kikimimi-ux.md §5): the sheet, and the way from the hub to a
 // mode's page (あそぶ › the mode), みんなで, きろく.
-import { expect, type Page } from './fixtures.ts';
+import { expect, type Locator, type Page } from './fixtures.ts';
 
 export const kikiSheet = (p: Page) => p.locator('dialog[open] [data-kikimimi]');
 
@@ -45,6 +45,9 @@ async function runUntil(p: Page, done: () => Promise<boolean>, what = 'the state
   }
 }
 const STEP = 250;
+
+/** `l` visible, the clock stepped to it (a state's selector: `[data-kiki-call-done][aria-disabled="false"]`). */
+export const runToSee = (p: Page, l: Locator) => runUntil(p, () => l.first().isVisible(), String(l));
 
 /** The sheet's game at `phase`, the clock stepped to it. */
 export const runToPhase = (p: Page, phase: string) =>
