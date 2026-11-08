@@ -32,40 +32,66 @@ const nav = (page: Page, path: string) => page.evaluate((h) => {
 const framed = (page: Page, hook: string) =>
   page.waitForFunction((h) => ((window as unknown as Record<string, { stats(): { frames: number } } | undefined>)[h]?.stats()?.frames ?? 0) > 1, hook, { timeout: 30_000 });
 
-test('the island, its sheets, the music and the rooms: no CSP violation', async ({ page }) => {
-  test.setTimeout(120_000);
+/** The island up, the watch on: what it saw. */
+async function island(page: Page) {
   const seen = await watch(page);
-  const audio: string[] = [];
-  page.on('request', (r) => r.url().includes('/audio/') && audio.push(r.url()));
   await page.goto(Q);
   await expect.poll(() => is3d(page), { timeout: 30_000 }).toBe(true);
+  return seen;
+}
+/** Nothing seen, after a moment for a violation reported after the last load. */
+async function none(page: Page, seen: string[]) {
+  await page.waitForTimeout(1000); // hold: a violation reported after the last load still counts
+  expect(seen).toEqual([]);
+}
+
+// One test a surface (they shard apart, each well inside 30 s): the island and its music, the HUD's sheets, the rooms.
+test('the island and its music: no CSP violation', async ({ page }) => {
+  const audio: string[] = [];
+  page.on('request', (r) => r.url().includes('/audio/') && audio.push(r.url()));
+  const seen = await island(page);
   // the first tap unlocks the sound: the hour's music plays (from a blob: URL)
   const s = (await page.locator('.if-scene').boundingBox())!;
   await page.mouse.click(s.x + s.width / 2, s.y + 60);
   await expect.poll(() => audio.some((u) => u.includes('/audio/music/'))).toBe(true);
+  await none(page, seen);
+});
+
+test('the menu’s sheets (ベル, ずかん, りょこう, 設定): no CSP violation', async ({ page }) => {
+  const seen = await island(page);
   for (const which of ['bells', 'zukan', 'travel', 'settings'] as const) {
     await fromMenu(page, which);
     await page.keyboard.press('Escape');
     await expect(page.locator('dialog[open]')).toHaveCount(0);
   }
-  // 健康 and ごはん: one sheet from the dumbbell, each tab shown
+  await none(page, seen);
+});
+
+test('健康 and ごはん (one sheet from the dumbbell, each tab shown): no CSP violation', async ({ page }) => {
+  const seen = await island(page);
   for (const tab of ['health', 'food'] as const) {
     await openKenkou(page, tab);
     await expect(page.locator('dialog[open]')).toHaveCount(1);
     await page.keyboard.press('Escape');
     await expect(page.locator('dialog[open]')).toHaveCount(0);
   }
-  await nav(page, `shop${Q}`);
-  await expect(page.locator('[data-shop]')).toBeVisible();
-  await nav(page, `museum${Q}`);
-  await framed(page, '__museum');
-  await nav(page, `tent${Q}`);
-  await framed(page, '__tent');
-  await nav(page, `editor/${Q}`);
-  await page.waitForFunction(() => !!(window as unknown as { __editor?: unknown }).__editor, null, { timeout: 30_000 });
-  await page.waitForTimeout(1000);
-  expect(seen).toEqual([]);
+  await none(page, seen);
 });
+
+/** The rooms, each from the island as a door goes (the app's own navigation), up once it shows or draws. */
+const rooms: [string, string, (page: Page) => Promise<unknown>][] = [
+  ['the shop', 'shop', (page) => expect(page.locator('[data-shop]')).toBeVisible()],
+  ['the museum', 'museum', (page) => framed(page, '__museum')],
+  ['the tent', 'tent', (page) => framed(page, '__tent')],
+  ['the editor', 'editor/', (page) => page.waitForFunction(() => !!(window as unknown as { __editor?: unknown }).__editor, null, { timeout: 30_000 })]
+];
+for (const [name, path, up] of rooms)
+  test(`${name}: no CSP violation`, async ({ page }) => {
+    const seen = await island(page);
+    await nav(page, `${path}${Q}`);
+    await up(page);
+    await none(page, seen);
+  });
 
 // The trip map (docs/travel.md "Maps"): drawn (not the logic tier's stub), its worker (our own file), its fonts (the
 // app's woff2 slices, fetched and handed to the FontFace API), OpenFreeMap's TileJSON and tiles (the fixtures, at their
