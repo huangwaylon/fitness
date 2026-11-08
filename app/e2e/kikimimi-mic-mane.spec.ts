@@ -79,6 +79,8 @@ test('off: no 声に出す shelf while the mic is off', async ({ page }) => {
 
 for (const [when, q] of [['day', DAY], ['night', NIGHT]] as const) {
   test(`a solo game (${when}): listen, say it along, the two lines and a tip, again, after, skip; the end; minutes only`, async ({ page }) => {
+    // (the night's: its screenshots, the same game as the day's, as kikimimi-call's and -tachi's night tests)
+    test.skip(when === 'night' && !process.env.KIKI_SHOTS, 'screenshots only');
     await fakeMic(page, true);
     const posts: string[] = [];
     page.on('request', (r) => r.method() === 'POST' && posts.push(r.url()));
