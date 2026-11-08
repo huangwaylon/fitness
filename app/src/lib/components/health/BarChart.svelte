@@ -1,11 +1,11 @@
 <script lang="ts">
   // A daily series' chart, one person's (けんこう's activity, ごはん's kcal and nutrients): a bar per day (1週, 1か月) or
   // per week / month (the daily average of its days with a record) in their colour, solid when its goal was met the
-  // goal's way (at least, at most, near: model/health.ts seriesBuckets' `met`) and paler the fewer of its days did:
+  // goal's way (at least, at most, near: model/health.ts seriesBuckets' `met`) and paler the fewer of its days did (today's too: solid once met):
   // Apple Health's values as is, so a 66-step day is its short bar and a 0 a 1px sliver on the axis; today's bar is
   // outlined (still running); a day with no record gets a short faint hatched stub on the axis (plainly missing: not a
-  // gap that reads as zero, and not a column that reads as a value). The goal dashed (stepped where it changed) with its
-  // words over it (ChartFrame); `avg`, the period's daily average, a flat solid line; with room (1週) each bar carries
+  // gap that reads as zero, and not a column that reads as a value). The goal dashed (stepped where it changed; its
+  // words are the card's chip and legend, not in the plot: ChartFrame); `avg`, the period's daily average, a flat solid line; with room (1週) each bar carries
   // its value. `plain` (no goal): every bar solid. Hand-drawn SVG at the measured width, in ChartFrame.
   import type { LocalDate, Who } from '#lib/types.ts';
   import type { BucketValue, Range } from '#lib/model/health.ts';
@@ -59,12 +59,11 @@
   /** A no-record day's stub: this tall on the axis, far below any value worth reading. */
   const NONE_H = 7;
 
-  /** The goal per bucket (stepped where it changed); its words at the period's end goal's height. */
+  /** The goal per bucket (stepped where it changed); none at all: no line. */
   const goal = $derived.by(() => {
     if (goalText === null) return null;
     const ys = vals.map((b) => (b.goal === null ? null : y(b.goal)));
-    const end = ys.findLast((v) => v !== null);
-    return end === undefined ? null : { ys, y: end, text: goalText, off: null, tone: 'soft' as const };
+    return ys.every((v) => v === null) ? null : { ys, text: goalText, off: null, tone: 'soft' as const };
   });
 
   const missing = (i: number) => {
@@ -84,7 +83,7 @@
       {#if b.v !== null}
         {@const yt = Math.min(y(b.v), base - 1)}
         {@const r = Math.min(3, barW / 2, base - yt)}
-        <path class="bar p{p}" class:now={b.today} style:opacity={b.today || plain ? null : 0.34 + 0.66 * (b.met / Math.max(1, b.days))}
+        <path class="bar p{p}" class:now={b.today} style:--met={plain ? 1 : b.met / Math.max(1, b.days)}
           d="M{x} {base}V{yt + r}Q{x} {yt} {x + r} {yt}H{x + barW - r}Q{x + barW} {yt} {x + barW} {yt + r}V{base}Z" />
       {:else if missing(i)}
         <rect class="none" x={x + 0.5} y={base - NONE_H} width={Math.max(1, barW - 1)} height={NONE_H - 0.5} rx={Math.min(1.5, barW / 2)} fill="url(#hatch-{id})" />
@@ -110,9 +109,12 @@
 </ChartFrame>
 
 <style>
-  /* opacity: the share of its days that met the goal (a day: met = solid, not met = pale) */
-  .bar { stroke-width: 0; }
-  .bar.now { fill-opacity: .3; stroke-width: 1.5; stroke-dasharray: 3 2; }
+  /* the fill: the share of its days that met the goal (a day: met = solid, not met = pale; today's alike, met once its
+     value is: the dashed outline says it's still running), never under --bar-floor (night's higher: the navy card) */
+  .bar { stroke-width: 0; fill-opacity: calc(var(--bar-floor) + (1 - var(--bar-floor)) * var(--met)); }
+  .bar.now { stroke-width: 1.5; stroke-dasharray: 3 2; }
+  /* at night a pale bar keeps its full-colour edge too (its fill alone is ~1.6:1 on the navy card) */
+  :global(:root[data-tod='night']) .bar:not(.now) { stroke-width: 1; }
   .pA { fill: var(--person-a); stroke: var(--person-a); }
   .pB { fill: var(--person-b); stroke: var(--person-b); }
   .pG { fill: var(--c-lilac); stroke: var(--c-lilac); }

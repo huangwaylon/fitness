@@ -11,9 +11,9 @@
 
 <script lang="ts">
   // The frame every chart in けんこう and ごはん's グラフ is drawn in (BarChart, DotChart): the measured SVG, the
-  // horizontal grid with its numbers, the dates under it, the goal (its dashed line, stepped where it changed, and its
-  // words, 「目標 8,000歩 以上」, over its right end, by the newest bucket (today's, the shortest bar most days), or at the
-  // top or bottom edge with ↑/↓ when it is far off the axis), the page's
+  // horizontal grid with its numbers, the dates under it, the goal (its dashed line, stepped where it changed; its words
+  // are the card's chip and legend, never over the bars, but when it is far off the axis: 「目標 66.0 kg 前後 ↑」 at the
+  // top or bottom edge), the page's
   // slide and drag, the picked bucket's band and its callout (inside the plot's top, on the half away from it, so the
   // bucket stays in sight). A tap picks the bucket under it (again: closes) and scrolls the chart fully into view; a
   // horizontal drag turns the page (gestures.ts). The caller draws its marks (`plot`) and the callout's lines (`tip`).
@@ -35,9 +35,9 @@
     label: string;
     /** The y grid: each line's value, height and number. */
     ticks: readonly { v: number; y: number; text: string }[];
-    /** The goal: its height per bucket (stepped where it changed; null: none there, no line while `off`), its words,
-     *  the height they go at (the period's end goal's) or the edge it is far off past (`off`), and its colour. */
-    goal: { ys: readonly (number | null)[]; y: number; text: string; off: 'above' | 'below' | null; tone: 'soft' | 'yuzu' } | null;
+    /** The goal: its height per bucket (stepped where it changed; null: none there, no line while `off`), its words
+     *  (shown only while it is far off past an edge, `off`), and its colour. */
+    goal: { ys: readonly (number | null)[]; text: string; off: 'above' | 'below' | null; tone: 'soft' | 'yuzu' } | null;
     selected: number | null;
     onselect: (i: number | null) => void;
     onswipe: (dir: -1 | 1) => void;
@@ -93,8 +93,8 @@
   }
   const sel = $derived(selected !== null && selected >= 0 && selected < n ? selected : null);
   const tipLeftSide = $derived(sel !== null && geo.cx(sel) > pad.l + plotW / 2);
-  /** The goal's words: over its line, or at the edge it is off past (with ↑ / ↓), kept inside the plot. */
-  const goalY = $derived(goal === null ? 0 : goal.off === 'below' ? base - 5 : goal.off === 'above' ? pad.t + 8 : Math.max(pad.t + 8, goal.y - 5));
+  /** A goal far off the axis: its words at the edge it is off past (with ↑ / ↓), kept inside the plot. */
+  const goalY = $derived(goal?.off === 'below' ? base - 5 : pad.t + 8);
 </script>
 
 <div class="chart" bind:this={box} bind:clientWidth={() => w, (v) => v > 0 && (w = v)} style:height="{H}px" use:chartGestures={{ tap, swipe: onswipe, drag: (d) => (dx = d) }}>
@@ -118,8 +118,8 @@
           </g>
         {/key}
       </g>
-      {#if goal}
-        <text class="gtext" data-goal-line x={w - pad.r - 2} y={goalY} text-anchor="end">{goal.text}{goal.off === 'below' ? ' ↓' : goal.off === 'above' ? ' ↑' : ''}</text>
+      {#if goal?.off}
+        <text class="gtext" data-goal-line x={w - pad.r - 2} y={goalY} text-anchor="end">{goal.text}{goal.off === 'below' ? ' ↓' : ' ↑'}</text>
       {/if}
       {#each xl as l (l.i)}
         <text class="ax" x={Math.min(Math.max(geo.cx(l.i), pad.l + 14), w - pad.r - 14)} y={H - 6} text-anchor="middle">{l.text}</text>

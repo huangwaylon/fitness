@@ -303,19 +303,20 @@ Health data over time for the personal trainer, one person at a time, computed o
   目標 n/N日（%）, ベスト and 記録なし n日; the chart; a one-line key.
 - **No Health data yet** (a new couple, `?demo&health=none`): every card is still there with its goal chip (set from it),
   over one line, 「まだ記録がありません」: no numbers or chart.
-- **Chart** (`BarChart` in `ChartFrame`, SVG; the frame is every chart's: the grid, the dates, the goal line and its words, the
+- **Chart** (`BarChart` in `ChartFrame`, SVG; the frame is every chart's: the grid, the dates, the goal line, the
   slide and drag, the picked bucket's band and callout): a bar per day (1週, 1か月), per week (3か月: 13) or per calendar month (1年), each
   the bucket's daily average, in the person's colour (ウェイ blue `--person-a`, うめ orange `--person-b`); solid when
-  the goal was met the goal's way (at least / at most / near: [Goal directions](#goal-directions)), paler the fewer of its days did; today outlined; a finished bucket with no row gets a short hatched stub (記録なし).
-  The goal dashed (stepped when it changed) with its words over its right end, as the chip reads them (「目標 8,000歩 以上」); the axis always reaches it. On 1週 each bar carries its value. A tap shows one value; a
+  the goal was met the goal's way (at least / at most / near: [Goal directions](#goal-directions)), paler the fewer of its days did (night: a higher floor and a full-colour edge); today outlined dashed, solid once met; a finished bucket with no row gets a short hatched stub (記録なし).
+  The goal dashed (stepped when it changed), no words in the plot (they collided with the bars' values: the card's chip
+  and the legend's 「--- 目標」 say it); the axis always reaches it. On 1週 each bar carries its value. A tap shows one value; a
   horizontal drag turns the page (right = older); vertical drags scroll the panel.
 - **体重 · 体脂肪率 · BMI · 除脂肪体重** (`BodyCard`, `DotChart` in `ChartFrame`; one card for the four): each its own goal at the upper
   right (`goalWeight`, `goalBodyFat`, `goalBmi`, `goalLean`, each optional), 平均 (n回の記録; BMI's with its category by the
   person's standard, 「普通体重（アジア基準）」: under 18.5 低体重, then アジア 23 過体重 and 25 肥満 (JASSO, WHO's Asian
   cut-offs) or WHO 25 and 30; [Profile](#profile)), 期間の変化 ([Weight](#weight): the
   plain change in the card's unit, `−0.4%`, `+0.2`, `−0.3 kg`) and per week, the dot chart on an axis fitted to the values (at
-  least 2 kg or 2 points of body fat, 1 of BMI; 2–5 grid lines at a round step) with the goal dashed yuzu and its words
-  (「目標 66.0 kg 前後」), or at that edge with ↑/↓ when far off, and the goal month at that pace (only when the period ends today;
+  least 2 kg or 2 points of body fat, 1 of BMI; 2–5 grid lines at a round step) with the goal dashed yuzu (no words),
+  or its words at that edge with ↑/↓ when far off (「目標 66.0 kg 前後 ↑」), and the goal month at that pace (only when the period ends today;
   the goal's way: reached once under a ceiling, over a floor, or near a value). A day with no measurement has no dot; 記録なし when the
   period has none. Never earns, no good / bad colours on the dots.
 - <a id="goals-in-place"></a>**Goals in place** (`GoalEdit`, `health/goals.ts` GOAL_SPECS over the registry `contract/goals.ts`
@@ -542,7 +543,7 @@ the day at its top, no level (no search, query, row opened in place, amount or e
   average of its days with a meal), in the person's colour, solid when the goal was met its way (as けんこう's; every bar
   solid without a goal); today outlined and uncounted; a day with nothing logged is
   記録なし (the stub, never a 0). 1日の平均（n日分） and 期間の合計 over the finished days with a meal; 目標 n/N日 (with a goal) · 記録 n日 ·
-  記録なし m日; the goal at the upper right (GoalEdit) and dashed on the chart with its words, the average a flat solid line (「平均」 in
+  記録なし m日; the goal at the upper right (GoalEdit) and dashed on the chart, the average a flat solid line (「平均」 in
   the key). Then the same card for たんぱく質, 脂質, 炭水化物, 塩分, 食物繊維 and アルコール (grams, one decimal; foodSeries per
   nutrient from the same pass; salt's bars one decimal; a day whose entries none knows the fibre of is 記録なし on the
   fibre card, alcohol unknown counts as none), each with its catalogue icon (`art.ts` NUTRIENT_ART: the barbecue, the
