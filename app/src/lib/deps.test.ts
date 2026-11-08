@@ -8,15 +8,16 @@ import { dirname, join, relative, resolve } from 'node:path';
 const LIB = import.meta.dirname;
 const DOMAIN = ['types', 'contract', 'time', 'config', 'scoring', 'model'];
 /** Leaves that import nothing (their own allow-list is empty): any folder may import them. */
-const FREE = ['math', 'quiet'];
+const FREE = ['math', 'quiet', 'staticUrl'];
 
 const ALLOW: Record<string, string[]> = {
   types: [],
   random: [],
-  // the leaves (FREE): math.ts (clamp, smoothstep, the easing curves) and quiet.ts (a swallowed failure counted in
-  // IslandLog, the log plugging its counter in)
+  // the leaves (FREE): math.ts (clamp, smoothstep, the easing curves), quiet.ts (a swallowed failure counted in
+  // IslandLog, the log plugging its counter in) and staticUrl.ts (a static file's URL: $app/paths only)
   math: [],
   quiet: [],
+  staticUrl: [],
   // (random.ts imports nothing: the shop's stock is seeded by it, the relay bundling it along)
   contract: ['types', 'random'],
   time: ['types', 'contract'],

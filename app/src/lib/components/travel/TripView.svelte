@@ -12,7 +12,6 @@
   // now), else the first. The other pages have the title bar from the top, the page's name after the place. `tab` is
   // the sheet's (kept while the app runs). Its private values not in yet (offline), a line says so.
   import { onMount, tick } from 'svelte';
-  import { asset } from '$app/paths';
   import type { Trip } from '#lib/travel/types.ts';
   import { privateKeys } from '#lib/travel/tokens.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
@@ -33,6 +32,7 @@
   import { phaseOf, rowNow, todayDay } from './when.ts';
   import { packing } from './packing.svelte.ts';
   import { dayColor } from './map/types.ts';
+  import { staticUrl } from '#lib/staticUrl.ts';
 
   interface Props {
     trip: Trip;
@@ -106,7 +106,7 @@
   <div class="scroll" class:map={tab === 'map'} bind:this={scroller} onscroll={scrolled}>
     {#if tab === 'days'}
       <div class="hero" bind:this={hero}>
-        <PhotoBand src={asset(trip.hero.src as Parameters<typeof asset>[0])} alt={pick(trip.hero.alt, i18n.locale)} height={150} edge>
+        <PhotoBand src={staticUrl(trip.hero.src)} alt={pick(trip.hero.alt, i18n.locale)} height={150} edge>
           <span class="ht">{title}{#if phase.k === 'now'}<span class="sticker" data-trip-status="now">{t('travel.day', { n: phase.day })}</span>{/if}</span>
           <span class="hs">{listSpan(trip.start, trip.end, i18n.locale)} · <Txt l={trip.eyebrow} {note} /></span>
         </PhotoBand>

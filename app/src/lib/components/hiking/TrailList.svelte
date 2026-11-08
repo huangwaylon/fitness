@@ -2,7 +2,6 @@
   // トレイル's list: NavBar on the plain band (the body's --surface), one ChipRow under it (the difficulties with their counts, then the two
   // sorts, each off again on a second tap), and a dense photo card per trail (its level's sticker, name and area on a
   // PhotoBand, 距離 · 標高差 · 時間 in a StatStrip under it). A card opens the trail.
-  import { asset } from '$app/paths';
   import NavBar from '../ui/NavBar.svelte';
   import ChipRow from '../ui/ChipRow.svelte';
   import Chip from '../ui/Chip.svelte';
@@ -15,6 +14,7 @@
   import { pick } from '../travel/text.ts';
   import { i18n } from '#lib/i18n/index.ts';
   import { trailStats } from './stats.ts';
+  import { staticUrl } from '#lib/staticUrl.ts';
 
   let { hidden = false, onopen, onclose }: { hidden?: boolean; onopen: (t: Trail) => void; onclose: () => void } = $props();
 
@@ -29,7 +29,7 @@
   const count = (f: (typeof FILTERS)[number]) => (f === 'all' ? TRAILS.length : TRAILS.filter((t) => t.diff === f).length);
   /** The level's sticker: leaf, yuzu, coral. */
   const TONE: Record<Diff, string> = { moderate: 'leaf', hard: '', veryhard: 'hot' };
-  const photo = (slug: string) => asset(`/hiking/photos/${slug}.webp` as Parameters<typeof asset>[0]);
+  const photo = (slug: string) => staticUrl(`/hiking/photos/${slug}.webp`);
 </script>
 
 <section class="screen" {hidden} data-trail-list>

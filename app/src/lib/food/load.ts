@@ -4,16 +4,16 @@
 // lazy ones (products, 3 MB) after, in `db.more`. A dataset that fails to load is left out (its items unsearchable)
 // till a retry at its next chance brings it (`chance`: the caller's, ui-state/retry.ts nextChance; none: no retry);
 // only a missing index.json fails the load. Each is indexed a slice per task (db.ts SLICE), never a long frame.
-import { asset } from '$app/paths';
 import { addDataset, emptyDb, withJan, type FoodDb } from './db.ts';
 import type { Dataset, FoodIndex, Verify } from './types.ts';
 import type { Parsed } from './dataset.worker.ts';
 import { quiet, swallowed } from '#lib/quiet.ts';
+import { staticUrl } from '#lib/staticUrl.ts';
 
 /** A failed dataset's retries (at its next chances) before it's left out for the session. */
 const RETRIES = 4;
 
-const url = (file: string, v?: string): string => `${asset(`food/${file}` as Parameters<typeof asset>[0])}${v ? `?v=${encodeURIComponent(v)}` : ''}`;
+const url = (file: string, v?: string): string => `${staticUrl(`food/${file}`)}${v ? `?v=${encodeURIComponent(v)}` : ''}`;
 
 async function json<T>(href: string, init?: RequestInit): Promise<T> {
   const res = await fetch(href, init);

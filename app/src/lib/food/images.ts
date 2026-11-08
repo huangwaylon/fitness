@@ -3,8 +3,8 @@
 // a 128 px one in a thumbnail sheet (rows and lists, 40-64 px) and a 384 px one in a detail sheet (the amount's
 // picture). Sheet names carry their content hash, so a URL never changes (cached on first use, service worker).
 // A food without one (products, custom foods, not drawn yet) gets none: FoodThumb shows its category's tile.
-import { asset } from '$app/paths';
 import { quiet } from '#lib/quiet.ts';
+import { staticUrl } from '#lib/staticUrl.ts';
 
 /** A cell of a sheet: FoodThumb's `img` (its url, the cell's x / y and size in the sheet's pixels). */
 export interface FoodImg {
@@ -30,7 +30,7 @@ export interface FoodImageIndex {
 /** Up to this displayed size, the thumbnail cell (≥ 2× of it); above, the detail cell. */
 const THUMB_MAX = 64;
 
-const fileUrl = (f: string): string => asset(`food-img/${f}` as Parameters<typeof asset>[0]);
+const fileUrl = (f: string): string => staticUrl(`food-img/${f}`);
 
 let loading: Promise<FoodImageIndex | null> | null = null;
 

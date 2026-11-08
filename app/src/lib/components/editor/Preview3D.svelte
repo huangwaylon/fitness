@@ -11,7 +11,6 @@
   // changed; a frame is drawn only when something changed (an edit, the camera, a model in, a wobble), never on a
   // timer.
   import { onMount } from 'svelte';
-  import { asset } from '$app/paths';
   import type { Layout } from '#lib/layout/model.ts';
   import { diffLayouts } from '#lib/layout/diff.ts';
   import { lookOf, type Look } from '../world3d/groundLook.ts';
@@ -20,6 +19,7 @@
   import type { EditStage } from '../layoutEdit/IslandEdit.svelte';
   import type { Material, Mesh, Object3D } from 'three';
   import { clamp } from '#lib/math.ts';
+  import { staticUrl } from '#lib/staticUrl.ts';
 
   let { layout, mode = 'orbit', look, camZ = $bindable(300), stage = $bindable() }: {
     layout: Layout;
@@ -173,7 +173,7 @@
                 scene.add(o);
                 kick();
                 return () => (scene.remove(o), kick());
-              }, asset('room/villagers3d/' as Parameters<typeof asset>[0]), () => kick());
+              }, staticUrl('room/villagers3d/'), () => kick());
               vil.lift(0.32);
               kick();
             }, (e) => console.warn('preview: K.K.', e));

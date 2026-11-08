@@ -5,7 +5,6 @@
   // StatStrip, the drive, route and pass as key · value rows, and the trail: トレイル's own opens in the app,
   // hiking/open.svelte.ts openTrail, else its link out), the hour-by-hour timeline (Rows: the rows gone by quiet, the one that is now lit
   // in the day's colour), the free day's lists, the note, the photo, the links out.
-  import { asset } from '$app/paths';
   import type { Day } from '#lib/travel/types.ts';
   import { hikeSlugOf } from '#lib/hiking/trails.ts';
   import { openTrail } from '../hiking/open.svelte.ts';
@@ -21,6 +20,7 @@
   import { fmtM, pick } from './text.ts';
   import { fmtKm } from './units.ts';
   import { dayParts } from './dates.ts';
+  import { staticUrl } from '#lib/staticUrl.ts';
 
   interface Props {
     day: Day;
@@ -79,7 +79,7 @@
       <div class="hike" data-hike={day.hike.level}>
         {#if day.photo}
           <div class="hp">
-            <PhotoBand src={asset(day.photo.src as Parameters<typeof asset>[0])} alt={pick(day.photo.alt, i18n.locale)} height={150}>
+            <PhotoBand src={staticUrl(day.photo.src)} alt={pick(day.photo.alt, i18n.locale)} height={150}>
               <span class="hk"><b class="sticker {LEVEL[day.hike.level]}">{t(`travel.hike.${day.hike.level}`)}</b><span><Txt l={day.hike.where} {note} /></span></span>
             </PhotoBand>
           </div>

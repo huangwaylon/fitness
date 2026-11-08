@@ -4,17 +4,17 @@
 // times out. The probe drives it a device at a time; whisperRecogniser (stt.ts's whisper) loads WebGPU, else the WASM
 // runtime, transcribes a take or scores はつおん's candidates. The e2e's stub: with `localStorage['e2e.stt']` (a list
 // of what it "hears") nothing is fetched and no worker runs: every take hears the list's first line.
-import { asset } from '$app/paths';
 import sttWorker from './whisper.worker.ts?worker&url';
 import { STT_CACHE } from '../../../service-worker/caches.ts';
 import { STT_ID, ensureStt, sttCached } from '../models.ts';
 import { stubScript } from '../pick.ts';
 import type { Device, WIn, WOut } from './whisper.worker.ts';
 import type { Capture, Recogniser } from '../stt.ts';
+import { staticUrl } from '#lib/staticUrl.ts';
 
 export type { Device };
 
-const root = (): string => new URL(asset('stt/' as Parameters<typeof asset>[0]), location.href).href;
+const root = (): string => new URL(staticUrl('stt/'), location.href).href;
 
 /** The tests' stub: what every take hears (its script's first line), else null. */
 function stub(): string | null {

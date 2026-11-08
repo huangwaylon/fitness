@@ -5,13 +5,13 @@
   // hops it, each edit is dressed on in place. Until it's built (or if it can't be) the flat stand-in figure stands
   // there. A villager is its official render (the 3D player kept, hidden, for the portraits). A tap hops either.
   import { onMount, untrack } from 'svelte';
-  import { asset } from '$app/paths';
   import type { Who } from '#lib/types.ts';
   import { playerOf, type Look } from '#lib/contract/look.ts';
   import Villager from '../characters/Villager.svelte';
   import PlayerFigure from './PlayerFigure.svelte';
   import { portraitOf, usePainter } from './portraits.svelte.ts';
   import type { Preview3D } from './preview3d.ts';
+  import { staticUrl } from '#lib/staticUrl.ts';
 
   let { who, look, onturn }: { who: Who; look: Look; onturn?: () => void } = $props();
   let hop = $state(0);
@@ -22,7 +22,7 @@
   onMount(() => {
     let gone = false;
     void import('./preview3d.ts')
-      .then(({ createPreview }) => createPreview(canvas, untrack(() => player), asset('room/player/' as Parameters<typeof asset>[0]), who === 'B' ? 2 : 1))
+      .then(({ createPreview }) => createPreview(canvas, untrack(() => player), staticUrl('room/player/'), who === 'B' ? 2 : 1))
       .then((p) => {
         if (gone) return p.dispose();
         p3 = p;
