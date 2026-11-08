@@ -425,8 +425,40 @@ const popupStill = (page: Page) =>
     };
     frame();
   }));
-/** NH's shake of the left goal tree: three quick taps on its canopy, each where the popup leaves it open. */
-export async function shakeTree(page: Page) {
+/** The popup's box (or ''), read once. */
+const popupBox = (page: Page) =>
+  page.evaluate(() => {
+    const b = document.querySelector('.detail')?.getBoundingClientRect();
+    return b ? `${b.left},${b.top},${b.width},${b.height}` : '';
+  });
+/** NH's shake of the left goal tree: three quick taps on its canopy, each where the popup leaves it open. `onClock`:
+ *  on the page's own clock (installed by the caller; left running after): paused for the taps, so they come 120 ms
+ *  of the page's time apart (and the popup's placing a few frames of it), however long a round trip takes (the full
+ *  tier's software-GL frames spread the wall-clock taps past SHAKE_WINDOW_MS). */
+export async function shakeTree(page: Page, o: { onClock?: boolean } = {}) {
+  if (o.onClock) {
+    // (a moment ahead of the page's now, which runs on during the round trip: again further ahead if it got there)
+    for (let ahead = 250; ; ahead *= 2) {
+      const at = await page.evaluate((ms) => Date.now() + ms, ahead);
+      if (await page.clock.pauseAt(at).then(() => true, (e: Error) => (/to the past/.test(e.message) && ahead < 8000 ? false : Promise.reject(e)))) break;
+    }
+    for (let i = 0; i < 3; i++) {
+      if (i) {
+        await page.clock.runFor(120);
+        // the popup at rest (it's placed again as its rows come in): unmoved over a frame or so, at most 5 tries
+        for (let k = 0, was = await popupBox(page); k < 5; k++) {
+          await page.clock.runFor(50);
+          const now = await popupBox(page);
+          if (now === was) break;
+          was = now;
+        }
+      }
+      const c = await canopyAt(page);
+      await page.mouse.click(c.x, c.y);
+    }
+    await page.clock.resume();
+    return;
+  }
   for (let i = 0; i < 3; i++) {
     await popupStill(page);
     const c = await canopyAt(page);
