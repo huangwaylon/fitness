@@ -5,7 +5,7 @@
 // away and the float stays out till a tap reels it in. Where the 3D island draws the shadow and the float is where their
 // tap areas are (the DOM's nodes, placed through the same camera): a tap on what's drawn is a tap on it.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, castIn, geo, toTheWater } from './island.ts';
+import { camTo, castIn, geo, pauseNow, toTheWater } from './island.ts';
 import { markShown, overHead, type Mark } from './biteMark.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -220,10 +220,17 @@ test('3D fishing: the rod stays in the hand, its tip where the line starts, at e
     return t && { d: [t[0] - l.x, t[1], t[2] + l.z], unbent: v.unbent('mine') };
   });
   const camZ = await page.evaluate(() => (window as unknown as { __world3d: G }).__world3d.view().camZ);
+  // each zoom read on the page's clock, paused: the camera stepped to rest a frame at a time, so the pose's breathing
+  // moves on only those frames between reads (not however long a loaded runner's round trips took)
+  await pauseNow(page);
+  const still = () => page.evaluate(() => (window as unknown as { __world3d: G }).__world3d.camStill());
   let first: number[] | null = null;
   for (const k of [1, 2, 3.2, 1]) {
     await page.evaluate(([z, k]) => (window as unknown as { __world3d: G }).__world3d.go(z, k), [camZ, k]);
-    await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: G }).__world3d.camStill()), { timeout: 5000 }).toBe(true);
+    for (let i = 0; !(await still()); i++) {
+      expect(i, 'the camera still within 3 s of the page’s time').toBeLessThan(90);
+      await page.clock.runFor(33);
+    }
     const t = (await tipNow())!;
     expect(t.unbent).toEqual([]);
     first ??= t.d;
@@ -237,6 +244,8 @@ test('3D fishing: the rod stays in the hand, its tip where the line starts, at e
 for (const [water, q] of [['sea', '&critter=fish&date=2026-11-04T12:00'], ['river', '&critter=river&date=2026-11-04T21:00']] as const)
 test(`3D fishing as a human player in the ${water}: facing, rod and line in one line, the tip steady`, async ({ page }) => {
   test.setTimeout(60_000);
+  // (the page's clock ours, running till the tip's reads: pauseNow)
+  await page.clock.install({ time: new Date(`${q.match(/date=([\d-]+T[\d:]+)/)![1]}:00+09:00`) });
   // (A's いつもの, the player: the villager look the others seed taken back off)
   await page.addInitScript(() => {
     const e = JSON.parse(localStorage.getItem('island-demo.events') ?? 'null') as { events: { id: string }[] } | null;
@@ -264,10 +273,17 @@ test(`3D fishing as a human player in the ${water}: facing, rod and line in one 
     return t && [t[0] - l.x, t[1], t[2] + l.z];
   });
   const camZ = await page.evaluate(() => (window as unknown as { __world3d: G }).__world3d.view().camZ);
+  // each zoom read on the page's clock, paused: the camera stepped to rest a frame at a time, so the pose's breathing
+  // moves on only those frames between reads (not however long a loaded runner's round trips took)
+  await pauseNow(page);
+  const still = () => page.evaluate(() => (window as unknown as { __world3d: G }).__world3d.camStill());
   let first: number[] | null = null;
   for (const k of [1, 2, 3.2, 1]) {
     await page.evaluate(([z, k]) => (window as unknown as { __world3d: G }).__world3d.go(z, k), [camZ, k]);
-    await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: G }).__world3d.camStill()), { timeout: 5000 }).toBe(true);
+    for (let i = 0; !(await still()); i++) {
+      expect(i, 'the camera still within 3 s of the page’s time').toBeLessThan(90);
+      await page.clock.runFor(33);
+    }
     const t = (await tipNow())!;
     first ??= t;
     expect(Math.hypot(t[0] - first[0], t[1] - first[1], t[2] - first[2])).toBeLessThan(8);
