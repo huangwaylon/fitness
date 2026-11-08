@@ -40,9 +40,8 @@ test('a shooting star crosses the sky, never the HUD; a tap meanwhile is a wish,
   await open(page, '&date=2026-11-04T21:00&shower');
   const streak = page.locator('[data-fx="shoot"]');
   await expect(streak.first()).toBeAttached({ timeout: 10_000 }); // a meteor shower's night: one every 3–8 s
-  // its path (sampled as it flies): in the sky, off the HUD: the leaf, the bowl and the health button
+  // its path (sampled as it flies): in the sky, off the HUD: the leaf and the health button
   const rib = (await hudMenu(page).boundingBox())!, jar = (await page.locator('.hud-health').first().boundingBox())!;
-  const pot = (await page.locator('.hud-food').boundingBox())!;
   // the fixed sky ends at the camera's horizon (the scene's data-horizon)
   const horizon = await page.locator('.if-scene').evaluate((sc) => sc.getBoundingClientRect().top + Number((sc as HTMLElement).dataset.horizon));
   for (let i = 0; i < 6; i++) {
@@ -53,7 +52,6 @@ test('a shooting star crosses the sky, never the HUD; a tap meanwhile is a wish,
     if (head) {
       expect(overlap(head, rib), 'over the leaf').toBe(false);
       expect(overlap(head, jar), 'over the health button').toBe(false);
-      expect(overlap(head, pot), 'over the bowl').toBe(false);
       expect(head.y).toBeLessThan(horizon);
     }
     await page.waitForTimeout(120);
@@ -101,9 +99,8 @@ for (const vp of [{ width: 375, height: 667 }, { width: 390, height: 844 }, { wi
     const bursts = page.locator('[data-firework]');
     await expect(bursts.first()).toBeAttached({ timeout: 6000 });
     const rib = (await hudMenu(page).boundingBox())!, jar = (await page.locator('.hud-health').first().boundingBox())!;
-    const pot = (await page.locator('.hud-food').boundingBox())!;
     const sky = (await page.locator('.if-scene .fireworks').boundingBox())!;
-    // each burst's whole circle (its sparks' reach) stays in the sky, off the HUD: the leaf, the bowl, the health button
+    // each burst's whole circle (its sparks' reach) stays in the sky, off the HUD: the leaf, the health button
     for (let i = 0; i < 4; i++) {
       for (const b of await bursts.evaluateAll((els) => els.map((el) => {
         const r = el.getBoundingClientRect(), rad = Number(getComputedStyle(el).getPropertyValue('--rad'));
@@ -111,7 +108,6 @@ for (const vp of [{ width: 375, height: 667 }, { width: 390, height: 844 }, { wi
       }))) {
         expect(overlap(b, rib)).toBe(false);
         expect(overlap(b, jar)).toBe(false);
-        expect(overlap(b, pot)).toBe(false);
         expect(b.y).toBeGreaterThanOrEqual(sky.y - 1);
         expect(b.y + b.height).toBeLessThanOrEqual(sky.y + sky.height + 1);
       }

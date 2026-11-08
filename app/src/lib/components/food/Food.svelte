@@ -6,8 +6,8 @@
   // entry → its amount at once (from its snapshot; the catalog's portions swapped in when they come) → ほぞん / けす
   // (けす with とりけす in its banner; a いつもの's entry: the day leaves the repeat only then, detachDay, so ‹ changes
   // nothing); the kcal goal at the summary's upper right (GoalEdit, in place); a meal's 🔁 → いつもの (its repeat, or a new one from the day's entries). Those push a
-  // level (FoodSheet's title bar: its ‹; back where it was scrolled, the focus on what opened it, as けんこう's).
-  // Anyone else's day is read-only. データの出典 at the foot. Whose day sits in the title bar (`lead`, FoodSheet's
+  // level (HealthSheet's title bar: its ‹; back where it was scrolled, the focus on what opened it, as けんこう's).
+  // Anyone else's day is read-only. データの出典 at the foot. Whose day sits in the title bar (`lead`, HealthSheet's
   // NavBar; kept for the session as けんこう's); under it the tabs (TABS, けんこう's group switch): きろく (the day,
   // on each opening) and グラフ (FoodChart: the kcal over a period, its range row with けんこう's period dropdown beside
   // きょう, and its Move card; switching whose keeps the tab, the period and the range). A meal's search offers everyone's
@@ -17,7 +17,7 @@
   // Several foods a trip: a new entry logged from a meal's search (its amount's ついか, a row's own ＋, a recipe's or a
   // custom food's) comes back to that search, listed at its top (each with ✕), its field focused; おわり ends the trip.
   // クイック (the search's ⚡, or a kcal typed): kcal and what else is known as one entry (FoodCustom `quick`), no food saved.
-  // Kept mounted between openings (FoodSheet, Sheet's `keep`): `open` false (closed) resets what an opening resets (reset()).
+  // Kept mounted between openings (HealthSheet's ごはん tab, Sheet's `keep`): `open` false (closed, or 健康's tab shown) resets what an opening resets (reset()).
   import '#lib/i18n/food.ts'; // the meal log's strings, loaded with it
   import '#lib/i18n/kenkou.ts'; // けんこう's: the period dropdown
   import { flushSync, tick, untrack, type Snippet } from 'svelte';

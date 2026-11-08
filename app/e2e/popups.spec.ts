@@ -1,6 +1,6 @@
 // Every discovery popup (docs/design.md "Critters", "Beach finds", "Balloon", "Shooting stars", "Visitors: life"): the
 // catch plate (a fish, its first-find page, a shell, a present), the wish's caption and Gulliver's sleep talk keep at
-// least 12px from the screen's sides and foot and never sit over the HUD (the leaf, the bowl, the health button, the sync chip,
+// least 12px from the screen's sides and foot and never sit over the HUD (the leaf, the health button, the sync chip,
 // the say button). The catch plates stack at the bottom centre, the newest at the bottom, and go on their own.
 import { expect, test, type Page } from './fixtures.ts';
 import { castIn, islandUp, quiet, reelOnBite } from './island.ts';

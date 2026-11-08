@@ -180,7 +180,9 @@ async function measures() {
   sheets.health1y = { idle: await quiet(), scroll: await scrollSheet('dialog[open] [data-health-sheet]') };
   await run(`document.querySelector('dialog[open]').close();`);
   await sleep(1500);
-  await run(`document.querySelector('.hud-food').click();`);
+  await run(`document.querySelector('.hud-health').click();`);
+  await waitFor('dialog[open] [data-kenkou-tab=food]');
+  await run(`document.querySelector('dialog[open] [data-kenkou-tab=food]').click();`);
   await waitFor('dialog[open] [data-food-summary]');
   sheets.foodLog = { idle: await quiet(), scroll: await scrollSheet('dialog[open] [data-food-sheet]') };
   await shot('food');

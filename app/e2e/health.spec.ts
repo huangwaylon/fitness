@@ -295,7 +295,7 @@ test('the dumbbell opens it at 1週, every time; whose data is kept for the sess
   const before = js.length;
   await bell.click();
   await expect(sheet(page).locator('.health .mc')).toHaveCount(4);
-  await expect(sheet(page).locator('.tabs')).toHaveCount(0); // a popup of its own, not a panel tab
+  await expect(sheet(page).locator('[data-kenkou-tab]')).toHaveText(['健康', 'ごはん']); // a popup of its own: 健康 and ごはん's tabs
   await expect(sheet(page).locator('h2')).toHaveText('健康');
   expect(js.length).toBeGreaterThan(before); // its own chunk
   await expect(whoSel(page)).toHaveValue('A');

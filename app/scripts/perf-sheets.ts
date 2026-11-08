@@ -13,7 +13,8 @@ const [port = '4694', runs = '3', eng = 'webkit'] = process.argv.slice(2);
 const Q = process.env.Q ?? '?demo&date=2026-11-04T12:00';
 const ALL: [string, string | null, string][] = [
   ['health', null, '.hud-health'],
-  ['food', null, '.hud-food'],
+  // ごはん: the dumbbell, then its tab (the sheet opens on the tab shown last: ONLY=food alone for its own numbers)
+  ['food', '.hud-health', 'dialog[open] [data-kenkou-tab=food]'],
   ['travel', '[data-hud-menu]', '[data-hud-travel]'],
   ['wedding', '[data-hud-menu]', '[data-hud-wedding]'],
   ['hiking', '[data-hud-menu]', '[data-hud-hiking]'],
