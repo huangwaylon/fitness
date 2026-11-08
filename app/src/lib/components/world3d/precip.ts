@@ -1,6 +1,5 @@
-// The rain and the snow in 3D (docs/design.md "Weather"; the user: "instead of just a 2D texture on the screen,
-// actually make it more like a subtle, beautiful 3D splash, drop, falling effect. Not overly done, subtle. Similar to
-// the original game"). NH's:
+// The rain and the snow in 3D (docs/design.md "Weather"): subtle drops, splashes and flakes in the world, not a
+// texture on the screen. NH's:
 //   rain     thin, faint streaks falling at a slight slant through the world, near ones and far ones (parallax as the
 //            camera moves), denser and quicker in a downpour; small soft rings where drops land on flat ground and on
 //            the water, sparse;

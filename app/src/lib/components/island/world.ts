@@ -376,7 +376,7 @@ export function surfaceAt(x: number, z: number): Surface {
   return 'grass';
 }
 
-// ---- the island's layout (the 3D island on the long layout: docs/island-layout.md "What the 3D integration must change" 7)
+// ---- the island's layout (the 3D island on the long layout: docs/island-layout.md "How the 3D island reads it")
 
 /** Everything above that the layout gives instead (island/layoutWorld.ts worldOf): the values, and the tests that read
  *  the layout's tiles rather than the shapes. */

@@ -1,4 +1,4 @@
-// The bulletin board's face in 3D (docs/board.md "To the 3D lead"): a plane over NH's cork, in the board model's own
+// The bulletin board's face in 3D (docs/board.md "The 3D hooks"): a plane over NH's cork, in the board model's own
 // units (its origin the model's), with the face's canvas (face.ts) as its texture; handed to `world.three.attach`
 // ('board', mesh), which places, turns, scales and bends it with the board. Loaded only on the 3D island.
 import { Box3, CanvasTexture, Mesh, MeshLambertMaterial, PlaneGeometry, SRGBColorSpace } from 'three';

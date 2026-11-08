@@ -3,7 +3,7 @@
 The three travel guides (Okinawa, Seattle, New Zealand), ported from `~/Documents/other/travel-plans` into one area,
 「りょこう」. The UI is [design.md §Trips](design.md#trips); this file is the data, the relay's part and the map.
 
-## Decisions (the user, 2026-11-06)
+## Decisions
 
 - The guides are dense reading cards (design.md §Trips bends the screen rules for them); the UI is polished, not a port.
 - The packing list is shared on the relay; ticks are **per person**; the guest views, ticks and adds, and edits or
@@ -13,16 +13,15 @@ The three travel guides (Okinawa, Seattle, New Zealand), ported from `~/Document
 - Maps: MapLibre GL JS on OpenFreeMap's public vector tiles in our own NookPhone style (no self-hosting for now;
   Protomaps on R2 rejected: decisions.md "The trip map"). No terrain shading. Offline: see "Offline" below.
 - A "you are here" dot; **the position never leaves the phone** (never logged, sent or kept).
-- Past trips download nothing ahead of time (no photo or tile prefetch); what was seen is kept (2026-11-07: "Offline").
+- Nothing downloads ahead of time unless asked (「オフライン用に保存」); what was seen is kept ("Offline").
 - A km / mi switch per device. No ベル / economy tie-in.
 
-## Past trips (the user, 2026-11-07)
+## Past trips
 
 Every trip is drawn by the unified kit (`TripView`; design.md §Trips): Okinawa's campsites and candidate layers and
 Seattle's hikes are pages and cards of it. A trip that's over is **read-only**, one rule for all (`when.ts`
 `readOnly`: its phase is past): its packing list is frozen as everyone left it (`packing.frozen`: the live list's
-fold of the record's rows, who packed what shown, no Tick or 編集, nothing sent; the user, 2026-11-07: "freeze final
-list"), nothing else on it changes. Okinawa and Seattle are over (no relay rows: their seed); NZ will be after its
+fold of the record's rows, who packed what shown, no Tick or 編集, nothing sent), nothing else on it changes. Okinawa and Seattle are over (no relay rows: their seed); NZ will be after its
 flight home.
 
 ## Content
@@ -113,18 +112,18 @@ is the paper with a small picture icon (`ui/photoFallback.ts`, on every `<img>` 
 
 ## Offline
 
-(2026-11-07, phase A: docs/backend.md "Service worker" › Offline.) After one visit online the trips read offline: the
+(docs/backend.md "Service worker" › Offline.) After one visit online the trips read offline: the
 text, 持ち物 (ticks queue till back), each trip's cover and hero (precached, ~0.26 MB with the trails' tracks), every
 photo already seen (`island-photos-v1`). The map draws offline once it has drawn on the phone: MapLibre is kept in the
 shell, and the tiles it drew (`island-tiles-v1`, 60 MB, least recently used out; OpenFreeMap's tiles fetched by the
 page, `map/tiles.ts`, as WebKit's service worker doesn't see MapLibre's worker's fetches) with the TileJSON
 (`island-map-meta-v1`). Where no tile was kept: the route with 「地図はオフライン — ルートのみ」. Nothing is prefetched.
 
-Phase B (the user, 2026-11-07): every trip with a map (Okinawa, NZ: past ones too, read-only otherwise) has
+Every trip with a map (Okinawa, NZ: past ones too, read-only otherwise) has
 「オフライン用に保存」 over its map (design.md "Offline maps"); nothing downloads by itself. The plan
 (`lib/offline/plan.ts planTrip`): z5–9 over the trip's `bbox`, z10–12 within 3 km of its legs and places, z13–14 within
-1 km of its places. As built: **NZ 438 tiles, 20.4 MB** (measured; the brief's 16.8 was an earlier estimate: Auckland's
-z14 tiles are ~145 KB), **Okinawa 310 tiles, 7.6 MB**; both well inside OpenFreeMap's ≤ 3,000 tiles and ≤ 50 MB an area.
+1 km of its places. Sizes: **NZ 438 tiles, 20.4 MB** (Auckland's z14 tiles are ~145 KB), **Okinawa 310 tiles,
+7.6 MB**; both well inside OpenFreeMap's ≤ 3,000 tiles and ≤ 50 MB an area.
 Offline with it saved, the map says 「保存した範囲のみ」.
 
 ## Open
@@ -141,7 +140,7 @@ Offline with it saved, the map says 「保存した範囲のみ」.
 
 ## Trip facts (from TRIPS.md)
 
-Copied from the old repo's `TRIPS.md` (2026-11-06): the facts the markup can't show, what was verified, and the
+From the old repo's `TRIPS.md`: the facts the markup can't show, what was verified, and the
 decisions that would otherwise get undone by accident. They bind edits to the trip modules too. Private values are
 named by their `{p:}` keys.
 
@@ -204,17 +203,18 @@ island's centroid).
   Kin), and Daisekirinzan was renamed **ASMUI** in Dec 2024 and charges ¥2,500.
 - **The campsites** are the **Evertrail directory**'s (https://directory.evertrailokinawa.com/, a React SPA over
   Airtable; its `Hot spot` / `Dining` records sourced itinerary stops): the 26 drivable main-island sites, ordered by
-  road time, then its 9 ferry-only outer-island sites (Tokashiki, Zamami, Izena ×4, Iheya ×3; added 2026-11-08 for the
+  road time, then its 9 ferry-only outer-island sites (Tokashiki, Zamami, Izena ×4, Iheya ×3, kept for the
   record). A ferry-only site has no drive time, no map pin (the map's box and its offline tiles stay the main island)
   and no photo (Evertrail's own, not copied: its row shows a tent); its fields are the directory's only. Their kana
   names where the kanji is unconfirmed (アケチハラ, マテラ, スガハマ). Azama (night 2) is no longer listed in the
-  directory (checked 2026-11-08); its entry stays.
+  directory; its entry stays.
 
 ### Seattle 2026 (Jul 2–19, en only)
 
 - Restored in the old repo from its last state before it was rebuilt around Okinawa: kept so the trip is not lost, not
   because it is being planned (it is in the past).
-- Hike data from WTA and AllTrails; the trail maps link out to `huangwaylon.github.io/hiking-trails/#/trail/<slug>` (the old `/gpx` site moved; a later hiking port makes them in-app).
+- Hike data from WTA and AllTrails; a hike card opens its trail in トレイル (`hikeSlugOf`, [hiking.md](hiking.md#entry)),
+  else links out to the old [hiking-trails site](https://huangwaylon.github.io/hiking-trails/).
 - Only the itinerary and the packing list: no map, no campsites. English-only by design; only the chrome follows the
   language.
 

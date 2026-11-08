@@ -455,7 +455,7 @@ const NO_MODEL: [string, string][] = [
   ['finds/shovel, finds/watering-can', 'approximate: NH’s wooden shovel and watering can (the plain ones’ textures aren’t in the files)']
 ];
 
-/** The inventory's tables, between the doc's markers: per kind, each key → model → scale, anchor, footprint, hit, KB. */
+/** The inventory's summary, between the doc's markers: per kind its keys, models, KB and loading; the art with no model. */
 export function writeDoc(file: string, assets: string) {
   const A = JSON.parse(readFileSync(assets, 'utf8')) as { kb: Record<string, number>; models: Record<string, Meta>; keys: Record<string, { m: string; cat: Cat; s: number; anchor: string; foot?: number[]; hit: number; lit?: 1; winter?: string; lazy?: string; standIn?: 1; yaw?: number }> };
   const byCat = new Map<Cat, [string, (typeof A.keys)[string]][]>();
@@ -466,15 +466,6 @@ export function writeDoc(file: string, assets: string) {
     '| kind | keys | models | KB | loads |', '| --- | --- | --- | --- | --- |',
     ...[...byCat].map(([c, ks]) => `| ${c} | ${ks.length} | ${new Set(ks.map(([, k]) => k.m)).size} | ${A.kb[c] ?? 0} | ${ks[0][1].lazy ? `lazily (${ks[0][1].lazy})` : 'with the island'} |`), ''
   ];
-  for (const [c, ks] of byCat) {
-    lines.push(`### ${c}`, '', '| key | model | scale | anchor | foot | hit | KB | notes |', '| --- | --- | --- | --- | --- | --- | --- | --- |');
-    for (const [key, k] of ks) {
-      const m = A.models[k.m];
-      const notes = [k.lit && 'lit', k.winter && `winter: ${k.winter}`, k.yaw && `yaw ${k.yaw}°`, k.standIn && 'stand-in'].filter(Boolean).join(', ');
-      lines.push(`| ${key} | ${k.m} | ${k.s} | ${k.anchor} | ${k.foot?.join('×') ?? ''} | ${k.hit} | ${m.kb} | ${notes} |`);
-    }
-    lines.push('');
-  }
   lines.push('### No model of its own', '', '| keys | status |', '| --- | --- |', ...NO_MODEL.map(([k, why]) => `| ${k} | ${why} |`));
   const doc = readFileSync(file, 'utf8');
   const [a, b] = ['<!-- assets:start -->', '<!-- assets:end -->'];

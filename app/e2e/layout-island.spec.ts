@@ -1,4 +1,4 @@
-// The island on its editable layout (docs/island-layout.md "What the 3D integration must change"; island/site.svelte.ts):
+// The island on its editable layout (docs/island-layout.md "How the 3D island reads it"; island/site.svelte.ts):
 // the gameplay reads the long layout: the doors, the homes, the walk, the waters.
 import { expect, test, type Page } from './fixtures.ts';
 import { geo, is3d, openNear, quiet, reelOnBite, settled, tapOn } from './island';

@@ -1,4 +1,4 @@
-// world.ts's island from the layout (docs/island-layout.md "What the 3D integration must change" 7), pure: every
+// world.ts's island from the layout (docs/island-layout.md "How the 3D island reads it"), pure: every
 // position, spot, seat, water and box the island's gameplay reads (the walk's names, the critters' waters, the
 // fishing, the finds, the visitors, the doors, the decor's spots, the scenery's tap areas), derived from a Layout so a
 // moved pond or tent carries everything with it. world.ts setWorld(worldOf(layout)) swaps them in.

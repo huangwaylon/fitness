@@ -478,7 +478,7 @@ def dish_entries(b, sources):
 
 ADULT_REFS = ('dishes', 'eatout', 'kurume', 'mext')
 SERVING_LABEL = re.compile(r'人前|皿|杯|食|盛')   # MEXT portions like '1個' are pieces, not servings
-DEFAULT_ADULT_RATIO = 1.3   # docs/data.md §2.6: adult/school portion overall 1.2-1.4
+DEFAULT_ADULT_RATIO = 1.3   # adult/school portion overall 1.2-1.4
 STAPLE_ADULT_RATIO = 1.2    # 主食 without its own measured ratio (the city-wide one is driven by small mains)
 
 

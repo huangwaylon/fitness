@@ -2,9 +2,8 @@
 // tiles from the far end down to the sea, a fall or a pond) as a centreline of straights and circular arcs, the drawn
 // water a band of one breadth round it; fields.ts takes its signed distance as the fresh water's where the stem runs (so
 // the banks, the bed, the bank's sand and grass in the bake and the water's edge all follow it), its tangent as the flow
-// and its length as the streaks' way along (mesh.ts). The user (2026-11-03): "for the straight parts, keep it straight
-// … if I have a straight line down, then go 45 degree down and left, then straight left, I want the 45 degree down to
-// be a quarter circle curve". So:
+// and its length as the streaks' way along (mesh.ts). Straights stay straight, and a 45° staircase between a straight
+// down and a straight left is a quarter circle:
 // - a straight is a run of MIN_RUN+ tile steps one way (and the run at either end): drawn exactly on its tiles' middles;
 // - between two straights, the tiles that turn (a staircase, a jog's step, or none: a plain L) are a turn: a line
 //   through the staircase's middle, and each corner where the lines meet is filleted with a circular arc tangent to
