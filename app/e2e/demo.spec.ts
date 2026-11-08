@@ -650,7 +650,8 @@ test('navigation: every sheet and level has a visible ✕ (top-right) or ‹ (to
 
 test('サウンド: all off by default; toggles persist on this phone; ミュージック: the opening, then the hour', async ({ page }) => {
   const errors: string[] = [];
-  page.on('pageerror', (e) => errors.push(String(e)));
+  // (WebKit reports a fetch the reload cut off, caught by the app, as a page error: "Fetch API cannot load … due to access control checks")
+  page.on('pageerror', (e) => /Fetch API cannot load .* due to access control checks/.test(String(e)) || errors.push(String(e)));
   const audio: string[] = [];
   page.on('request', (r) => r.url().includes('/audio/') && audio.push(new URL(r.url()).pathname));
   await page.goto('?demo');

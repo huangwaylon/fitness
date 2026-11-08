@@ -141,12 +141,12 @@ test("the orbit view's turn and zoom redraw the frame, not the shadow map (its s
   const s0 = await pv(page, (p) => p.shadowFrames());
   const box = (await page.locator('[data-preview] canvas').boundingBox())!;
   const [cx, cy] = [box.x + box.width / 2, box.y + box.height / 2];
-  // a turn (a left drag) and a zoom (the wheel)
+  // a turn (a left drag) and a zoom (the wheel: an event of the page's own, as mobile WebKit has no mouse wheel)
   await page.mouse.move(cx, cy);
   await page.mouse.down();
   for (let i = 1; i <= 6; i++) await page.mouse.move(cx + i * 15, cy);
   await page.mouse.up();
-  await page.mouse.wheel(0, -200);
+  await page.locator('[data-preview] canvas').dispatchEvent('wheel', { deltaY: -200, clientX: cx, clientY: cy, bubbles: true, cancelable: true });
   await expect.poll(() => pv(page, (p) => p.frames())).toBeGreaterThan(was + 2);
   expect(await pv(page, (p) => p.shadowFrames())).toBe(s0);
 });
