@@ -40,10 +40,12 @@ export const LOG_EVENTS = {
   "app.show": { src: 'c', f: { awayS: 'n', route: LOG_ROUTES } },
   "app.reload": { src: 'c', f: { why: ['update', 'chunk', 'stale', 'other'] } },
   "perf.frames": { src: 'c', f: { p50: 'n', p95: 'n', fps: 'n', long: 'n', drawFps: 'n', hz: 'n', mode: ['3d', 'none'], when: ['ready', 'show'] } },
-  // a sheet's opening (ui-state/sheetTiming.ts), ms from the tap: its chunk in and the dialog shown (`chunk`), the last
-  // change inside it (`content`), its open animation's end (`anim`); the longest frame in that time (`long`) and those
-  // over 33 ms (`slow`); its first opening this load, or a kept one shown again (`kept`). Every first, a share of the rest
-  "perf.sheet": { src: 'c', f: { sheet: LOG_SHEETS, first: 'b', kept: 'b', chunk: 'n', content: 'n', anim: 'n', long: 'n', slow: 'n' } },
+  // a sheet's opening (ui-state/sheetTiming.ts), ms from the tap: its chunk in and the dialog shown (`chunk`), its content
+  // ready (`content`: the last change inside it before 300 ms of none once the opening is done), its open animation's end
+  // (`anim`, -1: none); a change after that quiet, the last within 3 s (`late`, -1: none), and the node it changed (`what`:
+  // its tag and class); the longest frame till the content was ready (`long`) and those over 33 ms (`slow`); its first
+  // opening this load, or a kept one shown again (`kept`). Every first, a share of the rest
+  "perf.sheet": { src: 'c', f: { sheet: LOG_SHEETS, first: 'b', kept: 'b', chunk: 'n', content: 'n', anim: 'n', late: 'n', what: 't', long: 'n', slow: 'n' } },
   // the island's launch, once a load (world3d/boot.ts BootReport: ms since the navigation's start, frame lengths in ms)
   "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n' } },
   "js.error": { src: 'c', f: { kind: ['error', 'rejection'], msg: 'msg', stack: 'stack', src: 't', n: 'n', leaving: 'b', route: LOG_ROUTES } },
