@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  BEACH, BEACH_GAP, BOTTLE_STAY, DIG_SPOTS, FOSSILS, FOSSIL_SETS, FRAGMENTS, MAX_SHELLS, NOTES, SHELLS, bottleAt, digSpots,
+  BEACH, BEACH_GAP, BOTTLE_STAY, DIGS_A_DAY, DIG_SPOTS, FOSSILS, FOSSIL_SETS, FRAGMENTS, MAX_SHELLS, NOTES, SHELLS, bottleAt, digSpots,
   fragmentsOn, shellOdds, shellsAt, zodiacOf
 } from './beach.ts';
 import { addDays } from '#lib/time/dates.ts';
@@ -76,17 +76,21 @@ describe('fossils', () => {
     for (let d = 0; d < 2000; d++) for (const s of digSpots(addDays('2026-01-01', d), new Set())) dug.add(s.fossil);
     expect(dug.size).toBeGreaterThan(65);
   });
-  it('2–4 dig spots at a time on distinct lawn spots; a dug one gives way to the next', () => {
+  it('four dig spots a day on distinct lawn spots; a dug one stays gone, nothing turns up after it', () => {
     for (let d = 1; d <= 20; d++) {
       const date = `2026-05-${String(d).padStart(2, '0')}`;
       const s = digSpots(date, new Set());
-      expect(s.length).toBeGreaterThanOrEqual(2);
-      expect(s.length).toBeLessThanOrEqual(4);
-      expect(new Set(s.map((x) => `${x.x},${x.y}`)).size).toBe(s.length);
+      expect(s.map((x) => x.uid)).toEqual(['f0', 'f1', 'f2', 'f3']);
+      expect(DIGS_A_DAY).toBe(4);
+      expect(new Set(s.map((x) => `${x.x},${x.y}`)).size).toBe(4);
       for (const x of s) expect(DIG_SPOTS.some(([sx, sy]) => sx === x.x && sy === x.y)).toBe(true);
-      const next = digSpots(date, new Set([s[0].uid]));
-      expect(next.map((x) => x.uid)).not.toContain(s[0].uid);
-      expect(next).toHaveLength(s.length);
+      // dug one by one: the rest stay where they were, no replacement, none left after four
+      const dug = new Set<string>();
+      for (const x of s) {
+        dug.add(x.uid);
+        expect(digSpots(date, dug)).toEqual(s.filter((y) => !dug.has(y.uid)));
+      }
+      expect(digSpots(date, dug)).toEqual([]);
     }
   });
 });

@@ -1,7 +1,7 @@
 <script lang="ts">
   // Beach finds (docs/design.md "Beach finds"), after NH: seashells keep washing up on the front beach (one every 1–2
-  // minutes, the newest three on the sand), fossil dig spots (NH's ✕ crack) on the lawn, 2–4 at a time, a new one a
-  // little while after you dig; a message bottle at the water's edge every 8–14 minutes for six; a star fragment on the
+  // minutes, the newest three on the sand), four fossil dig spots (NH's ✕ crack) on the lawn a day, a dug one gone
+  // till tomorrow (beach.ts DIGS_A_DAY); a message bottle at the water's edge every 8–14 minutes for six; a star fragment on the
   // beach the morning after each wish on a shooting star (stars.ts: one per wish, from 5:00, at most 8); in mushroom
   // season, mushrooms beside the trees (mushrooms.ts). A tap picks a shell, a fragment or the bottle up (it lifts off the
   // sand) or digs a fossil up (a shovel, a puff of earth, a hole), with NH's caption on the catch plate. The first find
@@ -15,8 +15,8 @@
   // either; so is a tree's present (treeGifts.ts: two oaks or cedars a day hold one, put by TreeShakes when shaken),
   // which falls out of the canopy and opens into that tree's furniture of the day. Wishes are both people's: a fragment for each. Everything lies in the world (world units: beach.ts, mushrooms.ts),
   // each item a world node at its foot (a dig spot and a hole flat on the ground). SceneTaps mounts this inside the stage
-  // and asks it about each tap after the critters (`tap`, client px). Cheap: static images and one-shot animations; no
-  // timers but the dig's short wait, the clock is the scene's minute tick.
+  // and asks it about each tap after the critters (`tap`, client px). Cheap: static images and one-shot animations; the
+  // clock is the scene's minute tick.
   //   ?find=bottle | washed | fragment | mushroom | rare-mushroom (dev or ?demo): a bottle, a bottle washing in 1.5 s
   //   after the island opens, this morning's fragments, a mushroom now, or the next dig spot's rare mushroom (the e2e's
   //   hooks); ?seed= varies the island's seed.
@@ -78,9 +78,6 @@
 
   /** Bumped when this phone takes something (the lists re-derive). */
   let taken = $state(0);
-  /** A dig's replacement waits a little (NH: the next fossil turns up later), until this time. */
-  let digHold = $state(0);
-  let holdTimer: ReturnType<typeof setTimeout> | undefined;
 
   const clock = $derived(minuteNow());
   const date = $derived(dayKey(clock));
@@ -120,12 +117,8 @@
   const spots = $derived.by<DigSpot[]>(() => {
     void taken;
     void site.rev;
-    void digHold;
-    const list = digSpots(date, goneOn(date), seed);
-    return digHold > Date.now() && heldShown ? list.filter((s) => heldShown!.has(s.uid)) : list;
+    return digSpots(date, goneOn(date), seed);
   });
-  /** The dig spots on screen (visible, not covered) when the last one was dug: until digHold, only these show. */
-  let heldShown = $state<ReadonlySet<string> | null>(null);
   const bottle = $derived.by<Bottle | null>(() => {
     void taken;
     const b = want === 'bottle' || (want === 'washed' && washedIn) ? bottleNow(date, [...allFragments, ...shellsAt(date, msOfDay, seed, allFragments)], seed) : bottleAt(date, msOfDay, seed, allFragments);
@@ -185,7 +178,6 @@
   onMount(() => {
     first = false;
     if (want === 'washed') later(() => (washedIn = true), 1500);
-    return () => clearTimeout(holdTimer);
   });
 
   // ---------- the moment of a find (world x, and y = the world's z; `lift` units above the ground) ----------
@@ -359,17 +351,7 @@
   }
   function digUp(s: DigSpot) {
     const special = rare(s) ? 'rare-mushroom' : egg(s) ? 'earth-egg' : null;
-    // the hold before the claim: claiming the spot re-derives the list, and its replacement must already be waiting
-    const held = digHold, heldWas = heldShown;
-    heldShown = new Set(visibleSpots.map((x) => x.uid));
-    digHold = Date.now() + 20_000 + rand() * 20_000;
-    if (!claim(s.uid, special ? `dug:${special}` : `fossil:${s.fossil}`, s.x, s.y)) {
-      digHold = held;
-      heldShown = heldWas;
-      return;
-    }
-    clearTimeout(holdTimer);
-    holdTimer = setTimeout(() => (digHold = 0), digHold - Date.now());
+    if (!claim(s.uid, special ? `dug:${special}` : `fossil:${s.fossil}`, s.x, s.y)) return;
     pickHere(s.x, () => {
       if (!stillMine(s.uid)) return;
       const added = special ? (recordGoods(special, `pick:${s.uid}`), false) : recordFind('fossil', s.fossil, `pick:${s.uid}`);

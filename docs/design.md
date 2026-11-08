@@ -1860,7 +1860,7 @@ northern-hemisphere months; hours still hold.
 `island/Finds.svelte`, `island/beach.ts`, `island/sceneDay.ts`, `e2e/finds.spec.ts`. The day's items derive from the
 Tokyo date and time plus a seed, so both phones agree; what either of us picks up, digs or opens is gone on both
 ([Shared world](#shared-world): a `pick`, claimed at the tap, first wins; this phone keeps its own in `scene-day` too),
-the next dig spot is the same on both, and on the other phone our villager turns to it, it's picked up (or dug) where
+and on the other phone our villager turns to it, it's picked up (or dug) where
 it lies, its plate in the bottom stack (nothing held over the head). The first of each shell, fossil and fragment is a ずかん `find`, written when it's picked up (and still ours).
 
 - **Seashells** (NH's eight; the summer shell rare, likelier June–September): one washes up every 60–120 s, the newest
@@ -1875,9 +1875,12 @@ it lies, its plate in the bottom stack (nothing held over the head). The first o
 - **Where things lie** (`beachSpot`): shells, fragments and the bottle keep 34u apart (`BEACH_GAP`), each taking a
   spot that far from everything there in a seeded order; worked out once per date and seed, so nothing moves.
 - **Fossils** (all 73 of NH's: the standalone ones and every dinosaur piece, `FOSSIL_SETS`): NH's star-shaped dig
-  spot, 2–4 at a time on six lawn spots (`world.ts` `DIG_SPOTS`: four on the front lawn, two behind the trees), each
-  shown only where it's clear of every control on this screen. A tap digs it up (the shovel, a burst of earth, an open
-  hole that fades): 「化石を ほりだした！ アンモナイトだ！」. The next turns up 20–40 s later.
+  spot, four a day as in NH (`beach.ts` `DIGS_A_DAY`), each on its own of the day's eight dig spots (the 3D island's
+  layout: `layout/spots.ts` daySpots, seeded by the date; `world.ts` `DIG_SPOTS`' six only before the layout's
+  applied), shown only where it's clear of every control on this screen. A tap digs it up (the shovel, a burst of
+  earth, an open hole that fades): 「化石を ほりだした！ アンモナイトだ！」. A dug spot stays gone till tomorrow: at most
+  four digs a day between us. NH carries undug ones over (up to six); here each day stands alone, as neither phone
+  knows the other's yesterday (the relay keeps only today's claims).
 - **Mushrooms** (`island/mushrooms.ts`): every November day 1–2 beside the trunks (1 in 8 October and December days
   one), NH's weights; a tap picks one up. 1 in 20 November dig spots hold the rare mushroom. Cosmetic: no `find`.
 - **Message bottle:** every 8–14 minutes one rocks at the water's edge for 6; a tap reads its note (16 kind notes).
@@ -1892,7 +1895,7 @@ it lies, its plate in the bottom stack (nothing held over the head). The first o
 
 `island/Care.svelte`, `island/care.ts`, `e2e/care.spec.ts` (no ベル, no find):
 
-- **Weeds** sprout every 30–60 minutes on the lawn's free spots (`LAWN`), the newest three at a time; a tap pulls one
+- **Weeds** sprout every 30–60 minutes on the day's free weed spots (15 from the layout's open grass, `layout/spots.ts` daySpots; `world.ts` `LAWN_SPOTS` before the layout's applied), the newest three at a time; a tap pulls one
   (`scene-weed`), gone on both phones (our villager pulls it on the other).
 - **Watering:** a flower tap is NH's watering can (a tilt, drops, a glint; `scene-water`); a flower watered today, by
   either of us, glitters for the day on both phones (`wateredOn` and the shared day's `watered`, by the flower's id `fl:<x>:<z>`,
