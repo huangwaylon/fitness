@@ -88,6 +88,29 @@ describe('pacer', () => {
     s.run(1000);
     expect([early, drawn.length, p.queued()]).toEqual([2, 2, false]);
   });
+
+  it('asked() is a change’s frame, never the ambience’s, a slow frame’s at once too', () => {
+    // (a clock by hand: a rAF waits to be run, a frame takes 25 ms)
+    let t = 0, raf: ((v: number) => void) | null = null;
+    const clock: PaceClock = { raf: (fn) => ((raf = fn), 1), caf: () => (raf = null), setTimeout: () => 1, clearTimeout: () => {}, now: () => t };
+    const p = pacer((v) => {
+      if (!p.due(v, 30)) return;
+      t += 25;
+      p.later(30);
+    }, clock);
+    const run = () => {
+      const fn = raf!;
+      raf = null;
+      fn(t);
+    };
+    p.kick();
+    expect(p.asked()).toBe(true);
+    run();
+    // (the ambience's next due within 4 ms: its display frame asked for at once)
+    expect([p.queued(), p.asked()]).toEqual([true, false]);
+    p.kick();
+    expect(p.asked()).toBe(true);
+  });
 });
 
 describe('moveFast (a critter move at the full rate or the ambience)', () => {
