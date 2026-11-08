@@ -9,7 +9,7 @@
 // the start finds it on its way. A phone gone (closed, hidden, offline) leaves its villager where its last walk ended,
 // on every phone, for as long as it's gone (the relay keeps each person's last walk, across days). Plain TS: the relay
 // and the clock come in through `VillagerLink`.
-import { WAKE_MS, actors, along, isRemote, livePos, onOwnMove, onWake, place, setRemote, wake, walkTo, type Facing, type Move } from '../motion/director.svelte.ts';
+import { WAKE_MS, actors, along, isRemote, livePos, onOwnMove, onWake, place, remoteWalking, setRemote, wake, walkTo, type Facing, type Move } from '../motion/director.svelte.ts';
 import { VIA_MAX, type Face, type Intent, type Pt, type Who } from '#lib/contract/live-protocol.ts';
 import { actorOfFor, whoOfFor, type VillagerActor } from '#lib/ui-state/cast.ts';
 import { dist } from '#lib/layout/nav.ts';
@@ -182,8 +182,9 @@ export function linkVillagers(link: VillagerLink): VillagerLinked {
       if (id === 'mine' || on === present.has(id)) return;
       if (on) {
         present.add(id);
-        // whatever this phone had their villager doing stops where it is; their phone says where it is
-        if (!isRemote(id) && actors[id].walking) {
+        // whatever this phone had their villager doing stops where it is; their phone says where it is (a walk the
+        // relay gave it is their phone's already: it goes on, as after a bye from their other tab and a hello)
+        if (!isRemote(id) && actors[id].walking && !remoteWalking(id)) {
           const [x, z] = livePos(id);
           place(id, x, z);
         }

@@ -360,6 +360,8 @@ export function setRemote(id: ActorId, on: boolean): void {
   remote[id] = on;
 }
 export const isRemote = (id: ActorId): boolean => !!remote[id];
+/** `id` is on a walk the relay gave it (the partner's own, played here), not one of this phone's. */
+export const remoteWalking = (id: ActorId): boolean => actors[id].walking && !!remoteWalk[id];
 
 /** Put an actor at (x, y) at once (no walk): back home after a long absence, frozen under a sheet. `fromRemote`: the
  *  relay's put of a remote actor (setRemote); a local one of it does nothing. */
@@ -445,6 +447,7 @@ export function walkTo(id: ActorId, pts: readonly Pt[], o: WalkOpts = {}): numbe
   const total = o.ms ?? (len / (o.speed ?? 90)) * 1000;
   if (id === 'mine') ownMove?.({ id, from, pts, ms: total, face: o.face });
   if (o.remote) remoteWalk[id] = { from, pts, ms: total, t0: clock(), face: o.face };
+  else delete remoteWalk[id];
   const own = (ms: number, fn: () => void) => {
     const c = later(id, ms, () => {
       walks[id].delete(c);
