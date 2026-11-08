@@ -8,6 +8,7 @@
 // stepped while the tank is off screen (the caller's clock), never a feeder in a tank without a predator.
 import { CHASE, LUNGE, STALK, endChase, swimBox, type Swimmer } from './boids.ts';
 import type { Box } from './tanks.ts';
+import { mulberry32 } from '#lib/random.ts';
 
 /** The fish that hunt the feeders (NH's big ones, shadow 4–6, that eat little fish): the sharks (the whale shark a
  *  filter feeder: not), the giant trevally, the tuna, the blue marlin, the mahi-mahi; the river's arapaima, pike, gar,
@@ -77,8 +78,8 @@ export interface Feeding {
   hunts: number;
   bites: number;
   escapes: number;
-  /** Its random's state. */
-  rnd: number;
+  /** Its random (seeded mulberry32). */
+  rnd: () => number;
   /** When a resting predator next looks for prey (the tank's clock). */
   look: number;
 }
@@ -87,17 +88,10 @@ export interface Feeding {
 export function feedingOf(seed: number): Feeding {
   const feeders: Feeder[] = [];
   for (let i = 0; i < FEEDERS; i++) feeders.push({ alive: false, p: [0, 0, 0], v: [0, 0, 0], yaw: 0, fade: 0, eaten: false, leaving: false, born: 0, dash: 1 });
-  const f: Feeding = { feeders, clock: 0, next: 0, depth: 0, hunter: null, prey: -1, until: 0, rest: 0, puff: [0, 0, 0], puffT: 99, hunts: 0, bites: 0, escapes: 0, rnd: seed >>> 0 || 1, look: 0 };
-  f.next = FIRST[0] + (FIRST[1] - FIRST[0]) * rand(f);
-  f.rest = REST_MIN * rand(f);
+  const f: Feeding = { feeders, clock: 0, next: 0, depth: 0, hunter: null, prey: -1, until: 0, rest: 0, puff: [0, 0, 0], puffT: 99, hunts: 0, bites: 0, escapes: 0, rnd: mulberry32(seed >>> 0 || 1), look: 0 };
+  f.next = FIRST[0] + (FIRST[1] - FIRST[0]) * f.rnd();
+  f.rest = REST_MIN * f.rnd();
   return f;
-}
-/** mulberry32 */
-function rand(f: Feeding): number {
-  let t = (f.rnd = (f.rnd + 0x6d2b79f5) >>> 0);
-  t = Math.imul(t ^ (t >>> 15), t | 1);
-  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 }
 const box: Box = { x0: 0, x1: 0, y0: 0, y1: 0, z0: 0, z1: 0 };
 /** How many feeders are in (alive). */
@@ -123,9 +117,9 @@ export function stepFeeding(f: Feeding, predators: readonly Swimmer[], water: Bo
     for (const x of f.feeders) if (x.alive) x.leaving = true;
     f.next = Math.max(f.next, f.clock + FIRST[0]);
   } else if (f.clock >= f.next) {
-    f.next = f.clock + EVERY[0] + (EVERY[1] - EVERY[0]) * rand(f);
-    const n = SCHOOL[0] + Math.floor(rand(f) * (SCHOOL[1] - SCHOOL[0] + 1)), end = rand(f) < 0.5;
-    f.depth = b.y0 + (b.y1 - b.y0) * (0.25 + 0.45 * rand(f));
+    f.next = f.clock + EVERY[0] + (EVERY[1] - EVERY[0]) * f.rnd();
+    const n = SCHOOL[0] + Math.floor(f.rnd() * (SCHOOL[1] - SCHOOL[0] + 1)), end = f.rnd() < 0.5;
+    f.depth = b.y0 + (b.y1 - b.y0) * (0.25 + 0.45 * f.rnd());
     const lx = along ? (end ? b.x0 + (b.x1 - b.x0) * 0.15 : b.x1 - (b.x1 - b.x0) * 0.15) : (b.x0 + b.x1) / 2;
     const lz = along ? (b.z0 + b.z1) / 2 : end ? b.z0 + (b.z1 - b.z0) * 0.15 : b.z1 - (b.z1 - b.z0) * 0.15;
     const yaw = along ? (end ? Math.PI / 2 : -Math.PI / 2) : end ? 0 : Math.PI;
@@ -139,10 +133,10 @@ export function stepFeeding(f: Feeding, predators: readonly Swimmer[], water: Bo
       x.fade = 0;
       x.born = f.clock;
       x.dash = 1;
-      x.p[0] = Math.min(b.x1, Math.max(b.x0, lx + (rand(f) - 0.5) * 9));
-      x.p[1] = b.y1 - rand(f) * 2;
-      x.p[2] = Math.min(b.z1, Math.max(b.z0, lz + (rand(f) - 0.5) * 9));
-      x.yaw = yaw + (rand(f) - 0.5) * 0.6;
+      x.p[0] = Math.min(b.x1, Math.max(b.x0, lx + (f.rnd() - 0.5) * 9));
+      x.p[1] = b.y1 - f.rnd() * 2;
+      x.p[2] = Math.min(b.z1, Math.max(b.z0, lz + (f.rnd() - 0.5) * 9));
+      x.yaw = yaw + (f.rnd() - 0.5) * 0.6;
       x.v[0] = Math.sin(x.yaw) * CRUISE;
       x.v[1] = -1;
       x.v[2] = Math.cos(x.yaw) * CRUISE;
@@ -178,7 +172,7 @@ function stepHunt(f: Feeding, predators: readonly Swimmer[], water: Box): void {
     if (!who) return;
     f.hunter = who;
     f.prey = prey;
-    f.until = f.clock + STALK_S * (0.5 + 0.5 * rand(f));
+    f.until = f.clock + STALK_S * (0.5 + 0.5 * f.rnd());
     who.chase = STALK;
     f.hunts++;
   }
@@ -237,7 +231,7 @@ function over(f: Feeding, s: Swimmer, water: Box, bit: boolean): void {
   else f.escapes++;
   f.hunter = null;
   f.prey = -1;
-  f.rest = f.clock + REST_MIN + (REST_MAX - REST_MIN) * rand(f);
+  f.rest = f.clock + REST_MIN + (REST_MAX - REST_MIN) * f.rnd();
 }
 
 /** The feeders: a loose school (each to its own spot about the school's middle, turned the way it heads: together, the

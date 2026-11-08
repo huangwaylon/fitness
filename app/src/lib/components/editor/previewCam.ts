@@ -2,6 +2,7 @@
 // drag and zoom. Pure (no three.js): the tests' too.
 
 import { MID_X, midXOf } from '#lib/layout/model.ts';
+import { clamp } from '#lib/math.ts';
 
 /** The phone view's middle across the island (engine.ts's: model.ts midXOf, its land's): where it starts and where ⌖
  *  puts it back. */
@@ -12,8 +13,6 @@ const Z_MIN = -60, Z_MAX = 1260;
 const ZOOM_MIN = 0.6, ZOOM_MAX = 3;
 /** The phone view's lens (engine.ts's): this much of the island across the screen at the pivot, at zoom 1 (u). */
 const ACROSS_U = 420;
-
-export const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
 
 /** Where a pan may take the camera's pivot (world u, z into the island): the land's box (extentOf's), a tile's
  *  margin round it, so the island never leaves the view. */

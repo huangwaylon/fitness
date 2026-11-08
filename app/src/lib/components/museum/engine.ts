@@ -12,6 +12,7 @@ import {
   Matrix4, Mesh, Sphere, MeshBasicMaterial, MeshLambertMaterial, PerspectiveCamera, Plane, PlaneGeometry, Raycaster, RepeatWrapping,
   Scene, SRGBColorSpace, TextureLoader, Vector3, WebGLRenderer, type Material, type Object3D, type Texture
 } from 'three';
+import { cubicOut } from '#lib/math.ts';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import type { Villager3D } from '../villager3d/villager3d.ts';
@@ -154,7 +155,6 @@ export interface Museum {
 const now = () => performance.now();
 /** The top of the tallest thing in the museum (the hall's cornice): the near plane comes down to just over it. */
 const TOP = 70;
-const ease = (t: number) => 1 - Math.pow(1 - t, 3);
 
 /** A soft round shadow's texture. */
 function softDisc(): CanvasTexture {
@@ -1206,7 +1206,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     let full = false;
     // the camera: eased back to NH's view, following my villager
     if (easing) {
-      const k = Math.min(1, (t - easing.t0) / 400), e = ease(k);
+      const k = Math.min(1, (t - easing.t0) / 400), e = cubicOut(k);
       view.az = easing.from.az + wrapAngle(DEF.az - easing.from.az) * e;
       view.pitch = easing.from.pitch + (DEF.pitch - easing.from.pitch) * e;
       view.k = easing.from.k + (DEF.k - easing.from.k) * e;

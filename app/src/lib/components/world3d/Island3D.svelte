@@ -68,6 +68,7 @@
   import { setDrawnFps } from '#lib/sync/log.ts';
   import { weather } from '../island/weatherNow.svelte.ts';
   import { createPrecip, type Precip } from './precip.ts';
+  import { hermite } from '#lib/math.ts';
 
   /** The villagers' GLBs and the players' parts (person3d, world3d/villagers.ts). */
   const dirs: Dirs = { villagers: asset('room/villagers3d/' as Parameters<typeof asset>[0]), player: asset('room/player/' as Parameters<typeof asset>[0]) };
@@ -536,7 +537,6 @@
   };
   const marked = new WeakMap<Element, boolean>();
   let lamps3: LampSpot[] = [];
-  const smooth = (k: number) => k * k * (3 - 2 * k);
   // (the ground is built as the engine starts: 0 before it, should anything ask)
   const heightOf = (x: number, z: number) => lground?.heightAt(x, z) ?? 0;
   const feetOf = (x: number, z: number) => lground?.feet(x, z) ?? 0;
@@ -599,7 +599,7 @@
         L.t0 = t;
         L.ms = n.m3.ms ?? 0;
       }
-      const k = L.ms > 0 ? Math.min(1, (t - L.t0) / L.ms) : 1, q = smooth(k);
+      const k = L.ms > 0 ? Math.min(1, (t - L.t0) / L.ms) : 1, q = hermite(k);
       const x = L.from[0] + (L.to[0] - L.from[0]) * q, z = L.from[1] + (L.to[1] - L.from[1]) * q, lf = L.from[2] + (L.to[2] - L.from[2]) * q;
       if (k < 1 && moving !== true) {
         const p = e.at(x, z, lf, AT), on = p.visible && p.sx > -80 && p.sx < cw + 80 && p.sy > -80 && p.sy < ch + 80;

@@ -25,6 +25,8 @@ import {
   DataTexture, FloatType, InstancedBufferAttribute, InstancedBufferGeometry, Mesh, NearestFilter, PlaneGeometry, RGBAFormat, ShaderMaterial, Vector2, Vector3,
   type Object3D, type WebGLRenderer
 } from 'three';
+import { mulberry32 } from '#lib/random.ts';
+import { smoothstep } from '#lib/math.ts';
 import { BEND_GLSL, bendU } from './bend.ts';
 import { lampFog } from './lights.ts';
 
@@ -74,11 +76,6 @@ export const lookOf = (sky: Sky): PrecipLook | null => (sky === 'rain' || sky ==
 /** How many particles a look draws (of its kind's set count): the share by its density. */
 export const drawnOf = (l: PrecipLook): number => Math.round(COUNTS[l.kind].reduce((a, b) => a + b, 0) * l.density);
 
-const smoothstep = (a: number, b: number, v: number) => {
-  if (a === b) return 1;
-  const t = Math.max(0, Math.min(1, (v - a) / (b - a)));
-  return t * t * (3 - 2 * t);
-};
 /** Each group's share at a zoom (the widest's always whole). */
 const groupShare = (g: number, zoom: number) => (g === 0 ? 1 : smoothstep(GROUPS[g].zoom[0], GROUPS[g].zoom[1], zoom));
 export const groupAlpha = (zoom: number): [number, number, number] => [groupShare(0, zoom), groupShare(1, zoom), groupShare(2, zoom)];
@@ -293,24 +290,12 @@ void main() {
 
 // ---- the meshes ----
 
-/** A tiny seeded random (the seeds: the same every load, so a screenshot is a screenshot). */
-function seeded(n: number): () => number {
-  let s = n >>> 0;
-  return () => {
-    s = (s + 0x6d2b79f5) >>> 0;
-    let t = s;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
 /** One instanced quad mesh: `counts` instances a group, each a seed (x, y, z in its box, w its share and its look). */
 function pool(counts: readonly number[], quad: PlaneGeometry, vert: string, frag: string, uniforms: Record<string, { value: unknown }>, seed: number): Mesh<InstancedBufferGeometry, ShaderMaterial> {
   const geo = new InstancedBufferGeometry();
   geo.index = quad.index;
   geo.setAttribute('position', quad.getAttribute('position'));
-  const total = counts.reduce((a, b) => a + b, 0), seeds = new Float32Array(total * 4), groups = new Float32Array(total), r = seeded(seed);
+  const total = counts.reduce((a, b) => a + b, 0), seeds = new Float32Array(total * 4), groups = new Float32Array(total), r = mulberry32(seed);
   let i = 0;
   counts.forEach((c, g) => {
     for (let k = 0; k < c; k++, i++) {

@@ -11,6 +11,8 @@ const DOMAIN = ['types', 'contract', 'time', 'config', 'scoring', 'model'];
 const ALLOW: Record<string, string[]> = {
   types: [],
   random: [],
+  // (math.ts: clamp, smoothstep and the easing curves; pure, imports nothing)
+  math: [],
   // (random.ts imports nothing: the shop's stock is seeded by it, the relay bundling it along)
   contract: ['types', 'random'],
   time: ['types', 'contract'],
@@ -18,12 +20,12 @@ const ALLOW: Record<string, string[]> = {
   scoring: ['types', 'contract', 'time', 'config'],
   model: DOMAIN,
   // the island's layout (docs/island-layout.md): pure, over the contract's ops
-  layout: ['types', 'contract', 'random'],
+  layout: ['types', 'contract', 'random', 'math'],
   // the meal log's food catalog (lib/food/index.ts): pure but for its loader, over the contract's snapshot
   food: ['contract'],
   // けっこんしき (docs/wedding.md): the board's pure rules (lib/wedding: progress, its settings' defaults, the note's
   // markdown and its links; the board's zone and the days between two days: time/zone.ts, time/dates.ts)
-  wedding: ['types', 'contract', 'time'],
+  wedding: ['types', 'contract', 'time', 'math'],
   i18n: ['types', 'time', 'config'],
   sync: [...DOMAIN, 'random'],
   store: [...DOMAIN, 'layout', 'sync', 'i18n', 'ui-state', 'random'],
@@ -46,7 +48,7 @@ const ALLOW: Record<string, string[]> = {
   // `/stt` and the key (sync)
   mic: ['sync', 'sound'],
   offline: ['travel', 'hiking', 'sync'],
-  components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'mic', 'offline']
+  components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'math', 'travel', 'hiking', 'mic', 'offline']
 };
 
 function files(dir: string): string[] {

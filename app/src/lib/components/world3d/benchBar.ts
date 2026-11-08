@@ -8,6 +8,7 @@
 // small bar is back. Nothing goes over the relay: the use is the seat's, which every phone draws the same, and the bar
 // follows from it. Pure (three's maths only, no allocation per call): unit-tested.
 import { Matrix4, Quaternion, Vector3 } from 'three';
+import { smooth01 } from '#lib/math.ts';
 
 /** Off the rack into the hands (ms), once it's lain down; back onto it as it gets up. */
 export const GRAB_MS = 520, RACK_MS = 420;
@@ -20,16 +21,11 @@ export const GRAB_MS = 520, RACK_MS = 420;
  *  (13 u round) outside the rack's uprights (24.5 u apart) and well off the ground there. */
 export const HELD = 'decor/barbell', HELD_SCALE = 1.25;
 
-const ease = (v: number) => {
-  const t = Math.max(0, Math.min(1, v));
-  return t * t * (3 - 2 * t);
-};
-
 /** How far off the rack (0 on it … 1 in the hands) at t: `t0` when it starts for the hands, `off` when it was let go of
  *  (null: held) and how far off it was then (`kOff`). */
 export function barK(t: number, t0: number, off: number | null, kOff: number): number {
-  if (off === null) return ease((t - t0) / GRAB_MS);
-  return kOff * (1 - ease((t - off) / RACK_MS));
+  if (off === null) return smooth01((t - t0) / GRAB_MS);
+  return kOff * (1 - smooth01((t - off) / RACK_MS));
 }
 
 const AXIS: Record<'x' | 'y' | 'z', Vector3> = { x: new Vector3(1, 0, 0), y: new Vector3(0, 1, 0), z: new Vector3(0, 0, 1) };

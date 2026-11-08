@@ -5,7 +5,7 @@
 // rests; world3d/wings.ts wingBeat), its itinerary drawn a minute at a time from its seed and played on from where
 // the last one ended. A bug is kept to its enclosure shrunk by its own size (its wings' reach up included), so it
 // never meets a prop, the glass or the ground (bugLife.test.ts).
-import { mulberry32 } from '#lib/random.ts';
+import { mulberry32, smallHash } from '#lib/random.ts';
 import { BUGS, type BugId, type Flight, type Patch } from '../island/critters.ts';
 import { BOB, FLY_UPS, PACE, bugAt, bugLegs, clamp, type Flying, type Leg, type P3, type Ways } from '../island/critterPath.ts';
 import { turn } from '../island/glide.ts';
@@ -156,7 +156,7 @@ export function slotsOf(id: string, hab: Habitat): readonly Slot[] {
 // ---------- a bug's life ----------
 
 /** A bug's own seed (by its id: the same each visit). */
-export const bugSeed = (id: string): number => [...id].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 100003, 7);
+export const bugSeed: (id: string) => number = smallHash;
 
 /** A bug's size as drawn (its model's box × BUG_S): across (x), along (z), its height. */
 export interface Size { w: number; l: number; h: number }

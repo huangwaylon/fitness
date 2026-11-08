@@ -131,3 +131,14 @@ describe('the bug wing’s bugs (bugLife.ts: the island’s motion, NH’s museu
     expect([...new Set(out.map((s) => s.replace(/[a-z-]+ \(/g, '(')))]).toEqual([]);
   });
 });
+
+it('bugSeed is pinned (a bug keeps its spot and rhythm across builds)', () => {
+  expect(['tarantula', 'common-butterfly', 'a', ''].map(bugSeed)).toMatchInlineSnapshot(`
+    [
+      36050,
+      34457,
+      314,
+      7,
+    ]
+  `);
+});

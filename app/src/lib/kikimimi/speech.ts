@@ -4,6 +4,7 @@
 import { ROSTER } from '#lib/villagers/roster.ts';
 import type { Accent, CastId, Item } from './bank.ts';
 import { CAST } from './cast.ts';
+import { fnv1a } from '#lib/random.ts';
 
 /** The cast's slots per accent and gender (18 voices, American first: every villager's voice is US; UK and AU only speak
  *  the やま/ほし accent-exposure items, docs/curriculum.md "American English first"). */
@@ -17,12 +18,6 @@ export const SLOTS: Readonly<Record<Accent, Readonly<Record<'f' | 'm', number>>>
 export const CAST_IDS: readonly CastId[] = (Object.keys(SLOTS) as Accent[]).flatMap((a) =>
   (['f', 'm'] as const).flatMap((g) => Array.from({ length: SLOTS[a][g] }, (_, i) => `${a}-${g}${i + 1}` as CastId)));
 
-/** FNV-1a, 32-bit: a stable small hash of a villager id. */
-function fnv(s: string): number {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193) >>> 0;
-  return h;
-}
 
 /** The cast voice that speaks an item: level 4's `cast`; else the speaker's voice (CAST) when its accent is the item's;
  *  else a voice of the item's accent and the speaker's gender picked by a stable hash of the speaker (so a villager
@@ -32,7 +27,7 @@ export function castOf(it: Pick<Item, 'speaker' | 'voice' | 'cast'>): CastId {
   const home = CAST[it.speaker];
   if (home && home.startsWith(`${it.voice}-`)) return home;
   const g = ROSTER[it.speaker].gender;
-  return `${it.voice}-${g}${(fnv(it.speaker) % SLOTS[it.voice][g]) + 1}` as CastId;
+  return `${it.voice}-${g}${(fnv1a(it.speaker) % SLOTS[it.voice][g]) + 1}` as CastId;
 }
 
 const ONES = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
