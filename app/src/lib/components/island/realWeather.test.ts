@@ -147,6 +147,14 @@ describe('the real sky', () => {
     };
     expect([at('rain-pm', '13:00')?.sky, at('rain-pm', '10:00')?.sky, at('typhoon', '10:00')?.sky, at('snow', '10:00')?.sky, at('clears', '10:00')?.sky, at('clears', '15:00')?.sky]).toEqual(['rain', 'clear', 'heavy', 'snow', 'rain', 'clear']);
     expect([at('fog', '06:00')?.fog, at('fog', '10:00')?.fog, at('cloudy', '10:00')?.sky, at('stale', '10:00')]).toEqual([true, false, 'cloudy', null]);
+    // the rain clearing at 14:00 brings its rainbow; on a winter day the rain falls as snow; an August Sunday's
+    // fireworks night is fine through a typhoon (the e2e's sky on two phones: realweather.spec)
+    const on = (name: (typeof WX_FIXTURES)[number], d: string, hm: string) => {
+      const now = tokyo(d, hm);
+      return realWeatherAt(wxFixture(name, now), now);
+    };
+    const clears = on('clears', '2026-06-10', '14:20');
+    expect([clears?.sky, clears!.rainbow > 0, on('rain-pm', '2027-01-20', '13:00')?.sky, on('typhoon', '2026-08-09', '20:00')?.sky]).toEqual(['clear', true, 'snow', 'clear']);
     // two phones laying one on the same clock agree
     const now = tokyo('2026-06-10', '13:00');
     const { at: _a, ...one } = wxFixture('rain-pm', now), { at: _b, ...other } = wxFixture('rain-pm', now + 20 * 60_000);
