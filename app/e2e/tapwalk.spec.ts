@@ -141,7 +141,17 @@ test('the campsite: near its door my villager goes straight in', { tag: '@logic'
   await oku(page);
   const door = campDoor(await geo(page));
   // (about where it stands just out of the tent: buildings.ts outOf)
+  const feet = () => page.locator('[data-actor="mine"]').evaluate((el) => getComputedStyle(el).transform);
+  const before = await feet();
   await call(page, (w, [x, z]) => w.put(x, z), [door[0] - 12, door[1] - 30]);
+  // (its node there before the door's open point is looked for: put places it on a later frame, maybe in front of the
+  // door, and a tap found before then went to my villager): moved, and still
+  let was = before;
+  await expect.poll(async () => {
+    const now = await feet(), still = now !== before && now === was;
+    was = now;
+    return still;
+  }, { message: 'my villager placed by the door' }).toBe(true);
   const came = await watchComings(page, { walking: '[data-actor="mine"].walking' });
   await tapTent(page);
   // in, and straight: no walk up first (not a time: the tent's load is the runner's)
