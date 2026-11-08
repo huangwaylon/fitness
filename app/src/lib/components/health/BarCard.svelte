@@ -8,7 +8,7 @@
   import type { GoalId } from '#lib/contract/goals.ts';
   import { periodStats, seriesBuckets, type DaySeries, type Range } from '#lib/model/health.ts';
   import { md } from '#lib/i18n/format.ts';
-  import { formatNum, t } from '#lib/i18n/index.ts';
+  import { t } from '#lib/i18n/index.ts';
   import BarChart from './BarChart.svelte';
   import ChartCard from './ChartCard.svelte';
   import { goalLabel, valueText } from './goals.ts';

@@ -15,7 +15,7 @@
 // and let back x2: the aquarium rebuilt as a new find rebuilds it).
 // FILL=1 (a room flow): the room furnished with the starter set first. --snap: heap snapshots at cycle SNAP_AT (default 3; 0: none, the end's whole heap) and the end, diffed by constructor; --path=<name>: the retainer
 // paths of the first PATHS nodes so named (=<name>: exactly) new since the first snapshot. Read handles: the probe never keeps one (a JSHandle holds what it points at).
-import { chromium, webkit, devices, type Page, type CDPSession } from '@playwright/test';
+import { chromium, webkit, devices, type CDPSession } from '@playwright/test';
 import { writeFileSync } from 'node:fs';
 import { BUG_IDS, FISH_IDS } from '../src/lib/components/museum/species.ts';
 

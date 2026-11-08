@@ -8,7 +8,7 @@
 //   board.unseen / board.seen() the 「！」, and clearing it
 import { boardFold, boardMayWrite, boardPosts, cleanText, newPostId, type Post } from '#lib/contract/board.ts';
 import { week } from '#lib/store/week.svelte.ts';
-import { opClock, world } from '#lib/store/world.svelte.ts';
+import { opClock } from '#lib/store/world.svelte.ts';
 import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { resolveLook } from '#lib/villagers/look.ts';
 import { artUrl, villagerArt } from '#lib/art.ts';

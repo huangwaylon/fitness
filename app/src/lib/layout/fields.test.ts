@@ -8,7 +8,7 @@ import { layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
 import { Ch, adoptFields, computeFields, fieldsOf, hasFields, type RawFields } from './fields.ts';
 import { codeOf, idx } from './grid.ts';
 import { Layout, defaultLayout, layoutOf } from './model.ts';
-import { fieldsFrom, primeFields } from './fieldsPrime.ts';
+import { primeFields } from './fieldsPrime.ts';
 import { configureFieldsCache, fieldsKey, fieldsWriter, readFields } from './fieldsCache.ts';
 import { IDBFactory } from 'fake-indexeddb';
 import { CHUNK_COUNT, adoptChunks, chunkMesh } from './mesh.ts';

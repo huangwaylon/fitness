@@ -9,7 +9,7 @@ import type { SeaId } from './sea.ts';
 import type { Sky } from './weather.ts';
 import {
   BEACH_BOX, BRIDGE, CLIFF, FLOWERS, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, POND, RIVER, ROCK, SCENERY, SEA_BOX, SHORE_Z, TREE_H, freshWhere, surfaceAt,
-  LAWN_SPOTS, PONDS, RIVER_BEND, onLand, onLayout, riverNS, worldGen, type FreshWhere
+  LAWN_SPOTS, PONDS, RIVER_BEND, onLayout, riverNS, worldGen, type FreshWhere
 } from './world.ts';
 
 /** NH months (1–12) a critter is about, and its hours [from, to) in Tokyo time (to < from wraps past midnight). */

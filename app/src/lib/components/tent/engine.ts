@@ -8,7 +8,7 @@ import {
   AmbientLight, BoxGeometry, CanvasTexture, CircleGeometry, Color, DirectionalLight, DoubleSide, Group, HemisphereLight,
   LineBasicMaterial, LineSegments, BufferGeometry, Float32BufferAttribute, Material, Mesh, MeshBasicMaterial, MeshLambertMaterial,
   Box3, Object3D, PCFSoftShadowMap, PerspectiveCamera, Plane, PlaneGeometry, PointLight, Raycaster, RepeatWrapping, Scene, Sprite,
-  SpriteMaterial, SRGBColorSpace, Texture, DataTexture, TextureLoader, Vector3, WebGLRenderer, type MeshStandardMaterial, type SkinnedMesh
+  SpriteMaterial, SRGBColorSpace, Texture, DataTexture, TextureLoader, Vector3, WebGLRenderer, type MeshStandardMaterial
 } from 'three';
 import { cubicOut } from '#lib/math.ts';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';

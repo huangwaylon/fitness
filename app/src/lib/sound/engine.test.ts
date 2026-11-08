@@ -615,7 +615,6 @@ describe('lazy effects (ids.ts `lazy`: the radio jingles)', () => {
 
 describe('the voice bus (ききみみ: engine.ts wakeVoice, holdAwake, loadBytes, playClip)', () => {
   const SILENT = { music: false, sfx: false, volume: 0.5 };
-  const fetched = (path: string) => vi.mocked(fetch).mock.calls.filter(([u]) => String(u).includes(path)).length;
   const clip = (ctx: FakeContext) => ctx.createBuffer(1, 8000) as unknown as AudioBuffer; // 1 s
 
   /** A context woken for the voice alone, every sound setting off. */

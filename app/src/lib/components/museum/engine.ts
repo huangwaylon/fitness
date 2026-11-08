@@ -28,7 +28,7 @@ import { ktx2Plugin } from '../world3d/ktx2.ts';
 import M from './models.json' with { type: 'json' };
 import { modelBounds } from '../world3d/models3d.ts';
 import { along, roomScreen, walkLens, type Walk } from '../rooms/view.ts';
-import { EYE_MARGIN, camAz, clampEye, firstPerson as createFirstPerson, headAnchor, wrapAngle } from '../rooms/firstPerson.ts';
+import { EYE_MARGIN, clampEye, firstPerson as createFirstPerson, headAnchor, wrapAngle } from '../rooms/firstPerson.ts';
 import {
   BUG_WING, DESK, DOOR_HALF, DOORMAT, FISH_WING, HALL, HALL_H, OPENING, WALLS, WING_H, inRect, navOf, roomAt, walkable, wallEnds, wingAt,
   type Nav, type Pt, type Rect, type Wall, type Wing
@@ -893,12 +893,9 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     if (frames) draw();
     invalidate();
   }
-  /** The camera's heading as it is now (the view's az, or the eyes' in the first person). */
-  let az = DEF.az;
   /** Where the room's camera is (before the first person's glide moves it): the cutaway's, so the walls it cut stay
    *  cut all the way down to the eyes. */
   const orbitPos = new Vector3();
-  const azV = new Vector3();
   function aim() {
     const d = baseD * view.k;
     camera.position.set(
@@ -914,7 +911,6 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     camera.far = d + 700;
     orbitPos.copy(camera.position);
     fp.apply(camera, FOV, Math.max(4, 0.8 * (camera.position.y - TOP)), target);
-    az = fp.mix > 0 ? camAz(camera, azV) : view.az;
     cutaway();
   }
   /** Where the camera looks for a villager at (x, z): a little ahead of it, kept over the floors (the view's lower edge

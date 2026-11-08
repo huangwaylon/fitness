@@ -18,7 +18,7 @@
   import { HUES, closet, itemKey, wear, wornIn, type ClosetItem, type ClosetKind, type Hue } from './closet.ts';
   import { KIND_OF, SUBS, TABS, dotNames, firstTab, statusOf, type Sub, type Tab } from './tabs.ts';
   import {
-    defaultLook, LOOK_LIMITS, lookName, playerOf, sameLook, type Hex, type Look, type PartId, type PlayerLook, type SavedLook
+    defaultLook, LOOK_LIMITS, lookName, playerOf, sameLook, type Hex, type Look, type PartId, type PlayerLook
   } from '#lib/contract/look.ts';
   import {
     deleteLook, myLook, mySavedLooks, overwriteLook, renameLook, restoreLook, saveLook, wearLook, wearUsual, wearVillager

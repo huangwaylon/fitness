@@ -57,7 +57,7 @@ describe('the hour’s pick (onDisplay)', () => {
   const ids = (m: Map<string, Specimen[]>) => [...m.entries()].map(([t, l]) => [t, l.map((s) => s.id)] as const);
   test('seven at most a tank, only its own and only what was caught, none twice in the aquarium', () => {
     expect(PER_TANK).toBe(7);
-    const caught = all.filter((s, i) => i % 3 === 0);
+    const caught = all.filter((_, i) => i % 3 === 0);
     for (let h = 0; h < 48; h++) {
       const pick = onDisplay(caught, at('2026-11-04T00:00+09:00') + h);
       const seen = new Set<string>();
@@ -93,7 +93,7 @@ describe('the hour’s pick (onDisplay)', () => {
     expect(HUNTED).toBe('sea');
     expect(preds.length).toBeGreaterThan(1);
     const h0 = at('2026-11-04T00:00+09:00'), led = new Set<string>();
-    for (const [name, caught] of [['all', all], ['one predator', [...prey, preds[0]]], ['predators only', preds], ['a third', all.filter((s, i) => i % 3 === 0)]] as const)
+    for (const [name, caught] of [['all', all], ['one predator', [...prey, preds[0]]], ['predators only', preds], ['a third', all.filter((_, i) => i % 3 === 0)]] as const)
       for (let h = 0; h < 72; h++) {
         const list = onDisplay(caught, h0 + h).get(HUNTED)!, has = caught.some((s) => s.tank === HUNTED && PREDATORS.has(s.id));
         if (has && !PREDATORS.has(list[0]?.id)) out.push(`${name} ${h}: led by ${list[0]?.id}`);
