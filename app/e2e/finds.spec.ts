@@ -122,7 +122,9 @@ test('a bottle the waves bring washes up from the waterline to its spot, fading 
   await page.clock.pauseAt(new Date('2026-11-04T12:00:01+09:00'));
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto('?demo&date=2026-11-04T12:00&find=washed');
-  await expect.poll(async () => (await step(page, 100), hudMenu(page).isVisible()), { timeout: 20_000 }).toBe(true);
+  // (the 3D island up, not only the HUD: its mount waits for the ground's fields, whose worker starts on a page timer
+  // when the cache is slow to answer, fieldsPrime.ts CACHE_MS: on this paused clock only as it's stepped)
+  await expect.poll(async () => (await step(page, 100), (await hudMenu(page).isVisible()) && (await page.evaluate(() => !!(window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded()))), { timeout: 20_000 }).toBe(true);
   const before = { bells: await hudBells(page).getAttribute('aria-label'), url: page.url() };
   const sample = () => page.evaluate(() => {
     type W = { where(id: string): { x: number; z: number; fade: number } | null; client(x: number, z: number, lift?: number): number[] };

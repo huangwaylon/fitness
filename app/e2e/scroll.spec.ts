@@ -4,7 +4,7 @@
 // trees with a band of sea under the beach, おく the campsite. A tree's popup opens in screen space, wholly in view,
 // over the canopies when it fits, never dimmed at night.
 import { expect, test, type Page } from './fixtures.ts';
-import { geo } from './island.ts';
+import { geo, islandUp, quiet } from './island.ts';
 
 type W = { cam(): number; stops(): number[]; at(x: number, z: number): [number, number]; idle(): boolean; go(z: number): void };
 const call = <T,>(page: Page, fn: (w: W, a: number[]) => T, args: number[] = []) =>
@@ -12,8 +12,10 @@ const call = <T,>(page: Page, fn: (w: W, a: number[]) => T, args: number[] = [])
 
 async function open(page: Page, q = '&date=2026-07-01T10:00') {
   await page.goto(`?demo&season=summer${q}`);
-  await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
-  await page.waitForTimeout(600);
+  // the 3D island up, its DOM placed by its camera (it mounts once the ground's fields are in, fieldsPrime.ts: a while
+  // after __world on a loaded runner, the villagers' nodes not yet where it draws them), and the opening beats over
+  await islandUp(page);
+  await quiet(page);
 }
 /** The tops of what must stay clear of the HUD, and its bottom. */
 const clearOfHud = (page: Page, sels: string[]) =>
