@@ -3,7 +3,7 @@
 // sheets, the music, the shop, the museum, the tent, the editor and the trip map with no violation (every `securitypolicyviolation`
 // event and every console line of a refused load, the page's and its workers').
 import { expect, test, type Page } from './fixtures.ts';
-import { fromMenu } from './hud.ts';
+import { fromMenu, openKenkou } from './hud.ts';
 import { is3d, islandQuery } from './island.ts';
 import { drawn, fixtureTiles, gotoTrip, mapReady } from './trips.ts';
 
@@ -48,8 +48,9 @@ test('the island, its sheets, the music and the rooms: no CSP violation', async 
     await page.keyboard.press('Escape');
     await expect(page.locator('dialog[open]')).toHaveCount(0);
   }
-  for (const name of ['けんこう', 'ごはん']) {
-    await page.getByRole('button', { name, exact: true }).click();
+  // 健康 and ごはん: one sheet from the dumbbell, each tab shown
+  for (const tab of ['health', 'food'] as const) {
+    await openKenkou(page, tab);
     await expect(page.locator('dialog[open]')).toHaveCount(1);
     await page.keyboard.press('Escape');
     await expect(page.locator('dialog[open]')).toHaveCount(0);
