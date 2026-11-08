@@ -11,6 +11,10 @@ test.use({ viewport: { width: 390, height: 844 } });
 
 async function open(page: Page, q = '') {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
+  // the page's own clock, running, for the shake's three taps on it (shakeTree onClock: on a slow runner's wall clock
+  // they spread past SHAKE_WINDOW_MS, and no nest fell)
+  await page.clock.install({ time: new Date('2026-11-04T12:00:00+09:00') });
+  await page.clock.resume();
   await page.goto(`?demo&date=2026-11-04T12:00${q}`);
   await islandUp(page, { timeout: 15_000 }); // (its first paint: now and then over 5 s under CI's load)
   await is3d(page); // (the 3D island up and its canopies where they'll stay: a while in software GL)
@@ -27,7 +31,7 @@ test('one tap opens the popup and drops nothing; two close it; the third quick t
   await page.mouse.click(c.x, c.y);
   await expect(page.locator('.detail')).toHaveCount(0);
   await expect(page.locator('[data-nest]')).toHaveCount(0);
-  await shake(page);
+  await shake(page, { onClock: true });
   await expect(page.locator('.detail')).toHaveCount(0); // the shake closes it
   await expect(page.locator('[data-nest]')).toHaveCount(1);
   expect(await cues(page)).toContain('tree-shake');
@@ -36,7 +40,7 @@ test('one tap opens the popup and drops nothing; two close it; the third quick t
 test('a nest falls; its wasps charge my villager; a tap in time nets one: NH’s line, no sting, no ベル', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=nest');
   const bells = await hudBells(page).getAttribute('aria-label');
-  await shake(page);
+  await shake(page, { onClock: true });
   await expect(page.locator('[data-nest]')).toHaveCount(1);
   const swarm = page.locator('button[data-swarm]');
   await expect(swarm).toBeVisible({ timeout: 2000 });
@@ -58,11 +62,12 @@ test('a nest falls; its wasps charge my villager; a tap in time nets one: NH’s
 
 test('too late: the wasps sting the villager on that side (a fright, a sweat drop, the swollen eye) and fly off', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=nest');
-  await shake(page);
+  await shake(page, { onClock: true });
   await expect(page.locator('button[data-swarm]')).toBeVisible({ timeout: 2000 });
   // the left tree's wasps go for the villager on the left, at its face where it stands
   await expect(page.locator('[data-actor="mine"][data-stung]')).toHaveCount(1, { timeout: 2500 });
-  const v = (await page.locator('[data-actor="mine"] .vil').boundingBox())!, w = (await page.locator('button[data-swarm]').boundingBox())!;
+  // (both boxes at one moment: the swarm flies off after the sting, and read a round trip apart it had moved on)
+  const [v, w] = await page.evaluate(() => ['[data-actor="mine"] .vil', 'button[data-swarm]'].map((s) => document.querySelector(s)!.getBoundingClientRect().toJSON() as DOMRect));
   expect(Math.abs(w.x + w.width / 2 - (v.x + v.width / 2))).toBeLessThan(v.width);
   expect(await cues(page)).toContain('scene-sting');
   await expect(page.locator('button[data-swarm]')).toHaveCount(0, { timeout: 2000 });
@@ -79,7 +84,7 @@ test('stung on the 3D island: the swollen eye is the 3D villager’s own (its lu
   const v3 = (fn: string) => page.evaluate(`(${fn})(window.__villagers3)`);
   // my villager in 3D (its model in)
   await expect.poll(() => v3('(v) => v.state("mine")'), { timeout: 30_000 }).not.toBeNull();
-  await shake(page);
+  await shake(page, { onClock: true });
   await expect(page.locator('[data-actor="mine"][data-stung]')).toHaveCount(1, { timeout: 4000 });
   await expect.poll(() => v3('(v) => v.stung("mine")'), { timeout: 3000 }).toBe(true);
   // the 2D render's lump never shows over the 3D villager
@@ -95,7 +100,7 @@ test('stung on the 3D island: the swollen eye is the 3D villager’s own (its lu
 
 test('a shaken branch lies beside the trunk until a tap picks it up', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=branch');
-  await shake(page);
+  await shake(page, { onClock: true });
   const twig = page.locator('button[data-branch]');
   await expect(twig).toHaveCount(1);
   await expect(twig).toHaveAttribute('aria-label', '木のえだを ひろう');
@@ -108,7 +113,7 @@ test('a shaken branch lies beside the trunk until a tap picks it up', { tag: '@l
 
 test('a shake knocks out a piece of wood; picked up, it is in my pocket’s しげん at the shop and sells for かいがら', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=wood');
-  await shake(page);
+  await shake(page, { onClock: true });
   const wood = page.locator('button[data-wood]');
   await expect(wood).toHaveCount(1);
   await expect(wood).toHaveAttribute('aria-label', 'もくざいを ひろう');
@@ -131,7 +136,7 @@ test('a shake knocks out a piece of wood; picked up, it is in my pocket’s し�
 test('a shake drops a bagworm on its thread beside the trunk; a tap nets it (NH’s line, a ずかん find, no ベル)', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=bagworm');
   const bells = await hudBells(page).getAttribute('aria-label');
-  await shake(page);
+  await shake(page, { onClock: true });
   await expect(page.locator('[data-dangle="bagworm"]')).toBeAttached();
   const btn = page.locator('button[data-dangler="bagworm"]');
   await expect(btn).toHaveAttribute('data-sfx', 'self');
@@ -157,7 +162,7 @@ test('at night a spider can dangle instead; left alone it climbs back up into th
   await islandUp(page);
   await is3d(page);
   await page.waitForTimeout(2600);
-  await shake(page);
+  await shake(page, { onClock: true });
   await expect(page.locator('[data-dangle="spider"]')).toBeAttached();
   await page.clock.fastForward(11_500); // left alone (the page's clock, run on at once: its timers, not its every frame)
   await expect(page.locator('[data-dangle]')).toHaveCount(0);
