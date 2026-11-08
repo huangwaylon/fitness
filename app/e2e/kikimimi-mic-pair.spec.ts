@@ -25,9 +25,11 @@ async function snap(p: Page, name: string) {
 }
 
 /** The mic on or off, the stand-in mic (as kikimimi-mic-mane.spec.ts's: the clip once into each stream, each track
- *  kept) and the stub recogniser. */
+ *  kept) and the stub recogniser. The clip: fixtures/mic/short-line.wav, 0.8 s of ladder-line.wav's speech (`ffmpeg -ss
+ *  1.05 -t 0.8`; a take ends 1 s after it, not 5.5 s): the stub decides what's heard, the VAD only needs speech; the
+ *  whole line's path is mane's and the probe's. */
 async function fakeMic(ctx: BrowserContext, on: boolean) {
-  await ctx.route('**/__e2e/mic.wav', (route) => route.fulfill({ path: `${import.meta.dirname}/fixtures/mic/ladder-line.wav`, contentType: 'audio/wav' }));
+  await ctx.route('**/__e2e/mic.wav', (route) => route.fulfill({ path: `${import.meta.dirname}/fixtures/mic/short-line.wav`, contentType: 'audio/wav' }));
   await ctx.addInitScript((on) => {
     const w = window as unknown as { __micTracks: MediaStreamTrack[] };
     w.__micTracks = [];
@@ -108,7 +110,9 @@ test('off: no 声に出す shelf, no はつおん while the mic is off', async (
 
 for (const [when, q] of [['day', DAY], ['night', NIGHT]] as const) {
   test(`solo (${when}): hear both, say one; the joke and a second try, 通じた！; 聞いて選んでね; nothing heard; 飛ばす; the end`, async ({ page, context }) => {
-    test.slow(); // (four takes of the stand-in mic's 4.5 s clip, in real time: ~26 s here)
+    // (the night's: its screenshots, the same game as the day's, as kikimimi-call's and -tachi's night tests)
+    test.skip(when === 'night' && !process.env.KIKI_SHOTS, 'screenshots only');
+    test.slow(); // (four takes of the stand-in mic's 0.8 s clip, in real time: ~12 s here)
     await fakeMic(context, true);
     const posts: string[] = [];
     page.on('request', (r) => r.method() === 'POST' && posts.push(r.url()));
