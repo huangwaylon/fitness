@@ -5,9 +5,10 @@
 //
 //   deps        `npm ci --dry-run` on a copy of package.json and the lockfile: the ERESOLVE (a peer conflict, typescript 7
 //               against svelte-check's ^5 || ^6: run 42350564692) or the lockfile out of step that kills every job
-//   check       npm run check (svelte-kit sync, svelte-check)
+//   check       svelte-check (npm run check without its svelte-kit sync: that runs once first, before every step,
+//               as knip and vitest read .svelte-kit/ while check runs)
 //   knip        npm run knip
-//   vitest      npx vitest run (--quick: only the tests the changes since origin/main reach, `--changed origin/main`)
+//   vitest      npx vitest run (--quick: only the tests this branch's changes reach, `--changed` from where it left origin/main)
 //   quarantine  scripts/e2e-quarantine.ts: every quarantined test has an owner
 //   build       --build: npm run build (the kikimimi budget, the headers, load-budget's precache limit)
 // No e2e: that's `npm run e2e:ci-like`.
@@ -23,18 +24,26 @@ const build = args.includes('--build');
 const deps = mkdtempSync(join(tmpdir(), 'verify-deps-'));
 for (const f of ['package.json', 'package-lock.json']) copyFileSync(f, join(deps, f));
 
+// (three-dot: what this branch changed, not what origin/main did since)
+const since = quick ? spawnSync('git', ['merge-base', 'origin/main', 'HEAD'], { encoding: 'utf8' }).stdout.trim() || 'origin/main' : '';
+
 type Step = { name: string; cmd: string[]; cwd?: string };
 const steps: Step[] = [
   { name: 'deps', cmd: ['npm', 'ci', '--dry-run', '--ignore-scripts', '--no-audit', '--no-fund'], cwd: deps },
-  { name: 'check', cmd: ['npm', 'run', 'check'] },
+  { name: 'check', cmd: ['npx', 'svelte-check', '--tsconfig', './tsconfig.json'] },
   { name: 'knip', cmd: ['npm', 'run', 'knip'] },
-  { name: 'vitest', cmd: ['npx', 'vitest', 'run', ...(quick ? ['--changed', 'origin/main'] : [])] },
+  { name: 'vitest', cmd: ['npx', 'vitest', 'run', ...(quick ? ['--changed', since] : [])] },
   { name: 'quarantine', cmd: ['node', 'scripts/e2e-quarantine.ts'] },
   ...(build ? [{ name: 'build', cmd: ['npm', 'run', 'build'] }] : []),
 ];
 
-// one sync first: check runs it again, but knip and vitest read .svelte-kit/ meanwhile
-spawnSync('npx', ['svelte-kit', 'sync'], { stdio: 'ignore' });
+// the one sync, before the steps that read .svelte-kit/
+const sync = spawnSync('npx', ['svelte-kit', 'sync'], { encoding: 'utf8' });
+if (sync.status !== 0) {
+  console.log(`FAIL  sync  (npx svelte-kit sync)\n\n${(sync.stdout + sync.stderr).trim()}\n\nverify: red`);
+  rmSync(deps, { recursive: true, force: true });
+  process.exit(1);
+}
 
 const t0 = performance.now();
 const secs = (t: number) => `${((performance.now() - t) / 1000).toFixed(1)}s`;
