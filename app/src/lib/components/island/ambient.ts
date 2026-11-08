@@ -145,6 +145,8 @@ export interface Spawn {
   water?: FreshWhere;
   /** A sea shadow's stretch of coast past the first (its channel's: coast.ts). */
   coast?: number;
+  /** The second roaming bug's (`bug2`): its spot keeps off the first's (bugRivals). */
+  lane?: 2;
 }
 
 
@@ -335,7 +337,9 @@ const CHANNELS = {
   river: { odds: 0.9 },
   mouth: { odds: 0.9 },
   clifftop: { odds: 0.9 },
-  bug: { odds: 0.9 }
+  bug: { odds: 0.9 },
+  // the second roaming bug (lane 2): two about at once, each its own chain (the user, 2026-11-08: "2 at once")
+  bug2: { odds: 0.9 }
 } as const;
 /** The sea round the rest of the coast past the front's (`sea`): a channel per stretch (coast.ts), `sea1`, `sea2`…,
  *  as the front's but never bubbles (the dive spots stay off the front beach). */
@@ -362,7 +366,7 @@ function chain(date: LocalDate, block: number, ch: Channel): Spawn[] {
     const fresh = FRESH_CH.has(ch);
     const kind: CritterKind = ch === 'sea' ? (r() < BUBBLE_SHARE ? 'bubbles' : 'fish') : coast ? (r(), 'fish') : fresh ? 'fresh' : 'bug';
     const slots = Math.min(between(r, STAY[kind]), end - s);
-    out.push({ kind, slot: s, slots, at: Math.floor(r() * SPAWN_AT_MAX), seed: Math.floor(r() * 2 ** 32), ...(fresh ? { water: ch as FreshWhere } : {}), ...(coast ? { coast } : {}) });
+    out.push({ kind, slot: s, slots, at: Math.floor(r() * SPAWN_AT_MAX), seed: Math.floor(r() * 2 ** 32), ...(fresh ? { water: ch as FreshWhere } : {}), ...(coast ? { coast } : {}), ...(ch === 'bug2' ? { lane: 2 } : {}) });
     freeAt = s + slots;
   }
   if (chains.size >= 160) chains.delete(chains.keys().next().value!);
@@ -372,7 +376,7 @@ function chain(date: LocalDate, block: number, ch: Channel): Spawn[] {
 
 /** The critters there in `slot`: those that come in it and those still staying from before (a phone opening mid-stay
  *  shows them too, `slot - spawn.slot` slots in). One at a time off each of the island's `coasts` stretches of coast
- *  (coast.ts: the front's a shadow or bubbles), in each fresh water and among the bugs; the phone skips a channel it
+ *  (coast.ts: the front's a shadow or bubbles) and in each fresh water, two among the bugs (`bug`, `bug2`); the phone skips a channel it
  *  has no room for (no such water, no bug about at this hour). */
 export function crittersAt(date: LocalDate, slot: number, coasts = 1): Spawn[] {
   const out: Spawn[] = [];
@@ -381,6 +385,11 @@ export function crittersAt(date: LocalDate, slot: number, coasts = 1): Spawn[] {
     for (const c of chain(date, Math.floor(slot / BLOCK), ch)) if (c.slot <= slot && slot < c.slot + c.slots) out.push(c);
   return out;
 }
+
+/** The first lane's bugs about at any time during a second-lane bug's stay (none for any other spawn): its spot
+ *  keeps off theirs (critterPath.ts BugOpts.taken), so the two never share one, the same on both phones. */
+export const bugRivals = (date: LocalDate, c: Spawn): Spawn[] =>
+  c.lane === 2 ? chain(date, Math.floor(c.slot / BLOCK), 'bug').filter((o) => o.slot < c.slot + c.slots && c.slot < o.slot + o.slots) : [];
 
 /** The critters coming in `slot`. */
 export const spawnsIn = (date: LocalDate, slot: number, coasts = 1): Spawn[] => crittersAt(date, slot, coasts).filter((s) => s.slot === slot);

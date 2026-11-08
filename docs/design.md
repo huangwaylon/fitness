@@ -1758,7 +1758,7 @@ docs/backend.md "Ambient life"): the sea holds a shadow off every stretch of the
 the island: `island/coast.ts` cuts the sea within 3 tiles of the shore that the camera can show into one stretch per
 450u of coastline, the front beach's 15 tiles' worth, each a sector round the island's middle from the layout's tiles,
 so both phones cut the same; the front's is 1 turn in 4 bubbles instead), each fresh water
-(the pond, the river, its mouth, the clifftop) its own shadow most of the time too ([Pond](#pond)), and a bug comes by every so often, each of the same kind and species on both phones and
+(the pond, the river, its mouth, the clifftop) its own shadow most of the time too ([Pond](#pond)), and bugs come by, up to two roaming at once (each on its own spot: another trunk or flower, or 40u apart), each of the same kind and species on both phones and
 leaving at the same boundary. **Where it is, is the world's** ([Shared world](#shared-world)): its seed picks the swim
 patch (a pond's on the island's ponds, painted or put down), the trunk, the flower head or the patch of grass, and every glide, hop, dart, rest and landing
 at its time after it came (`critterPath.ts`), so both phones have it at the same spot doing the same thing, and a phone
