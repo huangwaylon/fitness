@@ -224,6 +224,28 @@ describe('a phone gone, however long: its villager stays where it was, on every 
     link.detach();
   });
 
+  it('the partner arriving mid-walk (a hello after their other tab\'s bye): the relay\'s walk of theirs goes on to its end; this phone\'s own walk of it stops where it is', async () => {
+    const clock = { t: 2_000_000 };
+    const { d, link } = await phone(clock, 'A');
+    link.joined();
+    // (B gone here, as its editor tab's bye said: then the walk of B's comes, and then B's hello)
+    d.playPartner({ kind: 'walk', from: [262, 214], to: [262, 614], s: clock.t, ms: 2000 }, clock.t);
+    clock.t += 500;
+    await vi.advanceTimersByTimeAsync(500);
+    link.here('partner', true);
+    expect(d.actors.partner.walking).toBe(true);
+    clock.t += 1600;
+    await vi.advanceTimersByTimeAsync(1600);
+    expect(d.livePos('partner')).toEqual([262, 614]);
+    link.here('partner', false);
+    // this phone's own life walking it (an outing): stopped where it is as they arrive
+    d.walkTo('partner', [[262, 214]], { ms: 2000 });
+    await vi.advanceTimersByTimeAsync(500);
+    link.here('partner', true);
+    expect(d.actors.partner.walking).toBe(false);
+    link.detach();
+  });
+
   it('a phone opening later finds it where its last walk ended, however old (the relay’s last walk), not home', async () => {
     const clock = { t: 2_000_000 + 86_400_000 * 2 };
     const { d, link } = await phone(clock, 'A');
