@@ -261,8 +261,8 @@ the gate) goes in and out of the shop, the museum and うめ's house, opening �
 and out (the eye button, a bench), the info sheets (りょこう's pages and maps, Okinawa's 地図 and campsites, けっこんしき, three
 trails), three rounds, and checks after a forced GC that no WebGL context (watched by
 WeakRefs) or window/document listener is left over, and that inside the museum only its own context lives. To hunt
-one: `npm run leak -- <flow> [cycles] --snap` (scripts/leak-probe.ts, its header lists the flows: the rooms, each
-sheet, the picker, visibility, the museum's eye, benches, hours, curator and a wing rebuilt, fishing, selling, the
+one: `npm run leak -- <flow> [cycles] --snap` (scripts/leak-probe.ts, its header lists the flows: the rooms, the island's mount
+left early (`abort`), each sheet, the picker, visibility, the museum's eye, benches, hours, curator and a wing rebuilt, fishing, selling, the
 sim's clock over midnight and over days; `FILL=1`: a room furnished first) against a served build (`E2E_PORT`), printing per cycle the heap, DOM nodes, listeners, rAF
 a second, live contexts and the room's renderer.info, then a heap-snapshot diff by constructor (`SNAP_AT=0`: the
 whole heap, for an A/B of two builds); `--path=<name>` (`=<name>`: exactly, e.g. `--path==WebGL2RenderingContext`)
