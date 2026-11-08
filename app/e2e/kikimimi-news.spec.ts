@@ -5,13 +5,13 @@
 // a story replayed, the detail wrong, 「傘は いる？」 right (rain later: いる); the last reveal's whole bulletin, the
 // results' review and my row (gm news, the choices as authored). Then two phones in co-op over the demo's relay: both
 // answer every question, the team's are those both got. The lines play their voiced length (A3), silent:
-// Playwright's Chromium is muted. Screenshots (KIKI_SHOTS=1) into /tmp/kikimimi-shots/news/, by day and at night.
+// Playwright's Chromium is muted; on the page's clock, stepped through (kikimimi-nav.ts runUntil). Screenshots (KIKI_SHOTS=1) into /tmp/kikimimi-shots/news/, by day and at night.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { atHub, kikiSheet as sheet } from './kikimimi-nav.ts';
+import { atHub, kikiSheet as sheet, runToQuestion, runToSee } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const SHOTS = '/tmp/kikimimi-shots/news';
@@ -51,7 +51,9 @@ async function snap(p: Page, name: string, fullPage = false) {
   await p.screenshot({ path: `${SHOTS}/${name}.png`, fullPage });
 }
 
+/** A phone on the context's clock (installed once, before its first page: both tabs step together). */
 async function phone(ctx: BrowserContext, q: string, as: 'A' | 'B' = 'A'): Promise<Page> {
+  if (!ctx.pages().length) await ctx.clock.install();
   const page = await ctx.newPage();
   await page.goto(`?demo&${q}${as === 'A' ? '' : `&as=${as}`}`);
   await islandUp(page);
@@ -68,9 +70,9 @@ async function toNews(p: Page) {
 
 /** Question i, once its choices open: the right one (or `wrong`, another), tapped. */
 async function answer(p: Page, i: number, wrong = false) {
-  await expect.poll(() => kiki(p, (k) => k.view().i), { timeout: 20_000 }).toBe(i);
+  await runToQuestion(p, i);
   const chips = sheet(p).locator('.choices [data-choice]');
-  await expect(chips.first()).toHaveAttribute('aria-disabled', 'false', { timeout: 90_000 });
+  await runToSee(p, sheet(p).locator('.choices [data-choice][aria-disabled="false"]'));
   const want = rightOf((await kiki(p, (k) => k.items()))[i]);
   const texts = await chips.evaluateAll((bs) => bs.map((b) => b.querySelector('.tx')!.textContent!.trim()));
   const k = wrong ? texts.findIndex((x) => x !== want) : texts.indexOf(want);
@@ -79,7 +81,6 @@ async function answer(p: Page, i: number, wrong = false) {
 }
 
 test('solo: the mode once listened, the day’s bulletin at しずえ’s desk with today’s weather, three questions, the results and my row', async ({ context }) => {
-  test.setTimeout(240_000);
   await weather(context);
   const page = await phone(context, DAY);
   await toNews(page);
@@ -90,11 +91,11 @@ test('solo: the mode once listened, the day’s bulletin at しずえ’s desk w
   expect(ids).toEqual([ids[0], `${ids[0]}-d`, `${ids[0]}-kasa`]);
   // the bulletin plays: the desk, its stories (the weather's last), nothing to answer
   const desk = sheet(page).locator('[data-kiki-frame="news"]');
-  await expect(desk).toBeVisible({ timeout: 15_000 });
+  await runToSee(page, desk);
   await expect(desk.locator('[data-seg]')).toHaveCount(3);
   await expect(desk.locator('[data-seg="2"]')).toHaveAttribute('data-topic', 'weather');
   await expect(sheet(page).locator('[data-kiki-news-wait]')).toBeVisible();
-  await expect(desk).toHaveAttribute('data-live', 'true', { timeout: 15_000 });
+  await runToSee(page, sheet(page).locator('[data-kiki-frame="news"][data-live="true"]'));
   await snap(page, 'listen');
   // the gist, right; a story again
   await answer(page, 0);
@@ -105,13 +106,13 @@ test('solo: the mode once listened, the day’s bulletin at しずえ’s desk w
   await desk.locator('[data-seg="1"]').click();
   await sheet(page).locator('[data-kiki-next]').click();
   // the detail, wrong
-  await expect(sheet(page).locator('[data-kiki-news-ask="detail"]')).toBeVisible({ timeout: 20_000 });
+  await runToSee(page, sheet(page).locator('[data-kiki-news-ask="detail"]'));
   await snap(page, 'detail');
   await answer(page, 1, true);
   await expect(sheet(page).locator('[data-kiki-verdict="wrong"]')).toBeVisible();
   await sheet(page).locator('[data-kiki-next]').click();
   // 「傘は いる？」: rain later today, いる; the last reveal's note and the whole bulletin (its lines, the weather's, the sign-off)
-  await expect(sheet(page).locator('[data-kiki-news-ask="kasa"]')).toBeVisible({ timeout: 20_000 });
+  await runToSee(page, sheet(page).locator('[data-kiki-news-ask="kasa"]'));
   await snap(page, 'kasa');
   await answer(page, 2);
   await expect(sheet(page).locator('[data-kiki-verdict="right"]')).toBeVisible();
@@ -134,19 +135,18 @@ test('solo: the mode once listened, the day’s bulletin at しずえ’s desk w
 
 test('night: the desk and a reveal in the night palette', async ({ context }) => {
   test.skip(!process.env.KIKI_SHOTS, 'screenshots only');
-  test.setTimeout(120_000);
   await weather(context, '2026-11-07T21:30');
   const page = await phone(context, NIGHT);
   await toNews(page);
   await sheet(page).locator('[data-kiki-start]').click();
-  await expect(sheet(page).locator('[data-kiki-news-wait]')).toBeVisible({ timeout: 15_000 });
+  await runToSee(page, sheet(page).locator('[data-kiki-news-wait]'));
   await snap(page, 'night-listen');
   await answer(page, 0, true);
   await snap(page, 'night-reveal', true);
 });
 
 test('co-op on two phones: both answer every question; the team’s are the ones both got', async ({ browser }) => {
-  test.setTimeout(240_000);
+  test.setTimeout(60_000); // two phones (the plays stepped through)
   const ctx = await browser.newContext();
   await weather(ctx);
   const a = await phone(ctx, DAY, 'A'), b = await phone(ctx, DAY, 'B');

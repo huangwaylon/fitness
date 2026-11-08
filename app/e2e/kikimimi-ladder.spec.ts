@@ -2,12 +2,14 @@
 // ladders (each rung's own question, the ladder over the stage, a rung's reveal keeping the line hidden and silent till the
 // top, the climb stopping at a miss or a replay, the results' climbs and the review's speeds), きろく's speed; and two
 // players over the demo's relay (`?demo` and `?demo&as=B`): the host's mode reaches B's invite and lobby, both climb, the
-// same points on each phone. The logic tier: no clip has to sound (`?kikimimi=fast`: a short time limit; the top rung's reveal waits for つぎへ, the lower ones move on after 3 s). Screenshots to
+// same points on each phone. The logic tier: no clip has to sound (`?kikimimi=fast`: a short time limit; the top rung's
+// reveal waits for つぎへ, the lower ones move on after 3 s), the schedule on the page's clock, stepped through
+// (kikimimi-nav.ts runUntil). Screenshots to
 // /tmp/kikimimi-shots/inc7/ with KIKI_SHOTS=1.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { toMode } from './kikimimi-nav.ts';
+import { runToPhase, runToQuestion, toMode } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -22,7 +24,9 @@ async function shot(p: Page, name: string, full = false) {
   await p.screenshot({ path: `${SHOTS}/${name}.png`, fullPage: full });
 }
 
+/** A phone on its page's clock (a context's installed before its first page: both tabs step together). */
 async function open(ctx: BrowserContext | Page, as: 'A' | 'B' = 'A'): Promise<Page> {
+  if (!('newPage' in ctx) || !ctx.pages().length) await ctx.clock.install();
   const page = 'newPage' in ctx ? await ctx.newPage() : ctx;
   await page.goto(`?demo&${Q}${as === 'A' ? '' : `&as=${as}`}`);
   await islandUp(page);
@@ -31,7 +35,7 @@ async function open(ctx: BrowserContext | Page, as: 'A' | 'B' = 'A'): Promise<Pa
 
 /** Answer the current rung: the right choice, or (`wrong`) another; `replay` first (🔁: no climb). */
 async function answer(page: Page, o: { wrong?: boolean; replay?: boolean } = {}) {
-  await expect(sheet(page)).toHaveAttribute('data-phase', 'answer', { timeout: 20_000 });
+  await runToPhase(page, 'answer');
   if (o.replay) await sheet(page).locator('[data-kiki-replay]').click();
   const right = await kiki(page, (k) => k.right());
   const k = o.wrong ? (right + 1) % 3 : right;
@@ -40,7 +44,6 @@ async function answer(page: Page, o: { wrong?: boolean; replay?: boolean } = {})
 }
 
 test('solo: the mode in the lobby, two ladders climbed (a miss and a replay stop a climb), the line only at the top, the results and きろく', async ({ page }) => {
-  test.setTimeout(180_000); // (8 rungs of 4-9 s lines, two tabs: past test.slow()'s 90 s under a full parallel run)
   await open(page);
   await fromMenu(page, 'kikimimi');
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
@@ -56,7 +59,7 @@ test('solo: the mode in the lobby, two ladders climbed (a miss and a replay stop
   const plan: { wrong?: boolean; replay?: boolean }[] = [{}, {}, { wrong: true }, {}, {}, { replay: true }, {}, {}];
   const climb = ['up', 'up', 'stop', 'held', 'up', 'held', 'held', 'held'];
   for (let i = 0; i < 8; i++) {
-    await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 20_000 }).toBe(i);
+    await runToQuestion(page, i);
     const rung = (i % 4) + 1;
     await expect(sheet(page).locator('[data-kiki-rung]')).toHaveAttribute('data-kiki-rung', String(rung));
     // rungs 1-3 ask in Japanese; the top shows the line with its chunk blanked
@@ -108,7 +111,7 @@ test('solo: the mode in the lobby, two ladders climbed (a miss and a replay stop
 });
 
 test('two players: the host’s mode reaches B’s invite and lobby; both climb, co-op’s tally and the same points on each phone', async ({ browser }) => {
-  test.setTimeout(180_000); // (8 rungs of 4-9 s lines, two tabs: past test.slow()'s 90 s under a full parallel run)
+  test.setTimeout(60_000); // two phones, eight rungs each (the plays stepped through)
   const ctx = await browser.newContext();
   const a = await open(ctx, 'A');
   const b = await open(ctx, 'B');
@@ -134,7 +137,7 @@ test('two players: the host’s mode reaches B’s invite and lobby; both climb,
   for (let i = 0; i < 8; i++) {
     for (const [p, who] of [[a, 'A'], [b, 'B']] as const) {
       await p.bringToFront();
-      await expect.poll(() => kiki(p, (k) => k.view().i), { timeout: 20_000 }).toBe(i);
+      await runToQuestion(p, i);
       await answer(p, { wrong: who === 'B' && i === 5 });
     }
     await expect(sheet(a)).toHaveAttribute('data-phase', 'reveal');
@@ -144,7 +147,7 @@ test('two players: the host’s mode reaches B’s invite and lobby; both climb,
   }
   for (const p of [a, b]) {
     await p.bringToFront();
-    await expect(sheet(p)).toHaveAttribute('data-phase', 'results', { timeout: 20_000 });
+    await runToPhase(p, 'results');
     // A 8 rungs, B 4 + 1; co-op: the team got every question
     await expect.poll(() => kiki(p, (k) => k.view().players.map((x) => [x.who, x.score]))).toEqual([['A', 800], ['B', 500]]);
     await expect(sheet(p).locator('[data-kiki-team] b')).toHaveText('ふたりで 8 / 8');

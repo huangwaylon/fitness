@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { atHub, kikiSheet as sheet } from './kikimimi-nav.ts';
+import { atHub, kikiSheet as sheet, runToQuestion, runToSee } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const SHOTS = '/tmp/kikimimi-shots/rush';
@@ -32,7 +32,10 @@ async function snap(p: Page, name: string, fullPage = false) {
   await p.screenshot({ path: `${SHOTS}/${name}.png`, fullPage });
 }
 
+/** A phone on the context's clock (installed once, before its first page: both tabs step together; the orders'
+ *  voiced lines stepped through: kikimimi-nav.ts runUntil). */
 async function phone(ctx: BrowserContext, q: string, as: 'A' | 'B' = 'A'): Promise<Page> {
+  if (!ctx.pages().length) await ctx.clock.install();
   const page = await ctx.newPage();
   await page.goto(`?demo&${q}${as === 'A' ? '' : `&as=${as}`}`);
   await islandUp(page);
@@ -52,9 +55,9 @@ async function toRush(p: Page) {
 
 /** Customer i's ticket, once its chips open: the right chip (or `wrong`, another), tapped. */
 async function serve(p: Page, i: number, wrong = false) {
-  await expect.poll(() => kiki(p, (k) => k.view().i), { timeout: 20_000 }).toBe(i);
+  await runToQuestion(p, i);
   const chips = sheet(p).locator('[data-kiki-rush-ticket] [data-choice]');
-  await expect(chips.first()).toHaveAttribute('aria-disabled', 'false', { timeout: 20_000 });
+  await runToSee(p, sheet(p).locator('[data-kiki-rush-ticket] [data-choice][aria-disabled="false"]'));
   const ids = await kiki(p, (k) => k.items());
   const want = RIGHT.get(ids[i])!;
   const texts = await chips.evaluateAll((bs) => bs.map((b) => b.querySelector('.tx')!.textContent!.trim()));
@@ -65,20 +68,19 @@ async function serve(p: Page, i: number, wrong = false) {
 }
 
 test('solo: the mode once listened, a queue of 8 with one ticket wrong (the run goes on), the results and my row', async ({ context }) => {
-  test.setTimeout(240_000);
   const page = await phone(context, DAY);
   await toRush(page);
   await snap(page, 'mode');
   await sheet(page).locator('[data-kiki-start]').click();
   await expect.poll(() => kiki(page, (k) => k.view().gm)).toBe('rush');
   // the order plays: the counter, the line, the ticket waiting
-  await expect(sheet(page).locator('[data-kiki-rush-at]')).toBeVisible({ timeout: 15_000 });
+  await runToSee(page, sheet(page).locator('[data-kiki-rush-at]'));
   await expect(sheet(page).locator('.line .dot')).toHaveCount(8);
   await expect(sheet(page).locator('[data-kiki-ctx]')).toBeVisible();
   await snap(page, 'listen');
   for (let i = 0; i < 8; i++) {
     if (i === 0) {
-      await expect(sheet(page).locator('[data-kiki-rush-ticket] [data-choice]').first()).toHaveAttribute('aria-disabled', 'false', { timeout: 20_000 });
+      await runToSee(page, sheet(page).locator('[data-kiki-rush-ticket] [data-choice][aria-disabled="false"]'));
       await snap(page, 'ticket');
     }
     await serve(page, i, i === 3);
@@ -114,18 +116,17 @@ test('solo: the mode once listened, a queue of 8 with one ticket wrong (the run 
 
 test('night: the counter and the ticket in the night palette', async ({ context }) => {
   test.skip(!process.env.KIKI_SHOTS, 'screenshots only');
-  test.setTimeout(120_000);
   const page = await phone(context, NIGHT);
   await toRush(page);
   await sheet(page).locator('[data-kiki-start]').click();
-  await expect(sheet(page).locator('[data-kiki-rush-ticket] [data-choice]').first()).toHaveAttribute('aria-disabled', 'false', { timeout: 20_000 });
+  await runToSee(page, sheet(page).locator('[data-kiki-rush-ticket] [data-choice][aria-disabled="false"]'));
   await snap(page, 'night-ticket');
   await serve(page, 0, true);
   await snap(page, 'night-reveal', true);
 });
 
 test('co-op on two phones: two registers, the customers alternating, the other phone passing; the team serves the line', async ({ browser }) => {
-  test.setTimeout(300_000);
+  test.setTimeout(60_000); // two phones, eight customers (the orders stepped through)
   const ctx = await browser.newContext();
   const a = await phone(ctx, DAY, 'A'), b = await phone(ctx, DAY, 'B');
   await a.bringToFront();
@@ -147,10 +148,10 @@ test('co-op on two phones: two registers, the customers alternating, the other p
     const [reg, other] = i % 2 ? [b, a] : [a, b];
     // the other register: its phone passes once the answers open
     await other.bringToFront();
-    await expect.poll(() => kiki(other, (k) => k.view().i), { timeout: 20_000 }).toBe(i);
+    await runToQuestion(other, i);
     await expect(sheet(other).locator('[data-kiki-rush-register]')).toHaveAttribute('data-kiki-rush-register', 'theirs');
     await expect(sheet(other).locator('[data-kiki-rush-ticket] [data-choice]').first()).toHaveAttribute('aria-disabled', 'true');
-    await expect.poll(() => kiki(other, (k) => k.view().phase), { timeout: 20_000 }).toBe('answer');
+    await runToQuestion(other, i, 'answer');
     if (i === 1) await snap(a, 'coop-watch');
     await reg.bringToFront();
     await expect(sheet(reg).locator('[data-kiki-rush-register]')).toHaveAttribute('data-kiki-rush-register', 'mine');
