@@ -178,12 +178,21 @@ The ベル ledger (`model/history.ts`, `components/kiroku/*`), read-only, in [�
 
 ### Kenkou
 
-けんこう (`model/health.ts`, `components/health/*`, `e2e/health.spec.ts`): the health popup's first tab, 健康 (full
-height, ✕, the tab bar 健康 · ごはん at its foot). Health data over time, one person at a time, computed on read, each
-card with its goal. Its code and strings (`i18n/kenkou.*.json`) load with the first opening.
+けんこう (`model/health.ts`, `components/health/*`, `e2e/health.spec.ts`): the health popup's first page, 健康 (full
+height). Health data over time, one person at a time, computed on read, each card with its goal. Its code and strings
+(`i18n/kenkou.*.json`) load with the first opening.
 
-- **The selectors:** whose data in the title bar left of the title (NavBar's `lead`: a native `<select>` as a compact
-  pill, 16px type so Safari doesn't zoom; this phone's person first, kept for the session). Then one row: かつどう ·
+- **The title bar** (both pages, `e2e/kenkou-header.spec.ts`): whose · the page switch 健康 | ごはん · ✕, no tab bar.
+  The switch (`KenkouSwitch`, NavBar's `middle`, the title kept as its hidden heading) is one cream track, each page
+  its NH art (the dumbbell, the dinner) and its name, the shown one on the yuzu thumb; drawn 40px, taller than the
+  pills under it, so it reads as the page. On ごはん's levels the bar is ‹, the level's title, ✕ (no switch).
+- **Whose** (NavBar's `lead`, `Pick`): the avatar alone with its colour stroke, a native `<select>` (iOS's picker lists
+  the names; the accessible name 「誰のデータ：ウェイ」). One pick for both pages (`health/whose.svelte.ts`), this
+  phone's person first, kept for the session. 健康 has no guest data: with the guest picked it shows the last member
+  picked, its pill dashed and a line under the bar 「おきゃくさんの健康データはありません。ウェイを表示しています」.
+- **Spacing:** both pages' scrollers set `--kk-gap` 12 (rows, cards) and `--kk-row` 44 (the control row), so their
+  range rows sit at one height.
+- **The selectors:** under the bar one row: かつどう ·
   からだ (two pills with NH icons: `art.ts` GROUP_ART) and the period dropdown (1週 · 1か月 · 3か月 · 1年; the same
   controls as ごはん's グラフ). 1週 and かつどう on every opening. The guest has no switch (かつどう only).
 - **Then** a sticky row: ‹ the visible range (「10/2〜10/31」, 「1日ごと」 / 「1週ごとの 1日平均」 / 「1か月ごとの 1日平均」) ›
@@ -232,15 +241,15 @@ card with its goal. Its code and strings (`i18n/kenkou.*.json`) load with the fi
 
 ごはん, the meal log (`model/food.ts`, `components/food/*`, `lib/food/`, `e2e/food.spec.ts`; the data in
 `static/food/`, built by `food-data/`: [food-data.md](food-data.md)): the health popup's second tab (no bowl in the
-HUD). Each time it shows it starts on きろく, today, the day at its top, no level open. What each of us ate, typed in by
+HUD; whose and the title bar: [Kenkou](#kenkou)). Each time it shows it starts on きろく, today, the day at its top, no level open. What each of us ate, typed in by
 hand; it never earns ベル. Everyone sees everyone's meals, the guest too; only the owner changes an entry. Its code is
 in the popup's chunk, its strings (`i18n/food.*.json`) load with it. The day renders from its entries' snapshots and
 never waits on the food data: the catalogue loads with the first search or amount, or at idle after the open
 (`foodUi.ts` foodDbSoon), parsed in a worker (`food/dataset.worker.ts`) and handed over in slices. Kept mounted between
 openings (Sheet's `keep`), so a reopening shows the day at once.
 
-- **Tabs** (`ui/Segmented`, `Food.svelte` TABS): きろく · グラフ (`FoodChart`). Whose day sits in the title bar as
-  けんこう's (this phone's person first, then the others; the guest once it has logged a meal). きろく has a sticky row
+- **Tabs** (`ui/Segmented`, `Food.svelte` TABS): きろく · グラフ (`FoodChart`). Whose day is 健康's pick (this phone's
+  person first, then the others; the guest once it has logged a meal). きろく has a sticky row
   ‹ the day › and きょう; › goes past today only to tomorrow, when a いつもの fills it (read-only). Recipes and custom
   foods have no tab: a meal's search is the way in.
 - **Summary card:** three short rows, so every meal's ＋ shows on opening: the day's kcal large with the kcal goal chip
@@ -335,7 +344,7 @@ One rule app-wide; `ui/nav.test.ts` enforces it.
   top-right closes the whole sheet from any level; ‹ top-left only on a level (or a sheet opened in place of its
   parent's row: ずかん, ‹ back to 設定); they never swap or move. Backdrop tap and Esc also close.
 - **A half-filled form asks first** (`ui/discard.svelte.ts`): while a form holds unsaved input (けっこんしき's task
-  form, ごはん's マイレシピ / マイ食品 / クイック editors), ✕, the backdrop, Esc, the editor's ‹ and leaving ごはん's tab ask
+  form, ごはん's マイレシピ / マイ食品 / クイック editors), ✕, the backdrop, Esc and the editor's ‹ ask
   「入力した内容を破棄しますか？」 [破棄する] [編集を続ける]. Untouched, they close at once.
 - **One button**, `ui/NavButton`, for ‹, ✕ and the bar's tools: a 32px disc in the 44px hit (`--ctl`, `--sh-ctl-s`),
   the glyph `ui/Icon` at stroke 2.4. One look everywhere, over a photo or a map too; a map's own controls are the same
@@ -343,7 +352,8 @@ One rule app-wide; `ui/nav.test.ts` enforces it.
   museum's, the HHA letter, the say picker, the K.K. picker, a board note, ごはん's photo) put the same ✕ at their
   top-right corner.
 - **Lead and trailing:** on a top level the lead slot may hold one compact control: ⚙ (ききみみ), whose data (けんこう,
-  ごはん), km | mi (りょこう). Trailing, before ✕: tool icons only (＋). Never words in the bar.
+  ごはん), km | mi (りょこう). Trailing, before ✕: tool icons only (＋). Never words in the bar but the title, or, in its
+  place (`middle`), 健康 | ごはん's page switch.
 - **Forms and confirms:** a form sheet (`Sheet` default) is ✕ to cancel + one action in its footer (保存), no キャンセル.
   An edit mode inside a sheet or the world (メモ, a board note, a goal's tray) has キャンセル then its action. A confirm asks
   「…を削除しますか？」 and answers with the verb, never はい / いいえ: a list's is an `ActionSheet` (the coral 削除 row),

@@ -26,10 +26,10 @@ test('the tab: one person at a time, a card per metric; かつどう (steps, the
   await expect(sheet(page).locator('[data-group=activity]')).toHaveAttribute('aria-pressed', 'true'); // and on かつどう
   await expect(sheet(page).locator('[data-group]')).toHaveText(['活動', '体']);
   await pickPeriod(page, 'month');
-  // whose data in the title bar, left of けんこう (centred), ✕ at the right; then one row: かつどう / からだ and the
-  // period beside them; then the range row
+  // whose data in the title bar, left of the page switch 健康 | ごはん (centred), ✕ at the right; then one row:
+  // かつどう / からだ and the period beside them; then the range row (the header's own checks: kenkou-header.spec)
   const bar = sheet(page).locator('.navbar');
-  const [w, ttl, x] = [(await whoSel(page).boundingBox())!, (await bar.locator('h2').boundingBox())!, (await bar.locator('button.close').boundingBox())!];
+  const [w, ttl, x] = [(await whoSel(page).boundingBox())!, (await bar.locator('nav').boundingBox())!, (await bar.locator('button.close').boundingBox())!];
   await expect(bar.locator('h2')).toHaveText('健康');
   expect(w.x + w.width).toBeLessThanOrEqual(ttl.x + 1); // left of the title
   expect(Math.abs(w.y + w.height / 2 - (ttl.y + ttl.height / 2))).toBeLessThan(4); // one row
@@ -51,7 +51,7 @@ test('the tab: one person at a time, a card per metric; かつどう (steps, the
   await expect(whoSel(page).locator('option')).toHaveText(['ウェイ', 'うめ']);
   await expect(periodSel(page).locator('option')).toHaveText(['1週', '1か月', '3か月', '1年']);
   await expect(periodSel(page)).toHaveAccessibleName('期間');
-  await expect(whoSel(page)).toHaveAccessibleName('誰のデータ');
+  await expect(whoSel(page)).toHaveAccessibleName('誰のデータ：ウェイ');
   await expect(sheet(page).locator('.health .wk')).toHaveCount(0); // no week card: the charts carry the trends
   await expect(sheet(page).locator('.health section.card h3')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド']);
   await expect(range(page)).toHaveText('10/2〜10/31'); // 1か月 = the 30 days to today
@@ -299,7 +299,7 @@ test('the dumbbell opens it at 1週, every time; whose data is kept for the sess
   const before = js.length;
   await bell.click();
   await expect(sheet(page).locator('.health .mc')).toHaveCount(4);
-  await expect(sheet(page).locator('[data-kenkou-tab]')).toHaveText(['健康', 'ごはん']); // a popup of its own: 健康 and ごはん's tabs
+  await expect(sheet(page).locator('[data-kenkou-tab]')).toHaveText(['健康', 'ごはん']); // a popup of its own: 健康 | ごはん in its title bar
   await expect(sheet(page).locator('h2')).toHaveText('健康');
   expect(js.length).toBeGreaterThan(before); // its own chunk
   await expect(whoSel(page)).toHaveValue('A');

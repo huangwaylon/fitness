@@ -6,8 +6,9 @@
 <script lang="ts">
   // けんこう (health, design.md "Kenkou"): the health popup (the HUD's dumbbell), the Health data over time for
   // the personal trainer, one person at a time. Whose data (ウェイ / うめ, this phone's person by default; switching
-  // keeps the period and the range) is a native dropdown in the title bar, left of けんこう (`lead`, bindable: the
-  // popup's NavBar renders it). Then one row: which cards (かつどう / からだ, かつどう
+  // keeps the period and the range) is a native dropdown in the title bar, left of 健康 | ごはん (`lead`, bindable: the
+  // popup's NavBar renders it), one pick with ごはん's (whose.svelte.ts): the guest picked there, this shows the last
+  // member picked, its pill dashed and a line under the bar saying so. Then one row: which cards (かつどう / からだ, かつどう
   // on each opening; switching keeps the period, range and person) and one period for every chart (1週 / 1か月 / 3か月 /
   // 1年, a dropdown) beside it; then a sticky row with ‹ the visible range › and きょう; then a card per metric in the group's CARDS order: かつどう 🍎 Steps,
   // 🍐 Move, 🍑 Exercise, 🍒 Stand; からだ 体重, 体脂肪率, BMI, 除脂肪体重. A horizontal drag on any chart turns the page; a tap shows a bar's numbers.
@@ -31,6 +32,7 @@
   import { goalName, saveGoal } from './goals.ts';
   import { RangePager } from './pager.svelte.ts';
   import { isGuest } from '#lib/ui-state/viewer.ts';
+  import { pickWhose, whose } from './whose.svelte.ts';
 
   /** `opens`: the sheet's openings (HealthSheet keeps this mounted between them): each one starts again from `last`. */
   let { lead = $bindable(null), opens = 0 }: { lead?: Snippet | null; opens?: number } = $props();
@@ -48,9 +50,14 @@
   /** The guest's phone has かつどう only (docs/design.md "The guest": never a からだ figure; its snapshot has none). */
   const guest = $derived(isGuest(view));
   const group = $derived<Group>(guest ? 'activity' : pickedGroup);
-  let picked = $state<PersonId | null>(last.who);
+  /** The person picked on either tab (this phone's by default); 健康 has no guest data, so with the guest picked it
+   *  shows the last member picked (`away`). */
+  const shared = $derived(whose.who ?? view?.viewer ?? me);
+  const away = $derived(shared === 'G');
   /** Whose data every card shows. */
-  const who = $derived<PersonId>(picked ?? me);
+  const who = $derived<PersonId>(shared === 'G' ? (whose.member ?? me) : shared);
+  const guestName = $derived(view?.guest.villagerName ?? '');
+  const awayNote = $derived(away ? t('health.noGuest', { guest: guestName, name: names[who] }) : '');
 
   const today = $derived(hs?.to ?? '');
   const pager = new RangePager(() => ({ period, today, first: hs?.from ?? today }));
@@ -70,9 +77,9 @@
   }
   /** Another person: the same period and range, their numbers. */
   function setWho(p: PersonId) {
-    if (p === who || (p !== 'A' && p !== 'B')) return;
+    if ((p === who && !away) || (p !== 'A' && p !== 'B')) return;
     cue('tick');
-    picked = last.who = p;
+    pickWhose(p);
     pager.sel = null;
   }
 
@@ -84,7 +91,6 @@
     untrack(() => {
       period = last.period;
       pickedGroup = last.group;
-      picked = last.who;
       pager.anchor = null;
       pager.reset();
     });
@@ -102,11 +108,12 @@
 {#snippet whoPill()}
   <!-- whose data, in the title bar (NavBar's lead) -->
   <Pick kind="who" value={who} options={[me, partner].map((id) => ({ id, label: names[id] }))} label={t('health.who')} onpick={setWho}
-    person={{ p: who, villager: villagers[who] }} compact />
+    person={{ p: who, villager: villagers[who] }} compact {away} note={awayNote} />
 {/snippet}
 
 <div class="health">
   {#if hs && range}
+    {#if away}<p class="away" role="status" data-health-away>{awayNote}</p>{/if}
     <!-- one row: which cards, and the period beside them (a native dropdown: iOS's own picker); the guest has no cards to
          pick, so its period sits at the range row's end, as ごはん's グラフ's (no row left empty) -->
     {#snippet periodPick()}
@@ -139,9 +146,10 @@
 </div>
 
 <style>
-  .health { display: grid; gap: 12px; padding-bottom: 8px; }
+  .health { display: grid; gap: var(--kk-gap); padding-bottom: 8px; }
+  .away { margin: 0; font: 600 var(--fs-s)/1.4 var(--font-body); color: var(--text-soft); text-align: center; }
   /* かつどう · からだ, the period pill beside them at its own width (the guest's: the pill alone, at the right); centred,
      not stretched: the pills ごはん's きろく · グラフ (Segmented's 36), the dropdown its グラフ's (Pick compact) */
-  .sel { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+  .sel { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; min-height: var(--kk-row); }
   .per { flex: none; display: flex; }
 </style>

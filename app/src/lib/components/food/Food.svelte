@@ -9,7 +9,7 @@
   // level (HealthSheet's title bar: its ‹; back where it was scrolled, the focus on what opened it, as けんこう's).
   // An editor's draft changed (マイレシピ, マイ食品, クイック): its ‹ and the sheet's ✕, backdrop and Esc ask first (ui/discard).
   // Anyone else's day is read-only. データの出典 at the foot. Whose day sits in the title bar (`lead`, HealthSheet's
-  // NavBar; kept for the session as けんこう's); under it the tabs (TABS, けんこう's group switch): きろく (the day,
+  // NavBar; one pick with 健康's, kept for the session: whose.svelte.ts); under it the tabs (TABS, けんこう's group switch): きろく (the day,
   // on each opening) and グラフ (FoodChart: the kcal over a period, its range row with けんこう's period dropdown beside
   // きょう, and its Move card; switching whose keeps the tab, the period and the range). A meal's search offers everyone's
   // recipes (マイレシピ) and custom foods (マイ食品), and under its field レシピを つくる (FoodRecipe, the editor) and 食品を
@@ -54,8 +54,9 @@
   import FoodRecipe from './FoodRecipe.svelte';
   import FoodCustom from './FoodCustom.svelte';
   import { askDiscard, guardForm } from '../ui/discard.svelte.ts';
+  import { pickWhose, whose } from '../health/whose.svelte.ts';
   import {
-    customDraft, customItem, customOf, DAYS, foodDb, foodDbNow, foodDbSoon, foodLast, whenFoodDb, inState, itemOf, portionLabel, recentOf, recipeItem,
+    customDraft, customItem, customOf, DAYS, foodDb, foodDbNow, foodDbSoon, whenFoodDb, inState, itemOf, portionLabel, recentOf, recipeItem,
     quickDraft, quickSnap, recipeServing, sameItems, servingOnly, type CustomDraft, type RecipeDraft
   } from './foodUi.ts';
 
@@ -90,8 +91,7 @@
     period = p;
   }
 
-  let picked = $state<Who | null>(foodLast.who);
-  const who = $derived<Who>(picked && order.includes(picked) ? picked : me);
+  const who = $derived<Who>(whose.who && order.includes(whose.who) ? whose.who : me);
   /** The day shown (null: today, following the clock). */
   let picked_d = $state<LocalDate | null>(null);
   const today = $derived(view?.today ?? '');
@@ -196,7 +196,7 @@
   function setWho(w: Who) {
     if (w === who || !order.includes(w)) return;
     cue('tick');
-    picked = foodLast.who = w;
+    pickWhose(w);
   }
   function shift(dir: -1 | 1) {
     if (dir > 0 && !canOn) return;
@@ -634,7 +634,7 @@
         {/if}
       {/key}
     {:else}
-      <Segmented items={TABS.map((id) => ({ id, label: t(`food.tab.${id}`), art: FOOD_TAB_ART[id] }))} value={tab} label={t('food.tabs')} attr="tab" onpick={(id) => (tab = id)} />
+      <div class="sel"><Segmented items={TABS.map((id) => ({ id, label: t(`food.tab.${id}`), art: FOOD_TAB_ART[id] }))} value={tab} label={t('food.tabs')} attr="tab" onpick={(id) => (tab = id)} /></div>
       {#if tab === 'chart'}
         <FoodChart {who} name={names[who]} {period} onperiod={setPeriod} />
       {:else}
@@ -664,7 +664,9 @@
 <style>
   /* the sheet's height, so a level can put its actions at the screen's foot (the amount: .lv:has(> .amt) stretches it) */
   .food { padding-bottom: 8px; display: flex; flex-direction: column; min-height: 100%; }
-  .lv { flex: 1 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: 12px; }
+  .lv { flex: 1 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: var(--kk-gap); }
+  /* きろく · グラフ: the row as tall as 健康's (its period pill 44), so both tabs' range rows sit at one height */
+  .sel { display: grid; align-items: center; min-height: var(--kk-row); }
   .lv:has(> :global(.amt)) { align-content: stretch; }
   /* a level slides in from the right (design.md "Navigation": one push motion, 240ms; as けんこう's goal level) */
   .lvl { animation: lvl 240ms cubic-bezier(.2, .8, .2, 1); }

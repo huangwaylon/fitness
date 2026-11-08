@@ -3,7 +3,8 @@
   // ‹ back top-left when there is a level to go back to, ✕ top-right on every sheet (it closes the whole sheet, from any
   // level). Back and close never swap places, and the title never moves. `lead`: a control in ‹'s place on the top
   // level (けんこう's and ごはん's whose data pill); `trailing`: controls before ✕ (＋, ⚙). The sides share the row evenly
-  // so the title stays centred, and a level's ‹ takes the place back (the caller passes no lead there).
+  // so the title stays centred, and a level's ‹ takes the place back (the caller passes no lead there). `middle`: a
+  // control in the title's place on a top level (健康 | ごはん's page switch), the title kept as the bar's hidden heading.
   // One size on every sheet: 48px, the title 18 (--fs-talk, --font-ui 700), the NavButtons' 32px discs. `over`: laid
   // over a photo (a trip's hero, a trail's map): no title or band shown (it stays the bar's name), ‹ ✕ the same
   // discs as everywhere.
@@ -24,14 +25,16 @@
     trailing?: Snippet | null;
     /** On a photo: the title hidden (‹ ✕ unchanged). */
     over?: boolean;
+    /** In the title's place (the title still its heading, unseen). */
+    middle?: Snippet | null;
   }
-  let { title = '', onback = null, onclose = null, sfx = 'back', lead = null, trailing = null, over = false }: Props = $props();
-  const led = $derived((!onback && !!lead) || !!trailing);
+  let { title = '', onback = null, onclose = null, sfx = 'back', lead = null, trailing = null, over = false, middle = null }: Props = $props();
+  const led = $derived((!onback && !!lead) || !!trailing || !!middle);
 </script>
 
 <div class="navbar" class:led class:over>
   <span class="side">{#if onback}<NavButton kind="back" onclick={onback} {sfx} />{:else if lead}{@render lead()}{/if}</span>
-  {#if title}<h2 class="ttl" class:sr-only={over}>{title}</h2>{:else}<span></span>{/if}
+  {#if middle}<div class="mid"><h2 class="sr-only">{title}</h2>{@render middle()}</div>{:else if title}<h2 class="ttl" class:sr-only={over}>{title}</h2>{:else}<span></span>{/if}
   <span class="side end">{#if trailing}{@render trailing()}{/if}{#if onclose}<NavButton kind="close" onclick={onclose} {sfx} />{/if}</span>
 </div>
 
@@ -47,6 +50,7 @@
   .navbar.led { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); container: navbar / inline-size; }
   .led .side { width: auto; min-width: 0; align-items: center; gap: 0; }
   .led .ttl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mid { display: flex; min-width: 0; }
   /* over a photo: only the two buttons, at the band's sides */
   .navbar.over { display: flex; justify-content: space-between; }
   .over .side { width: auto; }

@@ -81,9 +81,9 @@ test('the guest’s phone: the members’ activity and ベル, never a からだ
 });
 
 // The guest's 健康 and ごはん leave no hole (health plan C7): no かつどう / からだ to pick, so the period sits at the
-// range row's end (no row of its own); its long name (おきゃくさん) in the title bar's pill is its avatar alone, the
-// title centred.
-test('the guest’s 健康: the period on the range row; ごはん: its pill the avatar alone, the title centred', async ({ page }) => {
+// range row's end (no row of its own); in the title bar its pill is its avatar alone (every name's is), the page switch
+// centred.
+test('the guest’s 健康: the period on the range row; ごはん: its pill the avatar alone, the switch centred', async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 852 });
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none&as=G`);
   await expect(page.getByRole('button', { name: 'けんこう', exact: true })).toBeVisible({ timeout: 15_000 });
@@ -95,7 +95,7 @@ test('the guest’s 健康: the period on the range row; ごはん: its pill the
   const pill = page.locator('dialog[open] .titlebar .dd.who');
   await expect(pill).toHaveClass(/\bonly\b/);
   expect((await pill.boundingBox())!.width).toBeLessThanOrEqual(72);
-  const t = (await page.locator('dialog[open] .titlebar h2').boundingBox())!;
+  const t = (await page.locator('dialog[open] .titlebar nav').boundingBox())!;
   expect(Math.abs(t.x + t.width / 2 - 393 / 2)).toBeLessThan(3);
   await expect(pill.locator('select option:checked')).toHaveText('おきゃくさん'); // (its name in the picker)
 });
