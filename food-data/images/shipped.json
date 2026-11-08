@@ -6290,6 +6290,19 @@
 "checked": false
 },
 {
+"key": "kumagaya-00360",
+"ja": "わかさぎフリッター",
+"desc": "Wakasagi fritters: a plate of small whole smelt fish in puffy golden fritter batter, tails showing",
+"items": [
+"kumagaya:00360"
+],
+"roll": 0,
+"seed": 11569,
+"prompt": "a1a303ce79",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-00414",
 "ja": "じゃがいもの洋風煮",
 "desc": "Western-style simmered potatoes: a bowl of potato chunks, carrot, onion and sausage slices in a light consomme broth",
@@ -6338,6 +6351,19 @@
 "roll": 0,
 "seed": 64806,
 "prompt": "15da77963c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-00529",
+"ja": "里芋のごまみそ煮",
+"desc": "Taro in sesame miso: a small bowl of soft round white satoimo taro chunks coated in thick tan sesame miso sauce",
+"items": [
+"kumagaya:00529"
+],
+"roll": 0,
+"seed": 10115,
+"prompt": "a6c4e122d6",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -6391,6 +6417,19 @@
 "roll": 0,
 "seed": 77333,
 "prompt": "cc7cc61397",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-00859",
+"ja": "グリーンポタージュ",
+"desc": "Green potage: a soup bowl of smooth thick pale green pureed vegetable soup with a creamy texture",
+"items": [
+"kumagaya:00859"
+],
+"roll": 0,
+"seed": 95095,
+"prompt": "cff8451a8d",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -6499,6 +6538,19 @@
 "checked": false
 },
 {
+"key": "kumagaya-01973",
+"ja": "ちくわの煎茶あげ",
+"desc": "Green tea chikuwa fries: a plate of tube-shaped fish cake pieces fried in batter speckled green with powdered sencha tea",
+"items": [
+"kumagaya:01973"
+],
+"roll": 0,
+"seed": 84537,
+"prompt": "1cd9ab6f57",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-01978",
 "ja": "春雨サ",
 "desc": "Glass noodle salad: a small bowl of clear harusame noodles with cucumber, carrot and ham strips in a glossy soy-vinegar dressing",
@@ -6534,6 +6586,19 @@
 "roll": 0,
 "seed": 25010,
 "prompt": "6d50c3126a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-02030",
+"ja": "きのこサラダ",
+"desc": "Mushroom salad: a small bowl of sauteed shimeji, enoki and shiitake with cabbage, cucumber and carrot in a soy dressing",
+"items": [
+"kumagaya:02030"
+],
+"roll": 0,
+"seed": 4806,
+"prompt": "34f526b9a6",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -6590,6 +6655,19 @@
 "checked": false
 },
 {
+"key": "kumagaya-02045",
+"ja": "星型ハンバーグのおろしかけ",
+"desc": "Star-shaped hamburg with grated daikon: a plate of a browned star-shaped ground meat patty topped with white grated daikon and soy sauce",
+"items": [
+"kumagaya:02045"
+],
+"roll": 0,
+"seed": 82318,
+"prompt": "13f8a91b8b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-02059",
 "ja": "肉団子スープ",
 "desc": "Meatball soup: a bowl of clear broth with round small pork meatballs, napa cabbage, carrot and green onion",
@@ -6616,6 +6694,19 @@
 "checked": false
 },
 {
+"key": "kumagaya-02126",
+"ja": "アセロラゼリー ファイバー",
+"desc": "Acerola jelly: a small cup of translucent bright red-pink acerola cherry jelly with a glossy surface",
+"items": [
+"kumagaya:02126"
+],
+"roll": 0,
+"seed": 24037,
+"prompt": "230b90b35a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-02160",
 "ja": "春キャベツのサラダ",
 "desc": "Spring cabbage salad: a small bowl of tender light green cabbage pieces with cucumber and carrot in a light dressing",
@@ -6625,6 +6716,45 @@
 "roll": 0,
 "seed": 44404,
 "prompt": "be4ec01a1d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-02178",
+"ja": "夏野菜カレー（トマト入り・ごはんなし）",
+"desc": "Summer vegetable curry with tomato: a bowl of brown curry sauce with eggplant, zucchini, tomato, pumpkin, carrot and pork, no rice",
+"items": [
+"kumagaya:02178"
+],
+"roll": 0,
+"seed": 1703,
+"prompt": "033f8d65dd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-02216",
+"ja": "野菜椀（小松菜入り）",
+"desc": "Vegetable soup bowl: a lacquered soup bowl of clear soy dashi with daikon, carrot, tofu and green komatsuna leaves",
+"items": [
+"kumagaya:02216"
+],
+"roll": 0,
+"seed": 4479,
+"prompt": "005a93e9b9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-02242",
+"ja": "豆腐と豚肉のキムチ煮",
+"desc": "Tofu and pork kimchi stew: a bowl of white tofu cubes, pork slices, napa kimchi and green onion in a red spicy broth",
+"items": [
+"kumagaya:02242"
+],
+"roll": 0,
+"seed": 55523,
+"prompt": "e3bca72c53",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -6651,6 +6781,19 @@
 "roll": 0,
 "seed": 61526,
 "prompt": "06889819a2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-02324",
+"ja": "鶏肉のみそだれかけ（胸肉）",
+"desc": "Chicken breast with miso sauce: a plate of sliced grilled chicken breast topped with thick glossy brown miso sauce",
+"items": [
+"kumagaya:02324"
+],
+"roll": 0,
+"seed": 1927,
+"prompt": "f71d471bd8",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -6734,6 +6877,19 @@
 "checked": false
 },
 {
+"key": "kumagaya-02425-2",
+"ja": "ちくわ（加工品）とさつまいもの天ら",
+"desc": "Chikuwa and sweet potato tempura: a plate of puffy tempura of tube-shaped fish cake pieces and purple-skinned sweet potato slices in pale crisp batter",
+"items": [
+"kumagaya:02425-2"
+],
+"roll": 0,
+"seed": 25120,
+"prompt": "b468005f1a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-02431",
 "ja": "パプリカサラダ",
 "desc": "Paprika salad: a small bowl of thin strips of red and yellow bell pepper with cabbage and cucumber in a light glossy dressing",
@@ -6756,6 +6912,45 @@
 "roll": 0,
 "seed": 374,
 "prompt": "46afeb87b8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-02447",
+"ja": "すまし汁（かま・わか・えのき・ふ）",
+"desc": "Clear soup: a lacquered soup bowl of clear dashi with pink-edged kamaboko slices, wakame, thin white enoki and small round wheat gluten fu",
+"items": [
+"kumagaya:02447"
+],
+"roll": 0,
+"seed": 72286,
+"prompt": "2caeac079a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-02471",
+"ja": "アスパラガスのサラダ",
+"desc": "Asparagus salad: a small bowl of green asparagus pieces, cabbage, carrot and corn in a light dressing",
+"items": [
+"kumagaya:02471"
+],
+"roll": 0,
+"seed": 99528,
+"prompt": "6800388949",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-02492",
+"ja": "沢煮椀（ごぼうなし）",
+"desc": "Sawani-wan clear soup: a lacquered soup bowl of clear broth with fine matchstick strips of carrot, bamboo shoot, shiitake and pork with green mitsuba",
+"items": [
+"kumagaya:02492"
+],
+"roll": 0,
+"seed": 81020,
+"prompt": "78cce55071",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -6825,6 +7020,19 @@
 "checked": false
 },
 {
+"key": "kumagaya-02583",
+"ja": "ビーンズスープ",
+"desc": "Bean soup: a soup bowl of light tomato or consomme broth with white beans, kidney beans, diced carrot, onion and potato",
+"items": [
+"kumagaya:02583"
+],
+"roll": 0,
+"seed": 37948,
+"prompt": "12a4b430e4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-02587",
 "ja": "野菜の中華スープ",
 "desc": "Chinese vegetable soup: a bowl of clear soy-sesame broth with napa cabbage, carrot, wood ear mushroom, chives and egg ribbons",
@@ -6890,6 +7098,32 @@
 "checked": false
 },
 {
+"key": "kumagaya-02647",
+"ja": "大根のみそ汁（葉大根、油揚げ）",
+"desc": "Daikon miso soup: a lacquered soup bowl of cloudy tan miso soup with white daikon strips, green daikon leaves and golden aburaage strips",
+"items": [
+"kumagaya:02647"
+],
+"roll": 0,
+"seed": 8496,
+"prompt": "8e1cddcc44",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-02651",
+"ja": "ミネストローネ（肉なし）",
+"desc": "Minestrone: a soup bowl of red tomato soup with diced carrot, onion, celery, potato, cabbage and small pasta, no meat",
+"items": [
+"kumagaya:02651"
+],
+"roll": 0,
+"seed": 17796,
+"prompt": "3c3fbb99b4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-02658",
 "ja": "沢煮椀（豚肉なし）塩分減",
 "desc": "Sawani-wan clear soup: a lacquered soup bowl of pale clear broth with fine matchstick strips of burdock, carrot, bamboo shoot, shiitake and green mitsuba, no meat",
@@ -6912,6 +7146,19 @@
 "roll": 0,
 "seed": 74533,
 "prompt": "2896b8199f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-02678",
+"ja": "春雨スープ（鶏肉なし）",
+"desc": "Glass noodle soup: a soup bowl of clear light broth with translucent bean-thread noodles, carrot strips, cabbage and green onion, no meat",
+"items": [
+"kumagaya:02678"
+],
+"roll": 0,
+"seed": 65442,
+"prompt": "9a64ed5578",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -6942,6 +7189,34 @@
 "checked": false
 },
 {
+"key": "kumagaya-02695",
+"ja": "地場産きゅうりのサラダ（もやし）",
+"desc": "Cucumber salad with bean sprouts: a small bowl of thin green cucumber slices, white bean sprouts and carrot strips in a sesame vinegar dressing",
+"items": [
+"kumagaya:02695"
+],
+"roll": 0,
+"seed": 9329,
+"prompt": "0991281f54",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-02699",
+"ja": "タコナゲット（焼き）",
+"desc": "Octopus nuggets: a plate of small baked golden-brown oval nuggets with bits of chopped octopus inside",
+"items": [
+"kumagaya:02699",
+"kumagaya:02790",
+"kumagaya:03452"
+],
+"roll": 0,
+"seed": 31770,
+"prompt": "b3df09e06a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-02739",
 "ja": "鶏肉とほうれん草のクリーム煮",
 "desc": "Chicken and spinach cream stew: a bowl of chicken pieces, green spinach, onion and carrot in a smooth white cream sauce",
@@ -6951,6 +7226,20 @@
 "roll": 0,
 "seed": 76775,
 "prompt": "efc5fd4ae4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-02743",
+"ja": "つみっこ（ごぼう抜きしょうゆ味）",
+"desc": "Tsumikko: a bowl of Saitama soy broth with irregular hand-pinched flat white flour dumplings, daikon, carrot, napa cabbage and pork, no burdock",
+"items": [
+"kumagaya:02743",
+"kumagaya:03454"
+],
+"roll": 0,
+"seed": 98910,
+"prompt": "4b55d04ae9",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -6968,6 +7257,19 @@
 "checked": false
 },
 {
+"key": "kumagaya-02759",
+"ja": "ちくわ（加工品）とかぼちゃの天ぷら",
+"desc": "Chikuwa and pumpkin tempura: a plate of puffy tempura of tube-shaped fish cake pieces and orange kabocha slices with green skin in pale crisp batter",
+"items": [
+"kumagaya:02759"
+],
+"roll": 0,
+"seed": 78273,
+"prompt": "449dbdce69",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-02768",
 "ja": "トマトビーンズ",
 "desc": "Tomato beans: a bowl of soybeans and mixed beans simmered in red tomato sauce with diced carrot, onion and minced meat",
@@ -6977,6 +7279,19 @@
 "roll": 0,
 "seed": 2036,
 "prompt": "ae40dfbd42",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-02776",
+"ja": "おふのみそ汁（ふ・油揚げ・小松菜）",
+"desc": "Fu miso soup: a lacquered soup bowl of tan miso soup with small soft round wheat gluten fu, golden aburaage strips and green komatsuna",
+"items": [
+"kumagaya:02776"
+],
+"roll": 0,
+"seed": 27474,
+"prompt": "8cfb196dd8",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -6994,6 +7309,19 @@
 "checked": false
 },
 {
+"key": "kumagaya-02784",
+"ja": "ほうれん草と豆腐のみそ汁",
+"desc": "Spinach and tofu miso soup: a lacquered soup bowl of cloudy tan miso soup with dark green spinach and white tofu cubes",
+"items": [
+"kumagaya:02784"
+],
+"roll": 0,
+"seed": 65713,
+"prompt": "3453c25c96",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-02841",
 "ja": "こんにゃくソテー（鶏ほぐし身）",
 "desc": "Konnyaku saute with chicken: a small dish of grey speckled konnyaku strips stir-fried with shredded chicken and carrot, glossy with soy",
@@ -7007,6 +7335,19 @@
 "checked": false
 },
 {
+"key": "kumagaya-02842",
+"ja": "広東ラーメンスープ（うずらなし。ほうれん草・めんなし）",
+"desc": "Cantonese ramen soup: a soup bowl of soy broth with a thick glossy starch-thickened topping of napa cabbage, carrot, pork, mushroom and spinach, no noodles",
+"items": [
+"kumagaya:02842"
+],
+"roll": 0,
+"seed": 88693,
+"prompt": "93c460959e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-02843",
 "ja": "お楽しみデザート（いちごカップデザート）",
 "desc": "Strawberry cup dessert: a small plastic cup of pink strawberry mousse or jelly with a smooth glossy top and a little red sauce",
@@ -7016,6 +7357,19 @@
 "roll": 0,
 "seed": 41059,
 "prompt": "5ab82625e7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-02850",
+"ja": "カリフラワーのサラダ（人参・枝豆）",
+"desc": "Cauliflower salad: a small bowl of white cauliflower florets, orange carrot strips and green edamame in a light dressing",
+"items": [
+"kumagaya:02850"
+],
+"roll": 0,
+"seed": 96408,
+"prompt": "0b29e63cfa",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -7059,6 +7413,72 @@
 "checked": false
 },
 {
+"key": "kumagaya-02911",
+"ja": "しらたきサラダ（葉大根）",
+"desc": "Shirataki salad with daikon leaves: a small bowl of translucent konnyaku noodles, green daikon leaf pieces, carrot and cucumber in soy-vinegar dressing",
+"items": [
+"kumagaya:02911"
+],
+"roll": 0,
+"seed": 1437,
+"prompt": "c0b399b0c4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-02926",
+"ja": "サンマーメン（めんなし）",
+"desc": "Sanmamen topping soup: a soup bowl of soy broth with a thick glossy starch-thickened topping of stir-fried bean sprouts, cabbage and pork, no noodles",
+"items": [
+"kumagaya:02926"
+],
+"roll": 0,
+"seed": 22269,
+"prompt": "dd5073686f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-02941",
+"ja": "キムタクごはんの具",
+"desc": "Kimtaku rice topping: a small bowl of stir-fried pork, red napa kimchi and yellow takuan pickle bits, for mixing into rice",
+"items": [
+"kumagaya:02941"
+],
+"roll": 0,
+"seed": 57464,
+"prompt": "130c2a842b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-02961",
+"ja": "煮びたし さつま揚",
+"desc": "Nibitashi with satsuma-age: a small bowl of soft green komatsuna simmered in soy dashi with slices of brown fried fish cake",
+"items": [
+"kumagaya:02961",
+"kumagaya:02961-2"
+],
+"roll": 0,
+"seed": 41594,
+"prompt": "27e13cba1f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-02974",
+"ja": "ポパイサラダ（キャベツ）",
+"desc": "Popeye salad: a small bowl of dark green spinach, shredded cabbage, corn and carrot in a light dressing",
+"items": [
+"kumagaya:02974"
+],
+"roll": 0,
+"seed": 4436,
+"prompt": "624c4c1b26",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-02977",
 "ja": "金平そぼろごはんの具",
 "desc": "Kinpira and soboro rice topping: a small bowl of brown minced chicken soboro mixed with chopped burdock and carrot kinpira, for rice",
@@ -7094,6 +7514,45 @@
 "roll": 0,
 "seed": 91335,
 "prompt": "f9fe69b535",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03019",
+"ja": "いそ寿司の具（蒸し鶏ほぐし身）",
+"desc": "Isozushi filling: a small bowl of shredded steamed chicken with carrot, shiitake and green bits in a light sweet soy seasoning, for mixing into rice",
+"items": [
+"kumagaya:03019"
+],
+"roll": 0,
+"seed": 2661,
+"prompt": "0a2a39788e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03028",
+"ja": "変わり金平（れんこん・いんげん入り）",
+"desc": "Kinpira with lotus root and green beans: a small bowl of glossy soy-glazed burdock and carrot matchsticks, lotus root slices and green bean pieces",
+"items": [
+"kumagaya:03028"
+],
+"roll": 0,
+"seed": 69072,
+"prompt": "b8afcc460a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03030",
+"ja": "カットコーン（チルド）",
+"desc": "Cut corn: a few short rounds of boiled corn on the cob with plump bright yellow kernels",
+"items": [
+"kumagaya:03030"
+],
+"roll": 0,
+"seed": 40259,
+"prompt": "c749dd6549",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -7150,6 +7609,19 @@
 "checked": false
 },
 {
+"key": "kumagaya-03043-2",
+"ja": "わかめスープ（肉なし、もやし、玉ねぎ）",
+"desc": "Wakame soup with bean sprouts and onion: a soup bowl of clear Chinese broth with dark green wakame, bean sprouts, onion slices and sesame",
+"items": [
+"kumagaya:03043-2"
+],
+"roll": 0,
+"seed": 40971,
+"prompt": "46871a650e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-03053",
 "ja": "冬野菜シチュー",
 "desc": "Winter vegetable stew: a bowl of creamy white stew with chunks of potato, carrot, daikon, turnip, broccoli and chicken",
@@ -7172,6 +7644,19 @@
 "roll": 0,
 "seed": 98920,
 "prompt": "dca1cc31df",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03085",
+"ja": "野菜の中華スープ（チンゲン・じゃが）",
+"desc": "Chinese vegetable soup with bok choy and potato: a soup bowl of clear broth with green bok choy, potato cubes, carrot and onion",
+"items": [
+"kumagaya:03085"
+],
+"roll": 0,
+"seed": 69095,
+"prompt": "6f12114131",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -7202,6 +7687,19 @@
 "checked": false
 },
 {
+"key": "kumagaya-03088-3",
+"ja": "ごぼうサラダ（枝豆・れんこん）",
+"desc": "Burdock salad with edamame and lotus root: a small bowl of brown burdock matchsticks, lotus root slices and green edamame in creamy sesame mayonnaise",
+"items": [
+"kumagaya:03088-3"
+],
+"roll": 0,
+"seed": 83684,
+"prompt": "78b6c748ef",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-03089",
 "ja": "ぶどうゼリー ５０ｇ",
 "desc": "Grape jelly: a small cup of translucent deep purple grape jelly, smooth and wobbly with a glossy surface",
@@ -7212,6 +7710,45 @@
 "roll": 0,
 "seed": 97644,
 "prompt": "a0fe61deba",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03113",
+"ja": "豆腐と野菜のみそ汁",
+"desc": "Tofu and vegetable miso soup: a lacquered soup bowl of tan miso soup with white tofu cubes, daikon, carrot, onion and green onion",
+"items": [
+"kumagaya:03113"
+],
+"roll": 0,
+"seed": 23276,
+"prompt": "73fae35415",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03115",
+"ja": "わかめスープ（肉なし・もやし、たけのこ）",
+"desc": "Wakame soup with bean sprouts and bamboo shoot: a soup bowl of clear Chinese broth with dark green wakame, bean sprouts, bamboo shoot strips and sesame",
+"items": [
+"kumagaya:03115"
+],
+"roll": 0,
+"seed": 31993,
+"prompt": "936409a865",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03119",
+"ja": "枝豆ごはんの具（蒸し鶏）",
+"desc": "Edamame rice topping: a small bowl of green edamame beans with shredded steamed chicken, for mixing into rice",
+"items": [
+"kumagaya:03119"
+],
+"roll": 0,
+"seed": 27826,
+"prompt": "1c6d5cdf2c",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -7256,6 +7793,19 @@
 "checked": false
 },
 {
+"key": "kumagaya-03130-3",
+"ja": "こんにゃくねぎ塩ソテー（鶏ひき肉）",
+"desc": "Konnyaku and minced chicken saute with green onion salt: a small plate of grey konnyaku pieces with crumbled minced chicken and glossy green onion",
+"items": [
+"kumagaya:03130-3"
+],
+"roll": 0,
+"seed": 42701,
+"prompt": "790018eba4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-03131",
 "ja": "芋煮",
 "desc": "Imoni: a bowl of soy-simmered taro chunks, beef slices, konnyaku, long green onion and mushrooms in brown broth",
@@ -7278,6 +7828,32 @@
 "roll": 0,
 "seed": 49064,
 "prompt": "4583502653",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03158",
+"ja": "たけのこと春雨のスープ（肉なし）",
+"desc": "Bamboo shoot and glass noodle soup: a soup bowl of clear Chinese broth with bamboo shoot strips, translucent noodles, carrot and green onion",
+"items": [
+"kumagaya:03158"
+],
+"roll": 0,
+"seed": 37696,
+"prompt": "7148365f89",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03164",
+"ja": "鶏回鍋肉",
+"desc": "Chicken twice-cooked style: a plate of chicken pieces stir-fried with cabbage chunks, green pepper and long onion in a glossy brown sweet miso sauce",
+"items": [
+"kumagaya:03164"
+],
+"roll": 0,
+"seed": 46088,
+"prompt": "d28595c485",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -7308,6 +7884,19 @@
 "checked": false
 },
 {
+"key": "kumagaya-03191",
+"ja": "地場産きゅうりと玉ねぎのサラダ",
+"desc": "Cucumber and onion salad: a small bowl of thin green cucumber slices and translucent onion slices in a light vinegar dressing",
+"items": [
+"kumagaya:03191"
+],
+"roll": 0,
+"seed": 85992,
+"prompt": "5699188e81",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-03194",
 "ja": "ホキのバジルマヨ焼き",
 "desc": "Hoki with basil mayonnaise: a plate of a white fish fillet baked under a golden-browned mayonnaise topping flecked with green basil",
@@ -7330,6 +7919,19 @@
 "roll": 0,
 "seed": 32380,
 "prompt": "2909e03da6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03213",
+"ja": "キャベツとえのきのサラダ（キャベツ、人参、えのき）",
+"desc": "Cabbage and enoki salad: a small bowl of shredded cabbage, carrot strips and thin white enoki mushrooms in a light soy dressing",
+"items": [
+"kumagaya:03213"
+],
+"roll": 0,
+"seed": 14325,
+"prompt": "a87f68ea30",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -7412,6 +8014,45 @@
 "checked": false
 },
 {
+"key": "kumagaya-03250",
+"ja": "タンドリーチキン",
+"desc": "Tandoori chicken: a plate of chicken pieces with a deep orange-red spiced yogurt coating, charred at the edges",
+"items": [
+"kumagaya:03250"
+],
+"roll": 0,
+"seed": 23083,
+"prompt": "0e38ca3791",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03266",
+"ja": "鶏肉のクリームスープ",
+"desc": "Chicken cream soup: a soup bowl of white creamy soup with chicken pieces, potato, carrot, onion and green broccoli",
+"items": [
+"kumagaya:03266"
+],
+"roll": 0,
+"seed": 14141,
+"prompt": "5b49513f80",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03272",
+"ja": "ハンバーグドミソースかけ（ソテーオニオン使用）",
+"desc": "Hamburg steak with demi-glace sauce: a plate of an oval browned ground meat patty under glossy dark brown demi-glace with sauteed onion",
+"items": [
+"kumagaya:03272"
+],
+"roll": 0,
+"seed": 29669,
+"prompt": "340e73971c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-03274",
 "ja": "ビビンバ（彩花みそ）",
 "desc": "Bibimbap topping with miso: a bowl of separate heaps of brown seasoned minced meat, spinach, bean sprouts and carrot, with a dab of red-brown miso sauce",
@@ -7421,6 +8062,32 @@
 "roll": 0,
 "seed": 90096,
 "prompt": "36103d5589",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03278",
+"ja": "鶏肉の和風梅だれかけ",
+"desc": "Chicken with Japanese plum sauce: a plate of grilled chicken pieces topped with a pinkish-red umeboshi sauce",
+"items": [
+"kumagaya:03278"
+],
+"roll": 0,
+"seed": 71291,
+"prompt": "7a78c29fa6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03282",
+"ja": "アジの照り焼き",
+"desc": "Teriyaki horse mackerel: a plate of a grilled aji fillet with silvery skin under a glossy dark brown sweet soy glaze",
+"items": [
+"kumagaya:03282"
+],
+"roll": 0,
+"seed": 30826,
+"prompt": "766cbefda7",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -7464,6 +8131,32 @@
 "checked": false
 },
 {
+"key": "kumagaya-03289",
+"ja": "つるむらさきのおひたし",
+"desc": "Tsurumurasaki ohitashi: a small bowl of glossy dark green Malabar spinach leaves and red-tinged stems in soy dashi, topped with bonito flakes",
+"items": [
+"kumagaya:03289"
+],
+"roll": 0,
+"seed": 24290,
+"prompt": "1681a187a8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03290",
+"ja": "七夕スープ",
+"desc": "Tanabata soup: a soup bowl of clear broth with star-shaped slices of okra and carrot, thin white somen noodles and green leaves",
+"items": [
+"kumagaya:03290"
+],
+"roll": 0,
+"seed": 551,
+"prompt": "c89680830c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-03301",
 "ja": "カリフラワーと枝豆のサラダ",
 "desc": "Cauliflower and edamame salad: a small bowl of white cauliflower florets and bright green edamame with carrot in a light dressing",
@@ -7473,6 +8166,19 @@
 "roll": 0,
 "seed": 81487,
 "prompt": "adf3b58185",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03301-2",
+"ja": "ほうれん草と春雨のサラダ（アスパラ）",
+"desc": "Spinach and glass noodle salad with asparagus: a small bowl of spinach, translucent noodles, green asparagus pieces and carrot in soy-vinegar dressing",
+"items": [
+"kumagaya:03301-2"
+],
+"roll": 0,
+"seed": 63394,
+"prompt": "36f943a331",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -7529,6 +8235,19 @@
 "checked": false
 },
 {
+"key": "kumagaya-03325",
+"ja": "にらともやしのみそ汁",
+"desc": "Chive and bean sprout miso soup: a lacquered soup bowl of tan miso soup with green garlic chives, white bean sprouts and tofu cubes",
+"items": [
+"kumagaya:03325"
+],
+"roll": 0,
+"seed": 54740,
+"prompt": "25995819f2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-03329",
 "ja": "ブルーベリーカップケーキ",
 "desc": "Blueberry cupcake: a small paper-cup muffin with a golden domed top dotted with deep purple blueberries",
@@ -7551,6 +8270,19 @@
 "roll": 0,
 "seed": 12847,
 "prompt": "0fb34c652c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03338",
+"ja": "ホッケみりん干し",
+"desc": "Mirin-dried hokke: a plate of a split grilled atka mackerel fillet with a glossy amber-brown sweet mirin glaze and sesame seeds",
+"items": [
+"kumagaya:03338"
+],
+"roll": 0,
+"seed": 61160,
+"prompt": "33faa9d4da",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -7633,6 +8365,19 @@
 "checked": false
 },
 {
+"key": "kumagaya-03378",
+"ja": "白身魚のごまだれかけ",
+"desc": "White fish with sesame sauce: a plate of a pale fried white fish fillet topped with thick beige sesame sauce",
+"items": [
+"kumagaya:03378"
+],
+"roll": 0,
+"seed": 41548,
+"prompt": "86d78408ec",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-03382",
 "ja": "厚揚げと鶏肉の煮物",
 "desc": "Atsuage and chicken simmered: a bowl of golden-brown fried tofu cubes and chicken pieces with carrot and green beans in a sweet soy broth",
@@ -7681,6 +8426,19 @@
 "roll": 0,
 "seed": 36882,
 "prompt": "373ce8bad6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03388",
+"ja": "しらたきサラダ（わかめ）",
+"desc": "Shirataki salad with wakame: a small bowl of translucent konnyaku noodles, dark green wakame, cucumber and carrot in a soy-vinegar dressing",
+"items": [
+"kumagaya:03388"
+],
+"roll": 0,
+"seed": 67267,
+"prompt": "b44f1d060b",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -7737,6 +8495,19 @@
 "checked": false
 },
 {
+"key": "kumagaya-03398",
+"ja": "かつお竜田揚げ",
+"desc": "Bonito tatsuta-age: a plate of deep red-brown fried skipjack chunks with a crisp starch coating, soy-ginger marinated",
+"items": [
+"kumagaya:03398"
+],
+"roll": 0,
+"seed": 91746,
+"prompt": "ea3c11eb09",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-03399",
 "ja": "あさりとキャベツのペペロンチーノ炒め",
 "desc": "Clam and cabbage peperoncino stir-fry: a plate of soft cabbage with small shelled asari clams, sliced garlic and red chili rings",
@@ -7746,6 +8517,19 @@
 "roll": 0,
 "seed": 78260,
 "prompt": "f02f191e6f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03402",
+"ja": "塩ラーメンスープ（あさり・鶏・めんなし）",
+"desc": "Salt ramen soup with clams and chicken: a soup bowl of clear pale salt broth with clams, chicken, cabbage, bean sprouts, carrot and corn, no noodles",
+"items": [
+"kumagaya:03402"
+],
+"roll": 0,
+"seed": 4752,
+"prompt": "1601f16e1a",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -7908,6 +8692,19 @@
 "checked": false
 },
 {
+"key": "kumagaya-03483",
+"ja": "だんご汁 （肉なし）",
+"desc": "Dango-jiru: a lacquered soup bowl of soy broth with chewy flat white flour dumplings, daikon, carrot, taro and green onion, no meat",
+"items": [
+"kumagaya:03483"
+],
+"roll": 0,
+"seed": 65646,
+"prompt": "542a0fe2d4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-03488",
 "ja": "妻沼ねぎのナムル（ほう・もやし）",
 "desc": "Menuma leek namul: a small dish of sliced green-white naganegi leek, green spinach and white bean sprouts in sesame oil with sesame seeds",
@@ -7921,6 +8718,19 @@
 "checked": false
 },
 {
+"key": "kumagaya-03495",
+"ja": "切干大根のベーコン煮",
+"desc": "Kiriboshi daikon with bacon: a small bowl of tangled pale brown dried radish strips simmered with bacon pieces, carrot and green beans",
+"items": [
+"kumagaya:03495"
+],
+"roll": 0,
+"seed": 71162,
+"prompt": "7c131fa011",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-03496",
 "ja": "ひじきともやしのサラダ",
 "desc": "Hijiki and bean sprout salad: a small bowl of short black hijiki seaweed strands, white bean sprouts, cucumber, carrot and corn in a dressing",
@@ -7930,6 +8740,19 @@
 "roll": 0,
 "seed": 63936,
 "prompt": "ae6a1865a9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03498",
+"ja": "キムチトッポギスープ卵なし",
+"desc": "Kimchi tteokbokki soup: a soup bowl of red spicy broth with chewy white cylindrical rice cakes, kimchi, cabbage and green onion, no egg",
+"items": [
+"kumagaya:03498"
+],
+"roll": 0,
+"seed": 63687,
+"prompt": "7392d76741",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -8038,6 +8861,111 @@
 "checked": false
 },
 {
+"key": "kumagaya-03534",
+"ja": "揚げ餃子★",
+"desc": "Fried gyoza: a plate of crescent-shaped dumplings deep-fried crisp and golden all over with pleated edges",
+"items": [
+"kumagaya:03534"
+],
+"roll": 0,
+"seed": 58545,
+"prompt": "508f8914f6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03535",
+"ja": "ベーコンオニオンオムレツ",
+"desc": "Bacon and onion omelette: a plate of a thick oval yellow omelette with bits of pink bacon and onion visible inside",
+"items": [
+"kumagaya:03535",
+"kumagaya:03535-2"
+],
+"roll": 0,
+"seed": 86983,
+"prompt": "d731b746f4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03539",
+"ja": "鶏肉の塩から揚げ★",
+"desc": "Salt karaage chicken: a plate of craggy pale golden deep-fried chicken chunks seasoned with salt, lighter than soy karaage",
+"items": [
+"kumagaya:03539"
+],
+"roll": 0,
+"seed": 30924,
+"prompt": "81526e6b5b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03545",
+"ja": "鮭メンチカツ★",
+"desc": "Salmon menchi katsu: a plate of an oval patty in golden panko crumb, cut open showing pinkish minced salmon and onion inside",
+"items": [
+"kumagaya:03545"
+],
+"roll": 0,
+"seed": 20640,
+"prompt": "2f8e0f4bb9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03546",
+"ja": "じゃが芋の磯煮（角食缶・蒸し鶏）",
+"desc": "Potato iso-ni: a small bowl of soy-simmered potato chunks with black hijiki seaweed, steamed chicken and carrot",
+"items": [
+"kumagaya:03546"
+],
+"roll": 0,
+"seed": 11354,
+"prompt": "aa6873b836",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03547",
+"ja": "わかめスープ（玉ねぎ・チンゲン）",
+"desc": "Wakame soup with onion and bok choy: a soup bowl of clear Chinese broth with dark green wakame, onion slices, bok choy and sesame",
+"items": [
+"kumagaya:03547"
+],
+"roll": 0,
+"seed": 37196,
+"prompt": "53a9564ae9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03548",
+"ja": "マーボーなす豆腐（素なし）",
+"desc": "Mapo eggplant tofu: a bowl of white tofu cubes and soft purple eggplant in a reddish-brown thickened minced pork sauce with green onion",
+"items": [
+"kumagaya:03548"
+],
+"roll": 0,
+"seed": 59677,
+"prompt": "29dc9582fd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03549",
+"ja": "サワラのごま風味焼き",
+"desc": "Sesame-flavoured grilled sawara: a plate of a grilled Spanish mackerel fillet with pale flesh and a coating of white sesame seeds",
+"items": [
+"kumagaya:03549"
+],
+"roll": 0,
+"seed": 47659,
+"prompt": "dde4f867e7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-03550",
 "ja": "チリコンカン（鶏・レンズ豆）",
 "desc": "Chili con carne with lentils: a bowl of thick red tomato stew with minced chicken, small brown lentils, kidney beans, onion and carrot",
@@ -8117,6 +9045,58 @@
 "checked": false
 },
 {
+"key": "kumagaya-03559",
+"ja": "大根のそぼろ煮物",
+"desc": "Daikon with minced meat: a small bowl of soft simmered translucent daikon chunks under a thickened soy sauce with minced chicken",
+"items": [
+"kumagaya:03559"
+],
+"roll": 0,
+"seed": 47882,
+"prompt": "f26c9c7f73",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03560",
+"ja": "なす入りマカロニのドミグラあえ",
+"desc": "Macaroni and eggplant in demi-glace: a plate of short elbow macaroni with soft purple eggplant pieces and minced meat in glossy dark brown sauce",
+"items": [
+"kumagaya:03560"
+],
+"roll": 0,
+"seed": 89389,
+"prompt": "6e88b8a38f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03561",
+"ja": "肉入りわんたんスープ（中華）",
+"desc": "Wonton soup with pork: a soup bowl of clear Chinese broth with silky wonton dumplings filled with pork, greens, carrot and green onion",
+"items": [
+"kumagaya:03561"
+],
+"roll": 0,
+"seed": 69147,
+"prompt": "2af4fdd490",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03562",
+"ja": "鶏肉のタルタル焼き",
+"desc": "Chicken with tartar sauce: a plate of baked chicken pieces covered with white tartar sauce with chopped egg, browned on top",
+"items": [
+"kumagaya:03562"
+],
+"roll": 0,
+"seed": 22721,
+"prompt": "ac82b61e33",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "kumagaya-03563",
 "ja": "手づくりチキンカツ",
 "desc": "Homemade chicken cutlet: a breaded deep-fried chicken cutlet with golden crumbs, cut into strips showing white meat",
@@ -8165,6 +9145,19 @@
 "roll": 0,
 "seed": 74243,
 "prompt": "13aec02e36",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "kumagaya-03576",
+"ja": "冷凍マンゴー",
+"desc": "Frozen mango: a small dish of frozen bright orange mango cubes with a frosty icy surface",
+"items": [
+"kumagaya:03576"
+],
+"roll": 0,
+"seed": 21849,
+"prompt": "203043da3d",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
