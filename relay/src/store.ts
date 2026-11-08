@@ -72,7 +72,7 @@ export const PAGES_PER_MINUTE = 600;
 const MAX_EVENT_DATA_CHARS = 20_000;
 const UPLOADS_SHOWN = 20;
 /** The ingest audit keeps this long (ms): each ingest lets older rows go. */
-export const UPLOADS_KEEP_MS = 60 * 86_400_000;
+const UPLOADS_KEEP_MS = 60 * 86_400_000;
 /** At most this many events in one `events` request (a queue that grew offline goes in a few). */
 const EVENTS_MAX = 50;
 /** A late row is returned to a poll whose `since` is at most this much after its arrival (the servers' clocks). */

@@ -40,7 +40,7 @@ const KEYLESS_MAX = 512;
  * first 8 `"key"` members is a person's key, or it has none and is small (keyless `health`). A bounded scan, not a
  * parse: the record parses and checks the key again.
  */
-export function keyGate(text: string, keys: Keys): boolean {
+function keyGate(text: string, keys: Keys): boolean {
   let n = 0;
   for (const m of text.matchAll(KEY_FIELD)) {
     if (keyOwner(m[1], keys)) return true;

@@ -105,7 +105,7 @@ npm run e2e:ci-like -- e2e/world3d.spec.ts --repeat 5   # as CI runs it (below)
 
 ## Before you push (a new or changed spec, or a change to the 3D engines, the tent or sync)
 1. `npm run verify` (~25 s): `checks` as CI runs it, all at once, the first red printed and the rest stopped: the lockfile
-   (`npm ci --dry-run`: an ERESOLVE peer conflict), `check`, `knip`, `vitest run`, the quarantine's owners. `-- --quick`:
+   (`npm ci --dry-run`: an ERESOLVE peer conflict), `check`, `knip` (and relay/'s, once `npm ci` ran there), `vitest run`, the quarantine's owners. `-- --quick`:
    vitest on the changes since origin/main only; `-- --build`: the build and its budgets too. No e2e.
 2. `npm run e2e:ci-like -- --changed` (or `-- e2e/the.spec.ts --repeat 5`): the logic tier as CI runs it (a fresh build if `src/` is newer,
    software GL, CI's workers, `CI=1`, a free port), each test 5×. For a drawn (`@render`/`@smoke`) test add
