@@ -4,7 +4,8 @@
 import BASIS, { type Basis } from 'three/examples/jsm/libs/basis/basis_transcoder.js';
 import { TRANSCODE, type Target, type Transcoded } from './ktx2Format.ts';
 
-export type Ask = { id: number; wasm: string; buf: ArrayBuffer; target: Target };
+/** A file to transcode for a target (answered with its `id`), or none: the transcoder loaded ahead (no answer). */
+export type Ask = { id: number; wasm: string; buf?: ArrayBuffer; target?: Target };
 export type Answer = { id: number; tex: Transcoded | null };
 
 let ready: Promise<Basis> | null = null;
@@ -32,6 +33,7 @@ function transcode(m: Basis, buf: ArrayBuffer, target: Target): Transcoded | nul
 }
 
 self.onmessage = async ({ data: a }: MessageEvent<Ask>) => {
+  if (!a.buf || !a.target) return void init(a.wasm).catch(() => {});
   let tex: Transcoded | null = null;
   try {
     tex = transcode(await init(a.wasm), a.buf, a.target);

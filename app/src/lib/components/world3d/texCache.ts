@@ -14,6 +14,8 @@ export const CAP_BYTES = 24_000_000;
 const TOUCH_MS = 86_400_000;
 /** Writes wait this long for more (ms). */
 const WRITE_MS = 1000;
+/** A write transaction's mip data at most (bytes; at least one texture), and the wait between two (ms). */
+const CHUNK_BYTES = 512_000, CHUNK_MS = 100;
 
 type Meta = { b: number; at: number };
 let idb: IDBFactory | null = typeof indexedDB !== 'undefined' ? indexedDB : null;
@@ -27,6 +29,7 @@ export function configureTexCache(o: { indexedDB: IDBFactory | null; now?: () =>
   db = null;
   reads = new Map();
   writes = new Map();
+  flushing = false;
 }
 
 function open(): Promise<IDBDatabase | null> {
@@ -55,6 +58,21 @@ const whole = (t: unknown): t is Transcoded => {
 const bytes = (t: Transcoded) => t.mips.reduce((n, m) => n + m.data.byteLength, 0);
 
 let reads = new Map<string, ((t: Transcoded | null) => void)[]>();
+/** Whether anything of pipeline `pipe` is kept (the database opened meanwhile, ready for the reads): false on a first
+ *  launch, a new pipeline, or no IndexedDB. Never rejects. */
+export async function hasTex(pipe: string): Promise<boolean> {
+  const d = await open().catch(() => null);
+  if (!d) return false;
+  return new Promise((ok) => {
+    try {
+      const r = d.transaction(META, 'readonly').objectStore(META).openKeyCursor(IDBKeyRange.bound(pipe, `${pipe}\uffff`));
+      r.onsuccess = () => ok(!!r.result);
+      r.onerror = () => ok(false);
+    } catch {
+      ok(false);
+    }
+  });
+}
 /** The texture kept under `key`, or null (none, an error, anything odd). Never rejects. */
 export function readTex(key: string): Promise<Transcoded | null> {
   return new Promise((ok) => {
@@ -102,35 +120,54 @@ async function flushReads() {
   }
 }
 
-let writes = new Map<string, Transcoded>();
+let writes = new Map<string, Transcoded>(), flushing = false;
 /** Keep `tex` under `key` (soon, with others; its mip data must not be transferred meanwhile). `pipe`: the current
  *  pipeline's key prefix (another's are let go of). */
 export function writeTex(key: string, tex: Transcoded, pipe: string): void {
   if (!idb) return;
   writes.set(key, tex);
-  if (writes.size === 1) setTimeout(() => void flushWrites(pipe), WRITE_MS);
+  if (flushing) return;
+  flushing = true;
+  setTimeout(() => void flushWrites(pipe, CHUNK_MS), WRITE_MS);
 }
-async function flushWrites(pipe: string): Promise<void> {
-  const batch = writes;
-  writes = new Map();
+/** The writes waiting, CHUNK_BYTES a transaction, `gap` ms apart: a put clones its value on the main thread (the
+ *  island's start, ~6 MB at once, was a long frame on a busy runner). The bound kept with the last. */
+async function flushWrites(pipe: string, gap: number): Promise<void> {
   const d = await open().catch(() => null);
-  if (!d) return;
+  while (d && writes.size) {
+    const chunk: [string, Transcoded][] = [];
+    let n = 0;
+    for (const [k, v] of writes) {
+      if (chunk.length && n + bytes(v) > CHUNK_BYTES) break;
+      chunk.push([k, v]);
+      n += bytes(v);
+    }
+    for (const [k] of chunk) writes.delete(k);
+    await put(d, chunk, writes.size ? null : pipe);
+    if (writes.size && gap) await new Promise((ok) => setTimeout(ok, gap));
+  }
+  writes.clear();
+  flushing = false;
+}
+async function put(d: IDBDatabase, chunk: [string, Transcoded][], pipe: string | null): Promise<void> {
   try {
     const t = d.transaction([DATA, META], 'readwrite'), data = t.objectStore(DATA), meta = t.objectStore(META), at = now();
-    for (const [k, v] of batch) data.put(v, k), meta.put({ b: bytes(v), at } satisfies Meta, k);
+    for (const [k, v] of chunk) data.put(v, k), meta.put({ b: bytes(v), at } satisfies Meta, k);
     // the bound: another pipeline's entries, then the least recently used past CAP_BYTES
-    const keys = meta.getAllKeys(), vals = meta.getAll();
-    vals.onsuccess = () => {
-      const all = (keys.result as string[]).map((k, i) => ({ k, ...(vals.result[i] as Meta) }));
-      const gone = all.filter((e) => !e.k.startsWith(pipe));
-      let total = all.reduce((n, e) => n + (e.k.startsWith(pipe) ? e.b : 0), 0);
-      for (const e of all.filter((x) => x.k.startsWith(pipe)).sort((a, b) => a.at - b.at)) {
-        if (total <= CAP_BYTES) break;
-        gone.push(e);
-        total -= e.b;
-      }
-      for (const e of gone) data.delete(e.k), meta.delete(e.k);
-    };
+    if (pipe !== null) {
+      const keys = meta.getAllKeys(), vals = meta.getAll();
+      vals.onsuccess = () => {
+        const all = (keys.result as string[]).map((k, i) => ({ k, ...(vals.result[i] as Meta) }));
+        const gone = all.filter((e) => !e.k.startsWith(pipe));
+        let total = all.reduce((n, e) => n + (e.k.startsWith(pipe) ? e.b : 0), 0);
+        for (const e of all.filter((x) => x.k.startsWith(pipe)).sort((a, b) => a.at - b.at)) {
+          if (total <= CAP_BYTES) break;
+          gone.push(e);
+          total -= e.b;
+        }
+        for (const e of gone) data.delete(e.k), meta.delete(e.k);
+      };
+    }
     await new Promise<void>((ok) => (t.oncomplete = t.onerror = t.onabort = () => ok()));
   } catch {
     // (full, unavailable: transcoded again next time)
@@ -138,4 +175,4 @@ async function flushWrites(pipe: string): Promise<void> {
 }
 
 /** Tests: the pending writes now. */
-export const flushTexWrites = (pipe: string) => flushWrites(pipe);
+export const flushTexWrites = (pipe: string) => flushWrites(pipe, 0);
