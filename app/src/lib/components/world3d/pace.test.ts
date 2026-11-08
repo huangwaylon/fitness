@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pacer, type PaceClock } from './pace.ts';
+import { moveFast, pacer, SLOW_PX, type PaceClock } from './pace.ts';
 
 /** A page's clock, simulated: timers fire on time (+ `late` ms), and a rAF asked for at `t` runs on the display's next
  *  vsync (60 Hz), or at once (`atOnce`: WebKit with nothing else drawing, its first rAF after an idle spell). */
@@ -87,5 +87,25 @@ describe('pacer', () => {
     p.stop();
     s.run(1000);
     expect([early, drawn.length, p.queued()]).toEqual([2, 2, false]);
+  });
+});
+
+describe('moveFast (a critter move at the full rate or the ambience)', () => {
+  const view = { vw: 390, vh: 660 };
+  const at = (sx: number, sy = 300, visible = true) => ({ sx, sy, visible });
+  it('a move under SLOW_PX a second on screen is ambience, whatever the flight (a dart or a hop never pauses)', () => {
+    // a dart's 40 px in a second, as the darts measured at zoom 1
+    expect(moveFast(1000, false, at(100), at(140), view)).toBe(false);
+    expect(moveFast(1000, false, at(100), at(100 + SLOW_PX), view)).toBe(true);
+  });
+  it('a startled flight, one with no model yet or no time is at the full rate', () => {
+    expect(moveFast(1000, true, at(100), at(101), view)).toBe(true);
+    expect(moveFast(1000, false, null, at(101), view)).toBe(true);
+    expect(moveFast(0, false, at(100), at(101), view)).toBe(true);
+  });
+  it('a fast move off screen (both ends past the margin, or behind the camera) is ambience', () => {
+    expect(moveFast(100, false, at(-200), at(-100), view)).toBe(false);
+    expect(moveFast(100, false, at(100, 300, false), at(200, 300, false), view)).toBe(false);
+    expect(moveFast(100, false, at(-200), at(100), view)).toBe(true);
   });
 });

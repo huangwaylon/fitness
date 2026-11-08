@@ -43,7 +43,7 @@
   import { NOTICE_U, cast as castLine, due, pull, step as stepLine, type Around, type Line as MyLine, type Plan, type Step } from './fishing.ts';
   import { actorOf } from '#lib/ui-state/cast.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import { pace, SLOW_PX } from '../world3d/pace.ts';
+  import { moveFast, pace } from '../world3d/pace.ts';
   import { showCatch } from './catchCard.ts';
   import { timers } from './timers.ts';
   import { fnv1a as seedOf, pickOne } from '#lib/random.ts';
@@ -560,14 +560,12 @@
     }, ms);
     wake();
   }
-  /** A bug's move drawn at the full rate: a dart, a hop, a startled flight, a snap, one with no 3D spot yet, or one
-   *  at least SLOW_PX a second on screen (from where its model is now to where it goes). */
+  /** A bug's move drawn at the full rate (pace.ts moveFast: a startled flight, one with no 3D spot yet, or one at least
+   *  SLOW_PX a second on screen, a dart's and a hop's alike). */
   function bugFast(b: Bug): boolean {
     const m = mos.get(bugId(b));
-    if (!pace.slow || !m || b.ms <= 0 || b.fled || b.flight === 'dart' || b.flight === 'hop') return true;
-    const p = w.screenAt(b.x, b.z, b.lift), q = w.screenAt(m.xyz[0], m.xyz[1], m.xyz[2]), v = w.view;
-    const on = (s: typeof p) => s.visible && s.sx > -80 && s.sx < v.vw + 80 && s.sy > -80 && s.sy < v.vh + 80;
-    return (on(p) || on(q)) && (Math.hypot(p.sx - q.sx, p.sy - q.sy) / b.ms) * 1000 >= SLOW_PX;
+    if (!pace.slow) return true;
+    return moveFast(b.ms, !!b.fled, m ? w.screenAt(m.xyz[0], m.xyz[1], m.xyz[2]) : null, w.screenAt(b.x, b.z, b.lift), w.view);
   }
   onMount(() => () => {
     clearTimeout(fullTimer);
