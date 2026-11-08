@@ -264,3 +264,20 @@ describe('the record’s compaction', () => {
     expect(isCompactTick(Date.parse('2026-11-04T04:15:00.000Z'))).toBe(false);
   });
 });
+
+describe('the user’s hold on compaction (2026-11-05: keep every Health row)', () => {
+  it('nothing turns the cron’s compaction on: no COMPACT_CRON in wrangler.toml, production’s or the test env’s, nor in a deploy', async () => {
+    // health A9 (2026-11-08): the code stays, gated; only the user lifts the hold (docs/ops/runbook.md §13)
+    const { readFileSync, readdirSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const root = join(import.meta.dirname, '..', '..');
+    const set = /^\s*COMPACT_CRON\s*=/m;
+    expect(readFileSync(join(root, 'relay', 'wrangler.toml'), 'utf8')).not.toMatch(set);
+    const pkg = readFileSync(join(root, 'relay', 'package.json'), 'utf8');
+    expect(pkg).not.toMatch(/COMPACT_CRON/);
+    const flows = join(root, '.github', 'workflows');
+    let names: string[] = [];
+    try { names = readdirSync(flows); } catch { /* the relay's CI checks out relay/ and app/src only */ }
+    for (const f of names) expect(readFileSync(join(flows, f), 'utf8'), f).not.toMatch(/COMPACT_CRON/);
+  });
+});
