@@ -205,8 +205,8 @@
     if (!openTree) return;
     // Capture phase, so it runs before the tapped control's own handler; the tap still does what it does.
     const away = (e: PointerEvent) => {
-      // A tree's own buttons toggle it themselves.
-      if (!(e.target instanceof Element) || !e.target.closest('.canopy, .row-btn')) {
+      // A tree's own buttons toggle it themselves; the popup's ごはん button opens the sheet (which closes it: covered).
+      if (!(e.target instanceof Element) || !e.target.closest('.canopy, .row-btn, [data-tree-food]')) {
         openTree = null;
         closedBy = e;
         // a tap on the popup itself only closes it: the click that follows (the popup gone from under the finger) must

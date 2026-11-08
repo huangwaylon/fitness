@@ -108,6 +108,37 @@ test('the popup’s 朝 / 昼 / 夜: a meal logged in ごはん fills its circle
   await expect(page.locator(`.detail [data-meal=${meal}] svg.ok`)).toBeVisible();
 });
 
+test('the popup’s ごはん button opens ごはん on today, on the tree’s person’s day, in place (no walk, the island paused)', async ({ page }) => {
+  await open(page, '2026-11-04T12:30');
+  const canopy = async (who: string) => page.locator(`button.canopy[aria-controls="${await page.locator(`[data-tree-row=${who}]`).getAttribute('aria-controls')}"]`);
+  const sheet = page.locator('dialog[open]');
+  // my tree's: きろく, 健康 shown last (the dumbbell's default) and still ごはん opens
+  await (await canopy('A')).click();
+  const go = page.locator('.detail [data-tree-food=A]');
+  await expect(go).toHaveText('きろく');
+  await expect(go).toHaveAccessibleName('ごはんを きろく する');
+  await go.click();
+  await expect(sheet.locator('[data-kenkou-tab=food]')).toHaveAttribute('aria-current', 'page');
+  await expect(sheet.locator('[data-food-date]')).toHaveAttribute('data-food-date', '2026-11-04');
+  await expect(sheet.locator('.titlebar [data-who]')).toHaveAttribute('data-who', 'A');
+  await expect(sheet.locator('[data-add=b]')).toBeVisible(); // my own day: ＋ per meal
+  await expect(page.locator('.detail')).toHaveCount(0); // the popup closed under the sheet
+  await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0); // a button: never a walk
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { stats(): { paused: boolean } } }).__world3d.stats().paused)).toBe(true);
+  await page.keyboard.press('Escape');
+  await expect(sheet).toHaveCount(0);
+
+  // the partner's tree: みる, their day (read-only), today again
+  await (await canopy('B')).click();
+  const see = page.locator('.detail [data-tree-food=B]');
+  await expect(see).toHaveText('みる');
+  await see.click();
+  await expect(sheet.locator('.titlebar [data-who]')).toHaveAttribute('data-who', 'B');
+  await expect(sheet.locator('[data-food-date]')).toHaveAttribute('data-food-date', '2026-11-04');
+  await expect(sheet.locator('[data-add]')).toHaveCount(0);
+  await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
+});
+
 test('with nothing fallen, the fruit row still opens the popup; from the keyboard it picks up the first fallen fruit', async ({ page }) => {
   await open(page, '2026-11-04T05:30');
   await page.locator('button.row-btn').first().click();

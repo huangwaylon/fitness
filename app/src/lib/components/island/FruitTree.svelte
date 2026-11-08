@@ -11,7 +11,7 @@
   // is the one home of a person's per-fruit detail: a nameplate (whose tree), then per goal (🍎 steps first, POPUP_ORDER)
   // today's amount against the goal (met or not), ✓ once met and a 「がんばり」 chip once at 1.5× (every stretched row
   // alike, whatever the cap; no numbers on the rows), each held by a faint ghost until then (the chip's only while the
-  // cap can still pay); then the day's meals (朝 / 昼 / 夜, ✓ once logged: mealChecks.ts); then one ledger of the day, its zeros faint: もくひょう (+1 a goal met), がんばり (always; +1 a
+  // cap can still pay); then the day's meals (朝 / 昼 / 夜, ✓ once logged: mealChecks.ts; its button → ごはん on that day: kenkouAsk); then one ledger of the day, its zeros faint: もくひょう (+1 a goal met), がんばり (always; +1 a
   // goal at 1.5×, at most +2; 「（上限 2）」 when more were reached), this person's total (「うめの きょう +6 ベル」),
   // then ふたりでぜんぶ (both people, all four goals: +2, shared: shown in both popups, so ウェイ + うめ + ふたりでぜんぶ
   // is today's total, ごほうび's 「きょう +N ベル」) and when the data last arrived. It stays until this tree is tapped again, the other
@@ -48,6 +48,9 @@
   import { site } from './site.svelte.ts';
   import { recordGoods } from '#lib/store/actions.ts';
   import { MAIN_MEALS, mealsLogged } from './mealChecks.ts';
+  import { askFood } from './kenkouAsk.svelte.ts';
+  import { prefetchSheet } from './sheetChunks.ts';
+  import { sheetTap } from '#lib/ui-state/sheetTiming.ts';
 
   interface Props {
     person: PersonWeekView;
@@ -121,6 +124,14 @@
   /** Today's 朝 / 昼 / 夜 in this person's meal log (mealChecks.ts; everyone's meals are seen by all three, the guest
    *  too: contract/guest.ts), read only while the popup is open; none in the gallery (no model). */
   const meals = $derived(open && week.model && week.view ? mealsLogged(week.model.state, person.person, week.view.today) : null);
+  /** This phone's person's own tree: its ごはん button logs (きろく); anyone else's shows the day (みる: read-only). */
+  const mine = $derived(week.view?.viewer === person.person);
+  /** The meals row's button: けんこう and ごはん's sheet on ごはん, today, on this tree's person's day (kenkouAsk.svelte.ts).
+   *  It acts in place: a button, so the tap never walks the player (SceneTaps), and the scene's tap-away leaves it be. */
+  function toFood() {
+    sheetTap();
+    askFood(person.person);
+  }
   /** The fruit row leans out from the island's middle (left tree left, right tree right). */
   const lean = $derived(fruitLean(x, site.midX));
   /** The fruit row's offset off a building's ground, moved as one (world.ts offBuildingsAt round its middle, its whole
@@ -477,7 +488,8 @@
         <span class="row" class:on={picked === f} data-row={f} data-stretched={r.stretched || null}>
           <span class="ic"><OfficialArt key={fruitArt(f)} size="20px" eager /></span>
           <span class="lbl">{t(`fruit.${f}`)}</span>
-          <span class="amt money" class:met={r.met}>{#if r.met}<svg class="ok" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{:else}<span class="ok todo" aria-hidden="true"></span>{/if}{amount(f)}</span>
+          <span class="ck">{#if r.met}<svg class="ok" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{:else}<span class="ok todo" aria-hidden="true"></span>{/if}</span>
+          <span class="amt money" class:met={r.met}>{amount(f)}</span>
           <span class="gbc">{#if r.stretched}<span class="chip">{t('tree.stretched')}</span>{:else if stretchBells < STRETCH.cap}<span class="ghost" aria-hidden="true">{t('tree.stretched')}</span>{/if}</span>
         </span>
       {/each}
@@ -493,6 +505,10 @@
                 {#if meals[m]}<svg class="ok" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{:else}<span class="ok todo" aria-hidden="true"></span>{/if}<span aria-hidden="true">{t(`tree.meal.${m}`)}</span>
               </span>
             {/each}
+          </span>
+          <span class="gbc">
+            <button type="button" class="go" class:see={!mine} data-tree-food={person.person} data-sfx="self" aria-label={t(mine ? 'tree.meals.logLabel' : 'tree.meals.seeLabel', { name: person.villagerName })}
+              aria-haspopup="dialog" onpointerdown={(e) => (e.stopPropagation(), void prefetchSheet('health'))} onclick={toFood}>{t(mine ? 'tree.meals.log' : 'tree.meals.see')}</button>
           </span>
         </span>
       {/if}
@@ -585,11 +601,12 @@
     40% { transform: translate(-10px, 40px) rotate(120deg); } 75% { transform: translate(8px, 80px) rotate(240deg); opacity: 1; }
     100% { transform: translate(0, 110px) rotate(320deg); opacity: 0; }
   }
-  /* NH-style popup: a nameplate, then one row per fruit (icon · word · ✓ once met and amount / goal · +1), in shared columns
-     (subgrid) so the numbers line up */
+  /* NH-style popup: a nameplate, then one row per fruit in shared columns (subgrid): icon · word · ✓ · amount / goal
+     (right-aligned, tabular) · がんばり; the meals row on the same grid (its circles from the ✓ column, its button in
+     がんばり's); the ledger and the footer inset as the rows, so every left and right edge lines up */
   .pop { position: absolute; inset: 0; z-index: var(--z-popup); pointer-events: none; --safe-b: var(--safe-bottom); }
   .detail {
-    position: absolute; left: 0; top: 0; display: grid; grid-template-columns: 20px auto auto auto; gap: 3px 0;
+    position: absolute; left: 0; top: 0; display: grid; grid-template-columns: 20px auto 18px auto auto; gap: 3px 8px;
     background: var(--plate); border-radius: var(--r-btn); padding: 16px 10px 8px; white-space: nowrap;
     box-shadow: 0 4px 0 var(--plate-lip); color: var(--plate-ink);
     /* it takes the tap that lands on it (the scene's tap-away closes it), so a tap on the popup never reaches a visitor or
@@ -610,13 +627,14 @@
     max-width: calc(100% - 20px); overflow: hidden; text-overflow: ellipsis;
   }
   .row {
-    grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; column-gap: 8px;
+    grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center;
     padding: 3px 6px; border-radius: var(--r-chip); line-height: 1;
   }
   .row.on { background: var(--c-yuzu); }
   .ic { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; line-height: 0; }
   .lbl { font: 500 var(--fs-s)/1.2 var(--font-ui); }
-  .amt { display: flex; align-items: center; justify-content: flex-end; gap: 5px; font: 700 var(--fs-s)/1.2 var(--font-num); color: var(--c-ink-soft); }
+  .ck { display: flex; }
+  .amt { text-align: right; font: 700 var(--fs-s)/1.2 var(--font-num); font-variant-numeric: tabular-nums; color: var(--c-ink-soft); }
   .amt.met { color: var(--c-leaf-text); }
   .ok { width: 18px; height: 18px; flex: none; padding: 3px; border-radius: 50%; background: var(--c-leaf); color: var(--c-ink); display: block; }
   /* not met yet: the ✓'s place as a faint dashed ring, so an early morning's popup shows where the ✓ will come */
@@ -626,23 +644,30 @@
   }
   /* がんばり on a row (1.5×): the same small yuzu chip on every stretched row, in its own column so the values line up;
      until then a ghost of it (dashed, faint) holds the place */
-  .gbc { display: flex; justify-content: flex-start; }
-  .chip {
-    padding: 2px 6px 3px; border-radius: var(--r-pill); background: var(--c-yuzu); color: var(--c-ink);
-    font: 700 11px/1.1 var(--font-ui); box-shadow: 0 1px 0 var(--c-yuzu-lip);
+  .gbc { display: flex; }
+  .chip, .ghost, .go { flex: 1; box-sizing: border-box; padding: 3px 8px; border-radius: var(--r-pill); text-align: center; font: 700 13px/1.1 var(--font-ui); }
+  .chip { background: var(--c-yuzu); color: var(--c-ink); box-shadow: 0 1px 0 var(--c-yuzu-lip); }
+  .ghost { padding: 2px 7px; border: 1px dashed color-mix(in srgb, var(--plate-ink) 30%, transparent); color: color-mix(in srgb, var(--plate-ink) 38%, transparent); }
+  /* the meals row's ごはん button: the column's pill, raised; leaf (the kit's action) on my own tree, the cream card on
+     anyone else's (a look only); its tap area 44px tall over the rows around it */
+  .go {
+    --lip: var(--c-leaf-edge);
+    position: relative; appearance: none; margin: 0; border: 0; cursor: pointer; background: var(--c-leaf); color: var(--c-ink);
+    box-shadow: 0 2px 0 var(--lip); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    transition: transform 120ms var(--ease-soft), box-shadow 120ms var(--ease-soft);
   }
-  .ghost {
-    padding: 1px 5px 2px; border-radius: var(--r-pill); border: 1px dashed color-mix(in srgb, var(--plate-ink) 30%, transparent);
-    color: color-mix(in srgb, var(--plate-ink) 38%, transparent); font: 700 11px/1.1 var(--font-ui);
-  }
+  .go::after { content: ''; position: absolute; left: -4px; right: -4px; top: 50%; height: var(--hit); translate: 0 -50%; }
+  .go.see { --lip: var(--c-edge); background: var(--c-card); }
+  .go:active { transform: translateY(2px); box-shadow: 0 0 0 var(--lip); }
+  .go:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   /* today's meals: the goal rows' ✓ and dashed ring, one per meal, each with its 朝 / 昼 / 夜 (display only) */
-  .mls { grid-column: 3 / -1; display: flex; align-items: center; gap: 8px; }
+  .mls { grid-column: 3 / -2; display: flex; align-items: center; gap: 8px; }
   .ml { display: inline-flex; align-items: center; gap: 3px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: color-mix(in srgb, var(--plate-ink) 55%, transparent); }
   .ml.on { color: var(--c-leaf-text); }
   /* the day's ledger: word left, ベル right; this person's total under a hairline */
   .sum {
     grid-column: 1 / -1; display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 2px 12px;
-    margin-top: 3px; padding: 5px 8px 1px; border-top: 1px dashed color-mix(in srgb, var(--plate-ink) 25%, transparent);
+    margin-top: 3px; padding: 5px 6px 1px; border-top: 1px dashed color-mix(in srgb, var(--plate-ink) 25%, transparent);
     font: 500 var(--fs-s)/1.2 var(--font-ui); color: var(--plate-ink);
   }
   .sum .v { font: 700 var(--fs-s)/1.2 var(--font-num); text-align: right; }
@@ -657,7 +682,7 @@
     border-top: 1px dashed color-mix(in srgb, var(--plate-ink) 25%, transparent); font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--plate-ink);
   }
   .duo b { font-family: var(--font-num); }
-  .duo small { font: 500 11px/1.1 var(--font-ui); color: var(--c-ink-soft); }
+  .duo small { font: 500 13px/1.1 var(--font-ui); color: var(--c-ink-soft); }
   .duo svg { width: 16px; height: 16px; flex: none; fill: color-mix(in srgb, var(--plate-ink) 30%, transparent); }
   .duo.met svg { fill: var(--c-yuzu-lip); }
   /* when the data last arrived: soft and small, under everything; the plate is cream at every time of day, so the
@@ -669,16 +694,13 @@
   .sync.late::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: color-mix(in srgb, var(--c-ink-soft) 55%, transparent); }
   /* narrow stages: the word goes (the fruit art says which), so the popup fits over its own tree */
   @container (max-width: 400px) {
-    .detail { grid-template-columns: 20px auto auto; }
+    .detail { grid-template-columns: 20px 18px auto auto; column-gap: 10px; }
     .lbl { display: none; }
-    .mls { grid-column: 2 / -1; padding-left: 4px; }
-    .row { column-gap: 10px; }
-    /* a clear gap, so the longest value (14,164 / 8,000歩) never touches its fruit */
-    .amt { padding-left: 4px; }
+    .mls { grid-column: 2 / -2; }
   }
   /* short screens: tighter rows, so the popup covers less of the canopy when the sky is short (keepInside) */
   @media (max-height: 700px) {
-    .detail { gap: 0; padding: 14px 8px 6px; }
+    .detail { row-gap: 0; padding: 14px 8px 6px; }
     .row { padding-block: 2px; }
     .sum { row-gap: 0; }
     .sum .rule { margin: 0; }
