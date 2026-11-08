@@ -169,12 +169,12 @@ line (also a narrower key's way to drop a broader one's), and a key matching no 
   outside ±max(15 %, 10 kcal) of it are left out of the group (their items get no `byId` entry), so each member's own
   kcal agrees with its source's value. `n` = agreeing families, or 1 when the kept values spread more than 1.5×.
   **n ≥ 2 = confirmed**: the app's search shows ✓n beside the name.
-- Current build: 867 groups covering 1,263 items. 753 groups have n ≥ 2 (980 items), 104 have n ≥ 3 and 12 have n ≥ 4.
+- Current build: 867 groups covering 1,266 items. 753 groups have n ≥ 2 (982 items), 104 have n ≥ 3 and 12 have n ≥ 4.
 
 ## Pictures
 ごはん's food pictures are AI-generated イメージ (ours: Z-Image-Turbo, Apache-2.0, run locally) of generic foods and
-dishes, in one style (coloured pencil and watercolour on the paper colour). Packaged products, custom foods and anything
-not drawn yet keep their category's tile. `food-data/images/fi.py` (its docstring has the commands) does the following:
+dishes, in one style (coloured pencil and watercolour on the paper colour): 5,026 pictures cover all 6,185 generic foods
+(907 sheets). Packaged products and custom foods keep their category's tile. `food-data/images/fi.py` (its docstring has the commands) does the following:
 - **Table** (`food-data/images/table/*.json`, hand-written): one row per visual concept, `{key, ja, desc, items}`. Variants
   that look alike share a row (脂身つき / なし, 和牛 / 輸入牛, a dish's sizes, the same dish in dishes and eatout); states
   that look different get their own (生 / 焼き, 乾 / ゆで). `desc` is a short English description of what the food looks
@@ -183,7 +183,7 @@ not drawn yet keep their category's tile. `food-data/images/fi.py` (its docstrin
 - **Generation** (`gen`, the mflux tool's Python, about 15–50 s per image on a shared GPU): the prompt (`PROMPT`,
   `PROMPT_V`) with the row's `desc`, seed `crc32(key) % 100000 + roll`, 9 steps, 512 px. Images are cached in
   `$FOOD_IMG_RAW/gen/` (default ~/food-images-raw, outside the repo), so a re-run skips what exists and is resumable.
-- **Checks** (optional for now; the user, 2026-11-06): the images ship unchecked, listed in `food-data/images/shipped.json`
+- **Checks** (optional; not run yet): the images ship unchecked, listed in `food-data/images/shipped.json`
   (each key's description, seed, prompt hash and `checked: false`). The checks, when run (`FI_CHECKS=1`), are
   (a) `verify`: a second vision model (qwen via ollama) compares each image with at least 2 vetted reference photos
   (`refs`: Commons, Wikidata P18, Wikipedia, the MAFF photos; look-only, kept outside the repo, never shipped);

@@ -46,7 +46,7 @@ export const TICKET_HEADER = 'X-Island-Ticket';
 /**
  * The admission (relay review O3, the server half): a socket's request with a ticket among its subprotocols
  * (contract/ticket.ts) goes on marked with whose it is (TICKET_HEADER); a bad or stale ticket is refused (null: 403).
- * One without a ticket still goes on, unmarked (the phones send none yet; once they all do, it is required here).
+ * One without a ticket still goes on, unmarked (the phones send one, sync/live.ts; an older build may not).
  */
 export async function admission(req: Request, keys: Keys, now: number): Promise<Request | null> {
   const t = ticketIn(req.headers.get('Sec-WebSocket-Protocol'));

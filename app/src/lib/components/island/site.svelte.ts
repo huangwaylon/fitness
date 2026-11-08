@@ -1,4 +1,4 @@
-// The island on its layout (docs/island-layout.md "What the 3D integration must change"): world.ts's geometry is the
+// The island on its layout (docs/island-layout.md "How the 3D island reads it"): world.ts's geometry is the
 // editable layout's (layoutWorld.ts worldOf, swapped in by world.ts setWorld) for the gameplay (the walk, the critters'
 // waters, the fishing, the finds, the doors, the seats, the visitors, the tap areas over the 3D canvas) and the 3D
 // scene alike, and follows every change of it (the editor's, a phone's もようがえ) as it lands.

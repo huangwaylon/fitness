@@ -5,7 +5,7 @@
 import { layout } from '#lib/store/layout.svelte.ts';
 import type { Proj3 } from '../island/camera.svelte.ts';
 
-/** What the board needs of the 3D island (docs/board.md "To the 3D lead"): optional, so the board works without a 3D island. */
+/** What the board needs of the 3D island (docs/board.md "The 3D hooks"): optional, so the board works without a 3D island. */
 export type BoardProj = Proj3 & {
   focus?(f: { x: number; z: number; y: number; w: number; h: number; yaw?: number; top?: number; bottom?: number; fill?: number }, ms?: number): Promise<void>;
   unfocus?(ms?: number): Promise<void>;

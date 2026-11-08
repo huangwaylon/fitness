@@ -2,16 +2,15 @@
 
 The hiking-trails app (`~/Documents/other/hiking-trails`, "Ume-chan's Trails") ported into the island: ten trails (eight
 in Washington State, two in Japan) on topo maps, with a scrubbable elevation chart and Kinpu's YAMAP plan. Drawn on the
-unified kit like りょこう and けっこんしき (design.md "Unified kit", 2026-11-07): the app's paper, cards and tokens; one
-list, no tab bar.
+unified kit like 旅行 and 結婚式 (design.md "Unified kit"): the app's paper, cards and tokens; one list, no tab bar.
 
-## Decisions (the user, 2026-11-06)
+## Decisions
 
-- Everything comes as it is: the write-ups (the user's), AllTrails' stats, the simplified tracks and the ten photos.
+- Everything comes as it is: the write-ups, AllTrails' stats, the simplified tracks and the ten photos.
 - The old map styles: USGS Topo for Washington, GSI 地理院タイル std for Japan, as MapLibre raster sources. The old
   app's IndexedDB tile store, its save buttons and tile manifest are not ported (offline: "Offline" below).
 - Live tracking and the free hike: later.
-- The entry: the leaf menu's トレイル pill (between けっこんしき and せってい).
+- The entry: the HUD menu's トレイル pill (the menu: [design](design.md#island)).
 
 ## Entry
 
@@ -48,15 +47,15 @@ map ever drew, a retry. Under drawOff() (the e2e's logic tier) a stub draws the 
 
 ## Offline
 
-(2026-11-07, phase A: docs/backend.md "Service worker" › Offline.) The ten tracks are precached (~70 KB): every
+(docs/backend.md "Service worker" › Offline.) The ten tracks are precached (~70 KB): every
 trail's chart and its map's route read offline, opened before or not. A photo seen is kept (`island-photos-v1`); one
 never seen is the paper placeholder. The map draws offline once it has drawn on the phone: MapLibre kept in the
 shell, the USGS / GSI tiles it drew in `island-tiles-v1` (both send `Access-Control-Allow-Origin: *`: readable, so
 counted at their size); where none was kept, the track alone with the note.
 
-Phase B (the user, 2026-11-07): all ten trails have 「オフライン用に保存」 on the map, under ‹ (design.md "Offline maps").
-The plan (`lib/offline/plan.ts planTrail`): z12–13 within 3 km of the track, z14–16 within 1 km. As built (measured,
-every tile once): USGS 1.6–3.1 MB (Talapus 1.6, Pilchuck 1.9, Valhalla 2.0, Lake 22 2.2, Snow Lake 2.4, Bridal Veil
+All ten trails have 「オフライン用に保存」 on the map, under ‹ (design.md "Offline maps").
+The plan (`lib/offline/plan.ts planTrail`): z12–13 within 3 km of the track, z14–16 within 1 km. Sizes (every tile
+once): USGS 1.6–3.1 MB (Talapus 1.6, Pilchuck 1.9, Valhalla 2.0, Lake 22 2.2, Snow Lake 2.4, Bridal Veil
 2.6, Skyline 3.1), Enchantments 8.8 MB (519 tiles); GSI Kinpu 3.3, Fuji 4.4. GSI's tiles are kept on the phone only
 (never re-served), saved to z16 (offline the source is capped there and scaled up past it), and its credit
 「出典：国土地理院（地理院タイル）」 shows on the map above the sheet's peek and in the credits.
@@ -66,7 +65,7 @@ every tile once): USGS 1.6–3.1 MB (Talapus 1.6, Pilchuck 1.9, Valhalla 2.0, La
 - **The list:** NavBar (✕); one ChipRow: すべて 中級 上級 最上級 with their counts, then 距離順 標高差順 (a sort is off
   again on a second tap); a dense card per trail: a 120px PhotoBand (the level's sticker: leaf, yuzu, coral; the name
   and area) over a StatStrip (距離 · 標高差 · 時間, `stats.ts`).
-- **A trail:** the map full screen under the game's buttons (the user: like the HUD's and the island's): NavBar's ‹ ✕,
+- **A trail:** the map full screen under the game's buttons (like the HUD's): NavBar's ‹ ✕,
   44px cream discs with the brown edge and lip at every time of day, ＋ − and locate the same object (locate sky while on). The location dot appears only after the locate button, through the trip map's `LocWatch` (the position
   never leaves the phone). The drag-up sheet on the paper: the grip, the peek (the name, a StatStrip with 難易度) tall
   enough for the whole elevation chart; drag or tap it up to 90 %, and Esc folds it back. The body, dense cards: the

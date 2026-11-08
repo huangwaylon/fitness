@@ -1,9 +1,8 @@
 # The island's bulletin board (けいじばん)
 
 NH's island board (`EvtobjBbs`, the green one outside Resident Services; the bird that perches on it, `BbsBirdDay` by
-day and `BbsBirdNight` at night): everyone on the island writes short notes on it, and everyone sees them at once.
-The user: "I want users to be able to walk up to it to update its contents for everyone to see. The camera should zoom
-up to it so that we see it clearly in 3D space and allow editing it." Then: "put the sign up near the front of the beach."
+day and `BbsBirdNight` at night) near the front of the beach: everyone on the island walks up to it, writes short
+notes on it, and everyone sees them at once. The camera zooms up to it, so it's read and edited in 3D.
 
 ## Files
 
@@ -15,14 +14,14 @@ up to it so that we see it clearly in 3D space and allow editing it." Then: "put
 | Its spot: a layout object `board` (`layout/catalog.ts`: furniture, 2 × 1 tiles, `fixed`, `turns`, `front`: the tile before it kept clear to read it), movable in the editor | `app/src/lib/layout/` |
 | The camera's focus and the face on the 3D model | `app/src/lib/components/world3d/` (engine.ts `focus` / `unfocus`, things.ts `attach`) |
 
-## The 3D hooks (the board's "To the 3D lead")
+## The 3D hooks
 
 On `world.three` (camera.svelte.ts `Proj3`, filled by Island3D from the engine; `board/spot.ts` `BoardProj`), all
 optional: without `focus` the board opens as a sheet over the island.
 
 - `focus(f, ms = 600)`: dolly and zoom to look at a rect face-on (`f`: its middle x, z on the ground, `y` u above it,
   `w` × `h` u, `yaw` its face's way, `top` / `bottom` screen px to keep it between, `fill` the share of the free screen,
-  0.9 by default), along a cubic in-out ease; the camera's x leaves MID_X for this only (the user's exception to "x
+  0.9 by default), along a cubic in-out ease; the camera's x leaves MID_X for this only (the one exception to "x
   kept centred, no automatic camera moves"); the gestures are off while focused; called again it re-frames from where
   it is (the keyboard opening: a new `bottom`).
 - `unfocus(ms = 600)`: back to exactly the view the first focus left, then the gestures on again. While focused, a
@@ -62,8 +61,8 @@ seconds); the board follows `world.rest.three` (`world.three` isn't reactive).
   the canvas's rect to the edge's and the controls' rects, so iOS scrolling the page to the field (it does, even under
   `overflow: hidden`) moves nothing out of sight. Fields are ≥ 16 px (no zoom on focus); `focus({ preventScroll })`.
   Why: iOS never resizes the layout viewport for the keyboard, and `innerHeight` follows the visual viewport, so
-  `innerHeight − vv.height − vv.offsetTop` reads 0 (the iOS 26 simulator: innerHeight 714 → 377, vv offsetTop 337).
-- **Editing:** an author edits their own; anyone deletes anyone's, the guest as ウェイ and うめ (2026-11-06).
+  `innerHeight − vv.height − vv.offsetTop` reads 0.
+- **Editing:** an author edits their own; anyone deletes anyone's, the guest as ウェイ and うめ.
 - **Notices:** a post by someone else since I last opened the board puts a 「！」 over it, cleared when I open it.
 
 ## The data (docs/backend.md#events `board`)

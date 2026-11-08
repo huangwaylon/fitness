@@ -1,13 +1,12 @@
 # けっこんしき (the wedding board)
 
-The wedding planning board of `~/Documents/other/wedding` (React over an Apps Script / Google Sheet), moved into the
-app: the HUD menu's けっこんしき pill.
+The wedding planning board, ported from the old `~/Documents/other/wedding` app (React over an Apps Script / Google
+Sheet): the HUD menu's 結婚式 pill (the menu: [design](design.md#island)).
 
-## Decisions (the user, 2026-11-06)
+## Decisions
 
-- The two members edit; the guest reads only (server-enforced). No key-less share link for now.
-- No host villager on the board (the redesign, 2026-11-06: Harvey and the arch removed; normal Japanese labels).
-- The leaf menu has six pills: ベル, ずかん, えいご, りょこう, けっこんしき, せってい.
+- The two members edit; the guest reads only (server-enforced). No key-less share link.
+- No host villager on the board; normal Japanese labels.
 - No ベル tie-in.
 - One wedding date: the board's `date` setting drives the island's countdown, its wedding-day events and music
   (`time/holidays.ts` `weddingDate`, fed by the model's rows, the guest's too; 2027-10-08 until the record has one).
@@ -22,11 +21,11 @@ app: the HUD menu's けっこんしき pill.
   countdown in days in the board's time zone (default Asia/Tokyo).
 - **Notes:** one shared markdown note (headings, lists, bold, italic, http(s) links).
 - **Settings (members):** the names, the date and time, the venue, the categories; the deleted tasks with 戻す, and
-  完全に削除 (final). No time zone row (2026-11-08: one wedding, in Japan; a `tz` the record holds still applies).
+  完全に削除 (final). No time zone row (one wedding, in Japan; a `tz` the record holds still applies).
 - **Categories** (`lib/contract/wedCats.ts`): the starter list in Japanese, 予算 · 会場 · 招待客 · 業者 · 衣装 · 料理 ·
   ペーパーアイテム · 写真 · 音楽 · 美容 · ギフト · 手続き · 新婚旅行 · その他 (free text: a typed one as typed). The old board's
-  English names (Guests, Paperwork, …) were renamed on the record once, 2026-11-09 (`relay/scripts/wedding-cats.ts`,
-  after a bookmark: A's ops through `/api`; idempotent, a dry run by default).
+  English names (Guests, Paperwork, …) were renamed on the record once (`relay/scripts/wedding-cats.ts`: A's ops
+  through `/api`; idempotent, a dry run by default).
 - Dropped from the old board: the accent colours, the edit link and read-only toggle (the keys replace them), the
   starter templates.
 
@@ -89,16 +88,16 @@ fallback 2027-10-08), driven by `e2e/wedding-board.spec.ts`.
 
 ## Migration
 
-Done 2026-11-06: the old Apps Script's `doGet` reply, converted and loaded into PRODUCTION: 63 events (52 `wtask`, 3 `wdone`, 7
-`wconf`, 1 `wnote`), each `imported: true`, person `A`, ids `wed-<id>-wtask`, `wed-<id>-wdone`, `wed-conf-<key>`,
-`wed-note` (a load again adds nothing). Parity: 52 tasks, 364 fields, 7 settings, the note byte-equal. The tools
-(`relay/scripts/wedding-import.ts`, `wedding-sheet.ts`, `wedding-parity.ts`, their test and invented fixture) live at
-the git tag `wedding-import`. To audit: check out the tag, `node scripts/record.ts dump > dump.json` (mode 600), then
+The old Apps Script's `doGet` reply was converted and loaded once: 63 events (52 `wtask`, 3 `wdone`, 7 `wconf`,
+1 `wnote`), each `imported: true`, person `A`, ids `wed-<id>-wtask`, `wed-<id>-wdone`, `wed-conf-<key>`, `wed-note`
+(a load again adds nothing); parity was byte-equal. The tools (`wedding-import.ts`, `wedding-sheet.ts`,
+`wedding-parity.ts`, their test and invented fixture) live at the git tag `wedding-import`, not on main. To audit:
+check out the tag, `node scripts/record.ts dump > dump.json` (mode 600), then
 `node scripts/wedding-parity.ts <doget.json> dump.json` (prints mismatches by id and field, never a value). The
 record must keep those rows valid: `relay/test/wedding.test.ts` "the imported shapes".
 
 ## Open
 
 - The date inputs and the note's field with the keyboard up (`--kb`): check on a real iPhone.
-- Retiring the old app (approved): once the new screens are live, the user rotates the Apps Script `APP_KEY` and
-  archives the `/exec` deployment; then the old site gets a "moved" notice and its repo is archived. The Sheet is kept.
+- Retiring the old app: rotate the Apps Script `APP_KEY`, archive the `/exec` deployment, give the old site a
+  "moved" notice and archive its repo. The Sheet is kept.

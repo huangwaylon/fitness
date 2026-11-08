@@ -161,7 +161,7 @@ def read_nutriments(n):
 
 # ---------------------------------------------------------------- plausibility (all values per 100 g)
 # Salt caps by app category (g/100 g). Above the cap the salt value is nulled unless the name is a known salty
-# food; above 60 g it is nulled outside 調味料 regardless. docs/data.md §2.5, extended to meat/fish/
+# food; above 60 g it is nulled outside 調味料 regardless; extended to meat/fish/
 # eggs/dishes so that e.g. 鶏胸肉 7.9 g or 牛乳 3.3 g (per-serving typos) are caught.
 SALT_CAP = {'調味料': 100.0, '飲料': 1.5, '酒': 2.0, '乳製品': 2.0, '菓子・デザート': 5.0, 'パン': 3.0, '果物': 1.0,
             'ナッツ・種': 3.0, '主食': 7.0, '麺': 8.0, '肉': 4.0, '卵': 2.0, '大豆・豆': 3.0, 'いも': 3.0, '野菜': 4.0,

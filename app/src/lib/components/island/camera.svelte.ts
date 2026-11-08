@@ -174,7 +174,7 @@ export interface Proj3 {
   idle(): boolean;
   /** Drawing paused (a sheet over the island): the World's own clock holds too. */
   paused?(): boolean;
-  /** The bulletin board's (docs/board.md "To the 3D lead"): dolly and zoom to look at a rect face-on (its middle x, z on
+  /** The bulletin board's (docs/board.md "The 3D hooks"): dolly and zoom to look at a rect face-on (its middle x, z on
    *  the ground, y above it, w × h u), framed in the screen between `top` and `bottom` px and filling `fill` of it, over `ms` (600):
    *  the user's one exception to "x centred, nothing but the finger moves the camera"; the finger does nothing while
    *  focused; called again it re-frames from where it is. unfocus() goes back to exactly the view the first focus left. */
