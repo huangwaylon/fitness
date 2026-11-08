@@ -208,11 +208,13 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await expect(dlg).toHaveCount(0);
   await page.waitForTimeout(400);
 
-  // the HUD menu (NH's leaf): ずかん and せってい drop out of it; each pill: the villagers glance up, then its sheet
+  // the HUD menu (NH's leaf): せってい drops out of it, ずかん from its last row; each pill: the villagers glance up, then its sheet
   await step('島', 'menu (unfold)', () => leaf.tap(), ['toggle-on']);
   await step('島', 'menu (fold)', () => leaf.tap(), ['toggle-off']);
   await step('島', 'menu (unfold) again', () => leaf.tap(), ['toggle-on']);
-  await step('島', 'ずかん (→ the sheet)', () => page.locator('[data-hud-zukan]').tap(), ['jar-tap', 'panel-open']);
+  await step('島', 'せってい (→ the sheet) for ずかん', () => page.locator('[data-hud-settings]').tap(), ['jar-tap', 'panel-open']);
+  await dlg.locator('[data-settings-zukan]').scrollIntoViewIfNeeded();
+  await step('せってい', 'ずかん (→ its sheet)', () => dlg.locator('[data-settings-zukan]').tap(), ['tick', 'panel-close', 'panel-open']);
   await step('ずかん', 'a kind', () => dlg.locator('[data-zukan="shell"]').tap(), ['page']);
   await step('ずかん', 'back (‹)', () => dlg.locator('.titlebar .back').tap(), ['back']);
   await step('ずかん', 'close (×)', () => dlg.locator('.titlebar .close').tap(), ['panel-close']);

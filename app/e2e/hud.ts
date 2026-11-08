@@ -10,7 +10,7 @@ export const hudMenu = (page: Page) => page.locator('[data-hud-menu]');
 /** The menu's ベル row (the wallet's balance in data-bells, today's in data-today; hidden while folded). */
 export const hudBells = (page: Page) => page.locator('[data-hud-bells]');
 
-const PILL = { bells: '[data-hud-bells]', zukan: '[data-hud-zukan]', kikimimi: '[data-hud-kikimimi]', travel: '[data-hud-travel]', wedding: '[data-hud-wedding]', hiking: '[data-hud-hiking]', settings: '[data-hud-settings]' };
+const PILL = { bells: '[data-hud-bells]', kikimimi: '[data-hud-kikimimi]', travel: '[data-hud-travel]', wedding: '[data-hud-wedding]', hiking: '[data-hud-hiking]', settings: '[data-hud-settings]' };
 const SHEET = {
   bells: 'dialog[open] [data-wallet]', zukan: 'dialog[open] [data-zukan-sheet]', kikimimi: 'dialog[open] [data-kikimimi]', travel: 'dialog[open] [data-travel]', wedding: 'dialog[open] [data-wedding]', hiking: 'dialog[open] [data-hiking]', settings: 'dialog[open] [data-settings]'
 };
@@ -27,8 +27,18 @@ export async function unfoldMenu(page: Page, how: 'click' | 'tap' = 'click') {
   await expect.poll(inPlace).toBe(true);
 }
 
-/** Unfold the menu (if folded) and tap one of its pills; its sheet (the panel, for ベル) is open when this returns. */
-export async function fromMenu(page: Page, which: keyof typeof PILL, how: 'click' | 'tap' = 'click') {
+/** Unfold the menu (if folded) and tap one of its pills; its sheet (the panel, for ベル) is open when this returns.
+ *  ずかん: 設定's last row (設定 closes, the ずかん's sheet in its place). */
+export async function fromMenu(page: Page, which: keyof typeof SHEET, how: 'click' | 'tap' = 'click') {
+  if (which === 'zukan') {
+    await fromMenu(page, 'settings', how);
+    const row = page.locator('dialog[open] [data-settings-zukan]');
+    await row.scrollIntoViewIfNeeded();
+    await row[how]();
+    await expect(page.locator(SHEET.zukan)).toBeVisible();
+    await expect(page.locator('dialog[open]')).toHaveCount(1);
+    return;
+  }
   await unfoldMenu(page, how);
   const pill = page.locator(PILL[which]);
   await expect(pill).toBeVisible();

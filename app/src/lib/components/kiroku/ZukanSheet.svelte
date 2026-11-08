@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ずかん (docs/design.md "Zukan"): the HUD's menu's ずかん button opens it, full height, grown out of the button
+  // ずかん (docs/design.md "Zukan"): 設定's 図鑑 row opens it (設定 closing), full height, grown out of the row
   // (Sheet's `pop`, as けんこう out of the dumbbell). Its first screen: one row per kind with how many either of us has
   // found (ZukanCard); a row pushes that kind's page (Zukan.svelte) with ‹. ✕, the backdrop and Esc close it, and the
   // next opening starts on the rows. The guest's phone has it too (a shared museum, the guest's finds under its name).

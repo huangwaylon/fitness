@@ -24,9 +24,9 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 ## Simplicity rules
 
 - No tab bar: 島 (the island), the health popup (tap the dumbbell: けんこう), the meal log (tap the bowl: ごはん), and
-  behind the HUD menu's leaf the one panel for the ベル (its 「ベル 121」 row: ごほうび, no tabs), the ずかん, ききみみ
+  behind the HUD menu's leaf the one panel for the ベル (its 「ベル 121」 row: ごほうび, no tabs), ききみみ
   (English listening: ききみみ クイズ), りょこう ([Trips](#trips)), けっこんしき (the wedding board: [wedding.md](wedding.md)), トレイル (the hiking trails:
-  [hiking.md](hiking.md)) and せってい, each its own sheet.
+  [hiking.md](hiking.md)) and せってい (the ずかん its last row), each its own sheet.
 - One focal point per screen (島: the island itself, the sky clean, the leaf the door to the rest; ごほうび: the
   balance, today's ベル under it).
 - A number is shown in full in one place; elsewhere it is only a doorway to it.
@@ -69,8 +69,7 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
   NH's yellow, the leaf tips (−40°, as if it flicked the menu down) and four cream pills show at once (no drop: the
   user found it slow; they fold away in a 100ms fade), right-aligned under the leaf (along the screen's side), the same width:
   **ベル 121** (the shared wallet's balance in the app's number font, no icon: the number is the picture) →
-  [the panel](#panel) (ごほうび; `aria-expanded` while it's open), **ずかん** (NH's agrias butterfly) →
-  [the ずかん](#zukan), **ききみみ** with its small 「えいご」 (しずえ's head) → [ききみみ クイズ](#ききみみ-クイズ) (「さそわれています！」 under
+  [the panel](#panel) (ごほうび; `aria-expanded` while it's open), **ききみみ** with its small 「えいご」 (しずえ's head) → [ききみみ クイズ](#ききみみ-クイズ) (「さそわれています！」 under
   its name, and a coral dot on the folded leaf, while someone's invite is live) and **せってい** (a gear in the say
   button's soft brown: NH has no settings icon) →
   [せってい](#panel). Each pill is 44px tall, its name then its icon or number (a word as well as a picture: an icon
@@ -153,7 +152,7 @@ island with the panel open on ごほうび (`?panel=rewards`, dropped from the U
 The HUD menu's 「ベル」 row → the island panel slides down from the top (`panel/IslandPanel.svelte`): title 「ごほうび」,
 full height, no tabs: [the wallet](#wallet) (the jar and the balance, today's ベル, the rewards, the ベル ledger, the
 buys). Every opening starts at its top. Its own chunk, loaded on the first tap. The goals are けんこう's
-([Kenkou](#kenkou)), the ずかん the HUD menu's.
+([Kenkou](#kenkou)), the ずかん 設定's.
 
 A day of the ledger pushes a level with ‹ (the wallet stays mounted under it, hidden, so ‹ comes back to it as it was,
 scrolled where it was); ✕, the backdrop and Esc close the panel.
@@ -162,7 +161,7 @@ scrolled where it was); ✕, the backdrop and Esc close the panel.
 pill (Sheet's `pop`), title せってい: **すがた** (the look's portrait, the よびな and what's worn: いつもの, a コーデ's name
 or the villager's; かえる → [the すがた level](#sugata): the closet and the villagers in one dresser), **プロフィール** ([Profile](#profile)), **サウンド** ([Sound settings](#sound-settings)), **言語** (one dropdown, health/Pick's:
 日本語 by default / English), **季節** ([Seasonal preview](#seasonal-preview); its fold opens on **島の天気**, 実際の天気 / ゲーム:
-[Weather](#weather)), and **模様替え** (one row with its はじめる); the guest's the same (2026-11-06), with a line saying it's visiting. すがた pushes a level with ‹; ✕, the backdrop and Esc close it,
+[Weather](#weather)) and **図鑑** (one row: 設定 closes, [the ずかん](#zukan) opens grown out of it); the guest's the same (2026-11-06), with a line saying it's visiting. すがた pushes a level with ‹; ✕, the backdrop and Esc close it,
 and the next opening starts at its top. Its own chunk, loaded on the first tap.
 
 <a id="sugata"></a>**すがた** (`look/LookPage.svelte`, `look/LookStage.svelte`, `look/tabs.ts`, `look/ClosetGrid.svelte`,
@@ -1914,8 +1913,8 @@ and its mouth, and the spring and the river above the cliff.
 ### Zukan
 
 `kiroku/Zukan.svelte`, `kiroku/ZukanCard.svelte`, `kiroku/zukan.ts`, `model/finds.ts`, `model/tally.ts`,
-`e2e/zukan.spec.ts`. The ずかん is its own sheet (`kiroku/ZukanSheet.svelte`: the HUD menu's ずかん pill, grown out of it,
-Sheet's `pop`): first one row per kind with how many either of us has found (`ZukanCard`), a row → that kind's page
+`e2e/zukan.spec.ts`. The ずかん is its own sheet (`kiroku/ZukanSheet.svelte`: 設定's last section, 図鑑 (one row, NH's agrias
+butterfly; since 2026-11-08, no pill in the HUD menu): 設定 closes and the sheet grows out of the row, Sheet's `pop`): first one row per kind with how many either of us has found (`ZukanCard`), a row → that kind's page
 with ‹ (titled with the kind: a level's title is its own name, the ledger's day its date); the next opening starts on the rows. Shared (the first `find` of either of us): 魚 80 (the sea's 34 and the pond's
 46), 虫 74, 海の幸 40, 化石 73 (laid out like NH's museum: the standalone ones, then each dinosaur with
 「Tレックス 1 / 3」), かいがら 9 (the pearl last), and a balloon's presents: カタログ 1,836 (by NH's categories: かぐ,
@@ -2828,7 +2827,7 @@ camera's two ends; `mine()`, `partner()`, `geo()`, `site()`, …) for the e2e an
 
 Two zones (the user, 2026-11-07), by where a string shows (`i18n/linebreaks.test.ts` WORLD lists the world's keys):
 - **The world** (the island and its rooms: villagers' and NPCs' lines, `Bubble`, signs, in-world notices and toasts,
-  the HUD, the tree's plate, the leaf menu's pills ベル · ずかん · えいご ききとり · りょこう · けっこんしき · トレイル ·
+  the HUD, the tree's plate, the leaf menu's pills ベル · えいご ききとり · りょこう · けっこんしき · トレイル ·
   せってい): kids-style spaced kana (分かち書き), 「つうしん中…」, 「ここに おく」. `word-break: keep-all` (body):
   a line breaks only at a space or after 、。！, so no run without one is over 12 characters.
 - **Everything opened from it** (every sheet, panel, level, dialog and form, pairing, the error page, the editor, the

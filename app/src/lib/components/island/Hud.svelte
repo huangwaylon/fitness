@@ -61,7 +61,7 @@
     <HudHealth onopen={() => { healthMounted = true; healthOpen = true; }} />
     <HudFood onopen={() => { foodMounted = true; foodOpen = true; }} />
     <HudMenu bells={balance} {today} {later} expanded={panelOpen} onbells={() => (opened = panelOpen = true)}
-      onzukan={() => { zukanMounted = true; zukanOpen = true; }} onsettings={() => { settingsMounted = true; settingsOpen = true; }} />
+      onsettings={() => { settingsMounted = true; settingsOpen = true; }} />
   </div>
   <SyncPill />
   <PreviewPill />
@@ -77,7 +77,7 @@
   {#await loadZukan() then { default: ZukanSheet }}<ZukanSheet bind:open={zukanOpen} />{/await}
 {/if}
 {#if settingsMounted}
-  {#await loadSettings() then { default: SettingsSheet }}<SettingsSheet bind:open={settingsOpen} />{/await}
+  {#await loadSettings() then { default: SettingsSheet }}<SettingsSheet bind:open={settingsOpen} onzukan={() => { zukanMounted = true; zukanOpen = true; }} />{/await}
 {/if}
 <!-- りょこう's and けっこんしき's sheets, lazySheets from their first opening (the menu's pills) -->
 {#if trips.Sheet}<trips.Sheet bind:open={trips.open} />{/if}
