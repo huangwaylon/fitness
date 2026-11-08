@@ -544,7 +544,7 @@ async function tapTree(page: Page, i: number) {
 }
 
 test('tree popups: one at a time, they stay open, and a tap on the tree, the other tree or elsewhere toggles them', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-04T12:00&critter=none&visitor=none');
+  await page.goto('?demo&date=2026-11-04T12:00');
   await islandReady(page);
   await quiet(page); // (the greeting's balloon and the day's beats over)
   const canopies = page.locator('button.canopy');
@@ -885,7 +885,7 @@ test('the menu\'s 「ベル」 row shows ごほうび\'s balance, follows a buy 
       last = f;
     }).observe(document, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['class'] });
   });
-  await page.goto('?demo&date=2026-10-28T22:00&critter=none&visitor=none'); // three goals met by then
+  await page.goto('?demo&date=2026-10-28T22:00'); // three goals met by then
   await islandReady(page);
   const row = hudBells(page);
   // a fresh phone has seen none of today's goals: their coins fly from the fruit into the leaf
@@ -925,7 +925,7 @@ test('the menu\'s 「ベル」 row shows ごほうび\'s balance, follows a buy 
 });
 
 test('ごほうび: today’s ベル in a yuzu pill under the balance (both of us, ふたりでぜんぶ in), a faint cream 「きょうの ベル 0」 before the first', async ({ page }) => {
-  await page.goto('?demo&date=2026-10-28T22:00&critter=none&visitor=none');
+  await page.goto('?demo&date=2026-10-28T22:00');
   await islandReady(page);
   const row = hudBells(page);
   const today = Number(await row.getAttribute('data-today'));
@@ -940,7 +940,7 @@ test('ごほうび: today’s ベル in a yuzu pill under the balance (both of u
   expect(pb.y).toBeGreaterThanOrEqual(tb.y + tb.height - 1);
   expect(pb.height).toBeLessThan(tb.height + 8);
   // just after midnight nothing's earned yet: the faint pill
-  await page.goto('?demo&date=2026-10-28T00:05&critter=none&visitor=none');
+  await page.goto('?demo&date=2026-10-28T00:05');
   await islandReady(page);
   await expect(row).toHaveAttribute('data-today', '0');
   await expect(row).toHaveAttribute('aria-label', / · 今日 0\sベル$/);

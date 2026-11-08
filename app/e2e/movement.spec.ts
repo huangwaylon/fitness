@@ -198,7 +198,7 @@ test('under a sheet the walkers stop and no footstep sounds', async ({ page }) =
 
 test('a visitor: a tap and they speak, my villager turning to them where it stands', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('?demo&date=2026-11-04T12:00&visitor=jingle&critter=none');
+    await page.goto('?demo&date=2026-11-04T12:00&visitor=jingle');
     await islandUp(page);
     await page.waitForTimeout(800);
     // a host stands on centre stage, the campsite's clearing (おく)

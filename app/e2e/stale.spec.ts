@@ -9,7 +9,7 @@ import { hudBells, openRewards, unfoldMenu } from './hud.ts';
 test('a failed panel chunk reloads the page once, then the panel opens', { tag: '@chromium' }, async ({ page }) => {
   // (no critter or visitor coming by: each loads its own chunk when it comes, and one 404ing under the route below
   // reloaded the page before the panel was asked for, its menu then folded: CI run 41798557650)
-  await page.goto('?demo&critter=none&visitor=none&date=2026-11-04T12:00');
+  await page.goto('?demo&date=2026-11-04T12:00');
   await islandUp(page);
   // (the 3D island's own chunks, three and its scene, come in after the HUD: all in first)
   await is3d(page);
@@ -48,7 +48,7 @@ test('a chunk that fails as the page leaves (or offline: every load fails) reloa
 });
 
 test('a chunk of the running build that keeps failing reloads nothing (the deployed build is this one)', { tag: '@chromium' }, async ({ page }) => {
-  await page.goto('?demo&critter=none&visitor=none&date=2026-11-04T12:00');
+  await page.goto('?demo&date=2026-11-04T12:00');
   await islandUp(page);
   await is3d(page);
   await unfoldMenu(page);
@@ -64,7 +64,7 @@ test('a chunk of the running build that keeps failing reloads nothing (the deplo
 });
 
 test('a chunk that loads but throws as it runs reloads nothing, even with a newer build deployed', { tag: '@chromium' }, async ({ page }) => {
-  await page.goto('?demo&critter=none&visitor=none&date=2026-11-04T12:00');
+  await page.goto('?demo&date=2026-11-04T12:00');
   await islandUp(page);
   await is3d(page);
   await unfoldMenu(page);

@@ -7,7 +7,7 @@ import { newRecord } from './record.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none&preview=0';
+const Q = '?demo&date=2026-11-04T12:00&preview=0';
 type T = { stats(): { frames: number }; pieces(): { id: string; item: string }[]; fill(codes: string[]): number; starter(): string[] };
 const tent = <R,>(page: Page, fn: (t: T) => R) => page.evaluate(`(${fn.toString()})(window.__tent)`) as Promise<R>;
 
@@ -102,7 +102,7 @@ async function phone(browser: Browser, rec: Rec, who: W, home: W) {
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   await rec.pair(context, who);
   const page = await context.newPage();
-  await page.goto(`tent/?critter=none&visitor=none${home !== 'A' ? `&home=${home}` : ''}`);
+  await page.goto(`tent/${home !== 'A' ? `?home=${home}` : ''}`);
   await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
   await expect(page.locator(`[data-room-home="${home}"]`)).toBeVisible();
   return page;

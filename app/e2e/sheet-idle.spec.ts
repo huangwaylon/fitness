@@ -72,7 +72,7 @@ for (const [k, settle] of Object.entries(infoSheets))
     await drawn(page);
     await fixtureTiles(page);
     await page.route(/^https:\/\/(basemap\.nationalmap\.gov|cyberjapandata\.gsi\.go\.jp)\//, (r) => r.fulfill({ contentType: 'image/png', body: TILE, headers: { 'access-control-allow-origin': '*' } }));
-    await page.goto('?demo&date=2026-11-04T12:30&critter=none&visitor=none');
+    await page.goto('?demo&date=2026-11-04T12:30');
     await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
     expect(await rafs(page), 'the probe sees the island\'s frames').toBeGreaterThan(0);
     await fromMenu(page, k as 'travel' | 'wedding' | 'hiking');

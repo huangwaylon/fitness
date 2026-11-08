@@ -16,8 +16,8 @@ import { atHub, kikiSheet as sheet, runToQuestion, runToSee } from './kikimimi-n
 
 test.use({ viewport: { width: 393, height: 852 } });
 const SHOTS = '/tmp/kikimimi-shots/tachi';
-const DAY = 'date=2026-11-07T10:00&critter=none&visitor=none&kikimimi=fast';
-const NIGHT = 'date=2026-11-07T21:30&critter=none&visitor=none&kikimimi=fast';
+const DAY = 'date=2026-11-07T10:00&kikimimi=fast';
+const NIGHT = 'date=2026-11-07T21:30&kikimimi=fast';
 
 type Yaml = { id: string; lines: { who: string }[]; rounds: ({ type: 'opinions'; answer: string[] } | { type: 'changed'; answer: string } | { type: 'plan'; answer: number })[] };
 const LEVELS = join(import.meta.dirname, '..', 'src', 'lib', 'kikimimi', 'levels');

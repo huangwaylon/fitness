@@ -15,7 +15,7 @@ async function settings(browser: Browser, rec: Rec, who: 'A' | 'B' | 'G') {
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   await rec.pair(context, who);
   const page = await context.newPage();
-  await page.goto('?critter=none&visitor=none');
+  await page.goto('');
   await islandUp(page);
   await fromMenu(page, 'settings');
   const card = page.locator('dialog[open] [data-profile]');

@@ -9,7 +9,7 @@ import { islandUp } from './island.ts';
 type Now = { key: string | null; pos: number | null };
 type H = { __music: { now(): Now; request(src: string, song: string, o?: { ms?: number; pc?: string }): void; hush(src: string): void } };
 const h = <R,>(page: Page, fn: (h: H) => R) => page.evaluate(`(${fn.toString()})(window)`) as Promise<R>;
-const Q = 'date=2026-11-04T15:00&critter=none&visitor=none';
+const Q = 'date=2026-11-04T15:00';
 const SONG = 'kk-march';
 
 /** A phone of the demo (`as`: B, G), ミュージック on or off, its audio unlocked by a tap. */
@@ -96,7 +96,7 @@ test('the island’s moments on its stage: A’s stretch plays on B’s deck wit
   const a = await ctx.newPage(), b = await ctx.newPage();
   for (const [p, as] of [[a, ''], [b, '&as=B']] as const) {
     await p.addInitScript(() => localStorage.setItem('island.sound', JSON.stringify({ music: true, sfx: false, volume: 0.8 })));
-    await p.goto(`?demo${as}&date=2027-03-04T12:00&critter=none&visitor=none`); // うめ's birthday
+    await p.goto(`?demo${as}&date=2027-03-04T12:00`); // うめ's birthday
     await islandUp(p);
     await p.mouse.click(196, 90);
   }

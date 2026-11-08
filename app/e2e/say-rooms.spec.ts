@@ -9,7 +9,7 @@ import { balloonState, expectWhole } from './balloon.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
-const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none&preview=0';
+const Q = '?demo&date=2026-11-04T12:00&preview=0';
 const picker = (page: Page) => page.getByRole('dialog', { name: 'なにを いう？' });
 const sayBtn = (page: Page) => page.getByRole('button', { name: 'ひとこと いう' });
 const balloon = (page: Page) => page.locator('[data-say="mine"]');

@@ -46,7 +46,7 @@ test('けんこう reopened: the same content, its charts in the first frame, at
   await expect(sheet(page).locator('[data-group=activity]')).toHaveAttribute('aria-pressed', 'true');
 });
 
-const FOOD = '?demo&date=2026-11-04T12:30&critter=none&visitor=none';
+const FOOD = '?demo&date=2026-11-04T12:30';
 async function openFood(page: Page) {
   await openKenkou(page, 'food');
   await expect(sheet(page).locator('[data-food-summary]')).toBeVisible();

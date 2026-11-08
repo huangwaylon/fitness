@@ -10,7 +10,7 @@ import { kikiSheet as sheet, toTile } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const SHOTS = '/tmp/kikimimi-shots/zukan';
-const Q = 'date=2026-11-07T12:00&critter=none&visitor=none&kikimimi=fast';
+const Q = 'date=2026-11-07T12:00&kikimimi=fast';
 
 const ok = (...ids: string[]) => ids.map((id) => [id, 1, 0, 0]);
 /** よていを かえる (fr-replan) over three days, its チェック all right on the first listen; once more the next day; a

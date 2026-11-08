@@ -13,7 +13,7 @@ const controlled = (page: Page) => page.waitForFunction(() => !!navigator.servic
 // (in Chromium: WebKit's Playwright build doesn't route a service worker's own fetches)
 test('a navigation is the cached shell at once; a deploy reloads once its worker is in', { tag: '@chromium' }, async ({ page, context }) => {
   test.setTimeout(120_000);
-  const first = await page.goto('?demo&critter=none&visitor=none');
+  const first = await page.goto('?demo');
   expect(first?.fromServiceWorker()).toBe(false);
   await islandUp(page);
   await controlled(page);
@@ -67,7 +67,7 @@ test('a first visit registers the worker only once the island has its models in;
       return reg.apply(this, a);
     };
   });
-  await page.goto('?demo&critter=none&visitor=none');
+  await page.goto('?demo');
   await islandUp(page);
   await controlled(page);
   expect(await page.evaluate(() => (window as unknown as { __reg?: boolean[] }).__reg)).toEqual([true]);
@@ -99,7 +99,7 @@ async function deploy(page: Page, context: import('@playwright/test').BrowserCon
 
 test('a deploy whose install fails reloads nothing, and the next time the app comes back it installs and reloads', { tag: '@chromium' }, async ({ page, context }) => {
   test.setTimeout(120_000);
-  await page.goto('?demo&critter=none&visitor=none');
+  await page.goto('?demo');
   await islandUp(page);
   await controlled(page);
   const chunk = await notCached(page);
@@ -130,7 +130,7 @@ test('a deploy whose install fails reloads nothing, and the next time the app co
 
 test('a slow install is waited for (no reload before its worker is in); a static file that fails costs only itself; the unchanged ones are copied', { tag: '@chromium' }, async ({ page, context }) => {
   test.setTimeout(120_000);
-  await page.goto('?demo&critter=none&visitor=none');
+  await page.goto('?demo');
   await islandUp(page);
   await controlled(page);
   const chunk = await notCached(page);
@@ -171,7 +171,7 @@ test('a slow install is waited for (no reload before its worker is in); a static
 
 test('the room cache: a file\'s older version goes, and a cache from before the index is counted whole', { tag: '@chromium' }, async ({ page, context }) => {
   test.setTimeout(90_000);
-  await page.goto('?demo&critter=none&visitor=none');
+  await page.goto('?demo');
   await islandUp(page);
   await controlled(page);
   // the island's models through the worker into the room cache
@@ -215,7 +215,7 @@ test('the room cache: a file\'s older version goes, and a cache from before the 
 // (in Chromium, as the room's)
 test('ききみみ’s packs: the lobby’s pack goes into the listen cache whole, with its bytes in the index', { tag: '@chromium' }, async ({ page }) => {
   test.setTimeout(60_000);
-  await page.goto('?demo&critter=none&visitor=none&kikimimi=fast');
+  await page.goto('?demo&kikimimi=fast');
   await islandUp(page);
   await controlled(page);
   await fromMenu(page, 'kikimimi');

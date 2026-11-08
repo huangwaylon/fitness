@@ -6,7 +6,7 @@
 import { expect, test, type Page } from './fixtures.ts';
 import { is3d, quiet } from './island.ts';
 
-const q = (who: 'A' | 'B') => `?demo&date=2026-11-04T12:00&critter=none${who === 'B' ? '&as=B' : ''}`;
+const q = (who: 'A' | 'B') => `?demo&date=2026-11-04T12:00${who === 'B' ? '&as=B' : ''}`;
 type Live = { x: number; y: number; z: number; s: number };
 type Fx3 = { live(name: string): Live[] };
 

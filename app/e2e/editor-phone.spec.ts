@@ -36,7 +36,7 @@ test("the editor's move, placement, paste and undo show the same on a phone, eve
   test.setTimeout(90_000);
   const editor = await context.newPage(), phone = await context.newPage();
   await phone.setViewportSize({ width: 393, height: 659 });
-  await phone.goto(`?demo&as=B&date=${DATE}&critter=none`);
+  await phone.goto(`?demo&as=B&date=${DATE}`);
   expect(await is3d(phone), 'the phone draws the island in 3D').toBe(true);
   await editor.goto(`editor/?demo&preview=0&check&date=${DATE}`);
   await editor.waitForFunction(() => (window as unknown as { __editor?: unknown }).__editor);
@@ -127,8 +127,8 @@ test("K.K.'s stool moved in the editor: on both phones he sits on it where it we
   test.setTimeout(120_000);
   const editor = await context.newPage(), a = await context.newPage(), b = await context.newPage();
   for (const p of [a, b]) await p.setViewportSize({ width: 393, height: 659 });
-  await a.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
-  await b.goto(`?demo&as=B&date=${DATE}&critter=none&visitor=none`);
+  await a.goto(`?demo&date=${DATE}`);
+  await b.goto(`?demo&as=B&date=${DATE}`);
   for (const p of [a, b]) expect(await is3d(p)).toBe(true);
   const at0 = (await kk3(a)).pos!;
   for (const p of [a, b]) {

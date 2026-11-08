@@ -10,7 +10,7 @@
 // nothing here is drawn 3D. Pictures under SHOTS=<dir>.
 import { expect, test, type Locator, type Page } from './fixtures.ts';
 import { fromMenu, fromMenuAfterReload, hudMenu, unfoldMenu } from './hud.ts';
-import { islandQuery, islandUp } from './island.ts';
+import { islandUp } from './island.ts';
 import { shot } from './shots.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -29,7 +29,7 @@ const played = (el: Locator) => el.evaluate((e) => Promise.all(e.getAnimations()
 /** The island as `as` (A, B or G), the board's sheet open from the menu and grown to its place (Sheet's pop: a box
  *  measured during it is scaled, CI run 42235342027's ＋ above the last row). */
 async function board(p: Page, as = 'A') {
-  await p.goto(islandQuery(`demo&as=${as}&${DAY}`));
+  await p.goto(`?demo&as=${as}&${DAY}`);
   await fromMenu(p, 'wedding');
   await expect(sheet(p).locator('[data-wed-top]')).toBeVisible();
   await played(p.locator('dialog[open].full'));
@@ -436,7 +436,7 @@ test('the guest reads everything and has nothing to tick or edit', async ({ page
 });
 
 test('the island paused under the board; offline before the first opening: the banner, もういちど opens it once back', async ({ page, context }) => {
-  await page.goto(islandQuery(`demo&${DAY}`));
+  await page.goto(`?demo&${DAY}`);
   await islandUp(page);
   await context.setOffline(true);
   await unfoldMenu(page);

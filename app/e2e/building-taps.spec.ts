@@ -73,7 +73,7 @@ for (const [name, ops] of [['the user’s island', USER_LAYOUT], ['the default i
     test.slow();
     const feet = feetOf([...ops]);
     if (ops.length) await page.addInitScript((ops) => localStorage.setItem('island-demo.layout', ops), JSON.stringify(ops));
-    await page.goto('?demo&visitor=none&critter=none&date=2026-11-04T12:00');
+    await page.goto('?demo&date=2026-11-04T12:00');
     expect(await is3d(page)).toBe(true);
     if (ops.length) expect(feet.shop).toEqual({ x0: 120, x1: 330, y0: 1380, y1: 1500 });
     const { min, max } = await page.evaluate(() => (window as unknown as Hooks).__world3d.limits());
@@ -90,7 +90,7 @@ for (const [name, ops] of [['the user’s island', USER_LAYOUT], ['the default i
 test('on the user’s island the shop’s tap area covers its roof and walls, as drawn, and opens it', async ({ page }) => {
   test.slow();
   await page.addInitScript((ops) => localStorage.setItem('island-demo.layout', ops), JSON.stringify(USER_LAYOUT));
-  await page.goto('?demo&visitor=none&critter=none&date=2026-11-04T12:00');
+  await page.goto('?demo&date=2026-11-04T12:00');
   expect(await is3d(page)).toBe(true);
   const max = await page.evaluate(() => (window as unknown as Hooks).__world3d.limits().max);
   await page.evaluate((z) => (window as unknown as Hooks).__world3d.go(z, 1), max);

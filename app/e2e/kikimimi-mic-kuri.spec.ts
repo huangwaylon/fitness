@@ -15,7 +15,7 @@ import { atHub, kikiSheet as sheet, runToSee } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const SHOTS = '/tmp/kikimimi-shots/kuri';
-const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
+const Q = '?demo&date=2026-11-04T12:00&kikimimi=fast';
 
 /** Every level's sentences as compiled, by id. */
 const PARTS = join(import.meta.dirname, '..', 'src', 'lib', 'kikimimi', 'levels', 'parts');

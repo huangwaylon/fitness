@@ -14,7 +14,7 @@ import { atHub, kikiSheet as sheet, runToPhase, toMode } from './kikimimi-nav.ts
 
 test.use({ viewport: { width: 393, height: 852 }, kikiFirstRun: true });
 const SHOTS = '/tmp/kikimimi-shots/check';
-const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
+const Q = 'date=2026-11-04T12:00&kikimimi=fast';
 
 type Kiki = { view(): { phase: string; i: number; n: number; gm: string | null }; right(): number; items(): string[] };
 const kiki = <R,>(p: Page, fn: (k: Kiki) => R) => p.evaluate(`(${fn.toString()})(window.__kiki)`) as Promise<R>;

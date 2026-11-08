@@ -13,7 +13,7 @@ const DATE = '2026-11-04T12:00';
 const Q = `demo&date=${DATE}`;
 
 async function open(page: Page, q = '') {
-  await page.goto(`?demo&date=${DATE}&critter=none${q}`);
+  await page.goto(`?demo&date=${DATE}${q}`);
   await islandUp(page);
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await page.waitForTimeout(2000);

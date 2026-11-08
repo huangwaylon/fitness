@@ -14,8 +14,8 @@ import { atHub, kikiSheet as sheet, runToQuestion, runToSee } from './kikimimi-n
 
 test.use({ viewport: { width: 393, height: 852 } });
 const SHOTS = '/tmp/kikimimi-shots/rush';
-const DAY = 'date=2026-11-07T10:00&critter=none&visitor=none&kikimimi=fast';
-const NIGHT = 'date=2026-11-07T21:30&critter=none&visitor=none&kikimimi=fast';
+const DAY = 'date=2026-11-07T10:00&kikimimi=fast';
+const NIGHT = 'date=2026-11-07T21:30&kikimimi=fast';
 
 /** The rush files as compiled: each customer's right chip. */
 const PARTS = ['s1-rush', 's2-rush'].map((u) => JSON.parse(readFileSync(join(import.meta.dirname, '..', 'src', 'lib', 'kikimimi', 'levels', 'parts', `${u}.json`), 'utf8')) as {

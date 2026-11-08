@@ -21,7 +21,7 @@ async function phone(browser: Browser, rec: Rec, who: Who) {
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   await rec.pair(context, who);
   const page = await context.newPage();
-  await page.goto('?critter=none&visitor=none');
+  await page.goto('');
   await islandUp(page);
   await fromMenu(page, 'settings');
   await expect(settings(page).locator('[data-look-row]')).toBeVisible();

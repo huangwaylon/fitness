@@ -13,7 +13,7 @@ const DATE = '2026-11-04T12:00';
 
 async function open(ctx: BrowserContext, as: 'A' | 'B' | 'G') {
   const page = await ctx.newPage();
-  await page.goto(`?demo&date=${DATE}&critter=none&visitor=none${as === 'A' ? '' : `&as=${as}`}`);
+  await page.goto(`?demo&date=${DATE}${as === 'A' ? '' : `&as=${as}`}`);
   await islandUp(page);
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   return page;
@@ -150,7 +150,7 @@ const drawn = (p: Page) => p.evaluate(() => (window as unknown as { __board: Boa
 const face3 = (p: Page) => p.evaluate(() => (window as unknown as { __board: BoardHook }).__board.face3());
 
 test('a note written is drawn on the face at once, and still after a reload', async ({ page }) => {
-  await page.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
+  await page.goto(`?demo&date=${DATE}`);
   await islandUp(page);
   await page.waitForFunction(() => (window as unknown as { __board?: unknown }).__board);
   await openBoard(page);
@@ -168,7 +168,7 @@ test('a note written is drawn on the face at once, and still after a reload', as
 test('「もどる」 sits under the HUD, never over it, and the face under both', async ({ page }) => {
   // (the 3D island loads its models: 20-odd s on CI before the board opens)
   test.setTimeout(60_000);
-  await page.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
+  await page.goto(`?demo&date=${DATE}`);
   await islandUp(page);
   const hud = (await hudMenu(page).boundingBox())!;
   await openBoard(page);
@@ -203,7 +203,7 @@ async function pairedWithPost(page: Page) {
       body: action === 'snapshot' ? JSON.stringify(snap) : '{"ok":true}'
     });
   });
-  await page.goto(`?critter=none&visitor=none&date=${day}T12:00`);
+  await page.goto(`?date=${day}T12:00`);
   await page.waitForFunction(() => (window as unknown as { __board?: unknown }).__board);
 }
 
@@ -251,7 +251,7 @@ test('on the 3D island the face rides on the board’s cork, in front of NH’s 
 test('writing with the keyboard up: the field, its controls and the face with the note as typed stay above it', async ({ page }) => {
   test.setTimeout(60_000);
   await fakeKeyboard(page);
-  await page.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
+  await page.goto(`?demo&date=${DATE}`);
   await islandUp(page);
   await openBoard(page);
   await expect(view(page)).toHaveAttribute('data-board-view', '3d');

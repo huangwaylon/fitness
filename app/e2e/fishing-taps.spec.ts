@@ -33,7 +33,7 @@ async function open(page: Page, o: { layout?: 'default' | 'user'; q?: string; op
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   const ops = o.ops ?? (o.layout === 'user' ? USER_LAYOUT : null);
   if (ops) await page.addInitScript((ops) => localStorage.setItem('island-demo.layout', ops), JSON.stringify(ops));
-  await page.goto(`?demo&visitor=none&date=2026-11-04T12:00${o.q ?? ''}`);
+  await page.goto(`?demo&date=2026-11-04T12:00${o.q ?? ''}`);
   expect(await is3d(page)).toBe(true);
 }
 const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);

@@ -6,7 +6,7 @@ import { geo, is3d, openNear, quiet, reelOnBite, settled, tapOn } from './island
 type Site = { on: boolean; doors: Record<string, [number, number]>; homes: { A: [number, number]; B: [number, number] }; stage: [number, number]; named: Record<string, [number, number]>; grass: [number, number][] };
 const site = (page: Page) => page.evaluate(() => (window as unknown as { __world: { site(): Site } }).__world.site());
 const world = <R,>(page: Page, fn: string) => page.evaluate(`window.__world.${fn}`) as Promise<R>;
-const ISLAND = './?demo&visitor=none&critter=none&date=2026-11-04T12:00';
+const ISLAND = './?demo&date=2026-11-04T12:00';
 
 test('the long layout: its doors, homes, centre stage and named spots', async ({ page }) => {
   await page.goto(ISLAND);
@@ -62,7 +62,7 @@ for (const water of ['sea', 'pond', 'river', 'mouth', 'clifftop'] as const)
   test(`the fish swim in the layout’s own waters: ${water}`, async ({ page }) => {
     // (no wait on the 3D island: the shadow is the DOM's and its water the layout's; CI's software GL is slow to load)
     test.slow();
-    await page.goto(`${ISLAND.replace('&critter=none', '')}&critter=${water === 'sea' ? 'fish' : water}`);
+    await page.goto(`${ISLAND.replace('', '')}&critter=${water === 'sea' ? 'fish' : water}`);
     await page.waitForFunction(() => (window as unknown as { __world?: { site?(): { on: boolean } } }).__world?.site?.().on);
     const node = page.locator(`[data-shadow-of="${water}"]`);
     await expect(node, water).toBeAttached({ timeout: 30_000 });
@@ -77,7 +77,7 @@ for (const water of ['sea', 'pond', 'river', 'mouth', 'clifftop'] as const)
   });
 
 test('a pond fish on the long layout: cast beside it, the bite, a tap catches it', async ({ page }) => {
-  await page.goto(`${ISLAND.replace('&critter=none', '')}&critter=carp`);
+  await page.goto(`${ISLAND.replace('', '')}&critter=carp`);
   expect(await is3d(page)).toBe(true);
   const node = page.locator('[data-shadow-of="pond"]');
   await expect(node).toBeAttached();
@@ -172,7 +172,7 @@ test('the editor moves うめ’s home: the phone’s door, walk and tap area fo
 });
 
 test('K.K. on the long layout: on his stool (the layout’s piece) on the front lawn, and a tap talks to him', async ({ page }) => {
-  await page.goto('./?demo&critter=none&date=2026-10-24T19:00'); // a Saturday evening: his show
+  await page.goto('./?demo&date=2026-10-24T19:00'); // a Saturday evening: his show
   expect(await is3d(page)).toBe(true);
   const stage = await page.evaluate(() => (window as unknown as { __layout: { pos(id: string): [number, number] } }).__layout.pos('kk-slider'));
   await world(page, `go(${stage[1] - 120})`);

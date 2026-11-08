@@ -10,7 +10,7 @@ const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] 
  *  `settled` would add seconds of the island's own activity winding down, and a tap is polled to its target anyway). */
 async function open(page: Page, when: string, end: 'mae' | 'oku') {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
-  await page.goto(`?demo&date=${when}&critter=none&visitor=none`);
+  await page.goto(`?demo&date=${when}`);
   await islandUp(page);
   await camTo(page, (await geo(page)).CAMS[end], false);
 }

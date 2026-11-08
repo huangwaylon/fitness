@@ -15,7 +15,7 @@ async function phone(browser: Browser, rec: Rec, who: 'A' | 'B' | 'G') {
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   await rec.pair(context, who);
   const page = await context.newPage();
-  await page.goto('?critter=none&visitor=none');
+  await page.goto('');
   await islandUp(page);
   return page;
 }
@@ -94,16 +94,16 @@ test('in the tent and the museum: my human player, and my villager once I wear i
   const usual = await model(a, 'mine');
   type Room = { model(w: string): string | null };
   const inRoom = (hook: '__tent' | '__museum') => a.evaluate((h) => (window as unknown as Record<string, Room | undefined>)[h]?.model('A') ?? null, hook);
-  await a.goto('tent?critter=none&visitor=none');
+  await a.goto('tent');
   await expect.poll(() => inRoom('__tent'), { timeout: 30_000 }).toBe(usual);
-  await a.goto('museum?critter=none&visitor=none');
+  await a.goto('museum');
   await expect.poll(() => inRoom('__museum'), { timeout: 30_000 }).toBe(usual);
   await a.context().close();
   // my villager look (sent from another phone of mine): a phone opening later draws my villager in the tent
   expect(rec.event('A', 'pref', { key: 'villager', value: 'raymond' })).toEqual({ ok: true });
   expect(rec.event('A', 'pref', { key: 'look', value: { kind: 'villager' } })).toEqual({ ok: true });
   const a2 = await phone(browser, rec, 'A');
-  await a2.goto('tent?critter=none&visitor=none');
+  await a2.goto('tent');
   await expect.poll(() => a2.evaluate(() => (window as unknown as Record<string, Room | undefined>).__tent?.model('A') ?? null), { timeout: 30_000 }).toBe('v:raymond');
   await a2.context().close();
 });
@@ -112,7 +112,7 @@ test('in the tent and the museum: my human player, and my villager once I wear i
 // createPainter), kept by the look (look/portraits.svelte.ts): the partner's head too, a look never opened in すがた here
 test('the 2D heads: A’s and B’s portraits, drawn by the island’s renderer @render', async ({ page }) => {
   test.setTimeout(90_000);
-  await page.goto('?demo&date=2026-11-04T12:00&critter=none&visitor=none');
+  await page.goto('?demo&date=2026-11-04T12:00');
   await page.waitForFunction(() => (window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded(), null, { timeout: 30_000 });
   await fromMenu(page, 'settings');
   await expect(profileHead(page)).toHaveAttribute('data-portrait', '3d', { timeout: 60_000 });

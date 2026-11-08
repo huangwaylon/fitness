@@ -21,7 +21,7 @@ const cards = (p: Page) => sheet(p).locator('[data-trail]');
 async function openTrails(page: Page, draw = false) {
   if (!draw) await page.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   await page.route('**/hiking/tracks/*.json', (r) => r.fulfill({ json: TRACK }));
-  await page.goto(`${BASE}/?demo&date=2026-11-04T12:00&critter=none&visitor=none`);
+  await page.goto(`${BASE}/?demo&date=2026-11-04T12:00`);
   // (the island up first, as after any goto: drawn, the menu unfolded while the island was still mounting never had
   // its pills in place)
   await islandUp(page);

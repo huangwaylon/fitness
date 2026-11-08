@@ -26,7 +26,7 @@ test('each host on its day, at centre stage clear of every control, introducing 
     ['2026-11-26T10:00', 'franklin', 'フランクリン'], ['2026-12-24T12:00', 'jingle', 'ジングル'],
     ['2027-03-21T09:00', 'zipper', 'ぴょんたろう']
   ] as const) {
-    await page.goto(`?demo&date=${date}&critter=none`);
+    await page.goto(`?demo&date=${date}`);
     await islandUp(page);
     const sel = `[data-visitor="${id}"] .art`;
     await camTo(page, await stageCam(page), false);
@@ -61,7 +61,7 @@ test('Turkey Day: Franklin asks for a fish; the next catch makes him happy, and 
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('ありがとう', { timeout: 6000 });
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('scene-franklin') ?? '{}'))).toMatchObject({ date: '2026-11-26', asked: true, fed: true });
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
-  await page.goto('?demo&date=2026-11-26T11:00&critter=none');
+  await page.goto('?demo&date=2026-11-26T11:00');
   await camTo(page, await stageCam(page), false);
   await expect(page.locator('[data-visitor="franklin"] .art')).toBeVisible();
   await tapFigure(page, '[data-visitor="franklin"] .art');
@@ -70,7 +70,7 @@ test('Turkey Day: Franklin asks for a fish; the next catch makes him happy, and 
 });
 
 test('Toy Day: two presents beside the goal trees (まえ)', async ({ page }) => {
-  await page.goto('?demo&date=2026-12-24T12:00&critter=none');
+  await page.goto('?demo&date=2026-12-24T12:00');
   await islandUp(page);
   await camTo(page, 114);
   await expect(page.locator('[data-toy]')).toHaveCount(2);
@@ -79,7 +79,7 @@ test('Toy Day: two presents beside the goal trees (まえ)', async ({ page }) =>
 });
 
 test('Bunny Day week: no Zipper mid-week, and a dig spot can hold an earth egg (no ずかん find)', async ({ page }) => {
-  await page.goto('?demo&date=2027-03-24T12:00&find=earth-egg&critter=none');
+  await page.goto('?demo&date=2027-03-24T12:00&find=earth-egg');
   await islandUp(page);
   await expect(page.locator('[data-visitor="zipper"]')).toHaveCount(0);
   const p = await fossilOnScreen(page);

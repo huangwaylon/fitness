@@ -43,7 +43,7 @@ const centre = (page: Page, sel: string) =>
 
 test('scenery taps play a flourish and change nothing; trees, villagers and the health button still work', async ({ page }) => {
   // a fixed midday (Tokyo): without it the orb is the moon from 19:00 and the sun row below fails every evening
-  await page.goto('?demo&date=2026-11-04T12:00&critter=none');
+  await page.goto('?demo&date=2026-11-04T12:00');
   await islandReady(page);
   const bellsRow = hudBells(page);
   const health = page.locator('.hud-health');
@@ -129,7 +129,7 @@ test('night sky: the moon twinkles; a tap in the open sky lights a star (shootin
 test('the campfire by the tent: unlit by day, its flames and light at night; a tap pokes it where it is (embers, a crackle)', async ({ page }) => {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   const go = async (when: string) => {
-    await page.goto(`?demo&date=${when}&critter=none&visitor=none`);
+    await page.goto(`?demo&date=${when}`);
     await islandReady(page);
     await page.waitForFunction(() => (window as unknown as { __world?: W }).__world);
     // (held there and at rest: the campfire's box is read for the tap where the island draws it)

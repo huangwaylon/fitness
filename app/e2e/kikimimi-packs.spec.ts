@@ -20,7 +20,7 @@ test('the lobby fetches its deck’s pack whole; a sliced clip decodes to its le
   page.on('request', (r) => {
     if (r.url().includes('/audio/')) asked.push({ url: r.url(), range: !!r.headers().range });
   });
-  await page.goto('?demo&date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast');
+  await page.goto('?demo&date=2026-11-04T12:00&kikimimi=fast');
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
   const sheet = page.locator('dialog[open] [data-kikimimi]');

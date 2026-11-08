@@ -10,7 +10,7 @@ import { fromMenu, hudBells } from './hud.ts';
 test.use({ viewport: { width: 393, height: 852 } });
 
 const DATE = '2026-11-04';
-const Q = `?demo&date=${DATE}T12:00&critter=none&visitor=none`;
+const Q = `?demo&date=${DATE}T12:00`;
 /** The day's first holding tree (the same on every phone: the page's island's, its trees the layout's on it), set by
  *  open(). */
 let TREE = '', TREE_Z = 0, G: Geo;

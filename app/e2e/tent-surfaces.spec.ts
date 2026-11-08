@@ -6,7 +6,7 @@ import items from '../src/lib/components/tent/items.json' with { type: 'json' };
 
 test.use({ viewport: { width: 393, height: 852 } });
 
-const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none';
+const Q = '?demo&date=2026-11-04T12:00';
 type Piece = { id: string; item: string; x: number; z: number; f: number; on?: string };
 type T = {
   tile(x: number, z: number): [number, number];

@@ -10,7 +10,7 @@ test("うめ's birthday: hats, the cake clear of every control, confetti and し
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await watchFor(page, ['.fxa.confetti']);
-  await page.goto('?demo&date=2027-03-04T12:00&critter=none');
+  await page.goto('?demo&date=2027-03-04T12:00');
   await islandUp(page);
   const bells = await hudBells(page).getAttribute('aria-label');
   await expect(page.locator('.vil [data-hat]')).toHaveCount(2);
@@ -41,18 +41,18 @@ test("うめ's birthday: hats, the cake clear of every control, confetti and し
 });
 
 test('ウェイ’s birthday too; none the day after; an NH villager’s own birthday: its hat', async ({ page }) => {
-  await page.goto('?demo&date=2026-10-06T12:00&critter=none');
+  await page.goto('?demo&date=2026-10-06T12:00');
   await islandUp(page);
   await expect(page.locator('.vil [data-hat]')).toHaveCount(2);
   await expect(page.locator('.news')).toContainText('さん、おたんじょうび おめでとう！');
-  await page.goto('?demo&date=2026-10-07T12:00&critter=none');
+  await page.goto('?demo&date=2026-10-07T12:00');
   await islandUp(page);
   await page.waitForTimeout(800);
   await expect(page.locator('.vil [data-hat]')).toHaveCount(0);
   await expect(page.locator('[data-cake]')).toHaveCount(0);
   await expect(page.locator('.news')).toHaveCount(0);
   // Goldie (my villager in the demo) was born on Dec 27
-  await page.goto('?demo&date=2026-12-27T12:00&critter=none');
+  await page.goto('?demo&date=2026-12-27T12:00');
   await islandUp(page);
   await expect(page.locator('.vil [data-hat]')).toHaveCount(1);
   await expect(page.locator('[data-cake]')).toHaveCount(0);

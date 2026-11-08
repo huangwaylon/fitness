@@ -14,7 +14,7 @@ import { fromMenu } from './hud.ts';
 import { atHub, kikiSheet as sheet, openStage, runToQuestion } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
-const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
+const Q = 'date=2026-11-04T12:00&kikimimi=fast';
 const SHOTS = '/tmp/kikimimi-shots/path';
 
 type Kiki = { view(): { phase: string; i: number }; right(): number; recorded(): { u?: string; l?: number } | null };

@@ -48,7 +48,7 @@ const keys = (): Record<string, string> =>
 // the relay's day is today's: no `?date=` against it (`?awake`: the villagers up at any hour); the demo's tabs preview a
 // fixed day
 const q = (who: 'A' | 'B') =>
-  RELAY ? `?demo&awake&critter=none${who === 'B' ? '&as=B' : ''}&relay=${encodeURIComponent(RELAY)}&key=${keys()[`KEY_${who}`]}` : `?demo&date=2026-11-04T12:00&critter=none${who === 'B' ? '&as=B' : ''}`;
+  RELAY ? `?demo&awake${who === 'B' ? '&as=B' : ''}&relay=${encodeURIComponent(RELAY)}&key=${keys()[`KEY_${who}`]}` : `?demo&date=2026-11-04T12:00${who === 'B' ? '&as=B' : ''}`;
 
 const CTX = { viewport: { width: 390, height: 844 }, bypassCSP: !!RELAY };
 

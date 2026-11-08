@@ -14,7 +14,7 @@ const frame = (p: Page) => sheet(p).locator('[data-kiki-page="story-frame"]');
 
 async function open(page: Page, at: string) {
   await page.clock.install(); // (a segment's play stepped through: kikimimi-nav.ts runUntil)
-  await page.goto(`?demo&date=${at}&critter=none&visitor=none&kikimimi=fast`);
+  await page.goto(`?demo&date=${at}&kikimimi=fast`);
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
   await atHub(page);

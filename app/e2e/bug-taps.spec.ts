@@ -13,7 +13,7 @@ type Fx3 = { live(name: string): unknown[] };
 
 async function open(page: Page, q: string) {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
-  await page.goto(`?demo&visitor=none&${q}`);
+  await page.goto(`?demo&${q}`);
   expect(await is3d(page)).toBe(true);
 }
 /** The bug's model on screen (client px): its id once it's placed, and where it's drawn now. */

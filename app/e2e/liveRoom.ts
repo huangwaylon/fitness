@@ -133,7 +133,7 @@ export function newIsland() {
     },
     /** The demo's URL for `who` on this island (the hooks on; `extra`: more of the query). */
     demoUrl(who: Who, extra = '') {
-      return `?demo&awake&critter=none&visitor=none${who === 'A' ? '' : `&as=${who}`}&relay=${encodeURIComponent(DEMO_WS)}&key=${KEY_OF[who]}${extra}`;
+      return `?demo&awake${who === 'A' ? '' : `&as=${who}`}&relay=${encodeURIComponent(DEMO_WS)}&key=${KEY_OF[who]}${extra}`;
     },
     /** The relay closes `who`'s sockets (1012: a deploy restarting the room). */
     drop(who: Who, code = 1012) {

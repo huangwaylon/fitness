@@ -9,7 +9,7 @@ import { drawn, fixtureTiles, mapReady, openTrip, tripsSheet } from './trips.ts'
 import { fromMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
-const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none&as=B';
+const Q = '?demo&date=2026-11-04T12:00&as=B';
 /** A blank topo tile (トレイル's map: hiking.spec's). */
 const TILE = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', 'base64');
 

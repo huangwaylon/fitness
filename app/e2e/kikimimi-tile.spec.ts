@@ -14,8 +14,8 @@ import { atHub, kikiSheet as sheet, runToQuestion, runToSee } from './kikimimi-n
 
 test.use({ viewport: { width: 393, height: 852 } });
 const SHOTS = '/tmp/kikimimi-shots/tile';
-const DAY = 'date=2026-11-07T10:00&critter=none&visitor=none&kikimimi=fast';
-const NIGHT = 'date=2026-11-07T21:30&critter=none&visitor=none&kikimimi=fast';
+const DAY = 'date=2026-11-07T10:00&kikimimi=fast';
+const NIGHT = 'date=2026-11-07T21:30&kikimimi=fast';
 
 const LEVELS = join(import.meta.dirname, '..', 'src', 'lib', 'kikimimi', 'levels');
 /** かわ's (stage 2) listened tile files, as this build ships them (s1-tile-a, -b and, since A2, -c). */

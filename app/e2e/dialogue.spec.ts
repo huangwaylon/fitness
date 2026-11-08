@@ -18,7 +18,7 @@ async function holdTyping(page: Page, shown: Locator) {
 
 test('a visitor’s introduction: typed, two pages, the ▼ only before the last; tap finishes, turns, then closes', async ({ page }) => {
   await page.clock.install();
-  await page.goto('?demo&date=2026-11-04T12:00&visitor=gulliver&critter=none'); // no ambient critters to net instead
+  await page.goto('?demo&date=2026-11-04T12:00&visitor=gulliver'); // no ambient critters to net instead
   await islandUp(page);
   const bells = await hudBells(page).getAttribute('aria-label');
   // he sleeps face down until the fifth nudge (NH); then his introduction

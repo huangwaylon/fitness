@@ -29,7 +29,7 @@ test.use({ viewport: { width: 390, height: 844 } });
 
 type T = { stats(): { frames: number; calls: number; tris: number; dpr: number; queued: boolean }; still(): boolean; mine(): [number, number]; walking(w: string): boolean; px(x: number, z: number, y?: number): [number, number]; loading(): number };
 const tent = <R,>(page: Page, fn: (t: T) => R) => page.evaluate(`(${fn.toString()})(window.__tent)`) as Promise<R>;
-const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none';
+const Q = '?demo&date=2026-11-04T12:00';
 /** Drawn (the advisory render tier, CI's software GL): a frame takes ~0.5–2 s, so a test that loads the island, the
  *  room and the island again drawn needs more than 30 s, and its waits on the scenes more than their 5 s. */
 const drawn = process.env.E2E_RENDER !== 'none';

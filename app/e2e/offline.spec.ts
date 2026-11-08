@@ -5,7 +5,7 @@
 // once loaded, never precached), one never played says オフラインです.
 import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu } from './hud.ts';
-import { BASE, islandQuery } from './island.ts';
+import { BASE } from './island.ts';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { drawn, mapReady, mapState, pickTrip, tripsSheet } from './trips.ts';
@@ -17,7 +17,7 @@ test.use({ viewport: { width: 393, height: 852 } });
 const loaded = (img: import('@playwright/test').Locator) => expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 1 && !('missing' in i.dataset)), { timeout: 15_000 }).toBe(true);
 const dayChip = (p: Page, d: number) => tripsSheet(p).locator(`[data-day-pick="${d}"]`);
 const hiking = (p: Page) => p.locator('dialog[open] [data-hiking]');
-const URL_ = `${BASE}/${islandQuery('demo&date=2026-11-04T12:00')}`;
+const URL_ = `${BASE}/?demo&date=2026-11-04T12:00`;
 const up = (page: Page) => page.waitForFunction(() => !!(window as unknown as { __world?: unknown }).__world, null, { timeout: 30_000 });
 
 test.describe('offline after a visit', () => {
@@ -123,7 +123,7 @@ test.describe('offline after a visit', () => {
       await expect(kiki(page).locator(`[data-kiki-mode-page="${m}"]`)).toBeVisible();
     };
     const gm = () => page.evaluate(() => (window as unknown as { __kiki?: { view(): { gm: string | null } } }).__kiki?.view().gm ?? null);
-    const KIKI = `${BASE}/?demo&date=2026-11-07T10:00&critter=none&visitor=none&kikimimi=fast`;
+    const KIKI = `${BASE}/?demo&date=2026-11-07T10:00&kikimimi=fast`;
     await page.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
     await page.goto(KIKI);
     await up(page);
@@ -262,7 +262,7 @@ test('a photo that fails to load is the paper placeholder with its box kept, and
 test('offline, the sync pill counts the taps waiting to go', async ({ page, context }) => {
   const rec = newRecord();
   await rec.pair(context, 'A');
-  await page.goto(islandQuery('x=1'));
+  await page.goto('?x=1');
   await up(page);
   // the record's copy kept on the phone (the first sync)
   const kept = () => page.evaluate(() => new Promise<boolean>((ok) => {

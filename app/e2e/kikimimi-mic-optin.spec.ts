@@ -41,7 +41,7 @@ async function fakeMic(page: Page, o: { refuse?: boolean } = {}) {
 }
 
 async function toSettings(page: Page) {
-  await page.goto('?demo&date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast');
+  await page.goto('?demo&date=2026-11-04T12:00&kikimimi=fast');
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
   await atHub(page);

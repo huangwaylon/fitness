@@ -17,7 +17,7 @@ const seated = (page: Page, id: 'mine' | 'partner') => page.evaluate((id) => (wi
 const v3 = (page: Page, slot: string) => page.evaluate((s) => (window as unknown as { __villagers3?: { state(s: string): string | null } }).__villagers3?.state(s) ?? null, slot);
 
 async function open(page: Page, q = '') {
-  await page.goto(`?demo&date=${DATE}&critter=none&visitor=none${q}`);
+  await page.goto(`?demo&date=${DATE}${q}`);
   await islandUp(page);
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await quiet(page);
