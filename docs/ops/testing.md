@@ -68,9 +68,12 @@ After a deploy, never holding one back:
   on Safari, and Playwright's two profiles have the same viewport), runs in **the flake hunt**
   (`.github/workflows/e2e-flake-hunt.yml`) on **macOS** runners (Safari's own WebKit; Linux's draws the island at about
   one frame a second, so its timing-bound specs fail there): weekly (Monday 03:30 Tokyo), and Actions → *e2e flake
-  hunt* → Run workflow (with how many runs each; 1 for a plain WebKit check). Too slow to gate each push yet (5 macOS
-  runners, ~4 min); once it's green across the board it replaces Chromium as the gate. Each test 3× over, retries off;
-  red when anything failed even once, its summary lists them worst first. It gates nothing.
+  hunt* → Run workflow (with how many runs each; 1 for a plain WebKit check). It runs the logic tier
+  (`E2E_RENDER=none`, `@render` and `@quarantine` left out), as the gate does: WebKit's signal is its DOM, events and
+  JS, and the VM's software GL isn't the phones' Metal (drawn, the logic specs timed out there, red on every run).
+  2 workers a runner (a 3-core VM: at 3, tests ran 3-6× their local time). Too slow to gate each push (5 macOS
+  runners, ~20 min a run each); once it's green across the board it replaces Chromium as the gate. Each test 3× over,
+  retries off; red when anything failed even once, its summary lists them worst first. It gates nothing.
 - **The base path.** The site is at the root (`BASE_PATH` unset or `''`); the specs follow `BASE_PATH` (`e2e/island.ts`
   `BASE`, `islandURL`), so a build under one (`BASE_PATH=/x npm run build`, then `BASE_PATH=/x npm run e2e`) is tested the same.
 - **The headers.** `npm run build` writes `build-pages/_headers` (`scripts/headers.ts`: the CSP SvelteKit put in the
