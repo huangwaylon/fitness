@@ -69,6 +69,6 @@ One home per topic; the others link to it. If a doc and the code disagree, the c
 | [app/content/listen/README.md](app/content/listen/README.md) | The listening units' YAML format |
 | [ops/perf.md](docs/ops/perf.md) | Performance: the budgets, how to measure, the open items |
 | [ops/runbook.md](docs/ops/runbook.md) | Running it: hosting, deploys, keys, the relay, recovery |
-| [ops/testing.md](docs/ops/testing.md) · [ops/test-strategy.md](docs/ops/test-strategy.md) | CI (the gate, shards, flaky ledger) and how to write a stable spec; the test tiers |
+| [ops/testing.md](docs/ops/testing.md) | The test tiers and why, CI (the lean gate, shards, the flaky ledger) and how to write a stable spec |
 | [ops/observability.md](docs/ops/observability.md) | The log, its reader, the alert, the costs |
 | [ops/shortcut-health-sync.md](docs/ops/shortcut-health-sync.md) | The iOS Shortcut that sends Health data |

@@ -1,4 +1,4 @@
-# The full logic tier (docs/ops/test-strategy.md, docs/ops/testing.md "CI"): after each deploy (a green run of *Deploy
+# The full logic tier (docs/ops/testing.md "CI"): after each deploy (a green run of *Deploy
 # UI*) and on demand, every test the gate's way (the 3D engines drawing nothing, @render and @quarantine left out) on the
 # deployed commit, the auto-quarantined ones too; with the drawn smoke (advisory) and the test times for the shards'
 # plan. It never holds a deploy back (the user, 2026-11-08: a lean gate, fix-forward), so it's loud: a failure is an
@@ -89,7 +89,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 3
 
-  # The drawn smoke (docs/ops/test-strategy.md): the tests that need the pixels (@render) and a few whole 3D flows
+  # The drawn smoke (docs/ops/testing.md): the tests that need the pixels (@render) and a few whole 3D flows
   # (@smoke) with real (software) GL, on one runner. Advisory (the user, Nov 2026: CI's software GL isn't the phones'
   # Metal): continue-on-error, so it never turns this workflow red; its failures are in its summary.
   e2e-render:

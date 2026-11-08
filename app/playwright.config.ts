@@ -13,7 +13,7 @@ const PORT = Number(process.env.E2E_PORT ?? (process.env.CI ? 4173 : ownPort()))
 const BASE = process.env.BASE_PATH ?? '';
 // Each test's phone starts with these in localStorage:
 // E2E_RENDER=none: the logic mode, the 3D engines run every frame but draw nothing (src/lib/ui-state/testMode.ts,
-// docs/ops/test-strategy.md): CI's software GL then costs nothing
+// docs/ops/testing.md): CI's software GL then costs nothing
 const local = process.env.E2E_RENDER === 'none' ? [{ name: 'e2e.render', value: 'none' }] : [];
 const ISLAND = { storageState: { cookies: [], origins: [{ origin: `http://127.0.0.1:${PORT}`, localStorage: local }] } };
 

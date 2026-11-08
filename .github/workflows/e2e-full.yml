@@ -1,4 +1,4 @@
-# The full tier, drawn (docs/ops/test-strategy.md, docs/ops/testing.md): the whole e2e suite with real (software) GL,
+# The full tier, drawn (docs/ops/testing.md): the whole e2e suite with real (software) GL,
 # the quarantine included, nightly (02:30 Tokyo) and on demand (Actions → e2e full tier → Run workflow). Ten runners:
 # after every deploy it held half of GitHub Free's 20 jobs and queued the next push's gate (the user, 2026-11-08: the
 # full logic tier runs after each deploy instead, e2e-logic-full.yml). It gates nothing. Its failures are in its

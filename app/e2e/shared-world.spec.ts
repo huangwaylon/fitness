@@ -148,7 +148,7 @@ test('two players: a tap-walk on one tab plays on the other from the same start 
     // under way: the two tabs have it within a few steps of each other (one frame and the evaluate's skew apart: the
     // two reads up to 0.2 s apart, as far as the tap-walk's run goes in that time). Not drawn (the full tier): two tabs
     // drawing under software GL each take a second a frame, and a walk's next leg starts in a frame, so it measures
-    // SwiftShader (80–150u); never two drawn 3D tabs in a sync check (docs/ops/test-strategy.md "Two phones")
+    // SwiftShader (80–150u); never two drawn 3D tabs in a sync check (docs/ops/testing.md "Two phones")
     let worst = 0;
     for (let i = 0; i < 8; i++) {
       await tapper.waitForTimeout(150); // (a sample every 150 ms of the walk)

@@ -1,4 +1,4 @@
-// Timing-based e2e shards (docs/ops/test-strategy.md "CI"). Playwright's own --shard splits by count, so one shard got
+// Timing-based e2e shards (docs/ops/testing.md "CI"). Playwright's own --shard splits by count, so one shard got
 // the 3D specs (40 s each under CI's software GL) and ran 3× as long as another. This one splits by each test's time.
 //
 //   node scripts/e2e-shards.ts plan <n> <outDir> [timings.json] [-- <playwright list args>]

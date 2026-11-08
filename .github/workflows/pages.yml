@@ -1,7 +1,7 @@
 # Builds the UI as a static site and deploys it to Cloudflare Pages: https://island-fund.pages.dev/ (its own origin; GitHub
 # Pages, https://huangwaylon.github.io/fitness/, until 2026-11-05).
 # The backend is the relay (relay/: the record at /api, the room at /room); its URLs are in the app (lib/sync/live.ts).
-# The layout (docs/ops/testing.md, docs/ops/test-strategy.md): the gate, lean (the user, 2026-11-08: two people use the
+# The layout (docs/ops/testing.md): the gate, lean (the user, 2026-11-08: two people use the
 # app, fix-forward is cheap): `build` (the `site` artifact: what is deployed, its budgets), `checks`, `unit`, `select` →
 # `e2e-gate` (the core e2e and what the push changed or reaches) all at once, and `deploy` getting ready beside them,
 # deploying once all are green. After it, never holding it back: the full logic tier and the drawn smoke
