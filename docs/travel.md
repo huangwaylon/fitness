@@ -131,8 +131,9 @@ Offline with it saved, the map says 「保存した範囲のみ」.
 
 - Not yet checked on a real iPhone (Safari's `text-wrap: pretty`, the hero crops, the map on Metal).
 - The map has no night tint (the day palette at every hour).
-- Offline, then back: in Playwright's WebKit the pill's import can still fail after もういちど's reload (no request
-  made; `travel.spec` "offline before the first opening" fails about half its WebKit runs). Check on the phone.
+- Offline (onLine still true) with no worker in control, then back: WebKit's failed modulepreloads still fail the
+  import, もういちど reloads, and the new page's first tap can get the old page's failures again (`lazySheet.svelte.ts`).
+  Not seen on the phone: there the worker serves the chunk.
 - Offline maps on the phone: `e2e/offline.spec.ts` checks them in Chromium (a drawn map offline from the caches) and
   the tiles kept in Playwright's WebKit by hand; not yet on an iPhone.
 - Packing: no icon picker (a new category is always the shopping bag), no note editing, no moving an item to another
