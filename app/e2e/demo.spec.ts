@@ -1,7 +1,7 @@
 // Demo smoke test: buy, undo, the harvest recap, the ベル ledger (read-only), けんこう's goals, on `?demo` (no backend, no key).
 import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, hudBells, hudMenu, openRewards, unfoldMenu } from './hud.ts';
-import { BASE, islandUp, islandURL, lawnTap, quiet } from './island.ts';
+import { BASE, islandUp, islandURL, lawnTap, quiet, watchComings } from './island.ts';
 
 /** The topmost sheet (a confirm over the panel). */
 const sheet = (page: Page) => page.locator('dialog[open]').last();
@@ -418,15 +418,19 @@ test('partner: a tap is a high-five in place, no card: a sparkle flies between t
     return [Math.round(m.m41), Math.round(m.m42)];
   })));
   const home = await feet();
+  // (each effect watched for from before the tap: they're transient, over before a loaded runner's look)
+  const came = await watchComings(page, {
+    zap: '[data-zap]', sparklesMine: '[data-actor="mine"] .fx.sparkles', sparklesPartner: '[data-actor="partner"] .fx.sparkles',
+    hearts: '[data-actor="partner"] .fx.hearts', walking: '[data-actor="mine"].walking'
+  });
   await vil.click();
   await vil.click(); // a second tap while it's under way adds nothing
   await expect(page.locator('dialog[open]')).toHaveCount(0); // no card
-  // a sparkle flies from mine to them; both hop face to face with the sparkles, and it's sent
-  await expect(page.locator('[data-zap]')).toBeAttached();
-  for (const id of ['mine', 'partner']) await expect(page.locator(`[data-actor="${id}"] .fx.sparkles`).first()).toBeAttached({ timeout: 2000 });
+  // a sparkle flies from mine to them; both hop face to face with the sparkles, hearts on them, and it's sent
+  for (const k of ['zap', 'sparklesMine', 'sparklesPartner', 'hearts']) await expect.poll(() => came(k), { message: k }).toBeGreaterThan(0);
   await expect(page.getByText('うめさんに ハイタッチ！')).toBeVisible();
-  await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
-  await expect(page.locator('[data-actor="partner"] .fx.hearts').first()).toBeAttached({ timeout: 2000 });
+  expect(await came('zap'), 'one high-five: the second tap added nothing').toBe(1);
+  expect(await came('walking'), 'nobody walked').toBe(0);
   expect(await feet()).toEqual(home); // nobody walked
   // over the relay only (here the demo's tabs): nothing for the sheet
   await page.waitForTimeout(600);
