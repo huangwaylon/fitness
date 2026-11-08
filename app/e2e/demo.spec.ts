@@ -270,7 +270,7 @@ test('けんこう: body weight (from Health, no logging by hand); its goal is s
   await saved.getByRole('button', { name: '閉じる' }).click();
   await expect(saved).toHaveCount(0);
   await expect(sheet(page).locator('[data-group=body]')).toHaveAttribute('aria-pressed', 'true');
-  await expect(sheet(page).locator('.bc[data-metric=weight][data-person=A] svg[role=img]')).toContainText('目標 65.0');
+  await expect(sheet(page).locator('.bc[data-metric=weight][data-person=A] svg[role=img]')).toHaveAttribute('aria-label', /目標 65\.0/);
   // −/＋ step by 0.5 kg from the goal; やめる changes nothing
   await chip.click();
   await expect(input).toHaveValue('65.0');
@@ -311,8 +311,8 @@ test('けんこう: the body fat goal, set on its card (3–60 %), dashed on the
   await sheet(page).locator('[data-group=body]').click(); // からだ
   const fat = sheet(page).locator('.bc[data-metric=body_fat_pct][data-person=A]');
   await expect(fat.getByRole('heading', { name: '体脂肪率' })).toBeVisible();
-  await expect(fat.locator('path.goal')).toHaveCount(0); // no goal yet: no line, no label
-  await expect(fat.locator('svg[role=img]')).not.toContainText(/目標 \d/);
+  await expect(fat.locator('path.goal')).toHaveCount(0); // no goal yet: no line, none in its words
+  await expect(fat.locator('svg[role=img]')).not.toHaveAttribute('aria-label', /目標 \d/);
   // BMI and lean mass have their own (none set in the demo): a chip each, no line
   await expect(goalChip(page, 'bmi-goal')).toHaveText('目標なし');
   await expect(goalChip(page, 'lean_kg-goal')).toHaveText('目標なし');
@@ -332,9 +332,10 @@ test('けんこう: the body fat goal, set on its card (3–60 %), dashed on the
   await expect(saved).toContainText('体脂肪率の目標を変更しました');
   await saved.getByRole('button', { name: '閉じる' }).click();
   await expect(saved).toHaveCount(0);
-  // drawn on the body fat chart as the weight goal is: the dashed line, its label and the key
+  // drawn on the body fat chart as the weight goal is: the dashed line, the key and the chart's words (its own words
+  // are the chip's, never in the plot: health plan C3)
   await expect(fat.locator('path.goal')).toHaveCount(1);
-  await expect(fat.locator('svg[role=img]')).toContainText('目標 19.5');
+  await expect(fat.locator('svg[role=img]')).toHaveAttribute('aria-label', /目標 19\.5/);
   await expect(fat.locator('.key .k-goal')).toHaveCount(1);
   // cleared: no line
   await chip.click();
@@ -346,7 +347,7 @@ test('けんこう: the body fat goal, set on its card (3–60 %), dashed on the
   await expect(cleared).toHaveCount(0);
   await expect(fat).toBeVisible();
   await expect(fat.locator('path.goal')).toHaveCount(0);
-  await expect(fat.locator('svg[role=img]')).not.toContainText('目標 19.5');
+  await expect(fat.locator('svg[role=img]')).not.toHaveAttribute('aria-label', /目標 19\.5/);
 });
 
 test('けんこう: each からだ card wears its own NH item, as かつどう wears its fruit (no scale glyph left)', async ({ page }) => {
