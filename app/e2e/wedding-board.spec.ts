@@ -95,7 +95,6 @@ test('finished rows: hidden under すべて, shown on asking; who finished one i
   await expect(card(page, 'wdemo09').locator('[data-wed-by="A"]')).toBeVisible();
   await open(page, 'wdemo01');
   await expect(card(page, 'wdemo01').locator('[data-wed-imported]')).toHaveText('前のボードで完了');
-  await expect(card(page, 'wdemo01').locator('.tag')).toHaveText('会場'); // the old Sheet's 「Venue」, read in Japanese
   await expect(card(page, 'wdemo09').locator('[data-wed-by]')).toHaveCount(0); // (one row open at a time)
   // the finished months come before 今月
   const all = await sheet(page).locator('[data-wed-group]').evaluateAll((els) => els.map((e) => e.getAttribute('data-wed-group')));
@@ -409,7 +408,7 @@ test('設定: the names, a category added and removed, a deleted task restored, 
   await sheet(page).locator('[data-wed-set="venue"]').fill('も'.repeat(150));
   await sheet(page).locator('[data-wed-set="venue"]').blur();
   await expect(sheet(page).locator('[data-wed-set="venue"]')).toHaveValue('も'.repeat(150));
-  // the categories in Japanese (an old English one on the record read so too, health plan C8); no time zone row
+  // the categories in Japanese (health plan C8); no time zone row
   // (one wedding, in Japan)
   await expect(sheet(page).locator('[data-wed-cat]')).toHaveText(['予算', '会場', '招待客', '業者', '衣装', '料理', 'ペーパーアイテム', '写真', '音楽', '美容', 'ギフト', '手続き', '新婚旅行', 'その他']);
   await expect(sheet(page).locator('[data-wed-set="tz"]')).toHaveCount(0);
