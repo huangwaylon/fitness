@@ -1,7 +1,7 @@
 # Observability: the log, its reader, the alert
 
 What the phones and the relay log, where it goes, how to read it, what it costs. The decisions and why:
-[decisions](../decisions.md#logging-and-observability-2026-11-05). Code: `app/src/lib/contract/log.ts` (the schema),
+[decisions](../decisions.md#logging-and-observability). Code: `app/src/lib/contract/log.ts` (the schema),
 `app/src/lib/sync/log.ts` (the phone), `relay/src/log.ts` · `logRoute.ts` · `reqMeta.ts` · `logObject.ts` (the relay),
 `relay/scripts/logs.ts` (the reader).
 

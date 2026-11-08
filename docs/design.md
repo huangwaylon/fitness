@@ -15,7 +15,7 @@ daily goal) into one shared wallet, spent on two treats: おやつ and 外食. J
 - **Data out:** the PWA (SvelteKit, static on Cloudflare Pages) fetches the raw rows and computes every number on the
   phone (`lib/model/`, pure functions).
 - **Principles:** zero required taps a day; both people see all data; no notifications (the app is opened by choice;
-  [decisions](decisions.md#no-notifications-2026-11-02)); everything always animates
+  [decisions](decisions.md#no-notifications)); everything always animates
   (no reduced-motion variants).
 
 Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/` · `model/` · `sync/` · `store/` ·
@@ -61,7 +61,7 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
 - **HUD row:** [the health button] [the menu] (the meal button folded into the health popup's ごはん tab: the user,
   2026-11-08), one cluster right-aligned in the top-right corner,
   the leaf at the very right (2026-11-03, the user: "move the leaf drop down button to the very right … kenkou, gohan,
-  then finally dropdown menu"; [decisions](decisions.md#the-jar-goes-into-the-leaf-ごほうび-is-the-panel-2026-11-03)),
+  then finally dropdown menu"),
   at `--hud-top` (10px under the safe area: clear of iOS 27's top-edge blur, the Dynamic Island clear above it), inset
   14px or the safe area's side, 6px apart. The dumbbell is 60px wide (`--hud-side`), the menu
   a 44px disc. No jar and no ribbon in the sky: NH's island view keeps its sky clear and its UI tucked away, and the
@@ -403,7 +403,7 @@ the day at its top, no level (no search, query, row opened in place, amount or e
   「なしなら 体重×1.6 g」; at least the 推奨量 with a profile); with a profile ([Profile](#profile)) kcal from the daily
   energy and salt the 食事摂取基準's ceiling by sex (「なしなら からだと 活動からの めやす」, 「なしなら 食事摂取基準の めやす」);
   fibre the 食事摂取基準 2025's 目標量 by sex and age (men 20 g, 22 from 30 to 64; women 18; 「なしなら 食事摂取基準の めやす」);
-  alcohol 20 g for everyone (厚労省's 節度ある適度な飲酒: [decisions](decisions.md#fibre-and-alcohol-2026-11-05)); none for fat and
+  alcohol 20 g for everyone (厚労省's 節度ある適度な飲酒: [decisions](decisions.md#fibre-and-alcohol)); none for fat and
   carbs (they depend on the plan). A default never overrides a goal that's set.
   **Warn, allow** (the user, 2026-11-05; [decisions](decisions.md#low-kcal-goals-warn-allow)): a kcal goal typed under my resting energy (with a profile,
   [Profile](#profile)) gets a gentle note under the field, 「きそたいしゃ（約1,630 kcal）より ひくい めやす です。きんにくが
@@ -1433,7 +1433,7 @@ picked up is gone on both, what a shake drops lies on both, each villager stands
 ### The guest
 
 `contract/guest.ts`, `ui-state/cast.ts`, `ui-state/viewer.ts`, `e2e/guest.spec.ts` ([backend](backend.md#the-guest),
-[decisions](decisions.md#a-guest-not-a-third-member-2026-11-02)). A third person, 「おきゃくさん」: a visitor to our island,
+[decisions](decisions.md#the-guest)). A third person, 「おきゃくさん」: a visitor to our island,
 NH's way, with its own key (pairing: [runbook §4b](ops/runbook.md#4b-the-guest)). `?demo&as=G` is its phone.
 
 - **What it sees:** our island, the trees and their popups, the HUD menu's ベル row, ごほうび (to look at: the balance, today's ベル (the members') and the
@@ -1849,7 +1849,7 @@ northern-hemisphere months; hours still hold.
   `critters.ts` fleesFrom). A bug a dev hook brings keeps clear of every control; one of ambient
   life's sits where its seed puts it (a tap on it comes first, before a control under it). Left out: the blue weevil beetle, the giraffe stag
   and the horned hercules (no icons), the dung beetle, the ant and the fly
-  ([decisions.md](decisions.md#the-rest-of-nhs-bugs-what-the-island-can-hold)).
+  ([decisions.md](decisions.md#nhs-calendar-and-critters)).
 - **Diving** (`island/sea.ts`, NH's 40 sea creatures, loaded with the first bubble spot; `e2e/dive.spec.ts`): now and
   then (1 in 14 a slot with none there: about as often as when they took 1 sea turn in 4) a spot of bubbles rises off
   the front beach, beside its shadow (gone after 30 s). A tap dives: still and slow creatures are
@@ -2226,7 +2226,7 @@ only: the others see my villager as ever. Off during もようがえ (the room's
 
 `shop/ShopRoom.svelte`, `routes/shop`, `contract/shop.ts`, `contract/shopPrices.ts` (`npm run shop:prices`),
 `model/shop.ts`, `store/actions.ts` (sell, buyPiece), `e2e/shop.spec.ts`. NH's Nook's Cranny (タヌキ商店) with its own
-money, かいがら (shells, NH's cowrie for its mark), never ベル ([decisions](decisions.md#the-shops-かいがら-2026-11-04)):
+money, かいがら (shells, NH's cowrie for its mark), never ベル ([decisions](decisions.md#the-shops-かいがら)):
 the island's catches sell for them and buy furniture for the rooms. Each person's own pocket and かいがら, the guest's
 too.
 
@@ -2257,7 +2257,7 @@ too.
 - A sell or a buy shows at once with 取り消す for 5 s (the banner up over the counter here, clear of the bar), then
   goes to the record, which checks it (the pocket, the wallet, the stock, the price: [backend](backend.md#events)).
 - **Prices:** NH's Bells ÷ 20 both ways, NH's own ratio (a sell at least 3): a sea bass 20, a koi 200, a whale shark
-  650, wood 3, a coral 25, a T. rex skull 300; a median piece 110, one or two catches ([decisions](decisions.md#the-shops-かいがら-2026-11-04)).
+  650, wood 3, a coral 25, a T. rex skull 300; a median piece 110, one or two catches ([decisions](decisions.md#the-shops-かいがら)).
 - **The building:** NH's Nook's Cranny with its タヌキ商店 sign, 7 × 4, one to an island, moved and turned in the editor,
   never deleted ([island-layout.md](island-layout.md#the-islands-buildings)); a tap walks up to its door
   and goes in, ‹ 島へ comes out of it. It is the only way in (one goes to the shop to buy and sell, as in NH).
