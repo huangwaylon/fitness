@@ -944,7 +944,7 @@ test('ごほうび: today’s ベル in a yuzu pill under the balance (both of u
   await expect(pill).toHaveClass(/none/);
 });
 
-test('the dumbbell grows the health popup out of itself: a live zoom about the button, no View Transition', async ({ page }) => {
+test('the dumbbell opens the health popup at once: no zoom, slide or fade, no View Transition', async ({ page }) => {
   await page.goto('?demo');
   await islandReady(page);
   await page.evaluate(() => {
@@ -952,21 +952,12 @@ test('the dumbbell grows the health popup out of itself: a live zoom about the b
     w.vts = 0;
     const real = document.startViewTransition?.bind(document);
     if (real) document.startViewTransition = ((cb?: ViewTransitionUpdateCallback) => (w.vts++, real(cb))) as typeof document.startViewTransition;
-    // every animation slowed as it starts, to read the zoom mid-way
-    document.addEventListener('animationstart', () => document.getAnimations().forEach((a) => (a.playbackRate = 0.05)), true);
   });
-  const btn = page.getByRole('button', { name: 'けんこう', exact: true });
-  const art = (await btn.locator('.art').boundingBox())!;
-  await btn.click();
+  await page.getByRole('button', { name: 'けんこう', exact: true }).click();
   const dlg = page.locator('dialog.pop[open]');
   await expect(dlg).toHaveCount(1);
-  await expect.poll(() => dlg.evaluate((d) => d.getAnimations().map((a) => (a as CSSAnimation).animationName))).toEqual([expect.stringMatching(/(^|-)pop$/)]);
-  // the zoom's origin is the dumbbell (its box before the press squash)
-  const origin = await dlg.evaluate((d: HTMLDialogElement) => {
-    const [x, y] = getComputedStyle(d).transformOrigin.split(' ').map(parseFloat);
-    return { x: d.offsetLeft + x, y: d.offsetTop + y };
-  });
-  expect(Math.abs(origin.x - (art.x + art.width / 2))).toBeLessThan(3);
-  expect(Math.abs(origin.y - (art.y + art.height / 2))).toBeLessThan(3);
+  // nothing in it moving as it shows (its content's slide-ins finished by the opening too)
+  expect(await dlg.evaluate((d) => d.getAnimations({ subtree: true }).filter((a) => a.playState === 'running' && Number.isFinite(a.effect?.getTiming().iterations ?? 1)).length)).toBe(0);
+  expect(await dlg.evaluate((d) => getComputedStyle(d).animationName)).toBe('none');
   expect(await page.evaluate(() => (window as unknown as { vts: number }).vts)).toBe(0);
 });

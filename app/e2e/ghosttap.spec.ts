@@ -34,7 +34,6 @@ async function roundTrip(page: Page, tap: (x: number, y: number) => Promise<void
   const j = await center(page, '.hud-health');
   await tap(j.x, j.y);
   await expect(page.locator('dialog[open] [data-health-sheet]')).toBeVisible();
-  await page.waitForTimeout(500); // the zoom in
   const b = await center(page, 'dialog[open] .nav.close');
   await tap(b.x, b.y);
   await expect(panel(page)).toHaveCount(0);

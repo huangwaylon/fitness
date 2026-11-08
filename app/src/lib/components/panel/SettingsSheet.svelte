@@ -1,9 +1,9 @@
 <script lang="ts">
   // 設定 (docs/design.md "Settings"): the HUD's menu's せってい button opens it, full height like the island panel,
-  // grown out of the button (Sheet's `pop`, as けんこう out of the dumbbell). One scroller: 姿 (the look's portrait,
+  // at once (Sheet's `pop`). One scroller: 姿 (the look's portrait,
   // the よびな; 変更 → the 姿 level: the closet and the villagers, one dresser), プロフィール (性別, 生年月日, the BMI
   // standard: ProfileSection), サウンド, 言語 (one dropdown), 季節 (the seasonal preview, its fold opening on 島の天気) and
-  // 図鑑 (one row: this closes, the ずかん's sheet grown out of the row in its place); the guest's the same (2026-11-06), with a line saying it's visiting. The island is arranged in /editor, not here.
+  // 図鑑 (one row: this closes, the ずかん's sheet in its place); the guest's the same (2026-11-06), with a line saying it's visiting. The island is arranged in /editor, not here.
   // 姿 pushes a level with ‹ (its edits are sent as it's left, with a 取り消す banner here);
   // ✕, the backdrop and Esc close it, and the next opening starts at its top.
   import { tick } from 'svelte';
@@ -12,7 +12,6 @@
   import LookPage from '../look/LookPage.svelte';
   import LookPortrait from '../look/LookPortrait.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { popFrom } from '../island/popFrom.ts';
   import { prefetchSheet } from '../island/sheetChunks.ts';
   import SoundSection from './SoundSection.svelte';
   import LangSection from './LangSection.svelte';
@@ -108,7 +107,7 @@
       <section class="sec" aria-labelledby="sec-zukan">
         <h2 id="sec-zukan" class="sec-label">{t('title.zukan')}</h2>
         <button type="button" class="prow zukan" data-settings-zukan aria-haspopup="dialog" data-sfx="tick" onpointerdown={() => void prefetchSheet('zukan')}
-          onclick={(e) => (popFrom(e.currentTarget.querySelector('.ic')), (open = false), onzukan())}>
+          onclick={() => ((open = false), onzukan())}>
           <span class="ic"><OfficialArt key="critters/agrias-butterfly" size={36} /></span>
           <span class="prl">{t('zukan.open')}</span>
           <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>

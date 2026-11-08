@@ -79,8 +79,8 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
   view-only there, the same balance. It folds back up
   quicker (160ms, the last pill first) on a second tap of the leaf, a tap anywhere else (that tap still does what it
   would: no swallowed tap), Esc (focus back on the leaf), any sheet opening, and a pick: a pill's tap
-  is a press squash, the villagers glance up (R18) and its sheet grows out of the pill's icon (Sheet's `pop`, as
-  けんこう); once that sheet has closed, the focus goes back to the leaf (`preventScroll`; the pill is inert by then,
+  is a press squash, the villagers glance up (R18) and its sheet opens at once (no zoom, slide or fade: the user,
+  2026-11-08); once that sheet has closed, the focus goes back to the leaf (`preventScroll`; the pill is inert by then,
   so the dialog's own return would drop it to the page's top). Folded, the pills are `visibility: hidden` and `inert`: no focus, no taps, out of placement.ts' guards (a
   balloon may stand there). The column is out of the row's flow, so the HUD's box (`.ribbon-wrap`, which the 3D
   island measures for the sky) stays the row. Reduced motion: the pills fade in and out where they stand, the leaf
@@ -96,8 +96,8 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
 - **Health button** (`island/HudHealth.svelte`): a small cream pill 44px tall with the cream lip, 60px wide, NH's red
   dumbbell (`items/dumbbell`, NH's catalogue icon) across it, its plates a little over the ends; no number (the numbers
   live in the popup), the cluster's left end. Tap → the villagers glance up at it
-  (R18, to the right) and [けんこう](#kenkou) grows out of the dumbbell (`health/HealthSheet.svelte`, Sheet's `pop`: a live CSS zoom
-  about the button, no View Transition: its snapshot of the banded ground striped on iPhone).
+  (R18, to the right) and [けんこう](#kenkou) opens at once (`health/HealthSheet.svelte`, Sheet's `pop`: no motion, no View
+  Transition).
 - **Meal button** (`island/HudFood.svelte`): the health button's pill with NH's ramen bowl (`items/dinner`), between
   the dumbbell and the leaf. Tap → the villagers glance up at it (R18) and [ごはん](#gohan) grows out of
   the bowl (`food/FoodSheet.svelte`, Sheet's `pop`).
@@ -149,7 +149,7 @@ island with the panel open on ごほうび (`?panel=rewards`, dropped from the U
 
 ### Panel
 
-The HUD menu's 「ベル」 row → the island panel slides down from the top (`panel/IslandPanel.svelte`): title 「ごほうび」,
+The HUD menu's 「ベル」 row → the island panel opens at once, full height (`panel/IslandPanel.svelte`): title 「ごほうび」,
 full height, no tabs: [the wallet](#wallet) (the jar and the balance, today's ベル, the rewards, the ベル ledger, the
 buys). Every opening starts at its top. Its own chunk, loaded on the first tap. The goals are けんこう's
 ([Kenkou](#kenkou)), the ずかん 設定's.
@@ -157,11 +157,11 @@ buys). Every opening starts at its top. Its own chunk, loaded on the first tap. 
 A day of the ledger pushes a level with ‹ (the wallet stays mounted under it, hidden, so ‹ comes back to it as it was,
 scrolled where it was); ✕, the backdrop and Esc close the panel.
 
-**せってい** (`panel/SettingsSheet.svelte`): the HUD menu's せってい pill → its own sheet, full height, grown out of the
-pill (Sheet's `pop`), title せってい: **すがた** (the look's portrait, the よびな and what's worn: いつもの, a コーデ's name
+**せってい** (`panel/SettingsSheet.svelte`): the HUD menu's せってい pill → its own sheet, full height, at once
+(Sheet's `pop`), title せってい: **すがた** (the look's portrait, the よびな and what's worn: いつもの, a コーデ's name
 or the villager's; かえる → [the すがた level](#sugata): the closet and the villagers in one dresser), **プロフィール** ([Profile](#profile)), **サウンド** ([Sound settings](#sound-settings)), **言語** (one dropdown, health/Pick's:
 日本語 by default / English), **季節** ([Seasonal preview](#seasonal-preview); its fold opens on **島の天気**, 実際の天気 / ゲーム:
-[Weather](#weather)) and **図鑑** (one row: 設定 closes, [the ずかん](#zukan) opens grown out of it); the guest's the same (2026-11-06), with a line saying it's visiting. すがた pushes a level with ‹; ✕, the backdrop and Esc close it,
+[Weather](#weather)) and **図鑑** (one row: 設定 closes, [the ずかん](#zukan) opens); the guest's the same (2026-11-06), with a line saying it's visiting. すがた pushes a level with ‹; ✕, the backdrop and Esc close it,
 and the next opening starts at its top. Its own chunk, loaded on the first tap.
 
 <a id="sugata"></a>**すがた** (`look/LookPage.svelte`, `look/LookStage.svelte`, `look/tabs.ts`, `look/ClosetGrid.svelte`,
@@ -604,7 +604,9 @@ One rule app-wide (the user, 2026-11-07: "x and back are not consistent"); `ui/n
   a list's (the kit) is an `ActionSheet` (a short question, what it takes in `note`, the coral 削除 row; ✕ cancels),
   one with a picture (a buy, a saved look) a sheet with キャンセル + the verb (`.btn.danger`, coral, for a 削除; 買う！
   leaf). A delete that can be undone acts at once with 取り消す on its banner.
-- Sheets rise and levels slide in over 240 ms.
+- The island's full-height sheets (けんこう, the panel, りょこう, けっこんしき, トレイル, ききみみ, 設定) open and close at once:
+  no zoom, slide or fade (the user, 2026-11-08); a form sheet rises over 240 ms; a level slides in over 240 ms, never
+  as its sheet opens (Sheet's settle finishes it).
 
 ### Sizes
 
@@ -1913,7 +1915,7 @@ and its mouth, and the spring and the river above the cliff.
 
 `kiroku/Zukan.svelte`, `kiroku/ZukanCard.svelte`, `kiroku/zukan.ts`, `model/finds.ts`, `model/tally.ts`,
 `e2e/zukan.spec.ts`. The ずかん is its own sheet (`kiroku/ZukanSheet.svelte`: 設定's last section, 図鑑 (one row, NH's agrias
-butterfly; since 2026-11-08, no pill in the HUD menu): 設定 closes and the sheet grows out of the row, Sheet's `pop`): first one row per kind with how many either of us has found (`ZukanCard`), a row → that kind's page
+butterfly; since 2026-11-08, no pill in the HUD menu): 設定 closes and the sheet opens, Sheet's `pop`): first one row per kind with how many either of us has found (`ZukanCard`), a row → that kind's page
 with ‹ (titled with the kind: a level's title is its own name, the ledger's day its date); the next opening starts on the rows. Shared (the first `find` of either of us): 魚 80 (the sea's 34 and the pond's
 46), 虫 74, 海の幸 40, 化石 73 (laid out like NH's museum: the standalone ones, then each dinosaur with
 「Tレックス 1 / 3」), かいがら 9 (the pearl last), and a balloon's presents: カタログ 1,836 (by NH's categories: かぐ,

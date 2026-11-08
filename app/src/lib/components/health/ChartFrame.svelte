@@ -60,6 +60,13 @@
   /** The chart's width: its last while the sheet is closed (kept mounted, display none, it reads 0): its picture kept. */
   let w = $state(0);
   let dx = $state(0);
+  /** The range has turned since this chart was drawn: only then does the plot slide in (never as the sheet opens). */
+  // svelte-ignore state_referenced_locally
+  const drawn = range.from + range.period;
+  let turned = $state(false);
+  $effect.pre(() => {
+    if (range.from + range.period !== drawn) turned = true;
+  });
   const n = $derived(range.buckets.length);
   const plotW = $derived(Math.max(1, w - pad.l - pad.r));
   const bw = $derived(plotW / n);
@@ -103,7 +110,7 @@
       {/each}
       <g clip-path="url(#clip-{id})">
         {#key range.from + range.period}
-          <g class="plot" class:dragging={dx !== 0} style:--slide="{slide * 28}px" style:transform="translateX({dx * 0.5}px)">
+          <g class="plot" class:turned class:dragging={dx !== 0} style:--slide="{slide * 28}px" style:transform="translateX({dx * 0.5}px)">
             {#if sel !== null}<rect class="hl" x={geo.x0(sel)} y={pad.t - 4} width={bw} height={base - pad.t + 4} rx="4" />{/if}
             {@render plot(geo)}
             {#if goal && goalD}<path class="goal {goal.tone}" d={goalD} />{/if}
@@ -135,7 +142,7 @@
   .grid.zero { stroke: color-mix(in srgb, var(--text-soft) 45%, transparent); }
   .ax { fill: var(--text-soft); font: 700 var(--fs-s)/1 var(--font-num); }
   .gtext { fill: var(--text-soft); font: 700 var(--fs-xs)/1 var(--font-num); paint-order: stroke; stroke: var(--card); stroke-width: 3px; stroke-linejoin: round; }
-  .plot { animation: slide 220ms cubic-bezier(.2, .8, .2, 1); }
+  .plot.turned { animation: slide 220ms cubic-bezier(.2, .8, .2, 1); }
   .plot:not(.dragging) { transition: transform 200ms cubic-bezier(.2, .8, .2, 1); }
   @keyframes slide { from { opacity: .2; translate: var(--slide) 0; } to { opacity: 1; translate: 0 0; } }
   .hl { fill: var(--hl); }

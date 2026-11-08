@@ -26,7 +26,6 @@
   import { openTrails } from '../hiking/open.svelte.ts';
   import { coinsInFlight } from './HudCoins.svelte';
   import { react } from '../motion/director.svelte.ts';
-  import { popFrom } from './popFrom.ts';
   import { prefetchSheet, type SheetChunk } from './sheetChunks.ts';
   import { sheetTap } from '#lib/ui-state/sheetTiming.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
@@ -112,9 +111,7 @@
     });
   });
 
-  function pick(e: MouseEvent, go: (() => void) | undefined) {
-    const el = e.currentTarget as HTMLElement;
-    popFrom(el.querySelector('.ic') ?? el);
+  function pick(go: (() => void) | undefined) {
     react('R18');
     open = false;
     refocus = true;
@@ -185,35 +182,35 @@
   {#if !open}{@render plus()}{/if}
   <div class="items" id="hud-menu-items" role="group" aria-label={t('island.menu')} inert={!open}>
     <button type="button" class="item bells" data-hud-bells data-bells={bells} data-today={today} aria-haspopup="dialog" aria-expanded={expanded}
-      aria-label={t('island.bells', { bells: formatBells(bells), today: formatBells(today) })} data-sfx="self" onpointerdown={() => ahead('panel')} onclick={(e) => pick(e, onbells)}>
+      aria-label={t('island.bells', { bells: formatBells(bells), today: formatBells(today) })} data-sfx="self" onpointerdown={() => ahead('panel')} onclick={() => pick(onbells)}>
       <span class="lbl" aria-hidden="true">{t('island.bellsRow')}</span>
       <b class="num money" aria-hidden="true" onanimationend={(e) => e.currentTarget.classList.remove('catch')}>{formatNum(Math.round(shown.current))}</b>
       {#if open}{@render plus()}{/if}
     </button>
     <!-- the voice session begins in the tap itself (iOS: the clips play with the silent switch on) -->
     <button type="button" class="item" data-hud-kikimimi aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('kikimimi')}
-      onclick={(e) => (wakeQuizVoice(), pick(e, () => openQuiz()))}>
+      onclick={() => (wakeQuizVoice(), pick(() => openQuiz()))}>
       <span class="lbl">{t('panel.kikimimi')}{#if invited}<small class="invited" data-hud-kikimimi-invited>{t('panel.kikimimiInvited')}</small>{:else}<small class="sub">{t('panel.kikimimiSub')}</small>{/if}</span>
       <span class="ic"><Host head size={30} animate={false} eager /></span>
     </button>
     <!-- りょこう: the trips (Orville's head on the pill only) -->
-    <button type="button" class="item" data-hud-travel aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('travel')} onclick={(e) => pick(e, () => trips.show())}>
+    <button type="button" class="item" data-hud-travel aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('travel')} onclick={() => pick(() => trips.show())}>
       <span class="lbl">{t('panel.travel')}</span>
       <span class="ic"><OfficialArt key="villagers/orville-icon" size={30} eager /></span>
     </button>
     <!-- けっこんしき: the wedding board (Harvey's head on the pill only) -->
-    <button type="button" class="item" data-hud-wedding aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('wedding')} onclick={(e) => pick(e, () => weddingSheet.show())}>
+    <button type="button" class="item" data-hud-wedding aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('wedding')} onclick={() => pick(() => weddingSheet.show())}>
       <span class="lbl">{t('panel.wedding')}</span>
       <span class="ic"><OfficialArt key="villagers/harvey-icon" size={30} eager /></span>
     </button>
     <!-- トレイル: the hiking trails (no mountain in NH's art: drawn in the gear's soft brown, its snow cream) -->
-    <button type="button" class="item" data-hud-hiking aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('hiking')} onclick={(e) => pick(e, openTrails)}>
+    <button type="button" class="item" data-hud-hiking aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('hiking')} onclick={() => pick(openTrails)}>
       <span class="lbl">{t('panel.hiking')}</span>
       <span class="ic">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M1.8 20.2 8.6 8.4c.4-.7 1.4-.7 1.8 0l2.3 4 2.2-3.2c.4-.6 1.3-.6 1.7 0l5.6 8.4c.5.7 0 1.6-.8 1.6H2.7c-.8 0-1.3-.9-.9-1.6Z" /><path class="snow" d="M7.1 11 8.6 8.4c.4-.7 1.4-.7 1.8 0L12 11.2l-1.6 1-1-1.1-1 1.2Z" /></svg>
       </span>
     </button>
-    <button type="button" class="item" data-hud-settings aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('settings')} onclick={(e) => pick(e, onsettings)}>
+    <button type="button" class="item" data-hud-settings aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('settings')} onclick={() => pick(onsettings)}>
       <span class="lbl">{t('island.settings')}</span>
       <span class="ic">
         <!-- a gear in the say button's soft brown (no settings icon in NH's art) -->
