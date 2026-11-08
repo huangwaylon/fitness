@@ -7,7 +7,7 @@
 //   RELAY_E2E=1 npm run e2e -- sync-harness --workers=1   two browser contexts against the test relay (relay/.smoke-keys;
 //                                                         one at a time: each person's key opens one socket)
 import { expect, test, type Browser, type Page } from './fixtures.ts';
-import { geo, lawnTap, oku, tapOn, quiet } from './island.ts';
+import { geo, lawnTap, oku, tapOn, quiet, watchComings } from './island.ts';
 import { sayOwn } from './say.ts';
 import { existsSync, readFileSync } from 'node:fs';
 
@@ -448,7 +448,7 @@ test('two phones in the tent: one room, A’s drag live on B (held there), the d
   if (RELAY) await ctxB.close();
 });
 
-test('a high-five over the relay: the partner plays the same moment at once, its banner and hearts once; held while they are away', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a transient pose or effect (a squish, a sparkle) over before a software-GL frame shows it' } }, async ({ browser }) => {
+test('a high-five over the relay: the partner plays the same moment, its banner and hearts once; held while they are away', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a transient pose or effect (a squish, a sparkle) over before a software-GL frame shows it' } }, async ({ browser }) => {
   test.setTimeout(90_000);
   const { open, ctxB, close } = await phones(browser);
   const a = await open('A'), b = await open('B');
@@ -456,26 +456,13 @@ test('a high-five over the relay: the partner plays the same moment at once, its
   await quiet(a); // the opening beats are over
   // B watches for the moment, in its page from before the tap: each thing's comings (it showing after it wasn't), so a
   // transient sparkle is seen however late a loaded runner reads it, and a second coming is counted
-  await b.evaluate(() => {
-    const things: Record<string, () => boolean> = {
-      zap: () => !!document.querySelector('[data-zap]'),
-      hearts: () => !!document.querySelector('[data-actor="mine"] .fx.hearts'),
-      sparklesMine: () => !!document.querySelector('[data-actor="mine"] .fx.sparkles'),
-      sparklesPartner: () => !!document.querySelector('[data-actor="partner"] .fx.sparkles'),
-      banner: () => !!document.body.textContent?.includes('ウェイさんからハイタッチ！')
-    };
-    const came: Record<string, number> = Object.fromEntries(Object.keys(things).map((k) => [k, 0]));
-    const on: Record<string, boolean> = Object.fromEntries(Object.keys(things).map((k) => [k, things[k]()]));
-    new MutationObserver(() => {
-      for (const k in things) {
-        const now = things[k]();
-        if (now && !on[k]) came[k]++;
-        on[k] = now;
-      }
-    }).observe(document.body, { childList: true, subtree: true, characterData: true });
-    (window as unknown as { __came: typeof came }).__came = came;
+  const came = await watchComings(b, {
+    zap: '[data-zap]',
+    hearts: '[data-actor="mine"] .fx.hearts',
+    sparklesMine: '[data-actor="mine"] .fx.sparkles',
+    sparklesPartner: '[data-actor="partner"] .fx.sparkles',
+    banner: { sel: '.banner[role="status"] .txt', text: 'ウェイさんからハイタッチ！' }
   });
-  const came = (k: string) => b.evaluate((k) => (window as unknown as { __came: Record<string, number> }).__came[k], k);
   const t0 = await a.evaluate(() => Date.now());
   await a.locator('[data-actor="partner"] .vil').click();
   // the moment played there (how soon is the relay's business, not this flow's: logged, never asserted)

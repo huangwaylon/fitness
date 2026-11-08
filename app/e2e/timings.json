@@ -611,7 +611,7 @@
  "sw-update.spec.ts › a slow install is waited for (no reload before its worker is in); a static file that fails costs only itself; the unchanged ones are copied": 30752,
  "sw-update.spec.ts › the room cache: a file's older version goes, and a cache from before the index is counted whole": 11471,
  "sw-update.spec.ts › ききみみ’s packs: the lobby’s pack goes into the listen cache whole, with its bytes in the index": 7831,
- "sync-harness.spec.ts › a high-five over the relay: the partner plays the same moment at once, its banner and hearts once; held while they are away": 11821,
+ "sync-harness.spec.ts › a high-five over the relay: the partner plays the same moment, its banner and hearts once; held while they are away": 11821,
  "sync-harness.spec.ts › a lamp on a table, on both phones: on its top there, and along with the table when it moves": 3282,
  "sync-harness.spec.ts › a phrase in the tent: B in there sees it over A; B on the island doesn’t, nor does A in the tent hear B’s on the island": 9261,
  "sync-harness.spec.ts › a phrase is presence: the partner sees it over my villager at once, a phone opening later never": 16486,

@@ -425,23 +425,40 @@ const popupStill = (page: Page) =>
     };
     frame();
   }));
-/** Watches, from now, for each selector's comings (it there after it wasn't): a transient effect (a sparkle, the tap's
- *  ring, hearts) seen however late a loaded runner looks, and a second coming counted. Returns how many came of `k`. */
-export async function watchComings(page: Page, sels: Record<string, string>) {
-  await page.evaluate((sels) => {
-    const W = window as unknown as { __came: Record<string, number> };
+/** A thing watched for: a selector, or a selector with this text in one of its nodes (only those nodes read). */
+export type Coming = string | { sel: string; text: string };
+/** Watches, from now, for each thing's comings (it there after it wasn't): a transient effect (a sparkle, the tap's
+ *  ring, hearts, a banner) seen however late a loaded runner looks, and a second coming counted. One watch a page: a
+ *  new one stops the last (whose `came` throws then). Returns how many came of `k` (a key not watched throws). */
+export async function watchComings(page: Page, things: Record<string, Coming>) {
+  await page.evaluate((things) => {
+    const W = window as unknown as { __came: Record<string, number>; __comingsMO?: MutationObserver };
+    W.__comingsMO?.disconnect();
+    const there = (t: Coming) =>
+      typeof t === 'string' ? !!document.querySelector(t) : [...document.querySelectorAll(t.sel)].some((el) => el.textContent?.includes(t.text));
     const on: Record<string, boolean> = {};
     W.__came = {};
-    for (const k in sels) (W.__came[k] = 0), (on[k] = !!document.querySelector(sels[k]));
-    new MutationObserver(() => {
-      for (const k in sels) {
-        const now = !!document.querySelector(sels[k]);
+    for (const k in things) (W.__came[k] = 0), (on[k] = there(things[k]));
+    W.__comingsMO = new MutationObserver(() => {
+      for (const k in things) {
+        const now = there(things[k]);
         if (now && !on[k]) W.__came[k]++;
         on[k] = now;
       }
-    }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
-  }, sels);
-  return (k: string) => page.evaluate((k) => (window as unknown as { __came: Record<string, number> }).__came[k], k);
+    });
+    W.__comingsMO.observe(document.body, {
+      childList: true, subtree: true, attributes: true, attributeFilter: ['class'],
+      characterData: Object.values(things).some((t) => typeof t !== 'string')
+    });
+  }, things);
+  return (k: string) => {
+    if (!(k in things)) throw new Error(`watchComings: '${k}' isn't watched (${Object.keys(things).join(', ')})`);
+    return page.evaluate((k) => {
+      const c = (window as unknown as { __came: Record<string, number> }).__came;
+      if (!(k in c)) throw new Error(`watchComings: '${k}' no longer watched (a later watch on this page replaced it)`);
+      return c[k];
+    }, k);
+  };
 }
 /** The page's installed clock paused about now: a moment ahead of the page's time, which runs on during the round
  *  trip (pauseAt can't go back: again further ahead if the page got there first). */
@@ -464,19 +481,25 @@ const popupBox = (page: Page) =>
 export async function shakeTree(page: Page, o: { onClock?: boolean } = {}) {
   if (o.onClock) {
     await pauseNow(page);
-    for (let i = 0; i < 3; i++) {
-      if (i) {
-        await page.clock.runFor(120);
-        // the popup at rest (it's placed again as its rows come in): unmoved over a frame or so, at most 5 tries
-        for (let k = 0, was = await popupBox(page); k < 5; k++) {
-          await page.clock.runFor(50);
-          const now = await popupBox(page);
-          if (now === was) break;
-          was = now;
+    try {
+      for (let i = 0; i < 3; i++) {
+        if (i) {
+          await page.clock.runFor(120);
+          // the popup at rest (it's placed again as its rows come in): unmoved over a frame or so, at most 5 tries
+          for (let k = 0, was = await popupBox(page); k < 5; k++) {
+            await page.clock.runFor(50);
+            const now = await popupBox(page);
+            if (now === was) break;
+            was = now;
+          }
         }
+        const c = await canopyAt(page);
+        await page.mouse.click(c.x, c.y);
       }
-      const c = await canopyAt(page);
-      await page.mouse.click(c.x, c.y);
+    } catch (e) {
+      // (a step failed: the clock running again all the same, as after the taps)
+      await page.clock.resume().catch(() => {});
+      throw e;
     }
     await page.clock.resume();
     return;

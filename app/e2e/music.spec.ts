@@ -2,7 +2,7 @@
 // its track plays instead of the hour's; the wasps' chase and sting cut in over the island's music; a tap on K.K. plays
 // one of his songs. Dates are mocked with ?date= (Tokyo). Checked by the files the engine fetches.
 import { expect, test, type Page } from './fixtures.ts';
-import { BASE, is3d, islandUp, quiet, shakeTree } from './island.ts';
+import { BASE, is3d, islandUp, quiet, shakeTree, watchComings } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -53,13 +53,10 @@ test('the wasps: Chased by Bees cuts in as they come out, Stung by Bees after th
   await tapSky(page);
   await expect.poll(() => audio).toContain('music/hour-12.m4a');
   // the swarm seen as it comes out (watched from before the shake: it's gone once they sting, 1.5 s on)
-  await page.evaluate(() => {
-    const W = window as unknown as { __swarm?: boolean };
-    new MutationObserver((_, mo) => document.querySelector('button[data-swarm]') && ((W.__swarm = true), mo.disconnect())).observe(document.body, { childList: true, subtree: true });
-  });
+  const came = await watchComings(page, { swarm: 'button[data-swarm]' });
   // (where the popup leaves the canopy open: the first tap opens it over the canopy's middle)
   await shakeTree(page, { onClock: true });
-  await expect.poll(() => page.evaluate(() => !!(window as unknown as { __swarm?: boolean }).__swarm), { message: 'the wasps came out' }).toBe(true);
+  await expect.poll(() => came('swarm'), { message: 'the wasps came out' }).toBeGreaterThan(0);
   await expect.poll(() => audio).toContain('music/bee-chase.m4a');
   await expect(page.locator('[data-stung]')).toHaveCount(1); // no tap: stung
   await expect.poll(() => audio).toContain('music/bee-stung.m4a');
