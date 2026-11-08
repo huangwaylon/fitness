@@ -1,9 +1,8 @@
 // Everything the layout can hold has a drawing in the editor's 3D preview (the user: "the 3d editor preview is
 // missing a lot of things in general like pond"): every catalog kind is an instance of a real model (placeObjects, the
 // preview's day), a group the island's own builders build (built.ts: the homes, bridges, stairs and ponds), K.K. on his
-// stool, or one of the marks that are never drawn in 3D. A new kind with none of these fails here. And the preview
-// draws through the island's builders, not drawing code of its own (so the two can't drift again).
-import { readFileSync } from 'node:fs';
+// stool, or one of the marks that are never drawn in 3D. A new kind with none of these fails here. (The built groups
+// both scenes keep: built.test.ts; the preview's own groups in the browser: e2e/editor-preview.spec.ts.)
 import { describe, expect, test } from 'vitest';
 import { KIND_LIST } from '#lib/layout/catalog.ts';
 import { defaultLayout, layoutOf, type Layout } from '#lib/layout/model.ts';
@@ -61,13 +60,5 @@ describe("the editor's 3D preview", () => {
     const b = withKind('board');
     expect(drawnAs(b.l, b.id, DAYS[1])).toEqual(['model:deco/bulletin-board']);
     expect(drawnAs(b.l, b.id, DAYS[3])).toEqual(['model:deco/bulletin-board-winter']);
-  });
-
-  test("draws through the island's builders: the ground, the instances, the built groups, the villagers' K.K.", () => {
-    const src = readFileSync(new URL('../editor/Preview3D.svelte', import.meta.url), 'utf8');
-    for (const m of ['terrain.ts', 'objects.ts', 'things.ts', 'built.ts', 'drawCheck.ts', 'villagers.ts']) expect(src).toContain(`../world3d/${m}`);
-    for (const own of ['buildHome', 'buildStructure', 'buildPond', 'homePlaces', 'structurePlaces', 'pondPlaces']) expect(src).not.toContain(own);
-    const island = readFileSync(new URL('./Island3D.svelte', import.meta.url), 'utf8');
-    expect(island).toContain('createBuilt(');
   });
 });
