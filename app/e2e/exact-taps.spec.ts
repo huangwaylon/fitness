@@ -80,6 +80,29 @@ const findsNear = (page: Page, x: number, y: number, r: number) => page.evaluate
   return d <= r ? [{ uid: el.getAttribute('data-uid')!, d, x: b!.left + b!.width / 2, y: b!.top + b!.height / 2 }] : [];
 }).sort((a, b) => a.d - b.d), [x, y, r] as const);
 
+/** Opens the island on the first day from `from` (of 10) with a dig spot in the back third of the island within 30 u
+ *  of the sea, and gives that spot's x (the nearest the sea that day). */
+async function dayWithDigBySea(page: Page, layout: 'default' | 'user', from: string): Promise<number> {
+  for (let i = 0; i < 10; i++) {
+    const date = new Date(Date.parse(from) + i * 864e5).toISOString().slice(0, 10);
+    await open(page, layout, date);
+    const x = await page.evaluate(() => {
+      const h = window as unknown as Hooks;
+      const at = document.querySelector<HTMLElement>('[data-digs]')!.dataset.at!.split(' ').filter(Boolean).map((p) => p.split(',').map(Number));
+      const zs = at.map(([, z]) => z), back = Math.min(...zs) + (Math.max(...zs) - Math.min(...zs)) * 0.6;
+      const sea = (x: number, z: number) => {
+        for (let r = 2; r <= 30; r += 2)
+          for (let a = 0; a < 16; a++) if (['sea', 'water'].includes(h.__world.ground(x + Math.cos((a / 8) * Math.PI) * r, z + Math.sin((a / 8) * Math.PI) * r).surface)) return r;
+        return Infinity;
+      };
+      const near = at.filter(([, z]) => z >= back).map(([x, z]) => [x, sea(x, z)]).filter(([, d]) => d < Infinity).sort((a, b) => a[1] - b[1]);
+      return near[0]?.[0] ?? null;
+    });
+    if (x !== null) return x;
+  }
+  throw new Error(`no day from ${from} with a dig spot by the back beach`);
+}
+
 /** A tap on the sea at each point casts, and the next tap there reels in: never a door, never a find. */
 async function castsAt(page: Page, pts: Pt[], url: string) {
   for (const [x, y, r] of pts) {
@@ -144,21 +167,26 @@ for (const layout of ['default', 'user'] as const) {
 
   test(`${layout} island, the camera at its far stop: a tap on the sea beside a find by the back beach casts, a tap on it picks it up`, async ({ page }) => {
     test.slow();
-    // (a day with a find by the back beach on each island: the day's spots are drawn from the layout's open ground,
-    // so a new piece on the island, K.K.'s stool, draws them anew)
-    await open(page, layout, layout === 'user' ? '2026-11-09' : '2026-11-07');
+    // (a day with a dig spot by the back beach: the day's four are drawn from the layout's open ground, so a new piece
+    // on the island or a change to the draw moves them; the first such day from the one that had it last, read off the
+    // island, and the camera on that spot's x, not a fixed view's: one by the island's side sat at a fixed view's edge,
+    // in Chromium on CI's Linux in view, on a Mac not)
+    const x = await dayWithDigBySea(page, layout, layout === 'user' ? '2026-11-08' : '2026-11-07');
     const url = page.url();
-    let tried = 0, last: { k: number; x?: number; pt: Pt } | null = null;
-    for (const [k, x] of VIEWS) {
+    let tried = 0, last: { k: number; pt: Pt } | null = null;
+    for (const k of [1, 2, 3]) {
       await farStop(page, k, x);
       const pts = await waterBeside(page, 'find');
       tried += pts.length;
       await castsAt(page, spread(pts, 2), url);
-      if (pts.length) last = { k, x, pt: pts[0] };
+      // (the pick-up from a view with that find well on screen: the camera can't centre a spot by the island's side)
+      const [f] = pts.length ? await findsNear(page, pts[0][0], pts[0][1], 20) : [];
+      if (f && f.x > 24 && f.x < 393 - 24) last = { k, pt: pts[0] };
     }
     expect(tried, 'the sea beside a find at the far stop').toBeGreaterThan(0);
+    expect(last, 'a view with the find by the sea on screen').not.toBeNull();
     // the find beside the sea there itself, on its art's middle
-    await farStop(page, last!.k, last!.x);
+    await farStop(page, last!.k, x);
     const [on] = await findsNear(page, last!.pt[0], last!.pt[1], 20);
     expect(on, 'the find by the sea').toBeDefined();
     await page.waitForTimeout(400);
