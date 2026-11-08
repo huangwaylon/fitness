@@ -545,8 +545,8 @@ T_PX = 128  # thumbnails (48 / 40 px at 3x)
 T_COLS = int(os.environ.get('FI_TCOLS', 4))  # 4 x 4 a sheet (10 x 10 until 2026-11-08: a search downloaded ~250 KB; now ~100)
 T_PER = T_COLS * T_COLS
 T_QUALITY = int(os.environ.get('FI_TQ', 65))  # at 48 px on screen the same as 72, ~8 % smaller
-D_PX, D_COLS, D_PER = 384, 2, 2 * 2  # the amount picture (160 px): 2 x 2 (768 px, ~2.4 MB decoded), opened one at a time
-D_V = 2  # the detail layout's version: a change lays the detail sheets out again (5 x 5 until 2026-11-07)
+D_PX, D_COLS, D_PER = 384, 3, 3 * 3  # the amount picture (160 px): 3 x 3 (1,152 px, ~5.3 MB decoded), opened one at a time
+D_V = 3  # the detail layout's version: a change lays the detail sheets out again (5 x 5 until 2026-11-07, 2 x 2 till static/'s 15,000-file cap)
 QUALITY = 72
 # Thumbnail sheets are per search neighbourhood, so a search's rows touch few: a row whose name holds a common search
 # word sits with that word's family, the rest with its first item's category (BUCKET). Dish-type words rank before
