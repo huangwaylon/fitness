@@ -72,9 +72,13 @@ for (const [water, q, cam, sel, miss] of [
     // head (Critters' fish3: the body trails behind it), half its length from the tap area's middle
     const half = () => page.locator(`${sel} .fin`).evaluate((el) => { const r = el.getBoundingClientRect(); return Math.max(r.width, r.height) / 2; });
     await expect.poll(async () => apart(await drawnAt(page, sel, `fish-${water}-`)) - (await half()), { timeout: 8000 }).toBeLessThan(16);
-    // a tap by the shadow (on open water by where it's drawn): the cast, in place
-    await page.mouse.click(rx, ry);
+    // a tap by the shadow (on open water by where it's drawn, a real touch): the cast, in place, the float where the
+    // tap was (pulled in off the bank a little at most; the ground under the finger, not the shadow's spot: it swims)
+    const tapped = (await page.evaluate(([x, y]) => (window as unknown as { __world3d: { ground(cx: number, cy: number): { x: number; z: number } | null } }).__world3d.ground(x, y), [rx, ry] as const))!;
+    await page.touchscreen.tap(rx, ry);
     await expect(page.locator('[data-bobber]')).toBeAttached({ timeout: 3000 });
+    const cast = (await page.evaluate(() => (window as unknown as { __fish: { line(): { x: number; z: number } | null } }).__fish.line()))!;
+    expect(Math.hypot(cast.x - tapped.x, cast.z - tapped.z)).toBeLessThan(40);
     await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
     // NH's rod in my villager's hand, fishing
     await expect.poll(() => v3(page, (v) => [v.tool('mine'), v.state('mine')]), { timeout: 15_000 }).toEqual(['tools/rod', 'fish']);
@@ -143,7 +147,8 @@ for (const [water, q, cam, sel, miss] of [
     // the 「！」 gone with the reel
     await expect.poll(() => markShown(page), { timeout: 2000 }).toBe(false);
     if (SHOTS) await page.screenshot({ path: `${SHOTS}/fish3d-${water}${miss ? '-miss' : ''}-catch.png` });
-    expect(await page.evaluate(() => (window as { __cues?: string[] }).__cues ?? [])).toEqual(expect.arrayContaining(['scene-cast', 'scene-bite', 'scene-reel', 'scene-catch']));
+    expect(await page.evaluate(() => (window as { __cues?: string[] }).__cues ?? [])).toEqual(expect.arrayContaining(['scene-cast', 'scene-plop', 'scene-nibble', 'scene-bite', 'scene-reel', 'scene-catch']));
+    expect(await page.evaluate(() => (window as unknown as { __fish: { line(): object | null; why(): string } }).__fish.why())).toBe('caught');
     // the rod put away once the reel's over
     await expect.poll(() => v3(page, (v) => v.tool('mine')), { timeout: 6000 }).toBeNull();
   });
