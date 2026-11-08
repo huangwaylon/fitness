@@ -438,8 +438,9 @@ const popupStill = async (page: Page) => {
  *  after (the next tap the popup's, the shake's run a tap short). */
 const poppedIn = (page: Page) =>
   page.evaluate(() => Promise.all((document.querySelector('.detail')?.getAnimations() ?? []).map((a) => a.finished.catch(() => {}))).then(() => {}));
-/** A thing watched for: a selector, or a selector with this text in one of its nodes (only those nodes read). */
-export type Coming = string | { sel: string; text: string };
+/** A thing watched for: a selector, or a selector with this text in one of its nodes (only those nodes read), or
+ *  `each`: every node of the selector added, counted (two overlapping at once are two: a shooting star's streak). */
+export type Coming = string | { sel: string; text: string } | { sel: string; each: true };
 /** Watches, from now, for each thing's comings (it there after it wasn't): a transient effect (a sparkle, the tap's
  *  ring, hearts, a banner) seen however late a loaded runner looks, and a second coming counted. One watch a page: a
  *  new one stops the last (whose `came` throws then). Returns how many came of `k` (a key not watched throws). */
@@ -448,20 +449,25 @@ export async function watchComings(page: Page, things: Record<string, Coming>) {
     const W = window as unknown as { __came: Record<string, number>; __comingsMO?: MutationObserver };
     W.__comingsMO?.disconnect();
     const there = (t: Coming) =>
-      typeof t === 'string' ? !!document.querySelector(t) : [...document.querySelectorAll(t.sel)].some((el) => el.textContent?.includes(t.text));
+      typeof t === 'string' ? !!document.querySelector(t) : [...document.querySelectorAll(t.sel)].some((el) => 'text' in t && el.textContent?.includes(t.text));
     const on: Record<string, boolean> = {};
     W.__came = {};
     for (const k in things) (W.__came[k] = 0), (on[k] = there(things[k]));
-    W.__comingsMO = new MutationObserver(() => {
+    W.__comingsMO = new MutationObserver((ms) => {
       for (const k in things) {
-        const now = there(things[k]);
+        const t = things[k];
+        if (typeof t !== 'string' && 'each' in t) {
+          for (const m of ms) for (const n of m.addedNodes) if (n instanceof Element) W.__came[k] += (n.matches(t.sel) ? 1 : 0) + n.querySelectorAll(t.sel).length;
+          continue;
+        }
+        const now = there(t);
         if (now && !on[k]) W.__came[k]++;
         on[k] = now;
       }
     });
     W.__comingsMO.observe(document.body, {
       childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'data-act'], // (data-act: a villager's motion)
-      characterData: Object.values(things).some((t) => typeof t !== 'string')
+      characterData: Object.values(things).some((t) => typeof t !== 'string' && 'text' in t)
     });
   }, things);
   return (k: string) => {
