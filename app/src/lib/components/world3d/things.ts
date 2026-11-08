@@ -143,11 +143,15 @@ export interface Things {
   where(id: string): { x: number; y: number; z: number; hidden: boolean; model: string; fade: number; scale: number; order: number } | null;
   /** An instance's solid as a few of its outermost points (three's space, unbent; null: not built): what the camera
    *  sees of it is their hull (a building's tap area: camera.svelte.ts `body`). */
-  outline(id: string): readonly Vector3[] | null;
+  /** Its model's outermost points, each handed to `fn` in world space (one scratch vector: read it there), or false
+   *  with no such model built. */
+  outlineEach(id: string, fn: (p: Vector3) => void): boolean;
   pending(): number;
   dispose(): void;
 }
 
+/** outlineEach's one point (no vector a point a call: the outline runs for every shaped node each frame the camera moves). */
+const scratchV = new Vector3();
 /** The ways an outline looks for a model's outermost points: 64 spread over the sphere (a Fibonacci lattice). */
 const SHAPE_DIRS: readonly Vector3[] = Array.from({ length: 64 }, (_, i) => {
   const y = 1 - ((i + 0.5) / 64) * 2, r = Math.sqrt(1 - y * y), a = i * Math.PI * (3 - Math.sqrt(5));
@@ -848,9 +852,12 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       const scale = tmpS.setFromMatrixScale(a.g.base[a.i]).y / (a.inst.scale || 1);
       return { x: tmpV.x, y: tmpV.y, z: tmpV.z, hidden: !!overs.get(id)?.hidden, model: a.g.name, fade: opacity(id), scale, order: a.g.meshes[0]?.im.renderOrder ?? 0 };
     },
-    outline(id) {
+    outlineEach(id, fn) {
       const a = byId.get(id);
-      return a ? shapeOf(a.g).map((p) => p.clone().applyMatrix4(a.g.base[a.i])) : null;
+      if (!a) return false;
+      const m = a.g.base[a.i];
+      for (const p of shapeOf(a.g)) fn(scratchV.copy(p).applyMatrix4(m));
+      return true;
     },
     pending: () => pending,
     dispose() {

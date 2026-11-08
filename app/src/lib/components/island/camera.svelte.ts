@@ -13,6 +13,11 @@ import { getContext, setContext } from 'svelte';
 import { hull, quadMatrix, zIndexAt } from './geom.ts';
 import { AHEAD, BEHIND, CAMS, PLAN, type Pt } from './world.ts';
 import type { NodeFrame } from './balloonFollow.ts';
+import type { At } from '../world3d/engine.ts';
+
+/** Scratch points for the projector (Proj3 at()'s `out`): placing every node each frame made an object a call. */
+const newAt = (): At => ({ sx: 0, sy: 0, k: 0, up: 0, ground: 0, depth: 0, visible: false });
+const Q = newAt(), QUAD = [newAt(), newAt(), newAt(), newAt()], BODY = Array.from({ length: 8 }, newAt);
 
 type NodeMode = 'up' | 'flat' | 'quad' | 'body';
 export interface NodeSpec {
@@ -146,10 +151,10 @@ export interface Proj3 {
   /** A world point `lift` units above the ground under it: where it is on screen, the px a unit across there (an upright
    *  thing's scale), how much an upright `model` is foreshortened there (its height's px over k), the ground's
    *  foreshortening (a flat mark's), its distance from the camera, and whether it's in front of the horizon. */
-  at(x: number, z: number, lift: number): { sx: number; sy: number; k: number; up: number; ground: number; depth: number; visible: boolean };
+  at(x: number, z: number, lift: number, out?: At): At;
   /** A model instance's silhouette on screen (px from the scene's top-left: its outline's points), or null (none built,
    *  or some of it behind the camera). */
-  outline?(id: string): [number, number][] | null;
+  outline?(id: string): readonly (readonly [number, number])[] | null;
   /** The ground under a screen point, or null in the sky. */
   ground(sx: number, sy: number): { x: number; z: number } | null;
   /** The ground's height where feet stand at (x, z) (world y): `at`'s lift is above it. */
@@ -320,7 +325,7 @@ export class World {
   /** Where a world point is on screen: px from the scene's top-left (lift: units above the ground, upright). */
   screenAt(x: number, z: number, lift = 0): Screen {
     if (!this.three) return NOWHERE;
-    const q = this.three.at(x, z, lift);
+    const q = this.three.at(x, z, lift, Q);
     return { sx: q.sx, sy: q.sy, scale: q.k / this.view.s, ground: q.ground, depth: q.depth, visible: q.visible };
   }
 
@@ -343,7 +348,7 @@ export class World {
       const t = this.three, v = this.view;
       if (!t || !this.nodes.has(node)) return null;
       const [x, z, lift] = node.live ? node.live() : [node.x, node.z, node.lift];
-      const q = t.at(x, z, lift ?? node.lift ?? 0), k = q.k / v.s;
+      const q = t.at(x, z, lift ?? node.lift ?? 0, Q), k = q.k / v.s;
       const ky = node.mode === 'flat' ? k * Math.max(0.02, q.ground) : node.model ? k * q.up : k;
       return { x: q.sx + v.left, y: q.sy + v.top, kx: k, ky };
     };
@@ -372,7 +377,7 @@ export class World {
 
   /** The perspective scale at a world point. */
   scaleAt(x: number, z: number): number {
-    return this.three ? this.three.at(x, z, 0).k / this.view.s : 1;
+    return this.three ? this.three.at(x, z, 0, Q).k / this.view.s : 1;
   }
 
   /** How loud another player's sound at (x, z) is here (docs/sound-sync.md, sound/cues.ts hearFrom): 0 off screen
@@ -415,7 +420,7 @@ export class World {
     if (!t) return this.hide(n);
     if (mode === 'quad') {
       const b = n.box!;
-      const c = [t.at(b.x0, b.z1, 0), t.at(b.x1, b.z1, 0), t.at(b.x1, b.z0, 0), t.at(b.x0, b.z0, 0)];
+      const c = [t.at(b.x0, b.z1, 0, QUAD[0]), t.at(b.x1, b.z1, 0, QUAD[1]), t.at(b.x1, b.z0, 0, QUAD[2]), t.at(b.x0, b.z0, 0, QUAD[3])];
       if (c.every((q) => !q.visible) || c.every((q) => q.sy > v.vh + 2) || c.every((q) => q.sy < v.horizon - 4)) return this.hide(n);
       this.show(n);
       if (this.bareNow(n)) return;
@@ -429,7 +434,7 @@ export class World {
     }
     // (a building's tap area, quiet in a rush: as it was till the rush ends)
     if (mode === 'body') return this.bareNow(n) ? undefined : this.placeBody(n, t);
-    const q = t.at(x, z, lift), h = n.h ?? 80, k = q.k / v.s;
+    const q = t.at(x, z, lift, Q), h = n.h ?? 80, k = q.k / v.s;
     if (!q.visible || q.sy - (h + lift) * q.k > v.vh + 40 || q.sy < -60 || q.sx < -400 || q.sx > v.vw + 400) return this.hide(n);
     this.show(n);
     if (this.bareNow(n)) return;
@@ -460,11 +465,16 @@ export class World {
     else this.unshaped.delete(n);
     // its box's corners (a unit inside its edges: the ground under a corner is its own tier's, not a cliff's beside it):
     // in view when one of its feet is in front of the horizon (one behind it, the log's bend, is drawn nowhere)
-    const corners = [b.x0 + 1, b.x1 - 1].flatMap((x) => [b.z0 + 1, b.z1 - 1].flatMap((z) => [0, h].map((y) => ({ y, q: t.at(x, z, y) }))));
-    const seen = corners.some((c) => c.y === 0 && c.q.visible), behind = !own && corners.some((c) => c.q.depth <= 1);
-    const pts: [number, number][] = own ?? corners.map((c) => [c.q.sx, c.q.sy]);
-    const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
-    const l = Math.min(...xs), r = Math.max(...xs), tp = Math.min(...ys), bt = Math.max(...ys);
+    // (into BODY's 8 scratch points, the extent read in one pass: no arrays a node a frame)
+    let seen = false, behind = false, l = Infinity, r = -Infinity, tp = Infinity, bt = -Infinity, i = 0;
+    for (; i < 8; i++) {
+      const y = i & 1 ? h : 0, q = t.at(i & 4 ? b.x1 - 1 : b.x0 + 1, i & 2 ? b.z1 - 1 : b.z0 + 1, y, BODY[i]);
+      if (y === 0 && q.visible) seen = true;
+      if (!own && q.depth <= 1) behind = true;
+    }
+    const pts = own ?? null;
+    if (pts) for (const [x, y] of pts) (l = Math.min(l, x), (r = Math.max(r, x)), (tp = Math.min(tp, y)), (bt = Math.max(bt, y)));
+    else for (const q of BODY) (l = Math.min(l, q.sx), (r = Math.max(r, q.sx)), (tp = Math.min(tp, q.sy)), (bt = Math.max(bt, q.sy)));
     if (!seen || behind || tp > v.vh + 2 || bt < 0 || r < 0 || l > v.vw) return this.hide(n);
     this.show(n);
     const px = (a: number) => a.toFixed(1);
@@ -474,7 +484,7 @@ export class World {
       n.el.style.transform = tf;
       n.el.style.width = `${px(r - l)}px`;
       n.el.style.height = `${px(bt - tp)}px`;
-      n.el.style.clipPath = `polygon(${hull(pts).map(([x, y]) => `${px(x - l)}px ${px(y - tp)}px`).join(',')})`;
+      n.el.style.clipPath = `polygon(${hull(pts ?? BODY.map((q) => [q.sx, q.sy] as Pt)).map(([x, y]) => `${px(x - l)}px ${px(y - tp)}px`).join(',')})`;
       this.perf.writes++;
     }
   }
