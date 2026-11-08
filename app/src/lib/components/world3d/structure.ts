@@ -4,6 +4,7 @@
 // Lambert (home.ts's). structurePlaces says where; the scene attaches the group (engine.ts attach: bent there).
 import { Box3, Group, Vector3 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { ktx2Plugin } from './ktx2.ts';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import STRUCTURES from '#lib/layout/structures.json' with { type: 'json' };
 import { TIER_H } from '#lib/layout/grid.ts';
@@ -49,7 +50,7 @@ export function structurePlaces(layout: Layout): StructurePlace[] {
   return out;
 }
 
-const loader = new GLTFLoader();
+const loader = ktx2Plugin(new GLTFLoader());
 loader.setMeshoptDecoder(MeshoptDecoder);
 const glbs = new Map<string, Promise<GLTF | null>>();
 /** A structure's model fitted to its place (a new group: geometry shared), its origin the footprint's middle on the

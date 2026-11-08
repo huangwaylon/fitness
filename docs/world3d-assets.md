@@ -13,11 +13,13 @@ Status: **converted**. The island draws NH's own models for its art keys. This f
   the repo; the converted GLBs are public (the user's call).
 - Output: `app/static/room/world3d/<kind>/<id>.glb` (under `/room/`: the service worker caches a file on first use,
   never at install). The POC's own 43 models stay where they are (`models.json`) and serve their keys from there.
-- **Then `npm run world3d-ktx2`** (needs `basisu`: `brew install basis_universal`): each GLB's WebPs as KTX2 (UASTC,
-  mipmaps built) in `static/room/tex/<hash>.ktx2`, named by the WebP's hash, and three's transcoder wasm in
+- **Then `npm run world3d-ktx2`** (needs `basisu`: `brew install basis_universal`): each GLB's WebPs (world3d, homes,
+  structures, villagers3d, player) as KTX2 (UASTC, mipmaps built) in `static/room/tex/<hash>.ktx2`, named by the
+  WebP's hash; the loose WebPs those models wear (the homes' other colours, the players' faces and the bundled
+  closet's garments: `texHash.ts looseTextures`) as a KTX2 beside each; and three's transcoder wasm in
   `static/room/basis/`. The island draws those (`world3d/ktx2.ts`: ASTC on an iPhone, kept transcoded in IndexedDB,
-  docs/perf-plan.md C1); the GLBs keep their WebPs for the museum, the tent and a fallback. `world3d/ktx2.test.ts`
-  fails until it's run after a model changes.
+  docs/perf-plan.md C1); the WebPs stay for the museum's own models, the tent's furniture and a fallback.
+  `world3d/ktx2.test.ts` fails until it's run after a model, a home or a player part changes.
 - See-through two-sided parts (glass, curtains, a critter's fade, the particles) are two meshes, one a side
   (`world3d/sides.ts`): three's own two passes re-derive the program twice a draw every frame (27–31 a frame, ~13% of
   `render()`'s CPU on the demo island). The same pixels: the back faces drawn first.

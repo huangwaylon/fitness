@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { createContext, runInContext } from 'node:vm';
 import { IDBFactory } from 'fake-indexeddb';
@@ -9,7 +9,11 @@ import meta from './ktx2.json';
 import { basisModuleCode } from './basisModule.ts';
 import { pickTarget, TRANSCODE, type Transcoded } from './ktx2Format.ts';
 import { CAP_BYTES, configureTexCache, flushTexWrites, readTex, writeTex } from './texCache.ts';
-import { glbImages, texHash } from './texHash.ts';
+import { glbImages, looseTextures, texHash, type Loose } from './texHash.ts';
+import { entries, pack, packId } from './ktx2Pack.ts';
+import homes from '#lib/layout/homes.json' with { type: 'json' };
+import structures from '#lib/layout/structures.json' with { type: 'json' };
+import parts from '../player3d/parts.json' with { type: 'json' };
 
 const APP = join(import.meta.dirname, '..', '..', '..', '..');
 const ROOM = join(APP, 'static', 'room');
@@ -18,12 +22,50 @@ const sha8 = (b: Uint8Array) => createHash('sha256').update(b).digest('hex').sli
 const walk = (d: string): string[] => readdirSync(d).flatMap((f) => (statSync(join(d, f)).isDirectory() ? walk(join(d, f)) : f.endsWith('.glb') ? [join(d, f)] : []));
 
 describe('the island models\' KTX2 textures (scripts/world3d-ktx2.ts: npm run world3d-ktx2 when this fails)', () => {
-  it('has a KTX2 for every image in static/room/world3d, and none unused', () => {
-    const want = new Set<string>();
-    for (const f of walk(join(ROOM, 'world3d'))) for (const im of glbImages(readFileSync(f))) want.add(texHash(im));
-    const have = new Set(readdirSync(join(ROOM, 'tex')).map((f) => f.replace(/\.ktx2$/, '')));
-    expect([...want].filter((h) => !have.has(h))).toEqual([]);
-    expect([...have].filter((h) => !want.has(h))).toEqual([]);
+  it('has each model\'s pack, with a KTX2 for every image in it, and no pack unused', () => {
+    const want = new Map<string, string[]>();
+    for (const d of ['world3d', 'homes', 'structures', 'villagers3d', 'player'])
+      for (const f of walk(join(ROOM, d))) {
+        const hs = glbImages(readFileSync(f)).map((im) => texHash(im));
+        if (hs.length) want.set(`${packId(hs)}.ktx2p`, hs);
+      }
+    const have = readdirSync(join(ROOM, 'tex'));
+    expect(have.filter((f) => !want.has(f))).toEqual([]);
+    const short = [...want].filter(([f, hs]) => {
+      const es = existsSync(join(ROOM, 'tex', f)) ? entries(readFileSync(join(ROOM, 'tex', f))) : null;
+      return !es || hs.some((h) => !es.has(h));
+    });
+    expect(short.map(([f]) => f)).toEqual([]);
+  });
+
+  it('has a KTX2 for each loose WebP the models wear (a file beside it, or in its colour\'s pack), encoded from it as it is now, and none unused', () => {
+    const loose = looseTextures(homes, structures, parts);
+    const kept = JSON.parse(readFileSync(join(APP, 'scripts', 'ktx2-loose.json'), 'utf8')) as Record<string, string>;
+    expect(loose.length).toBeGreaterThan(1000);
+    const packs = new Map<string, Map<string, [number, number]> | null>();
+    const has = (l: Loose) => {
+      if (!existsSync(join(ROOM, l.out))) return false;
+      if (!l.entry) return true;
+      if (!packs.has(l.out)) packs.set(l.out, entries(readFileSync(join(ROOM, l.out))));
+      return !!packs.get(l.out)?.has(l.entry);
+    };
+    expect(loose.filter((l) => !has(l)).map((l) => l.path)).toEqual([]);
+    expect(loose.filter((l) => kept[l.path] !== texHash(readFileSync(join(ROOM, l.path)))).map((l) => l.path)).toEqual([]);
+    const want = new Set(loose.map((l) => l.out));
+    const dirs = [...new Set(loose.map((l) => l.out.slice(0, l.out.lastIndexOf('/'))))];
+    expect(dirs.flatMap((d) => readdirSync(join(ROOM, d)).filter((f) => /\.ktx2p?$/.test(f)).map((f) => `${d}/${f}`)).filter((f) => !want.has(f))).toEqual([]);
+    // (the players' drawn flipped, as TextureLoader draws their WebPs; the homes' unflipped, as glTF's)
+    expect(loose.filter((l) => l.flip !== l.path.startsWith('player/'))).toEqual([]);
+  });
+
+  it('packs files and finds each again by its id', () => {
+    const a = new Uint8Array([1, 2, 3]), b = new Uint8Array([9]);
+    const p = pack([['a', a], ['mWall', b]]);
+    const es = entries(p)!;
+    expect([...es.keys()]).toEqual(['a', 'mWall']);
+    const [o, l] = es.get('mWall')!;
+    expect(p.slice(o, o + l)).toEqual(b);
+    expect(entries(new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]))).toBeNull();
   });
 
   it('ships three\'s own transcoder wasm, under the hash the page asks for', () => {
@@ -42,9 +84,10 @@ describe('the transcoder as the worker has it (basisModule.ts)', () => {
     const BASIS = runInContext(src.replace(/export default BASIS;\n$/, 'BASIS'), ctx) as (m: { wasmBinary: Uint8Array }) => Promise<{ initializeBasis(): void; KTX2File: new (d: Uint8Array) => Record<string, (...a: number[]) => unknown> }>;
     const m = await BASIS({ wasmBinary: readFileSync(join(ROOM, 'basis', 'basis_transcoder.wasm')) });
     m.initializeBasis();
-    const file = readdirSync(join(ROOM, 'tex'))[0];
+    const packed = new Uint8Array(readFileSync(join(ROOM, 'tex', readdirSync(join(ROOM, 'tex'))[0])));
+    const [o, l] = [...entries(packed)!.values()][0];
     const U8 = runInContext('Uint8Array', ctx) as Uint8ArrayConstructor;
-    const k = new m.KTX2File(new U8(readFileSync(join(ROOM, 'tex', file))));
+    const k = new m.KTX2File(new U8(packed.slice(o, o + l)));
     expect(k.isValid()).toBeTruthy();
     expect(k.startTranscoding()).toBeTruthy();
     for (const [opaque, alpha] of Object.values(TRANSCODE)) {

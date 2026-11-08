@@ -1,5 +1,5 @@
 {
-  "_": "scripts/world3d-ktx2.ts: the island models' textures as KTX2 (static/room/tex/<hash>.ktx2), basisu's settings, the transcoder's content hash (static/room/basis/)",
+  "_": "scripts/world3d-ktx2.ts: the island models' textures as KTX2 (static/room/tex/<id>.ktx2p, the loose ones' beside them), basisu's settings, the transcoder's content hash (static/room/basis/)",
   "enc": "-ktx2 -mipmap -srgb -uastc -uastc_level 2 -uastc_rdo_l 2 -ktx2_zstandard_level 18",
   "wasm": "6cf17dc8"
 }

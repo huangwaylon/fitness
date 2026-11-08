@@ -4,9 +4,10 @@
 // share NH's origin (the house's front wall, its middle); the door stands in the wall's doorway (homes.json `door`: NH's
 // DoorModel0 joint); a colour swaps the albedo of the materials it names. NH's soft look: Lambert, lit a little by its own colour (things.ts's), a lamp's own glow its night
 // light. The scene places the group (engine.ts attach: bent there; homePlaces for where).
-import { Color, Group, MeshLambertMaterial, SRGBColorSpace, TextureLoader, type Material, type Mesh, type MeshStandardMaterial, type Object3D, type Side, type Texture } from 'three';
+import { Color, Group, MeshLambertMaterial, SRGBColorSpace, type Material, type Mesh, type MeshStandardMaterial, type Object3D, type Side, type Texture } from 'three';
 import { withMaps } from './blank.ts';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { ktx2Plugin, loadTexture } from './ktx2.ts';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { FAMILIES, partsOf, type HomeStyle } from '#lib/layout/homes.ts';
 import { splitSides } from './sides.ts';
@@ -15,9 +16,8 @@ import { lean } from './release.ts';
 /** World units a model unit (the island's furniture scale: 10 model units a 30u tile). */
 export const HOME_U = 3;
 
-const loader = new GLTFLoader();
+const loader = ktx2Plugin(new GLTFLoader());
 loader.setMeshoptDecoder(MeshoptDecoder);
-const textures = new TextureLoader();
 const glbs = new Map<string, Promise<GLTF | null>>();
 const maps = new Map<string, Promise<Texture | null>>();
 const baseUrl = (base?: string) => base ?? new URL('room/homes/', new URL(document.baseURI)).href;
@@ -37,10 +37,10 @@ function albedo(base: string, family: string, colour: string, mat: string): Prom
   const key = `${family}.${colour}.${mat}`;
   let p = maps.get(key);
   if (!p) {
-    p = textures.loadAsync(`${base}${key}.webp?v=${FAMILIES[family]?.v ?? 0}`).then(
+    // (a colour's KTX2s in a pack beside them, by material: texHash.ts looseTextures)
+    p = loadTexture(`${base}${key}.webp?v=${FAMILIES[family]?.v ?? 0}`, { flipY: false, ktx2: `${family}.${colour}.ktx2p#${mat}` }).then(
       (t) => {
         t.colorSpace = SRGBColorSpace;
-        t.flipY = false;
         return t;
       },
       () => null
