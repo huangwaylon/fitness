@@ -2,7 +2,7 @@
 # Pages, https://huangwaylon.github.io/fitness/, until 2026-11-05).
 # The backend is the relay (relay/: the record at /api, the room at /room); its URLs are in the app (lib/sync/live.ts).
 # The layout (docs/ops/testing.md, docs/ops/test-strategy.md): the gate, lean (the user, 2026-11-08: two people use the
-# app, fix-forward is cheap): `build` (the `site` artifact: what is deployed, its budgets), `checks` and `select` →
+# app, fix-forward is cheap): `build` (the `site` artifact: what is deployed, its budgets), `checks`, `unit`, `select` →
 # `e2e-gate` (the core e2e and what the push changed or reaches) all at once, and `deploy` getting ready beside them,
 # deploying once all are green. After it, never holding it back: the full logic tier and the drawn smoke
 # (e2e-logic-full.yml); nightly, everything drawn (e2e-full.yml).
@@ -59,8 +59,9 @@ jobs:
           compression-level: 0
           retention-days: 1
 
-  # Red main never deploys: the type-check (`check` runs svelte-kit sync first), knip and the unit tests (golden
-  # fixtures included), beside the build.
+  # Red main never deploys: the type-check (`check` runs svelte-kit sync first), knip and the quarantine's owners in
+  # `checks`; the unit tests (golden fixtures included) in `unit`, beside it (one after the other, `checks` was the
+  # last job of the gate in half the runs). Both with app/static/: Kit types asset() by its files, the tests read it.
   checks:
     runs-on: ubuntu-latest
     defaults:
@@ -78,9 +79,25 @@ jobs:
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm run check
       - run: npm run knip
-      - run: npx vitest run
       # the e2e quarantine in the summary; red when a quarantined test has no owner (docs/ops/testing.md "Tags")
       - run: node scripts/e2e-quarantine.ts >> "$GITHUB_STEP_SUMMARY"
+
+  unit:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx vitest run
 
   # What the gate's e2e runs, chosen once for all 4 shards (each choosing its own, an API call failing in one gave it
   # another selection and plan: tests in no shard, the gate green): the selection (scripts/e2e-impact.ts: the gate set,
@@ -221,8 +238,8 @@ jobs:
   # upload, no Git integration, so this workflow stays the gate). Secrets CLOUDFLARE_API_TOKEN (Pages: Edit, this
   # account only) and CLOUDFLARE_ACCOUNT_ID (docs/ops/runbook.md §1); without them the job says so and deploys nothing.
   # It starts once `build` is done and gets everything ready while the gate runs (the 537 MB `site`, ~7–25 s; the
-  # models; wrangler, ~7 s by npx), then waits for the gate: `checks`, `select` and every `e2e-gate` shard green, else
-  # red and nothing deployed. (`needs` on them put all that after the gate: ~30 s of every push→live.)
+  # models; wrangler, ~7 s by npx), then waits for the gate (its GATE list, below), else red and nothing deployed.
+  # (`needs` on the gate put all that after it: ~30 s of every push→live.)
   # With the site: ききみみ's recogniser under stt/ (docs/kikimimi-mic.md §3.6, the stopgap till R2): whisper tiny.en and
   # the ONNX runtime, ~67 MiB in parts ≤ 20 MiB, never in git nor in the `site` artifact, from an Actions cache keyed on
   # their pins (app/src/lib/mic/models.ts), which scripts/stt-models.ts fills on a miss (Hugging Face at the pinned
@@ -297,7 +314,7 @@ jobs:
       - if: steps.ready.outputs.go == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          GATE: build,checks,select,e2e-gate (1),e2e-gate (2),e2e-gate (3),e2e-gate (4)
+          GATE: build,checks,unit,select,e2e-gate (1),e2e-gate (2),e2e-gate (3),e2e-gate (4)
         run: |
           api="repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT/jobs?per_page=100"
           errors=0
