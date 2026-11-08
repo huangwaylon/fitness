@@ -38,6 +38,9 @@ import { PITCH } from '#lib/layout/hides.ts';
 
 type Tod = 'day' | 'dusk' | 'night';
 
+/** A world point on screen (engine at(); camera.svelte.ts Proj3's). */
+export interface At { sx: number; sy: number; k: number; up: number; ground: number; depth: number; visible: boolean }
+
 /** @public */
 export interface Land {
   x0: number;
@@ -250,10 +253,11 @@ export interface Island3 {
   /** The camera's ends for this screen (the scene fits them: まえ's shore, おく's campsite). */
   setLimits(min: number, max: number): void;
   // ---- the projection (the World's Proj3; px from the canvas's top-left) ----
-  at(x: number, z: number, lift: number): { sx: number; sy: number; k: number; up: number; ground: number; depth: number; visible: boolean };
+  /** (`out`: written into and returned, no object a call: the projector's hot path) */
+  at(x: number, z: number, lift: number, out?: At): At;
   /** An instance's silhouette on screen (its outline's points, bent, as px from the canvas's top-left; null: no such
-   *  model built, or some of it behind the camera). */
-  outline(id: string): [number, number][] | null;
+   *  model built, or some of it behind the camera). One array reused: valid till the next call. */
+  outline(id: string): readonly (readonly [number, number])[] | null;
   groundAt(sx: number, sy: number): { x: number; z: number } | null;
   horizon(): number;
   rev(): number;
@@ -447,7 +451,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     sp[1] = ((1 - v3.y) / 2) * H;
     sp[2] = depth;
   }
-  function at(x: number, z: number, lift: number) {
+  function at(x: number, z: number, lift: number, out?: At): At {
     const R = bendU.uBendR.value, pz = -camZ;
     const gy = src.feet(x, z);
     bendTo(x, gy + lift, -z, pz, R);
@@ -467,18 +471,35 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     const th = (z - camZ) / R, ny = Math.cos(th), nz = -Math.sin(th);
     const cy = camera.position.y - by, cz = camera.position.z - bz;
     const visible = depth > 1 && (ny * cy + nz * cz) / Math.hypot(cy, cz) > -0.12;
-    return { sx, sy, k, up, ground, depth, visible };
-  }
-  function outline(id: string): [number, number][] | null {
-    const pts = things.outline(id);
-    if (!pts?.length) return null;
-    const R = bendU.uBendR.value, pz = -camZ, out: [number, number][] = [];
-    for (const p of pts) {
-      const [sx, sy, depth] = screen(...bendPoint(p.x, p.y, p.z, pz, R));
-      if (depth <= 1) return null;
-      out.push([sx, sy]);
-    }
+    if (!out) return { sx, sy, k, up, ground, depth, visible };
+    out.sx = sx;
+    out.sy = sy;
+    out.k = k;
+    out.up = up;
+    out.ground = ground;
+    out.depth = depth;
+    out.visible = visible;
     return out;
+  }
+  // (outline's points: one array of pairs kept and refilled, no arrays a point a frame: 1.1 MB/s while dragging)
+  const shape: [number, number][] = [];
+  let shapeN = 0, behind = false;
+  const toShape = (p: Vector3) => {
+    if (behind) return;
+    bendTo(p.x, p.y, p.z, -camZ, bendU.uBendR.value);
+    screenTo(bp[0], bp[1], bp[2]);
+    if (sp[2] <= 1) return void (behind = true);
+    const q = (shape[shapeN] ??= [0, 0]);
+    q[0] = sp[0];
+    q[1] = sp[1];
+    shapeN++;
+  };
+  function outline(id: string): readonly (readonly [number, number])[] | null {
+    shapeN = 0;
+    behind = false;
+    if (!things.outlineEach(id, toShape) || behind || !shapeN) return null;
+    shape.length = shapeN;
+    return shape;
   }
   function groundAt(sx: number, sy: number): { x: number; z: number } | null {
     v3.set((sx / W) * 2 - 1, -(sy / H) * 2 + 1, 0.5).unproject(camera);
@@ -855,10 +876,21 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   /** Compiled, not ready to draw yet (linking, its first use, its textures): what uses them is held back. */
   const warm = createWarmup(renderer);
   const heldBack: Object3D[] = [];
+  const warming = (m: Material) => warm.has(m);
   let compiles = 0, holding = false, calmAt = 0;
   const materialsOf = (o: Object3D): Material[] => {
     const m = (o as Mesh).material as Material | Material[] | undefined;
-    return !m || !((o as Mesh).isMesh || (o as unknown as { isPoints?: boolean }).isPoints || (o as unknown as { isLine?: boolean }).isLine) ? [] : Array.isArray(m) ? m : [m];
+    return !m || !drawn(o) ? [] : Array.isArray(m) ? m : [m];
+  };
+  const drawn = (o: Object3D) => (o as Mesh).isMesh || (o as unknown as { isPoints?: boolean }).isPoints || (o as unknown as { isLine?: boolean }).isLine;
+  /** Whether one of `o`'s materials passes `test` (materialsOf without its array: hold looks at every object of the
+   *  scene on a fresh kick, ~35 a second, and the arrays were 0.9 MB/s). */
+  const someMaterial = (o: Object3D, test: (m: Material) => boolean): boolean => {
+    const m = (o as Mesh).material as Material | Material[] | undefined;
+    if (!m || !drawn(o)) return false;
+    if (!Array.isArray(m)) return test(m);
+    for (const x of m) if (test(x)) return true;
+    return false;
   };
   const programList = () => (renderer.info.programs ?? []) as object[];
   /** `root`'s meshes compiled with the island's lights and fog, and what they need handed to the warm-up: its new
@@ -928,9 +960,14 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     if (any) {
       // (every new one, in view or not yet: what's coming too; its materials new to this renderer)
       const fresh: Object3D[] = [], news = new Set<Material>();
+      const isNew = (m: Material) => !renderer.properties.has(m) && (news.add(m), true);
       scene.traverse((o) => {
+        const m = (o as Mesh).material as Material | Material[] | undefined;
+        if (!m || !drawn(o)) return;
+        // (every new material of it noted, no closure an object: a fresh kick looks at the whole scene)
         let is = false;
-        for (const m of materialsOf(o)) if (!renderer.properties.has(m)) (news.add(m), (is = true));
+        if (Array.isArray(m)) for (const x of m) is = isNew(x) || is;
+        else is = isNew(m);
         if (is) fresh.push(o);
       });
       any = fresh.length > 0;
@@ -948,7 +985,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       return (holding = false);
     }
     scene.traverseVisible((o) => {
-      for (const m of materialsOf(o)) if (warm.has(m)) return void heldBack.push(o);
+      if (someMaterial(o, warming)) heldBack.push(o);
     });
     for (const o of heldBack) o.visible = false;
     return (holding = true);

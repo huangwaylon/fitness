@@ -26,7 +26,7 @@
   import { listenFx3 } from '../island/fx3d.ts';
   import { ambient3 } from '../island/ambient3d.svelte.ts';
   import PLACES from '../island/models.json' with { type: 'json' };
-  import { createIsland, type Island3 } from './engine.ts';
+  import { createIsland, type At, type Island3 } from './engine.ts';
   import { assetFor } from './assets.ts';
   import { keyModel, modelBounds } from './models3d.ts';
   import { floats as floatsNow, floatAt, type Float } from './floats3d.ts';
@@ -273,9 +273,11 @@
   /** A character at (x, z) on screen or near it: its feet or its head inside the canvas, a margin of its height and a
    *  finger's round it (the log bends the far ones down: their head may show over its horizon). Off it, it's hidden
    *  and not posed (villagers.ts VSpec seen). */
+  /** A scratch point for the engine's at() where it's read at once (the frame's own: no object a call). */
+  const AT: At = { sx: 0, sy: 0, k: 0, up: 0, ground: 0, depth: 0, visible: false };
   function onScreen(e: Island3, x: number, z: number): boolean {
     for (const lift of [0, VILLAGER.h * 1.3]) {
-      const p = e.at(x, z, lift), m = 40 + p.k * VILLAGER.h;
+      const p = e.at(x, z, lift, AT), m = 40 + p.k * VILLAGER.h;
       if (p.depth > 1 && p.sx > -m && p.sx < cw + m && p.sy > -m && p.sy < ch + m) return true;
     }
     return false;
@@ -398,7 +400,7 @@
       const sz = in3 ? vil3?.size(c.id) : null;
       if (node && sz) {
         // (a thumb's least, 44 px on screen either way: hitbox.ts MIN_HIT, with a margin: the node is placed a frame behind a walker)
-        const k = eng.at(x, z, 0).k, least = k > 0 ? 50 / k : 0;
+        const k = eng.at(x, z, 0, AT).k, least = k > 0 ? 50 / k : 0;
         const [w, h] = sz.map((v) => String(Math.ceil(Math.max(v, least) * 2) / 2));
         if (node.style.getPropertyValue('--v3w') !== w) node.style.setProperty('--v3w', w);
         if (node.style.getPropertyValue('--v3h') !== h) node.style.setProperty('--v3h', h);
@@ -600,7 +602,7 @@
       const k = L.ms > 0 ? Math.min(1, (t - L.t0) / L.ms) : 1, q = smooth(k);
       const x = L.from[0] + (L.to[0] - L.from[0]) * q, z = L.from[1] + (L.to[1] - L.from[1]) * q, lf = L.from[2] + (L.to[2] - L.from[2]) * q;
       if (k < 1 && moving !== true) {
-        const p = e.at(x, z, lf), on = p.visible && p.sx > -80 && p.sx < cw + 80 && p.sy > -80 && p.sy < ch + 80;
+        const p = e.at(x, z, lf, AT), on = p.visible && p.sx > -80 && p.sx < cw + 80 && p.sy > -80 && p.sy < ch + 80;
         const px = (Math.hypot(L.to[0] - L.from[0], L.to[1] - L.from[1], L.to[2] - L.from[2]) / L.ms) * 1000 * p.k;
         moving = (on && px >= SLOW_PX) || !slowAmbient ? true : 'ambient';
       }
@@ -928,7 +930,7 @@
     fitEnds(e);
     e.go(start ?? e.limits().min);
     const proj: Proj3 = {
-      at: (x, z, lift) => e.at(x, z, lift), outline: (id) => e.outline(id), ground: (sx, sy) => e.groundAt(sx, sy), feet: (x, z) => feetOf(x, z), horizon: () => e.horizon(),
+      at: (x, z, lift, out) => e.at(x, z, lift, out), outline: (id) => e.outline(id), ground: (sx, sy) => e.groundAt(sx, sy), feet: (x, z) => feetOf(x, z), horizon: () => e.horizon(),
       rev: () => e.rev(), rushing: () => e.rushing(), camZ: () => e.view().camZ, kick: () => e.kick(), idle: () => e.idle(), paused: () => e.isPaused(),
       focus: (f, ms) => ((focusAt = { x: f.x, z: f.z }), e.frame(f, ms)), unfocus: (ms) => ((focusAt = null), e.restore(ms)), attach: (id, obj) => e.things.attach(id, obj as Object3D | null)
     };
@@ -971,7 +973,7 @@
       let falling: 'ambient' | false = false;
       if (p3) {
         precipSurface(p3);
-        falling = p3.frame(t, cv.camX, z, cv.zoom, e.at(cv.camX, z, 0).depth, ch);
+        falling = p3.frame(t, cv.camX, z, cv.zoom, e.at(cv.camX, z, 0, AT).depth, ch);
       }
       if (posed || more || moving === true) return true;
       // a still villager's next blink: one frame then (not the ambient rate's for as long as it stands still)
