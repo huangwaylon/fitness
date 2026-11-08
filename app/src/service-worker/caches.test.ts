@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, kikiPartOf, keepable, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgFetch, foodImgStale, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
+import { fetchKeep, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, kikiPartOf, keepable, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgFetch, foodImgStale, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -683,3 +683,22 @@ describe('saved areas in the worker (offline phase B)', () => {
     expect(await (await saveFetch(new Request(usgs), { match: async () => undefined }, usgs, net)).text()).toBe('net');
   });
 });
+
+describe('a cache-first miss (fetchKeep)', () => {
+  it('storage full: the copy fails, the answer still comes (health, sync #23)', async () => {
+    const waits: Promise<unknown>[] = [];
+    const res = await fetchKeep(new Request('https://x.test/a.webp'), async () => new Response('art'), async () => {
+      throw new DOMException('quota', 'QuotaExceededError');
+    }, (p) => void waits.push(p));
+    expect(await res.text()).toBe('art');
+    await expect(Promise.all(waits)).resolves.toBeDefined();
+  });
+
+  it('a failed answer is never kept', async () => {
+    const kept: Response[] = [];
+    const res = await fetchKeep(new Request('https://x.test/b.webp'), async () => new Response('', { status: 404 }), async (r) => void kept.push(r), () => {});
+    expect(res.status).toBe(404);
+    expect(kept).toEqual([]);
+  });
+});
+
