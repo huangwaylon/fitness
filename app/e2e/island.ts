@@ -221,17 +221,23 @@ export async function toTheWater(page: Page, water: string, zoom = 1, away = 40)
   // (the opening beats over: a greeting's balloon at the bottom of the screen lies over the sea)
   await quiet(page);
   // (the camera where the shadow is a little below the screen's middle, at the whole island's zoom: a shadow far up
-  // the island by the horizon is a speck, and the ground there is the far bank's)
-  await page.evaluate(([water, k]) => {
+  // the island by the horizon is a speck, and the ground there is the far bank's; a shadow out by the sea's edge, off
+  // the screen's side at that zoom (its x the island's middle there), zoomed in a step at a time till the camera's x
+  // reaches it, 60 px in from the side)
+  await page.evaluate(([water, k0]) => {
     type G = { go(z: number, k?: number, x?: number): void; client(x: number, z: number): [number, number]; view(): { camZ: number } };
     const w = (window as unknown as { __world3d: G }).__world3d, f = (window as unknown as Fishing).__fish.fish().find((f) => f.water === water)!;
-    let best: [number, number] | null = null;
-    for (let z = f.z - 700; z <= f.z + 100; z += 25) {
-      w.go(z, k, f.x);
-      const d = Math.abs(w.client(f.x, f.z)[1] - innerHeight * 0.58);
-      if (!best || d < best[1]) best = [w.view().camZ, d];
+    for (const k of [k0, k0 * 1.4, k0 * 1.8, k0 * 2.2]) {
+      let best: [number, number] | null = null;
+      for (let z = f.z - 700; z <= f.z + 100; z += 25) {
+        w.go(z, k, f.x);
+        const d = Math.abs(w.client(f.x, f.z)[1] - innerHeight * 0.58);
+        if (!best || d < best[1]) best = [w.view().camZ, d];
+      }
+      w.go(best![0], k, f.x);
+      const x = w.client(f.x, f.z)[0];
+      if (x > 60 && x < innerWidth - 60) return;
     }
-    w.go(best![0], k, f.x);
   }, [water, zoom] as const);
   await expect.poll(() => w3(page, (w) => w.camStill()), { message: 'the camera still' }).toBe(true);
   const spot = await page.evaluate(([water, away]) => {
