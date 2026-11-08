@@ -44,8 +44,9 @@ export const isPackType = (t: unknown): t is PackType => (PACK_TYPES as readonly
 export const PACK_NAME = 80;
 const PACK_NOTE = 120;
 const PACK_ICON = 32;
-/** At most this many `pack` rows a trip, and `pack_chk` rows a trip and person: a new one past them drops the oldest
- *  removal of an id an op made (a seed id's removal is kept: dropped, the seed item would come back), else is refused. */
+/** At most this many `pack` items standing a trip (a removal's row uncounted, never dropped: 2026-11-08, a phone that
+ *  cached the item before it would show it for good), and `pack_chk` rows a trip and person: a new one past them is
+ *  refused (`full`). */
 const PACK_MAX = 300;
 /** A trip note's keys at most, a key's pattern, a value's characters at most (one clean line). */
 const NOTE_KEYS = 64;
@@ -213,8 +214,8 @@ export function packSlot(type: string, sender: Who, d: Rec): string | null {
   }
 }
 
-/** What the record does with a row (contract/book.ts Verdict): `append` (the slots in `drop` deleted with it: a removal
- *  past the cap, a removed item's ticks), `stale`, `forbidden`, `full` (the trip's cap and nothing to drop) or `owner`
+/** What the record does with a row (contract/book.ts Verdict): `append` (the slots in `drop` deleted with it: a
+ *  removed item's ticks), `stale`, `forbidden`, `full` (the trip's cap of items standing) or `owner`
  *  (a set whose `by` isn't its id's creator). */
 export type PackVerdict = Verdict<PackRow, 'forbidden' | 'full' | 'owner'>;
 
@@ -228,7 +229,7 @@ export class PackBook extends Book<PackRow, 'forbidden' | 'full' | 'owner'> {
     return packSlot(r.type, r.who, r.op as unknown as Rec)!;
   }
   protected countOf(r: PackRow): string | null {
-    return r.type === 'pack' ? `p|${r.op.trip}` : r.type === 'pack_chk' ? `c|${r.op.trip}|${r.who}` : null;
+    return r.type === 'pack' ? (r.op.rm ? null : `p|${r.op.trip}`) : r.type === 'pack_chk' ? `c|${r.op.trip}|${r.who}` : null;
   }
 
   /** The `pack` row an id holds in a trip (null: none). */
@@ -242,14 +243,6 @@ export class PackBook extends Book<PackRow, 'forbidden' | 'full' | 'owner'> {
     const out: { by: Who | null }[] = [];
     for (const r of this.rows.values()) if (r.type === 'pack' && r.op.trip === trip && !r.op.rm && r.op.kind === 'item' && r.op.cat === cat) out.push({ by: r.op.by ?? null });
     return out;
-  }
-
-  /** The oldest removal of an id an op made in a trip (its slot), or null. */
-  #oldestGone(trip: string): string | null {
-    let best: (PackRow & { type: 'pack' }) | null = null;
-    for (const r of this.rows.values())
-      if (r.type === 'pack' && r.op.trip === trip && r.op.rm && isNewId(r.op.id) && (!best || r.op.at < best.op.at || (r.op.at === best.op.at && r.op.id < best.op.id))) best = r;
-    return best ? `pack|${trip}|${best.op.id}` : null;
   }
 
   /** The record's rules for a new row (see PackVerdict). */
@@ -277,12 +270,9 @@ export class PackBook extends Book<PackRow, 'forbidden' | 'full' | 'owner'> {
           if (!beats(r, h)) return { v: 'stale' };
           if (!op.rm && (op.by ?? null) !== creator) return { v: 'owner' };
         }
+        // (a removal never counts: the cap is the items standing)
+        if (!op.rm && !h && this.count(`p|${op.trip}`) >= PACK_MAX) return { v: 'full' };
         const drop: string[] = [];
-        if (!h && this.count(`p|${op.trip}`) >= PACK_MAX) {
-          const gone = this.#oldestGone(op.trip);
-          if (!gone) return { v: 'full' };
-          drop.push(gone);
-        }
         // a removed item's ticks go with it (a late tick of it is stale: the removal is held, or its id was made by an op)
         if (op.rm) for (const [s, x] of this.rows) if (x.type === 'pack_chk' && x.op.trip === op.trip && x.op.id === op.id) drop.push(s);
         return { v: 'append', row: r, drop };

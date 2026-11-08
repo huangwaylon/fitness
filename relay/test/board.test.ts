@@ -37,6 +37,13 @@ describe('the board in the record', () => {
     return boardPosts(rows.map((r) => ({ ...boardOpOf(JSON.parse(r[4]))!, who: r[1] }) as BoardEntry));
   };
 
+  it('a board op over a day ahead is refused (it would beat every later edit: health A6)', () => {
+    const far = now + 2 * 86_400_000;
+    expect(send('A', { id: 'bfar0001', at: far, p: far, t: 'みらい' })).toEqual({ ok: false, error: 'bad_request' });
+    expect(send('G', { id: 'bfar0001', at: far, rm: true })).toEqual({ ok: false, error: 'bad_request' });
+    expect(post('A', 'bfar0001', 'いま')).toMatchObject({ ok: true });
+  });
+
   it('keeps a post, tells the phones, and a guest’s phone sees it', () => {
     expect(post('A', 'bpost001', 'こんにちは！')).toMatchObject({ ok: true });
     expect(notices.at(-1)).toMatchObject({ what: 'event', who: 'A' });
@@ -135,14 +142,20 @@ describe('the board in the record', () => {
     expect(rows).toHaveLength(BOARD_MAX);
   });
 
-  it('keeps only the latest removals', () => {
-    for (let i = 0; i < BOARD_MAX + 5; i++) {
+  it('keeps every removal: a phone that cached a post before it hears of it in its delta, however many came after (health A7)', () => {
+    // until 2026-11-08 only the newest 50 removals were kept: B's delta said nothing of note 0, so B showed it for good
+    post('A', 'bgone0000', '#0');
+    const since = (call(KEY_B, 'snapshot').now as string);
+    expect(send('A', { id: 'bgone0000', at: (now += 1000), rm: true })).toMatchObject({ ok: true });
+    for (let i = 1; i <= BOARD_MAX + 5; i++) {
       post('A', `bgone${String(i).padStart(4, '0')}`, `#${i}`);
       expect(send('A', { id: `bgone${String(i).padStart(4, '0')}`, at: (now += 1000), rm: true })).toMatchObject({ ok: true });
     }
     const rows = (call(KEY_A, 'snapshot').rows.events as unknown[][]).filter((r) => r[3] === 'board');
-    expect(rows).toHaveLength(BOARD_MAX);
-    // a pruned removal's post never comes back (its edit is dropped)
+    expect(rows).toHaveLength(BOARD_MAX + 6);
+    const delta = (call(KEY_B, 'snapshot', { since }).rows.events as unknown[][]).filter((r) => r[3] === 'board');
+    expect(delta.map((r) => JSON.parse(String(r[4])))).toContainEqual(expect.objectContaining({ id: 'bgone0000', rm: true }));
+    // a removed post never comes back (its edit is dropped)
     expect(send('A', { id: 'bgone0000', at: (now += 1000), p: T0 + 1000, t: 'x' })).toMatchObject({ ok: true, duplicate: true });
     expect(posts()).toEqual([]);
   });

@@ -147,16 +147,16 @@ describe('the rules (PackBook)', () => {
     expect(b.rows.size).toBe(2);
   });
 
-  it('caps a trip at PACK_MAX rows: the oldest removal of an id an op made goes; a seed removal never', () => {
+  it('caps a trip at PACK_MAX items standing: a removal never counts and is never dropped (health A7)', () => {
     const b = new PackBook();
     b.apply(rm('A', 'ok-0-1', T));
     for (let i = 0; i < PACK_MAX - 1; i++) b.apply(set('A', `_cap${String(i).padStart(5, '0')}`, T + i));
     b.apply(rm('A', '_cap00007', T + 1000));
     b.apply(rm('A', '_cap00003', T + 1001));
-    expect(b.accept(set('A', '_capnew01', T + 2000))).toMatchObject({ v: 'append', drop: ['pack|okinawa|_cap00007'] });
-    b.apply(set('A', '_capnew01', T + 2000));
-    b.apply(set('A', '_capnew02', T + 2001));
-    expect(b.accept(set('A', '_capnew03', T + 2002)).v).toBe('full');
+    expect(b.accept(set('A', '_capnew01', T + 2000))).toMatchObject({ v: 'append', drop: [] });
+    for (const k of ['01', '02', '03']) b.apply(set('A', `_capnew${k}`, T + 2000));
+    expect(b.accept(set('A', '_capnew04', T + 2002)).v).toBe('full');
+    expect(b.rows.has('pack|okinawa|_cap00007')).toBe(true);
     // an edit of one held, another trip: room
     expect(b.accept(set('A', '_capnew02', T + 2003)).v).toBe('append');
     expect(b.accept(row('pack', 'A', { trip: 'nz', id: 'nz-0', at: T, rm: true })).v).toBe('append');

@@ -72,7 +72,7 @@ types and their wire limits: [backend.md#events](backend.md#events) (`pack`, `pa
 | Seed edits | A seed's `ord` is its index, so a list in use only grows at the ends (a new item last in its category, a new category last); never reorder a seed. |
 | Ticks | Per person: an item is packed for whoever's latest `pack_chk` is `v: 1` and later than their own `pack_reset`. |
 | Clock | Every op is stamped on the relay's clock (`world.serverNow()`, never a `?date=` preview's), after the op it replaces. |
-| Caps | 300 `pack` rows a trip (past them the oldest removal of an op-made id is dropped, else `pack full`), 300 ticks a trip and person. |
+| Caps | 300 `pack` items standing a trip (removals uncounted, never dropped; else `pack full`), 300 ticks a trip and person. |
 | The phone | `packFold` takes the record's rows as they are and judges this phone's queued ones by the record's rules, so the list shows what the record will. |
 
 The demo has a made-up note for each trip and うめ's ticks on NZ's list (a past trip's list shows it frozen).

@@ -311,7 +311,7 @@ describe('the wedding board in the record', () => {
       expect(wedNote(book())?.was).toBeUndefined();
     });
 
-    it('drops what a phone’s op would have dropped with a row it takes as it was: a purged task’s tick, a removed item’s ticks, the board’s oldest removals', async () => {
+    it('drops what a phone’s op would have dropped with a row it takes as it was: a purged task’s tick, a removed item’s ticks; never a removal', async () => {
       const { BOARD_MAX } = await import('../../app/src/lib/contract/board.ts');
       const ev = (id: string, who: W, type: string, d: object, t: number) => [new Date(t).toISOString(), who, id, type, JSON.stringify({ at: t, ...d })];
       const t0 = T0 - 1e8;
@@ -327,7 +327,7 @@ describe('the wedding board in the record', () => {
       expect(store.load({ rows: { events: rows } })).toMatchObject({ ok: true, skipped: 0 });
       const left = (call(KEY_A, 'snapshot').rows.events as unknown[][]).map((r) => `${String(r[3])}:${String(r[2])}`);
       expect(left.filter((x) => /^(wdone|wtask|pack|pack_chk):/.test(x)).sort()).toEqual(['pack:r1', 'pack_chk:c3', 'wdone:k3', 'wtask:w1', 'wtask:w2', 'wtask:w3']);
-      expect(left.filter((x) => x.startsWith('board:'))).toHaveLength(BOARD_MAX);
+      expect(left.filter((x) => x.startsWith('board:'))).toHaveLength(BOARD_MAX + 3);
     });
 
     it('a guest row, or a malformed one, is not taken', () => {

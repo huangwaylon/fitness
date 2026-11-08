@@ -78,6 +78,21 @@ describe('a decor op’s reads (O6)', () => {
       [at(2), 'A', 'x2', 'decor', JSON.stringify(obj('l2', T0 + 9e6))] // past the cap: only its id kept
     ] } });
     expect(r).toMatchObject({ ok: true, events: 1 });
-    expect(decor(obj('x', T0 + 9e7))).toEqual({ ok: false, error: 'bad_request', detail: 'layout full' });
+    expect(decor(obj('x', T0 + 9e6 + 10))).toEqual({ ok: false, error: 'bad_request', detail: 'layout full' });
   }, 30_000);
 });
+
+describe('an op’s time (health A6, sync #3)', () => {
+  it('a decor op over a day ahead is refused, a reset (the guest may send one) or a light’s switch too; within the day it is kept', () => {
+    const day = 86_400_000;
+    many([obj(1, T0), obj(2, T0)]);
+    expect(decor({ sc: 'r', id: 'reset', at: T0 + 1000 * day })).toEqual({ ok: false, error: 'bad_request' });
+    expect(decor(obj(3, now + day + 60_000))).toEqual({ ok: false, error: 'bad_request' });
+    expect(decor({ id: 'dmh1abc2a', at: now + 2 * day, rm: true })).toEqual({ ok: false, error: 'bad_request' });
+    expect(decor({ sc: 't', id: 'dmh1abc2a', at: now + 2 * day, lt: 1 })).toEqual({ ok: false, error: 'bad_request' });
+    // the layout stands: a later placement of an object is kept
+    expect(decor(obj(1, T0 + 5000))).toEqual({ ok: true });
+    expect(decor(obj(4, now + day - 60_000))).toEqual({ ok: true });
+  });
+});
+

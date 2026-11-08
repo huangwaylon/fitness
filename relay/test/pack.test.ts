@@ -194,21 +194,19 @@ describe('the packing list in the record', () => {
     expect(names()).toEqual(['テント', 'Lamp', 'パスポート']);
   });
 
-  it('keeps at most PACK_MAX rows a trip: the oldest removal of an added item goes for a new one; never a seed removal', () => {
+  it('keeps at most PACK_MAX items standing a trip; a removal never counts and is never dropped (health A7)', () => {
     expect(rm('A', 'lamp')).toMatchObject({ ok: true });
     for (let i = 0; i < PACK_MAX - 2; i++) expect(item(i % 2 ? 'A' : 'G', `_cap${String(i).padStart(5, '0')}`, `#${i}`)).toMatchObject({ ok: true });
     expect(rm('A', '_cap00000')).toMatchObject({ ok: true });
     expect(rm('A', '_cap00001')).toMatchObject({ ok: true });
-    expect(item('A', '_capnew01', 'あと ひとつ')).toMatchObject({ ok: true });
-    expect(packRows()).toHaveLength(PACK_MAX);
-    // full: the oldest added item's removal goes
-    expect(item('A', '_capnew02', 'もうひとつ')).toMatchObject({ ok: true });
-    expect(packRows()).toHaveLength(PACK_MAX);
-    expect(packRows().some((r) => String(r[4]).includes('_cap00000'))).toBe(false);
+    // the trip's rows past PACK_MAX: the removals stay (until 2026-11-08 the oldest went, so a phone that cached the
+    // item showed it for good), the removed items' places taken
+    for (const k of ['01', '02', '03', '05']) expect(item('A', `_capnew${k}`, k)).toMatchObject({ ok: true });
+    expect(packRows()).toHaveLength(PACK_MAX + 3); // 300 standing, 2 removed, the lamp's removal
+    for (const id of ['"_cap00000"', '"_cap00001"']) expect(packRows().some((r) => String(r[4]).includes(id) && String(r[4]).includes('"rm":true'))).toBe(true);
     // the seed's removal stays: the lamp doesn't come back
     expect(names()).not.toContain('Lamp');
-    expect(item('A', '_capnew03', 'さいご')).toMatchObject({ ok: true });
-    // nothing left to drop: refused, logged as its rule
+    // PACK_MAX standing: refused, logged as its rule
     const r = apiWithMeta(store, JSON.stringify({ key: KEY_A, action: 'event', id: 'efull', type: 'pack', data: { trip: 'okinawa', id: '_capnew04', at: at(), kind: 'item', cat: 'gear', ord: 1, name: { ja: 'むり' }, by: 'A' } }), (k) => keyOwner(String(k), { KEY_A, KEY_B, KEY_C }));
     expect(JSON.parse(r.body)).toMatchObject({ ok: false, error: 'bad_request', detail: 'pack full' });
     expect(r.meta).toMatchObject({ st: 'bad_request', why: 'pack.pack_full' });

@@ -1,6 +1,7 @@
 // The island room's logic, free of the Workers runtime so it is unit-testable: sockets, their attachments, the clock
 // and storage come in through RoomIO. The Durable Object (index.ts) is a thin adapter over this.
 import { CLOSE, HB_PING, HB_PONG, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, MAX_BYTES, NEST_GAP_MS, REPLAY_BYTES, claimOf, musicAt, musicBeats, musicLive, isStored, scopeMaySend, otherVersion, parseClient, tokyoDay, type Gone, type LiveV, type MusicRec, type MusicSrc, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
+import { AHEAD_MS } from '../../app/src/lib/contract/ops.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { Bucket } from './bucket.ts';
 import { served } from './weather.ts';
@@ -251,7 +252,8 @@ export class RoomCore<S extends Sock> {
     }
     const { v: _v, c, ...intent } = msg;
     // a scoped decor op: a home's look and room its owner's (the outdoors anyone's, the guest's too: contract/layout.ts)
-    if (intent.kind === 'decor' && !scopeMaySend(who, intent.sc, intent.id)) return c !== undefined ? this.ack(s, c, this.stamp(), false) : undefined;
+    // (and its `at` not over a day ahead, as the record's check: the partner would apply a far-future op, 2026-11-08)
+    if (intent.kind === 'decor' && (!scopeMaySend(who, intent.sc, intent.id) || intent.at > now + AHEAD_MS)) return c !== undefined ? this.ack(s, c, this.stamp(), false) : undefined;
     const stored = isStored(intent);
     if (stored && c !== undefined) {
       // a resend (after a reconnect) of one the room has, the same intent with the same number: acked again, not

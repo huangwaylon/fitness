@@ -61,13 +61,18 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
       return isTally(d, localDateAt(now));
     case 'island':
       return isIslandDay(d, localDateAt(now));
-    case 'decor':
+    case 'decor': {
       // the island's decorations, a home's room (`sc` t, u, v: contract/tent.ts) or the layout (o, c, r, h:
-      // contract/layout.ts)
-      return decorOpOf(d) !== null || tentOpOf(d) !== null || layoutOpOf(d) !== null;
-    case 'board':
-      // a bulletin board post set or removed (contract/board.ts: its text already clean)
-      return boardOpOf(d) !== null;
+      // contract/layout.ts); its `at` not over a day past the record's (2026-11-08: a layout reset stamped far ahead
+      // voided every later op for good, and the guest may send one), a light's switch too
+      const op = decorOpOf(d) ?? tentOpOf(d) ?? layoutOpOf(d);
+      return op !== null && atNear(op.at, now);
+    }
+    case 'board': {
+      // a bulletin board post set or removed (contract/board.ts: its text already clean), its `at` as decor's
+      const op = boardOpOf(d);
+      return op !== null && atNear(op.at, now);
+    }
     case 'food': {
       // a meal entry set or removed (contract/food.ts: already normalized), its day not after tomorrow
       const op = foodOp(d);
@@ -103,8 +108,8 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
   }
 }
 
-/** A meal op's `at` (the sender's clock) at most AHEAD_MS past the record's (foodAccept: an op no later than the one
- *  held is stale, so a clock far ahead would stamp ops no later edit could beat). */
+/** An op's `at` (the sender's clock) at most AHEAD_MS past the record's (a meal's, a decor or board op's: an op no later
+ *  than the one held is stale, so a clock far ahead would stamp ops no later edit could beat). */
 const atNear = (at: number, now: number): boolean => at <= now + AHEAD_MS;
 
 /** Whether `key` is a goal a day keeps (contract/goals.ts history `daily`). */
