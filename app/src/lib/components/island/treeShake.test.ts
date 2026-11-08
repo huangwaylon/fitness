@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { mulberry32 } from '#lib/random.ts';
 import {
-  BUG_ODDS, NEST_GAP_MS, NEST_ODDS, dropAt, sceneryTrees, SHAKE_WINDOW_MS, SWARM_MS, WOOD_A_DAY, WOODS, bearsCoconuts, dropIds, fallen, goalTree, lastNestOf, netsSwarm,
+  BUG_ODDS, NEST_GAP_MS, NEST_ODDS, dropAt, sceneryTrees, SHAKE_WINDOW_MS, SWARM_MS, WOOD_A_DAY, WOODS, bearsCoconuts, dropIds, fallen, legacyDropIds, goalTree, lastNestOf, netsSwarm,
   shakeDrop, shakeTap, shakenBug, treeById, wireDrop, woodAt, woodFall, woodId, woodOut, woodTree
 } from './treeShake.ts';
 import type { Put } from '#lib/sync/world-day.ts';
@@ -127,10 +127,22 @@ describe("the day's shakes (shared by both phones)", () => {
     { tree: 'cedar-k1', drop: 'bagworm', who: 'A', t: 5 },
     { tree: 'goal-B', drop: 'branch', who: 'A', t: 6 }
   ];
-  it('names what each left alike on both phones', () => {
+  it('names what each left alike on both phones, by the shake (who, its time), not its place in the day', () => {
     expect(shakes.map((_, i) => dropIds(shakes, i))).toEqual([
-      ['br:oak-k1:0'], ['co:palm-1:0', 'co:palm-1:1'], ['ws:oak-k1:0'], ['br:oak-k1:1'], ['dg:cedar-k1:0'], ['br:goal-B:0']
+      ['br:oak-k1:A1'], ['co:palm-1:0', 'co:palm-1:1'], ['ws:oak-k1:B3'], ['br:oak-k1:B4'], ['dg:cedar-k1:A5'], ['br:goal-B:A6']
     ]);
+    // the partner's earlier shake arriving after mine: my branch keeps its id (it was br:t:0, then br:t:1)
+    const mine: Shake = { tree: 'oak-k1', drop: 'branch', who: 'A', t: 1_762_000_000_500 };
+    const theirs: Shake = { tree: 'oak-k1', drop: 'branch', who: 'B', t: 1_762_000_000_100 };
+    const before = dropIds([mine], 0)[0];
+    expect(dropIds([theirs, mine], 1)[0]).toBe(before);
+    expect(dropIds([theirs, mine], 0)[0]).not.toBe(before);
+    // an editor tree's id (o + base-36 time + 3) still fits the relay's 32-character id
+    expect(dropIds([{ ...mine, tree: 'omh7k2x1qa3f' }], 0)[0].length).toBeLessThanOrEqual(32);
+  });
+  it('a claim an older app made under the positional id still takes the drop', () => {
+    expect(shakes.map((_, i) => legacyDropIds(shakes, i))).toEqual([['br:oak-k1:0'], [], ['ws:oak-k1:0'], ['br:oak-k1:1'], ['dg:cedar-k1:0'], ['br:goal-B:0']]);
+    expect(fallen(shakes, treeById, (id) => id === 'br:oak-k1:1').map((f) => f.id)).not.toContain('br:oak-k1:B4');
   });
   it('the nest rule and the coconuts read the day', () => {
     expect(lastNestOf(shakes, 'oak-k1')).toBe(3);
@@ -139,11 +151,11 @@ describe("the day's shakes (shared by both phones)", () => {
     expect(bearsCoconuts(shakes, 'palm-3')).toBe(true);
   });
   it("what lies about (picked ones gone), beside its tree, a goal tree's on its person's side on both phones", () => {
-    const mine = fallen(shakes, treeById, (id) => id === 'br:oak-k1:0');
-    expect(mine.map((f) => f.id)).toEqual(['co:palm-1:0', 'co:palm-1:1', 'br:oak-k1:1', 'br:goal-B:0']);
+    const mine = fallen(shakes, treeById, (id) => id === 'br:oak-k1:A1');
+    expect(mine.map((f) => f.id)).toEqual(['co:palm-1:0', 'co:palm-1:1', 'br:oak-k1:B4', 'br:goal-B:A6']);
     for (const f of mine) expect(['grass', 'sand', 'dirt']).toContain(surfaceAt(f.x, f.z));
     // B's tree stands on the right (the same island on both phones)
-    expect(mine.find((f) => f.id === 'br:goal-B:0')!.x).toBeGreaterThan(195);
+    expect(mine.find((f) => f.id === 'br:goal-B:A6')!.x).toBeGreaterThan(195);
   });
 });
 

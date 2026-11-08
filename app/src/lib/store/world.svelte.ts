@@ -350,6 +350,7 @@ class SharedWorld {
    * phone: A), as the record's day rows will say or correct; kept, so a reload keeps it theirs.
    */
   #refused(i: Intent): void {
+    if (i.kind === 'shake') return this.#unshake(i);
     if (i.kind !== 'catch' && i.kind !== 'pick') return;
     const me = this.#me, k = claimOf(i);
     if (!me || !k) return;
@@ -366,6 +367,23 @@ class SharedWorld {
     } catch (err) {
       console.error('world:', err);
     }
+  }
+
+  /** A shake of mine the room refused (a nest too soon after the tree's last: room.ts NEST_GAP_MS): taken back, off the
+   *  day, its kept events and my day row (re-sent without it), so its nest never reaches the partner through the record
+   *  as a wasp nobody can claim. */
+  #unshake(i: Extract<Intent, { kind: 'shake' }>): void {
+    const me = this.#me;
+    if (!me || i.at === undefined) return;
+    const d = this.#today(), mine = (s: { tree: string; who: Who; t: number }) => s.tree === i.tree && s.who === me && s.t === i.at;
+    const n = d.shakes.length;
+    d.shakes = d.shakes.filter((s) => !mine(s));
+    if (d.shakes.length === n) return;
+    this.#events = this.#events.filter((e) => !(e.kind === 'shake' && mine({ tree: e.tree, who: e.who, t: e.at ?? e.t })));
+    this.#writing = true;
+    queueMicrotask(() => this.#flush());
+    this.rev++;
+    this.#sink?.(this.#date(), rowOf(d, me));
   }
 
   /** A change of mine: folded into the day (first wins: a thing the partner already has stays theirs, `fresh` false),

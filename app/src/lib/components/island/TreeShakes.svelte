@@ -41,10 +41,11 @@
   import { critterArt, type BugId } from './critters.ts';
   import { catchLine, loadLines, loadNames } from './catchLine.ts';
   import { jst } from '#lib/time/clock.ts';
+  import type { Who } from '#lib/types.ts';
   import { islandDay } from './ambientClock.ts';
   import { artUrl } from '#lib/art.ts';
   import {
-    DANGLE_MS, SWARM_DELAY_MS, SWARM_MS, WOODS, bearsCoconuts, dropAt, dropIds, fallen, lastNestOf, netsSwarm, shakeDrop, wireDrop,
+    DANGLE_MS, SWARM_DELAY_MS, SWARM_MS, WOODS, bearsCoconuts, dropAt, dropIds, fallen, legacyDropIds, lastNestOf, netsSwarm, shakeDrop, wireDrop,
     woodAt, woodFall, woodOut, woodTree, type ShakeDrop, type ShakeTree, type Wood
   } from './treeShake.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
@@ -84,10 +85,10 @@
   let seq = 0;
   /** World x, y = the world's z. */
   let nests = $state<{ n: number; tree: string; x: number; y: number; from: number; fading: boolean }[]>([]);
-  let swarm = $state<{ n: number; id: string; side: Side; x0: number; z0: number; at: number; stung: boolean; away: number } | null>(null);
+  let swarm = $state<{ n: number; id: string; old?: string; side: Side; x0: number; z0: number; at: number; stung: boolean; away: number } | null>(null);
   /** The net's swing at world (x, z), `lift` up. */
   let net = $state<{ n: number; x: number; z: number; lift: number } | null>(null);
-  let dangler = $state<{ n: number; id: string; tree: string; bug: 'bagworm' | 'spider'; x: number; y: number; from: number; up: boolean } | null>(null);
+  let dangler = $state<{ n: number; id: string; old?: string; tree: string; bug: 'bagworm' | 'spider'; x: number; y: number; from: number; up: boolean } | null>(null);
 
   /** What the day's shakes left lying (the shared day: a reload or the partner's phone finds it too), and which of it
    *  fell while this island watched (only those fall; the rest just lie there). */
@@ -155,11 +156,12 @@
   }
 
   /** The `drop` of a shake of `tree` by `side`, as it falls here (its ids from the day's shakes). */
-  function play(tree: ShakeTree, side: Side, drop: Drop) {
+  function play(tree: ShakeTree, side: Side, drop: Drop, by?: { who: Who; t: number }) {
     if (drop === 'none') return;
     const d = world.day;
-    const i = d.shakes.findLastIndex((s) => s.tree === tree.id && s.drop === drop);
-    const ids = i >= 0 ? dropIds(d.shakes, i) : [];
+    // (the very shake when it's known: another's earlier one may have arrived after it)
+    const i = by ? d.shakes.findIndex((s) => s.tree === tree.id && s.who === by.who && s.t === by.t) : d.shakes.findLastIndex((s) => s.tree === tree.id && s.drop === drop);
+    const ids = i >= 0 ? dropIds(d.shakes, i) : [], old = i >= 0 ? legacyDropIds(d.shakes, i)[0] : undefined;
     const from = fromOf(tree);
     // (another's shake: its sounds by where it is)
     const far = side === 'mine' ? undefined : ([tree.x, tree.z] as const);
@@ -169,7 +171,7 @@
       const url = artUrl(critterArt(drop));
       if (url) new Image().src = url;
       const at = dropAt(tree, drop);
-      const g = { n: ++seq, id, tree: tree.id, bug: drop, x: at.x, y: at.z, from, up: false };
+      const g = { n: ++seq, id, old, tree: tree.id, bug: drop, x: at.x, y: at.z, from, up: false };
       dangler = g;
       later(() => dangler?.n === g.n && (dangler = { ...g, up: true }), DANGLE_MS);
       later(() => dangler?.n === g.n && (dangler = null), DANGLE_MS + 900);
@@ -183,7 +185,7 @@
       const nest = { n: ++seq, tree: tree.id, x: at.x, y: at.z, from, fading: false };
       nests = [...nests, nest];
       later(() => (sceneSfx('nest', far), side === 'mine' && waspMusic('nest')), 560);
-      later(() => charge(nest.n, ids[0] ?? `ws:${tree.id}:x`, nest.x, nest.y, side), 560 + SWARM_DELAY_MS);
+      later(() => charge(nest.n, ids[0] ?? `ws:${tree.id}:x`, nest.x, nest.y, side, old), 560 + SWARM_DELAY_MS);
     }
   }
 
@@ -192,6 +194,7 @@
     const d = dangler;
     if (!d || d.up) return;
     // first wins: claimed at the tap (the relay's first claim is the catch: the partner's phone hears it)
+    if (d.old && caught(world.day, d.old)) return; // (an older app's catch of it, under its old id)
     if (!world.share({ kind: 'catch', what: d.bug, id: d.id, at: [Math.round(d.x), Math.round(d.y)], how: 'net' }).fresh) return;
     // in place: my villager turns to it and the net swings at the bug; caught at the tap
     turnTo(d.x);
@@ -227,12 +230,12 @@
     stopFrames = null;
   }
 
-  function charge(nestN: number, id: string, x: number, z: number, side: Side) {
+  function charge(nestN: number, id: string, x: number, z: number, side: Side, old?: string) {
     const n = ++seq;
     stopSwarm();
     // the partner already netted these (their catch came in while the nest fell)
-    if (caught(world.day, id)) return fadeNest(nestN);
-    swarm = { n, id, side, x0: x, z0: z, at: performance.now(), stung: false, away: x < site.midX ? -1 : 1 };
+    if (caught(world.day, id) || (old && caught(world.day, old))) return fadeNest(nestN);
+    swarm = { n, id, old, side, x0: x, z0: z, at: performance.now(), stung: false, away: x < site.midX ? -1 : 1 };
     stopFrames = w.moveStart();
     const at = side === 'mine' ? undefined : ([x, z] as const);
     sceneSfx('buzz', at);
@@ -321,10 +324,10 @@
         if (!tree || !live) return;
         partnerTurnTo(tree.x, e.who, e.t);
         rustle?.(tree);
-        play(tree, actorOf(e.who), e.drop);
+        play(tree, actorOf(e.who), e.drop, { who: e.who, t: e.at ?? e.t });
       } else if (e.kind === 'catch' && e.id && /^(dg|ws):/.test(e.id)) {
         const d = dangler;
-        if (d?.id === e.id) {
+        if (d && (d.id === e.id || d.old === e.id)) {
           dangler = null;
           if (live) {
             partnerTurnTo(d.x, e.who, e.t);
@@ -334,7 +337,7 @@
           }
         }
         const s = swarm;
-        if (s?.id === e.id) {
+        if (s && (s.id === e.id || s.old === e.id)) {
           swarm = null;
           stopSwarm();
           const nest = nests.find((ns) => !ns.fading);

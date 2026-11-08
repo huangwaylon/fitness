@@ -135,15 +135,23 @@ export function lastNestOf(shakes: readonly Shake[], tree: string): number | und
 export const bearsCoconuts = (shakes: readonly Shake[], tree: string): boolean => !shakes.some((s) => s.tree === tree && s.drop === 'coconut');
 
 /** The shared ids of what the `i`-th of the day's shakes left: a branch or two coconuts (things to pick up), a
- *  dangling bug or the nest's wasps (critters to catch). Counted per tree and kind, so both phones name them alike. */
+ *  dangling bug or the nest's wasps (critters to catch). Named by the shake itself (who shook, at the shaker's own
+ *  time, base 36: the same on both phones whatever order the shakes arrive in), but a palm's coconuts (once a day). */
 export function dropIds(shakes: readonly Shake[], i: number): string[] {
   const s = shakes[i];
   if (!s || s.drop === 'none') return [];
-  const k = shakes.slice(0, i).filter((x) => x.tree === s.tree && x.drop === s.drop).length;
-  if (s.drop === 'branch') return [`br:${s.tree}:${k}`];
   if (s.drop === 'coconut') return [`co:${s.tree}:0`, `co:${s.tree}:1`];
-  if (s.drop === 'nest') return [`ws:${s.tree}:${k}`];
-  return [`dg:${s.tree}:${k}`];
+  const k = `${s.who}${s.t.toString(36)}`;
+  return [`${s.drop === 'branch' ? 'br' : s.drop === 'nest' ? 'ws' : 'dg'}:${s.tree}:${k}`];
+}
+
+/** The ids an older app named the same drop by (and the island rows it stored, the record's replay): counted per tree
+ *  and kind in the day's order, so a later-arriving earlier shake shifted them. A claim under one still counts. */
+export function legacyDropIds(shakes: readonly Shake[], i: number): string[] {
+  const s = shakes[i];
+  if (!s || s.drop === 'none' || s.drop === 'coconut') return [];
+  const k = shakes.slice(0, i).filter((x) => x.tree === s.tree && x.drop === s.drop).length;
+  return [`${s.drop === 'branch' ? 'br' : s.drop === 'nest' ? 'ws' : 'dg'}:${s.tree}:${k}`];
 }
 
 /** Where things land beside a trunk (world units from its foot): just in front of the trunk's line (FRONT), a branch
@@ -179,8 +187,9 @@ export function fallen(shakes: readonly Shake[], tree: (id: string) => ShakeTree
     if (what !== 'branch' && what !== 'coconut') return;
     const t = tree(s.tree);
     if (!t) return;
+    const old = legacyDropIds(shakes, i);
     dropIds(shakes, i).forEach((id, n) => {
-      if (!taken(id)) out.push({ id, tree: s.tree, what, ...dropAt(t, what, n) });
+      if (!taken(id) && !(old[n] && taken(old[n]))) out.push({ id, tree: s.tree, what, ...dropAt(t, what, n) });
     });
   });
   return out;
