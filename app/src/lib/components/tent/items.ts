@@ -2,8 +2,8 @@
 // scripts/room-models.ts (items.json: each item's footprint in tiles, its height, its size on the wire; the files under
 // static/room/). Item codes are NH's internal ids with a kind letter: `f…` furniture or a rug, `w…` a wallpaper, `g…`
 // a floor. Pure, no three.js: the room's chunk and the picker read it.
-import { asset } from '$app/paths';
 import data from './items.json';
+import { staticUrl } from '#lib/staticUrl.ts';
 
 export interface ItemMeta {
   /** Footprint in tiles in its own facing: w across, d deep. */
@@ -70,12 +70,12 @@ export function footprint(code: string, f: number): [number, number] {
   return f % 2 ? [m.d, m.w] : [m.w, m.d];
 }
 
-export const modelUrl = (code: string): string => `${asset(`room/models/${code}.glb` as Parameters<typeof asset>[0])}?v=${ITEMS[code]?.v ?? ''}`;
-export const wallUrl = (code: string): string => asset(`room/wall/${code}.webp` as Parameters<typeof asset>[0]);
-export const floorUrl = (code: string): string => asset(`room/floor/${code}.webp` as Parameters<typeof asset>[0]);
+export const modelUrl = (code: string): string => `${staticUrl(`room/models/${code}.glb`)}?v=${ITEMS[code]?.v ?? ''}`;
+export const wallUrl = (code: string): string => staticUrl(`room/wall/${code}.webp`);
+export const floorUrl = (code: string): string => staticUrl(`room/floor/${code}.webp`);
 /** An item's or a surface's icon: NH's own, or the ずかん's (the same NH icon, already on the phone). */
 export function iconUrl(code: string): string {
   const m = ITEMS[code];
   const path = m && !m.icon && m.cat ? `art/finds/items/${m.cat}.webp` : `room/icons/${code}.webp`;
-  return asset(path as Parameters<typeof asset>[0]);
+  return staticUrl(path);
 }

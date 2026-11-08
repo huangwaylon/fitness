@@ -2,10 +2,10 @@
 // helpers for every art group (docs/design.md#official-art). The manifest is bundled at build time (without its `source` credits,
 // stripped by vite.config.ts), so keys, sizes and aspect ratios are known synchronously: no fetch, no auth. Render
 // through <OfficialArt key>, which falls back to our fan-art when a file is missing.
-import { asset } from '$app/paths';
 import manifest from '../../static/art/manifest.json';
 import type { RingFruit } from '#lib/types.ts';
 import type { Foliage } from '#lib/ui-state/season.ts';
+import { staticUrl } from '#lib/staticUrl.ts';
 
 interface ArtEntry {
   path: string;
@@ -54,7 +54,7 @@ export function artKeys(): string[] {
 /** URL for a key (base-path aware), or null when missing. */
 export function artUrl(key: string | null | undefined): string | null {
   const e = art(key);
-  return e ? asset(`art/${e.path}` as Parameters<typeof asset>[0]) : null;
+  return e ? staticUrl(`art/${e.path}`) : null;
 }
 
 /** Roster villager → full-body render, or the round head icon. Unknown ids → null (use fan-art). */

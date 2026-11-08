@@ -3,13 +3,13 @@
 // manifest's bulk, are their own kk.json, loaded when first needed: kk.ts). The audio SOURCE is
 // pluggable: drop a file under static/audio/, add its line to the JSON, rebuild. Unknown keys are ignored (and
 // flagged by the test), so a typo never breaks the app.
-import { asset } from '$app/paths';
 import raw from '../../../static/audio/manifest.json';
 import { isSoundId, type SoundId } from './ids.ts';
 import { WEATHERS, hourKey, type MusicFiles, type MusicTrack, type Weather } from './hourly.ts';
 import { AMBIENT_IDS, type AmbientId } from './ambient.ts';
 import { EVENT_MUSIC_IDS, type EventMusicId } from './events.ts';
 import { PLACE_IDS, type PlaceId } from './places.ts';
+import { staticUrl } from '#lib/staticUrl.ts';
 
 export interface AudioManifest {
   sfx: Partial<Record<SoundId, string>>;
@@ -104,7 +104,7 @@ export function parseManifest(json: unknown): { manifest: AudioManifest; problem
 export const AUDIO = parseManifest(raw).manifest;
 
 /** URL of a manifest path (under the app's base path). */
-export const audioUrl = (path: string): string => asset(`audio/${path}` as Parameters<typeof asset>[0]);
+export const audioUrl = (path: string): string => staticUrl(`audio/${path}`);
 
 /** Any hourly track at all (the settings say so when there is none yet). */
 export const hasMusic = (): boolean => Object.values(AUDIO.music).some((h) => Object.keys(h ?? {}).length > 0);

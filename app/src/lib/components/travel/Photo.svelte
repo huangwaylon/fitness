@@ -3,13 +3,13 @@
   // layout shift), loaded lazily, its caption under it in the reader's locale. (A trip's hero is ui/PhotoBand's.)
   //   <Photo photo={day.photo} />
   import { photoFallback } from '../ui/photoFallback.ts';
-  import { asset } from '$app/paths';
   import type { Photo } from '#lib/travel/types.ts';
   import { i18n } from '#lib/i18n/index.ts';
   import { pick } from './text.ts';
+  import { staticUrl } from '#lib/staticUrl.ts';
 
   let { photo }: { photo: Photo } = $props();
-  const src = $derived(asset(photo.src as Parameters<typeof asset>[0]));
+  const src = $derived(staticUrl(photo.src));
   const alt = $derived(pick(photo.alt, i18n.locale));
   const caption = $derived(pick(photo.caption, i18n.locale));
 </script>

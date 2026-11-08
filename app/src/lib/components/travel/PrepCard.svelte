@@ -10,8 +10,8 @@
   import Stats from './Stats.svelte';
   import Rows from './Rows.svelte';
   import Links from './Links.svelte';
-  import { asset } from '$app/paths';
   import { pick } from './text.ts';
+  import { staticUrl } from '#lib/staticUrl.ts';
 
   let { card, note }: { card: Card; note: Record<string, string> | null } = $props();
   let open = $state(false);
@@ -26,7 +26,7 @@
 <article class="card dense prep" data-card={card.id} data-open={open || undefined}>
   <div class="row hd">
     {#if card.photo}
-      <img class="pi photo" src={asset(card.photo.src as Parameters<typeof asset>[0])} alt="" width="36" height="36" loading="lazy" decoding="async" {@attach photoFallback} />
+      <img class="pi photo" src={staticUrl(card.photo.src)} alt="" width="36" height="36" loading="lazy" decoding="async" {@attach photoFallback} />
     {:else}
       <span class="pi"><Icon name={card.icon} size={18} /></span>
     {/if}

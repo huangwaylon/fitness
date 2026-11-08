@@ -7,7 +7,6 @@
   // scrolls along the island (z only, a free fling), two pinch the zoom; nothing else moves the camera.
   // Its own chunk with three.js.
   import { onMount, untrack } from 'svelte';
-  import { asset } from '$app/paths';
   import { art, artUrl, villagerArt } from '#lib/art.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
   import type { Look as Worn } from '#lib/contract/look.ts';
@@ -69,9 +68,10 @@
   import { weather } from '../island/weatherNow.svelte.ts';
   import { createPrecip, type Precip } from './precip.ts';
   import { hermite } from '#lib/math.ts';
+  import { staticUrl } from '#lib/staticUrl.ts';
 
   /** The villagers' GLBs and the players' parts (person3d, world3d/villagers.ts). */
-  const dirs: Dirs = { villagers: asset('room/villagers3d/' as Parameters<typeof asset>[0]), player: asset('room/player/' as Parameters<typeof asset>[0]) };
+  const dirs: Dirs = { villagers: staticUrl('room/villagers3d/'), player: staticUrl('room/player/') };
 
   /** A villager on this island now (IslandScene's cast). */
   export interface Cast {

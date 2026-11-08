@@ -6,11 +6,11 @@
   // button into the trip.
   import { photoFallback } from '../ui/photoFallback.ts';
   import type { TripMeta } from '#lib/travel/trips/meta.ts';
-  import { asset } from '$app/paths';
   import { i18n, t } from '#lib/i18n/index.ts';
   import { listSpan } from './dates.ts';
   import { otherLang, phaseLabel, pick } from './text.ts';
   import type { Phase } from './when.ts';
+  import { staticUrl } from '#lib/staticUrl.ts';
 
   let { trip, phase, onopen }: { trip: TripMeta; phase: Phase; onopen: () => void } = $props();
   const year = $derived(trip.start.slice(0, 4));
@@ -22,7 +22,7 @@
   aria-label="{title} {year}, {span}, {phaseLabel(phase)}">
   <span class="main" aria-hidden="true">
     <span class="cover">
-      <img src={asset(trip.cover.src as Parameters<typeof asset>[0])} alt="" width={trip.cover.w} height={trip.cover.h} loading="eager" decoding="async" {@attach photoFallback} />
+      <img src={staticUrl(trip.cover.src)} alt="" width={trip.cover.w} height={trip.cover.h} loading="eager" decoding="async" {@attach photoFallback} />
       <span class="band"><span class="air">✈ {t('travel.air')}</span><span class="route">TYO <i>✈</i> {trip.code}</span></span>
     </span>
     <span class="txt">

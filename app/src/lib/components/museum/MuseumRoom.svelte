@@ -9,7 +9,7 @@
   // found, the guest's too), and comes as it's found. The others in here are seen (the relay's `tent` with `sc: 'm'`,
   // the rooms' presence); the say button says a phrase here (`say` with `sc: 'm'`). Nothing gives ベル.
   import { goto } from '$app/navigation';
-  import { asset, resolve } from '$app/paths';
+  import { resolve } from '$app/paths';
   import { onMount, untrack } from 'svelte';
   import NavButton from '../ui/NavButton.svelte';
   import Says from '../island/Says.svelte';
@@ -52,6 +52,7 @@
   import { t } from '#lib/i18n/index.ts';
   import type { Curator } from './curator.ts';
   import type { Hit, Museum, Who } from './engine.ts';
+  import { staticUrl } from '#lib/staticUrl.ts';
 
   let { view }: { view: WeekView } = $props();
 
@@ -142,7 +143,7 @@
   // ---- the others: each here only while they're in the museum (store/where.svelte.ts) ----
   const theirAt = new Map<Who, Pt>(others.map((w) => [w, [ENTRANCE[0] + sideX(w), ENTRANCE[1] - 10] as Pt]));
   /** The villagers' GLBs and the players' parts (person3d). */
-  const DIRS: Dirs = { villagers: asset('room/villagers3d/' as Parameters<typeof asset>[0]), player: asset('room/player/' as Parameters<typeof asset>[0]) };
+  const DIRS: Dirs = { villagers: staticUrl('room/villagers3d/'), player: staticUrl('room/player/') };
   /** Who draws them (person3d: the look they wear, their villager or their human player). */
   function lookOf(w: Who) {
     const villager = w === 'G' ? view.guest.villager : view.people[w].villager;
@@ -412,13 +413,13 @@
     void Promise.all([import('./engine.ts'), import('./plan.ts'), import('./curator.ts')]).then(
       ([{ createMuseum }, { walkPath }, { buildCurator }]) => {
         if (!alive || !canvas) return;
-        const e = createMuseum(canvas, { base: asset('room/museum/' as Parameters<typeof asset>[0]), world: asset('room/world3d/' as Parameters<typeof asset>[0]) });
+        const e = createMuseum(canvas, { base: staticUrl('room/museum/'), world: staticUrl('room/world3d/') });
         walkPathOf = (from, to) => walkPath(e.nav(), from, to);
         e.resize(insets());
         e.night(nightOf(theme.tod));
         e.villager(me, lookOf(me));
         e.follow(me);
-        curator = buildCurator(e.kit, { model: url3d('blathers', asset('room/villagers3d/' as Parameters<typeof asset>[0])), me: () => e.at(me) });
+        curator = buildCurator(e.kit, { model: url3d('blathers', staticUrl('room/villagers3d/')), me: () => e.at(me) });
         e.exhibit(curator);
         // in at the front door, a few steps into the hall
         e.put(me, [ENTRANCE[0] + sideX(me), ENTRANCE[1] + 6], Math.PI);
