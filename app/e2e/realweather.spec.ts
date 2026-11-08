@@ -34,19 +34,12 @@ async function seededSky(page: Page): Promise<string> {
 test.describe('the real weather', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  // one case a test: the eight in one (two phones, sixteen loads) took ~30 s on a loaded CI shard and ran out of its
-  // time there in most runs (the top of the flaky list, 2026-11-05)
+  // the wiring, one case a test (each two phones): the hour's sky from the fixture on both, its rain falling, and the
+  // rain clearing to a rainbow, the same one on both. Which sky each fixture and date give (typhoon, snow, cloudy, the
+  // hour before the rain, winter's rain as snow, a fireworks night held fine): realWeather.test's '?wx= fixtures'
   const CASES: [string, string, string][] = [
     ['rain in the afternoon', '&date=2026-06-10T13:00&wx=rain-pm', 'rain'],
-    ['before the rain', '&date=2026-06-10T10:00&wx=rain-pm', 'clear'],
-    ['a typhoon', '&date=2026-06-10T10:00&wx=typhoon', 'heavy'],
-    ['snow', '&date=2026-06-10T10:00&wx=snow', 'snow'],
-    ['cloudy', '&date=2026-06-10T10:00&wx=cloudy', 'cloudy'],
-    // the rain clears at 14:00: the rainbow, on both
-    ['the rain clears, a rainbow', '&date=2026-06-10T14:20&wx=clears', 'clear'],
-    // winter rain falls as snow; an August Sunday's fireworks night is fine whatever Tokyo does
-    ['winter rain falls as snow', '&date=2027-01-20T13:00&wx=rain-pm', 'snow'],
-    ['a fireworks night is fine', '&date=2026-08-09T20:00&wx=typhoon', 'clear']
+    ['the rain clears, a rainbow', '&date=2026-06-10T14:20&wx=clears', 'clear']
   ];
   for (const [name, q, want] of CASES)
     test(`a fixture timeline gives both phones the same sky by the hour: ${name}`, async ({ page, browser }) => {
