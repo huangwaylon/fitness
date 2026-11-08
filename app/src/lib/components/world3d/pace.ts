@@ -90,8 +90,10 @@ export function pacer(frame: (vsync: number) => void, clock: PaceClock = PAGE) {
       last = vsync;
       return true;
     },
-    /** A display frame is asked for (not just the ambience's timer). */
-    asked: () => !!raf,
+    /** A display frame is asked for by a change (a kick, or one put off by `due`), not the ambience's own (its timer, or
+     *  the display frame it's due on: a slow frame's ambience at 30 a second asks for the next at once, and the museum,
+     *  only its tanks moving, never read as still in WebKit drawn). */
+    asked: () => !!raf && !paced,
     /** A frame of either kind is coming. */
     queued: () => !!raf || !!timer,
     stop() {
