@@ -21,8 +21,12 @@ app: the HUD menu's けっこんしき pill.
 - **Progress:** a task's percent (its checklist's share, or done / not), the board's the mean over tasks; the
   countdown in days in the board's time zone (default Asia/Tokyo).
 - **Notes:** one shared markdown note (headings, lists, bold, italic, http(s) links).
-- **Settings (members):** the names, the date and time, the venue, the time zone, the categories; the deleted tasks
-  with 戻す, and 完全に削除 (final).
+- **Settings (members):** the names, the date and time, the venue, the categories; the deleted tasks with 戻す, and
+  完全に削除 (final). No time zone row (2026-11-08: one wedding, in Japan; a `tz` the record holds still applies).
+- **Categories** (`lib/contract/wedCats.ts`): the starter list in Japanese, 予算 · 会場 · 招待客 · 業者 · 衣装 · 料理 ·
+  ペーパーアイテム · 写真 · 音楽 · 美容 · ギフト · 手続き · 新婚旅行 · その他 (free text: a typed one as typed). The old board's
+  English names (Guests, Paperwork, …) read in Japanese until the record's one-time rename
+  (`relay/scripts/wedding-cats.ts`, after a bookmark: A's ops through `/api`, idempotent); then the read map can go.
 - Dropped from the old board: the accent colours, the edit link and read-only toggle (the keys replace them), the
   starter templates.
 

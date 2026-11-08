@@ -95,6 +95,7 @@ test('finished rows: hidden under すべて, shown on asking; who finished one i
   await expect(card(page, 'wdemo09').locator('[data-wed-by="A"]')).toBeVisible();
   await open(page, 'wdemo01');
   await expect(card(page, 'wdemo01').locator('[data-wed-imported]')).toHaveText('前のボードで完了');
+  await expect(card(page, 'wdemo01').locator('.tag')).toHaveText('会場'); // the old Sheet's 「Venue」, read in Japanese
   await expect(card(page, 'wdemo09').locator('[data-wed-by]')).toHaveCount(0); // (one row open at a time)
   // the finished months come before 今月
   const all = await sheet(page).locator('[data-wed-group]').evaluateAll((els) => els.map((e) => e.getAttribute('data-wed-group')));
@@ -174,7 +175,7 @@ test('編集 in a form sheet: the title, category and checklist saved; ✕ chang
   await card(page, 'wdemo02').locator('[data-wed-edit]').click();
   await expect(form(page)).toBeVisible();
   await form(page).locator('[data-wed-field="title"]').fill('ゲストの リスト');
-  await form(page).locator('[data-wed-cat-pick="Attire"]').click();
+  await form(page).locator('[data-wed-cat-pick="衣装"]').click();
   await form(page).locator('[data-wed-sub-name="wdemo02a"]').fill('しんぞく');
   await form(page).locator('[data-wed-sub-field]').fill('せきの はいち');
   await form(page).locator('[data-wed-sub-field]').press('Enter');
@@ -216,7 +217,7 @@ test('＋: a new task needs a title and a due day (both said at once); saved, it
   await form(page).locator('[data-wed-save]').click();
   await expect(form(page).locator('[data-wed-error]')).toHaveAttribute('data-wed-error', 'due');
   await form(page).locator('[data-wed-field="due"]').fill('2026-11-20');
-  await form(page).locator('[data-wed-cat-pick="Stationery"]').click();
+  await form(page).locator('[data-wed-cat-pick="ペーパーアイテム"]').click();
   await form(page).locator('[data-wed-sub-field]').fill('いろを えらぶ');
   await shot(page, 'e2e-new');
   await form(page).locator('[data-wed-save]').click();
@@ -408,18 +409,22 @@ test('設定: the names, a category added and removed, a deleted task restored, 
   await sheet(page).locator('[data-wed-set="venue"]').fill('も'.repeat(150));
   await sheet(page).locator('[data-wed-set="venue"]').blur();
   await expect(sheet(page).locator('[data-wed-set="venue"]')).toHaveValue('も'.repeat(150));
+  // the categories in Japanese (an old English one on the record read so too, health plan C8); no time zone row
+  // (one wedding, in Japan)
+  await expect(sheet(page).locator('[data-wed-cat]')).toHaveText(['予算', '会場', '招待客', '業者', '衣装', '料理', 'ペーパーアイテム', '写真', '音楽', '美容', 'ギフト', '手続き', '新婚旅行', 'その他']);
+  await expect(sheet(page).locator('[data-wed-set="tz"]')).toHaveCount(0);
   await sheet(page).locator('[data-wed-cat-field]').fill('ドリンク');
   await sheet(page).locator('[data-wed-cat-add]').click();
   await expect(sheet(page).locator('[data-wed-cat="ドリンク"]')).toBeVisible();
   // a category removed: とりけす brings it back
-  await sheet(page).locator('[data-wed-cat-remove="Photo"]').click();
-  await expect(sheet(page).locator('[data-wed-cat="Photo"]')).toHaveCount(0);
+  await sheet(page).locator('[data-wed-cat-remove="写真"]').click();
+  await expect(sheet(page).locator('[data-wed-cat="写真"]')).toHaveCount(0);
   await expect(banner(page)).toContainText('1件');
   await banner(page).locator('.act').click();
-  await expect(sheet(page).locator('[data-wed-cat="Photo"]')).toBeVisible();
-  await sheet(page).locator('[data-wed-cat-remove="Beauty"]').click();
-  await bannerIn(page, 'Beauty');
-  await expect(sheet(page).locator('[data-wed-cat="Beauty"]')).toHaveCount(0);
+  await expect(sheet(page).locator('[data-wed-cat="写真"]')).toBeVisible();
+  await sheet(page).locator('[data-wed-cat-remove="美容"]').click();
+  await bannerIn(page, '美容');
+  await expect(sheet(page).locator('[data-wed-cat="美容"]')).toHaveCount(0);
   await expect(sheet(page).locator('[data-wed-deleted]')).toHaveCount(1);
   await shot(page, 'e2e-settings');
   await sheet(page).locator('[data-wed-restore="wdemo07"]').click();

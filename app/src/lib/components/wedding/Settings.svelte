@@ -1,6 +1,6 @@
 <script lang="ts">
   // けっこんしき's 設定 (members; the sheet's third tab), grouped dense cards: ふたり (the two names), 式 (the day, the
-  // time, the venue, the time zone the board's today is read in), カテゴリ (chips with ×: とりけす on the banner, which
+  // time, the venue; the board's today is Japan's: one wedding, in Japan, no zone to pick), カテゴリ (chips with ×: とりけす on the banner, which
   // says how many tasks wear it; a field to add one), 削除したやること (each with 戻す: a task, or a checklist item
   // removed on its own; one deleted with its task comes back with it) and 完全に削除 (for good, after an action
   // sheet's ask). A field saves as it's left (its change), each its own wconf row.
@@ -17,15 +17,13 @@
   const deleted = $derived(restorable(board.deleted));
 
   // svelte-ignore state_referenced_locally
-  let f = $state({ p1: config.p1, p2: config.p2, date: config.date, time: config.time, venue: config.venue, tz: config.tz });
+  let f = $state({ p1: config.p1, p2: config.p2, date: config.date, time: config.time, venue: config.venue });
   let cat = $state('');
   let asking = $state(false);
-  const ZONES = ['Asia/Tokyo', 'Asia/Seoul', 'Asia/Taipei', 'Asia/Shanghai', 'Asia/Singapore', 'Australia/Sydney', 'Pacific/Honolulu', 'America/Los_Angeles', 'America/New_York', 'Europe/London', 'Europe/Paris', 'UTC'];
-  const zones = $derived(ZONES.includes(config.tz) || !config.tz ? ZONES : [config.tz, ...ZONES]);
 
   /** The banners docked low: never over the title bar's ✕ (a field's save lands mid-tap when ✕ is what blurred it). */
   const LOW = { low: true };
-  type Key = 'p1' | 'p2' | 'date' | 'time' | 'venue' | 'tz';
+  type Key = 'p1' | 'p2' | 'date' | 'time' | 'venue';
   /** One setting, saved as its field is left ('' clears it: the default again). */
   function one(k: Key) {
     const v = f[k].trim();
@@ -73,11 +71,6 @@
   <h3 class="sec-label head">{t('wed.set.ceremony')}</h3>
   <div class="card dense">
     {#each ROWS.ceremony as r (r.k)}{@render field(r)}{/each}
-    <label class="row">
-      <span class="gi"><Icon name="globe" size={18} /></span>
-      <span class="k">{t('wed.set.tz')}</span>
-      <select class="v" bind:value={f.tz} onchange={() => one('tz')} data-wed-set="tz" data-sfx="none">{#each zones as z (z)}<option value={z}>{z.replace('_', ' ')}</option>{/each}</select>
-    </label>
   </div>
 
   <h3 class="sec-label head">{t('wed.set.cats')}</h3>
@@ -131,7 +124,6 @@
   .v.start::placeholder { color: var(--text-soft); }
   input[type='date'].v, input[type='time'].v { display: flex; justify-content: flex-end; }
   input.v::-webkit-date-and-time-value { text-align: end; }
-  select.v { direction: rtl; text-align-last: end; cursor: pointer; }
   .row { padding-block: 4px; }
   .cats { list-style: none; margin: 0; padding: 10px 12px; display: flex; flex-wrap: wrap; gap: 6px; }
   .cchip { display: inline-flex; align-items: center; height: 32px; padding-left: 12px; border-radius: var(--r-pill); background: var(--ctl-off); font: 700 var(--fs-s)/1 var(--font-ui); }

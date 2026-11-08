@@ -102,17 +102,18 @@ const DEMO_NOTE_DAYS = 20;
 const WED_DAYS = 40;
 /** A task: its id, title, category, due (days from today; null: the day before the wedding), start (days), subtasks
  *  [id, title, done], done, deleted.
- *  The first came from the old Sheet (the admin's load: imported, its tick too, who unknown). */
+ *  The first came from the old Sheet (the admin's load: imported, its tick too, who unknown), with the old board's
+ *  English category (Venue: the board reads it 会場 till the record's rename, contract/wedCats.ts). */
 const WED_TASKS: [string, string, string, number | null, number | null, [string, string, boolean][], boolean, boolean][] = [
   ['wdemo01', '式場を決める', 'Venue', -20, null, [], true, false],
-  ['wdemo02', '招待客リストを作る', 'Guests', -3, -30, [['wdemo02a', '親族', true], ['wdemo02b', '友人', false], ['wdemo02c', '返信フォーム https://example.com/form', false]], false, false],
-  ['wdemo03', 'カメラマンを予約', 'Photo', 9, null, [], false, false],
-  ['wdemo04', 'ドレスの試着', 'Attire', 45, 5, [['wdemo04a', '一軒目', true], ['wdemo04b', '二軒目', false], ['wdemo04c', '決める', false]], false, false],
-  ['wdemo05', '招待状を送る', 'Stationery', 70, null, [], false, false],
-  ['wdemo06', '新婚旅行の下調べ', 'Honeymoon', 120, null, [], false, false],
-  ['wdemo07', '引き出物の候補', 'Gifts', 100, null, [], false, true],
-  ['wdemo08', '当日の段取り', 'Other', null, null, [], false, false],
-  ['wdemo09', '予算を決める', 'Budget', -30, null, [], true, false]
+  ['wdemo02', '招待客リストを作る', '招待客', -3, -30, [['wdemo02a', '親族', true], ['wdemo02b', '友人', false], ['wdemo02c', '返信フォーム https://example.com/form', false]], false, false],
+  ['wdemo03', 'カメラマンを予約', '写真', 9, null, [], false, false],
+  ['wdemo04', 'ドレスの試着', '衣装', 45, 5, [['wdemo04a', '一軒目', true], ['wdemo04b', '二軒目', false], ['wdemo04c', '決める', false]], false, false],
+  ['wdemo05', '招待状を送る', 'ペーパーアイテム', 70, null, [], false, false],
+  ['wdemo06', '新婚旅行の下調べ', '新婚旅行', 120, null, [], false, false],
+  ['wdemo07', '引き出物の候補', 'ギフト', 100, null, [], false, true],
+  ['wdemo08', '当日の段取り', 'その他', null, null, [], false, false],
+  ['wdemo09', '予算を決める', '予算', -30, null, [], true, false]
 ];
 const WED_IMPORTED = 'wdemo01';
 const WED_NOTE = '# メモ\n\n- 式場: 架空チャペル（見学 済み）\n- **予算** は月末に もう一度\n- 参考: [れい](https://example.com)\n';

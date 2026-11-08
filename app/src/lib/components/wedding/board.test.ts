@@ -92,7 +92,7 @@ describe('the board', () => {
     fake.rows.push(rec(T + 1, 'A', 'wconf', { k: 'tz', at: T + 1, v: 'America/Los_Angeles' }));
     expect(board.today).toBe('2026-11-06');
     expect(board.countdown).toBe(11);
-    expect(board.config).toMatchObject({ tz: 'America/Los_Angeles', p1: '', cats: expect.arrayContaining(['Venue']) });
+    expect(board.config).toMatchObject({ tz: 'America/Los_Angeles', p1: '', cats: expect.arrayContaining(['会場']) });
   });
 
   it('turns today at the board’s midnight for a reader (one timer, cleared when nothing reads)', () => {
@@ -219,7 +219,7 @@ describe('the board', () => {
     expect(board.setConfig('p1', ' たろう ')).toBe(true);
     expect(board.setConfig('cats', ['Venue', 'Food'])).toBe(true);
     expect(board.setConfig('date', 'someday')).toBe(false);
-    expect(board.config).toMatchObject({ p1: 'たろう', cats: ['Venue', 'Food'] });
+    expect(board.config).toMatchObject({ p1: 'たろう', cats: ['会場', '料理'] }); // (an old English name read in Japanese: contract/wedCats.ts)
   });
 
   it('the guest reads it all and changes nothing', () => {
