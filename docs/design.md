@@ -435,8 +435,9 @@ the day at its top, no level (no search, query, row opened in place, amount or e
   one as I had it; a custom food by its serving), no amount level.
   **Set up in place** (the user, 2026-11-07: "see and configure settings right away instead of having to add first and
   then edit"): in a meal's search a food row's tap (not a recipe's) opens it under the row (`FoodOpen`): the amount's
-  controls (`FoodPortion`: 状態, 量, −/＋, grams, the same rules), one line P · F · C, くわしく › (the amount level at what
-  is set: picture, 100 g values, another meal) and 「追加 558 kcal」 (the row's own state chip, amount and kcal hidden meanwhile), logged in the search's meal on this trip, the row
+  controls (`FoodPortion`: 状態, 量, −/＋, grams, the same rules), one line P · F · C, 栄養成分 › (the amount level at what
+  is set: picture, 100 g values, another meal) and 「追加 558 kcal」 (the row's own state chip, amount, kcal and ＋ hidden
+  meanwhile: one add per open row), logged in the search's meal on this trip, the row
   closed, the field cleared and focused in the tap. One row at a time (another closes at once, the scroll made up so
   nothing jumps); its row again, Esc (the sheet stays) or a new query close it; height and fade over 150 ms (none with
   reduced motion). Opening blurs the field (the keyboard down) and, when it would run past the screen, scrolls the row
@@ -513,10 +514,11 @@ the day at its top, no level (no search, query, row opened in place, amount or e
   the things counted (本 · 個 · 杯 · 缶 · 枚 · 切れ · 貫 · パック · ジョッキ …, and the 1人前 of a food eaten by the piece:
   おにぎり, むすび, ゆで卵, 目玉焼き, ハンバーグ …: foodUi.ts PIECE) and by half for 茶碗, 人前 and weights (±10 g once
   grams are typed), a grams field (ml for a drink; typing grams leaves the portions). The foot (the level's actions, at
-  the screen's foot even for a short food): which meal, four 44 px buttons over 追加, or 保存 / 削除 for my entry (a
+  the screen's foot even for a short food): which meal, four 44 px buttons over 「追加 298 kcal」 (every add says its
+  kcal), or 保存 / 削除 for my entry (a
   いつもの's: 「変更はこの日だけです（いつものはそのまま）」 above them) (削除 at once, its banner's 取り消す logs it
-  again). While the grams are typed (the keyboard up) the meal row leaves the foot, and 追加 says the kcal (「追加 298
-  kcal」: the head's may be scrolled away).
+  again). While the grams are typed (the keyboard up) the meal row leaves the foot, and 保存 says the kcal too (the
+  head's may be scrolled away).
 - **A level's actions** (the amount, マイ食品, マイレシピ, いつもの; theme.css `.level-acts`): at its end, held at the
   sheet's foot while the level runs past the screen and over the keyboard while a field is typed in; the action (leaf)
   takes the row's room, the cream ones (けす, レシピを ひらく, コピーして へんしゅう) their own.

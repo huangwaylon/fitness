@@ -10,7 +10,7 @@
   // 重さなら 乾); its portions as chips (the first the default; 100 g last), −/＋ by a whole portion for the things you
   // count and by half one for the rest (±10 g once grams are typed: stepOf), the grams field (ml for a drink). The foot
   // (sticky, at the screen's foot for a short food): which meal (gone while the grams are typed: the keyboard's up),
-  // then 追加 (a new entry) or 保存 / 削除 (my entry). For a recipe's ingredient (`pick`): no meal, the recipe's words.
+  // then 追加 with the kcal (a new entry) or 保存 / 削除 (my entry). For a recipe's ingredient (`pick`): no meal, the recipe's words.
   // The item may be swapped while it is open (an entry opened from its snapshot, the catalog's portions arriving):
   // untouched, the amount starts again from the same grams; touched, the portion picked stays picked (by its label).
   // A serving with no known weight (`serving`: a custom food's, マイ食品): its values per serving, its one portion stepped
@@ -62,8 +62,8 @@
   const pic = $derived(imgOf(imgs, item.id, 160));
   /** The values per 100 g (or per serving) shown: closed on every open, never remembered. */
   let perOpen = $state(false);
-  /** The grams field focused (the keyboard up): the meal row leaves the foot, which then covers less, and 追加 says
-   *  the kcal (the head's may be scrolled off over the keyboard). */
+  /** The grams field focused (the keyboard up): the meal row leaves the foot, which then covers less, and 保存 says
+   *  the kcal too, as 追加 always does (the head's may be scrolled off over the keyboard). */
   let typing = $state(false);
   /** The picture enlarged (FoodPhoto), and what opened it (the focus goes back there). */
   let big = $state(false);
@@ -125,7 +125,7 @@
     {#if open}<button type="button" class="btn paper small open" data-sfx="page" data-amount-open onclick={open.run}>{open.label}</button>{/if}
     {#if editing}<button type="button" class="btn paper small" data-sfx="undo" data-remove onclick={() => onremove?.()}>{t(pick ? 'food.rcp.itemRemove' : 'food.remove')}</button>{/if}
     <button type="submit" class="btn small" data-sfx="confirm" data-done aria-disabled={!a.ok}>
-      {pick ? t(editing ? 'food.rcp.save' : 'food.rcp.itemAdd') : editing ? t('food.save') : t('food.addOk')}{#if typing}{' '}<small class="dk money" data-done-kcal>{formatNum(n.kcal)} kcal</small>{/if}
+      {pick ? t(editing ? 'food.rcp.save' : 'food.rcp.itemAdd') : editing ? t('food.save') : t('food.addOk')}{#if typing || !editing}{' '}<small class="dk money" data-done-kcal>{formatNum(n.kcal)} kcal</small>{/if}
     </button>
   </div>
 </form>

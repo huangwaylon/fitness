@@ -1,7 +1,7 @@
 <script lang="ts">
   // ごはん: a food row of a meal's search opened in place (docs/design.md "Gohan" Search), under the row: the amount's
   // controls (FoodPortion over amount.svelte.ts's picker: the same 状態 swap, portions, −/＋ and grams), one live line of
-  // P · F · C, くわしく (the amount level at what is set: its picture, the 100 g values, another meal) and 追加 with the
+  // P · F · C, 栄養成分 › (the amount level at what is set: its picture, the 100 g values, another meal) and 追加 with the
   // kcal (logged in the search's meal). Its height and fade come in over 150 ms (FoodSearch closes it the same way).
   import { untrack } from 'svelte';
   import type { Item } from '#lib/food/index.ts';
@@ -38,7 +38,7 @@
     <FoodPortion {a} />
     <div class="line">
       <p class="nl money" data-food-open-live><span aria-hidden="true">P {a.n.p.toFixed(1)}<small>g</small> F {a.n.fa.toFixed(1)}<small>g</small> C {a.n.c.toFixed(1)}<small>g</small></span><span class="sr-only">{t('food.p')} {a.n.p.toFixed(1)}g, {t('food.fa')} {a.n.fa.toFixed(1)}g, {t('food.c')} {a.n.c.toFixed(1)}g</span></p>
-      <button type="button" class="more" data-sfx="page" data-food-open-more onclick={() => a.ok && onmore(set())}>{t('food.details')}<span aria-hidden="true">›</span></button>
+      <button type="button" class="more" data-sfx="page" data-food-open-more onclick={() => a.ok && onmore(set())}>{t('food.nutrients')}<span aria-hidden="true">›</span></button>
     </div>
     <button type="button" class="btn small add" data-sfx="confirm" data-food-open-add aria-disabled={!a.ok} onclick={() => a.ok && onadd(set())}>
       {t('food.addOk')}<small class="money" data-food-open-kcal>{formatNum(a.n.kcal)} kcal</small>

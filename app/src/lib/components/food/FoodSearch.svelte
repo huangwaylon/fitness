@@ -16,7 +16,7 @@
   // (back to the day). A meal's search also has ⚡ クイック (`onquicknew`: kcal only, eating out) under the つくる row, and a
   // kcal typed (「650」) offers itself as a quick entry above the catalog's rows (its row the form, its ＋ logged at once).
   // In a meal's search (`inline`) a food row (さいきん's, マイ食品's, the catalog's) opens in place instead (FoodOpen: the
-  // amount's controls, くわしく, 追加; the row's own state, amount and kcal hidden meanwhile): one at a time, kept in
+  // amount's controls, 栄養成分 ›, 追加; the row's own state, amount and kcal hidden meanwhile): one at a time, kept in
   // view (scrolled under the field when it would run past the screen; a row closed above it never shifts it), closed by
   // its row again, Esc, or a new query; its 追加 logs it and clears and focuses the field, as the amount's does.
   import type { Who } from '#lib/types.ts';
@@ -62,7 +62,7 @@
     onquicknew?: (k?: number) => void;
     onquicklog?: (k: number) => void;
     /** A food row opened in place (a meal's search; none: a row opens its amount): what it logs as (`of`: Food's
-     *  pickOf), its 追加 (`add`, in the search's meal) and くわしく (`more`: the amount level at what was set). */
+     *  pickOf), its 追加 (`add`, in the search's meal) and 栄養成分 › (`more`: the amount level at what was set). */
     inline?: {
       of: (item: Item, f?: FoodEntry['f']) => { item: Item; serving: boolean; swap: boolean };
       add: (item: Item, f: FoodEntry['f'] | undefined, v: Set) => void;
@@ -203,7 +203,7 @@
           <span class="nm">{c.n}</span>
           <small class="meta">{names?.[c.who] ?? c.who}</small>
           <span class="kc"><b class="money">{kcalText(c.k)}</b><small>{servingText(c)}</small></span>
-        </button>{#if oncustomquick}{@render qa(c.n, () => oncustomquick(c))}{/if}{@render opened(key, customItem(c))}</li>
+        </button>{#if oncustomquick}{@render qa(c.n, () => oncustomquick(c), key)}{/if}{@render opened(key, customItem(c))}</li>
       {/each}
     </ul>
     {#if results.length > drawn}<div class="more" use:rest aria-hidden="true"></div>{/if}
@@ -224,9 +224,9 @@
 
 {#snippet bolt()}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3 L6 13 H11 L10 21 L18 10 H13 Z" /></svg>{/snippet}
 
-<!-- a row's own ＋: logged as it comes, in one tap -->
-{#snippet qa(name: string, run: () => void)}
-  <button type="button" class="qa" data-sfx="confirm" data-quick aria-label={t('food.quickAdd', { name })} onclick={() => quick(run)}>{@render plus()}</button>
+<!-- a row's own ＋: logged as it comes, in one tap; hidden while its row is open (one add there: FoodOpen's 追加) -->
+{#snippet qa(name: string, run: () => void, key?: string)}
+  <button type="button" class="qa" class:off={!!inline && key !== undefined && open === key} data-sfx="confirm" data-quick aria-label={t('food.quickAdd', { name })} onclick={() => quick(run)}>{@render plus()}</button>
 {/snippet}
 
 {#snippet recipeRows()}
@@ -320,7 +320,7 @@
           <span class="nm">{e.f.n}</span>
           <small class="meta"><span class="as">{amountText(e)}{#if gl}{' · '}{/if}</span>{#if gl}<span class="gl" data-gloss>{gl}</span>{/if}</small>
           <b class="kc money">{kcalText(entryKcal(e))}</b>
-        </button>{#if onquick}{@render qa(e.f.n, () => onquick(itemOf(e.f, db, e.g), e.g, e.f.u, e.f))}{/if}{@render opened(key, itemOf(e.f, db, e.g), e.f, e.g, e.f.u)}</li>
+        </button>{#if onquick}{@render qa(e.f.n, () => onquick(itemOf(e.f, db, e.g), e.g, e.f.u, e.f), key)}{/if}{@render opened(key, itemOf(e.f, db, e.g), e.f, e.g, e.f.u)}</li>
       {/each}
     </ul>
   {:else}
@@ -374,7 +374,7 @@
           <span class="nm">{vs.length ? stemName(it) : it.name}{#if ok && !solo}{@render verified(ok, true)}{/if}</span>
           <small class="meta">{#if it.brand}<span class="br" data-brand>{it.brand}</span>{#if gl}{' · '}{/if}{/if}{#if gl}<span class="gl" data-gloss>{gl}</span>{/if}{#if vs.length}{#if gl || it.brand}{'\u3000'}{/if}{@render states(it, vs)}{:else if solo}{#if ok}{@render verified(ok)}{:else}{'\u00a0'}{/if}{/if}</small>
           <span class="kc"><b class="money">{kcalText(p.kcal)}</b><small>{p.label}</small></span>
-        </button>{#if onquick}{@render qa(it.name, () => onquick(it))}{/if}{@render opened(key, it)}</li>
+        </button>{#if onquick}{@render qa(it.name, () => onquick(it), key)}{/if}{@render opened(key, it)}</li>
       {/each}
     </ul>
     {#if results.length > drawn}<div class="more" use:rest aria-hidden="true"></div>{/if}
@@ -455,6 +455,8 @@
     appearance: none; border: 0; cursor: pointer; width: var(--hit); height: var(--hit); border-radius: var(--r-btn); flex: none;
     display: grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj); margin-bottom: var(--lip-h);
   }
+  /* (its room kept: the row doesn't widen under the finger) */
+  .qa.off { visibility: hidden; }
   .qa:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
   .qa:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .qa svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
