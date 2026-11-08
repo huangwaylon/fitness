@@ -1,4 +1,4 @@
-// キャンプ場 (Okinawa's 26 campsites; docs/design.md §Trips): the page's one filter, a criterion at a time as the old
+// キャンプ場 (Okinawa's 35 campsites; docs/design.md §Trips): the page's one filter, a criterion at a time as the old
 // site's (すべて, a kind, or one amenity), and a site's amenities in the order its row draws them. Pure.
 import type { Camp } from '#lib/travel/types.ts';
 

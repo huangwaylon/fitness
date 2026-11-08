@@ -82,7 +82,7 @@ test('Okinawa: the one layer button, its three layers off at first; the campsite
   await expect(pane(page).locator('[data-map-layer]')).toHaveText(['キャンプ場', '自然', '食べる']);
   await pane(page).locator('[data-map-layer="camp"]').click();
   await expect(pane(page).locator('[data-map-layer="camp"]')).toHaveAttribute('aria-pressed', 'true');
-  await expect.poll(async () => (await mapState(page)).candidates.length).toBe(okinawa.camps!.length);
+  await expect.poll(async () => (await mapState(page)).candidates.length).toBe(okinawa.places.filter((p) => p.kind === 'camp').length);
   await stub.locator('[data-pin="katsuren-beach"]').click();
   const card = page.locator('dialog[open] [data-camp-sheet="katsuren-beach"]');
   await expect(card).toBeVisible();

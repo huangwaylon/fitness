@@ -1,7 +1,7 @@
 <script lang="ts">
   // A campsite's card (docs/design.md §Trips, キャンプ場): the kit's sheet over the trip, from its row or its map pin:
-  // the photo, the kind and town, the description, its tags (our nights' as yuzu stickers), the drive from the
-  // office, the kind and the fee as key · value rows, and Maps out.
+  // the photo (if ours), the kind and town, the description, its tags (our nights' as yuzu stickers), the drive from the
+  // office (or ferry only), the kind and the fee as key · value rows, and Maps out.
   //   <CampSheet bind:open camp={c} {note} />
   import type { Camp } from '#lib/travel/types.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
@@ -20,7 +20,7 @@
 <Sheet bind:open label={name} title={name}>
   {#if camp}
     <div class="camp guide" data-camp-sheet={camp.id}>
-      <Photo photo={camp.photo} />
+      {#if camp.photo}<Photo photo={camp.photo} />{/if}
       <p class="sub"><Txt l={camp.sub} {note} /></p>
       <p class="desc"><Txt l={camp.desc} {note} /></p>
       <div class="tags">
@@ -28,7 +28,7 @@
       </div>
       <div class="card dense">
         <Stats {note} stats={[
-          { k: t('travel.camps.office'), v: `${t('travel.camps.drive', { min: camp.fromMin })} · ${fmtKm(camp.fromKm)}` },
+          { k: t('travel.camps.office'), v: camp.fromMin === undefined || camp.fromKm === undefined ? t('travel.camps.ferry') : `${t('travel.camps.drive', { min: camp.fromMin })} · ${fmtKm(camp.fromKm)}` },
           { k: t('travel.camps.type'), v: t(`travel.camps.kind.${camp.type}`) },
           { k: t('travel.camps.fee'), v: camp.fee }
         ]} />

@@ -40,7 +40,7 @@ const hrefs = (t: Trip) => [
   ...(t.camps ?? []).map((c) => c.maps),
   ...t.places.flatMap((p) => (p.link ? [p.link] : []))
 ];
-const photos = (t: Trip) => [t.cover, t.hero, ...t.days.flatMap((d) => (d.photo ? [d.photo] : [])), ...t.logistics.flatMap((c) => (c.photo ? [c.photo] : [])), ...(t.camps ?? []).map((c) => c.photo)];
+const photos = (t: Trip) => [t.cover, t.hero, ...t.days.flatMap((d) => (d.photo ? [d.photo] : [])), ...t.logistics.flatMap((c) => (c.photo ? [c.photo] : [])), ...(t.camps ?? []).flatMap((c) => (c.photo ? [c.photo] : []))];
 
 describe('the trips', () => {
   it('numbered and dated from the start to the end', () => {
@@ -75,13 +75,18 @@ describe('the trips', () => {
       c.items.forEach((it, ii) => expect(it.id).toBe(`${prefix}-${ci}-${ii}`));
     });
   });
-  it('the campsites: a camp pin each, the filter flags as the source chips them', () => {
+  it('the campsites: a drivable one a camp pin and its photo, a ferry-only one neither; the filter flags as the source chips them', () => {
+    const drivable = (okinawa.camps ?? []).filter((c) => c.fromMin !== undefined);
     for (const c of okinawa.camps ?? []) {
-      expect(okinawa.places.find((p) => p.id === c.id)?.kind).toBe('camp');
-      expect(c.photo.src).toBe(`travel/okinawa/camps/${c.id}.webp`);
+      const road = c.fromMin !== undefined;
+      expect(c.fromKm !== undefined, c.id).toBe(road);
+      expect(okinawa.places.find((p) => p.id === c.id)?.kind, c.id).toBe(road ? 'camp' : undefined);
+      expect(c.photo?.src, c.id).toBe(road ? `travel/okinawa/camps/${c.id}.webp` : undefined);
       for (const f of ['beach', 'toilet', 'shower'] as const) if (c[f]) expect(c.chips.some((ch) => ch.text.en?.toLowerCase() === f)).toBe(true);
     }
-    expect(okinawa.places.filter((p) => p.kind === 'camp').length).toBe(okinawa.camps?.length);
+    expect(drivable.length).toBe(26);
+    expect(okinawa.camps?.length).toBe(35);
+    expect(okinawa.places.filter((p) => p.kind === 'camp').length).toBe(drivable.length);
     expect((okinawa.camps ?? []).flatMap((c) => c.chips.filter((ch) => ch.pick).map((ch) => ch.text.en))).toEqual(expect.arrayContaining(['Night 1', 'Night 2']));
   });
   it('a guide\'s icons are the kit\'s (a logistics card\'s; a packing category\'s its NH item or ours: never the fallback)', () => {

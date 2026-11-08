@@ -1,4 +1,4 @@
-// キャンプ場's filter (camps.ts): one criterion at a time, over Okinawa's 26 sites.
+// キャンプ場's filter (camps.ts): one criterion at a time, over Okinawa's 35 sites.
 import { describe, expect, it } from 'vitest';
 import { okinawa } from '#lib/travel/trips/okinawa.ts';
 import { amenities, CAMP_FILTERS, campShown } from './camps.ts';
@@ -7,10 +7,10 @@ const camps = okinawa.camps!;
 const n = (f: (typeof CAMP_FILTERS)[number]) => camps.filter((c) => campShown(c, f)).length;
 
 describe('the campsites filter', () => {
-  it('all, a kind, or one amenity: the kinds split the 26', () => {
-    expect(n('all')).toBe(26);
-    expect(n('wild') + n('paid')).toBe(26);
-    expect(n('paid')).toBe(11);
+  it('all, a kind, or one amenity: the kinds split the 35', () => {
+    expect(n('all')).toBe(35);
+    expect(n('wild') + n('paid')).toBe(35);
+    expect(n('paid')).toBe(15);
     for (const f of ['beach', 'toilet', 'shower'] as const) expect(n(f)).toBe(camps.filter((c) => c[f]).length);
   });
   it('a site’s amenities in the row’s order', () => {
