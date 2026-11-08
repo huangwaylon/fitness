@@ -5,6 +5,7 @@
   // phone; 「みみ チェックを もういちど」 (the placement check again, at once; the place it gave me under it); last, マイク
   // (docs/kikimimi-mic.md §2.6: MicOptIn, a lazy chunk, with the probe's row under it, which opens MicProbe in this
   // page's place, another). Its own chunk.
+  import Lazy from '#lib/components/ui/Lazy.svelte';
   import type { QuizGame } from '../game.svelte.ts';
   import { JA_MODES, WEEK_GOALS, keepSame, keepWeekGoal, sameDefault, weekGoal, type JaMode, type WeekGoal } from '../prefs.ts';
   import { sound } from '#lib/sound/sound.svelte.ts';
@@ -44,7 +45,7 @@
 </script>
 
 {#if probing}
-  {#await import('../mic/MicProbe.svelte') then { default: MicProbe }}<MicProbe onback={() => (probing = false)} />{/await}
+  <Lazy load={() => import('../mic/MicProbe.svelte')}>{#snippet children(MicProbe)}<MicProbe onback={() => (probing = false)} />{/snippet}</Lazy>
 {:else}
 <div class="settings" data-kiki-page="settings">
   <section class="sec" aria-labelledby="kk-sound">
@@ -90,7 +91,7 @@
     <p class="hint">{t('kiki.set.goalSub')}</p>
   </section>
 
-  {#await import('../mic/MicOptIn.svelte') then { default: MicOptIn }}<MicOptIn onprobe={() => (probing = true)} />{/await}
+  <Lazy load={() => import('../mic/MicOptIn.svelte')}>{#snippet children(MicOptIn)}<MicOptIn onprobe={() => (probing = true)} />{/snippet}</Lazy>
 </div>
 {/if}
 

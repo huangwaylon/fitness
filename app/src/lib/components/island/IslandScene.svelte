@@ -16,6 +16,7 @@
   // bottom edge. Read back data-horizon (on .if-scene: the camera's horizon, px down it) to place overlays in the sky.
   // Life (islandLife.svelte.ts): the motion bus (emit('highfive-sent') etc.), reactions to the `view` diff (partner
   // data, fruit stages, a received high-five), naps, the balloon; idle life runs while not `paused`.
+  import Lazy from '#lib/components/ui/Lazy.svelte';
   import { lazyComponent } from '#lib/ui-state/lazyComponent.svelte.ts';
   import { releaseWorker } from '#lib/ui-state/swLate.ts';
   import { showAt } from './fireworks.ts';
@@ -1245,7 +1246,7 @@
         <Says bind:this={says} scene={sceneEl} />
         {#if hookFlag('hit')}
           <!-- ?hit: every tap target drawn over the island (its own chunk) -->
-          {#await import('./HitOverlay.svelte') then m}<m.default scene={sceneEl} />{/await}
+          <Lazy load={() => import('./HitOverlay.svelte')}>{#snippet children(HitOverlay)}<HitOverlay scene={sceneEl} />{/snippet}</Lazy>
         {/if}
         <!-- what a shaken tree drops: a branch, now and then a wasp nest -->
         <TreeShakes bind:this={shakes} scene={sceneEl} onsting={sting} {treeOf} rustle={(tr) => rustle(tr, true, true)} />
