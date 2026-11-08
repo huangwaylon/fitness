@@ -704,7 +704,9 @@ keeps kids-style spaced kana under `word-break: keep-all`; every sheet, panel, d
 Japanese with kanji, one spelling a term, under `word-break: normal; line-break: strict` (docs/design.md "Copy").
 Normal breaking is right for unspaced kanji text: keep-all would make a whole sentence one word, and WebKit has no
 `auto-phrase`; the trip guides keep their Intl.Segmenter `<wbr>`s. Keys shared by a pill and its sheet split (a sheet's
-title may differ: せってい → 設定). Fonts: the new kanji added two Zen Maru slices (148 → 150 @font-face rules, each
+title may differ: せってい → 設定). 2026-11-08, the user: the leaf menu's pills may use kanji too, for easier reading
+(ベル · 旅行 · 結婚式 · トレイル · 英語 · 設定, in that order); the island's lines, bubbles, signs and HUD text stay spaced
+kana. Fonts: the new kanji added two Zen Maru slices (148 → 150 @font-face rules, each
 loaded only when one of its glyphs shows). Rejected: kanji everywhere (the world's voice is NH's kana), furigana
 (clutter at these sizes), a per-person kana toggle (two copies of every sheet string).
 

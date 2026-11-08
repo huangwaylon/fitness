@@ -79,7 +79,7 @@
 {#if settingsMounted}
   {#await loadSettings() then { default: SettingsSheet }}<SettingsSheet bind:open={settingsOpen} onzukan={() => { zukanMounted = true; zukanOpen = true; }} />{/await}
 {/if}
-<!-- りょこう's and けっこんしき's sheets, lazySheets from their first opening (the menu's pills) -->
+<!-- 旅行's and 結婚式's sheets, lazySheets from their first opening (the menu's pills) -->
 {#if trips.Sheet}<trips.Sheet bind:open={trips.open} />{/if}
 {#if weddingSheet.Sheet}<weddingSheet.Sheet bind:open={weddingSheet.open} />{/if}
 <!-- トレイル's, opened by the menu's pill or a hike card (over りょこう's) -->

@@ -47,15 +47,17 @@ test('folded by default; the leaf unfolds it and folds it again; a tap elsewhere
   await hudMenu(page).click();
   await expect(hudMenu(page)).toHaveAttribute('aria-expanded', 'true');
   await expect(settings(page)).toBeVisible();
-  // the pills hang under the leaf, right-aligned to it, 「ベル 121」 first (no icon), then えいご ききとり, りょこう,
-  // けっこんしき, トレイル, せってい, each a 44px pill, on screen, the same width (no ずかん: 設定's since 2026-11-08)
+  // the pills hang under the leaf, right-aligned to it, 「ベル 121」 first (no icon), then 旅行, 結婚式, トレイル, 英語
+  // (ききみみ), 設定 (the user's order, in kanji: 2026-11-08), each a 44px pill, on screen, the same width (no ずかん:
+  // 設定's since 2026-11-08)
   await expect(pills(page)).toHaveCount(6);
   await expect(page.locator('[data-hud-zukan]')).toHaveCount(0);
-  await expect(pills(page).nth(1)).toHaveAttribute('data-hud-kikimimi', '');
-  await expect(pills(page).nth(2)).toHaveAttribute('data-hud-travel', '');
-  await expect(pills(page).nth(3)).toHaveAttribute('data-hud-wedding', '');
-  await expect(pills(page).nth(4)).toHaveAttribute('data-hud-hiking', '');
+  await expect(pills(page).nth(1)).toHaveAttribute('data-hud-travel', '');
+  await expect(pills(page).nth(2)).toHaveAttribute('data-hud-wedding', '');
+  await expect(pills(page).nth(3)).toHaveAttribute('data-hud-hiking', '');
+  await expect(pills(page).nth(4)).toHaveAttribute('data-hud-kikimimi', '');
   await expect(pills(page).nth(5)).toHaveAttribute('data-hud-settings', '');
+  await expect(pills(page).locator('.lbl')).toHaveText(['ベル', '旅行', '結婚式', 'トレイル', '英語', '設定']);
   await expect(pills(page).first()).toHaveAttribute('data-hud-bells', '');
   await expect(page.locator('[data-hud-shells]')).toHaveCount(0); // no かいがら: the shop is the building
   const bells = Number(await hudBells(page).getAttribute('data-bells'));

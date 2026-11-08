@@ -58,7 +58,7 @@ The sheet is a full-height bottom sheet (`Sheet` variant `pop`), 393 px wide, ab
 
 | Before | New | Note |
 |---|---|---|
-| pill 「えいご ききとり」 | 「ききみみ」 with the sub-label 「えいご」 | while an invite waits, the sub-label is 「さそわれています！」 |
+| pill 「えいご ききとり」 | 「英語」 (2026-11-08; was 「ききみみ」 with the sub-label 「えいご」) | while an invite waits, the sub-label 「誘われています！」 |
 | sheet title 「ききみみ クイズ」 | 「ききみみ」 at the root; the page's name on pushes; the mode's name in a game | |
 | 「ききとりクイズに さそっています」 | 「{name}が ききみみに さそっています」 + the mode on the second line | |
 | ききみみ クイズ (the game) | **ひとこと クイズ** | subtitle 「ひとことを きいて えらぶ」 |

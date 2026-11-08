@@ -1,8 +1,8 @@
 // The copy's two zones (docs/design.md "Copy"). The WORLD (the island and its rooms: villagers' and NPCs' lines, bubbles,
-// signs, in-world notices, the HUD, the leaf menu's pills) is kids-style spaced kana under `word-break: keep-all`: a
+// signs, in-world notices, the HUD) is kids-style spaced kana under `word-break: keep-all`: a
 // line breaks only at the copy's spaces or after 、。！, so a run with no break opportunity is one unbreakable word and
 // a long one overflows a 320px screen or a narrow card. Everything opened from the world (sheets, panels, dialogs,
-// forms) is normal Japanese with kanji under `word-break: normal` (theme.css): it breaks between any two Japanese
+// forms) and the leaf menu's pills (since 2026-11-08: easier to read) is normal Japanese with kanji under `word-break: normal` (theme.css): it breaks between any two Japanese
 // characters, so only a run of Latin letters or digits can't break there.
 import { describe, expect, it } from 'vitest';
 import jaMain from './ja.json';
@@ -17,7 +17,7 @@ import jaNames from './catch.ja.json';
 const jaKikiGames: Record<string, string> = Object.assign({}, ...Object.values(import.meta.glob<Record<string, string>>('./kiki-*.ja.json', { eager: true, import: 'default' })));
 const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaFood, ...jaNames, ...jaKiki, ...jaKikiGames, ...jaTravel, ...jaWed };
 
-/** The world's keys: shown on the island or in a room (a line, a bubble, a sign, a notice, the HUD, a menu pill), or
+/** The world's keys: shown on the island or in a room (a line, a bubble, a sign, a notice, the HUD), or
  *  an official name (NH's names, as the game writes them). Every other key is a sheet's. */
 const WORLD: RegExp[] = [
   // lines: しずえ, the visitors, the curator, the twins, ハニワくん, the snowman, notes in bottles
@@ -27,8 +27,8 @@ const WORLD: RegExp[] = [
   // ききみみ's spaced-kana lines in its sheet (しずえ's, under .kana's keep-all: theme.css)
   /^kiki\.(hub\.|cheer\.|fb\.|notice\.|ready$|taikai\.(hello$|reveal\.|host\.)|welcome\.(hello|sound)$|placed\.say$|mission\.(call|task)$|path\.hello$|prog\.empty$)/,
   /^guest\.(arrived|welcome)$/, /^panel\.sheet(Offline|Retry)$/, /^zukan\.added$/, /^island\.(highfive|balloon|no3d|me$)/,
-  // the HUD, its menu's pills, the island's own controls and plates
-  /^island\.(health|food|bells|menu|settings)/, /^panel\.(travel|hiking|wedding|kikimimi)/, /^zukan\.title$/, /^wallet\.title$/,
+  // the HUD, the island's own controls and plates (the leaf menu's pills are a sheet's copy: kanji since 2026-11-08)
+  /^island\.(health|food|menu)/, /^zukan\.title$/, /^wallet\.title$/,
   /^say\./, /^room\./, /^tree\./, /^preview\.chip/, /^preview\.(event|season|weather|tod)\./, /^sound\.tapToHear$/, /^sync\./, /^board\.(name|open|new|empty)$/,
   // the rooms' signs and HUD
   /^museum\.(title|room)$/, /^shop\.(title|sign|out|wallet|counter|twins)$/, /^tent\.(title|room|back|whose|failed|lights|resetView|edit|homeLook)$/,

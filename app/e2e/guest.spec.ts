@@ -92,7 +92,7 @@ test('the guest’s ごほうび shows today’s ベル under the balance: the m
   await g.goto(`?demo${at}&as=G`);
   await islandUp(g);
   await expect(hudBells(g)).toHaveAttribute('data-today', String(today));
-  await expect(hudBells(g)).toHaveAttribute('aria-label', new RegExp(` · きょう ${today}\\sベル$`));
+  await expect(hudBells(g)).toHaveAttribute('aria-label', new RegExp(` · 今日 ${today}\\sベル$`));
   await openRewards(g);
   const panel = g.locator('dialog[open]');
   await expect(panel.locator('[data-guest-jar]')).toBeVisible();
