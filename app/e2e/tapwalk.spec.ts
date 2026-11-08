@@ -3,7 +3,7 @@
 // day, the camera stays where the finger left it; a tap on the water acts in place (no walk): a ripple. The tent's door
 // is the one exception: my villager walks up to it, then goes in.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, campDoor, geo, lawnTap, openNear, tapOn } from './island.ts';
+import { camTo, campDoor, geo, lawnTap, openNear, tapOn, watchComings } from './island.ts';
 import { mkdirSync } from 'node:fs';
 
 /** A tap on the tent where it is the tent's (a villager may stand in front of its door). */
@@ -137,13 +137,15 @@ test('the campsite: a tap from far off walks my villager up to the door (no ring
   await open(page, '&date=2026-07-01T10:00&visitor=none');
   await oku(page);
   const home = await call(page, (w) => w.mine());
+  const came = await watchComings(page, { ring: '.tap-ring', walking: '[data-actor="mine"].walking' });
   await tapTent(page);
-  await page.waitForTimeout(300);
-  // on its way (not in yet), no ring: it's going in, not to a spot
-  expect(page.url()).not.toMatch(/\/tent\?/);
+  // on its way (not in yet): it walks
+  await expect.poll(() => came('walking'), { message: 'my villager walks to the door' }).toBeGreaterThan(0);
   expect(await call(page, (w) => w.mine())).not.toEqual(home);
-  await expect(page.locator('.tap-ring')).toHaveCount(0);
-  await expect(page).toHaveURL(/\/tent\?/, { timeout: 8000 });
+  // then in (however long the walk up took on a loaded runner), and never a ring: it was going in, not to a spot
+  // (the app's own navigation: the page and its watch stay)
+  await expect(page).toHaveURL(/\/tent\?/, { timeout: 20_000 });
+  expect(await came('ring')).toBe(0);
 });
 
 test('the campsite: near its door my villager goes straight in', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ page }) => {
@@ -152,8 +154,11 @@ test('the campsite: near its door my villager goes straight in', { tag: '@logic'
   const door = campDoor(await geo(page));
   // (about where it stands just out of the tent: buildings.ts outOf)
   await call(page, (w, [x, z]) => w.put(x, z), [door[0] - 12, door[1] - 30]);
+  const came = await watchComings(page, { walking: '[data-actor="mine"].walking' });
   await tapTent(page);
-  await expect(page).toHaveURL(/\/tent\?/, { timeout: 1500 });
+  // in, and straight: no walk up first (not a time: the tent's load is the runner's)
+  await expect(page).toHaveURL(/\/tent\?/);
+  expect(await came('walking'), 'no walk up to the door').toBe(0);
 });
 
 test('the campsite: a tap on the lawn on the way up is the end of going in', async ({ page }) => {
