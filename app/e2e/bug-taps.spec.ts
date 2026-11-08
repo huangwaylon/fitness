@@ -4,7 +4,7 @@
 // on what's drawn startled it off; my villager in front of a bug took the tap; and a tarantula's rear (its first tap)
 // showed nothing in 3D, so the second tap came while it was reared and it charged off every time.
 import { expect, test, type Page } from './fixtures.ts';
-import { is3d, pauseNow } from './island';
+import { is3d } from './island';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -46,24 +46,34 @@ for (const [id, date] of [['robust-cicada', '2026-07-15T11:00'], ['golden-stag',
 
 test('a tarantula rears up in 3D under a 「！」 at the first tap; settled, a tap nets it', async ({ page }) => {
   test.slow();
-  // (on the page's clock: its rear, REAR_MS, held while the spec looks, a frame stepped at a time; on the wall clock
-  // a loaded runner's looks came after it, the front back down)
-  await page.clock.install({ time: new Date('2026-07-15T21:00:00+09:00') });
-  await page.clock.resume();
   await open(page, 'critter=tarantula&date=2026-07-15T21:00');
   let at: [number, number] | null = null;
   await expect.poll(async () => (at = await drawn(page)), { timeout: 15_000 }).not.toBeNull();
   await page.waitForTimeout(800); // (under way)
   at = (await drawn(page))!;
-  const y0 = await page.evaluate(() => { const w = (window as unknown as { __world3d: W3 }).__world3d; for (let n = 0; n < 60; n++) { const p = w.where(`bug-${n}`); if (p) return p.y; } return NaN; });
-  await pauseNow(page);
+  // its rear (REAR_MS, 1.6 s) watched in the page from before the tap, a look every 16 ms: the most 「！」s at once and
+  // its highest point (a look a round trip from here came after it on a loaded runner, the front back down)
+  const y0 = await page.evaluate(() => {
+    const w = (window as unknown as { __world3d: W3; __fx3: Fx3; __rear?: { bangs: number; y: number; stop: () => void } }), y = () => {
+      for (let n = 0; n < 60; n++) {
+        const p = w.__world3d.where(`bug-${n}`);
+        if (p) return p.y;
+      }
+      return NaN;
+    };
+    const r = { bangs: 0, y: -Infinity, stop: () => clearInterval(id) };
+    const id = setInterval(() => ((r.bangs = Math.max(r.bangs, w.__fx3.live('bang').length)), (r.y = Math.max(r.y, y()))), 16);
+    w.__rear = r;
+    return y();
+  });
+  const rear = () => page.evaluate(() => ((r) => ({ bangs: r.bangs, y: r.y }))((window as unknown as { __rear: { bangs: number; y: number } }).__rear));
   await page.mouse.click(at[0], at[1]);
-  // reared: the 「！」 over it and its front lifted, on the 3D island (not only its invisible sprite), each look a frame
-  // or two of the page's time on (a few of its 1.6 s)
-  await expect.poll(async () => (await page.clock.runFor(32), page.evaluate(() => (window as unknown as { __fx3: Fx3 }).__fx3.live('bang').length))).toBe(1);
-  await expect.poll(async () => (await page.clock.runFor(32), page.evaluate(() => { const w = (window as unknown as { __world3d: W3 }).__world3d; for (let n = 0; n < 60; n++) { const p = w.where(`bug-${n}`); if (p) return p.y; } return NaN; }))).toBeGreaterThan(y0 + 1);
+  // reared: the 「！」 over it (one) and its front lifted, on the 3D island (not only its invisible sprite)
+  await expect.poll(async () => (await rear()).bangs).toBeGreaterThan(0);
+  await expect.poll(async () => (await rear()).y).toBeGreaterThan(y0 + 1);
+  expect((await rear()).bangs).toBe(1);
+  await page.evaluate(() => (window as unknown as { __rear: { stop(): void } }).__rear.stop());
   expect(await cues(page)).not.toContain('scene-catch');
-  await page.clock.resume();
   // settled (the 「！」 gone): a tap nets it
   // (the expect's own time, 10 s on CI, not 4: the 「！」 goes in the island's next frame after REAR_MS, and drawn in
   // software GL that's ~1 a second, so it was still up at 4 s: gone at 4.8 s here, 1 left at 4 s on a loaded CI)
