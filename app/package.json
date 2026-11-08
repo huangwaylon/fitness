@@ -45,6 +45,7 @@
     "perf:start": "node scripts/perf-start.ts",
     "perf:sheets": "node scripts/perf-sheets.ts",
     "knip": "knip",
+    "verify": "node scripts/verify.ts",
     "models": "node scripts/models.ts",
     "room-models": "node scripts/room-models.ts",
     "seat-anchors": "node scripts/seat-anchors.ts",
