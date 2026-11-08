@@ -67,8 +67,8 @@ test('A’s line on B’s phone: the float where it landed, the bite, the shadow
   // the shadow at A's float is A's: B casts by it, and it never comes to B's float
   await expect.poll(() => h(b, (w) => w.__fish.lines()[0]?.id ?? null)).toBe('hook:fish');
   await b.bringToFront();
-  const [bx, by] = await toTheWater(b, 'sea');
-  await b.mouse.click(bx, by);
+  // (castIn: the point checked clear and clicked in one step, again if a tap area came in between: testing.md "Casts")
+  await castIn(b, 'sea');
   await expect.poll(() => h(b, (w) => w.__fish.why())).toBe('cast in the sea');
   expect(await h(b, (w) => w.__fish.line()?.fish ?? null)).toBeNull();
   // A's bite reaches B (the float under), and A reels it in: the catch on both, B's view of the line cleared
@@ -163,8 +163,8 @@ test('a line cast at a new spot (its off never came) frees the shadow the old on
   await expect.poll(() => h(b, (w) => w.__fish.lines().length)).toBe(1);
   // (B's float by it: it's A's, it never comes to it; B's tab in front: a hidden tab's island takes no taps)
   await b.bringToFront();
-  const [bx, by] = await toTheWater(b, 'sea');
-  await b.mouse.click(bx, by);
+  // (castIn: the point checked clear and clicked in one step, again if a tap area came in between: testing.md "Casts")
+  const [bx, by] = await castIn(b, 'sea');
   await expect.poll(() => h(b, (w) => w.__fish.why())).toBe('cast in the sea');
   await b.waitForTimeout(1500); // (proving nothing comes for a while: the shadow is A's)
   expect(await h(b, (w) => w.__fish.line()?.fish ?? null)).toBeNull();
