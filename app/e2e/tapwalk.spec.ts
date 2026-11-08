@@ -79,7 +79,7 @@ test('a tap by the campsite runs my villager up the path, never through the wate
 test('a tap on the pond casts from where my villager stands and walks nowhere; the grass reels in, then walks; a walk stays for the session', async ({ page }) => {
   // (no critters: nothing bites while the line is out)
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
-  await open(page, '&date=2026-07-01T10:00&critter=none');
+  await open(page, '&date=2026-07-01T10:00');
   const { POND } = await geo(page);
   await camTo(page, POND.z - 212, false);
   const home = await call(page, (w) => w.mine());
@@ -122,7 +122,7 @@ test('the camera never moves for a walk: a run up the island leaves it where the
 });
 
 test('the campsite: a tap from far off walks my villager up to the door (no ring), then it goes in', async ({ page }) => {
-  await open(page, '&date=2026-07-01T10:00&visitor=none');
+  await open(page, '&date=2026-07-01T10:00');
   await oku(page);
   const home = await call(page, (w) => w.mine());
   const came = await watchComings(page, { ring: '.tap-ring', walking: '[data-actor="mine"].walking' });
@@ -137,7 +137,7 @@ test('the campsite: a tap from far off walks my villager up to the door (no ring
 });
 
 test('the campsite: near its door my villager goes straight in', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ page }) => {
-  await open(page, '&date=2026-07-01T10:00&visitor=none');
+  await open(page, '&date=2026-07-01T10:00');
   await oku(page);
   const door = campDoor(await geo(page));
   // (about where it stands just out of the tent: buildings.ts outOf)
@@ -160,7 +160,7 @@ test('the campsite: near its door my villager goes straight in', { tag: '@logic'
 });
 
 test('the campsite: a tap on the lawn on the way up is the end of going in', async ({ page }) => {
-  await open(page, '&date=2026-07-01T10:00&visitor=none');
+  await open(page, '&date=2026-07-01T10:00');
   await oku(page);
   await tapTent(page);
   await page.waitForTimeout(250);
@@ -172,7 +172,7 @@ test('the campsite: a tap on the lawn on the way up is the end of going in', asy
 });
 
 test('a tap at the tent’s foot goes in too (the footprint is the campsite’s)', async ({ page }) => {
-  await open(page, '&date=2026-07-01T10:00&visitor=none');
+  await open(page, '&date=2026-07-01T10:00');
   await oku(page);
   // the ground just inside the tent's footprint (taps on the art itself are the door button's)
   await page.addStyleTag({ content: '[data-building] .door { pointer-events: none !important; }' });

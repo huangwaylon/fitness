@@ -21,7 +21,7 @@ const v3 = (page: Page, slot: string) => page.evaluate((s) => (window as unknown
 const go = (page: Page, z: number) => page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z);
 
 async function open(page: Page, q = '') {
-  await page.goto(`?demo&date=${DATE}&critter=none&visitor=none${q}`);
+  await page.goto(`?demo&date=${DATE}${q}`);
   await islandUp(page);
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await expect.poll(() => v3(page, 'mine'), { timeout: 30_000 }).not.toBeNull();

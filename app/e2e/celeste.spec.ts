@@ -7,7 +7,7 @@ import { hudBells } from './hud.ts';
 
 test("a meteor shower's night: Celeste at centre stage, clear of every control, explains wishes", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('?demo&date=2026-11-12T21:00&critter=none');
+  await page.goto('?demo&date=2026-11-12T21:00');
   await islandUp(page);
   const bells = await hudBells(page).getAttribute('aria-label');
   await camTo(page, await stageCam(page), false);
@@ -26,7 +26,7 @@ test('shooting stars every 3–8 s on a shower night (a clear night: 15–40 s)'
   await page.setViewportSize({ width: 393, height: 852 });
   await page.clock.install({ time: new Date('2026-11-12T22:00:00+09:00') });
   await page.clock.resume();
-  await page.goto('?demo&date=2026-11-12T22:00&critter=none');
+  await page.goto('?demo&date=2026-11-12T22:00');
   await islandUp(page);
   // (the 3D island's whole-island view leaves the night sky a sliver under the HUD: there a streak crosses on down over
   // the island's far end)
@@ -46,16 +46,16 @@ test('shooting stars every 3–8 s on a shower night (a clear night: 15–40 s)'
 });
 
 test('not a shower night: no Celeste; each wish is a fragment the next morning, a shower night’s like any other', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-11T21:00&critter=none');
+  await page.goto('?demo&date=2026-11-11T21:00');
   await islandUp(page);
   await page.waitForTimeout(500);
   await expect(page.locator('[data-visitor="celeste"]')).toHaveCount(0);
   // five wishes on the shower night of 11-12: five fragments on the 13th's beach
   await page.evaluate(() => localStorage.setItem('scene-wish', JSON.stringify({ '2026-11-13': 5 })));
-  await page.goto('?demo&date=2026-11-13T08:00&critter=none');
+  await page.goto('?demo&date=2026-11-13T08:00');
   await expect(page.locator('[data-find="fragment"]')).toHaveCount(5);
   // two wishes on a plain night: two
   await page.evaluate(() => localStorage.setItem('scene-wish', JSON.stringify({ '2026-11-12': 2 })));
-  await page.goto('?demo&date=2026-11-12T08:00&critter=none');
+  await page.goto('?demo&date=2026-11-12T08:00');
   await expect(page.locator('[data-find="fragment"]')).toHaveCount(2);
 });

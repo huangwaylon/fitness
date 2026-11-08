@@ -5,7 +5,7 @@ import { expect, test, type Page } from './fixtures.ts';
 import { geo } from './island.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
-const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none';
+const Q = '?demo&date=2026-11-04T12:00';
 const SHOTS = process.env.SHOTS;
 
 type B = { state: string; box: [number[], number[]] } | null;
@@ -63,7 +63,7 @@ type V3 = { state(slot: string): string | null };
 for (const seat of ['seatMaeL', 'seatPondR', 'stoolW'] as const) {
   test(`island ${seat}: my villager sits on it`, async ({ page }) => {
     test.setTimeout(90_000);
-    await page.goto(`?demo&date=2026-11-04T12:00&critter=none&visitor=none`);
+    await page.goto(`?demo&date=2026-11-04T12:00`);
     await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
     await expect.poll(() => page.evaluate(() => (window as unknown as { __villagers3?: V3 }).__villagers3?.state('mine') ?? null), { timeout: 30_000 }).not.toBeNull();
     // (the seat's spot as the page's island has it: the layout's on it)

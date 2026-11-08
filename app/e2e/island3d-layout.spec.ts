@@ -16,7 +16,7 @@ type W3 = {
   groups(): { name: string; n: number }[];
 };
 const w3 = <R,>(page: Page, fn: (w: W3) => R) => page.evaluate(`(${fn.toString()})(window.__world3d)`) as Promise<R>;
-const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none';
+const Q = '?demo&date=2026-11-04T12:00';
 
 async function open(page: Page) {
   await page.goto(Q);

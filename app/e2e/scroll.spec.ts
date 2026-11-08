@@ -39,7 +39,7 @@ for (const vp of [{ width: 393, height: 852 }, { width: 402, height: 874 }, { wi
     });
 
     test('a tree’s popup opens wholly in view, the other tree still tappable, never dimmed', async ({ page }) => {
-      await open(page, '&date=2026-07-01T21:00&critter=none');
+      await open(page, '&date=2026-07-01T21:00');
       for (const z of [0, 200]) {
         await call(page, (w, [z]) => w.go(z), [z]);
         await page.waitForTimeout(400);

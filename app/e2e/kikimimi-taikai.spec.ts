@@ -13,7 +13,7 @@ import { atHub, kikiSheet as sheet, runToPhase, runToQuestion } from './kikimimi
 test.use({ viewport: { width: 393, height: 852 } });
 const SHOTS = '/tmp/kikimimi-shots/taikai';
 /** Saturday 2026-11-07 20:00 Tokyo: the weekend of Friday 2026-11-06. */
-const Q = 'date=2026-11-07T20:00&critter=none&visitor=none&kikimimi=fast';
+const Q = 'date=2026-11-07T20:00&kikimimi=fast';
 
 type Kiki = { view(): { phase: string; i: number; n: number; gm: string | null; ids: number[] }; right(): number; items(): string[] };
 const kiki = <R,>(p: Page, fn: (k: Kiki) => R) => p.evaluate(`(${fn.toString()})(window.__kiki)`) as Promise<R>;

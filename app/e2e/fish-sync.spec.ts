@@ -19,7 +19,7 @@ type H = {
   __villagers3?: { last(slot: string): { angling: { phase: string | null; x: number; z: number } } | null };
 };
 const h = <R,>(page: Page, fn: (h: H) => R) => page.evaluate(`(${fn.toString()})(window)`) as Promise<R>;
-const Q = 'visitor=none&critter=fish&date=2026-11-04T12:00';
+const Q = 'critter=fish&date=2026-11-04T12:00';
 
 /** A phone on the island, its 3D island up; `fish`: and a shadow in the sea to cast at. */
 async function open(page: Page, as = '', fish = true) {

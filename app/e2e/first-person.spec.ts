@@ -7,7 +7,7 @@ import { expect, test, type Page } from './fixtures.ts';
 import { islandURL } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
-const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none';
+const Q = '?demo&date=2026-11-04T12:00';
 
 type Fpv = { on: boolean; inside: boolean; busy: boolean; yaw: number; pitch: number; eye: [number, number, number] };
 type R = { stats(): { frames: number }; fpv(): Fpv | null; mine(): [number, number]; walking(w: string): boolean; px(x: number, z: number, y?: number): [number, number] };

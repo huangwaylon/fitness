@@ -29,7 +29,7 @@ async function open(page: Page, layout: 'default' | 'user', date = '2026-11-04')
   if (layout === 'user') await page.addInitScript((ops) => localStorage.setItem('island-demo.layout', ops), JSON.stringify(USER_LAYOUT));
   await page.addInitScript(() => ((window as unknown as Hooks).__cues = []));
   // (no balloon: one drifting over the sea took a tap meant for the water)
-  await page.goto(`?demo&visitor=none&critter=none&balloon=none&date=${date}T12:00`);
+  await page.goto(`?demo&date=${date}T12:00`);
   expect(await is3d(page)).toBe(true);
   await quiet(page);
 }
@@ -170,7 +170,7 @@ for (const layout of ['default', 'user'] as const) {
 for (const [room, ready] of [['tent', '__tent'], ['museum', '__museum']] as const)
   test(`the ${room}: a tap on the room beside its back button stays in the room, a tap on the button leaves`, async ({ page }) => {
     test.slow();
-    await page.goto(`${room}?demo&date=2026-11-04T12:00&critter=none&visitor=none`);
+    await page.goto(`${room}?demo&date=2026-11-04T12:00`);
     await page.waitForFunction((k) => ((window as unknown as Record<string, { stats(): { frames: number } }>)[k]?.stats()?.frames ?? 0) > 0, ready);
     await page.waitForTimeout(1500);
     const back = page.locator(`[data-${room}] .nav.back`);

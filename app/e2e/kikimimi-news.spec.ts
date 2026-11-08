@@ -16,8 +16,8 @@ import { atHub, kikiSheet as sheet, runToQuestion, runToSee } from './kikimimi-n
 test.use({ viewport: { width: 393, height: 852 } });
 const SHOTS = '/tmp/kikimimi-shots/news';
 const DAY_AT = '2026-11-07T10:00';
-const DAY = `date=${DAY_AT}&critter=none&visitor=none&kikimimi=fast`;
-const NIGHT = 'date=2026-11-07T21:30&critter=none&visitor=none&kikimimi=fast';
+const DAY = `date=${DAY_AT}&kikimimi=fast`;
+const NIGHT = 'date=2026-11-07T21:30&kikimimi=fast';
 const H = 3600_000;
 
 type Ask = { choices: string[]; answer: number };

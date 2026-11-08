@@ -14,8 +14,8 @@ import { atHub, kikiSheet as sheet, runToQuestion, runToSee } from './kikimimi-n
 
 test.use({ viewport: { width: 393, height: 852 } });
 const SHOTS = '/tmp/kikimimi-shots/pair';
-const DAY = 'date=2026-11-07T10:00&critter=none&visitor=none&kikimimi=fast';
-const NIGHT = 'date=2026-11-07T21:30&critter=none&visitor=none&kikimimi=fast';
+const DAY = 'date=2026-11-07T10:00&kikimimi=fast';
+const NIGHT = 'date=2026-11-07T21:30&kikimimi=fast';
 
 async function snap(p: Page, name: string) {
   if (!process.env.KIKI_SHOTS) return;

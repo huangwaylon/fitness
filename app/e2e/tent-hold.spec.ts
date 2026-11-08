@@ -6,7 +6,7 @@ import { expect, test, type Page } from './fixtures.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
-const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none';
+const Q = '?demo&date=2026-11-04T12:00';
 type Piece = { id: string; item: string; x: number; z: number; f: number };
 type T = {
   tile(x: number, z: number): [number, number];

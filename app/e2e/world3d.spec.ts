@@ -19,7 +19,7 @@ type W3 = {
 };
 const w3 = <R,>(page: Page, fn: (w: W3) => R) => page.evaluate(`(${fn.toString()})(window.__world3d)`) as Promise<R>;
 const ready = (page: Page) => page.waitForFunction(() => (window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded(), null, { timeout: 30_000 });
-const Q = 'demo&date=2026-11-04T12:00&critter=none&visitor=none';
+const Q = 'demo&date=2026-11-04T12:00';
 
 test('the island draws in 3D and a tap on the lawn walks my villager', { tag: '@render' }, async ({ page }) => {
   test.setTimeout(60_000);
@@ -223,7 +223,7 @@ test('nothing drawn strays off the island: no NaN or far-flung vertex (the falli
 
 test('at night the glows add light without touching the canvas\'s alpha (a lamp\'s halo over the sky was a black box)', { tag: '@render' }, async ({ page }) => {
   test.setTimeout(60_000);
-  await page.goto(`?demo&date=2026-11-04T22:00&critter=none&visitor=none`);
+  await page.goto(`?demo&date=2026-11-04T22:00`);
   await ready(page);
   // at the front at the closest zoom, the far lamps' halos behind the campsite's trees
   await page.evaluate(() => {
@@ -278,7 +278,7 @@ test('the 3D island draws what the 2D sprites did: no 2D art shows over it (a sc
 });
 
 test('a goal tree\'s glints (all four met) stand whole on the 3D island: the canopy\'s node is squashed upright as the model, the stars not', async ({ page }) => {
-  await page.goto(`?demo&date=2026-11-04T23:00&critter=none&visitor=none`);
+  await page.goto(`?demo&date=2026-11-04T23:00`);
   await ready(page);
   await expect(page.locator('.glints[data-tree]').first()).toBeAttached();
   // each glint's aspect on screen (its canopy node's scale × its own), whatever the node's squash

@@ -17,7 +17,7 @@ import { atHub, kikiSheet as sheet, runToQuestion, toTile } from './kikimimi-nav
 
 test.use({ viewport: { width: 393, height: 852 } });
 const SHOTS = '/tmp/kikimimi-shots/role';
-const Q = 'date=2026-11-07T10:00&critter=none&visitor=none&kikimimi=fast';
+const Q = 'date=2026-11-07T10:00&kikimimi=fast';
 
 /** A unit's dialogues' lines as compiled, by item id (the source chunk, not the build). */
 const linesOf = (unit: string): Map<string, string[]> => {

@@ -4,10 +4,10 @@
 // event and every console line of a refused load, the page's and its workers').
 import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, openKenkou } from './hud.ts';
-import { is3d, islandQuery } from './island.ts';
+import { is3d } from './island.ts';
 import { drawn, fixtureTiles, gotoTrip, mapReady } from './trips.ts';
 
-const Q = islandQuery('demo&date=2026-11-04T12:00');
+const Q = '?demo&date=2026-11-04T12:00';
 
 async function watch(page: Page): Promise<string[]> {
   const seen: string[] = [];

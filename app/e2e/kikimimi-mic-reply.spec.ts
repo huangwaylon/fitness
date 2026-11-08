@@ -11,7 +11,7 @@ import { fromMenu } from './hud.ts';
 import { openStage, runToQuestion } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
-const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
+const Q = 'date=2026-11-04T12:00&kikimimi=fast';
 const SHOTS = '/tmp/kikimimi-shots/reply';
 
 type Kiki = {

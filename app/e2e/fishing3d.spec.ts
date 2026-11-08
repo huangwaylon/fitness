@@ -57,7 +57,7 @@ for (const [water, q, cam, sel, miss] of [
     // catch plate is missed (the bite's window under CI's load); the logic tier (E2E_RENDER=none) runs it
     test.fixme(!!process.env.CI && process.env.E2E_RENDER !== 'none', 'CI drawn tier: the bite window is missed under its software GL');
     await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
-    await page.goto(`?demo&visitor=none${q}`);
+    await page.goto(`?demo${q}`);
     await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
     // (the river's: おく as the page's island has it, the layout's, held there)
     if (cam === 'oku') await camTo(page, (await geo(page)).CAMS.oku, false);
@@ -160,7 +160,7 @@ for (const water of ['pond', 'river', 'mouth', 'sea'] as const)
     test.slow();
     // a pond put down on the grass in view (the user's island has two, and no painted pond): the shadow comes there
     if (water === 'pond') await page.addInitScript((op) => localStorage.setItem('island-demo.layout', JSON.stringify([op])), POND_OP);
-    await page.goto(`?demo&visitor=none&critter=${water === 'sea' ? 'fish' : water}&date=2026-11-04T12:00`);
+    await page.goto(`?demo&critter=${water === 'sea' ? 'fish' : water}&date=2026-11-04T12:00`);
     await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
     type S = { x: number; y: number; z: number; hidden: boolean; order: number };
     const shadow = () => page.evaluate((wt) => {
@@ -202,7 +202,7 @@ test('3D fishing: the rod stays in the hand, its tip where the line starts, at e
   test.setTimeout(60_000);
   // (the page's clock ours, set to its ?date and running till the tip's reads: pauseNow)
   await page.clock.install({ time: new Date('2026-11-04T12:00:00+09:00') });
-  await page.goto('?demo&visitor=none&critter=fish&date=2026-11-04T12:00');
+  await page.goto('?demo&critter=fish&date=2026-11-04T12:00');
   await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
   await expect.poll(() => v3(page, (v) => v.state('mine')), { timeout: 30_000 }).not.toBeNull();
   const fish = () => page.evaluate(() => {
@@ -256,7 +256,7 @@ test(`3D fishing as a human player in the ${water}: facing, rod and line in one 
     const e = JSON.parse(localStorage.getItem('island-demo.events') ?? 'null') as { events: { id: string }[] } | null;
     if (e?.events.some((x) => x.id === 'seed-look')) localStorage.removeItem('island-demo.events');
   });
-  await page.goto(`?demo&visitor=none${q}`);
+  await page.goto(`?demo${q}`);
   await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
   if (water === 'river') await camTo(page, (await geo(page)).CAMS.oku, false);
   await expect.poll(() => page.evaluate(() => (window as unknown as { __villagers3: { player(s: string): boolean } }).__villagers3.player('mine')), { timeout: 30_000 }).toBe(true);

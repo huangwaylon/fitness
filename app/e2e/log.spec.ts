@@ -45,7 +45,7 @@ test('a forced error reaches the log, scrubbed, with the session, the role and t
     return route.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: store.handleText(text) });
   });
   const page = await context.newPage();
-  await page.goto('?log=on&critter=none&visitor=none');
+  await page.goto('?log=on');
   await islandUp(page);
   // a bug, as the phone would meet it: thrown from a timer, its message carrying what must never be kept; then the
   // page goes (the log writes itself and sends what it has with keepalive)

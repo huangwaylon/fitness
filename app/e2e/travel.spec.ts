@@ -9,7 +9,7 @@
 // day and at night.
 import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, fromMenuAfterReload, unfoldMenu } from './hud.ts';
-import { islandQuery, islandUp } from './island.ts';
+import { islandUp } from './island.ts';
 import { shot } from './shots.ts';
 import { gotoTrips, pickTrip, tripsSheet as sheet } from './trips.ts';
 import { nz } from '../src/lib/travel/trips/nz.ts';
@@ -233,7 +233,7 @@ test('reopening: the trip and its page as they were left', async ({ page }) => {
 });
 
 test('offline before the first opening: the pill says so, もういちど opens it once back', async ({ page, context }) => {
-  await page.goto(islandQuery('demo&date=2026-11-04T12:00'));
+  await page.goto('?demo&date=2026-11-04T12:00');
   await islandUp(page);
   await context.setOffline(true);
   await unfoldMenu(page);

@@ -8,7 +8,7 @@ import { islandURL } from './island.ts';
 import { is3d, lawnTap, settled, tapOn } from './island';
 
 test.use({ viewport: { width: 393, height: 852 } });
-const Q = '?demo&visitor=none&critter=none&date=2026-11-04T12:00';
+const Q = '?demo&date=2026-11-04T12:00';
 type Pt = [number, number];
 type W = { mine(): Pt; partner(): Pt; go(z: number): void; site(): { doors: Record<string, Pt> }; exit(id: string): { at: Pt; face: string } };
 const w = <R,>(page: Page, fn: (w: W) => R) => page.evaluate(`(${fn.toString()})(window.__world)`) as Promise<R>;

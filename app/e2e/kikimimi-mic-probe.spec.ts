@@ -55,7 +55,7 @@ test('the mic probe: each step, its numbers to the log, never the heard text; a 
     return route.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: JSON.stringify({ ok: true, text: HEARD }) });
   });
 
-  await page.goto('?log=on&critter=none&visitor=none');
+  await page.goto('?log=on');
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
   await atHub(page);

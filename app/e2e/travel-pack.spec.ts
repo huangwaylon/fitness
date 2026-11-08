@@ -6,7 +6,7 @@
 // the record), and a trip that's over: frozen (when.ts readOnly: its final list as everyone left it, no ticks, no 編集, nothing sent:
 // NZ after its dates, Okinawa and Seattle now). SHOTS=<dir>: screenshots of the list.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
-import { BASE, islandQuery } from './island.ts';
+import { BASE } from './island.ts';
 import { shot } from './shots.ts';
 import { openTrip } from './trips.ts';
 import { nz } from '../src/lib/travel/trips/nz.ts';
@@ -20,7 +20,7 @@ const TOTAL = nz.packing.cats.reduce((n, c) => n + c.items.length, 0) + 1;
 
 async function open(ctx: BrowserContext, as: 'A' | 'B' | 'G' = 'A', date = BEFORE, trip = 'nz') {
   const page = await ctx.newPage();
-  await page.goto(`${BASE}/${islandQuery(`demo&date=${date}${as === 'A' ? '' : `&as=${as}`}`)}`);
+  await page.goto(`${BASE}/?demo&date=${date}${as === 'A' ? '' : `&as=${as}`}`);
   await openTrip(page, trip, 'pack');
   await expect(page.locator('[data-pack-item]').first()).toBeVisible();
   return page;

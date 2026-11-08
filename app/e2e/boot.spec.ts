@@ -28,7 +28,7 @@ test('not paired: to /pair without the 3D island', async ({ page }) => {
 
 test('the demo: the 3D island and its fields asked for at the launch', async ({ page }) => {
   const asked = watch3d(page);
-  await page.goto('?demo&critter=none&visitor=none');
+  await page.goto('?demo');
   await islandUp(page);
   await expect.poll(() => asked.some((u) => u.includes('fields.worker'))).toBe(true);
   await expect.poll(() => asked.some((u) => u.endsWith(chunk3d()))).toBe(true);

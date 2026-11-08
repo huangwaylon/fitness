@@ -9,7 +9,7 @@ import { GRID, TILE } from '../src/lib/layout/grid.ts';
 test.use({ viewport: { width: 393, height: 852 } });
 
 const Q = '?demo&date=2026-11-04T12:00&preview=0';
-const ISLAND = '?demo&date=2026-11-04T12:00&visitor=kicks&critter=none';
+const ISLAND = '?demo&date=2026-11-04T12:00&visitor=kicks';
 type IE = { sel(): { id: string | null; k: string; x: number; z: number; why: string | null } | null; tileScreen(c: number, r: number): [number, number] | null };
 const ie = <R,>(page: Page, fn: (e: IE) => R) => page.evaluate(`(${fn.toString()})(window.__islandEdit)`) as Promise<R>;
 type L = { ids(k: string): string[]; obj(id: string): { x: number; z: number } };

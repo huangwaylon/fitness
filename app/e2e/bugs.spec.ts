@@ -72,7 +72,7 @@ test('a mole cricket chirps under a mound in the grass; a tap digs it up', async
 });
 
 test('a tap on my villager sends a flea hopping off into the grass; a tap on it nets it', async ({ page }) => {
-  await open(page, '&date=2026-07-10T12:00&flea&critter=none'); // (no visiting bug: one out takes the flea's place)
+  await open(page, '&date=2026-07-10T12:00&flea'); // (no visiting bug: one out takes the flea's place)
   await quiet(page); // the opening beats are over
   await page.locator('button.vil').first().click();
   const flea = page.locator('[data-critter="flea"]');
@@ -135,7 +135,7 @@ test('fireflies: a little cloud of lights blinking out of step', async ({ page }
 });
 
 test('a butterfly lands on a flower now and then (its wings slowly opening and closing)', async ({ page }) => {
-  await open(page, '&date=2026-05-10T12:00&critter=common-butterfly&visitor=none');
+  await open(page, '&date=2026-05-10T12:00&critter=common-butterfly');
   await page.waitForFunction(() => (window as unknown as W3).__world3d?.loaded(), null, { timeout: 30_000 });
   await expect(page.locator('[data-critter="common-butterfly"].sat')).toBeAttached({ timeout: 15_000 });
   // landed: its model over a flower's foot, by the world's points (the island's flowers as the page has them; DOM
@@ -167,7 +167,7 @@ test('on the 3D island a bug perched on a trunk sits on its bark, in view under 
   test.setTimeout(75_000);
   // (NH's palm beetles on the palms at night, a horned atlas and a golden stag; a stag on a hardwood trunk)
   for (const [date, id, palm] of [['2026-07-10T12:00', 'robust-cicada', false], ['2026-07-10T22:00', 'saw-stag', false], ['2026-07-10T22:00', 'horned-atlas', true], ['2026-07-10T22:00', 'golden-stag', true]] as const) {
-    await open(page, `&date=${date}&critter=${id}&visitor=none`);
+    await open(page, `&date=${date}&critter=${id}`);
     await page.waitForFunction(() => (window as unknown as W3).__world3d?.loaded(), null, { timeout: 30_000 });
     await expect(page.locator(`[data-critter="${id}"]`)).toHaveAttribute('data-place', palm ? 'palm' : 'trunk');
     await expect(page.locator(`[data-critter="${id}"].sat`)).toBeAttached({ timeout: 5000 });

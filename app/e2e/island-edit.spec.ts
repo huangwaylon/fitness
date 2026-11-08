@@ -19,7 +19,7 @@ async function openEdit(page: Page, cam = 300) {
 
 test('a new piece from the tray: down near the middle, ✓ puts it there; the other phone has it', async ({ context }) => {
   const phone = await context.newPage();
-  await phone.goto(`${Q}&as=B&critter=none`);
+  await phone.goto(`${Q}&as=B`);
   await phone.waitForFunction(() => (window as unknown as { __layout?: unknown }).__layout);
   const page = await context.newPage();
   await openEdit(page);
@@ -64,10 +64,10 @@ test('pick up a placed thing, drag it two tiles, ✓; red over the river; 🗑 n
 
 test('the guest arranges the outdoors as a member does: its piece on both members’ islands', async ({ context }) => {
   const a = await context.newPage();
-  await a.goto(`${Q}&critter=none`);
+  await a.goto(`${Q}`);
   await a.waitForFunction(() => (window as unknown as { __layout?: unknown }).__layout);
   const b = await context.newPage();
-  await b.goto(`${Q}&as=B&critter=none`);
+  await b.goto(`${Q}&as=B`);
   await b.waitForFunction(() => (window as unknown as { __layout?: unknown }).__layout);
   const page = await context.newPage();
   await page.goto(`editor/${Q}&as=G&view=phone&edit&cam=300`);

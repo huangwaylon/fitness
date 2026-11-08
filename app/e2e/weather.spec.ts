@@ -93,7 +93,7 @@ test.describe('the day itself', () => {
     // (the precip meshes' own draws in the last frame drawn (__world3d.precipCalls): the frame's total moved with a
     // critter, a visitor or a model loading between the frames compared, the drawn smoke's most flaky test)
     const calls = () => page.evaluate(() => (window as unknown as { __world3d: { precipCalls(): number } }).__world3d.precipCalls());
-    for (const [q, n] of [['date=2026-06-10T11:00&weather=rain&critter=none&visitor=none', 2], ['date=2027-01-12T10:00&weather=snow&critter=none&visitor=none', 1]] as const) {
+    for (const [q, n] of [['date=2026-06-10T11:00&weather=rain', 2], ['date=2027-01-12T10:00&weather=snow', 1]] as const) {
       await open(page, q);
       await expect.poll(() => precip(page).then((p) => p?.meshes.length), { timeout: 30_000 }).toBe(n);
       await expect.poll(calls, { timeout: 30_000 }).toBe(n);

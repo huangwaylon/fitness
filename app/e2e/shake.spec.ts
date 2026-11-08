@@ -122,7 +122,7 @@ test('a shake knocks out a piece of wood; picked up, it is in my pocket’s し�
   await wood.click();
   await expect(wood).toHaveCount(0);
   await expect(page.locator('.detail')).toHaveCount(0);
-  await page.goto('shop?demo&date=2026-11-04T12:00&critter=none&visitor=none');
+  await page.goto('shop?demo&date=2026-11-04T12:00');
   const tile = page.locator(`[data-shop-sec="material"] + ul [data-shop-catch="goods:${what}"]`);
   await expect(tile).toHaveAttribute('data-n', '1');
   const shells = () => page.locator('[data-shop]').getAttribute('data-shells').then(Number);

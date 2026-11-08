@@ -4,7 +4,7 @@
 // after a turn and back, and with the edit tray open.
 import { expect, test, type Page } from './fixtures.ts';
 
-const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none';
+const Q = '?demo&date=2026-11-04T12:00';
 type C = { at: [number, number]; band: [number, number] };
 const centre = (page: Page) => page.evaluate(() => (window as unknown as { __tent: { centre(): C } }).__tent.centre());
 

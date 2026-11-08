@@ -31,7 +31,7 @@ async function pick(page: Page, ...which: string[]) {
 }
 
 test('ハロウィン in せってい brings Halloween night now; the chip shows it, a reload keeps it, its tap goes back', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-19T12:00&critter=none'); // (a quiet day: no visitor to walk home before Jack comes)
+  await page.goto('?demo&date=2026-11-19T12:00'); // (a quiet day: no visitor to walk home before Jack comes)
   await islandUp(page);
   await expect(html(page)).toHaveAttribute('data-tod', 'day');
   await expect(chip(page)).toHaveCount(0);
@@ -58,7 +58,7 @@ test('ハロウィン in せってい brings Halloween night now; the chip shows
 });
 
 test('a season, the weather and the time of day; 自動に戻す is the real day again', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-04T12:00&critter=none');
+  await page.goto('?demo&date=2026-11-04T12:00');
   await islandUp(page);
   await expect(html(page)).toHaveAttribute('data-season', 'autumn');
   await pick(page, 'season:winter', 'weather:snow', 'tod:dusk');
@@ -83,7 +83,7 @@ test('a season, the weather and the time of day; 自動に戻す is the real day
 
 test("a look an older build kept on the phone is ignored", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('island.preview', JSON.stringify({ day: '2026-11-04', event: 'halloween', season: null, weather: null, tod: null })));
-  await page.goto('?demo&date=2026-11-04T12:00&critter=none');
+  await page.goto('?demo&date=2026-11-04T12:00');
   await islandUp(page);
   await expect(chip(page)).toHaveCount(0);
   await expect(page.locator('[data-halloween]')).toHaveCount(0);
@@ -91,7 +91,7 @@ test("a look an older build kept on the phone is ignored", async ({ page }) => {
 });
 
 test('天気: 自動 (Tokyo\'s, its line and credit), ゲーム, or a forced sky; one heading, and 自動に戻す sets the weather back too', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-04T12:00&critter=none');
+  await page.goto('?demo&date=2026-11-04T12:00');
   await islandUp(page);
   await fromMenu(page, 'settings');
   await unfold(page);

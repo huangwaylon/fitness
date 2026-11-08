@@ -7,7 +7,7 @@ import { hudBells } from './hud.ts';
 
 test('100 days to go: Reese and Cyrus on the centre stage under their heart float, counting down', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('?demo&date=2027-06-30T12:00&critter=none');
+  await page.goto('?demo&date=2027-06-30T12:00');
   await islandUp(page);
   const bells = await hudBells(page).getAttribute('aria-label');
   const pair = page.locator('[data-visitor="reese"]');
@@ -26,12 +26,12 @@ test('100 days to go: Reese and Cyrus on the centre stage under their heart floa
 
 test('no countdown the day before; the arch on a June Sunday, clear of every control', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 568 });
-  await page.goto('?demo&date=2027-06-29T12:00&critter=none');
+  await page.goto('?demo&date=2027-06-29T12:00');
   await islandUp(page);
   await page.waitForTimeout(600);
   await expect(page.locator('[data-visitor="reese"]')).toHaveCount(0);
   await expect(page.locator('[data-arch]')).toHaveCount(0);
-  await page.goto('?demo&date=2027-06-27T12:00&critter=none');
+  await page.goto('?demo&date=2027-06-27T12:00');
   await camTo(page, await stageCam(page), false);
   await expect(page.locator('[data-arch] .official')).toBeVisible();
   expect(await offFrom(page, '[data-arch]', ...(await geo(page)).ARCH)).toBeLessThan(2);
@@ -41,7 +41,7 @@ test('no countdown the day before; the arch on a June Sunday, clear of every con
 test('the wedding day: confetti and hearts on the villagers, Reese’s congratulations, fireworks at night', async ({ page }) => {
   // (watched from the start: on a slow GPU the confetti may be over by the time the island's up)
   await watchFor(page, ['.fxa.confetti', '.fxa.hearts']);
-  await page.goto('?demo&date=2027-10-08T20:00&critter=none');
+  await page.goto('?demo&date=2027-10-08T20:00');
   await islandUp(page);
   await is3d(page);
   await expect.poll(() => sawIt(page, '.fxa.confetti'), { timeout: 4000 }).toBe(true);

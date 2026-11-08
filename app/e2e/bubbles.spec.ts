@@ -47,7 +47,7 @@ for (const [v, at] of [['gulliver', '12:00'], ['kk-slider', '21:00'], ['wisp', '
   test(`${v}: the balloon by their head, not floated above the campsite`, async ({ page }) => {
     // (K.K. on his stool, no visitor: in view from まえ)
     const kk = v === 'kk-slider';
-    await page.goto(`?demo&date=2026-11-04T${at}&visitor=${kk ? 'none' : v}&critter=none`);
+    await page.goto(`?demo&date=2026-11-04T${at}&visitor=${kk ? 'none' : v}`);
     const art = kk ? '[data-kk] .art' : `[data-visitor="${v}"] .art`;
     // Gulliver washes up on the front beach and Daisy Mae wanders the front lawn (まえ); the rest take centre stage
     if (v !== 'gulliver' && v !== 'daisy-mae' && !kk) await camTo(page, 642, false);
@@ -59,7 +59,7 @@ for (const [v, at] of [['gulliver', '12:00'], ['kk-slider', '21:00'], ['wisp', '
   });
 
 test('the balloon follows a speaker who moves while talking, and closes if they go', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-04T12:00&visitor=gulliver&critter=none');
+  await page.goto('?demo&date=2026-11-04T12:00&visitor=gulliver');
   const art = '[data-visitor="gulliver"] .art';
   await expect(page.locator(art)).toBeVisible();
   await wakeGulliver(page, art);
@@ -80,7 +80,7 @@ test('the balloon follows a speaker who moves while talking, and closes if they 
 // visibility: hidden), but its page's text is visibility: visible of its own, so the text stayed alone. Now it's carried
 // with its speaker each of the camera's frames, whole.
 test('mid-pinch and mid-scroll the balloon stays whole (its box, not only its text) and by its speaker; let go, it stands by them again', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-04T12:00&visitor=reese&critter=none');
+  await page.goto('?demo&date=2026-11-04T12:00&visitor=reese');
   await camTo(page, 642, false);
   const art = '[data-visitor="reese"] .art', box = '[data-fx="talk"]';
   await expect(page.locator(art)).toBeVisible();

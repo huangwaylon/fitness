@@ -30,7 +30,7 @@ const feet = (page: Page) =>
 async function open(page: Page, at = '2026-11-04T12:00', said?: string[]) {
   // my own words kept from before (island.says, newest first)
   if (said) await page.addInitScript((s) => localStorage.setItem('island.says', s), JSON.stringify(said));
-  await page.goto(`?demo&date=${at}&critter=none`);
+  await page.goto(`?demo&date=${at}`);
   await islandUp(page, { timeout: 15_000 }); // (its first paint: now and then over 5 s under CI's load)
   await expect(mine(page)).toBeEnabled();
   await quiet(page); // the opening beats are over

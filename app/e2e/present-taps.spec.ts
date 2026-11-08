@@ -15,7 +15,7 @@ import { tileAt } from '../src/lib/layout/grid.ts';
 test.use({ viewport: { width: 393, height: 852 }, hasTouch: true, isMobile: true });
 
 const DATE = '2026-11-05';
-const Q = `?demo&date=${DATE}T12:00&critter=none&visitor=none`;
+const Q = `?demo&date=${DATE}T12:00`;
 /** The demo's clock: an hour before the page's (the seeded day's changes), and the Tokyo day's number. */
 const T = Date.parse(`${DATE}T11:00:00+09:00`);
 const DAY = Math.floor((T + 9 * 3600_000) / 86_400_000);

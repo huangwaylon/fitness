@@ -12,7 +12,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, type Page } from './fixtures.ts';
 import type { MapState } from '../src/lib/components/travel/map/types.ts';
-import { BASE, islandQuery } from './island.ts';
+import { BASE } from './island.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 
 const FIX = join(import.meta.dirname, 'fixtures', 'travel');
@@ -51,7 +51,7 @@ export async function openTrip(page: Page, trip = 'nz', tab: TripTab = 'map') {
 }
 /** The demo on `date` (Nov 4 by default: before NZ, its days open, its map on day 1), the list; `q` more of the query (`as=B`). */
 export async function gotoTrips(page: Page, date = '2026-11-04T12:00', q = '') {
-  await page.goto(`${BASE}/${islandQuery(`demo&date=${date}${q ? `&${q}` : ''}`)}`);
+  await page.goto(`${BASE}/?demo&date=${date}${q ? `&${q}` : ''}`);
   await openTrips(page);
 }
 /** The demo (Nov 4: before NZ), then `trip`'s page `tab`; `q` more of the query. */

@@ -17,7 +17,7 @@ const atRest = (...ps: Page[]) =>
 const DATE = '2026-11-04T12:00';
 
 async function open(page: Page, q = '') {
-  await page.goto(`?demo&date=${DATE}&critter=none${q}`);
+  await page.goto(`?demo&date=${DATE}${q}`);
   await islandUp(page);
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await quiet(page); // the opening beats are over
@@ -169,7 +169,7 @@ test('two players: asleep at night on both tabs; a tap wakes my villager on both
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const a = await ctx.newPage(), b = await ctx.newPage();
   for (const [p, as] of [[a, ''], [b, '&as=B']] as const) {
-    await p.goto(`?demo&date=2026-11-04T23:00&critter=none${as}`);
+    await p.goto(`?demo&date=2026-11-04T23:00${as}`);
     await islandUp(p);
     await p.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   }
@@ -192,7 +192,7 @@ test('two players: Gulliver woken on one tab is up on the other too, and for a t
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const a = await ctx.newPage(), b = await ctx.newPage();
   for (const [p, as] of [[a, ''], [b, '&as=B']] as const) {
-    await p.goto(`?demo&date=2026-11-04T12:00&visitor=gulliver&critter=none${as}`);
+    await p.goto(`?demo&date=2026-11-04T12:00&visitor=gulliver${as}`);
     await islandUp(p);
   }
   const g = (p: Page) => p.locator('[data-visitor="gulliver"]');
@@ -205,7 +205,7 @@ test('two players: Gulliver woken on one tab is up on the other too, and for a t
   await expect(g(a)).not.toHaveAttribute('data-asleep', /./);
   await expect(g(b)).not.toHaveAttribute('data-asleep', /./, { timeout: 2000 });
   const c = await ctx.newPage();
-  await c.goto('?demo&date=2026-11-04T12:00&visitor=gulliver&critter=none&as=B');
+  await c.goto('?demo&date=2026-11-04T12:00&visitor=gulliver&as=B');
   // (its page loading: the expect's own budget, 10 s on CI, as a first wait after goto; a third tab under load took over 5 s)
   await islandUp(c);
   await expect(g(c)).toBeAttached();
@@ -270,7 +270,7 @@ test('two players: a shell picked up on one tab is gone on the other, and from a
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const a = await ctx.newPage(), b = await ctx.newPage();
   for (const [p, as] of [[a, ''], [b, '&as=B']] as const) {
-    await p.goto(`?demo&date=${DATE}&critter=none${as}`);
+    await p.goto(`?demo&date=${DATE}${as}`);
     await islandUp(p);
   }
   const shells = (p: Page) => p.locator('[data-find="shell"]');
@@ -295,7 +295,7 @@ test('two players: a shell picked up on one tab is gone on the other, and from a
   await expect(b.locator(`${fl} [data-watered]`)).toHaveCount(1);
   // B's phone again, later: the day as it is
   const c = await ctx.newPage();
-  await c.goto(`?demo&date=${DATE}&critter=none&as=B`);
+  await c.goto(`?demo&date=${DATE}&as=B`);
   await islandUp(c);
   await expect(shells(c)).toHaveCount(2);
   await ctx.close();

@@ -6,7 +6,7 @@ import { expect, test, type Page } from './fixtures.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const DATE = '2026-11-04T12:00';
-const Q = `?demo&date=${DATE}&critter=none&visitor=none`;
+const Q = `?demo&date=${DATE}`;
 type Seed = [type: string, data: object, who: 'A' | 'B' | 'G'];
 /** The demo's events (as a catch, a sell or a buy writes them). */
 const seed = (page: Page, events: Seed[]) =>
