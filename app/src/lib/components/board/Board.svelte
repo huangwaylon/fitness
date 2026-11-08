@@ -20,7 +20,7 @@
   import type { Season } from '#lib/ui-state/season.ts';
 
   interface Props {
-    /** Live, not covered by a sheet, page visible, not decorating. */
+    /** Live, not covered by a sheet, page visible. */
     enabled: () => boolean;
     night: boolean;
     season: Season;

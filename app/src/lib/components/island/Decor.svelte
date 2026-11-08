@@ -1,8 +1,8 @@
 <script lang="ts">
   // The island's decorations (docs/design.md "Decorating"): the layout's objects of the decorations' kinds, each an
   // upright world node at its feet (its tap area over the 3D island's model, world3d/objects.ts), in the one depth
-  // order; the walk has them already (layout/nav.ts). Outside the もようがえ (IslandEdit) a tap jiggles it where it
-  // stands (my villager turns to it, no walk), but for a seat or a piece of the gym one uses (`sit`: IslandScene
+  // order; the walk has them already (layout/nav.ts). They're arranged in /editor (docs/island-layout.md "The editor").
+  // A tap jiggles it where it stands (my villager turns to it, no walk), but for a seat or a piece of the gym one uses (`sit`: IslandScene
   // sitOn, island/sitting.ts): my villager walks up to it and on. The partner's change, just made, puffs where it lands.
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { art } from '#lib/art.ts';
@@ -20,16 +20,13 @@
   import { castMe } from '#lib/ui-state/cast.ts';
 
   interface Props {
-    /** The もようがえ is on (IslandEdit's): a tap does nothing here. */
-    editing?: boolean;
     /** A tap on a seat or a gym piece (its id): true when my villager went to it (IslandScene sitOn). */
     sit?: (id: string) => boolean;
   }
-  let { editing = false, sit }: Props = $props();
+  let { sit }: Props = $props();
   const w = useWorld();
 
-  // The layout's objects of the decorations' kinds (the old もようがえ's moved in as `m-<id>`, the phone's
-  // もようがえ's new ones, the gym's).
+  // The layout's objects of the decorations' kinds (the old もようがえ's moved in as `m-<id>`, the editor's, the gym's).
   const KINDS: ReadonlySet<string> = new Set(DECOR_KINDS);
   const items = $derived.by((): readonly { id: string; item: string; x: number; z: number; f: Facing }[] => {
     const l = site.layout;
@@ -54,7 +51,6 @@
     el.animate([{ scale: '1 1' }, { scale: '1.08 .9', offset: 0.25 }, { scale: '.96 1.06', offset: 0.55 }, { scale: '1 1' }], { duration: 380, easing: 'ease-out', id: 'jiggle' });
   }
   function tap(e: MouseEvent, id: string, x: number) {
-    if (editing) return;
     // a seat or a gym piece: walked up to and on (all taken: its boop)
     if (sit?.(id)) return;
     jiggle(e.currentTarget as Element);
@@ -82,7 +78,7 @@
 {#each items as p (p.id)}
   {@const l = look(p.item, p.f)}
   <div class="spr" data-decor-node={p.id} data-scenery-id={p.id} {@attach w.at({ x: p.x, z: p.z, h: l.h, inv: true })}>
-    <button type="button" class="deco" class:editing data-nopan={editing || undefined} data-decor={p.id} data-item={p.item} data-x={p.x} data-z={p.z} data-f={p.f} data-sfx="self" aria-label={t(`decor.item.${p.item}`)}
+    <button type="button" class="deco" data-decor={p.id} data-item={p.item} data-x={p.x} data-z={p.z} data-f={p.f} data-sfx="self" aria-label={t(`decor.item.${p.item}`)}
       style={l.style} style:height="calc({l.h} * var(--u))" style:width="calc({l.wd} * var(--u))"
       onclick={(e) => tap(e, p.id, p.x)}>
       <OfficialArt key={l.key} size="calc({l.h} * var(--u))" />
@@ -107,8 +103,6 @@
     width: max(100%, calc(45px * var(--inv, 1))); height: max(calc(100% + 4 * var(--u)), calc(45px * var(--inv, 1)));
   }
   .deco:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  /* in the もようがえ the finger is IslandEdit's */
-  .deco.editing { touch-action: none; }
   .puff {
     position: absolute; left: 0; top: 0; width: calc(50 * var(--u)); height: calc(50 * var(--u)); translate: -50% -50%; border-radius: 50%;
     background: radial-gradient(closest-side, rgba(255, 255, 255, .9), rgba(255, 255, 255, .5) 55%, transparent); animation: puff .6s ease-out both;

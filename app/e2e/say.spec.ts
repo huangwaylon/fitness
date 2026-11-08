@@ -8,7 +8,7 @@
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp, lawnTap, quiet } from './island.ts';
 import { KEYBOARD_PX, aboveKeyboard, fakeKeyboard, keyboard } from './keyboard.ts';
-import { fromMenu, hudBells, hudMenu } from './hud.ts';
+import { fromMenu, hudBells } from './hud.ts';
 import { sayOwn } from './say.ts';
 import { balloonState, expectWhole, fingers, liftFingers, spreading } from './balloon.ts';
 
@@ -237,7 +237,7 @@ test('at night: the picker and the balloon in their cream, over the night tint',
   await shot(page, 'balloon-night');
 });
 
-test('the say button hides under the island panel and in もようがえ (its picker with it)', async ({ page }) => {
+test('the say button hides under the island panel (its picker with it)', async ({ page }) => {
   await open(page);
   await sayBtn(page).click();
   await expect(picker(page)).toBeVisible();
@@ -247,15 +247,10 @@ test('the say button hides under the island panel and in もようがえ (its pi
   await fromMenu(page, 'bells');
   await expect(picker(page)).toHaveCount(0);
   await expect(sayBtn(page)).toHaveCount(0);
-  // もようがえ (せってい, the HUD menu's), once the panel is gone and the menu folded
+  // back once the panel is gone
   await page.keyboard.press('Escape');
   await expect(page.locator('dialog[open]')).toHaveCount(0);
-  await expect(hudMenu(page)).toHaveAttribute('aria-expanded', 'false');
-  await fromMenu(page, 'settings');
-  await page.locator('[data-decor-start]').click();
-  // (the island's もようがえ: IslandEdit)
-  await expect(page.locator('[data-island-edit]')).toBeVisible();
-  await expect(sayBtn(page)).toHaveCount(0);
+  await expect(sayBtn(page)).toBeVisible();
 });
 
 test('mid-pinch my villager’s balloon stays whole (its box, not only its text) and over it', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ page }) => {

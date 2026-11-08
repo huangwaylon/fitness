@@ -2,7 +2,8 @@
 
 The layout: the schema, the ops, the default, the nav, the checks and the store (`app/src/lib/layout/`,
 `store/layout.svelte.ts`); the 3D ground and objects from it (`world3d/terrain.ts`, `world3d/objects.ts`); the desktop
-editor; the homes, their looks and their rooms; the phone's もようがえ. Phone terraforming is the editor's alone.
+editor (its phone view's もようがえ too); the homes, their looks and their rooms. The game itself has no island
+editing (removed 2026-11-08): the island is arranged in /editor only.
 
 ## The grid
 
@@ -44,7 +45,7 @@ editor; the homes, their looks and their rooms; the phone's もようがえ. Pho
   `drawCoast`). A click is one action (edits.ts `resize`; ⌘Z): its chunk ops and any moves one burst (the store's
   sink: `sendMany`), so the phones get it live and their camera's far end follows (Island3D fitEnds: the land's far
   edge). Blocked, the list instead (★ fixed; a click selects the piece and centres it) and 「うごかす」 (moves them in,
-  the resize with them, one action) or やめる. The phone's もようがえ has no terraforming, so no resize.
+  the resize with them, one action) or やめる. The phone view's もようがえ has no terraforming, so no resize.
 - **Costs:** the 20 sea rows add ~5 ms to a field rebuild (fieldsOf 70 → 75 ms in Node), 1.6 MB to the fields and no
   GPU texture (an all-sea band has no bake); a resize step ~3 ms with its checks.
 
@@ -63,8 +64,8 @@ editor; the homes, their looks and their rooms; the phone's もようがえ. Pho
   its kind the season's), rocks (`rock` the shovel's, `flat-rock`, `garden-rock`), lights, NH's outdoor furniture,
   the seasonal spots (`beach-chair`, `sandcastle`, `snowboy`), NH's bulletin board (`board`: 2 × 1, one on the
   island, used from the tile in front of it, which must stay clear and reachable like a home's door), K.K. Slider's
-  stool (`kk-stool`, id `kk-slider`: 1 × 1, one on the island, never deleted, moved and turned in the editor and
-  もようがえ, he faces its way; its front tile clear and reachable, as the board's, `front-kk-slider`; the default puts it
+  stool (`kk-stool`, id `kk-slider`: 1 × 1, one on the island, never deleted, moved and turned in the editor, he faces
+  its way; its front tile clear and reachable, as the board's, `front-kk-slider`; the default puts it
   on まえ's lawn west of the main path at tile 6 × 22, behind the visitors' stage, its tile and front free on the
   user's island too (the record's, its museum and shop where the user put them), so an island arranged before him has
   him there with no op; docs/design.md "K.K. on his stool"), the
@@ -117,7 +118,7 @@ id's latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (i
 - The room relays a layout op live but never keeps it in the day's ring (an afternoon in the editor would push the
   shared world out of it); a phone opening later reads it from the record. A `drag` with `sc: 'o'` is an outdoor
   object being moved (x, z its middle in world units): presence, as the tent's.
-- **A burst** (2026-11-05: the editor's save, a もようがえ, a clash settled): my ops are merged and rebuilt once and go
+- **A burst** (2026-11-05: the editor's save, a clash settled): my ops are merged and rebuilt once and go
   to the record as one burst (`week.sendMany`: one queue write, one recompute of the week); the partner's, one socket
   message each, are merged as they come and rebuilt once, the tick after. 40 ops (desktop Chrome, the demo's phones on
   the in-process relay, `e2e/live-sync.spec.ts` burst): the sender 14–17 ms → 6 ms, the partner's longest frame
@@ -166,7 +167,7 @@ id's latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (i
   beach, his mark's tile when one is put down and usable, else a free sand tile two in from the sea in the beach's
   middle, by the date. The day's weeds and fossils keep off the stage; the wedding's arch and a birthday's cake stand
   by it (layoutWorld.ts ARCH, CAKE), the idle walks keep off it (nav `centreStage`), a balloon's present lands clear of
-  the visitor drawn there. Pure: every phone with the layout agrees, and a もようがえ moves them.
+  the visitor drawn there. Pure: every phone with the layout agrees, and the editor moves them.
 - **The visitors' spots** (catalog.ts group `visitor`, kinds `plaza` おきゃくさんの ばしょ and `beach-spot` ジョニーの
   ばしょ, `one`: one each on the island, removable): a mark the members put down, never drawn in play, standing on
   nothing (no ground taken, no overlap, no block, the weeds' open grass unchanged). **Two marks cover everyone:**
@@ -210,7 +211,7 @@ layout.current: Layout          // reactive: reading it in an $effect or $derive
 layout.pos(id): [x, z] | null   // where an object stands (u); null when it's gone
 layout.obj(id); layout.ofKind('flower'); layout.home('B')
 layout.on(({ diff, who, live }) => …)   // every change as it lands, with what changed
-layout.apply(ops)               // changes of mine (the editor's save, the phone's もようがえ): merged, kept, sent
+layout.apply(ops)               // changes of mine (the editor's save, its phone view's もようがえ): merged, kept, sent
 ```
 
 IslandScene attaches it (the relay, the record's `state.layout` rows, the sink to the record), so every phone keeps
@@ -440,7 +441,7 @@ room refuse anyone else's; an outdoor op (a member moving it) never changes it (
 It turns about its door's tile (model.ts originOf), the door, the footprint, the walk-up spot (`door-home-*`), the
 model's yaw (homePlaces) and the way out of its room (TentRoom's outOfHome) with it. A turn that would wall the door
 in or put the footprint over something is refused: in the editor R / the wheel (the owner's own home only; a toast
-says why not), on the phone's もようがえ the ↻ button (shown only to the owner), and いえを かえる's ↻ まわす (the guest's
+says why not), in the editor's phone view the ↻ button (shown only to the owner), and いえを かえる's ↻ まわす (the guest's
 way to turn its own house).
 
 ## The day's spots, the structures, the old decorations
@@ -463,7 +464,8 @@ way to turn its own house).
 
 ## Phone editing (phase 5)
 
-`components/layoutEdit/IslandEdit.svelte`: the island's もようがえ on the phone, the tent's way (TentEdit's tray, bar
+`components/layoutEdit/IslandEdit.svelte`: the island's もようがえ in the editor's phone view (the game's own, from
+設定, was removed 2026-11-08: the island is arranged in /editor only; the tent's もようがえ stays the room's), the tent's way (TentEdit's tray, bar
 and buttons). The tray's tabs (き, かんぼく, はな, いわ, あかり, かぐ, ジム (the gym: design.md "Decorating"), はし・さか, たてもの, おきゃくさん (the
 visitors' spots, above: their marks drawn over the ground only in the mode, a soft tile and its sign, red when nobody
 can stand there now with the reason in the bar; the usual spot a dashed ring while no plaza is down; the tray's item
@@ -478,11 +480,13 @@ its model hidden), drags it a tile at a time; a tap on the ground moves it there
 
 It runs over any stage: `{ host, toScreen(x, z, lift), toGround(sx, sy), size(), hide(id) }`. The editor's phone
 view gives it one (`/editor/?view=phone&edit`: the 3D island's camera and bend, `&cam=<z>` its spot; `&preview=0` a
-flat plan, the e2e's; `?view=orbit` the 3D preview, `&eye=x,y,z&at=x,y,z` its camera). On the island, IslandScene
-mounts it while せってい → もようがえ is open, the stage from the World (`host` the scene element, `toScreen` = `world.at(x, z, lift)` in its px, `toGround` =
-`world.worldAt(sx, sy)`, `hide(id)` = `things.over(id, { hidden: true })` / `over(id, null)`). The e2e:
+flat plan, the e2e's; `?view=orbit` the 3D preview, `&eye=x,y,z&at=x,y,z` its camera). Its edits reach every phone's
+island live (the layout's ops over the relay, as any). The e2e:
 `e2e/island-edit.spec.ts` (a new piece placed and on the other phone; a placed one picked up, dragged and put down;
-red over the river; no 🗑 for a one-off; the guest's piece on both members' islands), `e2e/visitor-spot.spec.ts` (the plaza put down, moved
+red over the river; no 🗑 for a one-off; the guest's piece on both members' islands), `e2e/decor.spec.ts` (a piece
+put down there is on both players' islands, live, after a reload and for a tab opening later; moved and put away),
+`e2e/island3d-layout.spec.ts` (drawn on the 3D island), `e2e/gym.spec.ts` (a treadmill put down there, used on the
+island), `e2e/visitor-spot.spec.ts` (the plaza put down, moved
 and taken away, Kicks on it on both phones; a bench on it: red, the warning, the usual ring).
 
 ## How the 3D island reads it

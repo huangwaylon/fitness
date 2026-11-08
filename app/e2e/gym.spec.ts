@@ -1,10 +1,10 @@
-// The gym (docs/design.md "Decorating: the gym"): もようがえ's ジム tab lists NH's fitness furniture; a treadmill put
-// down stays (a reload) and is on the other phone at once; a tap on it out of the mode walks my villager up to it and
+// The gym (docs/design.md "Decorating: the gym"): the editor's もようがえ's ジム tab lists NH's fitness furniture; a
+// treadmill put down there stays (a reload) and is on both phones at once; a tap on it walks my villager up to it and
 // it runs on it (the 3D villager's 'run'), and the other phone sees it running too (the walk is all the relay carries:
 // standing still on its spot is on it, island/sitting.ts).
 import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu } from './hud.ts';
-import { geo, islandUp, openNear, tapOn } from './island.ts';
+import { geo, islandUp, openEditor, openNear, tapOn } from './island.ts';
 import { HELD_SCALE } from '../src/lib/components/world3d/benchBar.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -26,13 +26,21 @@ async function open(page: Page, q = '') {
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await expect.poll(() => v3(page, 'mine'), { timeout: 30_000 }).not.toBeNull();
 }
-async function editLayout(page: Page) {
+/** A piece of `kind` put down from the editor's tray (its ジム tab) near tile 6 × 12, the editor closed: its id. */
+async function putDown(page: Page, kind: string): Promise<string> {
+  const ed = await openEditor(page.context(), `demo&date=${DATE}`);
+  await ed.locator('[data-tab="gym"]').click();
+  await ed.locator(`[data-island-item="${kind}"]`).click();
+  await expect.poll(() => ie(ed, (e) => e.sel()?.k ?? null)).toBe(kind);
+  await fineFrom(ed, 6, 12);
+  await ed.locator('button[data-act="place"]').dispatchEvent('click');
+  await expect.poll(() => ie(ed, (e) => e.sel())).toBeNull();
+  const id = (await ids(ed, kind)).at(-1)!;
+  await ed.close();
+  // the island's camera a little up the lawn, by it
   await page.bringToFront();
   await go(page, 300);
-  await fromMenu(page, 'settings');
-  await page.locator('[data-decor-start]').click();
-  await expect(page.locator('[data-island-edit]')).toBeVisible();
-  await page.waitForFunction(() => (window as unknown as { __islandEdit?: unknown }).__islandEdit);
+  return id;
 }
 /** The first tile from (c, r) on along its row where the held piece may stand (a tap on the ground moves it there). */
 async function fineFrom(page: Page, c: number, r: number): Promise<[number, number]> {
@@ -52,25 +60,26 @@ test('the ジム tab lists the gym; a treadmill put down stays and is on the oth
   const a = await ctx.newPage(), b = await ctx.newPage();
   await open(a);
   await open(b, '&as=B');
-  await editLayout(a);
-  await a.locator('[data-tab="gym"]').click();
-  await expect(a.locator('[data-tab="gym"]')).toHaveText('ジム');
-  for (const k of GYM) await expect(a.locator(`[data-island-item="${k}"]`), k).toBeVisible();
-  await expect(a.locator('[data-island-item="treadmill"]')).toHaveAttribute('aria-label', 'ランニングマシン');
-  await a.locator('[data-island-item="treadmill"]').click();
-  await expect.poll(() => ie(a, (e) => e.sel()?.k ?? null)).toBe('treadmill');
-  const [x0, z0] = await fineFrom(a, 6, 12);
-  await a.locator('button[data-act="place"]').dispatchEvent('click');
-  await expect.poll(() => ie(a, (e) => e.sel())).toBeNull();
-  const id = (await ids(a, 'treadmill')).at(-1)!;
-  expect(await where(a, id)).toEqual([x0, z0]);
-  await a.locator('[data-island-done]').click();
-  await expect(a.locator('[data-island-edit]')).toHaveCount(0);
-  // B has it at once, where A put it, drawn as NH's model
+  const ed = await openEditor(ctx, `demo&date=${DATE}`);
+  await ed.locator('[data-tab="gym"]').click();
+  await expect(ed.locator('[data-tab="gym"]')).toHaveText('ジム');
+  for (const k of GYM) await expect(ed.locator(`[data-island-item="${k}"]`), k).toBeVisible();
+  await expect(ed.locator('[data-island-item="treadmill"]')).toHaveAttribute('aria-label', 'ランニングマシン');
+  await ed.locator('[data-island-item="treadmill"]').click();
+  await expect.poll(() => ie(ed, (e) => e.sel()?.k ?? null)).toBe('treadmill');
+  const [x0, z0] = await fineFrom(ed, 6, 12);
+  await ed.locator('button[data-act="place"]').dispatchEvent('click');
+  await expect.poll(() => ie(ed, (e) => e.sel())).toBeNull();
+  const id = (await ids(ed, 'treadmill')).at(-1)!;
+  await ed.close();
+  // A's island has it at once, where it was put
+  await expect.poll(() => where(a, id), { timeout: 10_000 }).toEqual([x0, z0]);
+  // B's too, drawn as NH's model
   await expect.poll(() => where(b, id), { timeout: 10_000 }).toEqual([x0, z0]);
   await expect.poll(() => b.evaluate((id) => (window as unknown as { __world3d: { where(id: string): { model: string } | null } }).__world3d.where(id)?.model ?? null, id)).toBe('decor/treadmill');
   // A taps it: my villager walks up to it and runs on it; B sees A's villager (its partner) running there
   await a.bringToFront();
+  await go(a, 300);
   await tapOn(a, a.locator(`[data-decor="${id}"]`));
   await expect.poll(() => v3(a, 'mine'), { timeout: 15_000 }).toBe('run');
   await b.bringToFront();
@@ -152,16 +161,7 @@ for (const who of ['a human player', 'a villager'] as const) test(`the weight be
     await a.keyboard.press('Escape');
     await expect.poll(() => a.evaluate(() => (window as unknown as { __villagers3: { model(s: string): string | null } }).__villagers3.model('mine')), { timeout: 30_000 }).toBe('v:raymond');
   }
-  await editLayout(a);
-  await a.locator('[data-tab="gym"]').click();
-  await a.locator('[data-island-item="weight-bench"]').click();
-  await expect.poll(() => ie(a, (e) => e.sel()?.k ?? null)).toBe('weight-bench');
-  await fineFrom(a, 6, 12);
-  await a.locator('button[data-act="place"]').dispatchEvent('click');
-  await expect.poll(() => ie(a, (e) => e.sel())).toBeNull();
-  const id = (await ids(a, 'weight-bench')).at(-1)!;
-  await a.locator('[data-island-done]').click();
-  await expect(a.locator('[data-island-edit]')).toHaveCount(0);
+  const id = await putDown(a, 'weight-bench');
   await expect.poll(() => a.evaluate((id) => (window as unknown as { __world3d: { where(id: string): { model: string } | null } }).__world3d.where(id)?.model ?? null, id)).toBe('decor/weight-bench');
   // at rest the bench is as it was: its small bar on the rack, no barbell
   expect(await racked(a, id)).toBe(true);

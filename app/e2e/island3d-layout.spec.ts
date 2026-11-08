@@ -1,9 +1,9 @@
 // The 3D island on its layout (island/site.svelte.ts site.on): the ground is the
 // layout's (terrain.ts buildGround), its objects placeObjects' (one model an id: the rock is drawn once), the homes and
-// NH's bridges and stairs stood on it (engine.ts placeGroup), the camera's far end at ウェイ's door; the もようがえ is
-// the layout's own (layoutEdit/IslandEdit.svelte over this camera), a bench put down is drawn where it went.
+// NH's bridges and stairs stood on it (engine.ts placeGroup), the camera's far end at ウェイ's door; a bench put down in
+// the editor (the island's one もようがえ) is drawn where it went.
 import { expect, test, type Page } from './fixtures.ts';
-import { fromMenu } from './hud.ts';
+import { openEditor } from './island.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -36,35 +36,21 @@ test('on its layout: the layout\'s ground, the homes and the structures placed, 
   expect(rock).not.toBeNull();
 });
 
-test('the もようがえ on the layout is IslandEdit over the 3D island: a bench from the tray is put down and drawn there', async ({ page }) => {
+test('a bench put down in the editor is drawn on the 3D island at once, at its id', async ({ page }) => {
   await open(page);
-  await fromMenu(page, 'settings');
-  await page.locator('[data-decor-start]').click();
-  await expect(page.locator('[data-island-edit]')).toBeVisible();
-  const before = await page.evaluate(() => (window as unknown as { __layout: { count(k: string): number } }).__layout.count('park-bench'));
-  await page.locator('[data-tab="furniture"]').click();
-  await page.locator('[data-island-item="park-bench"]').click();
-  await page.locator('[data-act="place"]').click();
-  await expect.poll(() => page.evaluate(() => (window as unknown as { __layout: { count(k: string): number } }).__layout.count('park-bench'))).toBe(before + 1);
+  const count = () => page.evaluate(() => (window as unknown as { __layout: { count(k: string): number } }).__layout.count('park-bench'));
+  const before = await count();
+  const ed = await openEditor(page.context(), 'demo&date=2026-11-04T12:00');
+  await ed.locator('[data-tab="furniture"]').click();
+  await ed.locator('[data-island-item="park-bench"]').click();
+  await ed.locator('[data-act="place"]').click();
+  await ed.close();
+  await page.bringToFront();
+  await expect.poll(count).toBe(before + 1);
   // its model on the 3D island, at its id
   const id = await page.evaluate(() => (window as unknown as { __layout: { ids(k: string): string[] } }).__layout.ids('park-bench'));
   expect(id.length).toBe(before + 1);
   await expect.poll(() => page.evaluate((ids) => ids.filter((i) => (window as unknown as { __world3d: W3 }).__world3d.where(i)?.model).length, id), { timeout: 10_000 }).toBe(id.length);
-  // a placed thing dragged two tiles: it follows the finger, the camera stays put
-  const t = await page.evaluate(() => {
-    const o = (window as unknown as { __layout: { obj(id: string): { x: number; z: number } } }).__layout.obj('tape-deck');
-    return [o.x, o.z] as [number, number];
-  });
-  type IE = { sel(): { x: number } | null; tileScreen(c: number, r: number): [number, number] | null };
-  const scr = (c: number, r: number) => page.evaluate(([c, r]) => (window as unknown as { __islandEdit: IE }).__islandEdit.tileScreen(c, r), [c, r] as const);
-  const from = (await scr(t[0], t[1]))!, to = (await scr(t[0] - 2, t[1]))!;
-  const cam0 = await w3(page, (w) => (w as unknown as { view(): { camZ: number } }).view().camZ);
-  await page.mouse.move(from[0], from[1]);
-  await page.mouse.down();
-  for (let i = 1; i <= 6; i++) await page.mouse.move(from[0] + ((to[0] - from[0]) * i) / 6, from[1] + ((to[1] - from[1]) * i) / 6);
-  await page.mouse.up();
-  await expect.poll(() => page.evaluate(() => (window as unknown as { __islandEdit: IE }).__islandEdit.sel()?.x ?? null)).toBe(t[0] - 2);
-  expect(await w3(page, (w) => (w as unknown as { view(): { camZ: number } }).view().camZ)).toBeCloseTo(cam0, 1);
 });
 
 test('on its layout my villager sits on a bench where the layout has it (its seat by layout/nav.ts seatsOf)', async ({ page }) => {

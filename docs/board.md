@@ -12,7 +12,7 @@ up to it so that we see it clearly in 3D space and allow editing it." Then: "put
 | The posts (contract, merge, sanitising, caps, permissions) | `app/src/lib/contract/board.ts` |
 | The record's rules (a `board` event) | `relay/src/store.ts` (via the contract) |
 | The phone's posts, the badge, the UI (the zoomed view's controls, the write field, the sheet), the face's drawing | `app/src/lib/components/board/` |
-| Its spot: a layout object `board` (`layout/catalog.ts`: furniture, 2 × 1 tiles, `fixed`, `turns`, `front`: the tile before it kept clear to read it), movable in the editor and in もようがえ | `app/src/lib/layout/` |
+| Its spot: a layout object `board` (`layout/catalog.ts`: furniture, 2 × 1 tiles, `fixed`, `turns`, `front`: the tile before it kept clear to read it), movable in the editor | `app/src/lib/layout/` |
 | The camera's focus and the face on the 3D model | `app/src/lib/components/world3d/` (engine.ts `focus` / `unfocus`, things.ts `attach`) |
 
 ## The 3D hooks (the board's "To the 3D lead")

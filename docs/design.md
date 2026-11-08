@@ -79,7 +79,7 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
   "+N" badge on the leaf (a badge reads as a notification to clear). The guest has the ベル row too: ごほうび is
   view-only there, the same balance. It folds back up
   quicker (160ms, the last pill first) on a second tap of the leaf, a tap anywhere else (that tap still does what it
-  would: no swallowed tap), Esc (focus back on the leaf), any sheet opening or もようがえ, and a pick: a pill's tap
+  would: no swallowed tap), Esc (focus back on the leaf), any sheet opening, and a pick: a pill's tap
   is a press squash, the villagers glance up (R18) and its sheet grows out of the pill's icon (Sheet's `pop`, as
   けんこう); once that sheet has closed, the focus goes back to the leaf (`preventScroll`; the pill is inert by then,
   so the dialog's own return would drop it to the page's top). Folded, the pills are `visibility: hidden` and `inert`: no focus, no taps, out of placement.ts' guards (a
@@ -111,14 +111,14 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
   it waits while something covers the scene. The leaf, not the bowl or the dumbbell: it is where the ベル live now,
   and the corner it sits in is where NH's own bells pickup flies (up to the phone's corner).
 - **Centre stage:** the plaza (`world.ts` `CENTRE_STAGE`, ひろば: `layout/spots.ts` `stageOf`, where the members put
-  the visitors' spot in the もようがえ, else a clear patch of lawn behind the villagers' spots, in view as the island
+  the visitors' spot in the editor, else a clear patch of lawn behind the villagers' spots, in view as the island
   opens), where visitors stand.
 - **Villagers:** a tap on mine is a squish; a tap on the partner's is a high-five ([Villager taps](#villager-taps)).
   Neither opens a sheet.
 - **Say button** (`island/SayButton.svelte`): a small round cream button at the scene's bottom right, NH's chat glyph
   (a speech bubble with three dots, soft ink), 36px drawn in a 44px target, 12px in from the side and above the home
   indicator; over しずえ's box while she speaks. It opens the phrase picker above it (a phrase shows over my villager
-  on both phones). Hidden under a sheet, the panel or the harvest, a tree's popup, and in もようがえ. The guest has it
+  on both phones). Hidden under a sheet, the panel or the harvest, and a tree's popup. The guest has it
   too, and the tent and the homes have it ([The tent](#the-tent) "Phrases"). Nothing else lives at the bottom right (the partner's edge face and the catch plates' stack are centred; the stack keeps the button's room on both sides).
 - Controls are real buttons with `aria-label`, ≥ 44px (villagers 64px); focus order = visual order.
 
@@ -1313,7 +1313,7 @@ them unseen, on the steps behind the front line, so the building's tap area took
 function of the layout and the point alone (every phone puts it in the same place): what's dropped or spawned takes a
 spot off it (a tree's present, wood, branch, coconuts, a nest's and a bug's spot, mushrooms, the beach's shells,
 fragments and bottles, a balloon's landing, the day's weeds and dig spots: `openGrass` leaves those tiles out), and
-what lies there already (put before the rule, or a building placed or moved in the もようがえ over it since) is drawn and
+what lies there already (put before the rule, or a building placed or moved in the editor over it since) is drawn and
 tapped at the nearest free spot `offBuildings` gives it: rings 6u apart from the camera's side round, walkable, at its
 level, off the trees' and bushes' tap areas where it can be; its put (`at`) stays as it was, and a layout change moves it
 at once. A goal tree's fruit row moves as one. We move the thing rather than test what the camera sees at a tap: a find
@@ -1421,14 +1421,14 @@ NH's way, with its own key (pairing: [runbook §4b](ops/runbook.md#4b-the-guest)
   buys, 「ちょきんばこは ふたりの もの。」 in place of the shop, no ×; the ledger), the ずかん and
   けんこう's かつどう (whose data: either member; no からだ switch) with its goals read-only (no chip to tap). Never a からだ figure: no からだ switch, no weight or body card, no weight or body fat goal (its snapshot holds
   none: the record leaves them out). せってい: as ours (its すがた and name: the same closet and picker, its own prefs
-  and コーデ; the sound, the language, きせつ, てんき, つうしん and もようがえ), with a line saying it's visiting. ききみみ:
+  and コーデ; the sound, the language, 季節 and 島の天気), with a line saying it's visiting. ききみみ:
   the members' games as their summaries (the together line counts its games and minutes with theirs), as they see its.
 - **What it does:** walks, catches, digs, picks up and shakes like us (the shared world's claims, first wins), its
   finds and counts its own in the shared ずかん (each entry credited to its first finder, the guest's
   name with 「（おきゃくさん）」 once it has one of its own; per-person counts, and a row of who found how many of the page
   once three share it); phrases over its villager, high-fives with either of us, the tent and its own house (walking,
   sitting, arranging), and everything else on the island as we do (2026-11-06, decisions: *The guest plays the island
-  as a member does*): もようがえ and the editor (the outdoors, the decorations), watering the flowers, wishing on stars,
+  as a member does*): the editor (the outdoors, the decorations), watering the flowers, wishing on stars,
   waking a sleeping visitor, the weather, the shop and the museum, K.K., the board (any note taken down, its own
   edited), ききみみ. It earns and spends no ベル (no buy or erase in ごほうび, no harvest), sets none of our goals and
   writes neither the wedding board nor a trip's notes (the record refuses those, so its phone doesn't try).
@@ -1481,8 +1481,8 @@ tent's room, all three).
 
 ### Decorating
 
-`layoutEdit/IslandEdit.svelte`, `island/Decor.svelte`, `island/decor.ts`, `e2e/decor.spec.ts`, docs/island-layout.md
-"Phone editing". Any of us (the guest too) puts NH's outdoor furniture on the island, moves it, turns it and takes it away; both
+`layoutEdit/IslandEdit.svelte` (in /editor), `island/Decor.svelte`, `island/decor.ts`, `e2e/decor.spec.ts`, docs/island-layout.md
+"Phone editing". Any of us (the guest too) puts NH's outdoor furniture on the island in /editor, moves it, turns it and takes it away; both
 phones show the same island, kept for good: the decorations are the layout's objects of their kinds (the old
 decorations' map, `contract/decor.ts`, moved into the layout once as `m-<id>`: layout/migrate.ts).
 
@@ -1492,7 +1492,7 @@ decorations' map, `contract/decor.ts`, moved into the layout once as `m-<id>`: l
 - **The gym** (the tray's ジム tab, `layout/catalog.ts` group `gym`; the user: "I want to build a gym"): NH's fitness
   furniture under its official names, the decorations' pipeline (scripts/models.ts and world3d-assets.ts `DECOR`: the
   icon `decor/<kind>-0`, the model `decor/<kind>`, its first colour), NH's footprints (catalog.ts; they turn), the same
-  checks, ops and members-only もようがえ as every outdoor piece: けんすいスタンド (the pull-up bar, the default island's
+  checks and ops as every outdoor piece: けんすいスタンド (the pull-up bar, the default island's
   own stand among them), プレスベンチ, エクササイズバイク, ランニングマシン, サンドバッグ, バランスボール, バーベル, ケトルベル,
   プロテインシェイカー, ウォーターサーバー, たいじゅうそくていき, クライミングウォール, ロッカー. NH has no dumbbells, medicine ball,
   rowing machine, ab roller, stepper, stretch board or jump rope, and the yoga mats and exercise mats aren't in the model
@@ -1537,11 +1537,12 @@ decorations' map, `contract/decor.ts`, moved into the layout once as `m-<id>`: l
 - **How many:** the layout's objects are capped by the record at 1,500 standing (`contract/layout.ts` LAYOUT_MAX; a removed one's row is kept, never counted;
   the default island's ~100 among them), not by `contract/decor.ts` DECOR_MAX (30: the old もようがえ's decorations' map,
   moved into the layout once; nothing places by it now). A gym of 10–20 pieces fits.
-- **In:** せってい → もようがえ → はじめる (the sheet closes; no new HUD control on the island): IslandEdit over the 3D
-  camera, the tent's way: a tray of every kind, a ghost green or red, a drag a tile at a time, a tap on the ground
-  puts it there, ↻ まわす, ✕, 🗑, ✓ (island-layout.md "Phone editing"). Its おきゃくさん tab: where the visitors stand
-  and where Gulliver washes up (a mark each, seen only in the mode; "Visitors").
-- **Out of the mode** a placed item is a world thing: NH's model on the 3D island, its DOM node the tap area (its 2D
+- **In:** /editor only (the user, 2026-11-08: the game's own もようがえ from 設定 is gone): the desktop editor, or its
+  phone view's IslandEdit (`/editor/?view=phone&edit`), the tent's way: a tray of every kind, a ghost green or red, a
+  drag a tile at a time, a tap on the ground puts it there, ↻ まわす, ✕, 🗑, ✓ (island-layout.md "Phone editing"). Its
+  おきゃくさん tab: where the visitors stand and where Gulliver washes up (a mark each, seen only there; "Visitors").
+  Every phone's island has the change at once (the layout's ops over the relay).
+- **On the island** a placed item is a world thing: NH's model on the 3D island, its DOM node the tap area (its 2D
   art hidden under the model), an obstacle the walk goes round (layout/nav.ts), and a tap jiggles it where it stands
   (my villager turns to it: no walk). The partner's change, just made, puffs where it lands and their villager turns
   to it.
@@ -1932,7 +1933,7 @@ Names of everything catchable live in their own catalog (`i18n/catch.ts`), loade
 `routes/museum`, `e2e/museum.spec.ts`. NH's museum (はくぶつかん) is a building on the layout
 (docs/island-layout.md "The island's buildings"): NH's own model (StrcMuseumA02, the built-up museum with its banners),
 7 × 4 tiles, one to an island, at the back on the clifftop behind the campsite by default; the members move and turn it
-in the editor and on the phone's もようがえ, never take it away. A tap on it walks my villager up to its door and goes in
+in the editor, never take it away. A tap on it walks my villager up to its door and goes in
 (the door's iris, as a home's) to its own screen; ‹ 島へ or the doormat comes back out, just out of its door.
 
 - **Inside** (plan.ts, model units, the rooms' scale: a tile 10, a villager 16): one floor, NH's layout: the entrance
@@ -2231,8 +2232,8 @@ too.
   goes to the record, which checks it (the pocket, the wallet, the stock, the price: [backend](backend.md#events)).
 - **Prices:** NH's Bells ÷ 20 both ways, NH's own ratio (a sell at least 3): a sea bass 20, a koi 200, a whale shark
   650, wood 3, a coral 25, a T. rex skull 300; a median piece 110, one or two catches ([decisions](decisions.md#the-shops-かいがら-2026-11-04)).
-- **The building:** NH's Nook's Cranny with its タヌキ商店 sign, 7 × 4, one to an island, moved and turned in the editor
-  and もようがえ, never deleted ([island-layout.md](island-layout.md#the-islands-buildings)); a tap walks up to its door
+- **The building:** NH's Nook's Cranny with its タヌキ商店 sign, 7 × 4, one to an island, moved and turned in the editor,
+  never deleted ([island-layout.md](island-layout.md#the-islands-buildings)); a tap walks up to its door
   and goes in, ‹ 島へ comes out of it. It is the only way in (one goes to the shop to buy and sell, as in NH).
 
 ### Dialogue
@@ -2385,8 +2386,8 @@ once a week, drawn by the week's Monday, with about one quiet day in ten): **Kic
 visitor now, he lives on the island: [K.K. on his stool](#kk-on-his-stool)); **Jack** on Halloween night, **Celeste** on a meteor shower's night, the holiday hosts on
 their days, the wedding couple on its days. Priority (`visitorAt`): the event's host (Jack included), the wedding
 couple, Celeste, (Saturday evening: nobody), Daisy Mae, then the day's. `?visitor=none`: nobody. They stand on centre stage in the plaza
-(ひろば: `stageOf`, the layout's: where we put **おきゃくさんの ばしょ** in the もようがえ's おきゃくさん tab, else derived; it
-moves with a もようがえ, a visitor out then on the new spot at once), its skinned model converted as the villagers'
+(ひろば: `stageOf`, the layout's: where we put **おきゃくさんの ばしょ** in the editor's おきゃくさん tab, else derived; it
+moves with an edit, a visitor out then on the new spot at once), its skinned model converted as the villagers'
 are (`scripts/villagers3d-models.ts`: the special characters, and `VISITOR_ONLY` for the hosts, Jack and the wedding's
 pair) and drawn and posed by the same code and materials (`world3d/villagers.ts`, slot `visitor`; Cyrus `visitor:b`),
 at NH's proportions to them, with the same blob shadow; as in NH, **Gulliver washes up on the front beach** (`washedUp`:
@@ -2399,7 +2400,7 @@ them where it stands, then their introduction the first time, then one of their 
 `island/KKSlider.svelte`, `island/kkSlider.ts`, `e2e/visitors.spec.ts`, `e2e/visitor-life.spec.ts`. The user: "make
 kkrider a permanent addition to the island - also make him movable/placeable via the editor". K.K. Slider (とたけけ) lives here,
 on his **stool**: a piece of the layout (`kk-stool`, id `kk-slider`; [island-layout.md](island-layout.md): one on the
-island, never deleted, moved and turned in the editor and もようがえ, synced as any piece; its front tile kept clear
+island, never deleted, moved and turned in the editor, synced as any piece; its front tile kept clear
 and reachable for his listeners). The default stool stands on まえ's lawn west of the main path (tile 6 × 22), behind the
 visitors' stage and off to its side, a clump of flowers before him, facing the camera, nothing tall in front of him,
 off the villagers' ways between their home spots; an island arranged before him

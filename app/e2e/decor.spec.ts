@@ -1,17 +1,16 @@
-// Decorating (docs/design.md "Decorating", docs/island-layout.md "Phone editing"): せってい → もようがえ opens the
-// layout's own もようがえ (layoutEdit/IslandEdit.svelte over the 3D island): a piece from the tray goes down on fine
-// ground, a drag moves it a tile at a time, a tap on the ground puts it there, red over the water, ✓ places it; a tap
-// picks a placed piece up to move, turn, put back or put away. Both players' tabs show the same island (the demo's
-// relay, as two phones over the real one), and it stays across a reload and for a tab opening later.
+// Decorating (docs/design.md "Decorating", docs/island-layout.md "Phone editing"): the island is arranged in /editor
+// only (2026-11-08), its phone view's もようがえ (layoutEdit/IslandEdit.svelte; here over the plan, e2e/island.ts
+// openEditor): a piece from the tray goes down on fine ground, a drag moves it a tile at a time, a tap on the ground
+// puts it there, red over the water, ✓ places it; a tap picks a placed piece up to move, turn, put back or put away.
+// Both players' islands have it at once (the demo's relay, as two phones over the real one), and it stays across a
+// reload and for a tab opening later.
 import { expect, test, type Page } from './fixtures.ts';
-import { islandUp } from './island.ts';
-import { fromMenu } from './hud.ts';
+import { islandUp, openEditor } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-type W = { go(z: number): void; at(x: number, z: number): [number, number]; mine(): [number, number]; idle(): boolean };
-const go = (page: Page, z: number) => page.evaluate((z) => (window as unknown as { __world: W }).__world.go(z), z);
 const DATE = '2026-11-04T12:00';
+const Q = `demo&date=${DATE}`;
 
 async function open(page: Page, q = '') {
   await page.goto(`?demo&date=${DATE}&critter=none${q}`);
@@ -24,16 +23,6 @@ type IE = { sel(): { id?: string; k: string; x: number; z: number; f: number; wh
 const ie = <R,>(page: Page, fn: (e: IE) => R) => page.evaluate(`(${fn.toString()})(window.__islandEdit)`) as Promise<R>;
 type L = { count(k: string): number; ids(k: string): string[]; obj(id: string): { x: number; z: number; f: number } | undefined };
 const lay = <R,>(page: Page, fn: (l: L) => R) => page.evaluate(`(${fn.toString()})(window.__layout)`) as Promise<R>;
-/** もようがえ on the layout: IslandEdit over the island, the camera a little up the lawn. */
-async function editLayout(page: Page) {
-  await page.bringToFront();
-  await go(page, 300);
-  await fromMenu(page, 'settings');
-  await page.locator('[data-decor-start]').click();
-  await expect(page.locator('[data-island-edit]')).toBeVisible();
-  await page.waitForFunction(() => (window as unknown as { __islandEdit?: unknown }).__islandEdit);
-  await page.waitForTimeout(300);
-}
 /** (IslandEdit's bar rides with the held piece, a frame at a time: its buttons pressed where they are) */
 /** A tile's middle on screen. */
 const tile = async (page: Page, c: number, r: number) => (await page.evaluate(([c, r]) => (window as unknown as { __islandEdit: IE }).__islandEdit.tileScreen(c, r), [c, r] as const))!;
@@ -61,19 +50,17 @@ async function fineFrom(page: Page, c: number, r: number): Promise<[number, numb
   throw new Error(`no fine tile by ${c}, ${r}`);
 }
 
-test('on the layout: a piece from the tray goes down on fine ground, a drag moves it a tile at a time, a tap on the ground puts it there, red over the water, ✓ places it', async ({ page }) => {
-  await open(page);
-  await editLayout(page);
+test('in the editor: a piece from the tray goes down on fine ground, a drag moves it a tile at a time, a tap on the ground puts it there, red over the water, ✓ places it', async ({ context }) => {
+  const page = await openEditor(context, Q);
   const before = await lay(page, (l) => l.count('stone-lantern'));
   await page.locator('[data-tab="furniture"]').click();
   await page.locator('[data-island-item="stone-lantern"]').click();
   await expect.poll(() => ie(page, (e) => e.sel()?.k ?? null)).toBe('stone-lantern');
   expect(await ie(page, (e) => e.sel()!.why)).toBeNull();
-  // a drag with one finger moves it a tile at a time (the camera stays put)
-  const s0 = (await ie(page, (e) => e.sel()))!, cam = await page.evaluate(() => (window as unknown as { __world: { cam(): number } }).__world.cam());
+  // a drag with one finger moves it a tile at a time
+  const s0 = (await ie(page, (e) => e.sel()))!;
   await dragTile(page, [s0.x, s0.z], [s0.x - 2, s0.z]);
   await expect.poll(() => ie(page, (e) => e.sel()!.x)).toBe(s0.x - 2);
-  expect(await page.evaluate(() => (window as unknown as { __world: { cam(): number } }).__world.cam())).toBeCloseTo(cam, 0);
   // a tap on the ground puts it there
   const [fx, fz] = await fineFrom(page, s0.x + 3, s0.z + 1);
   expect(await ie(page, (e) => [e.sel()!.x, e.sel()!.z])).toEqual([fx, fz]);
@@ -96,9 +83,8 @@ test('on the layout: a piece from the tray goes down on fine ground, a drag move
   await expect(page.locator('[data-island-edit]')).toHaveCount(0);
 });
 
-test('on the layout: a tap picks a placed piece up, a drag and ✓ move it, ✕ puts it back, 🗑 puts it away', async ({ page }) => {
-  await open(page);
-  await editLayout(page);
+test('in the editor: a tap picks a placed piece up, a drag and ✓ move it, ✕ puts it back, 🗑 puts it away', async ({ context }) => {
+  const page = await openEditor(context, Q);
   await page.locator('[data-tab="furniture"]').click();
   await page.locator('[data-island-item="tanuki"]').click();
   const [x0, z0] = await fineFrom(page, 6, 12);
@@ -125,30 +111,30 @@ test('on the layout: a tap picks a placed piece up, a drag and ✓ move it, ✕ 
   await expect.poll(() => page.evaluate((id) => (window as unknown as { __layout: L }).__layout.obj(id) ?? null, id)).toBeNull();
 });
 
-test('on the layout: both players see the same island, live and after a reload; a tab opening later too', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ browser }) => {
+test('both players see the editor\'s changes on their islands, live and after a reload; a tab opening later too', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ browser }) => {
   test.setTimeout(60_000);
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const a = await ctx.newPage(), b = await ctx.newPage();
   await open(a);
   await open(b, '&as=B');
-  await editLayout(a);
-  await a.locator('[data-tab="furniture"]').click();
-  await a.locator('[data-island-item="garden-wagon"]').click();
-  const [x0, z0] = await fineFrom(a, 6, 12);
-  await a.locator('button[data-act="place"]').dispatchEvent('click');
-  const id = (await lay(a, (l) => l.ids('garden-wagon'))).at(-1)!;
-  // B has it at once, where A put it
+  // A's editor puts a wagon down
+  const ea = await openEditor(ctx, Q);
+  await ea.locator('[data-tab="furniture"]').click();
+  await ea.locator('[data-island-item="garden-wagon"]').click();
+  const [x0, z0] = await fineFrom(ea, 6, 12);
+  await ea.locator('button[data-act="place"]').dispatchEvent('click');
+  const id = (await lay(ea, (l) => l.ids('garden-wagon'))).at(-1)!;
+  // both islands have it at once, where it was put
   const where = (p: Page) => p.evaluate((id) => { const o = (window as unknown as { __layout: L }).__layout.obj(id); return o ? [o.x, o.z] : null; }, id);
+  await expect.poll(() => where(a), { timeout: 3000 }).toEqual([x0, z0]);
   await expect.poll(() => where(b), { timeout: 3000 }).toEqual([x0, z0]);
-  // B moves it; A has the move
-  await editLayout(b);
-  await dragTile(b, [x0, z0], [x0 - 1, z0 + 1]);
-  await expect.poll(() => ie(b, (e) => e.sel()?.id ?? null)).toBe(id);
-  const to = await ie(b, (e) => [e.sel()!.x, e.sel()!.z]);
-  if (await ie(b, (e) => e.sel()!.why)) await fineFrom(b, x0 - 1, z0 + 1);
-  const moved = await ie(b, (e) => [e.sel()!.x, e.sel()!.z]);
-  void to;
-  await b.locator('button[data-act="place"]').dispatchEvent('click');
+  // B's editor moves it; A's island has the move
+  const eb = await openEditor(ctx, `${Q}&as=B`);
+  await dragTile(eb, [x0, z0], [x0 - 1, z0 + 1]);
+  await expect.poll(() => ie(eb, (e) => e.sel()?.id ?? null)).toBe(id);
+  if (await ie(eb, (e) => e.sel()!.why)) await fineFrom(eb, x0 - 1, z0 + 1);
+  const moved = await ie(eb, (e) => [e.sel()!.x, e.sel()!.z]);
+  await eb.locator('button[data-act="place"]').dispatchEvent('click');
   await expect.poll(() => where(a), { timeout: 3000 }).toEqual(moved);
   // a reload keeps it; a third tab opening later finds it too
   await a.bringToFront();
@@ -158,11 +144,11 @@ test('on the layout: both players see the same island, live and after a reload; 
   const c = await ctx.newPage();
   await open(c, '&as=B');
   await expect.poll(() => where(c)).toEqual(moved);
-  // A puts it away: gone on B
-  await editLayout(a);
-  await tapTile(a, moved[0], moved[1]);
-  await expect.poll(() => ie(a, (e) => e.sel()?.id ?? null)).toBe(id);
-  await a.locator('button[data-act="remove"]').dispatchEvent('click');
+  // A's editor puts it away: gone on B
+  await ea.bringToFront();
+  await tapTile(ea, moved[0], moved[1]);
+  await expect.poll(() => ie(ea, (e) => e.sel()?.id ?? null)).toBe(id);
+  await ea.locator('button[data-act="remove"]').dispatchEvent('click');
   await expect.poll(() => where(b), { timeout: 3000 }).toBeNull();
   await ctx.close();
 });

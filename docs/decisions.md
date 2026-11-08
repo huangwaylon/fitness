@@ -1173,3 +1173,12 @@ as docs/backend.md "Service worker" › Offline › Saved areas. Why: the trailh
 seen-tiles cache only holds what was looked at. Rejected: auto-downloading a trip before it starts (OpenFreeMap's
 goodwill, phone storage), an `X-Client` header (OpenFreeMap refuses the preflight), downloading in the worker (the
 page already fetches tiles for WebKit: one path).
+
+### 設定 trimmed; the island arranged in /editor only (2026-11-08)
+The user asked to clean up 設定: the main island is edited only from /editor (the desktop editor and its phone view's
+IslandEdit), so the game's own もようがえ (設定 → 模様替え → 始める, IslandEdit over the 3D island) is gone; the tent's
+もようがえ is the room's and stays. The game draws at most 30 frames a second (the 60 option and its `island.fps` key
+gone; a stored value is ignored); the 同期 section and the offline maps' list are gone (the sync and the saving stay; a
+saved area is deleted from its own pill); 天気 moved into 季節's fold as 島の天気; 言語 is one dropdown. Why: fewer
+controls, and one place to arrange the island. Rejected: keeping the phone's もようがえ beside the editor (two ways to
+do one thing).
