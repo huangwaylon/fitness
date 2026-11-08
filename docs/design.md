@@ -501,8 +501,9 @@ the day at its top, no level (no search, query, row opened in place, amount or e
   min(100vw − 64, 360) px, with the badge, the name, the 「これは…」 line and 「AI生成のイメージ…」; ✕, Esc or a tap
   outside close it, the focus back on the picture), its name, then (only with one) its everyday name and its 「これは…」
   line (the data's `desc`); at the name column's foot what this amount holds, live: the kcal at title size (the sheet's
-  loudest number) and 「100gあたり ▾」 (a serving's 「1食あたり」), the values per 100 g behind it, closed on every open;
-  under the picture's row P · F · C · 塩分 in g, label over value. Then **状態** (a food in its states): a chip per state
+  loudest number) with the amount it's for, 「298 kcal（120g）」; under the picture's row P · F · C · 塩分 in g, label over
+  value, and under them 「100gあたりの栄養 ▾」 (a serving's 「1食あたりの栄養」), the values per 100 g behind it, closed on
+  every open. Then **状態** (a food in its states): a chip per state
   (乾 生 ゆで … in process order) with its kcal at the amount it would take, picking one swaps the food (its values
   follow; its name keeps the cut's words, 豚ロース 脂身つき 焼き, and the raw one's portions carry over through the yield
   of a pair they share, 1枚（とんかつ用） 120 g → 90 g, 薄切り1枚 → 15 g: `foodUi.ts` stateItem; a portion label it also

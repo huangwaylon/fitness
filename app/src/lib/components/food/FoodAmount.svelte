@@ -2,7 +2,8 @@
   // ごはん's amount (a level over the search or the day; docs/design.md "Gohan" Amount). The head: its picture when it
   // has one (104 px beside the name, the イメージ badge: every picture is generated; a tap: FoodPhoto, it enlarged),
   // its name, everyday name (glossOf) and 「これは…」 line (`desc`); under them what this amount holds, live: the kcal
-  // (the sheet's loudest number), P · F · C · 塩分, and behind 「100gあたり」 (closed on each open) the values per 100 g.
+  // (the sheet's loudest number) with the grams it's for, P · F · C · 塩分, and under them behind 「100gあたりの栄養」
+  // (closed on each open) the values per 100 g.
   // Then the controls (FoodPortion, their rules amount.svelte.ts) in the order they're decided: じょうたい, a food in its states (the data's vg/st), a chip per
   // state with its kcal at the amount it would take (`onitem` swaps the food: a portion label the state also has stays
   // picked at its own grams, typed grams stay typed, else its default), one line why (パックの重さなら 生 / ゆでる前の
@@ -95,12 +96,7 @@
         <h3>{item.name}</h3>
         {#if gloss || item.desc}<p class="gl" data-food-about>{#if gloss}<span data-gloss>{gloss}</span>{/if}{#if gloss && item.desc}{' — '}{/if}{#if item.desc}<span data-desc>{item.desc}</span>{/if}</p>{/if}
         {#if agree}<p class="vf" data-verified={agree}>{t('food.verifiedBadge', { n: agree })}</p>{/if}
-        <div class="kline">
-          <p class="k money" aria-live="polite">{formatNum(n.kcal)}<small>kcal</small></p>
-          <button type="button" class="per-t" data-food-per aria-expanded={perOpen} aria-controls="food-per" data-sfx="tick" onclick={() => (perOpen = !perOpen)}>
-            {serving ? t('food.my.perOne', { u: a.ps[0].label }) : t('food.per100Head')}<span class="caret" aria-hidden="true">▾</span>
-          </button>
-        </div>
+        <p class="k money" aria-live="polite">{formatNum(n.kcal)}<small>kcal</small>{#if !serving}<small class="g" data-food-g>（{formatNum(a.g)}{a.unit}）</small>{/if}</p>
       </div>
     </div>
     <dl class="nut">
@@ -109,6 +105,9 @@
       <div><dt>{t('food.c')}</dt><dd class="money">{n.c.toFixed(1)}<small>g</small></dd></div>
       <div><dt>{t('food.s')}</dt><dd class="money">{n.s.toFixed(1)}<small>g</small></dd></div>
     </dl>
+    <button type="button" class="per-t" data-food-per aria-expanded={perOpen} aria-controls="food-per" data-sfx="tick" onclick={() => (perOpen = !perOpen)}>
+      {serving ? t('food.perOneNut', { u: a.ps[0].label }) : t('food.per100Head')}<span class="caret" aria-hidden="true">▾</span>
+    </button>
     {#if perOpen}<p class="per money" id="food-per">{formatNum(item.kcal)} kcal · P {per(item.p)} · F {per(item.f)} · C {per(item.c)} · {t('food.s')} {per(item.salt)}</p>{/if}
   </section>
 
@@ -151,13 +150,13 @@
   h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; }
   .vf { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--leaf-text); }
   .once { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-  /* what this amount holds, live: the kcal (the loudest thing on the sheet) at the name column's foot, the per-100 g
-     toggle beside it (under it when there's no room), the four nutrients under the picture's row (label over value) */
-  .kline { margin-top: auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; column-gap: 8px; }
-  .k { margin: 0; font-size: var(--fs-title); line-height: 1; }
+  /* what this amount holds, live: the kcal (the loudest thing on the sheet) and the amount it's for at the name column's
+     foot, the four nutrients under the picture's row (label over value), the per-100 g toggle under them */
+  .k { margin: auto 0 0; padding-top: 6px; font-size: var(--fs-title); line-height: 1; }
   .k small { margin-left: 4px; font-size: var(--fs-s); color: var(--text-soft); }
+  .k .g { margin-left: 0; }
   .per-t {
-    appearance: none; border: 0; background: none; cursor: pointer; min-height: var(--hit); padding: 0 0 0 6px; margin-right: -2px;
+    appearance: none; border: 0; background: none; cursor: pointer; min-height: var(--hit); padding: 0; margin: -8px 0 -6px; justify-self: start;
     display: inline-flex; align-items: center; gap: 4px; font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft);
   }
   .per-t:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; border-radius: var(--r-chip); }
