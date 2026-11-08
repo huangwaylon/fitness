@@ -135,7 +135,7 @@ const SEED = Number(opt('--seed') ?? 1234);
  *  on the command line wins). */
 const PINNED: Readonly<Record<string, number>> = {
   'd4-landlord-3': 2000, 'd4-taxi-street-4': 2000,
-  // wave 1's units (docs/reviews/2026-11-06-wave1-review.md): the corrected detail heard over the heavy street
+  // wave 1's units (their listening check: docs/curriculum.md "Listening check"): the corrected detail heard over the heavy street
   // (dk-fast-replan's "seven", "did you say the pub"), Ikebukuro heard as said, and short exclamations off-voice
   'dk-fast-replan-4': 2000, 'dk-fast-replan-5': 3005, 'dmu-wrong-train-1': 5000, 'dk-wrong-time-4': 2003,
   'dk-loud-toast-4': 2003, 'dk-toast-2': 3009, 'dmu-bins-5': 3003,
