@@ -1,10 +1,10 @@
 <script lang="ts">
-  // せってい (docs/design.md "Settings"): the HUD's menu's せってい button opens it, full height like the island panel,
-  // grown out of the button (Sheet's `pop`, as けんこう out of the dumbbell). One scroller: すがた (the look's portrait,
-  // the よびな; かえる → the すがた level: the closet and the villagers, one dresser), プロフィール (せいべつ, たんじょうび, the BMI standard: ProfileSection), サウンド, ことば, きせつ (the seasonal preview), てんき (the island's: real or the game's), えいご
-  // ききとり (one row: あそぶ → ききみみ クイズ's sheet, its voice session started in the tap) and もようがえ (one row: はじめる);
-  // the guest's the same (2026-11-06), with a line saying it's visiting.
-  // Each pushes a level with ‹ (すがた's edits are sent as it's left, with a とりけす banner here);
+  // 設定 (docs/design.md "Settings"): the HUD's menu's せってい button opens it, full height like the island panel,
+  // grown out of the button (Sheet's `pop`, as けんこう out of the dumbbell). One scroller: 姿 (the look's portrait,
+  // the よびな; 変更 → the 姿 level: the closet and the villagers, one dresser), プロフィール (性別, 生年月日, the BMI
+  // standard: ProfileSection), サウンド, 言語 (one dropdown) and 季節 (the seasonal preview, its fold opening on 島の天気);
+  // the guest's the same (2026-11-06), with a line saying it's visiting. The island is arranged in /editor, not here.
+  // 姿 pushes a level with ‹ (its edits are sent as it's left, with a 取り消す banner here);
   // ✕, the backdrop and Esc close it, and the next opening starts at its top.
   import { tick } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
@@ -15,7 +15,6 @@
   import LangSection from './LangSection.svelte';
   import SeasonSection from './SeasonSection.svelte';
   import ProfileSection from './ProfileSection.svelte';
-  import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
@@ -103,10 +102,6 @@
       <section class="sec" aria-labelledby="sec-sound"><h2 id="sec-sound" class="sec-label">{t('panel.sound')}</h2><SoundSection /></section>
       <section class="sec" aria-labelledby="sec-lang"><h2 id="sec-lang" class="sec-label">{t('panel.lang')}</h2><LangSection /></section>
       <section class="sec" aria-labelledby="sec-season"><h2 id="sec-season" class="sec-label">{t('panel.season')}</h2><SeasonSection {view} /></section>
-      <div class="prow static decor">
-        <span class="prl">{t('panel.decor')}</span>
-        <button type="button" class="btn small paper" data-decor-start data-sfx="open" onclick={() => ((ui.decorating = true), (open = false))}>{t('panel.decorStart')}</button>
-      </div>
       {#if week.demo}<span class="demo">{t('demo.badge')}</span>{/if}
     {/if}
   </div>
@@ -129,11 +124,11 @@
   /* one section per topic: a small heading over its rows */
   .sec { display: grid; gap: 8px; }
   .me .prl small { display: block; margin-top: 2px; font-size: var(--fs-s); color: var(--text-soft); }
-  .me .btn, .decor .btn { flex: none; }
+  .me .btn { flex: none; }
   .guest { margin: 6px 4px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
   .demo { align-self: center; background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-chip); padding: 4px 10px; font: 700 var(--fs-s)/1 var(--font-ui); }
 
-  /* Rows shared by the sections (ことば, サウンド, てんき). */
+  /* Rows shared by the sections (サウンド, 島の天気). */
   .panel-body :global(.prows) { display: grid; gap: 10px; }
   .panel-body :global(.prow) {
     appearance: none; cursor: pointer; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 12px;

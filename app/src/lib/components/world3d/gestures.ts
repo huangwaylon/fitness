@@ -34,7 +34,7 @@ export function attachGestures(el: HTMLElement, cam: Cam, o: { enabled: () => bo
   let swallowUntil = 0;
   /** This touch landed on a fast fling: a tap only stops it. */
   let stopper = false;
-  const skip = (e: PointerEvent) => !o.enabled() || (e.target instanceof Element && !!e.target.closest('[data-nopan], input, textarea, select'));
+  const skip = (e: PointerEvent) => !o.enabled() || (e.target instanceof Element && !!e.target.closest('input, textarea, select'));
 
   function down(e: PointerEvent) {
     if (e.pointerType === 'mouse' && e.button !== 0) return;

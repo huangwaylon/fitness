@@ -1,6 +1,6 @@
 // The 3D island in the specs: its being up (`is3d`: the island's hooks and its models loaded), its hooks (`w3`, window.__world3d: Island3D.svelte), and a tap on a DOM target only where it is that target's
 // (`tapOn`: in 3D the whole island is in view, so a villager or a visitor in front covers much of a small door).
-import { expect, type Locator, type Page } from './fixtures.ts';
+import { expect, type BrowserContext, type Locator, type Page } from './fixtures.ts';
 import { hudMenu } from './hud.ts';
 
 /** The site's base path, as the build's (playwright.config.ts BASE_PATH: '' at the root, the default; e.g. '/x' under one). */
@@ -10,6 +10,17 @@ export const BASE = process.env.BASE_PATH ?? '';
 export const islandQuery = (q: string): string => `?${q}&critter=none&visitor=none`;
 /** The island's own URL (the base path's root) with a query, `rest` (a regex source) after its `?`. */
 export const islandURL = (rest = ''): RegExp => new RegExp(`^https?://[^/]+${BASE}/?\\?${rest}`);
+
+/** The island's もようがえ, which is /editor's alone (docs/island-layout.md "Phone editing"): its phone view with IslandEdit
+ *  over the plan (`preview=0`: no WebGL), the camera at `cam`, a tab of `context` (the demo's relay is the context's
+ *  tabs': the island's tabs there have its edits at once). `q`: the island's query (`demo&date=…`, `&as=B`). */
+export async function openEditor(context: BrowserContext, q: string, cam = 300): Promise<Page> {
+  const page = await context.newPage();
+  await page.goto(`editor/?${q}&view=phone&edit&cam=${cam}&preview=0`);
+  await expect(page.locator('[data-island-edit]')).toBeVisible();
+  await page.waitForFunction(() => (window as unknown as { __islandEdit?: unknown }).__islandEdit);
+  return page;
+}
 
 /** The 3D island's test hooks (Island3D.svelte's window.__world3d), the parts the specs read. */
 export type W3 = {

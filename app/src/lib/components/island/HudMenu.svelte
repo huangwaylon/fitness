@@ -58,7 +58,7 @@
 
   // a sheet opening (the panel, けんこう, a tree's …) or もようがえ folds it
   $effect(() => {
-    if (ui.sheets.length || ui.decorating) open = false;
+    if (ui.sheets.length) open = false;
   });
 
   // open: a tap outside folds it (capture, so it folds whatever the tap lands on; the tap itself goes on), Esc too

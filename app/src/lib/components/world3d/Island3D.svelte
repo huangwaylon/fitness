@@ -60,7 +60,6 @@
   import { extentOf, midXOf, type Layout } from '#lib/layout/model.ts';
   import { GRASS_Y, SEA_Y as LAYOUT_SEA_Y, WATER_DROP as LAYOUT_DROP, fieldOf } from '#lib/layout/height.ts';
   import { TIER_H } from '#lib/layout/grid.ts';
-  import type { EditStage } from '../layoutEdit/IslandEdit.svelte';
   import { drawOff } from '../../ui-state/testMode.ts';
   import { releaseWorker } from '#lib/ui-state/swLate.ts';
   import { DEVICE, localKV } from '#lib/sync/storage.ts';
@@ -107,7 +106,7 @@
     /** A wet day's darkening (0 … 1). */
     wet: number;
     cast: () => readonly Cast[];
-    /** The finger may move the camera (no sheet over the island, not decorating). */
+    /** The finger may move the camera (no sheet over the island). */
     enabled: () => boolean;
     /** Where the camera opens (back from the tent: where it was), or null: まえ. */
     start: number | null;
@@ -790,35 +789,6 @@
     const e = eng, on = !enabled();
     if (e) untrack(() => e.pause(on));
   });
-
-  /** The island's もようがえ on the layout (layoutEdit/IslandEdit.svelte): world ⇄ the scene's px through this camera,
-   *  what's held hidden; null before the island is up. */
-  let hiddenEdit: string | null = null;
-  export function editStage(): EditStage | null {
-    const e = eng, c = canvas;
-    if (!e || !c) return null;
-    const off = () => {
-      const r = c.getBoundingClientRect(), h = scene.getBoundingClientRect();
-      return [r.left - h.left, r.top - h.top];
-    };
-    return {
-      host: scene,
-      toScreen(x, z, lift = 0) {
-        const p = e.at(x, z, lift), [ox, oy] = off();
-        return p.visible ? [p.sx + ox, p.sy + oy] : null;
-      },
-      toGround(sx, sy) {
-        const [ox, oy] = off(), g = e.groundAt(sx - ox, sy - oy);
-        return g ? [g.x, g.z] : null;
-      },
-      size: () => [scene.clientWidth, scene.clientHeight],
-      hide(id) {
-        if (hiddenEdit && hiddenEdit !== id) e.things.over(hiddenEdit, { hidden: false });
-        hiddenEdit = id;
-        if (id) e.things.over(id, { hidden: true });
-      }
-    };
-  }
 
   /** Put the camera at a world z at once (the e2e, IslandScene's goTo). */
   export function go(z: number, k?: number) {

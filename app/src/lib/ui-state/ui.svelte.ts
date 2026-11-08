@@ -5,8 +5,6 @@ class Ui {
   /** The full-height sheets (panel, pop, full) open with their open animation done: nothing of the island shows, so it
    *  is hidden then, not in the tap's frame (IslandScene's data-sheet). */
   up = $state<number[]>([]);
-  /** The island's decorate mode is on (docs/design.md "Decorating": せってい → もようがえ starts it, ✓ おわる ends it). */
-  decorating = $state(false);
   /** The island's camera when the tent was entered (its world z): the island opens there again on the way out. */
   islandZ: number | null = null;
   /** My villager just came out of a building's door (island/doorOut.ts): where it steps out (world u) and its facing,

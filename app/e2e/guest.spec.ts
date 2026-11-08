@@ -2,7 +2,7 @@
 // members' `?demo` (A) and `?demo&as=B`; the demo's relay is the tabs' BroadcastChannel (sync/live-local.ts) and its
 // record their shared localStorage, as two phones and a guest's have the relay and the record. The guest's phone shows
 // the members' activity and ベル but never a からだ figure, and nothing of the economy or the members' goals (a buy, an
-// erase, a goal); on the island it does what a member does (もようがえ, つうしん, the weather: 2026-11-06); its
+// erase, a goal); on the island it does what a member does (the editor, the weather: 2026-11-06); its
 // catches go into the shared ずかん under its own name; its tent pieces reach both members; and its villager is on the
 // members' islands only while its app is open, moving only when it's moved.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
@@ -56,12 +56,11 @@ test('the guest’s phone: the members’ activity and ベル, never a からだ
   for (const text of ['体重', '体脂肪率', 'kg', '%']) await expect(panel, text).not.toContainText(text);
   await page.keyboard.press('Escape');
   await expect(panel).toHaveCount(0);
-  // せってい (the HUD menu's): the villager, the sound, the language, the weather and もようがえ as a member's
-  // (no つうち: gone for everyone)
+  // 設定 (the HUD menu's): the villager, the sound, the language and the weather as a member's (no つうち, no
+  // 模様替え: gone for everyone)
   await fromMenu(page, 'settings');
   await expect(panel.locator('[data-guest-note]')).toBeVisible();
   await expect(panel.locator('[data-push="look"]')).toBeVisible();
-  await expect(panel.locator('[data-decor-start]')).toBeVisible();
   await expect(panel.locator('#sec-notify')).toHaveCount(0);
   await expect(panel.locator('#sec-lang')).toBeVisible();
   await expect(panel.locator('[data-wx-mode="game"]')).not.toHaveAttribute('aria-disabled', 'true');

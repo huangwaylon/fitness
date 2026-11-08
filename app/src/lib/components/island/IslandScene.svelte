@@ -185,7 +185,7 @@
   site.sync();
   const island3dC = lazyComponent(() => import('../world3d/Island3D.svelte'));
   const Island3DC = $derived(island3dC.get(r3));
-  let island3d = $state<{ go(z: number, k?: number): void; limits(): { min: number; max: number }; editStage(): import('../layoutEdit/IslandEdit.svelte').EditStage | null }>();
+  let island3d = $state<{ go(z: number, k?: number): void; limits(): { min: number; max: number } }>();
   /** Where the 3D camera opens (back from the tent: where it was). */
   let start3 = $state<number | null>(null);
 
@@ -242,7 +242,7 @@
   let picking = $state<HTMLElement | null>(null);
   let sayBtn = $state<HTMLButtonElement>();
   /** The say button shows on the live island with nothing over it: no sheet, the harvest, a tree's popup, もようがえ. */
-  const sayShown = $derived(!covered && !ui.decorating && !openTree && !ui.sheets.length);
+  const sayShown = $derived(!covered && !openTree && !ui.sheets.length);
   const vilEls = $state<Record<VillagerActor, HTMLElement | undefined>>({ mine: undefined, partner: undefined, third: undefined });
   function openPicker(el: HTMLElement) {
     if (!sayShown) return;
@@ -258,7 +258,7 @@
     actors.mine.busyUntil = Math.min(actors.mine.busyUntil, Date.now() + 1200);
   }
   $effect(() => {
-    // a sheet over the island, a tree's popup or decorating: the picker goes with its button
+    // a sheet over the island or a tree's popup: the picker goes with its button
     if (picking && !sayShown) untrack(() => closePicker());
   });
   /** Show `text` over a villager (mine: picked here; the partner's: from the relay) and hop it. */
@@ -531,7 +531,7 @@
   /** SceneTaps' last step: the tap landed on the ground at (x, z) and nothing else took it. A tap at a building's foot
    *  knocks at its door (walk there, then its line). */
   function walkThere(x: number, z: number, hit: SceneHit): boolean {
-    if (covered || decorating || actors.mine.asleep) return false;
+    if (covered || actors.mine.asleep) return false;
     // only empty ground walks: water ripples and a building's footprint knocks at its door where my villager stands
     if (hit.kind !== 'grass' && hit.kind !== 'sand') return false;
     const b0 = buildingAt(x, z), door = b0 && sceneEl?.querySelector<HTMLElement>(`[data-building="${b0}"] .door`);
@@ -551,7 +551,7 @@
   /** A seat (its piece's id: SceneTaps' data-sit, or the ground at its foot) tapped: my villager walks up to its free
    *  seat nearest it, and on (all taken: a boop; on it already: nothing more). True when it took the tap. */
   function sitOn(piece: string): boolean {
-    if (covered || decorating || actors.mine.asleep) return false;
+    if (covered || actors.mine.asleep) return false;
     const l = site.layout, o = l?.objects.get(piece);
     const spots = l && o ? seatSpots(l, o).filter((q) => seatHere(q.name)) : [];
     if (!spots.length) return false;
@@ -1116,11 +1116,6 @@
   const BirthdayC = $derived(birthdayC.get(!!bday.length));
   const WeddingC = $derived(weddingC.get(wedding.arch || wedding.day));
   // The decorate mode (docs/design.md "Decorating"): its tray and ghost are their own chunk, loaded on the first use.
-  const decorating = $derived(ui.decorating);
-  const islandEditC = lazyComponent(() => import('../layoutEdit/IslandEdit.svelte'));
-  const IslandEditC = $derived(islandEditC.get(decorating));
-  /** The 3D island's stage for IslandEdit (while decorating). */
-  const editStage = $derived(decorating && island3d ? island3d.editStage() : null);
   // what the 3D island draws today (Scenery's own: the scenery's seasonal swaps, the fixed decor's pieces)
   const scenery3 = $derived.by(() => {
     void site.rev;
@@ -1142,7 +1137,7 @@
   }));
 </script>
 
-<div class="if-scene scene" bind:this={sceneEl} data-r3={r3 || undefined} data-decorating={decorating || undefined} data-season={season} data-tod={tod} data-sky={weather.sky} data-paused={life.hidden || undefined}
+<div class="if-scene scene" bind:this={sceneEl} data-r3={r3 || undefined} data-season={season} data-tod={tod} data-sky={weather.sky} data-paused={life.hidden || undefined}
   data-covered={ui.overlay || (covered && up) || undefined} data-sheet={(paused && up) || undefined} data-live="true" data-horizon={horizonPx}>
   {#if picking && sceneEl}
     <!-- what my villager says: outside the viewport (its field's focus never moves the island), over the stage -->
@@ -1192,11 +1187,9 @@
 
         <Flowers {season} {hybrid} />
 
-        <Decor editing={decorating} sit={sitOn} />
+        <Decor sit={sitOn} />
         <!-- the bulletin board on the front beach (docs/board.md): a tap walks up to it and opens it -->
-        <Board enabled={() => !covered && !life.hidden && !decorating} night={tod === 'night'} {season} />
-        <!-- the もようがえ: the layout's own (IslandEdit over the 3D camera) -->
-        {#if decorating && IslandEditC && editStage}<IslandEditC stage={editStage} {relay} me={castMe()} ondone={() => (ui.decorating = false)} />{/if}
+        <Board enabled={() => !covered && !life.hidden} night={tod === 'night'} {season} />
 
         {#each VILLAGERS as id (id)}
           {@const sd = sides[id]}
@@ -1244,7 +1237,7 @@
 
         <Particles {season} {foliage} {tod} quiet={asleepNow} mode="fireflies" raining={raining()} />
         <!-- scenery taps (bushes, flowers, clouds, sun / moon, sea, sand, grass): a short flourish, nothing else -->
-        <SceneTaps bind:this={sceneTaps} scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden && !decorating} swallowed={() => closedBy} walk={walkThere} sit={sitOn}
+        <SceneTaps bind:this={sceneTaps} scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden} swallowed={() => closedBy} walk={walkThere} sit={sitOn}
           exercise={view.people.A.rings.peach.met || view.people.B.rings.peach.met} cake={bday.length > 0}
           skyTap={(x, y) => !!fireworks?.tap(x, y)}
           say={(name, parts, from, o) => talk?.say(name, parts, from, o)} ontrick={trick} tree={treeTap} />
