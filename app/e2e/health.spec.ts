@@ -41,9 +41,12 @@ test('the tab: one person at a time, a card per metric; かつどう (steps, the
   await expect(sheet(page).locator('.health > .sel > .seg + .dd select')).toHaveAttribute('data-pick', 'period');
   await expect(sheet(page).locator('.health > .sel + .nav')).toHaveCount(1);
   const [g, p] = [(await sheet(page).locator('[data-group=body]').boundingBox())!, (await periodSel(page).boundingBox())!];
-  expect(Math.abs(g.y - p.y)).toBeLessThan(3); // one row
+  expect(Math.abs(g.y + g.height / 2 - (p.y + p.height / 2))).toBeLessThan(3); // one row
   expect(p.x).toBeGreaterThan(g.x + g.width - 1);
-  expect(Math.min(w.height, p.height, g.height)).toBeGreaterThanOrEqual(44);
+  expect(Math.min(w.height, p.height)).toBeGreaterThanOrEqual(44);
+  // ごはん's parts at ごはん's sizes: the pills its きろく · グラフ's (36 drawn, 44 to tap), the dropdown its グラフ's period
+  expect(g.height).toBe(36);
+  await expect(sheet(page).locator('.health > .sel > .dd.compact')).toHaveCount(1);
   expect(p.x + p.width).toBeLessThanOrEqual(sheetBox.x + sheetBox.width); // nothing past the edge at 393
   await expect(whoSel(page).locator('option')).toHaveText(['ウェイ', 'うめ']);
   await expect(periodSel(page).locator('option')).toHaveText(['1週', '1か月', '3か月', '1年']);
@@ -342,7 +345,14 @@ for (const [w, h] of [[390, 844], [320, 568]]) {
       await pickPeriod(page, per);
       await sheet(page).locator(`[data-group=${g}]`).click();
       const m = await page.evaluate(() => {
-        const ctl = [...document.querySelectorAll('dialog[open] .health :is(button, select)')].map((b) => b.getBoundingClientRect());
+        // (a Segmented pill: 36 drawn, its ::after the 44 hit: ごはん's きろく · グラフ's size)
+        const hit = (b: Element) => {
+          const r = b.getBoundingClientRect();
+          if (!b.matches('.seg .sb')) return r;
+          const a = getComputedStyle(b, '::after');
+          return { width: r.width - 2 * parseFloat(a.left), height: r.height - 2 * parseFloat(a.top) };
+        };
+        const ctl = [...document.querySelectorAll('dialog[open] .health :is(button, select)')].map(hit);
         const cards = [...document.querySelectorAll('dialog[open] .health section.card')].map((c) => c.getBoundingClientRect());
         const body = document.querySelector('dialog[open] [data-health-sheet]')!.getBoundingClientRect();
         return {

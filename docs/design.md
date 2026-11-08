@@ -286,7 +286,8 @@ Health data over time for the personal trainer, one person at a time, computed o
   compact (`Pick` `compact`: the avatar, the name, a stroke of their colour; at 320 the name without the avatar).
   The two members, this phone's person first and chosen on opening, kept for the session. Then one row: かつどう ·
   からだ, two pills, each with an NH icon (`art.ts` GROUP_ART: the cute sneakers, the dreamy bear toy), and the
-  period beside them, a dropdown as wide as its longest option (「きかん」: 1週 · 1か月 · 3か月 · 1年). 1週 and
+  period beside them, a dropdown as wide as its longest option (「きかん」: 1週 · 1か月 · 3か月 · 1年); the pills and the
+  dropdown are ごはん's (`Segmented` 36, `Pick` `compact` as グラフ's period: one size in both tabs). 1週 and
   かつどう on every opening; switching either keeps the other, the range and whose data; the guest has no switch
   (かつどう only), the period alone at the row's right end.
 - **Then** a sticky row: ‹ the visible range (「10/2–10/31」; 「1日ごと」 / 「1週ごとの 1日平均」 / 「1か月ごとの 1日平均」
@@ -592,7 +593,8 @@ One rule app-wide (the user, 2026-11-07: "x and back are not consistent"); `ui/n
 
 - **The title bar** is `ui/NavBar` on every sheet, panel and level: 48px, the title centred (18, `--font-ui` 700), the
   same in the game sheets and the kit's. ✕ top-right closes the whole sheet from any level; ‹ top-left only on a level
-  (never on a top level); they never swap or move. Backdrop tap and Esc also close.
+  (never on a top level, but for a sheet one row opened in place of its own: ずかん's rows, ‹ back to 設定); they never
+  swap or move. Backdrop tap and Esc also close.
 - **One button**, `ui/NavButton`, for ‹, ✕ and the bar's tools: a 32px disc drawn in the 44px hit (`--ctl`,
   `--sh-ctl-s`: cream by day, navy at night), the glyph `ui/Icon` at stroke 2.4, the cue `back`. Its disc sits on the
   container's content edge (NavBar pulls 6px out). One look everywhere, over a photo or a map too (a trip's hero, a
@@ -1921,7 +1923,7 @@ and its mouth, and the spring and the river above the cliff.
 
 `kiroku/Zukan.svelte`, `kiroku/ZukanCard.svelte`, `kiroku/zukan.ts`, `model/finds.ts`, `model/tally.ts`,
 `e2e/zukan.spec.ts`. The ずかん is its own sheet (`kiroku/ZukanSheet.svelte`: 設定's last section, 図鑑 (one row, NH's agrias
-butterfly; since 2026-11-08, no pill in the HUD menu): 設定 closes and the sheet opens, Sheet's `pop`): first one row per kind with how many either of us has found (`ZukanCard`), a row → that kind's page
+butterfly; since 2026-11-08, no pill in the HUD menu): 設定 closes and the sheet opens, Sheet's `pop`; on its rows ‹ goes back to 設定, reopened where it was scrolled, ✕ to the island): first one row per kind with how many either of us has found (`ZukanCard`), a row → that kind's page
 with ‹ (titled with the kind: a level's title is its own name, the ledger's day its date); the next opening starts on the rows. Shared (the first `find` of either of us): 魚 80 (the sea's 34 and the pond's
 46), 虫 74, 海の幸 40, 化石 73 (laid out like NH's museum: the standalone ones, then each dinosaur with
 「Tレックス 1 / 3」), かいがら 9 (the pearl last), and a balloon's presents: カタログ 1,836 (by NH's categories: かぐ,

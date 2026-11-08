@@ -2,7 +2,8 @@
   // One native dropdown pill (けんこう's row 1, ごはん's whose day, グラフ's period and 設定's 言語): iOS's own picker, a cream pill
   // ≥ 44px with a chevron, 16px type so Safari doesn't zoom. `kind` names it (`.dd.who`, `data-pick="who"`, `data-who`
   // the value: what the specs read). With `person` it is whose data: their avatar and a stroke of their colour.
-  // `compact`: the title bar's (NavBar's lead, left of けんこう / ごはん): a smaller avatar, the name as wide as it is.
+  // `compact`: the title bar's (NavBar's lead, left of けんこう / ごはん) and a row's period (ごはん's グラフ, けんこう's: one size
+  // in both tabs): drawn 34px in the 44px hit, a smaller avatar, the name as wide as it is.
   import type { Who } from '#lib/types.ts';
   import Avatar from '../characters/Avatar.svelte';
 

@@ -112,7 +112,7 @@
       {#if !guest}
         <Segmented items={GROUPS.map((id) => ({ id, label: t(`health.group.${id}`), art: GROUP_ART[id] }))} value={group} label={t('health.group')} attr="group" onpick={setGroup} />
       {/if}
-      <Pick kind="period" value={period} options={PERIODS.map((id) => ({ id, label: t(`health.period.${id}`) }))} label={t('health.period')} onpick={setPeriod} />
+      <Pick kind="period" value={period} options={PERIODS.map((id) => ({ id, label: t(`health.period.${id}`) }))} label={t('health.period')} onpick={setPeriod} compact />
     </div>
 
     <RangeNav earlier={t('health.earlier')} later={t('health.later')} today={t('health.today')} canBack={pager.can.back} canOn={pager.can.on} atToday={pager.anchor === null}
@@ -135,7 +135,8 @@
 
 <style>
   .health { display: grid; gap: 12px; padding-bottom: 8px; }
-  /* かつどう · からだ, the period pill beside them at its own width (the guest's: the pill alone, at the right) */
-  .sel { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+  /* かつどう · からだ, the period pill beside them at its own width (the guest's: the pill alone, at the right); centred,
+     not stretched: the pills ごはん's きろく · グラフ (Segmented's 36), the dropdown its グラフ's (Pick compact) */
+  .sel { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
   .sel > :global(:only-child) { grid-column: 2; }
 </style>
