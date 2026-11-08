@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { StoreCore } from '../src/store.ts';
 import { buyPrice, sellPrice, stockOf } from '../../app/src/lib/contract/shop.ts';
 import { BUY } from '../../app/src/lib/contract/shopPrices.ts';
+import { TALLY_PAST_DAYS } from '../../app/src/lib/contract/record.ts';
 import { memSql } from './sqlite.ts';
 
 const KEY_A = 'a'.repeat(64);
@@ -33,6 +34,13 @@ describe('the shop in the record', () => {
   const item = stockOf(D)[0];
   const buy = (who: 'A' | 'B' | 'G', it = item, price = buyPrice(it)!, d = D) => send(who, 'buy', { item: it, price, d });
   const refused = (detail?: string) => ({ ok: false, error: 'bad_request', ...(detail ? { detail } : {}) });
+
+  it(`a tally or a give-back dated over ${TALLY_PAST_DAYS} days before the record's day is refused (no pocket stock minted for old days)`, () => {
+    expect(tally('A', { 'fish:koi': 9 }, '2026-09-29')).toEqual(refused()); // 36 days back
+    expect(send('G', 'tally', { date: '2026-09-29', counts: { 'fish:koi': 9 } })).toEqual(refused());
+    expect(tally('A', { 'fish:koi': 9 }, '2026-09-30')).toMatchObject({ ok: true }); // 35: a phone offline for weeks
+    expect(send('A', 'tally_back', { date: '2026-09-29', counts: { 'fish:koi': 1 } })).toEqual(refused());
+  });
 
   it('a retry of a buy already kept is a duplicate even once its stock day has passed (not refused)', () => {
     tally('A', { 'fish:koi': Math.ceil(buyPrice(item)! / K) });
@@ -206,10 +214,12 @@ describe('the shop’s running ledger (O5)', () => {
 
   it('a sale reads the running ledger, not the history: a year of tallies and sales, then a 20-sale batch', () => {
     // 2026-11-05 relay review O5: each sale refolded every tally and shop row (a year: 153k rows read, 112 ms)
-    for (let i = 365; i >= 1; i -= 50) {
-      batch(Array.from({ length: Math.min(50, i) }, (_, j) => ({ type: 'tally', data: { date: day(i - j), counts: { 'fish:koi': 5, 'bug:ant': 3 } } })));
-      now += 60_000;
+    // (each tally sent while its day is recent: the record takes one dated at most TALLY_PAST_DAYS back)
+    for (let i = 365; i >= 1; i -= 30) {
+      now = T0 - Math.max(0, i - 29) * 86_400_000;
+      batch(Array.from({ length: Math.min(30, i) }, (_, j) => ({ type: 'tally', data: { date: day(i - j), counts: { 'fish:koi': 5, 'bug:ant': 3 } } })));
     }
+    now += 60_000;
     for (let i = 0; i < 6; i++) {
       batch(Array.from({ length: 50 }, () => ({ type: 'sell', data: { species: 'fish:koi', n: 1, v: K } })));
       now += 60_000;

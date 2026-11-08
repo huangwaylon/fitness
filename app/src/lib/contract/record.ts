@@ -58,7 +58,9 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
     // a day's catches given back (a claim race lost after its tally reached the record: contract/tally.ts), a tally's shape;
     // whether that day's tally covers them is the record's check (relay/src/store.ts)
     case 'tally_back':
-      return isTally(d, localDateAt(now));
+      // (2026-11-08: dated at most TALLY_PAST_DAYS before the record's day: any key could mint pocket stock for an old
+      // day and sell it; a phone offline for weeks still sends its catches)
+      return isTally(d, localDateAt(now)) && (d.date as string) >= localDateAt(now - TALLY_PAST_DAYS * 86_400_000);
     case 'island':
       return isIslandDay(d, localDateAt(now));
     case 'decor': {
@@ -107,6 +109,9 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
       return true;
   }
 }
+
+/** How many days before the record's a tally or a give-back may be dated. @public (relay/test/shop.test.ts) */
+export const TALLY_PAST_DAYS = 35;
 
 /** An op's `at` (the sender's clock) at most AHEAD_MS past the record's (a meal's, a decor or board op's: an op no later
  *  than the one held is stale, so a clock far ahead would stamp ops no later edit could beat). */
