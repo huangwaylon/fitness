@@ -6,6 +6,7 @@
 // another pipeline's at once. Never needed: no IndexedDB, an error, anything odd read back, and the texture is
 // transcoded again.
 import type { Transcoded } from './ktx2Format.ts';
+import { quiet } from '#lib/quiet.ts';
 
 const DB_NAME = 'island-tex', DATA = 'tex', META = 'meta';
 /** The store's bound (bytes of mip data): the island's whole set as ASTC is ~19 MB, its start ~4 MB. */
@@ -61,7 +62,7 @@ let reads = new Map<string, ((t: Transcoded | null) => void)[]>();
 /** Whether anything of pipeline `pipe` is kept (the database opened meanwhile, ready for the reads): false on a first
  *  launch, a new pipeline, or no IndexedDB. Never rejects. */
 export async function hasTex(pipe: string): Promise<boolean> {
-  const d = await open().catch(() => null);
+  const d = await quiet(open(), 'tex.idb', null);
   if (!d) return false;
   return new Promise((ok) => {
     try {
@@ -86,7 +87,7 @@ async function flushReads() {
   const batch = reads;
   reads = new Map();
   const answer = (k: string, t: Transcoded | null) => batch.get(k)!.forEach((f) => f(t));
-  const d = await open().catch(() => null);
+  const d = await quiet(open(), 'tex.idb', null);
   if (!d) return batch.forEach((_, k) => answer(k, null));
   try {
     const t = d.transaction([DATA, META], 'readonly'), data = t.objectStore(DATA), meta = t.objectStore(META), at = now(), stale: [string, Meta][] = [];
@@ -133,7 +134,7 @@ export function writeTex(key: string, tex: Transcoded, pipe: string): void {
 /** The writes waiting, CHUNK_BYTES a transaction, `gap` ms apart: a put clones its value on the main thread (the
  *  island's start, ~6 MB at once, was a long frame on a busy runner). The bound kept with the last. */
 async function flushWrites(pipe: string, gap: number): Promise<void> {
-  const d = await open().catch(() => null);
+  const d = await quiet(open(), 'tex.idb', null);
   while (d && writes.size) {
     const chunk: [string, Transcoded][] = [];
     let n = 0;

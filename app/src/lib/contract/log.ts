@@ -25,7 +25,7 @@ const EV_TYPES = [...EVENT_TYPES, 'other'] as const;
 /** A field's kind: `n` a number (rounded to 0.1, within ±1e7), `b` a boolean, `t` a token, a closed set (an array),
  *  `msg` / `stack` scrubbed text. */
 type Kind = 'n' | 'b' | 't' | 'msg' | 'stack' | readonly string[];
-/** `*`: counters (`use`): `sheet:` · `ev:` · `route:` · `act:` and a token, at most 40 of them, each a number. */
+/** `*`: counters (`use`): `sheet:` · `ev:` · `route:` · `act:` · `swallow:` and a token, at most 40 of them, each a number. */
 type Fields = Readonly<Record<string, Kind>>;
 
 const API = { action: LOG_ACTIONS, err: LOG_STATUS, http: 'n', ms: 'n', tries: 'n' } as const;
@@ -101,7 +101,7 @@ const TOKEN = /^[A-Za-z0-9_.:/-]{1,40}$/;
 const LONGRUN = /[0-9A-Za-z]{16,}/;
 export const isToken = (v: unknown): v is string => typeof v === 'string' && TOKEN.test(v) && !LONGRUN.test(v);
 /** A counter's name (`use`): its kind and a token. */
-const COUNTER = /^(sheet|ev|route|act):[A-Za-z0-9_.-]{1,32}$/;
+const COUNTER = /^(sheet|ev|route|act|swallow):[A-Za-z0-9_.-]{1,32}$/;
 /** A session, request or batch id: 6–15 of [0-9a-z] (never long enough to hold a key). */
 const ID = /^[0-9a-z]{6,15}$/;
 export const isLogId = (v: unknown): v is string => typeof v === 'string' && ID.test(v);

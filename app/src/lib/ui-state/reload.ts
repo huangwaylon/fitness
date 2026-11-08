@@ -9,6 +9,7 @@
 
 import { version } from '$app/env';
 import { log, persistLog } from '#lib/sync/log.ts';
+import { quiet } from '#lib/quiet.ts';
 
 const KEY = 'island.reloadAt';
 /** One automatic reload per this window: a build that still fails after reloading shows its error instead of looping. */
@@ -105,7 +106,7 @@ const CHUNK_KEY = 'island.chunkReloadFor';
  * (newWorker: else the reload is the old build's cached shell again), and once a deployed version a session.
  */
 export async function reloadUnlessLeaving(deployedNow: () => Promise<string | null> = deployed, running: string = version): Promise<boolean> {
-  const v = await deployedNow().catch(() => null);
+  const v = await quiet(deployedNow(), 'reload.version', null);
   if (!v || v === running) return false;
   try {
     if (sessionStorage.getItem(CHUNK_KEY) === v) return false;

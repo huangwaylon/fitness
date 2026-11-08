@@ -6,6 +6,7 @@ import { logUrl } from '#lib/sync/transport.ts';
 import { getKey } from '#lib/sync/storage.ts';
 import { wav16k } from '../probe/steps.ts';
 import type { Capture, Heard, Miss, Recogniser } from '../stt.ts';
+import { quiet } from '#lib/quiet.ts';
 
 /** The relay's cap: 10 s of 16 kHz 16-bit mono (its STT_MAX is 340 000 bytes). */
 export const RELAY_S = 10;
@@ -28,7 +29,7 @@ export async function postWav(body: Uint8Array, signal?: AbortSignal): Promise<P
       method: 'POST', headers: { 'Content-Type': 'audio/wav', Authorization: `Bearer ${key}` }, body: body as BodyInit,
       signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(TIMEOUT_MS)]) : AbortSignal.timeout(TIMEOUT_MS)
     });
-    const r = (await res.json().catch(() => null)) as { ok?: boolean; text?: unknown; words?: unknown; error?: unknown } | null;
+    const r = (await quiet(res.json(), 'stt.reply', null)) as { ok?: boolean; text?: unknown; words?: unknown; error?: unknown } | null;
     if (res.ok && r?.ok && typeof r.text === 'string') {
       return { ok: true, text: r.text, ...(Array.isArray(r.words) ? { words: r.words as Heard['words'] } : {}), ms: Math.round(performance.now() - t0) };
     }

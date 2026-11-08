@@ -7,6 +7,7 @@ import {
   CUSTOM, customDensityOk, customPortions, customSnap, FOOD_GRAMS, recipePortion, recipeSnap, type FoodCustom,
   type FoodEntry, type FoodSnap, type RepeatItem
 } from '#lib/contract/food.ts';
+import { quiet } from '#lib/quiet.ts';
 import type { Recipe } from '#lib/model/food.ts';
 import { itemById, loadFoodDb, portionsOf, unitOf, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
 import { loadFoodImages, type FoodImageIndex } from '#lib/food/images.ts';
@@ -49,7 +50,7 @@ const OPEN_MS = 600;
 export function foodDbSoon(): () => void {
   if (ready || dbP) return () => {};
   let idle = 0;
-  const go = () => void foodDb().catch(() => {});
+  const go = () => void quiet(foodDb(), 'food.db');
   const wait = setTimeout(() => (typeof requestIdleCallback === 'function' ? (idle = requestIdleCallback(go, { timeout: 2000 })) : go()), OPEN_MS);
   return () => {
     clearTimeout(wait);

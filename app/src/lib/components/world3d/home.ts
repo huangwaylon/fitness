@@ -12,6 +12,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { FAMILIES, partsOf, type HomeStyle } from '#lib/layout/homes.ts';
 import { splitSides } from './sides.ts';
 import { lean } from './release.ts';
+import { quiet } from '#lib/quiet.ts';
 
 /** World units a model unit (the island's furniture scale: 10 model units a 30u tile). */
 export const HOME_U = 3;
@@ -56,7 +57,7 @@ export async function buildHome(style: HomeStyle, base?: string): Promise<Group 
   const b = baseUrl(base);
   // the campsite's tent: the island's own model (world3d's), for a picker's preview
   if (style.m === 'campsite') {
-    const g = await loader.loadAsync(new URL('../world3d/tent.glb', b).href).catch(() => null);
+    const g = await quiet(loader.loadAsync(new URL('../world3d/tent.glb', b).href), 'tent.glb', null);
     if (!g) return null;
     const root = g.scene.clone(true);
     lambertAll(root, () => null);

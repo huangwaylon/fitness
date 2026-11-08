@@ -7,6 +7,7 @@
 import type { Primed } from './fields.worker.ts';
 import { CHUNK_COUNT } from './mesh.ts';
 import type { Layout } from './model.ts';
+import { quiet } from '#lib/quiet.ts';
 
 const DB_NAME = 'island-fields', STORE = 'primed';
 /** Bumped when what's stored changes shape (the build changes the key anyway). */
@@ -76,7 +77,7 @@ export async function readFields(key: string): Promise<Primed | null> {
 /** A writer of the one record (the last layout's): the database opened, then each call clones `primed` at once (its
  *  buffers may be transferred right after) and resolves once it's written. Null: no IndexedDB. Never rejects. */
 export async function fieldsWriter(): Promise<((key: string, primed: Primed) => Promise<void>) | null> {
-  const d = await open().catch(() => null);
+  const d = await quiet(open(), 'fields.idb', null);
   if (!d) return null;
   return (key, primed) => new Promise<void>((ok) => {
     try {

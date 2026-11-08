@@ -6,6 +6,7 @@ import type { L } from '#lib/travel/types.ts';
 import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { overCaps, TOTAL_CAP_BYTES, type Plan, type Source } from './plan.ts';
 import { deleteArea, readManifest, saveArea, type Manifest } from './save.ts';
+import { quiet } from '#lib/quiet.ts';
 
 interface Entry {
   name: L;
@@ -66,7 +67,7 @@ class Areas {
     const gone: Record<string, true> = {};
     for (const id of Object.keys(this.list)) {
       if (this.job?.id === id) continue;
-      const m = await readManifest(caches, id).catch(() => null);
+      const m = await quiet(readManifest(caches, id), 'offline.manifest', null);
       if (!m) gone[id] = true;
       else this.list[id] = { ...this.list[id], bytes: m.bytes, done: m.done, at: m.at };
     }
@@ -105,7 +106,7 @@ class Areas {
       this.list[plan.id] = entry(m);
     } catch {
       // stopped or the TileJSON not had: what's stored stays, 一部のみ
-      const m = await readManifest(caches, plan.id).catch(() => null);
+      const m = await quiet(readManifest(caches, plan.id), 'offline.manifest', null);
       if (m) this.list[plan.id] = entry(m);
       else delete this.list[plan.id];
     } finally {

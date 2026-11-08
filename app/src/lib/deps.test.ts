@@ -7,12 +7,16 @@ import { dirname, join, relative, resolve } from 'node:path';
 
 const LIB = import.meta.dirname;
 const DOMAIN = ['types', 'contract', 'time', 'config', 'scoring', 'model'];
+/** Leaves that import nothing (their own allow-list is empty): any folder may import them. */
+const FREE = ['math', 'quiet'];
 
 const ALLOW: Record<string, string[]> = {
   types: [],
   random: [],
-  // (math.ts: clamp, smoothstep and the easing curves; pure, imports nothing)
+  // the leaves (FREE): math.ts (clamp, smoothstep, the easing curves) and quiet.ts (a swallowed failure counted in
+  // IslandLog, the log plugging its counter in)
   math: [],
+  quiet: [],
   // (random.ts imports nothing: the shop's stock is seeded by it, the relay bundling it along)
   contract: ['types', 'random'],
   time: ['types', 'contract'],
@@ -20,12 +24,12 @@ const ALLOW: Record<string, string[]> = {
   scoring: ['types', 'contract', 'time', 'config'],
   model: DOMAIN,
   // the island's layout (docs/island-layout.md): pure, over the contract's ops
-  layout: ['types', 'contract', 'random', 'math'],
+  layout: ['types', 'contract', 'random'],
   // the meal log's food catalog (lib/food/index.ts): pure but for its loader, over the contract's snapshot
   food: ['contract'],
   // けっこんしき (docs/wedding.md): the board's pure rules (lib/wedding: progress, its settings' defaults, the note's
   // markdown and its links; the board's zone and the days between two days: time/zone.ts, time/dates.ts)
-  wedding: ['types', 'contract', 'time', 'math'],
+  wedding: ['types', 'contract', 'time'],
   i18n: ['types', 'time', 'config'],
   sync: [...DOMAIN, 'random'],
   store: [...DOMAIN, 'layout', 'sync', 'i18n', 'ui-state', 'random'],
@@ -48,7 +52,7 @@ const ALLOW: Record<string, string[]> = {
   // `/stt` and the key (sync)
   mic: ['sync', 'sound'],
   offline: ['travel', 'hiking', 'sync'],
-  components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'math', 'travel', 'hiking', 'mic', 'offline']
+  components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'mic', 'offline']
 };
 
 function files(dir: string): string[] {
@@ -117,7 +121,7 @@ describe('src/lib folder boundaries', () => {
       (e.from === 'art' && e.to.endsWith('static/art/manifest.json')) || (e.from === 'sound' && /static\/audio\/(manifest|kk)\.json$/.test(e.to)) ||
       ((e.from === 'mic' || e.from === 'offline') && e.to.endsWith('service-worker/caches.ts'));
     const bad = edges
-      .filter((e) => !(ALLOW[e.from] ?? []).includes(e.to) && !outside(e))
+      .filter((e) => !(ALLOW[e.from] ?? []).includes(e.to) && !FREE.includes(e.to) && !outside(e))
       .map((e) => `${e.file} → ${e.to}`);
     expect(bad).toEqual([]);
   });

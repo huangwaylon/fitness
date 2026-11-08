@@ -8,6 +8,7 @@ import { clipAt } from '#lib/kikimimi/clips.ts';
 import type { PackRef } from '#lib/kikimimi/packing.ts';
 import { audioUrl } from '#lib/sound/manifest.ts';
 import { loadVoice } from '#lib/sound/sound.svelte.ts';
+import { quiet } from '#lib/quiet.ts';
 
 /** The packs held in memory (bytes): any one game's (a level-4 deck may touch all eight of its level's ~1.15 MB packs). */
 const HOLD_BYTES = 12_000_000;
@@ -36,9 +37,7 @@ export class PackStore {
       this.#held.set(stem, had);
       return had;
     }
-    const p: Promise<ArrayBuffer | null> = this.#get(packUrl(stem))
-      .then((r) => (r.ok ? r.arrayBuffer() : null))
-      .catch(() => null)
+    const p: Promise<ArrayBuffer | null> = quiet(this.#get(packUrl(stem)).then((r) => (r.ok ? r.arrayBuffer() : null)), 'kiki.pack', null)
       .then((b) => {
         if (!b) {
           if (this.#held.get(stem) === p) this.#held.delete(stem);

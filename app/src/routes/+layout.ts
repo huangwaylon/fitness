@@ -5,6 +5,7 @@ import { resolve } from '$app/paths';
 import { version } from '$app/env';
 import { opensIsland } from '#lib/ui-state/boot.ts';
 import type { LayoutLoad } from './$types';
+import { quiet } from '#lib/quiet.ts';
 
 export const ssr = false;
 export const prerender = false;
@@ -22,6 +23,6 @@ export const load: LayoutLoad = async ({ url, untrack }) => {
     void Promise.all([import('#lib/store/layout.svelte.ts'), import('#lib/layout/fieldsPrime.ts')]).then(([{ layout }, { primeFields }]) => primeFields(layout.current, version), () => {});
   }
   if (readJson(localKV(), DEVICE.locale) !== 'en') return;
-  await loadEnglish().catch(() => {});
+  await quiet(loadEnglish(), 'i18n.en');
   setLocale('en');
 };

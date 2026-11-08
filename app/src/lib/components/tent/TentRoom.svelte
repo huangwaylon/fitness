@@ -59,6 +59,7 @@
   import { createSeating } from '../rooms/seating.ts';
   import { drawOff } from '#lib/ui-state/testMode.ts';
   import type { Look, Pose, Tent, Who } from './engine.ts';
+  import { quiet } from '#lib/quiet.ts';
 
   // `home`: whose home this is (docs/island-layout.md "Homes"): ウェイ's the tent's room (as it always was), うめ's house's
   // (`sc: 'u'`), the guest's (`v`); its owner arranges it (the tent's: all three), anyone may come in
@@ -562,7 +563,7 @@
   // ---- the Happy Home Academy (tent/hha.ts) ----
   const roomNow = () => ({ pieces: room.pieces, wall: room.wall, floor: room.floor, lights: room.lights });
   async function openLetter(): Promise<void> {
-    const table = await loadHha().catch(() => null);
+    const table = await quiet(loadHha(), 'tent.hha', null);
     if (table) letter = rate(roomNow(), table);
   }
   /** Come in through the door (the island's goIn), not a reload or a link: only then does the letter come. */

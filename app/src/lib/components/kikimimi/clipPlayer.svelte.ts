@@ -15,6 +15,7 @@ import { audioUrl } from '#lib/sound/manifest.ts';
 import { loadVoice, playVoice } from '#lib/sound/sound.svelte.ts';
 import { prefetchClips, voiceClip } from './packs.ts';
 import { preloadStage } from './scene/stage.ts';
+import { quiet } from '#lib/quiet.ts';
 
 type Handle = { stop(): void };
 
@@ -37,7 +38,7 @@ const lineDurs = (it: Item): number[] => clipIds(it).map((id) => clipDur(id) ?? 
 
 /** The bed's loop, decoded (the engine's few keep it; null: offline and never cached, or no voice session). */
 const partyBed = (): Promise<AudioBuffer | null> =>
-  loadVoice(`bed:${PARTY_BED}`, () => fetch(audioUrl(PARTY_BED)).then((r) => (r.ok ? r.arrayBuffer() : null)).catch(() => null));
+  loadVoice(`bed:${PARTY_BED}`, () => quiet(fetch(audioUrl(PARTY_BED)).then((r) => (r.ok ? r.arrayBuffer() : null)), 'kiki.bed', null));
 
 export class ClipPlayer {
   /** A replay sounding (🔁, 🐢, the reveal's, a review row's: i -1), on the relay's clock: the bubble's bar, the

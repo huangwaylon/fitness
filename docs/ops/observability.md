@@ -54,7 +54,7 @@ A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepal
 | `chunk.fail` | warn | | a chunk failed to load |
 | `storage.fail` | warn | `store`, `kind` | storage refused a write |
 | `storage.persist` | info | `ok`, `was`, `useMb`, `quotaMb` | the installed app asked to keep its storage (once, after a sync) |
-| `use` | info | counters `sheet:<i18n key>`, `ev:<event type>`, `route:<route>` | summed, one a flush |
+| `use` | info | counters `sheet:<i18n key>`, `ev:<event type>`, `route:<route>`, `act:<what>`, `swallow:<tag>` (a failure the app went on without: quiet.ts, e.g. `tex.idb`, `food.verify`, `stt.reply`) | summed, one a flush |
 | `log.drop` | warn | `n`, `why` (cap, full, day, pending) | the phone's log dropped events |
 | `mic.env` / `mic.perm` / `mic.duplex` / `mic.stt` | info | the mic probe's numbers and closed sets (docs/kikimimi-mic.md §1.1): the page's capabilities; the permission (`st`, `ms`, `again`, `asked`, `ec`, `sr`, `inp`); per earphone route the bleed (dB), round trip (ms), loudness and restore; per recogniser and step its `ms`, `mb`, `audS`, `wer` (%, computed on the phone), `ok`, `err`. **Never heard text, a device label or a sentence** | せってい's 「マイク診断（テスト）」, on 「結果を送信」 |
 | `req` (relay) | info; warn refused; error `unavailable` | `action`, `st` (ok or the error code), `ms` (the Worker's wall time), `inB`, `outB`, `n`, `rej`, `dup`, `why` (the first refusal's rule: `buy.pocket_short`, `spend_void.no_such_spend`, `ingest.parse`), ingest's `m` (added), `sk` (skipped), `w` (warnings: a count); a snapshot's `pg` (its page size; 0: unpaged, an app from before paging); `exc` (a thrown class) | every `/api` request: the Shortcut's ingests, rate-limit hits (`busy`), validation refusals |

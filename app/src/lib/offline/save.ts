@@ -6,6 +6,7 @@
 // (「一部のみ」, a retry). Pure but for the injected fetch and caches (save.test.ts runs it on fakes).
 import { OPENFREEMAP, SAVED_MANIFEST, SAVED_PREFIX, SAVE_HEADER, tileKey } from '../../service-worker/caches.ts';
 import type { Plan, Source } from './plan.ts';
+import { quiet } from '#lib/quiet.ts';
 
 /** An area's record, in its cache (SAVED_MANIFEST) and mirrored in localStorage (registry.ts: an area Safari evicted
  *  is still listed, 「消えました」). */
@@ -161,7 +162,7 @@ export async function saveArea(plan: Plan, d: SaveDeps, onProgress: (p: Progress
     m.empty = [...empty];
     m.done = todo.length === 0 && m.stored + empty.size >= m.tiles;
     if (!signal?.aborted) m.at = now();
-    await writeManifest(cache, m).catch(() => {});
+    await quiet(writeManifest(cache, m), 'offline.manifest');
   }
   return m;
 }

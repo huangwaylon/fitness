@@ -8,6 +8,7 @@ import { postWav } from '../backends/relay.ts';
 import { stubNext } from '../pick.ts';
 import { webkitOnce as webkitUtterance } from '../backends/webkit.ts';
 import { dbfs, inputClass, onset, silenceAfterSpeech, type Inp, type SttErr } from './steps.ts';
+import { quiet } from '#lib/quiet.ts';
 
 const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const TAKE_MAX_MS = 10_000;
@@ -164,7 +165,7 @@ export async function takeSpeech(secs?: (s: number) => void): Promise<{ stop(): 
 
 /** Bytes (a clip's) decoded on the probe's context (null: none, or undecodable). */
 export async function decode(bytes: ArrayBuffer | null): Promise<AudioBuffer | null> {
-  return bytes ? probeCtx().decodeAudioData(bytes).catch(() => null) : null;
+  return bytes ? quiet(probeCtx().decodeAudioData(bytes), 'mic.decode', null) : null;
 }
 
 /** Play a buffer now on the probe's context; resolves when it ends. */

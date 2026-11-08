@@ -8,6 +8,7 @@ import { asset } from '$app/paths';
 import { addDataset, emptyDb, withJan, type FoodDb } from './db.ts';
 import type { Dataset, FoodIndex, Verify } from './types.ts';
 import type { Parsed } from './dataset.worker.ts';
+import { quiet, swallowed } from '#lib/quiet.ts';
 
 /** A failed dataset's retries (at its next chances) before it's left out for the session. */
 const RETRIES = 4;
@@ -76,7 +77,7 @@ export async function loadFoodDb(chance?: (n: number) => Promise<void>): Promise
   let indexing = Promise.resolve();
   // (a dataset that fails is fetched again at its next chance, a few times, and added when it comes; the load itself
   // never waits for it)
-  const add = (meta: FoodIndex['datasets'][number], d: Dataset) => (indexing = indexing.then(() => addDataset(db, meta, d, pause)).catch(() => {}));
+  const add = (meta: FoodIndex['datasets'][number], d: Dataset) => (indexing = indexing.then(() => addDataset(db, meta, d, pause)).catch(() => swallowed('food.index')));
   const again = (meta: FoodIndex['datasets'][number], n: number): void =>
     void chance?.(n).then(() => fetchDataset(url(meta.file, index.version)).then((d) => void add(meta, d), () => n < RETRIES && again(meta, n + 1)));
   const load = (meta: FoodIndex['datasets'][number]) =>
@@ -84,7 +85,7 @@ export async function loadFoodDb(chance?: (n: number) => Promise<void>): Promise
   const core = index.datasets.filter((d) => !d.lazy);
   const lazy = index.datasets.filter((d) => d.lazy);
   // all at once, added in the order they arrive (search ranks by match, not by file)
-  const [verify] = await Promise.all([json<Verify>(url('verify.json', index.version)).catch(() => null), ...core.map(load)]);
+  const [verify] = await Promise.all([quiet(json<Verify>(url('verify.json', index.version)), 'food.verify', null), ...core.map(load)]);
   db.verify = verify;
   db.more = (async () => {
     for (const d of lazy) await load(d);
