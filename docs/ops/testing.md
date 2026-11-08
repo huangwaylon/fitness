@@ -45,7 +45,7 @@ A push to `main` that touches `app/**` (docs-only and relay-only pushes don't ru
 | Job | What | Gates the deploy |
 |---|---|---|
 | `build` | `npm run build` once (its budgets: the kikimimi budget, the headers, the precache limit); its `build-pages/` is the `site` artifact `deploy` ships | yes |
-| `checks`, `unit` | `checks`: `npm run check`, `npm run knip` and the quarantine listed in the summary (`scripts/e2e-quarantine.ts`: red when a quarantined test has no owner); `unit`: `npx vitest run`; both beside the build | yes |
+| `checks`, `unit` | `checks`: `npm run check`, `npm run knip` and the quarantine listed in the summary (`scripts/e2e-quarantine.ts`: red when a quarantined test has no owner) and `scripts/docs-check.ts` (the docs' pointers); `unit`: `npx vitest run`; both beside the build | yes |
 | `select` | what the gate's e2e runs, once for all its shards (`gate-plan` artifact): the selection (`scripts/e2e-impact.ts`), the auto-quarantine (`scripts/e2e-flakes.ts`) and the shards' plan (`scripts/e2e-shards.ts plan`, the committed `e2e/timings.json`); ~16 s, beside the shards' own build (they wait for its artifact, not the job) | yes |
 | `e2e-gate` ×4 | **the gate's e2e** ("The gate" below): Playwright in Chromium (iPhone 13 profile) in logic mode (`E2E_RENDER=none`), `@render` and `@quarantine` left out, on `site` served as Pages serves it (`scripts/serve-build.ts`): `select`'s plan (the gate set, the changed specs ×3 and the specs the push reaches); 3 workers each (4 made the short waits flaky on the 4-core runners); each shard builds the commit itself (no waiting for `build`) | yes |
 | `deploy` | `site` to Cloudflare Pages (`wrangler pages deploy`, project `island-fund`), once all of the above are green (it starts after `build` and gets the artifact, the models and wrangler ready meanwhile, then waits on the gate: `scripts/deploy-gate.ts`, every job in its `GATE` list once and `success`, else red); then checks https://island-fund.pages.dev answers this build (`_app/version.json`) with its CSP header. No `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` secret: a warning, nothing deployed | — |
@@ -143,7 +143,9 @@ npm run e2e:ci-like -- e2e/world3d.spec.ts --repeat 5   # as CI runs it (below)
 
 ## Before you push (a new or changed spec, or a change to the 3D engines, the tent or sync)
 1. `npm run verify` (~25 s): `checks` as CI runs it, all at once, the first red printed and the rest stopped: the lockfile
-   (`npm ci --dry-run`: an ERESOLVE peer conflict), `check`, `knip` (and relay/'s, once `npm ci` ran there), `vitest run`, the quarantine's owners. `-- --quick`:
+   (`npm ci --dry-run`: an ERESOLVE peer conflict), `check`, `knip` (and relay/'s, once `npm ci` ran there), `vitest run`, the quarantine's owners, the docs' pointers (`scripts/docs-check.ts`: every relative link and
+   anchor in the docs resolves, every backticked repo path exists, every `docs/….md` "Heading" or §Section a comment
+   cites is there; rename a heading and repoint its citations in the same push). `-- --quick`:
    vitest on the changes since origin/main only; `-- --build`: the build and its budgets too. No e2e.
 2. `npm run e2e:ci-like -- --changed` (or `-- e2e/the.spec.ts --repeat 5`): the logic tier as CI runs it (a fresh build if `src/` is newer,
    software GL, CI's workers, `CI=1`, a free port), each test 5×. For a drawn (`@render`/`@smoke`) test add
