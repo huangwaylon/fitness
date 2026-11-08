@@ -11,9 +11,9 @@
 // the guest's (`v`); `rooms.A` is the tent's.
 import { TENT_FLOOR, TENT_MAX, TENT_ROOM, TENT_WALL, mergeTent, tentLayout, tentOpOf, type TentEntry, type TentOp, type TentPiece } from '#lib/contract/tent.ts';
 import type { Relayed, Who } from '#lib/contract/live-protocol.ts';
-import type { Live } from '#lib/sync/live.ts';
-import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
-import { opClock, world } from './world.svelte.ts';
+import { DEMO, LIVE, localKV, readJson } from '#lib/sync/storage.ts';
+import { Synced } from './synced.svelte.ts';
+import { world } from './world.svelte.ts';
 
 /** A partner's change this recent is played as it happens. */
 const LIVE_MS = 12_000;
@@ -27,68 +27,48 @@ interface TentNews {
 
 type RoomSc = 't' | 'u' | 'v';
 
-class TentRoom {
-  rev = $state(0);
+class TentRoom extends Synced<TentEntry, TentOp, TentNews> {
+  protected readonly whos: readonly Who[] = ['A', 'B', 'G'];
+  protected readonly label = 'tent';
   /** Which home's room: `t` the tent's (ウェイ's), `u` うめ's, `v` the guest's. */
   readonly sc: RoomSc;
   constructor(sc: RoomSc = 't') {
+    super();
     this.sc = sc;
   }
-  #map = new Map<string, TentEntry>();
   #layout: ReturnType<typeof tentLayout> = { pieces: [], wall: null, floor: null, lights: true };
-  #loaded = false;
-  #relay: Live | null = null;
-  #off: (() => void) | null = null;
-  #me: Who | null = null;
-  #demo = false;
-  #last = 0;
-  #subs = new Set<(n: TentNews) => void>();
   /** Where my changes go to the sheet (store/actions.ts sendDecor: the same event type, scoped). */
   sink: ((op: TentOp) => void) | null = null;
 
-  #key(): string {
-    const k = this.#demo ? DEMO.tent : LIVE.tent;
+  protected key(): string {
+    const k = this.demo ? DEMO.tent : LIVE.tent;
     return this.sc === 't' ? k : `${k}.${this.sc}`;
   }
-  #load(): void {
-    if (this.#loaded) return;
-    this.#loaded = true;
-    const kept = readJson<unknown[]>(localKV(), this.#key());
-    if (Array.isArray(kept)) for (const k of kept) this.#merge(k);
-    this.#layout = tentLayout(this.#map.values());
-  }
-  #merge(raw: unknown): TentEntry | null {
-    if (typeof raw !== 'object' || raw === null) return null;
-    const r = raw as Record<string, unknown>;
-    if (r.who !== 'A' && r.who !== 'B' && r.who !== 'G') return null;
-    const { who, ...d } = r;
+  protected opOf(d: Record<string, unknown>): TentOp | null {
     const op = tentOpOf(d);
-    if (!op || op.sc !== this.sc) return null;
-    const e = { ...op, who } as TentEntry;
-    return mergeTent(this.#map, e) ? e : null;
+    return op && op.sc === this.sc ? op : null;
+  }
+  protected put(e: TentEntry): boolean {
+    return mergeTent(this.map, e);
+  }
+  protected rebuild(): void {
+    this.#layout = tentLayout(this.map.values());
   }
   /** Another tab's ops in storage merged into mine (commutative): true when any was news. */
   #fold(kept: unknown): boolean {
     let more = false;
-    if (Array.isArray(kept)) for (const k of kept) if (this.#merge(k)) more = true;
+    if (Array.isArray(kept)) for (const k of kept) if (this.merge(k)) more = true;
     return more;
   }
-  #changed(): void {
+  protected commit(): void {
     // a second tab of the app keeps the same copy: its ops merged in before mine are written, never written over
-    this.#fold(readJson<unknown[]>(localKV(), this.#key()));
-    this.#layout = tentLayout(this.#map.values());
-    writeJson(localKV(), this.#key(), [...this.#map.values()]);
-    this.rev++;
+    this.#fold(readJson<unknown[]>(localKV(), this.key()));
+    super.commit();
   }
-  #listening = false;
-  /** Another tab's writes, folded in as they land (the `storage` event: only other tabs' writes fire it). */
-  #listen(): void {
-    if (this.#listening || typeof window === 'undefined') return;
-    this.#listening = true;
-    window.addEventListener('storage', (e) => {
-      if (e.key !== this.#key() || !this.#loaded || !e.newValue) return;
+  protected attached(): void {
+    this.listen((text) => {
       try {
-        if (this.#fold(JSON.parse(e.newValue))) this.#changed();
+        if (this.#fold(JSON.parse(text))) this.commit();
       } catch {
         /* not ours */
       }
@@ -97,7 +77,7 @@ class TentRoom {
 
   #room() {
     void this.rev;
-    this.#load();
+    this.load();
     return this.#layout;
   }
   /** The pieces in the room (≤ TENT_MAX), the first placed first. */
@@ -118,9 +98,9 @@ class TentRoom {
   /** When the room was last changed: its latest op's time, the room's light switch aside (0: never). */
   get changed(): number {
     void this.rev;
-    this.#load();
+    this.load();
     let at = 0;
-    for (const e of this.#map.values()) if (e.id !== TENT_ROOM && e.at > at) at = e.at;
+    for (const e of this.map.values()) if (e.id !== TENT_ROOM && e.at > at) at = e.at;
     return at;
   }
   /** How many more pieces fit. */
@@ -129,67 +109,30 @@ class TentRoom {
   }
   /** A piece's (or a surface's) own entry: its place, never its light's switch (that's `<id>/l`: contract/tent.ts tentKey). */
   #own(id: string): Exclude<TentEntry, { lt: 0 | 1 }> | undefined {
-    return this.#map.get(id) as Exclude<TentEntry, { lt: 0 | 1 }> | undefined;
+    return this.map.get(id) as Exclude<TentEntry, { lt: 0 | 1 }> | undefined;
   }
   byId(id: string): TentPiece | undefined {
     return this.pieces.find((p) => p.id === id);
   }
 
-  attach(relay: Live | null, me: Who | null, demo = false): void {
-    if (relay === this.#relay && me === this.#me && demo === this.#demo) return;
-    this.#off?.();
-    this.#off = null;
-    if (demo !== this.#demo) {
-      this.#map.clear();
-      this.#loaded = false;
-    }
-    this.#relay = relay;
-    this.#me = me;
-    this.#demo = demo;
-    if (relay) this.#off = relay.on((m) => this.#heard(m));
-    this.#listen();
-    this.rev++;
-  }
-
-  /** The sheet's tent ops (the model's, queued ones included). */
-  rows(rows: readonly TentEntry[]): void {
-    this.#load();
-    let any = false;
-    for (const r of rows) if (this.#merge(r)) any = true;
-    if (any) this.#changed();
-  }
-
-  #heard(m: Relayed): void {
+  protected heard(m: Relayed): void {
     if (m.kind !== 'decor' || m.sc !== this.sc) return;
-    this.#load();
+    this.load();
     const { v: _v, t, kind: _k, ...d } = m;
     const was = this.byId(m.id) ?? null;
-    const e = this.#merge(d);
+    const e = this.merge(d);
     if (!e) return;
-    this.#changed();
-    if (m.who === this.#me) return;
-    const n: TentNews = { e, was, live: world.now() - t < LIVE_MS };
-    for (const f of this.#subs) {
-      try {
-        f(n);
-      } catch (err) {
-        console.error('tent:', err);
-      }
-    }
-  }
-
-  /** The time of a change of mine: the relay's clock, never twice the same, and after the op it changes. */
-  #now(after = 0): number {
-    this.#last = opClock(this.#last, after);
-    return this.#last;
+    this.commit();
+    if (m.who === this.me) return;
+    this.tell({ e, was, live: world.now() - t < LIVE_MS });
   }
 
   #mine(op: TentOp): TentEntry | null {
-    this.#load();
-    const e = { ...op, who: this.#me ?? 'A' } as TentEntry;
-    if (!mergeTent(this.#map, e)) return null;
-    this.#changed();
-    this.#relay?.send({ kind: 'decor', ...op } as never);
+    this.load();
+    const e = { ...op, who: this.me ?? 'A' } as TentEntry;
+    if (!mergeTent(this.map, e)) return null;
+    this.commit();
+    this.send(op);
     this.sink?.(op);
     return e;
   }
@@ -199,7 +142,7 @@ class TentRoom {
     const known = this.#own(p.id);
     if (known?.rm) return false;
     if (!known && this.room <= 0) return false;
-    const at = this.#now(known?.at);
+    const at = this.now(known?.at);
     return !!this.#mine({ sc: this.sc, id: p.id, at, item: p.item, x: p.x, z: p.z, f: p.f, p: p.p ?? (known && !known.rm ? known.p : at), ...(p.on ? { on: p.on } : {}),
       // a light keeps its switch through a move: its own op's once it has one (the move says nothing of it), else the
       // piece's own `l` (unless the move says otherwise)
@@ -209,7 +152,7 @@ class TentRoom {
   /** What a move of piece `id` says of its light: nothing once its switch is an op of its own (`<id>/l`), else `l`
    *  asked for or the piece's own. */
   #lightOf(id: string, l: 0 | 1 | undefined, known: Exclude<TentEntry, { lt: 0 | 1 }> | undefined): { l?: 0 | 1 } {
-    if (this.#map.has(`${id}/l`) && l === undefined) return {};
+    if (this.map.has(`${id}/l`) && l === undefined) return {};
     const own = l ?? (known && !known.rm ? known.l : undefined);
     return own !== undefined ? { l: own } : {};
   }
@@ -218,7 +161,7 @@ class TentRoom {
   remove(id: string): boolean {
     const known = this.#own(id);
     if (!this.byId(id) || !known) return false;
-    return !!this.#mine({ sc: this.sc, id, at: this.#now(known.at), rm: true });
+    return !!this.#mine({ sc: this.sc, id, at: this.now(known.at), rm: true });
   }
 
   /** The wallpaper or the floor. */
@@ -226,7 +169,7 @@ class TentRoom {
     const id = kind === 'wall' ? TENT_WALL : TENT_FLOOR;
     const known = this.#own(id);
     if (known && !known.rm && known.item === code) return false;
-    const at = this.#now(known?.at);
+    const at = this.now(known?.at);
     return !!this.#mine({ sc: this.sc, id, at, item: code, x: 0, z: 0, f: 0, p: known && !known.rm ? known.p : at });
   }
 
@@ -236,34 +179,19 @@ class TentRoom {
   switchLight(id: string, on: boolean): boolean {
     const p = this.byId(id), known = this.#own(id);
     if (!p || !known || known.rm || (p.l ?? 1) === (on ? 1 : 0)) return false;
-    const sw = this.#map.get(`${id}/l`);
-    return !!this.#mine({ sc: this.sc, id, at: this.#now(sw?.at), lt: on ? 1 : 0 });
+    const sw = this.map.get(`${id}/l`);
+    return !!this.#mine({ sc: this.sc, id, at: this.now(sw?.at), lt: on ? 1 : 0 });
   }
   /** NH's room light switch. */
   switchRoom(on: boolean): boolean {
     if (this.lights === on) return false;
     const known = this.#own(TENT_ROOM);
-    const at = this.#now(known?.at);
+    const at = this.now(known?.at);
     return !!this.#mine({ sc: this.sc, id: TENT_ROOM, at, item: on ? 'r1' : 'r0', x: 0, z: 0, f: 0, p: known && !known.rm ? known.p : at });
   }
 
-  on(fn: (n: TentNews) => void): () => void {
-    this.#subs.add(fn);
-    return () => void this.#subs.delete(fn);
-  }
-
-  /** Forget everything (tests). */
-  reset(): void {
-    this.#off?.();
-    this.#off = null;
-    this.#relay = null;
-    this.#me = null;
-    this.#map.clear();
+  protected cleared(): void {
     this.#layout = { pieces: [], wall: null, floor: null, lights: true };
-    this.#loaded = false;
-    this.#last = 0;
-    this.#subs.clear();
-    this.rev++;
   }
 }
 
