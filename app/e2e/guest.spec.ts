@@ -107,15 +107,22 @@ test('a guest’s catch is in the members’ ずかん at once, credited to the 
   const g = await ctx.newPage();
   await g.goto(`?demo&date=${DATE}&critter=common-butterfly&visitor=none&as=G`);
   await islandUp(g);
-  // the butterfly flown in: on screen, and over the island's ground rather than mid-way in from the edge
-  const bfl = g.locator('[data-critter="common-butterfly"]');
+  // the butterfly landed on a flower (still there: a flying one is somewhere else by the time a tap lands), tapped
+  // where its 3D model is (taps go by the model's spot, not the sprite's box), in one step in the page
   await expect.poll(async () => {
-    const b = await bfl.boundingBox();
-    return !!b && b.x > 20 && b.y > 80 && b.x + b.width < VIEW.width - 20 && b.y + b.height < VIEW.height - 80;
-  }, { timeout: 8000, intervals: [100] }).toBe(true);
-  const bf = (await bfl.boundingBox())!;
-  await g.mouse.click(bf.x + bf.width / 2, bf.y + bf.height / 2);
-  await expect(g.locator('[data-fx="catch"]')).toBeAttached();
+    const at = await g.evaluate(() => {
+      if (!document.querySelector('[data-critter="common-butterfly"].sat')) return null;
+      type W3 = { where(id: string): { x: number; y: number; z: number; hidden?: boolean } | null; client(x: number, y: number, z: number): [number, number] };
+      const w = (window as unknown as { __world3d: W3 }).__world3d;
+      for (let n = 0; n < 60; n++) {
+        const p = w.where(`bug-${n}`);
+        if (p && !p.hidden) return w.client(p.x, -p.z, p.y);
+      }
+      return null;
+    });
+    if (at) await g.mouse.click(at[0], at[1]);
+    return g.locator('[data-fx="catch"]').count();
+  }, { timeout: 20_000, message: 'the butterfly netted' }).toBeGreaterThan(0);
   // A's ずかん: the butterfly, first found by the guest (おきゃくさん), its count under the guest's own name
   await a.bringToFront();
   await fromMenu(a, 'zukan');
