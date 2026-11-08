@@ -6,7 +6,7 @@
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { kikiSheet, toMode, toTile } from './kikimimi-nav.ts';
+import { kikiSheet, runToQuestion, toMode, toTile } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -25,8 +25,7 @@ const shot = async (p: Page, name: string) => {
 async function playGame(page: Page, wrong: readonly number[]) {
   await expect(sheet(page)).toHaveAttribute('data-phase', 'countdown');
   for (let i = 0; i < 8; i++) {
-    await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 15_000 }).toBe(i);
-    await expect(sheet(page)).toHaveAttribute('data-phase', 'answer', { timeout: 15_000 });
+    await runToQuestion(page, i, 'answer');
     const right = await kiki(page, (k) => k.right());
     const n = await sheet(page).locator('[data-choice]').count();
     await sheet(page).locator(`[data-choice="${wrong.includes(i) ? (right + 1) % n : right}"]`).click();
@@ -37,7 +36,7 @@ async function playGame(page: Page, wrong: readonly number[]) {
 }
 
 test('after a solo game: my feedback, the hub’s menu, きろく, and the menu’s おさらい starts my weak spots', async ({ page }) => {
-  test.slow();
+  await page.clock.install(); // (the games' plays stepped through: kikimimi-nav.ts runUntil)
   await page.goto(`?demo&${Q}`);
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
@@ -87,7 +86,7 @@ test('after a solo game: my feedback, the hub’s menu, きろく, and the menu�
 });
 
 test('おさらい (あそぶ) plays a deck of my weak spots and records it', async ({ page }) => {
-  test.slow();
+  await page.clock.install(); // (the games' plays stepped through: kikimimi-nav.ts runUntil)
   await page.goto(`?demo&${Q}`);
   await islandUp(page);
   await fromMenu(page, 'kikimimi');

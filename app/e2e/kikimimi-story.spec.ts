@@ -6,13 +6,14 @@
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { atHub, kikiSheet as sheet } from './kikimimi-nav.ts';
+import { atHub, kikiSheet as sheet, runToSee } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const SHOTS = '/tmp/kikimimi-shots/story';
 const frame = (p: Page) => sheet(p).locator('[data-kiki-page="story-frame"]');
 
 async function open(page: Page, at: string) {
+  await page.clock.install(); // (a segment's play stepped through: kikimimi-nav.ts runUntil)
   await page.goto(`?demo&date=${at}&critter=none&visitor=none&kikimimi=fast`);
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
@@ -31,11 +32,10 @@ async function snap(p: Page, name: string) {
 async function toEnd(p: Page) {
   const fwd = frame(p).locator('[data-kiki-story-forward]');
   while ((await fwd.getAttribute('aria-disabled')) !== 'true') await fwd.click();
-  await expect(frame(p).locator('[data-kiki-story-end]')).toBeVisible({ timeout: 20_000 });
+  await runToSee(p, frame(p).locator('[data-kiki-story-end]'));
 }
 
 test('21:30: the night card plays the story; ⏸ / ▶, the timer, the words; its end unlocks the next chapter', async ({ page }) => {
-  test.setTimeout(60_000);
   await open(page, '2026-11-04T21:30');
   const whim = sheet(page).locator('[data-kiki-card="whim"]');
   await expect(whim).toContainText('おやすみ ものがたり');
@@ -99,7 +99,6 @@ test('21:30: the night card plays the story; ⏸ / ▶, the timer, the words; it
 });
 
 test('the morning after: the hub asks what happens next; the guess is revealed at the next chapter’s end', async ({ page }) => {
-  test.setTimeout(60_000);
   // ジョニーの たび's chapter 1 heard last night
   await page.addInitScript(() => {
     if (!localStorage.getItem('island.kikiStory'))

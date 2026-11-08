@@ -4,7 +4,7 @@
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { toMode } from './kikimimi-nav.ts';
+import { runToPhase, runToSee, toMode } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -30,7 +30,7 @@ async function through(p: Page, rate: 'got' | 'mada', name: string) {
   await expect(sand(p).locator('[data-kiki-sand-play]')).toBeVisible();
   await shot(p, `${name}-1-blind`);
   const read = p.locator('dialog[open] [data-kiki-sand-next="read"]');
-  await expect(read).toHaveAttribute('aria-disabled', 'false', { timeout: 20_000 });
+  await runToSee(p, p.locator('dialog[open] [data-kiki-sand-next="read"][aria-disabled="false"]'));
   await read.click();
   await expect(sand(p)).toHaveAttribute('data-kiki-sand', 'read');
   await expect(sand(p).locator('[data-kiki-sand-text]')).toBeVisible();
@@ -39,14 +39,14 @@ async function through(p: Page, rate: 'got' | 'mada', name: string) {
   await p.locator('dialog[open] [data-kiki-sand-next="again"]').click();
   await expect(sand(p)).toHaveAttribute('data-kiki-sand', 'again');
   await expect(sand(p).locator('[data-kiki-sand-text]')).toHaveCount(0);
-  await expect(p.locator('dialog[open] [data-kiki-sand-rate]')).toHaveAttribute('data-kiki-sand-rate', 'open', { timeout: 20_000 });
+  await runToSee(p, p.locator('dialog[open] [data-kiki-sand-rate="open"]'));
   await shot(p, `${name}-3-rate`);
   await p.locator(`dialog[open] [data-kiki-sand-${rate}]`).click();
   await expect(sand(p)).toHaveCount(0);
 }
 
 test('サンド: from a solo reveal and a review row; まだ marks the item on this phone', async ({ page }) => {
-  test.slow();
+  await page.clock.install(); // (the clips stepped through: kikimimi-nav.ts runUntil)
   await page.goto(`?demo&${Q}`);
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
@@ -54,7 +54,7 @@ test('サンド: from a solo reveal and a review row; まだ marks the item on t
   await sheet(page).locator('[data-level="1"]').click();
   await sheet(page).locator('[data-kiki-start]').click();
   // question 1's reveal (solo): 「読んでから もう一度」 under the verdict
-  await expect(sheet(page)).toHaveAttribute('data-phase', 'answer', { timeout: 40_000 });
+  await runToPhase(page, 'answer');
   const first = await kiki(page, (k) => k.items()[0]);
   await sheet(page).locator(`[data-choice="${await kiki(page, (k) => k.right())}"]`).click();
   await expect(sheet(page)).toHaveAttribute('data-phase', 'reveal');
@@ -69,7 +69,7 @@ test('サンド: from a solo reveal and a review row; まだ marks the item on t
   // the rest of the game, then a review row's サンド: 聞き取れた keeps nothing
   for (let i = 0; i < 8; i++) {
     if (i > 0) {
-      await expect(sheet(page)).toHaveAttribute('data-phase', 'answer', { timeout: 40_000 });
+      await runToPhase(page, 'answer');
       await sheet(page).locator(`[data-choice="${await kiki(page, (k) => k.right())}"]`).click();
       await expect(sheet(page)).toHaveAttribute('data-phase', 'reveal');
     }
