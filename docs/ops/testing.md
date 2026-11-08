@@ -7,30 +7,51 @@ The tiers and why: [test-strategy.md](test-strategy.md).
 
 | Job | What | Gates the deploy |
 |---|---|---|
-| `build` | `npm run build` once; its `build-pages/` is the `site` artifact: what `deploy` ships and the full tier tests | yes |
+| `build` | `npm run build` once (its budgets: the kikimimi budget, the headers, the precache limit); its `build-pages/` is the `site` artifact `deploy` ships | yes |
 | `checks` | `npm run check`, `npm run knip`, `npx vitest run`, beside the build; the quarantine listed in the summary (`scripts/e2e-quarantine.ts`: red when a quarantined test has no owner) | yes |
-| `e2e-logic` ×12 | **the logic tier**: Playwright in Chromium (iPhone 13 profile), every test but `@render` and `@quarantine`, with the 3D engines drawing nothing (`E2E_RENDER=none`), on `site` served as Pages serves it (`scripts/serve-build.ts`), 3 workers each (4 made the short waits flaky on the 4-core runners), shards balanced by each test's time (`scripts/e2e-shards.ts plan`, from the committed `e2e/timings.json`; the `timings` job's summary says when they drift apart: `npm run e2e:timings` and commit it); each shard builds the commit itself (~12 s: no waiting for `build`) | yes |
-| `e2e-render` | **the drawn smoke**: the `@render` and `@smoke` tests with real (software) GL, one runner; advisory (CI's SwiftShader isn't the phones' Metal: rendering is judged on the iOS Simulator and the phones) | no |
-| `timings` | after the logic tier, on pushes: its test times folded into `e2e/timings.json` (the `e2e-timings` artifact) and the shards' spread in the summary | no |
+| `e2e-gate` ×4 | **the gate's e2e** ("The gate" below): Playwright in Chromium (iPhone 13 profile) in logic mode (`E2E_RENDER=none`), `@render` and `@quarantine` left out, on `site` served as Pages serves it (`scripts/serve-build.ts`): the gate set, the changed specs ×3 and the specs the push reaches; 3 workers each (4 made the short waits flaky on the 4-core runners), shards balanced by each test's time (`scripts/e2e-shards.ts plan`, the committed `e2e/timings.json`); each shard builds the commit itself (no waiting for `build`) | yes |
 | `deploy` | `site` to Cloudflare Pages (`wrangler pages deploy`, project `island-fund`), once all of the above are green; then checks https://island-fund.pages.dev answers this build (`_app/version.json`) with its CSP header. No `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` secret: a warning, nothing deployed | — |
-| `e2e-full` ×10 | **the full tier** (`.github/workflows/e2e-full.yml`, its own workflow after each run of this one, and on demand): the whole suite drawn (the quarantine too), one browser a runner, `E2E_SLOW=1` (a test 90 s, an expect 20 s: drawn under software GL the game itself runs slower); its failures in its summary and on their specs | no |
+
+After a deploy, never holding one back:
+
+| Workflow · job | What |
+|---|---|
+| *e2e logic full* (`e2e-logic-full.yml`) · `e2e-logic` ×6 | **the full logic tier**: every test the gate's way, the auto-quarantined too, on the deployed commit, after each green *Deploy UI* run (and on demand). Loud: a failure is an `::error` on its spec, a list in the summary, and the workflow red: the next push's to fix first |
+| · `e2e-render` | **the drawn smoke**: the `@render` and `@smoke` tests with real (software) GL, one runner; advisory (CI's SwiftShader isn't the phones' Metal: rendering is judged on the iOS Simulator and the phones) |
+| · `timings` | the tier's test times folded into `e2e/timings.json` (the `e2e-timings` artifact) and the shards' spread in the summary: when they drift apart, `npm run e2e:timings` and commit it |
+| *e2e full tier* (`e2e-full.yml`) ×10 | **everything drawn**, nightly (02:30 Tokyo) and on demand: the whole suite with real GL (the quarantine too), one browser a runner, `E2E_SLOW=1` (a test 90 s, an expect 20 s: drawn under software GL the game itself runs slower); its failures in its summary and on their specs |
 
 - **Red main never deploys, and the newest green does.** One run at a time on `main`, never cancelled: a newer push
   waits, and one still waiting is replaced by the newest. So in a burst of pushes the running one finishes and
-  deploys, then the newest runs (a deploy that has started is never cancelled either). The full tier likewise runs
-  one at a time to the end (a newer one waits; one waiting is replaced by the newest): when its runs cancelled each
-  other, a burst of pushes left it never finishing, red for hours unseen.
+  deploys, then the newest runs (a deploy that has started is never cancelled either). The full logic tier likewise
+  runs one at a time to the end (a newer one waits; one waiting is replaced by the newest): when its runs cancelled
+  each other, a burst of pushes left it never finishing, red for hours unseen.
+- **The gate** (`scripts/e2e-impact.ts`, `npm run e2e:impact` shows what it would run here): push to live in ~4 min, so
+  not every test. It runs (1) the **gate set**, `e2e/gate.json`: ~16 fast, stable spec files over the core flows (boot,
+  the HUD, the tent, fishing, 健康 · ごはん, ききみみ, the shop, two phones, the editor, りょこう, the service worker,
+  the CSP), ~490 s of tests; (2) the specs the push **changed**, each test 3× and never retried (the `chromium-x3`
+  projects, `E2E_X3`): one failure in three is a flake the push brought, red; (3) the specs its files **reach**: a
+  changed e2e helper's importers (not island.ts or hud.ts: nearly every spec's), a src or content file's by
+  `e2e/impact.json` (path globs to spec names; else the file's own name: `fishing3d.ts` → `fishing3d*.spec.ts`). A file
+  nothing maps (a store, the config, a fixture, `package.json`) adds nothing. The changes are counted from the commit
+  live on the site (the `cloudflare-pages` deployments), not the push before: runs get superseded. Over the budget
+  (~1300 s of tests, ~110 s a shard) the changed specs run once, then the reached ones drop out: the gate set only.
+  Add a rule to `e2e/impact.json` when a src area's spec missed a break the full logic tier caught.
 - **Flakes: one retry, and a ledger.** On CI `retries: 1`: a test that fails twice is red; one that fails, then passes
   on its retry, is green but **flaky**: e2e/reporters/flaky.ts names it in the job summary, puts a warning on its spec,
   and writes it to the run's `flaky.json`, uploaded as `flaky-<shard>`: the **flaky ledger** (`npm run e2e:flakes`
-  prints the last 48 h). Fix a flaky test at its cause; one that's broken goes to the **quarantine** (below) with an
-  owner. Locally (`npm run e2e:ci-like`) there's no retry: a flake is red.
+  prints the last 48 h). **Auto-quarantine:** a test flaky in 2 runs or more in 48 h (the gate's shards and the full
+  logic tier both count) is left out of the gate (`--test-list-invert`), listed in its summary as *auto-quarantined*
+  with why, and still run by the full logic tier; it comes back by itself after 48 h without a flake. No commit: the
+  gate reads the ledger from the API each run (best effort: the API down, nothing is left out). Fix a flaky test at
+  its cause; one that's broken goes to the **quarantine** (below) with an owner. Locally (`npm run e2e:ci-like`)
+  there's no retry: a flake is red.
 - **Tags** (`test('…', { tag: '@render' }, …)`): `@render` needs real drawing (draw calls, pixels, the canvas's alpha):
   the drawn smoke only, never the logic tier. `@smoke` is a whole 3D flow worth drawing too: both tiers. `@quarantine`
-  is flaky: out of the gate, run in the full tier until fixed. A quarantined test carries who owns it and why:
+  is broken: out of the gate and the full logic tier, run in the nightly drawn tier until fixed. A quarantined test carries who owns it and why:
   `{ tag: '@quarantine', annotation: { type: 'quarantine', description: 'owner: engine agent, 2026-11-03: the rod never
   comes out on CI (#run)' } }`. List them: `npx playwright test --list --grep @quarantine`. `@logic` is the gate's
-  only, never drawn (the full tier leaves it out): a timing a software-GL frame of 0.5–1 s can't meet (three quick taps
+  only, never drawn (the drawn full tier leaves it out): a timing a software-GL frame of 0.5–1 s can't meet (three quick taps
   within 1.2 s, frame-by-frame smoothness, a wait sized for the game at full speed, a squish over before a frame shows
   it), with why in `annotation: { type: 'logic', description: 'drawn: …' }`; it says nothing about the phones, whose
   frames are 16 ms. List them: `npx playwright test --list --grep @logic`.
@@ -41,10 +62,10 @@ The tiers and why: [test-strategy.md](test-strategy.md).
 - **WebKit, the users' browser** (Playwright's WebKit as an iPhone 15: the users' phones are an iPhone 15 and an iPhone 16
   on Safari, and Playwright's two profiles have the same viewport), runs in **the flake hunt**
   (`.github/workflows/e2e-flake-hunt.yml`) on **macOS** runners (Safari's own WebKit; Linux's draws the island at about
-  one frame a second, so its timing-bound specs fail there): nightly, and Actions → *e2e flake hunt* → Run workflow
-  (with how many runs each; 1 for a plain WebKit check). Too slow to gate each push yet (5 macOS runners, ~4 min);
-  once it's green across the board it replaces Chromium as the gate. Each test 3× over, retries off; red when anything
-  failed even once, its summary lists them worst first. It gates nothing.
+  one frame a second, so its timing-bound specs fail there): weekly (Monday 03:30 Tokyo), and Actions → *e2e flake
+  hunt* → Run workflow (with how many runs each; 1 for a plain WebKit check). Too slow to gate each push yet (5 macOS
+  runners, ~4 min); once it's green across the board it replaces Chromium as the gate. Each test 3× over, retries off;
+  red when anything failed even once, its summary lists them worst first. It gates nothing.
 - **The base path.** The site is at the root (`BASE_PATH` unset or `''`); the specs follow `BASE_PATH` (`e2e/island.ts`
   `BASE`, `islandURL`), so a build under one (`BASE_PATH=/x npm run build`, then `BASE_PATH=/x npm run e2e`) is tested the same.
 - **The headers.** `npm run build` writes `build-pages/_headers` (`scripts/headers.ts`: the CSP SvelteKit put in the
@@ -81,7 +102,8 @@ npm run e2e:ci-like -- e2e/world3d.spec.ts --repeat 5   # as CI runs it (below)
    `--tier render`; `--tier full` draws everything; `--workers 6` loads the machine as a busy runner is.
 3. All green, every time: push (`git pull --rebase origin main && git push origin HEAD:main`). One failure in 5 is a
    flake: fix it now, or quarantine it in the same push with its owner.
-4. After the push, watch the run (`gh run watch`). A red gate is yours to fix first, before anything else.
+4. After the push, watch the run (`gh run watch`), then the full logic tier after its deploy (*e2e logic full*). A red
+   gate, or a red full logic tier, is yours to fix first, before anything else.
 
 ## Hermetic
 Every e2e runs in a sealed world (e2e/fixtures.ts), so a run today and a run in a month see the same island. The
@@ -148,11 +170,11 @@ instead:
 Fixed one? `UPDATE_BUDGETS=1 npx vitest run src/lib/e2e-budgets` writes the ceilings down to the counts (it never
 raises one: that's a hand edit to explain in the commit).
 
-## A changed spec, five times
-CI's `e2e-changed` job (pages.yml, the deploy waits for it) runs the specs a push adds or edits, each test 5× over in
-the logic tier (`scripts/e2e-changed.ts`; more than 8 changed is a sweep: the logic tier runs them all once). A flake
-fails the push that brings it, not the next ten runs. Before pushing: `npm run e2e:ci-like -- --changed` (the specs
-changed since origin/main, committed or not, 5× each).
+## A changed spec, three times
+The gate runs the specs a push adds or edits each test 3× over, never retried (the `chromium-x3` projects:
+`E2E_X3`, scripts/e2e-impact.ts; more than 8 changed is a sweep: each runs once). A flake fails the push that brings
+it, not the next ten runs. Before pushing: `npm run e2e:ci-like -- --changed` (the specs changed since origin/main,
+committed or not, 5× each).
 
 ## Writing a stable spec
 Most red runs so far were the spec, not the app. Before pushing a new or changed spec, run it with

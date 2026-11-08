@@ -8,12 +8,12 @@
 //   --tier logic   (default) what the gate runs: the 3D engines draw nothing (E2E_RENDER=none), @render and
 //                  @quarantine left out
 //   --tier render  the drawn smoke: real (software) GL, only the @render and @smoke tests
-//   --tier full    everything drawn, as the full tier after the deploy (quarantine and @logic left out)
+//   --tier full    everything drawn, as the nightly full tier (quarantine and @logic left out)
 //   --repeat N     each test N times (--repeat-each; default 1; 5 before pushing a new or changed 3D or sync spec)
 //   --workers N    default 3 (CI's); try 6 to load the machine as a busy runner is
 //   --port P       E2E_PORT (default: a free one from 4600)
-//   --changed      the specs changed since origin/main, committed or not (scripts/e2e-changed.ts), each test 5× unless
-//                  --repeat says otherwise: what CI's e2e-changed job runs on the push
+//   --changed      the specs changed since origin/main, committed or not (scripts/e2e-impact.ts --changed), each test
+//                  5× unless --repeat says otherwise (the gate runs them 3× on the push)
 // It builds first unless build-pages/ is newer than src/ (--no-build skips the check).
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, statSync } from 'node:fs';
@@ -41,7 +41,7 @@ const noBuild = flag('--no-build');
 const changed = flag('--changed');
 if (!['logic', 'render', 'full'].includes(tier)) throw new Error(`--tier logic|render|full, not ${tier}`);
 if (changed) {
-  const specs = execFileSync('node', ['scripts/e2e-changed.ts', 'origin/main'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] }).split('\n').filter(Boolean);
+  const specs = execFileSync('node', ['scripts/e2e-impact.ts', '--changed', 'origin/main'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] }).split('\n').filter(Boolean);
   if (!specs.length) {
     console.log('e2e:ci-like: no changed spec to run');
     process.exit(0);
