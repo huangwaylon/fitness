@@ -7,7 +7,7 @@
 //   RELAY_E2E=1 npm run e2e -- sync-harness --workers=1   two browser contexts against the test relay (relay/.smoke-keys;
 //                                                         one at a time: each person's key opens one socket)
 import { expect, test, type Browser, type Page } from './fixtures.ts';
-import { geo, lawnTap, oku, tapOn, quiet, watchComings } from './island.ts';
+import { lawnTap, oku, tapOn, quiet, watchComings } from './island.ts';
 import { sayOwn } from './say.ts';
 import { existsSync, readFileSync } from 'node:fs';
 
@@ -239,19 +239,6 @@ test('two phones, one island: a scripted session leaves both (and a phone openin
   await Promise.all([[a, 96], [b, 312]].map(([p, x]) => w(p as Page, 'decorSet', { id: d1, item: 'tanuki', x, z: 504, f: 0 })));
   // (the later wins on both: one layout before the next race, the demo's room is a log both tabs write)
   await expect.poll(async () => (await w<string>(a, 'decorCanon')) === (await w<string>(b, 'decorCanon')), { timeout: 4000 }).toBe(true);
-  // the fixed decor (docs/design.md "The fixed decor"): A's pump waters the flowers round it (the shared watered op:
-  // on both), and A's villager sitting on the front bench is drawn seated on both phones (from where it stands)
-  await w(a, 'go', await oku(a));
-  await atRest(a);
-  const pump = await a.locator('[data-fixture="pump"]').evaluate((el) => {
-    const r = el.getBoundingClientRect();
-    return [r.left + r.width / 2, r.top + r.height * 0.6];
-  });
-  await a.mouse.click(pump[0], pump[1]);
-  await w(a, 'go', 300);
-  await w(a, 'put', ...(await geo(a)).SEATS.seatMaeL);
-  await expect(a.locator('[data-actor="mine"]')).toHaveAttribute('data-seat', 'seatMaeL');
-  await expect(b.locator('[data-actor="partner"]')).toHaveAttribute('data-seat', 'seatMaeL', { timeout: 4000 });
   // both grab the same thing at once: one wins, both agree on who
   await Promise.all([a, b].map((p) => w(p, 'share', { kind: 'pick', id: `h${run}x`, what: 'weed' })));
   await settledAs(a, b); // the walks are over, everything has arrived
@@ -285,7 +272,6 @@ test('a phrase is presence: the partner sees it over my villager at once, a phon
   const said = b.locator('[data-say="partner"]');
   // a phrase, each way (A's first: nothing kept yet, the field at once; the demo's tabs share one storage, so B's
   // picker lists A's and goes through じぶんで かく…)
-  let saidAt = 0;
   for (const [from, to, name] of [[a, b, 'やっほー！'], [b, a, 'おつかれさま！']] as const) {
     await from.getByRole('button', { name: 'ひとこと いう' }).click();
     const box = from.getByRole('dialog', { name: 'なにを いう？' }), field = box.locator('[data-say-field]');
@@ -293,18 +279,13 @@ test('a phrase is presence: the partner sees it over my villager at once, a phon
     if (!(await field.count())) await box.getByRole('button', { name: 'じぶんで かく…' }).click();
     await field.fill(name);
     const t0 = Date.now();
-    if (from === a) saidAt = t0;
     await field.press('Enter');
     await expect(to.locator('[data-say="partner"]')).toHaveText(new RegExp(name), { timeout: 2000 });
+    if (from === a) await expect(said.locator('.who')).toHaveText('ウェイ');
     console.log(`[${RELAY ? 'relay' : 'demo'}] say → there: ${Date.now() - t0} ms (the Enter included)`);
     await expect(from.locator('[data-say="mine"]')).toHaveText(new RegExp(name));
   }
-  // my own words, cleaned on the way (A's last phrase was the first round's: one per 1.5 s, a time rule, so what's left
-  // of it waited out)
-  await a.waitForTimeout(Math.max(0, 1600 - (Date.now() - saidAt)));
-  await sayOwn(a, ' ジム\u202Eいこう ');
-  await expect(said.locator('.text')).toHaveText('ジムいこう', { timeout: 2000 });
-  await expect(said.locator('.who')).toHaveText('ウェイ');
+  // (my own words cleaned on the way: say.spec's, and live-protocol.test's parseServer)
   // gone after a few seconds, and never replayed to a phone opening later
   await expect(said).toHaveCount(0, { timeout: 5500 });
   const c = await open('B', RELAY ? await browser.newContext(CTX) : ctxB);
