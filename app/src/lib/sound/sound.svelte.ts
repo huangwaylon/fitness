@@ -29,9 +29,12 @@ import { ambientFor } from './ambient.ts';
 import { DEVICE, localKV } from '#lib/sync/storage.ts';
 import { dayKey, jst, now } from '#lib/time/clock.ts';
 
-export const sound = $state<{ settings: SoundSettings; weather: Weather; heavy: boolean; playing: Playing; unlocked: boolean }>({
+export const sound = $state<{ settings: SoundSettings; weather: Weather; heavy: boolean; shift: number; playing: Playing; unlocked: boolean }>({
   settings: { ...DEFAULT_SOUND },
   weather: 'sunny',
+  /** How far (ms) the island's music runs from the clock: the island's look shows another day or time of day (設定 →
+   *  季節, island/weatherNow.svelte.ts: its event's music, its hour's track and ambience); 0, the clock's. */
+  shift: 0,
   /** A downpour: the rain bed louder (ambient.ts). */
   heavy: false,
   /** What the music is (for the settings' note and the Now Playing tile). */
@@ -92,7 +95,7 @@ function hearIntro(day: string): void {
   }
 }
 
-const island = (d: Date) => musicAt(d, sound.weather, AUDIO, introHeard);
+const island = (d: Date) => musicAt(new Date(d.getTime() + sound.shift), sound.weather, AUDIO, introHeard);
 const room = () => placeMusic(place, AUDIO);
 /** What plays under a cut-in (and is fetched ahead): the room's track indoors, else the island's. */
 const baseAt = (d: Date) => pickMusic({ place: room(), island: island(d) });
@@ -335,7 +338,7 @@ function syncMusic(fade: Fade = 'hour'): void {
   }
   e.muffle(coveredBy() && !opening);
   const d = now();
-  const { hour, month } = jst(d);
+  const { hour, month } = jst(new Date(d.getTime() + sound.shift));
   const out = island(d), inside = room(), st = staged();
   const want = pickMusic({ opening: opening ? openingMusic(AUDIO) : null, cutIn, stage: st, place: inside, island: out });
   e.pin(pinsFor({ cutIn: cutIn ?? st, place: inside, island: out, files: AUDIO }));
@@ -515,6 +518,7 @@ export function startSound(o: { muffled: () => boolean }): () => void {
     $effect(() => {
       void sound.weather;
       void sound.heavy;
+      void sound.shift;
       untrack(() => syncMusic());
     });
   });

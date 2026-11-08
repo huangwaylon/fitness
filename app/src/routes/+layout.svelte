@@ -28,6 +28,8 @@
   import { musicNow, startSound } from '#lib/sound/sound.svelte.ts';
   import { acked, bindStage, hear, hush, request, stage } from '#lib/sound/stage.svelte.ts';
   import { hooksOn } from '#lib/ui-state/preview.ts';
+  import { bindLook } from '#lib/ui-state/preview.svelte.ts';
+  import { setSeasonLook } from '#lib/store/actions.ts';
   import { world } from '#lib/store/world.svelte.ts';
   import { startTaps } from '#lib/sound/taps.ts';
   import { startExactTaps } from '#lib/ui-state/exactTaps.ts';
@@ -97,6 +99,8 @@
 
   onMount(() => {
     registerLate(route === '/' && opensIsland());
+    // the island's look (設定 → 季節) is the record's: every phone's scene follows it
+    bindLook({ read: () => week.model?.state.seasonLook, write: (look) => void setSeasonLook(look) });
     const stopTheme = startTheme();
     const stopWeather = startWeather();
     week.init();

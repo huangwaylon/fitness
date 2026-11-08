@@ -1,11 +1,12 @@
 // The island's weather now (docs/design.md "Weather"): at each new minute, for the scene, the critters, the footsteps
-// and the music (it sets sound.weather and sound.heavy: the hour's arrangement and the rain bed). The island's mode
-// (`pref weatherMode`, せってい's てんき: one for the whole island) is `real` unless a member set `game`: then Tokyo's
+// and the music (it sets sound.weather and sound.heavy: the hour's arrangement and the rain bed; sound.shift: the
+// island's look's day and time of day, ui-state/preview.ts shownAt). The island's mode
+// (`pref weatherMode`, 設定 → 季節's 天気: one for the whole island) is `real` unless someone set `game`: then Tokyo's
 // real sky by the hour from the relay's timeline (sync/wx.ts, cached for opening offline) while it covers the hour,
 // else (and in `game`) the seeded day (weather.ts). A `?date=` preview moves the scene clock off the real hours: the
 // seeded day.
-// `?weather=clear|rain|heavy|snow|fog|aurora|rainbow` (dev or `?demo`) forces one for this load and せってい's きせつ shows
-// one (ui-state/preview.svelte.ts); `?wx=real|game` forces the mode and `?wx=<fixture>` lays a canned timeline on the
+// `?weather=clear|rain|heavy|snow|fog|aurora|rainbow` (dev or `?demo`) forces one for this load and 設定's 季節 shows
+// one on the whole island (ui-state/preview.svelte.ts); `?wx=real|game` forces the mode and `?wx=<fixture>` lays a canned timeline on the
 // scene clock (wxFixtures.ts); `?seed=` (dev or `?demo`) varies the island's seed like the rest of the island.
 // What the island yields (the rain-only critters) follows `yieldSky`: the mode's weather (or the dev param), never the
 // preview's.
@@ -13,6 +14,7 @@ import { untrack } from 'svelte';
 import { clockMoved, dayKey, jst, minuteNow, now } from '#lib/time/clock.ts';
 import { sound } from '#lib/sound/sound.svelte.ts';
 import { scenePreview } from '#lib/ui-state/preview.svelte.ts';
+import { shownAt } from '#lib/ui-state/preview.ts';
 import { week } from '#lib/store/week.svelte.ts';
 import { heldWx, onWx } from '#lib/sync/wx.ts';
 import type { Wx } from '#lib/contract/live-protocol.ts';
@@ -39,7 +41,7 @@ function modeOf(set: unknown): WeatherMode {
   return isWeatherMode(forced) ? forced : isWeatherMode(set) ? set : 'real';
 }
 
-function apply(at: Date, seed: string, shown: Forced | null, mode: WeatherMode, wx: Wx | null): void {
+function apply(at: Date, seed: string, shown: Forced | null, mode: WeatherMode, wx: Wx | null, shift: number): void {
   const date = dayKey(at), hour = jst(at).hour;
   const real = mode === 'real' ? realWeatherAt(wx, at.getTime(), seed) : null;
   const day = real ?? weatherAt(date, hour, seed);
@@ -52,6 +54,7 @@ function apply(at: Date, seed: string, shown: Forced | null, mode: WeatherMode, 
   const music = musicWeather(w.sky), heavy = w.sky === 'heavy';
   if (sound.weather !== music) sound.weather = music;
   if (sound.heavy !== heavy) sound.heavy = heavy;
+  if (sound.shift !== shift) sound.shift = shift;
 }
 
 /** Follow the clock (at each new minute), the preview, the island's mode and the relay's timeline; returns a cleanup
@@ -64,8 +67,10 @@ export function startWeather(): () => void {
   const off = fixture || clockMoved() ? () => {} : onWx((w) => (held.wx = w));
   const stop = $effect.root(() => {
     $effect(() => {
-      const at = minuteNow(), shown = forcedOf(scenePreview().weather), mode = modeOf(week.model?.state.weatherMode), wx = held.wx;
-      untrack(() => apply(at, seed, shown, mode, wx));
+      const at = minuteNow(), look = scenePreview(), shown = forcedOf(look.weather), mode = modeOf(week.model?.state.weatherMode), wx = held.wx;
+      // the music's moment: the look's event day and time of day (a minute's: the hour's track changes on the hour)
+      const shift = shownAt(at, look).getTime() - at.getTime();
+      untrack(() => apply(at, seed, shown, mode, wx, shift));
     });
   });
   return () => {

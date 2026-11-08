@@ -161,8 +161,8 @@ scrolled where it was); ✕, the backdrop and Esc close the panel.
 **設定** (`panel/SettingsSheet.svelte`): the HUD menu's 設定 pill → its own sheet, full height, at once
 (Sheet's `pop`), title せってい: **すがた** (the look's portrait, the よびな and what's worn: いつもの, a コーデ's name
 or the villager's; かえる → [the すがた level](#sugata): the closet and the villagers in one dresser), **プロフィール** ([Profile](#profile)), **サウンド** ([Sound settings](#sound-settings)), **言語** (one dropdown, health/Pick's:
-日本語 by default / English), **季節** ([Seasonal preview](#seasonal-preview); its fold opens on **島の天気**, 実際の天気 / ゲーム:
-[Weather](#weather)) and **図鑑** (one row: 設定 closes, [the ずかん](#zukan) opens); the guest's the same (2026-11-06), with a line saying it's visiting. すがた pushes a level with ‹; ✕, the backdrop and Esc close it,
+日本語 by default / English), **季節** ([Seasonal look](#seasonal-look): the whole island's; its 天気 is
+[Weather](#weather)'s switch too) and **図鑑** (one row: 設定 closes, [the ずかん](#zukan) opens); the guest's the same (2026-11-06), with a line saying it's visiting. すがた pushes a level with ‹; ✕, the backdrop and Esc close it,
 and the next opening starts at its top. Its own chunk, loaded on the first tap.
 
 <a id="sugata"></a>**すがた** (`look/LookPage.svelte`, `look/LookStage.svelte`, `look/tabs.ts`, `look/ClosetGrid.svelte`,
@@ -1160,12 +1160,12 @@ an hour's extra.
   all day (light, or a downpour), a wet morning, or heavy rain that clears at 16:00 and leaves a rainbow 16:00–17:00.
   In December–February a wet day snows instead (about one in four). Fog and the aurora come on fine days only.
   Fireworks days and meteor shower nights are always fine.
-- **The switch:** 設定 → 季節's fold → **島の天気**: **ほんもの** (「とうきょうの いまの てんき」) or **ゲーム**. It's one setting for the
+- **The switch:** 設定 → 季節's **天気** ([Seasonal look](#seasonal-look)): **自動** (Tokyo's) or **ゲーム**. It's one setting for the
   whole island (`pref weatherMode`, the last anyone set, the guest too, kept in the record), so the two phones never disagree on
   the rain-only critters. Under it is what the island has now (「いま: とうきょう あめ」, the fetch's time when it's
   over 2 h old, or 「ほんものの てんきが とれません（ゲームの てんき）」), and the credit 「天気: Open-Meteo（気象庁モデル）」.
-  The guest sets it as we do (2026-11-06). The きせつ preview's weather still overrides the look on one phone, and
-  `?weather=` both the look and the critters.
+  The guest sets it as we do (2026-11-06). Its 晴れ / 雨 / 雪 force the look on the whole island (not the critters),
+  and `?weather=` both the look and the critters.
 - **Look:** a grey sky and a darker tint on a wet day; a cloudy day's at about half, with nothing falling. Fog a haze
   with two drifting banks, the rainbow soft arcs low on the right, the aurora three swaying curtains: over the tint,
   under every control. A change of sky on screen fades: the grey sky, the tint and what falls ease in and out over a
@@ -2660,14 +2660,21 @@ menu's 「りょこう」 pill (Orville's head) opens a full-height sheet (`comp
   and a number's counter kept on the word before). The packing list's typed names break as normal Japanese. The chrome
   is a sheet's ([Copy](#copy)).
 
-### Seasonal preview
+### Seasonal look
 
-`ui-state/preview.ts` (pure: `resolvePreview`), `ui-state/preview.svelte.ts`, `panel/SeasonSection.svelte`,
-`island/PreviewPill.svelte`, `e2e/preview.spec.ts`. せってい's **きせつ** shows the island another day's look on this
-phone: an event, a season (はる / なつ / あき / ふゆ), the weather (はれ / あめ / ゆき) and the time of day (あさ / ひる /
-ゆうがた / よる), each おまかせ (the real day's) by default. Folded to one row by default: what's showing (おまかせ, or
-「ハロウィン · ふゆ」) and a chevron that opens the four chip groups; もどす sits in that row while a preview is on. One resolution feeds every seasonal look, with two inputs:
-the dev params below (they win, field by field) and the setting; then what the event implies.
+`ui-state/preview.ts` (pure: `resolvePreview`, `lookFrom`, `shownAt`), `ui-state/preview.svelte.ts`,
+`panel/SeasonSection.svelte`, `island/PreviewPill.svelte`, `e2e/preview.spec.ts`, `e2e/season-shared.spec.ts`.
+設定's **季節** shows the whole island another day's look, on every phone at once (2026-11-08, the user: "apply to the
+whole island, shared with everyone"): an event, a season (春 / 夏 / 秋 / 冬), the weather and the time of day (朝 / 昼 /
+夕方 / 夜), each **自動** (the real day's) by default. Anyone sets it, the guest too; it stays until someone sets it
+back. Folded to one row: 自動, or what's forced (「ハロウィン · 冬 · 雪」), and a chevron that opens a one-line note (the
+whole island sees it, anyone can change it) and the four chip groups; **自動に戻す** sits in that row while anything is
+forced and sets all of it back, the weather's mode too. **天気** is one group for both the look and
+[Weather](#weather)'s switch: 自動 (Tokyo's real sky: what it is now and the credit under it), ゲーム (the seeded days:
+`pref weatherMode`), 晴れ / 雨 / 雪 (a forced look). It's the record's: `pref seasonLook` (`{event, season, weather,
+tod}` or null, one island-wide slot, the last anyone set; docs/backend.md), bound into ui-state by the root layout
+(`bindLook`); a look older builds kept on the phone (`island.preview`) is ignored. One resolution feeds every seasonal
+look, with two inputs: the dev params below (they win, field by field) and the setting; then what the event implies.
 
 - **Events:** うめの たんじょうび, イースター (Zipper), さくら (petals, blossom), はなび, ウェイの たんじょうび,
   けっこんしき (Reese and Cyrus, the wedding pose, fireworks), ハロウィン (Jack, the lit pumpkins), もみじ, ハーベスト
@@ -2675,19 +2682,18 @@ the dev params below (they win, field by field) and the setting; then what the e
   main part is on at once, and it brings its day's look (its season, foliage and hedges: `EVENT_DAY`) and, for the
   evening ones (Halloween, fireworks, the wedding, a shower), the night sky; fireworks and a shower a clear sky.
 - **What follows it:** the theme (`<html>` data-tod/-season/-foliage, the sky, the chrome), the weather's look and its
-  music, `eventAt` for the scene (pumpkins, hosts, lines), the visitor, the fireworks, the shooting-star shower,
+  music, the music's hour and event (`shownAt`: the event's day, the time of day's hour), `eventAt` for the scene (pumpkins, hosts, lines), the visitor, the fireworks, the shooting-star shower,
   birthdays (hats, cake, しずえ), the wedding, cherry/maple/Toy Day's particles and decorations, the hedges' month.
 - **What never does:** the scene clock (`?date=` only), the days records and the scene's keys are by, and whatever the
   island yields: critters come by the real month and weather (`yieldSky`), Bunny Day's eggs and the mushrooms by the
-  real day, and a wish on a star brings no fragment while it's on. Nothing is synced or sent: it's `island.preview`
-  (`{ day, event, season, weather, tod }`) on this phone, for the Tokyo day it was set on; the next day it's off.
-- **On screen:** while it's on, a chip under the HUD row says what (「きせつ: ハロウィン」); a tap on it, or もどす in
-  きせつ, goes back to the real day. The event music stays the real day's.
+  real day, and a wish on a star brings no fragment while it's on.
+- **On screen:** while it's on, a chip under the HUD row says what (「きせつ: ハロウィン」); a tap on it, or 自動に戻す in
+  季節, goes back to the real day, on every phone.
 
 ### Dev params
 
-Read on each call by `island/devHooks.ts` (the seasonal ones by `ui-state/preview.ts`: the same resolution as せってい's
-きせつ, above). The island's hooks work in dev builds or with `?demo`; `?date`, `?theme` and `?season` work everywhere:
+Read on each call by `island/devHooks.ts` (the seasonal ones by `ui-state/preview.ts`: the same resolution as 設定's
+季節, above). The island's hooks work in dev builds or with `?demo`; `?date`, `?theme` and `?season` work everywhere:
 
 | Param | Effect |
 |---|---|

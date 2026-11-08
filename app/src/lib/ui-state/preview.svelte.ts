@@ -1,33 +1,40 @@
-// The scene's seasonal preview, live (ui-state/preview.ts resolves it): せってい's きせつ, kept on this phone for the
-// Tokyo day it was set on, and the URL's dev params. Every seasonal look reads `scenePreview()` (the theme, the
-// weather, the island's events, visitors, fireworks, birthdays, the wedding); a change shows at once.
-import { dayKey, minuteNow } from '#lib/time/clock.ts';
-import { DEVICE, localKV, readJson, remove, writeJson } from '#lib/sync/storage.ts';
-import { devChoice, resolvePreview, savedFrom, type Choice, type Saved, type Scene } from './preview.ts';
+// The island's look, live (ui-state/preview.ts resolves it): 設定's 季節, one for the whole island (`pref seasonLook`
+// in the record: whoever set it last, every phone at once), and the URL's dev params. Every seasonal look reads
+// `scenePreview()` (the theme, the weather, the music, the island's events, visitors, fireworks, birthdays, the
+// wedding); a change, here or from another phone, shows at once. The record is the store's (ui-state never imports
+// it): the root layout binds it (bindLook). (A look kept on the phone by older builds, `island.preview`, is ignored.)
+import { devChoice, lookFrom, resolvePreview, type Choice, type Scene } from './preview.ts';
 
-let saved = $state<Saved | null>(savedFrom(readJson(localKV(), DEVICE.preview)));
+interface LookSource {
+  /** The record's `seasonLook` (reactive). */
+  read(): unknown;
+  /** Send a new one (null: 自動). */
+  write(look: Choice | null): void;
+}
+let source: LookSource | null = null;
 
-/** The preview now (reactive: the setting, and the day it lapses at). */
-export function scenePreview(): Scene {
-  return resolvePreview(devChoice(typeof location === 'undefined' ? '' : location.search), saved, dayKey(minuteNow()));
+/** Once, in the root layout, before the theme starts: where the island's look is kept. */
+export function bindLook(s: LookSource): void {
+  source = s;
 }
 
-/** The setting's own choices today (all null: none). */
+/** The island's setting (all null: 自動). */
 export function previewChoice(): Choice {
-  const s = saved?.day === dayKey(minuteNow()) ? saved : null;
-  return { event: s?.event ?? null, season: s?.season ?? null, weather: s?.weather ?? null, tod: s?.tod ?? null };
+  return lookFrom(source?.read()) ?? { event: null, season: null, weather: null, tod: null };
 }
 
-/** Change the setting (for today); all null clears it. */
+/** The look now (reactive: the island's setting, and the dev params). */
+export function scenePreview(): Scene {
+  return resolvePreview(devChoice(typeof location === 'undefined' ? '' : location.search), lookFrom(source?.read()));
+}
+
+/** Change the island's setting; all null is 自動. */
 export function setPreview(c: Partial<Choice>): void {
   const next = { ...previewChoice(), ...c };
-  if (next.event === null && next.season === null && next.weather === null && next.tod === null) return clearPreview();
-  saved = { day: dayKey(), ...next };
-  writeJson(localKV(), DEVICE.preview, saved);
+  source?.write(next.event === null && next.season === null && next.weather === null && next.tod === null ? null : next);
 }
 
-/** もどす: the real day again. */
+/** 自動に戻す: the real day again, on every phone. */
 export function clearPreview(): void {
-  saved = null;
-  remove(localKV(), DEVICE.preview);
+  if (lookFrom(source?.read())) source?.write(null);
 }

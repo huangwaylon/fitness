@@ -3,55 +3,65 @@ import { reduce } from '#lib/model/state.ts';
 import { eventSlot, prefTaken, validEventData } from '#lib/contract/record.ts';
 import { guestMayWrite } from '#lib/contract/guest.ts';
 import type { EventRow } from '#lib/contract/api.ts';
-import { devChoice, PREVIEW_EVENTS, resolvePreview, savedFrom, type Saved } from './preview.ts';
+import { devChoice, lookFrom, PREVIEW_EVENTS, resolvePreview, shownAt, type Choice } from './preview.ts';
 
-const TODAY = '2026-11-04';
-const saved = (o: Partial<Saved>): Saved => ({ day: TODAY, event: null, season: null, weather: null, tod: null, ...o });
+const set = (o: Partial<Choice>): Choice => ({ event: null, season: null, weather: null, tod: null, ...o });
 const none = { event: null, season: null, foliage: null, month: null, tod: null, weather: null, on: false };
 
 describe('resolvePreview', () => {
   it('is the real day with nothing set', () => {
-    expect(resolvePreview({}, null, TODAY)).toEqual(none);
-    expect(resolvePreview({}, saved({}), TODAY)).toEqual(none);
+    expect(resolvePreview({}, null)).toEqual(none);
+    expect(resolvePreview({}, set({}))).toEqual(none);
   });
 
-  it('shows the setting on the day it was set, and lapses after it', () => {
-    const s = saved({ season: 'winter', weather: 'snow', tod: 'dusk' });
-    expect(resolvePreview({}, s, TODAY)).toEqual({ ...none, season: 'winter', foliage: 'snow', month: 1, weather: 'snow', tod: 'dusk', on: true });
-    expect(resolvePreview({}, s, '2026-11-05')).toEqual(none);
+  it('shows the island\'s setting, whatever the day', () => {
+    expect(resolvePreview({}, set({ season: 'winter', weather: 'snow', tod: 'dusk' }))).toEqual({ ...none, season: 'winter', foliage: 'snow', month: 1, weather: 'snow', tod: 'dusk', on: true });
   });
 
   it('gives an event its day’s look and hour', () => {
-    expect(resolvePreview({}, saved({ event: 'halloween' }), TODAY)).toMatchObject({ event: 'halloween', season: 'autumn', foliage: 'fall', month: 10, tod: 'night', weather: null, on: true });
-    expect(resolvePreview({}, saved({ event: 'cherry' }), TODAY)).toMatchObject({ season: 'spring', foliage: 'blossom', month: 4, tod: null });
-    expect(resolvePreview({}, saved({ event: 'toy-day' }), TODAY)).toMatchObject({ season: 'winter', foliage: 'snow', month: 12 });
-    expect(resolvePreview({}, saved({ event: 'fireworks' }), TODAY)).toMatchObject({ season: 'summer', tod: 'night', weather: 'clear' });
+    expect(resolvePreview({}, set({ event: 'halloween' }))).toMatchObject({ event: 'halloween', season: 'autumn', foliage: 'fall', month: 10, tod: 'night', weather: null, on: true });
+    expect(resolvePreview({}, set({ event: 'cherry' }))).toMatchObject({ season: 'spring', foliage: 'blossom', month: 4, tod: null });
+    expect(resolvePreview({}, set({ event: 'toy-day' }))).toMatchObject({ season: 'winter', foliage: 'snow', month: 12 });
+    expect(resolvePreview({}, set({ event: 'fireworks' }))).toMatchObject({ season: 'summer', tod: 'night', weather: 'clear' });
     // a meteor shower is any clear night: the season stays the real one
-    expect(resolvePreview({}, saved({ event: 'shower' }), TODAY)).toMatchObject({ season: null, month: null, tod: 'night', weather: 'clear' });
+    expect(resolvePreview({}, set({ event: 'shower' }))).toMatchObject({ season: null, month: null, tod: 'night', weather: 'clear' });
   });
 
   it('every event resolves', () => {
-    for (const event of PREVIEW_EVENTS) expect(resolvePreview({}, saved({ event }), TODAY).event).toBe(event);
+    for (const event of PREVIEW_EVENTS) expect(resolvePreview({}, set({ event })).event).toBe(event);
   });
 
   it('a picked season, time or weather wins over the event’s own', () => {
-    expect(resolvePreview({}, saved({ event: 'halloween', season: 'spring', tod: 'day', weather: 'rain' }), TODAY))
+    expect(resolvePreview({}, set({ event: 'halloween', season: 'spring', tod: 'day', weather: 'rain' })))
       .toMatchObject({ event: 'halloween', season: 'spring', foliage: 'blossom', month: 4, tod: 'day', weather: 'rain' });
   });
 
   it('a dev param wins over the setting, field by field; the dev params alone are not the setting', () => {
-    const s = saved({ event: 'maple', tod: 'dusk' });
-    expect(resolvePreview({ event: 'wedding', weather: 'fog' }, s, TODAY)).toMatchObject({ event: 'wedding', tod: 'dusk', weather: 'fog', on: true });
-    expect(resolvePreview({ event: 'halloween' }, null, TODAY)).toMatchObject({ event: 'halloween', tod: 'night', on: false });
+    expect(resolvePreview({ event: 'wedding', weather: 'fog' }, set({ event: 'maple', tod: 'dusk' }))).toMatchObject({ event: 'wedding', tod: 'dusk', weather: 'fog', on: true });
+    expect(resolvePreview({ event: 'halloween' }, null)).toMatchObject({ event: 'halloween', tod: 'night', on: false });
   });
 });
 
-describe('savedFrom', () => {
-  it('keeps only what it knows', () => {
-    expect(savedFrom({ day: TODAY, event: 'halloween', season: 'monsoon', weather: 'hail', tod: 'night' })).toEqual(saved({ event: 'halloween', tod: 'night' }));
-    expect(savedFrom(null)).toBeNull();
-    expect(savedFrom('x')).toBeNull();
-    expect(savedFrom({ event: 'halloween' })).toBeNull();
+describe('lookFrom (the record\'s pref seasonLook)', () => {
+  it('keeps only what this build knows; nothing known, or none, is 自動', () => {
+    expect(lookFrom({ event: 'halloween', season: 'monsoon', weather: 'hail', tod: 'night' })).toEqual(set({ event: 'halloween', tod: 'night' }));
+    expect(lookFrom({ season: 'winter' })).toEqual(set({ season: 'winter' }));
+    expect(lookFrom({ event: 'a-later-event' })).toBeNull();
+    expect(lookFrom(null)).toBeNull();
+    expect(lookFrom(undefined)).toBeNull();
+    expect(lookFrom('x')).toBeNull();
+  });
+});
+
+describe('shownAt (the music\'s moment)', () => {
+  const at = new Date('2026-11-04T14:20:00+09:00');
+  it('the clock with no event nor time of day; else the event\'s day and the time of day\'s hour (the minute kept)', () => {
+    expect(shownAt(at, { event: null, tod: null })).toEqual(at);
+    expect(shownAt(at, { event: null, tod: 'night' })).toEqual(new Date('2026-11-04T21:20:00+09:00'));
+    expect(shownAt(at, { event: 'halloween', tod: 'night' })).toEqual(new Date('2026-10-31T21:20:00+09:00'));
+    expect(shownAt(at, { event: 'toy-day', tod: null })).toEqual(new Date('2026-12-24T14:20:00+09:00'));
+    // a meteor shower has no day of its own
+    expect(shownAt(at, { event: 'shower', tod: 'dawn' })).toEqual(new Date('2026-11-04T06:20:00+09:00'));
   });
 });
 
