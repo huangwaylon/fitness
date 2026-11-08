@@ -134,7 +134,7 @@ export function fibreDefault(s: Pick<State, 'prefs'>, who: Who, t: number): numb
 export const proteinRda = (sex: Sex, age: number): number => (sex === 'f' ? 50 : age >= 65 ? 60 : 65);
 
 /** A day's protein goal split over three meals (g, whole): the per-meal hint. */
-export const perMeal = (g: number): number => Math.round(g / 3);
+const perMeal = (g: number): number => Math.round(g / 3);
 
 /** A meal's protein to aim for (g, whole; きろく's chip turns green at it): a third of the day's goal (perMeal), at
  *  least MEAL_PROTEIN.min (about the least a meal needs to build muscle: 0.4 g/kg, 20 g or more); with no day goal,

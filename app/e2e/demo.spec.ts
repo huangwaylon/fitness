@@ -659,7 +659,6 @@ test('サウンド: all off by default; toggles persist on this phone; ミュー
   await row('ミュージック').click();
   await expect(row('ミュージック')).toHaveAttribute('aria-checked', 'true');
   // the opening theme plays while the panel is up (NH's title screen); closing the panel hands over to the hour
-  await expect(sheet(page).getByText('今はオープニングテーマ')).toBeVisible();
   await expect.poll(() => audio).toContain(`${BASE}/audio/music/opening.m4a`);
   await sheet(page).getByRole('slider', { name: '音量' }).fill('4');
   await sheet(page).locator('.titlebar .close').click();

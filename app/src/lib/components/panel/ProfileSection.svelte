@@ -1,20 +1,18 @@
 <script lang="ts">
   // せってい → プロフィール (docs/design.md "Profile"): whose (けんこう's dropdown: the two members, this phone's first;
   // the guest only its own), then せいべつ (おとこ · おんな · ひみつ), たんじょうび (a date field, the age beside it) and the
-  // BMI standard (アジア · WHO: the BMI card's category; not the guest's, who has no body data). Under them what the
-  // profile gives: the height from Health's weight and BMI, the resting and daily energy (model/profile.ts), or what is
-  // still missing. Either member sets either's; the record shows a member's to the two members alone and the guest's
+  // BMI standard (アジア · WHO: the BMI card's category; not the guest's, who has no body data); no notes under them
+  // (the user, 2026-11-08). Either member sets either's; the record shows a member's to the two members alone and the guest's
   // to the guest alone (contract/guest.ts rowsFor).
   import type { Who, WeekView } from '#lib/types.ts';
   import { roving } from '../ui/roving.ts';
   import Pick from '../health/Pick.svelte';
   import { BIRTH, latestBirth, SEXES, BMI_STDS, type ProfileKey } from '#lib/contract/profile.ts';
-  import { ageAt, energyOf, kcalDefault, perMeal, profileOf, saltDefault } from '#lib/model/profile.ts';
-  import { proteinDefault } from '#lib/model/food.ts';
+  import { ageAt, profileOf } from '#lib/model/profile.ts';
   import { setProfile } from '#lib/store/actions.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { localDateAt } from '#lib/time/dates.ts';
-  import { formatNum, t } from '#lib/i18n/index.ts';
+  import { t } from '#lib/i18n/index.ts';
 
   let { view }: { view: WeekView } = $props();
 
@@ -25,13 +23,6 @@
   const m = $derived(week.model);
   const prof = $derived(m ? profileOf(m.state, who) : null);
   const age = $derived(m ? ageAt(m.state, who, m.now) : null);
-  const energy = $derived(m && !guest ? energyOf(m.state, who, m.now) : null);
-  /** ごはん's suggested goals from it (shown there while none is set): kcal, protein (and a third of it a meal), salt. */
-  const hints = $derived.by(() => {
-    if (!m || guest) return null;
-    const k = kcalDefault(m.state, who, m.now), p = proteinDefault(m.state, who, m.now), s = saltDefault(m.state, who, m.now);
-    return k === null || p === null || s === null ? null : { k: formatNum(k), p, meal: perMeal(p), s: s.toFixed(1) };
-  });
   const max = $derived(m ? latestBirth(localDateAt(m.now)) : undefined);
   const name = (p: Who) => (p === 'G' ? view.guest.villagerName : view.people[p].villagerName);
 
@@ -79,12 +70,7 @@
           {/each}
         </div>
       </div>
-      <p class="note" data-profile-energy={energy ? 'on' : 'off'}>
-        {energy ? t('profile.energy', { cm: energy.cm.toFixed(1), bmr: formatNum(energy.bmr), tdee: formatNum(energy.tdee) }) : t('profile.needs')}
-      </p>
-      {#if hints}<p class="note" data-profile-hints>{t('profile.hints', hints)}</p>{/if}
     {/if}
-    <p class="note">{t(guest ? 'profile.private.guest' : 'profile.private')}</p>
   </div>
 {/if}
 
@@ -103,5 +89,4 @@
     font: 700 var(--fs-input)/1.1 var(--font-num); color: var(--text); background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge);
   }
   input[type='date']:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .note { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
 </style>

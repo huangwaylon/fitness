@@ -240,9 +240,8 @@ no foot bar: the stage and the tabs hold still, the panel under them scrolls to 
 user's gender and birthdate so that the calculations and recommendations can account for that"): one card. Whose, in
 けんこう's dropdown (the two members, this phone's first; the guest has no dropdown: its own only) with the age at the
 right (「29さい」, by the Tokyo day); せいべつ (おとこ · おんな · ひみつ: unset), たんじょうび (a native date field,
-1900 … 10 years ago) and BMIの めやす (アジア, the default · WHO; not the guest's: no body data). Under them, a member's:
-「身長 … cm（体重と BMI から）・基礎代謝 … kcal・1日 約… kcal」 and ごはん's suggested goals (kcal, protein with 1食 a
-third, salt), or what is still missing; then who sees it (「ふたりだけに みえるよ」 / the guest's 「じぶんだけに」).
+1900 … 10 years ago) and BMIの めやす (アジア, the default · WHO; not the guest's: no body data). No notes under them
+(the user, 2026-11-08: the height, energy and suggested goals' line and who sees it are gone from here).
 Prefs on the record ([backend](backend.md#events) `sex`, `birth`, `bmiStd`): either member sets either's; private to the
 two members (the guest's to the guest), enforced by the record. What it feeds (decisions: *Profile*):
 - **Height:** from Health's own BMI: √(weight ÷ BMI) of the latest day with both (the Shortcut sends both; no height pref).
@@ -3083,4 +3082,5 @@ the shop's big and closing, the Able Sisters, Resident Services, the tent, Redd,
 ### Sound settings
 
 The panel's サウンド: **ミュージック** (music, ambience), **効果音** (effects, jingles), **音量** 0–10; both off at first;
-turning one on previews it. In localStorage (`island.sound`), never synced.
+turning one on previews it. In localStorage (`island.sound`), never synced. No note under them (the user, 2026-11-08:
+the track playing and the silent-mode line are gone).
