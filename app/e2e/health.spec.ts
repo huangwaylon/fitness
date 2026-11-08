@@ -12,7 +12,6 @@ async function openHealth(page: Page, query = '?demo') {
   await page.goto(query);
   await page.getByRole('button', { name: 'けんこう', exact: true }).click();
   await expect(sheet(page).locator('.health .mc')).toHaveCount(4);
-  await sheet(page).evaluate((d) => Promise.all(d.getAnimations().map((a) => a.finished))); // the zoom in has played
 }
 const range = (page: Page) => sheet(page).locator('.health .nav .rl b');
 /** The two dropdowns (native selects): whose data in the title bar, the period beside かつどう / からだ. */

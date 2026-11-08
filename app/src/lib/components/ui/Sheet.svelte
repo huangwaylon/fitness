@@ -1,5 +1,7 @@
 <script module lang="ts">
   let seq = 0;
+  /** How long after a full-height sheet shows its content's own entrances are skipped (Sheet's settle). */
+  const SETTLE_MS = 500;
 </script>
 
 <script lang="ts">
@@ -8,11 +10,12 @@
   // top-right; nothing advertises swipe-down), one CTA in `footer`. Backdrop tap and Esc also close.
   // `footer`: a sticky action row at the bottom, lifted above the on-screen keyboard (--kb from visualViewport).
   // Focused inputs scroll to the centre. While open, the page behind is locked (scrollLock).
-  // variant="top": the island panel, sliding down from the top (the leaf menu's ベル row opens it) (rounded at the bottom, the safe area on top).
-  // It does not scroll itself: it is a flex column, and the panel puts its own title bar (with ‹) and its one
-  // scrolling body (`.panel-body`) inside. variant="pop": the same full-height column (the health popup), grown out of
-  // the HUD's dumbbell (--pop-x / --pop-y on the dialog, from the button's popFrom) instead of sliding down. variant="full": the
-  // pop's column for the info sheets (docs/design.md "Unified kit": りょこう, けっこんしき, トレイル): the paper edge to
+  // variant="top": the island panel (the leaf menu's ベル row opens it), the screen's height (rounded at the bottom, the
+  // safe area on top). It does not scroll itself: it is a flex column, and the panel puts its own title bar (with ‹) and its one
+  // scrolling body (`.panel-body`) inside. variant="pop": the same full-height column (けんこう, the island's other
+  // sheets). The full-height sheets open from the island at once (the user, 2026-11-08: no zoom, slide or fade, and
+  // none closing): no motion of their own, and the opening finishes any their content's levels would start then
+  // (settle). variant="full": the pop's column for the info sheets (docs/design.md "Unified kit": りょこう, けっこんしき, トレイル): the paper edge to
   // edge, body text in --font-body, the kit's scope (`.kit`); the sheet puts its own NavBar, one scroller and
   // a TabBar inside. The default (paper) is also the kit's form sheet: the fields, then 保存 (a leaf .btn) in `footer`;
   // `focusField` puts the keyboard up on its first field.
@@ -21,7 +24,7 @@
   // opened let go, all of them on pagehide or a lost WebGL context; `keep` false while closed lets it go too). The sheet
   // resets what each opening resets itself.
   // `timed`: its openings timed for the log (`perf.sheet`, ui-state/sheetTiming.ts).
-  // A full-height sheet (top, pop, full) joins ui.up once its open animation is done: the island hides under it then.
+  // A full-height sheet (top, pop, full) joins ui.up once its first frame is out: the island hides under it then.
   import { untrack, type Snippet } from 'svelte';
   import { onScrim } from './scrim.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
@@ -36,7 +39,6 @@
   import type { LogSheet } from '#lib/contract/log.ts';
   import { timeSheet } from '#lib/ui-state/sheetTiming.ts';
   import { keepSheet, unkeepSheet } from '#lib/ui-state/keptSheets.ts';
-  import { popOrigin } from '../island/popFrom.ts';
 
   interface Props {
     open: boolean;
@@ -97,13 +99,8 @@
           kept = true;
           keepSheet(id, () => (kept = false), () => !!dlg?.open);
         });
-      const o = variant === 'pop' ? popOrigin() : null;
-      if (o) {
-        d.style.setProperty('--pop-x', `${o[0]}px`);
-        d.style.setProperty('--pop-y', `${o[1]}px`);
-      }
       dlg.showModal();
-      if (variant !== 'paper') untrack(() => whenUp(d));
+      if (variant !== 'paper') untrack(() => (settle(d), whenUp(d)));
       // the sheet itself, not the first control (no stray focus ring); showModal's own focus on that control may have
       // scrolled it (the undo banner's とりけす comes first), so start at the top
       dlg.focus({ preventScroll: true });
@@ -112,14 +109,26 @@
     } else if (!open && dlg.open) dlg.close();
   });
 
-  /** Once the open animation is done (none: at once), the sheet is up: in ui.up while it stays open. */
+  /** The sheet is up once its first frame is out (in ui.up while it stays open: the island hidden under it then, not in
+   *  the tap's frame, where restyling the island held up the sheet's first frame: docs/perf-plan.md A6). */
   function whenUp(d: HTMLDialogElement) {
-    const up = () => {
+    requestAnimationFrame(() => requestAnimationFrame(() => {
       if (d.open && !ui.up.includes(id)) ui.up = [...ui.up, id];
+    }));
+  }
+  /** A full-height sheet shown at rest: the slide-ins and fades its content starts as it shows (a kept page back from
+   *  display: none, a first mount, a chart drawn a moment later) end at once, for SETTLE_MS; anything looping plays on. */
+  function settle(d: HTMLDialogElement) {
+    const done = (a: Animation) => {
+      const t = a.effect?.getTiming();
+      if (!a.currentTime && t && Number.isFinite(t.iterations ?? 1)) a.finish();
     };
-    const runs = d.getAnimations?.() ?? [];
-    if (!runs.length) return up();
-    void Promise.allSettled(runs.map((a) => a.finished)).then(up);
+    for (const a of d.getAnimations?.({ subtree: true }) ?? []) done(a);
+    const started = (e: AnimationEvent) => {
+      if (e.target instanceof Element) for (const a of e.target.getAnimations()) if ((a as CSSAnimation).animationName === e.animationName) done(a);
+    };
+    d.addEventListener('animationstart', started);
+    setTimeout(() => d.removeEventListener('animationstart', started), SETTLE_MS);
   }
   $effect(() => {
     if (!open) untrack(() => ui.up.includes(id) && (ui.up = ui.up.filter((x) => x !== id)));
@@ -202,12 +211,8 @@
     border-radius: 0 0 var(--r-sheet) var(--r-sheet); box-shadow: var(--sh-float);
     overflow: hidden; display: none; flex-direction: column;
   }
-  dialog.top[open] { display: flex; animation-name: down; }
-  /* the health popup grows out of the dumbbell (an eased zoom, no overshoot) */
-  dialog.pop[open] {
-    display: flex; transform-origin: var(--pop-x, 85%) var(--pop-y, 6%);
-    animation: pop 280ms cubic-bezier(.2, .8, .2, 1);
-  }
+  /* at once, no motion (the paper sheet's slide up is theirs to skip) */
+  dialog.top[open], dialog.pop[open] { display: flex; animation: none; }
   /* (child combinators throughout: a sheet opened from inside the panel, BuyConfirm say, is a dialog nested in this one's
      .inner, and must not take the panel's rules) */
   dialog.top > .inner, dialog.pop > .inner {
@@ -220,11 +225,9 @@
   dialog.toasting > .foot { padding-bottom: calc(var(--pad-bottom) + 16px + 56px + var(--lip-h) + 10px); }
   dialog.top.toasting > .inner, dialog.pop.toasting > .inner { padding-bottom: 0; }
   dialog.top.toasting, dialog.pop.toasting { --body-pad: calc(var(--safe-bottom) + 96px + var(--kb, 0px)); }
-  @keyframes down { from { transform: translateY(-100%); } to { transform: none; } }
   /* the info sheets: the app's paper, the column edge to edge (the sheet's header and scroller pad themselves), dense
      body text in the system font (titles, labels, numbers set their own --font-ui / --font-num) */
   dialog.full { border-radius: 0; font: 400 var(--fs-body)/1.45 var(--font-body); font-variant-numeric: tabular-nums; }
   dialog.full > .inner { padding: 0; }
-  @keyframes pop { from { opacity: 0; transform: scale(.08); } 40% { opacity: 1; } to { transform: none; } }
   @keyframes up { from { transform: translateY(100%); } to { transform: none; } }
 </style>

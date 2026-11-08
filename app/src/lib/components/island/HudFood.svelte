@@ -5,7 +5,6 @@
   //   <HudFood onopen={() => …} />
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { react } from '../motion/director.svelte.ts';
-  import { popFrom } from './popFrom.ts';
   import { prefetchSheet } from './sheetChunks.ts';
   import { sheetTap } from '#lib/ui-state/sheetTiming.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -17,11 +16,9 @@
   let { onopen }: Props = $props();
 
   let pressed = $state(false);
-  let artEl: HTMLElement | undefined = $state();
 
   function tap() {
     pressed = false;
-    popFrom(artEl);
     // the villagers glance up to the right, at it
     react('R18');
     sheetTap();
@@ -31,7 +28,7 @@
 
 <button type="button" class="hud-food" class:pressed aria-label={t('island.food')} aria-haspopup="dialog" data-sfx="self" onclick={tap}
   onpointerdown={() => ((pressed = true), void prefetchSheet('food'))} onpointerup={() => (pressed = false)} onpointerleave={() => (pressed = false)} onpointercancel={() => (pressed = false)}>
-  <span class="art" data-guard bind:this={artEl}><OfficialArt key="items/dinner" size="100%" eager /></span>
+  <span class="art" data-guard><OfficialArt key="items/dinner" size="100%" eager /></span>
 </button>
 
 <style>

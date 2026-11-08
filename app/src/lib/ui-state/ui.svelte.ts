@@ -2,8 +2,8 @@
 // own toasts until it closes; and the open sheets, newest last (the banner renders inside the topmost one).
 class Ui {
   sheets = $state<number[]>([]);
-  /** The full-height sheets (panel, pop, full) open with their open animation done: nothing of the island shows, so it
-   *  is hidden then, not in the tap's frame (IslandScene's data-sheet). */
+  /** The full-height sheets (panel, pop, full) open with their first frame out: nothing of the island shows, so it is
+   *  hidden then, not in the tap's frame (IslandScene's data-sheet). */
   up = $state<number[]>([]);
   /** The island's camera when the tent was entered (its world z): the island opens there again on the way out. */
   islandZ: number | null = null;

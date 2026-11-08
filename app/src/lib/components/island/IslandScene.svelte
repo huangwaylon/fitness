@@ -172,7 +172,7 @@
 
   const covered = $derived(paused || ui.overlay || quiz.open);
   /** Its CSS (data-covered, data-sheet: every animation held, the island hidden): under a sheet only once the sheet is
-   *  up (its open animation done, ui.up), not in the tap's frame, where restyling the island's 600 elements held up the
+   *  up (its first frame out, ui.up), not in the tap's frame, where restyling the island's 600 elements held up the
    *  sheet's first frame (docs/perf-plan.md A6). (data-sheet: never for ききみみ's alone, whose sheet is in the scene
    *  and animates.) */
   const up = $derived(ui.up.length > 0);

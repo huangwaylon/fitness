@@ -15,7 +15,6 @@ async function openFood(page: Page, as = '', date = `&date=${DATE}`) {
   await expect(bowl).toBeVisible({ timeout: 15_000 });
   await bowl.click();
   await expect(sheet(page).locator('[data-food-summary]')).toBeVisible();
-  await sheet(page).evaluate((d) => Promise.all(d.getAnimations().map((a) => a.finished))); // the zoom in has played
 }
 
 /** A row opened in place has come to rest: its 150 ms height and fade played, and the sheet's scroll (smooth, when it

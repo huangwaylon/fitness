@@ -1,28 +1,25 @@
 <script lang="ts">
   // The health button, the HUD cluster's left end in the top-right corner (docs/design.md "Island"): a small cream pill,
   // 44px tall, with NH's red dumbbell across it, no number (the numbers live in the popup), as wide as the bowl. Tap:
-  // a press squash, the villagers glance up at it (R18), and the health popup grows out of the dumbbell
-  // (HealthSheet, Sheet's `pop`: the zoom's origin is the dumbbell, --pop-x / --pop-y on the root).
+  // a press squash, the villagers glance up at it (R18), and the health popup opens at once
+  // (HealthSheet).
   //   <HudHealth onopen={() => …} />
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { react } from '../motion/director.svelte.ts';
-  import { popFrom } from './popFrom.ts';
   import { prefetchSheet } from './sheetChunks.ts';
   import { sheetTap } from '#lib/ui-state/sheetTiming.ts';
   import { t } from '#lib/i18n/index.ts';
 
   interface Props {
-    /** Tapped (open the health popup): at once (the press squash plays over its zoom). */
+    /** Tapped (open the health popup): at once. */
     onopen?: () => void;
   }
   let { onopen }: Props = $props();
 
   let pressed = $state(false);
-  let artEl: HTMLElement | undefined = $state();
 
   function tap() {
     pressed = false;
-    popFrom(artEl);
     // the villagers glance up to the right, at it
     react('R18');
     sheetTap();
@@ -32,7 +29,7 @@
 
 <button type="button" class="hud-health" class:pressed aria-label={t('island.health')} aria-haspopup="dialog" data-sfx="self" onclick={tap}
   onpointerdown={() => ((pressed = true), void prefetchSheet('health'))} onpointerup={() => (pressed = false)} onpointerleave={() => (pressed = false)} onpointercancel={() => (pressed = false)}>
-  <span class="art" data-guard bind:this={artEl}><OfficialArt key="items/dumbbell" size="100%" eager /></span>
+  <span class="art" data-guard><OfficialArt key="items/dumbbell" size="100%" eager /></span>
 </button>
 
 <style>
