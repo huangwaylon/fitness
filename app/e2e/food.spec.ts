@@ -868,10 +868,10 @@ test('the amount: the compact card while there are no pictures, its 「これは
 });
 
 // The amount's layout (docs/design.md "Gohan" Amount) on an iPhone 15's whole screen: the most a raw food shows (its
-// picture, 3 states and their line, 4 portions) without a scroll; the kcal, the per-100 g values closed behind
-// 「100gあたり」 (closed again on the next open); the meal in the foot over 追加, gone while grams are typed, when 追加
+// picture, 3 states and their line, 4 portions) without a scroll; the kcal with its grams, the per-100 g values closed
+// behind 「100gあたりの栄養」 under P · F · C (closed again on the next open); the meal in the foot over 追加, gone while grams are typed, when 追加
 // says the kcal.
-test('the amount: 豚ロース fits on the screen, kcal in the head, 100gあたり closed, the meal in the foot but while typing', async ({ page }) => {
+test('the amount: 豚ロース fits on the screen, kcal（g） in the head, 100gあたりの栄養 closed, the meal in the foot but while typing', async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 852 });
   const open = async () => {
     await openFood(page);
@@ -883,7 +883,11 @@ test('the amount: 豚ロース fits on the screen, kcal in the head, 100gあた�
   await open();
   expect(await dlg(page).locator('[data-food-sheet]').evaluate((b) => b.scrollHeight - b.clientHeight)).toBeLessThanOrEqual(0);
   await expect(sheet(page).locator('[data-food-live] .k')).toContainText('298');
+  await expect(sheet(page).locator('[data-food-g]')).toHaveText('（120g）'); // the kcal's amount beside it
   const per = sheet(page).locator('[data-food-per]');
+  await expect(per).toHaveText(/^100gあたりの栄養/);
+  // (a toggle under P · F · C, never beside the kcal, where it read as the kcal's unit)
+  expect((await per.boundingBox())!.y).toBeGreaterThan((await sheet(page).locator('.head .nut').boundingBox())!.y);
   await expect(per).toHaveAttribute('aria-expanded', 'false');
   await expect(sheet(page).locator('.head .per')).toHaveCount(0);
   await per.click();
