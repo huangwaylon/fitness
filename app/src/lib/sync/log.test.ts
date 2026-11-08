@@ -6,6 +6,7 @@ import {
   clearLog, configureLog, count, DAY_MAX, flushLog, leaving, log, logError, osOf, persistLog, PIN, restoreLog, RING_MAX, SESSION_ERRORS, SESSION_MAX
 } from './log.ts';
 import type { LogBatch } from '#lib/contract/log.ts';
+import { quiet, swallowed } from '#lib/quiet.ts';
 
 const KEY = '3f9a'.repeat(16);
 const T0 = Date.parse('2026-11-05T03:00:00.000Z');
@@ -119,6 +120,15 @@ describe('the ring', () => {
     log('api.ok', { ms: 2 }, 1, { sample: 0.6 });
     await flushLog();
     expect(evs().map((e) => [e.e, e.d])).toEqual([['api.ok', { ms: 2 }], ['use', { 'sheet:island.food': 2, 'ev:tally': 1 }]]);
+  });
+
+  it('a swallowed failure (quiet.ts) is a `swallow:` counter, the caller given its fallback', async () => {
+    expect(await quiet(Promise.reject(new Error('offline')), 'food.verify', null)).toBe(null);
+    expect(await quiet(Promise.resolve(3), 'food.verify', null)).toBe(3);
+    swallowed('tex.idb');
+    swallowed('tex.idb');
+    await flushLog();
+    expect(evs().map((e) => [e.e, e.d])).toEqual([['use', { 'swallow:food.verify': 1, 'swallow:tex.idb': 2 }]]);
   });
 });
 

@@ -63,7 +63,7 @@ describe('cleanData', () => {
   it('numbers bounded and rounded, closed sets closed, counters by kind', () => {
     expect(cleanData('api.fail', { action: 'events', err: 'busy', ms: 123.456, http: Infinity, tries: '3' })).toEqual({ action: 'events', err: 'busy', ms: 123.5 });
     expect(cleanData('api.fail', { action: 'drop_table', err: 'whatever' })).toEqual({});
-    expect(cleanData('use', { 'sheet:island.food': 2, 'ev:tally': 1, 'x:y': 1, 'route:/tent': 1, 'act:fish': true })).toEqual({ 'sheet:island.food': 2, 'ev:tally': 1 });
+    expect(cleanData('use', { 'sheet:island.food': 2, 'ev:tally': 1, 'x:y': 1, 'route:/tent': 1, 'act:fish': true, 'swallow:tex.idb': 3 })).toEqual({ 'sheet:island.food': 2, 'ev:tally': 1, 'swallow:tex.idb': 3 });
     expect(cleanData('req', { why: 'pocket short', ms: 1e12 })).toEqual({ ms: 1e7 });
     expect(cleanData('perf.sheet', { sheet: 'food', first: true, chunk: 12.34, long: 48, title: 'ごはん', sheetName: 'x' })).toEqual({ sheet: 'food', first: true, chunk: 12.3, long: 48 });
     expect(cleanData('perf.sheet', { sheet: 'island.food' })).toEqual({});

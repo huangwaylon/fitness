@@ -18,6 +18,7 @@ import {
 } from '#lib/contract/log.ts';
 import { localDateAt } from '#lib/contract/tokyo.ts';
 import { getKey, LIVE } from './storage.ts';
+import { quietSink } from '#lib/quiet.ts';
 
 type Ev = LogEventIn & { pin?: true };
 /** The relay's answer to a batch. */
@@ -160,6 +161,8 @@ export function count(key: string): void {
   if (!st.on) return;
   st.counters.set(key, (st.counters.get(key) ?? 0) + 1);
 }
+// (quiet.ts's swallowed failures: `swallow:<tag>`)
+quietSink((tag) => count(`swallow:${tag}`));
 
 // ---------------------------------------------------------------- persistence
 

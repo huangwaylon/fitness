@@ -19,6 +19,7 @@ import { AUDIO, audioUrl } from './manifest.ts';
 import { IdleTimer, QUEUED_DROP_MS, WRAP, canSound, gestureAction, needsFadeIn, needsUnlock, wrapTarget, type Gesture } from './session.ts';
 import type { AmbientLayer } from './ambient.ts';
 import type { SoundSettings } from './settings.ts';
+import { quiet } from '#lib/quiet.ts';
 
 /** The music when muffled (a sheet or the phone is up: NH muffles its BGM under the phone and menus). */
 const MUFFLE_HZ = 900;
@@ -697,9 +698,7 @@ export class Engine {
   #blob(path: string): Promise<string | null> {
     let p = this.#blobs.get(path);
     if (!p) {
-      p = fetch(audioUrl(path))
-        .then(async (r) => (r.ok ? URL.createObjectURL(await r.blob()) : null))
-        .catch(() => null);
+      p = quiet(fetch(audioUrl(path)).then(async (r) => (r.ok ? URL.createObjectURL(await r.blob()) : null)), 'sound.fetch', null);
       p.then((url) => {
         if (url === null) this.#blobs.delete(path);
         else if (this.#blobs.get(path) === p) this.#urls.set(path, url);

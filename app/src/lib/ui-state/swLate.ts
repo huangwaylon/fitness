@@ -6,6 +6,7 @@
 // the worker controls already is unaffected: the browser checks for a new worker on each navigation itself.
 
 import { resolve } from '$app/paths';
+import { swallowed } from '#lib/quiet.ts';
 
 /** On the island, registered by this long after the start whatever the island is doing. */
 export const ISLAND_CAP_MS = 30_000;
@@ -31,7 +32,7 @@ export function registerLate(island: boolean, sw: ServiceWorkerContainer | undef
     if (document.readyState === 'complete') later();
     else addEventListener('load', later, { once: true });
   });
-  void wait.then(() => sw.register(`${resolve('/')}service-worker.js`, { type: 'module' })).then(() => sw.ready).then(() => active(!!sw.controller), () => {});
+  void wait.then(() => sw.register(`${resolve('/')}service-worker.js`, { type: 'module' })).then(() => sw.ready).then(() => active(!!sw.controller), () => swallowed('sw.register'));
 }
 
 let active: (on: boolean) => void = () => {};

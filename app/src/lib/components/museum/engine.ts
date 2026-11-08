@@ -12,6 +12,7 @@ import {
   Matrix4, Mesh, Sphere, MeshBasicMaterial, MeshLambertMaterial, PerspectiveCamera, Plane, PlaneGeometry, Raycaster, RepeatWrapping,
   Scene, SRGBColorSpace, TextureLoader, Vector3, WebGLRenderer, type Material, type Object3D, type Texture
 } from 'three';
+import { swallowed } from '#lib/quiet.ts';
 import { cubicOut } from '#lib/math.ts';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
@@ -390,7 +391,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const k = `${name}|${repeat}`;
     let t = texCache.get(k);
     if (!t) {
-      t = texLoader.load(`${o.base}tex/${name}.webp`, () => invalidate(), undefined, () => {});
+      t = texLoader.load(`${o.base}tex/${name}.webp`, () => invalidate(), undefined, () => swallowed('museum.tex'));
       t.colorSpace = SRGBColorSpace;
       t.wrapS = t.wrapT = RepeatWrapping;
       t.repeat.set(repeat[0], repeat[1]);

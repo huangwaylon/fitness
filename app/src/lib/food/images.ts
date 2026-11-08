@@ -4,6 +4,7 @@
 // picture). Sheet names carry their content hash, so a URL never changes (cached on first use, service worker).
 // A food without one (products, custom foods, not drawn yet) gets none: FoodThumb shows its category's tile.
 import { asset } from '$app/paths';
+import { quiet } from '#lib/quiet.ts';
 
 /** A cell of a sheet: FoodThumb's `img` (its url, the cell's x / y and size in the sheet's pixels). */
 export interface FoodImg {
@@ -35,9 +36,7 @@ let loading: Promise<FoodImageIndex | null> | null = null;
 
 /** The index, fetched once (none, a missing or broken file: every food keeps its tile, and the next call tries again). */
 export function loadFoodImages(): Promise<FoodImageIndex | null> {
-  loading ??= fetch(fileUrl('index.json'))
-    .then((r) => (r.ok ? (r.json() as Promise<FoodImageIndex>) : null))
-    .catch(() => null)
+  loading ??= quiet(fetch(fileUrl('index.json')).then((r) => (r.ok ? (r.json() as Promise<FoodImageIndex>) : null)), 'food.images', null)
     .then((ix) => {
       if (!ix) loading = null;
       return ix;

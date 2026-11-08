@@ -14,6 +14,7 @@ import type { Answer, Ask } from './ktx2.worker.ts';
 import { hasTex, readTex, writeTex } from './texCache.ts';
 import { texHash } from './texHash.ts';
 import { entries, packId } from './ktx2Pack.ts';
+import { quiet } from '#lib/quiet.ts';
 
 /** Bumped when what's kept changes shape or meaning (the encoder's settings and the transcoder are in the key anyway). */
 const TEX_V = 1;
@@ -109,7 +110,7 @@ function levels(id: string, where: () => Promise<Where>, t: Target): Promise<Tra
   const key = PIPE + t + '.' + id;
   let p = pending.get(key);
   if (!p) {
-    p = (async () => {
+    p = quiet((async () => {
       const kept = await readTex(key);
       if (kept?.target === t) return ktx2Stats.kept++, kept;
       if (broken) return null;
@@ -119,7 +120,7 @@ function levels(id: string, where: () => Promise<Where>, t: Target): Promise<Tra
       if (tex && t !== 'rgba') writeTex(key, tex, PIPE);
       if (tex) ktx2Stats.made++;
       return tex;
-    })().catch(() => null);
+    })(), 'ktx2.load', null);
     pending.set(key, p);
     void p.finally(() => pending.delete(key));
   }

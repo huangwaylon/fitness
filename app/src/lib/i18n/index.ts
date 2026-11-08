@@ -2,6 +2,7 @@
 // Japanese is bundled; English is its own chunk, loaded the first time it's asked for.
 import ja from './ja.json';
 import { applyLocale, i18n, type Locale } from './state.svelte.ts';
+import { swallowed } from '#lib/quiet.ts';
 
 export { i18n, type Locale };
 
@@ -24,7 +25,7 @@ let wanted: Locale = 'ja';
 export function setLocale(locale: Locale): void {
   wanted = locale;
   if (locale === 'ja') return applyLocale('ja');
-  void loadEnglish().then(() => wanted === 'en' && applyLocale('en'), () => {});
+  void loadEnglish().then(() => wanted === 'en' && applyLocale('en'), () => swallowed('i18n.en'));
 }
 
 type Params = Record<string, string | number | null | undefined>;
