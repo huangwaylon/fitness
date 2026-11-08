@@ -1,7 +1,7 @@
 import type { Box } from './geom.ts';
 import { describe, expect, it } from 'vitest';
 import {
-  BIG_ODDS, MAX_FRAGMENTS, STREAK_MS, WISH_MS, addWish, fragmentDay, fragmentsDue, inStarHours, nextShowerMs, showerPlan,
+  BIG_ODDS, MAX_FRAGMENTS, STREAK_MS, WISH_MS, addWish, fragmentsDue, wishDays, inStarHours, nextShowerMs, showerPlan,
   streakPath, type Streak
 } from './stars.ts';
 import { addDays } from '#lib/time/dates.ts';
@@ -89,10 +89,16 @@ describe('a streak keeps to the sky and off the UI', () => {
 
 describe('wishes → star fragments, across the day boundary', () => {
   it('a wish after dusk brings its fragment the next morning, one before dawn that morning', () => {
-    expect(fragmentDay('2026-11-04', 21, next)).toBe('2026-11-05');
-    expect(fragmentDay('2026-11-04', 23, next)).toBe('2026-11-05');
-    expect(fragmentDay('2026-11-05', 2, next)).toBe('2026-11-05');
-    expect(fragmentDay('2026-12-31', 23, next)).toBe('2027-01-01');
+    const at = (s: string) => wishDays(Date.parse(`${s}+09:00`), next);
+    expect(at('2026-11-04T21:00')).toEqual({ day: '2026-11-04', morning: '2026-11-05' });
+    expect(at('2026-11-04T23:00').morning).toBe('2026-11-05');
+    expect(at('2026-11-05T02:00')).toEqual({ day: '2026-11-05', morning: '2026-11-05' });
+    expect(at('2026-12-31T23:00').morning).toBe('2027-01-01');
+  });
+  it('a wish just after midnight is that night’s: its day and hour from the one instant', () => {
+    expect(wishDays(Date.parse('2026-11-05T00:00:00.010+09:00'), next)).toEqual({ day: '2026-11-05', morning: '2026-11-05' });
+    expect(wishDays(Date.parse('2026-11-05T04:59:59.999+09:00'), next).morning).toBe('2026-11-05');
+    expect(wishDays(Date.parse('2026-11-05T05:00:00+09:00'), next).morning).toBe('2026-11-06');
   });
   it('one fragment per wish, from 5:00 that morning only, capped at the beach’s room', () => {
     let w = addWish({}, '2026-11-05', '2026-11-04'); // 21:00 on the 4th

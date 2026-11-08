@@ -11,7 +11,7 @@
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
   import { flowerArt } from '#lib/art.ts';
-  import { dayKey, minuteNow } from '#lib/time/clock.ts';
+  import { islandDay } from './ambientClock.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { WATERED, wateredOn } from './sceneDay.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
@@ -25,10 +25,10 @@
   const w = useWorld();
 
   /** Today (the model's Tokyo day; the gallery has no view). */
-  const date = $derived(week.view?.today ?? dayKey(minuteNow()));
+  const date = $derived(week.view?.today ?? islandDay());
   /** The flowers watered today (NH: a watered flower keeps a glitter for the rest of the day), by either of us. */
   let mineWatered = $state<string[]>([]);
-  const watered = $derived(new Set([...mineWatered, ...(date === dayKey() ? Object.keys(shared.day.watered) : [])]));
+  const watered = $derived(new Set([...mineWatered, ...(date === islandDay() ? Object.keys(shared.day.watered) : [])]));
   $effect(() => {
     const d = date;
     const read = () => (mineWatered = wateredOn(d));

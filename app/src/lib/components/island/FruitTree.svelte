@@ -30,7 +30,8 @@
   import { fruitArt, seasonArt, treeArt } from '#lib/art.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
   import { lastSyncLine } from '#lib/i18n/format.ts';
-  import { dayKey, minuteNow } from '#lib/time/clock.ts';
+  import { minuteNow } from '#lib/time/clock.ts';
+  import { islandDay } from './ambientClock.ts';
   import { todayPct } from './progress.ts';
   import { RULES, STRETCH } from '#lib/config/rules.ts';
   import { week } from '#lib/store/week.svelte.ts';
@@ -144,7 +145,7 @@
   });
 
   /** Today (the model's Tokyo day; the gallery has no view) and this phone's record of today's fallen and picked fruit. */
-  const date = $derived(week.view?.today ?? dayKey(minuteNow()));
+  const date = $derived(week.view?.today ?? islandDay());
   // svelte-ignore state_referenced_locally
   let rec = $state(fruitDay(date));
   $effect(() => {
@@ -160,7 +161,7 @@
     RING_FRUITS.map((f, i) => {
       const r = ring(f);
       // picked up by either of us today (the shared day's `fr:<person>:<fruit>`) is gone on both phones
-      const id = fruitId(person.person, f), by = date === dayKey() ? takenBy(shared.day, `fr:${id}`) : null;
+      const id = fruitId(person.person, f), by = date === islandDay() ? takenBy(shared.day, `fr:${id}`) : null;
       // anyone's pick-up takes it at once, mine too (a phone that lost its own record, rec, gets my claim back in the
       // relay's replay: a claim can't be made twice, so a fruit kept on the ground for it could never be picked up)
       const gone = !!by;

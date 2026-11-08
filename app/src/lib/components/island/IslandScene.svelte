@@ -18,6 +18,7 @@
   // data, fruit stages, a received high-five), naps, the balloon; idle life runs while not `paused`.
   import Lazy from '#lib/components/ui/Lazy.svelte';
   import { lazyComponent } from '#lib/ui-state/lazyComponent.svelte.ts';
+  import { relayOffset } from './ambientClock.ts';
   import { releaseWorker } from '#lib/ui-state/swLate.ts';
   import { showAt } from './fireworks.ts';
   import { hook, hookFlag, hooksOn } from './devHooks.ts';
@@ -952,7 +953,7 @@
     const to = pointOf(w.to);
     if (!to || id === 'mine') return;
     setPartnerRest(to[0], to[1], id);
-    steered[id] = Date.now();
+    steered[id] = w.t - relayOffset(); // (the relay's instant, as on every phone: ambient.ts held())
     // (a phone opening, the island hidden: where the walk has it by now; live and in view, a big gap glides off)
     const how = playPartner(w, relayNow(), now && !covered && !life.hidden && onIsland(id), id);
     if (how === 'walk' || how === 'glide' || how === 'jump') {
@@ -962,7 +963,7 @@
     }
     if (how) return;
     if (!now || covered) return partnerRestsAt(to[0], to[1], id);
-    if (partnerTo(to[0], to[1], id)) ring(to[0], to[1], true);
+    if (partnerTo(to[0], to[1], id, w.t)) ring(to[0], to[1], true);
   }
   onMount(() => {
     // where the partner's villager is today (a phone opening later: the shared day's last walk, played to now)

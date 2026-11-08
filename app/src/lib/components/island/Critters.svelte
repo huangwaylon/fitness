@@ -48,7 +48,8 @@
   import { timers } from './timers.ts';
   import { fnv1a as seedOf, pickOne } from '#lib/random.ts';
   import { hook, hookFlag, hooksOn } from './devHooks.ts';
-  import { yieldSky } from './weatherNow.svelte.ts';
+  import { skyAt, yieldSky } from './weatherNow.svelte.ts';
+  import type { Sky } from './weather.ts';
   import { onMount, untrack } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { SHOWN, bodyRect, grow, hitSources, inside, type Seen } from './hitbox.ts';
@@ -261,13 +262,13 @@
    *  (the projector shows it when the camera sees it); else (a dev hook's) where the camera can see it (`pinned`: or
    *  anywhere in it). `stay`: how long it stays (ms; true: STAY_MS.fish, false: until caught); `r`: what it is
    *  (ambient life's seeded species, the same on both phones). */
-  async function spawnFish(water: Water, stay: boolean | number = true, want?: FishId | PondFishId, pinned = false, r = rand, o: Shared & { month?: number; hour?: number; coast?: number } = {}): Promise<boolean> {
+  async function spawnFish(water: Water, stay: boolean | number = true, want?: FishId | PondFishId, pinned = false, r = rand, o: Shared & { month?: number; hour?: number; coast?: number; sky?: Sky } = {}): Promise<boolean> {
     const pool = poolOf(water, o.coast);
     if (fishes[pool]) return true;
     const t = jst(now()), month = o.month ?? t.month, hour = o.hour ?? t.hour;
     let id: FishId | PondFishId, look: { size: number; shape?: 'narrow' | 'fin' };
     if (water === 'sea') {
-      id = want ?? pickFish(month, hour, r, yieldSky.sky);
+      id = want ?? pickFish(month, hour, r, o.sky ?? yieldSky.sky);
       look = FISH[id as FishId];
     } else {
       const { POND_FISH, pickFresh } = await loadPond();
@@ -983,7 +984,7 @@
   /** The partner's catch (or a critter that got away from them), heard over the relay: gone here too. Just now (`live`):
    *  their villager runs over and nets it, reels it in, digs it up or dives for it, and its plate joins the stack (out
    *  of view, its icon from the edge); `beat`: I tapped it too, and the relay heard them first. */
-  function theirCatch(e: { what: string; id?: string; at?: readonly [number, number]; how?: How; who?: Who }, live: boolean, beat: boolean) {
+  function theirCatch(e: { what: string; id?: string; at?: readonly [number, number]; how?: How; who?: Who; t?: number }, live: boolean, beat: boolean) {
     const id = e.id, how = e.how;
     const f = allFish().find((x) => x.cid === id) ?? null;
     const b = bugs.find((x) => x.cid === id) ?? null;
@@ -1018,7 +1019,7 @@
     const [x, z] = at;
     if (b) Object.assign(b, { held: true, ms: 0 });
     // in place: their villager turns to it, and the net or the shovel shows at the catch (a reel or a dive: a splash)
-    partnerTurnTo(x, e.who);
+    partnerTurnTo(x, e.who, e.t);
     const p = stageAt(x, z);
     // (the 3D island's swing: fx3d.ts)
     if (how === 'dig') dig = { n: ++seq, ...p, in3d: fx3d('swing', x, z, 0, { v: 'shovel' }) && fx3d('dust', x, z, 0, { v: '#b48a5a' }) };
@@ -1049,7 +1050,7 @@
       else if (e.kind === 'put' && e.what.startsWith('bug:')) theirBug(e);
       else if (e.kind === 'act' && e.act === 'cast' && live && e.pt) {
         // the partner casts: their villager turns to the water where it stands (their bite is theirs)
-        partnerTurnTo(e.pt[0], e.who);
+        partnerTurnTo(e.pt[0], e.who, e.t);
       }
     })
   );
@@ -1340,7 +1341,8 @@
     const cid = critterId(c);
     if (caught(shared.day, cid)) return;
     const t0 = slotStart(date, c.slot) + c.at;
-    const o = { cid, path: { seed: c.seed, t0, total: end - t0 }, month: +date.slice(5, 7), hour: Math.floor(c.slot / 360) };
+    // (the sky at its start: the same species on both phones across a change of weather)
+    const o = { cid, path: { seed: c.seed, t0, total: end - t0 }, month: +date.slice(5, 7), hour: Math.floor(c.slot / 360), sky: skyAt(t0) };
     const r = spawnRand(c);
     if (c.kind === 'fish') {
       // (off its stretch of coast; the front's waits on a dive there, never on its bubbles: every stretch's shadow alike)
@@ -1353,11 +1355,11 @@
     } else if (!bugs.some((b) => b.cid === cid)) {
       // (the second lane's spot keeps off the first lane's bugs about in its stay: ambient.ts bugRivals)
       const taken = bugRivals(date, c).flatMap((q) => {
-        const id = pickBug(o.month, Math.floor(q.slot / 360), spawnRand(q), yieldSky.sky);
+        const id = pickBug(o.month, Math.floor(q.slot / 360), spawnRand(q), skyAt(slotStart(date, q.slot) + q.at));
         const p = id && bugPath(id, q.seed, 0, { white: whiteHeads() });
         return p ? [p.spot] : [];
       });
-      spawnBug(pickBug(o.month, o.hour, r, yieldSky.sky), { stay, ...o, taken });
+      spawnBug(pickBug(o.month, o.hour, r, o.sky), { stay, ...o, taken });
     }
   }
   $effect(() => {

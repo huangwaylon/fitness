@@ -16,6 +16,7 @@ import {
   baseName, cleanData, isLogId, logRoute, LOG_BATCH_MAX, LOG_BODY_MAX, LOG_V,
   type LogBatch, type LogData, type LogEventIn, type LogEventName, type LogLevel
 } from '#lib/contract/log.ts';
+import { localDateAt } from '#lib/contract/tokyo.ts';
 import { getKey, LIVE } from './storage.ts';
 
 type Ev = LogEventIn & { pin?: true };
@@ -83,7 +84,8 @@ export const sessionId = (): string => st.sid;
 /** Whether the log is on (started, not the demo or automation). */
 export const logOn = (): boolean => st.on;
 
-const today = () => new Date(env.now()).toISOString().slice(0, 10);
+/** The phone's day for DAY_MAX: Tokyo's, as every day in the app (the UTC date reopened it at 09:00). */
+const today = () => localDateAt(env.now());
 
 /** Tests: the environment, and a fresh state. */
 export function configureLog(o: Partial<Env> & { reset?: boolean; on?: boolean }): void {
