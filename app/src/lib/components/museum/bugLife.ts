@@ -7,13 +7,14 @@
 // never meets a prop, the glass or the ground (bugLife.test.ts).
 import { mulberry32, smallHash } from '#lib/random.ts';
 import { BUGS, type BugId, type Flight, type Patch } from '../island/critters.ts';
-import { BOB, FLY_UPS, PACE, bugAt, bugLegs, clamp, type Flying, type Leg, type P3, type Ways } from '../island/critterPath.ts';
+import { BOB, FLY_UPS, PACE, bugAt, bugLegs, type Flying, type Leg, type P3, type Ways } from '../island/critterPath.ts';
 import { turn } from '../island/glide.ts';
 import { FLAPS, wingBeat, type Beat } from '../world3d/wings.ts';
 import W3D from '../world3d/models.json' with { type: 'json' };
 import M from './models.json' with { type: 'json' };
 import type { Habitat } from './species.ts';
 import type { Pt, Rect } from './plan.ts';
+import { clamp } from '#lib/math.ts';
 
 /** A bug is drawn this much bigger than NH's own (the island's way: a butterfly a hand across). */
 export const BUG_S = 1.9;

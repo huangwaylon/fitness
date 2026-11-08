@@ -18,6 +18,7 @@ import {
   Box3, Color, DirectionalLight, Fog, Frustum, HemisphereLight, Matrix4, Mesh, PerspectiveCamera, Scene, Sphere, SRGBColorSpace, Texture, Vector3,
   WebGLRenderer, PCFSoftShadowMap, MeshDepthMaterial, RGBADepthPacking, FrontSide, BackSide, DoubleSide, type Material, type MeshLambertMaterial, type Object3D, type Side
 } from 'three';
+import { cubicInOut, cubicOut } from '#lib/math.ts';
 import { bend, bendPoint, bendU, unbendRay } from './bend.ts';
 import { waterFog, waterU } from './water.ts';
 import { createThings, type Things } from './things.ts';
@@ -633,7 +634,6 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   }
   /** The spring back to the default zoom after a pinch released zoomed out past it (eased out over ZOOM_BACK_MS). */
   let zoomBack: { t0: number; k0: number } | null = null;
-  const easeOut = (k: number) => 1 - (1 - k) ** 3;
   /** Back inside the limits (a released rubber band, the zoom past its end), eased. */
   function settle(dt: number): boolean {
     let more = false;
@@ -647,7 +647,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     if (!zoomBack && zoomK < ZOOM.min - 0.0005) zoomBack = { t0: now(), k0: zoomK };
     if (zoomBack) {
       const k = Math.min(1, (now() - zoomBack.t0) / ZOOM_BACK_MS);
-      zoomK = zoomBack.k0 + (ZOOM.min - zoomBack.k0) * easeOut(k);
+      zoomK = zoomBack.k0 + (ZOOM.min - zoomBack.k0) * cubicOut(k);
       if (k >= 1) zoomBack = null;
       else more = true;
     } else if (Math.abs(kt - zoomK) > 0.0005) {
@@ -680,7 +680,6 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   }
   let focus: { back: { z: number; k: number; x: number } } | null = null, move: Move | null = null;
   /** NH's dolly: a cubic in and out. */
-  const ease = (k: number) => (k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2);
   const camNow = (): Cam => ({ z: camZ, k: zoomK, fk, x: fx, y: fy, pitch: fpitch, drop: fdrop });
   function moveTo(to: Cam, ms: number): Promise<void> {
     move?.done();
@@ -693,7 +692,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   }
   function stepMove(t: number): boolean {
     if (!move) return false;
-    const m = move, k = ease(Math.min(1, (t - m.t0) / m.ms)), lerp = (a: number, b: number) => a + (b - a) * k;
+    const m = move, k = cubicInOut(Math.min(1, (t - m.t0) / m.ms)), lerp = (a: number, b: number) => a + (b - a) * k;
     camZ = rawZ = lerp(m.from.z, m.to.z);
     zoomK = rawK = lerp(m.from.k, m.to.k);
     fk = lerp(m.from.fk, m.to.fk);

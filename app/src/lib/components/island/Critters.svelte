@@ -42,7 +42,6 @@
   import { angle, angling, floatLift, nibbled } from '../world3d/fishing3d.ts';
   import { NOTICE_U, cast as castLine, due, pull, step as stepLine, type Around, type Line as MyLine, type Plan, type Step } from './fishing.ts';
   import { actorOf } from '#lib/ui-state/cast.ts';
-  import { cue } from '#lib/sound/cues.ts';
   import { moveFast, pace } from '../world3d/pace.ts';
   import { showCatch } from './catchCard.ts';
   import { timers } from './timers.ts';
@@ -72,7 +71,7 @@
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { caught, lying } from '#lib/sync/world-day.ts';
   import type { FishPhase, How, Relayed, Who } from '#lib/contract/live-protocol.ts';
-  import { GLIDE_U, STILL, bubblesAt, bugAt, bugPath, clamp, clearOf, critterId, fishPath, freshWater, groundOk, inWater, legAt, type BugOpts, type Leg } from './critterPath.ts';
+  import { GLIDE_U, STILL, bubblesAt, bugAt, bugPath, clearOf, critterId, fishPath, freshWater, groundOk, inWater, legAt, type BugOpts, type Leg } from './critterPath.ts';
   import { tellPartner } from './partnerNews.ts';
   import { actors, holdNaps, inMotion, livePos, wake as wakeUp } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -89,6 +88,7 @@
   import type { FreshWhere } from './world.ts';
   import { bugLoc, fishLoc, loc, poolOf, seaPool, type Bug, type Fish, type Line, type Net, type P3, type Pool, type Shared } from './critterTypes.ts';
   import { critterMotion3d } from './critterMotion3d.ts';
+  import { clamp } from '#lib/math.ts';
 
   interface Props {
     scene?: HTMLElement;
@@ -676,7 +676,7 @@
    *  nowhere clear for it right now. `from`: it flies (or hops) in from there (a shaken bush, my villager, the rock),
    *  keeping to `area`. */
   function spawnBug(id: BugId | null, o: { from?: P3; area?: Patch; avoid?: Patch[]; taken?: P3[]; stay?: boolean | number; pinned?: boolean; keep?: BugOpts['keep'] } & Shared = {}): boolean {
-    const { from, area, stay = true, pinned = false } = o;
+    const { area, stay = true, pinned = false } = o;
     if (!id || bugs.length >= MAX_BUGS) return bugs.length > 0;
     void loadSprite();
     preload(critterArt(id));
