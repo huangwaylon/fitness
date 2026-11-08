@@ -5,13 +5,14 @@
 // seats; one round wrong, the results' review and my row (gm tachi, a row a round). Then two phones in co-op 「たんとう」
 // over the demo's relay: each has a speaker of their own and a shared one (easy: the shared one placed), places their
 // own face; the team's rounds are the ones both got. Screenshots (KIKI_SHOTS=1) into /tmp/kikimimi-shots/tachi/, by day
-// and at night. The logic tier (Playwright's Chromium is muted; a conversation still takes its 30-50 s).
+// and at night. The logic tier (Playwright's Chromium is muted; a conversation's 30-50 s on the page's clock, stepped
+// through: kikimimi-nav.ts runUntil).
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { atHub, kikiSheet as sheet } from './kikimimi-nav.ts';
+import { atHub, kikiSheet as sheet, runToQuestion, runToSee } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const SHOTS = '/tmp/kikimimi-shots/tachi';
@@ -41,7 +42,9 @@ async function snap(p: Page, name: string, fullPage = false) {
   await p.screenshot({ path: `${SHOTS}/${name}.png`, fullPage });
 }
 
+/** A phone on the context's clock (installed once, before its first page: both tabs step together). */
 async function phone(ctx: BrowserContext, q: string, as: 'A' | 'B' = 'A'): Promise<Page> {
+  if (!ctx.pages().length) await ctx.clock.install();
   const page = await ctx.newPage();
   await page.goto(`?demo&${q}${as === 'A' ? '' : `&as=${as}`}`);
   await islandUp(page);
@@ -68,7 +71,7 @@ async function answer(p: Page, o: { wrong?: boolean; faces?: number[] } = {}) {
   const { id, k } = await round(p);
   const want = answerOf(id, k);
   if (Array.isArray(want)) {
-    await expect(sheet(p).locator('[data-kiki-tachi-claims]')).toBeVisible({ timeout: 90_000 });
+    await runToSee(p, sheet(p).locator('[data-kiki-tachi-claims]'));
     const faces = o.faces ?? [0, 1, 2];
     for (const f of faces) {
       // (wrong: the first two faces swapped; co-op mine on my partner's claim)
@@ -86,20 +89,19 @@ async function answer(p: Page, o: { wrong?: boolean; faces?: number[] } = {}) {
 }
 
 test('solo: the mode once listened, the conversation first, then whose view, who changed, the plan; a line again; the transcript; my row', async ({ context }) => {
-  test.setTimeout(240_000); // two real conversations (30–50 s each) play through: past test.slow()'s 90 s on CI's 3 workers
   const page = await phone(context, DAY);
   await toTachi(page);
   await snap(page, 'mode');
   await sheet(page).locator('[data-kiki-start]').click();
   await expect.poll(() => kiki(page, (k) => k.view().gm)).toBe('tachi');
   // the conversation first: three seats, nothing to answer
-  await expect(sheet(page).locator('[data-kiki-tachi-wait]')).toBeVisible({ timeout: 15_000 });
+  await runToSee(page, sheet(page).locator('[data-kiki-tachi-wait]'));
   await expect(sheet(page).locator('[data-kiki-tachi-seats] [data-face]')).toHaveCount(3);
   await expect(sheet(page).locator('[data-kiki-tachi-claims]')).toHaveCount(0);
   await expect(sheet(page).locator('[data-kiki-ctx]')).toBeVisible();
   await snap(page, 'listen');
   // round 1: a face on a claim, moved, taken off; then all three; できた
-  await expect(sheet(page).locator('[data-kiki-tachi-claims]')).toBeVisible({ timeout: 90_000 });
+  await runToSee(page, sheet(page).locator('[data-kiki-tachi-claims]'));
   await expect(sheet(page).locator('[data-kiki-tachi-done]')).toHaveAttribute('aria-disabled', 'true');
   const open = sheet(page).locator('[data-claim]:not([data-given])');
   await open.nth(0).locator('[data-face="0"]').click();
@@ -120,7 +122,7 @@ test('solo: the mode once listened, the conversation first, then whose view, who
   await sheet(page).locator('[data-kiki-tachi-lines] [data-line="2"]').click();
   await sheet(page).locator('[data-kiki-next]').click();
   // round 2 wrong, then the plan right: the transcript in three seats
-  await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 20_000 }).toBe(1);
+  await runToQuestion(page, 1);
   await expect(sheet(page).locator('[data-kiki-tachi-changed]')).toBeVisible();
   await snap(page, 'changed');
   await answer(page, { wrong: true });
@@ -128,7 +130,7 @@ test('solo: the mode once listened, the conversation first, then whose view, who
   await expect(sheet(page).locator('[data-kiki-tachi-changed] [data-mark="right"]')).toHaveCount(1);
   await snap(page, 'reveal-changed');
   await sheet(page).locator('[data-kiki-next]').click();
-  await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 20_000 }).toBe(2);
+  await runToQuestion(page, 2);
   await snap(page, 'plan');
   await answer(page);
   await expect(sheet(page).locator('[data-kiki-verdict="right"]')).toBeVisible();
@@ -138,7 +140,7 @@ test('solo: the mode once listened, the conversation first, then whose view, who
   await sheet(page).locator('[data-kiki-next]').click();
   // the second conversation, right
   for (let i = 3; i < 6; i++) {
-    await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 20_000 }).toBe(i);
+    await runToQuestion(page, i);
     await answer(page);
     await expect(sheet(page).locator('[data-kiki-verdict="right"]')).toBeVisible();
     await sheet(page).locator('[data-kiki-next]').click();
@@ -159,29 +161,28 @@ test('solo: the mode once listened, the conversation first, then whose view, who
 
 test('night: the claims and a reveal in the night palette', async ({ context }) => {
   test.skip(!process.env.KIKI_SHOTS, 'screenshots only');
-  test.setTimeout(240_000); // two real conversations (30–50 s each) play through: past test.slow()'s 90 s on CI's 3 workers
   const page = await phone(context, NIGHT);
   await toTachi(page);
   await sheet(page).locator('[data-kiki-start]').click();
-  await expect(sheet(page).locator('[data-kiki-tachi-wait]')).toBeVisible({ timeout: 15_000 });
+  await runToSee(page, sheet(page).locator('[data-kiki-tachi-wait]'));
   await snap(page, 'night-listen');
-  await expect(sheet(page).locator('[data-kiki-tachi-claims]')).toBeVisible({ timeout: 90_000 });
+  await runToSee(page, sheet(page).locator('[data-kiki-tachi-claims]'));
   await snap(page, 'night-opinions');
   await answer(page, { wrong: true });
   await expect(sheet(page)).toHaveAttribute('data-phase', 'reveal');
   await snap(page, 'night-reveal');
   await sheet(page).locator('[data-kiki-next]').click();
-  await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 20_000 }).toBe(1);
+  await runToQuestion(page, 1);
   await answer(page);
   await sheet(page).locator('[data-kiki-next]').click();
-  await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 20_000 }).toBe(2);
+  await runToQuestion(page, 2);
   await answer(page);
   await expect(sheet(page).locator('[data-kiki-transcript]')).toBeVisible();
   await snap(page, 'night-transcript', true);
 });
 
 test('co-op on two phones 「たんとう」: a speaker each and a shared one, each places their own; the team’s rounds are those both got', async ({ browser }) => {
-  test.setTimeout(240_000);
+  test.setTimeout(60_000); // two phones, six rounds each (the plays stepped through)
   const ctx = await browser.newContext();
   const a = await phone(ctx, DAY, 'A'), b = await phone(ctx, DAY, 'B');
   await a.bringToFront();
@@ -202,13 +203,13 @@ test('co-op on two phones 「たんとう」: a speaker each and a shared one, e
   for (let i = 0; i < 6; i++) {
     for (const [p, who] of [[a, 'A'], [b, 'B']] as const) {
       await p.bringToFront();
-      await expect.poll(() => kiki(p, (k) => k.view().i), { timeout: 20_000 }).toBe(i);
+      await runToQuestion(p, i);
       const role = who === 'A' ? 0 : 1;
       if (i === 0) {
         expect(await kiki(p, (k) => k.view().roles)).toEqual({ A: 0, B: 1 });
         await expect(sheet(p).locator(`[data-kiki-tachi-seats] [data-face="${role}"]`)).toHaveAttribute('data-part', 'mine');
         await expect(sheet(p).locator('[data-kiki-tachi-seats] [data-face="2"]')).toHaveAttribute('data-part', 'shared');
-        await expect(sheet(p).locator('[data-kiki-tachi-claims]')).toBeVisible({ timeout: 90_000 });
+        await runToSee(p, sheet(p).locator('[data-kiki-tachi-claims]'));
         if (who === 'B') await snap(p, 'coop-opinions');
       }
       await answer(p, { faces: [role, 2], wrong: who === 'B' && i === 3 });
