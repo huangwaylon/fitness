@@ -1,4 +1,4 @@
-// ききみみ クイズ (docs/kikimimi.md): the English listening game from the menu's 「えいご ききとり」. Solo from the lobby to
+// ききみみ クイズ (docs/kikimimi.md): the English listening game from the menu's 英語. Solo from the lobby to
 // the results and its review list; two players over the demo's relay (`?demo` and `?demo&as=B`, two tabs of one
 // browser: sync/live-local.ts plays the room) from B's invite banner to both phones' results, in co-op (the team's tally, never who missed) and in たいせん (the ranking); and the
 // 「やめますか？」 path (mid-game a backdrop tap or Esc keeps the sheet; ✕ asks first). The reveal is untimed: solo taps
@@ -29,7 +29,7 @@ async function open(ctx: BrowserContext | Page, as: 'A' | 'B' = 'A'): Promise<Pa
   await islandUp(page);
   return page;
 }
-/** The menu's えいご ききとり: the game's sheet. */
+/** The menu's 英語: the game's sheet. */
 const play = (page: Page) => fromMenu(page, 'kikimimi');
 /** Answer the current question: the right choice, or (`wrong`) another; waits for the answer window first. */
 async function answer(page: Page, wrong = false) {

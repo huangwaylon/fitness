@@ -66,14 +66,15 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
 - **Menu** (`island/HudMenu.svelte`, `e2e/hud-menu.spec.ts`): the cluster's right end, at the screen's side, a 40px
   cream disc with the lip in a 44px target, NH's leaf mark in it (drawn inline: two greens either side of a pale vein, a dark outline, a curled stem; NH's art has no flat one, `money/leaf` is the 3D item); `aria-expanded`, `aria-controls` its
   pills. Folded by default: the sky shows only the dumbbell, the bowl and the menu. A tap unfolds it: the disc turns
-  NH's yellow, the leaf tips (−40°, as if it flicked the menu down) and four cream pills show at once (no drop: the
+  NH's yellow, the leaf tips (−40°, as if it flicked the menu down) and six cream pills show at once (no drop: the
   user found it slow; they fold away in a 100ms fade), right-aligned under the leaf (along the screen's side), the same width:
   **ベル 121** (the shared wallet's balance in the app's number font, no icon: the number is the picture) →
-  [the panel](#panel) (ごほうび; `aria-expanded` while it's open), **ききみみ** with its small 「えいご」 (しずえ's head) → [ききみみ クイズ](#ききみみ-クイズ) (「さそわれています！」 under
-  its name, and a coral dot on the folded leaf, while someone's invite is live) and **せってい** (a gear in the say
-  button's soft brown: NH has no settings icon) →
-  [せってい](#panel). Each pill is 44px tall, its name then its icon or number (a word as well as a picture: an icon
-  alone would be a guess). The ベル row's label carries today's ベル too (「ごほうび · ふたりのベル 129 ベル · きょう
+  [the panel](#panel) (ごほうび; `aria-expanded` while it's open), **旅行** (Orville's head) → [りょこう](#trips),
+  **結婚式** (Harvey's head) → けっこんしき, **トレイル** (a mountain) → トレイル, **英語** (しずえ's head) →
+  [ききみみ クイズ](#ききみみ-クイズ) (「誘われています！」 under its name, and a coral dot on the folded leaf, while
+  someone's invite is live) and **設定** (a gear in the say button's soft brown: NH has no settings icon) →
+  [設定](#panel): the user's order and kanji labels (2026-11-08: [Copy](#copy)). Each pill is 44px tall, its name then its icon or number (a word as well as a picture: an icon
+  alone would be a guess). The ベル row's label carries today's ベル too (「ごほうび · 二人のベル 129 ベル · 今日
   12 ベル」: on the island only a screen reader hears today's total; it's shown in full in ごほうび). No permanent
   "+N" badge on the leaf (a badge reads as a notification to clear). The guest has the ベル row too: ごほうび is
   view-only there, the same balance. It folds back up
@@ -92,7 +93,7 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
     its pills; nothing hidden reachable; reduced motion honoured; text on cream, never on the sky).
     The pills drop down rather than slide left: sliding left would cover the sky's middle (the sun, the moon) and
     put the pills before the leaf in the reading order; under the leaf they're over the island for a moment only.
-    The ベル row is first (the most used: the wallet), the rarer one (せってい) the furthest.
+    The ベル row is first (the most used: the wallet), the rarer one (設定) the furthest.
 - **Health button** (`island/HudHealth.svelte`): a small cream pill 44px tall with the cream lip, 60px wide, NH's red
   dumbbell (`items/dumbbell`, NH's catalogue icon) across it, its plates a little over the ends; no number (the numbers
   live in the popup), the cluster's left end. Tap → the villagers glance up at it
@@ -157,7 +158,7 @@ buys). Every opening starts at its top. Its own chunk, loaded on the first tap. 
 A day of the ledger pushes a level with ‹ (the wallet stays mounted under it, hidden, so ‹ comes back to it as it was,
 scrolled where it was); ✕, the backdrop and Esc close the panel.
 
-**せってい** (`panel/SettingsSheet.svelte`): the HUD menu's せってい pill → its own sheet, full height, at once
+**設定** (`panel/SettingsSheet.svelte`): the HUD menu's 設定 pill → its own sheet, full height, at once
 (Sheet's `pop`), title せってい: **すがた** (the look's portrait, the よびな and what's worn: いつもの, a コーデ's name
 or the villager's; かえる → [the すがた level](#sugata): the closet and the villagers in one dresser), **プロフィール** ([Profile](#profile)), **サウンド** ([Sound settings](#sound-settings)), **言語** (one dropdown, health/Pick's:
 日本語 by default / English), **季節** ([Seasonal preview](#seasonal-preview); its fold opens on **島の天気**, 実際の天気 / ゲーム:
@@ -2828,19 +2829,19 @@ camera's two ends; `mine()`, `partner()`, `geo()`, `site()`, …) for the e2e an
 
 Two zones (the user, 2026-11-07), by where a string shows (`i18n/linebreaks.test.ts` WORLD lists the world's keys):
 - **The world** (the island and its rooms: villagers' and NPCs' lines, `Bubble`, signs, in-world notices and toasts,
-  the HUD, the tree's plate, the leaf menu's pills ベル · えいご ききとり · りょこう · けっこんしき · トレイル ·
-  せってい): kids-style spaced kana (分かち書き), 「つうしん中…」, 「ここに おく」. `word-break: keep-all` (body):
+  the HUD, the tree's plate): kids-style spaced kana (分かち書き), 「つうしん中…」, 「ここに おく」. `word-break: keep-all` (body):
   a line breaks only at a space or after 、。！, so no run without one is over 12 characters.
 - **Everything opened from it** (every sheet, panel, level, dialog and form, pairing, the error page, the editor, the
-  もようがえ trays, the board, the shop's menu; an NPC's line inside one stays the world's): natural adult Japanese with
+  board, the shop's menu; an NPC's line inside one stays the world's) **and the leaf menu's pills** (ベル · 旅行 · 結婚式 ·
+  トレイル · 英語 · 設定: kanji since 2026-11-08, the user: easier to read): natural adult Japanese with
   kanji and no spaces between words (a space only around a number or Latin: 「目標 8,000歩 以上」), 「今すぐ同期」,
   「ここに置く」. `dialog`, `[role=dialog]` and `.sheet-copy` are `word-break: normal` (kinsoku by `line-break:
   strict`); a bubble is keep-all wherever it is.
 - **One spelling a term** in every sheet: 設定 · 記録 · 目標 · 歩数 · 体重 · 完了 · 削除 · 取り消す · 保存 · 編集 · 決定 ·
   キャンセル (not やめる) · 閉じる · 戻る · 元に戻す · もう一度 · 今日 · 変更 · 同期 · オフライン · 住民 · お客さん · 姿 ·
   模様替え · 片付ける · 季節 · 天気; the game's own words stay as the game says them (ベル, かいがら, がんばり, ふたりで全部,
-  いつもの, ごはん, ごほうび) and official names as NH writes them. A sheet's title may differ from its pill (せってい → 設定,
-  ずかん → 図鑑, けんこう → 健康, りょこう → 旅行, けっこんしき → 結婚式). linebreaks.test checks the sheets' keys for a
+  いつもの, ごはん, ごほうび) and official names as NH writes them. A sheet's title may differ from its HUD button's name (けんこう → 健康)
+  or its pill (英語 → ききみみ). linebreaks.test checks the sheets' keys for a
   space between two Japanese characters and for the kana spellings of the list.
 
 ## Small screens

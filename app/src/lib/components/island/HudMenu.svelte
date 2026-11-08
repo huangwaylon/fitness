@@ -1,16 +1,16 @@
 <script lang="ts">
   // The HUD menu, the cluster's right end (docs/design.md "Island"): a small round cream button with NH's leaf (the
-  // toggle; aria-expanded) that drops six pills down under it, right-aligned, one after the other on a small spring:
+  // toggle; aria-expanded) that drops six pills down under it, right-aligned (the user's order, 2026-11-08; kanji on
+  // them since then, easier to read than spaced kana):
   // 「ベル 121」 (the shared wallet's balance, no icon: the number is the picture) → the panel (ごほうび) (ずかん is
-  // 設定's: its last section), ききみみ with its small えいご (しずえ's head: ききみみ's sheet opened here, the voice session begun in the
-  // tap itself; 「さそわれています！」 on it, and a dot on the leaf, while someone's invite is live), りょこう (Orville's
-  // head: the trips' sheet, travel/open.svelte.ts), けっこんしき (パニエル's
-  // head: the wedding board, its sheet opened here: components/wedding), トレイル (a mountain: the hiking trails,
-  // hiking/open.svelte.ts) and せってい (a gear);
+  // 設定's: its last section), 旅行 (Orville's head: the trips' sheet, travel/open.svelte.ts), 結婚式 (パニエル's head:
+  // the wedding board, its sheet opened here: components/wedding), トレイル (a mountain: the hiking trails,
+  // hiking/open.svelte.ts), 英語 (しずえ's head: ききみみ's sheet opened here, the voice session begun in the tap itself;
+  // 「誘われています！」 on it, and a dot on the leaf, while someone's invite is live) and 設定 (a gear);
   // no かいがら: the shop is the building. Folded by default: the sky keeps only the dumbbell, the bowl and the leaf.
   // It folds again on a second tap of the leaf, a tap anywhere else (that tap still goes where it was aimed), Esc, a
-  // sheet opening, or a pick (a pill: a press squash, the villagers glance up at it (R18), and its sheet grows out of
-  // it at once, Sheet's `pop`; its chunk fetched from the pill's touch-down). Folded, the pills are hidden and inert (no taps, no focus, out of placement.ts' guards).
+  // sheet opening, or a pick (a pill: a press squash, the villagers glance up at it (R18), and its sheet opens at once;
+  // its chunk fetched from the pill's touch-down). Folded, the pills are hidden and inert (no taps, no focus, out of placement.ts' guards).
   // The goals' coins fly into it (HudCoins): into the leaf while it's folded, into the ベル row's number while it's
   // open; the number holds while they are in the air and counts up as each lands, and today's +N flashes by where
   // they land (a yuzu bubble that fades: earnings only, never a とりけす's refund).
@@ -187,18 +187,12 @@
       <b class="num money" aria-hidden="true" onanimationend={(e) => e.currentTarget.classList.remove('catch')}>{formatNum(Math.round(shown.current))}</b>
       {#if open}{@render plus()}{/if}
     </button>
-    <!-- the voice session begins in the tap itself (iOS: the clips play with the silent switch on) -->
-    <button type="button" class="item" data-hud-kikimimi aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('kikimimi')}
-      onclick={() => (wakeQuizVoice(), pick(() => openQuiz()))}>
-      <span class="lbl">{t('panel.kikimimi')}{#if invited}<small class="invited" data-hud-kikimimi-invited>{t('panel.kikimimiInvited')}</small>{:else}<small class="sub">{t('panel.kikimimiSub')}</small>{/if}</span>
-      <span class="ic"><Host head size={30} animate={false} eager /></span>
-    </button>
-    <!-- りょこう: the trips (Orville's head on the pill only) -->
+    <!-- 旅行: the trips (Orville's head on the pill only) -->
     <button type="button" class="item" data-hud-travel aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('travel')} onclick={() => pick(() => trips.show())}>
       <span class="lbl">{t('panel.travel')}</span>
       <span class="ic"><OfficialArt key="villagers/orville-icon" size={30} eager /></span>
     </button>
-    <!-- けっこんしき: the wedding board (Harvey's head on the pill only) -->
+    <!-- 結婚式: the wedding board (Harvey's head on the pill only) -->
     <button type="button" class="item" data-hud-wedding aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('wedding')} onclick={() => pick(() => weddingSheet.show())}>
       <span class="lbl">{t('panel.wedding')}</span>
       <span class="ic"><OfficialArt key="villagers/harvey-icon" size={30} eager /></span>
@@ -209,6 +203,12 @@
       <span class="ic">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M1.8 20.2 8.6 8.4c.4-.7 1.4-.7 1.8 0l2.3 4 2.2-3.2c.4-.6 1.3-.6 1.7 0l5.6 8.4c.5.7 0 1.6-.8 1.6H2.7c-.8 0-1.3-.9-.9-1.6Z" /><path class="snow" d="M7.1 11 8.6 8.4c.4-.7 1.4-.7 1.8 0L12 11.2l-1.6 1-1-1.1-1 1.2Z" /></svg>
       </span>
+    </button>
+    <!-- 英語 (ききみみ): the voice session begins in the tap itself (iOS: the clips play with the silent switch on) -->
+    <button type="button" class="item" data-hud-kikimimi aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('kikimimi')}
+      onclick={() => (wakeQuizVoice(), pick(() => openQuiz()))}>
+      <span class="lbl">{t('panel.kikimimi')}{#if invited}<small class="invited" data-hud-kikimimi-invited>{t('panel.kikimimiInvited')}</small>{/if}</span>
+      <span class="ic"><Host head size={30} animate={false} eager /></span>
     </button>
     <button type="button" class="item" data-hud-settings aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('settings')} onclick={() => pick(onsettings)}>
       <span class="lbl">{t('island.settings')}</span>
@@ -270,8 +270,7 @@
   .open .item:active { transform: translateY(2px) scale(.97); box-shadow: 0 2px 0 var(--c-lip); transition: transform 80ms var(--ease-squash), box-shadow 80ms; }
   .item:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .lbl { letter-spacing: .02em; }
-  .invited, .sub { display: block; margin-top: 3px; font-size: var(--fs-xs); color: var(--c-coral-text); }
-  .sub { color: var(--text-soft); }
+  .invited { display: block; margin-top: 3px; font-size: var(--fs-xs); color: var(--c-coral-text); }
   /* an invite waiting (the leaf folded): a small coral dot on its rim */
   .dot {
     position: absolute; top: 3px; right: 3px; width: 10px; height: 10px; border-radius: 50%; pointer-events: none;

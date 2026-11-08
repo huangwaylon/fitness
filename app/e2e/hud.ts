@@ -1,5 +1,5 @@
 // The HUD's top-right cluster (docs/design.md "Island"): [the health button] [the meal button] [the menu]. The menu
-// (NH's leaf, at the screen's side) drops 「ベル 121」 (→ the panel, ごほうび), ずかん, えいご ききとり, りょこう, けっこんしき, トレイル and せってい; each opens
+// (NH's leaf, at the screen's side) drops 「ベル 121」 (→ the panel, ごほうび), 旅行, 結婚式, トレイル, 英語 (ききみみ) and 設定; each opens
 // its own sheet.
 // Shared by the specs that reach any of them.
 import { expect, type Page } from './fixtures.ts';

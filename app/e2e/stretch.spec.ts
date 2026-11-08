@@ -43,7 +43,7 @@ test('the popup: a がんばり chip on the row at 1.5×, the ledger adds up; to
   await expect(pop.locator('.duo')).toHaveText('ふたりで ぜんぶ まで：あと 3つ');
   await expect(page.locator('button.canopy').nth(0)).toHaveAttribute('aria-label', /^ウェイ: 歩数 [\d,]+ \/ 8,000歩 ✓ がんばり、ムーブ .*。もくひょう \+3、がんばり \+1、ウェイの きょう \+4\sベル/);
   // ウェイ 3 + 1, うめ 2: today's total (the ベル row's label, ごほうび's pill) is the day's with がんばり
-  await expect(hudBells(page)).toHaveAttribute('aria-label', / · きょう 6\sベル$/);
+  await expect(hudBells(page)).toHaveAttribute('aria-label', / · 今日 6\sベル$/);
   if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/popup-1.png` });
 });
 
@@ -61,7 +61,7 @@ test('the cap: three goals at 1.5× all show the same chip, the ledger pays +2 w
   await expect(pop.locator('.sum .v')).toHaveText(['+4', '+2', /^\+6\sベル$/]);
   await expect(pop.locator('.duo')).toHaveText(/^\s*ふたりで ぜんぶ！\s*\+2\s*ふたりに$/);
   // ふたりでぜんぶ is the pair's: in both popups, counted once: ウェイ 4 + うめ 6 + 2 = today's 12
-  await expect(hudBells(page)).toHaveAttribute('aria-label', / · きょう 12\sベル$/);
+  await expect(hudBells(page)).toHaveAttribute('aria-label', / · 今日 12\sベル$/);
   // the wider rows still fit the stage
   const box = (await pop.boundingBox())!;
   expect(box.x).toBeGreaterThanOrEqual(0);

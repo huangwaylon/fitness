@@ -896,7 +896,7 @@ test('the menu\'s 「ベル」 row shows ごほうび\'s balance, follows a buy 
   const flashes = () => page.evaluate(() => (window as unknown as { flashes: string[] }).flashes);
   await expect.poll(async () => (await flashes()).at(-1)).toBe(`+${today}`);
   await expect(page.locator('[data-bells-flash]')).toHaveCount(0, { timeout: 4000 });
-  await expect(row).toHaveAttribute('aria-label', new RegExp(`^ごほうび · ふたりのベル ${bells.toLocaleString('en-US')}\\sベル · きょう ${today}\\sベル$`));
+  await expect(row).toHaveAttribute('aria-label', new RegExp(`^ごほうび · 二人のベル ${bells.toLocaleString('en-US')}\\sベル · 今日 ${today}\\sベル$`));
   // unfolded: 「ベル 121」, no icon, the same number as ごほうび's
   await hudMenu(page).click();
   await expect(row).toBeVisible();
@@ -938,7 +938,7 @@ test('ごほうび: today’s ベル in a yuzu pill under the balance (both of u
   await page.goto('?demo&date=2026-10-28T00:05&critter=none&visitor=none');
   await islandReady(page);
   await expect(row).toHaveAttribute('data-today', '0');
-  await expect(row).toHaveAttribute('aria-label', / · きょう 0\sベル$/);
+  await expect(row).toHaveAttribute('aria-label', / · 今日 0\sベル$/);
   await openPanel(page);
   await expect(pill).toHaveText(/^\s*今日のベル\s*0\s*ベル\s*$/);
   await expect(pill).toHaveClass(/none/);
