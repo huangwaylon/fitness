@@ -1373,7 +1373,7 @@ test('a row opened in place: 焼き ×2 and 追加 in the search, its ＋ hidden
   await expect(pork.locator('.kc')).toBeHidden(); // the row's own 生 298 kcal steps aside: nothing contradicts
   await expect(pork.locator('[data-states]')).toBeHidden();
   // one add for an open row: its own ＋ (the default portion) hidden, back once it's closed
-  const porkPlus = s.locator('li', { has: pork }).locator('[data-quick]');
+  const porkPlus = s.locator('[data-food-results] li:has([data-item="mext:11123"]) [data-quick]');
   await expect(porkPlus).toBeHidden();
   await expect(s.locator('[data-food-open-more]')).toHaveText('栄養成分›');
   await tap(add);
@@ -1384,8 +1384,6 @@ test('a row opened in place: 焼き ×2 and 追加 in the search, its ＋ hidden
   await expect(box).toHaveCount(0);
   await expect(q).toHaveValue('');
   await expect(q).toBeFocused(); // in the tap: the keyboard up for the next food
-  await q.fill('豚ロース');
-  await expect(porkPlus).toBeVisible();
   await q.fill('ごはん');
   const rice = s.locator('[data-food-results] [data-item="mext:01088"]');
   await tap(rice);
@@ -1425,6 +1423,7 @@ test('a row opened in place: 焼き ×2 and 追加 in the search, its ＋ hidden
   await expect(box).toHaveCount(1);
   await expect(pork).toHaveAttribute('aria-expanded', 'false');
   await expect(lean).toHaveAttribute('aria-expanded', 'true');
+  await expect(porkPlus).toBeVisible(); // its row closed: its ＋ back
   await lean.click();
   await expect(box).toHaveCount(0);
   await pork.click();
