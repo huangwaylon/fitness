@@ -11,7 +11,7 @@ import { join } from 'node:path';
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { atHub, kikiSheet as sheet, openStage } from './kikimimi-nav.ts';
+import { atHub, kikiSheet as sheet, openStage, runToQuestion } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -31,6 +31,7 @@ async function snap(p: Page, name: string, fullPage = false) {
 }
 /** The hub, then しまの みち from あそぶ's card. */
 async function toPath(page: Page) {
+  await page.clock.install(); // (the plays stepped through: kikimimi-nav.ts runUntil)
   await page.goto(`?demo&${Q}`);
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
@@ -43,8 +44,7 @@ async function toPath(page: Page) {
 async function playAllRight(page: Page) {
   await expect(sheet(page)).toHaveAttribute('data-phase', 'countdown');
   for (let i = 0; i < 6; i++) {
-    await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 45_000 }).toBe(i);
-    await expect(sheet(page)).toHaveAttribute('data-phase', 'answer', { timeout: 45_000 });
+    await runToQuestion(page, i, 'answer');
     await sheet(page).locator(`[data-choice="${await kiki(page, (k) => k.right())}"]`).click();
     await expect(sheet(page)).toHaveAttribute('data-phase', 'reveal');
     await sheet(page).locator('[data-kiki-next]').click();
@@ -53,7 +53,6 @@ async function playAllRight(page: Page) {
 }
 
 test('a stamp brings the host’s letter: on the results, then on the unit’s page and in ずかん › スタンプ', async ({ page }) => {
-  test.slow();
   await toPath(page);
   await openStage(page, 'mori');
   await sheet(page).locator('[data-kiki-stop="tr-hotel"] [data-kiki-stop-open]').click();

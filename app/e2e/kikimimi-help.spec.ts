@@ -6,6 +6,7 @@
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
+import { runToQuestion } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -38,7 +39,7 @@ async function snap(p: Page, name: string, fullPage = false) {
 }
 
 test('the Japanese help: the situation before the clip, the choices’ Japanese and 解説 at the reveal and in the review; none where missing', async ({ page }) => {
-  test.slow();
+  await page.clock.install(); // (the plays stepped through: kikimimi-nav.ts runUntil)
   await page.goto(`?demo&${Q}`);
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
@@ -48,8 +49,7 @@ test('the Japanese help: the situation before the clip, the choices’ Japanese 
 
   for (const [i, id] of IDS.entries()) {
     const h = HELP[id];
-    await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 15_000 }).toBe(i);
-    await expect(sheet(page)).toHaveAttribute('data-phase', 'answer', { timeout: 30_000 });
+    await runToQuestion(page, i, 'answer');
     // before the reveal: the situation under the speaker, no Japanese under the choices yet
     if (h?.ctx) await expect(sheet(page).locator('[data-kiki-ctx]')).toHaveText(h.ctx);
     else await expect(sheet(page).locator('[data-kiki-ctx]')).toHaveCount(0);
