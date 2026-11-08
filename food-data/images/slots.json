@@ -1522,7 +1522,34 @@
 "toyonaka-118873",
 "toyonaka-266191",
 "toyonaka-121188",
-"toyonaka-118898"
+"toyonaka-118898",
+"toyonaka-121671",
+"toyonaka-267637",
+"toyonaka-267617",
+"toyonaka-122566",
+"toyonaka-124137",
+"toyonaka-122563",
+"toyonaka-122564",
+"toyonaka-269303",
+"toyonaka-267666",
+"toyonaka-267598",
+"toyonaka-267665",
+"toyonaka-267601",
+"toyonaka-122504",
+"toyonaka-267642",
+"toyonaka-122179",
+"toyonaka-267675",
+"toyonaka-124138",
+"toyonaka-267636",
+"toyonaka-269302",
+"toyonaka-267641",
+"toyonaka-267618",
+"toyonaka-124136",
+"toyonaka-267597",
+"toyonaka-267592",
+"toyonaka-269263",
+"toyonaka-267593",
+"toyonaka-267602"
 ],
 "meat": [
 "mext-11227",
@@ -1881,7 +1908,12 @@
 "toyonaka-121214",
 "toyonaka-121187",
 "toyonaka-122521",
-"toyonaka-266147"
+"toyonaka-266147",
+"toyonaka-267591",
+"toyonaka-269262",
+"toyonaka-267603",
+"toyonaka-267631",
+"toyonaka-269301"
 ],
 "other": [
 "mext-02034",
@@ -2136,7 +2168,8 @@
 "takatsuki-r09",
 "takatsuki-r07",
 "kurume-002",
-"toyonaka-110010"
+"toyonaka-110010",
+"toyonaka-267594"
 ],
 "season": [
 "mext-17007",
@@ -2720,7 +2753,15 @@
 "toyonaka-120366",
 "toyonaka-118673",
 "toyonaka-121189",
-"toyonaka-118697"
+"toyonaka-118697",
+"toyonaka-267643",
+"toyonaka-267623",
+"toyonaka-269274",
+"toyonaka-269280",
+"toyonaka-124140",
+"toyonaka-267638",
+"toyonaka-124107",
+"toyonaka-269264"
 ],
 "soup": [
 "dishes-miso-tofu-wakame",
@@ -2940,7 +2981,15 @@
 "toyonaka-121395",
 "toyonaka-266134",
 "toyonaka-267560",
-"toyonaka-118670"
+"toyonaka-118670",
+"toyonaka-267616",
+"toyonaka-122178",
+"toyonaka-267621",
+"toyonaka-267606",
+"toyonaka-267664",
+"toyonaka-269272",
+"toyonaka-267674",
+"toyonaka-269524"
 ],
 "soy": [
 "mext-04032",
@@ -3539,7 +3588,8 @@
 "toyonaka-266814",
 "toyonaka-122275",
 "toyonaka-118698",
-"toyonaka-120478"
+"toyonaka-120478",
+"toyonaka-269249"
 ],
 "veg": [
 "mext-08001",
@@ -4123,7 +4173,8 @@
 "toyonaka-117812",
 "mext-14015",
 "maff_kyodo-35_17_kanagawa",
-"maff_kyodo-40_14_hyogo"
+"maff_kyodo-40_14_hyogo",
+"toyonaka-267591"
 ],
 "beer": [
 "mext-16006",
@@ -4369,7 +4420,10 @@
 "toyonaka-117749",
 "toyonaka-118898",
 "maff_kyodo-toridose_chiba",
-"maff_kyodo-46_13_nagasaki"
+"maff_kyodo-46_13_nagasaki",
+"toyonaka-267643",
+"toyonaka-267593",
+"toyonaka-267602"
 ],
 "curry": [
 "eatout-curry_pork_chain",
@@ -4404,7 +4458,8 @@
 "toyonaka-119261",
 "toyonaka-117824",
 "toyonaka-267581",
-"takatsuki-r45"
+"takatsuki-r45",
+"toyonaka-267636"
 ],
 "dairy": [
 "mext-13020",
@@ -4624,7 +4679,8 @@
 "maff_kyodo-31_3_tochigi",
 "dishes-onsen-tamago",
 "maff_kyodo-34_11_tokyo",
-"mext-12023"
+"mext-12023",
+"toyonaka-121671"
 ],
 "fish": [
 "mext-10281",
@@ -5219,7 +5275,10 @@
 "maff_kyodo-29_17_akita",
 "maff_kyodo-niwatorijiru_oita",
 "mext-06366",
-"mext-06368"
+"mext-06368",
+"toyonaka-267616",
+"toyonaka-122178",
+"toyonaka-267674"
 ],
 "konbini": [
 "eatout-bento_makunouchi",
@@ -5631,7 +5690,24 @@
 "dishes-mabo-harusame",
 "maff_kyodo-36_1_shizuoka",
 "maff_kyodo-40_25_hyogo",
-"maff_kyodo-46_15_nagasaki"
+"maff_kyodo-46_15_nagasaki",
+"toyonaka-267637",
+"toyonaka-267617",
+"toyonaka-122566",
+"toyonaka-124137",
+"toyonaka-122563",
+"toyonaka-122564",
+"toyonaka-269303",
+"toyonaka-267666",
+"toyonaka-267665",
+"toyonaka-122504",
+"toyonaka-267642",
+"toyonaka-267675",
+"toyonaka-124138",
+"toyonaka-269302",
+"toyonaka-267641",
+"toyonaka-267592",
+"toyonaka-269263"
 ],
 "meat": [
 "mext-11279",
@@ -5721,7 +5797,8 @@
 "dishes-miso-tamago",
 "maff_kyodo-oyagani_no_miso_shiru_tottori",
 "kurume-184",
-"toyonaka-119462"
+"toyonaka-119462",
+"toyonaka-267606"
 ],
 "natto": [
 "mext-04046",
@@ -5874,7 +5951,8 @@
 "toyonaka-119220",
 "mext-01173",
 "dishes-wafu-kinoko-spa",
-"takatsuki-r20"
+"takatsuki-r20",
+"toyonaka-267631"
 ],
 "pork": [
 "mext-11276",
@@ -5972,7 +6050,11 @@
 "mext-11312",
 "maff_kyodo-butahoneyasai_kagoshima",
 "mext-11174",
-"mext-10387"
+"mext-10387",
+"toyonaka-267601",
+"toyonaka-267618",
+"toyonaka-124136",
+"toyonaka-267597"
 ],
 "ramen": [
 "dishes-ramen-shoyu",
@@ -6003,7 +6085,8 @@
 "mext-01051",
 "mext-01050",
 "eatout-tantanmen",
-"mext-01188"
+"mext-01188",
+"toyonaka-269262"
 ],
 "rice": [
 "mext-01088",
@@ -6177,7 +6260,8 @@
 "kurume-002",
 "maff_kyodo-kiinaiokowa_aichi",
 "maff_kyodo-ohantoohankayaku_oita",
-"maff_kyodo-37_11_toyama"
+"maff_kyodo-37_11_toyama",
+"toyonaka-267594"
 ],
 "saba": [
 "mext-10154",
@@ -6255,7 +6339,12 @@
 "eatout-gyudon_set",
 "kurume-155",
 "kurume-153",
-"toyonaka-265179"
+"toyonaka-265179",
+"toyonaka-267623",
+"toyonaka-267603",
+"toyonaka-269280",
+"toyonaka-124140",
+"toyonaka-267638"
 ],
 "salmon": [
 "mext-10139",
@@ -6810,7 +6899,10 @@
 "maff_kyodo-39_11_osaka",
 "maff_kyodo-funo_karashi_ae_fukui",
 "maff_kyodo-41_21_okayama",
-"maff_kyodo-kurodaseritohorensonoohitashi_shimane"
+"maff_kyodo-kurodaseritohorensonoohitashi_shimane",
+"toyonaka-269274",
+"toyonaka-124107",
+"toyonaka-269264"
 ],
 "soba": [
 "dishes-zaru-soba",
@@ -6865,7 +6957,8 @@
 "maff_kyodo-43_30_yamaguchi",
 "maff_kyodo-44_5_tokushima",
 "eatout-niku_soba",
-"dishes-kamonanban"
+"dishes-kamonanban",
+"toyonaka-269301"
 ],
 "soup": [
 "mext-18005",
@@ -6959,7 +7052,11 @@
 "maff_kyodo-zoni_aichi",
 "maff_kyodo-36_16_shizuoka",
 "maff_kyodo-asuka_nabe_nara",
-"maff_kyodo-39_4_osaka"
+"maff_kyodo-39_4_osaka",
+"toyonaka-267621",
+"toyonaka-267664",
+"toyonaka-269272",
+"toyonaka-269524"
 ],
 "soy": [
 "mext-05018",
@@ -7516,7 +7613,8 @@
 "mext-15120",
 "maff_kyodo-33_21_saitama",
 "maff_kyodo-onimanju_aichi",
-"mext-15067"
+"mext-15067",
+"toyonaka-269249"
 ],
 "tofu": [
 "mext-04032",
@@ -7605,7 +7703,8 @@
 "toyonaka-122489",
 "mext-06370",
 "dishes-hiyashi-tomato",
-"mext-06391"
+"mext-06391",
+"toyonaka-122179"
 ],
 "tuna": [
 "mext-10260",
@@ -7629,7 +7728,8 @@
 "toyonaka-110015",
 "toyonaka-118557",
 "toyonaka-120336",
-"toyonaka-117827"
+"toyonaka-117827",
+"toyonaka-267598"
 ],
 "udon": [
 "mext-01039",
