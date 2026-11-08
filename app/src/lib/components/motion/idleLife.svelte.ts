@@ -40,6 +40,9 @@ interface IdleContext {
   offset?: () => number;
   /** The slot's beats (tests); ambient.ts villagerBeats. */
   beats?: typeof villagerBeats;
+  /** The villagers, しずえ and the visitor do nothing on their own (`?idle=none`, the e2e's ambient life off:
+   *  devHooks.ts): no beats, strolls or outings; asleep, they still doze. */
+  still?: boolean;
 }
 
 /** Slots played after 3 min without input: one in this many. */
@@ -98,12 +101,13 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
     if (ctx.paused()) return;
     const { date, slot } = slotAt(clock() - DECIDE_MS, offset());
     if (Date.now() - lastInput > 3 * 60_000 && slot % SLOW_EVERY) return schedule();
-    ctx.visitor?.(slotRand(date, slot, 'visitor'));
+    if (!ctx.still) ctx.visitor?.(slotRand(date, slot, 'visitor'));
     if (Date.now() - lastEvent.at < 3_000) return schedule(); // an event is playing: the villagers leave it be
     if (ctx.asleep()) {
       doze(slot);
       return schedule();
     }
+    if (ctx.still) return schedule();
     const w = ctx.world();
     if (w) {
       const beats = (ctx.beats ?? villagerBeats)({ ...w, phase: ctx.night?.() ? 'evening' : 'day' }, date, slot);

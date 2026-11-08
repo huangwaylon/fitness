@@ -220,6 +220,7 @@ export class IslandLife {
     }, 700);
 
     const stopIdle = startIdleLife({
+      still: hook('idle') === 'none',
       paused: () => ctx.covered() || this.hidden,
       asleep: () => actors.mine.asleep && actors.partner.asleep,
       night: ctx.night,

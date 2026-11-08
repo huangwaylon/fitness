@@ -213,6 +213,23 @@ describe('idle life on ambient life’s slots', () => {
     expect(played.length).toBe(at10);
     stop();
   });
+  it('still (?idle=none, the e2e’s ambient life off): no beats, no visitor’s turn, no しずえ; asleep, the villagers still doze', async () => {
+    const { startIdleLife } = await import('./idleLife.svelte.ts');
+    const { actors, lastEvent, resetAll } = await import('./director.svelte.ts');
+    resetAll();
+    lastEvent.at = 0;
+    vi.setSystemTime(new Date('2026-10-29T12:00:00Z'));
+    let played = 0, visits = 0, asleep = false;
+    const stop = startIdleLife({ ...base, still: true, asleep: () => asleep, beats: () => (played++, {}), visitor: () => visits++ });
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect([played, visits]).toEqual([0, 0]);
+    asleep = actors.mine.asleep = true;
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(actors.mine.fx.some((f) => f.kind === 'zzz')).toBe(true);
+    expect([played, visits]).toEqual([0, 0]);
+    stop();
+    resetAll();
+  });
   it('the guest’s villager pairs up as a member’s: its chat with mine turns them to each other, a nod and a laugh', async () => {
     const { startIdleLife } = await import('./idleLife.svelte.ts');
     const { actors, lastEvent, resetAll } = await import('./director.svelte.ts');
