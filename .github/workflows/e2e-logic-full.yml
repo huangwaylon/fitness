@@ -16,8 +16,10 @@ on:
 permissions:
   contents: read
 
+# (the condition in the group's name: a run after a red, cancelled, pull request's or fork's Deploy UI run skips its
+# jobs, but in the group it would still replace a real one waiting: 42449903526 did)
 concurrency:
-  group: e2e-logic-full
+  group: ${{ (github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository)) && 'e2e-logic-full' || format('skip-{0}', github.run_id) }}
   cancel-in-progress: false
 
 jobs:
@@ -25,8 +27,8 @@ jobs:
   # one retry (playwright.config.ts): failing twice is red; flaky (failed, then passed) is named, annotated and written to
   # the flaky ledger (flaky-<shard>: scripts/e2e-flakes.ts), which the gate reads.
   e2e-logic:
-    # (after a deploy: not after a red or cancelled gate)
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    # (after a deploy: not after a red or cancelled gate, nor a pull request's: a fork's code, its own `main` too)
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -91,7 +93,7 @@ jobs:
   # (@smoke) with real (software) GL, on one runner. Advisory (the user, Nov 2026: CI's software GL isn't the phones'
   # Metal): continue-on-error, so it never turns this workflow red; its failures are in its summary.
   e2e-render:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     continue-on-error: true
     timeout-minutes: 15
