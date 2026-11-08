@@ -32,3 +32,29 @@ export async function openStage(p: Page, stage: string) {
   await expect(head).toHaveAttribute('aria-expanded', 'true');
 }
 
+/** A game's schedule on the page's clock (`page.clock.install()` before the goto; the pinned day kept): the countdown,
+ *  the lead, a clip's play window (its length from clips.json, not the audio's) and the reveal's wait are the session's
+ *  timers on the relay's clock (game.svelte.ts #refresh; the demo's relay is Date.now()), so stepping the clock runs
+ *  them in moments. Steps STEP ms at a time (its frames with it; the clock still flows between steps) until `done`:
+ *  never more than a step past a phase's start (an 8 s answer window kept). Both tabs of a context step together (the
+ *  clock is the context's). */
+async function runUntil(p: Page, done: () => Promise<boolean>, what = 'the state', max = 180_000) {
+  for (let t = 0; !(await done()); t += STEP) {
+    if (t > max) throw new Error(`runUntil: ${what} not reached in ${String(max / 1000)} s of the page's clock`);
+    await p.clock.runFor(STEP);
+  }
+}
+const STEP = 250;
+
+/** The sheet's game at `phase`, the clock stepped to it. */
+export const runToPhase = (p: Page, phase: string) =>
+  runUntil(p, async () => (await kikiSheet(p).getAttribute('data-phase')) === phase, `data-phase ${phase}`);
+
+/** Question i on (`__kiki.view()`; at `phase` if given: 'answer', its window), the clock stepped through its
+ *  countdown, lead and clip. */
+export const runToQuestion = (p: Page, i: number, phase?: string) =>
+  runUntil(p, () => p.evaluate(([i, phase]) => {
+    const v = (window as unknown as { __kiki?: { view(): { i: number; phase: string } | null } }).__kiki?.view();
+    return v?.i === i && (!phase || v.phase === phase);
+  }, [i, phase] as const), `question ${String(i)}${phase ? ` at ${phase}` : ''}`);
+
