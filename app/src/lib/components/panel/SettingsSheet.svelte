@@ -26,6 +26,9 @@
   import { i18n, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { isGuest, mine } from '#lib/ui-state/viewer.ts';
+  import { lastSentAt, queued } from '#lib/sync/queue.ts';
+  import { formatSyncTime } from '#lib/i18n/format.ts';
+  import { dayKey } from '#lib/time/clock.ts';
 
   /** `resume`: this opening is ずかん's ‹ back (Hud): at 図鑑's row again, where the list was scrolled to. */
   let { open = $bindable(), onzukan, resume = $bindable(false) }: { open: boolean; onzukan: () => void; resume?: boolean } = $props();
@@ -52,6 +55,10 @@
     if (me.who !== 'G' && sameLook(p, DEFAULT_LOOKS[me.who])) return t('look.usual');
     return mySavedLooks().find((s) => sameLook(s.look, p))?.name ?? null;
   });
+  /** The writes not sent yet (2026-11-08: a stuck queue was invisible): 「未送信 {n}件（最終送信 {time}）」, 送信 sends
+   *  them now, the set-aside ones too. (The view recomputes as one is queued or acked: the count follows it.) */
+  const unsent = $derived((void week.view, week.demo ? 0 : queued().length));
+  const sentAt = $derived((void week.view, lastSentAt()));
   /** The guest's phone (docs/design.md "The guest"): a line saying it's visiting. */
   const guest = $derived(isGuest(view));
 
@@ -107,6 +114,12 @@
     {#if push === 'look' && view}
       <div class="page"><LookPage {view} /></div>
     {:else if !push && view && me && worn}
+      {#if unsent}
+        <div class="prow static" data-unsent={unsent}>
+          <span class="prl">{t('panel.unsent', { n: unsent, time: formatSyncTime(sentAt === null ? null : new Date(sentAt), dayKey()) })}</span>
+          <button type="button" class="btn small paper" data-sfx="sync" aria-disabled={week.syncing} onclick={() => week.refresh({ unpark: true })}>{t('panel.unsentSend')}</button>
+        </div>
+      {/if}
       <section class="sec" aria-labelledby="sec-look">
         <h2 id="sec-look" class="sec-label">{t('panel.look')}</h2>
         <div class="prow static me" data-look-row={worn.kind}>

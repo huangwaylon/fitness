@@ -252,6 +252,10 @@ at once; one event alone so refused is set aside.
 - **Set aside** (`parked`, 2026-11-08): an event the record fails (`unavailable`: its write threw) 30 times, ~2 h, is
   kept and shown but no longer sent, and no longer blocks the queue (later events on its subject wait with it). Logged
   `queue.poison`; a sync tap (`unpark`) tries it again. Never dropped.
+- **Unsent** (2026-11-08): online, once a write has waited 2 minutes past its hold (backed off, set aside or blocked:
+  `unsentStuck`), the island's sync chip says 「おくれて いない きろく {n} · タップで おくる」 and 設定 「未送信 {n}件（最終送信
+  {time}）」 (`island.sentAt`: the last ack) with 送信; a tap sends them all, the set-aside ones too. Storage-full eviction
+  of the re-fetchable caches waits for the log to show `storage.fail` (none in the 30 days to 2026-11-08).
 
 - **Holds:** a held event (`holdMs`, the undo window) is skipped, not waited for; `unqueue` takes it back, `holdEvent`
   moves its time.

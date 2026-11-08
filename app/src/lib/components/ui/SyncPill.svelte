@@ -2,24 +2,32 @@
   // Sync chip under the HUD row: shown only when sync is not ok (offline, or the last refresh
   // or send failed). A lasting system state, so it is a chip, not しずえ. Tap = retry now (flush + refresh);
   // while that runs it says 同期中…. Offline, the taps waiting to go (sync/queue.ts) are counted on it, and its label
-  // says when the record last came. A failed save (data may be lost) is the store's one banner + R17 instead.
+  // says when the record last came. Online with a write waiting over 2 minutes (backed off, set aside: queue.ts
+  // unsentStuck, 2026-11-08), it says so: 「おくれて いない きろく {n} · タップで おくる」, and a tap sends the set-aside
+  // ones too. A failed save (data may be lost) is the store's one banner + R17 instead.
   import { week } from '#lib/store/week.svelte.ts';
-  import { queued } from '#lib/sync/queue.ts';
+  import { queued, unsentStuck } from '#lib/sync/queue.ts';
   import { t } from '#lib/i18n/index.ts';
   import { formatSyncTime } from '#lib/i18n/format.ts';
-  import { dayKey } from '#lib/time/clock.ts';
+  import { dayKey, minuteNow } from '#lib/time/clock.ts';
 
   const time = $derived(week.lastSync ? formatSyncTime(week.lastSync, dayKey()) : t('sync.never'));
-  // (the view recomputes as a tap is queued and as one is acked: the count follows it)
+  // (the view recomputes as a tap is queued and as one is acked: the count follows it; the minute tick for the wait)
   const waiting = $derived((void week.view, week.offline ? queued().length : 0));
+  const stuck = $derived((void week.view, week.offline || week.demo ? 0 : unsentStuck(minuteNow().getTime())));
   const label = $derived(week.syncing ? t('sync.syncing') : t('sync.retryLabel', { time }) + (waiting ? t('sync.queuedLabel', { n: waiting }) : ''));
 </script>
 
 {#if week.offline}
-  <button type="button" class="chip" aria-label={label} aria-disabled={week.syncing} data-sfx="sync" data-sync-waiting={waiting} onclick={() => week.refresh()}>
+  <button type="button" class="chip" aria-label={label} aria-disabled={week.syncing} data-sfx="sync" data-sync-waiting={waiting} onclick={() => week.refresh({ unpark: true })}>
     <svg viewBox="0 0 24 24" class:spin={week.syncing} aria-hidden="true"><use href="#i-sync" /></svg>
     <span aria-hidden="true">{week.syncing ? t('sync.syncing') : t('sync.offline')}</span>
     {#if waiting && !week.syncing}<span class="n" aria-hidden="true">{t('sync.queued', { n: waiting })}</span>{/if}
+  </button>
+{:else if stuck}
+  <button type="button" class="chip" aria-disabled={week.syncing} data-sfx="sync" data-sync-stuck={stuck} onclick={() => week.refresh({ unpark: true })}>
+    <svg viewBox="0 0 24 24" class:spin={week.syncing} aria-hidden="true"><use href="#i-sync" /></svg>
+    <span>{week.syncing ? t('sync.syncing') : t('sync.stuck', { n: stuck })}</span>
   </button>
 {/if}
 
