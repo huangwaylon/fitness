@@ -13,25 +13,24 @@ async function open(page: Page, date: string) {
   await camTo(page, await oku(page), false);
 }
 
-test('snow on the campsite’s tent in winter only', async ({ page }) => {
+// (which days: ui-state/season.test's windows, scenery.test's sceneryKey (the campsite's snow in winter only) and
+// clock.test's eventsAt (cherry-blossom and maple weeks, neither on an ordinary day); here a day of each on the island)
+test('snow on the campsite’s tent in winter', async ({ page }) => {
   const tent = page.locator('[data-building="campsite"] [data-look]');
   await open(page, '2027-01-12T10:00');
   await expect(tent).toHaveAttribute('data-look', 'deco/campsite-winter');
-  await open(page, '2026-12-05T10:00');
-  await expect(tent).toHaveAttribute('data-look', 'deco/campsite');
 });
 
-for (const [date, floating] of [['2027-04-05T10:00', 'petal'], ['2026-11-20T10:00', 'maple'], ['2026-11-01T10:00', null]] as const)
-  test(`the pond on ${date.slice(0, 10)}: ${floating ?? 'nothing'} floating`, async ({ page }) => {
+// (each week's own model on the water: the wiring; no week, nothing: clock.test's eventsAt)
+for (const [date, floating] of [['2027-04-05T10:00', 'petal'], ['2026-11-20T10:00', 'maple']] as const)
+  test(`the pond on ${date.slice(0, 10)}: ${floating} floating`, async ({ page }) => {
     await open(page, date);
     await is3d(page);
     // NH's petal or maple leaf riding the stream and afloat on the pond (world3d/floats3d.ts)
-    const model = floating ? `fx/${floating === 'petal' ? 'petal' : 'maple-leaf'}` : undefined;
+    const model = `fx/${floating === 'petal' ? 'petal' : 'maple-leaf'}`;
     await expect.poll(() => w3(page, (w) => w.where('float-0')?.model)).toBe(model);
     await expect.poll(() => w3(page, (w) => w.where('float-pond-0')?.model)).toBe(model);
-    if (floating) {
-      // on the pond's water, inside its banks (world.ts POND as the page has it)
-      const p = await w3(page, (w) => w.where('float-pond-0')), { POND } = await geo(page);
-      expect(((p!.x - POND.x) / POND.rx) ** 2 + ((-p!.z - POND.z) / POND.rz) ** 2).toBeLessThan(1);
-    }
+    // on the pond's water, inside its banks (world.ts POND as the page has it)
+    const p = await w3(page, (w) => w.where('float-pond-0')), { POND } = await geo(page);
+    expect(((p!.x - POND.x) / POND.rx) ** 2 + ((-p!.z - POND.z) / POND.rz) ** 2).toBeLessThan(1);
   });

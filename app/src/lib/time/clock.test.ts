@@ -17,6 +17,17 @@ describe('scene clock in Tokyo time', () => {
     expect(eventsAt(new Date('2026-11-15T14:30:00Z')).maple).toBe(false); // Nov 15, 23:30 JST
     expect(eventsAt(new Date('2026-12-23T15:30:00Z')).toyDay).toBe(true); // Dec 24, 00:30 JST
   });
+
+  it('cherry-blossom week is Apr 1–10 and maple week Nov 16–25, Tokyo days (the pond’s petals and leaves)', () => {
+    const on = (d: string) => eventsAt(new Date(`${d}+09:00`));
+    const cherry = ['2027-03-31T23:30', '2027-04-01T00:30', '2027-04-05T10:00', '2027-04-10T23:30', '2027-04-11T00:30'].map((d) => on(d).cherry);
+    expect(cherry).toEqual([false, true, true, true, false]);
+    const maple = ['2026-11-15T23:30', '2026-11-16T00:30', '2026-11-20T10:00', '2026-11-25T23:30', '2026-11-26T00:30'].map((d) => on(d).maple);
+    expect(maple).toEqual([false, true, true, true, false]);
+    // an ordinary day: neither
+    expect(on('2026-11-01T10:00')).toEqual({ cherry: false, maple: false, toyDay: false });
+    expect(on('2027-04-05T10:00').maple || on('2026-11-20T10:00').cherry).toBe(false);
+  });
 });
 
 describe('the minute tick', () => {
