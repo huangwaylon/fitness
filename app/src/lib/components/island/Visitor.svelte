@@ -393,16 +393,17 @@
     return () => host.removeEventListener('island:star', onStar);
   });
 
-  // dev hooks: a stroll now, the partner coming over now (after the opening beats)
+  // dev hooks: a stroll now, the partner coming over now (after the opening beats; `?stroll=6000`: that many ms after)
   $effect(() => {
     const meetNow = hookFlag('meet');
     if (!(meetNow || hookFlag('stroll')) || !shown) return;
+    const after = meetNow ? 3000 : Number(hook('stroll')) || 3000;
     let t: ReturnType<typeof setTimeout>, tries = 0;
     const go = () => {
       const ok = meetNow ? meet(shown!) : stroll();
       if (!ok && ++tries < 12) t = setTimeout(go, 700);
     };
-    t = setTimeout(go, 3000);
+    t = setTimeout(go, after);
     return () => clearTimeout(t);
   });
 
