@@ -1,4 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { reduce } from '#lib/model/state.ts';
+import { eventSlot, prefTaken, validEventData } from '#lib/contract/record.ts';
+import { guestMayWrite } from '#lib/contract/guest.ts';
+import type { EventRow } from '#lib/contract/api.ts';
 import { devChoice, PREVIEW_EVENTS, resolvePreview, savedFrom, type Saved } from './preview.ts';
 
 const TODAY = '2026-11-04';
@@ -58,5 +62,37 @@ describe('devChoice', () => {
     expect(devChoice('?demo&shower')).toMatchObject({ event: 'shower' });
     expect(devChoice('?season=winter&theme=night')).toMatchObject({ season: 'winter', tod: 'night' });
     expect(devChoice('?season=monsoon&theme=dim&event=nope')).toMatchObject({ season: null, tod: null, event: null });
+  });
+});
+
+describe("the island's look (pref seasonLook): one for the island, anyone's", () => {
+  const ev = (hm: string, who: 'A' | 'B' | 'G', data: object): EventRow => [new Date(`2026-11-04T${hm}:00+09:00`).toISOString(), who, `e${hm}${who}`, 'pref', JSON.stringify(data)];
+  const look = (events: EventRow[]) => reduce({ metrics: [], events }).seasonLook;
+
+  it('the model: the last anyone set wins, the guest too; null is 自動; a malformed one or a `person` changes nothing', () => {
+    const halloween = { event: 'halloween', season: null, weather: null, tod: null };
+    expect([
+      look([]),
+      look([ev('10:00', 'A', { key: 'seasonLook', value: halloween })]),
+      look([ev('10:00', 'A', { key: 'seasonLook', value: halloween }), ev('11:00', 'G', { key: 'seasonLook', value: { season: 'winter' } })]),
+      look([ev('10:00', 'A', { key: 'seasonLook', value: halloween }), ev('11:00', 'B', { key: 'seasonLook', value: null })]),
+      look([ev('10:00', 'A', { key: 'seasonLook', value: halloween }), ev('11:00', 'B', { key: 'seasonLook', value: { colour: 'red' } })]),
+      look([ev('10:00', 'A', { person: 'B', key: 'seasonLook', value: halloween })])
+    ]).toEqual([undefined, halloween, { season: 'winter' }, null, halloween, undefined]);
+  });
+
+  it('the record: one slot for the island, the guest may write it (never with a `person`); a malformed one refused', () => {
+    const at = Date.parse('2026-11-04T01:00:00Z');
+    expect([
+      eventSlot('pref', 'A', 'A', { key: 'seasonLook', value: { tod: 'night' } }, at),
+      eventSlot('pref', 'G', 'G', { key: 'seasonLook', value: null }, at),
+      eventSlot('pref', 'A', 'A', { key: 'seasonLook', value: 'night' }, at),
+      prefTaken('seasonLook', { event: 'a-later-event' }),
+      validEventData('pref', { key: 'seasonLook', value: { event: 'halloween', season: 'autumn', weather: 'rain', tod: 'night' } }, at),
+      validEventData('pref', { key: 'seasonLook', value: { colour: 'red' } }, at),
+      validEventData('pref', { key: 'seasonLook', value: { tod: 'Night time' } }, at),
+      guestMayWrite('pref', { key: 'seasonLook', value: null }),
+      guestMayWrite('pref', { key: 'seasonLook', value: null, person: 'A' })
+    ]).toEqual(['pref|island|seasonLook', 'pref|island|seasonLook', null, true, true, false, false, true, false]);
   });
 });

@@ -21,8 +21,8 @@ import { goalDay } from '#lib/contract/record.ts';
 import type { TallyRow } from './tally.ts';
 import { appendedTo, rowAt } from './snapshot.ts';
 import {
-  BODY_BOUNDS, DATE_RE, eventSubject, EVENT_TYPES, isFind, isId, isPersonId, isWho, isActivityMetric, isBodyMetric, isWeatherMode, roundKg, WEIGHT_KG,
-  type ActivityMetric, type BodyMetric, type EventRow, type EventType, type FindKind, type MetricRow, type SnapshotRows, type WeatherMode
+  BODY_BOUNDS, DATE_RE, eventSubject, EVENT_TYPES, isFind, isId, isPersonId, isWho, isActivityMetric, isBodyMetric, isSeasonLook, isWeatherMode, roundKg, WEIGHT_KG,
+  type ActivityMetric, type BodyMetric, type EventRow, type EventType, type FindKind, type MetricRow, type SeasonLook, type SnapshotRows, type WeatherMode
 } from '#lib/contract/api.ts';
 
 export const partnerOf = (p: PersonId): PersonId => (p === 'A' ? 'B' : 'A');
@@ -143,6 +143,9 @@ export interface State {
   prefs: Record<Who, Prefs>;
   /** The island's weather (`pref weatherMode`: the last anyone set, the guest too; unset, `real`): Tokyo's real sky or the game's. */
   weatherMode?: WeatherMode;
+  /** The island's look (`pref seasonLook`, contract/api.ts isSeasonLook: the last anyone set, the guest too; unset or
+   *  null, the real day's): read by every phone's scene (ui-state/preview.svelte.ts). */
+  seasonLook?: SeasonLook | null;
   /** The goals a day keeps (`pref` stepsGoal, moveGoal, exerciseGoal, standGoal) per person, each ascending `at`
    *  (`goalOn` picks the one in force on a day). */
   /** Each goal a day keeps, in `at` order, with the Tokyo day it applies from (contract/record.ts goalDay). */
@@ -619,6 +622,11 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
     if (d.key === 'weatherMode') {
       // the island's, whoever set it (no `person`; the guest too); anything else is ignored (the mode stays)
       if (isWeatherMode(d.value)) s.weatherMode = d.value;
+      return;
+    }
+    if (d.key === 'seasonLook') {
+      // the island's too (anything else is ignored: the look stays)
+      if (isSeasonLook(d.value)) s.seasonLook = d.value;
       return;
     }
     if (!isPersonId(person) && !GUEST_PREFS.includes(d.key)) return;

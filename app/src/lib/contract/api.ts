@@ -62,11 +62,12 @@ export const GOAL_PREF_KEYS: readonly string[] = [
  * The `pref` keys the model reads (any other key is refused): the sender's `locale`, `villagerName`, `villager`, `look`
  * and `savedLooks` (contract/look.ts: the look worn and the コーデ), every
  * goal (contract/goals.ts GOALS: the activity, body and meal-log goals, each its own key), the profile (`sex`, `birth`,
- * `bmiStd`: PROFILE_PREF_KEYS) and the island's `weatherMode` (WEATHER_MODES: island-wide, the members' alone).
+ * `bmiStd`: PROFILE_PREF_KEYS), the island's `weatherMode` (WEATHER_MODES) and its `seasonLook` (isSeasonLook): both
+ * island-wide, anyone's, the guest's too.
  */
 export const PREF_KEYS: readonly string[] = [
   'locale', 'villagerName', 'villager', 'stepsGoal', 'moveGoal', 'exerciseGoal', 'standGoal', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean', 'kcalGoal',
-  'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal', 'fibreGoal', 'alcoholGoal', 'weatherMode', 'sex', 'birth', 'bmiStd', 'look', 'savedLooks'
+  'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal', 'fibreGoal', 'alcoholGoal', 'weatherMode', 'sex', 'birth', 'bmiStd', 'look', 'savedLooks', 'seasonLook'
 ];
 
 /** The profile's `pref` keys (contract/profile.ts PROFILE_KEYS, written out here as GOAL_PREF_KEYS are): either member
@@ -79,6 +80,16 @@ export const PROFILE_PREF_KEYS: readonly string[] = ['sex', 'birth', 'bmiStd'];
 export const WEATHER_MODES = ['real', 'game'] as const;
 export type WeatherMode = (typeof WEATHER_MODES)[number];
 export const isWeatherMode = (v: unknown): v is WeatherMode => v === 'real' || v === 'game';
+
+/** The island's look (`pref seasonLook`, 設定 → 季節, docs/design.md "Seasonal look"): an event, a season, a weather and
+ *  a time of day the whole island shows instead of the real day's, each null for the real one; `null` is 自動 (the
+ *  real date and Tokyo's weather). One for the island (no `person`; the last one set wins). Its fields' names are
+ *  checked here, their values by the phones (ui-state/preview.ts lookFrom: a value a phone doesn't know is the real
+ *  day's there), so a later build's event still replaces the slot on an older one. */
+const SEASON_LOOK_KEYS = ['event', 'season', 'weather', 'tod'] as const;
+export type SeasonLook = Partial<Record<(typeof SEASON_LOOK_KEYS)[number], string | null>>;
+export const isSeasonLook = (v: unknown): v is SeasonLook | null =>
+  v === null || (isRec(v) && Object.entries(v).every(([k, x]) => (SEASON_LOOK_KEYS as readonly string[]).includes(k) && (x === null || (typeof x === 'string' && /^[a-z0-9-]{1,24}$/.test(x)))));
 
 
 export const isPersonId = (v: unknown): v is PersonId => v === 'A' || v === 'B';
