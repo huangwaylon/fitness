@@ -7,7 +7,7 @@ import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { newId } from '#lib/sync/queue.ts';
 import { setLocale, t, type Locale } from '#lib/i18n/index.ts';
 import type { LocalDate, ShopItemId, Who } from '#lib/types.ts';
-import { isWeatherMode, nextDay, type FindKind, type SeasonLook, type WeatherMode } from '#lib/contract/api.ts';
+import { isWeatherMode, type FindKind, type SeasonLook, type WeatherMode } from '#lib/contract/api.ts';
 import { findKey, findsView } from '#lib/model/finds.ts';
 import { addToTally, dayTallies } from '#lib/model/tally.ts';
 import { localDateAt } from '#lib/time/dates.ts';
@@ -17,6 +17,7 @@ import {
   customSnap, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, newCustomId, newFoodId, newRecipeId, newRepeatId, recipeSnap, repeatCovers,
   type FoodEntry, type FoodRepeat, type FoodSnap, type Meal, type RepeatItem, type RepeatOp
 } from '#lib/contract/food.ts';
+import { nextDay } from '#lib/contract/tokyo.ts';
 import { customs, foodDay, foodEntries, mealItems, recipes, repeats } from '#lib/model/food.ts';
 import { buyPrice, sellPrice, stockOf } from '#lib/contract/shop.ts';
 import { GOODS } from '#lib/contract/pocket.ts';

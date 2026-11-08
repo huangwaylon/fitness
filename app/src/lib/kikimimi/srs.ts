@@ -15,7 +15,8 @@ import { ENTRIES, entryOf, itemOf } from './pool.ts';
 import { agesOf, staleness, type Recent } from './recent.ts';
 import { DECK_SIZE, MIX } from './deck.ts';
 import { drawn } from './mix.ts';
-import { dayNum, type Answer, type Stats } from './progress.ts';
+import { dayNum } from '../contract/tokyo.ts';
+import type { Answer, Stats } from './progress.ts';
 import { SKILLS, skillsOf, tagsOf, type Skill } from './tags.ts';
 
 /** Days until a card is due again, by box (0: at once). */

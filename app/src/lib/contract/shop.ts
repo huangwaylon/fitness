@@ -14,11 +14,12 @@
 // price, the stock and the cover when it keeps one (relay/src/store.ts, `shopRefusal` over `shopLedger`); the phones
 // fold the same rows by the same rules (model/shop.ts), a kept row as kept and a queued one as the record would judge
 // it. Shared by the record and the model; pure.
-import { isLocalDate, nextDay } from './api.ts';
+import { isLocalDate } from './api.ts';
 import { SELL, BUY } from './shopPrices.ts';
 import type { LocalDate, Who } from '../types.ts';
 import { seeded } from '../random.ts';
 import { POCKET_KINDS } from './pocket.ts';
+import { nextDay, prevDay } from './tokyo.ts';
 
 export interface SellData { species: string; n: number; v: number }
 export interface BuyData { item: string; price: number; d: LocalDate }
@@ -57,9 +58,6 @@ export function buyOf(d: Record<string, unknown>): BuyData | null {
   if (!isWhole(d.price, 1_000_000) || !isLocalDate(d.d)) return null;
   return { item: d.item, price: d.price, d: d.d };
 }
-
-/** The calendar day before `date`. */
-const prevDay = (date: string): string => new Date(Date.parse(`${date}T00:00:00Z`) - 86400_000).toISOString().slice(0, 10);
 
 /**
  * Whether the record keeps this `sell` or `buy` now (`today`: the server's Tokyo date), cover aside (`shopRefusal`): a

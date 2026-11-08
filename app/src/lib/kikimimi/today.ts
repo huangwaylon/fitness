@@ -8,7 +8,7 @@
 import type { LocalDate } from '../types.ts';
 import type { Lesson } from './stages.ts';
 import { modeOf, type ModeId } from './catalog.ts';
-import { dayNum } from './progress.ts';
+import { dayNum } from '../contract/tokyo.ts';
 
 export type Act =
   | { k: 'review'; n: number }

@@ -5,7 +5,8 @@
 // play never moves a unit's dots (only rows with `u` and `l` do). Pure.
 import type { LocalDate } from '../types.ts';
 import { CHECK_LESSON } from '../contract/listen.ts';
-import { dayNum, dayOf, type Game, type OtherGame } from './progress.ts';
+import { dayNum, dayOf } from '../contract/tokyo.ts';
+import type { Game, OtherGame } from './progress.ts';
 import { LESSONS, LESSON_QS, type Lesson } from './stages.ts';
 
 /** A stamped unit comes back once, about this many days after its stamp, as a 6-question solo recheck (§3, §10). */
