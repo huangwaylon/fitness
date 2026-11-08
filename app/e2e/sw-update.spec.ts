@@ -18,20 +18,21 @@ test('a navigation is the cached shell at once; a deploy reloads once its worker
   await islandUp(page);
   await controlled(page);
 
-  // the network for pages hangs 20 s: the reload doesn't wait for it
-  const slow = async (route: import('@playwright/test').Route) => {
+  // the network for pages held until the shell is up (a gate this test opens): the reload doesn't wait for it
+  let open = () => {};
+  const gate = new Promise<void>((r) => (open = r));
+  const held = async (route: import('@playwright/test').Route) => {
     if (route.request().resourceType() !== 'document') return route.fallback();
-    await new Promise((r) => setTimeout(r, 20_000));
+    await gate;
     await route.fallback().catch(() => {});
   };
-  await context.route('**/*', slow);
-  const t = Date.now();
+  await context.route('**/*', held);
   const again = await page.reload();
   expect(again?.fromServiceWorker()).toBe(true);
-  // (the shell up: its HUD, the measure here; the island under it loads after)
+  // (the shell up, the network still held: its HUD; the island under it loads after)
   await expect(hudMenu(page)).toBeVisible();
-  expect(Date.now() - t).toBeLessThan(10_000);
-  await context.unroute('**/*', slow);
+  open();
+  await context.unroute('**/*', held);
   await controlled(page);
 
   // a deploy: a changed worker, and version.json naming a new version
@@ -41,11 +42,12 @@ test('a navigation is the cached shell at once; a deploy reloads once its worker
   await page.evaluate(() => {
     // (the first: Chromium may install the same worker again as the reload starts, a second claim after it)
     navigator.serviceWorker.addEventListener('controllerchange', () => sessionStorage.getItem('e2e.swChanged') ?? sessionStorage.setItem('e2e.swChanged', String(Date.now())));
+    (window as unknown as { __before?: boolean }).__before = true;
   });
-  const reloaded = page.waitForEvent('framenavigated', { timeout: 60_000 });
   // (Kit checks version.json as the app comes back to the front)
   await page.evaluate(() => window.dispatchEvent(new Event('focus')));
-  await reloaded;
+  // reloaded: a new page (not the one marked), by the app (its reloadAt), the HUD up
+  await expect.poll(() => page.evaluate(() => !(window as unknown as { __before?: boolean }).__before && !!sessionStorage.getItem('island.reloadAt')).catch(() => false), { timeout: 60_000, message: 'the app reloaded into the new worker' }).toBe(true);
   await context.unroute('**/_app/version.json');
   await expect(hudMenu(page)).toBeVisible();
   const [changed, reloadAt] = await page.evaluate(() => [sessionStorage.getItem('e2e.swChanged'), sessionStorage.getItem('island.reloadAt')]);
