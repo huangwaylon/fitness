@@ -8,11 +8,6 @@ import { hudBells } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-const at = (page: Page, sel: string) =>
-  page.locator(sel).first().evaluate((el) => {
-    const r = el.getBoundingClientRect();
-    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-  });
 /** Tap the balloon until it has said everything (each tap finishes a page, the next turns it). */
 async function readAll(page: Page) {
   for (let i = 0; i < 12 && (await page.locator('[data-fx="talk"]').count()); i++) {
@@ -43,9 +38,13 @@ test('Turkey Day: Franklin at centre stage clear of every control asks for a fis
   const [fx, fy] = await castIn(page, 'sea');
   // the reel the moment it bites (e2e/island.ts reelOnBite)
   await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 }); // landed
-  const b = await at(page, '[data-bobber]');
-  await reelOnBite(page, b.x < 195 ? 366 : 24, b.y);
+  // (where it cast: a fixed point by the screen's side may be a door or off the island once the camera zoomed in to
+  // the shadow)
+  await reelOnBite(page, fx, fy);
   await expect(page.locator('[data-fx="catch"]')).toContainText(CATCH_LINES['sea-bass'][0].split('\n')[0]);
+  // (his thanks come 2.8 s after the catch, in a balloon by him: the camera back on him at the whole island's zoom,
+  // as a shadow by the sea's edge had it zoomed in on the sea, and a balloon whose speaker is out of view closes)
+  await page.evaluate((z) => (window as unknown as { __world3d: { go(z: number, k?: number): void } }).__world3d.go(z, 1), await stageCam(page));
   await expect(page.locator('[data-treat]')).toBeAttached({ timeout: 6000 });
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('ありがとう', { timeout: 6000 });
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('scene-franklin') ?? '{}'))).toMatchObject({ date: '2026-11-26', asked: true, fed: true });
