@@ -89,9 +89,9 @@ async function turnNow(a: Page, b: Page, k: number): Promise<{ id: string; line:
 }
 
 test('ロールプレイ: in the みんなで picker only; さんか asks for the mic; a scene on two phones, the ✓ chips, the team’s phrases, お手本', async ({ browser }) => {
-  test.setTimeout(150_000); // (seven takes of the stand-in mic's clip in real time: ~60 s here; the lines stepped through)
+  test.setTimeout(150_000); // (seven takes of the stand-in mic's clip in real time, short-line.wav's 0.8 s and the take's 1 s of quiet each: ~30 s here; the lines stepped through)
   const ctx = await browser.newContext();
-  await ctx.route('**/__e2e/mic.wav', (route) => route.fulfill({ path: `${import.meta.dirname}/fixtures/mic/ladder-line.wav`, contentType: 'audio/wav' }));
+  await ctx.route('**/__e2e/mic.wav', (route) => route.fulfill({ path: `${import.meta.dirname}/fixtures/mic/short-line.wav`, contentType: 'audio/wav' }));
   const posts: string[] = [];
   ctx.on('request', (r) => r.method() === 'POST' && posts.push(r.url()));
   const LINES = linesOf('fr-replan');

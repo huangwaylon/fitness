@@ -33,9 +33,10 @@ async function shot(p: Page, name: string, at?: Locator) {
   await p.screenshot({ path: `${SHOTS}/${name}.png` });
 }
 
-/** The fake mic: the clip once into a MediaStream, silence after it; each track kept in `__micTracks`. */
+/** The fake mic: the clip once into a MediaStream, silence after it; each track kept in `__micTracks`. The clip:
+ *  short-line.wav (kikimimi-mic-pair.spec's fakeMic says why). */
 async function fakeMic(page: Page) {
-  await page.context().route('**/__e2e/mic.wav', (route) => route.fulfill({ path: `${import.meta.dirname}/fixtures/mic/ladder-line.wav`, contentType: 'audio/wav' }));
+  await page.context().route('**/__e2e/mic.wav', (route) => route.fulfill({ path: `${import.meta.dirname}/fixtures/mic/short-line.wav`, contentType: 'audio/wav' }));
   await page.addInitScript(() => {
     const w = window as unknown as { __micTracks: MediaStreamTrack[] };
     w.__micTracks = [];
