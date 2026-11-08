@@ -599,6 +599,9 @@ One rule app-wide (the user, 2026-11-07: "x and back are not consistent"); `ui/n
   same in the game sheets and the kit's. ✕ top-right closes the whole sheet from any level; ‹ top-left only on a level
   (never on a top level, but for a sheet one row opened in place of its own: ずかん's rows, ‹ back to 設定); they never
   swap or move. Backdrop tap and Esc also close.
+- **A half-filled form asks first** (health plan C4, `ui/discard.svelte.ts`): while a form holds input not saved (けっこんしき's
+  task form, ごはん's マイレシピ / マイ食品 / クイック editors), ✕, the backdrop, Esc, the editor's ‹ and leaving ごはん's tab
+  ask 「入力した内容を破棄しますか？」 [破棄する] [編集を続ける] in a paper sheet over it. Untouched, they close at once.
 - **One button**, `ui/NavButton`, for ‹, ✕ and the bar's tools: a 32px disc drawn in the 44px hit (`--ctl`,
   `--sh-ctl-s`: cream by day, navy at night), the glyph `ui/Icon` at stroke 2.4, the cue `back`. Its disc sits on the
   container's content edge (NavBar pulls 6px out). One look everywhere, over a photo or a map too (a trip's hero, a

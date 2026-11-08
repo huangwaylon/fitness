@@ -551,6 +551,36 @@ test('マイレシピ: made from a meal’s search (2 ingredients, 2人前), lis
 
 // Everyone's recipes: うめ's phone finds ウェイ's おうちカレー in a meal's search; its amount opens it read-only, whose
 // ごはんに追加 comes back to the amount; logged; and copied (a recipe of うめ's own, opened in the editor).
+// A recipe begun is never lost to a stray tap (health plan C4): its ‹, ✕ and Esc ask first; 編集を続ける keeps it,
+// 破棄する goes on (‹: the search; ✕: the sheet closed). Untouched, ‹ goes back at once.
+test('マイレシピ: a recipe begun asks before ‹, ✕ or Esc throw it away', async ({ page }) => {
+  await openFood(page);
+  const h2 = sheet(page).locator('.navbar h2');
+  const ask = page.locator('dialog[open] [data-discard-ask]');
+  await sheet(page).locator('[data-add=l]').click();
+  await sheet(page).locator('[data-recipe-new]').click();
+  await expect(h2).toHaveText('新しいレシピ');
+  await sheet(page).getByRole('button', { name: '戻る' }).click(); // untouched
+  await expect(h2).toHaveText('昼ごはん');
+  await expect(ask).toHaveCount(0);
+  await sheet(page).locator('[data-recipe-new]').click();
+  const name = sheet(page).locator('[data-recipe-n]');
+  await name.fill('テストごはん');
+  await sheet(page).getByRole('button', { name: '戻る' }).click();
+  await expect(ask).toContainText('入力した内容を破棄しますか？');
+  await ask.locator('[data-discard-keep]').click();
+  await expect(h2).toHaveText('新しいレシピ');
+  await expect(name).toHaveValue('テストごはん');
+  await name.focus();
+  await page.keyboard.press('Escape');
+  await expect(ask).toBeVisible();
+  await ask.locator('[data-discard-keep]').click();
+  await sheet(page).locator('.navbar button.nav.close').click();
+  await expect(ask).toBeVisible();
+  await ask.locator('[data-discard-yes]').click();
+  await expect(dlg(page)).toHaveCount(0);
+});
+
 test('マイレシピ: someone else’s recipe in the meal search is read-only from its amount, logged and copied', async ({ page }) => {
   await openFood(page, '&as=B');
   const before = await kcalOf(page);

@@ -228,6 +228,34 @@ test('＋: a new task needs a title and a due day (both said at once); saved, it
   await expect(sheet(page).locator('[data-wed-filter="all"]')).toHaveAttribute('data-count', '9');
 });
 
+// A half-filled form never goes on a stray tap (health plan C4): ✕, the backdrop and Esc ask first, 「入力した内容を破棄
+// しますか？」; 編集を続ける keeps it as it was, 破棄する closes it. Untouched, it closes at once.
+test('a half-filled task form asks before ✕, the backdrop or Esc throw it away', async ({ page }) => {
+  await board(page);
+  const ask = page.locator('dialog[open] [data-discard-ask]');
+  await root(page).locator('[data-wed-add]').click();
+  await form(page).locator('.navbar button.nav.close').click(); // untouched: no question
+  await expect(form(page)).toHaveCount(0);
+  await expect(ask).toHaveCount(0);
+  await root(page).locator('[data-wed-add]').click();
+  await form(page).locator('[data-wed-field="title"]').fill('招待状を送る');
+  await form(page).locator('.navbar button.nav.close').click();
+  await expect(ask).toContainText('入力した内容を破棄しますか？');
+  await expect(ask.locator('button')).toHaveText(['破棄する', '編集を続ける']);
+  await ask.locator('[data-discard-keep]').click();
+  await expect(ask).toHaveCount(0);
+  await expect(form(page).locator('[data-wed-field="title"]')).toHaveValue('招待状を送る');
+  await page.mouse.click(196, 20); // the backdrop, over the form
+  await expect(ask).toBeVisible();
+  await ask.locator('[data-discard-keep]').click();
+  await form(page).locator('[data-wed-field="title"]').focus();
+  await page.keyboard.press('Escape');
+  await expect(ask).toBeVisible();
+  await ask.locator('[data-discard-yes]').click();
+  await expect(form(page)).toHaveCount(0);
+  await expect(sheet(page)).toBeVisible(); // only the form went
+});
+
 test('the ＋ sits over the tab bar, clear of every row\'s tick (659 px tall)', async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 659 });
   await board(page);
