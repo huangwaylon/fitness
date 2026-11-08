@@ -35,26 +35,40 @@ const sample = (page: Page, id: string, ms: number) => page.evaluate(([id, ms]) 
   frame();
 }), [id, ms] as const);
 
-/** The first model `prefix`N's spot, fade and scale every frame from the frame it comes for `ms` after (in the page, from
- *  before it's there: a poll from the test found it late, now and then 0.8 faded in already under CI's load). */
-const sampleFirst = (page: Page, prefix: string, ms: number) => page.evaluate(([prefix, ms]) => new Promise<Sample[]>((ok, no) => {
-  const w = (window as unknown as { __world3d: { where(id: string): { x: number; z: number; fade: number; scale: number; hidden: boolean } | null; stats(): { frames: number } } }).__world3d;
-  const out: Sample[] = [], start = performance.now();
-  let id: string | null = null, t0 = 0, drawn = -1;
-  const frame = () => {
-    if (!id) {
-      for (let n = 0; n < 400 && !id; n++) if (w.where(prefix + n)) id = prefix + n;
-      if (!id) return performance.now() - start > 30_000 ? no(new Error(`no model ${prefix}N`)) : void requestAnimationFrame(frame);
-      t0 = performance.now();
-    }
-    const p = w.where(id), n = w.stats().frames;
-    if (n !== drawn) out.push(p && { t: performance.now() - t0, x: p.x, z: p.z, fade: p.fade, scale: p.scale, hidden: p.hidden });
-    drawn = n;
-    if (performance.now() - t0 < ms) requestAnimationFrame(frame);
-    else ok(out);
+/** The first model `prefix`N's spot, fade and scale every frame from the frame it comes for `ms` after, sampled in the
+ *  page from its start (called before the page opens; the returned function waits for the samples). Not from after
+ *  is3d's loaded(): the island's models can be in before it (the KTX2 textures read back), a fish ~0.77 faded in by
+ *  then on a busy runner; a poll from the test found it late too. */
+async function sampleFirst(page: Page, prefix: string, ms: number): Promise<() => Promise<Sample[]>> {
+  await page.addInitScript(([prefix, ms]) => {
+    type W = { where(id: string): { x: number; z: number; fade: number; scale: number; hidden: boolean } | null; stats(): { frames: number; at: number } };
+    const g = window as unknown as { __world3d?: W; __first?: { out: unknown[]; done: boolean; error?: string } };
+    const box = (g.__first = { out: [] as unknown[], done: false } as { out: unknown[]; done: boolean; error?: string });
+    const start = performance.now();
+    let id: string | null = null, t0 = 0, drawn = -1;
+    const frame = () => {
+      const w = g.__world3d;
+      if (!id) {
+        for (let n = 0; w && n < 400 && !id; n++) if (w.where(prefix + n)) id = prefix + n;
+        if (!id) return performance.now() - start > 60_000 ? ((box.error = `no model ${prefix}N`), (box.done = true)) : void requestAnimationFrame(frame);
+        t0 = w!.stats().at;
+      }
+      // (the engine's frame time, not this callback's: a busy runner's ticks put them a tick apart, a speed off by it)
+      const p = w!.where(id), st = w!.stats(), n = st.frames;
+      if (n !== drawn) box.out.push(p && { t: st.at - t0, x: p.x, z: p.z, fade: p.fade, scale: p.scale, hidden: p.hidden });
+      drawn = n;
+      if (st.at - t0 < ms) requestAnimationFrame(frame);
+      else box.done = true;
+    };
+    requestAnimationFrame(frame);
+  }, [prefix, ms] as const);
+  return async () => {
+    await page.waitForFunction(() => (window as unknown as { __first?: { done: boolean } }).__first?.done, null, { timeout: 90_000 });
+    const box = await page.evaluate(() => (window as unknown as { __first: { out: Sample[]; error?: string } }).__first);
+    if (box.error) throw new Error(box.error);
+    return box.out;
   };
-  frame();
-}), [prefix, ms] as const);
+}
 
 /** The biggest move between two frames drawn (u), as speed in u per 60th of a second (a slow frame of a busy runner
  *  moves it further: speed, not a jump). The game draws at most 30 a second (store/frameRate.ts, its due(): ~27 ms
@@ -80,9 +94,10 @@ const fadeInMs = (shown: NonNullable<Sample>[]) => (shown.find((p) => p.fade >= 
 const ramps = (fades: number[], n = 3) => fades.filter((f) => f > 0.05 && f < 0.95).length >= n;
 
 test('a fish shadow fades in where it comes and swims smoothly: never a jump between frames', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: frame-by-frame smoothness, and drawn under software GL the ambience runs at 2 frames a second' } }, async ({ page }) => {
+  const first = await sampleFirst(page, 'fish-sea-', 4000);
   await page.goto('?demo&visitor=none&critter=fish&date=2026-11-04T12:00');
   expect(await is3d(page)).toBe(true);
-  const s = await sampleFirst(page, 'fish-sea-', 4000);
+  const s = await first();
   const shown = s.filter((p): p is NonNullable<Sample> => !!p && !p.hidden);
   // faded in: from (nearly) nothing, through the frames of a ramp, to whole; a slight scale-up with it
   expect(shown[0].fade).toBeLessThan(0.75);
@@ -172,9 +187,10 @@ test('a missed bite: the fish darts away fast with a wiggle, fading as it goes',
 });
 
 test('a bug fades in where it comes, moves smoothly, and fades out where it goes (never popped)', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: frame-by-frame smoothness, and drawn under software GL the ambience runs at 2 frames a second' } }, async ({ page }) => {
+  const first = await sampleFirst(page, 'bug-', 2500);
   await page.goto('?demo&visitor=none&critter=common-butterfly&date=2026-05-04T11:00');
   expect(await is3d(page)).toBe(true);
-  const s = await sampleFirst(page, 'bug-', 2500);
+  const s = await first();
   const id = await modelId(page, 'bug-');
   const shown = s.filter((p): p is NonNullable<Sample> => !!p && !p.hidden);
   expect(shown[0].fade).toBeLessThan(0.75);
