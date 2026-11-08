@@ -57,7 +57,11 @@
 "mext-01212",
 "mext-01159",
 "mext-01176",
-"mext-01175"
+"mext-01175",
+"jbfd-トルティーヤ・ピタパン",
+"tokyo_hokeniryo-hitori11_2",
+"jbfd-菓子パン・そうざいパン",
+"jbfd-調理パン"
 ],
 "dairy": [
 "mext-13040",
@@ -163,7 +167,8 @@
 "dishes-tekkadon",
 "dishes-teishoku-gyoza",
 "dishes-mabodon",
-"dishes-teishoku-mabo"
+"dishes-teishoku-mabo",
+"tokyo_hokeniryo-hitori12_3"
 ],
 "drink": [
 "eatout-cafe_latte",
@@ -278,7 +283,10 @@
 "mext-16043",
 "eatout-ryokucha_hai",
 "mext-16027",
-"mext-06400"
+"mext-06400",
+"jbfd-アイススラリー飲料",
+"jbfd-ゼリー飲料",
+"jbfd-粉末飲料"
 ],
 "eatout": [
 "eatout-curry_pork_chain",
@@ -782,7 +790,8 @@
 "mext-10367",
 "mext-10219",
 "mext-10387",
-"mext-10423"
+"mext-10423",
+"mext-10474"
 ],
 "fruit": [
 "mext-07027",
@@ -916,7 +925,9 @@
 "mext-07161",
 "mext-07092",
 "mext-07186",
-"mext-07174"
+"mext-07174",
+"jbfd-冷凍フルーツ（カット・ミックス）",
+"jbfd-果実ミックス"
 ],
 "konbini": [
 "eatout-onigiri_sake",
@@ -1968,7 +1979,45 @@
 "kumagaya-03127",
 "kumagaya-02702",
 "kumagaya-02660",
-"kumagaya-03206"
+"kumagaya-03206",
+"kumagaya-03372",
+"kumagaya-01972",
+"kumagaya-02843-2",
+"tokyo_hokeniryo-hitori11_1",
+"kumagaya-02990-2",
+"kumagaya-02095",
+"jbfd-アクアパッツァ",
+"kumagaya-02677-2",
+"kumagaya-03312-2",
+"jbfd-シーフードミックス",
+"jbfd-ハヤシ",
+"kumagaya-03362",
+"jbfd-中華惣菜（えびチリ等）",
+"kumagaya-02634-2",
+"jbfd-冷凍アヒージョ",
+"jbfd-冷凍ボイルムール貝",
+"jbfd-冷凍骨取り赤魚切身",
+"jbfd-味付け肉",
+"tokyo_hokeniryo-hitori12_2",
+"kumagaya-03359",
+"kumagaya-03343",
+"jbfd-漬け魚（加熱調理用）",
+"jbfd-煮魚惣菜",
+"kumagaya-02853-2",
+"jbfd-白身魚のパン粉焼",
+"tokyo_hokeniryo-hitori12_1",
+"jbfd-粉物惣菜",
+"jbfd-豚角煮",
+"jbfd-鍋料理",
+"jbfd-魚のフレーク・ほぐし身",
+"jbfd-魚介のカツ・フライ",
+"jbfd-魚介の竜田揚げ",
+"jbfd-魚肉練り製品(揚げ・蒲鉾)",
+"tokyo_hokeniryo-hitori4_2",
+"jbfd-鶏肉のから揚げ・フライ",
+"kumagaya-03344",
+"jbfd-鶏肉のスモーク製品",
+"kumagaya-03368-2"
 ],
 "meat": [
 "mext-11227",
@@ -2148,7 +2197,9 @@
 "mext-11298",
 "mext-11299",
 "mext-11226",
-"mext-11114"
+"mext-11114",
+"mext-11007",
+"mext-11118"
 ],
 "noodle": [
 "mext-01039",
@@ -2348,7 +2399,9 @@
 "kumagaya-01963",
 "kumagaya-03560",
 "kumagaya-03514",
-"kumagaya-00478"
+"kumagaya-00478",
+"jbfd-うどん類（調理済み）",
+"kumagaya-03182"
 ],
 "other": [
 "mext-02034",
@@ -2611,7 +2664,13 @@
 "kumagaya-151",
 "kumagaya-118",
 "kumagaya-02432",
-"kumagaya-00123"
+"kumagaya-00123",
+"tokyo_hokeniryo-hitori4_1",
+"jbfd-グラノーラ",
+"jbfd-味付けごはん類",
+"kumagaya-00128",
+"kumagaya-03375",
+"jbfd-雑穀ミックス"
 ],
 "season": [
 "mext-17007",
@@ -2784,7 +2843,18 @@
 "mext-17133",
 "mext-17134",
 "mext-17135",
-"mext-17096"
+"mext-17096",
+"jbfd-だしパック",
+"jbfd-ちらし寿司の素",
+"jbfd-エスニック系辛味ソース",
+"jbfd-エスニック調味ペースト",
+"jbfd-シチュールウ",
+"jbfd-スプレッド類",
+"jbfd-ドリアソース",
+"jbfd-ハーブソルト",
+"jbfd-中華薬味ソース",
+"jbfd-製菓材料",
+"jbfd-麺用ソース"
 ],
 "side": [
 "dishes-green-salad",
@@ -3358,7 +3428,26 @@
 "kumagaya-03340-2",
 "kumagaya-02779",
 "kumagaya-02108",
-"kumagaya-02750"
+"kumagaya-02750",
+"tokyo_hokeniryo-hitori6_2",
+"tokyo_hokeniryo-hitori6_1",
+"kumagaya-02740",
+"kumagaya-03088-4",
+"tokyo_hokeniryo-hitori10_1",
+"tokyo_hokeniryo-hitori8_1",
+"kumagaya-02138",
+"tokyo_hokeniryo-hitori10_2",
+"kumagaya-02362",
+"kumagaya-03190",
+"tokyo_hokeniryo-hitori4_3",
+"jbfd-サラダ惣菜",
+"kumagaya-01016",
+"kumagaya-03360",
+"kumagaya-02152",
+"kumagaya-02388",
+"jbfd-茶わんむし",
+"jbfd-酢の物・和え物",
+"toyonaka-131130"
 ],
 "soup": [
 "dishes-miso-tofu-wakame",
@@ -3790,7 +3879,21 @@
 "kumagaya-00177",
 "kumagaya-02365",
 "kumagaya-00973",
-"kumagaya-02968"
+"kumagaya-02968",
+"kumagaya-03115-2",
+"kumagaya-03236-2",
+"kumagaya-03358",
+"kumagaya-00178",
+"kumagaya-00185",
+"tokyo_hokeniryo-hitori8_2",
+"kumagaya-03348-2",
+"kumagaya-03163",
+"kumagaya-03146",
+"kumagaya-03090",
+"kumagaya-00907",
+"toyonaka-131098",
+"toyonaka-284504",
+"kumagaya-02557-2"
 ],
 "soy": [
 "mext-04032",
@@ -3927,7 +4030,11 @@
 "mext-04104",
 "mext-04025",
 "mext-04106",
-"mext-04077"
+"mext-04077",
+"jbfd-アーモンド小魚",
+"jbfd-ミックスナッツ",
+"jbfd-ミックスビーンズ",
+"jbfd-煮豆"
 ],
 "sushi": [
 "eatout-sushi_maguro",
@@ -4442,7 +4549,24 @@
 "kumagaya-00517",
 "kumagaya-03089-3",
 "kumagaya-03271-2",
-"kumagaya-03305"
+"kumagaya-03305",
+"jbfd-いか・カツ風味お菓子",
+"kumagaya-03151",
+"kumagaya-02956",
+"jbfd-ごま団子・湯圓",
+"jbfd-のり天系スナック菓子",
+"jbfd-アメリカンドッグ・ワッフルドッグ",
+"kumagaya-02519",
+"jbfd-クルトン",
+"kumagaya-00561-2",
+"jbfd-ココナッツ菓子",
+"jbfd-ショコラケーキ",
+"kumagaya-00974",
+"jbfd-チュロス",
+"jbfd-チーズ鱈・チーズサンドおつまみ",
+"jbfd-海外揚げ菓子（ヤッカ）",
+"jbfd-畜産物燻製おつまみ",
+"jbfd-芋チップス"
 ],
 "veg": [
 "mext-08001",
@@ -4938,7 +5062,11 @@
 "mext-06346",
 "mext-08055",
 "mext-06194",
-"mext-06403"
+"mext-06403",
+"jbfd-カレー・シチュー用下ゆで野菜",
+"jbfd-乾燥野菜",
+"jbfd-水煮野菜ミックス",
+"jbfd-海藻ミックス"
 ]
 },
 "dv": 3,
@@ -5030,7 +5158,8 @@
 "maff_kyodo-35_17_kanagawa",
 "maff_kyodo-40_14_hyogo",
 "toyonaka-267591",
-"kumagaya-00097"
+"kumagaya-00097",
+"mext-11007"
 ],
 "beer": [
 "mext-16006",
@@ -5101,7 +5230,13 @@
 "mext-01159",
 "mext-01176",
 "mext-01175",
-"toyonaka-285959"
+"toyonaka-285959",
+"jbfd-チーズ鱈・チーズサンドおつまみ",
+"jbfd-トルティーヤ・ピタパン",
+"tokyo_hokeniryo-hitori11_2",
+"jbfd-白身魚のパン粉焼",
+"jbfd-菓子パン・そうざいパン",
+"jbfd-調理パン"
 ],
 "cabbage": [
 "mext-06061",
@@ -5125,7 +5260,8 @@
 "toyonaka-131150",
 "kumagaya-03593",
 "kumagaya-03105",
-"kumagaya-02538"
+"kumagaya-02538",
+"tokyo_hokeniryo-hitori4_3"
 ],
 "carrot": [
 "mext-06214",
@@ -5363,7 +5499,11 @@
 "kumagaya-03247",
 "kumagaya-03110",
 "kumagaya-02660",
-"kumagaya-03206"
+"kumagaya-03206",
+"kumagaya-03362",
+"jbfd-鶏肉のから揚げ・フライ",
+"jbfd-鶏肉のスモーク製品",
+"kumagaya-03368-2"
 ],
 "curry": [
 "eatout-curry_pork_chain",
@@ -5425,7 +5565,13 @@
 "kumagaya-02053",
 "kumagaya-02677",
 "kumagaya-02629-2",
-"kumagaya-02706"
+"kumagaya-02706",
+"tokyo_hokeniryo-hitori8_1",
+"jbfd-カレー・シチュー用下ゆで野菜",
+"kumagaya-02677-2",
+"kumagaya-02634-2",
+"kumagaya-03360",
+"kumagaya-03344"
 ],
 "dairy": [
 "mext-13020",
@@ -5499,7 +5645,9 @@
 "toyonaka-271605",
 "kumagaya-3552",
 "kumagaya-2989",
-"kumagaya-02853"
+"kumagaya-02853",
+"tokyo_hokeniryo-hitori12_3",
+"kumagaya-02853-2"
 ],
 "drink": [
 "eatout-cafe_latte",
@@ -5589,7 +5737,10 @@
 "mext-16043",
 "eatout-ryokucha_hai",
 "mext-16027",
-"mext-06400"
+"mext-06400",
+"jbfd-アイススラリー飲料",
+"jbfd-ゼリー飲料",
+"jbfd-粉末飲料"
 ],
 "eatout": [
 "eatout-hamburger",
@@ -6020,7 +6171,8 @@
 "mext-10366",
 "mext-10367",
 "mext-10219",
-"mext-10423"
+"mext-10423",
+"mext-10474"
 ],
 "fruit": [
 "mext-07027",
@@ -6139,7 +6291,9 @@
 "mext-07161",
 "mext-07092",
 "mext-07186",
-"mext-07174"
+"mext-07174",
+"jbfd-冷凍フルーツ（カット・ミックス）",
+"jbfd-果実ミックス"
 ],
 "jiru": [
 "mext-18028",
@@ -6304,7 +6458,8 @@
 "kumagaya-03275",
 "kumagaya-02468",
 "kumagaya-03021",
-"kumagaya-00177"
+"kumagaya-00177",
+"tokyo_hokeniryo-hitori8_2"
 ],
 "konbini": [
 "eatout-bento_makunouchi",
@@ -6933,7 +7088,29 @@
 "kumagaya-03322",
 "kumagaya-00754",
 "kumagaya-03127",
-"kumagaya-02702"
+"kumagaya-02702",
+"kumagaya-03372",
+"kumagaya-02843-2",
+"tokyo_hokeniryo-hitori11_1",
+"kumagaya-02095",
+"jbfd-アクアパッツァ",
+"kumagaya-03312-2",
+"jbfd-シーフードミックス",
+"jbfd-ハヤシ",
+"jbfd-冷凍アヒージョ",
+"jbfd-冷凍ボイルムール貝",
+"jbfd-冷凍骨取り赤魚切身",
+"jbfd-味付け肉",
+"tokyo_hokeniryo-hitori12_2",
+"kumagaya-03359",
+"jbfd-漬け魚（加熱調理用）",
+"jbfd-煮魚惣菜",
+"jbfd-粉物惣菜",
+"jbfd-鍋料理",
+"jbfd-魚のフレーク・ほぐし身",
+"jbfd-魚介のカツ・フライ",
+"jbfd-魚介の竜田揚げ",
+"jbfd-魚肉練り製品(揚げ・蒲鉾)"
 ],
 "meat": [
 "mext-11279",
@@ -7066,7 +7243,12 @@
 "kumagaya-02131",
 "kumagaya-03113-2",
 "kumagaya-02636",
-"kumagaya-02968"
+"kumagaya-02968",
+"kumagaya-03090",
+"kumagaya-00907",
+"toyonaka-131098",
+"toyonaka-284504",
+"kumagaya-02557-2"
 ],
 "natto": [
 "mext-04046",
@@ -7233,7 +7415,8 @@
 "kumagaya-03514",
 "kumagaya-03287",
 "kumagaya-00478",
-"kumagaya-03400"
+"kumagaya-03400",
+"kumagaya-03182"
 ],
 "pork": [
 "mext-11276",
@@ -7378,7 +7561,9 @@
 "kumagaya-03334",
 "kumagaya-02658-3",
 "kumagaya-02739-2",
-"kumagaya-03313"
+"kumagaya-03313",
+"jbfd-豚角煮",
+"mext-11118"
 ],
 "ramen": [
 "dishes-ramen-shoyu",
@@ -7606,7 +7791,13 @@
 "kumagaya-03389",
 "kumagaya-03449",
 "kumagaya-00123",
-"kumagaya-03315"
+"kumagaya-03315",
+"tokyo_hokeniryo-hitori4_1",
+"jbfd-グラノーラ",
+"jbfd-味付けごはん類",
+"kumagaya-00128",
+"kumagaya-03375",
+"jbfd-雑穀ミックス"
 ],
 "saba": [
 "mext-10154",
@@ -7783,7 +7974,16 @@
 "kumagaya-03214",
 "kumagaya-02779",
 "kumagaya-02108",
-"kumagaya-02750"
+"kumagaya-02750",
+"tokyo_hokeniryo-hitori6_1",
+"kumagaya-02740",
+"kumagaya-03088-4",
+"kumagaya-02362",
+"kumagaya-03190",
+"jbfd-サラダ惣菜",
+"kumagaya-01016",
+"kumagaya-02388",
+"toyonaka-131130"
 ],
 "salmon": [
 "mext-10139",
@@ -7820,7 +8020,9 @@
 "kumagaya-3642",
 "kumagaya-03545",
 "kumagaya-03339",
-"kumagaya-03293"
+"kumagaya-03293",
+"tokyo_hokeniryo-hitori12_1",
+"tokyo_hokeniryo-hitori4_2"
 ],
 "season": [
 "mext-17007",
@@ -7971,7 +8173,17 @@
 "mext-17133",
 "mext-17134",
 "mext-17135",
-"mext-17096"
+"mext-17096",
+"jbfd-だしパック",
+"jbfd-エスニック系辛味ソース",
+"jbfd-エスニック調味ペースト",
+"jbfd-シチュールウ",
+"jbfd-スプレッド類",
+"jbfd-ドリアソース",
+"jbfd-ハーブソルト",
+"jbfd-中華薬味ソース",
+"jbfd-製菓材料",
+"jbfd-麺用ソース"
 ],
 "shrimp": [
 "mext-18003",
@@ -8017,7 +8229,10 @@
 "kurume-167",
 "kurume-108",
 "maff_kyodo-37_25_toyama",
-"kumagaya-2350"
+"kumagaya-2350",
+"kumagaya-01972",
+"jbfd-中華惣菜（えびチリ等）",
+"kumagaya-03343"
 ],
 "side": [
 "dishes-hiyayakko",
@@ -8395,7 +8610,14 @@
 "kumagaya-03289-2",
 "kumagaya-02422-2",
 "kumagaya-00922-2",
-"kumagaya-03340-2"
+"kumagaya-03340-2",
+"tokyo_hokeniryo-hitori6_2",
+"tokyo_hokeniryo-hitori10_1",
+"kumagaya-02138",
+"tokyo_hokeniryo-hitori10_2",
+"kumagaya-02152",
+"jbfd-茶わんむし",
+"jbfd-酢の物・和え物"
 ],
 "soba": [
 "dishes-zaru-soba",
@@ -8660,7 +8882,14 @@
 "kumagaya-03319",
 "kumagaya-02812",
 "kumagaya-02365",
-"kumagaya-00973"
+"kumagaya-00973",
+"kumagaya-03115-2",
+"kumagaya-03358",
+"kumagaya-00178",
+"kumagaya-00185",
+"kumagaya-03348-2",
+"kumagaya-03163",
+"kumagaya-03146"
 ],
 "soy": [
 "mext-05018",
@@ -8773,7 +9002,11 @@
 "mext-04104",
 "mext-04025",
 "mext-04106",
-"mext-04077"
+"mext-04077",
+"jbfd-アーモンド小魚",
+"jbfd-ミックスナッツ",
+"jbfd-ミックスビーンズ",
+"jbfd-煮豆"
 ],
 "sushi": [
 "eatout-sushi_maguro",
@@ -8894,7 +9127,9 @@
 "kumagaya-3019",
 "kumagaya-02990",
 "kumagaya-03019",
-"kumagaya-00071"
+"kumagaya-00071",
+"kumagaya-02990-2",
+"jbfd-ちらし寿司の素"
 ],
 "sweet": [
 "mext-15103",
@@ -9271,7 +9506,23 @@
 "kumagaya-00517",
 "kumagaya-03089-3",
 "kumagaya-03271-2",
-"kumagaya-03305"
+"kumagaya-03305",
+"jbfd-いか・カツ風味お菓子",
+"kumagaya-03151",
+"kumagaya-02956",
+"jbfd-ごま団子・湯圓",
+"jbfd-のり天系スナック菓子",
+"jbfd-アメリカンドッグ・ワッフルドッグ",
+"kumagaya-02519",
+"jbfd-クルトン",
+"kumagaya-00561-2",
+"jbfd-ココナッツ菓子",
+"jbfd-ショコラケーキ",
+"kumagaya-00974",
+"jbfd-チュロス",
+"jbfd-海外揚げ菓子（ヤッカ）",
+"jbfd-畜産物燻製おつまみ",
+"jbfd-芋チップス"
 ],
 "tofu": [
 "mext-04032",
@@ -9471,7 +9722,9 @@
 "kumagaya-3236",
 "kumagaya-03568",
 "kumagaya-03236",
-"kumagaya-01963"
+"kumagaya-01963",
+"jbfd-うどん類（調理済み）",
+"kumagaya-03236-2"
 ],
 "veg": [
 "mext-08001",
@@ -9929,7 +10182,10 @@
 "mext-06250",
 "mext-06369",
 "mext-08055",
-"mext-06194"
+"mext-06194",
+"jbfd-乾燥野菜",
+"jbfd-水煮野菜ミックス",
+"jbfd-海藻ミックス"
 ],
 "yogurt": [
 "mext-13025",
