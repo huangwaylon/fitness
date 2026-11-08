@@ -17,7 +17,8 @@ export const load: LayoutLoad = async ({ url, untrack }) => {
   if (untrack(() => url.pathname) === resolve('/') && opensIsland()) {
     void import('#lib/components/world3d/Island3D.svelte').catch(() => {});
     // the layout's distance fields in a worker meanwhile (the layout is in localStorage: at hand now), so the 3D
-    // island finds them built as it mounts (layout/fieldsPrime.ts; else it builds them itself, as before)
+    // island finds them built as it mounts (layout/fieldsPrime.ts: one job, the mount's own call shares it, or starts
+    // it if it runs first)
     void Promise.all([import('#lib/store/layout.svelte.ts'), import('#lib/layout/fieldsPrime.ts')]).then(([{ layout }, { primeFields }]) => primeFields(layout.current, version), () => {});
   }
   if (readJson(localKV(), DEVICE.locale) !== 'en') return;

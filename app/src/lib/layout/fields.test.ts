@@ -8,7 +8,7 @@ import { layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
 import { Ch, adoptFields, computeFields, fieldsOf, hasFields, type RawFields } from './fields.ts';
 import { codeOf, idx } from './grid.ts';
 import { Layout, defaultLayout, layoutOf } from './model.ts';
-import { fieldsSoon, primeFields } from './fieldsPrime.ts';
+import { fieldsFrom, primeFields } from './fieldsPrime.ts';
 import { configureFieldsCache, fieldsKey, fieldsWriter, readFields } from './fieldsCache.ts';
 import { IDBFactory } from 'fake-indexeddb';
 import { CHUNK_COUNT, adoptChunks, chunkMesh } from './mesh.ts';
@@ -26,6 +26,18 @@ const altered = (l: Layout, n: number) => {
   return new Layout(codes, new Map(l.objects), l.homes);
 };
 const same = (a: Float32Array, b: Float32Array) => Buffer.from(a.buffer, a.byteOffset, a.byteLength).equals(Buffer.from(b.buffer, b.byteOffset, b.byteLength));
+/** What the worker answers for `l` (its fields and chunks). */
+const primedOf = (l: Layout) => {
+  const raw = computeFields(l);
+  const wl = new Layout(l.codes, l.objects, l.homes);
+  adoptFields(wl, raw);
+  return { raw, chunks: Array.from({ length: CHUNK_COUNT }, (_, i) => chunkMesh(wl, i)) };
+};
+/** A launch's modules (nothing built or primed yet: a set is adopted only while none is held). */
+const fresh = async () => {
+  vi.resetModules();
+  return { fp: await import('./fieldsPrime.ts'), ff: await import('./fields.ts') };
+};
 
 describe('the fields off the main thread (fieldsPrime.ts)', () => {
   for (const [name, mk] of [['the default island', defaultLayout], ['the user’s island', record]] as const) {
@@ -79,17 +91,69 @@ describe('the fields off the main thread (fieldsPrime.ts)', () => {
     expect(hasFields(stale)).toBe(false);
     expect(fieldsOf(new Layout(now.codes.slice(), new Map(now.objects), now.homes))).toBe(f);
   });
-  it('the mount waits for the prime in flight, at most its cap; nothing to wait for without one', async () => {
+  it('one job a layout: a second caller (the mount after the launch, or before it) shares the first\'s worker', async () => {
     const m = altered(defaultLayout(), 8);
-    expect(fieldsSoon(m, 300)).toBeNull();
-    // a worker that never answers: the cap, then the main thread
+    const made: Answering[] = [];
+    class Answering {
+      onmessage: ((e: { data: unknown }) => void) | null = null;
+      onerror = null;
+      onmessageerror = null;
+      constructor() {
+        made.push(this);
+      }
+      postMessage(d: Pick<Layout, 'codes' | 'objects' | 'homes'>) {
+        setTimeout(() => this.onmessage?.({ data: primedOf(new Layout(d.codes, d.objects, d.homes)) }), 20);
+      }
+      terminate() {}
+    }
+    vi.stubGlobal('Worker', Answering);
+    try {
+      const { fp, ff } = await fresh();
+      const a = fp.primeFields(m, 'test'), b = fp.primeFields(new Layout(m.codes.slice(), new Map(m.objects), m.homes), 'test');
+      expect(b).toBe(a);
+      await b;
+      expect(made).toHaveLength(1);
+      expect(ff.hasFields(m)).toBe(true);
+      expect(fp.fieldsFrom(m)).toBe('worker');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+  it('a worker that fails: the main thread builds them, once (no worker tried again)', async () => {
+    const m = altered(defaultLayout(), 14);
+    let made = 0;
+    class Failing {
+      onmessage = null;
+      onerror: (() => void) | null = null;
+      onmessageerror = null;
+      constructor() {
+        made++;
+      }
+      postMessage() {
+        setTimeout(() => this.onerror?.(), 10);
+      }
+      terminate() {}
+    }
+    vi.stubGlobal('Worker', Failing);
+    try {
+      const { fp, ff } = await fresh();
+      await fp.primeFields(m, 'test');
+      expect(ff.hasFields(m)).toBe(false);
+      await fp.primeFields(m, 'test');
+      expect(made).toBe(1);
+      ff.fieldsOf(m);
+      expect(fp.fieldsFrom(m)).toBe('main');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+  it('a worker that never answers: given up at the timeout, then the main thread', async () => {
+    const m = altered(defaultLayout(), 15);
     class Mute { onmessage = null; onerror = null; onmessageerror = null; postMessage() {} terminate() {} }
     vi.stubGlobal('Worker', Mute);
     try {
-      void primeFields(m, 'test', 60_000);
       const t = Date.now();
-      await fieldsSoon(m, 50);
-      expect(Date.now() - t).toBeGreaterThanOrEqual(45);
+      await primeFields(m, 'test', 50);
       expect(Date.now() - t).toBeLessThan(1000);
       expect(hasFields(m)).toBe(false);
     } finally {
@@ -104,12 +168,6 @@ describe('the fields off the main thread (fieldsPrime.ts)', () => {
 });
 
 describe('the fields kept for the next launch (fieldsCache.ts)', () => {
-  const primedOf = (l: Layout) => {
-    const raw = computeFields(l);
-    const wl = new Layout(l.codes, l.objects, l.homes);
-    adoptFields(wl, raw);
-    return { raw, chunks: Array.from({ length: CHUNK_COUNT }, (_, i) => chunkMesh(wl, i)) };
-  };
   it('keyed by the layout and the build: another tile, piece or build is another key', () => {
     const l = altered(defaultLayout(), 11);
     const k = fieldsKey(l, 'b1');

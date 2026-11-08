@@ -32,7 +32,7 @@ The launch snapshot is dropped (the user said no).
 | HTML from the SW (`responseEnd`) | 8-13 | 3 of ~12 runs took **~1020 ms** here (SW wake-up?); check on a phone |
 | Entry JS evaluated, layout script runs | 78-103 | 116 JS files, all from the SW cache; the last one ends at 265-400 |
 | Page mounts, data ready (demo backend) → Island3D onMount | 126-163 | real users read IndexedDB here (live.ts loadCache); the relay is never awaited |
-| Wait for the worker's ground fields (`fieldsSoon`, up to 300 ms) | **75-140** | on the critical path, before the WebGL context exists |
+| Wait for the worker's ground fields (`primeFields`: the mount waits for it) | **75-140** | on the critical path, before the WebGL context exists |
 | `mount()`: renderer, ground build and GPU bake (ground 35-40) | 46-51 | |
 | First frame | 305-387 | 1 draw call; 15 programs; 50 models pending |
 | Models: 71 GLBs (1.5 MB) from the SW room cache, parsed (`place()` async) | 180-230 (wall) | done by about 500 |

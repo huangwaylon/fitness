@@ -1020,10 +1020,11 @@ with gzip at Fast 4G, Chromium 393 × 852 at 4× CPU, `?demo`):
   first paint waits for; load() asks for it soon enough.
 - **The ground's fields:** the layout's distance fields in a worker from `+layout.ts` load()
   ([island-layout](island-layout.md): the distance fields); the river stems' field with `Math.sqrt`, not
-  `Math.hypot`, in its hot loop (the same numbers). The 3D island's mount waits for the worker's answer, 300 ms at
-  most (`fieldsSoon`), before it builds the ground: its mount is one long task, and the answer (a task of its own) was
-  only read after it, when the ground had built the fields on the main thread already (~230 ms at 4× CPU). Not in
-  the e2e's logic mode (nothing drawn; its tests read the projection as the HUD shows). A late answer (the fields
+  `Math.hypot`, in its hot loop (the same numbers). The 3D island's mount waits for the fields before it builds the
+  ground (`primeFields`: one job, shared by load() and the mount, whichever asks first; in WebKit the mount often ran
+  first and built them on the main thread). Its mount is one long task, so a later answer (a task of its own) would
+  only be read after it, once the ground had built them on the main thread (~230 ms at 4× CPU). The e2e's logic mode
+  waits too. The main thread builds them only with no worker, an error, or one stalled 4 s. A late answer (the fields
   built here meanwhile, or the tiles changed) is dropped, never kept over the current layout's set (~8 MB each).
   Measured (HTTP/2 brotli at ~Fast 4G, 4× CPU, `?demo`, medians): first frame warm 1,175 → 877 ms, cold 2,201 →
   1,949 ms; no fields built on the main thread. The same worker builds the ground's chunks (`layout/mesh.ts
