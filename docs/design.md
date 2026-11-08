@@ -2712,7 +2712,7 @@ Read on each call by `island/devHooks.ts` (the seasonal ones by `ui-state/previe
 | `?wx=real\|game` | The island's weather mode for this load ([Weather](#weather)) |
 | `?wx=rain-pm\|clears\|typhoon\|snow\|fog\|cloudy\|stale` | A canned real-weather timeline on the scene clock's hours (`island/wxFixtures.ts`): rain 12:00–18:00; rain until 14:00 then fine (a rainbow); a downpour; snow; foggy mornings; overcast; one fetched 37 h ago (the seeded day) |
 | `?event=<id>` | Show an event (the preview's ids: `halloween`, `cherry`, `birthday-A`, `wedding`…; its main part on; Bunny Day's eggs too) |
-| `?visitor=<id>\|none`, `?arrive`, `?leave=<ms>`, `?stroll`, `?meet` | A visitor; its arrival; its departure; a stroll; the partner's hello |
+| `?visitor=<id>\|none\|events`, `?arrive`, `?leave=<ms>`, `?stroll`, `?meet` | A visitor (`events`: an event's host only, never the day's); its arrival; its departure; a stroll; the partner's hello |
 | `?kk=show`, `?kk=day`, `?kk=asleep` | K.K. on his stool: his show, his day, asleep (whatever the clock) |
 | `?critter=fish\|pond\|<fish>\|<pond fish>\|<bug>\|none`, `&coast=front\|back\|left\|right`, `?sea=<id>\|pearl`, `?flea` | A critter now (kept until caught; ambient visits off), a sea fish off that side; a dive spot; a flea on every villager tap |
 | `?shake=nest\|branch\|bagworm\|spider` | The next shake drops that |
@@ -2722,6 +2722,8 @@ Read on each call by `island/devHooks.ts` (the seasonal ones by `ui-state/previe
 | `?hit` | Every tap target drawn over the island (magenta: the scene's elements; cyan: the boxes a module tests) |
 | `?fpv=1\|0` | The rooms' first-person view for the tab, not kept ([First person](#first-person)) |
 | `?awake` | The villagers never doze (22:00–05:00 otherwise) |
+| `?idle=none`, `?stars=none` | No idle beats (the villagers, しずえ and a visitor do nothing on their own: they still doze); no ordinary night's shooting stars (a meteor shower's still come) |
+| `localStorage['e2e.ambient'] = 'off'` | The e2e's ambient life off (e2e/fixtures.ts, every test): `critter=none`, `visitor=events`, `balloon=none`, `idle=none`, `stars=none` unless the URL sets them |
 | `?relay=<wss url>&key=<key>` | The demo over a real relay (the island and the rooms; `e2e/sync-harness.spec.ts`, the test relay) |
 | `?quietafter=<ms>` | How long a phone gone quiet inside a room stays shown there (the harness's) |
 | `?render=none` | The 3D engines run but draw nothing (the e2e's logic mode: `ui-state/testMode.ts`) |

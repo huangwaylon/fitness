@@ -23,7 +23,7 @@
   import { lazyComponent } from '#lib/ui-state/lazyComponent.svelte.ts';
   import { visitorNow } from './visitors.ts';
   import { timers } from './timers.ts';
-  import { islandSeed } from './devHooks.ts';
+  import { hook, islandSeed } from './devHooks.ts';
   import { site } from './site.svelte.ts';
   import { scenePreview } from '#lib/ui-state/preview.svelte.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -571,9 +571,12 @@
     return () => clearTimeout(id);
   });
   const starHours = $derived(inStarHours(jst(minuteNow()).hour));
+  /** `?stars=none` (dev or ?demo; the e2e's ambient life off): no ordinary night's showers (a meteor shower's still
+   *  comes). */
+  const noStars = hook('stars') === 'none';
   let showerIn = nextShowerMs(Math.random, true);
   $effect(() => {
-    if (!night || shower || !starHours || weather.sky !== 'clear' || !enabled()) return;
+    if (noStars || !night || shower || !starHours || weather.sky !== 'clear' || !enabled()) return;
     let started = performance.now();
     let id: ReturnType<typeof setTimeout>;
     const arm = () => {

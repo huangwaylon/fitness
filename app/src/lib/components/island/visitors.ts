@@ -45,15 +45,20 @@ export function dayVisitor(date: string, weekday: number, seed = ISLAND_SEED): V
   return shuffle(week, dayRand(addDays(date, 1 - weekday), 'visitors', seed))[weekday - 1];
 }
 
-/** Who visits at this Tokyo moment. `prevDate`: the day before (Wisp's night runs past midnight). `ev`: the event now
- *  (Halloween night brings Jack, even on a Saturday: the event comes first, as in NH). `shower`: a meteor shower is on
- *  (Celeste comes to watch it, even at K.K.'s show, before Wisp: she's the rarest). */
+/** An event's visitor at this Tokyo moment, or null: the event's host (Halloween night brings Jack, even on a Saturday:
+ *  the event comes first, as in NH), Reese and Cyrus on the wedding, Celeste on a meteor shower (even at K.K.'s show,
+ *  before Wisp: she's the rarest). */
+function eventVisitor(date: string, hour: number, ev: EventNow | null, shower: boolean): VisitorId | null {
+  const host = ev?.night ? HOSTS[ev.id] : undefined;
+  return host ?? (coupleAt(date, hour) ? 'reese' : shower ? 'celeste' : null);
+}
+
+/** Who visits at this Tokyo moment. `prevDate`: the day before (Wisp's night runs past midnight). `ev`: the event now;
+ *  `shower`: a meteor shower is on (eventVisitor: theirs come first). */
 export function visitorAt(date: string, prevDate: string, hour: number, weekday: number, seed = ISLAND_SEED,
   ev: EventNow | null = eventAt(date, hour), shower = showerAt(date, prevDate, hour, seed)): VisitorId | null {
-  const host = ev?.night ? HOSTS[ev.id] : undefined;
+  const host = eventVisitor(date, hour, ev, shower);
   if (host) return host;
-  if (coupleAt(date, hour)) return 'reese';
-  if (shower) return 'celeste';
   // Saturday evening is K.K.'s show on his stool (kkSlider.ts): the plaza's his
   if (weekday === 6 && hour >= 18) return null;
   if (weekday === 0 && hour >= 5 && hour < 12) return 'daisy-mae';
@@ -68,15 +73,18 @@ export function visitorAt(date: string, prevDate: string, hour: number, weekday:
 /** Who visits at a scene-clock moment, the dev hooks (`?visitor=`, `?seed=`) and the seasonal preview included (an
  *  event's host, Celeste on a shower, Reese and Cyrus on the wedding). */
 export function visitorNow(clock: Date): VisitorId | null {
-  // (`?visitor=none`: nobody, the specs' pinned scene)
-  if (hook('visitor') === 'none') return null;
+  // (`?visitor=none`: nobody, the specs' pinned scene; `?visitor=events`: an event's visitor only, never the day's: the
+  // e2e's ambient life off, devHooks.ts)
+  const h = hook('visitor');
+  if (h === 'none') return null;
   const want = hookOneOf('visitor', VISITORS);
   if (want) return want;
   const shown = scenePreview().event;
   if (shown === 'wedding') return 'reese';
   const date = dayKey(clock), prev = addDays(date, -1), seed = islandSeed();
   const { hour, weekday } = jst(clock);
-  return visitorAt(date, prev, hour, weekday, seed, eventAt(date, hour, shown), showerAt(date, prev, hour, seed, shown === 'shower'));
+  const ev = eventAt(date, hour, shown), shower = showerAt(date, prev, hour, seed, shown === 'shower');
+  return h === 'events' ? eventVisitor(date, hour, ev, shower) : visitorAt(date, prev, hour, weekday, seed, ev, shower);
 }
 
 /** A visitor's line on a tap (an i18n key): one of theirs, never the last one again. */
