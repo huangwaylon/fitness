@@ -39,8 +39,8 @@ describe('the tent’s catalogue (scripts/room-models.ts)', () => {
       const icon = m.icon || !m.cat ? join(STATIC, 'room', 'icons', `${code}.webp`) : join(STATIC, 'art', 'finds', 'items', `${m.cat}.webp`);
       expect(existsSync(icon), icon).toBe(true);
     }
-    // the whole set stays a few megabytes
-    expect(total).toBeLessThan(12_000_000);
+    // the whole set stays a few megabytes (~19 KB a piece; a room loads only its own)
+    expect(total).toBeLessThan(16_000_000);
   });
 
   it('every wallpaper and floor has its texture, its icon and its names; the tent’s own come first', () => {
