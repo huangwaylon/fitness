@@ -9,7 +9,7 @@
 // nothing on screen does. Plain TS; the screen (MuseumRoom.svelte) drives it.
 import {
   AmbientLight, Box3, BoxGeometry, CanvasTexture, CircleGeometry, Color, CylinderGeometry, DirectionalLight, Frustum, Group, HemisphereLight,
-  Matrix4, Mesh, Sphere, MeshBasicMaterial, MeshLambertMaterial, PerspectiveCamera, Plane, PlaneGeometry, Raycaster, RepeatWrapping,
+  Matrix4, Mesh, Sphere, MeshBasicMaterial, MeshLambertMaterial, PerspectiveCamera, Plane, PlaneGeometry, DoubleSide, Raycaster, RepeatWrapping,
   Scene, SRGBColorSpace, TextureLoader, Vector3, WebGLRenderer, type Material, type Object3D, type Texture
 } from 'three';
 import { swallowed } from '#lib/quiet.ts';
@@ -55,7 +55,8 @@ const WALL_FADE = 220;
 
 export type Who = 'A' | 'B' | 'G';
 /** Who draws a villager here (person3d: the look they wear). */
-export type Look = Person3;
+/** Who draws a person: its model, and for a villager with none (villagers.json none) its render, drawn as a card. */
+export type Look = Person3 & { card?: { url: string; aspect: number } };
 export interface Insets { top: number; bottom: number }
 export type Hit = { kind: 'villager'; who: Who } | { kind: 'creature'; id: string } | { kind: 'seat'; id: string } | { kind: 'door' } | { kind: 'floor'; x: number; z: number };
 
@@ -106,6 +107,8 @@ export interface Museum {
   villager(who: Who, look: Look | null): void;
   /** The model drawn for `who` (person3d's key: `v:<roster id>`, `p:…` a human player), null till one is in. */
   model(who: Who): string | null;
+  /** Whether `who` is drawn as its card (a villager with no model: its render, standing), its picture in. */
+  card(who: Who): boolean;
   at(who: Who): [number, number] | null;
   put(who: Who, p: Pt, yaw?: number): void;
   walk(who: Who, pts: readonly Pt[], o?: { from?: Pt; ago?: number; ms?: number }): number;
@@ -727,6 +730,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   interface Walker {
     look: Look;
     v3: Villager3D | null;
+    /** Its render standing on the floor, facing the camera (a villager with no model), or null. */
+    card: Mesh<PlaneGeometry, MeshBasicMaterial> | null;
     shadow: Mesh;
     pos: [number, number];
     was: [number, number];
@@ -745,6 +750,30 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const shadowMat = decal(new MeshBasicMaterial({ map: disc, transparent: true, depthWrite: false }), 5);
   disposables.push(shadowGeo, shadowMat);
   let followed: Who = 'A', v3Pending = 0;
+  const cardGeo = new PlaneGeometry(1, 1).translate(0, 0.5, 0), cardTex = new TextureLoader();
+  disposables.push(cardGeo);
+  /** Its card (a villager with no model: `look.card`, its render) put up, or the one it had taken down. */
+  function card3(who: Who, w: Walker, on = true) {
+    if (w.card) (scene.remove(w.card), w.card.material.map?.dispose(), w.card.material.dispose(), (w.card = null));
+    const c = w.look.card;
+    if (!on || !c || w.look.has3d) return;
+    const mat = new MeshBasicMaterial({ alphaTest: 0.5, side: DoubleSide, visible: false });
+    const m = new Mesh(cardGeo, mat);
+    m.scale.set(VILLAGER_H * c.aspect, VILLAGER_H, 1);
+    m.userData.who = who;
+    w.card = m;
+    scene.add(m);
+    const look = w.look;
+    cardTex.loadAsync(c.url).then((t) => {
+      if (disposed || w.card !== m || w.look !== look) return t.dispose();
+      t.colorSpace = SRGBColorSpace;
+      mat.map = t;
+      mat.visible = true;
+      mat.needsUpdate = true;
+      place(w);
+      invalidate();
+    }, () => {});
+  }
   /** Its 3D model up (`look`), placed where the walker is, once loaded; over the one it had (another look: swapped in
    *  place, the walk and the seat going on with the new model). */
   function model3(who: Who, w: Walker, look: Look) {
@@ -771,11 +800,15 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     if (was && look && was.look.key !== look.key) {
       // another look (theirs or mine changed): the model swapped where it is
       was.look = look;
+      // (to a villager with no model: its card in the model's place)
+      if (!look.has3d && was.v3) (scene.remove(was.v3.group), was.v3.dispose(), (was.v3 = null));
+      card3(who, was);
       return model3(who, was, look);
     }
     if (was && !look) {
       scene.remove(was.shadow);
       if (was.v3) (scene.remove(was.v3.group), was.v3.dispose());
+      card3(who, was, false);
       villagers.delete(who);
       invalidate();
     }
@@ -783,9 +816,10 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const shadow = new Mesh(shadowGeo, shadowMat);
     shadow.rotation.x = -Math.PI / 2;
     shadow.renderOrder = 2;
-    const w: Walker = { look, v3: null, shadow, pos: [0, 50], was: [0, 50], yaw: Math.PI, path: null, hop: 0, posing: true, seat: null };
+    const w: Walker = { look, v3: null, card: null, shadow, pos: [0, 50], was: [0, 50], yaw: Math.PI, path: null, hop: 0, posing: true, seat: null };
     villagers.set(who, w);
     scene.add(shadow);
+    card3(who, w);
     model3(who, w, look);
     place(w);
     invalidate();
@@ -800,6 +834,12 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   function place(w: Walker) {
     const [sx, sz] = spotOf(w);
     w.shadow.position.set(sx, 0.15, sz);
+    if (w.card) {
+      // standing where it is (seated: on its seat's middle, a little sunk), turned to the camera about its upright
+      const lift = w.hop ? Math.max(0, Math.sin(Math.min(1, (now() - w.hop) / 420) * Math.PI)) * 4 : 0;
+      w.card.position.set(sx, w.seat ? Math.max(0, w.seat.y - VILLAGER_H * 0.3) : lift, sz);
+      w.card.rotation.set(0, Math.atan2(camera.position.x - sx, camera.position.z - sz), 0);
+    }
     if (!w.v3) return;
     // on its seat: the model sits down there itself (the group is its own till it gets up)
     if (w.seat) return w.v3.sitAt(w.seat);
@@ -1216,6 +1256,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     if (me && (fp.on || fp.mix > 0)) {
       fpMoved = fp.step(t, dt, eyeOf(me, t));
       me.v3?.show(!(fp.mix > 0.5));
+      if (me.card) me.card.visible = !(fp.mix > 0.5);
       if (fpMoved) full = true;
     }
     if (me) {
@@ -1289,6 +1330,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     still: () => !easing && !gesturing && !pace.asked() && !fp.busy(),
     villager,
     model: (who) => (villagers.get(who)?.v3 ? villagers.get(who)!.look.key : null),
+    card: (who) => !!villagers.get(who)?.card?.material.map,
     at: (who) => (villagers.get(who) ? [villagers.get(who)!.pos[0], villagers.get(who)!.pos[1]] : null),
     put(who, p, yaw) {
       const w = villagers.get(who);

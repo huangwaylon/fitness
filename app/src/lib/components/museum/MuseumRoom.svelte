@@ -23,6 +23,7 @@
   import { SAY_TAG, rememberSay, sayGate, type SaySpeaker } from '../island/say.ts';
   import { url3d } from '../villager3d/manifest.ts';
   import { person3, type Dirs } from '../person3d/person3d.ts';
+  import { art, artUrl, villagerArt } from '#lib/art.ts';
   import { drawOff } from '#lib/ui-state/testMode.ts';
   import { lookOf as wornOf } from '#lib/store/look.ts';
   import type { WeekView } from '#lib/types.ts';
@@ -51,7 +52,7 @@
   import { createSeating } from '../rooms/seating.ts';
   import { t } from '#lib/i18n/index.ts';
   import type { Curator } from './curator.ts';
-  import type { Hit, Museum, Who } from './engine.ts';
+  import type { Hit, Look, Museum, Who } from './engine.ts';
   import { staticUrl } from '#lib/staticUrl.ts';
 
   let { view }: { view: WeekView } = $props();
@@ -144,10 +145,14 @@
   const theirAt = new Map<Who, Pt>(others.map((w) => [w, [ENTRANCE[0] + sideX(w), ENTRANCE[1] - 10] as Pt]));
   /** The villagers' GLBs and the players' parts (person3d). */
   const DIRS: Dirs = { villagers: staticUrl('room/villagers3d/'), player: staticUrl('room/player/') };
-  /** Who draws them (person3d: the look they wear, their villager or their human player). */
-  function lookOf(w: Who) {
+  /** Who draws them (person3d: the look they wear, their villager or their human player; a villager with no model its
+   *  render, as a card). */
+  function lookOf(w: Who): Look {
     const villager = w === 'G' ? view.guest.villager : view.people[w].villager;
-    return person3(w, wornOf(w), villager, DIRS);
+    const p = person3(w, wornOf(w), villager, DIRS);
+    if (p.has3d) return p;
+    const key = villagerArt(p.villager), a = art(key), url = artUrl(key);
+    return a && url ? { ...p, card: { url, aspect: a.w / a.h } } : p;
   }
   // a look changed (on leaving すがた, or the partner's phone): the model swapped where it is
   $effect(() => {
@@ -476,6 +481,8 @@
       at: (w: Who) => eng?.at(w),
       /** The model drawn for `w` (person3d's key), null till one is in. */
       model: (w: Who) => eng?.model(w) ?? null,
+      /** Whether `w` is drawn as its card (a villager with no model), its picture in. */
+      asCard: (w: Who) => !!eng?.card(w),
       walking: (w: Who) => eng?.walking(w),
       still: () => !!eng?.still(),
       /** A floor point's client px. */

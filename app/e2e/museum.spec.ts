@@ -376,3 +376,15 @@ test('a wing rebuilt with a new find keeps its programs: none freed with the old
   }
   expect(seen).toEqual(seen.map(() => before));
 });
+
+test('a villager with no 3D model (the guest\'s マーティー) stands in the museum as its card, not a shadow alone', async ({ page }) => {
+  await page.addInitScript(() => {
+    if (localStorage.getItem('island-demo.events')) return;
+    const at = Date.parse('2026-11-04T09:00:00+09:00');
+    localStorage.setItem('island-demo.events', JSON.stringify({ day: '2026-11-04', events: [{ id: 'seed-v', type: 'pref', data: { key: 'villager', value: 'marty' }, queuedAt: at, tries: 0, nextAt: 0, ackedAt: at, person: 'G' }] }));
+  });
+  await open(page, `${MUSEUM}&as=G`);
+  await expect.poll(() => mu<boolean>(page, 'asCard("G")'), { timeout: 15_000 }).toBe(true);
+  expect(await mu<string | null>(page, 'model("G")')).toBeNull();
+  if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/museum-card.png` });
+});
