@@ -5,11 +5,11 @@
 // localStorage, so the tent opens as it was before the sheet answers.
 //   tent.attach(relay, me, demo)          the relay in use and who I am
 //   tent.pieces / tent.wall / tent.floor  the room (reactive)
-//   tent.set(p) / tent.remove(id) / tent.surface(kind, code)   a change of mine: merged, kept, sent
+//   tent.set(p) / tent.remove(id) / tent.surface(kind, code) / tent.resize(n)   a change of mine: merged, kept, sent
 //   tent.on(fn)                           the partner's changes as they arrive
 // The other homes' rooms are the same (docs/island-layout.md "Homes"): `rooms.B` うめ's house (`sc: 'u'`), `rooms.G`
 // the guest's (`v`); `rooms.A` is the tent's.
-import { TENT_FLOOR, TENT_MAX, TENT_ROOM, TENT_WALL, mergeTent, tentLayout, tentOpOf, type TentEntry, type TentOp, type TentPiece } from '#lib/contract/tent.ts';
+import { ROOM_DEFAULT, TENT_FLOOR, TENT_MAX, TENT_ROOM, TENT_SIZE, TENT_WALL, mergeTent, tentLayout, tentOpOf, type TentEntry, type TentOp, type RoomSize, type TentPiece } from '#lib/contract/tent.ts';
 import type { Relayed, Who } from '#lib/contract/live-protocol.ts';
 import { DEMO, LIVE, localKV, readJson } from '#lib/sync/storage.ts';
 import { Synced } from './synced.svelte.ts';
@@ -36,7 +36,7 @@ class TentRoom extends Synced<TentEntry, TentOp, TentNews> {
     super();
     this.sc = sc;
   }
-  #layout: ReturnType<typeof tentLayout> = { pieces: [], wall: null, floor: null, lights: true };
+  #layout: ReturnType<typeof tentLayout> = { pieces: [], wall: null, floor: null, lights: true, size: ROOM_DEFAULT };
   /** Where my changes go to the sheet (store/actions.ts sendDecor: the same event type, scoped). */
   sink: ((op: TentOp) => void) | null = null;
 
@@ -94,6 +94,10 @@ class TentRoom extends Synced<TentEntry, TentOp, TentNews> {
   /** NH's room light switch (on unless switched off). */
   get lights(): boolean {
     return this.#room().lights;
+  }
+  /** The room's size (tiles a side: contract/tent.ts ROOM_SIZES; the largest unless set). */
+  get size(): RoomSize {
+    return this.#room().size;
   }
   /** When the room was last changed: its latest op's time, the room's light switch aside (0: never). */
   get changed(): number {
@@ -173,6 +177,14 @@ class TentRoom extends Synced<TentEntry, TentOp, TentNews> {
     return !!this.#mine({ sc: this.sc, id, at, item: code, x: 0, z: 0, f: 0, p: known && !known.rm ? known.p : at });
   }
 
+  /** The room's size (the caller checks every piece still fits: TentEdit's shrink rule). */
+  resize(n: RoomSize): boolean {
+    if (this.size === n) return false;
+    const known = this.#own(TENT_SIZE);
+    const at = this.now(known?.at);
+    return !!this.#mine({ sc: this.sc, id: TENT_SIZE, at, item: `s${n}`, x: 0, z: 0, f: 0, p: known && !known.rm ? known.p : at });
+  }
+
   /** A light's switch (a lamp, the lantern, the fireplace): its own op (contract/tent.ts `lt`, 2026-11-05), never the
    *  piece's place, so a move the partner made meanwhile and this switch both stand (as a whole-state op it was one or
    *  the other: last writer wins per id). False when it's already so, or the piece isn't here. */
@@ -191,7 +203,7 @@ class TentRoom extends Synced<TentEntry, TentOp, TentNews> {
   }
 
   protected cleared(): void {
-    this.#layout = { pieces: [], wall: null, floor: null, lights: true };
+    this.#layout = { pieces: [], wall: null, floor: null, lights: true, size: ROOM_DEFAULT };
   }
 }
 

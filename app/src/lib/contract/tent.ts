@@ -3,7 +3,8 @@
 // (`sc: 't'`), in the same event type and the same relay intent: a piece set at a spot (`{sc, id, at, item, x, z, f, p}`:
 // placed or moved, its whole state, x and z its footprint's back-left tile) or taken away (`{sc, id, at, rm: true}`,
 // final), and the wallpaper and the floor (`{sc, id: TENT_WALL | TENT_FLOOR, at, item, x: 0, z: 0, f: 0, p}`, never
-// removed); a small thing on another piece's surface (NH's table-top things) carries `on: <its id>`, and then x and z
+// removed), and the room's size (`{sc, id: TENT_SIZE, at, item: 's4' | 's6' | 's8', x: 0, z: 0, f: 0, p}`: NH's main room
+// sizes, absent the largest, as every room was before 2026-11-09); a small thing on another piece's surface (NH's table-top things) carries `on: <its id>`, and then x and z
 // are its slot on that piece (its tile in the piece's own, unturned footprint) and f its facing on it, so the piece
 // moving or turning carries it, in one op. The same merge as the island's: a removal beats everything, else the latest `at`, then G over B over A; the record
 // keeps each id's latest op. Shared by the record (relay/src/store.ts), the model, the relay protocol and the tent; pure and
@@ -19,6 +20,14 @@ export const TENT_WALL = 'dtentwall';
 export const TENT_FLOOR = 'dtentfloor';
 /** NH's room light switch: item `r1` (on) or `r0` (off), x = z = f = 0. */
 export const TENT_ROOM = 'dtentroom';
+/** The room's size (docs/design.md "The tent"): item `s` + its tiles across and deep, x = z = f = 0. */
+export const TENT_SIZE = 'dtentsize';
+/** NH's main room sizes (tiles a side, nookipedia.com/wiki/Home_loan): the tent's 4 × 4, the first house's 6 × 6, the
+ *  main room expanded 8 × 8 (the largest: a room with no size op is this one). Each a square, its front wall (the
+ *  door's) where the largest one's is: the pieces' tiles stay the largest room's 0–7, so a size never moves one. */
+export const ROOM_SIZES = [4, 6, 8] as const;
+export type RoomSize = (typeof ROOM_SIZES)[number];
+export const ROOM_DEFAULT: RoomSize = 8;
 
 /** Who set it (the guest's tent pieces too): the merge's tie-break is a fixed order, A < B < G. */
 type Who = 'A' | 'B' | 'G';
@@ -51,15 +60,16 @@ export interface TentPiece {
 }
 
 const ID = /^d[0-9a-z]{6,24}$/;
-/** An item's code (NH's internal id with its kind: f furniture or a rug, w a wallpaper, g a floor; r the room's light). */
-const ITEM = /^[fwgr]\d{1,6}$/;
+/** An item's code (NH's internal id with its kind: f furniture or a rug, w a wallpaper, g a floor; r the room's light,
+ *  s its size). */
+const ITEM = /^[fwgrs]\d{1,6}$/;
 
 /** A room op's data (`sc` one of t, u, v), its known keys only, each well-formed, or null. */
 export function tentOpOf(d: Record<string, unknown>): TentOp | null {
   if (typeof d.sc !== 'string' || !SCOPES.includes(d.sc) || typeof d.id !== 'string' || !ID.test(d.id) || !isMs(d.at)) return null;
   const sc = d.sc as Sc;
   const keys = Object.keys(d);
-  const surface = d.id === TENT_WALL ? 'w' : d.id === TENT_FLOOR ? 'g' : d.id === TENT_ROOM ? 'r' : null;
+  const surface = d.id === TENT_WALL ? 'w' : d.id === TENT_FLOOR ? 'g' : d.id === TENT_ROOM ? 'r' : d.id === TENT_SIZE ? 's' : null;
   if (d.rm !== undefined) {
     if (surface || d.rm !== true || keys.some((k) => k !== 'sc' && k !== 'id' && k !== 'at' && k !== 'rm')) return null;
     return { sc, id: d.id, at: d.at, rm: true };
@@ -71,6 +81,7 @@ export function tentOpOf(d: Record<string, unknown>): TentOp | null {
   if (keys.some((k) => !['sc', 'id', 'at', 'item', 'x', 'z', 'f', 'p', 'on', 'l'].includes(k))) return null;
   if (d.l !== undefined && (surface || (d.l !== 0 && d.l !== 1))) return null;
   if (surface === 'r' && d.item !== 'r0' && d.item !== 'r1') return null;
+  if (surface === 's' && !ROOM_SIZES.some((n) => d.item === `s${n}`)) return null;
   if (d.on !== undefined && (surface || typeof d.on !== 'string' || !ID.test(d.on) || d.on === d.id)) return null;
   if (typeof d.item !== 'string' || !ITEM.test(d.item) || d.item[0] !== (surface ?? 'f')) return null;
   if (!isInt(d.x, 0, ROOM - 1) || !isInt(d.z, 0, ROOM - 1) || !isInt(d.f, 0, 3) || !isMs(d.p) || d.p > d.at) return null;
@@ -97,16 +108,16 @@ export function mergeTent(m: Map<string, TentEntry>, e: TentEntry): boolean {
   return true;
 }
 
-const isSurface = (id: string) => id === TENT_WALL || id === TENT_FLOOR || id === TENT_ROOM;
+const isSurface = (id: string) => id === TENT_WALL || id === TENT_FLOOR || id === TENT_ROOM || id === TENT_SIZE;
 /** Whether an entry is a piece in its room that counts toward TENT_MAX: set, not removed, not a light's switch nor a
  *  surface. @public (relay/src/store.ts) */
 export const isTentPiece = (e: TentEntry): boolean => !e.rm && e.lt === undefined && !isSurface(e.id);
 
-/** The room: every piece set and not removed (the oldest TENT_MAX by when they were first placed, then by id), and
- *  the wallpaper and the floor (null: the tent's own). */
-export function tentLayout(entries: Iterable<TentEntry>): { pieces: TentPiece[]; wall: string | null; floor: string | null; lights: boolean } {
+/** The room: every piece set and not removed (the oldest TENT_MAX by when they were first placed, then by id), the
+ *  wallpaper and the floor (null: the tent's own), the light and the size. */
+export function tentLayout(entries: Iterable<TentEntry>): { pieces: TentPiece[]; wall: string | null; floor: string | null; lights: boolean; size: RoomSize } {
   const pieces: TentPiece[] = [];
-  let wall: string | null = null, floor: string | null = null, lights = true;
+  let wall: string | null = null, floor: string | null = null, lights = true, size: RoomSize = ROOM_DEFAULT;
   const all = [...entries];
   // each piece's light switch (its own op, the latest per piece)
   const switched = new Map<string, { at: number; l: 0 | 1 }>();
@@ -120,6 +131,7 @@ export function tentLayout(entries: Iterable<TentEntry>): { pieces: TentPiece[];
     if (e.id === TENT_WALL) wall = e.item;
     else if (e.id === TENT_FLOOR) floor = e.item;
     else if (e.id === TENT_ROOM) lights = e.item === 'r1';
+    else if (e.id === TENT_SIZE) size = Number(e.item.slice(1)) as RoomSize;
     else {
       // its switch's, unless the piece's own op says `l` (an older phone's whole state) later (a tie: the switch)
       const sw = switched.get(e.id);
@@ -128,7 +140,7 @@ export function tentLayout(entries: Iterable<TentEntry>): { pieces: TentPiece[];
     }
   }
   pieces.sort((a, b) => a.p - b.p || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-  return { pieces: pieces.slice(0, TENT_MAX), wall, floor, lights };
+  return { pieces: pieces.slice(0, TENT_MAX), wall, floor, lights, size };
 }
 
 /** What the record does with a new op, given the tent's rows it holds: `stale` (an op that beats it is there; a light's
