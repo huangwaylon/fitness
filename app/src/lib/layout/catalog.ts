@@ -44,6 +44,60 @@ export interface KindDef {
 }
 
 const k = (def: KindDef): KindDef => def;
+/** A pack's kinds (scripts/world3d-assets.ts PACKS: the camp goods, the food, the gym's newer pieces), packed for the
+ *  first load's bytes: `kind|ja|en|wd|footW,footD,h|icon`, each on any land, blocking, turned with its facing; its
+ *  icon the ずかん's (`finds/items/<icon>`), else NH's own (`items/<kind>`). */
+const packed = (group: Group, rows: string): KindDef[] =>
+  rows.split(';').map((r) => {
+    const [kk, ja, en, wd, f, icon] = r.split('|'), [fw, fd, h] = f.split(',').map(Number);
+    return { k: kk, group, ja, en, w: +wd[0], d: +wd[1], block: true, foot: [fw, fd] as const, on: 'land' as const, h, icon: icon ? `finds/items/${icon}` : `items/${kk}`, turns: true };
+  });
+const PACKED_CAMP = packed('camp', [
+  'small-campfire|たき火|Campfire|11|18,16,16|',
+  'fire-pit|ファイヤーピット|Fire pit|22|35,35,21|fire-pit',
+  'lantern|ランタン|Lantern|11|16,16,29|',
+  'camping-cot|キャンプベッド|Camping cot|21|46,22,18|',
+  'sleeping-bag|シュラフ|Sleeping bag|21|48,22,8|sleeping-bag',
+  'kids-tent|キッズテント|Kids\' tent|22|47,48,59|',
+  'cooler-box|クーラーボックス|Cooler box|11|21,17,17|cooler-box',
+  'barbecue|バーベキューグリル|Barbecue|11|18,25,38|barbecue',
+  'camp-stove|コッフェル|Camp stove|11|15,10,20|camp-stove',
+  'folding-chair|折りたたみアウトドアチェア|Outdoor folding chair|11|25,20,31|outdoor-folding-chair',
+  'folding-table|折りたたみアウトドアテーブル|Outdoor folding table|11|22,21,22|outdoor-folding-table',
+  'outdoor-bench|アウトドアベンチ|Outdoor bench|21|43,16,13|outdoor-bench',
+  'outdoor-table|アウトドアテーブル|Outdoor table|21|46,23,22|outdoor-table',
+  'directors-chair|ディレクターズチェア|Director\'s chair|11|20,19,32|directors-chair',
+  'utility-wagon|キャリーワゴン|Utility wagon|11|26,17,32|utility-wagon',
+  'water-jug|ウォータージャグ|Handy water cooler|11|15,18,21|handy-water-cooler',
+  'simple-kettle|ケトル|Simple kettle|11|14,12,20|simple-kettle',
+  'portable-radio|携帯ラジオ|Portable radio|11|12,8,11|',
+  'angled-signpost|ナナメのみちしるべ|Angled signpost|11|20,20,32|',
+  'destinations-signpost|せかいのみちしるべ|Destinations signpost|22|33,28,71|',
+].join(';'));
+const PACKED_FOOD = packed('food', [
+  'picnic-basket|ピクニックバスケット|Picnic basket|11|20,20,20|picnic-basket',
+  'picnic-set|お花見セット|Outdoor picnic set|22|37,37,18|',
+  'fruit-basket|フルーツバスケット|Fruit basket|11|24,18,15|',
+  'bread|パン|Bread|11|20,20,15|',
+  'sandwich-set|ミックスサンドセット|Diced-salad sandwich set|11|22,17,15|diced-salad-sandwich-set',
+  'campfire-cookware|飯ごう|Campfire cookware|11|23,21,22|campfire-cookware',
+  'stewpot|鍋|Stewpot|11|21,17,24|stewpot',
+  'frying-pan|フライパン|Frying pan|11|19,19,4|',
+  'seafood-ajillo|シーフードのアヒージョ|Seafood ajillo|11|19,19,4|',
+  'grilled-sea-bass|スズキの香草焼き|Grilled sea bass with herbs|11|22,15,6|',
+  'western-meal|洋風定食|Western-style meal|11|23,16,5|western-style-meal',
+  'japanese-meal|和風定食|Japanese-style meal|11|23,16,5|japanese-style-meal',
+  'bottled-beverage|ペットボトル飲料|Bottled beverage|11|8,8,22|bottled-beverage',
+  'coconut-juice|ココナッツジュース|Coconut juice|11|10,10,18|',
+  'cookies|クッキー|Cookies|11|19,19,4|',
+].join(';'));
+const PACKED_GYM = packed('gym', [
+  'yoga-mat|ヨガマット|Yoga mat|21|47,22,4|yoga-mat',
+  'nook-yoga-mat|たぬき開発ヨガマット|Nook Inc. yoga mat|21|47,22,4|',
+  'speed-bag|スピードバッグ|Speed bag|11|24,22,54|speed-bag',
+  'massage-chair|マッサージチェア|Plush massage chair|11|24,21,43|plush-massage-chair',
+  'dumbbell|ダンベル|Dumbbell|11|13,8,7|',
+].join(';'));
 const TREE_FOOT = [24, 12] as const;
 
 export const KIND_LIST: readonly KindDef[] = [
@@ -98,42 +152,9 @@ export const KIND_LIST: readonly KindDef[] = [
   // the camp goods (キャンプ: NH's outdoor furniture for a campsite, its names; the camp pack's models, scripts/world3d-assets.ts
   // PACKS, their icons the ずかん's): sat on (the chairs, the bench), lain on (the cot, the sleeping bag), lit at night
   // (the campfire, the fire pit, the lantern: world3d/things.ts LAMP); the rest to look at
-  k({ k: 'small-campfire', group: 'camp', ja: 'たき火', en: 'Campfire', w: 1, d: 1, block: true, foot: [18, 16], on: 'land', h: 16, icon: 'items/small-campfire', turns: true }),
-  k({ k: 'fire-pit', group: 'camp', ja: 'ファイヤーピット', en: 'Fire pit', w: 2, d: 2, block: true, foot: [35, 35], on: 'land', h: 21, icon: 'finds/items/fire-pit', turns: true }),
-  k({ k: 'lantern', group: 'camp', ja: 'ランタン', en: 'Lantern', w: 1, d: 1, block: true, foot: [16, 16], on: 'land', h: 29, icon: 'items/lantern', turns: true }),
-  k({ k: 'camping-cot', group: 'camp', ja: 'キャンプベッド', en: 'Camping cot', w: 2, d: 1, block: true, foot: [46, 22], on: 'land', h: 18, icon: 'items/camping-cot', turns: true }),
-  k({ k: 'sleeping-bag', group: 'camp', ja: 'シュラフ', en: 'Sleeping bag', w: 2, d: 1, block: true, foot: [48, 22], on: 'land', h: 8, icon: 'finds/items/sleeping-bag', turns: true }),
-  k({ k: 'kids-tent', group: 'camp', ja: 'キッズテント', en: "Kids' tent", w: 2, d: 2, block: true, foot: [47, 48], on: 'land', h: 59, icon: 'items/kids-tent', turns: true }),
-  k({ k: 'cooler-box', group: 'camp', ja: 'クーラーボックス', en: 'Cooler box', w: 1, d: 1, block: true, foot: [21, 17], on: 'land', h: 17, icon: 'finds/items/cooler-box', turns: true }),
-  k({ k: 'barbecue', group: 'camp', ja: 'バーベキューグリル', en: 'Barbecue', w: 1, d: 1, block: true, foot: [18, 25], on: 'land', h: 38, icon: 'finds/items/barbecue', turns: true }),
-  k({ k: 'camp-stove', group: 'camp', ja: 'コッフェル', en: 'Camp stove', w: 1, d: 1, block: true, foot: [15, 10], on: 'land', h: 20, icon: 'finds/items/camp-stove', turns: true }),
-  k({ k: 'folding-chair', group: 'camp', ja: '折りたたみアウトドアチェア', en: 'Outdoor folding chair', w: 1, d: 1, block: true, foot: [25, 20], on: 'land', h: 31, icon: 'finds/items/outdoor-folding-chair', turns: true }),
-  k({ k: 'folding-table', group: 'camp', ja: '折りたたみアウトドアテーブル', en: 'Outdoor folding table', w: 1, d: 1, block: true, foot: [22, 21], on: 'land', h: 22, icon: 'finds/items/outdoor-folding-table', turns: true }),
-  k({ k: 'outdoor-bench', group: 'camp', ja: 'アウトドアベンチ', en: 'Outdoor bench', w: 2, d: 1, block: true, foot: [43, 16], on: 'land', h: 13, icon: 'finds/items/outdoor-bench', turns: true }),
-  k({ k: 'outdoor-table', group: 'camp', ja: 'アウトドアテーブル', en: 'Outdoor table', w: 2, d: 1, block: true, foot: [46, 23], on: 'land', h: 22, icon: 'finds/items/outdoor-table', turns: true }),
-  k({ k: 'directors-chair', group: 'camp', ja: 'ディレクターズチェア', en: "Director's chair", w: 1, d: 1, block: true, foot: [20, 19], on: 'land', h: 32, icon: 'finds/items/directors-chair', turns: true }),
-  k({ k: 'utility-wagon', group: 'camp', ja: 'キャリーワゴン', en: 'Utility wagon', w: 1, d: 1, block: true, foot: [26, 17], on: 'land', h: 32, icon: 'finds/items/utility-wagon', turns: true }),
-  k({ k: 'water-jug', group: 'camp', ja: 'ウォータージャグ', en: 'Handy water cooler', w: 1, d: 1, block: true, foot: [15, 18], on: 'land', h: 21, icon: 'finds/items/handy-water-cooler', turns: true }),
-  k({ k: 'simple-kettle', group: 'camp', ja: 'ケトル', en: 'Simple kettle', w: 1, d: 1, block: true, foot: [14, 12], on: 'land', h: 20, icon: 'finds/items/simple-kettle', turns: true }),
-  k({ k: 'portable-radio', group: 'camp', ja: '携帯ラジオ', en: 'Portable radio', w: 1, d: 1, block: true, foot: [12, 8], on: 'land', h: 11, icon: 'items/portable-radio', turns: true }),
-  k({ k: 'angled-signpost', group: 'camp', ja: 'ナナメのみちしるべ', en: 'Angled signpost', w: 1, d: 1, block: true, foot: [20, 20], on: 'land', h: 32, icon: 'items/angled-signpost', turns: true }),
-  k({ k: 'destinations-signpost', group: 'camp', ja: 'せかいのみちしるべ', en: 'Destinations signpost', w: 2, d: 2, block: true, foot: [33, 28], on: 'land', h: 71, icon: 'items/destinations-signpost', turns: true }),
+  ...PACKED_CAMP,
   // the food (たべもの: NH's dishes and drinks, the food pack's; to look at, a tap jiggles one; the cookware's fire lit)
-  k({ k: 'picnic-basket', group: 'food', ja: 'ピクニックバスケット', en: 'Picnic basket', w: 1, d: 1, block: true, foot: [20, 20], on: 'land', h: 20, icon: 'finds/items/picnic-basket', turns: true }),
-  k({ k: 'picnic-set', group: 'food', ja: 'お花見セット', en: 'Outdoor picnic set', w: 2, d: 2, block: true, foot: [37, 37], on: 'land', h: 18, icon: 'items/picnic-set', turns: true }),
-  k({ k: 'fruit-basket', group: 'food', ja: 'フルーツバスケット', en: 'Fruit basket', w: 1, d: 1, block: true, foot: [24, 18], on: 'land', h: 15, icon: 'items/fruit-basket', turns: true }),
-  k({ k: 'bread', group: 'food', ja: 'パン', en: 'Bread', w: 1, d: 1, block: true, foot: [20, 20], on: 'land', h: 15, icon: 'items/bread', turns: true }),
-  k({ k: 'sandwich-set', group: 'food', ja: 'ミックスサンドセット', en: 'Diced-salad sandwich set', w: 1, d: 1, block: true, foot: [22, 17], on: 'land', h: 15, icon: 'finds/items/diced-salad-sandwich-set', turns: true }),
-  k({ k: 'campfire-cookware', group: 'food', ja: '飯ごう', en: 'Campfire cookware', w: 1, d: 1, block: true, foot: [23, 21], on: 'land', h: 22, icon: 'finds/items/campfire-cookware', turns: true }),
-  k({ k: 'stewpot', group: 'food', ja: '鍋', en: 'Stewpot', w: 1, d: 1, block: true, foot: [21, 17], on: 'land', h: 24, icon: 'finds/items/stewpot', turns: true }),
-  k({ k: 'frying-pan', group: 'food', ja: 'フライパン', en: 'Frying pan', w: 1, d: 1, block: true, foot: [19, 19], on: 'land', h: 4, icon: 'items/frying-pan', turns: true }),
-  k({ k: 'seafood-ajillo', group: 'food', ja: 'シーフードのアヒージョ', en: 'Seafood ajillo', w: 1, d: 1, block: true, foot: [19, 19], on: 'land', h: 4, icon: 'items/seafood-ajillo', turns: true }),
-  k({ k: 'grilled-sea-bass', group: 'food', ja: 'スズキの香草焼き', en: 'Grilled sea bass with herbs', w: 1, d: 1, block: true, foot: [22, 15], on: 'land', h: 6, icon: 'items/grilled-sea-bass', turns: true }),
-  k({ k: 'western-meal', group: 'food', ja: '洋風定食', en: 'Western-style meal', w: 1, d: 1, block: true, foot: [23, 16], on: 'land', h: 5, icon: 'finds/items/western-style-meal', turns: true }),
-  k({ k: 'japanese-meal', group: 'food', ja: '和風定食', en: 'Japanese-style meal', w: 1, d: 1, block: true, foot: [23, 16], on: 'land', h: 5, icon: 'finds/items/japanese-style-meal', turns: true }),
-  k({ k: 'bottled-beverage', group: 'food', ja: 'ペットボトル飲料', en: 'Bottled beverage', w: 1, d: 1, block: true, foot: [8, 8], on: 'land', h: 22, icon: 'finds/items/bottled-beverage', turns: true }),
-  k({ k: 'coconut-juice', group: 'food', ja: 'ココナッツジュース', en: 'Coconut juice', w: 1, d: 1, block: true, foot: [10, 10], on: 'land', h: 18, icon: 'items/coconut-juice', turns: true }),
-  k({ k: 'cookies', group: 'food', ja: 'クッキー', en: 'Cookies', w: 1, d: 1, block: true, foot: [19, 19], on: 'land', h: 4, icon: 'items/cookies', turns: true }),
+  ...PACKED_FOOD,
   // the gym (ジム: NH's fitness furniture, its official names; the decorations' models and icons, `decor/<kind>-0`). A tap
   // on the ones NH lets one use walks my villager up to it and on (layout/nav.ts SEAT_ON's `use`: island/sitting.ts):
   // the weight bench's presses, the bike's pedalling, the treadmill's run, the punching bag's punches, the exercise
@@ -152,11 +173,7 @@ export const KIND_LIST: readonly KindDef[] = [
   k({ k: 'digital-scale', group: 'gym', ja: 'たいじゅうそくていき', en: 'Digital scale', w: 1, d: 1, block: true, foot: [18, 16], on: 'land', h: 4, icon: 'decor/digital-scale-0', turns: true }),
   k({ k: 'climbing-wall', group: 'gym', ja: 'クライミングウォール', en: 'Climbing wall', w: 2, d: 1, block: true, foot: [60, 12], on: 'land', h: 90, icon: 'decor/climbing-wall-0', turns: true }),
   k({ k: 'upright-locker', group: 'gym', ja: 'ロッカー', en: 'Upright locker', w: 1, d: 1, block: true, foot: [24, 22], on: 'land', h: 56, icon: 'decor/upright-locker-0', turns: true }),
-  k({ k: 'yoga-mat', group: 'gym', ja: 'ヨガマット', en: 'Yoga mat', w: 2, d: 1, block: true, foot: [47, 22], on: 'land', h: 4, icon: 'finds/items/yoga-mat', turns: true }),
-  k({ k: 'nook-yoga-mat', group: 'gym', ja: 'たぬき開発ヨガマット', en: 'Nook Inc. yoga mat', w: 2, d: 1, block: true, foot: [47, 22], on: 'land', h: 4, icon: 'items/nook-yoga-mat', turns: true }),
-  k({ k: 'speed-bag', group: 'gym', ja: 'スピードバッグ', en: 'Speed bag', w: 1, d: 1, block: true, foot: [24, 22], on: 'land', h: 54, icon: 'finds/items/speed-bag', turns: true }),
-  k({ k: 'massage-chair', group: 'gym', ja: 'マッサージチェア', en: 'Plush massage chair', w: 1, d: 1, block: true, foot: [24, 21], on: 'land', h: 43, icon: 'finds/items/plush-massage-chair', turns: true }),
-  k({ k: 'dumbbell', group: 'gym', ja: 'ダンベル', en: 'Dumbbell', w: 1, d: 1, block: true, foot: [13, 8], on: 'land', h: 7, icon: 'items/dumbbell', turns: true }),
+  ...PACKED_GYM,
   // NH's bulletin board (けいじばん): one on the island, used from the tile in front of it
   k({ k: 'board', group: 'furniture', ja: '掲示板', en: 'Bulletin board', w: 2, d: 1, block: true, foot: [54, 14], on: 'land', h: 44, icon: 'deco/bulletin-board', turns: true, fixed: true, front: true }),
   // the seasonal spots (fixedDecor.ts: the season's piece stands there in its weeks)
