@@ -18,8 +18,8 @@ describe('decorations: art and sizes (island/decor.ts)', () => {
     // facing 0 is art (the tray's icon); every facing a 3D model (the 3D island draws them), its box in models.json
     const bad: string[] = [];
     for (const k of DECOR_ART) if (!(k.endsWith('-0') ? art(k) : PLACES[k as keyof typeof PLACES]) || !(k in MODELS.keys)) bad.push(k);
-    // (a pack's kinds have no renders: every facing a model's key, its look's box the model's)
-    for (const i of DECOR_KINDS) for (const f of [0, 1, 2, 3]) if (!(`decor/${i}-${f}` in MODELS.keys)) bad.push(`${i}-${f}`);
+    // (a pack's kinds have no renders: its facing 0's model key, turned by its facing; its look's box the model's)
+    for (const i of DECOR_KINDS) if (!(`decor/${i}-0` in MODELS.keys)) bad.push(`${i}-0`);
     for (const i of DECOR_KINDS) {
       const d = kindDef(i)!, hs = ([0, 1, 2, 3] as const).map((f) => decorH(i, f));
       // (a long piece seen from its end at 30° up shows its length too: the crop that much taller)

@@ -157,7 +157,7 @@ the 2.0.0 export: their cards stay.
 Written by `npm run world3d-models` from assets.json (the per-key rows are in the manifest).
 
 <!-- assets:start -->
-749 keys, 474 models, 6.04 MB in all.
+629 keys, 474 models, 6.04 MB in all.
 
 | kind | keys | models | KB | loads |
 | --- | --- | --- | --- | --- |
@@ -170,7 +170,7 @@ Written by `npm run world3d-models` from assets.json (the per-key rows are in th
 | fish | 83 | 83 | 891.5 | lazily (fish) |
 | deco | 48 | 39 | 862.8 | with the island |
 | event | 6 | 6 | 115.2 | lazily (event) |
-| decor | 248 | 62 | 956.3 | with the island |
+| decor | 128 | 62 | 956.3 | with the island |
 | flower | 42 | 42 | 551.5 | with the island |
 | fruit | 4 | 4 | 47.9 | with the island |
 | fx | 15 | 15 | 45.8 | with the island |

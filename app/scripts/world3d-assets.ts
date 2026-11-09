@@ -320,12 +320,13 @@ const PACKS: Record<string, Member[]> = {
   ]
 };
 // (NH's おはなみセット, converted already with the fixed decor: the たべもの tab's too, its facings' keys on its model)
-decos.find((j) => j.name === 'deco/picnic-set')!.uses.push(...[0, 1, 2, 3].map((f): Use => ({ key: `decor/picnic-set-${f}`, cat: 'decor', s: DECOR_U, yaw: f * 90 })));
+decos.find((j) => j.name === 'deco/picnic-set')!.uses.push({ key: 'decor/picnic-set-0', cat: 'decor', s: DECOR_U });
 const packs = Object.entries(PACKS).map(([name, ms]): AssetJob => ({
   name, parts: [], uses: [],
   pack: ms.map(([id, model, tex, maxTex]) => ({
     id, parts: one(model), tex: tex ?? ftrTex(model), ...(maxTex ? { maxTex } : {}),
-    uses: [0, 1, 2, 3].map((f): Use => ({ key: `decor/${id}-${f}`, cat: 'decor', s: DECOR_U, yaw: f * 90 }))
+    // (its facing 0's key only: the island turns it by its facing, world3d/objects.ts; the first load's bytes)
+    uses: [{ key: `decor/${id}-0`, cat: 'decor', s: DECOR_U }]
   }))
 }));
 
