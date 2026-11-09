@@ -288,6 +288,18 @@ describe('practiceDeck', () => {
     expect(deal(first).answer).not.toBe(deal(second).answer);
     expect(deal(second).choices[deal(second).answer]).toBe(lone.choices[lone.answer]);
   });
+  it('a stand-in never double-steps a card, and an item with a card of its own stands in for none', () => {
+    const x1 = 'w1-right', [x2, y] = BANK.filter((it) => isSibling(entryOf(x1)!, entryOf(it.id)!)).map((i) => i.id);
+    expect(isSibling(entryOf(x2)!, entryOf(y)!)).toBe(true);
+    const a = (id: string, ok: boolean, d: string, p = false): Answer => ({ id, ok, pick: ok ? 0 : 1, rp: 0, d, g: `g${d}${p}`, lv: 1, p });
+    // x1 missed and then right (box 1), x2 missed once (box 0): both due by the 3rd
+    const base = [a(x1, false, '2026-10-20'), a(x1, true, '2026-10-21'), a(x2, false, '2026-11-01')];
+    // y (no card) stands in for x2, then x2 itself is asked: one step, not two
+    expect(cardsOf([...base, a(y, true, '2026-11-03', true), a(x2, true, '2026-11-03', true)]).items.get(x2)!.box).toBe(1);
+    // x2 right on the 2nd (box 1, due the 3rd), practised again that day: it steps x1 not at all
+    const held = [...base, a(x2, true, '2026-11-02')];
+    expect(cardsOf([...held, a(x2, true, '2026-11-02', true)]).items.get(x1)).toEqual(cardsOf(held).items.get(x1));
+  });
   it('narrows to a focus', () => {
     const num = practiceDeck({ answers, stats, today: TODAY, seed: 3, levels: LV, focus: { skill: 'num' } });
     expect(num.every((it) => it.type === 'num')).toBe(true);
