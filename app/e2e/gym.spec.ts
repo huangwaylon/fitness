@@ -144,6 +144,26 @@ async function rep(page: Page, slot: string, id: string) {
   expect(Math.max(...spans), 'the hands on the grip').toBeLessThan(GRIP);
 }
 
+test('the guest uses the gym as a member does: its 3D villager does pull-ups; one with no 3D model (マーティー) does them as its card', async ({ page }) => {
+  await open(page, '&as=G');
+  const d = (await geo(page)).DECOR_SLOTS.find((s) => s.id === 'pullup')!;
+  await camTo(page, d.z - 110);
+  await tapOn(page, page.locator('[data-sit="pullup"]'));
+  await expect.poll(() => v3(page, 'mine'), { timeout: 15_000 }).toBe('pullup');
+  // a villager with no model of its own (villagers.json none): drawn as its card, which does pull-ups at the bar
+  const st = page.locator('dialog[open]').first();
+  await fromMenu(page, 'settings');
+  await st.locator('[data-push=look]').click();
+  await st.locator('[data-look-tab=villager]').click();
+  await st.getByRole('searchbox').fill('マーティー');
+  await st.getByRole('radio', { name: 'マーティー' }).click();
+  await st.locator('.titlebar .back').click();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('[data-actor="mine"]')).toHaveAttribute('data-gym', 'pullup');
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __villagers3: { model(s: string): string | null } }).__villagers3.model('mine')), { timeout: 10_000 }).toBeNull();
+  if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/gym-guest-card.png` });
+});
+
 for (const who of ['a human player', 'a villager'] as const) test(`the weight bench, ${who} on it: lying down, the gym's barbell takes the small bar's place and is pressed in the hands (on both phones); getting up racks the small bar`, async ({ browser }) => {
   test.setTimeout(90_000);
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });

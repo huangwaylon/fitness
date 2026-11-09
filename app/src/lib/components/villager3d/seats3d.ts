@@ -57,6 +57,8 @@ export interface Place {
   s: number;
 }
 
+/** What one does on an island piece of the gym (by its model name: the layout's kind), or null: not the gym's. */
+export const useOf = (key: string): Use | null => D.island[key]?.use ?? null;
 /** The shape of a piece: the tent's by item code, the island's by model name. */
 export const shapeOf = (where: 'tent' | 'island', key: string): Shape | null => D[where][key] ?? null;
 

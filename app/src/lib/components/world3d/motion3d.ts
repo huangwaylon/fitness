@@ -1,6 +1,7 @@
 // A villager card's pose in 3D (cards.ts): the director's motions (reactions.ts, the 2D island's CSS keyframes) as a
 // lift, a squash and a tilt over the motion's time, plus the walk's trot, the idle bob and a sleeper's breathing. Pure.
 import { MOTION_MS, type Motion } from '../motion/reactions.ts';
+import type { GymUse } from '../villager3d/poses.ts';
 
 export interface Pose {
   lift: number;
@@ -41,4 +42,25 @@ export function idlePose(t: number, walking: boolean, asleep: boolean, stepMs: n
   }
   if (asleep) return { lift: 0, squash: 0.025 * S(t / 1400 + seed), tilt: 0 };
   return { lift: 0, squash: 0.014 * S(t / 650 + seed), tilt: 0 };
+}
+
+const PULL_MS = 4200;
+/** The pull-up bar's two reps a cycle (IslandScene's keyframes): up at 8–16 % and 40–48 % of it (u). */
+export function pullLift(t: number): number {
+  const k = (t % PULL_MS) / PULL_MS, up = (a: number, b: number, c: number, d: number) => (k < a || k > d ? 0 : k < b ? (k - a) / (b - a) : k <= c ? 1 : (d - k) / (d - c));
+  return 9 * Math.max(up(0, 0.08, 0.16, 0.24), up(0.32, 0.4, 0.48, 0.56));
+}
+
+/** A card (a villager with no 3D model) using a piece of the gym at time `t` (ms): its own rhythm for each use, as the
+ *  3D villager's pose would (poses.ts): pull-ups lift it, the treadmill a quick trot, the bike a seated bob, the bag
+ *  jabs, the ball a slow bounce, the bench a lying press. */
+export function gymPose(use: GymUse, t: number): Pose {
+  switch (use) {
+    case 'pullup': return { lift: pullLift(t), squash: 0, tilt: 0 };
+    case 'run': { const ph = t / 110; return { lift: Math.abs(S(ph)) * 4, squash: 0, tilt: S(ph) * 0.05 }; }
+    case 'pedal': { const ph = t / 170; return { lift: Math.abs(S(ph)) * 2.5, squash: 0, tilt: S(ph) * 0.04 }; }
+    case 'punch': return { lift: 0, squash: 0, tilt: Math.max(0, S(t / 140)) * 0.16 };
+    case 'bounce': return { lift: Math.abs(S(t / 330)) * 7, squash: 0.06 * Math.max(0, -Math.cos((2 * t) / 330)), tilt: 0 };
+    case 'press': return { lift: 0, squash: 0.08 * S(t / 450), tilt: 0 };
+  }
 }
