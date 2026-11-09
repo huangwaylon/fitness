@@ -5,6 +5,7 @@
   import type { Component } from 'svelte';
   import type { QuizGame } from '../game.svelte.ts';
   import { cardKind, type CardKind } from '#lib/kikimimi/games/lesson/recipe.ts';
+  import Lazy from '#lib/components/ui/Lazy.svelte';
   import Play from '../Play.svelte';
   import { cardGame } from './board.ts';
 
@@ -13,23 +14,15 @@
   const kind = $derived(it ? cardKind(it) : null);
   const card = $derived(cardGame(game));
 
-  type Page = Promise<{ default: Component<{ game: QuizGame }> }>;
-  const PAGES: Record<CardKind, () => Page> = {
+  const PAGES: Record<CardKind, () => Promise<{ default: Component<{ game: QuizGame }> }>> = {
     tile: () => import('../tile/TilePlay.svelte'),
     call: () => import('../call/CallPlay.svelte'),
     tachi: () => import('../tachi/TachiPlay.svelte')
   };
-  /** Each page's chunk, one promise (the {#await} keeps it from round to round). */
-  const LOADED = new Map<CardKind, Page>();
-  const page = (k: CardKind): Page => {
-    let p = LOADED.get(k);
-    if (!p) LOADED.set(k, (p = PAGES[k]()));
-    return p;
-  };
 </script>
 
 {#if kind}
-  {#await page(kind) then { default: Page }}<Page game={card} />{/await}
+  {#key kind}<Lazy load={PAGES[kind]}>{#snippet children(Page)}<Page game={card} />{/snippet}</Lazy>{/key}
 {:else}
   <Play {game} />
 {/if}
