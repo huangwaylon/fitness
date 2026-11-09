@@ -20,6 +20,21 @@ const { person3 } = await import('./person3d.ts');
 const DIRS = { villagers: '/room/villagers3d/', player: '/room/player/' };
 
 describe('person3d: who draws a person', () => {
+  it('every look one can pick is drawable in every scene: a 3D model, else (a villager with none) its render as a card', async () => {
+    const { ROSTER } = await import('#lib/villagers/roster.ts');
+    const { art, villagerArt } = await import('#lib/art.ts');
+    const cards: string[] = [];
+    for (const id of Object.keys(ROSTER)) {
+      const p = person3('G', { kind: 'villager', villager: id }, id, DIRS);
+      expect(p.villager, id).toBe(id);
+      if (!p.has3d) (expect(art(villagerArt(id)), `${id}: no model and no render`).not.toBeNull(), cards.push(id));
+    }
+    // the guest's マーティー among them (the island, the museum and the tent draw these as their card)
+    expect(cards).toContain('marty');
+    // a player look always has its 3D player (its parts: look/closet.test, player3d/parts.test)
+    expect(person3('G', resolveLook({}, 'A'), null, DIRS).has3d).toBe(true);
+  });
+
   it('a villager look draws the villager pref, or the person’s default villager', () => {
     expect(person3('A', { kind: 'villager', villager: 'bob' }, 'bob', DIRS)).toMatchObject({ key: 'v:bob', kind: 'villager', villager: 'bob', has3d: true });
     expect(person3('G', resolveLook({}, 'G'), null, DIRS)).toMatchObject({ key: 'v:judy', villager: 'judy' });

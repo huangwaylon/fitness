@@ -524,7 +524,7 @@ the camera, the frames), `island/Scenery.svelte`, `e2e/world.spec.ts`, `e2e/worl
   slower than 60 px/s on screen, or off it, is ambience: `world3d/pace.ts`), and the World steps itself on the game's
   clock when no frame has (camera.svelte.ts `simTick`). The ground and the water are the layout's (`terrain.ts`
   buildGround with NH's textures, `water.ts`); the objects `objects.ts` placeObjects; the villagers and the day's
-  visitor NH's models (`villagers.ts`, villager3d/: a villager with none is its render's card); the lights `lights.ts`;
+  visitor NH's models (`villagers.ts`, villager3d/: a villager with none is its render's card, on the island, in the tent and the museum: `person3d.test.ts` checks every pickable look draws); the lights `lights.ts`;
   the finger `gestures.ts`. The camera's ends come from the layout's extent. `window.__world3d` (stats, view, go,
   client, ground, where, focus, xRoom, strays, alphaBlends, away, lamps, precip) serves the e2e: `stats().why` names the
   parts that wanted the last frame, `stats().paused` is true under a sheet.
