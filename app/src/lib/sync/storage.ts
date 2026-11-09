@@ -155,6 +155,8 @@ export const DEVICE = {
   /** localStorage: `{[who]: [itemId, day][]}`: よみきき サンド's まだ on this phone, folded in as "hard" (kikimimi/srs.ts
    *  madaOf; no row, nothing on the wire; the newest 200 a player). */
   kikiMada: 'island.kikiMada',
+  /** localStorage: `1`: 音の へんしん's dictation answered with tiles on this phone (none: typed; docs/kikimimi.md "音の へんしん"). */
+  kikiTiles: 'island.kikiTiles',
   /** localStorage: `{ on, be }`: ききみみ's mic on this phone (off by default; lib/mic/pick.ts MicPrefs: the switch and
    *  the 音声認識 picked, `auto` by default). Never synced; no recording is ever kept (docs/kikimimi-mic.md "The privacy rule"). */
   mic: 'island.mic',

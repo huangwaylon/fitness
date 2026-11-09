@@ -42,6 +42,9 @@
 // The listening kinds (ことば タイル, ようじ でんわ, たちぎき; content/listen/*.yaml, listen.ts): a tile's clip is its id, a
 // call's or たちぎき's lines `<item>-<n>` (a call's `me` in the file's cast.me), at their stage's level (S1 かわ → 3), a
 // call's lines in its phone band; a draft file only under --only. A derived tile plays its bank item's clip.
+// 音の へんしん's phrases (level 8, content/henshin.ts): the natural clip (`tts`), a careful take `<id>-c` (speech.ts
+// carefulText: the focus in full, its words apart) through the same gate, and `<id>-f`, the natural take that passed
+// sped up by FAST (atempo, as スピード はしご's rungs; whisper hears it, a mishearing flagged, never re-rolled).
 // はつおん's pairs (content/mic/pairs.yaml): each word alone (`<pair>-1`, `<pair>-2`) at level 3, in its pair's own pack.
 // The bedtime serials (おやすみ ものがたり, content/listen/story/, story.ts): each segment a clip (`<chapter>-<n>`), the
 // narrator's voice or the villager's CAST voice, as spoken (no tempo change: the engine has no pace setting), no
@@ -70,7 +73,7 @@ import { clipItems, type Accent, type CastId, type Item } from '../src/lib/kikim
 import { AUTHORED as ITEMS } from '../src/lib/kikimimi/source.ts';
 import { ROSTER } from '../src/lib/villagers/roster.ts';
 import type { Clip } from '../src/lib/kikimimi/clips.ts';
-import { CAST_IDS, castOf, spokenText } from '../src/lib/kikimimi/speech.ts';
+import { CAST_IDS, carefulText, castOf, spokenText } from '../src/lib/kikimimi/speech.ts';
 import { codecArgs, condOf, condPlan, condSource, dropGaps, dropOut, stepFilter, type CondPlan, type Step } from '../src/lib/kikimimi/conditions.ts';
 import type { Bed } from '../src/lib/kikimimi/bank.ts';
 import { SR, chime, convolve, filter, gain, impulse, lufs, noise, readPcm, writeWav } from './tts/dsp.ts';
@@ -96,6 +99,18 @@ const EVAL = process.env.KIKIMIMI_TTS_EVAL;
 
 /** Bump to re-speak everything after a change to the processing below (neural engines; `say` keeps v1's hashes). */
 const PIPELINE = 2;
+/** 音の へんしん's fast take: the natural one at this tempo (atempo 1.25 kept UTMOS at 4.12 on the ladders' takes). */
+const FAST = 1.25;
+/** Bump to re-make every fast take after a change to how it's made. */
+const FAST_V = 1;
+/** A つながる 音 phrase's careful take as an item of its own (`<id>-c`: its careful text, no `hs`); none for any other. */
+function carefulItems(it: Item): Item[] {
+  if (!it.hs) return [];
+  const { hs: _, ...rest } = it;
+  return [{ ...rest, id: `${it.id}-c`, tts: carefulText(it) }];
+}
+/** A fast take's source hash: its natural take's master, the tempo and its version. */
+const fastSrc = (master: string) => sha(JSON.stringify([master, FAST, STRETCH, FAST_V]), 10);
 const SLOW = 0.75;
 const hasSlow = (it: Item): boolean => it.lv <= 2;
 
@@ -221,7 +236,7 @@ function engines(spec: string): Record<Accent, Engine> {
 const ENGINE = engines(opt('--engine') ?? 'qwen3');
 const SAY = ENGINE.us === 'say';
 if (SAY && (ENGINE.uk !== 'say' || ENGINE.au !== 'say')) throw new Error('--engine say is all or nothing');
-const LEVELS = (opt('--levels') ?? (SAY ? '1,2,3' : '1,2,3,4,5,6,7')).split(',').map(Number);
+const LEVELS = (opt('--levels') ?? (SAY ? '1,2,3' : '1,2,3,4,5,6,7,8')).split(',').map(Number);
 if (SAY && LEVELS.some((lv) => lv > 3)) throw new Error('levels 4-7 are never spoken by say (docs/curriculum.md "Audio and script rules")');
 
 const SCRATCH = opt('--out') ? resolve(opt('--out')!) : null;
@@ -249,7 +264,9 @@ const PAIR_ITEMS = PAIRS && (only || PAIRS.status !== 'draft') ? pairClipItems(P
 /** One entry per clip: an item, or each line of a dialogue as its own (bank.ts clipItems: `<item>-<n>`); the bank's
  *  items, then the units' own (app/content/units/*.yaml, inline: same cast, `tts`, conditions and beds; their ids are
  *  never the bank's: units.ts checkUnits), the listening kinds', then the stories' segments. */
-const ALL: readonly Item[] = [...[...ITEMS, ...unitItems()].flatMap(clipItems), ...LISTEN_ITEMS, ...PAIR_ITEMS, ...STORY_ITEMS];
+const ALL: readonly Item[] = [...[...ITEMS, ...unitItems()].flatMap((it) => [...clipItems(it), ...carefulItems(it)]), ...LISTEN_ITEMS, ...PAIR_ITEMS, ...STORY_ITEMS];
+/** 音の へんしん's fast takes (`<id>-f`): made from their phrase's natural take, never spoken themselves. */
+const FAST_IDS: ReadonlySet<string> = new Set(ITEMS.filter((it) => it.hs).map((it) => `${it.id}-f`));
 const BANK = ALL.filter((it) => (STORY.has(it.id) ? !SAY : LEVELS.includes(it.lv)));
 /** スピード はしご (ladder.ts): each ladder's line spoken once (the gate as any clip's), its rungs that take stretched. */
 const LADDERS = ALL_LADDERS.filter((l) => LEVELS.includes(l.line.lv));
@@ -699,8 +716,9 @@ function run(): void {
   const fileOf = (id: string, slow = false) => join(OUT, `${id}${slow ? '-slow' : ''}.m4a`);
   const plans = BANK.filter((it) => !only || only.test(it.id)).map(planOf);
   const todo = plans.filter((p) => {
-    const files = [fileOf(p.it.id), ...(hasSlow(p.it) ? [fileOf(p.it.id, true)] : [])];
-    return flag('--force') || !old[p.it.id] || oldSrc[p.it.id] !== p.src || !files.every((f) => existsSync(f));
+    const files = [fileOf(p.it.id), ...(hasSlow(p.it) ? [fileOf(p.it.id, true)] : []), ...(p.it.hs ? [fileOf(`${p.it.id}-f`)] : [])];
+    const fast = !p.it.hs || (old[`${p.it.id}-f`] && oldSrc[`${p.it.id}-f`] === fastSrc(p.master));
+    return flag('--force') || !old[p.it.id] || oldSrc[p.it.id] !== p.src || !fast || !files.every((f) => existsSync(f));
   });
   // スピード はしご: a ladder whose rung clips are missing or out of date has its line spoken (a take already made, a
   // level-4 line's own included, comes from the raw cache) and every rung made again from it
@@ -801,7 +819,30 @@ function run(): void {
           };
         }
       }
-      const made = [...todo.map((p) => p.it.id), ...rungs.map((r) => r.id)];
+      // 音の へんしん's fast takes: the natural take that passed, sped up, then finished as any clip; whisper hears each
+      const fasts: { id: string; p: Plan }[] = [];
+      for (const p of todo.filter((x) => x.it.hs)) {
+        const t = best.get(p.it.id)!, id = `${p.it.id}-f`, wav = join(CACHE, 'work', `${id}.wav`);
+        stretch(t.wav, FAST, wav);
+        clips[id] = staged([fileOf(id)], ([f]) => {
+          finish(wav, f);
+          return { dur: duration(f), hash: sha(readFileSync(f), 8) };
+        });
+        srcs[id] = fastSrc(p.master);
+        fasts.push({ id, p });
+      }
+      if (fasts.length) {
+        const heard = py<{ hyp: string; wer: number; content: number }>('qa', 'wer', fasts.map((x) => ({ wav: fileOf(x.id), refs: [x.p.it.en, x.p.text] })));
+        for (const { id, p } of fasts) {
+          const t = best.get(p.it.id)!, h = heard[fileOf(id)], dur = clips[id].dur, words = p.text.match(/[A-Za-z']+/g)?.length ?? 0;
+          rows[id] = {
+            src: srcs[id], cast: p.cast, engine: p.engine, text: p.text, dur, wpm: Math.round((words / Math.max(dur - 0.06, 0.1)) * 60),
+            seed: t.seed, tries: takesOf.get(p.it.id) ?? 1, hyp: h.hyp, wer: h.wer, content: h.content, sim: t.sim, tempo: FAST,
+            flags: [...(h.content ? ['misheard'] : []), ...(t.content ? ['take-misheard'] : [])]
+          };
+        }
+      }
+      const made = [...todo.map((p) => p.it.id), ...rungs.map((r) => r.id), ...fasts.map((x) => x.id)];
       if (!flag('--no-mos')) {
         // a mixed clip's UTMOS is its clean take's (noise is the point)
         const fileFor = (id: string) => (mixed.has(id) ? best.get(id)!.m4a : fileOf(id));
@@ -813,11 +854,11 @@ function run(): void {
       }
     }
     // clips of items no longer in the bank (a whole run into the work folder only)
-    const ids = new Set([...ALL.map((it) => it.id), ...RUNG_IDS]);
+    const ids = new Set([...ALL.map((it) => it.id), ...RUNG_IDS, ...FAST_IDS]);
     for (const id of Object.keys(clips)) if (!ids.has(id)) { delete clips[id]; delete srcs[id]; }
     if (!SCRATCH && !only) {
       const want = new Set([...ALL.filter((it) => clips[it.id]).flatMap((it) => [`${it.id}.m4a`, ...(hasSlow(it) ? [`${it.id}-slow.m4a`] : [])]),
-        ...RUNG_IDS.filter((id) => clips[id]).map((id) => `${id}.m4a`)]);
+        ...[...RUNG_IDS, ...FAST_IDS].filter((id) => clips[id]).map((id) => `${id}.m4a`)]);
       for (const f of readdirSync(OUT).filter((f) => !want.has(f))) rmSync(join(OUT, f));
     }
   } finally {
@@ -849,7 +890,7 @@ function run(): void {
     clips: storyRows.length, minutes: Math.round(storyRows.reduce((s, r) => s + r.dur, 0) / 6) / 10, wpm: mean(storyRows.map((r) => r.wpm)),
     mos: mean(storyRows.map((r) => r.mos).filter((x): x is number => typeof x === 'number')), contentClean: storyRows.filter((r) => !r.content).length
   };
-  const wpm = Object.fromEntries([1, 2, 3, 4, 5, 6, 7].map((lv) => [lv, mean(Object.entries(rows).filter(([id]) => lvOf.get(id) === lv).map(([, r]) => r.wpm))]));
+  const wpm = Object.fromEntries([1, 2, 3, 4, 5, 6, 7, 8].map((lv) => [lv, mean(Object.entries(rows).filter(([id]) => lvOf.get(id) === lv).map(([, r]) => r.wpm))]));
   const summary = {
     engine: ENGINE, models: Object.fromEntries([...new Set(Object.values(ENGINE))].map((e) => [e, MODEL[e]])), pipeline: PIPELINE,
     slow: { tempo: SLOW, by: STRETCH }, l1Tempo: L1_TEMPO, at: new Date().toISOString(), wallSeconds: Math.round((Date.now() - t0) / 1000),

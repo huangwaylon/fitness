@@ -82,3 +82,14 @@ export function sayNumbers(text: string, accent: Accent = 'us'): string {
 
 /** What the engine speaks: `tts` (level 4's reductions and numbers, as written), else `en` with its numbers written out. */
 export const spokenText = (it: Pick<Item, 'en' | 'tts' | 'voice'>): string => it.tts ?? sayNumbers(it.en, it.voice);
+
+/** A つながる 音 phrase's careful take (`<id>-c`, bank.ts takeIds): `en` with its focus in full (a contraction's `full`),
+ *  the focus's words set apart by commas (a comma is a breath: curriculum.md "Audio and script rules"), so each word is
+ *  said as it's written: "Salt, and, pepper, please." beside the natural "Salt 'n pepper, please." */
+export function carefulText(it: Pick<Item, 'en' | 'focus' | 'hs' | 'voice'>): string {
+  const f = it.focus ?? '', at = f ? it.en.indexOf(f) : -1;
+  if (at < 0) throw new Error(`kikimimi: "${f}" isn't in "${it.en}"`);
+  const before = it.en.slice(0, at).replace(/([\w'])\s+$/, '$1, '), after = it.en.slice(at + f.length);
+  const words = (it.hs?.full ?? f).split(/\s+/).join(', ');
+  return sayNumbers(`${before}${words}${/^\s+[\w']/.test(after) ? ',' : ''}${after}`, it.voice);
+}

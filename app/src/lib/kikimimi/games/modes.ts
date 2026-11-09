@@ -30,4 +30,7 @@ function kuriGate(): boolean {
 export const MANE_MODE: ModeMeta = { id: 'mane', group: 'koe', icon: '🦜', mins: 2, qs: 4, coop: false, game: 'mane', requires: 'mic', gate: micOn };
 export const KURI_MODE: ModeMeta = { id: 'kuri', group: 'koe', icon: '🗣️', mins: 3, qs: 8, coop: false, game: 'kuri', requires: 'mic', gate: kuriGate };
 export const ROLE_MODE: ModeMeta = { id: 'role', group: 'together', icon: '🎭', mins: 3, qs: 0, coop: true, game: 'role', requires: 'mic', gate: micOn };
+/** 音の へんしん (docs/kikimimi.md "音の へんしん"): the daily connected-speech drill, on さくっと; no ばしょ (its phrases are
+ *  their own level, today's phenomenon the place). */
+export const HENSHIN_MODE: ModeMeta = { id: 'henshin', group: 'quick', icon: '🔗', mins: 4, qs: 8, coop: true, game: 'henshin' };
 export const PAIR_MODE: ModeMeta = { id: 'pair', group: 'koe', icon: '👄', mins: 2, qs: 8, coop: true, game: 'pair', requires: 'mic', gate: micOn };

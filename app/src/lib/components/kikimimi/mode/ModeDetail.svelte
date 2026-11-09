@@ -1,7 +1,8 @@
 <script lang="ts">
   // A mode's page (docs/kikimimi.md "Mode detail"): what it is (its subtitle, a line about it, its questions, minutes and
   // whether it can be shared), its settings (ひとこと クイズ: the ばしょ row; スピード はしご: its speeds and rule; アナウンス
-  // and the quiz: こたえる じかん; a lane's game: the places its content has, if its mode offers them, and こたえる じかん),
+  // and the quiz: こたえる じかん; a lane's game: the places its content has, if its mode offers them, and こたえる じかん; 音の
+  // へんしん: each phenomenon's standing, henshin/Mastery.svelte),
   // the volume-0 line when the sound is off, and the foot: さそう (the みんなで page, this game in it) and はじめる.
   // おさらい: a solo deck of my weak spots, はじめる alone. Entering it sets my lobby's game to the mode (a lane's: its
   // lane loaded first; a lobby kept alone: nothing on the wire). The ばしょ is おまかせ (みみ チェック's placed stage:
@@ -21,6 +22,8 @@
   import TimerRow from './TimerRow.svelte';
   import LadderSteps from '../LadderSteps.svelte';
   import { sound } from '#lib/sound/sound.svelte.ts';
+  import Lazy from '#lib/components/ui/Lazy.svelte';
+  import { HENSHIN_LV } from '#lib/kikimimi/bank.ts';
   import { t } from '#lib/i18n/index.ts';
 
   let { game, m, oninvite, onpractice }: { game: QuizGame; m: ModeId; oninvite: () => void; onpractice: () => void } = $props();
@@ -88,6 +91,10 @@
       <LadderSteps size="big" step={(k) => (k === SPEEDS.length - 1 ? 'up' : 'soft')} />
       <p class="hint">{t('kiki.ladderRule')}</p>
     </section>
+  {:else if m === 'henshin'}
+    <Lazy load={() => import('../henshin/Mastery.svelte')}>{#snippet children(Mastery)}
+      <Mastery onpick={() => game.setGame('henshin', { lv: HENSHIN_LV, timer: v.timer })} />
+    {/snippet}</Lazy>
   {:else if m === 'review' && due}
     <p class="hint" data-kiki-review-due>{t('kiki.review.picked', { n: due })}</p>
   {/if}

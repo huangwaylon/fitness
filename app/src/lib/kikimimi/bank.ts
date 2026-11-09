@@ -21,6 +21,8 @@ export const DIALOGUE_TYPES: readonly ItemType[] = ['gist', 'next'];
  *  phone menus through their channels, about level 4's band), 6 やま and 7 ほし (content/: the stages above level 4), 8
  *  room for the next. */
 export type Level = QuizLv;
+/** 音の へんしん's phrases' level (kikimimi/henshin.ts): never a quiz level (no mix), nor a place, nor on the ability's scale. */
+export const HENSHIN_LV: Level = 8;
 export type Accent = 'us' | 'uk' | 'au';
 /** A level's place on the stages' ladder (progress.ts difficulty, advice.ts nudges): 1-4 themselves; 5, the アナウンス
  *  pack, sits beside level 4 (its band, B1+ → B2), never above it; 6 (やま) and 7 (ほし) the next steps, 5 and 6. */
@@ -57,7 +59,8 @@ export interface Tags {
  *  purpose (やま and ほし only, about a tenth of each, standard English without slang; American is the default). */
 export type Feature = 'contraction' | 'weak-form' | 'flap' | 'yod' | 'gonna' | 'wanna' | 'gotta' | 'lemme' | 'dunno' | 'kinda' |
   'can-cant' | 't-glottal' | 'teen-ty' | 'self-repair' | 'numbers' | 'ellipsis' | 'idiom' | 'intonation' |
-  'l-r' | 'vowel' | 'b-v' | 'th' | 'sh-s' | 'f-h' | 'ending' | 'katakana' | 'contrast' | 'clock' | 'accent-exposure';
+  'l-r' | 'vowel' | 'b-v' | 'th' | 'sh-s' | 'f-h' | 'ending' | 'katakana' | 'contrast' | 'clock' | 'accent-exposure' |
+  'elision' | 'linking' | 'h-drop' | 'chain';
 
 /** A dialogue's line: who says it (their cast voice), what's shown and its Japanese, what's spoken when it differs. Each
  *  line is its own clip (clipIds: `<item>-<n>`, or its own `clip`). */
@@ -128,6 +131,11 @@ export interface Item {
   /** A スピード はしご rung (ladder.ts): its ladder, its place on it (1-4) and its speed (× natural speech). Its clip is
    *  the ladder's line at that speed (its id, `<ladder>-<n>`). Never in BANK. */
   rung?: Rung;
+  /** A つながる 音 phrase (level 8, 音の へんしん: docs/kikimimi.md "音の へんしん"): its focus as said (`red`, "whaddaya"
+   *  for "what do you") and, when the focus is a contraction, its full form (`full`, I'll → "I will"). Besides its
+   *  natural clip (`tts`) it has a careful take (`<id>-c`: speech.ts carefulText) and a fast one (`<id>-f`, the natural
+   *  take sped up): takeIds. */
+  hs?: { red: string; full?: string };
 }
 
 /** An item as the index knows it (pool.ts ENTRIES, without loading its level): what きろく's stats, the advice and
@@ -188,6 +196,9 @@ export const isDialogue = (it: Pick<Item, 'lines'>): it is Item & { lines: reado
 
 /** An item's clip ids: its own id, or a dialogue's one per line, `<id>-<n>` (n from 1) unless the line names its own. */
 export const clipIds = (it: Pick<Item, 'id' | 'lines'>): string[] => (isDialogue(it) ? it.lines.map((l, n) => l.clip ?? `${it.id}-${n + 1}`) : [it.id]);
+
+/** Every take an item has: its clips, and a つながる 音 phrase's careful and fast ones (`<id>-c`, `<id>-f`). */
+export const takeIds = (it: Pick<Item, 'id' | 'lines' | 'hs'>): string[] => (it.hs ? [it.id, `${it.id}-c`, `${it.id}-f`] : clipIds(it));
 
 /** What the audio script speaks, one item per clip (scripts/kikimimi-audio.ts maps it over the bank; here, not in clips.ts, so
  *  the script needn't load clips.json): the item itself,

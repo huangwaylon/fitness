@@ -11,7 +11,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { clipIds } from '../src/lib/kikimimi/bank.ts';
+import { clipIds, takeIds } from '../src/lib/kikimimi/bank.ts';
 import type { Clip } from '../src/lib/kikimimi/clips.ts';
 import { readListen, readPairs, readStories, readUnits } from '../src/lib/kikimimi/compile.ts';
 import { PAIR_UNIT, pairClipItems } from '../src/lib/kikimimi/games/pair/pairs.ts';
@@ -48,7 +48,7 @@ function homes(clips: Readonly<Record<string, Clip>>): Map<string, string[]> {
   // the bank for these clips, not the module's BANK (clips.json at import): the audio script packs a waiting set's
   // items in the run that voices them
   const bank = joined(clips);
-  for (const lv of [...new Set(bank.map((it) => it.lv))].sort((a, b) => a - b)) for (const it of bank.filter((x) => x.lv === lv)) for (const id of clipIds(it)) add(`lv${lv}`, id);
+  for (const lv of [...new Set(bank.map((it) => it.lv))].sort((a, b) => a - b)) for (const it of bank.filter((x) => x.lv === lv)) for (const id of takeIds(it)) add(`lv${lv}`, id);
   for (const l of LADDERS) for (const r of l.rungs) add('ladder', r.id);
   for (const { raw } of readUnits()) {
     const u = raw as { unit: string; items?: { id: string; lines?: unknown[] }[] };

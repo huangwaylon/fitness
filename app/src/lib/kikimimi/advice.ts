@@ -3,7 +3,7 @@
 // numbers; the UI words them (i18n kiki.rec.*, kiki.fb.*). Pure.
 import { levelRank, type Accent, type Level } from './bank.ts';
 import type { Game, Speed, Stats } from './progress.ts';
-import { MIN_SHOWN, isLadderGame } from './progress.ts';
+import { MIN_SHOWN, offTrend } from './progress.ts';
 import { entryOf } from './pool.ts';
 import { SKILLS, featureSkill, skillsOf, tagsOf, type Skill } from './tags.ts';
 
@@ -63,7 +63,7 @@ export function recommend(o: {
     const m = stats.skills[s].m!;
     if (m < WEAK || (i === 0 && m < STRONG)) out.push({ kind: 'skill', skill: s, m });
   });
-  const normal = games.filter((g) => !g.p && !isLadderGame(g));
+  const normal = games.filter((g) => !g.p && !offTrend(g));
   const lv = normal.at(-1)?.lv as Level | undefined;
   if (lv !== undefined) {
     const last = normal.filter((g) => g.lv === lv).slice(-3);

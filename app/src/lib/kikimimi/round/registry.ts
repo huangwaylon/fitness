@@ -25,7 +25,8 @@ import { ladderLane } from '../games/ladder/lane.ts';
 import { lessonLane } from '../games/lesson/lane.ts';
 import { taikaiLane } from '../games/taikai/lane.ts';
 import { checkLane } from '../games/check/lane.ts';
-import { KURI_MODE, MANE_MODE, PAIR_MODE, ROLE_MODE } from '../games/modes.ts';
+import { HENSHIN_MODE, KURI_MODE, MANE_MODE, PAIR_MODE, ROLE_MODE } from '../games/modes.ts';
+import { HENSHIN_LV } from '../bank.ts';
 
 /** A game's deck as the phone names it: its game, seed, options (as on the wire), unit and items' ids (an `open`'s). */
 export interface DeckOf {
@@ -66,7 +67,7 @@ export interface Lane<O = any> {
   /** A lobby's options from its page's picks (a place's level, こたえる じかん) and my comfortable level (a host's tier);
    *  none: `[lv, timer]` (quizOpts). They lead with those two as the quiz's do (the lobby's view reads its level and timer
    *  from them), a game's own after. */
-  opts?(p: { lv: number; timer: QuizTimer; level?: number | null }): number[];
+  opts?(p: { lv: number; timer: QuizTimer; level?: number | null; focus?: number | null }): number[];
   /** My answers of its game as my `listen` row's (components/kikimimi/recorder.ts), when they aren't choices (else
    *  progress.ts listenAnswers): from the view (my options, seed, raw answers, the rounds I had), its items and my
    *  replays; the row carries its `gm`. */
@@ -103,6 +104,7 @@ const LATER: Readonly<Record<GameId, Later>> = {
   kuri: { lane: () => import('../games/kuri/lane.ts'), content: () => true, mode: KURI_MODE },
   role: { lane: () => import('../games/role/lane.ts'), content: () => true, mode: ROLE_MODE },
   pair: { lane: () => import('../games/pair/lane.ts'), content: () => !!INDEX.units['mic-pairs'], mode: PAIR_MODE },
+  henshin: { lane: () => import('../games/henshin/lane.ts'), content: () => (INDEX.units[HENSHIN_LV]?.n ?? 0) >= 12, mode: HENSHIN_MODE },
 };
 
 /** The levels of the places a game's listened files are at (catalog.ts contentLevels over this build's index). */
@@ -116,7 +118,7 @@ export function levelFor(gm: GameId, want: number, listen: Readonly<Record<strin
 }
 
 /** A lobby's options for a lane's game from the picks (Lane.opts, else the quiz's `[lv, timer]`). */
-export const laneOpts = (lane: Lane, p: { lv: number; timer: QuizTimer; level?: number | null }): number[] =>
+export const laneOpts = (lane: Lane, p: { lv: number; timer: QuizTimer; level?: number | null; focus?: number | null }): number[] =>
   lane.opts?.(p) ?? quizOpts.encode({ lv: p.lv as QuizLv, timer: p.timer });
 
 export class Registry {

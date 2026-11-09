@@ -9,7 +9,7 @@ import type { LocalDate, Who } from '../types.ts';
 import type { KV } from '../sync/storage.ts';
 import { DEVICE, readJson, writeJson } from '../sync/storage.ts';
 import { firstListenRight } from '../contract/listen.ts';
-import type { Accent, Entry, Feature, Item, Level } from './bank.ts';
+import { HENSHIN_LV, type Accent, type Entry, type Feature, type Item, type Level } from './bank.ts';
 import { rotateChoices, shuffleChoices } from './bank.ts';
 import { ENTRIES, entryOf, itemOf } from './pool.ts';
 import { agesOf, staleness, type Recent } from './recent.ts';
@@ -147,12 +147,16 @@ const DUE_MAX = 4;
  * last games: recent.ts; and answered in the last 2 days), then the nearest the 75-85 % I should get right (progress.ts
  * chanceOf, the learned difficulty). Choices shuffled by `seed`, as deck() does; deterministic. The picks are the
  * index's (`ids`); `deal` (once) makes the deck of them from their items as authored (their levels loaded: pool.ts loadIds).
+ * 音の へんしん's phrases (level 8) join only as due cards, each through another phrase of its phenomenon.
  */
 export function practicePicks(o: PracticeOpts): { ids: string[]; deal: (item: (id: string) => Item | undefined) => Item[] } {
   const r = mulberry32(o.seed >>> 0);
   const t = dayNum(o.today);
   const focus = o.focus ?? null;
   const pool = shuffle(ENTRIES.filter((it) => o.levels.includes(it.lv) && drawn(it, MIX) && fits(it, focus)), r);
+  // 音の へんしん's phrases (level 8: no level's mix) come back only as due cards, each through another phrase of its
+  // phenomenon where there is one (isSibling: the same level, type and first feature; another voice and sentence)
+  const drill = shuffle(ENTRIES.filter((it) => it.lv === HENSHIN_LV && fits(it, focus)), mulberry32((o.seed ^ 0x8e5) >>> 0));
   const cards = cardsOf(o.answers, undefined, o.mada);
   const lastSeen = new Map<string, number>();
   for (const a of o.answers) lastSeen.set(a.id, dayNum(a.d));
@@ -165,12 +169,12 @@ export function practicePicks(o: PracticeOpts): { ids: string[]; deal: (item: (i
   };
   // 1. due item cards, through a sibling where there is one (the same skill, the same template first, then the most
   //    features shared, then the rank), else again with the choices rotated
-  const dueItems = pool.filter((it) => (cards.items.get(it.id)?.due ?? Infinity) <= t)
+  const dueItems = [...pool, ...drill].filter((it) => (cards.items.get(it.id)?.due ?? Infinity) <= t)
     .sort((a, b) => cards.items.get(a.id)!.box - cards.items.get(b.id)!.box || cards.items.get(a.id)!.due - cards.items.get(b.id)!.due);
   const again = new Map<string, number>();
   const shared = (x: Entry, y: Entry) => (familyOf(x) === familyOf(y) ? 10 : 0) + tagsOf(y).features.filter((f) => tagsOf(x).features.includes(f)).length;
   for (const it of dueItems.slice(0, DUE_MAX)) {
-    const sib = pool.filter((y) => !taken.has(y.id) && !cards.items.has(y.id) && isSibling(it, y)).sort((a, b) => shared(it, b) - shared(it, a) || rank(a) - rank(b))[0];
+    const sib = (it.lv === HENSHIN_LV ? drill : pool).filter((y) => !taken.has(y.id) && !cards.items.has(y.id) && isSibling(it, y)).sort((a, b) => shared(it, b) - shared(it, a) || rank(a) - rank(b))[0];
     if (sib) take(sib);
     else {
       take(it);

@@ -13,6 +13,7 @@ import * as yamaB from './yama-b.ts';
 import * as hoshi from './hoshi.ts';
 import * as variety from './variety.ts';
 import * as kawaB from './kawa-b.ts';
+import * as henshin from './henshin.ts';
 
 /** Each set's single items and dialogues, by name (content/sets.test.ts checks each set's own rules). */
 export const SETS: Readonly<Record<string, { items: readonly Item[]; dialogues: readonly Item[]; family?: Readonly<Record<string, string>> }>> = {
@@ -28,8 +29,10 @@ export const SETS: Readonly<Record<string, { items: readonly Item[]; dialogues: 
 
 /** The sets written after their levels were offered: their items join the bank as they're voiced (source.ts joined). */
 const WAITS = ['variety-mori', 'variety-yama', 'kawa-b'];
-/** Their items' ids. */
-export const WAITING: ReadonlySet<string> = new Set(WAITS.flatMap((s) => [...SETS[s].items, ...SETS[s].dialogues].map((it) => it.id)));
+/** 音の へんしん's phrases (level 8: henshin.ts), beside the sets: a phrase joins once its three takes are made. */
+const HENSHIN: readonly Item[] = henshin.ITEMS;
+/** Their items' ids, and the phrases'. */
+export const WAITING: ReadonlySet<string> = new Set([...WAITS.flatMap((s) => [...SETS[s].items, ...SETS[s].dialogues]), ...HENSHIN].map((it) => it.id));
 
 /** A scene's noise bed. */
 const BED: Partial<Record<SceneId, Bed>> = { cafe: 'cafe', street: 'street', platform: 'station', gate: 'station' };
@@ -43,4 +46,4 @@ function withBed(it: Item): Item {
 }
 
 /** Every item of the sets, in the sets' order, each with its bed. */
-export const CONTENT: readonly Item[] = Object.values(SETS).flatMap((s) => [...s.items, ...s.dialogues]).map(withBed);
+export const CONTENT: readonly Item[] = [...Object.values(SETS).flatMap((s) => [...s.items, ...s.dialogues]).map(withBed), ...HENSHIN];

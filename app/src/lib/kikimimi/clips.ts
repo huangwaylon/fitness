@@ -4,7 +4,7 @@
 // imports clips.json whole: each level's chunk (compile.ts) carries its clips (length, hash, and where each is in its
 // pack: ChunkClip) and word timings, added here as it loads (pool.ts); components/kikimimi/packs.ts fetches and
 // slices the packs.
-import { clipIds, type Item } from './bank.ts';
+import { clipIds, takeIds, type Item } from './bank.ts';
 import { wordSpans } from './marks.ts';
 import type { PackRef } from './packing.ts';
 
@@ -61,8 +61,8 @@ export const LINE_GAP = 0.3;
  *  LINE_GAP. */
 export const lineGaps = (it: Pick<Item, 'lines'>): number[] => ((it.lines ?? []) as readonly { at?: number }[]).slice(1).map((l) => (typeof l.at === 'number' ? l.at : LINE_GAP));
 
-/** Whether every clip of an item exists (in `clips`: clips.json, the compiler's). */
-export const voiced = (it: Pick<Item, 'id' | 'lines'>, clips: Readonly<Record<string, unknown>>): boolean => clipIds(it).every((id) => id in clips);
+/** Whether every clip of an item exists (in `clips`: clips.json, the compiler's), a つながる 音 phrase's three takes too. */
+export const voiced = (it: Pick<Item, 'id' | 'lines' | 'hs'>, clips: Readonly<Record<string, unknown>>): boolean => takeIds(it).every((id) => id in clips);
 
 /** An item's length as played (s): its clip, or a dialogue's lines in turn, each its offset after the one before
  *  (lineGaps), to the last one's end (the session's schedule: components/kikimimi/decks.ts, a round's `play`);
