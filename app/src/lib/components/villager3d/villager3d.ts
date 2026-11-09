@@ -89,6 +89,9 @@ export interface Villager3D {
   sitAt(a: Anchor | null): void;
   /** On a seat (sitting down or seated), else null: its anchor. */
   seat(): Anchor | null;
+  /** Lying on its seat this much lower (the group's parent's units: a pod's lid shutting over it, tent/lid.ts), 0 as
+   *  the anchor has it; the next step() places it. */
+  lower(dy: number): void;
   /** On a gym piece and settled, using it (a loop, looped while it's on it): the last step() moved it for that alone
    *  (the island draws it at the ambient rate, not the full one). */
   looping(): boolean;
@@ -302,6 +305,8 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
   type Tf = { x: number; y: number; z: number; yaw: number };
   /** On a seat (since t0, from where it stood), or getting up off one (since t0). */
   let seat: { a: Anchor; t0: number; from: Tf } | null = null, leaving: { a: Anchor; t0: number; on: Tf } | null = null, fadeMs = FADE_MS;
+  /** lower()'s. */
+  let drop = 0;
   /** The last step moved it only for its gym piece's loop (looping()). */
   let loopOnly = false;
   const tfOf = (): Tf => ({ x: group.position.x, y: group.position.y, z: group.position.z, yaw: group.rotation.y });
@@ -378,6 +383,7 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
     },
     sitAt(a) {
       if (a && seat && seat.a === a) return;
+      drop = 0;
       if (a) {
         seat = { a, t0: lastT, from: leaving ? tfOf() : tfOf() };
         leaving = null;
@@ -405,6 +411,9 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
       fadeMs = SIT_MS;
     },
     seat: () => seat?.a ?? null,
+    lower(dy) {
+      drop = dy;
+    },
     looping: () => loopOnly,
     state: () => cur,
     act(a) {
@@ -541,7 +550,7 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
           moving = u < 1;
           if (!moving) leaving = null;
         }
-        group.position.set(tf.x, tf.y, tf.z);
+        group.position.set(tf.x, tf.y - (seat ? drop : 0), tf.z);
         group.rotation.set(0, tf.yaw, 0, 'YXZ');
         // a hammock's gentle sway, rolled about its length
         if (seat?.a.sway) {

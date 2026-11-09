@@ -91,6 +91,10 @@ the seat, feet down or dangling (poses.ts sitOn), or lies along the bed (a hammo
 tent's seats (`tent/seats.ts`), the museum's benches (`museum/seats.ts`) and the island's (`world3d/villagers.ts`, by
 world.ts SEATS's names) pass their anchors.
 
+A lid (`tent/lid.ts` LIDS: the cold sleep pod's, f13508): NH ships no clip, bone or shut variant (FtrSFBedS: one Root
+joint), so at load `splitLid` cuts the hood out of the body mesh (its loose parts over `over`) and puts it and the glass
+meshes under a `lid` group at the hinge; the engine turns it `shut` rad about z. No re-export.
+
 **The pose data** (`seats3d.json` `tent[code]` / `island[model]`, model units, the model's own frame: +z its front, its
 middle at 0; a new piece, like a hammock or a sleeping bag, adds one entry and needs nothing else):
 
