@@ -8,7 +8,7 @@
 //   --tier logic   (default) what the gate runs: the 3D engines draw nothing (E2E_RENDER=none), @render and
 //                  @quarantine left out
 //   --tier render  the drawn smoke: real (software) GL, only the @render and @smoke tests
-//   --tier full    everything drawn, as the nightly full tier (quarantine and @logic left out)
+//   --tier full    everything drawn, as the full drawn tier (quarantine and @logic left out)
 //   --repeat N     each test N times (--repeat-each; default 1; 5 before pushing a new or changed 3D or sync spec)
 //   --workers N    default 3 (CI's); try 6 to load the machine as a busy runner is
 //   --port P       E2E_PORT (default: a free one from 4600)

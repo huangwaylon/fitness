@@ -1,10 +1,9 @@
 # The full tier, drawn (docs/ops/testing.md "CI"): the whole suite with real (software) GL, the quarantine included,
-# nightly (02:30 Tokyo) and on demand. It gates nothing; its failures are in its summary and on their specs.
+# on demand only (a nightly run was red every night on drawn-only timings, ~140 billed min; rendering is judged on the
+# iOS Simulator and the phones, the drawn smoke runs after each deploy). It gates nothing.
 name: e2e full tier
 
 on:
-  schedule:
-    - cron: '30 17 * * *'
   workflow_dispatch:
 
 permissions:

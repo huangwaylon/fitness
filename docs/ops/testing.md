@@ -13,7 +13,7 @@ paid, and its macOS VMs draw in software too.
 |---|---|---|
 | Unit | pure rules and simulations: spawns, seeds, schedules, paths, scoring, sync merges | vitest (`src/**/*.test.ts`, ~360 files), the `unit` job |
 | Logic-mode e2e | the real app in a browser, gameplay and DOM tap areas live, the 3D engines drawing nothing | Playwright: the gate (a selection) and the full logic tier after each deploy (all) |
-| Drawn smoke | real WebGL: it draws, the camera, a tap lands on the model (`@render`, `@smoke`: ~16 tests) | after each deploy, advisory; everything drawn nightly |
+| Drawn smoke | real WebGL: it draws, the camera, a tap lands on the model (`@render`, `@smoke`: ~16 tests) | after each deploy, advisory; everything drawn on demand |
 
 - **A rule belongs in a unit test.** If an e2e asserts a rule ("four dig spots a day", "Celeste one night in ten"),
   test the function that decides it (beach.ts, critters.ts, events.ts, meteor.ts, daySeed.ts) with a seed and a date;
@@ -56,7 +56,7 @@ After a deploy, never holding one back:
 | *e2e logic full* (`e2e-logic-full.yml`) · `e2e-logic` ×6 | **the full logic tier**: every test the gate's way, the auto-quarantined too, on the deployed commit, after each green *Deploy UI* run (and on demand). Loud: a failure is an `::error` on its spec, a list in the summary, and the workflow red: the next push's to fix first |
 | · `e2e-render` | **the drawn smoke**: the `@render` and `@smoke` tests with real (software) GL, one runner; advisory (CI's SwiftShader isn't the phones' Metal: rendering is judged on the iOS Simulator and the phones) |
 | · `timings` | the tier's test times folded into `e2e/timings.json` (the `e2e-timings` artifact) and the shards' spread in the summary: when they drift apart, `npm run e2e:timings` and commit it. And **what the gate missed** (`scripts/e2e-missed.ts`): each failing spec the deployed commit's gate didn't run, with that commit's changed files: the next `e2e/impact.json` rule |
-| *e2e full tier* (`e2e-full.yml`) ×10 | **everything drawn**, nightly (02:30 Tokyo) and on demand: the whole suite with real GL (the quarantine too), one browser a runner, `E2E_SLOW=1` (a test 90 s, an expect 20 s: drawn under software GL the game itself runs slower); its failures in its summary and on their specs |
+| *e2e full tier* (`e2e-full.yml`) ×10 | **everything drawn**, on demand (no schedule: nightly it was red every night on drawn-only timings, SwiftShader's, not the phones'): the whole suite with real GL (the quarantine too), one browser a runner, `E2E_SLOW=1` (a test 90 s, an expect 20 s: drawn under software GL the game itself runs slower); its failures in its summary and on their specs |
 
 - **Red main never deploys, never older over newer, and the newest green does.** Pushes' runs overlap, never
   cancelled (cancelling older runs, nothing finished in a burst): a push's gate starts at once. Only `deploy` is one at
@@ -96,7 +96,7 @@ After a deploy, never holding one back:
   there's no retry: a flake is red.
 - **Tags** (`test('…', { tag: '@render' }, …)`): `@render` needs real drawing (draw calls, pixels, the canvas's alpha):
   the drawn smoke only, never the logic tier. `@smoke` is a whole 3D flow worth drawing too: both tiers. `@quarantine`
-  is broken: out of the gate and the full logic tier, run in the nightly drawn tier until fixed, with its owner and why
+  is broken: out of the gate and the full logic tier, run in the drawn full tier until fixed, with its owner and why
   (`annotation: { type: 'quarantine', description: 'owner: …: the rod never comes out on CI (#run)' }`). `@logic` is
   the logic tiers' only, never drawn: a timing a software-GL frame of 0.5–1 s can't meet (three quick taps within
   1.2 s, a wait sized for the game at full speed), with why in `annotation: { type: 'logic', description: 'drawn: …' }`;
