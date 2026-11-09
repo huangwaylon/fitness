@@ -63,7 +63,7 @@
   "food.loadFail": "データを読み込めませんでした（オフライン？）",
   "food.retry": "もう一度",
   "food.none": "「{q}」は見つかりませんでした",
-  "food.per100Head": "100gあたりの栄養",
+  "food.per100Head": "100{u}あたりの栄養",
   "food.perOneNut": "{u}あたりの栄養",
   "food.verified": "{n}件の資料で同じ値",
   "food.verifiedBadge": "✓ {n}件の資料で一致",
