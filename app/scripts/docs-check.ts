@@ -54,7 +54,9 @@ export function names(md: string, cited: string): boolean {
   }
   const hit = (t: string) => {
     const n = norm(t).replace(/^(§\s?)?\d+(\.\d+)*[a-z]?\.?\s+/, '');
-    return n.startsWith(c) || c.startsWith(n) || norm(t).startsWith(c);
+    // a whole-word prefix of it ("The guest" of "The guest player"), or it then a subsection ("World: lights")
+    const pre = (a: string) => a === c || (a.startsWith(c) && /^[\s:,(—–-]/.test(a.slice(c.length))) || c.startsWith(`${a}:`);
+    return pre(n) || pre(norm(t));
   };
   return o.headings.some(hit) || o.labels.some(hit) || o.anchors.has(slug(cited));
 }

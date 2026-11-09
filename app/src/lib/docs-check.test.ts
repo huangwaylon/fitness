@@ -25,10 +25,13 @@ describe('docs-check', () => {
     expect(a.has('not-a-heading')).toBe(false);
   });
 
-  it('names a heading by prefix, a bold label, or a section number', () => {
+  it('names a heading by a whole-word prefix, a bold label, or a section number; never by a longer name or a word cut', () => {
     const md = files['docs/a.md'];
-    for (const n of ['The guest', 'the guest player', 'Mic modes', '2.4', '2.4-2.6', 'Scoring']) expect(names(md, n), n).toBe(true);
-    for (const n of ['The host', '3.1', 'Settings']) expect(names(md, n), n).toBe(false);
+    for (const n of ['The guest', 'the guest', 'Mic modes', '2.4', '2.4-2.6', 'Scoring']) expect(names(md, n), n).toBe(true);
+    for (const n of ['The host', '3.1', 'Settings', 'The gu', 'the guest player', 'Scor', 'Mic mo']) expect(names(md, n), n).toBe(false);
+    // a whole-word prefix, or a heading then its subsection
+    for (const n of ['Weather', 'Weather: rain', 'Weather: rain, snow']) expect(names(files['docs/b.md'], n), n).toBe(true);
+    expect(names(files['docs/b.md'], 'Weath')).toBe(false);
   });
 
   it('tells a backticked path from code and placeholders', () => {
