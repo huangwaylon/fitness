@@ -11,6 +11,7 @@
   import { lookOf } from '#lib/store/look.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { t } from '#lib/i18n/index.ts';
+  import { phrases } from '#lib/i18n/phrases.ts';
 
   interface Props {
     text: string;
@@ -31,6 +32,7 @@
   }
   let { text, person, reaction, action, low = false, onhold, ondismiss, leaving = false }: Props = $props();
 
+  const parts = $derived(phrases(text));
   let gone = $state(false);
   let startY = 0;
 
@@ -95,7 +97,7 @@
       {:else if person}<Villager {person} size={36} head animate={false} eager />
       {:else}<Host head size={36} animate={false} eager />{/if}
     </span>
-    <span class="txt">{text}</span>
+    <span class="txt">{#each parts as ph, i (i)}{#if i}<wbr />{/if}{#each ph as p, k (k)}{#if k % 2}<span class="num">{p}</span>{:else}{p}{/if}{/each}{/each}</span>
     {#if action}<button type="button" class="act" data-sfx="undo" onclick={() => { action.run(); dismiss(); }}>{action.label}</button>
     {:else if reaction}<span class="re" aria-hidden="true"><OfficialArt key="reactions/{reaction}" size={28} eager /></span>{/if}
   </div>
@@ -104,8 +106,8 @@
 <style>
   .banner {
     position: fixed; inset: auto 0; margin: 0 auto; z-index: var(--z-toast); overflow: hidden;
-    top: calc(var(--ui-top) + 56px); height: 52px; width: min(100% - 2 * var(--side), 420px);
-    display: flex; align-items: center; gap: 10px; padding: 0 12px 0 6px; border-radius: var(--r-pill);
+    top: calc(var(--ui-top) + 56px); min-height: 52px; width: min(100% - 2 * var(--side), 420px);
+    display: flex; align-items: center; gap: 10px; padding: 6px 12px 6px 6px; border-radius: var(--r-pill);
     background: var(--c-card); color: var(--c-ink); border: 0; box-shadow: 0 var(--lip-h) 0 var(--c-lip), var(--sh-float);
     font: 700 var(--fs-body)/1.2 var(--font-ui);
     animation: in 320ms var(--ease-bounce) both;
@@ -123,16 +125,19 @@
     width: 40px; height: 40px; flex: none; border-radius: 50%; display: grid; place-items: center; overflow: hidden;
     background: color-mix(in srgb, var(--c-yuzu) 40%, var(--c-cream));
   }
-  .txt { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* The whole message, wrapped by phrase (a long one grows the banner): at its spaces and <wbr>s only (i18n/phrases.ts),
+     a number never cut */
+  .txt { flex: 1; min-width: 0; word-break: keep-all; }
+  .num { white-space: nowrap; }
   /* An undo banner: low, in the thumb zone, so it never covers the ベル row's total; its text (what was done:
-     「アイス 1,000 ベル つかいました！」) may take two lines next to the button. */
-  .banner.undo, .banner.undo:popover-open { top: auto; bottom: calc(var(--pad-bottom) + 16px); height: 56px; animation-name: up-in; }
+     「アイス 1,000 ベル つかいました！」) may take two lines or more next to the button. */
+  .banner.undo, .banner.undo:popover-open { top: auto; bottom: calc(var(--pad-bottom) + 16px); min-height: 56px; animation-name: up-in; }
   /* …but in the shop, whose うる / かう bar is in the thumb zone: high, over the counter's sign (components/shop) */
   :global(:root:has([data-shop])) .banner.undo { top: calc(var(--ui-top) + 56px); bottom: auto; animation-name: none; }
   /* …and on the island with no sheet up: over the say button at the bottom right (IslandScene .say-dock: 44px, 8px up), never on it */
   :global(:root:has(.island .say-dock):not(:has(dialog[open], [data-shop]))) .banner.undo { bottom: calc(var(--pad-bottom) + 8px + var(--hit) + 10px); }
   /* …and over a sheet's level with actions at its foot (theme.css .level-acts): above them, never on them (`over`, measured) */
-  .undo .txt { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; font-size: var(--fs-s); line-height: 1.25; }
+  .undo .txt { font-size: var(--fs-s); line-height: 1.25; }
   @keyframes up-in { from { transform: translateY(120%); opacity: 0; } to { transform: none; opacity: 1; } }
   .re { flex: none; line-height: 0; }
   /* Undo: above the dismiss layer, a 44px-tall button on the right. */

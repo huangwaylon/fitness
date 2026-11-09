@@ -1,0 +1,11 @@
+// Where a line of Japanese may wrap, by phrase (文節), for WebKit, which has no `word-break: auto-phrase`: after
+// 、。！？ and after a run of hiragana (a phrase's particle or ending) before anything else. Shown with keep-all and a
+// <wbr> between the phrases (ui/Toast.svelte): 「23個を / 5,026かいがらで / 買いました。/ 模様替えに / 入っています」, never
+// 「買いまし / た。」 or 「5, / 026」. Each phrase's numbers come apart (odd places) to be kept on one line even when a
+// phrase is wider than the line.
+const AT = /(?<=[、。！？!?])|(?<=[ぁ-ゖ])(?=[^ぁ-ゖー、。！？!?])/;
+const NUM = /(\d[\d,.]*\d)/;
+
+export function phrases(text: string): string[][] {
+  return text.split(AT).map((p) => p.split(NUM));
+}
