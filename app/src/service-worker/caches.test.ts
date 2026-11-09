@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fetchKeep, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, kikiPartOf, keepable, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgFetch, foodImgStale, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
+import { fetchKeep, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, kikiPartOf, keepable, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgFetch, foodImgStale, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, listenSlice, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -583,6 +583,13 @@ describe('ききみみ’s packs (LISTEN_CACHE, listenEvict)', () => {
     idx[`${L}lv4-2.aaaaaaaa.pak`][1] = now - min;
     idx[`${L}lv4-2.bbbbbbbb.pak`][1] = now - 2 * min;
     expect(listenEvict(idx, now)).toEqual([]);
+  });
+  it('a clip’s slice (?s=from-to) is a name of its own: its pack’s other slices are no older versions of it', () => {
+    expect(listenSlice(new URL(`${L}lv4.aaaaaaaa.pak?s=300-399`))).toEqual([300, 399]);
+    expect([listenSlice(new URL(`${L}lv4.aaaaaaaa.pak`)), listenSlice(new URL(`${L}lv4.aaaaaaaa.pak?s=9-3`))]).toEqual([null, null]);
+    const idx: RoomIndex = { [`${L}lv4.aaaaaaaa.pak?s=0-99`]: [100, now - 20 * min], [`${L}lv4.aaaaaaaa.pak?s=100-199`]: [100, now - 15 * min], [`${L}lv4.aaaaaaaa.pak`]: [1e6, now - 30 * min] };
+    expect(listenEvict(idx, now)).toEqual([]);
+    expect(listenEvict({ ...idx, [`${L}lv4.bbbbbbbb.pak?s=0-99`]: [100, now] }, now)).toEqual([`${L}lv4.aaaaaaaa.pak?s=0-99`]);
   });
 });
 
