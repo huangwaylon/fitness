@@ -807,8 +807,8 @@ in the ずかん (カタログ, レシピ). On Bunny Day a sky egg instead. The 
 picked up is gone on all, what a shake drops lies on all, each villager stands where its person sent it.
 
 - **The villagers move as one:** each of us moves our own villager; the other phones play the very same walk (same
-  start, time, way and end facing), catching up when a message is late (`island/villagerSync.ts`). Sleep too: all doze
-  off at 22:00 and wake at 05:00; a villager woken on one phone is awake on all for the same 10 s.
+  start, time, way and end facing), catching up when a message is late (`island/villagerSync.ts`). Sleep too
+  ([Sleep](#sleep)): the same villagers asleep on every phone, a wake on one is on all for the same minute.
 - **One layout, not mirrored:** A lives on the left and B on the right on every phone; every shared id is by person or
   by place (`fl:<x>:<z>`); `?demo` and `?demo&as=B` show the same island.
 - **Fishing, seen by everyone** (`e2e/fish-sync.spec.ts`): each step of a line goes to the others as it happens (`fish
@@ -821,6 +821,24 @@ picked up is gone on all, what a shake drops lies on all, each villager stands w
 - **First wins:** of two people tapping the same thing, the relay's first claim is it; the other sees it taken.
 - **Late and alone:** a phone opening later hears the day from the relay (and keeps it); with the relay unreachable each
   phone keeps its own and they catch up when it's back.
+
+### Sleep
+
+`ui-state/presence.ts`, `ui-state/cast.ts`, `island/islandLife.svelte.ts` syncSleep, `e2e/presence-sleep.spec.ts`
+([decisions](decisions.md#sleep-by-presence)). Everyone's villager (A's, B's, the guest's) is always on the island:
+**awake while its person's app is open, asleep where it stands while it's closed**, at any hour (no night's sleep).
+
+- **Online:** the relay's `here`, and for `GRACE_MS` (45 s) after a person's last socket closed (its `gone`), so a
+  reload, a moment in another app or a dropped socket doesn't put the villager to sleep. All on the relay's clock, the
+  same instant on every phone; a phone's own socket down, the last word holds till its welcome; reloaded, what it last
+  heard is kept (`scene-presence.<who>`), those here then counted as gone then.
+- **Asleep:** the zzz, in none of the island's life (ambient beats, chats and dances, the dusk meet-up, ふたりでぜんぶ,
+  the follow, group stretching: `cast.ts` islandActors, `ambient.ts` not free); those awake carry on without it.
+- **A tap wakes it** (a high-five: [Villager taps](#villager-taps)) for `WAKE_MS` (60 s) from the wake's relay time
+  (`act {act: wake, id, at}`): on every open phone, one opening meanwhile too, the same minute; it's in the island's
+  life then (not present: an outing of its own), and it sleeps where it ends up (stopped mid-walk). Each phone moves it
+  by the same seeded slots; a phone opening later puts it where its person's last walk ended.
+- **Back online:** awake where it is (no walk home: [Walking](#walking)).
 
 ### The guest
 
@@ -838,10 +856,9 @@ island, NH's way, with its own key (pairing: [runbook "Pair a phone"](ops/runboo
   and writes neither the wedding board nor a trip's notes (the record refuses those).
 - **Its villager on the island:** always there, as the members' are (the user, 2026-11-09: "go for consistency"):
   where its last walk left it (its spot by its house, or the campsite, till it has walked), its own phone opening it
-  there too. **Asleep while its app is closed** (the relay's presence: `cast.ts` guestAway, `islandLife.svelte.ts`
-  asleepNow; the night's doze and zzz, a tap wakes it for 10 s), **awake while it's open**, in the island's life then as
-  a member's villager (ambient moves, chats, ふたりでぜんぶ's walk and high-five, the dusk meet-up, group stretching),
-  never an outing of its own. It dozes 22:00–05:00 with everyone. (The members' villagers, offline, stay awake.)
+  there too. Asleep while its app is closed, awake while it's open, as everyone's ([Sleep](#sleep)); awake, in the
+  island's life as a member's villager (ambient moves, chats, ふたりでぜんぶ's walk and high-five, the dusk meet-up,
+  group stretching), never an outing of its own.
 - **On our phones:** drawn like the partner's villager (lilac name tag); a tap is a high-five; its phrases and catches
   show there. A banner: 「おきゃくさんが あそびに きたよ！」.
 - **Who counts as "the partner"** (said once): the guest only where the island's life is everyone's
@@ -850,8 +867,8 @@ island, NH's way, with its own key (pairing: [runbook "Pair a phone"](ops/runboo
   - ふたりでぜんぶ: everyone on the island walks to the middle (the guest a step in front: `wander.ts` MEET.G) and
     high-fives.
   - The follow: a member's villager comes over to mine; on the guest's phone A's or B's comes to the guest's.
-  - Ambient life (`ambient.ts`): the members' villagers and the guest's while it's awake; it shakes no tree.
-  - The goal walks and meeting a visitor: the members' own. Sleep: everyone, by the relay's clock (`act wake`, `id`).
+  - Ambient life (`ambient.ts`): every awake villager; the guest's shakes no tree.
+  - The goal walks and meeting a visitor: the members' own. Sleep: everyone's, by the relay's presence (`act wake`, `id`).
   - High-fives: one at a time per pair, each with its `to`.
 
 ### The island's layout
@@ -1019,7 +1036,7 @@ stands just in front, facing out, on every phone. The homes' rooms are the same 
   with open water between, closes in, nibbles 1–4 times, then bites (the float yanked under, NH's 「！」 over the angler).
   While the line is out any tap but a door is the reel: on the bite it catches (`BITE_WINDOW_MS` 1 s from when the bite
   shows); earlier it scares the fish; with none it comes in. The line ends by itself only through a door, when covered,
-  or at the day's turn (the night nap waits: `holdNaps`). 1 in 14 a boot, tire or can. `e2e/fishing-taps.spec.ts`:
+  or at the day's turn. 1 in 14 a boot, tire or can. `e2e/fishing-taps.spec.ts`:
   every water point on screen casts. On the 3D island (`island/glide.ts`, `world3d/things.ts`) nothing pops: shadows and
   bugs fade in and out, a fish turns to the float, bumps it, lunges, darts off (`e2e/critters3d.spec.ts`); the 3D frame
   reads plain mirrors (`mirrorFish` / `mirrorBug`), not Svelte's proxies.
@@ -1411,7 +1428,7 @@ once, one timer between them.
 `island/stretching.ts`, `island/TapeDeck.svelte`, `motion/stretch.svelte.ts`, `e2e/radio.spec.ts`. NH's tape deck (a
 fixed layout piece, NH's boom box) plays on a day either of us met 🍑 Exercise, or when the island is opened
 06:00–08:00 (`scene-stretch`). A tap plays NH's ラジオ体操 on the island's [shared stage](#shared-music) (`ev-aerobics`)
-and everyone's villager on the island (the guest's too) and an awake visitor do NH's three stretches together
+and everyone's villager awake on the island (the guest's too) and an awake visitor do NH's three stretches together
 (villager3d `warmup`, `sidebend`, `jump`) on every phone; event reactions wait (`holdEvents`). Then it's done for the
 day; any other time a tap says when it plays.
 
@@ -1506,7 +1523,7 @@ builds or with `?demo`; `?date`, `?theme` and `?season` work everywhere:
 | `?balloon`, `?fireworks`, `?shower`, `?stretch`, `?hybrid` | A balloon (`=none`: never); a show; a meteor shower's night; the tape deck; a hybrid flower |
 | `?hit` | Every tap target drawn over the island |
 | `?fpv=1\|0` | The rooms' first-person view for the tab |
-| `?awake` | The villagers never doze |
+| `?awake`, `?grace=<ms>`, `?wake=<ms>` | Everyone counts as online (no villager sleeps); the [Sleep](#sleep) grace and a tap's wake that long |
 | `?idle=none`, `?stars=none` | No idle beats; no ordinary night's shooting stars |
 | `localStorage['e2e.ambient'] = 'off'` | The e2e's ambient life off (e2e/fixtures.ts): `critter=none`, `visitor=events`, `balloon=none`, `idle=none`, `stars=none` unless the URL sets them |
 | `?relay=<wss url>&key=<key>` | The demo over a real relay (`e2e/sync-harness.spec.ts`) |
@@ -1554,7 +1571,7 @@ Anywhere: `?panel=rewards` opens ごほうび at once; the 3D island's renderer 
   `playPartner`); only a phone opening, or the island hidden, puts it there.
 - **The camera never moves for a walk:** only the finger scrolls.
 - **A phone gone** (closed, hidden, offline, for any time): its villager stays where its last walk ended, on every phone
-  (the relay carries each person's last walk into each new day). The guest's too, asleep there ([The guest](#the-guest)).
+  (the relay carries each person's last walk into each new day), asleep there ([Sleep](#sleep)).
 - **Sheets and hiding:** a sheet stops everyone; uncovered, the outings wander back; hidden over 30 s, they're back on
   return. A balloon opens only over a villager standing still.
 - **Walk mask** (`walkGeo`): land, the bridge's deck and the stairs; not water, cliffs, footprints, trunks, the rock,

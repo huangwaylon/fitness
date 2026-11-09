@@ -18,7 +18,7 @@
   import { showAt } from './fireworks.ts';
   import { hook, hookFlag, hooksOn } from './devHooks.ts';
   import type { PersonId, WeekView, Who } from '#lib/types.ts';
-  import { actorOf, castMe, guestPhone, setCast, setGuestHere, whoOf, type VillagerActor } from '#lib/ui-state/cast.ts';
+  import { actorOf, castMe, guestPhone, islandActors, keepSeen, setCast, setPresence, setPresenceClock, whoOf, type VillagerActor } from '#lib/ui-state/cast.ts';
   import Villager from '../characters/Villager.svelte';
   import Avatar from '../characters/Avatar.svelte';
   import { artGate, setArtGate } from '../characters/artGate.ts';
@@ -57,7 +57,7 @@
   import { resolveLook } from '#lib/villagers/look.ts';
   import { lookOf as wornOf } from '#lib/store/look.ts';
   import type { Look as Worn } from '#lib/contract/look.ts';
-  import { IslandLife, asleepNow as sleepsNow } from './islandLife.svelte.ts';
+  import { IslandLife } from './islandLife.svelte.ts';
   import { VILLAGER, eventsAt, u, wildFlower, type Tod } from './scene.ts';
   import { CAMS, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, SEAT_DROP, flowerById, freshWhere, seatAt, surfaceAt, worldGen, BUILDINGS, LAWN_SPOTS, type BuildingId } from './world.ts';
   import { guestSpot, doorAt, outOf, partnerOnline } from './buildings.ts';
@@ -84,7 +84,7 @@
   import { hybridFor, hybridsOf } from './care.ts';
   import { garden } from './sceneDay.ts';
   import { addDays } from '#lib/time/dates.ts';
-  import { actors, addFx, applyStep, busy, eventsQuiet, inMotion, react, livePos, onMove, onStep, place, setAsleep, setEmote, setHome, setMotion, wake } from '../motion/director.svelte.ts';
+  import { actors, addFx, applyStep, busy, eventsQuiet, inMotion, react, livePos, onMove, onStep, place, setEmote, setHome, setMotion, wake } from '../motion/director.svelte.ts';
   import { cue, hearFrom } from '#lib/sound/cues.ts';
   import { prefetchPlace } from '#lib/sound/sound.svelte.ts';
   import { enterStage } from '#lib/sound/stage.svelte.ts';
@@ -146,7 +146,7 @@
   // The same island on both phones (docs/design.md "Shared world"): A (ウェイ) lives on the left, B (うめ) on the right,
   // whichever of us holds the phone: homes, goal trees, flower beds, every shared id by person.
   // The guest (docs/design.md "The guest"): its villager is the third on a member's phone (always there, asleep while
-  // its app is closed), this phone's own on the guest's (A and B then the partner and the third: ui-state/cast.ts). It has no home
+  // its app is closed, as everyone's), this phone's own on the guest's (A and B then the partner and the third: ui-state/cast.ts). It has no home
   // or tree: its spot is by the campsite.
   // svelte-ignore state_referenced_locally
   setCast(view.viewer);
@@ -712,7 +712,7 @@
         decor: hash(decorCanon()),
         villagers: Object.fromEntries(VILLAGERS.map((id) => {
           const [x, z] = livePos(id);
-          return [whoOf(id), { x: Math.round(x), z: Math.round(z), asleep: actors[id].asleep, walking: actors[id].walking }];
+          return [whoOf(id), { x: Math.round(x), z: Math.round(z), asleep: actors[id].asleep, walking: actors[id].walking, life: islandActors().includes(id) }];
         }))
       }),
       ...(hooksOn() ? {
@@ -739,7 +739,8 @@
     const off = attachAvatar({ geo: () => (presence.visitor ? geoVisited() : geo()), clear: standsClear, where: feet, enabled: () => !covered && !life.hidden, hush: () => talk?.hush() });
     let hiddenAt = 0;
     const vis = () => {
-      if (document.hidden) hiddenAt = Date.now();
+      // (hidden: who's online kept as of now, for a reload's villagers: cast.ts keepSeen)
+      if (document.hidden) (hiddenAt = Date.now()), keepSeen();
       else if (hiddenAt && Date.now() - hiddenAt > SNAP_HOME_MS) snapHome();
     };
     document.addEventListener('visibilitychange', vis);
@@ -872,6 +873,10 @@
   // theirs to move (this phone's own life leaves it alone).
   // (on the relay's own clock: a `?date=` preview shifts the island's day, not when a walk set off)
   const relayNow = () => (relay ?? demoRelay)?.serverNow() ?? Date.now();
+  // who's awake goes by the relay's clock (ui-state/cast.ts: a grace's end, a wake's, the same instant on every phone)
+  setPresenceClock(relayNow);
+  $effect(() => () => setPresenceClock(null));
+  life.syncSleep();
   const link = linkVillagers({
     share: (w) => void shared.share(w), me: castMe, serverNow: relayNow, enabled: () => true, kept: keepPos
   });
@@ -897,9 +902,9 @@
       // I'm on the island (not in the tent): said to whoever arrives, whatever they last heard of me
       if (here.some((w) => !was.includes(w))) r.send({ kind: 'tent', in: false });
       was = here;
-      // the guest's villager: always on the island, asleep while its app is closed (islandLife.svelte.ts asleepNow)
-      setGuestHere(here.includes('G'));
-      untrack(() => setAsleep(actorOf('G'), sleepsNow(actorOf('G'))));
+      // everyone's villager: awake while its person's app is open, asleep while it's closed (after a grace: cast.ts)
+      setPresence(st);
+      life.syncSleep();
       // (re)connected: once the day's replay is in, my villager as it is here (the room may hold an older walk of it,
       // from a session that ended elsewhere)
       if (st.connected && !up) soon = setTimeout(() => link.joined(), JOIN_SAY_MS);
@@ -965,8 +970,9 @@
     const offShared = shared.on(({ e, live: now }) => {
       if (hooksOn()) heardAt[`${e.kind}:${'id' in e ? e.id : 'tree' in e ? e.tree : ''}`] = Date.now();
       if (e.kind === 'walk' && e.who !== castMe()) partnerWalk(e, now, actorOf(e.who));
-      // a villager woke on their phone (theirs tapped, or both at a high-five): here too, until the same moment
-      else if (e.kind === 'act' && e.act === 'wake' && now) playWake(e, castMe(), relayNow());
+      // a villager woke on another phone (a tap, a high-five): here too, until the same moment (a phone opening during
+      // its minute finds it up for the rest)
+      else if (e.kind === 'act' && e.act === 'wake' && playWake(e, castMe(), relayNow())) life.syncSleep();
     });
     return () => {
       offShared();

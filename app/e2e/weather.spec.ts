@@ -102,7 +102,7 @@ test.describe('the day itself', () => {
 
   test('in the rain the ambience has its rain bed and footsteps splash', async ({ page }) => {
     test.setTimeout(60_000);
-    await open(page, 'date=2026-06-10T11:00&weather=rain', true);
+    await open(page, 'date=2026-06-10T11:00&weather=rain&awake', true); // (&awake: the partner's app counted open, free to go out)
     const s = (await page.locator('.if-scene').boundingBox())!;
     await page.mouse.click(s.x + s.width / 2, s.y + 60); // a tap on open sky unlocks audio
     await expect.poll(() => page.evaluate(() => (window as { __ambient?: string[] }).__ambient), { timeout: 8000 }).toEqual(['waves', 'rain']);

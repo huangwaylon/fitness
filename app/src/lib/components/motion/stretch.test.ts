@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actors, resetAll } from './director.svelte.ts';
 import { groupStretch } from './stretch.svelte.ts';
-import { setCast, setGuestHere } from '#lib/ui-state/cast.ts';
+import { setCast, setPresence } from '#lib/ui-state/cast.ts';
 
 const POSES = ['warmup', 'sidebend', 'leap'] as const;
 
-describe('group stretching: everyone on the island (2026-11-06)', () => {
+describe('group stretching: everyone awake on the island (2026-11-06; awake while online: 2026-11-09)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     resetAll();
@@ -13,7 +13,7 @@ describe('group stretching: everyone on the island (2026-11-06)', () => {
   afterEach(() => {
     resetAll();
     setCast('A');
-    setGuestHere(false);
+    setPresence({ connected: true, here: [] });
     vi.useRealTimers();
   });
   const poses = async () => {
@@ -26,17 +26,19 @@ describe('group stretching: everyone on the island (2026-11-06)', () => {
     return seen;
   };
 
-  it('on the guest’s phone its own villager stretches with both members’', async () => {
+  it('on the guest’s phone its own villager stretches with both members’ (their apps open)', async () => {
     setCast('G');
+    setPresence({ connected: true, here: ['A', 'B'] });
     const seen = await poses();
     for (const id of ['mine', 'partner', 'third']) expect(seen[id], id).toEqual([...POSES]);
   });
 
   it('on a member’s phone the guest’s villager joins while it’s here, and not otherwise', async () => {
     setCast('A');
+    setPresence({ connected: true, here: ['B'] });
     expect((await poses()).third).toEqual(['', '', '']);
     resetAll();
-    setGuestHere(true);
+    setPresence({ connected: true, here: ['B', 'G'] });
     expect((await poses()).third).toEqual([...POSES]);
   });
 });

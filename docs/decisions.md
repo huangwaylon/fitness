@@ -82,8 +82,8 @@ A third person plays as a guest ([backend](backend.md#the-guest)): its own key a
 からだ figures (weight, body fat, BMI, lean mass and their goals) or profiles, and doesn't write the economy or the
 real-world records: ごほうび's buys, the harvest, the members' goals, the Health ingest, a trip's notes, the wedding board.
 The record and the room enforce it (`contract/guest.ts`); the からだ rows never enter its snapshot. Its villager is always on the
-island (2026-11-09: consistency), asleep while its app is closed, in the island's life while it's open. Why: a guest who plays but doesn't earn; a privacy rule only the UI kept
-would leak through the cache.
+island, asleep while its app is closed, as everyone's ([Sleep by presence](#sleep-by-presence)). Why: a guest who plays
+but doesn't earn; a privacy rule only the UI kept would leak through the cache.
 
 ### Profile
 Each person's sex, birth date and BMI standard are prefs, private like the body data: a member's reach only the members,
@@ -290,6 +290,13 @@ start at the same time. Why: replaying only a tap's target let the phones drift.
 A villager stays where its last walk ended, however long its phone is gone; the room carries each person's last walk
 into each new day. Gone quiet inside a room, it comes out at the door 3 minutes later. While I'm in the shop, museum or a
 room, other phones show me nowhere. Why: a villager walking itself home read as someone else moving it.
+
+### Sleep by presence
+Everyone's villager is awake while its person's app is open and asleep where it stands while it's closed, at any hour
+(the user, 2026-11-09: no night's sleep, the same rule for A, B and the guest). Online is the relay's `here` and a 45 s
+grace after the last socket closed (its `gone`); a tap wakes a sleeper for 60 s from the wake's `at`, in the island's
+life meanwhile. Why: one rule everyone can read off the island; every input is the relay's, on its clock, so all open
+phones agree who sleeps without a message of their own.
 
 ### A villager's phrase is presence
 The say button (bottom right, also in the tent and homes) sends `say {text, sc}`: shown over the speaker for 4 s on the

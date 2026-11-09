@@ -49,11 +49,13 @@ describe('the tape deck', () => {
 });
 
 describe('the routine (director)', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    (await import('#lib/ui-state/cast.ts')).setEveryoneAwake(true); // (both apps open: both awake)
     vi.useFakeTimers();
     vi.stubGlobal('document', { hidden: false, addEventListener: vi.fn(), removeEventListener: vi.fn() });
   });
-  afterEach(() => {
+  afterEach(async () => {
+    (await import('#lib/ui-state/cast.ts')).setEveryoneAwake(false);
     vi.useRealTimers();
     vi.unstubAllGlobals();
   });
@@ -102,16 +104,21 @@ describe('the routine (director)', () => {
     vi.advanceTimersByTime(2500);
     expect(queuedEvents()).toEqual([]);
   });
-  it('sleepers join in and go back to sleep after', async () => {
+  it('a sleeper (its app closed) sleeps through it', async () => {
     const { actors, resetAll, setAsleep } = await import('../motion/director.svelte.ts');
     const { groupStretch } = await import('../motion/stretch.svelte.ts');
+    const cast = await import('#lib/ui-state/cast.ts');
     resetAll();
+    cast.setEveryoneAwake(false);
+    cast.setPresence({ connected: true, here: [] });
     setAsleep('partner', true);
     groupStretch(POSES, POSE_MS);
-    expect(actors.partner.asleep).toBe(false);
     vi.advanceTimersByTime(0);
-    expect(actors.partner.motion).toBe('warmup');
+    expect(actors.mine.motion).toBe('warmup');
+    expect(actors.partner.motion).toBe(null);
+    expect(actors.partner.asleep).toBe(true);
     vi.advanceTimersByTime(STRETCH_MS + 2500);
     expect(actors.partner.asleep).toBe(true);
+    setAsleep('partner', false);
   });
 });

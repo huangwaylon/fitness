@@ -6,6 +6,7 @@ import { pickOne } from '#lib/random.ts';
 import type { EmoteIcon } from '#lib/art.ts';
 import { HOST_TAP, MOTION_MS, REACTIONS, type ActorId, type FxKind, type Motion, type ReactionId, type Step } from './reactions.ts';
 import { cue } from '#lib/sound/cues.ts';
+import { wakeMs } from '#lib/ui-state/cast.ts';
 
 /** Which way an actor looks: as drawn ('home'), toward the middle of the island ('in'), or left / right. */
 export type Facing = 'home' | 'in' | 'l' | 'r';
@@ -498,41 +499,31 @@ export function faceToward(id: ActorId, x: number) {
   actors[id].face = toward(id, x);
 }
 
-/** What keeps a villager from nodding off (Critters: my line out; the user: "while fishing don't fall asleep"). */
-// (the let-go hold made at module level: an arrow made in the cleanup below would share its scope, and with it `fn`,
-// Critters' closure, so the page-wide napHold kept the whole island alive: leaks.spec, 3 contexts in the museum)
-const NO_HOLD = (): boolean => false;
-let napHold: (id: ActorId) => boolean = NO_HOLD;
-export function holdNaps(fn: (id: ActorId) => boolean): () => void {
-  napHold = fn;
-  return () => {
-    if (napHold === fn) napHold = NO_HOLD;
-  };
-}
-/** How often a held nap asks again (ms). */
-const NAP_RETRY_MS = 5_000;
-
-/** Night naps (R13): asleep = slow breath + a zzz loop; held off while napHold says so (asked again till it's let go). */
+/** Sleep (R13): asleep = slow breath + a zzz loop, where it stands (on its way somewhere, woken by a tap: it stops
+ *  there, at the same instant on every phone). */
 export function setAsleep(id: ActorId, asleep: boolean) {
   const a = actors[id];
   if (a.asleep === asleep) return;
-  if (asleep && napHold(id)) {
-    later(id, NAP_RETRY_MS, () => setAsleep(id, sleepy(id)));
-    return;
+  if (asleep && a.walking) {
+    const [x, y] = livePos(id);
+    cancel(id);
+    place(id, x, y);
   }
   a.asleep = asleep;
   if (asleep) {
     setEmote(id, 'dozing');
     addFx(id, 'zzz');
-  } else if (a.emoteHold) {
-    setEmote(id, null);
+  } else {
+    // (back online: up, its zzz gone)
+    a.fx = a.fx.filter((f) => f.kind !== 'zzz');
+    if (a.emoteHold) setEmote(id, null);
   }
 }
 
-/** How long a woken villager stays up (ms). */
-export const WAKE_MS = 10_000;
-/** Whether a villager sleeps now (islandLife asleepNow: the night's hours on the relay's clock, the same on every phone;
- *  the guest's too while its app is closed): a woken villager goes back to sleep after WAKE_MS only then. */
+/** How long a woken villager is busy with its start (its surprise), before the island's life has it. */
+const WAKE_START_MS = 2_400;
+/** Whether a villager sleeps now (islandLife asleepNow: its person's app closed, by the relay's word, the same on
+ *  every phone): a woken villager goes back to sleep after its minute only then. */
 let sleepy: (id: ActorId) => boolean = () => true;
 export function setSleepClock(fn: (id: ActorId) => boolean): void {
   sleepy = fn;
@@ -547,20 +538,25 @@ export function onWake(fn: typeof woken): () => void {
   };
 }
 
-/** Wake a dozing villager for WAKE_MS (R14; `ms`: what's left of a wake on the other phone), then back to sleep. */
+const wakeEnds: Partial<Record<ActorId, ReturnType<typeof setTimeout>>> = {};
+/** Wake a sleeping villager for its minute (R14, cast.ts wakeMs; `ms`: what's left of a wake on another phone), then back to sleep where
+ *  it ends up, unless its person's app is open by then. */
 export function wake(id: 'mine' | 'partner' | 'third', o: { remote?: boolean; ms?: number } = {}) {
   const a = actors[id];
   if (!o.remote) woken?.(id);
   cancel(id);
   a.asleep = false;
   a.fx = a.fx.filter((f) => f.kind !== 'zzz');
-  a.busyUntil = Date.now() + 10_000;
+  a.busyUntil = Date.now() + WAKE_START_MS;
   lastEvent.at = Date.now();
   setMotion(id, 'surprise');
   setEmote(id, 'shocked');
   addFx(id, 'sweat');
   cue('emote-surprise');
-  later(id, o.ms ?? WAKE_MS, () => setAsleep(id, sleepy(id)));
+  // (a moment past its end on the relay's clock, as every phone's; its own timer: a reaction meanwhile, a high-five,
+  // cancels the actor's, not this)
+  clearTimeout(wakeEnds[id]);
+  wakeEnds[id] = setTimeout(() => setAsleep(id, sleepy(id)), (o.ms ?? wakeMs()) + 50);
 }
 
 /** Reset everything (scene unmount). */
@@ -570,6 +566,7 @@ export function resetAll() {
   drainTimer = null;
   eventUntil = 0;
   for (const id of ['mine', 'partner', 'third', 'host', 'visitor', 'kk'] as const) {
+    clearTimeout(wakeEnds[id]);
     const { present, home } = actors[id];
     cancel(id);
     Object.assign(actors[id], blank(), { present, home, x: home[0], y: home[1], from: home });

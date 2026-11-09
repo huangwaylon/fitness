@@ -1,4 +1,4 @@
-// Scene clock: the device time, or `?date=YYYY-MM-DDTHH:mm` (Tokyo time; testing seasonal events, night naps).
+// Scene clock: the device time, or `?date=YYYY-MM-DDTHH:mm` (Tokyo time; testing seasonal events, the night).
 // The preview lasts for this page load only (kept across in-app navigation, never persisted).
 // Every wall-clock reading (sky, season, naps, the host's greeting, the phone clock) goes through jst(): the model's
 // days and cutoffs are Tokyo's, so the island agrees with them on a phone set to another zone.

@@ -90,8 +90,9 @@ export interface VillagerState {
   /** Free for an idle beat: awake, standing, not mid-reaction. From the shared state only (a partner's walk or act
    *  arrives over the relay); my own touches that never reach the relay must not count, or the phones disagree. */
   free: boolean;
-  /** Its person has the island open (on their own phone: always; the partner's: the relay's presence): it makes small
-   *  moves but no outings, as its person may tap it any moment. */
+  /** Its person has the island open (on their own phone: always; another's: the relay's presence, ui-state/cast.ts
+   *  online): it makes small moves but no outings, as its person may tap it any moment. Not present and free: woken by
+   *  a tap for its minute (asleep, it isn't free). */
   present?: boolean;
   /** The relay's `t` of its owner's last walk or act (my own: the serverNow() I sent it at), if any: idle life leaves
    *  a villager its owner is steering alone for HOLD_SLOTS (held()). */
@@ -99,14 +100,14 @@ export interface VillagerState {
 }
 
 export interface AmbientWorld {
-  /** The members' villagers, and the guest's while it's on the island (`G`: its app open, so always `present`). The
-   *  guest's villager takes part as a present member's does (docs/design.md "The guest", 2026-11-06): small moves, a
-   *  chat or a dance with anyone, the doze, and the dusk meet-up beside the bench; never an outing on its own. */
+  /** The members' villagers, and the guest's while it's awake (`G`: its app open, or woken by a tap). The guest's
+   *  villager takes part as a member's does (docs/design.md "The guest", 2026-11-06): small moves, a chat or a dance
+   *  with anyone, and the dusk meet-up beside the bench; never an outing on its own. */
   villagers: Record<Who, VillagerState> & { G?: VillagerState };
   /** Where a villager may wander (the world's points of interest, any order: sorted here). */
   pois: readonly Poi[];
-  /** 'evening' (19–22: no day-only moves) and 'asleep' (22–05: the villagers only doze). */
-  phase: 'day' | 'evening' | 'asleep';
+  /** 'evening' (tod night, the evening and the night: no day-only moves). */
+  phase: 'day' | 'evening';
   /** Each person's day score (progress.ts dayScore: today's ベル as % of a full day), for dancing together and the dusk
    *  meet-up at the bench (both 100: every goal met). */
   scores: Record<Who, number>;
@@ -116,7 +117,7 @@ export interface AmbientWorld {
 
 // ---------- what a slot holds ----------
 
-type IdleMove = Exclude<IdleAction, 'wander' | 'chat' | 'dance' | 'doze'>;
+type IdleMove = Exclude<IdleAction, 'wander' | 'chat' | 'dance'>;
 
 export type VillagerBeat =
   /** A small move, `at` ms into the slot. */
@@ -125,8 +126,7 @@ export type VillagerBeat =
    *  `together`: both set off at once (the dusk meet-up at the bench). */
   | { kind: 'outing'; stops: readonly { node: string; linger: number }[]; together?: boolean }
   /** Two villagers: a chat or a dance, the same for both; the lead's starts it. */
-  | { kind: 'pair'; action: 'chat' | 'dance'; with: Islander; lead: boolean; at: number }
-  | { kind: 'doze' };
+  | { kind: 'pair'; action: 'chat' | 'dance'; with: Islander; lead: boolean; at: number };
 
 type CritterKind = 'fish' | 'bubbles' | 'fresh' | 'bug';
 
@@ -247,18 +247,13 @@ function outing(v: VillagerState, pois: readonly Poi[], r: () => number): Villag
 }
 
 /** The villagers' beats in one slot of the day, from the slot and the shared world at its start: at most one villager's,
- *  two for a pair, or the night's doze. */
+ *  two for a pair (a sleeping villager isn't free: in none). */
 export function villagerBeats(w: AmbientWorld, date: LocalDate, slot: number): Partial<Record<Islander, VillagerBeat>> {
   const start = slotStart(date, slot);
   const guest = !!w.villagers.G;
   const everyone = guest ? WITH_GUEST : PEOPLE;
   const v = (p: Islander) => (p === 'G' ? w.villagers.G! : w.villagers[p]);
   const free = (p: Islander) => v(p).free && !held(v(p), start);
-  if (w.phase === 'asleep') {
-    const out: Partial<Record<Islander, VillagerBeat>> = {};
-    for (const p of everyone) if (v(p).free) out[p] = { kind: 'doze' };
-    return out;
-  }
   const { r, outing: o, who, pool, first } = roll(date, slot, w.phase, guest);
   // one villager out at a time, from home (the members': the guest's stands wherever its taps put it)
   const nobodyOut = PEOPLE.every((p) => atHome(w.villagers[p]));
@@ -285,20 +280,20 @@ export function villagerBeats(w: AmbientWorld, date: LocalDate, slot: number): P
     if (beat) return { [p]: beat };
   }
   if (!free(who) || !first) return {};
-  // a pair's other: the other member, or with the guest here one of the other two
-  const mates = everyone.filter((p) => p !== who);
-  const mate = mates.length === 1 ? mates[0] : mates[Math.floor(r() * mates.length)];
-  const pairOk = free(mate);
+  // a pair's other: the other member, or with the guest here one of the other two; awake (a sleeping one is left out)
+  const mates = everyone.filter((p) => p !== who && v(p).free);
+  const mate = mates.length <= 1 ? mates[0] : mates[Math.floor(r() * mates.length)];
+  const pairOk = mate !== undefined && free(mate);
   const low = Math.min(w.scores.A, w.scores.B);
   const at = Math.floor(r() * IDLE_AT_MAX);
-  if (pairOk && low >= 80 && r() < DANCE_BOOST) return both('dance', who, mate, at);
+  if (pairOk && low >= 80 && r() < DANCE_BOOST) return both('dance', who, mate!, at);
   const no = recent(date, slot, who, w.phase, guest);
   // (the guest has no tree of its own to shake)
   const allowed = (e: PoolEntry) => !no.has(e.action) && (!e.pair || pairOk) && (e.action !== 'dance' || low >= 70) && !(who === 'G' && e.action === 'treeshake');
   const e = allowed(first) ? first : pickEntry(pool.filter(allowed), r);
   if (!e) return {};
-  if (e.action === 'dance') return both('dance', who, mate, at);
-  if (e.action === 'chat') return both('chat', who, mate, at);
+  if (e.action === 'dance') return both('dance', who, mate!, at);
+  if (e.action === 'chat') return both('chat', who, mate!, at);
   return { [who]: { kind: 'idle', action: e.action as IdleMove, at } };
 }
 

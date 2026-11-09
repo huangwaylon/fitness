@@ -149,7 +149,7 @@ for (const [id, way] of [['wisp', 'float'], ['celeste', 'fly'], ['jack', 'spook'
   });
 
 test('the partner comes over to say hello to Daisy Mae on the lawn: they face each other, she answers with an emote', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-04T09:00&visitor=daisy-mae&critter=none&meet');
+  await page.goto('?demo&date=2026-11-04T09:00&visitor=daisy-mae&critter=none&meet&awake'); // (&awake: the partner's app counted open)
   await islandUp(page);
   // (the ?meet hook sends the partner 3 s after the visitor's in, and tries again every 700 ms, 12 times, while the
   // partner is busy: up to ~11 s)

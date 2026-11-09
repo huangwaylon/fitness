@@ -107,14 +107,24 @@ describe('ambient life: the villagers', () => {
     expect(idle).toEqual(new Set(['look', 'wiggle', 'hop', 'peek', 'treeshake'])); // stretch is a morning move
   });
 
-  it('keeps the hours: stretching only 5–10, no day-only moves in the evening, only dozing asleep', () => {
+  it('keeps the hours: stretching only 5–10, no day-only moves in the evening; awake at night too (no night’s sleep: 2026-11-09)', () => {
     const morning = beats(day(world(), 5 * 360, 10 * 360));
     expect(morning.some(([, b]) => b.kind === 'idle' && b.action === 'stretch')).toBe(true);
     const evening = beats(day(world({ phase: 'evening' }), 19 * 360, 22 * 360));
     expect(evening.some(([, b]) => b.kind === 'idle' && ['hop', 'peek', 'treeshake', 'stretch'].includes(b.action))).toBe(false);
-    const w = world({ phase: 'asleep' });
-    w.villagers.B.free = false;
-    for (const s of day(w, 0, 50)) expect(s).toEqual({ A: { kind: 'doze' } });
+    const night = beats(day(world({ phase: 'evening' }), 0, 5 * 360));
+    expect(night.some(([, b]) => b.kind === 'idle')).toBe(true);
+  });
+
+  it('leaves a sleeping villager out (its app closed: not free): no beat of its own, never a pair’s other, no dusk meet-up', () => {
+    const seats: Poi[] = [...POIS, { node: 'seatMaeL', at: [27, 146] }, { node: 'seatMaeR', at: [53, 146] }];
+    const w = world({ pois: seats, scores: { A: 100, B: 100 } });
+    w.villagers.B = { ...w.villagers.B, free: false };
+    const got = beats(day(w, 9 * 360, 18 * 360));
+    expect(got.some(([who]) => who === 'B')).toBe(false);
+    expect(got.some(([, b]) => b.kind === 'pair')).toBe(false);
+    expect(got.some(([, b]) => b.kind === 'outing' && b.together)).toBe(false);
+    expect(got.some(([who, b]) => who === 'A' && b.kind === 'idle')).toBe(true);
   });
 
   it('sends one villager out at a time, from home, to points of interest within reach and never where it stands', () => {
@@ -354,8 +364,12 @@ describe('ambient life: the guest’s villager while it’s on the island (2026-
     expect(day(world(), 4000, 4200).every((s) => !('G' in s))).toBe(true);
   });
 
-  it('dozes at night with the others, and joins the dusk meet-up beside the bench (not on a seat)', () => {
-    expect(villagerBeats(withG({ phase: 'asleep' }), DATE, 100)).toEqual({ A: { kind: 'doze' }, B: { kind: 'doze' }, G: { kind: 'doze' } });
+  it('pairs only with an awake one (a member asleep: the guest’s pairs are with the other), and joins the dusk meet-up beside the bench (not on a seat)', () => {
+    const asleepB = withG({ scores: { A: 90, B: 90 } });
+    asleepB.villagers.B = { ...asleepB.villagers.B, free: false };
+    const pairs = all(asleepB).flatMap(([who, b]) => (b.kind === 'pair' ? [[who, b.with]] : []));
+    expect(pairs.length).toBeGreaterThan(0);
+    expect(pairs.flat()).not.toContain('B');
     const seats: Poi[] = [...POIS, { node: 'seatMaeL', at: [27, 146] }, { node: 'seatMaeR', at: [53, 146] }];
     const dusk = villagerBeats(withG({ pois: seats, scores: { A: 100, B: 100 } }), DATE, 17 * 360);
     expect(dusk.A).toEqual({ kind: 'outing', stops: [{ node: 'seatMaeL', linger: 90_000 }], together: true });

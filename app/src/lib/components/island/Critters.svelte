@@ -73,7 +73,7 @@
   import type { FishPhase, How, Relayed, Who } from '#lib/contract/live-protocol.ts';
   import { GLIDE_U, STILL, bubblesAt, bugAt, bugPath, clearOf, critterId, fishPath, freshWater, groundOk, inWater, legAt, type BugOpts, type Leg } from './critterPath.ts';
   import { tellPartner } from './partnerNews.ts';
-  import { actors, holdNaps, inMotion, livePos, wake as wakeUp } from '../motion/director.svelte.ts';
+  import { inMotion, livePos } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import type { DiveItem } from './sea.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
@@ -124,13 +124,11 @@
     const l = line;
     if (l) angle(l.phase === 'bite' ? 'bite' : l.phase === 'flying' ? 'cast' : 'wait', l);
     else if (angling.phase !== 'reel') angle(null);
-    // (the line in without a reel: my villager dozed off, the critters left, the day ended)
+    // (the line in without a reel: the critters left, the day ended)
     if (!l) untrack(() => tellLine('off'));
   });
   // gone with the line out (through a door: the phone's socket stays, so the others hear it end), and the others'
   // villagers' rods down (their steps go unheard till I'm back)
-  // my villager stays awake while my line is out (NH: no nodding off with a rod in hand)
-  onMount(() => holdNaps((id) => id === 'mine' && !!line));
   onMount(() => () => {
     clearTimeout(tickT);
     if (line) tellLine('off');
@@ -383,7 +381,7 @@
   /** What a step of my line asks of the island: my villager, the day, the shadows. */
   const around = (): Around => {
     return {
-      asleep: actors.mine.asleep, day: today(), rand,
+      day: today(), rand,
       // the nearest free shadow on that water within NOTICE_U, open water between it and the float
       notice(x, z, water) {
         let best: { fish: string; d: number } | null = null;
@@ -471,9 +469,8 @@
     // (behind a building's body: the building's tap)
     if (!seen(to.x, to.z)) return (why = 'behind a building'), false;
     const [mx, mz] = livePos('mine');
-    // dozing: the cast wakes it (as a tap on it does: on both phones); walking: it stops where it is, and casts
-    if (actors.mine.asleep) wakeUp('mine');
-    else if (inMotion('mine')) sendTo(mx, mz);
+    // walking: it stops where it is, and casts
+    if (inMotion('mine')) sendTo(mx, mz);
     turnTo(to.x);
     line = castLine(to, performance.now(), today());
     lineN++;

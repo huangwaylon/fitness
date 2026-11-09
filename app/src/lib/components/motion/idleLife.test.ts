@@ -26,7 +26,7 @@ const WORLD = {
   pois: [],
   scores: { A: 50, B: 50 }
 } as const;
-const base = { paused: () => false, asleep: () => false, treeShake: () => {}, me: () => 'A' as const, world: () => structuredClone(WORLD) as never };
+const base = { paused: () => false, treeShake: () => {}, me: () => 'A' as const, world: () => structuredClone(WORLD) as never };
 /** Every slot, mine (A) leads a chat with the partner. */
 const chatCtx = () => ({
   ...base,
@@ -125,23 +125,22 @@ describe('idle life while the page is hidden', () => {
 });
 
 describe('the visitor’s beat', () => {
-  it('runs on every slot with the slot’s PRNG (awake or asleep: visitors keep their own hours), never under a sheet', async () => {
+  it('runs on every slot with the slot’s PRNG (visitors keep their own hours), never under a sheet', async () => {
     const { startIdleLife } = await import('./idleLife.svelte.ts');
     const { lastEvent, resetAll } = await import('./director.svelte.ts');
     resetAll();
     lastEvent.at = 0;
-    let beats = 0, covered = false, asleep = false;
+    let beats = 0, covered = false;
     vi.setSystemTime(new Date('2026-10-29T12:00:03Z'));
     const draws: number[] = [];
     // a slot every 10 s, played 0.5 s past its start: 7.5 s from now, then every 10 s
-    const stop = startIdleLife({ ...base, paused: () => covered, asleep: () => asleep, visitor: (r) => (beats++, draws.push(r())) });
+    const stop = startIdleLife({ ...base, paused: () => covered, visitor: (r) => (beats++, draws.push(r())) });
     await vi.advanceTimersByTimeAsync(7_400);
     expect(beats).toBe(0);
     await vi.advanceTimersByTimeAsync(200);
     expect(beats).toBe(1);
     await vi.advanceTimersByTimeAsync(10_000);
     expect(beats).toBe(2);
-    asleep = true;
     await vi.advanceTimersByTimeAsync(10_000);
     expect(beats).toBe(3);
     expect(new Set(draws).size).toBe(3); // each slot its own PRNG
@@ -213,19 +212,19 @@ describe('idle life on ambient life’s slots', () => {
     expect(played.length).toBe(at10);
     stop();
   });
-  it('still (?idle=none, the e2e’s ambient life off): no beats, no visitor’s turn, no しずえ; asleep, the villagers still doze', async () => {
+  it('still (?idle=none, the e2e’s ambient life off): no beats, no visitor’s turn, no しずえ; a sleeping villager keeps its zzz', async () => {
     const { startIdleLife } = await import('./idleLife.svelte.ts');
     const { actors, lastEvent, resetAll } = await import('./director.svelte.ts');
     resetAll();
     lastEvent.at = 0;
     vi.setSystemTime(new Date('2026-10-29T12:00:00Z'));
-    let played = 0, visits = 0, asleep = false;
-    const stop = startIdleLife({ ...base, still: true, asleep: () => asleep, beats: () => (played++, {}), visitor: () => visits++ });
+    let played = 0, visits = 0;
+    const stop = startIdleLife({ ...base, still: true, beats: () => (played++, {}), visitor: () => visits++ });
     await vi.advanceTimersByTimeAsync(60_000);
     expect([played, visits]).toEqual([0, 0]);
-    asleep = actors.mine.asleep = true;
+    actors.partner.asleep = true;
     await vi.advanceTimersByTimeAsync(10_000);
-    expect(actors.mine.fx.some((f) => f.kind === 'zzz')).toBe(true);
+    expect(actors.partner.fx.some((f) => f.kind === 'zzz')).toBe(true);
     expect([played, visits]).toEqual([0, 0]);
     stop();
     resetAll();

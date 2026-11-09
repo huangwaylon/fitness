@@ -208,6 +208,9 @@ export const SCENE = {
   franklin: 'scene-franklin',
   /** localStorage `scene-wedding` = the date the wedding day's confetti last burst on this phone (island/Wedding.svelte). */
   wedding: 'scene-wedding',
+  /** localStorage `scene-presence.<A|B|G>` = `{ here, gone, at }`: what the relay last said of who's online, for this
+   *  person's phone (ui-state/cast.ts: a reload's villagers asleep or awake as they were, till the welcome). */
+  presence: (me: string) => `scene-presence.${me}`,
   /** localStorage `scene-birthday` = `{ date, confetti, candles }`: a birthday on this phone (island/birthday.ts): whether the
    *  confetti has burst and whether the cake's candles are out. */
   birthday: 'scene-birthday'

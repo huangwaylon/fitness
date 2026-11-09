@@ -8,12 +8,6 @@ import { dayKey, minuteNow } from '#lib/time/clock.ts';
 /** The relay's clock minus this device's (ms). */
 export const relayOffset = (): number => liveRelay().serverNow() - Date.now();
 
-/** `who` has the island open (the relay's presence: on the guest's phone, each member). */
-export function personHere(who: 'A' | 'B' | 'G'): boolean {
-  const s = liveRelay().status();
-  return s.connected && s.here.includes(who);
-}
-
 /** The island's Tokyo day (YYYY-MM-DD) on its one clock, the relay's (world.now(): a `?date=` preview moved, the pings'
  *  offset added), as the shared day is: the day-seeded finds, gifts, fruit and flowers never on a skewed device's day.
  *  Reactive at each minute (minuteNow). */

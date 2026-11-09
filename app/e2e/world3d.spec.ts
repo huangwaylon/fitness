@@ -257,7 +257,7 @@ const domArt = (page: Page) => page.evaluate(() => {
 
 test('the 3D island draws what the 2D sprites did: no 2D art shows over it (a scroll, a high five), and the first high five\'s sparkles are ready', async ({ page }) => {
   test.setTimeout(60_000);
-  await page.goto(`?${Q}`);
+  await page.goto(`?${Q}&awake`); // (the partner awake: no wake's sweat drop, the DOM's on purpose)
   await ready(page);
   // the flourishes' models are loaded and on the GPU before any is asked for
   await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { fxWarmed(): boolean } }).__world3d.fxWarmed()), { timeout: 20_000 }).toBe(true);

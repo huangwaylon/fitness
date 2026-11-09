@@ -1,7 +1,7 @@
 // Group stretching (docs/design.md "Group stretching"): NH's ラジオ体操. The tape deck comes out on a day either of us met
 // 🍑 Exercise or when the island is opened 06:00–08:00, clear of every control; a tap plays its tape (the `stretch`
-// cue) and both villagers and the visitor do the same three stretches together (~6 s); then the deck is gone for the
-// day on this phone. No ベル.
+// cue) and every awake villager and the visitor do the same three stretches together (~6 s; one asleep, its app
+// closed, sleeps through it); then the deck is gone for the day on this phone. No ベル.
 import { expect, test, type Page } from './fixtures.ts';
 import { is3d, islandUp, w3 } from './island.ts';
 import { hudBells } from './hud.ts';
@@ -51,7 +51,7 @@ test('a morning: the tape deck is out, clear of every control; a tap and everyon
     const w = window as { __acts?: string[] };
     w.__acts = [];
     const snap = () => {
-      // (not the guest's villager: its app closed, it sleeps through it)
+      // (mine, the partner's and the visitor's: not the guest's villager)
       const a = [...document.querySelectorAll('.actor:not([data-who="G"]) .vil .body, [data-visitor]')].map((e) => e.getAttribute(e.hasAttribute('data-visitor') ? 'data-motion' : 'data-act'));
       const s = a.join(',');
       if (w.__acts![w.__acts!.length - 1] !== s) w.__acts!.push(s);
@@ -64,7 +64,8 @@ test('a morning: the tape deck is out, clear of every control; a tap and everyon
   expect(await page.evaluate(() => (window as { __cues?: string[] }).__cues)).toContain('stretch');
   await expect(page.locator(LIVE)).toHaveCount(0, { timeout: 15_000 });
   const seen = await page.evaluate(() => (window as { __acts?: string[] }).__acts ?? []);
-  const at = ['warmup', 'sidebend', 'leap'].map((p) => seen.indexOf([p, p, p].join(',')));
+  // (the partner's villager, its app closed, sleeps through it)
+  const at = ['warmup', 'sidebend', 'leap'].map((p) => seen.indexOf([p, '', p].join(',')));
   expect(at.every((i) => i >= 0), seen.join(' | ')).toBe(true);
   expect([...at].sort((a, b) => a - b)).toEqual(at);
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
@@ -134,8 +135,8 @@ test.describe('the layout’s deck', () => {
   });
 });
 
-// The guest's villager joins the island's group stretching as a member's does (2026-11-06): on its own phone with both
-// members', and on a member's phone while its app is open.
+// The guest's villager joins the island's group stretching as a member's does (2026-11-06): on its own phone, and on a
+// member's phone while its app is open; a villager whose app is closed sleeps through it (2026-11-09).
 /** Every change of what each villager is doing (`[data-actor]` order: mine, partner, third), recorded in the page. */
 const watchActs = (page: Page) =>
   page.evaluate(() => {
@@ -147,32 +148,32 @@ const watchActs = (page: Page) =>
     };
     new MutationObserver(snap).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['data-act'], childList: true });
   });
-/** Nobody walking (the guest's villager comes ashore as its app opens). */
+/** Nobody walking. */
 const settled = (page: Page) =>
   expect.poll(() => page.locator('[data-actor].walking').count(), { timeout: 20_000 }).toBe(0);
-/** Each pose seen by all `n` villagers at once, in order. */
-async function allStretched(page: Page, n: number) {
+/** Each pose seen by the awake villagers at once, in order (`awake`: mine, partner, third; the rest sleep through). */
+async function allStretched(page: Page, awake: readonly boolean[]) {
   const seen = await page.evaluate(() => (window as { __vacts?: string[] }).__vacts ?? []);
-  const at = ['warmup', 'sidebend', 'leap'].map((p) => seen.indexOf(Array(n).fill(p).join(',')));
+  const at = ['warmup', 'sidebend', 'leap'].map((p) => seen.indexOf(awake.map((on) => (on ? p : '')).join(',')));
   expect(at.every((i) => i >= 0), seen.join(' | ')).toBe(true);
   expect([...at].sort((a, b) => a - b)).toEqual(at);
 }
 
-test('the guest’s phone: a tap on the deck and its villager stretches with both members’', async ({ page }) => {
+test('the guest’s phone: a tap on the deck and its villager stretches; the members’, their apps closed, sleep through it', async ({ page }) => {
   await page.goto('?demo&date=2026-11-01T07:00&as=G');
   await islandUp(page);
   await expect(deck(page)).toBeVisible();
   await expect(page.locator('[data-actor] .vil')).toHaveCount(3);
-  await settled(page); // its villager ashore at its spot
+  await settled(page);
   await watchActs(page);
   const pt = await deckPoint(page);
   await page.mouse.click(pt.x, pt.y);
   await expect(page.locator('[data-stretch="on"]')).toBeAttached();
   await expect(page.locator(LIVE)).toHaveCount(0, { timeout: 15_000 });
-  await allStretched(page, 3);
+  await allStretched(page, [true, false, false]);
 });
 
-test('a member’s tap with the guest here: the guest’s villager stretches on the member’s phone too', async ({ browser }) => {
+test('a member’s tap with the guest here: the guest’s villager stretches on the member’s phone too (the partner’s asleep)', async ({ browser }) => {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const open = async (more: string) => {
     const p = await ctx.newPage();
@@ -191,6 +192,6 @@ test('a member’s tap with the guest here: the guest’s villager stretches on 
   await a.mouse.click(pt.x, pt.y);
   await expect(a.locator('[data-stretch="on"]')).toBeAttached();
   await expect(a.locator(LIVE)).toHaveCount(0, { timeout: 15_000 });
-  await allStretched(a, 3);
+  await allStretched(a, [true, false, true]);
   await ctx.close();
 });

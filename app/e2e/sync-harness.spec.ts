@@ -45,10 +45,10 @@ const RELAY = process.env.RELAY_E2E ? (process.env.RELAY_URL ?? 'wss://island-fu
 const KEYS_FILE = new URL('../../relay/.smoke-keys', import.meta.url);
 const keys = (): Record<string, string> =>
   Object.fromEntries(readFileSync(KEYS_FILE, 'utf8').trim().split('\n').map((l) => l.split('=') as [string, string]));
-// the relay's day is today's: no `?date=` against it (`?awake`: the villagers up at any hour); the demo's tabs preview a
+// the relay's day is today's: no `?date=` against it; the demo's tabs preview a
 // fixed day
 const q = (who: 'A' | 'B') =>
-  RELAY ? `?demo&awake${who === 'B' ? '&as=B' : ''}&relay=${encodeURIComponent(RELAY)}&key=${keys()[`KEY_${who}`]}` : `?demo&date=2026-11-04T12:00${who === 'B' ? '&as=B' : ''}`;
+  RELAY ? `?demo${who === 'B' ? '&as=B' : ''}&relay=${encodeURIComponent(RELAY)}&key=${keys()[`KEY_${who}`]}` : `?demo&date=2026-11-04T12:00${who === 'B' ? '&as=B' : ''}`;
 
 const CTX = { viewport: { width: 390, height: 844 }, bypassCSP: !!RELAY };
 
