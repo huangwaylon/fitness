@@ -67,6 +67,11 @@ first. It brought the 2.0 villagers, Brewster, Kapp'n and Wilbur, and 376 tent p
   (`world3d/things.ts` lift/rest, `world3d/benchBar.ts`) the bar is drawn on the rack with the bench's instances;
   pressed, that instance's bar is emptied and the gym's standalone barbell (`decor/barbell`) drawn at the presser's
   hands instead.
+- **Packs** (`PACKS` in the map: the camp goods, the food, the gym's newer pieces): one GLB a tab
+  (`static/room/world3d/decor/{camp,food,gym2}.glb`, one KTX2 pack each), each member a node named its id
+  (world3d-page.js convertPack, gltfpack `-kn`), a model `decor/<id>` in assets.json with `pack` its file; things.ts
+  reads the node out (`member`). Six files for 39 models, not three an item. A member's seat is found on the tent's
+  model of the same NH piece (seat-anchors.ts ISLAND `room`).
 - **Held tools and accessories:** the bug net, the rod and its bobber (NH's wooden ones: the plain ones have no
   textures in the files), the birthday's cake hats and NH's party glasses, at the villagers' scale, `anchor: joint`.
 - The plumeria isn't in NH's files: NH's hibiscus stands in, in the plumeria's white and pink.
@@ -152,7 +157,7 @@ the 2.0.0 export: their cards stay.
 Written by `npm run world3d-models` from assets.json (the per-key rows are in the manifest).
 
 <!-- assets:start -->
-589 keys, 435 models, 5.50 MB in all.
+749 keys, 474 models, 6.04 MB in all.
 
 | kind | keys | models | KB | loads |
 | --- | --- | --- | --- | --- |
@@ -163,9 +168,9 @@ Written by `npm run world3d-models` from assets.json (the per-key rows are in th
 | sea | 40 | 40 | 495 | lazily (sea) |
 | bug | 75 | 75 | 1020 | lazily (bug) |
 | fish | 83 | 83 | 891.5 | lazily (fish) |
-| deco | 48 | 39 | 895.5 | with the island |
+| deco | 48 | 39 | 862.8 | with the island |
 | event | 6 | 6 | 115.2 | lazily (event) |
-| decor | 88 | 22 | 373.6 | with the island |
+| decor | 248 | 62 | 956.3 | with the island |
 | flower | 42 | 42 | 551.5 | with the island |
 | fruit | 4 | 4 | 47.9 | with the island |
 | fx | 15 | 15 | 45.8 | with the island |

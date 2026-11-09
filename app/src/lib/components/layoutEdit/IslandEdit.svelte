@@ -2,7 +2,7 @@
   // The island's もようがえ in /editor's phone view (`?view=phone&edit`; docs/island-layout.md "Phone editing": the game
   // itself has none since 2026-11-08): NH's outdoor arranging, one-handed, on
   // the island's layout (store/layout.svelte.ts), the tent's way (tent/TentEdit.svelte). The tray at the foot: its tabs
-  // (き, かんぼく, はな, いわ, あかり, かぐ, ジム, はし・さか, たてもの, おきゃくさん) over each kind's icon; a tap puts that kind down as a ghost on the
+  // (き, かんぼく, はな, いわ, あかり, かぐ, キャンプ, 食べ物, ジム, はし・さか, たてもの, おきゃくさん) over each kind's icon; a tap puts that kind down as a ghost on the
   // free tile nearest the middle of the view, its footprint on the ground green or red (and why, in the bar); a finger
   // on it, or on a placed thing (it's picked up), drags it a tile at a time; a tap on the ground moves it there; ↻ turns
   // it; ✓ puts it down; 🗑 しまう takes a placed one away (the island's one-offs, the goal trees, the homes never); ✕
@@ -52,7 +52,7 @@
   let { stage, relay, me, ondone }: Props = $props();
 
   type Facing = Obj['f'];
-  const TABS = ['tree', 'bush', 'flower', 'rock', 'light', 'furniture', 'gym', 'structure', 'building', 'visitor'] as const;
+  const TABS = ['tree', 'bush', 'flower', 'rock', 'light', 'furniture', 'camp', 'food', 'gym', 'structure', 'building', 'visitor'] as const;
   const MARKS = ['plaza', 'beach-spot'] as const;
   /** A kind's or an issue's name in this phone's language. */
   const say = (x: { ja: string; en: string }) => (i18n.locale === 'ja' ? x.ja : x.en);

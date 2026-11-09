@@ -3,7 +3,7 @@
 // stand, its drawn height (u: the 2D sprites' and the 3D models' size), its palette icon (an art key) and its names.
 // The editor's palette, the validation, the nav and the 3D placement (world3d/objects.ts) all read this one table.
 
-type Group = 'tree' | 'bush' | 'flower' | 'rock' | 'light' | 'furniture' | 'gym' | 'season' | 'structure' | 'building' | 'home' | 'spot' | 'visitor';
+type Group = 'tree' | 'bush' | 'flower' | 'rock' | 'light' | 'furniture' | 'camp' | 'food' | 'gym' | 'season' | 'structure' | 'building' | 'home' | 'spot' | 'visitor';
 /** Where a kind may stand: any land tile (`land`), on grass only (`grass`: a tree, a flower), over water with land at
  *  both ends (`span`: a bridge), in front of a cliff one tier up (`cliff`: stairs). */
 type On = 'land' | 'grass' | 'span' | 'cliff';
@@ -69,16 +69,16 @@ export const KIND_LIST: readonly KindDef[] = [
   k({ k: 'streetlamp', group: 'light', ja: '街灯', en: 'Streetlamp', w: 1, d: 1, block: true, foot: [10, 8], on: 'land', h: 46, icon: 'deco/streetlamp' }),
   k({ k: 'garden-lantern', group: 'light', ja: 'ガーデンランタン', en: 'Garden lantern', w: 1, d: 1, block: true, foot: [12, 8], on: 'land', h: 24, icon: 'deco/garden-lantern', variants: ['plain', 'white'] }),
   // NH's outdoor furniture (the fixed decor's pieces, at one scale)
-  k({ k: 'campsite-sign', group: 'furniture', ja: 'キャンプサイトの看板', en: 'Campsite sign', w: 1, d: 1, block: true, foot: [16, 8], on: 'land', h: 30, icon: 'deco/campsite-sign' }),
-  k({ k: 'campfire', group: 'furniture', ja: 'たきび', en: 'Campfire', w: 1, d: 1, block: true, foot: [22, 12], on: 'land', h: 47, icon: 'deco/campfire' }),
-  k({ k: 'log-stool', group: 'furniture', ja: 'まるたのイス', en: 'Log stool', w: 1, d: 1, block: true, foot: [12, 8], on: 'land', h: 19, icon: 'deco/log-stool' }),
+  k({ k: 'campsite-sign', group: 'camp', ja: 'キャンプサイトの看板', en: 'Campsite sign', w: 1, d: 1, block: true, foot: [16, 8], on: 'land', h: 30, icon: 'deco/campsite-sign' }),
+  k({ k: 'campfire', group: 'camp', ja: 'キャンプファイア', en: 'Bonfire', w: 1, d: 1, block: true, foot: [22, 12], on: 'land', h: 47, icon: 'deco/campfire' }),
+  k({ k: 'log-stool', group: 'camp', ja: 'まるたのイス', en: 'Log stool', w: 1, d: 1, block: true, foot: [12, 8], on: 'land', h: 19, icon: 'deco/log-stool' }),
   k({ k: 'park-bench', group: 'furniture', ja: 'ベンチ', en: 'Park bench', w: 2, d: 1, block: true, foot: [52, 14], on: 'land', h: 30, icon: 'deco/park-bench', turns: true }),
-  k({ k: 'log-bench', group: 'furniture', ja: 'まるたのベンチ', en: 'Log bench', w: 2, d: 1, block: true, foot: [56, 16], on: 'land', h: 24, icon: 'deco/log-bench', turns: true }),
-  k({ k: 'hammock', group: 'furniture', ja: 'ハンモック', en: 'Hammock', w: 2, d: 1, block: true, foot: [56, 16], on: 'land', h: 36, icon: 'deco/hammock', turns: true }),
-  k({ k: 'rod-stand', group: 'furniture', ja: 'つりざおスタンド', en: 'Rod stand', w: 1, d: 1, block: true, foot: [22, 10], on: 'land', h: 30, icon: 'deco/rod-stand' }),
+  k({ k: 'log-bench', group: 'camp', ja: 'まるたのベンチ', en: 'Log bench', w: 2, d: 1, block: true, foot: [56, 16], on: 'land', h: 24, icon: 'deco/log-bench', turns: true }),
+  k({ k: 'hammock', group: 'camp', ja: 'ハンモック', en: 'Hammock', w: 2, d: 1, block: true, foot: [56, 16], on: 'land', h: 36, icon: 'deco/hammock', turns: true }),
+  k({ k: 'rod-stand', group: 'camp', ja: 'ロッドスタンド', en: 'Rod stand', w: 1, d: 1, block: true, foot: [22, 10], on: 'land', h: 30, icon: 'deco/rod-stand' }),
   k({ k: 'pump', group: 'furniture', ja: 'ポンプ', en: 'Pump', w: 1, d: 1, block: true, foot: [24, 14], on: 'land', h: 34, icon: 'deco/pump' }),
   k({ k: 'shishiodoshi', group: 'furniture', ja: 'ししおどし', en: 'Shishi-odoshi', w: 1, d: 1, block: true, foot: [26, 18], on: 'land', h: 28, icon: 'deco/shishiodoshi', turns: true }),
-  k({ k: 'firewood', group: 'furniture', ja: 'まき', en: 'Firewood', w: 1, d: 1, block: true, foot: [18, 12], on: 'land', h: 18, icon: 'deco/firewood' }),
+  k({ k: 'firewood', group: 'camp', ja: 'まき', en: 'Firewood', w: 1, d: 1, block: true, foot: [18, 12], on: 'land', h: 18, icon: 'deco/firewood' }),
   k({ k: 'tape-deck', group: 'furniture', ja: 'ラジカセ', en: 'Tape deck', w: 1, d: 1, block: true, foot: [34, 20], on: 'land', h: 40, icon: 'deco/tape-deck', fixed: true }),
   // K.K. Slider's spot (とたけけ: island/KKSlider.svelte, docs/design.md "K.K. Slider"): his stool, with him on it with
   // his guitar every day, one on the island, never deleted; moved and turned (he faces its way); listeners stand on the
@@ -95,10 +95,50 @@ export const KIND_LIST: readonly KindDef[] = [
   k({ k: 'monstera', group: 'furniture', ja: 'モンステラ', en: 'Monstera', w: 1, d: 1, block: true, foot: [22, 20], on: 'land', h: 40, icon: 'decor/monstera-0', turns: true }),
   k({ k: 'signpost', group: 'furniture', ja: 'みちしるべ', en: 'Signpost', w: 1, d: 1, block: true, foot: [18, 14], on: 'land', h: 42, icon: 'decor/signpost-0', turns: true }),
   k({ k: 'wheelbarrow', group: 'furniture', ja: 'いちりんしゃ', en: 'Wheelbarrow', w: 2, d: 1, block: true, foot: [40, 22], on: 'land', h: 26, icon: 'decor/wheelbarrow-0', turns: true }),
+  // the camp goods (キャンプ: NH's outdoor furniture for a campsite, its names; the camp pack's models, scripts/world3d-assets.ts
+  // PACKS, their icons the ずかん's): sat on (the chairs, the bench), lain on (the cot, the sleeping bag), lit at night
+  // (the campfire, the fire pit, the lantern: world3d/things.ts LAMP); the rest to look at
+  k({ k: 'small-campfire', group: 'camp', ja: 'たき火', en: 'Campfire', w: 1, d: 1, block: true, foot: [18, 16], on: 'land', h: 16, icon: 'items/small-campfire', turns: true }),
+  k({ k: 'fire-pit', group: 'camp', ja: 'ファイヤーピット', en: 'Fire pit', w: 2, d: 2, block: true, foot: [35, 35], on: 'land', h: 21, icon: 'finds/items/fire-pit', turns: true }),
+  k({ k: 'lantern', group: 'camp', ja: 'ランタン', en: 'Lantern', w: 1, d: 1, block: true, foot: [16, 16], on: 'land', h: 29, icon: 'items/lantern', turns: true }),
+  k({ k: 'camping-cot', group: 'camp', ja: 'キャンプベッド', en: 'Camping cot', w: 2, d: 1, block: true, foot: [46, 22], on: 'land', h: 18, icon: 'items/camping-cot', turns: true }),
+  k({ k: 'sleeping-bag', group: 'camp', ja: 'シュラフ', en: 'Sleeping bag', w: 2, d: 1, block: true, foot: [48, 22], on: 'land', h: 8, icon: 'finds/items/sleeping-bag', turns: true }),
+  k({ k: 'kids-tent', group: 'camp', ja: 'キッズテント', en: "Kids' tent", w: 2, d: 2, block: true, foot: [47, 48], on: 'land', h: 59, icon: 'items/kids-tent', turns: true }),
+  k({ k: 'cooler-box', group: 'camp', ja: 'クーラーボックス', en: 'Cooler box', w: 1, d: 1, block: true, foot: [21, 17], on: 'land', h: 17, icon: 'finds/items/cooler-box', turns: true }),
+  k({ k: 'barbecue', group: 'camp', ja: 'バーベキューグリル', en: 'Barbecue', w: 1, d: 1, block: true, foot: [18, 25], on: 'land', h: 38, icon: 'finds/items/barbecue', turns: true }),
+  k({ k: 'camp-stove', group: 'camp', ja: 'コッフェル', en: 'Camp stove', w: 1, d: 1, block: true, foot: [15, 10], on: 'land', h: 20, icon: 'finds/items/camp-stove', turns: true }),
+  k({ k: 'folding-chair', group: 'camp', ja: '折りたたみアウトドアチェア', en: 'Outdoor folding chair', w: 1, d: 1, block: true, foot: [25, 20], on: 'land', h: 31, icon: 'finds/items/outdoor-folding-chair', turns: true }),
+  k({ k: 'folding-table', group: 'camp', ja: '折りたたみアウトドアテーブル', en: 'Outdoor folding table', w: 1, d: 1, block: true, foot: [22, 21], on: 'land', h: 22, icon: 'finds/items/outdoor-folding-table', turns: true }),
+  k({ k: 'outdoor-bench', group: 'camp', ja: 'アウトドアベンチ', en: 'Outdoor bench', w: 2, d: 1, block: true, foot: [43, 16], on: 'land', h: 13, icon: 'finds/items/outdoor-bench', turns: true }),
+  k({ k: 'outdoor-table', group: 'camp', ja: 'アウトドアテーブル', en: 'Outdoor table', w: 2, d: 1, block: true, foot: [46, 23], on: 'land', h: 22, icon: 'finds/items/outdoor-table', turns: true }),
+  k({ k: 'directors-chair', group: 'camp', ja: 'ディレクターズチェア', en: "Director's chair", w: 1, d: 1, block: true, foot: [20, 19], on: 'land', h: 32, icon: 'finds/items/directors-chair', turns: true }),
+  k({ k: 'utility-wagon', group: 'camp', ja: 'キャリーワゴン', en: 'Utility wagon', w: 1, d: 1, block: true, foot: [26, 17], on: 'land', h: 32, icon: 'finds/items/utility-wagon', turns: true }),
+  k({ k: 'water-jug', group: 'camp', ja: 'ウォータージャグ', en: 'Handy water cooler', w: 1, d: 1, block: true, foot: [15, 18], on: 'land', h: 21, icon: 'finds/items/handy-water-cooler', turns: true }),
+  k({ k: 'simple-kettle', group: 'camp', ja: 'ケトル', en: 'Simple kettle', w: 1, d: 1, block: true, foot: [14, 12], on: 'land', h: 20, icon: 'finds/items/simple-kettle', turns: true }),
+  k({ k: 'portable-radio', group: 'camp', ja: '携帯ラジオ', en: 'Portable radio', w: 1, d: 1, block: true, foot: [12, 8], on: 'land', h: 11, icon: 'items/portable-radio', turns: true }),
+  k({ k: 'angled-signpost', group: 'camp', ja: 'ナナメのみちしるべ', en: 'Angled signpost', w: 1, d: 1, block: true, foot: [20, 20], on: 'land', h: 32, icon: 'items/angled-signpost', turns: true }),
+  k({ k: 'destinations-signpost', group: 'camp', ja: 'せかいのみちしるべ', en: 'Destinations signpost', w: 2, d: 2, block: true, foot: [33, 28], on: 'land', h: 71, icon: 'items/destinations-signpost', turns: true }),
+  // the food (たべもの: NH's dishes and drinks, the food pack's; to look at, a tap jiggles one; the cookware's fire lit)
+  k({ k: 'picnic-basket', group: 'food', ja: 'ピクニックバスケット', en: 'Picnic basket', w: 1, d: 1, block: true, foot: [20, 20], on: 'land', h: 20, icon: 'finds/items/picnic-basket', turns: true }),
+  k({ k: 'picnic-set', group: 'food', ja: 'お花見セット', en: 'Outdoor picnic set', w: 2, d: 2, block: true, foot: [37, 37], on: 'land', h: 18, icon: 'items/picnic-set', turns: true }),
+  k({ k: 'fruit-basket', group: 'food', ja: 'フルーツバスケット', en: 'Fruit basket', w: 1, d: 1, block: true, foot: [24, 18], on: 'land', h: 15, icon: 'items/fruit-basket', turns: true }),
+  k({ k: 'bread', group: 'food', ja: 'パン', en: 'Bread', w: 1, d: 1, block: true, foot: [20, 20], on: 'land', h: 15, icon: 'items/bread', turns: true }),
+  k({ k: 'sandwich-set', group: 'food', ja: 'ミックスサンドセット', en: 'Diced-salad sandwich set', w: 1, d: 1, block: true, foot: [22, 17], on: 'land', h: 15, icon: 'finds/items/diced-salad-sandwich-set', turns: true }),
+  k({ k: 'campfire-cookware', group: 'food', ja: '飯ごう', en: 'Campfire cookware', w: 1, d: 1, block: true, foot: [23, 21], on: 'land', h: 22, icon: 'finds/items/campfire-cookware', turns: true }),
+  k({ k: 'stewpot', group: 'food', ja: '鍋', en: 'Stewpot', w: 1, d: 1, block: true, foot: [21, 17], on: 'land', h: 24, icon: 'finds/items/stewpot', turns: true }),
+  k({ k: 'frying-pan', group: 'food', ja: 'フライパン', en: 'Frying pan', w: 1, d: 1, block: true, foot: [19, 19], on: 'land', h: 4, icon: 'items/frying-pan', turns: true }),
+  k({ k: 'seafood-ajillo', group: 'food', ja: 'シーフードのアヒージョ', en: 'Seafood ajillo', w: 1, d: 1, block: true, foot: [19, 19], on: 'land', h: 4, icon: 'items/seafood-ajillo', turns: true }),
+  k({ k: 'grilled-sea-bass', group: 'food', ja: 'スズキの香草焼き', en: 'Grilled sea bass with herbs', w: 1, d: 1, block: true, foot: [22, 15], on: 'land', h: 6, icon: 'items/grilled-sea-bass', turns: true }),
+  k({ k: 'western-meal', group: 'food', ja: '洋風定食', en: 'Western-style meal', w: 1, d: 1, block: true, foot: [23, 16], on: 'land', h: 5, icon: 'finds/items/western-style-meal', turns: true }),
+  k({ k: 'japanese-meal', group: 'food', ja: '和風定食', en: 'Japanese-style meal', w: 1, d: 1, block: true, foot: [23, 16], on: 'land', h: 5, icon: 'finds/items/japanese-style-meal', turns: true }),
+  k({ k: 'bottled-beverage', group: 'food', ja: 'ペットボトル飲料', en: 'Bottled beverage', w: 1, d: 1, block: true, foot: [8, 8], on: 'land', h: 22, icon: 'finds/items/bottled-beverage', turns: true }),
+  k({ k: 'coconut-juice', group: 'food', ja: 'ココナッツジュース', en: 'Coconut juice', w: 1, d: 1, block: true, foot: [10, 10], on: 'land', h: 18, icon: 'items/coconut-juice', turns: true }),
+  k({ k: 'cookies', group: 'food', ja: 'クッキー', en: 'Cookies', w: 1, d: 1, block: true, foot: [19, 19], on: 'land', h: 4, icon: 'items/cookies', turns: true }),
   // the gym (ジム: NH's fitness furniture, its official names; the decorations' models and icons, `decor/<kind>-0`). A tap
   // on the ones NH lets one use walks my villager up to it and on (layout/nav.ts SEAT_ON's `use`: island/sitting.ts):
   // the weight bench's presses, the bike's pedalling, the treadmill's run, the punching bag's punches, the exercise
-  // ball's bounce, the pull-up bar's reps (the default island's own stand, `deco/pullup`, is one of them)
+  // ball's bounce, the pull-up bar's reps (the default island's own stand, `deco/pullup`, is one of them); the gym pack's
+  // (scripts/world3d-assets.ts PACKS) yoga mats lain on, massage chair sat on, speed bag punched; the rest to look at
   k({ k: 'pullup', group: 'gym', ja: 'けんすいスタンド', en: 'Pull-up-bar stand', w: 1, d: 1, block: true, foot: [28, 12], on: 'land', h: 44, icon: 'deco/pullup', turns: true }),
   k({ k: 'weight-bench', group: 'gym', ja: 'プレスベンチ', en: 'Weight bench', w: 2, d: 1, block: true, foot: [56, 28], on: 'land', h: 52, icon: 'decor/weight-bench-0', turns: true }),
   k({ k: 'exercise-bike', group: 'gym', ja: 'エクササイズバイク', en: 'Exercise bike', w: 1, d: 1, block: true, foot: [28, 16], on: 'land', h: 37, icon: 'decor/exercise-bike-0', turns: true }),
@@ -112,6 +152,11 @@ export const KIND_LIST: readonly KindDef[] = [
   k({ k: 'digital-scale', group: 'gym', ja: 'たいじゅうそくていき', en: 'Digital scale', w: 1, d: 1, block: true, foot: [18, 16], on: 'land', h: 4, icon: 'decor/digital-scale-0', turns: true }),
   k({ k: 'climbing-wall', group: 'gym', ja: 'クライミングウォール', en: 'Climbing wall', w: 2, d: 1, block: true, foot: [60, 12], on: 'land', h: 90, icon: 'decor/climbing-wall-0', turns: true }),
   k({ k: 'upright-locker', group: 'gym', ja: 'ロッカー', en: 'Upright locker', w: 1, d: 1, block: true, foot: [24, 22], on: 'land', h: 56, icon: 'decor/upright-locker-0', turns: true }),
+  k({ k: 'yoga-mat', group: 'gym', ja: 'ヨガマット', en: 'Yoga mat', w: 2, d: 1, block: true, foot: [47, 22], on: 'land', h: 4, icon: 'finds/items/yoga-mat', turns: true }),
+  k({ k: 'nook-yoga-mat', group: 'gym', ja: 'たぬき開発ヨガマット', en: 'Nook Inc. yoga mat', w: 2, d: 1, block: true, foot: [47, 22], on: 'land', h: 4, icon: 'items/nook-yoga-mat', turns: true }),
+  k({ k: 'speed-bag', group: 'gym', ja: 'スピードバッグ', en: 'Speed bag', w: 1, d: 1, block: true, foot: [24, 22], on: 'land', h: 54, icon: 'finds/items/speed-bag', turns: true }),
+  k({ k: 'massage-chair', group: 'gym', ja: 'マッサージチェア', en: 'Plush massage chair', w: 1, d: 1, block: true, foot: [24, 21], on: 'land', h: 43, icon: 'finds/items/plush-massage-chair', turns: true }),
+  k({ k: 'dumbbell', group: 'gym', ja: 'ダンベル', en: 'Dumbbell', w: 1, d: 1, block: true, foot: [13, 8], on: 'land', h: 7, icon: 'items/dumbbell', turns: true }),
   // NH's bulletin board (けいじばん): one on the island, used from the tile in front of it
   k({ k: 'board', group: 'furniture', ja: '掲示板', en: 'Bulletin board', w: 2, d: 1, block: true, foot: [54, 14], on: 'land', h: 44, icon: 'deco/bulletin-board', turns: true, fixed: true, front: true }),
   // the seasonal spots (fixedDecor.ts: the season's piece stands there in its weeks)

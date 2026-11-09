@@ -248,7 +248,8 @@ function splitOff(geo, above) {
 /** o: { parts: [{folder, dae}], files: [[folder, names]], maxTex, maxEmi, grdRow?, hide? } → the glTF (JSON, images
  *  as PNG data URIs), the bounds, triangles and materials, and the doorway's place (a frame's DoorModel0 joint: a wall's,
  *  where a door family stands; a door part converted with its frame is put there already). */
-window.convert = async (o) => {
+/** One model's scene (the baked materials, merged per material), its bounds, triangles and the rest (convert's). */
+async function sceneOf(o) {
   const group = new THREE.Group();
   /** NH's doorway: the frame's DoorModel0 joint (a house's wall, a tent), where its door stands. */
   let doorway = null;
@@ -329,12 +330,32 @@ window.convert = async (o) => {
     if (b.lit) lit = true;
     scene.add(mesh);
   }
-  const gltf = await exporter.parseAsync(scene, { binary: false, onlyVisible: true });
   return {
-    gltf: JSON.stringify(gltf), box: [box.min.toArray(), box.max.toArray()], tris: Math.round(tris),
+    scene, box: [box.min.toArray(), box.max.toArray()], tris: Math.round(tris),
     mats: [...baked.keys()].map((k) => k.split('|').pop()), lit, parts, split,
     door: doorway ? new THREE.Vector3().setFromMatrixPosition(doorway).toArray().map((n) => +n.toFixed(3)) : null
   };
+}
+
+window.convert = async (o) => {
+  const { scene, ...r } = await sceneOf(o);
+  return { gltf: JSON.stringify(await exporter.parseAsync(scene, { binary: false, onlyVisible: true })), ...r };
+};
+
+/** A pack (o.members: each convert's options and its `id`): every member's scene under a node of its own named its id,
+ *  at the origin, in one glTF (the island reads a member out by its node: world3d/things.ts), and each one's bounds,
+ *  triangles and whether it's lit. */
+window.convertPack = async (o) => {
+  const root = new THREE.Scene(), members = [];
+  for (const m of o.members) {
+    const { scene, box, tris, lit } = await sceneOf({ ...o, ...m });
+    const g = new THREE.Group();
+    g.name = m.id;
+    g.add(...scene.children);
+    root.add(g);
+    members.push({ id: m.id, box, tris, lit });
+  }
+  return { gltf: JSON.stringify(await exporter.parseAsync(root, { binary: false, onlyVisible: true })), members };
 };
 
 window.ready = true;

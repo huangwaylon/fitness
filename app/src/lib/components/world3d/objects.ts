@@ -155,8 +155,10 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
     // (assets.json `decor/<kind>-0`, at its own scale), turned by its facing: it used to look for a model of the kind's
     // bare name, found none and stood a card of the 2D art, which drew over what stood in front of it (a well behind a
     // campfire floated over it) and was missing from the editor's preview
-    if (def.icon.startsWith('decor/')) {
-      const a = keyModel(`decor/${o.k}-0`);
+    // (a pack's kinds, the camp goods, the food and the rest of the gym, wear the ずかん's icon: their model is the key's)
+    const decor = keyModel(`decor/${o.k}-0`);
+    if (def.icon.startsWith('decor/') || decor) {
+      const a = decor;
       if (a) thing(a.m as ModelName, a.s);
       else if (has(o.k)) thing(o.k, DECOR_U);
       else standins.push({ id: o.id, key: `decor/${o.k}-${o.f}`, x, z, h });

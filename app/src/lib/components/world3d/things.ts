@@ -23,8 +23,9 @@ import { nightLift, nightTag } from './nightLift.ts';
 import { procScene } from './proc3d.ts';
 import { FLAPS, flapGlsl, wingHinge } from './wings.ts';
 
-/** Where a lit model's light is (a share of its height), its colour and the halo's and pool's sizes (u). */
-const LAMP: Partial<Record<string, { at: number; kind: LampSpot['kind']; colour: number; glow: number; pool: number; dz?: number }>> = {
+/** Where a lit model's light is (a share of its height; or `e`, its emitter in model units, its own frame: turned and
+ *  scaled with it, as the rooms' lamps' are, tent/grid.ts toRoom), its colour and the halo's and pool's sizes (u). */
+export const LAMP: Partial<Record<string, { at: number; e?: readonly [number, number, number]; kind: LampSpot['kind']; colour: number; glow: number; pool: number; dz?: number }>> = {
   streetlamp: { at: 0.9, kind: 'lamp', colour: 0xffd38a, glow: 15, pool: 46 },
   'garden-lantern': { at: 0.62, kind: 'lamp', colour: 0xffc070, glow: 9, pool: 26 },
   'garden-lantern-white': { at: 0.62, kind: 'lamp', colour: 0xfff0c8, glow: 9, pool: 26 },
@@ -37,7 +38,13 @@ const LAMP: Partial<Record<string, { at: number; kind: LampSpot['kind']; colour:
   'deco/illumi-tree': { at: 0.5, kind: 'lamp', colour: 0xfff0c8, glow: 22, pool: 40 },
   'decor/stone-lantern': { at: 0.6, kind: 'lamp', colour: 0xffc070, glow: 9, pool: 26 },
   'events/spooky-lantern': { at: 0.45, kind: 'fire', colour: 0xffa040, glow: 12, pool: 30 },
-  'events/countdown-board': { at: 0.6, kind: 'window', colour: 0xfff0c8, glow: 18, pool: 30 }
+  'events/countdown-board': { at: 0.6, kind: 'window', colour: 0xfff0c8, glow: 18, pool: 30 },
+  // the camp pack's (scripts/world3d-assets.ts PACKS): the lantern's glass (NH's light locator, tent/items.json f1432's
+  // `e`), the flames of the campfire and the fire pit (their emissive's middle), the cookware's fire under its pot (f1433's)
+  'decor/lantern': { at: 0.45, e: [0, 4.4, 0], kind: 'lamp', colour: 0xfff0c8, glow: 10, pool: 30 },
+  'decor/small-campfire': { at: 0.4, e: [0.15, 2, 0.06], kind: 'fire', colour: 0xff9a4a, glow: 14, pool: 46 },
+  'decor/fire-pit': { at: 0.5, e: [-0.42, 3.6, 0.4], kind: 'fire', colour: 0xff9a4a, glow: 18, pool: 56 },
+  'decor/campfire-cookware': { at: 0.22, e: [-0.2, 1.6, 0], kind: 'fire', colour: 0xff9a4a, glow: 10, pool: 36 }
 };
 
 /** The models that cast no shadow (assets.json `shadow`: the flat things, a fish's shadow, a dig spot, the
@@ -210,6 +217,19 @@ function free(g: GLTF, close = false) {
     s.dispose();
   });
 }
+/** A pack's member (assets.json `pack`): its node, named its model's last part, as a model of its own (one wrapper a
+ *  member, kept, so its builds share it); a model of its own as it is. */
+const members = new WeakMap<GLTF, Map<string, GLTF | null>>();
+function member(g: GLTF, name: ModelName): GLTF | null {
+  if (!MODELS[name]?.pack) return g;
+  let by = members.get(g);
+  if (!by) members.set(g, (by = new Map()));
+  if (!by.has(name)) {
+    const node = g.scene.children.find((n) => n.name === name.slice(name.lastIndexOf('/') + 1)) ?? null;
+    by.set(name, node && ({ ...g, scene: node } as unknown as GLTF));
+  }
+  return by.get(name)!;
+}
 let loader: GLTFLoader | null = null;
 function load(url: string, name: string): Promise<GLTF | null> {
   let p = loaded.get(url);
@@ -243,12 +263,12 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       pending++;
       const url = urlOf(name);
       use(url);
-      p = load(url, name).then((g) => (pending--, g && got.add(g), g));
+      p = load(url, name).then((g) => (pending--, (g = g && member(g, name)), g && got.add(g), g));
       gltfs.set(name, p);
     }
     return p;
   };
-  const urlOf = (name: ModelName) => `${base}${name}.glb?v=${MODELS[name]?.v ?? 0}`;
+  const urlOf = (name: ModelName) => `${base}${MODELS[name]?.pack ?? name}.glb?v=${MODELS[name]?.v ?? 0}`;
   /** A lazy model's last instance gone: its GPU copies and this mount's materials of it let go of, its load handed
    *  back (kept decoded a while: unuse). Asked for again, it's built afresh; asked for again before its load's tick
    *  (a critter gone and another of its species come in one regroup), its new build has these very materials
@@ -602,8 +622,15 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       const h = MODELS[g.name].max[1];
       for (const o of g.list) {
         if (overs.get(o.id)?.hidden) continue;
-        const gy = height(o.x, o.z), z = o.z + (L.dz ?? 0) * o.scale;
-        out.push({ id: o.id, x: o.x, z, y: gy + (o.lift ?? 0) + h * o.scale * L.at, gy, kind: L.kind, colour: L.colour, glow: L.glow, pool: L.pool });
+        const gy = height(o.x, o.z);
+        if (!L.e) {
+          out.push({ id: o.id, x: o.x, z: o.z + (L.dz ?? 0) * o.scale, y: gy + (o.lift ?? 0) + h * o.scale * L.at, gy, kind: L.kind, colour: L.colour, glow: L.glow, pool: L.pool });
+          continue;
+        }
+        // (its emitter in its frame turned by its yaw, three's rotation.y, into the world's x and z: z the world's −z)
+        const [ex, ey, ez] = L.e, c = Math.cos(o.yaw ?? 0), sn = Math.sin(o.yaw ?? 0);
+        const x = o.x + (ex * c + ez * sn) * o.scale, z = o.z + (ex * sn - ez * c) * o.scale;
+        out.push({ id: o.id, x, z, y: gy + (o.lift ?? 0) + ey * o.scale, gy, kind: L.kind, colour: L.colour, glow: L.glow, pool: L.pool });
       }
     }
     return out;

@@ -21,8 +21,9 @@ const only = (process.argv.find((a) => a.startsWith('--only='))?.slice(7) ?? '')
 
 type Use = 'press' | 'pedal' | 'run' | 'punch' | 'bounce' | 'pullup';
 type Shape = ((SeatShape | BedShape) & { sway?: 1; use?: Use }) | { k: 'u'; use: Use; x: number; y: number; z: number; yaw: number; fx: number; fz: number };
-/** The island's seats: its model, how many sit on it, sat or lain on. */
-const ISLAND: Record<string, { key: string; n: number; u: 's' | 'l' }> = {
+/** The island's seats: its model, how many sit on it, sat or lain on; `room`: found on the tent's model of the same NH
+ *  piece (static/room/models/<code>.glb: the same frame and units), a pack's member being one node of its GLB. */
+const ISLAND: Record<string, { key: string; n: number; u: 's' | 'l'; room?: string }> = {
   'park-bench': { key: 'deco/park-bench', n: 2, u: 's' },
   'log-bench': { key: 'deco/log-bench', n: 2, u: 's' },
   'log-stool': { key: 'deco/log-stool', n: 1, u: 's' },
@@ -30,7 +31,16 @@ const ISLAND: Record<string, { key: string; n: number; u: 's' | 'l' }> = {
   'iron-chair': { key: 'decor/iron-chair-0', n: 1, u: 's' },
   'beach-chair': { key: 'deco/beach-chair', n: 1, u: 'l' },
   // the gym's weight bench: lain on (its presses: OVERRIDES' use)
-  'weight-bench': { key: 'decor/weight-bench-0', n: 1, u: 'l' }
+  'weight-bench': { key: 'decor/weight-bench-0', n: 1, u: 'l' },
+  // the camp goods (キャンプ), the gym's mats and massage chair (the Nook Inc. mat NH's plain one's size: its shape)
+  'folding-chair': { key: 'decor/folding-chair-0', n: 1, u: 's', room: 'f13637' },
+  'directors-chair': { key: 'decor/directors-chair-0', n: 1, u: 's', room: 'f2020' },
+  'outdoor-bench': { key: 'decor/outdoor-bench-0', n: 2, u: 's', room: 'f3947' },
+  'camping-cot': { key: 'decor/camping-cot-0', n: 1, u: 'l', room: 'f4081' },
+  'sleeping-bag': { key: 'decor/sleeping-bag-0', n: 1, u: 'l', room: 'f1434' },
+  'yoga-mat': { key: 'decor/yoga-mat-0', n: 1, u: 'l', room: 'f13683' },
+  'nook-yoga-mat': { key: 'decor/nook-yoga-mat-0', n: 1, u: 'l', room: 'f13683' },
+  'massage-chair': { key: 'decor/massage-chair-0', n: 1, u: 's', room: 'f12339' }
 };
 /** The gym's pieces used in place (seats3d.ts's `u`: no seat or bed the rays could find), by hand from their models
  *  (model units, +z their front, the bounds in world3d/assets.json): where the feet (standing) or the hips (seated) go,
@@ -44,7 +54,9 @@ const USE: Record<string, UseShape> = {
   'exercise-ball': { k: 'u', use: 'bounce', x: 0, y: 7.6, z: 0, yaw: 0, fx: 0, fz: 8 },
   treadmill: { k: 'u', use: 'run', x: 1.5, y: 1.2, z: 0, yaw: -Math.PI / 2, fx: 1.5, fz: 8 },
   'punching-bag': { k: 'u', use: 'punch', x: -8, y: 0, z: 2, yaw: Math.PI / 2, fx: -8, fz: 2 },
-  pullup: { k: 'u', use: 'pullup', x: 0, y: 0, z: -5, yaw: 0, fx: 0, fz: -5 }
+  pullup: { k: 'u', use: 'pullup', x: 0, y: 0, z: -5, yaw: 0, fx: 0, fz: -5 },
+  // the speed bag (its bag hung at x 0 out front of its board, z +3.5): punched from in front, facing it
+  'speed-bag': { k: 'u', use: 'punch', x: 0, y: 0, z: 8, yaw: Math.PI, fx: 0, fz: 8 }
 };
 /** What the rays get wrong or can't tell, by hand (each bed's head checked by eye, 2026-11-09: NH's at −x but these):
  *  merged over what they found. A hammock sways (its cloth sags in the middle; the lying height is the sag's, a little
@@ -98,7 +110,7 @@ for (const [code, m] of Object.entries(ITEMS)) {
 for (const [model, it] of Object.entries(ISLAND)) {
   if (!want(model)) continue;
   const a = ASSETS.keys[it.key], [w, d] = a.foot ?? [1, 1], h = ASSETS.models[a.m].max[1];
-  const sh = await shape(`/m/world3d/${a.m}.glb`, w, d, h, it.u, it.n);
+  const sh = await shape(it.room ? `/m/models/${it.room}.glb` : `/m/world3d/${a.m}.glb`, w, d, h, it.u, it.n);
   if (sh) out.island[model] = { ...sh, ...OVERRIDES[model] } as Shape;
   console.log(model, JSON.stringify(out.island[model] ?? 'none'));
 }

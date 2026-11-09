@@ -348,7 +348,7 @@ to `/pair`). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the
 
 `components/layoutEdit/IslandEdit.svelte`: the island's もようがえ in the editor's phone view (the tent's もようがえ
 stays the room's), the tent's way (TentEdit's tray, bar and buttons). The tray's tabs (き, かんぼく, はな, いわ, あかり,
-かぐ, ジム (design.md "Decorating"), はし・さか, たてもの, おきゃくさん: the visitors' marks drawn over the ground only in
+かぐ, キャンプ, 食べ物, ジム (design.md "Decorating"), はし・さか, たてもの, おきゃくさん: the visitors' marks drawn over the ground only in
 this mode, red when nobody can stand there with the reason in the bar) over every placeable kind; a tap on one puts
 it down as a ghost on the free tile nearest the view's middle, its footprint green or red, the bar saying why; a finger
 on it, or on any placed thing, drags it a tile at a time; a tap on the ground moves it there; ↻ まわす, ✕ やめる, ✓ ここに

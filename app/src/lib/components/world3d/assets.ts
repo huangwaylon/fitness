@@ -9,6 +9,9 @@ export interface AssetModel {
   /** A part of its own (its GLB's node `name`: the weight bench's bar), resting at `rest` (model units: its middle),
    *  `len` long along its `axis`. */
   part?: { name: string; rest: number[]; axis: 'x' | 'y' | 'z'; len: number };
+  /** In a pack: its file (static/room/world3d/<pack>.glb, `v` the file's hash), the model its node there named its
+   *  name's last part (scripts/world3d-assets.ts PACKS: the camp goods, the food). */
+  pack?: string;
 }
 export interface AssetKey {
   /** The model: static/room/world3d/<m>.glb. */
