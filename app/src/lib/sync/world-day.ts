@@ -191,6 +191,15 @@ export const takenIds = (d: WorldDay): Set<string> =>
 /** What lies about now: the day's puts nobody (me included) has picked up or caught. */
 export const lying = (d: WorldDay): Put[] =>
   Object.values(d.puts).filter((p) => !(taken(d, p.id) ?? caught(d, p.id))).sort((a, b) => a.t - b.t);
+/** What lay about at `t`: the puts made by then and not yet picked up or caught (both phones agree on it, whatever
+ *  each has heard since: a keep-clear area fixed at a slot's start, Critters.svelte). */
+export const lyingAt = (d: WorldDay, t: number): Put[] =>
+  Object.values(d.puts)
+    .filter((p) => {
+      const gone = taken(d, p.id) ?? caught(d, p.id);
+      return p.t <= t && !(gone && gone.t <= t);
+    })
+    .sort((a, b) => a.t - b.t);
 /** How many wishes, everyone's, bring a fragment on the morning of `date`. */
 export const wishesFor = (d: WorldDay, date: string): number => Object.values(d.wishes[date] ?? {}).reduce((s, n) => s + (n ?? 0), 0);
 

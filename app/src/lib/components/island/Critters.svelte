@@ -69,7 +69,7 @@
   import { eggOnLine } from './eggs.ts';
   import { partnerTurnTo, sendTo, turnTo } from './avatar.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
-  import { caught, lying } from '#lib/sync/world-day.ts';
+  import { caught, lyingAt } from '#lib/sync/world-day.ts';
   import type { FishPhase, How, Relayed, Who } from '#lib/contract/live-protocol.ts';
   import { GLIDE_U, STILL, bubblesAt, bugAt, bugPath, clearOf, critterId, fishPath, freshWater, groundOk, inWater, legAt, type BugOpts, type Leg } from './critterPath.ts';
   import { tellPartner } from './partnerNews.ts';
@@ -1332,18 +1332,19 @@
   const forceFlea = hookFlag('flea');
   /** The first look at the slots after the island shows (ms): the scene measured and the camera placed by then. */
   const FIRST_LOOK_MS = 3000;
-  /** A slot's critter comes now, staying until the end of its last slot (`end`, the relay's ms), where its seed puts it
-   *  in the world (critterPath.ts: the same on both phones; this camera shows it if it sees it), unless one of us has
-   *  caught it (or it got away) today. */
-  /** What lies on the ground to be tapped today, as the shared day has it on both phones (world x, z): the puts lying
-   *  (presents, wood) where they're drawn, and the day's dig spots (dug or not: the same on both). */
-  function tapSpots(date: string): { x: number; z: number }[] {
-    const puts = lying(shared.day).filter((p) => !p.what.startsWith('bug:')).map((p) => {
+  /** What lies on the ground to be tapped at `t` (a slot's start), as the shared day has it on both phones (world x,
+   *  z): the puts lying then (presents, wood: lyingAt, never what each phone has heard since) where they're drawn, and
+   *  the day's dig spots (dug or not: the same on both). */
+  function tapSpots(date: string, t: number): { x: number; z: number }[] {
+    const puts = lyingAt(shared.day, t).filter((p) => !p.what.startsWith('bug:')).map((p) => {
       const [x, z] = offBuildingsAt(p.at[0], p.at[1]);
       return { x, z };
     });
     return [...puts, ...digSpots(date, new Set(), islandSeed()).map((d) => ({ x: d.x, z: d.y }))];
   }
+  /** A slot's critter comes now, staying until the end of its last slot (`end`, the relay's ms), where its seed puts it
+   *  in the world (critterPath.ts: the same on both phones; this camera shows it if it sees it), unless one of us has
+   *  caught it (or it got away) today. */
   function visit(c: Spawn, date: string, end: number) {
     const stay = end - shared.now();
     if (stay < 1000) return;
@@ -1364,7 +1365,7 @@
     } else if (!bugs.some((b) => b.cid === cid)) {
       // (the second lane's spot keeps off the first lane's bugs about in its stay: ambient.ts bugRivals)
       // (clear of what lies to be tapped: a bug hovering over a present took the finger meant for it; its rivals' too)
-      const keep = clearOf(tapSpots(date));
+      const keep = clearOf(tapSpots(date, t0));
       const taken = bugRivals(date, c).flatMap((q) => {
         const id = pickBug(o.month, Math.floor(q.slot / 360), spawnRand(q), skyAt(slotStart(date, q.slot) + q.at));
         const p = id && bugPath(id, q.seed, 0, { white: whiteHeads(), keep });
