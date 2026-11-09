@@ -419,11 +419,15 @@ The units' headers name seven planned backdrops, `party`, `restaurant`, `shop`, 
 
 1. **Seed sheet:** can-do, phrases, sound, host and scene, the scenario seeds; for a game the kind and tier sets.
 2. **Draft** (one author per file): `en`; `tts` only where the reduction matters; `ja`; `note`; `ctx`; `cja`; `why`; tags. Per kind: a tile's `why` names each decoy's trap; a call's `cja` per chip and `why` per memo round; たちぎき `ctx` and `why` per round. Rush comes from its frames (`npm run kikimimi:rush`); derived tiles from `scripts/kikimimi-tiles.ts`, then a person.
-3. **Machine gates** (CI; errors past draft): schema and ids; `helpProblems`; the US-only lint (a UK/AU list: mate, cheers, queue, flat, lift, fortnight, reckon, fancy, half nine, neighbour, realise…; `accent-exposure` exempt); digit-free `tts`; phrase, recycling and coverage rules; near-duplicates (rush only against the rest); the chunk budgets.
+3. **Machine gates** (CI; errors past draft): schema and ids; `helpProblems`; the US-only lint (a UK/AU list: mate, cheers, queue, flat, lift, fortnight, reckon, fancy, half nine, neighbour, realise…; `accent-exposure` exempt); digit-free `tts`; the choice tells ("Choice tells"); phrase, recycling and coverage rules; near-duplicates (rush only against the rest); the chunk budgets.
 4. **Human review before voicing:** an EFL teacher, a US scriptwriter and a Japanese reviewer read each batch: natural for an American friend or clerk; one clearly best answer; the second distractor the real trap; `ctx` without the answer; natural Japanese; kana in character speech, kanji in sheet copy, one spelling per term. Findings go into the files or this doc's backlog, not into docs/.
 5. **Voicing:** `npm run audio:kikimimi` (the gate and re-rolls), conditions mixed after the gate, then `npm run kikimimi:packs`.
 6. **Listening check** ("Listening check"); a file's `status` goes `draft` → `voiced` → `listened`, set by hand.
 7. **Tuning:** a week of play; grow a stage only at 75–85 % first-listen success.
+
+### Choice tells
+
+A choice set must not give its answer away without the audio. `tells.test` holds each level's 3-choice `reply`, `mean`, `gist` and `next` sets (and the units' tiers) near chance: the right choice the longest in 20–45 % of sets (by ≥ 1.25× in ≤ 12 %), the shortest in 20–45 %, echoing the clip's words least in ≤ 45 % and most in ≥ 15 %, and opening with a reaction or being a question about as often as the wrong ones (± 12 points). Distractors are what a partial listener could pick: a near sound, a number or name caught wrong, the right words with the wrong implication; the clip's words are spread across the choices. `npm run kikimimi:tells -- <level | file>` lists the sets with a tell. The right choice's place comes from the deck's seeded shuffle, even across places.
 
 ## Listening check
 
