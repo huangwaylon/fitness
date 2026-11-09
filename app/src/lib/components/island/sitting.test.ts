@@ -4,7 +4,10 @@ import { defaultLayout, objMid, withChanges, type Obj } from '#lib/layout/model.
 import { seatsOf } from '#lib/layout/nav.ts';
 
 const l0 = defaultLayout();
-const KINDS = [['park-bench', 2, false], ['log-bench', 2, false], ['log-stool', 1, false], ['iron-chair', 1, false], ['hammock', 1, true], ['beach-chair', 1, true]] as const;
+const KINDS = [['park-bench', 2, false], ['log-bench', 2, false], ['log-stool', 1, false], ['iron-chair', 1, false], ['hammock', 1, true], ['beach-chair', 1, true],
+  // the camp goods' and the gym's (scripts/world3d-assets.ts PACKS)
+  ['folding-chair', 1, false], ['directors-chair', 1, false], ['outdoor-bench', 2, false], ['massage-chair', 1, false],
+  ['camping-cot', 1, true], ['sleeping-bag', 1, true], ['yoga-mat', 1, true], ['nook-yoga-mat', 1, true]] as const;
 const at = (o: Obj) => withChanges(l0, { set: [o] });
 
 describe('sitting.ts: the island\'s seats', () => {
@@ -47,7 +50,7 @@ describe('sitting.ts: the island\'s seats', () => {
   });
 
   test('the gym: each piece one uses walks up to its spot and on (its anchor\'s use), every facing', () => {
-    const USES = { 'weight-bench': ['press', false], 'exercise-bike': ['pedal', false], treadmill: ['run', true], 'punching-bag': ['punch', true], 'exercise-ball': ['bounce', false], pullup: ['pullup', true] } as const;
+    const USES = { 'weight-bench': ['press', false], 'exercise-bike': ['pedal', false], treadmill: ['run', true], 'punching-bag': ['punch', true], 'exercise-ball': ['bounce', false], pullup: ['pullup', true], 'speed-bag': ['punch', true] } as const;
     const bad: string[] = [];
     for (const [k, [use, stand]] of Object.entries(USES))
       for (const f of [0, 1, 2, 3] as const) {
@@ -64,7 +67,7 @@ describe('sitting.ts: the island\'s seats', () => {
         if (Math.hypot(a.x - mx, -a.z - mz) >= 30) bad.push(`${k} f${f}: off its piece`);
       }
     // the rest of the gym is to look at: a tap answers where it stands
-    for (const k of ['barbell', 'kettlebell', 'protein-shaker', 'water-cooler', 'digital-scale', 'climbing-wall', 'upright-locker']) if (seatSpots(at({ id: 'g1', k, x: 8, z: 20, f: 0 }), { id: 'g1', k, x: 8, z: 20, f: 0 }).length) bad.push(`${k}: a seat`);
+    for (const k of ['barbell', 'kettlebell', 'protein-shaker', 'water-cooler', 'digital-scale', 'climbing-wall', 'upright-locker', 'dumbbell']) if (seatSpots(at({ id: 'g1', k, x: 8, z: 20, f: 0 }), { id: 'g1', k, x: 8, z: 20, f: 0 }).length) bad.push(`${k}: a seat`);
     expect(bad).toEqual([]);
   });
 

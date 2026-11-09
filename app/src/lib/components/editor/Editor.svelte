@@ -464,7 +464,7 @@
   // ---- the panel ----
   const BRUSHES: Kind[] = ['grass', 'sand', ...PATHS, 'river', 'pond', 'sea'];
   const BRUSH_NAME: Record<Kind, string> = { grass: '草', sand: '砂', dirt: '土', stone: '石', brick: 'レンガ', plank: '板', river: '川', pond: '池', sea: '海' };
-  const GROUPS: [string, string][] = [['tree', '木'], ['bush', '低木'], ['flower', '花'], ['rock', '岩'], ['light', '明かり'], ['furniture', '家具'], ['gym', 'ジム'], ['season', '季節'], ['structure', '橋・坂'], ['building', '建物'], ['visitor', 'お客さん']];
+  const GROUPS: [string, string][] = [['tree', '木'], ['bush', '低木'], ['flower', '花'], ['rock', '岩'], ['light', '明かり'], ['furniture', '家具'], ['camp', 'キャンプ'], ['food', '食べ物'], ['gym', 'ジム'], ['season', '季節'], ['structure', '橋・坂'], ['building', '建物'], ['visitor', 'お客さん']];
   const one = $derived(selected.size === 1 ? (cur.objects.get([...selected][0]) ?? null) : null);
   function setVariant(s: string) {
     if (one) commit(restyle(store.current, one.id, s), '変更した');

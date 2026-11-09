@@ -71,7 +71,12 @@ interface Job {
   split?: { name: string; above: number };
   /** The art keys it serves (scripts/world3d-assets.ts: the island's things, into assets.json; not the POC's models.json). */
   uses?: Use[];
+  /** A pack (scripts/world3d-assets.ts PACKS): its members in this one GLB, each under a node named its id, model
+   *  `decor/<id>` in assets.json (`pack`: this file). */
+  pack?: (Pick<Job, 'parts' | 'tex' | 'maxTex' | 'uses'> & { id: string })[];
 }
+/** A pack member's model name (assets.json): the pack's folder and its id. */
+const memberName = (j: Job, id: string) => `${j.name.slice(0, j.name.lastIndexOf('/') + 1)}${id}`;
 const ftr = (name: string, model: string, body = 0, extra: Partial<Job> = {}): Job => ({ name, parts: [[model, model]], tex: [`${model}ReBody${body}`, `${model}ReFabric0`], ...extra });
 
 const JOBS: Job[] = [
@@ -180,8 +185,8 @@ const copy = (folder: string) => {
   const src = join(ROOT, F(folder));
   for (const n of readdirSync(src)) if (/^[A-Za-z0-9_]+(\.[0-9]+)?\.(dae|png)$/.test(n) && statSync(join(src, n)).isFile()) cpSync(join(src, n), join(dst, n));
 };
-for (const j of todo) {
-  for (const [f, d] of j.parts) if (!has(f) || !SAFE.test(d)) throw new Error(`${j.name}: no model ${f}/${d}`);
+for (const j of todo.flatMap((t) => [t, ...(t.pack ?? [])])) {
+  for (const [f, d] of j.parts) if (!has(f) || !SAFE.test(d)) throw new Error(`${'name' in j ? j.name : j.id}: no model ${f}/${d}`);
   // (a room's textures, `<room>_Tex`: every one of its own folders, `<room>_Tex_<material>_<map>`)
   j.tex = (j.tex ?? []).flatMap((t) => (t.endsWith('_Tex') ? roomTex(t) : [t])).filter(has);
   for (const f of [...j.parts.map((p) => p[0]), ...j.tex]) copy(f);
@@ -214,15 +219,26 @@ await page.waitForFunction(() => (window as unknown as { ready?: boolean }).read
 
 /** A part lifted out (Job `split`): its node's name, where it rests (model units: its middle), its long axis and length. */
 interface Part { name: string; rest: number[]; axis: 'x' | 'y' | 'z'; len: number; tris: number }
-interface Meta { min: number[]; max: number[]; tris: number; kb: number; v: string; lit?: 1; part?: Omit<Part, 'tris'> }
+interface Meta { min: number[]; max: number[]; tris: number; kb: number; v: string; lit?: 1; part?: Omit<Part, 'tris'>; pack?: string }
 const metas: Record<string, Meta> = existsSync(META) ? (JSON.parse(readFileSync(META, 'utf8')) as { models: Record<string, Meta> }).models : {};
 const ASSET_META = join(dirname(META), 'assets.json');
 /** The island's things' models (assets.json `models`; the POC's stay in models.json too). */
 const assetMetas: Record<string, Meta> = existsSync(ASSET_META) ? (JSON.parse(readFileSync(ASSET_META, 'utf8')) as { models: Record<string, Meta> }).models : {};
 let total = 0;
+/** A pack's members' bounds, triangles and light (convertPack), by member. */
+type Member = { id: string; box: [number[], number[]]; tris: number; lit: boolean };
 for (const j of todo) {
-  const files = [...j.tex!, ...new Set(j.parts.map((p) => p[0]))].map((f) => [F(f), readdirSync(join(scratch, F(f)))]);
-  const r = j.fx ? { ...fxGltf(j.fx), lit: j.fx === 'flame' } : await page.evaluate((o) => (window as unknown as { convert: (o: unknown) => Promise<{ gltf: string; box: [number[], number[]]; tris: number; lit: boolean; split: Part | null }> }).convert(o), {
+  const filesOf = (x: Pick<Job, 'tex' | 'parts'>) => [...x.tex!, ...new Set(x.parts.map((p) => p[0]))].map((f) => [F(f), readdirSync(join(scratch, F(f)))]);
+  const files = filesOf(j);
+  let members: Member[] | null = null;
+  const r = j.pack ? await page.evaluate(async (o) => {
+    const p = await (window as unknown as { convertPack: (o: unknown) => Promise<{ gltf: string; members: Member[] }> }).convertPack(o);
+    return { gltf: p.gltf, members: p.members };
+  }, { maxTex: j.maxTex ?? 256, maxEmi: 128, members: j.pack.map((m) => ({ id: m.id, parts: m.parts.map(([f, d, at]) => ({ folder: F(f), dae: `${d}.dae`, at })), files: filesOf(m), ...(m.maxTex ? { maxTex: m.maxTex } : {}) })) }).then((p) => {
+    members = p.members;
+    const min = [0, 1, 2].map((i) => Math.min(...p.members.map((m) => m.box[0][i]))), max = [0, 1, 2].map((i) => Math.max(...p.members.map((m) => m.box[1][i])));
+    return { gltf: p.gltf, box: [min, max] as [number[], number[]], tris: p.members.reduce((n, m) => n + m.tris, 0), lit: p.members.some((m) => m.lit), split: null };
+  }) : j.fx ? { ...fxGltf(j.fx), lit: j.fx === 'flame' } : await page.evaluate((o) => (window as unknown as { convert: (o: unknown) => Promise<{ gltf: string; box: [number[], number[]]; tris: number; lit: boolean; split: Part | null }> }).convert(o), {
     parts: j.parts.map(([f, d, at]) => ({ folder: F(f), dae: `${d}.dae`, at })), files, maxTex: j.maxTex ?? 256, maxEmi: 128,
     grdRow: j.grdRow, grdRows: j.grdRows, grdBlock: j.grdBlock, hide: j.hide, alias: j.alias, flat: j.flat, pose: j.pose, grdFile: j.grdFile, snow: j.snow, variant: j.variant, noAo: j.noAo, split: j.split
   });
@@ -252,15 +268,22 @@ for (const j of todo) {
   writeFileSync(join(dir, 'm.gltf'), JSON.stringify(g));
   const out = join(OUT, `${j.name}.glb`);
   mkdirSync(dirname(out), { recursive: true });
-  const max = j.tris ?? TRIS;
+  const max = j.tris ?? (j.pack ? TRIS * j.pack.length : TRIS);
   const si = r.tris > max ? ['-si', (max / r.tris).toFixed(3)] : [];
   // (a lifted part's node and its extras kept: not merged into the rest)
-  const split = 'split' in r ? r.split : null, keep = j.split ? ['-kn', '-ke'] : [];
+  const split = 'split' in r ? r.split : null, keep = j.split || j.pack ? ['-kn', '-ke'] : [];
   if (j.split && !split) throw new Error(`${j.name}: nothing above ${j.split.above} to lift out`);
   execFileSync('node', [GLTFPACK, '-i', join(dir, 'm.gltf'), '-o', out, '-cc', '-ce', 'ext', ...keep, ...si]);
   const bytes = statSync(out).size;
   total += bytes;
   const v = createHash('sha256').update(readFileSync(out)).digest('hex').slice(0, 8);
+  if (members) {
+    // each member a model of its own in assets.json, in this file (its share of the bytes by its triangles)
+    const all = (members as Member[]).reduce((n, m) => n + m.tris, 0);
+    for (const m of members as Member[]) assetMetas[memberName(j, m.id)] = { min: m.box[0].map((n) => +n.toFixed(2)), max: m.box[1].map((n) => +n.toFixed(2)), tris: m.tris, kb: +((bytes / 1024) * (m.tris / all)).toFixed(1), v, ...(m.lit ? { lit: 1 as const } : {}), pack: j.name };
+    console.log(`${j.name}: ${(bytes / 1024).toFixed(1)} KB, ${r.tris} tris, ${(members as Member[]).length} models (${(members as Member[]).map((m) => `${m.id} ${m.tris}${m.lit ? ' lit' : ''} h ${(m.box[1][1] - m.box[0][1]).toFixed(1)}`).join(', ')})`);
+    continue;
+  }
   (j.uses ? assetMetas : metas)[j.name] = { min: r.box[0].map((n) => +n.toFixed(2)), max: r.box[1].map((n) => +n.toFixed(2)), tris: Math.min(r.tris, max), kb: +(bytes / 1024).toFixed(1), v, ...(r.lit ? { lit: 1 as const } : {}), ...(split ? { part: { name: split.name, rest: split.rest, axis: split.axis, len: split.len } } : {}) };
   if (process.env.PARTS) console.log(JSON.stringify((r as unknown as { parts: unknown }).parts));
   console.log(`${j.name}: ${(bytes / 1024).toFixed(1)} KB, ${r.tris} tris${si.length ? ` → ${max}` : ''}${r.lit ? ', lit' : ''}, h ${(r.box[1][1] - r.box[0][1]).toFixed(1)}`);
@@ -292,8 +315,9 @@ if (probe) {
   console.log(`${todo.length} models, ${(total / 1024 / 1024).toFixed(2)} MB → ${OUT}`);
   process.exit(0);
 }
-for (const k of Object.keys(assetMetas)) if (!JOBS.some((j) => j.name === k && j.uses)) delete assetMetas[k];
-writeAssets(ASSET_META, assetMetas, metas, POC_USES, JOBS.filter((j) => j.uses).map((j) => [j.name, j.uses!] as const));
+const jobUses = JOBS.flatMap((j) => (j.pack ? j.pack.map((m) => [memberName(j, m.id), m.uses!] as const) : j.uses ? [[j.name, j.uses] as const] : []));
+for (const k of Object.keys(assetMetas)) if (!jobUses.some(([n]) => n === k)) delete assetMetas[k];
+writeAssets(ASSET_META, assetMetas, metas, POC_USES, jobUses);
 writeDoc(join(APP, '..', 'docs', 'world3d-assets.md'), ASSET_META);
 const sorted = Object.fromEntries(Object.entries(metas).sort(([a], [b]) => a.localeCompare(b)));
 writeFileSync(META, `{\n  "_": "scripts/world3d-models.ts: the 3D island POC's models (bounds in model units, triangles, KB, content hash)",\n  "models": {\n${Object.entries(sorted).map(([k, m]) => `    ${JSON.stringify(k)}: ${JSON.stringify(m)}`).join(',\n')}\n  }\n}\n`);

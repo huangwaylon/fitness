@@ -114,6 +114,9 @@ export interface AssetJob {
   split?: { name: string; above: number };
   /** Not NH's: a stylised effect (scripts/world3d-fx.ts). */
   fx?: 'sparkle' | 'bang' | 'dust' | 'splash' | 'ripple' | 'zzz' | 'sweat' | 'confetti' | 'flame' | 'lily-pad';
+  /** A pack: several models in this one GLB (`name` its file), each under a node named its id, its model
+   *  `decor/<id>` (assets.json `pack`: the file it's in); the job's own `uses` none. */
+  pack?: (Pick<AssetJob, 'parts' | 'tex' | 'maxTex' | 'uses'> & { id: string })[];
   uses: Use[];
 }
 
@@ -291,6 +294,41 @@ const DECOR: [string, string][] = [
   ['exercise-ball', 'FtrBalanceball'], ['barbell', 'FtrBarbell'], ['kettlebell', 'FtrKettlebell'], ['protein-shaker', 'FtrProtein'],
   ['water-cooler', 'FtrWaterserver'], ['digital-scale', 'FtrWeightscale'], ['climbing-wall', 'FtrClimbingwall'], ['upright-locker', 'FtrLocker']
 ];
+// the packs (docs/design.md "Decorating"): the もようがえ's キャンプ, たべもの and more of the ジム, NH's camp goods,
+// food and fitness furniture, a GLB a tab (static/ stays under Pages' file cap: a few files, not three an item), each
+// member as a decoration (its four facings' keys `decor/<id>-<f>`, its model `decor/<id>`). [id, NH's model, its texture
+// colour folders (default its ReBody0 and ReFabric0), longest texture side]
+type Member = [id: string, model: string, tex?: string[], maxTex?: number];
+const PACKS: Record<string, Member[]> = {
+  'decor/camp': [
+    ['small-campfire', 'FtrBonfire'], ['fire-pit', 'FtrFirepit'], ['lantern', 'FtrLantern'], ['camping-cot', 'FtrCampbed'],
+    ['sleeping-bag', 'FtrSleepingbag'], ['kids-tent', 'FtrCrsTent'], ['cooler-box', 'FtrCoolerbox'], ['barbecue', 'FtrBarbecuegrill'],
+    ['camp-stove', 'FtrKocher'], ['folding-chair', 'FtrOutdoorChair'], ['folding-table', 'FtrOutdoorTable'], ['outdoor-bench', 'FtrOutdoorchairM'],
+    ['outdoor-table', 'FtrOutdoortableM'], ['directors-chair', 'FtrDirectorchair'], ['utility-wagon', 'FtrOutdoorCarry'],
+    ['water-jug', 'FtrWaterjug', undefined, 128], ['simple-kettle', 'FtrKettle', undefined, 128], ['portable-radio', 'FtrPortableradio', undefined, 128],
+    ['angled-signpost', 'FtrSignpostTilt'], ['destinations-signpost', 'FtrSignpostWorld']
+  ],
+  'decor/food': [
+    ['picnic-basket', 'FtrPicnicbasket'], ['fruit-basket', 'FtrFruitbasket'], ['bread', 'FtrBreadbasket'], ['sandwich-set', 'FtrBucketsandset'],
+    ['campfire-cookware', 'FtrMesstin'], ['stewpot', 'FtrStockpot'], ['frying-pan', 'FtrPan'], ['seafood-ajillo', 'FtrSkilletSeafood'],
+    ['grilled-sea-bass', 'FtrFishdishBass'], ['western-meal', 'FtrCuisineWestern'], ['japanese-meal', 'FtrCuisineJapan'],
+    ['bottled-beverage', 'FtrBottlePlastic'], ['coconut-juice', 'FtrCoconutjuice'], ['cookies', 'FtrCookiePlain']
+  ].map(([id, m]): Member => [id, m, undefined, 128]),
+  'decor/gym2': [
+    ['yoga-mat', 'FtrYogamat'], ['nook-yoga-mat', 'FtrYogamatExercise'], ['speed-bag', 'FtrSpeedbag'], ['massage-chair', 'FtrMassagechair'],
+    ['dumbbell', 'ToolDumbbell', [], 128]
+  ]
+};
+// (NH's おはなみセット, converted already with the fixed decor: the たべもの tab's too, its facings' keys on its model)
+decos.find((j) => j.name === 'deco/picnic-set')!.uses.push(...[0, 1, 2, 3].map((f): Use => ({ key: `decor/picnic-set-${f}`, cat: 'decor', s: DECOR_U, yaw: f * 90 })));
+const packs = Object.entries(PACKS).map(([name, ms]): AssetJob => ({
+  name, parts: [], uses: [],
+  pack: ms.map(([id, model, tex, maxTex]) => ({
+    id, parts: one(model), tex: tex ?? ftrTex(model), ...(maxTex ? { maxTex } : {}),
+    uses: [0, 1, 2, 3].map((f): Use => ({ key: `decor/${id}-${f}`, cat: 'decor', s: DECOR_U, yaw: f * 90 }))
+  }))
+}));
+
 /** A decoration's part lifted out of its one mesh, its own node (the same material): the weight bench's barbell, its bar,
  *  plates and collars (the mesh's pieces wholly above 10 model units: the rack's uprights reach the ground), lifted off
  *  the rack and pressed by whoever lies on it (world3d/benchBar.ts). */
@@ -362,7 +400,7 @@ const accessories: AssetJob[] = [
   { name: 'accessories/party-glasses', parts: one('AccessoryGlassBirthday0'), maxTex: 128, uses: [{ key: 'accessories/party-glasses', cat: 'accessory', s: VILLAGER_S, anchor: 'joint', lazy: 'event' }] }
 ];
 
-export const ASSETS: AssetJob[] = [...bugs, ...fish, ...sea, ...shadows, ...finds, ...flowers, ...bushes, ...trees, ...decos, ...decor, ...events, ...board, ...fxs, ...tools, ...accessories];
+export const ASSETS: AssetJob[] = [...bugs, ...fish, ...sea, ...shadows, ...finds, ...flowers, ...bushes, ...trees, ...decos, ...decor, ...packs, ...events, ...board, ...fxs, ...tools, ...accessories];
 
 /** The POC's models (models.json: static/room/world3d/<name>.glb) serving the island's keys as they are. */
 export const POC_USES: [string, Use[]][] = [

@@ -884,6 +884,18 @@ the layout's objects (the old decorations' map moved into the layout once as `m-
   for the gym's barbell (benchBar.ts HELD, 1.25 × NH's size so a human player's grip fits), which rides the hands
   (villager3d `hands()`, `world3d/benchBar.ts`) through `press` and goes back on the rack as it gets up. The others are
   to look at (a tap jiggles them). A piece is the decorations' instanced model; its use is stepped at the ambient rate.
+  More of NH's (the gym pack): ヨガマット and たぬき開発ヨガマット (lain on), スピードバッグ (punched, `punch`),
+  マッサージチェア (sat on), ダンベル (to look at).
+- **キャンプ** (group `camp`): NH's camp goods, the island's own (キャンプファイア, まるたのイス, まるたのベンチ,
+  ハンモック, ロッドスタンド, まき, キャンプサイトの看板) and the camp pack's: たき火, ファイヤーピット, ランタン (lit at
+  night from their emitters, world3d/things.ts LAMP `e`, faded in as every light), キャンプベッド and シュラフ (lain on),
+  折りたたみアウトドアチェア, ディレクターズチェア, アウトドアベンチ (sat on), キッズテント, クーラーボックス,
+  バーベキューグリル, コッフェル, 折りたたみアウトドアテーブル, アウトドアテーブル, キャリーワゴン, ウォータージャグ,
+  ケトル, 携帯ラジオ, ナナメのみちしるべ, せかいのみちしるべ.
+- **食べ物** (group `food`, to look at): ピクニックバスケット, お花見セット, フルーツバスケット, パン, ミックスサンドセット,
+  飯ごう (its fire lit at night), 鍋, フライパン, シーフードのアヒージョ, スズキの香草焼き, 洋風定食, 和風定食,
+  ペットボトル飲料, ココナッツジュース, クッキー. The editor's labels are kanji (the sheets' rule); the world's
+  (`decor.item.*`) NH's kana. The tray's icons are the ずかん's, else NH's own (`art/items/<kind>`).
 - **How many:** the layout's objects are capped by the record at 1,500 standing (`contract/layout.ts` LAYOUT_MAX).
 - **In:** /editor only: the desktop editor, or its phone view's IslandEdit (`/editor/?view=phone&edit`), the tent's
   way (a tray, a ghost green or red, a tile at a time, ↻ まわす, ✕, 🗑, ✓). Its おきゃくさん tab: where the visitors stand

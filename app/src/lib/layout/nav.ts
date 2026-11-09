@@ -199,7 +199,18 @@ const SEAT_ON: Readonly<Record<string, { x: readonly number[]; front: number; li
   'exercise-ball': { x: [0], front: 24 },
   treadmill: { x: [4.5], front: 24 },
   'punching-bag': { x: [-24], front: 6 },
-  pullup: { x: [0], front: -15 }
+  pullup: { x: [0], front: -15 },
+  // the camp goods' chairs, bench, cot and sleeping bag, and the gym's mats (lain on), massage chair and speed bag (punched
+  // from in front)
+  'folding-chair': { x: [0], front: 29.4 },
+  'directors-chair': { x: [0], front: 27.9 },
+  'outdoor-bench': { x: [-11.7, 11.7], front: 26.4 },
+  'camping-cot': { x: [1.65], front: 30, lie: true },
+  'sleeping-bag': { x: [0.15], front: 30, lie: true },
+  'yoga-mat': { x: [0.15], front: 30, lie: true },
+  'nook-yoga-mat': { x: [0.15], front: 30, lie: true },
+  'massage-chair': { x: [0], front: 21.9 },
+  'speed-bag': { x: [0], front: 24 }
 };
 /** A piece's turn (three's yaw: 0 its front toward us, −z; a quarter turn each), as the 3D island stands it
  *  (world3d/objects.ts): a turning kind by its facing, a look-only facing (odd) a little turned. */

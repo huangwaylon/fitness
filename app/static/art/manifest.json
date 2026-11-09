@@ -2755,11 +2755,47 @@
       "h": 512,
       "source": "https://nookipedia.com/wiki/File:Tom_Nook_NH.png"
     },
+    "items/angled-signpost": {
+      "path": "items/angled-signpost.webp",
+      "w": 96,
+      "h": 96,
+      "source": "NH's own icon Layout_FtrIcon_FtrSignpostTilt_Remake_0_0 (the 2.0.0 export)"
+    },
+    "items/bread": {
+      "path": "items/bread.webp",
+      "w": 96,
+      "h": 96,
+      "source": "NH's own icon Layout_FtrIcon_FtrBreadbasket (the 2.0.0 export)"
+    },
+    "items/camping-cot": {
+      "path": "items/camping-cot.webp",
+      "w": 96,
+      "h": 96,
+      "source": "NH's own icon Layout_FtrIcon_FtrCampbed_Remake_0_0 (the 2.0.0 export)"
+    },
     "items/candy": {
       "path": "items/candy.webp",
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Candy_NH_Inv_Icon.png"
+    },
+    "items/coconut-juice": {
+      "path": "items/coconut-juice.webp",
+      "w": 96,
+      "h": 96,
+      "source": "NH's own icon Layout_FtrIcon_FtrCoconutjuice (the 2.0.0 export)"
+    },
+    "items/cookies": {
+      "path": "items/cookies.webp",
+      "w": 96,
+      "h": 96,
+      "source": "NH's own icon Layout_FtrIcon_FtrCookiePlain (the 2.0.0 export)"
+    },
+    "items/destinations-signpost": {
+      "path": "items/destinations-signpost.webp",
+      "w": 96,
+      "h": 96,
+      "source": "NH's own icon Layout_FtrIcon_FtrSignpostWorld_Remake_0_0 (the 2.0.0 export)"
     },
     "items/dinner": {
       "path": "items/dinner.webp",
@@ -2772,6 +2808,66 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Dumbbell_(Red)_NH_Icon.png"
+    },
+    "items/fruit-basket": {
+      "path": "items/fruit-basket.webp",
+      "w": 96,
+      "h": 96,
+      "source": "NH's own icon Layout_FtrIcon_FtrFruitbasket (the 2.0.0 export)"
+    },
+    "items/frying-pan": {
+      "path": "items/frying-pan.webp",
+      "w": 96,
+      "h": 96,
+      "source": "NH's own icon Layout_FtrIcon_FtrPan_Remake_0_0 (the 2.0.0 export)"
+    },
+    "items/grilled-sea-bass": {
+      "path": "items/grilled-sea-bass.webp",
+      "w": 96,
+      "h": 96,
+      "source": "NH's own icon Layout_FtrIcon_FtrFishdishBass (the 2.0.0 export)"
+    },
+    "items/kids-tent": {
+      "path": "items/kids-tent.webp",
+      "w": 96,
+      "h": 96,
+      "source": "NH's own icon Layout_FtrIcon_FtrCrsTent_Remake_0_0 (the 2.0.0 export)"
+    },
+    "items/lantern": {
+      "path": "items/lantern.webp",
+      "w": 96,
+      "h": 96,
+      "source": "NH's own icon Layout_FtrIcon_FtrLantern_Remake_0_0 (the 2.0.0 export)"
+    },
+    "items/nook-yoga-mat": {
+      "path": "items/nook-yoga-mat.webp",
+      "w": 96,
+      "h": 96,
+      "source": "NH's own icon Layout_FtrIcon_FtrYogamatExercise (the 2.0.0 export)"
+    },
+    "items/picnic-set": {
+      "path": "items/picnic-set.webp",
+      "w": 96,
+      "h": 96,
+      "source": "NH's own icon Layout_FtrIcon_FtrSakuraPicnicset (the 2.0.0 export)"
+    },
+    "items/portable-radio": {
+      "path": "items/portable-radio.webp",
+      "w": 96,
+      "h": 96,
+      "source": "NH's own icon Layout_FtrIcon_FtrPortableradio_Remake_0_0 (the 2.0.0 export)"
+    },
+    "items/seafood-ajillo": {
+      "path": "items/seafood-ajillo.webp",
+      "w": 96,
+      "h": 96,
+      "source": "NH's own icon Layout_FtrIcon_FtrSkilletSeafood (the 2.0.0 export)"
+    },
+    "items/small-campfire": {
+      "path": "items/small-campfire.webp",
+      "w": 96,
+      "h": 96,
+      "source": "NH's own icon Layout_FtrIcon_FtrBonfire (the 2.0.0 export)"
     },
     "items/snack": {
       "path": "items/snack.webp",

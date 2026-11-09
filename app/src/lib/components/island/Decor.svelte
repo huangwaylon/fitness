@@ -9,9 +9,8 @@
   import { t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { decorArt, decorH, DECOR_KINDS, type Facing } from './decor.ts';
+  import { decorArt, decorH, decorPlace, DECOR_KINDS, type Facing } from './decor.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
-  import PLACES from './models.json';
   import { onMount } from 'svelte';
   import { echo3d } from './echo3d.ts';
   import { site } from './site.svelte.ts';
@@ -36,11 +35,10 @@
       return { id: o.id, item: o.k, x: Math.round(x), z: Math.round(z), f: o.f as Facing };
     });
   });
-  const P = PLACES as unknown as Record<string, { ax: number; ay: number; mu?: [number, number] }>;
-  /** A render stands on its feet point (models.json), its height decorH; its width the art's, else the model's box
-   *  (models.json mu: the turned looks have no 2D art, only the 3D island draws them). */
+  /** A render stands on its feet point (decorPlace), its height decorH; its width the art's, else the model's box (the
+   *  turned looks and a pack's kinds have no 2D art, only the 3D island draws them). */
   function look(item: string, f: Facing) {
-    const key = decorArt(item, f), h = decorH(item, f), a = art(key), p = P[key];
+    const key = decorArt(item, f), h = decorH(item, f), a = art(key), p = decorPlace(item, f);
     const wd = a ? (h * a.w) / a.h : p?.mu ? (h * p.mu[0]) / p.mu[1] : h;
     return { key, h, wd, style: p ? `left:calc(${-p.ax * wd} * var(--u));bottom:calc(${-(1 - p.ay) * h} * var(--u))` : '' };
   }
