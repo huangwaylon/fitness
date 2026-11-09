@@ -119,8 +119,8 @@ After a deploy, never holding one back:
   runners, ~20 min a run each); once it's green across the board it replaces Chromium as the gate. Each test 3× over,
   retries off; red when anything failed even once, its summary lists them worst first. It gates nothing. A test gets
   60 s there (`--timeout=60000`): the VM runs a test 2–3× its Linux time, and it hunts flakes, not speed. A test
-  WebKit can't run is `@chromium` with why; one the drawn tier can't (a map made, so OpenFreeMap or USGS tiles off the
-  network; a timing software GL can't meet) is `@logic` with why: tagged out, never a job left red.
+  WebKit can't run is `@chromium` with why; one the drawn tier can't (a timing software GL can't meet) is `@logic`
+  with why: tagged out, never a job left red.
 - **The base path.** The site is at the root (`BASE_PATH` unset or `''`); the specs follow `BASE_PATH` (`e2e/island.ts`
   `BASE`, `islandURL`), so a build under one (`BASE_PATH=/x npm run build`, then `BASE_PATH=/x npm run e2e`) is tested the same.
 - **The headers.** `npm run build` writes `build-pages/_headers` (`scripts/headers.ts`: the CSP SvelteKit put in the
@@ -130,9 +130,10 @@ After a deploy, never holding one back:
   the island, its sheets, the music, the shop, the museum, the tent, the editor and the trip map (drawn on fixture
   tiles: its worker, fonts and OpenFreeMap's origin) and fails on any CSP violation.
 - **The trip map.** In the logic tier no map is made: `TripMap` is a stub with its pins as buttons
-  (`travel-map.spec.ts`, `window.__travelMap`). The drawn ones (its `@render` smoke, `csp.spec`, `leaks.spec`) get
-  OpenFreeMap answered from `e2e/fixtures/travel/` (`e2e/trips.ts`, with the refresh recipe): no spec reaches the
-  network.
+  (`travel-map.spec.ts`, `window.__travelMap`; its stub tests set logic mode themselves, so they read the stub in any
+  tier). Every map tile host is answered on every context (`e2e/mapTiles.ts`, from e2e/fixtures.ts): OpenFreeMap from
+  `e2e/fixtures/travel/` (the refresh recipe in `e2e/trips.ts`), USGS and GSI a 1 px PNG, so a drawn map (a trip's
+  地図, a hike's trail, `csp.spec`, `leaks.spec`) never reaches the network, whichever spec makes it.
 - Playwright's browsers are cached by its version; bumping `@playwright/test` downloads them once.
 
 ## CI cost
@@ -211,7 +212,8 @@ Every e2e runs in a sealed world (e2e/fixtures.ts), so a run today and a run in 
   the time as they do: `island.now()`, `rec.now()`, never `Date.now()`.
 - **No network.** Chromium resolves no host but 127.0.0.1 (`--host-resolver-rules`), and a request off the local
   preview that went out (Chromium refused it; WebKit: a server answered) fails the test at its end, naming it. Mock a
-  relay with `page.route` / `context.route` and fulfil it (board.spec, record.ts, liveRoom.ts). The real relay's
+  relay with `page.route` / `context.route` and fulfil it (board.spec, record.ts, liveRoom.ts); the map tiles are
+  answered already (e2e/mapTiles.ts). The real relay's
   harness (`RELAY_E2E=1`, sync-harness.spec) is the one opt-out (`test.use({ network: 'any' })`).
 - **No randomness**: no `Math.random` in a spec (a counter for ids); pin the island's with `?seed=`, `&rock=`,
   `&shake=`, and a critter or a visitor with `?critter=` / `?visitor=` (docs/design.md "Dev params").

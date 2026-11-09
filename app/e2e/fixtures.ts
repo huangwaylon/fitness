@@ -11,7 +11,8 @@
 //   the pinned day's seeded one (clear at noon) or a `?wx=` / `?weather=` fixture;
 // - the network: nothing leaves the local preview. Chromium resolves no other host (playwright.config.ts), and any
 //   request or socket to one fails the test loudly at its end, naming it (`test.use({ network: 'any' })`: the real
-//   relay's harness only, RELAY_E2E=1);
+//   relay's harness only, RELAY_E2E=1). Every map tile host (OpenFreeMap, USGS, GSI) is answered on every context
+//   (e2e/mapTiles.ts), so a drawn map is local whichever spec makes it;
 // - storage: each test's own context (Playwright's), service workers blocked; two phones in one context share it.
 //   ききみみ's first-run welcome counts as seen for every player (DEVICE.kikiOnboarded, unless the test set it):
 //   `test.use({ kikiFirstRun: true })` keeps it for the onboarding spec;
@@ -21,6 +22,7 @@
 //   stars. Nothing wanders into a tap. A URL's own param wins (`?critter=fish`, `?visitor=jack`);
 //   `test.use({ ambient: 'on' })` brings it all back for a test or file.
 import { test as base, type BrowserContext, type Page } from '@playwright/test';
+import { serveMapTiles } from './mapTiles.ts';
 
 export * from '@playwright/test';
 
@@ -123,6 +125,7 @@ export const test = base.extend<Options & { hermetic: void }>({
         c.pages().forEach(own);
         c.on('page', own);
         if (network === 'any') return;
+        await serveMapTiles(c);
         // what went out: one Chromium refused to resolve, or one a server answered (WebKit has no such block); a request
         // the test routes and fulfils or aborts itself (a mocked relay: board.spec, record.ts) never left
         const blocked = (e: string | undefined) => /NAME_NOT_RESOLVED|NAME_RESOLUTION_FAILED/.test(e ?? '');

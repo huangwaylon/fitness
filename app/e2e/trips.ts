@@ -8,14 +8,11 @@
 //   T=$(node -p "require('/tmp/planet.json').tiles[0]")
 //   for f in tiles/*/*/*.pbf; do IFS=/ read -r _ z x y <<< "${f%.pbf}"; curl -s "$(echo $T | sed "s/{z}/$z/;s/{x}/$x/;s/{y}/$y/")" -o $f; done
 //   then copy /tmp/planet.json's fields into tilejson.json, keeping its tiles as …/planet/fixture/{z}/{x}/{y}.pbf.
-import { readFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
 import { expect, type Page } from './fixtures.ts';
+import { openFreeMap } from './mapTiles.ts';
 import type { MapState } from '../src/lib/components/travel/map/types.ts';
 import { BASE } from './island.ts';
 import { fromMenu, hudMenu } from './hud.ts';
-
-const FIX = join(import.meta.dirname, 'fixtures', 'travel');
 
 export const mapState = (page: Page) => page.evaluate(() => (window as unknown as { __travelMap: { state(): unknown } }).__travelMap.state()) as Promise<MapState>;
 
@@ -60,21 +57,16 @@ export async function gotoTrip(page: Page, trip = 'nz', tab: TripTab = 'map', q 
   await pickTrip(page, trip, tab);
 }
 
-/** OpenFreeMap from the fixtures; returns the requests to it that weren't the fixture's (expected: none). */
+/** OpenFreeMap from the fixtures (e2e/mapTiles.ts, every context's already), counted: the fixture tiles asked for, and
+ *  the requests to it that weren't the fixture's (expected: none). */
 export async function fixtureTiles(page: Page): Promise<{ tiles: string[]; stray: string[] }> {
   const tiles: string[] = [], stray: string[] = [];
   await page.route('https://tiles.openfreemap.org/**', (route) => {
-    const u = new URL(route.request().url());
-    if (u.pathname === '/planet') return route.fulfill({ contentType: 'application/json', body: readFileSync(join(FIX, 'tilejson.json')), headers: { 'access-control-allow-origin': '*' } });
-    const m = /^\/planet\/fixture\/(\d+)\/(\d+)\/(\d+)\.pbf$/.exec(u.pathname);
-    if (m) {
-      tiles.push(m.slice(1).join('/'));
-      const f = join(FIX, 'tiles', m[1], m[2], `${m[3]}.pbf`);
-      return existsSync(f)
-        ? route.fulfill({ contentType: 'application/x-protobuf', body: readFileSync(f), headers: { 'access-control-allow-origin': '*' } })
-        : route.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*' } });
-    }
-    stray.push(u.href);
+    const m = /^\/planet\/fixture\/(\d+)\/(\d+)\/(\d+)\.pbf$/.exec(new URL(route.request().url()).pathname);
+    if (m) tiles.push(m.slice(1).join('/'));
+    const done = openFreeMap(route);
+    if (done) return done;
+    stray.push(route.request().url());
     return route.abort();
   });
   return { tiles, stray };
