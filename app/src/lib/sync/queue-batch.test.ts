@@ -33,6 +33,7 @@ beforeEach(() => {
 });
 
 const T = 1_000_000;
+const bytes = (body: unknown) => new TextEncoder().encode(JSON.stringify(body)).length;
 
 describe('a batch to the record', () => {
   it('sends what may go now in one request, in queue order, skipping a held one and what follows it on its subject', async () => {
@@ -178,10 +179,27 @@ describe('a queue that never wedges (health A3: sync #1, #18, #19)', () => {
     expect(releaseHeld(T)).toBe(true);
     enqueue('wnote', wnote(9), T);
     const r = await flush(() => T, { keepalive: true });
-    expect(bodies.map((b) => b.body.events.length)).toEqual([2, 2, 2]);
-    expect(bodies.every((b) => JSON.stringify(b.body).length < 64_000)).toBe(true);
+    expect(bodies.map((b) => b.body.events.length)).toEqual([3, 3]);
+    expect(bodies.every((b) => bytes(b.body) < 64 * 1024)).toBe(true);
     expect(r.remaining).toBe(1); // the note: its own next flush
     expect(releaseHeld(T)).toBe(false);
+  });
+
+  it('a keepalive counts the body in bytes, as the browser does: 25k Japanese characters are 75 KB', async () => {
+    enqueue('wnote', { id: 'n1', text: 'あ'.repeat(25_000) }, T);
+    const small = enqueue('pref', { key: 'moveGoal', value: 450 }, T);
+    await flush(() => T, { keepalive: true });
+    expect(bodies.map((b) => b.body.events.map((e: { id: string }) => e.id))).toEqual([[small.id]]);
+    expect(bodies.every((b) => bytes(b.body) < 64 * 1024)).toBe(true);
+  });
+
+  it('a keepalive passes over one event too big for it: the held rows behind it still go', async () => {
+    enqueue('wnote', { id: 'n1', text: 'x'.repeat(70_000) }, T); // due, over 64 KB alone
+    const row = enqueue('island', { date: '2026-11-10', taken: [] }, T, 120_000);
+    releaseHeld(T);
+    const r = await flush(() => T, { keepalive: true });
+    expect(bodies.map((b) => b.body.events.map((e: { id: string }) => e.id))).toEqual([[row.id]]);
+    expect(r.remaining).toBe(1);
   });
 });
 
