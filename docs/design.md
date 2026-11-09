@@ -1191,8 +1191,9 @@ eyes, and back. Kept on this phone (`island.fpv`; `?fpv=1|0` for a tab); local o
 
 ### The shop
 
-`shop/ShopRoom.svelte`, `routes/shop`, `contract/shop.ts`, `contract/shopPrices.ts` (`npm run shop:prices`),
-`model/shop.ts`, `store/actions.ts` (sell, buyPiece), `e2e/shop.spec.ts`. NH's Nook's Cranny (タヌキ商店) with its own
+`shop/ShopRoom.svelte`, `shop/stock.ts` (buyPiece), `routes/shop`, `contract/shop.ts`, `contract/stock.ts`,
+`contract/shopPrices.ts` and `buyPrices.ts` (`npm run shop:prices`), `model/shop.ts`, `store/actions.ts` (sell),
+`e2e/shop.spec.ts`. NH's Nook's Cranny (タヌキ商店) with its own
 money, かいがら (shells), never ベル ([decisions](decisions.md#the-shops-かいがら)): the island's catches sell
 for them and buy furniture for the rooms. Each person's own pocket and かいがら, the guest's too.
 
@@ -1208,13 +1209,16 @@ for them and buy furniture for the rooms. Each person's own pocket and かいが
 - **What a pocket holds** (`contract/pocket.ts`, one table: kind, id, names, icon, price): every collectible: fish,
   bugs, sea creatures, shells, fossils, star fragments, and the goods (`goods:<id>` tally keys: wood, branches, weeds,
   fruit, coconuts, mushrooms, Bunny Day's eggs, junk off the line).
-- **かう** (buy): today's stock (8 pieces of NH furniture a Tokyo day, the same on every phone) and the basics always,
-  each with its icon, name and price. A piece I own says もってる. A bought piece is mine for good in もようがえ (the かった
-  tab, or かべかけ for a wall piece) in every room I arrange.
+- **かう** (buy): today's stock, 24 pieces of NH furniture a Tokyo day (`shop/stock.ts`): the day's order of the price
+  list (seeded by the date and the island's seed) less every piece the island had by the day's start, the shared
+  ずかん's furniture finds (presents, tree gifts, digs) and anyone's buys, so both phones agree all day and a find today
+  leaves it till tomorrow. No いつもの (folded in: all three were furniture). Fewer when the island has nearly
+  everything; none, 売り切れ. Each with its icon, name and price. A piece I own says もってる. A bought piece is mine for
+  good in もようがえ (the かった tab, or かべかけ for a wall piece) in every room I arrange.
 - A sell or a buy shows at once with 取り消す for 5 s, then goes to the record, which checks it (the pocket, the
-  wallet, the stock, the price: [backend](backend.md#events)).
+  wallet, the stock's day, the price: [backend](backend.md#events)).
 - **Prices:** NH's Bells ÷ 20 both ways (a sell at least 3): a sea bass 20, a koi 200, a whale shark 650, wood 3; a
-  median piece 110, one or two catches.
+  median piece 130 (745 pieces: every room model NH sells for up to 100,000 Bells), one or two catches.
 - **The building:** NH's Nook's Cranny, 7 × 4, one to an island, moved and turned in the editor, never removed
   ([island-layout.md](island-layout.md#the-islands-buildings)); the only way in.
 

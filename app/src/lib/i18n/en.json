@@ -592,7 +592,7 @@
   "shop.all": "All",
   "shop.sell": "Sell",
   "shop.today": "Today's stock",
-  "shop.basics": "Always in stock",
+  "shop.soldOut": "Sold out: the island has every piece already",
   "shop.buyHint": "Pick something",
   "shop.buy": "Buy",
   "shop.owned": "Owned",

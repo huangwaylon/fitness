@@ -3,8 +3,8 @@
   // screen, not a room: the twins behind their counter (NH's render, host/timmy-tommy) under the shop's sign, and NH's
   // counter menu under them, うる (sell: my pocket, everything I caught, found or picked up, from my day tallies less what
   // I sold: model/shop.ts; by its sections, shop/pocket.ts) and
-  // かう (buy: the day's stock, the same on every phone: contract/shop.ts stockOf). Prices and my かいがら in NH's shell
-  // (the cowrie). A sell or a buy shows at once with もとに戻す (store/actions.ts sell, buyPiece); a bought piece joins
+  // かう (buy: the day's stock, the same on every phone, never a piece the island had by the day's start: shop/stock.ts). Prices and my かいがら in NH's shell
+  // (the cowrie). A sell or a buy shows at once with もとに戻す (store/actions.ts sell, stock.ts buyPiece); a bought piece joins
   // my もようがえ; an empty pocket opens it on かう (no うる bar). The guest's pocket and かいがら are its own. Never ベル.
   // ‹ 島へ goes back out, just out of its door.
   // While I'm in here the others' islands show my villager nowhere, as in the museum and the rooms (the rooms' `tent`
@@ -20,11 +20,12 @@
   import { SECTIONS, pocketItem } from './pocket.ts';
   import { findArt } from '../island/beach.ts';
   import type { WeekView } from '#lib/types.ts';
-  import { BASICS, buyPrice, sellPrice, stockOf } from '#lib/contract/shop.ts';
+  import { sellPrice } from '#lib/contract/shop.ts';
+  import { buyPrice } from '#lib/contract/stock.ts';
+  import { buyPiece, buyRefusal, stockAt } from './stock.ts';
   import { shopView } from '#lib/model/shop.ts';
-  import { localDateAt } from '#lib/time/dates.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { buyPiece, buyRefusal, sell, undoBanner } from '#lib/store/actions.ts';
+  import { sell, undoBanner } from '#lib/store/actions.ts';
   import { layout as islandLayout } from '#lib/store/layout.svelte.ts';
   import { leaveBy } from '../island/doorOut.ts';
   import { hook } from '../island/devHooks.ts';
@@ -54,9 +55,8 @@
 
   const me = $derived(week.model?.me ?? view.viewer);
   const shop = $derived(week.model ? shopView(week.model.state, me) : { pocket: new Map<string, number>(), shells: 0, owned: [] as readonly string[] });
-  const today = $derived(localDateAt(week.model?.now ?? Date.now()));
-  const stock = $derived(stockOf(today));
-  const daily = $derived(stock.filter((c) => !BASICS.includes(c)));
+  // (as of the day's start: a find or a buy today leaves it as it was)
+  const stock = $derived(week.model ? stockAt(week.model.state, week.model.now) : []);
   const night = $derived(theme.tod === 'night' || theme.tod === 'dusk');
 
   // ---- my presence (the phone's one socket; the demo's two tabs share a channel; ?relay=&key= a test relay) ----
@@ -124,16 +124,16 @@
     pick = pick === code ? null : code;
     cue('tick');
     if (!pick) return void (say = { k: 'hello' });
-    const why = buyRefusal(code);
+    const why = buyRefusal(code, stock);
     say = why === 'owned' ? { k: 'owned' } : why === 'wallet' ? { k: 'short', p: { name: itemName(code) } } : { k: 'price', p: { name: itemName(code), v: formatNum(buyPrice(code) ?? 0) } };
   }
-  const why = $derived(pick ? (void shop, buyRefusal(pick)) : null);
+  const why = $derived(pick ? (void shop, buyRefusal(pick, stock)) : null);
   function buyPicked() {
     if (!pick || why) {
       if (pick) say = why === 'owned' ? { k: 'owned' } : { k: 'short', p: { name: itemName(pick) } };
       return void cue('boop');
     }
-    const r = buyPiece(pick);
+    const r = buyPiece(pick, stock);
     if (!r.ok) return void cue('boop');
     cue('buy');
     undoBanner(t('shop.bought', { name: itemName(pick), v: formatNum(r.price ?? 0) }), r);
@@ -258,13 +258,13 @@
       {/if}
     {:else}
       <h2 class="sec-label">{t('shop.today')}</h2>
-      <ul class="grid" data-shop-stock>
-        {#each daily as code (code)}{@render piece(code)}{/each}
-      </ul>
-      <h2 class="sec-label">{t('shop.basics')}</h2>
-      <ul class="grid">
-        {#each BASICS as code (code)}{@render piece(code)}{/each}
-      </ul>
+      {#if stock.length}
+        <ul class="grid" data-shop-stock>
+          {#each stock as code (code)}{@render piece(code)}{/each}
+        </ul>
+      {:else if week.model}
+        <p class="empty" data-shop-sold-out>{t('shop.soldOut')}</p>
+      {/if}
       <div class="bar">
         <p class="sum" data-shop-pick={pick ?? ''}>{pick ? `${itemName(pick)} · ${formatNum(buyPrice(pick) ?? 0)}` : t('shop.buyHint')}</p>
         <button type="button" class="btn small" data-shop-buy data-sfx="self" aria-disabled={!pick || !!why} onclick={buyPicked}>{t('shop.buy')}</button>
@@ -276,7 +276,7 @@
 {#snippet piece(code: string)}
   {@const owned = shop.owned.includes(code)}
   <li class="tile" class:on={pick === code} class:owned>
-    <button type="button" class="pickable" data-shop-item={code} data-owned={owned} data-sfx="self" aria-pressed={pick === code}
+    <button type="button" class="pickable" data-shop-item={code} data-price={buyPrice(code)} data-owned={owned} data-sfx="self" aria-pressed={pick === code}
       aria-label={t(owned ? 'shop.itemOwned' : 'shop.itemLabel', { name: itemName(code), v: formatNum(buyPrice(code) ?? 0) })} onclick={() => choose(code)}>
       <span class="ic"><img src={iconUrl(code)} alt="" width="46" height="46" loading="lazy" decoding="async" /></span>
       <span class="nm">{itemName(code)}</span>

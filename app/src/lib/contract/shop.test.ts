@@ -1,8 +1,11 @@
 // The shop's rules (contract/shop.ts): the price list's scale, a sell's and a buy's shape and price, the day's stock
 // (the same on every phone and the record, from the date alone) and the ledger (the pocket, かいがら, a piece once).
 import { describe, expect, it } from 'vitest';
-import { BASICS, STOCK_N, buyOf, buyPrice, isSellable, sellOf, sellPrice, shopLedger, shopPriced, shopRefusal, stockOf, type ShopRow } from './shop.ts';
-import { BUY, SELL } from './shopPrices.ts';
+import { dayNum, dayOf } from './tokyo.ts';
+import { buyOf, isSellable, sellOf, sellPrice, shopLedger, shopPriced, shopRefusal, type ShopRow } from './shop.ts';
+import { STOCK_N, buyPrice, stockOf } from './stock.ts';
+import { SELL } from './shopPrices.ts';
+import { BUY } from './buyPrices.ts';
 import { ITEMS } from '../components/tent/items.ts';
 import { FOSSILS, FRAGMENTS, SHELLS } from '../components/island/beach.ts';
 import { GOODS } from './pocket.ts';
@@ -68,32 +71,53 @@ describe('a sell and a buy', () => {
     expect(shopPriced('buy', { item, price: buyPrice(item)!, d: today }, today)).toBe(true);
     expect(shopPriced('buy', { item, price: buyPrice(item)! + 1, d: today }, today)).toBe(false);
     // yesterday's stock (a buy queued over midnight) and tomorrow's (a clock ahead), never older or later
-    const y = stockOf('2026-11-03')[0], t = stockOf('2026-11-05')[0], old = stockOf('2026-11-02')[0];
-    expect(shopPriced('buy', { item: y, price: buyPrice(y)!, d: '2026-11-03' }, today)).toBe(true);
-    expect(shopPriced('buy', { item: t, price: buyPrice(t)!, d: '2026-11-05' }, today)).toBe(true);
-    expect(shopPriced('buy', { item: old, price: buyPrice(old)!, d: '2026-11-02' }, today)).toBe(false);
-    // a piece the day's stock doesn't have
+    for (const [d, ok] of [['2026-11-03', true], ['2026-11-05', true], ['2026-11-02', false], ['2026-11-06', false]] as const)
+      expect(shopPriced('buy', { item, price: buyPrice(item)!, d }, today), d).toBe(ok);
+    // the stock hangs on the island's finds, so any priced piece passes (an app from before 2026-11-09 drew its own)
     const not = Object.keys(BUY).find((c) => !stockOf(today).includes(c))!;
-    expect(shopPriced('buy', { item: not, price: buyPrice(not)!, d: today }, today)).toBe(false);
+    expect(shopPriced('buy', { item: not, price: buyPrice(not)!, d: today }, today)).toBe(true);
+    expect(shopPriced('buy', { item: 'f1', price: 1, d: today }, today)).toBe(false); // never sold
   });
 });
 
 describe('the day’s stock', () => {
-  it('is the date’s alone: the same every time, STOCK_N pieces and the basics, another the next day', () => {
+  it('is the date’s and the found set’s alone: the same every time, STOCK_N pieces, another the next day', () => {
     const a = stockOf('2026-11-04');
-    expect(a).toEqual(stockOf('2026-11-04'));
-    expect(a).toHaveLength(STOCK_N + BASICS.length);
+    expect(a).toEqual(stockOf('2026-11-04', new Set()));
+    expect(a).toHaveLength(STOCK_N);
+    expect(STOCK_N).toBe(24);
     expect(new Set(a).size).toBe(a.length);
-    expect(a.slice(STOCK_N)).toEqual(BASICS);
     for (const c of a) expect(buyPrice(c), c).toBeDefined();
     expect(stockOf('2026-11-05')).not.toEqual(a);
-    // pinned: a change of the draw or the list changes what a day sold (a relay deploy first)
-    expect(stockOf('2026-11-04').slice(0, STOCK_N)).toEqual(['f3947', 'f1092', 'f2556', 'f1243', 'f9700', 'f4753', 'f2020', 'f4338']);
+    // pinned: a change of the draw or the list changes what a day sold
+    expect(a.slice(0, 4)).toEqual(['f2592', 'f14354', 'f13305', 'f7802']);
+  });
+  it('never holds a piece the island has: the next of the day’s order stands in', () => {
+    const a = stockOf('2026-11-04');
+    const found = new Set(a.slice(0, 5));
+    const b = stockOf('2026-11-04', found);
+    expect(b).toHaveLength(STOCK_N);
+    for (const c of b) expect(found.has(c)).toBe(false);
+    expect(b.slice(0, STOCK_N - 5)).toEqual(a.slice(5)); // the rest keep their order
+  });
+  it('the old いつもの are in the rotation, not always there', () => {
+    const basics = ['f3672', 'f7047', 'f4123'];
+    for (const c of basics) expect(buyPrice(c), c).toBeDefined();
+    const year = Array.from({ length: 365 }, (_, i) => stockOf(dayOf(dayNum('2027-01-01') + i)));
+    expect(year.some((day) => !basics.every((c) => day.includes(c)))).toBe(true);
+    const seen = new Set(year.flat());
+    for (const c of basics) expect(seen.has(c), c).toBe(true);
+  });
+  it('runs short when the island has nearly all, and sells out when it has all', () => {
+    const all = Object.keys(BUY);
+    const order = stockOf('2026-11-04', new Set(all.slice(10)));
+    expect(order.length).toBe(10);
+    expect(stockOf('2026-11-04', new Set(all))).toEqual([]);
   });
   it('turns over: a month of days shows most of the list', () => {
     const seen = new Set<string>();
     for (let d = 1; d <= 30; d++) for (const c of stockOf(`2026-12-${String(d).padStart(2, '0')}`)) seen.add(c);
-    expect(seen.size).toBeGreaterThan(150);
+    expect(seen.size).toBeGreaterThan(450);
   });
 });
 

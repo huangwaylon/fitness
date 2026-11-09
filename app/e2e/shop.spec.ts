@@ -17,6 +17,13 @@ const seed = (page: Page, events: Seed[]) =>
     localStorage.setItem('island-demo.events', JSON.stringify({ day: '2026-11-04', events: rows }));
   }, events);
 const shells = async (page: Page) => Number(await page.locator('[data-shop]').getAttribute('data-shells'));
+const stock = (page: Page) => page.locator('[data-shop-stock] [data-shop-item]');
+/** The first piece of the day's stock whose price is `ok`: its code and price. */
+const pieceOf = async (page: Page, ok: (price: number) => boolean): Promise<[string, number]> => {
+  await expect(stock(page)).toHaveCount(24);
+  const all = await stock(page).evaluateAll((els) => els.map((e): [string, number] => [e.getAttribute('data-shop-item')!, Number(e.getAttribute('data-price'))]));
+  return all.find(([, p]) => ok(p))!;
+};
 const tally = (counts: Record<string, number>, who: 'A' | 'B' | 'G' = 'A'): Seed => ['tally', { date: '2026-11-04', counts }, who];
 
 test('a catch is in my pocket; sold, かいがら rise; a piece bought from the stock is in my もようがえ and かいがら fall', async ({ page }) => {
@@ -47,15 +54,17 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
   await page.locator('[data-shop-sell]').click();
   await expect.poll(() => shells(page)).toBe(650 + 650 + 400 + 3 * 3); // a cowrie 3
   await expect(page.locator('[data-shop-empty]')).toBeVisible();
-  // かう: the day's stock and the basics; a cardboard box (6)
+  // かう: the day's stock, 24 pieces (no いつもの); one at most 1,709
   await page.locator('[data-shop-tab="buy"]').click();
-  await expect(page.locator('[data-shop-stock] [data-shop-item]')).toHaveCount(8);
-  await page.locator('[data-shop-item="f3672"]').click();
+  await expect(stock(page)).toHaveCount(24);
+  const [code, price] = await pieceOf(page, (p) => p <= 1709);
+  const item = page.locator(`[data-shop-item="${code}"]`);
+  await item.click();
   await page.locator('[data-shop-buy]').click();
-  await expect.poll(() => shells(page)).toBe(1709 - 6);
-  await expect(page.locator('[data-shop-item="f3672"]')).toHaveAttribute('data-owned', 'true');
-  // bought once: picked again, かう only boops
-  await page.locator('[data-shop-item="f3672"]').click();
+  await expect.poll(() => shells(page)).toBe(1709 - price);
+  await expect(item).toHaveAttribute('data-owned', 'true');
+  // bought once: picked again, かう only boops (and still in today's stock)
+  await item.click();
   await expect(page.locator('[data-shop-buy]')).toHaveAttribute('aria-disabled', 'true');
   await expect(page.locator('[data-shop-say]')).toHaveAttribute('data-shop-say', 'owned');
   // the piece is in my もようがえ (かった)
@@ -63,23 +72,20 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
   await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
   await page.locator('[data-tent-edit-open]').click();
   await page.locator('[data-tab="bought"]').click();
-  await expect(page.locator('[data-tent-items] [data-tent-item="f3672"]')).toBeVisible();
+  await expect(page.locator(`[data-tent-items] [data-tent-item="${code}"]`)).toBeVisible();
 });
 
-test('the beach’s finds and the island’s goods sell too: a coral, a fossil, wood; never the ずかん’s page', async ({ page }) => {
-  await seed(page, [tally({ 'shell:coral': 2, 'fossil:amber': 1, 'goods:hardwood': 3, 'item:froggy-chair': 1 }), ['find', { kind: 'shell', id: 'coral' }, 'A']]);
+// (a piece found before the day leaves the stock: shop/stock.test; the demo stamps its seeded rows today)
+test('a piece found or bought today stays in the day’s stock till tomorrow, the same on every phone', async ({ page }) => {
+  // the day's first two pieces (contract/shop.test pins the order): the tin bucket found by the guest this morning,
+  // the unicorn toy bought by B
+  await seed(page, [tally({ 'fish:whale-shark': 1 }, 'B'), ['sell', { species: 'fish:whale-shark', n: 1, v: 650 }, 'B'],
+    ['find', { kind: 'item', id: 'tin-bucket' }, 'G'], ['buy', { item: 'f14354', price: 70, d: '2026-11-04' }, 'B']]);
   await page.goto(`shop${Q}`);
-  await expect(page.locator('[data-shop-sec]')).toHaveText(['かいがら', '資源', '化石']); // never a present's piece
-  await page.locator('[data-shop-catch="shell:coral"]').click();
-  await page.locator('[data-shop-sell]').click();
-  await expect.poll(() => shells(page)).toBe(25); // NH's 500 ÷ 20
-  await page.locator('[data-shop-all]').click();
-  await page.locator('[data-shop-sell]').click();
-  await expect.poll(() => shells(page)).toBe(25 + 25 + 60 + 3 * 3);
-  await expect(page.locator('[data-shop-empty]')).toBeVisible();
-  // the coral's ずかん page stays
-  const events = await page.evaluate(() => JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events as { type: string }[]);
-  expect(events.filter((e) => e.type === 'find')).toHaveLength(1);
+  await expect(stock(page)).toHaveCount(24);
+  await expect(stock(page).nth(0)).toHaveAttribute('data-shop-item', 'f2592');
+  await expect(stock(page).nth(1)).toHaveAttribute('data-shop-item', 'f14354');
+  await expect(page.locator('[data-shop-sold-out]')).toHaveCount(0);
 });
 
 test('overspending is refused: too dear, かう only boops and the twins say so; a forged sell past the pocket counts for nothing', async ({ page }) => {
@@ -88,12 +94,13 @@ test('overspending is refused: too dear, かう only boops and the twins say so;
   await page.goto(`shop${Q}`);
   await expect.poll(() => shells(page)).toBe(4);
   await page.locator('[data-shop-tab="buy"]').click();
-  await page.locator('[data-shop-item="f7047"]').click(); // the zen cushion, 25
+  const [dear] = await pieceOf(page, (p) => p > 4);
+  await page.locator(`[data-shop-item="${dear}"]`).click();
   await expect(page.locator('[data-shop-say]')).toHaveAttribute('data-shop-say', 'short');
   await expect(page.locator('[data-shop-buy]')).toHaveAttribute('aria-disabled', 'true');
   await page.locator('[data-shop-buy]').click({ force: true });
   expect(await shells(page)).toBe(4);
-  await expect(page.locator('[data-shop-item="f7047"]')).toHaveAttribute('data-owned', 'false');
+  await expect(page.locator(`[data-shop-item="${dear}"]`)).toHaveAttribute('data-owned', 'false');
 });
 
 // Nothing to sell: the shop opens on かう (health plan C7: an empty うる was a dead end, its bar's 売る disabled under
@@ -102,7 +109,7 @@ test('an empty pocket opens the shop on かう; うる says it’s empty, no 売
   await seed(page, []);
   await page.goto(`shop${Q}`);
   await expect(page.locator('[data-shop-tab="buy"]')).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('[data-shop-stock] [data-shop-item]').first()).toBeVisible();
+  await expect(stock(page).first()).toBeVisible();
   await expect(page.locator('[data-shop-say]')).toHaveAttribute('data-shop-say', 'stock');
   await page.locator('[data-shop-tab="sell"]').click();
   await expect(page.locator('[data-shop-empty]')).toHaveText('ポケットは空です。魚や虫、かいがらや木材を拾ったら、ここで売れます');
@@ -121,9 +128,10 @@ test('the guest’s pocket and かいがら are its own', async ({ browser }) =>
   await g.locator('[data-shop-sell]').click();
   await expect.poll(() => shells(g)).toBe(400);
   await g.locator('[data-shop-tab="buy"]').click();
-  await g.locator('[data-shop-item="f3672"]').click();
+  const [code, price] = await pieceOf(g, (p) => p <= 400);
+  await g.locator(`[data-shop-item="${code}"]`).click();
   await g.locator('[data-shop-buy]').click();
-  await expect.poll(() => shells(g)).toBe(394);
+  await expect.poll(() => shells(g)).toBe(400 - price);
   // a member's phone on the same record: A's own
   const a = await ctx.newPage();
   await a.goto(`shop${Q}`);
