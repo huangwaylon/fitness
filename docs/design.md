@@ -876,7 +876,7 @@ the layout's objects (the old decorations' map moved into the layout once as `m-
   pipeline ([world3d-assets.md](world3d-assets.md)). **Used, NH's way** (the six NH lets one use): a tap walks my
   villager up to it and on, a seat of sitting.ts (`layout/nav.ts` SEAT_ON, `villager3d/seats3d.json` `use`,
   `scripts/seat-anchors.ts` USE), and it loops its pose while it stays (poses.ts `press`, `pedal`, `run`, `punch`,
-  `bounce`, `pullup`); a tap on the ground gets it off. One villager a piece, the earlier keeping it; nothing new on the
+  `bounce`, `pullup`; a villager with no 3D model, drawn as its card, by a rhythm of its own: `world3d/motion3d.ts` gymPose); a tap on the ground gets it off. Anyone, the guest too. One villager a piece, the earlier keeping it; nothing new on the
   relay (`e2e/gym.spec.ts`). **The bench press:** NH's bench's bar is split out as the GLB's `bar` node
   ([world3d-assets.md](world3d-assets.md) "Parts split out"); lying down, the bench's small bar is swapped on the rack
   for the gym's barbell (benchBar.ts HELD, 1.25 × NH's size so a human player's grip fits), which rides the hands

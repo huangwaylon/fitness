@@ -100,6 +100,8 @@
   import { landing, perches } from './critters.ts';
   import { arrive, attachAvatar, keepPos, partnerRestsAt, partnerTo, presence, freeze, sendTo, setInside, setPartnerRest, sitTo, snapHome, startAt, stepOut, steered, thaw, turnTo, wander, SNAP_HOME_MS } from './avatar.ts';
   import { freeSeat, seatNamed, seatOpen, seatPieceAt, seatSpots, sitTimeOf, yieldsSeat, type SeatSpot } from './sitting.ts';
+  import { useOf } from '../villager3d/seats3d.ts';
+  import type { GymUse } from '../villager3d/poses.ts';
   import { where } from '#lib/store/where.svelte.ts';
   import { JOIN_SAY_MS, RUN_RING_U_S, linkVillagers, playPartner, playWake } from './villagerSync.ts';
   import { canonical, hash, type DayEvent } from '#lib/sync/world-day.ts';
@@ -470,12 +472,12 @@
   // phones draw the same. Both on one bench: a heart each.
   // (asleep too: it dozes off on it; a seat whose spot has another piece today is none: seatHere)
   const seated = $derived(Object.fromEntries(VILLAGERS.map((id) => [id, actors[id].walking ? null : seatHere(seatAt(Math.round(actors[id].x), Math.round(actors[id].y)))])) as Record<VillagerActor, string | null>);
-  // (the pull-up bar is a seat of the gym's: one on its spot does pull-ups there, the 3D villager by its pose; a card
-  // without a model is lifted, Island3D's pullLift)
-  const repping = $derived(Object.fromEntries(VILLAGERS.map((id) => {
+  // (the gym's pieces are seats: one on its spot uses it, the 3D villager by its pose, a card without a model by its
+  // own rhythm: motion3d.ts gymPose; asleep, it dozes there)
+  const gymUse = $derived(Object.fromEntries(VILLAGERS.map((id) => {
     const l = site.layout, s = seated[id] && l ? seatNamed(l, seated[id]) : null;
-    return [id, !actors[id].asleep && s?.kind === 'pullup'];
-  })) as Record<VillagerActor, boolean>);
+    return [id, !actors[id].asleep && s ? useOf(s.kind) : null];
+  })) as Record<VillagerActor, GymUse | null>);
   /** The bench (a piece of two seats) a seat is on, or null. */
   const benchOf = (seat: string | null) => {
     const l = site.layout, s = seat && l ? seatNamed(l, seat) : null, o = s && l?.objects.get(s.piece);
@@ -1138,7 +1140,7 @@
   const goalTrees = $derived((void site.rev, GOAL_TREES));
   const cast3 = () => VILLAGERS.map((id) => ({
     id, person: sides[id].person.person, villager: sides[id].person.villager, look: sides[id].person.worn, side: sides[id].side,
-    shown: onIsland(id) && !inTent(id), seated: !!seated[id], seat: seated[id], stung: swollen[id], rep: repping[id], hat: hatOf(id, sides[id].person)
+    shown: onIsland(id) && !inTent(id), seated: !!seated[id], seat: seated[id], stung: swollen[id], gym: gymUse[id], hat: hatOf(id, sides[id].person)
   }));
 </script>
 
@@ -1199,7 +1201,7 @@
         {#each VILLAGERS as id (id)}
           {@const sd = sides[id]}
           {#if onIsland(id)}
-          <div class="actor" class:walking={actors[id].walking} class:inside={inTent(id)} data-inside={inTent(id) || undefined} data-actor={id} data-who={sd.person.person} data-seat={seated[id]} data-rep={repping[id] || undefined} style:--seat-drop={u(SEAT_DROP)} style:--rep-lift={u(9)} data-person={sd.person.person} data-stung={stung[id] || null} style:--bob-delay={id === 'partner' ? '-1.2s' : id === 'third' ? '-0.6s' : '0s'}
+          <div class="actor" class:walking={actors[id].walking} class:inside={inTent(id)} data-inside={inTent(id) || undefined} data-actor={id} data-who={sd.person.person} data-seat={seated[id]} data-gym={gymUse[id] || undefined} style:--seat-drop={u(SEAT_DROP)} style:--rep-lift={u(9)} data-person={sd.person.person} data-stung={stung[id] || null} style:--bob-delay={id === 'partner' ? '-1.2s' : id === 'third' ? '-0.6s' : '0s'}
             {@attach world.at({ x: sd.home[0], z: sd.home[1], h: VILLAGER.h, live: () => livePos(id), always: true })}>
             <button type="button" class="vil" data-sfx="self" bind:this={vilEls[id]}
               aria-label={id !== 'mine'
@@ -1347,9 +1349,9 @@
   /* seated: sunk behind the seat (the bench or the stool in front covers the legs) */
   .actor[data-seat] .vil { translate: -50% calc(2px + var(--seat-drop)); }
   /* at the bar: three pull-ups, a rest, again */
-  .actor[data-rep] .vil { animation: pullup 4.2s ease-in-out infinite; }
+  .actor[data-gym=pullup] .vil { animation: pullup 4.2s ease-in-out infinite; }
   @keyframes pullup { 0%, 64%, 100% { translate: -50% 2px; } 8%, 16% { translate: -50% calc(2px - var(--rep-lift)); } 24%, 32% { translate: -50% 2px; } 40%, 48% { translate: -50% calc(2px - var(--rep-lift)); } 56% { translate: -50% 2px; } }
-  :global(.if-scene:is([data-paused], [data-covered])) .actor[data-rep] .vil { animation-play-state: paused; }
+  :global(.if-scene:is([data-paused], [data-covered])) .actor[data-gym=pullup] .vil { animation-play-state: paused; }
   .actor.walking { will-change: transform; }
   .vil {
     position: absolute; left: 0; bottom: 0; translate: -50% 2px; width: max-content;

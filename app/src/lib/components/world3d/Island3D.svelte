@@ -30,7 +30,8 @@
   import { keyModel, modelBounds } from './models3d.ts';
   import { floats as floatsNow, floatAt, type Float } from './floats3d.ts';
   import { attachGestures } from './gestures.ts';
-  import { idlePose, motionPose } from './motion3d.ts';
+  import { gymPose, idlePose, motionPose, pullLift } from './motion3d.ts';
+  import type { GymUse } from '../villager3d/poses.ts';
   import type { CardSpec } from './cards.ts';
   import type { LampSpot } from './lights.ts';
   import { createVillagers, type VSpec, type Villagers3 } from './villagers.ts';
@@ -87,7 +88,8 @@
     /** Its seat's name (world.ts SEATS: a bench's, a stool's), or null. */
     seat: string | null;
     stung: boolean;
-    rep: boolean;
+    /** The gym piece it's using (its seat's: villager3d/seats3d.ts useAt), or null. */
+    gym: GymUse | null;
     /** Its hat (an asset key: a birthday's), or null. */
     hat?: string | null;
   }
@@ -179,12 +181,6 @@
 
   // ---- the villagers: cards of their renders (the director's state: where, which way, its motion) ----
   const motionAt: Partial<Record<VillagerActor, { n: number; t0: number }>> = {};
-  const PULL_MS = 4200;
-  /** The pull-up bar's three reps (IslandScene's keyframes): up at 8–16 % and 40–48 % of the cycle. */
-  function pullLift(t: number): number {
-    const k = (t % PULL_MS) / PULL_MS, up = (a: number, b: number, c: number, d: number) => (k < a || k > d ? 0 : k < b ? (k - a) / (b - a) : k <= c ? 1 : (d - k) / (d - c));
-    return 9 * Math.max(up(0, 0.08, 0.16, 0.24), up(0.32, 0.4, 0.48, 0.56));
-  }
   /** The seats' tops (u): a bench's, a stool's (NH's park bench and log stool at 3u a model unit). */
   const seatTop = (name: string) => (name.startsWith('stool') ? 9 : 13);
   let vil3: Villagers3 | null = null;
@@ -369,7 +365,7 @@
       s.side = c.side;
       s.asleep = a.asleep;
       s.seat = c.seat ? seatTop(c.seat) : null;
-      s.lift = c.rep ? pullLift(t) : 0;
+      s.lift = c.gym === 'pullup' ? pullLift(t) : 0;
       s.motion = a.motion;
       s.motionN = a.motionN;
       s.emote = a.emote;
@@ -415,9 +411,9 @@
       }
       const m = motionAt[c.id];
       if (!m || m.n !== a.motionN) motionAt[c.id] = { n: a.motionN, t0: t };
-      const mp = a.motion ? motionPose(a.motion, t - motionAt[c.id]!.t0) : null;
+      const mp = a.motion ? motionPose(a.motion, t - motionAt[c.id]!.t0) : null, gp = c.gym && !a.walking ? gymPose(c.gym, t) : null;
       const ip = idlePose(t, a.walking, a.asleep, a.stepMs || 640, c.id === 'partner' ? 1.2 : c.id === 'third' ? 0.6 : 0);
-      if (mp || a.walking) moving = true;
+      if (mp || gp || a.walking) moving = true;
       // (a card breathes: idlePose, the ambient rate)
       vilAmbient = true;
       const f = a.face, wantRight = f === 'l' ? false : f === 'r' ? true : f === 'in' ? c.side === 'left' : null;
@@ -425,8 +421,8 @@
       const sway = swaying ? Math.sin(t / 420 + (c.id === 'partner' ? Math.PI : 0)) * 0.05 : 0;
       eng.cards.set(`v:${c.id}`, {
         ...base, x, z, flip, shadow: 17,
-        lift: (mp?.lift ?? 0) + ip.lift + (c.seated ? -SEAT_DROP * 0.6 : 0) + (c.rep ? pullLift(t) : 0),
-        squash: (mp?.squash ?? 0) + ip.squash, tilt: (mp?.tilt ?? 0) + ip.tilt + sway
+        lift: (mp?.lift ?? 0) + ip.lift + (c.seated ? -SEAT_DROP * 0.6 : 0) + (gp?.lift ?? 0),
+        squash: (mp?.squash ?? 0) + ip.squash + (gp?.squash ?? 0), tilt: (mp?.tilt ?? 0) + ip.tilt + sway + (gp?.tilt ?? 0)
       });
     }
     return moving;
