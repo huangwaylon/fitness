@@ -5,6 +5,7 @@ import { configureStorage, type KV } from '#lib/sync/storage.ts';
 import { configureTransport } from '#lib/sync/transport.ts';
 import { configureCache, saveCache } from '#lib/sync/cache.ts';
 import { setKey } from '#lib/sync/pairing.ts';
+import { sessionId } from '#lib/sync/log.ts';
 import type { Intent } from '#lib/contract/live-protocol.ts';
 import type { SheetChange } from '#lib/sync/live.ts';
 import { LiveBackend } from './live.ts';
@@ -110,6 +111,16 @@ describe('LiveBackend: the relay push', () => {
     await settle();
     expect(snapshots).toBe(0);
     change({ who: 'A', what: 'ingest', at: LATER, rev: 'r1' }); // my own Shortcut's upload
+    await settle();
+    expect(snapshots).toBe(1);
+  });
+
+  it('my own event from another page (its `sid`: my Mac, another tab) fetches; this page\'s own does not', async () => {
+    await ready();
+    change({ who: 'A', what: 'event', at: LATER, rev: 'r1', sid: sessionId() });
+    await settle();
+    expect(snapshots).toBe(0);
+    change({ who: 'A', what: 'event', at: LATER, rev: 'r1', sid: 'othermac1' });
     await settle();
     expect(snapshots).toBe(1);
   });

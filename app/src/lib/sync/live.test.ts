@@ -120,8 +120,8 @@ describe('live: connecting', () => {
     // a page's first hello asks for today's whole shared world (from Tokyo midnight)
     expect(last().sent[0]).toEqual({ v: 3, kind: 'hello', key: KEY, since: dayStart(tokyoDay(Date.now())), beat: true });
     last().recv({ kind: 'welcome', me: 'A', peer: false, t: Date.now() });
-    expect(live.status()).toEqual({ connected: true, me: 'A', peer: false, here: [], gone: {} });
-    expect(seen.at(-1)).toEqual({ connected: true, me: 'A', peer: false, here: [], gone: {} });
+    expect(live.status()).toEqual({ connected: true, me: 'A', peer: false, here: [], gone: {}, mine: false });
+    expect(seen.at(-1)).toEqual({ connected: true, me: 'A', peer: false, here: [], gone: {}, mine: false });
     // the guest (v3) comes and goes: it is here, but it isn't the partner
     last().recv({ kind: 'presence', who: 'G', on: true, t: Date.now() });
     expect(live.status()).toMatchObject({ peer: false, here: ['G'] });
@@ -277,6 +277,29 @@ describe('live: messages', () => {
     expect(cs[0]! < cs[1]! && cs[1]! < cs[2]!).toBe(true);
     last().recv({ kind: 'presence', who: 'B', on: false, t: Date.now() });
     expect(live.send({ kind: 'act', act: 'tap' })).toBe(false);
+  });
+
+  it('my other device (one device, one socket: the hello\'s `dev`): its decor ops are heard, my layout ops go to it', () => {
+    live = createLive({ url: 'wss://x', key: () => KEY, dev: () => 'phone12345', WebSocket: FakeWS as never, env });
+    live.start();
+    last().open();
+    expect(last().sent[0]).toMatchObject({ kind: 'hello', dev: 'phone12345' });
+    last().recv({ kind: 'welcome', me: 'A', peer: false, t: Date.now(), mine: true });
+    expect(live.status().mine).toBe(true);
+    const op = { kind: 'decor', sc: 'o', id: 'o1', at: Date.now(), k: 'bench', x: 3, z: 4, f: 0 } as const;
+    // nobody else here, but my Mac is: the layout op goes, numbered (its ack); a presence-only intent doesn't
+    expect(live.send(op)).toBe(true);
+    expect(last().sent.at(-1)).toMatchObject({ kind: 'decor', id: 'o1', c: expect.any(Number) });
+    expect(live.send({ kind: 'act', act: 'tap' })).toBe(false);
+    const heard: Relayed[] = [];
+    live.on((m) => heard.push(m));
+    last().recv({ ...op, id: 'o2', who: 'A', t: Date.now() });
+    last().recv({ kind: 'act', act: 'tap', who: 'A', t: Date.now() });
+    expect(heard.map((m) => m.kind)).toEqual(['decor']);
+    // my Mac gone: my presence says so, and the partner's list is untouched
+    last().recv({ kind: 'presence', who: 'A', on: false, t: Date.now() });
+    expect(live.status()).toMatchObject({ mine: false, here: [] });
+    expect(live.send({ ...op, id: 'o3' })).toBe(false);
   });
 
   it('a high-five goes numbered with the partner away (the room holds it), and one heard is answered `got`', () => {

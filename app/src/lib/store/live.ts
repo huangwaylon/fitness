@@ -11,7 +11,7 @@ import { addOwnRows, loadCache, refreshSnapshot, type SnapshotCache } from '#lib
 import { keyFromHash } from '#lib/sync/pairing.ts';
 import { LIVE_URL, liveRelay, type Live, type SheetChange } from '#lib/sync/live.ts';
 import type { RecordMark } from '#lib/contract/live-protocol.ts';
-import { log, persistLog } from '#lib/sync/log.ts';
+import { log, persistLog, sessionId } from '#lib/sync/log.ts';
 import { pendingAcked } from './view.ts';
 import { world } from './world.svelte.ts';
 import { HOLD_MAX_MS, type Backend, type Host, type SendOptions, type SendResult } from './backend.ts';
@@ -220,13 +220,14 @@ export class LiveBackend implements Backend {
 
   /**
    * The relay says the record changed: refresh now (gathered, `fresh` so a fetch already in flight is followed by one
-   * more). Skipped when the cache already holds it, and for my own events (the re-read after the ack fetches those).
+   * more). Skipped when the cache already holds it, and for this page's own events (the ack's rows are in the cache:
+   * flush); my other devices' (their `sid`) are fetched. A relay from before `sid`: all of mine skipped, as then.
    */
   #sheetChanged(c: SheetChange): void {
     if (c.at) this.#pushWorks = true;
     else if (this.#pushWorks) return; // a nudge, and the push already brings events
     const cache = this.#cache;
-    if (c.at && cache && c.who === cache.me && c.what === 'event') return;
+    if (c.at && cache && c.who === cache.me && c.what === 'event' && (!c.sid || c.sid === sessionId())) return;
     if (c.at && cache && c.rev === cache.rev && cache.since !== null && c.at <= cache.since) return;
     if (this.#pushTimer) return;
     this.#pushTimer = setTimeout(() => {

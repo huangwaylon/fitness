@@ -8,6 +8,8 @@
 //   E13  both phones move a different piece onto one tile at once: the later op's phone moves its piece off
 //   burst 40 layout ops at once (the editor's save): what each phone's main thread spends on them
 //   tabs two tabs of one phone (the second's socket replaces the first's): neither's layout ops written over
+//   devs one person on two devices (the Mac's editor, the phone's island): neither evicts the other, the editor's edit
+//        reaches the phone live
 import { expect, test, type Browser, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { newIsland, setVisible } from './liveRoom.ts';
@@ -161,6 +163,32 @@ test('two tabs of one phone: each one’s layout op is kept, and the other tab f
   await a1.evaluate(() => window.removeEventListener('storage', (window as unknown as { __deaf: (e: Event) => void }).__deaf, true));
   const moved3 = await nudge(a2, p3);
   await expect.poll(() => lay(a1, (l, id) => l.obj(id)?.x, p3)).toBe(moved3.x);
+});
+
+test('devs: one person\'s Mac editor and phone keep both sockets, and the editor\'s move reaches the phone live', async ({ browser }) => {
+  const island = newIsland();
+  const phoneA = await phone(browser, island, 'A');
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: 'ja-JP', timezoneId: 'Asia/Tokyo', serviceWorkers: 'block' });
+  await ctx.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
+  await island.pair(ctx, 'A');
+  const mac = await ctx.newPage();
+  await mac.goto('editor/?preview=0');
+  await mac.waitForFunction(() => (window as unknown as { __editor?: unknown }).__editor);
+  // both in (was: the Mac's hello replaced the phone's socket, 4002, the phone deaf until shown again)
+  await expect.poll(() => island.sockets('A'), { timeout: 10_000 }).toBe(2);
+  // the editor moves a default oak a tile to the left
+  type Ed = { layout(): { objects: Map<string, { x: number; z: number }> }; tileScreen(c: number, r: number): [number, number] };
+  const oak = await mac.evaluate(() => { const o = (window as unknown as { __editor: Ed }).__editor.layout().objects.get('oak-m1')!; return { x: o.x, z: o.z }; });
+  const at = (c: number, r: number) => mac.evaluate(([c, r]) => (window as unknown as { __editor: Ed }).__editor.tileScreen(c, r), [c, r] as const);
+  const [a, b] = [await at(oak.x, oak.z), await at(oak.x - 1, oak.z)];
+  await mac.mouse.move(a[0], a[1]);
+  await mac.mouse.down();
+  for (let i = 1; i <= 6; i++) await mac.mouse.move(a[0] + ((b[0] - a[0]) * i) / 6, a[1] + ((b[1] - a[1]) * i) / 6);
+  await mac.mouse.up();
+  // on the phone at once, over the socket (its layout as it keeps it)
+  const phoneX = () => phoneA.evaluate(() => (JSON.parse(localStorage.getItem('island.layout') ?? '[]') as { id: string; x: number }[]).find((e) => e.id === 'oak-m1')?.x ?? null);
+  await expect.poll(phoneX, { timeout: 3000 }).toBe(oak.x - 1);
+  expect(island.sockets('A')).toBe(2);
 });
 
 test('E13: both phones move a different piece onto one tile at once: the later one’s phone moves its piece off, both agree', async ({ browser }) => {

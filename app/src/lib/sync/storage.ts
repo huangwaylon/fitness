@@ -29,6 +29,9 @@ export const LIVE = {
   /** `{ until }`: the live socket goes without its admission ticket until then (sync/live.ts: two ticketed handshakes in
    *  a row failed, a relay that can't answer one; ≤ 6 h). */
   ticket: 'island.liveTicket',
+  /** This device's id, made once (sync/live.ts deviceId): the hello's `dev`, so the relay replaces only this device's
+   *  earlier socket, never my other devices'. */
+  device: 'island.device',
   /** `{ me, d, cs }`: the day's claims I counted (`cs`: claim → tally key; store/actions.ts): a race lost after a reload
    *  or a kill still takes its catch back. Today's only, mine only. */
   counted: 'island.counted',

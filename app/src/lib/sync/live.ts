@@ -4,7 +4,7 @@
 // never throws and never waits. Plain TS: the socket, the visibility source and the key are injectable for tests.
 import { LIVE, getKey, getStoredMe, localKV, readJson, remove, writeJson } from './storage.ts';
 import { fnv1a } from '../random.ts';
-import { log } from './log.ts';
+import { log, logId } from './log.ts';
 import { takeWx } from './wx.ts';
 import { ROOM_PROTOCOL, TICKET_TTL_MS, makeTicket } from '../contract/ticket.ts';
 import { CLOSE, HB_PING, LIVE_V, MAX_BYTES, dayStart, isAcked, isLayoutIntent, isStored, parseClient, parseServer, scopeMaySend, tokyoDay, type Gone, type Intent, type Notice, type RecordMark, type Relayed, type Who } from '../contract/live-protocol.ts';
@@ -16,7 +16,7 @@ export const LIVE_URL: string = (import.meta.env?.VITE_LIVE_URL as string | unde
  * The record changed: its push (`changed`, with the new rows' `at` and `rev`; anyone's write, mine too) or the
  * partner's nudge after an acked event (`saved`: no `at`). Either way the snapshot is worth fetching now.
  */
-export type SheetChange = Partial<Pick<Notice, 'what' | 'at' | 'rev'>> & { who: Who };
+export type SheetChange = Partial<Pick<Notice, 'what' | 'at' | 'rev' | 'sid'>> & { who: Who };
 
 export interface LiveStatus {
   /** The socket is up and the relay accepted my key. */
@@ -32,6 +32,8 @@ export interface LiveStatus {
   /** When each person not here left, on the relay's clock (the welcome's, then each `presence` off; mine: when my
    *  previous socket did, as of the welcome): one gone quiet inside a room leaves it a while after (store/where.svelte.ts). */
   gone?: Gone;
+  /** Another device of mine is here (the relay says so to a hello with `dev`): it hears my layout ops. */
+  mine?: boolean;
 }
 
 /** Where the page's visibility and connectivity come from (the document and window by default). */
@@ -54,6 +56,9 @@ export interface LiveOptions {
   me?: () => Who | null;
   /** The app's version, said in the hello (the relay logs it: `ws.hello`). */
   build?: () => string | undefined;
+  /** This device's id, said in the hello (`dev`): the relay replaces only this device's earlier socket. Without it (the
+   *  tests' relays), a hello replaces the person's other sockets that said none. */
+  dev?: () => string | undefined;
   WebSocket?: typeof WebSocket;
   env?: LiveEnv;
   /** The relay time of the last shared-world change this phone heard (the hello's `since`), kept across reloads: a
@@ -392,7 +397,7 @@ export function createLive(o: LiveOptions): Live {
 
   const setStatus = (s: Partial<LiveStatus>) => {
     const next = { ...st, ...s };
-    if (next.connected === st.connected && next.me === st.me && next.peer === st.peer && next.rec === st.rec && next.here.join() === st.here.join() && sameGone(next.gone, st.gone)) return;
+    if (next.connected === st.connected && next.me === st.me && next.peer === st.peer && next.rec === st.rec && next.here.join() === st.here.join() && sameGone(next.gone, st.gone) && next.mine === st.mine) return;
     st = next;
     for (const f of statusSubs) safe(() => f(st));
   };
@@ -589,7 +594,7 @@ export function createLive(o: LiveOptions): Live {
         /* already closing */
       }
     }
-    setStatus({ connected: false, peer: false, here: [], rec: undefined, gone: undefined });
+    setStatus({ connected: false, peer: false, here: [], rec: undefined, gone: undefined, mine: false });
   };
 
   /** A socket's end, as the log's ws.close: its code (a close of this phone's own: 1000, STALE, NO_WELCOME), how long
@@ -671,7 +676,8 @@ export function createLive(o: LiveOptions): Live {
       const build = o.build?.();
       // `beat`: this phone sends something at least every PING_EVERY_MS (quiet), so the room may take one it hears
       // nothing from for a minute for a ghost
-      raw({ v: LIVE_V, kind: 'hello', key, since: lastWorld, ...(build ? { build } : {}), beat: true });
+      const dev = o.dev?.();
+      raw({ v: LIVE_V, kind: 'hello', key, since: lastWorld, ...(build ? { build } : {}), beat: true, ...(dev ? { dev } : {}) });
     };
     s.onmessage = (e: MessageEvent) => {
       heardAt = Date.now();
@@ -703,7 +709,7 @@ export function createLive(o: LiveOptions): Live {
           } else offset = was;
           hbOk = m.hb === true;
           keepOffset();
-          setStatus({ connected: true, me: m.me, peer: m.peer, here: m.here ?? (m.peer ? [partnerOf(m.me)] : []), rec: m.rec, gone: m.gone ?? {} });
+          setStatus({ connected: true, me: m.me, peer: m.peer, here: m.here ?? (m.peer ? [partnerOf(m.me)] : []), rec: m.rec, gone: m.gone ?? {}, mine: m.mine === true });
           for (const at of PING_MS) pings.push(setTimeout(ping, at));
           // a quiet socket is asked whether it's alive (a second welcome on one socket: the one timer still)
           if (pingEvery) clearTimeout(pingEvery);
@@ -756,14 +762,15 @@ export function createLive(o: LiveOptions): Live {
           return;
         }
         case 'presence': {
-          if (m.who === st.me) return;
+          // (mine: whether another device of mine is here)
+          if (m.who === st.me) return setStatus({ mine: m.on });
           const here = [...new Set([...st.here.filter((w) => w !== m.who), ...(m.on ? [m.who] : [])])].sort();
           // (when they left: the relay's clock, the same on every phone)
           const { [m.who]: _was, ...gone } = st.gone ?? {};
           return setStatus({ here, peer: peerOf(st.me, here), gone: m.on ? gone : { ...gone, [m.who]: m.t } });
         }
         case 'changed':
-          return changed({ who: m.who, what: m.what, at: m.at, rev: m.rev });
+          return changed({ who: m.who, what: m.what, at: m.at, rev: m.rev, ...(m.sid ? { sid: m.sid } : {}) });
         case 'wx': {
           // Tokyo's real sky by the hour (sync/wx.ts: kept for the island, cached for opening offline)
           const { v: _v, kind: _k, t: _t, ...w } = m;
@@ -780,8 +787,9 @@ export function createLive(o: LiveOptions): Live {
           return;
         }
         default:
-          // (a music stage of mine: the room's record of it, at its hello or when mine lost)
-          if (m.who === st.me && m.kind !== 'music') return;
+          // (a music stage of mine: the room's record of it, at its hello or when mine lost; a decor op of mine from my
+          // other device: the stores merge it as any)
+          if (m.who === st.me && m.kind !== 'music' && m.kind !== 'decor') return;
           if (m.kind === 'saved') return changed({ who: m.who, what: 'event' });
           if (isStored(m) && m.t > lastWorld) since.set((lastWorld = m.t));
           for (const f of subs) safe(() => f(m));
@@ -800,7 +808,7 @@ export function createLive(o: LiveOptions): Live {
       mx.closed = e.code;
       ws = null;
       clearTimers();
-      setStatus({ connected: false, peer: false, here: [], rec: undefined, gone: undefined });
+      setStatus({ connected: false, peer: false, here: [], rec: undefined, gone: undefined, mine: false });
       closed(e.code, 'closed');
       if (e.code === CLOSE.unauthorized || e.code === CLOSE.replaced || e.code === CLOSE.version) {
         parked = true;
@@ -861,10 +869,12 @@ export function createLive(o: LiveOptions): Live {
       // next welcome
       // a layout op too while someone is here to hear it: numbered, so one of an editor's save over the room's rate
       // limit hears `busy` and goes again (unnumbered, the room dropped it: only the record's push brought it)
-      const kept = isAcked(i) || (isLayoutIntent(i) && st.connected && st.here.length > 0);
+      // (a decor op is heard by my other devices too: `mine`)
+      const heard = st.here.length > 0 || (i.kind === 'decor' && !!st.mine);
+      const kept = isAcked(i) || (isLayoutIntent(i) && st.connected && heard);
       // a scoped decor op only where I may (the room would refuse the rest: live-protocol scopeMaySend)
       if (i.kind === 'decor' && st.me && !scopeMaySend(st.me, i.sc, i.id)) return false;
-      if (!kept && (!st.connected || !st.here.length)) return false;
+      if (!kept && (!st.connected || !heard)) return false;
       const c = kept ? nextSeq() : undefined;
       const m = { v: LIVE_V, ...(c !== undefined ? { c } : {}), ...i };
       const s = JSON.stringify(m);
@@ -954,13 +964,23 @@ function safe(f: () => void): void {
 let shared: Live | null = null;
 let appBuild: string | undefined;
 
+/** This device's id (LIVE.device: made once, logId's shape), or none when storage can't keep it. */
+function deviceId(): string | undefined {
+  const kv = localKV();
+  const was = readJson<string>(kv, LIVE.device);
+  if (typeof was === 'string' && /^[0-9a-z]{6,15}$/.test(was)) return was;
+  const id = logId();
+  return writeJson(kv, LIVE.device, id) ? id : undefined;
+}
+
 /** The app's version for the hello (+layout.svelte, from `$app/env`). */
 export const setLiveBuild = (b: string): void => void (appBuild = b);
 
 /**
  * The phone's one relay socket, keyed by the paired key. Everything that talks to the relay shares it (the sync's push
- * now, the island's presence later): a second socket of the same person would replace this one (4002).
+ * now, the island's presence later): a second socket of this device (another tab) would replace this one (4002); my
+ * other devices' sockets stay (the hello's `dev`).
  */
 export function liveRelay(): Live {
-  return (shared ??= createLive({ key: getKey, me: getStoredMe, build: () => appBuild }));
+  return (shared ??= createLive({ key: getKey, me: getStoredMe, build: () => appBuild, dev: deviceId }));
 }
