@@ -354,7 +354,9 @@ export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<R
   // each game's cv by its deck's content (pool.ts gameCvOf): the quiz at a level, スピード はしご, a unit's lesson, the
   // tournament
   const games: Index['games'] = {};
-  for (const lv of levels) games[`quiz:${lv}`] = gameCv('quiz', units[lv].cv);
+  // (level 8, 音の へんしん's phrases, is no quiz's nor the tournament's: its own game's below)
+  const quizLevels = levels.filter((lv) => lv !== HENSHIN_LV);
+  for (const lv of quizLevels) games[`quiz:${lv}`] = gameCv('quiz', units[lv].cv);
   games['ladder:ladder'] = gameCv('ladder', units.ladder.cv);
   // (a recipe-2 unit's lesson cv takes in its kinds' files that are listened: those its lessons play)
   const refs = listenRefs(listen);
@@ -364,7 +366,7 @@ export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<R
     games[`lesson:${u.unit}`] = gameCv('lesson', [units[u.unit].cv, ...files.map((f) => `${f}:${listenCv.get(f)}`)].join(','));
   }
   // the weekend tournament deals from every level by the items' places in them (games/taikai/pick.ts numbering)
-  games['taikai:all'] = gameCv('taikai', levels.map((lv) => units[lv].cv).join(','));
+  games['taikai:all'] = gameCv('taikai', quizLevels.map((lv) => units[lv].cv).join(','));
   // a listening file's game (`tile:s1-tile-a`), once the registry has the game (games/versions.ts BUILD_V)
   for (const [u, [gm]] of Object.entries(listenIndex)) if (BUILD_V[gm] !== undefined) games[`${gm}:${u}`] = gameCv(gm, listenCv.get(u)!);
   if (units[PAIR_UNIT] && BUILD_V.pair !== undefined) games[`pair:${PAIR_UNIT}`] = gameCv('pair', units[PAIR_UNIT].cv);

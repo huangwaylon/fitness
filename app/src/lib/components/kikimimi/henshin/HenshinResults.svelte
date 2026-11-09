@@ -45,7 +45,7 @@
 </script>
 
 <ResultsFrame {v} {tally} of={cards.length} {firsts} {line} {ondone} onagain={again}>
-  <p class="today" data-kiki-henshin-today>{t('kiki.henshin.today', { ph: t(`kiki.henshin.ph.${today}`) })} <span lang="en">{t(`kiki.henshin.eg.${today}`)}</span></p>
+  <p class="today" data-kiki-henshin-today>{t('kiki.henshin.today', { ph: t(`kiki.henshin.ph.${today}`) })}（<span lang="en">{t(`kiki.henshin.eg.${today}`)}</span>）</p>
   <ReviewList bind:missedOnly none={!shown.length}>
     <ul class="review">
       {#each shown as r (r.i)}

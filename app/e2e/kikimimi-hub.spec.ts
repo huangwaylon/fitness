@@ -48,7 +48,7 @@ test('the hub, あそぶ, a mode’s page, きろく and せってい: ‹ pops 
   // あそぶ: the modes by situation, only the playable ones (おさらい: the demo's A has played)
   await sheet(page).locator('[data-kiki-tile="asobu"]').click();
   await expect(title(page)).toHaveText('遊ぶ');
-  await expect(sheet(page).locator('[data-kiki-group="quick"] [data-kiki-mode-tile]')).toHaveText([/ひとこと クイズ/, /スピード はしご/, /おさらい/, /ことば タイル/, /すうじ ラッシュ/]);
+  await expect(sheet(page).locator('[data-kiki-group="quick"] [data-kiki-mode-tile]')).toHaveText([/ひとこと クイズ/, /スピード はしご/, /おさらい/, /ことば タイル/, /すうじ ラッシュ/, /音の へんしん/]);
   await expect(sheet(page).locator('[data-kiki-group="scene"] [data-kiki-mode-tile]')).toHaveText([/アナウンス/, /ようじ でんわ/, /たちぎき/]);
   await snap(page, 'asobu');
 
@@ -123,12 +123,15 @@ test('the hub, あそぶ, a mode’s page, きろく and せってい: ‹ pops 
   await atHub(page);
 });
 
-test('a menu card plays at once (きまぐれ: its mode); ✕ asks first, やめる closes', async ({ page }) => {
+test('a menu card plays (きまぐれ: its mode, a lane game’s page first); ✕ asks first, やめる closes', async ({ page }) => {
   test.slow();
   await open(page);
   await fromMenu(page, 'kikimimi');
   await atHub(page);
   await sheet(page).locator('[data-kiki-card-go="whim"]').click();
+  // (the pinned day's きまぐれ is 音の へんしん, a lane's game: its page first, then はじめる)
+  await expect(sheet(page).locator('[data-kiki-mode-page="henshin"]')).toBeVisible();
+  await sheet(page).locator('[data-kiki-start]').click();
   await expect(sheet(page)).toHaveAttribute('data-phase', 'countdown');
   // ✕ asks 「ここでやめますか？」; やめる leaves the game
   await page.locator('dialog[open] .navbar .close').click();
