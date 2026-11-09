@@ -3,7 +3,7 @@
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
-import { fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, isShellOf, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, keepShell, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
+import { fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, listenSlice, isShellOf, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, keepShell, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -233,8 +233,35 @@ self.addEventListener('fetch', (event) => {
 
   // ききみみ's packs: cache first and never revalidated (the hash is in the name), fetched whole (packs.ts; a Range
   // request goes to the network), stored after the answer; each use marks the pack in the index, the least recently
-  // used going past the cache's bytes, never one used in the last 10 minutes (caches.ts listenEvict).
+  // used going past the cache's bytes, never one used in the last 10 minutes (caches.ts listenEvict). A clip's slice
+  // (`?s=from-to`, asked as a Range: packs.ts sliceUrl) is kept under its URL as a 200 of just its bytes: from the
+  // cache, else cut from its whole pack when that's cached, else the network's 206 (a whole 200: cut here).
   if (isListenPack(url.pathname)) {
+    const sl = listenSlice(url);
+    if (sl) {
+      event.respondWith(
+        (async () => {
+          const cache = await caches.open(LISTEN_CACHE);
+          const hit = await cache.match(req.url);
+          if (hit) {
+            event.waitUntil(listenUsed(req.url).catch(() => {}));
+            return hit;
+          }
+          const whole = await cache.match(url.origin + url.pathname);
+          const res = whole ?? (await fetch(req));
+          if (!res.ok) return res;
+          const got = await res.arrayBuffer();
+          const body = res.status === 206 ? got : got.slice(sl[0], sl[1] + 1);
+          const out = new Response(body, { status: 200, headers: { 'content-type': 'application/octet-stream' } });
+          event.waitUntil((async () => {
+            await cache.put(req.url, out.clone());
+            await listenUsed(req.url, body.byteLength);
+          })().catch(() => {}));
+          return out;
+        })()
+      );
+      return;
+    }
     if (req.headers.has('range')) return;
     event.respondWith(
       (async () => {

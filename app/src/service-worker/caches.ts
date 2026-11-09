@@ -113,7 +113,13 @@ export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, k
  *  (an index of each pack's bytes and last use kept in the cache), so a few levels' and units' packs stay offline. */
 export const LISTEN_CACHE = 'island-listen-v1';
 export const isListenPack = (path: string): boolean => path.includes('/audio/listen/') && path.endsWith('.pak');
-/** The listen cache's bound: past it, the least recently used packs go (the 144 packs are ~111 MiB: the games' 89.3,
+/** A ききみみ clip's slice of its pack (components/kikimimi/packs.ts sliceUrl: `?s=<from>-<to>`, asked as a Range): its
+ *  first and last byte, else null (the pack whole). Kept per slice in LISTEN_CACHE, under its URL. */
+export function listenSlice(url: URL): [from: number, to: number] | null {
+  const m = /^(\d+)-(\d+)$/.exec(url.searchParams.get('s') ?? '');
+  return m && Number(m[2]) >= Number(m[1]) ? [Number(m[1]), Number(m[2])] : null;
+}
+/** The listen cache's bound: past it, the least recently used packs go (the 149 packs are ~116 MiB: the games' 94.2,
  *  the stories' 21.4, bank.test's stopgap lines till W2-R moves them to R2; a level-4 game's eight ~9 MB). */
 export const LISTEN_CAP_BYTES = 30_000_000;
 /** A pack used within this is never evicted (a game in progress keeps its packs; a page still on the last build its
@@ -127,7 +133,11 @@ export const LISTEN_INDEX = '__listen-index';
  *  recently used, never one used within `keepMs`. */
 export function listenEvict(index: RoomIndex, now: number, cap = LISTEN_CAP_BYTES, keepMs = LISTEN_KEEP_MS): string[] {
   const urls = Object.keys(index);
-  const nameOf = (u: string) => new URL(u, 'https://x/').pathname.replace(/\.[0-9a-f]+\.pak$/, '');
+  // (a slice is a name of its own: its pack's and its bytes)
+  const nameOf = (u: string) => {
+    const x = new URL(u, 'https://x/');
+    return x.pathname.replace(/\.[0-9a-f]+\.pak$/, '') + x.search;
+  };
   const newest = new Map<string, string>();
   for (const u of urls) {
     const n = nameOf(u), m = newest.get(n);

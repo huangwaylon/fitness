@@ -1,5 +1,5 @@
-// ききみみ's audio packs (docs/kikimimi-engine.md "Audio"): the lobby fetches its deck's pack(s) whole from /audio/listen/
-// (no Range, no loose clip), and a clip sliced from a pack as built decodes to its length in the page (the 9a spike's
+// ききみみ's audio packs (docs/kikimimi-engine.md "Audio"): the lobby fetches its deck's clips from /audio/listen/, each a
+// Range of its pack (no whole pack for a deck's few, no loose clip), and a clip sliced from a pack as built decodes to its length in the page (the 9a spike's
 // check, kept: WebKit is the users' Safari). Silent: nothing is played (an OfflineAudioContext decodes; the sound check
 // is never tapped). The logic tier.
 import { readFileSync } from 'node:fs';
@@ -15,7 +15,7 @@ type Pack = { hash: string; slow?: true; clips: [string, number, number][] };
 const PACKS = JSON.parse(readFileSync(join(KIKI, 'packs.json'), 'utf8')) as Record<string, Pack>;
 const CLIPS = JSON.parse(readFileSync(join(KIKI, 'clips.json'), 'utf8')) as Record<string, { dur: number }>;
 
-test('the lobby fetches its deck’s pack whole; a sliced clip decodes to its length', async ({ page }) => {
+test('the lobby fetches its deck’s clips as slices of their pack; a sliced clip decodes to its length', async ({ page }) => {
   const asked: { url: string; range: boolean }[] = [];
   page.on('request', (r) => {
     if (r.url().includes('/audio/')) asked.push({ url: r.url(), range: !!r.headers().range });
@@ -26,10 +26,10 @@ test('the lobby fetches its deck’s pack whole; a sliced clip decodes to its le
   const sheet = page.locator('dialog[open] [data-kikimimi]');
   await expect(sheet).toHaveAttribute('data-phase', 'lobby');
   await expect(sheet.locator('[data-kiki-page="hub"]')).toBeVisible(); // (my lobby at level 1, the default)
-  // level 1's deck: its one pack, fetched whole
+  // level 1's deck: its clips, each alone as a Range of its pack (packs.ts WHOLE_AT: a deck's 8 never take a pack whole)
   const lv1 = `/audio/listen/lv1.${PACKS.lv1.hash}.pak`;
-  await expect.poll(() => asked.filter((a) => a.url.endsWith(lv1)).length).toBe(1);
-  expect(asked.filter((a) => a.range || a.url.includes('/audio/kikimimi/'))).toEqual([]);
+  await expect.poll(() => asked.filter((a) => a.url.includes(`${lv1}?s=`) && a.range).length).toBeGreaterThanOrEqual(8);
+  expect(asked.filter((a) => a.url.endsWith(lv1) || a.url.includes('/audio/kikimimi/'))).toEqual([]);
 
   // a clip from a few packs (level 1 and its slow pack, a level-4 part, a ladder rung, a unit's), sliced and decoded
   const pick = ['lv1', 'lv1-slow', 'lv4-2', 'ladder', 'u-gl-clarify'].filter((n) => PACKS[n]);

@@ -1,24 +1,29 @@
-// The phone's audio packs (packs.ts): a pack fetched whole (never a Range), once at a time, held within a byte cap
-// (the newest always), a failure not kept; a clip's bytes the copy of its slice; voiceClip keys the engine's decoded
-// clips by pack and offset and slices from the right pack (slow takes from the slow pack); prefetch asks once a pack.
+// The phone's audio packs (packs.ts): a deck's home pack fetched whole, once at a time, held within a byte cap (the
+// newest always), a failure not kept; any other clip fetched alone as a Range of its pack (a server answering with the
+// whole pack sliced here); a clip's bytes a copy; voiceClip keys the engine's decoded clips by pack and offset and slices
+// from the right pack (slow takes from the slow pack); prefetch asks for a pack holding WHOLE_AT of the deck's clips whole,
+// each other clip alone, each once.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const loadVoice = vi.fn(async (_key: string, bytes: () => Promise<ArrayBuffer | null>) => ((await bytes()) ? ({ duration: 1 } as AudioBuffer) : null));
 vi.mock('#lib/sound/sound.svelte.ts', () => ({ loadVoice: (k: string, b: () => Promise<ArrayBuffer | null>) => loadVoice(k, b) }));
 
-const { PackStore, packUrl } = await import('./packs.ts');
+const { PackStore, WHOLE_AT, packUrl, sliceUrl } = await import('./packs.ts');
 
-/** A fake network: each pack's bytes 0, 1, 2… (mod 256), `n` long; counts the asks, records each request's headers. */
-function net(sizes: Record<string, number>) {
+/** A fake network: each pack's bytes 0, 1, 2… (mod 256), `n` long, a Range answered as a 206 (`ranges` false: the
+ *  whole pack, as a server without them); counts the asks. */
+function net(sizes: Record<string, number>, ranges = true) {
   const asked: string[] = [];
   let down = false;
   const get = vi.fn(async (url: string, init?: RequestInit) => {
     asked.push(url);
-    expect(new Headers(init?.headers).has('range')).toBe(false);
     if (down) throw new TypeError('offline');
-    const stem = Object.keys(sizes).find((s) => url.endsWith(`/listen/${s}.pak`));
+    const stem = Object.keys(sizes).find((s) => url.split('?')[0].endsWith(`/listen/${s}.pak`));
     if (!stem) return new Response(null, { status: 404 });
-    return new Response(Uint8Array.from({ length: sizes[stem] }, (_, i) => i % 256));
+    const all = Uint8Array.from({ length: sizes[stem] }, (_, i) => i % 256);
+    const r = /bytes=(\d+)-(\d+)/.exec(new Headers(init?.headers).get('range') ?? '');
+    expect(!!r, url).toBe(url.includes('?s='));
+    return r && ranges ? new Response(all.slice(Number(r[1]), Number(r[2]) + 1), { status: 206 }) : new Response(all);
   });
   return { get, asked, off: (v: boolean) => (down = v) };
 }
@@ -27,6 +32,7 @@ describe('PackStore', () => {
   it('fetches a pack whole, once though asked twice at once; a clip is a copy of its slice', async () => {
     const n = net({ 'lv1.aaaa': 1000 });
     const s = new PackStore(n.get);
+    void s.pack('lv1.aaaa');
     const [a, b] = await Promise.all([s.bytes(['lv1.aaaa', 10, 5]), s.bytes(['lv1.aaaa', 300, 3])]);
     expect([...new Uint8Array(a!)]).toEqual([10, 11, 12, 13, 14]);
     expect([...new Uint8Array(b!)]).toEqual([44, 45, 46]);
@@ -56,7 +62,7 @@ describe('PackStore', () => {
     n.off(false);
     expect(await s.pack('nope')).toBeNull(); // a 404
     n.off(true);
-    expect(await s.bytes(['c', 0, 4])).toBeNull(); // let go, and offline now
+    expect(await s.bytes(['c', 0, 4])).toBeNull(); // let go (its slice asked alone), and offline now
     n.off(false);
     expect(await s.bytes(['c', 0, 4])).not.toBeNull(); // tried again
     s.clear();
@@ -64,15 +70,27 @@ describe('PackStore', () => {
     expect(n.asked.filter((u) => u.endsWith('/big.pak')).length).toBe(2);
   });
 
-  it('prefetch asks for each pack once, the first alone (the rest once it is in)', async () => {
-    const n = net({ x: 10, y: 10, z: 10 });
+  it('a clip of a pack not held comes alone, as a Range (a whole answer sliced here), once though asked twice', async () => {
+    for (const ranges of [true, false]) {
+      const n = net({ 'lv4.bbbb': 1000 }, ranges);
+      const s = new PackStore(n.get);
+      const [a, b] = await Promise.all([s.bytes(['lv4.bbbb', 300, 4]), s.bytes(['lv4.bbbb', 300, 4])]);
+      expect([...new Uint8Array(a!)]).toEqual([44, 45, 46, 47]);
+      expect(b).not.toBe(a); // (each a copy)
+      expect(n.asked).toEqual([sliceUrl(['lv4.bbbb', 300, 4])]);
+      expect(sliceUrl(['lv4.bbbb', 300, 4])).toMatch(/\/listen\/lv4\.bbbb\.pak\?s=300-303$/);
+    }
+  });
+
+  it('prefetch: a pack holding WHOLE_AT of the deck’s clips whole, the others’ clips alone; the first first, each once', async () => {
+    const n = net({ home: 2000, x: 1000, y: 1000 });
     const s = new PackStore(n.get);
-    s.prefetch(['x', 'y', 'x', 'z']);
-    expect(n.asked.map((u) => u.split('/').at(-1))).toEqual(['x.pak']);
-    await s.pack('x');
-    await vi.waitFor(() => expect(n.asked.map((u) => u.split('/').at(-1))).toEqual(['x.pak', 'y.pak', 'z.pak']));
-    s.prefetch(['y']);
-    await s.pack('z');
+    const home = Array.from({ length: WHOLE_AT }, (_, k) => ['home', k * 100, 50] as const);
+    s.prefetch([['x', 0, 40], ...home, ['y', 500, 40], ['x', 0, 40]]);
+    expect(n.asked).toEqual([sliceUrl(['x', 0, 40])]);
+    await s.slice(['x', 0, 40]);
+    await vi.waitFor(() => expect(n.asked).toEqual([sliceUrl(['x', 0, 40]), packUrl('home'), sliceUrl(['y', 500, 40])]));
+    expect([...new Uint8Array((await s.bytes(['home', 100, 2]))!)]).toEqual([100, 101]); // from the pack held
     expect(n.asked).toHaveLength(3);
   });
 });
@@ -96,7 +114,7 @@ describe('voiceClip', () => {
     expect(loadVoice.mock.calls[1][0]).toBe('lv1-slow.2222:40');
     expect(await voiceClip('nope')).toBeNull();
     prefetchClips(['q1', 'nope']);
-    expect(n.asked.filter((u) => u.endsWith('lv1.1111.pak')).length).toBe(1); // held already
+    expect(n.asked.filter((u) => u.includes('lv1.1111.pak')).length).toBe(1); // (its slice, held already)
     vi.unstubAllGlobals();
   });
 });

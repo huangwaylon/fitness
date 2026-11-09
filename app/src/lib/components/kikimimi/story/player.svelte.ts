@@ -11,7 +11,7 @@ import type { Chapter } from '#lib/kikimimi/story.ts';
 import { clipDur } from '#lib/kikimimi/clips.ts';
 import { FADE_MS, NEXT_CHAPTER_MS, fadeCurve, finishesOnTimer, gapAfter, timeline, timerLeft, type SleepTimer } from '#lib/kikimimi/bedtime.ts';
 import { fadeVoice, holdVoiceDuck, playVoice } from '#lib/sound/sound.svelte.ts';
-import { voiceClip } from '../packs.ts';
+import { prefetchClips, voiceClip } from '../packs.ts';
 
 /** How long a segment's clip is waited for before its length passes in silence (ms). */
 const DECODE_WAIT = 3_000;
@@ -154,6 +154,8 @@ export class StoryPlayer {
 
   async #sound(): Promise<void> {
     const token = ++this.#token, k = this.seg, segs = this.chapter.segments, seg = segs[k];
+    // (the chapter's pack whole: its segments are all in it, packs.ts WHOLE_AT)
+    prefetchClips(segs.slice(k).map((s) => s.clip));
     const buf = await Promise.race([voiceClip(seg.clip), new Promise<null>((r) => setTimeout(() => r(null), DECODE_WAIT))]);
     if (token !== this.#token || !this.playing) return;
     const dur = buf?.duration ?? clipDur(seg.clip) ?? 2;
