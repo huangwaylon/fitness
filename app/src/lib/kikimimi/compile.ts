@@ -30,7 +30,8 @@ import { LADDERS, ladderReady } from './ladders.ts';
 import { drawn, mixFor, type Mixes } from './mix.ts';
 import { clipPlaces, type PackRef, type Packs } from './packing.ts';
 import type { Index, PathEntry } from './pool.ts';
-import { joined } from './source.ts';
+import { AUTHORED, joined } from './source.ts';
+import { TELL_TYPES, type ChoiceSet } from './tells.ts';
 import { tagsOf } from './tags.ts';
 import { LESSONS, candoText, checkUnits, kindFiles, lessonIds, listenRefs, manifestOf, type UnitManifest, type UnitsCheck } from './units.ts';
 import { BUILD_V } from './games/versions.ts';
@@ -80,6 +81,26 @@ export const readPairs = (file: URL = PAIRS_FILE): unknown => (existsSync(file) 
  *  the bank's (their ids are checked against the bank's and each other's: checkUnits). */
 export function unitItems(sources: readonly UnitSource[] = readUnits()): Item[] {
   return sources.flatMap(({ raw }) => ((raw as { items?: unknown }).items as Item[] | undefined) ?? []);
+}
+
+/** Every 3-choice set a player could weigh without the audio (tells.ts TELL_TYPES), by group: the banks' items by level
+ *  (`L4`), the units' items and their tiers (`units`, a tier's id `<item>:<tier>`, its unit's file). tells.test holds them
+ *  to the limits; scripts/kikimimi-tells.ts lists them. */
+export function choiceSets(sources: readonly UnitSource[] = readUnits()): (ChoiceSet & { group: string; id: string; type: string; file?: string })[] {
+  const out: (ChoiceSet & { group: string; id: string; type: string; file?: string })[] = [];
+  const add = (group: string, id: string, type: string, s: ChoiceSet, file?: string) =>
+    s.choices.length === 3 && TELL_TYPES.has(type) && out.push({ group, id, type, choices: s.choices, answer: s.answer, en: s.en, ...(file && { file }) });
+  for (const it of AUTHORED) add(`L${it.lv}`, it.id, it.type, it);
+  for (const { file, raw } of sources) {
+    const items = unitItems([{ file, raw }]), byId = new Map(items.map((it) => [it.id, it]));
+    for (const it of items) add('units', it.id, it.type, it, file);
+    const tiers = (raw as { tiers?: Record<string, Record<string, Pick<Item, 'choices' | 'answer'>>> }).tiers ?? {};
+    for (const [id, t] of Object.entries(tiers)) {
+      const it = byId.get(id);
+      if (it) for (const [k, set] of Object.entries(t)) add('units', `${id}:${k}`, it.type, { ...set, en: it.en }, file);
+    }
+  }
+  return out;
 }
 
 /** The units read and checked (units.ts: each manifest, then all of them against the bank, the ladders, the clips and

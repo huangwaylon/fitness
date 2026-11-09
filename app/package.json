@@ -31,6 +31,7 @@
     "audio:kikimimi-words": "node scripts/kikimimi-words.ts",
     "kikimimi:levels": "node scripts/kikimimi-levels.ts",
     "kikimimi:packs": "node scripts/kikimimi-packs.ts",
+    "kikimimi:tells": "node scripts/kikimimi-tells.ts",
     "stt:models": "node scripts/stt-models.ts",
     "kikimimi:tiles": "node scripts/kikimimi-tiles.ts",
     "kikimimi:rush": "node scripts/kikimimi-rush.ts",
