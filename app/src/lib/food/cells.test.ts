@@ -1,7 +1,7 @@
 // food/cells.ts: a cell drawn at the box's pixels (never more than the cell's own), one decode per sheet shared by its
 // cells, the decoded sheet closed a moment after its last draw, a sheet that fails rejected.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { drawCell, held } from './cells.ts';
+import { drawCell, drawPlate, held, plateRects } from './cells.ts';
 
 const calls: unknown[][] = [];
 let decodes = 0, closed = 0;
@@ -34,5 +34,40 @@ describe('drawCell', () => {
     await expect(drawCell(canvas(), { url: '/bad.webp', x: 0, y: 0, size: 128 }, 48)).rejects.toThrow();
     await vi.advanceTimersByTimeAsync(2000);
     expect(held().decoded).toBe(0);
+  });
+});
+
+describe('drawPlate: a recipe’s picture box', () => {
+  it('plateRects: 1 whole, 2 halves, 3 a half and two quarters, 4 a 2 × 2, a gap between, the edges whole', () => {
+    expect(plateRects(1, 120, 0)).toEqual([[0, 0, 120, 120]]);
+    expect(plateRects(2, 120, 4)).toEqual([[0, 0, 58, 120], [62, 0, 58, 120]]);
+    expect(plateRects(3, 120, 4)).toEqual([[0, 0, 58, 120], [62, 0, 58, 58], [62, 62, 58, 58]]);
+    expect(plateRects(4, 120, 4)).toEqual([[0, 0, 58, 58], [62, 0, 58, 58], [0, 62, 58, 58], [62, 62, 58, 58]]);
+  });
+
+  it('draws each picture’s middle into its rectangle (a tile its tint), once: drawn again from what it kept', async () => {
+    const made: ReturnType<typeof canvas>[] = [];
+    const fills: string[] = [];
+    vi.stubGlobal('Path2D', class { constructor(public d: string) {} });
+    vi.stubGlobal('document', { createElement: () => {
+      const c = canvas() as unknown as { getContext: () => object };
+      const g = c.getContext() as Record<string, unknown>;
+      c.getContext = () => Object.assign(g, { fillRect: () => fills.push(String(g.fillStyle)), save() {}, restore() {}, translate() {}, scale() {}, stroke() {} });
+      made.push(c as never);
+      return c;
+    } });
+    const cells = [{ img: { url: '/t-1.webp', x: 0, y: 0, size: 128 } }, { img: { url: '/t-2.webp', x: 128, y: 0, size: 128 } }, { tint: '#EDC3A8', glyph: 'M0 0', ink: '#000' }];
+    const a = canvas(), b = canvas();
+    await drawPlate(a, cells, 40);
+    expect(a.width).toBe(120);
+    expect(decodes).toBe(2); // two sheets
+    expect(fills).toEqual(['#EDC3A8']);
+    // the first: its 128 cell zoomed ×1.35 and cut to a tall half (58 × 120 at 3×)
+    const [first] = calls.filter((c) => c.length === 9);
+    const ch = 128 / 1.35, cw = (ch * 58) / 120;
+    expect(first.slice(1)).toEqual([(128 - cw) / 2, (128 - ch) / 2, cw, ch, 0, 0, 58, 120]);
+    await drawPlate(b, cells, 40);
+    expect([made.length, decodes, held().plates]).toEqual([1, 2, 1]); // kept: no new canvas, no decode
+    expect(calls.at(-1)).toEqual([made[0], 0, 0]);
   });
 });

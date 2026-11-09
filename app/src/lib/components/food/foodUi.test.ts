@@ -1,13 +1,16 @@
 // ごはん's helpers (foodUi.ts): a portion in words, the snapshot's own portion, the amount's start and step, the 最近
-// list, a row's everyday name, the kcal goal field and its chip, the repeat's days and the same-items check.
+// list, a row's everyday name, the kcal goal field and its chip, the repeat's days and the same-items check, and a
+// recipe's picture box (which ingredients it shows).
 import { describe, expect, it } from 'vitest';
 import '#lib/i18n/food.ts';
 import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from '#lib/food/index.ts';
 import {
   amountText, customDraft, customErrors, customItem, customOf, DAYS, daysText, defaultPortion, glossOf, goalChip, itemOf, matchPortion,
-  parseAmount, portionLabel, portionText, quickDraft, quickErrors, quickSnap, recentOf, sameItems, servingText, startOf, stateItem, stepOf, typedKcal
+  parseAmount, portionLabel, portionText, quickDraft, quickErrors, quickSnap, recentOf, sameItems, servingText, startOf, stateItem, stepOf, typedKcal,
+  catOf, plateOf, recipeIdOf, recipePlate
 } from './foodUi.ts';
+import type { FoodImageIndex } from '#lib/food/images.ts';
 import { unitOf } from '#lib/food/index.ts';
 import { foodOp } from '#lib/contract/food.ts';
 
@@ -219,5 +222,36 @@ describe('クイック: kcal (and what else is known) as one entry, no food save
   it('typedKcal: a number typed in the search (full width, a comma, kcal after it); anything else null', () => {
     expect(['650', '６５０', '1,200', '800kcal', '450 kcal', '12.4'].map(typedKcal)).toEqual([650, 650, 1200, 800, 450, 12]);
     expect(['', 'ごはん', '0', '6000', '7-11', 'kcal', '1個'].map(typedKcal)).toEqual([null, null, null, null, null, null, null]);
+  });
+});
+
+describe('マイレシピ: its picture box (recipePlate, plateOf) and a logged recipe’s id', () => {
+  const it3 = (id: string, g: number) => ({ g, f: { id } });
+  const pics = new Set(['rice', 'onion', 'chicken', 'potato', 'carrot']);
+  const pictured = (id: string) => pics.has(id);
+
+  it('the pictured ones first, then the most grams; at most four, drawn biggest first; a food once, its grams summed', () => {
+    const items = [it3('chicken', 300), it3('roux', 900), it3('onion', 200), it3('potato', 300), it3('carrot', 150), it3('rice', 600), it3('onion', 250)];
+    // roux (no picture) is the most grams, yet four pictured ones come before it; onion's 450 g together
+    expect(recipePlate(items, pictured)).toEqual([{ id: 'rice', g: 600 }, { id: 'onion', g: 450 }, { id: 'chicken', g: 300 }, { id: 'potato', g: 300 }]);
+  });
+
+  it('fewer pictured than room: the rest by their tiles, in grams order; a tie keeps the listed order', () => {
+    expect(recipePlate([it3('roux', 80), it3('rice', 600), it3('soy', 80)], pictured).map((x) => x.id)).toEqual(['rice', 'roux', 'soy']);
+    expect(recipePlate([it3('a', 10), it3('b', 10)], () => false).map((x) => x.id)).toEqual(['a', 'b']);
+    expect(recipePlate([], pictured)).toEqual([]);
+  });
+
+  it('plateOf: each cell its picture, else its category (none known: undefined, その他 at the box)', () => {
+    const ix: FoodImageIndex = { v: 1, t: 128, d: 384, sheets: ['t-0.webp'], keys: [[0, 128, 0, 0, 0, 0]], ids: { 'mext:01088': 0 } };
+    const parts = plateOf({ it: [{ g: 50, f: snap('off:4901', 'しょうゆ') }, { g: 600, f: snap('mext:01088', 'ごはん') }] }, ix, null, 48);
+    expect(parts.map((p) => [p.img?.x ?? null, p.cat])).toEqual([[128, undefined], [null, undefined]]);
+  });
+
+  it('a logged recipe: its id from its snapshot, and the レシピ tile', () => {
+    expect(recipeIdOf('recipe:cdemoa1')).toBe('cdemoa1');
+    expect(recipeIdOf('mext:01088')).toBeNull();
+    expect(recipeIdOf('custom:mdemoa1')).toBeNull();
+    expect([catOf(null, 'recipe:cdemoa1'), catOf(null, 'cdemoa1'), catOf(null, 'custom:mdemoa1')]).toEqual(['レシピ', 'レシピ', undefined]);
   });
 });

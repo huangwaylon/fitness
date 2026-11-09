@@ -31,14 +31,14 @@
   import FoodThumb from './FoodThumb.svelte';
   import FoodOpen, { type Set } from './FoodOpen.svelte';
   import NavButton from '../ui/NavButton.svelte';
-  import { amountText, catalogOf, catOf, customItem, defaultPortion, stemName, foodDb, glossOf, itemOf, servingText, typedKcal, withImages } from './foodUi.ts';
+  import { amountText, catalogOf, catOf, customItem, defaultPortion, stemName, foodDb, glossOf, itemOf, servingText, typedKcal, withImages, plateOf, recipeIdOf } from './foodUi.ts';
 
   interface Props {
     /** My recent entries (recentOf). */
     recent: FoodEntry[];
     /** A food picked: a catalog item, or a recent one with the grams I had last. */
     onpick: (item: Item, g?: number, u?: string, f?: FoodEntry['f']) => void;
-    /** マイレシピ to offer (none: a recipe's ingredient is being picked), and who set each. */
+    /** Everyone's マイレシピ (offered with `onrecipe`; else only for さいきん's pictures of the ones logged), and who set each. */
     recipes?: readonly Recipe[];
     names?: Record<Who, string>;
     onrecipe?: (r: Recipe) => void;
@@ -129,6 +129,7 @@
   /** The recipes and custom foods whose names hold every word typed (all of them with nothing typed). */
   const words = $derived(q.trim().split(/[\s　]+/).map(searchKey).filter(Boolean));
   const hits = (n: string) => words.every((w) => searchKey(n).includes(w));
+  const recipeById = $derived(new Map(recipes.map((r) => [r.id, r])));
   const myRecipes = $derived(onrecipe ? recipes.filter((r) => hits(r.n)) : []);
   const myFoods = $derived(oncustom ? customs.filter((c) => hits(c.n)) : []);
   /** Nothing of ours matches what was typed (the catalog's own say so after). */
@@ -236,7 +237,7 @@
     <ul class="list" data-food-recipes>
       {#each myRecipes as r (r.id)}
         <li><button type="button" class="card it tt" data-sfx="page" data-recipe={r.id} onclick={() => onrecipe(r)}>
-          <FoodThumb cat="レシピ" />
+          <FoodThumb cat="レシピ" plate={plateOf(r, imgs, db, 48)} />
           <span class="nm">{r.n}</span>
           <small class="meta">{names?.[r.who] ?? r.who} · {t('food.rcp.servings', { n: r.sv })}</small>
           <span class="kc"><b class="money">{kcalText(r.per.kcal)}</b><small>{t('food.rcp.one')}</small></span>
@@ -315,9 +316,11 @@
       {#each recent as e (e.id)}
         {@const gl = glossOf(catalogOf(db, e.f.id) ?? itemOf(e.f, null), e.f.n)}
         {@const key = `r:${e.id}`}
+        {@const rid = recipeIdOf(e.f.id)}
+        {@const r = rid ? recipeById.get(rid) : undefined}
         <li class:rw={!!onquick}><button type="button" class="card it tt" data-sfx="page" data-item={e.f.id} aria-expanded={inline ? open === key : undefined}
           aria-controls={inline && open === key ? `fo-${key}` : undefined} onclick={tap(key, () => onpick(itemOf(e.f, db, e.g), e.g, e.f.u, e.f))}>
-          <FoodThumb cat={catOf(db, e.f.id)} img={imgOf(imgs, e.f.id, 48)} />
+          <FoodThumb cat={catOf(db, e.f.id)} img={imgOf(imgs, e.f.id, 48)} plate={r ? plateOf(r, imgs, db, 48) : null} />
           <span class="nm">{e.f.n}</span>
           <small class="meta"><span class="as">{amountText(e)}{#if gl}{' · '}{/if}</span>{#if gl}<span class="gl" data-gloss>{gl}</span>{/if}</small>
           <b class="kc money">{kcalText(entryKcal(e))}</b>

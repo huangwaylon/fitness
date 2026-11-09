@@ -5,8 +5,12 @@
   // (its url, the cell's x / y and size in the sheet's pixels), drawn into the box's canvas (food/cells.ts: the sheet
   // decoded a moment, not held) once the box nears the screen, fades in over the tint, the tile again if it fails: the
   // box never changes size, so nothing shifts. Decorative (the row beside it says the name) unless `alt`.
+  // A recipe's (マイレシピ: `plate`, foodUi.ts plateOf): its ingredients' pictures in one box (1 whole, 2 halves, 3 a
+  // half and two quarters, 4 a 2 × 2; one with no picture its category's tile), drawn over the レシピ tile
+  // (cells.ts drawPlate, kept per what it holds), and a small round pot on the box's corner: a recipe, not a food.
   import { FOOD_CAT, type FoodGlyph } from '#lib/art.ts';
-  import { drawCell } from '#lib/food/cells.ts';
+  import { drawCell, drawPlate, type PlateCell } from '#lib/food/cells.ts';
+  import type { PlatePart } from './foodUi.ts';
 
   interface Props {
     /** `Item.cat`, or レシピ; unknown: その他. */
@@ -19,10 +23,13 @@
     under?: { url: string; x: number; y: number; size: number } | null;
     /** A picture is on screen (`img`, or `under` for it): FoodAmount's イメージ badge. */
     pictured?: boolean;
+    /** A recipe's ingredients, its box's cells (none, or empty: a food's, `img` / the tile). */
+    plate?: readonly PlatePart[] | null;
   }
-  let { cat, size = 48, img = null, alt, under = null, pictured = $bindable(false) }: Props = $props();
+  let { cat, size = 48, img = null, alt, under = null, pictured = $bindable(false), plate = null }: Props = $props();
 
-  const key = $derived(cat && FOOD_CAT[cat] ? cat : 'その他');
+  const isPlate = $derived(!!plate?.length);
+  const key = $derived(isPlate ? 'レシピ' : cat && FOOD_CAT[cat] ? cat : 'その他');
   const tile = $derived(FOOD_CAT[key]);
   /** A cell's identity (a sheet holds many). */
   const id = (c: { url: string; x: number; y: number }) => `${c.url}#${c.x},${c.y}`;
@@ -55,6 +62,24 @@
   }
   $effect(() => paint(cv, img, (k) => (loaded = k), (k) => (failed = k)));
   $effect(() => paint(ucv, under, (k) => (underIn = k)));
+  // a recipe's: its cells as drawPlate takes them (a tile's ink the box's own text colour)
+  let pcv: HTMLCanvasElement | undefined = $state();
+  const plateId = $derived(isPlate ? JSON.stringify(plate) : '');
+  let plateIn = $state<string | null>(null), plateBad = $state<string | null>(null);
+  $effect(() => {
+    if (!pcv || !box || !near || !plate?.length) return;
+    let live = true;
+    // (the box's colour read only for a tile: getComputedStyle flushes the styles, in the middle of a scroll)
+    const k = plateId, ink = plate.every((x) => x.img) ? '' : getComputedStyle(box).color;
+    const cells: PlateCell[] = plate.map((x) => {
+      if (x.img) return { img: x.img };
+      const c = FOOD_CAT[x.cat && FOOD_CAT[x.cat] ? x.cat : 'その他'];
+      return { tint: c.tint, glyph: GLYPH[c.glyph], ink };
+    });
+    drawPlate(pcv, cells, size).then(() => live && (plateIn = k), () => live && (plateBad = k));
+    return () => void (live = false);
+  });
+  const plated = $derived(isPlate && plateIn === plateId && plateBad !== plateId);
   /** Each glyph's lines on a 24 × 24 grid. */
   const GLYPH: Record<FoodGlyph, string> = {
     bowl: 'M3 12h18a9 7 0 0 1-18 0z M6.5 12a5.5 4.5 0 0 1 11 0',
@@ -88,13 +113,13 @@
   };
 </script>
 
-<span bind:this={box} class="th" class:pic={shown || stand} data-thumb={shown ? 'img' : stand ? 'under' : 'cat'} data-cat={key} role={alt ? 'img' : undefined} aria-label={alt} aria-hidden={alt ? undefined : 'true'}
+<span bind:this={box} class="th" class:pic={shown || stand || plated} data-thumb={plated ? 'plate' : shown ? 'img' : stand ? 'under' : 'cat'} data-plate={isPlate ? plate!.length : undefined} data-cat={key} role={alt ? 'img' : undefined} aria-label={alt} aria-hidden={alt ? undefined : 'true'}
   style:--t={tile.tint} style:--s="{size}px" style:--r="{Math.round(size / 4)}px">
   {#if under && img && !shown && failed !== id(img)}
     <!-- the thumbnail, cached, scaled up until the cell decodes (never the tile in between) -->
     <canvas class="cell" class:in={stand} bind:this={ucv}></canvas>
   {/if}
-  {#if !shown && !stand}
+  {#if !shown && !stand && !plated}
     <svg viewBox="0 0 24 24" width={Math.round(size * 0.46)} height={Math.round(size * 0.46)}><path d={GLYPH[tile.glyph]} /></svg>
     <span class="w">{tile.word}</span>
   {/if}
@@ -102,11 +127,18 @@
     <!-- the cell alone, drawn at the box's size -->
     <canvas class="cell" class:in={shown} bind:this={cv}></canvas>
   {/if}
+  {#if isPlate && plateBad !== plateId}
+    <canvas class="cell" class:in={plated} bind:this={pcv}></canvas>
+  {/if}
+  {#if isPlate}
+    <!-- a recipe: the pot (the レシピ tile's glyph) on a cream sticker at the corner -->
+    <span class="pot" data-recipe-mark><svg viewBox="0 0 24 24"><path d={GLYPH.pot} /></svg></span>
+  {/if}
 </span>
 
 <style>
   .th {
-    position: relative; flex: none; display: grid; place-content: center; justify-items: center; gap: 1px; overflow: hidden;
+    position: relative; flex: none; display: grid; place-content: center; justify-items: center; gap: 1px;
     box-sizing: border-box; width: var(--s); height: var(--s); border-radius: var(--r); background: var(--t);
     box-shadow: 0 3px 0 color-mix(in srgb, var(--c-edge) 60%, transparent); color: var(--c-ink);
   }
@@ -117,7 +149,15 @@
   :global(:root[data-tod='night']) .pic::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(255, 246, 224, 0.6); }
   svg { display: block; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .w { font: 700 calc(var(--s) * 0.21)/1 var(--font-ui); white-space: nowrap; letter-spacing: -0.02em; }
-  .cell { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; }
+  /* (clipped to the box's corners itself: the box doesn't clip, so the recipe's pot may sit over its edge) */
+  .cell { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; border-radius: inherit; }
+  /* the recipe's pot: ~40 % of the box, over its lower-right corner, a cream sticker with the brown edge */
+  .pot {
+    position: absolute; right: calc(var(--s) * -0.1); bottom: calc(var(--s) * -0.1); z-index: 1; display: grid; place-items: center;
+    width: max(16px, calc(var(--s) * 0.4)); height: max(16px, calc(var(--s) * 0.4)); border-radius: 50%;
+    background: var(--c-cream); box-shadow: inset 0 0 0 1.5px var(--c-edge), 0 1px 0 var(--c-edge); color: var(--c-ink);
+  }
+  .pot svg { width: 70%; height: 70%; stroke-width: 2.6; }
   .cell.in { opacity: 1; transition: opacity 150ms; }
   @media (prefers-reduced-motion: reduce) { .cell.in { transition: none; } }
 </style>

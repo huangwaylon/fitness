@@ -80,5 +80,94 @@ export async function drawCell(canvas: HTMLCanvasElement, cell: FoodImg, px: num
   }
 }
 
+/** One cell of a recipe's picture box (drawPlate): an ingredient's picture, else its category's tile (its tint, its
+ *  glyph's path on a 24 × 24 grid, in `ink`). */
+export type PlateCell = { img: FoodImg } | { tint: string; glyph: string; ink: string };
+/** Each layout's rectangles in a unit box (x, y, w, h): 1 whole, 2 halves, 3 a half and two quarters, 4 a 2 × 2. */
+const LAYOUT: [number, number, number, number][][] = [
+  [[0, 0, 1, 1]],
+  [[0, 0, 0.5, 1], [0.5, 0, 0.5, 1]],
+  [[0, 0, 0.5, 1], [0.5, 0, 0.5, 0.5], [0.5, 0.5, 0.5, 0.5]],
+  [[0, 0, 0.5, 0.5], [0.5, 0, 0.5, 0.5], [0, 0.5, 0.5, 0.5], [0.5, 0.5, 0.5, 0.5]]
+];
+/** Rectangles of a box of `n` px for `k` cells, a `gap` between them (whole pixels, nothing lost at the edges). */
+export function plateRects(k: number, n: number, gap: number): [number, number, number, number][] {
+  const half = Math.round((n - gap) / 2), at = (v: number) => (v === 0 ? 0 : v === 0.5 ? half + gap : n);
+  return (LAYOUT[Math.min(k, LAYOUT.length) - 1] ?? []).map(([x, y, w, h]) => {
+    const x0 = at(x), y0 = at(y), x1 = w === 1 ? n : x === 0 ? half : n, y1 = h === 1 ? n : y === 0 ? half : n;
+    return [x0, y0, x1 - x0, y1 - y0];
+  });
+}
+/** A picture in a cell of several is zoomed in this much (the generated pictures sit on paper with a margin: at a
+ *  quarter of a 40 px box the food itself would be a few px). */
+const ZOOM = 1.35;
+/** Plates drawn, kept to draw again at once (a row scrolled back, the search re-rendered): the last few dozen. */
+const PLATES_MAX = 48;
+const plates = new Map<string, Promise<CanvasImageSource>>();
+const newCanvas = (n: number): HTMLCanvasElement | null => {
+  const c = globalThis.document?.createElement('canvas');
+  if (c) c.width = c.height = n;
+  return c ?? null;
+};
+
+/** Draw a recipe's picture box (`cells`: FoodThumb's plate, at most 4) into `canvas` for a box of `px` CSS px, at the
+ *  screen's pixels: each picture's cell, zoomed and cut to its rectangle, each tile its tint and glyph, a gap between
+ *  them (the box's own tint shows through). Kept by what it holds (PLATES_MAX), so a row drawn again costs one
+ *  drawImage. Rejects when a sheet can't be had (FoodThumb: the tile again). */
+export async function drawPlate(canvas: HTMLCanvasElement, cells: readonly PlateCell[], px: number): Promise<void> {
+  const n = Math.max(1, Math.round(px * (globalThis.devicePixelRatio || 1)));
+  const key = `${n}|${JSON.stringify(cells)}`;
+  let p = plates.get(key);
+  if (p) plates.delete(key);
+  else {
+    p = paintPlate(cells, n);
+    p.catch(() => plates.get(key) === p && plates.delete(key));
+  }
+  plates.set(key, p);
+  while (plates.size > PLATES_MAX) plates.delete(plates.keys().next().value!);
+  const src = await p;
+  if (canvas.width !== n) canvas.width = canvas.height = n;
+  const g = canvas.getContext('2d');
+  if (!g) throw new Error('no 2d context');
+  g.clearRect(0, 0, n, n);
+  g.drawImage(src, 0, 0);
+}
+async function paintPlate(cells: readonly PlateCell[], n: number): Promise<CanvasImageSource> {
+  const c = newCanvas(n);
+  if (!c) throw new Error('no canvas');
+  const g = c.getContext('2d');
+  if (!g) throw new Error('no 2d context');
+  const k = Math.min(cells.length, LAYOUT.length);
+  const rects = plateRects(k, n, k > 1 ? Math.max(1, Math.round(n * 0.04)) : 0);
+  const sheets = cells.slice(0, k).map((x) => ('img' in x ? { url: x.img.url, d: take(x.img.url) } : null));
+  try {
+    const srcs = await Promise.all(sheets.map((s) => s?.d.p));
+    g.imageSmoothingQuality = 'high';
+    cells.slice(0, k).forEach((x, i) => {
+      const [rx, ry, rw, rh] = rects[i];
+      if ('img' in x) {
+        // the cell's middle, as wide as the rectangle's shape (a half: a tall strip), zoomed in with several
+        const z = k > 1 ? ZOOM : 1, ch = x.img.size / z, cw = Math.min(x.img.size, (ch * rw) / rh);
+        g.drawImage(srcs[i]!, x.img.x + (x.img.size - cw) / 2, x.img.y + (x.img.size - ch) / 2, cw, ch, rx, ry, rw, rh);
+        return;
+      }
+      g.fillStyle = x.tint;
+      g.fillRect(rx, ry, rw, rh);
+      const s = Math.min(rw, rh) * 0.6;
+      g.save();
+      g.translate(rx + (rw - s) / 2, ry + (rh - s) / 2);
+      g.scale(s / 24, s / 24);
+      g.strokeStyle = x.ink;
+      g.lineWidth = 2;
+      g.lineCap = g.lineJoin = 'round';
+      g.stroke(new Path2D(x.glyph));
+      g.restore();
+    });
+  } finally {
+    sheets.forEach((s) => s && release(s.url, s.d));
+  }
+  return c;
+}
+
 /** Tests: what's held (decoded sheets, sheets' bytes). */
-export const held = (): { decoded: number; bytes: number } => ({ decoded: decoded.size, bytes: bytes.size });
+export const held = (): { decoded: number; bytes: number; plates: number } => ({ decoded: decoded.size, bytes: bytes.size, plates: plates.size });
