@@ -4,7 +4,7 @@
 // on what's drawn startled it off; my villager in front of a bug took the tap; and a tarantula's rear (its first tap)
 // showed nothing in 3D, so the second tap came while it was reared and it charged off every time.
 import { expect, test, type Page } from './fixtures.ts';
-import { is3d } from './island';
+import { is3d, tapAt, type Aim } from './island';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -40,6 +40,14 @@ async function drawn(page: Page): Promise<[number, number] | null> {
     return null;
   });
 }
+/** `tapAt`'s aim at the bug's model where it's drawn at the tap (frame-locked: it flies, hops and walks). */
+const theBug: Aim<null> = (w) => {
+  for (let n = 0; n < 60; n++) {
+    const at = w.__world3d.modelAt(`bug-${n}`);
+    if (at) return at[0] > 15 && at[0] < innerWidth - 15 && at[1] > 60 && at[1] < innerHeight - 50 ? at : null;
+  }
+  return null;
+};
 const cues = (page: Page) => page.evaluate(() => (window as unknown as { __cues: string[] }).__cues.slice());
 
 for (const [id, date] of [['robust-cicada', '2026-07-15T11:00'], ['golden-stag', '2026-07-15T21:00']] as const)
@@ -47,9 +55,7 @@ for (const [id, date] of [['robust-cicada', '2026-07-15T11:00'], ['golden-stag',
     test.slow();
     await open(page, `critter=${id}&date=${date}`);
     // the first moment it's on screen (still flying in, or landing)
-    let at: [number, number] | null = null;
-    await expect.poll(async () => (at = await drawn(page)), { timeout: 15_000, intervals: [50] }).not.toBeNull();
-    await page.mouse.click(at![0], at![1]);
+    await tapAt(page, theBug, null, { clear: null, timeout: 15_000, intervals: [50], mouse: true });
     await expect.poll(() => cues(page)).toContain('scene-catch');
     expect(await cues(page)).not.toContain('scene-bug-flee');
   });
@@ -57,10 +63,8 @@ for (const [id, date] of [['robust-cicada', '2026-07-15T11:00'], ['golden-stag',
 test('a tarantula rears up in 3D under a 「！」 at the first tap; settled, a tap nets it', async ({ page }) => {
   test.slow();
   await open(page, 'critter=tarantula&date=2026-07-15T21:00');
-  let at: [number, number] | null = null;
-  await expect.poll(async () => (at = await drawn(page)), { timeout: 15_000 }).not.toBeNull();
+  await expect.poll(() => drawn(page), { timeout: 15_000 }).not.toBeNull();
   await page.waitForTimeout(800); // (under way)
-  at = (await drawn(page))!;
   // its rear (REAR_MS, 1.6 s) watched in the page from before the tap, a look every 16 ms: the most 「！」s over it at
   // once and its highest point (a look a round trip from here came after it on a loaded runner, the front back down)
   const y0 = await page.evaluate(() => {
@@ -80,7 +84,8 @@ test('a tarantula rears up in 3D under a 「！」 at the first tap; settled, a 
     return bug()?.y ?? NaN;
   });
   const rear = () => page.evaluate(() => ((r) => ({ bangs: r.bangs, y: r.y }))((window as unknown as { __rear: { bangs: number; y: number } }).__rear));
-  await page.mouse.click(at[0], at[1]);
+  // (frame-locked: it walks)
+  await tapAt(page, theBug, null, { clear: null, mouse: true });
   // reared: the 「！」 over it (one) and its front lifted, on the 3D island (not only its invisible sprite)
   await expect.poll(async () => (await rear()).bangs).toBeGreaterThan(0);
   await expect.poll(async () => (await rear()).y).toBeGreaterThan(y0 + 1);
@@ -91,8 +96,7 @@ test('a tarantula rears up in 3D under a 「！」 at the first tap; settled, a 
   // (the expect's own time, 10 s on CI, not 4: the 「！」 goes in the island's next frame after REAR_MS, and drawn in
   // software GL that's ~1 a second, so it was still up at 4 s: gone at 4.8 s here, 1 left at 4 s on a loaded CI)
   await expect.poll(() => bangsAtBug(page)).toBe(0);
-  at = (await drawn(page))!;
-  await page.mouse.click(at[0], at[1]);
+  await tapAt(page, theBug, null, { clear: null, mouse: true });
   await expect.poll(() => cues(page)).toContain('scene-catch');
   expect(await cues(page)).not.toContain('scene-bug-flee');
 });

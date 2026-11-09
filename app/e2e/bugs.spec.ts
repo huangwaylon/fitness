@@ -65,7 +65,8 @@ test('a mole cricket chirps under a mound in the grass; a tap digs it up', async
   await expect(page.locator('[data-critter="mole-cricket"]')).toBeAttached();
   await page.waitForTimeout(900);
   const p = await at(page, '[data-critter="mole-cricket"]');
-  expect(await clear(page, p)).toBe('');
+  // clear of every control (a villager walking by may pass in front of the mound for a moment: the hunt's WebKit red)
+  await expect.poll(() => clear(page, p), { timeout: 8000 }).toBe('');
   await page.mouse.click(p.x, p.y);
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('mole-cricket'));
   expect(await cues(page)).toEqual(expect.arrayContaining(['scene-dig', 'scene-catch']));

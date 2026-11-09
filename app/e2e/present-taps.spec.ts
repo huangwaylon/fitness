@@ -5,7 +5,7 @@
 // lost its own record of the day gets my claims back in the relay's replay; what I had opened lay there again on my
 // phone and a tap did nothing (my claim was the day's already: it can't be made twice). Now a claim, mine too, is gone.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, geo, type Geo, islandUp, openNear, quiet } from './island.ts';
+import { camTo, geo, type Aim, type Geo, islandUp, openNear, quiet, tapAt } from './island.ts';
 import { layoutOpOf, mergeLayout, type LayoutEntry } from '../src/lib/contract/layout.ts';
 import { defaultLayout, layoutOf } from '../src/lib/layout/model.ts';
 import { navOf, type LayoutNav } from '../src/lib/layout/nav.ts';
@@ -48,23 +48,19 @@ const pickedBy = (page: Page, id: string) =>
     return d.events.filter((e) => e.kind === 'pick' && e.id === id).map((e) => `${e.who}:${e.what.split(':')[0]}`);
   }, id);
 /** Where a present is drawn: its 3D model's middle (`gift-<uid>`, its box's middle 12 u over its base), else its art's. */
-async function giftPoint(page: Page, uid: string): Promise<[number, number]> {
-  const at = () => page.evaluate((uid) => {
-    const p = (window as unknown as { __world3d?: { modelAt(id: string, lift?: number): [number, number] | null } }).__world3d?.modelAt(`gift-${uid}`, 12);
-    if (p) return p;
-    const r = document.querySelector(`[data-find="present"][data-uid="${uid}"] .official`)?.getBoundingClientRect();
-    return r && r.width ? [r.left + r.width / 2, r.top + r.height / 2] as [number, number] : null;
-  }, uid);
-  await expect.poll(at, { message: `the present ${uid}, drawn` }).not.toBeNull();
-  return (await at())!;
-}
+const giftAt: Aim<string> = (w, uid) => {
+  const p = w.__world3d?.modelAt(`gift-${uid}`, 12);
+  if (p) return p;
+  const r = document.querySelector(`[data-find="present"][data-uid="${uid}"] .official`)?.getBoundingClientRect();
+  return r && r.width ? [r.left + r.width / 2, r.top + r.height / 2] : null;
+};
 /** A finger's tap on a present where it's drawn: opened (A's claim in the day, gone from the island, its plate). */
 async function tapGift(page: Page, uid: string, z: number) {
   await camTo(page, z - 114);
   const gift = page.locator(`[data-find="present"][data-uid="${uid}"]`);
   await expect(gift).toHaveCount(1);
-  const [x, y] = await giftPoint(page, uid);
-  await page.touchscreen.tap(x, y);
+  // (frame-locked: its point read and touched in one held frame)
+  await tapAt(page, giftAt, uid, { clear: null, message: `the present ${uid}, drawn` });
   await expect.poll(() => pickedBy(page, uid), { message: `${uid} opened` }).toEqual(['A:present']);
   await expect(gift).toHaveCount(0);
   await expect(page.locator('[data-catch-stack] [data-fx="catch"]').last()).toBeVisible();

@@ -226,14 +226,18 @@ Every e2e runs in a sealed world (e2e/fixtures.ts), so a run today and a run in 
   emulates it: rAF runs at 60 in both), so a tab that missed a tap didn't miss it for being behind; still
   `bringToFront()` the tab that acts (rule 6 below). A second tab opened last is still loading: wait for its island
   (`is3d`, `quiet`) before timing anything across the two (highfive-star).
-- **Casts go through `castIn`** (e2e/island.ts): `toTheWater`'s point then a plain `mouse.click` misses when a tree's
-  or a house's tap area comes in between the check and the click (its lazy art); `castIn` checks and clicks in one
-  step and tries again. A plain click or touch only where the tap itself is the test (fishing-taps, exact-taps).
+- **Taps on the 3D island are frame-locked** (e2e/island.ts `tapAt`, `tapWorld`, `tapThing`, `tapWater`): the page's
+  frames held (requestAnimationFrame's callbacks kept till after the tap), the point read in the page, a real touch
+  (or `mouse: true`) there, then the frames let go, so no camera ease, walk or swim comes between the read and the tap
+  (a point read, then tapped a round trip later, was most of the tap specs' flakes). An aim is a function run in the
+  page (a world point, a model, a fish, a box), polled while it has no point or a tap area lies over it. `castIn`
+  sends its tap from the page in the same task (`dispatch`: a tree's lazy tap area can't come in between) and retries
+  until it cast. A point tapped as read only where nothing moves or the tap itself is the test (exact-taps).
 - **Read the hooks once they're there**: `__world` comes before `__world3d`; `camTo` and `settled` wait for both
   (`ready3d`); a spec reading `__world3d` straight after `goto` waits on `is3d` first.
 - **The island after the HUD**: after a `goto` or `reload` wait with `islandUp` (e2e/island.ts), not the HUD alone. The
-  3D island mounts up to 300 ms after the HUD shows (it waits for the ground's fields from their worker), and until
-  then every island target sits hidden at the scene's corner: a box read or a tap there misses.
+  3D island mounts after the HUD shows, once the ground's fields are in (worker or cache: layout/fieldsPrime.ts), and
+  until then every island target sits hidden at the scene's corner: a box read or a tap there misses.
 - **Silent**: Chromium runs with `--mute-audio` and `--disable-audio-output` (the music, K.K. and the effects never
   sound on a dev's Mac, and the page's audio clock is a fake output's, as on CI's Linux: the Mac's own device stalled
   it, the decks frozen, kk-sync red locally); WebKit headless makes no sound.
@@ -271,8 +275,8 @@ Most red runs are the spec, not the app. Before pushing a new or changed spec, r
 `--repeat-each=10` (and the whole file with `--workers=8`: a loaded machine is what CI is).
 
 1. **Never tap where something can wander.** The villagers walk about, critters come and go (a flea off a villager,
-   a bug from under the rock), visitors stroll, balloons drift. Tap a point only once it is *that* thing's: poll
-   `document.elementFromPoint(x, y)` until it's inside the target, or pin the scene: ambient life is off already
+   a bug from under the rock), visitors stroll, balloons drift. Tap a point only once it is *that* thing's, read and
+   tapped in one held frame (`tapAt` and its `clear`, above), or pin the scene: ambient life is off already
    ("Hermetic"), then `&rock=clonk`, `&shake=…`, `?weather=…`, `?seed=` (docs/design.md "Dev params"). Prefer a locator's own click
    (Playwright checks what receives it) to `page.mouse.click(x, y)` when the island isn't the target.
 2. **Wait on the app's state, not on time.** `expect(…).toBeVisible()`, `expect.poll(() => window.__world.cam())`,
@@ -311,9 +315,10 @@ Most red runs are the spec, not the app. Before pushing a new or changed spec, r
     touch's click from its pointerup's point, so WebKit's touch adjustment never moves it onto a door, and a find's 44px
     margin over the water is the water's: `e2e/exact-taps.spec.ts`). `toTheWater('sea')` gives a point on the sea
     itself (a clifftop pool by the back beach is water too) and on the screen.
-    `castIn(page, water)` casts in any water: `toTheWater`'s point checked clear and clicked in one step in the page (a tree's
-    tap area on the bank comes in as its lazy art loads), retried until it cast; it returns where it cast, the place to
-    reel (a fixed reel point can be a building's door, and with the line out a door goes in: the bite is missed).
+    `tapWater(page, water)` taps it frame-locked (the world point under `toTheWater`'s, still that water at the tap) and
+    returns where, and the ground the float must land on; `castIn(page, water)` casts and retries until it did, and
+    returns where it cast, the place to reel (a fixed reel point can be a building's door, and with the line out a door
+    goes in: the bite is missed).
 11. **Tap a pill only once it's at rest.** Playwright calls a moving thing "stable" while a staggered transition is in
     its delay, then the tap lands where it has moved off to (the menu's せってい sits over the ベル row 110 ms first):
     `e2e/hud.ts` `unfoldMenu` / `fromMenu` wait for the pills' spring. A route that fails chunks fails every lazy load

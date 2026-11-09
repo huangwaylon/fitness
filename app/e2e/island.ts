@@ -46,9 +46,8 @@ async function ready3d(page: Page) {
 
 /** The island open: the HUD up and the 3D island mounted, its camera placing the island's DOM targets (trees,
  *  villagers, finds, critters: hidden at the scene's corner until then; a step of the game's clock after the mount, not
- *  the first frame drawn). The HUD shows first: the island mounts up to 300 ms later while the ground's fields come from
- *  their worker (Island3D FIELDS_WAIT_MS), and a box read or a tap before that missed (the full tier's ~20 red tests
- *  from 1a786b48). Not the models loaded: `is3d`. */
+ *  the first frame drawn). The HUD shows first: the island mounts once the ground's fields are in (worker or cache:
+ *  layout/fieldsPrime.ts), and a box read or a tap before that missed. Not the models loaded: `is3d`. */
 export async function islandUp(page: Page, { timeout }: { timeout?: number } = {}) {
   await expect(hudMenu(page)).toBeVisible({ timeout });
   await page.waitForFunction(() => {
@@ -103,14 +102,89 @@ export async function watchFor(page: Page, sels: readonly string[]) {
 }
 export const sawIt = (page: Page, sel: string) => page.evaluate((s) => !!(window as unknown as { __saw?: Record<string, boolean> }).__saw?.[s], sel);
 
-/** A tap on the 3D island's model `id` (`__world3d.where`), at its point `lift` above its feet, through the camera's
- *  own projection: the game's state says where it is, not the pixels. Polled until the model is in and shown. */
-export async function tapThing(page: Page, id: string, { lift = 0 }: { lift?: number } = {}) {
-  const at = () => page.evaluate(([id, lift]) => (window as unknown as { __world3d: W3 }).__world3d.modelAt(id, lift), [id, lift] as const);
-  await expect.poll(at, { message: `the 3D model ${id}, shown` }).not.toBeNull();
-  const [x, y] = (await at())!;
-  await page.mouse.click(x, y);
+/** What a tap on the island goes to (the scene's tap areas and controls): a point under one is that thing's. */
+const TAP_AREAS = 'button, a, [role="button"], [data-bush], [data-tree], [data-flower], [data-sit], [data-fixture], [data-campfire], [data-building], [data-decor], [data-actor], [data-visitor], [data-fx="talk"]';
+
+/** Where a frame-locked tap aims, worked out in the page (`w`: its window): a client point, or null (not there yet).
+ *  Self-contained: it runs in the page, so it reads only `w` and `arg`. */
+export type Aim<A> = (w: any, arg: A) => readonly [number, number] | null;
+/** Where a frame-locked tap went (client px), on what, and the 3D island's ground under it then (world x, z). */
+export type Tapped = { x: number; y: number; on: string; ground: { x: number; z: number } | null };
+
+/** The page's frames held (window.__e2eHold): requestAnimationFrame's callbacks kept, not run, from `on()` (a frame
+ *  already asked for runs first: `on` resolves after it) till `off()` runs them. Installed at the first use; the engines
+ *  ask for each frame anew (world3d/pace.ts), so nothing moves meanwhile: no camera ease, no walk, no swim. */
+const HOLD = `(window.__e2eHold ??= (() => {
+  const raf = window.requestAnimationFrame.bind(window), caf = window.cancelAnimationFrame.bind(window);
+  let held = null, n = 0;
+  window.requestAnimationFrame = (cb) => (held ? (held.set(--n, cb), n) : raf(cb));
+  window.cancelAnimationFrame = (id) => (id < 0 ? held && held.delete(id) : caf(id));
+  return {
+    on: () => { held ??= new Map(); return new Promise((ok) => raf(() => setTimeout(ok, 0))); },
+    off: () => { const h = held; held = null; for (const cb of h ? h.values() : []) raf(cb); }
+  };
+})())`;
+
+/** A tap frame-locked to the 3D island (docs/ops/testing.md "Flakes"): the page's frames held (HOLD), the point `aim`
+ *  gives read, a real tap there (`page.touchscreen`, else the mouse; `mouse`: the mouse, for taps one after another,
+ *  which WebKit moves to the last touch's point within a double tap's time), its click seen, then the frames let go. No
+ *  frame comes between reading where something is and the tap (a camera easing, a villager walking over it, a fish
+ *  swimming on: what moved a target between a read and a tap a round trip later). Polled (frames running between
+ *  tries) while `aim` has no point, it's off the screen, or it's under one of `clear`'s tap areas (null: anything goes);
+ *  then one tap. `dispatch`: the finger's events (pointerdown, pointerup, click) sent from the page in the same task as
+ *  the read, nothing at all between them (not even a lazy tap area coming in), but untrusted: exactTaps.ts leaves them
+ *  be. Where it tapped, and on what. */
+export async function tapAt<A>(page: Page, aim: Aim<A>, arg: A, o: { clear?: string | null; message?: string; timeout?: number; intervals?: number[]; mouse?: boolean; dispatch?: boolean } = {}): Promise<Tapped> {
+  const clear = o.clear === undefined ? TAP_AREAS : o.clear;
+  const read = () => page.evaluate(`(async (aim, arg, clear, dispatch) => {
+    if (!dispatch) await ${HOLD}.on();
+    const p = aim(window, arg), [x, y] = p || [];
+    const el = p && document.elementFromPoint(x, y), over = el && clear ? el.closest(clear) : null;
+    const why = !p ? 'no point yet' : !(x >= 1 && y >= 1 && x <= innerWidth - 1 && y <= innerHeight - 1) ? 'off the screen at ' + x + ',' + y
+      : !el || over ? 'at ' + Math.round(x) + ',' + Math.round(y) + ' ' + (over ? 'under ' + over.outerHTML.slice(0, 80) : 'nothing') : '';
+    if (why) return (dispatch || window.__e2eHold.off(), { why });
+    const on = el.tagName.toLowerCase() + (typeof el.className === 'string' && el.className ? '.' + el.className.split(' ')[0] : '');
+    const ground = (window.__world3d && window.__world3d.ground(x, y)) || null;
+    if (dispatch) {
+      const at = { bubbles: true, cancelable: true, composed: true, clientX: x, clientY: y, button: 0 };
+      const finger = { ...at, pointerId: 7001, pointerType: 'touch', isPrimary: true, width: 10, height: 10 };
+      el.dispatchEvent(new PointerEvent('pointerdown', finger));
+      el.dispatchEvent(new PointerEvent('pointerup', finger));
+      el.dispatchEvent(new MouseEvent('click', at));
+      return { x, y, on, ground };
+    }
+    window.__e2eTapped = new Promise((ok) => {
+      const seen = () => (removeEventListener('click', seen, true), clearTimeout(t), ok());
+      const t = setTimeout(seen, 400);
+      addEventListener('click', seen, true);
+    });
+    return { x, y, on, ground };
+  })(${aim.toString()}, ${JSON.stringify(arg)}, ${JSON.stringify(clear)}, ${!!o.dispatch})`) as Promise<Tapped | { why: string }>;
+  let last = { why: 'not tried' } as Tapped | { why: string };
+  await expect.poll(async () => 'x' in (last = await read()) || last.why, { timeout: o.timeout ?? 10_000, intervals: o.intervals, message: o.message ?? 'a frame-locked tap' }).toBe(true);
+  const t = last as Tapped;
+  if (o.dispatch) return t;
+  try {
+    if (o.mouse) await page.mouse.click(t.x, t.y);
+    else await page.touchscreen.tap(t.x, t.y).catch((e: Error) => (/hasTouch/.test(e.message) ? page.mouse.click(t.x, t.y) : Promise.reject(e)));
+    await page.evaluate(() => (window as unknown as { __e2eTapped?: Promise<void> }).__e2eTapped).catch(() => {});
+  } finally {
+    // (gone with the page when the tap navigated: a door)
+    await page.evaluate(() => (window as unknown as { __e2eHold?: { off(): void } }).__e2eHold?.off()).catch(() => {});
+  }
+  return t;
 }
+
+/** A frame-locked tap (`tapAt`) on the world point (x, z), `lift` above the ground, through the 3D camera's projection
+ *  as it is at the tap (the DOM island's, `__world.at`, without the 3D island). */
+export const tapWorld = (page: Page, x: number, z: number, o: { lift?: number; clear?: string | null; message?: string; mouse?: boolean } = {}) =>
+  tapAt(page, (w, [x, z, lift]) => (w.__world3d ? w.__world3d.client(x, z, lift) : w.__world.at(x, z)), [x, z, o.lift ?? 0] as const, { message: `a tap on the island at ${x}, ${z}`, ...o });
+
+/** A tap on the 3D island's model `id` (`__world3d.where`), at its point `lift` above its feet, through the camera's
+ *  own projection: the game's state says where it is, not the pixels. Frame-locked (`tapAt`): polled until the model is
+ *  in and shown, then read and tapped in one task (anything over it counts: it's the topmost there that's tapped). */
+export const tapThing = (page: Page, id: string, { lift = 0 }: { lift?: number } = {}) =>
+  tapAt(page, (w, [id, lift]) => w.__world3d.modelAt(id, lift), [id, lift] as const, { clear: null, message: `the 3D model ${id}, shown` });
 
 /** The 3D island at rest: its camera still and nothing moving (polled; a villager wandering by doesn't count). */
 export async function settled(page: Page) {
@@ -293,22 +367,31 @@ export async function toTheWater(page: Page, water: string, zoom = 1, away = 40)
   return pt!;
 }
 
-const TAPS = 'button, a, [role="button"], [data-bush], [data-tree], [data-flower], [data-sit], [data-fixture], [data-campfire], [data-building], [data-decor], [data-actor], [data-visitor], [data-fx="talk"]';
-/** A cast by the shadow in `water` from its bank (toTheWater), checked: the point's checked clear and clicked in one
- *  step in the page (a tree's tap area on the bank comes in as its lazy art loads, between a check and a click from
- *  here: the tap was the tree's), and tried again where the shadow has gone (at most four) until the tap cast. Where
- *  it cast (client px): a reel's tap there is on the island, never on a door (a door with the line out goes in). */
+/** A frame-locked tap (`tapAt`) on the water by the shadow in `water`: toTheWater's spot, kept as the world point under
+ *  it and projected again at the tap, still that water there (for the sea, the sea) and clear of the island's tap
+ *  areas. Where it tapped, and the world point (where the float must land). */
+export async function tapWater(page: Page, water: string, zoom = 1, away = 40, { timeout, dispatch }: { timeout?: number; dispatch?: boolean } = {}): Promise<Tapped & { at: { x: number; z: number } }> {
+  const at = await groundUnder(page, await toTheWater(page, water, zoom, away));
+  return { ...(await tapAt(page, onWater, [at.x, at.z, water] as const, { message: `a tap on the ${water} by its shadow`, timeout, dispatch })), at };
+}
+/** The world point under a client point (the 3D island's ground). */
+export const groundUnder = async (page: Page, [x, y]: readonly [number, number]) =>
+  (await page.evaluate(([x, y]) => (window as unknown as { __world3d: { ground(cx: number, cy: number): { x: number; z: number } | null } }).__world3d.ground(x, y), [x, y] as const))!;
+/** `tapAt`'s aim at world (x, z) on `water` (for the sea, the sea's): where it is now, while it's that water there. */
+export const onWater: Aim<readonly [number, number, string]> = (w, [gx, gz, water]) => {
+  const p = w.__world.at(gx, gz), g = w.__world3d.ground(p[0], p[1]), s = g && w.__world.ground(g.x, g.z).surface;
+  return (water === 'sea' ? s === 'sea' : s === 'water' || s === 'sea') ? p : null;
+};
+
+/** A cast by the shadow in `water` from its bank (`tapWater`, frame-locked), checked, and tried again where the shadow
+ *  has gone (at most four) until the tap cast. Where it cast (client px): a reel's tap there is on the island, never on
+ *  a door (a door with the line out goes in). */
 export async function castIn(page: Page, water: string, zoom = 1, away = 40): Promise<[number, number]> {
   for (let i = 0; i < 4; i++) {
-    const [x, y] = await toTheWater(page, water, zoom, away);
-    const tapped = await page.evaluate(([x, y, taps]) => {
-      const el = document.elementFromPoint(x, y);
-      if (!el || el.closest(taps)) return false;
-      el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0 }));
-      return true;
-    }, [x, y, TAPS] as const);
-    if (tapped && (await expect.poll(() => page.evaluate(() => (window as unknown as { __fish: { line(): unknown } }).__fish.line()), { timeout: 1500 }).not.toBeNull().then(() => true, () => false)))
-      return [x, y];
+    // (dispatched: a tree's tap area on the bank comes in as its lazy art loads, between a read and a real tap)
+    const t = await tapWater(page, water, zoom, away, { timeout: 1500, dispatch: true }).catch(() => null);
+    if (t && (await expect.poll(() => page.evaluate(() => (window as unknown as { __fish: { line(): unknown } }).__fish.line()), { timeout: 1500 }).not.toBeNull().then(() => true, () => false)))
+      return [t.x, t.y];
   }
   throw new Error(`no cast in the ${water}: ${await page.evaluate(() => (window as unknown as { __fish: { why(): string } }).__fish.why())}`);
 }

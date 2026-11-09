@@ -1,7 +1,7 @@
 // The island on its editable layout (docs/island-layout.md "How the 3D island reads it"; island/site.svelte.ts):
 // the gameplay reads the long layout: the doors, the homes, the walk, the waters.
 import { expect, test, type Page } from './fixtures.ts';
-import { castIn, geo, is3d, openNear, quiet, reelOnBite, settled, tapOn } from './island';
+import { castIn, geo, is3d, openNear, quiet, reelOnBite, settled, tapOn, tapWorld } from './island';
 
 type Site = { on: boolean; doors: Record<string, [number, number]>; homes: { A: [number, number]; B: [number, number] }; stage: [number, number]; named: Record<string, [number, number]>; grass: [number, number][] };
 const site = (page: Page) => page.evaluate(() => (window as unknown as { __world: { site(): Site } }).__world.site());
@@ -47,8 +47,7 @@ test('a tap on the ground walks there on the layout’s walk (the long middle)',
   await expect.poll(() => page.evaluate('window.__world3d.camStill()')).toBe(true);
   const to = await openNear(page, 75, 870, 45, true), from = await openNear(page, to[0] + 110, to[1] - 40);
   await world(page, `put(${from[0]}, ${from[1]})`);
-  const [x, y] = await page.evaluate(`window.__world3d.client(${to[0]}, ${to[1]})`) as [number, number];
-  await page.mouse.click(x, y);
+  await tapWorld(page, ...to, { mouse: true });
   await expect.poll(async () => {
     const [mx, mz] = await world<[number, number]>(page, 'mine()');
     return Math.hypot(mx - to[0], mz - to[1]);

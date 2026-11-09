@@ -4,7 +4,7 @@
 // navigates. `?critter=` (with ?demo) brings one on at once and keeps it until caught.
 import { expect, test, type Page } from './fixtures.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
-import { castIn, islandUp, plateOnly, reelOnBite, toTheWater } from './island.ts';
+import { castIn, islandUp, plateOnly, reelOnBite, tapAt, toTheWater, type Aim } from './island.ts';
 import { hudBells } from './hud.ts';
 
 /** NH's own catch line (ja), as the plate shows it (whitespace collapsed). */
@@ -173,34 +173,43 @@ for (const c of POPS)
     await expect(gift).toHaveCount(1, { timeout: 5000 });
     const g = (await gift.locator(':scope > *').boundingBox())!;
     expect(Math.hypot(g.x + g.width / 2 - px, g.y + g.height - py)).toBeLessThan(40);
-    // (a villager wandering past may stand over it for a moment: it lies behind them)
-    const gc = { x: g.x + g.width / 2, y: g.y + g.height / 2 };
-    await expect.poll(() => page.evaluate(({ x, y }) => !document.elementFromPoint(x, y)?.closest('[data-actor]'), gc), { timeout: 10_000 }).toBe(true);
-    await page.mouse.click(g.x + g.width / 2, g.y + g.height / 2);
+    // (frame-locked: a point of it no villager stands over, its middle first: one wandering past, or zoomed in the
+    // partner standing by, lies in front of it, and a tap there is theirs)
+    await tapAt(page, () => {
+      const r = document.querySelector('[data-find="present"] > *')?.getBoundingClientRect();
+      if (!r) return null;
+      for (const [fx, fy] of [[0.5, 0.5], [0.3, 0.5], [0.7, 0.5], [0.5, 0.3], [0.5, 0.75], [0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]]) {
+        const x = r.left + r.width * fx, y = r.top + r.height * fy;
+        if (!document.elementFromPoint(x, y)?.closest('[data-actor]')) return [x, y] as const;
+      }
+      return null;
+    }, null, { clear: '[data-actor]', mouse: true, timeout: 10_000 });
     await expect(page.locator('[data-fx="present-open"]')).toHaveCount(1, { timeout: 3000 });
   });
 
 /** A point on the sea well away from the float and the shadow, on the screen's other side at the float's height or
  *  just above, with no control over it: the float low on the screen put 366 on the say button (its sheet opened, the
  *  line stayed out: 4 in 20 under load). */
+const awayAim: Aim<null> = (w) => {
+  const r = document.querySelector('[data-bobber]')?.getBoundingClientRect();
+  if (!r) return null;
+  const bx = r.left + r.width / 2, by = r.top + r.height / 2;
+  for (let dy = 0; dy <= 160; dy += 8)
+    for (let dx = 0; dx <= 120; dx += 8) {
+      const x = bx < 195 ? 366 - dx : 24 + dx, y = by - dy, g = w.__world3d.ground(x, y);
+      if (g && w.__world.ground(g.x, g.z).surface === 'sea' && document.elementFromPoint(x, y)?.matches('.stage, canvas')) return [x, y];
+    }
+  return null;
+};
 const awayFromFloat = async (page: Page): Promise<[number, number]> => {
-  const b = await at(page, '[data-bobber]');
-  const pt = await page.evaluate(([bx, by]) => {
-    const w = window as unknown as { __world3d: { ground(x: number, y: number): { x: number; z: number } | null }; __world: { ground(x: number, z: number): { surface: string } } };
-    for (let dy = 0; dy <= 160; dy += 8)
-      for (let dx = 0; dx <= 120; dx += 8) {
-        const x = bx < 195 ? 366 - dx : 24 + dx, y = by - dy, g = w.__world3d.ground(x, y);
-        if (g && w.__world.ground(g.x, g.z).surface === 'sea' && document.elementFromPoint(x, y)?.matches('.stage, canvas')) return [x, y] as [number, number];
-      }
-    return null;
-  }, [b.x, b.y] as const);
+  const pt = await page.evaluate(`(${awayAim.toString()})(window, null)`) as [number, number] | null;
   expect(pt, 'the sea away from the float, no control over it').not.toBeNull();
   return pt!;
 };
-/** A tap on the sea well away from the float and the shadow (any tap is the reel while the line is out). */
+/** A tap on the sea well away from the float and the shadow (any tap is the reel while the line is out): frame-locked,
+ *  its point found and tapped in one held frame, polled while a control or a ripple lies over every such point. */
 async function seaTap(page: Page) {
-  const [x, y] = await awayFromFloat(page);
-  await page.mouse.click(x, y);
+  await tapAt(page, awayAim, null, { clear: null, mouse: true, message: 'the sea away from the float, no control over it' });
 }
 /** My villager on the beach by the shadow and a cast beside it (NH casts from where it stands): the float out. */
 async function castBy(page: Page) {

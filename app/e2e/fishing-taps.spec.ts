@@ -7,7 +7,7 @@
 // out (its squish, no reel).
 import { expect, test, type Page } from './fixtures.ts';
 import RECORD from '../src/lib/layout/record-2026-11-03.json' with { type: 'json' };
-import { castIn, is3d, lawnTap, reelOnBite, toTheWater } from './island';
+import { castIn, groundUnder, is3d, lawnTap, onWater, reelOnBite, tapAt, tapWater, tapWorld, toTheWater } from './island';
 import { defaultLayout, withChanges } from '../src/lib/layout/model.ts';
 import { GRID, chunkId, chunkOf, chunkString, chunkXZ } from '../src/lib/layout/grid.ts';
 import { validate } from '../src/lib/layout/validate.ts';
@@ -47,11 +47,9 @@ for (const layout of ['default', 'user'] as const)
       test.slow();
       await open(page, { layout, q: `&critter=${water === 'sea' ? 'fish' : water}` });
       await expect.poll(() => hooks(page, (h) => h.__fish.fish().map((f) => f.water)), { timeout: 15_000 }).toContain(water);
-      const [x, y] = await toTheWater(page, water);
-      // (the ground under the finger: where the float must land. Not the shadow's spot read after the cast: it swims,
-      // and fish()[0] may be another water's; that was 21 flaky runs in a day, 2026-11-05)
-      const tapped = (await page.evaluate(([x, y]) => (window as unknown as Hooks).__world3d.ground(x, y), [x, y] as const))!;
-      await page.touchscreen.tap(x, y);
+      // (frame-locked: where the float must land is the ground under the finger, `at`, not the shadow's spot read after
+      // the cast: it swims, and fish()[0] may be another water's)
+      const { x, y, at: tapped } = await tapWater(page, water);
       // (the river's lower reach and its mouth are one channel: a tap by a shadow at the seam may land in either)
       const ok = water === 'river' || water === 'mouth' ? ['cast in the river', 'cast in the mouth'] : [`cast in the ${water}`];
       await expect.poll(async () => ok.includes(await hooks(page, (h) => h.__fish.why()))).toBe(true);
@@ -89,13 +87,12 @@ for (const layout of ['default', 'user'] as const)
         else if (side === 'right') expect(f.x).toBeGreaterThan(420);
         else expect(f.z).toBeGreaterThan(1400);
         try {
-          [x, y] = await toTheWater(page, 'sea', 3);
+          ({ x, y } = await tapWater(page, 'sea', 3));
           break;
         } catch (e) {
-          if (tries >= 2 || !/water a finger can tap/.test(String(e))) throw e;
+          if (tries >= 2 || !/water a finger can tap|a tap on the sea/.test(String(e))) throw e;
         }
       }
-      await page.touchscreen.tap(x, y);
       await expect.poll(() => hooks(page, (h) => h.__fish.why())).toBe('cast in the sea');
       await expect.poll(async () => (await line(page))?.fish ?? null, { timeout: 8000 }).not.toBeNull();
       await reelOnBite(page, x, y, 15_000);
@@ -200,9 +197,8 @@ test('a far cast: from across the island the float lands where the tap was, the 
   // the camera back on the shadow (my villager may be off the screen), and a tap on open water by it
   await page.evaluate(([x, z]) => (window as unknown as Hooks).__world3d.go(z - 200, 1, x), [f.x, f.z] as const);
   await expect.poll(() => hooks(page, (h) => h.__world3d.camStill())).toBe(true);
-  // (the point and the ground under it read together: the shadow swims between two reads)
-  const [x, y, at] = await hooks(page, (h) => { const f = h.__fish.fish()[0]; const [x, y] = h.__world3d.client(f.x, f.z); return [x, y, h.__world3d.ground(x, y)] as const; });
-  await page.touchscreen.tap(x, y);
+  // (frame-locked: the shadow's point, the ground under it and the tap in one held frame; it swims between two reads)
+  const { x, y, ground: at } = await tapAt(page, (w) => ((f) => w.__world3d.client(f.x, f.z))(w.__fish.fish()[0]), null);
   await expect.poll(() => hooks(page, (h) => h.__fish.why())).toBe('cast in the sea');
   const l = (await line(page))!;
   const [mx, mz] = await hooks(page, (h) => h.__world.mine());
@@ -260,8 +256,9 @@ test('a tap on the water right after a scroll casts (no tap swallowed after a dr
   // at once (no wait for the camera: that would hide a swallow window), so on sea that stays sea under the finger while
   // the drag's camera move eases out (up to its 30 px): the shadow's spot itself, by the bank or under the screen's
   // foot after the drag, was the beach's by then or no point at all (no cast, 1 in 10 under load)
-  const [x2, y2] = await page.evaluate(() => {
-    const w = window as unknown as Hooks & { __world: { at(x: number, z: number): [number, number] } }, f = w.__fish.fish()[0], [cx, cy] = w.__world3d.client(f.x, f.z);
+  // (frame-locked: the point read and tapped in one held frame)
+  await tapAt(page, (w: Hooks) => {
+    const f = w.__fish.fish()[0], [cx, cy] = w.__world3d.client(f.x, f.z);
     const sea = (x: number, y: number) => { const g = w.__world3d.ground(x, y); return !!g && w.__world.ground(g.x, g.z).surface === 'sea'; };
     const TAPS = 'button, a, [role="button"], [data-bush], [data-tree], [data-flower], [data-sit], [data-fixture], [data-campfire], [data-building], [data-decor], [data-actor], [data-visitor], [data-fx="talk"]';
     // (any sea casts: the point nearest the shadow on screen that stays sea as the scene eases on down, up to 30 px
@@ -275,21 +272,21 @@ test('a tap on the water right after a scroll casts (no tap swallowed after a dr
       if ([-40, -32, -24, -16, -8, 0, 8, 16].every((d) => sea(x, y + d)) && [-16, 16].every((d) => sea(x + d, y))) return [x, y] as const;
     }
     return [cx, cy] as const;
-  });
-  await page.touchscreen.tap(x2, y2);
+  }, null, { clear: null });
   await expect.poll(() => hooks(page, (h) => h.__fish.why())).toBe('cast in the sea');
 });
 
 test('a tap on the water while my villager walks: it stops where it is and casts', async ({ page }) => {
   await open(page, { q: '&critter=fish' });
   await expect.poll(() => hooks(page, (h) => h.__fish.fish().length), { timeout: 15_000 }).toBeGreaterThan(0);
-  const [x, y] = await toTheWater(page, 'sea');
+  const sea = await groundUnder(page, await toTheWater(page, 'sea'));
   const [mx, mz] = await hooks(page, (h) => h.__world.mine());
-  // a tap-walk along the beach (open ground a little way off, on this screen), and the tap on the water while it's under way
+  // a tap-walk along the beach (open ground a little way off, on this screen), and the tap on the water while it's
+  // under way (both frame-locked: the camera follows the walk, so a point read before it is somewhere else by the tap)
   const to = await lawnTap(page, mx + 100, mz + 50);
-  await page.touchscreen.tap(to.x, to.y);
+  await tapWorld(page, ...to.at);
   await expect(page.locator('[data-actor="mine"].walking'), JSON.stringify([to, mx, mz, await hooks(page, (h) => h.__fish.why())])).toHaveCount(1);
-  await page.touchscreen.tap(x, y);
+  await tapAt(page, onWater, [sea.x, sea.z, 'sea'] as const);
   await expect.poll(() => hooks(page, (h) => h.__fish.why())).toBe('cast in the sea');
   await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
   expect(await line(page)).not.toBeNull();
@@ -298,12 +295,9 @@ test('a tap on the water while my villager walks: it stops where it is and casts
 test('with the line out, a tap on my villager reels it in (NH’s A button), not its squish', async ({ page }) => {
   await open(page, { q: '&critter=fish' });
   await expect.poll(() => hooks(page, (h) => h.__fish.fish().length), { timeout: 15_000 }).toBeGreaterThan(0);
-  const [x, y] = await toTheWater(page, 'sea');
-  await page.touchscreen.tap(x, y);
+  await tapWater(page, 'sea');
   await expect.poll(() => line(page)).not.toBeNull();
-  const me = page.locator('[data-actor="mine"] .vil');
-  const box = (await me.boundingBox())!;
-  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+  await tapAt(page, () => ((b) => (b ? [b.left + b.width / 2, b.top + b.height / 2] as const : null))(document.querySelector('[data-actor="mine"] .vil')?.getBoundingClientRect()), null, { clear: null });
   await expect.poll(() => line(page)).toBeNull();
   expect(['reel', 'scared']).toContain(await hooks(page, (h) => h.__fish.why()));
 });
@@ -317,16 +311,15 @@ test('with the line out, a tap on the ground reels it in where my villager stand
   await expect.poll(() => line(page)).not.toBeNull();
   const [mx, mz] = await hooks(page, (h) => h.__world.mine());
   const to = await lawnTap(page, mx + 100, mz + 50);
-  await page.touchscreen.tap(to.x, to.y);
+  await tapWorld(page, ...to.at);
   await expect.poll(() => line(page)).toBeNull();
   expect(['reel', 'scared']).toContain(await hooks(page, (h) => h.__fish.why()));
   await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
   expect(await hooks(page, (h) => h.__world.mine())).toEqual([mx, mz]);
-  // a tap on the same ground now walks: its point read again once the camera's still (the reel turns my villager and
-  // the camera may ease after it: the first point was then the sea's, a cast, 2 in 10 under load)
+  // a tap on the same ground now walks: once the camera's still (the reel turns my villager and the camera may ease
+  // after it), frame-locked; a click (a second touch at the same point this soon is a double tap's)
   await expect.poll(() => hooks(page, (h) => h.__world3d.camStill())).toBe(true);
-  const [tx, ty] = await page.evaluate(([x, z]) => (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(x, z), to.at);
-  await page.touchscreen.tap(tx, ty);
+  await tapWorld(page, ...to.at, { mouse: true });
   await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(1);
 });
 
@@ -358,7 +351,6 @@ test('a pond put down on an island without the painted pond: its fish in it, and
   await expect.poll(() => hooks(page, (h) => h.__fish.fish().map((f) => f.water)), { timeout: 15_000 }).toContain('pond');
   // in the pond put down, never off the island
   expect(await hooks(page, (h) => { const f = h.__fish.fish()[0]; return h.__world.ground(f.x, f.z).surface; })).toBe('water');
-  const [x, y] = await toTheWater(page, 'pond');
-  await page.touchscreen.tap(x, y);
+  await tapWater(page, 'pond');
   await expect.poll(() => hooks(page, (h) => h.__fish.why())).toBe('cast in the pond');
 });

@@ -5,7 +5,7 @@
 // away and the float stays out till a tap reels it in. Where the 3D island draws the shadow and the float is where their
 // tap areas are (the DOM's nodes, placed through the same camera): a tap on what's drawn is a tap on it.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, castIn, geo, pauseNow, toTheWater } from './island.ts';
+import { camTo, castIn, geo, groundUnder, onWater, pauseNow, tapAt, toTheWater } from './island.ts';
 import { markShown, overHead, type Mark } from './biteMark.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -62,7 +62,8 @@ for (const [water, q, cam, sel, miss] of [
     // my villager on its bank (NH casts from where it stands), the camera on the shadow; the reel's tap
     // later where the cast's was (open water: no door, nothing over it)
     // (a float out past the rod's tip: under it the line has no direction to line up)
-    const [rx, ry] = await toTheWater(page, water, 1, 100);
+    // (kept as the world point under it: the tap's point is read again at the tap, frame-locked)
+    const spot = await groundUnder(page, await toTheWater(page, water, 1, 100));
     // my villager in 3D (its model in: under CI's software GL that takes a while)
     await expect.poll(() => v3(page, (v) => v.state('mine')), { timeout: 30_000 }).not.toBeNull();
     // the shadow drawn where its tap area is (it swims: a few px of lag between the two at most): the model's spot is its
@@ -71,8 +72,7 @@ for (const [water, q, cam, sel, miss] of [
     await expect.poll(async () => apart(await drawnAt(page, sel, `fish-${water}-`)) - (await half()), { timeout: 8000 }).toBeLessThan(16);
     // a tap by the shadow (on open water by where it's drawn, a real touch): the cast, in place, the float where the
     // tap was (pulled in off the bank a little at most; the ground under the finger, not the shadow's spot: it swims)
-    const tapped = (await page.evaluate(([x, y]) => (window as unknown as { __world3d: { ground(cx: number, cy: number): { x: number; z: number } | null } }).__world3d.ground(x, y), [rx, ry] as const))!;
-    await page.touchscreen.tap(rx, ry);
+    const { x: rx, y: ry, ground } = await tapAt(page, onWater, [spot.x, spot.z, water] as const), tapped = ground!;
     await expect(page.locator('[data-bobber]')).toBeAttached({ timeout: 3000 });
     const cast = (await page.evaluate(() => (window as unknown as { __fish: { line(): { x: number; z: number } | null } }).__fish.line()))!;
     expect(Math.hypot(cast.x - tapped.x, cast.z - tapped.z)).toBeLessThan(40);

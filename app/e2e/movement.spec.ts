@@ -3,7 +3,7 @@
 // wanders between points of interest with footsteps under it. Neither ends up over a control, mine stays a
 // thumb-sized button while it walks, and a sheet stops them where they are.
 import { expect, test, type Page } from './fixtures.ts';
-import { islandUp, lawnTap, openNear, plateOnly, quiet, sawIt, watchFor } from './island.ts';
+import { islandUp, lawnTap, openNear, plateOnly, quiet, sawIt, tapWorld, watchFor } from './island.ts';
 import { openRewards } from './hud.ts';
 
 async function open(page: Page, q = '') {
@@ -85,15 +85,15 @@ test('a tap on the ground walks there, never over a control, a thumb-sized butto
   const home = await feet(page);
   // (open ground there a tap walks to, nothing over it on this screen)
   const pa = await openNear(page, 210, 290, 45, true), pb = await openNear(page, 175, 185, 45, true);
-  const a = await at(page, ...pa), b = await at(page, ...pb);
-  await page.mouse.click(a[0], a[1]);
+  // (frame-locked taps, each where its ground is at the tap: the camera follows the walk)
+  await tapWorld(page, ...pa, { mouse: true });
   await expect(page.locator('[data-actor="mine"].walking')).toBeAttached();
   const btn = await page.locator('[data-actor="mine"] .vil').boundingBox();
   expect(Math.min(btn!.width, btn!.height)).toBeGreaterThanOrEqual(44);
   await page.waitForTimeout(150);
-  await page.mouse.click(b[0], b[1]);
+  await tapWorld(page, ...pb, { mouse: true });
   await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0, { timeout: 4000 });
-  const f = await feet(page);
+  const f = await feet(page), b = await at(page, ...pb);
   expect(Math.hypot(f.x - home.x, f.y - home.y)).toBeGreaterThan(20);
   expect(Math.hypot(f.x - b[0], f.y - b[1])).toBeLessThan(12);
   expect(await overlaps(page)).toEqual([]);
