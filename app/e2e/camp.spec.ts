@@ -7,7 +7,9 @@ import { camTo, islandUp, openEditor, tapOn } from './island.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const DAY = '2026-11-04T12:00', NIGHT = '2026-11-04T21:00';
-const CAMP = ['campfire', 'small-campfire', 'fire-pit', 'lantern', 'hammock', 'camping-cot', 'sleeping-bag', 'kids-tent', 'cooler-box', 'barbecue', 'camp-stove', 'folding-chair', 'folding-table', 'outdoor-bench', 'log-bench', 'directors-chair', 'destinations-signpost'];
+const CAMP = ['campfire', 'small-campfire', 'fire-pit', 'lantern', 'hammock', 'camping-cot', 'sleeping-bag', 'kids-tent', 'cooler-box', 'barbecue', 'camp-stove', 'folding-chair', 'folding-table', 'outdoor-bench', 'log-bench', 'directors-chair', 'destinations-signpost',
+  // (the second camp file's: NH's camp kitchen, the table with its burner, and the rest)
+  'outdoor-kitchen', 'outdoor-generator', 'plastic-canister', 'clothesline', 'clothesline-pole', 'leaf-campfire', 'oil-barrel-bathtub', 'smoker', 'lawn-chair', 'kettle', 'espresso-maker', 'wooden-bucket', 'tin-bucket'];
 const FOOD = ['picnic-basket', 'picnic-set', 'fruit-basket', 'bread', 'sandwich-set', 'campfire-cookware', 'stewpot', 'frying-pan', 'seafood-ajillo', 'grilled-sea-bass', 'western-meal', 'japanese-meal', 'bottled-beverage', 'coconut-juice', 'cookies'];
 const GYM = ['yoga-mat', 'nook-yoga-mat', 'speed-bag', 'massage-chair', 'dumbbell'];
 
@@ -67,6 +69,7 @@ test('the キャンプ and 食べ物 tabs list NH\'s camp goods and food, the �
   await ed.locator('[data-tab="camp"]').click();
   await expect(ed.locator('[data-island-item="small-campfire"]')).toHaveAttribute('aria-label', 'たき火');
   await expect(ed.locator('[data-island-item="folding-chair"]')).toHaveAttribute('aria-label', '折りたたみアウトドアチェア');
+  await expect(ed.locator('[data-island-item="outdoor-kitchen"]')).toHaveAttribute('aria-label', 'アウトドアキッチン');
   await ed.locator('[data-tab="food"]').click();
   await expect(ed.locator('[data-island-item="campfire-cookware"]')).toHaveAttribute('aria-label', '飯ごう');
 });
@@ -103,4 +106,16 @@ test('the new gym: the speed bag punched; the guest lies on a yoga mat', async (
   await camTo(g, (await zOf(g, mat)) - 110);
   await tapOn(g, g.locator(`[data-decor="${mat}"]`));
   await expect.poll(() => v3(g, 'mine'), { timeout: 15_000 }).toBe('lie');
+});
+
+test('the camp kitchen and the second camp file\'s pieces: NH\'s models, the leaf fire a light at night, the lawn chair sat on', async ({ page }) => {
+  await open(page, NIGHT);
+  const [kitchen, fire, chair] = await putDown(page, NIGHT, [['camp', 'outdoor-kitchen', 5, 12], ['camp', 'leaf-campfire', 8, 14], ['camp', 'lawn-chair', 4, 15]]);
+  await expect.poll(() => model(page, kitchen), { timeout: 10_000 }).toBe('decor/outdoor-kitchen');
+  await expect.poll(() => model(page, fire)).toBe('decor/leaf-campfire');
+  await expect.poll(() => model(page, chair)).toBe('decor/lawn-chair');
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { lamps(): string[] } }).__world3d.lamps()), { timeout: 10_000 }).toContain(fire);
+  await camTo(page, (await zOf(page, chair)) - 110);
+  await tapOn(page, page.locator(`[data-decor="${chair}"]`));
+  await expect.poll(() => v3(page, 'mine'), { timeout: 15_000 }).toBe('sit');
 });

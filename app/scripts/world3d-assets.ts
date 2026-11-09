@@ -317,6 +317,15 @@ const PACKS: Record<string, Member[]> = {
   'decor/gym2': [
     ['yoga-mat', 'FtrYogamat'], ['nook-yoga-mat', 'FtrYogamatExercise'], ['speed-bag', 'FtrSpeedbag'], ['massage-chair', 'FtrMassagechair'],
     ['dumbbell', 'ToolDumbbell', [], 128]
+  ],
+  // the キャンプ tab's second file (camp.glb near its 400 KB): NH's camp kitchen (the table with its burner), the
+  // site's power, water, washing line, fires and pots
+  'decor/camp2': [
+    ['outdoor-kitchen', 'FtrOutdoorKitchen'], ['outdoor-generator', 'FtrOutdoorgenerator'], ['plastic-canister', 'FtrPolytank', undefined, 128],
+    ['clothesline', 'FtrClothesline'], ['clothesline-pole', 'FtrClotheshorse'], ['leaf-campfire', 'FtrFallenleavesfire'],
+    ['oil-barrel-bathtub', 'FtrDrumcanbath'], ['smoker', 'FtrSmoker'], ['lawn-chair', 'FtrVinylchair'],
+    ['kettle', 'FtrKettleJapan', [], 128], ['espresso-maker', 'FtrEspressomaker', undefined, 128], ['wooden-bucket', 'FtrBucketWood', [], 128],
+    ['tin-bucket', 'FtrBucket', [], 128]
   ]
 };
 // (NH's おはなみセット, converted already with the fixed decor: the たべもの tab's too, its facings' keys on its model)

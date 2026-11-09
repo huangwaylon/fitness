@@ -44,7 +44,12 @@ export const LAMP: Partial<Record<string, { at: number; e?: readonly [number, nu
   'decor/lantern': { at: 0.45, e: [0, 4.4, 0], kind: 'lamp', colour: 0xfff0c8, glow: 10, pool: 30 },
   'decor/small-campfire': { at: 0.4, e: [0.15, 2, 0.06], kind: 'fire', colour: 0xff9a4a, glow: 14, pool: 46 },
   'decor/fire-pit': { at: 0.5, e: [-0.42, 3.6, 0.4], kind: 'fire', colour: 0xff9a4a, glow: 18, pool: 56 },
-  'decor/campfire-cookware': { at: 0.22, e: [-0.2, 1.6, 0], kind: 'fire', colour: 0xff9a4a, glow: 10, pool: 36 }
+  'decor/campfire-cookware': { at: 0.22, e: [-0.2, 1.6, 0], kind: 'fire', colour: 0xff9a4a, glow: 10, pool: 36 },
+  // the second camp file's (decor/camp2): the leaf fire, the fire under the oil-barrel bath, the smoker's firebox (each
+  // its emissive map's lit middle, scripts/room-surfaces-page.js emitter on its node)
+  'decor/leaf-campfire': { at: 0.22, e: [0, 1.2, -0.1], kind: 'fire', colour: 0xff9a4a, glow: 14, pool: 46 },
+  'decor/oil-barrel-bathtub': { at: 0.07, e: [0, 1.1, 0.2], kind: 'fire', colour: 0xff9a4a, glow: 12, pool: 40 },
+  'decor/smoker': { at: 0.18, e: [-0.1, 2.2, -1.4], kind: 'fire', colour: 0xff9a4a, glow: 8, pool: 24 }
 };
 
 /** The models that cast no shadow (assets.json `shadow`: the flat things, a fish's shadow, a dig spot, the

@@ -23,7 +23,7 @@ describe('the island’s NH models (assets.json)', () => {
   });
 
   it('a pack holds each of its members as a node named for it, its hash the file\'s, under 400 KB', () => {
-    expect([...PACKS.keys()].sort()).toEqual(['decor/camp', 'decor/food', 'decor/gym2']);
+    expect([...PACKS.keys()].sort()).toEqual(['decor/camp', 'decor/camp2', 'decor/food', 'decor/gym2']);
     for (const [pack, ms] of PACKS) {
       const b = readFileSync(join(DIR, `${pack}.glb`)), json = JSON.parse(b.subarray(20, 20 + b.readUInt32LE(12)).toString()) as { scenes: { nodes: number[] }[]; nodes: { name?: string }[] };
       const names = json.scenes[0].nodes.map((i) => json.nodes[i].name);

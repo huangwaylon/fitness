@@ -76,6 +76,21 @@ const PACKED_CAMP = packed('camp', [
   'portable-radio|携帯ラジオ|Portable radio|11|12,8,11|',
   'angled-signpost|ナナメのみちしるべ|Angled signpost|11|20,20,32|',
   'destinations-signpost|せかいのみちしるべ|Destinations signpost|22|33,28,71|',
+  // (the second file's, decor/camp2: NH's camp kitchen, its table's burner and sink, and the site's power, water,
+  // washing line, fires and pots)
+  'outdoor-kitchen|アウトドアキッチン|Outdoor kitchen|21|50,23,37|outdoor-kitchen',
+  'outdoor-generator|アウトドア発電機|Outdoor generator|11|20,18,19|outdoor-generator',
+  'plastic-canister|ポリタンク|Plastic canister|11|16,8,20|plastic-canister',
+  'clothesline|物干しロープ|Clothesline|21|51,8,45|',
+  'clothesline-pole|物干しざお|Clothesline pole|21|50,12,47|clothesline-pole',
+  'leaf-campfire|落ち葉のたき火|Leaf campfire|11|25,25,16|',
+  'oil-barrel-bathtub|ドラム缶風呂|Oil-barrel bathtub|11|22,22,47|',
+  'smoker|燻製マシン|Smoker|11|21,18,37|smoker',
+  'lawn-chair|ビニールチェア|Lawn chair|11|21,19,30|lawn-chair',
+  'kettle|やかん|Kettle|11|13,17,21|kettle',
+  'espresso-maker|エスプレッソメーカー|Stovetop espresso maker|11|14,8,17|stovetop-espresso-maker',
+  'wooden-bucket|木製のバケツ|Wooden bucket|11|16,15,23|',
+  'tin-bucket|ブリキのバケツ|Tin bucket|11|16,17,16|tin-bucket',
 ].join(';'));
 const PACKED_FOOD = packed('food', [
   'picnic-basket|ピクニックバスケット|Picnic basket|11|20,20,20|picnic-basket',

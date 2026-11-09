@@ -40,7 +40,8 @@ const ISLAND: Record<string, { key: string; n: number; u: 's' | 'l'; room?: stri
   'sleeping-bag': { key: 'decor/sleeping-bag-0', n: 1, u: 'l', room: 'f1434' },
   'yoga-mat': { key: 'decor/yoga-mat-0', n: 1, u: 'l', room: 'f13683' },
   'nook-yoga-mat': { key: 'decor/nook-yoga-mat-0', n: 1, u: 'l', room: 'f13683' },
-  'massage-chair': { key: 'decor/massage-chair-0', n: 1, u: 's', room: 'f12339' }
+  'massage-chair': { key: 'decor/massage-chair-0', n: 1, u: 's', room: 'f12339' },
+  'lawn-chair': { key: 'decor/lawn-chair-0', n: 1, u: 's', room: 'f1621' }
 };
 /** The gym's pieces used in place (seats3d.ts's `u`: no seat or bed the rays could find), by hand from their models
  *  (model units, +z their front, the bounds in world3d/assets.json): where the feet (standing) or the hips (seated) go,
@@ -109,8 +110,10 @@ for (const [code, m] of Object.entries(ITEMS)) {
 }
 for (const [model, it] of Object.entries(ISLAND)) {
   if (!want(model)) continue;
-  const a = ASSETS.keys[it.key], [w, d] = a.foot ?? [1, 1], h = ASSETS.models[a.m].max[1];
-  const sh = await shape(it.room ? `/m/models/${it.room}.glb` : `/m/world3d/${a.m}.glb`, w, d, h, it.u, it.n);
+  // (a pack's member has no key in assets.json, made at load: its tent piece's footprint and height)
+  const r = it.room ? ITEMS[it.room] : null, a = ASSETS.keys[it.key];
+  const [w, d] = r ? [r.w, r.d] : (a.foot ?? [1, 1]), h = r ? r.h : ASSETS.models[a.m].max[1];
+  const sh = await shape(r ? `/m/models/${it.room}.glb` : `/m/world3d/${a.m}.glb`, w, d, h, it.u, it.n);
   if (sh) out.island[model] = { ...sh, ...OVERRIDES[model] } as Shape;
   console.log(model, JSON.stringify(out.island[model] ?? 'none'));
 }
