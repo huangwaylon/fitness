@@ -294,15 +294,19 @@ export async function foodImgFetch(req: Request, cache: FoodCacheLike, net: (r: 
 /** The home-screen and install icons: the OS fetches them when the app is added, never the page offline (the favicon
  *  only needs the network). */
 const isAppIcon = (path: string): boolean => path.includes('/icons/');
-/** The trips' photos (static/travel/; docs/travel.md "Offline"): each trip's cover and hero precached, the rest in
+/** The trips' photos (static/travel/; docs/travel.md "Offline"): each trip's cover precached, the rest (its hero too) in
  *  PHOTO_CACHE on first view. */
 const isTravel = (path: string): boolean => path.includes('/travel/');
+/** けっこんしき's banner photo (static/wedding/hero.webp): in PHOTO_CACHE on first view, as the trips' heroes (the
+ *  precache's 3 MiB: docs/ops/perf.md); offline before that, the banner's plain photo fallback (ui/photoFallback.ts). */
+const isWeddingPhoto = (path: string): boolean => /^(\/[\w-]+)?\/wedding\/[\w-]+\.webp$/.test(path);
 /** トレイル's photos and tracks (static/hiking/; docs/hiking.md "Offline"): the ten tracks precached (~70 KB), the photos
  *  in PHOTO_CACHE on first view. */
 const isHiking = (path: string): boolean => path.includes('/hiking/');
-const PRECACHED_TRIP_FILES = /\/travel\/[\w-]+\/(cover|hero)\.webp$|\/hiking\/tracks\/[\w-]+\.json$/;
-/** The guides' photos the SW caches on first view (everything under travel/ and hiking/ but the precached). */
-export const isGuidePhoto = (path: string): boolean => (isTravel(path) || isHiking(path)) && !PRECACHED_TRIP_FILES.test(path);
+const PRECACHED_TRIP_FILES = /\/travel\/[\w-]+\/cover\.webp$|\/hiking\/tracks\/[\w-]+\.json$/;
+/** The guides' photos the SW caches on first view (everything under travel/ and hiking/ but the precached, and the
+ *  wedding's banner). */
+export const isGuidePhoto = (path: string): boolean => ((isTravel(path) || isHiking(path)) && !PRECACHED_TRIP_FILES.test(path)) || isWeddingPhoto(path);
 /** The maps' MapLibre: its chunk (`maplibre.*.js`, named so by vite.config.ts, with the maps' engines), its worker and
  *  its CSS (~1.8 MB raw, ~480 KB on the wire): not at install, but kept in the shell the first time a map draws, and
  *  carried by each install after that (copied when unchanged, fetched when changed: index.ts). */
@@ -408,7 +412,7 @@ const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/;
  *  (`art/…`, `audio/…`), so they are matched with a leading slash. Not precached: the font slices but the common ones
  *  (PRECACHED_FONT_SLICES; the rest cached on first use),
  *  the bundled art and audio manifests, every villager but the defaults, every critter, find and present (all cached
- *  on first use), all audio (AUDIO_CACHE, on first play; ききみみ's packs LISTEN_CACHE, on first use), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the food pictures (FOOD_IMG_CACHE, on first use), the guides' photos but the trips' covers and heroes and the trails' tracks (PHOTO_CACHE), the maps' MapLibre and ききみみ's parts (carried: kept once used), the recogniser (stt/, STT_CACHE), the app icons and macOS
+ *  on first use), all audio (AUDIO_CACHE, on first play; ききみみ's packs LISTEN_CACHE, on first use), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the food pictures (FOOD_IMG_CACHE, on first use), the guides' photos but the trips' covers and the trails' tracks, and the wedding's banner (PHOTO_CACHE), the maps' MapLibre and ききみみ's parts (carried: kept once used), the recogniser (stt/, STT_CACHE), the app icons and macOS
  *  litter. */
 export function precachable(path: string): boolean {
   const p = path.startsWith('/') ? path : `/${path}`;

@@ -526,13 +526,17 @@
   // ---- 最新の値にする (fresh.ts): my own day's entries (not a いつもの's) whose food has changed since they were logged
   // (the data fixed, the recipe or custom food edited). The catalogue comes once a day with an entry of it shows, at
   // idle after the open (foodUi.ts foodDbSoon: never on the open's path; it is the search's data too, and the rows'
-  // tiles); the products when they come. Never updated by itself.
+  // tiles); the products when they come (only with a product logged that day, or a search). Never updated by itself.
   let catalog = $state.raw<FoodDb | null>(foodDbNow());
   let catalogRev = $state(0);
   $effect(() => (catalog ? undefined : whenFoodDb((db) => {
     catalog = db;
     void db.more.then(() => catalogRev++);
   })));
+  // (the products only for a day with one of them logged: never for the open alone, 2.7 MB)
+  $effect(() => {
+    if (catalog && day?.entries.some((e) => e.f.id.startsWith('off:'))) void catalog.wantMore();
+  });
   // (only while open: a quick close cancels it, as an unmount did; the next opening asks again until it is in)
   $effect(() => {
     if (!open || catalog || !day?.entries.some((e) => !/^(recipe|custom):/.test(e.f.id))) return;

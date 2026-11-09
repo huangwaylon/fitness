@@ -44,7 +44,7 @@ test.describe('offline after a visit', () => {
     await up(page);
     await fromMenu(page, 'travel');
     await pickTrip(page, 'seattle');
-    // the hero (precached) and the photo seen
+    // the hero and the photo, both seen online (PHOTO_CACHE)
     await loaded(tripsSheet(page).locator('[data-trip-view="seattle"] .band.edge img'));
     await dayChip(page, 2).click();
     await loaded(tripsSheet(page).locator('[data-day="2"] [data-hike] .band img'));

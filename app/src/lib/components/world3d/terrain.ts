@@ -565,6 +565,9 @@ export const keptBytes = (): number =>
 /** Tests: forget the kept set. */
 export const forgetBands = (): void => void (kept = null);
 
+/** NH's ground textures' images once loaded (by URL; ~100 KB of WebP in all), for the next ground's build. */
+const nhImages = new Map<string, HTMLImageElement>();
+
 export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   const { renderer } = opts;
   const px = opts.px ?? 1.6;
@@ -576,10 +579,17 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
 
   // the textures: NH's, and the layout's own (the fields, the tiles)
   const loader = new TextureLoader();
-  /** NH's texture by name: `srgb` for the lit materials (the walls), raw for the bake (it paints in sRGB). */
+  /** NH's texture by name: `srgb` for the lit materials (the walls), raw for the bake (it paints in sRGB); its image
+   *  the one loaded before (back from a room: in at once, so the ground bakes once, not the palette then again). */
   const nh = (name: string, srgb = true): Texture => {
-    const t = loader.load(`${base}terrain/nh/${name}.webp`, () => (pendingTex--, pendingTex || texDone()), undefined, () => (pendingTex--, pendingTex || texDone()));
-    pendingTex++;
+    const url = `${base}terrain/nh/${name}.webp`, had = nhImages.get(url);
+    let t: Texture;
+    if (had) (t = new Texture(had)), (t.needsUpdate = true);
+    else {
+      const done = () => (pendingTex--, pendingTex || texDone());
+      t = loader.load(url, (x) => (nhImages.set(url, x.image as HTMLImageElement), done()), undefined, done);
+      pendingTex++;
+    }
     t.wrapS = t.wrapT = RepeatWrapping;
     if (srgb) t.colorSpace = SRGBColorSpace;
     t.anisotropy = 4;
@@ -592,6 +602,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     cliff: nh('cliff'), cliffSnow: nh('cliff-snow'), sand: nh('sand', false), stone: nh('stone', false), brick: nh('brick', false), plank: nh('plank', false),
     grassMix: nh('grass-mix', false), soilMix: nh('soil-mix', false), falls: nh('falls', false), steps: nh('stone')
   };
+  if (!pendingTex) texDone();
   const sdfA = new DataTexture(new Uint8Array(FW * FD * 4), FW, FD, RGBAFormat, UnsignedByteType);
   const sdfB = new DataTexture(new Uint8Array(FW * FD * 4), FW, FD, RGBAFormat, UnsignedByteType);
   for (const t of [sdfA, sdfB]) {
@@ -796,9 +807,10 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     stairs.geometry = opts.stairs === false ? new BufferGeometry() : wallGeometry(stairsMesh(lay));
   };
   buildStairs();
-  // the first bake once NH's textures are in (a bake before shows the palette alone)
+  // the bake once NH's textures are in; while they load, one with the palette alone first (none twice when they're in
+  // already: back from a room, ~40 ms at 4x CPU)
   for (const b of bands) bake(b);
-  void ready.then(() => {
+  if (pendingTex) void ready.then(() => {
     if (!disposed) for (const b of bands) bake(b);
   });
 

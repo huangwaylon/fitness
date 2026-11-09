@@ -2,9 +2,11 @@
   // A food's picture box (docs/design.md "Gohan"): a fixed NH rounded square with a brown lip, `size` px. Until there
   // are pictures, its category's tile (art.ts FOOD_CAT): the tint, a plain line glyph (a leaf for 野菜: never a
   // particular food) and the category's word in small type; night tints darker. `img`, a cell of a packed sprite sheet
-  // (its url, the cell's x / y and size in the sheet's pixels), fades in over the tint once it decodes, the tile again if
-  // it fails: the box never changes size, so nothing shifts. Decorative (the row beside it says the name) unless `alt`.
+  // (its url, the cell's x / y and size in the sheet's pixels), drawn into the box's canvas (food/cells.ts: the sheet
+  // decoded a moment, not held) once the box nears the screen, fades in over the tint, the tile again if it fails: the
+  // box never changes size, so nothing shifts. Decorative (the row beside it says the name) unless `alt`.
   import { FOOD_CAT, type FoodGlyph } from '#lib/art.ts';
+  import { drawCell } from '#lib/food/cells.ts';
 
   interface Props {
     /** `Item.cat`, or レシピ; unknown: その他. */
@@ -22,16 +24,37 @@
 
   const key = $derived(cat && FOOD_CAT[cat] ? cat : 'その他');
   const tile = $derived(FOOD_CAT[key]);
+  /** A cell's identity (a sheet holds many). */
+  const id = (c: { url: string; x: number; y: number }) => `${c.url}#${c.x},${c.y}`;
   let failed = $state<string | null>(null);
   let loaded = $state<string | null>(null);
-  const shown = $derived(!!img && failed !== img.url && loaded === img.url);
+  const shown = $derived(!!img && failed !== id(img) && loaded === id(img));
   let underIn = $state<string | null>(null);
-  const stand = $derived(!shown && !!under && !!img && failed !== img.url && underIn === under.url);
+  const stand = $derived(!shown && !!under && !!img && failed !== id(img) && underIn === id(under));
   $effect.pre(() => {
     pictured = shown || stand;
   });
-  /** The cell's scale into the box. */
-  const k = $derived(img ? size / img.size : 1);
+  /** The box is on screen or near it (the sheet's scroller's 400 px, as `loading=lazy` did): its cells drawn then. */
+  let box: HTMLElement | undefined = $state();
+  let near = $state(false);
+  $effect(() => {
+    if (!box || near) return;
+    if (typeof IntersectionObserver === 'undefined') return void (near = true);
+    const io = new IntersectionObserver((es) => es.some((e) => e.isIntersecting) && (near = true), { root: box.closest('[data-food-sheet]'), rootMargin: '400px 0px' });
+    io.observe(box);
+    return () => io.disconnect();
+  });
+  let cv: HTMLCanvasElement | undefined = $state(), ucv: HTMLCanvasElement | undefined = $state();
+  /** Draw a cell into its canvas, then mark it in (or failed); a cell changed meanwhile isn't marked. */
+  function paint(c: HTMLCanvasElement | undefined, cell: typeof img, done: (k: string) => void, fail?: (k: string) => void) {
+    if (!c || !cell || !near) return;
+    let live = true;
+    const k = id(cell);
+    drawCell(c, cell, size).then(() => live && done(k), () => live && fail?.(k));
+    return () => void (live = false);
+  }
+  $effect(() => paint(cv, img, (k) => (loaded = k), (k) => (failed = k)));
+  $effect(() => paint(ucv, under, (k) => (underIn = k)));
   /** Each glyph's lines on a 24 × 24 grid. */
   const GLYPH: Record<FoodGlyph, string> = {
     bowl: 'M3 12h18a9 7 0 0 1-18 0z M6.5 12a5.5 4.5 0 0 1 11 0',
@@ -65,22 +88,19 @@
   };
 </script>
 
-<span class="th" class:pic={shown || stand} data-thumb={shown ? 'img' : stand ? 'under' : 'cat'} data-cat={key} role={alt ? 'img' : undefined} aria-label={alt} aria-hidden={alt ? undefined : 'true'}
+<span bind:this={box} class="th" class:pic={shown || stand} data-thumb={shown ? 'img' : stand ? 'under' : 'cat'} data-cat={key} role={alt ? 'img' : undefined} aria-label={alt} aria-hidden={alt ? undefined : 'true'}
   style:--t={tile.tint} style:--s="{size}px" style:--r="{Math.round(size / 4)}px">
-  {#if under && img && !shown && failed !== img.url}
+  {#if under && img && !shown && failed !== id(img)}
     <!-- the thumbnail, cached, scaled up until the cell decodes (never the tile in between) -->
-    <img class="cell" class:in={stand} src={under.url} alt="" decoding="async" width={under.size} height={under.size}
-      style:object-position="{-under.x}px {-under.y}px" style:scale={size / under.size} onload={() => (underIn = under.url)} />
+    <canvas class="cell" class:in={stand} bind:this={ucv}></canvas>
   {/if}
   {#if !shown && !stand}
     <svg viewBox="0 0 24 24" width={Math.round(size * 0.46)} height={Math.round(size * 0.46)}><path d={GLYPH[tile.glyph]} /></svg>
     <span class="w">{tile.word}</span>
   {/if}
-  {#if img && failed !== img.url}
-    <!-- the cell alone: an img its size showing the sheet at -x -y (object-position), scaled to the box -->
-    <img class="cell" src={img.url} alt="" loading="lazy" decoding="async" class:in={shown} width={img.size} height={img.size}
-      style:object-position="{-img.x}px {-img.y}px" style:scale={k}
-      onload={() => (loaded = img.url)} onerror={() => (failed = img.url)} />
+  {#if img && failed !== id(img)}
+    <!-- the cell alone, drawn at the box's size -->
+    <canvas class="cell" class:in={shown} bind:this={cv}></canvas>
   {/if}
 </span>
 
@@ -97,7 +117,7 @@
   :global(:root[data-tod='night']) .pic::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(255, 246, 224, 0.6); }
   svg { display: block; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .w { font: 700 calc(var(--s) * 0.21)/1 var(--font-ui); white-space: nowrap; letter-spacing: -0.02em; }
-  .cell { position: absolute; left: 0; top: 0; max-width: none; object-fit: none; transform-origin: 0 0; opacity: 0; }
+  .cell { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; }
   .cell.in { opacity: 1; transition: opacity 150ms; }
   @media (prefers-reduced-motion: reduce) { .cell.in { transition: none; } }
 </style>
