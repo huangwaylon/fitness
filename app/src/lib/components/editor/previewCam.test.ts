@@ -25,8 +25,8 @@ describe("the preview's pan", () => {
     const grown = extentOf(withTiles(l, resizeEdge(l, 'back', 5).codes!));
     expect(grown.land.z1).toBeGreaterThan(e.land.z1);
     expect(clampView({ x: MID_X, z: 1e5, zoom: 1 }, grown).z).toBe(grown.land.z1 + 30);
-    // the front, across, the zoom's range; no land: the old reach
-    expect(clampView({ x: -1e5, z: -1e5, zoom: 99 }, e)).toEqual({ x: e.land.x0 - 30, z: e.land.z0 - 30, zoom: 3 });
+    // the front, across, the zoom's range (in as far as the phone's: 3.2); no land: the old reach
+    expect(clampView({ x: -1e5, z: -1e5, zoom: 99 }, e)).toEqual({ x: e.land.x0 - 30, z: e.land.z0 - 30, zoom: 3.2 });
     expect(clampView({ x: 0, z: 1e5, zoom: 0 }, { land: { x0: 0, x1: 0, z0: 0, z1: 0 } })).toEqual({ x: MID_X, z: 1260, zoom: 0.6 });
   });
 

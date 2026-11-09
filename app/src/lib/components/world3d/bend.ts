@@ -4,7 +4,7 @@
 // z' = pivot − (R + y)·sin θ, y' = (R + y)·cos θ − R (three's z runs out of the screen: world z into the island is
 // three's −z). Exact (not the parabola), so a tall thing leans back with the ground, as NH's do. One shared uniform
 // pair: a frame updates it once. bendPoint() is the same on the CPU (taps, hit tests, overlays).
-import { AddEquation, CustomBlending, OneFactor, SrcAlphaFactor, ZeroFactor, type Material, type WebGLProgramParametersWithUniforms } from 'three';
+import { AddEquation, CustomBlending, OneFactor, SrcAlphaFactor, ZeroFactor, type Material, type Mesh, type Object3D, type WebGLProgramParametersWithUniforms } from 'three';
 
 export const bendU = { uBendZ: { value: 0 }, uBendR: { value: 900 } };
 
@@ -47,6 +47,16 @@ export function bend<M extends Material>(m: M): M {
   const key = m.customProgramCacheKey.bind(m);
   m.customProgramCacheKey = () => `bend|${key()}`;
   return m;
+}
+
+/** Every material under `root` bent, its meshes never culled by three (their bounds are unbent: the bend draws them
+ *  elsewhere; the island culls what it must itself). */
+export function bendTree(root: Object3D): void {
+  root.traverse((n) => {
+    const m = (n as Mesh).material as Material | Material[] | undefined;
+    if (m) for (const x of Array.isArray(m) ? m : [m]) bend(x);
+    n.frustumCulled = false;
+  });
 }
 
 /** The bend on the CPU, in three's space (x, y, z → its bent position). */

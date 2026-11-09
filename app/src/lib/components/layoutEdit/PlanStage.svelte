@@ -27,6 +27,12 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     draw(ctx, { layout, view, w: W, h: H, grid: true, selected: new Set(), hover: null, issues: [], icon: () => null });
   });
+  /** What follows the camera (IslandEdit's: EditStage moved). */
+  const movers = new Set<() => void>();
+  $effect(() => {
+    void view;
+    for (const f of movers) f();
+  });
   onMount(() => {
     const ro = new ResizeObserver(() => {
       const r = wrap!.getBoundingClientRect();
@@ -38,7 +44,8 @@
       host: wrap!,
       toScreen: (x, z) => toScreen(view, x, z),
       toGround: (sx, sy) => toWorld(view, sx, sy),
-      size: () => [W, H]
+      size: () => [W, H],
+      moved: (fn) => (movers.add(fn), () => void movers.delete(fn))
     };
     // one finger along the island (the mode takes the taps that are its own first)
     let drag: { y: number; z: number } | null = null;

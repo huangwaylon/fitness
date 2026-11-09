@@ -1,18 +1,18 @@
 // The editor's 3D preview's camera moves (editor/Preview3D.svelte): a pan kept over the island, the phone view's
-// drag and zoom. Pure (no three.js): the tests' too.
+// drag and zoom (its lens the island's: world3d/islandCam.ts). No three.js of its own: the tests' too.
 
 import { MID_X, midXOf } from '#lib/layout/model.ts';
 import { clamp } from '#lib/math.ts';
+import { VIEW_W, ZOOM } from '../world3d/islandCam.ts';
 
 /** The phone view's middle across the island (engine.ts's: model.ts midXOf, its land's): where it starts and where ⌖
  *  puts it back. */
 export const midX = (e: { land: { x0: number; x1: number } }): number => midXOf(e.land);
 /** The phone view's spot along the island (world z of its pivot) with no land to keep it over. */
 const Z_MIN = -60, Z_MAX = 1260;
-/** The phone view's zoom, kept within these. */
-const ZOOM_MIN = 0.6, ZOOM_MAX = 3;
-/** The phone view's lens (engine.ts's): this much of the island across the screen at the pivot, at zoom 1 (u). */
-const ACROSS_U = 420;
+/** The phone view's zoom, kept within these: further out than the phone (the whole island), in as far. */
+const ZOOM_MIN = 0.6;
+const ZOOM_MAX = ZOOM.max;
 
 /** Where a pan may take the camera's pivot (world u, z into the island): the land's box (extentOf's), a tile's
  *  margin round it, so the island never leaves the view. */
@@ -33,6 +33,6 @@ export function clampView(v: { x: number; z: number; zoom: number }, e: { land: 
  *  along the island (the ground follows the finger: a drag down brings the back of the island into view). The ground
  *  is foreshortened along the island by the camera's pitch. */
 export function panBy(dx: number, dy: number, width: number, zoom: number, pitch: number): [number, number] {
-  const u = ACROSS_U / Math.max(1, width) / zoom;
+  const u = VIEW_W / Math.max(1, width) / zoom;
   return [dx * u, (dy * u) / Math.max(0.2, Math.sin(pitch))];
 }

@@ -19,10 +19,11 @@ import {
   PCFSoftShadowMap, MeshDepthMaterial, RGBADepthPacking, FrontSide, BackSide, DoubleSide, type Material, type MeshLambertMaterial, type Object3D, type Side, type WebGLRenderer
 } from 'three';
 import { cubicInOut, cubicOut } from '#lib/math.ts';
-import { bend, bendU, unbendRay } from './bend.ts';
+import { bendTree, bendU, unbendRay } from './bend.ts';
 import { waterFog, waterU } from './water.ts';
 import { createThings, type Things } from './things.ts';
-import { shadowBox, type ShadowBox } from './shadowBox.ts';
+import { shadowBox, sunOn, type ShadowBox } from './shadowBox.ts';
+import { DAY_SUN, FOV, PIVOT_DROP, VIEW_W, ZOOM, backAt, cullBands, dropPivot, focalOf, haze, horizonAt, pitchAt, pose } from './islandCam.ts';
 import { createCards, type Cards } from './cards.ts';
 import { createEffects, type FxKind, type FxOpts } from './effects.ts';
 import { createBiteMarks, type MarkState } from './biteMark.ts';
@@ -37,7 +38,6 @@ import { createWarmup, texturesOf } from './warmup.ts';
 import { ktx2Target } from './ktx2.ts';
 import { log } from '#lib/sync/log.ts';
 import { SEA_X, midXOf } from '#lib/layout/model.ts';
-import { PITCH } from '#lib/layout/hides.ts';
 
 type Tod = 'day' | 'dusk' | 'night';
 
@@ -115,13 +115,6 @@ interface Stats {
   drawn: boolean;
 }
 
-/** The camera: vertical field of view (a long lens), the pitch at zoom 1 / fully in / fully out (layout/hides.ts PITCH:
- *  what a tall thing hides by it), the zoom's range. */
-const FOV = 30;
-/** The zoom's range: the default (1) is the widest the island rests at (the user: zoomed out past it, a pinch gives
- *  rubber-band resistance and springs back on release, ZOOM_BACK_MS); fully in (the user: "increase the maximum zoom
- *  level", 1.8 before) close enough for a villager's face and a flower: the camera ~420u off, its near plane 20. */
-const ZOOM = { min: 1, max: 3.2 };
 /** How far past a limit a pinch may go (eased back on release), as a factor: in past the end ZOOM_OVER, out past the
  *  default ZOOM_UNDER (further, a felt stretch). */
 const ZOOM_OVER = 1.12, ZOOM_UNDER = 1.2;
@@ -132,12 +125,6 @@ const ZOOM_BACK_MS = 350;
 const X_RAMP = 0.3;
 /** Where the camera may look (the pivot's world z): the sea in front of まえ … the falls and the forest above the cliff. */
 const CAM_Z = { min: 30, max: 1000 } as const;
-/** The width the camera shows at the pivot at zoom 1 (u): the land is 470 (its beaches just off the sides). */
-const VIEW_W = 420;
-/** How far below the screen's middle the pivot sits (a share of the height). */
-const PIVOT_DROP = 0.16;
-/** The haze's start and end, as shares of the horizon's view depth: only what stands by the horizon fades a little. */
-const LAND_HAZE = [0.8, 1.35] as const;
 /** The cards lean back this share of the camera's pitch. */
 const LEAN = 0.42;
 /** At rest the ambience draws REST_FPS a second (the battery and the phone's heat: the water, the fall, the weather and
@@ -167,7 +154,7 @@ interface TodLook {
   fog: number;
   hemi: [number, number, number];
   sun: [number, number];
-  sunAt: [number, number, number];
+  sunAt: readonly [number, number, number];
   tint: number;
   lamps: number;
   villager: number;
@@ -175,7 +162,7 @@ interface TodLook {
   lift: number;
 }
 const TOD: Record<Tod, TodLook> = {
-  day: { fog: 0xd7f0ff, hemi: [0xffffff, 0xe6efd4, 3.0], sun: [0xfff3df, 1.5], sunAt: [-0.55, 1, 0.75], tint: 0xffffff, lamps: 0, villager: 0xffffff, lift: 0.32 },
+  day: { fog: 0xd7f0ff, hemi: [0xffffff, 0xe6efd4, 3.0], sun: [0xfff3df, 1.5], sunAt: DAY_SUN, tint: 0xffffff, lamps: 0, villager: 0xffffff, lift: 0.32 },
   dusk: { fog: 0xf2b996, hemi: [0xffd2b4, 0xb09ab0, 2.5], sun: [0xffa66a, 1.3], sunAt: [0.9, 0.45, 0.4], tint: 0xffd6c0, lamps: 0.7, villager: 0xffd9c4, lift: 0.22 },
   night: { fog: 0x223463, hemi: [0x7d93d6, 0x3a4570, 1.7], sun: [0xa9bcff, 0.5], sunAt: [-0.3, 1, 0.5], tint: 0x8795c8, lamps: 1, villager: 0x9aa6d6, lift: 0.08 }
 };
@@ -316,11 +303,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
 
   // ---- the ground (built on the layout), bent here ----
   const src = { height: (x: number, z: number) => ground.heightAt(x, z), feet: (x: number, z: number) => (ground.feet ?? ground.heightAt)(x, z) };
-  ground.group.traverse((n) => {
-    const m = (n as Mesh).material as Material | Material[] | undefined;
-    for (const x of m ? (Array.isArray(m) ? m : [m]) : []) bend(x);
-    (n as Mesh).frustumCulled = false;
-  });
+  bendTree(ground.group);
   scene.add(ground.group);
 
   // ---- the things, the cards, the lights ----
@@ -340,16 +323,11 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
 
   // ---- the camera ----
   const lim = { min: CAM_Z.min as number, max: CAM_Z.max as number };
-  let camZ = lim.min, zoomK = 1, pitch = (PITCH.def * Math.PI) / 180, rev = 0;
+  let camZ = lim.min, zoomK = 1, pitch = pitchAt(1), rev = 0;
   let shadowAim: ShadowBox | null = null;
   /** The camera's rev in the last frame's scene step (its DOM nodes placed for it). */
   let framedRev = -1;
   let W = 1, H = 1, D0 = 1500, focal = 1;
-  const pitchAt = (k: number) => {
-    const kk = Math.max(ZOOM.min, Math.min(ZOOM.max, k));
-    const deg = kk >= 1 ? PITCH.def + (PITCH.near - PITCH.def) * ((kk - 1) / (ZOOM.max - 1)) : PITCH.def + (PITCH.far - PITCH.def) * ((1 - kk) / (1 - ZOOM.min));
-    return (deg * Math.PI) / 180;
-  };
   /** A focus (the bulletin board's: docs/decisions.md "The island in 3D"): the camera framing one thing, its own x,
    *  pitch, height and pivot drop, eased in (k 0 … 1) over the finger's camera. */
   /** The island's middle (the camera's x at the default zoom): its land's (model.ts midXOf), followed as it grows. */
@@ -358,44 +336,22 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   function aim() {
     pitch = pitchAt(zoomK);
     if (fk > 0) pitch += (fpitch - pitch) * fk;
-    const D = D0 / zoomK, cx = camX + (fx - camX) * fk, cy = fy * fk;
-    camera.position.set(cx, cy + D * Math.sin(pitch), -camZ + D * Math.cos(pitch));
-    camera.lookAt(cx, cy, -camZ);
     const d = PIVOT_DROP + (fdrop - PIVOT_DROP) * fk;
-    if (d !== drop) {
-      drop = d;
-      camera.setViewOffset(W, H, 0, -drop * H, W, H);
-      camera.updateProjectionMatrix();
-    }
-    camera.updateMatrixWorld();
+    if (d !== drop) dropPivot(camera, W, H, (drop = d));
+    pose(camera, camX + (fx - camX) * fk, fy * fk, camZ, D0 / zoomK, pitch);
     things.camera(camera.quaternion);
     bendU.uBendZ.value = -camZ;
-    // NH's haze: the far sea (and what stands far off) fades into the sky's horizon colour, all of it by the log's
-    // horizon, so the sea meets the sky in one soft line at every scroll and zoom (no hard band of open sea)
-    const hd = horizonDepth();
-    fog.near = hd * LAND_HAZE[0];
-    fog.far = hd * LAND_HAZE[1];
+    haze(fog, camera, camZ);
     waterFog(fog);
     lampFog.near.value = fog.near;
     lampFog.far.value = fog.far;
     // the shadow's box follows the pivot (shadowBox.ts): the map redraws only when it moves on
     const box = shadowBox(shadowAim, camZ, camX, zoomK, todLook.sunAt, VIEW_W, ZOOM.min);
     if (box) {
-      shadowAim = box;
-      const [sx, sy, sz] = todLook.sunAt, [tx, ty, tz] = box.target;
-      Object.assign(sun.shadow.camera, { left: box.left, right: box.right, top: box.top, bottom: box.bottom, near: 10, far: 1800 });
-      sun.shadow.camera.updateProjectionMatrix();
-      sun.position.set(tx + sx * 700, ty + sy * 700, tz + sz * 700);
-      sun.target.position.set(tx, ty, tz);
-      sun.target.updateMatrixWorld();
+      sunOn(sun, (shadowAim = box), todLook.sunAt);
       shadowed();
     }
-    // the ground's bands in reach (the bend drops the far ones behind the horizon)
-    if (ground.chunks)
-      for (const b of ground.chunks()) {
-        const on = b.z1 > camZ - 700 && b.z0 < camZ + 1500;
-        for (const m of b.meshes) m.visible = on;
-      }
+    if (ground.chunks) cullBands(ground.chunks(), camZ);
     rev++;
     horizonY = NaN;
   }
@@ -409,11 +365,9 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     H = Math.max(1, r.height);
     if (W !== sizedW || H !== sizedH) renderer.setSize((sizedW = W), (sizedH = H), false);
     camera.aspect = W / H;
-    D0 = VIEW_W / (2 * Math.tan(((FOV / 2) * Math.PI) / 180) * camera.aspect);
-    // the pivot (the ground the camera looks at) a little below the middle: more island ahead, the horizon high
-    camera.setViewOffset(W, H, 0, -drop * H, W, H);
-    camera.updateProjectionMatrix();
-    focal = H / 2 / Math.tan(((FOV / 2) * Math.PI) / 180);
+    D0 = backAt(camera.aspect);
+    dropPivot(camera, W, H, drop);
+    focal = focalOf(H);
     aim();
     kick();
   }
@@ -503,27 +457,12 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     }
     return hitP;
   }
-  /** The view depth of the log's horizon (the far tangent from the camera, in the y-z plane). */
-  function horizonDepth(): number {
-    tangent();
-    v3.set(camera.position.x, tg[0], tg[1]).applyMatrix4(camera.matrixWorldInverse);
-    return Math.max(100, -v3.z);
-  }
-  /** The far tangent point (y, z: beyond the pivot, three's −z), into tg. */
-  const tg = new Float64Array(2);
-  function tangent() {
-    const R = bendU.uBendR.value + 3, oy = -bendU.uBendR.value, oz = -camZ;
-    const cy = camera.position.y - oy, cz = camera.position.z - oz, L = Math.hypot(cy, cz);
-    const base = Math.atan2(cy, cz), a = Math.acos(Math.min(1, R / L));
-    const t1 = base + a, t2 = base - a, z1 = oz + R * Math.cos(t1), z2 = oz + R * Math.cos(t2);
-    tg[0] = oy + R * Math.sin(z1 < z2 ? t1 : t2);
-    tg[1] = Math.min(z1, z2);
-  }
   let horizonY = NaN;
+  const tg = new Float64Array(2);
   /** Where the ground's silhouette is on screen: the tangent from the camera to the log, seen in the y-z plane. */
   function horizon(): number {
     if (!Number.isNaN(horizonY)) return horizonY;
-    tangent();
+    horizonAt(camera, camZ, tg);
     screenTo(camera.position.x, tg[0], tg[1]);
     horizonY = Math.max(0, sp[1]);
     return horizonY;
@@ -548,7 +487,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   /** The finger has moved the camera since it touched (a drag or a pinch, not a tap). */
   let moved = false;
   const rushing = () => (touch ? moved : !focus && (Math.abs(vel) > RUSH_V || Math.abs(velX) > RUSH_V));
-  const unitsPerPx = () => (2 * (D0 / zoomK) * Math.tan(((FOV / 2) * Math.PI) / 180)) / H;
+  /** The ground's units across a px at the pivot (VIEW_W across the screen at zoom 1). */
+  const unitsPerPx = () => VIEW_W / (W * zoomK);
   /** Past an end the scroll gives less and less (iOS's rubber band). */
   const rubber = (over: number) => (over <= 0 ? 0 : (1 - 1 / (over / 160 + 1)) * 160);
   let rawZ = camZ;
@@ -849,11 +789,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
    *  renderer alive. */
   const unplaced: ReturnType<typeof resourcesOf> = new Set();
   function addObj(obj: Object3D): () => void {
-    obj.traverse((n) => {
-      const m = (n as Mesh).material as Material | Material[] | undefined;
-      for (const x of m ? (Array.isArray(m) ? m : [m]) : []) bend(x);
-      n.frustumCulled = false;
-    });
+    bendTree(obj);
     scene.add(obj);
     kick();
     return () => {

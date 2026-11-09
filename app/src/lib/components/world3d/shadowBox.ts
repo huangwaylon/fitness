@@ -5,6 +5,8 @@
 // built, padded to cover the view all the while, and is built again that far ahead in the way the camera goes: one
 // redraw a 2 × LEAD of the view's width of scroll (a 40 u step's was one every other frame of a drag).
 
+import type { DirectionalLight } from 'three';
+
 /** The box's step across (u), and its play either way the 40 u step's box had along the island too (its padding). */
 export const STEP = 40;
 const LEAD = 0.15;
@@ -41,4 +43,19 @@ export function shadowBox(was: ShadowBox | null, camZ: number, camX: number, zoo
   const padX = (Math.abs(sx) / across) * pad, padY = (Math.abs(sy * sz) / (across * Math.hypot(sx, sy, sz))) * pad;
   const half = Math.max(MIN, (viewW / Math.max(zoomMin, kq - 0.0625)) * 0.75 + STEP);
   return { k: kq, sun: sunAt, x, z, left: -half - padX, right: half + padX, top: half * 1.4 + padY, bottom: -half * 1.1 - padY, target: [x, 0, -z - AHEAD] };
+}
+
+/** The sun put on a box: its shadow camera's extents, its target, the sun 700 u off toward `sunAt`. */
+export function sunOn(sun: DirectionalLight, box: ShadowBox, sunAt: readonly number[]) {
+  const [sx, sy, sz] = sunAt, [tx, ty, tz] = box.target, cam = sun.shadow.camera;
+  cam.left = box.left;
+  cam.right = box.right;
+  cam.top = box.top;
+  cam.bottom = box.bottom;
+  cam.near = 10;
+  cam.far = 1800;
+  cam.updateProjectionMatrix();
+  sun.position.set(tx + sx * 700, ty + sy * 700, tz + sz * 700);
+  sun.target.position.set(tx, ty, tz);
+  sun.target.updateMatrixWorld();
 }

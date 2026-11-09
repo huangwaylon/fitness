@@ -5,19 +5,19 @@
   // bulletin board, the island's DOM node's model), the homes, bridges, stairs and ponds (world3d/built.ts, the
   // island's own createBuilt) and K.K. on his stool (the island's villagers' code, slot `kk`, his model loaded once
   // there's a stool). `orbit` (drag to turn, wheel or a pinch to zoom; right-drag, shift-drag, space-drag or two
-  // fingers to pan) or `phone` (NH's island camera: a long lens, high, the rolling log bending the far ground away; a
-  // drag on open ground or the wheel moves it, a pinch or ctrl-wheel zooms). Panning stays over the island; ⌖ puts the
-  // camera back where it started; nothing moves it but a hand. A layout change rebuilds only the chunks and models that
-  // changed; a frame is drawn only when something changed (an edit, the camera, a model in, a wobble), never on a
-  // timer.
+  // fingers to pan) or `phone` (the island's own camera, world3d/islandCam.ts: its pitch by the zoom, the pivot below
+  // the middle, the haze to the log's horizon, the shadow box's steps; a drag on open ground or the wheel moves it, a
+  // pinch or ctrl-wheel zooms). Panning stays over the island; ⌖ puts the camera back where it started; nothing moves it
+  // but a hand. A layout change rebuilds only the chunks and models that changed; a frame is drawn (world3d/stage.ts:
+  // at most 30 a second, none hidden) only when something changed (an edit, the camera, a model in, a wobble), never
+  // on a timer; the shadow map only when what casts or the shadow box moved.
   import { onMount } from 'svelte';
   import type { Layout } from '#lib/layout/model.ts';
   import { diffLayouts } from '#lib/layout/diff.ts';
   import { lookOf, type Look } from '../world3d/groundLook.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
-  import { drawOff } from '#lib/ui-state/testMode.ts';
   import type { EditStage } from '../layoutEdit/IslandEdit.svelte';
-  import type { Material, Mesh, Object3D } from 'three';
+  import type { Object3D } from 'three';
   import { clamp } from '#lib/math.ts';
   import { staticUrl } from '#lib/staticUrl.ts';
 
@@ -40,19 +40,22 @@
   onMount(() => {
     let gone = false, stop = () => {};
     const camZ0 = camZ;
-    void Promise.all([import('../world3d/threePreview.ts'), import('three/examples/jsm/controls/OrbitControls.js'), import('../world3d/terrain.ts'), import('../world3d/objects.ts'), import('../world3d/things.ts'), import('../world3d/bend.ts'), import('../world3d/water.ts'), import('../world3d/home.ts'), import('../world3d/built.ts'), import('../world3d/release.ts'), import('../world3d/drawCheck.ts'), import('../island/kkSlider.ts'), import('../island/devHooks.ts'), import('#lib/time/clock.ts'), import('#lib/layout/model.ts'), import('../rooms/gesture.ts'), import('./previewCam.ts'), import('../world3d/stage.ts')]).then(
-      ([T, { OrbitControls }, { buildGround }, { placeObjects }, { createThings }, { bendU, bend, bendPoint, unbendRay }, { waterU, waterFog }, { homeTod }, { createBuilt, builtObject }, { resourcesOf }, { previewDay }, KK, { hookOneOf, islandSeed }, { dayKey, jst, now }, { extentOf }, { gestures }, C, { endRenderer, makeRenderer }]) => {
+    void Promise.all([import('../world3d/threePreview.ts'), import('three/examples/jsm/controls/OrbitControls.js'), import('../world3d/terrain.ts'), import('../world3d/objects.ts'), import('../world3d/things.ts'), import('../world3d/bend.ts'), import('../world3d/water.ts'), import('../world3d/home.ts'), import('../world3d/built.ts'), import('../world3d/release.ts'), import('../world3d/drawCheck.ts'), import('../island/kkSlider.ts'), import('../island/devHooks.ts'), import('#lib/time/clock.ts'), import('#lib/layout/model.ts'), import('../rooms/gesture.ts'), import('./previewCam.ts'), import('../world3d/stage.ts'), import('../world3d/islandCam.ts'), import('../world3d/shadowBox.ts')]).then(
+      ([T, { OrbitControls }, { buildGround }, { placeObjects }, { createThings }, { bendU, bendTree, bendPoint, unbendRay }, { waterU, waterFog }, { homeTod }, { createBuilt, builtObject }, { resourcesOf }, { previewDay }, KK, { hookOneOf, islandSeed }, { dayKey, jst, now }, { extentOf }, { gestures }, C, { createStage }, I, { shadowBox, sunOn }]) => {
         if (gone || !canvas) return;
-        let renderer: ReturnType<typeof makeRenderer>['renderer'];
+        /** The canvas's size (the stage's, from its ResizeObserver: no layout read a call), and whether the scene's up. */
+        let cw = 300, ch = 150, ready = false;
+        let st: import('../world3d/stage.ts').Stage;
         try {
           // (no preserveDrawingBuffer: a copy of the frame kept each draw, at DPR 2 with AA dear on a phone; nothing reads
           // the canvas back, a screenshot is the page's)
-          ({ renderer } = makeRenderer(canvas, { antialias: true }));
+          st = createStage(canvas, { antialias: true }, (t) => frame(t), (w, h) => ((cw = w), (ch = h), ready && resize()));
         } catch (e) {
           console.warn('preview', e);
           failed = true;
           return;
         }
+        const renderer = st.renderer;
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = T.PCFSoftShadowMap;
         // (the shadow map redrawn only with a frame that changed what casts or where the sun is: kick(), not kick(false))
@@ -67,11 +70,12 @@
         sun.shadow.mapSize.set(2048, 2048);
         sun.shadow.bias = -0.0006;
         sun.shadow.normalBias = 1.2;
-        Object.assign(sun.shadow.camera, { left: -700, right: 700, top: 900, bottom: -900, near: 10, far: 3000 });
         scene.add(hemi, sun, sun.target);
-        const camera = new T.PerspectiveCamera(30, 1, 10, 9000);
+        const camera = new T.PerspectiveCamera(I.FOV, 1, 10, 9000);
         const controls = new OrbitControls(camera, canvas);
         controls.enableDamping = true;
+        // (its damping a frame's: at 30 a second, twice a 60 Hz frame's)
+        controls.dampingFactor = 0.1;
         // ?eye=x,y,z&at=x,y,z (world: z into the island) for a close look
         const q = new URLSearchParams(location.search);
         const v3 = (k: string, d: number[]) => (q.get(k)?.split(',').map(Number).filter(Number.isFinite).length === 3 ? q.get(k)!.split(',').map(Number) : d);
@@ -84,16 +88,13 @@
 
         // a frame when something changed, then as long as something still moves (the controls' damping, a wobble,
         // K.K. settling onto his stool): never on a timer
-        let raf = 0, dirty = true, shade = true, frames = 0, shadowFrames = 0;
-        // (the e2e's logic mode: nothing drawn)
-        const off = drawOff();
+        let dirty = true, shade = true, frames = 0, shadowFrames = 0;
         /** A frame to draw; `shadows`: and the shadow map with it (a model in or moved, a layout change, the phone view's
-         *  sun moved with its camera); the orbit's turn and zoom only move the camera, the shadow camera stays. (things'
-         *  changed(shadows) is this.) */
+         *  shadow box moved on); a camera's move alone redraws no shadow. (things' changed(shadows) is this.) */
         const kick = (shadows: boolean | 'slow' = true) => {
           dirty = true;
           if (shadows) shade = true;
-          if (!raf && !gone) raf = requestAnimationFrame(frame);
+          if (!gone) st.kick();
         };
 
         let cur = layout;
@@ -124,10 +125,7 @@
             groups.delete(id);
           }
           if (g && at) {
-            g.traverse((n) => {
-              const mm = (n as Mesh).material;
-              for (const m of mm ? ([] as Material[]).concat(mm) : []) bend(m);
-            });
+            bendTree(g);
             g.position.set(at.x, at.y ?? ground.heightAt(at.x, at.z), -at.z);
             g.rotation.y = at.yaw;
             g.visible = builtObject(id) !== heldId;
@@ -161,11 +159,7 @@
             void import('../world3d/villagers.ts').then(({ createVillagers }) => {
               if (gone) return;
               vil = createVillagers((o) => {
-                o.traverse((n) => {
-                  const mm = (n as Mesh).material;
-                  for (const m of mm ? ([] as Material[]).concat(mm) : []) bend(m);
-                  n.frustumCulled = false;
-                });
+                bendTree(o);
                 scene.add(o);
                 kick();
                 return () => (scene.remove(o), kick());
@@ -180,57 +174,54 @@
 
         // ---- the camera ----
         let m: 'orbit' | 'phone' = mode;
-        const PITCH = (58 * Math.PI) / 180;
-        /** The phone view's camera: its spot along the island (camZ), across it, and its zoom. */
-        let camX = C.midX(extentOf(cur)), zoom = 1, D = 1700;
+        /** The phone view's camera: its spot along the island (camZ), across it, and its zoom; the sun's: the orbit's own
+         *  or the phone view's shadow box. */
+        let camX = C.midX(extentOf(cur)), zoom = 1, lit: import('../world3d/shadowBox.ts').ShadowBox | 'orbit' | null = null;
         const bounds = () => C.panBounds(extentOf(cur));
+        /** What follows the camera (IslandEdit's: EditStage moved). */
+        const movers = new Set<() => void>();
         function aim() {
           if (m === 'orbit') {
             bendU.uBendR.value = 3e5;
             controls.enabled = true;
-            cull();
+            camera.clearViewOffset();
+            for (const b of ground.chunks()) for (const mesh of b.meshes) mesh.visible = true;
             fog.near = 1e5;
             fog.far = 2e5;
-            return;
+            // (its own sun and shadow camera, the whole island's, still while it turns)
+            if (lit !== 'orbit') {
+              lit = 'orbit';
+              sun.position.set(-200, 900, 400);
+              sun.target.position.set(210, 0, -560);
+              sun.target.updateMatrixWorld();
+              Object.assign(sun.shadow.camera, { left: -700, right: 700, top: 900, bottom: -900, near: 10, far: 3000 });
+              sun.shadow.camera.updateProjectionMatrix();
+              shade = true;
+            }
+          } else {
+            ({ x: camX, z: camZ, zoom } = C.clampView({ x: camX, z: camZ, zoom }, extentOf(cur)));
+            controls.enabled = false;
+            bendU.uBendR.value = 1300;
+            bendU.uBendZ.value = -camZ;
+            I.dropPivot(camera, cw, ch);
+            I.pose(camera, camX, 0, camZ, I.backAt(camera.aspect) / zoom, I.pitchAt(zoom));
+            I.haze(fog, camera, camZ);
+            I.cullBands(ground.chunks(), camZ);
+            // (the day's sun on the island's shadow box: redrawn only as it moves on; zoomed out past the phone's widest,
+            // as wide as the view)
+            const b = shadowBox(lit === 'orbit' ? null : lit, camZ, camX, zoom, I.DAY_SUN, I.VIEW_W, Math.min(I.ZOOM.min, zoom));
+            if (b) (sunOn(sun, (lit = b), I.DAY_SUN), (shade = true));
           }
-          ({ x: camX, z: camZ, zoom } = C.clampView({ x: camX, z: camZ, zoom }, extentOf(cur)));
-          fog.near = 1400 * 1.25;
-          fog.far = 1400 * 3.2;
-          controls.enabled = false;
-          bendU.uBendR.value = 1300;
-          bendU.uBendZ.value = -camZ;
-          const d = D / zoom;
-          camera.position.set(camX, d * Math.sin(PITCH), -camZ + d * Math.cos(PITCH));
-          camera.lookAt(camX, 0, -camZ);
-          sun.position.set(camX - 0.55 * 700, 700, -camZ - 120 + 0.75 * 700);
-          sun.target.position.set(camX, 0, -camZ - 120);
-          sun.target.updateMatrixWorld();
-          cull();
-        }
-        /** The bands in reach (engine.ts's rule: the bend drops the far ones behind the horizon); all in orbit. */
-        function cull() {
-          for (const b of ground.chunks()) {
-            const on = m === 'orbit' || (b.z1 > camZ - 700 && b.z0 < camZ + 1500);
-            for (const mesh of b.meshes) mesh.visible = on;
-          }
+          for (const f of movers) f();
         }
         function resize() {
-          const r = canvas!.getBoundingClientRect();
-          renderer.setSize(r.width, r.height, false);
-          camera.aspect = r.width / Math.max(1, r.height);
-          // the phone's lens (engine.ts's): 30° high, as far back as puts 420u of island across the screen at the pivot
-          D = 420 / (2 * Math.tan((15 * Math.PI) / 180) * camera.aspect);
+          camera.aspect = cw / Math.max(1, ch);
           camera.updateProjectionMatrix();
           aim();
-          kick();
+          kick(false);
         }
-        const ro = new ResizeObserver(resize);
-        ro.observe(canvas);
+        ready = true;
         resize();
-        aim();
-        sun.position.set(-200, 900, 400);
-        sun.target.position.set(210, 0, -560);
-        sun.target.updateMatrixWorld();
         // orbit: the pan kept over the island (the camera moved with its target)
         const was = new T.Vector3();
         // (the damping's leftover pan and turn: dropped at an edge and on ⌖, so it doesn't push on for seconds)
@@ -257,13 +248,12 @@
         window.addEventListener('blur', onBlur);
         /** The phone view moved by a hand: `dx`, `dy` px the ground follows the finger, `k` its zoom's ratio. */
         function move(dx: number, dy: number, k = 1) {
-          const r = canvas!.getBoundingClientRect();
-          const [mx, mz] = C.panBy(dx, dy, r.width, zoom, PITCH);
+          const [mx, mz] = C.panBy(dx, dy, cw, zoom, I.pitchAt(zoom));
           camX -= mx;
           camZ += mz;
           zoom *= k;
           aim();
-          kick();
+          kick(false);
         }
         const onWheel = (e: WheelEvent) => {
           if (m !== 'phone') return;
@@ -271,10 +261,10 @@
           // (a trackpad's pinch is a ctrl-wheel)
           if (e.ctrlKey) move(0, 0, Math.exp(-e.deltaY * 0.01));
           else {
-            camX += e.deltaX * 0.8 * (420 / Math.max(1, canvas!.getBoundingClientRect().width)) / zoom;
+            camX += (e.deltaX * 0.8 * (I.VIEW_W / Math.max(1, cw))) / zoom;
             camZ -= e.deltaY * 0.8;
             aim();
-            kick();
+            kick(false);
           }
         };
         canvas.addEventListener('wheel', onWheel, { passive: false });
@@ -292,12 +282,14 @@
         canvas.addEventListener('pointerup', onUp);
         canvas.addEventListener('pointercancel', onCancel);
 
-        function frame(t: number) {
-          raf = 0;
+        /** A frame (createStage's: at most 30 a second): 0 another wanted at once, Infinity none till a kick. */
+        function frame(t: number): number {
           let more = false;
           if (m === 'orbit' && controls.update()) more = true;
           // (a wobble, a fade, K.K. settling: what casts moves)
-          if (things.frame(t)) more = shade = true;
+          const th = things.frame(t);
+          if (th) more = true;
+          if (th === 'cast') shade = true;
           if (vil && vil.frame(t, kkOn ? [kkSpec] : [], false).moving) more = shade = true;
           if (dirty || more) {
             waterU.uTime.value = (t / 1000) % 3600;
@@ -306,12 +298,13 @@
             renderer.shadowMap.needsUpdate = shade;
             shade = false;
             // (the e2e's logic mode: the frame's work done, nothing drawn: CI's software GL took seconds a frame)
-            if (!off) renderer.render(scene, camera);
+            if (!st.noDraw) renderer.render(scene, camera);
             frames++;
             dirty = false;
           }
           // (what moved set shade already: the controls' damping alone redraws no shadow)
-          if (more) kick(false);
+          if (more) dirty = true;
+          return more ? 0 : Infinity;
         }
         kick();
         // the e2e's view of it: the frames drawn, the camera, the groups built and K.K.
@@ -374,12 +367,10 @@
             const [bx, by, bz] = bendPoint(x, ground.feet(x, z) + lift, -z, bendU.uBendZ.value, bendU.uBendR.value);
             pv.set(bx, by, bz).project(camera);
             if (pv.z > 1) return null;
-            const r = canvas!.getBoundingClientRect();
-            return [((pv.x + 1) / 2) * r.width, ((1 - pv.y) / 2) * r.height];
+            return [((pv.x + 1) / 2) * cw, ((1 - pv.y) / 2) * ch];
           },
           toGround(sx: number, sy: number) {
-            const r = canvas!.getBoundingClientRect();
-            pv.set((sx / r.width) * 2 - 1, -(sy / r.height) * 2 + 1, 0.5).unproject(camera);
+            pv.set((sx / cw) * 2 - 1, -(sy / ch) * 2 + 1, 0.5).unproject(camera);
             const o = camera.position, d = pv.sub(o).normalize();
             let h = 3, hit: [number, number] | null = null;
             for (let i = 0; i < 3; i++) {
@@ -390,10 +381,8 @@
             }
             return hit;
           },
-          size: () => {
-            const r = canvas!.getBoundingClientRect();
-            return [r.width, r.height];
-          },
+          size: () => [cw, ch],
+          moved: (fn) => (movers.add(fn), () => void movers.delete(fn)),
           hide(ids: readonly string[]) {
             // (the piece held, and what's on its top)
             const id = ids[0] ?? null;
@@ -408,9 +397,6 @@
           }
         };
         stop = () => {
-          if (raf) cancelAnimationFrame(raf);
-          raf = 0;
-          ro.disconnect();
           canvas?.removeEventListener('wheel', onWheel);
           canvas?.removeEventListener('pointerdown', onDown);
           canvas?.removeEventListener('pointermove', onMove);
@@ -433,7 +419,7 @@
           // the cached homes', bridges' and ponds' resources let go of on this renderer (their listeners kept it
           // alive), the shadow map, then the context
           sun.shadow.dispose();
-          endRenderer(renderer, [scene], gone3);
+          st.dispose([scene], gone3);
           bendU.uBendR.value = 1300;
         };
       },

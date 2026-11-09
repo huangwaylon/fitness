@@ -41,6 +41,8 @@
     size(): [number, number];
     /** Hide placed things' models while they're held (a table and what's on it; none: show them all). */
     hide?(ids: readonly string[]): void;
+    /** `fn` after each move of the stage's camera and each resize (what's drawn over it follows); its removal returned. */
+    moved(fn: () => void): () => void;
     /** The stage pans itself on a drag over open ground (the editor's preview: a tap there does nothing of its own):
      *  a press on the ground while something's held passes on to it too, its tap still putting the held thing there. */
     pans?: boolean;
@@ -359,30 +361,9 @@
     }).filter((m) => !!m);
   });
 
-  /** How far apart along the island the camera's moves are looked for (u): one at least on screen wherever it looks. */
-  const CAM_PROBE = 150;
-  let raf = 0;
-  $effect(() => {
-    // the camera may move under a held thing (a pinch), and under the marks: they follow
-    if (!sel && !marks.length) return;
-    // (a re-render only when the camera did move: ground points along the island, those on screen, and the stage's
-    // size, read each display frame; a bump every frame re-rendered the marks and the held thing's outline at 60 a
-    // second for nothing)
-    let was = '';
-    const tick = () => {
-      // (down the island's middle, its land's whole length: the back of a grown island too)
-      const land = site.extent.land, mid = site.midX;
-      let key = stage.size().join();
-      for (let z = Math.min(0, land.z0); z <= land.z1 + CAM_PROBE; z += CAM_PROBE) key += `|${stage.toScreen(mid, z, 0)?.join() ?? '-'}`;
-      if (key !== was) {
-        was = key;
-        rev++;
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  });
+  // the camera may move under a held thing (a pinch), and under the marks: they follow (the stage says when it moved:
+  // a probe of its camera each display frame re-rendered nothing, but woke the page 60-120 times a second)
+  $effect(() => stage.moved(() => rev++));
   const def = $derived(sel ? kindDef(sel.k) : null);
   const size = $derived.by(() => (void rev, stage.size()));
   $effect(() => {

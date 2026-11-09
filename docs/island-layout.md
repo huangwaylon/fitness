@@ -267,7 +267,10 @@ to `/pair`). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the
   `world3d/previewDraw.test.ts` fails for a catalog kind with no drawing. **Moved by hand only:** orbit, a drag turns,
   the wheel or a pinch zooms, a right / shift / space drag or two fingers pan; phone, a drag on open ground pans, a
   pinch or ctrl-wheel zooms, the wheel scrolls (a press on a piece is IslandEdit's). The pan keeps the pivot over the
-  land's box; ⌖ puts it back. It draws a frame only when something changed, never on a timer.
+  land's box; ⌖ puts it back. The phone view's camera is the island's (`world3d/islandCam.ts`: the pitch by the zoom,
+  the pivot below the middle, the haze, the band cull; `shadowBox.ts`), so a zoomed view is what the phone shows. It
+  draws a frame only when something changed, at most 30 a second (`world3d/stage.ts`), never on a timer; the shadow
+  map only when what casts or the shadow box moved.
 - **`?check`** (`world3d/drawCheck.ts undrawn`): a 3Dの チェック panel listing each object the phones' 3D island doesn't
   draw as a model (a day of each season), and why: an unknown kind, a card of 2D art, nothing at all, a model file
   missing; a click selects it.
@@ -374,7 +377,8 @@ on it, or on any placed thing, drags it a tile at a time; a tap on the ground mo
 a drop is its ops at once. Anyone's, the guest's too. Terraforming (paths, water, cliffs) is the desktop editor's
 alone.
 
-It runs over any stage: `{ host, toScreen(x, z, lift), toGround(sx, sy), size(), hide(ids) }`. The editor's phone view
+It runs over any stage: `{ host, toScreen(x, z, lift), toGround(sx, sy), size(), moved(fn), hide(ids) }` (`moved`: told
+of each camera move, no probe each display frame). The editor's phone view
 gives it one (`/editor/?view=phone&edit`: the 3D island's camera and bend, `&cam=<z>` its spot; `&preview=0` a flat
 plan, the e2e's; `?view=orbit` the 3D preview, `&eye=x,y,z&at=x,y,z` its camera). The e2e: `e2e/island-edit.spec.ts`,
 `e2e/decor.spec.ts`, `e2e/island3d-layout.spec.ts`, `e2e/gym.spec.ts`, `e2e/visitor-spot.spec.ts`.
