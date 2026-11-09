@@ -251,3 +251,91 @@ describe('the shop’s running ledger (O5)', () => {
     expect(store.shopCheck()).toMatchObject({ A: 'same' });
   });
 });
+
+// The shop's ぜんぶ かう (store.ts group): the day's pieces in one `events` request, one `group`, all or none.
+describe('a group of buys (ぜんぶ かう)', () => {
+  let now: number;
+  let store: StoreCore;
+  let notices = 0;
+  beforeEach(() => {
+    now = T0;
+    notices = 0;
+    const db = memSql();
+    store = new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B, KEY_C }, now: () => (now += 10), notify: () => void notices++ });
+  });
+  const keyOf = { A: KEY_A, B: KEY_B, G: KEY_C } as const;
+  type Result = { id: string; ok: boolean; duplicate?: true; at?: string; error?: string; detail?: string };
+  const post = (who: 'A' | 'B' | 'G', events: object[]) =>
+    (store.handle({ key: keyOf[who], action: 'events', events }, 100) as unknown as { results: Result[] }).results;
+  const pieces = stockOf(D).slice(0, 4);
+  const total = pieces.reduce((a, c) => a + buyPrice(c)!, 0);
+  const buys = (g: string, list = pieces, who = 'a') => list.map((item, i) => ({ id: `${who}-${g}-${i}`, type: 'buy', group: g, data: { item, price: buyPrice(item)!, d: D } }));
+  /** `who`'s かいがら: exactly `v`, from koi sold (a sell may fetch under its list: an older app's). */
+  const fund = (who: 'A' | 'B', v: number) => {
+    const k = Math.ceil(v / K);
+    post(who, [{ id: `t-${who}`, type: 'tally', data: { date: D, counts: { 'fish:koi': k } } }, { id: `s-${who}`, type: 'sell', data: { species: 'fish:koi', n: k, v } }]);
+  };
+  const owned = (who: 'A' | 'B') => (store.handle({ key: keyOf[who], action: 'snapshot' }, 100) as unknown as { rows: { events: unknown[][] } }).rows.events
+    .filter((r) => r[3] === 'buy' && r[1] === who).map((r) => (JSON.parse(r[4] as string) as { item: string }).item);
+
+  it('keeps every piece when the かいがら cover them all, one notice', () => {
+    fund('A', total);
+    notices = 0;
+    const r = post('A', buys('g1'));
+    expect(r.map((x) => x.ok)).toEqual([true, true, true, true]);
+    expect(r.every((x) => typeof x.at === 'string')).toBe(true);
+    expect(notices).toBe(1);
+    expect(owned('A').sort()).toEqual([...pieces].sort());
+    expect(store.shopCheck()).toMatchObject({ A: 'same' });
+  });
+
+  it('keeps none when they don’t: the short one says so, the rest `group`; nothing charged', () => {
+    fund('A', total - 1); // all but the last covered
+    const r = post('A', buys('g1'));
+    expect(r.map((x) => x.detail)).toEqual(['group', 'group', 'group', 'wallet short']);
+    expect(r.every((x) => !x.ok && x.error === 'bad_request')).toBe(true);
+    expect(owned('A')).toEqual([]);
+    // the かいがら are all still there: the first three alone go through
+    expect(post('A', buys('g2', pieces.slice(0, 3))).every((x) => x.ok)).toBe(true);
+  });
+
+  it('a piece my other phone bought meanwhile is refused `owned` alone and costs nothing; the rest are kept', () => {
+    fund('A', total);
+    expect(post('A', [{ id: 'other', type: 'buy', data: { item: pieces[1], price: buyPrice(pieces[1])!, d: D } }])[0].ok).toBe(true);
+    const r = post('A', buys('g1'));
+    expect(r.map((x) => x.ok)).toEqual([true, false, true, true]);
+    expect(r[1]).toMatchObject({ error: 'bad_request', detail: 'owned' });
+    expect(owned('A').sort()).toEqual([...pieces].sort()); // each once
+    expect(store.shopCheck()).toMatchObject({ A: 'same' });
+    // charged once for each: nothing left over, nothing owed
+    expect(post('A', [{ id: 'more', type: 'buy', data: { item: stockOf(D)[5], price: buyPrice(stockOf(D)[5])!, d: D } }])[0]).toMatchObject({ detail: 'wallet short' });
+  });
+
+  it('the partner buying the same piece takes nothing from me: each person’s own', () => {
+    fund('A', total);
+    fund('B', buyPrice(pieces[0])!);
+    expect(post('B', [{ id: 'b0', type: 'buy', data: { item: pieces[0], price: buyPrice(pieces[0])!, d: D } }])[0].ok).toBe(true);
+    expect(post('A', buys('g1')).every((x) => x.ok)).toBe(true);
+    expect(owned('B')).toEqual([pieces[0]]);
+  });
+
+  it('a retry of a group kept is each a duplicate (its ack lost), even the next day', () => {
+    fund('A', total);
+    expect(post('A', buys('g1')).every((x) => x.ok)).toBe(true);
+    now += 86_400_000;
+    expect(post('A', buys('g1'))).toEqual(pieces.map((_, i) => ({ id: `a-g1-${i}`, ok: true, duplicate: true })));
+    expect(owned('A')).toHaveLength(4);
+  });
+
+  it('a group beside other events: only the group is all or none', () => {
+    fund('A', buyPrice(pieces[0])!);
+    const r = post('A', [
+      { id: 'x1', type: 'tally', data: { date: D, counts: { 'fish:koi': 99 } } },
+      ...buys('g1', pieces.slice(0, 2)),
+      { id: 'x2', type: 'buy', data: { item: pieces[0], price: buyPrice(pieces[0])!, d: D } }
+    ]);
+    expect(r.map((x) => x.ok)).toEqual([true, false, false, true]);
+    expect(r[2].detail).toBe('wallet short');
+    expect(owned('A')).toEqual([pieces[0]]);
+  });
+});

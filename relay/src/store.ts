@@ -164,6 +164,11 @@ export interface ImportResult { metrics: number; events: number; uploads: number
 export interface HeldRow { person: string; date: string; metric: string; value: number; at: string; last: string; n: number; promoted: string | null }
 
 type Reply = Rec & { ok: boolean };
+
+/** An event's `group` in an `events` batch (store.ts group), or null. */
+const groupOf = (e: unknown): string | null => (isRec(e) && isId(e.group) ? e.group : null);
+/** Thrown to roll a group's transaction back (store.ts group). */
+class GroupRefused extends Error {}
 /** A dump's rows: the held values only when there are some. */
 type DumpRows = Required<Omit<ImportRows, 'held'>> & Pick<ImportRows, 'held'>;
 
@@ -607,34 +612,80 @@ export class StoreCore {
   }
 
   /**
-   * `events: [{id, type, data}, …]` (≤ EVENTS_MAX), kept in order, each as `event` would: `{ok, results}`, one per
-   * event (`{id, ok, duplicate?, at?}` or `{id, ok: false, error, detail?}`), `at` the stored row's. One notice for
-   * the lot. An event whose write throws is `unavailable` alone (nothing of it kept), never the batch.
+   * `events: [{id, type, data, group?}, …]` (≤ EVENTS_MAX), kept in order, each as `event` would: `{ok, results}`, one
+   * per event (`{id, ok, duplicate?, at?}` or `{id, ok: false, error, detail?}`), `at` the stored row's. One notice for
+   * the lot. An event whose write throws is `unavailable` alone (nothing of it kept), never the batch. A `group` (the
+   * shop's ぜんぶ: one id, its events side by side) is all or none, in one transaction (`group`).
    */
   private events(me: Who, body: Rec): Reply {
     const list = body.events;
     if (!Array.isArray(list) || !list.length || list.length > EVENTS_MAX) return fail('bad_request');
     let last: string | null = null;
-    const results = list.map((e) => {
-      let r: Reply & { at?: string };
-      try {
-        r = isRec(e) ? this.keep(me, e) : fail('bad_request');
-      } catch (err) {
-        // that event alone (its transaction rolled back, its id still free for a retry): the others go on, and the
-        // notice tells of what committed. Its class only (a message can quote the body).
-        this.exc = errName(err);
-        console.error('store', this.exc, scrubMsg(err instanceof Error ? err.message : ''));
-        r = fail('unavailable');
+    const results: (Reply & { id: string | null })[] = [];
+    for (let i = 0; i < list.length; ) {
+      const g = groupOf(list[i]);
+      let j = i + 1;
+      while (g && j < list.length && groupOf(list[j]) === g) j++;
+      const part = list.slice(i, j);
+      const rs = g ? this.group(me, part) : [this.keepOne(me, part[0])];
+      for (const [k, r] of rs.entries()) {
+        if (r.ok && r.at) last = r.at;
+        const e = part[k];
+        const { at, ...rest } = r;
+        results.push({ id: isRec(e) && typeof e.id === 'string' ? e.id : null, ...rest, ...(at ? { at } : {}) });
       }
-      if (r.ok && r.at) last = r.at;
-      return { id: isRec(e) && typeof e.id === 'string' ? e.id : null, ...r };
-    });
+      i = j;
+    }
     if (last) this.io.notify({ what: 'event', who: me, at: last, rev: this.rev() });
     return { ok: true, results };
   }
 
+  /** One event of a batch kept as `keep` would; a write that throws is `unavailable` (its transaction rolled back, its
+   *  id still free for a retry). Its class only is logged (a message can quote the body). */
+  private keepOne(me: Who, e: unknown, tx?: <R>(fn: () => R) => R): Reply & { at?: string } {
+    try {
+      return isRec(e) ? this.keep(me, e, tx) : fail('bad_request');
+    } catch (err) {
+      this.exc = errName(err);
+      console.error('store', this.exc, scrubMsg(err instanceof Error ? err.message : ''));
+      return fail('unavailable');
+    }
+  }
+
+  /**
+   * A group's events (the shop's ぜんぶ かう: one `buy` a piece) kept all or none, in one transaction: a retry of a
+   * group kept is each a duplicate; a buy of a piece the sender has already (their other phone got there first) is
+   * refused `owned` alone and costs nothing, the rest kept; any other refusal (`wallet short`: their かいがら spent
+   * meanwhile) or a write that throws rolls the lot back, that one answered as it was and the others `group`
+   * (`unavailable` for a throw: the phone sends them all again).
+   */
+  private group(me: Who, part: readonly unknown[]): (Reply & { at?: string })[] {
+    const out: (Reply & { at?: string })[] = [];
+    let bad: { i: number; r: Reply } | null = null;
+    try {
+      this.io.tx(() => {
+        for (const [i, e] of part.entries()) {
+          const r = isRec(e) ? this.keep(me, e, (fn) => fn()) : fail('bad_request');
+          if (!r.ok && !(r.error === 'bad_request' && r.detail === 'owned')) {
+            bad = { i, r };
+            throw new GroupRefused();
+          }
+          out.push(r);
+        }
+      });
+    } catch (err) {
+      if (!(err instanceof GroupRefused)) {
+        this.exc = errName(err);
+        console.error('store', this.exc, scrubMsg(err instanceof Error ? err.message : ''));
+        return part.map(() => fail('unavailable'));
+      }
+    }
+    const b = bad as { i: number; r: Reply } | null;
+    return b ? part.map((_, i) => (i === b.i ? b.r : fail('bad_request', 'group'))) : out;
+  }
+
   /** One event checked and kept (or acknowledged): the reply, with the stored row's `at` when one was written. */
-  private keep(me: Who, body: Rec): Reply & { at?: string } {
+  private keep(me: Who, body: Rec, tx: <R>(fn: () => R) => R = (fn) => this.io.tx(fn)): Reply & { at?: string } {
     const id = body.id;
     if (!isId(id)) return fail('bad_request');
     // a retry of an event already kept is acknowledged before any check: its time rules may have lapsed since (a buy
@@ -663,7 +714,7 @@ export class StoreCore {
     const subject = eventSubject(body.type, data, me);
     if (!subject || !validEventData(body.type, data, this.io.now())) return fail('bad_request');
     const type = body.type;
-    return this.io.tx((): Reply & { at?: string } => {
+    return tx((): Reply & { at?: string } => {
       if (this.known(id)) return { ok: true, duplicate: true };
       if (type === 'spend_void') {
         const v = this.voidTarget(data.spendId as string);
