@@ -20,7 +20,7 @@ const asVillager = (page: Page) => page.addInitScript(() => {
 });
 test.beforeEach(({ page }) => asVillager(page));
 
-type W3 = { loaded(): boolean; client(x: number, z: number, lift?: number): [number, number]; where(id: string): { x: number; y: number; z: number; hidden: boolean } | null };
+type W3 = { loaded(): boolean; modelAt(id: string, lift?: number): [number, number] | null; where(id: string): { x: number; y: number; z: number; hidden: boolean } | null };
 type V3 = { state(slot: string): string | null; tool(slot: string): string | null; tip(slot: string): number[] | null };
 const v3 = <R,>(page: Page, fn: (v: V3) => R) => page.evaluate(`(${fn.toString()})(window.__villagers3)`) as Promise<R>;
 const SHOTS = process.env.SHOTS;
@@ -33,11 +33,8 @@ const drawnAt = (page: Page, sel: string, prefix: string) => page.evaluate(([sel
   if (!el) return null;
   const r = el.getBoundingClientRect();
   for (let n = 0; n < 200; n++) {
-    const id = prefix.endsWith('-') ? `${prefix}${n}` : prefix, p = w.where(id);
-    if (p && !p.hidden) {
-      const [cx, cy] = w.client(p.x, -p.z, p.y);
-      return { dom: [r.left + r.width / 2, r.top + r.height / 2], model: [cx, cy] };
-    }
+    const model = w.modelAt(prefix.endsWith('-') ? `${prefix}${n}` : prefix);
+    if (model) return { dom: [r.left + r.width / 2, r.top + r.height / 2], model };
     if (!prefix.endsWith('-')) break;
   }
   return null;

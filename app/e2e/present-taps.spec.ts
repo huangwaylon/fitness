@@ -47,14 +47,11 @@ const pickedBy = (page: Page, id: string) =>
     const d = JSON.parse(localStorage.getItem('island-demo.world.A') ?? '{"events":[]}') as { events: Ev[] };
     return d.events.filter((e) => e.kind === 'pick' && e.id === id).map((e) => `${e.who}:${e.what.split(':')[0]}`);
   }, id);
-/** Where a present is drawn: its 3D model's middle (`gift-<uid>`, through the camera's projection), else its art's.
- *  (`client`'s lift is above the ground there: `where`'s y is that ground's height, 43 on the museum's tier, and with it
- *  added the finger came down 43 u over the box, 0.5 px above its tap area: "pbunder opened" red in the full tier) */
+/** Where a present is drawn: its 3D model's middle (`gift-<uid>`, its box's middle 12 u over its base), else its art's. */
 async function giftPoint(page: Page, uid: string): Promise<[number, number]> {
   const at = () => page.evaluate((uid) => {
-    const w = (window as unknown as { __world3d?: { where(id: string): { x: number; y: number; z: number; hidden: boolean } | null; client(x: number, z: number, lift?: number): [number, number] } }).__world3d;
-    const p = w?.where(`gift-${uid}`);
-    if (p && !p.hidden) return w!.client(p.x, -p.z, 12);
+    const p = (window as unknown as { __world3d?: { modelAt(id: string, lift?: number): [number, number] | null } }).__world3d?.modelAt(`gift-${uid}`, 12);
+    if (p) return p;
     const r = document.querySelector(`[data-find="present"][data-uid="${uid}"] .official`)?.getBoundingClientRect();
     return r && r.width ? [r.left + r.width / 2, r.top + r.height / 2] as [number, number] : null;
   }, uid);

@@ -200,7 +200,7 @@ test('a bug fades in where it comes, moves smoothly, and fades out where it goes
   expect(shown[0].scale).toBeLessThan(0.97); // (in step with its fade, as the fish's)
   expect(maxStep(s)).toBeLessThan(12);
   // netted (a tap on it where it's drawn): gone from the island, its model fades out where it was
-  const [bx, by] = await w3(page, new Function('w', `const q = w.where('${id}'); return w.client(q.x, -q.z, q.y);`) as (w: unknown) => number[]);
+  const [bx, by] = await w3(page, new Function('w', `return w.modelAt('${id}');`) as (w: unknown) => number[]);
   await page.mouse.click(bx, by);
   const out = await sample(page, id, 2500);
   const going = out.filter((p): p is NonNullable<Sample> => !!p);

@@ -644,10 +644,17 @@
       if (e.who !== me) eng.face(e.who, centreOf(p));
     }));
     const offDoor = provideDoor(() => (eng?.inView(0, 0, HALF - 2) ? (([x, y]) => ({ x, y }))(eng.client(0, 0, HALF - 2)) : null));
+    const fail = () => ((failed = true), doorReady());
     void import('./engine.ts').then(
       ({ createTent }) => {
         if (!alive || !canvas) return;
-        const e = createTent(canvas);
+        // (a WebGL context lost as it's made throws here: the room's failure, not a white room for good)
+        let e: ReturnType<typeof createTent>;
+        try {
+          e = createTent(canvas);
+        } catch {
+          return fail();
+        }
         e.resize(insets());
         e.night(nightOf(theme.tod));
         e.villager(me, lookOf(me));
@@ -668,10 +675,7 @@
         hhaTimer = setTimeout(() => alive && !editing && rateOnEntry(), HHA_AFTER_MS);
         hooks();
       },
-      () => {
-        failed = true;
-        doorReady();
-      }
+      fail
     );
     const ro = new ResizeObserver(() => eng?.resize(insets()));
     if (canvas) ro.observe(canvas);

@@ -163,12 +163,13 @@ test('water bugs: a pondskater skates on fresh water on a summer day; a tap nets
   await page.waitForTimeout(800);
   // its 3D model (taps go by the model's spot, not the sprite's box): the world point and where it's drawn
   const model = () => page.evaluate(() => {
-    type W3 = { where(id: string): { x: number; y: number; z: number; hidden?: boolean } | null; client(x: number, y: number, z: number): [number, number] };
+    type W3 = { where(id: string): { x: number; y: number; z: number; hidden?: boolean } | null; modelAt(id: string, lift?: number): [number, number] | null };
     const w = (window as unknown as { __world3d: W3 }).__world3d;
     // (bug-<n>: n counts every critter that came, the waters' shadows too)
     for (let n = 0; n < 1000; n++) {
       const p = w.where(`bug-${n}`);
-      if (p && !p.hidden) return { x: p.x, z: -p.z, at: w.client(p.x, -p.z, p.y) };
+      const at = w.modelAt(`bug-${n}`);
+      if (p && at) return { x: p.x, z: -p.z, at };
     }
     return null;
   });
