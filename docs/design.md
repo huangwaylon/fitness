@@ -929,7 +929,8 @@ stands just in front, facing out, on every phone. The homes' rooms are the same 
   walls between the camera and the room are cut away (Happy Home Paradise's look). Or at my villager's eyes:
   [First person](#first-person).
 - **The light:** warm interior light, one small shadow map (1024², redrawn only when a piece changes); at night dimmer
-  and warmer, the lamps' emissive on and up to four point lights at the lamps.
+  and warmer, the lamps' emissive on and up to four point lights at the lamps, each where its lamp glows (items.json
+  `e`: NH's light locator, else its emissive part's lit middle; turned with the piece: grid.ts `toRoom`).
 - **The villagers** are NH's 3D models where they have one (villager3d/: walking, sitting, lying, a hop, blinks), else
   billboards of their official renders, each with a soft round shadow. A tap on the floor walks mine there (A* on half
   tiles round the furniture, rugs walkable; 45 units a second); a tap on a villager hops it; a tap on a piece acts in
