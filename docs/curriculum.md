@@ -379,7 +379,7 @@ lessons:
 - **25 listening files**, all `listened`: tiles (232: drafts, 65 derived from voiced bank items, 30 for the B2 features, the units' おと), calls (34), たちぎき (30), すうじ ラッシュ (240 customers), しずえの ニュース (30 bulletins and the weather tail).
 - **音の へんしん:** 180 phrases at level 8, 15 phenomena of 12 ("Connected speech").
 - **3 bedtime serials:** st-johnny, st-cafe and st-tokyo (トウキョウ ひとりぐらし: an American newcomer's first month in Tokyo, 7 chapters of ~4 min, narrator us-f3, recycling the units' phrases).
-- **144 packs**, ~111 MiB (games 89.3, stories 21.4).
+- **149 packs**, ~116 MiB (games 94.2, stories 21.4).
 - Every level and unit item has `ctx`, `cja` and `why` (音の へんしん's phrases `ctx`, `cja` and `note`).
 - **Stays outside units:** the はまべ island lines, the アナウンス pack and ほし's news, lectures and talks (modes and tracks), the number templates.
 

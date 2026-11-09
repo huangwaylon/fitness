@@ -7,7 +7,15 @@
 const SPELLED: ReadonlySet<string> = new Set(['gonna', 'wanna', 'gotta', 'lemme', 'gimme', 'kinda', 'sorta', 'outta', 'lotsa', 'lotta', 'coupla', 'dunno',
   'gotcha', 'whatcha', 'betcha', 'getcha', 'letcha', 'didja', 'wouldja', 'couldja', 'whaddaya', 'doncha', 'woulda', 'shoulda', "y'know", "'em"]);
 
-const norm = (w: string) => w.toLowerCase().replace(/[’]/g, "'").replace(/[^a-z0-9']/g, '');
+/** whisper's other spellings of a few (waddaya, y'know as yknow), and its digits for small numbers. */
+const SAME: Readonly<Record<string, string>> = {
+  waddaya: 'whaddaya', whadaya: 'whaddaya', "wha'daya": 'whaddaya', wouldcha: 'wouldja', couldcha: 'couldja', whaddya: 'whaddaya', wadaya: 'whaddaya', whadya: 'whaddaya', yknow: "y'know", duno: 'dunno',
+  ...Object.fromEntries(['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'].map((w, n) => [String(n), w]))
+};
+const norm = (w: string) => {
+  const x = w.toLowerCase().replace(/[’]/g, "'").replace(/[^a-z0-9']/g, '');
+  return SAME[x] ?? x;
+};
 const words = (s: string) => s.split(/[\s,.?!;:]+/).map(norm).filter(Boolean);
 
 /** The whisper-written reduced spellings in a phrase's `red` ("I'm gonna" → gonna). */

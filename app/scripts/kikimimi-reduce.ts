@@ -1,7 +1,7 @@
 // 音の へんしん: is each phrase's change actually heard? (docs/curriculum.md "Connected speech"). The audio gate makes sure
 // whisper hears every word of a clip (reductions normalised: "gonna" passes for "going to"); this checks the other way
-// round. whisper-cli (large-v3-turbo) hears each voiced phrase's natural take `<id>` prompted with the reduced spellings
-// (so it writes "gonna", "lemme", "outta" when that's what's said) and its careful take `<id>-c` unprompted. A phrase
+// round. whisper-cli (large-v3-turbo) hears each voiced phrase's natural take `<id>` prompted with the reduced spellings,
+// two ways (so it writes "gonna", "lemme", "outta" when that's what's said) and its careful take `<id>-c` unprompted. A phrase
 // passes when its careful take is heard in full (the full form's words, in order), and, where its spelling as said is one
 // whisper writes (games/henshin/reduce.ts SPELLED: gonna, wanna, gotta, lemme, kinda, dunno, gotcha, whaddaya…), its
 // natural take is heard in that spelling. A flap, a dropped t or h, a link or a weak vowel whisper spells as written
@@ -11,7 +11,7 @@
 // content/henshin.test.ts holds every voiced phrase to a pass at its clips' hashes. Silent: it never plays a sound.
 //   node scripts/kikimimi-reduce.ts [--force] [--only <regex>]       (npm run kikimimi:reduce; after audio:kikimimi)
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { registerHooks } from 'node:module';
@@ -30,8 +30,12 @@ const CLIPS = JSON.parse(readFileSync(join(APP, 'src/lib/kikimimi/clips.json'), 
 const force = process.argv.includes('--force');
 const onlyAt = process.argv.indexOf('--only');
 const only = onlyAt > 0 ? new RegExp(process.argv[onlyAt + 1]) : null;
-/** whisper's prompt: the reduced spellings it should keep as said. */
-const PROMPT = "Yeah, I'm gonna, wanna, gotta, hafta, hasta, lemme, gimme, kinda, sorta, outta, lotsa, coupla, dunno, gotcha, whatcha, didja, wouldja, whaddaya, 'em, y'know.";
+/** whisper's prompts: the reduced spellings it should keep as said, as speech and as a list (each hears some takes'
+ *  spellings the other writes in full: either is the change heard). */
+const PROMPTS = [
+  "Um, like, I dunno, y'know. I'm gonna, I wanna, I gotta go. Lemme see, gimme a sec. It's kinda, sorta outta here. Whaddaya, whatcha, didja, gotcha, tell 'em.",
+  "Yeah, I'm gonna, wanna, gotta, hafta, hasta, lemme, gimme, kinda, sorta, outta, lotsa, coupla, dunno, gotcha, whatcha, didja, wouldja, whaddaya, 'em, y'know."
+];
 
 type Row = [nat: string, care: string, pass: 0 | 1, spelled: 0 | 1, heard: string, careful: string];
 const out: Record<string, Row> = existsSync(OUT) ? JSON.parse(readFileSync(OUT, 'utf8')) : {};
@@ -54,15 +58,21 @@ if (todo.length) {
       for (let k = 0; k < files.length; k += 50)
         execFileSync('whisper-cli', ['-m', MODEL, '-l', 'en', '-np', ...prompt, '-oj', ...files.slice(k, k + 50).flatMap((f) => ['-f', f])], { stdio: ['ignore', 'ignore', 'ignore'] });
     };
-    hear(todo.map((it) => wav(it.id)), ['--prompt', PROMPT]);
+    // each prompt's hearing of the natural takes into a copy of its own (whisper-cli writes <file>.json beside it)
+    const nat = (it: { id: string }, k: number) => join(tmp, `${it.id}~${k}.wav`);
+    PROMPTS.forEach((p, k) => {
+      for (const it of todo) copyFileSync(wav(it.id), nat(it, k));
+      hear(todo.map((it) => nat(it, k)), ['--prompt', p]);
+    });
     hear(todo.map((it) => wav(`${it.id}-c`)), []);
-    const heardOf = (id: string): Heard[] =>
-      (JSON.parse(readFileSync(`${wav(id)}.json`, 'utf8')) as { transcription: { offsets: { from: number; to: number }; text: string }[] }).transcription
+    const heardOf = (f: string): Heard[] =>
+      (JSON.parse(readFileSync(`${f}.json`, 'utf8')) as { transcription: { offsets: { from: number; to: number }; text: string }[] }).transcription
         .map((s) => ({ w: s.text.trim(), from: s.offsets.from / 1000, to: s.offsets.to / 1000 })).filter((x) => norm(x.w).length > 0);
     let passed = 0;
     for (const it of todo) {
-      const natText = heardOf(it.id).map((x) => x.w).join(' ').trim(), careText = heardOf(`${it.id}-c`).map((x) => x.w).join(' ').trim();
-      const spellable = spellingsOf(it.hs!.red).length > 0, spelled = spelledIn(it.hs!.red, natText);
+      const text = (f: string) => heardOf(f).map((x) => x.w).join(' ').trim();
+      const nats = PROMPTS.map((_, k) => text(nat(it, k))), careText = text(wav(`${it.id}-c`));
+      const spellable = spellingsOf(it.hs!.red).length > 0, hit = nats.find((t) => spelledIn(it.hs!.red, t)), spelled = !!hit, natText = hit ?? nats[0];
       const full = fullIn(it.hs!.full ?? it.focus!, careText);
       const pass = full && (!spellable || spelled);
       if (pass) passed++;

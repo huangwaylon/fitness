@@ -212,7 +212,8 @@ const PINNED: Readonly<Record<string, number>> = {
   'pr-vest-1': 5000, 'pr-vest-2': 3000, 'pr-vote-1': 1238, 'pr-vote-2': 4000, 'pr-walk-1': 1235, 'pr-walk-2': 2000,
   'pr-wing-2': 1237,
   // 音の へんしん (2026-11-09): careful takes heard in full (unprompted whisper), natural ones heard as said
-  'hs-gotta-bus-here-c': 2000
+  'hs-gotta-bus-here-c': 2000, 'hs-lemme-give-hand': 2000, 'hs-lemme-let-think': 2000, 'hs-lemme-give-ride': 2000, 'hs-kinda-what-music': 4000,
+  'hs-kinda-out-time': 5000, 'hs-dunno-if-open': 2000, 'hs-dunno-what-mean': 2000, 'hs-chain-know-mean': 9000
 };
 const seedOf = (id: string): number => (opt('--seed') ? SEED : PINNED[id] ?? SEED);
 const only = opt('--only') ? new RegExp(opt('--only')!) : null;
