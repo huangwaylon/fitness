@@ -166,6 +166,21 @@ describe('sending', () => {
     expect(sent.length).toBe(2);
   });
 
+  it('offline, the unacked batches past three fold the oldest two into one: none of their events dropped', async () => {
+    reply = () => null;
+    for (let i = 0; i < 6; i++) {
+      log('app.show', { awayS: i });
+      await flushLog();
+      now += 120_000;
+    }
+    reply = () => ({ ok: true });
+    sent = [];
+    while (!(await flushLog())) now += 120_000;
+    const shown = evs().filter((e) => e.e === 'app.show').map((e) => (e.d as { awayS: number }).awayS);
+    expect(shown).toEqual([0, 1, 2, 3, 4, 5]);
+    expect(evs().some((e) => e.e === 'log.drop')).toBe(false);
+  });
+
   it('persists when leaving and sends one batch with keepalive; a reload sends what was left, as its old session', async () => {
     reply = () => null; // the page dies before the reply
     log('app.show', { awayS: 1 });

@@ -276,9 +276,18 @@ function cut(): void {
   }
   if (!es.length) return;
   st.pending.push({ b: logId(), s: st.sid, build: st.build, os: st.os, es });
+  // past PENDING_MAX (hidden or offline: a keepalive sends one at a time) the oldest two go as one when they fit, a
+  // new id (the relay may have taken the first); else the oldest is dropped (2026-11-09: 33 dropped a day)
   while (st.pending.length > PENDING_MAX) {
-    st.pending.shift();
-    st.dropped.pending++;
+    const [a, b] = st.pending;
+    const bytes = (x: typeof a) => x.es.reduce((n, e) => n + JSON.stringify(e).length + 1, 0);
+    if (a.s === b.s && a.build === b.build && a.os === b.os && a.es.length + b.es.length <= LOG_BATCH_MAX && 200 + bytes(a) + bytes(b) <= LOG_BODY_MAX) {
+      st.pending.splice(0, 2, { ...a, b: logId(), es: [...a.es, ...b.es] });
+      count('act:log.fold');
+    } else {
+      st.pending.shift();
+      st.dropped.pending++;
+    }
   }
   st.dirty = true;
 }
