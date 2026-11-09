@@ -348,9 +348,9 @@
 
 {#snippet ownView(view: NonNullable<typeof own>)}
   <!-- a lane's own view in this phase's place (its lobby, its round, its results) -->
-  {#await view then { default: View }}
+  {#key view}<Lazy load={view}>{#snippet children(View)}
     <View {game} onagain={act.again} onmissed={act.replayMissed} ondone={act.done} onhub={act.toHub} />
-  {/await}
+  {/snippet}</Lazy>{/key}
 {/snippet}
 
 <Sheet bind:open label={t('kiki.title')} variant="pop" onclose={closed} ondismiss={dismiss} timed="kikimimi">

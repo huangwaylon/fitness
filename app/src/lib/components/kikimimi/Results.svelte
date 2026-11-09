@@ -16,6 +16,7 @@
   import { canSlow, type QuizGame } from './game.svelte.ts';
   import { isCoop } from './listenView.ts';
   import { PIC_JA, isDialogue, jaLines, splitFocus, type Item } from '#lib/kikimimi/bank.ts';
+  import Lazy from '#lib/components/ui/Lazy.svelte';
   import Transcript from './Transcript.svelte';
   import LadderSteps from './LadderSteps.svelte';
   import LessonDots from './path/LessonDots.svelte';
@@ -124,9 +125,9 @@
         {:else}<p class="soon">{t('kiki.stamp.notYet')}</p>{/if}
         <p class="mine" data-kiki-tally-mine={own}>{t('kiki.stamp.mine', { k: own, n: recorded.r.length })}{#if recorded.tm !== undefined} · {t('kiki.stamp.team', { k: recorded.tm })}{/if}</p>
         {#if letterIn}
-          {#await Promise.all([import('./path/VillagerLetter.svelte'), loadLetters()]) then [{ default: VillagerLetter }, texts]}
+          <Lazy load={() => Promise.all([import('./path/VillagerLetter.svelte'), loadLetters()]).then(([m, texts]) => ({ default: { VillagerLetter: m.default, texts } }))}>{#snippet children({ VillagerLetter, texts })}
             {#if texts[ls.unit.id]}<div class="mail"><VillagerLetter letter={{ unit: ls.unit.id, host: ls.unit.host, ...texts[ls.unit.id] }} open fresh /></div>{/if}
-          {/await}
+          {/snippet}</Lazy>
         {/if}
       {:else if nextLesson}
         <button type="button" class="btn small nextl" data-kiki-next-lesson={nextLesson} data-sfx="confirm" onclick={() => onnext?.(nextLesson!)}>
@@ -222,7 +223,7 @@
               {#snippet summary()}{#if kind === 'tile'}<span class="en" lang="en">{r.it.en}</span>{:else}<span class="en">{r.it.ctx ?? r.it.en}</span>{/if}{/snippet}
               {#snippet hear()}{#if hearIt}<HearButton data-kiki-hear={r.i} onclick={() => game.hear(hearIt)} />{/if}{/snippet}
               {#if call}
-                {#await Promise.all([import('./call/CallLog.svelte'), import('#lib/i18n/kiki-call.ts')]) then [{ default: CallLog }]}<CallLog info={call.info} />{/await}
+                <Lazy load={() => Promise.all([import('./call/CallLog.svelte'), import('#lib/i18n/kiki-call.ts')]).then(([m]) => m)}>{#snippet children(CallLog)}<CallLog info={call.info} />{/snippet}</Lazy>
               {:else if dlg}
                 <Transcript it={dlg} talk={game.talk?.i === -1 && game.talk.at === dlg.id ? game.talk.k : -1} from={game.talk?.from ?? null} clock={() => game.clock()} />
               {:else}

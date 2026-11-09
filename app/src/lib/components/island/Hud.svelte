@@ -9,6 +9,7 @@
   import { onMount, untrack } from 'svelte';
   import { replaceState } from '$app/navigation';
   import { page } from '$app/state';
+  import Lazy from '../ui/Lazy.svelte';
   import SyncPill from '../ui/SyncPill.svelte';
   import PreviewPill from './PreviewPill.svelte';
   import HudHealth from './HudHealth.svelte';
@@ -73,14 +74,15 @@
   <PreviewPill />
 </div>
 
+<!-- each sheet through <Lazy> (a failed chunk: もういちど over the island), its loader quiet: <Lazy> does the stale-build reload -->
 {#if opened}
-  {#await loadPanel() then { default: IslandPanel }}<IslandPanel bind:open={panelOpen} />{/await}
+  <Lazy floating load={() => loadPanel(true)}>{#snippet children(IslandPanel)}<IslandPanel bind:open={panelOpen} />{/snippet}</Lazy>
 {/if}
 {#if zukanMounted}
-  {#await loadZukan() then { default: ZukanSheet }}<ZukanSheet bind:open={zukanOpen} onback={() => (settingsResume = settingsOpen = true)} />{/await}
+  <Lazy floating load={() => loadZukan(true)}>{#snippet children(ZukanSheet)}<ZukanSheet bind:open={zukanOpen} onback={() => (settingsResume = settingsOpen = true)} />{/snippet}</Lazy>
 {/if}
 {#if settingsMounted}
-  {#await loadSettings() then { default: SettingsSheet }}<SettingsSheet bind:open={settingsOpen} bind:resume={settingsResume} onzukan={() => { zukanMounted = true; zukanOpen = true; }} />{/await}
+  <Lazy floating load={() => loadSettings(true)}>{#snippet children(SettingsSheet)}<SettingsSheet bind:open={settingsOpen} bind:resume={settingsResume} onzukan={() => { zukanMounted = true; zukanOpen = true; }} />{/snippet}</Lazy>
 {/if}
 <!-- 旅行's and 結婚式's sheets, lazySheets from their first opening (the menu's pills) -->
 {#if trips.Sheet}<trips.Sheet bind:open={trips.open} />{/if}
@@ -88,7 +90,7 @@
 <!-- トレイル's, opened by the menu's pill or a hike card (over りょこう's) -->
 {#if hiking.Sheet}<hiking.Sheet bind:open={hiking.open} />{/if}
 {#if healthMounted}
-  {#await loadHealth() then { default: HealthSheet }}<HealthSheet bind:open={healthOpen} />{/await}
+  <Lazy floating load={() => loadHealth(true)}>{#snippet children(HealthSheet)}<HealthSheet bind:open={healthOpen} />{/snippet}</Lazy>
 {/if}
 
 <style>
