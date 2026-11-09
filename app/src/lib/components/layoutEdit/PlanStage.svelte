@@ -2,7 +2,7 @@
   // The island top-down at a phone's size (plan.ts's drawing), a stage for the island's もようがえ (IslandEdit) where
   // there's no 3D: the editor's phone view with `?preview=0` (the e2e: CI draws WebGL in software). The camera's z at
   // the screen's middle; one finger drags it along the island.
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import type { Layout } from '#lib/layout/model.ts';
   import { GRID, TILE } from '#lib/layout/grid.ts';
   import { draw, toScreen, toWorld, type View } from '../editor/plan.ts';
@@ -31,7 +31,11 @@
   const movers = new Set<() => void>();
   $effect(() => {
     void view;
-    for (const f of movers) f();
+    // (untracked: a mover reads and writes its own state, IslandEdit's `rev++`; tracked here, that looped till Svelte
+    // stopped it, effect_update_depth_exceeded, and the editor's phone view never came up)
+    untrack(() => {
+      for (const f of movers) f();
+    });
   });
   onMount(() => {
     const ro = new ResizeObserver(() => {
