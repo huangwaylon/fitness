@@ -166,6 +166,11 @@ above (the tent shows `tent.failed`). Check them on the flake hunt.
    anchor in the docs resolves, every backticked repo path exists, every `docs/….md` "Heading" or §Section a comment
    cites is there; rename a heading and repoint its citations in the same push). `-- --quick`:
    vitest on the changes since origin/main only; `-- --build`: the build and its budgets too. No e2e.
+   **The pre-push hook runs it for you** (`.githooks/pre-push`, set up by app's `npm ci` / `npm install`: its
+   `prepare` sets `core.hooksPath .githooks`, shared by every worktree; once by hand: `git config core.hooksPath
+   .githooks`): a push that changes `app/` runs `npm run verify` on the working tree and is refused when it's red (a
+   pipe like `| tail` once hid its exit code: red commits pushed). Emergency bypass: `git push --no-verify` (or
+   `SKIP_VERIFY=1 git push`), then fix forward.
 2. `npm run e2e:ci-like -- --changed` (or `-- e2e/the.spec.ts --repeat 5`): the logic tier as CI runs it (a fresh build if `src/` is newer,
    software GL, CI's workers, `CI=1`, a free port), each test 5×. For a drawn (`@render`/`@smoke`) test add
    `--tier render`; `--tier full` draws everything; `--workers 6` loads the machine as a busy runner is.

@@ -19,7 +19,7 @@
     "e2e:flakes": "node scripts/e2e-flakes.ts",
     "ios:check": "node scripts/ios-sim-check.ts",
     "ios:indoor": "node scripts/ios-sim-indoor.ts",
-    "prepare": "svelte-kit sync || true",
+    "prepare": "(svelte-kit sync || true) && (git config core.hooksPath .githooks 2>/dev/null || true)",
     "assets:fetch": "node scripts/fetch-assets.ts",
     "catalog:build": "node scripts/catalog.ts",
     "shop:prices": "node scripts/shop-prices.ts",
