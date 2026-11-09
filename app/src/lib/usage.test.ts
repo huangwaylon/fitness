@@ -209,3 +209,14 @@ describe('official art (static/art/manifest.json)', () => {
     expect(named.filter((k) => !keys.includes(k) && !(k in MODELS.keys))).toEqual([]);
   });
 });
+
+// A prop read once for a starting value says so (`untrack`, or a writable $derived that follows it), not by silencing
+// Svelte's warning: the count only goes down (review 4: 47; the 3D rooms' and the island scene's are what's left).
+const IGNORES_MAX = 15;
+describe('svelte-ignore state_referenced_locally (a ratchet)', () => {
+  it(`at most ${IGNORES_MAX}`, () => {
+    const n = files(join(SRC, 'lib')).concat(files(join(SRC, 'routes'))).filter((f) => f.endsWith('.svelte'))
+      .reduce((s, f) => s + (readFileSync(f, 'utf8').match(/svelte-ignore state_referenced_locally/g)?.length ?? 0), 0);
+    expect(n).toBeLessThanOrEqual(IGNORES_MAX);
+  });
+});

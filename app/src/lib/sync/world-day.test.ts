@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { RoomCore, type Meta } from '../../../../relay/src/room.ts';
 import { dayStart, parseServer, tokyoDay, type Intent, type Relayed, type Who } from '../contract/live-protocol.ts';
-import { apply, applyRow, canonical, emptyDay, hash, lying, lyingAt, rowOf, taken, takenIds, caught, wishesFor, type DayEvent, type WorldDay } from './world-day.ts';
+import { apply, applyRow, canonical, emptyDay, hash, lying, lyingAt, rowOf, taken, takenIds, caught, type DayEvent, type WorldDay } from './world-day.ts';
 
 const KEY_A = 'a1'.repeat(16);
 const KEY_B = 'b2'.repeat(16);
@@ -127,7 +127,7 @@ describe('the shared day: two phones on the relay', () => {
     expect(takenIds(A.day)).toEqual(new Set(['s1000']));
     expect(caught(B.day, 'sea:100')?.who).toBe('B');
     expect(lying(B.day).map((p) => p.id)).toEqual(['p1']);
-    expect(wishesFor(B.day, '2026-11-02')).toBe(1);
+    expect(Object.values(B.day.wishes['2026-11-02'] ?? {}).reduce((s, n) => s + (n ?? 0), 0)).toBe(1);
     expect(A.day.walks).toMatchObject({ A: { to: [100, 500] }, B: { to: [195, 900] } });
   });
 

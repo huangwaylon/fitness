@@ -8,12 +8,13 @@ import { parseTokens, privateKeys } from './tokens.ts';
 import { okinawa } from './trips/okinawa.ts';
 import { seattle } from './trips/seattle.ts';
 import { nz } from './trips/nz.ts';
-import { TRIP_IDS, loadTrip } from './trips/index.ts';
+import { loadTrip } from './trips/index.ts';
 import { TRIP_META } from './trips/meta.ts';
 import { isIcon } from '../components/ui/Icon.svelte';
 import { catIcon } from '../components/travel/packView.ts';
 
 const TRIPS: Record<TripId, Trip> = { okinawa, seattle, nz };
+const TRIP_IDS = Object.keys(TRIPS) as TripId[];
 const STATIC = join(import.meta.dirname, '..', '..', '..', 'static');
 
 /** The private values each trip note carries (the keys only: the values live on the relay). */

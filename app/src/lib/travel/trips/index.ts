@@ -1,8 +1,6 @@
 // The three guides (docs/travel.md "Content"): each its own module, loaded only with the りょこう sheet.
 import type { Trip, TripId } from '../types.ts';
 
-export const TRIP_IDS: readonly TripId[] = ['okinawa', 'seattle', 'nz'];
-
 /** A guide's data (its own chunk). */
 export function loadTrip(id: TripId): Promise<Trip> {
   switch (id) {

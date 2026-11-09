@@ -56,8 +56,7 @@
   });
 
   // Crossfade: keep the shown pose until the next one is decoded, then fade (opacity only).
-  // svelte-ignore state_referenced_locally
-  let shown = $state<HostPose>(resolve(pose));
+  let shown = $state<HostPose>(untrack(() => resolve(pose)));
   let prev = $state<HostPose | null>(null);
   // A→B→A within one decode must end on A: each run gets an `alive` token that the next run (or
   // unmount) revokes, and the clear-prev timer is cancelled with it.

@@ -200,8 +200,6 @@ export const lyingAt = (d: WorldDay, t: number): Put[] =>
       return p.t <= t && !(gone && gone.t <= t);
     })
     .sort((a, b) => a.t - b.t);
-/** How many wishes, everyone's, bring a fragment on the morning of `date`. */
-export const wishesFor = (d: WorldDay, date: string): number => Object.values(d.wishes[date] ?? {}).reduce((s, n) => s + (n ?? 0), 0);
 
 // ---------- the sheet's day row (contract/island.ts) ----------
 

@@ -4,6 +4,7 @@
   // says how many tasks wear it; a field to add one), 削除したやること (each with 戻す: a task, or a checklist item
   // removed on its own; one deleted with its task comes back with it) and 完全に削除 (for good, after an action
   // sheet's ask). A field saves as it's left (its change), each its own wconf row.
+  import { untrack } from 'svelte';
   import ActionSheet from '../ui/ActionSheet.svelte';
   import Icon, { type IconName } from '../ui/Icon.svelte';
   import { board } from './board.svelte.ts';
@@ -16,8 +17,7 @@
   const config = $derived(board.config);
   const deleted = $derived(restorable(board.deleted));
 
-  // svelte-ignore state_referenced_locally
-  let f = $state({ p1: config.p1, p2: config.p2, date: config.date, time: config.time, venue: config.venue });
+  let f = $state(untrack(() => ({ p1: config.p1, p2: config.p2, date: config.date, time: config.time, venue: config.venue })));
   let cat = $state('');
   let asking = $state(false);
 

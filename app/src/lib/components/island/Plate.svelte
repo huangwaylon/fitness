@@ -6,7 +6,7 @@
   // the bottom stack (CatchStack.svelte), laid out there: measured hidden (its fonts in), then shown, the icon flying
   // from the catch to its place.
   //   <Plate {scene} x={u} y={u} art="critters/sea-bass" parts={[line, note]} ondone={…} />   (x, y: the source, stage u)
-  import { onMount, tick } from 'svelte';
+  import { onMount, tick, untrack } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { stageGeo } from './placement.ts';
   import { TYPE_MS, arrow, paginate, split, tapBox, typeOne, typing, type PagerState } from './pager.ts';
@@ -26,8 +26,7 @@
   let { scene, x, y, art, parts, leaving = false, ondone }: Props = $props();
   let at = $state({ dx: 0, dy: 0, placed: false });
   // the source and text are fixed for the plate's life (the stack keys a new one per catch)
-  // svelte-ignore state_referenced_locally
-  let pg = $state<PagerState>({ pages: paginate(parts), page: 0, shown: 0 });
+  let pg = $state<PagerState>(untrack(() => ({ pages: paginate(parts), page: 0, shown: 0 })));
   let el = $state<HTMLElement>();
   const typedNow = $derived(split(pg));
   const typed = $derived(typedNow[0]), untyped = $derived(typedNow[1]);

@@ -123,8 +123,7 @@
   const ahead = (k: SheetChunk) => void prefetchSheet(k);
 
   /** The ベル the row shows: the wallet less what is still flying in (never down while coins fly; a spend at once). */
-  // svelte-ignore state_referenced_locally
-  let held = $state(bells);
+  let held = $state(untrack(() => bells));
   const shown = new Tween(untrack(() => held), { duration: 600, easing: cubicOut });
   $effect(() => {
     void bells;

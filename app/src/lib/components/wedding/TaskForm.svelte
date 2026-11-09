@@ -6,7 +6,7 @@
   // 保存), and in 編集 the task's 削除 (the banner's とりけす brings it back). ✕, the backdrop or Esc with anything changed
   // ask first (破棄する / 編集を続ける). Every missing field is said at once. A
   // task promoted from a checklist (it names a parent the board no longer holds) has no dates and no checklist.
-  import { tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import Chip from '../ui/Chip.svelte';
   import ChipRow from '../ui/ChipRow.svelte';
@@ -33,10 +33,8 @@
   interface Item { id?: string; title: string; was?: string; gone?: boolean }
 
   const fieldsOf = (x: Task | null): Fields => (x ? { title: x.title, cat: x.category, start: x.start, due: x.due } : { title: '', cat: '', start: '', due: '' });
-  // svelte-ignore state_referenced_locally
-  let draft = $state<Fields>(fieldsOf(task));
-  // svelte-ignore state_referenced_locally
-  let items = $state<Item[]>(task ? task.subtasks.map((s) => ({ id: s.id, title: s.title, was: s.title })) : []);
+  let draft = $state<Fields>(untrack(() => fieldsOf(task)));
+  let items = $state<Item[]>(untrack(() => (task ? task.subtasks.map((s) => ({ id: s.id, title: s.title, was: s.title })) : [])));
   let sub = $state('');
   let subEl: HTMLInputElement | undefined = $state();
   let errors = $state({ title: false, due: false });
@@ -44,8 +42,7 @@
   const options = $derived(draft.cat && !cats.includes(draft.cat) ? [...cats, draft.cat] : cats);
   const uid = $props.id();
   /** Anything typed or changed since it opened: a close asks first (ui/Sheet's `dirty`). */
-  // svelte-ignore state_referenced_locally
-  const start = JSON.stringify([draft, items]);
+  const start = untrack(() => JSON.stringify([draft, items]));
   const unsaved = () => !!sub.trim() || JSON.stringify([draft, items]) !== start;
 
   async function addItem() {

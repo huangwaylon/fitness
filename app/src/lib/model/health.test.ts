@@ -8,10 +8,18 @@ import type { PersonId } from '#lib/types.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { reduce } from './state.ts';
 import {
-  activityOn, bucketValues, CARDS, canShift, dotSeries, dotStats, GROUPS, healthSeries, metricStats, noWatch, previousRange, rangeFor, shiftAnchor
+  activityOn, CARDS, canShift, dotSeries, dotStats, GROUPS, healthSeries, metricSeries, noWatch, periodStats, previousRange, rangeFor, seriesBuckets, shiftAnchor,
+  type HealthSeries, type Metric, type Range
 } from './health.ts';
 import { weekBells } from './bells.ts';
 import { weekKeyOf } from '#lib/time/dates.ts';
+
+/** One person's metric: each bucket's value, a period's numbers (what the charts read through metricSeries). */
+const bucketValues = (hs: HealthSeries, p: PersonId, m: Metric, r: Range) => seriesBuckets(metricSeries(hs, p, m), r);
+const metricStats = (hs: HealthSeries, p: PersonId, m: Metric, r: Range) => {
+  const { avg, days, met, missing, best, change } = periodStats(metricSeries(hs, p, m), r);
+  return { avg, days, missing, met, best, change };
+};
 
 const jst = (date: string, hm = '22:00') => new Date(`${date}T${hm}:00+09:00`).toISOString();
 const TODAY = '2026-10-31';

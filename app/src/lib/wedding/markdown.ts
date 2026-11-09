@@ -265,7 +265,6 @@ function toggleMark(text: string, start: number, end: number, mark: string): Edi
 }
 
 export const toggleBold = (text: string, start: number, end: number): Edit => toggleMark(text, start, end, '**');
-export const toggleItalic = (text: string, start: number, end: number): Edit => toggleMark(text, start, end, '*');
 
 /** `prefix` on every touched line, or off from all of them if all carry it (an all-blank selection takes it). */
 function togglePrefix(text: string, start: number, end: number, prefix: string, carried: RegExp): Edit {

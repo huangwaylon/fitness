@@ -1,7 +1,7 @@
 // けっこんしき's note grammar, its toolbar and the link allowlist (ported from the old board's tests): what a line
 // becomes, that nothing it produces can carry markup, and that an href is http/https or nothing.
 import { describe, expect, it } from 'vitest';
-import { parseMarkdown, toggleBold, toggleBullets, toggleHeading, toggleItalic, groupLinks, type Block, type Span } from './markdown.ts';
+import { parseMarkdown, toggleBold, toggleBullets, toggleHeading, groupLinks, type Block, type Span } from './markdown.ts';
 import { safeHref, splitLinks, urlAt } from './links.ts';
 
 const kinds = (text: string) => parseMarkdown(text).map((b) => b.kind);
@@ -96,9 +96,6 @@ describe('the toolbar', () => {
     expect(toggleBold('say yes now', 3, 8).text).toBe('say **yes** now');
     expect(toggleBold('one\ntwo', 0, 7).text).toBe('**one**\n**two**');
     expect(toggleBold('- one\n- two', 0, 11).text).toBe('- **one**\n- **two**');
-  });
-  it('italic nests inside bold', () => {
-    expect(toggleItalic('**bold**', 2, 6)).toEqual({ text: '***bold***', start: 3, end: 7 });
   });
   it('bullets and headings prefix every touched line, strip when all carry it, replace another family', () => {
     expect(toggleBullets('one\ntwo\nthree', 1, 5).text).toBe('- one\n- two\nthree');

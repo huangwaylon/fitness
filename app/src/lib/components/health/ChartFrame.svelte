@@ -17,7 +17,7 @@
   // slide and drag, the picked bucket's band and its callout (inside the plot's top, on the half away from it, so the
   // bucket stays in sight). A tap picks the bucket under it (again: closes) and scrolls the chart fully into view; a
   // horizontal drag turns the page (gestures.ts). The caller draws its marks (`plot`) and the callout's lines (`tip`).
-  import type { Snippet } from 'svelte';
+  import { untrack, type Snippet } from 'svelte';
   import type { LocalDate } from '#lib/types.ts';
   import type { Range } from '#lib/model/health.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -61,8 +61,7 @@
   let w = $state(0);
   let dx = $state(0);
   /** The range has turned since this chart was drawn: only then does the plot slide in (never as the sheet opens). */
-  // svelte-ignore state_referenced_locally
-  const drawn = range.from + range.period;
+  const drawn = untrack(() => range.from + range.period);
   let turned = $state(false);
   $effect.pre(() => {
     if (range.from + range.period !== drawn) turned = true;

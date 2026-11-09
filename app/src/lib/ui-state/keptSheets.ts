@@ -41,6 +41,3 @@ export function keepSheet(id: number, release: () => void, isOpen: () => boolean
 export function unkeepSheet(id: number): void {
   kept = kept.filter((k) => k.id !== id);
 }
-
-/** Kept now, by id (tests). */
-export const keptIds = (): number[] => kept.map((k) => k.id);

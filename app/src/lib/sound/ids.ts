@@ -170,10 +170,3 @@ export const isSoundId = (s: string): s is SoundId => Object.hasOwn(SOUNDS, s);
 /** The ids with a placeholder of their own (synth.ts): every id without a `like`. */
 export type SynthId = Exclude<SoundId, 'get-fanfare' | 'complete-fanfare' | RadioJingle>;
 export const SYNTH_IDS = SOUND_IDS.filter((id): id is SynthId => !SOUNDS[id].like);
-
-/** Whose placeholder an id uses: its own, or its `like`'s (followed to the end). */
-export function placeholderOf(id: SoundId): SynthId {
-  let i = id;
-  for (let n = 0; SOUNDS[i].like && n < 8; n++) i = SOUNDS[i].like!;
-  return i as SynthId;
-}

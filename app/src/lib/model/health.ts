@@ -263,10 +263,7 @@ export function seriesBuckets(ds: DaySeries, r: Range): BucketValue[] {
   });
 }
 
-/** Each bucket's value of a metric (seriesBuckets over its days). */
-export const bucketValues = (hs: HealthSeries, p: PersonId, m: Metric, r: Range): BucketValue[] => seriesBuckets(metricSeries(hs, p, m), r);
-
-export interface MetricStats {
+interface MetricStats {
   /** Average of the recorded, finished days (null: none). */
   avg: number | null;
   /** Recorded finished days. */
@@ -313,12 +310,6 @@ export function periodStats(ds: DaySeries, r: Range): SeriesStats & { change: nu
   const prevR = previousRange(r);
   const prev = prevR.to >= ds.from ? seriesStats(ds, prevR.from, prevR.to) : null;
   return { ...cur, change: cur.avg !== null && prev?.avg ? (cur.avg - prev.avg) / prev.avg : null };
-}
-
-/** A period's numbers for one person and metric, with the change against the previous period. */
-export function metricStats(hs: HealthSeries, p: PersonId, m: Metric, r: Range): MetricStats {
-  const { avg, days, met, missing, best, change } = periodStats(metricSeries(hs, p, m), r);
-  return { avg, days, missing, met, best, change };
 }
 
 // ---------- weight ----------

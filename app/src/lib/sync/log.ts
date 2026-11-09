@@ -381,6 +381,8 @@ function frames(ms: number): Promise<{ p50: number; p95: number; fps: number; lo
 }
 
 const ALIVE = 'island.alive';
+/** The island's `ready` polled every 500 ms for a minute at most. */
+const READY_POLLS = 120;
 
 export interface LogStart {
   build: string;
@@ -440,8 +442,10 @@ export function startLog(o: LogStart): () => void {
     if (stop || document.hidden) return;
     log('perf.frames', { ...f, drawFps: drawn?.() ?? -1, mode: drawn ? '3d' : 'none', when });
   }, 10_000);
-  let readyDone = false;
+  // (given up after a minute: a launch with no island canvas, /shop or /museum opened directly or no WebGL, is never ready)
+  let readyDone = false, polls = 0;
   const poll = setInterval(() => {
+    if (++polls > READY_POLLS) return clearInterval(poll);
     if (stop || readyDone || !o.ready()) return;
     readyDone = true;
     clearInterval(poll);

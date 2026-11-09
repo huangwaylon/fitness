@@ -83,8 +83,7 @@
     pager.sel = null;
   }
 
-  // svelte-ignore state_referenced_locally
-  let opened = opens;
+  let opened = untrack(() => opens);
   $effect.pre(() => {
     if (opens === opened) return;
     opened = opens;

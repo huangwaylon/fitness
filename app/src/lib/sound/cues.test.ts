@@ -4,8 +4,15 @@ import { CUES, cue, hearFrom } from './cues.ts';
 import { play } from './sound.svelte.ts';
 
 vi.mock('./sound.svelte.ts', () => ({ play: vi.fn(), covered: () => false, announce: vi.fn() }));
-import { SOUNDS, placeholderOf, type SceneSfx } from './ids.ts';
+import { SOUNDS, type SceneSfx, type SoundId, type SynthId } from './ids.ts';
 import { durationOf } from './synth.ts';
+
+/** Whose placeholder an id uses: its own, or its `like`'s (followed to the end). */
+const placeholderOf = (id: SoundId): SynthId => {
+  let i = id;
+  for (let n = 0; SOUNDS[i].like && n < 8; n++) i = SOUNDS[i].like!;
+  return i as SynthId;
+};
 
 // every kind sceneSfx() can ask for (the Record type makes the compiler list them all)
 const KINDS: Record<SceneSfx, true> = {
