@@ -111,9 +111,10 @@
     return () => void delete window.__board;
   });
 
-  // ---- the bird: a tiny idle (it looks about now and then) ----
+  // ---- the bird: a tiny idle (it looks about now and then), only while the island is seen ----
   let look = $state(0);
-  onMount(() => {
+  $effect(() => {
+    if (!enabled()) return;
     const id = setInterval(() => (look = [0, 0.5, 0, -0.5, 0][Math.floor(Math.random() * 5)]), 3800);
     return () => clearInterval(id);
   });

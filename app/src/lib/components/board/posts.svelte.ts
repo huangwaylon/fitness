@@ -6,13 +6,17 @@
 //   board.write(t) / edit(id, t) / remove(id)
 //   board.mayEdit(p) / mayRemove(p)
 //   board.unseen / board.seen() the 「！」, and clearing it
-import { boardFold, boardMayWrite, boardPosts, cleanText, newPostId, type Post } from '#lib/contract/board.ts';
+import { boardFold, boardMayWrite, boardPosts, cleanText, newPostId, type BoardRow, type Post } from '#lib/contract/board.ts';
+import { foldOnce } from '#lib/contract/book.ts';
 import { week } from '#lib/store/week.svelte.ts';
 import { opClock } from '#lib/store/world.svelte.ts';
 import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { resolveLook } from '#lib/villagers/look.ts';
 import { artUrl, villagerArt } from '#lib/art.ts';
 import type { Who } from '#lib/types.ts';
+
+const NONE: readonly BoardRow[] = [];
+const postsOf = foldOnce((rows: readonly BoardRow[]) => boardPosts(boardFold(rows).values()));
 
 class BoardPosts {
   /** Bumped when the seen mark moves. */
@@ -24,10 +28,11 @@ class BoardPosts {
     return week.view?.viewer ?? 'A';
   }
 
-  /** The posts, newest first. */
+  /** The posts, newest first: folded once per row list (the minute's new model keeps its lists, so nothing that
+   *  reads them runs again: the face isn't redrawn). */
+  readonly #posts = $derived(postsOf(week.model?.state.board ?? NONE));
   get posts(): Post[] {
-    const s = week.model?.state;
-    return s ? boardPosts(boardFold(s.board).values()) : [];
+    return this.#posts;
   }
 
   /** A post's author as the board shows them: their villager's name, and their head's image (null: none). */
