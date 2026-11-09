@@ -59,18 +59,26 @@ export function isSibling(x: Entry, y: Entry): boolean {
 }
 
 /** The cards my answers (in order) leave: an item card from its first miss or replay on, a feature card for every
- *  feature answered. A practice answer on a sibling (isSibling) of a due item card steps that card too (the lowest box,
- *  most overdue): おさらい asks the sibling in its place (practicePicks). */
+ *  feature answered. A practice answer on a never-carded sibling (isSibling) of a due item card steps that card too (the
+ *  lowest box, most overdue): おさらい asks the sibling in its place (practicePicks); one with a card of its own steps only
+ *  its own, and the due card's own answer that day replaces the stand-in's step (never two steps a day). */
 export function cardsOf(answers: readonly Answer[], items: { get(id: string): Entry | undefined } = { get: entryOf }, mada: readonly Mada[] = []): Cards {
   const out: Cards = { items: new Map(), features: new Map() };
+  // a card a sibling stood in for, as it was before (its own answer that day replaces the stand-in's step)
+  const stood = new Map<string, { day: number; was: Card }>();
   for (const a of withMada(answers, mada)) {
     const it = items.get(a.id);
     if (!it) continue;
     const g = gradeOf(a), day = dayNum(a.d);
-    const held = out.items.get(a.id);
-    if (a.p && !(held && held.due <= day)) {
+    const s = stood.get(a.id);
+    const held = s?.day === day ? s.was : out.items.get(a.id);
+    stood.delete(a.id);
+    if (a.p && !held) {
       const stand = [...out.items].filter(([id, c]) => c.due <= day && c.last < day && isSiblingId(items, id, it)).sort(([, b], [, c]) => b.box - c.box || b.due - c.due)[0];
-      if (stand) out.items.set(stand[0], step(stand[1], g, day));
+      if (stand) {
+        stood.set(stand[0], { day, was: stand[1] });
+        out.items.set(stand[0], step(stand[1], g, day));
+      }
     }
     if (held || g !== 'good') out.items.set(a.id, step(held, g, day));
     for (const f of tagsOf(it).features) out.features.set(f, step(out.features.get(f), g, day));
