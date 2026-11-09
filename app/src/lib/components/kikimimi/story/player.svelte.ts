@@ -5,8 +5,8 @@
 // whatever the audio does. ⏮ / ⏭ by segment, ⏸ / ▶ (▶ starts the segment again), the sleep timer (listening time:
 // a pause stops it) fading the voice over its last 20 s (fadeVoice), the music held down under the whole run
 // (holdVoiceDuck: no swell in the gaps). A chapter ended: finished; a timed story goes on into the next chapter
-// after a pause, else it ends there. The timer run out: finished when in the chapter's last third, else its place
-// kept (つづき). Loaded with StoryFrame only.
+// after a pause (paused in it, ▶ goes straight on), else it ends there. The timer run out: finished when in the
+// chapter's last third, else its place kept (つづき). Loaded with StoryFrame only.
 import type { Chapter } from '#lib/kikimimi/story.ts';
 import { clipDur } from '#lib/kikimimi/clips.ts';
 import { FADE_MS, NEXT_CHAPTER_MS, fadeCurve, finishesOnTimer, gapAfter, timeline, timerLeft, type SleepTimer } from '#lib/kikimimi/bedtime.ts';
@@ -49,6 +49,8 @@ export class StoryPlayer {
   #token = 0;
   #mark = 0;
   #fading = false;
+  /** Paused in the wait between two chapters: ▶ goes on into the next one. */
+  #onward = false;
   #handle: { stop(): void } | null = null;
   #step: ReturnType<typeof setTimeout> | undefined;
   #tick: ReturnType<typeof setInterval> | undefined;
@@ -89,12 +91,15 @@ export class StoryPlayer {
     holdVoiceDuck(true);
     clearInterval(this.#tick);
     this.#tick = setInterval(() => this.#onTick(), TICK_MS);
-    void this.#sound();
+    if (this.#onward) void this.#nextChapter(0);
+    else void this.#sound();
   }
 
   pause(): void {
     if (!this.playing) return;
     this.#account();
+    this.#onward = this.between;
+    this.between = false;
     this.#halt();
     this.#hooks.place(this.chapter.chapter, this.seg);
   }
@@ -137,6 +142,7 @@ export class StoryPlayer {
     this.seg = seg;
     this.ended = null;
     this.between = false;
+    this.#onward = false;
     if (this.playing) void this.#sound();
     else this.play();
   }
@@ -147,6 +153,7 @@ export class StoryPlayer {
     this.#account();
     this.#halt();
     this.between = false;
+    this.#onward = false;
     if (was && !this.ended) this.#hooks.place(this.chapter.chapter, this.seg);
   }
 
@@ -172,24 +179,29 @@ export class StoryPlayer {
     if (this.seg + 1 < this.chapter.segments.length) {
       this.seg++;
       void this.#sound();
-    } else void this.#chapterEnd();
+    } else this.#chapterEnd();
   }
 
-  async #chapterEnd(): Promise<void> {
+  #chapterEnd(): void {
     this.#stopSound();
-    const ch = this.chapter.chapter;
-    this.#hooks.finished(ch);
+    this.#hooks.finished(this.chapter.chapter);
     const left = this.left;
-    if (left !== null && left > 0) {
-      this.between = true;
-      const token = this.#token;
-      const [next] = await Promise.all([this.#hooks.next(ch).catch(() => null), new Promise((r) => setTimeout(r, NEXT_CHAPTER_MS))]);
-      if (token !== this.#token || !this.between) return;
-      if (next) {
-        this.#mark = this.#clock(); // (the pause between chapters isn't listening)
-        this.open(next);
-        return;
-      }
+    if (left !== null && left > 0) return void this.#nextChapter(NEXT_CHAPTER_MS);
+    this.#halt();
+    this.ended = 'end';
+  }
+
+  /** A timed story on into the next chapter after `wait` ms (0: ▶ after a pause in the wait), or ended at the serial's end. */
+  async #nextChapter(wait: number): Promise<void> {
+    this.#onward = false;
+    this.between = true;
+    const token = this.#token;
+    const [next] = await Promise.all([this.#hooks.next(this.chapter.chapter).catch(() => null), new Promise((r) => setTimeout(r, wait))]);
+    if (token !== this.#token) return;
+    if (next) {
+      this.#mark = this.#clock(); // (the pause between chapters isn't listening)
+      this.open(next);
+      return;
     }
     this.#halt();
     this.between = false;
