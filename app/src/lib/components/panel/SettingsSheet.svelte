@@ -26,9 +26,9 @@
   import { i18n, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { isGuest, mine } from '#lib/ui-state/viewer.ts';
-  import { lastSentAt, queued } from '#lib/sync/queue.ts';
+  import { lastSentAt, unsentStuck } from '#lib/sync/queue.ts';
   import { formatSyncTime } from '#lib/i18n/format.ts';
-  import { dayKey } from '#lib/time/clock.ts';
+  import { dayKey, minuteNow } from '#lib/time/clock.ts';
 
   /** `resume`: this opening is ずかん's ‹ back (Hud): at 図鑑's row again, where the list was scrolled to. */
   let { open = $bindable(), onzukan, resume = $bindable(false) }: { open: boolean; onzukan: () => void; resume?: boolean } = $props();
@@ -56,8 +56,9 @@
     return mySavedLooks().find((s) => sameLook(s.look, p))?.name ?? null;
   });
   /** The writes not sent yet (2026-11-08: a stuck queue was invisible): 「未送信 {n}件（最終送信 {time}）」, 送信 sends
-   *  them now, the set-aside ones too. (The view recomputes as one is queued or acked: the count follows it.) */
-  const unsent = $derived((void week.view, week.demo ? 0 : queued().length));
+   *  them now, the set-aside ones too. As the sync chip counts them (unsentStuck): none while every write is in its
+   *  hold or fresh. (The view recomputes as one is queued or acked, the minute as one waits: the count follows it.) */
+  const unsent = $derived((void week.view, week.demo ? 0 : unsentStuck(minuteNow().getTime())));
   const sentAt = $derived((void week.view, lastSentAt()));
   /** The guest's phone (docs/design.md "The guest"): a line saying it's visiting. */
   const guest = $derived(isGuest(view));
