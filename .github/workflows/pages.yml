@@ -304,13 +304,17 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        # (once more on a failure: Pages' "Failed to publish your Function: Unknown internal error" is theirs, and a
+        # second upload sends only what the first didn't)
         run: |
-          "$RUNNER_TEMP/wrangler/node_modules/.bin/wrangler" pages deploy ../site --project-name island-fund --branch main --commit-hash "$GITHUB_SHA" --commit-message "${GITHUB_SHA::12}"
-      # the site answers this commit's build (the version SvelteKit polls), with its headers (looked at every 2 s, a minute)
+          deploy() { "$RUNNER_TEMP/wrangler/node_modules/.bin/wrangler" pages deploy ../site --project-name island-fund --branch main --commit-hash "$GITHUB_SHA" --commit-message "${GITHUB_SHA::12}"; }
+          deploy || { echo "::warning::wrangler failed, once more in 15 s"; sleep 15; deploy; }
+      # the site answers this commit's build (the version SvelteKit polls), with its headers (looked at every 2 s, 3 min:
+      # Pages took over a minute to serve a deploy it had called complete)
       - if: steps.order.outputs.deploy == 'true'
         run: |
           want=$(node -p "require('./site/_app/version.json').version")
-          for _ in $(seq 30); do
+          for _ in $(seq 90); do
             got=$(curl -sS --max-time 20 "https://island-fund.pages.dev/_app/version.json?t=$(date +%s%N)" | node -p "JSON.parse(require('fs').readFileSync(0)).version" 2>/dev/null || true)
             [ "$got" = "$want" ] && break
             sleep 2
