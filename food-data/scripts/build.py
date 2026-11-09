@@ -717,7 +717,7 @@ def build_index(dirs):
 
 # ---------------------------------------------------------------- 「これは…」 lines (data_src/descriptions.json)
 DESC_TARGETS = ('mext', 'dishes', 'eatout', 'maff_kyodo')
-# what a line must not say: a health claim, or what a food does for the body (docs/food-data.md "desc")
+# what a line must not say: a health claim, or what a food does for the body (docs/food-data.md "Descriptions")
 DESC_BANNED = re.compile(r'効果|効能|予防|改善|健康|美容|美肌|ダイエット|免疫|血圧|血糖|痩せ|やせる|デトックス|体に良い|'
                          r'体にいい|栄養満点|栄養豊富|疲労回復|整腸|老化|若返')
 MEXT_TOKEN = re.compile(r'［[^］]*］|（[^）]*）|＜[^＞]*＞|[^\s　［（＜]+')
