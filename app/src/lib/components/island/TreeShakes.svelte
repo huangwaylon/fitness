@@ -89,10 +89,12 @@
   let seq = 0;
   /** World x, y = the world's z. */
   let nests = $state<{ n: number; tree: string; x: number; y: number; from: number; fading: boolean }[]>([]);
-  let swarm = $state<{ n: number; id: string; old?: string; side: Side; x0: number; z0: number; at: number; stung: boolean; away: number } | null>(null);
+  /** A shake's identity on both phones (its drop's ids hang off it). */
+  type ShakeKey = { tree: string; who: Who; t: number };
+  let swarm = $state<{ n: number; id: string; old?: string; shake?: ShakeKey; side: Side; x0: number; z0: number; at: number; stung: boolean; away: number } | null>(null);
   /** The net's swing at world (x, z), `lift` up. */
   let net = $state<{ n: number; x: number; z: number; lift: number } | null>(null);
-  let dangler = $state<{ n: number; id: string; old?: string; tree: string; bug: 'bagworm' | 'spider'; x: number; y: number; from: number; up: boolean } | null>(null);
+  let dangler = $state<{ n: number; id: string; old?: string; shake?: ShakeKey; tree: string; bug: 'bagworm' | 'spider'; x: number; y: number; from: number; up: boolean } | null>(null);
 
   /** What the day's shakes left lying (the shared day: a reload or the partner's phone finds it too), and which of it
    *  fell while this island watched (only those fall; the rest just lie there). */
@@ -170,6 +172,7 @@
     // (the very shake when it's known: another's earlier one may have arrived after it)
     const i = by ? d.shakes.findIndex((s) => s.tree === tree.id && s.who === by.who && s.t === by.t) : d.shakes.findLastIndex((s) => s.tree === tree.id && s.drop === drop);
     const ids = i >= 0 ? dropIds(d.shakes, i) : [], old = i >= 0 ? legacyDropIds(d.shakes, i)[0] : undefined;
+    const shake = i >= 0 ? { tree: tree.id, who: d.shakes[i].who, t: d.shakes[i].t } : undefined;
     const from = fromOf(tree);
     // (another's shake: its sounds by where it is)
     const far = side === 'mine' ? undefined : ([tree.x, tree.z] as const);
@@ -179,7 +182,7 @@
       const url = artUrl(critterArt(drop));
       if (url) new Image().src = url;
       const at = dropAt(tree, drop);
-      const g = { n: ++seq, id, old, tree: tree.id, bug: drop, x: at.x, y: at.z, from, up: false };
+      const g = { n: ++seq, id, old, shake, tree: tree.id, bug: drop, x: at.x, y: at.z, from, up: false };
       dangler = g;
       later(() => dangler?.n === g.n && (dangler = { ...g, up: true }), DANGLE_MS);
       later(() => dangler?.n === g.n && (dangler = null), DANGLE_MS + 900);
@@ -193,14 +196,19 @@
       const nest = { n: ++seq, tree: tree.id, x: at.x, y: at.z, from, fading: false };
       nests = [...nests, nest];
       later(() => (sceneSfx('nest', far), side === 'mine' && waspMusic('nest')), 560);
-      later(() => charge(nest.n, ids[0] ?? `ws:${tree.id}:x`, nest.x, nest.y, side, old), 560 + SWARM_DELAY_MS);
+      later(() => charge(nest.n, ids[0] ?? `ws:${tree.id}:x`, nest.x, nest.y, side, old, shake), 560 + SWARM_DELAY_MS);
     }
   }
+
+  /** Whether a shake is gone from the day (the room refused it: store/world.svelte.ts #unshake): its bug or wasps are
+   *  nobody's to net. */
+  const unshaken = (k?: ShakeKey): boolean => !!k && !world.day.shakes.some((s) => s.tree === k.tree && s.who === k.who && s.t === k.t);
 
   /** A tap on the dangling bug: netted (the net's swing, NH's catch line, a ずかん find), unless the partner has it. */
   function netDangler() {
     const d = dangler;
     if (!d || d.up) return;
+    if (unshaken(d.shake)) return void (dangler = null);
     // first wins: claimed at the tap (the relay's first claim is the catch: the partner's phone hears it)
     if (d.old && caught(world.day, d.old)) return; // (an older app's catch of it, under its old id)
     if (!world.share({ kind: 'catch', what: d.bug, id: d.id, at: [Math.round(d.x), Math.round(d.y)], how: 'net' }).fresh) return;
@@ -238,12 +246,12 @@
     stopFrames = null;
   }
 
-  function charge(nestN: number, id: string, x: number, z: number, side: Side, old?: string) {
+  function charge(nestN: number, id: string, x: number, z: number, side: Side, old?: string, shake?: ShakeKey) {
     const n = ++seq;
     stopSwarm();
-    // the partner already netted these (their catch came in while the nest fell)
-    if (caught(world.day, id) || (old && caught(world.day, old))) return fadeNest(nestN);
-    swarm = { n, id, old, side, x0: x, z0: z, at: performance.now(), stung: false, away: x < site.midX ? -1 : 1 };
+    // the partner already netted these (their catch came in while the nest fell), or the room refused the shake
+    if (caught(world.day, id) || (old && caught(world.day, old)) || unshaken(shake)) return fadeNest(nestN);
+    swarm = { n, id, old, shake, side, x0: x, z0: z, at: performance.now(), stung: false, away: x < site.midX ? -1 : 1 };
     stopFrames = w.moveStart();
     const at = side === 'mine' ? undefined : ([x, z] as const);
     sceneSfx('buzz', at);
@@ -272,6 +280,14 @@
   function netIt() {
     const s = swarm;
     if (!s || s.stung || s.side !== 'mine' || !netsSwarm(performance.now() - s.at)) return;
+    if (unshaken(s.shake)) {
+      // refused while the wasps were out: they scatter
+      swarm = null;
+      stopSwarm();
+      const nest = nests.find((ns) => !ns.fading);
+      if (nest) fadeNest(nest.n);
+      return;
+    }
     const [x, z, lift] = swarmAt();
     world.share({ kind: 'catch', what: 'wasp', id: s.id, at: [Math.round(x), Math.round(z)], how: 'swarm' });
     swarm = null;
