@@ -47,9 +47,9 @@ items:
     en: "Maple! Oh my gosh, how have you been? It's been, what, a year? More! Okay, you'll never guess. I quit the bank. No way! What are you doing now? Long story short, I'm teaching yoga. Full-time. And I've never been happier."
     ja: "銀行を辞めてヨガを教えていて、とても幸せ。"
     note: "never been happier＝今が いちばん 幸せ"
-    choices: ["She quit her bank job, teaches yoga now, and she's happy.", "She lost her bank job and is looking for work.", "She does yoga after work at the bank."]
+    choices: ["She quit to teach yoga and loves it.", "She got fired and is looking for work.", "She does yoga after work at the bank."]
     answer: 0
-    cja: ["銀行を辞めて今はヨガを教えていて、幸せ。", "銀行をクビになって、仕事を探している。", "銀行の仕事のあとにヨガをしている。"]
+    cja: ["銀行を辞めてヨガの先生になり、とても満足している。", "クビになって、仕事を探している。", "銀行の仕事のあとにヨガをしている。"]
     why: "I quit the bank は「自分で辞めた」。結論だけ言うと、今はヨガの先生。never been happier は「今がいちばん幸せ」。"
     ctx: "1年ぶりに、カフェで友だちに会いました"
     focus: "Long story short, I'm teaching yoga."
@@ -95,9 +95,9 @@ items:
     tts: "Hey, stranger! How ya been?"
     ja: "やあ、久しぶり！ 元気だった？ →「まあまあ！ 忙しいけど元気だよ。そっちは？」"
     note: "Hey, stranger＝久しぶり（親しい あいさつ）"
-    choices: ["Pretty good! Busy, but good. You?", "I've been here since two.", "I'm not a stranger, it's me!"]
+    choices: ["Pretty good! Busy, but good. You?", "I've been here since two.", "Stranger? Come on, you know me!"]
     answer: 0
-    cja: ["まあまあ！ 忙しいけど元気。そっちは？", "2時からここにいるよ。", "知らない人じゃないよ、私だよ！"]
+    cja: ["まあまあ！ 忙しいけど元気。そっちは？", "2時からここにいるよ。", "知らない人？ ちょっと、私のこと知ってるでしょ！"]
     why: "Hey, stranger は「久しぶり」という親しいあいさつで、知らない人扱いではない。How have you been? は「最近どう？」なので、近況を一言返す。"
     ctx: "カフェで、しばらく会っていない友だちが"
     scene: cafe
@@ -112,10 +112,10 @@ items:
     en: "Long story short, we broke up, but we're still friends. It's actually fine."
     ja: "手短に言うと、別れたけど、今も友だちなの。本当に大丈夫。 → つまり、詳しくは省くけど別れた。でも仲はいい。"
     note: "long story short＝細かい 話は 省いて"
-    choices: ["They broke up but stayed friends; she's skipping the details.", "It's a long story, so she'll tell all of it now.", "They're getting married."]
+    choices: ["They split up but are still friends.", "She's about to tell the whole long story.", "They broke up, and she's still upset."]
     answer: 0
-    cja: ["別れたが友だちのまま。詳しい話は省いている。", "長い話なので、今から全部話す。", "二人は結婚する。"]
-    why: "long story short は「手短に言うと」で、細かい経緯を省いて結論だけ言う合図。別れたが still friends（今も友だち）で、本人は fine と言っている。"
+    cja: ["別れたけど、今も友だち。", "これから長い話を全部する。", "別れて、まだ落ち込んでいる。"]
+    why: "long story short は「手短に言うと」で、経緯を省く合図。別れたが still friends で、fine と言っているので落ち込んではいない。"
     ctx: "カフェで、友だちに恋人のことを聞きました"
     ask: "つまり、どういう こと？"
     scene: cafe
@@ -150,9 +150,9 @@ items:
     tts: "Honestly, it's been a rough few months. But I'm doin' a lot better now."
     ja: "正直、ここ数か月は大変だった。でも今はずいぶんよくなったよ。 → つまり、大変な時期があったが、今は持ち直している。"
     note: "rough＝大変な。but の 後が 今"
-    choices: ["It was a hard few months, but she's much better now.", "She's still having a really hard time.", "The last few months were great."]
+    choices: ["Things were hard, but she's okay now.", "She's still having a really hard time.", "The last few months were great."]
     answer: 0
-    cja: ["数か月大変だったが、今はずっとよくなった。", "今もとても大変。", "ここ数か月はすごくよかった。"]
+    cja: ["大変だったけど、今は大丈夫。", "今もとても大変。", "ここ数か月はすごくよかった。"]
     why: "a rough few months は「大変な数か月」。でも but のあと、doing a lot better now（今はずっとよくなった）。今も大変なわけではない。"
     ctx: "久しぶりに会った友だちに、最近どうか聞きました"
     ask: "つまり、どういう こと？"
@@ -169,9 +169,9 @@ items:
     en: "Whatever happened with Whitney? Didn't she move? Yeah, to Denver. Wait, no, Boulder. It's close to Denver. She got a job at the university. Good for her! Does she like it? She loves it, but she says she misses the ocean."
     ja: "大学の仕事でボルダーに引っ越した。気に入っているが海が恋しい。"
     note: "Wait, no の 後が 正しい 町"
-    choices: ["She moved to Boulder for a university job; she loves it but misses the ocean.", "She moved to Denver and doesn't like it.", "She's moving back because she misses the ocean."]
+    choices: ["She's in Boulder now and loves it.", "She moved to Denver and doesn't like it.", "She misses the ocean, so she's moving back."]
     answer: 0
-    cja: ["大学の仕事でボルダーへ。気に入っているが、海が恋しい。", "デンバーに引っ越して、気に入っていない。", "海が恋しくて戻ってくる。"]
+    cja: ["今はボルダーにいて、気に入っている。", "デンバーに引っ越して、気に入っていない。", "海が恋しいので戻ってくる。"]
     why: "最初はデンバーと言ったが、Wait, no で近くのボルダーに訂正。大学で働き、loves it。でも misses the ocean（海が恋しい）だけで、戻るとは言っていない。"
     ctx: "カフェで、共通の友だちの話になりました"
     focus: "Yeah, to Denver. Wait, no, Boulder."
@@ -212,9 +212,9 @@ items:
     tts: "You finally asked fer a raise? Good for you! I'm so proud of ya."
     ja: "ついに昇給をお願いしたの？ えらい！ すごく誇らしいよ。 → つまり、昇給を頼んだ勇気をほめている。"
     note: "good for you＝よかったね・えらい"
-    choices: ["She's proud he finally asked for a raise.", "She thinks it's good for her own career.", "She's annoyed he waited so long."]
+    choices: ["She's proud of him for asking.", "She thinks it's good for her own career.", "She's annoyed he waited."]
     answer: 0
-    cja: ["ついに昇給を頼んだことを誇りに思っている。", "自分の仕事にとっていいと思っている。", "こんなに待ったことにいらいらしている。"]
+    cja: ["頼んだ彼を誇らしく思っている。", "自分の仕事にとっていいと思っている。", "彼が待ちすぎたことにいらいらしている。"]
     why: "good for you は相手をほめたり祝ったりする一言で、「あなたの体にいい」ではない。finally（ついに）頼んだことを so proud とほめている。"
     ctx: "カフェで、友だちが仕事の話をしてくれました"
     ask: "つまり、どういう 気持ち？"
@@ -247,11 +247,11 @@ items:
     voice: us
     cast: us-m1
     en: "Sorry I'm late! Okay, catch me up. What did I miss? Goldie broke her wrist skiing, and Maple quit her job. Wait, what? Goldie broke her wrist? That sounds so rough. And Maple quit? She loved that job!"
-    ja: "実はそうでもなかったみたい。今はヨガを教えていて、すごく楽しいって。"
+    ja: "実はそうでもなかったみたい。今はヨガを教えるのが楽しいって。"
     note: "catch me up＝何が あったか 教えて"
-    choices: ["Not really. She's teaching yoga now and loves it.", "Yeah, she's skiing with Goldie now.", "No, Goldie quit, and Maple broke her wrist."]
+    choices: ["Not really. She loves teaching yoga now.", "Yeah, she skis with Goldie now.", "No, Goldie quit, and Maple broke her wrist."]
     answer: 0
-    cja: ["そうでもなかったみたい。今はヨガを教えて楽しんでる。", "そう、今はゴールディとスキーしてる。", "違う、ゴールディが辞めて、メイプルが手首を折ったの。"]
+    cja: ["そうでもなかったみたい。今はヨガを教えるのが楽しいって。", "そう、今はゴールディとスキーしてる。", "違う、ゴールディが辞めて、メイプルが手首を折ったの。"]
     why: "マーシャルは She loved that job! と驚いたので、今の仕事のほうが好きだと伝える。辞めたのはメイプル、けがはゴールディで、逆ではない。"
     ctx: "カフェに遅れて来た友だちに、近況を伝えます"
     focus: "Wait, what? Goldie broke her wrist? That sounds so rough. And Maple quit? She loved that job!"
@@ -273,9 +273,9 @@ items:
     tts: "Wait, back up. You're movin'? Since when?"
     ja: "待って、ちょっと戻って。引っ越すの？ いつから決まってたの？ → つまり、引っ越しの話を聞き逃したので、そこに戻ってほしい。"
     note: "back up＝話を 戻して"
-    choices: ["He wants to go back to the part about moving.", "He's asking her to back up her phone.", "He wants her to step back."]
+    choices: ["He wants to hear about the move.", "He wants her phone backed up.", "He wants her to step back."]
     answer: 0
-    cja: ["引っ越しの話に戻ってほしい。", "スマホのバックアップを取ってほしい。", "一歩下がってほしい。"]
+    cja: ["引っ越しの話をもっと聞きたい。", "スマホのバックアップを取ってほしい。", "一歩下がってほしい。"]
     why: "wait, back up は「待って、話を戻して」。さらっと出た引っ越しの話に驚いて聞き返している。バックアップや、体を下げる話ではない。"
     ctx: "カフェで、友だちが話の途中で驚きました"
     ask: "つまり、どういう こと？"
@@ -292,9 +292,9 @@ items:
     en: "So, long story short, I adopted a dog. His name's Biscuit. Stop! I need pictures. What kind? A beagle. Well, half beagle. The shelter said beagle, but the vet thinks he's mostly basset hound. Ha! Either way, I love him already."
     ja: "犬を引き取った。獣医の見立てでは、ほとんどバセットハウンド。"
     note: "Well, の 後で 言い直す"
-    choices: ["She adopted a dog that's probably mostly basset hound.", "She's thinking about getting a beagle.", "The vet said he's all beagle."]
+    choices: ["She adopted a dog, a basset hound mix.", "She's still thinking about getting a beagle.", "The vet says he's a purebred beagle."]
     answer: 0
-    cja: ["犬を引き取った。たぶんほとんどバセットハウンド。", "ビーグルを飼おうか考えている。", "獣医は純粋なビーグルだと言った。"]
+    cja: ["犬を引き取った。バセットハウンドの雑種らしい。", "まだビーグルを飼おうか考えている。", "獣医は純血のビーグルだと言っている。"]
     why: "結論は、犬を引き取ったこと。保護施設はビーグルと言ったが、Well, half beagle と言い直し、獣医は mostly basset hound と見ている。"
     ctx: "ビデオ通話で、遠くに住む友だちと近況報告です"
     focus: "The shelter said beagle, but the vet thinks he's mostly basset hound."
@@ -315,12 +315,12 @@ items:
     cast: us-f2
     en: "My landlord's selling the building, so I have to move out by March."
     tts: "My landlord's sellin' the building, so I hafta move out by March."
-    ja: "大家さんが建物を売るから、3月までに引っ越さなきゃいけないの。 →「えー、それは大変だね。荷造り手伝おうか？」"
+    ja: "大家さんが建物を売るから、3月までに引っ越さなきゃいけないの。 →「えー、それは大変だね。手伝おうか？」"
     note: "by March＝3月 までに"
-    choices: ["Oh no, that sounds rough. Need help packing?", "Nice! Congrats on the new place!", "March? So you're buying the building?"]
+    choices: ["Oh no, that's rough. Need a hand?", "Nice! Congrats on the new place!", "March? So you're buying it?"]
     answer: 0
-    cja: ["えー、それは大変だね。荷造り手伝おうか？", "いいね！ 新居おめでとう！", "3月？ じゃあ建物を買うの？"]
-    why: "大家が建物を売るので、3月までに出なければならない。望んだ引っ越しではないので、お祝いは合わない。that sounds rough と気づかい、手伝いを申し出るのが自然。"
+    cja: ["えー、それは大変だね。手伝おうか？", "いいね！ 新居おめでとう！", "3月？ じゃあ建物を買うの？"]
+    why: "大家が建物を売るので、3月までに出なければならない。望んだ引っ越しではないので、お祝いは合わない。that's rough と気づかい、手伝いを申し出るのが自然。"
     ctx: "カフェで、友だちが困った顔で話し出しました"
     scene: cafe
     cond: { kind: cafe, level: light }
@@ -334,9 +334,9 @@ items:
     en: "You'll never guess who's getting married. Kicks! I know, right?"
     ja: "誰が結婚すると思う？ キックスだよ！ でしょ、びっくりだよね？ → つまり、意外にもキックスが結婚すると驚いている。"
     note: "I know, right?＝でしょ？（同意を 求める）"
-    choices: ["He's surprised that Kicks is getting married.", "He doesn't know who's getting married.", "He wants her to guess for a prize."]
+    choices: ["He's amazed Kicks is getting married.", "He has no idea who's getting married.", "He wants her to guess, for a prize."]
     answer: 0
-    cja: ["キックスが結婚することに驚いている。", "誰が結婚するのか知らない。", "賞品つきで当ててほしい。"]
+    cja: ["キックスが結婚することに驚いている。", "誰が結婚するのか、まったく知らない。", "賞品つきで当ててほしい。"]
     why: "you'll never guess は「聞いたら驚くよ」の前置きで、当てさせたいわけではない。すぐ Kicks! と言い、I know, right? で驚きを分かち合っている。"
     ctx: "カフェで、友だちがニュースを持ってきました"
     ask: "つまり、どういう こと？"
@@ -369,11 +369,11 @@ items:
     voice: us
     cast: us-f1
     en: "Whatever happened with your car? Did you get it fixed? Ugh, no. Long story short, it wasn't worth fixing. I sold it. Oh, man. That sounds rough. So how are you getting around?"
-    ja: "だいたい自転車。実はけっこう気に入ってる。"
+    ja: "だいたい自転車。悪くないよ。"
     note: "getting around＝移動する"
-    choices: ["Bike, mostly. It's actually kind of nice.", "I fixed it last week, so by car.", "Around? Usually around eight."]
+    choices: ["By bike, mostly. It's not bad.", "I fixed it last week, so by car.", "Around? Oh, usually around eight."]
     answer: 0
-    cja: ["だいたい自転車。実はけっこういいよ。", "先週直したから、車で。", "ごろ？ だいたい8時ごろ。"]
+    cja: ["だいたい自転車。悪くないよ。", "先週直したから、車で。", "ごろ？ ああ、だいたい8時ごろ。"]
     why: "車は売った（sold it）。how are you getting around? は「どうやって移動してるの？」で、時間の around ではない。移動手段を答える。"
     ctx: "カフェで、友だちに車のことを聞かれました"
     focus: "So how are you getting around?"
@@ -394,9 +394,9 @@ items:
     en: "I finally finished my first half marathon!"
     ja: "ついに初めてのハーフマラソンを完走したの！ →「すごい！ 体はどう？」"
     note: "half marathon＝ハーフマラソン（約 21km）"
-    choices: ["Good for you! How do you feel?", "Half? So you stopped in the middle?", "Only half? Maybe the whole thing next time."]
+    choices: ["Good for you! How do you feel?", "Half? You stopped midway?", "Only half? Next time, the whole thing."]
     answer: 0
-    cja: ["すごい！ 体はどう？", "半分？ じゃあ途中でやめたの？", "半分だけ？ 次は全部走れるといいね。"]
+    cja: ["すごい！ 体はどう？", "半分？ 途中でやめたの？", "半分だけ？ 次は全部走ろうよ。"]
     why: "half marathon は約21kmのレースで、途中でやめたのではない。finally finished は「ついに完走した」なので祝う。「半分だけ」は失礼。"
     ctx: "ビデオ通話で、友だちがうれしそうに報告"
     scene: living
@@ -512,9 +512,9 @@ items:
     en: "Okay, so, my brother's getting married in June. No, July. July 4th weekend, which, I know, is crazy. Wait, back up. Your brother? Whatever happened with the never-getting-married thing? Ha! Long story short, he met someone at a wedding, of all places. Good for him!"
     ja: "結婚しないと言っていた兄が、7月に結婚する。"
     note: "No, July の 後が 正しい 月"
-    choices: ["Her brother, who said he'd never marry, is getting married in July.", "Her brother is getting married in June.", "Her brother met someone, but he won't marry."]
+    choices: ["Her brother's marrying in July after all.", "Her brother is getting married in June.", "He met someone, but he won't marry."]
     answer: 0
-    cja: ["結婚しないと言っていた兄が、7月に結婚する。", "兄が6月に結婚する。", "兄は相手が見つかったが、結婚はしない。"]
+    cja: ["結婚しないと言っていた兄が、結局7月に結婚する。", "兄が6月に結婚する。", "兄は相手が見つかったが、結婚はしない。"]
     why: "6月と言ったが、No, July で7月に訂正。結婚しないと言っていた兄が、よりによって結婚式（of all places）で相手に出会った。"
     ctx: "混んだカフェで、友だちが早口で話します"
     focus: "Okay, so, my brother's getting married in June. No, July."
@@ -537,9 +537,9 @@ items:
     tts: "So I'm at the airport, I mean, the train station, an' guess who's on my train? My old boss. Fer four hours."
     ja: "それでね、空港で、じゃなくて駅でね、同じ電車に誰が乗ってたと思う？ 前の上司。4時間も。 → つまり、元上司と4時間同じ電車で気まずかった。"
     note: "I mean の 後が 正しい 場所"
-    choices: ["She was stuck on a long train ride with her old boss.", "She met her old boss at the airport.", "Her old boss drove her to the station."]
+    choices: ["Her old boss was on her train for hours.", "She met her old boss at the airport.", "Her old boss drove her to the station."]
     answer: 0
-    cja: ["前の上司と、長い電車の旅で一緒だった。", "空港で前の上司に会った。", "前の上司が駅まで車で送ってくれた。"]
+    cja: ["前の上司と、何時間も同じ電車だった。", "空港で前の上司に会った。", "前の上司が駅まで車で送ってくれた。"]
     why: "空港と言ったが I mean で駅に訂正。同じ電車に前の上司がいて、For four hours（4時間も）と強調しているので、気まずかったということ。"
     ctx: "にぎやかなカフェで、友だちが旅の話を"
     ask: "つまり、どういう こと？"
@@ -554,12 +554,12 @@ items:
     cast: us-m1
     en: "Dude, I got the promotion! They told me, like, this morning!"
     tts: "Dude, I got the promotion! They told me, like, this mornin'!"
-    ja: "ねえ、昇進したんだ！ 今朝言われたばっかり！ →「すごい！ よかったね！ お祝いしよう。」"
+    ja: "ねえ、昇進したんだ！ 今朝言われたばっかり！ →「うそ！ おめでとう！ お祝いしよう。」"
     note: "promotion＝昇進"
-    choices: ["No way! Good for you! We should celebrate.", "Oh no, I'm so sorry.", "This morning? So you're late for work?"]
+    choices: ["No way! Congrats! Let's celebrate.", "Oh no, I'm so sorry to hear that.", "This morning? So you're late for work?"]
     answer: 0
-    cja: ["うそ！ よかったね！ お祝いしよう。", "えっ、本当に残念だね。", "今朝？ じゃあ仕事に遅刻？"]
-    why: "promotion は「昇進」でうれしい知らせ。今朝知らされたばかりと興奮しているので、Good for you! と祝うのが自然。残念がるのは逆。"
+    cja: ["うそ！ おめでとう！ お祝いしよう。", "えっ、それは本当に残念だね。", "今朝？ じゃあ仕事に遅刻？"]
+    why: "promotion は「昇進」でうれしい知らせ。今朝知らされたばかりと興奮しているので、Congrats! と祝うのが自然。残念がるのは逆。"
     ctx: "騒がしいカフェに、友だちが駆け込んできました"
     scene: cafe
     cond: { kind: cafe, level: heavy }
@@ -591,11 +591,11 @@ items:
     voice: us
     cast: us-m3
     en: "We should do this more often. Like, every month? Totally. How about the first Saturday of every month? First Saturday's tough for me. What about the second? Would that work?"
-    ja: "第2土曜で大丈夫。そうしよう！"
+    ja: "いいよ、第2土曜で大丈夫！"
     note: "tough＝都合が 悪い。second＝第2"
-    choices: ["The second Saturday works. Let's do it!", "Great, the first Saturday it is.", "The second? So, twice a month?"]
+    choices: ["Sure, the second's fine!", "Great, the first Saturday it is.", "The second? So, twice a month?"]
     answer: 0
-    cja: ["第2土曜で大丈夫。そうしよう！", "よし、第1土曜で決まり。", "2回目？ じゃあ月に2回？"]
+    cja: ["いいよ、第2土曜で大丈夫！", "よし、第1土曜で決まり。", "2回目？ じゃあ月に2回？"]
     why: "第1土曜は tough（都合が悪い）と言われ、the second（第2土曜）を提案された。月2回という意味ではない。それに乗るのが自然。"
     ctx: "混んだカフェで、帰りぎわに次の約束を"
     focus: "First Saturday's tough for me. What about the second? Would that work?"
@@ -617,9 +617,9 @@ items:
     tts: "Anyway, I've gotta run, but text me, an' catch me up properly soon. I want the whole story."
     ja: "とにかく、もう行かなきゃ。でも連絡して、近いうちにちゃんと近況を聞かせて。全部聞きたいから。 → つまり、もう帰るが、近いうちにゆっくり話を聞きたい。"
     note: "gotta run＝もう 行かなきゃ"
-    choices: ["She has to leave, but wants to hear everything soon.", "She's going running and wants company.", "She doesn't want to hear any more."]
+    choices: ["She's leaving but wants the full story.", "She's going for a jog.", "She doesn't want to hear any more."]
     answer: 0
-    cja: ["もう行くが、近いうちに全部聞きたい。", "走りに行くので一緒に来てほしい。", "もう話は聞きたくない。"]
+    cja: ["もう行くけど、あとで全部聞きたい。", "ジョギングに行く。", "もう話は聞きたくない。"]
     why: "Anyway と I've gotta run は「そろそろ行かなきゃ」の合図。走る話ではない。text me、catch me up で、近いうちに全部聞かせてと言っている。"
     ctx: "混んだカフェで、友だちが時計を見て"
     ask: "つまり、どういう こと？"

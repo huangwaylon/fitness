@@ -46,9 +46,9 @@ items:
     en: "Hey! Did you get Molly and Sterling's invitation? They're finally tying the knot! I know! I got the save-the-date months ago. When is it again? Saturday, June 14th. And they want everyone to RSVP by May 1st. Did you say the 14th or the 4th? The 14th. Oh, and you get a plus-one, so bring someone fun!"
     ja: "6月14日の土曜。5月1日までに返事。誰か一人連れていける。"
     note: "RSVP by の 後が 返事の 期限"
-    choices: ["June 14th. Reply by May 1st, and he can bring a guest.", "June 4th. Reply by May 1st, and he should come alone.", "June 14th. The invitation comes on May 1st."]
+    choices: ["June 14th. RSVP by May 1st. He gets a plus-one.", "June 4th. RSVP by May 1st. No plus-one.", "June 14th. The invitations go out on May 1st."]
     answer: 0
-    cja: ["6月14日。5月1日までに返事、誰か一人連れていける。", "6月4日。5月1日までに返事、一人で行く。", "6月14日。招待状は5月1日に届く。"]
+    cja: ["6月14日。5月1日までに返事。誰か一人連れていける。", "6月4日。5月1日までに返事。同伴者なし。", "6月14日。招待状は5月1日に発送。"]
     why: "日にちは fourteenth（14日）と聞き返して確かめた。RSVP by May 1st は「5月1日までに出欠の返事」。plus-one は一人連れていけるということ。"
     ctx: "友だちから、結婚式の話で電話です"
     focus: "Saturday, June 14th. And they want everyone to RSVP by May 1st."
@@ -70,12 +70,12 @@ items:
     voice: us
     cast: us-f4
     en: "So what's the deal with gifts? Do I just put cash in a card? You can, but they have a registry online. Just pick something off the list, and it ships straight to them. Oh, nice. So there's no set amount? Nope. Whatever you're comfortable with."
-    ja: "よかった。今夜リストを見てみる。"
+    ja: "いいね、今夜リストから何か選ぶね。"
     note: "registry＝ほしい物リスト。金額の 決まりは ない"
-    choices: ["Perfect. I'll check out the registry tonight.", "Okay, so how much cash is the rule?", "A registry? Do I have to sign up to go?"]
+    choices: ["Great, I'll pick something off the list tonight.", "Okay, so a hundred in cash is the rule.", "Wait, I need to sign up online to attend?"]
     answer: 0
-    cja: ["よかった。今夜リストを見てみる。", "じゃあ、現金はいくらが決まり？", "登録？ 出席するのに申し込みがいるの？"]
-    why: "registry は新郎新婦がほしい物のリスト。選べば直接届き、金額の決まりはない（no set amount）。現金の相場を聞くのも、出席の登録と考えるのも違う。"
+    cja: ["いいね、今夜リストから何か選ぶね。", "じゃあ、現金で100ドルが決まりなんだね。", "待って、出席するのにネットで申し込みがいるの？"]
+    why: "registry は新郎新婦がほしい物のリスト。選べば直接届き、金額の決まりはない（no set amount）。現金100ドルと決めつけるのも、出席の申し込みと考えるのも違う。"
     ctx: "結婚祝いについて、友だちに相談しています"
     focus: "Just pick something off the list, and it ships straight to them."
     ask: "次の ひとことは？"
@@ -95,12 +95,12 @@ items:
     cast: us-f3
     en: "So you got the save-the-date! Are you bringing a plus-one, or is it just you?"
     tts: "So ya got the save-the-date! Are ya bringin' a plus-one, or is it just you?"
-    ja: "お知らせ、届いたんだね！ 誰か連れてくる？ それとも一人？ →「今回は一人だと思う。」"
+    ja: "お知らせ、届いたんだね！ 誰か連れてくる？ それとも一人？ →「あ、今回は一人だよ。」"
     note: "plus-one＝連れて くる 一人。「もう1つ」 ではない"
-    choices: ["Just me this time, I think.", "Sure, one more slice for me!", "Plus one? So the party starts at one?"]
+    choices: ["Oh, just me this time.", "Yeah, I got it last week.", "I can bring an extra dish."]
     answer: 0
-    cja: ["今回は一人だと思う。", "うん、もう一切れちょうだい！", "プラス・ワン？ じゃあパーティーは1時から？"]
-    why: "plus-one は「同伴者」。A, or B? の聞き方で、誰か連れてくるか一人かを選ばせている。おかわりの話でも、時間の話でもない。"
+    cja: ["あ、今回は一人だよ。", "うん、先週届いたよ。", "料理をもう一品持っていけるよ。"]
+    why: "plus-one は「同伴者」。A, or B? の聞き方で、誰か連れてくるか一人かを選ばせている。届いたかどうかや、料理の話ではない。"
     ctx: "結婚する友だちと、招待のことを話しています"
     scene: cafe
     tags: { seed: 48, register: friend, pragmatic: literal, features: [intonation] }
@@ -114,9 +114,9 @@ items:
     tts: "The dress code says cocktail attire. So, no jeans, but ya don't need a tux either."
     ja: "服装はカクテル・アタイアだって。ジーンズはだめだけど、タキシードもいらない。 → つまり、少しきちんとした服で行けばいい。"
     note: "no〜, but〜either の 両方を 聞く"
-    choices: ["Dress up a little, but nothing too formal.", "Jeans are fine. It's casual.", "Men have to wear a tux."]
+    choices: ["Dress up a bit, not too formal.", "Jeans are fine. It's casual.", "Men need a tux, women a cocktail dress."]
     answer: 0
-    cja: ["少しきちんとした服で。でも正装まではいらない。", "ジーンズで大丈夫。カジュアル。", "男性はタキシード必須。"]
+    cja: ["少しきちんと。でも正装まではいらない。", "ジーンズで大丈夫。カジュアル。", "男性はタキシード、女性はカクテルドレス。"]
     why: "cocktail attire は「少しきちんとした服装」。no jeans でジーンズは不可、you don't need a tux でタキシードまでは不要。その間くらい。"
     ctx: "招待状を見ながら、友だちが説明しています"
     ask: "つまり、何を 着ていく？"
@@ -150,10 +150,10 @@ items:
     tts: "Wait, they're finally tyin' the knot? After, what, ten years together?"
     ja: "え、あの二人、ついに結婚するの？ 付き合って、えっと、10年？ → つまり、やっと結婚すると聞いて驚いている。"
     note: "tie the knot＝結婚する。上がる 声は 驚き"
-    choices: ["He's surprised they're finally getting married.", "He thinks they're breaking up.", "He's asking how to tie a tie."]
+    choices: ["He's surprised it's finally happening.", "He's surprised they're breaking up after ten years.", "He wants to learn how to tie the knot."]
     answer: 0
-    cja: ["やっと結婚すると聞いて驚いている。", "二人が別れると思っている。", "ネクタイの結び方を聞いている。"]
-    why: "tie the knot は「結婚する」。finally と、声が上がる After ten years? は「やっと？」という驚き。ネクタイの話でも別れ話でもない。"
+    cja: ["やっと結婚すると聞いて驚いている。", "10年も付き合って別れると聞いて驚いている。", "結び目の作り方を習いたい。"]
+    why: "tie the knot は「結婚する」。finally と、声が上がる After ten years? は「やっと？」という驚き。結び目の話でも別れ話でもない。"
     ctx: "結婚式の招待のことを、友だちに話しました"
     ask: "どんな 気持ち？"
     scene: cafe
@@ -168,10 +168,10 @@ items:
     en: "Uh-oh. Marshal's giving the toast. This could be bad. Hi, everyone! Sterling and I go way back, so trust me, I have stories. Don't worry, buddy. I'll keep it clean. Mostly. Ha. Mostly. This guy used to say he'd never settle down. Then he met Molly, and two weeks later, he's asking me how to cook. Molly, I couldn't be happier for you two. So, everyone, raise your glasses. To Molly and Sterling!"
     ja: "モリーに出会ってスターリングが変わった、と優しくからかっている。"
     note: "couldn't be happier＝最高に うれしい"
-    choices: ["Meeting Molly changed Sterling, and he's teasing him kindly.", "Sterling can't cook, so the food tonight is bad.", "Marshal doesn't think they should get married."]
+    choices: ["Molly changed Sterling, and he teases him kindly.", "Sterling can't cook, so tonight's food will be bad.", "Marshal thinks they rushed into getting married."]
     answer: 0
-    cja: ["モリーに出会ってスターリングが変わった、と優しくからかっている。", "スターリングは料理ができないので、今夜の料理はまずい。", "マーシャルは二人の結婚に反対している。"]
-    why: "結婚しないと言っていた彼が、モリーに会って2週間で料理を習い始めた、という愛のあるからかい。couldn't be happier は「最高にうれしい」で、反対ではない。"
+    cja: ["モリーに出会ってスターリングが変わった、と優しくからかっている。", "スターリングは料理ができないので、今夜の料理はまずいだろう。", "マーシャルは二人の結婚が急すぎると思っている。"]
+    why: "結婚しないと言っていた彼が、モリーに会って2週間で料理を習い始めた、という愛のあるからかい。couldn't be happier は「最高にうれしい」で、批判ではない。"
     ctx: "披露宴で、新郎の親友が乾杯のあいさつをします"
     focus: "Then he met Molly, and two weeks later, he's asking me how to cook."
     ask: "スピーチの 冗談の 意味は？"
@@ -191,11 +191,11 @@ items:
     voice: us
     cast: us-f5
     en: "Oh, I couldn't be happier for them. I cried through the whole ceremony!"
-    ja: "ああ、本当にうれしいわ。式の間ずっと泣いちゃった！ →「私もです。素敵な式でしたね。」"
+    ja: "ああ、本当にうれしいわ。式の間ずっと泣いちゃった！ →「ほんと、私も。素敵な式でしたね。」"
     note: "couldn't＋比べる 形＝最高に。否定 ではない"
-    choices: ["Me too. It was beautiful.", "Oh no, what's wrong? Are you okay?", "Why couldn't you go to the ceremony?"]
+    choices: ["Oh, me too. It was beautiful.", "Oh no, I'm so sorry to hear that.", "Why couldn't you go to the ceremony?"]
     answer: 0
-    cja: ["私もです。素敵な式でしたね。", "えっ、どうしたんですか？ 大丈夫？", "どうして式に行けなかったんですか？"]
+    cja: ["ほんと、私も。素敵な式でしたね。", "えっ、それはお気の毒に。", "どうして式に行けなかったんですか？"]
     why: "couldn't be happier は「これ以上ないほどうれしい」。泣いたのはうれし泣き。悲しい話でも、式に行けなかった話でもないので、同じ気持ちを返す。"
     ctx: "披露宴で、新婦のおばさんと同じテーブルです"
     scene: living
@@ -211,9 +211,9 @@ items:
     tts: "Oh, great. A five-course dinner, an' then a forty-minute slideshow. Can't wait."
     ja: "ああ、そりゃいいね。5品のコースのあとに40分のスライドショーか。待ちきれないよ。 → つまり、長すぎてうんざりしている（皮肉）。"
     note: "平らな Oh, great は 皮肉"
-    choices: ["He's not looking forward to how long it'll be.", "He's excited to see the slideshow.", "He's upset that dinner is too short."]
+    choices: ["He's dreading how long it'll take.", "He can't wait to see the slideshow.", "He's upset the dinner is too short."]
     answer: 0
-    cja: ["長くなりそうで、うんざりしている。", "スライドショーを楽しみにしている。", "食事が短すぎて不満。"]
+    cja: ["長くなりそうで、うんざりしている。", "スライドショーを見るのが待ちきれない。", "食事が短すぎて不満。"]
     why: "低く平らな Oh, great と Can't wait は皮肉。コース料理に40分のスライドショーと聞いて、長さにうんざりしている。本当に楽しみなら声が上がる。"
     ctx: "披露宴の進行表を見て、新婦のおじさんが"
     ask: "本当は どう 思ってる？"
@@ -246,11 +246,11 @@ items:
     voice: us
     cast: us-f3
     en: "Okay, be honest. My speech is about six minutes. Is that too long? Six minutes is... fine. Wow. Okay. That 'fine' did not sound fine. Honestly? Maybe cut the story about my ex."
-    ja: "はは、そうだね。あの話はカットする。"
+    ja: "わかった、そうだね。元カレの話はカットする。"
     note: "間の ある fine は 本音 ではない"
-    choices: ["Ha, fair. That story's gone.", "Great, then I'll add a few more stories.", "Your ex? Should I invite him too?"]
+    choices: ["Okay, fair. I'll cut the story about my ex.", "Great, then I'll add a few more stories.", "Your ex? Should I invite him too?"]
     answer: 0
-    cja: ["はは、そうだね。あの話はカットする。", "よかった、じゃあ話をもう少し足すね。", "元カレ？ 彼も招待したほうがいい？"]
+    cja: ["わかった、そうだね。元カレの話はカットする。", "よかった、じゃあ話をもう少し足すね。", "元カレ？ 彼も招待したほうがいい？"]
     why: "間のある Six minutes is… fine は「本当は長い」の合図。Honestly? のあと、元カレの話を削ってと本音を言った。話を足すのは逆。"
     ctx: "結婚式の前に、花嫁にスピーチの相談です"
     focus: "Honestly? Maybe cut the story about my ex."
@@ -270,11 +270,11 @@ items:
     cast: us-f4
     en: "Sorry, the invitation only has your name on it, so no plus-one this time. We're keeping it small."
     tts: "Sorry, the invitation only has yer name on it, so no plus-one this time. We're keepin' it small."
-    ja: "ごめんね、招待状はあなたの名前だけなの。だから今回は同伴者なし。小さくやりたくて。 → つまり、一人で来てほしい。"
+    ja: "ごめんね、招待状はあなたの名前だけなの。だから今回は同伴者なし。小さくやりたくて。 → つまり、招待は本人だけで、同伴者なし。"
     note: "only has your name＝招待は 本人だけ"
-    choices: ["She'd like him to come alone.", "He can bring one friend.", "The wedding is canceled."]
+    choices: ["It's just him, no plus-one.", "He can bring one friend along.", "The wedding's been called off."]
     answer: 0
-    cja: ["一人で来てほしい。", "友だちを一人連れてきていい。", "結婚式は中止。"]
+    cja: ["招待は本人だけで、同伴者なし。", "友だちを一人連れてきていい。", "結婚式は中止になった。"]
     why: "only has your name は「招待はあなただけ」。no plus-one で同伴者なし。小さくやりたい（keeping it small）からで、中止ではない。"
     ctx: "婚約した同僚に、誰か連れていけるか聞きました"
     ask: "つまり、どういう こと？"
@@ -290,9 +290,9 @@ items:
     en: "Hey, it's Molly! Just checking, did you get the invite? We need your RSVP by Friday. I did! Sorry, I've been swamped. Count me in. Yay! Okay, dinner's chicken or fish. Which one? Fish, please. And what's the dress code? Cocktail attire. And no gifts needed, really, but there's a registry if you want."
     ja: "出席で、魚を選んだ。"
     note: "A or B↘ は「どっち？」。一つ 選ぶ"
-    choices: ["He's coming, and he wants the fish.", "He's coming, and he wants both.", "He might not make it."]
+    choices: ["He's in, and he picked the fish.", "He's coming and wants both dishes.", "He's too busy to make it."]
     answer: 0
-    cja: ["出席で、魚を選んだ。", "出席で、両方ほしい。", "行けないかもしれない。"]
+    cja: ["出席で、魚を選んだ。", "出席で、両方の料理がほしい。", "忙しくて行けない。"]
     why: "Count me in は「出席する」。chicken or fish? は最後が下がる「どっち？」の聞き方なので一つ選ぶ。ドムは魚にした。プレゼントは任意。"
     ctx: "結婚する友だちから、返事の確認の電話です"
     focus: "Okay, dinner's chicken or fish. Which one?"
@@ -315,12 +315,12 @@ items:
     cast: us-m5
     en: "Before we eat, I'd like everyone to raise your glasses to the happy couple."
     tts: "Before we eat, I'd like everyone ta raise yer glasses to the happy couple."
-    ja: "食事の前に、皆さんグラスを持って、幸せな二人に乾杯しましょう。 →「モリーとスターリングに！」"
+    ja: "食事の前に、皆さんグラスを持って、幸せな二人に乾杯しましょう。 →「幸せなお二人に！」"
     note: "raise your glasses＝乾杯の 合図"
-    choices: ["To Molly and Sterling!", "Sure. How high should I lift it?", "Thanks, but I'm not that hungry."]
+    choices: ["To the happy couple!", "Okay, I'll raise my hand.", "I'm not that hungry, thanks."]
     answer: 0
-    cja: ["モリーとスターリングに！", "はい。どのくらい高く上げればいい？", "ありがとう、でもあまりお腹すいてない。"]
-    why: "raise your glasses は乾杯の合図。グラスを上げて二人の名前を言う（To〜!）のが決まり。高さを聞くのも、食事を断るのも的外れ。"
+    cja: ["幸せなお二人に！", "はい、手を挙げますね。", "あまりお腹すいてないです、ありがとう。"]
+    why: "raise your glasses は乾杯の合図。グラスを上げて To〜! と続けるのが決まり。手を挙げるのも、食事を断るのも的外れ。"
     ctx: "披露宴で、新郎のお父さんが立ち上がりました"
     scene: living
     cond: { kind: party, level: light }
@@ -334,9 +334,9 @@ items:
     en: "We just sent out the save-the-dates. The real invitations, with all the details, go out in March."
     ja: "日にちのお知らせを送ったところ。詳しいことが書いてある正式な招待状は3月に送るね。 → つまり、今は日にちだけで、詳細はあとで届く。"
     note: "save the date＝この 日を 空けて おいて"
-    choices: ["It's just the date for now. Details come later.", "Please save a seat for her.", "The wedding was moved to March."]
+    choices: ["Just the date for now. Details come later.", "Please save her a seat at the wedding.", "The wedding was moved to March."]
     answer: 0
-    cja: ["今は日にちだけ。詳細はあとで。", "彼女の席を取っておいてほしい。", "結婚式が3月に変わった。"]
+    cja: ["今は日にちだけ。詳細はあとで。", "式で彼女の席を取っておいてほしい。", "結婚式が3月に変わった。"]
     why: "save-the-date は「この日を空けておいて」という先のお知らせ。正式な招待状（the real invitations）が3月に届く。式が3月になったわけではない。"
     ctx: "婚約した同僚が、カードを配っています"
     ask: "つまり、どういう こと？"
@@ -369,11 +369,11 @@ items:
     voice: us
     cast: us-m5
     en: "So, how's married life so far? Day one. Great! Molly says I can keep my old couch. Oh, nice! ...In the garage."
-    ja: "はは！ もう奥さんが仕切ってるね。"
+    ja: "はは！ ソファはガレージ行きってわけね？"
     note: "間の あとの 一言が オチ"
-    choices: ["Ha! Sounds like she's already in charge.", "Nice, so the couch stays in the living room.", "Oh no, are you guys fighting already?"]
+    choices: ["Ha! So the couch lives in the garage now?", "Nice, so it stays in the living room.", "Oh no, sounds like you're fighting already."]
     answer: 0
-    cja: ["はは！ もう奥さんが仕切ってるね。", "いいね、じゃあソファはリビングに置けるんだ。", "えっ、もうケンカしてるの？"]
+    cja: ["はは！ ソファはガレージ行きってわけね？", "いいね、じゃあリビングに置けるんだ。", "えっ、もうケンカしてるみたいだね。"]
     why: "間を置いた In the garage. がオチ。ソファは残せてもガレージ行き、つまり奥さんが決めているという笑い話。リビングに置けるわけでも、ケンカでもない。"
     ctx: "披露宴で、新郎と立ち話をしています"
     focus: "...In the garage."
@@ -545,9 +545,9 @@ items:
     tts: "Oh, sure, the band's... amazing. They've played the same song, like, three times now."
     ja: "ああ、そうだね、バンドは「最高」だよ。もう同じ曲を3回くらいやってる。 → つまり、バンドにうんざりしている（皮肉）。"
     note: "Oh, sure＋大げさな ほめ言葉＝皮肉"
-    choices: ["He thinks the band is boring and repetitive.", "He loves the band and wants more songs.", "The band only knows three songs."]
+    choices: ["He's tired of hearing the same song.", "He loves the band and wants more songs.", "The band only knows three songs."]
     answer: 0
-    cja: ["同じ曲ばかりで退屈だと思っている。", "バンドが大好きで、もっと聞きたい。", "バンドは3曲しか知らない。"]
+    cja: ["同じ曲ばかりでうんざりしている。", "バンドが大好きで、もっと聞きたい。", "バンドは3曲しか知らない。"]
     why: "Oh, sure と大げさに伸ばした amazing は皮肉。同じ曲を3回もやっているので、本当はうんざりしている。3曲しか知らないとは言っていない。"
     ctx: "披露宴のダンスの時間に、隣の人がつぶやきます"
     ask: "本当は どう 思ってる？"
@@ -562,12 +562,12 @@ items:
     cast: us-f6
     en: "Sorry, I'm terrible with names! How do you know Sterling again? Work?"
     tts: "Sorry, I'm terrible with names! How d'you know Sterling again? Work?"
-    ja: "ごめん、名前を覚えるのが苦手で！ スターリングとはどういう知り合いだっけ？ 仕事？ →「ううん、昔からの付き合い。大学のルームメイト。」"
+    ja: "ごめん、名前を覚えるのが苦手で！ スターリングとはどういう知り合いだっけ？ 仕事？ →「実は違うんだ。大学のルームメイトだったの。」"
     note: "Work?＝仕事の 知り合い？"
-    choices: ["No, we go way back. College roommates.", "Yeah, Sterling. Nice to meet you.", "Work's fine, thanks. Busy as usual."]
+    choices: ["Actually, no. We were college roommates.", "Yeah, Sterling. Nice to meet you.", "Work's fine, thanks. Busy as usual."]
     answer: 0
-    cja: ["ううん、昔からの付き合い。大学のルームメイト。", "うん、スターリング。はじめまして。", "仕事は順調、ありがとう。相変わらず忙しい。"]
-    why: "How do you know Sterling? は関係を聞く質問で、Work? は「仕事関係？」の確認。違うなら No と言い、go way back（昔からの仲）と答える。"
+    cja: ["実は違うんだ。大学のルームメイトだったの。", "うん、スターリング。はじめまして。", "仕事は順調、ありがとう。相変わらず忙しい。"]
+    why: "How do you know Sterling? は関係を聞く質問で、Work? は「仕事関係？」の確認。違うので Actually, no と言い、大学のルームメイトと答える。"
     ctx: "披露宴の後半、さっき話した人がまた来ました"
     scene: living
     cond: { kind: party, level: heavy }
@@ -600,9 +600,9 @@ items:
     en: "Diana! Table six is short two chairs. Can you grab some from the patio? The patio by the bar? No, the other one. By the fountain. Thank you, you're the best!"
     ja: "了解。噴水のそばから椅子を二つね。"
     note: "No, the other one＝もう 一つの 方"
-    choices: ["On it. Two chairs from by the fountain.", "Got it. Two chairs from the patio by the bar.", "Sure, I'll bring six chairs."]
+    choices: ["Sure. Two chairs from by the fountain.", "Okay, two chairs from the patio by the bar.", "I'll bring six chairs, then."]
     answer: 0
-    cja: ["了解。噴水のそばから椅子を二つね。", "わかった。バーのそばのテラスから二つね。", "いいよ、椅子を六つ持ってくる。"]
+    cja: ["了解。噴水のそばから椅子を二つね。", "わかった、バーのそばのテラスから二つね。", "じゃあ、椅子を六つ持ってくるね。"]
     why: "6番テーブルに椅子が二つ足りない。バーのそばかと聞くと、No, the other one で噴水のそばのテラスだと訂正。six はテーブルの番号で椅子の数ではない。"
     ctx: "披露宴の最中、花嫁が付き添い役に頼みごと"
     focus: "No, the other one. By the fountain."
@@ -624,9 +624,9 @@ items:
     tts: "Honestly, I wouldn' miss it fer the world, but I've gotta head out right after the cake. Early flight."
     ja: "正直、絶対に行きたいんだけど、ケーキのすぐあとに抜けなきゃ。朝早い飛行機なんだ。 → つまり、出席するが、ケーキのあと早めに帰る。"
     note: "wouldn't miss it＝絶対 行く。but の 後に 注意"
-    choices: ["He'll be there, but he'll leave after the cake.", "He can't come because of a flight.", "He'll stay until the very end."]
+    choices: ["He'll come, but leave after the cake.", "He'll miss it because of a flight.", "He'll stay until the very end."]
     answer: 0
-    cja: ["出席するが、ケーキのあとに帰る。", "飛行機があるので来られない。", "最後までいる。"]
+    cja: ["来るけど、ケーキのあとに帰る。", "飛行機があるので行けない。", "最後までいる。"]
     why: "wouldn't miss it for the world は「絶対に行く」。ただし but のあと、早朝の飛行機のためケーキのすぐあとに帰る。来られないわけではない。"
     ctx: "にぎやかな会場で、友だちが式の予定を話します"
     ask: "つまり、どう する？"

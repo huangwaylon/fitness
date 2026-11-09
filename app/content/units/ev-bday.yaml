@@ -42,9 +42,9 @@ items:
     en: "Hey Sterling! Are you free on Saturday night? I think so. Why, what's going on? It's Tia's birthday, and we're throwing her a surprise party at my place. Don't tell her! My lips are sealed. Should I bring anything? Maybe some snacks? And get there before seven. She's showing up at seven-thirty. So that's Saturday, before seven, at your place. Got it!"
     ja: "ポピーの家でティアのサプライズパーティー。"
     note: "at my place＝わたしの いえで。主役は Tia"
-    choices: ["It's a surprise party for Tia at Poppy's place.", "It's Poppy's birthday on Saturday.", "Tia is having a party at seven."]
+    choices: ["Tia's surprise, at Poppy's.", "Poppy's birthday, on Saturday.", "A party at Tia's place, at seven."]
     answer: 0
-    cja: ["ポピーの家で開く、ティアのサプライズパーティー。", "土曜日はポピーの誕生日。", "ティアが7時にパーティーを開く。"]
+    cja: ["ポピーの家で、ティアのサプライズ。", "土曜日はポピーの誕生日。", "ティアの家で、7時からパーティー。"]
     why: "「Tia's birthday」「at my place」から、ポピーの家で開くティアのサプライズ。7時はみんなの集合時間で、ティアが来るのは7時半。"
     ctx: "友だちのポピーから電話がかかってきました"
     focus: "a surprise party at my place"
@@ -67,12 +67,12 @@ items:
     voice: us
     cast: us-m5
     en: "Oh, what about a present? Are we all getting her something? We're chipping in for one big thing, those wireless headphones she wants. Like two thousand yen each?"
-    ja: "のった。今日送るね。"
+    ja: "いいよ、ひとり2千円で大丈夫。"
     note: "chip in＝お金を 出しあう。ひとり 2千円"
-    choices: ["Count me in. I'll send it today.", "Wireless? I can't hear you.", "Two thousand headphones? Wow."]
+    choices: ["Sure, two thousand each is fine.", "Wireless? I can't hear you.", "Oh, two hundred? That's cheap!"]
     answer: 0
-    cja: ["参加する。今日送るね。", "ワイヤレス？ よく聞こえないよ。", "ヘッドホンが2千個？ すごい。"]
-    why: "chip in はみんなでお金を出し合うこと。ひとり2千円と言われたので「参加する、今日送る」が自然。two thousand は金額で、ヘッドホンの数ではない。"
+    cja: ["いいよ、ひとり2千円で大丈夫。", "ワイヤレス？ よく聞こえないよ。", "え、200円？ 安いね！"]
+    why: "chip in はお金を出し合うこと。ひとり2千円と言われたので「いいよ」と乗るのが自然。two thousand を two hundred と聞き違えないように。"
     ctx: "ティアへのプレゼントを電話で相談中"
     focus: "We're chipping in"
     ask: "つぎの ひとことは？"
@@ -108,12 +108,12 @@ items:
     voice: us
     cast: us-m1
     en: "Party's at my place on Friday. You know where I live, right? Text me if you get lost."
-    ja: "金曜にうちでパーティー。家わかるよね？ 迷ったらメッセージして。 →「うん、前に行ったし。じゃあそのときに！」"
+    ja: "金曜にうちでパーティー。家わかるよね？ 迷ったらメッセージして。 →「道はわかるよ。じゃあ金曜に！」"
     note: "at my place＝ぼくの 家で。お店 ではない"
-    choices: ["Yep, I've been before. See you there!", "Oh, is it your birthday?", "No, the party's at my place."]
+    choices: ["I know the way. See you Friday!", "Oh, wait, is it your birthday?", "No, the party's at my place."]
     answer: 0
-    cja: ["うん、前に行ったことある。じゃあそのときに！", "あ、きみの誕生日なの？", "ちがう、パーティーはうちでやるよ。"]
-    why: "「家わかるよね？」への返事なので「前に行ったことある」が合う。at my place は相手の家のこと。「うちで」と言い返すと話がかみ合わない。"
+    cja: ["道はわかるよ。じゃあ金曜に！", "あれ、きみの誕生日なの？", "ちがう、パーティーはうちでやるよ。"]
+    why: "「家わかるよね？」への返事なので「道はわかる」が合う。at my place は相手の家のこと。「うちで」と言い返すと話がかみ合わない。"
     ctx: "友だちから金曜のパーティーの連絡です"
     scene: living
     channel: phone
@@ -148,9 +148,9 @@ items:
     en: "Okay, everyone, grab a glass! Quick toast. Ooh, speech! Speech! Here's to Tia: the best neighbor, the worst singer, and now officially thirty! Cheers! Cheers! Happy birthday, Tia!"
     ja: "30歳になったティア。"
     note: "Here's to＝〜に 乾杯。worst singer は 冗談"
-    choices: ["Tia, who just turned thirty.", "Poppy, the best singer.", "Their new neighbor."]
+    choices: ["Tia, who's thirty now.", "Poppy, their best singer.", "Their new next-door neighbor."]
     answer: 0
-    cja: ["30歳になったばかりのティア。", "歌が一番うまいポピー。", "新しいお隣さん。"]
+    cja: ["30歳になったティア。", "みんなで一番歌がうまいポピー。", "新しいお隣さん。"]
     why: "Here's to Tia は「ティアに乾杯」。best neighbor や worst singer はティアをほめたりからかったりする言葉で、別の人の話ではない。"
     ctx: "パーティーの最中、だれかがグラスを持って立ちました"
     focus: "Here's to Tia"
@@ -172,9 +172,9 @@ items:
     en: "Hey, thanks for coming, you guys. It really means a lot."
     ja: "来てくれたお礼を言っている。"
     note: "means a lot＝とても うれしい。お礼の ことば"
-    choices: ["He's thanking his friends for coming.", "He's making a toast.", "He wants them to leave."]
+    choices: ["He's thanking them for coming.", "He's making a toast to them.", "He wants them to leave now."]
     answer: 0
-    cja: ["来てくれた友だちにお礼を言っている。", "乾杯の音頭をとっている。", "みんなに帰ってほしい。"]
+    cja: ["来てくれたお礼を言っている。", "みんなに乾杯している。", "もう帰ってほしい。"]
     why: "It really means a lot は「本当にうれしい」というお礼の決まり文句。thanks for coming と合わせて感謝を伝えている。乾杯の言葉はない。"
     ctx: "パーティーの主役が玄関でみんなに話しています"
     ask: "つまり、どういうこと？"
@@ -187,12 +187,12 @@ items:
     voice: us
     cast: us-f3
     en: "Shh! Don't tell Dom about the cake. He thinks we forgot."
-    ja: "しーっ！ ケーキのことドムに言わないで。忘れてると思ってるから。 →「誰にも言わない！」"
+    ja: "しーっ！ ケーキのことドムに言わないで。忘れてると思ってるから。 →「わかった、ドムには言わない！」"
     note: "Don't tell〜＝ないしょに して"
-    choices: ["My lips are sealed!", "Okay, I'll tell him now.", "He forgot the cake?"]
+    choices: ["Got it, I won't tell Dom!", "Okay, I'll tell him now.", "Wait, you forgot it?"]
     answer: 0
-    cja: ["口はかたいよ！", "わかった、今から言ってくる。", "ドムがケーキを忘れたの？"]
-    why: "Don't tell〜は「〜に言わないで」。My lips are sealed は「誰にも言わない」の決まり文句。ドムは、みんなが誕生日を忘れたと思っている。"
+    cja: ["わかった、ドムには言わない！", "わかった、今から言ってくる。", "待って、ケーキ忘れたの？"]
+    why: "Don't tell〜は「〜に言わないで」。ドムには言わないと約束するのが自然。He thinks we forgot は、みんなが誕生日を忘れたとドムが思っているということ。"
     ctx: "ドムの誕生日の準備をしています"
     scene: living
     cond: { kind: cafe, level: light }
@@ -204,11 +204,11 @@ items:
     voice: us
     cast: us-f1
     en: "She's here! I can hear her on the stairs! Quiet, everyone! Who's got the lights? Got it. Everyone hide behind the couch, and wait for my signal."
-    ja: "オッケー、しーっ！ 合図を待つね。"
+    ja: "オッケー、しーっ！ 合図でね。"
     note: "まだ 隠れる 段階。先に 言ったら 台無し"
-    choices: ["Okay, shh! We'll wait for your signal.", "Hi Tia, it's a surprise party!", "The lights are on the stairs."]
+    choices: ["Okay, shh! On your signal.", "Hi Tia, it's a surprise party!", "The lights are on the stairs."]
     answer: 0
-    cja: ["オッケー、しーっ！ 合図を待つね。", "ティア、サプライズパーティーだよ！", "電気は階段にあるよ。"]
+    cja: ["オッケー、しーっ！ 合図でね。", "ティア、サプライズパーティーだよ！", "電気は階段にあるよ。"]
     why: "ティアはまだ階段にいて、隠れて合図を待つ段階。先に「サプライズだよ」と言ったら台無し。stairs は足音が聞こえる場所。"
     ctx: "サプライズの主役がもうすぐ部屋に来ます"
     focus: "wait for my signal"
@@ -244,7 +244,7 @@ items:
     en: "Bring anything? Nah, just bring yourself. Oh, and maybe ice, if you pass a store."
     ja: "氷だけ、ついでがあれば買ってきてほしい。"
     note: "bring yourself＝手ぶらで。でも ice は ほしい"
-    choices: ["She only really needs ice, if it's easy.", "She wants him to bring lots of food.", "She doesn't want him to come."]
+    choices: ["She only needs ice, if it's easy.", "She wants him to bring lots of food.", "She doesn't want him to come."]
     answer: 0
     cja: ["ついでがあれば、氷だけほしい。", "食べ物をたくさん持ってきてほしい。", "彼に来てほしくない。"]
     why: "just bring yourself は「手ぶらで来て」。でも maybe ice, if you pass a store で「店の前を通るなら氷を」と軽く頼んでいる。"
@@ -283,9 +283,9 @@ items:
     en: "Hey Molly, quick question. Is Kicks's party still on Friday? It moved to Saturday. Same time, but at the karaoke place in Shibuya now. Saturday at the karaoke place. Got it. Should I bring anything? Just your singing voice! Okay, I'll let you go. See you Saturday!"
     ja: "土曜、渋谷のカラオケ。"
     note: "moved to Saturday＝金曜 ではない。場所も 変更"
-    choices: ["Saturday, at a karaoke place.", "Friday, at a karaoke place.", "Saturday, at Kicks's place."]
+    choices: ["Saturday, karaoke in Shibuya.", "Friday, same karaoke bar.", "Sunday, at Kicks's house."]
     answer: 0
-    cja: ["土曜日、カラオケで。", "金曜日、カラオケで。", "土曜日、キックスの家で。"]
+    cja: ["土曜日、渋谷のカラオケ。", "金曜日、同じカラオケ店。", "日曜日、キックスの家。"]
     why: "It moved to Saturday で金曜から土曜に変更。場所も the karaoke place in Shibuya に変わった。時間は同じ。"
     ctx: "パーティーの予定を電話で確認しています"
     focus: "It moved to Saturday"
@@ -326,9 +326,9 @@ items:
     en: "Wouldn't miss it for the world. What time should I come?"
     ja: "絶対行くよ。何時に行けばいい？ →「7時ごろ！ うちでやるよ。」"
     note: "Wouldn't miss it＝必ず 行く"
-    choices: ["Around seven! It's at my place.", "Thanks, it's a big world.", "No, don't miss it."]
+    choices: ["Around seven! It's at my place.", "Oh, you can't come? That's okay.", "The whole world? Wow, thanks!"]
     answer: 0
-    cja: ["7時ごろ！ うちでやるよ。", "ありがとう、世界は広いね。", "ううん、逃さないでね。"]
+    cja: ["7時ごろ！ うちでやるよ。", "え、来られないの？ 大丈夫だよ。", "世界中？ わあ、ありがとう！"]
     why: "Wouldn't miss it for the world は「絶対行く」。そのあと何時に行けばいいか聞いているので、時間と場所を答える。"
     ctx: "パーティーに誘ったら、友だちから返事が来ました"
     scene: living
@@ -362,11 +362,11 @@ items:
     voice: us
     cast: us-m6
     en: "Morning! So, any plans for Tia's birthday? Shh! She's right behind you."
-    ja: "あ！ えーと…いい天気だね！"
+    ja: "えーと…いい天気だね？"
     note: "本人の 前では 話題を 変える"
-    choices: ["Oh! Uh… nice weather today, huh?", "Tia, we're planning your party!", "Behind me? Where?"]
+    choices: ["Uh… so, nice weather, huh?", "Tia, we're planning your party!", "Behind me? Who's behind me?"]
     answer: 0
-    cja: ["あっ！ えーと…今日はいい天気だね？", "ティア、パーティーの計画中だよ！", "うしろ？ どこ？"]
+    cja: ["えーと…いい天気だね？", "ティア、パーティーの計画中だよ！", "うしろ？ だれがうしろに？"]
     why: "She's right behind you は「本人がすぐうしろにいる」。サプライズがばれないよう話題を変えるのが正解。計画をばらしたり、きょろきょろしたりするのは逆効果。"
     ctx: "朝、道で友だちに会いました"
     focus: "She's right behind you"
@@ -526,9 +526,9 @@ items:
     tts: "B B Q at my place Sunday afternoon for Kitt's birthday. No need to bring anything, but if you wanna grab some ice, you're a lifesaver."
     ja: "日曜の午後、彼の家でバーベキュー。"
     note: "BBQ＝バーベキュー。at my place＝うちで"
-    choices: ["It's a barbecue at his place on Sunday afternoon.", "It's a party at Kitt's place on Sunday night.", "He wants her to bring lots of food."]
+    choices: ["A barbecue at his place, Sunday afternoon.", "A party at Kitt's place on Sunday night.", "She should bring lots of food and some ice."]
     answer: 0
-    cja: ["日曜の午後、彼の家でバーベキュー。", "日曜の夜、キットの家でパーティー。", "食べ物をたくさん持ってきてほしい。"]
+    cja: ["日曜の午後、彼の家でバーベキュー。", "日曜の夜、キットの家でパーティー。", "食べ物をたくさんと、氷も持ってきてほしい。"]
     why: "at my place は話している本人の家。キットは誕生日の人。持ち物はいらないが、氷を買ってきてくれたら助かる（lifesaver）という軽いお願い。"
     ctx: "外を歩きながら、友だちが電話で誘ってきました"
     ask: "つまり、どういうこと？"
@@ -563,11 +563,11 @@ items:
     voice: us
     cast: us-m2
     en: "Psst, don't say anything to Dom, but we got him a puppy!"
-    ja: "ねえ、ドムには何も言わないでね、子犬をプレゼントするんだ！ →「うそ！ 絶対言わない。」"
+    ja: "ねえ、ドムには何も言わないでね、子犬をプレゼントするんだ！ →「うそ！ 何も言わないよ。」"
     note: "don't say anything to〜＝〜には ないしょ"
-    choices: ["No way! My lips are sealed.", "Dom, you're getting a puppy!", "Say anything? Like what?"]
+    choices: ["No way! I won't say anything.", "Dom, you're getting a puppy!", "Say anything? Like, what do you mean?"]
     answer: 0
-    cja: ["うそ！ 絶対言わない。", "ドム、子犬もらえるよ！", "何か言うって？ たとえば？"]
+    cja: ["うそ！ 何も言わないよ。", "ドム、子犬もらえるよ！", "何か言うって？ どういう意味？"]
     why: "don't say anything to Dom は「ドムには何も言わないで」。驚きつつ秘密を守るのが自然。本人にばらしたり、言葉どおりに聞き返したりするのはずれている。"
     ctx: "にぎやかなパーティーで、友だちが小声で"
     scene: living
@@ -583,9 +583,9 @@ items:
     tts: "Okay, I'm gonna head out. Thanks for tonight, it was an awesome party. Let's grab brunch next week!"
     ja: "お礼を言って帰ろうとしている。"
     note: "head out＝帰る。awesome＝最高の"
-    choices: ["He's thanking the host and leaving.", "He's making a toast.", "He wants another drink."]
+    choices: ["He's saying goodbye.", "He's making a toast to the host.", "He wants another drink."]
     answer: 0
-    cja: ["主催者にお礼を言って帰るところ。", "乾杯の音頭をとっている。", "もう一杯飲みたい。"]
+    cja: ["お礼を言って、帰るところ。", "主催者に乾杯している。", "もう一杯飲みたい。"]
     why: "head out は「そろそろ帰る」。Thanks for tonight でお礼、Let's grab brunch next week は別れぎわのあいさつ。乾杯ではない。"
     ctx: "パーティーの終わりごろ、玄関で"
     ask: "つまり、どういうこと？"

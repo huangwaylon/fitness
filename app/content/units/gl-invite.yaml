@@ -88,12 +88,12 @@ items:
     cast: us-m4
     en: "We're grabbing ramen after this. Want to come?"
     tts: "We're grabbin' ramen after this. Wanna come?"
-    ja: "このあとラーメン食べに行くんだけど。来る？ →「いいね、行く！」"
+    ja: "このあとラーメン食べに行くんだけど。来る？ →「いいね、ラーメン最高！」"
     note: "Wanna come?＝一緒に 来る？"
-    choices: ["Sure, count me in!", "Come? I'm already coming.", "Sorry, I don't have any ramen."]
+    choices: ["Sure, ramen sounds great!", "Come? I'm already coming.", "Sorry, I don't have any ramen."]
     answer: 0
-    cja: ["いいね、行く！", "来る？ もう向かってるよ。", "ごめん、ラーメンは持ってない。"]
-    why: "Wanna come? は Want to come? のくだけた形で「一緒に来る？」という誘い。Count me in（行く）で応じる。ラーメンの有無の話ではない。"
+    cja: ["いいね、ラーメン最高！", "来る？ もう向かってるよ。", "ごめん、ラーメンは持ってない。"]
+    why: "Wanna come? は Want to come? のくだけた形で「一緒に来る？」という誘い。気軽に乗って応じる。ラーメンの有無の話ではない。"
     ctx: "映画を見終わったあと、友だちが"
     scene: street
     tags: { seed: 48, register: friend, pragmatic: literal, features: [wanna] }
@@ -106,10 +106,10 @@ items:
     en: "Ugh, thanks, but I think I'm gonna pass. I've been out every night this week."
     ja: "今回は行かない。今週は毎晩出かけていて疲れている。"
     note: "I'm gonna pass＝今回は やめとく"
-    choices: ["She's not coming. She's been out too much.", "She'll pass by later tonight.", "She passed a test this week."]
+    choices: ["She'll skip it this time.", "She'll pass by later tonight.", "She aced a big test today."]
     answer: 0
-    cja: ["行かない。出かけすぎている。", "今夜あとで寄る。", "今週テストに合格した。"]
-    why: "I'm gonna pass は誘いを「今回はやめとく」。今週は毎晩出かけていたのが理由。pass by（立ち寄る）や合格の意味ではない。"
+    cja: ["今回はやめておく。", "今夜あとで寄る。", "今日、大きなテストで高得点を取った。"]
+    why: "I'm gonna pass は誘いを「今回はやめとく」。今週は毎晩出かけていたのが理由。pass by（立ち寄る）やテストの話ではない。"
     ctx: "金曜の夜、友だちを飲みに誘いました"
     ask: "つまり、どういう こと？"
     scene: street
@@ -159,9 +159,9 @@ items:
     en: "Hey, we're doing a barbecue by the river Sunday. You in? Aw, that sounds fun, but I'm gonna pass. My parents are visiting. No worries! Maybe next time. Definitely. Text me some pictures!"
     ja: "ジュディは来ない。両親が来るので。"
     note: "sounds fun, but… の あとが 本音"
-    choices: ["Judy isn't coming because her parents are visiting.", "Judy's bringing her parents.", "Judy will come after her parents leave."]
+    choices: ["Judy's skipping it; her parents are visiting.", "Judy's bringing her parents along to the river.", "Judy will come after her parents leave."]
     answer: 0
-    cja: ["両親が来るので、ジュディは来ない。", "ジュディは両親を連れてくる。", "両親が帰ったら、ジュディは来る。"]
+    cja: ["両親が来るので、ジュディは行かない。", "ジュディは両親を川に連れてくる。", "両親が帰ったら、ジュディは来る。"]
     why: "that sounds fun, but… の but のあとが本音で、I'm gonna pass（今回はやめとく）。理由は両親の訪問。"
     ctx: "道で会った友だちが、日曜の予定を話しています"
     focus: "Aw, that sounds fun, but I'm gonna pass."
@@ -233,11 +233,11 @@ items:
     voice: us
     cast: us-f4
     en: "Are you coming to the movie tonight? Maybe? I'll try to make it, but I'm super tired. Okay. So that's a no, huh?"
-    ja: "はは、たぶんね。ごめん！ 次は絶対行く。"
+    ja: "はは、うん。疲れすぎてて、ごめん。"
     note: "So that's a no?＝つまり 来ないって こと？"
-    choices: ["Ha, yeah, probably. Sorry! Next time for sure.", "What movie? I didn't hear about it.", "Tired? No, I'm wide awake!"]
+    choices: ["Ha, yeah. I'm too tired, sorry.", "What movie? I didn't hear about it.", "Tired? No, I'm wide awake!"]
     answer: 0
-    cja: ["はは、たぶんね。ごめん！ 次は絶対行く。", "何の映画？ 聞いてないよ。", "疲れてる？ いや、目はぱっちりだよ！"]
+    cja: ["はは、うん。疲れすぎてて、ごめん。", "何の映画？ 聞いてないよ。", "疲れてる？ いや、目はぱっちりだよ！"]
     why: "I'll try to make it とすごく疲れていると言ったので、So that's a no?（来ないってこと？）と見抜かれた。認めて謝るのが自然。"
     ctx: "今夜の映画に来るか、友だちに聞かれました"
     focus: "Okay. So that's a no, huh?"
@@ -256,11 +256,11 @@ items:
     cast: us-f4
     en: "Some of us are getting drinks after work on Friday. You should come!"
     tts: "Some of us are gettin' drinks after work on Friday. Ya should come!"
-    ja: "金曜の仕事のあと、何人かで飲みに行くの。来なよ！ →「ありがとう！ 行けたら行くね。」"
+    ja: "金曜の仕事のあと、何人かで飲みに行くの。来なよ！ →「ありがとう！ 金曜、行けたら行くね。」"
     note: "after work＝仕事の あと"
-    choices: ["Thanks! I'll try to make it.", "After work? I'm working right now.", "Drinks? I'll bring some from home."]
+    choices: ["Thanks! I'll try to make it Friday.", "After work? I'm working right now.", "Drinks? I'll bring some from home."]
     answer: 0
-    cja: ["ありがとう！ 行けたら行くね。", "仕事のあと？ 今仕事中だよ。", "飲み物？ 家から持っていくね。"]
+    cja: ["ありがとう！ 金曜、行けたら行くね。", "仕事のあと？ 今仕事中だよ。", "飲み物？ 家から持っていくね。"]
     why: "金曜の仕事のあとの飲み会への誘い。I'll try to make it（行けたら行く）は職場でよく使う、角の立たない返事。今の話でも、飲み物を持っていく話でもない。"
     ctx: "職場で、同僚が金曜の予定を話しています"
     scene: office
@@ -275,9 +275,9 @@ items:
     en: "Hiking Saturday morning? Want to come? Hmm, how early? We're leaving at six. Six? Oof. I'm gonna pass on the hike, but count me in for dinner after."
     ja: "ハイキングには行かないが、そのあとの夕食には来る。"
     note: "pass on〜＝〜は やめとく。count me in for〜＝〜は 行く"
-    choices: ["She'll skip the hike but come to dinner.", "She'll go hiking at six.", "She won't come at all."]
+    choices: ["She'll skip the hike but come to dinner.", "She'll go hiking but skip the dinner.", "She won't come to either one."]
     answer: 0
-    cja: ["ハイキングはやめて、夕食には来る。", "6時にハイキングに行く。", "どちらにも来ない。"]
+    cja: ["ハイキングはやめて、夕食には来る。", "ハイキングには行くが、夕食はやめる。", "どちらにも来ない。"]
     why: "6時出発と聞いて、I'm gonna pass on the hike（ハイキングはやめとく）。でも count me in for dinner after で、夕食には来る。"
     ctx: "道で会った友だちが、土曜の予定に誘っています"
     focus: "I'm gonna pass on the hike, but count me in for dinner after."
@@ -298,12 +298,12 @@ items:
     cast: us-f2
     en: "I'm having people over Saturday. Want to come?"
     tts: "I'm havin' people over Saturday. Wanna come?"
-    ja: "土曜に家に人を呼ぶの。来る？ →「楽しそうだけど、予定があるんだ。また今度？」"
+    ja: "土曜に家に人を呼ぶの。来る？ →「楽しそう！ でも予定があるんだ。また今度？」"
     note: "have people over＝家に 人を 呼ぶ"
-    choices: ["That sounds fun, but I have plans. Maybe next time?", "Sure, I'll go over to see them.", "Saturday? It's Friday today."]
+    choices: ["Fun! But I've got plans. Next time?", "Oh, sure, I'll go over and see them.", "Saturday? Wait, isn't today Friday?"]
     answer: 0
-    cja: ["楽しそうだけど、予定があるんだ。また今度？", "いいよ、その人たちに会いに行くね。", "土曜？ 今日は金曜だよ。"]
-    why: "having people over は「家に人を呼ぶ」。行けないなら That sounds fun, but… で前置きし、Maybe next time? で結ぶ。"
+    cja: ["楽しそう！ でも予定があるんだ。また今度？", "あ、いいよ、その人たちに会いに行くね。", "土曜？ 待って、今日って金曜じゃない？"]
+    why: "having people over は「家に人を呼ぶ」。行けないなら Fun! But… と前置きして断り、Next time? で結ぶ。"
     ctx: "同じマンションの友だちが、廊下で声をかけてきました"
     scene: door
     tags: { seed: 48, register: friend, pragmatic: refusal, features: [wanna] }
@@ -350,12 +350,12 @@ items:
     voice: us
     cast: us-f6
     en: "My sister's in town this weekend. Is it cool if she tags along?"
-    ja: "今週末、姉がこっちに来てるの。一緒に連れていってもいい？ →「もちろん！ 人が多いほうが楽しいよ。」"
+    ja: "今週末、姉がこっちに来てるの。一緒に連れていってもいい？ →「もちろん！ 連れてきて。」"
     note: "tag along＝一緒に ついて行く"
-    choices: ["Of course! The more, the merrier.", "Tag? Sure, you're it!", "In town? Which town?"]
+    choices: ["Of course! Bring her along.", "Oh, tag? Sure, but you're it first!", "In town? Which town is she in?"]
     answer: 0
-    cja: ["もちろん！ 人が多いほうが楽しいよ。", "鬼ごっこ？ いいよ、君が鬼！", "町に？ どの町？"]
-    why: "tag along は「一緒について行く」。姉を連れてきていいかと聞いているので、The more, the merrier（多いほど楽しい）が定番の返し。"
+    cja: ["もちろん！ 連れてきて。", "え、鬼ごっこ？ いいよ、でも最初は君が鬼！", "町に？ 彼女はどの町にいるの？"]
+    why: "tag along は「一緒について行く」。姉を連れてきていいかと聞いているので、Bring her along（連れてきて）と快く返す。"
     ctx: "週末の約束をしている友だちが"
     scene: street
     tags: { seed: 48, register: friend, pragmatic: literal, features: [contraction] }
@@ -493,9 +493,9 @@ items:
     en: "Okay, so Friday's karaoke, Saturday's the beach. You in for both? Friday, yes, count me in. Saturday, I mean, I'll try to make it, but I've got my cousin's thing. So that's a yes for Friday and a maybe for Saturday? Ha, more like a no for Saturday. Sorry!"
     ja: "金曜のカラオケは行く。土曜の海は行かない。"
     note: "more like a no＝むしろ 行かない"
-    choices: ["Yes to karaoke on Friday, no to the beach on Saturday.", "Yes to both.", "Maybe on Friday, yes on Saturday."]
+    choices: ["Friday yes, Saturday no.", "Yes to both days, Friday and Saturday.", "Maybe on Friday, yes on Saturday."]
     answer: 0
-    cja: ["金曜のカラオケは行く、土曜の海は行かない。", "両方行く。", "金曜はたぶん、土曜は行く。"]
+    cja: ["金曜は行く、土曜は行かない。", "金曜も土曜も、両方行く。", "金曜はたぶん、土曜は行く。"]
     why: "金曜は count me in（行く）。土曜は I'll try to make it と言い、聞き返されて more like a no（むしろ行かない）と認めた。"
     ctx: "にぎやかな通りで、友だちと週末の予定を確認"
     focus: "Ha, more like a no for Saturday. Sorry!"
@@ -555,12 +555,12 @@ items:
     cast: us-m4
     en: "Hey, a bunch of us are heading to that new taco place. Want to come? We're leaving in like ten minutes."
     tts: "Hey, a bunch of us are headin' ta that new taco place. Wanna come? We're leavin' in like ten minutes."
-    ja: "ねえ、みんなであの新しいタコス屋に行くんだ。来る？ 10分後くらいに出るよ。 →「行く！ 上着取ってくる。」"
+    ja: "ねえ、みんなであの新しいタコス屋に行くんだ。来る？ 10分後くらいに出るよ。 →「行く！ 2分待って。」"
     note: "in like ten minutes＝10分後 くらいに"
-    choices: ["Yes! Let me grab my jacket.", "Ten minutes? Sure, see you next week.", "Tacos? I'll make some at home."]
+    choices: ["Yes! Give me two minutes.", "Ten minutes? Sure, see you next week.", "Ten? Sure, I'll be there by ten."]
     answer: 0
-    cja: ["行く！ 上着取ってくる。", "10分？ いいよ、じゃあ来週ね。", "タコス？ 家で作るよ。"]
-    why: "Wanna come? は誘いで、10分後くらいに出発する。行くなら上着を取ってくると答えるのが自然。来週の話でも、家で作る話でもない。"
+    cja: ["行く！ 2分待って。", "10分？ いいよ、じゃあ来週ね。", "10時？ いいよ、10時までに行くね。"]
+    why: "Wanna come? は誘いで、10分後くらいに出発する。行くなら「2分待って」と答えるのが自然。10時の話でも、来週の話でもない。"
     ctx: "にぎやかな通りで、友だちに呼び止められました"
     scene: street
     cond: { kind: street, level: heavy }

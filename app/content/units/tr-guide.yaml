@@ -102,9 +102,9 @@ items:
     speaker: bob
     voice: us
     cast: us-m3
-    choices: [ He's nervous about a packed train with his suitcase., He thinks the trains are easy., He wants to buy a new suitcase. ]
+    choices: [ "Rush hour with luggage worries him.", "He thinks the trains will be easy for him.", "He wants a new suitcase for the trip." ]
     answer: 0
-    cja: [ "スーツケースを持って満員電車に乗るのが不安。", "電車は簡単だと思っている。", "新しいスーツケースを買いたい。" ]
+    cja: [ "大荷物でのラッシュが不安。", "電車は自分にも簡単だと思っている。", "旅行用に新しいスーツケースがほしい。" ]
     why: "kinda worried は控えめでも本当の心配。but の後の rush hour with my suitcase が本題です。「電車は簡単」はみんなの意見です。"
     ctx: "駅のホームで、旅行中の友だちが話します"
     ask: つまり、どういうこと？
@@ -119,9 +119,9 @@ items:
     speaker: freya
     voice: us
     cast: us-f4
-    choices: [ How about an izakaya near the station?, "Sure, I'll pick you up at eight.", It's up the stairs on the right. ]
+    choices: [ "How about an izakaya by the station?", "Sure, want me to pick you up at eight?", "It's up the stairs on the right." ]
     answer: 0
-    cja: [ "じゃあ、駅の近くの居酒屋はどう？", "いいよ、8時に迎えに行くね。", "階段を上がって右だよ。" ]
+    cja: [ "じゃあ、駅の近くの居酒屋はどう？", "いいよ、8時に迎えに行こうか？", "階段を上がって右だよ。" ]
     why: "up for anything は「何でもいい」。ただ高級すぎる店は嫌なので、気軽な居酒屋の提案がぴったり。up the stairs は up の音につられたひっかけです。"
     ctx: "夜の街で、友だちと晩ごはんを決めます"
     tags: { seed: 58, register: friend, pragmatic: literal }
@@ -130,14 +130,14 @@ items:
     lv: 4
     type: reply
     en: Wait, what time's the last train back to the hotel?
-    ja: ちょっと待って、ホテルに戻る終電って何時？ →「12時ごろ。だからまだ2時間くらいあるよ。」
+    ja: "ちょっと待って、ホテルに戻る終電って何時？ →「あ、12時ごろ。まだ時間あるよ。」"
     note: last train＝終電。late train と聞き違えない
     speaker: kicks
     voice: us
     cast: us-m4
-    choices: [ "Around midnight, so we've got a couple of hours.", The late train's always busy., It's the last one on the left. ]
+    choices: [ "Oh, around midnight. We've got time.", "The late train's always packed, though.", "It's the last one on the left, I think." ]
     answer: 0
-    cja: [ "12時ごろ。だからまだ2時間くらいあるよ。", "遅い電車はいつも混んでるよ。", "左の一番最後のだよ。" ]
+    cja: [ "あ、12時ごろ。まだ時間あるよ。", "でも遅い電車はいつも混んでるよ。", "たぶん左の一番最後のだよ。" ]
     why: "last train は「終電」。何時かを聞かれたので時刻で答えます。late train（遅い電車）や last one（最後の）は似た音のひっかけです。"
     ctx: "夜の街で、ホテルに泊まる友だちが聞きます"
     tags: { seed: 58, register: friend, pragmatic: literal, conditions: [ street ] }
@@ -151,9 +151,9 @@ items:
     speaker: apollo
     voice: us
     cast: us-m6
-    choices: [ "Don't worry, I'll show you. What are you in the mood for?", "Just pay the chef, then.", The button's by the door. ]
+    choices: [ "No worries, I'll help. What do you want?", "So just pay the chef when you're done, then.", "Isn't the button right there by the door?" ]
     answer: 0
-    cja: [ "大丈夫、教えるよ。何が食べたい？", "じゃあ、シェフに払えば。", "ボタンは入口のところだよ。" ]
+    cja: [ "大丈夫、教えるよ。何が食べたい？", "じゃあ、食べ終わったらシェフに払えば。", "ボタンはドアのすぐそばじゃない？" ]
     why: "The thing is の後が困りごと：券売機が日本語で読めない。だから「教えるよ」と助けるのが自然。シェフに払うのは今否定したばかりです。"
     ctx: "ラーメン屋の前で、旅行中の友だちと"
     focus: The thing is
@@ -183,9 +183,9 @@ items:
     speaker: faith
     voice: us
     cast: us-f6
-    choices: [ She's not sure it's worth going if she can't see it., She thinks Fuji is too expensive., She wants to go even if it's cloudy. ]
+    choices: [ "She's unsure it's worth it if cloudy.", "She thinks Fuji is too far and too pricey.", "She'll go even if it's cloudy, she says." ]
     answer: 0
-    cja: [ "山が見えないなら行く価値があるか迷っている。", "富士山は高すぎると思っている。", "曇っていても行きたい。" ]
+    cja: [ "曇りなら行く価値があるか迷っている。", "富士山は遠くて高すぎると思っている。", "曇っていても行くと言っている。" ]
     why: "worth it は「わざわざ行く価値」。曇りで山が見えないなら2時間かける意味があるか、と迷っています。値段の話ではなく、「曇りでも行く」とも言っていません。"
     ctx: "旅行中の友だちが、日帰りの予定を相談します"
     ask: つまり、どういうこと？
@@ -195,14 +195,14 @@ items:
     lv: 4
     type: reply
     en: I've heard a lot of places are still cash only. Should I hit an ATM?
-    ja: まだ現金しか使えない店がたくさんあるって聞いたけど。おろしておいた方がいい？ →「うん、少しね。コンビニのATMが一番楽だよ。」
+    ja: "まだ現金しか使えない店がたくさんあるって聞いたけど。おろしておいた方がいい？ →「うん、少しね。コンビニでおろすといいよ。」"
     note: I've heard＝聞いた話。確かめたい気持ち
     speaker: al
     voice: us
     cast: us-m4
-    choices: [ "Yeah, a bit. Convenience store ATMs are easiest.", "I've heard of it, yeah.", "Only cash? Sorry, I've got cards." ]
+    choices: [ "Yeah, a bit. Try a convenience store ATM.", "I've heard of it, yeah. It's pretty famous.", "Only cash? Sorry, I've just got cards." ]
     answer: 0
-    cja: [ "うん、少しね。コンビニでおろすのが一番楽だよ。", "うん、聞いたことあるよ。", "現金だけ？ ごめん、カードしかない。" ]
+    cja: [ "うん、少しね。コンビニでおろすといいよ。", "聞いたことあるよ。けっこう有名だよね。", "現金だけ？ ごめん、カードしかない。" ]
     why: "I've heard は聞いた話を確かめたいサイン。お金をおろすべきかに答えるのが正解。I've heard of it は「名前は知ってる」で、答えになっていません。"
     ctx: "街を歩きながら、旅行中の友だちが聞きます"
     tags: { seed: 58, register: friend, pragmatic: literal }
@@ -228,15 +228,15 @@ items:
     lv: 4
     type: reply
     en: Is it OK to go in the hot spring with a tattoo, or will they kick me out?
-    ja: タトゥーがあっても温泉に入っていいの？ 追い出されたりする？ →「OKなところもあるよ。どこか調べてみるね。」
+    ja: "タトゥーがあっても温泉に入っていいの？ 追い出されたりする？ →「大丈夫なところもあるよ。調べてみるね。」"
     note: kick me out＝追い出される。断られる心配
     speaker: walker
     voice: us
     cast: us-m1
-    choices: [ Some places are fine. Let me check which ones., "Sure, they'll kick it out.", "It's hot, but you'll be OK." ]
+    choices: [ "Some places are fine. I'll check.", "Sure, they'll kick you out at ten.", "It's hot, but you'll be totally OK." ]
     answer: 0
-    cja: [ "大丈夫なところもあるよ。どこか調べてみるね。", "もちろん、追い出すよ。", "熱いけど、大丈夫だよ。" ]
-    why: "タトゥーがあっても入れるか、kick me out（追い出される）かの心配。日本では施設によるので「調べるね」が正直で親切。hot は温度の話ではありません。"
+    cja: [ "大丈夫なところもあるよ。調べてみるね。", "いいよ、10時に追い出されるけどね。", "熱いけど、全然大丈夫だよ。" ]
+    why: "タトゥーがあっても入れるか、kick me out（追い出される）かの心配。施設によるので「調べるね」が正直で親切。閉まる時間や湯の熱さの話ではありません。"
     ctx: "温泉に行く前、旅行中の友だちが聞きます"
     tags: { seed: 58, register: friend, pragmatic: literal }
   - id: dmu-bins
@@ -248,9 +248,9 @@ items:
     speaker: cherry
     voice: us
     cast: us-f6
-    choices: [ She can't find anywhere to throw her cup away., She's lost her cup., She got in trouble for leaving trash. ]
+    choices: [ "She can't find a trash can.", "She lost her coffee somewhere.", "She got yelled at for leaving trash." ]
     answer: 0
-    cja: [ "カップを捨てる場所が見つからない。", "カップをなくした。", "ゴミを置いて怒られた。" ]
+    cja: [ "ゴミ箱が見つからない。", "どこかでコーヒーをなくした。", "ゴミを置いて怒られた。" ]
     why: "Where are all the trash cans? が困りごと。1時間カップを持ち歩いています。怒られるのは心配しているだけで、実際には起きていません。"
     ctx: "街を歩きながら、旅行中の友だちと話します"
     focus: on the way
@@ -289,7 +289,7 @@ items:
     speaker: raymond
     voice: us
     cast: us-m5
-    choices: [ "Have one more drink, then catch the last train.", Stay late and take a taxi., Leave now and walk to the hotel. ]
+    choices: [ "One more drink, then the last train.", "Stay late and take a taxi home.", "Leave now and walk to the hotel." ]
     answer: 0
     cja: [ "もう一杯飲んでから終電に乗る。", "遅くまでいてタクシーで帰る。", "今すぐ出てホテルまで歩く。" ]
     why: "最後の I'm up for one more, then we run for the train が結論。タクシーは5千円と高いので、もう一杯だけ飲んで終電に走ります。"
@@ -325,14 +325,14 @@ items:
     type: reply
     en: I don't know if the seven-day rail pass is worth it. We're only leaving Tokyo once.
     tts: I dunno if the seven-day rail pass is worth it. We're only leaving Tokyo once.
-    ja: 7日間のレールパス、元が取れるかわからなくて。東京を出るの1回だけだし。 →「たぶん取れないね。その1回は普通に切符を買えばいいよ。」
+    ja: "7日間のレールパス、元が取れるかわからなくて。東京を出るの1回だけだし。 →「たぶん取れないね。1回だけならね。」"
     note: I dunno if＝迷っている。1回だけなら元は取れない
     speaker: sylvia
     voice: us
     cast: us-f5
-    choices: [ Probably not. Just buy a regular ticket for that trip., "Yes, it's seven days.", "Once? I'll pass, thanks." ]
+    choices: [ "Probably not, if it's just once.", "Yes, it's good for all seven days.", "Once? Then I'll pass on it, thanks." ]
     answer: 0
-    cja: [ "たぶん取れないね。その1回は普通に切符を買えばいいよ。", "うん、7日間だよ。", "1回？ じゃあ遠慮しとく。" ]
+    cja: [ "たぶん取れないね。1回だけならね。", "うん、7日間ずっと使えるよ。", "1回？ じゃあ遠慮しとくよ。" ]
     why: "I dunno if は迷いのサイン。東京を出るのが1回だけなら7日間パスは元が取れません。I'll pass は「遠慮する」で、pass の音につられたひっかけです。"
     ctx: "駅で、旅行中の友だちが切符のことで迷っています"
     tags: { seed: 58, register: friend, pragmatic: hedge, features: [ dunno ] }
@@ -381,9 +381,9 @@ items:
     speaker: tasha
     voice: us
     cast: us-f4
-    choices: [ Kind of. Maybe text them instead?, "Yes, the train is very quiet.", "No, I didn't call you." ]
+    choices: [ "Kind of. Maybe just text them?", "Yes, the train's so quiet today.", "No, I didn't call you, did I?" ]
     answer: 0
-    cja: [ "ちょっとね。メッセージにしたら？", "うん、電車はとても静かだね。", "ううん、電話してないよ。" ]
+    cja: [ "ちょっとね。メッセージにしたら？", "うん、今日は電車がすごく静かだね。", "ううん、電話してないよね？" ]
     why: "Is it rude to〜? は失礼かどうかの確認。日本の電車では通話を控えるのがマナーなので、「ちょっとね」とやわらかく答えて代案を出します。"
     ctx: "電車の中で、旅行中の友だちが小声で聞きます"
     tags: { seed: 58, register: friend, pragmatic: literal, conditions: [ station ] }
@@ -516,9 +516,9 @@ items:
     speaker: walker
     voice: us
     cast: us-m1
-    choices: [ Get off at the next stop and go back the other way., Stay on until Ikebukuro., Call back from platform two. ]
+    choices: [ "Get off next stop and ride back.", "Stay on until Ikebukuro, then call.", "Call back from platform two." ]
     answer: 0
-    cja: [ "次の駅で降りて、反対方向の電車に乗る。", "池袋まで乗っていく。", "2番線から電話をかけ直す。" ]
+    cja: [ "次の駅で降りて、逆方向に戻る。", "池袋まで乗って、それから電話。", "2番線から電話をかけ直す。" ]
     why: "聞き返した後の get off at the next stop and cross to the other side が指示。次の駅で反対のホームに渡って戻ります。"
     ctx: "旅行中の友だちから、駅から電話です"
     focus: cross to the other side
@@ -558,9 +558,9 @@ items:
     speaker: pekoe
     voice: us
     cast: us-f3
-    choices: [ B2. Follow the yellow signs., "Yes, it's too loud.", "Two of us, yeah." ]
+    choices: [ "B2. Follow the yellow signs.", "Yeah, it's way too loud in here.", "Two of us, yeah. Just two." ]
     answer: 0
-    cja: [ "ビー2だよ。黄色い案内に沿って行って。", "うん、うるさすぎるね。", "うん、ふたりだよ。" ]
+    cja: [ "ビー2だよ。黄色い案内に沿って行って。", "うん、ここはうるさすぎるね。", "うん、ふたりだよ。ふたりだけ。" ]
     why: "Did you say A2 or B2? はどちらかを確かめる聞き返し。片方をはっきり答えるのが正解です。Two of us は「2」の音につられたひっかけです。"
     ctx: "混んだ駅の中で、友だちが聞き返します"
     tags: { seed: 58, register: friend, pragmatic: literal, conditions: [ station ] }
@@ -588,15 +588,15 @@ items:
     lv: 4
     type: reply
     en: So what's the plan? I'm up for a temple, some shopping, then food. Mostly food.
-    ja: で、予定は？ お寺と、ちょっと買い物と、それからご飯。主にご飯。 →「じゃあ浅草だね。お寺の後で食べ歩き。」
+    ja: "で、予定は？ お寺と、ちょっと買い物と、それからご飯。主にご飯。 →「じゃあ浅草だね。お寺、それからご飯。」"
     note: up for＝したい。最後の Mostly food が本音
     speaker: apollo
     voice: us
     cast: us-m6
-    choices: [ "Asakusa, then. Temple first, street food after.", "I'm up, yeah. I slept well.", "Mostly, yes. I've got a plan." ]
+    choices: [ "Asakusa, then. Temple, then food.", "You're up? Did you sleep okay?", "Mostly, yeah. I've got a plan." ]
     answer: 0
-    cja: [ "じゃあ浅草だね。先にお寺、その後で食べ歩き。", "うん、起きてるよ。よく寝た。", "だいたいね。計画はあるよ。" ]
-    why: "up for は「〜したい」。お寺・買い物・食べ物の希望に合う場所を提案します。I'm up は「起きてる」、Mostly は最後の言葉につられたひっかけです。"
+    cja: [ "じゃあ浅草だね。お寺、それからご飯。", "起きてるの？ よく眠れた？", "だいたいね。計画はあるよ。" ]
+    why: "up for は「〜したい」。お寺・買い物・食べ物の希望に合う場所を提案します。I'm up を「起きてる」と取るのや、最後の Mostly につられるのはひっかけです。"
     ctx: "朝、旅行中の友だちと今日の予定を立てます"
     tags: { seed: 58, register: friend, pragmatic: literal, conditions: [ street ] }
     scene: street

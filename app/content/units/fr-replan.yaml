@@ -41,9 +41,9 @@ items:
     en: "Hey, it's me! Are we still on for dinner tonight? About that… something's come up at work. Could we push it back to Thursday? Sorry, say that again? A truck's going past. Thursday! Same place, seven o'clock. Does that work for you? Thursday at seven. Perfect, see you then!"
     ja: "木曜の7時にずれた。"
     note: "push it back＝あとに ずらす。中止 ではない"
-    choices: ["It's moved to Thursday at seven.", "It's canceled for good.", "It's still on for tonight."]
+    choices: ["Moved to Thursday at seven.", "It's canceled for good.", "It's still tonight, just at seven."]
     answer: 0
-    cja: ["木曜の7時に変更。", "完全に中止。", "今夜の予定のまま。"]
+    cja: ["木曜の7時に変更。", "完全に中止。", "今夜のまま、7時に。"]
     why: "push it back to Thursday で木曜にずらした。Same place, seven o'clock と最後に確認している。中止ではなく延期。"
     ctx: "今夜の夕食の約束について、友だちと電話中"
     focus: "Could we push it back to Thursday?"
@@ -65,12 +65,12 @@ items:
     voice: us
     cast: us-m1
     en: "Oh, and actually, can we do the ramen place instead? The pizza place is closed on Thursdays. The one by the station? No, the other one, near the park. I'll text you the map."
-    ja: "ありがとう。じゃあ木曜にね！"
+    ja: "ありがとう。じゃあラーメン屋ね！"
     note: "the other one＝駅の そばでは ない 方"
-    choices: ["Great, thanks. See you Thursday!", "The pizza's great on Thursdays.", "By the station, then."]
+    choices: ["Thanks! The ramen place it is, then.", "Sure, let's get pizza instead.", "Got it, the one by the station."]
     answer: 0
-    cja: ["わかった、ありがとう。じゃあ木曜に！", "木曜のピザは最高だよね。", "じゃあ駅のそばね。"]
-    why: "the other one, near the park で、駅のそばではなく公園の近くの店。地図も送ってくれるので、お礼を言えばいい。ピザ屋は木曜休み。"
+    cja: ["ありがとう！ じゃあラーメン屋ね。", "いいよ、代わりにピザにしよう。", "了解、駅のそばの店ね。"]
+    why: "the other one, near the park で、駅のそばではなく公園の近くのラーメン屋。地図も送ってくれるので、お礼を言えばいい。ピザ屋は木曜休み。"
     ctx: "木曜の夕食の店を電話で決めています"
     focus: "the other one, near the park"
     ask: "つぎの ひとことは？"
@@ -89,11 +89,11 @@ items:
     voice: us
     cast: us-m4
     en: "Hey, I'm running about ten minutes late. My train stopped."
-    ja: "ごめん、10分くらい遅れてる。電車が止まっちゃって。 →「大丈夫、先に席とっとくね。」"
+    ja: "ごめん、10分くらい遅れてる。電車が止まっちゃって。 →「大丈夫。10分なら平気だよ。」"
     note: "running late＝遅れそう。走って いない"
-    choices: ["No problem, I'll grab us a table.", "Running? Be careful!", "Sure, see you at ten, then!"]
+    choices: ["No problem. Ten minutes is fine.", "Running? Slow down, I'm not in a hurry.", "Sure, see you at ten o'clock, then!"]
     answer: 0
-    cja: ["大丈夫、先に席とっとくね。", "走ってるの？ 気をつけて！", "いいよ、じゃあ10時にね！"]
+    cja: ["大丈夫。10分なら平気だよ。", "走ってるの？ 急がなくていいよ。", "いいよ、じゃあ10時にね！"]
     why: "running late は「遅れている」で、走っているわけではない。ten minutes は10分遅れのことで、10時ではない。"
     ctx: "待ち合わせの店にいると、友だちから電話です"
     scene: street
@@ -107,11 +107,11 @@ items:
     voice: us
     cast: us-f2
     en: "Ah, this week's crazy. Let's do it another time!"
-    ja: "たぶん、すぐに新しい日を決める気はない。"
+    ja: "たぶん、まだ新しい日を決める気はない。"
     note: "another time だけ＝日にちは 決まって いない"
-    choices: ["She probably isn't planning a new date soon.", "She wants to meet next week for sure.", "She wants to meet right now."]
+    choices: ["She isn't setting a new date yet.", "She wants to meet next week for sure.", "She wants to meet right now."]
     answer: 0
-    cja: ["すぐに新しい日を決めるつもりはなさそう。", "来週は必ず会いたい。", "今すぐ会いたい。"]
+    cja: ["まだ新しい日を決めるつもりはない。", "来週は必ず会いたい。", "今すぐ会いたい。"]
     why: "Let's do it another time は「また今度」。日にちを言っていないので、ほぼやんわり断っている。this week's crazy は「今週は忙しすぎ」。"
     ctx: "週末に会おうと誘ったら、こう返ってきました"
     ask: "つまり、どういうこと？"
@@ -145,11 +145,11 @@ items:
     voice: us
     cast: us-m5
     en: "Dude, I'm so sorry, I can't make it tonight. My boss wants this report done. Another time?"
-    ja: "ほんとにごめん、今夜行けない。上司にこのレポートやれって言われて。また今度？ →「気にしないで。来週は？」"
+    ja: "ほんとにごめん、今夜行けない。上司にこのレポートやれって言われて。また今度？ →「気にしないで。来週とかどう？」"
     note: "can't make it＝行けない。作れない ではない"
-    choices: ["Ah, that's okay. Next week?", "Make what? Dinner?", "Sure, I'll make it for you."]
+    choices: ["No worries. Next week, maybe?", "Make what? The report for your boss?", "Sure, I'll make it tonight for you."]
     answer: 0
-    cja: ["ああ、大丈夫。来週は？", "作るって何を？ 夕食？", "いいよ、作ってあげる。"]
+    cja: ["気にしないで。来週とかどう？", "作るって何を？ 上司のレポート？", "いいよ、今夜作ってあげる。"]
     why: "can't make it は「行けない」で、make（作る）ではない。Another time? と聞かれたので、気にしないと伝えて別の日を出すのが自然。"
     ctx: "今夜会う予定の友だちから連絡が来ました"
     scene: street
@@ -165,9 +165,9 @@ items:
     en: "Would you mind if we pushed it back an hour? I'm still at the hair salon."
     ja: "1時間遅く会いたい。"
     note: "push back＝あとに ずらす"
-    choices: ["She wants to meet an hour later.", "She wants to meet an hour earlier.", "She wants to cancel."]
+    choices: ["She wants to meet an hour later.", "She'd like to start earlier.", "She wants to cancel."]
     answer: 0
-    cja: ["1時間遅く会いたい。", "1時間早く会いたい。", "中止したい。"]
+    cja: ["1時間遅く会いたい。", "もっと早く始めたい。", "中止したい。"]
     why: "push it back は予定をあとにずらすこと。まだ美容院にいるので遅らせたい。早める（move it up）や中止とは違う。"
     ctx: "待ち合わせの少し前に、友だちから電話です"
     ask: "つまり、どういうこと？"
@@ -182,11 +182,11 @@ items:
     voice: us
     cast: us-m2
     en: "Hey Tammy, about the beach tomorrow. Have you seen the forecast? I know, it's supposed to pour. Should we take a rain check? Yeah. How about next Saturday instead? Same time? Next Saturday works. I'll put it in my calendar. Talk soon!"
-    ja: "代わりに来週の土曜に行く。"
+    ja: "来週の土曜、同じ時間に行く。"
     note: "rain check でも 日にちが 決まれば キャンセル ではない"
-    choices: ["They'll go next Saturday instead.", "They're going tomorrow in the rain.", "They've canceled with no new date."]
+    choices: ["They'll go next Saturday, same time.", "They're going tomorrow in the rain.", "They've canceled with no new date."]
     answer: 0
-    cja: ["代わりに来週の土曜に行く。", "雨の中、明日行く。", "中止で、次の日は決まっていない。"]
+    cja: ["来週の土曜、同じ時間に行く。", "雨の中、明日行く。", "中止で、次の日は決まっていない。"]
     why: "rain check は「また今度」だが、How about next Saturday? で日にちが決まった。だから中止ではなく延期。明日は土砂降り（pour）の予報。"
     ctx: "明日のビーチの約束について電話で話しています"
     focus: "How about next Saturday instead?"
@@ -209,9 +209,9 @@ items:
     en: "Would Sunday afternoon work for you instead?"
     ja: "代わりに日曜の午後は都合どう？ →「日曜ばっちり。何時？」"
     note: "work for you＝都合が いい。働く ではない"
-    choices: ["Sunday's perfect. What time?", "Yes, I work on Sundays.", "I'm working on it."]
+    choices: ["Sunday's perfect. What time?", "Yes, I've worked there for years.", "I'm working on it."]
     answer: 0
-    cja: ["日曜ばっちり。何時？", "うん、日曜は仕事だよ。", "今やってるところ。"]
+    cja: ["日曜ばっちり。何時？", "うん、そこで何年も働いてるよ。", "今やってるところ。"]
     why: "Would〜work for you? は「都合はどう？」。work を「働く」と取ると誤り。都合がいいと答えて時間を聞くのが自然。"
     ctx: "友だちが会う日を変えたいと言っています"
     scene: street
@@ -271,9 +271,9 @@ items:
     en: "Hey! So, small change of plan for the movie. Uh-oh. You're not canceling, are you? No, no! I'm just running late. Can we do the 8:40 show instead of 7:15? Sure. So that's 8:40. I'll grab dinner first, then. See you there!"
     ja: "8時40分の回を見る。"
     note: "instead of のあとは 前の 予定。キャンセル ではない"
-    choices: ["They'll see the 8:40 show.", "He's canceling the movie.", "They'll see the 7:15 show."]
+    choices: ["They'll see the 8:40 show.", "He's calling the whole thing off.", "They'll see an earlier show."]
     answer: 0
-    cja: ["8時40分の回を見る。", "映画をやめる。", "7時15分の回を見る。"]
+    cja: ["8時40分の回を見る。", "全部とりやめにする。", "もっと早い回を見る。"]
     why: "the 8:40 show instead of 7:15 で、遅い回に変更。instead of の後ろは元の予定。キャンセルではなく、遅れているだけ。"
     ctx: "映画の約束の日、友だちから電話です"
     focus: "Can we do the 8:40 show instead"
@@ -294,11 +294,11 @@ items:
     voice: us
     cast: us-m3
     en: "I might not make it by six. Can you guys start without me?"
-    ja: "遅れるので、先に始めてほしい。"
+    ja: "先に始めてほしい。遅れて来る。"
     note: "might not make it by six＝6時に 間に合わない かも"
-    choices: ["He'll be late, so they should start.", "He isn't coming at all.", "He wants them to wait for him."]
+    choices: ["They should start; he'll come late.", "He isn't coming, so they should start.", "He wants them to wait until six."]
     answer: 0
-    cja: ["遅れるので、先に始めてほしい。", "まったく来ない。", "自分を待っていてほしい。"]
+    cja: ["先に始めてほしい。遅れて来る。", "来られないので、先に始めてほしい。", "6時まで待っていてほしい。"]
     why: "might not make it by six は「6時に間に合わないかも」。start without me は「先に始めて」なので、遅れても来るつもり。"
     ctx: "6時からの集まりの前に、友だちから電話"
     ask: "つまり、どういうこと？"
@@ -313,12 +313,12 @@ items:
     voice: us
     cast: us-f6
     en: "Ugh, something's come up tomorrow. Any chance we could do Friday?"
-    ja: "うわ、明日急用ができちゃった。金曜にできたりする？ →「いいよ、金曜で。時間は同じ？」"
+    ja: "うわ、明日急用ができちゃった。金曜にできたりする？ →「いいよ、金曜で。」"
     note: "something's come up＝急用。Any chance〜？＝できる？"
-    choices: ["Sure, Friday's fine. Same time?", "What came up? The sun?", "Yes, tomorrow is fine."]
+    choices: ["Sure, Friday works.", "Sure, I'll come up tomorrow, then.", "Yeah, tomorrow's still fine with me."]
     answer: 0
-    cja: ["いいよ、金曜で。時間は同じ？", "何が昇ったの？ 太陽？", "うん、明日で大丈夫。"]
-    why: "something's come up は「急用ができた」。Any chance we could do Friday? は「金曜にできない？」。金曜でいいと答える。"
+    cja: ["いいよ、金曜で。", "いいよ、じゃあ明日そっちに行くね。", "うん、明日のままで大丈夫。"]
+    why: "something's come up は「急用ができた」で、come up は「行く」ではない。Any chance〜Friday? は「金曜にできない？」。金曜でいいと答える。"
     ctx: "明日会う約束の友だちから電話です"
     scene: street
     channel: phone
@@ -333,9 +333,9 @@ items:
     en: "Change of plan, we're meeting at the west exit. Sorry, I meant the east exit, not the west. East!"
     ja: "東口で会う。"
     note: "I meant〜, not〜 で 訂正。最後の East! が 答え"
-    choices: ["They'll meet at the east exit.", "They'll meet at the west exit.", "They'll meet at both exits."]
+    choices: ["They'll meet at the east exit.", "They'll meet by the west gate.", "They'll pick a place later."]
     answer: 0
-    cja: ["東口で会う。", "西口で会う。", "両方の出口で会う。"]
+    cja: ["東口で会う。", "西側の改札で会う。", "場所はあとで決める。"]
     why: "最初に west と言ったが、Sorry, I meant the east exit で訂正。I meant〜, not〜 の後ろが正しい情報。"
     ctx: "駅での待ち合わせの前に、友だちから電話"
     ask: "つまり、どういうこと？"
@@ -352,9 +352,9 @@ items:
     en: "Mind if I take a rain check on Saturday? I've got this awful cold."
     ja: "土曜、また今度にしてもいい？ ひどい風邪ひいちゃって。 →「もちろん。お大事に！」"
     note: "rain check＝また今度。雨 ではない"
-    choices: ["Of course. Feel better soon!", "It isn't raining, though.", "Sure, take my umbrella."]
+    choices: ["Of course. Feel better!", "Oh, is it supposed to rain Saturday?", "Sure, I'll bring an umbrella, then."]
     answer: 0
-    cja: ["もちろん。お大事に！", "でも雨は降ってないよ。", "いいよ、私の傘を使って。"]
+    cja: ["もちろん。お大事に！", "え、土曜は雨の予報なの？", "いいよ、じゃあ傘を持っていくね。"]
     why: "take a rain check は「また今度にする」で、雨とは関係ない。ひどい風邪をひいているので、気づかう返事が自然。"
     ctx: "土曜に会う約束の友だちから連絡です"
     scene: living
@@ -515,9 +515,9 @@ items:
     en: "Honestly, I'm wiped. Can we just… do it another time? I'll message you."
     ja: "キャンセルで、新しい日にちはまだない。"
     note: "another time＋I'll message you＝ほぼ キャンセル"
-    choices: ["He's canceling and hasn't set a new date.", "He wants to meet tomorrow.", "He's on his way."]
+    choices: ["He's canceling for now, no new date yet.", "He wants to meet tomorrow instead.", "He's wiped, but he's on his way now."]
     answer: 0
-    cja: ["中止で、新しい日はまだ決めていない。", "明日会いたい。", "向かっているところ。"]
+    cja: ["今回は中止で、新しい日はまだない。", "代わりに明日会いたい。", "くたくただけど、今向かっている。"]
     why: "I'm wiped は「くたくた」。another time と I'll message you だけで日にちがないので、実質キャンセル。"
     ctx: "今夜会う予定の友だちから電話です"
     ask: "つまり、どういうこと？"
@@ -552,11 +552,11 @@ items:
     voice: us
     cast: us-m5
     en: "Does Tuesday at noon work? If not, I'm free Wednesday morning."
-    ja: "火曜の正午はどう？ だめなら水曜の朝が空いてる。 →「火曜の正午、ばっちり。」"
+    ja: "火曜の正午はどう？ だめなら水曜の朝が空いてる。 →「いいよ、火曜の正午でばっちり。」"
     note: "work＝都合が いい。If not＝だめ なら"
-    choices: ["Tuesday at noon's perfect.", "Yes, I work at noon.", "No, I'm not free on Wednesday."]
+    choices: ["Sure, Tuesday at noon works great.", "Yes, I'm at the office then.", "Sure, Wednesday at noon, then."]
     answer: 0
-    cja: ["火曜の正午、ばっちり。", "うん、正午は仕事だよ。", "ううん、水曜はあいてない。"]
+    cja: ["いいよ、火曜の正午でばっちり。", "うん、その時間は会社にいるよ。", "いいよ、じゃあ水曜の正午ね。"]
     why: "Does〜work? は「都合はどう？」。火曜の正午を出されたので、それでいいと答える。work を「働く」と取るのは誤り。水曜は代わりの案。"
     ctx: "友だちが会う日時を提案しています"
     scene: street

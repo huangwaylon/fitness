@@ -44,9 +44,9 @@ items:
     en: "Hey, Kidd! Have you two met? This is my coworker, Audie. No, I don't think so. Hi, nice to meet you! Nice to meet you too! So, how do you know Marshal? Oh, we go way back. We played soccer in high school. And Audie plays soccer every Sunday. You guys have a lot in common."
     ja: "オーディーは同僚、キッドは高校からの友だち。二人ともサッカーをする。"
     note: "my coworker＝同僚。go way back＝昔からの 仲"
-    choices: ["Audie is his coworker, Kidd is an old friend, and they both play soccer.", "Audie and Kidd are old friends from high school.", "Kidd is his coworker, and Audie is an old friend."]
+    choices: ["Audie's a coworker, Kidd's an old friend; both play soccer.", "Audie and Kidd are old friends who play soccer every Sunday.", "Kidd's a coworker, Audie's an old friend from high school."]
     answer: 0
-    cja: ["オーディーは同僚、キッドは古い友だちで、二人ともサッカーをする。", "オーディーとキッドは高校からの友だち。", "キッドは同僚で、オーディーは古い友だち。"]
+    cja: ["オーディーは同僚、キッドは古い友だちで、二人ともサッカーをする。", "オーディーとキッドは、毎週日曜にサッカーをする古い友だち。", "キッドは同僚で、オーディーは高校からの古い友だち。"]
     why: "This is my coworker, Audie でオーディーは同僚。キッドは we go way back（昔からの仲）で、高校のサッカー仲間。二人の共通点はサッカー。"
     ctx: "友だちのパーティーで、紹介が始まりました"
     focus: "This is my coworker, Audie."
@@ -69,9 +69,9 @@ items:
     en: "Phoebe! Come meet Judy. Judy, this is my sister, Phoebe. Oh my gosh, hi! I've heard so much about you!"
     ja: "えー、いい話だといいな！"
     note: "heard so much＝話を たくさん 聞いた。音の 話 ではない"
-    choices: ["Aw, only good things, I hope!", "So much? Sorry, I'll keep it down.", "Thanks, I heard you too."]
+    choices: ["Aw, only good things, I hope!", "So much? Sorry, I'll keep it down.", "Thanks, I can hear you fine."]
     answer: 0
-    cja: ["えー、いい話だといいな！", "そんなに？ ごめん、静かにするね。", "ありがとう、私も聞こえたよ。"]
+    cja: ["えー、いい話だといいな！", "そんなに？ ごめん、静かにするね。", "ありがとう、ちゃんと聞こえてるよ。"]
     why: "I've heard so much about you は「お噂はかねがね」で、うるさいという意味ではない。Only good things, I hope! が定番の返し。"
     ctx: "パーティーで、彼氏が自分の妹を連れてきました"
     focus: "I've heard so much about you!"
@@ -92,9 +92,9 @@ items:
     tts: "So, how d'you know Marshal?"
     ja: "で、マーシャルとはどういう知り合い？ →「実は、同じ職場なんです。」"
     note: "how do you know＝どういう 知り合い？"
-    choices: ["We work together, actually.", "Pretty well, yeah.", "Oh, I don't know him."]
+    choices: ["We work together, actually.", "Oh, pretty well, I'd say.", "Oh, I don't know him."]
     answer: 0
-    cja: ["実は、同じ職場なんです。", "けっこうよく知ってるよ。", "あ、彼のことは知らない。"]
+    cja: ["実は、同じ職場なんです。", "うん、けっこうよく知ってると思う。", "あ、彼のことは知らない。"]
     why: "how do you know〜? は「〜とはどういう知り合い？」と関係を聞く定番。どのくらい知っているか（Pretty well）ではない。パーティーの主役を知らないのも不自然。"
     ctx: "パーティーで、初対面の人に話しかけられました"
     scene: living
@@ -109,9 +109,9 @@ items:
     en: "Oh, Marshal and I go way back. We were roommates in college."
     ja: "二人は大学時代からの長い付き合い。"
     note: "go way back＝ずっと 昔からの 仲"
-    choices: ["They've been friends for a long time.", "They both went back to college.", "They live far away from each other."]
+    choices: ["They've been friends for years.", "They went back to school.", "They live far apart now."]
     answer: 0
-    cja: ["長い付き合いの友だち。", "二人とも大学に戻った。", "お互いに遠くに住んでいる。"]
+    cja: ["何年も前からの友だち。", "二人とも学校に戻った。", "今は遠く離れて住んでいる。"]
     why: "go way back は「ずっと昔からの付き合い」。大学のルームメイトだったので、長い仲だとわかる。back（戻る）や way（遠く）の意味に引っぱられない。"
     ctx: "パーティーで、主役の友だちと話しています"
     ask: "つまり、どういう こと？"
@@ -163,9 +163,9 @@ items:
     en: "Bob, this is Maple. She just moved here from Seattle. Oh, nice to meet you! What brings you to Tokyo? Work, mostly. But I'm really here for the mountains. I love hiking. See? I told you two you'd have a lot in common. Bob hikes every weekend."
     ja: "メイプルは引っ越してきたばかり。ボブと同じでハイキングが好き。"
     note: "a lot in common＝共通点が 多い"
-    choices: ["Maple just moved here, and she and Bob both love hiking.", "Maple and Bob work together in Seattle.", "Bob is moving to Seattle for work."]
+    choices: ["Maple's new in town, and she and Bob both hike.", "Maple and Bob both moved here from Seattle for work.", "Bob's moving to Seattle, and Maple loves the mountains there."]
     answer: 0
-    cja: ["メイプルは引っ越してきたばかりで、ボブと二人ともハイキングが好き。", "メイプルとボブはシアトルで一緒に働いている。", "ボブは仕事でシアトルに引っ越す。"]
+    cja: ["メイプルは引っ越してきたばかりで、ボブと二人ともハイキングをする。", "メイプルとボブは二人とも仕事でシアトルから引っ越してきた。", "ボブはシアトルに引っ越し、メイプルはそこの山が好き。"]
     why: "メイプルはシアトルから引っ越してきたばかり。I love hiking に、ボブは毎週ハイキングをする。だから a lot in common（共通点が多い）。"
     ctx: "ホームパーティーで、友だちが二人を引き合わせます"
     focus: "See? I told you two you'd have a lot in common."
@@ -187,9 +187,9 @@ items:
     en: "Oh, and this is my partner, Kenji. We've been together five years."
     ja: "ケンジは恋人（パートナー）。"
     note: "partner＝恋人・配偶者。仕事の 相手 とは かぎらない"
-    choices: ["Kenji is the person she's in a relationship with.", "Kenji is her business partner.", "Kenji is her partner on a work project."]
+    choices: ["She and Kenji are a couple.", "She and Kenji run a business together.", "Kenji's been her work partner for five years."]
     answer: 0
-    cja: ["ケンジは彼女の恋人。", "ケンジは彼女のビジネスパートナー。", "ケンジは仕事のプロジェクトの相棒。"]
+    cja: ["彼女とケンジはカップル。", "彼女とケンジは一緒に会社を経営している。", "ケンジとは5年間、仕事の相棒。"]
     why: "アメリカでは my partner は恋人や配偶者のことが多い。We've been together five years（付き合って5年）で、仕事の相手ではないとわかる。"
     ctx: "パーティーで、知り合いが隣の人を紹介しました"
     ask: "つまり、どういう こと？"
@@ -204,11 +204,11 @@ items:
     cast: us-f2
     en: "Wait, you're Marshal's roommate? I've heard so much about you!"
     tts: "Wait, you're Marshal's roommate? I've heard so much aboutcha!"
-    ja: "待って、マーシャルのルームメイトなの？ 話はたくさん聞いてるよ！ →「えっ、ほんと？ いい話だといいけど！」"
+    ja: "待って、マーシャルのルームメイトなの？ 話はたくさん聞いてるよ！ →「あらら。いい話ばかりだといいけど！」"
     note: "heard so much about you＝噂は かねがね"
-    choices: ["Uh-oh. Good things, I hope!", "Sorry, was I too loud?", "No, I'm his roommate."]
+    choices: ["Uh-oh. All good, I hope!", "Sorry, was I being too loud?", "No, I'm his roommate."]
     answer: 0
-    cja: ["あらら。いい話だといいけど！", "ごめん、うるさかった？", "いや、僕は彼のルームメイトだよ。"]
+    cja: ["あらら。いい話ばかりだといいけど！", "ごめん、うるさすぎた？", "いや、僕は彼のルームメイトだよ。"]
     why: "I've heard so much about you は「噂はかねがね」で、うるさいという意味ではない。Good things, I hope! と冗談っぽく返すのが定番。"
     ctx: "パーティーで、友だちの同僚に自己紹介しました"
     scene: living
@@ -240,11 +240,11 @@ items:
     voice: us
     cast: us-m3
     en: "Hey! Good to see you again. Yeah! Um, sorry, what was your name again? Bob! We met at Marshal's barbecue last summer."
-    ja: "そうだ、ボブ！ ごめんね、名前を覚えるのが苦手で。"
+    ja: "そうだ、ボブ！ 名前を覚えるのが苦手で。"
     note: "name again＝名前の 聞き直し。会うのは 2回目"
-    choices: ["Right, Bob! Sorry, I'm terrible with names.", "Last summer? No, I'm free next summer.", "A barbecue? Sure, I'll bring drinks."]
+    choices: ["Right, Bob! I'm terrible with names.", "Last summer? No, I'm free next summer.", "A barbecue? Sure, I'll bring drinks."]
     answer: 0
-    cja: ["そうだ、ボブ！ ごめんね、名前を覚えるのが苦手で。", "去年の夏？ いや、来年の夏なら空いてるよ。", "バーベキュー？ いいよ、飲み物を持っていくね。"]
+    cja: ["そうだ、ボブ！ 名前を覚えるのが苦手で。", "去年の夏？ いや、来年の夏なら空いてるよ。", "バーベキュー？ いいよ、飲み物を持っていくね。"]
     why: "名前を聞き直したら、Bob! と、去年の夏のバーベキューで会ったと教えてくれた。思い出して I'm terrible with names（名前が苦手で）と謝るのが自然。"
     ctx: "パーティーで、見覚えのある人に声をかけられました"
     focus: "Um, sorry, what was your name again?"
@@ -266,9 +266,9 @@ items:
     tts: "Wait, have you two met? No? Okay, this is Cherry. She's the one who got me inta running."
     ja: "チェリーを紹介している。彼がランニングを始めたのは彼女のおかげ。"
     note: "got me into＝〜に はまる きっかけを くれた"
-    choices: ["He's introducing Cherry, who got him into running.", "He and Cherry are meeting for the first time.", "Cherry ran into him by accident."]
+    choices: ["Cherry's the reason he started running.", "He and Cherry are meeting for the first time.", "Cherry ran into him by accident once."]
     answer: 0
-    cja: ["ランニングを始めるきっかけをくれたチェリーを紹介している。", "彼とチェリーは初対面。", "チェリーは偶然彼にぶつかった。"]
+    cja: ["チェリーのおかげで彼はランニングを始めた。", "彼とチェリーは初対面。", "チェリーは以前、偶然彼にぶつかった。"]
     why: "have you two met? に No なので紹介した。got me into running は「ランニングを始めるきっかけをくれた」で、ran into ではない。"
     ctx: "パーティーで、友だちが女の人を連れてきました"
     ask: "つまり、どういう こと？"
@@ -285,7 +285,7 @@ items:
     en: "Hi! I don't think we've met. I'm Goldie, Marshal's cousin. Oh, hey! I'm Sherb. I work with Marshal at the bakery. No way! So you're the one who makes those amazing croissants? Ha, guilty. Nice to meet you!"
     ja: "ゴールディはマーシャルのいとこ、シャーベットはパン屋の同僚。"
     note: "cousin＝いとこ。work with＝同僚"
-    choices: ["Goldie is Marshal's cousin, and Sherb works with him at the bakery.", "Goldie works at the bakery, and Sherb is Marshal's cousin.", "Sherb and Goldie are old friends from the bakery."]
+    choices: ["Goldie's Marshal's cousin; Sherb's his bakery coworker.", "Goldie works at the bakery, and Sherb is Marshal's cousin.", "Sherb and Goldie are old friends from the bakery."]
     answer: 0
     cja: ["ゴールディはマーシャルのいとこで、シャーベットはパン屋の同僚。", "ゴールディはパン屋で働き、シャーベットはマーシャルのいとこ。", "シャーベットとゴールディはパン屋時代からの友だち。"]
     why: "ゴールディは Marshal's cousin（いとこ）。シャーベットは I work with Marshal でパン屋の同僚。二人は今日が初対面。"
@@ -307,11 +307,11 @@ items:
     voice: us
     cast: us-m4
     en: "Have you guys met? This is my brother, Jacques."
-    ja: "二人は会ったことある？ こっちは弟のジャック。 →「まだです！ どうも、ミカです。」"
+    ja: "二人は会ったことある？ こっちは弟のジャック。 →「まだです！ どうも、ジャック、ミカです。」"
     note: "Have you guys met?＝会ったこと ある？"
-    choices: ["Not yet! Hi, I'm Mika.", "Yeah, I'll meet him later.", "Sorry, I don't have a brother."]
+    choices: ["Not yet! Hi, Jacques, I'm Mika.", "Yeah, I'll meet him later.", "Sorry, I don't have a brother."]
     answer: 0
-    cja: ["まだです！ どうも、ミカです。", "うん、あとで会うよ。", "ごめん、私には兄弟がいないの。"]
+    cja: ["まだです！ どうも、ジャック、ミカです。", "うん、あとで会うよ。", "ごめん、私には兄弟がいないの。"]
     why: "Have you guys met? は「会ったことある？」。目の前に弟がいるので、Not yet（まだ）と言って自己紹介する。あとで会う話でも、自分の兄弟の話でもない。"
     ctx: "パーティーで、友だちが男の人を連れてきました"
     scene: living
@@ -327,9 +327,9 @@ items:
     tts: "So you're Judy! Marshal talks about ya all the time. I've heard great things aboutcha."
     ja: "マーシャルがいつもジュディのことをほめている。"
     note: "heard great things＝いい 噂を 聞いて いる"
-    choices: ["Marshal often says nice things about Judy.", "Phoebe heard Judy singing.", "Marshal never talks about Judy."]
+    choices: ["Marshal says good things about Judy.", "Phoebe heard Judy sing at a party.", "Marshal never talks about Judy."]
     answer: 0
-    cja: ["マーシャルはよくジュディのことをほめている。", "フィービーはジュディの歌を聞いた。", "マーシャルはジュディのことを話さない。"]
+    cja: ["マーシャルはジュディのことをよく言っている。", "フィービーはパーティーでジュディの歌を聞いた。", "マーシャルはジュディのことを話さない。"]
     why: "talks about you all the time は「いつもあなたの話をしている」。heard great things で、いい話ばかりだとわかる。歌の話ではない。"
     ctx: "パーティーで、友だちの妹と初めて会いました"
     ask: "つまり、どういう こと？"
@@ -361,12 +361,12 @@ items:
     voice: us
     cast: us-m1
     en: "You should talk to Raymond. He's crazy about cats too. You guys have a lot in common."
-    ja: "レイモンドと話してみなよ。彼も猫が大好きなんだ。二人は共通点が多いよ。 →「わあ、いいね！ あいさつしてくる。」"
+    ja: "レイモンドと話してみなよ。彼も猫が大好きなんだ。二人は共通点が多いよ。 →「いいね！ レイモンドってどの人？」"
     note: "crazy about＝大好き。in common＝共通の"
-    choices: ["Oh, fun! I'll go say hi.", "Crazy? Is he okay?", "Oh, is he your cat?"]
+    choices: ["Fun! Which one is Raymond?", "Oh no, crazy? Is he okay?", "Oh, Raymond's your cat?"]
     answer: 0
-    cja: ["わあ、いいね！ あいさつしてくる。", "おかしい？ 彼、大丈夫？", "え、彼はあなたの猫なの？"]
-    why: "crazy about cats は「猫が大好き」。共通点があるから話してみて、と紹介してくれているので、あいさつしに行くのが自然。頭がおかしいという意味ではない。"
+    cja: ["いいね！ レイモンドってどの人？", "えっ、おかしい？ 彼、大丈夫？", "え、レイモンドってあなたの猫？"]
+    why: "crazy about cats は「猫が大好き」。共通点があるから話してみて、と紹介してくれているので、どの人か聞いて会いに行くのが自然。頭がおかしいという意味ではない。"
     ctx: "パーティーで、友だちが話し相手を探してくれています"
     scene: living
     cond: { kind: party, level: light }
@@ -378,12 +378,12 @@ items:
     voice: us
     cast: us-m5
     en: "So, how do you two know each other? Oh, me and Marshal? I mean, we go way back. Like, kindergarten."
-    ja: "わあ、それは長いね！"
+    ja: "わあ、幼稚園から！"
     note: "go way back＝ずっと 昔からの 仲"
-    choices: ["Wow, that's a long time!", "Back? Are you leaving already?", "Kindergarten? Do you have kids?"]
+    choices: ["Wow, since kindergarten!", "Back? Are you leaving already?", "Oh, my kids are in kindergarten, too."]
     answer: 0
-    cja: ["わあ、それは長いね！", "戻る？ もう帰るの？", "幼稚園？ 子どもがいるの？"]
-    why: "we go way back は「ずっと昔からの付き合い」で、幼稚園からの仲。驚いて「長いね」と返すのが自然。帰る話でも、子どもの話でもない。"
+    cja: ["わあ、幼稚園から！", "戻る？ もう帰るの？", "あ、うちの子も幼稚園なんだ。"]
+    why: "we go way back は「ずっと昔からの付き合い」で、幼稚園からの仲。驚いて「幼稚園から！」と返すのが自然。帰る話でも、子どもの話でもない。"
     ctx: "パーティーで、主役の友だちと話しています"
     focus: "I mean, we go way back. Like, kindergarten."
     ask: "次の ひとことは？"
@@ -505,9 +505,9 @@ items:
     en: "Okay, quick intros! Diana, this is Pietro, my old roommate. And Cherry's my neighbor. Hi! Sorry, did you say neighbor or coworker? Neighbor! She lives right upstairs. And you all love karaoke, so... Ha! Okay, I'm in. Nice to meet you both!"
     ja: "ピエトロは昔のルームメイト、チェリーは上の階の隣人。みんなカラオケ好き。"
     note: "did you say〜? で 聞き直し。答えは neighbor"
-    choices: ["Pietro's his old roommate, Cherry's his neighbor, and they all love karaoke.", "Pietro's his neighbor, and Cherry's his coworker.", "Cherry's his old roommate, and she lives upstairs."]
+    choices: ["Pietro's an old roommate, Cherry's a neighbor; all love karaoke.", "Pietro's his neighbor, and Cherry's a coworker who loves karaoke.", "Cherry's his old roommate, and she lives right upstairs."]
     answer: 0
-    cja: ["ピエトロは昔のルームメイト、チェリーは隣人で、みんなカラオケ好き。", "ピエトロは隣人で、チェリーは同僚。", "チェリーは昔のルームメイトで、上の階に住んでいる。"]
+    cja: ["ピエトロは昔のルームメイト、チェリーは隣人で、みんなカラオケ好き。", "ピエトロは隣人で、チェリーはカラオケ好きの同僚。", "チェリーは昔のルームメイトで、すぐ上の階に住んでいる。"]
     why: "ピエトロは my old roommate（昔のルームメイト）。チェリーは聞き直すと Neighbor!（隣人）で、上の階に住んでいる。共通点はカラオケ。"
     ctx: "にぎやかなパーティーで、友だちが次々と紹介します"
     focus: "Neighbor! She lives right upstairs."
@@ -529,9 +529,9 @@ items:
     en: "Oh, you work with Marshal? I mean, he talks about work all the time. Anyway, I'm Apollo, his brother-in-law."
     ja: "アポロはマーシャルの義理の兄弟。"
     note: "brother-in-law＝義理の 兄弟"
-    choices: ["He's family, Marshal's brother-in-law.", "He works with Marshal.", "He's Marshal's real brother."]
+    choices: ["He's Marshal's brother-in-law.", "He works in the same office as Marshal.", "He's Marshal's real brother."]
     answer: 0
-    cja: ["家族で、マーシャルの義理の兄弟。", "マーシャルと一緒に働いている。", "マーシャルの実の兄弟。"]
+    cja: ["マーシャルの義理の兄弟。", "マーシャルと同じ職場で働いている。", "マーシャルの実の兄弟。"]
     why: "同じ職場なのは話している相手のほう。Anyway のあとが本題で、アポロは brother-in-law（義理の兄弟）。実の兄弟ではない。"
     ctx: "にぎやかなパーティーで、初対面の人と話しています"
     ask: "つまり、どういう こと？"
@@ -564,11 +564,11 @@ items:
     cast: us-f2
     en: "Wait, sorry, what was your name again? I'm so bad with names."
     tts: "Wait, sorry, what was yer name again? I'm so bad with names."
-    ja: "待って、ごめん、名前何だっけ？ 名前覚えるの苦手で。 →「大丈夫、ミカです。」"
+    ja: "待って、ごめん、名前何だっけ？ 名前覚えるの苦手で。 →「大丈夫、名前はミカです。」"
     note: "bad with names＝名前を 覚えるのが 苦手"
-    choices: ["No worries, it's Mika.", "Again? Sure, nice to meet you again.", "Me too, I'm bad at games."]
+    choices: ["No worries, my name's Mika.", "Again? Sure, nice to meet you again.", "Me too, I'm bad at games."]
     answer: 0
-    cja: ["大丈夫、ミカです。", "また？ うん、また会えてうれしいよ。", "私も、ゲームは苦手。"]
+    cja: ["大丈夫、名前はミカです。", "また？ うん、また会えてうれしいよ。", "私も、ゲームは苦手。"]
     why: "what was your name again? は名前の聞き直し。名前を覚えるのが苦手（bad with names）と謝っているので、もう一度名乗る。"
     ctx: "にぎやかなパーティーで、少し前に紹介された人が"
     scene: living
@@ -584,9 +584,9 @@ items:
     tts: "You're from Osaka? No way, my husband's from Osaka! You two have so much in common. You've gotta meet 'im."
     ja: "夫も大阪出身なので、ぜひ紹介したい。"
     note: "You've gotta meet him＝ぜひ 会って ほしい"
-    choices: ["She wants you to meet her husband, who's also from Osaka.", "Her husband lives in Osaka now.", "She's moving to Osaka soon."]
+    choices: ["She wants you to meet her husband.", "Her husband lives in Osaka now.", "She's moving to Osaka with her husband soon."]
     answer: 0
-    cja: ["同じ大阪出身の夫に、ぜひ会ってほしい。", "夫は今、大阪に住んでいる。", "彼女はもうすぐ大阪に引っ越す。"]
+    cja: ["夫にぜひ会ってほしい。", "夫は今、大阪に住んでいる。", "彼女はもうすぐ夫と大阪に引っ越す。"]
     why: "my husband's from Osaka は「夫は大阪出身」。共通点があるので You've gotta meet him（ぜひ会って）。今の住まいや引っ越しの話ではない。"
     ctx: "にぎやかなパーティーで、出身地の話になりました"
     ask: "つまり、どういう こと？"

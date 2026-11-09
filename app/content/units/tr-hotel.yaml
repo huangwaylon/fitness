@@ -80,14 +80,14 @@ items:
     lv: 4
     type: reply
     en: We're fully booked tonight, I'm afraid, but our sister hotel's just five minutes away.
-    ja: 今夜はあいにく満室でして。ただ、系列ホテルが歩いて5分のところにございます。 →「空きがあるか、電話で確認してもらえますか？」
+    ja: "今夜はあいにく満室でして。ただ、系列ホテルが歩いて5分のところにございます。 →「空きがあるか確認してもらえますか？」"
     note: fully booked＝満室。sister hotel＝系列ホテル
     speaker: audie
     voice: us
     cast: us-f2
-    choices: [ Could you call and check they have a room?, "Great, so I can stay here tonight?", "Five minutes? Sure, I can wait." ]
+    choices: [ "Could you check if they have a room?", "Great, so I can stay here tonight?", "Five minutes? Sure, I can wait for it." ]
     answer: 0
-    cja: [ "空きがあるか、電話で確認してもらえますか？", "よかった、じゃあ今夜ここに泊まれるんですね？", "5分？ いいですよ、待てます。" ]
+    cja: [ "空きがあるか確認してもらえますか？", "よかった、じゃあ今夜ここに泊まれるんですね？", "5分？ いいですよ、待てます。" ]
     why: "fully booked は満室なので、ここには泊まれません。5分は系列ホテルまでの距離で、待ち時間ではありません。系列ホテルの空きを確かめてもらうのが自然です。"
     ctx: "予約なしで、ホテルのフロントに来ました"
     tags: { seed: 3, register: service, pragmatic: formula, conditions: [ desk ], features: [ contrast ] }
@@ -100,9 +100,9 @@ items:
     speaker: keaton
     voice: us
     cast: us-m5
-    choices: [ You can have free drinks while you wait., They'd like you to say something nice about the bar., You'll pay for the drinks at checkout. ]
+    choices: [ "You can have free drinks while you wait.", "They want a nice review of the bar.", "You'll pay for the drinks at checkout." ]
     answer: 0
-    cja: [ "待つ間、無料で飲み物が飲める。", "バーをほめてほしい。", "飲み物代はチェックアウトで払う。" ]
+    cja: [ "待つ間、無料で飲み物が飲める。", "バーをほめるレビューを書いてほしい。", "飲み物代はチェックアウトで払う。" ]
     why: "complimentary は「無料の」。compliment（ほめ言葉）と似ていますが別の意味です。部屋の準備ができるまで、バーで無料で飲めます。"
     ctx: "ホテルのロビーで、部屋の準備を待っています"
     ask: つまり、どういうこと？
@@ -168,7 +168,7 @@ items:
     speaker: wolfgang
     voice: us
     cast: us-m5
-    choices: [ "To pay less, park yourself in the garage across the street.", Valet parking is free for hotel guests., The hotel will park your car across the street for you. ]
+    choices: [ "Pay less: park it yourself across the street.", "Valet parking is free for hotel guests.", "They'll park it across the street for you." ]
     answer: 0
     cja: [ "安くしたいなら、向かいの駐車場に自分で停める。", "宿泊客はバレーパーキングが無料。", "ホテルが向かいの駐車場に車を停めてくれる。" ]
     why: "The best I can do は「これが精一杯」。バレーは1泊45ドルで、代案は向かいの駐車場。安いけれど、自分で停めます。"
@@ -199,9 +199,9 @@ items:
     speaker: tia
     voice: us
     cast: us-f4
-    choices: [ "You can check in early, but before noon costs a bit extra.", Early check-in is free all morning., You can't check in before noon. ]
+    choices: [ "Before noon it costs extra.", "Early check-in is free all morning.", "You can't check in before noon." ]
     answer: 0
-    cja: [ "早く入れるが、正午前は少し追加料金がかかる。", "午前中ならいつでも無料で早く入れる。", "正午前はチェックインできない。" ]
+    cja: [ "正午前だと追加料金がかかる。", "午前中ならいつでも無料で早く入れる。", "正午前はチェックインできない。" ]
     why: "no problem で「できる」とわかっても、small fee if it's before noon で正午前は有料。small でもお金はかかります。"
     ctx: "ホテルのフロントで、早めのチェックインを聞きます"
     ask: つまり、どういうこと？
@@ -255,9 +255,9 @@ items:
     speaker: bud
     voice: us
     cast: us-m4
-    choices: [ "That's fine. She's asleep on the bed anyway.", "Thanks, I'll clean it myself, then.", "No crib? Then we'll take two." ]
+    choices: [ "That's fine. She's asleep anyway.", "Thanks, I'll clean it myself, then.", "No crib? Then we'll take two." ]
     answer: 0
-    cja: [ "大丈夫です。どうせ今はベッドで寝ているので。", "ありがとう、じゃあ自分で掃除します。", "ベビーベッドがない？ じゃあ2台ください。" ]
+    cja: [ "大丈夫です。どうせ今は寝てるので。", "ありがとう、じゃあ自分で掃除します。", "ベビーベッドがない？ じゃあ2台ください。" ]
     why: "I'm afraid の後は「今は全部貸し出し中」、でも but の後で「20分で届けられる」。少し待てばいいので「大丈夫」。掃除するのはホテル側です。"
     ctx: "ホテルのフロントで、ベビーベッドを頼みました"
     tags: { seed: 3, register: service, pragmatic: formula, conditions: [ desk ], features: [ contrast ] }
@@ -385,7 +385,7 @@ items:
     speaker: sterling
     voice: us
     cast: us-m5
-    choices: [ "You pay it every night, whether you use them or not.", It's free if you skip the pool and the gym., You pay it once for the whole stay. ]
+    choices: [ "You pay every night, used or not.", "It's free if you skip the pool and gym.", "You pay it once for the whole stay." ]
     answer: 0
     cja: [ "使っても使わなくても、毎晩払う。", "プールとジムを使わなければ無料。", "滞在中に1回だけ払う。" ]
     why: "per night は「1泊ごと」、even if you never use them は「一度も使わなくても」。I'm afraid の後なので、うれしくない知らせです。"
@@ -455,9 +455,9 @@ items:
     speaker: cyd
     voice: us
     cast: us-m4
-    choices: [ He'll stay at the sister hotel; the taxi's paid., He'll pay for two bookings., He'll come back next Friday. ]
+    choices: [ "He'll stay at the sister hotel, taxi paid.", "He'll pay for this booking and next Friday's.", "He'll come back next Friday to stay here." ]
     answer: 0
-    cja: [ "系列ホテルに泊まり、タクシー代も出してもらえる。", "予約を2つ分払う。", "来週の金曜にまた来る。" ]
+    cja: [ "系列ホテルに泊まり、タクシー代は出してもらえる。", "今回の予約と来週金曜の分の両方を払う。", "来週の金曜にまた来て泊まる。" ]
     why: "予約サイトの日付ミス。満室なので what I can do is の後の代案が答え：系列ホテルの部屋と、タクシー代（cover the taxi）。料金も免除です。"
     ctx: "夜、ホテルのフロントでチェックインします"
     focus: cover the taxi
