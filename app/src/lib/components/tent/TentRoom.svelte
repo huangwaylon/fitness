@@ -53,7 +53,7 @@
   import { tokyoDay, type Intent, type SayScope, type Pt as WirePt, type Relayed } from '#lib/contract/live-protocol.ts';
   import { hook } from '../island/devHooks.ts';
   import { DEFAULT_FLOOR, DEFAULT_WALL, ITEMS, STARTER, codeOfFind } from './items.ts';
-  import { DOOR_IN, HALF, centreOf, nearestFree, resolve as resolveRoom, walkPath, type Pt, type Resolved } from './grid.ts';
+  import { DOOR_IN, HALF, boundsOf, centreOf, clampIn, nearestFree, onFloor, outside, rectOf, resolve as resolveRoom, wallMid, walkPath, type Pt, type Resolved, type Spot } from './grid.ts';
   import { DragLink } from './dragLink.ts';
   import { seatsOf, type Seat } from './seats.ts';
   import { createSeating } from '../rooms/seating.ts';
@@ -110,8 +110,17 @@
   let picking = $state(false);
   const link = new DragLink((d) => send(d));
 
+  /** The room's size (store/tent: NH's main rooms, the largest unless its owner chose another). */
+  const bounds = $derived(boundsOf(room.size));
+  /** The pieces as stored, but any a smaller room can't hold (a piece an old phone put outside it, or one placed as the
+   *  room shrank on the other phone): kept, not drawn, there again when the room grows. */
+  function inRoom(): (Spot & { id: string; l?: 0 | 1 })[] {
+    const all = room.pieces.map((p) => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f, ...(p.on ? { on: p.on } : {}), ...(p.l !== undefined ? { l: p.l } : {}) }));
+    const out = new Set(outside(all, bounds).map((s) => s.id));
+    return out.size ? all.filter((p) => !out.has(p.id) && !(p.on && out.has(p.on))) : all;
+  }
   /** The pieces where they stand in the room (a small thing on a table: on its top there). */
-  const spots = (): Resolved[] => resolveRoom(room.pieces.map((p) => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f, ...(p.on ? { on: p.on } : {}), ...(p.l !== undefined ? { l: p.l } : {}) })));
+  const spots = (): Resolved[] => resolveRoom(inRoom());
 
   /** The villagers' GLBs and the players' parts (person3d). */
   const DIRS: Dirs = { villagers: staticUrl('room/villagers3d/'), player: staticUrl('room/player/') };
@@ -173,7 +182,7 @@
     let from: Pt = now0;
     const up = seats.stand();
     if (up) eng.put(me, (from = up));
-    const pts = walkPath(spots(), from, to);
+    const pts = walkPath(spots(), from, to, bounds);
     if (!pts.length) return void then?.();
     const ms = eng.walk(me, pts);
     myWalk = { from, via: pts.slice(0, -1), to: pts[pts.length - 1], s: relayNow(), ms };
@@ -523,11 +532,18 @@
 
   // the room as the store has it: the pieces, the wallpaper and the floor
   $effect(() => {
-    const ps = room.pieces, w = room.wall, f = room.floor, e = eng;
+    const w = room.wall, f = room.floor, e = eng, b = bounds;
+    void room.pieces;
     void room.lights;
     if (!e) return;
     untrack(() => {
-      e.pieces(resolveRoom(ps.map((p) => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f, ...(p.on ? { on: p.on } : {}), ...(p.l !== undefined ? { l: p.l } : {}) }))));
+      // the room's size first (its walls, the camera's framing); a villager left outside a smaller room steps in
+      e.size(b);
+      for (const who of [me, ...others]) {
+        const at = e.at(who);
+        if (at && !onFloor(at, b)) e.put(who, clampIn(at, b));
+      }
+      e.pieces(spots());
       e.room(room.lights);
       // a seat whose piece moved or went: up and off it
       const sat = seats.mine();
@@ -716,6 +732,8 @@
       /** Where each piece stands in the room (a thing on a table: its tile there, and how high). */
       placed: () => spots().map((p) => ({ id: p.id, x: p.x, z: p.z, f: p.f, y: p.y })),
       surfaces: () => ({ wall: room.wall, floor: room.floor }),
+      /** The room's size (tiles a side). */
+      size: () => room.size,
       edit: () => edit?.snapshot() ?? null,
       held: () => link.theirs().map((h) => ({ id: h.id, item: h.item, x: h.x, z: h.z, f: h.f })),
       partner: () => (eng?.at(partner) ? { at: eng.at(partner), walking: eng.walking(partner) } : null),
@@ -741,8 +759,9 @@
       hha: async () => rate(roomNow(), await loadHha()),
       letter: () => letter,
       wallPx: (wall: number, u: number, y: number) => {
-        const th = [0, Math.PI / 2, -Math.PI / 2, Math.PI][wall], at = [[0, -HALF], [-HALF, 0], [HALF, 0], [0, HALF]][wall];
-        const lx = u - HALF, lz = 0.3;
+        const [x0, x1, z0, z1] = rectOf(bounds), mz = (z0 + z1) / 2;
+        const th = [0, Math.PI / 2, -Math.PI / 2, Math.PI][wall], at = [[0, z0], [x0, mz], [x1, mz], [0, z1]][wall];
+        const lx = u - wallMid(wall, bounds), lz = 0.3;
         return eng?.client(at[0] + lx * Math.cos(th) + lz * Math.sin(th), y, at[1] - lx * Math.sin(th) + lz * Math.cos(th));
       },
       /** Where the floor's middle and the usable band's middle are on screen. */
@@ -759,7 +778,7 @@
         let n = 0;
         for (const c of [...codes].sort((a, b) => Number(!ITEMS[b].rug) - Number(!ITEMS[a].rug) || 0)) {
           if (room.room <= 0) break;
-          const at = nearestFree(spots(), c, 0, 0, -10);
+          const at = nearestFree(spots(), c, 0, 0, -10, bounds);
           if (at && room.set({ id: `d${Date.now().toString(36)}${(n++).toString(36).padStart(3, '0')}`, item: c, x: at[0], z: at[1], f: 0 })) continue;
         }
         return room.pieces.length;

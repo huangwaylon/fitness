@@ -67,4 +67,11 @@ describe('the HHA rating', () => {
   it('a crowded floor says so', () => {
     expect(rate(room(Array.from({ length: 30 }, () => 'f4041')), T).note).toEqual({ k: 'crowded' });
   });
+
+  it('the space is the room’s own: what sits well in the largest room crowds a 4 × 4 tent', () => {
+    const r = room(['f4041', 'f4041', 'f4041', 'f4041']);
+    const space = (size?: number) => rate({ ...r, size }, T).parts.find((p) => p.k === 'space')!.pts;
+    expect(space()).toBe(space(8));
+    expect(space(4)).toBeLessThan(space(8));
+  });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DOOR_TILES, HALF, ROOM, TILE, isWallItem, wallSnap, wallSpot, wallSteps, wallWhy, blocked, centreOf, clampIn, fitsOn, isSmall, isSurface, kidSpot, nearestFree, onTop, slotsOf, topY, placeWhy, resolve, slotTaken, slotToTile, snapTo, surfaceAt, tileToSlot, tilesOf, walkPath, type Spot } from './grid.ts';
+import { DOOR_TILES, FULL, HALF, ROOM, TILE, boundsOf, onFloor, outside, rectOf, wallMid, wallSpan, isWallItem, wallSnap, wallSpot, wallSteps, wallWhy, blocked, centreOf, clampIn, fitsOn, isSmall, isSurface, kidSpot, nearestFree, onTop, slotsOf, topY, placeWhy, resolve, slotTaken, slotToTile, snapTo, surfaceAt, tileToSlot, tilesOf, walkPath, type Spot } from './grid.ts';
 import { ITEMS, STARTER, footprint } from './items.ts';
 
 const furniture = STARTER.filter((c) => !ITEMS[c].rug);
@@ -186,5 +186,57 @@ describe('on the walls (NH\'s wall-mounted things)', () => {
     // never a floor thing: no tiles blocked, no floor placement in the way
     expect(blocked(there).reduce((a, b) => a + b, 0)).toBe(0);
     expect(placeWhy(there, { item: 'f4039', x: 2, z: 3, f: 0 })).toBeNull();
+  });
+});
+
+describe('a smaller room (NH’s house 6 × 6, tent 4 × 4: contract/tent.ts ROOM_SIZES)', () => {
+  const six = boundsOf(6), four = boundsOf(4);
+  const wallThing = Object.keys(ITEMS).find((c) => isWallItem(c) && ITEMS[c].w === 1)!;
+  it('a square of the largest room’s tiles against its front wall, the door’s two tiles in its front row’s middle', () => {
+    expect(FULL).toEqual({ n: 8, x0: 0, x1: 8, z0: 0, z1: 8 });
+    expect(six).toEqual({ n: 6, x0: 1, x1: 7, z0: 2, z1: 8 });
+    expect(four).toEqual({ n: 4, x0: 2, x1: 6, z0: 4, z1: 8 });
+    for (const b of [FULL, six, four]) for (const [x, z] of DOOR_TILES) expect(x >= b.x0 && x < b.x1 && z === b.z1 - 1).toBe(true);
+    expect(rectOf(six)).toEqual([-30, 30, -20, 40]);
+    // the walls' spans: back and front its x tiles, the left one from the front, the right one its z
+    expect([0, 1, 2, 3].map((f) => wallSpan(f, four))).toEqual([[2, 6], [0, 4], [4, 8], [2, 6]]);
+    expect([0, 1, 2, 3].map((f) => wallMid(f, four))).toEqual([40, 20, 60, 40]);
+    expect([0, 1, 2, 3].map((f) => wallMid(f, FULL))).toEqual([40, 40, 40, 40]);
+  });
+
+  it('a piece stands only inside it: placing, snapping, the nearest free spot, a wall’s span', () => {
+    expect(placeWhy([], { item: one, x: 0, z: 7, f: 0 }, six)).toBe('out');
+    expect(placeWhy([], { item: one, x: 1, z: 2, f: 0 }, six)).toBeNull();
+    expect(placeWhy([], { item: one, x: 1, z: 1, f: 0 }, six)).toBe('out');
+    expect(snapTo(bed, 0, -100, -100, four)).toEqual([2, 4]);
+    expect(snapTo(bed, 0, 100, 100, four)).toEqual([4, 6]);
+    const at = nearestFree([], bed, 0, -100, -100, four)!;
+    expect(placeWhy([], { item: bed, x: at[0], z: at[1], f: 0 }, four)).toBeNull();
+    expect(wallWhy([], { item: wallThing, x: 0, z: 0, f: 0 }, four)).toBe('out');
+    expect(wallWhy([], { item: wallThing, x: 2, z: 0, f: 0 }, four)).toBeNull();
+    expect(wallWhy([], { item: wallThing, x: 3, z: 0, f: 1 }, four)).toBeNull();
+    expect(wallWhy([], { item: wallThing, x: 4, z: 0, f: 1 }, four)).toBe('out');
+    expect(wallSnap(wallThing, 0, 10, 2, four)[0]).toBe(4);
+  });
+
+  it('what a shrink would leave outside (a thing on a top goes with its piece); none for the largest', () => {
+    const spots: Spot[] = [
+      { id: 'a', item: bed, x: 0, z: 0, f: 0 }, { id: 'b', item: one, x: 3, z: 5, f: 0 }, { id: 'c', item: one, x: 0, z: 0, f: 0, on: 'a' },
+      { id: 'w', item: wallThing, x: 7, z: 0, f: 0 }, { id: 'v', item: wallThing, x: 3, z: 0, f: 0 }
+    ];
+    expect(outside(spots, FULL)).toEqual([]);
+    expect(outside(spots, six).map((s) => s.id)).toEqual(['a', 'w']);
+    expect(outside(spots, four).map((s) => s.id)).toEqual(['a', 'w']);
+  });
+
+  it('a villager walks only on its floor', () => {
+    const b = blocked([], four);
+    expect(b.reduce((a, c) => a + c, 0)).toBe(16 * 16 - 8 * 8);
+    expect(clampIn([-50, -50], four)).toEqual([-17, 3]);
+    expect(onFloor([0, 0], four)).toBe(true);
+    expect(onFloor([0, -10], four)).toBe(false);
+    const path = walkPath([], [0, 30], [-100, -100], four);
+    const end = path.at(-1)!;
+    expect(onFloor(end, four) && end[0] >= -20 && end[1] >= 0).toBe(true);
   });
 });

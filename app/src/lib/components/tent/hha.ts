@@ -6,7 +6,7 @@
 //   loadHha()             hha.json (once)
 import type { TentPiece } from '#lib/contract/tent.ts';
 import { DEFAULT_FLOOR, DEFAULT_WALL, ITEMS, footprint } from './items.ts';
-import { DOOR_TILES, ROOM } from './grid.ts';
+import { DOOR_TILES } from './grid.ts';
 
 /** An item's (a piece's, a wallpaper's, a floor's) HHA numbers. */
 interface HhaMeta {
@@ -28,6 +28,8 @@ export interface HhaRoom {
   wall: string | null;
   floor: string | null;
   lights: boolean;
+  /** Its size (tiles a side; none: the largest, 8). */
+  size?: number;
 }
 
 /** What the rating counts, in the letter's order. */
@@ -67,7 +69,8 @@ const SPACE_USE = 200;
 /** Each kind of thing (a seat, a bed, a table, a rug, a wall thing, a light, and each HHA category). */
 const VARIETY_PER = 60, VARIETY_MAX = 600;
 
-const USABLE = ROOM * ROOM - DOOR_TILES.length;
+/** The floor's tiles but the doorway's (a room of n tiles a side: its size). */
+const usable = (n: number) => n * n - DOOR_TILES.length;
 
 /** Most-shared key among the pieces: [key, how many pieces], the first in sorted order on a tie. */
 function top(keys: (readonly string[])[]): [string, number] | null {
@@ -113,7 +116,7 @@ export function rate(room: HhaRoom, table: HhaTable): HhaRating {
 
   // the room's space: the floor neither bare nor crowded, and the tables and walls used
   const onFloor = pieces.filter((p) => !ITEMS[p.item].rug && !ITEMS[p.item].wl && !(p.on && ids.has(p.on)));
-  const fill = onFloor.reduce((s, p) => s + footprint(p.item, 0).reduce((a, b) => a * b, 1), 0) / USABLE;
+  const fill = onFloor.reduce((s, p) => s + footprint(p.item, 0).reduce((a, b) => a * b, 1), 0) / usable(room.size ?? 8);
   const onTables = pieces.some((p) => p.on && ids.has(p.on)), onWalls = pieces.some((p) => ITEMS[p.item].wl);
   const space = (fill >= FILL_LO && fill <= FILL_HI ? SPACE_BEST : fill >= FILL_LO - FILL_EDGE && fill <= FILL_HI + FILL_EDGE ? SPACE_OK : 0)
     + (onTables ? SPACE_USE : 0) + (onWalls ? SPACE_USE : 0);

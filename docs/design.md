@@ -902,7 +902,7 @@ bobs over it when someone else wrote since I last looked. Everyone, the guest to
 `routes/tent/+page.svelte`, `tent/TentRoom.svelte`, `tent/TentEdit.svelte`, `tent/engine.ts` (three.js), `tent/grid.ts`,
 `tent/items.ts`, `tent/dragLink.ts`, `store/tent.svelte.ts`, `contract/tent.ts`, `ui-state/doorTransition.ts`,
 `scripts/room-models.ts`, `scripts/room-surfaces.ts`, `store/where.svelte.ts`, `e2e/tent.spec.ts`,
-`e2e/tent-surfaces.spec.ts`, `e2e/tent-hold.spec.ts`, `e2e/sync-harness.spec.ts`. A tap on the campsite's tent walks my
+`e2e/tent-surfaces.spec.ts`, `e2e/tent-hold.spec.ts`, `e2e/tent-size.spec.ts`, `e2e/sync-harness.spec.ts`. A tap on the campsite's tent walks my
 villager up to its door (the walk goes over the relay; within 36u it goes straight in; a tap elsewhere on the way
 cancels), then goes inside: its own screen, truly 3D, behind NH's door (a black iris closes, stays black while the
 room's chunk and first frame come, opens out of the room's door; the way out the same). Out of the door my villager
@@ -914,6 +914,14 @@ stands just in front, facing out, on every phone. The homes' rooms are the same 
   villager leave 3 minutes after the relay saw it go ([Walking](#walking) "A phone gone").
 - **The room:** NH's largest main room, 8 × 8 tiles (a tile 10 model units), four walls four tiles high, the front one
   with the door (two tiles wide) and NH's doormat; its two tiles stay clear.
+- **Room size** (もようがえ's 広さ tab, `e2e/tent-size.spec.ts`): NH's main rooms, テント 4 × 4, 初めての家 6 × 6 and
+  増築した部屋 8 × 8 ([Nookipedia: Home loan](https://nookipedia.com/wiki/Home_loan),
+  [Player house](https://nookipedia.com/wiki/Player_house)), each card the room's plan. One op (`dtentsize`, the
+  room's scope: whoever may arrange it); none is 8 × 8. A smaller room is the largest one's middle tiles against the
+  same front wall (`grid.ts` Bounds): the walls, floor, grid and camera fit it, pieces keep their tiles. Larger always;
+  smaller only with nothing left outside, else those pieces glow red and the bar says how many to move or put away
+  (decisions: *A room's size never moves or drops a piece*). The HHA's space counts the room's own tiles. NH's back,
+  side, upstairs and basement rooms are a follow-up (a home is one room).
 - **The camera** starts as NH's room camera (perspective, 47° down, a 32° lens, from the front), then it's the
   player's: a drag turns it round the room and tilts it (28°–78°), a pinch zooms (0.55–1.35 ×), 🏠 eases it back. The
   walls between the camera and the room are cut away (Happy Home Paradise's look). Or at my villager's eyes:

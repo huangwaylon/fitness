@@ -7,16 +7,18 @@
   // places it (greyed while red, the bar saying why); 🗑 しまう takes a placed one away (とりけす on the banner); ✕ やめる
   // puts it back. A wallpaper or a floor is on the walls at once. While I hold a piece the partner's phone sees it move
   // (dragLink.ts); what the partner holds, I can't pick up. Every change is one op (store/tent.svelte.ts), in the room
-  // it's given: the home's own (the tent's `t`, うめ's house's `u`, the guest's `v`).
+  // it's given: the home's own (the tent's `t`, うめ's house's `u`, the guest's `v`). 広さ picks the room's size from NH's
+  // main rooms (contract/tent.ts ROOM_SIZES): a smaller one only once nothing would be left outside it (else those
+  // pieces glow red and the bar says to move or put them away first; there is no storage to send them to).
   import { onMount } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
   import type { rooms } from '#lib/store/tent.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import { TENT_MAX } from '#lib/contract/tent.ts';
+  import { ROOM_SIZES, TENT_MAX, type RoomSize } from '#lib/contract/tent.ts';
   import { DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, GYM, ITEMS, STARTER, WALLS, footprint, iconUrl } from './items.ts';
-  import { HALF, ROOM, TILE, centreOf, fitsOn, isSmall, isSurface, isWallItem, kidSpot, tilesOf, wallSnap, wallSteps, wallWhy, nearestFree, placeWhy, resolve, slotTaken, snapTo, surfaceAt, tileToSlot, type Facing, type Spot, type Why } from './grid.ts';
+  import { HALF, ROOM, TILE, boundsOf, outside, wallSpan, centreOf, fitsOn, isSmall, isSurface, isWallItem, kidSpot, tilesOf, wallSnap, wallSteps, wallWhy, nearestFree, placeWhy, resolve, slotTaken, snapTo, surfaceAt, tileToSlot, type Facing, type Spot, type Why } from './grid.ts';
   import type { Tent } from './engine.ts';
   import type { DragLink } from './dragLink.ts';
 
@@ -39,18 +41,20 @@
   }
   let { room, eng, link, finds, bought, villagers, relayNow, holderName, ondone }: Props = $props();
 
-  type Tab = 'recent' | 'furniture' | 'rugs' | 'walled' | 'finds' | 'bought' | 'gym' | 'wall' | 'floor';
+  type Tab = 'recent' | 'furniture' | 'rugs' | 'walled' | 'finds' | 'bought' | 'gym' | 'wall' | 'floor' | 'size';
+  /** The room's size (its tiles within the largest room's: grid.ts Bounds). */
+  const bounds = $derived(boundsOf(room.size));
   /** The gym's pieces I have (found or bought: items.ts GYM), gathered on a tab of their own. */
   const gym = $derived([...new Set([...finds, ...bought])].filter((c) => GYM.has(c)));
   /** The pieces I picked last (this phone's, newest first): NH's quick access to what's at hand. */
   const RECENT_MAX = 12;
   let recent = $state<string[]>(((r) => (Array.isArray(r) ? r.filter((c): c is string => typeof c === 'string' && !!ITEMS[c]) : []))(readJson<unknown>(localKV(), DEVICE.tentRecent)));
-  const TABS = $derived<Tab[]>([...(recent.length ? ['recent' as const] : []), 'furniture', 'rugs', 'walled', 'finds', ...(bought.length ? ['bought' as const] : []), ...(gym.length ? ['gym' as const] : []), 'wall', 'floor']);
+  const TABS = $derived<Tab[]>([...(recent.length ? ['recent' as const] : []), 'furniture', 'rugs', 'walled', 'finds', ...(bought.length ? ['bought' as const] : []), ...(gym.length ? ['gym' as const] : []), 'wall', 'floor', 'size']);
   let tab = $state<Tab>('furniture');
   const list = $derived(
     tab === 'recent' ? recent : tab === 'furniture' ? STARTER.filter((c) => !ITEMS[c].rug && !ITEMS[c].wl) : tab === 'rugs' ? STARTER.filter((c) => ITEMS[c].rug)
       : tab === 'walled' ? [...new Set([...STARTER, ...finds, ...bought].filter((c) => ITEMS[c].wl))] : tab === 'finds' ? finds : tab === 'bought' ? bought : tab === 'gym' ? gym
-      : tab === 'wall' ? WALLS : FLOORS
+      : tab === 'wall' ? WALLS : tab === 'floor' ? FLOORS : []
   );
   /** How many of each piece stand in the room (the icons' counts). */
   const counts = $derived(room.pieces.reduce((m, p) => m.set(p.item, (m.get(p.item) ?? 0) + 1), new Map<string, number>()));
@@ -84,7 +88,7 @@
     onto = null;
     if (!sel) return void (why = null);
     // on a wall: its wall's grid (its facing is the wall: f)
-    if (isWallItem(sel.item)) return void (why = wallWhy(others(), { id: sel.fresh ? undefined : sel.id, item: sel.item, x: at[0], z: at[1], f: sel.f }));
+    if (isWallItem(sel.item)) return void (why = wallWhy(others(), { id: sel.fresh ? undefined : sel.id, item: sel.item, x: at[0], z: at[1], f: sel.f }, bounds));
     // a small thing over a surface goes on its top (NH's table tops): on the tiles of it that hold a thing, one thing
     // a tile (a bigger one on two)
     if (isSmall(sel.item)) {
@@ -105,7 +109,7 @@
       }
     }
     const s: Spot = { id: sel.fresh ? undefined : sel.id, item: sel.item, x: at[0], z: at[1], f: sel.f };
-    why = placeWhy(placed(), s);
+    why = placeWhy(placed(), s, bounds);
     if (!why && !ITEMS[sel.item]?.rug) {
       const [w, d] = footprint(sel.item, sel.f), x0 = -HALF + at[0] * TILE, z0 = -HALF + at[1] * TILE;
       if (villagers().some(([x, z]) => x > x0 - 2 && x < x0 + w * TILE + 2 && z > z0 - 2 && z < z0 + d * TILE + 2)) why = 'villager';
@@ -128,7 +132,7 @@
   /** A wall thing to a point on a wall (across from its left end, up): its wall's grid. */
   function moveToWall(wall: number, u: number, y: number): boolean {
     if (!sel || !isWallItem(sel.item)) return false;
-    const n = wallSnap(sel.item, u, y);
+    const n = wallSnap(sel.item, u, y, wall, bounds);
     if (n[0] === at[0] && n[1] === at[1] && sel.f === wall) return false;
     sel.f = wall as Facing;
     at = n;
@@ -138,7 +142,7 @@
   }
   function moveTo(x: number, z: number): boolean {
     if (!sel || isWallItem(sel.item)) return false;
-    const n = snapTo(sel.item, sel.f, x, z);
+    const n = snapTo(sel.item, sel.f, x, z, bounds);
     if (n[0] === at[0] && n[1] === at[1]) return false;
     at = n;
     check();
@@ -157,15 +161,15 @@
     }
     const me = villagers()[0] ?? [0, 0];
     let f: Facing = 0;
-    let spot = nearestFree(placed(), code, f, me[0], me[1] - 12) ?? snapTo(code, f, 0, 0);
+    let spot = nearestFree(placed(), code, f, me[0], me[1] - 12, bounds) ?? snapTo(code, f, 0, 0, bounds);
     if (isWallItem(code)) {
       // a wall thing: the first free spot on the back wall, from its middle out, at eye height first
-      const w = ITEMS[code].w, steps = wallSteps(code), mid = Math.floor((ROOM - w) / 2);
+      const w = ITEMS[code].w, steps = wallSteps(code), midOf = (wall: number) => Math.floor((wallSpan(wall, bounds)[0] + wallSpan(wall, bounds)[1] - w) / 2);
       const tries: [number, number, number][] = [];
       for (const wall of [0, 1, 2, 3]) for (let dz = 0; dz <= steps; dz++) for (let dx = 0; dx <= ROOM; dx++)
-        for (const x of [mid + dx, mid - dx]) tries.push([wall, x, Math.min(steps, Math.max(0, 3 + (dz % 2 ? -1 : 1) * Math.ceil(dz / 2)))]);
-      const ok = tries.find(([wall, x, z]) => !wallWhy(others(), { item: code, x, z, f: wall as Facing }));
-      [f, spot] = ok ? [ok[0] as Facing, [ok[1], ok[2]]] : [0, [Math.max(0, mid), 0]];
+        for (const x of [midOf(wall) + dx, midOf(wall) - dx]) tries.push([wall, x, Math.min(steps, Math.max(0, 3 + (dz % 2 ? -1 : 1) * Math.ceil(dz / 2)))]);
+      const ok = tries.find(([wall, x, z]) => !wallWhy(others(), { item: code, x, z, f: wall as Facing }, bounds));
+      [f, spot] = ok ? [ok[0] as Facing, [ok[1], ok[2]]] : [0, [Math.max(0, midOf(0)), 0]];
     }
     sel = { id: newId(Date.now()), fresh: true, item: code, f };
     at = spot;
@@ -313,7 +317,7 @@
    *  the spot flashes red (the bar saying why). */
   export function tapFloor(x: number, z: number): void {
     if (!sel || isWallItem(sel.item)) return;
-    const n = snapTo(sel.item, sel.f, x, z), was = at;
+    const n = snapTo(sel.item, sel.f, x, z, bounds), was = at;
     if (n[0] === at[0] && n[1] === at[1]) return;
     at = n;
     check();
@@ -396,7 +400,7 @@
     const [cx, cz] = centreOf({ item: sel.item, x: at[0], z: at[1], f: sel.f });
     // clockwise seen from above (a quarter turn the other way about the up axis)
     sel.f = ((sel.f + 3) % 4) as Facing;
-    at = snapTo(sel.item, sel.f, cx, cz);
+    at = snapTo(sel.item, sel.f, cx, cz, bounds);
     check();
     show();
     cue('tick', { step: 5 });
@@ -455,11 +459,25 @@
         label: t('common.undo'),
         // a removal is final: the undo puts a new one down where it stood (if the spot is still free)
         run: () => {
-          const back = p.on ? !slotTaken(others(), p.on, p.x, p.z, undefined, p.item, p.f) && !!room.byId(p.on) : !placeWhy(placed(), { item: p.item, x: p.x, z: p.z, f: p.f });
+          const back = p.on ? !slotTaken(others(), p.on, p.x, p.z, undefined, p.item, p.f) && !!room.byId(p.on) : !placeWhy(placed(), { item: p.item, x: p.x, z: p.z, f: p.f }, bounds);
           if (back) room.set({ id: newId(Date.now()), item: p.item, x: p.x, z: p.z, f: p.f, p: p.p, ...(p.on ? { on: p.on } : {}) });
         }
       }
     });
+  }
+  /** 広さ: the room to NH's size `n`. Larger always; smaller only with nothing left outside it (NH's rooms keep what's
+   *  in them, and here nothing is ever lost): else those pieces glow red and the bar says how many to move first. */
+  function resize(n: RoomSize) {
+    if (n === room.size) return;
+    if (sel) cancel(false);
+    const out = outside(others(), boundsOf(n));
+    if (out.length) {
+      eng()?.warn(out);
+      say(t('tent.sizeBlocked', { n: out.length }), 'size');
+      cue('boop');
+      return;
+    }
+    if (room.resize(n)) cue('confirm');
   }
   function surface(kind: 'wall' | 'floor', code: string) {
     if (room.surface(kind, code)) cue('confirm');
@@ -513,7 +531,7 @@
       </button>
     </div>
   {:else}
-    <div class="bar hint" data-tent-hint>{peek ? nameOf(peek) : t(room.pieces.length ? 'tent.hintMove' : 'tent.hint')}</div>
+    <div class="bar hint" class:bad={!!note} data-tent-hint data-note={note?.k ?? ''}>{note ? note.text : peek ? nameOf(peek) : t(tab === 'size' ? 'tent.sizeHint' : room.pieces.length ? 'tent.hintMove' : 'tent.hint')}</div>
   {/if}
   <div class="tray">
     <div class="tabs" role="tablist" aria-label={t('tent.edit')}>
@@ -523,6 +541,26 @@
     </div>
     <div class="row">
       <!-- a grid that scrolls up and down under the thumb (no snapping: a tap is a tap, never the start of a jump) -->
+      {#if tab === 'size'}
+        <!-- NH's main rooms, each drawn as its floor within the largest one's, its door at the front -->
+        <div class="sizes" role="group" aria-label={t('tent.tab.size')} data-tent-sizes>
+          {#each ROOM_SIZES as n (n)}
+            {@const o = (8 - n) / 2}
+            <button type="button" class="sz" data-tent-size={n} data-sfx="self" aria-pressed={room.size === n} onclick={() => resize(n)}>
+              <svg viewBox="-0.5 -0.5 9 9.6" aria-hidden="true">
+                <rect class="all" x="0" y="0" width="8" height="8" />
+                <rect class="mine" x={o} y={8 - n} width={n} height={n} />
+                {#each Array.from({ length: n - 1 }, (_, i) => i + 1) as i (i)}
+                  <path d="M{o + i} {8 - n}v{n}M{o} {8 - n + i}h{n}" />
+                {/each}
+                <rect class="door" x="3" y="7.9" width="2" height="0.6" />
+              </svg>
+              <span class="nm">{t(`tent.size.s${n}`)}</span>
+              <span class="dim">{t('tent.sizeTiles', { n })}</span>
+            </button>
+          {/each}
+        </div>
+      {:else}
       <div class="items" role="group" aria-label={t(`tent.tab.${tab}`)} data-tent-items>
         {#each list as code (code)}
           {@const n = counts.get(code) ?? 0}
@@ -537,6 +575,7 @@
           <p class="empty" data-tent-empty>{t('tent.findsEmpty')}</p>
         {/each}
       </div>
+      {/if}
       <button type="button" class="done" data-tent-done data-sfx="confirm" onclick={done}>
         <span class="count" data-tent-count>{room.pieces.length}/{TENT_MAX}</span>
         <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg><span>{t('decor.done')}</span>
@@ -557,5 +596,24 @@
   .it.full { opacity: .45; }
   .empty { grid-column: 1 / -1; margin: 0; align-self: center; padding: 12px 8px; color: var(--c-ink-soft); font-weight: 700; white-space: normal; text-align: center; }
   .count { font: 700 var(--fs-xs)/1 var(--font-num); color: var(--c-ink); }
+  .hint.bad { color: var(--c-ink); }
+  .hint.bad::before { content: '! '; color: var(--c-coral); }
+  /* 広さ: three cards, each NH's room as a plan */
+  .sizes { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 2px; }
+  .sz {
+    appearance: none; border: 0; margin: 0; font: inherit; color: var(--c-ink); cursor: pointer; -webkit-tap-highlight-color: transparent;
+    display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-radius: var(--r-btn);
+    background: var(--c-card); box-shadow: inset 0 0 0 2px var(--c-edge);
+  }
+  .sz[aria-pressed='true'] { box-shadow: inset 0 0 0 3px var(--c-leaf-edge); background: color-mix(in srgb, var(--c-leaf) 14%, var(--c-card)); }
+  .sz:active { transform: translateY(2px); }
+  .sz:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .sz svg { width: 52px; height: 56px; }
+  .sz .all { fill: none; stroke: var(--c-edge); stroke-width: .12; stroke-dasharray: .3 .25; }
+  .sz .mine { fill: color-mix(in srgb, var(--c-lip) 55%, var(--c-cream)); stroke: var(--c-ink-soft); stroke-width: .18; }
+  .sz path { stroke: var(--c-ink-soft); stroke-width: .06; opacity: .6; }
+  .sz .door { fill: var(--c-ink-soft); }
+  .sz .nm { font-size: var(--fs-xs); white-space: nowrap; }
+  .sz .dim { font: 700 var(--fs-xs)/1 var(--font-num); color: var(--c-ink-soft); }
   @keyframes up { from { translate: 0 8px; opacity: 0; } to { translate: 0 0; opacity: 1; } }
 </style>
