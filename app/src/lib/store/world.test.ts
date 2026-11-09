@@ -130,6 +130,20 @@ describe('the shared island on this phone', () => {
     expect(rows.at(-1)?.date).toBe('2026-11-01');
   });
 
+  it('the relay’s midnight after a device’s (its clock ahead): the record read this session folds again for the new day, my row goes', () => {
+    const r = fakeRelay();
+    r.live.serverNow = () => Date.now() - 3000;
+    const midnight = Date.UTC(2026, 10, 1, 15); // 2026-11-02 00:00 Tokyo
+    vi.setSystemTime(midnight + 1000); // the device just past midnight, the relay at 23:59:58
+    world.attach(r.live, 'A');
+    const rows: { date: string }[] = [];
+    world.sink = (date) => rows.push({ date });
+    world.rows([], true); // fed at the device's new day: the record's rows for the relay's 1st
+    vi.setSystemTime(midnight + 60_000); // the relay's new day, no new State
+    world.share({ kind: 'pick', id: 'w9', what: 'weed' });
+    expect(rows).toEqual([{ date: '2026-11-02' }]);
+  });
+
   it('hears the partner: played when it just happened, only folded when it\'s the day\'s replay; a repeat is nothing', () => {
     const r = fakeRelay();
     world.attach(r.live, 'A');
@@ -232,6 +246,12 @@ describe('a claim the room refused (its winner never heard here)', () => {
     world.attach(live, 'A');
     const rows: { shakes: unknown[] }[] = [];
     world.sink = (_date, row) => rows.push(row);
+    // before the record's rows: refused, my row still waits for them (health A8: one rebuilt from the cache would erase
+    // claims only the record holds)
+    world.share({ kind: 'shake', tree: 'oak-p1', drop: 'nest' });
+    refuse!(r.sent.at(-1)!);
+    expect(rows).toEqual([]);
+    world.rows([]); // the record's rows in
     expect(world.share({ kind: 'shake', tree: 'oak-p1', drop: 'nest' }).fresh).toBe(true);
     const sent = r.sent.at(-1)!;
     expect(world.day.shakes).toHaveLength(1);

@@ -35,6 +35,9 @@ type Shared = Extract<Intent, { kind: DayEvent['kind'] }>;
 const KINDS = new Set<string>(['catch', 'pick', 'put', 'shake', 'world', 'walk', 'act']);
 const isDayEvent = (m: Relayed): m is Relayed & DayEvent => KINDS.has(m.kind);
 
+/** A sheet's island row (model/state.ts islandDays). */
+type RecordRow = { at: number; person: Who; data: DayRow & { date: string } };
+
 class SharedWorld {
   /** Bumped at every change (read it to re-derive from `day`). */
   rev = $state(0);
@@ -58,6 +61,8 @@ class SharedWorld {
   #recordDay: string | null = null;
   /** My row changed before then: it goes once they are. */
   #rowWaits = false;
+  /** The rows of that fold: the relay's midnight folds them again for its new day (the same record, read this session). */
+  #recordRows: readonly RecordRow[] | null = null;
 
   /** The island's clock on the relay's (a `?date=` preview moves it; the relay's offset from the pings). */
   now(): number {
@@ -192,6 +197,9 @@ class SharedWorld {
     const today = this.#date();
     if (this.#recordDay !== today) {
       this.#rowWaits = true;
+      // the record read this session, before the relay's midnight: its new day is folded from the same rows (a phone's
+      // own midnight, ahead or behind, never decides it)
+      if (this.#recordRows) this.rows(this.#recordRows, true);
       return;
     }
     this.#rowWaits = false;
@@ -201,7 +209,7 @@ class SharedWorld {
   /** The sheet's island days (model/state.ts islandDays, each person's latest by day): today's folded in (what the
    *  relay didn't bring: both apps were closed, an outage), yesterday's watering and wishes kept for today. `current`:
    *  the rows are the record's as fetched this session (week.current), so my row may go now (#sendRow). */
-  rows(rows: readonly { at: number; person: Who; data: DayRow & { date: string } }[], current = true): void {
+  rows(rows: readonly RecordRow[], current = true): void {
     const d = this.#today(), today = this.#date(), yesterday = this.#date(-86_400_000);
     const latest = new Map<string, (typeof rows)[number]>();
     for (const r of rows) {
@@ -240,6 +248,7 @@ class SharedWorld {
       // before the record came, the app closed since: #rowWaits didn't survive the reload)
       const first = this.#recordDay !== today, me = this.#me;
       this.#recordDay = today;
+      this.#recordRows = rows;
       if (this.#rowWaits || (first && me && rowLacks(latest.get(`${me}|${today}`)?.data, rowOf(d, me)))) this.#sendRow();
     }
   }
@@ -386,7 +395,7 @@ class SharedWorld {
     this.#writing = true;
     queueMicrotask(() => this.#flush());
     this.rev++;
-    this.#sink?.(this.#date(), rowOf(d, me));
+    this.#sendRow();
   }
 
   /** A change of mine: folded into the day (first wins: a thing the partner already has stays theirs, `fresh` false),
@@ -440,6 +449,7 @@ class SharedWorld {
     this.#prev = null;
     this.#recordDay = null;
     this.#rowWaits = false;
+    this.#recordRows = null;
     this.#events = [];
     this.#subs.clear();
     this.#hearSubs.clear();
