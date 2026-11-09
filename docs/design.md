@@ -960,8 +960,9 @@ stands just in front, facing out, on every phone. The homes' rooms are the same 
   person's ceiling, the edit grid) is compiled a program a tick once still (engine.ts `warm`). At rest the room draws
   only a blink (villager3d `nextBlink`).
 - **Sit, lie and switch** (`tent/seats.ts`; shared with the museum's benches: `rooms/seating.ts`): NH's own interaction
-  from the spreadsheet (a Chair is sat on, a Bed lain on): a tap walks my villager up and it sits or lies; a floor tap
-  gets it up; the first to sit keeps the seat (the `tent` intent's `seat`). A light switches with a tap, kept with the
+  from the spreadsheet (a Chair is sat on, a Bed lain on): a tap walks my villager up to the nearest free side and it
+  sits or lies, its pose its model's turned with the piece (along the bed, the head on the pillow, a double bed's two
+  side by side: [Seats and beds](world3d-assets.md#seats-and-beds)); a floor tap gets it up; the first to sit keeps the seat (the `tent` intent's `seat`). A light switches with a tap, kept with the
   piece (its op's `l`); NH's room light switch (💡) dims the room's own light.
 - **Phrases** ([Villager taps](#villager-taps)): the say button at the room's bottom right, in the tent and every home;
   hidden in もようがえ and under a sheet. The phrase shows in the island's balloon (`island/Says.svelte`) by the speaker's

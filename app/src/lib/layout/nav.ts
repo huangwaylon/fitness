@@ -190,8 +190,8 @@ const SEAT_ON: Readonly<Record<string, { x: readonly number[]; front: number; li
   'log-bench': { x: [-10.5, 12], front: 29.4 },
   'log-stool': { x: [0], front: 24.9 },
   'iron-chair': { x: [0], front: 24.9 },
-  hammock: { x: [1.7], front: 30, lie: true },
-  'beach-chair': { x: [1.7], front: 30, lie: true },
+  hammock: { x: [0.9], front: 30, lie: true },
+  'beach-chair': { x: [-1.4], front: 30, lie: true },
   // the gym's (seats3d.json `use`): the weight bench lain on, the rest used in place (its anchor's `from`: in front of the
   // bike, the ball and the treadmill; beside the bag; under the pull-up bar, 15u behind its middle)
   'weight-bench': { x: [0.9], front: 30, lie: true },

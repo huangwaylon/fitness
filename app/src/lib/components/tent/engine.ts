@@ -138,9 +138,9 @@ export interface Tent {
   /** 0 day … 1 night: the light, and the lamps on. */
   night(n: number): void;
   villager(who: Who, look: Look | null): void;
-  /** The test hook's: a 3D villager's state and the box its skinned meshes fill now (bones applied), relative to its
-   *  feet (room units), or null (no model, or a card). */
-  v3(who: Who): { state: string; box: [number[], number[]] } | null;
+  /** The test hook's: a 3D villager's state, the box its skinned meshes fill now (bones applied) relative to its group's
+   *  spot, that spot and its head bone (room units), or null (no model, or a card). */
+  v3(who: Who): { state: string; box: [number[], number[]]; at: number[]; head: number[] | null } | null;
   /** The model drawn for `who` (person3d's key: `v:<roster id>`, `p:…` a human player), null till one is in. */
   model(who: Who): string | null;
   /** Where a villager stands now (model units). */
@@ -1896,7 +1896,8 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
         sm.computeBoundingBox();
         b.union(m.copy(sm.boundingBox!).applyMatrix4(sm.matrixWorld));
       });
-      return { state: v.state(), box: [[b.min.x - o.x, b.min.y - o.y, b.min.z - o.z], [b.max.x - o.x, b.max.y - o.y, b.max.z - o.z]] };
+      const hb = v.head()?.getWorldPosition(new Vector3());
+      return { state: v.state(), box: [[b.min.x - o.x, b.min.y - o.y, b.min.z - o.z], [b.max.x - o.x, b.max.y - o.y, b.max.z - o.z]], at: [o.x, o.y, o.z], head: hb ? [hb.x, hb.y, hb.z] : null };
     },
     walk, walking: (who) => !!villagers.get(who)?.path, face, hop, headPoint, hit, floorAt, client, orbit, zoom, resetView, isDefault, moving, centre,
     loading: () => pending,

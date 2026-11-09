@@ -46,12 +46,14 @@ const USE: Record<string, UseShape> = {
   'punching-bag': { k: 'u', use: 'punch', x: -8, y: 0, z: 2, yaw: Math.PI / 2, fx: -8, fz: 2 },
   pullup: { k: 'u', use: 'pullup', x: 0, y: 0, z: -5, yaw: 0, fx: 0, fz: -5 }
 };
-/** What the rays get wrong or can't tell, by hand: merged over what they found. A hammock sways (its cloth sags in the
- *  middle; the lying height is the sag's, a little under the rim the rays see first). */
+/** What the rays get wrong or can't tell, by hand (each bed's head checked by eye, 2026-11-09: NH's at −x but these):
+ *  merged over what they found. A hammock sways (its cloth sags in the middle; the lying height is the sag's, a little
+ *  under the rim the rays see first); the inflatable sofa's head is at its tall closed end (+x), not its low tip. */
 const OVERRIDES: Record<string, Partial<Shape>> = {
   hammock: { sway: 1 },
   'weight-bench': { use: 'press' },
-  f1620: { sway: 1 }
+  f1620: { sway: 1 },
+  f3962: { head: 1 }
 };
 
 const three = join(dirname(createRequire(import.meta.url).resolve('three')), '..');
@@ -73,10 +75,14 @@ await page.route('http://room.local/**', (route) => {
 await page.goto('http://room.local/');
 await page.waitForFunction(() => (window as unknown as { ready?: boolean }).ready);
 
+/** Seats and beds found on their lowest level: the bunk bed's bottom bunk (no ladder climbing), under a canopy, a
+ *  parasol, a pod's lid or the bus stop's roof (the rays' first hits are those). */
+const LOW = new Set(['f8298', 'f3624', 'f13294', 'f13508', 'f13512']);
+
 const STEP = 0.5;
-async function shape(url: string, w: number, d: number, h: number, u: 's' | 'l', n: number): Promise<Shape | null> {
+async function shape(url: string, w: number, d: number, h: number, u: 's' | 'l', n: number, low = false): Promise<Shape | null> {
   const s = (await page.evaluate((o) => (window as unknown as { sample: (o: unknown) => Promise<Sample> }).sample(o), { url, W: w * 10, D: d * 10, step: STEP })) as Sample;
-  return u === 's' ? seatOf(s, w, d, STEP, n) : bedOf(s, w, d, STEP, n, h);
+  return u === 's' ? seatOf(s, w, d, STEP, n, low) : bedOf(s, w, d, STEP, n, h, low);
 }
 
 const prev = existsSync(OUT) ? (JSON.parse(readFileSync(OUT, 'utf8')) as { tent: Record<string, Shape>; island: Record<string, Shape> }) : { tent: {}, island: {} };
@@ -84,7 +90,7 @@ const out = { tent: { ...prev.tent }, island: { ...prev.island } };
 const want = (k: string) => !only.length || only.includes(k);
 for (const [code, m] of Object.entries(ITEMS)) {
   if (!m.u || !want(code)) continue;
-  const sh = await shape(`/m/models/${code}.glb`, m.w, m.d, m.h, m.u, Math.max(1, m.n ?? 1));
+  const sh = await shape(`/m/models/${code}.glb`, m.w, m.d, m.h, m.u, Math.max(1, m.n ?? 1), LOW.has(code));
   if (sh) out.tent[code] = { ...sh, ...OVERRIDES[code] } as Shape;
   else delete out.tent[code];
   console.log(code, JSON.stringify(out.tent[code] ?? 'none'));
