@@ -120,7 +120,7 @@ Wilbur) and, by
 `VISITOR_ONLY` (not in the picker), Franklin, Jack, Jingle, Zipper, Reese and Cyrus. Pavé isn't in NH's files: he
 never visits. A material's textures are the ones its Collada effect samples, not the ones named after it (`mCapVis`
 and `mGlassCap` sample `mBody_Alb` and `mGlass_Alb`); the converter fails a villager whose GLB has a material without
-a base colour where the source has one. The 60 plain tops are the files' own (the clothing's texture isn't in them). Tulin, Mineru, Cece and Viché aren't in
+a base colour where the source has one. Each villager wears its default top's texture (a single-look top, as the Sanrio tees, is the data's row itself, not a variation; once missed, 66 wore plain white: `villager3d.test` holds every material to its texture). Tulin, Mineru, Cece and Viché aren't in
 the 2.0.0 export: their cards stay.
 
 ## The inventory

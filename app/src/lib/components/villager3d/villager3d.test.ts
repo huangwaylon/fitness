@@ -37,6 +37,21 @@ describe('the villagers’ 3D models (villagers.json)', () => {
     for (const id of ['goldie', 'anchovy', 'judy']) expect(has3d(id), id).toBe(true);
   });
 
+  it('wears every texture its source has: each material a base colour, a top its clothing’s (a plain white top once hid a missed one)', () => {
+    const rows = MAP as Record<string, (string | null)[]>;
+    for (const id of Object.keys(M.villagers)) {
+      const b = readFileSync(join(DIR, `${id}.glb`)), j = JSON.parse(b.subarray(20, 20 + b.readUInt32LE(12)).toString());
+      const row = rows[id];
+      for (const m of (j.materials ?? []) as { name?: string; pbrMetallicRoughness?: { baseColorTexture?: unknown } }[]) {
+        // (only a top with no texture in NH's files may go without: Isabelle's and Redd's own, its colour the material's)
+        const bare = m.name === 'mTops' && row && !row[2];
+        if (!bare) expect(m.pbrMetallicRoughness?.baseColorTexture, `${id}: ${m.name}`).toBeTruthy();
+      }
+    }
+    // a villager's top always has its clothing's texture (the data's default clothing, a single-look top's row its own)
+    for (const [id, row] of Object.entries(rows)) if (row[0]?.startsWith('NpcNml')) expect(row[2], id).toBeTruthy();
+  });
+
   it('keeps every face part: eyes, a mouth, and a bird’s beak (NH’s FaceNothing mesh: once dropped, Anchovy had none)', () => {
     /** NH draws these mouths on the body (anteaters, hedgehogs, Nook, Redd, Daisy Mae, Kicks, Jack's carved pumpkin, Zipper's costume): no mesh of its own. */
     const ON_BODY = new Set(['anabelle', 'annalisa', 'antonio', 'cyrano', 'olaf', 'pango', 'snooty', 'zoe', 'tom-nook', 'redd', 'daisy-mae', 'kicks', 'label', 'mabel', 'sable', 'jack', 'zipper']);
