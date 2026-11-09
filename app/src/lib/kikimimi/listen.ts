@@ -5,12 +5,16 @@
 // the audio script speaks them, and each file as compiled (compile.ts: `parts/<unit>.json`, the index's `listen` and
 // `games`). The compiler's, the audio scripts' and the tests' (it reads the roster); the phone imports its types only.
 import { ROSTER, type RosterId } from '#lib/villagers/roster.ts';
-import { CHANNELS, PRAGMATICS, REGISTERS, SCENE_IDS, accentOf, helpProblems, type CastId, type Channel, type Item, type Level, type SoundMark, type Tags } from './bank.ts';
+import { CHANNELS, HENSHIN_LV, PRAGMATICS, REGISTERS, SCENE_IDS, accentOf, helpProblems, type Accent, type CastId, type Channel, type Feature, type Item, type ItemType, type Level, type SoundMark, type Tags } from './bank.ts';
 import { CAST } from './cast.ts';
 import { CAST_IDS } from './speech.ts';
 import { ALERTS, HI_MAX, HI_MIN, SKIES, hiKey, type Alert, type Sky } from './games/news/weather.ts';
+import { PHENOMENA, type Phenomenon } from './henshin.ts';
+import { FEATURES as BANK_FEATURES } from './tags.ts';
 
-const LISTEN_KINDS = ['tile', 'call', 'tachi', 'rush', 'news'] as const;
+const isBankFeature = (f: string): f is Feature => (BANK_FEATURES as readonly string[]).includes(f);
+
+const LISTEN_KINDS = ['tile', 'call', 'tachi', 'rush', 'news', 'long'] as const;
 /** The kinds an item may be: a game's, or the news's weather sentences. */
 const ITEM_KINDS: readonly string[] = [...LISTEN_KINDS, 'weather'];
 type ListenKind = (typeof LISTEN_KINDS)[number];
@@ -187,7 +191,73 @@ export function wxSentences(it: Pick<WeatherItem, 'id' | 'sky' | 'high' | 'alert
 /** A bulletin's lines in order (both segments). */
 export const newsLines = (it: Pick<NewsItem, 'segments'>): NewsLine[] => it.segments.flatMap((s) => s.lines);
 
-export type ListenItem = TileItem | CallItem | TachiItem | RushItem | NewsItem | WeatherItem;
+// ---- まるごと 聞く (kikimimi-engine.md "まるごと 聞く") ----
+
+/** A long piece's line: a villager's, spoken by the pipeline (`tts` piece: `at` its gap, as a たちぎき's), or a real
+ *  speaker's (`real` piece: `who` a key of its `speakers`, `t` its span in the excerpt, s; the lines cut end to end). */
+interface LongLine {
+  who: string;
+  en: string;
+  ja: string;
+  tts?: string;
+  at?: number;
+  t?: [number, number];
+  clip?: string;
+}
+/** A question after the piece: its angle, 3 English choices, the right one, the line that answers it (0-based). */
+export interface LongQ {
+  type: (typeof LONG_QS)[number];
+  ask: string;
+  choices: string[];
+  answer: number;
+  /** The line that answers it (0-based): the transcript marks it, a miss's dictation is cut near it. */
+  line: number;
+  cja?: string[];
+  why?: string;
+}
+/** A dictation's line (0-based), the words to write (in its `en`) and the connected speech in them (henshin.ts). */
+export interface LongDict {
+  line: number;
+  words: string;
+  feature: Phenomenon;
+}
+/** Where a real piece comes from and on what terms (shown with it and in せってい's 音声の 出典). */
+interface LongCredit {
+  title: string;
+  by: string;
+  /** The episode's page. */
+  url: string;
+  /** The file downloaded (an archive's member: `#<name>`; its sha256), and the excerpt's span in it (s). */
+  file: string;
+  sha256: string;
+  start: number;
+  end: number;
+  licence: string;
+  licenceUrl: string;
+  /** The credit line as the licence asks for it. */
+  attribution: string;
+}
+/** The questions' angles (curriculum.md "Long listening": CEFR CV 2020's B2 → C1 step). */
+const LONG_QS = ['gist', 'mean', 'attitude', 'next'] as const;
+/** まるごと 聞く: a 2-4 minute conversation, generated (`tts`) or a real recording (`real`), then its questions; its
+ *  transcript and dictation lines for the results. */
+interface LongItem extends Common {
+  kind: 'long';
+  /** Its title in the list (UI copy). */
+  name: string;
+  source: 'tts' | 'real';
+  /** A real piece's speakers: their key, how the transcript names them (English and Japanese) and their gender. */
+  speakers?: Record<string, { name: string; ja: string; g: 'f' | 'm' }>;
+  credit?: LongCredit;
+  lines: LongLine[];
+  questions: LongQ[];
+  dict: LongDict[];
+}
+
+export type ListenItem = TileItem | CallItem | TachiItem | RushItem | NewsItem | WeatherItem | LongItem;
+
+/** An item as the index lists it (pool.ts Index `items`): id, level, type, accent, pragmatic layer, features. */
+export type IndexEntry = [string, Level, ItemType, Accent, Tags['pragmatic'], Feature[]];
 
 /** A file's header (content/listen/README.md "Header"). */
 interface ListenHead {
@@ -231,7 +301,7 @@ const NOT_US: readonly [RegExp, string][] = [
   [/\bmate\b/i, 'mate'],
   [/\bcheers(?: for|,? (?:love|then))\b/i, 'cheers for thanks'],
   [/\bqueu(e|es|ed|ing)\b/i, 'queue (line)'],
-  [/\b(?:my|your|our|his|her|their|the|a|new|this)\s+flat\b(?!\s+(?:tire|fee|rate|screen|out|white|shoes?))/i, 'flat (apartment)'],
+  [/\b(?:my|your|our|his|her|their|the|a|new|this)\s+flat\b(?!\s+(?:tire|fee|rate|screen|out|white|shoes?|hats?))/i, 'flat (apartment)'],
   [/\b(?:the|take the)\s+lift\b(?!\s+(?:ticket|line|pass))/i, 'lift (elevator)'],
   [/\bfortnight\b/i, 'fortnight'],
   [/\breckon\b/i, 'reckon'],
@@ -267,6 +337,8 @@ export const usProblems = (it: Parameters<typeof shownEnglish>[0]): string[] =>
 
 // ---- the checker (content/listen/README.md "Checks") ------------------------------------------------------------------
 
+/** The scenario bank's seeds (curriculum.md "The scenario bank": 1-66, then まるごと 聞く's 67-70). */
+const SEED_MAX = 70;
 const GAMES = ['quiz', 'ladder', 'tile', 'call', 'tachi', 'rush', 'news', 'long', 'serial'];
 const TRACKS = ['life', 'people', 'work', 'broadcast'];
 const STATUSES: readonly ListenStatus[] = ['draft', 'voiced', 'listened'];
@@ -300,7 +372,7 @@ export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<strin
   if (!GAMES.includes(u.game as string)) at('header', `game ${u.game}`);
   if (!isInt(u.stage, 1, 5)) at('header', `stage ${u.stage}`);
   if (!TRACKS.includes(u.track as string)) at('header', `track ${u.track}`);
-  if (!Array.isArray(u.seeds) || !u.seeds.length || !u.seeds.every((s) => isInt(s, 1, 66))) at('header', 'seeds: 1-66');
+  if (!Array.isArray(u.seeds) || !u.seeds.length || !u.seeds.every((s) => isInt(s, 1, SEED_MAX))) at('header', `seeds: 1-${SEED_MAX}`);
   const f = u.features as Obj | undefined;
   if (!f || !FEATURES.includes(f.primary as string) || (f.review !== undefined && !FEATURES.includes(f.review as string))) at('header', 'features');
   if (!isStr(u.cando)) at('header', 'cando');
@@ -351,7 +423,7 @@ export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<strin
     const t = it.tags as Obj | undefined;
     if (!t) at(where, 'tags');
     else {
-      if (!isInt(t.seed, 1, 66) || !u.seeds?.includes(t.seed)) at(where, `tags.seed ${t.seed} must be one of the unit's seeds`);
+      if (!isInt(t.seed, 1, SEED_MAX) || !u.seeds?.includes(t.seed)) at(where, `tags.seed ${t.seed} must be one of the unit's seeds`);
       if (!(REGISTERS as readonly unknown[]).includes(t.register)) at(where, `register ${t.register}`);
       if (!(PRAGMATICS as readonly unknown[]).includes(t.pragmatic)) at(where, `pragmatic ${t.pragmatic}`);
       if (t.conditions !== undefined && !(strs(t.conditions) && t.conditions.every((c) => CONDITIONS.includes(c)))) at(where, `conditions ${t.conditions}`);
@@ -449,6 +521,7 @@ export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<strin
     }
 
     if (it.kind === 'news') checkNews(where, it, { at, speaker, spoken, help });
+    if (it.kind === 'long') checkLong(where, it, { at, speaker, spoken, help, distinct });
     if (it.kind === 'weather') checkWeather(where, it, at, u.game === 'news');
   }
   return bad;
@@ -462,6 +535,7 @@ interface Checks {
   speaker(where: string, who: unknown): void;
   spoken(where: string, o: Obj): void;
   help(where: string, o: { choices?: unknown; cja?: unknown; why?: unknown; ctx?: unknown }, need: readonly ('cja' | 'why' | 'ctx')[]): void;
+  distinct?(where: string, whos: string[]): void;
 }
 const wordCount = (s: string) => s.split(/\s+/).filter(Boolean).length;
 const strsOf = (v: unknown): string[] => (strs(v) ? v : []);
@@ -495,6 +569,93 @@ function checkNews(where: string, it: Obj, c: Checks) {
   }
   const choices = [...strsOf((it.gist as Obj)?.choices), ...strsOf((it.detail as Obj)?.choices)];
   for (const p of usProblems({ lines, choices, tags: it.tags as Common['tags'] })) at(where, p);
+}
+
+// ---- まるごと 聞く's checks ----
+
+/** A long piece's clips' AAC bitrate (kbps; the others' 48): minutes of speech a piece (bank.test's line for them). */
+export const LONG_KBPS = 32;
+/** A long piece's bounds: its lines, its words (about 2-4 minutes), a real one's seconds and a real line's. */
+const LONG_LINES = [20, 90] as const;
+const LONG_WORDS = [280, 800] as const;
+const LONG_SECS = [90, 330] as const;
+const LONG_LINE_SECS = 16;
+const isUrl = (v: unknown): v is string => isStr(v) && /^https?:\/\/\S+$/.test(v);
+
+/** A long piece's problems: its id (≤ 24: its rows add -q5, -k12), title and source; its lines (20-90, 280-800 words):
+ *  a generated piece's villagers with distinct US voices, `at` gaps with an overlap; a real piece's speakers, its lines
+ *  cut end to end from 0 (each ≤ 16 s, 90-330 s in all) and its credit (where, whose, the licence and its credit line);
+ *  4-5 questions (the gist first, 3 angles at least), 3 distinct choices each, the line that answers them; 2-4
+ *  dictation lines (their words in the line, a connected-speech feature); the help (ctx, each question's cja and why)
+ *  past draft; US English. */
+function checkLong(where: string, it: Obj, c: Checks) {
+  const { at } = c;
+  if (String(it.id).length > 24) at(where, 'a long piece’s id ≤ 24 characters (its rows add -q5, -k12)');
+  if (!isStr(it.name) || chars(it.name) > 20) at(where, 'name: its title, ≤ 20 字');
+  const lines = (Array.isArray(it.lines) ? it.lines : []) as Obj[];
+  if (lines.length < LONG_LINES[0] || lines.length > LONG_LINES[1]) at(where, `${lines.length} lines (${LONG_LINES.join('-')})`);
+  const words = lines.reduce((n, l) => n + (isStr(l.en) ? wordCount(l.en) : 0), 0);
+  if (words < LONG_WORDS[0] || words > LONG_WORDS[1]) at(where, `${words} words (${LONG_WORDS.join('-')}: about 2-4 minutes)`);
+  if (it.source === 'tts') {
+    if (it.speakers !== undefined || it.credit !== undefined) at(where, 'a generated piece has no speakers or credit (its villagers speak)');
+    lines.forEach((l, i) => {
+      c.speaker(`${where} line ${i}`, l.who);
+      c.spoken(`${where} line ${i}`, l);
+      if (l.t !== undefined) at(`${where} line ${i}`, 'a generated line has no `t`');
+      if (typeof l.at !== 'number' || l.at < -1.5 || l.at > 3 || (i === 0 && l.at !== 0)) at(`${where} line ${i}`, `at ${l.at} (the first 0; then -1.5…3 s)`);
+    });
+    if (!lines.some((l) => typeof l.at === 'number' && l.at < 0)) at(where, 'no overlap: give some line a negative `at`');
+    const who = [...new Set(lines.map((l) => l.who as string))];
+    if (who.length < 2 || who.length > 4) at(where, `2-4 speakers, not ${who.length}`);
+    c.distinct?.(where, who);
+  } else if (it.source === 'real') {
+    const sp = (it.speakers ?? {}) as Record<string, Obj>;
+    if (!Object.keys(sp).length) at(where, 'a real piece names its speakers');
+    for (const [k, s] of Object.entries(sp)) if (!/^[a-z]$/.test(k) || !isStr(s?.name) || !isStr(s?.ja) || !['f', 'm'].includes(s?.g as string)) at(where, `speaker ${k}: a letter, name, ja, g f|m`);
+    let end = 0;
+    lines.forEach((l, i) => {
+      const w = `${where} line ${i}`;
+      if (!isStr(l.who) || !(l.who in sp)) at(w, `speaker ${l.who} isn't one of the piece's`);
+      if (!isStr(l.en) || !isStr(l.ja)) at(w, 'en and ja');
+      if (l.tts !== undefined || l.at !== undefined) at(w, 'a real line has no tts or at (it’s cut, not spoken)');
+      const t = l.t as unknown[];
+      const ok = Array.isArray(t) && t.length === 2 && t.every((x) => typeof x === 'number') && (t[1] as number) > (t[0] as number);
+      if (!ok) return at(w, 't: [start, end] in s');
+      const [a, b] = t as [number, number];
+      if (Math.abs(a - end) > 0.001) at(w, `t starts at ${a}, not where the line before ends (${end}): the lines are cut end to end from 0`);
+      if (b - a > LONG_LINE_SECS) at(w, `${(b - a).toFixed(1)} s (≤ ${LONG_LINE_SECS}: split it at a sentence)`);
+      end = b;
+    });
+    if (end < LONG_SECS[0] || end > LONG_SECS[1]) at(where, `${end.toFixed(0)} s (${LONG_SECS.join('-')})`);
+    const cr = (it.credit ?? {}) as Obj;
+    if (!isStr(cr.title) || !isStr(cr.by) || !isUrl(cr.url) || !isUrl(cr.file) || !isStr(cr.licence) || !isUrl(cr.licenceUrl) || !isStr(cr.attribution))
+      at(where, 'credit: title, by, url, file, licence, licenceUrl, attribution');
+    if (!isStr(cr.sha256) || !/^[0-9a-f]{64}$/.test(cr.sha256)) at(where, 'credit.sha256: the file’s');
+    if (typeof cr.start !== 'number' || typeof cr.end !== 'number' || Math.abs(cr.end - cr.start - end) > 0.05) at(where, `credit start/end: the excerpt's span (its lines end at ${end})`);
+  } else at(where, 'source: tts | real');
+  c.help(where, { ctx: it.ctx }, ['ctx']);
+  const qs = (Array.isArray(it.questions) ? it.questions : []) as Obj[];
+  if (qs.length < 4 || qs.length > 5) at(where, `${qs.length} questions (4-5)`);
+  if (qs[0]?.type !== 'gist') at(where, 'the first question is the gist');
+  if (new Set(qs.map((q) => q.type)).size < 3) at(where, 'questions: 3 angles at least (gist, mean, attitude, next)');
+  qs.forEach((q, k) => {
+    const w = `${where} question ${k}`;
+    if (!(LONG_QS as readonly unknown[]).includes(q.type)) at(w, `type ${q.type}`);
+    if (!isStr(q.ask)) at(w, 'ask');
+    if (!(strs(q.choices) && q.choices.length === 3 && new Set(q.choices).size === 3 && isInt(q.answer, 0, 2))) at(w, '3 distinct choices, the answer 0-2');
+    if (!isInt(q.line, 0, lines.length - 1)) at(w, `line ${q.line}: the line that answers it`);
+    c.help(w, { choices: q.choices, cja: q.cja, why: q.why }, ['cja', 'why']);
+    for (const p of usProblems({ choices: q.choices })) at(w, p);
+  });
+  const dict = (Array.isArray(it.dict) ? it.dict : []) as Obj[];
+  if (dict.length < 2 || dict.length > 4) at(where, `${dict.length} dictation lines (2-4)`);
+  if (new Set(dict.map((d) => d.line)).size !== dict.length) at(where, 'a dictation line once');
+  dict.forEach((d, k) => {
+    const w = `${where} dict ${k}`, l = isInt(d.line, 0, lines.length - 1) ? lines[d.line] : undefined;
+    if (!l) return at(w, `line ${d.line}`);
+    if (!isStr(d.words) || wordCount(d.words) > 6 || !isStr(l.en) || !hasWords(l.en, d.words)) at(w, `words "${d.words}": 1-6 of the line's own`);
+    if (!(PHENOMENA as readonly unknown[]).includes(d.feature)) at(w, `feature ${d.feature}: one of henshin.ts PHENOMENA`);
+  });
 }
 
 /** The weather sentences' problems: only in a news file; every sky (with its 解説), alert and the sign-off said, in US
@@ -553,6 +714,8 @@ export function listenClipItems(raw: unknown): Item[] {
       const cast = castOf(it.speaker);
       return [{ ...base, id: it.id, en: it.en, ja: it.ja, speaker: it.speaker, voice: accentOf(cast), cast, ...(it.tts && { tts: it.tts }) }];
     }
+    // (a real piece's lines are cut from its recording: scripts/kikimimi-real.ts)
+    if (it.kind === 'long' && it.source === 'real') return [];
     if (it.kind === 'news' || it.kind === 'weather') {
       // (しずえ reads every one: the file's cast.isabelle)
       const cast = castOf('isabelle'), ids = listenClipIds(it), said = it.kind === 'news' ? newsLines(it) : wxSentences(it);
@@ -561,10 +724,15 @@ export function listenClipItems(raw: unknown): Item[] {
     const icon = it.lines.find((l) => l.who !== ME)!.who as RosterId;
     return it.lines.map((l, n): Item => {
       const cast = castOf(l.who);
-      return { ...base, id: `${it.id}-${n + 1}`, en: l.en, ja: l.ja, speaker: l.who === ME ? icon : l.who, voice: accentOf(cast), cast, ...(l.tts && { tts: l.tts }) };
+      return { ...base, id: `${it.id}-${n + 1}`, en: l.en, ja: l.ja, speaker: l.who === ME ? icon : (l.who as RosterId), voice: accentOf(cast), cast, ...(l.tts && { tts: l.tts }) };
     });
   });
 }
+
+/** A file's real pieces' clips (a long `real` piece's lines, cut from its recording by scripts/kikimimi-real.ts, never
+ *  spoken): what the audio script keeps beside its own. */
+export const realClipIds = (raw: unknown): string[] =>
+  listenUnit(raw).items.flatMap((it) => (it.kind === 'long' && it.source === 'real' ? listenClipIds(it) : []));
 
 /** A file as its part holds it: the header and the items less `tts` (`en` is what the reveal shows; the marks the
  *  spoken shape), each tile and line with its clip id (listenClipIds), a derived tile with its bank item's speaker. */
@@ -582,20 +750,44 @@ export function listenPart(raw: unknown, bank: ReadonlyMap<string, Pick<Item, 's
         let n = 0;
         return { ...it, segments: it.segments.map((s) => ({ ...s, lines: s.lines.map((l) => ({ ...drop(l), clip: ids[n++] })) })) };
       }
+      if (it.kind === 'long') return { ...it, lines: it.lines.map(({ t: _, ...l }, n) => ({ ...drop(l), clip: ids[n] })) };
       return { ...it, lines: it.lines.map((l, n) => ({ ...drop(l), clip: ids[n] })) } as ListenItem;
     })
   };
 }
 
+/** A long piece's place on the bank's level scale (its questions' level: やま 6, ほし 7). */
+export const longLevel = (stage: number): Level => (stage >= 5 ? 7 : 6);
+/** A question's angle as the quiz's item type (きろく's skills, the learned difficulty and a review's sibling: the
+ *  implied meaning and the attitude `mean`, the gist and the next step `gist`). */
+const LONG_TYPE = { gist: 'gist', mean: 'mean', attitude: 'mean', next: 'gist' } as const satisfies Record<LongQ['type'], ItemType>;
+/** A question's row id and a dictation's (`<piece>-q1`, `<piece>-k12`: the line's number, from 1). */
+export const longQId = (piece: string, k: number): string => `${piece}-q${k + 1}`;
+export const longDictId = (piece: string, line: number): string => `${piece}-k${line + 1}`;
+/** A file's long pieces as the index's entries (pool.ts: answers this build knows, outside every deck and level): each
+ *  question at its piece's level, its angle's type, the piece's pragmatic layer and features; each dictation line at
+ *  音の へんしん's level 8, a `word` of its feature (so it counts, and comes back, as the drill's phrases do). */
+export function longEntries(raw: unknown): IndexEntry[] {
+  const u = listenUnit(raw);
+  if (u.game !== 'long' || u.status === 'draft') return [];
+  return u.items.flatMap((it): IndexEntry[] => it.kind !== 'long' ? [] : [
+    // (the bank's features only: a listening file's own, overlap and filler, have no skill in きろく)
+    ...it.questions.map((q, k): IndexEntry => [longQId(it.id, k), longLevel(u.stage), LONG_TYPE[q.type], 'us', it.tags.pragmatic, it.tags.features.filter(isBankFeature)]),
+    ...it.dict.map((d): IndexEntry => [longDictId(it.id, d.line), HENSHIN_LV, 'word', 'us', 'literal', [d.feature]])
+  ]);
+}
+
 /** What shapes a file's decks (its content version's input, compile.ts): each item's id, kind and answer shape (a
  *  tile's tiles and decoys; a call's halves and its memo's option counts and answers; a たちぎき's speakers, offsets
  *  and answers; a rush's chips (a tier keeps them by their numbers), answer and `was`; a bulletin's season, weekday,
- *  lines and its questions' answers and traps; the weather's sentences). No Japanese, notes or marks. */
+ *  lines and its questions' answers and traps; the weather's sentences; a long piece's speakers, gaps, questions and
+ *  dictation lines). No Japanese, notes or marks. */
 export function listenShape(it: ListenItem): unknown {
   if (it.kind === 'tile') return [it.id, it.kind, it.tiles, it.decoys];
   if (it.kind === 'rush') return [it.id, it.kind, it.options, it.answer, it.was ?? -1];
   if (it.kind === 'call') return [it.id, it.kind, it.half, it.memo.map((r) => r.slots.map((s) => [s.options.length, s.answer]))];
   if (it.kind === 'news') return [it.id, it.kind, it.season, it.weekday ?? '', it.segments.map((s) => s.lines.length), [it.gist, it.detail].map((q) => [q.answer, q.trap])];
   if (it.kind === 'weather') return [it.id, it.kind, wxSentences(it).map((x) => x.key)];
+  if (it.kind === 'long') return [it.id, it.kind, it.source, it.lines.map((l) => [l.who, l.at ?? 0]), it.questions.map((q) => [q.type, q.choices.length, q.answer, q.line]), it.dict.map((d) => [d.line, d.words])];
   return [it.id, it.kind, it.lines.map((l) => [l.who, l.at]), it.rounds.map((r) => [r.type, r.answer, r.type === 'plan' ? r.choices.length : 0])];
 }

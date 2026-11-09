@@ -85,7 +85,7 @@ import { writeLevels } from './kikimimi-levels.ts';
 import { WORK, unpackClips, writePacks } from './kikimimi-packs.ts';
 import { readListen, readPairs, readStories, unitItems } from '../src/lib/kikimimi/compile.ts';
 import { pairClipItems } from '../src/lib/kikimimi/games/pair/pairs.ts';
-import { listenClipItems } from '../src/lib/kikimimi/listen.ts';
+import { LONG_KBPS, listenClipItems, realClipIds } from '../src/lib/kikimimi/listen.ts';
 import { storyItems } from '../src/lib/kikimimi/story.ts';
 
 const APP = join(import.meta.dirname, '..');
@@ -258,13 +258,20 @@ const STORY: ReadonlySet<string> = new Set(STORY_ITEMS.map((it) => it.id));
 /** The stories' loudness: a little softer than the quiz's −16. しずえの ニュース's lines and weather sentences are read
  *  at it too (a bulletin heard whole, like a chapter: kikimimi-engine.md "しずえの ニュース"). */
 const STORY_LUFS = -18;
-const SOFT: ReadonlySet<string> = new Set([...STORY, ...readListen().filter(({ raw }) => (raw as { game: string }).game === 'news')
-  .flatMap(({ raw }) => listenClipItems(raw)).map((it) => it.id)]);
+const listenOf = (game: string): string[] => readListen().filter(({ raw }) => (raw as { game: string }).game === game).flatMap(({ raw }) => listenClipItems(raw)).map((it) => it.id);
+/** まるごと 聞く's generated lines (content/listen/s4-long-*.yaml): heard whole as a story is, at its loudness, and kept
+ *  at 32 kbps (minutes of speech a piece: bank.test's line for them), as a real piece's are (scripts/kikimimi-real.ts). */
+const LONG: ReadonlySet<string> = new Set(listenOf('long'));
+const SOFT: ReadonlySet<string> = new Set([...STORY, ...listenOf('news'), ...LONG]);
 const lufsOf = (it: Item): number => (SOFT.has(it.id) ? STORY_LUFS : -16);
+/** A clip's AAC bitrate (kbps): a long piece's 32, else 48. */
+const kbpsOf = (it: Item): number => (LONG.has(it.id) ? LONG_KBPS : 48);
 /** The listening kinds' clips (content/listen/*.yaml, listen.ts listenClipItems: a tile's own, each line of a call or a
  *  たちぎき, `<item>-<n>`, at its stage's level): a draft file's only when --only names them (it's voiced after its
  *  review, curriculum.md "Authoring pipeline"). */
 const LISTEN_ITEMS = readListen().filter(({ raw }) => only || (raw as { status: string }).status !== 'draft').flatMap(({ raw }) => listenClipItems(raw));
+/** まるごと 聞く's real pieces' lines (scripts/kikimimi-real.ts cuts them): kept, never spoken. */
+const REAL_IDS = readListen().flatMap(({ raw }) => realClipIds(raw));
 /** はつおん's words (content/mic/pairs.yaml, games/pair/pairs.ts): each alone, `<pair>-1`, `<pair>-2`, in the pair's
  *  villager's voice; a draft file's only under --only, as the listening kinds'. */
 const PAIRS = readPairs() as { status?: string } | null;
@@ -347,12 +354,12 @@ function trim(raw: string, out: string): void {
 }
 /** A trimmed WAV → the shipped m4a: a gain to −16 LUFS (a story's −18: lufsOf; a limiter holds the true peak under
  *  −1.5 dBTP), a 60 ms tail. */
-function finish(wav: string, out: string, target = -16): void {
+function finish(wav: string, out: string, target = -16, kbps = 48): void {
   const { i, tp } = measureLoudness(wav);
   const gain = Number.isFinite(i) ? target - i : 0;
   const limit = tp + gain > -1.5 ? `,alimiter=limit=${(10 ** (-1.6 / 20)).toFixed(3)}:attack=2:release=40:level=0` : '';
   ff('-i', wav, '-af', `volume=${gain.toFixed(2)}dB${limit},apad=pad_dur=0.06`,
-    '-ac', '1', '-ar', String(SR), '-c:a', 'aac', '-b:a', '48k', '-map_metadata', '-1', '-fflags', '+bitexact', '-movflags', '+faststart', out);
+    '-ac', '1', '-ar', String(SR), '-c:a', 'aac', '-b:a', `${kbps}k`, '-map_metadata', '-1', '-fflags', '+bitexact', '-movflags', '+faststart', out);
 }
 /** ffmpeg atempo (WSOLA): in the pilot it kept UTMOS (0.92: 4.36 vs 4.37 unstretched; 0.75: 4.31), where rubberband
  *  cost 0.7 (R3) to 1.9 (R2). */
@@ -576,7 +583,7 @@ function planOf(it: Item): Plan {
   const voice = CLONES(engine) ? [cast, refHash(cast), entry.ref.text] : [entry.kokoro];
   const tempo = tempoOf(it);
   const master = sha(JSON.stringify([engine, MODEL[engine], voice, text, seedOf(it.id), hasSlow(it) && [SLOW, STRETCH], tempo !== 1 && [tempo, STRETCH], PIPELINE,
-    ...(SOFT.has(it.id) ? [['story', STORY_LUFS]] : [])]), 10);
+    ...(SOFT.has(it.id) ? [['story', STORY_LUFS]] : []), ...(kbpsOf(it) !== 48 ? [['kbps', kbpsOf(it)]] : [])]), 10);
   const c = condOf(it), cond = c && condPlan(c);
   if (cond && hasSlow(it)) throw new Error(`${it.id}: no conditions at levels 1-2 (their slow clip is the clean take)`);
   return { it, cast, engine, text, master, cond, src: condSource(master, cond, cond ? condAssets(cond) : {}) };
@@ -672,7 +679,7 @@ function speak(plans: Plan[]): Map<string, Take> {
         const s = t.wav.replace(/\.wav$/, '-t.wav');
         stretch(t.wav, tempoOf(p.it), s);
         finish(s, t.m4a);
-      } else finish(t.wav, t.m4a, lufsOf(p.it));
+      } else finish(t.wav, t.m4a, lufsOf(p.it), kbpsOf(p.it));
     }
     const heard = py<{ hyp: string; wer: number; content: number }>('qa', 'wer', todo.map((p) => ({ wav: takes.get(p.it.id)!.m4a, refs: [p.it.en, p.text] })));
     const cloned = todo.filter((p) => CLONES(p.engine));
@@ -862,11 +869,11 @@ function run(): void {
       }
     }
     // clips of items no longer in the bank (a whole run into the work folder only)
-    const ids = new Set([...ALL.map((it) => it.id), ...RUNG_IDS, ...FAST_IDS]);
+    const ids = new Set([...ALL.map((it) => it.id), ...RUNG_IDS, ...FAST_IDS, ...REAL_IDS]);
     for (const id of Object.keys(clips)) if (!ids.has(id)) { delete clips[id]; delete srcs[id]; }
     if (!SCRATCH && !only) {
       const want = new Set([...ALL.filter((it) => clips[it.id]).flatMap((it) => [`${it.id}.m4a`, ...(hasSlow(it) ? [`${it.id}-slow.m4a`] : [])]),
-        ...[...RUNG_IDS, ...FAST_IDS].filter((id) => clips[id]).map((id) => `${id}.m4a`)]);
+        ...[...RUNG_IDS, ...FAST_IDS, ...REAL_IDS].filter((id) => clips[id]).map((id) => `${id}.m4a`)]);
       for (const f of readdirSync(OUT).filter((f) => !want.has(f))) rmSync(join(OUT, f));
     }
   } finally {

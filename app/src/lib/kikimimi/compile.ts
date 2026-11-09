@@ -37,7 +37,7 @@ import { LESSONS, candoText, checkUnits, kindFiles, lessonIds, listenRefs, manif
 import { BUILD_V } from './games/versions.ts';
 import { chapterPart, chapters, type ChapterEntry, type StoryEntry, type StorySource } from './story.ts';
 import { PAIR_UNIT, pairsFile } from './games/pair/pairs.ts';
-import { checkListenAll, listenClipIds, listenPart, listenShape, usProblems, type ListenSource } from './listen.ts';
+import { checkListenAll, listenClipIds, listenPart, listenShape, listenUnit, longEntries, longQId, usProblems, type ListenSource } from './listen.ts';
 
 /** A unit's chunk's budget (gzipped; plan §8: 20 KB, raised to 32 for the Japanese help, cja, why and ctx, ~0.3 KB an item). */
 export const UNIT_MAX = 32 * 1024;
@@ -84,9 +84,10 @@ export function unitItems(sources: readonly UnitSource[] = readUnits()): Item[] 
 }
 
 /** Every 3-choice set a player could weigh without the audio (tells.ts TELL_TYPES), by group: the banks' items by level
- *  (`L4`), the units' items and their tiers (`units`, a tier's id `<item>:<tier>`, its unit's file). tells.test holds them
- *  to the limits; scripts/kikimimi-tells.ts lists them. */
-export function choiceSets(sources: readonly UnitSource[] = readUnits()): (ChoiceSet & { group: string; id: string; type: string; file?: string })[] {
+ *  (`L4`), the units' items and their tiers (`units`, a tier's id `<item>:<tier>`, its unit's file), まるごと 聞く's
+ *  questions against their piece's whole transcript (`long`, a question's row id). tells.test holds them to the limits;
+ *  scripts/kikimimi-tells.ts lists them. */
+export function choiceSets(sources: readonly UnitSource[] = readUnits(), listen: readonly ListenSource[] = readListen()): (ChoiceSet & { group: string; id: string; type: string; file?: string })[] {
   const out: (ChoiceSet & { group: string; id: string; type: string; file?: string })[] = [];
   const add = (group: string, id: string, type: string, s: ChoiceSet, file?: string) =>
     s.choices.length === 3 && TELL_TYPES.has(type) && out.push({ group, id, type, choices: s.choices, answer: s.answer, en: s.en, ...(file && { file }) });
@@ -100,6 +101,10 @@ export function choiceSets(sources: readonly UnitSource[] = readUnits()): (Choic
       if (it) for (const [k, set] of Object.entries(t)) add('units', `${id}:${k}`, it.type, { ...set, en: it.en }, file);
     }
   }
+  // (a long question's angle as the quiz's type: the implied meaning and the attitude `mean`, the gist and the next `gist`)
+  for (const { file, raw } of listen)
+    for (const it of listenUnit(raw).items)
+      if (it.kind === 'long') it.questions.forEach((q, k) => add('long', longQId(it.id, k), 'gist', { ...q, en: it.lines.map((l) => l.en).join(' ') }, file));
   return out;
 }
 
@@ -380,9 +385,10 @@ export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<R
       const t = tagsOf(it);
       return [it.id, it.lv, it.type, it.voice, t.pragmatic, [...t.features]];
     }),
+    long: listen.flatMap(({ raw }) => longEntries(raw)),
     rungs: rungs.map((it) => it.id)
   };
-  const { items, rungs: rungIds, paths: pathList, ...head } = index;
-  out.set('index.json', `${JSON.stringify(head).slice(0, -1)},\n"paths":${list(pathList)},\n"items":${list(items)},\n"rungs":${JSON.stringify(rungIds)}}\n`);
+  const { items, long, rungs: rungIds, paths: pathList, ...head } = index;
+  out.set('index.json', `${JSON.stringify(head).slice(0, -1)},\n"paths":${list(pathList)},\n"items":${list(items)},\n"long":${list(long)},\n"rungs":${JSON.stringify(rungIds)}}\n`);
   return out;
 }

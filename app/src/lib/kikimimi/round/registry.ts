@@ -100,6 +100,7 @@ const LATER: Readonly<Record<GameId, Later>> = {
   call: { lane: () => import('../games/call/lane.ts') },
   rush: { lane: () => import('../games/rush/lane.ts') },
   news: { lane: () => import('../games/news/lane.ts') },
+  long: { lane: () => import('../games/long/lane.ts') },
   mane: { lane: () => import('../games/mane/lane.ts'), content: () => true, mode: MANE_MODE },
   kuri: { lane: () => import('../games/kuri/lane.ts'), content: () => true, mode: KURI_MODE },
   role: { lane: () => import('../games/role/lane.ts'), content: () => true, mode: ROLE_MODE },

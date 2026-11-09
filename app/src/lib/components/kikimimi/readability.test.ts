@@ -29,6 +29,7 @@ const SMALL = new Set([
   'taikai/TaikaiPlay.svelte .pips i.line::after, .pips i.gold::after', 'frame/PlayerChip.svelte .read', // icons
   'scene/MarkLegend.svelte .say', 'scene/MarkLegend.svelte .dot', 'scene/SoundLine.svelte .w.st::before', // the marks' samples
   'scene/PhoneFrame.svelte .tm', // a call's running time
+  'long/LongTranscript.svelte .q', // a question's number by the line that answers it
 ]);
 
 const fsPx = new Map([...tokens.matchAll(/(--fs-[\w-]+)\s*:\s*(\d*\.?\d+)rem/g)].map((m) => [m[1], Number(m[2]) * 16]));

@@ -17,7 +17,9 @@ import { levelMark, sx } from './look.ts';
 import { remember, type Recent } from '#lib/kikimimi/recent.ts';
 import { unitsOf, type UnitState } from '#lib/kikimimi/stamps.ts';
 import { madaOf, markMada } from '#lib/kikimimi/srs.ts';
-import { INDEX, entryOf, unitIds, unitPart } from '#lib/kikimimi/pool.ts';
+import { INDEX, LONG_ENTRIES, entryOf, unitIds, unitPart } from '#lib/kikimimi/pool.ts';
+import { heardOf, pieceFor, type Heard } from '#lib/kikimimi/games/long/def.ts';
+import { dayNum } from '#lib/contract/tokyo.ts';
 import { focusOf, phenomenaOf, type PhState } from '#lib/kikimimi/henshin.ts';
 import { lessonsOfMask, pathOf, type Filter, type Path, type PathUnit } from '#lib/kikimimi/path.ts';
 import { LESSONS } from '#lib/kikimimi/stages.ts';
@@ -121,6 +123,23 @@ export function currentHenshin(): { states: PhState[]; today: number; focus: num
   const states = m ? (m.henshin ??= phenomenaOf(currentAnswers(), entryOf, m.day)) : phenomenaOf([], entryOf, '2000-01-01' as LocalDate);
   const today = focusOf(states);
   return { states, today, focus: henshinPick ?? today, picked: henshinPick !== null };
+}
+
+/** まるごと 聞く's piece picked on its page (its id; null: pieceFor's), this sheet's while it's open. */
+let longPick = $state<string | null>(null);
+/** Pick まるごと 聞く's piece (null: back to the one of the day). */
+export const pickLong = (id: string | null): void => void (longPick = id);
+
+/** まるごと 聞く at a place's level now: its pieces by id (the index's questions: those of `listened` files), how I've
+ *  heard each (games/long/def.ts heardOf, from my answers), the one of the day (pieceFor) and the one the game plays
+ *  (picked, else the day's), as its place among them. Reactive. */
+export function currentLong(lv: number): { ids: string[]; heard: Map<string, Heard>; today: number; piece: number; picked: boolean } {
+  const ids = [...new Set(LONG_ENTRIES.filter((e) => e.lv === lv && /-q1$/.test(e.id)).map((e) => e.id.replace(/-q1$/, '')))].sort();
+  const m = memoNow();
+  const heard = heardOf(currentAnswers().map((a) => ({ id: a.id, ok: a.ok, day: dayNum(a.d) })));
+  const today = pieceFor(ids, heard, dayNum(m?.day ?? localDateAt(Date.now())));
+  const picked = longPick !== null && ids.includes(longPick) ? ids.indexOf(longPick) : null;
+  return { ids, heard, today, piece: picked ?? today, picked: picked !== null };
 }
 
 /** Bumped as a unit's chunk is put in at run time (the e2e's fixture: pool.ts addUnit), so the path lists it. */

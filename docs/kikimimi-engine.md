@@ -218,6 +218,7 @@ The listening kinds (`content/listen/*.yaml`, not story/; schemas in app/content
 - **Word timings** (`npm run audio:kikimimi-words`): whisper-cli hears every clip word by word (DTW timestamps), matched to the shown words by a DP over normalised spellings; `words.json` `{clip: [hash, start…, end]}` in centiseconds, compiled into the parts; `wordTimes` spreads the clip's length when the hash differs.
 - **Files:** loose m4a in the work folder `app/.cache/tts/clips/` (refilled from the packs before a run: `unpackClips`); `clips.json` (`{id: {dur, hash, slow?}}`) and `app/scripts/kikimimi-clips.src.json` (each clip's source hash: engine, voice, text, seed, pipeline version). Only clips whose source hash changed are re-made; `--out <dir>` writes to a scratch dir. The units' and stories' YAML go through the same cast and rules (compile.ts `unitItems`, story.ts `storyItems`); stories have no condition or tempo change.
 - **Attribution.** The AU voices are derived from the CSTR VCTK Corpus (CC BY 4.0): Yamagishi, Junichi; Veaux, Christophe; MacDonald, Kirsten. (2019). *CSTR VCTK Corpus: English Multi-speaker Corpus for CSTR Voice Cloning Toolkit (version 0.92)*. University of Edinburgh, CSTR. https://doi.org/10.7488/ds/2645. Changes: utterances trimmed, joined, loudness-normalised and resampled into the reference clips, which the TTS clones. The UK references are Phonon 31m output (Apache-2.0); the US ones are VoiceDesign output.
+- **Recordings** (まるごと 聞く's real pieces; each one's credit in its YAML, shown in the app): NASA Johnson Space Center, *Houston We Have a Podcast* ep. 4 "Space Food" and ep. 402 "On a Desert Island with the 2025 Class of Astronaut Candidates" (public domain, US government works); National Park Service, Grand Canyon, *Behind the Scenery* "Your Questions Answered" (public domain); Kendall, Tyler and Charlie Farrington (2021), CORAAL: Valdosta, GA, version 2021.07 (CC BY-NC-SA 4.0); Trey, Hacker Public Radio hpr4098 "Road trips without GPS" (CC BY-SA 4.0). Excerpts, loudness-normalised and re-encoded; the CC excerpts are shared under their licence.
 
 ### Packs
 
@@ -324,13 +325,21 @@ The connected-speech drill (`games/henshin/`: def.ts, lane.ts, match.ts, reduce.
 - **Takes:** a phrase's natural clip `<id>`, careful `<id>-c` and fast `<id>-f` (bank.ts `takeIds`) share its pack; the reveal and the review play the other two through `game.hear` as items of another id.
 - **Review:** srs.ts `practicePicks` takes a due level-8 card through a sibling of the same phenomenon (another drill phrase), level 8 never otherwise; progress.ts leaves level 8 out of θ and the difficulties, and `offTrend` its games out of the trend and the nudge.
 
+### まるごと 聞く
+
+The long piece (`games/long/`: def.ts, lane.ts; `components/kikimimi/long/`; the player's side kikimimi.md "まるごと 聞く"). Content: content/listen/s4-long-a…d.yaml (`game: long`, stage 5; a and b generated, c and d real), compiled as listen parts; their questions and dictation lines also go into the index's `long` (listen.ts `longEntries`: きろく and おさらい know them).
+- **Options** `[lv, timer, ear, piece]` (`longOpts`): the piece's place among the place's pieces by id, the host's (progress.svelte.ts `currentLong`: a pick on the mode page or def.ts `pieceFor` from my answers, `heardOf`). cv `long:<file>`.
+- **Deck** (`longDeal`): the piece's questions in order, the first card carrying its lines (a real piece's end to end, `at` 0; a generated one's `at` gaps, overlaps on the audio clock as たちぎき's). **Rounds:** the piece plays before the first question, the others have no clip, +8 s to read; easy shows the answer and the first wrong choice. **Row:** `gm: 'long'`, `[q id, ok, choice, rp]`; the dictation a row of its own after it (`QuizGame.keepMore`, nothing on the wire), `[<piece>-k<line>, ok, wrong-word mask, rp]`.
+- **Audio:** a generated line is spoken by the pipeline at −18 LUFS, 32 kbps (`LONG_KBPS`); a real line is cut from its recording (`npm run kikimimi:real -- --src <dir>`: the file's sha256 checked, read by ffmpeg only, one gain for the excerpt, each line's `t` span to AAC with 5 ms fades). A file is one pack (`LONG_PACK_MAX` 8 MB), fetched as slices.
+- **Checks:** listen.ts `checkLong` (lines, words, speakers, `at` with an overlap, a real piece's spans end to end and its credit), tells.test's `long` group, long.test (licences, credit lines, 2–6 minutes, every line heard by whisper at its clip's hash within align.ts's bounds: `npm run kikimimi:real -- --align` into align.json), games/long/long.test, e2e kikimimi-long.
+
 ### よみきき サンド
 
 Listen blind → read → listen blind, over any item: 「📖 読んでから もう一度」 (frame/SandButton) under a solo reveal's verdict (never in co-op: it would hold up the partner) and in an open review row. frame/Sandwich is a full-height sheet: the clip blind, then the transcript with its marks, `cja` and `why`, then the clip blind again, then 「聞き取れた ／ まだ」. まだ is a device-local mark (`DEVICE.kikiMada` `{[who]: [id, day][]}`, ≤ 200) that srs.ts folds as "hard" after that day's answers; no row change, nothing on the wire.
 
 ### Not built
 
-Long-form (segmented talks with a comprehension map, answers during play) and a game of its own for ふたりで ジグソー (the listening games' two roles already split what each hears; `half` in the call schema is ready).
+Segmented talks with a comprehension map and answers during play (まるごと 聞く plays a piece whole, then asks), and a game of its own for ふたりで ジグソー (the listening games' two roles already split what each hears; `half` in the call schema is ready).
 
 ## Performance
 

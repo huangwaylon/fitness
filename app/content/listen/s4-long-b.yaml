@@ -1,0 +1,129 @@
+# まるごと 聞く S4 ほし (b): everyday life, generated. Two 2-4 minute scenes: three friends at dinner (news let out
+# sideways, a budget never named, a check to split) and two neighbours over the fence (a complaint wrapped in small
+# talk, a favour asked on the way out). Implied meaning, attitude and overlap as in (a).
+schema: 1
+unit: s4-long-b
+game: long
+stage: 5
+track: people
+seeds: [18, 27, 32]
+features: { primary: overlap, review: filler }
+cando: "友だちや 近所の 人との 長い 雑談を 聞いて、言わずに 伝えている ことが わかる"
+status: listened
+items:
+  - kind: long
+    id: lg-dinner-news
+    name: 金曜の 夕食
+    source: tts
+    ctx: "金曜の夜。友だち3人がレストランで"
+    note: "just the soup の くり返しは お金の サイン"
+    tags: { seed: 27, register: friend, pragmatic: indirect, features: [overlap, kinda, gonna] }
+    lines:
+      - { who: punchy, at: 0, en: "Okay, are we doing appetizers? I'm doing appetizers. The calamari here is unreal.", ja: "よし、前菜いく？俺はいく。ここのカラマリ、ありえないくらいうまいんだ。" }
+      - { who: coco, at: 0.4, en: "I'm good, actually. I'll probably just get the soup.", ja: "私はいいかな。たぶんスープだけにする。" }
+      - { who: punchy, at: 0.3, en: "Just the soup? Come on, it's Friday.", ja: "スープだけ？いいじゃん、金曜だよ。" }
+      - { who: coco, at: 0.3, en: "I know, I know. I had a big lunch.", ja: "わかってる、わかってる。お昼をたくさん食べたの。" }
+      - { who: dom, at: 0.3, en: "You had a granola bar at your desk. I saw you.", ja: "デスクでグラノーラバー食べてただけじゃん。見たよ。" }
+      - { who: coco, at: 0.3, en: "That was a big granola bar.", ja: "大きいグラノーラバーだったの。" }
+      - { who: punchy, at: 0.5, en: "Fine, more calamari for me. Dom, what about you? You're quiet tonight.", ja: "いいよ、カラマリは俺がもらう。ドムは？今夜は静かだね。" }
+      - { who: dom, at: 0.6, en: "Am I? No, I'm just... thinking. I'll get the burger.", ja: "そう？いや、ちょっと…考え事してて。バーガーにする。" }
+      - { who: punchy, at: 0.3, en: "Thinking about what? Work?", ja: "何を？仕事？" }
+      - { who: dom, at: 0.4, en: "Kind of. Well— sort of the opposite of work, actually.", tts: "Kinda. Well— sorta the opposite of work, actually.", ja: "まあね。いや…どっちかっていうと仕事の反対、かな。" }
+      - { who: coco, at: 0.3, en: "The opposite of work? What does that mean?", ja: "仕事の反対？どういう意味？" }
+      - { who: dom, at: 0.6, en: "So, okay. Don't freak out. I gave my notice on Monday.", ja: "じゃあ言うね。驚かないで。月曜に辞表を出したんだ。" }
+      - { who: punchy, at: -0.3, en: "You what?", ja: "何だって？" }
+      - { who: coco, at: -0.2, en: "Wait, you quit? You quit quit?", ja: "待って、辞めたの？本当に辞めたの？" }
+      - { who: dom, at: 0.2, en: "I quit quit. Last day's the twentieth.", ja: "本当に辞めた。最終日は20日。" }
+      - { who: punchy, at: 0.3, en: "Dude. Did something happen? Was it your boss?", ja: "おい。何かあったのか？上司のせい？" }
+      - { who: dom, at: 0.4, en: "No, no, nothing like that. I'm starting a food truck.", ja: "いやいや、そういうんじゃない。フードトラックを始めるんだ。" }
+      - { who: coco, at: 0.4, en: "Shut up. Like, tacos?", ja: "うそでしょ。タコスとか？" }
+      - { who: dom, at: 0.3, en: "Korean barbecue tacos. My mom's recipe for the marinade.", ja: "韓国風焼肉タコス。漬けダレは母さんのレシピ。" }
+      - { who: punchy, at: 0.4, en: "Okay, that's actually amazing. I would eat there every single day.", ja: "おい、それ最高じゃん。毎日通うよ。" }
+      - { who: dom, at: 0.3, en: "You say that now.", ja: "今はそう言うけどね。" }
+      - { who: coco, at: 0.4, en: "No, seriously, Dom, that's huge. Are you scared?", ja: "ううん、本当にすごいことだよ、ドム。怖くない？" }
+      - { who: dom, at: 0.5, en: "Terrified. I put most of my savings into the truck. So, you know, no pressure.", tts: "Terrified. I put most of my savings into the truck. So, y'know, no pressure.", ja: "めちゃくちゃ怖い。貯金のほとんどをトラックにつぎ込んだからね。まあ、プレッシャーなんてないけど。" }
+      - { who: punchy, at: 0.4, en: "Well, this calls for a celebration. Let's get a bottle of wine. The good one.", ja: "じゃあお祝いしなきゃ。ワインをボトルで頼もう。いいやつを。" }
+      - { who: coco, at: 0.5, en: "Oh— um, I'm okay with water, honestly. I've got an early morning.", ja: "あ…えっと、私は水で大丈夫。明日、朝が早いの。" }
+      - { who: punchy, at: 0.3, en: "On a Saturday?", ja: "土曜なのに？" }
+      - { who: coco, at: 0.4, en: "Yoga. Very early yoga.", ja: "ヨガ。すごく早い時間のヨガ。" }
+      - { who: dom, at: 0.4, en: "Since when do you do yoga?", ja: "いつからヨガなんてやってるの？" }
+      - { who: coco, at: 0.3, en: "Since... recently.", ja: "最近…から。" }
+      - { who: punchy, at: 0.6, en: "Okay, whatever, I'm getting the bottle. And the steak. And we'll just split the check three ways at the end. Easy.", tts: "Okay, whatever, I'm gettin' the bottle. And the steak. And we'll just split the check three ways at the end. Easy.", ja: "まあいいや、ボトルは頼む。あとステーキも。会計は最後に3人で割り勘にしよう。簡単でしょ。" }
+      - { who: coco, at: 0.7, en: "Mm. Or... we could each just pay for our own? It's just, I'm only having the soup, so...", ja: "うーん。それか…それぞれ自分の分を払うのは？ほら、私スープだけだし…" }
+      - { who: punchy, at: 0.3, en: "Oh. Yeah, no, totally. That's fair. My bad.", ja: "あ。そうだよね、もちろん。それが公平だ。ごめん。" }
+      - { who: dom, at: 0.4, en: "Actually, can I say something? Tonight's on me.", tts: "Actually, c'n I say something? Tonight's on me.", ja: "ねえ、ちょっといい？今夜は僕のおごり。" }
+      - { who: coco, at: -0.3, en: "Dom, no. You just quit your job.", ja: "ドム、だめよ。仕事辞めたばっかりでしょ。" }
+      - { who: dom, at: 0.2, en: "Which is exactly why. I'm celebrating. Let me do this.", tts: "Which is exactly why. I'm celebrating. Lemme do this.", ja: "だからこそだよ。お祝いなんだから。払わせて。" }
+      - { who: punchy, at: 0.4, en: "Absolutely not. The guy who just spent his savings on a truck is not paying for my steak.", ja: "絶対だめ。貯金をトラックにはたいたばかりのやつに、俺のステーキ代は払わせない。" }
+      - { who: dom, at: 0.3, en: "Then what do you suggest?", ja: "じゃあどうするのさ？" }
+      - { who: punchy, at: 0.5, en: "Here's the deal. Coco pays for her soup, I pay for my steak and the wine, and your burger's on me. Congratulations present.", ja: "こうしよう。ココは自分のスープ、俺はステーキとワイン、で、お前のバーガーは俺のおごり。お祝いのプレゼント。" }
+      - { who: coco, at: 0.4, en: "And I'll get your dessert. Then we're all celebrating.", ja: "じゃあデザートは私が出す。それでみんなでお祝いね。" }
+      - { who: dom, at: 0.5, en: "You guys are going to make me cry in a restaurant.", tts: "You guys're gonna make me cry in a restaurant.", ja: "お前ら、レストランで泣かせる気かよ。" }
+      - { who: punchy, at: 0.3, en: "Cry after the calamari. Speaking of which— excuse me! Hi, could we get the calamari to start?", tts: "Cry after the calamari. Speaking of which— 'scuse me! Hi, could we get the calamari to start?", ja: "泣くのはカラマリのあとにしな。そうだ…すみません！最初にカラマリをお願いできますか？" }
+      - { who: coco, at: 0.4, en: "And could you bring some extra bread? I'm suddenly very hungry.", ja: "それとパンを多めにもらえますか？急にすごくお腹がすいてきちゃった。" }
+    questions:
+      - { type: gist, ask: "夕食での 大きな ニュースは？", line: 16, choices: ["A friend is moving away to open a restaurant in another city.", "A friend has quit his job to start his own food business.", "A friend lost his job after an argument with his boss."], answer: 1, cja: ["友だちが別の町でレストランを開くため引っ越す", "友だちが仕事を辞めて自分の食べ物の商売を始める", "友だちが上司と言い争って仕事を失った"], why: "ドムは月曜に辞表を出し、フードトラックを始める。上司のせいかと聞かれて nothing like that と否定している。" }
+      - { type: mean, ask: "ココが just the soup と 言いつづける わけは？", line: 30, choices: ["She doesn't feel well and wants something light.", "She's a vegetarian, and there's little on the menu for her.", "She's trying not to spend much money tonight."], answer: 2, cja: ["体調が悪く軽いものにしたい", "菜食で、食べられるものが少ない", "今夜はあまりお金を使いたくない"], why: "お昼の話もヨガの話も言い訳。割り勘になりそうになると each just pay for our own と言う。お金を気にしている。" }
+      - { type: attitude, ask: "ドムは 新しい 計画を どう 感じている？", line: 22, choices: ["Excited but scared, since most of his savings are in it.", "Sorry he left his job, and he wishes he hadn't.", "Calm, because his family is paying for the truck."], answer: 0, cja: ["わくわくしつつ怖い。貯金のほとんどをつぎ込んだ", "仕事を辞めたことを後悔している", "家族がトラック代を出すので落ち着いている"], why: "Terrified と言いつつ、no pressure と冗談めかす。貯金のほとんどを使った。母のレシピはタレのことで、お金の話ではない。" }
+      - { type: mean, ask: "Since when do you do yoga? が 示すのは？", line: 27, choices: ["He wants to come along to her yoga class tomorrow.", "He doesn't believe her reason for skipping the wine.", "He thinks early yoga is too expensive for her."], answer: 1, cja: ["明日のヨガのクラスに一緒に行きたい", "ワインを断る理由を信じていない", "早朝ヨガは彼女には高すぎると思う"], why: "急に出てきたヨガの話を疑っている。ココも Since... recently と口ごもる。本当はお金を使いたくない。" }
+      - { type: next, ask: "会計は どう なる？", line: 37, choices: ["They split the whole check three ways.", "Each pays for their own, and they treat Dom.", "Dom pays for everyone to celebrate his news."], answer: 1, cja: ["全部を3人で割り勘", "それぞれ自分の分を払い、ドムの分はおごる", "ドムがお祝いに全員分を払う"], why: "ココはスープ、パンチーはステーキとワインとドムのバーガー、ココがドムのデザート。割り勘もドムのおごりも却下。" }
+    dict:
+      - { line: 9, words: "sort of the opposite", feature: kinda }
+      - { line: 34, words: "Let me do this", feature: lemme }
+      - { line: 39, words: "going to make me cry", feature: gonna }
+
+  - kind: long
+    id: lg-neighbor-tree
+    name: お隣の 大きな 木
+    source: tts
+    ctx: "晴れた朝。隣人同士が庭先で"
+    note: "葉っぱの 話は 遠回しの お願い"
+    tags: { seed: 32, register: neighbour, pragmatic: indirect, features: [overlap, gonna, contraction] }
+    lines:
+      - { who: goldie, at: 0, en: "Morning, Cyd! Beautiful day, huh?", ja: "おはよう、シド！いいお天気ね。" }
+      - { who: cyd, at: 0.5, en: "Hey, Goldie. Yeah, finally. I thought the rain was never going to stop.", tts: "Hey, Goldie. Yeah, finally. I thought the rain was never gonna stop.", ja: "やあ、ゴールディ。うん、やっとね。雨が永遠にやまないかと思ったよ。" }
+      - { who: goldie, at: 0.3, en: "Tell me about it. Oh, hey, I've got a package of yours. It came Tuesday. I think they left it on my porch by mistake.", ja: "ほんとよね。そうそう、あなたの荷物を預かってるの。火曜に届いたのよ。間違えてうちの玄関に置いていったみたい。" }
+      - { who: cyd, at: 0.3, en: "Oh, nice, thanks. I've been looking for that. It's a, uh, it's a new blade for the mower.", ja: "お、助かる、ありがとう。探してたんだ。それ、えっと、芝刈り機の新しい刃なんだ。" }
+      - { who: goldie, at: 0.4, en: "Well, it's right inside the door. I'll grab it for you in a sec.", tts: "Well, it's right inside the door. I'll grab it for ya in a sec.", ja: "ドアのすぐ内側にあるから、あとで取ってくるわね。" }
+      - { who: cyd, at: 0.3, en: "No rush. How's Biscuit doing? Still chasing squirrels?", tts: "No rush. How's Biscuit doin'? Still chasin' squirrels?", ja: "急がなくていいよ。ビスケットは元気？まだリスを追いかけてる？" }
+      - { who: goldie, at: 0.4, en: "Oh, constantly. Actually, the squirrels have been having a field day lately. They love that big oak of yours.", ja: "もうずっとよ。実はね、最近リスたちがやりたい放題なの。あなたの大きなオークの木が大好きみたいで。" }
+      - { who: cyd, at: 0.3, en: "Ha, yeah, that tree's basically a squirrel hotel.", ja: "はは、あの木はリスのホテルみたいなもんだからね。" }
+      - { who: goldie, at: 0.5, en: "It's a gorgeous tree. Really. It's just... it's gotten so big. Some of the branches are hanging way over on my side now.", ja: "本当に立派な木よ。ただ…すごく大きくなったわよね。枝がいくつか、うちの側にかなり張り出してきてるの。" }
+      - { who: cyd, at: 0.4, en: "Yeah, it's been a good year for it. All that rain.", ja: "ああ、今年はよく育ったからね。あれだけ雨が降れば。" }
+      - { who: goldie, at: 0.5, en: "Mm-hm. And with the rain, the leaves have been, um, piling up in my gutters a little. I had a guy clean them out twice already this fall.", ja: "そうね。それで雨のせいで、葉っぱが、その、うちの雨どいにちょっとたまっちゃって。この秋だけでもう2回、業者に掃除してもらったのよ。" }
+      - { who: cyd, at: 0.6, en: "Twice? Wow. Those gutter guys must be making a killing.", tts: "Twice? Wow. Those gutter guys must be makin' a killing.", ja: "2回も？へえ。雨どい業者はぼろ儲けだね。" }
+      - { who: goldie, at: 0.4, en: "They are. They really are.", ja: "そうなのよ。本当にね。" }
+      - { who: goldie, at: 1.0, en: "So I was kind of wondering if... maybe those branches could be cut back a little? Just the ones over the fence.", tts: "So I was kinda wondering if... maybe those branches could be cut back a little? Just the ones over the fence.", ja: "それでね、ちょっと思ってたんだけど…あの枝、少し切ってもらえないかしら？フェンスを越えてる分だけでいいの。" }
+      - { who: cyd, at: 0.6, en: "Oh. Oh, I see. Huh. I mean, I hadn't really noticed it was bothering you.", ja: "あ。ああ、そういうことか。へえ。いや、迷惑になってるなんて気づかなかったよ。" }
+      - { who: goldie, at: -0.2, en: "It's not bothering me, exactly—", ja: "迷惑ってほどじゃないのよ…" }
+      - { who: cyd, at: 0.2, en: "No, no, it's fine, I get it. You should've said something sooner.", tts: "No, no, it's fine, I get it. You shoulda said somethin' sooner.", ja: "いやいや、いいんだ、わかるよ。もっと早く言ってくれればよかったのに。" }
+      - { who: goldie, at: 0.3, en: "I didn't want to make a thing of it. You know how it is.", tts: "I didn't wanna make a thing of it. Y'know how it is.", ja: "大ごとにしたくなかったの。ほら、わかるでしょ。" }
+      - { who: cyd, at: 0.5, en: "Sure. Okay. Well, trimming a tree that size isn't cheap, though. Last time I got a quote, it was, like, eight hundred bucks.", ja: "うん。わかった。でも、あのサイズの木を切るのは安くないんだよね。前に見積もりを取ったら、800ドルくらいだった。" }
+      - { who: goldie, at: 0.4, en: "Oh, wow. Eight hundred.", ja: "まあ。800ドル。" }
+      - { who: cyd, at: 0.4, en: "Yeah. So I've kind of been putting it off, to be honest.", tts: "Yeah. So I've kinda been puttin' it off, to be honest.", ja: "うん。だから正直、ずっと先延ばしにしてたんだ。" }
+      - { who: goldie, at: 0.6, en: "Well, since the branches are over my side, what if we split it? Half and half?", ja: "じゃあ、枝はうちの側に出てるんだし、半分ずつ出すのはどう？折半で。" }
+      - { who: cyd, at: 0.5, en: "You'd do that?", ja: "そうしてくれるの？" }
+      - { who: goldie, at: 0.3, en: "Of course. It'd save me a fortune in gutter guys.", ja: "もちろん。雨どい業者に払う大金が浮くもの。" }
+      - { who: cyd, at: 0.3, en: "Ha! Okay, then. Deal. I've got a buddy who does tree work. I'll call him this weekend and see when he can come out.", tts: "Ha! Okay, then. Deal. I've got a buddy who does tree work. I'll call 'im this weekend an' see when he can come out.", ja: "はは！よし、じゃあ決まり。木の仕事をしてる仲間がいるんだ。今週末に電話して、いつ来られるか聞いてみるよ。" }
+      - { who: goldie, at: 0.3, en: "That'd be great. Thank you, Cyd. Really.", ja: "助かるわ。ありがとう、シド。本当に。" }
+      - { who: cyd, at: 0.3, en: "Hey, no problem. Thanks for bringing it up. Nicely, I mean.", ja: "いいって。言ってくれてありがとう。やんわりとね。" }
+      - { who: goldie, at: 0.4, en: "Oh, and while I've got you— I'm going to be away next week. My daughter's having her baby.", tts: "Oh, and while I've gotcha— I'm gonna be away next week. My daughter's having her baby.", ja: "そうだ、ついでに…来週留守にするの。娘に赤ちゃんが生まれるのよ。" }
+      - { who: cyd, at: -0.2, en: "No way! Congratulations, Grandma!", ja: "うそ！おめでとう、おばあちゃん！" }
+      - { who: goldie, at: 0.2, en: "Thank you! I'm a nervous wreck. Would you mind keeping an eye on the house? Just, you know, grab the mail, make sure nothing looks weird.", tts: "Thank you! I'm a nervous wreck. Would you mind keepin' an eye on the house? Just, y'know, grab the mail, make sure nothing looks weird.", ja: "ありがとう！もうどきどきよ。家を見ててもらえないかしら？郵便を取って、変なことがないか見るくらいでいいの。" }
+      - { who: cyd, at: 0.4, en: "Yeah, of course. Want me to water your tomatoes too?", tts: "Yeah, of course. Want me ta water your tomatoes too?", ja: "もちろん。トマトにも水やろうか？" }
+      - { who: goldie, at: 0.3, en: "Would you? There's a key under the frog by the back door.", ja: "いいの？裏口のカエルの置物の下に鍵があるから。" }
+      - { who: cyd, at: 0.4, en: "Under the frog. Very secure.", ja: "カエルの下。防犯はばっちりだね。" }
+      - { who: goldie, at: 0.3, en: "Don't tell anyone.", ja: "誰にも言わないでね。" }
+      - { who: cyd, at: 0.3, en: "Your secret's safe with me. And hey, if the tree guy can come while you're gone, I'll just have him do it then.", tts: "Your secret's safe with me. And hey, if the tree guy can come while you're gone, I'll just have 'im do it then.", ja: "秘密は守るよ。それと、留守の間に木の業者が来られたら、そのときにやってもらうね。" }
+      - { who: goldie, at: 0.4, en: "Perfect. Okay, let me get you that package before I forget.", tts: "Perfect. Okay, lemme getcha that package before I forget.", ja: "完璧。じゃあ、忘れないうちに荷物を取ってくるわね。" }
+      - { who: cyd, at: 0.3, en: "Thanks. Oh— and say hi to Biscuit for me.", ja: "ありがとう。あ…ビスケットによろしく。" }
+    questions:
+      - { type: gist, ask: "2人が 決めた ことは？", line: 24, choices: ["To cut the whole tree down because of the squirrels.", "To share the cost of trimming a tree, and he'll watch her house.", "To complain together about the gutter cleaning company."], answer: 1, cja: ["リスのせいで木を丸ごと切り倒す", "木の剪定費用を折半し、彼が家を見ておく", "雨どい掃除の業者に一緒に苦情を言う"], why: "張り出した枝を半分ずつの費用で切ることにし、留守の間の家の見回りも頼まれる。木を切り倒す話ではない。" }
+      - { type: mean, ask: "雨どいの 葉っぱの 話を するのは なぜ？", line: 10, choices: ["She's hinting that his tree is causing her a problem.", "She wants to recommend her gutter cleaner to him.", "She's complaining about how much it rained this fall."], answer: 0, cja: ["彼の木が困りごとの原因だとほのめかしている", "自分の雨どい業者を紹介したい", "この秋の雨の多さに文句を言っている"], why: "枝が張り出している、葉が雨どいにたまる、と遠回しに伝え、そのあと cut back を切り出す。シドは最初、気づかない。" }
+      - { type: attitude, ask: "お願いに 気づいた シドの 反応は？", line: 14, choices: ["Angry, and he refuses to touch the tree at all.", "Relieved, because he wanted to cut it back anyway.", "Surprised and a bit defensive, but he agrees."], answer: 2, cja: ["怒っていて、木には一切手をつけないと言う", "どうせ枝を切りたかったので、ほっとしている", "驚いて少し身構えるが、受け入れる"], why: "Oh, I see. Huh. と間があき、I hadn't really noticed と少し身構える。でも I get it と受け入れ、費用の心配をする。" }
+      - { type: mean, ask: "Under the frog. Very secure. の 意味は？", line: 32, choices: ["He's impressed by how cleverly she hid the key.", "He's teasing her: it's not a safe hiding place at all.", "He's asking her to buy a better lock for the back door."], answer: 1, cja: ["鍵の隠し方がうまいと感心している", "全然安全な隠し場所じゃないとからかっている", "裏口にもっといい鍵をつけるよう頼んでいる"], why: "置物の下に鍵はよくある隠し場所。Very secure は反語のからかい。Don't tell anyone と返すのも冗談。" }
+      - { type: next, ask: "シドは 今週末 何を する？", line: 24, choices: ["Pick up a new blade for his mower at the store.", "Drive her to the hospital to see the new baby.", "Call a buddy who does tree work."], answer: 2, cja: ["店で芝刈り機の新しい刃を受け取る", "生まれた赤ちゃんに会いに、彼女を病院まで送る", "木の仕事をしている仲間に電話する"], why: "I'll call him this weekend and see when he can come out＝今週末に仲間に電話していつ来られるか聞く。刃はもう届いている。" }
+    dict:
+      - { line: 1, words: "never going to stop", feature: gonna }
+      - { line: 16, words: "should've said", feature: contraction }
+      - { line: 35, words: "let me get you", feature: chain }

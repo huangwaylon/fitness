@@ -76,8 +76,10 @@ describe('listen content', () => {
     for (const { raw } of FILES) {
       const u = raw as { stage: number; cast?: Record<string, string>; items: ListenItem[] };
       const spoken = listenClipItems(raw);
-      // a derived tile (`clip`) plays its bank item's clip: nothing of its own to speak
-      expect(spoken.map((c) => c.id)).toEqual(u.items.filter((it) => it.kind !== 'tile' || !it.clip).flatMap(listenClipIds));
+      // a derived tile (`clip`) plays its bank item's clip, a real long piece's lines are cut from its recording: nothing
+      // of their own to speak
+      const own = (it: ListenItem) => (it.kind !== 'tile' || !it.clip) && (it.kind !== 'long' || it.source !== 'real');
+      expect(spoken.map((c) => c.id)).toEqual(u.items.filter(own).flatMap(listenClipIds));
       for (const c of spoken) {
         expect(c.lv).toBe(u.stage + 1);
         expect(c.cast).toMatch(/^us-/);
@@ -91,7 +93,7 @@ describe('listen content', () => {
   it('a part keeps what is shown, not the engine text, and each clip id', () => {
     for (const { raw } of FILES) {
       const p = listenPart(raw, new Map(BANK.map((it) => [it.id, it])));
-      expect(JSON.stringify(p)).not.toContain('"tts"');
+      expect(JSON.stringify(p)).not.toContain('"tts":');
       expect(p.items.length).toBe((raw as { items: unknown[] }).items.length);
       for (const it of p.items) if (it.kind !== 'news' && it.kind !== 'weather') expect('lines' in it ? it.lines.map((l) => l.clip) : [it.clip]).toEqual(listenClipIds(it));
     }

@@ -11,6 +11,9 @@
 export const PACK_MAX = 1_200_000;
 /** A slow pack's bound (bytes; the 🐢 takes are fetched only when asked for). */
 export const SLOW_PACK_MAX = 800_000;
+/** A まるごと 聞く file's pack's bound (bytes): its pieces are fetched as slices, a piece's run of lines at once
+ *  (components/kikimimi/packs.ts), so a file is one pack (static/ is near its file cap). */
+export const LONG_PACK_MAX = 8_000_000;
 
 /** packs.json's entry for a pack: its content hash (8 hex, of the file), whether it holds slow takes, and its clips
  *  in file order: id, offset, bytes. */

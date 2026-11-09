@@ -5,12 +5,12 @@
 // lobby's level, a heard `open`'s, にがて れんしゅう's picks (game.svelte.ts waits for them before a deck is built).
 // Decks read only loaded levels (levelItems throws on one that isn't: a deck from half a bank would differ between phones).
 import INDEX_JSON from './levels/index.json';
-import type { Accent, Entry, Feature, Item, ItemType, Level, Tags } from './bank.ts';
+import type { Entry, Item, Level } from './bank.ts';
 import { addClips, type ChunkClip, type Words } from './clips.ts';
 import type { Ladder } from './ladder.ts';
 import type { Lesson, UnitChunk, UnitPlay } from './lesson.ts';
 import type { LetterText } from './letters.ts';
-import type { ListenEntry, ListenPart } from './listen.ts';
+import type { IndexEntry, ListenEntry, ListenPart } from './listen.ts';
 import type { Chapter, StoryEntry } from './story.ts';
 
 /** What a chunk holds: a level's items (or the ladders; a unit's: the unit, its lessons' items and ladders) and their
@@ -58,7 +58,9 @@ export interface Index {
   /** The units, in file order (units.ts's `status` gates them on the phone, a later step). */
   paths: PathEntry[];
   /** Every item, in the bank's order: id, level, type, accent, pragmatic layer, features. */
-  items: [string, Level, ItemType, Accent, Tags['pragmatic'], Feature[]][];
+  items: IndexEntry[];
+  /** まるごと 聞く's questions and dictation lines (listen.ts longEntries): answers this build knows, in no deck or level. */
+  long: IndexEntry[];
   /** Every rung's id (`<ladder>-<n>`). */
   rungs: string[];
 }
@@ -71,8 +73,15 @@ export type Unit = Level | 'ladder' | `${string}-${string}`;
 const PARTS = import.meta.glob<Part>('./levels/parts/*.json', { import: 'default' });
 
 /** Every item as the index knows it, in the bank's order. */
-export const ENTRIES: readonly Entry[] = INDEX.items.map(([id, lv, type, voice, pragmatic, features]) => ({ id, lv, type, voice, tags: { pragmatic, features } }));
-const BY_ID: ReadonlyMap<string, Entry> = new Map(ENTRIES.map((e) => [e.id, e]));
+const entry = ([id, lv, type, voice, pragmatic, features]: IndexEntry): Entry => ({ id, lv, type, voice, tags: { pragmatic, features } });
+export const ENTRIES: readonly Entry[] = INDEX.items.map(entry);
+/** まるごと 聞く's questions and dictation lines: known (entryOf: きろく, the difficulties, a review card), never dealt (a
+ *  review hears another item in their place: srs.ts). */
+export const LONG_ENTRIES: readonly Entry[] = (INDEX.long ?? []).map(entry);
+const LONG_IDS: ReadonlySet<string> = new Set(LONG_ENTRIES.map((e) => e.id));
+/** Whether an item id is a long piece's question or dictation line (never dealt as itself). */
+export const isLongId = (id: string): boolean => LONG_IDS.has(id);
+const BY_ID: ReadonlyMap<string, Entry> = new Map([...ENTRIES, ...LONG_ENTRIES].map((e) => [e.id, e]));
 /** An item of this build by id (a `listen` row's answer), loaded or not. */
 export const entryOf = (id: string): Entry | undefined => BY_ID.get(id);
 
