@@ -13,17 +13,18 @@
 // miscellaneous item a balloon can bring (the ずかん's カタログ: island/catalog.json) that NH has a model of here, so a
 // find can always be placed.
 //
-// Usage (from app/): NH_MODELS=~/Downloads/Model npm run room-models [-- --only=f1234,w5678 --data | --surfaces]
+// Usage (from app/): NH_MODELS=~/Downloads/Model npm run room-models [-- --only=f1234,w5678 --data | --surfaces | --emitters]
 //   --only      just these codes (or names' substrings), and keep everything else in items.json as it is
 //   --data      rewrite items.json and the names only (no conversion)
 //   --surfaces  as --data, and find every surface's top again from its converted model (static/room/models)
+//   --emitters  as --data, and find every light's emitter again (NH's light locator, else its model's glow)
 // The model folder is untrusted input and never part of the repo: only the folders the list names are copied into a
 // scratch dir (only their .dae and .png files; nothing in them is run, three.js reads them in the page), and only the
 // converted files are written. Needs Google Chrome (Playwright's channel 'chrome') and cwebp (brew install webp);
 // gltfpack is a dev dependency (wasm). The ACNH spreadsheet's JSON (Norviah/animal-crossing) gives the names, the
 // models' file names and NH's sizes (a cross-check of the footprints), cached in the OS temp dir like
 // scripts/catalog.ts.
-import { chromium } from '@playwright/test';
+import { chromium, type Page } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -44,7 +45,8 @@ const CACHE = join(tmpdir(), 'island-catalog-src');
 const arg = (k: string) => process.argv.find((a) => a.startsWith(`--${k}=`))?.slice(k.length + 3);
 const only = (arg('only') ?? '').split(',').filter(Boolean);
 const surfacesOnly = process.argv.includes('--surfaces');
-const dataOnly = process.argv.includes('--data') || surfacesOnly;
+const emittersOnly = process.argv.includes('--emitters');
+const dataOnly = process.argv.includes('--data') || surfacesOnly || emittersOnly;
 
 /** Bytes a model may take: over TARGET it goes again with smaller textures; over MAX the run says so. */
 const TARGET = 40_000;
@@ -266,6 +268,9 @@ interface Meta {
   n?: number;
   /** A light (a switch). */
   lt?: 1;
+  /** A light's emitter, its point light (model units): NH's light locator (el), else its emissive map's lit middle. */
+  e?: [number, number, number];
+  el?: 1;
   /** On a wall: w tiles across it, h high (its middle at its origin). */
   wl?: 1;
 }
@@ -301,8 +306,9 @@ function writeItems() {
 //      in scripts/room-surfaces.ts) ------------------------------------------------------------------------------
 
 const three = join(dirname(createRequire(import.meta.url).resolve('three')), '..');
-async function surfaceTops(codes: readonly string[]): Promise<void> {
-  if (!codes.length) return;
+/** scripts/room-surfaces-page.js in the installed Chrome: the converted models (/models/), and a piece's Collada from
+ *  the game files (/src/<folder>/<folder>.dae, only that file: untrusted input, read by three.js in the page). */
+async function modelPage<T>(run: (page: Page) => Promise<T>): Promise<T> {
   const PAGE = join(import.meta.dirname, 'room-surfaces-page.js'), MODELS_OUT = join(OUT, 'models');
   const browser = await chromium.launch({ channel: 'chrome' });
   const page = await browser.newPage();
@@ -314,29 +320,70 @@ async function surfaceTops(codes: readonly string[]): Promise<void> {
       return f.startsWith(root + sep) ? f : null;
     };
     if (u === '/') return route.fulfill({ contentType: 'text/html', body: '<!doctype html><script type="importmap">{"imports":{"three":"/three/build/three.module.js","three/addons/":"/three/examples/jsm/"}}</script><script type="module" src="/page.js"></script>' });
-    const f = u === '/page.js' ? PAGE : u.startsWith('/three/') ? within(three, u.slice(7)) : u.startsWith('/models/') ? within(MODELS_OUT, u.slice(8)) : null;
+    const dae = /^\/src\/([A-Za-z0-9_]+)\/\1\.dae$/.exec(u);
+    const f = u === '/page.js' ? PAGE : u.startsWith('/three/') ? within(three, u.slice(7)) : u.startsWith('/models/') ? within(MODELS_OUT, u.slice(8))
+      : dae && has(dae[1]) ? join(ROOT, F(dae[1]), `${dae[1]}.dae`) : null;
     if (!f || !existsSync(f)) return route.fulfill({ status: 404, body: '' });
     return route.fulfill({ body: readFileSync(f), contentType: extname(f) === '.js' ? 'text/javascript' : 'application/octet-stream' });
   });
   await page.goto('http://room.local/');
   await page.waitForFunction(() => (window as unknown as { ready?: boolean }).ready);
-  const STEP = 0.5;
-  for (const code of codes) {
-    const m = metas[code];
-    if (!m) continue;
-    const s = await page.evaluate((o) => (window as unknown as { sample: (o: unknown) => Promise<Sample> }).sample(o), { url: `/models/${code}.glb`, W: m.w * TILE, D: m.d * TILE, step: STEP });
-    const top = topOf(s, m.w, m.d, STEP);
-    const { sy: _sy, st: _st, sl: _sl, ...rest } = m;
-    metas[code] = top ? { ...rest, ...top } : rest;
-    const p = pieces.get(code)!;
-    console.log(`${code} ${p.en}: ${top ? `top ${top.sy} (bounds ${m.h}), ${top.sl.length}/${m.w * m.d} tiles` : 'no top'}`);
+  try {
+    return await run(page);
+  } finally {
+    await browser.close();
   }
-  await browser.close();
 }
+async function surfaceTops(codes: readonly string[]): Promise<void> {
+  if (!codes.length) return;
+  const STEP = 0.5;
+  await modelPage(async (page) => {
+    for (const code of codes) {
+      const m = metas[code];
+      if (!m) continue;
+      const s = await page.evaluate((o) => (window as unknown as { sample: (o: unknown) => Promise<Sample> }).sample(o), { url: `/models/${code}.glb`, W: m.w * TILE, D: m.d * TILE, step: STEP });
+      const top = topOf(s, m.w, m.d, STEP);
+      const { sy: _sy, st: _st, sl: _sl, ...rest } = m;
+      metas[code] = top ? { ...rest, ...top } : rest;
+      const p = pieces.get(code)!;
+      console.log(`${code} ${p.en}: ${top ? `top ${top.sy} (bounds ${m.h}), ${top.sl.length}/${m.w * m.d} tiles` : 'no top'}`);
+    }
+  });
+}
+
+// ---- the lights' emitters: where a lamp's point light stands (scripts/room-surfaces-page.js locator, emitter) -----
+
+/** Lights with neither NH's light locator nor a lit emissive map: their glow's spot, checked by eye (model units). */
+const EMITTERS: Record<string, [number, number, number]> = {
+  // the stage flame machine's nozzle, the cartoonist's set's light table
+  f13467: [0, 7.5, 0], f4122: [0, 1.6, 0]
+};
+/** Each light's emitter (items.json e): NH's own light locator in the game's model (el: a lamp's bulb, a TV's
+ *  screen) when it is within the model, else the middle of its emissive map's lit texels (the converted model's
+ *  glow), else EMITTERS. */
+async function emitters(codes: readonly string[]): Promise<void> {
+  if (!codes.length) return;
+  const r1 = (n: number) => Math.round(n * 10) / 10 || 0;
+  await modelPage(async (page) => {
+    for (const code of codes) {
+      const m = metas[code], p = pieces.get(code)!;
+      const { e: _e, el: _el, ...rest } = m;
+      const loc = await page.evaluate((o) => (window as unknown as { locator: (o: unknown) => Promise<number[] | null> }).locator(o), { url: `/src/${p.folder}/${p.folder}.dae` });
+      const glow = await page.evaluate((o) => (window as unknown as { emitter: (o: unknown) => Promise<{ at: number[] | null; box: number[][] }> }).emitter(o), { url: `/models/${code}.glb` });
+      // (the fortune-telling set's floats over its crystal ball)
+      const within = loc && loc.every((v, i) => v >= glow.box[0][i] - 0.3 && v <= glow.box[1][i] + 0.3) ? loc : null;
+      const at = within ?? glow.at ?? EMITTERS[code];
+      metas[code] = at ? { ...rest, e: at.map(r1) as [number, number, number], ...(within ? { el: 1 as const } : {}) } : rest;
+      console.log(`${code} ${p.en}: ${at ? `${within ? 'NH locator' : glow.at ? 'glow' : 'by eye'} ${metas[code].e!.join(', ')} (height ${m.h})` : 'no emitter'}`);
+    }
+  });
+}
+const emitterCodes = (list: Iterable<Piece>) => [...list].filter((p) => p.light && metas[p.code]).map((p) => p.code);
 const surfaceCodes = (list: Iterable<Piece>) => [...list].filter((p) => p.surface && !p.rug && !p.wall && metas[p.code]).map((p) => p.code);
 
 if (dataOnly) {
   if (surfacesOnly) await surfaceTops(surfaceCodes([...pieces.values()].filter((p) => wanted(p.code, p))));
+  if (emittersOnly) await emitters(emitterCodes([...pieces.values()].filter((p) => wanted(p.code, p))));
   writeItems();
   process.exit(0);
 }
@@ -477,6 +524,7 @@ for (const [list, kind, w, h] of [[walls, 'wall', 256, 512], [floors, 'floor', 5
 if (texBytes) console.log(`wallpapers and floors: ${(texBytes / 1024 / 1024).toFixed(2)} MB`);
 
 await surfaceTops(surfaceCodes(todo));
+await emitters(emitterCodes(todo));
 writeItems();
 rmSync(scratch, { recursive: true, force: true });
 rmSync(work, { recursive: true, force: true });

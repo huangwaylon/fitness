@@ -13,7 +13,7 @@ import {
 import { cubicOut } from '#lib/math.ts';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
-import { FULL, HALF, TILE, centreOf, isSurface, isWallItem, onTop, rectOf, wallMid, wallSpot, type Bounds, type Facing, type Pt, type Spot } from './grid.ts';
+import { FULL, HALF, TILE, centreOf, emitterOf, isSurface, isWallItem, onTop, rectOf, wallMid, wallSpot, type Bounds, type Facing, type Pt, type Spot } from './grid.ts';
 import { footprint, floorUrl, ITEMS, modelUrl, wallUrl } from './items.ts';
 import { VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
 import { hitsSkinned } from '../player3d/hit.ts';
@@ -931,6 +931,18 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     pointLights.push(p);
     scene.add(p);
   }
+  /** A lamp's point light where it glows (grid.ts emitterOf: NH's light locator or its emissive part, turned with the
+   *  piece; a wall thing's through its wall's frame), in the room's frame. */
+  function emitterAt(l: Live): Vector3 {
+    const wall = isWallItem(l.spot.item);
+    const at = new Vector3(...emitterOf(l.spot.item, wall ? 0 : l.spot.f)).add(l.root.position);
+    const g = l.root.parent;
+    if (wall && g) {
+      g.updateWorldMatrix(true, false);
+      g.localToWorld(at);
+    }
+    return at;
+  }
   /** NH's room light switch: off, the room's own light goes down (the lamps that are on light it). */
   let roomOn = true;
   function lights() {
@@ -940,13 +952,14 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     const lamps = [...live.values()].filter((l) => ITEMS[l.spot.item]?.lt && l.root.visible).map((l) => {
       const on = (l.spot.l ?? 1) === 1;
       for (const m of l.lit) m.emissiveIntensity = on ? 1.4 : 0;
-      return { l, on };
-    }).filter((x) => x.on);
-    lamps.sort((a, b) => a.l.root.position.length() - b.l.root.position.length());
+      return { l, on, at: on ? emitterAt(l) : null };
+    }).filter((x) => x.at);
+    const off = (v: Vector3) => Math.hypot(v.x - midX(), v.z - midZ());
+    lamps.sort((a, b) => off(a.at!) - off(b.at!));
     pointLights.forEach((p, i) => {
       const x = dark ? lamps[i] : undefined;
       p.intensity = x ? 900 : 0;
-      if (x) p.position.set(x.l.root.position.x, x.l.root.position.y + (ITEMS[x.l.spot.item]?.h ?? 8) * 0.8 + 2, x.l.root.position.z);
+      if (x) p.position.copy(x.at!);
     });
   }
   function room(on: boolean) {
