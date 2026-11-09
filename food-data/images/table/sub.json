@@ -131,5 +131,40 @@
   "cat": "菓子・デザート",
   "desc": "anmitsu, a glass bowl of clear agar jelly cubes with a scoop of sweet red bean paste, white shiratama dumplings, a few red peas, mandarin and fruit pieces, a little dark brown kuromitsu syrup",
   "items": []
+ },
+ {
+  "key": "sub-lemon-cake",
+  "ja": "レモンケーキ",
+  "cat": "菓子・デザート",
+  "desc": "Japanese lemon cakes, small lemon-shaped sponge cakes coated in a thin glossy pale yellow lemon glaze, one cut showing a soft yellow crumb, on a small plate",
+  "items": []
+ },
+ {
+  "key": "sub-brownie",
+  "ja": "ブラウニー",
+  "cat": "菓子・デザート",
+  "desc": "chocolate brownies, a few square pieces of dense fudgy dark brown chocolate cake with a crackled shiny top and walnut pieces, on a small plate",
+  "items": []
+ },
+ {
+  "key": "sub-karupasu",
+  "ja": "カルパス",
+  "cat": "肉",
+  "desc": "karupasu, a small pile of short thin dry sausage sticks, dark reddish-brown and slightly wrinkled, one cut showing the speckled inside",
+  "items": []
+ },
+ {
+  "key": "sub-tteokbokki",
+  "ja": "トッポギ",
+  "cat": "主菜",
+  "desc": "tteokbokki, chewy cylindrical white rice cakes and fish cake slices in a glossy thick red spicy gochujang sauce with green onion, in a shallow dish",
+  "items": []
+ },
+ {
+  "key": "sub-financier",
+  "ja": "フィナンシェ",
+  "cat": "菓子・デザート",
+  "desc": "financiers, a few small rectangular golden-brown almond butter cakes with crisp edges, on a small plate",
+  "items": []
  }
 ]

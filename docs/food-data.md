@@ -176,7 +176,7 @@ line (also a narrower key's way to drop a broader one's), and a key matching no 
 ## Pictures
 ごはん's food pictures are AI-generated イメージ (ours: Z-Image-Turbo, Apache-2.0, run locally) of generic foods and
 dishes, in one style (coloured pencil and watercolour on the paper colour): 5,123 pictures cover all 6,185 generic foods,
-and 7,623 of the 13,916 packaged products show a subcategory's picture (19 of them products-only; 972 sheets). Custom
+and 7,978 of the 13,916 packaged products show a subcategory's picture (24 of them products-only; 977 sheets). Custom
 foods and the other products keep their category's tile. `food-data/images/fi.py` (its docstring has the commands) does the following:
 - **Table** (`food-data/images/table/*.json`, hand-written): one row per visual concept, `{key, ja, desc, items}`. Variants
   that look alike share a row (脂身つき / なし, 和牛 / 輸入牛, a dish's sizes, the same dish in dishes and eatout); states
@@ -206,8 +206,8 @@ foods and the other products keep their category's tile. `food-data/images/fi.py
   else with its category), so a common search's top 20 download about 120 KB of thumbnails; detail sheets go by category. Popular
   items come first. A product uses its picture's cell when that sits in its own name's neighbourhood, else a cell in a
   product sheet (`p-*`, per neighbourhood: たまねぎドレッシング with the onions). `slots.json` is append-only, so a full sheet never changes. The names carry the content hash (cached for a year, `scripts/headers.ts`).
-  `index.json` (~485 KB, 130 KB gzipped) maps each food id to its picture's two cells (`lib/food/images.ts` `imgOf`).
-- **Budget** (`lib/food/images.test.ts`): ≤ 1,100 files and 90 MB in food-img/ (projected over the whole table, within static/'s file cap, `lib/static-budget.ts`: 18,000 = Pages' 20,000 less the build's ~1,000 and a 1,000 margin), a common search's top 20 ≤ 125 KB of thumbnails on average (~124 now; 120 before the products' pictures; 350 at most), ≤ 400 KB a sheet, ≤ 19,000 files under
+  `index.json` (~495 KB, 132 KB gzipped) maps each food id to its picture's two cells (`lib/food/images.ts` `imgOf`).
+- **Budget** (`lib/food/images.test.ts`): ≤ 1,100 files and 90 MB in food-img/ (projected over the whole table, within static/'s file cap, `lib/static-budget.ts`: 18,000 = Pages' 20,000 less the build's ~1,000 and a 1,000 margin), a common search's top 20 ≤ 128 KB of thumbnails on average (~125 now; 120 before the products' pictures; 350 at most), ≤ 400 KB a sheet, ≤ 19,000 files under
   static/ (Cloudflare Pages takes 20,000 a deploy), and every generic food in a table row (a new catalogue item fails the test until it has one). The service worker caches the sheets on first use (`FOOD_IMG_CACHE`),
   never at install.
 

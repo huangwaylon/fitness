@@ -59940,6 +59940,17 @@
 "checked": false
 },
 {
+"key": "sub-brownie",
+"ja": "ブラウニー",
+"desc": "chocolate brownies, a few square pieces of dense fudgy dark brown chocolate cake with a crackled shiny top and walnut pieces, on a small plate",
+"items": [],
+"roll": 0,
+"seed": 54891,
+"prompt": "6603498fb9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "sub-chinsuko",
 "ja": "ちんすこう",
 "desc": "chinsuko, a few small oblong Okinawan shortbread biscuits with ridged edges, pale golden and crumbly, on a small plate",
@@ -59958,6 +59969,17 @@
 "roll": 0,
 "seed": 39506,
 "prompt": "29fcc81f97",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "sub-financier",
+"ja": "フィナンシェ",
+"desc": "financiers, a few small rectangular golden-brown almond butter cakes with crisp edges, on a small plate",
+"items": [],
+"roll": 0,
+"seed": 26256,
+"prompt": "1ffec243a2",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -60006,6 +60028,17 @@
 "checked": false
 },
 {
+"key": "sub-karupasu",
+"ja": "カルパス",
+"desc": "karupasu, a small pile of short thin dry sausage sticks, dark reddish-brown and slightly wrinkled, one cut showing the speckled inside",
+"items": [],
+"roll": 0,
+"seed": 87879,
+"prompt": "94f45c71c1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "sub-lasagna",
 "ja": "ラザニア",
 "desc": "lasagna, a square portion of layered flat pasta sheets with red meat sauce and creamy white sauce, the top of browned bubbling cheese, on a plate",
@@ -60013,6 +60046,17 @@
 "roll": 0,
 "seed": 17938,
 "prompt": "257663453d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "sub-lemon-cake",
+"ja": "レモンケーキ",
+"desc": "Japanese lemon cakes, small lemon-shaped sponge cakes coated in a thin glossy pale yellow lemon glaze, one cut showing a soft yellow crumb, on a small plate",
+"items": [],
+"roll": 0,
+"seed": 96804,
+"prompt": "242b9762b5",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -60123,6 +60167,17 @@
 "roll": 0,
 "seed": 97514,
 "prompt": "ae909bf420",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "sub-tteokbokki",
+"ja": "トッポギ",
+"desc": "tteokbokki, chewy cylindrical white rice cakes and fish cake slices in a glossy thick red spicy gochujang sauce with green onion, in a shallow dish",
+"items": [],
+"roll": 0,
+"seed": 49009,
+"prompt": "0d0d66ee1a",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },

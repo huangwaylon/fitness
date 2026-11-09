@@ -617,7 +617,7 @@ _KANA = [('芋', 'いも'), ('玉子', 'たまご'), ('卵', 'たまご'), ('葱
          ('餃子', 'ぎょうざ'), ('ギョーザ', 'ぎょうざ'), ('焼売', 'しゅうまい'), ('シュウマイ', 'しゅうまい'), ('ー', ''), ('・', '')]
 # a name's last bits that say nothing of the food: sizes, counts, brackets, marks
 _JUNK = re.compile(r'([^\w]|\d+(\.\d+)?(g|ml|kg|l|個|枚|本|袋|食|粒|切|切れ|貫|人前|p|入|入り|コ)+|内容量.*|[!！?？☆★♪〈〉<>【】\[\]「」『』'
-                   r'（）()／/、,.。~〜%％+＋&＆-]|大|小|中|ミニ|特大|徳用|業務用|お徳用)+$')
+                   r'（）()／/、,.。~〜%％+＋&＆-]|大|小|中|ミニ|特大|徳用|業務用|お徳用|スライス|切り落とし|切り落し|切落し|切落とし|詰め合わせ|詰合せ|セット|生食用|刺身用|加熱用|焼肉用|味付|解凍品|冷凍品|加工品)+$')
 
 
 def _kana(s):
@@ -633,15 +633,15 @@ def pnorm(s):
 
 
 def product_words():
-    """products.txt: word -> (row key, whole token only, weak, first token only)."""
+    """products.txt: word -> (row key, whole token only, weak, first token only, may end a word)."""
     out = {}
     for line in PRODUCTS.read_text().splitlines():
         line = line.split('#')[0].strip()
         if line:
             words, key = (x.strip() for x in line.split(' = '))
             for w in words.split('|'):
-                mark = w[:len(w) - len(w.lstrip('^~!'))]
-                out[pnorm(w[len(mark):])] = (key, '^' in mark, '~' in mark, '!' in mark)
+                mark = w[:len(w) - len(w.lstrip('^~!+'))]
+                out[pnorm(w[len(mark):])] = (key, '^' in mark, '~' in mark, '!' in mark, '+' in mark)
     return out
 
 
@@ -651,8 +651,8 @@ def _script(c):
 
 def product_key(name, words):
     """A product's picture row: the word one of its name's tokens ends with (a token ending in 味 is a flavour), not
-    starting inside a katakana or latin word unless 3+ letters long (ビーフカレー: カレー; ショコラ is not コーラ), a short
-    hiragana one not inside a hiragana run; a `!` word only in the first token (堅あげポテト 九州しょうゆ is no soy sauce). A
+    starting inside a word of its own script unless 3+ letters long or marked `+` (レモンケーキ: ケーキ, タコグミ: グミ;
+    ショコラ is not コーラ); a `!` word only in the first token (堅あげポテト 九州しょうゆ is no soy sauce). A
     food's form beats a weak word (~: an ingredient that is often a flavour, 博多明太子 おにぎり: おにぎり), then the longer
     word, then the earlier token. None: its category's tile."""
     best = None
@@ -666,11 +666,10 @@ def product_key(name, words):
             w = pnorm(tok[st:])
             if len(w) < 2 or w not in words:
                 continue
-            key, whole, weak, first = words[w]
+            key, whole, weak, first, tail = words[w]
             if (whole and st) or (first and ti):
                 continue
-            if st and _script(tok[st]) == _script(tok[st - 1]) and (
-                    (_script(tok[st]) in 'ka' and len(w) < 3) or (_script(tok[st]) == 'h' and len(w) < 3)):
+            if st and _script(tok[st]) == _script(tok[st - 1]) and len(tok) - st < 3 and not tail:
                 continue
             sc = (not weak, len(w), -ti)
             if best is None or sc > best[0]:

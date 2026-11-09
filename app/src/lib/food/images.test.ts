@@ -111,8 +111,8 @@ describe('sheet locality', () => {
   const QUERIES = ['豚', '鶏', '牛', 'ごはん', 'うどん', 'そば', 'ラーメン', 'さけ', 'まぐろ', 'さば', '卵', '豆腐', '納豆', 'キャベツ', 'トマト', 'たまねぎ', 'にんじん',
     'カレー', '丼', '味噌汁', 'サラダ', 'パン', 'りんご', 'バナナ', '牛乳', 'ヨーグルト', 'チーズ', 'おにぎり', '寿司', 'ビール', 'スープ', 'サンド', 'えび'];
   /** A search's top 20's thumbnail download (the sheets they touch, 4 × 4 cells each): on average, and at most. 120 KB
-   *  till the products had pictures (2026-11-10: +5 KB, on searches whose top 20 were mostly products' tiles). */
-  const MEAN_KB = 125;
+   *  till the products had pictures (2026-11-10: +6 KB, on searches whose top 20 were mostly products' tiles). */
+  const MEAN_KB = 128;
   const MAX_KB = 350;
 
   it('keeps a common search\'s thumbnail download small', async () => {
