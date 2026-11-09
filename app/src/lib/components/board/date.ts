@@ -1,7 +1,5 @@
 // A board post's date as its note shows it: NH's month/day (Tokyo's).
-import { jst } from '#lib/time/clock.ts';
+import { md } from '#lib/i18n/format.ts';
+import { localDateAt } from '#lib/time/dates.ts';
 
-export function postDate(ms: number): string {
-  const d = jst(new Date(ms));
-  return `${d.month}/${d.day}`;
-}
+export const postDate = (ms: number): string => md(localDateAt(ms));

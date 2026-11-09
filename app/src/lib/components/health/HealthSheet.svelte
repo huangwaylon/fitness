@@ -7,7 +7,7 @@
   // ✕, the backdrop and Esc close it (ごはん's editor changed: they ask first; the switch is never shown over an editor); kept mounted between openings (Sheet's `keep`: a reopening shows it at once).
   // Each opening starts 健康 at 1週 on かつどう at its top (whose data kept for the session); each time ごはん shows (an
   // opening on it, or its tab) it starts on 記録, today, the day at its top (Food's `open`: its reset, and its
-  // catalogue's idle load while it shows). A tree popup's ごはん button (kenkouAsk) opens it on ごはん, today, on the
+  // catalogue's idle load while it shows). A tree popup's ごはん button (open.svelte.ts askFood) opens it on ごはん, today, on the
   // tree's owner's day (the one whose).
   import { untrack, type Snippet } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
@@ -17,12 +17,11 @@
   import Food from '../food/Food.svelte';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { cue } from '#lib/sound/cues.ts';
   import { last, resetHealth, type KenkouTab } from './healthLast.ts';
   import { closeGoalEdit } from './GoalEdit.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { pickWhose } from './whose.svelte.ts';
-  import { kenkouAsk, shown } from '../island/kenkouAsk.svelte.ts';
+  import { kenkou } from './open.svelte.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
   let tab = $state<KenkouTab>(last.tab);
@@ -52,14 +51,10 @@
   }
   const close = () => (sheet ? sheet.guard(() => (open = false)) : (open = false));
 
+  // a tree's ask (on its mount too: the ask that mounts it)
   $effect.pre(() => {
-    const n = kenkouAsk.n;
-    if (n === shown.n) return;
-    shown.n = n;
-    untrack(() => {
-      pick('food');
-      if (kenkouAsk.who) pickWhose(kenkouAsk.who);
-    });
+    const ask = kenkou.ask;
+    if (ask) untrack(() => (pick('food'), pickWhose(ask.arg)));
   });
 
   function closed() {
@@ -72,14 +67,9 @@
   let healthBody: HTMLElement | undefined = $state();
   let foodBody: HTMLElement | undefined = $state();
 
-  // The popup's open and close tunes (it mounts on the first tap, already open: that is an open too).
-  let wasOpen = false;
+  // Each opening: counted, at the top.
   $effect(() => {
-    const o = open;
-    if (o === wasOpen) return;
-    wasOpen = o;
-    cue(o ? 'panel-open' : 'panel-close');
-    if (!o) return;
+    if (!open) return;
     opens = untrack(() => opens) + 1;
     queueMicrotask(() => healthBody?.scrollTo({ top: 0 }));
   });
@@ -91,7 +81,7 @@
 
 {#snippet pages()}<KenkouSwitch items={TABS} value={tab} label={t('health.tabs')} onpick={pick} />{/snippet}
 
-<Sheet bind:this={sheet} bind:open label={t('title.health')} variant="pop" onclose={closed} timed="health" keep>
+<Sheet bind:this={sheet} bind:open tunes label={t('title.health')} variant="pop" onclose={closed} timed="health" keep>
   <div class="titlebar">
     {#if tab === 'food' && back}
       <NavBar title={foodTitle} onback={back} onclose={close} sfx="self" />

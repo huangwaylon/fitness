@@ -135,7 +135,7 @@
 <section class="detail" data-trail-view={trail.slug} data-sheet={sheetState}>
   <TrailMap bind:this={map} region={trail.tiles} center={trail.center} {prep} {scrub} {fix} bottom={peekH} {saved} />
 
-  <div class="top"><NavBar {onback} {onclose} /></div>
+  <div class="top"><NavBar pad {onback} {onclose} /></div>
   <div class="offline" inert={full}><SaveButton {plan} name={trail.name} /></div>
   <div class="zoom" inert={full}>
     <button type="button" class="disc" data-sfx="tick" aria-label={pick(S.zoomIn, L)} onclick={() => map?.zoom(1)}><Icon name="plus" size={18} stroke={2.4} /></button>
@@ -191,7 +191,7 @@
 
   /* ‹ ✕ over the map: NavBar's buttons; the map's own (＋ − locate, the save pill) the same family: NavButton's 32px disc
      drawn in the 44px hit, the kit's control (--ctl, --sh-ctl-s) */
-  .top { position: absolute; z-index: 1000; top: 0; left: 0; right: 0; padding: var(--ui-top) calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); pointer-events: none; }
+  .top { position: absolute; z-index: 1000; top: 0; left: 0; right: 0; pointer-events: none; }
   .top :global(.nav) { pointer-events: auto; }
   .disc {
     appearance: none; position: relative; border: 0; padding: 0; width: var(--hit); height: var(--hit); display: grid; place-items: center;

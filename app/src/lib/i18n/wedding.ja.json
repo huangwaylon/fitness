@@ -23,8 +23,6 @@
   "wed.sec.overdue": "期限切れ",
   "wed.sec.thisMonth": "今月",
   "wed.sec.nodate": "日付なし",
-  "wed.month": "{y}年 {m}月",
-  "wed.monthShort": "{m}月",
   "wed.theMonth": "式の月",
   "wed.count": "{n}件",
   "wed.tallyLabel": "{total}件中{done}件完了",

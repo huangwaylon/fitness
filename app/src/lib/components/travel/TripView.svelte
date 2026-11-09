@@ -11,7 +11,7 @@
   // (‹ the place ✕) takes its place. The day shown at first: the one that is now (today's, or the day of the row on
   // now), else the first. The other pages have the title bar from the top, the page's name after the place. `tab` is
   // the sheet's (kept while the app runs). Its private values not in yet (offline), a line says so.
-  import { onMount, tick } from 'svelte';
+  import { onMount, tick, untrack } from 'svelte';
   import type { Trip } from '#lib/travel/types.ts';
   import { privateKeys } from '#lib/travel/tokens.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
@@ -27,7 +27,8 @@
   import PackList from './PackList.svelte';
   import CampList from './CampList.svelte';
   import Txt from './Txt.svelte';
-  import { listSpan, monthDay } from './dates.ts';
+  import { listSpan } from './dates.ts';
+  import { md } from '#lib/i18n/format.ts';
   import { pick } from './text.ts';
   import { phaseOf, rowNow, todayDay } from './when.ts';
   import { packing } from './packing.svelte.ts';
@@ -59,8 +60,7 @@
   const hasPrep = $derived(trip.logistics.length > 0 || !!trip.foot);
 
   /** The day on 日程 (its `n`), or 準備. */
-  // svelte-ignore state_referenced_locally
-  let shown = $state<number | 'prep'>(mark?.day ?? today ?? trip.days[0]?.n ?? 1);
+  let shown = $state<number | 'prep'>(untrack(() => mark?.day ?? today ?? trip.days[0]?.n ?? 1));
   const day = $derived(shown === 'prep' ? null : (trip.days.find((d) => d.n === shown) ?? null));
 
   let scroller: HTMLElement | undefined = $state();
@@ -100,7 +100,7 @@
 
 <div class="trip" data-trip-view={trip.id} data-pane-tab={tab}>
   <div class="hd" class:over={tab === 'days'} class:solid={tab !== 'days' || past} bind:this={bar}>
-    <NavBar title={tab === 'days' ? title : `${title} · ${tabName}`} {onback} {onclose} over={tab === 'days' && !past} />
+    <NavBar pad title={tab === 'days' ? title : `${title} · ${tabName}`} {onback} {onclose} over={tab === 'days' && !past} />
   </div>
 
   <div class="scroll" class:map={tab === 'map'} bind:this={scroller} onscroll={scrolled}>
@@ -114,7 +114,7 @@
       <div class="ctl">
         <ChipRow label={t('travel.tab.days')}>
           {#each trip.days as d (d.n)}
-            <Chip label={t('travel.day', { n: d.n })} count={monthDay(d.date)} dot={dayColor(trip.dayColors, d.n)} selected={shown === d.n} data-day-pick={d.n} onclick={() => pickDay(d.n)} />
+            <Chip label={t('travel.day', { n: d.n })} count={md(d.date)} dot={dayColor(trip.dayColors, d.n)} selected={shown === d.n} data-day-pick={d.n} onclick={() => pickDay(d.n)} />
           {/each}
           {#if hasPrep}<Chip label={t('travel.prep')} selected={shown === 'prep'} data-day-pick="prep" onclick={() => pickDay('prep')} />{/if}
         </ChipRow>
@@ -149,7 +149,7 @@
   .trip { flex: 1; min-height: 0; display: flex; flex-direction: column; position: relative; }
   /* the title bar: over the photo on 日程 (‹ ✕ the app's discs) till the photo scrolls away; in the flow on the other
      pages */
-  .hd { flex: none; padding: var(--ui-top) calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); position: relative; z-index: 6; background: var(--surface); }
+  .hd { flex: none; position: relative; z-index: 6; background: var(--surface); }
   .hd.over { position: absolute; top: 0; left: 0; right: 0; background: none; transition: background-color var(--dur-quick); }
   .hd.solid { background: var(--surface); box-shadow: 0 var(--lip-s) 0 var(--lip); }
   .scroll { flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; padding-bottom: 24px; }

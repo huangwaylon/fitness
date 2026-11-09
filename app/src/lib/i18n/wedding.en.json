@@ -23,8 +23,6 @@
   "wed.sec.overdue": "Overdue",
   "wed.sec.thisMonth": "This month",
   "wed.sec.nodate": "No date",
-  "wed.month": "{mon} {y}",
-  "wed.monthShort": "{short}",
   "wed.theMonth": "The big month",
   "wed.count": "{n}",
   "wed.tallyLabel": "{done} of {total} done",

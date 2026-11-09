@@ -353,7 +353,7 @@ prints what retains the ones new since the first snapshot.
   alive (a heap path through "DevTools console"); wait on booleans.
 - A steady +0.3 MB a trip that's all `[code]` in the diff is V8 compiling; it levels off (the museum in and out:
   from the 12th trip). `blink::NetworkResourcesData` is DevTools' own (the probe's), not the app's.
-- **MapLibre:** a map goes by travel/map/remove.ts, not `map.remove()` alone: that leaves the style's font faces in
+- **MapLibre:** a map goes by travel/map/glmap.ts removeMap, not `map.remove()` alone: that leaves the style's font faces in
   `document.fonts` (each holding its woff2; ~19 a guide's map) and the last map's abort Error holding the map.
 - **Models kept:** the page-wide caches keep each model without its loader's parser (release.ts `lean`: the parser
   holds the GLB's whole file again). Over days they still grow, one entry a new model (a visitor's, a day's thing), and

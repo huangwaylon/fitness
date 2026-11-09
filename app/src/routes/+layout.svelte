@@ -75,11 +75,10 @@
   // worker controls the page (newWorker): it serves the reload its own shell, from its cache (before, the reload was
   // the old build's cached shell again). Its install failed or can't be had now: asked again as the app comes back.
   let workerReady = $state(false);
-  let askWorker = $state(0);
-  $effect(() => {
-    void askWorker;
+  function askWorker() {
     if (updated.current && !workerReady) void newWorker().then((ok) => (workerReady = ok));
-  });
+  }
+  $effect(askWorker);
   $effect(() => {
     if (workerReady && !onPair && !showHarvest && !ui.sheets.length) safeReload(Date.now(), 'update');
   });
@@ -106,7 +105,7 @@
     week.init();
     if (!routeOf(location.pathname).startsWith('/pair')) week.refresh();
     const onVisible = () => {
-      if (document.visibilityState === 'visible') askWorker++;
+      if (document.visibilityState === 'visible') askWorker();
       if (document.visibilityState === 'visible' && !routeOf(location.pathname).startsWith('/pair')) week.refresh({ background: true });
     };
     document.addEventListener('visibilitychange', onVisible);

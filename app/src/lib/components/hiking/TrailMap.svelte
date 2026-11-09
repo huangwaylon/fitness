@@ -7,7 +7,7 @@
   import { onMount } from 'svelte';
   import { lazy } from '#lib/ui-state/reload.ts';
   import { drawOff } from '#lib/ui-state/testMode.ts';
-  import { hooksOn } from '#lib/ui-state/preview.ts';
+  import { online } from '#lib/ui-state/online.svelte.ts';
   import type { Prepared } from '#lib/hiking/track.ts';
   import type { Region } from '#lib/hiking/types.ts';
   import { S } from '#lib/hiking/strings.ts';
@@ -16,7 +16,7 @@
   import { C } from './map/style.ts';
   import type { Fix } from './map/engine.ts';
   import { EngineFeed } from './map/feed.svelte.ts';
-  import { engineReady } from '../travel/map/cached.ts';
+  import { mapLoader } from '../travel/map/cached.ts';
 
   interface Props {
     region: Region;
@@ -30,12 +30,10 @@
     saved?: boolean;
   }
   let { region, center, prep, scrub, fix, bottom, saved = false }: Props = $props();
-  let online = $state(typeof navigator === 'undefined' || navigator.onLine);
 
   const loadEngine = lazy(() => import('./map/engine.ts'));
   let el: HTMLDivElement | undefined = $state();
   let mode = $state<'stub' | 'loading' | 'ready' | 'offline' | 'failed' | 'lost'>(drawOff() ? 'stub' : 'loading');
-  let gone = false;
   const feed = new EngineFeed({
     get prep() { return prep; },
     get scrub() { return scrub; },
@@ -47,40 +45,18 @@
   /** The next fix brings the map to it (the locate button). */
   export const flyToFix = () => (fix ? feed.engine?.setFix(fix, true) : (feed.flyNext = true));
 
-  function draw() {
-    mode = 'loading';
-    engineReady().then((ok) => (ok ? loadEngine() : Promise.reject(new Error('offline')))).then(
-      ({ createEngine }) => {
-        if (gone || !el) return;
-        try {
-          // (the props follow it in: feed.svelte.ts)
-          feed.engine = createEngine(el, { region, center, bottom, savedOnly: saved && !navigator.onLine }, { mode: (m) => (mode = m) });
-        } catch (e) {
-          console.error(e);
-          mode = 'failed';
-        }
-      },
-      () => !gone && (mode = 'failed')
-    );
-  }
+  const map = mapLoader(loadEngine, ({ createEngine }) => {
+    // (the props follow it in: feed.svelte.ts)
+    if (el) feed.engine = createEngine(el, { region, center, bottom, savedOnly: saved && !navigator.onLine }, { mode: (m) => (mode = m) });
+  }, { set: (m) => (mode = m), failed: () => mode === 'failed' });
+  const draw = map.draw;
 
   onMount(() => {
-    const on = () => (online = navigator.onLine);
-    addEventListener('online', on);
-    addEventListener('offline', on);
-    const back = () => mode === 'failed' && draw();
-    if (mode !== 'stub') (draw(), addEventListener('online', back));
-    const hook = { state: () => ({ mode, ...feed.engine?.state() }) };
-    const w = window as unknown as { __trailMap?: unknown };
-    if (hooksOn(new URLSearchParams(location.search))) w.__trailMap = hook;
+    const stop = map.start(mode === 'stub', '__trailMap', { state: () => ({ mode, ...feed.engine?.state() }) });
     return () => {
-      gone = true;
-      removeEventListener('online', back);
-      removeEventListener('online', on);
-      removeEventListener('offline', on);
+      stop();
       feed.engine?.destroy();
       feed.engine = null;
-      if (w.__trailMap === hook) delete w.__trailMap;
     };
   });
 
@@ -112,7 +88,7 @@
       <p>{pick(S.mapFailed, i18n.locale)}</p>
       <button type="button" class="btn small paper" data-sfx="tick" onclick={draw}>{pick(S.retry, i18n.locale)}</button>
     </div>
-  {:else if saved && !online && mode !== 'stub'}
+  {:else if saved && !online.current && mode !== 'stub'}
     <p class="note" role="status" data-map-note="saved">{t('offline.savedOnly')}</p>
   {:else if mode === 'offline'}
     <p class="note" role="status" data-map-note>{pick(S.mapOffline, i18n.locale)}</p>

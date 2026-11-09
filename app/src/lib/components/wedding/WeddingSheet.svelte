@@ -26,7 +26,6 @@
   import type { Who } from '#lib/types.ts';
   import { DEVICE, localKV } from '#lib/sync/storage.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
-  import { cue } from '#lib/sound/cues.ts';
   import { t } from '#lib/i18n/index.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
@@ -55,15 +54,9 @@
     ...(canEdit ? [{ id: 'settings' as const, label: t('wed.settings'), icon: 'gear' as const }] : [])
   ]);
 
-  // its open and close tunes (it mounts on the first tap, already open: that is an open too)
-  let wasOpen = false;
+  // (kept mounted between openings, Sheet's `keep`: the plan's top again, after the dialog shows)
   $effect(() => {
-    const o = open;
-    if (o === wasOpen) return;
-    wasOpen = o;
-    cue(o ? 'panel-open' : 'panel-close');
-    // (kept mounted between openings, Sheet's `keep`: the plan's top again, after the dialog shows)
-    if (o) queueMicrotask(() => body?.scrollTo({ top: 0 }));
+    if (open) queueMicrotask(() => body?.scrollTo({ top: 0 }));
   });
 
   /** Closed: the next opening is on its tab (設定: the plan), すべて, the plan's top (a note being written stays: back in its editor). */
@@ -113,7 +106,7 @@
 </script>
 
 
-<Sheet bind:open label={t('wed.title')} variant="full" onclose={closed} timed="wedding" keep>
+<Sheet bind:open tunes label={t('wed.title')} variant="full" onclose={closed} timed="wedding" keep>
   <div class="wd">
     <NavBar {title} onclose={() => (open = false)} />
     <div class="wd-body" class:writing class:plan={tab === 'plan'} bind:this={body} data-wedding data-tab={tab} data-guest={!canEdit || undefined}>

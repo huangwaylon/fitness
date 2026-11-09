@@ -202,7 +202,7 @@ test('period: 1週 by day, 3か月 by week, 1年 by month; ‹ › page through 
   await expect(sheet(page).locator('.health .nav .rl small')).toHaveText('1週ごとの1日平均');
   await expect(bars('A')).toHaveCount(9); // 13 weeks, the demo's data in the last 9
   await pickPeriod(page, 'year');
-  await expect(range(page)).toHaveText('2025/11〜2026/10');
+  await expect(range(page)).toHaveText('2025年11月〜2026年10月');
   await pickPeriod(page, 'week');
   const on = sheet(page).locator('[data-nav=on]');
   await expect(on).toHaveAttribute('aria-disabled', 'true'); // nothing after today

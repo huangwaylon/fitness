@@ -3,8 +3,8 @@
 import type { LocalDate } from '#lib/types.ts';
 import type { GoalId } from '#lib/contract/goals.ts';
 import type { Range } from '#lib/model/health.ts';
-import { formatNum, i18n, t } from '#lib/i18n/index.ts';
-import { formatDate, md } from '#lib/i18n/format.ts';
+import { formatNum, t } from '#lib/i18n/index.ts';
+import { formatDate, md, monthLabel } from '#lib/i18n/format.ts';
 import { valueText } from './goals.ts';
 
 /** An axis number: `600`, `8,000`, `12k`, `2.5` (a step under 1: ごはん's salt). */
@@ -25,12 +25,6 @@ export function niceTicks(max: number): number[] {
   return out;
 }
 
-/** `2026/3` / `Mar 2026`. */
-function monthLabel(d: LocalDate, withYear = true): string {
-  if (i18n.locale === 'ja') return withYear ? `${d.slice(0, 4)}/${Number(d.slice(5, 7))}` : `${Number(d.slice(5, 7))}月`;
-  return new Intl.DateTimeFormat('en-US', { month: 'short', ...(withYear ? { year: 'numeric' } : {}), timeZone: 'UTC' }).format(new Date(`${d}T00:00:00Z`));
-}
-
 /** The visible range: `10/2〜10/31`, with the year when it isn't this year's (`2025/12/30〜1/5`); months for 1年. */
 export function rangeLabel(r: Range, today: LocalDate): string {
   if (r.unit === 'month') return t('kiroku.range', { a: monthLabel(r.from), b: monthLabel(r.to) });
@@ -47,7 +41,7 @@ export function xLabels(r: Range, plotW: number, px = 46): { i: number; text: st
   const out: { i: number; text: string }[] = [];
   for (let i = n - 1; i >= 0; i -= step) {
     const d = r.buckets[i].from;
-    const text = r.unit !== 'month' ? md(d) : d.slice(5, 7) === '01' || i < step ? monthLabel(d) : monthLabel(d, false);
+    const text = r.unit !== 'month' ? md(d) : d.slice(5, 7) === '01' || i < step ? monthLabel(d) : monthLabel(d, { year: false });
     out.unshift({ i, text });
   }
   return out;

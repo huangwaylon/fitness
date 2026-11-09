@@ -11,7 +11,7 @@
   import { t } from '#lib/i18n/index.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { bmiCategory, profileOf } from '#lib/model/profile.ts';
-  import { monthText } from '../kiroku/fmt.ts';
+  import { monthLabel } from '#lib/i18n/format.ts';
   import ChartCard from './ChartCard.svelte';
   import DotChart from './DotChart.svelte';
   import { goalLabel, goalName, valueText } from './goals.ts';
@@ -65,7 +65,7 @@
   {#if s.projection && range.to === hs.to}
     <p class="proj" data-proj={s.projection.kind}>
       {#if s.projection.kind === 'reached'}{t('weight.reached')}
-      {:else if s.projection.kind === 'date'}{t('weight.projected', { date: monthText(s.projection.date) })}
+      {:else if s.projection.kind === 'date'}{t('weight.projected', { date: monthLabel(s.projection.date) })}
       {:else}{t('weight.noDate')}{/if}
     </p>
   {/if}

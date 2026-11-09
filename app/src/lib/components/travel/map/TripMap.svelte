@@ -8,12 +8,12 @@
   // `window.__travelMap` (hooks on) is the specs' view.
   import { onMount } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
-  import { hooksOn } from '#lib/ui-state/preview.ts';
+  import { online } from '#lib/ui-state/online.svelte.ts';
   import { lazy } from '#lib/ui-state/reload.ts';
   import { drawOff } from '#lib/ui-state/testMode.ts';
   import { pick } from '../text.ts';
   import { LocWatch } from './geo.ts';
-  import { engineReady } from './cached.ts';
+  import { mapLoader } from './cached.ts';
   import { candidatesOf, farFrom, layersOn, legsData, pinLabel, pinsOf } from './overlay.ts';
   import { dayColor, type MapState, type TripMapProps } from './types.ts';
   import type { Engine } from './engine.ts';
@@ -27,7 +27,6 @@
   let mode = $state<MapState['mode']>(drawOff() ? 'stub' : 'loading');
   let loc = $state<MapState['loc']>('off');
   let engine: Engine | null = null;
-  let gone = false;
 
   const input = () => ({ places, legs, dayColors, day, selected, layers, locale });
   const pins = $derived(pinsOf(places, day));
@@ -66,26 +65,12 @@
   /** Back to the day's route (its chip tapped again). */
   export const fit = () => engine?.fit();
 
-  /** Offline, the chunk is asked for only if the service worker holds it (cached.ts engineReady): else 'failed' till
-   *  the phone is back online (then drawn by itself) or the retry is tapped. */
-  function draw() {
-    mode = 'loading';
-    engineReady().then((ok) => (ok ? loadEngine() : Promise.reject(new Error('offline')))).then(
-      ({ createEngine }) => {
-        if (gone) return;
-        try {
-          engine = createEngine(mapEl!, input(), { select: (id) => onselect?.(id), mode: (m) => (mode = m) });
-        } catch (e) {
-          console.error(e); // no WebGL (or a bug: the drawn smoke fails on it)
-          mode = 'failed';
-          return;
-        }
-        engine.update(input());
-        if (watch.fix) engine.setFix(watch.fix, false);
-      },
-      () => !gone && (mode = 'failed')
-    );
-  }
+  const map = mapLoader(loadEngine, ({ createEngine }) => {
+    engine = createEngine(mapEl!, input(), { select: (id) => onselect?.(id), mode: (m) => (mode = m) });
+    engine.update(input());
+    if (watch.fix) engine.setFix(watch.fix, false);
+  }, { set: (m) => (mode = m), failed: () => mode === 'failed' });
+  const draw = map.draw;
 
   const snapshot = (): MapState => ({
     mode, loc, candidates: cands.map((p) => p.id), legs: legsData(legs, dayColors, day).features.length, layers: layersOn(layers), center: engine?.center() ?? null,
@@ -108,34 +93,21 @@
     const io = new IntersectionObserver(([e]) => ((inView = e.isIntersecting), shown()));
     io.observe(host);
     document.addEventListener('visibilitychange', shown);
-    const online = () => mode === 'failed' && draw();
-    if (mode !== 'stub') (draw(), addEventListener('online', online));
-    const hook = { state: snapshot };
-    if (hooksOn(new URLSearchParams(location.search))) (window as unknown as { __travelMap?: unknown }).__travelMap = hook;
+    const stop = map.start(mode === 'stub', '__travelMap', { state: snapshot });
     return () => {
-      gone = true;
+      stop();
       clearTimeout(sayTimer);
       watch.stop();
       io.disconnect();
       document.removeEventListener('visibilitychange', shown);
-      removeEventListener('online', online);
       host.removeEventListener('gesturestart', noPageZoom);
       engine?.destroy();
       engine = null;
-      const w = window as unknown as { __travelMap?: unknown };
-      if (w.__travelMap === hook) delete w.__travelMap;
     };
   });
 
   /** Offline with the trip's area saved (lib/offline): 「保存した範囲のみ」 over the map, whatever it drew. */
-  let online = $state(typeof navigator === 'undefined' || navigator.onLine);
-  onMount(() => {
-    const on = () => (online = navigator.onLine);
-    addEventListener('online', on);
-    addEventListener('offline', on);
-    return () => (removeEventListener('online', on), removeEventListener('offline', on));
-  });
-  const note = $derived(mode === 'failed' ? null : saved && !online ? 'saved' : mode === 'offline' ? 'offline' : say);
+  const note = $derived(mode === 'failed' ? null : saved && !online.current ? 'saved' : mode === 'offline' ? 'offline' : say);
 </script>
 
 <div class="tm" bind:this={host} data-travel-map data-mode={mode} data-day={day} data-selected={selected ?? ''}>

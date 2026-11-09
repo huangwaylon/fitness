@@ -215,14 +215,6 @@
       };
   });
 
-  // Its open and close tunes (it mounts on the first tap, already open: that is an open too).
-  let wasOpen = false;
-  $effect(() => {
-    const o = open;
-    if (o === wasOpen) return;
-    wasOpen = o;
-    cue(o ? 'panel-open' : 'panel-close');
-  });
 
   // An invite that lapsed while the hub waited on it (idle, no game of mine): my own lobby, so the hub's pages work.
   let invited = false;
@@ -353,7 +345,7 @@
   {/snippet}</Lazy>{/key}
 {/snippet}
 
-<Sheet bind:open label={t('kiki.title')} variant="pop" onclose={closed} ondismiss={dismiss} timed="kikimimi">
+<Sheet bind:open tunes label={t('kiki.title')} variant="pop" onclose={closed} ondismiss={dismiss} timed="kikimimi">
   <div class="titlebar"><NavBar {title} onback={canBack ? back : null} onclose={requestClose} sfx="self" lead={atHub && !welcome ? gear : null} /></div>
   <div class="kk-body" data-kikimimi data-phase={v?.phase} data-host={v?.amHost || undefined} data-kiki-at={story ? 'story-frame' : atHub ? (welcome ? 'welcome' : 'hub') : hosting && page ? page.k : guest ? 'lobby' : undefined} data-kiki-night={story ? '' : undefined}
     data-kiki-ja={ja} data-kiki-right={right || undefined}>

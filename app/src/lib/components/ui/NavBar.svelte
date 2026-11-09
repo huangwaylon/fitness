@@ -7,7 +7,7 @@
   // control in the title's place on a top level (健康 | ごはん's page switch), the title kept as the bar's hidden heading.
   // One size on every sheet: 48px, the title 18 (--fs-talk, --font-ui 700), the NavButtons' 32px discs. `over`: laid
   // over a photo (a trip's hero, a trail's map): no title or band shown (it stays the bar's name), ‹ ✕ the same
-  // discs as everywhere.
+  // discs as everywhere. `pad`: at a full-screen sheet's top edge (the info sheets): the safe area's top and sides inside it.
   //   <NavBar title="記録" onback={…} onclose={…} />   <NavBar title="りょこう" onclose={…} trailing={add} />
   import type { Snippet } from 'svelte';
   import NavButton from './NavButton.svelte';
@@ -27,12 +27,14 @@
     over?: boolean;
     /** In the title's place (the title still its heading, unseen). */
     middle?: Snippet | null;
+    /** At the screen's top edge: --ui-top above it, the sheet's side padding (and the safe area) beside it. */
+    pad?: boolean;
   }
-  let { title = '', onback = null, onclose = null, sfx = 'back', lead = null, trailing = null, over = false, middle = null }: Props = $props();
+  let { title = '', onback = null, onclose = null, sfx = 'back', lead = null, trailing = null, over = false, middle = null, pad = false }: Props = $props();
   const led = $derived((!onback && !!lead) || !!trailing || !!middle);
 </script>
 
-<div class="navbar" class:led class:over>
+<div class="navbar" class:led class:over class:pad>
   <span class="side">{#if onback}<NavButton kind="back" onclick={onback} {sfx} />{:else if lead}{@render lead()}{/if}</span>
   {#if middle}<div class="mid"><h2 class="sr-only">{title}</h2>{@render middle()}</div>{:else if title}<h2 class="ttl" class:sr-only={over}>{title}</h2>{:else}<span></span>{/if}
   <span class="side end">{#if trailing}{@render trailing()}{/if}{#if onclose}<NavButton kind="close" onclick={onclose} {sfx} />{/if}</span>
@@ -42,6 +44,7 @@
   .navbar { display: grid; grid-template-columns: var(--hit) minmax(0, 1fr) var(--hit); align-items: center; gap: 4px; min-height: 48px;
     /* the disc (6px in its hit) on the container's content edge */
     margin-inline: -6px; }
+  .navbar.pad { box-sizing: content-box; margin-inline: 0; padding: var(--ui-top) calc(6px + var(--safe-right)) 0 calc(6px + var(--safe-left)); }
   .side { display: flex; width: var(--hit); }
   .end { justify-content: flex-end; }
   /* a long level title (あたらしい マイ食品 at 375) wraps at its space, balanced, rather than running into ✕ */

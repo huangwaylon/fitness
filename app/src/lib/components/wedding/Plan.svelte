@@ -10,7 +10,7 @@
   import { counts, FILTERS, groupPlan, visibleTasks, type Filter, type Group, type Task } from './view.ts';
   import type { Overall } from '#lib/wedding/progress.ts';
   import type { Who } from '#lib/types.ts';
-  import { monthTitle } from './format.ts';
+  import { monthLabel } from '#lib/i18n/format.ts';
   import { t } from '#lib/i18n/index.ts';
 
   interface Props {
@@ -50,7 +50,7 @@
       else if (g.kind === 'nodate') out.set(g.key, t('wed.sec.nodate'));
       else {
         const y = g.month.slice(0, 4);
-        const m = monthTitle(g.month, y !== year);
+        const m = monthLabel(g.month, { year: y !== year, long: true });
         year = y;
         out.set(g.key, g.kind === 'thisMonth' ? `${m} · ${t('wed.sec.thisMonth')}` : g.wedding ? `${m} · ${t('wed.theMonth')}` : m);
       }

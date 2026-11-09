@@ -78,7 +78,7 @@ test('the plan: the countdown, the ring, the chips\' counts, 期限切れ and �
   expect(groups).toEqual(['overdue', 'thisMonth', '2026-12', '2027-01', '2027-03', '2027-10']);
   await expect(sheet(page).locator('[data-wed-group="overdue"] [data-wed-task]')).toHaveCount(1);
   await expect(sheet(page).locator('[data-wed-group="thisMonth"] h3')).toContainText('11月 · 今月');
-  await expect(sheet(page).locator('[data-wed-group="2027-01"] h3')).toContainText('2027年 1月');
+  await expect(sheet(page).locator('[data-wed-group="2027-01"] h3')).toContainText('2027年1月');
   await expect(sheet(page).locator('[data-wed-group="2027-03"] h3')).toHaveText(/^3月/);
   await expect(sheet(page).locator('[data-wed-group="2027-10"] h3')).toContainText('式の月');
   await expect(sheet(page).locator('[data-wed-group="2027-10"] [data-wed-group-tally]')).toHaveAttribute('data-wed-group-tally', '0/1');

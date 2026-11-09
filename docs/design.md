@@ -52,7 +52,7 @@ zoom, a tap on empty ground walks my villager there.
   then each holds its place faintly (a dashed ring, a dashed ghost chip, gone once the day's がんばり cap is paid). Under
   the goals one ごはん row, 朝 / 昼 / 夜, each ✓ once that person's meal log has anything in that meal today (a いつもの
   too; おやつ never counts: `island/mealChecks.ts`), and one button: 「きろく」 on my own tree, 「みる」 on anyone else's,
-  opening the health popup on ごはん, today, on that person's day (`island/kenkouAsk.svelte.ts`). Then the ledger, all
+  opening the health popup on ごはん, today, on that person's day (`health/open.svelte.ts` askFood: the sheet a `lazySheet`, the ask its `show` arg). Then the ledger, all
   three lines, a zero faint: 「もくひょう +3」, 「がんばり +1」 (「がんばり（上限 2） +2」 at three or four) and the person's
   total 「うめの きょう +6 ベル」; then ふたりでぜんぶ (「あと 2つ」 or 「ふたりで ぜんぶ！ +2 ふたりに」), outside either total.
   The last line says when that person's data last arrived (「15:24 に とどいた」), with a dot once over 6 hours old.

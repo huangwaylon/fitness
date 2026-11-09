@@ -86,14 +86,9 @@
     stack = [];
   }
 
-  // Its open and close tunes (it mounts on the first tap, already open: that is an open too).
-  let wasOpen = false;
+  // Back on 図鑑 when it opens again from there.
   $effect(() => {
-    const o = open;
-    if (o === wasOpen) return;
-    wasOpen = o;
-    cue(o ? 'panel-open' : 'panel-close');
-    if (o && untrack(() => resume)) {
+    if (open && untrack(() => resume)) {
       resume = false;
       void tick().then(() => {
         body?.scrollTo({ top: zukanTop });
@@ -109,7 +104,7 @@
   }
 </script>
 
-<Sheet bind:open label={t('title.settings')} variant="pop" onclose={closed} timed="settings">
+<Sheet bind:open tunes label={t('title.settings')} variant="pop" onclose={closed} timed="settings">
   <div class="titlebar"><NavBar {title} onback={push ? back : null} onclose={() => (open = false)} sfx="self" /></div>
   <div class="panel-body" class:fill={push !== null} data-settings bind:this={body}>
     {#if push === 'look' && view}

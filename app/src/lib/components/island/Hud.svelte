@@ -6,7 +6,7 @@
   // 結婚式, トレイル, 英語, 設定) each open their own sheet, at once (each sheet's chunk fetched ahead: sheetChunks.ts).
   // Only when sync is not ok, the sync chip centred under the row; under it, while 設定's 季節 is on, its chip. The
   // panel, the popups and every sheet are their own chunks, loaded on first open.
-  import { onMount, untrack } from 'svelte';
+  import { onMount } from 'svelte';
   import { replaceState } from '$app/navigation';
   import { page } from '$app/state';
   import Lazy from '../ui/Lazy.svelte';
@@ -17,8 +17,8 @@
   import { trips } from '../travel/open.svelte.ts';
   import { weddingSheet } from '../wedding/open.svelte.ts';
   import { hiking } from '../hiking/open.svelte.ts';
-  import { kenkouAsk } from './kenkouAsk.svelte.ts';
-  import { loadHealth, loadPanel, loadSettings, loadZukan, prefetchSheets } from './sheetChunks.ts';
+  import { kenkou } from '../health/open.svelte.ts';
+  import { loadPanel, loadSettings, loadZukan, prefetchSheets } from './sheetChunks.ts';
 
   interface Props {
     /** Today's ベル so far, both people (the ベル row's label and the flash; shown in full in ごほうび). */
@@ -27,18 +27,15 @@
     balance: number;
     /** Bindable: the panel is open (the island pauses under it). */
     panelOpen?: boolean;
-    /** Bindable: けんこう and ごはん's sheet is open (the island pauses under it too). */
-    healthOpen?: boolean;
     /** Bindable: ずかん, せってい open (the island pauses under them too). */
     zukanOpen?: boolean;
     settingsOpen?: boolean;
     /** The page's timer (cleared with the page). */
     later: (fn: () => void, ms: number) => void;
   }
-  let { today, balance, panelOpen = $bindable(false), healthOpen = $bindable(false), zukanOpen = $bindable(false), settingsOpen = $bindable(false), later }: Props = $props();
+  let { today, balance, panelOpen = $bindable(false), zukanOpen = $bindable(false), settingsOpen = $bindable(false), later }: Props = $props();
   /** Mounted from the first open on (each keeps its state between opens). */
   let opened = $state(false);
-  let healthMounted = $state(false);
   let zukanMounted = $state(false);
   let settingsMounted = $state(false);
   /** ずかん (opened from 設定's row, its only door) going back by ‹: 設定 reopens where it was. */
@@ -53,20 +50,12 @@
     replaceState(location.pathname + q + location.hash, page.state);
     opened = panelOpen = true;
   });
-  // a tree popup's ごはん button (kenkouAsk): the sheet opens as from the dumbbell (HealthSheet picks ごはん and whose day)
-  let seenAsk = kenkouAsk.n;
-  $effect(() => {
-    const n = kenkouAsk.n;
-    if (n === seenAsk) return;
-    seenAsk = n;
-    untrack(() => (healthMounted = healthOpen = true));
-  });
 </script>
 
 <!-- (.ribbon-wrap: the HUD's box, by its old name: the 3D island measures it for the sky under it) -->
 <div class="ribbon-wrap">
   <div class="hud-row">
-    <HudHealth onopen={() => { healthMounted = true; healthOpen = true; }} />
+    <HudHealth onopen={() => kenkou.show()} />
     <HudMenu bells={balance} {today} {later} expanded={panelOpen} onbells={() => (opened = panelOpen = true)}
       onsettings={() => { settingsMounted = true; settingsOpen = true; }} />
   </div>
@@ -89,9 +78,8 @@
 {#if weddingSheet.Sheet}<weddingSheet.Sheet bind:open={weddingSheet.open} />{/if}
 <!-- トレイル's, opened by the menu's pill or a hike card (over りょこう's) -->
 {#if hiking.Sheet}<hiking.Sheet bind:open={hiking.open} />{/if}
-{#if healthMounted}
-  <Lazy floating load={() => loadHealth(true)}>{#snippet children(HealthSheet)}<HealthSheet bind:open={healthOpen} />{/snippet}</Lazy>
-{/if}
+<!-- けんこう and ごはん's, opened by the dumbbell or a tree's ごはん -->
+{#if kenkou.Sheet}<kenkou.Sheet bind:open={kenkou.open} />{/if}
 
 <style>
   /* across the column (left/right 0 inside the centred .island), at --hud-top (tokens.css: 10px under the safe area,

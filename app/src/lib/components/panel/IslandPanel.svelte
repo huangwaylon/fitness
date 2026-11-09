@@ -59,17 +59,9 @@
     again = false;
   }
 
-  // The panel's open and close tunes. It mounts on the first tap of the ベル row (Hud), already open: that is an open too.
-  let wasOpen = false;
-  $effect(() => {
-    const o = open;
-    if (o === wasOpen) return;
-    wasOpen = o;
-    cue(o ? 'panel-open' : 'panel-close');
-  });
 </script>
 
-<Sheet bind:open label={t('wallet.title')} variant="top" onclose={closed} timed="panel">
+<Sheet bind:open tunes label={t('wallet.title')} variant="top" onclose={closed} timed="panel">
   <div class="titlebar"><NavBar title={date ? dayTitle(date) : t('wallet.title')} onback={date ? back : null} onclose={() => (open = false)} sfx="self" /></div>
 
   <div class="panel-body" bind:this={body}>
@@ -91,9 +83,8 @@
   .panel-body > :global(*) { flex: none; }
   /* each level slides in from the right (design.md "Navigation": one push motion, 240ms); the wallet again on ‹ (an
      animation restarts when its element comes back from display: none) */
-  .day, .again { animation: lvl 240ms cubic-bezier(.2, .8, .2, 1); }
+  .day, .again { animation: if-lvl 240ms cubic-bezier(.2, .8, .2, 1); }
   .lvl[hidden] { display: none; }
   .day { display: grid; gap: 12px; }
-  @keyframes lvl { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { .day, .again { animation: none; } }
 </style>

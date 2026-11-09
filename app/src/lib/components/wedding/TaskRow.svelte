@@ -12,7 +12,8 @@
   import { board } from './board.svelte.ts';
   import { formatDate, md } from '#lib/i18n/format.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { dueLine, monthShort } from './format.ts';
+  import { dueLine } from './format.ts';
+  import { monthLabel } from '#lib/i18n/format.ts';
   import type { Who } from '#lib/types.ts';
   import type { Task } from './view.ts';
 
@@ -49,7 +50,7 @@
     <button type="button" class="head" aria-expanded={open} aria-controls="{uid}-more" data-sfx={open ? 'back' : 'open'}
       aria-label="{task.title}、{dateLabel}{due ? `、${due.text}` : ''}{tally ? `、${t('wed.tallyLabel', tally)}` : ''}" onclick={ontoggle}>
       <span class="dc" aria-hidden="true">
-        {#if dated}<span class="mo">{monthShort(task.due)}</span><span class="dd">{Number(task.due.slice(8, 10))}</span>{:else}<span class="dd dash">–</span>{/if}
+        {#if dated}<span class="mo">{monthLabel(task.due, { year: false })}</span><span class="dd">{Number(task.due.slice(8, 10))}</span>{:else}<span class="dd dash">–</span>{/if}
       </span>
       <span class="body">
         <span class="tt" data-wed-title>{task.title}</span>

@@ -7,23 +7,13 @@
 import { lazySheet } from '#lib/ui-state/lazySheet.svelte.ts';
 import { hooksOn } from '#lib/ui-state/preview.ts';
 
-export const hiking = lazySheet(() => import('./HikingSheet.svelte'));
+/** Its show's arg: the opening's level, a trail's slug or null for the list. */
+export const hiking = lazySheet<string | null>(() => import('./HikingSheet.svelte'));
 
-/** The next opening's level: a trail's slug, or null for the list; `n` counts the asks (an ask while open moves it). */
-export const hikingAsk = $state<{ slug: string | null; n: number }>({ slug: null, n: 0 });
-
-export function openTrails(): void {
-  hikingAsk.slug = null;
-  hikingAsk.n++;
-  hiking.show();
-}
+export const openTrails = (): void => hiking.show(null);
 
 /** りょこう's hike days: `openTrail(hikeSlugOf(day.hike.gpx))` (travel/DayCard.svelte). */
-export function openTrail(slug: string): void {
-  hikingAsk.slug = slug;
-  hikingAsk.n++;
-  hiking.show();
-}
+export const openTrail = (slug: string): void => hiking.show(slug);
 
 // the specs' and the console's way in (the demo's hooks)
 if (typeof location !== 'undefined' && hooksOn(new URLSearchParams(location.search))) (window as unknown as { __hiking?: unknown }).__hiking = { openTrails, openTrail };

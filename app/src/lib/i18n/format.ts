@@ -1,14 +1,23 @@
 // Date and time formatting, one place for each shape. Dates are `YYYY-MM-DD` strings (calendar days, read
 // in UTC so they never shift); stamps (sync, buys) are shown in Tokyo time.
-import { i18n, t } from './index.ts';
+import { i18n, t, type Locale } from './index.ts';
 import { addDays, dateMs } from '#lib/time/dates.ts';
 
 /** ISO weekday of a `YYYY-MM-DD`: 1 = Monday … 7 = Sunday. */
 const isoWeekday = (d: string): number => new Date(dateMs(d)).getUTCDay() || 7;
 /** `水` / `Wed`. */
-export const weekdayOf = (d: string): string => t(`weekday.${isoWeekday(d)}`);
-/** `10/28`. */
+export const weekdayOf = (d: string, locale: Locale = i18n.locale): string => t(`weekday.${isoWeekday(d)}`, undefined, locale);
+/** `10/28` (both locales). */
 export const md = (d: string): string => `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}`;
+
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+/** A month of a `YYYY-MM(-DD)`: `2027年3月` / `Mar 2027`; `year: false` `3月` / `Mar`; `long` its English name in full with
+ *  the year (a heading: `March 2027`). */
+export function monthLabel(d: string, { year = true, long = false }: { year?: boolean; long?: boolean } = {}): string {
+  const y = d.slice(0, 4), m = Number(d.slice(5, 7));
+  if (i18n.locale === 'ja') return year ? `${y}年${m}月` : `${m}月`;
+  return year ? `${long ? MONTHS[m - 1] : MONTHS[m - 1].slice(0, 3)} ${y}` : MONTHS[m - 1].slice(0, 3);
+}
 /** A week from its Monday: `10/26–11/1`. */
 export const weekRange = (wk: string): string => t('kiroku.range', { a: md(wk), b: md(addDays(wk, 6)) });
 

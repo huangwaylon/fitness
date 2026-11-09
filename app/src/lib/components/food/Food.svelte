@@ -690,7 +690,6 @@
   .sel { display: grid; align-items: center; min-height: var(--kk-row); }
   .lv:has(> :global(.amt)) { align-content: stretch; }
   /* a level slides in from the right (design.md "Navigation": one push motion, 240ms; as けんこう's goal level) */
-  .lvl { animation: lvl 240ms cubic-bezier(.2, .8, .2, 1); }
-  @keyframes lvl { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
+  .lvl { animation: if-lvl 240ms cubic-bezier(.2, .8, .2, 1); }
   .rl { flex: 1; min-width: 0; text-align: center; font-size: var(--fs-talk); white-space: nowrap; }
 </style>

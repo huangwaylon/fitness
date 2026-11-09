@@ -184,6 +184,8 @@
 /* ---------- chrome keyframes (prefix if-; if-pop / if-hop live in the Builder A block) ---------- */
 /* letter reveal: each glyph */
 @keyframes if-letter { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
+/* a sheet's level pushed in from the right (the panel's day, 図鑑's kinds, ごはん's levels, りょこう's trip) */
+@keyframes if-lvl { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
 
 /* ======================================================================================
    Builder A: scene + fx + keyframes (design.md "Motion").

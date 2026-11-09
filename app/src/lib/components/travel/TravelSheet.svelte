@@ -78,14 +78,9 @@
     if (toasts.current) toasts.dismiss();
   }
 
-  // Its open and close tunes (it mounts on the first tap, already open: that is an open too), and where it opens.
-  let wasOpen = false;
+  // Where it opens.
   $effect(() => {
-    const o = open;
-    if (o === wasOpen) return;
-    wasOpen = o;
-    cue(o ? 'panel-open' : 'panel-close');
-    if (o) untrack(opening);
+    if (open) untrack(opening);
   });
 </script>
 
@@ -93,17 +88,17 @@
   <Segmented size="s" items={UNITS.map((u) => ({ id: u, label: u }))} value={units.current} label={t('travel.units')} attr="units" onpick={setUnits} />
 {/snippet}
 
-<Sheet bind:open label={t('travel.title')} variant="full" onclose={closed} timed="travel" {keep}>
+<Sheet bind:open tunes label={t('travel.title')} variant="full" onclose={closed} timed="travel" {keep}>
   <div class="tv" data-travel data-level={sel ? 'trip' : 'list'}>
     {#key `${sel}|${fresh}`}
       <div class="lvl">
         {#if !sel}
-          <div class="top"><NavBar title={t('travel.title')} onclose={close} {lead} /></div>
+          <div class="top"><NavBar pad title={t('travel.title')} onclose={close} {lead} /></div>
           <TripList trips={TRIP_META} {now} onopen={show} />
         {:else if trip}
           <TripView {trip} {now} onback={back} onclose={close} bind:tab={() => tabs[trip.id] ?? 'days', (v) => (tabs[trip.id] = v)} />
         {:else}
-          <div class="top"><NavBar title={pick(meta?.title, i18n.locale)} onback={back} onclose={close} /></div>
+          <div class="top"><NavBar pad title={pick(meta?.title, i18n.locale)} onback={back} onclose={close} /></div>
           <div class="scroll" data-trip-view={sel}>
             {#if failed === sel}
               <div class="center" data-travel-failed>
@@ -122,10 +117,9 @@
 
 <style>
   .tv { flex: 1; min-height: 0; display: flex; flex-direction: column; }
-  .lvl { flex: 1; min-height: 0; display: flex; flex-direction: column; animation: lvl 240ms cubic-bezier(.2, .8, .2, 1); }
+  .lvl { flex: 1; min-height: 0; display: flex; flex-direction: column; animation: if-lvl 240ms cubic-bezier(.2, .8, .2, 1); }
   /* each level slides in from the right (design.md "Navigation": one push motion, 240ms) */
-  @keyframes lvl { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
-  .top { flex: none; padding: var(--ui-top) calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); background-color: var(--surface); }
+  .top { flex: none; background-color: var(--surface); }
   .scroll { flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; }
   .center { flex: 1; min-height: 60%; display: grid; place-content: center; justify-items: center; gap: 12px; margin: 0; color: var(--text-soft); }
   .center p { margin: 0; }

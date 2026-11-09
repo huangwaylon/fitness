@@ -51,17 +51,9 @@
     kind = null;
   }
 
-  // Its open and close tunes (it mounts on the first tap, already open: that is an open too).
-  let wasOpen = false;
-  $effect(() => {
-    const o = open;
-    if (o === wasOpen) return;
-    wasOpen = o;
-    cue(o ? 'panel-open' : 'panel-close');
-  });
 </script>
 
-<Sheet bind:open label={t('title.zukan')} variant="pop" onclose={closed} timed="zukan">
+<Sheet bind:open tunes label={t('title.zukan')} variant="pop" onclose={closed} timed="zukan">
   <div class="titlebar"><NavBar title={kind ? t(`zukan.kind.${kind}`) : t('title.zukan')} onback={kind ? back : onback ? toSettings : null} onclose={() => (open = false)} sfx="self" /></div>
   <div class="zs-body" class:fill={kind !== null} data-zukan-sheet>
     {#if m && finds}
@@ -87,7 +79,6 @@
   /* a kind's page pins its head and scrolls its own grid (to the bottom edge): the body holds still */
   .zs-body.fill { overflow: hidden; padding-bottom: 0; }
   /* each level slides in from the right (design.md "Navigation": one push motion, 240ms) */
-  .lvl { display: grid; gap: 12px; animation: lvl 240ms cubic-bezier(.2, .8, .2, 1); }
+  .lvl { display: grid; gap: 12px; animation: if-lvl 240ms cubic-bezier(.2, .8, .2, 1); }
   .fill .lvl { flex: 1; min-height: 0; display: flex; flex-direction: column; }
-  @keyframes lvl { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
 </style>

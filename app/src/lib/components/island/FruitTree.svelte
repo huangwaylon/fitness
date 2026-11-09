@@ -11,7 +11,7 @@
   // is the one home of a person's per-fruit detail: a nameplate (whose tree), then per goal (🍎 steps first, POPUP_ORDER)
   // today's amount against the goal (met or not), ✓ once met and a 「がんばり」 chip once at 1.5× (every stretched row
   // alike, whatever the cap; no numbers on the rows), each held by a faint ghost until then (the chip's only while the
-  // cap can still pay); then the day's meals (朝 / 昼 / 夜, ✓ once logged: mealChecks.ts; its button → ごはん on that day: kenkouAsk); then one ledger of the day, its zeros faint: もくひょう (+1 a goal met), がんばり (always; +1 a
+  // cap can still pay); then the day's meals (朝 / 昼 / 夜, ✓ once logged: mealChecks.ts; its button → ごはん on that day: health/open.svelte.ts); then one ledger of the day, its zeros faint: もくひょう (+1 a goal met), がんばり (always; +1 a
   // goal at 1.5×, at most +2; 「（上限 2）」 when more were reached), this person's total (「うめの きょう +6 ベル」),
   // then ふたりでぜんぶ (both people, all four goals: +2, shared: shown in both popups, so ウェイ + うめ + ふたりでぜんぶ
   // is today's total, ごほうび's 「きょう +N ベル」) and when the data last arrived. It stays until this tree is tapped again, the other
@@ -49,7 +49,7 @@
   import { site } from './site.svelte.ts';
   import { recordGoods } from '#lib/store/actions.ts';
   import { MAIN_MEALS, mealsLogged } from './mealChecks.ts';
-  import { askFood } from './kenkouAsk.svelte.ts';
+  import { askFood } from '../health/open.svelte.ts';
   import { prefetchSheet } from './sheetChunks.ts';
   import { sheetTap } from '#lib/ui-state/sheetTiming.ts';
 
@@ -127,7 +127,7 @@
   const meals = $derived(open && week.model && week.view ? mealsLogged(week.model.state, person.person, week.view.today) : null);
   /** This phone's person's own tree: its ごはん button logs (きろく); anyone else's shows the day (みる: read-only). */
   const mine = $derived(week.view?.viewer === person.person);
-  /** The meals row's button: けんこう and ごはん's sheet on ごはん, today, on this tree's person's day (kenkouAsk.svelte.ts).
+  /** The meals row's button: けんこう and ごはん's sheet on ごはん, today, on this tree's person's day (health/open.svelte.ts).
    *  It acts in place: a button, so the tap never walks the player (SceneTaps), and the scene's tap-away leaves it be. */
   function toFood() {
     sheetTap();
@@ -146,14 +146,8 @@
 
   /** Today (the model's Tokyo day; the gallery has no view) and this phone's record of today's fallen and picked fruit. */
   const date = $derived(week.view?.today ?? islandDay());
-  // svelte-ignore state_referenced_locally
-  let rec = $state(fruitDay(date));
-  $effect(() => {
-    const d = date;
-    untrack(() => {
-      if (rec.date !== d) rec = fruitDay(d);
-    });
-  });
+  /** (read again for each new day; a pick or a drop replaces it) */
+  let rec = $derived(fruitDay(date));
   /** Fruit falling right now: its drop plays once. */
   let falling = $state<RingFruit[]>([]);
 

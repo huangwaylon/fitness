@@ -1,6 +1,6 @@
 // トレイル's map, the MapLibre side (docs/hiking.md "Map"): the lazy chunk TrailMap.svelte imports only when it draws
 // (never under drawOff()), on the trip map's CSP-safe path (its worker our own file:
-// travel/map/engine.ts). One map per trail view; destroy() lets go of it the way the trip map's does (travel/map/remove.ts).
+// travel/map/engine.ts). One map per trail view; destroy() lets go of it the way the trip map's does (travel/map/glmap.ts).
 import { AttributionControl, Map as GLMap, setWorkerUrl, type GeoJSONSource, type LngLatBoundsLike } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
@@ -8,10 +8,9 @@ import type { Region } from '#lib/hiking/types.ts';
 import type { Prepared } from '#lib/hiking/track.ts';
 import { buildStyle, SRC, TOPO } from './style.ts';
 import { SAVED_MAX_Z } from '#lib/offline/plan.ts';
-import { removeMap } from '../../travel/map/remove.ts';
+import { removeMap, watchMode, type EngineMode } from '../../travel/map/glmap.ts';
 
 export interface Fix { lon: number; lat: number }
-export type EngineMode = 'ready' | 'offline' | 'lost';
 export interface Engine {
   setTrack(p: Prepared | null): void;
   setScrub(p: Fix | null): void;
@@ -60,10 +59,9 @@ export function createEngine(el: HTMLElement, i: { region: Region; center: Fix; 
   map.keyboard.disableRotation();
   map.addControl(new AttributionControl({ compact: false }), 'bottom-right');
 
-  let loaded = false, lost = false;
-  let base: 'wait' | 'ok' | 'down' = 'wait';
+  let loaded = false;
   let track: Prepared | null = null, scrub: Fix | null = null, fix: Fix | null = null, bottom = i.bottom;
-  const report = () => loaded && on.mode(lost ? 'lost' : base === 'down' ? 'offline' : 'ready');
+  const loadedNow = watchMode(map, SRC.base, on.mode);
   const src = (id: string) => map.getSource<GeoJSONSource>(id);
 
   function fit(): void {
@@ -94,19 +92,8 @@ export function createEngine(el: HTMLElement, i: { region: Region; center: Fix; 
     drawTrack();
     drawScrub();
     drawFix(flyOnLoad);
-    report();
+    loadedNow();
   });
-  map.on('data', (e) => {
-    const d = e as { dataType?: string; sourceId?: string; tile?: unknown };
-    if (d.dataType === 'source' && d.sourceId === SRC.base && d.tile && base !== 'ok') ((base = 'ok'), report());
-  });
-  map.on('error', (e) => {
-    if ((e as { sourceId?: string }).sourceId === SRC.base) {
-      if (base !== 'down') ((base = 'down'), report());
-    } else console.error(e.error);
-  });
-  map.on('webglcontextlost', () => ((lost = true), report()));
-  map.on('webglcontextrestored', () => ((lost = false), report()));
 
   return {
     setTrack(p) {

@@ -59,4 +59,15 @@ describe('lazySheet', () => {
     expect(s.open).toBe(true);
     expect(show).not.toHaveBeenCalled();
   });
+
+  it('show(arg): the ask kept, a new one each time (an ask while open moves it); a bare show leaves it', async () => {
+    const s = lazySheet<string>(async () => ({ default: Sheet }));
+    phone(true);
+    s.show('lake-22');
+    const first = s.ask;
+    s.show('lake-22');
+    s.show();
+    await settle();
+    expect([first?.arg, s.ask?.arg, s.ask !== first, s.open]).toEqual(['lake-22', 'lake-22', true, true]);
+  });
 });

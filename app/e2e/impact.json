@@ -123,7 +123,6 @@
     ["src/lib/components/island/ambient*", ["ambience"]],
     ["src/lib/components/island/Jar*", ["hud-menu"]],
     ["src/lib/components/island/mealChecks*", ["food"]],
-    ["src/lib/components/island/kenkouAsk*", ["health"]],
     ["src/lib/components/island/partnerNews*", ["live-sync"]],
     ["src/lib/components/island/PartnerNews*", ["live-sync"]],
     ["src/lib/components/island/villagerSync*", ["shared-world", "positions"]],

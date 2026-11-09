@@ -234,7 +234,7 @@ test('the trip map in and out: no WebGL context or window listener left behind',
 // The info sheets (りょこう, けっこんしき, トレイル: docs/design.md "Unified kit"), drawn, in and out three times on the
 // island: NZ's pages (its map on the fixture tiles), Okinawa's 地図 (Motobu's labels drawn in Zen Maru; its campsites on),
 // a wedding task opened and メモ, three trails' maps (a blank topo tile). After each round no map's context, no listener,
-// no font face and no DOM node more than after the first (before remove.ts: each guide's map left its ~19 Zen Maru
+// no font face and no DOM node more than after the first (before glmap.ts removeMap: each guide's map left its ~19 Zen Maru
 // faces in document.fonts, each holding its woff2, 171 → 235 over three).
 test('the info sheets in and out (the trips, Okinawa’s map and campsites, the wedding board, three trails): nothing left behind', { tag: '@chromium' }, async ({ page }) => {
   test.setTimeout(180_000);

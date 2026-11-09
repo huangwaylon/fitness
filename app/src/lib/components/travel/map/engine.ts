@@ -4,7 +4,7 @@
 // (style.ts BASEMAP: the CSP's one third-party connect-src); labels in the app's font (fonts.ts). Neither this chunk
 // nor its worker nor its CSS is precached; the service worker keeps them, and the tiles drawn, once a map has drawn
 // (service-worker/caches.ts isMapLibre, tileKey). One map per TripMap;
-// destroy() lets go of it all (remove.ts).
+// destroy() lets go of it all (glmap.ts).
 import { addProtocol, AttributionControl, Map as GLMap, Marker, setWorkerUrl, type GeoJSONSource, type MapGeoJSONFeature } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 // (bundled as our own worker chunk, a .js: a raw .mjs is served as application/octet-stream by some hosts, which a
@@ -17,7 +17,7 @@ import { boundsOf, candidatesData, candidatesOf, keepoutData, legsData, locData,
 import { buildStyle, haloRadius, KEEP_IMAGES, labelLayers, SRC, TILE_ORIGIN } from './style.ts';
 import { loadViaPage, VIA, viaPage } from './tiles.ts';
 import { dayColor, type TripMapProps } from './types.ts';
-import { removeMap } from './remove.ts';
+import { removeMap, watchMode, type EngineMode } from './glmap.ts';
 
 export type EngineInput = Omit<TripMapProps, 'onselect'>;
 
@@ -32,10 +32,6 @@ export interface Engine {
   moving(): boolean;
   destroy(): void;
 }
-
-/** What the map shows: 'ready' (the basemap's tiles coming), 'offline' (none came: the route alone), 'lost' (no WebGL
- *  context). Only once the map has loaded. */
-export type EngineMode = 'ready' | 'offline' | 'lost';
 
 /** A 44 px hit round a candidate's dot: what a fingertip covers. */
 const HIT = 22;
@@ -74,10 +70,8 @@ export function createEngine(el: HTMLElement, input: EngineInput, on: { select(i
   let cur = input;
   let fix: Fix | null = null;
   const markers = new Map<string, { m: Marker; el: HTMLButtonElement; pin: Pin }>();
-  let loaded = false, lost = false;
-  /** The basemap: no tile yet, a tile in since the last failure, or failing (offline, the TileJSON or tiles refused). */
-  let base: 'wait' | 'ok' | 'down' = 'wait';
-  const report = () => loaded && on.mode(lost ? 'lost' : base === 'down' ? 'offline' : 'ready');
+  let loaded = false;
+  const loadedNow = watchMode(map, SRC.base, on.mode);
 
   function pins(i: EngineInput): void {
     const want = pinsOf(i.places, i.day);
@@ -160,21 +154,9 @@ export function createEngine(el: HTMLElement, input: EngineInput, on: { select(i
     if (cur.selected) bringTo(cur.selected);
     // a fix that came before the style was in
     if (fix) showFix(flyOnLoad);
-    report();
+    loadedNow();
   });
   map.on('zoom', spread);
-  map.on('data', (e) => {
-    const d = e as { dataType?: string; sourceId?: string; tile?: unknown };
-    if (d.dataType === 'source' && d.sourceId === SRC.base && d.tile && base !== 'ok') ((base = 'ok'), report());
-  });
-  // the basemap failing is shown (TripMap's notice), not logged; anything else is MapLibre's console error as before
-  map.on('error', (e) => {
-    if ((e as { sourceId?: string }).sourceId === SRC.base) {
-      if (base !== 'down') ((base = 'down'), report());
-    } else console.error(e.error);
-  });
-  map.on('webglcontextlost', () => ((lost = true), report()));
-  map.on('webglcontextrestored', () => ((lost = false), report()));
   // a candidate's dot: the nearest within a fingertip
   map.on('click', (e) => {
     if (!map.getLayer('cands')) return;
@@ -216,7 +198,7 @@ export function createEngine(el: HTMLElement, input: EngineInput, on: { select(i
     destroy() {
       for (const { m } of markers.values()) m.remove();
       markers.clear();
-      removeMap(map); // its context, its font faces (remove.ts)
+      removeMap(map); // its context, its font faces (glmap.ts)
     }
   };
 }

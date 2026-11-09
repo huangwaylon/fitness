@@ -5,41 +5,25 @@
   // is paused under it (+page's sheetOpen); its open and close tunes are the panel's. The list is kept mounted between
   // openings (Sheet's `keep`: a reopening at once, its chips and scroll as left); a trail's view never (its map and
   // its location watch go with the close).
-  import { untrack } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import TrailList from './TrailList.svelte';
   import TrailView from './TrailView.svelte';
-  import { hikingAsk } from './open.svelte.ts';
+  import { hiking } from './open.svelte.ts';
   import { trailOf } from '#lib/hiking/trails.ts';
   import type { Trail } from '#lib/hiking/types.ts';
   import { i18n } from '#lib/i18n/index.ts';
   import { S } from '#lib/hiking/strings.ts';
   import { pick } from '../travel/text.ts';
-  import { cue } from '#lib/sound/cues.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
-  let sel = $state<Trail | null>(null);
+  /** Each ask (the menu's pill, a hike card) picks the level it opens on; ‹ and a row move it. */
+  let sel = $derived<Trail | null>(trailOf(hiking.ask?.arg ?? null));
   let view: { escape(): boolean } | undefined = $state();
-
-  // each ask (the menu's pill, a hike card) picks the level it opens on
-  $effect(() => {
-    void hikingAsk.n;
-    untrack(() => (sel = trailOf(hikingAsk.slug)));
-  });
-
-  // its open and close tunes (it mounts on the first tap, already open: that is an open too)
-  let wasOpen = false;
-  $effect(() => {
-    const o = open;
-    if (o === wasOpen) return;
-    wasOpen = o;
-    cue(o ? 'panel-open' : 'panel-close');
-  });
 
   const close = () => (open = false);
 </script>
 
-<Sheet bind:open label={pick(S.title, i18n.locale)} variant="full" ondismiss={() => !view?.escape()} timed="hiking" keep={!sel}>
+<Sheet bind:open tunes label={pick(S.title, i18n.locale)} variant="full" ondismiss={() => !view?.escape()} timed="hiking" keep={!sel}>
   <div class="hk" lang={i18n.locale} data-hiking data-level={sel ? 'trail' : 'list'}>
     <TrailList hidden={!!sel} onopen={(t) => (sel = t)} onclose={close} />
     {#if sel}

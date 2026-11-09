@@ -12,10 +12,10 @@
   import Icon from '../ui/Icon.svelte';
   import { areas, type Refusal } from '#lib/offline/areas.svelte.ts';
   import { mb, type Plan } from '#lib/offline/plan.ts';
+  import { online } from '#lib/ui-state/online.svelte.ts';
 
   let { plan, name }: { plan: Plan | null; name: L } = $props();
 
-  let online = $state(typeof navigator === 'undefined' || navigator.onLine);
   let why = $state<Refusal | null>(null);
   let whyTimer: ReturnType<typeof setTimeout> | undefined;
   const id = $derived(plan?.id ?? '');
@@ -25,7 +25,7 @@
   async function tap() {
     if (!plan) return;
     if (st.k === 'saving') return areas.stop();
-    if (!online) return;
+    if (!online.current) return;
     const r = await areas.save(plan, name);
     if (r) {
       why = r;
@@ -36,14 +36,11 @@
 
   onMount(() => {
     void areas.refresh();
-    const on = () => (online = navigator.onLine);
-    addEventListener('online', on);
-    addEventListener('offline', on);
-    return () => (removeEventListener('online', on), removeEventListener('offline', on), clearTimeout(whyTimer));
+    return () => clearTimeout(whyTimer);
   });
 </script>
 
-{#if plan && (online || st.k !== 'none')}
+{#if plan && (online.current || st.k !== 'none')}
   <div class="area">
     {#if why}
       <p class="save why" role="status" data-offline-save="refused" data-offline-why={why}><span>{t(`offline.refuse.${why}`)}</span></p>
@@ -51,7 +48,7 @@
       <p class="save done" data-offline-save="saved" data-offline-id={id}><Icon name="check" size={16} stroke={2.6} /><span>{t('offline.saved', { mb: mb(st.bytes) })}</span></p>
     {:else}
       <button type="button" class="save" class:busy={st.k === 'saving'} style:--p="{pct}%" data-offline-save={st.k === 'saved' ? 'stale' : st.k} data-offline-id={id} data-sfx="tick"
-        aria-label={st.k === 'saving' ? `${t('offline.saving', { pct })} · ${t('offline.stop')}` : undefined} aria-disabled={!online && st.k !== 'saving'} onclick={tap}>
+        aria-label={st.k === 'saving' ? `${t('offline.saving', { pct })} · ${t('offline.stop')}` : undefined} aria-disabled={!online.current && st.k !== 'saving'} onclick={tap}>
         <Icon name={st.k === 'saving' ? 'close' : st.k === 'saved' ? 'refresh' : 'download'} size={16} stroke={2.4} />
         <span>{st.k === 'saving' ? t('offline.saving', { pct }) : st.k === 'saved' ? t('offline.update') : st.k === 'partial' ? t('offline.partial') : st.k === 'gone' ? t('offline.gone') : t('offline.save', { mb: mb(plan.bytes) })}</span>
       </button>

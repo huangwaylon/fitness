@@ -8,15 +8,15 @@ import { workerControls } from '#lib/ui-state/swLate.ts';
 import { trips } from '../travel/open.svelte.ts';
 import { weddingSheet } from '../wedding/open.svelte.ts';
 import { hiking } from '../hiking/open.svelte.ts';
+import { kenkou } from '../health/open.svelte.ts';
 
 export const loadPanel = lazy(() => import('../panel/IslandPanel.svelte'));
-export const loadHealth = lazy(() => import('../health/HealthSheet.svelte'));
 export const loadZukan = lazy(() => import('../kiroku/ZukanSheet.svelte'));
 export const loadSettings = lazy(() => import('../panel/SettingsSheet.svelte'));
 export const loadKikimimi = lazy(() => import('../kikimimi/KikimimiSheet.svelte'));
 
 const CHUNKS = {
-  health: () => loadHealth(true),
+  health: () => kenkou.prefetch(),
   kikimimi: () => loadKikimimi(true).then((m) => m.warm()),
   travel: () => trips.prefetch(),
   hiking: () => hiking.prefetch(),

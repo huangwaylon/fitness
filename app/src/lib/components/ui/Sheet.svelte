@@ -23,6 +23,7 @@
   // opening shows it at once instead of building it again; a few at most (ui-state/keptSheets.ts: the least recently
   // opened let go, all of them on pagehide or a lost WebGL context; `keep` false while closed lets it go too). The sheet
   // resets what each opening resets itself.
+  // `tunes`: its open and close tunes (panel-open / panel-close; mounted already open, on the first tap: that is an open too).
   // `timed`: its openings timed for the log (`perf.sheet`, ui-state/sheetTiming.ts).
   // A full-height sheet (top, pop, full) joins ui.up once its first frame is out: the island hides under it then.
   // A half-filled form in it (`dirty`, or one registered inside it: ui/discard.svelte.ts) makes every close ask first,
@@ -60,12 +61,14 @@
     focusField?: boolean;
     /** Keep the content mounted after a close (the next opening at once). */
     keep?: boolean;
+    /** Sound its open and close tunes. */
+    tunes?: boolean;
     /** Time its openings for the log, by this name. */
     timed?: LogSheet;
     /** A form with input not saved (a form that is the sheet itself; forms inside it register: guardForm). */
     dirty?: () => boolean;
   }
-  let { open = $bindable(), label, title, variant = 'paper', onclose, ondismiss, children, footer, focusField = false, keep = false, timed, dirty }: Props = $props();
+  let { open = $bindable(), label, title, variant = 'paper', onclose, ondismiss, children, footer, focusField = false, keep = false, tunes = false, timed, dirty }: Props = $props();
 
   /** The forms inside it (guardForm), and the close waiting on 破棄する while the question is up. */
   const forms = new Set<() => boolean>();
@@ -110,6 +113,14 @@
 
   $effect(() => {
     if (open) return lockScroll();
+  });
+
+  let wasOpen = false;
+  $effect(() => {
+    const o = open;
+    if (!tunes || o === wasOpen) return;
+    wasOpen = o;
+    cue(o ? 'panel-open' : 'panel-close');
   });
 
   $effect(() => {

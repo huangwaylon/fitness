@@ -6,6 +6,7 @@
   // the rows it merges marked and scrolled into view). A trip with candidate places (Okinawa's campsites, nature,
   // food) has one small layer button on the map: its panel turns each layer on (its colour's dot); a campsite's pin
   // opens its card (CampSheet), a nature or food pin is tagged with its name.
+  import { untrack } from 'svelte';
   import type { Camp, Trip } from '#lib/travel/types.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import Chip from '../ui/Chip.svelte';
@@ -18,7 +19,7 @@
   import Txt from './Txt.svelte';
   import { pick } from './text.ts';
   import { fmtKm } from './units.ts';
-  import { monthDay } from './dates.ts';
+  import { md } from '#lib/i18n/format.ts';
   import SaveButton from '../offline/SaveButton.svelte';
   import { areas } from '#lib/offline/areas.svelte.ts';
   import { planTrip } from '#lib/offline/plan.ts';
@@ -29,8 +30,7 @@
     start?: number;
   }
   let { trip, note, start = 1 }: Props = $props();
-  // svelte-ignore state_referenced_locally
-  let day = $state(start);
+  let day = $state(untrack(() => start));
   let selected = $state<string | null>(null);
   const days = $derived([...new Set(trip.places.flatMap((p) => (p.kind === 'stop' && p.day ? [p.day] : [])))].sort((a, b) => a - b));
   const stops = $derived(trip.places.filter((p) => p.kind === 'stop' && p.day === day).sort((a, b) => (a.i ?? 0) - (b.i ?? 0)));
@@ -76,7 +76,7 @@
       <ChipRow label={t('travel.map.days')}>
         {#each days as d (d)}
           {@const dt = dateOf(d)}
-          <Chip label={t('travel.day', { n: d })} count={dt ? monthDay(dt) : undefined} dot={dayColor(trip.dayColors, d)} selected={day === d} data-map-day={d} onclick={() => pickDay(d)} />
+          <Chip label={t('travel.day', { n: d })} count={dt ? md(dt) : undefined} dot={dayColor(trip.dayColors, d)} selected={day === d} data-map-day={d} onclick={() => pickDay(d)} />
         {/each}
       </ChipRow>
     </div>
