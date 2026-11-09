@@ -22,6 +22,7 @@
   import LessonDots from './path/LessonDots.svelte';
   import ResultsFrame from './frame/Results.svelte';
   import ReviewList from './frame/ReviewList.svelte';
+  import { Review } from './frame/review.svelte.ts';
   import Why from './frame/Why.svelte';
   import ReviewRow from './frame/ReviewRow.svelte';
   import HearButton from './frame/HearButton.svelte';
@@ -67,15 +68,11 @@
   /** いっぱつ: right with no replay or slow play (a stamp; no points). */
   const first = (i: number) => firstListen(ok(i), !!v.answers[i]?.rp, v.same);
   const firsts = $derived(items.filter((_, i) => first(i)).length);
-  // with misses, the results open on them, the first one open (once: the filter and the rows are mine after)
-  // svelte-ignore state_referenced_locally
-  let missedOnly = $state(items.some((_, i) => !ok(i)));
-  // svelte-ignore state_referenced_locally
-  let opened = $state<number[]>(items.flatMap((_, i) => (ok(i) ? [] : [i])).slice(0, 1));
-  const toggle = (i: number) => (opened = opened.includes(i) ? opened.filter((x) => x !== i) : [...opened, i]);
-  const rows = $derived(items.map((it, i) => ({ it, i, ok: ok(i), k: v.answers[i]?.k ?? null })).filter((r) => !missedOnly || !r.ok));
+  // with misses, the results open on them, the first one open
+  const review = new Review(() => items.flatMap((_, i) => (ok(i) ? [] : [i])));
+  const rows = $derived(items.map((it, i) => ({ it, i, ok: ok(i), k: v.answers[i]?.k ?? null })).filter((r) => !review.missedOnly || !r.ok));
   /** The ladders shown in the review (the misses only: those not climbed to the top). */
-  const shown = $derived(ladders.map((l, j) => ({ l, j })).filter(({ l, j }) => !missedOnly || mine[j] < l.n));
+  const shown = $derived(ladders.map((l, j) => ({ l, j })).filter(({ l, j }) => !review.missedOnly || mine[j] < l.n));
   /** A review row's ▶︎ playing this item: when it started (its karaoke). */
   const playing = (it: Item) => (game.sounding && game.sounding.i === -1 && game.sounding.at === it.id ? game.sounding.from : null);
   /** My feedback (docs/kikimimi.md "Recommendations and feedback"): しずえ's line from my きろく with this game in it,
@@ -173,7 +170,7 @@
     </section>
   {/if}
 
-  <ReviewList bind:missedOnly none={ladders.length ? !shown.length : !rows.length} {retry} player={game}>
+  <ReviewList {review} none={ladders.length ? !shown.length : !rows.length} {retry} player={game}>
     {#snippet children(sand)}
     {#if ladders.length}
       <ul class="review">
@@ -211,7 +208,7 @@
       <ul class="review">
         {#each rows as r (r.i)}
           {@const [pre, focus, post] = splitFocus(r.it)}
-          {@const open = opened.includes(r.i)}
+          {@const open = review.isOpen(r.i)}
           {@const dlg = isDialogue(r.it) ? r.it : null}
           {@const kind = cardKind(r.it)}
           {#if kind}
@@ -219,7 +216,7 @@
                  the tile's line, the call's or the conversation's transcript, the note and 解説 -->
             {@const call = kind === 'call' ? (r.it as CallCard).call : null}
             {@const hearIt = call ? items[r.i - call.part] : r.it}
-            <ReviewRow i={r.i} ok={r.ok} {open} ontoggle={() => toggle(r.i)} first={first(r.i)} data-kiki-card={kind}>
+            <ReviewRow i={r.i} ok={r.ok} {open} ontoggle={() => review.toggle(r.i)} first={first(r.i)} data-kiki-card={kind}>
               {#snippet summary()}{#if kind === 'tile'}<span class="en" lang="en">{r.it.en}</span>{:else}<span class="en">{r.it.ctx ?? r.it.en}</span>{/if}{/snippet}
               {#snippet hear()}{#if hearIt}<HearButton data-kiki-hear={r.i} onclick={() => game.hear(hearIt)} />{/if}{/snippet}
               {#if call}
@@ -234,7 +231,7 @@
               {#if r.it.why}<Why text={r.it.why} />{/if}
             </ReviewRow>
           {:else}
-            <ReviewRow i={r.i} ok={r.ok} {open} ontoggle={() => toggle(r.i)} first={first(r.i)}>
+            <ReviewRow i={r.i} ok={r.ok} {open} ontoggle={() => review.toggle(r.i)} first={first(r.i)}>
               {#snippet summary()}
                 {#if dlg}<span class="en" lang="en">→ {dlg.choices[dlg.answer]}</span>
                 {:else if open}<span class="en big" data-kiki-review-en><SoundLine en={r.it.en} focus={r.it.focus} marks={r.it.marks} clip={r.it.id} from={playing(r.it)} clock={() => game.clock()} /></span>

@@ -11,6 +11,7 @@
   import { isCoop, playAgain } from '../listenView.ts';
   import ResultsFrame from '../frame/Results.svelte';
   import ReviewList from '../frame/ReviewList.svelte';
+  import { Review } from '../frame/review.svelte.ts';
   import Why from '../frame/Why.svelte';
   import ReviewRow from '../frame/ReviewRow.svelte';
   import HearButton from '../frame/HearButton.svelte';
@@ -38,13 +39,9 @@
   const line = $derived(t(served >= cards.length ? 'kiki.rush.host.all' : served * 2 >= cards.length ? 'kiki.rush.host.some' : 'kiki.rush.host.few'));
   const frameV = $derived({ ...v, team: { ...v.team, all: 0 } });
 
-  // with misses, the list opens on them, the first one open (the filter and the rows are mine after)
-  // svelte-ignore state_referenced_locally
-  let missedOnly = $state(rows.some((r) => !r.ok));
-  // svelte-ignore state_referenced_locally
-  let opened = $state<number[]>(rows.filter((r) => !r.ok).slice(0, 1).map((r) => r.i));
-  const toggle = (i: number) => (opened = opened.includes(i) ? opened.filter((x) => x !== i) : [...opened, i]);
-  const shown = $derived(rows.filter((r) => !missedOnly || !r.ok));
+  // with misses, the list opens on them, the first one open
+  const review = new Review(() => rows.filter((r) => !r.ok).map((r) => r.i));
+  const shown = $derived(rows.filter((r) => !review.missedOnly || !r.ok));
 </script>
 
 {#snippet more()}
@@ -53,10 +50,10 @@
 {/snippet}
 
 <ResultsFrame v={frameV} {tally} of={mineRows.length} {firsts} {line} {more} {ondone} onagain={() => playAgain(game, 'rush', onagain)}>
-  <ReviewList bind:missedOnly none={!shown.length}>
+  <ReviewList {review} none={!shown.length}>
     <ul class="review">
       {#each shown as r (r.i)}
-        <ReviewRow i={r.i} ok={r.ok} open={opened.includes(r.i)} ontoggle={() => toggle(r.i)} first={r.first}>
+        <ReviewRow i={r.i} ok={r.ok} open={review.isOpen(r.i)} ontoggle={() => review.toggle(r.i)} first={r.first}>
           {#snippet summary()}<span>{r.c.rush.ask} <b>{r.c.choices[r.c.answer]}</b></span>{/snippet}
           {#snippet hear()}<HearButton data-kiki-hear={r.i} onclick={() => game.hear(r.c)} />{/snippet}
           <p class="en" lang="en">{r.c.en}</p>

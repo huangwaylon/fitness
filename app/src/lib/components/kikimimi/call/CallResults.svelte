@@ -14,6 +14,7 @@
   import { playAgain } from '../listenView.ts';
   import ResultsFrame from '../frame/Results.svelte';
   import ReviewList from '../frame/ReviewList.svelte';
+  import { Review } from '../frame/review.svelte.ts';
   import Why from '../frame/Why.svelte';
   import ReviewRow from '../frame/ReviewRow.svelte';
   import HearButton from '../frame/HearButton.svelte';
@@ -45,14 +46,11 @@
   const line = $derived(t(errands >= calls.length ? 'kiki.call.host.all' : errands * 2 >= calls.length ? 'kiki.call.host.some' : 'kiki.call.host.few'));
   const frameV = $derived({ ...v, team: { ...v.team, right: v.team.all, all: 0 } });
 
-  // with misses, the list opens on them, the first one open (the filter and the rows are mine after)
-  // svelte-ignore state_referenced_locally
-  let missedOnly = $state(calls.some((x) => !x.ok));
-  // svelte-ignore state_referenced_locally
-  let opened = $state<number[]>(calls.filter((x) => !x.ok).slice(0, 1).map((x) => x.i));
+  // with misses, the list opens on them, the first one open
+  const review = new Review(() => calls.filter((x) => !x.ok).map((x) => x.i));
   let logs = $state<number[]>([]);
   const toggle = (list: number[], i: number) => (list.includes(i) ? list.filter((x) => x !== i) : [...list, i]);
-  const shown = $derived(calls.filter((x) => !missedOnly || !x.ok));
+  const shown = $derived(calls.filter((x) => !review.missedOnly || !x.ok));
 
   const again = () => playAgain(game, 'call', onagain);
 </script>
@@ -60,10 +58,10 @@
 {#snippet more()}<span class="sub" data-kiki-call-errands={errands}>📞 {t('kiki.call.errands', { k: errands, n: calls.length })}</span>{/snippet}
 
 <ResultsFrame v={frameV} {tally} of={cards.length} {firsts} {line} {more} {ondone} onagain={again}>
-  <ReviewList bind:missedOnly none={!shown.length}>
+  <ReviewList {review} none={!shown.length}>
     <ul class="review">
       {#each shown as x (x.i)}
-        <ReviewRow i={x.i} ok={x.ok} open={opened.includes(x.i)} ontoggle={() => (opened = toggle(opened, x.i))}>
+        <ReviewRow i={x.i} ok={x.ok} open={review.isOpen(x.i)} ontoggle={() => review.toggle(x.i)}>
           {#snippet lead()}<span class="who"><OfficialArt key={villagerArt(x.c.speaker, true)} alt="" size={32} /></span>{/snippet}
           {#snippet summary()}<b>{name(x.c.speaker)}</b>{#if x.c.ctx}<span class="ctx">{x.c.ctx}</span>{/if}{/snippet}
           {#snippet hear()}

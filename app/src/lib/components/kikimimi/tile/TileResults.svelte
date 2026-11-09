@@ -13,6 +13,7 @@
   import { isCoop, playAgain } from '../listenView.ts';
   import ResultsFrame from '../frame/Results.svelte';
   import ReviewList from '../frame/ReviewList.svelte';
+  import { Review } from '../frame/review.svelte.ts';
   import Why from '../frame/Why.svelte';
   import ReviewRow from '../frame/ReviewRow.svelte';
   import HearButton from '../frame/HearButton.svelte';
@@ -39,24 +40,20 @@
   const line = $derived(t(made >= cards.length ? 'kiki.tile.host.all' : made * 2 >= cards.length ? 'kiki.tile.host.some' : 'kiki.tile.host.few'));
   const frameV = $derived({ ...v, team: { ...v.team, right: v.team.all, all: 0 } });
 
-  // with misses, the list opens on them, the first one open (the filter and the rows are mine after)
-  // svelte-ignore state_referenced_locally
-  let missedOnly = $state(rows.some((r) => !r.ok));
-  // svelte-ignore state_referenced_locally
-  let opened = $state<number[]>(rows.filter((r) => !r.ok).slice(0, 1).map((r) => r.i));
-  const toggle = (i: number) => (opened = opened.includes(i) ? opened.filter((x) => x !== i) : [...opened, i]);
-  const shown = $derived(rows.filter((r) => !missedOnly || !r.ok));
+  // with misses, the list opens on them, the first one open
+  const review = new Review(() => rows.filter((r) => !r.ok).map((r) => r.i));
+  const shown = $derived(rows.filter((r) => !review.missedOnly || !r.ok));
   const playing = (c: TileCard) => (game.sounding && game.sounding.i === -1 && game.sounding.at === c.id ? game.sounding.from : null);
 
   const again = () => playAgain(game, 'tile', onagain);
 </script>
 
 <ResultsFrame v={frameV} {tally} of={cards.length} {firsts} {line} {ondone} onagain={again}>
-  <ReviewList bind:missedOnly none={!shown.length}>
+  <ReviewList {review} none={!shown.length}>
     <ul class="review">
       {#each shown as r (r.i)}
-        {@const open = opened.includes(r.i)}
-        <ReviewRow i={r.i} ok={r.ok} {open} ontoggle={() => toggle(r.i)} first={r.first}>
+        {@const open = review.isOpen(r.i)}
+        <ReviewRow i={r.i} ok={r.ok} {open} ontoggle={() => review.toggle(r.i)} first={r.first}>
           {#snippet summary()}
             {#if open}<span class="en big" data-kiki-review-en><SoundLine en={r.c.en} marks={r.c.marks} clip={r.c.id} from={playing(r.c)} clock={() => game.clock()} /></span>
             {:else}<span class="en" lang="en">{r.c.en}</span>{/if}

@@ -3,6 +3,7 @@
   // paper, signed; 「にほんごやく」 shows the gloss under it (hidden by default: the English first). Folded, it's an
   // envelope row (the villager's face, 「{name}から てがみ」, the day) that opens it in place. Text only: nothing plays.
   // Shared: the results' strip (open), a unit's page and ずかん's スタンプ (folded; letters.ts lettersOf lists them).
+  import { untrack } from 'svelte';
   import type { Letter } from '#lib/kikimimi/letters.ts';
   import type { RosterId } from '#lib/villagers/roster.ts';
   import OfficialArt from '../../characters/OfficialArt.svelte';
@@ -20,8 +21,7 @@
     fresh?: boolean;
   } = $props();
 
-  // svelte-ignore state_referenced_locally
-  let shown = $state(open);
+  let shown = $state(untrack(() => open));
   let ja = $state(false);
   const sender = $derived(rosterName(letter.host as RosterId));
   const to = $derived(week.view ? villagerNameOf(week.view, week.view.viewer) : '');

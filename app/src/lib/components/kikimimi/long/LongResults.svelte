@@ -5,6 +5,7 @@
   // answer and mine in Japanese, 解説), where a real recording comes from (its credit), the transcript (LongTranscript:
   // each line to hear alone, the questions' lines marked) and the dictation (LongDictation: a line or two near my misses,
   // its words blanked in the transcript until it's done), whose answers are a row of their own (QuizGame.keepMore).
+  import { untrack } from 'svelte';
   import type { QuizGame } from '../game.svelte.ts';
   import { rawOf } from '#lib/kikimimi/games/listened.ts';
   import { dictFor, longOpts, longTier, type LongCard } from '#lib/kikimimi/games/long/def.ts';
@@ -13,6 +14,7 @@
   import { jaMode } from '../prefs.ts';
   import ResultsFrame from '../frame/Results.svelte';
   import ReviewList from '../frame/ReviewList.svelte';
+  import { Review } from '../frame/review.svelte.ts';
   import ReviewRow from '../frame/ReviewRow.svelte';
   import HearButton from '../frame/HearButton.svelte';
   import Why from '../frame/Why.svelte';
@@ -38,19 +40,13 @@
   const line = $derived(t(made >= cards.length ? 'kiki.long.host.all' : made * 2 >= cards.length ? 'kiki.long.host.some' : 'kiki.long.host.few'));
   const frameV = $derived({ ...v, team: { ...v.team, right: v.team.all, all: 0 } });
 
-  // with misses, the list opens on them, the first one open (the filter and the rows are mine after)
-  // svelte-ignore state_referenced_locally
-  let missedOnly = $state(rows.some((r) => !r.ok));
-  // svelte-ignore state_referenced_locally
-  let opened = $state<number[]>(rows.filter((r) => !r.ok).slice(0, 1).map((r) => r.i));
-  const toggle = (i: number) => (opened = opened.includes(i) ? opened.filter((x) => x !== i) : [...opened, i]);
-  const shown = $derived(rows.filter((r) => !missedOnly || !r.ok));
+  // with misses, the list opens on them, the first one open
+  const review = new Review(() => rows.filter((r) => !r.ok).map((r) => r.i));
+  const shown = $derived(rows.filter((r) => !review.missedOnly || !r.ok));
 
   // the dictation: picked once from my answers as the results open (game.svelte.ts keeps the view's answers)
-  // svelte-ignore state_referenced_locally
-  const dicts = dictFor(cards, mine);
-  // svelte-ignore state_referenced_locally
-  const missed = rows.some((r) => !r.ok);
+  const dicts = untrack(() => dictFor(cards, mine));
+  const missed = untrack(() => rows.some((r) => !r.ok));
   const tier = $derived.by(() => {
     const o = longOpts.decode(v.o);
     return o ? longTier(o.ear) : undefined;
@@ -77,10 +73,10 @@
 </script>
 
 <ResultsFrame v={frameV} {tally} of={cards.length} firsts={0} {line} {ondone} onagain={again}>
-  <ReviewList bind:missedOnly none={!shown.length}>
+  <ReviewList {review} none={!shown.length}>
     <ul class="review">
       {#each shown as r (r.i)}
-        <ReviewRow i={r.i} ok={r.ok} open={opened.includes(r.i)} ontoggle={() => toggle(r.i)}>
+        <ReviewRow i={r.i} ok={r.ok} open={review.isOpen(r.i)} ontoggle={() => review.toggle(r.i)}>
           {#snippet summary()}{r.c.long.ask}{/snippet}
           <p class="ans">{t('kiki.long.answer', { a: r.right ?? '' })}</p>
           {#if !r.ok}<p class="picked" data-kiki-long-mine>{t('kiki.long.mine', { a: r.mine ?? t('kiki.timeUp') })}</p>{/if}

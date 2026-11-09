@@ -4,6 +4,7 @@
   // lines at the same level, at once).
   import '#lib/i18n/kiki-mane.ts';
   import type { QuizGame } from '../game.svelte.ts';
+  import { playAgain } from '../listenView.ts';
   import { lineJa } from '#lib/kikimimi/games/mane/def.ts';
   import ResultsShell from '../frame/ResultsShell.svelte';
   import ScoreCard from '../frame/ScoreCard.svelte';
@@ -11,17 +12,10 @@
   import { t } from '#lib/i18n/index.ts';
 
   let { game, onagain, ondone }: { game: QuizGame; onagain: () => void; ondone: () => void } = $props();
-  const v = $derived(game.view);
 
-  function again() {
-    const lv = v.lv, timer = v.timer;
-    onagain();
-    game.setGame('mane', { lv, timer });
-    game.go();
-  }
 </script>
 
-<ResultsShell line={t('kiki.mane.host')} {ondone} onagain={again} data-mane-results>
+<ResultsShell line={t('kiki.mane.host')} {ondone} onagain={() => playAgain(game, 'mane', onagain)} data-mane-results>
   <ScoreCard note={t('kiki.mane.row')}>
     <b class="big">{t('kiki.mane.count', { n: game.items.length })}</b>
   </ScoreCard>

@@ -12,6 +12,7 @@
   import { isCoop, playAgain } from '../listenView.ts';
   import ResultsFrame from '../frame/Results.svelte';
   import ReviewList from '../frame/ReviewList.svelte';
+  import { Review } from '../frame/review.svelte.ts';
   import Why from '../frame/Why.svelte';
   import ReviewRow from '../frame/ReviewRow.svelte';
   import HearButton from '../frame/HearButton.svelte';
@@ -44,23 +45,19 @@
     return c.tachi.type === 'changed' ? who(a as number) : (c.cja?.[a as number] ?? c.choices[a as number] ?? null);
   }
 
-  // with misses, the list opens on them, the first one open (the filter and the rows are mine after)
-  // svelte-ignore state_referenced_locally
-  let missedOnly = $state(convs.some((c) => !c.all));
-  // svelte-ignore state_referenced_locally
-  let opened = $state<number[]>(convs.filter((c) => !c.all).slice(0, 1).map((c) => c.n));
-  const toggle = (n: number) => (opened = opened.includes(n) ? opened.filter((x) => x !== n) : [...opened, n]);
-  const shown = $derived(convs.filter((c) => !missedOnly || !c.all));
+  // with misses, the list opens on them, the first one open
+  const review = new Review(() => convs.filter((c) => !c.all).map((c) => c.n));
+  const shown = $derived(convs.filter((c) => !review.missedOnly || !c.all));
   const playing = (c: TachiCard) => (game.talk && game.talk.i === -1 && game.talk.at === c.id ? game.talk.all : []);
 
   const again = () => playAgain(game, 'tachi', onagain);
 </script>
 
 <ResultsFrame v={frameV} {tally} of={cards.length} firsts={0} {line} {ondone} onagain={again}>
-  <ReviewList bind:missedOnly none={!shown.length}>
+  <ReviewList {review} none={!shown.length}>
     <ul class="review">
       {#each shown as cv (cv.n)}
-        <ReviewRow i={cv.n} ok={cv.all} open={opened.includes(cv.n)} ontoggle={() => toggle(cv.n)} marks={cv.rs.map((r) => ({ i: r.i, ok: r.ok }))}>
+        <ReviewRow i={cv.n} ok={cv.all} open={review.isOpen(cv.n)} ontoggle={() => review.toggle(cv.n)} marks={cv.rs.map((r) => ({ i: r.i, ok: r.ok }))}>
           {#snippet summary()}{cv.c.ask ?? ''}{/snippet}
           {#snippet hear()}<HearButton label={t('kiki.tachi.hearAll')} data-kiki-hear={cv.n} onclick={() => game.hear(cv.c)} />{/snippet}
           <Transcript it={cv.c} all={playing(cv.c)} clock={() => game.clock()} compact />

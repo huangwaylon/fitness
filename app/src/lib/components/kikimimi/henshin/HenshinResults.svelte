@@ -14,6 +14,7 @@
   import { playAgain } from '../listenView.ts';
   import ResultsFrame from '../frame/Results.svelte';
   import ReviewList from '../frame/ReviewList.svelte';
+  import { Review } from '../frame/review.svelte.ts';
   import ReviewRow from '../frame/ReviewRow.svelte';
   import HearButton from '../frame/HearButton.svelte';
   import Note from '../frame/Note.svelte';
@@ -33,12 +34,8 @@
   const today = $derived(PHENOMENA[henshinOpts.decode(v.o)?.focus ?? 0]);
 
   // with misses, the list opens on them, the first one open
-  // svelte-ignore state_referenced_locally
-  let missedOnly = $state(rows.some((r) => !r.ok));
-  // svelte-ignore state_referenced_locally
-  let opened = $state<number[]>(rows.filter((r) => !r.ok).slice(0, 1).map((r) => r.i));
-  const toggle = (i: number) => (opened = opened.includes(i) ? opened.filter((x) => x !== i) : [...opened, i]);
-  const shown = $derived(rows.filter((r) => !missedOnly || !r.ok));
+  const review = new Review(() => rows.filter((r) => !r.ok).map((r) => r.i));
+  const shown = $derived(rows.filter((r) => !review.missedOnly || !r.ok));
   const playing = (c: HenshinCard) => (game.sounding && game.sounding.i === -1 && game.sounding.at === c.id ? game.sounding.from : null);
 
   const again = () => playAgain(game, 'henshin', onagain);
@@ -46,11 +43,11 @@
 
 <ResultsFrame {v} {tally} of={cards.length} {firsts} {line} {ondone} onagain={again}>
   <p class="today" data-kiki-henshin-today>{t('kiki.henshin.today', { ph: t(`kiki.henshin.ph.${today}`) })}（<span lang="en">{t(`kiki.henshin.eg.${today}`)}</span>）</p>
-  <ReviewList bind:missedOnly none={!shown.length}>
+  <ReviewList {review} none={!shown.length}>
     <ul class="review">
       {#each shown as r (r.i)}
-        {@const open = opened.includes(r.i)}
-        <ReviewRow i={r.i} ok={r.ok} {open} ontoggle={() => toggle(r.i)} first={r.first}>
+        {@const open = review.isOpen(r.i)}
+        <ReviewRow i={r.i} ok={r.ok} {open} ontoggle={() => review.toggle(r.i)} first={r.first}>
           {#snippet summary()}
             {#if open}<span class="en big" data-kiki-review-en><SoundLine en={r.c.en} marks={r.c.marks} clip={r.c.id} from={playing(r.c)} clock={() => game.clock()} /></span>
             {:else}<span class="en" lang="en">{r.c.en}</span>{/if}

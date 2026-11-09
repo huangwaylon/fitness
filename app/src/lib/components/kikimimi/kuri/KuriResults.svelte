@@ -3,6 +3,7 @@
   // (「ここまで 14語！」: the longest sentence said) and how many sentences came through, shown only to you; then the run's
   // sentences, each with ○ / × (– skipped), its Japanese and ▶︎. What was heard isn't here: it went with the round. もういっかい: a new run at the same level, at once.
   import type { QuizGame } from '../game.svelte.ts';
+  import { playAgain } from '../listenView.ts';
   import { answerOf, reached, saidOk } from '#lib/kikimimi/games/kuri/def.ts';
   import { rawOf } from '#lib/kikimimi/games/listened.ts';
   import { jaOf } from './board.ts';
@@ -21,16 +22,9 @@
   const said = $derived(rows.filter((r) => r.mark === 'ok').length);
   const line = $derived(t(words >= 12 ? 'kiki.kuri.host.long' : words ? 'kiki.kuri.host.some' : 'kiki.kuri.host.none'));
 
-  /** もういっかい: a new run at this level (solo: it starts at once). */
-  function again() {
-    const lv = v.lv, timer = v.timer;
-    onagain();
-    game.setGame('kuri', { lv, timer });
-    game.go();
-  }
 </script>
 
-<ResultsShell {line} {ondone} onagain={again} data-kuri-results>
+<ResultsShell {line} {ondone} onagain={() => playAgain(game, 'kuri', onagain)} data-kuri-results>
   <ScoreCard data-kuri-reached={words} note={t('kiki.kuri.private')}>
     <b class="big">{words ? t('kiki.kuri.reached', { n: words }) : t('kiki.kuri.reachedNone')}</b>
     <span class="sub">{t('kiki.kuri.sentences', { k: said, n: rows.length })}</span>

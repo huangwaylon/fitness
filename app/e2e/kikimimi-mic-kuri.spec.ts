@@ -184,4 +184,9 @@ test('くりかえし チャレンジ: a solo run, said, heard again, nothing he
   expect(Object.keys(mine[0]).sort()).toEqual(['d', 'g', 'gm', 'lv', 'ms', 'n', 'r']);
   expect(await live(page)).toBe(0);
   expect(posts).toEqual([]);
+
+  // もういっかい: a new run at once
+  await sheet(page).locator('[data-kiki-again]').click();
+  await expect(results).toBeHidden();
+  await myTurn(page);
 });

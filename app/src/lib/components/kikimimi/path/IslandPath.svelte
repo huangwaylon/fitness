@@ -57,11 +57,7 @@
   const me = $derived(week.view?.viewer ?? null);
   /** The landmarks whose celebration this player has seen on this phone (read at once: the opening scroll looks for a
    *  celebration). */
-  // svelte-ignore state_referenced_locally
-  let seen = $state<string[]>(me ? landmarksSeen(me) : []);
-  $effect(() => {
-    if (me) seen = landmarksSeen(me);
-  });
+  let seen = $derived<string[]>(me ? landmarksSeen(me) : []);
   const party = $derived(me ? path.stages.filter((s) => s.cleared && !seen.includes(s.stage)).map((s) => s.stage) : []);
   function seenIt(stage: Stage) {
     if (me) keepLandmarkSeen(me, stage);
