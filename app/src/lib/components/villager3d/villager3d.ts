@@ -593,6 +593,10 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
       // other villagers: three's listeners on each else keep a gone room's or island's whole renderer alive; another
       // villager of the kind uploads them again on its next frame)
       group.traverse((n) => (n as Mesh).geometry?.dispose());
+      // (and its skeletons' bone textures: three gives each skinned mesh's skeleton a float texture on the GPU, kept
+      // till the skeleton is disposed: ~5 a villager left on the island's renderer at each swap or visitor gone, and
+      // one a museum visit, its curator's)
+      group.traverse((n) => (n as SkinnedMesh).skeleton?.dispose());
       for (const m of owned) for (const v of Object.values(m)) if (v instanceof Texture) v.dispose();
       for (const m of owned) m.dispose();
       for (const f of faces) f.tex.dispose();

@@ -706,13 +706,13 @@ export async function wearable(look: PlayerLook, t: PartTable, dir: string, base
 
 /** The portraits' own player (a scene's on screen stays as it is): made on the first shot, dressed in each look in
  *  turn, its head drawn through `renderer` (player3d portrait: a render target, never another context) as a PNG data
- *  URL (null: `gone()` by then). One shot at a time is the caller's (a queue). `wrap`: what's done to it once made. */
+ *  URL (null: `gone()` by then). One shot at a time is the caller's (a queue). */
 export type Shooter = ReturnType<typeof createShooter>;
-export function createShooter(name: string, dir: string, wrap: (p: Player3D) => Player3D = (p) => p) {
+export function createShooter(name: string, dir: string) {
   let made: Promise<Player3D> | null = null;
   return {
     async shoot(renderer: WebGLRenderer, look: PlayerLook, px: number, gone: () => boolean): Promise<string | null> {
-      made ??= createPlayer(name, look, dir, 0).then((p) => (p.step(0), p.step(1000), wrap(p)));
+      made ??= createPlayer(name, look, dir, 0).then((p) => (p.step(0), p.step(1000), p));
       const p = await made;
       await p.dress(look);
       p.face(null);

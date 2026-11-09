@@ -17,6 +17,7 @@
   import SayPicker from '../island/SayPicker.svelte';
   import SayButton from '../island/SayButton.svelte';
   import EyeToggle from '../rooms/EyeToggle.svelte';
+  import { nightOf, roomSpeaker } from '../rooms/speaker.ts';
   import { gestures } from '../rooms/gesture.ts';
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
   import MuseumCard from './MuseumCard.svelte';
@@ -204,27 +205,7 @@
   let card = $state<Specimen | null>(null);
   const sayShown = $derived(!!eng && !failed && !ui.sheets.length);
   const sayId = (w: Who) => (w === me ? 'mine' : w === partner ? 'partner' : 'third');
-  function speakerOf(w: Who): SaySpeaker {
-    return {
-      get isConnected() {
-        // (at my villager's eyes another's balloon goes once it's out of view: behind the camera it has no place)
-        const h = eng?.at(w) && eng.headPoint(w);
-        return !!h && (w === me || !fpv || eng!.inView(h[0], h[1], h[2]));
-      },
-      getBoundingClientRect() {
-        const h = eng?.headPoint(w), at = eng?.at(w);
-        if (!eng || !h || !at) return new DOMRect();
-        // mine, at its eyes: from the foot of the view, as one's own voice
-        if (w === me && fpv && canvas) {
-          const r = canvas.getBoundingClientRect();
-          return new DOMRect(r.left + r.width / 2 - 20, r.bottom - insets().bottom - 70, 40, 40);
-        }
-        const [hx, hy] = eng.client(h[0], h[1], h[2]), [, fy] = eng.client(at[0], 0, at[1]);
-        const tall = Math.max(12, fy - hy), wide = tall * 0.55;
-        return new DOMRect(hx - wide / 2, hy, wide, tall);
-      }
-    };
-  }
+  const speakerOf = (w: Who) => roomSpeaker(w, me, () => ({ eng, fpv, canvas, bottom: insets().bottom }));
   function showSay(w: Who, text: string) {
     if (!eng?.at(w)) return;
     says?.say(sayId(w), text, speakerOf(w), { name: nameOf(w), colour: SAY_TAG[w] });
@@ -362,7 +343,6 @@
     void goto(resolve('/') + (q.size ? `?${q}` : '')).finally(() => (leaving = false));
   }
 
-  const nightOf = (tod: string) => (tod === 'night' ? 1 : tod === 'dusk' ? 0.55 : tod === 'dawn' ? 0.3 : 0);
   $effect(() => eng?.night(nightOf(theme.tod)));
   /** At my villager's eyes (docs/design.md "First person"): the phone's choice. Local only. */
   const fpv = $derived(firstPerson.on);

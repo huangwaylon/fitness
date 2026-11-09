@@ -3,6 +3,16 @@
 // camera, and no allocation per call (the bubbles ask every frame).
 import { Vector2, Vector3, type Camera, type Raycaster } from 'three';
 
+/** A villager's height in the rooms (model units: a little over a tile and a half, NH's proportions against its beds). */
+export const VILLAGER_H = 16;
+/** Walking pace (model units a second: four and a half tiles; three before the user's "increase the walk speed of
+ *  players by 50%", 2026-11-04). Only a player walks in a room. */
+export const PACE = 45;
+/** The longest a room's first frame waits for the villagers' models (ms): its engine's holding. */
+export const ENTRY_HOLD_MS = 1500;
+/** What covers a room's canvas at its top and foot (px): the room fits between. */
+export interface Insets { top: number; bottom: number }
+
 type Pt = readonly [number, number];
 
 /** A walk: from `from` through `pts`, over `ms` from `t0` (ms), its legs' lengths and their sum. */

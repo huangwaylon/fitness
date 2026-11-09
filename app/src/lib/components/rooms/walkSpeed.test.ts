@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SPEED } from '../island/speed.ts';
-import { PACE as TENT_PACE } from '../tent/engine.ts';
-import { PACE as MUSEUM_PACE } from '../museum/engine.ts';
+import { PACE } from './view.ts';
 import { reachOf, strideOf, walk } from '../villager3d/poses.ts';
 import { VILLAGER_S } from '../villager3d/villager3d.ts';
 
@@ -11,8 +10,8 @@ describe("a player's walk, half as fast again", () => {
   it('on the island, in the tent and in the museum', () => {
     expect(SPEED.run).toBe(200 * 1.5);
     expect(SPEED.action).toBe(240 * 1.5);
-    expect(TENT_PACE).toBe(30 * 1.5);
-    expect(MUSEUM_PACE).toBe(30 * 1.5);
+    // (the tent's and the museum's one pace)
+    expect(PACE).toBe(30 * 1.5);
     expect(SPEED.wander).toBe(90);
   });
 

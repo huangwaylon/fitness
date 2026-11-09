@@ -159,15 +159,11 @@ const COLOURS: Closet['colours'] = {
 };
 
 let current: Closet | null = null;
-/** The closet the level lists: the part table's, unless another was set (useCloset). */
 const swatchesOf = (t: Table): Swatches => ({
   items: Object.fromEntries(Object.entries(t.items).flatMap(([id, it]) => (it.sw ? [[id, it.sw]] : []))), icons: t.icons ?? {}
 });
+/** The closet the level lists: the part table's (made on first use). */
 export const closet = (): Closet => (current ??= tableCloset(PARTS as Table, swatchesOf(PARTS as Table)));
-/** Swap the closet (a test's; null: back to the part table's). @public */
-export function useCloset(c: Closet | null): void {
-  current = c;
-}
 
 /** A look with `id` worn as `kind`, by NH's rules: a one-piece clears the bottoms; a bottom clears a one-piece; a hat
  *  and a hair ornament are both headwear, one at a time (a hat puts the hair under it: NH's cut where the style has one). */

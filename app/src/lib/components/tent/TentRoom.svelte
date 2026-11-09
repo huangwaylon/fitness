@@ -26,9 +26,10 @@
   import SayPicker from '../island/SayPicker.svelte';
   import SayButton from '../island/SayButton.svelte';
   import EyeToggle from '../rooms/EyeToggle.svelte';
+  import { nightOf, roomSpeaker } from '../rooms/speaker.ts';
   import { gestures } from '../rooms/gesture.ts';
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
-  import { SAY_TAG, rememberSay, sayGate, type SaySpeaker } from '../island/say.ts';
+  import { SAY_TAG, rememberSay, sayGate } from '../island/say.ts';
   import { loadHha, rate, type HhaRating } from './hha.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import type { WeekView } from '#lib/types.ts';
@@ -143,7 +144,6 @@
       partnerShown();
     });
   });
-  const nightOf = (tod: string) => (tod === 'night' ? 1 : tod === 'dusk' ? 0.55 : tod === 'dawn' ? 0.3 : 0);
 
   /** What the balloons brought that NH has a model of (either of us found it), newest first, the starters left out. */
   const finds = $derived.by(() => {
@@ -291,31 +291,7 @@
   /** As on the island: not in もようがえ, nor under a sheet or ハニワくん's letter. */
   const sayShown = $derived(!!eng && !failed && !editing && !picking && !letter && !ui.sheets.length);
   const sayId = (w: Who) => (w === me ? 'mine' : w === partner ? 'partner' : 'third');
-  /** A villager's box on screen as the room's camera has it now (Says asks it again as it follows): from the top of
-   *  its head (the engine's headPoint) down to its feet. Gone with the villager. */
-  function speakerOf(w: Who): SaySpeaker {
-    return {
-      get isConnected() {
-        // (at my villager's eyes another's balloon goes once it's out of view: behind the camera it has no place)
-        const h = eng?.at(w) && eng.headPoint(w);
-        return !!h && (w === me || !fpv || eng!.inView(h[0], h[1], h[2]));
-      },
-      getBoundingClientRect() {
-        const h = eng?.headPoint(w), at = eng?.at(w);
-        if (!eng || !h || !at) return new DOMRect();
-        // mine, at its eyes: from the foot of the view, as one's own voice
-        if (w === me && fpv && canvas) return ownVoice(canvas, insets().bottom);
-        const [hx, hy] = eng.client(h[0], h[1], h[2]), [, fy] = eng.client(at[0], 0, at[1]);
-        const tall = Math.max(12, fy - hy), wide = tall * 0.55;
-        return new DOMRect(hx - wide / 2, hy, wide, tall);
-      }
-    };
-  }
-  /** At my villager's eyes, my own balloon stands by the middle of the view's foot. */
-  const ownVoice = (c: HTMLCanvasElement, bottom: number) => {
-    const r = c.getBoundingClientRect();
-    return new DOMRect(r.left + r.width / 2 - 20, r.bottom - bottom - 70, 40, 40);
-  };
+  const speakerOf = (w: Who) => roomSpeaker(w, me, () => ({ eng, fpv, canvas, bottom: insets().bottom }));
   /** `text` over a villager in here (mine: picked here; another's: from the relay) and a hop. */
   function showSay(w: Who, text: string) {
     if (!eng?.at(w)) return;

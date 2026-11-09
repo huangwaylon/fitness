@@ -1189,8 +1189,10 @@ island, moved and turned in the editor, never removed. A tap walks my villager t
   loaded per species; every frame moves only what's on screen; the exhibits step at the ambient rate, nothing while
   nothing on screen moves. Stands, bases, water, glass and frames are one mesh a material (geometry.ts batcher). Once
   everything is in, what isn't on screen yet is made ready while the hall is still (textures eight at a time, programs
-  compiled: engine.ts warm). On WebKit its models' textures are plain images, not ImageBitmaps (world3d/gltf.ts
-  `plainImages`: WebKit uploads ImageBitmaps ~10× slower); the island keeps its ImageBitmaps. A rebuilt wing keeps its
+  compiled: engine.ts warm; paused while the page is hidden). Its models stay loaded across visits, as the tent's
+  furniture does (world3d/modelCache.ts: the 64 last used of those unused; each visit's GPU copies go with its renderer).
+  On WebKit its models' textures are plain images, not ImageBitmaps (world3d/gltf.ts `glbLoader({ plain })`: WebKit
+  uploads ImageBitmaps ~10× slower); the island keeps its ImageBitmaps. A rebuilt wing keeps its
   programs (engine.ts `retired`: the old wing disposed only after the new one's materials compiled;
   `npm run leak -- rebuild`).
 - **Never a blank frame:** the canvas's buffer is resized only just before a draw, in the same task (engine.ts draw),

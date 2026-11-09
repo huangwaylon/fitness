@@ -495,6 +495,7 @@
     addEventListener('keydown', esc);
     return () => {
       clearTimeout(noteTimer);
+      clearTimeout(peekTimer);
       removeEventListener('keydown', esc);
       sel = null;
       link.release();

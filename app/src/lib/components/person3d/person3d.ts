@@ -10,7 +10,7 @@ import type { Who } from '#lib/types.ts';
 import { resolveLook as villagerLook } from '#lib/villagers/look.ts';
 import { createVillager, type Villager3D } from '../villager3d/villager3d.ts';
 import { url3d } from '../villager3d/manifest.ts';
-import type { SkinnedMesh, WebGLRenderer } from 'three';
+import type { WebGLRenderer } from 'three';
 import type { Painter } from '../look/portraits.svelte.ts';
 import type { Shooter } from '../player3d/player3d.ts';
 import { drawOff } from '../../ui-state/testMode.ts';
@@ -32,22 +32,10 @@ export interface Person3 {
   create(seed: number): Promise<Villager3D> | null;
 }
 
-/** Its dispose() letting go of its skeletons' bone textures too: three gives each skinned mesh's skeleton a float
- *  texture on the GPU, kept till the skeleton is disposed (~5 a villager left on the island's renderer at each swap or
- *  visitor gone: the leak probe's `look` flow). */
-function released(v: Villager3D): Villager3D {
-  const dispose = v.dispose.bind(v);
-  v.dispose = () => {
-    v.group.traverse((n) => (n as SkinnedMesh).skeleton?.dispose());
-    dispose();
-  };
-  return v;
-}
-
 /** A roster villager's model (a person's, or a visitor's: world3d/villagers.ts). */
 export function villager3(id: string, dir: string): Person3 {
   const url = url3d(id, dir);
-  return { key: `v:${id}`, kind: 'villager', villager: id, has3d: !!url, create: (seed) => (url ? createVillager(id, url, seed).then(released) : null) };
+  return { key: `v:${id}`, kind: 'villager', villager: id, has3d: !!url, create: (seed) => (url ? createVillager(id, url, seed) : null) };
 }
 
 /** A look's fields in a fixed order (the key: two equal looks are one model). */
@@ -72,7 +60,7 @@ export function person3(who: Who, look: Look, villagerPref: string | null | unde
       key: `p:${lookKey(look)}`, kind: 'player', villager: id, has3d: true,
       create: (seed) => import('../player3d/player3d.ts')
         .then(({ createPlayer }) => createPlayer(who, parts, dirs.player, seed))
-        .then(released, () => v.create(seed) ?? Promise.reject(new Error(`no model for ${who}`)))
+        .catch(() => v.create(seed) ?? Promise.reject(new Error(`no model for ${who}`)))
     };
   }
   memo.set(look, { pref: villagerPref, p });
@@ -103,7 +91,7 @@ export function createPainter(renderer: WebGLRenderer, dir: string, idle: () => 
       if (gone || drawOff()) return null;
       await settle();
       const { createShooter } = await import('../player3d/player3d.ts');
-      shooter ??= createShooter('portrait', dir, (p) => released(p) as typeof p);
+      shooter ??= createShooter('portrait', dir);
       const url = await shooter.shoot(renderer, look, px, () => gone);
       if (url) drawn();
       return url;

@@ -27,17 +27,13 @@ import { softDisc } from '../world3d/cards.ts';
 import { modelCache } from '../world3d/modelCache.ts';
 import M from './models.json' with { type: 'json' };
 import { modelBounds } from '../world3d/models3d.ts';
-import { along, roomScreen, walkLens, type Walk } from '../rooms/view.ts';
+import { ENTRY_HOLD_MS, PACE, VILLAGER_H, along, roomScreen, walkLens, type Insets, type Walk } from '../rooms/view.ts';
 import { EYE_MARGIN, clampEye, firstPerson as createFirstPerson, headAnchor, wrapAngle } from '../rooms/firstPerson.ts';
 import {
   BUG_WING, DESK, DOOR_HALF, DOORMAT, FISH_WING, HALL, HALL_H, OPENING, WALLS, WING_H, inRect, navOf, roomAt, walkable, wallEnds, wingAt,
   type Nav, type Pt, type Rect, type Wall, type Wing
 } from './plan.ts';
 
-/** A villager's height (model units: the rooms', tent/engine.ts VILLAGER_H). */
-const VILLAGER_H = 16;
-/** Walking pace (model units a second: the rooms', tent/engine.ts PACE). */
-export const PACE = 45;
 /** The rooms' camera: degrees down from level, the lens. */
 const PITCH = 47;
 const FOV = 32;
@@ -47,8 +43,6 @@ const VIEW_W = 92;
  *  world3d/engine.ts), REST_FPS, and REST_FAR_FPS while those moving are only seen through an opening (a wing's
  *  tanks and bugs from the hall, the hall's from a wing): the battery and the phone's heat at rest. */
 const AMBIENT = 30, REST_MS = 2500, REST_FPS = 15, REST_FAR_FPS = 10;
-/** The longest the first frame waits for the villagers' models (ms): holding. */
-const ENTRY_HOLD_MS = 1500;
 /** How long a wall takes to fade out or in (ms), the cutaway's. */
 const WALL_FADE = 220;
 
@@ -56,7 +50,6 @@ export type Who = 'A' | 'B' | 'G';
 /** Who draws a villager here (person3d: the look they wear). */
 /** Who draws a person: its model, and for a villager with none (villagers.json none) its render, drawn as a card. */
 export type Look = Person3 & { card?: { url: string; aspect: number } };
-export interface Insets { top: number; bottom: number }
 export type Hit = { kind: 'villager'; who: Who } | { kind: 'creature'; id: string } | { kind: 'seat'; id: string } | { kind: 'door' } | { kind: 'floor'; x: number; z: number };
 
 /** One wing's exhibits (aquarium.ts, garden.ts): its group, what stands on the floor (the walk keeps off it), its frame

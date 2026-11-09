@@ -25,21 +25,14 @@ import { glbLoader } from '../world3d/gltf.ts';
 import { softDisc } from '../world3d/cards.ts';
 import { FPS } from '#lib/store/frameRate.ts';
 import { pacer } from '../world3d/pace.ts';
-import { along, roomScreen, walkLens, type Walk } from '../rooms/view.ts';
+import { ENTRY_HOLD_MS, PACE, VILLAGER_H, along, roomScreen, walkLens, type Insets, type Walk } from '../rooms/view.ts';
 import { EYE_MARGIN, camAz, clampEye, firstPerson as createFirstPerson, headAnchor, type Rect } from '../rooms/firstPerson.ts';
 
 /** The walls' height (RoomMdlWall: 40 model units, four tiles). */
 const WALL_H = 40;
-/** A villager's height in the room (model units: a little over a tile and a half, NH's proportions against its beds). */
-export const VILLAGER_H = 16;
-/** Walking pace (model units a second: four and a half tiles; three before the user's "increase the walk speed of
- *  players by 50%", 2026-11-04). Only a player walks in here. */
-export const PACE = 45;
 /** Camera: degrees down from the horizontal and the lens (NH's room camera: steep, a long lens). */
 const PITCH = 47;
 const FOV = 32;
-/** The longest the first frame waits for the villagers' models (ms): engine.ts holding. */
-const ENTRY_HOLD_MS = 1500;
 /** How many lamps light the room at night (a point light each, nearest the middle first). */
 const LIGHTS_MAX = 4;
 
@@ -88,11 +81,6 @@ export interface Ghost {
   at?: readonly [number, number];
   /** What stands on it (a table carried with its things): each one's slot and facing on it. */
   kids?: readonly { item: string; x: number; z: number; f: Facing }[];
-}
-export interface Insets {
-  /** What covers the canvas at its top and foot (px): the room fits between. */
-  top: number;
-  bottom: number;
 }
 
 export interface Tent {
