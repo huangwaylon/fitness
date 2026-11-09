@@ -224,8 +224,8 @@ test('みつけた: what either of us found in a balloon that NH has a model of,
     if (localStorage.getItem('island-demo.events')) return;
     const at = Date.parse('2026-11-04T11:00:00+09:00');
     const ev = (i: number, id: string, person: 'A' | 'B') => ({ id: `seed-${i}`, type: 'find', data: { kind: 'item', id }, queuedAt: at + i, tries: 0, nextAt: 0, ackedAt: at + i, person });
-    // the froggy chair has no model here: it isn't offered
-    localStorage.setItem('island-demo.events', JSON.stringify({ day: '2026-11-04', events: [ev(0, 'exercise-bike', 'A'), ev(1, 'froggy-chair', 'B'), ev(2, 'treadmill', 'B')] }));
+    // the electric bass has no model in NH's files: it isn't offered
+    localStorage.setItem('island-demo.events', JSON.stringify({ day: '2026-11-04', events: [ev(0, 'exercise-bike', 'A'), ev(1, 'electric-bass', 'B'), ev(2, 'treadmill', 'B')] }));
     localStorage.removeItem('island-demo.tent');
   });
   await page.goto('tent' + Q);

@@ -974,8 +974,8 @@ stands just in front, facing out, on every phone. The homes' rooms are the same 
   keeps it; silent for 2 s it drops back; the drop is the op.
 - **Cost:** three.js and the room's code are their own chunk, fetched only when the tent opens (`e2e/tent.spec.ts`); no
   MSAA; pixel ratio capped at 2, 1.5 while the camera moves; frames on demand; everything disposed on the way out.
-- **The models** (`npm run room-models`, NH_MODELS=~/Downloads/Model): NH's furniture, rugs, wallpapers and floors
-  converted to `static/room/` ([world3d-assets.md](world3d-assets.md)): each piece a meshopt glTF with baked WebP
+- **The models** (`npm run room-models`, NH_MODELS: see [world3d-assets.md](world3d-assets.md)): NH's furniture, rugs, wallpapers and floors
+  converted to `static/room/`: 816 pieces (every ずかん piece NH has a model of), each a meshopt glTF with baked WebP
   textures (≤ 256 px, ≈ 18 KB average), its footprint from NH's catalogue size; wallpapers 256 × 512, floors 512².
   Cached by the service worker on first use (`island-room-v1`, content-hashed URLs), never at install.
 
