@@ -592,7 +592,7 @@
   "shop.all": "全部",
   "shop.sell": "売る",
   "shop.today": "今日の品物",
-  "shop.basics": "いつもの",
+  "shop.soldOut": "売り切れです。島の家具はすべてそろっています",
   "shop.buyHint": "欲しいものを選んでください",
   "shop.buy": "買う",
   "shop.owned": "持っている",

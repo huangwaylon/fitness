@@ -1,10 +1,11 @@
 // The shop in the record (docs/backend.md#events `sell` / `buy`, contract/shop.ts): a sell only of what the sender's
-// pocket holds (their tallies' catches less their sells), at most its price (an older app's lower list); a buy only of a piece in a stock of
-// about today, at exactly its price, covered by their かいがら, once; each person's own (the guest's too); an id once.
+// pocket holds (their tallies' catches less their sells), at most its price (an older app's lower list); a buy only of a priced piece, its
+// stock's day about today, at exactly its price, covered by their かいがら, once; each person's own (the guest's too); an id once.
 import { beforeEach, describe, expect, it } from 'vitest';
 import { StoreCore } from '../src/store.ts';
-import { buyPrice, sellPrice, stockOf } from '../../app/src/lib/contract/shop.ts';
-import { BUY } from '../../app/src/lib/contract/shopPrices.ts';
+import { sellPrice } from '../../app/src/lib/contract/shop.ts';
+import { buyPrice, stockOf } from '../../app/src/lib/contract/stock.ts';
+import { BUY } from '../../app/src/lib/contract/buyPrices.ts';
 import { TALLY_PAST_DAYS } from '../../app/src/lib/contract/record.ts';
 import { memSql } from './sqlite.ts';
 
@@ -131,14 +132,13 @@ describe('the shop in the record', () => {
     expect(rows.filter((r) => r[3] === 'buy')).toHaveLength(1);
   });
 
-  it('buys only what かいがら cover, a piece once, from the day’s stock at its price', () => {
+  it('buys only what かいがら cover, a piece once, from a stock of about today at its price', () => {
     const price = buyPrice(item)!;
     expect(buy('A')).toEqual(refused('wallet short'));
     tally('A', { 'fish:whale-shark': 40 });
     expect(sell('A', 'fish:whale-shark', 40, 40 * W)).toEqual({ ok: true });
     expect(buy('A', item, price + 1)).toEqual(refused());
-    const not = Object.keys(BUY).find((c) => !['2026-11-03', D, '2026-11-05'].some((d) => stockOf(d).includes(c)))!;
-    expect(buy('A', not)).toEqual(refused()); // not in the stock
+    expect(buy('A', 'f1', 1)).toEqual(refused()); // never sold
     expect(buy('A', stockOf('2026-11-01')[0], buyPrice(stockOf('2026-11-01')[0])!, '2026-11-01')).toEqual(refused()); // an old day's
     expect(buy('A')).toEqual({ ok: true });
     expect(buy('A')).toEqual(refused('owned'));
@@ -192,7 +192,7 @@ describe('the shop in the record', () => {
     expect(sell('B', 'fish:koi', 1, K)).toEqual(refused('pocket short')); // A's catches aren't B's
     expect(sell('G', 'fish:koi', 2, 2 * K)).toEqual(refused('pocket short'));
     expect(sell('G', 'fish:koi', 1, K)).toEqual({ ok: true });
-    expect(buy('G', 'f3672', 6)).toEqual({ ok: true }); // the cardboard box, always in stock
+    expect(buy('G', 'f3672', 6)).toEqual({ ok: true }); // the cardboard box
     expect(buy('B', 'f3672', 6)).toEqual(refused('wallet short'));
     expect(buy('A', 'f3672', 6)).toEqual(refused('wallet short')); // caught, not sold yet
   });

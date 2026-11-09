@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { foldEvents, reduce } from './state.ts';
 import { shopView } from './shop.ts';
 import { weekBells } from './bells.ts';
-import { stockOf, buyPrice } from '#lib/contract/shop.ts';
+import { stockOf, buyPrice } from '#lib/contract/stock.ts';
 import type { EventRow } from '#lib/contract/api.ts';
 import type { Who } from '#lib/types.ts';
 

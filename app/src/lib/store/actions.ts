@@ -19,7 +19,7 @@ import {
 } from '#lib/contract/food.ts';
 import { nextDay } from '#lib/contract/tokyo.ts';
 import { customs, foodDay, foodEntries, mealItems, recipes, repeats } from '#lib/model/food.ts';
-import { buyPrice, sellPrice, stockOf } from '#lib/contract/shop.ts';
+import { sellPrice } from '#lib/contract/shop.ts';
 import { GOODS } from '#lib/contract/pocket.ts';
 import { shopView } from '#lib/model/shop.ts';
 import { world } from './world.svelte.ts';
@@ -300,23 +300,6 @@ export function sell(picks: ReadonlyMap<string, number>): SendResult & { shells?
   releaseTally();
   const r = together(rows.map((d) => week.send('sell', d, { holdMs: UNDO_MS })));
   return { ...r, shells: rows.reduce((a, d) => a + d.v, 0) };
-}
-
-/** Why I can't buy this piece from today's stock now, or null: not in the stock, bought already, too dear. */
-export function buyRefusal(item: string): 'stock' | 'owned' | 'wallet' | null {
-  const m = week.model;
-  if (!m || !stockOf(localDateAt(m.now)).includes(item)) return 'stock';
-  const v = shopView(m.state, m.me);
-  if (v.owned.includes(item)) return 'owned';
-  return (buyPrice(item) ?? Infinity) > v.shells ? 'wallet' : null;
-}
-
-/** Buy a piece of today's stock with my かいがら: it joins my もようがえ. `{ok:false}` when `buyRefusal` says no. */
-export function buyPiece(item: string): SendResult & { price?: number } {
-  const m = week.model;
-  const price = buyPrice(item);
-  if (!m || price === undefined || buyRefusal(item)) return { ok: false };
-  return { ...week.send('buy', { item, price, d: localDateAt(m.now) }, { holdMs: UNDO_MS }), price };
 }
 
 // ---- The shared island's day on the sheet (docs/backend.md#shared-world): one `island` row per person and day, sent

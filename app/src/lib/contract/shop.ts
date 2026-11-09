@@ -5,8 +5,8 @@
 //   contract/tally.ts: one row per person and day, its counts only ever growing) less what they sold of it (`sell`).
 //   No write per catch. What it holds: contract/pocket.ts.
 // - **かいがら** are derived too: Σ the sells' values − Σ the buys' prices, per person (the guest's its own).
-// - **The stock**: STOCK_N pieces a Tokyo day, picked from the price list's pieces by the date alone (seeded), and the
-//   BASICS always; a buy names the day whose stock it was bought from.
+// - **The stock** (contract/stock.ts): 24 pieces a Tokyo day, never one the island had by the day's start; a buy names
+//   the day whose stock it was bought from.
 //
 // A `sell` is `{species, n, v}`: `species` a tally key of the pocket's (`fish:koi`, `shell:coral`, `goods:wood`), `n` how many,
 // `v` what they fetched (n × the species' price when sold: kept, so a later price list never rewrites the past). A `buy`
@@ -15,9 +15,9 @@
 // fold the same rows by the same rules (model/shop.ts), a kept row as kept and a queued one as the record would judge
 // it. Shared by the record and the model; pure.
 import { isLocalDate } from './api.ts';
-import { SELL, BUY } from './shopPrices.ts';
+import { SELL } from './shopPrices.ts';
+import { buyPrice } from './stock.ts';
 import type { LocalDate, Who } from '../types.ts';
-import { seeded } from '../random.ts';
 import { POCKET_KINDS } from './pocket.ts';
 import { nextDay, prevDay } from './tokyo.ts';
 
@@ -26,10 +26,6 @@ export interface BuyData { item: string; price: number; d: LocalDate }
 
 /** At most this many of a species in one sell (a day's tally holds at most 999 of it). */
 const SELL_MAX_N = 999;
-/** The pieces a day's stock holds besides the basics. */
-export const STOCK_N = 8;
-/** Always in stock (NH's shop keeps its basics): a cardboard box, a zen cushion, a mini cactus set. */
-export const BASICS: readonly string[] = ['f3672', 'f7047', 'f4123'];
 
 /** The kinds a pocket holds (contract/pocket.ts: never a present's furniture or recipe). */
 const SPECIES_RE = new RegExp(`^(${POCKET_KINDS.join('|')}):[a-z][a-z0-9-]{0,47}$`);
@@ -42,8 +38,6 @@ const keysAre = (d: Record<string, unknown>, keys: readonly string[]): boolean =
 
 /** A species' sell price in かいがら (contract/shopPrices.ts), or undefined: not sellable. */
 export const sellPrice = (species: string): number | undefined => (Object.hasOwn(SELL, species) ? SELL[species] : undefined);
-/** A piece's buy price in かいがら, or undefined: the shop never sells it. */
-export const buyPrice = (item: string): number | undefined => (Object.hasOwn(BUY, item) ? BUY[item] : undefined);
 
 /** A `sell`'s data as the model reads it: its shape only (the price was the record's rule when it was kept). */
 export function sellOf(d: Record<string, unknown>): SellData | null {
@@ -62,8 +56,10 @@ export function buyOf(d: Record<string, unknown>): BuyData | null {
 /**
  * Whether the record keeps this `sell` or `buy` now (`today`: the server's Tokyo date), cover aside (`shopRefusal`): a
  * sell at most n × its species' price (an app from before a price rise sells at its own lower list; never above the
- * record's); a buy at exactly its piece's price, from the stock of a day from yesterday to
- * tomorrow (a buy queued over midnight, a phone's clock a little ahead), the piece in that day's stock.
+ * record's); a buy at exactly its piece's price, from the stock of a day from yesterday to tomorrow (a buy queued over
+ * midnight, a phone's clock a little ahead). Which pieces a day's stock holds depends on the island's finds
+ * (contract/stock.ts), so the record doesn't check it: the phones only offer the stock (and an app from before 2026-11-09
+ * drew another).
  */
 export function shopPriced(type: 'sell' | 'buy', d: Record<string, unknown>, today: LocalDate): boolean {
   if (type === 'sell') {
@@ -73,28 +69,7 @@ export function shopPriced(type: 'sell' | 'buy', d: Record<string, unknown>, tod
   }
   const b = buyOf(d);
   if (!b || b.price !== buyPrice(b.item)) return false;
-  if (b.d < prevDay(today) || b.d > nextDay(today)) return false;
-  return stockOf(b.d).includes(b.item);
-}
-
-// ---- the stock
-
-const POOL: readonly string[] = Object.keys(BUY).filter((c) => !BASICS.includes(c)).sort();
-const stockMemo = new Map<string, readonly string[]>();
-
-/** A Tokyo day's stock: STOCK_N pieces drawn from the price list by the date alone (the same on every phone and the
- *  record), then the BASICS. Memoised. */
-export function stockOf(date: LocalDate): readonly string[] {
-  const hit = stockMemo.get(date);
-  if (hit) return hit;
-  const r = seeded(`shop:${date}`);
-  const pool = [...POOL];
-  const out: string[] = [];
-  for (let i = 0; i < STOCK_N && pool.length; i++) out.push(pool.splice(Math.floor(r() * pool.length), 1)[0]);
-  const all = [...out, ...BASICS.filter((b) => buyPrice(b) !== undefined)];
-  if (stockMemo.size > 64) stockMemo.clear();
-  stockMemo.set(date, all);
-  return all;
+  return b.d >= prevDay(today) && b.d <= nextDay(today);
 }
 
 // ---- the ledger
