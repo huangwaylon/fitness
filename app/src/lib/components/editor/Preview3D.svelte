@@ -119,7 +119,7 @@
         // models' cache's) let go of with the rest at the end
         const gone3: ReturnType<typeof resourcesOf> = new Set();
         const groups = new Map<string, Object3D>();
-        let heldId: string | null = null;
+        let heldId: string | null = null, heldIds: readonly string[] = [];
         const built = createBuilt((id, g, at) => {
           const was = groups.get(id);
           if (was) {
@@ -398,11 +398,14 @@
             const r = canvas!.getBoundingClientRect();
             return [r.width, r.height];
           },
-          hide(id: string | null) {
+          hide(ids: readonly string[]) {
+            // (the piece held, and what's on its top)
+            const id = ids[0] ?? null;
             for (const [gid, gr] of groups) gr.visible = builtObject(gid) !== id;
-            if (heldId && heldId !== id) things.over(heldId, null);
+            for (const was of heldIds) if (!ids.includes(was)) things.over(was, null);
             heldId = id;
-            if (id) things.over(id, { hidden: true });
+            heldIds = ids;
+            for (const i of ids) things.over(i, { hidden: true });
             // (K.K. goes with his stool while it's held, and sits on it again where it's put down)
             kkSpec.shown = !id || KK.kkSpot(cur)?.id !== id;
             kick();

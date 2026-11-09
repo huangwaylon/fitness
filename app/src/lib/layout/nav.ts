@@ -69,7 +69,8 @@ export const dist = (a: Pt, b: Pt) => Math.hypot(b[0] - a[0], b[1] - a[1]);
 /** An object's block box (u, unpadded): its kind's trunk or its whole footprint. */
 export function blockBox(layout: Layout, o: Obj): Box | null {
   const def = kindDef(o.k);
-  if (!def?.block) return null;
+  // (a thing on a table's top blocks nothing of its own: its table does, tops.ts)
+  if (!def?.block || o.on) return null;
   const [w, d] = footOf(layout, o);
   if (def.foot && o.k !== 'home') {
     const [mx, mz] = objMid(layout, o);
@@ -227,7 +228,8 @@ export const liesOn = (k: string): boolean => !!SEAT_ON[k]?.lie;
 export function seatsOf(layout: Layout, o: Obj): [string, Pt][] {
   const [mx, mz] = objMid(layout, o);
   const on = SEAT_ON[o.k];
-  if (on) {
+  // (a bench or a stool with things on its top is no seat: tops.ts)
+  if (on && ![...layout.objects.values()].some((t) => t.on === o.id)) {
     const NAMES: Record<string, readonly string[]> = { 'bench-mae': ['seatMaeL', 'seatMaeR'], 'bench-pond': ['seatPondL', 'seatPondR'], 'stool-1': ['stoolW'], 'stool-2': ['stoolE'], pullup: ['pullup'] };
     const names = NAMES[o.id] ?? (on.x.length > 1 ? on.x.map((_, i) => `seat-${o.id}-${i}`) : [`seat-${o.id}`]);
     // the model's across (+x) and front (+z, toward us at yaw 0) turned by its yaw, in the layout's x / z (z into the island)

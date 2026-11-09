@@ -19,6 +19,7 @@
   import HomePicker from '../homes/HomePicker.svelte';
   import ResetConfirm from './ResetConfirm.svelte';
   import { draw, fitView, tileUnder, toScreen, toWorld, zoomAt, type View } from './plan.ts';
+  import { carryTops } from '#lib/layout/tops.ts';
   import {
     brushTiles, cliff, copy, ghostFoot, inBox, move, objectAt, paint, paste, place, remove, removable, resize, restyle, revert, rotate, sameLayout, wetAt, type Clip
   } from './edits.ts';
@@ -68,6 +69,8 @@
   }
   function commit(next: Layout, label: string): void {
     const before = store.current;
+    // the things on the tops of the tables moved, turned or taken away go with them (layout/tops.ts)
+    next = carryTops(before, next);
     if (sameLayout(before, next)) return;
     if (!send(next)) return;
     undoStack = [...undoStack.slice(-199), { before, after: next, label }];
@@ -243,7 +246,8 @@
       return;
     }
     // select: an object picks it up (and its group if it's selected), empty ground starts a box
-    const o = objectAt(cur, tile[0], tile[1]);
+    // (a thing on a table's top by its middle, the table by the rest of its tile)
+    const o = objectAt(cur, tile[0], tile[1], toWorld(view, px, py));
     if (o) {
       if (e.shiftKey || e.metaKey) {
         const s = new Set(selected);
@@ -253,7 +257,9 @@
         return;
       }
       if (!selected.has(o.id)) selected = new Set([o.id]);
-      drag = { mode: 'move', x: px, y: py, tile, ids: [...selected], dc: 0, dr: 0, turn: 0, lastSent: 0 };
+      // (a table carries what's on its top)
+      const ids = [...selected], kids = [...cur.objects.values()].filter((k) => k.on && selected.has(k.on) && !selected.has(k.id)).map((k) => k.id);
+      drag = { mode: 'move', x: px, y: py, tile, ids: [...ids, ...kids], dc: 0, dr: 0, turn: 0, lastSent: 0 };
     } else {
       if (!e.shiftKey) selected = new Set();
       drag = { mode: 'box', x: px, y: py, tile };

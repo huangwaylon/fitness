@@ -42,10 +42,12 @@ const solid = (o: Obj) => {
 };
 
 /** Whether two objects overlap as validate's `overlap` has it: solid things never share ground, a flower never stands
- *  in a solid thing, a structure (stairs, a bridge) clashes only with what blocks or another structure; the spots and
- *  the markers with nothing. */
+ *  in a solid thing, a structure (stairs, a bridge) clashes only with what blocks or another structure; the spots, the
+ *  markers and the things on a table's top with nothing. */
 export function overlap(layout: Layout, a: Obj, b: Obj): boolean {
   if (a.k === 'spot' || isMarker(a.k) || b.k === 'spot' || isMarker(b.k) || (!solid(a) && !solid(b))) return false;
+  // (a thing on a table's top shares its table's ground: tops.ts)
+  if (a.on || b.on) return false;
   // a flower may grow by stairs or a bridge's end
   const sa = a.k === 'bridge' || a.k === 'stairs', sb = b.k === 'bridge' || b.k === 'stairs';
   if ((sa && !sb && !kindDef(b.k)?.block) || (sb && !sa && !kindDef(a.k)?.block)) return false;

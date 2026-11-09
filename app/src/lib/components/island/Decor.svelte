@@ -28,12 +28,18 @@
 
   // The layout's objects of the decorations' kinds (the old もようがえ's moved in as `m-<id>`, the editor's, the gym's).
   const KINDS: ReadonlySet<string> = new Set(DECOR_KINDS);
-  const items = $derived.by((): readonly { id: string; item: string; x: number; z: number; f: Facing }[] => {
+  // (a thing on a table's top: there, over the ground: layout/tops.ts, the 3D island's own, loaded with it: never in the
+  // first load)
+  let topSpot = $state<typeof import('#lib/layout/tops.ts').topSpot | null>(null);
+  $effect(() => {
+    if (!topSpot && [...(site.layout?.objects.values() ?? [])].some((o) => o.on)) void import('#lib/layout/tops.ts').then((m) => (topSpot = m.topSpot));
+  });
+  const items = $derived.by((): readonly { id: string; item: string; x: number; z: number; lift: number; f: Facing }[] => {
     const l = site.layout;
     if (!l) return [];
     return [...l.objects.values()].filter((o) => KINDS.has(o.k)).map((o) => {
-      const [x, z] = objMid(l, o);
-      return { id: o.id, item: o.k, x: Math.round(x), z: Math.round(z), f: o.f as Facing };
+      const top = o.on && topSpot ? topSpot(l, o) : null, [x, z] = top ? [top.x, top.z] : objMid(l, o);
+      return { id: o.id, item: o.k, x: Math.round(x), z: Math.round(z), lift: top?.lift ?? 0, f: o.f as Facing };
     });
   });
   /** A render stands on its feet point (decorPlace), its height decorH; its width the art's, else the model's box (the
@@ -81,7 +87,7 @@
 
 {#each items as p (p.id)}
   {@const l = look(p.item, p.f)}
-  <div class="spr" data-decor-node={p.id} data-scenery-id={p.id} {@attach w.at({ x: p.x, z: p.z, h: l.h, inv: true })}>
+  <div class="spr" data-decor-node={p.id} data-scenery-id={p.id} {@attach w.at({ x: p.x, z: p.z, lift: p.lift, h: l.h, inv: true })}>
     <button type="button" class="deco" data-decor={p.id} data-item={p.item} data-x={p.x} data-z={p.z} data-f={p.f} data-sfx="self" aria-label={nameOf(p.item)}
       style={l.style} style:height="calc({l.h} * var(--u))" style:width="calc({l.wd} * var(--u))"
       onclick={(e) => tap(e, p.id, p.x)}>

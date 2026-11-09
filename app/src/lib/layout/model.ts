@@ -17,6 +17,8 @@ export interface Obj {
   z: number;
   f: Facing;
   s?: string;
+  /** It stands on this object's top (NH's table tops: tops.ts), on its own tile (one of that object's). */
+  on?: string;
   /** The default's own offset from its footprint's middle (u): today's island exactly, until someone moves it. */
   n?: readonly [number, number];
 }
@@ -92,7 +94,7 @@ export function layoutOf(entries: Iterable<LayoutEntry> | Map<string, LayoutEntr
     } else if (e.sc === 'o') {
       if (e.rm) objects.delete(e.id);
       // (a home's facing is its owner's look's, never an outdoor op's: the default's until its owner turns it)
-      else objects.set(e.id, { id: e.id, k: e.k, x: e.x, z: e.z, f: WHO_OF_HOME[e.id] ? (from.objects.get(e.id)?.f ?? 0) : e.f, ...(e.s ? { s: e.s } : {}) });
+      else objects.set(e.id, { id: e.id, k: e.k, x: e.x, z: e.z, f: WHO_OF_HOME[e.id] ? (from.objects.get(e.id)?.f ?? 0) : e.f, ...(e.s ? { s: e.s } : {}), ...(e.on ? { on: e.on } : {}) });
     } else if (e.sc === 'h') {
       const who = e.id.slice(1) as Who;
       homes[who] = { m: e.m, ...(e.w ? { w: e.w } : {}), ...(e.r ? { r: e.r } : {}), ...(e.d ? { d: e.d } : {}), ...(e.f !== undefined ? { f: e.f } : {}) };
@@ -183,8 +185,8 @@ export function opsBetween(a: Layout, b: Layout, at: number): LayoutOp[] {
   }
   for (const o of b.objects.values()) {
     const was = a.objects.get(o.id);
-    if (was && was.k === o.k && was.x === o.x && was.z === o.z && was.f === o.f && was.s === o.s && !!was.n === !!o.n) continue;
-    out.push({ sc: 'o', id: o.id, at: t++, k: o.k, x: o.x, z: o.z, f: o.f, ...(o.s ? { s: o.s } : {}) });
+    if (was && was.k === o.k && was.x === o.x && was.z === o.z && was.f === o.f && was.s === o.s && was.on === o.on && !!was.n === !!o.n) continue;
+    out.push({ sc: 'o', id: o.id, at: t++, k: o.k, x: o.x, z: o.z, f: o.f, ...(o.s ? { s: o.s } : {}), ...(o.on ? { on: o.on } : {}) });
   }
   for (const id of a.objects.keys()) if (!b.objects.has(id)) out.push({ sc: 'o', id, at: t++, rm: true });
   for (const who of ['A', 'B', 'G'] as const) {
@@ -248,7 +250,7 @@ export function fromJson(j: unknown): Layout | null {
   for (const x of o.objects) {
     if (!x || typeof x.id !== 'string' || !ID.test(x.id) || typeof x.k !== 'string' || !kindDef(x.k)) return null;
     if (![x.x, x.z, x.f].every((n) => Number.isInteger(n) && n >= 0 && n < 128) || x.f > 3) return null;
-    objects.set(x.id, { id: x.id, k: x.k, x: x.x, z: x.z, f: x.f as Facing, ...(typeof x.s === 'string' && x.s ? { s: x.s } : {}), ...(Array.isArray(x.n) && x.n.length === 2 ? { n: [Number(x.n[0]) || 0, Number(x.n[1]) || 0] as const } : {}) });
+    objects.set(x.id, { id: x.id, k: x.k, x: x.x, z: x.z, f: x.f as Facing, ...(typeof x.s === 'string' && x.s ? { s: x.s } : {}), ...(typeof x.on === 'string' && ID.test(x.on) && x.on !== x.id ? { on: x.on } : {}), ...(Array.isArray(x.n) && x.n.length === 2 ? { n: [Number(x.n[0]) || 0, Number(x.n[1]) || 0] as const } : {}) });
   }
   const homes = { ...DEFAULT_HOMES };
   for (const who of ['A', 'B', 'G'] as const) {

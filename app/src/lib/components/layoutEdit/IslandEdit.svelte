@@ -6,7 +6,9 @@
   // free tile nearest the middle of the view, its footprint on the ground green or red (and why, in the bar); a finger
   // on it, or on a placed thing (it's picked up), drags it a tile at a time; a tap on the ground moves it there; ↻ turns
   // it; ✓ puts it down; 🗑 しまう takes a placed one away (the island's one-offs, the goal trees, the homes never); ✕
-  // puts it back. While a finger holds it the other phones see it move (`drag`, `sc: 'o'`); a drop is one action,
+  // puts it back. A small thing (the food, a kettle, the lantern) held over a table's top goes on it, as in the rooms
+  // (layout/tops.ts; a tap on the table puts it there); a table carries what's on it, and goes away only once that's
+  // gone. While a finger holds it the other phones see it move (`drag`, `sc: 'o'`); a drop is one action,
   // its ops at once (every phone's island, the editor). Everyone's, the guest's too (2026-11-06).
   // The terrain (paths, water, cliffs) is the desktop editor's for now. The visitors' spots (おきゃくさん: the plaza's, where
   // the visitors stand, and Gulliver's on the beach; docs/design.md "Visitors") are marks only here: one each, a tap on
@@ -26,6 +28,7 @@
   import type { Live } from '#lib/sync/live.ts';
   import { objectAt } from '../editor/edits.ts';
   import { WHO_OF_HOME, type Who } from '#lib/layout/homes.ts';
+  import { carryTops, isSmallKind, isSurfaceKind, kidsOf, surfaceAt, topSpot, topWhy } from '#lib/layout/tops.ts';
 
   export interface EditStage {
     /** The element over the island the mode's taps come through (its own taps pass on to the island). */
@@ -36,8 +39,8 @@
     toGround(sx: number, sy: number): [number, number] | null;
     /** The host's size (px). */
     size(): [number, number];
-    /** Hide a placed thing's model while it's held (null: none). */
-    hide?(id: string | null): void;
+    /** Hide placed things' models while they're held (a table and what's on it; none: show them all). */
+    hide?(ids: readonly string[]): void;
     /** The stage pans itself on a drag over open ground (the editor's preview: a tap there does nothing of its own):
      *  a press on the ground while something's held passes on to it too, its tap still putting the held thing there. */
     pans?: boolean;
@@ -63,7 +66,7 @@
   const ICON_FALLBACK: Record<string, string> = { stairs: '⛰', board: '📋' };
 
   /** What's held: a new kind (`id` null) or a placed thing, its tile (its footprint's anchor) and facing. */
-  let sel = $state<{ id: string | null; k: string; s?: string; x: number; z: number; f: Facing; orig?: Obj } | null>(null);
+  let sel = $state<{ id: string | null; k: string; s?: string; x: number; z: number; f: Facing; on?: string; orig?: Obj } | null>(null);
   let why = $state<string | null>(null);
   /** Whether the held thing may turn here (a home: its owner only). */
   const turns = $derived(!sel || sel.k !== 'home' || sel.id === `home-${me}`);
@@ -73,13 +76,25 @@
   function withHeld(l: Layout): { l: Layout; id: string } | null {
     if (!sel) return null;
     const id = sel.id ?? 'held-new';
-    const o: Obj = { id, k: sel.k, x: sel.x, z: sel.z, f: sel.f, ...(sel.s ? { s: sel.s } : {}) };
+    const o: Obj = { id, k: sel.k, x: sel.x, z: sel.z, f: sel.f, ...(sel.s ? { s: sel.s } : {}), ...(sel.on ? { on: sel.on } : {}) };
     return { l: withChanges(l, { set: [o] }), id };
+  }
+  /** A small thing held over a table's top is on it (the rooms' way: tent/TentEdit.svelte); null: on the ground. */
+  function onto(): void {
+    if (!sel || !isSmallKind(sel.k)) return;
+    const p = surfaceAt(store.current, sel.x, sel.z, sel.id ?? undefined);
+    const { on: _, ...ground } = sel;
+    sel = p ? { ...ground, on: p.id } : ground;
   }
   /** Why the held thing can't stand there (the checks' reason for it), or null. */
   function check(): void {
+    onto();
     const h = withHeld(store.current);
     if (!h) return void (why = null);
+    if (sel?.on) {
+      const w = topWhy(store.current, store.current.objects.get(sel.on)!, sel.x, sel.z, sel.id);
+      return void (why = w ? t(`tent.why.${w}`) : null);
+    }
     const [w, d] = footOf(h.l, h.l.objects.get(h.id)!), [x0, z0] = originOf(h.l, h.l.objects.get(h.id)!);
     if (x0 < 0 || z0 < 0 || x0 + w > GRID.cols || z0 + d > GRID.rows) return void (why = t('decor.island.outside'));
     // (a visitors' spot: where nobody can stand is no place for it)
@@ -126,8 +141,9 @@
   function pickUp(o: Obj) {
     cancel();
     if (!kindDef(o.k)) return;
-    sel = { id: o.id, k: o.k, ...(o.s ? { s: o.s } : {}), x: o.x, z: o.z, f: o.f, orig: o };
-    stage.hide?.(o.id);
+    sel = { id: o.id, k: o.k, ...(o.s ? { s: o.s } : {}), x: o.x, z: o.z, f: o.f, ...(o.on ? { on: o.on } : {}), orig: o };
+    // (a table with what's on its top: those go with it, shown again where it's put down)
+    stage.hide?.([o.id, ...kidsOf(store.current, o.id).map((k) => k.id)]);
     check();
     cue('tick');
   }
@@ -139,7 +155,7 @@
     sayDrag(false);
   }
   function cancel() {
-    if (sel?.id) stage.hide?.(null);
+    if (sel?.id) stage.hide?.([]);
     if (sel) sayDrag(true);
     sel = null;
     why = null;
@@ -149,15 +165,16 @@
     if (why) return cue('boop');
     const before = store.current;
     const id = sel.id ?? newObjId(store.stamp());
-    const o: Obj = { id, k: sel.k, x: sel.x, z: sel.z, f: sel.f, ...(sel.s ? { s: sel.s } : {}) };
-    const same = sel.orig && sel.orig.x === o.x && sel.orig.z === o.z && sel.orig.f === o.f && !sel.orig.n;
+    const o: Obj = { id, k: sel.k, x: sel.x, z: sel.z, f: sel.f, ...(sel.s ? { s: sel.s } : {}), ...(sel.on ? { on: sel.on } : {}) };
+    const same = sel.orig && sel.orig.x === o.x && sel.orig.z === o.z && sel.orig.f === o.f && sel.orig.on === o.on && !sel.orig.n;
     // a home's turn is its owner's look (an `h` op the record lets only them send)
     const who = WHO_OF_HOME[id];
     // (one of it on the island: any other a phone put down at the same time goes)
     const extra = kindDef(o.k)?.one ? [...before.objects.values()].filter((p) => p.k === o.k && p.id !== id).map((p) => p.id) : [];
     const next = who && who === me && o.f !== sel.orig?.f ? withChanges(before, { set: [o], homes: { [who]: { ...before.homes[who], f: o.f } } }) : withChanges(before, { set: [o], remove: extra });
-    if (!same) store.apply(opsBetween(before, next, store.stamp()));
-    stage.hide?.(null);
+    // (what's on a table's top goes with it: layout/tops.ts)
+    if (!same) store.apply(opsBetween(before, carryTops(before, next), store.stamp()));
+    stage.hide?.([]);
     sayDrag(true);
     sel = null;
     why = null;
@@ -167,8 +184,13 @@
     if (!sel?.id) return;
     const o = store.current.objects.get(sel.id);
     if (!o || kindDef(o.k)?.fixed) return cue('boop');
+    // (NH won't put a table away with things on it: those first, as in the rooms)
+    if (kidsOf(store.current, o.id).length) {
+      cue('boop');
+      return tell(t('tent.hasThings'));
+    }
     store.apply(opsBetween(store.current, withChanges(store.current, { remove: [o.id] }), store.stamp()));
-    stage.hide?.(null);
+    stage.hide?.([]);
     sayDrag(true);
     sel = null;
     cue('undo');
@@ -178,6 +200,14 @@
   //      Anything else is the island's (a drag on empty ground scrolls it); while something's held, every tap is ours ----
   let finger: { id: number; x: number; y: number; moved: boolean; onHeld: boolean } | null = null;
   let lastSent = 0;
+  /** A word in the bar a moment (why a tap did nothing: a table with things on it). */
+  let note = $state<string | null>(null);
+  let noteTimer: ReturnType<typeof setTimeout> | undefined;
+  function tell(text: string) {
+    clearTimeout(noteTimer);
+    note = text;
+    noteTimer = setTimeout(() => (note = null), 2200);
+  }
   function sayDrag(end: boolean) {
     if (!relay || !sel) return;
     const now = performance.now();
@@ -196,7 +226,22 @@
     const o = h.l.objects.get(h.id)!;
     const [w, d] = footOf(h.l, o), [x0, z0] = originOf(h.l, o);
     const [c, r] = tileOf(g[0], g[1]);
+    // (a small thing's near miss on a table's other tile is that tile: a tap there puts it there)
+    if (isSmallKind(sel.k) && (c !== x0 || r !== z0) && surfaceAt(store.current, c, r, sel.id ?? undefined)) return false;
     return c >= x0 - 1 && c <= x0 + w && r >= z0 - 1 && r <= z0 + d;
+  }
+  /** The thing on a table's top drawn under the finger (its middle within a third of a tile on screen), or null. */
+  function kidAt(sx: number, sy: number): Obj | null {
+    const l = store.current;
+    let best: Obj | null = null, bd = Infinity;
+    for (const o of l.objects.values()) {
+      if (!o.on || o.id === sel?.id) continue;
+      const top = topSpot(l, o), p = top && stage.toScreen(top.x, top.z, top.lift + 4), q = top && stage.toScreen(top.x + TILE, top.z, top.lift + 4);
+      if (!p || !q) continue;
+      const d = Math.hypot(p[0] - sx, p[1] - sy);
+      if (d < Math.min(22, Math.hypot(q[0] - p[0], q[1] - p[1]) * 0.3) && d < bd) (best = o), (bd = d);
+    }
+    return best;
   }
   function onDown(e: PointerEvent) {
     if ((e.target as Element | null)?.closest('.foot')) return;
@@ -205,9 +250,11 @@
     let onHeld = heldAt(sx, sy);
     if (!onHeld) {
       const g = stage.toGround(sx, sy);
-      const o = g && objectAt(store.current, ...tileOf(g[0], g[1]));
-      // (a visitors' spot is a mark on the ground: with something held, a tap there puts it there)
-      if (o && kindDef(o.k) && o.k !== 'spot' && !(sel && isMarker(o.k))) {
+      // (a thing on a table's top where it's drawn, by its middle; the table by the rest of it)
+      const o = kidAt(sx, sy) ?? (g && objectAt(store.current, ...tileOf(g[0], g[1]), g));
+      // (a visitors' spot is a mark on the ground: with something held, a tap there puts it there; with a small thing
+      // held, a tap on a table, or on what's on its top, puts it on that tile of its top)
+      if (o && kindDef(o.k) && o.k !== 'spot' && !(sel && isMarker(o.k)) && !(sel && isSmallKind(sel.k) && (isSurfaceKind(o.k) || o.on))) {
         pickUp(o);
         onHeld = true;
       }
@@ -272,16 +319,18 @@
     const o = h.l.objects.get(h.id)!;
     const [w, d] = footOf(h.l, o), [x0, z0] = originOf(h.l, o);
     const X0 = GRID.x0 + x0 * TILE, Z0 = GRID.z0 + z0 * TILE;
-    return { X0, Z0, X1: X0 + w * TILE, Z1: Z0 + d * TILE };
+    // (on a table's top: its tile there, at the top's height)
+    const top = o.on ? topSpot(h.l, o) : null;
+    return { X0, Z0, X1: X0 + w * TILE, Z1: Z0 + d * TILE, lift: top?.lift ?? 0 };
   });
   const ghost = $derived.by(() => {
     void rev;
     if (!sel || !held) return null;
-    const { X0, Z0, X1, Z1 } = held;
-    const pts = [[X0, Z0], [X1, Z0], [X1, Z1], [X0, Z1]].map(([x, z]) => stage.toScreen(x, z, 1));
+    const { X0, Z0, X1, Z1, lift } = held;
+    const pts = [[X0, Z0], [X1, Z0], [X1, Z1], [X0, Z1]].map(([x, z]) => stage.toScreen(x, z, lift + 1));
     if (pts.some((p) => !p)) return null;
     const [mx, mz] = [(X0 + X1) / 2, (Z0 + Z1) / 2];
-    const top = stage.toScreen(mx, mz, Math.min(60, kindDef(sel.k)?.h ?? 30)), foot = stage.toScreen(mx, mz, 0);
+    const top = stage.toScreen(mx, mz, lift + Math.min(60, kindDef(sel.k)?.h ?? 30)), foot = stage.toScreen(mx, mz, lift);
     return { poly: pts.map((p) => p!.join(',')).join(' '), top, foot };
   });
   // ---- the visitors' spots: their marks on the ground (nothing in play), the usual spot while no plaza's put down ----
@@ -348,7 +397,7 @@
       host.removeEventListener('pointermove', onMove, opt);
       host.removeEventListener('pointerup', onUp, opt);
       host.removeEventListener('pointercancel', onUp, opt);
-      stage.hide?.(null);
+      stage.hide?.([]);
     };
   });
 
@@ -397,7 +446,7 @@
   <div class="foot edit-tray">
     {#if sel && def}
       <div class="bar" role="toolbar" aria-label={say(def)}>
-        <span class="say" class:bad={!!why} data-why={why ?? ''} aria-live="polite">{why ?? say(def)}</span>
+        <span class="say" class:bad={!!(note ?? why)} data-why={why ?? ''} data-on={sel.on ?? ''} aria-live="polite">{note ?? why ?? say(def)}</span>
         {#if turns}<button type="button" class="act" data-act="turn" data-sfx="self" aria-label={t('decor.turn')} onclick={turn}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.05-4.95" /><path d="M19 4v4h-4" /></svg>
         </button>{/if}
