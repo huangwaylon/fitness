@@ -87,7 +87,7 @@ Production minimal pairs: the contrasts Japanese speakers merge (r/l, the hat/hu
 - **The round:** a unit's scene, two of its dialogues chained (7 scenes, one per wave-1 unit, 8–10 turns, roles' names and goals in kanji; the scene is the options' third int `[lv, timer, scene]`, the host's pick). Each phone gets a role card; each turn shows its speaker the line in Japanese with the key phrases in English as chips (the whole English faded on easy); the speaker's phone checks the key phrases (match.ts `phrases`) and sends the bitmask; the other phone shows ✓ chips, never a transcript. 「お手本」 at the end plays the villagers' version with the karaoke. Score: the team's 「ふたりで 9 / 11 フレーズ」, never per person.
 - **A turn:** a round with no clip (`play` 0, `quietReveal`), untimed, the reveal `auto`. The speaker's answer is the mask (bits 0–5 the phrases, bit 6 spoken; 「マイクなしで次へ」 always); the other phone acks (255). cv: the unit's lesson cv, `BUILD_V.role` and the scene's dialogues.
 - **Consent:** joining is the consent (no wire field). Before joining, the invitee's phone says 「マイクを使います」 with 参加する / やめる; a phone with the mic off can't join.
-- Files: games/role/ (scenes.ts, def.ts, lane.ts, mode.ts), components/kikimimi/role/ (RoleLobby, RolePlay, RoleMic, RoleResults, MicJoin); group `together` (the みんなで picker only).
+- Files: games/role/ (scenes.ts, def.ts, lane.ts, mode.ts), components/kikimimi/role/ (RoleLobby, RolePlay, RoleResults, MicJoin; the mic: mic/TalkButton); group `together` (the みんなで picker only).
 
 ### Where they show
 

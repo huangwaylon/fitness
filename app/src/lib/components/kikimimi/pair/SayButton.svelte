@@ -8,6 +8,7 @@
   import { t } from '#lib/i18n/index.ts';
   import { audioCtx } from '#lib/sound/sound.svelte.ts';
   import type { Outcome, Recogniser, Take } from '#lib/mic/stt.ts';
+  import { level01 } from '#lib/mic/level.ts';
 
   let { r, words, onheard }: { r: Recogniser; words: readonly string[]; onheard: (o: Outcome) => void } = $props();
 
@@ -27,7 +28,7 @@
     }
     if (st === 'hearing') return;
     audioCtx();
-    const tk = (take = r.listen({ candidates: words, frame: (v) => (level = Math.min(1, Math.max(0, (v.db + 60) / 45))) }));
+    const tk = (take = r.listen({ candidates: words, frame: (v) => (level = level01(v.db)) }));
     st = 'listening';
     const o = await tk.heard;
     if (take !== tk || gone) return;

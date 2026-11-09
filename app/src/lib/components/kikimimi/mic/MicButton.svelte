@@ -10,6 +10,7 @@
   import { t } from '#lib/i18n/index.ts';
   import { audioCtx } from '#lib/sound/sound.svelte.ts';
   import type { Got, Take } from '#lib/mic/session.ts';
+  import { level01 } from '#lib/mic/level.ts';
 
   let { onheard, onstart, maxS }: { onheard: (g: Got | null) => void; onstart?: () => void; maxS?: number } = $props();
 
@@ -35,7 +36,7 @@
     st = 'opening';
     try {
       const { takeMic } = await core();
-      take = await takeMic({ maxS, frame: (v) => ((level = Math.min(1, Math.max(0, (v.db + 60) / 45))), (speaking = v.speaking)) });
+      take = await takeMic({ maxS, frame: (v) => ((level = level01(v.db)), (speaking = v.speaking)) });
       // left while the mic was opening: let it go at once
       if (gone) return take.cancel();
       st = 'listening';

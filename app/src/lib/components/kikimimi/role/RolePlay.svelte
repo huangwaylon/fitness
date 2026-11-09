@@ -2,7 +2,7 @@
   // A turn of ふたりで ロールプレイ (docs/kikimimi-mic.md "ふたりで ロールプレイ"; games/role/def.ts), its own chunk, in the round's frame
   // (frame/RoundFrame.svelte). Over the stage: where we are (場面 p · k / n), the part's two villagers (the speaker's
   // lifted, mine marked あなた), my role and its goal for this part. My turn: the line in Japanese, its key phrases as
-  // chips (English, with their Japanese), the English faded on easy (else 「英文を見る」), the mic (RoleMic: tap, say it,
+  // chips (English, with their Japanese), the English faded on easy (else 「英文を見る」), the mic (mic/TalkButton: tap, say it,
   // it stops on the silence after); the chips light as they're heard, what came through shows under them (mine only),
   // then 「もう一度話す」 (the phrases add up) or 次へ, which answers the phrases said; 「マイクなしで次へ」 always. The
   // partner's turn: their line's chips, dim, and 「よく聞いてね」; once their answer is in my phone answers that it heard
@@ -17,7 +17,7 @@
   import { sttRound } from '../mic/sttRound.ts';
   import { currentReport } from '../progress.svelte.ts';
   import { easyFor, heardKeys, keepSaid, partsOf, roleHere, roleOfWho } from './board.ts';
-  import RoleMic from './RoleMic.svelte';
+  import TalkButton from '../mic/TalkButton.svelte';
   import RoundFrame from '../frame/RoundFrame.svelte';
   import { rosterName as name } from '../scene/stage.ts';
   import OfficialArt from '../../characters/OfficialArt.svelte';
@@ -157,7 +157,7 @@
           <p class="hint" data-role-preparing>{t('kiki.role.preparing')}</p>
         {:else}
           {#if here?.miss}<p class="warn" data-role-miss={here.miss}>{missLine(here.miss)}</p>{/if}
-          <RoleMic {rec} bind:st={mic} idle={here ? t('kiki.role.retry') : t('kiki.role.talk')} onheard={heard} onmiss={missed} />
+          <TalkButton game="role" {rec} maxS={15} bind:st={mic} idle={here ? t('kiki.role.retry') : t('kiki.role.talk')} onheard={heard} onmiss={missed} />
           {#if here?.text !== undefined}
             <p class="heard" data-role-heard><small>{t('kiki.role.heard')}</small><span lang="en">{here.text}</span></p>
           {/if}

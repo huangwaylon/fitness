@@ -6,8 +6,6 @@ import type { Recogniser } from '#lib/mic/stt.ts';
 export function sttRound() {
   const stt = import('#lib/mic/stt.ts');
   return {
-    /** The module (its level01 and the like), once loaded. */
-    stt,
     /** This phone's recogniser, ready; null: none can run here (or it wouldn't load). */
     ready: (): Promise<Recogniser | null> =>
       stt.then(async ({ recogniser }) => {

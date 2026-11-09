@@ -1,7 +1,7 @@
 <script lang="ts">
   // A sentence of くりかえし チャレンジ (docs/kikimimi-mic.md "くりかえし チャレンジ"; games/kuri/def.ts), its own chunk, in the round's frame
   // (frame/RoundFrame.svelte). Over the stage, the ladder (8 steps by length, this sentence's lit) and the speaker. The
-  // clip plays once, then a one-second beat; then your turn: the mic (KuriMic: tap, say it, it stops on the silence
+  // clip plays once, then a one-second beat; then your turn: the mic (mic/TalkButton: tap, say it, it stops on the silence
   // after), 「もう一回聞く」 (free, but that sentence can't climb) and, after a miss, the reason in Japanese, 「もう一度話す」
   // and 「この文はとばす」. What was heard is checked against the sentence on the phone (board.ts) and answered as its
   // content words' count; the reveal: the climb (or not), the sentence with the words you said lit and the others
@@ -16,7 +16,7 @@
   import { sttRound } from '../mic/sttRound.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { bare, heardAgainst, jaOf } from './board.ts';
-  import KuriMic from './KuriMic.svelte';
+  import TalkButton from '../mic/TalkButton.svelte';
   import RoundFrame from '../frame/RoundFrame.svelte';
   import RevealFrame from '../frame/RevealFrame.svelte';
   import Why from '../frame/Why.svelte';
@@ -148,7 +148,7 @@
     {:else}
       <p class="ask">{t('kiki.kuri.say')}</p>
       {#if mine?.miss}<p class="warn" data-kuri-miss={mine.miss}>{t(`kiki.kuri.miss.${mine.miss}`)}</p>{/if}
-      <KuriMic {rec} {maxS} bind:st={mic} idle={mine?.miss ? t('kiki.kuri.retry') : undefined} onheard={heard} onmiss={missed} />
+      <TalkButton game="kuri" {rec} {maxS} bind:st={mic} idle={t(mine?.miss ? 'kiki.kuri.retry' : 'kiki.kuri.talk')} onheard={heard} onmiss={missed} />
       <p class="hint">{t('kiki.kuri.earphones')}</p>
     {/if}
     <div class="acts">

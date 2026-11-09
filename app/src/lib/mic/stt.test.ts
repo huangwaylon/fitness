@@ -6,7 +6,8 @@ import type { Got, Take as MicTake } from './session.ts';
 import type { VadState } from './vad.ts';
 
 vi.mock('#lib/sound/sound.svelte.ts', () => ({ audioCtx: () => null, micSession: () => {} }));
-const { capturing, isMiss, level01 } = await import('./stt.ts');
+const { capturing, isMiss } = await import('./stt.ts');
+const { level01 } = await import('./level.ts');
 const { stubRecogniser } = await import('./backends/stub.ts');
 const { postWav, relayRecogniser, relayReady } = await import('./backends/relay.ts');
 const { configureTransport } = await import('#lib/sync/transport.ts');

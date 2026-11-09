@@ -12,6 +12,7 @@ import { localKV } from '#lib/sync/storage.ts';
 import { pickBackend, readMic, stubbed, type Backend as Picked, type Can } from './pick.ts';
 import { takeMic, type Got } from './session.ts';
 import type { VadState } from './vad.ts';
+import { level01 } from './level.ts';
 
 export type Backend = Picked | 'stub';
 
@@ -70,8 +71,6 @@ export interface Recogniser {
 /** A capture-and-recognise take (whisper, relay, stub): the backends get it from here, so they import no capture. */
 export type Capture = (be: Backend, h: Hint, recognise: (got: Got, signal: AbortSignal) => Promise<Outcome>) => Take;
 
-/** A level in dBFS as 0–1 (−60 → −15), the mic button's ring. */
-export const level01 = (db: number): number => Math.min(1, Math.max(0, (db + 60) / 45));
 
 /** The take function's shape (session.ts takes; the unit tests give fakes). */
 export type TakeFn = typeof takeMic;

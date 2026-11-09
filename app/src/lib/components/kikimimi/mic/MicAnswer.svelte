@@ -12,6 +12,7 @@
   import { audioCtx } from '#lib/sound/sound.svelte.ts';
   import { choose } from '#lib/mic/match.ts';
   import type { Miss, Recogniser, Take } from '#lib/mic/stt.ts';
+  import { level01 } from '#lib/mic/level.ts';
   import { sttRound } from './sttRound.ts';
 
   let { voice, choices, open, reveal, onpick }: {
@@ -36,13 +37,10 @@
   let heard = $state('');
   let miss = $state<Miss | null>(null);
   let take: Take | null = null;
-  /** stt.ts's level01, once loaded (a take starts inside the tap, with no await before it). */
-  let toLevel: (db: number) => number = () => 0;
   let gone = false;
   const live = $derived(st === 'listening' || st === 'hearing');
 
   onMount(async () => {
-    void stt.stt.then((m) => (toLevel = m.level01), () => {});
     const x = await stt.ready();
     if (x && !gone) r = x;
   });
@@ -76,7 +74,7 @@
     }
     if (!r || !open || st === 'hearing') return;
     audioCtx();
-    const tk = (take = r.listen({ frame: (v) => (level = toLevel(v.db)) }));
+    const tk = (take = r.listen({ frame: (v) => (level = level01(v.db)) }));
     st = 'listening';
     miss = null;
     const o = await tk.heard;
