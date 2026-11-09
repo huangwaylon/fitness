@@ -11,7 +11,7 @@ docs/design.md "ききみみ クイズ" has the one-paragraph summary; docs/back
 
 ## Open items
 
-- **R2 (W2-R).** The packs are 101.6 MiB (games, まるごと 聞く's 7.4 of them) + 21.4 MiB (stories) on Pages, under bank.test's raised lines (103 and 23 MiB). The fix is the packs on R2 behind a same-origin `PACK_BASE` (not in the code). It needs R2 enabled in the Cloudflare dashboard (a bucket and a token); the same bucket, bound as `STT_BUCKET`, serves the mic's model (kikimimi-mic.md "Hosting and the service worker").
+- **Audio on Pages.** The packs are 101.6 MiB (games) + 21.4 MiB (stories), under bank.test's budget (160 and 32 MiB). No R2 (the user, 2026-11-09: it needs a payment method on file); revisit only if Pages' per-file 25 MiB or the file cap binds.
 - **`QUIZ_ON_PLAY`** (round/wire.ts) is off: the quiz and スピード はしご still go out as `quiz`. Turn it on once `npm run logs` shows both phones on a build that hears `play` (kikimimi-engine.md "Wire migration").
 - **The mic probe** on both phones, then the backend thresholds (kikimimi-mic.md "The probe"). Workers AI's data terms still to be written into docs/ops; until then the relay recogniser is never 自動.
 - **Mic leftovers:** こたえて！'s 「これ？」 band and 「声で / タップで」 preference, くりかえし's device-local speaking span, the unit page's ロールプレイ row, the input latency off まねっこ's lag.
