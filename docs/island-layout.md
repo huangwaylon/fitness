@@ -236,7 +236,7 @@ extentOf(layout): { grid, land, shore, home }   // model.ts: the island's box, t
   (`water.ts` RIVER_FRAG / FOAM_FRAG) run along the stem (each water vertex's `path`, from `fields.along`): 26 u/s,
   hurrying to 90 u/s and whitening over the last 22u before a fall, a foam pool over the first 34u below it (`flow.w`);
   the falls' wall long streaks at 110 u/s over NH's streak texture. Off a stem the tiles' flow.
-- NH's textures: `npm run terrain-textures` (NH_MODELS=~/Downloads/Model) converts the few PNGs from
+- NH's textures: `npm run terrain-textures` (NH_MODELS=~/Downloads/acnh-2.0.0-models/Model) converts the few PNGs from
   `FldUnit.Nin_NX_NVN` into `static/terrain/nh/*.webp` (92 KB).
 
 ## The editor

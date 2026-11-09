@@ -6,11 +6,16 @@ manifest itself; this doc keeps the pipeline, the rules and a summary.
 
 ## How they're made
 
+The source is NH's 2.0.0 export (archive.org `acnh-2.0.0-models`, `ACNH_2.0.0_Exported_Model_DAE+PNG.7z`, md5
+4c42817a…: 57,822 `<Model>.Nin_NX_NVN` folders of .dae and PNG), extracted to `~/Downloads/acnh-2.0.0-models/Model`.
+It holds the old `~/Downloads/Model` set but for 15 layout icons; a run on both can take a folder of symlinks, the new
+first. It brought the 2.0 villagers, Brewster, Kapp'n and Wilbur, and 376 tent pieces; nothing the island lacked.
+
 - `scripts/world3d-assets.ts`: the map (art key → NH model folder, the conversion's options, the key's scale and
   anchor). `scripts/world3d-models.ts` converts them: NH's materials baked into one WebP each (≤ 128 px for small
   things, 256 for furniture, 512 for the tent and the countdown board), merged per material, quantised and
   meshopt-compressed by gltfpack, triangles capped per kind (critters 2,500, visitors 4,000).
-  `NH_MODELS=~/Downloads/Model npm run world3d-models [-- --only=critters/,finds/]`. The raw model files never enter
+  `NH_MODELS=~/Downloads/acnh-2.0.0-models/Model npm run world3d-models [-- --only=critters/,finds/]`. The raw model files never enter
   the repo; the converted GLBs are public.
 - Output: `app/static/room/world3d/<kind>/<id>.glb` (under `/room/`: the service worker caches a file on first use,
   never at install). The first 43 models stay in `models.json` and serve their keys from there.
@@ -115,9 +120,8 @@ Wilbur) and, by
 `VISITOR_ONLY` (not in the picker), Franklin, Jack, Jingle, Zipper, Reese and Cyrus. Pavé isn't in NH's files: he
 never visits. A material's textures are the ones its Collada effect samples, not the ones named after it (`mCapVis`
 and `mGlassCap` sample `mBody_Alb` and `mGlass_Alb`); the converter fails a villager whose GLB has a material without
-a base colour where the source has one. The 60 plain tops are the files' own (the clothing's texture isn't in them). The 2.0 villagers, the Sanrio six,
-Brewster, Kapp'n and Wilbur come from the 2.0.0 export (`NH_MODELS=~/Downloads/acnh-2.0.0-models/Model`, a superset
-of the old `Model` but for 15 layout icons); Tulin, Mineru, Cece and Viché aren't in it (their cards stay).
+a base colour where the source has one. The 60 plain tops are the files' own (the clothing's texture isn't in them). Tulin, Mineru, Cece and Viché aren't in
+the 2.0.0 export: their cards stay.
 
 ## The inventory
 
