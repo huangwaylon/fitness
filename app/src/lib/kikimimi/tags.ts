@@ -66,6 +66,7 @@ const FEATURE_SKILL: Readonly<Record<Feature, Skill>> = {
   'b-v': 'cons', th: 'cons', 'sh-s': 'cons', 'f-h': 'cons', ending: 'cons',
   contraction: 'reduce', 'weak-form': 'reduce', flap: 'reduce', yod: 'reduce', gonna: 'reduce', wanna: 'reduce', gotta: 'reduce',
   lemme: 'reduce', dunno: 'reduce', kinda: 'reduce', 'can-cant': 'reduce', 't-glottal': 'reduce', ellipsis: 'reduce',
+  elision: 'reduce', linking: 'reduce', 'h-drop': 'reduce', chain: 'reduce',
   numbers: 'num', 'teen-ty': 'num', clock: 'num', 'self-repair': 'num',
   contrast: 'detail', katakana: 'detail',
   idiom: 'reply', intonation: 'indirect',

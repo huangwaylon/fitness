@@ -5,7 +5,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { art } from '#lib/art.ts';
-import { CHANNELS, SCENE_IDS, channelOf, isDialogue, type SoundMark } from './bank.ts';
+import { CHANNELS, HENSHIN_LV, SCENE_IDS, channelOf, isDialogue, type SoundMark } from './bank.ts';
 import { AUTHORED as BANK } from './source.ts';
 import { MARKS, NOISE, PLACES } from './staging.ts';
 import { CONTENT } from './content/index.ts';
@@ -27,7 +27,9 @@ await loadAll();
 const STATIC = join(import.meta.dirname, '../../../static');
 const SCRIPT = JSON.parse(readFileSync(join(import.meta.dirname, '../../../scripts/scenes/scenes.json'), 'utf8')) as { scenes: Record<string, string> };
 /** Levels 4-7 (5 the アナウンス pack): the staged levels. */
-const L4 = BANK.filter((it) => it.lv >= 4);
+const L4 = BANK.filter((it) => it.lv >= 4 && it.lv !== HENSHIN_LV);
+/** 音の へんしん's phrases (level 8): the plain stage, one `say` mark over the focus where it's said otherwise. */
+const DRILL = BANK.filter((it) => it.lv === HENSHIN_LV);
 /** The content sprint's sets stage their own items (content/): the older banks' staging is PLACES / MARKS / NOISE. */
 const OWN = new Set(CONTENT.map((it) => it.id));
 
@@ -80,7 +82,7 @@ describe('kikimimi sound marks', () => {
   });
 
   it('every mark lands on whole words of its line; say runs never overlap', () => {
-    for (const c of clips.filter((c) => c.marks)) {
+    for (const c of [...clips, ...DRILL].filter((c) => c.marks)) {
       const taken = new Array<boolean>(c.en.length).fill(false);
       for (const m of c.marks!) {
         const at = placeMark(c.en, m);

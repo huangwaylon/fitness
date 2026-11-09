@@ -25,7 +25,7 @@ So the core band is **B1+ → B2 → C1**; A1/A2 material is only a warm-up and 
 6. **Co-op over ranking**; a ranking is opt-in (しょうぶ).
 7. **Results private, summaries shared** ("The couple").
 8. **Teach the trap, not grammar.** One Japanese line on why the sound or the logic fooled you (`note`, ≤ 40 字), `why` for the full かいせつ. No grammar terms.
-9. **Short, fun, never homework:** ≤ 3 min a game, tap only, no streaks, no keyboard.
+9. **Short, fun, never homework:** ≤ 3 min a game, tap only, no streaks; the one keyboard is 音の へんしん's dictation, with tiles beside it.
 10. **Measure before scaling.** A stage's content grows only once real play shows 75–85 % first-listen success.
 
 ## American English first
@@ -208,6 +208,7 @@ What each game trains, and why it's there (the rules: kikimimi.md and kikimimi-e
 | ひとこと クイズ (levels 1-7) | replies, pragmatics (`mean`, `gist`, `next`), numbers in context | the base game |
 | アナウンス (level 5) | channel and noise tolerance: PA, voicemail, IVR menus | |
 | スピード はしご | rate tolerance, reductions | rewards rungs climbed in order on the first listen, stops at the first miss |
+| 音の へんしん | decoding American connected speech (reductions, flaps, linking, elision, weak forms) | daily, 8 phrases; pick the full form, then dictation; many voices ("Connected speech") |
 | ことば タイル | segmentation, weak forms, contractions, h-drop, chains | decoys are sound traps, tiles shown only after the first listen, so it stays listening, not a grammar puzzle |
 | たちぎき | tracking 3 speakers, attitude, mind change, inference through overlap | the only three-speaker training |
 | ようじ でんわ | multi-detail listening, self-repair, phone audio | chips, not typing; the basket is the payoff; the units' チェック |
@@ -376,9 +377,10 @@ lessons:
 - **The level banks:** 862 items (L1–L7: 46 / 49 / 89 / 297 / 30 / 236 / 115), plus 30 ladders (kikimimi-engine.md "Content").
 - **21 units** (かわ 11, もり 10), all `voiced`; the plan (units.ts `PLANNED`) is はまべ 3, かわ 10, もり 14, やま 14, ほし 10.
 - **25 listening files**, all `listened`: tiles (232: drafts, 65 derived from voiced bank items, 30 for the B2 features, the units' おと), calls (34), たちぎき (30), すうじ ラッシュ (240 customers), しずえの ニュース (30 bulletins and the weather tail).
+- **音の へんしん:** 180 phrases at level 8, 15 phenomena of 12 ("Connected speech").
 - **3 bedtime serials:** st-johnny, st-cafe and st-tokyo (トウキョウ ひとりぐらし: an American newcomer's first month in Tokyo, 7 chapters of ~4 min, narrator us-f3, recycling the units' phrases).
 - **144 packs**, ~111 MiB (games 89.3, stories 21.4).
-- Every level and unit item has `ctx`, `cja` and `why`.
+- Every level and unit item has `ctx`, `cja` and `why` (音の へんしん's phrases `ctx`, `cja` and `note`).
 - **Stays outside units:** the はまべ island lines, the アナウンス pack and ほし's news, lectures and talks (modes and tracks), the number templates.
 
 ### The 21 units
@@ -428,6 +430,14 @@ The units' headers name seven planned backdrops, `party`, `restaurant`, `shop`, 
 ### Choice tells
 
 A choice set must not give its answer away without the audio. `tells.test` holds each level's 3-choice `reply`, `mean`, `gist` and `next` sets (and the units' tiers) near chance: the right choice the longest in 20–45 % of sets (by ≥ 1.25× in ≤ 12 %), the shortest in 20–45 %, echoing the clip's words least in ≤ 45 % and most in ≥ 15 %, and opening with a reaction or being a question about as often as the wrong ones (± 12 points). Distractors are what a partial listener could pick: a near sound, a number or name caught wrong, the right words with the wrong implication; the clip's words are spread across the choices. `npm run kikimimi:tells -- <level | file>` lists the sets with a tell. The right choice's place comes from the deck's seeded shuffle, even across places.
+
+## Connected speech
+
+For a strong listener the biggest gain is decoding American connected speech, checked by dictation, from many voices (Field 2008; HVPT, Logan et al. 1991). 音の へんしん drills it daily (kikimimi.md "音の へんしん"; user decisions 2026-11-09: everyday conversation and travel, American first, ~15 min a day).
+- **The phenomena,** in the order taught (henshin.ts `PHENOMENA`, each a feature under つながる おと): gonna, wanna, gotta / hafta, contractions (I'll, we've, should've), weak forms (fer, 'em, 'n), the flap (a lodda), linking (pi-ki-tup), t / d + you (didja, gotcha), lemme / gimme, kinda / outta, dunno, elided t / d (nex' week), the stopped t (tha' one), the dropped h (tell 'im), chains (whaddaya, gonna hafta).
+- **The phrases** (content/henshin.ts, level 8): 12 a phenomenon, 180 in all, everyday and travel, each in another of the 12 US voices (every phenomenon heard in all 12). A `word` item: `en` written in full, `focus` the changing chunk, `tts` the line as said, `hs.red` the chunk as said, `hs.full` a contraction's long form, two near-sound wrong chunks that fit, `ja`, `note`, `ctx`, `cja`.
+- **Takes:** natural, careful (`<id>-c`: the full form, its words set apart by commas) and fast (`<id>-f`: the natural take at 1.25×), ~16 min of audio.
+- **Validators** (content/henshin.test.ts): order and coverage; voices; focus in the sentence, wrong chunks not; a full form that types right; tiles at every tier; the choice tells near chance against what is said (tells.ts `DRILL_LIMITS`: length only, every word for the echo, no form gap); and every voiced phrase heard reduced (`npm run kikimimi:reduce`: whisper, prompted with the reduced spellings, writes the natural take's spelling as said, or its focus takes ≤ 0.85 of the careful take's time per syllable; the careful take never heard reduced), at its clips' hashes.
 
 ## Listening check
 

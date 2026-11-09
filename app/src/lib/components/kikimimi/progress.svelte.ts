@@ -17,7 +17,8 @@ import { levelMark, sx } from './look.ts';
 import { remember, type Recent } from '#lib/kikimimi/recent.ts';
 import { unitsOf, type UnitState } from '#lib/kikimimi/stamps.ts';
 import { madaOf, markMada } from '#lib/kikimimi/srs.ts';
-import { INDEX, unitIds, unitPart } from '#lib/kikimimi/pool.ts';
+import { INDEX, entryOf, unitIds, unitPart } from '#lib/kikimimi/pool.ts';
+import { focusOf, phenomenaOf, type PhState } from '#lib/kikimimi/henshin.ts';
 import { lessonsOfMask, pathOf, type Filter, type Path, type PathUnit } from '#lib/kikimimi/path.ts';
 import { LESSONS } from '#lib/kikimimi/stages.ts';
 import { levelRank } from '#lib/kikimimi/bank.ts';
@@ -80,7 +81,7 @@ function progressRows(me: Who, record: readonly EventRow[]): EventRow[] {
  *  event changes them), who I am, today and the phone's rows. The lobby's view refreshes about once a second and
  *  several parts read the report each time; it's folded again only when one of those changes. Its units and answers
  *  are worked out once, on first ask. */
-let memo: { listen: readonly EventRow[]; me: Who; day: LocalDate; kept: number; report: Report; units?: Map<string, UnitState>; answers?: Answer[] } | null = null;
+let memo: { listen: readonly EventRow[]; me: Who; day: LocalDate; kept: number; report: Report; units?: Map<string, UnitState>; answers?: Answer[]; henshin?: PhState[] } | null = null;
 function memoNow(): typeof memo {
   const k = kept;
   const m = week.model;
@@ -106,6 +107,20 @@ export function currentUnits(): Map<string, UnitState> {
 export function currentAnswers(): Answer[] {
   const m = memoNow();
   return m ? (m.answers ??= answersOf(m.report.games)) : [];
+}
+
+/** 音の へんしん's phenomenon picked on its page (null: today's, focusOf), this sheet's while it's open. */
+let henshinPick = $state<number | null>(null);
+/** Pick 音の へんしん's phenomenon (null: back to today's). */
+export const pickHenshin = (k: number | null): void => void (henshinPick = k);
+
+/** 音の へんしん now: each phenomenon's standing (henshin.ts phenomenaOf, from my answers), today's (focusOf) and the one
+ *  the drill plays (picked, else today's). Reactive. */
+export function currentHenshin(): { states: PhState[]; today: number; focus: number; picked: boolean } {
+  const m = memoNow();
+  const states = m ? (m.henshin ??= phenomenaOf(currentAnswers(), entryOf, m.day)) : phenomenaOf([], entryOf, '2000-01-01' as LocalDate);
+  const today = focusOf(states);
+  return { states, today, focus: henshinPick ?? today, picked: henshinPick !== null };
 }
 
 /** Bumped as a unit's chunk is put in at run time (the e2e's fixture: pool.ts addUnit), so the path lists it. */

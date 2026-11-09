@@ -5,7 +5,7 @@
 import { LISTEN_MAX_Q, LISTEN_MAX_RP, STORY_GM, firstListenRight, listenOf, listenSummaryOf, minutesOnly, stampsUnit, type ListenRow } from '../contract/listen.ts';
 import type { EventRow } from '../contract/api.ts';
 import type { LocalDate, Who } from '../types.ts';
-import { levelRank, type Accent, type Entry, type Feature, type Item, type ItemType } from './bank.ts';
+import { HENSHIN_LV, levelRank, type Accent, type Entry, type Feature, type Item, type ItemType } from './bank.ts';
 import { SKILLS, skillsOf, tagsOf, type Skill } from './tags.ts';
 import { SPEEDS, climb } from './ladder.ts';
 import { entryOf, isRungId, itemOf as loadedItem, rungAt } from './pool.ts';
@@ -264,6 +264,8 @@ export function statsOf(answers: readonly Answer[], today: LocalDate): Stats {
       if (firstListenRight(a)) x._f++;
       (map as Map<unknown, ReturnType<typeof acc>>).set(key, x);
     }
+    // 音の へんしん's phrases (level 8) train the sounds, not a place: the ability and the difficulties leave them out
+    if (it.lv === HENSHIN_LV) continue;
     const learned = { items, shelves };
     const expected = 1 / (1 + Math.exp(-(theta - difficultyOf(it, learned))));
     theta += (k < 24 ? 0.3 : 0.15) * (sc - expected);
@@ -299,10 +301,13 @@ export function statsOf(answers: readonly Answer[], today: LocalDate): Stats {
 /** A スピード はしご game (its answers are rungs': ladder.ts). Its first listens fail by design at the top, so the
  *  trend and the level nudge leave it out; it has its own measure (speedOf). */
 export const isLadderGame = (g: Pick<Game, 'r'>): boolean => g.r.some((a) => isRungId(a.id));
+/** A game that isn't a quiz at a place (スピード はしご's, 音の へんしん's drill: a dictation's first listens are another
+ *  measure): the trend and the level nudge leave it out. */
+export const offTrend = (g: Pick<Game, 'r' | 'gm'>): boolean => isLadderGame(g) || g.gm === 'henshin';
 
 /** First-listen accuracy per quiz game, the last `n` games (oldest first). */
 export function trendOf(games: readonly Game[], n = 12): number[] {
-  return games.filter((g) => g.r.length && !isLadderGame(g)).slice(-n).map((g) => g.r.filter(firstListenRight).length / g.r.length);
+  return games.filter((g) => g.r.length && !offTrend(g)).slice(-n).map((g) => g.r.filter(firstListenRight).length / g.r.length);
 }
 
 /** The ladders a speed reading takes (the last this many climbed) and the fewest it's read from. */

@@ -87,7 +87,8 @@ describe('kikimimi bank', () => {
     // variety set's 36 (content/); level 5 the アナウンス pack; 6 やま's 100 + 100 + the variety set's 36; 7 ほし's 115
     const count = (lv: Level) => BANK.filter((it) => it.lv === lv).length;
     expect([1, 2, 3, 4, 5, 6, 7].map((lv) => count(lv as Level))).toEqual([46, 49, 89, 297, 30, 236, 115]);
-    expect(count(8)).toBe(0);
+    // 音の へんしん's phrases (content/henshin.ts): 15 phenomena of 12
+    expect(count(8)).toBe(180);
     for (const lv of [1, 2, 3, 4, 6, 7] as Level[]) {
       const items = BANK.filter((it) => it.lv === lv);
       expect(items.length, `level ${lv}`).toBeGreaterThanOrEqual(40);

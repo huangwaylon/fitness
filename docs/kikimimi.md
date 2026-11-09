@@ -100,6 +100,19 @@ Level 5 (bank5.ts, 30 items, B1+ → B2), the mode アナウンス: station and 
 - **Results:** how high I climbed, co-op's 「ふたりで n/8」, a review row a ladder with ▶︎ at each speed.
 - **きろく: the fastest comfortable speed** (progress.ts `speedOf`): the fastest rung climbed in ≥ 75 % of my last 8 ladders; under 4 ladders 「はかっている とちゅう」. Ladder games stay out of the quiz's trend, nudge and skills.
 
+## 音の へんしん
+
+A daily drill of American connected speech (about 3–4 minutes of the 15-minute day): the phenomena and phrases are curriculum.md "Connected speech"; the deal and the audio, kikimimi-engine.md "音の へんしん".
+- **A game:** 8 phrases, 5 of today's phenomenon and one each of the phenomena before it, every phrase in another voice. The rounds take turns:
+  - 「なんて言った？」: the line with its changed words blanked; pick the full form from 3 near-sound choices (gonna → going to / got to / want to).
+  - 「書きとり」: write the missing words. Typed on the phone, matched forgivingly: case and punctuation aside, a contraction as good as its long form either way, the apostrophe optional where no other word is spelled so (dont), a reduced spelling as good as what it stands for (gonna, whaddaya); never a near spelling (then / than). 「タイルで答える」 instead: the words and 1–4 decoys to tap (remembered per phone, `DEVICE.kikiTiles`).
+- **Reveal:** ○ / ×, the line with its sound mark, the full form beside the spelling as said (「didja」＝ did you), the Japanese and the trap's note, and 聞きくらべ: はっきり (a careful take, the full form word by word), ふつう, 速く (1.25×). The same three takes on every review row.
+- **Tiers** as the listening games': easy two choices and one decoy tile, hard four decoys. Co-op counts a phrase anyone got; no たいせん.
+- **Today's phenomenon** (henshin.ts `focusOf`): the first in order not yet 習得 (≥ 80 % over ≥ 6 answers, recency-weighted, first listen 1, after a replay 0.6); one tried 24 times without it waits in review. The host's rides the lobby's options.
+- **The mode page** lists each phenomenon in order with its bar (outlined till 3 answers), 「今日」 and 「✓ 習得」; a tap plays that one instead, till 「今日の音に戻す」. Mine alone, never the partner's.
+- **Recycling:** a missed phrase is an item card like any; おさらい asks it through another phrase of its phenomenon (another voice and sentence: srs.ts `isSibling`), the drill's phrases joining おさらい only that way.
+- **The row:** `gm: 'henshin'`, `lv` 8, `[id, ok, pick, rp]` (a choice as authored; the dictation's wrong words as a mask). Level 8 trains the sounds, not a place: きろく's つながる おと and the features count it; the ability, the item difficulties, the trend and the level nudge leave it out.
+
 ## Navigation
 
 ```
@@ -139,7 +152,7 @@ The root page, 「ききみみ」: the invite card while one waits; しずえ's 
 
 | Group | Modes |
 |---|---|
-| さくっと（3ぷんで できる） | ひとこと クイズ, スピード はしご, おさらい, ことば タイル, すうじ ラッシュ |
+| さくっと（3ぷんで できる） | ひとこと クイズ, スピード はしご, おさらい, ことば タイル, すうじ ラッシュ, 音の へんしん |
 | まちで・でんわで（ばめんで きく） | アナウンス, ようじ でんわ, たちぎき |
 | じっくり（ながめに きく） | しずえの ニュース |
 | ねる まえに（てんすう なし） | おやすみ ものがたり |

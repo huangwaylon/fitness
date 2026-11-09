@@ -75,6 +75,7 @@ const NONE: Record<string, string> = {
   'lib/components/kikimimi/frame/ChoiceGrid.svelte': 'a choice outside the answer window, or after my one answer (the reveal plays its right / wrong cue)',
   'lib/components/kikimimi/call/CallPlay.svelte': 'ようじ でんわ: メモできた before my rows are filled (the reveal plays its cue)',
   'lib/components/kikimimi/call/MemoPad.svelte': 'ようじ でんわ: a chip while the memo is closed (not yet, sent, the reveal)',
+  'lib/components/kikimimi/henshin/HenshinPlay.svelte': '音の へんしん: a tile already placed or all placed, an empty slot, できた before there is an answer, the typing field (the keyboard clicks)',
   'lib/components/kikimimi/tile/TilePlay.svelte': 'ことば タイル: a tile already placed or a full sentence, an empty or given slot, できた before it\'s full (the reveal plays its cue)',
   'lib/components/kikimimi/news/NewsStage.svelte': 'しずえの ニュース: a story chip while the bulletin first plays (nothing replays yet)',
   'lib/components/kikimimi/tachi/TachiPlay.svelte': 'たちぎき: a face that isn\'t mine to place (the partner\'s, a given claim), できた before mine are placed, a face after my answer (the reveal plays its cue)',

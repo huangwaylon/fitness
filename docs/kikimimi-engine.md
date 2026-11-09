@@ -16,7 +16,7 @@ app/src/lib/kikimimi/
     types.ts      GameDef, RoundKind, Round, RoundDeck, RoundTiming, AnswerValue
     registry.ts   LANES: EAGER (quiz, ladder, lesson, taikai, check) + LATER (one lazy line a game)
   games/<gm>/     def.ts (a pure GameDef) and lane.ts: quiz, ladder, lesson, taikai, check, tile, tachi, call, rush, news,
-                  mane, kuri, pair, role; listened.ts + listenLane.ts for the listening games; versions.ts (BUILD_V)
+                  mane, kuri, pair, role, henshin; listened.ts + listenLane.ts for the listening games; versions.ts (BUILD_V)
   bank*.ts, dialogues.ts, content/, source.ts, ladders.ts   the TS banks (BANK, LADDERS)
   deck.ts, mix.ts, score.ts, clips.ts, staging.ts, marks.ts, conditions.ts, speech.ts, cast.ts
   compile.ts, pool.ts, packing.ts, units.ts, listen.ts, story.ts, levels/   the compiler and its output
@@ -214,6 +214,7 @@ The listening kinds (`content/listen/*.yaml`, not story/; schemas in app/content
 - **Text:** `speech.ts spokenText`: `tts`, else `en` with numbers written out (`sayNumbers`).
 - **Processing:** the raw take (cached by master hash and seed) → edges trimmed → −16 LUFS, a limiter at −1.5 dBTP → mono AAC 48 kbps 24 kHz (stories and しずえの ニュース at −18 LUFS: `SOFT`). L1's clips slowed to 0.92 and L1/L2's `-slow` to 0.75 by atempo from the same take.
 - **The gate:** whisper-cli large-v3-turbo hears every clip (numbers, contractions and reductions normalised); a content word wrong or the voice drifting (ECAPA < 0.5) re-rolls with the next seed, up to 5 times; the best take is kept and the rest flagged for a person. UTMOS measured too. Re-rolls a person chose are pinned (`PINNED`). `app/scripts/tts/report.json` has every clip's text, seed, takes, what whisper heard, WER, UTMOS, similarity and flags (its summary's `flagged`: curriculum.md "Listening check").
+- **音の へんしん's takes:** a phrase's careful take is an item of its own through the same gate (speech.ts `carefulText`); its fast take is its natural take that passed, at atempo 1.25 (`FAST`), heard by whisper and flagged, never re-rolled. `npm run kikimimi:reduce` then checks each phrase is heard reduced (curriculum.md "Connected speech") into `reduce.json`.
 - **Word timings** (`npm run audio:kikimimi-words`): whisper-cli hears every clip word by word (DTW timestamps), matched to the shown words by a DP over normalised spellings; `words.json` `{clip: [hash, start…, end]}` in centiseconds, compiled into the parts; `wordTimes` spreads the clip's length when the hash differs.
 - **Files:** loose m4a in the work folder `app/.cache/tts/clips/` (refilled from the packs before a run: `unpackClips`); `clips.json` (`{id: {dur, hash, slow?}}`) and `app/scripts/kikimimi-clips.src.json` (each clip's source hash: engine, voice, text, seed, pipeline version). Only clips whose source hash changed are re-made; `--out <dir>` writes to a scratch dir. The units' and stories' YAML go through the same cast and rules (compile.ts `unitItems`, story.ts `storyItems`); stories have no condition or tempo change.
 - **Attribution.** The AU voices are derived from the CSTR VCTK Corpus (CC BY 4.0): Yamagishi, Junichi; Veaux, Christophe; MacDonald, Kirsten. (2019). *CSTR VCTK Corpus: English Multi-speaker Corpus for CSTR Voice Cloning Toolkit (version 0.92)*. University of Edinburgh, CSTR. https://doi.org/10.7488/ds/2645. Changes: utterances trimmed, joined, loudness-normalised and resampled into the reference clips, which the TTS clones. The UK references are Phonon 31m output (Apache-2.0); the US ones are VoiceDesign output.
@@ -312,6 +313,16 @@ The morning bulletin (`games/news/`: def.ts, weather.ts; `components/kikimimi/ne
 - **The weather:** the relay's timeline carries `hi` (relay/src/weather.ts `highOf`). `newsWxOf` reads the sky over 06:00 (or now) to 21:00 Tokyo, or after 18:00 the next six hours, any fog and the high; `tailKeys` gives the sky, the high, ≤ 2 alerts and the sign-off. With no timeline the sign-off follows segment 2 and there's no umbrella question.
 - **Deck:** the seed is the Tokyo day (`Lane.seed`); `bulletinOf` takes the day's season or `any`, `day % n`. Options `[lv, timer, ear + 4 × sky byte, high byte]` (`newsOpts`: the host's weather, so every phone plays and grades the same tail). Cards: the gist, `<id>-d` and `<id>-kasa` (with the weather), the last two with no clip.
 - **Tiers:** easy shows the answer and its `trap` only. **Rounds:** the bulletin plays before the gist (+5 s to read); NewsStage's chips replay a segment. **Row:** `gm: 'news'`, `[card id, ok, choice, rp]`.
+
+### 音の へんしん
+
+The connected-speech drill (`games/henshin/`: def.ts, lane.ts, match.ts, reduce.ts; `components/kikimimi/henshin/`; the player's side kikimimi.md "音の へんしん"). Its phrases are level 8 (content/henshin.ts, in the bank and the index like any level, but in no level's mix, so never a quiz level, a place or the tournament's), compiled as `lv8`; its mode comes with its registry line (`HENSHIN_MODE`) once level 8 has 12 phrases.
+- **Options** `[8, timer, ear, focus]` (`henshinOpts`): the host's ear and today's phenomenon (the sheet's `focus`: progress.svelte.ts `currentHenshin`, a pick on the mode page or henshin.ts `focusOf`). cv `henshin:8`.
+- **Deck** (`henshinDeal`): 5 of the focus's phrases by the seed, one each of the phenomena before it, each next in the voice most left unlike the last; the kinds alternate, a pick first.
+- **Rounds:** `henshin.pick` (the choices at my tier in the deal's order; easy keeps two) and `henshin.type` (the focus's words, the board: those and the wrong choices' words as decoys, hard topped up from sound swaps). A dictation is answered as tiles, the board's index per word; a typed one is matched on the phone (match.ts `matchTyped`) and sent the same way (`typedAnswer`: a word right its tile, else `OTHER` 62), so nothing typed goes on the wire. The window grows 3 s a missing word.
+- **Row:** a pick's choice as authored, the dictation's wrong words as a mask (`henshinRecord`).
+- **Takes:** a phrase's natural clip `<id>`, careful `<id>-c` and fast `<id>-f` (bank.ts `takeIds`) share its pack; the reveal and the review play the other two through `game.hear` as items of another id.
+- **Review:** srs.ts `practicePicks` takes a due level-8 card through a sibling of the same phenomenon (another drill phrase), level 8 never otherwise; progress.ts leaves level 8 out of θ and the difficulties, and `offTrend` its games out of the trend and the nudge.
 
 ### よみきき サンド
 

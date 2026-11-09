@@ -38,7 +38,7 @@
   import PathCard from './path/PathCard.svelte';
   import { QuizGame, needs } from './game.svelte.ts';
   import { gameIn } from '#lib/kikimimi/round/wire.ts';
-  import { currentPath, currentReport, currentUnits, recordGame, unitAdded } from './progress.svelte.ts';
+  import { currentHenshin, currentPath, currentReport, currentUnits, recordGame, unitAdded } from './progress.svelte.ts';
   import { KikiActions } from './actions.ts';
   import { jaMode, keepJa, keepLv, keepOnboarded, keepTimer, lastLv, lastTimer, onboarded, sameDefault, type JaMode } from './prefs.ts';
   import { LANES } from '#lib/kikimimi/round/registry.ts';
@@ -157,7 +157,8 @@
         if (gone) return;
         const it = new QuizGame({
           live: quizLive(), me: who, fast: hook('kikimimi') === 'fast', wire: wireHook(), heard: heardQuiz(), record: (row) => recordGame(who, row),
-          tierOf: (stage) => tierFor(currentReport()?.stats.level ?? null, stage), level: () => currentReport()?.stats.level ?? null
+          tierOf: (stage) => tierFor(currentReport()?.stats.level ?? null, stage), level: () => currentReport()?.stats.level ?? null,
+          focus: () => currentHenshin().focus
         });
         g = it;
         untrack(() => {

@@ -63,10 +63,14 @@ export interface Tells {
   form: { opener: boolean; question: boolean; wrongOpeners: number; wrongQuestions: number };
 }
 
-export function tellsOf({ choices, answer, en }: ChoiceSet): Tells {
+/** Every word of a text, lower case (音の へんしん's choices are function words: what's said is weighed whole). */
+export const allWords = (text: string): Set<string> => new Set(text.toLowerCase().replace(/[’‘]/g, "'").match(/[a-z0-9][a-z0-9']*/g) ?? []);
+
+/** One choice set's tells; `words`: what of a text counts toward its echo (its content words). */
+export function tellsOf({ choices, answer, en }: ChoiceSet, words: (text: string) => Set<string> = contentWords): Tells {
   const len = choices.map((c) => c.trim().length), right = len[answer];
   const wrong = len.filter((_, i) => i !== answer), wrongText = choices.filter((_, i) => i !== answer);
-  const heard = contentWords(en), echo = choices.map((c) => echoOf(c, heard));
+  const heard = words(en), echo = choices.map((c) => [...words(c)].filter((w) => heard.has(w)).length);
   const echoWrong = echo.filter((_, i) => i !== answer);
   return {
     n: choices.length,
@@ -112,8 +116,13 @@ export const TELL_LIMITS = {
   longest: [0.2, 0.45], longBy: [0, 0.12], shortest: [0.2, 0.45], echoLeast: [0, 0.45], echoMost: [0.15, 1], opener: [-0.12, 0.12], question: [-0.12, 0.12]
 } as const satisfies Record<keyof Omit<TellStats, 'sets'>, readonly [number, number]>;
 
+/** 音の へんしん's sets (level 8: the full form of what was said, from near-sound full forms): weighed against what's said
+ *  (its `tts`), every word, since a choice is a few function words. The right choice may not be the one echoing the
+ *  respelling most (or least) more often than chance; a question or an opener is no form a chunk has. */
+export const DRILL_LIMITS = { ...TELL_LIMITS, echoMost: [0, 0.45], opener: [-1, 1], question: [-1, 1] } as const satisfies Record<keyof typeof TELL_LIMITS, readonly [number, number]>;
+
 /** What's outside the limits (empty: fine). */
-export function overLimits(s: TellStats, lim: typeof TELL_LIMITS = TELL_LIMITS): string[] {
+export function overLimits(s: TellStats, lim: Readonly<Record<keyof typeof TELL_LIMITS, readonly [number, number]>> = TELL_LIMITS): string[] {
   const pct = (x: number) => `${Math.round(x * 100)} %`;
   return (Object.keys(lim) as (keyof typeof lim)[]).flatMap((k) => {
     const [lo, hi] = lim[k];

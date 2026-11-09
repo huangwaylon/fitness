@@ -115,6 +115,8 @@ export class QuizGame {
   #tiered = '';
   /** My comfortable level (progress.ts Stats.level; null: unmeasured), the tournament's tier. */
   readonly #level: () => number | null;
+  /** 音の へんしん's phenomenon of the day (kikimimi/henshin.ts focusOf, or the one picked on its page), a lobby's option. */
+  readonly #focus: () => number | null;
   /** The tournament: the lobby state its deck was last picked for (the host's), the game my offer was sent in (a
    *  player's). */
   #picked = '';
@@ -123,10 +125,11 @@ export class QuizGame {
   /** `wire`: how this phone sends (round/wire.ts WIRE; the e2e's `?wire=quiz` is an 8b phone's). */
   constructor(o: {
     live: Live | null; me: Who; fast?: boolean; wire?: WireMode; heard?: readonly GameIn[]; record?: (row: ListenRow) => void; tierOf?: (stage: Stage) => Tier | undefined;
-    level?: () => number | null;
+    level?: () => number | null; focus?: () => number | null;
   }) {
     this.me = o.me;
     this.#level = o.level ?? (() => null);
+    this.#focus = o.focus ?? (() => null);
     this.#record = o.record;
     this.#tierOf = o.tierOf ?? (() => undefined);
     this.#link = o.live ? roundLink(o.live, o.wire) : soloLink();
@@ -240,7 +243,7 @@ export class QuizGame {
       // (the quiz's settings drive the sheet's games' lobbies, QuizRounds.configure; a later game's goes back to the quiz
       // for a quiz-family pick)
       const v = this.view, lane = LANES.isLater(v?.gm) && o.ladder === undefined ? LANES.of(v?.gm) : undefined;
-      return lane && { gm: lane.id, o: laneOpts(lane, { lv: o.lv ?? v.lv, timer: o.timer ?? v.timer, level: this.#level() }) };
+      return lane && { gm: lane.id, o: laneOpts(lane, { lv: o.lv ?? v.lv, timer: o.timer ?? v.timer, level: this.#level(), focus: this.#focus() }) };
     };
     this.#queue.then(() => {
       const g = own();
@@ -259,7 +262,7 @@ export class QuizGame {
   setGame(gm: GameId, p: { lv: number; timer: QuizTimer }): void {
     const opts = () => {
       const lane = LANES.of(gm);
-      return lane ? laneOpts(lane, { ...p, level: this.#level() }) : [];
+      return lane ? laneOpts(lane, { ...p, level: this.#level(), focus: this.#focus() }) : [];
     };
     this.#queue.then(() => LANES.loading(gm) ?? chunksOf(gm, opts()), () => {
       const v = this.view;

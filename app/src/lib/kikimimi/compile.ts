@@ -21,7 +21,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import { parse } from 'yaml';
 import { QUIZ_LVS } from '../contract/live-protocol.ts';
-import { clipIds, isDialogue, type Item, type Level } from './bank.ts';
+import { HENSHIN_LV, clipIds, isDialogue, takeIds, type Item, type Level } from './bank.ts';
 import type { ChunkClip, Clip, Words } from './clips.ts';
 import { voiced } from './clips.ts';
 import type { Ladder } from './ladder.ts';
@@ -184,7 +184,7 @@ const dict = (o: Readonly<Record<string, unknown>>): string => {
 /** A part's file: its items (or ladders; a unit's: the unit, then both), their clips (the packs they're in, and where)
  *  and their word timings. */
 function partFile(of: { unit?: unknown; items?: readonly Item[]; ladders?: readonly Ladder[] }, clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>, places: Places): string {
-  const ids = [...(of.items ?? []).flatMap((it) => clipIds(it)), ...(of.ladders ?? []).flatMap((l) => l.rungs.map((r) => r.id))];
+  const ids = [...(of.items ?? []).flatMap((it) => takeIds(it)), ...(of.ladders ?? []).flatMap((l) => l.rungs.map((r) => r.id))];
   const pick = <T,>(src: Readonly<Record<string, T>>) => Object.fromEntries(ids.filter((id) => id in src).map((id) => [id, src[id]]));
   const body = of.unit
     ? `"unit":${JSON.stringify(of.unit)},\n"items":${list(of.items ?? [])},\n"ladders":${list(of.ladders ?? [])}`
@@ -368,6 +368,8 @@ export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<R
   // a listening file's game (`tile:s1-tile-a`), once the registry has the game (games/versions.ts BUILD_V)
   for (const [u, [gm]] of Object.entries(listenIndex)) if (BUILD_V[gm] !== undefined) games[`${gm}:${u}`] = gameCv(gm, listenCv.get(u)!);
   if (units[PAIR_UNIT] && BUILD_V.pair !== undefined) games[`pair:${PAIR_UNIT}`] = gameCv('pair', units[PAIR_UNIT].cv);
+  // 音の へんしん deals from level 8, its phrases (content/henshin.ts)
+  if (units[HENSHIN_LV] && BUILD_V.henshin !== undefined) games[`henshin:${HENSHIN_LV}`] = gameCv('henshin', units[HENSHIN_LV].cv);
   const first = BANK.find((it) => it.lv === 1)!;
   const test = chunkClips([first.id], clips, places);
   const index: Index = {
