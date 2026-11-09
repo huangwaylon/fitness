@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { RoomCore, type Meta } from '../../../../relay/src/room.ts';
 import { dayStart, parseServer, tokyoDay, type Intent, type Relayed, type Who } from '../contract/live-protocol.ts';
-import { apply, applyRow, canonical, emptyDay, hash, lying, rowOf, taken, takenIds, caught, wishesFor, type DayEvent, type WorldDay } from './world-day.ts';
+import { apply, applyRow, canonical, emptyDay, hash, lying, lyingAt, rowOf, taken, takenIds, caught, wishesFor, type DayEvent, type WorldDay } from './world-day.ts';
 
 const KEY_A = 'a1'.repeat(16);
 const KEY_B = 'b2'.repeat(16);
@@ -331,5 +331,19 @@ describe('the shared day: two phones on the relay', () => {
     expect(B.act({ kind: 'world', op: 'woke', id: 'gulliver' })).toBe(false);
     expect(A.day.woke).toEqual({ gulliver: 'A' });
     expect(B.day.woke).toEqual({ gulliver: 'A' });
+  });
+});
+
+describe('what lay about at a moment (lyingAt: a slot’s keep-clear area, the same on both phones)', () => {
+  it('only the puts made by then and not yet taken: a later put, or a pick heard late, changes nothing', () => {
+    const d = emptyDay(DAY);
+    apply(d, { kind: 'put', id: 'p1', what: 'present', at: [1, 2], who: 'A', t: T0 }, 'A');
+    apply(d, { kind: 'put', id: 'p2', what: 'wood', at: [3, 4], who: 'B', t: T0 + 2000 }, 'A');
+    apply(d, { kind: 'pick', id: 'p1', what: 'present', who: 'B', t: T0 + 3000 }, 'A');
+    const at = (t: number) => lyingAt(d, t).map((p) => p.id);
+    expect(at(T0 + 1000)).toEqual(['p1']); // p2 not yet down
+    expect(at(T0 + 2500)).toEqual(['p1', 'p2']); // p1's pick not yet
+    expect(at(T0 + 3000)).toEqual(['p2']);
+    expect(lying(d).map((p) => p.id)).toEqual(['p2']);
   });
 });
