@@ -210,6 +210,7 @@ const SEAT_ON: Readonly<Record<string, { x: readonly number[]; front: number; li
   'yoga-mat': { x: [0.15], front: 30, lie: true },
   'nook-yoga-mat': { x: [0.15], front: 30, lie: true },
   'massage-chair': { x: [0], front: 21.9 },
+  'lawn-chair': { x: [0], front: 27.9 },
   'speed-bag': { x: [0], front: 24 }
 };
 /** A piece's turn (three's yaw: 0 its front toward us, −z; a quarter turn each), as the 3D island stands it

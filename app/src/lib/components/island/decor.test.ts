@@ -59,7 +59,10 @@ describe('decorations: art and sizes (island/decor.ts)', () => {
       'pullup', 'weight-bench', 'exercise-bike', 'treadmill', 'punching-bag', 'exercise-ball', 'barbell', 'kettlebell', 'protein-shaker', 'water-cooler', 'digital-scale', 'climbing-wall', 'upright-locker',
       'yoga-mat', 'nook-yoga-mat', 'speed-bag', 'massage-chair', 'dumbbell'
     ]);
-    expect(list.filter((d) => d.group === 'camp').length).toBeGreaterThanOrEqual(27);
+    expect(list.filter((d) => d.group === 'camp').length).toBeGreaterThanOrEqual(40);
+    // NH's camp kitchen (the camp table with its burner) and the second camp file's pieces, each its own model there
+    for (const k of ['outdoor-kitchen', 'outdoor-generator', 'plastic-canister', 'clothesline', 'clothesline-pole', 'leaf-campfire', 'oil-barrel-bathtub', 'smoker', 'lawn-chair', 'kettle', 'espresso-maker', 'wooden-bucket', 'tin-bucket'])
+      expect(kindDef(k)?.group === 'camp' && modelBounds(`decor/${k}`)?.pack, k).toBe('decor/camp2');
     expect(list.filter((d) => d.group === 'food').length).toBeGreaterThanOrEqual(15);
     for (const g of groups) expect(J[`decor.tab.${g}`], g).toBeTruthy();
     expect(J['decor.tab.gym']).toBe('ジム');

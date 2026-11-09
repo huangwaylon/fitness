@@ -2779,6 +2779,12 @@
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Candy_NH_Inv_Icon.png"
     },
+    "items/clothesline": {
+      "path": "items/clothesline.webp",
+      "w": 96,
+      "h": 96,
+      "source": "NH's own icon Layout_FtrIcon_FtrClothesline_Remake_0_0 (the 2.0.0 export)"
+    },
     "items/coconut-juice": {
       "path": "items/coconut-juice.webp",
       "w": 96,
@@ -2839,11 +2845,23 @@
       "h": 96,
       "source": "NH's own icon Layout_FtrIcon_FtrLantern_Remake_0_0 (the 2.0.0 export)"
     },
+    "items/leaf-campfire": {
+      "path": "items/leaf-campfire.webp",
+      "w": 96,
+      "h": 96,
+      "source": "NH's own icon Layout_FtrIcon_FtrFallenleavesfire_Remake_0_0 (the 2.0.0 export)"
+    },
     "items/nook-yoga-mat": {
       "path": "items/nook-yoga-mat.webp",
       "w": 96,
       "h": 96,
       "source": "NH's own icon Layout_FtrIcon_FtrYogamatExercise (the 2.0.0 export)"
+    },
+    "items/oil-barrel-bathtub": {
+      "path": "items/oil-barrel-bathtub.webp",
+      "w": 96,
+      "h": 96,
+      "source": "NH's own icon Layout_FtrIcon_FtrDrumcanbath_Remake_0_0 (the 2.0.0 export)"
     },
     "items/picnic-set": {
       "path": "items/picnic-set.webp",
@@ -2874,6 +2892,12 @@
       "w": 128,
       "h": 128,
       "source": "https://nookipedia.com/wiki/File:Soft_Serve_NH_Inv_Icon.png"
+    },
+    "items/wooden-bucket": {
+      "path": "items/wooden-bucket.webp",
+      "w": 96,
+      "h": 96,
+      "source": "NH's own icon Layout_FtrIcon_FtrBucketWood (the 2.0.0 export)"
     },
     "money/bells": {
       "path": "money/bells.webp",

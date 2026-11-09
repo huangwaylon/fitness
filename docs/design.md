@@ -908,7 +908,10 @@ the layout's objects (the old decorations' map moved into the layout once as `m-
   night from their emitters, world3d/things.ts LAMP `e`, faded in as every light), キャンプベッド and シュラフ (lain on),
   折りたたみアウトドアチェア, ディレクターズチェア, アウトドアベンチ (sat on), キッズテント, クーラーボックス,
   バーベキューグリル, コッフェル, 折りたたみアウトドアテーブル, アウトドアテーブル, キャリーワゴン, ウォータージャグ,
-  ケトル, 携帯ラジオ, ナナメのみちしるべ, せかいのみちしるべ.
+  ケトル, 携帯ラジオ, ナナメのみちしるべ, せかいのみちしるべ; and a second file's (`decor/camp2`): アウトドアキッチン
+  (NH's camp table with its burner and sink), アウトドア発電機, ポリタンク, 物干しロープ, 物干しざお, 落ち葉のたき火,
+  ドラム缶風呂 and 燻製マシン (their fires lit at night), ビニールチェア (sat on), やかん, エスプレッソメーカー,
+  木製のバケツ, ブリキのバケツ.
 - **食べ物** (group `food`, to look at): ピクニックバスケット, お花見セット, フルーツバスケット, パン, ミックスサンドセット,
   飯ごう (its fire lit at night), 鍋, フライパン, シーフードのアヒージョ, スズキの香草焼き, 洋風定食, 和風定食,
   ペットボトル飲料, ココナッツジュース, クッキー. Their labels are kanji (the sheets' rule; the world's tap areas

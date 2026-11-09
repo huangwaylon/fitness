@@ -6,7 +6,7 @@ import { seatsOf } from '#lib/layout/nav.ts';
 const l0 = defaultLayout();
 const KINDS = [['park-bench', 2, false], ['log-bench', 2, false], ['log-stool', 1, false], ['iron-chair', 1, false], ['hammock', 1, true], ['beach-chair', 1, true],
   // the camp goods' and the gym's (scripts/world3d-assets.ts PACKS)
-  ['folding-chair', 1, false], ['directors-chair', 1, false], ['outdoor-bench', 2, false], ['massage-chair', 1, false],
+  ['folding-chair', 1, false], ['directors-chair', 1, false], ['outdoor-bench', 2, false], ['massage-chair', 1, false], ['lawn-chair', 1, false],
   ['camping-cot', 1, true], ['sleeping-bag', 1, true], ['yoga-mat', 1, true], ['nook-yoga-mat', 1, true]] as const;
 const at = (o: Obj) => withChanges(l0, { set: [o] });
 
