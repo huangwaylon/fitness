@@ -199,8 +199,9 @@ const BATCH_MAX = 50;
 /** At most this many characters of events in one request: the record's body cap is 1,000,000 (storeRoute.ts
  *  MAX_BODY_CHARS), and one event may be 20k (a wedding note 140k). */
 const BATCH_CHARS = 900_000;
-/** A request that outlives the page (`keepalive`): the browser's cap is 64 KB of body. */
-const KEEPALIVE_CHARS = 60_000;
+/** A request that outlives the page (`keepalive`): the browser's cap is 64 KiB of body, in bytes (UTF-8: a Japanese
+ *  character is 3), ~1 KB of it left for the envelope (key, action, rid, sid). */
+const KEEPALIVE_BYTES = 64 * 1024 - 1024;
 /** The record's failures (`unavailable`) one event takes before it is set aside (~2 h at the 5 min backoff). */
 export const PARK_AFTER = 30;
 /** One event's answer in an `events` reply. */
@@ -228,8 +229,9 @@ function subjectOf(ev: Pick<QueuedEvent, 'type' | 'data'>): string | null {
 /**
  * The queue in send order at `now`: the events that may go now, then whether a due-later (backed-off) event blocks
  * the rest. Held events are skipped (with every later event on the same subject); a backed-off one stops the scan.
+ * `skip`: passed over (in this batch already); `defer`: passed over as a held one is (too big for a keepalive).
  */
-function due(q: QueuedEvent[], now: number, skip: (ev: QueuedEvent) => boolean = () => false): { ev: QueuedEvent | null; wake: number | null } {
+function due(q: QueuedEvent[], now: number, skip: (ev: QueuedEvent) => boolean = () => false, defer: (ev: QueuedEvent) => boolean = () => false): { ev: QueuedEvent | null; wake: number | null } {
   const heldSubjects = new Set<string>();
   let wake: number | null = null;
   for (const ev of q) {
@@ -239,7 +241,7 @@ function due(q: QueuedEvent[], now: number, skip: (ev: QueuedEvent) => boolean =
       continue;
     }
     if (skip(ev)) continue;
-    if (isHeld(ev, now)) {
+    if (defer(ev) || isHeld(ev, now)) {
       wake = wake === null ? ev.nextAt : Math.min(wake, ev.nextAt);
       if (subj) heldSubjects.add(subj);
       continue;
@@ -262,11 +264,13 @@ function due(q: QueuedEvent[], now: number, skip: (ev: QueuedEvent) => boolean =
  */
 export function flush(now: () => number = Date.now, opts: { keepalive?: boolean } = {}): Promise<FlushResult> {
   if (flushing) return flushing;
-  const most = opts.keepalive ? KEEPALIVE_CHARS : BATCH_CHARS;
+  const most = opts.keepalive ? KEEPALIVE_BYTES : BATCH_CHARS;
   const p = (async (): Promise<FlushResult> => {
     const out: FlushResult = { sent: 0, acked: [], stored: [], dropped: [], remaining: 0 };
     const body = (ev: QueuedEvent) => ({ id: ev.id, type: ev.type, data: ev.data });
     const tried = new Set<string>();
+    /** Over a keepalive's cap alone: left for the next flush with the page open, the rest sent past it. */
+    const tooBig = new Set<string>();
     const ack = (ev: QueuedEvent, at?: string) => {
       out.sent++;
       out.acked.push(ev);
@@ -301,7 +305,9 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean 
       saveQueue(queued().map((x) => (x.id === ev.id ? { ...x, tries, nextAt: now() + backoffMs(tries), ...(n ? { served: n } : {}) } : x)));
       return false;
     };
-    const size = (ev: QueuedEvent) => JSON.stringify(body(ev)).length + 1;
+    // (a keepalive's in bytes, the browser's measure; else characters, the record's)
+    const utf8 = new TextEncoder();
+    const size = (ev: QueuedEvent) => (opts.keepalive ? utf8.encode(JSON.stringify(body(ev))).length : JSON.stringify(body(ev)).length) + 1;
     /** A batch refused whole for its size halves the next one (order kept); one alone is set aside. */
     let cap = BATCH_MAX;
     for (;;) {
@@ -309,11 +315,15 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean 
       const batch: QueuedEvent[] = [];
       let chars = 0;
       while (batch.length < cap) {
-        const { ev } = due(queued(), now(), (x) => tried.has(x.id));
+        const { ev } = due(queued(), now(), (x) => tried.has(x.id), (x) => tooBig.has(x.id));
         if (!ev) break;
         const n = size(ev);
         // (one alone may go over BATCH_CHARS: the record caps an event below its body's; never over a keepalive's)
-        if ((batch.length || opts.keepalive) && chars + n > most) break;
+        if (opts.keepalive && n > most) {
+          tooBig.add(ev.id);
+          continue;
+        }
+        if (batch.length && chars + n > most) break;
         tried.add(ev.id);
         batch.push(ev);
         chars += n;

@@ -255,8 +255,9 @@ at once; one event alone so refused, or too large to send at all, is set aside.
 - **Retry now:** the `online` event, a sync tap, the re-read after an ack, becoming visible and the socket's welcome
   (iOS often skips `online` after a suspend) send backed-off events at once, at most once per 30 s.
 - **Hidden:** on `visibilitychange` to hidden and `pagehide`, the day rows still in their hold (a tally's 60 s, an
-  island day's 120 s) go at once in `keepalive` requests (≤ 60,000 chars each), so a phone locked right after a catch
-  doesn't leave the partner behind. A buy's undo window keeps its time.
+  island day's 120 s) go at once in `keepalive` requests (≤ 63 KiB of UTF-8 each, the browser's 64 KiB less the
+  envelope; an event bigger than that alone waits for the next flush, the rest go past it), so a phone locked right
+  after a catch doesn't leave the partner behind. A buy's undo window keeps its time.
 
 ### Optimistic view
 
