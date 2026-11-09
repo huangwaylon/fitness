@@ -180,6 +180,10 @@ export interface Stats {
   byLevel: Partial<Record<number, Acc>>;
   /** The Elo-style ability and the comfortable level (where it predicts 80 %), null until any answer. */
   theta: number;
+  /** What my answers taught about the items (learned difficulty): each answered item's own shift and the answers it's
+   *  from, and each shelf's (a level's place and a type, `4:mean`) shift; difficultyOf adds them to the filed difficulty. */
+  items: ReadonlyMap<string, { d: number; n: number }>;
+  shelves: Readonly<Record<string, number>>;
   level: number | null;
   /** Fewer than ESTIMATE_MIN answers: still measuring. */
   measuring: boolean;
@@ -188,6 +192,29 @@ export interface Stats {
 /** An item's difficulty on the ability scale: its level (L1 −1 … L4 2, やま 3, ほし 4; the アナウンス pack as L4) and its type. */
 const TYPE_OFFSET: Readonly<Record<ItemType, number>> = { pic: -0.3, word: 0, num: 0, reply: 0.2, mean: 0.4, gist: 0.3, next: 0.3 };
 export const difficulty = (it: Pick<Entry, 'lv' | 'type'>): number => levelRank(it.lv) - 2 + TYPE_OFFSET[it.type];
+/** A shelf: the items filed at one place with one type (`4:mean`): its shift is learned from all of them. */
+const shelfOf = (it: Pick<Entry, 'lv' | 'type'>): string => `${levelRank(it.lv)}:${it.type}`;
+/** The learned shifts' steps: an item's 0.4 on its first answer, less with each (0.4 / (1 + n)); a shelf's 0.04 an answer.
+ *  Both bounded (an item ± 1.5, a shelf ± 1), so a run of luck never moves an item off the scale. */
+const K_ITEM = 0.4;
+const K_SHELF = 0.04;
+const ITEM_MAX = 1.5;
+const SHELF_MAX = 1;
+const clamp = (x: number, m: number) => Math.max(-m, Math.min(m, x));
+
+/** An item's difficulty as learned (docs/kikimimi.md "What's measured"): its filed difficulty (its place and type), its shelf's
+ *  shift and its own, from my answers so far (`stats`; none: as filed). */
+export const difficultyOf = (it: Pick<Entry, 'id' | 'lv' | 'type'>, stats?: Pick<Stats, 'items' | 'shelves'>): number =>
+  difficulty(it) + (stats?.shelves[shelfOf(it)] ?? 0) + (stats?.items.get(it.id)?.d ?? 0);
+
+/** The chance I get an item right on the first listen, as the estimate stands (θ against its learned difficulty). */
+export const chanceOf = (it: Pick<Entry, 'id' | 'lv' | 'type'>, stats: Pick<Stats, 'theta' | 'items' | 'shelves'>): number =>
+  1 / (1 + Math.exp(-(stats.theta - difficultyOf(it, stats))));
+
+/** The success the picks aim for (docs/curriculum.md "Placement and spaced repetition": 75-85 %), and how far an item's chance is from it (0
+ *  inside the band). */
+export const AIM = { lo: 0.75, hi: 0.85 } as const;
+export const offAim = (p: number): number => (p < AIM.lo ? AIM.lo - p : p > AIM.hi ? p - AIM.hi : 0);
 const ESTIMATE_MIN = 16;
 /** θ − ln 4: where the predicted score is 80 %. */
 const COMFORT = Math.log(4);
@@ -197,8 +224,9 @@ const acc = (): Acc & { _r: number; _f: number } => ({ n: 0, right: 0, first: 0,
 /**
  * The stats of `answers` (in the order answered) as of `today`: each skill's and feature's mastery (an answer counts
  * fully for its item's primary skill, half for the others, and less as it ages: HALF_LIFE), accuracy per type, accent
- * and level, and the ability: θ += K (score − expected) over the items' difficulty, K 0.3 for the first 24 answers then
- * 0.15; the comfortable level is θ − ln 4 on the levels' scale, capped at the hardest level played + 0.5.
+ * and level, and the ability: θ += K (score − expected) over the items' learned difficulty (difficultyOf), K 0.3 for the
+ * first 24 answers then 0.15, the item and its shelf moving the other way (K_ITEM, K_SHELF); the comfortable level is
+ * θ − ln 4 on the levels' scale, capped at the hardest level played + 0.5.
  */
 export function statsOf(answers: readonly Answer[], today: LocalDate): Stats {
   const t = dayNum(today);
@@ -206,6 +234,7 @@ export function statsOf(answers: readonly Answer[], today: LocalDate): Stats {
   const ft = new Map<Feature, { n: number; w: number; s: number }>();
   const byType = new Map<ItemType, ReturnType<typeof acc>>(), byAccent = new Map<Accent, ReturnType<typeof acc>>(), byLevel = new Map<number, ReturnType<typeof acc>>();
   let theta = 0, k = 0, maxLv = 0;
+  const items = new Map<string, { d: number; n: number }>(), shelves: Record<string, number> = {};
   const games = new Set<string>();
   for (const a of answers) {
     const it = entryOf(a.id);
@@ -235,9 +264,13 @@ export function statsOf(answers: readonly Answer[], today: LocalDate): Stats {
       if (firstListenRight(a)) x._f++;
       (map as Map<unknown, ReturnType<typeof acc>>).set(key, x);
     }
-    const b = difficulty(it);
-    const expected = 1 / (1 + Math.exp(-(theta - b)));
+    const learned = { items, shelves };
+    const expected = 1 / (1 + Math.exp(-(theta - difficultyOf(it, learned))));
     theta += (k < 24 ? 0.3 : 0.15) * (sc - expected);
+    // the item and its shelf learn too: a right answer makes them a little easier, a miss harder
+    const own = items.get(it.id) ?? { d: 0, n: 0 }, shelf = shelfOf(it);
+    items.set(it.id, { d: clamp(own.d - (K_ITEM / (1 + own.n)) * (sc - expected), ITEM_MAX), n: own.n + 1 });
+    shelves[shelf] = clamp((shelves[shelf] ?? 0) - K_SHELF * (sc - expected), SHELF_MAX);
     k++;
     maxLv = Math.max(maxLv, levelRank(it.lv));
   }
@@ -256,6 +289,8 @@ export function statsOf(answers: readonly Answer[], today: LocalDate): Stats {
     byAccent: accOut(byAccent),
     byLevel: accOut(byLevel),
     theta,
+    items,
+    shelves,
     level: k ? Math.max(1, Math.min(maxLv + 0.5, theta - COMFORT + 2)) : null,
     measuring: k < ESTIMATE_MIN
   };

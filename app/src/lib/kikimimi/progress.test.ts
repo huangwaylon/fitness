@@ -6,10 +6,10 @@ import { levelAt, levelRank, type Level } from './bank.ts';
 import { BANK } from './source.ts';
 import { DECK_SIZE } from './deck.ts';
 import { dayNum } from '../contract/tokyo.ts';
-import { answersOf, daysPlayed, gamesOf, isLadderGame, listenAnswers, recentOf, scoreOf, speedOf, statsOf, together, trendOf, weekDays, type Answer, type Game } from './progress.ts';
+import { AIM, answersOf, chanceOf, daysPlayed, difficulty, difficultyOf, gamesOf, offAim, isLadderGame, listenAnswers, recentOf, scoreOf, speedOf, statsOf, together, trendOf, weekDays, type Answer, type Game } from './progress.ts';
 import { ladderDeck } from './ladder.ts';
 import { LADDERS } from './ladders.ts';
-import { loadAll } from './pool.ts';
+import { entryOf, loadAll } from './pool.ts';
 import { cardsOf, dueOf, gradeOf, practiceDeck, step } from './srs.ts';
 import { feedback, recommend, tripsOf } from './advice.ts';
 import { skillsOf } from './tags.ts';
@@ -168,7 +168,29 @@ describe('statsOf', () => {
     expect(stageAt(6).id).toBe('hoshi');
     expect(stageAt(9).id).toBe('hoshi');
   });
+  it('learns each item’s difficulty from my answers, seeded from where it’s filed', () => {
+    const l3 = BANK.filter((it) => it.lv === 3 && it.type === 'reply').map((it) => it.id);
+    const [hard, easy] = l3;
+    const e = (id: string) => entryOf(id)!;
+    expect(difficultyOf(e(hard))).toBe(difficulty(e(hard))); // none answered: as filed
+    const missed = statsOf(answersOf([game(l3.slice(0, 12), { lv: 3, miss: [hard] }), game([hard], { lv: 3, miss: [hard] })]), TODAY);
+    expect(missed.items.get(hard)).toMatchObject({ n: 2 });
+    expect(missed.items.get(hard)!.d).toBeGreaterThan(0.1); // a miss, twice: harder
+    expect(missed.items.get(easy)!.d).toBeLessThan(0); // right: easier
+    expect(difficultyOf(e(hard), missed)).toBeGreaterThan(difficultyOf(e(easy), missed) + 0.2);
+    expect(chanceOf(e(hard), missed)).toBeLessThan(chanceOf(e(easy), missed));
+    // the shelf (level 3's replies) learns from all of them: an unanswered reply at level 3 moves too, a level 2 one doesn't
+    const unseen = l3.find((id) => !missed.items.has(id))!;
+    expect(difficultyOf(e(unseen), missed)).not.toBe(difficulty(e(unseen)));
+    const l2 = BANK.find((it) => it.lv === 2 && it.type === 'reply')!.id;
+    expect(difficultyOf(e(l2), missed)).toBe(difficulty(e(l2)));
+    // a long run of luck stays on the scale (an item ± 1.5, a shelf ± 1)
+    const lucky = statsOf(answersOf(Array.from({ length: 40 }, () => game([easy], { lv: 3 }))), TODAY);
+    expect(difficultyOf(e(easy), lucky)).toBeGreaterThanOrEqual(difficulty(e(easy)) - 2.5);
+    expect([offAim(0.8), offAim(AIM.lo), offAim(0.6), offAim(0.95)].map((x) => +x.toFixed(2))).toEqual([0, 0, 0.15, 0.1]);
+  });
 });
+
 
 describe('trend, week, together', () => {
   it('trends first-listen accuracy per game and compares the last 5 with the 5 before', () => {
@@ -238,7 +260,7 @@ describe('practiceDeck', () => {
   it('brings back the items I missed and the features I miss', () => {
     const a = practiceDeck({ answers, stats, today: TODAY, seed: 1, levels: LV }).map((it) => it.id);
     const missed = ['w1-right', 'w1-rock', 'w1-play', 'w1-fly', 'n1-reps-1'];
-    expect(a.filter((id) => missed.includes(id))).toHaveLength(4); // at most 4 due items
+    expect(a.filter((id) => missed.includes(id)).length).toBeGreaterThanOrEqual(4); // the 4 due first (a fifth may come as its feature's item nearest the aim)
     const lr = a.filter((id) => skillsOf(BANK.find((b) => b.id === id)!).primary === 'lr');
     expect(lr.length).toBeGreaterThanOrEqual(4);
   });

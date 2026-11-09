@@ -10,13 +10,13 @@ import type { KV } from '../sync/storage.ts';
 import { DEVICE, readJson, writeJson } from '../sync/storage.ts';
 import { firstListenRight } from '../contract/listen.ts';
 import type { Accent, Entry, Feature, Item, Level } from './bank.ts';
-import { levelRank, shuffleChoices } from './bank.ts';
+import { shuffleChoices } from './bank.ts';
 import { ENTRIES, entryOf, itemOf } from './pool.ts';
 import { agesOf, staleness, type Recent } from './recent.ts';
 import { DECK_SIZE, MIX } from './deck.ts';
 import { drawn } from './mix.ts';
 import { dayNum } from '../contract/tokyo.ts';
-import type { Answer, Stats } from './progress.ts';
+import { chanceOf, offAim, type Answer, type Stats } from './progress.ts';
 import { SKILLS, skillsOf, tagsOf, type Skill } from './tags.ts';
 
 /** Days until a card is due again, by box (0: at once). */
@@ -118,9 +118,10 @@ const DUE_MAX = 4;
 /**
  * にがて れんしゅう: DECK_SIZE items of the offered levels (the types their mix draws), never one twice: my due item cards
  * first (lowest box, most overdue; at most 4), then items carrying my weakest features (due ones first; another item
- * than the one missed when there is one, nearest my comfortable level), then my weakest skills' items, then any; all
- * within `focus`. Among those, items not heard lately come first, then the least recently heard (`recent`, this phone's
- * last games: recent.ts; and answered in the last 2 days), then the nearest my level. Choices shuffled by `seed`, as
+ * than the one missed when there is one), then my weakest skills' items, then any; all within `focus`. Among those,
+ * items not heard lately come first, then the least recently heard (`recent`, this phone's last games: recent.ts; and
+ * answered in the last 2 days), then the nearest the 75-85 % I should get right (progress.ts chanceOf, the learned
+ * difficulty). Choices shuffled by `seed`, as
  * deck() does; deterministic. The picks are the index's (`ids`); `deal` (once) makes the deck of them from their items as
  * authored (their levels loaded: pool.ts loadIds).
  */
@@ -132,10 +133,9 @@ export function practicePicks(o: PracticeOpts): { ids: string[]; deal: (item: (i
   const cards = cardsOf(o.answers, undefined, o.mada);
   const lastSeen = new Map<string, number>();
   for (const a of o.answers) lastSeen.set(a.id, dayNum(a.d));
-  const near = o.stats.level ?? 2;
   const ages = agesOf(o.recent ?? []);
-  /** Not heard lately first, then the least recently heard, then nearer my level (the pool's seeded order breaks ties). */
-  const rank = (it: Entry) => staleness(it.id, ages) * 100 + (t - (lastSeen.get(it.id) ?? -1e6) < 2 ? 50 : 0) + Math.abs(levelRank(it.lv) - near);
+  /** Not heard lately first, then the least recently heard, then nearer the aim (the pool's seeded order breaks ties). */
+  const rank = (it: Entry) => staleness(it.id, ages) * 100 + (t - (lastSeen.get(it.id) ?? -1e6) < 2 ? 50 : 0) + 20 * offAim(chanceOf(it, o.stats));
   const out: Entry[] = [], taken = new Set<string>();
   const take = (it: Entry | undefined) => {
     if (it && !taken.has(it.id) && out.length < DECK_SIZE) (out.push(it), taken.add(it.id));
