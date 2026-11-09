@@ -179,7 +179,7 @@ test('dialogues (gist, next): both speakers while it plays, the two-sided transc
     await expect(tr.locator('[data-line="1"]')).toHaveClass(/right/);
     await expect(tr.locator('[data-line]:has(.focus)')).toHaveCount(1);
     await expect(tr.locator('[data-kiki-next-line]')).toHaveCount(next ? 1 : 0);
-    if (next) await expect(tr.locator('[data-kiki-next-line] .en')).toHaveText("No problem, I'm not in a rush.");
+    if (next) await expect(tr.locator('[data-kiki-next-line] .en')).toHaveText("No problem, I've got a minute.");
     await expect(sheet(page).locator('[data-kiki-note]')).toBeVisible();
     if (shots) await snap(page, `${shots}/dialogue-reveal-${next ? 'next' : 'gist'}.png`);
     await sheet(page).locator('[data-kiki-next]').click();
@@ -187,7 +187,7 @@ test('dialogues (gist, next): both speakers while it plays, the two-sided transc
   await expect(sheet(page)).toHaveAttribute('data-phase', 'results');
   // the missed one (1) open with its transcript; the other folded till tapped
   await expect(sheet(page).locator('[data-review] [data-kiki-transcript]')).toHaveCount(1);
-  await expect(sheet(page).locator('[data-review="1"] .ans')).toContainText("He'll take a bus from outside the station.");
+  await expect(sheet(page).locator('[data-review="1"] .ans')).toContainText("He'll take the shuttle bus out front.");
   await sheet(page).locator('[data-kiki-missed]').click();
   await sheet(page).locator('[data-kiki-row="0"]').click();
   await expect(sheet(page).locator('[data-review] [data-kiki-transcript]')).toHaveCount(2);

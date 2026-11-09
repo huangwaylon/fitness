@@ -41,10 +41,10 @@ const ROWS: readonly Row[] = [
       ['rosie', "Oh, shoot. Sorry about that. Let me remake it for you, it'll just be a minute.", 'あっ、すみません。作り直しますね、少々お待ちください。',
         "Oh, shoot. Sorry about that. Lemme remake it for ya, it'll just be a minute."]
     ],
-    choices: ["No problem, I'm not in a rush.", "Sorry, I'll make it again.", "Yes, it's an iced one."],
-    ja: '大丈夫です、急いでないので。', note: 'lemme＝let me。作り直すのは店員の方',
-    cja: ['大丈夫です、急いでいないので。', 'すみません、作り直します。', 'はい、アイスのです。'],
-    why: '店員が「作り直します」と言ったので、客は「急いでいません」と気づかいを返すのが自然。作り直すのは店員なので、客が謝るのは役割が逆です。',
+    choices: ["No problem, I've got a minute.", "Sorry, I'll make it again for you.", "Yes, it's the caramel one, for Dawn."],
+    ja: '大丈夫です、時間はあるので。', note: 'lemme＝let me。作り直すのは店員の方',
+    cja: ['大丈夫です、時間はあるので。', 'すみません、作り直しますね。', 'はい、ドーンさんのキャラメルのです。'],
+    why: '店員が「作り直します」と言ったので、客は「時間はあります」と気づかいを返すのが自然。作り直すのは店員なので、客が謝るのは役割が逆です。',
     ctx: 'カフェで、店員が名前を呼んで飲み物を出しています',
     tags: tg(51, 'service', 'formula', ['cafe'], ['lemme'])
   },
@@ -57,9 +57,9 @@ const ROWS: readonly Row[] = [
       ['raymond', 'Great. So how do I get there?', 'そりゃ最高だね。じゃあ、どうやって行けば？'],
       ['mabel', "Your best bet's the shuttle bus. It leaves from out front, by the taxi stand.", 'シャトルバスがいちばんです。正面のタクシー乗り場の横から出ます。']
     ],
-    choices: ["He'll take a bus from outside the station.", "He'll wait for the 8:40 train.", "He'll take a taxi to Philadelphia."],
-    ja: '駅の外からバスに乗る。', note: 'Great は皮肉。taxi stand は乗り場の場所',
-    cja: ['駅の外からバスに乗る。', '8時40分の電車を待つ。', 'フィラデルフィアまでタクシーで行く。'],
+    choices: ["He'll take the shuttle bus out front.", "He'll wait for the next train to Philadelphia.", "He'll take a taxi to Philadelphia."],
+    ja: '正面からシャトルバスに乗る。', note: 'Great は皮肉。taxi stand は乗り場の場所',
+    cja: ['正面からシャトルバスに乗る。', '次のフィラデルフィア行きの電車を待つ。', 'フィラデルフィアまでタクシーで行く。'],
     why: '電車は運休なので、駅員は正面から出るシャトルバスを勧めています。タクシー乗り場はバス乗り場の目印にすぎません。Great は皮肉です。',
     ctx: '駅の窓口で、男性が駅員に尋ねています',
     tags: tg(5, 'service', 'sarcasm', ['station'], ['contraction'])
@@ -88,9 +88,9 @@ const ROWS: readonly Row[] = [
       ['audie', 'Oh no, long day?', 'あら、大変な一日だった？'],
       ['maple', 'The worst. Can we do Saturday instead? My treat.', '最悪だった。代わりに土曜日にしない？ おごるから。']
     ],
-    choices: ['Sure, Saturday works. Get some rest!', 'Thanks, but I already ate tonight.', "No, I'm not tired at all."],
+    choices: ["Sure, Saturday's good. Rest up!", 'Thanks, but I already ate tonight.', "Oh, I'm not tired at all, actually."],
     ja: 'いいよ、土曜で大丈夫。ゆっくり休んで！', note: 'wiped out＝へとへと。My treat＝おごるよ',
-    cja: ['いいよ、土曜で大丈夫。ゆっくり休んで！', 'ありがとう、でも今夜はもう食べたよ。', 'ううん、全然疲れてないよ。'],
+    cja: ['いいよ、土曜で大丈夫。ゆっくり休んで！', 'ありがとう、でも今夜はもう食べたよ。', 'あ、実は全然疲れてないよ。'],
     why: 'wiped out は「くたくた」。疲れたので土曜にしようという提案には、了解して相手を気づかうのが自然です。My treat（おごる）を今夜の食事の話と取るのは罠。',
     ctx: '今夜会う予定の友達から電話です',
     tags: tg(49, 'friend', 'refusal', ['phone'], ['ellipsis'])
@@ -103,9 +103,9 @@ const ROWS: readonly Row[] = [
       ['molly', "No reason. It's just that the client moved our call to three, and it's the only room with a screen.",
         '別に。ただ、クライアントが電話会議を3時にずらして、画面があるのはあの部屋だけなんだよね。']
     ],
-    choices: ["She'd like him to let her have the room.", 'She wants to join his meeting at three.', "She's asking him to move the client call."],
-    ja: '部屋を使わせてほしい。', note: "No reason. It's just that…＝遠回しなお願いの定番",
-    cja: ['部屋を譲ってほしい。', '3時の彼の会議に参加したい。', 'クライアントとの電話を動かしてほしい。'],
+    choices: ['She wants the room at three.', 'She wants to join his meeting at three.', "She's asking him to move the client call."],
+    ja: '3時にその部屋を使いたい。', note: "No reason. It's just that…＝遠回しなお願いの定番",
+    cja: ['3時にその部屋を使いたい。', '3時の彼の会議に参加したい。', 'クライアントとの電話を動かしてほしい。'],
     why: '「別に。ただ…」と事情だけ話すのは、遠回しなお願いの定番。画面のある部屋が3時に必要なので、譲ってほしいのです。電話を動かしたのはクライアントです。',
     ctx: 'オフィスで、同僚が話しかけてきました',
     tags: tg(42, 'colleague', 'indirect')
@@ -132,9 +132,9 @@ const ROWS: readonly Row[] = [
       ['bunnie', "That's what you said in May.", '5月にもそう言いましたよね。'],
       ['tom-nook', "Right, right. I'll, uh, have my guy call you once the lumber comes in.", 'そうでしたね。材木が入りしだい、うちの職人から電話させます。']
     ],
-    choices: ["There's no fixed time for the repair yet.", 'A carpenter is coming tomorrow.', 'She has to fix the steps herself.'],
-    ja: '修理の日時はまだ決まっていない。', note: 'once ～ comes in＝入荷しだい。日時は未定のまま',
-    cja: ['修理の日時はまだ決まっていない。', '明日、大工さんが来る。', '彼女が自分で階段を直さないといけない。'],
+    choices: ['It depends on when the lumber comes in.', 'A carpenter will be there tomorrow to fix the deck.', 'She has to fix the steps herself.'],
+    ja: '材木がいつ入るかしだい。', note: 'once ～ comes in＝入荷しだい。日時は未定のまま',
+    cja: ['材木がいつ入るかしだい。', '明日、大工さんがデッキを直しに来る。', '彼女が自分で階段を直さないといけない。'],
     why: 'once the lumber comes in は「材木が入りしだい」。いつ入るかは言っていないので、日時は未定です。5月にも同じことを言っていて、大家ははぐらかしています。',
     ctx: '借家の住人が、大家さんに電話しています',
     tags: tg(31, 'service', 'hedge', ['phone'])
@@ -146,10 +146,10 @@ const ROWS: readonly Row[] = [
       ['apollo', "Oh, thanks! Hope it wasn't too loud.", 'ああ、どうも！うるさくなかったならいいけど。'],
       ['ankha', 'Well... the baby was up till two, to be honest.', 'まあ…正直、赤ちゃんが2時まで起きてて。']
     ],
-    choices: ["Oh no, I'm so sorry. We'll keep it down next time.", 'Great, so you enjoyed the party too?', 'Two? I thought it ended at one.'],
-    ja: 'うわ、本当にすみません。次は静かにします。', note: 'fun party は前置き。本題は赤ちゃんが眠れなかったこと',
-    cja: ['うわ、本当にすみません。次は静かにします。', 'よかった、じゃああなたも楽しんだんですね？', '2時？ 1時に終わったと思ってたけど。'],
-    why: '「楽しそうでしたね」は前置きで、本題は「赤ちゃんが2時まで寝られなかった」という苦情。謝って、次は静かにすると約束するのが正解です。時刻を言い返すのは失礼。',
+    choices: ["Oh no, sorry! We'll keep it down.", 'Great, so you enjoyed the party too?', 'Two? I thought the party ended at one.'],
+    ja: 'うわ、ごめんなさい！静かにします。', note: 'fun party は前置き。本題は赤ちゃんが眠れなかったこと',
+    cja: ['うわ、ごめんなさい！ 静かにします。', 'よかった、じゃああなたも楽しんだんですね？', '2時？ パーティーは1時に終わったと思ってたけど。'],
+    why: '「楽しそうでしたね」は前置きで、本題は「赤ちゃんが2時まで寝られなかった」という苦情。謝って、静かにすると約束するのが正解です。時刻を言い返すのは失礼。',
     ctx: '週明け、隣の人が玄関を訪ねてきました',
     tags: tg(32, 'neighbour', 'indirect')
   },
@@ -161,9 +161,9 @@ const ROWS: readonly Row[] = [
       ['roald', "Forty? I've got a connection at six-thirty.", '40分？ 6時半に乗り継ぎがあるんですが。'],
       ['whitney', "You should be fine. They're holding it for everyone on this flight.", '大丈夫だと思いますよ。この便の乗客を待ってくれますから。']
     ],
-    choices: ["He'll probably still make it.", "He'll miss it and need a new ticket.", "He'll be put on a later connection."],
-    ja: 'たぶん間に合う。', note: 'should be fine＝たぶん大丈夫。holding＝出発を待つ',
-    cja: ['たぶん間に合う。', '乗り遅れて、新しい航空券が必要になる。', '後の乗り継ぎ便に変更される。'],
+    choices: ["He'll probably still make his connection.", "He'll miss it and need a new ticket.", "He'll be put on a later connection."],
+    ja: 'たぶん乗り継ぎに間に合う。', note: 'should be fine＝たぶん大丈夫。holding＝出発を待つ',
+    cja: ['たぶん乗り継ぎに間に合う。', '乗り遅れて、新しい航空券が必要になる。', '後の乗り継ぎ便に変更される。'],
     why: 'You should be fine は「たぶん大丈夫」。乗り継ぎ便がこの便の乗客を待ってくれる（holding）ので、間に合いそうです。40分の遅れだけで判断するのは罠。',
     ctx: '空港の搭乗口で、男性が係員に尋ねています',
     tags: tg(8, 'service', 'literal', ['desk'], ['teen-ty', 'clock'])
@@ -176,9 +176,9 @@ const ROWS: readonly Row[] = [
       ['dom', "Almost. You're kind of leaning forward. Try sitting back, like there's a chair behind you.", 'おしい。ちょっと前に倒れてる。後ろに椅子があるつもりで、腰を引いてみて。',
         "Almost. You're kinda leaning forward. Try sittin' back, like there's a chair behind ya."]
     ],
-    choices: ['Oh, that feels much better on my knees.', "Thanks, I'll grab a chair.", 'Sure, ten more minutes.'],
-    ja: 'あ、ひざがずっと楽になった。', note: "like there's a chair＝椅子があるつもりで。本物は使わない",
-    cja: ['あ、ひざがずっと楽になった。', 'ありがとう、椅子を持ってくるね。', 'いいよ、あと10分ね。'],
+    choices: ['Oh, sitting back feels better on my knees.', "Thanks, I'll go grab a chair from the back room.", 'Sure, ten more minutes, then.'],
+    ja: 'あ、腰を引くとひざが楽になった。', note: "like there's a chair＝椅子があるつもりで。本物は使わない",
+    cja: ['あ、腰を引くとひざが楽になった。', 'ありがとう、奥の部屋から椅子を持ってくるね。', 'いいよ、じゃああと10分ね。'],
     why: 'like there\'s a chair は「椅子があるつもりで」というたとえ。言われたとおり腰を引き、楽になったと返すのが自然です。本物の椅子は使わず、10は分ではなく回数です。',
     ctx: 'ジムで、トレーナーがスクワットを見ています',
     tags: tg(17, 'friend', 'literal', [], ['kinda'])
@@ -205,9 +205,9 @@ const ROWS: readonly Row[] = [
       ['stitches', 'Uh, no, it was a gift.', 'いや、プレゼントでもらったので。'],
       ['audie', "Then I'm afraid all I can offer is store credit.", 'それでしたら、あいにく店内クレジットでのご対応のみになります。']
     ],
-    choices: ["That's fine. Can I use it online as well?", "Great, I'll take the cash, then.", 'No thanks, I already have a receipt.'],
+    choices: ["That's fine. Does it work online too?", "Great, I'll take cash, then.", "No thanks, I've got a receipt here."],
     ja: 'それでいいです。オンラインでも使えますか？', note: 'store credit＝店で使える金券。現金は戻らない',
-    cja: ['それでいいです。オンラインでも使えますか？', 'よかった、じゃあ現金でもらいます。', 'いえ、レシートはもう持っています。'],
+    cja: ['それでいいです。オンラインでも使えますか？', 'よかった、じゃあ現金でもらいます。', 'いえ、レシートならここにあります。'],
     why: 'store credit はその店でだけ使える返金分で、現金は戻りません。受け入れて使い道を聞くのが自然です。レシートはないと言ったばかりなので、三つ目は矛盾します。',
     ctx: '家電店のカウンターで、客が返品を頼んでいます',
     tags: tg(26, 'service', 'refusal')
@@ -220,9 +220,9 @@ const ROWS: readonly Row[] = [
       ['cherry', 'Sorry, Street. Lincoln Street, by the park.', 'すみません、ストリートです。公園のそばのリンカーン・ストリート。'],
       ['kappn', 'Oh, gotcha. Totally different direction. Good thing you said something.', 'あー、了解。全然逆方向だ。言ってくれてよかった。', 'Oh, gotcha. Totally different direction. Good thing ya said something.']
     ],
-    choices: ['The driver nearly went to the wrong place.', "The driver doesn't know the park.", 'The passenger changed her destination.'],
-    ja: '運転手が違う場所へ行くところだった。', note: 'Street と Avenue の聞き違いを直しただけ。行き先は同じ',
-    cja: ['運転手が違う場所へ行くところだった。', '運転手はその公園を知らない。', '乗客が行き先を変えた。'],
+    choices: ['The driver nearly went to the wrong Lincoln.', "The driver didn't know where the park was.", 'The passenger changed where she was going.'],
+    ja: '運転手が違うリンカーンへ行くところだった。', note: 'Street と Avenue の聞き違いを直しただけ。行き先は同じ',
+    cja: ['運転手が違うリンカーンへ行くところだった。', '運転手は公園の場所を知らなかった。', '乗客が行き先を変えた。'],
     why: '運転手が Street を Avenue と聞き違え、乗客がすぐ訂正しました。行き先は最初から同じなので、変えたわけではありません。「言ってくれてよかった」が決め手です。',
     ctx: 'タクシーに乗った女性が、行き先を告げます',
     tags: tg(4, 'service', 'literal', [], ['contrast'])
@@ -234,9 +234,9 @@ const ROWS: readonly Row[] = [
       ['rosie', 'Good, thanks! Pretty quiet. We finally tried that ramen place on Fifth.', 'よかったよ！ のんびりしてた。5番街のラーメン屋にやっと行ってきた。'],
       ['orville', 'Oh, nice! We should grab lunch there sometime.', 'いいね！ 今度そこでランチしようよ。']
     ],
-    choices: ["Totally, let's do it!", 'Sorry, I already had lunch.', 'On Fifth? No, I took the train.'],
-    ja: 'ぜひ、行こう！', note: 'grab lunch sometime＝社交辞令のことも。軽く乗るのが自然',
-    cja: ['ぜひ、行こう！', 'ごめん、もうお昼食べちゃった。', '5番街？ いや、電車で行ったよ。'],
+    choices: ["Totally! Let's grab lunch there soon.", 'Sorry, I already had lunch today.', 'On Fifth? No, I took the train.'],
+    ja: 'いいね！近いうちにそこでランチしよう。', note: 'grab lunch sometime＝社交辞令のことも。軽く乗るのが自然',
+    cja: ['いいね！ 近いうちにそこでランチしよう。', 'ごめん、今日はもうお昼食べちゃった。', '5番街？ いや、電車で行ったよ。'],
     why: 'grab lunch sometime は「今度ランチしよう」という軽い誘いで、社交辞令のことも。気軽に乗るのが自然です。sometime なので今日のお昼の話ではありません。',
     ctx: '月曜の朝、職場で同僚と雑談しています',
     tags: tg(38, 'colleague', 'ritual', [], ['weak-form'])
@@ -265,9 +265,9 @@ const ROWS: readonly Row[] = [
       ['bunnie', 'They do salads too!', 'サラダもあるよ！'],
       ['molly', 'Hmm. Let me check my calendar and get back to you.', 'うーん。予定見て、また連絡するね。']
     ],
-    choices: ["She probably doesn't want to go.", "She'll go if there are salads.", "She's busy on Friday evening."],
-    ja: 'たぶん行きたくない。', note: 'be good＝節制中。get back to you はここでは遠回しな断り',
-    cja: ['たぶん行きたくない。', 'サラダがあるなら行く。', '金曜の夜は予定がある。'],
+    choices: ["She'd rather skip the pizza.", "She'll go if there are salads.", "She has plans on Friday, so she can't go."],
+    ja: '本当はピザに行きたくない。', note: 'be good＝節制中。get back to you はここでは遠回しな断り',
+    cja: ['本当はピザに行きたくない。', 'サラダがあるなら行く。', '金曜は予定があるので行けない。'],
     why: 'trying to be good は「節制中」。サラダもあると言われても「予定を見て連絡する」とかわすのは、遠回しな断りです。忙しいとは一言も言っていません。',
     ctx: '友達が、新しいピザ屋に誘っています',
     tags: tg(18, 'friend', 'refusal', [], ['wanna', 'kinda'])
@@ -279,9 +279,9 @@ const ROWS: readonly Row[] = [
       ['diana', 'This one covers well, but it takes two coats. Are you doing it this weekend?', 'これはよく隠れますが、2度塗りが必要です。今週末に塗るんですか？'],
       ['raymond', "Yeah, my in-laws are staying with us on Sunday, actually.", 'ええ、実は日曜に妻の両親が泊まりに来るんです。']
     ],
-    choices: ["Then grab this one instead. It's paint and primer in one, so one coat should do it.", 'Great, it takes about two weeks to dry.', 'Sure, I can paint it white for you.'],
-    ja: 'それならこちらをどうぞ。下塗り剤入りなので、1回塗りで済みます。', note: 'coat＝塗る回数。時間がないので1回で済む品を勧める',
-    cja: ['それならこちらをどうぞ。下塗り剤入りなので、1回塗りで済みます。', 'よかった、乾くのに2週間ほどかかります。', 'いいですよ、私が白く塗ってあげます。'],
+    choices: ['Then try this one. It only needs one coat.', 'Great, it takes about two weeks to dry.', 'Sure, I can come paint it white for you on Sunday.'],
+    ja: 'それならこちらを。1回塗りで済みます。', note: 'coat＝塗る回数。時間がないので1回で済む品を勧める',
+    cja: ['それならこちらを。1回塗りで済みます。', 'よかった、乾くのに2週間ほどかかります。', 'いいですよ、日曜に私が白く塗りに行きます。'],
     why: '日曜に義理の両親が泊まりに来るので、時間がありません。2度塗りの品より、1回で済む品を勧めるのが自然です。coat は「塗りの回数」。店員が塗るわけではありません。',
     ctx: 'ホームセンターで、男性がペンキを探しています',
     tags: tg(31, 'service', 'literal')
@@ -309,10 +309,10 @@ const ROWS: readonly Row[] = [
       ['coco', 'Yeah, everywhere does that now. Even the self-checkout!', 'うん、今はどこもそう。セルフレジでさえ！'],
       ['punchy', "So is it rude if I just hit 'No tip'?", 'じゃあ「チップなし」を押したら失礼かな？']
     ],
-    choices: ["Not for a counter order. It's up to you.", 'No, one muffin is enough for me.', "Fifty percent? That's crazy!"],
-    ja: 'カウンター注文なら失礼じゃないよ。君しだい。', note: 'カウンター注文のチップは任意。fifteen と fifty にも注意',
-    cja: ['カウンターでの注文なら失礼じゃないよ。君しだい。', 'ううん、マフィンは1個で十分。', '50％？ ありえない！'],
-    why: '「チップなしを押したら失礼？」への答え。カウンター注文のチップは任意なので「君しだい」が自然です。fifteen（15）と fifty（50）の聞き違い、マフィンの数の話は罠。',
+    choices: ["Not for one muffin. It's up to you.", 'No, one muffin is plenty for me, thanks.', "Fifty percent? That's crazy for a muffin!"],
+    ja: 'マフィン1個なら失礼じゃないよ。君しだい。', note: 'カウンター注文のチップは任意。fifteen と fifty にも注意',
+    cja: ['マフィン1個なら失礼じゃないよ。君しだい。', 'ううん、マフィンは1個で十分だよ。', '50％？ マフィンにそれはありえない！'],
+    why: '「チップなしは失礼？」への答え。カウンターでマフィン1個なら、チップは任意で「君しだい」が自然。fifteen（15）と fifty（50）の聞き違い、マフィンの数の話は罠。',
     ctx: 'カフェのレジで、友達同士が話しています',
     tags: tg(27, 'friend', 'literal', ['cafe'], ['teen-ty'])
   },
@@ -323,9 +323,9 @@ const ROWS: readonly Row[] = [
       ['goldie', "Honestly, just bring yourself. My mom's been cooking since Tuesday.", '正直、手ぶらでいいよ。母が火曜から料理してるから。'],
       ['kid-cat', "Come on, I can't show up empty-handed.", 'そんな、手ぶらで行けないよ。']
     ],
-    choices: ["Okay, then grab a pie on the way. Pumpkin's always safe.", 'Sure, my mom cooks every Tuesday.', "No thanks, I'm not hungry yet."],
-    ja: 'じゃあ、途中でパイを買ってきて。パンプキンなら間違いない。', note: 'empty-handed＝手ぶら。手土産を持っていきたい',
-    cja: ['じゃあ、途中でパイを買ってきて。パンプキンなら間違いない。', 'うん、母は毎週火曜に料理するよ。', 'いいよ、まだお腹すいてないから。'],
+    choices: ["Okay, bring a pie. Pumpkin's safe.", 'Sure, my mom cooks every Tuesday.', "No thanks, I'm really not hungry yet."],
+    ja: 'じゃあ、パイを持ってきて。パンプキンなら間違いない。', note: 'empty-handed＝手ぶら。手土産を持っていきたい',
+    cja: ['じゃあ、パイを持ってきて。パンプキンなら間違いない。', 'うん、母は毎週火曜に料理するよ。', 'いや、まだ本当にお腹すいてないから。'],
     why: 'can\'t show up empty-handed は「手ぶらでは行けない」。持っていきたい相手には、手頃な手土産を勧めるのが自然。火曜は料理を始めた日で、毎週ではありません。',
     ctx: '感謝祭に招かれた友達が、手土産の相談をしています',
     tags: tg(48, 'friend', 'ritual')
@@ -338,9 +338,9 @@ const ROWS: readonly Row[] = [
       ['apollo', 'Great. How about the ballgame on Saturday, then?', 'よし。じゃあ土曜は野球観戦は？'],
       ['ankha', 'Hmm... we went to a game last weekend.', 'うーん…先週も試合に行ったよね。']
     ],
-    choices: ['Fair enough. You pick, then.', 'Awesome, so Saturday it is.', 'Last weekend? No, it was the weekend before.'],
-    ja: 'それもそうだね。じゃあ君が選んで。', note: "I'm easy＝なんでもいい。でも本音は別",
-    cja: ['それもそうだね。じゃあ君が選んで。', 'よし、じゃあ土曜で決まり。', '先週？ いや、その前の週だよ。'],
+    choices: ['Fair enough. You pick this weekend, then.', 'Awesome, so Saturday it is.', 'Last weekend? No, it was the one before.'],
+    ja: 'それもそうだね。じゃあ今週末は君が選んで。', note: "I'm easy＝なんでもいい。でも本音は別",
+    cja: ['それもそうだね。じゃあ今週末は君が選んで。', 'よし、じゃあ土曜で決まり。', '先週？ いや、その前の週だよ。'],
     why: 'I\'m easy（なんでもいい）と言いつつ、「先週も試合に行ったよね」は遠回しな反対。くみ取って相手に選んでもらうのが自然です。決めてしまうのも、日付の訂正も的外れ。',
     ctx: 'カップルが、週末の予定を話しています',
     tags: tg(36, 'partner', 'indirect', [], ['wanna'])
@@ -353,9 +353,9 @@ const ROWS: readonly Row[] = [
       ['merengue', 'We do have a suite available now, for a small fee.', '少々の追加料金で、今すぐご利用いただけるスイートもございます。'],
       ['blathers', 'How small are we talking?', '少しって、どのくらいです？']
     ],
-    choices: ['How much extra the suite costs.', 'Whether the meeting room is free.', 'What time his room will be ready.'],
-    ja: 'スイートの追加料金がいくらか。', note: 'for a small fee＝有料。How small…?＝いくら？',
-    cja: ['スイートの追加料金がいくらか。', '会議室が空いているか。', '部屋が何時に用意できるか。'],
+    choices: ["How much the suite's 'small fee' really is.", 'Whether the hotel has a free meeting room.', 'What time his room will be ready.'],
+    ja: 'スイートの「少々の追加料金」が実際いくらか。', note: 'for a small fee＝有料。How small…?＝いくら？',
+    cja: ['スイートの「少々の追加料金」が実際いくらか。', 'ホテルに空いている会議室があるか。', '部屋が何時に用意できるか。'],
     why: 'How small are we talking? は「少しって、いくら？」と金額を聞く決まり文句。部屋は3時とすでに聞いています。会議は彼の予定で、会議室の話ではありません。',
     ctx: 'ホテルのフロントで、男性がチェックインしています',
     tags: tg(3, 'service', 'hedge', ['desk'])
@@ -368,9 +368,9 @@ const ROWS: readonly Row[] = [
       ['redd', "I'll explain in a sec. First, just read me the code we texted you, to confirm it's you.", 'すぐご説明します。まず本人確認のため、送ったコードを読み上げてください。'],
       ['raymond', "Hang on. I'll call the number on the back of my card.", '待ってください。カードの裏の番号にかけ直します。']
     ],
-    choices: ['Call the bank himself to check.', 'Read out the code he was sent.', 'Ask which payment was blocked.'],
-    ja: '自分で銀行に電話して確かめる。', note: 'コードを聞き出す「銀行」は詐欺のサイン。自分でかけ直す',
-    cja: ['自分で銀行に電話して確かめる。', '送られてきたコードを読み上げる。', 'どの支払いが止められたか聞く。'],
+    choices: ['Call the bank back himself.', 'Read out the code he was sent.', 'Ask which payment was blocked.'],
+    ja: '自分で銀行にかけ直す。', note: 'コードを聞き出す「銀行」は詐欺のサイン。自分でかけ直す',
+    cja: ['自分で銀行にかけ直す。', '送られてきたコードを読み上げる。', 'どの支払いが止められたか聞く。'],
     why: '送ったコードを読み上げさせる「銀行員」は詐欺の典型。男性は「カードの裏の番号にかけ直す」と言い、自分で確かめます。どの支払いかは聞いたものの、はぐらかされました。',
     ctx: '男性の携帯に、銀行を名乗る電話がかかってきました',
     tags: tg(23, 'stranger', 'deception', ['phone'])
@@ -382,9 +382,9 @@ const ROWS: readonly Row[] = [
       ['wilbur', "Afraid not, it's been called off. The next one's at six, weather permitting.", '残念ながら欠航です。次は6時、天候次第ですね。'],
       ['cherry', "And if that one's canceled too?", 'それも欠航になったら？']
     ],
-    choices: ["Then we'll put you up in a hotel for the night.", "Yes, it's at six, weather permitting.", "Don't worry, the wind's from the west."],
-    ja: 'その場合は、今夜のホテルをご用意します。', note: 'called off＝中止。put you up＝泊める',
-    cja: ['その場合は、今夜のホテルをご用意します。', 'はい、6時です。天候次第ですが。', 'ご心配なく、風は西から吹いています。'],
+    choices: ["Then we'll put you up in a hotel.", "Yes, the next one's at six, weather permitting.", "Don't worry, the wind's from the west."],
+    ja: 'その場合は、ホテルをご用意します。', note: 'called off＝中止。put you up＝泊める',
+    cja: ['その場合は、ホテルをご用意します。', 'はい、次は6時です。天候次第ですが。', 'ご心配なく、風は西から吹いています。'],
     why: '「それも欠航したら？」には、その場合の対応を答えます。put you up は「泊める」。6時の便のことはもう言ったので、繰り返しても答えになりません。',
     ctx: 'フェリー乗り場で、女性が係員に尋ねています',
     tags: tg(11, 'service', 'literal')
