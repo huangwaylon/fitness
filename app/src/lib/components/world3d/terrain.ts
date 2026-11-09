@@ -56,6 +56,8 @@ export interface Ground {
   chunks(): readonly { z0: number; z1: number; meshes: Mesh[] }[];
   /** A promise for the textures (the first bake waits on them). */
   ready: Promise<void>;
+  /** The bands baked again (a lost context back: their render targets come back empty). */
+  restore(): void;
   dispose(): void;
 }
 
@@ -883,6 +885,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
       for (const b of bands) bake(b);
     },
     chunks: () => (landed ??= bands.filter((b) => b.rt)),
+    restore: () => bands.forEach(bake),
     dispose() {
       disposed = true;
       for (const b of bands) {

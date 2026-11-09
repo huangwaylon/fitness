@@ -65,6 +65,8 @@ export interface BuiltGround {
   /** Called in each frame (its water's time, a paint stroke's rebuild): true while it moves (frames at the full rate),
    *  'ambient' while only its ambience does (its water: the ambient rate), false when still. */
   update?(t: number): Want;
+  /** A lost context back: what it baked on the GPU baked again. */
+  restore?(): void;
   dispose?(): void;
 }
 /** What a frame's part wants next: true something moves (the full rate), 'ambient' only its ambience (the ambient rate),
@@ -1072,6 +1074,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   };
   const onRestored = () => {
     log('gl.lost', { where: 'island', restored: true });
+    // (three uploads the textures and programs again as they're drawn; the ground's bakes came back blank)
+    ground.restore?.();
     shadowed();
     resize();
   };
