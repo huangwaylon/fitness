@@ -15,8 +15,8 @@
 //   World's step runs in each frame before it draws, so the DOM moves with the picture.
 // Plain TS; world3d/Island3D.svelte drives it.
 import {
-  Box3, Color, DirectionalLight, Fog, Frustum, HemisphereLight, Matrix4, Mesh, PerspectiveCamera, Scene, Sphere, SRGBColorSpace, Texture, Vector3,
-  WebGLRenderer, PCFSoftShadowMap, MeshDepthMaterial, RGBADepthPacking, FrontSide, BackSide, DoubleSide, type Material, type MeshLambertMaterial, type Object3D, type Side
+  Box3, Color, DirectionalLight, Fog, Frustum, HemisphereLight, Matrix4, Mesh, PerspectiveCamera, Scene, Sphere, Texture, Vector3,
+  PCFSoftShadowMap, MeshDepthMaterial, RGBADepthPacking, FrontSide, BackSide, DoubleSide, type Material, type MeshLambertMaterial, type Object3D, type Side, type WebGLRenderer
 } from 'three';
 import { cubicInOut, cubicOut } from '#lib/math.ts';
 import { bend, bendPoint, bendU, unbendRay } from './bend.ts';
@@ -28,7 +28,8 @@ import { createEffects, type FxKind, type FxOpts } from './effects.ts';
 import { createBiteMarks, type MarkState } from './biteMark.ts';
 import { createLights, lampFog, type LampSpot } from './lights.ts';
 import type { Inst } from './objects.ts';
-import { drawOff, shaderChecks } from '../../ui-state/testMode.ts';
+import { drawOff } from '../../ui-state/testMode.ts';
+import { DPR_MOVING, endRenderer, makeRenderer } from './stage.ts';
 import { releaseAll, resourcesOf } from './release.ts';
 import { FPS } from '#lib/store/frameRate.ts';
 import { pacer } from './pace.ts';
@@ -291,13 +292,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   // the e2e's logic mode (testMode.ts): every frame runs (the scene, the cameras, the hooks), nothing is drawn
   const noDraw = drawOff();
   if (noDraw) Object.assign(opts, { dpr: 1, shadows: false });
-  const renderer = new WebGLRenderer({ canvas, antialias: init.aa ?? true, alpha: true, premultipliedAlpha: true, powerPreference: 'high-performance', stencil: false });
-  // (no per-program link check on a live phone: testMode.ts shaderChecks)
-  renderer.debug.checkShaderErrors = shaderChecks();
+  const { renderer } = makeRenderer(canvas, { antialias: init.aa ?? true, alpha: true, dpr: opts.dpr });
   ktx2Target(renderer, opts.ktx2 ?? true);
-  renderer.setPixelRatio(opts.dpr);
-  renderer.setClearColor(0x000000, 0);
-  renderer.outputColorSpace = SRGBColorSpace;
   renderer.shadowMap.enabled = opts.shadows;
   renderer.shadowMap.type = PCFSoftShadowMap;
   renderer.shadowMap.autoUpdate = false;
@@ -558,9 +554,9 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   /** A lighter pixel ratio while the camera moves (the tent's way), back once it's still; never for a tap. */
   let lightened = false;
   function light(on: boolean) {
-    if (on === lightened || opts.dpr <= 1.5) return;
+    if (on === lightened || opts.dpr <= DPR_MOVING) return;
     lightened = on;
-    renderer.setPixelRatio(on ? 1.5 : opts.dpr);
+    renderer.setPixelRatio(on ? DPR_MOVING : opts.dpr);
     renderer.setSize(W, H, false);
   }
   /** The sideways room at a zoom (u either side of the middle): none at the default or wider; zoomed in, as far as
@@ -1322,8 +1318,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       ground.dispose?.();
       for (const v of Object.values(sun.shadow)) if (v instanceof Texture) v.dispose();
       sun.shadow.map?.dispose();
-      renderer.dispose();
-      renderer.forceContextLoss();
+      endRenderer(renderer);
     }
   };
 }

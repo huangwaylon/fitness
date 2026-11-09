@@ -135,6 +135,29 @@ describe('a player dressed as it goes (player3d.ts)', () => {
     expect(glbStats().worn).toBe(0);
   });
 
+  it('latest wins: looks asked for while one is under way are skipped but the newest (the newest worn, each promise its)', async () => {
+    const p = await createPlayer('t', A, '/r');
+    const top = PARTS.items[tops[0]];
+    holdBack = [{ match: `mesh/${top.mesh}.glb`, go: () => {} }];
+    const parsed: string[] = [];
+    const parse = vi.mocked(GLTFLoader.prototype.parseAsync).getMockImplementation()!;
+    vi.mocked(GLTFLoader.prototype.parseAsync).mockImplementation(async function (this: GLTFLoader, b, path) {
+      parsed.push(pathOf(b as ArrayBuffer));
+      return parse.call(this, b, path);
+    });
+    const first = p.dress({ ...A, top: tops[0] });
+    await settle();
+    const mid = p.dress({ ...A, top: tops[1] }), last = p.dress({ ...A, top: tops[2] });
+    holdBack[0].go();
+    await Promise.all([first, mid, last]);
+    expect(p.look().top).toBe(tops[2]);
+    // the one in between never fetched
+    const meshOf = (id: string) => `mesh/${PARTS.items[id].mesh}.glb`;
+    expect(parsed.some((u) => u.includes(meshOf(tops[1])))).toBe(false);
+    expect(parsed.some((u) => u.includes(meshOf(tops[2])))).toBe(true);
+    p.dispose();
+  });
+
   it('keeps the GLBs worn and the 16 last worn, the older let go of (geometry and images)', async () => {
     const p = await createPlayer('t', A, '/r');
     expect(hairs.length).toBeGreaterThan(20);

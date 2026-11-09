@@ -3,14 +3,14 @@
 // it, a tap hopping it, every edit dressed on in place. Its renderer is the level's one WebGL context: the closet's
 // portraits (the コーデ chips, the せってい row) are drawn through it too (player3d portrait: a render target, a
 // second player kept for the shots), never another context. Frames on demand: only while the player moves (a step or
-// a blink says so) or turns, at most 30 a second, none while the page is hidden; at rest no frame is even asked for
-// till its next blink (a timer); everything let go of on dispose.
-import {
-  Box3, DirectionalLight, Group, HemisphereLight, PerspectiveCamera, Scene, SRGBColorSpace, Vector3, WebGLRenderer
-} from 'three';
-import { createPlayer, portrait, type Player3D } from '../player3d/player3d.ts';
+// a blink says so) or turns, at most 30 a second, none while the page is hidden or the canvas is (pause: a villager's
+// look); at rest no frame is even asked for till its next blink (a timer); everything let go of on dispose
+// (world3d/stage.ts: one renderer lifecycle).
+import { Box3, DirectionalLight, Group, HemisphereLight, PerspectiveCamera, Scene, Vector3 } from 'three';
+import { createPlayer, createShooter } from '../player3d/player3d.ts';
 import type { PlayerLook } from '#lib/contract/look.ts';
-import { drawOff, shaderChecks } from '#lib/ui-state/testMode.ts';
+import { createStage } from '../world3d/stage.ts';
+import { drawOff } from '#lib/ui-state/testMode.ts';
 
 export interface Preview3D {
   /** Wear a look (in place: what changed). */
@@ -21,13 +21,13 @@ export interface Preview3D {
   turn(dx: number): void;
   /** Let go of the drag: it eases back toward facing front. */
   release(): void;
+  /** Not on screen (a villager's look shows its card): no frames till it's back. */
+  pause(on: boolean): void;
   /** A look's head as a PNG data URL (null: nothing drawn, the logic mode), through this renderer. */
   portrait(look: PlayerLook, size: number): Promise<string | null>;
   dispose(): void;
 }
 
-const DPR_MAX = 2;
-const FRAME_MS = 1000 / 30;
 /** Radians a CSS px of drag turns it. */
 const TURN = 0.014;
 /** How long (ms) it stays turned after a drag before easing back to the front. */
@@ -35,30 +35,14 @@ const BACK_MS = 2500;
 
 /** A preview on `canvas` (its CSS size), wearing `look`; rejects if the player can't be built (keep the stand-in). */
 export async function createPreview(canvas: HTMLCanvasElement, look: PlayerLook, dir: string, seed = 0): Promise<Preview3D> {
-  const noDraw = drawOff();
-  const renderer = new WebGLRenderer({ canvas, antialias: !noDraw, alpha: true, premultipliedAlpha: true, powerPreference: 'low-power', stencil: false });
-  // (no per-program link check on a live phone: testMode.ts shaderChecks)
-  renderer.debug.checkShaderErrors = shaderChecks();
-  renderer.setPixelRatio(noDraw ? 1 : Math.min(DPR_MAX, window.devicePixelRatio || 1));
-  renderer.outputColorSpace = SRGBColorSpace;
-  renderer.setClearColor(0x000000, 0);
-  const w = Math.round(canvas.clientWidth) || 96, h = Math.round(canvas.clientHeight) || 132;
-
+  // (the player first: its renderer only once there's something to draw, none made and let go of if it can't be built)
+  const player = await createPlayer('look', look, dir, seed);
   const scene = new Scene();
   scene.add(new HemisphereLight(0xffffff, 0x9fb0a0, 1.6));
   const sun = new DirectionalLight(0xfff2dd, 1.4);
   sun.position.set(-40, 120, 90);
   scene.add(sun);
-  const camera = new PerspectiveCamera(22, w / h, 1, 4000);
-
-  let player: Player3D;
-  try {
-    player = await createPlayer('look', look, dir, seed);
-  } catch (e) {
-    renderer.dispose();
-    renderer.forceContextLoss();
-    throw e;
-  }
+  const camera = new PerspectiveCamera(22, 1, 1, 4000);
   // turned by a pivot of its own (the player's group is its animator's: a step may set its turn)
   const pivot = new Group();
   pivot.add(player.group);
@@ -69,44 +53,22 @@ export async function createPreview(canvas: HTMLCanvasElement, look: PlayerLook,
   // CSS box changes size (the stage's width; its compact states are a transform, not a resize), never a new renderer
   const box = new Box3().setFromObject(player.group), size = box.getSize(new Vector3());
   const fh = size.y * 1.12, cy = box.min.y + size.y * 0.5;
-  let cw = w, ch = h;
   function frameTo(nw: number, nh: number) {
-    cw = nw;
-    ch = nh;
-    renderer.setSize(nw, nh, false);
     camera.aspect = nw / nh;
     camera.updateProjectionMatrix();
     const fit = Math.max(fh, (size.x * 1.25) / camera.aspect);
     const d = fit / 2 / Math.tan((camera.fov / 2) * Math.PI / 180);
     camera.position.set(0, cy + d * 0.08, d);
     camera.lookAt(0, cy, 0);
-  }
-  frameTo(w, h);
-  const resized = new ResizeObserver(() => {
-    const nw = Math.round(canvas.clientWidth), nh = Math.round(canvas.clientHeight);
-    if (nw < 8 || nh < 8 || (nw === cw && nh === ch)) return;
-    frameTo(nw, nh);
     dirty = true;
-    kick();
-  });
-  resized.observe(canvas);
-
-  let yaw = 0, spin = 0, held = false, letGo = -1e9, dirty = true, last = 0, raf = 0, gone = false;
-  /** The next frame's timer while nothing moves (its next blink, or the end of the stay turned): no frame till then. */
-  let wake: ReturnType<typeof setTimeout> | undefined;
-  /** A frame asked for (an edit, a drag, a hop, a resize, a shot, the page back in front, a blink's time). */
-  function kick() {
-    if (gone || raf) return;
-    clearTimeout(wake);
-    wake = undefined;
-    raf = requestAnimationFrame(frame);
   }
-  function frame(t: number) {
-    raf = 0;
-    // (hidden: none till it's back, onVis)
-    if (document.hidden) return;
-    if (t - last < FRAME_MS) return void (raf = requestAnimationFrame(frame));
-    last = t;
+
+  let yaw = 0, spin = 0, held = false, letGo = -1e9, dirty = true, paused = false, gone = false;
+  /** A frame: drawn if anything changed; the next wanted at once while it moves on its own (a step's crossfade or a hop,
+   *  a spin, the ease back) or is held, else at its next blink (or the end of its stay turned): an idle すがた wakes
+   *  for its blinks only. */
+  function frame(t: number): number {
+    if (paused) return Infinity;
     const stepping = player.step(t);
     let moved = player.blink(t) || stepping;
     let wait = Infinity;
@@ -122,57 +84,55 @@ export async function createPreview(canvas: HTMLCanvasElement, look: PlayerLook,
     if (pivot.rotation.y !== yaw) (pivot.rotation.y = yaw), (moved = true);
     if (moved || dirty) {
       dirty = false;
-      if (!noDraw) renderer.render(scene, camera);
+      if (!stage.noDraw) stage.renderer.render(scene, camera);
     }
-    // on, frame by frame, while it moves on its own (a step's crossfade or a hop, a spin, the ease back) or is held;
-    // else asleep till its next blink (or the end of its stay turned): an idle すがた wakes for its blinks only, where it
-    // ran a frame (a step, a blink check) 30 times a second and asked for one every vsync
     const easing = !held && (Math.abs(spin) > 0.001 || (wait === Infinity && yaw !== 0));
-    if (stepping || held || easing) raf = requestAnimationFrame(frame);
-    else wake = setTimeout(kick, Math.max(FRAME_MS, Math.min(wait, player.nextBlink(t))));
+    return stepping || held || easing ? 0 : Math.min(wait, player.nextBlink(t));
   }
-  const onVis = () => void (document.hidden || kick());
-  document.addEventListener('visibilitychange', onVis);
-  kick();
+  let stage: ReturnType<typeof createStage>;
+  try {
+    stage = createStage(canvas, { antialias: true, alpha: true, power: 'low-power', at: [96, 132] }, frame, frameTo);
+  } catch (e) {
+    player.dispose();
+    throw e;
+  }
 
-  // the portraits' own player (the preview's stays as it is on screen), made on the first shot
-  let shooter: Promise<Player3D> | null = null;
+  // the portraits' own player (the preview's stays as it is on screen), made on the first shot, one shot at a time
+  const shooter = createShooter('look-portrait', dir);
   let queue: Promise<unknown> = Promise.resolve();
+  const redraw = () => ((dirty = true), stage.kick());
 
   return {
     async dress(next) {
       await player.dress(next);
-      dirty = true;
-      kick();
+      redraw();
     },
     hop() {
       player.act('hop');
-      kick();
+      stage.kick();
     },
     turn(dx) {
       held = true;
       const a = dx * TURN;
       yaw += a;
       spin = a;
-      kick();
+      stage.kick();
     },
     release() {
       held = false;
       letGo = performance.now();
-      kick();
+      stage.kick();
+    },
+    pause(on) {
+      paused = on;
+      if (!on) redraw();
     },
     portrait(l, px) {
       const run = queue.then(async () => {
-        if (gone || noDraw) return null;
-        shooter ??= createPlayer('look-portrait', l, dir, 0).then((p) => (p.step(0), p.step(1000), p));
-        const p = await shooter;
-        await p.dress(l);
-        p.face(null);
-        p.step(2000);
-        if (gone) return null;
-        const url = portrait(renderer, p, px, null).toDataURL('image/png');
-        dirty = true; // the shot's render target came and went: draw the preview again
-        kick();
+        if (gone || drawOff()) return null;
+        const url = await shooter.shoot(stage.renderer, l, px, () => gone);
+        // (the shot's render target came and went: draw the preview again)
+        if (url) redraw();
         return url;
       });
       queue = run.catch(() => null);
@@ -181,15 +141,10 @@ export async function createPreview(canvas: HTMLCanvasElement, look: PlayerLook,
     dispose() {
       if (gone) return;
       gone = true;
-      resized.disconnect();
-      cancelAnimationFrame(raf);
-      clearTimeout(wake);
-      document.removeEventListener('visibilitychange', onVis);
       scene.remove(pivot);
       player.dispose();
-      void shooter?.then((p) => p.dispose()).catch(() => {});
-      renderer.dispose();
-      renderer.forceContextLoss();
+      shooter.dispose();
+      stage.dispose([scene]);
     }
   };
 }

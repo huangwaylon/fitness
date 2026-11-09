@@ -81,6 +81,8 @@
     }
   }
   const in3d = $derived(!!p3 && look.kind === 'player');
+  // (its canvas hidden, a villager's look: no frames, its blinks too)
+  $effect(() => p3?.pause(!in3d));
 </script>
 
 <button type="button" class="lpv" data-look-preview={look.kind} data-look-3d={in3d ? 'on' : 'off'} aria-hidden="true" tabindex="-1" data-sfx="none"

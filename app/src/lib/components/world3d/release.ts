@@ -5,7 +5,7 @@
 // again.
 import { Texture, type BufferGeometry, type Material, type Mesh, type Object3D } from 'three';
 
-type Res = BufferGeometry | Material | Texture;
+export type Res = BufferGeometry | Material | Texture;
 
 /** The geometries, materials and their textures under `root`, added to `into`. */
 export function resourcesOf(root: Object3D, into = new Set<Res>()): Set<Res> {

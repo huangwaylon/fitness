@@ -10,7 +10,7 @@
 import {
   AmbientLight, Box3, BoxGeometry, CanvasTexture, CircleGeometry, Color, CylinderGeometry, DirectionalLight, Frustum, Group, HemisphereLight,
   Matrix4, Mesh, Sphere, MeshBasicMaterial, MeshLambertMaterial, PerspectiveCamera, Plane, PlaneGeometry, DoubleSide, Raycaster, RepeatWrapping,
-  Scene, SRGBColorSpace, TextureLoader, Vector3, WebGLRenderer, type Material, type Object3D, type Texture
+  Scene, SRGBColorSpace, TextureLoader, Vector3, type Material, type Object3D, type Texture
 } from 'three';
 import { swallowed } from '#lib/quiet.ts';
 import { cubicOut } from '#lib/math.ts';
@@ -19,7 +19,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import type { Villager3D } from '../villager3d/villager3d.ts';
 import type { Person3 } from '../person3d/person3d.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
-import { drawOff, shaderChecks } from '../../ui-state/testMode.ts';
+import { DPR_MOVING, endRenderer, makeRenderer } from '../world3d/stage.ts';
 import { decal } from './geometry.ts';
 import { FPS } from '#lib/store/frameRate.ts';
 import { pacer } from '../world3d/pace.ts';
@@ -43,7 +43,6 @@ const PITCH = 47;
 const FOV = 32;
 /** How much of the floor the default view shows across (model units): about fifteen tiles. */
 const VIEW_W = 92;
-const DPR_MAX = 2, DPR_MOVING = 1.5;
 /** The exhibits' rate (a second) while only they move; no finger on the room for REST_MS (the island's rest:
  *  world3d/engine.ts), REST_FPS, and REST_FAR_FPS while those moving are only seen through an opening (a wing's
  *  tanks and bugs from the hall, the hall's from a wing): the battery and the phone's heat at rest. */
@@ -363,13 +362,7 @@ function grass(): CanvasTexture {
 }
 
 export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world: string }): Museum {
-  const noDraw = drawOff();
-  const renderer = new WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' });
-  // (no per-program link check on a live phone: testMode.ts shaderChecks)
-  renderer.debug.checkShaderErrors = shaderChecks();
-  const dprFull = noDraw ? 1 : Math.min(DPR_MAX, window.devicePixelRatio || 1);
-  renderer.setPixelRatio(dprFull);
-  renderer.outputColorSpace = SRGBColorSpace;
+  const { renderer, noDraw, dpr: dprFull } = makeRenderer(canvas);
   const scene = new Scene();
   scene.background = new Color(0x1d1712);
   const camera = new PerspectiveCamera(FOV, 1, 4, 3000);
@@ -1447,10 +1440,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
         const m = n as Mesh;
         if (m.isMesh) m.geometry.dispose();
       });
-      renderer.dispose();
-      // (the GPU's memory back now, not at the context's collection: the island's comes up next; the tent's and the
-      // island's way)
-      renderer.forceContextLoss();
+      endRenderer(renderer);
     }
   };
 }

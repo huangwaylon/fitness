@@ -641,6 +641,8 @@ The game draws at most **30** frames a second (`store/frameRate.ts` FPS; a store
 rate of every 3D engine (the island, the rooms, the museum) while something moves, a gesture included; a still scene
 draws nothing. On a 60 Hz screen each engine draws every other display frame (`due()`: an even 33 ms). One pacer runs
 the island's and the museum's frames (`world3d/pace.ts` `pacer`), each due time 1000/rate after the last one's due time.
+Every surface makes and ends its renderer through `world3d/stage.ts` (makeRenderer, endRenderer); the small ones
+(すがた, the home picker: its sway at 15 a second) draw through its `createStage`: on demand, none while hidden.
 The simulation runs on real time (`dt`), so nothing moves slower; a touch moves the camera on its event and the next due
 frame draws it. Why 30: NH itself runs at 30, a gesture at 60 cost the most, and the added latency is under a vsync.
 

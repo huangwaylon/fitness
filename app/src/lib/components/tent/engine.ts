@@ -8,7 +8,7 @@ import {
   AmbientLight, BoxGeometry, CanvasTexture, CircleGeometry, Color, DirectionalLight, DoubleSide, Group, HemisphereLight,
   LineBasicMaterial, LineSegments, BufferGeometry, Float32BufferAttribute, Material, Mesh, MeshBasicMaterial, MeshLambertMaterial,
   Box3, Object3D, PCFSoftShadowMap, PerspectiveCamera, Plane, PlaneGeometry, PointLight, Raycaster, RepeatWrapping, Scene, Sprite,
-  SpriteMaterial, SRGBColorSpace, Texture, DataTexture, TextureLoader, Vector3, WebGLRenderer, type MeshStandardMaterial
+  SpriteMaterial, SRGBColorSpace, Texture, DataTexture, TextureLoader, Vector3, type MeshStandardMaterial
 } from 'three';
 import { cubicOut } from '#lib/math.ts';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -20,7 +20,7 @@ import { hitsSkinned } from '../player3d/hit.ts';
 import type { Person3 } from '../person3d/person3d.ts';
 import { seatOf } from '../villager3d/poses.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
-import { drawOff, shaderChecks } from '../../ui-state/testMode.ts';
+import { DPR_MOVING, endRenderer, makeRenderer } from '../world3d/stage.ts';
 import { lean } from '../world3d/release.ts';
 import { LIDS, lidK, lidMoving, lidOpen, lidOpenIn, lidWant, splitLid, type Lid } from './lid.ts';
 import { keepUsed } from '../world3d/keepUsed.ts';
@@ -39,10 +39,6 @@ export const PACE = 45;
 /** Camera: degrees down from the horizontal and the lens (NH's room camera: steep, a long lens). */
 const PITCH = 47;
 const FOV = 32;
-/** The device pixel ratio's cap (an iPhone's 3 costs too much for what it adds). */
-const DPR_MAX = 2;
-/** …and while the camera moves (a gesture under way). */
-const DPR_MOVING = 1.5;
 /** The longest the first frame waits for the villagers' models (ms): engine.ts holding. */
 const ENTRY_HOLD_MS = 1500;
 /** How many lamps light the room at night (a point light each, nearest the middle first). */
@@ -345,14 +341,8 @@ function loadModel(code: string): Promise<GLTF | null> {
 }
 
 export function createTent(canvas: HTMLCanvasElement): Tent {
-  const renderer = new WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' });
-  // (no per-program link check on a live phone: testMode.ts shaderChecks)
-  renderer.debug.checkShaderErrors = shaderChecks();
-  // the e2e's logic mode (testMode.ts): every frame runs, nothing is drawn
-  const noDraw = drawOff();
-  const dpr = noDraw ? 1 : Math.min(DPR_MAX, window.devicePixelRatio || 1);
-  renderer.setPixelRatio(dpr);
-  renderer.outputColorSpace = SRGBColorSpace;
+  // (noDraw: the e2e's logic mode, testMode.ts: every frame runs, nothing is drawn)
+  const { renderer, noDraw, dpr } = makeRenderer(canvas);
   renderer.shadowMap.enabled = !noDraw;
   renderer.shadowMap.type = PCFSoftShadowMap;
   renderer.shadowMap.autoUpdate = false;
@@ -1973,8 +1963,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       }
       used.clear();
       disc.dispose();
-      renderer.dispose();
-      renderer.forceContextLoss();
+      endRenderer(renderer);
       live.clear();
       villagers.clear();
     }

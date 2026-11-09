@@ -84,20 +84,14 @@
   // ---- the preview: the house turning ----
   let canvas = $state<HTMLCanvasElement>();
   let show: ((s: HomeStyle) => void) | null = null;
+  /** The sway's frame rate: it only sways (±0.6 rad over ~16 s), where it drew every display frame. */
+  const SWAY_FPS = 15;
   onMount(() => {
     // `?preview=0`: no 3D (the e2e: a software GL in CI)
     if (new URLSearchParams(location.search).get('preview') === '0') return;
     let gone = false, stop = () => {};
-    void Promise.all([import('../world3d/threePreview.ts'), import('../world3d/home.ts'), import('../world3d/release.ts')]).then(([T, { buildHome }, { releaseAll, resourcesOf }]) => {
+    void Promise.all([import('../world3d/threePreview.ts'), import('../world3d/home.ts'), import('../world3d/release.ts'), import('../world3d/stage.ts')]).then(([T, { buildHome }, { resourcesOf }, { createStage }]) => {
       if (gone || !canvas) return;
-      let renderer: InstanceType<typeof T.WebGLRenderer>;
-      try {
-        renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: true });
-      } catch {
-        return;
-      }
-      renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1));
-      renderer.outputColorSpace = T.SRGBColorSpace;
       const scene = new T.Scene();
       scene.add(new T.HemisphereLight(0xffffff, 0xd8e4c8, 2.6));
       const sun = new T.DirectionalLight(0xfff3df, 1.6);
@@ -106,23 +100,24 @@
       const cam = new T.PerspectiveCamera(30, 1, 10, 3000);
       const spin = new T.Group();
       scene.add(spin);
-      let raf = 0, t0 = performance.now(), seq = 0;
+      const t0 = performance.now();
+      let seq = 0;
+      // (frames on demand, SWAY_FPS a second while there's a house to sway, none while the page is hidden: world3d/stage.ts)
+      let stage: ReturnType<typeof createStage>;
+      try {
+        stage = createStage(canvas, { antialias: true, alpha: true }, (t) => {
+          spin.rotation.y = Math.sin((t - t0) / 2600) * 0.6;
+          if (!stage.noDraw) stage.renderer.render(scene, cam);
+          return spin.children.length ? 1000 / SWAY_FPS : Infinity;
+        }, (w, h) => {
+          cam.aspect = w / h;
+          cam.updateProjectionMatrix();
+        });
+      } catch {
+        return;
+      }
       // the houses shown and since swapped out (their models the island's cache: released with the rest at the end)
       const shown: ReturnType<typeof resourcesOf> = new Set();
-      // (its size from a ResizeObserver: read in the frame, it forced a layout each one)
-      const ro = new ResizeObserver(() => {
-        const r = canvas!.getBoundingClientRect();
-        renderer.setSize(r.width, r.height, false);
-        cam.aspect = r.width / Math.max(1, r.height);
-        cam.updateProjectionMatrix();
-      });
-      ro.observe(canvas);
-      const frame = (t: number) => {
-        raf = requestAnimationFrame(frame);
-        spin.rotation.y = Math.sin((t - t0) / 2600) * 0.6;
-        renderer.render(scene, cam);
-      };
-      raf = requestAnimationFrame(frame);
       show = (s: HomeStyle) => {
         const n = ++seq;
         void buildHome(s, base).then((g) => {
@@ -136,18 +131,13 @@
           const d = Math.max(size.x, size.y, size.z) * 2.4;
           cam.position.set(0, size.y * 0.9 + d * 0.35, d);
           cam.lookAt(0, size.y * 0.42, 0);
+          stage.kick();
         });
       };
       show(style);
-      stop = () => {
-        cancelAnimationFrame(raf);
-        ro.disconnect();
-        // the cached models' geometries and textures let go of here: three's listeners on each kept this renderer, its
-        // context and the sheet's whole DOM alive, one more each time the picker opened
-        releaseAll([scene], shown);
-        renderer.dispose();
-        renderer.forceContextLoss();
-      };
+      // the cached models' geometries and textures let go of with the renderer: three's listeners on each kept this
+      // renderer, its context and the sheet's whole DOM alive, one more each time the picker opened
+      stop = () => stage.dispose([scene], shown);
     });
     return () => {
       gone = true;

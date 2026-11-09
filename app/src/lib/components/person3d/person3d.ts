@@ -5,13 +5,14 @@
 // (player3d createPlayer), a `villager` look the roster villager (villager3d createVillager, the `villager` pref).
 // A scene keeps the model while its `key` stays and swaps it, in place, when the key changes (the look changed: on
 // leaving すがた, or the partner's phone sending theirs). Pure but for the model factories (player3d loads on first use).
-import type { Look, PlayerLook } from '#lib/contract/look.ts';
+import type { Look } from '#lib/contract/look.ts';
 import type { Who } from '#lib/types.ts';
 import { resolveLook as villagerLook } from '#lib/villagers/look.ts';
 import { createVillager, type Villager3D } from '../villager3d/villager3d.ts';
 import { url3d } from '../villager3d/manifest.ts';
 import type { SkinnedMesh, WebGLRenderer } from 'three';
 import type { Painter } from '../look/portraits.svelte.ts';
+import type { Shooter } from '../player3d/player3d.ts';
 import { drawOff } from '../../ui-state/testMode.ts';
 
 /** Where the models are (the site's room/villagers3d/ and room/player/: $app/paths asset). */
@@ -85,16 +86,15 @@ export function person3(who: Who, look: Look, villagerPref: string | null | unde
  */
 export function createPainter(renderer: WebGLRenderer, dir: string, idle: () => boolean, drawn: () => void): { paint: Painter; dispose(): void } {
   let gone = false, queue: Promise<unknown> = Promise.resolve(), pending = 0, done: ReturnType<typeof setTimeout> | undefined;
-  let shooter: Promise<Villager3D & { dress(l: PlayerLook): Promise<void> }> | null = null;
+  let shooter: Shooter | null = null;
   const settle = () => new Promise<void>((ok) => {
     const t = () => (gone || idle() ? ok() : setTimeout(t, 400));
     setTimeout(t, 400);
   });
   /** The shots' player let go of once none are asked for a while (its textures off the island's renderer). */
   const letGo = () => {
-    const p = shooter;
+    shooter?.dispose();
     shooter = null;
-    void p?.then((v) => v.dispose(), () => {});
   };
   const paint: Painter = (look, px) => {
     pending++;
@@ -102,15 +102,10 @@ export function createPainter(renderer: WebGLRenderer, dir: string, idle: () => 
     const run = queue.then(async () => {
       if (gone || drawOff()) return null;
       await settle();
-      const { createPlayer, portrait } = await import('../player3d/player3d.ts');
-      shooter ??= createPlayer('portrait', look, dir, 0).then((p) => (p.step(0), p.step(1000), released(p) as typeof p));
-      const p = await shooter;
-      await p.dress(look);
-      p.face(null);
-      p.step(2000);
-      if (gone) return null;
-      const url = portrait(renderer, p, px, null).toDataURL('image/png');
-      drawn();
+      const { createShooter } = await import('../player3d/player3d.ts');
+      shooter ??= createShooter('portrait', dir, (p) => released(p) as typeof p);
+      const url = await shooter.shoot(renderer, look, px, () => gone);
+      if (url) drawn();
       return url;
     });
     queue = run.catch(() => null).finally(() => {

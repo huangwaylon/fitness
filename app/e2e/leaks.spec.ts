@@ -2,7 +2,8 @@
 // the rooms and the home picker must leave nothing behind. Each WebGL context made is watched (a WeakRef: alive only
 // while something still holds its canvas), and the window's and document's listeners counted, after a forced GC
 // (Chromium's CDP, hence @chromium). Before the fixes: one more context a home picker opened (three's dispose listeners
-// on the cached home models held the picker's renderer), one more an /editor visit (and a document keydown listener).
+// on the cached home models held the picker's renderer), one more an /editor visit (and a document keydown listener),
+// one more and ~700 DOM nodes a すがた visit (the page-wide white stand-in texture's listeners: world3d/stage.ts).
 import { expect, test, type Page } from './fixtures.ts';
 import { BASE } from './island.ts';
 import { drawn, fixtureTiles, mapReady, openTrip, tripsSheet } from './trips.ts';
@@ -109,6 +110,42 @@ test('the rooms and the home picker, in and out: no WebGL context or window list
   expect(first.gl, 'WebGL contexts alive after one round').toBeLessThanOrEqual(2);
   expect(after.gl, 'WebGL contexts alive after three').toBeLessThanOrEqual(first.gl);
   expect(after.ls, 'window and document listeners').toBeLessThanOrEqual(first.ls);
+});
+
+// すがた (docs/design.md "すがた"): せってい → すがた, its 3D stage up, two tops worn and いつもの, back
+// and closed, twice, as ウェイ. Its renderer goes with it (before world3d/stage.ts endRenderer: one context and ~700 DOM
+// nodes more a visit, held by the page-wide white stand-in texture's dispose listeners).
+test('すがた in and out, dressed: no WebGL context, listener or DOM node left behind', { tag: '@chromium' }, async ({ page }) => {
+  await watch(page);
+  // (as ウェイ: his island's player is NH's human player, so the island and the stage share player3d's textures)
+  await page.goto('?demo&date=2026-11-04T12:00');
+  await islandUp(page);
+  const sheet = page.locator('dialog[open]').first();
+  const live: number[] = [];
+  const round = async () => {
+    await fromMenu(page, 'settings');
+    await sheet.locator('[data-push=look]').click();
+    await expect(sheet.locator('[data-look-preview][data-look-3d=on]')).toBeVisible({ timeout: 30_000 });
+    live.push((await measure(page)).gl);
+    await sheet.locator('[data-look-tab=wear]').click();
+    const tops = sheet.locator('[data-closet=top] [data-item]:not([data-item=none])');
+    for (const k of [1, 2]) await tops.nth(k).click();
+    await sheet.locator('[data-look-tab=coord]').click();
+    await sheet.locator('[data-look-chip="usual"]').click();
+    await sheet.locator('.titlebar .back').click();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('dialog[open]')).toHaveCount(0);
+  };
+  await round();
+  const first = await measure(page);
+  await round();
+  const after = await measure(page);
+  // (the island's and the stage's while it's open: 2 each visit)
+  expect(live, 'WebGL contexts alive in すがた').toEqual([2, 2]);
+  expect(after.gl, 'WebGL contexts alive after two').toBeLessThanOrEqual(first.gl);
+  expect(after.ls, 'window and document listeners').toBeLessThanOrEqual(first.ls);
+  // (a few: the island's own life between rounds; a visit's whole page was ~700)
+  expect(after.nodes - first.nodes, 'DOM nodes alive, attached or not').toBeLessThan(100);
 });
 
 // The museum (docs/design.md "The museum", "First person"): in first person and out, the eye button on and off, a

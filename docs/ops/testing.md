@@ -328,7 +328,7 @@ Most red runs are the spec, not the app. Before pushing a new or changed spec, r
 ## Memory
 The PWA stays open for days, so a scene's round trip must leave nothing behind. `e2e/leaks.spec.ts` (`@chromium`, in
 the gate) goes in and out of the shop, the museum and うめ's house, opening いえを かえる, and the museum in first person
-and out (the eye button, a bench), the info sheets (りょこう's pages and maps, Okinawa's 地図 and campsites, けっこんしき, three
+and out (the eye button, a bench), すがた dressed (as ウェイ: no context or DOM node more a visit), the info sheets (りょこう's pages and maps, Okinawa's 地図 and campsites, けっこんしき, three
 trails), three rounds, and checks after a forced GC that no WebGL context (watched by
 WeakRefs) or window/document listener is left over, and that inside the museum only its own context lives. To hunt
 one: `npm run leak -- <flow> [cycles] --snap` (scripts/leak-probe.ts, its header lists the flows: the rooms, the island's mount
@@ -344,8 +344,9 @@ prints what retains the ones new since the first snapshot.
   `preloadListenersOff` takes them off.
 - **three.js:** a renderer stays alive as long as any geometry, material or texture it drew isn't disposed (three's
   dispose listeners hold it). Anything drawn from a page-wide model cache (homes, bridges, villagers) is disposed when
-  its renderer goes (world3d/release.ts `releaseAll`), the ones that left the scene earlier too; then
-  `forceContextLoss()`.
+  its renderer goes, the ones that left the scene earlier too, and so is the page-wide white stand-in (blank.ts
+  `WHITE`, on most materials: undisposed, it held each すがた stage's renderer and page): every surface ends its
+  renderer with world3d/stage.ts `endRenderer` (releaseAll, WHITE, `forceContextLoss()`).
 - **A closure made inside a cleanup** shares the cleanup's scope: a page-wide hold's `hold = () => false` written in its
   let-go held `fn` (Critters' closure) and so the whole island; a let-go value is made at module level.
 - **The probe's own handles:** `waitForSelector` and `waitForFunction` return handles that keep their DOM or object

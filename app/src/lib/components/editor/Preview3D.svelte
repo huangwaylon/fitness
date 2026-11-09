@@ -15,7 +15,7 @@
   import { diffLayouts } from '#lib/layout/diff.ts';
   import { lookOf, type Look } from '../world3d/groundLook.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
-  import { drawOff, shaderChecks } from '#lib/ui-state/testMode.ts';
+  import { drawOff } from '#lib/ui-state/testMode.ts';
   import type { EditStage } from '../layoutEdit/IslandEdit.svelte';
   import type { Material, Mesh, Object3D } from 'three';
   import { clamp } from '#lib/math.ts';
@@ -40,23 +40,19 @@
   onMount(() => {
     let gone = false, stop = () => {};
     const camZ0 = camZ;
-    void Promise.all([import('../world3d/threePreview.ts'), import('three/examples/jsm/controls/OrbitControls.js'), import('../world3d/terrain.ts'), import('../world3d/objects.ts'), import('../world3d/things.ts'), import('../world3d/bend.ts'), import('../world3d/water.ts'), import('../world3d/home.ts'), import('../world3d/built.ts'), import('../world3d/release.ts'), import('../world3d/drawCheck.ts'), import('../island/kkSlider.ts'), import('../island/devHooks.ts'), import('#lib/time/clock.ts'), import('#lib/layout/model.ts'), import('../rooms/gesture.ts'), import('./previewCam.ts')]).then(
-      ([T, { OrbitControls }, { buildGround }, { placeObjects }, { createThings }, { bendU, bend, bendPoint, unbendRay }, { waterU, waterFog }, { homeTod }, { createBuilt, builtObject }, { releaseAll, resourcesOf }, { previewDay }, KK, { hookOneOf, islandSeed }, { dayKey, jst, now }, { extentOf }, { gestures }, C]) => {
+    void Promise.all([import('../world3d/threePreview.ts'), import('three/examples/jsm/controls/OrbitControls.js'), import('../world3d/terrain.ts'), import('../world3d/objects.ts'), import('../world3d/things.ts'), import('../world3d/bend.ts'), import('../world3d/water.ts'), import('../world3d/home.ts'), import('../world3d/built.ts'), import('../world3d/release.ts'), import('../world3d/drawCheck.ts'), import('../island/kkSlider.ts'), import('../island/devHooks.ts'), import('#lib/time/clock.ts'), import('#lib/layout/model.ts'), import('../rooms/gesture.ts'), import('./previewCam.ts'), import('../world3d/stage.ts')]).then(
+      ([T, { OrbitControls }, { buildGround }, { placeObjects }, { createThings }, { bendU, bend, bendPoint, unbendRay }, { waterU, waterFog }, { homeTod }, { createBuilt, builtObject }, { resourcesOf }, { previewDay }, KK, { hookOneOf, islandSeed }, { dayKey, jst, now }, { extentOf }, { gestures }, C, { endRenderer, makeRenderer }]) => {
         if (gone || !canvas) return;
-        let renderer: InstanceType<typeof T.WebGLRenderer>;
+        let renderer: ReturnType<typeof makeRenderer>['renderer'];
         try {
           // (no preserveDrawingBuffer: a copy of the frame kept each draw, at DPR 2 with AA dear on a phone; nothing reads
           // the canvas back, a screenshot is the page's)
-          renderer = new T.WebGLRenderer({ canvas, antialias: true });
+          ({ renderer } = makeRenderer(canvas, { antialias: true }));
         } catch (e) {
           console.warn('preview', e);
           failed = true;
           return;
         }
-        renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1));
-        // (no per-program link check on a live phone: testMode.ts shaderChecks)
-        renderer.debug.checkShaderErrors = shaderChecks();
-        renderer.outputColorSpace = T.SRGBColorSpace;
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = T.PCFSoftShadowMap;
         // (the shadow map redrawn only with a frame that changed what casts or where the sun is: kick(), not kick(false))
@@ -436,10 +432,8 @@
           ground.dispose();
           // the cached homes', bridges' and ponds' resources let go of on this renderer (their listeners kept it
           // alive), the shadow map, then the context
-          releaseAll([scene], gone3);
           sun.shadow.dispose();
-          renderer.dispose();
-          renderer.forceContextLoss();
+          endRenderer(renderer, [scene], gone3);
           bendU.uBendR.value = 1300;
         };
       },

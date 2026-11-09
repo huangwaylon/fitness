@@ -11,7 +11,7 @@
 //   - dress(look) swaps what changed in place: a colour or a texture is a material's change, a new shape a mesh's.
 import {
   Bone, Box3, Color, DoubleSide, Matrix4, MeshLambertMaterial, Quaternion, RepeatWrapping, SRGBColorSpace, Sphere, Texture, Vector3,
-  type Material, type Mesh, type MeshStandardMaterial, type Object3D, type SkinnedMesh, type WebGLProgramParametersWithUniforms
+  type Material, type Mesh, type MeshStandardMaterial, type Object3D, type SkinnedMesh, type WebGLProgramParametersWithUniforms, type WebGLRenderer
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { ktx2On, ktx2Plugin, textureFrom } from '../world3d/ktx2.ts';
@@ -26,8 +26,9 @@ import { sharedSkin } from './skin.ts';
 import { playerKind } from './tune.ts';
 import { hooksOn } from '#lib/ui-state/preview.ts';
 
+import { portrait } from './portrait.ts';
 /** @public (the 2D heads' portraits, the closet's tiles) */
-export { portrait } from './portrait.ts';
+export { portrait };
 import { DEFAULT_LOOKS, isOnepiece, type PlayerLook } from '#lib/contract/look.ts';
 
 /** @public (the すがた preview, the scenes) */
@@ -539,7 +540,7 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
     hair.set(cur.hairColor);
     eyeColour.set(cur.eyeColor);
   };
-  let busy: Promise<void> = Promise.resolve();
+  let busy: Promise<void> = Promise.resolve(), asks = 0;
   const dress = async (want: PlayerLook) => {
     alive();
     asked = { ...want };
@@ -627,12 +628,16 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
   };
   return Object.assign(v, {
     dress(next: PlayerLook) {
+      // latest wins: one asked for while another is under way waits for it, and is skipped if a newer one is asked for
+      // meanwhile (its promise the newer's): colours tapped quickly in すがた built every look in between, each in full
       // (a failed one, a part missing, doesn't stop the next)
-      busy = busy.catch(() => {}).then(() => dress(next).catch((e: unknown) => {
+      const n = ++asks;
+      const run = busy.catch(() => {}).then(() => (n === asks ? dress(next).catch((e: unknown) => {
         if (e !== GONE) throw e;
         sweep();
-      }));
-      return busy;
+      }) : undefined));
+      busy = run;
+      return run.then(() => (n === asks ? undefined : busy));
     },
     look: () => ({ ...asked }),
     dispose() {
@@ -698,4 +703,28 @@ export async function wearable(look: PlayerLook, t: PartTable, dir: string, base
   if (!hair) out.hair = base.hair;
   if (!bottom) out.bottom = base.bottom;
   return out;
+}
+
+/** The portraits' own player (a scene's on screen stays as it is): made on the first shot, dressed in each look in
+ *  turn, its head drawn through `renderer` (player3d portrait: a render target, never another context) as a PNG data
+ *  URL (null: `gone()` by then). One shot at a time is the caller's (a queue). `wrap`: what's done to it once made. */
+export type Shooter = ReturnType<typeof createShooter>;
+export function createShooter(name: string, dir: string, wrap: (p: Player3D) => Player3D = (p) => p) {
+  let made: Promise<Player3D> | null = null;
+  return {
+    async shoot(renderer: WebGLRenderer, look: PlayerLook, px: number, gone: () => boolean): Promise<string | null> {
+      made ??= createPlayer(name, look, dir, 0).then((p) => (p.step(0), p.step(1000), wrap(p)));
+      const p = await made;
+      await p.dress(look);
+      p.face(null);
+      p.step(2000);
+      return gone() ? null : portrait(renderer, p, px, null).toDataURL('image/png');
+    },
+    /** Its player let go of (made again on the next shot). */
+    dispose() {
+      const p = made;
+      made = null;
+      void p?.then((v) => v.dispose(), () => {});
+    }
+  };
 }
