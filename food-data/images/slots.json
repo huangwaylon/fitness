@@ -61,7 +61,8 @@
 "jbfd-トルティーヤ・ピタパン",
 "tokyo_hokeniryo-hitori11_2",
 "jbfd-菓子パン・そうざいパン",
-"jbfd-調理パン"
+"jbfd-調理パン",
+"eatout-morning_set"
 ],
 "dairy": [
 "mext-13040",
@@ -105,7 +106,8 @@
 "mext-13002",
 "kumagaya-2733",
 "kumagaya-03589",
-"kumagaya-00723"
+"kumagaya-00723",
+"sub-shredded-cheese"
 ],
 "don": [
 "dishes-gyudon",
@@ -168,7 +170,15 @@
 "dishes-teishoku-gyoza",
 "dishes-mabodon",
 "dishes-teishoku-mabo",
-"tokyo_hokeniryo-hitori12_3"
+"tokyo_hokeniryo-hitori12_3",
+"maff_kyodo-katsudon_yama_nashi",
+"dishes-teishoku-saba-misoni",
+"dishes-teishoku-saba-shioyaki",
+"dishes-teishoku-sanma",
+"dishes-teishoku-hokke",
+"eatout-hirekatsu_teishoku",
+"eatout-tamago_kake_teishoku",
+"maff_kyodo-butadon_hokkaido"
 ],
 "drink": [
 "eatout-cafe_latte",
@@ -286,7 +296,10 @@
 "mext-06400",
 "jbfd-アイススラリー飲料",
 "jbfd-ゼリー飲料",
-"jbfd-粉末飲料"
+"jbfd-粉末飲料",
+"sub-plant-milk",
+"eatout-cocoa",
+"sub-smoothie"
 ],
 "eatout": [
 "eatout-curry_pork_chain",
@@ -342,7 +355,11 @@
 "eatout-yakitori_butabara",
 "eatout-karubi",
 "eatout-rosu_yakiniku",
-"eatout-nankotsu_age"
+"eatout-nankotsu_age",
+"eatout-fried_chicken",
+"eatout-nirareba",
+"eatout-reimen",
+"eatout-yasaiitame"
 ],
 "egg": [
 "mext-12005",
@@ -791,7 +808,8 @@
 "mext-10219",
 "mext-10387",
 "mext-10423",
-"mext-10474"
+"mext-10474",
+"sub-sake-toba"
 ],
 "fruit": [
 "mext-07027",
@@ -927,7 +945,11 @@
 "mext-07186",
 "mext-07174",
 "jbfd-冷凍フルーツ（カット・ミックス）",
-"jbfd-果実ミックス"
+"jbfd-果実ミックス",
+"mext-07079",
+"mext-07143",
+"sub-dried-fruit",
+"sub-fruit-mix"
 ],
 "konbini": [
 "eatout-onigiri_sake",
@@ -958,7 +980,9 @@
 "eatout-onigiri_karubi",
 "eatout-bento_shogayaki",
 "eatout-onigiri_sekihan",
-"eatout-onigiri_torigomoku"
+"eatout-onigiri_torigomoku",
+"eatout-oden_rollcabbage",
+"eatout-fukuro_ramen"
 ],
 "main": [
 "mext-18002",
@@ -2017,7 +2041,20 @@
 "jbfd-鶏肉のから揚げ・フライ",
 "kumagaya-03344",
 "jbfd-鶏肉のスモーク製品",
-"kumagaya-03368-2"
+"kumagaya-03368-2",
+"dishes-oden-daikon",
+"maff_kyodo-igisu_dofu_ehime",
+"maff_kyodo-43_3_yamaguchi",
+"maff_kyodo-itokoni_shiga",
+"dishes-oden-satsumaage",
+"dishes-oden-chikuwa",
+"dishes-oden-tsumire",
+"dishes-oden-hanpen",
+"maff_kyodo-komo_toufu_tottori",
+"sub-green-curry",
+"sub-lasagna",
+"maff_kyodo-nina_niigata",
+"maff_kyodo-basashi_kumamoto"
 ],
 "meat": [
 "mext-11227",
@@ -2670,7 +2707,12 @@
 "jbfd-味付けごはん類",
 "kumagaya-00128",
 "kumagaya-03375",
-"jbfd-雑穀ミックス"
+"jbfd-雑穀ミックス",
+"maff_kyodo-harako_meshi_miyagi",
+"sub-gapao",
+"sub-paella",
+"maff_kyodo-nara_chameshi_nara",
+"maff_kyodo-keihan_kagoshima"
 ],
 "season": [
 "mext-17007",
@@ -2854,7 +2896,9 @@
 "jbfd-ハーブソルト",
 "jbfd-中華薬味ソース",
 "jbfd-製菓材料",
-"jbfd-麺用ソース"
+"jbfd-麺用ソース",
+"sub-tartar",
+"sub-nabe-tsuyu"
 ],
 "side": [
 "dishes-green-salad",
@@ -3447,7 +3491,12 @@
 "kumagaya-02388",
 "jbfd-茶わんむし",
 "jbfd-酢の物・和え物",
-"toyonaka-131130"
+"toyonaka-131130",
+"maff_kyodo-aimaze_oita",
+"maff_kyodo-oyaki_nagano",
+"maff_kyodo-42_7_hiroshima",
+"dishes-furofuki-daikon",
+"maff_kyodo-furofukidaikon_kyoto"
 ],
 "soup": [
 "dishes-miso-tofu-wakame",
@@ -3893,7 +3942,11 @@
 "kumagaya-00907",
 "toyonaka-131098",
 "toyonaka-284504",
-"kumagaya-02557-2"
+"kumagaya-02557-2",
+"maff_kyodo-dojou_jiru_kagawa",
+"maff_kyodo-hiyajiru_miyazaki",
+"maff_kyodo-hiyashiru_yamagata",
+"maff_kyodo-zouni_fukui"
 ],
 "soy": [
 "mext-04032",
@@ -4034,7 +4087,8 @@
 "jbfd-アーモンド小魚",
 "jbfd-ミックスナッツ",
 "jbfd-ミックスビーンズ",
-"jbfd-煮豆"
+"jbfd-煮豆",
+"mext-05009"
 ],
 "sushi": [
 "eatout-sushi_maguro",
@@ -4153,7 +4207,14 @@
 "maff_kyodo-sabano_bouzushi_shiga",
 "maff_kyodo-36_8_shizuoka",
 "maff_kyodo-40_11_hyogo",
-"maff_kyodo-41_24_okayama"
+"maff_kyodo-41_24_okayama",
+"eatout-kaitenzushi_10",
+"maff_kyodo-inari_zushi_aomori",
+"maff_kyodo-kokera_zushi_mie",
+"maff_kyodo-kokerazushi_kochi",
+"maff_kyodo-barazushi_kyoto",
+"maff_kyodo-kakinoha_zushi_wakayama",
+"maff_kyodo-kakinoha_zushi_tottori"
 ],
 "sweet": [
 "mext-15103",
@@ -4566,7 +4627,24 @@
 "jbfd-チーズ鱈・チーズサンドおつまみ",
 "jbfd-海外揚げ菓子（ヤッカ）",
 "jbfd-畜産物燻製おつまみ",
-"jbfd-芋チップス"
+"jbfd-芋チップス",
+"mext-15104",
+"sub-anmitsu",
+"maff_kyodo-igamanju_aichi",
+"maff_kyodo-imomochi_hokkaido",
+"maff_kyodo-imomochi_wakayama",
+"maff_kyodo-44_20_tokushima",
+"sub-chinsuko",
+"sub-gummy",
+"sub-scone",
+"sub-baumkuchen",
+"sub-montblanc",
+"sub-rusk",
+"maff_kyodo-tamagokanten_yamagata",
+"maff_kyodo-kashiwa_mochi_fukui",
+"maff_kyodo-yubeshi_kumamoto",
+"maff_kyodo-38_17_gifu",
+"maff_kyodo-sasamaki_shimane"
 ],
 "veg": [
 "mext-08001",
@@ -5066,10 +5144,524 @@
 "jbfd-カレー・シチュー用下ゆで野菜",
 "jbfd-乾燥野菜",
 "jbfd-水煮野菜ミックス",
-"jbfd-海藻ミックス"
+"jbfd-海藻ミックス",
+"mext-06292",
+"mext-08017",
+"mext-06004",
+"mext-06006",
+"mext-06031",
+"mext-06059",
+"mext-02041",
+"mext-06079",
+"mext-06118",
+"mext-06121",
+"mext-06125",
+"mext-06158",
+"mext-06163",
+"mext-06166",
+"mext-06168",
+"mext-06174",
+"mext-06202",
+"mext-06257",
+"mext-06259",
+"mext-06266",
+"mext-06275",
+"mext-02049",
+"mext-06297",
+"mext-06321",
+"mext-06325",
+"mext-06002",
+"mext-06082",
+"mext-06127",
+"mext-06330",
+"mext-06331",
+"mext-06244",
+"mext-02055",
+"mext-06309",
+"mext-06311",
+"mext-06110",
+"mext-06284",
+"mext-06225",
+"mext-02051"
 ]
 },
 "dv": 3,
+"p": {
+"apple": [
+"mext-15087",
+"mext-15103",
+"mext-17015",
+"jbfd-グラノーラ",
+"mext-13025",
+"mext-14017",
+"mext-15170",
+"sub-scone"
+],
+"banana": [
+"eatout-protein_whey",
+"mext-15103",
+"jbfd-グラノーラ",
+"mext-15116",
+"sub-baumkuchen",
+"sub-smoothie",
+"eatout-lacto_ice",
+"jbfd-ミックスナッツ",
+"mext-15082",
+"mext-15097",
+"sub-montblanc"
+],
+"beef": [
+"mext-17112",
+"mext-18050",
+"mext-18018",
+"dishes-meat-sauce",
+"mext-15057",
+"mext-15103",
+"mext-18045",
+"dishes-hayashi-rice",
+"mext-17006",
+"mext-18014",
+"dishes-bukkake-udon",
+"dishes-chinjao",
+"mext-01118",
+"mext-06152",
+"mext-11163",
+"mext-12004",
+"mext-17027",
+"mext-17031",
+"mext-17127",
+"mext-18022",
+"mext-18036",
+"sub-nabe-tsuyu",
+"takatsuki-r31",
+"toyonaka-112197"
+],
+"bread": [
+"mext-15103",
+"mext-15083",
+"mext-15057",
+"mext-15097",
+"mext-14020",
+"mext-15084",
+"eatout-tiramisu",
+"mext-06223",
+"mext-09004",
+"mext-11176",
+"mext-13014",
+"mext-13040",
+"mext-13042",
+"mext-14017",
+"mext-15094",
+"mext-15116",
+"mext-16045",
+"mext-18056",
+"sub-baumkuchen"
+],
+"cabbage": [
+"mext-11222",
+"mext-17037"
+],
+"carrot": [
+"mext-17040",
+"mext-06267",
+"mext-07031"
+],
+"cheese": [
+"sub-shredded-cheese",
+"mext-10379",
+"mext-15057",
+"mext-15097",
+"dishes-macaroni-gratin",
+"mext-18050",
+"eatout-margherita",
+"toyonaka-120334",
+"eatout-protein_whey",
+"jbfd-チーズ鱈・チーズサンドおつまみ",
+"jbfd-ミックスナッツ",
+"mext-01148",
+"mext-13042",
+"mext-15024",
+"mext-15102",
+"mext-18015",
+"eatout-chijimi",
+"eatout-yakitori_negima",
+"mext-01037",
+"mext-05005",
+"mext-07117",
+"mext-10313",
+"mext-10381",
+"mext-10385",
+"mext-11183",
+"mext-11293",
+"mext-15005",
+"mext-15073",
+"mext-15086",
+"mext-15094",
+"mext-15103",
+"mext-17042",
+"mext-17063",
+"mext-18018",
+"sub-baumkuchen"
+],
+"chicken": [
+"eatout-bento_makunouchi",
+"mext-18015",
+"mext-15019",
+"dishes-tempura-moriawase",
+"mext-15103",
+"eatout-toriten",
+"mext-11195",
+"mext-11293",
+"mext-04032",
+"mext-18050",
+"sub-nabe-tsuyu",
+"mext-06263",
+"mext-10383",
+"dishes-doria",
+"dishes-green-salad",
+"mext-06179",
+"mext-06236",
+"mext-10260",
+"mext-11107",
+"mext-12004",
+"mext-13040",
+"mext-17019",
+"mext-18002",
+"dishes-chazuke-shake",
+"dishes-hiyashi-chuka",
+"dishes-macaroni-gratin",
+"dishes-minestrone",
+"dishes-ramen-shoyu",
+"eatout-margherita",
+"eatout-protein_bar",
+"jbfd-ミックスナッツ",
+"mext-01118",
+"mext-06016",
+"mext-06084",
+"mext-11181",
+"mext-11189",
+"mext-17007",
+"mext-17027",
+"mext-17029",
+"mext-17042",
+"mext-17045",
+"mext-17098",
+"mext-17110",
+"mext-18014",
+"mext-18040",
+"mext-18048",
+"sub-paella",
+"takatsuki-r31"
+],
+"curry": [
+"sub-green-curry",
+"dishes-ramen-shoyu",
+"mext-15057",
+"mext-11221",
+"mext-15103",
+"mext-18050",
+"sub-nabe-tsuyu",
+"dishes-doria",
+"dishes-macaroni-gratin",
+"dishes-yakisoba",
+"eatout-bento_makunouchi",
+"eatout-saladchicken",
+"eatout-yakitori_negima",
+"mext-01039",
+"mext-01111",
+"mext-02039",
+"mext-17029",
+"mext-17040",
+"mext-18018",
+"mext-18022"
+],
+"drink": [
+"sub-plant-milk",
+"sub-smoothie"
+],
+"egg": [
+"mext-15061",
+"mext-15009",
+"mext-18057",
+"dishes-omurice",
+"dishes-sui-gyoza",
+"dishes-teriyaki-chicken",
+"mext-04046",
+"mext-10382",
+"mext-14017",
+"mext-15030",
+"mext-15057",
+"mext-15078",
+"mext-15086",
+"mext-18022"
+],
+"fruit": [
+"sub-dried-fruit",
+"sub-fruit-mix"
+],
+"jiru": [
+"dishes-miso-shijimi",
+"mext-18054",
+"sub-gummy",
+"dishes-chazuke-shake",
+"dishes-cheese-hamburg",
+"dishes-somen",
+"mext-07031"
+],
+"main": [
+"sub-lasagna"
+],
+"milk": [
+"mext-13006",
+"eatout-cafe_latte",
+"mext-15036",
+"mext-15078",
+"mext-15086",
+"dishes-clam-chowder",
+"mext-13042",
+"mext-15009",
+"sub-baumkuchen",
+"sub-rusk"
+],
+"miso": [
+"eatout-protein_whey"
+],
+"natto": [
+"mext-17127",
+"mext-11176"
+],
+"onigiri": [
+"mext-17045"
+],
+"onion": [
+"mext-17040",
+"mext-06226",
+"mext-15057",
+"dishes-shogayaki",
+"mext-17110",
+"mext-18050"
+],
+"pasta": [
+"mext-15102",
+"mext-10202",
+"dishes-clam-chowder",
+"mext-02067",
+"mext-10204",
+"mext-18050"
+],
+"pork": [
+"mext-11189",
+"eatout-nirareba",
+"mext-18002",
+"mext-18012",
+"mext-15035",
+"mext-18057",
+"eatout-bento_makunouchi",
+"eatout-margherita",
+"eatout-motsuni",
+"mext-01191",
+"mext-11107",
+"mext-11221",
+"mext-11273",
+"mext-11279",
+"mext-11293",
+"mext-13040",
+"mext-17007",
+"mext-18054",
+"dishes-hoikoro",
+"eatout-rice_burger",
+"eatout-rosu_yakiniku",
+"mext-01117",
+"mext-10139",
+"mext-11236",
+"mext-17002",
+"mext-17045",
+"mext-17110",
+"mext-18018",
+"mext-18033",
+"mext-18036",
+"mext-18049",
+"mext-18050",
+"mext-18053",
+"toyonaka-122521"
+],
+"ramen": [
+"dishes-consomme-soup",
+"mext-15102",
+"mext-17045",
+"mext-15057",
+"mext-15103",
+"mext-17019",
+"mext-17029",
+"mext-17098",
+"mext-18057",
+"sub-nabe-tsuyu"
+],
+"rice": [
+"sub-gapao",
+"sub-paella",
+"eatout-bento_makunouchi",
+"mext-06236",
+"mext-17007",
+"dishes-bibimbap",
+"dishes-chinjao",
+"mext-06084",
+"mext-09046",
+"mext-17127",
+"toyonaka-117749"
+],
+"saba": [
+"mext-10139",
+"mext-11220",
+"mext-16025",
+"toyonaka-117749"
+],
+"salad": [
+"mext-17040",
+"jbfd-ミックスビーンズ",
+"mext-10415",
+"mext-15057",
+"mext-10379",
+"mext-15103",
+"jbfd-グラノーラ",
+"mext-01039",
+"mext-01064",
+"mext-06016",
+"mext-06179",
+"mext-11181",
+"mext-17007",
+"mext-17063",
+"mext-17127"
+],
+"salmon": [
+"mext-10131",
+"sub-sake-toba",
+"eatout-bento_makunouchi",
+"dishes-gindara-saikyo",
+"mext-13040",
+"mext-11107",
+"mext-13056",
+"eatout-bento_nori",
+"mext-06236",
+"mext-09044",
+"mext-10204",
+"mext-10313",
+"mext-14002",
+"mext-15057",
+"mext-15103",
+"mext-17007",
+"mext-17029",
+"sub-tartar"
+],
+"season": [
+"sub-nabe-tsuyu",
+"sub-tartar"
+],
+"shrimp": [
+"mext-15057",
+"dishes-doria",
+"dishes-sui-gyoza",
+"mext-18002",
+"mext-18053",
+"dishes-chawanmushi",
+"dishes-kakiage",
+"dishes-nikomi-hamburg",
+"mext-05035",
+"mext-15019",
+"mext-15102",
+"mext-15103",
+"mext-17019",
+"mext-18012",
+"mext-18043",
+"sub-nabe-tsuyu"
+],
+"soba": [
+"mext-01191",
+"mext-15057",
+"mext-17029",
+"dishes-somen",
+"eatout-bento_makunouchi",
+"mext-01062",
+"mext-01064",
+"mext-01111",
+"mext-10202",
+"mext-15103",
+"mext-15106",
+"mext-17007"
+],
+"soup": [
+"eatout-protein_whey",
+"sub-nabe-tsuyu",
+"dishes-kakitamajiru",
+"mext-01136",
+"mext-15102",
+"mext-17007",
+"dishes-hiyashi-chuka",
+"dishes-sui-gyoza",
+"eatout-motsuni",
+"eatout-reimen",
+"mext-06179",
+"mext-12004",
+"mext-18050"
+],
+"sushi": [
+"mext-01111",
+"mext-10161"
+],
+"sweet": [
+"sub-baumkuchen",
+"sub-gummy",
+"sub-scone",
+"sub-montblanc",
+"sub-rusk",
+"sub-chinsuko",
+"sub-anmitsu"
+],
+"tofu": [
+"eatout-cafe_latte",
+"eatout-protein_whey",
+"kurume-236",
+"mext-04024",
+"mext-15103"
+],
+"tomato": [
+"mext-17036",
+"dishes-meat-sauce",
+"mext-18050",
+"mext-11222",
+"dishes-clam-chowder",
+"dishes-doria",
+"dishes-minestrone",
+"eatout-margherita",
+"mext-06399",
+"mext-10260",
+"mext-13040",
+"mext-15057",
+"mext-18043"
+],
+"tuna": [
+"mext-09023",
+"mext-11107",
+"dishes-sashimi-moriawase",
+"eatout-gunkan_negitoro",
+"mext-08003",
+"mext-18050"
+],
+"udon": [
+"dishes-consomme-soup",
+"dishes-ramen-shoyu"
+],
+"yogurt": [
+"eatout-protein_whey",
+"mext-07181",
+"mext-07117",
+"mext-07138",
+"mext-13042",
+"mext-15113",
+"mext-15116",
+"sub-fruit-mix"
+]
+},
 "t": {
 "apple": [
 "mext-07148",
@@ -5236,7 +5828,8 @@
 "tokyo_hokeniryo-hitori11_2",
 "jbfd-白身魚のパン粉焼",
 "jbfd-菓子パン・そうざいパン",
-"jbfd-調理パン"
+"jbfd-調理パン",
+"eatout-morning_set"
 ],
 "cabbage": [
 "mext-06061",
@@ -5261,7 +5854,9 @@
 "kumagaya-03593",
 "kumagaya-03105",
 "kumagaya-02538",
-"tokyo_hokeniryo-hitori4_3"
+"tokyo_hokeniryo-hitori4_3",
+"eatout-oden_rollcabbage",
+"mext-06284"
 ],
 "carrot": [
 "mext-06214",
@@ -5503,7 +6098,9 @@
 "kumagaya-03362",
 "jbfd-鶏肉のから揚げ・フライ",
 "jbfd-鶏肉のスモーク製品",
-"kumagaya-03368-2"
+"kumagaya-03368-2",
+"eatout-fried_chicken",
+"maff_kyodo-keihan_kagoshima"
 ],
 "curry": [
 "eatout-curry_pork_chain",
@@ -5647,7 +6244,12 @@
 "kumagaya-2989",
 "kumagaya-02853",
 "tokyo_hokeniryo-hitori12_3",
-"kumagaya-02853-2"
+"kumagaya-02853-2",
+"maff_kyodo-katsudon_yama_nashi",
+"dishes-teishoku-sanma",
+"dishes-teishoku-hokke",
+"eatout-hirekatsu_teishoku",
+"maff_kyodo-butadon_hokkaido"
 ],
 "drink": [
 "eatout-cafe_latte",
@@ -5740,7 +6342,8 @@
 "mext-06400",
 "jbfd-アイススラリー飲料",
 "jbfd-ゼリー飲料",
-"jbfd-粉末飲料"
+"jbfd-粉末飲料",
+"eatout-cocoa"
 ],
 "eatout": [
 "eatout-hamburger",
@@ -5764,7 +6367,10 @@
 "eatout-imoten",
 "eatout-toriten",
 "eatout-nasuten",
-"eatout-xiaolongbao"
+"eatout-xiaolongbao",
+"eatout-nirareba",
+"eatout-reimen",
+"eatout-yasaiitame"
 ],
 "egg": [
 "mext-12005",
@@ -5817,7 +6423,8 @@
 "kumagaya-00761",
 "kumagaya-03078",
 "kumagaya-03462-2",
-"kumagaya-00780"
+"kumagaya-00780",
+"maff_kyodo-tamagokanten_yamagata"
 ],
 "fish": [
 "mext-10281",
@@ -6459,7 +7066,12 @@
 "kumagaya-02468",
 "kumagaya-03021",
 "kumagaya-00177",
-"tokyo_hokeniryo-hitori8_2"
+"tokyo_hokeniryo-hitori8_2",
+"mext-07079",
+"maff_kyodo-dojou_jiru_kagawa",
+"mext-07143",
+"maff_kyodo-hiyajiru_miyazaki",
+"maff_kyodo-hiyashiru_yamagata"
 ],
 "konbini": [
 "eatout-bento_makunouchi",
@@ -7110,7 +7722,16 @@
 "jbfd-魚のフレーク・ほぐし身",
 "jbfd-魚介のカツ・フライ",
 "jbfd-魚介の竜田揚げ",
-"jbfd-魚肉練り製品(揚げ・蒲鉾)"
+"jbfd-魚肉練り製品(揚げ・蒲鉾)",
+"dishes-oden-daikon",
+"maff_kyodo-43_3_yamaguchi",
+"maff_kyodo-itokoni_shiga",
+"dishes-oden-satsumaage",
+"dishes-oden-chikuwa",
+"dishes-oden-tsumire",
+"dishes-oden-hanpen",
+"maff_kyodo-nina_niigata",
+"maff_kyodo-basashi_kumamoto"
 ],
 "meat": [
 "mext-11279",
@@ -7260,7 +7881,8 @@
 "mext-15003",
 "maff_kyodo-ama_nattou_no_osekihan_yama_nashi",
 "maff_kyodo-nattomochi_kyoto",
-"dishes-natto"
+"dishes-natto",
+"eatout-tamago_kake_teishoku"
 ],
 "noodle": [
 "mext-01044",
@@ -7601,7 +8223,8 @@
 "kumagaya-03402",
 "kumagaya-02842",
 "kumagaya-03402-2",
-"kumagaya-03328"
+"kumagaya-03328",
+"eatout-fukuro_ramen"
 ],
 "rice": [
 "mext-01088",
@@ -7797,7 +8420,9 @@
 "jbfd-味付けごはん類",
 "kumagaya-00128",
 "kumagaya-03375",
-"jbfd-雑穀ミックス"
+"jbfd-雑穀ミックス",
+"maff_kyodo-harako_meshi_miyagi",
+"maff_kyodo-nara_chameshi_nara"
 ],
 "saba": [
 "mext-10154",
@@ -7821,7 +8446,9 @@
 "mext-10403",
 "mext-10155",
 "toyonaka-268726",
-"kumagaya-03391"
+"kumagaya-03391",
+"dishes-teishoku-saba-misoni",
+"dishes-teishoku-saba-shioyaki"
 ],
 "salad": [
 "dishes-green-salad",
@@ -8617,7 +9244,12 @@
 "tokyo_hokeniryo-hitori10_2",
 "kumagaya-02152",
 "jbfd-茶わんむし",
-"jbfd-酢の物・和え物"
+"jbfd-酢の物・和え物",
+"maff_kyodo-aimaze_oita",
+"maff_kyodo-oyaki_nagano",
+"maff_kyodo-42_7_hiroshima",
+"dishes-furofuki-daikon",
+"maff_kyodo-furofukidaikon_kyoto"
 ],
 "soba": [
 "dishes-zaru-soba",
@@ -8889,7 +9521,8 @@
 "kumagaya-00185",
 "kumagaya-03348-2",
 "kumagaya-03163",
-"kumagaya-03146"
+"kumagaya-03146",
+"maff_kyodo-zouni_fukui"
 ],
 "soy": [
 "mext-05018",
@@ -9006,7 +9639,8 @@
 "jbfd-アーモンド小魚",
 "jbfd-ミックスナッツ",
 "jbfd-ミックスビーンズ",
-"jbfd-煮豆"
+"jbfd-煮豆",
+"mext-05009"
 ],
 "sushi": [
 "eatout-sushi_maguro",
@@ -9129,7 +9763,14 @@
 "kumagaya-03019",
 "kumagaya-00071",
 "kumagaya-02990-2",
-"jbfd-ちらし寿司の素"
+"jbfd-ちらし寿司の素",
+"eatout-kaitenzushi_10",
+"maff_kyodo-inari_zushi_aomori",
+"maff_kyodo-kokera_zushi_mie",
+"maff_kyodo-kokerazushi_kochi",
+"maff_kyodo-barazushi_kyoto",
+"maff_kyodo-kakinoha_zushi_wakayama",
+"maff_kyodo-kakinoha_zushi_tottori"
 ],
 "sweet": [
 "mext-15103",
@@ -9522,7 +10163,16 @@
 "jbfd-チュロス",
 "jbfd-海外揚げ菓子（ヤッカ）",
 "jbfd-畜産物燻製おつまみ",
-"jbfd-芋チップス"
+"jbfd-芋チップス",
+"mext-15104",
+"maff_kyodo-igamanju_aichi",
+"maff_kyodo-imomochi_hokkaido",
+"maff_kyodo-imomochi_wakayama",
+"maff_kyodo-44_20_tokushima",
+"maff_kyodo-kashiwa_mochi_fukui",
+"maff_kyodo-yubeshi_kumamoto",
+"maff_kyodo-38_17_gifu",
+"maff_kyodo-sasamaki_shimane"
 ],
 "tofu": [
 "mext-04032",
@@ -9617,7 +10267,9 @@
 "kumagaya-03297",
 "kumagaya-03350",
 "kumagaya-02697",
-"kumagaya-03396"
+"kumagaya-03396",
+"maff_kyodo-igisu_dofu_ehime",
+"maff_kyodo-komo_toufu_tottori"
 ],
 "tomato": [
 "mext-06182",
@@ -10185,7 +10837,44 @@
 "mext-06194",
 "jbfd-乾燥野菜",
 "jbfd-水煮野菜ミックス",
-"jbfd-海藻ミックス"
+"jbfd-海藻ミックス",
+"mext-06292",
+"mext-08017",
+"mext-06004",
+"mext-06006",
+"mext-06031",
+"mext-06059",
+"mext-02041",
+"mext-06079",
+"mext-06118",
+"mext-06121",
+"mext-06125",
+"mext-06158",
+"mext-06163",
+"mext-06166",
+"mext-06168",
+"mext-06174",
+"mext-06202",
+"mext-06257",
+"mext-06259",
+"mext-06266",
+"mext-06275",
+"mext-02049",
+"mext-06297",
+"mext-06321",
+"mext-06325",
+"mext-06002",
+"mext-06082",
+"mext-06127",
+"mext-06330",
+"mext-06331",
+"mext-06244",
+"mext-02055",
+"mext-06309",
+"mext-06311",
+"mext-06110",
+"mext-06225",
+"mext-02051"
 ],
 "yogurt": [
 "mext-13025",

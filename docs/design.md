@@ -290,7 +290,7 @@ openings (Sheet's `keep`), so a reopening shows the day at once.
   agree on its kcal, a product's brand, the everyday name (`foodUi.ts` glossOf), the default portion and kcal. A food in
   its states (`vg`/`st`: 生 · ゆで · 焼き) is one row (`search.ts`, `stemName`). MEXT's lookalikes are out unless named
   (LOOKALIKE). Left of the name the **category tile** (`FoodThumb`; `art.ts` FOOD_CAT) or the food's generated picture
-  (`lib/food/images.ts` imgOf: every generic food has one, in `static/food-img` sprite sheets; products keep their tile;
+  (`lib/food/images.ts` imgOf: every generic food has one, in `static/food-img` sprite sheets; a product its subcategory's, else its tile;
   [food-data.md](food-data.md) "Pictures"). ー counts (カレー is not かれい). Offline: a message, もういちど, and さいきん.
   **Ranking** (`food/search.ts` tierOf): the name exact or its head; its prefix, level with an alias exact; a substring;
   an alias's prefix or substring; any other field; rare forms (`RARE_FORM`) 2.5 tiers lower, a secondary dataset 1.5,

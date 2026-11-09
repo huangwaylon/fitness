@@ -1,0 +1,274 @@
+[
+ {
+  "key": "maff_kyodo-42_7_hiroshima",
+  "ja": "お好み焼き（広島県）",
+  "desc": "hiroshima okonomiyaki, a thick layered round of thin crepe batter, a tall heap of steamed shredded cabbage, pork belly slices and fried yakisoba noodles under a thin egg layer, glossy dark brown sauce and green aonori on top, on an iron griddle",
+  "items": [
+   "maff_kyodo:42_7_hiroshima"
+  ]
+ },
+ {
+  "key": "maff_kyodo-furofukidaikon_kyoto",
+  "ja": "ふろふき大根（京都府）",
+  "desc": "furofuki daikon kyoto style, thick wedges of round Shogoin daikon simmered soft in kombu dashi, pale and glossy, with a dab of creamy pale white miso flecked with yellow yuzu peel, in a shallow bowl",
+  "items": [
+   "maff_kyodo:furofukidaikon_kyoto"
+  ]
+ },
+ {
+  "key": "maff_kyodo-38_17_gifu",
+  "ja": "栗きんとん（岐阜県）",
+  "desc": "kuri kinton gifu style, small chestnut-shaped sweets of mashed sweetened chestnut squeezed in a cloth, matte pale yellow-brown with soft twisted cloth wrinkles at the top and flecks of chestnut, several on a small plate",
+  "items": [
+   "maff_kyodo:38_17_gifu"
+  ]
+ },
+ {
+  "key": "maff_kyodo-butadon_hokkaido",
+  "ja": "豚丼（北海道）",
+  "desc": "obihiro butadon, a bowl of white rice covered with overlapping thick slices of grilled pork loin, lightly charred and glazed glossy dark brown with sweet soy sauce, topped with fine white shreds of leek and a few green peas",
+  "items": [
+   "maff_kyodo:butadon_hokkaido"
+  ]
+ },
+ {
+  "key": "maff_kyodo-katsudon_yama_nashi",
+  "ja": "かつ丼（山梨県）",
+  "desc": "yamanashi katsudon, a donburi of white rice topped with a bed of fine shredded green cabbage and a sliced golden-brown breaded pork cutlet drizzled with dark brown tonkatsu sauce, a lemon slice at the side",
+  "items": [
+   "maff_kyodo:katsudon_yama_nashi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-tamagokanten_yamagata",
+  "ja": "卵寒天（山形県）",
+  "desc": "tamago kanten yamagata style, rectangular blocks of firm agar jelly tinted translucent amber-brown with sweet soy sauce, with ribbons of soft yellow egg suspended through it, on a small plate",
+  "items": [
+   "maff_kyodo:tamagokanten_yamagata"
+  ]
+ },
+ {
+  "key": "maff_kyodo-oyaki_nagano",
+  "ja": "おやき（長野県）",
+  "desc": "shinshu oyaki, round flat buns of wheat-flour dough, matte beige with browned griddle marks, one broken open to show a filling of soft simmered eggplant in brown miso, several on a plate",
+  "items": [
+   "maff_kyodo:oyaki_nagano"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sasamaki_shimane",
+  "ja": "笹巻き（島根県）",
+  "desc": "sasamaki shimane style, slender bundles of broad dark green kumazasa bamboo leaves wrapped around oval rice-flour dumplings on a leaf-stem stick and tied with rush, one opened to show the smooth white dumpling beside kinako",
+  "items": [
+   "maff_kyodo:sasamaki_shimane"
+  ]
+ },
+ {
+  "key": "maff_kyodo-harako_meshi_miyagi",
+  "ja": "はらこ飯（宮城県）",
+  "desc": "harako meshi miyagi style, a bowl of light brown rice cooked in salmon simmering broth, topped with flakes of soft pink simmered salmon and a scattering of glossy orange-red salmon roe beads, a few green mitsuba leaves",
+  "items": [
+   "maff_kyodo:harako_meshi_miyagi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-basashi_kumamoto",
+  "ja": "馬刺し（熊本県）",
+  "desc": "basashi kumamoto style, thin slices of raw horse meat, some deep red lean and some pale pink finely marbled, fanned on a plate with thinly sliced onion, grated ginger and garlic, and a small dish of sweet soy",
+  "items": [
+   "maff_kyodo:basashi_kumamoto"
+  ]
+ },
+ {
+  "key": "maff_kyodo-inari_zushi_aomori",
+  "ja": "いなりずし（青森県）",
+  "desc": "tsugaru inari-zushi, plump golden-brown pouches of sweet simmered fried tofu filled with sticky glutinous rice tinted bright pink with chopped red pickled ginger, one cut open showing the pink rice, on a plate",
+  "items": [
+   "maff_kyodo:inari_zushi_aomori"
+  ]
+ },
+ {
+  "key": "maff_kyodo-dojou_jiru_kagawa",
+  "ja": "どじょう汁（香川県）",
+  "desc": "dojo-jiru kagawa style, a large bowl of cloudy miso broth with thick white udon noodles, small whole dark grey loach, chunks of taro and purple eggplant, burdock pieces, fried tofu strips and green leek",
+  "items": [
+   "maff_kyodo:dojou_jiru_kagawa"
+  ]
+ },
+ {
+  "key": "maff_kyodo-hiyajiru_miyazaki",
+  "ja": "冷や汁（宮崎県）",
+  "desc": "miyazaki hiyajiru, a deep bowl of barley rice under a cold pale brown soup of grilled fish flakes, sesame and miso, with white tofu cubes, thin green cucumber rounds, shredded shiso and myoga floating on top",
+  "items": [
+   "maff_kyodo:hiyajiru_miyazaki"
+  ]
+ },
+ {
+  "key": "maff_kyodo-hiyashiru_yamagata",
+  "ja": "冷や汁（山形県）",
+  "desc": "yonezawa hiyashiru, a cold ohitashi of blanched green seasonal vegetables in clear chilled dashi with spongy grey dried konjac pieces, sliced dried shiitake, flattened soybeans and shreds of dried scallop, in a large bowl",
+  "items": [
+   "maff_kyodo:hiyashiru_yamagata"
+  ]
+ },
+ {
+  "key": "maff_kyodo-igamanju_aichi",
+  "ja": "いがまんじゅう（愛知県）",
+  "desc": "iga manju aichi style, small round rice-flour buns filled with azuki paste, their tops studded with grains of glutinous rice dyed soft pink, yellow and green, several on a plate",
+  "items": [
+   "maff_kyodo:igamanju_aichi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-nara_chameshi_nara",
+  "ja": "奈良茶飯（奈良県）",
+  "desc": "nara chameshi nara style, rice cooked in roasted hojicha tea, its grains tinted light tan-brown, evenly mixed with whole golden roasted soybeans, a plain heap in a ceramic rice bowl",
+  "items": [
+   "maff_kyodo:nara_chameshi_nara"
+  ]
+ },
+ {
+  "key": "maff_kyodo-43_3_yamaguchi",
+  "ja": "いとこ煮（山口県）",
+  "desc": "itokoni yamaguchi style, a lacquered bowl of clear light soy broth with sweet simmered red-brown azuki beans, round white and pink shiratama dumplings, sliced shiitake and pink-edged kamaboko slices",
+  "items": [
+   "maff_kyodo:43_3_yamaguchi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-itokoni_shiga",
+  "ja": "いとこ煮（滋賀県）",
+  "desc": "itokoni shiga style, a small bowl of soft simmered peeled taro pieces, pale grey-white and round, coated in sweet simmered whole red-brown azuki beans in a little thick dark red liquid",
+  "items": [
+   "maff_kyodo:itokoni_shiga"
+  ]
+ },
+ {
+  "key": "maff_kyodo-44_20_tokushima",
+  "ja": "いももち（徳島県）",
+  "desc": "imo mochi tokushima style, round soft dumplings of bright yellow mashed sweet potato and mochi flour wrapped around azuki paste, dusted all over with golden kinako, one cut to show the dark filling, on a plate",
+  "items": [
+   "maff_kyodo:44_20_tokushima"
+  ]
+ },
+ {
+  "key": "maff_kyodo-imomochi_hokkaido",
+  "ja": "いももち（北海道）",
+  "desc": "hokkaido imo mochi, flat round patties of mashed potato kneaded with potato starch, smooth and pale yellow, pan-fried golden brown on both sides, a few stacked on a plate",
+  "items": [
+   "maff_kyodo:imomochi_hokkaido"
+  ]
+ },
+ {
+  "key": "maff_kyodo-imomochi_wakayama",
+  "ja": "いももち（和歌山県）",
+  "desc": "imo mochi wakayama style, flat oval cakes of pounded sweet potato and glutinous rice, soft orange-yellow with a grainy texture, toasted with brown scorched spots, one broken to show azuki paste, on a plate",
+  "items": [
+   "maff_kyodo:imomochi_wakayama"
+  ]
+ },
+ {
+  "key": "maff_kyodo-komo_toufu_tottori",
+  "ja": "こも豆腐（鳥取県）",
+  "desc": "komo dofu tottori style, thick round slices of a firm pale beige tofu roll with straw-mat ridges on the outside, the cut faces showing orange carrot and brown burdock strips at the centre, on a long plate",
+  "items": [
+   "maff_kyodo:komo_toufu_tottori"
+  ]
+ },
+ {
+  "key": "maff_kyodo-barazushi_kyoto",
+  "ja": "ばらずし（京都府）",
+  "desc": "tango barazushi, a shallow square wooden box of vinegared rice layered with sweet brown flaked mackerel, topped with yellow shredded egg, sliced shiitake, kanpyo strips, pink kamaboko, bamboo shoot and red pickled ginger",
+  "items": [
+   "maff_kyodo:barazushi_kyoto"
+  ]
+ },
+ {
+  "key": "maff_kyodo-kokera_zushi_mie",
+  "ja": "こけらずし（三重県）",
+  "desc": "kokera zushi mie style, square pressed sushi pieces with colourful toppings laid in overlapping rows like shingles, vinegared mackerel, yellow egg, orange carrot, brown shiitake and green snow peas over white rice, on a leaf",
+  "items": [
+   "maff_kyodo:kokera_zushi_mie"
+  ]
+ },
+ {
+  "key": "maff_kyodo-kokerazushi_kochi",
+  "ja": "こけらずし（高知県）",
+  "desc": "kokera zushi kochi style, a tall square block of pressed sushi built of many stacked layers of white vinegared rice alternating with yellow egg, orange carrot, brown shiitake and flaked fish, like a layered cake, cut to show the stripes",
+  "items": [
+   "maff_kyodo:kokerazushi_kochi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-yubeshi_kumamoto",
+  "ja": "柚餅子（熊本県）",
+  "desc": "yubeshi kumamoto style, a firm chewy log of glutinous rice cake kneaded with miso and yuzu, dark caramel brown, sliced into thick rounds, on an opened dried bamboo sheath wrapper",
+  "items": [
+   "maff_kyodo:yubeshi_kumamoto"
+  ]
+ },
+ {
+  "key": "maff_kyodo-igisu_dofu_ehime",
+  "ja": "いぎす豆腐（愛媛県）",
+  "desc": "igisu tofu ehime style, square slices of firm translucent grey-tan seaweed and soybean jelly studded with pink shrimp bits and thin strips of carrot, burdock and shiitake, topped with pale mustard vinegared miso, in a small dish",
+  "items": [
+   "maff_kyodo:igisu_dofu_ehime"
+  ]
+ },
+ {
+  "key": "maff_kyodo-nina_niigata",
+  "ja": "煮菜（新潟県）",
+  "desc": "nina, niigata simmered greens, soft dark olive-green chopped salted taina leaves and stems simmered in soy dashi with pale flattened soybeans, a moist tangled heap in a bowl",
+  "items": [
+   "maff_kyodo:nina_niigata"
+  ]
+ },
+ {
+  "key": "maff_kyodo-kashiwa_mochi_fukui",
+  "ja": "柏餅（福井県）",
+  "desc": "kashiwa mochi fukui style, half-moon white rice cakes folded over azuki paste, each wrapped in a large glossy green oak leaf with wavy edges, several on a plate",
+  "items": [
+   "maff_kyodo:kashiwa_mochi_fukui"
+  ]
+ },
+ {
+  "key": "maff_kyodo-keihan_kagoshima",
+  "ja": "鶏飯（鹿児島県）",
+  "desc": "amami keihan, a bowl of white rice topped with neat sections of shredded chicken, yellow shredded egg, brown simmered shiitake strips, pickled papaya, green onion, nori and mandarin peel, with clear golden chicken broth poured over",
+  "items": [
+   "maff_kyodo:keihan_kagoshima"
+  ]
+ },
+ {
+  "key": "maff_kyodo-aimaze_oita",
+  "ja": "あいまぜ（大分県）",
+  "desc": "aimaze oita style, simmered zenmai fern shoots, dried daikon strips, shiitake and carrot strips folded into a creamy white mashed tofu dressing, a heap in a small dark bowl",
+  "items": [
+   "maff_kyodo:aimaze_oita"
+  ]
+ },
+ {
+  "key": "maff_kyodo-kakinoha_zushi_tottori",
+  "ja": "柿の葉寿司（鳥取県）",
+  "desc": "kakinoha zushi chizu style, small oval mounds of vinegared rice topped with thin pink slices of salted trout and a few green sansho berries, each set on an open green persimmon leaf, on a plate",
+  "items": [
+   "maff_kyodo:kakinoha_zushi_tottori"
+  ]
+ },
+ {
+  "key": "maff_kyodo-kakinoha_zushi_wakayama",
+  "ja": "柿の葉寿司（和歌山県）",
+  "desc": "kakinoha zushi wakayama style, small pressed sushi bundles wrapped in autumn persimmon leaves of red, orange and yellow, some unwrapped showing vinegared rice topped with mackerel, simmered shiitake or shrimp, on a plate",
+  "items": [
+   "maff_kyodo:kakinoha_zushi_wakayama"
+  ]
+ },
+ {
+  "key": "maff_kyodo-zouni_fukui",
+  "ja": "雑煮（福井県）",
+  "desc": "zoni fukui style, a plain soup bowl of cloudy light brown miso broth with soft round white mochi and thin half-moon slices of turnip, heaped with a large mound of pink-beige bonito flakes",
+  "items": [
+   "maff_kyodo:zouni_fukui"
+  ]
+ }
+]

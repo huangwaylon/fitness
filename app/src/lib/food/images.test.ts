@@ -73,22 +73,26 @@ describe('static/food-img', () => {
   it('keeps every cell inside its sheet', () => {
     const size = new Map(index.sheets.map((f) => [f, webpSize(readFileSync(join(DIR, f)))]));
     for (const [ts, tx, ty, ds, dx, dy] of index.keys) {
-      for (const [s, x, y, px, tag] of [[ts, tx, ty, index.t, 't'], [ds, dx, dy, index.d, 'd']] as const) {
+      for (const [s, x, y, px, tags] of [[ts, tx, ty, index.t, ['t-', 'p-']], [ds, dx, dy, index.d, ['d-']]] as const) {
         const f = index.sheets[s];
-        expect(f?.startsWith(`${tag}-`), `${f}`).toBe(true);
+        expect(tags.some((t) => f?.startsWith(t)), `${f}`).toBe(true);
         const [w, h] = size.get(f)!;
         expect(x % px === 0 && y % px === 0 && x + px <= w && y + px <= h, `${f} ${x},${y}`).toBe(true);
       }
     }
   });
 
-  it("maps only shipped generic foods' ids, each to a picture", () => {
+  it("maps only shipped foods' ids, each to a picture (a product's in a product sheet, p-, or its picture's own)", () => {
     const food = join(STATIC, 'food');
     const fi = JSON.parse(readFileSync(join(food, 'index.json'), 'utf8')) as FoodIndex;
-    const ids = new Set(fi.datasets.filter((d) => !d.lazy).flatMap((d) => (JSON.parse(readFileSync(join(food, d.file), 'utf8')) as Dataset).items.map((it) => it.id)));
-    const stray = Object.keys(index.ids).filter((id) => !ids.has(id));
-    expect(stray).toEqual([]);
-    for (const k of Object.values(index.ids)) expect(index.keys[k]).toBeDefined();
+    const idsOf = (lazy: boolean) => new Set(fi.datasets.filter((d) => !d.lazy === !lazy).flatMap((d) => (JSON.parse(readFileSync(join(food, d.file), 'utf8')) as Dataset).items.map((it) => it.id)));
+    const generic = idsOf(false), products = idsOf(true);
+    expect(Object.keys(index.ids).filter((id) => !generic.has(id) && !products.has(id))).toEqual([]);
+    for (const [id, k] of Object.entries(index.ids)) {
+      expect(index.keys[k]).toBeDefined();
+      const sheet = index.sheets[index.keys[k]![0]]!;
+      expect(sheet.startsWith('t-') || (products.has(id) && sheet.startsWith('p-')), id).toBe(true);
+    }
   });
 
   it("fits the whole table's pictures in static/'s file cap (projected from what is shipped)", () => {
@@ -106,8 +110,9 @@ describe('sheet locality', () => {
   /** Common searches: the thumbnail sheets their top 20 touch, and those sheets' bytes. */
   const QUERIES = ['豚', '鶏', '牛', 'ごはん', 'うどん', 'そば', 'ラーメン', 'さけ', 'まぐろ', 'さば', '卵', '豆腐', '納豆', 'キャベツ', 'トマト', 'たまねぎ', 'にんじん',
     'カレー', '丼', '味噌汁', 'サラダ', 'パン', 'りんご', 'バナナ', '牛乳', 'ヨーグルト', 'チーズ', 'おにぎり', '寿司', 'ビール', 'スープ', 'サンド', 'えび'];
-  /** A search's top 20's thumbnail download (the sheets they touch, 4 × 4 cells each): on average, and at most. */
-  const MEAN_KB = 120;
+  /** A search's top 20's thumbnail download (the sheets they touch, 4 × 4 cells each): on average, and at most. 120 KB
+   *  till the products had pictures (2026-11-10: +5 KB, on searches whose top 20 were mostly products' tiles). */
+  const MEAN_KB = 125;
   const MAX_KB = 350;
 
   it('keeps a common search\'s thumbnail download small', async () => {

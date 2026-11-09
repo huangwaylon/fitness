@@ -36,12 +36,7 @@
   "ja": "だいこん ゆで",
   "desc": "thick round slices of simmered daikon radish, soft translucent pale amber discs, in a shallow bowl",
   "items": [
-   "mext:06135",
-   "dishes:furofuki-daikon",
-   "dishes:oden-daikon",
-   "eatout:oden_daikon",
-   "maff_kyodo:furofukidaikon_aichi",
-   "maff_kyodo:furofukidaikon_kyoto"
+   "mext:06135"
   ]
  },
  {
@@ -401,8 +396,7 @@
   "ja": "もやし 生",
   "desc": "a pile of bean sprouts (moyashi), crisp thin white stems with small pale yellow tips",
   "items": [
-   "mext:06291",
-   "mext:06292"
+   "mext:06291"
   ]
  },
  {
@@ -942,8 +936,7 @@
   "ja": "しめじ 生",
   "desc": "a cluster of bunashimeji mushrooms, many small round grey-brown caps on white stems joined at the base",
   "items": [
-   "mext:08016",
-   "mext:08017"
+   "mext:08016"
   ]
  },
  {
@@ -1416,11 +1409,9 @@
   "items": [
    "mext:10161",
    "dishes:saba-shioyaki",
-   "eatout:saba_shio_teishoku",
    "toyonaka:117813",
    "kumagaya:2195",
-   "kumagaya:02195",
-   "dishes:teishoku-saba-shioyaki"
+   "kumagaya:02195"
   ]
  },
  {
@@ -1478,7 +1469,6 @@
   "items": [
    "mext:10174",
    "dishes:sanma-shioyaki",
-   "dishes:teishoku-sanma",
    "kurume:077"
   ]
  },
@@ -1629,9 +1619,7 @@
   "items": [
    "mext:10412",
    "dishes:hokke",
-   "eatout:hokke_izk",
-   "dishes:teishoku-hokke",
-   "eatout:hokke_teishoku"
+   "eatout:hokke_izk"
   ]
  },
  {

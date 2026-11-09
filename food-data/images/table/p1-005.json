@@ -63,8 +63,7 @@
   "desc": "a bowl of potato chips, thin wavy golden crisps",
   "items": [
    "mext:15103",
-   "eatout:potato_chips",
-   "mext:15104"
+   "eatout:potato_chips"
   ]
  },
  {
@@ -393,10 +392,9 @@
  {
   "key": "mext-16049",
   "ja": "ミルクココア（粉）",
-  "desc": "a mug of hot cocoa, creamy light chocolate-brown with a little foam",
+  "desc": "milk cocoa powder, a small dish of fine light brown sweetened cocoa powder with a spoon",
   "items": [
-   "mext:16049",
-   "eatout:cocoa"
+   "mext:16049"
   ]
  },
  {
@@ -1052,7 +1050,6 @@
    "dishes:okonomiyaki",
    "eatout:okonomiyaki",
    "maff_kyodo:39_20_osaka",
-   "maff_kyodo:42_7_hiroshima",
    "kurume:229",
    "toyonaka:265163"
   ]
@@ -1704,8 +1701,6 @@
   "desc": "Japanese stir-fried vegetables (yasai itame), cabbage, bean sprouts, carrot, green pepper and pork slices glossy on a plate",
   "items": [
    "dishes:yasai-itame",
-   "eatout:yasaiitame",
-   "kurume:063",
    "toyonaka:118633",
    "kumagaya:00505"
   ]

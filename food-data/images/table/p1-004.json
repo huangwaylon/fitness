@@ -262,9 +262,7 @@
   "ja": "ちくわ（焼き竹輪）",
   "desc": "a few chikuwa, tube-shaped grilled fish cakes with browned outsides and a hole through the middle, one cut in rounds",
   "items": [
-   "mext:10381",
-   "dishes:oden-chikuwa",
-   "eatout:oden_chikuwa"
+   "mext:10381"
   ]
  },
  {
@@ -281,9 +279,7 @@
   "ja": "つみれ",
   "desc": "a few tsumire fish balls, round grey-brown fish dumplings, in a small bowl of broth",
   "items": [
-   "mext:10383",
-   "dishes:oden-tsumire",
-   "eatout:oden_tsumire"
+   "mext:10383"
   ]
  },
  {
@@ -299,9 +295,7 @@
   "ja": "はんぺん",
   "desc": "a square of hanpen, a puffy soft pure white fish cake, one triangle cut",
   "items": [
-   "mext:10385",
-   "dishes:oden-hanpen",
-   "eatout:oden_hanpen"
+   "mext:10385"
   ]
  },
  {
@@ -310,8 +304,6 @@
   "desc": "a few satsuma-age fried fish cakes, flat golden-brown round and oblong patties",
   "items": [
    "mext:10386",
-   "dishes:oden-satsumaage",
-   "eatout:oden_satsuma",
    "kurume:088"
   ]
  },
@@ -566,8 +558,7 @@
   "desc": "tonkatsu, a breaded deep-fried pork loin cutlet cut into strips showing white pork inside a thick crisp golden panko crust, with shredded cabbage and dark tonkatsu sauce",
   "items": [
    "mext:11276",
-   "dishes:tonkatsu",
-   "eatout:tonkatsu_teishoku"
+   "dishes:tonkatsu"
   ]
  },
  {
@@ -609,8 +600,7 @@
   "desc": "hire katsu, small round breaded pork fillet cutlets in a crisp golden panko crust, one cut showing white lean pork, with shredded cabbage",
   "items": [
    "mext:11279",
-   "dishes:hirekatsu",
-   "eatout:hirekatsu_teishoku"
+   "dishes:hirekatsu"
   ]
  },
  {

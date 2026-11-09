@@ -1,8 +1,9 @@
-// ごはん's pictures (docs/food-data.md "Pictures"): AI-generated イメージ of generic foods and dishes, packed into
-// sprite sheets in static/food-img/ by food-data/images/fi.py pack. index.json maps a food id to its picture's two cells:
+// ごはん's pictures (docs/food-data.md "Pictures"): AI-generated イメージ of generic foods and dishes (a product: its
+// subcategory's, by the word its name ends with; never a package), packed into sprite sheets in static/food-img/ by
+// food-data/images/fi.py pack. index.json maps a food id to its picture's two cells:
 // a 128 px one in a thumbnail sheet (rows and lists, 40-64 px) and a 384 px one in a detail sheet (the amount's
 // picture). Sheet names carry their content hash, so a URL never changes (cached on first use, service worker).
-// A food without one (products, custom foods, not drawn yet) gets none: FoodThumb shows its category's tile.
+// A food without one (custom foods, a product no word names) gets none: FoodThumb shows its category's tile.
 import { quiet } from '#lib/quiet.ts';
 import { staticUrl } from '#lib/staticUrl.ts';
 

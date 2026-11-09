@@ -1,0 +1,518 @@
+[
+ {
+  "key": "eatout-hirekatsu_teishoku",
+  "ja": "ヒレかつ定食",
+  "desc": "a hire katsu set meal on a tray, small round breaded pork fillet cutlets with shredded cabbage, a bowl of white rice, a bowl of miso soup and pickles",
+  "items": [
+   "eatout:hirekatsu_teishoku"
+  ]
+ },
+ {
+  "key": "dishes-teishoku-saba-misoni",
+  "ja": "さばの味噌煮定食",
+  "desc": "a saba misoni set meal on a tray, a mackerel fillet in thick glossy brown miso sauce with slivered ginger, a bowl of white rice, a bowl of miso soup and pickles",
+  "items": [
+   "dishes:teishoku-saba-misoni",
+   "eatout:saba_miso_teishoku"
+  ]
+ },
+ {
+  "key": "dishes-teishoku-saba-shioyaki",
+  "ja": "さばの塩焼き定食",
+  "desc": "a salt-grilled mackerel set meal on a tray, a grilled mackerel fillet with blistered golden-brown skin and grated daikon, a bowl of white rice, a bowl of miso soup and pickles",
+  "items": [
+   "dishes:teishoku-saba-shioyaki",
+   "eatout:saba_shio_teishoku"
+  ]
+ },
+ {
+  "key": "dishes-teishoku-sanma",
+  "ja": "さんま定食",
+  "desc": "a sanma set meal on a tray, a whole salt-grilled saury on a long plate with grated daikon, a bowl of white rice, a bowl of miso soup and pickles",
+  "items": [
+   "dishes:teishoku-sanma"
+  ]
+ },
+ {
+  "key": "dishes-teishoku-hokke",
+  "ja": "ほっけ定食",
+  "desc": "a hokke set meal on a tray, a large grilled atka mackerel split open and spread flat like an open book, golden-brown flesh facing up, with grated daikon, a bowl of white rice, a bowl of miso soup and pickles",
+  "items": [
+   "dishes:teishoku-hokke",
+   "eatout:hokke_teishoku"
+  ]
+ },
+ {
+  "key": "eatout-tamago_kake_teishoku",
+  "ja": "朝定食（焼き魚・納豆）",
+  "desc": "a Japanese breakfast set on a tray, a small grilled fish fillet, a small bowl of natto, a raw egg in a little dish, a bowl of white rice and a bowl of miso soup",
+  "items": [
+   "eatout:tamago_kake_teishoku"
+  ]
+ },
+ {
+  "key": "eatout-nirareba",
+  "ja": "ニラレバ炒め",
+  "desc": "nira reba, stir-fried pork liver slices with bright green garlic chives and bean sprouts in a glossy brown sauce on a plate",
+  "items": [
+   "eatout:nirareba"
+  ]
+ },
+ {
+  "key": "eatout-morning_set",
+  "ja": "モーニングセット（トースト・ゆで卵・コーヒー）",
+  "desc": "a Japanese cafe morning set, a thick slice of buttered toast on a small plate, a peeled boiled egg in an egg cup and a cup of black coffee",
+  "items": [
+   "eatout:morning_set"
+  ]
+ },
+ {
+  "key": "dishes-oden-daikon",
+  "ja": "おでん 大根",
+  "desc": "oden daikon, a thick round of simmered daikon radish, soft translucent amber, in clear golden oden broth in a shallow bowl with a dab of yellow karashi mustard",
+  "items": [
+   "dishes:oden-daikon",
+   "eatout:oden_daikon"
+  ]
+ },
+ {
+  "key": "dishes-furofuki-daikon",
+  "ja": "ふろふき大根",
+  "desc": "furofuki daikon, thick round slices of soft simmered daikon radish topped with glossy sweet brown miso sauce in a small bowl",
+  "items": [
+   "dishes:furofuki-daikon",
+   "maff_kyodo:furofukidaikon_aichi"
+  ]
+ },
+ {
+  "key": "dishes-oden-chikuwa",
+  "ja": "おでん ちくわ",
+  "desc": "oden chikuwa, a tube-shaped grilled fish cake with a browned outside, cut in half, in clear golden oden broth in a shallow bowl",
+  "items": [
+   "dishes:oden-chikuwa",
+   "eatout:oden_chikuwa"
+  ]
+ },
+ {
+  "key": "dishes-oden-tsumire",
+  "ja": "おでん つみれ",
+  "desc": "oden tsumire, three round grey-brown sardine fish balls on a short skewer in clear golden oden broth in a shallow bowl",
+  "items": [
+   "dishes:oden-tsumire",
+   "eatout:oden_tsumire"
+  ]
+ },
+ {
+  "key": "dishes-oden-hanpen",
+  "ja": "おでん はんぺん",
+  "desc": "oden hanpen, a puffy soft white square fish cake swollen and glossy with clear golden oden broth in a shallow bowl",
+  "items": [
+   "dishes:oden-hanpen",
+   "eatout:oden_hanpen"
+  ]
+ },
+ {
+  "key": "dishes-oden-satsumaage",
+  "ja": "おでん さつま揚げ",
+  "desc": "oden satsuma-age, a flat round golden-brown fried fish cake soaked in clear golden oden broth in a shallow bowl",
+  "items": [
+   "dishes:oden-satsumaage",
+   "eatout:oden_satsuma"
+  ]
+ },
+ {
+  "key": "eatout-oden_rollcabbage",
+  "ja": "おでん ロールキャベツ",
+  "desc": "oden roll cabbage, a soft cabbage-leaf roll filled with minced meat, tied with a strip of kanpyo, in clear golden oden broth in a shallow bowl",
+  "items": [
+   "eatout:oden_rollcabbage"
+  ]
+ },
+ {
+  "key": "mext-15104",
+  "ja": "成形ポテトチップス",
+  "desc": "stackable formed potato crisps, uniform saddle-shaped pale golden oval chips in a neat stack, a few loose beside it",
+  "items": [
+   "mext:15104"
+  ]
+ },
+ {
+  "key": "eatout-cocoa",
+  "ja": "ココア（ホット）",
+  "desc": "a mug of hot cocoa, creamy light chocolate-brown with a little foam",
+  "items": [
+   "eatout:cocoa"
+  ]
+ },
+ {
+  "key": "eatout-fukuro_ramen",
+  "ja": "インスタントラーメン（袋麺・調理前）",
+  "desc": "a square block of dried instant fried ramen noodles, tightly packed wavy pale golden noodles, on a small plate",
+  "items": [
+   "eatout:fukuro_ramen"
+  ]
+ },
+ {
+  "key": "eatout-fried_chicken",
+  "ja": "フライドチキン（骨付き 1ピース）",
+  "desc": "a bone-in piece of fried chicken, a drumstick with a thick craggy crisp golden-brown seasoned coating",
+  "items": [
+   "eatout:fried_chicken"
+  ]
+ },
+ {
+  "key": "eatout-kaitenzushi_10",
+  "ja": "回転寿司 10皿（20貫）",
+  "desc": "kaiten sushi, a tall stack of small round coloured sushi plates beside two plates each holding two nigiri pieces of salmon and tuna",
+  "items": [
+   "eatout:kaitenzushi_10"
+  ]
+ },
+ {
+  "key": "eatout-yasaiitame",
+  "ja": "肉野菜炒め",
+  "desc": "niku yasai itame, stir-fried thin pork slices with cabbage, bean sprouts, carrot, onion and green pepper, glossy, heaped on a plate",
+  "items": [
+   "eatout:yasaiitame",
+   "kurume:063"
+  ]
+ },
+ {
+  "key": "mext-07079",
+  "ja": "すだち 果汁",
+  "desc": "sudachi juice, a small glass dish of clear pale greenish-yellow citrus juice beside a sudachi cut in half",
+  "items": [
+   "mext:07079"
+  ]
+ },
+ {
+  "key": "mext-07143",
+  "ja": "ゆず 果汁",
+  "desc": "yuzu juice, a small glass dish of cloudy pale yellow citrus juice beside a bright yellow yuzu cut in half",
+  "items": [
+   "mext:07143"
+  ]
+ },
+ {
+  "key": "eatout-reimen",
+  "ja": "冷麺（盛岡風）",
+  "desc": "Korean-style cold noodles (reimen) in a steel bowl, chewy translucent grey noodles in clear cold broth topped with sliced beef, half a boiled egg, kimchi, cucumber and a slice of pear",
+  "items": [
+   "eatout:reimen"
+  ]
+ },
+ {
+  "key": "mext-02041",
+  "ja": "きくいも 水煮",
+  "desc": "boiled Jerusalem artichoke (kikuimo), peeled bite-size pieces, soft and pale cream-white, in a small bowl",
+  "items": [
+   "mext:02041"
+  ]
+ },
+ {
+  "key": "mext-02049",
+  "ja": "むらさきいも 蒸し",
+  "desc": "steamed purple sweet potato, peeled thick round slices of soft vivid deep purple flesh on a small plate",
+  "items": [
+   "mext:02049"
+  ]
+ },
+ {
+  "key": "mext-02051",
+  "ja": "親いも 水煮",
+  "desc": "boiled taro (yatsugashira, takenoko-imo), peeled chunks of soft sticky pale lilac-white taro in a small bowl",
+  "items": [
+   "mext:02051",
+   "mext:02053",
+   "mext:02016"
+  ]
+ },
+ {
+  "key": "mext-02055",
+  "ja": "ヤーコン 水煮",
+  "desc": "boiled yacon, peeled round slices, soft translucent pale yellow, in a small bowl",
+  "items": [
+   "mext:02055"
+  ]
+ },
+ {
+  "key": "mext-05009",
+  "ja": "ぎんなん ゆで",
+  "desc": "boiled ginkgo nuts, shelled glossy translucent jade-green nuts in a small dish",
+  "items": [
+   "mext:05009"
+  ]
+ },
+ {
+  "key": "mext-06002",
+  "ja": "アーティチョーク ゆで",
+  "desc": "a boiled globe artichoke, soft dull olive-green bracts opened out a little, on a plate",
+  "items": [
+   "mext:06002"
+  ]
+ },
+ {
+  "key": "mext-06004",
+  "ja": "あさつき ゆで",
+  "desc": "boiled asatsuki chives, soft deep green thin leaves cut into short lengths, neatly piled in a small bowl",
+  "items": [
+   "mext:06004"
+  ]
+ },
+ {
+  "key": "mext-06006",
+  "ja": "あしたば ゆで",
+  "desc": "boiled ashitaba greens, deep green leaves and stalks cut into short lengths, neatly piled in a small bowl",
+  "items": [
+   "mext:06006"
+  ]
+ },
+ {
+  "key": "mext-06330",
+  "ja": "トウミョウ ゆで",
+  "desc": "boiled tomyo pea shoots, soft deep green tangled shoots with small leaves in a small bowl",
+  "items": [
+   "mext:06330"
+  ]
+ },
+ {
+  "key": "mext-06331",
+  "ja": "トウミョウ 油いため",
+  "desc": "stir-fried tomyo pea shoots, glossy bright green wilted shoots with a few garlic slices on a small plate",
+  "items": [
+   "mext:06331"
+  ]
+ },
+ {
+  "key": "mext-06031",
+  "ja": "おかひじき ゆで",
+  "desc": "boiled okahijiki, soft bright green needle-like stems cut short and piled in a small bowl",
+  "items": [
+   "mext:06031"
+  ]
+ },
+ {
+  "key": "mext-06059",
+  "ja": "きく ゆで",
+  "desc": "boiled edible chrysanthemum petals (kiku no hana), a small loose mound of soft limp wilted yellow petals, no whole flowers, dressed with a little vinegar in a small dish",
+  "items": [
+   "mext:06059"
+  ]
+ },
+ {
+  "key": "mext-06079",
+  "ja": "くわい ゆで",
+  "desc": "boiled kuwai arrowhead bulbs, peeled glossy pale cream-yellow round bulbs each with its curved sprout, in a small bowl",
+  "items": [
+   "mext:06079"
+  ]
+ },
+ {
+  "key": "mext-06082",
+  "ja": "コールラビ ゆで",
+  "desc": "boiled kohlrabi, peeled soft pale green-white wedges in a small bowl",
+  "items": [
+   "mext:06082"
+  ]
+ },
+ {
+  "key": "mext-06110",
+  "ja": "生ずいき ゆで",
+  "desc": "boiled zuiki, soft taro stalk pieces, peeled and pale greenish-tan, in a small bowl",
+  "items": [
+   "mext:06110"
+  ]
+ },
+ {
+  "key": "mext-06118",
+  "ja": "せり ゆで",
+  "desc": "boiled seri (Japanese parsley), deep green stems and leaves cut into short lengths, neatly piled in a small bowl",
+  "items": [
+   "mext:06118"
+  ]
+ },
+ {
+  "key": "mext-06121",
+  "ja": "ぜんまい ゆで",
+  "desc": "boiled zenmai fern shoots, soft long brown-green stems with curled tips, in a small bowl",
+  "items": [
+   "mext:06121"
+  ]
+ },
+ {
+  "key": "mext-06125",
+  "ja": "そらまめ ゆで",
+  "desc": "boiled fava beans, large flat shiny pale green beans with their skins, a few peeled, in a small bowl",
+  "items": [
+   "mext:06125"
+  ]
+ },
+ {
+  "key": "mext-06127",
+  "ja": "タアサイ ゆで",
+  "desc": "boiled tatsoi, soft deep green round leaves on short stems, neatly piled in a small bowl",
+  "items": [
+   "mext:06127"
+  ]
+ },
+ {
+  "key": "mext-06158",
+  "ja": "たらのめ ゆで",
+  "desc": "boiled taranome, soft plump green angelica tree buds with their leaves opening, in a small dish",
+  "items": [
+   "mext:06158"
+  ]
+ },
+ {
+  "key": "mext-06163",
+  "ja": "つくし ゆで",
+  "desc": "boiled tsukushi, soft dark brown horsetail shoots with their caps, the leaf sheaths removed, in a small dish",
+  "items": [
+   "mext:06163"
+  ]
+ },
+ {
+  "key": "mext-06166",
+  "ja": "つるむらさき ゆで",
+  "desc": "boiled tsurumurasaki, soft glossy deep green leaves and stems cut short, neatly piled in a small bowl",
+  "items": [
+   "mext:06166"
+  ]
+ },
+ {
+  "key": "mext-06168",
+  "ja": "つわぶき ゆで",
+  "desc": "boiled tsuwabuki, peeled soft pale green leaf stalks cut into short lengths in a small bowl",
+  "items": [
+   "mext:06168"
+  ]
+ },
+ {
+  "key": "mext-06174",
+  "ja": "とうがん ゆで",
+  "desc": "boiled winter melon (togan), soft translucent pale green chunks in a small bowl",
+  "items": [
+   "mext:06174"
+  ]
+ },
+ {
+  "key": "mext-06202",
+  "ja": "なばな ゆで",
+  "desc": "boiled nanohana, bright green rapeseed shoots with tight buds cut into lengths, neatly piled in a small bowl",
+  "items": [
+   "mext:06202"
+  ]
+ },
+ {
+  "key": "mext-06225",
+  "ja": "茎にんにく ゆで",
+  "desc": "boiled garlic stems, soft bright green stalks cut into short lengths in a small dish",
+  "items": [
+   "mext:06225"
+  ]
+ },
+ {
+  "key": "mext-06244",
+  "ja": "ビーツ ゆで",
+  "desc": "boiled beets, peeled soft deep magenta-red slices and wedges on a small plate",
+  "items": [
+   "mext:06244"
+  ]
+ },
+ {
+  "key": "mext-06257",
+  "ja": "ふき ゆで",
+  "desc": "boiled fuki butterbur stalks, peeled translucent pale green short lengths in a small bowl",
+  "items": [
+   "mext:06257"
+  ]
+ },
+ {
+  "key": "mext-06259",
+  "ja": "ふきのとう ゆで",
+  "desc": "boiled fukinoto, soft dull green butterbur buds, the bracts loosened, in a small dish",
+  "items": [
+   "mext:06259"
+  ]
+ },
+ {
+  "key": "mext-06266",
+  "ja": "へちま ゆで",
+  "desc": "boiled sponge gourd, peeled soft pale green round slices in a small bowl",
+  "items": [
+   "mext:06266"
+  ]
+ },
+ {
+  "key": "mext-06275",
+  "ja": "みつば ゆで",
+  "desc": "boiled mitsuba, soft deep green stems and leaves cut into short lengths, neatly piled in a small bowl",
+  "items": [
+   "mext:06275"
+  ]
+ },
+ {
+  "key": "mext-06284",
+  "ja": "芽キャベツ ゆで",
+  "desc": "boiled Brussels sprouts, soft bright green mini cabbages, a few halved, in a small bowl",
+  "items": [
+   "mext:06284"
+  ]
+ },
+ {
+  "key": "mext-06292",
+  "ja": "もやし ゆで",
+  "desc": "boiled bean sprouts, soft limp translucent white sprouts with pale yellow tips in a small bowl",
+  "items": [
+   "mext:06292"
+  ]
+ },
+ {
+  "key": "mext-06297",
+  "ja": "ゆりね ゆで",
+  "desc": "boiled lily bulb scales, soft translucent cream-white petal-shaped scales in a small bowl",
+  "items": [
+   "mext:06297"
+  ]
+ },
+ {
+  "key": "mext-06309",
+  "ja": "リーキ ゆで",
+  "desc": "boiled leek, soft pale green-white rounds of leek in a small dish",
+  "items": [
+   "mext:06309"
+  ]
+ },
+ {
+  "key": "mext-06311",
+  "ja": "ルバーブ ゆで",
+  "desc": "stewed rhubarb, soft pink-red stalk pieces falling apart in a small bowl",
+  "items": [
+   "mext:06311"
+  ]
+ },
+ {
+  "key": "mext-06321",
+  "ja": "わけぎ ゆで",
+  "desc": "boiled wakegi, soft deep green onion leaves cut into short lengths in a small bowl",
+  "items": [
+   "mext:06321"
+  ]
+ },
+ {
+  "key": "mext-06325",
+  "ja": "わらび ゆで",
+  "desc": "boiled warabi, soft olive-green bracken stems with curled tips cut into lengths in a small bowl",
+  "items": [
+   "mext:06325"
+  ]
+ },
+ {
+  "key": "mext-08017",
+  "ja": "しめじ ゆで",
+  "desc": "boiled shimeji mushrooms, soft separated grey-brown capped mushrooms on pale stems in a small bowl",
+  "items": [
+   "mext:08017"
+  ]
+ }
+]

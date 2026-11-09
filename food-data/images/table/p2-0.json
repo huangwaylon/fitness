@@ -237,8 +237,7 @@
   "ja": "卵寒天",
   "desc": "tamago kanten, rectangular blocks of firm agar jelly in two layers, a bright yellow egg layer over a pale translucent white layer, on a lilac plate",
   "items": [
-   "maff_kyodo:29_11_akita",
-   "maff_kyodo:tamagokanten_yamagata"
+   "maff_kyodo:29_11_akita"
   ]
  },
  {
@@ -318,8 +317,7 @@
   "ja": "おやき",
   "desc": "oyaki, flat round pan-grilled mochi-flour cakes, soft white with light golden spots, stuffed with dark red sweet azuki paste, several overlapping on a dark plate",
   "items": [
-   "maff_kyodo:29_21_akita",
-   "maff_kyodo:oyaki_nagano"
+   "maff_kyodo:29_21_akita"
   ]
  },
  {
@@ -368,7 +366,6 @@
   "desc": "sasamaki, triangular bundles of glutinous rice wrapped in dark green bamboo leaves and tied with rush string, piled on a round bamboo basket",
   "items": [
    "maff_kyodo:29_3_akita",
-   "maff_kyodo:sasamaki_shimane",
    "maff_kyodo:sasamaki_yamagata"
   ]
  },
@@ -426,8 +423,7 @@
   "ja": "はらこ飯",
   "desc": "harako meshi, a bowl of white rice completely covered with glistening translucent orange-red salmon roe beads, a sprig of green on top, in a black lacquered bowl",
   "items": [
-   "maff_kyodo:30_12_fukushima",
-   "maff_kyodo:harako_meshi_miyagi"
+   "maff_kyodo:30_12_fukushima"
   ]
  },
  {
@@ -493,7 +489,6 @@
   "desc": "basashi, raw horse meat, thick rectangular slices of lean deep red meat with no marbling, on crushed ice with shiso leaves, beside soy sauce and mustard miso",
   "items": [
    "maff_kyodo:30_23_fukushima",
-   "maff_kyodo:basashi_kumamoto",
    "maff_kyodo:basashi_yama_nashi"
   ]
  },
@@ -626,8 +621,7 @@
   "ja": "いなりずし",
   "desc": "inari-zushi, plump golden-brown pouches of sweet fried tofu stuffed with vinegared rice, some with the opening showing rice and yellow egg, tied around the middle with a gourd strip, on an oval plate",
   "items": [
-   "maff_kyodo:31_14_tochigi",
-   "maff_kyodo:inari_zushi_aomori"
+   "maff_kyodo:31_14_tochigi"
   ]
  },
  {
@@ -724,8 +718,7 @@
   "ja": "どじょう汁",
   "desc": "dojo-jiru, a soy broth with small whole dark grey loach fish, burdock and leek, in a red lacquered bowl, beside a block of white tofu",
   "items": [
-   "maff_kyodo:31_28_tochigi",
-   "maff_kyodo:dojou_jiru_kagawa"
+   "maff_kyodo:31_28_tochigi"
   ]
  },
  {
@@ -1093,9 +1086,7 @@
   "ja": "冷や汁",
   "desc": "hiyajiru, cold soup of ground sesame and miso thinned with icy water, pale beige, with thin cucumber rounds, shiso and myoga, poured over white udon noodles in a bowl",
   "items": [
-   "maff_kyodo:33_3_saitama",
-   "maff_kyodo:hiyajiru_miyazaki",
-   "maff_kyodo:hiyashiru_yamagata"
+   "maff_kyodo:33_3_saitama"
   ]
  },
  {
@@ -1103,8 +1094,7 @@
   "ja": "いがまんじゅう",
   "desc": "iga manju, round buns coated all over with grains of pinkish red bean sticky rice dotted with red azuki beans, like chestnut burrs, on a dark plate",
   "items": [
-   "maff_kyodo:33_4_saitama",
-   "maff_kyodo:igamanju_aichi"
+   "maff_kyodo:33_4_saitama"
   ]
  },
  {
@@ -1360,8 +1350,7 @@
   "ja": "奈良茶飯",
   "desc": "nara chameshi, rice cooked in green tea, pale beige, mixed with chestnuts and reddish azuki or soybeans, in a bowl",
   "items": [
-   "maff_kyodo:35_20_kanagawa",
-   "maff_kyodo:nara_chameshi_nara"
+   "maff_kyodo:35_20_kanagawa"
   ]
  },
  {

@@ -141,8 +141,7 @@
   "ja": "鶏飯",
   "desc": "torimeshi, mixed rice with soy-tan grains and small pieces of chicken, burdock and carrot evenly mixed through, heaped in a blue-rimmed rice bowl",
   "items": [
-   "maff_kyodo:46_13_nagasaki",
-   "maff_kyodo:keihan_kagoshima"
+   "maff_kyodo:46_13_nagasaki"
   ]
  },
  {
@@ -583,8 +582,7 @@
   "desc": "aimaze, julienned daikon, carrot, burdock and shiitake simmered with fried tofu in light soy, a pale tangle in a dark bowl",
   "items": [
    "maff_kyodo:aimaze_ishikawa",
-   "maff_kyodo:aimaze_mie",
-   "maff_kyodo:aimaze_oita"
+   "maff_kyodo:aimaze_mie"
   ]
  },
  {

@@ -303,8 +303,7 @@
   "ja": "にぎり寿司 盛り合わせ（10貫）",
   "desc": "an assorted nigiri sushi platter, ten pieces of tuna, salmon, shrimp, squid, egg and white fish nigiri on a wooden board with gari",
   "items": [
-   "eatout:nigiri_moriawase",
-   "eatout:kaitenzushi_10"
+   "eatout:nigiri_moriawase"
   ]
  },
  {
@@ -465,8 +464,7 @@
   "ja": "骨なしフライドチキン（ホットスナック）",
   "desc": "a piece of fried chicken with a thick craggy crisp golden-brown seasoned coating",
   "items": [
-   "eatout:chicken_hot",
-   "eatout:fried_chicken"
+   "eatout:chicken_hot"
   ]
  },
  {

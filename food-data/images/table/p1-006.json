@@ -5,8 +5,6 @@
   "desc": "saba misoni, mackerel fillet pieces simmered in a thick glossy brown miso sauce with slivered ginger, in a shallow bowl",
   "items": [
    "dishes:saba-misoni",
-   "dishes:teishoku-saba-misoni",
-   "eatout:saba_miso_teishoku",
    "kurume:096"
   ]
  },
@@ -420,8 +418,7 @@
   "ja": "栗きんとん",
   "desc": "kuri kinton, glossy bright golden-yellow mashed sweet potato with whole candied chestnuts",
   "items": [
-   "dishes:kurikinton",
-   "maff_kyodo:38_17_gifu"
+   "dishes:kurikinton"
   ]
  },
  {
@@ -629,8 +626,7 @@
   "desc": "butadon, a bowl of white rice topped with simmered pork slices and onion in sweet soy sauce",
   "items": [
    "dishes:butadon",
-   "eatout:butadon",
-   "maff_kyodo:butadon_hokkaido"
+   "eatout:butadon"
   ]
  },
  {
@@ -650,7 +646,6 @@
   "items": [
    "dishes:katsudon",
    "eatout:katsudon",
-   "maff_kyodo:katsudon_yama_nashi",
    "kurume:010"
   ]
  },
@@ -1420,8 +1415,7 @@
   "ja": "ロールキャベツ（2個）",
   "desc": "cabbage rolls, two soft cabbage leaf rolls filled with minced meat in a light tomato consommé",
   "items": [
-   "dishes:roll-cabbage",
-   "eatout:oden_rollcabbage"
+   "dishes:roll-cabbage"
   ]
  },
  {
@@ -1561,8 +1555,7 @@
   "desc": "a Japanese set meal (teishoku) on a tray, a grilled salted salmon fillet, a bowl of rice, a bowl of miso soup and small side dishes",
   "items": [
    "dishes:teishoku-yakizake",
-   "eatout:shake_teishoku",
-   "eatout:tamago_kake_teishoku"
+   "eatout:shake_teishoku"
   ]
  },
  {
@@ -1606,7 +1599,8 @@
   "ja": "とんかつ定食",
   "desc": "a tonkatsu set meal on a tray, a sliced breaded pork cutlet with shredded cabbage, rice, miso soup and pickles",
   "items": [
-   "dishes:teishoku-tonkatsu"
+   "dishes:teishoku-tonkatsu",
+   "eatout:tonkatsu_teishoku"
   ]
  },
  {
@@ -1702,8 +1696,7 @@
   "ja": "洋朝食（トースト・ベーコンエッグ・サラダ・ヨーグルト・牛乳）",
   "desc": "a Western breakfast set, toast, bacon and eggs, a small salad, a cup of yogurt and a glass of milk",
   "items": [
-   "dishes:yo-choshoku",
-   "eatout:morning_set"
+   "dishes:yo-choshoku"
   ]
  },
  {
@@ -1855,10 +1848,9 @@
  {
   "key": "eatout-nira_reba_teishoku",
   "ja": "レバニラ定食",
-  "desc": "liver and garlic chive stir-fry, pork liver slices with nira and bean sprouts in glossy sauce",
+  "desc": "a nira reba set meal on a tray, a plate of stir-fried pork liver with bright green garlic chives and bean sprouts in glossy sauce, a bowl of white rice, a bowl of miso soup and pickles",
   "items": [
-   "eatout:nira_reba_teishoku",
-   "eatout:nirareba"
+   "eatout:nira_reba_teishoku"
   ]
  },
  {

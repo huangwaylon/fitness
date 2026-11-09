@@ -226,8 +226,7 @@
   "desc": "a bowl of cooked instant ramen, wavy yellow noodles in brown soy soup topped with green onion",
   "items": [
    "mext:01198",
-   "dishes:instant-ramen",
-   "eatout:fukuro_ramen"
+   "dishes:instant-ramen"
   ]
  },
  {
@@ -338,10 +337,9 @@
  {
   "key": "mext-01150",
   "ja": "冷めん（生）",
-  "desc": "Korean-style cold noodles (reimen) in a steel bowl, chewy translucent grey noodles in clear cold broth topped with sliced beef, half a boiled egg, kimchi, cucumber and a slice of pear",
+  "desc": "fresh raw reimen noodles, a loose coil of chewy translucent grey-beige noodles dusted with starch on a plate",
   "items": [
-   "mext:01150",
-   "eatout:reimen"
+   "mext:01150"
   ]
  },
  {

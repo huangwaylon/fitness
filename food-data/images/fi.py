@@ -11,9 +11,12 @@ sheets in app/static/food-img/.
   python3 -I food-data/images/fi.py checksheet <out> keys  # generated beside refs, for the second (by-eye) check
   python3 -I food-data/images/fi.py status               # per row: refs, rolls, verdicts, shipped
   python3 -I food-data/images/fi.py pack                 # paper-even, webp, sheets + index.json into app/static/food-img/
+  python3 -I food-data/images/fi.py split <lines> <dest>  # items that look different get their own row (or join another's)
 
-Committed here: the table (table/*.json: rows {key, ja, desc, items, refs, why}), the verdict log (verdicts.jsonl) and the
-slots (slots.json: a key's sheet cell, append-only so a shipped sheet never changes). Everything else (reference
+Committed here: the table (table/*.json: rows {key, ja, desc, items, refs, why}; a row without items, `cat` instead, is
+a products-only subcategory picture), the product words (products.txt: a product's picture by the word its name ends
+with), the verdict log (verdicts.jsonl) and the slots (slots.json: a key's sheet cell, append-only so a shipped sheet
+never changes). Everything else (reference
 photos, generated images, sheets for review) lives in $FOOD_IMG_RAW (default ~/food-images-raw), never in the repo:
 reference photos are look-only. Downloads are untrusted: nothing is run from them. Python with PIL (pack, sheets) and
 the mflux tool's Python (gen) are the only non-stdlib parts.
@@ -434,7 +437,7 @@ def cmd_gen(keys=None):
         due = [(r, s[1]) for r in table() if (not keys or r['key'] in keys) for s in [state(r, vs)] if s[0] == 'gen']
         pop = {i: it.get('pop', 0) for i, it in items_by_id().items()}
         due = [(r, roll) for r, roll in due if not gen_path(r, roll).exists()]
-        due.sort(key=lambda d: -max(pop.get(i, 0) for i in d[0]['items']))  # the popular first (a stable sort: then table order)
+        due.sort(key=lambda d: -max([pop.get(i, 0) for i in d[0]['items']] or [0]))  # the popular first (a stable sort: then table order)
         due = due[:20]  # then re-read the table
         if not due:
             if os.environ.get('FI_WATCH') != '1':
@@ -587,7 +590,7 @@ def model_of(png):
     return f"Z-Image-Turbo q{c['quant']} {c['steps']} steps {c['px']}px"
 
 
-def family_of(row, byid):
+def family_of(row, byid, other=None):
     """A row's thumbnail neighbourhood: a dish-type word's family (FAMILY up to 'milk', in order), else the ingredient
     word that comes first in the name (トマトと卵の炒め物: トマト; 鶏肉とトマトの煮込み: 鶏), else its first item's category."""
     name = row['ja']
@@ -598,7 +601,96 @@ def family_of(row, byid):
     hits = [(name.find(w), i, fam) for i, (fam, words) in enumerate(FAMILY) if fam not in dish for w in words.split() if w in name]
     if hits:
         return min(hits)[2]
-    return BUCKET.get(byid[row['items'][0]]['cat'], 'other')
+    return other or BUCKET.get(cat_of(row, byid), 'other')
+
+
+def cat_of(row, byid):
+    """A row's category: its first item's, or its own `cat` (a subcategory picture, products only)."""
+    return byid[row['items'][0]]['cat'] if row['items'] else row['cat']
+
+
+# ---------- products: a subcategory picture by the word a name ends with (products.txt; never a package)
+
+PRODUCTS = HERE / 'products.txt'
+_KANA = [('芋', 'いも'), ('玉子', 'たまご'), ('卵', 'たまご'), ('葱', 'ねぎ'), ('海老', 'えび'), ('烏賊', 'いか'), ('鮭', 'さけ'),
+         ('しゃけ', 'さけ'), ('胡麻', 'ごま'), ('醤油', 'しょうゆ'), ('味噌', 'みそ'), ('から揚げ', '唐揚げ'), ('からあげ', '唐揚げ'),
+         ('餃子', 'ぎょうざ'), ('ギョーザ', 'ぎょうざ'), ('焼売', 'しゅうまい'), ('シュウマイ', 'しゅうまい'), ('ー', ''), ('・', '')]
+# a name's last bits that say nothing of the food: sizes, counts, brackets, marks
+_JUNK = re.compile(r'([^\w]|\d+(\.\d+)?(g|ml|kg|l|個|枚|本|袋|食|粒|切|切れ|貫|人前|p|入|入り|コ)+|内容量.*|[!！?？☆★♪〈〉<>【】\[\]「」『』'
+                   r'（）()／/、,.。~〜%％+＋&＆-]|大|小|中|ミニ|特大|徳用|業務用|お徳用)+$')
+
+
+def _kana(s):
+    return ''.join(chr(ord(c) - 0x60) if 'ァ' <= c <= 'ヶ' else c for c in s)
+
+
+def pnorm(s):
+    """A word as products.txt compares it: NFKC, katakana as hiragana, lower case, a few kanji / kana spellings one."""
+    s = _kana(unicodedata.normalize('NFKC', s)).lower()
+    for a, b in _KANA:
+        s = s.replace(_kana(a), b)
+    return s
+
+
+def product_words():
+    """products.txt: word -> (row key, whole token only, weak, first token only)."""
+    out = {}
+    for line in PRODUCTS.read_text().splitlines():
+        line = line.split('#')[0].strip()
+        if line:
+            words, key = (x.strip() for x in line.split(' = '))
+            for w in words.split('|'):
+                mark = w[:len(w) - len(w.lstrip('^~!'))]
+                out[pnorm(w[len(mark):])] = (key, '^' in mark, '~' in mark, '!' in mark)
+    return out
+
+
+def _script(c):
+    return 'k' if 'ァ' <= c <= 'ヺ' or c == 'ー' else 'h' if 'ぁ' <= c <= 'ゖ' else 'a' if c.isascii() and c.isalnum() else 'x'
+
+
+def product_key(name, words):
+    """A product's picture row: the word one of its name's tokens ends with (a token ending in 味 is a flavour), not
+    starting inside a katakana or latin word unless 3+ letters long (ビーフカレー: カレー; ショコラ is not コーラ), a short
+    hiragana one not inside a hiragana run; a `!` word only in the first token (堅あげポテト 九州しょうゆ is no soy sauce). A
+    food's form beats a weak word (~: an ingredient that is often a flavour, 博多明太子 おにぎり: おにぎり), then the longer
+    word, then the earlier token. None: its category's tile."""
+    best = None
+    for ti, tok in enumerate(t for t in re.split(r'\s+', unicodedata.normalize('NFKC', name)) if t):
+        tok = re.sub(r'[（(][^）)]*[）)]', '', tok)
+        for _ in range(3):
+            tok = _JUNK.sub('', tok)
+        if not tok or re.search(r'(味|風味|フレーバー)$', tok):
+            continue
+        for st in range(len(tok)):
+            w = pnorm(tok[st:])
+            if len(w) < 2 or w not in words:
+                continue
+            key, whole, weak, first = words[w]
+            if (whole and st) or (first and ti):
+                continue
+            if st and _script(tok[st]) == _script(tok[st - 1]) and (
+                    (_script(tok[st]) in 'ka' and len(w) < 3) or (_script(tok[st]) == 'h' and len(w) < 3)):
+                continue
+            sc = (not weak, len(w), -ti)
+            if best is None or sc > best[0]:
+                best = (sc, key)
+            break
+    return best and best[1]
+
+
+def product_pictures():
+    """off id -> picture row key, for the products a word in products.txt names."""
+    words = product_words()
+    idx = json.loads((APP_FOOD / 'index.json').read_text())
+    out = {}
+    for d in idx['datasets']:
+        if d.get('lazy'):
+            for it in json.loads((APP_FOOD / d['file']).read_text())['items']:
+                k = product_key(it['name'], words)
+                if k:
+                    out[it['id']] = k
+    return out
 
 
 def cmd_pack():
@@ -608,24 +700,42 @@ def cmd_pack():
     rows = [r for r in table() if state(r, vs)[0] == 'ship']
     slots = json.loads(SLOTS.read_text()) if SLOTS.exists() else {}
     if slots.get('v') != FAMILY_V:  # another family ranking (or the first layout): the thumbnails laid out again
-        old = slots if set(slots) <= {'t', 'd', 'v', 'dv'} else {}
+        old = slots if set(slots) <= {'t', 'd', 'p', 'v', 'dv'} else {}
         slots = {'v': FAMILY_V, 'd': old.get('d', {}), 'dv': old.get('dv')}
     if slots.get('dv') != D_V:
         slots['d'], slots['dv'] = {}, D_V
-    slots.setdefault('t', {})
-    slots.setdefault('d', {})
+    for tag in 'tdp':
+        slots.setdefault(tag, {})
+    # products' pictures (products.txt): their own thumbnail sheets per search neighbourhood, the most used first, so a
+    # search's products touch few sheets (the same picture's generic cell sits with the generic foods)
+    shipping = {r['key']: r for r in rows}
+    prodmap = {i: k for i, k in product_pictures().items() if k in shipping}
+    # a product's sheet: its own name's search neighbourhood (たまねぎドレッシング with the onions), else its picture's
+    pnames = {it['id']: it['name'] for d in json.loads((APP_FOOD / 'index.json').read_text())['datasets'] if d.get('lazy')
+              for it in json.loads((APP_FOOD / d['file']).read_text())['items']}
+    pfam = {i: family_of({'ja': pnames[i], 'items': []}, byid, family_of(shipping[k], byid)) for i, k in prodmap.items()}
+    # a picture whose generic cell is in that neighbourhood already serves the product from there
+    pfam = {i: f for i, f in pfam.items() if f != family_of(shipping[prodmap[i]], byid) or not shipping[prodmap[i]]['items']}
+    uses = {}
+    for i, f in pfam.items():
+        uses[(f, prodmap[i])] = uses.get((f, prodmap[i]), 0) + 1
     # new keys join their bucket's end, popular first, then by name: a full sheet never changes
-    rows_by_pop = sorted(rows, key=lambda r: (-max(byid.get(i, {}).get('pop', 0) for i in r['items']), r['ja']))
-    for tag, place in (('t', lambda r: family_of(r, byid)), ('d', lambda r: BUCKET.get(byid[r['items'][0]]['cat'], 'other'))):
+    rows_by_pop = sorted(rows, key=lambda r: (-max([byid.get(i, {}).get('pop', 0) for i in r['items']] or [0]), r['ja']))
+    for tag, place, want in (('t', lambda r: family_of(r, byid), lambda r: r['items']),
+                             ('d', lambda r: BUCKET.get(cat_of(r, byid), 'other'), lambda r: True),
+                             ):
         placed = {k for ks in slots[tag].values() for k in ks}
         for r in rows_by_pop:
-            if r['key'] not in placed:
+            if r['key'] not in placed and want(r):
                 slots[tag].setdefault(place(r), []).append(r['key'])
+    for (fam, k), n in sorted(uses.items(), key=lambda u: (-u[1], u[0])):  # the most used first
+        if k not in slots['p'].get(fam, []):
+            slots['p'].setdefault(fam, []).append(k)
     SLOTS.write_text(json.dumps(slots, ensure_ascii=False, indent=0, sort_keys=True) + '\n')
     ship = {r['key']: r for r in rows}
     OUT.mkdir(parents=True, exist_ok=True)
     keep, sheets, cells = set(), [], {}
-    for px, cols, per, tag in ((T_PX, T_COLS, T_PER, 't'), (D_PX, D_COLS, D_PER, 'd')):
+    for px, cols, per, tag in ((T_PX, T_COLS, T_PER, 't'), (D_PX, D_COLS, D_PER, 'd'), (T_PX, T_COLS, T_PER, 'p')):
         for b in sorted(slots[tag]):
             for n in range(0, len(slots[tag][b]), per):
                 part = slots[tag][b][n:n + per]  # a key gone to the tile leaves its cell empty
@@ -639,30 +749,34 @@ def cmd_pack():
                     im = paper_even(Image.open(gen_path(ship[k], state(ship[k], vs)[1]))).resize((px, px), Image.LANCZOS)
                     x, y = (i % cols) * px, (i // cols) * px
                     sh.paste(im, (x, y))
-                    cells.setdefault(k, {})[tag] = (len(sheets), x, y)
+                    cells.setdefault(k, {})[tag if tag != 'p' else ('p', b)] = (len(sheets), x, y)
                 buf = io.BytesIO()
-                sh.save(buf, 'WEBP', quality=T_QUALITY if tag == 't' else QUALITY, method=6)
+                sh.save(buf, 'WEBP', quality=QUALITY if tag == 'd' else T_QUALITY, method=6)
                 b2 = buf.getvalue()
                 name = f'{tag}-{b}-{n // per}-{hashlib.sha256(b2).hexdigest()[:8]}.webp'
                 if not (OUT / name).exists():
                     (OUT / name).write_bytes(b2)
                 keep.add(name)
                 sheets.append(name)
-    keys = sorted(cells)
+    keys = sorted(k for k in cells if 't' in cells[k])
+    pkeys = sorted((c[1], k) for k in cells for c in cells[k] if isinstance(c, tuple))
     kidx = {k: i for i, k in enumerate(keys)}
+    pidx = {fk: len(keys) + i for i, fk in enumerate(pkeys)}
+    ids = {i: kidx[k] for k in keys for i in sorted(ship[k]['items']) if i in byid}
+    prod = {i: pidx[(pfam[i], k)] if i in pfam else kidx[k] for i, k in sorted(prodmap.items())}
     index = {'v': 1, 't': T_PX, 'd': D_PX, 'sheets': sheets,
-             'keys': [[*cells[k]['t'], *cells[k]['d']] for k in keys],
-             'ids': {i: kidx[k] for k in keys for i in sorted(ship[k]['items']) if i in byid}}
+             'keys': [[*cells[k]['t'], *cells[k]['d']] for k in keys] + [[*cells[k][('p', f)], *cells[k]['d']] for f, k in pkeys],
+             'ids': {**ids, **prod}}
     (OUT / 'index.json').write_text(json.dumps(index, ensure_ascii=False, separators=(',', ':'), sort_keys=True))
     for p in OUT.glob('*.webp'):
         if p.name not in keep:
             p.unlink()
     shipped = [{'key': k, 'ja': ship[k]['ja'], 'desc': ship[k]['desc'], 'items': ship[k]['items'], 'roll': state(ship[k], vs)[1],
                 'seed': seed(k, state(ship[k], vs)[1]), 'prompt': desc_hash(ship[k]), 'model': model_of(gen_path(ship[k], state(ship[k], vs)[1])),
-                'checked': checked(ship[k], vs)} for k in keys]
+                'checked': checked(ship[k], vs)} for k in sorted(set(keys) | {k for _, k in pkeys})]
     (HERE / 'shipped.json').write_text(json.dumps(shipped, ensure_ascii=False, indent=0) + '\n')
     total = sum((OUT / n).stat().st_size for n in keep)
-    print(f'pack: {len(keys)} pictures for {len(index["ids"])} items, {len(sheets)} sheets, {total / 1e6:.2f} MB')
+    print(f'pack: {len(keys)} pictures for {len(ids)} foods and {len(prod)} products, {len(sheets)} sheets, {total / 1e6:.2f} MB')
 
 
 def _mend(name, byname):
@@ -709,6 +823,43 @@ def cmd_rows(src, dest, phase='1'):
         sys.exit(f'unknown names: {bad}')
     p.write_text(json.dumps(rows, ensure_ascii=False, indent=1) + '\n')
     print(f'{p.name}: {len(rows)} rows')
+
+
+def cmd_split(src, dest):
+    """Items that look different from their row's picture get their own ("id|id = name :: description" lines; dest:
+    table/<dest>.json, appended), or join another row's ("id|id = @key"): the ids leave their rows (a row keeps its key:
+    its key item never moves) and form a new row keyed by the first id. An unknown id, a key item or an id in two lines
+    fails."""
+    files = {p: json.loads(p.read_text()) for p in sorted((HERE / 'table').glob('*.json'))}
+    owner = {i: (p, r) for p, rs in files.items() for r in rs for i in r['items']}
+    keys = {r['key'] for rs in files.values() for r in rs}
+    p = HERE / 'table' / f'{dest}.json'
+    new = files.setdefault(p, [])
+    bad, seen = [], set()
+    for line in Path(src).read_text().splitlines():
+        if not line.strip() or line.startswith('#'):
+            continue
+        ids, rest = (x.strip() for x in line.split(' = ', 1))
+        ids = ids.split('|')
+        to = next((r for rs in files.values() for r in rs if '@' + r['key'] == rest), None)  # `= @key`: join that row
+        miss = [i for i in ids if i not in owner or i in seen or owner[i][1]['key'] == i.replace(':', '-')]
+        if miss or (to is None and (rest.startswith('@') or ids[0].replace(':', '-') in keys)):
+            bad += miss or ids[:1]
+            continue
+        for i in ids:
+            seen.add(i)
+            owner[i][1]['items'].remove(i)
+        if to is not None:
+            to['items'] += ids
+            continue
+        ja, desc = (x.strip() for x in rest.split(' :: ', 1))
+        new.append({'key': ids[0].replace(':', '-'), 'ja': ja, 'desc': desc, 'items': ids})
+        keys.add(new[-1]['key'])
+    if bad:
+        sys.exit(f'unknown, key or repeated ids: {bad}')
+    for q, rs in files.items():
+        q.write_text(json.dumps(rs, ensure_ascii=False, indent=1) + '\n')
+    print(f'{p.name}: {len(new)} rows')
 
 
 def cmd_attach(phase):

@@ -4,8 +4,7 @@
   "ja": "きくいも 生",
   "desc": "Jerusalem artichokes (kikuimo), knobbly pale brown ginger-like tubers, one cut showing crisp white flesh",
   "items": [
-   "mext:02001",
-   "mext:02041"
+   "mext:02001"
   ]
  },
  {
@@ -13,8 +12,7 @@
   "ja": "むらさきいも 皮なし 生",
   "desc": "purple sweet potato, a dark purple-skinned tuber cut to show vivid deep purple flesh",
   "items": [
-   "mext:02048",
-   "mext:02049"
+   "mext:02048"
   ]
  },
  {
@@ -23,11 +21,8 @@
   "desc": "large taro corms with hairy ringed brown skin, one cut showing pale lilac-white flesh",
   "items": [
    "mext:02050",
-   "mext:02051",
    "mext:02052",
-   "mext:02053",
-   "mext:02015",
-   "mext:02016"
+   "mext:02015"
   ]
  },
  {
@@ -35,8 +30,7 @@
   "ja": "ヤーコン 生",
   "desc": "yacon roots, long tapered brown tubers like sweet potatoes, one cut showing crisp pale yellow juicy flesh",
   "items": [
-   "mext:02054",
-   "mext:02055"
+   "mext:02054"
   ]
  },
  {
@@ -60,8 +54,7 @@
   "ja": "そらまめ 生",
   "desc": "fava beans (soramame), long fat green pods, one open showing large flat pale green beans in white fluff",
   "items": [
-   "mext:06124",
-   "mext:06125"
+   "mext:06124"
   ]
  },
  {
@@ -128,8 +121,7 @@
   "ja": "ぎんなん 生",
   "desc": "ginkgo nuts (ginnan), cream oval shells, a few cracked open showing glossy jade-green nuts, a few on a pine needle skewer",
   "items": [
-   "mext:05008",
-   "mext:05009"
+   "mext:05008"
   ]
  },
  {
@@ -210,8 +202,7 @@
   "ja": "アーティチョーク 生",
   "desc": "a globe artichoke, a round green flower bud of thick overlapping scaly bracts",
   "items": [
-   "mext:06001",
-   "mext:06002"
+   "mext:06001"
   ]
  },
  {
@@ -227,8 +218,7 @@
   "ja": "あさつき 生",
   "desc": "a bundle of asatsuki chives, very thin hollow bright green leaves with tiny white bulbs",
   "items": [
-   "mext:06003",
-   "mext:06004"
+   "mext:06003"
   ]
  },
  {
@@ -236,8 +226,7 @@
   "ja": "あしたば 生",
   "desc": "a bunch of ashitaba, bright green deeply divided leaves on long pale green stalks",
   "items": [
-   "mext:06005",
-   "mext:06006"
+   "mext:06005"
   ]
  },
  {
@@ -272,9 +261,7 @@
   "desc": "a bunch of tomyo pea shoots, tender green stems with small round leaves and curly tendrils",
   "items": [
    "mext:06019",
-   "mext:06329",
-   "mext:06330",
-   "mext:06331"
+   "mext:06329"
   ]
  },
  {
@@ -282,8 +269,7 @@
   "ja": "おかひじき 生",
   "desc": "okahijiki, a bunch of thin bright green succulent needle-like stems",
   "items": [
-   "mext:06030",
-   "mext:06031"
+   "mext:06030"
   ]
  },
  {
@@ -307,8 +293,7 @@
   "ja": "きく 生",
   "desc": "edible chrysanthemum petals, bright yellow and lilac petals loose and in a few whole flowers",
   "items": [
-   "mext:06058",
-   "mext:06059"
+   "mext:06058"
   ]
  },
  {
@@ -340,8 +325,7 @@
   "ja": "くわい 生",
   "desc": "kuwai arrowhead bulbs, round blue-grey bulbs each with a long curved sprout",
   "items": [
-   "mext:06078",
-   "mext:06079"
+   "mext:06078"
   ]
  },
  {
@@ -357,8 +341,7 @@
   "ja": "コールラビ 生",
   "desc": "a kohlrabi, a round pale green bulb with leaf stems sprouting from it, one cut showing white flesh",
   "items": [
-   "mext:06081",
-   "mext:06082"
+   "mext:06081"
   ]
  },
  {
@@ -446,8 +429,7 @@
   "ja": "生ずいき 生",
   "desc": "zuiki, fresh taro stalks, long thick spongy stalks with reddish-purple skin, cut pieces showing a pale sponge-like cross-section full of small holes",
   "items": [
-   "mext:06109",
-   "mext:06110"
+   "mext:06109"
   ]
  },
  {
@@ -471,8 +453,7 @@
   "ja": "せり 生",
   "desc": "a bunch of seri (Japanese parsley), small serrated bright green leaves on long slender stems with white roots",
   "items": [
-   "mext:06117",
-   "mext:06118"
+   "mext:06117"
   ]
  },
  {
@@ -480,8 +461,7 @@
   "ja": "生ぜんまい 若芽 生",
   "desc": "zenmai fern shoots, curled brown-green fiddleheads covered in reddish fluff, a few boiled long brown stems",
   "items": [
-   "mext:06120",
-   "mext:06121"
+   "mext:06120"
   ]
  },
  {
@@ -489,8 +469,7 @@
   "ja": "タアサイ 生",
   "desc": "tatsoi, a flat rosette of small round glossy dark green spoon-shaped leaves",
   "items": [
-   "mext:06126",
-   "mext:06127"
+   "mext:06126"
   ]
  },
  {
@@ -514,8 +493,7 @@
   "ja": "たらのめ 生",
   "desc": "taranome, the plump green spring buds of the angelica tree with reddish-brown bud scales",
   "items": [
-   "mext:06157",
-   "mext:06158"
+   "mext:06157"
   ]
  },
  {
@@ -531,8 +509,7 @@
   "ja": "つくし 生",
   "desc": "tsukushi horsetail shoots, slender pale brown segmented stems with cone-like caps",
   "items": [
-   "mext:06162",
-   "mext:06163"
+   "mext:06162"
   ]
  },
  {
@@ -540,8 +517,7 @@
   "ja": "つるむらさき 生",
   "desc": "tsurumurasaki (Malabar spinach), thick glossy dark green round leaves on red-purple stems",
   "items": [
-   "mext:06165",
-   "mext:06166"
+   "mext:06165"
   ]
  },
  {
@@ -549,8 +525,7 @@
   "ja": "つわぶき 生",
   "desc": "tsuwabuki stalks, long pale green-brown leaf stalks, peeled and cut",
   "items": [
-   "mext:06167",
-   "mext:06168"
+   "mext:06167"
   ]
  },
  {
@@ -558,8 +533,7 @@
   "ja": "とうがん 生",
   "desc": "a winter melon (togan), a large dusty pale green gourd, a wedge cut showing white flesh and seeds",
   "items": [
-   "mext:06173",
-   "mext:06174"
+   "mext:06173"
   ]
  },
  {
@@ -607,8 +581,7 @@
   "ja": "和種なばな 生",
   "desc": "nanohana, bunches of rapeseed shoots, green stems with tight green buds and a few bright yellow flowers",
   "items": [
-   "mext:06201",
-   "mext:06202"
+   "mext:06201"
   ]
  },
  {
@@ -640,8 +613,7 @@
   "ja": "茎にんにく 生",
   "desc": "garlic stems (ninniku no me), long smooth bright green stalks, a few cut short",
   "items": [
-   "mext:06224",
-   "mext:06225"
+   "mext:06224"
   ]
  },
  {
@@ -707,8 +679,7 @@
   "ja": "ビーツ 生",
   "desc": "beets, round deep red-purple roots, one cut showing magenta rings",
   "items": [
-   "mext:06243",
-   "mext:06244"
+   "mext:06243"
   ]
  },
  {
@@ -716,8 +687,7 @@
   "ja": "ふき 生",
   "desc": "fuki butterbur stalks, long pale green hollow stalks, some peeled and cut into short lengths",
   "items": [
-   "mext:06256",
-   "mext:06257"
+   "mext:06256"
   ]
  },
  {
@@ -725,8 +695,7 @@
   "ja": "ふきのとう 生",
   "desc": "fukinoto, round pale green butterbur flower buds wrapped in leafy bracts",
   "items": [
-   "mext:06258",
-   "mext:06259"
+   "mext:06258"
   ]
  },
  {
@@ -734,8 +703,7 @@
   "ja": "へちま 生",
   "desc": "a young sponge gourd (hechima), a long dark green ridged gourd, a few slices",
   "items": [
-   "mext:06265",
-   "mext:06266"
+   "mext:06265"
   ]
  },
  {
@@ -751,8 +719,7 @@
   "ja": "切りみつば 生",
   "desc": "a bunch of mitsuba, long thin pale green stems with three-lobed bright green leaves",
   "items": [
-   "mext:06274",
-   "mext:06275"
+   "mext:06274"
   ]
  },
  {
@@ -768,8 +735,7 @@
   "ja": "めキャベツ 生",
   "desc": "Brussels sprouts, small round green mini cabbages, one cut in half",
   "items": [
-   "mext:06283",
-   "mext:06284"
+   "mext:06283"
   ]
  },
  {
@@ -785,8 +751,7 @@
   "ja": "ゆりね 生",
   "desc": "a lily bulb (yurine), a round cream-white bulb of layered scales, a few scales loose",
   "items": [
-   "mext:06296",
-   "mext:06297"
+   "mext:06296"
   ]
  },
  {
@@ -811,8 +776,7 @@
   "ja": "リーキ 生",
   "desc": "a leek (poireau), a thick white stalk with flat blue-green leaves",
   "items": [
-   "mext:06308",
-   "mext:06309"
+   "mext:06308"
   ]
  },
  {
@@ -820,8 +784,7 @@
   "ja": "ルバーブ 生",
   "desc": "rhubarb, long red and green celery-like stalks",
   "items": [
-   "mext:06310",
-   "mext:06311"
+   "mext:06310"
   ]
  },
  {
@@ -829,8 +792,7 @@
   "ja": "わけぎ 生",
   "desc": "a bunch of wakegi, thin dark green onion leaves with small white bulbs",
   "items": [
-   "mext:06320",
-   "mext:06321"
+   "mext:06320"
   ]
  },
  {
@@ -846,8 +808,7 @@
   "ja": "生わらび 生",
   "desc": "warabi bracken shoots, slender green-brown stems with curled tips",
   "items": [
-   "mext:06324",
-   "mext:06325"
+   "mext:06324"
   ]
  },
  {
@@ -930,8 +891,7 @@
   "ja": "すだち 果皮 生",
   "desc": "sudachi, small round deep green citrus, one cut in half showing pale yellow flesh",
   "items": [
-   "mext:07078",
-   "mext:07079"
+   "mext:07078"
   ]
  },
  {
@@ -963,8 +923,7 @@
   "ja": "ゆず 果皮 生",
   "desc": "yuzu, round bumpy bright yellow citrus with a leaf, one cut in half",
   "items": [
-   "mext:07142",
-   "mext:07143"
+   "mext:07142"
   ]
  },
  {

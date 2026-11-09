@@ -148,9 +148,7 @@
   "ja": "いとこ煮",
   "desc": "itokoni, a small bowl of soupy simmered stew of tiny dice of daikon, carrot, taro, konnyaku and fried tofu with whole red-brown adzuki beans in pale broth",
   "items": [
-   "maff_kyodo:37_6_toyama",
-   "maff_kyodo:43_3_yamaguchi",
-   "maff_kyodo:itokoni_shiga"
+   "maff_kyodo:37_6_toyama"
   ]
  },
  {
@@ -199,10 +197,7 @@
   "ja": "いももち",
   "desc": "imo mochi, flat round pale white-cream patties of mashed taro and rice, lightly toasted with small brown scorched spots, plain, on a plate",
   "items": [
-   "maff_kyodo:38_14_gifu",
-   "maff_kyodo:44_20_tokushima",
-   "maff_kyodo:imomochi_hokkaido",
-   "maff_kyodo:imomochi_wakayama"
+   "maff_kyodo:38_14_gifu"
   ]
  },
  {
@@ -293,7 +288,6 @@
   "desc": "komo dofu, thick round slices of pale beige firm tofu with a porous spongy hole-riddled texture and faint straw-mat ridges on the outside, simmered and plain, on a long plate",
   "items": [
    "maff_kyodo:38_29_gifu",
-   "maff_kyodo:komo_toufu_tottori",
    "maff_kyodo:komodofu_ibaraki"
   ]
  },
@@ -489,8 +483,7 @@
   "desc": "barazushi, a round platter of vinegared rice scattered with a thick layer of fine yellow shredded egg, pink sweet fish flakes, red pickled ginger, chopped nori and green snow peas",
   "items": [
    "maff_kyodo:39_3_osaka",
-   "maff_kyodo:bara_zushi_kagawa",
-   "maff_kyodo:barazushi_kyoto"
+   "maff_kyodo:bara_zushi_kagawa"
   ]
  },
  {
@@ -595,9 +588,7 @@
   "ja": "こけらずし",
   "desc": "kokera zushi, square pressed sushi blocks of white vinegared rice topped thickly with fluffy pale beige sweet fish flakes and pink fish floss, on a white plate",
   "items": [
-   "maff_kyodo:40_20_hyogo",
-   "maff_kyodo:kokera_zushi_mie",
-   "maff_kyodo:kokerazushi_kochi"
+   "maff_kyodo:40_20_hyogo"
   ]
  },
  {
@@ -913,8 +904,7 @@
   "ja": "柚餅子",
   "desc": "yubeshi, Okayama yuzu sweet, soft chewy translucent white rice-flour cakes flecked with yuzu peel, shaped into knotted pillows and dusted white, on a black plate",
   "items": [
-   "maff_kyodo:41_9_okayama",
-   "maff_kyodo:yubeshi_kumamoto"
+   "maff_kyodo:41_9_okayama"
   ]
  },
  {
@@ -938,8 +928,7 @@
   "ja": "いぎす豆腐",
   "desc": "igisu tofu, a square block of firm pale greyish-tan seaweed and soybean jelly cut neatly with layered texture, topped with a dab of yellow miso, on a leaf in a small dish",
   "items": [
-   "maff_kyodo:42_12_hiroshima",
-   "maff_kyodo:igisu_dofu_ehime"
+   "maff_kyodo:42_12_hiroshima"
   ]
  },
  {
@@ -1036,8 +1025,7 @@
   "ja": "煮菜",
   "desc": "nija, a bowl of stir-simmered thin julienned daikon with fried tofu strips, green onion pieces and small dried sardines, light brown with soy",
   "items": [
-   "maff_kyodo:42_26_hiroshima",
-   "maff_kyodo:nina_niigata"
+   "maff_kyodo:42_26_hiroshima"
   ]
  },
  {
@@ -1176,8 +1164,7 @@
   "ja": "柏餅",
   "desc": "kashiwa mochi, a round white rice-flour cake filled with red bean paste, sandwiched between two round pale green sarutori-ibara leaves, on a dark blue plate",
   "items": [
-   "maff_kyodo:43_15_yamaguchi",
-   "maff_kyodo:kashiwa_mochi_fukui"
+   "maff_kyodo:43_15_yamaguchi"
   ]
  },
  {

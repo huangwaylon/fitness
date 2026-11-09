@@ -175,13 +175,21 @@ line (also a narrower key's way to drop a broader one's), and a key matching no 
 
 ## Pictures
 ごはん's food pictures are AI-generated イメージ (ours: Z-Image-Turbo, Apache-2.0, run locally) of generic foods and
-dishes, in one style (coloured pencil and watercolour on the paper colour): 5,026 pictures cover all 6,185 generic foods
-(907 sheets). Packaged products and custom foods keep their category's tile. `food-data/images/fi.py` (its docstring has the commands) does the following:
+dishes, in one style (coloured pencil and watercolour on the paper colour): 5,123 pictures cover all 6,185 generic foods,
+and 7,623 of the 13,916 packaged products show a subcategory's picture (19 of them products-only; 972 sheets). Custom
+foods and the other products keep their category's tile. `food-data/images/fi.py` (its docstring has the commands) does the following:
 - **Table** (`food-data/images/table/*.json`, hand-written): one row per visual concept, `{key, ja, desc, items}`. Variants
   that look alike share a row (脂身つき / なし, 和牛 / 輸入牛, a dish's sizes, the same dish in dishes and eatout); states
   that look different get their own (生 / 焼き, 乾 / ゆで). `desc` is a short English description of what the food looks
   like. A name alone draws the wrong food (白和え as a potato, ほうとう as bread). `propose <phase>` drafts the groups,
-  and `rows` turns `name|name = description` lines into rows.
+  and `rows` turns `name|name = description` lines into rows; `split` gives items their own row when they look
+  different (a 定食 apart from its main dish, おでん in its broth, a MEXT state, a prefecture's 郷土料理 from its MAFF page).
+- **Products** (`food-data/images/products.txt`; never a package photo): a product's picture is the row named by the
+  word one of its name's tokens ends with (干し芋, 食パン, のむヨーグルト, ドレッシング), or a products-only row (`sub.json`:
+  グミ, スコーン, あんみつ...). A word does not start inside a katakana word unless 3+ letters long (ショコラ is no コーラ);
+  `~` weak words (an ingredient, often a flavour) lose to a form word (博多明太子 おにぎり), `!` words count only in the
+  first token (堅あげポテト 九州しょうゆ), `^` only as a whole token (fruit, sauces); a token ending in 味 is a flavour.
+  About 1 in 15 is a lookalike (a fish 竜田揚げ drawn as chicken); a product no word names keeps its tile.
 - **Generation** (`gen`, the mflux tool's Python, about 15–50 s per image on a shared GPU): the prompt (`PROMPT`,
   `PROMPT_V`) with the row's `desc`, seed `crc32(key) % 100000 + roll`, 9 steps, 512 px. Images are cached in
   `$FOOD_IMG_RAW/gen/` (default ~/food-images-raw, outside the repo), so a re-run skips what exists and is resumable.
@@ -195,10 +203,11 @@ dishes, in one style (coloured pencil and watercolour on the paper colour): 5,02
   writes webp q72 sprite sheets into `app/static/food-img/`. Thumbnail sheets hold 4 × 4 cells of 128 px (webp q65) (rows, 40–64 px
   at 3×). Detail sheets hold 3 × 3 cells of 384 px (the amount's 160 px picture: one open fetches ~100 KB and decodes 5.3 MB). Thumbnail sheets are per search
   neighbourhood (`FAMILY`: a row whose name holds a common search word, e.g. カレー or 卵, sits with that word's family,
-  else with its category), so a common search's top 20 download about 100 KB of thumbnails; detail sheets go by category. Popular
-  items come first. `slots.json` is append-only, so a full sheet never changes. The names carry the content hash (cached for a year, `scripts/headers.ts`).
-  `index.json` maps each food id to its picture's two cells (`lib/food/images.ts` `imgOf`).
-- **Budget** (`lib/food/images.test.ts`): ≤ 1,100 files and 90 MB in food-img/ (projected over the whole table, within static/'s file cap, `lib/static-budget.ts`: 18,000 = Pages' 20,000 less the build's ~1,000 and a 1,000 margin), a common search's top 20 ≤ 120 KB of thumbnails on average (350 at most), ≤ 400 KB a sheet, ≤ 19,000 files under
+  else with its category), so a common search's top 20 download about 120 KB of thumbnails; detail sheets go by category. Popular
+  items come first. A product uses its picture's cell when that sits in its own name's neighbourhood, else a cell in a
+  product sheet (`p-*`, per neighbourhood: たまねぎドレッシング with the onions). `slots.json` is append-only, so a full sheet never changes. The names carry the content hash (cached for a year, `scripts/headers.ts`).
+  `index.json` (~485 KB, 130 KB gzipped) maps each food id to its picture's two cells (`lib/food/images.ts` `imgOf`).
+- **Budget** (`lib/food/images.test.ts`): ≤ 1,100 files and 90 MB in food-img/ (projected over the whole table, within static/'s file cap, `lib/static-budget.ts`: 18,000 = Pages' 20,000 less the build's ~1,000 and a 1,000 margin), a common search's top 20 ≤ 125 KB of thumbnails on average (~124 now; 120 before the products' pictures; 350 at most), ≤ 400 KB a sheet, ≤ 19,000 files under
   static/ (Cloudflare Pages takes 20,000 a deploy), and every generic food in a table row (a new catalogue item fails the test until it has one). The service worker caches the sheets on first use (`FOOD_IMG_CACHE`),
   never at install.
 

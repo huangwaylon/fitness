@@ -1,0 +1,135 @@
+[
+ {
+  "key": "sub-gummy",
+  "ja": "グミ",
+  "cat": "菓子・デザート",
+  "desc": "gummy candies, a small heap of chewy translucent fruit gummies in red, orange, yellow and green, glossy and lightly sugared, in a small dish",
+  "items": []
+ },
+ {
+  "key": "sub-shredded-cheese",
+  "ja": "シュレッドチーズ",
+  "cat": "乳製品",
+  "desc": "shredded cheese, a loose heap of fine pale yellow and white grated cheese strands in a small dish",
+  "items": []
+ },
+ {
+  "key": "sub-smoothie",
+  "ja": "スムージー",
+  "cat": "飲料",
+  "desc": "a glass of thick smooth fruit smoothie, opaque soft pinkish-purple, with a straw",
+  "items": []
+ },
+ {
+  "key": "sub-nabe-tsuyu",
+  "ja": "鍋つゆ",
+  "cat": "調味料",
+  "desc": "nabe soup base, a small donabe clay pot of steaming clear light brown soup broth with nothing in it, a wooden ladle resting on the rim",
+  "items": []
+ },
+ {
+  "key": "sub-scone",
+  "ja": "スコーン",
+  "cat": "菓子・デザート",
+  "desc": "scones, two round thick golden-brown English-style scones, one split open showing a crumbly pale inside, on a small plate",
+  "items": []
+ },
+ {
+  "key": "sub-green-curry",
+  "ja": "グリーンカレー",
+  "cat": "主菜",
+  "desc": "Thai green curry in a bowl, a creamy pale green coconut curry sauce with chicken pieces, eggplant chunks and a few basil leaves",
+  "items": []
+ },
+ {
+  "key": "sub-montblanc",
+  "ja": "モンブラン",
+  "cat": "菓子・デザート",
+  "desc": "a Mont Blanc cake, a small dome piped all over with thin swirled strands of pale brown chestnut cream, topped with a glossy candied chestnut, on a small plate",
+  "items": []
+ },
+ {
+  "key": "sub-baumkuchen",
+  "ja": "バウムクーヘン",
+  "cat": "菓子・デザート",
+  "desc": "baumkuchen, a thick round slice of layered tree cake showing many thin golden-brown rings, with a hole in the middle, on a small plate",
+  "items": []
+ },
+ {
+  "key": "sub-rusk",
+  "ja": "ラスク",
+  "cat": "菓子・デザート",
+  "desc": "rusks, a few thin crisp slices of twice-baked bread glazed with butter and sugar, golden with sparkling sugar crystals, on a small plate",
+  "items": []
+ },
+ {
+  "key": "sub-paella",
+  "ja": "パエリア",
+  "cat": "主食",
+  "desc": "paella in a shallow round pan, saffron-yellow rice with mussels, shrimp, squid rings, red pepper strips and a lemon wedge",
+  "items": []
+ },
+ {
+  "key": "sub-gapao",
+  "ja": "ガパオライス",
+  "cat": "主食",
+  "desc": "gapao rice, a plate of white rice beside glossy stir-fried minced chicken with holy basil and red pepper, topped with a fried egg with a crisp edge",
+  "items": []
+ },
+ {
+  "key": "sub-lasagna",
+  "ja": "ラザニア",
+  "cat": "主菜",
+  "desc": "lasagna, a square portion of layered flat pasta sheets with red meat sauce and creamy white sauce, the top of browned bubbling cheese, on a plate",
+  "items": []
+ },
+ {
+  "key": "sub-sake-toba",
+  "ja": "鮭とば",
+  "cat": "魚介",
+  "desc": "sake toba, thin strips of dried salted salmon, chewy dark reddish-brown flesh with silver skin edges, in a small dish",
+  "items": []
+ },
+ {
+  "key": "sub-tartar",
+  "ja": "タルタルソース",
+  "cat": "調味料",
+  "desc": "tartar sauce, a small dish of creamy white mayonnaise sauce flecked with chopped boiled egg, pickles and onion",
+  "items": []
+ },
+ {
+  "key": "sub-chinsuko",
+  "ja": "ちんすこう",
+  "cat": "菓子・デザート",
+  "desc": "chinsuko, a few small oblong Okinawan shortbread biscuits with ridged edges, pale golden and crumbly, on a small plate",
+  "items": []
+ },
+ {
+  "key": "sub-plant-milk",
+  "ja": "アーモンドミルク",
+  "cat": "飲料",
+  "desc": "a glass of almond milk, smooth opaque pale beige-white drink, a few whole almonds beside it",
+  "items": []
+ },
+ {
+  "key": "sub-dried-fruit",
+  "ja": "ドライフルーツ",
+  "cat": "果物",
+  "desc": "mixed dried fruit in a small dish, chewy pieces of dried mango, apricot, raisins, cranberries and pineapple",
+  "items": []
+ },
+ {
+  "key": "sub-fruit-mix",
+  "ja": "フルーツミックス",
+  "cat": "果物",
+  "desc": "mixed fruit cocktail in a glass bowl, cubes of peach, pear and pineapple with white grapes and a red cherry in light syrup",
+  "items": []
+ },
+ {
+  "key": "sub-anmitsu",
+  "ja": "あんみつ",
+  "cat": "菓子・デザート",
+  "desc": "anmitsu, a glass bowl of clear agar jelly cubes with a scoop of sweet red bean paste, white shiratama dumplings, a few red peas, mandarin and fruit pieces, a little dark brown kuromitsu syrup",
+  "items": []
+ }
+]

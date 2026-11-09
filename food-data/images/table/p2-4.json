@@ -626,7 +626,7 @@
  {
   "key": "maff_kyodo-shijimi_jiru_shiga",
   "ja": "しじみ汁",
-  "desc": "shijimi jiru, a red lacquered bowl of clear pale broth filled with many small open dark shijimi clams with olive and purple shells",
+  "desc": "shijimi jiru, a red lacquered bowl of cloudy light brown miso broth filled with many small open dark shijimi clams with olive and purple shells, a few chopped green onions on top",
   "items": [
    "maff_kyodo:shijimi_jiru_shiga",
    "maff_kyodo:shijimijiru_shimane"
@@ -1595,7 +1595,6 @@
   "desc": "zoni, clear soy broth in a red lacquered bowl with square white rice cakes, a bundle of green mochina greens and bonito flakes on top",
   "items": [
    "maff_kyodo:zoni_aichi",
-   "maff_kyodo:zouni_fukui",
    "maff_kyodo:zouni_mie"
   ]
  },

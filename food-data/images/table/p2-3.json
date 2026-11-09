@@ -550,9 +550,7 @@
   "ja": "柿の葉寿司",
   "desc": "kakinoha-zushi, small rectangular blocks of pressed sushi rice topped with vinegared mackerel, each wrapped in a green persimmon leaf, a couple unwrapped showing the fish, on a black plate",
   "items": [
-   "maff_kyodo:kakinoha_zushi_nara",
-   "maff_kyodo:kakinoha_zushi_tottori",
-   "maff_kyodo:kakinoha_zushi_wakayama"
+   "maff_kyodo:kakinoha_zushi_nara"
   ]
  },
  {
