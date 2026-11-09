@@ -1013,6 +1013,14 @@
         const p = e.at(x, z, lift), r = canvas!.getBoundingClientRect();
         return [r.left + p.sx, r.top + p.sy];
       },
+      /** Where model `id` is drawn (client px), `lift` above its base (`where`'s y is world height: the ground's under
+       *  it, 43 on the museum's tier, plus its perch); null: not in, or hidden. */
+      modelAt: (id: string, lift = 0): [number, number] | null => {
+        const p = e.things.where(id);
+        if (!p || p.hidden) return null;
+        const at = e.at(p.x, -p.z, p.y - feetOf(p.x, -p.z) + lift), r = canvas!.getBoundingClientRect();
+        return [r.left + at.sx, r.top + at.sy];
+      },
       ground: (cx: number, cy: number) => {
         const r = canvas!.getBoundingClientRect();
         return e.groundAt(cx - r.left, cy - r.top);

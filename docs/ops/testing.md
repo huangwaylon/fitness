@@ -145,6 +145,10 @@ npm run e2e -- e2e/csp.spec.ts --project=webkit --workers=8   # a worker a test 
 next page's WebGL context is lost as it's made (`getShaderPrecisionFormat` null: the island shows `[data-no3d]`, `is3d`
 times out), so at `--workers=1` every second test fails. Local only (CI's macOS runners pass): give each test its own
 worker.
+`kk-sync.spec.ts` in WebKit on a Mac: two local-only reds (CI's macOS runners pass all five). WebKit's audio clock
+stands still here (an `AudioContext` with an oscillator: `currentTime` 0 after 1.5 s; the decks' `currentTime` frozen),
+so the K.K. test's positions never pass 0.5 s or drift apart; and the tent test's third page loses its WebGL context as
+above (the tent shows `tent.failed`). Check them on the flake hunt.
 
 ## Before you push (a new or changed spec, or a change to the 3D engines, the tent or sync)
 1. `npm run verify` (~25 s): `checks` as CI runs it, all at once, the first red printed and the rest stopped: the lockfile

@@ -30,6 +30,8 @@ export type W3 = {
   view(): { camZ: number; zoom: number; pitch: number; camX: number };
   limits(): { min: number; max: number };
   client(x: number, z: number, lift?: number): [number, number];
+  /** Where model `id` is drawn, `lift` above its base (`where`'s y is world height, the raised ground's in it); null: not in, or hidden. */
+  modelAt(id: string, lift?: number): [number, number] | null;
   things(id: string): boolean;
   where(id: string): { x: number; y: number; z: number; hidden: boolean; model: string } | null;
   /** The ids of the lamps lit now (a stand-in's `s:` prefixed). */
@@ -104,11 +106,7 @@ export const sawIt = (page: Page, sel: string) => page.evaluate((s) => !!(window
 /** A tap on the 3D island's model `id` (`__world3d.where`), at its point `lift` above its feet, through the camera's
  *  own projection: the game's state says where it is, not the pixels. Polled until the model is in and shown. */
 export async function tapThing(page: Page, id: string, { lift = 0 }: { lift?: number } = {}) {
-  const at = () => page.evaluate(([id, lift]) => {
-    const w = (window as unknown as { __world3d: W3 }).__world3d, p = w.where(id);
-    if (!p || p.hidden) return null;
-    return w.client(p.x, -p.z, p.y + lift);
-  }, [id, lift] as const);
+  const at = () => page.evaluate(([id, lift]) => (window as unknown as { __world3d: W3 }).__world3d.modelAt(id, lift), [id, lift] as const);
   await expect.poll(at, { message: `the 3D model ${id}, shown` }).not.toBeNull();
   const [x, y] = (await at())!;
   await page.mouse.click(x, y);

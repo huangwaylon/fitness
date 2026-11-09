@@ -8,7 +8,7 @@ import { is3d } from './island';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
-type W3 = { client(x: number, z: number, lift?: number): [number, number]; where(id: string): { x: number; y: number; z: number; hidden: boolean } | null };
+type W3 = { modelAt(id: string, lift?: number): [number, number] | null; where(id: string): { x: number; y: number; z: number; hidden: boolean } | null };
 type Fx3 = { live(name: string): { x: number; z: number }[] };
 /** The 「！」s live over the bug (within 30 u of it): a villager's own 「！」 mark is a 'bang' part too (effects.ts mark),
  *  over its head wherever it stands (a partner surprised by the second roaming bug: two at the first look). */
@@ -31,9 +31,9 @@ async function drawn(page: Page): Promise<[number, number] | null> {
   return page.evaluate(() => {
     const w = (window as unknown as { __world3d: W3 }).__world3d;
     for (let n = 0; n < 60; n++) {
-      const p = w.where(`bug-${n}`);
-      if (p && !p.hidden) {
-        const [x, y] = w.client(p.x, -p.z, p.y);
+      const at = w.modelAt(`bug-${n}`);
+      if (at) {
+        const [x, y] = at;
         return x > 15 && x < innerWidth - 15 && y > 60 && y < innerHeight - 50 ? ([x, y] as [number, number]) : null;
       }
     }
