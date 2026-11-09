@@ -248,6 +248,13 @@ removal beats everything (ids never reused), else the latest `at`, then B over A
 each item's latest op and checks the item, bounds and the cap (30). Why: commutative and idempotent, so any arrival order
 reaches the same layout with no leader, and rows stay as few as the items.
 
+### A room's size never moves or drops a piece
+A home's room is one of NH's main rooms, 4 × 4, 6 × 6 or 8 × 8 (none set: 8 × 8), chosen by whoever may arrange it
+([The tent](design.md#the-tent)). A smaller room is a square of the largest one's tiles against its front wall, so a
+piece's tiles never change; a shrink that would leave a piece outside is refused until it's moved or put away (the
+rooms have no storage to send it to); a piece left outside by a race is kept, not drawn, until the room grows. Why:
+nothing is ever lost, and old phones and old rows keep working.
+
 ### Buildings are doors
 The tent, the homes, the museum and the shop open their own screens; a tap on the door walks my villager up to it, then
 in. Why: NH's buildings, and the back of the island gets reasons to visit.

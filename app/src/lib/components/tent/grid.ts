@@ -1,9 +1,12 @@
 // The tent's floor plan (docs/design.md "The tent"), pure: NH's largest room, the main room fully expanded, 8 × 8
-// tiles of 10 model units (RoomMdlFloor8x8: −40…40 across and deep), the door in the middle of the front edge. What
+// tiles of 10 model units (RoomMdlFloor8x8: −40…40 across and deep), the door in the middle of the front edge; a
+// smaller room (NH's 6 × 6 house, 4 × 4 tent: contract/tent.ts ROOM_SIZES) is a square of those tiles against the same
+// front wall, its middle tiles across (Bounds), so a piece's tiles never change with the size. What
 // may stand where (a piece on its whole tiles, inside the room, off the door's tiles, not over another piece; a rug
 // under the furniture, never over another rug) and how a villager walks (A* on a half-tile grid round the furniture,
 // the corners pulled straight).
 import { footprint, ITEMS } from './items.ts';
+import { ROOM_DEFAULT, type RoomSize } from '#lib/contract/tent.ts';
 
 /** Tiles across and deep. */
 export const ROOM = 8;
@@ -16,6 +19,31 @@ export const DOOR_TILES: readonly (readonly [number, number])[] = [[3, ROOM - 1]
 /** Where a villager comes in (just inside the door) and how far from the walls it keeps (model units). */
 export const DOOR_IN: readonly [number, number] = [0, HALF - 6];
 const WALL_PAD = 3;
+
+/** A room of `n` tiles a side within the largest one's tiles: x0 ≤ x < x1, z0 ≤ z < z1 (the front row, z 7, always). */
+export interface Bounds {
+  n: RoomSize;
+  x0: number;
+  x1: number;
+  z0: number;
+  z1: number;
+}
+export function boundsOf(n: RoomSize): Bounds {
+  const x0 = (ROOM - n) / 2;
+  return { n, x0, x1: x0 + n, z0: ROOM - n, z1: ROOM };
+}
+/** The largest room (a room with no size: every room before 2026-11-09). */
+export const FULL = boundsOf(ROOM_DEFAULT);
+/** The room's floor in model units: [x0, x1, z0, z1]. */
+export const rectOf = (b: Bounds): [number, number, number, number] => [-HALF + b.x0 * TILE, -HALF + b.x1 * TILE, -HALF + b.z0 * TILE, -HALF + b.z1 * TILE];
+/** The tiles along wall `f` (its spot's x: from the largest room's wall's left end as one faces it) that this room's
+ *  wall spans: the back and front ones its x tiles, the left one (its left end at the front) 0…n, the right one its z. */
+export function wallSpan(f: number, b: Bounds): [number, number] {
+  return f === 1 ? [ROOM - b.z1, ROOM - b.z0] : f === 2 ? [b.z0, b.z1] : [b.x0, b.x1];
+}
+/** Where wall `f`'s middle is along it (model units from the largest room's wall's left end): its spots' u less this
+ *  is across from the wall's own middle. */
+export const wallMid = (f: number, b: Bounds): number => ((wallSpan(f, b)[0] + wallSpan(f, b)[1]) / 2) * TILE;
 
 export type Facing = 0 | 1 | 2 | 3;
 /** A piece in the room: its item, its footprint's back-left tile (x across, z deep, after turning) and its facing. */
@@ -46,10 +74,10 @@ export function centreOf(s: Pick<Spot, 'item' | 'x' | 'z' | 'f'>): [number, numb
 }
 
 /** The footprint's back-left tile that puts a piece's centre nearest model point (px, pz), inside the room. */
-export function snapTo(item: string, f: Facing, px: number, pz: number): [number, number] {
+export function snapTo(item: string, f: Facing, px: number, pz: number, b: Bounds = FULL): [number, number] {
   const [w, d] = footprint(item, f);
   const x = Math.round((px + HALF) / TILE - w / 2), z = Math.round((pz + HALF) / TILE - d / 2);
-  return [Math.min(ROOM - w, Math.max(0, x)), Math.min(ROOM - d, Math.max(0, z))];
+  return [Math.min(b.x1 - w, Math.max(b.x0, x)), Math.min(b.z1 - d, Math.max(b.z0, z))];
 }
 
 const isRug = (item: string) => !!ITEMS[item]?.rug;
@@ -69,15 +97,17 @@ export function wallSpot(s: Pick<Spot, 'item' | 'x' | 'z'>): [number, number] {
   return [(s.x + w / 2) * TILE, WALL_FOOT + s.z * WALL_STEP + h / 2];
 }
 /** The step and tile that put a wall thing's middle nearest (u across, y up) on its wall. */
-export function wallSnap(item: string, u: number, y: number): [number, number] {
-  const m = ITEMS[item], w = m?.w ?? 1, h = m?.h ?? 5;
+export function wallSnap(item: string, u: number, y: number, wall = 0, b: Bounds = FULL): [number, number] {
+  const m = ITEMS[item], w = m?.w ?? 1, h = m?.h ?? 5, [lo, hi] = wallSpan(wall, b);
   const x = Math.round(u / TILE - w / 2), z = Math.round((y - h / 2 - WALL_FOOT) / WALL_STEP);
-  return [Math.min(ROOM - w, Math.max(0, x)), Math.min(wallSteps(item), Math.max(0, z))];
+  return [Math.min(hi - w, Math.max(lo, x)), Math.min(wallSteps(item), Math.max(0, z))];
 }
 /** Why a wall thing can't hang there (null: it can): off the wall, over the door, over another wall thing. */
-export function wallWhy(others: readonly Spot[], s: Spot): Why | null {
+export function wallWhy(others: readonly Spot[], s: Spot, b: Bounds = FULL): Why | null {
   const m = ITEMS[s.item], w = m?.w ?? 1, h = m?.h ?? 5;
-  if (s.x < 0 || s.x + w > ROOM || s.z < 0 || s.z > wallSteps(s.item) || s.f < 0 || s.f >= WALLS_N) return 'out';
+  if (s.f < 0 || s.f >= WALLS_N) return 'out';
+  const [lo, hi] = wallSpan(s.f, b);
+  if (s.x < lo || s.x + w > hi || s.z < 0 || s.z > wallSteps(s.item)) return 'out';
   const y0 = WALL_FOOT + s.z * WALL_STEP, y1 = y0 + h;
   // the front wall's door: tiles 3–4, three tiles high
   if (s.f === 3 && s.x < 5 && s.x + w > 3 && y0 < 30) return 'door';
@@ -199,9 +229,9 @@ export function slotTaken(spots: readonly Spot[], parent: string, sx: number, sz
 }
 
 /** Why a piece can't stand there (null: it can). `others`: what stands in the room (the piece itself, by id, left out). */
-export function placeWhy(others: readonly Spot[], s: Spot): Why | null {
+export function placeWhy(others: readonly Spot[], s: Spot, b: Bounds = FULL): Why | null {
   const [w, d] = footprint(s.item, s.f);
-  if (s.x < 0 || s.z < 0 || s.x + w > ROOM || s.z + d > ROOM) return 'out';
+  if (s.x < b.x0 || s.z < b.z0 || s.x + w > b.x1 || s.z + d > b.z1) return 'out';
   const mine = tilesOf(s);
   const rug = isRug(s.item);
   if (!rug && mine.some(([x, z]) => DOOR_TILES.some(([dx, dz]) => dx === x && dz === z))) return 'door';
@@ -215,11 +245,11 @@ export function placeWhy(others: readonly Spot[], s: Spot): Why | null {
 }
 
 /** The free spot nearest (px, pz) for a new piece (null: the room has none), turned `f`. */
-export function nearestFree(others: readonly Spot[], item: string, f: Facing, px: number, pz: number): [number, number] | null {
+export function nearestFree(others: readonly Spot[], item: string, f: Facing, px: number, pz: number, b: Bounds = FULL): [number, number] | null {
   const [w, d] = footprint(item, f);
   let best: [number, number] | null = null, bd = Infinity;
-  for (let x = 0; x + w <= ROOM; x++) for (let z = 0; z + d <= ROOM; z++) {
-    if (placeWhy(others, { item, x, z, f })) continue;
+  for (let x = b.x0; x + w <= b.x1; x++) for (let z = b.z0; z + d <= b.z1; z++) {
+    if (placeWhy(others, { item, x, z, f }, b)) continue;
     const [cx, cz] = centreOf({ item, x, z, f });
     const dd = (cx - px) ** 2 + (cz - pz) ** 2;
     if (dd < bd) (bd = dd), (best = [x, z]);
@@ -234,9 +264,11 @@ const CELL = TILE / 2;
 const N = ROOM * 2;
 export type Pt = readonly [number, number];
 
-/** Which half-tile cells are blocked (furniture, not rugs). */
-export function blocked(spots: readonly Spot[]): Uint8Array {
+/** Which half-tile cells are blocked (furniture, not rugs; and outside a smaller room). */
+export function blocked(spots: readonly Spot[], room: Bounds = FULL): Uint8Array {
   const b = new Uint8Array(N * N);
+  for (let cx = 0; cx < N; cx++) for (let cz = 0; cz < N; cz++)
+    if (cx < room.x0 * 2 || cx >= room.x1 * 2 || cz < room.z0 * 2 || cz >= room.z1 * 2) b[cx * N + cz] = 1;
   for (const s of spots) {
     if (isRug(s.item) || s.on || isWallItem(s.item)) continue;
     for (const [x, z] of tilesOf(s)) for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) {
@@ -252,10 +284,28 @@ const cellOf = (p: Pt): [number, number] => [
 ];
 const mid = (c: readonly [number, number]): [number, number] => [-HALF + (c[0] + 0.5) * CELL, -HALF + (c[1] + 0.5) * CELL];
 /** A point kept inside the room, off the walls. */
-export const clampIn = (p: Pt): [number, number] => [
-  Math.min(HALF - WALL_PAD, Math.max(-HALF + WALL_PAD, p[0])),
-  Math.min(HALF - WALL_PAD, Math.max(-HALF + WALL_PAD, p[1]))
-];
+export const clampIn = (p: Pt, b: Bounds = FULL): [number, number] => {
+  const [x0, x1, z0, z1] = rectOf(b);
+  return [Math.min(x1 - WALL_PAD, Math.max(x0 + WALL_PAD, p[0])), Math.min(z1 - WALL_PAD, Math.max(z0 + WALL_PAD, p[1]))];
+};
+/** Whether a model point is on this room's floor. */
+export const onFloor = (p: Pt, b: Bounds = FULL): boolean => {
+  const [x0, x1, z0, z1] = rectOf(b);
+  return p[0] >= x0 && p[0] <= x1 && p[1] >= z0 && p[1] <= z1;
+};
+/** The pieces a room of these bounds can't hold where they stand (a shrink's: TentEdit keeps it from leaving one
+ *  outside): on the floor past its edge, on a wall past its span; a thing on a top goes with its piece. */
+export function outside(spots: readonly Spot[], b: Bounds): Spot[] {
+  return spots.filter((s) => {
+    if (s.on) return false;
+    if (isWallItem(s.item)) {
+      const [lo, hi] = wallSpan(s.f, b);
+      return s.x < lo || s.x + (ITEMS[s.item]?.w ?? 1) > hi;
+    }
+    const [w, d] = footprint(s.item, s.f);
+    return s.x < b.x0 || s.z < b.z0 || s.x + w > b.x1 || s.z + d > b.z1;
+  });
+}
 
 /** Whether the segment a → b crosses no blocked cell (sampled every quarter cell). */
 function clear(b: Uint8Array, a: Pt, c: Pt): boolean {
@@ -277,9 +327,9 @@ function clear(b: Uint8Array, a: Pt, c: Pt): boolean {
  * nearest reachable point to it when `to` is under a piece or walled off), [] when it's there already. A* over the
  * half-tile cells (8 ways, no corner cutting), then the corners pulled straight where the line is clear.
  */
-export function walkPath(spots: readonly Spot[], from: Pt, to: Pt): Pt[] {
-  const b = blocked(spots);
-  const goal = clampIn(to);
+export function walkPath(spots: readonly Spot[], from: Pt, to: Pt, room: Bounds = FULL): Pt[] {
+  const b = blocked(spots, room);
+  const goal = clampIn(to, room);
   const s = cellOf(from);
   let g = cellOf(goal);
   const idx = (c: readonly [number, number]) => c[0] * N + c[1];

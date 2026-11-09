@@ -1,5 +1,5 @@
 // The tent's room in 3D (docs/design.md "The tent"): three.js, loaded only when the tent opens (its own chunk). NH's
-// largest room (8 × 8 tiles, grid.ts) under NH's fixed, slightly top-down room camera and a warm interior light: the
+// largest room (8 × 8 tiles, grid.ts) or a smaller one (its size: grid.ts Bounds, the walls rebuilt round it) under NH's fixed, slightly top-down room camera and a warm interior light: the
 // floor and three walls in NH's wallpaper and flooring, the furniture as the glTFs scripts/room-models.ts made, the
 // villagers NH's own 3D models where they have one (villager3d/: the island's; walking, sitting, lying, a hop, their
 // blinks), else billboards of their official renders, each with a soft round shadow. Drawn on demand: a frame only when something changed or moves (a walk, a
@@ -13,7 +13,7 @@ import {
 import { cubicOut } from '#lib/math.ts';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
-import { HALF, ROOM, TILE, centreOf, isSurface, isWallItem, onTop, wallSpot, type Facing, type Pt, type Spot } from './grid.ts';
+import { FULL, HALF, TILE, centreOf, isSurface, isWallItem, onTop, rectOf, wallMid, wallSpot, type Bounds, type Facing, type Pt, type Spot } from './grid.ts';
 import { footprint, floorUrl, ITEMS, modelUrl, wallUrl } from './items.ts';
 import { VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
 import { hitsSkinned } from '../player3d/hit.ts';
@@ -103,6 +103,10 @@ export interface Tent {
   /** The camera at rest (no framing or view easing under way): the e2e's taps aim then. */
   still(): boolean;
   surfaces(wall: string, floor: string): void;
+  /** The room's size (grid.ts Bounds: its floor, walls and the camera's framing fitted to it). */
+  size(b: Bounds): void;
+  /** These pieces' footprints glow red a moment (what a shrink would leave outside). */
+  warn(list: readonly Spot[]): void;
   /** What stands in the room (by id: new ones load and pop in, gone ones go, moved ones move). */
   pieces(list: readonly Placed[]): void;
   /** Hide these pieces where they stand (the one I'm moving, the ones the partner holds). */
@@ -381,19 +385,21 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   };
   const floorMat = new MeshLambertMaterial({ map: swatch(0xd8c4a0) });
   const wallMat = new MeshLambertMaterial({ map: swatch(0xe8dcc6) });
-  const floor = new Mesh(new PlaneGeometry(ROOM * TILE, ROOM * TILE), floorMat);
-  floor.rotation.x = -Math.PI / 2;
-  floor.receiveShadow = true;
   const trimMat = new MeshLambertMaterial({ color: 0x5b4330 });
   const capMat = new MeshLambertMaterial({ color: 0xf1e6cf });
+  const gridMat = new LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.45, depthWrite: false });
   const T = 2;
-  const L = ROOM * TILE;
-  /** A wall's face from u0 to u1 along it and y0 to y1 up, its UVs the wallpaper's (two tiles across, the wall's height). */
+  /** The room's size, its floor's rect in model units (x0, x1, z0, z1) and middle, its side (model units). */
+  let bounds: Bounds = FULL;
+  let floorRect = rectOf(bounds), L = bounds.n * TILE;
+  const midX = () => (floorRect[0] + floorRect[1]) / 2, midZ = () => (floorRect[2] + floorRect[3]) / 2;
+  /** A wall's face from u0 to u1 along it (its own middle at 0) and y0 to y1 up, its UVs the wallpaper's (two tiles
+   *  across, the wall's height). */
   const wallFace = (u0: number, u1: number, y0: number, y1: number) => {
     const g = new PlaneGeometry(u1 - u0, y1 - y0);
     g.translate((u0 + u1) / 2, (y0 + y1) / 2, 0);
     const p = g.attributes.position, uv = g.attributes.uv;
-    for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) + HALF) / (2 * TILE), p.getY(i) / WALL_H);
+    for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) + L / 2) / (2 * TILE), p.getY(i) / WALL_H);
     return g;
   };
   interface Wall {
@@ -402,10 +408,12 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     n: [number, number];
   }
   const walls: Wall[] = [];
-  /** A wall along u (−HALF…HALF), facing in; `door`: the front one's opening (two tiles wide, three high). */
+  /** A wall along u (its middle at 0, L long), facing in; `door`: the front one's opening (two tiles wide, three high,
+   *  in its middle: the front wall's middle is the largest room's in every size). */
   function wall(n: [number, number], door = false): Wall {
     const g = new Group();
-    const faces = door ? [wallFace(-HALF, -TILE, 0, WALL_H), wallFace(TILE, HALF, 0, WALL_H), wallFace(-TILE, TILE, 30, WALL_H)] : [wallFace(-HALF, HALF, 0, WALL_H)];
+    const h = L / 2;
+    const faces = door ? [wallFace(-h, -TILE, 0, WALL_H), wallFace(TILE, h, 0, WALL_H), wallFace(-TILE, TILE, 30, WALL_H)] : [wallFace(-h, h, 0, WALL_H)];
     const index = walls.length;
     for (const f of faces) {
       const m = new Mesh(f, wallMat);
@@ -420,36 +428,27 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     back.position.set(0, WALL_H / 2, -T / 2 - 0.15);
     g.add(top, back);
     // placed on its side of the room, turned to face in
-    g.position.set(-n[0] * -HALF, 0, -n[1] * -HALF);
+    g.position.set(midX() + n[0] * h, 0, midZ() + n[1] * h);
     g.rotation.y = Math.atan2(-n[0], -n[1]);
     const w = { g, n };
     walls.push(w);
     scene.add(g);
     return w;
   }
-  wall([0, -1]);
-  wall([-1, 0]);
-  wall([1, 0]);
-  wall([0, 1], true);
-  const base = new Mesh(new BoxGeometry(L + T * 2 + 0.6, 4, L + T * 2 + 0.6), trimMat);
-  base.position.set(0, -2.01, 0);
+  const floor = new Mesh(new PlaneGeometry(1, 1), floorMat);
+  floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
+  const base = new Mesh(new BoxGeometry(1, 4, 1), trimMat);
   const mat = new Mesh(new PlaneGeometry(18, 6.5), new MeshLambertMaterial({ map: matTexture(), transparent: true }));
   mat.rotation.x = -Math.PI / 2;
   mat.position.set(0, 0.06, HALF - 3.6);
   mat.receiveShadow = true;
   mat.renderOrder = 1;
   scene.add(floor, base, mat);
-  /** The walls between the camera and the room go (its side's outward normal toward the camera); at the eyes all stand,
-   *  the ceiling and the door's closed door with them (seen from above the ceiling is its back: culled, nothing drawn). */
-  function cutaway() {
-    const cx = Math.sin(view.az), cz = Math.cos(view.az), inside = fp.inside();
-    for (const w of walls) w.g.visible = inside || w.n[0] * cx + w.n[1] * cz < 0.25;
-    ceiling.visible = door.visible = fp.mix > 0;
-  }
   // the ceiling at the walls' top (facing down) and a closed door in the doorway (facing in): the first person's only
   // (unlit: the room's lights all shine down, so a lit ceiling was a muddy brown; dimmed with the room's light)
   const ceilingMat = new MeshBasicMaterial({ map: beams() });
-  const ceiling = new Mesh(new PlaneGeometry(L + 0.2, L + 0.2), ceilingMat);
+  const ceiling = new Mesh(new PlaneGeometry(1, 1), ceilingMat);
   ceiling.rotation.x = Math.PI / 2;
   ceiling.position.y = WALL_H;
   const door = new Mesh(new PlaneGeometry(2 * TILE, 30), new MeshLambertMaterial({ color: 0x7a5234 }));
@@ -457,6 +456,51 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   door.rotation.y = Math.PI;
   ceiling.visible = door.visible = false;
   scene.add(ceiling, door);
+  // ---- the grid (edit mode) ----
+  const gridLines = new LineSegments(new BufferGeometry(), gridMat);
+  gridLines.visible = false;
+  gridLines.renderOrder = 2;
+  scene.add(gridLines);
+  /** The room's shell for its size: the floor, its base and the ceiling sized, the walls built round it (what hangs on
+   *  them moved onto the new ones), the grid over its tiles. */
+  function shell(b: Bounds) {
+    bounds = b;
+    floorRect = rectOf(b);
+    L = b.n * TILE;
+    const [x0, x1, z0, z1] = floorRect;
+    floor.scale.set(L, L, 1);
+    floor.position.set(midX(), 0, midZ());
+    base.scale.set(L + T * 2 + 0.6, 1, L + T * 2 + 0.6);
+    base.position.set(midX(), -2.01, midZ());
+    ceiling.scale.set(L + 0.2, L + 0.2, 1);
+    ceiling.position.set(midX(), WALL_H, midZ());
+    const was = walls.splice(0);
+    for (const [i, [n, d]] of ([[[0, -1], false], [[-1, 0], false], [[1, 0], false], [[0, 1], true]] as [[number, number], boolean][]).entries()) {
+      const w = wall(n, d);
+      const old = was[i];
+      if (!old) continue;
+      w.g.visible = old.g.visible;
+      // its wall things and a ghost on it, in the new wall's frame (their u is the largest room's: placeRoot)
+      for (const c of [...old.g.children]) if (c.userData.wall === undefined && !(c as Mesh).isMesh) w.g.add(c);
+      for (const c of [...old.g.children]) if (c === foot || c === ring) w.g.add(c);
+      old.g.removeFromParent();
+      old.g.traverse((o) => (o as Mesh).geometry?.dispose());
+    }
+    const v: number[] = [];
+    for (let i = b.x0; i <= b.x1; i++) v.push(-HALF + i * TILE, 0.4, z0, -HALF + i * TILE, 0.4, z1);
+    for (let i = b.z0; i <= b.z1; i++) v.push(x0, 0.4, -HALF + i * TILE, x1, 0.4, -HALF + i * TILE);
+    gridLines.geometry.dispose();
+    gridLines.geometry = new BufferGeometry().setAttribute('position', new Float32BufferAttribute(v, 3));
+    // a floor is four tiles to a texture's repeat
+    if (floorMat.map) floorMat.map.repeat.set(b.n / 4, b.n / 4);
+  }
+  /** The walls between the camera and the room go (its side's outward normal toward the camera); at the eyes all stand,
+   *  the ceiling and the door's closed door with them (seen from above the ceiling is its back: culled, nothing drawn). */
+  function cutaway() {
+    const cx = Math.sin(view.az), cz = Math.cos(view.az), inside = fp.inside();
+    for (const w of walls) w.g.visible = inside || w.n[0] * cx + w.n[1] * cz < 0.25;
+    ceiling.visible = door.visible = fp.mix > 0;
+  }
 
   function surfaces(wallCode: string, fl: string) {
     const load = (url: string, m: MeshLambertMaterial, rx: number, ry: number) =>
@@ -473,25 +517,10 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       }, () => {});
     // a wallpaper's tiling is in the walls' UVs; a floor is four tiles each way
     if (wallCode !== cur.wall) void load(wallUrl((cur.wall = wallCode)), wallMat, 1, 1);
-    if (fl !== cur.floor) void load(floorUrl((cur.floor = fl)), floorMat, ROOM / 4, ROOM / 4);
+    if (fl !== cur.floor) void load(floorUrl((cur.floor = fl)), floorMat, bounds.n / 4, bounds.n / 4);
   }
   const cur = { wall: '', floor: '' };
 
-  // ---- the grid (edit mode) ----
-  const gridLines = (() => {
-    const v: number[] = [];
-    for (let i = 0; i <= ROOM; i++) {
-      const p = -HALF + i * TILE;
-      v.push(p, 0.4, -HALF, p, 0.4, HALF, -HALF, 0.4, p, HALF, 0.4, p);
-    }
-    const g = new BufferGeometry();
-    g.setAttribute('position', new Float32BufferAttribute(v, 3));
-    const l = new LineSegments(g, new LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.45, depthWrite: false }));
-    l.visible = false;
-    l.renderOrder = 2;
-    return l;
-  })();
-  scene.add(gridLines);
 
   // ---- the furniture ----
   /** The items this room has asked for (each counted once: useModel), handed back on dispose. */
@@ -517,7 +546,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     // a wall thing in its wall's own frame (the wall's group: it goes with the wall when the wall is cut away)
     if (isWallItem(s.item)) {
       const [u, y] = wallSpot(s);
-      root.position.set(-HALF + u, y, 0.2 + lift * 0.3);
+      root.position.set(u - wallMid(s.f, bounds), y, 0.2 + lift * 0.3);
       root.rotation.set(0, 0, 0);
       return;
     }
@@ -677,17 +706,18 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       const wg = walls[g.f]?.g ?? scene, m = ITEMS[g.item], w = (m?.w ?? 1) * TILE, h = m?.h ?? 5;
       const [u, y] = wallSpot(g);
       for (const o of [ghostRoot, foot, ring]) if (o.parent !== wg) wg.add(o);
-      ghostRoot.position.set(-HALF + u, y, 0.2);
+      const um = u - wallMid(g.f, bounds);
+      ghostRoot.position.set(um, y, 0.2);
       ghostRoot.rotation.set(0, 0, 0);
       ghostY = y;
       foot.rotation.set(0, 0, 0);
       foot.scale.set(w - 0.8, h + 1, 1);
-      foot.position.set(-HALF + u, y, 0.25);
+      foot.position.set(um, y, 0.25);
       footMat.color.set(g.ok ? 0x78dc78 : 0xf05a50);
       ring.geometry.dispose();
       const hw = w / 2 - 0.4, hh = (h + 1) / 2;
       ring.geometry = new BufferGeometry().setAttribute('position', new Float32BufferAttribute([-hw, -hh, 0, hw, -hh, 0, hw, -hh, 0, hw, hh, 0, hw, hh, 0, -hw, hh, 0, -hw, hh, 0, -hw, -hh, 0], 3));
-      ring.position.set(-HALF + u, y, 0.3);
+      ring.position.set(um, y, 0.3);
       ring.rotation.set(0, 0, 0);
       if (ghostKey !== g.item) {
         ghostKey = g.item;
@@ -809,6 +839,44 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     nope.visible = true;
     nopeT = now();
     invalidate();
+  }
+  /** What a shrink would leave outside: each one's footprint (a wall thing's outline on its wall) pulsing red a while. */
+  // (drawn over the piece itself: its footprint is under it, and it's the piece that's being pointed at)
+  const warnMat = nopeMat.clone();
+  warnMat.depthTest = false;
+  const warned: Mesh[] = [];
+  let warnT = 0;
+  const WARN_MS = 2600;
+  function warn(list: readonly Spot[]) {
+    for (const m of warned.splice(0)) m.removeFromParent();
+    for (const s of list) {
+      const m = new Mesh(nope.geometry, warnMat);
+      m.renderOrder = 3;
+      if (isWallItem(s.item)) {
+        const it = ITEMS[s.item], [u, y] = wallSpot(s);
+        m.scale.set((it?.w ?? 1) * TILE - 0.8, (it?.h ?? 5) + 1, 1);
+        m.position.set(u - wallMid(s.f, bounds), y, 0.35);
+        (walls[s.f]?.g ?? scene).add(m);
+      } else {
+        const [w, d] = footprint(s.item, s.f), [cx, cz] = centreOf(s);
+        m.rotation.x = -Math.PI / 2;
+        m.scale.set(w * TILE - 0.8, d * TILE - 0.8, 1);
+        m.position.set(cx, 0.6, cz);
+        m.renderOrder = 4;
+        scene.add(m);
+      }
+      warned.push(m);
+    }
+    warnT = now();
+    invalidate();
+  }
+  /** The room's size: its shell rebuilt, the camera's target its floor's middle, the framing fitted again. */
+  function size(b: Bounds) {
+    if (b.n === bounds.n) return;
+    shell(b);
+    target.set(midX(), 0, midZ());
+    tallOnes();
+    fit();
   }
   function onHeld(cx: number, cy: number, slop: number): 'on' | 'near' | null {
     if (!ghostRoot.visible) return null;
@@ -1176,9 +1244,10 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   function framingFor(): [number, number] {
     const W = canvas.clientWidth || 1, H = canvas.clientHeight || 1;
     camera.aspect = W / H;
+    const [x0, x1, z0, z1] = floorRect;
     const corners = [
-      [-HALF - 2, 0, HALF + 2], [HALF + 2, 0, HALF + 2], [-HALF - 2, WALL_H + 1, -HALF - 2], [HALF + 2, WALL_H + 1, -HALF - 2],
-      [-HALF - 2, WALL_H + 1, HALF], [HALF + 2, WALL_H + 1, HALF], [0, -4, HALF + 2]
+      [x0 - 2, 0, z1 + 2], [x1 + 2, 0, z1 + 2], [x0 - 2, WALL_H + 1, z0 - 2], [x1 + 2, WALL_H + 1, z0 - 2],
+      [x0 - 2, WALL_H + 1, z1], [x1 + 2, WALL_H + 1, z1], [midX(), -4, z1 + 2]
     ].map(([x, y, z]) => new Vector3(x, y, z));
     const bandH = Math.max(0.3 * H, H - insets.top - insets.bottom);
     const was = { ...view, baseD, shiftY };
@@ -1309,7 +1378,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   /** A card's eyes (a render has no bones), and a piece taller than this stands in the eye's way. */
   const EYE_H = VILLAGER_H * 0.7;
   /** The floor a wall's depth in from each wall (what hangs on one stands out of it), and the pieces taller than the eye. */
-  const ROOM_IN: Rect[] = [{ x0: -HALF + 1, x1: HALF - 1, z0: -HALF + 1, z1: HALF - 1 }], NONE: Rect[] = [];
+  const roomIn = (): Rect[] => [{ x0: floorRect[0] + 1, x1: floorRect[1] - 1, z0: floorRect[2] + 1, z1: floorRect[3] - 1 }], NONE: Rect[] = [];
   let tall: Rect[] = [];
   function tallOnes() {
     tall = [];
@@ -1336,7 +1405,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     const P = w.pose;
     eyeT.copy(anchor(t, w.path ? null : [w.pos[0], w.pos[1], w.yaw, w.posing ? 1 : 0, P ? P.at[0] : -1e9, P ? P.at[1] : -1e9], () => headOf(w)));
     // (seated, the seat is under it: only the walls)
-    clampEye(eyeT.x, eyeT.z, ROOM_IN, w.pose ? NONE : tall, EYE_MARGIN, eyeXZ);
+    clampEye(eyeT.x, eyeT.z, roomIn(), w.pose ? NONE : tall, EYE_MARGIN, eyeXZ);
     eyeT.x = eyeXZ[0];
     eyeT.z = eyeXZ[1];
     return eyeT;
@@ -1367,7 +1436,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   function floorAt(cx: number, cy: number): [number, number] | null {
     toNdc(cx, cy);
     const p = ray.ray.intersectPlane(ground, new Vector3());
-    if (!p || Math.abs(p.x) > HALF || Math.abs(p.z) > HALF) return null;
+    if (!p || p.x < floorRect[0] || p.x > floorRect[1] || p.z < floorRect[2] || p.z > floorRect[3]) return null;
     return [p.x, p.z];
   }
   /** The wall under client px (one that shows), and where on it: across from its left end and up (model units). */
@@ -1378,7 +1447,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     const h = ray.intersectObjects(faces, false)[0];
     if (!h) return null;
     const wi = h.object.userData.wall as number, local = walls[wi].g.worldToLocal(h.point.clone());
-    return { wall: wi, u: local.x + HALF, y: local.y };
+    return { wall: wi, u: local.x + wallMid(wi, bounds), y: local.y };
   }
   /** Drawn: not hidden, and (a wall thing) its wall not cut away. */
   const shown = (l: { root: Group; spot: Spot }) => l.root.visible && (!isWallItem(l.spot.item) || !!walls[l.spot.f]?.g.visible);
@@ -1608,6 +1677,12 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       handle.position.copy(ghostRoot.localToWorld(new Vector3(0, wallGhost ? (ITEMS[ghostKey]?.h ?? 5) / 2 + 3 : (ITEMS[ghostKey]?.h ?? 8) + 3.2, wallGhost ? 1 : 0)));
       handle.visible = !!ghostBody;
     }
+    if (warned.length) {
+      const k = (t - warnT) / WARN_MS;
+      warnMat.opacity = k < 1 ? 0.35 + 0.3 * Math.cos(k * Math.PI * 6) ** 2 : 0;
+      if (k >= 1) for (const m of warned.splice(0)) m.removeFromParent();
+      else more = true;
+    }
     if (nope.visible) {
       const k = (t - nopeT) / 700;
       nopeMat.opacity = k < 1 ? 0.6 * (1 - k * k) : 0;
@@ -1772,12 +1847,13 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   };
   document.addEventListener('visibilitychange', onVis);
 
+  shell(FULL);
   fit();
   night(0);
   warmSoon();
 
   return {
-    resize, still, surfaces, pieces, hide, held, pick, wallAt, ghost, onHeld, nudge, flash, surfacePoint, grid, bump, room, pose, night, villager,
+    resize, still, surfaces, size, warn, pieces, hide, held, pick, wallAt, ghost, onHeld, nudge, flash, surfacePoint, grid, bump, room, pose, night, villager,
     firstPerson, inView, onDrawn: (fn: (() => void) | null) => void (drawn = fn),
     look(dx, dy) {
       fp.look(dx, dy, canvas.clientWidth);
