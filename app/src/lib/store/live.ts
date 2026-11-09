@@ -293,7 +293,7 @@ export class LiveBackend implements Backend {
    */
   send(type: EventType, data: Record<string, unknown>, opts: SendOptions): SendResult {
     const holdMs = opts.holdMs ?? 0;
-    const ev = enqueue(type, data, Date.now(), holdMs);
+    const ev = enqueue(type, data, Date.now(), holdMs, opts.group);
     this.#host.changed();
     void this.#flush(true);
     if (holdMs <= 0) return { ok: true };
@@ -326,8 +326,9 @@ export class LiveBackend implements Backend {
     // Only events the server acked stay on screen until the snapshot has them (flush keeps them: ackedEvents()). An
     // event that left the queue because it was undone mid-flush must not come back.
     if (r.dropped.length) {
-      // (a ききみみ game's row refused, by a relay from before it: kept on this phone for きろく, no toast; docs/kikimimi.md "Storage")
-      if (r.dropped.some((ev) => ev.type !== 'listen')) toasts.show(t('state.saveFailed'), undefined, { code: 'save-failed', reaction: 'sheepishness' });
+      // (a ききみみ game's row refused, by a relay from before it: kept on this phone for きろく, no toast; docs/kikimimi.md "Storage";
+      // a buy of a piece I have already, my other phone's: nothing lost, no toast)
+      if (r.dropped.some((ev) => ev.type !== 'listen' && !(ev.type === 'buy' && ev.detail === 'owned'))) toasts.show(t('state.saveFailed'), undefined, { code: 'save-failed', reaction: 'sheepishness' });
       this.#host.changed();
     }
     if (r.error === 'unauthorized') {

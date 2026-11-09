@@ -120,7 +120,7 @@ preflight; a Shortcut's `application/json` is fine), `{key, action, ...}`. Every
 |---|---|---|
 | `ingest` | the Shortcut's fields ([Ingest](#ingest)) | `{ok, metrics, skipped?, warnings?}` |
 | `event` | `id, type, data` | `{ok, duplicate?}`: a repeated `id` is acked as a duplicate before any check (a retry whose time rules have lapsed, a buy days on, is never refused), so retries are safe |
-| `events` | `events: [{id, type, data}, …]` (≤ 50) | `{ok, results: [{id, ok, duplicate?, at?} \| {id, ok: false, error, detail?}]}`: each kept in order as `event` would, `at` its stored row's; one whose write throws is `{id, ok: false, error: 'unavailable'}` alone, the others go on |
+| `events` | `events: [{id, type, data, group?}, …]` (≤ 50) | `{ok, results: [{id, ok, duplicate?, at?} \| {id, ok: false, error, detail?}]}`: each kept in order as `event` would, `at` its stored row's; one whose write throws is `{id, ok: false, error: 'unavailable'}` alone, the others go on. Side-by-side events of one `group` (the shop's 全部: one `buy` a piece) are all or none in one transaction: a buy of a piece the sender has already is refused `owned` alone (nothing charged), any other refusal rolls the lot back (that one as it was, the rest `detail: 'group'`), a throw makes them all `unavailable`; a retry of a kept group is all duplicates |
 | `snapshot` | `since?` (ISO: the max `at` cached); `page?` (1–10,000 rows), `after?` (the last page's `next`) | `{ok, me, now, rev, rows:{metrics, events}, next?}`: compact arrays in column order, rows with `at > since`. With `page`, at most that many rows in (at, table, seq) order and `next` (a cursor) while there are more: the pages together are the whole reply. Without `page`, every row at once (the log's `req` says `pg` 0 for such a request) |
 | `uploads` | | `{ok, rows:[{at, status, bytes, notes}]}`: the caller's last 20 audit rows, newest first |
 | `whoami` | | `{ok, me, build}` (pairing) |
@@ -248,6 +248,8 @@ at once; one event alone so refused, or too large to send at all, is set aside.
 - **Holds:** a held event (`holdMs`, the undo window) is skipped, not waited for; `unqueue` takes it back, `holdEvent`
   moves its time.
 - **Subjects:** a later event on the same spend (its `spend_void`) never overtakes a held one.
+- **Groups** (`group`, the shop's 全部): none goes while any of it is held; then all of it side by side in one request
+  (a batch's end never cuts one: it goes whole in the next). A buy refused `owned` is dropped without the toast.
 - **Replies:** acked (`ok` or `duplicate`) → into `island.acked`, then out of the queue; acked events stay in the view
   until a snapshot holds their id (given up 5 minutes after the ack). `bad_request` / `too_large` → dropped with a
   message. `unauthorized` → pairing. Other errors keep the event and all after it, with backoff 1 s, 2 s, 4 s … ≤ 5

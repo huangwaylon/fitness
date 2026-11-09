@@ -271,7 +271,7 @@ export function recordGoods(id: string, claim?: string): void {
 // my かいがら (the guest's its own). Shown at once, sent after the UNDO_MS banner, like a buy of a treat. Never ベル.
 
 /** One SendResult for several sends: undone, held and resumed together. */
-function together(rs: SendResult[]): SendResult {
+export function together(rs: SendResult[]): SendResult {
   if (!rs.length || rs.some((r) => !r.ok)) {
     for (const r of rs) r.undo?.();
     return { ok: false };

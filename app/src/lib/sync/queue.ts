@@ -25,6 +25,9 @@ export interface QueuedEvent {
   /** Set aside (2026-11-08): the record refused it PARK_AFTER times, or it is too large to send. Kept (shown, never
    *  dropped), not sent, and every later event on its subject waits with it; `unpark` (a sync tap) tries it again. */
   parked?: true;
+  /** Kept all or none with the queue's other events of this id (the shop's ぜんぶ かう: relay store.ts group): sent side
+   *  by side in one request, none of them before all of them may go. Absent: on its own. */
+  group?: string;
 }
 
 export function newId(): string {
@@ -93,8 +96,8 @@ const dayRow = (ev: Pick<QueuedEvent, 'type' | 'data' | 'person'>): string | nul
  * day, not dozens of 12-20k ones, and nothing queued after the first (a sell of what it counted) passes it. One tried
  * already may have reached the record: the newer row holds all it did (a new id: never taken for a duplicate).
  */
-export function enqueue(type: EventType, data: Record<string, unknown>, now = Date.now(), holdMs = 0): QueuedEvent {
-  const ev: QueuedEvent = { id: newId(), type, data, queuedAt: now, tries: 0, nextAt: now + holdMs };
+export function enqueue(type: EventType, data: Record<string, unknown>, now = Date.now(), holdMs = 0, group?: string): QueuedEvent {
+  const ev: QueuedEvent = { id: newId(), type, data, queuedAt: now, tries: 0, nextAt: now + holdMs, ...(group ? { group } : {}) };
   const q = queued();
   const row = dayRow(ev);
   const stale = (x: QueuedEvent) => dayRow(x) === row && !flushingIds.has(x.id);
@@ -192,7 +195,7 @@ export function backoffMs(tries: number, rand = Math.random): number {
  * `acked`: the events the server confirmed in this flush (not merely ones that left the queue, e.g. by undo);
  * `stored`: those the record wrote a row for just now, with its `at` (the row the next snapshot would bring).
  */
-interface FlushResult { sent: number; acked: QueuedEvent[]; stored: { ev: QueuedEvent; at: string }[]; dropped: QueuedEvent[]; remaining: number; error?: ApiError }
+interface FlushResult { sent: number; acked: QueuedEvent[]; stored: { ev: QueuedEvent; at: string }[]; dropped: (QueuedEvent & { detail?: string })[]; remaining: number; error?: ApiError }
 
 /** At most this many events in one request to the record (its EVENTS_MAX). */
 const BATCH_MAX = 50;
@@ -233,6 +236,8 @@ function subjectOf(ev: Pick<QueuedEvent, 'type' | 'data'>): string | null {
  */
 function due(q: QueuedEvent[], now: number, skip: (ev: QueuedEvent) => boolean = () => false, defer: (ev: QueuedEvent) => boolean = () => false): { ev: QueuedEvent | null; wake: number | null } {
   const heldSubjects = new Set<string>();
+  // a group waits while any of it is held (its undo window): then all of it goes, side by side
+  const heldGroups = new Set(q.flatMap((x) => (x.group && isHeld(x, now) ? [x.group] : [])));
   let wake: number | null = null;
   for (const ev of q) {
     const subj = subjectOf(ev);
@@ -241,8 +246,10 @@ function due(q: QueuedEvent[], now: number, skip: (ev: QueuedEvent) => boolean =
       continue;
     }
     if (skip(ev)) continue;
-    if (defer(ev) || isHeld(ev, now)) {
-      wake = wake === null ? ev.nextAt : Math.min(wake, ev.nextAt);
+    const held = defer(ev) || isHeld(ev, now);
+    if (held || (ev.group && heldGroups.has(ev.group))) {
+      // (one of a held group waits for the held one's time, not its own)
+      if (held) wake = wake === null ? ev.nextAt : Math.min(wake, ev.nextAt);
       if (subj) heldSubjects.add(subj);
       continue;
     }
@@ -267,7 +274,7 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean 
   const most = opts.keepalive ? KEEPALIVE_BYTES : BATCH_CHARS;
   const p = (async (): Promise<FlushResult> => {
     const out: FlushResult = { sent: 0, acked: [], stored: [], dropped: [], remaining: 0 };
-    const body = (ev: QueuedEvent) => ({ id: ev.id, type: ev.type, data: ev.data });
+    const body = (ev: QueuedEvent) => ({ id: ev.id, type: ev.type, data: ev.data, ...(ev.group ? { group: ev.group } : {}) });
     const tried = new Set<string>();
     /** Over a keepalive's cap alone: left for the next flush with the page open, the rest sent past it. */
     const tooBig = new Set<string>();
@@ -279,9 +286,9 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean 
       keepAcked([...ackedEvents().filter((x) => x.id !== ev.id), { ...ev, ackedAt: now() }]);
       saveQueue(queued().filter((x) => x.id !== ev.id));
     };
-    const drop = (ev: QueuedEvent, error: ApiError) => {
+    const drop = (ev: QueuedEvent, error: ApiError, detail?: string) => {
       log('queue.drop', { type: ev.type, err: error, tries: ev.tries + 1 }, 3);
-      out.dropped.push(ev);
+      out.dropped.push(detail ? { ...ev, detail } : ev);
       saveQueue(queued().filter((x) => x.id !== ev.id));
     };
     /** Set aside, kept: it no longer blocks the queue (only its subject). */
@@ -329,6 +336,12 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean 
         chars += n;
       }
       if (!batch.length) break;
+      // a group cut by the batch's end goes whole in the next one (unless it is all the batch: then as it is)
+      const g = batch[batch.length - 1].group;
+      const next = g ? due(queued(), now(), (x) => tried.has(x.id), (x) => tooBig.has(x.id)).ev : null;
+      if (g && next?.group === g && batch[0].group !== g) {
+        while (batch[batch.length - 1].group === g) tried.delete(batch.pop()!.id);
+      }
       for (const ev of batch) flushingIds.add(ev.id);
       const key = getKey();
       const r = await post<{ results: EventResult[] }>('events', { events: batch.map(body) }, opts.keepalive ? { keepalive: true } : {});
@@ -357,7 +370,7 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean 
         const x = results[i];
         if (x?.ok) ack(ev, x.at);
         // (`forbidden`: the guest's phone asked for what only a member may: never again)
-        else if (x && (x.error === 'bad_request' || x.error === 'too_large' || x.error === 'forbidden')) drop(ev, x.error);
+        else if (x && (x.error === 'bad_request' || x.error === 'too_large' || x.error === 'forbidden')) drop(ev, x.error, x.detail);
         else {
           // it and the rest wait (in order): the record already has any of them it took, and acks a repeat as a duplicate
           // (set aside instead: the rest go again now)
