@@ -252,7 +252,7 @@ Both learners are B1+ (TOEIC 700+), so the point is which sounds and skills stil
 ### Adaptivity
 
 - **The shared deck stays deterministic**; personal adaptivity is solo only.
-- **Cards** (a chunk or a feature, never a clip): an item card for each item missed or right only after a replay, a feature card for each feature answered. Leitner boxes 0 / 1 / 3 / 7 / 16 / 35 / 90 days: first listen right good, after a replay hard, wrong again. よみきき サンド's まだ counts as hard on that phone. Folded from the answers (`srs.ts`).
+- **Cards** (a chunk or a feature, never a clip): an item card for each item missed or right only after a replay, a feature card for each feature answered. A due item card comes back through a sibling where one is offered (`srs.ts isSibling`: the same level and type, its num template or first feature; another clip, voice and choices), and the sibling's practice answer steps the card; with none, the same item with its choices turned a place (`bank.ts rotateChoices`). A unit phrase's review takes a clip of it not yet heard first. Leitner boxes 0 / 1 / 3 / 7 / 16 / 35 / 90 days: first listen right good, after a replay hard, wrong again. よみきき サンド's まだ counts as hard on that phone. Folded from the answers (`srs.ts`).
 - **おさらい** (にがて れんしゅう): 8 questions from the levels offered: due item cards first (≤ 4), then items carrying the weakest due features, then the weakest skills' items, the least recently heard first, then those whose chance (θ against the learned difficulty) is nearest 75–85 %; a recommendation narrows it to a skill or an accent. Nothing on the wire.
 
 ### Recommendations and feedback
@@ -332,6 +332,6 @@ Speaking is opt-in and private: off by default, per phone, recordings never stor
 
 ## Tests
 
-- **vitest:** the deck's determinism and mix; the bank's validity (speakers and art exist, answers in range, clips and caps); the session's state machine with fake time; the protocol's parse cases (size, guest, ≤ 256 B relayed); the stats, SRS, advice and tag table; each game's kinds.
+- **vitest:** the deck's determinism and mix; the bank's validity (speakers and art exist, answers in range, clips and caps); the choice tells per level (curriculum.md "Choice tells"); the session's state machine with fake time; the protocol's parse cases (size, guest, ≤ 256 B relayed); the stats, SRS, advice and tag table; each game's kinds.
 - **relay vitest:** `quiz` and `play` go to the others and are never stored; `listen` rows owner-only with summaries.
 - **e2e** (logic tier, Chromium; specs open past the welcome with `e2e/fixtures.ts` `kikiFirstRun` and go through the hub with `e2e/kikimimi-nav.ts`): two players over `?demo` and `?demo&as=B`, solo, every game solo and co-op; `?kikimimi=fast` shortens the timed windows. `KIKI_SHOTS=1` writes screenshots under /tmp/kikimimi-shots/. Rendering is judged on the iOS Simulator and the phones.

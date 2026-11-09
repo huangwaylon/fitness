@@ -9,8 +9,9 @@ import { dayNum } from '../contract/tokyo.ts';
 import { AIM, answersOf, chanceOf, daysPlayed, difficulty, difficultyOf, gamesOf, offAim, isLadderGame, listenAnswers, recentOf, scoreOf, speedOf, statsOf, together, trendOf, weekDays, type Answer, type Game } from './progress.ts';
 import { ladderDeck } from './ladder.ts';
 import { LADDERS } from './ladders.ts';
-import { entryOf, loadAll } from './pool.ts';
-import { cardsOf, dueOf, gradeOf, practiceDeck, step } from './srs.ts';
+import { loadAll } from './pool.ts';
+import { cardsOf, dueOf, gradeOf, isSibling, practiceDeck, practicePicks, step } from './srs.ts';
+import { entryOf } from './pool.ts';
 import { feedback, recommend, tripsOf } from './advice.ts';
 import { skillsOf } from './tags.ts';
 import { stageAt } from './stages.ts';
@@ -191,7 +192,6 @@ describe('statsOf', () => {
   });
 });
 
-
 describe('trend, week, together', () => {
   it('trends first-listen accuracy per game and compares the last 5 with the 5 before', () => {
     const gs = Array.from({ length: 10 }, (_, i) => game(ids('w1-', 4), { miss: i < 5 ? ids('w1-', 2) : [] }));
@@ -257,12 +257,36 @@ describe('practiceDeck', () => {
     expect(practiceDeck({ answers, stats, today: TODAY, seed: 7, levels: LV })).toEqual(a);
     for (const it of a) expect(it.choices[it.answer]).toBe(BANK.find((b) => b.id === it.id)!.choices[BANK.find((b) => b.id === it.id)!.answer]);
   });
-  it('brings back the items I missed and the features I miss', () => {
+  it('brings back the items I missed, through another clip that tests the same where there is one, and the features I miss', () => {
     const a = practiceDeck({ answers, stats, today: TODAY, seed: 1, levels: LV }).map((it) => it.id);
     const missed = ['w1-right', 'w1-rock', 'w1-play', 'w1-fly', 'n1-reps-1'];
-    expect(a.filter((id) => missed.includes(id)).length).toBeGreaterThanOrEqual(4); // the 4 due first (a fifth may come as its feature's item nearest the aim)
+    // the 4 due first (at most 4): each itself or a sibling (the same level, type and first feature, another clip)
+    const due = ['n1-reps-1', 'w1-right', 'w1-rock', 'w1-play', 'w1-fly'].filter((id) => a.includes(id) || a.some((y) => isSibling(entryOf(id)!, entryOf(y)!)));
+    expect(due.length).toBeGreaterThanOrEqual(4);
+    expect(a.filter((id) => missed.includes(id)).length).toBeLessThan(4); // siblings stand in for some
     const lr = a.filter((id) => skillsOf(BANK.find((b) => b.id === id)!).primary === 'lr');
     expect(lr.length).toBeGreaterThanOrEqual(4);
+  });
+  it('steps a due card from its sibling’s practice answer, and turns a lone item’s choices each time it comes back', () => {
+    const day = '2026-11-06';
+    const card = () => cardsOf(answers).items.get('w1-right')!;
+    expect(card().due).toBeLessThanOrEqual(dayNum(day));
+    const sib = BANK.find((it) => isSibling(entryOf('w1-right')!, entryOf(it.id)!) && !answers.some((a) => a.id === it.id))
+      ?? BANK.find((it) => isSibling(entryOf('w1-right')!, entryOf(it.id)!) && !['w1-rock', 'w1-play', 'w1-fly'].includes(it.id))!;
+    const practice = game([sib.id], { d: day, p: true, lv: 1 });
+    const after = cardsOf([...answers, ...practice.r]).items.get('w1-right')!;
+    expect(after).toMatchObject({ box: 1, last: dayNum(day) });
+    // not in practice (a game's own answer), or the card answered that day: the card waits
+    expect(cardsOf([...answers, ...game([sib.id], { d: day, lv: 1 }).r]).items.get('w1-right')).toEqual(card());
+    // a due item with no sibling in the pool (a focus on it alone): itself, the right choice moved on each time
+    const solo = (extra: Answer[]) => practicePicks({ answers: [...answers, ...extra], stats: statsOf([...answers, ...extra], TODAY), today: '2026-11-20', seed: 5, levels: [2] });
+    const lone = BANK.find((it) => it.lv === 2 && it.type === 'reply' && !BANK.some((y) => isSibling(entryOf(it.id)!, entryOf(y.id)!)))!;
+    const miss = (d: string) => game([lone.id], { d, lv: 2, miss: [lone.id] }).r;
+    const first = solo(miss('2026-11-10')), second = solo([...miss('2026-11-10'), ...miss('2026-11-12')]);
+    const deal = (p: ReturnType<typeof practicePicks>) => p.deal((id) => BANK.find((b) => b.id === id)).find((it) => it.id === lone.id)!;
+    expect(first.ids).toContain(lone.id);
+    expect(deal(first).answer).not.toBe(deal(second).answer);
+    expect(deal(second).choices[deal(second).answer]).toBe(lone.choices[lone.answer]);
   });
   it('narrows to a focus', () => {
     const num = practiceDeck({ answers, stats, today: TODAY, seed: 3, levels: LV, focus: { skill: 'num' } });

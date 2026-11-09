@@ -6,7 +6,7 @@
 // a slice of its pack (static/audio/listen/, packing.ts); changing an item's `en`, `tts`, `voice` or speaker's voice regenerates its clip. Ids
 // key the clips in their packs: keep them stable. The lobby offers a level only once every item of it has a clip (compile.ts
 // playable). Level 4's dialogues (`gist`, `next`: dialogues.ts) are one clip per line and have a gate of their own.
-import { shuffle } from '#lib/random.ts';
+import { seeded, shuffle } from '#lib/random.ts';
 import type { RosterId } from '#lib/villagers/roster.ts';
 import type { QuizLv } from '../contract/live-protocol.ts';
 
@@ -208,6 +208,15 @@ export function shuffleChoices(it: Item, r: () => number, set: Pick<Item, 'choic
   const order = shuffle(set.choices.map((_, i) => i), r);
   const { cja: _, ...rest } = it, cja = set.cja;
   return { ...rest, choices: order.map((i) => set.choices[i]), answer: order.indexOf(set.answer), ...(cja && { cja: order.map((i) => cja[i]) }) };
+}
+
+/** A copy of an item with its choices in its own order turned `k` places (an item heard again: おさらい's `k`th time):
+ *  the order is seeded by its id, so each time it comes back the right choice is in the next place round. */
+export function rotateChoices(it: Item, k: number): Item {
+  const base = shuffle(it.choices.map((_, i) => i), seeded(it.id)), n = base.length;
+  const order = base.map((_, i) => base[(i + k) % n]), cja = it.cja;
+  const { cja: _, ...rest } = it;
+  return { ...rest, choices: order.map((i) => it.choices[i]), answer: order.indexOf(it.answer), ...(cja && { cja: order.map((i) => cja[i]) }) };
 }
 
 /** The Japanese help's limits (`why`, `ctx`). */

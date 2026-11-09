@@ -10,7 +10,7 @@ import type { KV } from '../sync/storage.ts';
 import { DEVICE, readJson, writeJson } from '../sync/storage.ts';
 import { firstListenRight } from '../contract/listen.ts';
 import type { Accent, Entry, Feature, Item, Level } from './bank.ts';
-import { shuffleChoices } from './bank.ts';
+import { rotateChoices, shuffleChoices } from './bank.ts';
 import { ENTRIES, entryOf, itemOf } from './pool.ts';
 import { agesOf, staleness, type Recent } from './recent.ts';
 import { DECK_SIZE, MIX } from './deck.ts';
@@ -46,8 +46,21 @@ export interface Cards {
   features: Map<Feature, Card>;
 }
 
+/** A num template's items share their id up to the row number (`n1-price-2`), as deck.ts's families. */
+const familyOf = (it: Pick<Entry, 'id' | 'type'>): string => (it.type === 'num' ? it.id.replace(/-\d+$/, '') : it.id);
+
+/** Whether `y` reviews what `x` tests with another clip (docs/kikimimi.md "Adaptivity"): the same level and type, and
+ *  the same num template or `x`'s first feature (its sound or skill: tags.ts). */
+export function isSibling(x: Entry, y: Entry): boolean {
+  if (x.id === y.id || x.lv !== y.lv || x.type !== y.type) return false;
+  if (x.type === 'num' && familyOf(x) === familyOf(y)) return true;
+  const f = tagsOf(x).features[0];
+  return !!f && tagsOf(y).features.includes(f);
+}
+
 /** The cards my answers (in order) leave: an item card from its first miss or replay on, a feature card for every
- *  feature answered. */
+ *  feature answered. A practice answer on a sibling (isSibling) of a due item card steps that card too (the lowest box,
+ *  most overdue): おさらい asks the sibling in its place (practicePicks). */
 export function cardsOf(answers: readonly Answer[], items: { get(id: string): Entry | undefined } = { get: entryOf }, mada: readonly Mada[] = []): Cards {
   const out: Cards = { items: new Map(), features: new Map() };
   for (const a of withMada(answers, mada)) {
@@ -55,11 +68,20 @@ export function cardsOf(answers: readonly Answer[], items: { get(id: string): En
     if (!it) continue;
     const g = gradeOf(a), day = dayNum(a.d);
     const held = out.items.get(a.id);
+    if (a.p && !(held && held.due <= day)) {
+      const stand = [...out.items].filter(([id, c]) => c.due <= day && c.last < day && isSiblingId(items, id, it)).sort(([, b], [, c]) => b.box - c.box || b.due - c.due)[0];
+      if (stand) out.items.set(stand[0], step(stand[1], g, day));
+    }
     if (held || g !== 'good') out.items.set(a.id, step(held, g, day));
     for (const f of tagsOf(it).features) out.features.set(f, step(out.features.get(f), g, day));
   }
   return out;
 }
+
+const isSiblingId = (items: { get(id: string): Entry | undefined }, id: string, y: Entry): boolean => {
+  const x = items.get(id);
+  return !!x && isSibling(x, y);
+};
 
 // ---- よみきき サンド's まだ: this phone's marks ------------------------------------------------------------------------
 
@@ -69,13 +91,13 @@ export type Mada = { id: string; d: LocalDate };
 const MADA_KEEP = 200;
 
 /** The answers with each まだ as a "hard" one on its day, after that day's answers (the game came first). */
-function withMada(answers: readonly Answer[], mada: readonly Mada[]): readonly Pick<Answer, 'id' | 'ok' | 'rp' | 'd'>[] {
+function withMada(answers: readonly Answer[], mada: readonly Mada[]): readonly Pick<Answer, 'id' | 'ok' | 'rp' | 'd' | 'p'>[] {
   if (!mada.length) return answers;
-  const out: Pick<Answer, 'id' | 'ok' | 'rp' | 'd'>[] = [...answers];
+  const out: Pick<Answer, 'id' | 'ok' | 'rp' | 'd' | 'p'>[] = [...answers];
   for (const m of [...mada].sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0))) {
     let k = out.length;
     while (k > 0 && out[k - 1].d > m.d) k--;
-    out.splice(k, 0, { id: m.id, ok: true, rp: 1, d: m.d });
+    out.splice(k, 0, { id: m.id, ok: true, rp: 1, d: m.d, p: false });
   }
   return out;
 }
@@ -117,13 +139,14 @@ const DUE_MAX = 4;
 
 /**
  * にがて れんしゅう: DECK_SIZE items of the offered levels (the types their mix draws), never one twice: my due item cards
- * first (lowest box, most overdue; at most 4), then items carrying my weakest features (due ones first; another item
- * than the one missed when there is one), then my weakest skills' items, then any; all within `focus`. Among those,
- * items not heard lately come first, then the least recently heard (`recent`, this phone's last games: recent.ts; and
- * answered in the last 2 days), then the nearest the 75-85 % I should get right (progress.ts chanceOf, the learned
- * difficulty). Choices shuffled by `seed`, as
- * deck() does; deterministic. The picks are the index's (`ids`); `deal` (once) makes the deck of them from their items as
- * authored (their levels loaded: pool.ts loadIds).
+ * first (lowest box, most overdue; at most 4), each heard through a sibling when one is in the pool (isSibling: what it
+ * tests, another clip, voice and choices; cardsOf steps the card from the sibling's answer), else itself with its choices
+ * rotated (rotateChoices: the right one in another place each time it comes back); then items carrying my weakest features
+ * (due ones first; another item than the one missed when there is one), then my weakest skills' items, then any; all
+ * within `focus`. Among those, items not heard lately come first, then the least recently heard (`recent`, this phone's
+ * last games: recent.ts; and answered in the last 2 days), then the nearest the 75-85 % I should get right (progress.ts
+ * chanceOf, the learned difficulty). Choices shuffled by `seed`, as deck() does; deterministic. The picks are the
+ * index's (`ids`); `deal` (once) makes the deck of them from their items as authored (their levels loaded: pool.ts loadIds).
  */
 export function practicePicks(o: PracticeOpts): { ids: string[]; deal: (item: (id: string) => Item | undefined) => Item[] } {
   const r = mulberry32(o.seed >>> 0);
@@ -140,10 +163,20 @@ export function practicePicks(o: PracticeOpts): { ids: string[]; deal: (item: (i
   const take = (it: Entry | undefined) => {
     if (it && !taken.has(it.id) && out.length < DECK_SIZE) (out.push(it), taken.add(it.id));
   };
-  // 1. due item cards
+  // 1. due item cards, through a sibling where there is one (the same skill, the same template first, then the most
+  //    features shared, then the rank), else again with the choices rotated
   const dueItems = pool.filter((it) => (cards.items.get(it.id)?.due ?? Infinity) <= t)
     .sort((a, b) => cards.items.get(a.id)!.box - cards.items.get(b.id)!.box || cards.items.get(a.id)!.due - cards.items.get(b.id)!.due);
-  for (const it of dueItems.slice(0, DUE_MAX)) take(it);
+  const again = new Map<string, number>();
+  const shared = (x: Entry, y: Entry) => (familyOf(x) === familyOf(y) ? 10 : 0) + tagsOf(y).features.filter((f) => tagsOf(x).features.includes(f)).length;
+  for (const it of dueItems.slice(0, DUE_MAX)) {
+    const sib = pool.filter((y) => !taken.has(y.id) && !cards.items.has(y.id) && isSibling(it, y)).sort((a, b) => shared(it, b) - shared(it, a) || rank(a) - rank(b))[0];
+    if (sib) take(sib);
+    else {
+      take(it);
+      again.set(it.id, o.answers.filter((a) => a.id === it.id).length);
+    }
+  }
   // 2. the weakest features (due first), one item each per round
   const fm = (f: Feature) => o.stats.features[f]?.raw ?? 0.7;
   const weak = [...cards.features].filter(([f, c]) => c.due <= t || fm(f) < 0.85).map(([f]) => f)
@@ -165,7 +198,8 @@ export function practicePicks(o: PracticeOpts): { ids: string[]; deal: (item: (i
     deal: (item) => shuffle(out, r).map((e) => {
       const it = item(e.id);
       if (!it) throw new Error(`kikimimi: ${e.id} isn't loaded`);
-      return shuffleChoices(it, r);
+      const k = again.get(e.id);
+      return k === undefined ? shuffleChoices(it, r) : rotateChoices(it, k);
     })
   };
 }
@@ -206,9 +240,10 @@ export function phrasesOf(phrases: readonly PhraseIn[], answers: readonly Answer
 /**
  * Today's phrase review: the phrases heard but not caught whose card is due (a Leitner card per phrase, stepped by
  * each answer on its items: srs's `step`), lowest box and most overdue first, at most REVIEW_CAP a day (those already
- * reviewed today count against it, and aren't asked again till tomorrow). Each with the item to hear it in: one of its items not yet right on the first
- * listen (a new clip toward caught), else the least recently answered; only items in `playable` when given (a loaded
- * unit's). Deterministic.
+ * reviewed today count against it, and aren't asked again till tomorrow). Each with the item to hear it in, another clip
+ * than last time where there is one: one of its items never answered, else one not yet right on the first listen (a new
+ * clip toward caught), the least recently answered first; only items in `playable` when given (a loaded unit's).
+ * Deterministic.
  */
 export function phraseReview(phrases: readonly PhraseIn[], answers: readonly Answer[], today: LocalDate, playable?: ReadonlySet<string>): { phrase: string; item: string }[] {
   const t = dayNum(today);
@@ -233,8 +268,10 @@ export function phraseReview(phrases: readonly PhraseIn[], answers: readonly Ans
       continue;
     }
     if (card.due > t) continue;
+    // another clip than the one last heard: one never answered, else one not yet right, else the least recently answered
     const pool = ph.in.filter((id) => !playable || playable.has(id));
-    const item = pool.find((id) => !right.has(id)) ?? [...pool].sort((a, b) => (last.get(a) ?? -1) - (last.get(b) ?? -1))[0];
+    const order = (id: string) => (last.has(id) ? (right.has(id) ? 2 : 1) : 0);
+    const item = [...pool].sort((a, b) => order(a) - order(b) || (last.get(a) ?? -1) - (last.get(b) ?? -1))[0];
     if (item) due.push({ phrase: ph.id, item, card });
   }
   return due.sort((a, b) => a.card.box - b.card.box || a.card.due - b.card.due).slice(0, Math.max(0, REVIEW_CAP - reviewed)).map(({ phrase, item }) => ({ phrase, item }));
