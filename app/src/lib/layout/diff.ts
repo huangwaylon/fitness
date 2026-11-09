@@ -26,7 +26,7 @@ export function diffLayouts(a: Layout, b: Layout): LayoutDiff {
   for (const o of b.objects.values()) {
     const was = a.objects.get(o.id);
     if (!was) add.push(o);
-    else if (was !== o && (was.k !== o.k || was.x !== o.x || was.z !== o.z || was.f !== o.f || was.s !== o.s || was.n?.[0] !== o.n?.[0] || was.n?.[1] !== o.n?.[1])) move.push(o);
+    else if (was !== o && (was.k !== o.k || was.x !== o.x || was.z !== o.z || was.f !== o.f || was.s !== o.s || was.on !== o.on || was.n?.[0] !== o.n?.[0] || was.n?.[1] !== o.n?.[1])) move.push(o);
     else if (o.k === 'home' && homes.includes(WHO_OF_HOME[o.id])) move.push(o);
   }
   for (const id of a.objects.keys()) if (!b.objects.has(id)) remove.push(id);

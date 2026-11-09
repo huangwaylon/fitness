@@ -2,7 +2,8 @@
 // the decorations' `decor` event and relay intent with a scope `sc`, last writer wins per id. Shared by the record
 // (relay/src/store.ts), the room (relay/src/room.ts), the model and the phones; pure and dependency-free (what the
 // kinds and the tiles mean is the app's: lib/layout/).
-//   o  an outdoor object set `{id, at, k, x, z, f, s?}` or gone `{id, at, rm: true}` (not final: a later set is back)
+//   o  an outdoor object set `{id, at, k, x, z, f, s?, on?}` or gone `{id, at, rm: true}` (not final: a later set is
+//      back); `on`: it stands on that object's top (NH's table tops: lib/layout/tops.ts), x and z still its own tile
 //   c  a terrain chunk `{id: 'c<cx>x<cz>', at, g}`: its 8 × 8 tiles row by row, one character each
 //   r  a reset `{id: 'reset', at}`: every o and c op older than it is void (the default layout again)
 //   h  a home's look `{id: 'hA' | 'hB' | 'hG', at, m, w?, r?, d?, f?}` (f its facing 0–3): its owner's alone
@@ -39,7 +40,7 @@ const PART = /^[A-Za-z0-9.]{1,24}$/;
 
 
 type ObjOp =
-  | { sc: 'o'; id: string; at: number; k: string; x: number; z: number; f: Facing; s?: string; rm?: undefined }
+  | { sc: 'o'; id: string; at: number; k: string; x: number; z: number; f: Facing; s?: string; on?: string; rm?: undefined }
   | { sc: 'o'; id: string; at: number; rm: true };
 interface ChunkOp { sc: 'c'; id: string; at: number; g: string }
 interface ResetOp { sc: 'r'; id: 'reset'; at: number }
@@ -54,10 +55,11 @@ export function layoutOpOf(d: Record<string, unknown>): LayoutOp | null {
     case 'o': {
       if (!OBJ_ID.test(d.id)) return null;
       if (d.rm !== undefined) return d.rm === true && only(d, ['sc', 'id', 'at', 'rm']) ? { sc: 'o', id: d.id, at: d.at, rm: true } : null;
-      if (!only(d, ['sc', 'id', 'at', 'k', 'x', 'z', 'f', 's'])) return null;
+      if (!only(d, ['sc', 'id', 'at', 'k', 'x', 'z', 'f', 's', 'on'])) return null;
       if (typeof d.k !== 'string' || !TOKEN.test(d.k) || !isInt(d.x, 0, TILES_MAX) || !isInt(d.z, 0, TILES_MAX) || !isInt(d.f, 0, 3)) return null;
       if (d.s !== undefined && (typeof d.s !== 'string' || !TOKEN.test(d.s))) return null;
-      return { sc: 'o', id: d.id, at: d.at, k: d.k, x: d.x, z: d.z, f: d.f as Facing, ...(d.s !== undefined ? { s: d.s as string } : {}) };
+      if (d.on !== undefined && (typeof d.on !== 'string' || !OBJ_ID.test(d.on) || d.on === d.id)) return null;
+      return { sc: 'o', id: d.id, at: d.at, k: d.k, x: d.x, z: d.z, f: d.f as Facing, ...(d.s !== undefined ? { s: d.s as string } : {}), ...(d.on !== undefined ? { on: d.on as string } : {}) };
     }
     case 'c':
       if (!CHUNK_ID.test(d.id) || !only(d, ['sc', 'id', 'at', 'g']) || typeof d.g !== 'string' || !TILE_RE.test(d.g)) return null;

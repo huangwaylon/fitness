@@ -149,10 +149,10 @@ export function draw(ctx: CanvasRenderingContext2D, d: Draw): void {
   }
   if (d.river) drawRiver(ctx, v, d.river);
   if (d.coast) drawCoast(ctx, d, d.coast, cA, cB, rA, rB);
-  // the objects: big ones first, the selected last
+  // the objects: big ones first (a thing on a table's top after its table), the selected last
   const objs = [...l.objects.values()].sort((a, b) => {
     const [aw, ad] = footOf(l, a), [bw, bd] = footOf(l, b);
-    return bw * bd - aw * ad || (d.selected.has(a.id) ? 1 : 0) - (d.selected.has(b.id) ? 1 : 0);
+    return bw * bd - aw * ad || +!!a.on - +!!b.on || (d.selected.has(a.id) ? 1 : 0) - (d.selected.has(b.id) ? 1 : 0);
   });
   for (const o of objs) {
     const m = d.moved?.get(o.id);

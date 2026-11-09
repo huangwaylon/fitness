@@ -7,6 +7,7 @@
 // the corners pulled straight).
 import { footprint, ITEMS } from './items.ts';
 import { ROOM_DEFAULT, type RoomSize } from '#lib/contract/tent.ts';
+import { fitsOn as topFits, kidTiles as topTiles, onTop as topPoint, slotsOf as topSlots, type Top } from '#lib/surface.ts';
 
 /** Tiles across and deep. */
 export const ROOM = 8;
@@ -127,42 +128,21 @@ export const isSmall = (item: string): boolean => !!ITEMS[item]?.sm && !ITEMS[it
 
 /** A surface's top: its height (its model's top, not its bounds: scripts/room-surfaces.ts). */
 export const topY = (item: string): number => ITEMS[item]?.sy ?? ITEMS[item]?.h ?? 0;
-/** The tiles of a surface's own footprint that hold a thing (all of them, for a piece with no top found). */
-export function slotsOf(item: string): [number, number][] {
+/** A piece's top as the shared rules read it (lib/surface.ts). */
+const topOf = (item: string): Top => {
   const m = ITEMS[item];
-  if (!m) return [];
-  if (m.sl) return m.sl;
-  const out: [number, number][] = [];
-  for (let sx = 0; sx < m.w; sx++) for (let sz = 0; sz < m.d; sz++) out.push([sx, sz]);
-  return out;
-}
+  return { w: m?.w ?? 1, d: m?.d ?? 1, sy: topY(item), ...(m?.st ? { st: m.st } : {}), ...(m?.sl ? { sl: m.sl } : {}) };
+};
+/** The tiles of a surface's own footprint that hold a thing (all of them, for a piece with no top found). */
+export const slotsOf = (item: string): [number, number][] => (ITEMS[item] ? topSlots(topOf(item)) : []);
 /** The tiles (the parent's own) a small thing on slot (sx, sz), facing rf there, covers. */
-function kidTiles(item: string, sx: number, sz: number, rf: number): [number, number][] {
-  const [w, d] = footprint(item, rf);
-  const out: [number, number][] = [];
-  for (let i = 0; i < w; i++) for (let j = 0; j < d; j++) out.push([sx + i, sz + j]);
-  return out;
-}
+const kidTiles = (item: string, sx: number, sz: number, rf: number): [number, number][] => topTiles(...footprint(item, rf), sx, sz);
 /** Whether a small thing fits on `parent`'s top at slot (sx, sz) facing rf: every tile it covers holds a thing. */
-export function fitsOn(parent: string, item: string, sx: number, sz: number, rf: number): boolean {
-  const ok = new Set(slotsOf(parent).map(([x, z]) => x * 64 + z));
-  return kidTiles(item, sx, sz, rf).every(([x, z]) => ok.has(x * 64 + z));
-}
+export const fitsOn = (parent: string, item: string, sx: number, sz: number, rf: number): boolean => !!ITEMS[parent] && topFits(topOf(parent), ...footprint(item, rf), sx, sz);
 /** Where a small thing on `parent` stands in the parent's own frame: its middle (x, z, model units, the parent's middle
  *  at 0; on its tiles, kept on the top's rectangle) and how high. */
-export function onTop(parent: string, kid: { item: string; x: number; z: number; f: number }): [number, number, number] {
-  const m = ITEMS[parent], w = m?.w ?? 1, d = m?.d ?? 1;
-  const [kw, kd] = footprint(kid.item, kid.f);
-  let lx = (kid.x + kw / 2 - w / 2) * TILE, lz = (kid.z + kd / 2 - d / 2) * TILE;
-  const st = m?.st;
-  if (st) {
-    // on the top: its middle at least half a small thing in from the top's edges (the middle of a narrower top)
-    const keep = (v: number, a: number, b: number, half: number) => (b - a <= 2 * half ? (a + b) / 2 : Math.min(b - half, Math.max(a + half, v)));
-    lx = keep(lx, st[0], st[2], Math.min(2.5, (kw * TILE) / 2));
-    lz = keep(lz, st[1], st[3], Math.min(2.5, (kd * TILE) / 2));
-  }
-  return [lx, topY(parent), lz];
-}
+export const onTop = (parent: string, kid: { item: string; x: number; z: number; f: number }): [number, number, number] =>
+  topPoint(topOf(parent), ...footprint(kid.item, kid.f), kid.x, kid.z);
 
 /** A point in a piece's own frame (model units, its spot at 0) as an offset in the room's: turned as the room turns the
  *  piece (engine.ts placeRoot: rotation.y = f·90°; a wall thing, in its wall's frame, at f 0) and scaled by `s` (the

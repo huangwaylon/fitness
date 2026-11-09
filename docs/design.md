@@ -985,7 +985,8 @@ stands just in front, facing out, on every phone. The homes' rooms are the same 
   another piece doesn't take it unless what I hold goes there; a 400 ms press swaps; a tap off the room puts it down).
   **Table tops** (NH's surfaces, from the ACNH spreadsheet's `surface` flag): Miscellaneous things go one a tile on a
   surface's top, found from its converted model (`scripts/room-surfaces.ts`: items.json `sy`, `st`, `sl`); a thing's op
-  names its piece (`on`), so moving the table carries it; not put away with things on it. **On the walls** (the かべかけ
+  names its piece (`on`), so moving the table carries it; not put away with things on it. The island's tables
+  outdoors follow the same rules (`lib/surface.ts`; island-layout.md "Table tops"). **On the walls** (the かべかけ
   tab): a piece hangs on a wall's grid (its op: x, z the step, f the wall).
 - **Loading:** the furniture's models are kept page-wide as loaded (tent/engine.ts `loadModel`, release.ts `lean`), so
   a room comes back with no fetch or decode; each room's GPU copies go with its renderer. What isn't drawn yet (the first

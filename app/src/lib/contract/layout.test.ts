@@ -11,6 +11,8 @@ describe('layout ops (contract/layout.ts)', () => {
   test('parse: each scope, its known keys only', () => {
     expect(layoutOpOf({ sc: 'o', id: 'goal-A', at: T0, k: 'goal-tree', x: 3, z: 10, f: 0, s: 'a' })).toEqual({ sc: 'o', id: 'goal-A', at: T0, k: 'goal-tree', x: 3, z: 10, f: 0, s: 'a' });
     expect(layoutOpOf({ sc: 'o', id: 'fl:52:180', at: T0, rm: true })).toEqual({ sc: 'o', id: 'fl:52:180', at: T0, rm: true });
+    // a thing on a table's top: `on` its table's id
+    expect(layoutOpOf({ sc: 'o', id: 'okettle', at: T0, k: 'kettle', x: 5, z: 12, f: 1, on: 'otable' })).toEqual({ sc: 'o', id: 'okettle', at: T0, k: 'kettle', x: 5, z: 12, f: 1, on: 'otable' });
     expect(layoutOpOf({ sc: 'c', id: 'c2x5', at: T0, g: '4'.repeat(64) })).not.toBeNull();
     expect(layoutOpOf({ sc: 'r', id: 'reset', at: T0 })).not.toBeNull();
     expect(layoutOpOf({ sc: 'h', id: 'hB', at: T0, m: 'house', w: 'NAStucco.A', r: 'NATile.A', d: 'Simple.R.A' })).not.toBeNull();
@@ -22,6 +24,9 @@ describe('layout ops (contract/layout.ts)', () => {
       { sc: 'o', id: 'x', at: T0, k: 'Oak', x: 0, z: 0, f: 0 },
       { sc: 'o', id: 'x', at: T0, k: 'oak', x: 0, z: 0, f: 0, extra: 1 },
       { sc: 'o', id: 'x', at: T0, rm: false },
+      { sc: 'o', id: 'x', at: T0, k: 'kettle', x: 0, z: 0, f: 0, on: 'x' },
+      { sc: 'o', id: 'x', at: T0, k: 'kettle', x: 0, z: 0, f: 0, on: 'bad id!' },
+      { sc: 'o', id: 'x', at: T0, k: 'kettle', x: 0, z: 0, f: 0, on: 3 },
       { sc: 'c', id: 'c16x0', at: T0, g: '4'.repeat(64) },
       { sc: 'c', id: 'c0x0', at: T0, g: '4'.repeat(63) },
       { sc: 'r', id: 'other', at: T0 },

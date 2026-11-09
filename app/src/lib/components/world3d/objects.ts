@@ -17,6 +17,7 @@ import { kindDef } from '#lib/layout/catalog.ts';
 import { doorOf, facingVec, footOf, objMid, type Layout } from '#lib/layout/model.ts';
 import { WHO_OF_HOME, homePorch, type HomeStyle } from '#lib/layout/homes.ts';
 import { KK_STOOL_H } from '../island/kkSlider.ts';
+import { topSpot } from '#lib/layout/tops.ts';
 
 /** A model (static/room/world3d/<name>.glb). */
 export type ModelName = string;
@@ -288,6 +289,14 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
         else standins.push({ id: o.id, key, x, z, h: piece?.h ?? h, flip: o.f % 2 === 1 });
       }
     }
+  }
+  // the things on tables' tops (layout/tops.ts): on their table's top as it's drawn (its scale), turned with it
+  const byId = new Map(out.map((i) => [i.id, i]));
+  for (const i of out) {
+    const o = layout.objects.get(i.id);
+    if (!o?.on) continue;
+    const p = byId.get(o.on), at = p && topSpot(layout, o, p.scale);
+    if (at) Object.assign(i, at);
   }
   return { insts: out, standins };
 }

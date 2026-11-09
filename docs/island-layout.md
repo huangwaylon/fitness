@@ -81,7 +81,7 @@ latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (its pa
 
 | `sc` | Op | Who may write |
 |---|---|---|
-| `o` | an object set `{id, at, k, x, z, f, s?}` or gone `{id, at, rm: true}` (not final: a later set brings it back) | A, B, G |
+| `o` | an object set `{id, at, k, x, z, f, s?, on?}` or gone `{id, at, rm: true}` (not final: a later set brings it back); `on`: on that object's top ("Table tops") | A, B, G |
 | `c` | a terrain chunk `{id: 'c<cx>x<cz>', at, g}`: `g` its 64 tiles, row by row, one character each | A, B, G |
 | `r` | a reset `{id: 'reset', at}`: every `o` and `c` op older than it is void (the default again); the record drops them | A, B, G |
 | `h` | a home's style `{id: 'hA'\|'hB'\|'hG', at, m, w?, r?, d?, f?}` (`f` its facing 0–3) | its owner alone |
@@ -344,6 +344,24 @@ to `/pair`). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the
   as `o` ops `m-<its id>` on its tile (`layout.migrateDecor`); already moved (any op of that id) never again. The
   island draws the layout's copy, not contract/decor's.
 
+## Table tops
+
+NH's surfaces outdoors, the rooms' rules (design.md "The tent" › Table tops; the shared geometry `lib/surface.ts`,
+the island's `layout/tops.ts`). A small thing (NH's miscellaneous: the food, the kettles, the lantern, the radio, the
+cooler, the buckets…) stands on a surface (the folding and outdoor tables, the camp kitchen, the outdoor bench, the
+log stool, the wagon, the iron garden table, the locker), one a tile of its top; each surface's top is its room
+piece's (tent/items.json `sy`, `st`: the same NH model, `tops.test.ts`).
+
+- **Data:** the thing keeps its own tile (one of its surface's) and facing, and names its surface (`on`). Everything
+  else that reads the layout (the walk, the checks, an older phone) sees a thing on that tile; it blocks nothing and
+  overlaps nothing of its own. Its surface gone (a race), it stands on the ground there.
+- **Drawn** (`world3d/objects.ts`): on the top at the surface's drawn scale (its `lift`), on the top's rectangle, so a
+  lamp's light and a tap node (island/Decor.svelte) are there too. A bench or a stool with things on it is no seat.
+- **Edited:** in both editors a small thing put down or dragged over a top goes on it (a tap on the table with one
+  held, as in the rooms); moving or turning the table carries its things (`carryTops`: the same slots, turned);
+  the desktop editor's Delete takes them with it (⌘Z brings both), the phone's 🗑 refuses until they're off (the rooms'
+  「上のものを先に片付けてください」). The e2e: `e2e/editor-surfaces.spec.ts`.
+
 ## Phone editing
 
 `components/layoutEdit/IslandEdit.svelte`: the island's もようがえ in the editor's phone view (the tent's もようがえ
@@ -356,7 +374,7 @@ on it, or on any placed thing, drags it a tile at a time; a tap on the ground mo
 a drop is its ops at once. Anyone's, the guest's too. Terraforming (paths, water, cliffs) is the desktop editor's
 alone.
 
-It runs over any stage: `{ host, toScreen(x, z, lift), toGround(sx, sy), size(), hide(id) }`. The editor's phone view
+It runs over any stage: `{ host, toScreen(x, z, lift), toGround(sx, sy), size(), hide(ids) }`. The editor's phone view
 gives it one (`/editor/?view=phone&edit`: the 3D island's camera and bend, `&cam=<z>` its spot; `&preview=0` a flat
 plan, the e2e's; `?view=orbit` the 3D preview, `&eye=x,y,z&at=x,y,z` its camera). The e2e: `e2e/island-edit.spec.ts`,
 `e2e/decor.spec.ts`, `e2e/island3d-layout.spec.ts`, `e2e/gym.spec.ts`, `e2e/visitor-spot.spec.ts`.

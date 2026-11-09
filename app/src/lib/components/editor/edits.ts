@@ -2,12 +2,13 @@
 // withChanges), and undo's revert of one action over whatever the layout is now (a partner's changes since stay). The
 // editor sends the ops between the layout and the new one (model.ts opsBetween) through the store, so every phone
 // sees it live.
-import { codeOf, idx, isWater, kindOf, onGrid, tierOf, TIERS, CHUNKS_X, CHUNKS_Z, chunkString, chunkXZ, CHUNK, GRID, type Kind } from '#lib/layout/grid.ts';
+import { codeOf, idx, isWater, kindOf, onGrid, tierOf, TIERS, CHUNKS_X, CHUNKS_Z, chunkString, chunkXZ, CHUNK, GRID, TILE, type Kind } from '#lib/layout/grid.ts';
 import { footprintOf, kindDef } from '#lib/layout/catalog.ts';
 import { footOf, newObjId, originOf, withChanges, type Layout, type Obj } from '#lib/layout/model.ts';
 import { diffLayouts } from '#lib/layout/diff.ts';
 import { HOME_IDS, WHO_OF_HOME, type HomeStyle, type Who } from '#lib/layout/homes.ts';
 import { validate } from '#lib/layout/validate.ts';
+import { isSmallKind, seat } from '#lib/layout/tops.ts';
 import { moveInside, resizeEdge, withTiles, type Blocker, type Edge } from '#lib/layout/resize.ts';
 
 type Facing = Obj['f'];
@@ -55,7 +56,8 @@ export function place(l: Layout, k: string, c: number, r: number, f: Facing, s: 
   const id = (def.one && [...l.objects.values()].filter((o) => o.k === k).map((o) => o.id).sort().pop()) || newObjId(at);
   const o: Obj = { id, k, x: c, z: r, f: def.turns ? f : (f % 2) as Facing, ...((s ?? def.variants?.[0]) ? { s: s ?? def.variants![0] } : {}) };
   if (!inGrid(l, o)) return null;
-  return { layout: withChanges(l, { set: [o] }), id };
+  // (a small thing over a table: on its top, layout/tops.ts)
+  return { layout: withChanges(l, { set: [seat(l, o)] }), id };
 }
 
 /** Whether an object's footprint lies on the grid. */
@@ -75,7 +77,21 @@ export function move(l: Layout, ids: Iterable<string>, dc: number, dr: number): 
     dr = Math.max(-z, Math.min(GRID.rows - d - z, dr));
   }
   if (!dc && !dr) return l;
-  return withChanges(l, { set: os.map((o) => ({ id: o.id, k: o.k, x: o.x + dc, z: o.z + dr, f: o.f, ...(o.s ? { s: o.s } : {}) })) });
+  const next = withChanges(l, { set: os.map((o) => ({ id: o.id, k: o.k, x: o.x + dc, z: o.z + dr, f: o.f, ...(o.s ? { s: o.s } : {}), ...(o.on ? { on: o.on } : {}) })) });
+  return settle(next, os.map((o) => o.id));
+}
+
+/** The small things among `ids` that moved without their table: on the top they're over now, else on the ground
+ *  (layout/tops.ts seat); one moved with its table stays on it (the editor's commit carries it: carryTops). */
+function settle(l: Layout, ids: readonly string[]): Layout {
+  const set: Obj[] = [];
+  for (const id of ids) {
+    const o = l.objects.get(id);
+    if (!o || !isSmallKind(o.k) || (o.on && ids.includes(o.on))) continue;
+    const s = seat(l, o);
+    if (s.on !== o.on) set.push(s);
+  }
+  return set.length ? withChanges(l, { set }) : l;
 }
 
 /** Turn objects a quarter (clockwise seen from above: f + 1), each about its footprint's back-left tile. */
@@ -93,7 +109,7 @@ export function rotate(l: Layout, ids: Iterable<string>, by = 1, me?: Who): Layo
       homes[owner] = { ...l.homes[owner], f: ((((o.f + by) % 4) + 4) % 4) as Facing };
       continue;
     }
-    const next: Obj = { id, k: o.k, x: o.x, z: o.z, f: (((o.f + by) % 4) + 4) % 4 as Facing, ...(o.s ? { s: o.s } : {}) };
+    const next: Obj = { id, k: o.k, x: o.x, z: o.z, f: (((o.f + by) % 4) + 4) % 4 as Facing, ...(o.s ? { s: o.s } : {}), ...(o.on ? { on: o.on } : {}) };
     if (o.n) Object.assign(next, { n: o.n });
     if (inGrid(l, next)) set.push(next);
   }
@@ -147,7 +163,8 @@ export function paste(l: Layout, clip: Clip, c: number, r: number, at: number): 
     const o: Obj = { id: newObjId(at + i), k: it.k, x: c + it.dx, z: r + it.dz, f: it.f, ...(it.s ? { s: it.s } : {}) };
     if (inGrid(l, o)) set.push(o);
   });
-  return { layout: set.length ? withChanges(l, { set }) : l, ids: set.map((o) => o.id) };
+  const ids = set.map((o) => o.id);
+  return { layout: set.length ? settle(withChanges(l, { set }), ids) : l, ids };
 }
 
 /** The objects whose footprints a tile box (inclusive) touches. */
@@ -161,16 +178,19 @@ export function inBox(l: Layout, c0: number, r0: number, c1: number, r1: number)
   return out;
 }
 
-/** The object at a tile (the topmost: a small thing over a big one, a flower last), or null. */
-export function objectAt(l: Layout, c: number, r: number): Obj | null {
+/** The object at a tile (the topmost: a small thing over a big one, a thing on a table's top over it), or null. With
+ *  the point `at` (u) a thing on a top is taken only near its middle, its table by the rest of the tile. */
+export function objectAt(l: Layout, c: number, r: number, at?: readonly [number, number]): Obj | null {
   let best: Obj | null = null, area = Infinity;
   for (const o of l.objects.values()) {
     const [w, d] = footOf(l, o), [x, z] = originOf(l, o);
-    if (c >= x && c < x + w && r >= z && r < z + d && w * d < area) {
+    // (a thing on a table's top over its table)
+    if (c >= x && c < x + w && r >= z && r < z + d && (w * d < area || (w * d === area && o.on && !best?.on))) {
       best = o;
       area = w * d;
     }
   }
+  if (best?.on && at && Math.max(Math.abs(at[0] - (GRID.x0 + (c + 0.5) * TILE)), Math.abs(at[1] - (GRID.z0 + (r + 0.5) * TILE))) > TILE * 0.3) return l.objects.get(best.on) ?? best;
   return best;
 }
 
