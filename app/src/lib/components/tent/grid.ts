@@ -299,6 +299,17 @@ export const clampIn = (p: Pt, b: Bounds = FULL): [number, number] => {
   const [x0, x1, z0, z1] = rectOf(b);
   return [Math.min(x1 - WALL_PAD, Math.max(x0 + WALL_PAD, p[0])), Math.min(z1 - WALL_PAD, Math.max(z0 + WALL_PAD, p[1]))];
 };
+/** Whether one can stand at `p` (a step off a seat or a bed): on this room's floor off its walls, and no piece (but a
+ *  rug) under the walker's width there. */
+export function standable(spots: readonly Spot[], p: Pt, b: Bounds = FULL): boolean {
+  const [x0, x1, z0, z1] = rectOf(b);
+  if (p[0] < x0 + WALL_PAD || p[0] > x1 - WALL_PAD || p[1] < z0 + WALL_PAD || p[1] > z1 - WALL_PAD) return false;
+  const bl = blocked(spots, b);
+  return [[0, 0], [-1.5, 0], [1.5, 0], [0, -1.5], [0, 1.5]].every(([dx, dz]) => {
+    const [cx, cz] = cellOf([p[0] + dx, p[1] + dz]);
+    return !bl[cx * N + cz];
+  });
+}
 /** Whether a model point is on this room's floor. */
 export const onFloor = (p: Pt, b: Bounds = FULL): boolean => {
   const [x0, x1, z0, z1] = rectOf(b);

@@ -53,7 +53,7 @@
   import { tokyoDay, type Intent, type SayScope, type Pt as WirePt, type Relayed } from '#lib/contract/live-protocol.ts';
   import { hook } from '../island/devHooks.ts';
   import { DEFAULT_FLOOR, DEFAULT_WALL, ITEMS, STARTER, codeOfFind } from './items.ts';
-  import { DOOR_IN, HALF, boundsOf, centreOf, clampIn, nearestFree, onFloor, outside, rectOf, resolve as resolveRoom, wallMid, walkPath, type Pt, type Resolved, type Spot } from './grid.ts';
+  import { DOOR_IN, HALF, boundsOf, centreOf, clampIn, nearestFree, onFloor, outside, rectOf, resolve as resolveRoom, standable, wallMid, walkPath, type Facing, type Pt, type Resolved, type Spot } from './grid.ts';
   import { DragLink } from './dragLink.ts';
   import { seatsOf, type Seat } from './seats.ts';
   import { createSeating } from '../rooms/seating.ts';
@@ -194,15 +194,18 @@
   // ---- sitting and lying (NH's chairs, sofas, beds: seats.ts): walk up to it, then on; one villager a seat, first wins ----
   // svelte-ignore state_referenced_locally
   const seats = createSeating<Seat>(me);
-  const seatAt = (id: string, n: number) => {
+  // (each gets on and off from its nearest free side: a step off the footprint no piece or wall is on)
+  const canStand = (at: Pt) => standable(spots(), at, bounds);
+  const seatAt = (id: string, n: number, near?: Pt) => {
     const p = spots().find((q) => q.id === id);
-    return p ? (seatsOf(p)[n] ?? null) : null;
+    return p ? (seatsOf(p, canStand, near)[n] ?? null) : null;
   };
   const poseOf = (st: Seat): Pose => ({ at: st.at, y: st.y, lie: st.lie, front: st.front, a: st.anchor });
   function sitOn(id: string) {
     const p = spots().find((q) => q.id === id);
     if (!p || !eng) return false;
-    const go = seats.tap(seatsOf(p), eng.at(me) ?? [0, 0], relayNow, walkTo, (st) => {
+    const here = eng.at(me) ?? [0, 0];
+    const go = seats.tap(seatsOf(p, canStand, here), here, relayNow, walkTo, (st) => {
       eng?.pose(me, poseOf(st));
       cue('scene-bench');
       sayWhere();
@@ -236,7 +239,7 @@
     // on a seat: one villager to a seat, the first to sit keeps it (I stand up if they were there first)
     const { seat, yields } = seats.heard(w, m);
     if (seat) {
-      const st = seatAt(seat.id, seat.n), mine = seats.mine();
+      const st = seatAt(seat.id, seat.n, eng.at(w) ?? undefined), mine = seats.mine();
       if (yields && mine) {
         walkTo(mine.from);
         cue('boop');
@@ -745,6 +748,16 @@
       /** Where my villager sits or lies (null: standing), and the partner's. */
       seat: () => ((st) => (st ? { id: st.id, n: st.n, lie: st.lie } : null))(seats.mine()),
       partnerSeat: () => seats.their(partner),
+      /** Another villager (`w`) put on seat `n` of piece `id`, as if heard from its phone. */
+      seatAs: (w: Who, id: string, n: number) => {
+        const st = seatAt(id, n);
+        if (!st || !eng) return false;
+        eng.villager(w, lookOf(w));
+        eng.put(w, st.from);
+        seats.heard(w, { in: true, seat: id, n, s: relayNow(), t: relayNow() });
+        eng.pose(w, poseOf(st));
+        return true;
+      },
       /** Anyone's villager in here (A, B or G), null when it isn't (e2e: the guest). */
       who: (w: Who) => (eng?.at(w) ? { at: eng.at(w), walking: eng.walking(w) } : null),
       lights: () => ({ room: room.lights, pieces: room.pieces.filter((p) => ITEMS[p.item]?.lt).map((p) => ({ id: p.id, on: (p.l ?? 1) === 1 })) }),
@@ -778,12 +791,12 @@
       zoom: (f: number) => (eng?.zoom(f), (turned = !eng?.isDefault())),
       isDefault: () => eng?.isDefault(),
       /** Furnish the room with these pieces (rugs first, then each on the free spot nearest the middle): how many. */
-      fill: (codes: string[]) => {
+      fill: (codes: string[], f: Facing = 0) => {
         let n = 0;
         for (const c of [...codes].sort((a, b) => Number(!ITEMS[b].rug) - Number(!ITEMS[a].rug) || 0)) {
           if (room.room <= 0) break;
-          const at = nearestFree(spots(), c, 0, 0, -10, bounds);
-          if (at && room.set({ id: `d${Date.now().toString(36)}${(n++).toString(36).padStart(3, '0')}`, item: c, x: at[0], z: at[1], f: 0 })) continue;
+          const at = nearestFree(spots(), c, f, 0, -10, bounds);
+          if (at && room.set({ id: `d${Date.now().toString(36)}${(n++).toString(36).padStart(3, '0')}`, item: c, x: at[0], z: at[1], f })) continue;
         }
         return room.pieces.length;
       },

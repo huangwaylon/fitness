@@ -85,6 +85,22 @@ the seat, feet down or dangling (poses.ts sitOn), or lies along the bed (a hammo
 tent's seats (`tent/seats.ts`), the museum's benches (`museum/seats.ts`) and the island's (`world3d/villagers.ts`, by
 world.ts SEATS's names) pass their anchors.
 
+**The pose data** (`seats3d.json` `tent[code]` / `island[model]`, model units, the model's own frame: +z its front, its
+middle at 0; a new piece, like a hammock or a sleeping bag, adds one entry and needs nothing else):
+
+- a seat `{k:'s', y, x:[…], z0, z1, back}`: the seat's top, each seat's middle across (a sofa's or a bench's two), the
+  seat's back and front edges, the back's height over it (0 a stool);
+- a bed `{k:'l', y, a, head, s:[s0, s1], c:[…], py}`: the mattress's top (a bunk bed's lowest, `LOW`), the long axis
+  (`'x'`/`'z'`: the footprint's longer side; NH's 2 × 2 beds lie along x, the headboard at a side), the pillow's end
+  (−1/+1 along it: NH's −x, by eye where the rays can't tell), the mattress's extent along it, each sleeper's line
+  across (a double bed's two), the pillow's rise; `sway: 1` rocks (a hammock);
+- a gym point `{k:'u', use, x, y, z, yaw, fx, fz}` (by hand: USE).
+
+The room turns and scales it with its piece (grid.ts `toRoom`, as for the lamps' emitters); one gets on from the
+nearest free side (`tent/seats.ts`: a bed's own side, the other, its foot; a seat's front, then its sides). A piece
+whose seats have no pose isn't offered. `tent/seats.test.ts` checks every one at 4 facings (in the footprint, along
+its axis, the head at the pillow end, on the mattress); a by-eye head goes in its HEAD_PLUS too.
+
 ## Lamps' emitters
 
 `npm run room-models -- --emitters`: each of the tent's lights (NH's `lightingType`, 81) gets `e` in items.json, its

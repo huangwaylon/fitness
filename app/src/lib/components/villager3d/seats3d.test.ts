@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { anchorsOf, shapeOf } from './seats3d.ts';
 import { sitOn, type Body } from './poses.ts';
+import { toRoom } from '../tent/grid.ts';
+import DATA from './seats3d.json' with { type: 'json' };
 
 const body: Body = { thigh: 1.6, shin: 1.4, hip: 3.4 };
 
@@ -53,6 +55,32 @@ describe('seats3d: the seats and beds from the models', () => {
     // the head at −x, the feet toward +x
     expect(a.x).toBeLessThan(-6);
     expect(Math.sin(a.yaw)).toBeCloseTo(1);
+  });
+
+  it('every seat and bed, the tent’s and the island’s, turned and scaled as toRoom turns its model at each quarter: lain from the head along its long axis, sat facing its front', () => {
+    const D = DATA as unknown as Record<'tent' | 'island', Record<string, unknown>>;
+    const all = (['tent', 'island'] as const).flatMap((where) => Object.keys(D[where]).map((k) => [where, k] as const));
+    expect(all.length).toBeGreaterThan(120);
+    for (const [where, k] of all) for (let f = 0; f < 4; f++) {
+      const sh = shapeOf(where, k)!, s = where === 'island' ? 3 : 1, P = { x: 7, z: -4, y: 2, yaw: (f * Math.PI) / 2, s };
+      anchorsOf(sh, P).forEach((a, i) => {
+        const local: [number, number, number] = sh.k === 'l' ? (sh.a === 'x' ? [sh.head < 0 ? sh.s[0] : sh.s[1], 0, sh.c[i]] : [sh.c[i], 0, sh.head < 0 ? sh.s[0] : sh.s[1]])
+          : sh.k === 's' ? [sh.x[i], 0, sh.z0] : [sh.x, 0, sh.z];
+        const o = toRoom(local, f, s), id = `${where} ${k} f${f} #${i}`;
+        expect(Math.hypot(P.x + o[0] - a.x, P.z + o[2] - a.z), id).toBeLessThan(1e-6);
+        expect(a.y, id).toBeCloseTo(P.y + sh.y * s, 6);
+        const dir = [Math.sin(a.yaw), Math.cos(a.yaw)];
+        if (sh.k === 'l') {
+          // from the head toward the feet, along the long axis turned
+          const feet = toRoom(sh.a === 'x' ? [-sh.head, 0, 0] : [0, 0, -sh.head], f);
+          expect(dir[0] * feet[0] + dir[1] * feet[2], id).toBeCloseTo(1, 6);
+          expect(a.len, id).toBeCloseTo((sh.s[1] - sh.s[0]) * s, 6);
+        } else if (sh.k === 's') {
+          const front = toRoom([0, 0, 1], f);
+          expect(dir[0] * front[0] + dir[1] * front[2], id).toBeCloseTo(1, 6);
+        }
+      });
+    }
   });
 
   it('sitting: feet dangle off a high seat, knees come up on a low one', () => {
