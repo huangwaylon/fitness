@@ -85,6 +85,14 @@ the seat, feet down or dangling (poses.ts sitOn), or lies along the bed (a hammo
 tent's seats (`tent/seats.ts`), the museum's benches (`museum/seats.ts`) and the island's (`world3d/villagers.ts`, by
 world.ts SEATS's names) pass their anchors.
 
+## Lamps' emitters
+
+`npm run room-models -- --emitters`: each of the tent's lights (NH's `lightingType`, 81) gets `e` in items.json, its
+point light's spot in model units: NH's `Light` locator in the game's Collada when it's within the model (`el`: 61),
+else the area- and brightness-weighted middle of its emissive map's lit texels on the converted model (18), else
+EMITTERS by eye (2) (`room-surfaces-page.js` locator, emitter). The two agree within ~0.5 units where both exist.
+items.test checks each inside its emissive part (or its model) at every facing.
+
 ## Fishing
 
 `world3d/fishing3d.ts`: Critters.svelte says each step of my line (cast, wait, bite, reel) and where its float is; my
