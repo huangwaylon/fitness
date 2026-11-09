@@ -1,16 +1,17 @@
 // Two phones' live sync through what a phone's network does to them (docs/backend.md#live-sync): the relay's real
 // room and record in the test's process (e2e/liveRoom.ts), each phone its own browser context, in the logic tier's way
-// (nothing drawn). What the reviewer's two-phone experiments found, each kept as a regression:
+// (nothing drawn). What the reviewer's two-phone experiments found, each kept as a regression (kill, an intent made
+// offline and the app killed before it went: sync-offline.spec.ts, in the gate set):
 //   E15  a 3.5 s app switch while the partner writes: the record's change is fetched on coming back
 //   E14  the relay closes the socket (1012, a deploy) while the partner writes: fetched after the reconnect
 //   dead a socket that stays open and carries nothing: found out and replaced, what was sent goes again
-//   kill an intent made offline and the app killed before it went: sent when the app opens again
 //   E13  both phones move a different piece onto one tile at once: the later op's phone moves its piece off
 //   burst 40 layout ops at once (the editor's save): what each phone's main thread spends on them
 //   tabs two tabs of one phone (the second's socket replaces the first's): neither's layout ops written over
 import { expect, test, type Browser, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
-import { DEMO_CTX, newIsland, setVisible } from './liveRoom.ts';
+import { newIsland, setVisible } from './liveRoom.ts';
+import { connected, demoPhone, fakeCatch, w, type W } from './liveSync.ts';
 
 type Island = ReturnType<typeof newIsland>;
 type Who = 'A' | 'B';
@@ -26,27 +27,6 @@ async function phone(browser: Browser, island: Island, who: Who) {
   await expect.poll(() => island.sockets(who), { timeout: 10_000 }).toBe(1);
   return page;
 }
-
-type W = { layoutStamp(): number; layoutApply(ops: object[]): number; share(i: object): boolean; canon(): string; status(): { connected: boolean; peer: boolean } | null; metrics(): { pending: number; closed: number } | null };
-const w = <T,>(p: Page, fn: keyof W, ...args: unknown[]) =>
-  p.evaluate(([fn, args]) => ((window as unknown as { __world: Record<string, (...a: unknown[]) => unknown> }).__world[fn as string](...(args as unknown[]))), [fn, args] as const) as Promise<T>;
-
-/** A demo phone (its hooks on) on `island`'s room; `context` kept for a second page (the app killed and opened again). */
-async function demoPhone(browser: Browser, island: Island, who: Who) {
-  const context = await browser.newContext({ ...DEMO_CTX, locale: 'ja-JP', timezoneId: 'Asia/Tokyo', serviceWorkers: 'block' });
-  await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
-  await island.demo(context, who);
-  const open = async () => {
-    const page = await context.newPage();
-    await page.goto(island.demoUrl(who));
-    await page.waitForFunction(() => (window as unknown as { __world?: { state?: unknown } }).__world?.state);
-    return page;
-  };
-  return { context, open, page: await open() };
-}
-const connected = (p: Page) => expect.poll(() => w<{ connected: boolean } | null>(p, 'status').then((s) => !!s?.connected), { timeout: 10_000 }).toBe(true);
-/** A catch of a critter no island has (its own id: nothing on screen claims it), as the e2e's share does. */
-const fakeCatch = (id: string) => ({ kind: 'catch', what: 'koi', id, how: 'net' });
 
 test.afterEach(async ({ browser }) => {
   for (const c of browser.contexts()) await c.close();
@@ -136,27 +116,6 @@ test('an intent the relay drops without a word (one it can’t read): sent again
   await expect.poll(() => island.said('A').catch, { timeout: 16_000 }).toBeGreaterThanOrEqual(2);
   expect(island.said('A').hello).toBe(hellos);
   expect(await w<{ closed: number } | null>(a, 'metrics').then((m) => m?.closed)).toBe(0);
-});
-
-test('kill: a change made offline and the app killed before it went is sent when the app opens again', async ({ browser }) => {
-  test.setTimeout(60_000);
-  const island = newIsland();
-  const A = await demoPhone(browser, island, 'A');
-  const { page: b } = await demoPhone(browser, island, 'B');
-  await connected(A.page);
-  await connected(b);
-  island.offline('A');
-  await expect.poll(() => w<{ connected: boolean } | null>(A.page, 'status').then((s) => !!s?.connected)).toBe(false);
-  const id = `e2e-kill-${Date.now().toString(36).slice(-5)}`;
-  expect(await w<boolean>(A.page, 'share', fakeCatch(id))).toBe(true);
-  expect(await w<{ pending: number } | null>(A.page, 'metrics').then((m) => m?.pending)).toBe(1);
-  // killed (the page gone, nothing sent), then opened again online
-  await A.page.close();
-  island.offline('A', false);
-  const a2 = await A.open();
-  await connected(a2);
-  await expect.poll(() => w<string>(b, 'canon').then((c) => c.includes(id)), { timeout: 10_000 }).toBe(true);
-  await expect.poll(() => w<{ pending: number } | null>(a2, 'metrics').then((m) => m?.pending), { timeout: 5000 }).toBe(0);
 });
 
 type Obj = { id: string; k: string; x: number; z: number; f: number };

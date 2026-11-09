@@ -4,6 +4,9 @@
 # plan. It never holds a deploy back (the user, 2026-11-08: a lean gate, fix-forward), so it's loud: a failure is an
 # ::error on its spec and a list in the summary, and this workflow goes red: the next push's to fix. One at a time,
 # never cancelled: a newer one waits, and one still waiting is replaced by the newest.
+# The throttle (docs/ops/testing.md "CI cost"), off while the repo is public (its minutes are free): to run it at most
+# every 30 min instead of after each deploy, swap the comments on `workflow_run` and `schedule` below. Scheduled, it
+# tests the newest green deploy, and only when one landed since its previous scheduled run (the `throttle` job).
 name: e2e logic full
 
 on:
@@ -12,6 +15,8 @@ on:
     types: [completed]
     branches: [main]
   workflow_dispatch:
+  # schedule:
+  #   - cron: '7,37 * * * *'
 
 permissions:
   contents: read
@@ -19,16 +24,40 @@ permissions:
 # (the condition in the group's name: a run after a red, cancelled, pull request's or fork's Deploy UI run skips its
 # jobs, but in the group it would still replace a real one waiting: 42449903526 did)
 concurrency:
-  group: ${{ (github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository)) && 'e2e-logic-full' || format('skip-{0}', github.run_id) }}
+  group: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository)) && 'e2e-logic-full' || format('skip-{0}', github.run_id) }}
   cancel-in-progress: false
 
 jobs:
+  # Throttled (on the schedule) only: the newest green Deploy UI push run on main, if it
+  # finished after this workflow's previous scheduled run began (else nothing new was deployed: go=false).
+  throttle:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      actions: read
+    outputs:
+      go: ${{ steps.pick.outputs.go }}
+      sha: ${{ steps.pick.outputs.sha }}
+      run: ${{ steps.pick.outputs.run }}
+    steps:
+      - id: pick
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          last=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/e2e-logic-full.yml/runs?event=schedule&per_page=2" --jq "[.workflow_runs[] | select(.id != $GITHUB_RUN_ID)][0].created_at // \"1970-01-01T00:00:00Z\"")
+          read -r sha at run < <(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/pages.yml/runs?branch=main&event=push&status=success&per_page=1" --jq '.workflow_runs[0] | "\(.head_sha) \(.updated_at) \(.id)"')
+          if [ -n "$sha" ] && [[ "$at" > "$last" ]]; then go=true; else go=false; fi
+          echo "newest green deploy $sha at $at; the previous scheduled run $last: go=$go"
+          { echo "go=$go"; echo "sha=$sha"; echo "run=$run"; } >> "$GITHUB_OUTPUT"
+
   # Every test in 6 shards balanced by time (scripts/e2e-shards.ts plan, the committed e2e/timings.json), 3 workers each,
   # one retry (playwright.config.ts): failing twice is red; flaky (failed, then passed) is named, annotated and written to
   # the flaky ledger (flaky-<shard>: scripts/e2e-flakes.ts), which the gate reads.
   e2e-logic:
     # (after a deploy: not after a red or cancelled gate, nor a pull request's: a fork's code, its own `main` too)
-    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository)
+    needs: throttle
+    if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.throttle.outputs.go == 'true' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository)) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -44,7 +73,7 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ needs.throttle.outputs.sha || github.event.workflow_run.head_sha || github.sha }}
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 24
@@ -93,7 +122,8 @@ jobs:
   # (@smoke) with real (software) GL, on one runner. Advisory (the user, Nov 2026: CI's software GL isn't the phones'
   # Metal): continue-on-error, so it never turns this workflow red; its failures are in its summary.
   e2e-render:
-    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository)
+    needs: throttle
+    if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.throttle.outputs.go == 'true' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository)) }}
     runs-on: ubuntu-latest
     continue-on-error: true
     timeout-minutes: 15
@@ -104,7 +134,7 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ needs.throttle.outputs.sha || github.event.workflow_run.head_sha || github.sha }}
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 24
@@ -127,16 +157,22 @@ jobs:
         run: node scripts/e2e-report.ts playwright-results.json "Failed in the drawn smoke (e2e-render)" >> "$GITHUB_STEP_SUMMARY"
 
   # The tier's test times folded into the committed e2e/timings.json, as an artifact (`npm run e2e:timings` takes the
-  # newest green run's into the repo) and how far apart this run's shards ended, in its summary.
+  # newest green run's into the repo) and how far apart this run's shards ended, in its summary. And the failing specs
+  # the deployed commit's gate didn't run, with its changed files (scripts/e2e-missed.ts, from that Deploy UI run's
+  # `gate-plan`): the next e2e/impact.json rule.
   timings:
-    needs: e2e-logic
+    needs: [throttle, e2e-logic]
     if: always() && needs.e2e-logic.result != 'skipped'
     runs-on: ubuntu-latest
+    # (the Deploy UI run's gate-plan)
+    permissions:
+      contents: read
+      actions: read
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ needs.throttle.outputs.sha || github.event.workflow_run.head_sha || github.sha }}
           sparse-checkout: |
             app/scripts
             app/e2e
@@ -148,10 +184,19 @@ jobs:
           pattern: timings-*
           path: reports
           merge-multiple: true
+      - if: github.event.workflow_run.id || needs.throttle.outputs.run
+        continue-on-error: true
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: gate-plan
+          path: gate-plan
+          run-id: ${{ github.event.workflow_run.id || needs.throttle.outputs.run }}
+          github-token: ${{ github.token }}
       - run: |
           cp app/e2e/timings.json e2e-timings.json
           node app/scripts/e2e-shards.ts timings e2e-timings.json reports/*.json
           node app/scripts/e2e-shards.ts spread reports/*.json >> "$GITHUB_STEP_SUMMARY"
+          node app/scripts/e2e-missed.ts gate-plan reports/*.json >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: e2e-timings

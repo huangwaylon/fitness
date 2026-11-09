@@ -1,5 +1,5 @@
 {
-  "//": "Which e2e specs a changed file reaches (scripts/e2e-impact.ts, docs/ops/testing.md \"The gate\"): [path glob, [spec names]], paths under app/, the first rule whose specs exist wins. A spec name is its file without .spec.ts, `*` any run of letters, $1 the path's first `*`. A src file no rule maps tries its own name (fishing3d.ts: fishing3d*.spec.ts); one still unmapped adds nothing: the gate set runs, and the full logic tier after the deploy. Over the gate's budget, the push gets the gate set only.",
+  "//": "Which e2e specs a changed file reaches (scripts/e2e-impact.ts, docs/ops/testing.md \"The gate\"): [path glob, [spec names]], paths under app/, the first rule whose specs exist wins. A spec name is its file without .spec.ts, `*` any run of letters, $1 the path's first `*`. A src file no rule maps tries its own name (fishing3d.ts: fishing3d*.spec.ts); one still unmapped adds nothing: the gate set runs, and the full logic tier after the deploy. Over the gate's budget, the push gets the gate set only. Every directory under src/ and content/ has a file some rule (or its name) maps, or is in `unmapped` with why (src/lib/e2e-impact.test.ts).",
   "rules": [
     ["content/units/**", ["kikimimi-units", "kikimimi-zukan", "kikimimi-path", "kikimimi-tile", "kikimimi-check", "offline"]],
     ["content/listen/story/**", ["kikimimi-story", "kikimimi-zukan", "kikimimi-path", "kikimimi-tile", "kikimimi-check", "offline"]],
@@ -19,6 +19,7 @@
     ["src/lib/components/food/**", ["food*"]],
     ["src/lib/food/**", ["food*"]],
     ["src/lib/*/food*", ["food*"]],
+    ["src/lib/components/health/*Chart*", ["demo", "health"]],
     ["src/lib/components/health/**", ["health", "gym", "food-open"]],
     ["src/lib/*/health*", ["health", "gym"]],
     ["src/lib/i18n/kenkou*", ["health", "gym", "food-open"]],
@@ -128,12 +129,43 @@
     ["src/lib/components/island/tapWalk*", ["tapwalk", "movement"]],
     ["src/lib/components/island/wander*", ["movement", "positions"]],
     ["src/lib/components/island/walkGraph*", ["movement", "tapwalk"]],
+    ["src/lib/components/island/camera*", ["scroll", "movement"]],
+    ["src/lib/components/island/islandLife*", ["visitor-life", "visitor-spot", "guest"]],
+    ["src/lib/components/island/SceneTaps*", ["movement", "tapwalk", "exact-taps"]],
+    ["src/lib/components/island/sceneTaps*", ["movement", "tapwalk", "exact-taps"]],
+    ["src/lib/components/island/sheetChunks*", ["sheet-keep", "stale"]],
     ["src/lib/components/world3d/biteMark*", ["bite-mark", "fishing3d"]],
     ["src/lib/components/world3d/fish*", ["fishing3d", "fishing-taps"]],
     ["src/lib/components/world3d/pond*", ["pond"]],
     ["src/lib/components/world3d/balloon3d*", ["present-taps"]],
     ["src/lib/components/world3d/precip*", ["weather"]],
     ["src/lib/components/world3d/**", ["world3d", "world", "movement"]],
-    ["src/lib/contract/log*", ["log"]]
-  ]
+    ["src/lib/contract/log*", ["log"]],
+    ["src/lib/contract/wed*", ["wedding*"]],
+    ["src/lib/contract/goals*", ["health"]],
+    ["src/lib/contract/food*", ["food*"]],
+    ["src/lib/contract/listen*", ["kikimimi", "kikimimi-hub"]],
+    ["src/lib/contract/**", ["live-sync", "unsent"]],
+    ["src/lib/store/demo/**", ["demo"]],
+    ["src/lib/store/actions*", ["live-sync", "unsent"]],
+    ["src/lib/store/live*", ["live-sync", "unsent"]],
+    ["src/lib/store/synced*", ["live-sync", "shared-world"]],
+    ["src/routes/+layout*", ["demo", "scroll", "finds"]],
+    ["src/routes/+page*", ["demo", "scroll"]],
+    ["src/routes/jar/**", ["purchases"]],
+    ["src/lib/components/sheets/**", ["demo"]],
+    ["src/lib/config/**", ["demo", "stretch"]],
+    ["src/lib/scoring/**", ["demo", "stretch"]],
+    ["src/lib/styles/**", ["hud-menu", "scroll"]]
+  ],
+  "unmapped": {
+    "src": "app.html and the type declarations: every spec loads them (the gate set)",
+    "src/lib": "the shared helpers (math, random, art, types): every spec's (the gate set)",
+    "src/lib/components/characters": "the /dev/characters page's viewer: not in the app",
+    "src/lib/components/dev": "dev-only overlays: not in the app",
+    "src/lib/model/fixtures": "the model's unit-test fixtures",
+    "src/routes/dev/characters": "a dev page: not in the app",
+    "src/routes/dev/kit": "a dev page: not in the app",
+    "src/routes/world3d": "the 3D island POC's old address: the island itself (boot, the gate set)"
+  }
 }

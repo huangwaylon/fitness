@@ -1,7 +1,7 @@
 // CI's e2e reporter (docs/ops/testing.md "Flakes"): with `retries: 1` a test that failed and then passed on its retry
 // is green but flaky. This one names the flaky tests (a ::warning on each spec, a list in the job summary) and writes
 // them to flaky.json (E2E_FLAKY_FILE), the run's entry in the flaky ledger (scripts/e2e-flakes.ts: ≥2 in 48 h and the
-// gate leaves a test out); a test that failed every time is an ::error on its spec, and the run is red.
+// gate leaves a test out; with the tests run and failed, so a shard that mostly broke reads as the runner's trouble); a test that failed every time is an ::error on its spec, and the run is red.
 // (Playwright's own `github` reporter annotates a flaky test as an ::error, so CI doesn't use it.)
 import { writeFileSync, appendFileSync } from 'node:fs';
 import type { Reporter, Suite, TestCase } from '@playwright/test/reporter';
@@ -25,8 +25,10 @@ export default class FlakyReporter implements Reporter {
 
   onEnd() {
     const flaky: Entry[] = [], failed: Entry[] = [];
+    let total = 0;
     for (const t of this.root.allTests()) {
       const outcome = t.outcome();
+      if (outcome !== 'skipped') total++;
       if (outcome !== 'flaky' && outcome !== 'unexpected') continue;
       const bad = t.results.find((r) => r.status !== 'passed' && r.status !== 'skipped');
       const e: Entry = {
@@ -51,7 +53,7 @@ export default class FlakyReporter implements Reporter {
     if (flaky.length && process.env.E2E_FLAKY_FILE)
       writeFileSync(
         process.env.E2E_FLAKY_FILE,
-        JSON.stringify({ run: process.env.GITHUB_RUN_ID ?? '', sha: process.env.GITHUB_SHA ?? '', workflow: process.env.GITHUB_WORKFLOW ?? '', at: new Date().toISOString(), flaky }, null, 1) + '\n'
+        JSON.stringify({ run: process.env.GITHUB_RUN_ID ?? '', sha: process.env.GITHUB_SHA ?? '', workflow: process.env.GITHUB_WORKFLOW ?? '', at: new Date().toISOString(), total, failed: failed.length, flaky }, null, 1) + '\n'
       );
   }
 }
