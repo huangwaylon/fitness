@@ -129,6 +129,18 @@ describe('the flaky ledger', () => {
     expect(t.all.at(-1)!.key).toBe('a.spec.ts › t0');
   });
 
+  it("counts a flake only on a commit with its spec's last change: a fix lifts it, a flake after it says so", () => {
+    const flakes = [run(1, 'a', ['a.spec.ts › x', 'b.spec.ts › y']), run(2, 'b', ['a.spec.ts › x', 'b.spec.ts › y']), run(3, 'c', ['a.spec.ts › x']), run(4, 'd', ['a.spec.ts › x'])];
+    // a.spec.ts changed in c: a and b came before it; b.spec.ts never changed in the window
+    const current = (file: string, sha: string) => file !== 'e2e/a.spec.ts' || sha >= 'c';
+    const t = tally(flakes, [], { current });
+    expect(t.all.map((q) => [q.key, q.shas.size, q.fixed])).toEqual([['a.spec.ts › x', 2, 2], ['b.spec.ts › y', 2, 0]]);
+    // fixed in d instead: one flake since, not quarantined
+    const later = tally(flakes, [], { current: (file, sha) => file !== 'e2e/a.spec.ts' || sha >= 'd' });
+    expect(later.quarantined.map((q) => q.key)).toEqual(['b.spec.ts › y']);
+    expect(later.all.find((q) => q.key === 'a.spec.ts › x')).toMatchObject({ fixed: 3 });
+  });
+
   it("a shard that mostly broke, or 10 flaky at once, is the runner's: left out of the tally", () => {
     const many = Array.from({ length: 10 }, (_, i) => `a.spec.ts › m${i}`);
     const sick = { ...run(2, 'b', ['a.spec.ts › x']), total: 6, failed: 3 };

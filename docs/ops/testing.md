@@ -86,7 +86,8 @@ After a deploy, never holding one back:
   prints the last 48 h). **Auto-quarantine:** a test flaky in runs of 2 commits or more in 48 h (the gate's shards and
   the full logic tier both count; only this repo's own runs on main, never a fork's pull request: the repo is public)
   is left out of the gate (`--test-list-invert`), listed in its summary as *auto-quarantined* with why, and still run
-  by the full logic tier; it comes back by itself after 48 h without a flake. At most 5, the worst (most commits, then
+  by the full logic tier. A flake counts only on a commit that has its spec's last change, so a fix to the spec lifts
+  it at once, and a flake after it is listed *flaky after its fix*; else it comes back after 48 h without one. At most 5, the worst (most commits, then
   runs, then the latest): the rest are a warning each, still gating. Each one quarantined is a warning on its spec
   naming its owner (the spec's last commit). Never a gate set test (a warning: fix it now). A shard where most tests
   failed or were flaky (or 10 flaky at once) is the runner, not the tests: left out of the tally, named in the

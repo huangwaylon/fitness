@@ -1,8 +1,9 @@
 // The flaky ledger (docs/ops/testing.md "Flakes"): every logic-tier run (the gate's shards, the full logic tier after
 // the deploy) uploads its flaky tests (e2e/reporters/flaky.ts: failed, then passed on the retry) as an artifact
-// flaky-<shard>; this reads the last 48 h of them from the GitHub API. A test flaky in runs of 2 commits or more is
-// auto-quarantined: the gate leaves it out (`playwright test --test-list-invert`), the full logic tier still runs it,
-// and it comes back by itself once 48 h pass without a flake. At most 5, the worst (most commits, then most runs, then
+// flaky-<shard>; this reads the last 48 h of them from the GitHub API. A flake counts only on a commit
+// that has its spec's last change (a fix to the spec ends its count; one after is "flaky after its fix"). A test flaky
+// in runs of 2 commits or more is auto-quarantined: the gate leaves it out (`playwright test --test-list-invert`), the full logic tier still runs it,
+// and it comes back by itself once its spec changes or 48 h pass without a flake. At most 5, the worst (most commits, then most runs, then
 // the latest); the rest that qualify are a warning each. Never a test of the gate set (e2e/gate.json: a warning
 // instead). Each one quarantined is a warning on its spec naming its owner: the spec's last commit. A shard where
 // most tests failed or were flaky (or 10 flaky at once) is the runner, not the tests: its entry is left out of the
@@ -44,20 +45,28 @@ export function unzipOne(zip: Buffer): Buffer {
 export const runnerTrouble = (l: Ledger) => l.flaky.length >= RUNNER_FLAKY || (!!l.total && 2 * (l.flaky.length + (l.failed ?? 0)) > l.total);
 
 /** the tests flaky in runs of at least `minShas` commits, worst first (commits, runs, the latest); the gate set's held
- *  back, the worst `max` of the rest quarantined and the others over the cap; a runner's trouble left out */
-export function tally(ledgers: Ledger[], gate: string[] = [], { minShas = MIN_SHAS, max = MAX_QUARANTINED } = {}) {
-  const by = new Map<string, { key: string; project: string; where: string; runs: Set<string>; shas: Set<string>; error: string; at: string }>();
+ *  back, the worst `max` of the rest quarantined and the others over the cap; a runner's trouble left out. `current`:
+ *  whether a commit has the spec file's last change: a flake before it isn't counted (`fixed`: how many weren't, so a
+ *  test with both is flaky after its fix) */
+export function tally(ledgers: Ledger[], gate: string[] = [], { minShas = MIN_SHAS, max = MAX_QUARANTINED, current = (_file: string, _sha: string): boolean => true } = {}) {
+  const by = new Map<string, { key: string; project: string; where: string; runs: Set<string>; shas: Set<string>; error: string; at: string; fixed: number }>();
+  const before = new Map<string, number>();
   const runner = ledgers.filter(runnerTrouble);
   for (const l of ledgers.filter((l) => !runner.includes(l)).sort((a, b) => a.at.localeCompare(b.at)))
     for (const e of l.flaky) {
       const id = `[${e.project}] › ${e.key}`;
-      const t = by.get(id) ?? { key: e.key, project: e.project, where: `${e.file}:${e.line}`, runs: new Set(), shas: new Set(), error: '', at: '' };
+      if (l.sha && !current(e.file, l.sha)) {
+        before.set(id, (before.get(id) ?? 0) + 1);
+        continue;
+      }
+      const t = by.get(id) ?? { key: e.key, project: e.project, where: `${e.file}:${e.line}`, runs: new Set(), shas: new Set(), error: '', at: '', fixed: 0 };
       t.runs.add(l.run || l.at);
       t.shas.add(l.sha || l.run || l.at);
       t.error = e.error;
       t.at = l.at;
       by.set(id, t);
     }
+  for (const [id, n] of before) if (by.has(id)) by.get(id)!.fixed = n;
   const all = [...by.values()].sort((a, b) => b.shas.size - a.shas.size || b.runs.size - a.runs.size || b.at.localeCompare(a.at));
   const due = all.filter((t) => t.shas.size >= minShas);
   const inGate = (t: (typeof all)[number]) => gate.includes(t.key.split(' › ')[0]);
@@ -72,6 +81,33 @@ function owner(file: string) {
   } catch {
     return '';
   }
+}
+
+/** whether `sha` has `file`'s last change (`git merge-base --is-ancestor`); not sure (a commit not here): yes */
+function lastChange() {
+  const last = new Map<string, string>();
+  const known = new Map<string, boolean>();
+  const git = (args: string[]) => execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+  return (file: string, sha: string) => {
+    if (!last.has(file)) {
+      try {
+        last.set(file, git(['log', '-1', '--format=%H', '--', file]));
+      } catch {
+        last.set(file, '');
+      }
+    }
+    const change = last.get(file)!;
+    const k = `${change} ${sha}`;
+    if (change && !known.has(k)) {
+      try {
+        git(['merge-base', '--is-ancestor', change, sha]);
+        known.set(k, true);
+      } catch (e) {
+        known.set(k, (e as { status?: number }).status !== 1); // 1: not an ancestor; else unknown
+      }
+    }
+    return !change || known.get(k)!;
+  };
 }
 
 const gateSet = () => Object.keys((JSON.parse(readFileSync(join(import.meta.dirname, '..', 'e2e', 'gate.json'), 'utf8')) as { specs: Record<string, string> }).specs);
@@ -130,24 +166,24 @@ if (import.meta.main) {
   } catch (e) {
     why = String((e as Error)?.message ?? e);
   }
-  const { all, quarantined, over, held, runner } = tally(got?.ledgers ?? [], gateSet());
+  const { all, quarantined, over, held, runner } = tally(got?.ledgers ?? [], gateSet(), { current: lastChange() });
   if (out) writeFileSync(out, quarantined.map((t) => `[${t.project}] › ${t.key}`).join('\n') + (quarantined.length ? '\n' : ''));
   // (workflow commands on stderr: stdout is the summary)
   const at = (t: (typeof all)[number]) => `file=app/${t.where.replace(/:(\d+)$/, ',line=$1')}`;
   const owners = new Map(quarantined.map((t) => [t, owner(t.where.split(':')[0])]));
   if (out) {
-    for (const t of quarantined) console.error(`::warning ${at(t)},title=Auto-quarantined (flaky)::${t.key} [${t.project}]: flaky in runs of ${t.shas.size} commits; out of the gate till 48 h without a flake. Owner: ${owners.get(t) || 'unknown'}`);
+    for (const t of quarantined) console.error(`::warning ${at(t)},title=Auto-quarantined (flaky)::${t.key} [${t.project}]: flaky in runs of ${t.shas.size} commits; out of the gate till its spec changes or 48 h pass without a flake. Owner: ${owners.get(t) || 'unknown'}`);
     for (const t of over) console.error(`::warning ${at(t)},title=Flaky, over the quarantine's cap::${t.key} [${t.project}]: flaky in runs of ${t.shas.size} commits; ${MAX_QUARANTINED} worse ones are quarantined, this one still gates`);
     for (const t of held) console.error(`::warning ${at(t)},title=Flaky gate test (never auto-quarantined)::${t.key} [${t.project}]: flaky in runs of ${t.shas.size} commits. Fix it now: it's in the gate set (e2e/gate.json)`);
     if (runner.length) console.error(`::warning title=Flaky ledger::${runner.length} shard run(s) mostly broken: the runner, not the tests; left out of the tally (${runner.map((l) => l.run).join(', ')})`);
   }
   const secs = ((performance.now() - t0) / 1000).toFixed(1);
-  const line = (t: (typeof all)[number]) => `- \`${t.where}\` ${t.key} [${t.project}]: flaky in ${t.runs.size} run${t.runs.size > 1 ? 's' : ''} of ${t.shas.size} commit${t.shas.size > 1 ? 's' : ''}, last ${t.at.slice(0, 16).replace('T', ' ')} UTC: ${t.error.replace(/`/g, "'")}`;
+  const line = (t: (typeof all)[number]) => `- \`${t.where}\` ${t.key} [${t.project}]: flaky in ${t.runs.size} run${t.runs.size > 1 ? 's' : ''} of ${t.shas.size} commit${t.shas.size > 1 ? 's' : ''}, last ${t.at.slice(0, 16).replace('T', ' ')} UTC${t.fixed ? ` (**flaky after its fix**: ${t.fixed} more before the spec's last change)` : ''}: ${t.error.replace(/`/g, "'")}`;
   const runners = runner.length ? `Left out as the runner's trouble (most of the shard broke): ${runner.map((l) => `run ${l.run} (${l.flaky.length} flaky${l.total ? ` of ${l.total}` : ''})`).join(', ')}.\n` : '';
   if (!got) console.log(`### Auto-quarantine\n\nThe flaky ledger couldn't be read (${why}, ${secs} s): nothing left out.`);
   else if (out) {
     console.log(`### Auto-quarantined (${quarantined.length}): flaky in runs of ${MIN_SHAS}+ commits in ${HOURS} h, the worst ${MAX_QUARANTINED} at most\n`);
-    console.log(quarantined.length ? `Left out of the gate (the full logic tier still runs them); back by themselves after ${HOURS} h without a flake. Fix the cause (docs/ops/testing.md "Flakes").\n\n${quarantined.map((t) => `${line(t)} Owner: ${owners.get(t) || 'unknown'}`).join('\n')}\n` : 'None.\n');
+    console.log(quarantined.length ? `Left out of the gate (the full logic tier still runs them); back by themselves once their spec changes (a fix) or after ${HOURS} h without a flake. Fix the cause (docs/ops/testing.md "Flakes").\n\n${quarantined.map((t) => `${line(t)} Owner: ${owners.get(t) || 'unknown'}`).join('\n')}\n` : 'None.\n');
     if (over.length) console.log(`**Over the cap, still in the gate (${over.length}):** fix these too.\n\n${over.map(line).join('\n')}\n`);
     if (held.length) console.log(`**Flaky in the gate set (e2e/gate.json), never left out: fix now.**\n\n${held.map(line).join('\n')}\n`);
     if (runners) console.log(runners);
