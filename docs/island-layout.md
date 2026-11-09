@@ -173,15 +173,16 @@ layout in localStorage.
 three.js (`world3d/terrain.ts`, `objects.ts`):
 
 ```ts
-buildGround(layout, { renderer, look?, base?, px? }): Ground   // engine.ts's BuiltGround, and more
+buildGround(layout, { renderer, look?, base?, stairs?, px? }): Ground   // engine.ts's BuiltGround, and more
   ground.group: Group                 // the land, the walls, the falls, the water, the sea, the stairs
   ground.heightAt(x, z) / ground.feet(x, z)   // = layout/height.ts; where feet stand (stairs, bridge decks)
   ground.land: { x0, x1, z0, z1, r }  // the land's box (updated by a rebuild)
-  ground.update(t): false             // the engine's per-frame hook
+  ground.update(t): boolean | 'ambient'   // the engine's per-frame hook (the water's clock, at the ambient rate)
   ground.rebuild(layout, chunks?)     // the bands those chunks are in (and either side); all when none given
   ground.look('summer' | … | 'autumn-leaves')
   ground.chunks(): { z0, z1, meshes }[]     // each band, for the camera's culling
   ground.ready: Promise<void>         // NH's textures in (the bands bake again then)
+  ground.restore()                    // a lost context back: the bands bake again
   ground.dispose()
 placeObjects(layout, day): { insts: Inst[]; standins: Standin[] }   // the engine's instances, from the layout
   day = { season, foliage, month, swaps?: swapsOn(date), pieces?: piecesOn(date, hour, seed), fruit? }
@@ -199,9 +200,9 @@ extentOf(layout): { grid, land, shore, home }   // model.ts: the island's box, t
   the land, the beach's sand, the fresh water, the paths, each tier. The heights, the bake, the shore wash and the
   fresh water's edge all read them (~110 ms for the island on a desktop, ~300 on a phone). Built once per tiles and
   bridges; on `/` a worker builds them as the app starts (`fieldsPrime.ts`, `fields.worker.ts`: the same
-  `computeFields`, bit for bit, `fields.test.ts`) from the layout in localStorage, and the mount waits for that job
-  (or starts it); the main thread builds them only if the worker can't (none, an error, stalled 4 s) or the layout is
-  another.
+  `computeFields`, bit for bit, `fields.test.ts`) from the layout in localStorage, kept for the next launch
+  (`fieldsCache.ts`, IndexedDB: a hit starts no worker), and the mount waits for that job (or starts it); the main
+  thread builds them only if the worker can't (none, an error, stalled 4 s) or the layout is another.
 - **Soft edges** (NH's coast is round): the data and the objects stay on tiles, only the drawn edge is round. The
   coast, the beach's sand, the fresh water and the paths are rounded on half a tile; a staircase of tiles is cut
   straight, so a diagonal of tiles is a diagonal shore, river or path; then each soft field is box-blurred (2 cells,
@@ -233,11 +234,11 @@ extentOf(layout): { grid, land, shore, home }   // model.ts: the island's box, t
   the sea's shader the foam line and backwash: one rhythm, the same maths (SWASH_GLSL) on both and on the CPU (what
   washes in rides a wave). The rivers' flow (each tile's way down, breadth-first to the sea or a fall), the ponds'
   ripples, the falls' streaks: all on water.ts's shared clock, tint and fog uniforms. On a stem the river's streaks
-  (`water.ts` RIVER_FRAG / FOAM_FRAG) run along the stem (each water vertex's `path`, from `fields.along`): 26 u/s,
+  (terrain.ts `FRESH_FRAG`) run along the stem (each water vertex's `path`, from `fields.along`): 26 u/s,
   hurrying to 90 u/s and whitening over the last 22u before a fall, a foam pool over the first 34u below it (`flow.w`);
   the falls' wall long streaks at 110 u/s over NH's streak texture. Off a stem the tiles' flow.
 - NH's textures: `npm run terrain-textures` (NH_MODELS=~/Downloads/acnh-2.0.0-models/Model) converts the few PNGs from
-  `FldUnit.Nin_NX_NVN` into `static/terrain/nh/*.webp` (92 KB).
+  `FldUnit.Nin_NX_NVN` into `static/terrain/nh/*.webp` (94 KB).
 
 ## The editor
 
@@ -276,7 +277,7 @@ to `/pair`). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the
   missing; a click selects it.
 - **Files:** JSON に かきだす / JSON を よみこむ (model.ts `toJson` / `fromJson`; an import is one action), 最初の島に戻す
   (the reset op; the homes' looks kept) behind `editor/ResetConfirm.svelte`: what goes, then リセットする only once
-  「リセット」 is typed (やめる the default; anyone, the guest too: 2026-11-09).
+  「リセット」 is typed (やめる the default; anyone, the guest too).
 - **The e2e:** `e2e/editor.spec.ts` (a move live on the other tab and across a reload; a stroke and its undo / redo;
   R; Delete refusing a goal tree; placing refused on the river; the typed reset (A and G); the guest's door; しまの おおきさ live, blocked,
   うごかす and its ⌘Z), `e2e/editor-preview.spec.ts` (a pond on the plan in the preview, K.K. following his stool, the
@@ -286,7 +287,7 @@ to `/pair`). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the
 
 - **The catalogue** (`layout/homes.ts`, `homes.json`; `npm run home-models` with NH_MODELS converts NH's House* parts
   into `static/room/homes/`: 63 families, each part's GLB in its first colour with every other colour's albedo beside
-  it and a 48px swatch per colour, ~6.6 MB plus ~18 MB of KTX2 packs; NH's own picker icons for the doors and the
+  it and a 48px swatch per colour, ~2.9 MB plus ~18 MB of KTX2 packs; NH's own picker icons for the doors and the
   player house):
   - `campsite`: the campsite tent (ウェイ's by default);
   - `tent-n` (`w` 'A' | 'B'): NH's move-in tent; `tent-p`: the player's first tent;
@@ -385,14 +386,15 @@ plan, the e2e's; `?view=orbit` the 3D preview, `&eye=x,y,z&at=x,y,z` its camera)
 
 ## How the 3D island reads it
 
-- **The ground:** `createIsland(canvas, ground)` with `buildGround(layout.current, { renderer, look })`; its bands
+- **The ground:** `createIsland(canvas, (renderer) => buildGround(layout.current, { renderer, look }))`; its bands
   culled per frame (`ground.chunks()`, engine.ts).
 - **The things:** `placeObjects(layout.current, day)`; ids are the layout's (the campsite's tent `home-A` with
   `tap: 'tent'`, the bridge `bridge`).
 - **Live changes:** `layout.on(({ diff }) => …)` rebuilds the changed ground chunks and things (things.ts rebuilds only
   the models whose instances changed).
-- **The camera's ends** from `extentOf(layout.current)` (the shoreline + 60, the far home's door + 16), recomputed on
-  a change; its middle across the land box's (`model.ts midXOf`: `MID_X` 195 on the default island).
+- **The camera's ends** from `extentOf(layout.current)` (Island3D `fitEnds`: the front shore and まえ's canopy clear of
+  the HUD, the land's far edge `EDGE_AT` (0.42) down the screen), recomputed on a change; its middle across the land
+  box's (`model.ts midXOf`: `MID_X` 195 on the default island).
 - **The homes:** `homePlaces(layout.current)` → `buildHome(style)` (`world3d/built.ts` createBuilt, with the bridges,
   stairs and ponds; rebuilt on `diff.homes`); a tap on `home-B` / `home-G` walks to its door and goes in to
   `/tent?home=B|G` (the campsite's to `/tent`); their lamps `homeTod`.

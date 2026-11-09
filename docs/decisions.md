@@ -59,8 +59,8 @@ current phone skips its fetch.
 
 ### Shortcut health sync
 Each iPhone runs one built-in Shortcut posting daily totals (steps, exercise, Move kcal, stand, weight, body fat, BMI)
-when an everyday app opens ([shortcut](ops/shortcut-health-sync.md)); any changed value is appended, latest wins. Health
-rows are never compacted or pruned. Why: no third-party app, nothing manual; Health is the truth, up or down.
+when an everyday app opens, at most every 10 minutes ([shortcut](ops/shortcut-health-sync.md)); any changed value is
+appended, latest wins. Health rows are never compacted or pruned. Why: no third-party app, nothing manual; Health is the truth, up or down.
 
 ### No manual input
 The app never enters health data, and asks nothing day to day. Why: the daily loop needs no taps, and a second source
@@ -190,8 +190,9 @@ only pairing or `?demo`. No key or data is in the repo. Why: the pairing key is 
 ours alone, and Pages can set headers.
 
 ### Offline shell
-The service worker precaches the build (not audio, art beyond the defaults or the trip photos), loads pages
-network-first with a 3 s fallback, and keeps one previous version for a stale page's chunks. Why: the app opens instantly
+The service worker precaches the build (not audio, art beyond the defaults or the trip photos), opens this version's
+cached shell at once (network first, 3 s, only until it has one), and keeps one previous version for a stale page's
+chunks. Why: the app opens instantly
 and offline.
 
 ### Japanese first
@@ -223,7 +224,7 @@ hit-testing were new, and iPhone 15 / 16 Safari always have WebGL.
 ### Free scrolling
 Only the finger moves the camera: one finger scrolls along the island (sideways only zoomed in, x otherwise centred),
 two pinch the zoom; no snap, no sections, no automatic camera move (the board's focus is the one exception). It rests
-where the scroll leaves it, and nothing runs once still. Why: a camera that moves by itself fights the finger.
+where the scroll leaves it, and the camera never moves once still. Why: a camera that moves by itself fights the finger.
 
 ### Lights in depth
 The time of day's tint and a wet day's darkening are applied at the source, so a light (a lamp, a lit window, a firefly)
@@ -244,7 +245,7 @@ live every frame would cost what a bake costs once.
 
 ### Decor is a last-writer-wins map, the record keeps each item's latest op
 Each change of a decoration is one op with the item's whole state or its removal; the layout is the ops merged by id: a
-removal beats everything (ids never reused), else the latest `at`, then B over A (`contract/decor.ts`). The record keeps
+removal beats everything (ids never reused), else the latest `at`, then G over B over A (`contract/decor.ts`). The record keeps
 each item's latest op and checks the item, bounds and the cap (30). Why: commutative and idempotent, so any arrival order
 reaches the same layout with no leader, and rows stay as few as the items.
 
@@ -293,7 +294,7 @@ room, other phones show me nowhere. Why: a villager walking itself home read as 
 
 ### Sleep by presence
 Everyone's villager is awake while its person's app is open and asleep where it stands while it's closed, at any hour
-(the user, 2026-11-09: no night's sleep, the same rule for A, B and the guest). Online is the relay's `here` and a 45 s
+(no night's sleep; the same rule for A, B and the guest). Online is the relay's `here` and a 45 s
 grace after the last socket closed (its `gone`); a tap wakes a sleeper for 60 s from the wake's `at`, in the island's
 life meanwhile. Why: one rule everyone can read off the island; every input is the relay's, on its clock, so all open
 phones agree who sleeps without a message of their own.
@@ -350,7 +351,9 @@ and critters keep their pace. Why: crossing the long island took too long.
 ## Rooms
 
 ### The tent's inside is three.js, its models NH's own, converted
-Rooms are true 3D (`components/tent/`), their own chunk, drawn on demand and disposed on the way out. Furniture, rugs and
+Rooms are true 3D (`components/tent/`), their own chunk, drawn on demand (at most 30 frames a second, the island's
+renderer lifecycle: `world3d/stage.ts`), the renderer ended on the way out and the models kept for the next visit
+(`world3d/modelCache.ts`). Furniture, rugs and
 surfaces are NH's files converted by `scripts/room-models.ts` into compact glTFs and WebPs under `static/room/`; the
 converted models may ship. Why: a room to furnish and walk in, costing the island nothing.
 
@@ -432,8 +435,9 @@ The English listening game's decisions in force; detail in [kikimimi](kikimimi.m
 - **A level shows only when every item has a clip.** Why: the clips are the readiness signal, nothing to flip.
 - **American English first;** UK/AU only as tagged accent exposure (≤ 10 %) at やま and ほし. Why: the learners' target,
   with a little variety at the top.
-- **Audio in packs** (whole m4a files with a byte index), fetched once per game and cached. Why: Pages' 20,000-file
-  limit, and few refetches when a clip changes.
+- **Audio in packs** (whole m4a files with a byte index), each pack fetched whole and once (Pages answers a Range with
+  the whole file), its clips cut from it, cached; Pages static, no R2. Why: Pages' 20,000-file limit, and few refetches
+  when a clip changes.
 - **`play` beside `quiz`:** later games send `play`; the quiz keeps `quiz` (`QUIZ_ON_PLAY` off) until every phone runs a
   build that knows `play`. Why: an older phone must still hear it.
 - **The microphone** is off by default and per phone; recordings stay in memory for their round; recognition runs on the

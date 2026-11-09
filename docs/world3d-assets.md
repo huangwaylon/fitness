@@ -18,7 +18,7 @@ first. It brought the 2.0 villagers, Brewster, Kapp'n and Wilbur, and 376 tent p
   `NH_MODELS=~/Downloads/acnh-2.0.0-models/Model npm run world3d-models [-- --only=critters/,finds/]`. The raw model files never enter
   the repo; the converted GLBs are public.
 - Output: `app/static/room/world3d/<kind>/<id>.glb` (under `/room/`: the service worker caches a file on first use,
-  never at install). The first 43 models stay in `models.json` and serve their keys from there.
+  never at install). The first 45 models stay in `models.json` and serve their keys from there.
 - **Then `npm run world3d-ktx2`** (needs `basisu`: `brew install basis_universal`): each model's WebPs (world3d,
   homes, structures, villagers3d, the players' packs) as KTX2 (UASTC, mipmaps built), one pack a model in
   `static/room/tex/<id>.ktx2p` (`world3d/ktx2Pack.ts`); the loose WebPs those models wear (the homes' other colours,
@@ -116,8 +116,8 @@ its axis, the head at the pillow end, on the mattress); a by-eye head goes in it
 ## Lamps' emitters
 
 `npm run room-models -- --emitters`: each of the tent's lights (NH's `lightingType`, 81) gets `e` in items.json, its
-point light's spot in model units: NH's `Light` locator in the game's Collada when it's within the model (`el`: 61),
-else the area- and brightness-weighted middle of its emissive map's lit texels on the converted model (18), else
+point light's spot in model units: NH's `Light` locator in the game's Collada when it's within the model (`el`: 60),
+else the area- and brightness-weighted middle of its emissive map's lit texels on the converted model (19), else
 EMITTERS by eye (2) (`room-surfaces-page.js` locator, emitter). The two agree within ~0.5 units where both exist.
 items.test checks each inside its emissive part (or its model) at every facing.
 
@@ -144,7 +144,7 @@ reels in.
   the tip to the float, a point every 16u (12 to 64), sagging by its length (6u short, 4% long), lifted only where it
   must to stay 4u over the ground, the water and every blocking object's tiles. Its shape is worked out when its ends
   move, not each frame (`__world3d.line()`; `e2e/fishing-taps.spec.ts`).
-- Frames run at full rate while the float is out (`moveStart`). `window.__fx3` (dev and ?demo): each source's live
+- Frames run at the full rate (30 fps, not the rest's 12) while the float is out (`moveStart`). `window.__fx3` (dev and ?demo): each source's live
   parts and the spawns' log.
 
 ## Villagers and visitors
@@ -156,7 +156,7 @@ Wilbur) and, by
 `VISITOR_ONLY` (not in the picker), Franklin, Jack, Jingle, Zipper, Reese and Cyrus. Pavé isn't in NH's files: he
 never visits. A material's textures are the ones its Collada effect samples, not the ones named after it (`mCapVis`
 and `mGlassCap` sample `mBody_Alb` and `mGlass_Alb`); the converter fails a villager whose GLB has a material without
-a base colour where the source has one. Each villager wears its default top's texture (a single-look top, as the Sanrio tees, is the data's row itself, not a variation; once missed, 66 wore plain white: `villager3d.test` holds every material to its texture). Tulin, Mineru, Cece and Viché aren't in
+a base colour where the source has one. Each villager wears its default top's texture (a single-look top, as the Sanrio tees, is the data's row itself, not a variation: `villager3d.test` holds every material to its texture). Tulin, Mineru, Cece and Viché aren't in
 the 2.0.0 export: their cards stay.
 
 ## Players
@@ -173,8 +173,7 @@ offset, bytes]`), is in both part tables.
   (the WebPs of textures with a KTX2: only a page without a GPU format draws them), ≤ 1.2 MB. A home past its bound
   splits as stably as can be (`lib/packPlan.ts planHome`).
 - **On the phone** (`parts.ts`, `lib/packStore.ts`): any other part is cut from its pack, fetched whole and once (Cloudflare
-  Pages answers a Range with the whole file: a 200, measured 2026-11-09 on the live site; a すがた visit's 7 picks over 5
-  packs: 7 GETs, 1.70 MB → 5, 1.21 MB, 2026-11-10), so a first wear costs its packs (A's saved one-piece and hairstyle: two, 0.5 MB, where the loose files were 43 KB), held and kept by the
+  Pages answers a Range with the whole file: a 200), so a first wear costs its packs (A's saved one-piece and hairstyle: two, 0.5 MB, where the loose files were 43 KB), held and kept by the
   service worker (`island-room-v1`), their other parts free after. A saved コーデ is instant once worn. Offline, a part never fetched is drawn as いつもの's (`player3d.ts wearable`).
 - **Sources:** the packs are the only copy in the repo. `npm run player:packs -- --unpack` writes every file loose into
   `app/.cache/player/` (gitignored), the tree `players3d-models.ts` writes there and packs at its end;

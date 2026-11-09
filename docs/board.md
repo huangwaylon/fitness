@@ -12,7 +12,7 @@ notes on it, and everyone sees them at once. The camera zooms up to it, so it's 
 | The record's rules (a `board` event) | `relay/src/store.ts` (via the contract) |
 | The phone's posts, the badge, the UI (the zoomed view's controls, the write field, the sheet), the face's drawing | `app/src/lib/components/board/` |
 | Its spot: a layout object `board` (`layout/catalog.ts`: furniture, 2 × 1 tiles, `fixed`, `turns`, `front`: the tile before it kept clear to read it), movable in the editor | `app/src/lib/layout/` |
-| The camera's focus and the face on the 3D model | `app/src/lib/components/world3d/` (engine.ts `focus` / `unfocus`, things.ts `attach`) |
+| The camera's focus and the face on the 3D model | `app/src/lib/components/world3d/` (engine.ts `frame` / `restore`, wired as `focus` / `unfocus` by Island3D; things.ts `attach`) |
 
 ## The 3D hooks
 
@@ -36,7 +36,7 @@ notes stand off it to z +1.02, the frame's front at z +1.10 … +1.24). The face
 since `attach` sets the object's matrix to the instance's), with the face's CanvasTexture. The board is drawn at 3.5 u
 a model unit (`BOARD_S`); its focus rect is the face (`y` 29.75 u, 47.6 × 35 u), `yaw` from the layout's `f`, `fill`
 0.92. Its instance id is `board` (the bird's `board-bird`, an ordinary node on its top turning its yaw every few
-seconds); the board follows `world.rest.three` (`world.three` isn't reactive).
+seconds while the island is seen); the board follows `world.rest.three` (`world.three` isn't reactive).
 
 ## Behaviour
 

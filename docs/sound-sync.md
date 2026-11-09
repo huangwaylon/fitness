@@ -55,8 +55,8 @@ re-send, and the room skips `presence` when a ghost socket is replaced).
   `syncMusic()`, picking the song up mid-way. Until then, or with ミュージック off, the caption reads 「♪ title 🔇 タップで
   きく」; K.K.'s menu offers 「きく」 (`setSound({music:true})` from the tap).
 - **Remote cues:** `cue(c, { at })` / `sceneSfx(kind, at)` from the remote handlers only; the gain comes from the
-  camera's listener (`sound/cues.ts` `hearFrom`, registered by `island/camera.svelte.ts`): 0 out of view (with a
-  margin), else 1 falling to 0.35 with distance from the view's centre.
+  camera's listener (`sound/cues.ts` `hearFrom`, fed the camera's `earGain` by IslandScene): 0 out of view (with a
+  60 px margin), else 1 falling to 0.35 with distance from the view's centre.
 
 ## Risks and edge cases
 

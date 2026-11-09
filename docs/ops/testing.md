@@ -208,7 +208,7 @@ Every e2e runs in a sealed world (e2e/fixtures.ts), so a run today and a run in 
   answered already (e2e/mapTiles.ts). The real relay's
   harness (`RELAY_E2E=1`, sync-harness.spec) is the one opt-out (`test.use({ network: 'any' })`).
 - **No randomness**: no `Math.random` in a spec (a counter for ids); pin the island's with `?seed=`, `&rock=`,
-  `&shake=`, and a critter or a visitor with `?critter=` / `?visitor=` (docs/design.md "Dev params").
+  `&shake=`, and a critter or a visitor with `?critter=` / `?visitor=` ("URL params" below).
 - **Storage**: each test has its own context (Playwright's), service workers blocked; two phones in one context share
   `localStorage` and a BroadcastChannel (the demo's relay). In Chromium every tab is visible and focused (Playwright
   emulates it: rAF runs at 60 in both), so a tab that missed a tap didn't miss it for being behind; still
@@ -236,6 +236,41 @@ Every e2e runs in a sealed world (e2e/fixtures.ts), so a run today and a run in 
 - **Vitest's module cache** (node_modules/.vitest-cache) never keeps a module with an `import.meta.glob`
   (vite.config.ts `globsUncached`), so a file added under a glob is seen at once; anything else odd after a big
   rebase: `npx vitest run --clearCache`.
+
+## URL params
+Read on each call by `island/devHooks.ts` (the seasonal ones by `ui-state/preview.ts`). The island's hooks work in dev
+builds or with `?demo`; `?date`, `?theme` and `?season` work everywhere:
+
+| Param | Effect |
+|---|---|
+| `?demo` (`=harvest`, `&as=B\|G`, `&weeks=60`, `&health=none\|zero`) | Made-up data, no backend; the harvest recap; play as B or the guest; a longer history; no Health rows / no-watch days |
+| `?date=YYYY-MM-DDTHH:mm` | The scene clock (Tokyo), this page load only (it moves the shared day too) |
+| `?theme=dawn\|day\|dusk\|night`, `?season=` | Preview a time of day or a season |
+| `?seed=` | The island's seed (finds, weather, visitors) |
+| `?weather=clear\|cloudy\|rain\|heavy\|snow\|fog\|aurora\|rainbow` | Force the weather (the critters' too) |
+| `?wx=real\|game` | The island's weather mode for this load |
+| `?wx=rain-pm\|clears\|typhoon\|snow\|fog\|cloudy\|stale` | A canned real-weather timeline (`island/wxFixtures.ts`) |
+| `?event=<id>` | Show an event (the preview's ids: `halloween`, `cherry`, `birthday-A`, `wedding`…) |
+| `?visitor=<id>\|none\|events`, `?arrive`, `?leave=<ms>`, `?stroll[=<ms>]`, `?meet` | A visitor (`events`: an event's host only); its arrival; its departure; a stroll; the partner's hello |
+| `?kk=show\|day\|asleep` | K.K. on his stool, whatever the clock |
+| `?critter=fish\|pond\|<fish>\|<pond fish>\|<bug>\|none`, `&coast=front\|back\|left\|right`, `?sea=<id>\|pearl`, `?flea` | A critter now (ambient visits off), a sea fish off that side; a dive spot; a flea on every villager tap |
+| `?shake=nest\|branch\|bagworm\|spider\|coconut\|wood` | The next shake drops that |
+| `?rock=clonk\|sparkle\|bug` | Every rock tap has that outcome |
+| `?find=bottle\|fragment\|mushroom\|rare-mushroom\|earth-egg\|washed` | A beach find now / every dig spot that / a bottle washing in |
+| `?balloon`, `?fireworks`, `?shower`, `?stretch`, `?hybrid` | A balloon (`=none`: never); a show; a meteor shower's night; the tape deck; a hybrid flower |
+| `?hit` | Every tap target drawn over the island |
+| `?fpv=1\|0` | The rooms' first-person view for the tab |
+| `?awake`, `?grace=<ms>`, `?wake=<ms>` | Everyone counts as online (no villager sleeps); the [Sleep](../design.md#sleep) grace and a tap's wake that long |
+| `?idle=none`, `?stars=none` | No idle beats; no ordinary night's shooting stars |
+| `localStorage['e2e.ambient'] = 'off'` | The e2e's ambient life off (e2e/fixtures.ts): `critter=none`, `visitor=events`, `balloon=none`, `idle=none`, `stars=none` unless the URL sets them |
+| `?relay=<wss url>&key=<key>` | The demo over a real relay (`e2e/sync-harness.spec.ts`) |
+| `?quietafter=<ms>` | How long a phone gone quiet inside a room stays shown there |
+| `?render=none` | The 3D engines run but draw nothing (the e2e's logic mode: `ui-state/testMode.ts`) |
+
+Anywhere: `?panel=rewards` opens ごほうび at once; the 3D island's renderer takes `?dpr=<ratio>`, `?aa=0|1`,
+`?shadows=0|1` and `?ambient=<fps>`. The editor's params: [island-layout.md](../island-layout.md). The live island
+sets `window.__world` (`cam()`, `go(z)`, `at(x, z)`, `put(x, z)`, `idle()`, `quiet()`, `perf`, `stops()`, `mine()`,
+`partner()`, `geo()`, `site()`, …) for the e2e and the console (e2e/island.ts wraps them).
 
 ## Guardrails
 `src/lib/e2e-budgets.test.ts` (vitest, so the `unit` job) counts the flaky patterns per file in `e2e/*.ts`; today's

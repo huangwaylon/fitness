@@ -57,8 +57,7 @@ zoom, a tap on empty ground walks my villager there.
   total 「うめの きょう +6 ベル」; then ふたりでぜんぶ (「あと 2つ」 or 「ふたりで ぜんぶ！ +2 ふたりに」), outside either total.
   The last line says when that person's data last arrived (「15:24 に とどいた」), with a dot once over 6 hours old.
 - **HUD row:** [the health button] [the menu], right-aligned in the top-right corner at `--hud-top` (10px under the
-  safe area, clear of iOS 27's top-edge blur), 6px apart. No jar, no meal button and no ribbon in the sky (NH's island
-  view keeps its sky clear; its left third stays free for the sun and moon). Every target ≥ 44px; no View Transition.
+  safe area, clear of iOS 27's top-edge blur), 6px apart; nothing else in the sky. Every target ≥ 44px.
 - **Menu** (`island/HudMenu.svelte`, `e2e/hud-menu.spec.ts`), the single home of the menu's order: a 44px cream disc (the dumbbell pill's height)
   in a 44px target with NH's leaf mark drawn inline; `aria-expanded`, `aria-controls`. Folded by default. A tap unfolds
   it: the disc turns yellow, the leaf tips (−40°) and six cream pills show at once, right-aligned under the leaf, the
@@ -75,9 +74,7 @@ zoom, a tap on empty ground walks my villager there.
   Labels are kanji ([Copy](#copy)). No "+N" badge on the leaf (it reads as a notification). It folds back (160ms) on a
   second tap of the leaf, a tap elsewhere (which still does what it would), Esc, any sheet opening, and a pick (its
   sheet opens at once; on close, focus returns to the leaf). Folded, the pills are `visibility: hidden` and `inert`; the
-  column is out of the row's flow, so the HUD's box (`.ribbon-wrap`, which the 3D island measures) stays the row. Why:
-  a game's few corner objects with a drawer, HIG (one cluster, ≥ 44pt, a disclosure with `aria-expanded`, labels beside
-  icons), focus order = reading order; down, not left, to keep the sky's middle clear.
+  column is out of the row's flow, so the HUD's box (`.ribbon-wrap`, which the 3D island measures) stays the row.
 - **Health button** (`island/HudHealth.svelte`): a cream pill 44px tall, 60px wide, NH's red dumbbell across it, no
   number. Tap → the villagers glance up and the health popup opens at once (`health/HealthSheet.svelte`, Sheet's `pop`)
   on the tab shown last: [健康](#kenkou) or [ごはん](#gohan) (`ui/TabBar` at its foot; `healthLast.ts`). One kept sheet,
@@ -184,22 +181,19 @@ height). Health data over time, one person at a time, computed on read, each car
 
 - **The title bar** (both pages, `e2e/kenkou-header.spec.ts`): whose · the page switch 健康 | ごはん · ✕, no tab bar.
   The switch (`KenkouSwitch`, NavBar's `middle`, the title kept as its hidden heading) is one cream track, each page
-  its NH art (the dumbbell, the dinner) and its name, the shown one on the yuzu thumb; drawn 40px, taller than the
-  pills under it, so it reads as the page. On ごはん's levels the bar is ‹, the level's title, ✕ (no switch).
-- **Whose** (NavBar's `lead`, `Pick`): the avatar alone with its colour stroke, a native `<select>` (iOS's picker lists
-  the names; the accessible name 「誰のデータ：ウェイ」). One pick for both pages (`health/whose.svelte.ts`), this
-  phone's person first, kept for the session. 健康 has no guest data: with the guest picked it shows the last member
-  picked, its pill dashed and a line under the bar 「おきゃくさんの健康データはありません。ウェイを表示しています」.
+  its NH art and name, the shown one on the yuzu thumb, 40px. On ごはん's levels the bar is ‹, the level's title, ✕.
+- **Whose** (NavBar's `lead`, `Pick`): the avatar alone with its colour stroke, a native `<select>` (its accessible
+  name 「誰のデータ：ウェイ」). One pick for both pages (`health/whose.svelte.ts`), this phone's person first, kept for the
+  session. 健康 has no guest data: with the guest picked it shows the last member picked, its pill dashed, and says so.
 - **Spacing:** both pages' scrollers set `--kk-gap` 12 (rows, cards) and `--kk-row` 44 (the control row), so their
   range rows sit at one height.
-- **The selectors:** under the bar one row: かつどう ·
-  からだ (two pills with NH icons: `art.ts` GROUP_ART) and the period dropdown (1週 · 1か月 · 3か月 · 1年; the same
-  controls as ごはん's グラフ). 1週 and かつどう on every opening. The guest has no switch (かつどう only).
+- **The selectors:** under the bar one row: かつどう · からだ (two pills with NH icons: `art.ts` GROUP_ART) and the
+  period dropdown (1週 · 1か月 · 3か月 · 1年; ごはん's グラフ's too). 1週 and かつどう on every opening; the guest has
+  かつどう only.
 - **Then** a sticky row: ‹ the visible range (「10/2〜10/31」, 「1日ごと」 / 「1週ごとの 1日平均」 / 「1か月ごとの 1日平均」) ›
   and きょう.
 - **Cards** (`model/health.ts` GROUPS and CARDS): かつどう 🍎 歩数, 🍐 ムーブ, 🍑 エクササイズ, 🍒 スタンド; からだ 体重,
-  体脂肪率, BMI, 除脂肪体重, each with a catalogue icon (`art.ts` BODY_ART: the kitchen scale, the protein shaker, the
-  exercise bike, the weight bench).
+  体脂肪率, BMI, 除脂肪体重, each with a catalogue icon (`art.ts` BODY_ART).
 - **One card for every chart** (`ChartCard`: icon, name, the goal chip: [Goals in place](#goals-in-place); with nothing
   recorded yet 「まだ記録がありません」 and no chart). **Activity** (`BarCard`): 1日の平均 with 前の期間より ↑/↓ %; 目標
   n/N日（%）, ベスト and 記録なし n日; the chart; a one-line key.
@@ -240,94 +234,82 @@ height). Health data over time, one person at a time, computed on read, each car
 ### Gohan
 
 ごはん, the meal log (`model/food.ts`, `components/food/*`, `lib/food/`, `e2e/food.spec.ts`; the data in
-`static/food/`, built by `food-data/`: [food-data.md](food-data.md)): the health popup's second tab (no bowl in the
-HUD; whose and the title bar: [Kenkou](#kenkou)). Each time it shows it starts on きろく, today, the day at its top, no level open. What each of us ate, typed in by
-hand; it never earns ベル. Everyone sees everyone's meals, the guest too; only the owner changes an entry. Its code is
-in the popup's chunk, its strings (`i18n/food.*.json`) load with it. The day renders from its entries' snapshots and
+`static/food/`, built by `food-data/`: [food-data.md](food-data.md)): the health popup's second tab (whose and the
+title bar: [Kenkou](#kenkou)). Each time it shows it starts on きろく, today, no level open. What each of us ate, typed
+in by hand; it never earns ベル. Everyone sees everyone's meals, the guest too; only the owner changes an entry. Its code
+is in the popup's chunk, its strings (`i18n/food.*.json`) load with it. The day renders from its entries' snapshots and
 never waits on the food data: the catalogue loads with the first search or amount, or at idle after the open
 (`foodUi.ts` foodDbSoon), parsed in a worker (`food/dataset.worker.ts`) and handed over in slices. Kept mounted between
 openings (Sheet's `keep`), so a reopening shows the day at once.
 
-- **Tabs** (`ui/Segmented`, `Food.svelte` TABS): きろく · グラフ (`FoodChart`). Whose day is 健康's pick (this phone's
-  person first, then the others; the guest once it has logged a meal). きろく has a sticky row
-  ‹ the day › and きょう; › goes past today only to tomorrow, when a いつもの fills it (read-only). Recipes and custom
-  foods have no tab: a meal's search is the way in.
-- **Summary card:** three short rows, so every meal's ＋ shows on opening: the day's kcal large with the kcal goal chip
+- **Tabs** (`ui/Segmented`, `Food.svelte` TABS): きろく · グラフ (`FoodChart`). Whose day is 健康's pick (the guest once
+  it has logged a meal). きろく has a sticky row ‹ the day › and きょう; › goes past today only to tomorrow, when a いつもの
+  fills it (read-only). Recipes and custom foods have no tab: a meal's search is the way in.
+- **Summary card:** three short rows, so every meal's ＋ shows on opening: the day's kcal large with its goal chip
   ([goals in place](#goals-in-place)) and, with a goal, a bar with あと N kcal / N kcal オーバー (a past day 少なめ /
-  多め), coral only past 20 % over; then 「P 11.6 g F 5.1 g C 61.8 g 塩分 0.5 g」 (past a ceiling coral), and 「くわしく
-  ⌄」 (a `<details>`) with たんぱく質 · 脂質 · 炭水化物 · 塩分 against their goals (`goalOver`), 食物繊維 (「–」 while no
-  entry knows its fibre) and, on a day with any, アルコール. Under them the **PFC balance** (`PfcBar`, `model/food.ts`
-  pfcShare: Atwater 4/9/4 over their sum, alcohol at 7 its own share), each share's % against 食事摂取基準 2025's 目標量
-  (13–20 %, 20–30 %, 50–65 %: `PFC_RANGES`): ✓ within, else ひくめ / たかめ (never coral). A past day with nothing logged:
-  「きろく なし」, not 0 kcal.
-- **Goals** (the registry `contract/goals.ts`, prefs per person): kcal 1,200–5,000 by 50, protein, fat and carbs in g
-  by 5 (10–400, 10–300, 20–800), salt 1–20 g by 0.5, fibre 5–60 g and alcohol 1–100 g by 1; set on my own cards only.
-  Directions: kcal near (±10 %: a low day is no win, a surplus no fault), protein at least, fat at most, carbs near
-  (±15 %), salt at most, fibre at least, alcohol at most. **Defaults:** protein 1.6 g × the latest weigh-in; with a
-  profile kcal from the daily energy and salt by sex ([Profile](#profile)); fibre by sex and age (men 20 g, 22 from 30
-  to 64; women 18); alcohol 20 g (厚労省's 節度ある適度な飲酒: [decisions](decisions.md#fibre-and-alcohol));
-  none for fat and carbs. A default never overrides a set goal. **Warn, allow**
-  ([decisions](decisions.md#low-kcal-goals-warn-allow)): a kcal goal under my resting energy (else under 1,500 / 1,200)
-  gets a gentle note (`model/profile.ts` `lowKcal`, `health/goals.ts` `kcalWarn`); never coral, never blocking.
+  多め), coral only past 20 % over; then P · F · C · 塩分 (past a ceiling coral), and 「くわしく ⌄」 (a `<details>`) with
+  each nutrient against its goal (`goalOver`), 食物繊維 (「–」 while no entry knows its fibre) and, on a day with any,
+  アルコール. Under them the **PFC balance** (`PfcBar`, `model/food.ts` pfcShare: Atwater 4/9/4 over their sum, alcohol
+  at 7 its own share), each share against 食事摂取基準 2025's 目標量 (`PFC_RANGES`): ✓ within, else ひくめ / たかめ (never
+  coral). A past day with nothing logged: 「きろく なし」, not 0 kcal.
+- **Goals** (the registry `contract/goals.ts`, prefs per person; their ways: [Goal directions](#goal-directions)): kcal
+  1,000–5,000 by 50, protein, fat and carbs in g by 5 (10–400, 10–300, 20–800), salt 1–20 g by 0.5, fibre 5–60 g and
+  alcohol 1–100 g by 1; set on my own cards only. **Defaults:** protein, kcal and salt from the profile
+  ([Profile](#profile)); fibre by sex and age (men 20 g, 22 from 30 to 64; women 18); alcohol 20 g (厚労省's 節度ある適度な
+  飲酒: [decisions](decisions.md#fibre-and-alcohol)); none for fat and carbs. A default never overrides a set goal.
+  **Warn, allow** ([decisions](decisions.md#low-kcal-goals-warn-allow)): a kcal goal under my resting energy (else under
+  1,500 / 1,200) gets a gentle note (`model/profile.ts` `lowKcal`, `health/goals.ts` `kcalWarn`); never blocking.
 - **Meals:** 朝ごはん · 昼ごはん · 夜ごはん · おやつ, a card each with its kcal and its protein chip (leaf once at the
   per-meal aim: `profile.ts` mealProteinTarget), a row per entry: a 40px picture box (`FoodThumb`: the picture, else the
-  category tile; before the catalogue is in, as this phone last saw it: `foodUi.ts` loggedCat), the food, its amount
-  (「茶碗1杯（150g）」), kcal. On my day ＋ → the search (focused in the same tap, so the keyboard comes up), an entry → its
-  amount; anyone else's day is read-only. Levels slide in (240 ms). Confirmations dock just above a level's actions
-  (`ui/Toast`).
+  category tile; before the catalogue is in, as this phone last saw it: `foodUi.ts` loggedCat), the food, its amount,
+  kcal. On my day ＋ → the search (focused in the same tap, so the keyboard comes up), an entry → its amount; anyone
+  else's day is read-only. Levels slide in (240 ms). Confirmations dock just above a level's actions (`ui/Toast`).
   - **最新の値にする** (`fresh.ts`): an entry keeps its food as logged; when the food now differs beyond rounding, my
     entry offers 「最新の値にする（729→765 kcal）」 (`refreshFood`). Nothing updates by itself.
-  - **Several foods a trip:** an entry logged from a meal's search comes back to the search (field cleared and focused,
-    「ついかした もの（n）」 with ✕, おわり); each food row has its own ＋ for its default portion; a row's tap sets it up in
-    place (`FoodOpen`: the amount's controls, P · F · C, 「追加 558 kcal」), one row at a time.
+  - **Several foods a trip:** an entry logged from a meal's search comes back to the search (cleared and focused,
+    「ついかした もの（n）」, おわり); each food row has its own ＋ for its default portion; a row's tap sets it up in place
+    (`FoodOpen`), one row at a time.
   - **Copy a meal:** an empty meal on my day offers 「きのうと おなじ」 and 「〇〇と おなじ」 (`model/food.ts` copySources),
     copied as new entries of mine (`store/actions.ts` copyMeal), with とりけす.
-  - **クイック:** the ⚡ chip, or a kcal typed in the search (「650」: foodUi.ts typedKcal), logs one entry by the serving
-    (なまえ, カロリー, optional nutrients); its snapshot is a custom food's form with its own id (`quick:<id>`), never a
-    saved マイ食品.
+  - **クイック:** the ⚡ chip, or a kcal typed in the search (foodUi.ts typedKcal), logs one entry by the serving (なまえ,
+    カロリー, optional nutrients) as a custom food's snapshot with its own id (`quick:<id>`), never a saved マイ食品.
 - **Search:** a 16px field (no search mid-IME composition), ＋ レシピ, ＋ マイ食品 and ⚡ クイック under it until something is
   typed. Empty: さいきん (my latest entry of each food); typed, the best matches: the name, 「✓ 2件の資料で一致」 when sources
   agree on its kcal, a product's brand, the everyday name (`foodUi.ts` glossOf), the default portion and kcal. A food in
   its states (`vg`/`st`: 生 · ゆで · 焼き) is one row (`search.ts`, `stemName`). MEXT's lookalikes are out unless named
-  (LOOKALIKE). Left of the name the **category tile** (`FoodThumb`; `art.ts` FOOD_CAT) or the food's generated picture
-  (`lib/food/images.ts` imgOf: every generic food has one, in `static/food-img` sprite sheets; a product its subcategory's, else its tile;
-  [food-data.md](food-data.md) "Pictures"). ー counts (カレー is not かれい). Offline: a message, もういちど, and さいきん.
-  **Ranking** (`food/search.ts` tierOf): the name exact or its head; its prefix, level with an alias exact; a substring;
-  an alias's prefix or substring; any other field; rare forms (`RARE_FORM`) 2.5 tiers lower, a secondary dataset 1.5,
-  packaged products 2. `food/load.test.ts`'s 55 golden queries pin the first result, no product above a generic food in
-  the top three. The first 24 rows are drawn, the rest near the list's end.
+  (LOOKALIKE). Left of the name the food's generated picture (`lib/food/images.ts` imgOf: [food-data.md](food-data.md)
+  "Pictures"), else its **category tile** (`FoodThumb`; `art.ts` FOOD_CAT). ー counts (カレー is not かれい). Offline: a
+  message, もういちど, and さいきん. **Ranking** (`food/search.ts` tierOf): the name exact or its head; its prefix, level
+  with an alias exact; a substring; an alias's prefix or substring; any other field; rare forms (`RARE_FORM`) 2.5 tiers
+  lower, a secondary dataset 1.5, packaged products 2. `food/load.test.ts`'s 55 golden queries pin the first result, no
+  product above a generic food in the top three. The first 24 rows are drawn, the rest near the list's end.
 - **Amount** (`FoodPortion`, rules `amount.svelte.ts` AmountPick): one screen on an iPhone 15 for the common case. The
-  head: the picture (a tap enlarges it in `FoodPhoto`, 「AI生成のイメージ」), the name, everyday name and 「これは…」 (`desc`),
-  the kcal at title size, P · F · C · 塩分, and 「100gあたりの栄養 ▾」 (a drink's 「100mlあたり」). **状態**: a chip per state; picking one swaps the
-  food, carrying the portion through the pair's yield (`foodUi.ts` stateItem). **量**: portions as chips, −/＋ by a whole
-  portion for counted things (`foodUi.ts` PIECE) or by half, a grams field (ml for a drink). The foot: the meal (four
-  buttons) over 「追加 298 kcal」, or 保存 / 削除 for my entry (with 取り消す).
+  head: the picture (a tap enlarges it in `FoodPhoto`, 「AI生成のイメージ」), the name, everyday name and 「これは…」
+  (`desc`), the kcal at title size, P · F · C · 塩分, and the nutrients a 100 g (100 ml). **状態**: a chip per state;
+  picking one swaps the food, carrying the portion through the pair's yield (`foodUi.ts` stateItem). **量**: portions as
+  chips, −/＋ by a whole portion for counted things (`foodUi.ts` PIECE) or by half, a grams field (ml for a drink). The
+  foot: the meal (four buttons) over 「追加 298 kcal」, or 保存 / 削除 for my entry (with 取り消す).
 - **A level's actions** (theme.css `.level-acts`): held at the sheet's foot and over the keyboard while a field is typed in.
 - **いつもの (a repeat):** a meal eaten the same way on set weekdays (`FoodRepeat`): its items fill each day it covers,
   marked 🔁 (`RepeatMark`), counting like any entry; its days a chip in the meal's header (毎日 · 平日 · 週末 · 月水金…);
   changes apply from tomorrow, やめる keeps past days. Editing one of its items changes that day only.
 - **グラフ:** what was eaten only (calories burned are けんこう's ムーブ). Its range row is けんこう's, then **この期間の平均**
   (`FoodAverage`, `model/food.ts` foodAverage): the average day over the finished days with a meal, against the goal,
-  with the nutrients and PFC balance. Then たべた カロリー (`BarCard`; `model/food.ts` foodSeries): a bar per day or the
-  daily average of a week / month's days with a meal, solid when met; a day with nothing logged is 記録なし, never 0;
-  1日の平均（n日分）, 期間の合計, 目標 n/N日 · 記録 n日 · 記録なし m日; the average a flat line. Then the same card for
-  たんぱく質, 脂質, 炭水化物, 塩分, 食物繊維 and アルコール (`art.ts` NUTRIENT_ART), each with its goal; with nothing logged
-  each card still shows its goal chip (so goals can be set before the first meal).
+  with the nutrients and PFC balance. Then たべた カロリー (`BarCard`; `model/food.ts` foodSeries) as けんこう's activity
+  cards (a day with nothing logged is 記録なし, never 0; 期間の合計 too), and the same card for each nutrient (`art.ts`
+  NUTRIENT_ART); with nothing logged each card still shows its goal chip.
 - **マイレシピ** (`food_recipe`, `FoodRecipe`) and **マイ食品** (`food_custom`, contract/food.ts `customSnap`,
   `FoodCustom`): everyone's, listed in a meal's search after さいきん. A recipe logs as a food (1人前, ぜんぶ, 100 g); its
-  editor has its picture (the first four ingredients'), the name, なん人前 (1–20), the ingredients (added by a trip like a
-  meal's search), 1人前あたり and ぜんぶで. A custom food is one serving typed in: なまえ, 1食の めやす, その重さ g (optional:
-  then it logs by the serving, `sv`), カロリー (needed) and the nutrients; a weight too light for its values is refused
-  (`customDensityOk`). Made from a meal's search, either saves and logs one serving in one tap. Anyone else's is read-only
-  with 「コピーして へんしゅう」 and 「ごはんに ついか」; deletes are asked twice.
-  - **A recipe at a glance** (the user 2026-11-09): wherever a recipe or an entry of one shows (the search's マイレシピ,
-    さいきん, 記録), its box holds its ingredients' pictures (`foodUi.ts` recipePlate: a food once, the pictured ones
-    first, then the most grams, at most 4; 1 whole, 2 halves, 3 a half and two quarters, 4 a 2 × 2; one without a
-    picture its category's tile; `food/cells.ts` drawPlate, kept per what it holds) and a small round pot on its corner
-    (the レシピ tile's glyph): a recipe, not a food. A removed recipe's entry keeps the plain レシピ tile. No dish
-    picture is guessed from a recipe's name. On anyone else's day an entry of a recipe still there opens it read-only
-    (コピーして編集 only: no 追加 from there); my entry's amount has レシピを見る. Nothing new is seen: meals and
-    recipes are everyone's already, the guest's phone too.
+  editor has its picture, the name, なん人前 (1–20), the ingredients (added like a meal's search), 1人前あたり and ぜんぶで.
+  A custom food is one serving typed in: なまえ, 1食の めやす, その重さ g (optional: then it logs by the serving, `sv`),
+  カロリー (needed) and the nutrients; a weight too light for its values is refused (`customDensityOk`). Made from a
+  meal's search, either saves and logs one serving in one tap. Anyone else's is read-only with 「コピーして へんしゅう」
+  and 「ごはんに ついか」; deletes are asked twice.
+  - **A recipe at a glance:** wherever a recipe or an entry of one shows, its box holds its ingredients' pictures
+    (`foodUi.ts` recipePlate: the pictured ones first, then the most grams, at most 4 in a 2 × 2; `food/cells.ts`
+    drawPlate) and a small round pot on its corner: a recipe, not a food. A removed recipe's entry keeps the plain
+    レシピ tile. On anyone else's day an entry of a recipe still there opens it read-only (コピーして編集 only); my
+    entry's amount has レシピを見る.
 - **データの出典** at the foot: 「イメージ: AI生成の イメージ」, then each dataset's label, attribution and license.
 - Food names come from the data, so their kanji may be outside the trimmed Zen Maru subset: those fall back to the
   system font (the copy's own strings are covered: `npm run fonts:subset`).
@@ -396,13 +378,10 @@ trip data).
 - **Shape:** cards `--card`, `--r-row`, `--sh-lip-s`, no hairline; rows split by a 12px-inset stitch; controls 32px drawn
   / 44px hit; selected = yuzu (never green); the action = the leaf `.btn`. One control row per view, under the header.
   Grain only on the letter. Side padding 12, stack gap 8.
-- **Components** (ui/): `Sheet variant="full"` (edge to edge on `--surface`, `.kit` scope: NavBar, one scroller,
-  TabBar; default is the paper form sheet: `title`, fields, `footer`, `focusField`) · `NavBar` (`title`, `onback`,
-  `onclose`, `lead`, `trailing`, `over`) · `NavButton` (`kind` back / close / tool, `text`) · `TabBar` (`items`, `value`,
-  `onpick`; a cream dock, the shown tab on a yuzu pill; 56px + the safe area) · `Chip` in `ChipRow` · `Segmented` ·
-  `Tick` · `StatStrip` (up to 4 cells) · `PhotoBand` (150 hero, 120 card) · `ProgressBar` · `ActionSheet` (`groups`,
-  `note`: what a 削除 takes with it). theme.css: `.chip.s`, `.card.dense` with `.row` / `.row.kv`, `.stitch`,
-  `.sec-label.head`, `.tag`, `.sticker`, `.grain`. A sample of all of it: `/dev/kit` (`vite dev`).
+- **Components** (ui/): `Sheet variant="full"` (edge to edge, `.kit` scope; default the paper form sheet) · `NavBar` ·
+  `NavButton` · `TabBar` (a cream dock, the shown tab on a yuzu pill; 56px + the safe area) · `Chip` in `ChipRow` ·
+  `Segmented` · `Tick` · `StatStrip` (up to 4 cells) · `PhotoBand` · `ProgressBar` · `ActionSheet`; theme.css's
+  `.chip.s`, `.card.dense`, `.stitch`, `.tag`, `.sticker`, `.grain`. A sample of all of it: `/dev/kit` (`vite dev`).
 - **Icons:** `ui/Icon` only (`name`, `size` 18 rows · 20 buttons · 22 tabs, `stroke` 2, `soft`): our own drawing on a
   24 grid, a 2px round stroke in `currentColor`; an unknown name draws a pin. No emoji in chrome.
 - **NH art, only:** the pink-roses art in the wedding ring; the villager heads on the leaf-menu pills; packing
@@ -484,10 +463,8 @@ Steps, exercise, Move, Stand, weight and the body metrics (body fat %, BMI, lean
 Shortcut's `metrics` rows; a day's value is its latest row, so each sync replaces it with Health's current total (a
 locked week's earnings stay as of its lock). Nothing in the app enters or fixes them.
 
-What the app sends ([backend.md](backend.md#events)): the goals and profile prefs (either person's via `data.person`),
-buys and voids, harvest taps, the sender's `locale`, `villagerName`, `villager` and `look`, the meal log's ops, and the
-ずかん's finds (`find`, the first of each). A buy and its 取り消す wait 5 s before they are sent (touching the banner
-holds it, ≤ 2 min).
+What the app sends (goals, prefs, buys, the meal log, finds…) is [backend.md "Events"](backend.md#events). A buy and its
+取り消す wait 5 s before they are sent (touching the banner holds it, ≤ 2 min).
 
 ## Weight
 
@@ -528,18 +505,19 @@ the camera, the frames), `island/Scenery.svelte`, `e2e/world.spec.ts`, `e2e/worl
   しまを 表示できません」 (`[data-no3d]`); the HUD, the panel and the health popup work as ever.
 - **The 3D island** ([decisions](decisions.md) "The island in 3D"): `Island3D.svelte` puts a canvas under the stage's
   nodes (over the DOM sky) and hands the projector its camera (`World.useThree`); the engine runs the World's step in
-  its own frame ([the frame rate](#frame-rate) while anything moves, the ambient rate while only the water does; a move
-  slower than 60 px/s on screen, or off it, is ambience: `world3d/pace.ts`), and the World steps itself on the game's
-  clock when no frame has (camera.svelte.ts `simTick`). The ground and the water are the layout's (`terrain.ts`
-  buildGround with NH's textures, `water.ts`); the objects `objects.ts` placeObjects; the villagers and the day's
-  visitor NH's models (`villagers.ts`, villager3d/: a villager with none is its render's card, on the island, in the tent and the museum: `person3d.test.ts` checks every pickable look draws); the lights `lights.ts`;
-  the finger `gestures.ts`. The camera's ends come from the layout's extent. `window.__world3d` (stats, view, go,
-  client, ground, where, focus, xRoom, strays, alphaBlends, away, lamps, precip) serves the e2e: `stats().why` names the
-  parts that wanted the last frame, `stats().paused` is true under a sheet.
-  - **The camera:** the default zoom (1) is the widest it rests at, x centred, and one finger only scrolls along the
-    island. Zoomed in, one finger pans sideways too, x held over the land plus 24u of sea either side (`xRoom`). A pinch
-    zooms about its middle; past the default it gives with rubber-band resistance and springs back over 350 ms (the one
-    automatic move besides the board's focus). In: up to 1.8. A gesture is one kind from start to end. No native scroll.
+  its own frame ([Frame rate](#frame-rate); a move slower than 60 px/s on screen, or off it, is ambience:
+  `world3d/pace.ts`), and the World steps itself on the game's clock when no frame has (camera.svelte.ts `simTick`).
+  The ground and the water are the layout's (`terrain.ts` buildGround, `water.ts`); the objects `objects.ts`
+  placeObjects; the villagers and the day's visitor NH's models (`villagers.ts`, villager3d/: a villager with none is
+  its render's card, here and in the rooms: `person3d.test.ts` checks every pickable look draws); the lights
+  `lights.ts`; the finger `gestures.ts`. The camera's ends come from the layout's extent. `window.__world3d` (stats,
+  view, go, client, ground, where, focus, xRoom, strays, alphaBlends, away, lamps, precip) serves the e2e:
+  `stats().why` names the parts that wanted the last frame, `stats().paused` is true under a sheet.
+  - **The camera** (`world3d/islandCam.ts`, the editor's phone view's too): the default zoom (1) is the widest it rests
+    at, x centred, and one finger only scrolls along the island. Zoomed in, one finger pans sideways too, x held over
+    the land plus 24u of sea either side (`xRoom`). A pinch zooms about its middle, in up to 3.2 (ZOOM); past the
+    default it gives with rubber-band resistance and springs back over 350 ms (the one automatic move besides the
+    board's focus). A gesture is one kind from start to end. No native scroll.
     A touch on a fling still faster than 0.1 px/ms only stops it (iOS's scroll: no tap).
   - **Programs compiled ahead** (engine.ts `hold`): a frame never waits on a program still linking (KHR_parallel_shader_compile).
   - **A rush** (engine.ts `rushing`: a drag, a pinch, a fast fling) places only what shows (camera.svelte.ts `quiet`);
@@ -561,36 +539,33 @@ the camera, the frames), `island/Scenery.svelte`, `e2e/world.spec.ts`, `e2e/worl
   everything at their true size. Only nodes in [camZ − 600, camZ + 900] are shown.
 - **The ground and the water** are the layout's, built on the phone (`world3d/terrain.ts` buildGround: NH's ground
   textures in `static/terrain/nh/` by the season; `world3d/water.ts`: the sea, the rivers' flow, the falls, the ponds):
-  [island-layout.md](island-layout.md).
+  [island-layout.md](island-layout.md). After a lost WebGL context its baked bands are baked again
+  (engine.ts `onRestored`: `ground.restore`); three uploads the rest as it's drawn.
     - **The sea's wash** (`layout/swash.ts`, drawn by `terrain.ts`): NH's waves on every sea shore every 5 s, the foam
     running up 11–22u and the wet sand drying after; each point's phase is its nearest shoreline point's. A shader on the
     ground's and the sea's materials. **The shore** is one eased colour ramp by depth (sand, wet sand, aqua, turquoise,
     deep blue), rivers fading into the sea at their mouths.
-- **Layout:** the default island (`npm run layout:default`; [island-layout.md](island-layout.md)): まえ, the front
-beach with the only palms, the homes A (ウェイ, left) and B (うめ, right) on every phone (never mirrored) with the goal
-trees on their outer sides, the tape deck, the rock, the dig spots, the hedge; one path up the middle to the campsite
-and the stairs; the stream from the upper tier over the falls, across the island under the stone bridge to the west
-beach; おく: the pond, the bamboo, the campsite's tent, the cliff, a cedar forest on the upper tier. The trees, bushes and
-props are composed by hand in focal groups; the wild flowers and weed spots are scattered by seeded Poisson-disk sampling
-(`scripts/layout.ts`, `npm run layout` → `island/scatter.json`; `scenery.test` checks the gaps and that no open lawn is
-more than 90u from anything). **Wild flowers** (`world.ts` FLOWERS, `Flowers.svelte`): seven clumps of one kind, the
-season's kinds in turn (`scene.ts` WILD); each flower's id is where it stands (`fl:<x>:<z>`).
+- **Layout:** the default island (`npm run layout:default`; what stands where: [island-layout.md](island-layout.md)):
+  the homes A (ウェイ, left) and B (うめ, right) on every phone (never mirrored), the goal trees on their outer sides.
+  The trees, bushes and props are composed by hand; the wild flowers and weed spots are scattered by seeded
+  Poisson-disk sampling (`npm run layout` → `island/scatter.json`; `scenery.test` checks the gaps and that no open lawn
+  is more than 90u from anything). **Wild flowers** (`world.ts` FLOWERS, `Flowers.svelte`): seven clumps of one kind,
+  the season's kinds in turn (`scene.ts` WILD); each flower's id is where it stands (`fl:<x>:<z>`).
   **Decor** (the fixed pieces: `world.ts` DECOR_SLOTS, `island/fixedDecor.ts`, `e2e/fixed-decor.spec.ts`): NH's outdoor
-  furniture at one scale (world.ts DECOR_U), each in its own spot: the front bench, the hammock, the log bench, the
-  pump, the shishi-odoshi, the pull-up bar, the firewood, the campfire with two stools, and seasonal pieces from the date
-  (the picnic set, the summer's beach chair and sandcastle, the seasonal lamps, the illuminated tree, kadomatsu, a
-  snowboy after snow, Bunny Day's arch), the same on every phone. Every spot is a walk obstacle and off-limits to
-  decorations (`fixedDecor.test`). A tap answers in place: the pump gushes and waters the flowers within 70u, the
-  sandcastle and snowboy puff, the shishi-odoshi tips (also every 15–25 s in view), the rest knock; a seat is sat on;
-  the pull-up bar is the gym's. Lamps and the campfire light from dusk (.7).
+  furniture at one scale (world.ts DECOR_U), each in its own spot (the benches, the hammock, the pump, the
+  shishi-odoshi, the pull-up bar, the campfire with two stools, and seasonal pieces from the date), the same on every
+  phone. Every spot is a walk obstacle and off-limits to decorations (`fixedDecor.test`). A tap answers in place: the
+  pump gushes and waters the flowers within 70u, the sandcastle and snowboy puff, the shishi-odoshi tips (also every
+  15–25 s in view), the rest knock; a seat is sat on; the pull-up bar is the gym's. Lamps and the campfire light from
+  dusk (.7).
   **The decor's life** (`island/ambient.ts`): outings sit on the benches; 19–22 a villager sits at the campfire on its own
   stool; on an exercise-goal day a villager does pull-ups now and then; when both met every goal, at dusk they sit side by
   side on the front bench. A villager standing still on a seat's spot (`world.ts` SEATS: `layout/nav.ts` seatsOf) is on
   it (`villager3d` sitAt on its `seats3d.json` anchor; the hammock is lain in), so every phone draws the same.
   **Sitting on a tap** (`island/sitting.ts`, IslandScene `sitOn`, `e2e/sit-outdoors.spec.ts`): a tap on a seat walks my
-  villager to its nearest free seat and on (with the doors and the board, the exceptions to "a tap acts in place").
-  Taken: the other seat, else a `boop`; two on one seat, the earlier sit keeps it (a tie by A, B, G: `sitting.ts`
-  yieldsSeat). Nothing new goes over the relay: the walk ends on the seat's spot.
+  villager to its nearest free seat and on. Taken: the other seat, else a `boop`; two on one seat, the earlier sit
+  keeps it (a tie by A, B, G: `sitting.ts` yieldsSeat). Nothing new goes over the relay: the walk ends on the seat's
+  spot.
 - **Winter and night looks:** NH's snowy models and the models' emissive light, lit at dusk (.7) and night by
   `world3d/lights.ts`.
 - **Sizes** (`scene.ts`), NH's proportions against an 80u villager (≈ 45 × 76px at the front on a 393px screen):
@@ -610,18 +585,20 @@ season's kinds in turn (`scene.ts` WILD); each flower's id is where it stands (`
 What a launch waits for, and what it doesn't (budgets and measurements: [ops/perf.md](ops/perf.md)):
 - **The shell:** a second visit's page is the service worker's cached shell at once ([backend](backend.md) "Service
   worker").
-- **The players:** drawn from the bundled part table; the whole one (~1.1 MB) only for a part it lacks
+- **The players:** drawn from the bundled part table; the whole one (~1.2 MB) only for a part it lacks
   ([Players](#players)); not fetched, the bundled one for now, asked for again next time.
 - **The island page's chunks:** `index.html` modulepreloads the island page's chunk and its static imports
   (`scripts/headers.ts`), and `+layout.ts` load() starts the 3D island's import while the page reads the week from
   IndexedDB, only when the launch opens the island (`ui-state/boot.ts opensIsland`), so a phone going to /pair
-  downloads less. The 3D island's own chunks are not preloaded from `index.html` (tried: no sooner first frame, a later
-  first paint).
+  downloads less. The 3D island's own chunks are not preloaded from `index.html`.
 - **The ground's fields:** the layout's distance fields and the ground's chunks (`layout/mesh.ts chunkMesh`) are built
   in a worker started from `+layout.ts` load() (`layout/fieldsPrime.ts` `primeFields`: one job per layout, shared by
   load() and the mount, whichever asks first; the mount awaits it). The main thread builds them only with no worker, an
   error, or one stalled 4 s; a cached set is used first ([island-layout.md](island-layout.md)). The chunks come back as
   transferred buffers, adopted once each (`adoptChunks`).
+- **Back from a room** the fields are built already: the 3D island mounts on the next display frame, not in the
+  page's own mount, and its first frame only compiles, drawing on the frame after (engine.ts `mounting`), so the
+  page's work, the mount and the first draw are three frames, not one long one.
 - **The 2D stand-in figure:** its colours from `look/swatches.json` through `look/swatch.ts`; the closet and the part
   table load with すがた. `contract/partIds.json` stays in the first load (it decides whether a kept look draws as it is).
 - **A failed load tries again** at its next chance (`ui-state/retry.ts nextChance`: the next `online`, the page back to
@@ -630,32 +607,39 @@ What a launch waits for, and what it doesn't (budgets and measurements: [ops/per
 - **A chunk that fails reloads the page** (`ui-state/reload.ts`) only into a newer build: when `_app/version.json`
   names another version, once that version a session (`island.chunkReloadFor`), and only once its service worker
   controls the page. A chunk of the running build that keeps failing reloads nothing.
-- **Static files keep Pages' default cache** (revalidated): `/room/*`, `/terrain/*` and `/art/*` are not all
-  content-hashed by name, and `_headers` can't match a query string.
-- **three.js:** imported by name everywhere (`world3d/threePreview.ts` for the editor's preview), never as a whole
-  module.
+- **Static files keep Pages' default cache** (revalidated) but the content-hashed ones (`scripts/headers.ts`):
+  `/room/*`, `/terrain/*` and `/art/*` are not all hashed by name, and `_headers` can't match a query string.
+- **three.js:** imported by name everywhere (`world3d/threePreview.ts` for the editor's preview and the home picker),
+  never as a whole module.
 
 ### Frame rate
 
-The game draws at most **30** frames a second (`store/frameRate.ts` FPS; a stored `island.fps` is ignored), the full
-rate of every 3D engine (the island, the rooms, the museum) while something moves, a gesture included; a still scene
-draws nothing. On a 60 Hz screen each engine draws every other display frame (an even 33 ms). One pacer runs every
-engine's frames (`world3d/pace.ts` `pacer`), each ambient due time 1000/rate after the last one's due time.
-Every surface makes and ends its renderer through `world3d/stage.ts` (makeRenderer, endRenderer); the small ones
-(すがた, the home picker: its sway at 15 a second) draw through its `createStage`: on demand, none while hidden. The
-museum at rest (no finger for 2.5 s) draws its tanks and bugs at 15 a second, 10 seen only through an opening.
-The simulation runs on real time (`dt`), so nothing moves slower; a touch moves the camera on its event and the next due
-frame draws it. Why 30: NH itself runs at 30, a gesture at 60 cost the most, and the added latency is under a vsync.
+The game draws at most **30** frames a second (`store/frameRate.ts` FPS), the full rate of every 3D surface while
+something moves, a gesture included; a still scene draws nothing; on a 60 Hz screen every other display frame. One
+pacer runs every surface's frames (`world3d/pace.ts` `pacer`), each ambient due time 1000/rate after the last one's
+due time. The simulation runs on real time (`dt`), so nothing moves slower; a touch moves the camera on its event and
+the next due frame draws it.
+
+**One renderer lifecycle:** every WebGL surface (the island, the tent and the homes, the museum, すがた, the home picker,
+the editor's preview) makes its renderer with `world3d/stage.ts` makeRenderer (pixel ratio at most 2; the island, the
+rooms and the museum 1.5 while a gesture moves the camera) and lets it go with endRenderer (its resources, the shared
+white texture's listeners, the context). The small ones (すがた, the home picker: its sway at 15 a second, the editor's
+preview) draw through `createStage`: frames on demand, at most 30 a second, none while the page is hidden. The rooms
+keep their models page-wide (`world3d/modelCache.ts`); each visit's GPU copies go with its renderer.
 
 The DOM over the canvas keeps as few composited layers as it can: art the canvas draws is hidden (opacity 0) with no
 filter and no endless animation of its own (`[data-r3]` rules), since every drawn frame recomposites every layer.
 
 **At rest** (engine.ts REST_MS 2 s, REST_FPS 12) the island draws its ambience at **12** a second: no finger for 2 s and
 the last frame wanting only the ambience (no fling, spring or focus, no walk, no critter fast on screen: `pace.ts`
-moveFast, no flourish). Any of those, or a touch, draws at the full rate at once. The shadow map redraws only when a
-caster changes (a fish shadow casts none; a critter's fade only as it passes half; a bug's move or a thing shown or
-hidden at most every 66 ms) or its box moves on (once per 0.3 of the view's width of scroll); at rest at most every
-250 ms. Under the 3D island a fish shadow's own CSS transition is off (the canvas moves the model).
+moveFast, no flourish). Any of those, or a touch, draws at the full rate at once. The museum at rest (no finger for
+2.5 s) draws its tanks and bugs at 15 a second, 10 seen only through an opening; the tent only a blink.
+
+**Shadows** (the island's: `world3d/shadowBox.ts`, the editor's phone view's too): the map redraws only when a caster
+changes (a fish shadow casts none; a critter's fade only as it passes half; a bug's move or a thing shown or hidden at
+most every 66 ms) or its box moves on (once per 0.3 of the view's width of scroll); at rest at most every 250 ms. The
+tent's and the homes' one small map (1024²) redraws only when a piece changes. Under the 3D island a fish shadow's own
+CSS transition is off (the canvas moves the model).
 
 ### Buildings
 
@@ -691,19 +675,17 @@ the balloon present.
 phone shows the same sky at the same hour. NH's skies: **fine**, **cloudy**, **rain**, **a downpour**, **snow**, with
 **fog** as an hour's extra.
 
-- **ほんもの (the default):** the relay fetches Open-Meteo's forecast (JMA's models, central Tokyo) on its 15-minute
-  cron and keeps a 48-hour timeline, one sky an hour ([backend](backend.md#the-real-weather)). Each phone gets it after
-  the welcome and whenever it changes, and caches it (`island.wx`). An hour is locked once it begins, so the sky changes
-  at most once an hour. The mapping has dead bands against flicker: rain from 0.5 mm/h (stays down to 0.2), a downpour
-  from 4 mm/h or thunder (stays down to 2.5), cloudy from 85 % cover (stays down to 60 %), snow by a snow code or wet
-  at 1 °C. A lone hour between two alike takes theirs.
+- **ほんもの (the default):** the relay fetches Open-Meteo's forecast (JMA's models, central Tokyo) about every 30
+  minutes and keeps a timeline, one sky an hour, its mapping with dead bands against flicker
+  ([backend](backend.md#the-real-weather)). Each phone gets it after the welcome and whenever it changes, and caches it
+  (`island.wx`). An hour is locked once it begins, so the sky changes at most once an hour.
 - **Fallbacks:** the cached timeline while it covers the hour and was fetched within 36 hours; otherwise (and in ゲーム)
   the seeded day. A `?date=` preview shows the seeded day.
 - **On the phone, as NH:** Dec 11 – Feb 24 real rain falls as **snow**. Event nights stay fine: the August Sunday
   fireworks (19:00–24:00), New Year's (23:00–01:00), a meteor shower's night (20:00–04:00) and the wedding night (from
   19:00). The seeded treats stay on real fine hours: the 07:00 **fog** (October–March, 1 in 8) and the **aurora**
   (winter nights, 1 in 10). Real fog shows at any hour. The **rainbow** is the first fine hour 07:00–17:00 right after
-  rain, once a day, double 1 day in 8. No dry-spell rescue for the rain-only critters (Tokyo's ~100 wet days suffice).
+  rain, once a day, double 1 day in 8.
 - **ゲーム (the seeded days):** seeded by the date (05:00 → 05:00). About one day in six is wet (all day, a wet
   morning, or heavy rain clearing at 16:00 with a rainbow); in December–February a wet day snows. Fireworks days and
   meteor shower nights are always fine.
@@ -790,11 +772,10 @@ what lies there already is drawn and tapped at the nearest free spot (`offBuildi
 hit-tests itself (a shell, a dig spot, a present, a weed, a bug, the tape deck…) is the box of what it draws grown to
 44px (`hitOf`), the nearer when two overlap (`pick`); on water only what it draws (`bareOf`), so a tap on the sea beside
 a dig spot casts. `?hit` draws them all ([Dev params](#dev-params)).
-A touch decides by the point under the finger (`ui-state/exactTaps.ts`, `e2e/exact-taps.spec.ts`): WebKit's touch
-adjustment moves a click onto the nearest clickable element within the finger's radius, which opened the shop from the
-sea or left a room from its floor. Inside `data-exact-taps` (the island's `.stage`, the tent's and the museum's
-`<main>`) a capture listener drops a moved touch click and sends the click to what's under the finger, inside the native
-click (keeping its user activation). Mouse, keyboard and VoiceOver clicks are untouched.
+A touch decides by the point under the finger, not WebKit's touch adjustment (`ui-state/exactTaps.ts`,
+`e2e/exact-taps.spec.ts`): inside `data-exact-taps` (the island's `.stage`, the tent's and the museum's `<main>`) a
+capture listener drops a moved touch click and sends the click to what's under the finger, inside the native click
+(keeping its user activation). Mouse, keyboard and VoiceOver clicks are untouched.
 
 ### Balloon
 
@@ -809,9 +790,8 @@ reload). The flight's clock is the island's frames. A tap opens it where it lies
 (`island/catalog.ts`, its own chunk). What's inside follows NH's drop rates (Bells and materials left out): furniture 35 :
 clothing 20 : a season's DIY recipe 15 while a recipe season is on, else 50 : 25. The pool is NH's shop stock (1,836 base
 items; season stock only in season); the 126 recipes each in their NH window (northern hemisphere). Never Bells, counted
-in the ずかん (カタログ, レシピ). On Bunny Day a sky egg instead. The catalogue is built by `npm run catalog:build`
-(`scripts/catalog.ts`: the ACNH spreadsheet for rules and names, Nookipedia for icons; 96 px webp under
-`static/art/finds/items|recipes/`, cached by the service worker on first use).
+in the ずかん (カタログ, レシピ). On Bunny Day a sky egg instead. The catalogue: `npm run catalog:build`
+(`scripts/catalog.ts`: the ACNH spreadsheet's rules and names, Nookipedia's icons).
 
 ### Shared world
 
@@ -820,8 +800,8 @@ in the ずかん (カタログ, レシピ). On Bunny Day a sky egg instead. The 
 picked up is gone on all, what a shake drops lies on all, each villager stands where its person sent it.
 
 - **The villagers move as one:** each of us moves our own villager; the other phones play the very same walk (same
-  start, time, way and end facing), catching up when a message is late (`island/villagerSync.ts`). Sleep too
-  ([Sleep](#sleep)): the same villagers asleep on every phone, a wake on one is on all for the same minute.
+  start, time, way and end facing), catching up when a message is late (`island/villagerSync.ts`); asleep and awake
+  alike ([Sleep](#sleep)).
 - **One layout, not mirrored:** A lives on the left and B on the right on every phone; every shared id is by person or
   by place (`fl:<x>:<z>`); `?demo` and `?demo&as=B` show the same island.
 - **Fishing, seen by everyone** (`e2e/fish-sync.spec.ts`): each step of a line goes to the others as it happens (`fish
@@ -832,8 +812,8 @@ picked up is gone on all, what a shake drops lies on all, each villager stands w
   catch or a find is its plate in the bottom stack (「うめが スズキを つかまえた！」). Heard on opening (older), it only
   changes the island.
 - **First wins:** of two people tapping the same thing, the relay's first claim is it; the other sees it taken.
-- **Late and alone:** a phone opening later hears the day from the relay (and keeps it); with the relay unreachable each
-  phone keeps its own and they catch up when it's back.
+- **Late and alone:** a phone opening later hears the day from the relay (and keeps it); with the relay unreachable
+  each phone keeps its own and they catch up when it's back. The mechanism: [backend](backend.md#shared-world).
 
 ### Sleep
 
@@ -842,15 +822,14 @@ picked up is gone on all, what a shake drops lies on all, each villager stands w
 **awake while its person's app is open, asleep where it stands while it's closed**, at any hour (no night's sleep).
 
 - **Online:** the relay's `here`, and for `GRACE_MS` (45 s) after a person's last socket closed (its `gone`), so a
-  reload, a moment in another app or a dropped socket doesn't put the villager to sleep. All on the relay's clock, the
-  same instant on every phone; a phone's own socket down, the last word holds till its welcome; reloaded, what it last
-  heard is kept (`scene-presence.<who>`), those here then counted as gone then.
+  reload, a moment in another app or a dropped socket doesn't put the villager to sleep; on the relay's clock, the same
+  instant on every phone ([backend](backend.md#shared-world) "Sleep"). Reloaded, what it last heard is kept
+  (`scene-presence.<who>`).
 - **Asleep:** the zzz, in none of the island's life (ambient beats, chats and dances, the dusk meet-up, ふたりでぜんぶ,
   the follow, group stretching: `cast.ts` islandActors, `ambient.ts` not free); those awake carry on without it.
 - **A tap wakes it** (a high-five: [Villager taps](#villager-taps)) for `WAKE_MS` (60 s) from the wake's relay time
-  (`act {act: wake, id, at}`): on every open phone, one opening meanwhile too, the same minute; it's in the island's
-  life then (not present: an outing of its own), and it sleeps where it ends up (stopped mid-walk). Each phone moves it
-  by the same seeded slots; a phone opening later puts it where its person's last walk ended.
+  (`act {act: wake, id, at}`), the same minute on every phone; it's in the island's life then (by the same seeded
+  slots everywhere), and it sleeps where it ends up.
 - **Back online:** awake where it is (no walk home: [Walking](#walking)).
 
 ### The guest
@@ -867,11 +846,10 @@ island, NH's way, with its own key (pairing: [runbook "Pair a phone"](ops/runboo
   and its own house, the editor, watering, wishes, waking a visitor, the weather, the shop, the museum, K.K., the board,
   ききみみ), its finds credited in the shared ずかん (「（おきゃくさん）」). It earns and spends no ベル, sets none of our goals
   and writes neither the wedding board nor a trip's notes (the record refuses those).
-- **Its villager on the island:** always there, as the members' are (the user, 2026-11-09: "go for consistency"):
-  where its last walk left it (its spot by its house, or the campsite, till it has walked), its own phone opening it
-  there too. Asleep while its app is closed, awake while it's open, as everyone's ([Sleep](#sleep)); awake, in the
-  island's life as a member's villager (ambient moves, chats, ふたりでぜんぶ's walk and high-five, the dusk meet-up,
-  group stretching), never an outing of its own.
+- **Its villager on the island:** always there, as the members' are: where its last walk left it (its spot by its house,
+  or the campsite, till it has walked), its own phone opening it there too. Asleep while its app is closed, awake while
+  it's open, as everyone's ([Sleep](#sleep)); awake, in the island's life as a member's villager (ambient moves, chats,
+  ふたりでぜんぶ's walk and high-five, the dusk meet-up, group stretching), never an outing of its own.
 - **On our phones:** drawn like the partner's villager (lilac name tag); a tap is a high-five; its phrases and catches
   show there. A banner: 「おきゃくさんが あそびに きたよ！」.
 - **Who counts as "the partner"** (said once): the guest only where the island's life is everyone's
@@ -900,35 +878,25 @@ the outdoors, in /editor only ([Decorating](#decorating)).
 island in /editor, moves, turns and removes it; every phone shows the same island, kept for good: the decorations are
 the layout's objects (the old decorations' map moved into the layout once as `m-<id>`: layout/migrate.ts).
 
-- **The items:** NH's models (いしどうろう, バードバス, ガーデンワゴン, アイアンガーデンテーブル and チェア, レンガのいど,
-  たぬきのおきもの, モンステラ, みちしるべ, いちりんしゃ) and the layout's other kinds in IslandEdit's tray tabs.
-- **The gym** (the tray's ジム tab, `layout/catalog.ts` group `gym`): NH's fitness furniture under its official names
-  (けんすいスタンド, プレスベンチ, エクササイズバイク, ランニングマシン, サンドバッグ, バランスボール, バーベル, ケトルベル,
-  プロテインシェイカー, ウォーターサーバー, たいじゅうそくていき, クライミングウォール, ロッカー), through the decorations'
-  pipeline ([world3d-assets.md](world3d-assets.md)). **Used, NH's way** (the six NH lets one use): a tap walks my
-  villager up to it and on, a seat of sitting.ts (`layout/nav.ts` SEAT_ON, `villager3d/seats3d.json` `use`,
-  `scripts/seat-anchors.ts` USE), and it loops its pose while it stays (poses.ts `press`, `pedal`, `run`, `punch`,
-  `bounce`, `pullup`; a villager with no 3D model, drawn as its card, by a rhythm of its own: `world3d/motion3d.ts` gymPose); a tap on the ground gets it off. Anyone, the guest too. One villager a piece, the earlier keeping it; nothing new on the
-  relay (`e2e/gym.spec.ts`). **The bench press:** NH's bench's bar is split out as the GLB's `bar` node
-  ([world3d-assets.md](world3d-assets.md) "Parts split out"); lying down, the bench's small bar is swapped on the rack
-  for the gym's barbell (benchBar.ts HELD, 1.25 × NH's size so a human player's grip fits), which rides the hands
-  (villager3d `hands()`, `world3d/benchBar.ts`) through `press` and goes back on the rack as it gets up. The others are
-  to look at (a tap jiggles them). A piece is the decorations' instanced model; its use is stepped at the ambient rate.
-  More of NH's (the gym pack): ヨガマット and たぬき開発ヨガマット (lain on), スピードバッグ (punched, `punch`),
-  マッサージチェア (sat on), ダンベル (to look at).
-- **キャンプ** (group `camp`): NH's camp goods, the island's own (キャンプファイア, まるたのイス, まるたのベンチ,
-  ハンモック, ロッドスタンド, まき, キャンプサイトの看板) and the camp pack's: たき火, ファイヤーピット, ランタン (lit at
-  night from their emitters, world3d/things.ts LAMP `e`, faded in as every light), キャンプベッド and シュラフ (lain on),
-  折りたたみアウトドアチェア, ディレクターズチェア, アウトドアベンチ (sat on), キッズテント, クーラーボックス,
-  バーベキューグリル, コッフェル, 折りたたみアウトドアテーブル, アウトドアテーブル, キャリーワゴン, ウォータージャグ,
-  ケトル, 携帯ラジオ, ナナメのみちしるべ, せかいのみちしるべ; and a second file's (`decor/camp2`): アウトドアキッチン
-  (NH's camp table with its burner and sink), アウトドア発電機, ポリタンク, 物干しロープ, 物干しざお, 落ち葉のたき火,
-  ドラム缶風呂 and 燻製マシン (their fires lit at night), ビニールチェア (sat on), やかん, エスプレッソメーカー,
-  木製のバケツ, ブリキのバケツ.
-- **食べ物** (group `food`, to look at): ピクニックバスケット, お花見セット, フルーツバスケット, パン, ミックスサンドセット,
-  飯ごう (its fire lit at night), 鍋, フライパン, シーフードのアヒージョ, スズキの香草焼き, 洋風定食, 和風定食,
-  ペットボトル飲料, ココナッツジュース, クッキー. Their labels are kanji (the sheets' rule; the world's tap areas
-  name them so too, no `decor.item.*` of their own). The tray's icons are the ずかん's, else NH's own (`art/items/<kind>`).
+- **The items:** NH's models under their official names, in IslandEdit's tray tabs (`layout/catalog.ts` `group`); the
+  packed ones (the camp goods, the food, the gym's newer pieces) one GLB a tab (`scripts/world3d-assets.ts` PACKS:
+  [world3d-assets.md](world3d-assets.md)). Their labels are kanji (the sheets' rule; the world's tap areas name them so
+  too, no `decor.item.*` of their own). The tray's icons are the ずかん's, else NH's own (`art/items/<kind>`).
+- **The gym** (the tray's ジム tab, group `gym`): NH's fitness furniture. **Used, NH's way** (the six NH lets one use):
+  a tap walks my villager up to it and on, a seat of sitting.ts (`layout/nav.ts` SEAT_ON, `villager3d/seats3d.json`
+  `use`, `scripts/seat-anchors.ts` USE), and it loops its pose while it stays (poses.ts `press`, `pedal`, `run`,
+  `punch`, `bounce`, `pullup`; a villager with no 3D model, drawn as its card, by a rhythm of its own:
+  `world3d/motion3d.ts` gymPose); a tap on the ground gets it off. Anyone, the guest too. One villager a piece, the
+  earlier keeping it; nothing new on the relay (`e2e/gym.spec.ts`). **The bench press:** NH's bench's bar is split out
+  as the GLB's `bar` node ([world3d-assets.md](world3d-assets.md) "Parts split out"); lying down, the bench's small bar
+  is swapped on the rack for the gym's barbell (benchBar.ts HELD, 1.25 × NH's size so a human player's grip fits),
+  which rides the hands (villager3d `hands()`, `world3d/benchBar.ts`) through `press` and goes back on the rack as it
+  gets up. The yoga mats are lain on, the speed bag punched, the massage chair sat on; the others are to look at (a tap
+  jiggles them). A piece is the decorations' instanced model; its use is stepped at the ambient rate.
+- **キャンプ** (group `camp`): NH's camp goods, the island's own and the camp packs' (`decor/camp`, `decor/camp2`): the
+  fires and lanterns lit at night from their emitters (world3d/things.ts LAMP `e`, faded in as every light), the cot
+  and the sleeping bag lain on, the outdoor chairs and bench sat on, the rest to look at.
+- **食べ物** (group `food`, to look at): NH's dishes and drinks (the cookware's fire lit at night).
 - **How many:** the layout's objects are capped by the record at 1,500 standing (`contract/layout.ts` LAYOUT_MAX).
 - **In:** /editor only: the desktop editor, or its phone view's IslandEdit (`/editor/?view=phone&edit`), the tent's
   way (a tray, a ghost green or red, a tile at a time, ↻ まわす, ✕, 🗑, ✓). Its おきゃくさん tab: where the visitors stand
@@ -950,85 +918,81 @@ bobs over it when someone else wrote since I last looked. Everyone, the guest to
 `routes/tent/+page.svelte`, `tent/TentRoom.svelte`, `tent/TentEdit.svelte`, `tent/engine.ts` (three.js), `tent/grid.ts`,
 `tent/items.ts`, `tent/dragLink.ts`, `store/tent.svelte.ts`, `contract/tent.ts`, `ui-state/doorTransition.ts`,
 `scripts/room-models.ts`, `scripts/room-surfaces.ts`, `store/where.svelte.ts`, `e2e/tent.spec.ts`,
-`e2e/tent-surfaces.spec.ts`, `e2e/tent-hold.spec.ts`, `e2e/tent-size.spec.ts`, `e2e/sync-harness.spec.ts`. A tap on the campsite's tent walks my
-villager up to its door (the walk goes over the relay; within 36u it goes straight in; a tap elsewhere on the way
+`e2e/tent-surfaces.spec.ts`, `e2e/tent-hold.spec.ts`, `e2e/tent-size.spec.ts`, `e2e/sync-harness.spec.ts`. A tap on the
+campsite's tent walks my villager up to its door (over the relay; within 36u straight in; a tap elsewhere on the way
 cancels), then goes inside: its own screen, truly 3D, behind NH's door (a black iris closes, stays black while the
-room's chunk and first frame come, opens out of the room's door; the way out the same). Out of the door my villager
-stands just in front, facing out, on every phone. The homes' rooms are the same system.
+room's chunk and first frame come, opens out of the room's door; the way out the same, my villager stepping out in
+front, facing out, on every phone). The homes' rooms are the same system.
 
 - **One place at a time:** each villager is on the island or in a room, on every phone (`store/where.svelte.ts`:
-  presence over the relay, `tent {in}`, said again when someone joins or the socket comes back). A villager in a room is
-  nowhere on the island. The museum and the shop are the same (`sc` `m`, `s`). A phone that goes quiet inside has its
-  villager leave 3 minutes after the relay saw it go ([Walking](#walking) "A phone gone").
-- **The room:** NH's largest main room, 8 × 8 tiles (a tile 10 model units), four walls four tiles high, the front one
-  with the door (two tiles wide) and NH's doormat; its two tiles stay clear.
+  presence over the relay, `tent {in}`, said again when someone joins or the socket comes back); the museum and the
+  shop too (`sc` `m`, `s`). A phone that goes quiet inside has its villager leave 3 minutes after the relay saw it go.
+- **The room:** NH's main room, a tile 10 model units, four walls four tiles high, the front one with the door (two
+  tiles wide) and NH's doormat; its two tiles stay clear.
 - **Room size** (もようがえ's 広さ tab, `e2e/tent-size.spec.ts`): NH's main rooms, テント 4 × 4, 初めての家 6 × 6 and
-  増築した部屋 8 × 8 ([Nookipedia: Home loan](https://nookipedia.com/wiki/Home_loan),
-  [Player house](https://nookipedia.com/wiki/Player_house)), each card the room's plan. One op (`dtentsize`, the
-  room's scope: whoever may arrange it); none is 8 × 8. A smaller room is the largest one's middle tiles against the
-  same front wall (`grid.ts` Bounds): the walls, floor, grid and camera fit it, pieces keep their tiles. Larger always;
-  smaller only with nothing left outside, else those pieces glow red and the bar says how many to move or put away
-  (decisions: *A room's size never moves or drops a piece*). The HHA's space counts the room's own tiles. NH's back,
-  side, upstairs and basement rooms are a follow-up (a home is one room).
+  増築した部屋 8 × 8 (the default), each card the room's plan. One op (`dtentsize`, the room's scope). A smaller room is
+  the largest one's middle tiles against the same front wall (`grid.ts` Bounds): the walls, floor, grid and camera fit
+  it, pieces keep their tiles. Larger always; smaller only with nothing left outside, else those pieces glow red and
+  the bar says how many to move or put away (decisions: *A room's size never moves or drops a piece*). The HHA's space
+  counts the room's own tiles. A home is one room.
 - **The camera** starts as NH's room camera (perspective, 47° down, a 32° lens, from the front), then it's the
   player's: a drag turns it round the room and tilts it (28°–78°), a pinch zooms (0.55–1.35 ×), 🏠 eases it back. The
   walls between the camera and the room are cut away (Happy Home Paradise's look). Or at my villager's eyes:
   [First person](#first-person).
-- **The light:** warm interior light, one small shadow map (1024², redrawn only when a piece changes); at night dimmer
-  and warmer, the lamps' emissive on and up to four point lights at the lamps, each where its lamp glows (items.json
-  `e`: NH's light locator, else its emissive part's lit middle; turned with the piece: grid.ts `toRoom`).
-- **The villagers** are NH's 3D models where they have one (villager3d/: walking, sitting, lying, a hop, blinks), else
-  billboards of their official renders, each with a soft round shadow. A tap on the floor walks mine there (A* on half
-  tiles round the furniture, rugs walkable; 45 units a second); a tap on a villager hops it; a tap on a piece acts in
-  place; the doormat or ‹ 島へ goes back out.
-- **Stereos** (`tent/stereo.ts`, `tent/StereoPicker.svelte`, `kk-sync.spec.ts`): NH's music players in any room
-  play K.K.'s songs. A tap opens the song list (おまかせ, or one by name); the song is his **aircheck** (manifest
+- **The light:** warm interior light, one small shadow map ([Frame rate](#frame-rate)); at night dimmer and warmer,
+  the lamps' emissive on and up to four point lights, each where its lamp glows (items.json `e`: NH's light locator,
+  else its emissive part's lit middle; turned with the piece: grid.ts `toRoom`).
+- **The villagers** are NH's 3D models where they have one (villager3d/), else billboards of their official renders,
+  each with a soft round shadow. A tap on the floor walks mine there (A* on half tiles round the furniture, rugs
+  walkable; 45 units a second); a tap on a villager hops it; a tap on a piece acts in place; the doormat or ‹ 島へ goes
+  back out.
+- **Stereos** (`tent/stereo.ts`, `tent/StereoPicker.svelte`, `kk-sync.spec.ts`): NH's music players in any room play
+  K.K.'s songs. A tap opens the song list (おまかせ, or one by name); the song is his **aircheck** (manifest
   `kkAircheck.<id>`) on the room's music stage ([Shared music](#shared-music): `request(sc, id, { pc })`, the tent's
-  `t`, うめ's `u`, the guest's `v`), so everyone in the room hears it from the same point; the room's music stops for it.
-  Anyone's tap on the one playing stops it for all; heard only inside the room.
+  `t`, うめ's `u`, the guest's `v`), heard by everyone in the room from the same point, the room's music stopped for it.
+  Anyone's tap on the one playing stops it for all.
 - **The partner's villager** is theirs to move while they're in the room (each walk goes over the relay as the `tent`
   intent); while they're away their villager rests where it last stood.
 - **もようがえ** (the foot's green button, `TentEdit.svelte`): the grid on the floor and a tray: かぐ (the starter set),
   ラグ, みつけた (furniture found in presents that NH has a model of), ジム (tent/items.ts GYM), かった (bought in the shop),
   かべかけ, かべがみ, ゆか, and ✓ おわる with the count (「3/60」). A piece goes down as a ghost on the free spot nearest my
-  villager, its footprint green or red with the reason (「出入り口はあけておきましょう」…); ↻ まわす turns it; ✓ 置く places it;
-  🗑 片付ける stores it (取り消す for 5 s); ✕ やめる puts it back. At most 60 pieces a room, on whole tiles, off the door's
-  two, not over a piece or a villager; a rug lies under furniture. **Holding** (NH's: one thing held at a time): while I
-  hold one, the finger is for it (a press or a near miss drags it, a floor tap puts it there if it may stand, a tap on
-  another piece doesn't take it unless what I hold goes there; a 400 ms press swaps; a tap off the room puts it down).
-  **Table tops** (NH's surfaces, from the ACNH spreadsheet's `surface` flag): Miscellaneous things go one a tile on a
-  surface's top, found from its converted model (`scripts/room-surfaces.ts`: items.json `sy`, `st`, `sl`); a thing's op
-  names its piece (`on`), so moving the table carries it; not put away with things on it. The island's tables
-  outdoors follow the same rules (`lib/surface.ts`; island-layout.md "Table tops"). **On the walls** (the かべかけ
-  tab): a piece hangs on a wall's grid (its op: x, z the step, f the wall).
-- **Loading:** the furniture's models are kept page-wide as loaded (tent/engine.ts `loadModel`, release.ts `lean`), so
-  a room comes back with no fetch or decode; each room's GPU copies go with its renderer. What isn't drawn yet (the first
-  person's ceiling, the edit grid) is compiled a program a tick once still (engine.ts `warm`). At rest the room draws
-  only a blink (villager3d `nextBlink`).
-- **Sit, lie and switch** (`tent/seats.ts`; shared with the museum's benches: `rooms/seating.ts`): NH's own interaction
-  from the spreadsheet (a Chair is sat on, a Bed lain on): a tap walks my villager up to the nearest free side and it
-  sits or lies, its pose its model's turned with the piece (along the bed, the head on the pillow, a double bed's two
-  side by side: [Seats and beds](world3d-assets.md#seats-and-beds)); a floor tap gets it up; the first to sit keeps the seat (the `tent` intent's `seat`). The cold sleep pod's lid (`tent/lid.ts`) shuts over
-  its sleeper once lain (0.45 s, then 0.52 s eased; at once with reduced motion), the sleeper settling 1.2 deeper, and
-  opens before they get up (the get-up waits for it); each phone runs it off the shared lying pose. A light switches with a tap, kept with the
-  piece (its op's `l`); NH's room light switch (💡) dims the room's own light.
+  villager, its footprint green or red with the reason; ↻ まわす turns it; ✓ 置く places it; 🗑 片付ける stores it (取り消す
+  for 5 s); ✕ やめる puts it back. At most 60 pieces a room, on whole tiles, off the door's two, not over a piece or a
+  villager; a rug lies under furniture. **Holding** (NH's: one thing held at a time): while I hold one, the finger is
+  for it (a press or a near miss drags it, a floor tap puts it there if it may stand, a tap on another piece doesn't
+  take it unless what I hold goes there; a 400 ms press swaps; a tap off the room puts it down). **Table tops** (NH's
+  surfaces, the ACNH spreadsheet's `surface` flag): Miscellaneous things go one a tile on a surface's top, found from
+  its converted model (`scripts/room-surfaces.ts`: items.json `sy`, `st`, `sl`); a thing's op names its piece (`on`),
+  so moving the table carries it; not put away with things on it. The island's tables outdoors follow the same rules
+  (`lib/surface.ts`; island-layout.md "Table tops"). **On the walls** (the かべかけ tab): a piece hangs on a wall's grid
+  (its op: x, z the step, f the wall).
+- **Loading:** the furniture's models are kept page-wide as loaded (tent/engine.ts `furniture`: world3d/modelCache.ts,
+  the 48 last used of those no room uses; release.ts `lean`), so a room comes back with no fetch or decode. What isn't
+  drawn yet (the first person's ceiling, the edit grid) is compiled a program a tick once still (engine.ts
+  `warmSoon`). At rest the room draws only a blink (villager3d `nextBlink`).
+- **Sit, lie and switch** (`tent/seats.ts`; shared with the museum's benches: `rooms/seating.ts`): a Chair is sat on, a
+  Bed lain on (the spreadsheet's interaction): a tap walks my villager up to the nearest free side and it sits or lies,
+  its pose its model's turned with the piece ([Seats and beds](world3d-assets.md#seats-and-beds)); a floor tap gets it
+  up; the first to sit keeps the seat (the `tent` intent's `seat`). The cold sleep pod's lid (`tent/lid.ts`) shuts over
+  its sleeper once lain (at once with reduced motion) and opens before they get up; each phone runs it off the shared
+  lying pose. A light switches with a tap, kept with the piece (its op's `l`); NH's room light switch (💡) dims the
+  room's own light.
 - **Phrases** ([Villager taps](#villager-taps)): the say button at the room's bottom right, in the tent and every home;
-  hidden in もようがえ and under a sheet. The phrase shows in the island's balloon (`island/Says.svelte`) by the speaker's
-  head (the engine's `headPoint(who)`), 4 s. It goes out as `say {text, sc}` with the room's scope (`t`, `u`, `v`) and
-  shows only on a phone whose villager is in that room (`e2e/say-rooms.spec.ts`).
+  hidden in もようがえ and under a sheet. The phrase shows in the island's balloon (`island/Says.svelte`) by the
+  speaker's head (the engine's `headPoint(who)`), 4 s, as `say {text, sc}` with the room's scope (`t`, `u`, `v`), only
+  on a phone whose villager is in that room (`e2e/say-rooms.spec.ts`).
 - **The Happy Home Academy** (`tent/hha.ts`, `HhaLetter.svelte`): the first visit after the room changed that day,
   ハニワくん's letter rates it, from the shared room alone (NH's HHA points: series, themes, colours, lights, space, kinds;
   どう 3,000, ぎん 6,000, きん 10,000) with one remark. The numbers are their own chunk (`hha.json`). No ベル.
 - **Shared and kept:** each change is one op (the island's `decor` op with the room's scope, last writer wins:
   `contract/tent.ts`, [backend](backend.md#events)). While I hold a piece, the others see it move (`drag`, ≤ 10 a
-  second, presence only) with a yellow footprint, not theirs to pick up (「ウェイが うごかしているよ」); the earlier hold
-  keeps it; silent for 2 s it drops back; the drop is the op.
+  second, presence only) with a yellow footprint, not theirs to pick up; the earlier hold keeps it; silent for 2 s it
+  drops back; the drop is the op.
 - **Cost:** three.js and the room's code are their own chunk, fetched only when the tent opens (`e2e/tent.spec.ts`); no
-  MSAA; pixel ratio capped at 2, 1.5 while the camera moves; frames on demand; everything disposed on the way out.
-- **The models** (`npm run room-models`, NH_MODELS: see [world3d-assets.md](world3d-assets.md)): NH's furniture, rugs, wallpapers and floors
-  converted to `static/room/`: 816 pieces (every ずかん piece NH has a model of), each a meshopt glTF with baked WebP
-  textures (≤ 256 px, ≈ 18 KB average), its footprint from NH's catalogue size; wallpapers 256 × 512, floors 512².
-  Cached by the service worker on first use (`island-room-v1`, content-hashed URLs), never at install.
+  MSAA; frames on demand; the renderer let go of on the way out ([Frame rate](#frame-rate)).
+- **The models** (`npm run room-models`: [world3d-assets.md](world3d-assets.md)): NH's furniture, rugs, wallpapers and
+  floors in `static/room/`, 816 pieces (every ずかん piece NH has a model of), each a meshopt glTF with baked WebP
+  textures, its footprint from NH's catalogue size. Cached by the service worker on first use (`island-room-v1`).
 
 ### Critters
 
@@ -1189,12 +1153,11 @@ island, moved and turned in the editor, never removed. A tap walks my villager t
   loaded per species; every frame moves only what's on screen; the exhibits step at the ambient rate, nothing while
   nothing on screen moves. Stands, bases, water, glass and frames are one mesh a material (geometry.ts batcher). Once
   everything is in, what isn't on screen yet is made ready while the hall is still (textures eight at a time, programs
-  compiled: engine.ts warm; paused while the page is hidden). Its models stay loaded across visits, as the tent's
-  furniture does (world3d/modelCache.ts: the 64 last used of those unused; each visit's GPU copies go with its renderer).
-  On WebKit its models' textures are plain images, not ImageBitmaps (world3d/gltf.ts `glbLoader({ plain })`: WebKit
-  uploads ImageBitmaps ~10× slower); the island keeps its ImageBitmaps. A rebuilt wing keeps its
-  programs (engine.ts `retired`: the old wing disposed only after the new one's materials compiled;
-  `npm run leak -- rebuild`).
+  compiled: engine.ts `warmSoon`; paused while the page is hidden). Its models stay loaded across visits, as the
+  tent's furniture does (`world3d/modelCache.ts`: the 64 last used of those unused). On WebKit the rooms' model
+  textures are plain images, not ImageBitmaps (`world3d/gltf.ts` `glbLoader({ plain })`; the island keeps its
+  ImageBitmaps). A rebuilt wing keeps its programs (engine.ts `retired`: the old wing disposed only after the new
+  one's materials compiled; `npm run leak -- rebuild`).
 - **Never a blank frame:** the canvas's buffer is resized only just before a draw, in the same task (engine.ts draw),
   since WebKit shows a cleared buffer until the next draw.
 - Its music: [Place music](#place-music).
@@ -1233,10 +1196,9 @@ eyes, and back. Kept on this phone (`island.fpv`; `?fpv=1|0` for a tab); local o
 money, かいがら (shells), never ベル ([decisions](decisions.md#the-shops-かいがら)): the island's catches sell
 for them and buy furniture for the rooms. Each person's own pocket and かいがら, the guest's too.
 
-- **Inside:** a screen, not a 3D room (a counter, lists and prices; a walking room would add nothing and cost another
-  three.js scene): honey wood walls, the sign, a window with the sky, まめきち and つぶきち behind the counter, their line
-  in a cream balloon, and NH's counter menu under it. My かいがら top right; ‹ 島へ goes back out. While I'm in here my
-  villager is nowhere on the others' islands (`tent {in, sc: 's'}`).
+- **Inside:** a screen, not a 3D room: honey wood walls, the sign, a window with the sky, まめきち and つぶきち behind the
+  counter, their line in a cream balloon, and NH's counter menu under it. My かいがら top right; ‹ 島へ goes back out. While
+  I'm in here my villager is nowhere on the others' islands (`tent {in, sc: 's'}`).
 - **うる** (sell): my pocket, everything I caught, found or picked up (my day tallies, model/tally.ts) less what I sold,
   in sections (虫, 魚, 海の幸, かいがら, 資源, 果物, 化石, その他: `shop/pocket.ts`), dearest first. A tap picks one more, −
   one less, ぜんぶ all; the bar says 「3こで 120 かいがら」 and うる sells (one `sell` a kind). Selling never takes anything
@@ -1308,20 +1270,18 @@ the camera to them.
 [world3d-assets.md](world3d-assets.md). A and B are NH's human players by default (`contract/look.ts` DEFAULT_LOOKS),
 assembled at runtime from parts converted from the game files: the body (once per page; skin and hair colours are
 tints), the faces as atlases swapped by texture offset (eye colour through each eye's iris mask), one GLB per part
-mesh bound to the body's joints by name on one skeleton (`skin.ts`), one WebP per item (a KTX2 too for the bundled
-closet's). Every hairstyle, eye and mouth and every garment that wore cleanly is converted (4,338 items, ~23 MB in 44
-packs under `/room/player/`, lazy; an outfit ~60 KB over the body): [world3d-assets.md "Players"](world3d-assets.md#players). Hats sit at NH's brim with NH's cut-down hair; hair ornaments at each
-hairstyle's measured spot (`ORNAMENT_ON`).
+mesh bound to the body's joints by name on one skeleton (`skin.ts`). Every hairstyle, eye and mouth and every garment
+that wore cleanly is converted (4,338 items, lazy, in packs: [world3d-assets.md "Players"](world3d-assets.md#players)).
+Hats sit at NH's brim with NH's cut-down hair; hair ornaments at each hairstyle's measured spot (`ORNAMENT_ON`).
 - **The part table:** per item its slot, mesh, textures, colour line, swatch and closet icon. The whole table
-  (`static/room/player/parts.json`, ~1 MB) is fetched only when a look wears a part the bundled first closet
+  (`static/room/player/parts.json`, ~1.2 MB) is fetched only when a look wears a part the bundled first closet
   (`components/player3d/parts.json`) lacks (`parts.ts covers`, `loadParts`). `contract/partIds.json` is every id the app
   has, so a look naming an unknown part reads as いつもの's.
-- **The runtime:** `createPlayer(id, look, asset('/room/player'), seed)` → a `Player3D`: villager3d's `Villager3D`
-  interface (the same the island, the rooms and the museum use) plus `dress(look)` (changes in place only what differs)
-  and `look()`; a part it can't have (offline, never fetched) is drawn as いつもの's (`wearable`), and it rejects only
-  without the body (keep the stand-in). Faces map faces.ts's expressions (tune.ts); poses
-  are poses.ts's, unforked (`animateModel` with a rig Kind). `portrait(renderer, player, size, bg)` draws the head with a
-  renderer the page already has. `design/avatar/player3d/check.ts` draws the runtime in headless Chrome.
+- **The runtime:** `createPlayer` → a `Player3D`: villager3d's `Villager3D` interface (the same the island, the rooms
+  and the museum use) plus `dress(look)` (changes in place only what differs) and `look()`; a part it can't have
+  (offline, never fetched) is drawn as いつもの's (`wearable`), and it rejects only without the body (keep the
+  stand-in). Faces map faces.ts's expressions (tune.ts); poses are poses.ts's (`animateModel` with a rig Kind).
+  `portrait()` draws the head with a renderer the page already has.
 
 **Who draws a person** (`components/person3d/person3d.ts`, `e2e/players.spec.ts`): `person3(who, look, villagerPref,
 dirs)` is the one seam between the look a person wears (`store/look.ts` `lookOf`) and the model a scene stands up: a
@@ -1360,7 +1320,7 @@ stands on. What he's up to goes by the Tokyo clock (`kkMode`; `?kk=show|day|asle
   float up, the villagers sway and a caption sits by him, on every phone. A tap mid-song offers ストップ / つづけて. At its
   end his sign-off and the island's music returns.
 - **By day** (06:00–24:00 the rest of the week): he strums quietly, no sound; a tap is a chat that offers a song all the
-  same (a resident who played only once a week would be scenery).
+  same.
 - **Asleep, 00:00–06:00:** nodded off (villager3d's `nap`); a tap wakes him and he offers one all the same, then sleeps.
 - **Anyone, any time:** A, B and the guest alike; with ミュージック off, picking a song turns it on on that phone. **The
   song is everyone's**: it plays on the island's music stage ([Shared music](#shared-music)), heard on every phone
@@ -1525,39 +1485,8 @@ field), the setting, then what the event implies.
 
 ### Dev params
 
-Read on each call by `island/devHooks.ts` (the seasonal ones by `ui-state/preview.ts`). The island's hooks work in dev
-builds or with `?demo`; `?date`, `?theme` and `?season` work everywhere:
-
-| Param | Effect |
-|---|---|
-| `?demo` (`=harvest`, `&as=B\|G`, `&weeks=60`, `&health=none\|zero`) | Made-up data, no backend; the harvest recap; play as B or the guest; a longer history; no Health rows / no-watch days |
-| `?date=YYYY-MM-DDTHH:mm` | The scene clock (Tokyo), this page load only (it moves the shared day too) |
-| `?theme=dawn\|day\|dusk\|night`, `?season=` | Preview a time of day or a season |
-| `?seed=` | The island's seed (finds, weather, visitors) |
-| `?weather=clear\|cloudy\|rain\|heavy\|snow\|fog\|aurora\|rainbow` | Force the weather (the critters' too) |
-| `?wx=real\|game` | The island's weather mode for this load |
-| `?wx=rain-pm\|clears\|typhoon\|snow\|fog\|cloudy\|stale` | A canned real-weather timeline (`island/wxFixtures.ts`) |
-| `?event=<id>` | Show an event (the preview's ids: `halloween`, `cherry`, `birthday-A`, `wedding`…) |
-| `?visitor=<id>\|none\|events`, `?arrive`, `?leave=<ms>`, `?stroll[=<ms>]`, `?meet` | A visitor (`events`: an event's host only); its arrival; its departure; a stroll; the partner's hello |
-| `?kk=show\|day\|asleep` | K.K. on his stool, whatever the clock |
-| `?critter=fish\|pond\|<fish>\|<pond fish>\|<bug>\|none`, `&coast=front\|back\|left\|right`, `?sea=<id>\|pearl`, `?flea` | A critter now (ambient visits off), a sea fish off that side; a dive spot; a flea on every villager tap |
-| `?shake=nest\|branch\|bagworm\|spider\|coconut\|wood` | The next shake drops that |
-| `?rock=clonk\|sparkle\|bug` | Every rock tap has that outcome |
-| `?find=bottle\|fragment\|mushroom\|rare-mushroom\|earth-egg\|washed` | A beach find now / every dig spot that / a bottle washing in |
-| `?balloon`, `?fireworks`, `?shower`, `?stretch`, `?hybrid` | A balloon (`=none`: never); a show; a meteor shower's night; the tape deck; a hybrid flower |
-| `?hit` | Every tap target drawn over the island |
-| `?fpv=1\|0` | The rooms' first-person view for the tab |
-| `?awake`, `?grace=<ms>`, `?wake=<ms>` | Everyone counts as online (no villager sleeps); the [Sleep](#sleep) grace and a tap's wake that long |
-| `?idle=none`, `?stars=none` | No idle beats; no ordinary night's shooting stars |
-| `localStorage['e2e.ambient'] = 'off'` | The e2e's ambient life off (e2e/fixtures.ts): `critter=none`, `visitor=events`, `balloon=none`, `idle=none`, `stars=none` unless the URL sets them |
-| `?relay=<wss url>&key=<key>` | The demo over a real relay (`e2e/sync-harness.spec.ts`) |
-| `?quietafter=<ms>` | How long a phone gone quiet inside a room stays shown there |
-| `?render=none` | The 3D engines run but draw nothing (the e2e's logic mode: `ui-state/testMode.ts`) |
-
-Anywhere: `?panel=rewards` opens ごほうび at once; the 3D island's renderer takes `?dpr=<ratio>`, `?aa=0\|1`,
-`?shadows=0\|1` and `?ambient=<fps>`. The editor's params: [island-layout.md](island-layout.md). The live island sets
-`window.__world` (`cam()`, `go(z)`, `at(x, z)`, `put(x, z)`, `idle()`, `quiet()`, `perf`, `stops()`, `mine()`,
-`partner()`, `geo()`, `site()`, …) for the e2e and the console (e2e/island.ts wraps them).
+The island's URL params (a visitor, the weather, a critter, the clock…, read by `island/devHooks.ts` and
+`ui-state/preview.ts`) are listed in [ops/testing.md "URL params"](ops/testing.md#url-params).
 
 ## Motion
 
@@ -1588,14 +1517,14 @@ Anywhere: `?panel=rewards` opens ごほうび at once; the 3D island's renderer 
 - **Tap-to-walk** (`tapWalk.ts planTap` over `nav.ts`): my villager runs there (300 u/s), over the bridge and up the
   stairs. A tap on ground it can't stand on snaps to the nearest walkable point within 40u; unreachable ground to the
   nearest reachable point. Water never walks (it ripples); a building's footprint knocks at its door. A cream ring marks
-  the spot. The relay keeps each person's last walk, so a phone opening later puts their villager where they sent it.
+  the spot.
 - **Where my villager is, kept** (`avatar.ts` startAt, `e2e/positions.spec.ts`): the island opens with it where it last
   stood (`island-stay.<who>`), however long after. Only a player never placed starts at home.
 - **Never a teleport on another phone:** a big gap glides off at the run within 1.5 s while in view (villagerSync
   `playPartner`); only a phone opening, or the island hidden, puts it there.
 - **The camera never moves for a walk:** only the finger scrolls.
 - **A phone gone** (closed, hidden, offline, for any time): its villager stays where its last walk ended, on every phone
-  (the relay carries each person's last walk into each new day), asleep there ([Sleep](#sleep)).
+  (the relay keeps each person's last walk, into each new day), asleep there ([Sleep](#sleep)).
 - **Sheets and hiding:** a sheet stops everyone; uncovered, the outings wander back; hidden over 30 s, they're back on
   return. A balloon opens only over a villager standing still.
 - **Walk mask** (`walkGeo`): land, the bridge's deck and the stairs; not water, cliffs, footprints, trunks, the rock,
@@ -1609,11 +1538,9 @@ Anywhere: `?panel=rewards` opens ごほうび at once; the 3D island's renderer 
   direction (`LOOKS_RIGHT`; `NO_MIRROR`).
 - **The villagers' own outings:** the partner's villager walks to 1–3 points of interest within 600u of home, then
   home; mine only after 2 min without input. One away at a time; nothing after 10 min without input.
-- **Follow and chat:** when mine has been away over 8 s (within 600u) the partner comes over; two villagers within 64u
-  chat.
-- **The partner over the relay** (`LIVE_V` 2): my tap-to-walk sends `walk` with the world point; their phone runs my
-  villager there along the same graph. Off screen, a round face of their villager is pinned at the edge; a tap scrolls
-  to them.
+- **Follow and chat:** when mine has been away over 8 s (within 600u) the partner comes over; two within 64u chat.
+- **The partner over the relay** ([Shared world](#shared-world)): my walk goes as `walk`; their phone runs my villager
+  along the same way. Off screen, a round face of their villager is pinned at the edge; a tap scrolls to them.
 - **Goals:** a newly met fruit walks that person's villager to their tree; ふたりでぜんぶ brings both to the middle of the
   lawn for a high-five.
 
@@ -1735,15 +1662,12 @@ once. Nothing is fetched while ミュージック is off.
 
 ### Shared music
 
-`sound/stage.svelte.ts`, the relay's `music` ([backend.md](backend.md#live-relay)); the mechanism in
-[sound-sync.md](sound-sync.md). Continuous music someone starts is a **stage**, one record per source, the same on
-every phone: `isl` the island's (K.K., the stretch, the cake), `t` / `u` / `v` a room's stereo. A record says which song
-plays from when (`at`, the relay's clock) for how long (`ms`); `request(src, song)` and `hush(src)` apply it here at once
-and send it; the room keeps the last one per source and hands the live ones over at hello. Last writer wins by `(at,
-who)` (`newerMusic`). Nothing goes out when a song ends: each phone drops the record at `at + ms`. Visuals follow the
-record for everyone; the sound plays only where the stage is (`enterStage`) with ミュージック on, 音量 above 0 and audio
-unlocked, seeked to `serverNow − at` (`MusicTrack.from`). Mute and volume stay local. The first tap after the app opens
-picks the song up mid-song.
+`sound/stage.svelte.ts`, the relay's `music` ([backend.md](backend.md#live-relay)); the mechanism (the record, its
+last-writer rule, the seek, the unlock) is [sound-sync.md](sound-sync.md). Continuous music someone starts is a
+**stage**, one record per source, the same on every phone: `isl` the island's (K.K., the stretch, the cake), `t` /
+`u` / `v` a room's stereo. Visuals follow the record for everyone; the sound plays only where the stage is
+(`enterStage`) with ミュージック on, 音量 above 0 and audio unlocked, seeked to where the song is now. Mute and volume
+stay local. The first tap after the app opens picks the song up mid-song.
 
 **Another player's sounds** (a shake, a dig, a splash, their footsteps…) reach every phone through the intents that
 show them, each played where it happens (`cue(c, { at })`, `sceneSfx(kind, at)`) with the island camera's gain
@@ -1822,12 +1746,10 @@ hand-replaced file; `sound.test.ts` checks every one): the app fetches `file?v=`
 ([backend.md](backend.md#service-worker)). Add a file and its entry, no code change; a missing effect keeps its
 placeholder, missing ambience its procedural bed, missing music is silence.
 `npm run audio:music -- <dir> [--only <key regex>]` (`scripts/music.ts`, ffmpeg) builds every entry from the user's MP3s
-by track number (`CATALOGUE`): loops (finds the period, cuts it where both passes match, appends the copy; a 2 s blend
-where the rip's second pass is a variation), one-shots (silence trimmed), AAC 64 kbps, `gain` to −16 LUFS; jingles mono
-with their loudness in the file; K.K.'s songs and airchecks mono AAC at 40 kbps. `sound.test.ts`: every manifest path
-exists, every file is named, each folder under its budget (one file / all): `music/` 1 / 64 MB, `places/` 1 / 6 MB,
-`sfx/` 0.25 / 4 MB, `kk/` 1.2 / 60 MB, `kk/aircheck/` 1.2 / 36 MB. Audio is never precached; the worker's audio cache
-keeps its few per class (music 3, K.K. 2, the rest 8; ききみみ's packs have their own cache).
+by track number (`CATALOGUE`): seamless loops, one-shots trimmed, AAC (K.K.'s mono), loudness-matched `gain`.
+`sound.test.ts`: every manifest path exists, every file is named, each folder under its budget (`BUDGET_MB`). Audio is
+never precached; the worker's audio cache keeps its few per class (service-worker/caches.ts `KEEP`; ききみみ's packs
+have their own cache).
 
 ### Sound settings
 
