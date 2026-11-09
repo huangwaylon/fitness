@@ -1,13 +1,22 @@
-// The player part table (scripts/players3d-models.ts) and where each file is: under the site's room/player/ (the
-// service worker caches it on first use, never at install), its content hash in the address. The bundle carries the
-// first closet's table (parts.json: what the closet lists); the whole table (every item converted, ~1.1 MB) is fetched
-// once, beside the parts, only when a look wears a part the bundled one hasn't (covers, loadParts).
+// The player part table (scripts/players3d-models.ts) and where each file is: a slice of one of a few dozen packs under
+// the site's room/player/ (scripts/player-packs.ts, packing.ts: `<home>.<hash>.pak`; the service worker caches what's
+// fetched on first use, never at install). Each file's place, `at` (its KTX2's, `k`), is in the table: [the pack's
+// index in `packs`, offset, bytes]. Both いつもの looks are one pack, `everyday`, fetched whole as a player is first drawn;
+// any other part comes alone, a Range of its pack (lib/packStore.ts: Pages answers with the whole pack, then held).
+// The bundle carries the first closet's table (parts.json: what the closet lists); the whole table (every item
+// converted, ~1.1 MB) is fetched once, beside the packs, only when a look wears a part the bundled one hasn't (covers,
+// loadParts).
 import TABLE from './parts.json' with { type: 'json' };
 import type { PlayerLook } from '#lib/contract/look.ts';
+import { PackStore } from '#lib/packStore.ts';
 
+/** Where a file is: its pack (an index in the table's `packs`), offset and bytes. */
+export type At = [pack: number, offset: number, bytes: number];
+/** A file's place, and its KTX2's (a texture the bundled table lists: world3d/texHash.ts looseTextures). */
+export interface Placed { at?: At; k?: At }
 /** How a part's material is drawn: its texture (a file under tex/, or a plain colour), cut out, see-through (the
  *  opacity), tinted by the hair's colour or the skin's. */
-export interface TexSpec { file?: string; v?: string; kb?: number; color?: string; cut?: boolean; glass?: number; tint?: 'hair' | 'skin' }
+export interface TexSpec extends Placed { file?: string; v?: string; kb?: number; color?: string; cut?: boolean; glass?: number; tint?: 'hair' | 'skin' }
 export interface ItemSpec {
   slot: 'top' | 'bottom' | 'socks' | 'shoes' | 'glasses' | 'ornament' | 'hat';
   /** Its mesh (mesh/<key>.glb); none for socks (a texture on the body's legs). */
@@ -23,12 +32,16 @@ export interface ItemSpec {
   /** Its swatch: its texture's own dominant colour (the closet's dot and colour filter). */
   sw?: string;
 }
-interface MeshSpec { v: string; kb: number; tris: number; rigid: boolean; mats: string[] }
+interface MeshSpec extends Placed { v: string; kb: number; tris: number; rigid: boolean; mats: string[] }
+type FileSpec = Placed & { v: string; kb: number };
 export interface PartTable {
-  body: { v: string; kb: number; tris: number };
-  cheek: { v: string; kb: number }[];
+  /** The packs' stems (`<home>.<hash>`: room/player/<stem>.pak), and which holds both いつもの looks. */
+  packs?: string[];
+  everyday?: number;
+  body: FileSpec & { tris: number };
+  cheek: FileSpec[];
   /** An eye's or mouth's atlas; an eye's iris mask beside it (the eye colour's tint). */
-  face: Record<string, { v: string; kb: number; iris?: { v: string; kb: number } }>;
+  face: Record<string, FileSpec & { iris?: FileSpec }>;
   mesh: Record<string, MeshSpec>;
   /** A hairstyle's mesh, its under-a-hat cut, and its top and left side as measured (hair ornaments sit there: head
    *  joint frame, the body's axes). */
@@ -73,20 +86,43 @@ export function loadParts(dir: string): Promise<PartTable> {
 }
 
 const slash = (dir: string) => dir.replace(/\/?$/, '/');
-/** The body's address in `dir` (the site's room/player/: $app/paths asset). */
-export const bodyUrl = (dir: string): string => `${slash(dir)}body.glb?v=${PARTS.body.v}`;
-/** A mesh's address (a hairstyle's, a top's shape…), or null when the table hasn't it. */
-export const meshUrl = (key: string, dir: string, t: PartTable = PARTS): string | null => (t.mesh[key] ? `${slash(dir)}mesh/${key}.glb?v=${t.mesh[key].v}` : null);
+
+/** A file of the parts: `key` its name under room/player/ and content hash (`mesh/<key>.glb?v=…`: what's cached once a
+ *  page by), where it is (`at`) and its KTX2 (`k`), in `t`'s packs. */
+export interface PartFile { key: string; at?: At; k?: At; t: PartTable }
+const file = (key: string, spec: Placed & { v?: string }, t: PartTable): PartFile => ({ key: `${key}?v=${spec.v ?? ''}`, at: spec.at, k: spec.k, t });
+/** The body. */
+export const bodyFile = (t: PartTable = PARTS): PartFile => file('body.glb', t.body, t);
+/** A mesh (a hairstyle's, a top's shape…), or null when the table hasn't it. */
+export const meshFile = (key: string, t: PartTable = PARTS): PartFile | null => (t.mesh[key] ? file(`mesh/${key}.glb`, t.mesh[key], t) : null);
 /** An eye's or mouth's atlas (by its part id) or a blush's (`cheek0`–`cheek2`). */
-export function faceUrl(id: string, dir: string): string | null {
-  const c = /^cheek([0-2])$/.exec(id);
-  if (c) return `${slash(dir)}face/${id}.webp?v=${PARTS.cheek[+c[1]].v}`;
-  return PARTS.face[id] ? `${slash(dir)}face/${id}.webp?v=${PARTS.face[id].v}` : null;
+export function faceFile(id: string, t: PartTable = PARTS): PartFile | null {
+  const c = /^cheek([0-2])$/.exec(id), spec = c ? t.cheek[+c[1]] : t.face[id];
+  return spec ? file(`face/${id}.webp`, spec, t) : null;
 }
 /** An eye's iris mask (its eye colour's tint), or null. */
-export const irisUrl = (id: string, dir: string, t: PartTable = PARTS): string | null => {
+export const irisFile = (id: string, t: PartTable = PARTS): PartFile | null => {
   const i = t.face[id]?.iris;
-  return i ? `${slash(dir)}face/${id}.iris.webp?v=${i.v}` : null;
+  return i ? file(`face/${id}.iris.webp`, i, t) : null;
 };
-/** An item's texture file's address. */
-export const texUrl = (t: TexSpec, dir: string): string | null => (t.file ? `${slash(dir)}tex/${t.file}?v=${t.v}` : null);
+/** An item's texture file. */
+export const texFile = (spec: TexSpec, t: PartTable = PARTS): PartFile | null => (spec.file ? file(`tex/${spec.file}`, spec, t) : null);
+
+const stores = new Map<string, PackStore>();
+/** `dir`'s packs (the site's room/player/: $app/paths asset), held in memory: the everyday pack and a few more. */
+const storeOf = (dir: string): PackStore => {
+  let s = stores.get(dir);
+  if (!s) stores.set(dir, (s = new PackStore({ url: (stem) => `${slash(dir)}${stem}.pak`, cap: 4_000_000, slices: 96, tag: 'player' })));
+  return s;
+};
+const refOf = (t: PartTable, at: At | undefined) => (at && t.packs?.[at[0]] ? ([t.packs[at[0]], at[1], at[2]] as const) : null);
+/** A file's bytes (its KTX2's with `ktx2`), a copy; null when it can't be had (offline and never fetched, or no place). */
+export function partBytes(f: PartFile, dir: string, ktx2 = false): Promise<ArrayBuffer | null> {
+  const ref = refOf(f.t, ktx2 ? f.k : f.at);
+  return ref ? storeOf(dir).bytes(ref) : Promise.resolve(null);
+}
+/** The everyday pack (both いつもの looks, the body) fetched whole and held: its files are sliced from memory. */
+export function warmEveryday(dir: string, t: PartTable = PARTS): void {
+  const stem = t.everyday === undefined ? undefined : t.packs?.[t.everyday];
+  if (stem) void storeOf(dir).pack(stem);
+}

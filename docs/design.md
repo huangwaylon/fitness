@@ -1286,11 +1286,11 @@ the camera to them.
 `scripts/players3d-models.ts`, `components/player3d/` (`player3d.ts`, `tune.ts`, `parts.ts`, `skin.ts`,
 `portrait.ts`), `contract/partIds.json`; the conversion and its notes: `design/avatar/tech-notes.md`,
 [world3d-assets.md](world3d-assets.md). A and B are NH's human players by default (`contract/look.ts` DEFAULT_LOOKS),
-assembled at runtime from parts converted from the game files: the body (`static/room/player/body.glb`, once per page;
-skin and hair colours are tints), the faces as atlases swapped by texture offset (eye colour through each eye's iris
-mask), one GLB per part mesh bound to the body's joints by name on one skeleton (`skin.ts`), one WebP per item. Every
-hairstyle, eye and mouth and every garment that wore cleanly is converted (4,338 items, ~17 MB under `/room/player/`,
-lazy; an outfit ~60 KB over the body). Hats sit at NH's brim with NH's cut-down hair; hair ornaments at each
+assembled at runtime from parts converted from the game files: the body (once per page; skin and hair colours are
+tints), the faces as atlases swapped by texture offset (eye colour through each eye's iris mask), one GLB per part
+mesh bound to the body's joints by name on one skeleton (`skin.ts`), one WebP per item (a KTX2 too for the bundled
+closet's). Every hairstyle, eye and mouth and every garment that wore cleanly is converted (4,338 items, ~23 MB in 44
+packs under `/room/player/`, lazy; an outfit ~60 KB over the body): [world3d-assets.md "Players"](world3d-assets.md#players). Hats sit at NH's brim with NH's cut-down hair; hair ornaments at each
 hairstyle's measured spot (`ORNAMENT_ON`).
 - **The part table:** per item its slot, mesh, textures, colour line, swatch and closet icon. The whole table
   (`static/room/player/parts.json`, ~1 MB) is fetched only when a look wears a part the bundled first closet
@@ -1298,7 +1298,8 @@ hairstyle's measured spot (`ORNAMENT_ON`).
   has, so a look naming an unknown part reads as いつもの's.
 - **The runtime:** `createPlayer(id, look, asset('/room/player'), seed)` → a `Player3D`: villager3d's `Villager3D`
   interface (the same the island, the rooms and the museum use) plus `dress(look)` (changes in place only what differs)
-  and `look()`; it rejects if a part isn't there (keep the stand-in). Faces map faces.ts's expressions (tune.ts); poses
+  and `look()`; a part it can't have (offline, never fetched) is drawn as いつもの's (`wearable`), and it rejects only
+  without the body (keep the stand-in). Faces map faces.ts's expressions (tune.ts); poses
   are poses.ts's, unforked (`animateModel` with a rig Kind). `portrait(renderer, player, size, bg)` draws the head with a
   renderer the page already has. `design/avatar/player3d/check.ts` draws the runtime in headless Chrome.
 

@@ -704,12 +704,14 @@ None ([decisions](decisions.md#no-notifications); `e2e/no-notify.spec.ts`: nothi
 - **Room cache** (`island-room-v1`: the rooms' and the 3D island's models, the players' parts, the villagers' models;
   cache-first on first use, outliving builds): bounded (`caches.ts roomEvict`, its index `__room-index` in the cache
   itself). A file's older versions (the same path under another `?v=`) go at once; then, while the rest is over 40 MB,
-  the least recently used, never one used within 3 days.
+  the least recently used, never one used within 3 days. The players' packs (`/room/player/<home>.<hash>.pak`) are kept
+  here too: the everyday pack whole, a part's slice (`?s=`) as below, each slice a file of its own.
 - **Listen cache** (`island-listen-v1`: ききみみ's audio packs, `/audio/listen/<pack>.<hash>.pak`,
   [kikimimi.md](kikimimi.md) "Audio"): cache first, never revalidated, outliving builds; `listenEvict`: a pack's older
   version once unused for 10 minutes, then the least recently used past 30 MB, never a pack used in the last 10 minutes.
   A clip's slice (`?s=<from>-<to>`, asked as a Range) is kept under its URL as a 200 of its bytes (cut from the whole pack
-  when that's cached); any other Range request passes through.
+  when that's cached; Pages answers a Range with the whole pack, which is then kept too); any other Range request passes
+  through.
 - **STT cache** (`island-stt-v1`: ききみみ's recogniser, [kikimimi-mic.md "Hosting and the service worker"](kikimimi-mic.md#hosting-and-the-service-worker)): the whisper model and
   its ONNX runtime under `/stt/` (~70 MB) and its worker (`vite.config.ts stt-names`). Never precached: the page fills
   it after the mic opt-in (`lib/mic/models.ts ensureStt`); the worker serves `/stt/` from it and never stores.

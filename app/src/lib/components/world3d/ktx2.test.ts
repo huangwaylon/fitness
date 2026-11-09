@@ -14,21 +14,25 @@ import { entries, pack, packId } from './ktx2Pack.ts';
 import homes from '#lib/layout/homes.json' with { type: 'json' };
 import structures from '#lib/layout/structures.json' with { type: 'json' };
 import parts from '../player3d/parts.json' with { type: 'json' };
+import { playerFiles } from '../../../../scripts/player-packs.ts';
 
 const APP = join(import.meta.dirname, '..', '..', '..', '..');
 const ROOM = join(APP, 'static', 'room');
 const req = createRequire(import.meta.url);
 const sha8 = (b: Uint8Array) => createHash('sha256').update(b).digest('hex').slice(0, 8);
+/** The players' files (their packs'), and a file under static/room (a player's from its pack). */
+const PLAYER = playerFiles();
+const readRoom = (path: string): Uint8Array | undefined => (path.startsWith('player/') ? PLAYER.get(path.slice(7)) : existsSync(join(ROOM, path)) ? readFileSync(join(ROOM, path)) : undefined);
 const walk = (d: string): string[] => readdirSync(d).flatMap((f) => (statSync(join(d, f)).isDirectory() ? walk(join(d, f)) : f.endsWith('.glb') ? [join(d, f)] : []));
 
 describe('the island models\' KTX2 textures (scripts/world3d-ktx2.ts: npm run world3d-ktx2 when this fails)', () => {
   it('has each model\'s pack, with a KTX2 for every image in it, and no pack unused', () => {
     const want = new Map<string, string[]>();
-    for (const d of ['world3d', 'homes', 'structures', 'villagers3d', 'player'])
-      for (const f of walk(join(ROOM, d))) {
-        const hs = glbImages(readFileSync(f)).map((im) => texHash(im));
-        if (hs.length) want.set(`${packId(hs)}.ktx2p`, hs);
-      }
+    const glbs = [...['world3d', 'homes', 'structures', 'villagers3d'].flatMap((d) => walk(join(ROOM, d)).map((f) => readFileSync(f))), ...[...PLAYER].filter(([p]) => p.endsWith('.glb')).map(([, b]) => b)];
+    for (const b of glbs) {
+      const hs = glbImages(b).map((im) => texHash(im));
+      if (hs.length) want.set(`${packId(hs)}.ktx2p`, hs);
+    }
     const have = readdirSync(join(ROOM, 'tex'));
     expect(have.filter((f) => !want.has(f))).toEqual([]);
     const short = [...want].filter(([f, hs]) => {
@@ -44,15 +48,17 @@ describe('the island models\' KTX2 textures (scripts/world3d-ktx2.ts: npm run wo
     expect(loose.length).toBeGreaterThan(1000);
     const packs = new Map<string, Map<string, [number, number]> | null>();
     const has = (l: Loose) => {
-      if (!existsSync(join(ROOM, l.out))) return false;
+      if (!readRoom(l.out)) return false;
       if (!l.entry) return true;
       if (!packs.has(l.out)) packs.set(l.out, entries(readFileSync(join(ROOM, l.out))));
       return !!packs.get(l.out)?.has(l.entry);
     };
     expect(loose.filter((l) => !has(l)).map((l) => l.path)).toEqual([]);
-    expect(loose.filter((l) => kept[l.path] !== texHash(readFileSync(join(ROOM, l.path)))).map((l) => l.path)).toEqual([]);
+    expect(loose.filter((l) => kept[l.path] !== texHash(readRoom(l.path)!)).map((l) => l.path)).toEqual([]);
     const want = new Set(loose.map((l) => l.out));
-    const dirs = [...new Set(loose.map((l) => l.out.slice(0, l.out.lastIndexOf('/'))))];
+    const dirs = [...new Set(loose.filter((l) => !l.out.startsWith('player/')).map((l) => l.out.slice(0, l.out.lastIndexOf('/'))))];
+    // (the players' KTX2s: in their packs, none but these)
+    expect([...PLAYER.keys()].filter((p) => p.endsWith('.ktx2') && !want.has(`player/${p}`))).toEqual([]);
     expect(dirs.flatMap((d) => readdirSync(join(ROOM, d)).filter((f) => /\.ktx2p?$/.test(f)).map((f) => `${d}/${f}`)).filter((f) => !want.has(f))).toEqual([]);
     // (the players' drawn flipped, as TextureLoader draws their WebPs; the homes' unflipped, as glTF's)
     expect(loose.filter((l) => l.flip !== l.path.startsWith('player/'))).toEqual([]);

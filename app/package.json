@@ -57,6 +57,7 @@
     "world3d-sheet": "node scripts/world3d-sheet.ts",
     "villagers3d": "node scripts/villagers3d-models.ts",
     "players3d": "node scripts/players3d-models.ts",
+    "player:packs": "node scripts/player-packs.ts",
     "layout": "node scripts/layout.ts",
     "layout:default": "node scripts/layout-default.ts",
     "home-models": "node scripts/home-models.ts",
