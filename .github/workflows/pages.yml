@@ -307,19 +307,35 @@ jobs:
         # (once more on a failure: Pages' "Failed to publish your Function: Unknown internal error" is theirs, and a
         # second upload sends only what the first didn't)
         run: |
-          deploy() { "$RUNNER_TEMP/wrangler/node_modules/.bin/wrangler" pages deploy ../site --project-name island-fund --branch main --commit-hash "$GITHUB_SHA" --commit-message "${GITHUB_SHA::12}"; }
+          set -o pipefail
+          deploy() { "$RUNNER_TEMP/wrangler/node_modules/.bin/wrangler" pages deploy ../site --project-name island-fund --branch main --commit-hash "$GITHUB_SHA" --commit-message "${GITHUB_SHA::12}" | tee "$RUNNER_TEMP/deploy.log"; }
           deploy || { echo "::warning::wrangler failed, once more in 15 s"; sleep 15; deploy; }
-      # the site answers this commit's build (the version SvelteKit polls), with its headers (looked at every 2 s, 3 min:
-      # Pages took over a minute to serve a deploy it had called complete)
+      # the site answers this commit's build (the version SvelteKit polls), with its headers: every 2 s, 6 min (Pages has
+      # served a deploy it called complete only minutes later). Not by then: this deployment's own URL is asked too, and
+      # the error says whether it's the alias lagging (the build is up, island-fund.pages.dev not yet) or the deploy.
       - if: steps.order.outputs.deploy == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           want=$(node -p "require('./site/_app/version.json').version")
-          for _ in $(seq 90); do
-            got=$(curl -sS --max-time 20 "https://island-fund.pages.dev/_app/version.json?t=$(date +%s%N)" | node -p "JSON.parse(require('fs').readFileSync(0)).version" 2>/dev/null || true)
+          ver() { curl -sS --max-time 20 "$1/_app/version.json?t=$(date +%s%N)" | node -p "JSON.parse(require('fs').readFileSync(0)).version" 2>/dev/null || true; }
+          for _ in $(seq 180); do
+            got=$(ver https://island-fund.pages.dev)
             [ "$got" = "$want" ] && break
             sleep 2
           done
-          [ "$got" = "$want" ] || { echo "::error::island-fund.pages.dev answers build '$got', not '$want'"; exit 1; }
+          if [ "$got" != "$want" ]; then
+            own=$(grep -o 'https://[a-z0-9]*\.island-fund\.pages\.dev' "$RUNNER_TEMP/deploy.log" | tail -1)
+            mine=$([ -n "$own" ] && ver "$own")
+            "$RUNNER_TEMP/wrangler/node_modules/.bin/wrangler" pages deployment list --project-name island-fund --environment production 2>&1 | head -12 || true
+            if [ -n "$mine" ] && [ "$mine" = "$want" ]; then
+              echo "::error title=Pages alias lag::$own serves $want, but island-fund.pages.dev still answers '$got' after 6 min: Cloudflare's alias, not the code (it catches up by itself; re-run this job to check)"
+            else
+              echo "::error title=Deploy not served::island-fund.pages.dev answers '$got' and this deployment ($own) '$mine', not '$want'"
+            fi
+            exit 1
+          fi
           curl -sSI --max-time 20 https://island-fund.pages.dev/ | grep -i '^content-security-policy:.*frame-ancestors' > /dev/null || { echo "::error::no CSP header on island-fund.pages.dev"; exit 1; }
           stt=$(node -p "require('./stt/manifest.json').id")
           curl -sS --max-time 20 "https://island-fund.pages.dev/stt/manifest.json?t=$(date +%s)" | grep -qF "$stt" || { echo "::error::island-fund.pages.dev/stt/ doesn't serve $stt"; exit 1; }
