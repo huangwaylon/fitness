@@ -22,6 +22,7 @@ import { cubicInOut, cubicOut } from '#lib/math.ts';
 import { bend, bendPoint, bendU, unbendRay } from './bend.ts';
 import { waterFog, waterU } from './water.ts';
 import { createThings, type Things } from './things.ts';
+import { shadowBox, type ShadowBox } from './shadowBox.ts';
 import { createCards, type Cards } from './cards.ts';
 import { createEffects, type FxKind, type FxOpts } from './effects.ts';
 import { createBiteMarks, type MarkState } from './biteMark.ts';
@@ -136,19 +137,16 @@ const VIEW_W = 420;
 const PIVOT_DROP = 0.16;
 /** The haze's start and end, as shares of the horizon's view depth: only what stands by the horizon fades a little. */
 const LAND_HAZE = [0.8, 1.35] as const;
-/** The shadow map's box moves in steps of this (u): it redraws when it steps, not on every frame of a scroll. */
-const SHADOW_STEP = 40;
-/** The shadow box's least half width (u; its reach ahead 1.4 of it). */
-const SHADOW_MIN = 200;
 /** The cards lean back this share of the camera's pitch. */
 const LEAN = 0.42;
 /** At rest the ambience draws REST_FPS a second (the battery and the phone's heat: the water, the fall, the weather and
  *  a slow critter still move, at a calm rate; the user's call, 2026-11-07). At rest: no finger on the island for REST_MS,
  *  and the last frame wanted only the ambience (no camera move under way: a fling, a spring back, a focus; nothing
  *  moving at the full rate: a walk, a fast critter, a flourish, a jiggle); either of those draws at the full rate at
- *  once. On those frames the shadow map redraws at most every REST_SHADOW_MS (a slow critter's shadow, a card's), once
- *  more after the last change. */
-const REST_MS = 2000, REST_FPS = 12, REST_SHADOW_MS = 250;
+ *  once. At rest the shadow map redraws at most every REST_SHADOW_MS whatever moves (a walking villager's frames, its
+ *  shadow a blob, redrew it for a crawling bug's), once more after the last change; else a slow caster's move (a bug's,
+ *  a thing shown or hidden: things.ts) at most every SLOW_SHADOW_MS, the rest's in their frame. */
+const REST_MS = 2000, REST_FPS = 12, REST_SHADOW_MS = 250, SLOW_SHADOW_MS = 66;
 /** A fling faster than this (px/ms) rushes (Island3['rushing']): a touch on it only stops it, as iOS's scroll. */
 const RUSH_V = 0.1;
 /** The flourishes' warm-up waits this long after the last held-back batch was drawn (ms): its programs' first uses
@@ -330,7 +328,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   scene.add(ground.group);
 
   // ---- the things, the cards, the lights ----
-  const things = createThings(scene, src.height, (sh = true, soon = false) => (sh && shadowed(), soon && pace.queued() ? undefined : kick()));
+  const things = createThings(scene, src.height, (sh = true) => (sh && shadowed(sh === 'slow'), kick()));
   const cards = createCards(scene, (sh) => (sh && shadowed(), kick()));
   const lights = createLights(scene);
   const effects = createEffects(scene, src.feet, () => kick());
@@ -346,7 +344,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
 
   // ---- the camera ----
   const lim = { min: CAM_Z.min as number, max: CAM_Z.max as number };
-  let camZ = lim.min, zoomK = 1, pitch = (PITCH.def * Math.PI) / 180, rev = 0, shadowKey = '';
+  let camZ = lim.min, zoomK = 1, pitch = (PITCH.def * Math.PI) / 180, rev = 0;
+  let shadowAim: ShadowBox | null = null;
   /** The camera's rev in the last frame's scene step (its DOM nodes placed for it). */
   let framedRev = -1;
   let W = 1, H = 1, D0 = 1500, focal = 1;
@@ -383,18 +382,15 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     waterFog(fog);
     lampFog.near.value = fog.near;
     lampFog.far.value = fog.far;
-    // the shadow's box follows the pivot, as wide as the view, in steps (the shadow map redraws only when it steps)
-    const zq = Math.round(camZ / SHADOW_STEP) * SHADOW_STEP, kq = Math.round(zoomK * 8) / 8;
-    const xq = Math.round(camX / SHADOW_STEP) * SHADOW_STEP;
-    const key = `${zq}:${kq}:${xq}:${todLook.sunAt}`;
-    if (key !== shadowKey) {
-      shadowKey = key;
-      // (zoomed right in the low pitch sees further ahead of the pivot than the width: at least SHADOW_MIN)
-      const half = Math.max(SHADOW_MIN, (VIEW_W / Math.max(ZOOM.min, kq - 0.0625)) * 0.75 + SHADOW_STEP);
-      Object.assign(sun.shadow.camera, { left: -half, right: half, top: half * 1.4, bottom: -half * 1.1, near: 10, far: 1800 });
+    // the shadow's box follows the pivot (shadowBox.ts): the map redraws only when it moves on
+    const box = shadowBox(shadowAim, camZ, camX, zoomK, todLook.sunAt, VIEW_W, ZOOM.min);
+    if (box) {
+      shadowAim = box;
+      const [sx, sy, sz] = todLook.sunAt, [tx, ty, tz] = box.target;
+      Object.assign(sun.shadow.camera, { left: box.left, right: box.right, top: box.top, bottom: box.bottom, near: 10, far: 1800 });
       sun.shadow.camera.updateProjectionMatrix();
-      sun.position.set(xq + todLook.sunAt[0] * 700, todLook.sunAt[1] * 700, -zq - 120 + todLook.sunAt[2] * 700);
-      sun.target.position.set(xq, 0, -zq - 120);
+      sun.position.set(tx + sx * 700, ty + sy * 700, tz + sz * 700);
+      sun.target.position.set(tx, ty, tz);
       sun.target.updateMatrixWorld();
       shadowed();
     }
@@ -778,7 +774,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   }
 
   // ---- the frames ----
-  let frames = 0, shadowsDrawn = 0, shadowAt = 0, disposed = false, shadowsDirty = true, activeUntil = 0, lastFrame = 0, lastInput = now();
+  let frames = 0, shadowsDrawn = 0, shadowAt = 0, disposed = false, activeUntil = 0, lastFrame = 0, lastInput = now();
   /** The ground's water wanted its ambience in the last frame; the water's test and whether it's in view (as of
    *  the camera's rev `waterRev`). */
   let groundAmb = false, waterAt: ((x: number, z: number) => boolean) | null = null, waterRev = -1, waterOn = true;
@@ -812,14 +808,16 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   // between is skipped; a kick from outside while nothing moves draws at once; the ambience's next is due at its own
   // rate: its timer lands just before, and a page with no other frames running has its rAF at once, not at a vsync)
   const pace = pacer(frame);
-  /** The shadow map changed from outside a frame (a model in, a layout's edit, the time of day): redrawn at once, at
-   *  rest too. */
-  let shadowsNow = false;
-  /** The shadows changed (a caster moved or came or went). */
-  function shadowed() {
-    shadowsDirty = true;
-    if (!inFrame) shadowsNow = true;
+  /** When the shadow map is due to redraw (ms; Infinity: nothing changed since): a caster's change in the next frame,
+   *  a slow caster's SLOW_SHADOW_MS after the last redraw; `shadowsNow`, changed from outside a frame (a model in, a
+   *  layout's edit, the time of day): at once, at rest too, where the rest wait for REST_SHADOW_MS after the last. */
+  let shadowDue = -Infinity, shadowsNow = false;
+  /** The shadows changed (a caster moved or came or went; `slow`: a slow caster moved). */
+  function shadowed(slow = false) {
+    shadowDue = Math.min(shadowDue, slow ? shadowAt + SLOW_SHADOW_MS : -Infinity);
+    if (!inFrame && !slow) shadowsNow = true;
   }
+  const shadowBy = (t: number) => (shadowsNow || !resting(t) ? shadowDue : Math.max(shadowDue, shadowAt + REST_SHADOW_MS));
   /** The last frame's: something moved (the full rate), only the ambience did. */
   let busy = false, ambience = false, paused = false, inFrame = false;
   let hook: ((t: number) => Want) | null = null;
@@ -1035,8 +1033,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       if (groundAmb && !ambience && waterSeen()) (ambience = true), why.add('~ground');
       const fps = resting(now()) ? Math.min(opts.ambient, REST_FPS) : opts.ambient;
       if (ambience && fps > 0) pace.later(Math.min(fps, FPS));
-      // (a shadow held back at rest, with no frame coming to draw it: one of its own)
-      if (shadowsDirty && opts.shadows && !pace.queued()) wake(REST_SHADOW_MS - (now() - shadowAt));
+      // (a shadow held back, at rest or a slow caster's, with no frame coming to draw it: one of its own)
+      if (shadowDue < Infinity && opts.shadows && !pace.queued()) wake(Math.max(0, shadowBy(now()) - now()));
     }
   }
   function draw(t: number) {
@@ -1069,11 +1067,11 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       }
       if (!busy) light(false);
     }
-    // (a wobbling model moves its shadow: the map redraws; a walker's is a blob)
-    if (things.frame(t)) {
-      shadowed();
-      want(true, 'things');
-    }
+    // (a wobbling model moves its shadow, a critter's fade brings its own or takes it: the map redraws; a walker's is a
+    // blob, a fish's shadow casts none)
+    const th = things.frame(t);
+    if (th === 'cast') shadowed();
+    want(!!th, 'things');
     if (hook) want(hook(t), 'scene');
     // (the scene placed its nodes for this camera: camStill waits for it)
     framedRev = rev;
@@ -1090,10 +1088,10 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     cullGroups();
     // (new programs compiled ahead, what waits on them held back: before the shadow map's turn, which they join once in)
     const held = !noDraw && hold();
-    // (at rest, only the ambience moving: the map at most every REST_SHADOW_MS; a change from outside a frame at once)
-    if (opts.shadows && shadowsDirty && (shadowsNow || busy || !resting(t) || t - shadowAt >= REST_SHADOW_MS)) {
+    if (opts.shadows && t >= shadowBy(t)) {
       renderer.shadowMap.needsUpdate = true;
-      shadowsDirty = shadowsNow = false;
+      shadowDue = Infinity;
+      shadowsNow = false;
       shadowAt = t;
       shadowsDrawn++;
     }

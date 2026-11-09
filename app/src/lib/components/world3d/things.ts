@@ -60,14 +60,14 @@ const FLAT = (() => {
   for (const k of Object.values(ASSET_KEYS)) casts.set(k.m, (casts.get(k.m) ?? false) || k.shadow);
   return new Set([...casts].filter(([, c]) => !c).map(([m]) => m));
 })();
-/** The bugs' models: a bug's move redraws the shadow map at most every BUG_SHADOW_MS (and once more where it stops),
- *  not every frame (a crawling stinkbug redrew the whole island's map 25 times a second for its speck of a shadow). */
+/** The bugs' models: a bug's move is a slow caster's (`changed('slow')`: the engine redraws the shadow map for it on its
+ *  own cadence, once more where it stops), not every frame (a crawling stinkbug redrew the whole island's map 25 times a
+ *  second for its speck of a shadow). */
 const BUGS = (() => {
   const bug = new Map<string, boolean>();
   for (const k of Object.values(ASSET_KEYS)) bug.set(k.m, (bug.get(k.m) ?? true) && k.cat === 'bug');
   return new Set([...bug].filter(([, b]) => b).map(([m]) => m));
 })();
-const BUG_SHADOW_MS = 66;
 /** The critters' models (assets.json `cat` bug or shadow: a bug, a fish's or a dive's shadow): never popped in or out.
  *  One fades in (its opacity and a slight scale-up) where it first stands or is shown again, and fades out where it's
  *  hidden or taken away (kept, still placed by `over`, until it's gone): FADE_IN_MS, FADE_OUT_MS. Each instance's
@@ -87,6 +87,9 @@ const SHADOWS = (() => {
   for (const k of Object.values(ASSET_KEYS)) sh.set(k.m, (sh.get(k.m) ?? true) && k.cat === 'shadow');
   return new Set([...sh].filter(([, s]) => s).map(([m]) => m));
 })();
+/** Whether a group's rebuild changes the shadows: not a flat one's (none), nor a critter's (a new one comes in from
+ *  nothing, one taken away is faded out: its shadow comes and goes with its fade, frame). */
+const casts = (name: string) => !FLAT.has(name) && !SOFT.has(name);
 /** After the sea (1) and the fresh water and the ponds (2), under the falls and the foam (3). */
 const UNDER_WATER = 2.5;
 /** A flier's wings' hinge from its meshes' positions (in their own, quantized space: what the shader sees), and which
@@ -126,8 +129,9 @@ export interface Things {
   lamps(): LampSpot[];
   /** The time of day: the lamps' emissive level and the soft self-light ("lift"). */
   tod(lamps: number, lift: number): void;
-  /** One frame (the wobbles): true while one runs. */
-  frame(t: number): boolean;
+  /** One frame (the critters' fades, the wobbles): true while one runs, 'cast' when a caster's shadow changed in it (a
+   *  wobble's; a fade's as it passes half, where its shadow comes or goes: things.ts lambert). */
+  frame(t: number): boolean | 'cast';
   has(id: string): boolean;
   /** An instance shows another model for now (its pose: the shishi-odoshi tipped), or its own again (null). */
   swap(id: string, model: string | null): void;
@@ -249,9 +253,10 @@ function load(url: string, name: string): Promise<GLTF | null> {
   return p;
 }
 
-export function createThings(scene: Scene, height: (x: number, z: number) => number, changed: (shadows?: boolean, soon?: boolean) => void): Things {
+/** `changed(shadows)`: draw again; `shadows` a caster's shadow changed (true), a slow caster's ('slow': a bug's), none. */
+export function createThings(scene: Scene, height: (x: number, z: number) => number, changed: (shadows?: boolean | 'slow') => void): Things {
   const base = new URL(`room/world3d/`, new URL(document.baseURI)).href;
-  let pending = 0, disposed = false, bugShadowAt = -Infinity, bugTimer: ReturnType<typeof setTimeout> | 0 = 0;
+  let pending = 0, disposed = false;
   /** This mount's models (its own scene's for proc/; the shared loads' for the rest), and those in (on its GPU, once
    *  built: what its dispose lets go of). */
   const gltfs = new Map<ModelName, Promise<GLTF | null>>(), got = new Set<GLTF>();
@@ -455,7 +460,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
   }
   /** An instance's opacity: a critter's fade, or the caller's own (Over `fade`), else whole. */
   const opacity = (id: string) => fades.get(id)?.a ?? overs.get(id)?.fade ?? 1;
-  const tmpM = new Matrix4(), tmpQ = new Quaternion(), tmpQ2 = new Quaternion(), tmpV = new Vector3(), tmpS = new Vector3();
+  const tmpM = new Matrix4(), tmpM2 = new Matrix4(), tmpQ = new Quaternion(), tmpQ2 = new Quaternion(), tmpV = new Vector3(), tmpS = new Vector3();
   const UP = new Vector3(0, 1, 0), FWD = new Vector3(0, 0, 1), RIGHT = new Vector3(1, 0, 0), ZERO = new Matrix4().makeScale(0, 0, 0);
   const sigOf = (o: Inst) => `${o.id}:${o.x}:${o.z}:${o.lift ?? 0}:${o.scale}:${o.yaw ?? 0}:${o.tint ?? ''}`;
   /** An instance's matrix (three's space): its spot on the ground, its yaw, its scale. */
@@ -586,7 +591,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     });
     write(g);
     groups.set(name, g);
-    changed();
+    changed(casts(name));
   }
   const want = new Map<ModelName, string>();
   /** What stands: the layout's (place) and what comes and goes (set / remove: a critter, a find, a decoration). */
@@ -607,7 +612,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       drop(g);
       groups.delete(name);
       if (LAZY.has(name)) release(name);
-      changed();
+      changed(casts(name));
     }
     await Promise.all(jobs);
   }
@@ -642,8 +647,8 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
   }
 
   const JIG_MS = 560;
-  function frame(t: number): boolean {
-    let more = false, died = false;
+  function frame(t: number): boolean | 'cast' {
+    let more = false, cast = false, died = false;
     for (const [id, f] of fades) {
       if (f.a === f.to) continue;
       // (one whose model is still loading waits for it: its fade starts once it's drawn, never part-way in)
@@ -651,7 +656,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
         f.t = t;
         continue;
       }
-      const dt = Math.min(FADE_STEP_MS, Math.max(0, t - f.t));
+      const dt = Math.min(FADE_STEP_MS, Math.max(0, t - f.t)), was = f.a;
       f.t = t;
       f.a = f.to ? Math.min(1, f.a + dt / FADE_IN_MS) : Math.max(0, f.a - dt / FADE_OUT_MS);
       if (f.a === 0 && f.dying) {
@@ -666,6 +671,8 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       if (a) {
         matOf(a.inst, a.g.base[a.i]);
         write(a.g, a.i);
+        // (a fish's shadow casts none; a bug's shadow is there past half, and its scale-up done at the end)
+        if (!FLAT.has(a.g.name) && ((was < 0.5) !== (f.a < 0.5) || f.a === f.to)) cast = true;
       }
       more = true;
     }
@@ -685,8 +692,9 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
         more = true;
       }
       write(a.g, a.i);
+      if (!FLAT.has(a.g.name)) cast = true;
     }
-    return more;
+    return cast ? 'cast' : more;
   }
 
   return {
@@ -717,7 +725,8 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       return later();
     },
     over(id, o, cast = true) {
-      if (o) overs.set(id, { ...overs.get(id), ...o });
+      const seen = opacity(id) >= 0.5, had = overs.get(id);
+      if (o) had ? Object.assign(had, o) : overs.set(id, { ...o });
       else overs.delete(id);
       // a critter shown or hidden: it fades (frame)
       if (o && o.hidden !== undefined && !fades.get(id)?.dying && softId(id)) fadeTo(id, !o.hidden);
@@ -728,23 +737,13 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
         want.delete(a.g.name);
         void later();
       }
-      matOf(a.inst, a.g.base[a.i]);
+      const m = a.g.base[a.i], was = tmpM2.copy(m);
+      matOf(a.inst, m);
       write(a.g, a.i);
-      if (!cast || FLAT.has(a.g.name)) return changed(false);
-      if (!BUGS.has(a.g.name)) return changed(true);
-      // (a bug: the map redrawn at most every BUG_SHADOW_MS, and once after its last move)
-      const t = performance.now();
-      if (t - bugShadowAt >= BUG_SHADOW_MS) {
-        bugShadowAt = t;
-        return changed(true);
-      }
-      changed(false);
-      if (!bugTimer) bugTimer = setTimeout(() => {
-        bugTimer = 0;
-        bugShadowAt = performance.now();
-        // (soon: drawn by the frame already coming, a still bug's by one of its own)
-        if (!disposed) changed(true, true);
-      }, BUG_SHADOW_MS);
+      // its shadow: none to change (a flat one, the same spot, a grey), a move's at once, a bug's or a show or hide's
+      // (a fruit's as it leaves the screen's edge in a scroll) slow
+      if (!cast || FLAT.has(a.g.name) || (m.equals(was) && seen === opacity(id) >= 0.5)) return changed(false);
+      changed(BUGS.has(a.g.name) || m.equals(ZERO) || was.equals(ZERO) ? 'slow' : true);
     },
     flap(id, angle) {
       flaps.set(id, angle);
@@ -894,7 +893,6 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     pending: () => pending,
     dispose() {
       disposed = true;
-      if (bugTimer) clearTimeout(bugTimer);
       for (const g of groups.values()) drop(g);
       groups.clear();
       for (const { m, front, depth } of [...mats.values(), ...softMats.values()]) {

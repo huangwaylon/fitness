@@ -649,8 +649,10 @@ filter and no endless animation of its own (`[data-r3]` rules), since every draw
 
 **At rest** (engine.ts REST_MS 2 s, REST_FPS 12) the island draws its ambience at **12** a second: no finger for 2 s and
 the last frame wanting only the ambience (no fling, spring or focus, no walk, no critter fast on screen: `pace.ts`
-moveFast, no flourish). Any of those, or a touch, draws at the full rate at once. The shadow map then redraws at most
-every 250 ms. Under the 3D island a fish shadow's own CSS transition is off (the canvas moves the model).
+moveFast, no flourish). Any of those, or a touch, draws at the full rate at once. The shadow map redraws only when a
+caster changes (a fish shadow casts none; a critter's fade only as it passes half; a bug's move or a thing shown or
+hidden at most every 66 ms) or its box moves on (once per 0.3 of the view's width of scroll); at rest at most every
+250 ms. Under the 3D island a fish shadow's own CSS transition is off (the canvas moves the model).
 
 ### Buildings
 

@@ -94,7 +94,7 @@
         /** A frame to draw; `shadows`: and the shadow map with it (a model in or moved, a layout change, the phone view's
          *  sun moved with its camera); the orbit's turn and zoom only move the camera, the shadow camera stays. (things'
          *  changed(shadows) is this.) */
-        const kick = (shadows = true) => {
+        const kick = (shadows: boolean | 'slow' = true) => {
           dirty = true;
           if (shadows) shade = true;
           if (!raf && !gone) raf = requestAnimationFrame(frame);
