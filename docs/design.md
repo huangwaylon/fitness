@@ -887,7 +887,8 @@ the layout's objects (the old decorations' map moved into the layout once as `m-
 - **How many:** the layout's objects are capped by the record at 1,500 standing (`contract/layout.ts` LAYOUT_MAX).
 - **In:** /editor only: the desktop editor, or its phone view's IslandEdit (`/editor/?view=phone&edit`), the tent's
   way (a tray, a ghost green or red, a tile at a time, ↻ まわす, ✕, 🗑, ✓). Its おきゃくさん tab: where the visitors stand
-  and where Gulliver washes up. Every phone has the change at once (the layout's ops over the relay).
+  and where Gulliver washes up. Every phone has the change at once (the layout's ops over the relay). Its reset to the
+  default asks first, anyone alike: リセットする only once 「リセット」 is typed ([island-layout.md](island-layout.md)).
 - **On the island** a placed item is a world thing: NH's model, its DOM node the tap area, an obstacle the walk goes
   round (layout/nav.ts); a tap jiggles it in place. The partner's change puffs where it lands.
 

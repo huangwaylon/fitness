@@ -271,10 +271,11 @@ to `/pair`). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the
 - **`?check`** (`world3d/drawCheck.ts undrawn`): a 3Dの チェック panel listing each object the phones' 3D island doesn't
   draw as a model (a day of each season), and why: an unknown kind, a card of 2D art, nothing at all, a model file
   missing; a click selects it.
-- **Files:** JSON に かきだす / JSON を よみこむ (model.ts `toJson` / `fromJson`; an import is one action), はじめの しまに
-  もどす behind a confirm (the reset op; the homes' looks kept).
+- **Files:** JSON に かきだす / JSON を よみこむ (model.ts `toJson` / `fromJson`; an import is one action), 最初の島に戻す
+  (the reset op; the homes' looks kept) behind `editor/ResetConfirm.svelte`: what goes, then リセットする only once
+  「リセット」 is typed (やめる the default; anyone, the guest too: 2026-11-09).
 - **The e2e:** `e2e/editor.spec.ts` (a move live on the other tab and across a reload; a stroke and its undo / redo;
-  R; Delete refusing a goal tree; placing refused on the river; reset; the guest's door; しまの おおきさ live, blocked,
+  R; Delete refusing a goal tree; placing refused on the river; the typed reset (A and G); the guest's door; しまの おおきさ live, blocked,
   うごかす and its ⌘Z), `e2e/editor-preview.spec.ts` (a pond on the plan in the preview, K.K. following his stool, the
   phone view's pan and ⌖, no frame while still).
 
