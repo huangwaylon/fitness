@@ -6,7 +6,7 @@ import type { Who } from '#lib/types.ts';
 import type { QuizView } from '#lib/kikimimi/games/quiz/view.ts';
 import { listenOpts, tierAt, type ListenOpts } from '#lib/kikimimi/games/listened.ts';
 import { callRounds, roundRows, rowsOf, unionOf, type AskedRow, type CallCard, type CallRound } from '#lib/kikimimi/games/call/def.ts';
-import { roleOf } from '../listenView.ts';
+import { revealMemo, roleOf } from '../listenView.ts';
 
 /** A player's ear (theirs heard, else the game's: mine as I play it). */
 const earOf = (v: Pick<QuizView, 'o' | 'tiers'>, who?: Who): { lv: number; ear: number } | null => {
@@ -25,13 +25,12 @@ export const myRows = (v: Pick<QuizView, 'players' | 'vs' | 'roles'>, me: Who, n
 
 /** The others' answers heard at each round's reveal (a later reveal no longer has them: the basket's), by game and
  *  round. */
-const HEARD = new Map<string, { who: Who; a: readonly number[] }[]>();
+const HEARD = revealMemo<{ who: Who; a: readonly number[] }[]>();
 const othersOf = (v: Pick<QuizView, 'players'>, me: Who) => v.players.flatMap((p) => (p.who !== me && p.pick && Array.isArray(p.pick.a) ? [{ who: p.who, a: p.pick.a as readonly number[] }] : []));
 export function hear(v: Pick<QuizView, 'g' | 'i' | 'phase' | 'players'>, me: Who): void {
   if (v.phase !== 'reveal' || !v.g) return;
-  for (const k of HEARD.keys()) if (!k.startsWith(`${v.g}:`)) HEARD.delete(k); // (an earlier game's: let go)
   const got = othersOf(v, me);
-  if (got.length) HEARD.set(`${v.g}:${v.i}`, got);
+  if (got.length) HEARD.keep(v.g, v.i, got);
 }
 
 /** The team's memo for round i (mine first, then the others': this reveal's, an earlier one's as heard): each memo
@@ -39,7 +38,7 @@ export function hear(v: Pick<QuizView, 'g' | 'i' | 'phase' | 'players'>, me: Who
 export function teamMemo(v: Pick<QuizView, 'g' | 'i' | 'phase' | 'players' | 'o' | 'tiers' | 'answers'>, cards: readonly CallCard[], i: number, me: Who): Map<number, { chip: string; ok: boolean }> {
   const c = cards[i], mine = v.answers[i]?.a;
   if (!c) return new Map();
-  const others = i === v.i && v.phase === 'reveal' ? othersOf(v, me) : (HEARD.get(`${v.g}:${i}`) ?? []);
+  const others = i === v.i && v.phase === 'reveal' ? othersOf(v, me) : (HEARD.at(v.g, i) ?? []);
   return unionOf([
     ...(Array.isArray(mine) ? [{ round: roundFor(v, c), a: mine as readonly number[] }] : []),
     ...others.map((h) => ({ round: roundFor(v, c, h.who), a: h.a }))

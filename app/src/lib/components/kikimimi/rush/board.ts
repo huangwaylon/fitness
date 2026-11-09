@@ -8,7 +8,7 @@ import type { QuizView } from '#lib/kikimimi/games/quiz/view.ts';
 import { listenOpts } from '#lib/kikimimi/games/listened.ts';
 import { questionPoints } from '#lib/kikimimi/games/taikai/def.ts';
 import { PASS, bestCombo, comboAt, registerOf, rushRounds, type RushCard, type RushRound } from '#lib/kikimimi/games/rush/def.ts';
-import { isCoop } from '../listenView.ts';
+import { isCoop, revealMemo } from '../listenView.ts';
 
 type V = Pick<QuizView, 'o' | 'tiers'>;
 
@@ -39,16 +39,16 @@ export function authoredPick(v: V, c: RushCard, k: number | undefined | null, wh
 }
 
 /** The others' picks heard at each reveal (a later round no longer shows them), by game and round. */
-const HEARD = new Map<string, { who: Who; k: number; ok: boolean }[]>();
+const HEARD = revealMemo<{ who: Who; k: number; ok: boolean }[]>();
 export function hear(v: Pick<QuizView, 'g' | 'i' | 'phase' | 'players'>, me: Who): void {
   if (v.phase !== 'reveal' || !v.g) return;
-  HEARD.set(`${v.g}:${v.i}`, picks(v, me));
+  HEARD.keep(v.g, v.i, picks(v, me));
 }
 const picks = (v: Pick<QuizView, 'players'>, me: Who) => v.players.flatMap((p) => (p.who !== me && p.pick && p.pick.k !== PASS ? [{ who: p.who, k: p.pick.k, ok: p.pick.ok }] : []));
 /** The others' picks of round i (this reveal's, or as heard at its own; null: never seen here). */
 export function othersAt(v: Pick<QuizView, 'g' | 'i' | 'phase' | 'players'>, me: Who, i: number): { who: Who; k: number; ok: boolean }[] | null {
   if (i === v.i && v.phase === 'reveal') return picks(v, me);
-  return HEARD.get(`${v.g}:${i}`) ?? null;
+  return HEARD.at(v.g, i);
 }
 
 type ServedView = Pick<QuizView, 'g' | 'i' | 'phase' | 'players' | 'vs' | 'roles' | 'answers' | 'o' | 'tiers'>;

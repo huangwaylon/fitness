@@ -16,7 +16,7 @@
   $effect(() => {
     void load(...(units as Unit[])).then(() => {
       names = new Map(piecesAt(units.flatMap((u) => listenOf(u) ?? [])).map((p) => [p.id, { name: p.name, real: p.source === 'real' }]));
-    });
+    }, () => {}); // (offline: the section stays hidden)
   });
   function pick(k: number | null) {
     pickLong(k === null ? null : h.ids[k]);

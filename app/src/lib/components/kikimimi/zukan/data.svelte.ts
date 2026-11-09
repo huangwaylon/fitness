@@ -26,6 +26,7 @@ export class ZukanData {
   #stop: (() => void) | null = null;
   #timer: ReturnType<typeof setTimeout> | undefined;
   #gone = false;
+  #token = 0;
 
   /** Everything ずかん reads loaded: the units, the chapters, my answers' levels (each failure passed by: offline). */
   start(): void {
@@ -75,8 +76,9 @@ export class ZukanData {
   async play(clip: string, key: string): Promise<boolean> {
     this.stop();
     this.sample = clip;
+    const token = this.#token;
     const buf = await voiceClip(clip);
-    if (!buf || this.#gone || this.sample !== clip) return false;
+    if (!buf || this.#gone || token !== this.#token) return false;
     const h = playVoice(buf);
     if (!h) return false;
     this.#stop = () => h.stop();
@@ -85,7 +87,9 @@ export class ZukanData {
     return true;
   }
 
+  /** Whatever sounds stopped, and any clip still loading (a play() awaiting it) never starts. */
   stop(): void {
+    this.#token++;
     this.#stop?.();
     this.#stop = null;
     clearTimeout(this.#timer);

@@ -304,7 +304,9 @@ export class QuizGame {
     const i = this.view.i, bet = this.bet;
     if (isWager(this.view) && bet === null) return;
     const a = isWager(this.view) && typeof k === 'number' ? wagerAnswer(k, bet!) : k;
-    this.#queue.then(() => [], () => this.#act((s, now) => s.answer(a, !!this.replayed[i], now)));
+    // (the tap's time, not the queue's: one queued behind a chunk's load keeps its window and its speed)
+    const at = this.#link.now();
+    this.#queue.then(() => [], () => this.#act((s) => s.answer(a, !!this.replayed[i], at)));
   }
   /** つぎへ (the host's; anyone's once the host has gone). */
   next(): void {

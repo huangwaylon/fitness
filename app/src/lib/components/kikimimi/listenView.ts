@@ -1,5 +1,5 @@
 // What the listening games' pages share (ことば タイル, たちぎき, ようじ でんわ: games/listened.ts): whether it's co-op,
-// my role, whether I'm on easy, an empty answer, もういっかい.
+// my role, whether I'm on easy, an empty answer, もういっかい, what was seen at each round's reveal.
 import type { Who } from '#lib/types.ts';
 import type { QuizView } from '#lib/kikimimi/games/quiz/view.ts';
 import type { GameId } from '#lib/kikimimi/round/types.ts';
@@ -28,4 +28,19 @@ export function playAgain(game: Pick<QuizGame, 'view' | 'setGame' | 'go'>, gm: G
   if (!host) return;
   game.setGame(gm, { lv, timer });
   if (solo) game.go();
+}
+
+/** What this phone saw of each round of the current game (a reveal's others' picks, a turn's ✓): kept by round, let go
+ *  when another game's is kept. */
+export function revealMemo<T>(): { keep(g: string, i: number, x: T): void; at(g: string | null | undefined, i: number): T | null } {
+  const by = new Map<number, T>();
+  let game = '';
+  return {
+    keep(g, i, x) {
+      if (g !== game) by.clear();
+      game = g;
+      by.set(i, x);
+    },
+    at: (g, i) => (g === game ? (by.get(i) ?? null) : null)
+  };
 }

@@ -21,7 +21,7 @@
   import { downloadWhisper, openWhisper, whisperServed, type Device, type Whisper } from '#lib/mic/backends/whisper.ts';
   import { WHISPER, sttMB } from '#lib/mic/models.ts';
   import {
-    askMic, builtinMic, closeProbe, decode, duplex, openRec, permState, playBuf, probeCtx, probeEnv, relayOnce,
+    askMic, builtinMic, closeProbe, decode, duplex, openProbe, openRec, permState, playBuf, probeCtx, probeEnv, relayOnce,
     takeSpeech, webkitOnce, type Heard
   } from '#lib/mic/probe/run.ts';
   import { relayReady } from '#lib/mic/backends/relay.ts';
@@ -67,6 +67,7 @@
   let stopTake: (() => void) | null = null;
   /** The probe was left (a take that opens after it is let go at once). */
   let gone = false;
+  openProbe();
   /** The relay take's length so far (s). */
   let recS = $state(0);
   let stt = $state<Partial<Record<'whisper' | 'webkit' | 'relay', { pct: number; s: number }[]>>>({});

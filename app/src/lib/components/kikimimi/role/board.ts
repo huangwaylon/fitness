@@ -13,6 +13,7 @@ import { rawOf } from '#lib/kikimimi/games/listened.ts';
 import { tierFor } from '#lib/kikimimi/lesson.ts';
 import { INDEX } from '#lib/kikimimi/pool.ts';
 import type { Stage } from '#lib/kikimimi/stages.ts';
+import { revealMemo } from '../listenView.ts';
 import { phrases } from '#lib/mic/match.ts';
 
 /** A player's role: the game's (`pl` at go), else, in the lobby, their place among those joined (A, B, G). */
@@ -39,20 +40,17 @@ export function easyFor(unit: string, level: number | null): boolean {
 export const unitName = (unit: string): string => INDEX.paths.find((p) => p[0] === unit)?.[1] ?? unit;
 
 /** Each turn's ✓ as seen here: the speaker's mask by game and turn (this app's memory, this game only). */
-const SAID = new Map<string, number>();
-let saidFor = '';
+const SAID = revealMemo<number>();
 /** The speaker's answer to turn i of game g, kept (a listener's ack isn't). */
 export function keepSaid(g: string, i: number, a: Parameters<typeof rawOf>[0]): void {
   const x = rawOf(a);
   if (x === null || x === HEARD) return;
   const s = saidOf(x);
   if (!s) return;
-  if (saidFor !== g) SAID.clear();
-  saidFor = g;
-  SAID.set(`${g}:${i}`, s.mask);
+  SAID.keep(g, i, s.mask);
 }
 /** Turn i's phrases said (null: not seen here). */
-export const saidAt = (g: string, i: number): number | null => SAID.get(`${g}:${i}`) ?? null;
+export const saidAt = (g: string, i: number): number | null => SAID.at(g, i);
 
 /** The scene's parts: each its first turn's card and where it starts. */
 export const partsOf = (cards: readonly RoleCard[]): { card: RoleCard; at: number }[] =>

@@ -96,14 +96,28 @@ export interface Rec {
 }
 
 let ctx: AudioContext | null = null;
-/** The probe's own audio context (inside a tap: created or resumed). */
+let closed = false;
+/** What closeProbe ends with the context: open captures' tracks, a clip's wait. */
+const closers = new Set<() => void>();
+const onClose = (f: () => void) => (closers.add(f), () => void closers.delete(f));
+
+/** The probe (re)opened: its context may be created again. */
+export function openProbe(): void {
+  closed = false;
+}
+/** The probe's own audio context (inside a tap: created or resumed). After closeProbe it throws: a step still on its way
+ *  (an await in duplex, a take opening) stops there instead of opening a second context and the mic again. */
 export function probeCtx(): AudioContext {
+  if (closed) throw new Error('closed');
   ctx ??= new AudioContext();
   void ctx.resume();
   return ctx;
 }
-/** The probe's over: its context closed. */
+/** The probe's over: its context closed, every capture's track stopped. */
 export function closeProbe(): void {
+  closed = true;
+  for (const f of [...closers]) f();
+  closers.clear();
   void ctx?.close();
   ctx = null;
 }
@@ -111,37 +125,46 @@ export function closeProbe(): void {
 export async function openRec(o: { aec: boolean; deviceId?: string; level?: (db: number, ms: number) => void }): Promise<Rec> {
   const c = probeCtx();
   const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: o.aec, noiseSuppression: o.aec, autoGainControl: o.aec, ...(o.deviceId ? { deviceId: { exact: o.deviceId } } : {}) } });
-  const src = c.createMediaStreamSource(stream);
-  const SIZE = 2048;
-  // (ScriptProcessor: the probe's few seconds need no worklet file; M1's capture has one)
-  const proc = c.createScriptProcessor(SIZE, 1, 1);
-  const mute = c.createGain();
-  mute.gain.value = 0;
-  const chunks: Float32Array[] = [];
-  const rec: Rec = {
-    sr: c.sampleRate, inp: inputClass(stream.getAudioTracks()[0]?.label ?? ''), t0: -1,
-    frames() {
-      const n = chunks.reduce((a, b) => a + b.length, 0), out = new Float32Array(n);
-      let at = 0;
-      for (const ch of chunks) out.set(ch, at), (at += ch.length);
-      return out;
-    },
-    stop() {
-      proc.onaudioprocess = null;
-      src.disconnect();
-      proc.disconnect();
-      stream.getTracks().forEach((t) => t.stop());
-    }
-  };
-  proc.onaudioprocess = (e) => {
-    const x = new Float32Array(e.inputBuffer.getChannelData(0));
-    // the input block was captured one block before the output it feeds plays
-    if (rec.t0 < 0) rec.t0 = e.playbackTime - SIZE / c.sampleRate;
-    chunks.push(x);
-    o.level?.(dbfs(x), (SIZE / c.sampleRate) * 1000);
-  };
-  src.connect(proc).connect(mute).connect(c.destination);
-  return rec;
+  const release = () => stream.getTracks().forEach((t) => t.stop());
+  try {
+    if (ctx !== c) throw new Error('closed');
+    const src = c.createMediaStreamSource(stream);
+    const SIZE = 2048;
+    // (ScriptProcessor: the probe's few seconds need no worklet file; M1's capture has one)
+    const proc = c.createScriptProcessor(SIZE, 1, 1);
+    const mute = c.createGain();
+    mute.gain.value = 0;
+    const chunks: Float32Array[] = [];
+    const rec: Rec = {
+      sr: c.sampleRate, inp: inputClass(stream.getAudioTracks()[0]?.label ?? ''), t0: -1,
+      frames() {
+        const n = chunks.reduce((a, b) => a + b.length, 0), out = new Float32Array(n);
+        let at = 0;
+        for (const ch of chunks) out.set(ch, at), (at += ch.length);
+        return out;
+      },
+      stop() {
+        forget();
+        proc.onaudioprocess = null;
+        src.disconnect();
+        proc.disconnect();
+        release();
+      }
+    };
+    const forget = onClose(() => rec.stop());
+    proc.onaudioprocess = (e) => {
+      const x = new Float32Array(e.inputBuffer.getChannelData(0));
+      // the input block was captured one block before the output it feeds plays
+      if (rec.t0 < 0) rec.t0 = e.playbackTime - SIZE / c.sampleRate;
+      chunks.push(x);
+      o.level?.(dbfs(x), (SIZE / c.sampleRate) * 1000);
+    };
+    src.connect(proc).connect(mute).connect(c.destination);
+    return rec;
+  } catch (e) {
+    release();
+    throw e;
+  }
 }
 
 /** A sentence spoken (`secs`: how long so far): recording until the speech ends (1.2 s quiet after it), `stop()` or 10 s. */
@@ -168,12 +191,16 @@ export async function decode(bytes: ArrayBuffer | null): Promise<AudioBuffer | n
   return bytes ? quiet(probeCtx().decodeAudioData(bytes), 'mic.decode', null) : null;
 }
 
-/** Play a buffer now on the probe's context; resolves when it ends. */
+/** Play a buffer now on the probe's context; resolves when it ends, or the probe closes. */
 export function playBuf(buf: AudioBuffer): Promise<void> {
   const c = probeCtx(), s = c.createBufferSource();
   s.buffer = buf;
   s.connect(c.destination);
-  return new Promise((r) => ((s.onended = () => r()), s.start()));
+  return new Promise((r) => {
+    const forget = onClose(r);
+    s.onended = () => (forget(), r());
+    s.start();
+  });
 }
 
 /**
@@ -185,28 +212,38 @@ export async function duplex(clip: AudioBuffer, o: { click: boolean; deviceId?: 
   const was = applySession('play-and-record');
   const c = probeCtx();
   const out: { aec: boolean; bleed: number; rtl?: number; inp: Inp }[] = [];
+  // (left meanwhile: closeProbe stopped the take; each await's end throws instead of going on)
+  const live = () => {
+    if (ctx !== c) throw new Error('closed');
+  };
   try {
     for (const aec of [true, false]) {
       const rec = await openRec({ aec, deviceId: o.deviceId });
-      await wait(600);
-      const floor = dbfs(rec.frames());
-      let rtl: number | undefined;
-      if (o.click && aec) {
-        const at = c.currentTime + 0.05, osc = c.createOscillator();
-        osc.type = 'square';
-        osc.frequency.value = 1000;
-        osc.connect(c.destination);
-        osc.start(at);
-        osc.stop(at + 0.004);
-        await wait(700);
-        const x = rec.frames(), i = onset(x, Math.round((at - rec.t0) * rec.sr), floor);
-        if (i >= 0) rtl = Math.round((rec.t0 + i / rec.sr - at) * 1000);
+      try {
+        await wait(600);
+        live();
+        const floor = dbfs(rec.frames());
+        let rtl: number | undefined;
+        if (o.click && aec) {
+          const at = c.currentTime + 0.05, osc = c.createOscillator();
+          osc.type = 'square';
+          osc.frequency.value = 1000;
+          osc.connect(c.destination);
+          osc.start(at);
+          osc.stop(at + 0.004);
+          await wait(700);
+          live();
+          const x = rec.frames(), i = onset(x, Math.round((at - rec.t0) * rec.sr), floor);
+          if (i >= 0) rtl = Math.round((rec.t0 + i / rec.sr - at) * 1000);
+        }
+        const from = rec.frames().length;
+        await playBuf(clip);
+        live();
+        const x = rec.frames();
+        out.push({ aec, bleed: Math.round((dbfs(x, from) - floor) * 10) / 10, ...(rtl !== undefined ? { rtl } : {}), inp: rec.inp });
+      } finally {
+        rec.stop();
       }
-      const from = rec.frames().length;
-      await playBuf(clip);
-      const x = rec.frames();
-      rec.stop();
-      out.push({ aec, bleed: Math.round((dbfs(x, from) - floor) * 10) / 10, ...(rtl !== undefined ? { rtl } : {}), inp: rec.inp });
     }
   } finally {
     if (was !== null) applySession(was);
