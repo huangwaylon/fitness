@@ -604,7 +604,8 @@ person does is a small intent over the relay, kept by the room for the day, fold
   BroadcastChannel carries the intents and the sending tab plays the room's rules on a log in localStorage
   (`island-demo.relay`), so the e2e's two-player tests run without a network.
 - **The record's day row** (`island` event, `store/actions.ts sendIslandDay`): my part of the day (`rowOf`), sent
-  whole when it grows, held 2 minutes, only once this session's fetch has folded the record's rows in. The model keeps
+  whole when it grows, held 2 minutes, only once this session's fetch has folded the record's rows in (and then at once
+  if it holds what the record's copy lacks: a change made before them, the app closed since). The model keeps
   each person's latest (`state.islandDays`); the store folds in today's (what the relay didn't bring: both apps closed,
   an outage), yesterday's watering (today's hybrids grow from everyone's) and the wishes for the mornings to come
   (`applyRow`). A shake carries `at`, the shaker's own time, its identity on every phone.

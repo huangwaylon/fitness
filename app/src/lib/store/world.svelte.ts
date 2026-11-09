@@ -236,8 +236,11 @@ class SharedWorld {
     }
     if (changed) this.rev++;
     if (current) {
+      // the session's first look at the record: my row goes if it holds what the record's copy lacks (a change made
+      // before the record came, the app closed since: #rowWaits didn't survive the reload)
+      const first = this.#recordDay !== today, me = this.#me;
       this.#recordDay = today;
-      if (this.#rowWaits) this.#sendRow();
+      if (this.#rowWaits || (first && me && rowLacks(latest.get(`${me}|${today}`)?.data, rowOf(d, me)))) this.#sendRow();
     }
   }
 
@@ -445,6 +448,19 @@ class SharedWorld {
     this.#hereNow = [];
     this.rev++;
   }
+}
+
+/** Whether `mine` holds something the record's row `rec` hasn't (a claim, a put, a shake, a watering, a wish). */
+function rowLacks(rec: DayRow | undefined, mine: DayRow): boolean {
+  const taken = new Set(rec?.taken), puts = new Set(rec?.puts.map((p) => p[0])), watered = new Set(rec?.watered);
+  const shakes = new Set(rec?.shakes.map((s) => `${s[0]}|${s[2]}`));
+  return (
+    mine.taken.some((x) => !taken.has(x)) ||
+    mine.puts.some((p) => !puts.has(p[0])) ||
+    mine.shakes.some((s) => !shakes.has(`${s[0]}|${s[2]}`)) ||
+    mine.watered.some((x) => !watered.has(x)) ||
+    Object.entries(mine.wishes).some(([day, n]) => (rec?.wishes[day] ?? 0) < n)
+  );
 }
 
 /** The island's shared day: one per phone. */

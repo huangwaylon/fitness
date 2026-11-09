@@ -92,6 +92,30 @@ describe('the shared island on this phone', () => {
     expect(rows).toHaveLength(2);
   });
 
+  it('a change made before the record’s rows came, the app closed since: the next session’s first look at the record sends my row', async () => {
+    const st: LiveStatus = { connected: false, me: 'A', peer: false, here: [] };
+    const offline = (): Live => ({ start() {}, stop() {}, send: () => false, on: () => () => {}, onChange: () => () => {}, onStatus: (fn) => (fn(st), () => {}), status: () => st, serverNow: () => Date.now() });
+    world.attach(offline(), 'A');
+    const rows: { taken: string[] }[] = [];
+    world.sink = (_d, row) => rows.push(row);
+    world.rows([], false); // offline: the cache only
+    world.share({ kind: 'pick', id: 'w5', what: 'weed' });
+    expect(rows).toEqual([]);
+    await Promise.resolve();
+    world.reset(); // closed and reopened
+    world.attach(offline(), 'A');
+    world.sink = (_d, row) => rows.push(row);
+    world.rows([], true); // the record's rows, without it
+    expect(rows.at(-1)?.taken).toContain('w5');
+    // the record has it all: nothing to send
+    rows.length = 0;
+    world.reset();
+    world.attach(offline(), 'A');
+    world.sink = (_d, row) => rows.push(row);
+    world.rows([{ at: T0, person: 'A', data: { date: '2026-11-01', taken: ['w5'], puts: [], shakes: [], watered: [], wishes: {} } }], true);
+    expect(rows).toEqual([]);
+  });
+
   it('the Tokyo day of the sheet’s rows and the wishes is the relay’s, not a device clock running a day ahead', () => {
     const r = fakeRelay();
     // the device's clock a day fast: the relay's (its offset from the pings) a day behind it
