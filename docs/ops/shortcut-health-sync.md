@@ -99,6 +99,13 @@ only a day where all three are 0: a worn day's Exercise 0 is real. [U: action na
 Shortcuts → **Automation** → **+** → **App** → **LINE** (or the app you open most) → **Is Opened** → **Run
 Immediately**, **Notify When Run** off → **Run Shortcut しまの同期**. Do this on both phones.
 
+**At most every 10 minutes (recommended):** opening LINE often runs the Shortcut back to back (2026-11-09: one phone
+97 runs in a day, 36 within a minute of the last, 75 bringing nothing new), each a month of Health queried on the
+phone. At the start of しまの同期: **Get File** **shima-last.txt** in the Shortcuts folder (**Error If Not Found** off) → **Get Time
+Between Dates** (the file's text and **Current Date**, in minutes) → **If** it is under 10, **Stop This Shortcut** (no file yet: it runs). After
+step 9: **Text** **Current Date** → **Save File** to **shima-last.txt** in the Shortcuts folder, **Overwrite** on. [U: action names]
+The next run after the 10 minutes sends the whole month as always: nothing is lost.
+
 ## 4. Copy to the other phone
 An iCloud link carries the Shortcut's text, so a link with your key in it leaks the key. Before sharing: Shortcut
 settings (ⓘ) → **Setup** → **Import Questions** → add a question for the **Key** Text action ("Paste your Island

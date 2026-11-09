@@ -35,10 +35,13 @@ curl -sS https://island-fund-relay.island-fund-relay.workers.dev/api --data '{"a
 ```
 Both `{"ok":true,…}`. `.github/workflows/health.yml` runs these every 6 hours (and on demand) and fails (GitHub e-mails
 the owner) unless both are ok, and opens an `alert` issue when the log spikes (§11). The relay's `wx` is the real weather ([backend](../backend.md#the-real-weather)):
-`age` (minutes since the last good fetch) under ~35 and `hours` ahead over 30 is normal. An older one or `fails` > 0
+`age` (minutes since the last good fetch; `/health` asks the room once a minute) under ~35 and `hours` ahead over 30 is normal. An older one or `fails` > 0
 means Open-Meteo is failing (`npx wrangler tail` shows `wx-fail <why>`); the phones keep the last timeline for 36
 hours, then the game's weather. The workflow warns past 3 hours. A fetch now: the signed `/admin` op
 `{"op":"wx","refresh":true}` (`relay/scripts/admin.ts` `signed()`, as `relay/scripts/smoke.ts` sends it).
+
+The Free plan's tightest limit is likely its 100k rows written a day: `npm run logs -- stats` (from `relay/`) says
+today's (UTC) by object (`rowsLog`, `rowsStore`, `rowsRoom`) and `rowsPct`; the alert warns past 50 % (§11).
 
 ## 3. Rotate a key
 Lost phone, leak, any doubt:
