@@ -4,7 +4,7 @@
 // the members' activity and ベル but never a からだ figure, and nothing of the economy or the members' goals (a buy, an
 // erase, a goal); on the island it does what a member does (the editor, the weather: 2026-11-06); its
 // catches go into the shared ずかん under its own name; its tent pieces reach both members; and its villager is always
-// on the members' islands, asleep while its app is closed, moving only when it's moved.
+// on the members' islands, asleep while its app is closed (as everyone's: presence-sleep.spec), moving only when it's moved.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu, hudBells, openKenkou, openRewards } from './hud.ts';
@@ -196,9 +196,10 @@ test.describe(() => {
   test('the guest’s villager is always on the members’ islands: asleep while its app is closed, awake while open; it stays put unless moved', async ({ browser }) => {
     test.setTimeout(60_000);
     const ctx = await browser.newContext({ viewport: VIEW });
-    const a = await open(ctx, 'A');
-    const b = await open(ctx, 'B');
-    // its app closed: there, at its spot, asleep (by day: the members' are awake)
+    // (the grace short: ui-state/cast.ts setSpans)
+    const a = await open(ctx, 'A', '&grace=2000');
+    const b = await open(ctx, 'B', '&grace=2000');
+    // its app closed: there, at its spot, asleep (the members' apps open: theirs awake)
     for (const p of [a, b]) {
       await expect.poll(() => who(p, 'G')).not.toBeNull();
       await expect.poll(() => asleep(p, 'G')).toBe(true);
@@ -218,10 +219,11 @@ test.describe(() => {
     // life's 10 s slots)
     await g.waitForTimeout(11_000);
     for (const p of [g, a, b]) expect(near(await who(p, 'G'), there)).toBeLessThan(2);
-    // the guest closes its app: still there on both islands, asleep where it stood
+    // the guest closes its app: still there on both islands, awake for the grace, then asleep where it stood
     await g.close();
+    expect(await asleep(a, 'G')).toBe(false);
     for (const p of [a, b]) {
-      await expect.poll(() => asleep(p, 'G'), { timeout: 15_000 }).toBe(true);
+      await expect.poll(() => asleep(p, 'G'), { timeout: 8000 }).toBe(true);
       expect(near(await who(p, 'G'), there)).toBeLessThan(2);
     }
     await ctx.close();

@@ -533,7 +533,8 @@ the guest.
   brought activity rows (`notify(n, guest)`), and a new epoch's. Its welcome's `rec` is the last change it heard of
   (the room's `rec-g`).
 - **The phones:** a member's always draws the guest's villager, as a third actor (`ui-state/cast.ts`: `mine`,
-  `partner`, `third`; on the guest's phone `third` is B), asleep where its last walk left it while it isn't `here`; the guest's phone guards what it sends by the same
+  `partner`, `third`; on the guest's phone `third` is B), asleep where its last walk left it while it isn't online
+  ([Shared world](#shared-world) "Sleep"); the guest's phone guards what it sends by the same
   rules (`week.send` by `guestMayWrite`), so nothing it may not do is queued or shown.
 - **Tests:** `relay/test/guest.test.ts` (no からだ row or goal in any snapshot or delta; the island's writes taken, the
   economy's refused; the dump has `G`'s rows; the room's three villagers), `contract/guest.test.ts`,
@@ -557,9 +558,10 @@ shows the same island without a message (decisions: *Ambient life from the clock
 - **Villagers** (`villagerBeats(world, date, slot)`): each person's villager (`at`, `home`, `free`, `lastIntent`), the
   points of interest (`wander.ts pois`), the phase and both day scores. One beat a slot: an idle move from `IDLE_POOL`,
   an outing of 1–3 stops within 600u (30 % of slots, one villager out at a time; `avatar.ts outing`), a chat or a
-  dance for two free villagers (dancing only with both scores ≥ 70), or the night's doze. A villager whose person has
-  the island open makes small moves but no outings, and is left alone 12 slots after its person's last walk (`held`).
-  The guest's villager joins while its app is open (closed, it sleeps): a third each, no outing of its own, no tree shaking.
+  dance for two free villagers (dancing only with both scores ≥ 70; a pair's other an awake one). A sleeping villager
+  is never free: in none. A villager whose person has the island open makes small moves but no outings, and is left
+  alone 12 slots after its person's last walk (`held`); one woken by a tap (not online) may go on an outing.
+  The guest's villager joins while it's awake: a third each, no outing of its own, no tree shaking.
 - **Visitor:** `Visitor.svelte beat(r)` runs `visitorLife.ts pickAct`, `pickEmote` and `strollSpots` on the slot's
   `visitor` PRNG; a phone whose visitor is speaking skips it.
 - **Critters** (`spawnsIn(date, slot, coasts)`, `crittersAt`): per channel (the sea off the front beach, `sea`, a
@@ -618,9 +620,11 @@ person does is a small intent over the relay, kept by the room for the day, fold
   the island is in view. While the partner has the island open, their villager is the relay's to move here; a walk
   under way is said again every 5 s while someone is here. A phone gone leaves its villager where its last walk ended
   on every phone, across days ([decisions](decisions.md#a-villager-stays-where-it-was-left)); back, it says where it stands once its welcome is in.
-- **Sleep:** the villagers doze 22:00–05:00 on the relay's clock (`islandLife`). A wake here is `act {act: wake, id:
-  <whose>, at}`: the other phone wakes the same villager for what's left of its 10 s (`playWake`). Gulliver woken is
-  `world {op: woke, id: gulliver}`, kept in the day.
+- **Sleep** ([design](design.md#sleep)): a villager sleeps while its person is offline: not in the welcome's or a
+  `presence`'s `here`, its `gone` (the room's clock) over 45 s ago (`ui-state/presence.ts`; the status kept while this
+  phone's socket is down). A wake here is `act {act: wake, id: <whose>, at}`, kept in the day: every phone, one opening
+  within it too, wakes the same villager till `at` + 60 s (`playWake`). Gulliver woken is `world {op: woke, id:
+  gulliver}`, kept in the day.
 - **What's shared:** the critters (each where its seed puts it; its catch or escape by its id, `catch {what, id, at,
   how}`: `rod`, `net`, `dive`, `dig`, `flee`, claimed at the tap; my cast as an `act`, its line the `fish` steps); a
   bug out of a bush, from under the rock or off a villager as a `put` (`bug:<id>:<bush|rock|flea>`); where each

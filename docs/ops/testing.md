@@ -202,7 +202,8 @@ Every e2e runs in a sealed world (e2e/fixtures.ts), so a run today and a run in 
 - **Ambient life is off.** Nothing spawns or wanders on its own: no critter visits (fish, bubbles, fresh-water
   shadows, bugs), no day's visitor (an event's host still comes: Jack, Franklin, Reese, Celeste), no balloon, no idle
   beats of the villagers, しずえ or a visitor (looks, hops, tree shakes, strolls, outings), no ordinary night's
-  shooting stars. The villagers are all there, where they stand, and doze at night; the opening beats, the events and
+  shooting stars. The villagers are all there, where they stand, asleep while their phone isn't open (one tab: the others';
+  `?awake` keeps everyone up, `?grace=` / `?wake=` shorten the spans: design.md "Sleep"); the opening beats, the events and
   everything a tap starts are as ever. It's `localStorage['e2e.ambient'] = 'off'` (every context, a second phone's
   too), read with the hooks on (`?demo` or a dev build: island/devHooks.ts) as `critter=none`, `visitor=events`,
   `balloon=none`, `idle=none` and `stars=none`. A URL's own param wins (`?critter=fish`, `?visitor=jack`, `?balloon`): say what
@@ -344,8 +345,8 @@ prints what retains the ones new since the first snapshot.
   dispose listeners hold it). Anything drawn from a page-wide model cache (homes, bridges, villagers) is disposed when
   its renderer goes (world3d/release.ts `releaseAll`), the ones that left the scene earlier too; then
   `forceContextLoss()`.
-- **A closure made inside a cleanup** shares the cleanup's scope: `napHold = () => false` written in holdNaps' let-go
-  held `fn` (Critters' closure) and so the whole island; a let-go value is made at module level.
+- **A closure made inside a cleanup** shares the cleanup's scope: a page-wide hold's `hold = () => false` written in its
+  let-go held `fn` (Critters' closure) and so the whole island; a let-go value is made at module level.
 - **The probe's own handles:** `waitForSelector` and `waitForFunction` return handles that keep their DOM or object
   alive (a heap path through "DevTools console"); wait on booleans.
 - A steady +0.3 MB a trip that's all `[code]` in the diff is V8 compiling; it levels off (the museum in and out:

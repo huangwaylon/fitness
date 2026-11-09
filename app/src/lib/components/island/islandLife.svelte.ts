@@ -10,8 +10,8 @@ import { actors, react, resetAll, setAsleep, setSleepClock, wake } from '../moti
 import { startIdleLife } from '../motion/idleLife.svelte.ts';
 import { ambientPois, ambientVillager, goalWalk, meetUp, outing, presence, steered } from './avatar.ts';
 import { goalMoves } from './wander.ts';
-import { personHere, relayOffset } from './ambientClock.ts';
-import { actorOf, guestAway, guestPhone, islandActors, whoOf } from '#lib/ui-state/cast.ts';
+import { relayOffset } from './ambientClock.ts';
+import { actorOf, awake, guestPhone, islandActors, online, setEveryoneAwake, setSpans, sleepIn, whoOf, type VillagerActor } from '#lib/ui-state/cast.ts';
 import type { AmbientWorld } from './ambient.ts';
 import { on } from '../motion/bus.svelte.ts';
 import { dayKey, jst, now } from '#lib/time/clock.ts';
@@ -35,15 +35,12 @@ const balloonMs = (first = false, r = Math.random): number => (first ? 20_000 + 
 
 /** Four ripeness stages of a fruit's day (a stage-up is R7): < 25% · < 60% · < 100% · the goal. */
 const stage = (pct: number): number => (pct >= 100 ? 3 : pct >= 60 ? 2 : pct >= 25 ? 1 : 0);
-const asleepHour = (d: Date) => jst(d).hour >= 22 || jst(d).hour < 5;
-const HOUR_MS = 3600_000;
-/** Sleeping time now, on the relay's clock (`?awake`, the hooks on: never: the two-phone harness against the relay runs
- *  at whatever hour it is). Module-level: the director keeps it past the scene, and a closure made in the constructor
- *  would keep the whole island (its DOM, its renderer) alive through a room's visit. */
-const sleepyNow = () => !hookFlag('awake') && asleepHour(new Date(now().getTime() + relayOffset()));
-/** Whether a villager sleeps now: everyone at night; the guest's, always on the island, while its app is closed too
- *  (the relay's presence: cast.ts guestAway; awake while it's open). */
-export const asleepNow = (id: string): boolean => sleepyNow() || (id === actorOf('G') && guestAway());
+const VILLAGERS = ['mine', 'partner', 'third'] as const;
+/** Whether a villager sleeps now: its person's app closed, past the grace and any tap's wake (cast.ts awake: the
+ *  relay's word, the same on every phone; no hour of the day: 2026-11-09). Module-level: the director keeps it past
+ *  the scene, and a closure made in the constructor would keep the whole island (its DOM, its renderer) alive through
+ *  a room's visit. */
+const asleepNow = (id: string): boolean => (VILLAGERS as readonly string[]).includes(id) && !awake(whoOf(id as VillagerActor));
 
 /** True the first time `key` is seen today on this device. */
 const once = (key: string): boolean => firstOn(SCENE.beat(key), dayKey());
@@ -61,6 +58,9 @@ export class IslandLife {
   celebrate = $state<Record<PersonId, { fruit: RingFruit; n: number } | null>>({ A: null, B: null });
   #celebrateN = 0;
   #pending = new Set<ReturnType<typeof setTimeout>>();
+  #sleepTimer: ReturnType<typeof setTimeout> | undefined;
+  /** The scene is gone: no more timers (one would keep the whole island alive). */
+  #gone = false;
   #ctx: Ctx;
 
   constructor(ctx: Ctx) {
@@ -77,28 +77,17 @@ export class IslandLife {
       });
     });
 
-    // Naps 22:00–5:00 on the relay's clock (the same moment on both phones; a tap wakes a villager for a moment, on
-    // both: director.svelte.ts wake, villagerSync): put to sleep or woken at the hour it turns, not at every minute
-    // (that put a woken villager back to sleep early).
+    // Asleep while offline, awake while online (cast.ts awake; `?awake`: everyone online; `?grace=`, `?wake=`: its spans): put to sleep or woken at each
+    // word from the relay (the scene: syncSleep), and when a grace or a tap's wake runs out (on both phones at once:
+    // director.svelte.ts wake, villagerSync playWake).
+    setEveryoneAwake(hookFlag('awake'));
+    const ms = (k: string) => (hook(k) && Number(hook(k)) > 0 ? { [k]: Number(hook(k)) } : {});
+    setSpans({ ...ms('grace'), ...ms('wake') });
     setSleepClock(asleepNow);
-    $effect(() => {
-      let was: boolean | null = null;
-      let timer: ReturnType<typeof setTimeout>;
-      const tick = () => {
-        const s = sleepyNow();
-        if (s !== was) {
-          was = s;
-          untrack(() => {
-            setAsleep('mine', asleepNow('mine'));
-            setAsleep('partner', asleepNow('partner'));
-            setAsleep('third', asleepNow('third'));
-          });
-        }
-        const t = now().getTime() + relayOffset();
-        timer = setTimeout(tick, HOUR_MS - (((t % HOUR_MS) + HOUR_MS) % HOUR_MS) + 30);
-      };
-      tick();
-      return () => clearTimeout(timer);
+    this.syncSleep();
+    $effect(() => () => {
+      this.#gone = true;
+      clearTimeout(this.#sleepTimer);
     });
 
     // Balloon present (NH): one floats by in the daytime every 2–3 minutes of on-screen time, the first after 30–60 s.
@@ -134,10 +123,20 @@ export class IslandLife {
     this.#pending.add(t);
   };
 
-  /** My villager tapped: wake it or play its squish (the partner's tap is the high-five, IslandScene). */
+  /** Each villager asleep or awake as cast.ts says now, and again when that turns by itself. */
+  syncSleep = (): void => {
+    clearTimeout(this.#sleepTimer);
+    if (this.#gone) return;
+    untrack(() => {
+      for (const id of VILLAGERS) setAsleep(id, asleepNow(id));
+    });
+    const ms = sleepIn();
+    if (ms !== null) this.#sleepTimer = setTimeout(this.syncSleep, ms + 30);
+  };
+
+  /** My villager tapped (awake: its app is open): its squish (the partner's tap is the high-five, IslandScene). */
   tapMine(): void {
-    if (actors.mine.asleep) wake('mine');
-    else react('R9');
+    react('R9');
   }
 
   #diff(p: WeekView, v: WeekView): void {
@@ -205,11 +204,9 @@ export class IslandLife {
     const view = ctx.view();
     const me = view.people[view.me];
     const beats: ReactionId[] = [];
-    if (!asleepHour(d)) {
-      if (once('open')) beats.push('R1');
-    }
+    if (once('open')) beats.push('R1');
     // (the rest are about this phone's own day: the guest has none)
-    if (!asleepHour(d) && !guestPhone()) {
+    if (!guestPhone()) {
       if (h >= 5 && h < 9 && once('morning')) beats.push('R11');
       // evening: my partner turns to me while my day is still under half (a nudge to move, not to report in)
       if (h >= 18 && h < 22 && dayScore(me) < 50 && once('evening')) beats.push('R12');
@@ -225,26 +222,25 @@ export class IslandLife {
     const stopIdle = startIdleLife({
       still: hook('idle') === 'none',
       paused: () => ctx.covered() || this.hidden,
-      asleep: () => actors.mine.asleep && actors.partner.asleep,
       night: ctx.night,
       offset: relayOffset,
       me: () => ctx.view().me,
       // whose villager each actor draws (ui-state/cast.ts): the guest's takes part too while it's on the island
       actorOf: (p) => actorOf(p),
-      // ambient life's world (island/ambient.ts): each member's villager and the guest's while it's here (its app
-      // open: present, as a member with the island open), where they may wander, the day scores
+      // ambient life's world (island/ambient.ts): each member's villager and the guest's while it's awake (asleep:
+      // not free, in nothing), present while its person's app is open, where they may wander, the day scores
       world: () => {
         const v = ctx.view(), a = actorOf('A'), b = actorOf('B'), va = ambientVillager(a), vb = ambientVillager(b);
         if (!va || !vb) return null;
         const at = (t: number | undefined) => (t === undefined ? undefined : t + relayOffset());
-        // present: mine always, another by the relay's presence
-        const here = (id: typeof a, p: PersonId) => id === 'mine' || personHere(p);
+        // (present: mine always, another by the relay's presence and its grace, cast.ts online; woken by a tap, it's
+        // in the island's life but not present: an outing of its own)
         const g = actorOf('G'), vg = islandActors().includes(g) ? ambientVillager(g) : null;
         return {
           villagers: {
-            A: { ...va, present: here(a, 'A'), lastIntent: at(steered[a]) },
-            B: { ...vb, present: here(b, 'B'), lastIntent: at(steered[b]) },
-            ...(vg ? { G: { ...vg, present: true, lastIntent: at(steered[g]) } } : {})
+            A: { ...va, present: online('A'), lastIntent: at(steered[a]) },
+            B: { ...vb, present: online('B'), lastIntent: at(steered[b]) },
+            ...(vg ? { G: { ...vg, present: online('G'), lastIntent: at(steered[g]) } } : {})
           } as AmbientWorld['villagers'],
           pois: ambientPois(),
           scores: { A: dayScore(v.people.A), B: dayScore(v.people.B) },

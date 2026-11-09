@@ -113,12 +113,12 @@ export const REACTIONS: Record<ReactionId, Reaction> = {
 
 /** Idle-life actions (design.md "Motion"). */
 export type IdleAction =
-  | 'look' | 'wiggle' | 'hum' | 'hop' | 'wander' | 'peek' | 'daydream' | 'treeshake' | 'chat' | 'dance' | 'stretch' | 'doze';
+  | 'look' | 'wiggle' | 'hum' | 'hop' | 'wander' | 'peek' | 'daydream' | 'treeshake' | 'chat' | 'dance' | 'stretch';
 
 interface IdleEntry {
   action: IdleAction;
   weight: number;
-  /** Day only: skipped in the evening (tod night, 19–22, before the villagers fall asleep). */
+  /** Day only: skipped in the evening and at night (tod night). */
   day?: boolean;
   /** Hours [from, to) the action is allowed in. */
   hours?: [number, number];

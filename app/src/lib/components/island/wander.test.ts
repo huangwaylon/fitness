@@ -91,8 +91,9 @@ describe('the walkers (avatar.ts on a stand-in scene)', () => {
     await import('./avatar.ts');
   });
   afterAll(unstub);
-  beforeEach(stub);
-  afterEach(unstub);
+  // (both members' apps open: their villagers awake, in the island's life: ui-state/cast.ts)
+  beforeEach(async () => (stub(), (await import('#lib/ui-state/cast.ts')).setEveryoneAwake(true)));
+  afterEach(async () => (unstub(), (await import('#lib/ui-state/cast.ts')).setEveryoneAwake(false)));
   async function scene() {
     const d = await import('../motion/director.svelte.ts');
     const a = await import('./avatar.ts');

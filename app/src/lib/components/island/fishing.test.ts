@@ -6,10 +6,10 @@ import {
 
 const DAY = '2026-11-04';
 /** An island round the float: my villager dozing or not, at most one shadow (`fish`, `d` u off) that notices it. */
-function around(o: { asleep?: boolean; day?: string; fish?: string | null; d?: number; here?: boolean; seed?: number } = {}): Around {
+function around(o: { day?: string; fish?: string | null; d?: number; here?: boolean; seed?: number } = {}): Around {
   const fish = o.fish === undefined ? 'fish-sea-1' : o.fish;
   return {
-    asleep: o.asleep, day: o.day ?? DAY, rand: mulberry32(o.seed ?? 7),
+    day: o.day ?? DAY, rand: mulberry32(o.seed ?? 7),
     notice: () => (fish ? { fish, d: o.d ?? 60 } : null),
     here: () => o.here ?? true
   };
@@ -177,9 +177,6 @@ describe('the line ends on its own (the float just goes): nothing left hanging',
   const l = (): Line => step(out(0), FLY_MS, around({ fish: null })).line!;
   it('the day changed (the island’s day: its shadows are a new day’s)', () => {
     expect(step(l(), 1000, around({ day: '2026-11-05' }))).toEqual({ line: null, steps: [{ ev: 'off', why: 'day' }] });
-  });
-  it('my villager dozed off', () => {
-    expect(step(l(), 1000, around({ asleep: true }))).toEqual({ line: null, steps: [{ ev: 'off', why: 'asleep' }] });
   });
   it('the shadow at it went (another phone caught it, it left): the float waits on, and the next shadow can come', () => {
     let l: Line = step(out(0), FLY_MS, around()).line!;

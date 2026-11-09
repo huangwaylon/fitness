@@ -3,6 +3,7 @@
 // here; and two phones linked through a fake relay end with both villagers at the same points.
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Intent } from '#lib/contract/live-protocol.ts';
+import { WAKE_MS } from '#lib/ui-state/presence.ts';
 
 type Walk = Extract<Intent, { kind: 'walk' }>;
 
@@ -106,31 +107,30 @@ describe('the partner’s walk played here', () => {
 });
 
 describe('two phones linked through a relay', () => {
-  it('a wake here is told with its time; there it wakes the same villager for what is left, and both sleep again then', async () => {
+  it('a wake here is told with its time; there it wakes the same villager for what is left of its minute, and both sleep again then', async () => {
     const d = await load();
     d.resetAll();
     d.setSleepClock(() => true);
-    for (const id of ['mine', 'partner'] as const) d.setAsleep(id, true);
+    for (const id of ['partner', 'third'] as const) d.setAsleep(id, true);
     const told: unknown[] = [];
     const link = d.linkVillagers({ share: (w) => void told.push(w), me: () => 'B', serverNow: () => 70_000, enabled: () => true });
-    d.wake('partner'); // a high-five here wakes A's villager (my partner): A's phone hears it
+    d.wake('partner'); // a tap here (B's phone) wakes A's villager, A's app closed: the guest's phone hears it
     expect(told).toEqual([{ kind: 'act', act: 'wake', id: 'A', at: 70_000 }]);
     link.detach();
-    // A's phone (me A): its own villager wakes for the 10 s less the 3 s the message took, then sleeps
-    d.setAsleep('mine', true);
-    expect(d.playWake({ id: 'A', at: 70_000 }, 'A', 73_000)).toBe(true);
-    expect(d.actors.mine.asleep).toBe(false);
-    await vi.advanceTimersByTimeAsync(6900);
-    expect(d.actors.mine.asleep).toBe(false);
-    await vi.advanceTimersByTimeAsync(200);
-    expect(d.actors.mine.asleep).toBe(true);
-    // too late (over already) or awake: nothing
-    expect(d.playWake({ id: 'A', at: 0 }, 'A', 73_000)).toBe(false);
-    // past the night's end: a woken villager stays up
-    d.setSleepClock(() => false);
+    // the guest's phone (A's villager its `partner`): up for the minute less the 3 s the message took, then asleep
     d.setAsleep('partner', true);
-    d.playWake({ id: 'B', at: 80_000 }, 'A', 80_000);
-    await vi.advanceTimersByTimeAsync(10_100);
+    expect(d.playWake({ id: 'A', at: 70_000 }, 'G', 73_000)).toBe(true);
+    expect(d.actors.partner.asleep).toBe(false);
+    await vi.advanceTimersByTimeAsync(WAKE_MS - 3_000 - 100);
+    expect(d.actors.partner.asleep).toBe(false);
+    await vi.advanceTimersByTimeAsync(200);
+    expect(d.actors.partner.asleep).toBe(true);
+    // too late (over already) or awake: nothing
+    expect(d.playWake({ id: 'A', at: 0 }, 'G', 73_000 + WAKE_MS)).toBe(false);
+    // its person's app open by the minute's end: it stays up
+    d.setSleepClock(() => false);
+    d.playWake({ id: 'A', at: 80_000 }, 'G', 80_000);
+    await vi.advanceTimersByTimeAsync(WAKE_MS + 100);
     expect(d.actors.partner.asleep).toBe(false);
     d.setSleepClock(() => true);
   });

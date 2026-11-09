@@ -48,7 +48,7 @@
   const resolve = (p: HostPose): HostPose => (head ? 'icon' : theme.season === 'winter' ? 'winter' : p);
   const h = $derived(typeof size === 'number' ? `${size}px` : size);
   const nook = $derived(hostIsNook());
-  // asleep-ish by the scene clock (the island naps 22–05), not by the chrome palette
+  // asleep-ish by the scene clock (her night, 22–05: the villagers sleep by presence), not by the chrome palette
   // (minuteNow, not theme.tod: the time of day only changes at 05:00 and 19:00, so it would miss 22:00)
   const night = $derived.by(() => {
     const hr = jst(minuteNow()).hour;

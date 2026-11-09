@@ -3,12 +3,13 @@
 // clock) one villager does one small background thing (look around, wiggle, hop, a glance up at the HUD, tree shake,
 // stretch), sets off on an outing to points of interest, or both chat or dance; the visitor takes its beat from the
 // slot's own PRNG; しずえ now and then swaps pose / wiggles / hops. No emote bubbles or fx: those mark events. In the
-// evening (19–22) the energetic ones rest; asleep (22–05) the villagers only doze. Pauses while the tab is hidden or
+// evening and at night (tod night) the energetic ones rest; a villager asleep (its person's app closed) keeps its zzz
+// and is in nothing (ambient.ts: not free). Pauses while the tab is hidden or
 // a sheet is open; after 3 min without input it plays one slot in three (the same ones on both phones) and stops after
 // 10 min until the next touch. Every follow-up beat is scheduled through the director's `later`, and stop() cancels them
 // all, so nothing writes to the actors after the scene unmounts.
 import { HOST_IDLE, type ActorId, type IdleAction } from './reactions.ts';
-import { actors, addFx, applyStep, busy, faceToward, later as directorLater, lastEvent, setEmote, setMotion } from './director.svelte.ts';
+import { actors, addFx, applyStep, busy, faceToward, later as directorLater, lastEvent, setMotion } from './director.svelte.ts';
 import { now } from '#lib/time/clock.ts';
 import type { PersonId, Who } from '#lib/types.ts';
 import { DECIDE_MS, msToNextSlot, slotAt, slotRand, villagerBeats, type AmbientWorld, type VillagerBeat } from '../island/ambient.ts';
@@ -17,9 +18,7 @@ import type { VillagerActor } from '#lib/ui-state/cast.ts';
 interface IdleContext {
   /** Sheet / overlay open (or the scene isn't live). */
   paused: () => boolean;
-  /** The villagers are asleep (22–05). */
-  asleep: () => boolean;
-  /** Evening (tod night but still awake): no day-only actions. */
+  /** Evening and night (tod night): no day-only actions. */
   night?: () => boolean;
   /** Shake that actor's own tree (+ a falling leaf). */
   treeShake: (id: VillagerActor) => void;
@@ -41,7 +40,7 @@ interface IdleContext {
   /** The slot's beats (tests); ambient.ts villagerBeats. */
   beats?: typeof villagerBeats;
   /** The villagers, しずえ and the visitor do nothing on their own (`?idle=none`, the e2e's ambient life off:
-   *  devHooks.ts): no beats, strolls or outings; asleep, they still doze. */
+   *  devHooks.ts): no beats, strolls or outings; asleep, they keep their zzz. */
   still?: boolean;
 }
 
@@ -103,10 +102,7 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
     if (Date.now() - lastInput > 3 * 60_000 && slot % SLOW_EVERY) return schedule();
     if (!ctx.still) ctx.visitor?.(slotRand(date, slot, 'visitor'));
     if (Date.now() - lastEvent.at < 3_000) return schedule(); // an event is playing: the villagers leave it be
-    if (ctx.asleep()) {
-      doze(slot);
-      return schedule();
-    }
+    zzz();
     if (ctx.still) return schedule();
     const w = ctx.world();
     if (w) {
@@ -120,15 +116,11 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
     schedule();
   }
 
-  function doze(slot: number) {
+  /** A sleeping villager's zzz back if a reaction took it. */
+  function zzz() {
     for (const id of ['mine', 'partner', 'third'] as const) {
       const a = actors[id];
-      if (!a.asleep || busy(id)) continue;
-      if (!a.fx.some((f) => f.kind === 'zzz')) addFx(id, 'zzz');
-    }
-    if (actors.host.present && slot - lastHost >= 6) {
-      lastHost = slot;
-      setEmote('host', 'sleepy');
+      if (a.asleep && !busy(id) && !a.fx.some((f) => f.kind === 'zzz')) addFx(id, 'zzz');
     }
   }
 
@@ -150,7 +142,7 @@ export function startIdleLife(ctx: IdleContext): (() => void) & { owned: () => n
   function play(id: VillagerActor, b: VillagerBeat, mate: VillagerActor | null) {
     if (busy(id)) return;
     if (b.kind === 'outing') return void ctx.outing?.(id, b.stops, b.together);
-    if (b.kind === 'doze' || (b.kind === 'pair' && !b.lead)) return;
+    if (b.kind === 'pair' && !b.lead) return;
     later(id, b.at, () => (b.kind === 'pair' ? mate && pair(id, mate, b.action) : move(id, b.action)));
   }
 

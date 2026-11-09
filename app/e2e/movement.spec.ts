@@ -152,7 +152,7 @@ const footsteps = (page: Page) =>
 test('the partner wanders off to a point of interest and back, footsteps under it, never over a control', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
-    await page.goto('?demo&date=2026-11-04T12:00');
+    await page.goto('?demo&date=2026-11-04T12:00&awake'); // (the partner's app counted open: awake, free to go)
     // the island up and its opening beats over (10-odd s in software GL), where the partner stands read, then its outing
     // (`?wander`'s timer set it off 3.2 s in, now and then before the spec had read where it stood: WebKit 3 in 8)
     await islandUp(page, { timeout: 15_000 });
@@ -181,7 +181,7 @@ test('the partner wanders off to a point of interest and back, footsteps under i
 
 test('under a sheet the walkers stop and no footstep sounds', async ({ page }) => {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
-  await page.goto('?demo&date=2026-11-04T12:00');
+  await page.goto('?demo&date=2026-11-04T12:00&awake');
   // (the island up and its opening beats over first, as above, then the partner's outing)
   await islandUp(page, { timeout: 15_000 });
   await quiet(page);

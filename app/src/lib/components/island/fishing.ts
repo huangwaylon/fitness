@@ -1,5 +1,5 @@
 // Fishing, as NH plays it (docs/design.md "Fishing"): my line as one explicit state machine, pure. Its clock (ms), the
-// shadows near the float, whether my villager dozes, the day and the dice are the caller's, so every step and every
+// shadows near the float, the day and the dice are the caller's, so every step and every
 // edge is a unit test (fishing.test.ts). Critters.svelte steps it with performance.now() and plays what each step says: the float,
 // the rod, the shadow's swim, the sounds, the 「！」, the catch plate and the others' phones.
 //
@@ -8,8 +8,8 @@
 //                                         ↑                                                                │
 //                                         └──────────── it got away (no tap in BITE_WINDOW_MS) ────────────┘
 //   a tap while the line is out (NH's A button): flying, waiting → reel (nothing on it); approach, nibble → scare (it
-//   darts off: NH's early pull); bite → catch. Off by itself: the island hidden or left, the day over, my villager dozed
-//   off (the line just goes: `off`). No reach: the float may be anywhere on the island's water, the line as long as it
+//   darts off: NH's early pull); bite → catch. Off by itself: the island hidden or left, the day over (the line just
+//   goes: `off`). No reach: the float may be anywhere on the island's water, the line as long as it
 //   takes; a tap on the ground with the line out reels it in (NH: you reel in to move), the next one walks.
 //
 // The bite's window starts when the bite is shown (the step that enters it), not when it was planned: a late timer
@@ -52,7 +52,7 @@ export interface Line {
 }
 
 /** Why a line ended on its own. */
-type OffWhy = 'day' | 'asleep';
+type OffWhy = 'day';
 /** What a step did, in order, for the caller to play. */
 export type Step =
   | { ev: 'land' }
@@ -70,8 +70,6 @@ export type Pull = { ev: 'reel' } | { ev: 'scare'; fish: string } | { ev: 'catch
 
 /** What a step asks of the island. */
 export interface Around {
-  /** Whether my villager is dozing (it dropped the line). */
-  asleep?: boolean;
   /** The island's day now. */
   day: string;
   /** The free shadow nearest a float at (x, z) on `water` within NOTICE_U that can swim to it, and how far (u). */
@@ -109,10 +107,9 @@ const with_ = (l: Line, o: Partial<Line>): Line => ({ ...l, ...o });
 export function step(line: Line, now: number, w: Around): { line: Line | null; steps: Step[] } {
   const steps: Step[] = [];
   let l: Line = line;
-  // ended on its own: a new day, my villager dozed off
+  // ended on its own: a new day
   const off = (why: OffWhy) => (steps.push({ ev: 'off', why }), { line: null, steps });
   if (w.day !== l.day) return off('day');
-  if (w.asleep) return off('asleep');
   for (let guard = 0; guard < 16; guard++) {
     // the shadow gone before it bit (another caught it, it left): the float waits on
     if (l.fish && l.phase !== 'waiting' && !w.here(l.fish)) {

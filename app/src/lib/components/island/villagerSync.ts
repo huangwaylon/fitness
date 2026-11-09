@@ -9,9 +9,9 @@
 // the start finds it on its way. A phone gone (closed, hidden, offline) leaves its villager where its last walk ended,
 // on every phone, for as long as it's gone (the relay keeps each person's last walk, across days). Plain TS: the relay
 // and the clock come in through `VillagerLink`.
-import { WAKE_MS, actors, along, isRemote, livePos, onOwnMove, onWake, place, remoteWalking, setRemote, wake, walkTo, type Facing, type Move } from '../motion/director.svelte.ts';
+import { actors, along, isRemote, livePos, onOwnMove, onWake, place, remoteWalking, setRemote, wake, walkTo, type Facing, type Move } from '../motion/director.svelte.ts';
 import { VIA_MAX, type Face, type Intent, type Pt, type Who } from '#lib/contract/live-protocol.ts';
-import { actorOfFor, whoOfFor, type VillagerActor } from '#lib/ui-state/cast.ts';
+import { actorOfFor, setWoke, wakeMs, whoOfFor, type VillagerActor } from '#lib/ui-state/cast.ts';
 import { dist } from '#lib/layout/nav.ts';
 import { SPEED } from './speed.ts';
 
@@ -107,13 +107,14 @@ export function playPartner(w: Walk, now: number, visible = true, id: VillagerAc
   return gap > JUMP_U ? 'glide' : 'walk';
 }
 
-/** A villager woke on the partner's phone (a tap on theirs, a high-five): it wakes here too, for what's left of its
- *  WAKE_MS (the same moment it goes back to sleep on both). Returns whether it woke. */
+/** A villager woke on another phone (a tap there, a high-five): it wakes here too, for what's left of its minute (wakeMs)
+ *  from the wake's `at` (the same moment it goes back to sleep on every phone). Returns whether it woke. */
 export function playWake(e: { id?: string; at?: number }, me: Who, now: number): boolean {
   if (e.id !== 'A' && e.id !== 'B' && e.id !== 'G') return false;
   const id = actorOfFor(me, e.id);
-  const left = WAKE_MS - Math.max(0, now - (e.at ?? now));
+  const left = wakeMs() - Math.max(0, now - (e.at ?? now));
   if (left < 250 || !actors[id].asleep) return false;
+  setWoke(e.id, e.at ?? now);
   wake(id, { remote: true, ms: left });
   return true;
 }
@@ -155,8 +156,9 @@ export function linkVillagers(link: VillagerLink): VillagerLinked {
   });
   // a wake here (mine tapped, or both at a high-five) wakes the same villager there
   const offWake = onWake((id) => {
-    if (!link.enabled()) return;
-    link.share({ kind: 'act', act: 'wake', id: whoOfFor(link.me(), id), at: Math.round(link.serverNow()) });
+    const w = whoOfFor(link.me(), id), at = Math.round(link.serverNow());
+    setWoke(w, at);
+    if (link.enabled()) link.share({ kind: 'act', act: 'wake', id: w, at });
   });
   const tick = () => {
     // a walk still under way, said again (a phone that missed its start finds it on its way)

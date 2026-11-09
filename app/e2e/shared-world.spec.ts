@@ -173,27 +173,27 @@ test('two players: a tap-walk on one tab plays on the other from the same start 
   await ctx.close();
 });
 
-test('two players: asleep at night on both tabs; a tap wakes my villager on both, and both put it back to sleep at the same moment', async ({ browser }) => {
+test('two players at night: both awake on both tabs (no night’s sleep); B’s, its app closed, asleep on both; a tap wakes it on both for its minute, and both put it back to sleep at the same moment', async ({ browser }) => {
   test.setTimeout(60_000);
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const a = await ctx.newPage(), b = await ctx.newPage();
-  // (each tab's own clock, installed and running: stepped past the sleep's ten seconds below, not waited out)
+  // (each tab's own clock, installed and running: stepped past the wake's minute below, not waited out)
   await Promise.all([a, b].map((p) => p.clock.install()));
-  for (const [p, as] of [[a, ''], [b, '&as=B']] as const) {
+  for (const [p, as] of [[a, ''], [b, '&as=G']] as const) {
     await p.goto(`?demo&date=2026-11-04T23:00${as}`);
     await islandUp(p);
     await p.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   }
   const zzz = (p: Page, who: string) => p.locator(`[data-person="${who}"] .fxa.zzz`);
-  for (const p of [a, b]) for (const who of ['A', 'B']) await expect(zzz(p, who)).toHaveCount(1, { timeout: 4000 });
+  for (const p of [a, b]) await expect(zzz(p, 'B')).toHaveCount(1, { timeout: 4000 });
+  for (const p of [a, b]) for (const who of ['A', 'G']) await expect(zzz(p, who)).toHaveCount(0);
   await a.waitForTimeout(600);
-  const v = (await a.locator('[data-person="A"] .vil').boundingBox())!;
+  const v = (await a.locator('[data-person="B"] .vil').boundingBox())!;
   await a.mouse.click(v.x + v.width / 2, v.y + v.height * 0.6);
-  for (const p of [a, b]) await expect(zzz(p, 'A')).toHaveCount(0, { timeout: 1500 });
-  for (const p of [a, b]) await expect(zzz(p, 'B')).toHaveCount(1);
-  // ten seconds later: asleep again on both (the same moment: the wake's own time on each, each tab's clock stepped on)
-  await Promise.all([a, b].map((p) => p.clock.runFor(9000)));
-  for (const p of [a, b]) await expect(zzz(p, 'A')).toHaveCount(1, { timeout: 2500 });
+  for (const p of [a, b]) await expect(zzz(p, 'B')).toHaveCount(0, { timeout: 1500 });
+  // its minute later: asleep again on both (the same moment: the wake's own time on each, each tab's clock stepped on)
+  await Promise.all([a, b].map((p) => p.clock.runFor(59_000)));
+  for (const p of [a, b]) await expect(zzz(p, 'B')).toHaveCount(1, { timeout: 2500 });
   await ctx.close();
 });
 
