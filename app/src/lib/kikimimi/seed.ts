@@ -27,5 +27,4 @@ export const TIMERS = [30, 20, 60, 0] as const;
 export type QuizTimer = (typeof TIMERS)[number];
 /** The seed's こたえる じかん as its index in TIMERS (QuizWindows.answers' order). */
 export const timerIndex = (seed: number): number => (seed & TIMER) >>> TIMER_SHIFT;
-export const timerOf = (seed: number): QuizTimer => TIMERS[timerIndex(seed)];
 export const withTimer = (seed: number, timer: QuizTimer): number => setBits(seed, TIMER, Math.max(0, TIMERS.indexOf(timer)) << TIMER_SHIFT);

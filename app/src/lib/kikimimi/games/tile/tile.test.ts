@@ -10,8 +10,11 @@ import { registry } from '../../round/registry.ts';
 import { playIn, playOut, type PlayIn, type RoundOut } from '../../round/wire.ts';
 import { EMPTY, cvOver, filesOf, listenOpts, tierAt, type ListenOpts } from '../listened.ts';
 import {
-  TILE_QS, boardOf, decoysFor, slotsOf, tileDeal, tileGame, tileOk, tileRecord, tileRounds, tileValid, unionOf, wrongMask, wrongWords, type TileCard
+  TILE_QS, boardOf, decoysFor, slotsOf, tileDeal, tileGame, tileOk, tileRecord, tileRounds, tileValid, unionOf, wrongMask, type TileCard
 } from './def.ts';
+
+/** A row's answer read back: the words its mask says were wrong. */
+const wrongWords = (tiles: readonly string[], pick: number): string[] => (pick < 0 ? [] : tiles.filter((_, j) => pick & (1 << j)));
 
 const FILES = Object.keys(INDEX.listen).filter((u) => INDEX.listen[u][0] === 'tile');
 const parts = (us: readonly string[]): ListenPart[] => us.map((u) => listenOf(u)!);

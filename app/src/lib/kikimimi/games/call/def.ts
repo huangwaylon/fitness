@@ -223,7 +223,3 @@ export const callGame = (src: ListenSource<CallCard>): GameDef<ListenOpts> => li
 /** My answers of a game as its `listen` row's, by its call: the wrong rows' mask over the call's memo as `pick`. */
 export const callRecord = (rounds: readonly CallRound[], answers: readonly (AnswerValue | null)[], had: readonly boolean[], rp: readonly number[], done: boolean): ListenRow['r'] =>
   listenRecord(CALL, rounds, answers, had, rp, done);
-
-/** A row's answer read back (a test; きろく later): the memo rows its mask says were wrong. */
-
-export const wrongRows = (info: CallInfo, pick: number): MemoRow[] => (pick < 0 ? [] : info.memo.flatMap((m) => m.rows).filter((r) => pick & (1 << r.n)));

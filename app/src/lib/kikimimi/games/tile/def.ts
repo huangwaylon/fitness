@@ -155,6 +155,3 @@ export const tileGame = (src: ListenSource<TileCard>): GameDef<ListenOpts> => li
 /** My answers of a game as its `listen` row's: the wrong slots' mask as `pick`. */
 export const tileRecord = (rounds: readonly TileRound[], answers: readonly (AnswerValue | null)[], had: readonly boolean[], rp: readonly number[], done: boolean): ListenRow['r'] =>
   listenRecord(TILE, rounds, answers, had, rp, done);
-
-/** A row's answer read back (a test; きろく later): the words its mask says were wrong. */
-export const wrongWords = (tiles: readonly string[], pick: number): string[] => (pick < 0 ? [] : tiles.filter((_, j) => pick & (1 << j)));

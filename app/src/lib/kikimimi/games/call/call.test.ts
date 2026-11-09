@@ -11,8 +11,11 @@ import { registry } from '../../round/registry.ts';
 import { playIn, playOut, type PlayIn, type RoundOut } from '../../round/wire.ts';
 import { EMPTY, filesOf, listenOpts } from '../listened.ts';
 import {
-  CALL_QS, callDeal, callGame, callOk, callRecord, callRounds, callValid, chipsOf, infoOf, roundRows, rowsOf, trapOf, unionOf, wrongMask, wrongRows, type CallRound
+  CALL_QS, callDeal, callGame, callOk, callRecord, callRounds, callValid, chipsOf, infoOf, roundRows, rowsOf, trapOf, unionOf, wrongMask, type CallInfo, type CallRound
 } from './def.ts';
+
+/** A row's answer read back: the memo rows its mask says were wrong. */
+const wrongRows = (info: CallInfo, pick: number) => (pick < 0 ? [] : info.memo.flatMap((m) => m.rows).filter((r) => pick & (1 << r.n)));
 
 const FILES = Object.keys(INDEX.listen).filter((u) => INDEX.listen[u][0] === 'call');
 const parts = (us: readonly string[]): ListenPart[] => us.map((u) => listenOf(u)!);

@@ -8,7 +8,7 @@ import { MIX, deck } from './deck.ts';
 import { drawn } from './mix.ts';
 import { skillsOf } from './tags.ts';
 import { RECENT_GAMES, SEED_TRIES, agesOf, freshSeed, overlap, remember, seedWith, staleness, type Recent } from './recent.ts';
-import { FLAG_BITS, isLadder, timerOf, versus } from './seed.ts';
+import { FLAG_BITS, TIMERS, isLadder, timerIndex, versus } from './seed.ts';
 import { QuizRounds } from './games/quiz/session.ts';
 import { quizGame, type QuizSource } from './games/quiz/def.ts';
 import { ladderGame } from './games/ladder/def.ts';
@@ -16,6 +16,8 @@ import { registry } from './round/registry.ts';
 import { practiceDeck } from './srs.ts';
 import { statsOf } from './progress.ts';
 import { loadAll } from './pool.ts';
+
+const timerOf = (seed: number) => TIMERS[timerIndex(seed)];
 
 // (the compiled levels' chunks: decks and clips read the loaded ones, pool.ts)
 await loadAll();

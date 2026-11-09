@@ -15,7 +15,7 @@ import { quizGame, quizOpts, type QuizSource } from '../games/quiz/def.ts';
 import { ladderGame } from '../games/ladder/def.ts';
 import { lessonGame } from '../games/lesson/def.ts';
 import { roundOf, type QuizRound } from '../games/quiz/kinds.ts';
-import { isLadder, timerOf, versus, withLadder } from '../seed.ts';
+import { TIMERS, isLadder, timerIndex, versus, withLadder } from '../seed.ts';
 import { ladderDeck } from '../ladder.ts';
 import { LADDERS } from '../ladders.ts';
 import type { Live, LiveStatus } from '../../sync/live.ts';
@@ -23,6 +23,8 @@ import type { QuizLv, Relayed, Who } from '../../contract/live-protocol.ts';
 import { DIALOGUES } from '../dialogues.ts';
 import { LINE_GAP, itemDur } from '../clips.ts';
 import { clipIds } from '../bank.ts';
+
+const timerOf = (seed: number) => TIMERS[timerIndex(seed)];
 
 /** A test's deck: how many, each clip's length (ms), each right choice; or its rounds, when they carry more (a ladder's
  *  rungs). */

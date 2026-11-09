@@ -149,9 +149,6 @@ export const tachiGame = (src: ListenSource<TachiCard>): GameDef<ListenOpts> => 
 export const pickOf = (r: Pick<TachiRound, 'type'>, a: AnswerValue): number =>
   r.type === 'opinions' ? (a as readonly number[]).reduce((s, x, j) => s + (x === EMPTY ? 3 : x) * 4 ** j, 0) : (a as number);
 
-/** A row's opinions pick read back (a test; きろく later): each claim's speaker (EMPTY none). */
-export const opinionsOf = (pick: number): number[] => [0, 1, 2].map((j) => Math.floor(pick / 4 ** j) % 4).map((x) => (x === 3 ? EMPTY : x));
-
 /** My answers of a game as its `listen` row's: my answer as `pick`. */
 export const tachiRecord = (rounds: readonly TachiRound[], answers: readonly (AnswerValue | null)[], had: readonly boolean[], rp: readonly number[], done: boolean): ListenRow['r'] =>
   listenRecord(TACHI, rounds, answers, had, rp, done);

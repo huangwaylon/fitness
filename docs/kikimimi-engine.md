@@ -277,7 +277,7 @@ Rebuild what you heard (`games/tile/`, `components/kikimimi/tile/`). 6 sentences
 - **Tiers:** easy, the first authored decoy and my first slot placed; hard, decoys topped up to 3–4 from a sound-swap table over the sentence's own words.
 - **Answer:** the board's index per slot, `EMPTY` for none; valid: one per slot, each tile once. Right: every filled slot holds its word and they're the whole sentence or one role's half. 100 a sentence; a replay costs nothing.
 - **Co-op:** role 0 fills the odd slots, role 1 the others; the partner's slots dashed.
-- **Row:** `gm: 'tile'`, `[tile id, ok, wrong-slot mask, rp]` (`tileRecord`; `wrongWords`).
+- **Row:** `gm: 'tile'`, `[tile id, ok, wrong-slot mask, rp]` (`tileRecord`).
 
 ### たちぎき
 

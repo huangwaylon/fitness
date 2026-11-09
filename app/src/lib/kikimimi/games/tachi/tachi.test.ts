@@ -12,8 +12,11 @@ import { registry } from '../../round/registry.ts';
 import { playIn, playOut, type PlayIn, type RoundOut } from '../../round/wire.ts';
 import { EMPTY, filesOf, listenOpts, rawOf } from '../listened.ts';
 import {
-  SHARED, TACHI_QS, facesOf, givenClaim, opinionsOf, pickOf, tachiDeal, tachiGame, tachiOk, tachiRecord, tachiRounds, tachiValid, type TachiCard
+  SHARED, TACHI_QS, facesOf, givenClaim, pickOf, tachiDeal, tachiGame, tachiOk, tachiRecord, tachiRounds, tachiValid, type TachiCard
 } from './def.ts';
+
+/** A row's opinions pick read back: each claim's speaker (EMPTY none). */
+const opinionsOf = (pick: number): number[] => [0, 1, 2].map((j) => Math.floor(pick / 4 ** j) % 4).map((x) => (x === 3 ? EMPTY : x));
 
 const FILES = Object.keys(INDEX.listen).filter((u) => INDEX.listen[u][0] === 'tachi');
 const parts = (us: readonly string[]): ListenPart[] => us.map((u) => listenOf(u)!);
