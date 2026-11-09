@@ -1436,6 +1436,83 @@ test('several foods a trip: a row’s ＋ logs it at once, 追加 in place stays
   await expect(dinner.nth(n0 + 1)).toContainText('卵（全卵・生）');
 });
 
+// Review 4: a row's ＋ tapped twice fast logs one food: the clear swaps in さいきん, its first row the food just added
+// with its own ＋ under the finger; anything typed meanwhile is a new tap. The ingredient trip's ✕ takes out that one
+// (each its own id, not its index).
+test('a fast second ＋ is held, a typed one isn’t; the ingredient trip’s ✕ takes out that one', async ({ page }) => {
+  await openFood(page);
+  const s = sheet(page);
+  const q = s.locator('[data-food-q]');
+  const added = s.locator('[data-food-added] [data-added]');
+  await s.locator('[data-add=d]').click();
+  await q.fill('ごはん');
+  await expect(s.locator('[data-food-results] li:has([data-item="mext:01088"]) [data-quick]')).toBeVisible({ timeout: 15_000 });
+  // the two clicks a frame apart (a double tap): the second on さいきん's ＋, there by then
+  const second = await dlg(page).evaluate(async (d) => {
+    d.querySelector<HTMLElement>('[data-food-results] li:has([data-item="mext:01088"]) [data-quick]')!.click();
+    await new Promise(requestAnimationFrame);
+    const qa = d.querySelector<HTMLElement>('[data-food-recent] [data-quick]');
+    qa?.click();
+    return !!qa;
+  });
+  expect(second).toBe(true);
+  await expect(added).toHaveCount(1);
+  await q.fill('みそ汁');
+  await s.locator('[data-food-results] li:has([data-item="dishes:miso-tofu-wakame"]) [data-quick]').click();
+  await expect(added).toHaveCount(2);
+  await s.locator('[data-food-finish]').click();
+
+  // a recipe's ingredients: three by ＋, the middle one's ✕
+  await s.locator('[data-add=l]').click();
+  await s.locator('[data-recipe-new]').click();
+  await s.locator('[data-recipe-add]').click();
+  for (const [w, id] of [['ごはん', 'mext:01088'], ['みそ汁', 'dishes:miso-tofu-wakame'], ['卵', 'mext:12004']]) {
+    await q.fill(w);
+    await s.locator(`[data-food-results] li:has([data-item="${id}"]) [data-quick]`).click({ timeout: 15_000 });
+  }
+  await expect(added).toHaveCount(3);
+  const ids = await added.evaluateAll((els) => els.map((e) => e.getAttribute('data-added')));
+  await added.nth(1).locator('[data-unadd]').click();
+  await expect(added).toHaveCount(2);
+  expect(await added.evaluateAll((els) => els.map((e) => e.getAttribute('data-added')))).toEqual([ids[0], ids[2]]);
+  await expect(added.nth(1)).toContainText('卵');
+  await s.locator('[data-food-finish]').click();
+  await expect(s.locator('[data-recipe-level=edit] [data-recipe-item]')).toHaveCount(2);
+});
+
+// Review 4: opened before the catalog is in (slow, offline), a row in place and a recipe take the catalog's once it
+// comes: さいきん's ごはん its portions (茶碗1杯 alone, as logged, till then), the recipe's ingredients their tiles.
+async function catalogHeld(page: Page) {
+  let release = () => {};
+  const held = new Promise<void>((ok) => (release = ok));
+  await page.route('**/food/index.json*', async (r) => { await held; await r.continue(); });
+  await openFood(page);
+  await sheet(page).locator('[data-add=d]').click();
+  return release;
+}
+test('opened before the catalog is in: the row in place takes its portions when it comes', async ({ page }) => {
+  const release = await catalogHeld(page);
+  const s = sheet(page);
+  await s.locator('[data-food-recent] [data-item="mext:01088"]').click();
+  const portions = s.locator('[data-food-open] [data-portion]');
+  await expect(portions.first()).toBeVisible();
+  const before = await portions.count();
+  release();
+  await expect.poll(() => portions.count(), { timeout: 15_000 }).toBeGreaterThan(before);
+});
+test('opened before the catalog is in: the recipe’s ingredients take their tiles when it comes', async ({ page }) => {
+  const release = await catalogHeld(page);
+  const s = sheet(page);
+  await s.locator('[data-food-recipes] [data-recipe]').first().click();
+  await s.locator('[data-amount-open]').click(); // its amount → the recipe
+  const tiles = s.locator('[data-recipe-items] [data-thumb]');
+  await expect(tiles.first()).toBeVisible();
+  const known = () => tiles.evaluateAll((els) => els.filter((e) => e.getAttribute('data-cat') && e.getAttribute('data-cat') !== 'その他').length);
+  const before = await known();
+  release();
+  await expect.poll(known, { timeout: 15_000 }).toBeGreaterThan(before);
+});
+
 // A row opened in place (the user, 2026-11-07: "see and configure settings right away instead of having to add first
 // and then edit"; docs/design.md "Gohan" Search): a food row's tap opens the amount's controls under it, kept on the
 // screen (its own ＋ hidden meanwhile); 焼き ×2 there and 追加 logs 180 g, 558 kcal on this trip, the field cleared and

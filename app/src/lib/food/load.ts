@@ -2,7 +2,8 @@
 // opens, never at install (service worker: cached on first use under its `?v=`, so it works offline after that).
 // index.json first (past the HTTP cache: it names the version), then the core datasets and verify.json together; the
 // lazy ones (products, 2.7 MB) only once asked for (`db.wantMore`: the search's open), in `db.more`. A dataset that fails to load is left out (its items unsearchable)
-// till a retry at its next chance brings it (`chance`: the caller's, ui-state/retry.ts nextChance; none: no retry);
+// till a retry at its next chance brings it (`chance`: the caller's, ui-state/retry.ts nextChance; none: no retry;
+// `db.onAdd` says when one comes in, the search searching again);
 // only a missing index.json fails the load. Each is indexed a slice per task (db.ts SLICE), never a long frame.
 import { addDataset, emptyDb, withJan, type FoodDb } from './db.ts';
 import type { Dataset, FoodIndex, Verify } from './types.ts';
@@ -46,6 +47,11 @@ function startParser(): Worker | null {
     parsing.delete(m.id);
     if ('head' in m) p.ok({ ...m.head, items: p.items });
     else p.no(new Error(m.error));
+    // (nothing left to parse: let it go; a later dataset (the products, a retry) starts another)
+    if (!parsing.size) {
+      parser?.terminate();
+      parser = undefined;
+    }
   };
   // (a worker that can't start or run: what it was parsing fails, to be fetched again at its next chance, here)
   parser.onerror = parser.onmessageerror = () => {
@@ -77,7 +83,10 @@ export async function loadFoodDb(chance?: (n: number) => Promise<void>): Promise
   let indexing = Promise.resolve();
   // (a dataset that fails is fetched again at its next chance, a few times, and added when it comes; the load itself
   // never waits for it)
-  const add = (meta: FoodIndex['datasets'][number], d: Dataset) => (indexing = indexing.then(() => addDataset(db, meta, d, pause)).catch(() => swallowed('food.index')));
+  const listeners = new Set<() => void>();
+  db.onAdd = (f) => (listeners.add(f), () => void listeners.delete(f));
+  const add = (meta: FoodIndex['datasets'][number], d: Dataset) =>
+    (indexing = indexing.then(() => addDataset(db, meta, d, pause)).then(() => listeners.forEach((f) => f()), () => swallowed('food.index')));
   const again = (meta: FoodIndex['datasets'][number], n: number): void =>
     void chance?.(n).then(() => fetchDataset(url(meta.file, index.version)).then((d) => void add(meta, d), () => n < RETRIES && again(meta, n + 1)));
   const load = (meta: FoodIndex['datasets'][number]) =>

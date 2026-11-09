@@ -12,9 +12,9 @@
   import { kcalText } from '../kiroku/fmt.ts';
   import Avatar from '../characters/Avatar.svelte';
   import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
-  import { entryKcal } from '#lib/food/index.ts';
+  import { entryKcal, type FoodDb } from '#lib/food/index.ts';
   import FoodThumb from './FoodThumb.svelte';
-  import { amountText, catalogOf, catOf, foodDbNow, glossOf, itemOf, recipePlate, servingOnly, withImages, type RecipeDraft } from './foodUi.ts';
+  import { amountText, catOf, foodDbNow, recipePlate, servingOnly, snapGloss, whenFoodDb, withImages, type RecipeDraft } from './foodUi.ts';
 
   interface Props {
     draft: RecipeDraft;
@@ -42,6 +42,9 @@
   const ok = $derived(draft.n.trim().length > 0 && draft.it.length > 0 && !clean);
   let removing = $state(false);
   let imgs = $state.raw<FoodImageIndex | null>(null);
+  /** The catalog (each ingredient's category tile and everyday name), in once it loads (as FoodMeal's). */
+  let db = $state.raw<FoodDb | null>(foodDbNow());
+  $effect(() => (db ? undefined : whenFoodDb((d) => (db = d))));
   $effect(() => withImages((ix) => (imgs = ix)));
   /** The collage: up to four of the ingredients' pictures, the most grams first (a food once: recipePlate). */
   const hero = $derived(recipePlate(draft.it, (id) => !!imgOf(imgs, id, 160)).flatMap(({ id }) => {
@@ -59,8 +62,7 @@
 </script>
 
 {#snippet cells(it: RepeatItem)}
-  {@const db = foodDbNow()}
-  {@const gl = glossOf(catalogOf(db, it.f.id) ?? itemOf(it.f, null), it.f.n)}
+  {@const gl = snapGloss(db, it.f)}
   <FoodThumb cat={catOf(db, it.f.id)} size={40} img={imgOf(imgs, it.f.id, 40)} />
   <span class="nm">{it.f.n}</span>
   <small class="amt"><span>{amountText(it)}</span>{#if gl}{' · '}<span class="gl" data-gloss>{gl}</span>{/if}</small>

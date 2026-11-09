@@ -11,6 +11,8 @@ import { setGoal } from '#lib/store/actions.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { lowKcal } from '#lib/model/profile.ts';
 import type { State } from '#lib/model/state.ts';
+import { round1 } from '#lib/contract/food.ts';
+import { parseTyped } from '#lib/math.ts';
 
 export interface GoalSpec {
   id: GoalId;
@@ -71,19 +73,15 @@ export function goalName(id: GoalId): string {
   return id === 'weight' ? t('goal.weight') : t(`health.body.${id}`);
 }
 
-/** Full-width digits, point and comma typed on a Japanese keyboard (「６５０」, 「１２．５」) as ASCII. */
-const halfWidth = (text: string): string => text.replace(/[０-９．，]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0));
-
 /**
  * What was typed as the goal of `id` → the goal, or null when the record would refuse it: `8000`, `10,500`, `68,4`
  * (a decimal comma), full-width `６８．４`, a trailing unit (歩, kcal, kg, g, %, 分); one decimal at most kept for the
  * decimal ones (68.45 → 68.5), none for the whole ones (600.5 is refused); in the editor's range and on the record's grid.
  */
 export function parseGoal(id: GoalId, text: string): number | null {
-  const raw = halfWidth(text.trim()).replace(/\s*(歩|steps?|kcal|kg|g|グラム|%|％|分|min)$/i, '');
-  const s = /^\d{1,3}(,\d{3})+$/.test(raw) ? raw.replace(/,/g, '') : raw.replace(',', '.');
-  if (!/^\d{1,5}(\.\d+)?$/.test(s)) return null;
-  const v = decimalsOf(id) ? Math.round(Number(s) * 10) / 10 : Number(s);
+  const n = parseTyped(text, '歩|steps?|kcal|kg|g|グラム|%|％|分|min');
+  if (n == null) return null;
+  const v = decimalsOf(id) ? round1(n) : n;
   return isGoalValue(id, v) && v >= SPECS[id].min ? v : null;
 }
 
@@ -118,7 +116,7 @@ export function nudge(s: Pick<GoalSpec, 'min' | 'max' | 'step'>, from: number, d
   const k = Math.round(from / s.step + 1e-9);
   const on = Math.abs(k * s.step - from) < 1e-6;
   const next = (on ? k + dir : dir > 0 ? Math.ceil(from / s.step) : Math.floor(from / s.step)) * s.step;
-  return Math.round(Math.min(s.max, Math.max(s.min, next)) * 10) / 10;
+  return round1(Math.min(s.max, Math.max(s.min, next)));
 }
 
 /** The kcal editor's gentle note for `who` (GoalEdit `warn`): 「きそたいしゃ（約1,630 kcal）より ひくい めやす です…」

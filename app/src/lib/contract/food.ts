@@ -88,10 +88,6 @@ const oneDecimal = (n: number): boolean => Math.abs(n * 10 - Math.round(n * 10))
 
 /** A daily goal of `n` (FOOD_GOALS): within its range, a whole step. */
 export const isFoodGoal = (n: FoodGoalOf, v: unknown): v is number => isGoalValue(n, v);
-/** A daily kcal goal (`pref kcalGoal`): an integer within FOOD_GOALS.k, a whole step. */
-export const isKcalGoal = (v: unknown): v is number => isFoodGoal('k', v);
-/** The pref key of a meal-log goal → what it is of (`kcalGoal` → `k`), or null for any other key. */
-export const foodGoalOf = (key: unknown): FoodGoalOf | null => FOOD_GOAL_OF.find((n) => FOOD_GOALS[n].key === key) ?? null;
 
 /** A new entry's id. */
 export const newFoodId = (at: number, p = 'f'): string => newOpId(p, at);
@@ -133,7 +129,7 @@ export function foodOp(d: unknown): FoodOp | null {
   if (keys.some((k) => !['id', 'at', 'd', 'm', 'g', 'f'].includes(k))) return null;
   if (!isLocalDate(d.d) || !isMeal(d.m) || !inRange(d.g, FOOD_GRAMS.min, FOOD_GRAMS.max) || !oneDecimal(d.g)) return null;
   const f = snapOf(d.f);
-  return f && { id: d.id, at: d.at, d: d.d, m: d.m, g: Math.round(d.g * 10) / 10, f };
+  return f && { id: d.id, at: d.at, d: d.d, m: d.m, g: round1(d.g), f };
 }
 
 /** A removal op (`{id, at, rm: true}`, nothing else), null when it isn't one, undefined when it isn't a removal. */
@@ -153,7 +149,7 @@ function itemsOf(v: unknown, max: number): RepeatItem[] | null {
     if (!inRange(x.g, FOOD_GRAMS.min, FOOD_GRAMS.max) || !oneDecimal(x.g)) return null;
     const f = snapOf(x.f);
     if (!f) return null;
-    it.push({ g: Math.round(x.g * 10) / 10, f });
+    it.push({ g: round1(x.g), f });
   }
   return it;
 }
@@ -337,9 +333,11 @@ function withOptional(f: FoodSnap, t: Partial<Record<SnapNutrient, number | null
 }
 
 /** To one decimal (kcal, grams, nutrients as shown and kept). */
-export const round1 = (v: number): number => Math.round(v * 10) / 10;
+export function round1(v: number): number {
+  return Math.round(v * 10) / 10;
+}
 
-const clampGrams = (g: number): number => Math.min(FOOD_GRAMS.max, Math.max(FOOD_GRAMS.min, Math.round(g * 10) / 10));
+const clampGrams = (g: number): number => Math.min(FOOD_GRAMS.max, Math.max(FOOD_GRAMS.min, round1(g)));
 
 /** Whether some ingredients include a serving with no known weight (`sv`: a custom food's). */
 const anySv = (it: readonly RepeatItem[]): boolean => it.some((x) => x.f.sv === true);
@@ -409,7 +407,7 @@ export function foodCustomOp(d: unknown): CustomOp | null {
   const out: CustomOp = { id: d.id, at: d.at, n, u, k: d.k, p: null, fa: null, c: null, s: null };
   if (d.g !== undefined) {
     if (!inRange(d.g, CUSTOM.grams.min, CUSTOM.grams.max) || !oneDecimal(d.g)) return null;
-    out.g = Math.round(d.g * 10) / 10;
+    out.g = round1(d.g);
   }
   for (const k of SNAP_NUTRIENTS) {
     const v = d[k];
@@ -443,7 +441,7 @@ export function foodCustomFold(ops: Iterable<CustomOpBy>): FoodCustom[] {
 export function customSnap(c: CustomData, u?: string): FoodSnap {
   const by = 100 / customGrams(c);
   const nut = (v: number | null): number | null => (v === null ? null : Math.round(v * by * 100) / 100);
-  const f: FoodSnap = withOptional({ id: `custom:${c.id}`, n: c.n, k: Math.round(c.k * by * 10) / 10, p: nut(c.p), fa: nut(c.fa), c: nut(c.c), s: nut(c.s) }, c, nut);
+  const f: FoodSnap = withOptional({ id: `custom:${c.id}`, n: c.n, k: round1(c.k * by), p: nut(c.p), fa: nut(c.fa), c: nut(c.c), s: nut(c.s) }, c, nut);
   if (u) f.u = u;
   if (c.g === undefined) f.sv = true;
   return f;

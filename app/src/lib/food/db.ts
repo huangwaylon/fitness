@@ -19,9 +19,11 @@ export interface FoodDb {
   more: Promise<void>;
   /** The lazy datasets (products, 2.7 MB) fetched now, once: the search's open asks, never the sheet's (`more`). */
   wantMore(): Promise<void>;
+  /** `f` called each time a dataset is added after the load (a lazy one, one fetched again): search again; the stop. */
+  onAdd(f: () => void): () => void;
 }
 
-export const emptyDb = (index: FoodIndex): FoodDb => ({ version: index.version, sets: [], entries: [], verify: null, byId: new Map(), variants: new Map(), more: Promise.resolve(), wantMore: () => Promise.resolve() });
+export const emptyDb = (index: FoodIndex): FoodDb => ({ version: index.version, sets: [], entries: [], verify: null, byId: new Map(), variants: new Map(), more: Promise.resolve(), wantMore: () => Promise.resolve(), onAdd: () => () => {} });
 
 /** Items indexed per slice: a dataset is added a slice per task (load.ts), so no frame waits on a whole file. */
 export const SLICE = 2000;

@@ -3,10 +3,11 @@
 // row's everyday name, the さいきん list, a portion's start and step, a repeat's weekdays in words, and a recipe
 // as a food (マイレシピ: its portions), and a custom food as a food and its editor's fields (マイ食品).
 import {
-  CUSTOM, customDensityOk, customPortions, customSnap, FOOD_GRAMS, recipePortion, recipeSnap, type FoodCustom,
+  CUSTOM, customDensityOk, customPortions, customSnap, FOOD_GRAMS, recipePortion, recipeSnap, round1, type FoodCustom,
   type FoodEntry, type FoodSnap, type RepeatItem
 } from '#lib/contract/food.ts';
 import { quiet } from '#lib/quiet.ts';
+import { parseTyped } from '#lib/math.ts';
 import type { Recipe } from '#lib/model/food.ts';
 import { itemById, loadFoodDb, portionsOf, unitOf, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
 import { imgOf, loadFoodImages, type FoodImageIndex, type FoodImg } from '#lib/food/images.ts';
@@ -69,7 +70,7 @@ export const foodDbNow = (): FoodDb | null => ready;
 export const foodLast: { more: boolean } = { more: false };
 
 /** Grams as typed: one decimal at most, no trailing `.0`. */
-export const gramsText = (g: number): string => String(Math.round(g * 10) / 10);
+export const gramsText = (g: number): string => String(round1(g));
 
 /** Whether a portion label already says its weight (「1枚(60g)」, 「200ml」): no second （Ng） after it. */
 export const hasWeight = (label: string): boolean => /\d\s*(g|ml|グラム)/i.test(label.normalize('NFKC'));
@@ -98,23 +99,19 @@ export const servingOnly = (f: Pick<FoodSnap, 'sv'>): boolean => f.sv === true;
 export const amountText = (e: Pick<FoodEntry, 'g' | 'f'>): string =>
   servingOnly(e.f) ? (e.f.u ?? `×${gramsText(e.g / 100)}`) : portionText(e.f.u, e.g);
 
-/** Full-width digits, point and comma typed on a Japanese keyboard (「６５０」, 「１２．５」) as ASCII. */
-const halfWidth = (text: string): string => text.replace(/[０-９．，]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0));
 
 /** A logged snapshot as a catalog item: the catalog's own when it has it (its portions), else the snapshot's values
  *  and, with its grams `g`, the portion it was logged by (「茶碗1杯」 of 150 g; offline, a recipe's 1人前). */
 export function itemOf(f: FoodSnap, db: FoodDb | null, g?: number): Item {
-  const c = catalogOf(db, f.id);
+  const c = itemById(db, f.id);
   const it = c && inState(db, c);
   const own = it ? null : snapPortion(f.u, g);
   return { ...(it ?? {}), ...(own ? { portions: [own] } : {}), id: f.id, name: f.n, ...snapValues(f) };
 }
-/** The catalog's item of an id, if the catalog is in and has it (db.ts byId). */
-export const catalogOf = itemById;
 
 /** A food's category tile (FoodThumb) by its id: the catalog item's, a recipe's レシピ (`c…`, or as logged `recipe:c…`),
  *  else none (その他). */
-export const catOf = (db: FoodDb | null, id: string): string | undefined => catalogOf(db, id)?.cat ?? (/^(recipe:)?c[0-9a-z]+$/.test(id) ? 'レシピ' : undefined);
+export const catOf = (db: FoodDb | null, id: string): string | undefined => itemById(db, id)?.cat ?? (/^(recipe:)?c[0-9a-z]+$/.test(id) ? 'レシピ' : undefined);
 
 /** The recipe a logged food is (its snapshot's id `recipe:<recipe id>`: contract/food.ts recipeSnap), or null. */
 export const recipeIdOf = (foodId: string): string | null => (foodId.startsWith('recipe:') ? foodId.slice(7) : null);
@@ -190,6 +187,11 @@ export function glossOf(it: Item, name = it.name): string | null {
   if (name !== it.name && says(now, name)) return now;
   return it.gloss && says(it.gloss, name) ? it.gloss : null;
 }
+/** A logged food's everyday name (glossOf against the catalog's item; none until the catalog is in). */
+export function snapGloss(db: FoodDb | null, f: Pick<FoodSnap, 'id' | 'n'>): string | null {
+  const c = itemById(db, f.id);
+  return c ? glossOf(c, f.n) : null;
+}
 
 /** A state's word as a MEXT name writes it (its chip says レンジ, いため). */
 const STATE_WORD: Record<string, string> = { レンジ: '電子レンジ調理', いため: '油いため' };
@@ -225,7 +227,7 @@ export function stateItem(d: Item, v: Item): Item {
     if (is100(p)) continue;
     const q = match(p);
     if (q) used.add(q);
-    if (q || k) portions.push({ label: p.label, g: q ? q.g : Math.round(p.g * k! * 10) / 10 });
+    if (q || k) portions.push({ label: p.label, g: q ? q.g : round1(p.g * k!) });
   }
   portions.push(...own.filter((q) => !used.has(q)));
   return { ...v, name, portions: portions.length ? portions : v.portions };
@@ -246,7 +248,7 @@ function snapPortion(u: string | undefined, g: number | undefined): Portion | nu
   const [label, x] = u.split('×');
   const n = x ? Number(x) : 1;
   if (!label || !(n > 0) || /^100\s*(g|ml)$/i.test(label.normalize('NFKC'))) return null;
-  return { label, g: Math.round((g / n) * 10) / 10 };
+  return { label, g: round1(g / n) };
 }
 
 /** My latest entry of each food, newest first: what the search shows before anything is typed. */
@@ -384,15 +386,12 @@ export function customDraft(c: FoodCustom | null, name = ''): CustomDraft {
   return { n: c.n, u: c.u, g: num1(c.g), k: String(c.k), p: num1(c.p), fa: num1(c.fa), c: num1(c.c), s: num1(c.s), fi: num1(c.fi), al: num1(c.al) };
 }
 
-/** A typed amount → a number to one decimal within [min, max]; '' → null (left blank); undefined when it isn't one.
- *  Full-width digits, thousands commas (1,200: as parseKcalGoal reads them), else a decimal comma, and a trailing unit
- *  (g, ml, kcal) are fine. */
+/** A typed amount (math.ts parseTyped: full-width digits, 1,200, a decimal comma, a trailing g, ml or kcal) → a number
+ *  to one decimal within [min, max]; '' → null (left blank); undefined when it isn't one. */
 export function parseAmount(text: string, min: number, max: number): number | null | undefined {
-  const t = halfWidth(text.trim()).replace(/\s*(g|ml|kcal|グラム)$/i, '');
-  const s = /^\d{1,3}(,\d{3})+(\.\d+)?$/.test(t) ? t.replace(/,/g, '') : t.replace(',', '.');
-  if (!s) return null;
-  if (!/^\d{1,5}(\.\d+)?$/.test(s)) return undefined;
-  const v = Math.round(Number(s) * 10) / 10;
+  const n = parseTyped(text, 'g|ml|kcal|グラム');
+  if (n == null) return n;
+  const v = round1(n);
   return v >= min && v <= max ? v : undefined;
 }
 

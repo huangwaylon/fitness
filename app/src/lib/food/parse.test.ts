@@ -12,9 +12,9 @@ const fetchFile = async (href: string) => {
 };
 
 /** Loads the catalog with fresh modules, `worker`: through the stand-in worker. */
-async function load(worker: boolean): Promise<{ db: FoodDb; posts: number }> {
+async function load(worker: boolean): Promise<{ db: FoodDb; posts: number; workers: number; ended: number }> {
   vi.resetModules();
-  let posts = 0;
+  let posts = 0, workers = 0, ended = 0;
   if (worker) {
     let page: { onmessage: ((e: { data: unknown }) => void) | null } | null = null;
     const scope = { onmessage: null as ((e: { data: unknown }) => void) | null, postMessage: (m: unknown) => (posts++, setTimeout(() => page?.onmessage?.({ data: structuredClone(m) }))) };
@@ -24,11 +24,14 @@ async function load(worker: boolean): Promise<{ db: FoodDb; posts: number }> {
       onmessage = null;
       constructor() {
         page = this;
+        workers++;
       }
       postMessage(m: unknown) {
         scope.onmessage?.({ data: m });
       }
-      terminate() {}
+      terminate() {
+        ended++;
+      }
     });
     await import('./dataset.worker.ts');
   }
@@ -37,14 +40,14 @@ async function load(worker: boolean): Promise<{ db: FoodDb; posts: number }> {
   await db.wantMore();
   vi.unstubAllGlobals();
   vi.stubGlobal('fetch', fetchFile);
-  return { db, posts };
+  return { db, posts, workers, ended };
 }
 
-let here: FoodDb, there: FoodDb, posts = 0;
+let here: FoodDb, there: FoodDb, posts = 0, workers = 0, ended = 0;
 beforeAll(async () => {
   vi.stubGlobal('fetch', fetchFile);
   here = (await load(false)).db;
-  ({ db: there, posts } = await load(true));
+  ({ db: there, posts, workers, ended } = await load(true));
 });
 afterAll(() => vi.unstubAllGlobals());
 
@@ -56,5 +59,8 @@ describe('the worker’s parse', () => {
     expect(there.byId.size).toBe(here.byId.size);
     expect(there.verify).toEqual(here.verify);
     for (const q of ['ごはん', '鶏むね', 'カップヌードル', '4901990']) expect(searchFoods(there, q, 1)[0]?.id).toBe(searchFoods(here, q, 1)[0]?.id);
+  });
+  it('lets the worker go once nothing is left to parse (the core datasets, then the products: one each)', () => {
+    expect([workers, ended]).toEqual([2, 2]);
   });
 });

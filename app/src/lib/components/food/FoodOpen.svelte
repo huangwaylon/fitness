@@ -3,7 +3,6 @@
   // controls (FoodPortion over amount.svelte.ts's picker: the same 状態 swap, portions, −/＋ and grams), one live line of
   // P · F · C, 栄養成分 › (the amount level at what is set: its picture, the 100 g values, another meal) and 追加 with the
   // kcal (logged in the search's meal). Its height and fade come in over 150 ms (FoodSearch closes it the same way).
-  import { untrack } from 'svelte';
   import type { Item } from '#lib/food/index.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import FoodPortion from './FoodPortion.svelte';
@@ -27,8 +26,8 @@
   }
   let { id, item, g0, u0, serving = false, swap = false, onadd, onmore, closing = false, onclosed }: Props = $props();
 
-  /** The food as set (another state picked swaps it). */
-  let it = $state.raw(untrack(() => item));
+  /** The food as set: the row's (the catalog's once it's in), another state picked swaps it. */
+  let it = $derived(item);
   const a = new AmountPick(() => ({ item: it, g0, u0, serving, onitem: swap ? (x: Item) => (it = x) : undefined }));
   const set = (): Set => ({ item: it, g: a.g, u: a.u });
 </script>

@@ -2,7 +2,7 @@
 // label), ×n, typed grams, and what that holds. One picker for the amount level (FoodAmount) and a search row opened in
 // place (FoodOpen); FoodPortion draws its controls. Made in a component's setup (its effects are the component's).
 import { untrack } from 'svelte';
-import { FOOD_GRAMS } from '#lib/contract/food.ts';
+import { FOOD_GRAMS, round1 } from '#lib/contract/food.ts';
 import { nutrientsFor, portionsOf, unitOf, variantsOf, type FoodDb, type Item } from '#lib/food/index.ts';
 import { t } from '#lib/i18n/index.ts';
 import { foodDb, foodDbNow, gramsText, inState, parseAmount, portionLabel, startOf, stepOf } from './foodUi.ts';
@@ -76,7 +76,7 @@ export class AmountPick {
   }
   readonly pi = $derived(Math.max(0, this.ps.findIndex((p) => p.label === this.pl)));
   /** Typed grams as the editors read them (parseAmount: 「1,200」 is 1,200 g, 「150g」 150; out of range or not a number: 0). */
-  readonly g = $derived(this.custom ? (parseAmount(this.typed, FOOD_GRAMS.min, FOOD_GRAMS.max) ?? 0) : Math.round(this.ps[this.pi].g * this.mult * 10) / 10);
+  readonly g = $derived(this.custom ? (parseAmount(this.typed, FOOD_GRAMS.min, FOOD_GRAMS.max) ?? 0) : round1(this.ps[this.pi].g * this.mult));
   readonly ok = $derived(this.g >= FOOD_GRAMS.min && this.g <= FOOD_GRAMS.max);
   readonly n = $derived(nutrientsFor(this.item, this.ok ? this.g : 0));
   /** The label the entry keeps (none for typed grams or 100 g). */
@@ -122,7 +122,7 @@ export class AmountPick {
   keepIn(v: Item): { label: string; mult: number; custom: boolean; g: number } {
     const vp = portionsOf(inState(this.db, v));
     const same = !this.custom ? vp.find((p) => p.label === this.pl) : undefined;
-    if (same) return { label: same.label, mult: this.mult, custom: false, g: Math.round(same.g * this.mult * 10) / 10 };
+    if (same) return { label: same.label, mult: this.mult, custom: false, g: round1(same.g * this.mult) };
     if (this.custom) return { label: vp[0].label, mult: 1, custom: true, g: this.g };
     return { label: vp[0].label, mult: 1, custom: false, g: vp[0].g };
   }

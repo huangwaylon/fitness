@@ -18,14 +18,14 @@
   import { untrack } from 'svelte';
   import type { Meal } from '#lib/contract/food.ts';
   import { MEALS } from '#lib/contract/food.ts';
-  import { verifyOf, type Item } from '#lib/food/index.ts';
+  import { itemById, verifyOf, type Item } from '#lib/food/index.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
   import FoodThumb from './FoodThumb.svelte';
   import FoodPhoto from './FoodPhoto.svelte';
   import FoodPortion from './FoodPortion.svelte';
   import { AmountPick } from './amount.svelte.ts';
-  import { catalogOf, glossOf, withImages } from './foodUi.ts';
+  import { glossOf, withImages } from './foodUi.ts';
 
   interface Props {
     item: Item;
@@ -70,7 +70,7 @@
   /** A picture on screen (its thumbnail while the cell loads): then the イメージ badge, never on a tile. */
   let pictured = $state(false);
   let picBtn: HTMLButtonElement | undefined = $state();
-  const gloss = $derived(glossOf(catalogOf(a.db, item.id) ?? item, item.name));
+  const gloss = $derived(glossOf(itemById(a.db, item.id) ?? item, item.name));
   /** How many independent sources agree on its kcal (2 or more: said under its name). */
   const agree = $derived.by(() => {
     const v = a.db ? verifyOf(a.db, item.id) : null;

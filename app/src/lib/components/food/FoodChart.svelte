@@ -7,8 +7,8 @@
   import '#lib/i18n/kenkou.ts'; // けんこう's strings: the periods, the range row
   import type { LocalDate, Who } from '#lib/types.ts';
   import { PERIODS, type Period } from '#lib/model/health.ts';
-  import { foodAverage, foodGoal, foodSeries, setGoal } from '#lib/model/food.ts';
-  import { FOOD_GOAL_OF, type FoodGoalOf } from '#lib/contract/food.ts';
+  import { foodAverage, foodGoals, foodSeries, setGoal } from '#lib/model/food.ts';
+  import { FOOD_GOAL_OF } from '#lib/contract/food.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { addDays, localDateAt } from '#lib/time/dates.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -34,7 +34,7 @@
   const pager = new RangePager(() => ({ period, today, first: all?.[0].ds.first ?? today }));
   /** The range's average day (its finished days: to yesterday when it holds today) and whose goals it reads against. */
   const avg = $derived(m && pager.range ? foodAverage(m.state, who, pager.range.from, pager.range.to < today ? pager.range.to : addDays(today, -1)) : null);
-  const goals = $derived(Object.fromEntries(FOOD_GOAL_OF.map((n) => [n, m ? foodGoal(m.state, who, n, m.now) : null])) as Record<FoodGoalOf, number | null>);
+  const goals = $derived(foodGoals(m, who));
   /** A new period: no slide, no callout (as けんこう's setPeriod). */
   let shown: Period | null = null;
   $effect.pre(() => {

@@ -25,8 +25,8 @@
   import '#lib/i18n/kenkou.ts'; // けんこう's: the period dropdown
   import { flushSync, tick, untrack, type Snippet } from 'svelte';
   import type { LocalDate, Who } from '#lib/types.ts';
-  import { customGrams, customSnap, FOOD_GOAL_OF, MEALS, newFoodId, RECIPE, type FoodCustom as Custom, type FoodEntry, type FoodGoalOf, type FoodSnap, type Meal } from '#lib/contract/food.ts';
-  import { copySources, customs, foodDay, foodEntries, foodGoal, recipes, repeatOn, repeats, type CopySource, type Recipe } from '#lib/model/food.ts';
+  import { customGrams, customSnap, MEALS, newFoodId, RECIPE, type FoodCustom as Custom, type FoodEntry, type FoodSnap, type Meal, type RepeatItem } from '#lib/contract/food.ts';
+  import { copySources, customs, foodDay, foodEntries, foodGoals, recipes, repeatOn, repeats, type CopySource, type Recipe } from '#lib/model/food.ts';
   import { mealProteinTarget } from '#lib/model/profile.ts';
   import {
     copyMeal, detachDay, editFood, logCustom, logFood, logRecipe, refreshFood, removeCustom, removeFood, removeRecipe, saveCustom, saveRecipe, startRepeat,
@@ -105,7 +105,7 @@
 
   const day = $derived(m && date ? foodDay(m.state, who, date) : null);
   /** Whose goals, kcal and each nutrient (protein's default included). */
-  const goals = $derived(Object.fromEntries(FOOD_GOAL_OF.map((n) => [n, m ? foodGoal(m.state, who, n, m.now) : null])) as Record<FoodGoalOf, number | null>);
+  const goals = $derived(foodGoals(m, who));
   /** A meal's protein to aim for: a third of the day's (profile.ts mealProteinTarget). */
   const ptarget = $derived(mealProteinTarget(goals.p));
   const byMeal = (k: Meal) => day?.entries.filter((e) => e.m === k) ?? [];
@@ -437,8 +437,16 @@
     const { p, gg, uu } = asItComes(item, g, u, f);
     draft.it.push({ g: gg, f: snapOf(p, uu) });
   }
-  /** This trip's ingredients (`from` on), each with its index in the draft as its id (✕ takes it out). */
-  const tripOf = (from: number) => draft.it.slice(from).map((x, i) => ({ id: String(from + i), ...x }));
+  /** This trip's ingredients (`from` on), each with an id of its own while it's in the draft (✕ takes out that one:
+   *  an index would point at the next one once a row before it is gone). */
+  const tripIds = new WeakMap<RepeatItem, string>();
+  let tripN = 0;
+  const tripId = (x: RepeatItem) => tripIds.get(x) ?? (tripIds.set(x, String(++tripN)), String(tripN));
+  const tripOf = (from: number) => draft.it.slice(from).map((x) => ({ id: tripId(x), ...x }));
+  function untrip(id: string) {
+    const i = draft.it.findIndex((x) => tripIds.get(x) === id);
+    if (i >= 0) draft.it.splice(i, 1);
+  }
   function itemRemove(i: number) {
     draft.it.splice(i, 1);
     toRecipeLevel();
@@ -610,7 +618,7 @@
       <FoodSearch {recent} onpick={(item, g, u, f) => go({ k: 'ritem', ...pickOf(item, f), g0: g, u0: u })} {names} recipes={allRecipes} customs={allCustoms}
         oncustom={(c) => go({ k: 'ritem', ...pickOf(customItem(c)) })} oncreate={(n) => openCustom(null, { ingredient: true }, '[data-custom-new]', n)}
         onquick={room ? itemNow : undefined} oncustomquick={room ? (c) => itemNow(customItem(c)) : undefined}
-        added={tripOf(top.from)} onunadd={(id) => draft.it.splice(Number(id), 1)} addedHead="food.rcp.addedHead" onfinish={toRecipeLevel} />
+        added={tripOf(top.from)} onunadd={untrip} addedHead="food.rcp.addedHead" onfinish={toRecipeLevel} />
     {:else if top?.k === 'custom'}
       {@const l = top}
       {@const c = l.id ? allCustoms.find((x) => x.id === l.id) : undefined}

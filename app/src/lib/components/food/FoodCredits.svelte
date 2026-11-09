@@ -12,7 +12,9 @@
 
   function toggle() {
     open = !open;
-    if (open && !list) foodDb().then((db) => (list = credits(db)), () => (failed = true));
+    if (!open || list) return;
+    failed = false; // (opened again after a failure: loading again)
+    foodDb().then((db) => (list = credits(db)), () => (failed = true));
   }
 </script>
 

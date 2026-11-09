@@ -9,7 +9,7 @@
 import type { LocalDate, Who } from '#lib/types.ts';
 import {
   entryOrder, foodAccept, foodCustomFold, foodCustomOp, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, MEALS, recipePortion,
-  recipeTotals, repeatCovers, round1, FOOD_GOALS, type CustomOp, type FoodCustom, type FoodEntry, type FoodGoalOf, type FoodOp, type FoodSnap, type FoodRecipe, type FoodRepeat, type Meal, type RecipeOp, type RepeatItem,
+  recipeTotals, repeatCovers, round1, FOOD_GOAL_OF, FOOD_GOALS, type CustomOp, type FoodCustom, type FoodEntry, type FoodGoalOf, type FoodOp, type FoodSnap, type FoodRecipe, type FoodRepeat, type Meal, type RecipeOp, type RepeatItem,
   type RepeatOp
 } from '#lib/contract/food.ts';
 import { isPersonId, isRec, type EventRow } from '#lib/contract/api.ts';
@@ -402,6 +402,10 @@ export function setGoal(s: Pick<State, 'prefs'>, who: Who, n: FoodGoalOf): numbe
  *  what they should be depends on the plan). A default never overrides a goal that's set. */
 export function foodGoal(s: State, who: Who, n: FoodGoalOf, t: number): number | null {
   return setGoal(s, who, n) ?? foodDefault(s, who, n, t);
+}
+/** Each of `who`'s daily goals (foodGoal), none without a model yet. */
+export function foodGoals(m: { state: State; now: number } | null, who: Who): Record<FoodGoalOf, number | null> {
+  return Object.fromEntries(FOOD_GOAL_OF.map((n) => [n, m ? foodGoal(m.state, who, n, m.now) : null])) as Record<FoodGoalOf, number | null>;
 }
 
 /** `who`'s default goal of `n` (shown while none is set): the registry's computed one (contract/goals.ts `derived`), else
