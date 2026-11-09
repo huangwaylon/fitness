@@ -7,7 +7,7 @@
 import { ROSTER } from '#lib/villagers/roster.ts';
 import { ITEM_ID_RE } from '../contract/listen.ts';
 import { QUIZ_LVS } from '../contract/live-protocol.ts';
-import { CHANNELS, DIALOGUE_TYPES, ITEM_TYPES, REGISTERS, SCENE_IDS, clipIds, helpProblems, isDialogue, levelRank, type Feature, type Item, type ItemType, type Tags } from './bank.ts';
+import { CHANNELS, DIALOGUE_TYPES, HENSHIN_LV, ITEM_TYPES, REGISTERS, SCENE_IDS, clipIds, helpProblems, isDialogue, levelRank, type Feature, type Item, type ItemType, type Tags } from './bank.ts';
 import type { Ladder } from './ladder.ts';
 import { letterWords, type LetterText } from './letters.ts';
 import { CAST_IDS } from './speech.ts';
@@ -437,8 +437,8 @@ export function checkUnits(
         if (it && !clipIds(it).every((c) => c in clips)) at(`${id}: no clip, but the unit is ${u.status}`);
       }
   }
-  // phrases: where heard (every item in the bank and the units), by how many voices
-  const heard: Item[] = [...bank, ...own.values()];
+  // phrases: where heard (every item in the bank and the units, 音の へんしん's drill phrases aside), by how many voices
+  const heard: Item[] = [...bank.filter((it) => it.lv !== HENSHIN_LV), ...own.values()];
   const phraseIn = new Map<string, { items: string[]; voices: string[] }>();
   const itemPhrases = new Map<string, Set<string>>();
   for (const [id, { p, unit }] of phrases) {

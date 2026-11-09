@@ -43,7 +43,7 @@
 // call's or たちぎき's lines `<item>-<n>` (a call's `me` in the file's cast.me), at their stage's level (S1 かわ → 3), a
 // call's lines in its phone band; a draft file only under --only. A derived tile plays its bank item's clip.
 // 音の へんしん's phrases (level 8, content/henshin.ts): the natural clip (`tts`), a careful take `<id>-c` (speech.ts
-// carefulText: the focus in full, its words apart) through the same gate, and `<id>-f`, the natural take that passed
+// carefulText: the focus in full, its words apart; slowed to 0.8) through the same gate, and `<id>-f`, the natural take that passed
 // sped up by FAST (atempo, as スピード はしご's rungs; whisper hears it, a mishearing flagged, never re-rolled).
 // はつおん's pairs (content/mic/pairs.yaml): each word alone (`<pair>-1`, `<pair>-2`) at level 3, in its pair's own pack.
 // The bedtime serials (おやすみ ものがたり, content/listen/story/, story.ts): each segment a clip (`<chapter>-<n>`), the
@@ -109,6 +109,11 @@ function carefulItems(it: Item): Item[] {
   const { hs: _, ...rest } = it;
   return [{ ...rest, id: `${it.id}-c`, tts: carefulText(it) }];
 }
+/** 音の へんしん's careful takes, slowed to this (atempo, as level 1's): はっきり, each word heard as written. */
+const CAREFUL_TEMPO = 0.8;
+const CAREFUL_IDS: ReadonlySet<string> = new Set(ITEMS.filter((it) => it.hs).map((it) => `${it.id}-c`));
+/** A clip's tempo: level 1's gently slowed, a careful take slowed, else as spoken. */
+const tempoOf = (it: Item): number => (it.lv === 1 ? L1_TEMPO : CAREFUL_IDS.has(it.id) ? CAREFUL_TEMPO : 1);
 /** A fast take's source hash: its natural take's master, the tempo and its version. */
 const fastSrc = (master: string) => sha(JSON.stringify([master, FAST, STRETCH, FAST_V]), 10);
 const SLOW = 0.75;
@@ -205,7 +210,9 @@ const PINNED: Readonly<Record<string, number>> = {
   'pr-rock-2': 1235, 'pr-seat-1': 1239, 'pr-seat-2': 1236, 'pr-ship-1': 1236, 'pr-ship-2': 1239, 'pr-thick-1': 1235,
   'pr-thick-2': 1238, 'pr-think-1': 1238, 'pr-think-2': 1239, 'pr-van-1': 3000, 'pr-very-1': 1239, 'pr-very-2': 4000,
   'pr-vest-1': 5000, 'pr-vest-2': 3000, 'pr-vote-1': 1238, 'pr-vote-2': 4000, 'pr-walk-1': 1235, 'pr-walk-2': 2000,
-  'pr-wing-2': 1237
+  'pr-wing-2': 1237,
+  // 音の へんしん (2026-11-09): careful takes heard in full (unprompted whisper), natural ones heard as said
+  'hs-gotta-bus-here-c': 2000
 };
 const seedOf = (id: string): number => (opt('--seed') ? SEED : PINNED[id] ?? SEED);
 const only = opt('--only') ? new RegExp(opt('--only')!) : null;
@@ -566,7 +573,7 @@ function planOf(it: Item): Plan {
   if (engine === 'kokoro' && !entry.kokoro) throw new Error(`${it.id}: kokoro has no ${cast} voice (no Australian voices: --engine kokoro,au=qwen3)`);
   const text = spokenText(it);
   const voice = CLONES(engine) ? [cast, refHash(cast), entry.ref.text] : [entry.kokoro];
-  const tempo = it.lv === 1 ? L1_TEMPO : 1;
+  const tempo = tempoOf(it);
   const master = sha(JSON.stringify([engine, MODEL[engine], voice, text, seedOf(it.id), hasSlow(it) && [SLOW, STRETCH], tempo !== 1 && [tempo, STRETCH], PIPELINE,
     ...(SOFT.has(it.id) ? [['story', STORY_LUFS]] : [])]), 10);
   const c = condOf(it), cond = c && condPlan(c);
@@ -660,9 +667,9 @@ function speak(plans: Plan[]): Map<string, Take> {
       const t = takes.get(p.it.id)!;
       trim(t.raw, t.wav);
       // the slow clip is made from t.wav (the take as spoken), the normal one maybe gently stretched (L1)
-      if (p.it.lv === 1 && L1_TEMPO !== 1) {
+      if (tempoOf(p.it) !== 1) {
         const s = t.wav.replace(/\.wav$/, '-t.wav');
-        stretch(t.wav, L1_TEMPO, s);
+        stretch(t.wav, tempoOf(p.it), s);
         finish(s, t.m4a);
       } else finish(t.wav, t.m4a, lufsOf(p.it));
     }

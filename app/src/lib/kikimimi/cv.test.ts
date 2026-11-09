@@ -10,7 +10,8 @@ import { gameCv } from './compile.ts';
 import { deck } from './deck.ts';
 import { ladderDeck } from './ladder.ts';
 import { lessonDeck, type Tier } from './lesson.ts';
-import { ENTRIES, INDEX, gameCvOf, ladders, listenOf, loadAll, partItems, unitPart, type Unit } from './pool.ts';
+import { ENTRIES, INDEX, gameCvOf, ladders, levelItems, listenOf, loadAll, partItems, unitPart, type Unit } from './pool.ts';
+import { henshinDeal, henshinRounds } from './games/henshin/def.ts';
 import { LESSONS } from './stages.ts';
 import { BUILD_V } from './games/versions.ts';
 import { taikaiDeck } from './games/taikai/source.ts';
@@ -24,6 +25,7 @@ import { pairDeal, sayOf } from './games/pair/def.ts';
 import type { PairCard } from './games/pair/pairs.ts';
 
 const SEEDS = Array.from({ length: 20 }, (_, s) => s);
+const QUIZ_ENTRIES = ENTRIES.filter((e) => e.lv !== 8).length;
 const TIERS: readonly (Tier | undefined)[] = [undefined, 'easy', 'hard'];
 /** A deck's shape: each item's id, how many choices and which is right (never their text). */
 const shape = (items: readonly { id: string; choices: readonly string[]; answer: number }[]) => items.map((it) => [it.id, it.choices.length, it.answer]);
@@ -35,7 +37,8 @@ function decksOf(key: string): unknown {
   if (gm === 'quiz') return SEEDS.map((s) => shape(deck(s, Number(unit) as Level)));
   if (gm === 'ladder') return SEEDS.map((s) => shape(ladderDeck(s, ladders())));
   // the tournament's: 8 ids a seed, spread over every level's items
-  if (gm === 'taikai') return SEEDS.map((s) => shape(taikaiDeck(s, Array.from({ length: 8 }, (_, k) => (s * 37 + k * 101) % ENTRIES.length))));
+  // (over the quiz levels' items: 音の へんしん's, level 8, come after them in the index and never in a tournament)
+  if (gm === 'taikai') return SEEDS.map((s) => shape(taikaiDeck(s, Array.from({ length: 8 }, (_, k) => (s * 37 + k * 101) % QUIZ_ENTRIES))));
   // ことば タイル's: a file's sentences a seed, each one's board at every ear
   // たちぎき's: a file's two conversations a seed, each round's row, answer and choices, the lines' offsets, the bed
   if (gm === 'tachi') return SEEDS.map((s) => tachiDeal(s, [listenOf(unit)!]).map((c) => [c.tachi.row, c.tachi.answer, c.choices.length, c.bed ?? '', c.lines.map((l) => l.at ?? null)]));
@@ -48,6 +51,8 @@ function decksOf(key: string): unknown {
   if (gm === 'news') return SEEDS.map((s) => newsDeal(20_400 + s * 19, [listenOf(unit)!], { sky: 'rain', fog: false, hi: 23 }).map((c) => [c.id, c.answer, c.news.trap, c.choices.length, c.lines?.map((l) => l.clip) ?? []]));
   // はつおん's: 8 pairs a seed, the word to say on each
   if (gm === 'pair') return SEEDS.map((s) => pairDeal(s, partItems(unit as Unit) as PairCard[]).map((c) => [c.id, sayOf(s, c.id)]));
+  // 音の へんしん's: 8 phrases a seed for a few days' phenomena, each round's kind, choices and tiles at every ear
+  if (gm === 'henshin') return SEEDS.map((s) => [0, 3, 7, 14].map((focus) => { const cs = henshinDeal(s, levelItems(8), { focus }); return [0, 1, 2, 3].map((ear) => henshinRounds(cs, s, { ear }, () => 0).map((r) => [r.id, r.kind === 'henshin.pick' ? [r.choices.length, r.answer] : r.board])); }));
   const part = unitPart(unit)!;
   return LESSONS.filter((l) => part.unit.lessons[l]).map((l) => TIERS.map((t) => SEEDS.map((s) => shape(lessonDeck(part, l, s, t)))));
 }
@@ -72,12 +77,12 @@ describe('ききみみ content versions', () => {
   });
 
   it('every game the phone deals has one: each level’s quiz, スピード はしご, each unit’s lessons, the tournament over every level (pool.ts gameCvOf)', () => {
-    const levels = Object.keys(INDEX.units).filter((u) => /^\d+$/.test(u));
+    const levels = Object.keys(INDEX.units).filter((u) => /^\d+$/.test(u) && u !== '8');
     const units = INDEX.paths.map((p) => p[0]);
     const files = (gm: string) => Object.keys(INDEX.listen).filter((u) => INDEX.listen[u][0] === gm);
     expect(Object.keys(INDEX.games).sort()).toEqual([...levels.map((l) => `quiz:${l}`), 'ladder:ladder', ...units.map((u) => `lesson:${u}`), 'taikai:all',
       ...files('tile').map((u) => `tile:${u}`), ...files('tachi').map((u) => `tachi:${u}`), ...files('call').map((u) => `call:${u}`), ...files('rush').map((u) => `rush:${u}`), ...files('news').map((u) => `news:${u}`),
-      ...(INDEX.units['mic-pairs'] ? ['pair:mic-pairs'] : [])].sort());
+      ...(INDEX.units['mic-pairs'] ? ['pair:mic-pairs'] : []), ...(INDEX.units['8'] ? ['henshin:8'] : [])].sort());
     // (a recipe-2 unit's lesson takes in its kinds' listened files too: compile.ts)
     const listened = (u: string) => [...new Set(Object.values(INDEX.units[u].kinds ?? {}).flat())].filter((f) => INDEX.listen[f]?.[2] === 'listened').sort();
     for (const [key, cv] of Object.entries(INDEX.games)) {

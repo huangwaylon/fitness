@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ROSTER } from '#lib/villagers/roster.ts';
 import { villagerArt } from '#lib/art.ts';
-import { DIALOGUE_TYPES, PIC_JA, channelOf, clipIds, helpProblems, isDialogue, jaLines, shuffleChoices, splitFocus, type Item, type ItemType, type Level } from './bank.ts';
+import { DIALOGUE_TYPES, PIC_JA, channelOf, clipIds, helpProblems, isDialogue, jaLines, shuffleChoices, splitFocus, takeIds, type Item, type ItemType, type Level } from './bank.ts';
 import { mulberry32 } from '#lib/random.ts';
 import { AUTHORED as BANK, BANK as PLAYED } from './source.ts';
 import { CAST, EXPOSURE } from './cast.ts';
@@ -319,10 +319,12 @@ describe('kikimimi bank', () => {
     // once voiced, source.ts)
     for (const it of PLAYED) {
       if ((!LEVELS.includes(it.lv) || (isDialogue(it) && !MIX[it.lv]?.[it.type])) && !clipIds(it).some((id) => CLIPS[id])) continue;
-      for (const id of clipIds(it)) {
+      // (音の へんしん's phrases: their careful and fast takes too)
+      for (const id of takeIds(it)) {
         const c = CLIPS[id];
         expect(c, id).toBeDefined();
-        expect(c.dur, id).toBeGreaterThan(0.5);
+        // (a short phrase's fast take, "You wanna drink?" at 1.25×, under half a second)
+        expect(c.dur, id).toBeGreaterThan(it.hs && id.endsWith('-f') ? 0.35 : 0.5);
         expect(c.dur, id).toBeLessThan(clipCap(it));
         expect(c.hash).toMatch(/^[0-9a-f]{8}$/);
         expect(PLACES.normal.has(id), id).toBe(true);
@@ -365,20 +367,20 @@ describe('kikimimi bank', () => {
       expect(c.slow, id).toBeUndefined();
     }
     // (and スピード はしご's rungs: ladder.test)
-    const ids = new Set([...[...BANK, ...UNIT_ITEMS].flatMap((it) => clipIds(it)), ...RUNG_ITEMS.map((it) => it.id), ...STORY_IDS, ...LISTEN_IDS, ...PAIR_IDS]);
+    const ids = new Set([...[...BANK, ...UNIT_ITEMS].flatMap((it) => takeIds(it)), ...RUNG_ITEMS.map((it) => it.id), ...STORY_IDS, ...LISTEN_IDS, ...PAIR_IDS]);
     expect(Object.keys(CLIPS).filter((id) => !ids.has(id))).toEqual([]);
   });
 
   it('ships no other clips (no loose ones), and the clips stay small (each under 60 KB; level 4’s 80 KB, the アナウンス pack’s and やま’s 100 KB, ほし’s 2-4 sentences 160 KB, a ladder rung 80 KB, a story’s segment and a listening kind’s 100 KB, a はつおん word 20 KB; the games’ packs under 92 MB, the stories’ 23 MB)', () => {
     expect(existsSync(join(STATIC, 'audio/kikimimi')), 'the loose clips are gone (increment 9: the packs)').toBe(false);
     const rungs = new Set(RUNG_ITEMS.map((it) => it.id));
-    const want = new Set([...[...BANK, ...UNIT_ITEMS].flatMap((it) => clipIds(it).flatMap((id) => [id, ...(it.lv <= 2 ? [`${id}-slow`] : [])])), ...rungs, ...STORY_IDS, ...LISTEN_IDS, ...PAIR_IDS]);
+    const want = new Set([...[...BANK, ...UNIT_ITEMS].flatMap((it) => takeIds(it).flatMap((id) => [id, ...(it.lv <= 2 ? [`${id}-slow`] : [])])), ...rungs, ...STORY_IDS, ...LISTEN_IDS, ...PAIR_IDS]);
     const clips = Object.values(PACKS).flatMap((e) => e.clips.map(([id, , bytes]) => [e.slow ? `${id}-slow` : id, bytes] as const));
     expect(clips.map(([f]) => f).filter((f) => !want.has(f))).toEqual([]);
     // (a ladder rung is a whole 5-9 s line, slowed at its foot: 2 a game, 8 clips)
     // (a unit's line is held to level 4's size whatever its level, as to its length above: a bed's lead-in and tail)
     const lvOf = new Map([...BANK, ...UNIT_ITEMS.map((it) => ({ ...it, lv: Math.max(it.lv, 4) as Level }))]
-      .flatMap((it) => clipIds(it).flatMap((id) => [[id, it.lv], [`${id}-slow`, it.lv]] as const)));
+      .flatMap((it) => takeIds(it).flatMap((id) => [[id, it.lv], [`${id}-slow`, it.lv]] as const)));
     const kb = (f: string) => (rungs.has(f) ? 80 : PAIR_IDS.has(f) ? 20 : STORY_IDS.has(f) || LISTEN_IDS.has(f) ? 100 : ({ 4: 80, 5: 100, 6: 100, 7: 160 } as Partial<Record<Level, number>>)[lvOf.get(f)!] ?? 60);
     for (const [f, bytes] of clips) expect(bytes, f).toBeLessThan(kb(f) * 1024);
     // (The packs, 144 now, are the games' 89.3 MiB and the stories' 21.4 MiB (the bedtime stories fetched a chapter at a
@@ -389,7 +391,8 @@ describe('kikimimi bank', () => {
     // limit; the real fix is W2-R, the packs on R2 behind PACK_BASE, after which these lines measure what Pages serves.)
     const size = (story: boolean) => Object.entries(PACKS).filter(([, e]) => e.clips.some(([id]) => STORY_IDS.has(id)) === story)
       .reduce((n, [name, e]) => n + statSync(join(STATIC, 'audio/listen', packFile(name, e))).size, 0);
-    expect(size(false)).toBeLessThan(92 * 1024 * 1024);
+    // (音の へんしん's phrases, 2026-11-09: their three takes ~5 MiB more: the line raised from 92 to 96 MiB)
+    expect(size(false)).toBeLessThan(96 * 1024 * 1024);
     expect(size(true)).toBeLessThan(23 * 1024 * 1024);
   });
 });

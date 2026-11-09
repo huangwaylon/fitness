@@ -58,7 +58,7 @@ describe('kikimimi levels: loaded', () => {
     expect(loaded(4)).toBe(false);
     expect(itemOf(BANK.find((it) => it.lv === 5)!.id)).toBeDefined();
     expect(itemOf(BANK.find((it) => it.lv === 4)!.id)).toBeUndefined();
-    expect(loaded(8 as Level)).toBe(true); // (a level this build hasn't: nothing to load, no items)
+    expect(loaded(8 as Level)).toBe(false); // (音の へんしん's phrases: a level of their own, loaded when the drill is played)
   });
 
   it('each level is the bank’s items of it, in the bank’s order, as authored; the ladders are ladders.ts’s', async () => {

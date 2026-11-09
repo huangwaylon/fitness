@@ -18,7 +18,7 @@ import { ITEMS } from './henshin.ts';
 import { WAITING } from './index.ts';
 
 const CLIPS: Readonly<Record<string, { hash: string }>> = clipsJson;
-const REDUCE: Readonly<Record<string, readonly [string, string, number, number, number, string]>> = reduceJson as never;
+const REDUCE: Readonly<Record<string, readonly [string, string, number, number, string, string]>> = reduceJson as never;
 
 describe('音の へんしん: the phrases', () => {
   it('15 phenomena in the order taught, 12 phrases each, ids hs-<phenomenon>-<slug>, all level 8 and waiting for their voices', () => {
@@ -67,13 +67,13 @@ describe('音の へんしん: the phrases', () => {
     expect(overLimits(s, DRILL_LIMITS)).toEqual([]);
   });
 
-  it('every voiced phrase is heard reduced, its careful take in full (whisper: reduce.json at its clips’ hashes)', () => {
+  it('every voiced phrase heard as said (a spelling whisper writes: gonna, lemme…), its careful take in full (whisper: reduce.json at its clips’ hashes)', () => {
     const voiced = BANK.filter((it) => it.lv === HENSHIN_LV);
     for (const it of voiced) {
       const r = REDUCE[it.id];
       expect(r, `${it.id}: npm run kikimimi:reduce`).toBeDefined();
       expect([r[0], r[1]], `${it.id}: checked at other clips (npm run kikimimi:reduce)`).toEqual([CLIPS[it.id].hash, CLIPS[`${it.id}-c`].hash]);
-      expect(r[2], `${it.id}: heard "${r[5]}" (ratio ${r[3]})`).toBe(1);
+      expect(r[2], `${it.id}: heard "${r[4]}", the careful take "${r[5]}"`).toBe(1);
     }
   });
 });

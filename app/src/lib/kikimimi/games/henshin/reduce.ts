@@ -1,27 +1,28 @@
-// 音の へんしん's reduced-form check (scripts/kikimimi-reduce.ts, content.test): which reduced spellings whisper writes as
-// said, whether a transcript has a phrase's, and a rough syllable count for the time a focus takes. Pure.
+// 音の へんしん's reduced-form check (scripts/kikimimi-reduce.ts, content/henshin.test.ts): which reduced spellings whisper
+// writes as said, whether a transcript has a phrase's, and whether a careful take was heard in full. Pure.
 
-/** The reduced spellings whisper writes when prompted with them (the rest, a flap or a dropped t, it spells as written). */
-const SPELLED: ReadonlySet<string> = new Set(['gonna', 'wanna', 'gotta', 'hafta', 'hasta', 'lemme', 'gimme', 'kinda', 'sorta', 'outta', 'lotsa', 'lotta',
-  'coupla', 'dunno', 'gotcha', 'whatcha', 'betcha', 'getcha', 'letcha', 'didja', 'wouldja', 'couldja', 'whaddaya', 'doncha', 'woulda', 'shoulda', "'em", "y'know", 'useta']);
+/** The reduced spellings whisper writes when prompted with them (gonna, lemme, outta…). The rest (a flap, a dropped t, a
+ *  linked word, a weak vowel) it spells as written whatever is said: for those the natural take is the respelling said
+ *  (`tts` carries the spelling as said) and whisper's gate holds that every word is still heard. */
+const SPELLED: ReadonlySet<string> = new Set(['gonna', 'wanna', 'gotta', 'lemme', 'gimme', 'kinda', 'sorta', 'outta', 'lotsa', 'lotta', 'coupla', 'dunno',
+  'gotcha', 'whatcha', 'betcha', 'getcha', 'letcha', 'didja', 'wouldja', 'couldja', 'whaddaya', 'doncha', 'woulda', 'shoulda', "y'know", "'em"]);
 
-const norm = (w: string) => w.toLowerCase().replace(/[’]/g, "'").replace(/[^a-z']/g, '');
+const norm = (w: string) => w.toLowerCase().replace(/[’]/g, "'").replace(/[^a-z0-9']/g, '');
+const words = (s: string) => s.split(/[\s,.?!;:]+/).map(norm).filter(Boolean);
 
-/** Whether a transcript has the reduced spelling in `red` (false when `red` has none whisper would write). */
+/** The whisper-written reduced spellings in a phrase's `red` ("I'm gonna" → gonna). */
+export const spellingsOf = (red: string): string[] => words(red).filter((w) => SPELLED.has(w));
+
+/** Whether a transcript has every spelling of `red` whisper would write (false when it has none). */
 export function spelledIn(red: string, heard: string): boolean {
-  const want = red.split(/\s+/).map(norm).filter((w) => SPELLED.has(w));
-  if (!want.length) return false;
-  const got = new Set(heard.split(/\s+/).map(norm));
-  return want.every((w) => got.has(w) || got.has(w.replace(/^'/, '')));
+  const want = spellingsOf(red), got = new Set(words(heard));
+  return want.length > 0 && want.every((w) => got.has(w));
 }
 
-/** A phrase passes the timing check when its natural focus takes at most this share of the careful one's time per syllable. */
-export const REDUCE_SHORTER = 0.85;
-
-/** Syllables in spoken English, roughly (vowel groups, a silent final e aside; scripts/kikimimi-audio.ts's). */
-export function syllables(text: string): number {
-  return (text.toLowerCase().match(/[a-z']+/g) ?? []).reduce((s, w) => {
-    const v = w.replace(/'/g, '').replace(/(?:[^laeiouy]es|[^laeiouy]ed|[^laeiouy]e)$/, (m) => m[0]).replace(/^y/, '');
-    return s + Math.max(1, v.match(/[aeiouy]+/g)?.length ?? 0);
-  }, 0);
+/** Whether a transcript has the full form's words in order (a careful take heard in full: no reduced spelling for them). */
+export function fullIn(full: string, heard: string): boolean {
+  const want = words(full), got = words(heard);
+  let k = 0;
+  for (const w of got) if (k < want.length && w === want[k]) k++;
+  return k === want.length;
 }
