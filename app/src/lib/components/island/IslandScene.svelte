@@ -783,12 +783,12 @@
   // every tree on the island, its drop by its kind; the goal trees' canopies count their own taps, FruitTree).
   /** A tree by id (the same on both phones). */
   const treeOf = (id: string): ShakeTree | null => treeById(id);
-  function shakeTree(pid: PersonId) {
-    shakeAt(goalTree(pid));
+  function shakeTree(pid: PersonId, fruitDown = false) {
+    shakeAt(goalTree(pid), fruitDown);
   }
-  function shakeAt(tr: ShakeTree) {
+  function shakeAt(tr: ShakeTree, fruitDown = false) {
     turnTo(tr.x);
-    shakes?.shaken(tr);
+    shakes?.shaken(tr, fruitDown);
   }
   /** Any other tree (SceneTaps' tap on its art): a tap rustles it; the third quick one is a shake (treeShake.ts). */
   const treeTaps: Record<string, number[]> = {};
@@ -1187,7 +1187,7 @@
           {@const t = goalTrees[pid]}
           <FruitTree person={view.people[pid]} x={t[0]} z={t[1]} {foliage} shakeN={life.shakeN[pid]}
             celebrate={life.celebrate[pid]} open={openTree === pid} ontoggle={(on) => (openTree = on ? pid : null)}
-            onshake={() => shakeTree(pid)} />
+            onshake={(down) => shakeTree(pid, down)} />
         {/each}
 
         <Flowers {season} {hybrid} />

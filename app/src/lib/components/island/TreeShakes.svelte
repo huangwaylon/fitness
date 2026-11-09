@@ -4,8 +4,10 @@
   // taps), and this rolls the drop by the kind of tree. A tree branch falls beside the trunk on the inner side and lies
   // there until a tap picks it up (a pop, into my pocket: the shop buys it); a palm drops its two coconuts round its foot
   // (a tap picks one up, into my pocket too). Any tree now and then knocks out a piece of NH's wood (wood, softwood or
-  // hardwood: treeShake.ts woodFall, three a tree a day), put on the island for both (`wd:<tree>:<k>`, first wins); it
-  // lies in front of the trunk until a tap picks it up into my pocket. Now and then a bagworm (at night sometimes a spider) drops out of the canopy on its thread beside the trunk
+  // hardwood: treeShake.ts woodFall, 1 in 3 shakes, three a tree a day), put on the island for both (`wd:<tree>:<k>`,
+  // first wins); it lies by the trunk until a tap picks it up into my pocket. No piles: while anything a tree dropped
+  // lies under it (a branch, coconuts, wood, its present, a goal tree's fruit) a shake only rustles it, and a branch or
+  // a piece of wood lands on a free spot round the tree's foot (treeShake.ts dropSpot). Now and then a bagworm (at night sometimes a spider) drops out of the canopy on its thread beside the trunk
   // on the outer side and dangles there, swaying, for DANGLE_MS: a tap nets it (NH's catch line, the ずかん's bagworm or
   // spider), else it climbs back up. Rarely a wasp nest falls beside the trunk on the outer side: it lands with a thud,
   // and SWARM_DELAY_MS later three wasps buzz out and charge the villager who shook it for SWARM_MS. A tap on them in
@@ -24,6 +26,8 @@
   import { timers } from './timers.ts';
   import { hookOneOf, islandSeed } from './devHooks.ts';
   import { giftAt, giftId, holdsGift } from './treeGifts.ts';
+  import { digSpots } from './beach.ts';
+  import { mushroomsOn } from './mushrooms.ts';
   import { site } from './site.svelte.ts';
   import { offBuildingsAt } from './world.ts';
   import { onDestroy, onMount } from 'svelte';
@@ -32,8 +36,8 @@
   import { t } from '#lib/i18n/index.ts';
   import { recordFind, recordGoods } from '#lib/store/actions.ts';
   import { world } from '#lib/store/world.svelte.ts';
-  import { caught, taken } from '#lib/sync/world-day.ts';
-  import type { Drop } from '#lib/contract/live-protocol.ts';
+  import { caught, lying, taken } from '#lib/sync/world-day.ts';
+  import type { Drop, Pt } from '#lib/contract/live-protocol.ts';
   import { VILLAGER, u } from './scene.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
   import { sceneSfx } from './sceneTaps.ts';
@@ -45,8 +49,8 @@
   import { islandDay } from './ambientClock.ts';
   import { artUrl } from '#lib/art.ts';
   import {
-    DANGLE_MS, SWARM_DELAY_MS, SWARM_MS, WOODS, bearsCoconuts, dropAt, dropIds, fallen, legacyDropIds, lastNestOf, netsSwarm, shakeDrop, wireDrop,
-    woodAt, woodFall, woodOut, woodTree, type ShakeDrop, type ShakeTree, type Wood
+    DANGLE_MS, SWARM_DELAY_MS, SWARM_MS, WOODS, bearsCoconuts, dropAt, dropIds, dropSpot, fallen, legacyDropIds, lastNestOf, liesUnder, netsSwarm, shakeDrop,
+    wireDrop, woodFall, woodOut, woodTree, type Ground, type ShakeDrop, type ShakeTree, type Wood
   } from './treeShake.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { livePos } from '../motion/director.svelte.ts';
@@ -92,12 +96,15 @@
 
   /** What the day's shakes left lying (the shared day: a reload or the partner's phone finds it too), and which of it
    *  fell while this island watched (only those fall; the rest just lie there). */
-  const lyingNow = $derived.by(() => {
+  const ground = $derived.by((): Ground => {
     void site.rev;
-    const d = world.day;
+    const d = world.day, date = islandDay(), seed = islandSeed();
+    // what never moves today (dig spots, dug or not; mushrooms), the same on both phones
+    const still = [...digSpots(date, new Set(), seed).map((s): Pt => [s.x, s.y]), ...mushroomsOn(date, seed).map((m): Pt => [m.x, m.y])];
     // anyone's pick-up takes it at once, mine too (a phone that lost its own record gets my claims back in the replay)
-    return fallen(d.shakes, treeOf, (id) => !!taken(d, id));
+    return { puts: Object.values(d.puts), still, pickedAt: (id) => taken(d, id)?.t };
   });
+  const lyingNow = $derived(fallen(world.day.shakes, treeOf, ground));
   const dropping = new SvelteSet<string>();
 
   // the dev hook: the next shake drops this (a bagworm or a spider: that bug)
@@ -123,8 +130,9 @@
     later(() => dropping.delete(id), 900);
   }
 
-  /** My villager shook `tree` (where it stands: a tap acts in place): roll what falls by its kind, share it, play it. */
-  export function shaken(tree: ShakeTree) {
+  /** My villager shook `tree` (where it stands: a tap acts in place): roll what falls by its kind, share it, play it.
+   *  `fruitDown`: a goal tree's fruit lies under it. */
+  export function shaken(tree: ShakeTree, fruitDown = false) {
     const d = world.day, now = world.now();
     const bugForced = forced === 'bagworm' || forced === 'spider' ? forced : undefined;
     const woodForced = forced === 'wood';
@@ -133,12 +141,11 @@
     const nth = d.shakes.filter((s) => s.tree === tree.id).length;
     const gift = holdsGift(islandDay(), tree.id, d.puts, islandSeed());
     let drop: ShakeDrop = shakeDrop(Math.random, now, lastNestOf(d.shakes, tree.id), force, tree.kind, bearsCoconuts(d.shakes, tree.id), gift);
+    // no piles: while anything it dropped lies under it, only a rustle (the dev hook's drop falls all the same)
+    const lies = forced === undefined && (fruitDown || liesUnder(tree.id, lyingNow, lying(d)));
     forced = undefined;
-    // one thing of a kind at a tree at a time; while its present lies unopened under it, only a rustle (its spot clear)
-    const giftLies = !!d.puts[giftId(tree.id)] && !taken(d, giftId(tree.id));
-    if (!force && drop !== 'gift' && giftLies) drop = null;
+    if (lies) drop = null;
     if (drop === 'nest' && (swarm || dangler?.tree === tree.id || nests.some((s) => s.tree === tree.id))) drop = null;
-    if (drop === 'branch' && lyingNow.some((b) => b.tree === tree.id && b.what === 'branch')) drop = null;
     if (drop === 'bug' && (dangler || nests.some((s) => s.tree === tree.id))) drop = null;
     const wire = wireDrop(drop, jst().hour, Math.random, bugForced);
     world.share({ kind: 'shake', tree: tree.id, drop: wire });
@@ -147,11 +154,12 @@
     if (drop === 'gift' && world.share({ kind: 'put', id: giftId(tree.id), what: 'present', at: giftAt(tree) }).fresh) later(() => sceneSfx('twig'), 520);
     play(tree, 'mine', wire);
     // NH's wood without an axe: now and then a piece, three a tree a day (treeShake.ts woodFall); put for both, first
-    // wins (the partner's phone may have knocked the same piece out a moment before); none with its present
-    const wood = (giftLies || drop === 'gift') && !woodForced ? null : woodFall(islandDay(), tree.id, nth, woodOut(d.puts, tree.id), islandSeed(), woodForced);
+    // wins (the partner's phone may have knocked the same piece out a moment before); never on a shake that drops
+    // something else to lie there; on a free spot by the trunk, picked by its id (both phones pick the same)
+    const wood = lies || drop === 'gift' || drop === 'branch' || drop === 'coconut' ? null : woodFall(islandDay(), tree.id, nth, woodOut(d.puts, tree.id), islandSeed(), woodForced);
     if (wood) {
-      const [x, z] = woodAt(tree, woodOut(d.puts, tree.id));
-      if (world.share({ kind: 'put', id: wood.id, what: wood.what, at: [x, z] }).fresh) woodFalls(wood.id);
+      const busy = [...(ground.still ?? []), ...lying(world.day).map((p) => p.at), ...lyingNow.map((b): Pt => [b.x, b.z])];
+      if (world.share({ kind: 'put', id: wood.id, what: wood.what, at: dropSpot(tree, wood.id, busy) }).fresh) woodFalls(wood.id);
     }
   }
 
@@ -352,7 +360,7 @@
         const p = world.day.puts[e.id];
         if (p) partnerTurnTo(p.at[0], e.who, e.t);
       } else if (e.kind === 'pick' && /^(br|co):/.test(e.id) && live) {
-        const b = fallen(world.day.shakes, treeOf, () => false).find((x) => x.id === e.id);
+        const b = fallen(world.day.shakes, treeOf, ground, true).find((x) => x.id === e.id);
         if (!b) return;
         partnerTurnTo(b.x, e.who, e.t);
         if (b.what === 'coconut') tellPartner({ who: e.who, art: 'finds/coconut', verb: 'picked', name: 'beach.name.coconut', x: b.x, z: b.z });

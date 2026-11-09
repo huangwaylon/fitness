@@ -65,8 +65,8 @@
     open?: boolean;
     /** A tap on this tree: open its popup (true) or close it (false). */
     ontoggle?: (open: boolean) => void;
-    /** A quick run of taps shook the tree (the scene drops what falls). */
-    onshake?: () => void;
+    /** A quick run of taps shook the tree (the scene drops what falls; `fruitDown`: a fruit lies under it, so nothing). */
+    onshake?: (fruitDown: boolean) => void;
   }
   let { person, x, z, foliage, shakeN = 0, celebrate = null, open = false, ontoggle, onshake }: Props = $props();
 
@@ -287,7 +287,7 @@
       if (r.shake) {
         if (open) ontoggle?.(false);
         shake(true);
-        return onshake?.();
+        return onshake?.(ground.length > 0);
       }
     }
     if (open) {
