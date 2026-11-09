@@ -103,7 +103,7 @@ test('Okinawa (over): 日程 地図 キャンプ場 持ち物, a day at a time, 
   await expect(sheet(page).locator('[data-pane="camps"]')).toBeVisible();
 });
 
-test('Seattle (over, English only): 日程 and 持ち物, no 地図; a hike day’s photo, level, figures and its trail in トレイル', async ({ page }) => {
+test('Seattle (over, English only): 日程 and 持ち物, no 地図; a hike day’s photo, level, figures and its trail in トレイル', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: the hike day\'s trail map is made, and its USGS topo tiles are the network (logic mode makes no map)' } }, async ({ page }) => {
   await gotoTrips(page, '2026-11-04T12:00');
   await pickTrip(page, 'seattle');
   await expect(sheet(page).locator('[data-trip-tab]')).toHaveText(['日程', '持ち物']);
@@ -124,7 +124,7 @@ test('Seattle (over, English only): 日程 and 持ち物, no 地図; a hike day�
   await expect(hike).toBeVisible();
 });
 
-test('a kit trip: the photo, its pages on the tab bar, a chip a day, 準備; the title bar once scrolled; ‹ back', async ({ page }) => {
+test('a kit trip: the photo, its pages on the tab bar, a chip a day, 準備; the title bar once scrolled; ‹ back', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: its 地図 page makes the map, and the OpenFreeMap tiles are the network (logic mode makes no map)' } }, async ({ page }) => {
   await gotoTrips(page, '2026-11-04T12:00');
   await pickTrip(page, 'nz');
   // ‹ ✕ over the photo; the place in the photo's foot

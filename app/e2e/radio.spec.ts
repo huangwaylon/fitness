@@ -100,7 +100,7 @@ test.describe('the layout’s deck', () => {
     await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   });
 
-  test('its day (a morning): a tap on the deck and everyone stretches; done, a tap says so', async ({ page }) => {
+  test('its day (a morning): a tap on the deck and everyone stretches; done, a tap says so', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a transient pose or effect (a squish, a sparkle) over before a software-GL frame shows it' } }, async ({ page }) => {
     await page.goto('?demo&date=2026-11-01T07:00');
     await is3d(page);
     await expect(page.locator('[data-stretch="ready"]')).toBeAttached();

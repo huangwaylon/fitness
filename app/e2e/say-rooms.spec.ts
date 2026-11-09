@@ -75,8 +75,10 @@ test('the tent: the say button bottom right, clear of the room’s controls; the
   await expect(balloon(page)).toHaveText(/やっほー！/);
   await expect(balloon(page).locator('.who')).toHaveText('ウェイ');
   await expect(balloon(page)).toHaveClass(/placed/);
+  // (polled: the balloon sits where the last frame put the head, the hook projects the head now; a frame apart on the
+  // flake hunt's slow VM, WebKit read it 0.8 px over the head)
+  await expect.poll(async () => (await byHead(page, 'A'))?.above ?? -1).toBeGreaterThanOrEqual(0);
   const at = (await byHead(page, 'A'))!;
-  expect(at.above).toBeGreaterThanOrEqual(0);
   expect(at.above).toBeLessThanOrEqual(12 + 40 + 12);
   expect(at, JSON.stringify(at)).toMatchObject({ across: true, inside: true, over: false });
   await shot(page, 'balloon-day');

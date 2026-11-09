@@ -19,7 +19,7 @@ const refused = (page: Page) => page.addInitScript(() => {
   });
 });
 
-test('the stub: the day chips, the pins and the list, a pin and a row select', async ({ page }) => {
+test('the stub: the day chips, the pins and the list, a pin and a row select', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: the map is made (MapLibre, OpenFreeMap tiles off the network), not the stub this test reads; the drawn ones route fixture tiles (@render below)' } }, async ({ page }) => {
   await gotoTrip(page, 'nz');
   const map = pane(page).locator('[data-travel-map]');
   const stub = pane(page).locator('[data-map-stub]');
@@ -48,7 +48,7 @@ test('the stub: the day chips, the pins and the list, a pin and a row select', a
   await expect(map).toHaveAttribute('data-selected', r);
 });
 
-test("NZ day 1: New Lynn's two stops one pin 「2·6」, both rows marked; the map stays held at the top as the stops scroll", async ({ page }) => {
+test("NZ day 1: New Lynn's two stops one pin 「2·6」, both rows marked; the map stays held at the top as the stops scroll", { tag: '@logic', annotation: { type: 'logic', description: 'drawn: the map is made (MapLibre, OpenFreeMap tiles off the network), not the stub this test reads; the drawn ones route fixture tiles (@render below)' } }, async ({ page }) => {
   await gotoTrip(page, 'nz');
   const stub = pane(page).locator('[data-map-stub]');
   await expect(stub.locator('.tm-pin')).toHaveCount(5);
@@ -66,7 +66,7 @@ test("NZ day 1: New Lynn's two stops one pin 「2·6」, both rows marked; the m
   await expect(pane(page).locator('[data-map-day="1"]')).toBeInViewport();
 });
 
-test('Okinawa: the one layer button, its three layers off at first; the campsites on, a camp pin’s card (✕ back); a nature pin no card', async ({ page }) => {
+test('Okinawa: the one layer button, its three layers off at first; the campsites on, a camp pin’s card (✕ back); a nature pin no card', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: the map is made (MapLibre, OpenFreeMap tiles off the network), not the stub this test reads; the drawn ones route fixture tiles (@render below)' } }, async ({ page }) => {
   await gotoTrip(page, 'okinawa', 'map');
   const map = pane(page).locator('[data-travel-map]');
   const stub = pane(page).locator('[data-map-stub]');
@@ -98,7 +98,7 @@ test('Okinawa: the one layer button, its three layers off at first; the campsite
   await expect(page.locator('dialog[open] [data-camp-sheet]')).toHaveCount(0);
 });
 
-test('the locate button: asks only when tapped, the dot on with a fix, off when refused', async ({ page, context }) => {
+test('the locate button: asks only when tapped, the dot on with a fix, off when refused', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: the map is made (MapLibre, OpenFreeMap tiles off the network), not the stub this test reads; the drawn ones route fixture tiles (@render below)' } }, async ({ page, context }) => {
   await context.grantPermissions(['geolocation']);
   await context.setGeolocation({ latitude: -36.9, longitude: 174.69, accuracy: 25 });
   await gotoTrip(page, 'nz');
@@ -115,7 +115,7 @@ test('the locate button: asks only when tapped, the dot on with a fix, off when 
   expect([box.width, box.height]).toEqual([44, 44]);
 });
 
-test('the locate button far from the trip (Tokyo): on, and a note instead of a flight there', async ({ page, context }) => {
+test('the locate button far from the trip (Tokyo): on, and a note instead of a flight there', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: the map is made (MapLibre, OpenFreeMap tiles off the network), not the stub this test reads; the drawn ones route fixture tiles (@render below)' } }, async ({ page, context }) => {
   await context.grantPermissions(['geolocation']);
   await context.setGeolocation({ latitude: 35.68, longitude: 139.77, accuracy: 25 });
   await gotoTrip(page, 'nz');
@@ -124,7 +124,7 @@ test('the locate button far from the trip (Tokyo): on, and a note instead of a f
   await expect(page.locator('dialog[open] [data-map-note="far"]')).toHaveText('旅先から離れています');
 });
 
-test('the locate button refused: denied, a note says where to turn it on, and the watch stops', async ({ page, context }) => {
+test('the locate button refused: denied, a note says where to turn it on, and the watch stops', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: the map is made (MapLibre, OpenFreeMap tiles off the network), not the stub this test reads; the drawn ones route fixture tiles (@render below)' } }, async ({ page, context }) => {
   await context.clearPermissions();
   await refused(page);
   await gotoTrip(page, 'nz');

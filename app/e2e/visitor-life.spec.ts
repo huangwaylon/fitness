@@ -140,9 +140,12 @@ for (const [id, way] of [['wisp', 'float'], ['celeste', 'fly'], ['jack', 'spook'
     const v = page.locator(`[data-visitor="${id}"]`);
     await expect(v).toHaveAttribute('data-way', way);
     expect(await sawIt(page, phase('arrive'))).toBe(true);
-    await expect.poll(() => sawIt(page, phase('here')), { timeout: 4000 }).toBe(true);
-    await expect.poll(() => sawIt(page, phase('leave')), { timeout: 6000 }).toBe(true);
-    await expect(page.locator('[data-visitor]')).toHaveCount(0, { timeout: 4000 });
+    // (the phases are recorded as they come, so a long wait costs a green run nothing: on a loaded runner the page's
+    // first seconds block its main thread, and the arrival's 1.6–2.2 s timer fired 6.3 s after it began, the
+    // departure's a few ms later: past the 4 s poll, the CI flakes of 2026-11-09)
+    await expect.poll(() => sawIt(page, phase('here')), { timeout: 15_000 }).toBe(true);
+    await expect.poll(() => sawIt(page, phase('leave')), { timeout: 15_000 }).toBe(true);
+    await expect(page.locator('[data-visitor]')).toHaveCount(0, { timeout: 15_000 });
   });
 
 test('the partner comes over to say hello to Daisy Mae on the lawn: they face each other, she answers with an emote', async ({ page }) => {
