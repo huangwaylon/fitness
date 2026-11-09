@@ -76,13 +76,15 @@ async function buildMap(): Promise<Record<string, MapRow>> {
   const DATA = 'https://raw.githubusercontent.com/Norviah/animal-crossing/master/json/data/';
   const get = async (f: string) => (await (await fetch(DATA + encodeURIComponent(f))).json()) as unknown[];
   type V = { name: string; filename: string; defaultClothing: string; defaultClothingInternalId: number; gender: string };
-  type C = { name: string; variations?: { internalId: number; filename: string }[] };
+  type C = { name: string; internalId?: number; filename?: string; variations?: { internalId: number; filename: string }[] };
   const villagers = (await get('Villagers.json')) as V[];
   const clothes = [...((await get('Tops.json')) as C[]), ...((await get('Dress-Up.json')) as C[])];
   const byId = new Map<number, string>(), byName = new Map<string, string>();
   for (const c of clothes) {
-    for (const v of c.variations ?? []) byId.set(v.internalId, v.filename);
-    if (c.variations?.[0]) byName.set(c.name.toLowerCase(), c.variations[0].filename);
+    // (a top with one look has no variations: its id and file are the row's own, as the Sanrio tees')
+    const vs = c.variations ?? (c.filename && c.internalId !== undefined ? [{ internalId: c.internalId, filename: c.filename }] : []);
+    for (const v of vs) byId.set(v.internalId, v.filename);
+    if (vs[0]) byName.set(c.name.toLowerCase(), vs[0].filename);
   }
   const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[^a-z0-9]/g, '');
   const out: Record<string, MapRow> = {};
