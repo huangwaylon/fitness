@@ -89,9 +89,11 @@ jobs:
         with:
           name: site
           path: app
+      # (a test 60 s, not 30: the VM runs a test 2-3× its time on CI's Linux, and the two-phone ききみみ games (~23 s
+      # there) ran out the 30 s on 2026-11-08 with nothing wrong; it hunts flakes, not speed. A test.slow() gets 3× that)
       - id: e2e
         continue-on-error: true
-        run: npx playwright test --project=webkit --repeat-each=${{ inputs.repeat || '3' }} --retries=0 --workers=2 --grep-invert "@render|@quarantine" --shard=${{ matrix.shard }}/5
+        run: npx playwright test --project=webkit --repeat-each=${{ inputs.repeat || '3' }} --retries=0 --workers=2 --timeout=60000 --grep-invert "@render|@quarantine" --shard=${{ matrix.shard }}/5
       - name: Report
         if: always()
         run: |

@@ -99,7 +99,7 @@ test('a tap on the ground walks there, never over a control, a thumb-sized butto
   expect(await overlaps(page)).toEqual([]);
 });
 
-test('a netted bug holds still under the net, swung where it is (no walk); the catch is its plate, flown in from the bug, nothing over the head, my villager bouncing', async ({ page }) => {
+test('a netted bug holds still under the net, swung where it is (no walk); the catch is its plate, flown in from the bug, nothing over the head, my villager bouncing', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ page }) => {
   const SQUISH = '[data-actor="mine"] .body[data-act="squish"]';
   await watchFor(page, [SQUISH]);
   await open(page, '&critter=common-butterfly');

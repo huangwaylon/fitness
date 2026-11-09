@@ -52,7 +52,15 @@ const waterBeside = (page: Page, near: 'building' | 'find') => page.evaluate((ne
   const art = [...document.querySelectorAll('[data-find] img, [data-find] svg')].filter((e) => e.closest<HTMLElement>('[data-find]')!.checkVisibility({ visibilityProperty: true })).map((e) => e.getBoundingClientRect()).filter((r) => r.width);
   const off = (r: DOMRect, x: number, y: number) => Math.hypot(Math.max(r.left - x, 0, x - r.right), Math.max(r.top - y, 0, y - r.bottom));
   const onArt = (x: number, y: number, pad: number) => art.some((r) => off(r, x, y) <= pad);
-  const hits = near === 'building' ? (x: number, y: number) => !!document.elementFromPoint(x, y)?.closest('[data-building]') : (x: number, y: number) => onArt(x, y, 0);
+  // (a building's hit test on a 2 px grid, each point asked once: the rings round every water point overlap, and an
+  // elementFromPoint each took WebKit on the flake hunt's VM past the test's 90 s)
+  const memo = new Map<string, boolean>();
+  const onBuilding = (x: number, y: number) => {
+    const gx = Math.round(x / 2) * 2, gy = Math.round(y / 2) * 2, k = `${gx},${gy}`;
+    if (!memo.has(k)) memo.set(k, !!document.elementFromPoint(gx, gy)?.closest('[data-building]'));
+    return memo.get(k)!;
+  };
+  const hits = near === 'building' ? onBuilding : (x: number, y: number) => onArt(x, y, 0);
   const boxes = near === 'building' ? [...document.querySelectorAll('[data-building] .door')].map((e) => e.getBoundingClientRect()).filter((r) => r.width) : art;
   const seen = new Set<string>();
   for (const b of boxes)

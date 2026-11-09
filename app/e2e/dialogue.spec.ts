@@ -10,8 +10,16 @@ test.use({ viewport: { width: 390, height: 844 } });
  *  long a loaded runner takes to get there (`page.clock.resume()` lets it run again). */
 async function holdTyping(page: Page, shown: Locator) {
   // (a moment ahead of the page's now: pauseAt only jumps forward, and the page's clock runs on while we ask; at most
-  // one tick of the typing fires in the jump)
-  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 250));
+  // one tick of the typing fires in the jump. Drawn under software GL a frame can outlast the moment, and pauseAt
+  // throws "fast-forward to the past": asked again, further ahead)
+  for (const ahead of [250, 500, 1000]) {
+    const at = await page.evaluate((a) => Date.now() + a, ahead);
+    const missed = await page.clock.pauseAt(at).then(() => false, (e: Error) => {
+      if (ahead === 1000 || !/to the past/.test(e.message)) throw e;
+      return true;
+    });
+    if (!missed) break;
+  }
   for (let i = 0; i < 200 && !(await shown.isVisible()); i++) await page.clock.runFor(30);
   await expect(shown).toBeVisible();
 }

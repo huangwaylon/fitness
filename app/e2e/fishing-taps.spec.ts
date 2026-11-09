@@ -7,7 +7,7 @@
 // out (its squish, no reel).
 import { expect, test, type Page } from './fixtures.ts';
 import RECORD from '../src/lib/layout/record-2026-11-03.json' with { type: 'json' };
-import { is3d, lawnTap, reelOnBite, toTheWater } from './island';
+import { castIn, is3d, lawnTap, reelOnBite, toTheWater } from './island';
 import { defaultLayout, withChanges } from '../src/lib/layout/model.ts';
 import { GRID, chunkId, chunkOf, chunkString, chunkXZ } from '../src/lib/layout/grid.ts';
 import { validate } from '../src/lib/layout/validate.ts';
@@ -257,7 +257,25 @@ test('a tap on the water right after a scroll casts (no tap swallowed after a dr
     ev('pointermove', y - 170);
     setTimeout(() => (ev('pointerup', y - 170), done()), 120);
   }), [x, y] as const);
-  const [x2, y2] = await hooks(page, (h) => { const f = h.__fish.fish()[0]; return h.__world3d.client(f.x, f.z); });
+  // at once (no wait for the camera: that would hide a swallow window), so on sea that stays sea under the finger while
+  // the drag's camera move eases out (up to its 30 px): the shadow's spot itself, by the bank or under the screen's
+  // foot after the drag, was the beach's by then or no point at all (no cast, 1 in 10 under load)
+  const [x2, y2] = await page.evaluate(() => {
+    const w = window as unknown as Hooks & { __world: { at(x: number, z: number): [number, number] } }, f = w.__fish.fish()[0], [cx, cy] = w.__world3d.client(f.x, f.z);
+    const sea = (x: number, y: number) => { const g = w.__world3d.ground(x, y); return !!g && w.__world.ground(g.x, g.z).surface === 'sea'; };
+    const TAPS = 'button, a, [role="button"], [data-bush], [data-tree], [data-flower], [data-sit], [data-fixture], [data-campfire], [data-building], [data-decor], [data-actor], [data-visitor], [data-fx="talk"]';
+    // (any sea casts: the point nearest the shadow on screen that stays sea as the scene eases on down, up to 30 px
+    // after the drag: sea up to 40 px above it, 16 below and to the sides; the drag can take the shadow off the
+    // screen's foot, the front sea a band there)
+    const pts: [number, number][] = [];
+    for (let x = 24; x <= innerWidth - 24; x += 12) for (let y = 120; y <= innerHeight - 24; y += 12) pts.push([x, y]);
+    pts.sort((a, b) => Math.hypot(a[0] - cx, a[1] - cy) - Math.hypot(b[0] - cx, b[1] - cy));
+    for (const [x, y] of pts) {
+      if (document.elementFromPoint(x, y)?.closest(TAPS)) continue;
+      if ([-40, -32, -24, -16, -8, 0, 8, 16].every((d) => sea(x, y + d)) && [-16, 16].every((d) => sea(x + d, y))) return [x, y] as const;
+    }
+    return [cx, cy] as const;
+  });
   await page.touchscreen.tap(x2, y2);
   await expect.poll(() => hooks(page, (h) => h.__fish.why())).toBe('cast in the sea');
 });
@@ -294,8 +312,8 @@ test('with the line out, a tap on my villager reels it in (NH’s A button), not
 test('with the line out, a tap on the ground reels it in where my villager stands; the next tap walks', async ({ page }) => {
   await open(page, { q: '&critter=fish' });
   await expect.poll(() => hooks(page, (h) => h.__fish.fish().length), { timeout: 15_000 }).toBeGreaterThan(0);
-  const [x, y] = await toTheWater(page, 'sea');
-  await page.touchscreen.tap(x, y);
+  // (the cast itself isn't the test: castIn's checked one, a plain tap on toTheWater's point cast nothing 1 run in ~40)
+  await castIn(page, 'sea');
   await expect.poll(() => line(page)).not.toBeNull();
   const [mx, mz] = await hooks(page, (h) => h.__world.mine());
   const to = await lawnTap(page, mx + 100, mz + 50);
@@ -304,9 +322,11 @@ test('with the line out, a tap on the ground reels it in where my villager stand
   expect(['reel', 'scared']).toContain(await hooks(page, (h) => h.__fish.why()));
   await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
   expect(await hooks(page, (h) => h.__world.mine())).toEqual([mx, mz]);
-  // (past the reel's own moment: a tap on the ground walks)
-  await page.waitForTimeout(400);
-  await page.touchscreen.tap(to.x, to.y);
+  // a tap on the same ground now walks: its point read again once the camera's still (the reel turns my villager and
+  // the camera may ease after it: the first point was then the sea's, a cast, 2 in 10 under load)
+  await expect.poll(() => hooks(page, (h) => h.__world3d.camStill())).toBe(true);
+  const [tx, ty] = await page.evaluate(([x, z]) => (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(x, z), to.at);
+  await page.touchscreen.tap(tx, ty);
   await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(1);
 });
 

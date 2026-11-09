@@ -125,7 +125,7 @@ async function castAtFish(page: Page): Promise<string> {
   return id;
 }
 
-test('baited: the fish turns to the float, and each nibble is its nose touching it (backed off between)', async ({ page }) => {
+test('baited: the fish turns to the float, and each nibble is its nose touching it (backed off between)', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a nibble (the nose at the float for ~250 ms) sampled frame by frame, which a software-GL frame of 0.5–1 s can’t show' } }, async ({ page }) => {
   test.setTimeout(120_000);
   // (a fish may bite without a nibble, as in NH: then once more)
   for (let i = 0; ; i++) if ((await baited(page)) || i === 3) break;
