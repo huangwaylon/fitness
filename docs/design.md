@@ -555,7 +555,7 @@ the camera, the frames), `island/Scenery.svelte`, `e2e/world.spec.ts`, `e2e/worl
   - On a software renderer (CI's headless Chromium) it draws at its lightest; the e2e's logic mode
     (`E2E_RENDER=none`) runs the frames and draws nothing.
 - **The projector** (`camera.svelte.ts` `World`): every world thing is a DOM node at its feet (`{@attach world.at(…)}`)
-  placed through the 3D camera: an upright node, a flat mark or a ground quad (a matrix3d). Nothing is placed until the
+  placed through the 3D camera: an upright node, a flat mark or a solid's outline (a building's tap area). Nothing is placed until the
   camera is up. **One depth order** for the DOM: z-index from the feet (nearer in front, ties by x); a tree is two
   nodes, its canopy 14u nearer than its trunk. World-anchored overlays (a tree's popup, a bite's 「！」) stand over
   everything at their true size. Only nodes in [camZ − 600, camZ + 900] are shown.

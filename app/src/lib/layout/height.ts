@@ -60,7 +60,8 @@ function build(layout: Layout): Field {
   const tierMasks = [ms[Ch.tier1], ms[Ch.tier2], ms[Ch.tier3]];
   const kindAt = (c: number, r: number): Kind => (onGrid(c, r) ? kindOf(layout.codes[idx(c, r)]) : 'sea');
   function tierAt(x: number, z: number): number {
-    const [c, r] = tileAt(x, z);
+    // (tileAt's tuple inline: the ground's height under every node each frame)
+    const c = Math.floor((x - GRID.x0) / TILE), r = Math.floor((z - GRID.z0) / TILE);
     const u = (x - tileX(c)) / TILE, v = (z - tileZ(r)) / TILE;
     let t = 0;
     for (let i = 0; i < tierMasks.length; i++) if (roundedIn(tierMasks[i], c, r, u, v)) t = i + 1;

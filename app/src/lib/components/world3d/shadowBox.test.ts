@@ -10,7 +10,7 @@ const VIEW_W = 420;
 function stepped(camZ: number, zoom: number): ShadowBox {
   const zq = Math.round(camZ / STEP) * STEP, kq = Math.round(zoom * 8) / 8;
   const half = Math.max(200, (VIEW_W / Math.max(1, kq - 0.0625)) * 0.75 + STEP);
-  return { key: '', x: 0, z: zq, left: -half, right: half, top: half * 1.4, bottom: -half * 1.1, target: [0, 0, -zq - 120] };
+  return { k: kq, sun: [], x: 0, z: zq, left: -half, right: half, top: half * 1.4, bottom: -half * 1.1, target: [0, 0, -zq - 120] };
 }
 /** How far the box reaches past the pivot's point ahead (its own space: left, right, bottom, top). */
 function cover(b: ShadowBox, camZ: number, sunAt: readonly number[]): number[] {

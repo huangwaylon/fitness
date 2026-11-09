@@ -19,7 +19,7 @@ import {
   PCFSoftShadowMap, MeshDepthMaterial, RGBADepthPacking, FrontSide, BackSide, DoubleSide, type Material, type MeshLambertMaterial, type Object3D, type Side, type WebGLRenderer
 } from 'three';
 import { cubicInOut, cubicOut } from '#lib/math.ts';
-import { bend, bendPoint, bendU, unbendRay } from './bend.ts';
+import { bend, bendU, unbendRay } from './bend.ts';
 import { waterFog, waterU } from './water.ts';
 import { createThings, type Things } from './things.ts';
 import { shadowBox, type ShadowBox } from './shadowBox.ts';
@@ -61,7 +61,7 @@ export interface BuiltGround {
   feet?(x: number, z: number): number;
   land: Land;
   /** Its bands (a row of chunks across the island), culled with the camera. */
-  chunks?(): { z0: number; z1: number; meshes: Mesh[] }[];
+  chunks?(): readonly { z0: number; z1: number; meshes: Mesh[] }[];
   /** Called in each frame (its water's time, a paint stroke's rebuild): true while it moves (frames at the full rate),
    *  'ambient' while only its ambience does (its water: the ambient rate), false when still. */
   update?(t: number): Want;
@@ -420,13 +420,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
 
   // ---- the projection ----
   const v3 = new Vector3();
-  /** A three-space point (already bent) → canvas px and its view depth. */
-  function screen(x: number, y: number, z: number): [number, number, number] {
-    screenTo(x, y, z);
-    return [sp[0], sp[1], sp[2]];
-  }
-  // (at()'s scratch: it runs for every moving node each frame, every node while the camera moves; bendPoint's and
-  // screen's tuples were six arrays a call)
+  // (the projection's scratch: at() runs for every moving node each frame, every node while the camera moves, stretch
+  // for every card; bendPoint's and a screen point's tuples were six arrays a call)
   const bp = new Float64Array(3), sp = new Float64Array(3);
   /** bendPoint into bp. */
   function bendTo(x: number, y: number, z: number, pivotZ: number, R: number) {
@@ -435,7 +430,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     bp[1] = r * Math.cos(th) - R;
     bp[2] = pivotZ - r * Math.sin(th);
   }
-  /** screen into sp. */
+  /** A three-space point (already bent) → canvas px and its view depth, into sp. */
   function screenTo(x: number, y: number, z: number) {
     v3.set(x, y, z).applyMatrix4(camera.matrixWorldInverse);
     const depth = -v3.z;
@@ -476,13 +471,15 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   }
   // (outline's points: one array of pairs kept and refilled, no arrays a point a frame: 1.1 MB/s while dragging)
   const shape: [number, number][] = [];
+  // (its pairs kept apart: the list's cut to each outline's length, a longer one's next refilled the same pairs)
+  const pairs: [number, number][] = [];
   let shapeN = 0, behind = false;
   const toShape = (p: Vector3) => {
     if (behind) return;
     bendTo(p.x, p.y, p.z, -camZ, bendU.uBendR.value);
     screenTo(bp[0], bp[1], bp[2]);
     if (sp[2] <= 1) return void (behind = true);
-    const q = (shape[shapeN] ??= [0, 0]);
+    const q = (shape[shapeN] = pairs[shapeN] ??= [0, 0]);
     q[0] = sp[0];
     q[1] = sp[1];
     shapeN++;
@@ -508,35 +505,40 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   }
   /** The view depth of the log's horizon (the far tangent from the camera, in the y-z plane). */
   function horizonDepth(): number {
-    const [y, z] = tangent();
-    v3.set(camera.position.x, y, z).applyMatrix4(camera.matrixWorldInverse);
+    tangent();
+    v3.set(camera.position.x, tg[0], tg[1]).applyMatrix4(camera.matrixWorldInverse);
     return Math.max(100, -v3.z);
   }
-  function tangent(): [number, number] {
+  /** The far tangent point (y, z: beyond the pivot, three's −z), into tg. */
+  const tg = new Float64Array(2);
+  function tangent() {
     const R = bendU.uBendR.value + 3, oy = -bendU.uBendR.value, oz = -camZ;
     const cy = camera.position.y - oy, cz = camera.position.z - oz, L = Math.hypot(cy, cz);
     const base = Math.atan2(cy, cz), a = Math.acos(Math.min(1, R / L));
-    const t1 = base + a, t2 = base - a;
-    const p1: [number, number] = [oy + R * Math.sin(t1), oz + R * Math.cos(t1)], p2: [number, number] = [oy + R * Math.sin(t2), oz + R * Math.cos(t2)];
-    return p1[1] < p2[1] ? p1 : p2;
+    const t1 = base + a, t2 = base - a, z1 = oz + R * Math.cos(t1), z2 = oz + R * Math.cos(t2);
+    tg[0] = oy + R * Math.sin(z1 < z2 ? t1 : t2);
+    tg[1] = Math.min(z1, z2);
   }
   let horizonY = NaN;
   /** Where the ground's silhouette is on screen: the tangent from the camera to the log, seen in the y-z plane. */
   function horizon(): number {
     if (!Number.isNaN(horizonY)) return horizonY;
-    // the far tangent point (beyond the pivot: three's −z)
-    const far = tangent();
-    horizonY = Math.max(0, screen(camera.position.x, far[0], far[1])[1]);
+    tangent();
+    screenTo(camera.position.x, tg[0], tg[1]);
+    horizonY = Math.max(0, sp[1]);
     return horizonY;
   }
   /** How much a card must stretch to show as tall as it's wide-scaled: the inverse of its height's foreshortening. */
   function stretch(x: number, y: number, z: number, lean: number): number {
-    const R = bendU.uBendR.value, pz = -camZ;
-    const [bx, by, bz] = bendPoint(x, y, -z, pz, R);
-    const [, sy, depth] = screen(bx, by, bz);
+    const R = bendU.uBendR.value;
+    bendTo(x, y, -z, -camZ, R);
+    const bx = bp[0], by = bp[1], bz = bp[2];
+    screenTo(bx, by, bz);
+    const sy = sp[1], depth = sp[2];
     const th = (z - camZ) / R, a = lean + th;
     // its up: leaning back by its lean and the log's slope there
-    const [, ty] = screen(bx, by + 10 * Math.cos(a), bz - 10 * Math.sin(a));
+    screenTo(bx, by + 10 * Math.cos(a), bz - 10 * Math.sin(a));
+    const ty = sp[1];
     const k = depth > 1 ? focal / depth : 1;
     return Math.min(2.2, Math.max(1, (10 * k) / Math.max(0.1, sy - ty)));
   }
@@ -831,8 +833,9 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     frustum.setFromProjectionMatrix(viewProj);
     const R = bendU.uBendR.value, pz = -camZ;
     for (const g of groupsPlaced.values()) {
-      const c = g.ball.center, [x, y, z] = bendPoint(c.x, c.y, c.z, pz, R);
-      bentBall.center.set(x, y, z);
+      const c = g.ball.center;
+      bendTo(c.x, c.y, c.z, pz, R);
+      bentBall.center.set(bp[0], bp[1], bp[2]);
       bentBall.radius = g.ball.radius * 2 + 20;
       const on = frustum.intersectsSphere(bentBall);
       if (g.obj.visible !== on) {

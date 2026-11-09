@@ -13,7 +13,9 @@ const MIN = 200;
 const AHEAD = 120;
 
 export interface ShadowBox {
-  key: string;
+  /** The zoom's bucket and the sun it was built for (no key string an aim: a drag's every event). */
+  k: number;
+  sun: readonly number[];
   /** Its middle's x, and the pivot's z it was built round (three's −z; the middle AHEAD further). */
   x: number;
   z: number;
@@ -25,18 +27,18 @@ export interface ShadowBox {
   target: [number, number, number];
 }
 
-/** The box for this camera (`sunAt`: toward the sun; `viewW` the width the camera shows at zoom 1, `zoomMin` the least
- *  zoom): null while `was` still covers the view. */
+/** The box for this camera (`sunAt`: toward the sun, one array a sun; `viewW` the width the camera shows at zoom 1,
+ *  `zoomMin` the least zoom): null while `was` still covers the view. */
 export function shadowBox(was: ShadowBox | null, camZ: number, camX: number, zoom: number, sunAt: readonly number[], viewW: number, zoomMin: number): ShadowBox | null {
   const kq = Math.round(zoom * 8) / 8, x = Math.round(camX / STEP) * STEP;
-  const key = `${kq}:${x}:${sunAt}`, lead = (LEAD * viewW) / kq, drift = was ? camZ - was.z : 0;
-  if (was?.key === key && Math.abs(drift) <= lead) return null;
-  const z = was?.key === key ? camZ + Math.sign(drift) * lead : camZ;
+  const same = !!was && was.k === kq && was.x === x && was.sun === sunAt, lead = (LEAD * viewW) / kq, drift = was ? camZ - was.z : 0;
+  if (same && Math.abs(drift) <= lead) return null;
+  const z = same ? camZ + Math.sign(drift) * lead : camZ;
   // (zoomed right in the low pitch sees further ahead of the pivot than the width: at least MIN; a step's play either
   // way, and the pivot's drift past a 40 u step's along the island as the box sees it: the shadow camera's view of the
   // island's forward, (dx, dy·dz) / |(dx, dz)| of the sun's direction)
   const [sx, sy, sz] = sunAt, across = Math.hypot(sx, sz), pad = lead - STEP / 2;
   const padX = (Math.abs(sx) / across) * pad, padY = (Math.abs(sy * sz) / (across * Math.hypot(sx, sy, sz))) * pad;
   const half = Math.max(MIN, (viewW / Math.max(zoomMin, kq - 0.0625)) * 0.75 + STEP);
-  return { key, x, z, left: -half - padX, right: half + padX, top: half * 1.4 + padY, bottom: -half * 1.1 - padY, target: [x, 0, -z - AHEAD] };
+  return { k: kq, sun: sunAt, x, z, left: -half - padX, right: half + padX, top: half * 1.4 + padY, bottom: -half * 1.1 - padY, target: [x, 0, -z - AHEAD] };
 }

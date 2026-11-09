@@ -602,8 +602,9 @@
         if (!placedIds.has(n.id)) add.push({ id: n.id, model: a.m, x: n.x, z: n.z, lift, scale: a.s });
         live3.set(n.id, L);
       } else if (n.x !== L.to[0] || n.z !== L.to[1] || lift !== L.to[2]) {
-        L.from = [L.x, L.z, L.lift];
-        L.to = [n.x, n.z, lift];
+        // (in place: a moving one's every frame)
+        (L.from[0] = L.x), (L.from[1] = L.z), (L.from[2] = L.lift);
+        (L.to[0] = n.x), (L.to[1] = n.z), (L.to[2] = lift);
         L.t0 = t;
         L.ms = n.m3.ms ?? 0;
       }

@@ -481,10 +481,11 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     const y = lift + (o.id === 'bridge' ? height(x, z - 30) - 1 : height(x, z));
     return out.compose(tmpV.set(x, y, -z), tmpQ, tmpS);
   }
+  /** An instance's spot written to its group's meshes (`only`; all of them when absent). */
   function write(g: Group, only?: number) {
+    const i0 = only ?? 0, i1 = only === undefined ? g.base.length : only + 1;
     for (const { im, local, grey, fade, flap, part } of g.meshes) {
-      for (let i = 0; i < g.base.length; i++) {
-        if (only !== undefined && i !== only) continue;
+      for (let i = i0; i < i1; i++) {
         // (a part taken off: its spot on the instance empty)
         if (part && loose.has(`${g.list[i].id}|${part.name}`)) im.setMatrixAt(i, ZERO);
         else im.setMatrixAt(i, tmpM.multiplyMatrices(g.base[i], local));
@@ -498,8 +499,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       if (flap) flap.needsUpdate = true;
     }
     // what rides on an instance (the board's face) goes with it
-    for (let i = 0; i < g.base.length; i++) {
-      if (only !== undefined && i !== only) continue;
+    for (let i = i0; i < i1; i++) {
       const obj = riders.get(g.list[i].id);
       if (obj) {
         obj.matrix.copy(g.base[i]);
@@ -508,14 +508,15 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       }
     }
   }
-  /** The camera's turn (the billboards': `face`), and the instances that take it. */
+  /** The camera's turn (the billboards': `face`), and the instances that take it (no tuple an instance: a pinch turns
+   *  it every event). */
   const camQ = new Quaternion();
   function camera(q: Quaternion) {
     if (camQ.equals(q)) return;
     camQ.copy(q);
-    for (const [id, a] of byId) {
+    for (const a of byId.values()) {
       const o = a.inst;
-      if (!(overs.get(id)?.face ?? o.face)) continue;
+      if (!(overs.get(o.id)?.face ?? o.face)) continue;
       matOf(o, a.g.base[a.i]);
       write(a.g, a.i);
     }

@@ -78,17 +78,19 @@ export function rigOf(root: Object3D, opts: RigOpts = {}): Rig {
     d.copy(j.wi).multiply(r).multiply(j.w);
     j.bone.quaternion.copy(j.rest).multiply(d);
   };
+  const turnNamed = (name: string, v: readonly [number, number, number] | null | undefined) => {
+    const j = js[name as Joint] ?? more.get(name);
+    if (j) turnJ(j, v);
+  };
   return {
     body,
     joints: list.length,
     // (the bone of that name: a player's Hand_R, the tool's socket, though its pose turns Wrist_R)
     bone: (n) => map.get(n) ?? null,
+    // (no closure or entry a call: every walker's every frame)
     apply(p) {
-      for (const [n, j] of list) turnJ(j, p.j[n]);
-      opts.after?.(p, (name, v) => {
-        const j = js[name as Joint] ?? more.get(name);
-        if (j) turnJ(j, v);
-      });
+      for (let i = 0; i < list.length; i++) turnJ(list[i][1], p.j[list[i][0]]);
+      opts.after?.(p, turnNamed);
     }
   };
 }

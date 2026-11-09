@@ -53,7 +53,7 @@ export interface Ground {
   update(t: number): boolean | 'ambient';
   look(l: Look): void;
   /** Each band's meshes (a row of chunks across the island: 4 draws), for the camera's culling (world z extent). */
-  chunks(): { z0: number; z1: number; meshes: Mesh[] }[];
+  chunks(): readonly { z0: number; z1: number; meshes: Mesh[] }[];
   /** A promise for the textures (the first bake waits on them). */
   ready: Promise<void>;
   dispose(): void;
@@ -664,8 +664,12 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     walls: Mesh;
     falls: Mesh;
     water: Mesh;
+    /** The four, for the camera's culling. */
+    meshes: Mesh[];
   }
   const bands: Band[] = [];
+  /** The bands with land (chunks(): the camera culls them each move; made again only when a band's build changes it). */
+  let landed: Band[] | null = null;
   const topMats: MeshLambertMaterial[] = [];
   const wallMat = bend(withMaps(new MeshLambertMaterial({ map: tex.cliff, color: 0xffffff })));
   const fallsMat = waterMat(FALLS_VERT, FALLS_FRAG, { uStreak: { value: tex.falls } });
@@ -756,11 +760,12 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     });
   }
   function build(b: Band) {
-    for (const mesh of [b.top, b.walls, b.falls, b.water]) mesh.geometry.dispose();
+    for (const mesh of b.meshes) mesh.geometry.dispose();
     const a = arrays(b);
-    for (const mesh of [b.top, b.walls, b.falls, b.water]) mesh.visible = !!a;
+    for (const mesh of b.meshes) mesh.visible = !!a;
+    landed = null;
     if (!a) {
-      for (const mesh of [b.top, b.walls, b.falls, b.water]) mesh.geometry = new BufferGeometry();
+      for (const mesh of b.meshes) mesh.geometry = new BufferGeometry();
       b.rt?.dispose();
       b.rt = null;
       return;
@@ -792,7 +797,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
       mm.frustumCulled = false;
       group.add(mm);
     }
-    const b: Band = { row, z0: GRID.z0 + row * BAND_D, z1: GRID.z0 + (row + 1) * BAND_D, rt: null, top, walls, falls, water };
+    const b: Band = { row, z0: GRID.z0 + row * BAND_D, z1: GRID.z0 + (row + 1) * BAND_D, rt: null, top, walls, falls, water, meshes: [top, walls, falls, water] };
     bands.push(b);
     build(b);
   }
@@ -877,12 +882,12 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
       wallMat.needsUpdate = true;
       for (const b of bands) bake(b);
     },
-    chunks: () => bands.filter((b) => b.rt).map((b) => ({ z0: b.z0, z1: b.z1, meshes: [b.top, b.walls, b.falls, b.water] })),
+    chunks: () => (landed ??= bands.filter((b) => b.rt)),
     dispose() {
       disposed = true;
       for (const b of bands) {
         b.rt?.dispose();
-        for (const m of [b.top, b.walls, b.falls, b.water]) m.geometry.dispose();
+        for (const m of b.meshes) m.geometry.dispose();
       }
       stairs.geometry.dispose();
       for (const m of [...topMats, wallMat, fallsMat, freshMat, seaMat, bakeMat, stairsMat, deep.material]) m.dispose();
