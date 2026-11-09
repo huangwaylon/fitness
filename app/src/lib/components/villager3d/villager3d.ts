@@ -15,9 +15,7 @@ import {
   type MeshStandardMaterial, type SkinnedMesh, Texture
 } from 'three';
 import { smooth01 } from '#lib/math.ts';
-import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { ktx2Plugin } from '../world3d/ktx2.ts';
-import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { lean } from '../world3d/release.ts';
 import { withMaps } from '../world3d/blank.ts';
@@ -25,6 +23,7 @@ import { ACTION_MS, FADE_MS, action, base, isGym, mix, over, poseBuf, strideOf, 
 import { cellTransform, eyeAt, faceChangeIn, mouthAt, type Face } from './faces.ts';
 import { rigOf, type Rig, type RigOpts } from './rig.ts';
 import type { Anchor } from './seats3d.ts';
+import { glbLoader } from '../world3d/gltf.ts';
 
 /** Sitting down or getting up (ms): the turn, the step onto it, the pose's change. */
 const SIT_MS = 420;
@@ -101,8 +100,7 @@ export interface Villager3D {
   dispose(): void;
 }
 
-const loader = ktx2Plugin(new GLTFLoader());
-loader.setMeshoptDecoder(MeshoptDecoder);
+const loader = glbLoader({ ktx2: true });
 const cache = new Map<string, Promise<GLTF>>();
 
 /** A villager's GLB (once per id: a second villager of the same kind clones it). */

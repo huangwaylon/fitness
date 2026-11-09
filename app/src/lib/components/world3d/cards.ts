@@ -53,18 +53,19 @@ export interface Cards {
   dispose(): void;
 }
 
-/** NH's soft round shadow under a thing (a card's; the balloon's, world3d/balloon3d.ts). */
-export function softDisc(): CanvasTexture {
+/** NH's soft round shadow under a thing (a card's; the balloon's, world3d/balloon3d.ts; the rooms' villagers'), of
+ *  `rgb` ('r,g,b'), its full dark from `inner` px of its 32 out; `srgb`: its colours sRGB (the museum's are not). */
+export function softDisc(rgb = '30,40,20', inner = 2, srgb = true): CanvasTexture {
   const c = document.createElement('canvas');
   c.width = c.height = 64;
   const g = c.getContext('2d')!;
-  const r = g.createRadialGradient(32, 32, 2, 32, 32, 31);
-  r.addColorStop(0, 'rgba(30,40,20,0.42)');
-  r.addColorStop(1, 'rgba(30,40,20,0)');
+  const r = g.createRadialGradient(32, 32, inner, 32, 32, 31);
+  r.addColorStop(0, `rgba(${rgb},0.42)`);
+  r.addColorStop(1, `rgba(${rgb},0)`);
   g.fillStyle = r;
   g.fillRect(0, 0, 64, 64);
   const t = new CanvasTexture(c);
-  t.colorSpace = SRGBColorSpace;
+  if (srgb) t.colorSpace = SRGBColorSpace;
   return t;
 }
 

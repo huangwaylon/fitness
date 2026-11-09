@@ -3,14 +3,13 @@
 // fitted to its footprint (a bridge spans its length, an incline climbs its one tier over its four tiles), NH's soft
 // Lambert (home.ts's). structurePlaces says where; the scene attaches the group (engine.ts attach: bent there).
 import { Box3, Group, Vector3 } from 'three';
-import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { ktx2Plugin } from './ktx2.ts';
-import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import STRUCTURES from '#lib/layout/structures.json' with { type: 'json' };
 import { TIER_H } from '#lib/layout/grid.ts';
 import { footOf, objMid, type Layout, type Obj } from '#lib/layout/model.ts';
 import { lambertAll } from './home.ts';
 import { lean } from './release.ts';
+import { glbLoader } from './gltf.ts';
 
 const FAMILIES = (STRUCTURES as unknown as { families: Record<string, { min: number[]; max: number[]; v: string }> }).families;
 /** A bridge's or a stairs' variant → NH's model. */
@@ -50,8 +49,7 @@ export function structurePlaces(layout: Layout): StructurePlace[] {
   return out;
 }
 
-const loader = ktx2Plugin(new GLTFLoader());
-loader.setMeshoptDecoder(MeshoptDecoder);
+const loader = glbLoader({ ktx2: true });
 const glbs = new Map<string, Promise<GLTF | null>>();
 /** A structure's model fitted to its place (a new group: geometry shared), its origin the footprint's middle on the
  *  lower ground; null when it can't load. */

@@ -5,13 +5,15 @@
 // longest frames uploading. A plain image looks the same (three's glTF textures are unflipped and unpremultiplied
 // either way). Chromium keeps its ImageBitmaps (decoded off the main thread, uploaded quickly there).
 import { TextureLoader } from 'three';
-import type { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import { ktx2Plugin } from './ktx2.ts';
 
 /** WebKit's Safari (GLTFLoader's own test): not Chrome's or Android's. */
 const WEBKIT = typeof navigator !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
 /** `loader`'s models' images as plain <img>s on WebKit (a no-op elsewhere). */
-export function plainImages(loader: GLTFLoader): GLTFLoader {
+function plainImages(loader: GLTFLoader): GLTFLoader {
   if (!WEBKIT) return loader;
   return loader.register((parser) => {
     const t = new TextureLoader(parser.options.manager);
@@ -19,4 +21,20 @@ export function plainImages(loader: GLTFLoader): GLTFLoader {
     parser.textureLoader = t;
     return { name: 'island_plain_images' };
   });
+}
+
+const loaders = new Map<string, GLTFLoader>();
+/** The page's glTF loader of a kind, one each, shared (a loader keeps nothing of a load): meshopt's decoder always;
+ *  `ktx2`: the island's models' textures from their KTX2s (ktx2.ts); `plain`: plain images on WebKit (the rooms'). */
+export function glbLoader(o: { ktx2?: boolean; plain?: boolean } = {}): GLTFLoader {
+  const k = `${o.ktx2 ? 'k' : ''}${o.plain ? 'p' : ''}`;
+  let l = loaders.get(k);
+  if (!l) {
+    l = new GLTFLoader();
+    if (o.plain) plainImages(l);
+    if (o.ktx2) ktx2Plugin(l);
+    l.setMeshoptDecoder(MeshoptDecoder);
+    loaders.set(k, l);
+  }
+  return l;
 }

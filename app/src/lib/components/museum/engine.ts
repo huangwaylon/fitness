@@ -14,8 +14,7 @@ import {
 } from 'three';
 import { swallowed } from '#lib/quiet.ts';
 import { cubicOut } from '#lib/math.ts';
-import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { Villager3D } from '../villager3d/villager3d.ts';
 import type { Person3 } from '../person3d/person3d.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
@@ -23,8 +22,9 @@ import { DPR_MOVING, endRenderer, makeRenderer } from '../world3d/stage.ts';
 import { decal } from './geometry.ts';
 import { FPS } from '#lib/store/frameRate.ts';
 import { pacer } from '../world3d/pace.ts';
-import { plainImages } from '../world3d/gltf.ts';
-import { ktx2Plugin } from '../world3d/ktx2.ts';
+import { glbLoader } from '../world3d/gltf.ts';
+import { softDisc } from '../world3d/cards.ts';
+import { modelCache } from '../world3d/modelCache.ts';
 import M from './models.json' with { type: 'json' };
 import { modelBounds } from '../world3d/models3d.ts';
 import { along, roomScreen, walkLens, type Walk } from '../rooms/view.ts';
@@ -46,7 +46,7 @@ const VIEW_W = 92;
 /** The exhibits' rate (a second) while only they move; no finger on the room for REST_MS (the island's rest:
  *  world3d/engine.ts), REST_FPS, and REST_FAR_FPS while those moving are only seen through an opening (a wing's
  *  tanks and bugs from the hall, the hall's from a wing): the battery and the phone's heat at rest. */
-const AMBIENT = 30, REST_MS = 8000, REST_FPS = 20, REST_FAR_FPS = 12;
+const AMBIENT = 30, REST_MS = 2500, REST_FPS = 15, REST_FAR_FPS = 10;
 /** The longest the first frame waits for the villagers' models (ms): holding. */
 const ENTRY_HOLD_MS = 1500;
 /** How long a wall takes to fade out or in (ms), the cutaway's. */
@@ -158,19 +158,6 @@ export interface Museum {
 const now = () => performance.now();
 /** The top of the tallest thing in the museum (the hall's cornice): the near plane comes down to just over it. */
 const TOP = 70;
-
-/** A soft round shadow's texture. */
-function softDisc(): CanvasTexture {
-  const c = document.createElement('canvas');
-  c.width = c.height = 64;
-  const g = c.getContext('2d')!;
-  const r = g.createRadialGradient(32, 32, 4, 32, 32, 31);
-  r.addColorStop(0, 'rgba(40,24,14,0.42)');
-  r.addColorStop(1, 'rgba(40,24,14,0)');
-  g.fillStyle = r;
-  g.fillRect(0, 0, 64, 64);
-  return new CanvasTexture(c);
-}
 
 /** NH's lobby medallion (the owl's emblem in its ring of gold), drawn once. */
 function medallion(): CanvasTexture {
@@ -361,6 +348,27 @@ function grass(): CanvasTexture {
   return t;
 }
 
+/** The museum's models as loaded, kept across visits (world3d/modelCache.ts: each visit fetched, decoded and converted
+ *  them all again), the MUSEUM_KEEP last used: by `i:` + its URL an island model (the catches among them: drawn from
+ *  their KTX2s, as on the island, ktx2.ts), `m:` + its URL the museum's own (their WebPs). NH's soft look, the
+ *  island's: Lambert, a little lit by its own colour (no metal, no specular). */
+const MUSEUM_KEEP = 64;
+const museumModels = modelCache(MUSEUM_KEEP, (key) => glbLoader({ ktx2: key.startsWith('i:'), plain: true }).loadAsync(key.slice(2)).then((g) => {
+  g.scene.traverse((n) => {
+    const m = n as Mesh;
+    if (!m.isMesh) return;
+    const s = m.material as Material & { map?: Texture | null; color?: Color; alphaTest?: number; transparent?: boolean; opacity?: number; emissiveMap?: Texture | null };
+    const l = new MeshLambertMaterial({
+      name: s.name, map: s.map ?? null, color: s.color ?? new Color(0xffffff), alphaTest: s.alphaTest ?? 0, side: s.side,
+      transparent: !!s.transparent, opacity: s.opacity ?? 1, depthWrite: !s.transparent, emissiveMap: s.emissiveMap ?? null,
+      emissive: new Color(s.emissiveMap ? 0xffe2a8 : 0x000000), emissiveIntensity: s.emissiveMap ? 0.6 : 0
+    });
+    s.dispose();
+    m.material = l;
+  });
+  return g;
+}), 'museum: model');
+
 export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world: string }): Museum {
   const { renderer, noDraw, dpr: dprFull } = makeRenderer(canvas);
   const scene = new Scene();
@@ -403,46 +411,20 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     disposables.push(m);
     return m;
   };
-  // (the island's models, the catches among them, drawn from their KTX2s as on the island: world3d/ktx2.ts; the
-  // museum's own keep their WebPs)
-  const loader = plainImages(new GLTFLoader()), islandLoader = ktx2Plugin(plainImages(new GLTFLoader()));
-  loader.setMeshoptDecoder(MeshoptDecoder);
-  islandLoader.setMeshoptDecoder(MeshoptDecoder);
-  const glbs = new Map<string, Promise<GLTF | null>>();
+  // (kept across visits: museumModels; what this visit asked for let go of on its renderer on dispose)
+  const models = museumModels.user();
   let pending = 0;
-  const load = (url: string, from = loader) => {
-    let p = glbs.get(url);
-    if (!p) {
-      pending++;
-      p = from.loadAsync(url).then((g) => {
-        // NH's soft look, the island's: Lambert, a little lit by its own colour (no metal, no specular)
-        g.scene.traverse((n) => {
-          const m = n as Mesh;
-          if (!m.isMesh) return;
-          const s = m.material as Material & { map?: Texture | null; color?: Color; alphaTest?: number; transparent?: boolean; opacity?: number; emissiveMap?: Texture | null };
-          const l = new MeshLambertMaterial({
-            name: s.name, map: s.map ?? null, color: s.color ?? new Color(0xffffff), alphaTest: s.alphaTest ?? 0, side: s.side,
-            transparent: !!s.transparent, opacity: s.opacity ?? 1, depthWrite: !s.transparent, emissiveMap: s.emissiveMap ?? null,
-            emissive: new Color(s.emissiveMap ? 0xffe2a8 : 0x000000), emissiveIntensity: s.emissiveMap ? 0.6 : 0
-          });
-          s.dispose();
-          m.material = l;
-        });
-        return g;
-      }, (e: unknown) => {
-        console.warn('museum: model', url, e);
-        return null;
-      }).finally(() => {
-        pending--;
-        if (!pending) warmSoon();
-        invalidate();
-      });
-      glbs.set(url, p);
-    }
-    return p;
+  const load = (key: string): Promise<GLTF | null> => {
+    if (disposed) return Promise.resolve(null);
+    pending++;
+    return models.load(key).finally(() => {
+      pending--;
+      if (!pending) warmSoon();
+      invalidate();
+    });
   };
   const MODELS = M.models as Record<string, { min: number[]; max: number[]; v: string }>;
-  const model = (name: string) => (MODELS[name] ? load(`${o.base}${name}.glb?v=${MODELS[name].v}`) : Promise.resolve(null));
+  const model = (name: string) => (MODELS[name] ? load(`m:${o.base}${name}.glb?v=${MODELS[name].v}`) : Promise.resolve(null));
   function prop(name: string, x: number, z: number, p: { yaw?: number; s?: number; y?: number; parent?: Object3D } = {}): Group {
     const holder = new Group();
     holder.position.set(x, p.y ?? 0, z);
@@ -466,7 +448,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     critter: (kind, id) => kit.island(`critters/${kind}/${id}`),
     island: (name) => {
       const b = modelBounds(name);
-      return b ? load(`${o.world}${name}.glb?v=${b.v}`, islandLoader) : Promise.resolve(null);
+      return b ? load(`i:${o.world}${name}.glb?v=${b.v}`) : Promise.resolve(null);
     },
     islandBounds: (name) => modelBounds(name)
   };
@@ -695,6 +677,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     seatBoxes = seats.map((r) => ({ id: r.id, box: new Box3(new Vector3(r.x0, 0, r.z0), new Vector3(r.x1, r.h, r.z1)) }));
   }
   function exhibit(e: Exhibit) {
+    // (one built after the room was left: the exhibits' chunk landing late)
+    if (disposed) return e.dispose();
     exhibits.push(e);
     scene.add(e.group);
     blocksChanged();
@@ -737,7 +721,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   }
   const V3_SCALE = VILLAGER_H / 80;
   const villagers = new Map<Who, Walker>();
-  const disc = softDisc();
+  const disc = softDisc('40,24,14', 4, false);
   disposables.push(disc);
   const shadowGeo = new CircleGeometry(4.6, 20);
   const shadowMat = decal(new MeshBasicMaterial({ map: disc, transparent: true, depthWrite: false }), 5);
@@ -1149,8 +1133,11 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     // (a little after the last model: its exhibit's meshes made from it)
     if (!noDraw && !disposed) (warmT = setTimeout(warm, 250)), (warming = true);
   }
+  /** Hidden mid-way: taken up again when shown (onVis; the tent's way), not a timer every 32 ms the whole time. */
+  let warmHeld = false;
   function warm() {
     if (disposed || pending) return void (warming = !!pending);
+    if (document.hidden) return void (warmHeld = true);
     const todo: Texture[] = [];
     scene.traverse((n) => {
       const ms = (n as Mesh).material;
@@ -1161,6 +1148,11 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     });
     const step = () => {
       if (disposed) return;
+      if (document.hidden) {
+        // (the rest when shown: warm() again finds them)
+        for (const t of todo) warmed.delete(t);
+        return void (warmHeld = true);
+      }
       for (const t of todo.splice(0, 8)) renderer.initTexture(t);
       if (todo.length) warmT = setTimeout(step, 32);
       else {
@@ -1197,6 +1189,14 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     };
     step();
   }
+
+  // (shown again: a frame for what changed meanwhile, the warm-up taken up)
+  const onVis = () => {
+    if (document.hidden || disposed) return;
+    invalidate();
+    if (warmHeld) (warmHeld = false), warmSoon();
+  };
+  document.addEventListener('visibilitychange', onVis);
 
   // ---- the frame loop ----
   const frustum = new Frustum(), projScreen = new Matrix4();
@@ -1430,6 +1430,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     dispose() {
       disposed = true;
       pace.stop();
+      document.removeEventListener('visibilitychange', onVis);
       clearTimeout(warmT);
       clearTimeout(compileT);
       clearTimeout(holdT);
@@ -1440,6 +1441,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
         const m = n as Mesh;
         if (m.isMesh) m.geometry.dispose();
       });
+      models.release();
       endRenderer(renderer);
     }
   };

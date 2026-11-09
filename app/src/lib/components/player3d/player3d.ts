@@ -13,9 +13,8 @@ import {
   Bone, Box3, Color, DoubleSide, Matrix4, MeshLambertMaterial, Quaternion, RepeatWrapping, SRGBColorSpace, Sphere, Texture, Vector3,
   type Material, type Mesh, type MeshStandardMaterial, type Object3D, type SkinnedMesh, type WebGLProgramParametersWithUniforms, type WebGLRenderer
 } from 'three';
-import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { ktx2On, ktx2Plugin, textureFrom } from '../world3d/ktx2.ts';
-import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { ktx2On, textureFrom } from '../world3d/ktx2.ts';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { lean } from '../world3d/release.ts';
 import { WHITE, withMaps } from '../world3d/blank.ts';
@@ -30,6 +29,7 @@ import { portrait } from './portrait.ts';
 /** @public (the 2D heads' portraits, the closet's tiles) */
 export { portrait };
 import { DEFAULT_LOOKS, isOnepiece, type PlayerLook } from '#lib/contract/look.ts';
+import { glbLoader } from '../world3d/gltf.ts';
 
 /** @public (the すがた preview, the scenes) */
 export interface Player3D extends Villager3D {
@@ -66,8 +66,7 @@ const LIFT = 0.32;
  *  or hat 3.6 over it, its body at most 2.3 in any state or action (a hop's lift moves the sphere with it), with room. */
 const REACH = 10;
 
-const loader = ktx2Plugin(new GLTFLoader());
-loader.setMeshoptDecoder(MeshoptDecoder);
+const loader = glbLoader({ ktx2: true });
 /** By their file's key (parts.ts PartFile: `mesh/<key>.glb?v=…`). */
 const glbs = new Map<string, Promise<GLTF>>();
 const texs = new Map<string, Promise<Texture>>();

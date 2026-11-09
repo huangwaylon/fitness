@@ -10,15 +10,13 @@ import {
   NormalBlending, Scene, BufferGeometry, CanvasTexture, Color, DoubleSide, Float32BufferAttribute, Group, Matrix4, Mesh, MeshBasicMaterial, PlaneGeometry, Quaternion,
   RingGeometry, SphereGeometry, SRGBColorSpace, type Camera, type MeshStandardMaterial, type Side, type Texture
 } from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { ktx2Plugin } from './ktx2.ts';
-import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { bend, glow as addLight } from './bend.ts';
 import { WHITE, withMaps } from './blank.ts';
 import { splitSides } from './sides.ts';
 import { MODELS } from './models3d.ts';
 import { pace } from './pace.ts';
 import { HOP_MS, POP_IN_MS, POP_OUT_MS, popIn } from './biteMark.ts';
+import { glbLoader } from './gltf.ts';
 
 export type FxKind =
   | 'dust' | 'sand' | 'snow' | 'splash' | 'ripple' | 'sparkle' | 'sparks' | 'bang' | 'leaves' | 'drops' | 'hearts'
@@ -181,8 +179,7 @@ function glow(): Texture {
 
 /** `onLoad`: a part's model is in (a frame to show it). */
 export function createEffects(scene: Scene, ground: (x: number, z: number) => number, onLoad?: () => void): Effects {
-  const loader = ktx2Plugin(new GLTFLoader());
-  loader.setMeshoptDecoder(MeshoptDecoder);
+  const loader = glbLoader({ ktx2: true });
   const base = new URL(`room/world3d/`, new URL(document.baseURI)).href;
   const got = new Map<string, Promise<Src | null>>();
   const white = new Color(0xffffff);

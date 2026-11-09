@@ -7,14 +7,12 @@ import {
   BufferGeometry, CircleGeometry, Color, Float32BufferAttribute, Group, Line, LineBasicMaterial, Mesh, MeshBasicMaterial,
   MeshLambertMaterial, type MeshStandardMaterial, type Object3D
 } from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { ktx2Plugin } from './ktx2.ts';
-import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { keyModel, MODELS } from './models3d.ts';
 import { softDisc } from './cards.ts';
 import { bend } from './bend.ts';
 import { withMaps } from './blank.ts';
 import { RIG, flying, rigAt } from '../island/balloonFlight.ts';
+import { glbLoader } from './gltf.ts';
 
 export interface Balloon3 {
   /** Place it for the flight now (none, or shot down: hidden). */
@@ -33,8 +31,7 @@ const BLOB = 13;
 const STRING_N = 6;
 
 export function createBalloon3(add: (o: Object3D) => () => void, heightOf: (x: number, z: number) => number, kick: () => void): Balloon3 {
-  const loader = ktx2Plugin(new GLTFLoader());
-  loader.setMeshoptDecoder(MeshoptDecoder);
+  const loader = glbLoader({ ktx2: true });
   const base = new URL('room/world3d/', new URL(document.baseURI)).href;
   let liftL = 0.32, disposed = false;
   const mats: MeshLambertMaterial[] = [];

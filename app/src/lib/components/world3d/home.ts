@@ -6,19 +6,18 @@
 // light. The scene places the group (engine.ts attach: bent there; homePlaces for where).
 import { Color, Group, MeshLambertMaterial, SRGBColorSpace, type Material, type Mesh, type MeshStandardMaterial, type Object3D, type Side, type Texture } from 'three';
 import { withMaps } from './blank.ts';
-import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { ktx2Plugin, loadTexture } from './ktx2.ts';
-import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { loadTexture } from './ktx2.ts';
 import { FAMILIES, partsOf, type HomeStyle } from '#lib/layout/homes.ts';
 import { splitSides } from './sides.ts';
 import { lean } from './release.ts';
 import { quiet } from '#lib/quiet.ts';
+import { glbLoader } from './gltf.ts';
 
 /** World units a model unit (the island's furniture scale: 10 model units a 30u tile). */
 export const HOME_U = 3;
 
-const loader = ktx2Plugin(new GLTFLoader());
-loader.setMeshoptDecoder(MeshoptDecoder);
+const loader = glbLoader({ ktx2: true });
 const glbs = new Map<string, Promise<GLTF | null>>();
 const maps = new Map<string, Promise<Texture | null>>();
 const baseUrl = (base?: string) => base ?? new URL('room/homes/', new URL(document.baseURI)).href;

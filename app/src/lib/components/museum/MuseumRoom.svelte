@@ -387,7 +387,8 @@
     const k = list.map((s) => s.id).join(',');
     if (k === shownKey) return;
     shownKey = k;
-    untrack(() => void import('./exhibits.ts').then(({ show }) => show(e, list, clock)));
+    // (not on an engine let go of meanwhile: the room left before the chunk landed)
+    untrack(() => void import('./exhibits.ts').then(({ show }) => eng === e && show(e, list, clock)));
   });
 
   onMount(() => {
@@ -418,7 +419,16 @@
     void Promise.all([import('./engine.ts'), import('./plan.ts'), import('./curator.ts')]).then(
       ([{ createMuseum }, { walkPath }, { buildCurator }]) => {
         if (!alive || !canvas) return;
-        const e = createMuseum(canvas, { base: staticUrl('room/museum/'), world: staticUrl('room/world3d/') });
+        let e: ReturnType<typeof createMuseum>;
+        try {
+          // (no WebGL context to be had: the door opens on the room's stand-in, the tent's way)
+          e = createMuseum(canvas, { base: staticUrl('room/museum/'), world: staticUrl('room/world3d/') });
+        } catch (err) {
+          console.warn('museum', err);
+          failed = true;
+          doorReady();
+          return;
+        }
         walkPathOf = (from, to) => walkPath(e.nav(), from, to);
         e.resize(insets());
         e.night(nightOf(theme.tod));

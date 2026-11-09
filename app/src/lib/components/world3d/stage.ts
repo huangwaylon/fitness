@@ -12,12 +12,11 @@ import { WHITE } from './blank.ts';
 import { releaseAll, type Res } from './release.ts';
 import { pacer } from './pace.ts';
 import { drawOff, shaderChecks } from '#lib/ui-state/testMode.ts';
+import { FPS } from '#lib/store/frameRate.ts';
 
 /** The pixel ratio at most (an iPhone's 3 costs too much for what it adds), and while a gesture moves the camera. */
 const DPR_MAX = 2;
 export const DPR_MOVING = 1.5;
-/** The frame-rate cap (docs/design.md "Frame rate"). */
-const FPS = 30;
 
 export interface RendererOpts {
   /** MSAA (never in the logic mode). */

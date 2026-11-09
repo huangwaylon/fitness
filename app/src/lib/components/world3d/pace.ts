@@ -19,7 +19,7 @@ export function moveFast(ms: number, fled: boolean, from: OnScreen | null, to: O
   return (on(from) || on(to)) && (Math.hypot(from.sx - to.sx, from.sy - to.sy) / ms) * 1000 >= SLOW_PX;
 }
 
-/** Half a 60 Hz vsync's slack (ms): a display frame this early is on time (store/frameRate.ts due()'s). */
+/** Half a 60 Hz vsync's slack (ms): a display frame this early is on time. */
 const SLACK = 6;
 /** What the pacer runs on (the page's; a test's own clock). */
 export interface PaceClock {
@@ -36,7 +36,7 @@ const PAGE: PaceClock = {
   clearTimeout: (id) => clearTimeout(id as ReturnType<typeof setTimeout>),
   now: () => performance.now()
 };
-/** A 3D engine's frames (the island's, the rooms' and the museum's: docs/design.md "Frame rate"). `kick()`: a frame at
+/** A 3D engine's frames (the island's, the tent's, the museum's and the small stages': docs/design.md "Frame rate"). `kick()`: a frame at
  *  the next display frame (a change from outside; something moving: the full rate's next, checked by `due`). `later(fps)`:
  *  the ambience's next, `1000 / fps` after the last ambient one was due: a timer to just before, then the display frame
  *  it's due on; no display frames woken in between. In the frame, `due(vsync, fps)` says whether to draw on this

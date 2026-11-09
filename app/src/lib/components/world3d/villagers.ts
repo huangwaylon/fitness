@@ -8,9 +8,6 @@
 // (it walks, it acts, the camera moves); its blinks are a texture's offset, so the island idles as it did. What it
 // wears (a birthday hat, the party glasses: assets.json `joint` models, their origin NH's head joint) rides its head bone.
 import { MeshLambertMaterial, Color, Matrix4, Vector3 as V3, type Vector3, type Material, type Mesh, type MeshStandardMaterial, type Object3D } from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { ktx2Plugin } from './ktx2.ts';
-import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { keyModel, MODELS } from './models3d.ts';
 import { VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
 import { villager3, type Person3 } from '../person3d/person3d.ts';
@@ -30,6 +27,7 @@ import { site } from '../island/site.svelte.ts';
 import { seatAnchor, seatNamed } from '../island/sitting.ts';
 import { ASSET_MODELS } from './assets.ts';
 import { barAt, barK, GRAB_MS, HELD, HELD_SCALE, heldIn } from './benchBar.ts';
+import { glbLoader } from './gltf.ts';
 
 export interface VSpec {
   /** The slot (an actor: mine, partner, third, visitor) and the roster id it draws. */
@@ -294,8 +292,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     return w;
   }
 
-  const loader = ktx2Plugin(new GLTFLoader());
-  loader.setMeshoptDecoder(MeshoptDecoder);
+  const loader = glbLoader({ ktx2: true });
   const wearBase = new URL('room/world3d/', new URL(document.baseURI)).href;
   /** A worn model (once per key; each villager its own copy), its materials the villagers' Lambert. */
   const worn = new Map<string, Promise<Object3D | null>>();

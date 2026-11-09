@@ -6,13 +6,11 @@
 // piece popping in, a jiggle), nothing while still. Plain TS; the screen (TentRoom.svelte) drives it.
 import {
   AmbientLight, BoxGeometry, CanvasTexture, CircleGeometry, Color, DirectionalLight, DoubleSide, Group, HemisphereLight,
-  LineBasicMaterial, LineSegments, BufferGeometry, Float32BufferAttribute, Material, Mesh, MeshBasicMaterial, MeshLambertMaterial,
+  LineBasicMaterial, LineSegments, BufferGeometry, Float32BufferAttribute, Mesh, MeshBasicMaterial, MeshLambertMaterial,
   Box3, Object3D, PCFSoftShadowMap, PerspectiveCamera, Plane, PlaneGeometry, PointLight, Raycaster, RepeatWrapping, Scene, Sprite,
   SpriteMaterial, SRGBColorSpace, Texture, DataTexture, TextureLoader, Vector3, type MeshStandardMaterial
 } from 'three';
 import { cubicOut } from '#lib/math.ts';
-import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { FULL, HALF, TILE, centreOf, emitterOf, isSurface, isWallItem, onTop, rectOf, wallMid, wallSpot, type Bounds, type Facing, type Pt, type Spot } from './grid.ts';
 import { footprint, floorUrl, ITEMS, modelUrl, wallUrl } from './items.ts';
 import { VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
@@ -21,11 +19,12 @@ import type { Person3 } from '../person3d/person3d.ts';
 import { seatOf } from '../villager3d/poses.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
 import { DPR_MOVING, endRenderer, makeRenderer } from '../world3d/stage.ts';
-import { lean } from '../world3d/release.ts';
 import { LIDS, lidK, lidMoving, lidOpen, lidOpenIn, lidWant, splitLid, type Lid } from './lid.ts';
-import { keepUsed } from '../world3d/keepUsed.ts';
-import { plainImages } from '../world3d/gltf.ts';
-import { due, FPS } from '#lib/store/frameRate.ts';
+import { freeModel, modelCache } from '../world3d/modelCache.ts';
+import { glbLoader } from '../world3d/gltf.ts';
+import { softDisc } from '../world3d/cards.ts';
+import { FPS } from '#lib/store/frameRate.ts';
+import { pacer } from '../world3d/pace.ts';
 import { along, roomScreen, walkLens, type Walk } from '../rooms/view.ts';
 import { EYE_MARGIN, camAz, clampEye, firstPerson as createFirstPerson, headAnchor, type Rect } from '../rooms/firstPerson.ts';
 
@@ -191,7 +190,7 @@ export interface Tent {
   loading(): number;
   /** Frames drawn, and the last frame's draw calls and triangles (the e2e's budget); `queued`: a frame is asked for
    *  (something moves: a walk, a camera glide, a model popping in); `mem`: the GPU's geometries, textures and programs. */
-  stats(): { frames: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean; mem: [number, number, number]; models: ReturnType<typeof modelStats> };
+  stats(): { frames: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean; mem: [number, number, number]; models: ReturnType<typeof furniture.stats> };
   /** The first frame was drawn (the room on screen). */
   ready: Promise<void>;
   dispose(): void;
@@ -199,20 +198,6 @@ export interface Tent {
 
 const now = () => performance.now();
 const reduced = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-function softDisc(): CanvasTexture {
-  const c = document.createElement('canvas');
-  c.width = c.height = 64;
-  const g = c.getContext('2d')!;
-  const r = g.createRadialGradient(32, 32, 2, 32, 32, 31);
-  r.addColorStop(0, 'rgba(40,25,10,0.42)');
-  r.addColorStop(1, 'rgba(40,25,10,0)');
-  g.fillStyle = r;
-  g.fillRect(0, 0, 64, 64);
-  const t = new CanvasTexture(c);
-  t.colorSpace = SRGBColorSpace;
-  return t;
-}
 
 /** The ceiling from below (the first person's): warm plaster crossed by two wooden beams, tiled. */
 function beams(): CanvasTexture {
@@ -262,83 +247,34 @@ function matTexture(): CanvasTexture {
   return t;
 }
 
-/** The furniture as loaded (fetched, decoded: CPU-side), by item, kept across the rooms' visits as the island keeps its
- *  models (world3d/things.ts): back in the tent, or in another's home, it builds at once, with no fetch, meshopt or
- *  image decode again. Kept without the loader's parser (release.ts lean). Each room's GPU copies go with its renderer
- *  (dispose: three uploads them again to the next). A failed load isn't kept. Bounded: the rooms using each (by item)
- *  are counted, and of those no room uses, the MODEL_KEEP last used stay (a room's whole furniture back at once), the
- *  older let go of (geometry, textures, images closed; fetched again if placed again), where every one of the 440 ever
- *  shown stayed for the page's life. */
-const models = new Map<string, Promise<GLTF | null>>();
-/** The same, loaded (what a room's dispose lets go of at once: no wait on the loads still under way). */
-const modelsIn = new Map<string, GLTF>();
+/** The furniture as loaded, by item, kept across the rooms' visits (world3d/modelCache.ts: where every one of the 440
+ *  ever shown stayed for the page's life), the MODEL_KEEP last used of those no room uses. */
 const MODEL_KEEP = 48;
-const modelUse = keepUsed<string>(MODEL_KEEP, (code) => {
-  const g = modelsIn.get(code);
-  models.delete(code);
-  modelsIn.delete(code);
-  if (g) freeModel(g.scene, true);
-});
-/** A model's GPU copies let go of on every renderer (its geometries, materials and their textures); `close`: its
- *  decoded images too (evicted: it's not to be drawn again). `seen`: what's already let go of. */
-function freeModel(root: Object3D, close = false, seen = new Set<object>()) {
-  root.traverse((n) => {
+const furniture = modelCache(MODEL_KEEP, (code) => glbLoader({ plain: true }).loadAsync(modelUrl(code)).then((g) => {
+  g.scene.traverse((n) => {
     const m = n as Mesh;
-    if (m.geometry && !seen.has(m.geometry)) (seen.add(m.geometry), m.geometry.dispose());
-    const ms = (m.material ? (Array.isArray(m.material) ? m.material : [m.material]) : []) as Material[];
-    for (const x of ms) {
-      if (seen.has(x)) continue;
-      seen.add(x);
-      for (const v of Object.values(x)) {
-        if (!(v instanceof Texture) || seen.has(v)) continue;
-        seen.add(v);
-        v.dispose();
-        if (close) (v.image as { close?: () => void } | null)?.close?.();
-      }
+    if (!m.isMesh) return;
+    m.castShadow = !ITEMS[code]?.rug;
+    m.receiveShadow = true;
+    // Lambert, as the museum's and the island's are (the models' own are standard, rough 1, metal 0: the same light
+    // but a faint sheen; their programs ~3× the size, the room's first entry a long compile): a lamp's glow off
+    // till it's switched on (lights)
+    const lam = (x: MeshStandardMaterial) => {
+      const l = new MeshLambertMaterial({
+        name: x.name, map: x.map, color: x.color, alphaTest: x.alphaTest, side: x.side, transparent: x.transparent, opacity: x.opacity,
+        depthWrite: x.depthWrite, emissive: x.emissive, emissiveMap: x.emissiveMap, emissiveIntensity: x.emissiveMap ? 0 : x.emissiveIntensity,
+        // a rug lies on the floor: drawn over it, never fighting it
+        ...(ITEMS[code]?.rug ? { polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 } : {})
+      });
       x.dispose();
-    }
+      return l;
+    };
+    m.material = Array.isArray(m.material) ? (m.material as MeshStandardMaterial[]).map(lam) : lam(m.material as MeshStandardMaterial);
   });
-}
-/** The furniture's models kept: loaded, used by a room, kept unused. */
-const modelStats = () => ({ loaded: modelsIn.size, ...modelUse.stats() });
-let loader: GLTFLoader | null = null;
-function loadModel(code: string): Promise<GLTF | null> {
-  let p = models.get(code);
-  if (p) return p;
-  if (!loader) (loader = plainImages(new GLTFLoader())).setMeshoptDecoder(MeshoptDecoder);
-  p = loader.loadAsync(modelUrl(code)).then((g) => {
-    g.scene.traverse((n) => {
-      const m = n as Mesh;
-      if (!m.isMesh) return;
-      m.castShadow = !ITEMS[code]?.rug;
-      m.receiveShadow = true;
-      // Lambert, as the museum's and the island's are (the models' own are standard, rough 1, metal 0: the same light
-      // but a faint sheen; their programs ~3× the size, the room's first entry a long compile): a lamp's glow off
-      // till it's switched on (lights)
-      const lam = (x: MeshStandardMaterial) => {
-        const l = new MeshLambertMaterial({
-          name: x.name, map: x.map, color: x.color, alphaTest: x.alphaTest, side: x.side, transparent: x.transparent, opacity: x.opacity,
-          depthWrite: x.depthWrite, emissive: x.emissive, emissiveMap: x.emissiveMap, emissiveIntensity: x.emissiveMap ? 0 : x.emissiveIntensity,
-          // a rug lies on the floor: drawn over it, never fighting it
-          ...(ITEMS[code]?.rug ? { polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 } : {})
-        });
-        x.dispose();
-        return l;
-      };
-      m.material = Array.isArray(m.material) ? (m.material as MeshStandardMaterial[]).map(lam) : lam(m.material as MeshStandardMaterial);
-    });
-    // a lid of its own (lid.ts): cut out once, under its hinge, the clones sharing it
-    if (LIDS[code]) splitLid(g.scene, LIDS[code]);
-    if (models.get(code) === p) modelsIn.set(code, g);
-    return lean(g);
-  }, (e: unknown) => {
-    console.warn('tent: model', code, e);
-    if (models.get(code) === p) models.delete(code);
-    return null;
-  });
-  models.set(code, p);
-  return p;
-}
+  // a lid of its own (lid.ts): cut out once, under its hinge, the clones sharing it
+  if (LIDS[code]) splitLid(g.scene, LIDS[code]);
+  return g;
+}), 'tent: model');
 
 export function createTent(canvas: HTMLCanvasElement): Tent {
   // (noDraw: the e2e's logic mode, testMode.ts: every frame runs, nothing is drawn)
@@ -498,8 +434,14 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
    *  the ceiling and the door's closed door with them (seen from above the ceiling is its back: culled, nothing drawn). */
   function cutaway() {
     const cx = Math.sin(view.az), cz = Math.cos(view.az), inside = fp.inside();
-    for (const w of walls) w.g.visible = inside || w.n[0] * cx + w.n[1] * cz < 0.25;
+    let changed = false;
+    for (const w of walls) {
+      const on = inside || w.n[0] * cx + w.n[1] * cz < 0.25;
+      if (w.g.visible !== on) (w.g.visible = on), (changed = true);
+    }
     ceiling.visible = door.visible = fp.mix > 0;
+    // (a wall's things go with it: the shadow map again, the one change of what casts a view makes)
+    if (changed) shadowsDirty = true;
   }
 
   function surfaces(wallCode: string, fl: string) {
@@ -512,7 +454,6 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
         t.anisotropy = 4;
         m.map?.dispose();
         m.map = t;
-        shadowsDirty = true;
         invalidate();
       }, () => {});
     // a wallpaper's tiling is in the walls' UVs; a floor is four tiles each way
@@ -523,12 +464,9 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
 
 
   // ---- the furniture ----
-  /** The items this room has asked for (each counted once: useModel), handed back on dispose. */
-  const used = new Set<string>();
-  const model = (code: string) => {
-    if (!used.has(code)) (used.add(code), modelUse.use(code));
-    return loadModel(code);
-  };
+  /** The items this room has asked for, handed back on dispose. */
+  const models = furniture.user();
+  const model = models.load;
   interface Live {
     spot: Placed;
     root: Group;
@@ -1020,7 +958,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   const V3_SCALE = VILLAGER_H / 80;
   const v3Lift = () => (0.3 - 0.18 * nightN) * (roomOn ? 1 : 0.5);
   const villagers = new Map<Who, Walker>();
-  const disc = softDisc();
+  const disc = softDisc('40,25,10');
   const cardGeo = new PlaneGeometry(1, 1).translate(0, 0.5, 0);
   const shadowGeo = new CircleGeometry(4.2, 24);
   const shadowMat = new MeshBasicMaterial({ map: disc, transparent: true, depthWrite: false });
@@ -1318,6 +1256,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   let fitted = false;
   /** Refit (`ease`: to the new framing over a moment, as when the edit tray opens). */
   function fit(ease = false) {
+    if (disposed) return;
     const W = canvas.clientWidth || 1, H = canvas.clientHeight || 1;
     renderer.setSize(W, H, false);
     const to = framingFor();
@@ -1326,8 +1265,8 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     fitted = true;
     offset();
     aim();
-    shadowsDirty = true;
-    // (setSize cleared the canvas: drawn again now, not at the next due frame)
+    // (the shadow map stays: the key light and its camera are fixed, only the furniture casts; setSize cleared the
+    // canvas: drawn again now, not at the next due frame)
     if (frames) redraw();
     invalidate();
   }
@@ -1335,6 +1274,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
    *  lighter pixel ratio, a turn of the phone) clears it, and WebKit shows the cleared canvas until the next draw (the
    *  museum's black flashes, 3928d20f), so a resize is drawn over in the same task. */
   function redraw() {
+    if (disposed) return;
     if (shadowsDirty) (renderer.shadowMap.needsUpdate = true), (shadowsDirty = false);
     if (!noDraw) renderer.render(scene, camera);
   }
@@ -1571,7 +1511,9 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   }
 
   // ---- the frames: on demand ----
-  let raf = 0, frames = 0, disposed = false, shadowsDirty = true;
+  let frames = 0, disposed = false, shadowsDirty = true;
+  // (the frames: a change's at the next display frame, at most FPS a second: world3d/pace.ts, the island's and the museum's)
+  const pace = pacer((vsync) => frame(vsync));
   /** The first frame waits for the villagers' models asked for by then (up to ENTRY_HOLD_MS): their programs (skinned,
    *  ~6) compile with the room's in that one frame, behind the door's black; drawn in a frame of their own once the
    *  iris had opened, they froze it (the iOS Simulator, cold: 1039 ms, after the room's own first frame of 654 ms). */
@@ -1582,7 +1524,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   let readyFn: () => void = () => {};
   const ready = new Promise<void>((r) => (readyFn = r));
   function invalidate() {
-    if (!raf && !disposed) raf = requestAnimationFrame(frame);
+    if (!disposed) pace.kick();
   }
   const POP_MS = 320, BUMP_MS = 360, HOP_MS = 420;
   /** A 3D villager's frame: its walk (its heading turned to, the stride by the distance), its seat, its hop; posed
@@ -1635,17 +1577,9 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   }
   /** The camera moved since the last frame (the 3D villagers are posed while it does). */
   let cameraMoving = false, camRev = '';
-  /** The last frame drawn's display time (its rAF's): the frame rate's pacing (せってい's, a gesture's too). */
-  let lastVsync = 0;
   let drawn: (() => void) | null = null;
   function frame(vsync = now()) {
-    raf = 0;
-    if (disposed || holding()) return;
-    if (!due(vsync, lastVsync, FPS)) {
-      raf = requestAnimationFrame(frame);
-      return;
-    }
-    lastVsync = vsync;
+    if (disposed || holding() || !pace.due(vsync, FPS)) return;
     const t = now();
     let more = false;
     const rv = `${view.az}:${view.pitch}:${view.k}`;
@@ -1842,13 +1776,13 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   function warm() {
     if (disposed) return;
     if (document.hidden) return void (warmHeld = true);
-    if (pending || raf || !frames) return warmSoon();
+    if (pending || pace.queued() || !frames) return warmSoon();
     const meshes: Object3D[] = [];
     scene.traverse((n) => void ((n as Mesh).material && meshes.push(n)));
     const step = () => {
       if (disposed) return;
       if (document.hidden) return void (warmHeld = true);
-      if (raf) return void (warmT = setTimeout(step, 100));
+      if (pace.queued()) return void (warmT = setTimeout(step, 100));
       const n0 = renderer.info.programs?.length ?? 0;
       while (meshes.length && (renderer.info.programs?.length ?? 0) === n0) {
         const o = meshes.shift()!;
@@ -1882,7 +1816,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     if (disposed) return;
     // (hidden: no timer till it's shown again, onVis; a frame coming: its own step shows the face, and asks again)
     if (document.hidden) return;
-    if (raf) return blinkSoon();
+    if (pace.queued()) return blinkSoon();
     let changed = false;
     for (const w of villagers.values()) if (w.v3 && !w.path && !w.posing && w.v3.blink(now())) changed = true;
     if (changed) invalidate();
@@ -1941,12 +1875,13 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     upIn: (who) => Math.max(0, (villagers.get(who)?.upAt ?? 0) - now()),
     lid: (id) => ((l) => (l ? lidK(l.run, now()) : null))(live.get(id)?.lid), hop, headPoint, hit, floorAt, client, orbit, zoom, resetView, isDefault, moving, centre,
     loading: () => pending,
-    stats: () => ({ frames, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: cost.slice(), queued: !!raf,
-      mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0], models: modelStats() }),
+    stats: () => ({ frames, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: cost.slice(), queued: pace.queued(),
+      mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0], models: furniture.stats() }),
     ready,
     dispose() {
       disposed = true;
-      cancelAnimationFrame(raf);
+      pace.stop();
+      clearTimeout(restTimer);
       clearTimeout(blinkT);
       clearTimeout(holdT);
       document.removeEventListener('visibilitychange', onVis);
@@ -1954,14 +1889,8 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       for (const w of villagers.values()) w.v3?.dispose();
       const seen = new Set<object>();
       freeModel(scene, false, seen);
-      // the models it asked for, at once (a quick way back in must not have its new room's uploads let go of a tick
-      // later, as a wait on every load did), and handed back (the unused past MODEL_KEEP evicted)
-      for (const c of used) {
-        const g = modelsIn.get(c);
-        if (g) freeModel(g.scene, false, seen);
-        modelUse.unuse(c);
-      }
-      used.clear();
+      // the models it asked for, at once, and handed back
+      models.release(seen);
       disc.dispose();
       endRenderer(renderer);
       live.clear();
