@@ -20,9 +20,10 @@ first. It brought the 2.0 villagers, Brewster, Kapp'n and Wilbur, and 376 tent p
 - Output: `app/static/room/world3d/<kind>/<id>.glb` (under `/room/`: the service worker caches a file on first use,
   never at install). The first 43 models stay in `models.json` and serve their keys from there.
 - **Then `npm run world3d-ktx2`** (needs `basisu`: `brew install basis_universal`): each model's WebPs (world3d,
-  homes, structures, villagers3d, player) as KTX2 (UASTC, mipmaps built), one pack a model in
+  homes, structures, villagers3d, the players' packs) as KTX2 (UASTC, mipmaps built), one pack a model in
   `static/room/tex/<id>.ktx2p` (`world3d/ktx2Pack.ts`); the loose WebPs those models wear (the homes' other colours,
-  the players' faces and the bundled closet's garments: `texHash.ts looseTextures`) as KTX2 beside them; and three's
+  the players' faces and the bundled closet's garments: `texHash.ts looseTextures`) as KTX2 beside them (the players'
+  into their packs: `scripts/player-packs.ts`); and three's
   transcoder wasm in `static/room/basis/`. The island draws those (`world3d/ktx2.ts`: ASTC on an iPhone, kept
   transcoded in IndexedDB); the WebPs stay for the museum's own models, the tent's furniture and a fallback.
   `world3d/ktx2.test.ts` fails until it's run after a model, a home or a player part changes.
@@ -157,6 +158,27 @@ never visits. A material's textures are the ones its Collada effect samples, not
 and `mGlassCap` sample `mBody_Alb` and `mGlass_Alb`); the converter fails a villager whose GLB has a material without
 a base colour where the source has one. Each villager wears its default top's texture (a single-look top, as the Sanrio tees, is the data's row itself, not a variation; once missed, 66 wore plain white: `villager3d.test` holds every material to its texture). Tulin, Mineru, Cece and Viché aren't in
 the 2.0.0 export: their cards stay.
+
+## Players
+
+The human players' parts (`scripts/players3d-models.ts`; the runtime: [design.md "Players"](design.md#players)) ship in
+44 packs, not ~5,200 loose files: `app/static/room/player/<home>.<hash>.pak` (~23 MB: `player3d/packing.ts`,
+`scripts/player-packs.ts`, `npm run player:packs`), beside the whole part table (`parts.json`).
+A pack is `ktx2Pack.ts`'s container (its files' paths in its head). Each file's place, `at` (a KTX2's, `k`: `[pack,
+offset, bytes]`), is in both part tables.
+- **Homes:** `everyday` (the body and both いつもの looks as a phone draws them, KTX2s included: ~330 KB, fetched whole
+  as a player is first drawn, one request where there were 25); `face`, `hair` and a slot's first-closet garments
+  (`top`, …: the bundled table's, what the closet lists and a saved コーデ wears; by id, a line's colours together, a
+  shape with the first to wear it), ≤ 256 KB a pack; `more-<slot>` (the whole table's other ~4,000 items) and `webp`
+  (the WebPs of textures with a KTX2: only a page without a GPU format draws them), ≤ 1.2 MB. A home past its bound
+  splits as stably as can be (`lib/packPlan.ts planHome`).
+- **On the phone** (`parts.ts`, `lib/packStore.ts`): any other part is a Range of its pack (`?s=from-to`). Cloudflare
+  Pages answers a Range with the whole file (a 200: measured 2026-11-09 on the live site), so a first wear costs its
+  packs (A's saved one-piece and hairstyle: two, 0.5 MB, where the loose files were 43 KB), held and kept by the
+  service worker (`island-room-v1`), their other parts free after. A saved コーデ is instant once worn. Offline, a part never fetched is drawn as いつもの's (`player3d.ts wearable`).
+- **Sources:** the packs are the only copy in the repo. `npm run player:packs -- --unpack` writes every file loose into
+  `app/.cache/player/` (gitignored), the tree `players3d-models.ts` writes there and packs at its end;
+  `npm run world3d-ktx2` packs the KTX2s it makes. `player3d/parts.test.ts` checks every place.
 
 ## The inventory
 

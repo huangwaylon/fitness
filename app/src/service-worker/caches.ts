@@ -75,9 +75,12 @@ export const isDecorArt = (path: string): boolean =>
  *  them and cached on first use in a cache of their own that outlives builds (a re-converted model has a new `?v=`). */
 export const ROOM_CACHE = 'island-room-v1';
 export const isRoomAsset = (path: string): boolean => path.includes('/room/');
-/** The room cache's bound: its bytes past this, the least recently used go (the players' parts alone are ~30 MB, the
- *  villagers' models ~29 MB: grown whole, with the shell and the record's IndexedDB under one origin, WebKit may evict
- *  all of it at once). */
+/** The players' parts' packs (static/room/player/<home>.<hash>.pak: player3d/parts.ts): fetched whole (the everyday
+ *  pack) or a part's slice (`?s=`, packSlice), in the room's cache. */
+export const isPlayerPack = (path: string): boolean => path.includes('/room/player/') && path.endsWith('.pak');
+/** The room cache's bound: its bytes past this, the least recently used go (the players' parts alone are ~23 MB in
+ *  their packs, the villagers' models ~29 MB: grown whole, with the shell and the record's IndexedDB under one origin,
+ *  WebKit may evict all of it at once). */
 export const ROOM_CAP_BYTES = 40_000_000;
 /** What was used within this is never evicted for the bound (what the island, the tent and the museum show now). */
 export const ROOM_KEEP_MS = 3 * 24 * 3600_000;
@@ -86,11 +89,14 @@ export const ROOM_INDEX = '__room-index';
 export type RoomIndex = Record<string, [bytes: number, usedAt: number]>;
 
 /** Which of the room cache's entries go (`index` in any order): a file's older versions (the same path under another
- *  `?v=`, used less recently: a re-converted model, never asked for again), then, while the rest is over `cap`, the
- *  least recently used, never one used within `keepMs`. */
+ *  `?v=`, used less recently: a re-converted model, never asked for again; a pack's slice is a file of its own), then,
+ *  while the rest is over `cap`, the least recently used, never one used within `keepMs`. */
 export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, keepMs = ROOM_KEEP_MS): string[] {
   const urls = Object.keys(index);
-  const pathOf = (u: string) => new URL(u, 'https://x/').pathname;
+  const pathOf = (u: string) => {
+    const x = new URL(u, 'https://x/'), sl = x.searchParams.get('s');
+    return sl ? `${x.pathname}?s=${sl}` : x.pathname;
+  };
   const newest = new Map<string, string>();
   for (const u of urls) {
     const p = pathOf(u), n = newest.get(p);
@@ -113,9 +119,9 @@ export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, k
  *  (an index of each pack's bytes and last use kept in the cache), so a few levels' and units' packs stay offline. */
 export const LISTEN_CACHE = 'island-listen-v1';
 export const isListenPack = (path: string): boolean => path.includes('/audio/listen/') && path.endsWith('.pak');
-/** A ききみみ clip's slice of its pack (components/kikimimi/packs.ts sliceUrl: `?s=<from>-<to>`, asked as a Range): its
- *  first and last byte, else null (the pack whole). Kept per slice in LISTEN_CACHE, under its URL. */
-export function listenSlice(url: URL): [from: number, to: number] | null {
+/** A file's slice of its pack (lib/packStore.ts sliceOf: `?s=<from>-<to>`, asked as a Range; ききみみ's clips, the
+ *  players' parts): its first and last byte, else null (the pack whole). Kept per slice, under its URL. */
+export function packSlice(url: URL): [from: number, to: number] | null {
   const m = /^(\d+)-(\d+)$/.exec(url.searchParams.get('s') ?? '');
   return m && Number(m[2]) >= Number(m[1]) ? [Number(m[1]), Number(m[2])] : null;
 }

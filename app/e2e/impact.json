@@ -54,6 +54,7 @@
     ["src/lib/components/look/**", ["look", "players"]],
     ["src/lib/*/look*", ["look", "players"]],
     ["src/lib/components/player3d/**", ["players", "look"]],
+    ["src/lib/pack*", ["players", "kikimimi-packs"]],
     ["src/lib/components/person3d/**", ["players", "look"]],
     ["src/lib/components/villager3d/**", ["seats3d", "world3d", "sit-outdoors"]],
     ["src/lib/components/homes/**", ["homes"]],
@@ -160,7 +161,6 @@
   ],
   "unmapped": {
     "src": "app.html and the type declarations: every spec loads them (the gate set)",
-    "src/lib": "the shared helpers (math, random, art, types): every spec's (the gate set)",
     "src/lib/components/characters": "the /dev/characters page's viewer: not in the app",
     "src/lib/components/dev": "dev-only overlays: not in the app",
     "src/lib/model/fixtures": "the model's unit-test fixtures",

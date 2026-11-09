@@ -1,5 +1,5 @@
 // NH's human players in 3D (docs/design.md "Players"): a look (contract/look.ts PlayerLook) assembled from the parts
-// scripts/players3d-models.ts converts (parts.ts: static/room/player/…), given the villagers' life by villager3d.ts
+// scripts/players3d-models.ts converts (parts.ts: packed under static/room/player/), given the villagers' life by villager3d.ts
 // animateModel with the player's own tuning (tune.ts). The same Villager3D for the scenes: states, actions, faces and
 // blinks, seats, a tool in the hand, the eyes for first person.
 //   - The body loads once per page; each player clones it. A part's mesh loads once (its colours share it); an item's
@@ -14,21 +14,21 @@ import {
   type Material, type Mesh, type MeshStandardMaterial, type Object3D, type SkinnedMesh, type WebGLProgramParametersWithUniforms
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { ktx2Plugin, loadTexture } from '../world3d/ktx2.ts';
+import { ktx2On, ktx2Plugin, textureFrom } from '../world3d/ktx2.ts';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { lean } from '../world3d/release.ts';
 import { WHITE, withMaps } from '../world3d/blank.ts';
 import { keepUsed } from '../world3d/keepUsed.ts';
 import { animateModel, type Villager3D } from '../villager3d/villager3d.ts';
-import { PARTS, bodyUrl, covers, faceUrl, irisUrl, loadParts, meshUrl, texUrl, type ItemSpec, type PartTable, type TexSpec } from './parts.ts';
+import { PARTS, bodyFile, covers, faceFile, irisFile, loadParts, meshFile, partBytes, texFile, warmEveryday, type ItemSpec, type PartFile, type PartTable, type TexSpec } from './parts.ts';
 import { sharedSkin } from './skin.ts';
 import { playerKind } from './tune.ts';
 import { hooksOn } from '#lib/ui-state/preview.ts';
 
 /** @public (the 2D heads' portraits, the closet's tiles) */
 export { portrait } from './portrait.ts';
-import { isOnepiece, type PlayerLook } from '#lib/contract/look.ts';
+import { DEFAULT_LOOKS, isOnepiece, type PlayerLook } from '#lib/contract/look.ts';
 
 /** @public (the すがた preview, the scenes) */
 export interface Player3D extends Villager3D {
@@ -67,34 +67,31 @@ const REACH = 10;
 
 const loader = ktx2Plugin(new GLTFLoader());
 loader.setMeshoptDecoder(MeshoptDecoder);
+/** By their file's key (parts.ts PartFile: `mesh/<key>.glb?v=…`). */
 const glbs = new Map<string, Promise<GLTF>>();
 const texs = new Map<string, Promise<Texture>>();
-/** The files with a KTX2 beside them (world3d/texHash.ts looseTextures: the bundled table's faces and garments; a part
- *  only the whole table has keeps its WebP), by their address under room/player (`/face/…webp?v=…`). */
-const KTX2 = new Set([
-  ...Object.keys(PARTS.face).flatMap((id) => [faceUrl(id, ''), irisUrl(id, '')]),
-  ...PARTS.cheek.map((_, i) => faceUrl(`cheek${i}`, '')),
-  ...Object.values(PARTS.items).flatMap((it) => Object.values(it.tex).map((t) => texUrl(t, '')))
-]);
 
-function glb(url: string): Promise<GLTF> {
-  let p = glbs.get(url);
+function glb(f: PartFile, dir: string): Promise<GLTF> {
+  let p = glbs.get(f.key);
   if (!p) {
-    p = loader.loadAsync(url).then(lean);
-    p.catch(() => glbs.delete(url));
-    glbs.set(url, p);
+    p = partBytes(f, dir).then((b) => {
+      if (!b) throw new Error(`player: no ${f.key}`);
+      return loader.parseAsync(b, '');
+    }).then(lean);
+    p.catch(() => glbs.delete(f.key));
+    glbs.set(f.key, p);
   }
   return p;
 }
-/** How many of the parts' meshes worn each part's GLB is (by URL; the body's is never counted: every player's), and
+/** How many of the parts' meshes worn each part's GLB is (by key; the body's is never counted: every player's), and
  *  the ones none wears, the least recently worn first: GLB_KEEP of those stay decoded (back in a look at once, the
  *  closet's way back and forth), the older let go of (geometry, images closed; fetched again if worn again). Before,
  *  every hairstyle, top and hat ever tried on stayed for the page's life (the reviewer's closet run: 377 GLBs). */
 const GLB_KEEP = 16;
 /** (a part's GLB taken before its load is awaited: an idle one's eviction never frees what a put is about to clone) */
-const glbUse = keepUsed<string>(GLB_KEEP, (url) => {
-  const p = glbs.get(url);
-  glbs.delete(url);
+const glbUse = keepUsed<string>(GLB_KEEP, (key) => {
+  const p = glbs.get(key);
+  glbs.delete(key);
   void p?.then(freeGlb, () => {});
 });
 const useGlb = glbUse.use, unuseGlb = glbUse.unuse;
@@ -117,12 +114,15 @@ function freeGlb(g: GLTF) {
 }
 /** @public (tests) The parts' GLBs kept: in use (worn), and decoded but worn by none. */
 export const glbStats = () => ((s) => ({ cached: glbs.size, worn: s.used, idle: s.idle }))(glbUse.stats());
-/** A texture (once per address, while some player wears it: `uses`): a KTX2's if it has one (the bundled table's: KTX2),
+/** A texture (once per file, while some player wears it: `uses`): a KTX2's if it has one (the bundled table's: `k`),
  *  else its WebP (as TextureLoader draws it: flipped, the KTX2 encoded so). */
-function tex(url: string): Promise<Texture> {
+function tex(f: PartFile, dir: string): Promise<Texture> {
+  const url = f.key;
   let p = texs.get(url);
   if (!p) {
-    p = loadTexture(url, { flipY: true, ktx2: KTX2.has(url.slice(url.lastIndexOf('/player/') + 7)) }).then((t) => {
+    // (the KTX2 kept under its old address: a phone's transcoded copies from before the packs still match)
+    const id = `room/player/${url.replace(/\.webp(?=\?|$)/, '.ktx2')}`;
+    p = textureFrom(id, { flipY: true, ktx2: f.k ? () => partBytes(f, dir, true) : undefined, webp: () => partBytes(f, dir) }).then((t) => {
       // (NH's uvs run past 0–1, a face patch's below 0: repeated, as the GLBs' own textures are)
       t.wrapS = t.wrapT = RepeatWrapping;
       t.colorSpace = SRGBColorSpace;
@@ -212,18 +212,25 @@ function partMaterial(name: string, map: Texture | null, spec: { color?: string;
   return withMaps(m);
 }
 
+/** A part worn: its mesh's key, its GLB's file key (null once let go of: unwear). */
 interface Worn { key: string; url: string | null; meshes: SkinnedMesh[]; bones: Bone[]; mats: Material[] }
 
 /**
  * @public (the scenes, the すがた preview)
  * A player standing at its group's origin (its feet), facing +z, in `look`: `dir` the site's room/player/ ($app/paths
- * asset), `seed` its blink's rhythm. Rejects if a part it needs isn't there (the caller keeps its stand-in).
+ * asset), `seed` its blink's rhythm. A part that can't be had (offline, never fetched) is drawn as the いつもの look's
+ * (B's for B, else A's: the everyday pack; wearable). Rejects if the body isn't there (the caller keeps its stand-in).
  */
 export async function createPlayer(id: string, look: PlayerLook, dir: string, seed = 0): Promise<Player3D> {
   // (the bundled table when it has every part of the look: the whole one, ~1.1 MB, only for a part it hasn't)
   const table = (l: PlayerLook, t: PartTable) => (covers(l, t) ? Promise.resolve(t) : loadParts(dir));
-  const [body, T0] = await Promise.all([glb(bodyUrl(dir)), table(look, PARTS)]);
+  const base = DEFAULT_LOOKS[id === 'B' ? 'B' : 'A'];
+  warmEveryday(dir);
+  const [body, T0] = await Promise.all([glb(bodyFile(), dir), table(look, PARTS)]);
   let T = T0;
+  /** The look asked for (look()); `cur` is the one drawn. */
+  let asked: PlayerLook = { ...look };
+  look = await wearable(look, T, dir, base);
   const model = cloneSkinned(body.scene);
   const bones = new Map<string, Bone>();
   model.traverse((n) => {
@@ -283,13 +290,13 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
   const alive = () => {
     if (gone) throw GONE;
   };
-  const faceFile = (n: 'mEye' | 'mMouth' | 'mCheek') => (n === 'mEye' ? cur.eye : n === 'mMouth' ? cur.mouth : `cheek${cur.cheek}`);
+  const faceId = (n: 'mEye' | 'mMouth' | 'mCheek') => (n === 'mEye' ? cur.eye : n === 'mMouth' ? cur.mouth : `cheek${cur.cheek}`);
   const loadFace = async (n: 'mEye' | 'mMouth' | 'mCheek') => {
-    const u = faceUrl(faceFile(n), dir);
-    if (!u) throw new Error(`player: no face ${faceFile(n)}`);
+    const u = faceFile(faceId(n), T);
+    if (!u) throw new Error(`player: no face ${faceId(n)}`);
     // (its own copy: the cell is this player's offset)
-    const base = await tex(u), t = base.clone();
-    faceBase[n] = base;
+    const sheet = await tex(u, dir), t = sheet.clone();
+    faceBase[n] = sheet;
     t.needsUpdate = true;
     return t;
   };
@@ -297,13 +304,13 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
   // the iris mask (its own copy: a texture's uploaded image; sampled at the eye's own cell)
   const irisMap: Iris['map'] = { value: null };
   const loadIris = async () => {
-    const u = irisUrl(cur.eye, dir, T);
-    return u ? tex(u) : null;
+    const u = irisFile(cur.eye, T);
+    return u ? tex(u, dir) : null;
   };
   irisMap.value = await loadIris();
   const socksTex = async (): Promise<Texture | null> => {
     const it = cur.socks ? T.items[cur.socks] : null, t = it?.tex.mSocks;
-    return t ? tex(texUrl(t, dir)!) : null;
+    return t ? tex(texFile(t, T)!, dir) : null;
   };
   let socks = await socksTex();
   for (const m of skinned) {
@@ -370,12 +377,13 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
   }
   /** The part's mesh bound to this player's skeleton: its own joints grafted on (under their parent, or the anchor). */
   async function put(slot: Slot, p: { key: string; item: ItemSpec | null; anchor: AnchorKind | null }): Promise<Worn> {
-    const u = meshUrl(p.key, dir, T);
-    if (!u) throw new Error(`player: no mesh ${p.key}`);
+    const f = meshFile(p.key, T);
+    if (!f) throw new Error(`player: no mesh ${p.key}`);
+    const u = f.key;
     useGlb(u);
     let g: GLTF;
     try {
-      g = await glb(u);
+      g = await glb(f, dir);
       alive();
     } catch (e) {
       unuseGlb(u);
@@ -443,7 +451,7 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
         mat = partMaterial(n, s.map, {}, t === 'skin' ? skin : hair);
       } else {
         const spec: TexSpec = item.tex[n] ?? Object.values(item.tex)[0] ?? {};
-        const map = spec.file ? await tex(texUrl(spec, dir)!) : null;
+        const map = spec.file ? await tex(texFile(spec, T)!, dir) : null;
         if (gone) {
           // (fetched for a player since disposed: none holds it)
           if (map && !uses.has(map)) drop(map);
@@ -532,9 +540,11 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
     eyeColour.set(cur.eyeColor);
   };
   let busy: Promise<void> = Promise.resolve();
-  const dress = async (next: PlayerLook) => {
+  const dress = async (want: PlayerLook) => {
     alive();
-    T = await table(next, T);
+    asked = { ...want };
+    T = await table(want, T);
+    const next = await wearable(want, T, dir, base);
     alive();
     const prev = cur;
     cur = { ...next };
@@ -542,17 +552,17 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
     noses();
     for (const n of ['mEye', 'mMouth', 'mCheek'] as const) {
       const was = n === 'mEye' ? prev.eye : n === 'mMouth' ? prev.mouth : `cheek${prev.cheek}`;
-      if (was === faceFile(n)) continue;
+      if (was === faceId(n)) continue;
       // (the image swapped under the same texture: the cell it shows, its offset, is the face's)
-      const u = faceUrl(faceFile(n), dir);
+      const u = faceFile(faceId(n), T);
       if (!u) continue;
-      const base = await tex(u);
+      const sheet = await tex(u, dir);
       if (gone) {
-        if (!uses.has(base)) drop(base);
+        if (!uses.has(sheet)) drop(sheet);
         throw GONE;
       }
-      const src = base.source, t = faceTex[n]!;
-      faceBase[n] = base;
+      const src = sheet.source, t = faceTex[n]!;
+      faceBase[n] = sheet;
       // (its GPU copy let go of first, three's by its image: another size of image needs a new one; disposed after the
       // swap it let go of the new image's, another player's face if it wore that one, and orphaned its own)
       t.dispose();
@@ -624,7 +634,7 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
       }));
       return busy;
     },
-    look: () => ({ ...cur }),
+    look: () => ({ ...asked }),
     dispose() {
       if (gone) return;
       gone = true;
@@ -644,22 +654,48 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
   }) as Player3D;
 }
 
-/** The parts a look needs (their addresses: what a phone fetches to draw it; the service worker caches each), by
- *  `t` (the bundled first closet's table, or loadParts' whole one). */
-export function partUrls(look: PlayerLook, dir: string, t: PartTable = PARTS): string[] {
-  const out = [bodyUrl(dir)];
-  const f = (u: string | null) => u && out.push(u);
-  f(faceUrl(look.eye, dir));
-  f(faceUrl(look.mouth, dir));
-  f(faceUrl(`cheek${look.cheek}`, dir));
+/** The files a look needs (what a phone fetches to draw it: the everyday pack's, else each a slice of its pack), by
+ *  `t` (the bundled first closet's table, or loadParts' whole one), by slot (`body`, `eye`, …, a slot it doesn't wear
+ *  none); null for a slot whose part `t` hasn't. */
+export function partFiles(look: PlayerLook, t: PartTable = PARTS): Record<string, PartFile[] | null> {
+  const out: Record<string, PartFile[] | null> = {};
+  const all = (fs: (PartFile | null)[]) => (fs.every(Boolean) ? (fs as PartFile[]) : null);
+  out.body = [bodyFile(t)];
+  out.eye = all([faceFile(look.eye, t), ...(t.face[look.eye]?.iris ? [irisFile(look.eye, t)] : [])]);
+  out.mouth = all([faceFile(look.mouth, t)]);
+  out.cheek = all([faceFile(`cheek${look.cheek}`, t)]);
   const h = t.hair[look.hair];
-  if (h) f(meshUrl(look.hat && h.cap ? h.cap : h.mesh, dir, t));
+  out.hair = h ? all([look.hat && h.cap ? meshFile(h.cap, t) : meshFile(h.mesh, t)]) : null;
   for (const k of ['top', 'bottom', 'socks', 'shoes', 'glasses', 'ornament', 'hat'] as const) {
     const id = look[k];
-    const it = id ? t.items[id] : null;
-    if (!it || (k === 'bottom' && isOnepiece(look.top))) continue;
-    if (it.mesh) f(meshUrl(it.mesh, dir, t));
-    for (const t of Object.values(it.tex)) f(texUrl(t, dir));
+    if (!id || (k === 'bottom' && isOnepiece(look.top))) continue;
+    const it = t.items[id];
+    out[k] = it ? all([...(it.mesh ? [meshFile(it.mesh, t)] : []), ...Object.values(it.tex).filter((x) => x.file).map((x) => texFile(x, t))]) : null;
   }
+  return out;
+}
+
+/** `look` as it can be drawn now: each part whose files can't all be had (offline and never fetched; or `t` hasn't
+ *  it) the いつもの look's (`base`, the everyday pack's); a one-piece's stand-in that isn't one brings `base`'s bottoms.
+ *  Fetches what it checks (the store holds it for the load after: each a slice, or its pack). */
+export async function wearable(look: PlayerLook, t: PartTable, dir: string, base: PlayerLook): Promise<PlayerLook> {
+  // (a texture's KTX2 where it's drawn from it, else its WebP; either will do)
+  const one = async (f: PartFile) => (f.k && ktx2On() && (await partBytes(f, dir, true))) || (await partBytes(f, dir));
+  const have = async (fs: PartFile[] | null) => !!fs && (await Promise.all(fs.map(one))).every(Boolean);
+  const items = ['top', 'bottom', 'socks', 'shoes', 'glasses', 'ornament', 'hat'] as const;
+  const out: PlayerLook = { ...look };
+  const files = partFiles(look, t);
+  const ok = await Promise.all(items.map((k) => (k in files ? have(files[k]) : Promise.resolve(true))));
+  items.forEach((k, i) => {
+    if (!ok[i]) out[k] = base[k] ?? null;
+  });
+  if (!ok[0] && !isOnepiece(out.top) && !out.bottom) out.bottom = base.bottom;
+  const head = partFiles(out, t);
+  const [eye, mouth, cheek, hair, bottom] = await Promise.all([have(head.eye), have(head.mouth), have(head.cheek), have(head.hair), 'bottom' in head && out.bottom !== look.bottom ? have(head.bottom) : Promise.resolve(true)]);
+  if (!eye) out.eye = base.eye;
+  if (!mouth) out.mouth = base.mouth;
+  if (!cheek) out.cheek = base.cheek;
+  if (!hair) out.hair = base.hair;
+  if (!bottom) out.bottom = base.bottom;
   return out;
 }

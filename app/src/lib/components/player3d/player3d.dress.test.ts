@@ -1,16 +1,50 @@
-// createPlayer's caches and a dress() racing dispose() (player3d.ts), over stand-in files: the GLB and texture loaders
-// answer with tiny skinned models and plain textures, the animator and the face tuning stubbed (no WebGL, no fetch).
+// createPlayer's caches and a dress() racing dispose() (player3d.ts), over stand-in files: the packs a fake network's
+// (each file's bytes its index in the table's files), the GLB parser and the texture loader answering with tiny skinned
+// models and plain textures, the animator and the face tuning stubbed (no WebGL, no real fetch).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { Bone, BufferAttribute, BufferGeometry, Group, Material, MeshStandardMaterial, Skeleton, SkinnedMesh, Texture, TextureLoader, type Object3D } from 'three';
+import { Bone, BufferAttribute, BufferGeometry, Group, Material, MeshStandardMaterial, Skeleton, SkinnedMesh, Texture, type Object3D } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DEFAULT_LOOKS, type PlayerLook } from '#lib/contract/look.ts';
 import { PARTS } from './parts.ts';
+import { ktx2Of, tableFiles } from './packing.ts';
+
+/** The table's files (a texture's KTX2 beside it), by index: the fake packs' bytes at a file's place are its index. */
+const FILES: { path: string; at: [number, number, number] }[] = tableFiles(PARTS).flatMap(({ path, spec }) => [
+  ...(spec.at ? [{ path, at: spec.at }] : []), ...(spec.k ? [{ path: ktx2Of(path), at: spec.k }] : [])]);
+const packBytes = new Map<string, Uint8Array>();
+for (const [i, f] of FILES.entries()) {
+  const stem = PARTS.packs![f.at[0]];
+  let b = packBytes.get(stem) ?? new Uint8Array(0);
+  if (b.length < f.at[1] + f.at[2]) {
+    const g = new Uint8Array(f.at[1] + f.at[2]);
+    g.set(b);
+    packBytes.set(stem, (b = g));
+  }
+  new DataView(b.buffer).setUint32(f.at[1], i, true);
+}
+/** The file a fake file's bytes are. */
+const pathOf = (b: ArrayBuffer) => FILES[new DataView(b).getUint32(0, true)].path;
+const net = async (url: string, init?: RequestInit) => {
+  const b = packBytes.get(/\/([^/?]+)\.pak/.exec(url)![1])!;
+  const r = /bytes=(\d+)-(\d+)/.exec(new Headers(init?.headers).get('range') ?? '');
+  return r ? new Response(b.slice(Number(r[1]), Number(r[2]) + 1), { status: 206 }) : new Response(b.slice());
+};
+// (a GPU format, as on a phone: a texture's KTX2 where it has one)
+vi.mock('../world3d/ktx2.ts', () => ({
+  ktx2Plugin: (l: unknown) => l,
+  ktx2On: () => true,
+  textureFrom: async (_id: string, o: { ktx2?: () => Promise<ArrayBuffer | null>; webp: () => Promise<ArrayBuffer | null> }) => {
+    const b = (o.ktx2 && (await o.ktx2())) || (await o.webp());
+    await gate(pathOf(b!));
+    return new Texture();
+  }
+}));
 
 vi.mock('../villager3d/villager3d.ts', () => ({
   animateModel: (_id: string, model: Object3D) => ({ group: model, dispose: () => model.removeFromParent() })
 }));
 vi.mock('./tune.ts', () => ({ playerKind: () => ({ cell: () => 0, rebind() {} }) }));
-const { createPlayer, glbStats, texStats } = await import('./player3d.ts');
+const { createPlayer, glbStats, texStats, wearable } = await import('./player3d.ts');
 
 /** A one-vertex skinned mesh on Root → Head, its material named `mat` (with a texture of its own). */
 function model(mats: string[]): GLTF {
@@ -45,13 +79,11 @@ let disposedMats: Set<Material>;
 beforeEach(() => {
   holdBack = [];
   disposedMats = new Set();
-  vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockImplementation(async (url: string) => {
+  vi.stubGlobal('fetch', net);
+  vi.spyOn(GLTFLoader.prototype, 'parseAsync').mockImplementation(async (b: ArrayBuffer | string) => {
+    const url = pathOf(b as ArrayBuffer);
     await gate(url);
     return model(url.includes('body.glb') ? BODY : ['mPart']);
-  });
-  vi.spyOn(TextureLoader.prototype, 'loadAsync').mockImplementation(async (url: string) => {
-    await gate(url);
-    return new Texture();
   });
   const d0 = Material.prototype.dispose;
   vi.spyOn(Material.prototype, 'dispose').mockImplementation(function (this: Material) {
@@ -59,7 +91,10 @@ beforeEach(() => {
     d0.call(this);
   });
 });
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 
 const A = DEFAULT_LOOKS.A;
 /** The bundled table's tops with a mesh of their own, and eyes, other than A's. */
@@ -130,5 +165,22 @@ describe('a player dressed as it goes (player3d.ts)', () => {
     expect(texStats().cached).toBe(cached0);
     p.dispose();
     expect(texStats()).toEqual({ held: 0, refs: 0, cached: 0 });
+  });
+});
+
+describe('wearable (player3d.ts): offline, a part never fetched is drawn as the いつもの look\'s', () => {
+  // (only the everyday pack to be had, as a phone offline that has drawn only its いつもの look)
+  const offline = (u: string, i?: RequestInit) => (u.includes('/everyday.') ? net(u, i) : Promise.reject(new TypeError('offline')));
+  const saved: PlayerLook = { ...A, hair: 'PlayerHair11', top: 'TopsTexOnepieceAlineHLinen0', bottom: null, glasses: null };
+
+  it('online, as asked', async () => {
+    expect(await wearable(saved, PARTS, '/on', A)).toEqual(saved);
+  });
+  it('offline, each part it can\'t have the base\'s (a one-piece\'s stand-in brings its bottoms); one it can, as asked', async () => {
+    vi.stubGlobal('fetch', offline);
+    expect(await wearable(saved, PARTS, '/off', A)).toEqual({ ...saved, hair: A.hair, top: A.top, bottom: A.bottom });
+    expect(await wearable({ ...A, top: DEFAULT_LOOKS.B.top }, PARTS, '/off', A)).toEqual({ ...A, top: DEFAULT_LOOKS.B.top });
+    // a part the table hasn't (the whole table not to be had): the base's too
+    expect(await wearable({ ...A, shoes: 'ShoesNoSuchThing0' }, PARTS, '/off', A)).toEqual(A);
   });
 });

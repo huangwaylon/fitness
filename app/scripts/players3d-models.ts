@@ -1,15 +1,17 @@
 // NH's human players in 3D (components/player3d; design/avatar/tech-notes.md, closet/feasibility.md): the parts the app
-// assembles a player from at runtime, from the game files the user supplied:
-//   static/room/player/body.glb              the body, once per page (skeleton, skin, legs, face patches, ears, noses)
-//   static/room/player/face/<PlayerEyeNN|PlayerMouthNN>.webp   an eye type's 16 frames, a mouth's 9 (atlases)
-//   static/room/player/face/cheek<0-2>.webp  the blush shapes
-//   static/room/player/mesh/<key>.glb        each part's mesh alone (a hairstyle with its greyscale texture; a top's
-//                                            shape, a shoe's, a glasses' frame…), bound to the body's joints by name
-//   static/room/player/tex/<id>[.<material>].webp   each item's baked albedo (its colour; tints stay at runtime)
+// assembles a player from at runtime, from the game files the user supplied, loose into the work folder (.cache/player/,
+// gitignored), then packed into static/room/player/ (scripts/player-packs.ts, run at the end):
+//   body.glb              the body, once per page (skeleton, skin, legs, face patches, ears, noses)
+//   face/<PlayerEyeNN|PlayerMouthNN>.webp   an eye type's 16 frames, a mouth's 9 (atlases)
+//   face/cheek<0-2>.webp  the blush shapes
+//   mesh/<key>.glb        each part's mesh alone (a hairstyle with its greyscale texture; a top's shape, a shoe's, a
+//                         glasses' frame…), bound to the body's joints by name
+//   tex/<id>[.<material>].webp   each item's baked albedo (its colour; tints stay at runtime)
 //   src/lib/components/look/swatches.json   the bundled items' swatches alone (the 2D stand-in figure)
 //   src/lib/components/player3d/parts.json   the part table: every id → its slot, mesh, textures, colour line, icon,
 //                                            swatch (the closet's dot); each icon's colour (the closet tints it)
-// Under /room/: the service worker caches what a phone wears on first use, never at install.
+// Under /room/: the service worker caches what a phone wears on first use, never at install. Then npm run world3d-ktx2
+// (the KTX2s of what's new: it packs them in).
 //
 // Which items: the first closet (STARTER below: every hairstyle, eye and mouth, and every colour of the lines the art
 // scout curated, design/avatar/catalog.md), or --all (every item the closet sweep wore cleanly: ~19 MB). The sweep's
@@ -27,9 +29,10 @@ import { tmpdir } from 'node:os';
 import { dirname, extname, join, resolve, sep } from 'node:path';
 import { createRequire, stripTypeScriptTypes } from 'node:module';
 import { createHash } from 'node:crypto';
+import { WORK, packPlayer, writeTable } from './player-packs.ts';
 
 const APP = join(import.meta.dirname, '..');
-const OUT = join(APP, 'static', 'room', 'player');
+const OUT = WORK;
 const TABLE = join(APP, 'src', 'lib', 'components', 'player3d', 'parts.json');
 const MAP = join(import.meta.dirname, 'players3d-map.json');
 const ICONS = join(APP, 'static', 'art', 'finds', 'items');
@@ -199,7 +202,7 @@ function pack(r: { gltf: string }, out: string) {
 
 for (const f of ['PlayerBody', 'PlayerEye00', 'PlayerMouth00']) copy(f);
 await call('init', files);
-const table: Record<string, unknown> = { _: 'scripts/players3d-models.ts: the player parts (static/room/player/…: KB, content hash v), and per item its slot, mesh, textures (material → file), colour line, icon (static/art/finds/items/<icon>.webp), swatch sw (its own colour); icons: each catalogue icon\'s own colour' };
+const table: Record<string, unknown> = { _: 'scripts/players3d-models.ts: the player parts (packed in static/room/player/: KB, content hash v, place at [pack, offset, bytes] and a KTX2\'s k, scripts/player-packs.ts), and per item its slot, mesh, textures (material → file), colour line, icon (static/art/finds/items/<icon>.webp), swatch sw (its own colour); icons: each catalogue icon\'s own colour' };
 
 // the body
 const b = await call<{ gltf: string; tris: number }>('bodyGltf');
@@ -319,12 +322,10 @@ table.icons = Object.fromEntries(Object.entries(icons).sort(([a], [b]) => a.loca
 const sorted = (o: Record<string, unknown>) => Object.fromEntries(Object.entries(o).sort(([a], [b]) => a.localeCompare(b)));
 for (const k of ['face', 'mesh', 'hair', 'items'] as const) table[k] = sorted(table[k] as Record<string, unknown>);
 mkdirSync(dirname(TABLE), { recursive: true });
-// (one entry a line: a diff shows what changed)
-const block = (v: unknown) => v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length > 3
-  ? `{\n${Object.entries(v).map(([k, x]) => `  ${JSON.stringify(k)}: ${JSON.stringify(x)}`).join(',\n')}\n }` : JSON.stringify(v);
-const write = (f: string, t: Record<string, unknown>) => writeFileSync(f, `{\n${Object.entries(t).map(([k, v]) => ` ${JSON.stringify(k)}: ${block(v)}`).join(',\n')}\n}\n`);
+const write = writeTable;
 // the whole table, fetched when a player is drawn (static/room/player/parts.json: lazy, as the parts); the app's bundle
 // carries the first closet's (components/player3d/parts.json: what the closet lists now), and the whole one's hash
+// (both with each file's place once packed: player-packs.ts)
 const FULL = join(OUT, 'parts.json');
 write(FULL, table);
 const fullV = hash(FULL);
@@ -358,3 +359,5 @@ const meshKB = Object.values(meshes).reduce((t: number, m) => t + (m as { kb: nu
 console.log(`${items.length} items, ${hairs.length} hairstyles (+${caps.length} caps), ${eyes.length} eyes, ${mouths.length} mouths; meshes ${Object.keys(meshes).length} (${(meshKB / 1024).toFixed(2)} MB), item textures ${(texKB / 1024).toFixed(2)} MB`);
 rmSync(scratch, { recursive: true, force: true });
 rmSync(work, { recursive: true, force: true });
+const packed = packPlayer({ from: OUT });
+console.log(`${packed.packs} packs, ${(packed.bytes / 1e6).toFixed(2)} MB (${packed.written} written, ${packed.removed} removed): npm run world3d-ktx2 next`);
