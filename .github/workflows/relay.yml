@@ -5,9 +5,9 @@ name: Relay checks
 on:
   push:
     branches: [main]
-    paths: ['relay/**', 'app/src/lib/sync/live-protocol.ts', 'app/src/lib/contract/**', 'app/src/lib/model/**', '.github/workflows/relay.yml']
+    paths: ['relay/**', 'app/src/lib/contract/**', 'app/src/lib/random.ts', 'app/src/lib/types.ts', '.github/workflows/relay.yml']
   pull_request:
-    paths: ['relay/**', 'app/src/lib/sync/live-protocol.ts', 'app/src/lib/contract/**', 'app/src/lib/model/**', '.github/workflows/relay.yml']
+    paths: ['relay/**', 'app/src/lib/contract/**', 'app/src/lib/random.ts', 'app/src/lib/types.ts', '.github/workflows/relay.yml']
   workflow_dispatch:
 
 permissions:
@@ -27,6 +27,7 @@ jobs:
           sparse-checkout: |
             relay
             app/src
+            .github/workflows
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 24
