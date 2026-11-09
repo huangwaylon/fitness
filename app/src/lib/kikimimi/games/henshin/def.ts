@@ -82,6 +82,8 @@ const SWAPS: Readonly<Record<string, readonly string[]>> = {
   "don't": ["didn't", 'do'], know: ['no', 'now'], it: ['at', 'that'], at: ['it', 'to'], is: ['was', 'as'], what: ["what's", 'which']
 };
 const lower = (w: string) => w.toLowerCase().replace(/’/g, "'");
+/** A word's near sounds for a Japanese ear (SWAPS; none: []), まるごと 聞く's dictation tiles too. */
+export const swapsOf = (w: string): readonly string[] => SWAPS[lower(w)] ?? [];
 
 /** A phrase's choices at a tier: easy the right one and its first wrong one, else all three. */
 export const choicesFor = (it: Pick<Item, 'choices' | 'answer'>, tier: Tier | undefined): readonly string[] =>

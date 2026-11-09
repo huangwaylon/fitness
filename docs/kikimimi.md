@@ -11,7 +11,7 @@ docs/design.md "ききみみ クイズ" has the one-paragraph summary; docs/back
 
 ## Open items
 
-- **R2 (W2-R).** The packs are 94.2 MiB (games) + 21.4 MiB (stories) on Pages, under bank.test's raised lines (96 and 23 MiB). The fix is the packs on R2 behind a same-origin `PACK_BASE` (not in the code). It needs R2 enabled in the Cloudflare dashboard (a bucket and a token); the same bucket, bound as `STT_BUCKET`, serves the mic's model (kikimimi-mic.md "Hosting and the service worker").
+- **R2 (W2-R).** The packs are 101.6 MiB (games, まるごと 聞く's 7.4 of them) + 21.4 MiB (stories) on Pages, under bank.test's raised lines (103 and 23 MiB). The fix is the packs on R2 behind a same-origin `PACK_BASE` (not in the code). It needs R2 enabled in the Cloudflare dashboard (a bucket and a token); the same bucket, bound as `STT_BUCKET`, serves the mic's model (kikimimi-mic.md "Hosting and the service worker").
 - **`QUIZ_ON_PLAY`** (round/wire.ts) is off: the quiz and スピード はしご still go out as `quiz`. Turn it on once `npm run logs` shows both phones on a build that hears `play` (kikimimi-engine.md "Wire migration").
 - **The mic probe** on both phones, then the backend thresholds (kikimimi-mic.md "The probe"). Workers AI's data terms still to be written into docs/ops; until then the relay recogniser is never 自動.
 - **Mic leftovers:** こたえて！'s 「これ？」 band and 「声で / タップで」 preference, くりかえし's device-local speaking span, the unit page's ロールプレイ row, the input latency off まねっこ's lag.
@@ -112,6 +112,16 @@ A daily drill of American connected speech (about 3–4 minutes of the 15-minute
 - **The mode page** lists each phenomenon in order with its bar (outlined till 3 answers), 「今日」 and 「✓ 習得」; a tap plays that one instead, till 「今日の音に戻す」. Mine alone, never the partner's.
 - **Recycling:** a missed phrase is an item card like any; おさらい asks it through another phrase of its phenomenon (another voice and sentence: srs.ts `isSibling`), the drill's phrases joining おさらい only that way.
 - **The row:** `gm: 'henshin'`, `lv` 8, `[id, ok, pick, rp]` (a choice as authored; the dictation's wrong words as a mask). Level 8 trains the sounds, not a place: きろく's つながる おと and the features count it; the ability, the item difficulties, the trend and the level nudge leave it out.
+
+## まるごと 聞く
+
+C1 listening, everyday and travel (curriculum.md "Long listening"; the engine, kikimimi-engine.md "まるごと 聞く"). At ほし, on じっくり (never きまぐれ's pick); about 6 minutes, solo or co-op.
+- **A game:** one 2–5 minute piece played whole (its speakers on the stage, the one talking lifted, `ctx` under it; nothing to answer while it plays), then 4–5 questions with no clip: 話の中心, 言外の意味, 気持ち, 次の行動, 3 English choices each (easy, at かわ or below: two). 「通しで もう一度」 replays it all.
+- **Reveal:** ○ / ×, each choice's Japanese, 解説, and 「ここで わかる」: the line that answers it, with ▶︎.
+- **Results:** the review, the transcript (every line tappable to hear it alone, each question's Q mark on its line, a miss in coral), the credit of a real recording, then 書きとり: 1–2 lines near my misses (all right: one near the end), the missing words typed (音の へんしん's matching) or tapped as tiles with near-sound decoys.
+- **The pieces:** 5 real recordings (本物の録音) and 5 generated scenes (会話劇), 31 minutes. The mode page lists the place's pieces with my last score; 「今日」 is the first not heard, then one I missed (under 75 %) a week ago or more, else the least recent. A tap plays another, till 「今日の会話に戻す」.
+- **Recycling:** each question and dictation line is an item (`<piece>-q1`, `<piece>-k12`, outside every deck); a missed one comes back in おさらい through a sibling (a ほし item of its type, a drill phrase of its sound).
+- **Credits:** せってい's 「音声の出典」 lists each real recording's credit line and licence, and the results show it under the transcript.
 
 ## Navigation
 
@@ -221,7 +231,7 @@ A bedtime story in the night palette whatever the hour, no score (`story/StoryFr
 
 ### せってい
 
-`settings/KikiSettings.svelte`: 🔊 「きこえる？」; 「おとを 1だいに まとめる」 as a new lobby's default (`DEVICE.kikiSame`); にほんごやく いつも / まちがえたら / みない (`DEVICE.kikiJa`); こんしゅうの めあて 3 / 5 / 7 にち (`DEVICE.kikiWeekGoal`, 3 by default); 「みみ チェックを もういちど」 with the placed place; the mic's switch and probe (kikimimi-mic.md "Where they show").
+`settings/KikiSettings.svelte`: 🔊 「きこえる？」; 「おとを 1だいに まとめる」 as a new lobby's default (`DEVICE.kikiSame`); にほんごやく いつも / まちがえたら / みない (`DEVICE.kikiJa`); こんしゅうの めあて 3 / 5 / 7 にち (`DEVICE.kikiWeekGoal`, 3 by default); 「みみ チェックを もういちど」 with the placed place; 「音声の出典」 (まるごと 聞く's recordings, opened on a tap: settings/LongCredits.svelte); the mic's switch and probe (kikimimi-mic.md "Where they show").
 
 ### First run
 

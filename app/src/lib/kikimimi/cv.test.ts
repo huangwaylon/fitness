@@ -21,6 +21,7 @@ import { tachiDeal } from './games/tachi/def.ts';
 import { callDeal, callRounds } from './games/call/def.ts';
 import { rushDeal, rushRounds } from './games/rush/def.ts';
 import { newsDeal } from './games/news/def.ts';
+import { longDeal, longRounds, piecesAt } from './games/long/def.ts';
 import { pairDeal, sayOf } from './games/pair/def.ts';
 import type { PairCard } from './games/pair/pairs.ts';
 
@@ -49,6 +50,8 @@ function decksOf(key: string): unknown {
   if (gm === 'rush') return SEEDS.map((s) => { const cs = rushDeal(s, [listenOf(unit)!]); return [0, 1, 2, 3].map((ear) => rushRounds(cs, { lv: cs[0].lv, ear }, () => 0).map((r) => [r.id, r.map, r.answer])); });
   // しずえの ニュース's: the bulletin of a day a seed (spread over the year), each card's answer, trap and clips, on a rainy 23 °C day
   if (gm === 'news') return SEEDS.map((s) => newsDeal(20_400 + s * 19, [listenOf(unit)!], { sky: 'rain', fog: false, hi: 23 }).map((c) => [c.id, c.answer, c.news.trap, c.choices.length, c.lines?.map((l) => l.clip) ?? []]));
+  // まるごと 聞く's: each piece of the file, each question's choices shown and answer at every ear, the lines' gaps
+  if (gm === 'long') { const p = listenOf(unit)!; return piecesAt([p]).map((_, piece) => { const cs = longDeal([p], { piece }); return [cs[0].lines!.map((l) => [l.clip, (l as { at?: number }).at]), [0, 1, 2, 3].map((ear) => longRounds(cs, { ear }, () => 0).map((r) => [r.id, r.shown, r.answer]))]; }); }
   // はつおん's: 8 pairs a seed, the word to say on each
   if (gm === 'pair') return SEEDS.map((s) => pairDeal(s, partItems(unit as Unit) as PairCard[]).map((c) => [c.id, sayOf(s, c.id)]));
   // 音の へんしん's: 8 phrases a seed for a few days' phenomena, each round's kind, choices and tiles at every ear
@@ -81,7 +84,7 @@ describe('ききみみ content versions', () => {
     const units = INDEX.paths.map((p) => p[0]);
     const files = (gm: string) => Object.keys(INDEX.listen).filter((u) => INDEX.listen[u][0] === gm);
     expect(Object.keys(INDEX.games).sort()).toEqual([...levels.map((l) => `quiz:${l}`), 'ladder:ladder', ...units.map((u) => `lesson:${u}`), 'taikai:all',
-      ...files('tile').map((u) => `tile:${u}`), ...files('tachi').map((u) => `tachi:${u}`), ...files('call').map((u) => `call:${u}`), ...files('rush').map((u) => `rush:${u}`), ...files('news').map((u) => `news:${u}`),
+      ...files('tile').map((u) => `tile:${u}`), ...files('tachi').map((u) => `tachi:${u}`), ...files('call').map((u) => `call:${u}`), ...files('rush').map((u) => `rush:${u}`), ...files('news').map((u) => `news:${u}`), ...files('long').map((u) => `long:${u}`),
       ...(INDEX.units['mic-pairs'] ? ['pair:mic-pairs'] : []), ...(INDEX.units['8'] ? ['henshin:8'] : [])].sort());
     // (a recipe-2 unit's lesson takes in its kinds' listened files too: compile.ts)
     const listened = (u: string) => [...new Set(Object.values(INDEX.units[u].kinds ?? {}).flat())].filter((f) => INDEX.listen[f]?.[2] === 'listened').sort();

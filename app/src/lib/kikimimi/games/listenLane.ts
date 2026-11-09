@@ -20,8 +20,9 @@ export interface ListenMore<C extends Item, R extends Round, O extends ListenOpt
   codec?: { encode(o: O): number[]; decode(a: readonly number[]): O | null };
   /** Its GameDef over its source (listenGame). */
   game?(src: ListenSource<C>): GameDef<O>;
-  /** Its options' own, beyond a listening game's, as a lobby opens (the host's). */
-  lobby?(): Omit<O, keyof ListenOpts>;
+  /** Its options' own, beyond a listening game's, as a lobby opens (the host's; `focus`: the sheet's pick for this
+   *  game at this level, まるごと 聞く's piece). */
+  lobby?(p: { lv: number; focus: number | null }): Omit<O, keyof ListenOpts>;
   /** The host's seed (Lane.seed; none: a random one). */
   seed?: Lane['seed'];
   /** My answers as its row's from my rounds (listenRecord). */
@@ -47,7 +48,7 @@ export function listenLane<C extends Item, R extends Round, O extends ListenOpts
     deal: (d) => deal(d.seed, chunks(d).flatMap((u) => listenOf(String(u)) ?? []), codec.decode(d.o)),
     ...(more.seed && { seed: more.seed }),
     myTier: (_u, my) => tierOf(my.level),
-    opts: ({ lv, timer, level }) => codec.encode({ ...more.lobby?.(), lv: lv as ListenOpts['lv'], timer, ear: tierOf(level ?? null) } as O),
+    opts: ({ lv, timer, level, focus }) => codec.encode({ ...more.lobby?.({ lv, focus: focus ?? null }), lv: lv as ListenOpts['lv'], timer, ear: tierOf(level ?? null) } as O),
     record: (v, items, rp, done) => {
       const o = codec.decode(v.o);
       return o ? record(g.rounds(items as C[], v.seed, o, itemMs), v.answers.map(rawOf), v.had, rp, done) : [];

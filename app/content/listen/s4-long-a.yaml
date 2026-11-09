@@ -1,0 +1,206 @@
+# まるごと 聞く S4 ほし (a): travel, generated. Three 2-4 minute scenes with three speakers each: a hotel problem in
+# the middle of the night, a delayed flight and a missed connection, a haggle at a flea market. The meaning is implied,
+# not signposted (a refusal said politely, sarcasm, a sales trick); people interrupt and talk over each other (a
+# negative `at`); a light Southern (us-f6) and a light New York voice (us-m6) among them. Questions: the gist, the
+# implied meaning, the attitude, the next step; dictation lines on the connected speech.
+schema: 1
+unit: s4-long-a
+game: long
+stage: 5
+track: life
+seeds: [3, 8, 67]
+features: { primary: overlap, review: chain }
+cando: "旅先での 長い 会話を 通しで 聞いて、遠回しな 意味と 気持ちと 次の 行動が わかる"
+status: listened
+items:
+  - kind: long
+    id: lg-hotel-noise
+    name: 真夜中の フロント
+    source: tts
+    ctx: "深夜のホテル。客がフロントにやって来る"
+    note: "fully committed＝満室。make a note は「何もできない」"
+    tags: { seed: 3, register: service, pragmatic: refusal, features: [overlap, contraction, filler] }
+    lines:
+      - { who: raymond, at: 0, en: "Good evening— well, good morning, I guess. How can I help you?", tts: "Good evening— well, g'morning, I guess. How can I help ya?", ja: "こんばんは…いや、もうおはようございます、ですね。どうされました？" }
+      - { who: cherry, at: 0.4, en: "Hi. So, I'm in room 412, and I'm so sorry to bother you at this hour, but I haven't slept a wink.", tts: "Hi. So, I'm in room four-twelve, and I'm so sorry to bother ya at this hour, but I haven't slept a wink.", ja: "どうも。412号室の者です。こんな時間に本当にすみません、でも一睡もできていなくて。" }
+      - { who: raymond, at: 0.3, en: "Oh no. What seems to be the problem?", ja: "それは大変です。どうなさいました？" }
+      - { who: cherry, at: 0.3, en: "Well, where do I start? There's the ice machine right outside my door, which, you know, clunks every ten minutes like somebody's dropping a bag of rocks.", tts: "Well, where do I start? There's the ice machine right outside my door, which, y'know, clunks every ten minutes like somebody's droppin' a bag of rocks.", ja: "どこから話せばいいか。まず部屋の真ん前に製氷機があって、10分おきに石の袋でも落としたみたいにガコンって鳴るんです。" }
+      - { who: raymond, at: -0.4, en: "Ah, yeah, the ice machine—", ja: "ああ、製氷機ですね…" }
+      - { who: cherry, at: 0.1, en: "And that I could live with, honestly. But there's also a party going on upstairs. Like, a real party. With a DJ.", tts: "And that I could live with, honestly. But there's also a party goin' on upstairs. Like, a real party. With a D J.", ja: "それだけなら我慢できるんです、正直。でも上の階でパーティーをやってて。本格的なのが。DJまでいるんです。" }
+      - { who: raymond, at: 0.4, en: "Upstairs from 412... that'd be the fifth floor. Let me just... okay. Yeah, I see we've got a wedding group up there tonight.", tts: "Upstairs from four-twelve... that'd be the fifth floor. Lemme just... okay. Yeah, I see we've got a wedding group up there tonight.", ja: "412の上ですと…5階ですね。少々お待ちを…はい。今夜は5階に結婚式のグループが入っていますね。" }
+      - { who: cherry, at: 0.3, en: "A wedding. Of course it is.", ja: "結婚式。でしょうね。" }
+      - { who: raymond, at: 0.4, en: "I'm really sorry about that. I can call up and ask them to keep it down.", tts: "I'm really sorry about that. I can call up an' ask 'em to keep it down.", ja: "大変申し訳ありません。電話して静かにするようお願いしてみます。" }
+      - { who: cherry, at: 0.3, en: "I mean, sure, but I'm guessing you've already done that once or twice tonight?", ja: "まあ、それもいいですけど、今夜もう1、2回はそうしてるんじゃないですか？" }
+      - { who: raymond, at: 0.6, en: "...We may have. Yes.", ja: "…しているかもしれません。はい。" }
+      - { who: cherry, at: 0.3, en: "Right. So is there any chance I could just switch rooms? Anywhere quieter. I'm not picky.", ja: "ですよね。じゃあ部屋を替えてもらうことはできませんか？静かならどこでも。こだわりませんから。" }
+      - { who: raymond, at: 0.6, en: "Let me see what I can do. Hmm. So, the thing is, we're pretty much fully committed tonight, with the wedding and the conference.", tts: "Lemme see what I can do. Hmm. So, the thing is, we're pretty much fully committed tonight, with the wedding an' the conference.", ja: "確認してみます。うーん。実は今夜は結婚式と学会で、ほぼ満室でして。" }
+      - { who: cherry, at: -0.3, en: "Fully committed meaning—", ja: "満室っていうのは、つまり…" }
+      - { who: raymond, at: 0.1, en: "Meaning every room's booked, unfortunately. I can definitely make a note of the noise on your reservation, though.", ja: "あいにく全室ご予約で埋まっております。ただ、騒音の件はご予約に必ず記録しておきます。" }
+      - { who: cherry, at: 0.4, en: "A note. Okay. And what does the note do, exactly?", ja: "記録。はあ。で、その記録で具体的に何が変わるんですか？" }
+      - { who: raymond, at: 0.5, en: "Well, it lets the morning team know, so they can, you know, take care of you at checkout.", tts: "Well, it lets the morning team know, so they can, y'know, take care of ya at checkout.", ja: "朝のスタッフに伝わりますので、チェックアウトの際に、その、何かしら対応できるかと。" }
+      - { who: cherry, at: 0.4, en: "Uh-huh.", ja: "ふーん。" }
+      - { who: raymond, at: 0.4, en: "And I've got these. Complimentary earplugs. They're actually pretty good.", ja: "それとこちらを。無料の耳栓です。けっこう効きますよ。" }
+      - { who: cherry, at: 0.7, en: "Earplugs. Wow. That is... so thoughtful.", ja: "耳栓。まあ。なんて…お気遣いを。" }
+      - { who: raymond, at: 0.5, en: "I know it's not ideal.", ja: "理想的でないのはわかっています。" }
+      - { who: cherry, at: 0.3, en: "Look, I've got a nine a.m. presentation, and I drove six hours to get here. I'm not trying to make your night harder, I promise. I just really need some sleep.", ja: "あのね、朝9時にプレゼンがあって、6時間運転してここまで来たんです。あなたを困らせたいわけじゃないんですよ、本当に。ただどうしても眠りたいの。" }
+      - { who: raymond, at: 0.5, en: "No, I totally get it. Give me one second. Let me grab my manager. She might have some options I don't.", tts: "No, I totally get it. Gimme one second. Lemme grab my manager. She might have some options I don't.", ja: "いえ、よくわかります。少々お待ちください。マネージャーを呼んできます。私にはない手があるかもしれません。" }
+      - { who: raymond, at: 0.6, en: "Diana? Have you got a minute?", ja: "ダイアナさん、ちょっといいですか？" }
+      - { who: diana, at: 1.0, en: "Sure, what's up?", ja: "いいわよ、どうしたの？" }
+      - { who: raymond, at: 0.3, en: "Ms.— sorry, what was your last name?", ja: "えっと…すみません、お名前は？" }
+      - { who: cherry, at: 0.2, en: "Cherry's fine.", ja: "チェリーでいいです。" }
+      - { who: raymond, at: 0.2, en: "Cherry's in 412. By the ice machine, under the wedding.", tts: "Cherry's in four-twelve. By the ice machine, under the wedding.", ja: "チェリーさん、412号室です。製氷機の前で、結婚式の真下の。" }
+      - { who: diana, at: -0.5, en: "Oh, under the wedding. Say no more.", ja: "ああ、結婚式の真下ね。それ以上言わなくていいわ。" }
+      - { who: cherry, at: 0.3, en: "So you've heard about the wedding.", ja: "結婚式のこと、ご存じなんですね。" }
+      - { who: diana, at: 0.4, en: "Honey, the whole building's heard about the wedding. Okay. So I can't give you a regular room, because there aren't any. But I do have the corner suite on the second floor.", ja: "あなた、建物中みんな知ってるわよ。さてと。普通の部屋は空きがないから出せないの。でも2階の角のスイートなら用意できる。" }
+      - { who: cherry, at: 0.4, en: "Oh, wow.", ja: "まあ、すごい。" }
+      - { who: diana, at: 0.2, en: "Now, it's not ready. Housekeeping didn't get to it, so it'll take maybe twenty minutes to turn it over.", tts: "Now, it's not ready. Housekeeping didn't get to it, so it'll take maybe twenty minutes ta turn it over.", ja: "ただ、まだ準備ができてないの。清掃が間に合わなくて、整えるのに20分くらいかかるかな。" }
+      - { who: cherry, at: 0.4, en: "Twenty minutes is nothing. Honestly.", ja: "20分なんて平気です。本当に。" }
+      - { who: diana, at: 0.3, en: "And the other thing is, it's only free for tonight. Tomorrow it's booked, so you'd have to move back to a standard room in the afternoon.", ja: "それともう一つ、空いてるのは今夜だけなの。明日は予約が入ってるから、午後には普通の部屋に戻ってもらうことになる。" }
+      - { who: cherry, at: 0.5, en: "So I'd be packing twice.", ja: "じゃあ荷造りを2回するわけね。" }
+      - { who: diana, at: 0.4, en: "You would. I know. Or you can stay put with the earplugs. Totally your call.", ja: "そうなるわね。わかってる。耳栓でそのままいてもいいのよ。あなた次第。" }
+      - { who: cherry, at: 0.8, en: "Mm... no. No, I'll take the suite. I'll pack twice. I'd pack ten times at this point.", ja: "うーん…いえ。スイートにします。2回荷造りします。今なら10回だってするわ。" }
+      - { who: diana, at: 0.3, en: "Ha, fair enough. And there's no charge for the suite, obviously.", ja: "あはは、そうよね。もちろんスイートの追加料金はなしよ。" }
+      - { who: cherry, at: 0.3, en: "Oh, that's— thank you. Really.", ja: "まあ…ありがとうございます。本当に。" }
+      - { who: diana, at: 0.3, en: "So here's what we'll do. Go ahead and get your things together, and come back down in about twenty minutes. Raymond will have new keys for you.", tts: "So here's what we'll do. Go ahead an' get your things together, an' come back down in about twenty minutes. Raymond'll have new keys for ya.", ja: "じゃあこうしましょう。荷物をまとめて、20分くらいしたらまた降りてきて。レイモンドが新しい鍵を用意しておくから。" }
+      - { who: raymond, at: 0.3, en: "I'll have them right here.", tts: "I'll have 'em right here.", ja: "ここにご用意しておきます。" }
+      - { who: cherry, at: 0.4, en: "Perfect. Should I bring back the old key?", ja: "完璧。古い鍵は返したほうがいい？" }
+      - { who: raymond, at: 0.3, en: "Yeah, just drop it in the box when you come down. And, uh, you can keep the earplugs.", tts: "Yeah, just drop it in the box when ya come down. And, uh, you can keep the earplugs.", ja: "はい、降りてきたらボックスに入れてください。あと、その、耳栓はお持ちください。" }
+      - { who: cherry, at: 0.4, en: "You know what? I might actually use them. The suite's still in the same building as the wedding, right?", tts: "Y'know what? I might actually use 'em. The suite's still in the same building as the wedding, right?", ja: "そうね、実は使うかも。スイートだって結婚式と同じ建物の中ですもんね？" }
+      - { who: diana, at: 0.3, en: "That it is.", ja: "その通り。" }
+    questions:
+      - { type: gist, ask: "どんな やり取り？", line: 37, choices: ["A guest complains about a wedding, and the clerk asks the party to leave.", "A guest who can't sleep is offered a better room for one night.", "A guest asks for money back at checkout because the ice machine is broken."], answer: 1, cja: ["客が結婚式に苦情を言い、係がパーティーを終わらせる", "眠れない客に、一晩だけ良い部屋が用意される", "製氷機の故障で、客がチェックアウト時に返金を求める"], why: "製氷機と結婚式の騒音で眠れない客に、マネージャーが今夜だけ空いている2階のスイートを出す。パーティーを終わらせる話ではない。" }
+      - { type: mean, ask: "fully committed と 言うのは？", line: 14, choices: ["The staff are working hard to fix her problem.", "Every room is taken, so he can't move her.", "The wedding guests have promised to be quiet."], answer: 1, cja: ["スタッフが全力で対応している", "満室なので部屋を替えられない", "結婚式の客が静かにすると約束した"], why: "fully committed は「満室」の婉曲表現。直後に every room's booked と言い換えている。committed＝熱心、という意味ではない。" }
+      - { type: mean, ask: "We may have. Yes. で 認めたのは？", line: 10, choices: ["He's already asked them to keep it down, with no luck.", "He may have put her in the room under the party by mistake.", "He may be able to find her a room, but only a smaller one."], answer: 0, cja: ["もう静かにするよう頼んだが、効かなかった", "間違えてパーティーの真下の部屋にしたかもしれない", "部屋を用意できるかもしれないが、狭い部屋だけだ"], why: "「もう1、2回注意したのでは？」に対して We may have＝したかもしれない。つまり注意済みで効果がなかったと認めている。" }
+      - { type: attitude, ask: "耳栓を 渡された 客の 気持ちは？", line: 19, choices: ["Grateful, since she forgot to pack a pair of her own.", "Embarrassed that she's complaining so late.", "Unimpressed: she doesn't think it solves anything."], answer: 2, cja: ["自分の分を持ってくるのを忘れたので、ありがたい", "夜遅くに苦情を言って気まずい", "解決にならないと冷ややか"], why: "That is... so thoughtful. は間をあけた皮肉。耳栓では何も解決しないと思っている。" }
+      - { type: next, ask: "客は このあと 何を する？", line: 40, choices: ["Pack her things and come back down in about twenty minutes.", "Wait in the lobby while her bags are brought down.", "Sleep with the earplugs and change rooms tomorrow."], answer: 0, cja: ["荷物をまとめ、20分ほどで降りてくる", "荷物が運ばれるのをロビーで待つ", "耳栓で眠り、明日部屋を替える"], why: "get your things together＝荷物をまとめる。come back down in about twenty minutes＝20分ほどで戻る。部屋替えは今夜。" }
+    dict:
+      - { line: 12, words: "Let me see", feature: lemme }
+      - { line: 32, words: "turn it over", feature: linking }
+      - { line: 41, words: "have them", feature: weak-form }
+
+  - kind: long
+    id: lg-gate-delay
+    name: 乗り継ぎに 間に合わない
+    source: tts
+    ctx: "シカゴの空港。出発ゲートの前で"
+    note: "a consideration は控えめな表現。本当は大問題"
+    tags: { seed: 8, register: service, pragmatic: understatement, features: [overlap, numbers, gonna] }
+    lines:
+      - { who: orville, at: 0, en: "Good afternoon, folks, this is an update for Flight 1840 to Seattle. Our incoming crew has been delayed, so our new departure time is 7:15.", tts: "Good afternoon, folks, this is an update for Flight eighteen-forty to Seattle. Our incoming crew has been delayed, so our new departure time is seven-fifteen.", ja: "皆さま、シアトル行き1840便のご案内です。到着する乗務員が遅れているため、新しい出発時刻は7時15分となります。" }
+      - { who: orville, at: 0.3, en: "We'll have another update for you by 6:30. Thank you for your patience.", tts: "We'll have another update for ya by six-thirty. Thank you for your patience.", ja: "次のご案内は6時半までにいたします。ご理解ありがとうございます。" }
+      - { who: curt, at: 1.2, en: "Seven-fifteen. They said six-fifteen an hour ago.", ja: "7時15分。1時間前は6時15分って言ってたぞ。" }
+      - { who: maple, at: 0.3, en: "Sorry, did they just say seven-fifteen?", ja: "すみません、今7時15分って言いました？" }
+      - { who: curt, at: 0.2, en: "Yep. That's the second time. I'm starting to think there is no crew.", ja: "ああ。これで2回目。乗務員なんていないんじゃないかって気がしてきたよ。" }
+      - { who: maple, at: 0.4, en: "Oh, that's not good. I've got a connection in Seattle. To Anchorage.", ja: "まずいな。シアトルで乗り継ぎなんです。アンカレッジ行きに。" }
+      - { who: curt, at: 0.3, en: "Ooh. What time?", ja: "おっと。何時の？" }
+      - { who: maple, at: 0.2, en: "Nine-forty.", ja: "9時40分。" }
+      - { who: curt, at: 0.5, en: "Okay, so if this thing actually leaves at seven-fifteen, you'd land around nine-thirty, Seattle time. That's... cutting it pretty close.", tts: "Okay, so if this thing actually leaves at seven-fifteen, you'd land around nine-thirty, Seattle time. That's... cuttin' it pretty close.", ja: "てことは、本当に7時15分に出たとしても、着くのはシアトル時間で9時半ごろ。それは…かなりギリギリだな。" }
+      - { who: maple, at: 0.3, en: "Ten minutes. That's not a connection, that's a sprint.", ja: "10分。それって乗り継ぎじゃなくて全力疾走よ。" }
+      - { who: curt, at: 0.3, en: "You should talk to the agent before the line gets crazy. Go. I'll watch your bag.", tts: "You should talk to the agent before the line gets crazy. Go. I'll watch yer bag.", ja: "列がすごいことになる前に係員と話したほうがいい。行って。荷物は見てるから。" }
+      - { who: maple, at: 0.3, en: "Really? Thank you. I'll be quick.", ja: "本当に？ありがとう。すぐ戻ります。" }
+      - { who: orville, at: 1.5, en: "Hi there. What can I do for you?", tts: "Hi there. What can I do for ya?", ja: "こんにちは。どうされましたか？" }
+      - { who: maple, at: 0.3, en: "Hi. I'm on the Seattle flight, and I'm connecting to Anchorage at nine-forty. With this delay, I don't think I'm going to make it.", tts: "Hi. I'm on the Seattle flight, and I'm connecting to Anchorage at nine-forty. With this delay, I don't think I'm gonna make it.", ja: "どうも。シアトル便に乗るんですが、9時40分のアンカレッジ行きに乗り継ぐんです。この遅れだと間に合いそうになくて。" }
+      - { who: orville, at: 0.3, en: "Let me pull up your reservation. Last name?", tts: "Lemme pull up your reservation. Last name?", ja: "ご予約を確認します。お名字は？" }
+      - { who: maple, at: 0.2, en: "Maple. M-A-P-L-E.", tts: "Maple. M, A, P, L, E.", ja: "メープルです。M、A、P、L、E。" }
+      - { who: orville, at: 0.8, en: "Okay... yeah, I see it. So, you're right. That's a forty-minute connection on paper, and with the delay, it's... not realistic.", ja: "はい…ありました。おっしゃる通りです。予定では40分の乗り継ぎですが、この遅れだと…現実的ではないですね。" }
+      - { who: maple, at: 0.3, en: "That's what I was afraid of.", ja: "やっぱりそうですか。" }
+      - { who: orville, at: 0.4, en: "So I've got a couple of options for you. Option one, I can put you on the first flight tomorrow morning, Chicago straight to Anchorage. It leaves at 6:05.", tts: "So I've got a couple of options for ya. Option one, I can put ya on the first flight tomorrow morning, Chicago straight to Anchorage. It leaves at six-oh-five.", ja: "選択肢がいくつかあります。一つは、明日朝一番の、シカゴからアンカレッジへの直行便にお乗せできます。6時5分発です。" }
+      - { who: maple, at: 0.3, en: "Straight through? No connection?", ja: "直行？乗り継ぎなしで？" }
+      - { who: orville, at: 0.2, en: "Nonstop. Gets you in at nine-fifty, their time.", tts: "Nonstop. Gets ya in at nine-fifty, their time.", ja: "直行便です。現地時間の9時50分に着きます。" }
+      - { who: maple, at: 0.3, en: "Okay, that sounds—", ja: "なるほど、それは…" }
+      - { who: orville, at: -0.3, en: "Or, option two, I can try to get you out tonight through Denver. There's a flight boarding in twenty minutes, and the connection there is about fifty minutes.", tts: "Or, option two, I can try ta get ya out tonight through Denver. There's a flight boarding in twenty minutes, an' the connection there is about fifty minutes.", ja: "もう一つは、今夜デンバー経由で出発する方法です。20分後に搭乗が始まる便があって、デンバーでの乗り継ぎは50分ほどです。" }
+      - { who: maple, at: 0.4, en: "Tonight would be amazing, honestly. My sister's picking me up.", ja: "今夜なら最高です、本当に。姉が迎えに来てくれるんです。" }
+      - { who: orville, at: 0.5, en: "Sure. I'll just say, Denver's been having weather all afternoon, so... I can't promise that one goes on time either. And if it doesn't, you'd be stuck in Denver instead of here.", ja: "そうですよね。ただ一応申し上げると、デンバーは午後ずっと天気が荒れていて…あちらも定刻に出るとはお約束できません。そうなると、ここではなくデンバーで足止めになります。" }
+      - { who: maple, at: 0.6, en: "Ah. So it's, like, a gamble.", ja: "ああ。つまり、賭けってこと。" }
+      - { who: orville, at: 0.3, en: "It's a little bit of a gamble. And your checked bag might not make the switch. It'd probably come on the next flight.", ja: "少々賭けではあります。それに、預けたお荷物が乗り継ぎに間に合わないかもしれません。たぶん次の便で届くことになります。" }
+      - { who: maple, at: 0.5, en: "My bag has my winter coat in it. I'm going to Anchorage. In January.", ja: "あのバッグには冬のコートが入ってるんです。アンカレッジに行くんですよ。1月に。" }
+      - { who: orville, at: 0.3, en: "Yeah. That's... a consideration.", ja: "ええ。それは…考えどころですね。" }
+      - { who: maple, at: 0.7, en: "Okay. If I take the morning one, where do I stay tonight?", ja: "わかりました。朝の便にしたら、今夜はどこに泊まれば？" }
+      - { who: orville, at: 0.3, en: "Since it's a crew delay, that's on us. So I can give you a hotel voucher and a meal voucher.", tts: "Since it's a crew delay, that's on us. So I can give ya a hotel voucher an' a meal voucher.", ja: "乗務員による遅れですので、こちらで負担します。ホテルの宿泊券と食事券をお出しできます。" }
+      - { who: maple, at: 0.3, en: "Oh, okay. That changes things.", ja: "ああ、そうなんですね。それなら話が違う。" }
+      - { who: orville, at: 0.3, en: "The hotel's about ten minutes away. There's a shuttle from door four on the lower level.", ja: "ホテルは10分ほどのところです。下の階の4番出口からシャトルが出ています。" }
+      - { who: maple, at: 0.6, en: "You know what, let's do the morning flight. I'd rather get there late than end up in Denver without a coat.", tts: "Y'know what, let's do the morning flight. I'd rather get there late than end up in Denver without a coat.", ja: "決めました、朝の便にします。コートなしでデンバーに取り残されるより、遅れて着くほうがいい。" }
+      - { who: orville, at: 0.3, en: "Smart call. I'm printing everything now. Here's your new boarding pass, 6:05, gate B12. And these are the vouchers.", tts: "Smart call. I'm printing everything now. Here's your new boarding pass, six-oh-five, gate B twelve. And these are the vouchers.", ja: "賢明なご判断です。今すべて印刷しています。新しい搭乗券です、6時5分、B12ゲート。こちらが宿泊券と食事券です。" }
+      - { who: maple, at: 0.3, en: "B12. Got it. Do I need to get my bag back?", tts: "B twelve. Got it. Do I need ta get my bag back?", ja: "B12ね。わかりました。荷物は引き取らないといけませんか？" }
+      - { who: orville, at: 0.3, en: "Nope. We'll keep it and send it through on the morning flight with you.", tts: "Nope. We'll keep it an' send it through on the morning flight with ya.", ja: "いいえ。こちらでお預かりして、朝の便で一緒にお送りします。" }
+      - { who: maple, at: 0.3, en: "Great. Thank you so much. You've been really helpful.", ja: "よかった。本当にありがとうございます。とても助かりました。" }
+      - { who: orville, at: 0.2, en: "My pleasure. And call your sister. Tell her tomorrow, nine-fifty.", ja: "どういたしまして。お姉さんに電話を。明日の9時50分だって。" }
+      - { who: curt, at: 1.5, en: "So? You on the sprint plan?", ja: "で？全力疾走プランにした？" }
+      - { who: maple, at: 0.3, en: "Nope. I'm sleeping in a hotel on them and flying straight through in the morning.", ja: "ううん。航空会社持ちでホテルに泊まって、朝の直行便で行く。" }
+      - { who: curt, at: 0.4, en: "A hotel on them? Huh. Maybe I should go have a little chat with that guy too.", tts: "A hotel on them? Huh. Maybe I should go have a liddle chat with that guy too.", ja: "航空会社持ちのホテル？へえ。俺もあの人とちょっと話してこようかな。" }
+      - { who: maple, at: 0.3, en: "Weren't you just going to Seattle?", tts: "Weren'tcha jus' goin' ta Seattle?", ja: "あなた、シアトルに行くだけじゃなかった？" }
+      - { who: curt, at: 0.3, en: "Yeah, but nobody's waiting for me in Seattle. A free hotel sounds pretty good right now.", ja: "そうだけど、シアトルで待ってる人なんていないし。タダのホテル、今ならかなり魅力的だよ。" }
+      - { who: maple, at: 0.4, en: "Ha! Well, thanks for watching my bag. I'm going to go find the shuttle. Good luck with the... crew.", tts: "Ha! Well, thanks for watchin' my bag. I'm gonna go find the shuttle. Good luck with the... crew.", ja: "あはは。荷物を見ててくれてありがとう。シャトルを探しに行くね。その…乗務員の件、がんばって。" }
+    questions:
+      - { type: gist, ask: "どんな 話？", line: 33, choices: ["A traveler misses her flight because she waited at the wrong gate.", "A traveler is told her bag went to Denver by mistake and won't arrive.", "A traveler about to miss her connection rebooks for the morning."], answer: 2, cja: ["ゲートを間違えて、乗客が便を逃す", "荷物が手違いでデンバーへ行き、届かないと言われる", "乗り継ぎに間に合いそうにない客が、翌朝の便に替える"], why: "遅れで乗り継ぎが無理になり、係員の二つの案のうち翌朝の直行便を選ぶ。デンバーは選ばなかった案で、荷物は朝の便で一緒に送られる。" }
+      - { type: mean, ask: "デンバー経由に ついて 係員が 言いたいのは？", line: 24, choices: ["It's faster, so it's clearly the better choice if she wants to go tonight.", "It's risky: she could get stuck, and her bag might not make it.", "It's full, so she can only go on a waiting list."], answer: 1, cja: ["速いので、今夜行きたいなら明らかにこちらがいい", "危うい。足止めの恐れがあり、荷物も間に合わないかも", "満席なのでキャンセル待ちしかない"], why: "天気が荒れていて定刻は約束できない、デンバーで足止めになる、荷物が乗り継げないかも、と遠回しにリスクを伝えている。" }
+      - { type: attitude, ask: "That's... a consideration. の 口調は？", line: 28, choices: ["Impatient: he wants her to decide before the Denver flight boards.", "Gently amused: he agrees the coat matters.", "Confused: he didn't catch what she said about Anchorage."], answer: 1, cja: ["いら立っている：デンバー便の搭乗前に早く決めてほしい", "苦笑まじり：コートが大事なのはそのとおりだ", "戸惑っている：アンカレッジの話を聞き取れなかった"], why: "1月のアンカレッジにコートなしは大問題。それを a consideration（考慮点）と控えめに言うのは、苦笑まじりの同意。" }
+      - { type: mean, ask: "That changes things. と 言ったのは なぜ？", line: 31, choices: ["The airline will pay for her hotel, so waiting overnight is easier.", "Her sister can't pick her up tomorrow, so she needs another plan.", "The morning flight is cheaper than the one through Denver."], answer: 0, cja: ["ホテル代を航空会社が持つので、一晩待つのが楽になる", "姉が明日迎えに来られないので別の案が必要", "朝の便のほうがデンバー経由より安い"], why: "乗務員の遅れなので that's on us＝航空会社負担で宿泊券と食事券が出る。それで朝の便に傾いた。" }
+      - { type: next, ask: "彼女は このあと どこへ？", line: 32, choices: ["Back to the desk to pick up her checked bag.", "To the lower level, to catch the hotel shuttle.", "To the Denver flight's gate with the other passenger."], answer: 1, cja: ["預けた荷物を受け取りにカウンターへ", "ホテルのシャトルに乗りに下の階へ", "もう一人の乗客とデンバー便のゲートへ"], why: "最後に I'm going to go find the shuttle。シャトルは下の階の4番出口から。荷物は航空会社が預かったまま。" }
+    dict:
+      - { line: 13, words: "going to make it", feature: gonna }
+      - { line: 41, words: "a little chat", feature: flap }
+      - { line: 42, words: "Weren't you", feature: yod }
+
+  - kind: long
+    id: lg-flea-market
+    name: フリマで 値切る
+    source: tts
+    ctx: "日曜のフリーマーケット。古い椅子の前で"
+    note: "a lot of chair は遠回しに「好きじゃない」"
+    tags: { seed: 67, register: stranger, pragmatic: humour, features: [overlap, flap, weak-form] }
+    lines:
+      - { who: rosie, at: 0, en: "Oh, look at this chair. Marshal, look at this chair.", ja: "ねえ、この椅子見て。マーシャル、この椅子見てよ。" }
+      - { who: marshal, at: 0.4, en: "I'm looking. It's... a lot of chair.", ja: "見てるよ。なんというか…存在感のある椅子だね。" }
+      - { who: redd, at: 0.5, en: "Good eye, good eye. That's a 1960s original. Solid walnut, original fabric. They don't make them like that anymore.", tts: "Good eye, good eye. That's a nineteen-sixties original. Solid walnut, original fabric. They don't make 'em like that anymore.", ja: "お目が高い、お目が高い。1960年代のオリジナルだよ。ウォールナットの無垢材に、当時の生地。今じゃこんなのは作ってないね。" }
+      - { who: rosie, at: 0.3, en: "It's gorgeous. How much are you asking?", ja: "素敵。おいくらですか？" }
+      - { who: redd, at: 0.4, en: "For that one? Four-fifty.", ja: "それかい？450ドル。" }
+      - { who: marshal, at: -0.2, en: "Four hundred and fifty dollars?", ja: "450ドル？" }
+      - { who: redd, at: 0.3, en: "And that's a fair price. You'd pay twelve hundred in a shop on Melrose.", ja: "それでも良心的な値段だよ。メルローズの店なら1200ドルはするね。" }
+      - { who: rosie, at: 0.4, en: "Hmm. Can I sit in it?", ja: "うーん。座ってみてもいいですか？" }
+      - { who: redd, at: 0.2, en: "Please. Be my guest.", ja: "どうぞ。ご遠慮なく。" }
+      - { who: rosie, at: 1.0, en: "Oh, wow. Okay, that's comfortable. Marshal, sit.", ja: "わあ。うん、座り心地いい。マーシャル、座って。" }
+      - { who: marshal, at: 0.4, en: "I believe you.", ja: "信じるよ。" }
+      - { who: rosie, at: 0.5, en: "Wait, what's this? There's a little tear here, on the side of the cushion.", tts: "Wait, what's this? There's a liddle tear here, on the side of the cushion.", ja: "待って、これ何？クッションの横に小さな破れがある。" }
+      - { who: redd, at: 0.4, en: "Ah, that? That's character. Sixty years, a little wear, you know.", tts: "Ah, that? That's character. Sixty years, a liddle wear, y'know.", ja: "ああ、それ？それが味ってもんだよ。60年も経てば、多少はね。" }
+      - { who: rosie, at: 0.3, en: "And this leg's a bit wobbly, isn't it?", ja: "それにこの脚、ちょっとぐらつきますよね？" }
+      - { who: redd, at: 0.3, en: "Wobbly is a strong word. A screwdriver, two minutes, it's like new.", ja: "ぐらつくってのは言い過ぎだね。ドライバーで2分、新品同様さ。" }
+      - { who: marshal, at: -0.3, en: "So it's broken.", ja: "つまり壊れてるんだ。" }
+      - { who: redd, at: 0.2, en: "It's not broken. It's... relaxed.", ja: "壊れてないよ。ちょっと…くつろいでるだけ。" }
+      - { who: rosie, at: 0.5, en: "Ha. Okay. Look, I like it, but with the tear and the leg, I can't do four-fifty. Would you take two-fifty?", ja: "あはは。ねえ、気に入ったけど、破れと脚のことを考えると450は無理。250でどう？" }
+      - { who: redd, at: 0.4, en: "Two-fifty? Lady, you're killing me. I've got a guy coming back for it at two o'clock.", tts: "Two-fifty? Lady, you're killin' me. I got a guy comin' back for it at two o'clock.", ja: "250？お客さん、勘弁してよ。2時にこれを買いに戻ってくる客がいるんだから。" }
+      - { who: marshal, at: 0.4, en: "It's one forty-five.", ja: "今、1時45分だね。" }
+      - { who: redd, at: 0.3, en: "So he's coming back soon.", ja: "だからもうすぐ戻ってくるってこと。" }
+      - { who: rosie, at: 0.5, en: "Then he can have it at four-fifty. I'm at two seventy-five.", ja: "じゃあその人に450で売ればいいわ。私は275。" }
+      - { who: redd, at: 0.7, en: "Okay. Okay. For you, because you've got good taste, I can do three-fifty. That's practically giving it away.", ja: "わかった、わかった。センスのいいあんたにだけ、350にするよ。ほとんどタダみたいなもんだ。" }
+      - { who: rosie, at: 0.4, en: "Three hundred. And I'll take that little side table too.", tts: "Three hundred. And I'll take that liddle side table too.", ja: "300。それとあの小さなサイドテーブルももらうわ。" }
+      - { who: redd, at: 0.3, en: "The side table's a hundred on its own.", ja: "サイドテーブルだけで100ドルするよ。" }
+      - { who: rosie, at: 0.3, en: "It's got a water ring right in the middle.", ja: "真ん中にコップの跡がついてるけど。" }
+      - { who: redd, at: 0.6, en: "...Three twenty-five for both. Final offer. I mean it this time.", ja: "…両方で325。これが最後。今度こそ本気だよ。" }
+      - { who: marshal, at: 0.3, en: "Rosie, can I talk to you for a second?", ja: "ロージー、ちょっといい？" }
+      - { who: rosie, at: 0.2, en: "Uh, sure.", ja: "え、うん。" }
+      - { who: marshal, at: 0.6, en: "Where is this going to go? We don't have room for another chair.", tts: "Where's this gonna go? We don't have room for another chair.", ja: "これ、どこに置くの？もう椅子を置く場所なんてないよ。" }
+      - { who: rosie, at: 0.3, en: "It'll go in the corner, by the window. Where the plant is.", ja: "窓のそばの角に置くの。植木があるところ。" }
+      - { who: marshal, at: 0.3, en: "The plant you're always telling me needs sun.", ja: "日光が要るって君がいつも言ってる、あの植木ね。" }
+      - { who: rosie, at: 0.3, en: "The plant can move. Come on, three twenty-five for both is a steal, and you know it.", ja: "植木は動かせるでしょ。ねえ、両方で325なんて掘り出し物よ、あなたもわかってるくせに。" }
+      - { who: marshal, at: 0.6, en: "...Fine. But I'm not carrying it to the car.", ja: "…わかったよ。でも車まで運ぶのは僕じゃないからね。" }
+      - { who: rosie, at: 0.3, en: "You're absolutely carrying it to the car.", ja: "絶対あなたが運ぶのよ。" }
+      - { who: rosie, at: 0.9, en: "Okay. Three twenty-five. Deal.", ja: "じゃあ、325で。決まり。" }
+      - { who: redd, at: 0.2, en: "Pleasure doing business. Now, it's cash only, I'm afraid.", tts: "Pleasure doin' business. Now, it's cash only, I'm afraid.", ja: "毎度あり。で、悪いけど現金のみなんだ。" }
+      - { who: rosie, at: 0.3, en: "Oh. I've only got about a hundred on me.", ja: "あら。手持ちは100ドルくらいしかない。" }
+      - { who: redd, at: 0.3, en: "There's an ATM by the food trucks. I'll hold it for you. Twenty minutes.", tts: "There's an A T M by the food trucks. I'll hold it for ya. Twenty minutes.", ja: "フードトラックのところにATMがあるよ。取っておいてあげる。20分ね。" }
+      - { who: rosie, at: 0.3, en: "Thank you. Marshal, stay here, and don't let anybody sit in my chair.", ja: "ありがとう。マーシャル、ここにいて。誰にも私の椅子に座らせないでね。" }
+      - { who: marshal, at: 0.4, en: "Your chair. Already.", ja: "もう「私の椅子」なんだ。" }
+      - { who: redd, at: 0.3, en: "Don't worry, pal. If the two o'clock guy shows up, I'll tell him it's sold.", tts: "Don't worry, pal. If the two o'clock guy shows up, I'll tell 'im it's sold.", ja: "心配すんなって、兄さん。2時の客が来たら、売れたって言っとくから。" }
+      - { who: marshal, at: 0.4, en: "There's no two o'clock guy, is there?", ja: "2時の客なんていないんでしょ？" }
+      - { who: redd, at: 0.5, en: "There's always a two o'clock guy.", ja: "2時の客ってのは、いつだっているもんさ。" }
+    questions:
+      - { type: gist, ask: "どんな やり取り？", line: 35, choices: ["A couple bargains for a used chair and gets two items for one price.", "A couple brings back a broken chair and asks for their money back.", "A seller tries to buy an old chair that a couple owns."], answer: 0, cja: ["カップルが中古の椅子を値切り、2点をまとめた値段で買う", "カップルが壊れた椅子を返品して返金を求める", "売り手がカップルの古い椅子を買おうとする"], why: "450ドルの椅子を、破れとぐらつきを理由に値切り、サイドテーブルと合わせて325ドルで決まる。" }
+      - { type: attitude, ask: "最初、マーシャルは 椅子を どう 思っている？", line: 1, choices: ["He loves it, but he thinks four-fifty is far too much.", "He isn't keen on it, though he doesn't say so directly.", "He's worried it'll be too heavy for him to carry to the car."], answer: 1, cja: ["気に入っているが、450ドルは高すぎると思う", "気が進まないが、はっきりとは言わない", "車まで運ぶには重すぎると心配している"], why: "It's... a lot of chair は「ずいぶん大きな椅子だね」と遠回しに否定。座ってと言われても I believe you と座らない。" }
+      - { type: mean, ask: "It's one forty-five. で ほのめかしたのは？", line: 19, choices: ["They need to leave soon, because the market closes at two.", "Another buyer really is coming back for the chair at two o'clock.", "The story about the two o'clock buyer is probably a sales trick."], answer: 2, cja: ["市場が2時に閉まるので早く出たい", "別の客が本当に2時に椅子を買いに戻ってくる", "2時の客の話はたぶん売るための作り話"], why: "「2時に客が戻る」に、今は1時45分と返して焦らせる作戦を見抜いている。最後の There's no two o'clock guy, is there? で確定。" }
+      - { type: mean, ask: "脚が relaxed と 言うのは？", line: 16, choices: ["He's admitting it's loose, but joking to keep the price up.", "The chair was designed to rock gently, so the wobble is normal.", "He has already fixed it with a screwdriver."], answer: 0, cja: ["ぐらつきを認めつつ、冗談で値を下げまいとしている", "椅子はゆっくり揺れる作りなので、ぐらつきは普通だ", "もうドライバーで直してある"], why: "So it's broken に、壊れてない、くつろいでるだけと冗談で返す。ぐらつき自体は否定できていない。" }
+      - { type: next, ask: "ロージーは このあと 何を する？", line: 39, choices: ["Pay by card at the food trucks and come right back.", "Go and get cash while Marshal waits with the chair.", "Carry the chair to the car with Marshal."], answer: 1, cja: ["フードトラックでカード払いしてすぐ戻る", "マーシャルが椅子と待つ間に現金を下ろしに行く", "マーシャルと椅子を車まで運ぶ"], why: "cash only で手持ちが100ドルほど。ATM はフードトラックのそばにあり、マーシャルに stay here と言っている。" }
+    dict:
+      - { line: 2, words: "make them", feature: weak-form }
+      - { line: 23, words: "that little side table", feature: flap }
+      - { line: 29, words: "going to go", feature: gonna }

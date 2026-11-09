@@ -215,13 +215,14 @@ What each game trains, and why it's there (the rules: kikimimi.md and kikimimi-e
 | すうじ ラッシュ | numbers at speed, self-repair, teen/ty, yen and dollars | template-made; a miss never ends the run |
 | しずえの ニュース | news register, signposting, extended listening; the bridge to ほし | 60–75 s and 3 taps, the real weather as the hook, no hub card; evergreen bulletins (nothing to fact-check or go stale) |
 | しゅうまつ たいかい | retrieval, spacing, interleaving, hypercorrection (the wager) | levelled per player so the B1+ partner can win |
+| まるごと 聞く | C1 listening: 2–5 minute real and generated conversations heard whole; gist, implication, attitude, next step; dictation near misses | ほし; "Long listening" |
 | おやすみ ものがたり | extensive listening at 95 %+ comprehension | no score; 3 serials (st-johnny, st-cafe, st-tokyo) |
 | よみきき サンド | the listen → read → listen cycle (metacognition) | no new content; the clip always plays blind first |
 | おさらい | spaced review of what tripped you | |
 | みみ チェック | placement | |
 | the mic modes | prosody, sentence rebuilding, minimal pairs in production | private, opt-in (kikimimi-mic.md) |
 
-**Not built:** long-form (segmented talks, a comprehension map; ほし's 2-4-sentence clips cover talks in short); トーン あて ("Backlog"); うわさの でんごん, めいたんてい フータ, ざつだん パーティ (turn-taking taps are fragile on the audio clock); かいぎの ぎじろく (work is already the heaviest domain); ながら ききみみ (WebKit suspends audio on lock); とたけけの よふかしラジオ, いっしょに クッキング, わらいどころ (humour is hard for TTS). **Cut:** minimal-pair fishing (barely transfers at TOEIC 700+), riddles (no listening target), karaoke and the K.K. chant (recall, and singing is embarrassing), ふたりで タイル (dictogloss) and an earphones-only split (the listening games' two roles cover the information gap).
+**Not built:** segmented talks with a comprehension map; トーン あて ("Backlog"); うわさの でんごん, めいたんてい フータ, ざつだん パーティ (turn-taking taps are fragile on the audio clock); かいぎの ぎじろく (work is already the heaviest domain); ながら ききみみ (WebKit suspends audio on lock); とたけけの よふかしラジオ, いっしょに クッキング, わらいどころ (humour is hard for TTS). **Cut:** minimal-pair fishing (barely transfers at TOEIC 700+), riddles (no listening target), karaoke and the K.K. chant (recall, and singing is embarrassing), ふたりで タイル (dictogloss) and an earphones-only split (the listening games' two roles cover the information gap).
 
 ## Visual rules
 
@@ -376,10 +377,10 @@ lessons:
 
 - **The level banks:** 862 items (L1–L7: 46 / 49 / 89 / 297 / 30 / 236 / 115), plus 30 ladders (kikimimi-engine.md "Content").
 - **21 units** (かわ 11, もり 10), all `voiced`; the plan (units.ts `PLANNED`) is はまべ 3, かわ 10, もり 14, やま 14, ほし 10.
-- **25 listening files**, all `listened`: tiles (232: drafts, 65 derived from voiced bank items, 30 for the B2 features, the units' おと), calls (34), たちぎき (30), すうじ ラッシュ (240 customers), しずえの ニュース (30 bulletins and the weather tail).
+- **29 listening files**, all `listened`: tiles (232: drafts, 65 derived from voiced bank items, 30 for the B2 features, the units' おと), calls (34), たちぎき (30), すうじ ラッシュ (240 customers), しずえの ニュース (30 bulletins and the weather tail), まるごと 聞く (10 pieces: "Long listening").
 - **音の へんしん:** 180 phrases at level 8, 15 phenomena of 12 ("Connected speech").
 - **3 bedtime serials:** st-johnny, st-cafe and st-tokyo (トウキョウ ひとりぐらし: an American newcomer's first month in Tokyo, 7 chapters of ~4 min, narrator us-f3, recycling the units' phrases).
-- **149 packs**, ~116 MiB (games 94.2, stories 21.4).
+- **153 packs**, ~123 MiB (games 101.6, stories 21.4).
 - Every level and unit item has `ctx`, `cja` and `why` (音の へんしん's phrases `ctx`, `cja` and `note`).
 - **Stays outside units:** the はまべ island lines, the アナウンス pack and ほし's news, lectures and talks (modes and tracks), the number templates.
 
@@ -430,6 +431,15 @@ The units' headers name seven planned backdrops, `party`, `restaurant`, `shop`, 
 ### Choice tells
 
 A choice set must not give its answer away without the audio. `tells.test` holds each level's 3-choice `reply`, `mean`, `gist` and `next` sets (and the units' tiers) near chance: the right choice the longest in 20–45 % of sets (by ≥ 1.25× in ≤ 12 %), the shortest in 20–45 %, echoing the clip's words least in ≤ 45 % and most in ≥ 15 %, and opening with a reaction or being a question about as often as the wrong ones (± 12 points). Distractors are what a partial listener could pick: a near sound, a number or name caught wrong, the right words with the wrong implication; the clip's words are spread across the choices. `npm run kikimimi:tells -- <level | file>` lists the sets with a tell. The right choice's place comes from the deck's seeded shuffle, even across places.
+
+## Long listening
+
+Step 3 of the English direction (user decisions 2026-11-09: everyday conversation and travel, both at the same level, ~15 min a day, American first, real recordings allowed if licensed, PD or CC and credited). The B2 → C1 step is following extended, unscripted talk and what's meant rather than said (CEFR CV 2020); まるごと 聞く (kikimimi.md) gives one piece a day, ~6 minutes with its questions and dictation.
+- **Real recordings** (s4-long-c, -d): 5 excerpts of 2.7–4.7 min, unscripted, American: NASA's *Houston We Have a Podcast* (two, PD), NPS Grand Canyon's *Behind the Scenery* (PD), CORAAL Valdosta (African American English, CC BY-NC-SA 4.0), Hacker Public Radio hpr4098 (CC BY-SA 4.0). Only PD, CC BY, CC BY-SA or CC BY-NC-SA (long.test); each piece's `credit`: title, by, page, file and its sha256, the excerpt's span, licence, its deed and the credit line. Downloads are data: their own directory, read by ffmpeg and Python with `-I` only, never run. The transcript is the official one where there is one, else whisper's; lines cut at sentence ends (≤ 16 s).
+- **Generated scenes** (s4-long-a, -b): 5 of 2.4–3.3 min, 3 villagers each, everyday and travel (a hotel at night, a missed connection, a flea-market haggle, dinner with news let out sideways, a neighbour's tree): refusals said politely, sarcasm, a sales trick, a budget never named; interruptions and overlap (a negative `at`), reductions in `tts`.
+- **Questions:** 4–5 a piece, the gist first, then the implied meaning, the attitude and the next step; 3 choices held to "Choice tells" against the whole transcript. **Dictation:** 2–4 lines a piece on connected speech (a henshin.ts phenomenon), 1–6 words each.
+- **Alignment:** whisper hears every line's clip; a piece's weighted WER ≤ 20 %, a line of 4+ words ≤ 60 % (align.ts; real 8.6 % mean, generated 1.9 %).
+- **Listen-check:** the real pieces' cuts (a word clipped at a boundary: rl-canyon-questions-8, -12, rl-space-food-2), CORAAL's interviewer asides, and the generated scenes' flagged lines (homophones suite / steak, "Ms.—", numbers said as prices).
 
 ## Connected speech
 

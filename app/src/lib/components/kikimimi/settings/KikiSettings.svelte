@@ -2,10 +2,12 @@
   // ききみみ's せってい (docs/kikimimi.md "せってい"), pushed from the hub's ⚙: 🔊 「きこえる？」 (a clip through the game's
   // voice, with the earphones tip and the volume-0 line); 「おとを 1だいに まとめる」 as a new lobby's default; にほんごやく
   // (when the Japanese shows: いつも / まちがえた とき / みない); こんしゅうの めあて (3 / 5 / 7 にち). Each kept on this
-  // phone; 「みみ チェックを もういちど」 (the placement check again, at once; the place it gave me under it); last, マイク
+  // phone; 「みみ チェックを もういちど」 (the placement check again, at once; the place it gave me under it); 音声の出典
+  // (まるごと 聞く's real recordings' credits: LongCredits); last, マイク
   // (docs/kikimimi-mic.md "Where they show": MicOptIn, a lazy chunk, with the probe's row under it, which opens MicProbe in this
   // page's place, another). Its own chunk.
   import Lazy from '#lib/components/ui/Lazy.svelte';
+  import LongCredits from './LongCredits.svelte';
   import type { QuizGame } from '../game.svelte.ts';
   import { JA_MODES, WEEK_GOALS, keepSame, keepWeekGoal, sameDefault, weekGoal, type JaMode, type WeekGoal } from '../prefs.ts';
   import { sound } from '#lib/sound/sound.svelte.ts';
@@ -90,6 +92,8 @@
     </div>
     <p class="hint">{t('kiki.set.goalSub')}</p>
   </section>
+
+  <LongCredits />
 
   <Lazy load={() => import('../mic/MicOptIn.svelte')}>{#snippet children(MicOptIn)}<MicOptIn onprobe={() => (probing = true)} />{/snippet}</Lazy>
 </div>

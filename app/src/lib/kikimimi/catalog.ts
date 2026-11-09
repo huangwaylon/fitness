@@ -11,7 +11,7 @@ import { levelAt } from './bank.ts';
  *  weekend's quiz show (games/taikai/: the hub's banner, its own lobby, on no shelf). Wave 2's are each a game of its
  *  own lane (round/registry.ts): ことば タイル, すうじ ラッシュ, ようじ でんわ, たちぎき, しずえの ニュース; a later game's mode
  *  may come with its registry line (addMode: the mic's). */
-export type ModeId = 'quiz' | 'ladder' | 'review' | 'announce' | 'story' | 'taikai' | 'tile' | 'rush' | 'call' | 'tachi' | 'news' | (string & {});
+export type ModeId = 'quiz' | 'ladder' | 'review' | 'announce' | 'story' | 'taikai' | 'tile' | 'rush' | 'call' | 'tachi' | 'news' | 'long' | (string & {});
 /** The あそぶ page's shelves, in order: さくっと, まちで・でんわで, じっくり, ねる まえに, 声に 出す (the mic's modes). */
 export type Group = 'quick' | 'scene' | 'long' | 'night' | 'koe';
 const GROUPS: readonly Group[] = ['quick', 'scene', 'long', 'night', 'koe'];
@@ -68,6 +68,7 @@ const MODES: ModeMeta[] = [
   { id: 'call', group: 'scene', icon: '📞', mins: 3, qs: 6, coop: true, game: 'call', places: true },
   { id: 'tachi', group: 'scene', icon: '👂', mins: 3, qs: 6, coop: true, game: 'tachi', places: true },
   { id: 'news', group: 'long', icon: '📻', mins: 2, qs: 3, coop: true, game: 'news', hours: [5, 11] },
+  { id: 'long', group: 'long', icon: '🎧', mins: 6, qs: 5, coop: true, game: 'long', places: true },
   { id: 'story', group: 'night', icon: '🌙', mins: 4, qs: 0, coop: false, ok: (c) => !!c.story },
   { id: 'taikai', group: 'event', icon: '🏆', mins: 6, qs: 8, coop: true, ok: (c) => !!c.taikai && quizLevels(c) }
 ];
@@ -87,9 +88,9 @@ export function playable(id: ModeId, c: Ctx): boolean {
 }
 
 /** The modes きまぐれ picks from (today.ts): the playable ones on a day's shelf (not おさらい, the stories, the
- *  tournament, nor a mic mode: never a surprise to speak). */
+ *  tournament, nor a mic mode: never a surprise to speak; nor まるごと 聞く: six minutes at ほし, chosen, not dealt). */
 export const whims = (c: Ctx): ModeId[] =>
-  MODES.filter((m) => m.id !== 'review' && !m.requires && (m.group === 'quick' || m.group === 'scene' || m.group === 'long') && playable(m.id, c)).map((m) => m.id);
+  MODES.filter((m) => m.id !== 'review' && m.id !== 'long' && !m.requires && (m.group === 'quick' || m.group === 'scene' || m.group === 'long') && playable(m.id, c)).map((m) => m.id);
 
 /** The あそぶ page's shelves: each group with its playable modes, empty groups left out. */
 export function shelves(c: Ctx): { group: Group; modes: ModeMeta[] }[] {

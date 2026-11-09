@@ -72,6 +72,8 @@ const NONE: Record<string, string> = {
   'lib/components/kikimimi/mic/MicOptIn.svelte': 'the 音声認識 already chosen does nothing',
   'lib/components/kikimimi/story/StoryFrame.svelte': 'おやすみ ものがたり: ⏮ ⏯ ⏭, the sleep timer and the words are silent at bedtime (no cue over the story\'s voice)',
   'lib/components/kikimimi/frame/RoundFrame.svelte': 'よみおわった once tapped does nothing',
+  'lib/components/kikimimi/long/LongTranscript.svelte': 'a line with no clip to hear (offline, a guest’s turn) does nothing',
+  'lib/components/kikimimi/long/LongDictation.svelte': 'the dictation field: the system keyboard clicks',
   'lib/components/kikimimi/frame/ChoiceGrid.svelte': 'a choice outside the answer window, or after my one answer (the reveal plays its right / wrong cue)',
   'lib/components/kikimimi/call/CallPlay.svelte': 'ようじ でんわ: メモできた before my rows are filled (the reveal plays its cue)',
   'lib/components/kikimimi/call/MemoPad.svelte': 'ようじ でんわ: a chip while the memo is closed (not yet, sent, the reveal)',

@@ -10,7 +10,7 @@ import { CAST, EXPOSURE } from './cast.ts';
 import { LEVELS, MIX } from './deck.ts';
 import { mixes, readListen, readPacks, readPairs, readStories, unitItems } from './compile.ts';
 import { pairClipItems } from './games/pair/pairs.ts';
-import { listenClipItems } from './listen.ts';
+import { listenClipItems, realClipIds } from './listen.ts';
 import { clipPlaces, packFile } from './packing.ts';
 import type { Clip } from './clips.ts';
 import clipsJson from './clips.json';
@@ -28,7 +28,7 @@ const UNIT_ITEMS = unitItems();
 const STORY_IDS = new Set(storyItems(readStories()).map((it) => it.id));
 /** The listening kinds' clips (content/listen/*.yaml: a tile's own, each line of a call or a たちぎき), drafts included
  *  once voiced (they're voiced before the listening check: curriculum.md "Authoring pipeline"). */
-const LISTEN_IDS = new Set(readListen().flatMap(({ raw }) => listenClipItems(raw)).map((it) => it.id));
+const LISTEN_IDS = new Set([...readListen().flatMap(({ raw }) => listenClipItems(raw)).map((it) => it.id), ...readListen().flatMap(({ raw }) => realClipIds(raw))]);
 
 /** はつおん's words (content/mic/pairs.yaml): each said alone, `<pair>-1`, `<pair>-2`. */
 const PAIR_IDS = new Set(pairClipItems(readPairs()).map((it) => it.id));
@@ -348,11 +348,12 @@ describe('kikimimi bank', () => {
       }
     }
     // the listening kinds': every clip of a file once any of its is made (a file is voiced whole: すうじ ラッシュ's wait for
-    // A3), a call's or a たちぎき's whole turn 14 s at most (a call's correction comes inside a long turn: 12.9 s)
+    // A3), a call's or a たちぎき's whole turn 14 s at most (a call's correction comes inside a long turn: 12.9 s; a long
+    // piece's interjection, "You what?", under half a second)
     for (const ids of readListen().map(({ raw }) => listenClipItems(raw).map((it) => it.id))) if (ids.some((id) => CLIPS[id])) for (const id of ids) {
       const c = CLIPS[id];
       expect(c, id).toBeDefined();
-      expect(c.dur, id).toBeGreaterThan(0.5);
+      expect(c.dur, id).toBeGreaterThan(id.startsWith('lg-') ? 0.35 : 0.5);
       expect(c.dur, id).toBeLessThan(14);
       expect(PLACES.normal.has(id), id).toBe(true);
       expect(c.slow, id).toBeUndefined();
@@ -371,7 +372,7 @@ describe('kikimimi bank', () => {
     expect(Object.keys(CLIPS).filter((id) => !ids.has(id))).toEqual([]);
   });
 
-  it('ships no other clips (no loose ones), and the clips stay small (each under 60 KB; level 4’s 80 KB, the アナウンス pack’s and やま’s 100 KB, ほし’s 2-4 sentences 160 KB, a ladder rung 80 KB, a story’s segment and a listening kind’s 100 KB, a はつおん word 20 KB; the games’ packs under 92 MB, the stories’ 23 MB)', () => {
+  it('ships no other clips (no loose ones), and the clips stay small (each under 60 KB; level 4’s 80 KB, the アナウンス pack’s and やま’s 100 KB, ほし’s 2-4 sentences 160 KB, a ladder rung 80 KB, a story’s segment and a listening kind’s 100 KB, a はつおん word 20 KB; the games’ packs under 103 MiB, the stories’ 23 MiB)', () => {
     expect(existsSync(join(STATIC, 'audio/kikimimi')), 'the loose clips are gone (increment 9: the packs)').toBe(false);
     const rungs = new Set(RUNG_ITEMS.map((it) => it.id));
     const want = new Set([...[...BANK, ...UNIT_ITEMS].flatMap((it) => takeIds(it).flatMap((id) => [id, ...(it.lv <= 2 ? [`${id}-slow`] : [])])), ...rungs, ...STORY_IDS, ...LISTEN_IDS, ...PAIR_IDS]);
@@ -391,8 +392,9 @@ describe('kikimimi bank', () => {
     // limit; the real fix is W2-R, the packs on R2 behind PACK_BASE, after which these lines measure what Pages serves.)
     const size = (story: boolean) => Object.entries(PACKS).filter(([, e]) => e.clips.some(([id]) => STORY_IDS.has(id)) === story)
       .reduce((n, [name, e]) => n + statSync(join(STATIC, 'audio/listen', packFile(name, e))).size, 0);
-    // (音の へんしん's phrases, 2026-11-09: their three takes ~5 MiB more: the line raised from 92 to 96 MiB)
-    expect(size(false)).toBeLessThan(96 * 1024 * 1024);
+    // (音の へんしん's phrases, 2026-11-09: their three takes ~5 MiB more: the line raised from 92 to 96 MiB; まるごと 聞く's
+    // ten pieces, 32 kbps, 7.4 MiB more: 96 to 103)
+    expect(size(false)).toBeLessThan(103 * 1024 * 1024);
     expect(size(true)).toBeLessThan(23 * 1024 * 1024);
   });
 });

@@ -17,7 +17,7 @@ import { readListen, readPairs, readStories, readUnits } from '../src/lib/kikimi
 import { PAIR_UNIT, pairClipItems } from '../src/lib/kikimimi/games/pair/pairs.ts';
 import { listenClipIds, listenUnit } from '../src/lib/kikimimi/listen.ts';
 import { LADDERS } from '../src/lib/kikimimi/ladders.ts';
-import { PACK_MAX, SLOW_PACK_MAX, packFile, planHome, type PackEntry, type Packs } from '../src/lib/kikimimi/packing.ts';
+import { LONG_PACK_MAX, PACK_MAX, SLOW_PACK_MAX, packFile, planHome, type PackEntry, type Packs } from '../src/lib/kikimimi/packing.ts';
 import { joined } from '../src/lib/kikimimi/source.ts';
 import { chapterPart, chapters } from '../src/lib/kikimimi/story.ts';
 import { writeLevels } from './kikimimi-levels.ts';
@@ -35,6 +35,8 @@ const sha8 = (b: Buffer): string => createHash('sha256').update(b).digest('hex')
 const readJson = <T,>(f: string, def: T): T => (existsSync(f) ? (JSON.parse(readFileSync(f, 'utf8')) as T) : def);
 const fileName = (id: string, slow: boolean) => `${id}${slow ? '-slow' : ''}.m4a`;
 
+/** まるごと 聞く's files: a pack each, up to LONG_PACK_MAX. */
+const LONG_HOMES: ReadonlySet<string> = new Set(readListen().flatMap(({ raw }) => (listenUnit(raw).game === 'long' ? [listenUnit(raw).unit] : [])));
 /** Each clip's home, in order (the bank's items by level in the bank's order, the ladders' rungs, each unit's own
  *  items in file order, each listening file's own clips in its pack, `s1-tile-a`, はつおん's words in `mic-pairs`, each story chapter's segments: a
  *  chapter's own pack, `st-johnny-3`, fetched when it's played): home → ids. */
@@ -106,7 +108,8 @@ export function writePacks(quiet = false): { packs: Packs; written: string[]; re
         else missing.push(fileName(id, slow));
       }
       const name = slow ? `${home}-slow` : home;
-      const plan = planHome(name, ids.filter((id) => got.has(id)).map((id) => ({ id, bytes: got.get(id)!.length })), slow ? SLOW_PACK_MAX : PACK_MAX, prevParts);
+      const max = slow ? SLOW_PACK_MAX : LONG_HOMES.has(home) ? LONG_PACK_MAX : PACK_MAX;
+      const plan = planHome(name, ids.filter((id) => got.has(id)).map((id) => ({ id, bytes: got.get(id)!.length })), max, prevParts);
       for (const [part, pids] of plan) {
         if (packs[part]) throw new Error(`kikimimi-packs: two packs named ${part}`);
         const entry: PackEntry = { hash: '', ...(slow && { slow: true as const }), clips: [] };

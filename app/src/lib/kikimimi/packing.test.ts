@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
 import type { Clip } from './clips.ts';
 import clipsJson from './clips.json';
 import { readPacks } from './compile.ts';
-import { PACK_MAX, SLOW_PACK_MAX, clipPlaces, packFile, partName, planHome } from './packing.ts';
+import { LONG_PACK_MAX, PACK_MAX, SLOW_PACK_MAX, clipPlaces, packFile, partName, planHome } from './packing.ts';
 
 const CLIPS: Readonly<Record<string, Clip>> = clipsJson;
 const LISTEN = join(import.meta.dirname, '../../../static/audio/listen');
@@ -86,7 +86,8 @@ describe('kikimimi packs: as committed', () => {
         at += bytes;
       }
       expect(at, name).toBe(b.length);
-      if (e.clips.length > 1) expect(b.length, name).toBeLessThanOrEqual(e.slow ? SLOW_PACK_MAX : PACK_MAX);
+      // (a まるごと 聞く file is one pack: s4-long-*, fetched as slices)
+      if (e.clips.length > 1) expect(b.length, name).toBeLessThanOrEqual(e.slow ? SLOW_PACK_MAX : name.startsWith('s4-long-') ? LONG_PACK_MAX : PACK_MAX);
     }
     expect(readdirSync(LISTEN).sort()).toEqual(Object.entries(packs).map(([name, e]) => packFile(name, e)).sort());
   });

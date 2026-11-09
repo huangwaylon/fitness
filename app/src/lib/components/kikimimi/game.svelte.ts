@@ -115,17 +115,20 @@ export class QuizGame {
   #tiered = '';
   /** My comfortable level (progress.ts Stats.level; null: unmeasured), the tournament's tier. */
   readonly #level: () => number | null;
-  /** 音の へんしん's phenomenon of the day (kikimimi/henshin.ts focusOf, or the one picked on its page), a lobby's option. */
-  readonly #focus: () => number | null;
+  /** A game's pick for a lobby at a level, its option: 音の へんしん's phenomenon of the day (kikimimi/henshin.ts focusOf,
+   *  or the one picked on its page), まるごと 聞く's piece (games/long/def.ts pieceFor, or the one picked). */
+  readonly #focus: (gm: GameId, lv: number) => number | null;
   /** The tournament: the lobby state its deck was last picked for (the host's), the game my offer was sent in (a
    *  player's). */
   #picked = '';
   #offered = '';
+  /** The game whose further answers were recorded (keepMore). */
+  #more = '';
 
   /** `wire`: how this phone sends (round/wire.ts WIRE; the e2e's `?wire=quiz` is an 8b phone's). */
   constructor(o: {
     live: Live | null; me: Who; fast?: boolean; wire?: WireMode; heard?: readonly GameIn[]; record?: (row: ListenRow) => void; tierOf?: (stage: Stage) => Tier | undefined;
-    level?: () => number | null; focus?: () => number | null;
+    level?: () => number | null; focus?: (gm: GameId, lv: number) => number | null;
   }) {
     this.me = o.me;
     this.#level = o.level ?? (() => null);
@@ -243,7 +246,8 @@ export class QuizGame {
       // (the quiz's settings drive the sheet's games' lobbies, QuizRounds.configure; a later game's goes back to the quiz
       // for a quiz-family pick)
       const v = this.view, lane = LANES.isLater(v?.gm) && o.ladder === undefined ? LANES.of(v?.gm) : undefined;
-      return lane && { gm: lane.id, o: laneOpts(lane, { lv: o.lv ?? v.lv, timer: o.timer ?? v.timer, level: this.#level(), focus: this.#focus() }) };
+      const lv = o.lv ?? v.lv;
+      return lane && { gm: lane.id, o: laneOpts(lane, { lv, timer: o.timer ?? v.timer, level: this.#level(), focus: this.#focus(lane.id, lv) }) };
     };
     this.#queue.then(() => {
       const g = own();
@@ -262,7 +266,7 @@ export class QuizGame {
   setGame(gm: GameId, p: { lv: number; timer: QuizTimer }): void {
     const opts = () => {
       const lane = LANES.of(gm);
-      return lane ? laneOpts(lane, { ...p, level: this.#level(), focus: this.#focus() }) : [];
+      return lane ? laneOpts(lane, { ...p, level: this.#level(), focus: this.#focus(gm, p.lv) }) : [];
     };
     this.#queue.then(() => LANES.loading(gm) ?? chunksOf(gm, opts()), () => {
       const v = this.view;
@@ -433,6 +437,16 @@ export class QuizGame {
     const ids = taikaiPickFor({ seed: v.seed, me: this.me, mine: this.taikaiOffer(), evs: v.evs, tiers: v.tiers, recent: recentGames() });
     if (ids.join() === v.ids.join()) return;
     queueMicrotask(() => this.#queue.then(() => taikaiLevels(ids), () => this.#act((s, now) => s.pick(ids, now))));
+  }
+
+  /** More of my answers of the game just recorded (まるごと 聞く's dictation, done on this phone at the results): a row
+   *  of their own with the game's id, once (progress.ts gamesOf folds one game's rows into one: its answers once each,
+   *  its minutes summed). Nothing on the wire. */
+  keepMore(r: ListenRow['r'], ms: number): void {
+    const was = this.recorded;
+    if (!was || !r.length || this.#more === was.g) return;
+    this.#more = was.g;
+    this.#record?.({ d: was.d, g: was.g, ...(was.gm && { gm: was.gm }), lv: was.lv, n: 1, ms: Math.max(0, Math.min(3_600_000, Math.round(ms))), r });
   }
 
   /** My answers of this game recorded, once (recorder.ts): at the results, or when I leave mid-way (the tournament's: the

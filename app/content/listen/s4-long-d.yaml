@@ -1,0 +1,145 @@
+# まるごと 聞く S4 ほし (d): real recordings under Creative Commons: a sociolinguistic interview from CORAAL (African
+# American English in Valdosta, Georgia: CC BY-NC-SA 4.0) and a road-trip monologue from Hacker Public Radio (CC BY-SA
+# 4.0). American accents less heard in class, everyday stories, implied attitude. Each
+# excerpt is shared under its source's licence (credit.licence). Cut as (c).
+schema: 1
+unit: s4-long-d
+game: long
+stage: 5
+track: life
+seeds: [70]
+features: { primary: filler, review: elision }
+cando: "なじみの ない アメリカの なまりの 語りを 聞いて、話の 流れと 気持ちが わかる"
+status: listened
+items:
+  - kind: long
+    id: rl-band-trip
+    name: マーチングバンドの 遠征
+    source: real
+    ctx: "ジョージア州の女性が、高校のバンドの思い出を語る"
+    note: "finna＝〜しそう。we was も南部の話し言葉"
+    tags: { seed: 70, register: friend, pragmatic: attitude, features: [filler, wanna, elision] }
+    speakers:
+      a: { name: "Interviewer", ja: "聞き手", g: f }
+      b: { name: "Speaker", ja: "話し手", g: f }
+    credit:
+      title: "CORAAL: Valdosta, Georgia (VLD_se0_ag2_f_02)"
+      by: "Kendall, Tyler and Charlie Farrington. The Corpus of Regional African American Language (Version 2021.07). Eugene, OR: The Online Resources for African American Language Project"
+      url: "https://oraal.github.io/coraal"
+      file: "http://lingtools.uoregon.edu/coraal/vld/2021.07/VLD_audio_part01_2021.07.tar.gz#VLD_se0_ag2_f_02_1.wav"
+      sha256: "da40316f3c210b947421fc4d49ead77b11d5c82afbb1ba42792be18b72bc562e"
+      start: 2010.3
+      end: 2174.8
+      licence: "CC BY-NC-SA 4.0"
+      licenceUrl: "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+      attribution: "Audio: Kendall, Tyler and Charlie Farrington. 2021. The Corpus of Regional African American Language (CORAAL), Valdosta, GA, Version 2021.07. The Online Resources for African American Language Project. CC BY-NC-SA 4.0. Excerpt, loudness-normalized and re-encoded; this excerpt is shared under CC BY-NC-SA 4.0."
+    lines:
+      - { who: a, t: [0.0, 4.975], en: "So was concert season different? Or was it still...", ja: "演奏会のシーズンは違った？それとも同じ…" }
+      - { who: b, t: [4.975, 10.865], en: "It was... I didn't like concert season, 'cause it was boring.", ja: "そうね…演奏会のシーズンは好きじゃなかった。退屈だったから。" }
+      - { who: b, t: [10.865, 14.325], en: "I don't like sitting in a chair, just playing music.", ja: "椅子に座って演奏するだけなのが好きじゃないの。" }
+      - { who: b, t: [14.325, 20.675], en: "It seems boring. It's boring to me, but I liked going on the trips.", ja: "退屈そうでしょ。私には退屈。でも遠征に行くのは好きだった。" }
+      - { who: a, t: [20.675, 22.665], en: "Where'd y'all go in the band?", ja: "バンドではどこに行ったの？" }
+      - { who: b, t: [22.665, 26.365], en: "Like, for marching band or concert band?", ja: "マーチングバンドで？それとも演奏会のバンドで？" }
+      - { who: a, t: [26.365, 27.005], en: "Both.", ja: "両方。" }
+      - { who: b, t: [27.005, 32.125], en: "Marching band, my freshman year, we went to New York, Chicago.", ja: "マーチングバンドは、1年生のときにニューヨークとシカゴに行った。" }
+      - { who: b, t: [32.125, 36.595], en: "And my... was it my junior year?", ja: "それと…3年生のときだっけ？" }
+      - { who: b, t: [36.595, 47.595], en: "Was it my junior year we went somewhere else? I went on two trips during my high school, being in high school.", ja: "3年生のときにどこか別の所に行ったんだっけ？高校の間に遠征は2回行ったの、高校生のときに。" }
+      - { who: b, t: [47.595, 50.825], en: "But I don't remember where my second trip was.", ja: "でも2回目がどこだったか覚えてない。" }
+      - { who: b, t: [50.825, 58.255], en: "Where is the IKEA Parade, or... I don't know where the IKEA Parade... (Me neither, honey.)", ja: "イケア・パレードってどこだっけ…どこだったかわからない…（私もわからないわよ。）" }
+      - { who: b, t: [58.255, 64.615], en: "Philadelphia? I went to... okay, no, I went to New York and Philadelphia my freshman year.", ja: "フィラデルフィア？私が行ったのは…いや違う、1年生のときはニューヨークとフィラデルフィア。" }
+      - { who: b, t: [64.615, 68.085], en: "And I went to Chicago my junior year of high school.", ja: "で、高校3年のときにシカゴ。" }
+      - { who: b, t: [68.085, 69.885], en: "Either my junior or senior year of high school.", ja: "3年か4年のどっちか。" }
+      - { who: a, t: [69.885, 70.625], en: "What'd y'all do?", ja: "何をしたの？" }
+      - { who: b, t: [70.625, 78.575], en: "We marched in the parade. Well, New York, we marched in the... was it the Macy's Thanksgiving Parade?", ja: "パレードで行進したの。ニューヨークでは…メイシーズの感謝祭パレードだったかな？" }
+      - { who: b, t: [78.575, 84.905], en: "Or some kind of parade. And then the... my junior, senior year, we marched in the IKEA Parade.", ja: "とにかく何かのパレード。それから3年か4年のときにイケア・パレードで行進した。" }
+      - { who: b, t: [84.905, 89.745], en: "And my freshman year, it was snowing.", ja: "1年生のときは雪が降ってて。" }
+      - { who: b, t: [89.745, 95.315], en: "It wasn't snowing, but it was, like, snowing, hailing, raining, all at the same time.", ja: "雪じゃないんだけど、雪とひょうと雨がいっぺんに降ってるみたいな感じ。" }
+      - { who: b, t: [95.315, 101.595], en: "So that was miserable. My hands were... they felt like they were finna fall off.", ja: "だから最悪だった。手が…もげそうなくらいだったの。" }
+      - { who: b, t: [101.595, 104.415], en: "'Cause all we... we didn't have, like, thick gloves.", ja: "だって…厚い手袋なんて持ってなかったから。" }
+      - { who: b, t: [104.415, 111.505], en: "They were just, like, our regular marching gloves. So, like, everything was going through, and, like, it was painful.", ja: "いつものマーチング用の手袋だけ。だから全部しみ込んできて、痛かった。" }
+      - { who: b, t: [111.505, 116.255], en: "So when we got back on the bus, we was just... whew. About to die.", ja: "だからバスに戻ったときは、もう…はあ、って。死にそうだった。" }
+      - { who: b, t: [116.255, 120.955], en: "But... not about to die, but we were just like, we couldn't do it.", ja: "まあ…死にそうってほどじゃないけど、もう無理って感じ。" }
+      - { who: b, t: [120.955, 124.685], en: "And then my... I can't remember if it was my junior or senior year.", ja: "それから…3年だったか4年だったか思い出せない。" }
+      - { who: b, t: [124.685, 129.475], en: "I want to say junior year, but we went to IKEA, or, we went to the IKEA Parade.", ja: "3年だったと思うんだけど、イケアに…いや、イケア・パレードに行ったの。" }
+      - { who: b, t: [129.475, 136.615], en: "And I don't think we did much in these cities, because we were in a big group.", ja: "でもその町ではあんまり何もしなかったと思う。大人数だったから。" }
+      - { who: b, t: [136.615, 143.465], en: "There was not much we could do. We went to some little shops here and there, but I don't think I spent money.", ja: "できることがあまりなかったの。ちょこちょこ小さな店には行ったけど、お金は使わなかったと思う。" }
+      - { who: b, t: [143.465, 150.985], en: "'Cause I think... I think maybe they gave me, like, two hundred dollars. But, like, in New York and those other places, it's expensive.", ja: "だって…たしか200ドルくらいもらったんだけど、ニューヨークとかああいう所は高いでしょ。" }
+      - { who: b, t: [150.985, 155.035], en: "Like, stuff, like hats, souvenirs, anything, it's expensive.", ja: "帽子とかお土産とか、何でも高いの。" }
+      - { who: b, t: [155.035, 162.885], en: "So I don't think I got too much of anything. If I did, I just got, like, something for my brother, and my mom, and my dad.", ja: "だからたいしたものは買わなかったと思う。買ったとしても、弟と母と父にちょっとしたものくらい。" }
+      - { who: b, t: [162.885, 164.5], en: "But that's it.", ja: "それだけ。" }
+    questions:
+      - { type: gist, ask: "主に 何の 話？", line: 7, choices: ["Trips she took with her high school marching band.", "Why she quit the band after her first year.", "Shopping for souvenirs on a family vacation in New York."], answer: 0, cja: ["高校のマーチングバンドで行った遠征", "1年目のあとバンドをやめた理由", "家族旅行でニューヨークのお土産を買った話"], why: "演奏会は退屈だが遠征は好き、と言ってニューヨーク、フィラデルフィア、シカゴのパレードの話をする。家族旅行の話ではない。" }
+      - { type: mean, ask: "Me neither, honey. の 意味は？", line: 11, choices: ["She has never liked parades either, so she can't help.", "She doesn't know where it is either.", "She has never been to an IKEA store in her life."], answer: 1, cja: ["自分もパレードは好きじゃないので、わからない", "自分もそれがどこか知らない", "イケアの店に一度も行ったことがない"], why: "I don't know where the IKEA Parade... に対して Me neither＝私も（知らない）。honey は親しみをこめた呼びかけ。" }
+      - { type: attitude, ask: "1年生の ニューヨークの パレードは どうだった？", line: 20, choices: ["Exciting, even though it rained a little during the parade.", "Boring, like sitting in a chair for concert season.", "Miserable: freezing, and their gloves were too thin."], answer: 2, cja: ["パレード中に少し雨が降ったが、楽しかった", "演奏会シーズンにいすに座っているのと同じで退屈", "最悪。凍えるほど寒く、手袋が薄すぎた"], why: "雪とひょうと雨がいっぺんに降り、薄いマーチング用手袋で手がもげそう（finna fall off）。miserable＝最悪。" }
+      - { type: mean, ask: "遠征先で あまり 買い物を しなかった のは なぜ？", line: 29, choices: ["The band didn't let students go into any of the shops.", "Everything was expensive, and she had only a little money.", "She lost the money her parents had given her."], answer: 1, cja: ["バンドが生徒をどの店にも入らせなかった", "何でも高く、お金が少ししかなかった", "親にもらったお金をなくした"], why: "200ドルくらいもらったが、ニューヨークなどは帽子もお土産も高い。家族にちょっとしたものを買っただけ。" }
+    dict:
+      - { line: 26, words: "want to say", feature: wanna }
+      - { line: 27, words: "I don't think we did", feature: elision }
+      - { line: 31, words: "something for my brother", feature: weak-form }
+
+  - kind: long
+    id: rl-road-trip
+    name: GPSが 止まった 日
+    source: real
+    ctx: "長距離ドライブの途中、男性が休憩所で録音する"
+    note: "pear-shaped＝うまくいかなくなる、の口語"
+    tags: { seed: 70, register: broadcast, pragmatic: attitude, features: [filler, kinda, flap] }
+    speakers:
+      a: { name: "Trey", ja: "トレイ", g: m }
+    credit:
+      title: "Road trips without GPS"
+      by: "Trey, Hacker Public Radio episode 4098 (2024)"
+      url: "https://hackerpublicradio.org/eps/hpr4098/index.html"
+      file: "https://hackerpublicradio.org/eps/hpr4098/hpr4098.mp3"
+      sha256: "6b0ece951164263ae077b218a60da76612c69fc26ca40697f654bb12c07d9588"
+      start: 40.3
+      end: 320.0
+      licence: "CC BY-SA 4.0"
+      licenceUrl: "https://creativecommons.org/licenses/by-sa/4.0/"
+      attribution: "“Road trips without GPS” by Trey, Hacker Public Radio episode 4098 (2024), https://hackerpublicradio.org/eps/hpr4098/index.html. CC BY-SA 4.0. Excerpt, loudness-normalized and re-encoded; this excerpt is shared under CC BY-SA 4.0."
+    lines:
+      - { who: a, t: [0.0, 6.005], en: "Hello, this is Trey, and this is an off-the-cuff recording.", ja: "どうも、トレイです。これはその場の思いつきの録音です。" }
+      - { who: a, t: [6.005, 18.115], en: "I'm about 200 miles into a 700-mile trip from the southeastern United States to the northeastern United States.", ja: "アメリカ南東部から北東部へ向かう700マイルの旅の、200マイルくらいまで来たところです。" }
+      - { who: a, t: [18.115, 22.605], en: "I'm not sightseeing, I'm just trying to get from point A to point B.", ja: "観光じゃなくて、ただA地点からB地点に行こうとしているだけ。" }
+      - { who: a, t: [22.605, 32.655], en: "And I made a stop, and after the stop, my GPS decided it did not want to reconnect to data.", ja: "で、一度休憩したら、そのあとGPSがデータ通信につながってくれなくなって。" }
+      - { who: a, t: [32.655, 47.015], en: "And so, I thought to myself, this might be a good opportunity to share with the HPR community how I generally prepare for long-distance", ja: "それで、HPRのみなさんに、私がふだん長距離の旅をどう準備しているか話すいい機会かもしれないと思ったんです。" }
+      - { who: a, t: [47.015, 56.925], en: "trips like this, and what type of redundancies I have in place for when things go a little bit pear-shaped.", ja: "こういう旅で、ちょっと具合が悪くなったときのために、どんな予備の手段を用意しているかも。" }
+      - { who: a, t: [56.925, 67.655], en: "Now, I've been driving for a long time, more than 40 years, and long-distance driving like this.", ja: "さて、私はもう長いこと運転していて、40年以上、こういう長距離の運転もしてきました。" }
+      - { who: a, t: [67.655, 81.265], en: "Not driving a truck, not hauling any cargo, but living far away from where I grew up, and traveling to see friends that live in other parts of the country, and traveling around", ja: "トラックで荷物を運ぶ仕事じゃなくて、育った場所から遠くに住んで、国のあちこちに住む友だちに会いに行ったり、" }
+      - { who: a, t: [81.265, 85.495], en: "the country for work for a period of my career.", ja: "仕事で一時期、国じゅうを回ったりして。" }
+      - { who: a, t: [85.495, 90.875], en: "I've done a lot of longer-distance driving, and I really do enjoy it.", ja: "長距離の運転はたくさんしてきたし、本当に好きなんです。" }
+      - { who: a, t: [90.875, 97.515], en: "And at the beginning, when I started doing it, we had maps.", ja: "始めたころは、地図を使っていました。" }
+      - { who: a, t: [97.515, 111.915], en: "We had lots of paper maps. In fact, I made it a habit of making sure that I had the most recent road atlas for the roads in the United States.", ja: "紙の地図がたくさんあってね。実際、アメリカの道路の最新版ロードアトラスを必ず持つのを習慣にしていました。" }
+      - { who: a, t: [111.915, 125.885], en: "And a road atlas is really cool. It's a paperback, fairly thick, maybe half an inch to three-quarters of an inch thick paperback book of maps.", ja: "ロードアトラスって本当にいいんですよ。ペーパーバックで、けっこう分厚くて、1、2センチくらいある地図の本。" }
+      - { who: a, t: [125.885, 131.545], en: "Maps for sections of each state in the United States, because that was where I was focused.", ja: "アメリカの各州を区画ごとに載せた地図。私が走るのはアメリカだったので。" }
+      - { who: a, t: [131.545, 137.035], en: "And that way, if you needed to plan a route, you could.", ja: "それがあれば、ルートを計画する必要があってもできる。" }
+      - { who: a, t: [137.035, 140.605], en: "If things changed and you needed to reference your route, you could do that.", ja: "状況が変わってルートを確かめたくなっても、それができる。" }
+      - { who: a, t: [140.605, 146.325], en: "We also had something that I grew up with, which was TripTiks.", ja: "それと、私が子どものころからあったのが「トリップティック」。" }
+      - { who: a, t: [146.325, 156.565], en: "When my parents were planning trips, they would go to the American Automobile Association, of which they were a member,", ja: "両親は旅行を計画すると、会員になっていたアメリカ自動車協会に行って、" }
+      - { who: a, t: [156.565, 159.785], en: "and they would get a TripTik.", ja: "トリップティックをもらっていました。" }
+      - { who: a, t: [159.785, 171.235], en: "And the TripTik was basically a small, custom-made flip chart of maps for each section of the trip.", ja: "トリップティックというのは、旅の区間ごとの地図をまとめた、オーダーメイドの小さなめくり式の冊子です。" }
+      - { who: a, t: [171.235, 180.175], en: "So they would tell the agent at the American Automobile Association, I'm going from point A to point B.", ja: "自動車協会の係の人に「A地点からB地点に行きます。" }
+      - { who: a, t: [180.175, 185.485], en: "Can you do a TripTik? And they would figure out what the best route was.", ja: "トリップティックを作ってもらえますか？」と頼むと、一番いいルートを考えてくれる。" }
+      - { who: a, t: [185.485, 191.285], en: "They would also often figure out alternative routes, and they would put them together in this little flip chart.", ja: "別のルートもよく考えてくれて、それをこの小さな冊子にまとめてくれたんです。" }
+      - { who: a, t: [191.285, 204.955], en: "So you could flip from section to section to section and know where you're going, get a little bit more detail for those sections than what you would have in, like, an almanac", ja: "だから区間ごとにめくっていけば、どこへ向かっているかわかるし、年鑑みたいなものより詳しく見られる。" }
+      - { who: a, t: [204.955, 210.965], en: "or a big folded map to try to deal with while you're driving.", ja: "運転しながら大きな折りたたみ地図と格闘するよりもね。" }
+      - { who: a, t: [210.965, 220.565], en: "Now, we very rarely use maps like that anymore, because we have things like GPS.", ja: "今ではそういう地図はほとんど使いません。GPSみたいなものがあるから。" }
+      - { who: a, t: [220.565, 234.555], en: "And amazing tools like that, where our phones and our devices can tell us where to go, and what speed to go, and whether there's any obstacles in the road or other hazards to be aware of.", ja: "そういうすごい道具があって、スマホや機器が行き先も速度も、道路の障害物や気をつけるべき危険も教えてくれる。" }
+      - { who: a, t: [234.555, 239.875], en: "And it's been a wonderful innovation, but it doesn't always work.", ja: "すばらしい発明です。でも、いつもうまくいくとは限らない。" }
+      - { who: a, t: [239.875, 247.465], en: "Like in this case, where I do not have enough of a signal now to load the next segment of my trip.", ja: "今みたいに、次の区間を読み込むだけの電波がないこともある。" }
+      - { who: a, t: [247.465, 255.645], en: "But I went ahead and had printed the trip, section by section, before I left.", ja: "でも、出発前に旅の区間ごとの地図を印刷しておいたんです。" }
+      - { who: a, t: [255.645, 260.755], en: "So I have the equivalent of what those TripTiks used to be, and I have those available to me.", ja: "だから昔のトリップティックに当たるものが手元にある。" }
+      - { who: a, t: [260.755, 264.315], en: "So I can look and see, all right, this is where I need to go next.", ja: "それを見れば「よし、次はこっちだ」とわかる。" }
+      - { who: a, t: [264.315, 271.075], en: "And to be honest, this particular trip is a trip that I've made hundreds of times.", ja: "それに正直に言うと、この道はもう何百回も走っているんです。" }
+      - { who: a, t: [271.075, 279.7], en: "And so I'm much more familiar with the details of the trip, and where I'm going, and what to expect.", ja: "だから道の細かいところも、行き先も、何があるかも、よく知っているんですよ。" }
+    questions:
+      - { type: gist, ask: "なぜ この 録音を している？", line: 4, choices: ["He's lost on the highway and is asking listeners for directions.", "His GPS stopped working, so he's explaining how he plans long drives.", "He's reviewing a new navigation app he bought for the trip."], answer: 1, cja: ["高速道路で迷って、聞いている人に道を尋ねている", "ナビが止まったので、長距離ドライブの準備の仕方を話している", "旅のために買った新しいナビアプリを紹介している"], why: "休憩のあとGPSがつながらなくなり、いい機会だと長距離の旅の準備と予備の手段を語る。迷っているわけではない。" }
+      - { type: attitude, ask: "紙の 地図や 長距離運転を どう 思っている？", line: 12, choices: ["He finds long drives stressful and would rather fly.", "He thinks paper maps were useless next to GPS.", "He enjoys the driving and talks fondly about old maps."], answer: 2, cja: ["長距離運転はストレスで、飛行機のほうがいい", "紙の地図はナビに比べて役に立たなかった", "運転が好きで、昔の地図を懐かしそうに話す"], why: "I really do enjoy it、a road atlas is really cool と懐かしむ。GPSもすばらしいが、いつも動くとは限らない、という立場。" }
+      - { type: mean, ask: "TripTik とは 何？", line: 19, choices: ["A custom flip chart of maps for each part of a trip.", "A pass from the auto club that let drivers use toll roads free.", "A phone app that suggests other routes when there's traffic."], answer: 0, cja: ["旅の区間ごとの地図をまとめたオーダーメイドの冊子", "自動車協会がくれる、有料道路を無料で使えるパス", "渋滞のとき別のルートを教えるスマホのアプリ"], why: "custom-made flip chart of maps＝区間ごとの地図をまとめたオーダーメイドの冊子。自動車協会の係がルートを考えてくれた。" }
+      - { type: mean, ask: "GPSが なくても あまり 困って いない のは なぜ？", line: 32, choices: ["He printed the route, and he knows this trip well.", "He's going to buy a new road atlas at the next stop.", "His phone always reconnects to data after a few minutes."], answer: 0, cja: ["ルートを印刷してあり、この道をよく知っている", "次の休憩所で新しいロードアトラスを買う", "スマホはいつも数分でまたデータにつながる"], why: "区間ごとに印刷した地図があり、しかもこの道は hundreds of times 走っていて慣れている。新しい地図を買う話はない。" }
+      - { type: next, ask: "このあと 彼は どう する？", line: 31, choices: ["Wait at the rest stop until the GPS works again.", "Use his printed pages to see where to go next.", "Turn around and drive back home."], answer: 1, cja: ["ナビが直るまで休憩所で待つ", "印刷した地図で次の行き先を確かめる", "引き返して家に戻る"], why: "I can look and see, all right, this is where I need to go next＝印刷したものを見て、次はこっちだと確かめられる。" }
+    dict:
+      - { line: 2, words: "trying to get", feature: weak-form }
+      - { line: 11, words: "lots of paper maps", feature: kinda }
+      - { line: 29, words: "went ahead", feature: flap }
+
