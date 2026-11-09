@@ -163,7 +163,7 @@
                 scene.add(o);
                 kick();
                 return () => (scene.remove(o), kick());
-              }, staticUrl('room/villagers3d/'), () => kick());
+              }, staticUrl('room/villagers3d/'), () => kick(), null, false);
               vil.lift(0.32);
               kick();
             }, (e) => console.warn('preview: K.K.', e));

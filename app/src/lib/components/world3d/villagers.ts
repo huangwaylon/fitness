@@ -167,7 +167,8 @@ export interface Parts {
   rest(id: string, part: string, out: Matrix4): Matrix4 | null;
 }
 
-export function createVillagers(add: (o: Object3D) => () => void, dir: string, kick: () => void, parts: Parts | null = null): Villagers3 {
+/** `fishing`: anyone may fish here (the island; not the editor's K.K.), so NH's rod is loaded ahead. */
+export function createVillagers(add: (o: Object3D) => () => void, dir: string, kick: () => void, parts: Parts | null = null, fishing = true): Villagers3 {
   interface W {
     /** The model's key (person3d's, or the roster id) and, while a new look's loads over the old model, its key. */
     key: string;
@@ -322,7 +323,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
   };
   // NH's rod in ahead of the first cast (its model's fetch and parse took seconds on a slow phone and on CI's software
   // GL: the line could be out and gone before it was in hand); after the time of day's lift is set (Island3D, at once)
-  setTimeout(() => void (disposed || wearOf('tools/rod')), 0);
+  if (fishing) setTimeout(() => void (disposed || wearOf('tools/rod')), 0);
   function wear(w: W, key: string | null) {
     if ((w.hat?.key ?? null) === key) return;
     w.v?.wear(null);

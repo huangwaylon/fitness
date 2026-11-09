@@ -374,7 +374,7 @@ function frames(ms: number): Promise<{ p50: number; p95: number; fps: number; lo
       t.push(now);
       if (now < end) return void requestAnimationFrame(f);
       const g = t.slice(1).map((x, i) => x - t[i]).sort((a, b) => a - b), q = (p: number) => g[Math.min(g.length - 1, Math.floor(p * g.length))] ?? 0;
-      done({ p50: q(0.5), p95: q(0.95), fps: (t.length - 1) / (ms / 1000), long: g.filter((x) => x > 50).length, hz: q(0.05) > 0 && q(0.05) < 12 ? 120 : 60 });
+      done({ p50: q(0.5), p95: q(0.95), fps: (t.length - 1) / (ms / 1000), long: g.filter((x) => x > 50).length, hz: q(0.5) > 0 && q(0.5) < 12 ? 120 : 60 });
     };
     requestAnimationFrame(f);
   });
