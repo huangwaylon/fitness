@@ -301,7 +301,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // the guides' photos (a trip's cover and hero precached): kept once seen, revalidated in the background after a day
+  // the guides' photos (a trip's cover precached) and the wedding's banner: kept once seen, revalidated in the background after a day
   if (isGuidePhoto(url.pathname)) {
     event.respondWith((async () => {
       const pre = await caches.open(CACHE).then((c) => c.match(req));

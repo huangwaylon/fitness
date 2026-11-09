@@ -711,8 +711,8 @@ None ([decisions](decisions.md#no-notifications); `e2e/no-notify.spec.ts`: nothi
 - **Offline:** what a phone has shown once reads offline; nothing is prefetched unasked.
   - *Precached* (`scripts/load-budget.ts` ≤ 3 MB): the Zen Maru Gothic slices holding ~99 % of the app's characters
     and Fredoka's Latin (`caches.ts PRECACHED_FONT_SLICES`; the rest on first use, `island-fonts-v1`), each trip's
-    cover and hero and the trail tracks.
-  - *Photos* (`island-photos-v1`: the rest of `travel/` and `hiking/`): kept on first view, stale-while-revalidate
+    cover and the trail tracks.
+  - *Photos* (`island-photos-v1`: the rest of `travel/` and `hiking/`, the heroes too, and the wedding's banner): kept on first view, stale-while-revalidate
     once a day old (`caches.ts swrFetch`, `x-island-stored`), bounded at 20 MB. A photo that can't load is the paper
     placeholder (`ui/photoFallback.ts`).
   - *MapLibre* (its chunk, worker, CSS and engines): into this version's shell the first time a map draws; each

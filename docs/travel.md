@@ -113,7 +113,7 @@ is the paper with a small picture icon (`ui/photoFallback.ts`, on every `<img>` 
 ## Offline
 
 (docs/backend.md "Service worker" › Offline.) After one visit online the trips read offline: the
-text, 持ち物 (ticks queue till back), each trip's cover and hero (precached, ~0.26 MB with the trails' tracks), every
+text, 持ち物 (ticks queue till back), each trip's cover (precached, with the trails' tracks), its hero once seen, every
 photo already seen (`island-photos-v1`). The map draws offline once it has drawn on the phone: MapLibre is kept in the
 shell, and the tiles it drew (`island-tiles-v1`, 60 MB, least recently used out; OpenFreeMap's tiles fetched by the
 page, `map/tiles.ts`, as WebKit's service worker doesn't see MapLibre's worker's fetches) with the TileJSON

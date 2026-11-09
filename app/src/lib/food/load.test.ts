@@ -24,7 +24,7 @@ beforeAll(async () => {
     return file ? new Response(readFileSync(join(DIR, file))) : new Response(null, { status: 404 });
   });
   db = await loadFoodDb();
-  await db.more;
+  await db.wantMore();
 });
 afterAll(() => {
   vi.unstubAllGlobals();

@@ -325,6 +325,15 @@
     return node;
   }
 
+  /** The guest's villager asleep (its app closed: IslandScene), on every member's island. At the launch its model waits
+   *  for the island's first whole frame (boot.ts `shown`), and while it loads no card is drawn: its GLB, textures and
+   *  programs cost a member's first frame ~130 ms at 4x CPU (docs/ops/perf.md); it comes in after, through the engine's
+   *  compile ahead (warmup.ts), its skinned Lambert the players' programs. */
+  const dozing = (c: Cast) => c.person === 'G' && actors[c.id].asleep;
+  let guestLate = true, lateFrom = 0;
+  /** Let go of the wait at most this long after the mount (a launch whose first whole frame never comes). */
+  const GUEST_LATE_MAX_MS = 4000;
+
   /** The frame's specs, the people's models and spots, and each person's spec (kept from frame to frame). */
   const specs: VSpec[] = [], ps: Person3[] = [], at: (readonly [number, number])[] = [], personSpecs = new Map<string, VSpec>();
   /** The villagers' frame wanted the ambience (a gym piece's loop, a card's breathing), and its next blink (ms). */
@@ -343,6 +352,8 @@
     for (let i = 0; i < visN; i++) specs.push(visSpecs[i]);
     if (kkOn && (kkLoad ||= kkSpec.shown)) specs.push(kkSpec);
     const people = cast();
+    // (the asleep guest's model only after the launch's first whole frame: guestLate)
+    if (guestLate && (!boot || boot.marks().shown || boot.spoiled() || t - lateFrom > GUEST_LATE_MAX_MS)) guestLate = false;
     // each person's model and spot once a frame (both loops read them), into arrays and specs kept from frame to frame
     ps.length = at.length = 0;
     for (const c of people) {
@@ -351,7 +362,7 @@
     }
     for (let i = 0; i < people.length; i++) {
       const c = people[i], a = actors[c.id], p = ps[i];
-      if (!p.has3d) continue;
+      if (!p.has3d || (guestLate && dozing(c))) continue;
       const [x, z] = at[i];
       let s = personSpecs.get(c.id);
       if (!s) personSpecs.set(c.id, (s = { ...visSpecs[0], slot: c.id, prone: false, yaw: undefined }));
@@ -384,7 +395,8 @@
     const r = vil3?.frame(t, specs, active) ?? noVillagers;
     moving = r.moving;
     vilAmbient = r.ambient;
-    vilWake = r.wake;
+    // (waiting on the launch's first whole frame: a frame soon to look again, however still the island)
+    vilWake = guestLate ? Math.min(r.wake, 250) : r.wake;
     for (let i = 0; i < people.length; i++) {
       const c = people[i], a = actors[c.id], p = ps[i], look = resolveLook({ villager: p.villager, person: c.person });
       const [x, z] = at[i];
@@ -403,8 +415,8 @@
         if (node.style.getPropertyValue('--v3h') !== h) node.style.setProperty('--v3h', h);
       }
       if (in3) marks3(eng, t, c.id, x, z);
-      // (a player: nothing till its model is in, never its villager's render)
-      const base = c.shown && card && p.kind === 'villager' && !inFocusWay(x, z) ? artCard(villagerArt(look.id) ?? '', VILLAGER.h) : null;
+      // (a player: nothing till its model is in, never its villager's render; nor the asleep guest: its model only)
+      const base = c.shown && card && p.kind === 'villager' && !(p.has3d && dozing(c)) && !inFocusWay(x, z) ? artCard(villagerArt(look.id) ?? '', VILLAGER.h) : null;
       if (!base) {
         eng.cards.set(`v:${c.id}`, null);
         continue;
@@ -916,6 +928,7 @@
     const watch = watchBoot(() => ({ progs: e.stats().programs, fieldsMs: Math.round(fieldsMs), fields }), () => e.isPaused());
     boot = watch?.clock ?? null;
     boot?.mount(mountAt);
+    lateFrom = performance.now();
     if (boot) e.onDrawn(boot.frame);
     // (?ambient= the frames a second of the ambience, anywhere)
     // (not in the e2e's logic mode: nothing's drawn, a frame costs nothing, and the island's life runs in its frames)

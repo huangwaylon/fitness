@@ -18,7 +18,8 @@ const MANIFEST = join(APP, '.svelte-kit/output/client/.vite/manifest.json');
  *  covers and heroes and the trails' tracks 0.26 MB), so its cap 3 → 3.5 MB; 3.6 MB with wave 2's lanes and the mic
  *  games' pages (ロールプレイ's took it past 3.5); 2.88 MB with ききみみ's parts (levels/parts/*.json's chunks, 0.69 MB:
  *  useless offline without their audio packs, which aren't precached either) kept on first use instead (caches.ts
- *  isKikiPart), so the cap back to 3 MB. */
+ *  isKikiPart), so the cap back to 3 MB; 2.94 → 2.61 MB with the wedding's and the trips' heroes cached on first view
+ *  (2026-11-09: caches.ts isGuidePhoto). */
 const FIRST_JS = 400 * 1024;
 const FIRST_CSS = 70 * 1024;
 const PRECACHE = 3 * 1024 * 1024;

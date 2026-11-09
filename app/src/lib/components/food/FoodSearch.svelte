@@ -92,7 +92,8 @@
     foodDb().then((d) => {
       if (!live) return;
       db = d;
-      void d.more.then(() => live && more++);
+      // (the products with it: a search's, never the sheet's open; search again once they're in)
+      void d.wantMore().then(() => live && more++);
     }, () => live && (failed = true));
     return () => void (live = false);
   });

@@ -34,7 +34,7 @@ async function load(worker: boolean): Promise<{ db: FoodDb; posts: number }> {
   }
   const { loadFoodDb } = await import('./load.ts');
   const db = await loadFoodDb();
-  await db.more;
+  await db.wantMore();
   vi.unstubAllGlobals();
   vi.stubGlobal('fetch', fetchFile);
   return { db, posts };

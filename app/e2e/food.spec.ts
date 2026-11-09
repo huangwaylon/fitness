@@ -1044,7 +1044,7 @@ test('pictures: a sheet that fails to load leaves the category’s tile, no brok
   await sheet(page).locator('[data-food-q]').fill('ごはん');
   const th = sheet(page).locator('[data-food-results] button.it', { hasText: 'ごはん（精白米）' }).first().locator('[data-thumb]');
   await expect(th).toBeVisible({ timeout: 15_000 });
-  await expect(th.locator('img')).toHaveCount(0); // the failed cell is taken out
+  await expect(th.locator('canvas')).toHaveCount(0); // the failed cell is taken out
   await expect(th).toHaveAttribute('data-thumb', 'cat');
   await expect(th).toHaveAttribute('data-cat', '主食');
 });
@@ -1124,7 +1124,7 @@ test('category tiles: the night’s tint is darker than the day’s; a picture d
     await sheet(page).locator('[data-food-q]').fill('うど');
     const th = sheet(page).locator('[data-food-results] [data-thumb]').first();
     await expect(th).toBeVisible({ timeout: 15_000 });
-    const pic = sheet(page).locator('[data-food-results] [data-thumb=img] img').first();
+    const pic = sheet(page).locator('[data-food-results] [data-thumb=img] canvas').first();
     await expect(pic).toBeVisible();
     return [await th.evaluate((e) => getComputedStyle(e).backgroundColor), await pic.evaluate((e) => getComputedStyle(e).filter)];
   };

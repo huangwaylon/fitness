@@ -252,8 +252,9 @@ describe('the offline shell from a navigation (keepShell)', () => {
 });
 
 describe('the guides offline: what is precached', () => {
-  it("a trip's cover and hero, and every trail's track; the other photos are cached on first view", () => {
-    for (const p of ['travel/okinawa/hero.webp', '/fitness/travel/nz/cover.webp', 'hiking/tracks/kinpu-odarumi.json', '/fitness/hiking/tracks/lake-22.json']) expect([precachable(p), isGuidePhoto(`/${p.replace(/^\//, '')}`)]).toEqual([true, false]);
+  it("a trip's cover and every trail's track; the other photos (the heroes, the wedding's banner) are cached on first view", () => {
+    for (const p of ['travel/okinawa/hero.webp', '/fitness/travel/nz/hero.webp', 'wedding/hero.webp', '/fitness/wedding/hero.webp']) expect([precachable(p), isGuidePhoto(`/${p.replace(/^\//, '')}`)]).toEqual([false, true]);
+    for (const p of ['/fitness/travel/nz/cover.webp', 'hiking/tracks/kinpu-odarumi.json', '/fitness/hiking/tracks/lake-22.json']) expect([precachable(p), isGuidePhoto(`/${p.replace(/^\//, '')}`)]).toEqual([true, false]);
     for (const p of ['travel/okinawa/camps/katsuren-beach.webp', 'travel/seattle/lake-22.webp', 'hiking/photos/lake-22.webp']) expect([precachable(p), isGuidePhoto(`/${p}`)]).toEqual([false, true]);
   });
 

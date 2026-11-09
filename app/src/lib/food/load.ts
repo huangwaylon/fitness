@@ -1,7 +1,7 @@
 // The meal log's IO edge: the food data from static/food/ (scripts/food-data.ts), fetched when the food sheet first
 // opens, never at install (service worker: cached on first use under its `?v=`, so it works offline after that).
 // index.json first (past the HTTP cache: it names the version), then the core datasets and verify.json together; the
-// lazy ones (products, 3 MB) after, in `db.more`. A dataset that fails to load is left out (its items unsearchable)
+// lazy ones (products, 2.7 MB) only once asked for (`db.wantMore`: the search's open), in `db.more`. A dataset that fails to load is left out (its items unsearchable)
 // till a retry at its next chance brings it (`chance`: the caller's, ui-state/retry.ts nextChance; none: no retry);
 // only a missing index.json fails the load. Each is indexed a slice per task (db.ts SLICE), never a long frame.
 import { addDataset, emptyDb, withJan, type FoodDb } from './db.ts';
@@ -87,8 +87,13 @@ export async function loadFoodDb(chance?: (n: number) => Promise<void>): Promise
   // all at once, added in the order they arrive (search ranks by match, not by file)
   const [verify] = await Promise.all([quiet(json<Verify>(url('verify.json', index.version)), 'food.verify', null), ...core.map(load)]);
   db.verify = verify;
-  db.more = (async () => {
-    for (const d of lazy) await load(d);
-  })();
+  let wanted: Promise<void> | null = null, settle = () => {};
+  db.more = new Promise<void>((ok) => (settle = ok));
+  db.wantMore = () => {
+    wanted ??= (async () => {
+      for (const d of lazy) await load(d);
+    })().then(settle, settle);
+    return db.more;
+  };
   return db;
 }

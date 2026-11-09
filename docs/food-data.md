@@ -66,8 +66,8 @@ dropped (還元水あめ's fibre `14.0†`). kcal is MEXT's energy as given: it 
 the first 12 hex digits of the sha256 of every generated file (`jan/` included) in `out/`; in `static/food/`, of the
 shipped files' names and bytes (`food-data.ts`: `verify.json`, then the datasets in index order). The app appends `?v=<version>` to
 data URLs, and the service worker caches them cache-first under that key. `secondary` datasets rank slightly below the core ones
-(mext, dishes, eatout) for equally good matches. `lazy` datasets (`products.json`) load only after the others are
-searchable.
+(mext, dishes, eatout) for equally good matches. `lazy` datasets (`products.json`) load only when asked for (`db.wantMore`:
+the search's open, or a day with a product logged), never with the tab's open.
 
 **`verify.json`**: `{ "sources": {src: { "label", "license", "url", "attribution" }}, "groups": [{ "n", "kcal": {src:
 kcal per 100 g} }], "byId": {item id: group index} }`. `src` is a dataset `source` (the item id prefix) or `usda`; every
