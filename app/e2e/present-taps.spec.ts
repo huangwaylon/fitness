@@ -47,12 +47,14 @@ const pickedBy = (page: Page, id: string) =>
     const d = JSON.parse(localStorage.getItem('island-demo.world.A') ?? '{"events":[]}') as { events: Ev[] };
     return d.events.filter((e) => e.kind === 'pick' && e.id === id).map((e) => `${e.who}:${e.what.split(':')[0]}`);
   }, id);
-/** Where a present is drawn: its 3D model's middle (`gift-<uid>`, through the camera's projection), else its art's. */
+/** Where a present is drawn: its 3D model's middle (`gift-<uid>`, through the camera's projection), else its art's.
+ *  (`client`'s lift is above the ground there: `where`'s y is that ground's height, 43 on the museum's tier, and with it
+ *  added the finger came down 43 u over the box, 0.5 px above its tap area: "pbunder opened" red in the full tier) */
 async function giftPoint(page: Page, uid: string): Promise<[number, number]> {
   const at = () => page.evaluate((uid) => {
     const w = (window as unknown as { __world3d?: { where(id: string): { x: number; y: number; z: number; hidden: boolean } | null; client(x: number, z: number, lift?: number): [number, number] } }).__world3d;
     const p = w?.where(`gift-${uid}`);
-    if (p && !p.hidden) return w!.client(p.x, -p.z, p.y + 12);
+    if (p && !p.hidden) return w!.client(p.x, -p.z, 12);
     const r = document.querySelector(`[data-find="present"][data-uid="${uid}"] .official`)?.getBoundingClientRect();
     return r && r.width ? [r.left + r.width / 2, r.top + r.height / 2] as [number, number] : null;
   }, uid);
@@ -141,11 +143,14 @@ const modelAt = (page: Page, id: string) =>
     const p = (window as unknown as { __world3d?: { where(id: string): { x: number; z: number } | null } }).__world3d?.where(id);
     return p ? [p.x, -p.z] as [number, number] : null;
   }, id);
-/** Where `id` is drawn, off every building's ground (`put`: where it was put, the logic tier's answer: no model). */
+/** Where `id` is drawn, off every building's ground (`put`: where it was put, without WebGL: no model). Its model
+ *  waited for (CI: not in yet at the first read, the put's spot came back and the camera stopped 58 u short). */
 async function offTheBuildings(page: Page, id: string, g: LayoutNav, put: readonly [number, number]): Promise<readonly [number, number]> {
-  const at = await modelAt(page, id);
-  if (at) expect(onBuilding(g, at[0], at[1], 0), `${id} drawn at ${at}`).toBe(false);
-  return at ?? put;
+  if (!(await page.locator('.if-scene[data-r3]').count())) return put;
+  await expect.poll(() => modelAt(page, id), { message: `${id}'s model in` }).not.toBeNull();
+  const at = (await modelAt(page, id))!;
+  expect(onBuilding(g, at[0], at[1], 0), `${id} drawn at ${at}`).toBe(false);
+  return at;
 }
 /** A finger's tap on a piece of wood, where it's drawn: picked up by A, gone. */
 async function tapWood(page: Page, id: string, z: number) {
