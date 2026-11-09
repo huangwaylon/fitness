@@ -943,7 +943,7 @@ test('a drink’s amount: its grams and its per-100 values in ml (「100mlあた
   await openFood(page);
   await sheet(page).locator('[data-add=l]').click();
   await sheet(page).locator('[data-food-q]').fill('生ビール');
-  await amountOf(page, sheet(page).locator('[data-food-results] button.it', { hasText: '生ビール' }).first());
+  await amountOf(page, sheet(page).locator('[data-food-results] [data-item="eatout:beer_nama"]'));
   await expect(sheet(page).locator('[data-food-g]')).toHaveText(/ml）$/);
   await expect(sheet(page).locator('[data-food-per]')).toHaveText(/^100mlあたりの栄養/);
 });
