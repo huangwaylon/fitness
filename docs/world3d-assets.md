@@ -109,12 +109,15 @@ reels in.
 ## Villagers and visitors
 
 Their skinned models are converted apart (`scripts/villagers3d-models.ts`, `scripts/villagers3d-page.js`) into
-`app/static/room/villagers3d/<id>.glb` (417 files, ≤ 100 KB each), posed in code: the villagers, the roster's special
-characters (K.K., Daisy Mae, Wisp, Gulliver, Celeste, Kicks, Label, Saharah, Leif, Redd, C.J., Flick) and, by
+`app/static/room/villagers3d/<id>.glb` (442 files, ≤ 100 KB each), posed in code: the villagers, the roster's special
+characters (K.K., Daisy Mae, Wisp, Gulliver, Celeste, Kicks, Label, Saharah, Leif, Redd, C.J., Flick, Brewster, Kapp'n,
+Wilbur) and, by
 `VISITOR_ONLY` (not in the picker), Franklin, Jack, Jingle, Zipper, Reese and Cyrus. Pavé isn't in NH's files: he
 never visits. A material's textures are the ones its Collada effect samples, not the ones named after it (`mCapVis`
 and `mGlassCap` sample `mBody_Alb` and `mGlass_Alb`); the converter fails a villager whose GLB has a material without
-a base colour where the source has one. The 60 plain tops are the files' own (the clothing's texture isn't in them).
+a base colour where the source has one. The 60 plain tops are the files' own (the clothing's texture isn't in them). The 2.0 villagers, the Sanrio six,
+Brewster, Kapp'n and Wilbur come from the 2.0.0 export (`NH_MODELS=~/Downloads/acnh-2.0.0-models/Model`, a superset
+of the old `Model` but for 15 layout icons); Tulin, Mineru, Cece and Viché aren't in it (their cards stay).
 
 ## The inventory
 

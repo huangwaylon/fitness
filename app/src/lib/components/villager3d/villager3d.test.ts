@@ -39,7 +39,7 @@ describe('the villagers’ 3D models (villagers.json)', () => {
 
   it('keeps every face part: eyes, a mouth, and a bird’s beak (NH’s FaceNothing mesh: once dropped, Anchovy had none)', () => {
     /** NH draws these mouths on the body (anteaters, hedgehogs, Nook, Redd, Daisy Mae, Kicks, Jack's carved pumpkin, Zipper's costume): no mesh of its own. */
-    const ON_BODY = new Set(['anabelle', 'annalisa', 'antonio', 'cyrano', 'olaf', 'pango', 'snooty', 'tom-nook', 'redd', 'daisy-mae', 'kicks', 'label', 'mabel', 'sable', 'jack', 'zipper']);
+    const ON_BODY = new Set(['anabelle', 'annalisa', 'antonio', 'cyrano', 'olaf', 'pango', 'snooty', 'zoe', 'tom-nook', 'redd', 'daisy-mae', 'kicks', 'label', 'mabel', 'sable', 'jack', 'zipper']);
     const names = (id: string): string[] => {
       const b = readFileSync(join(DIR, `${id}.glb`)), j = JSON.parse(b.subarray(20, 20 + b.readUInt32LE(12)).toString());
       return [...(j.meshes ?? []), ...(j.nodes ?? [])].map((n: { name?: string }) => n.name ?? '');
