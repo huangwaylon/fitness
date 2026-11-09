@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TENT_FLOOR, TENT_MAX, TENT_ROOM, TENT_WALL, mergeTent, tentAccept, tentLayout, tentOpOf, type TentEntry } from './tent.ts';
+import { ROOM_SIZES, TENT_FLOOR, TENT_MAX, TENT_ROOM, TENT_SIZE, TENT_WALL, mergeTent, tentAccept, tentLayout, tentOpOf, type TentEntry } from './tent.ts';
 import { decorOpOf } from './decor.ts';
 
 const T0 = 1_790_000_000_000;
@@ -36,6 +36,23 @@ describe('a tent op', () => {
     const e = (o: object) => ({ ...tentOpOf(set(TENT_ROOM, T0, { item: 'r0', x: 0, z: 0, ...o }))!, who: 'A' as const });
     expect(tentLayout([e({})]).lights).toBe(false);
     expect(tentLayout([]).lights).toBe(true);
+  });
+
+  it('the room’s size: NH’s main rooms (4, 6, 8 tiles a side), the largest with no op (old rooms), never removed or counted', () => {
+    expect(ROOM_SIZES).toEqual([4, 6, 8]);
+    for (const n of ROOM_SIZES) expect(tentOpOf(set(TENT_SIZE, T0, { item: `s${n}`, x: 0, z: 0 }))).toMatchObject({ id: TENT_SIZE, item: `s${n}` });
+    for (const bad of [
+      set(TENT_SIZE, T0, { item: 's5', x: 0, z: 0 }), set(TENT_SIZE, T0, { item: 's10', x: 0, z: 0 }), set(TENT_SIZE, T0, { item: 'r1', x: 0, z: 0 }),
+      set(TENT_SIZE, T0, { item: 's6', x: 1, z: 0 }), set('dabc123', T0, { item: 's6' }), { sc: 't', id: TENT_SIZE, at: T0, rm: true }
+    ]) expect(tentOpOf(bad), JSON.stringify(bad)).toBeNull();
+    const e = (at: number, n: number) => ({ ...tentOpOf(set(TENT_SIZE, at, { item: `s${n}`, x: 0, z: 0 }))!, who: 'A' as const });
+    expect(tentLayout([]).size).toBe(8);
+    const m = new Map<string, TentEntry>();
+    for (const x of [e(T0 + 2, 4), e(T0 + 1, 6)]) mergeTent(m, x);
+    expect(tentLayout(m.values())).toMatchObject({ size: 4, pieces: [] });
+    // never counted: a full room still takes a size
+    const full = Array.from({ length: TENT_MAX }, (_, i) => ({ ...tentOpOf(set(`dp${String(i).padStart(5, '0')}`, T0))!, who: 'A' as const }));
+    expect(tentAccept(full, e(T0 + 3, 6))).toBe('append');
   });
 
   it('is never an island op, nor an island op a tent one (the scope keeps them apart on old phones too)', () => {

@@ -69,6 +69,21 @@ describe('the tent on this phone', () => {
     expect(tent.surface('wall', 'w4833')).toBe(true);
   });
 
+  it('the room’s size: the largest until set, sent as its own op, the partner’s heard, an old phone’s rows kept as they were', () => {
+    const r = fakeRelay();
+    tent.attach(r.live, 'A');
+    tent.set({ id: 'd000001', item: 'f4041', x: 7, z: 7, f: 0 });
+    expect(tent.size).toBe(8);
+    expect(tent.resize(8)).toBe(false);
+    vi.setSystemTime(T0 + 1000);
+    expect(tent.resize(6)).toBe(true);
+    expect(r.sent.at(-1)).toMatchObject({ kind: 'decor', sc: 't', id: 'dtentsize', item: 's6', x: 0, z: 0, f: 0 });
+    // the pieces are kept as they are (the screen keeps a shrink from leaving one outside)
+    expect([tent.size, tent.pieces.length, tent.room]).toEqual([6, 1, TENT_MAX - 1]);
+    r.hear({ sc: 't', id: 'dtentsize', at: T0 + 2000, item: 's4', x: 0, z: 0, f: 0, p: T0, who: 'B', t: T0 + 2000 });
+    expect(tent.size).toBe(4);
+  });
+
   it('hears the partner’s ops (and tells of them), never the island’s; the island never takes the tent’s', () => {
     const r = fakeRelay(), heard: unknown[] = [];
     tent.attach(r.live, 'A');

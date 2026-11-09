@@ -355,6 +355,17 @@ describe('events', () => {
     expect(got).toEqual([...Array(60).fill(true), { ok: false, error: 'bad_request', detail: 'tent full' }, true, true]);
   });
 
+  it('a room’s size (2026-11-09) is its own slot, owner-scoped, kept in a full room; never an odd size', () => {
+    const P = T0 - 60_000;
+    const size = (sc: string, at: number, item: string) => ev(`z-${sc}-${at}`, 'decor', { sc, id: 'dtentsize', at, item, x: 0, z: 0, f: 0, p: P });
+    for (let i = 0; i < 60; i++) b('event', ev(`r-u-${i}`, 'decor', { sc: 'u', id: `du${String(i).padStart(5, '0')}`, at: P + i, item: 'f4041', x: i % 8, z: (i >> 3) % 8, f: 0, p: P }));
+    expect(b('event', size('u', P + 70, 's6'))).toEqual({ ok: true });
+    expect(b('event', size('u', P + 80, 's4'))).toEqual({ ok: true });
+    expect(a('event', size('u', P + 90, 's8')).ok).toBe(false); // うめ's room: hers alone
+    expect(b('event', size('u', P + 95, 's5')).ok).toBe(false);
+    expect(events().filter((r) => r[2] === 'decor' && (r[3] as { id: string }).id === 'dtentsize').map((r) => (r[3] as { item: string }).item)).toEqual(['s4']);
+  });
+
   it('a room light’s switch is its own row beside its piece’s: a move after it never undoes it, nor it the move', () => {
     const P = T0 - 60_000;
     const lamp = (at: number, x: number) => ev(`l-${at}`, 'decor', { sc: 'u', id: 'dlamp001', at, item: 'f1432', x, z: 0, f: 0, p: P });
