@@ -298,7 +298,7 @@ openings (Sheet's `keep`), so a reopening shows the day at once.
   the top three. The first 24 rows are drawn, the rest near the list's end.
 - **Amount** (`FoodPortion`, rules `amount.svelte.ts` AmountPick): one screen on an iPhone 15 for the common case. The
   head: the picture (a tap enlarges it in `FoodPhoto`, 「AI生成のイメージ」), the name, everyday name and 「これは…」 (`desc`),
-  the kcal at title size, P · F · C · 塩分, and 「100gあたりの栄養 ▾」. **状態**: a chip per state; picking one swaps the
+  the kcal at title size, P · F · C · 塩分, and 「100gあたりの栄養 ▾」 (a drink's 「100mlあたり」). **状態**: a chip per state; picking one swaps the
   food, carrying the portion through the pair's yield (`foodUi.ts` stateItem). **量**: portions as chips, −/＋ by a whole
   portion for counted things (`foodUi.ts` PIECE) or by half, a grams field (ml for a drink). The foot: the meal (four
   buttons) over 「追加 298 kcal」, or 保存 / 削除 for my entry (with 取り消す).

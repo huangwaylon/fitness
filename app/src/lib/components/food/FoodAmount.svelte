@@ -106,7 +106,7 @@
       <div><dt>{t('food.s')}</dt><dd class="money">{n.s.toFixed(1)}<small>g</small></dd></div>
     </dl>
     <button type="button" class="per-t" data-food-per aria-expanded={perOpen} aria-controls="food-per" data-sfx="tick" onclick={() => (perOpen = !perOpen)}>
-      {serving ? t('food.perOneNut', { u: a.ps[0].label }) : t('food.per100Head')}<span class="caret" aria-hidden="true">▾</span>
+      {serving ? t('food.perOneNut', { u: a.ps[0].label }) : t('food.per100Head', { u: a.unit })}<span class="caret" aria-hidden="true">▾</span>
     </button>
     {#if perOpen}<p class="per money" id="food-per">{formatNum(item.kcal)} kcal · P {per(item.p)} · F {per(item.f)} · C {per(item.c)} · {t('food.s')} {per(item.salt)}</p>{/if}
   </section>

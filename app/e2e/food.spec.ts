@@ -939,6 +939,15 @@ test('the amount: 豚ロース fits on the screen, kcal（g） in the head, 100g
   await expect(sheet(page).locator('[data-food-per]')).toHaveAttribute('aria-expanded', 'false');
 });
 
+test('a drink’s amount: its grams and its per-100 values in ml (「100mlあたりの栄養」)', async ({ page }) => {
+  await openFood(page);
+  await sheet(page).locator('[data-add=l]').click();
+  await sheet(page).locator('[data-food-q]').fill('生ビール');
+  await amountOf(page, sheet(page).locator('[data-food-results] button.it', { hasText: '生ビール' }).first());
+  await expect(sheet(page).locator('[data-food-g]')).toHaveText(/ml）$/);
+  await expect(sheet(page).locator('[data-food-per]')).toHaveText(/^100mlあたりの栄養/);
+});
+
 // A food in its states (food data's vg/st: 豚ロース 脂身つき 生 · 焼き · ゆで) is one row: its name without the state,
 // the state its kcal is for filled and the others after it; a word of the query picks the state.
 test('search: one row per food in its states, the state filled; 豚ロース 焼き shows 焼き; 焼きいも its own name', async ({ page }) => {
