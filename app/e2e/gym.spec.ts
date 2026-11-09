@@ -144,7 +144,7 @@ async function rep(page: Page, slot: string, id: string) {
   expect(Math.max(...spans), 'the hands on the grip').toBeLessThan(GRIP);
 }
 
-test('the guest uses the gym as a member does: its 3D villager does pull-ups; one with no 3D model (マーティー) does them as its card', async ({ page }) => {
+test('the guest uses the gym as a member does: its 3D villager does pull-ups; one with no 3D model (チューリ) does them as its card', async ({ page }) => {
   await open(page, '&as=G');
   const d = (await geo(page)).DECOR_SLOTS.find((s) => s.id === 'pullup')!;
   await camTo(page, d.z - 110);
@@ -155,8 +155,8 @@ test('the guest uses the gym as a member does: its 3D villager does pull-ups; on
   await fromMenu(page, 'settings');
   await st.locator('[data-push=look]').click();
   await st.locator('[data-look-tab=villager]').click();
-  await st.getByRole('searchbox').fill('マーティー');
-  await st.getByRole('radio', { name: 'マーティー' }).click();
+  await st.getByRole('searchbox').fill('チューリ');
+  await st.getByRole('radio', { name: 'チューリ' }).click();
   await st.locator('.titlebar .back').click();
   await page.keyboard.press('Escape');
   await expect(page.locator('[data-actor="mine"]')).toHaveAttribute('data-gym', 'pullup');

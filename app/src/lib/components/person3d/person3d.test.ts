@@ -29,8 +29,10 @@ describe('person3d: who draws a person', () => {
       expect(p.villager, id).toBe(id);
       if (!p.has3d) (expect(art(villagerArt(id)), `${id}: no model and no render`).not.toBeNull(), cards.push(id));
     }
-    // the guest's マーティー among them (the island, the museum and the tent draw these as their card)
-    expect(cards).toContain('marty');
+    // the four NH's files lack (the island, the museum and the tent draw these as their card); the guest's マーティー
+    // is a model since the 2.0.0 export
+    expect(cards.sort()).toEqual(['cece', 'mineru', 'tulin', 'viche']);
+    expect(person3('G', { kind: 'villager', villager: 'marty' }, 'marty', DIRS).has3d).toBe(true);
     // a player look always has its 3D player (its parts: look/closet.test, player3d/parts.test)
     expect(person3('G', resolveLook({}, 'A'), null, DIRS).has3d).toBe(true);
   });
