@@ -897,9 +897,10 @@
       if (!gone) stop = mount();
     };
     // the ground's fields first (layout/fieldsPrime.ts: the cache's, or the worker's; the launch's prime if it has
-    // started, else this one starts it), and the e2e's logic mode alike; built (a mount after the first): at once
+    // started, else this one starts it), and the e2e's logic mode alike; built (a mount after the first, back from a
+    // room): the next display frame's, not in the page's own mount (WebKit: its ~55 ms and this ~35 ms were one frame)
     const l = layoutNow();
-    if (hasFields(l)) go();
+    if (hasFields(l)) requestAnimationFrame(go);
     else void primeFields(l, version).then(go);
     return () => {
       gone = true;

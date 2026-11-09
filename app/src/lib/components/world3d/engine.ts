@@ -948,8 +948,12 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   };
   /** At rest (REST_MS): no finger for a while (the frame's own wants say whether anything moves). */
   const resting = (t: number) => !touch && t - lastInput > REST_MS && t >= activeUntil;
+  /** The mount's task ends with no frame drawn: the first is a display frame later, not in the frame the mount ran
+   *  into (back from a room: the mount's ~80 ms and the first frame's ~90 ms at 4x CPU were one 167 ms gap). */
+  let mounting = true;
   function frame(vsync = now()) {
     if (disposed || document.hidden || paused) return;
+    if (mounting) return void ((mounting = false), pace.kick());
     const t = now();
     const active = touch || t < activeUntil || busy;
     if (!pace.due(vsync, active ? FPS : 0)) return;
@@ -1023,7 +1027,10 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     cullGroups();
     // (new programs compiled ahead, what waits on them held back: before the shadow map's turn, which they join once in)
     const held = !noDraw && hold();
-    if (opts.shadows && t >= shadowBy(t)) {
+    // (the first frame only compiles: all of it is held back, and its draw was another ~20 ms of programs on top in one
+    // frame; drawn in the next)
+    const compileOnly = held && frames === 0;
+    if (opts.shadows && !compileOnly && t >= shadowBy(t)) {
       renderer.shadowMap.needsUpdate = true;
       shadowDue = Infinity;
       shadowsNow = false;
@@ -1031,7 +1038,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       shadowsDrawn++;
     }
     if (!noDraw) {
-      renderer.render(scene, camera);
+      if (!compileOnly) renderer.render(scene, camera);
       if (held) {
         for (const o of heldBack) o.visible = true;
         heldBack.length = 0;
