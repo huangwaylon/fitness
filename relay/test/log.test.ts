@@ -111,16 +111,22 @@ describe('the relay’s events, the query, retention', () => {
 
   it('counts the day\'s rows written by object (the Free plan\'s 100k): the log\'s own, the record\'s `req` rw, the room\'s', () => {
     log.ingestText(batch([ev('app.show'), ev('app.show')]));
-    // 2 events + the batch id + 3 caps rows (c:A:i, all, rw:log)
-    expect(log.stats()).toMatchObject({ rowsLog: 6, rowsStore: 0, rowsRoom: 0, rowsPct: 0 });
+    // 2 events + the batch id + 2 caps rows (c:A:i; all, which keeps these counts: no row of their own)
+    expect(log.stats()).toMatchObject({ rowsLog: 5, rowsStore: 0, rowsRoom: 0, rowsPct: 0 });
     log.add([{ e: 'req', l: 1, d: { action: 'events', st: 'ok', rw: 40_000 } }, { e: 'room.close', l: 1, d: { code: 1000, rw: 12_000 } }]);
-    // + 2 events + 5 caps rows (r:i, all, rw:store, rw:room, rw:log)
-    expect(log.stats()).toMatchObject({ rowsLog: 13, rowsStore: 40_000, rowsRoom: 12_000, rowsPct: 52 });
+    // + 2 events + 2 caps rows (r:i, all)
+    expect(log.stats()).toMatchObject({ rowsLog: 9, rowsStore: 40_000, rowsRoom: 12_000, rowsPct: 52 });
     // kept across a restart, and the next UTC day starts again
     log = make();
     expect(log.stats()).toMatchObject({ rowsStore: 40_000 });
     now += DAY;
     expect(log.stats()).toMatchObject({ rowsLog: 0, rowsStore: 0, rowsRoom: 0, rowsPct: 0 });
+    // a log from before the column: it is added, the old rows kept
+    const old = memSql();
+    old.sql.exec('CREATE TABLE caps (day TEXT NOT NULL, bucket TEXT NOT NULL, n INTEGER NOT NULL, PRIMARY KEY (day, bucket)) WITHOUT ROWID');
+    old.sql.exec("INSERT INTO caps (day, bucket, n) VALUES (?, 'all', 7)", new Date(now).toISOString().slice(0, 10));
+    const was = new LogCore({ sql: old.sql, tx: old.tx, keys, now: () => now });
+    expect(was.stats()).toMatchObject({ today: 7, rowsLog: 0 });
   });
 
   it('purges by time and role', () => {

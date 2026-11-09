@@ -10,9 +10,9 @@
 // - Caps per UTC day and bucket (`caps`, one row each, written once per write): the phones 1,000 events a role and 200
 //   errors, the relay 4,000 and 500, and 8,000 in all (the hard guard on the account's 100k rows written a day).
 // - A batch id is taken once (`batches`, two days): a phone re-sends a batch it never saw acked.
-// - The account's rows written a UTC day, by object (`caps` `rw:log`, `rw:store`, `rw:room`): the log's own (counted:
-//   one a row, its tables have no index), the record's (each `req`'s `rw`) and the room's (`room.close` `rw`); `stats`
-//   says them against the Free plan's ROWS_DAY.
+// - The account's rows written a UTC day, by object (the day's `all` cap row's `rw`, written with it: no row of its
+//   own): the log's own (counted: one a row, its tables have no index), the record's (each `req`'s `rw`) and the
+//   room's (`room.close` `rw`); `stats` says them against the Free plan's ROWS_DAY.
 // - Retention: 30 days (`prune`, the object's daily alarm, 5,000 rows a chunk).
 import { keyOwner, type Keys } from './auth.ts';
 import type { Sql } from './store.ts';
@@ -57,6 +57,10 @@ const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS batches (b TEXT PRIMARY KEY, ts INTEGER NOT NULL) WITHOUT ROWID',
   'CREATE TABLE IF NOT EXISTS caps (day TEXT NOT NULL, bucket TEXT NOT NULL, n INTEGER NOT NULL, PRIMARY KEY (day, bucket)) WITHOUT ROWID'
 ];
+/** The day's rows written by object (RowsWritten), on its `all` cap row (2026-11-09: a column added to a log that had none). */
+const RW_COLUMN = 'ALTER TABLE caps ADD COLUMN rw TEXT';
+type RowsWritten = { log: number; store: number; room: number };
+const NO_ROWS: RowsWritten = { log: 0, store: 0, room: 0 };
 
 /** A stored event as a query returns it. */
 export interface LogRow {
@@ -102,9 +106,11 @@ export class LogCore {
   private last = 0;
   private day = '';
   private caps = new Map<Bucket, number>();
+  private rw: RowsWritten = { ...NO_ROWS };
 
   constructor(private io: LogIO) {
     for (const s of SCHEMA) io.sql.exec(s);
+    if (!io.sql.exec<{ name: string }>('SELECT name FROM pragma_table_info(?)', 'caps').toArray().some((c) => c.name === 'rw')) io.sql.exec(RW_COLUMN);
     this.last = Number(io.sql.exec<{ m: number | null }>('SELECT max(id) AS m FROM log').toArray()[0]?.m ?? 0);
   }
 
@@ -118,7 +124,15 @@ export class LogCore {
     const day = new Date(this.io.now()).toISOString().slice(0, 10);
     if (day !== this.day) {
       this.day = day;
-      this.caps = new Map(this.io.sql.exec<{ bucket: string; n: number }>('SELECT bucket, n FROM caps WHERE day = ?', day).toArray().map((r) => [r.bucket, Number(r.n)]));
+      const rows = this.io.sql.exec<{ bucket: string; n: number; rw: string | null }>('SELECT bucket, n, rw FROM caps WHERE day = ?', day).toArray();
+      this.caps = new Map(rows.map((r) => [r.bucket, Number(r.n)]));
+      let rw: Partial<RowsWritten> = {};
+      try {
+        rw = JSON.parse(rows.find((r) => r.bucket === 'all')?.rw ?? '{}') as Partial<RowsWritten>;
+      } catch {
+        /* as none */
+      }
+      this.rw = { log: Number(rw.log) || 0, store: Number(rw.store) || 0, room: Number(rw.room) || 0 };
     }
     return day;
   }
@@ -148,23 +162,22 @@ export class LogCore {
     return (this.caps.get(b) ?? 0) >= this.limitOf(b) || (this.caps.get('all') ?? 0) >= LOG_CAPS.all;
   }
 
-  /** The rows written today, by object (`rw:<object>`): `n` more, the bucket touched. */
-  private wrote(touched: Set<Bucket>, obj: 'log' | 'store' | 'room', n: number): void {
+  /** The rows written today by `obj`: `n` more (kept on the `all` row: touched). */
+  private wrote(touched: Set<Bucket>, obj: keyof RowsWritten, n: number): void {
     if (!(n > 0)) return;
-    const b = `rw:${obj}`;
-    this.caps.set(b, (this.caps.get(b) ?? 0) + Math.round(n));
-    touched.add(b);
+    this.rw[obj] += Math.round(n);
+    touched.add('all');
   }
 
-  /** The touched buckets' counts, written (one row each); a bucket that just filled logs `log.cap` once. `rows`: the
-   *  log's rows this write took so far (its events, a batch's id), counted with these and the cap's. */
+  /** The touched buckets' counts, written (one row each; the `all` row with the day's rows written); a bucket that just
+   *  filled logs `log.cap` once. `rows`: the log's rows this write took so far (its events, a batch's id). */
   private saveCaps(day: string, touched: Set<Bucket>, insert: (r: Bind[]) => void, rows: number): void {
-    this.wrote(touched, 'log', rows + touched.size + (touched.has('rw:log') ? 0 : 1));
+    this.wrote(touched, 'log', rows + touched.size + (touched.has('all') ? 0 : 1));
     for (const b of touched) {
-      this.io.sql.exec('INSERT INTO caps (day, bucket, n) VALUES (?, ?, ?) ON CONFLICT (day, bucket) DO UPDATE SET n = excluded.n', day, b, this.caps.get(b) ?? 0);
+      const rw = b === 'all' ? JSON.stringify(this.rw) : null;
+      this.io.sql.exec('INSERT INTO caps (day, bucket, n, rw) VALUES (?, ?, ?, ?) ON CONFLICT (day, bucket) DO UPDATE SET n = excluded.n, rw = excluded.rw', day, b, this.caps.get(b) ?? 0, rw);
     }
     for (const b of touched) {
-      if (b.startsWith('rw:')) continue;
       if (!this.full(b) || this.caps.has(`capped:${b}`)) continue;
       this.caps.set(`capped:${b}`, 1);
       this.io.sql.exec('INSERT OR IGNORE INTO caps (day, bucket, n) VALUES (?, ?, 1)', day, `capped:${b}`);
@@ -306,10 +319,10 @@ export class LogCore {
       today: this.caps.get('all') ?? 0,
       budgetPct: Math.round(((this.caps.get('all') ?? 0) / LOG_CAPS.all) * 100),
       // today's rows written (UTC), by object, and their share of the Free plan's ROWS_DAY (the alert warns past 50)
-      rowsLog: this.caps.get('rw:log') ?? 0,
-      rowsStore: this.caps.get('rw:store') ?? 0,
-      rowsRoom: this.caps.get('rw:room') ?? 0,
-      rowsPct: Math.round((['log', 'store', 'room'].reduce((n, o) => n + (this.caps.get(`rw:${o}`) ?? 0), 0) / ROWS_DAY) * 100),
+      rowsLog: this.rw.log,
+      rowsStore: this.rw.store,
+      rowsRoom: this.rw.room,
+      rowsPct: Math.round(((this.rw.log + this.rw.store + this.rw.room) / ROWS_DAY) * 100),
       capped,
       oldestDays: oldest ? Math.round(((now - oldest / 1000) / DAY) * 10) / 10 : 0
     };
