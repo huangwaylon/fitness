@@ -164,6 +164,17 @@ export function onTop(parent: string, kid: { item: string; x: number; z: number;
   return [lx, topY(parent), lz];
 }
 
+/** A point in a piece's own frame (model units, its spot at 0) as an offset in the room's: turned as the room turns the
+ *  piece (engine.ts placeRoot: rotation.y = f·90°; a wall thing, in its wall's frame, at f 0) and scaled by `s` (the
+ *  room's pieces stand at their model size: 1). */
+export function toRoom(local: readonly [number, number, number], f: number, s = 1): [number, number, number] {
+  const t = (((f % 4) + 4) % 4) * (Math.PI / 2), c = Math.round(Math.cos(t)), n = Math.round(Math.sin(t));
+  const [x, y, z] = local;
+  return [(x * c + z * n) * s || 0, y * s, (z * c - x * n) * s || 0];
+}
+/** A light's emitter (items.json e: where its point light stands) off its spot, in the room's frame at facing `f`. */
+export const emitterOf = (item: string, f: number): [number, number, number] => toRoom(ITEMS[item]?.e ?? [0, (ITEMS[item]?.h ?? 8) / 2, 0], f);
+
 /** The room tile of slot (sx, sz) on `parent` (as it stands, turned). */
 export function slotToTile(parent: Spot, sx: number, sz: number): [number, number] {
   const m = ITEMS[parent.item], w = m?.w ?? 1, d = m?.d ?? 1;

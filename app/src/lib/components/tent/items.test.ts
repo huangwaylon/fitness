@@ -1,10 +1,42 @@
-import { existsSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { Box3, Matrix4, Quaternion, Vector3 } from 'three';
 import catalog from '../island/catalog.json';
 import ja from '#lib/i18n/tent.ja.json';
 import en from '#lib/i18n/tent.en.json';
 import { DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, GYM, ITEMS, STARTER, WALLS, codeOfFind, iconUrl } from './items.ts';
+import { emitterOf, toRoom } from './grid.ts';
+
+interface Gltf {
+  nodes: { mesh?: number; children?: number[]; matrix?: number[]; translation?: number[]; rotation?: number[]; scale?: number[] }[];
+  scenes: { nodes: number[] }[];
+  meshes: { primitives: { attributes: { POSITION: number }; material?: number }[] }[];
+  accessors: { componentType: number; normalized?: boolean; min: number[]; max: number[] }[];
+  materials: { emissiveTexture?: object }[];
+}
+const NORM: Record<number, number> = { 5120: 127, 5121: 255, 5122: 32767, 5123: 65535 };
+/** A converted model's bounds, and its emissive part's (the meshes with an emissive map), from its glTF alone: each
+ *  primitive's POSITION min/max (dequantised) through its node's transforms. */
+function boundsOf(file: string): { all: Box3; lit: Box3 } {
+  const b = readFileSync(file), j = JSON.parse(b.subarray(20, 20 + b.readUInt32LE(12)).toString()) as Gltf;
+  const all = new Box3(), lit = new Box3();
+  const walk = (i: number, parent: Matrix4) => {
+    const n = j.nodes[i];
+    const local = n.matrix ? new Matrix4().fromArray(n.matrix) : new Matrix4().compose(
+      new Vector3(...(n.translation ?? [0, 0, 0])), new Quaternion(...(n.rotation ?? [0, 0, 0, 1])), new Vector3(...(n.scale ?? [1, 1, 1])));
+    const world = parent.clone().multiply(local);
+    for (const p of n.mesh === undefined ? [] : j.meshes[n.mesh].primitives) {
+      const a = j.accessors[p.attributes.POSITION], k = a.normalized ? NORM[a.componentType] : 1;
+      const box = new Box3(new Vector3(...a.min).divideScalar(k), new Vector3(...a.max).divideScalar(k)).applyMatrix4(world);
+      all.union(box);
+      if (p.material !== undefined && j.materials[p.material].emissiveTexture) lit.union(box);
+    }
+    for (const c of n.children ?? []) walk(c, world);
+  };
+  for (const i of j.scenes[0].nodes) walk(i, new Matrix4());
+  return { all, lit };
+}
 
 const STATIC = join(import.meta.dirname, '..', '..', '..', '..', 'static');
 const JA = ja as Record<string, string>, EN = en as Record<string, string>;
@@ -82,5 +114,34 @@ describe('the tent’s catalogue (scripts/room-models.ts)', () => {
     // its icon is the ずかん's (already on the phone), NH's own where the ずかん has none
     expect(iconUrl(codeOfFind(mapped[0])!)).toMatch(/art\/finds\/items\//);
     expect(iconUrl(WALLS[0])).toMatch(/room\/icons\/w\d+\.webp$/);
+  });
+
+  it('every light’s emitter (its point light) is where it glows: NH’s light locator inside the model, else inside its emissive part, at every facing', () => {
+    const lights = Object.entries(ITEMS).filter(([, m]) => m.lt);
+    expect(lights.length).toBeGreaterThanOrEqual(80);
+    const up = new Vector3(0, 1, 0), SLACK = 0.3;
+    let byGlow = 0;
+    for (const [code, m] of lights) {
+      expect(m.e, code).toHaveLength(3);
+      const { all, lit } = boundsOf(join(STATIC, 'room', 'models', `${code}.glb`));
+      // the glow's part when it has one and the emitter isn't NH's own locator (the lantern's flame, the fireplace's fire)
+      const part = !m.el && m.lit && !lit.isEmpty() ? lit : all;
+      if (part === lit) byGlow++;
+      for (let f = 0; f < 4; f++) {
+        // the room turns a piece by rotation.y = f·90° (engine.ts placeRoot; a wall thing stays at f 0 in its wall's frame)
+        const turned = new Box3().setFromPoints([0, 1, 2, 3, 4, 5, 6, 7].map((i) => new Vector3(
+          i & 1 ? part.max.x : part.min.x, i & 2 ? part.max.y : part.min.y, i & 4 ? part.max.z : part.min.z).applyAxisAngle(up, (f * Math.PI) / 2)));
+        expect(turned.expandByScalar(SLACK).containsPoint(new Vector3(...emitterOf(code, f))), `${code} f${f}`).toBe(true);
+      }
+    }
+    expect(byGlow).toBeGreaterThanOrEqual(15);
+    // toRoom is three's rotation.y = f·90° (and a scale)
+    for (let f = 0; f < 4; f++) {
+      const v = new Vector3(1, 2, 3).applyAxisAngle(up, (f * Math.PI) / 2).multiplyScalar(2);
+      expect(toRoom([1, 2, 3], f, 2).map((n, i) => n - v.getComponent(i)).every((d) => Math.abs(d) < 1e-9), `f${f}`).toBe(true);
+    }
+    // the old guess (straight over its spot, 0.8 of its height up) was outside the fireplace's fire and the iron wall lamp
+    expect(ITEMS.f742.e![1]).toBeLessThan(ITEMS.f742.h / 2);
+    expect(ITEMS.f3559.e![2]).toBeGreaterThan(2);
   });
 });

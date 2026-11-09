@@ -39,6 +39,10 @@ export interface ItemMeta {
   n?: number;
   /** A light: a lamp, the lantern, the fireplace (a switch). */
   lt?: 1;
+  /** A light's emitter, where its point light stands (model units, its own frame; scripts/room-models.ts emitters):
+   *  NH's light locator (el), else the middle of its emissive map's lit texels. */
+  e?: [number, number, number];
+  el?: 1;
   /** On a wall (NH's wall-mounted things): w tiles across it, h high, its middle at its origin, out of the wall from its
    *  back. */
   wl?: 1;
