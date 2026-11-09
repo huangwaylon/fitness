@@ -85,7 +85,7 @@ test('paint a stroke of sand, take it back with ⌘Z; R turns a bench; Delete ne
   expect(await objAt(page, 'goal-A')).not.toBeNull();
 });
 
-test('place from the palette; the check shows a tree in the river; reset to the default (behind a confirm)', async ({ page }) => {
+test('place from the palette; the check shows a tree in the river', async ({ page }) => {
   await openEditor(page);
   await page.locator('[data-kind="oak"]').click();
   // on the river (the stream down the middle's east side) it can't go
@@ -99,11 +99,49 @@ test('place from the palette; the check shows a tree in the river; reset to the 
   await page.mouse.move(gx, gy);
   await page.mouse.click(gx, gy);
   await expect.poll(() => page.evaluate(() => (window as unknown as { __editor: E }).__editor.layout().objects.size)).toBe(before + 1);
-  await page.keyboard.press('Escape');
-  await page.locator('[data-reset]').click();
-  await page.locator('[data-confirm-reset]').click();
-  await expect.poll(() => page.evaluate(() => (window as unknown as { __editor: E }).__editor.layout().objects.size)).toBe(before);
 });
+
+// the user, 2026-11-09: anyone may reset the island (the guest too), once 「リセット」 is typed
+for (const as of ['A', 'G'] as const)
+  test(`the reset (${as}): blocked till 「リセット」 is typed, やめる and Esc keep the layout, リセットする resets it`, async ({ page }) => {
+    await openEditor(page, `&as=${as}`);
+    const size = () => page.evaluate(() => (window as unknown as { __editor: E }).__editor.layout().objects.size);
+    const before = await size();
+    await page.locator('[data-kind="oak"]').click();
+    const [gx, gy] = await page.evaluate(() => (window as unknown as { __editor: E }).__editor.tileScreen(12, 20));
+    await page.mouse.move(gx, gy);
+    await page.mouse.click(gx, gy);
+    await expect.poll(size).toBe(before + 1);
+    await page.keyboard.press('Escape');
+    const ask = page.locator('[data-reset-ask]'), yes = page.locator('[data-confirm-reset]'), word = page.locator('[data-reset-word]');
+    // やめる is the default (focused); リセットする is off till the word is typed whole
+    await page.locator('[data-reset]').click();
+    await expect(ask).toContainText('置いたものはすべて元に戻ります');
+    await expect(page.locator('[data-reset-cancel]')).toBeFocused();
+    await expect(yes).toBeDisabled();
+    await word.fill('リセ');
+    await expect(yes).toBeDisabled();
+    await word.press('Enter');
+    await expect(ask).toBeVisible();
+    await word.fill('リセット');
+    await expect(yes).toBeEnabled();
+    // やめる: nothing sent, the oak still there
+    await page.locator('[data-reset-cancel]').click();
+    await expect(ask).toBeHidden();
+    expect(await size()).toBe(before + 1);
+    // Esc closes it too, and the field starts empty again
+    await page.locator('[data-reset]').click();
+    await expect(word).toHaveValue('');
+    await page.keyboard.press('Escape');
+    await expect(ask).toBeHidden();
+    expect(await size()).toBe(before + 1);
+    // typed, リセットする: the default island again
+    await page.locator('[data-reset]').click();
+    await word.fill('リセット');
+    await yes.click();
+    await expect(ask).toBeHidden();
+    await expect.poll(size).toBe(before);
+  });
 
 test('the museum: on the palette (greyed while it stands, one to an island), picked up and moved, R turns it, never deleted', async ({ page }) => {
   await openEditor(page);

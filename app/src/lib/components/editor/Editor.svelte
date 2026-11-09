@@ -17,6 +17,7 @@
   import Preview3D from './Preview3D.svelte';
   import type { Undrawn } from '../world3d/drawCheck.ts';
   import HomePicker from '../homes/HomePicker.svelte';
+  import ResetConfirm from './ResetConfirm.svelte';
   import { draw, fitView, tileUnder, toScreen, toWorld, zoomAt, type View } from './plan.ts';
   import {
     brushTiles, cliff, copy, ghostFoot, inBox, move, objectAt, paint, paste, place, remove, removable, resize, restyle, revert, rotate, sameLayout, wetAt, type Clip
@@ -349,6 +350,7 @@
   // ---- the keyboard ----
   let clip: Clip | null = null;
   function onKey(e: KeyboardEvent) {
+    if (confirmReset) return;
     const t = e.target as HTMLElement | null;
     if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) return;
     const cmd = e.metaKey || e.ctrlKey;
@@ -523,7 +525,6 @@
     (e.target as HTMLInputElement).value = '';
   }
   function resetAll() {
-    confirmReset = false;
     const before = store.current;
     const at = store.stamp();
     store.apply([{ sc: 'r', id: 'reset', at }]);
@@ -757,21 +758,12 @@
         <button type="button" onclick={() => fileInput?.click()}>JSONを読み込む</button>
         <input type="file" accept="application/json,.json" bind:this={fileInput} onchange={importJson} hidden />
       </div>
-      {#if confirmReset}
-        <div class="confirm" role="alertdialog" aria-label="reset">
-          <p>島を最初の状態に戻しますか？2人の変更はすべて消えます（家の見た目は残ります）。</p>
-          <div class="row">
-            <button type="button" class="danger" data-confirm-reset onclick={resetAll}>戻す</button>
-            <button type="button" onclick={() => (confirmReset = false)}>キャンセル</button>
-          </div>
-        </div>
-      {:else}
-        <button type="button" class="danger" data-reset onclick={() => (confirmReset = true)}>最初の島に戻す…</button>
-      {/if}
+      <button type="button" class="danger" data-reset onclick={() => (confirmReset = true)}>最初の島に戻す…</button>
     </section>
   </aside>
 </div>
 {#if picking}<HomePicker bind:open={picking} who={me} />{/if}
+<ResetConfirm bind:open={confirmReset} onconfirm={resetAll} />
 
 <style>
   .ed {
@@ -839,6 +831,4 @@
   .issues .warn { border-color: #d7a323; background: #fff8e2; }
   .bad { background: #e2553d; color: #fff; border-radius: 999px; padding: 0 8px; font-size: 12px; }
   .good { background: var(--c-leaf); color: #fff; border-radius: 999px; padding: 0 8px; font-size: 12px; }
-  .confirm { background: #fff0ec; border: 2px solid #d0533c; border-radius: 10px; padding: 8px; font-size: 13px; }
-  .confirm p { margin: 0 0 6px; }
 </style>
