@@ -221,7 +221,7 @@
 </div>
 
 <style>
-  /* The toggle: 44px to the thumb, a 40px cream disc with the cream lip to the eye (the bowl's and the dumbbell's
+  /* The toggle: a 44px cream disc with the cream lip, the dumbbell pill's full height (the dumbbell's
      cream), NH's leaf in it. Open: the disc NH's yellow, the leaf tipped as if it flicked the menu down. */
   .hud-menu { position: relative; flex: none; width: var(--hit); height: var(--hit); }
   .more {
@@ -230,7 +230,7 @@
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .more::before {
-    content: ''; position: absolute; inset: 2px 2px 4px; border-radius: 50%; background: var(--c-cream);
+    content: ''; position: absolute; inset: 0; border-radius: 50%; background: var(--c-cream);
     box-shadow: 0 var(--lip-h) 0 var(--c-lip); transition: background-color 180ms var(--ease-soft), translate 120ms, box-shadow 120ms;
   }
   .more:active::before { translate: 0 2px; box-shadow: 0 2px 0 var(--c-lip); }
@@ -238,7 +238,7 @@
   .more:focus-visible { outline: none; }
   .more:focus-visible::before { outline: 3px solid var(--focus); outline-offset: 2px; }
   .leaf {
-    position: relative; width: 26px; height: 26px; margin-top: -2px; display: flex; pointer-events: none;
+    position: relative; width: 28px; height: 28px; display: flex; pointer-events: none;
     filter: drop-shadow(0 1px 0 rgb(0 0 0 / .12)); transition: transform 320ms var(--ease-bounce);
   }
   .leaf svg { width: 100%; height: 100%; }

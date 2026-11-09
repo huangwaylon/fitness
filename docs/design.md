@@ -59,7 +59,7 @@ zoom, a tap on empty ground walks my villager there.
 - **HUD row:** [the health button] [the menu], right-aligned in the top-right corner at `--hud-top` (10px under the
   safe area, clear of iOS 27's top-edge blur), 6px apart. No jar, no meal button and no ribbon in the sky (NH's island
   view keeps its sky clear; its left third stays free for the sun and moon). Every target ≥ 44px; no View Transition.
-- **Menu** (`island/HudMenu.svelte`, `e2e/hud-menu.spec.ts`), the single home of the menu's order: a 40px cream disc
+- **Menu** (`island/HudMenu.svelte`, `e2e/hud-menu.spec.ts`), the single home of the menu's order: a 44px cream disc (the dumbbell pill's height)
   in a 44px target with NH's leaf mark drawn inline; `aria-expanded`, `aria-controls`. Folded by default. A tap unfolds
   it: the disc turns yellow, the leaf tips (−40°) and six cream pills show at once, right-aligned under the leaf, the
   same width, each 44px tall, its name then its icon or number:
