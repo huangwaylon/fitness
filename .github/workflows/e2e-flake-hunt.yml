@@ -99,4 +99,6 @@ jobs:
         run: |
           node scripts/e2e-report.ts playwright-results.json "Flaky in shard ${{ matrix.shard }} (×${{ inputs.repeat || '3' }})" >> "$GITHUB_STEP_SUMMARY"
           ANNOTATE=1 node scripts/e2e-report.ts playwright-results.json "Flaky e2e"
-          test "${{ steps.e2e.outcome }}" = success
+          # (red for any failure but WebKit itself crashing under Playwright, "Cannot find parent object browser@…":
+          # the environment, named in the summary; scripts/e2e-report.ts VERDICT)
+          [ "${{ steps.e2e.outcome }}" = success ] || VERDICT=1 node scripts/e2e-report.ts playwright-results.json verdict > /dev/null

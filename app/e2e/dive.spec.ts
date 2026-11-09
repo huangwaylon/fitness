@@ -47,7 +47,7 @@ test('a tap on the bubbles dives: a slow one (seaweed) is caught, NH’s line, a
   if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/critters-dive-caught.png` });
 });
 
-test('a quick one (a lobster) darts off as a shadow; a second tap on it in time catches it', async ({ page }) => {
+test('a quick one (a lobster) darts off as a shadow; a second tap on it in time catches it', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ page }) => {
   expect(SEA.lobster.speed).toBe('fast');
   await open(page, '&sea=lobster');
   const b = await at(page, '[data-bubbles]');

@@ -118,7 +118,9 @@ After a deploy, never holding one back:
   2 workers a runner (a 3-core VM: at 3, tests ran 3-6× their local time). Too slow to gate each push (5 macOS
   runners, ~20 min a run each); once it's green across the board it replaces Chromium as the gate. Each test 3× over,
   retries off; red when anything failed even once, its summary lists them worst first. It gates nothing. A test gets
-  60 s there (`--timeout=60000`): the VM runs a test 2–3× its Linux time, and it hunts flakes, not speed. A test
+  60 s there (`--timeout=60000`): the VM runs a test 2–3× its Linux time, and it hunts flakes, not speed. WebKit
+  itself crashing under Playwright ("Cannot find parent object browser@…") is named in the summary but not red
+  (`scripts/e2e-report.ts` `VERDICT`). A test
   WebKit can't run is `@chromium` with why; one the drawn tier can't (a timing software GL can't meet) is `@logic`
   with why: tagged out, never a job left red.
 - **The base path.** The site is at the root (`BASE_PATH` unset or `''`); the specs follow `BASE_PATH` (`e2e/island.ts`
