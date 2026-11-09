@@ -240,7 +240,7 @@ Both learners are B1+ (TOEIC 700+), so the point is which sounds and skills stil
   | `indirect` | ほんね | type `mean`; a `reply`, `next` or `gist` whose pragmatic layer is unsaid; `intonation` |
 
 - **Mastery** (0-1): a recency-weighted (half-life 21 days), smoothed (prior 0.7 × 2) mean: first listen right 1, after a replay 0.6, wrong 0. Shown from 3 answers.
-- **The level estimate:** an Elo-style ability θ (updates go to the learner, never the items: three players are too few to calibrate items). An item's difficulty is its place (progress.ts `difficulty`: L1 −1 … もり 2, やま 3, ほし 4; the pack as もり) plus a type offset; K 0.3 for the first 24 answers, then 0.15. The comfortable level is where θ predicts 80 % (θ − ln 4), capped at the hardest played + 0.5. 「はかっている とちゅう」 until 16 answers.
+- **The level estimate:** an Elo-style ability θ against each item's learned difficulty (progress.ts `difficultyOf`): filed at its place (L1 −1 … もり 2, やま 3, ほし 4; the pack as もり) plus a type offset, then shifted by my answers, the item's own shift (0.4 / (1 + n) a step, ± 1.5) and its shelf's (a place and a type, 0.04 a step, ± 1). θ's K is 0.3 for the first 24 answers, then 0.15. Learned on each phone from its owner's rows only: the record never sends anyone else's answers, and pooling three people's item results would reveal them. The comfortable level is where θ predicts 80 % (θ − ln 4), capped at the hardest played + 0.5. 「はかっている とちゅう」 until 16 answers.
 - **Trend:** first-listen accuracy over the last 12 games. **Consistency, never a streak:** the days played this Tokyo week.
 
 ### Storage
@@ -253,7 +253,7 @@ Both learners are B1+ (TOEIC 700+), so the point is which sounds and skills stil
 
 - **The shared deck stays deterministic**; personal adaptivity is solo only.
 - **Cards** (a chunk or a feature, never a clip): an item card for each item missed or right only after a replay, a feature card for each feature answered. Leitner boxes 0 / 1 / 3 / 7 / 16 / 35 / 90 days: first listen right good, after a replay hard, wrong again. よみきき サンド's まだ counts as hard on that phone. Folded from the answers (`srs.ts`).
-- **おさらい** (にがて れんしゅう): 8 questions from the levels offered: due item cards first (≤ 4), then items carrying the weakest due features, then the weakest skills' items; a recommendation narrows it to a skill or an accent. Nothing on the wire.
+- **おさらい** (にがて れんしゅう): 8 questions from the levels offered: due item cards first (≤ 4), then items carrying the weakest due features, then the weakest skills' items, the least recently heard first, then those whose chance (θ against the learned difficulty) is nearest 75–85 %; a recommendation narrows it to a skill or an accent. Nothing on the wire.
 
 ### Recommendations and feedback
 

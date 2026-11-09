@@ -248,7 +248,7 @@ The paper theme; lazy-loaded. Scene cards show the setting and the speakers, nev
 ## Placement and spaced repetition
 
 - **Placement, みみ チェック:** private, ~3 minutes, 8–12 adaptive items, starting at かわ (not はまべ, given the learners' level), up after 2 right, down after 1 wrong, stopping after two reversals; a band per skill gives とくい / これから. Re-check from せってい only. Not yet sampled: accent and phone clips; a stage-boundary re-check offer.
-- **Adaptivity:** one Elo-style ability per player (updates go to the learner: three players give too little data to calibrate items); the target is 75–85 % (the comfortable level at 80 %). Per-lever abilities aren't built.
+- **Adaptivity:** one Elo-style ability per player, and each item's difficulty learned from that player's answers, seeded from where it's filed (its place and type; an item's own shift and its shelf's, bounded). おさらい picks the items nearest the 75–85 % target (the comfortable level at 80 %). Per-lever abilities aren't built.
 - **Spaced repetition:** the card is a chunk or a feature, never a clip; each review uses a different clip. Intervals 1 / 3 / 7 / 16 / 35 / 90 days; right first play good, after a replay hard, wrong again. No streak guilt: a missed day only means more due cards (capped at 8 a day).
 - As built: kikimimi.md "Progress & feedback", kikimimi-engine.md "みみ チェック".
 
