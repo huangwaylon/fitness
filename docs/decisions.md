@@ -81,8 +81,8 @@ A third person plays as a guest ([backend](backend.md#the-guest)): its own key a
 ずかん, decorating the island and the tent, the board, the island's weather and look, ききみみ. It never sees the members'
 からだ figures (weight, body fat, BMI, lean mass and their goals) or profiles, and doesn't write the economy or the
 real-world records: ごほうび's buys, the harvest, the members' goals, the Health ingest, a trip's notes, the wedding board.
-The record and the room enforce it (`contract/guest.ts`); the からだ rows never enter its snapshot. Its villager joins the
-island's ambient life while its app is open. Why: a guest who plays but doesn't earn; a privacy rule only the UI kept
+The record and the room enforce it (`contract/guest.ts`); the からだ rows never enter its snapshot. Its villager is always on the
+island (2026-11-09: consistency), asleep while its app is closed, in the island's life while it's open. Why: a guest who plays but doesn't earn; a privacy rule only the UI kept
 would leak through the cache.
 
 ### Profile

@@ -1,9 +1,9 @@
 // Who each villager on this phone's island is (docs/design.md "The guest"): the director's villager actors are
 // `mine` (this phone's own, moved by its taps), `partner` and `third`. On a member's phone `partner` is the other
-// member and `third` the guest (shown only while the guest's app is open, moved only by the guest's phone); on the
+// member and `third` the guest (always there, asleep while the guest's app is closed, moved only by the guest's phone); on the
 // guest's phone `mine` is the guest's villager and `partner` / `third` are A / B. The island's life (ambient life, the
 // meet-ups, ふたりでぜんぶ, the follow, group stretching) is everyone's on the island, the guest's villager too while it's
-// here (2026-11-06). Set by the island scene (and the tent) as it mounts; plain TS (store/where.svelte.ts reads it too).
+// here (2026-11-06; asleep, it's in none: 2026-11-09). Set by the island scene (and the tent) as it mounts; plain TS (store/where.svelte.ts reads it too).
 import type { Who } from '#lib/types.ts';
 
 export type VillagerActor = 'mine' | 'partner' | 'third';
@@ -41,11 +41,14 @@ export const actorOf = (w: Who): VillagerActor => actorOfFor(me, w);
 /** Whose villager an actor draws here. */
 export const whoOf = (id: VillagerActor): Who => whoOfFor(me, id);
 
-/** The guest has the island open (the relay's presence, set by the island scene): its villager is on a member's island. */
+/** The guest has the island open (the relay's presence, set by the island scene): its villager, always on a member's
+ *  island, is awake and in the island's life; closed, it sleeps where it last stood. */
 let guestHere = false;
 export function setGuestHere(on: boolean): void {
   guestHere = on;
 }
+/** The guest's app is closed (on a member's phone; on the guest's own, never). */
+export const guestAway = (): boolean => me !== 'G' && !guestHere;
 
 /** The villager actors on this island now (the island's life is between these): on a member's phone mine and the
  *  partner's, and the guest's while it's here; on the guest's phone all three. */

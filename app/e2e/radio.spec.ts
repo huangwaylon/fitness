@@ -51,7 +51,8 @@ test('a morning: the tape deck is out, clear of every control; a tap and everyon
     const w = window as { __acts?: string[] };
     w.__acts = [];
     const snap = () => {
-      const a = [...document.querySelectorAll('.vil .body, [data-visitor]')].map((e) => e.getAttribute(e.hasAttribute('data-visitor') ? 'data-motion' : 'data-act'));
+      // (not the guest's villager: its app closed, it sleeps through it)
+      const a = [...document.querySelectorAll('.actor:not([data-who="G"]) .vil .body, [data-visitor]')].map((e) => e.getAttribute(e.hasAttribute('data-visitor') ? 'data-motion' : 'data-act'));
       const s = a.join(',');
       if (w.__acts![w.__acts!.length - 1] !== s) w.__acts!.push(s);
     };

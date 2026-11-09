@@ -1,8 +1,3 @@
-<script module lang="ts">
-  /** The guest's villager came ashore in this page load already (once per app open: docs/design.md "The guest"). */
-  let arrivedThisLoad = false;
-</script>
-
 <script lang="ts">
   // The island (docs/design.md "World", docs/decisions.md "The island in 3D"): NH's models in three.js on the editable
   // layout (world3d/Island3D.svelte: its own chunk), the camera its engine's (one finger along the island, two pinch:
@@ -62,10 +57,10 @@
   import { resolveLook } from '#lib/villagers/look.ts';
   import { lookOf as wornOf } from '#lib/store/look.ts';
   import type { Look as Worn } from '#lib/contract/look.ts';
-  import { IslandLife } from './islandLife.svelte.ts';
+  import { IslandLife, asleepNow as sleepsNow } from './islandLife.svelte.ts';
   import { VILLAGER, eventsAt, u, wildFlower, type Tod } from './scene.ts';
   import { CAMS, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, SEAT_DROP, flowerById, freshWhere, seatAt, surfaceAt, worldGen, BUILDINGS, LAWN_SPOTS, type BuildingId } from './world.ts';
-  import { GUEST_ARRIVAL, guestSpot, doorAt, outOf, partnerOnline } from './buildings.ts';
+  import { guestSpot, doorAt, outOf, partnerOnline } from './buildings.ts';
   import { site } from './site.svelte.ts';
   import { nextChance } from '#lib/ui-state/retry.ts';
   import { kkSpot } from './kkSlider.ts';
@@ -89,7 +84,7 @@
   import { hybridFor, hybridsOf } from './care.ts';
   import { garden } from './sceneDay.ts';
   import { addDays } from '#lib/time/dates.ts';
-  import { actors, addFx, applyStep, busy, eventsQuiet, inMotion, react, livePos, onMove, onStep, place, setEmote, setHome, setMotion, wake } from '../motion/director.svelte.ts';
+  import { actors, addFx, applyStep, busy, eventsQuiet, inMotion, react, livePos, onMove, onStep, place, setAsleep, setEmote, setHome, setMotion, wake } from '../motion/director.svelte.ts';
   import { cue, hearFrom } from '#lib/sound/cues.ts';
   import { prefetchPlace } from '#lib/sound/sound.svelte.ts';
   import { enterStage } from '#lib/sound/stage.svelte.ts';
@@ -98,7 +93,7 @@
   import { mushroomSpots } from './mushrooms.ts';
   import { giftTreesOn } from './treeGifts.ts';
   import { landing, perches } from './critters.ts';
-  import { arrive, attachAvatar, keepPos, partnerRestsAt, partnerTo, presence, freeze, sendTo, setInside, setPartnerRest, sitTo, snapHome, startAt, stepOut, steered, thaw, turnTo, wander, SNAP_HOME_MS } from './avatar.ts';
+  import { attachAvatar, keepPos, partnerRestsAt, partnerTo, presence, freeze, sendTo, setInside, setPartnerRest, sitTo, snapHome, startAt, stepOut, steered, thaw, turnTo, wander, SNAP_HOME_MS } from './avatar.ts';
   import { freeSeat, seatNamed, seatOpen, seatPieceAt, seatSpots, sitTimeOf, yieldsSeat, type SeatSpot } from './sitting.ts';
   import { useOf } from '../villager3d/seats3d.ts';
   import type { GymUse } from '../villager3d/poses.ts';
@@ -150,8 +145,8 @@
 
   // The same island on both phones (docs/design.md "Shared world"): A (ウェイ) lives on the left, B (うめ) on the right,
   // whichever of us holds the phone: homes, goal trees, flower beds, every shared id by person.
-  // The guest (docs/design.md "The guest"): its villager is the third on a member's phone (shown only while its app is
-  // open), this phone's own on the guest's (A and B then the partner and the third: ui-state/cast.ts). It has no home
+  // The guest (docs/design.md "The guest"): its villager is the third on a member's phone (always there, asleep while
+  // its app is closed), this phone's own on the guest's (A and B then the partner and the third: ui-state/cast.ts). It has no home
   // or tree: its spot is by the campsite.
   // svelte-ignore state_referenced_locally
   setCast(view.viewer);
@@ -167,12 +162,8 @@
     void site.rev;
     return Object.fromEntries(VILLAGERS.map((id) => [id, { person: lookOf(whos[id]), home: homeOf(whos[id]), side: sideOf(whos[id]) }])) as Record<VillagerActor, { person: Look; home: readonly [number, number]; side: 'left' | 'right' }>;
   });
-  /** Who else has the island open (the relay's presence): the guest's villager shows on a member's island only then. */
-  let hereNow = $state<readonly Who[]>([]);
   /** Whose villager is in the tent (one place at a time: nowhere on the island then). */
   const inTent = (id: VillagerActor): boolean => id !== 'mine' && where.inTent[whoOf(id)];
-  /** Whether an actor's villager is on this island now: mine and the members' always; the guest's while it's here. */
-  const onIsland = (id: VillagerActor): boolean => id === 'mine' || whoOf(id) !== 'G' || hereNow.includes('G');
 
   const covered = $derived(paused || ui.overlay || quiz.open);
   /** Its CSS (data-covered, data-sheet: every animation held, the island hidden): under a sheet only once the sheet is
@@ -269,7 +260,7 @@
   function showSay(id: VillagerActor, text: string) {
     const el = vilEls[id], sd = sides[id];
     // (a villager in the tent, or the guest's away, isn't on this screen: nothing to say it over)
-    if (!el || covered || inTent(id) || !onIsland(id)) return;
+    if (!el || covered || inTent(id)) return;
     says?.say(id, text, el, { name: sd.person.villagerName, colour: SAY_TAG[sd.person.person] });
     if (!actors[id].asleep && !actors[id].walking) applyStep(id, { actor: id, motion: 'hop' });
   }
@@ -306,7 +297,7 @@
     cue('emote-joy');
   }
   function highFiveTap(id: VillagerActor = 'partner') {
-    if (covered || fiving.has(id) || inTent(id) || !onIsland(id)) return;
+    if (covered || fiving.has(id) || inTent(id)) return;
     fiving.add(id);
     cue('villager-tap');
     for (const a of ['mine', id] as const) if (actors[a].asleep) wake(a);
@@ -333,7 +324,7 @@
     if (id === 'mine') return;
     const ago = Math.max(0, relayNow() - at);
     if (fiving.has(id)) return; // one at a time: both tapped at once, mine is the one playing
-    if (ago > HIGHFIVE_LIVE_MS || covered || life.hidden || !onIsland(id)) return void life.later(() => react('R5'), 700);
+    if (ago > HIGHFIVE_LIVE_MS || covered || life.hidden) return void life.later(() => react('R5'), 700);
     fiving.add(id);
     for (const a of ['mine', id] as const) if (actors[a].asleep) wake(a, { remote: true });
     const [mx, mz] = livePos('mine');
@@ -443,10 +434,9 @@
   // Where my villager stands as the island opens: just out of a building's door (a room's ‹ 島へ: island/doorOut.ts),
   // facing out; else where it last stood (back from another screen, a reload, the app reopened, however long after:
   // avatar.ts startAt), home only when it has never been anywhere.
-  let fromDoor = false;
   {
     const out = ui.takeOutAt();
-    if ((fromDoor = !!out)) stepOut(out!.at, out!.face);
+    if (out) stepOut(out.at, out.face);
     else {
       const at = startAt();
       if (at && !actors.mine.walking) place('mine', at[0], at[1]);
@@ -680,8 +670,8 @@
       partner: () => livePos('partner'),
       /** The seat a villager is on (its spot's name: world.ts SEATS), or null (e2e: sitting). */
       seated: (id: VillagerActor) => seated[id],
-      /** Anyone's villager's feet now (A, B or G), null when it isn't on this island (e2e: the guest). */
-      who: (w: Who) => (onIsland(actorOf(w)) && !inTent(actorOf(w)) ? livePos(actorOf(w)) : null),
+      /** Anyone's villager's feet now (A, B or G), null when it's in the tent (e2e: the guest). */
+      who: (w: Who) => (!inTent(actorOf(w)) ? livePos(actorOf(w)) : null),
       /** The camera's two ends for this screen (まえ, おく: the 3D island's; world.ts CAMS before it's up). */
       stops: () => (world.three && island3d ? [island3d.limits().min, island3d.limits().max] : [CAMS.mae, CAMS.oku]),
       /** The island on its layout (site.svelte.ts): whether it reads it, and where its doors, homes and centre stage are
@@ -720,7 +710,7 @@
       state: () => ({
         day: hash(canonical(shared.day)),
         decor: hash(decorCanon()),
-        villagers: Object.fromEntries(VILLAGERS.filter((id) => onIsland(id)).map((id) => {
+        villagers: Object.fromEntries(VILLAGERS.map((id) => {
           const [x, z] = livePos(id);
           return [whoOf(id), { x: Math.round(x), z: Math.round(z), asleep: actors[id].asleep, walking: actors[id].walking }];
         }))
@@ -747,12 +737,6 @@
 
   onMount(() => {
     const off = attachAvatar({ geo: () => (presence.visitor ? geoVisited() : geo()), clear: standsClear, where: feet, enabled: () => !covered && !life.hidden, hush: () => talk?.hush() });
-    // the guest's villager comes ashore once each time its app opens, and walks up to its spot by the campsite (the
-    // members see it arrive); back from the tent or another screen it is where it was
-    if (guestPhone() && !arrivedThisLoad && !actors.mine.walking) {
-      arrivedThisLoad = true;
-      if (!fromDoor) arrive(GUEST_ARRIVAL, guestSpot());
-    }
     let hiddenAt = 0;
     const vis = () => {
       if (document.hidden) hiddenAt = Date.now();
@@ -912,8 +896,9 @@
       // I'm on the island (not in the tent): said to whoever arrives, whatever they last heard of me
       if (here.some((w) => !was.includes(w))) r.send({ kind: 'tent', in: false });
       was = here;
-      hereNow = here;
+      // the guest's villager: always on the island, asleep while its app is closed (islandLife.svelte.ts asleepNow)
       setGuestHere(here.includes('G'));
+      untrack(() => setAsleep(actorOf('G'), sleepsNow(actorOf('G'))));
       // (re)connected: once the day's replay is in, my villager as it is here (the room may hold an older walk of it,
       // from a session that ended elsewhere)
       if (st.connected && !up) soon = setTimeout(() => link.joined(), JOIN_SAY_MS);
@@ -957,10 +942,10 @@
     setPartnerRest(to[0], to[1], id);
     steered[id] = w.t - relayOffset(); // (the relay's instant, as on every phone: ambient.ts held())
     // (a phone opening, the island hidden: where the walk has it by now; live and in view, a big gap glides off)
-    const how = playPartner(w, relayNow(), now && !covered && !life.hidden && onIsland(id), id);
+    const how = playPartner(w, relayNow(), now && !covered && !life.hidden, id);
     if (how === 'walk' || how === 'glide' || how === 'jump') {
       // a run (a tap on their phone: NH's ring where it goes)
-      if (now && onIsland(id) && w.ms && w.from && Math.hypot(to[0] - w.from[0], to[1] - w.from[1]) / (w.ms / 1000) >= RUN_RING_U_S) ring(to[0], to[1], true);
+      if (now && w.ms && w.from && Math.hypot(to[0] - w.from[0], to[1] - w.from[1]) / (w.ms / 1000) >= RUN_RING_U_S) ring(to[0], to[1], true);
       return;
     }
     if (how) return;
@@ -980,7 +965,7 @@
       if (hooksOn()) heardAt[`${e.kind}:${'id' in e ? e.id : 'tree' in e ? e.tree : ''}`] = Date.now();
       if (e.kind === 'walk' && e.who !== castMe()) partnerWalk(e, now, actorOf(e.who));
       // a villager woke on their phone (theirs tapped, or both at a high-five): here too, until the same moment
-      else if (e.kind === 'act' && e.act === 'wake' && now) playWake(e, view.me, relayNow());
+      else if (e.kind === 'act' && e.act === 'wake' && now) playWake(e, castMe(), relayNow());
     });
     return () => {
       offShared();
@@ -1140,7 +1125,7 @@
   const goalTrees = $derived((void site.rev, GOAL_TREES));
   const cast3 = () => VILLAGERS.map((id) => ({
     id, person: sides[id].person.person, villager: sides[id].person.villager, look: sides[id].person.worn, side: sides[id].side,
-    shown: onIsland(id) && !inTent(id), seated: !!seated[id], seat: seated[id], stung: swollen[id], gym: gymUse[id], hat: hatOf(id, sides[id].person)
+    shown: !inTent(id), seated: !!seated[id], seat: seated[id], stung: swollen[id], gym: gymUse[id], hat: hatOf(id, sides[id].person)
   }));
 </script>
 
@@ -1200,7 +1185,6 @@
 
         {#each VILLAGERS as id (id)}
           {@const sd = sides[id]}
-          {#if onIsland(id)}
           <div class="actor" class:walking={actors[id].walking} class:inside={inTent(id)} data-inside={inTent(id) || undefined} data-actor={id} data-who={sd.person.person} data-seat={seated[id]} data-gym={gymUse[id] || undefined} style:--seat-drop={u(SEAT_DROP)} style:--rep-lift={u(9)} data-person={sd.person.person} data-stung={stung[id] || null} style:--bob-delay={id === 'partner' ? '-1.2s' : id === 'third' ? '-0.6s' : '0s'}
             {@attach world.at({ x: sd.home[0], z: sd.home[1], h: VILLAGER.h, live: () => livePos(id), always: true })}>
             <button type="button" class="vil" data-sfx="self" bind:this={vilEls[id]}
@@ -1218,7 +1202,6 @@
                 actor={id} side={sd.side} emoteSize="var(--emote-size)" shadow animate tricked={id === 'mine' && tricked} swollen={swollen[id]} hat={hatOf(id, sd.person)} />
             </button>
           </div>
-          {/if}
         {/each}
 
         {#if edge && partnerHere && !where.partnerInTent}

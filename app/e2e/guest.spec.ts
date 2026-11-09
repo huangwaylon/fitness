@@ -3,8 +3,8 @@
 // record their shared localStorage, as two phones and a guest's have the relay and the record. The guest's phone shows
 // the members' activity and ベル but never a からだ figure, and nothing of the economy or the members' goals (a buy, an
 // erase, a goal); on the island it does what a member does (the editor, the weather: 2026-11-06); its
-// catches go into the shared ずかん under its own name; its tent pieces reach both members; and its villager is on the
-// members' islands only while its app is open, moving only when it's moved.
+// catches go into the shared ずかん under its own name; its tent pieces reach both members; and its villager is always
+// on the members' islands, asleep while its app is closed, moving only when it's moved.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu, hudBells, openKenkou, openRewards } from './hud.ts';
@@ -12,9 +12,9 @@ import { fromMenu, hudBells, openKenkou, openRewards } from './hud.ts';
 const VIEW = { width: 393, height: 659 };
 test.use({ viewport: VIEW });
 const DATE = '2026-07-04T12:00';
-type W = { who(w: string): [number, number] | null; state(): { villagers: Record<string, { walking: boolean }> } };
+type W = { who(w: string): [number, number] | null; state(): { villagers: Record<string, { walking: boolean; asleep: boolean }> } };
 const who = (p: Page, w: string) => p.evaluate((w) => (window as unknown as { __world: W }).__world.who(w), w);
-const walking = (p: Page, w: string) => p.evaluate((w) => (window as unknown as { __world: W }).__world.state().villagers[w]?.walking ?? null, w);
+const asleep = (p: Page, w: string) => p.evaluate((w) => (window as unknown as { __world: W }).__world.state().villagers[w]?.asleep ?? null, w);
 
 async function open(ctx: BrowserContext, as: 'A' | 'B' | 'G', more = '') {
   const page = await ctx.newPage();
@@ -193,33 +193,37 @@ test('a piece the guest puts in the tent is in both members’ tents', async ({ 
 
 test.describe(() => {
   test.use({ ambient: 'on' }); // (idle life about it, which must leave it put: ambient life, e2e/fixtures.ts)
-  test('the members see the guest’s villager while its app is open, never after; it stays put unless moved', async ({ browser }) => {
+  test('the guest’s villager is always on the members’ islands: asleep while its app is closed, awake while open; it stays put unless moved', async ({ browser }) => {
     test.setTimeout(60_000);
     const ctx = await browser.newContext({ viewport: VIEW });
     const a = await open(ctx, 'A');
     const b = await open(ctx, 'B');
-    expect(await who(a, 'G')).toBeNull();
-    expect(await who(b, 'G')).toBeNull();
+    // its app closed: there, at its spot, asleep (by day: the members' are awake)
+    for (const p of [a, b]) {
+      await expect.poll(() => who(p, 'G')).not.toBeNull();
+      await expect.poll(() => asleep(p, 'G')).toBe(true);
+      expect(await asleep(p, p === a ? 'A' : 'B')).toBe(false);
+    }
+    const spot = await who(a, 'G');
+    if (process.env.SHOTS) await a.screenshot({ path: `${process.env.SHOTS}/guest-asleep.png` });
     const g = await open(ctx, 'G');
-    // it comes ashore and walks up to its spot by the campsite: on both members' islands
-    for (const p of [a, b]) await expect.poll(() => who(p, 'G'), { timeout: 6000 }).not.toBeNull();
-    await expect.poll(() => walking(g, 'G'), { timeout: 20_000 }).toBe(false);
-    for (const p of [a, b]) await expect.poll(() => walking(p, 'G'), { timeout: 6000 }).toBe(false);
+    // its app open: awake on both members' islands, where it was (no walk ashore), as on its own phone
+    for (const p of [a, b]) await expect.poll(() => asleep(p, 'G'), { timeout: 6000 }).toBe(false);
+    expect(await asleep(g, 'G')).toBe(false);
     const there = await who(g, 'G');
-    for (const p of [a, b]) await expect.poll(async () => {
-      const at = await who(p, 'G');
-      return at && there ? Math.hypot(at[0] - there[0], at[1] - there[1]) : 999;
-    }, { timeout: 4000 }).toBeLessThan(2);
+    const near = (at: [number, number] | null, to: [number, number] | null) => (at && to ? Math.hypot(at[0] - to[0], at[1] - to[1]) : 999);
+    expect(near(there, spot)).toBeLessThan(2);
+    for (const p of [a, b]) await expect.poll(async () => near(await who(p, 'G'), there), { timeout: 4000 }).toBeLessThan(2);
     // idle: nobody's life moves it, on its own phone or theirs (a fixed wait: proving that nothing happens, two of ambient
     // life's 10 s slots)
     await g.waitForTimeout(11_000);
-    for (const p of [g, a, b]) {
-      const at = await who(p, 'G');
-      expect(at && there ? Math.hypot(at[0] - there[0], at[1] - there[1]) : 999).toBeLessThan(2);
-    }
-    // the guest closes its app: gone from both islands
+    for (const p of [g, a, b]) expect(near(await who(p, 'G'), there)).toBeLessThan(2);
+    // the guest closes its app: still there on both islands, asleep where it stood
     await g.close();
-    for (const p of [a, b]) await expect.poll(() => who(p, 'G'), { timeout: 15_000 }).toBeNull();
+    for (const p of [a, b]) {
+      await expect.poll(() => asleep(p, 'G'), { timeout: 15_000 }).toBe(true);
+      expect(near(await who(p, 'G'), there)).toBeLessThan(2);
+    }
     await ctx.close();
   });
 });
