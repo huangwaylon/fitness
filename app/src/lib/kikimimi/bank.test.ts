@@ -384,17 +384,12 @@ describe('kikimimi bank', () => {
       .flatMap((it) => takeIds(it).flatMap((id) => [[id, it.lv], [`${id}-slow`, it.lv]] as const)));
     const kb = (f: string) => (rungs.has(f) ? 80 : PAIR_IDS.has(f) ? 20 : STORY_IDS.has(f) || LISTEN_IDS.has(f) ? 100 : ({ 4: 80, 5: 100, 6: 100, 7: 160 } as Partial<Record<Level, number>>)[lvOf.get(f)!] ?? 60);
     for (const [f, bytes] of clips) expect(bytes, f).toBeLessThan(kb(f) * 1024);
-    // (The packs, 144 now, are the games' 89.3 MiB and the stories' 21.4 MiB (the bedtime stories fetched a chapter at a
-    // time), under these lines of 92 and 23. A stopgap (docs/kikimimi.md "Open items", open question 3): the packs were to
-    // move to R2 behind PACK_BASE (docs/kikimimi-engine.md "Loading") past 50 MB, but wave 2's audio batches outgrew that
-    // before R2 is enabled, so each line is raised to its batch's total and a little margin (the games' A2 60.5 MiB, A3
-    // 75.5, A4 89.3; the stories' A5, st-tokyo, 21.4). Pages takes files of up to 25 MiB and a pack is ≤ 1.2 MB, so the total isn't Pages'
-    // limit; the real fix is W2-R, the packs on R2 behind PACK_BASE, after which these lines measure what Pages serves.)
+    // The packs' budget (the user, 2026-11-09: no R2, raise the budget): the games' packs under 160 MiB and the bedtime
+    // stories' under 32 MiB, both on Pages (files of up to 25 MiB; a pack is ≤ 1.2 MB). A phone fetches clips as slices of
+    // their packs (packs.ts), so this bounds what the site serves, not what a phone keeps.
     const size = (story: boolean) => Object.entries(PACKS).filter(([, e]) => e.clips.some(([id]) => STORY_IDS.has(id)) === story)
       .reduce((n, [name, e]) => n + statSync(join(STATIC, 'audio/listen', packFile(name, e))).size, 0);
-    // (音の へんしん's phrases, 2026-11-09: their three takes ~5 MiB more: the line raised from 92 to 96 MiB; まるごと 聞く's
-    // ten pieces, 32 kbps, 7.4 MiB more: 96 to 103)
-    expect(size(false)).toBeLessThan(103 * 1024 * 1024);
-    expect(size(true)).toBeLessThan(23 * 1024 * 1024);
+    expect(size(false)).toBeLessThan(160 * 1024 * 1024);
+    expect(size(true)).toBeLessThan(32 * 1024 * 1024);
   });
 });

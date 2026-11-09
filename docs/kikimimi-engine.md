@@ -354,7 +354,7 @@ Segmented talks with a comprehension map and answers during play (まるごと �
 2. **`cv` too strict** (a deploy window blocks co-play): hash only what shapes the deck; the update card calls the reload path.
 3. **Byte budget creep** (`open` at ~197 B): size tests per op at worst case; `ids` capped at 8; extend through `o` and `ev`.
 4. **Evicting a pack mid-game:** never evict one used in the last 10 minutes; a missing pack refetches.
-5. **Audio outgrowing Pages** until R2: each batch raises bank.test's lines.
+5. **Audio on Pages:** bank.test's budget (160 MiB games, 32 MiB stories) bounds the packs; no R2 (kikimimi.md).
 
 ## Tests
 
