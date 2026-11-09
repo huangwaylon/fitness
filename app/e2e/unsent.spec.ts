@@ -30,3 +30,20 @@ test('a write set aside shows on the island and in 設定; a tap sends it', asyn
   await page.keyboard.press('Escape');
   await expect(pill).toHaveCount(0);
 });
+
+test('a write still in its hold is no 未送信 in 設定, as on the island', async ({ page, context }) => {
+  const rec = newRecord();
+  await rec.pair(context, 'A');
+  await page.addInitScript(() => {
+    if (sessionStorage.getItem('e2e.seeded')) return;
+    sessionStorage.setItem('e2e.seeded', '1');
+    const t = Date.now();
+    localStorage.setItem('island.queue', JSON.stringify([{ id: 'e2e-held-1', type: 'pref', data: { key: 'villagerName', value: 'まち' }, queuedAt: t, tries: 0, nextAt: t + 120_000 }]));
+  });
+  await page.goto('?x=1');
+  await up(page);
+  await fromMenu(page, 'settings');
+  await expect(page.locator('dialog[open] [data-settings]')).toBeVisible();
+  await expect(page.locator('dialog[open] [data-unsent]')).toHaveCount(0);
+  await expect(page.locator('button[data-sync-stuck]')).toHaveCount(0);
+});
