@@ -44,7 +44,7 @@
     "no-notify.spec.ts": 1,
     "offline.spec.ts": 1,
     "picker.spec.ts": 4,
-    "pond.spec.ts": 4,
+    "pond.spec.ts": 3,
     "popups.spec.ts": 3,
     "positions.spec.ts": 2,
     "purchases.spec.ts": 1,

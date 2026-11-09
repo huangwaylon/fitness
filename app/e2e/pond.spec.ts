@@ -91,9 +91,8 @@ test('the stream at おく: a river fish (NH: River) in its reach, cast from the
   await open(page, '&critter=river');
   const shadow = page.locator('[data-critter="pond"][data-water="river"]');
   await expect(shadow).toBeAttached();
-  await page.waitForTimeout(600);
-  const f = await at(page, '[data-water="river"]');
-  expect(f.x).toBeGreaterThan(0), expect(f.x).toBeLessThan(390), expect(f.y).toBeLessThan(844);
+  // (in view as it swims its reach: by the screen's foot it may be just under it a moment, the hunt's WebKit red)
+  await expect.poll(async () => { const f = await at(page, '[data-water="river"]'); return f.x > 0 && f.x < 390 && f.y < 844; }, { timeout: 8000, message: 'the river fish on the screen' }).toBe(true);
   if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/critters-river.png` });
   await fish(page, 'river');
   await expect(page.locator('[data-fx="catch"]')).toContainText('釣', { timeout: 4000 });
