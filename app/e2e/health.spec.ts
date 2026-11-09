@@ -1,7 +1,7 @@
 // けんこう (design.md "Kenkou"): the health popup for the trainer (the HUD's dumbbell). Open it, switch the period,
 // page through the history (‹ ›, a drag on a chart, きょう), tap a bar for its numbers, switch whose data (one person
 // at a time: whose data in the title bar left of けんこう, the かつどう / からだ switch with the period beside it), each
-// goal at its card's upper right (setting them: demo.spec); on `?demo` and a longer `?demo&weeks=60`, at 390 and 320.
+// goal at its card's upper right (setting them: demo.spec; with no data yet: health-goals.spec, in the gate set); on `?demo` and a longer `?demo&weeks=60`, at 390 and 320.
 import { expect, test, type Page } from './fixtures.ts';
 
 const sheet = (page: Page) => page.locator('dialog[open]');
@@ -317,25 +317,6 @@ test('the dumbbell opens it at 1週, every time; whose data is kept for the sess
   await page.reload(); // a new session: this phone's person again
   await page.getByRole('button', { name: 'けんこう', exact: true }).click();
   await expect(whoSel(page)).toHaveValue('A');
-});
-
-test('no Health data yet (a new couple): every card is there with its goal, saying so; the goals set from it', async ({ page }) => {
-  await openHealth(page, '?demo&health=none');
-  const cards = sheet(page).locator('.health section.card');
-  await expect(cards.locator('h3')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド']);
-  await expect(cards.locator('[data-health-empty]')).toHaveCount(4);
-  await expect(cards.locator('[data-health-empty]').first()).toHaveText('まだ記録がありません');
-  await expect(sheet(page).locator('.health svg[role=img]')).toHaveCount(0); // no empty charts
-  const steps = sheet(page).locator('button[data-goal=steps-goal]');
-  await expect(steps).toHaveText(/8,000歩\s以上/);
-  await steps.click();
-  await sheet(page).locator('#goal-steps-goal [data-goal-step="1"]').click();
-  await sheet(page).locator('#goal-steps-goal button[type=submit]').click();
-  await expect(steps).toHaveText(/8,500歩\s以上/);
-  await sheet(page).locator('[data-group=body]').click();
-  await expect(cards.locator('[data-health-empty]')).toHaveCount(4);
-  await expect(sheet(page).locator('button[data-goal=weight-goal]')).toHaveText(/66\.0\skg\s前後/); // the demo's goal, kept without a weigh-in
-  await expect(sheet(page).locator('button[data-goal=body_fat_pct-goal]')).toBeVisible();
 });
 
 for (const [w, h] of [[390, 844], [320, 568]]) {

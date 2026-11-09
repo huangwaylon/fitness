@@ -10,7 +10,8 @@
 //     deployment; that API down, the newest green Deploy UI run's commit). Runs get superseded, so a push's base is
 //     the live site, never the push before. Not an ancestor (a force push): where it and HEAD meet. No base at all:
 //     the gate set and more specs up to the budget, and a ::warning. <dir>/specs.txt and <dir>/x3.txt (e2e/ paths,
-//     one a line); Markdown for the job summary on stdout.
+//     one a line), <dir>/changed.txt (the changed files: scripts/e2e-missed.ts names them when the full tier finds a
+//     spec the gate missed); Markdown for the job summary on stdout.
 //   node scripts/e2e-impact.ts --changed <base>
 //     the specs changed since this branch left <base> (three-dot; the working tree too), one a line:
 //     `npm run e2e:ci-like -- --changed`.
@@ -205,7 +206,8 @@ if (import.meta.main) {
   if (base && !point) from += `; ${base.slice(0, 8)} not in the history`;
   const head = git('rev-parse', 'HEAD');
   const ctx = context();
-  const sel = point ? select(changedSince(point, head), ctx) : fill(ctx);
+  const changed = point ? changedSince(point, head) : [];
+  const sel = point ? select(changed, ctx) : fill(ctx);
   // (a workflow command, on stderr: stdout is the summary)
   if (!point) console.error(`::warning title=e2e-impact::no base to diff against (${from}): the gate set and more specs up to the budget`);
   const out = opt('--out');
@@ -214,6 +216,7 @@ if (import.meta.main) {
     const lines = (xs: string[]) => xs.map((s) => `e2e/${s}\n`).join('');
     writeFileSync(join(out, 'specs.txt'), lines([...new Set([...sel.gate, ...sel.once, ...sel.reached.keys()])].sort()));
     writeFileSync(join(out, 'x3.txt'), lines(sel.x3));
+    writeFileSync(join(out, 'changed.txt'), changed.map((f) => `${f}\n`).join(''));
   }
   const n = new Set([...sel.gate, ...sel.x3, ...sel.once, ...sel.reached.keys()]).size;
   const short = (r: string) => git('rev-parse', '--short=8', r);

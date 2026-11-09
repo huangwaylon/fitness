@@ -1,7 +1,10 @@
 // The gate's e2e selection (scripts/e2e-impact.ts) and the flaky ledger's tally (scripts/e2e-flakes.ts).
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { fill, mapFile, select, type Ctx } from '../../scripts/e2e-impact.ts';
-import { tally } from '../../scripts/e2e-flakes.ts';
+import { runnerTrouble, tally } from '../../scripts/e2e-flakes.ts';
+import { failedSpecs, missed } from '../../scripts/e2e-missed.ts';
 
 const ctx: Ctx = {
   specs: ['boot.spec.ts', 'tent.spec.ts', 'tent-hold.spec.ts', 'kikimimi-call.spec.ts', 'kikimimi-mic-role.spec.ts', 'fishing3d.spec.ts', 'offline.spec.ts', 'big.spec.ts'],
@@ -65,6 +68,44 @@ describe('e2e impact', () => {
   });
 });
 
+describe('e2e/impact.json', () => {
+  const app = join(import.meta.dirname, '..', '..');
+  const impact = JSON.parse(readFileSync(join(app, 'e2e', 'impact.json'), 'utf8')) as { rules: Ctx['rules']; unmapped: Record<string, string> };
+  const specs = readdirSync(join(app, 'e2e')).filter((f) => f.endsWith('.spec.ts'));
+  const walk = (d: string): string[] => readdirSync(join(app, d)).flatMap((f) => (statSync(join(app, d, f)).isDirectory() ? walk(`${d}/${f}`) : [`${d}/${f}`]));
+  const dirs = new Map<string, string[]>();
+  for (const f of [...walk('src'), ...walk('content')].filter((f) => !f.endsWith('.test.ts'))) {
+    const d = f.slice(0, f.lastIndexOf('/'));
+    dirs.set(d, [...(dirs.get(d) ?? []), f]);
+  }
+  const unmapped = [...dirs].filter(([, files]) => !files.some((f) => mapFile(f, { rules: impact.rules, specs }).length)).map(([d]) => d);
+
+  it('maps every source directory to a spec, or lists it in `unmapped` with why', () => {
+    expect(unmapped.filter((d) => !impact.unmapped[d]), 'add an impact.json rule (or an `unmapped` entry with why)').toEqual([]);
+  });
+
+  it('lists in `unmapped` only directories there are, that no rule maps', () => {
+    expect(Object.keys(impact.unmapped).filter((d) => !unmapped.includes(d))).toEqual([]);
+  });
+
+  it('names only specs there are', () => {
+    const none = impact.rules.flatMap(([glob, pats]) => pats.filter((p) => !p.includes('$1') && !specs.some((s) => new RegExp(`^${p.replace(/[.-]/g, '\\$&').replace(/\*/g, '.*')}\\.spec\\.ts$`).test(s))).map((p) => `${glob}: ${p}`));
+    expect(none).toEqual([]);
+  });
+});
+
+describe('what the gate missed', () => {
+  const report = (tests: [string, string[]][]) => ({ suites: [{ suites: tests.map(([file, results]) => ({ specs: [{ file, tests: [{ results: results.map((status) => ({ status })) }] }] })) }] });
+  it('a spec with a test that never passed, not one passing on its retry, nor a skip', () => {
+    const r = report([['a.spec.ts', ['failed', 'failed']], ['b.spec.ts', ['failed', 'passed']], ['c.spec.ts', ['skipped']], ['d.spec.ts', ['timedOut']]]);
+    expect(failedSpecs([r])).toEqual(['a.spec.ts', 'd.spec.ts']);
+  });
+
+  it("the failed specs that weren't in the gate's plan", () => {
+    expect(missed(['a.spec.ts', 'd.spec.ts'], ['e2e/a.spec.ts', 'e2e/boot.spec.ts'])).toEqual(['d.spec.ts']);
+  });
+});
+
 describe('the flaky ledger', () => {
   const entry = (key: string) => ({ key, project: 'chromium', file: `e2e/${key.split(' › ')[0]}`, line: 1, error: 'boom' });
   const run = (n: number, sha: string, keys: string[]) => ({ run: String(n), sha, workflow: 'Deploy UI', at: `2026-11-08T0${n}:00:00Z`, flaky: keys.map(entry) });
@@ -80,10 +121,21 @@ describe('the flaky ledger', () => {
     expect(held.map((t) => t.key)).toEqual(['boot.spec.ts › x']);
   });
 
-  it('more than 5 qualifying is the runners: none quarantined', () => {
-    const keys = Array.from({ length: 6 }, (_, i) => `a.spec.ts › t${i}`);
-    const six = tally([run(1, 'a', keys), run(2, 'b', keys)]);
-    expect([six.widespread, six.quarantined.length, six.due.length]).toEqual([true, 0, 6]);
-    expect(tally([run(1, 'a', keys.slice(1)), run(2, 'b', keys.slice(1))]).quarantined).toHaveLength(5);
+  it('more than 5 qualifying: the worst 5 quarantined (commits, then runs, then the latest), the rest over the cap', () => {
+    const keys = Array.from({ length: 7 }, (_, i) => `a.spec.ts › t${i}`);
+    const t = tally([run(1, 'a', keys), run(2, 'b', keys.slice(1)), run(3, 'c', ['a.spec.ts › t6']), run(4, 'c', ['a.spec.ts › t5'])]);
+    expect(t.quarantined.map((q) => q.key)).toEqual(['a.spec.ts › t5', 'a.spec.ts › t6', 'a.spec.ts › t1', 'a.spec.ts › t2', 'a.spec.ts › t3']);
+    expect(t.over.map((q) => q.key)).toEqual(['a.spec.ts › t4']);
+    expect(t.all.at(-1)!.key).toBe('a.spec.ts › t0');
+  });
+
+  it("a shard that mostly broke, or 10 flaky at once, is the runner's: left out of the tally", () => {
+    const many = Array.from({ length: 10 }, (_, i) => `a.spec.ts › m${i}`);
+    const sick = { ...run(2, 'b', ['a.spec.ts › x']), total: 6, failed: 3 };
+    const t = tally([run(1, 'a', ['a.spec.ts › x']), sick, run(3, 'c', many), run(4, 'd', many.slice(0, 9))]);
+    expect(t.runner.map((l) => l.run)).toEqual(['2', '3']);
+    expect(t.quarantined).toEqual([]);
+    expect(t.all.find((q) => q.key === 'a.spec.ts › x')!.shas.size).toBe(1);
+    expect(runnerTrouble({ ...run(5, 'e', ['a.spec.ts › x']), total: 100, failed: 2 })).toBe(false);
   });
 });

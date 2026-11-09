@@ -2,9 +2,9 @@
 # Pages, https://huangwaylon.github.io/fitness/, until 2026-11-05).
 # The backend is the relay (relay/: the record at /api, the room at /room); its URLs are in the app (lib/sync/live.ts).
 # The layout (docs/ops/testing.md): the gate, lean (the user, 2026-11-08: two people use the
-# app, fix-forward is cheap): `build` (the `site` artifact: what is deployed, its budgets), `checks`, `unit`, `select` →
-# `e2e-gate` (the core e2e and what the push changed or reaches) all at once, and `deploy` getting ready beside them,
-# deploying once all are green. After it, never holding it back: the full logic tier and the drawn smoke
+# app, fix-forward is cheap): `build` (the `site` artifact: what is deployed, its budgets), `checks` (with the gate's
+# plan), `unit` → `e2e-gate` (the core e2e and what the push changed or reaches) all at once, and `deploy` getting
+# ready beside them, deploying once all are green. After it, never holding it back: the full logic tier and the drawn smoke
 # (e2e-logic-full.yml); nightly, everything drawn (e2e-full.yml).
 name: Deploy UI
 
@@ -58,11 +58,22 @@ jobs:
           compression-level: 0
           retention-days: 1
 
-  # Red main never deploys: the type-check (`check` runs svelte-kit sync first), knip, the quarantine's owners and the
-  # docs' pointers in `checks`; the unit tests (golden fixtures included) in `unit`, beside it (one after the other, `checks` was the
-  # last job of the gate in half the runs). Both with app/static/: Kit types asset() by its files, the tests read it.
+  # Red main never deploys: first the gate's plan, then the type-check (`check` runs svelte-kit sync first), knip, the
+  # quarantine's owners and the docs' pointers. The plan: what the gate's e2e runs, chosen once for all 4 shards (each
+  # choosing its own, an API call failing in one gave it another selection: tests in no shard, the gate green): the
+  # selection (scripts/e2e-impact.ts: the gate set, the changed specs, the reached ones), the auto-quarantine
+  # (scripts/e2e-flakes.ts) and the shards' plan (scripts/e2e-shards.ts), uploaded as `gate-plan` ~20 s in, while the
+  # shards still build (they wait for the artifact, not the job). (Its own `select` job until 2026-11-09: a billed
+  # minute a push for ~16 s of work.) The unit tests (golden fixtures included) in `unit`, beside it. Both with
+  # app/static/: Kit types asset() by its files, the tests read it.
   checks:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # (the flaky ledger's artifacts, and the deployments: the commit live on the site)
+    permissions:
+      contents: read
+      actions: read
+      deployments: read
     defaults:
       run:
         working-directory: app
@@ -70,12 +81,38 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           persist-credentials: false
+          # (the base to diff against, and where a force-pushed one meets HEAD: the history, without its old blobs)
+          fetch-depth: 0
+          filter: blob:none
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 24
           cache: npm
           cache-dependency-path: app/package-lock.json
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          E2E_RENDER: none
+        run: |
+          node scripts/e2e-impact.ts ${BASE:+--base "$BASE"} --out sel >> "$GITHUB_STEP_SUMMARY"
+          node scripts/e2e-flakes.ts --out sel/quarantine.txt >> "$GITHUB_STEP_SUMMARY"
       - run: npm ci --ignore-scripts --no-audit --no-fund
+      # (the selected files unquoted: the list splits into them; chromium* takes in chromium-x3 and chromium-mic-x3)
+      - env:
+          E2E_RENDER: none
+        run: |
+          E2E_X3="$(tr '\n' ' ' < sel/x3.txt)"
+          export E2E_X3
+          # shellcheck disable=SC2046
+          node scripts/e2e-shards.ts plan 4 shards e2e/timings.json -- --project='chromium*' --grep-invert "@render|@quarantine" --test-list-invert sel/quarantine.txt $(cat sel/specs.txt sel/x3.txt)
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: gate-plan
+          path: |
+            app/sel
+            app/shards
+          if-no-files-found: error
+          retention-days: 1
       - run: npm run check
       - run: npm run knip
       # the e2e quarantine in the summary; red when a quarantined test has no owner (docs/ops/testing.md "Tags")
@@ -100,71 +137,16 @@ jobs:
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npx vitest run
 
-  # What the gate's e2e runs, chosen once for all 4 shards (each choosing its own, an API call failing in one gave it
-  # another selection and plan: tests in no shard, the gate green): the selection (scripts/e2e-impact.ts: the gate set,
-  # the changed specs, the reached ones), the auto-quarantine (scripts/e2e-flakes.ts) and the shards' plan
-  # (scripts/e2e-shards.ts), as the `gate-plan` artifact. Without app/static/: the plan lists the tests, never serves.
-  select:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    # (the flaky ledger's artifacts, and the deployments: the commit live on the site)
-    permissions:
-      contents: read
-      actions: read
-      deployments: read
-    defaults:
-      run:
-        working-directory: app
-    env:
-      E2E_RENDER: none
-    steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
-        with:
-          persist-credentials: false
-          # (the base to diff against, and where a force-pushed one meets HEAD: the history, without its blobs)
-          fetch-depth: 0
-          filter: blob:none
-          sparse-checkout: |
-            /*
-            !/app/static/
-          sparse-checkout-cone-mode: false
-      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: app/package-lock.json
-      - env:
-          GH_TOKEN: ${{ github.token }}
-          BASE: ${{ github.event.pull_request.base.sha }}
-        run: |
-          node scripts/e2e-impact.ts ${BASE:+--base "$BASE"} --out sel >> "$GITHUB_STEP_SUMMARY"
-          node scripts/e2e-flakes.ts --out sel/quarantine.txt >> "$GITHUB_STEP_SUMMARY"
-      # (playwright's --list loads the specs: the deps, not the build)
-      - run: npm ci --ignore-scripts --no-audit --no-fund
-      # (the selected files unquoted: the list splits into them; chromium* takes in chromium-x3 and chromium-mic-x3)
-      - run: |
-          E2E_X3="$(tr '\n' ' ' < sel/x3.txt)"
-          export E2E_X3
-          # shellcheck disable=SC2046
-          node scripts/e2e-shards.ts plan 4 shards e2e/timings.json -- --project='chromium*' --grep-invert "@render|@quarantine" --test-list-invert sel/quarantine.txt $(cat sel/specs.txt sel/x3.txt)
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: gate-plan
-          path: |
-            app/sel
-            app/shards
-          if-no-files-found: error
-          retention-days: 1
-
-  # The gate's e2e (docs/ops/testing.md "The gate"): `select`'s plan in logic mode (E2E_RENDER=none: nothing drawn),
-  # @render and @quarantine left out; the changed specs 3× and never retried, any other test retried once (failing
-  # again: red; passing: flaky, in the summary and the ledger, flaky-<shard>). Each shard builds the commit itself.
-  # Not `needs: select`: a shard waits for its artifact after its own build, so select (~16 s) isn't on the way to the
-  # deploy (needing it cost ~35 s: the job, then a runner for each shard).
+  # The gate's e2e (docs/ops/testing.md "The gate"): the `gate-plan` (from `checks`) in logic mode (E2E_RENDER=none:
+  # nothing drawn), @render and @quarantine left out; the changed specs 3× and never retried, any other test retried
+  # once (failing again: red; passing: flaky, in the summary and the ledger, flaky-<shard>). Each shard builds the
+  # commit itself.
+  # Not `needs: checks`: a shard waits for the plan's artifact after its own build, so the rest of `checks` isn't on
+  # the way to the deploy (needing the plan's job cost ~35 s: the job, then a runner for each shard).
   e2e-gate:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # (select's artifact, looked for in this run)
+    # (the gate-plan artifact, looked for in this run)
     permissions:
       contents: read
       actions: read
@@ -198,18 +180,18 @@ jobs:
       - if: steps.browsers.outputs.cache-hit != 'true'
         run: npx playwright install --only-shell chromium
       - run: npm run build
-      # select's plan, once it's uploaded (red if select failed, or none in 3 min)
+      # the plan, once `checks` uploaded it (red if `checks` failed before it, or none in 3 min)
       - env:
           GH_TOKEN: ${{ github.token }}
         run: |
           api="repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           for _ in $(seq 60); do
             [ "$(gh api "$api/artifacts?name=gate-plan" --jq .total_count 2>/dev/null)" = 1 ] && exit 0
-            state=$(gh api "$api/attempts/$GITHUB_RUN_ATTEMPT/jobs?per_page=100" --jq '.jobs[] | select(.name == "select") | .conclusion' 2>/dev/null || true)
-            case "$state" in failure|cancelled|skipped) echo "::error::the select job: $state, no plan"; exit 1 ;; esac
+            state=$(gh api "$api/attempts/$GITHUB_RUN_ATTEMPT/jobs?per_page=100" --jq '.jobs[] | select(.name == "checks") | .conclusion' 2>/dev/null || true)
+            case "$state" in failure|cancelled|skipped) echo "::error::the checks job: $state, no plan"; exit 1 ;; esac
             sleep 3
           done
-          echo "::error::no gate-plan from the select job in 3 min"; exit 1
+          echo "::error::no gate-plan from the checks job in 3 min"; exit 1
       # (sel/: specs.txt, x3.txt (the changed specs: E2E_X3), quarantine.txt; shards/: the plan)
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -318,7 +300,7 @@ jobs:
       - if: steps.ready.outputs.go == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          GATE: build,checks,unit,select,e2e-gate (1),e2e-gate (2),e2e-gate (3),e2e-gate (4)
+          GATE: build,checks,unit,e2e-gate (1),e2e-gate (2),e2e-gate (3),e2e-gate (4)
         run: |
           api="repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT/jobs?per_page=100"
           errors=0
