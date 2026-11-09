@@ -94,16 +94,8 @@ async function serve(req: IncomingMessage, res: ServerResponse) {
   if (deploys && path.endsWith('/service-worker.js')) body = Buffer.concat([body, Buffer.from(`\n// e2e deploy ${deploys}\n`)]);
   // (a type of _headers' over the file's: the models')
   const ruled = Object.fromEntries(Object.entries(headersFor(path)).map(([k, v]) => [k.toLowerCase(), v]));
-  const headers = { 'content-type': TYPES[extname(served)] ?? 'application/octet-stream', ...ruled, 'cache-control': 'no-store', 'accept-ranges': 'bytes' };
-  // WebKit's media elements ask for byte ranges (as Pages answers them)
-  const range = hit && /^bytes=(\d*)-(\d*)$/.exec(req.headers.range ?? '');
-  if (range && (range[1] || range[2])) {
-    const start = range[1] ? Number(range[1]) : Math.max(0, body.length - Number(range[2]));
-    const end = range[1] && range[2] ? Math.min(Number(range[2]), body.length - 1) : body.length - 1;
-    res.writeHead(206, { ...headers, 'content-range': `bytes ${start}-${end}/${body.length}` });
-    res.end(req.method === 'HEAD' ? undefined : body.subarray(start, end + 1));
-    return;
-  }
+  // (a Range is answered whole, 200, as Pages answers it: curl, 2026-11-09, for .pak and .m4a alike)
+  const headers = { 'content-type': TYPES[extname(served)] ?? 'application/octet-stream', ...ruled, 'cache-control': 'no-store' };
   res.writeHead(hit ? 200 : 404, headers);
   res.end(req.method === 'HEAD' ? undefined : body);
 }

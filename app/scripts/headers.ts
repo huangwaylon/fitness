@@ -6,7 +6,8 @@
 //   trip map's locate button).
 // - Hashed files (`_app/immutable/`) are cached for a year, and so is the audio (`audio/`): every audio URL the app
 //   fetches carries its file's content hash (`?v=`, lib/sound/manifest.ts), and so are ごはん's picture sheets (`food-img/*.webp`:
-//   their names carry their content hash), and ききみみ's recogniser under `stt/<dir>/` (each dir carries its revision or
+//   their names carry their content hash), the players' parts' packs (`room/player/*.pak`: `<home>.<hash>.pak`, parts.json
+//   names them), and ききみみ's recogniser under `stt/<dir>/` (each dir carries its revision or
 //   version; functions/stt/[[path]].ts sets the same, its manifest.json revalidated); everything else keeps Pages' default
 //   (revalidated).
 // - index.html (the SPA shell every route opens with) preloads the island's page too: Kit's fallback page preloads
@@ -79,6 +80,9 @@ ${base}/audio/*
   Cache-Control: public, max-age=31536000, immutable
 
 ${base}/food-img/*.webp
+  Cache-Control: public, max-age=31536000, immutable
+
+${base}/room/player/*.pak
   Cache-Control: public, max-age=31536000, immutable
 
 ${base}/stt/:dir/*

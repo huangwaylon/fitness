@@ -3,7 +3,7 @@
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
-import { fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, isPlayerPack, packSlice, isShellOf, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, keepShell, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
+import { fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, isShellOf, fetchShared, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, keepShell, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -144,6 +144,8 @@ function boundedCache(name: string, indexPath: string, evict: (idx: RoomIndex, n
     }));
   };
 }
+/** The fetches on their way, by URL (fetchShared): the packs' and the room's, once at a time. */
+const flying = new Map<string, Promise<Response>>();
 const roomUsed = boundedCache(ROOM_CACHE, ROOM_INDEX, (idx, now) => roomEvict(idx, now));
 const listenUsed = boundedCache(LISTEN_CACHE, LISTEN_INDEX, (idx, now) => listenEvict(idx, now));
 const photoUsed = boundedCache(PHOTO_CACHE, '__photo-index', (idx, now) => bytesEvict(idx, now, PHOTO_CAP_BYTES));
@@ -231,46 +233,10 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // A file's slice of its pack (`?s=from-to`, asked as a Range: lib/packStore.ts; ききみみ's clips, the players' parts):
-  // kept under its URL as a 200 of just its bytes, cache first (the pack's hash is in its name): from the cache, else
-  // cut from its whole pack when that's cached, else the network's 206; a whole 200 (Pages answers a Range so) is cut
-  // here and kept as the pack too, its other files cut from it after.
-  const sl = isListenPack(url.pathname) || isPlayerPack(url.pathname) ? packSlice(url) : null;
-  if (sl) {
-    const [name, used] = isListenPack(url.pathname) ? [LISTEN_CACHE, listenUsed] : [ROOM_CACHE, roomUsed];
-    event.respondWith(
-      (async () => {
-        const cache = await caches.open(name);
-        const hit = await cache.match(req.url);
-        if (hit) {
-          event.waitUntil(used(req.url).catch(() => {}));
-          return hit;
-        }
-        const packUrl = url.origin + url.pathname;
-        const whole = await cache.match(packUrl);
-        const res = whole ?? (await fetch(req));
-        if (!res.ok) return res;
-        const got = await res.arrayBuffer();
-        if (res.status !== 206 && got.byteLength < sl[1] + 1) return new Response(null, { status: 416 });
-        const body = res.status === 206 ? got : got.slice(sl[0], sl[1] + 1);
-        const out = new Response(body, { status: 200, headers: { 'content-type': 'application/octet-stream' } });
-        event.waitUntil((async () => {
-          if (!whole && res.status === 200) {
-            await cache.put(packUrl, new Response(got, { status: 200, headers: { 'content-type': 'application/octet-stream' } }));
-            await used(packUrl, got.byteLength);
-          }
-          await cache.put(req.url, out.clone());
-          await used(req.url, body.byteLength);
-        })().catch(() => {}));
-        return out;
-      })()
-    );
-    return;
-  }
-
-  // ききみみ's packs whole: cache first and never revalidated (the hash is in the name), fetched whole (packs.ts; a Range
-  // request goes to the network), stored after the answer; each use marks the pack in the index, the least recently
-  // used going past the cache's bytes, never one used in the last 10 minutes (caches.ts listenEvict).
+  // ききみみ's packs whole: cache first and never revalidated (the hash is in the name), fetched whole (lib/packStore.ts;
+  // a Range request goes to the network), once at a time (fetchShared), stored after the answer; each use marks the pack
+  // in the index, the least recently used going past the cache's bytes, never one used in the last 10 minutes
+  // (caches.ts listenEvict).
   if (isListenPack(url.pathname)) {
     if (req.headers.has('range')) return;
     event.respondWith(
@@ -281,15 +247,16 @@ self.addEventListener('fetch', (event) => {
           event.waitUntil(listenUsed(req.url).catch(() => {}));
           return hit;
         }
-        const res = await fetch(req);
-        if (res.ok && res.status === 200) {
-          const copy = res.clone(), sized = res.clone();
-          event.waitUntil((async () => {
-            await cache.put(req, copy);
-            await listenUsed(req.url, await sizeOf(sized));
-          })().catch(() => {}));
-        }
-        return res;
+        return fetchShared(flying, req.url, () => fetch(req).then((res) => {
+          if (res.ok && res.status === 200) {
+            const copy = res.clone(), sized = res.clone();
+            event.waitUntil((async () => {
+              await cache.put(req, copy);
+              await listenUsed(req.url, await sizeOf(sized));
+            })().catch(() => {}));
+          }
+          return res;
+        }));
       })()
     );
     return;
@@ -380,11 +347,12 @@ self.addEventListener('fetch', (event) => {
           if (room) event.waitUntil(roomUsed(req.url).catch(() => {}));
           return hit;
         }
-        return fetchKeep(req, fetch, async (copy) => {
+        // (once at a time: a player's pack asked by two tabs, fetchShared)
+        return fetchShared(flying, req.url, () => fetchKeep(req, fetch, async (copy) => {
           const sized = room ? copy.clone() : null;
           await cache.put(req, copy);
           if (sized) await roomUsed(req.url, await sizeOf(sized));
-        }, (p) => event.waitUntil(p));
+        }, (p) => event.waitUntil(p)));
       })()
     );
     return;

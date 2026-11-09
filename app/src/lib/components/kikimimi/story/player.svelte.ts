@@ -161,7 +161,7 @@ export class StoryPlayer {
 
   async #sound(): Promise<void> {
     const token = ++this.#token, k = this.seg, segs = this.chapter.segments, seg = segs[k];
-    // (the chapter's pack whole: its segments are all in it, packs.ts WHOLE_AT)
+    // (the chapter's pack: its segments are all in it)
     prefetchClips(segs.slice(k).map((s) => s.clip));
     const buf = await Promise.race([voiceClip(seg.clip), new Promise<null>((r) => setTimeout(() => r(null), DECODE_WAIT))]);
     if (token !== this.#token || !this.playing) return;

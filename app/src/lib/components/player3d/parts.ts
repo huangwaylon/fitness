@@ -112,7 +112,7 @@ const stores = new Map<string, PackStore>();
 /** `dir`'s packs (the site's room/player/: $app/paths asset), held in memory: the everyday pack and a few more. */
 const storeOf = (dir: string): PackStore => {
   let s = stores.get(dir);
-  if (!s) stores.set(dir, (s = new PackStore({ url: (stem) => `${slash(dir)}${stem}.pak`, cap: 4_000_000, slices: 96, tag: 'player' })));
+  if (!s) stores.set(dir, (s = new PackStore({ url: (stem) => `${slash(dir)}${stem}.pak`, cap: 4_000_000, tag: 'player' })));
   return s;
 };
 const refOf = (t: PartTable, at: At | undefined) => (at && t.packs?.[at[0]] ? ([t.packs[at[0]], at[1], at[2]] as const) : null);

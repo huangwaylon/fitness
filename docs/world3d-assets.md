@@ -172,9 +172,9 @@ offset, bytes]`), is in both part tables.
   shape with the first to wear it), ≤ 256 KB a pack; `more-<slot>` (the whole table's other ~4,000 items) and `webp`
   (the WebPs of textures with a KTX2: only a page without a GPU format draws them), ≤ 1.2 MB. A home past its bound
   splits as stably as can be (`lib/packPlan.ts planHome`).
-- **On the phone** (`parts.ts`, `lib/packStore.ts`): any other part is a Range of its pack (`?s=from-to`). Cloudflare
-  Pages answers a Range with the whole file (a 200: measured 2026-11-09 on the live site), so a first wear costs its
-  packs (A's saved one-piece and hairstyle: two, 0.5 MB, where the loose files were 43 KB), held and kept by the
+- **On the phone** (`parts.ts`, `lib/packStore.ts`): any other part is cut from its pack, fetched whole and once (Cloudflare
+  Pages answers a Range with the whole file: a 200, measured 2026-11-09 on the live site; a すがた visit's 7 picks over 5
+  packs: 7 GETs, 1.70 MB → 5, 1.21 MB, 2026-11-10), so a first wear costs its packs (A's saved one-piece and hairstyle: two, 0.5 MB, where the loose files were 43 KB), held and kept by the
   service worker (`island-room-v1`), their other parts free after. A saved コーデ is instant once worn. Offline, a part never fetched is drawn as いつもの's (`player3d.ts wearable`).
 - **Sources:** the packs are the only copy in the repo. `npm run player:packs -- --unpack` writes every file loose into
   `app/.cache/player/` (gitignored), the tree `players3d-models.ts` writes there and packs at its end;

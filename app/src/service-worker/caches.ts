@@ -72,12 +72,10 @@ export const isCritterArt = (path: string): boolean =>
 export const isDecorArt = (path: string): boolean =>
   /\/art\/.+-(winter|lit)\.webp$/.test(path) || (/\/art\/(trees|bushes|flowers|deco|decor|bridges)\//.test(path) && !/\/art\/deco\/birthday-hat-/.test(path));
 /** The tent's room (docs/design.md "The tent"): its models, wallpapers, floors and icons, fetched as the tent shows
- *  them and cached on first use in a cache of their own that outlives builds (a re-converted model has a new `?v=`). */
+ *  them and cached on first use in a cache of their own that outlives builds (a re-converted model has a new `?v=`);
+ *  the players' parts' packs too (static/room/player/<home>.<hash>.pak: player3d/parts.ts, fetched whole). */
 export const ROOM_CACHE = 'island-room-v1';
 export const isRoomAsset = (path: string): boolean => path.includes('/room/');
-/** The players' parts' packs (static/room/player/<home>.<hash>.pak: player3d/parts.ts): fetched whole (the everyday
- *  pack) or a part's slice (`?s=`, packSlice), in the room's cache. */
-export const isPlayerPack = (path: string): boolean => path.includes('/room/player/') && path.endsWith('.pak');
 /** The room cache's bound: its bytes past this, the least recently used go (the players' parts alone are ~23 MB in
  *  their packs, the villagers' models ~29 MB: grown whole, with the shell and the record's IndexedDB under one origin,
  *  WebKit may evict all of it at once). */
@@ -88,19 +86,20 @@ export const ROOM_KEEP_MS = 3 * 24 * 3600_000;
 export const ROOM_INDEX = '__room-index';
 export type RoomIndex = Record<string, [bytes: number, usedAt: number]>;
 
+/** A pack's slice (`?s=<from>-<to>`), as the worker kept them till 2026-11-10: never asked for again (a pack is fetched
+ *  whole), let go at once. */
+const isSlice = (u: string): boolean => new URL(u, 'https://x/').searchParams.has('s');
+
 /** Which of the room cache's entries go (`index` in any order): a file's older versions (the same path under another
- *  `?v=`, used less recently: a re-converted model, never asked for again; a pack's slice is a file of its own), then,
- *  while the rest is over `cap`, the least recently used, never one used within `keepMs`. */
+ *  `?v=`, used less recently: a re-converted model, never asked for again) and a pack's old slices, then, while the
+ *  rest is over `cap`, the least recently used, never one used within `keepMs`. */
 export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, keepMs = ROOM_KEEP_MS): string[] {
   const urls = Object.keys(index);
-  const pathOf = (u: string) => {
-    const x = new URL(u, 'https://x/'), sl = x.searchParams.get('s');
-    return sl ? `${x.pathname}?s=${sl}` : x.pathname;
-  };
+  const pathOf = (u: string) => new URL(u, 'https://x/').pathname;
   const newest = new Map<string, string>();
   for (const u of urls) {
     const p = pathOf(u), n = newest.get(p);
-    if (!n || index[u][1] >= index[n][1]) newest.set(p, u);
+    if (!isSlice(u) && (!n || index[u][1] >= index[n][1])) newest.set(p, u);
   }
   const out = new Set(urls.filter((u) => newest.get(pathOf(u)) !== u));
   let total = 0;
@@ -119,12 +118,6 @@ export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, k
  *  (an index of each pack's bytes and last use kept in the cache), so a few levels' and units' packs stay offline. */
 export const LISTEN_CACHE = 'island-listen-v1';
 export const isListenPack = (path: string): boolean => path.includes('/audio/listen/') && path.endsWith('.pak');
-/** A file's slice of its pack (lib/packStore.ts sliceOf: `?s=<from>-<to>`, asked as a Range; ききみみ's clips, the
- *  players' parts): its first and last byte, else null (the pack whole). Kept per slice, under its URL. */
-export function packSlice(url: URL): [from: number, to: number] | null {
-  const m = /^(\d+)-(\d+)$/.exec(url.searchParams.get('s') ?? '');
-  return m && Number(m[2]) >= Number(m[1]) ? [Number(m[1]), Number(m[2])] : null;
-}
 /** The listen cache's bound: past it, the least recently used packs go (the 149 packs are ~116 MiB: the games' 94.2,
  *  the stories' 21.4, bank.test's stopgap lines till W2-R moves them to R2; a level-4 game's eight ~9 MB). */
 export const LISTEN_CAP_BYTES = 30_000_000;
@@ -139,18 +132,14 @@ export const LISTEN_INDEX = '__listen-index';
  *  recently used, never one used within `keepMs`. */
 export function listenEvict(index: RoomIndex, now: number, cap = LISTEN_CAP_BYTES, keepMs = LISTEN_KEEP_MS): string[] {
   const urls = Object.keys(index);
-  // (a slice is a name of its own: its pack's and its bytes)
-  const nameOf = (u: string) => {
-    const x = new URL(u, 'https://x/');
-    return x.pathname.replace(/\.[0-9a-f]+\.pak$/, '') + x.search;
-  };
+  const nameOf = (u: string) => new URL(u, 'https://x/').pathname.replace(/\.[0-9a-f]+\.pak$/, '');
   const newest = new Map<string, string>();
   for (const u of urls) {
     const n = nameOf(u), m = newest.get(n);
-    if (!m || index[u][1] >= index[m][1]) newest.set(n, u);
+    if (!isSlice(u) && (!m || index[u][1] >= index[m][1])) newest.set(n, u);
   }
   const idle = (u: string) => now - index[u][1] > keepMs;
-  const out = new Set(urls.filter((u) => newest.get(nameOf(u)) !== u && idle(u)));
+  const out = new Set(urls.filter((u) => isSlice(u) || (newest.get(nameOf(u)) !== u && idle(u))));
   let total = 0;
   for (const u of urls) if (!out.has(u)) total += index[u][0];
   for (const u of urls.filter((u) => !out.has(u) && idle(u)).sort((a, b) => index[a][1] - index[b][1])) {
@@ -604,6 +593,19 @@ export async function tileJsonFetch(req: Request, cache: SwrCache, net: (r: Requ
  * (cache.put's quota error) costs only the copy, never the answer (2026-11-08: awaited, it failed the asset). Pure but
  * for its three functions, so it's tested without a worker.
  */
+/** One fetch at a time per URL (`flying`: those on their way): a second ask while the first is on its way (two tabs,
+ *  a page's prefetch and its play) shares its answer, each its own copy. */
+export function fetchShared(flying: Map<string, Promise<Response>>, url: string, get: () => Promise<Response>): Promise<Response> {
+  let p = flying.get(url);
+  if (!p) {
+    const mine = (p = get());
+    flying.set(url, mine);
+    const done = () => void (flying.get(url) === mine && flying.delete(url));
+    mine.then(done, done);
+  }
+  return p.then((r) => r.clone());
+}
+
 export async function fetchKeep(req: Request, get: (r: Request) => Promise<Response>, keep: (res: Response) => Promise<unknown>, waitUntil: (p: Promise<unknown>) => void): Promise<Response> {
   const res = await get(req);
   if (res.ok) waitUntil(keep(res.clone()).catch(() => {}));

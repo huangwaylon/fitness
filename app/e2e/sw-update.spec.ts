@@ -223,7 +223,7 @@ test('the room cache: a file\'s older version goes, and a cache from before the 
 });
 
 // (in Chromium, as the room's)
-test('ききみみ’s packs: the lobby’s clips go into the listen cache as slices of their pack, each with its bytes in the index', { tag: '@chromium' }, async ({ page }) => {
+test('ききみみ’s packs: the lobby’s deck’s pack goes into the listen cache whole, once, with its bytes in the index', { tag: '@chromium' }, async ({ page }) => {
   test.setTimeout(60_000);
   await page.goto('?demo&kikimimi=fast');
   await islandUp(page);
@@ -235,11 +235,10 @@ test('ききみみ’s packs: the lobby’s clips go into the listen cache as sl
     const idx = await c.match(new URL('__listen-index', (await navigator.serviceWorker.getRegistration())!.scope).href);
     return { keys: (await c.keys()).map((k) => { const u = new URL(k.url); return u.pathname + u.search; }), index: idx ? ((await idx.json()) as Record<string, [number, number]>) : {} };
   });
-  // (level 1's deck: its 8 clips, each a slice `?s=from-to` of the pack, never the pack whole: packs.ts WHOLE_AT)
-  const slice = /\/audio\/listen\/lv1\.[0-9a-f]{8}\.pak\?s=\d+-\d+$/;
-  await expect.poll(async () => (await listen()).keys.filter((p) => slice.test(p)).length, { timeout: 20_000 }).toBeGreaterThanOrEqual(8);
-  expect((await listen()).keys.filter((p) => /\/lv1\.[0-9a-f]{8}\.pak$/.test(p))).toEqual([]);
-  await expect.poll(async () => Object.entries((await listen()).index).filter(([u]) => slice.test(u) && u.length > 0).every(([, [n]]) => n > 1000), { timeout: 10_000 }).toBe(true);
+  // (level 1's deck: its pack whole, as Pages answers a Range; never a slice `?s=`)
+  const pack = /\/audio\/listen\/lv1\.[0-9a-f]{8}\.pak$/;
+  await expect.poll(async () => Object.entries((await listen()).index).filter(([u, [n]]) => pack.test(u) && n > 100_000).length, { timeout: 20_000 }).toBe(1);
+  expect((await listen()).keys.filter((p) => p.includes('?s='))).toEqual([]);
   // and not in the audio LRU's cache
   expect(await page.evaluate(async () => (await (await caches.open('island-audio-v1')).keys()).filter((k) => k.url.includes('/audio/listen/')).length)).toBe(0);
 });
