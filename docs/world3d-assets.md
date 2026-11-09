@@ -69,8 +69,9 @@ first. It brought the 2.0 villagers, Brewster, Kapp'n and Wilbur, and 376 tent p
   hands instead.
 - **Packs** (`PACKS` in the map: the camp goods, the food, the gym's newer pieces): one GLB a tab
   (`static/room/world3d/decor/{camp,food,gym2}.glb`, one KTX2 pack each), each member a node named its id
-  (world3d-page.js convertPack, gltfpack `-kn`), a model `decor/<id>` in assets.json with `pack` its file; things.ts
-  reads the node out (`member`). Six files for 39 models, not three an item. A member's seat is found on the tent's
+  (world3d-page.js convertPack, gltfpack `-kn`), a model `decor/<id>` in assets.json with `pack` its file, its one key `decor/<id>-0` made at
+  load (assets.ts packKey: none written, the island turns it by its facing); things.ts reads the node out (`member`).
+  island/decor.ts knows them by catalog.ts `packed`, never assets.json (that would pull it into the first load). Six files for 39 models, not three an item. A member's seat is found on the tent's
   model of the same NH piece (seat-anchors.ts ISLAND `room`).
 - **Held tools and accessories:** the bug net, the rod and its bobber (NH's wooden ones: the plain ones have no
   textures in the files), the birthday's cake hats and NH's party glasses, at the villagers' scale, `anchor: joint`.
@@ -157,7 +158,7 @@ the 2.0.0 export: their cards stay.
 Written by `npm run world3d-models` from assets.json (the per-key rows are in the manifest).
 
 <!-- assets:start -->
-629 keys, 474 models, 6.04 MB in all.
+590 keys, 474 models, 6.04 MB in all.
 
 | kind | keys | models | KB | loads |
 | --- | --- | --- | --- | --- |
@@ -170,7 +171,7 @@ Written by `npm run world3d-models` from assets.json (the per-key rows are in th
 | fish | 83 | 83 | 891.5 | lazily (fish) |
 | deco | 48 | 39 | 862.8 | with the island |
 | event | 6 | 6 | 115.2 | lazily (event) |
-| decor | 128 | 62 | 956.3 | with the island |
+| decor | 89 | 23 | 956.3 | with the island |
 | flower | 42 | 42 | 551.5 | with the island |
 | fruit | 4 | 4 | 47.9 | with the island |
 | fx | 15 | 15 | 45.8 | with the island |

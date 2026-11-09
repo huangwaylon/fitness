@@ -894,8 +894,8 @@ the layout's objects (the old decorations' map moved into the layout once as `m-
   ケトル, 携帯ラジオ, ナナメのみちしるべ, せかいのみちしるべ.
 - **食べ物** (group `food`, to look at): ピクニックバスケット, お花見セット, フルーツバスケット, パン, ミックスサンドセット,
   飯ごう (its fire lit at night), 鍋, フライパン, シーフードのアヒージョ, スズキの香草焼き, 洋風定食, 和風定食,
-  ペットボトル飲料, ココナッツジュース, クッキー. The editor's labels are kanji (the sheets' rule); the world's
-  (`decor.item.*`) NH's kana. The tray's icons are the ずかん's, else NH's own (`art/items/<kind>`).
+  ペットボトル飲料, ココナッツジュース, クッキー. Their labels are kanji (the sheets' rule; the world's tap areas
+  name them so too, no `decor.item.*` of their own). The tray's icons are the ずかん's, else NH's own (`art/items/<kind>`).
 - **How many:** the layout's objects are capped by the record at 1,500 standing (`contract/layout.ts` LAYOUT_MAX).
 - **In:** /editor only: the desktop editor, or its phone view's IslandEdit (`/editor/?view=phone&edit`), the tent's
   way (a tray, a ghost green or red, a tile at a time, ↻ まわす, ✕, 🗑, ✓). Its おきゃくさん tab: where the visitors stand

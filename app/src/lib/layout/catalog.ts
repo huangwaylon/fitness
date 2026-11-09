@@ -41,6 +41,9 @@ export interface KindDef {
   /** A building one goes into at the middle of its front edge (the museum): its door's tile(s) must stay clear and
    *  reachable, as a home's (validate.ts), and nav.ts walks up to it (`door-<id>`; a tap on it snaps to its door). */
   door?: boolean;
+  /** A pack's (scripts/world3d-assets.ts PACKS): a decoration (island/decor.ts) drawn as its model `decor/<k>`, its
+   *  icon the ずかん's or NH's own. */
+  packed?: true;
 }
 
 const k = (def: KindDef): KindDef => def;
@@ -50,7 +53,7 @@ const k = (def: KindDef): KindDef => def;
 const packed = (group: Group, rows: string): KindDef[] =>
   rows.split(';').map((r) => {
     const [kk, ja, en, wd, f, icon] = r.split('|'), [fw, fd, h] = f.split(',').map(Number);
-    return { k: kk, group, ja, en, w: +wd[0], d: +wd[1], block: true, foot: [fw, fd] as const, on: 'land' as const, h, icon: icon ? `finds/items/${icon}` : `items/${kk}`, turns: true };
+    return { k: kk, group, ja, en, w: +wd[0], d: +wd[1], block: true, foot: [fw, fd] as const, on: 'land' as const, h, icon: icon ? `finds/items/${icon}` : `items/${kk}`, turns: true, packed: true };
   });
 const PACKED_CAMP = packed('camp', [
   'small-campfire|たき火|Campfire|11|18,16,16|',

@@ -40,6 +40,14 @@ export interface AssetKey {
 
 export const ASSET_MODELS = A.models as Record<string, AssetModel>;
 export const ASSET_KEYS = A.keys as unknown as Record<string, AssetKey>;
+/** A pack's member's key (`decor/<id>-0`: its facing 0's, the island turns it), as scripts/world3d-assets.ts
+ *  writeAssets would write it (NH's furniture scale, its footprint and tap radius from its bounds): not in assets.json,
+ *  for the first load's bytes. */
+function packKey(m: AssetModel, name: string): AssetKey {
+  const s = 3, [dx, , dz] = m.max.map((n, i) => n - m.min[i]);
+  return { m: name, cat: 'decor', s, anchor: 'feet', foot: [Math.max(1, Math.ceil((dx * s) / 30 - 0.2)), Math.max(1, Math.ceil((dz * s) / 30 - 0.2))], hit: Math.max(12, Math.round((Math.max(dx, dz) * s) / 2)), shadow: true, ...(m.lit ? { lit: m.lit } : {}) };
+}
+for (const [name, m] of Object.entries(ASSET_MODELS)) if (m.pack) ASSET_KEYS[`decor/${name.slice(name.lastIndexOf('/') + 1)}-0`] ??= packKey(m, name);
 /** A model's budget (KB) by kind. */
 export const ASSET_BUDGET_KB = A.budgetKb as Record<AssetCat, number>;
 
