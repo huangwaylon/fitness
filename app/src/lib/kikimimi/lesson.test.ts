@@ -267,7 +267,9 @@ describe('the phrase ずかん', () => {
     const review = phraseReview(many, answers, '2026-11-05');
     expect(REVIEW_CAP).toBe(8);
     expect(review).toHaveLength(8);
-    expect(review[0]).toEqual({ phrase: 'ph-0', item: 'a0' }); // missed: a0 not yet right first time
+    expect(review[0]).toEqual({ phrase: 'ph-0', item: 'b0' }); // missed a0: another clip of it, one never heard
+    // every clip heard and missed: the least recently answered, not the one just missed
+    expect(phraseReview([many[0]], [ans('a0', '2026-10-27', false), ans('b0', '2026-10-28', false), ans('c0', '2026-10-29', false)], '2026-11-05')).toEqual([{ phrase: 'ph-0', item: 'a0' }]);
     // two reviewed today: 6 left, and those two aren't asked again today
     const today = [...answers, ans('a0', '2026-11-05'), ans('a1', '2026-11-05')];
     const left = phraseReview(many, today, '2026-11-05');
