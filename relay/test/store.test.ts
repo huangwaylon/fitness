@@ -416,6 +416,12 @@ describe('events (a batch)', () => {
     expect(events().map((e) => e[1])).toEqual(['s1', 'v1', 'p1']);
   });
 
+  it('an event\'s notice carries the page\'s session (`sid`), so that page alone skips it', () => {
+    a('events', { sid: 'abc1234567', events: [{ id: 'p1', type: 'pref', data: { key: 'locale', value: 'en' } }] });
+    a('event', { sid: 'BAD SID', id: 'p2', type: 'pref', data: { key: 'locale', value: 'ja' } });
+    expect(notices.map((n) => n.sid)).toEqual(['abc1234567', undefined]);
+  });
+
   it('one event that throws is `unavailable` alone: the others are kept, one notice for what committed', () => {
     // 2026-11-05 review: a throw in one event's write threw the whole batch (`unavailable`), after its earlier events
     // had committed, and told no phone

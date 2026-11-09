@@ -99,18 +99,23 @@ describe('/admin', () => {
 
   it('takes an op signed by who holds both keys (a load: a dump’s rows, idempotent); refuses an unsigned, stale or tampered one', async () => {
     const body = JSON.stringify({ op: 'load', rows: { metrics: [['2026-11-01T00:00:00.000Z', 'A', '2026-11-01', 'steps', 1]] } });
-    const ok = await adminRoute(await signed(body), () => room, () => NOW);
+    const ok = await adminRoute(await signed(body), () => room, { KEY_A, KEY_B }, () => NOW);
     expect(await ok.json()).toEqual({ ok: true, metrics: 1, events: 0, uploads: 0, skipped: 0, counts: { metrics: 1, events: 0, ids: 0, uploads: 0 } });
-    expect(await (await adminRoute(await signed(body), () => room, () => NOW)).json()).toMatchObject({ metrics: 0 }); // again: nothing new
+    expect(await (await adminRoute(await signed(body), () => room, { KEY_A, KEY_B }, () => NOW)).json()).toMatchObject({ metrics: 0 }); // again: nothing new
     // a load that added rows tells the phones (once: the second added nothing)
     expect(told).toEqual([{ what: 'ingest', who: 'A', at: '2026-11-01T00:00:00.000Z', rev: 'e1' }]);
-    expect((await adminRoute(new Request('https://relay.example/admin', { method: 'POST', body }), () => room, () => NOW)).status).toBe(401);
-    expect((await adminRoute(await signed(body, NOW - 10 * 60_000), () => room, () => NOW)).status).toBe(401);
+    expect((await adminRoute(new Request('https://relay.example/admin', { method: 'POST', body }), () => room, { KEY_A, KEY_B }, () => NOW)).status).toBe(401);
+    expect((await adminRoute(await signed(body, NOW - 10 * 60_000), () => room, { KEY_A, KEY_B }, () => NOW)).status).toBe(401);
     const s = await signed(body);
     const tampered = new Request(s.url, { method: 'POST', body: body.replace('"steps",1', '"steps",9'), headers: s.headers });
-    expect((await adminRoute(tampered, () => room, () => NOW)).status).toBe(401);
-    expect((await adminRoute(await signed('{"rows":{}}'), () => room, () => NOW)).status).toBe(400); // no op
-    expect(await (await adminRoute(await signed('{"op":"load","rows":{"metrics":5}}'), () => room, () => NOW)).json()).toEqual({ ok: false, error: 'bad_request' });
+    expect((await adminRoute(tampered, () => room, { KEY_A, KEY_B }, () => NOW)).status).toBe(401);
+    // a forged signature never reaches the record (no Durable Object request)
+    let reached = 0;
+    const counting: StoreRoom = { ...room, adminSigned: (...a) => (reached++, room.adminSigned(...a)) };
+    expect((await adminRoute(new Request(s.url, { method: 'POST', body: body.replace('"steps",1', '"steps",9'), headers: s.headers }), () => counting, { KEY_A, KEY_B }, () => NOW)).status).toBe(401);
+    expect(reached).toBe(0);
+    expect((await adminRoute(await signed('{"rows":{}}'), () => room, { KEY_A, KEY_B }, () => NOW)).status).toBe(400); // no op
+    expect(await (await adminRoute(await signed('{"op":"load","rows":{"metrics":5}}'), () => room, { KEY_A, KEY_B }, () => NOW)).json()).toEqual({ ok: false, error: 'bad_request' });
     expect(core.counts().metrics).toBe(1);
   });
 
@@ -120,16 +125,16 @@ describe('/admin', () => {
       const body = JSON.stringify({ op });
       const s = await signed(body);
       const again = new Request(s.url, { method: 'POST', body, headers: s.headers });
-      expect((await adminRoute(s, () => room, () => NOW)).status, op).toBe(200);
-      expect((await adminRoute(again, () => room, () => NOW)).status, op).toBe(409);
+      expect((await adminRoute(s, () => room, { KEY_A, KEY_B }, () => NOW)).status, op).toBe(200);
+      expect((await adminRoute(again, () => room, { KEY_A, KEY_B }, () => NOW)).status, op).toBe(409);
       // signed anew (a ms later): its own
-      expect((await adminRoute(await signed(body, NOW + 1), () => room, () => NOW)).status, op).toBe(200);
+      expect((await adminRoute(await signed(body, NOW + 1), () => room, { KEY_A, KEY_B }, () => NOW)).status, op).toBe(200);
     }
     // a read may be sent again
     const body = '{"op":"counts"}';
     const s = await signed(body);
-    expect((await adminRoute(s, () => room, () => NOW)).status).toBe(200);
-    expect((await adminRoute(new Request(s.url, { method: 'POST', body, headers: s.headers }), () => room, () => NOW)).status).toBe(200);
+    expect((await adminRoute(s, () => room, { KEY_A, KEY_B }, () => NOW)).status).toBe(200);
+    expect((await adminRoute(new Request(s.url, { method: 'POST', body, headers: s.headers }), () => room, { KEY_A, KEY_B }, () => NOW)).status).toBe(200);
   });
 
   it('a missing, malformed or stale signature is refused in the Worker: the record never hears it', async () => {
@@ -142,10 +147,10 @@ describe('/admin', () => {
       const h: Record<string, string> = {};
       if (t) h['X-Island-Time'] = t;
       if (g) h['X-Island-Sig'] = g;
-      expect((await adminRoute(new Request('https://relay.example/admin', { method: 'POST', body, headers: h }), () => counting, () => NOW)).status, `${t} ${g}`).toBe(401);
+      expect((await adminRoute(new Request('https://relay.example/admin', { method: 'POST', body, headers: h }), () => counting, { KEY_A, KEY_B }, () => NOW)).status, `${t} ${g}`).toBe(401);
     }
     expect(heard).toBe(0);
-    expect((await adminRoute(s, () => counting, () => NOW)).status).toBe(200);
+    expect((await adminRoute(s, () => counting, { KEY_A, KEY_B }, () => NOW)).status).toBe(200);
     expect(heard).toBe(1);
   });
 });

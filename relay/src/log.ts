@@ -10,6 +10,9 @@
 // - Caps per UTC day and bucket (`caps`, one row each, written once per write): the phones 1,000 events a role and 200
 //   errors, the relay 4,000 and 500, and 8,000 in all (the hard guard on the account's 100k rows written a day).
 // - A batch id is taken once (`batches`, two days): a phone re-sends a batch it never saw acked.
+// - The account's rows written a UTC day, by object (`caps` `rw:log`, `rw:store`, `rw:room`): the log's own (counted:
+//   one a row, its tables have no index), the record's (each `req`'s `rw`) and the room's (`room.close` `rw`); `stats`
+//   says them against the Free plan's ROWS_DAY.
 // - Retention: 30 days (`prune`, the object's daily alarm, 5,000 rows a chunk).
 import { keyOwner, type Keys } from './auth.ts';
 import type { Sql } from './store.ts';
@@ -41,6 +44,8 @@ const DAY = 86_400_000;
 /** The caps per UTC day: a bucket's events, then dropped (and `log.cap` once). */
 export const LOG_CAPS = { client: 1_000, clientErrors: 200, relay: 4_000, relayErrors: 500, all: 8_000 } as const;
 const PRUNE_CHUNK = 5_000, PRUNE_CHUNKS = 4;
+/** The Free plan's rows written a day, the account's (every Durable Object's). */
+const ROWS_DAY = 100_000;
 /** A query's rows at most. */
 const QUERY_MAX = 1_000;
 const KEY_RE = /^[0-9a-fA-F]{32,128}$/;
@@ -143,12 +148,23 @@ export class LogCore {
     return (this.caps.get(b) ?? 0) >= this.limitOf(b) || (this.caps.get('all') ?? 0) >= LOG_CAPS.all;
   }
 
-  /** The touched buckets' counts, written (one row each); a bucket that just filled logs `log.cap` once. */
-  private saveCaps(day: string, touched: Set<Bucket>, insert: (r: Bind[]) => void): void {
+  /** The rows written today, by object (`rw:<object>`): `n` more, the bucket touched. */
+  private wrote(touched: Set<Bucket>, obj: 'log' | 'store' | 'room', n: number): void {
+    if (!(n > 0)) return;
+    const b = `rw:${obj}`;
+    this.caps.set(b, (this.caps.get(b) ?? 0) + Math.round(n));
+    touched.add(b);
+  }
+
+  /** The touched buckets' counts, written (one row each); a bucket that just filled logs `log.cap` once. `rows`: the
+   *  log's rows this write took so far (its events, a batch's id), counted with these and the cap's. */
+  private saveCaps(day: string, touched: Set<Bucket>, insert: (r: Bind[]) => void, rows: number): void {
+    this.wrote(touched, 'log', rows + touched.size + (touched.has('rw:log') ? 0 : 1));
     for (const b of touched) {
       this.io.sql.exec('INSERT INTO caps (day, bucket, n) VALUES (?, ?, ?) ON CONFLICT (day, bucket) DO UPDATE SET n = excluded.n', day, b, this.caps.get(b) ?? 0);
     }
     for (const b of touched) {
+      if (b.startsWith('rw:')) continue;
       if (!this.full(b) || this.caps.has(`capped:${b}`)) continue;
       this.caps.set(`capped:${b}`, 1);
       this.io.sql.exec('INSERT OR IGNORE INTO caps (day, bucket, n) VALUES (?, ?, 1)', day, `capped:${b}`);
@@ -201,7 +217,7 @@ export class LogCore {
         kept++;
       }
       this.io.sql.exec('INSERT INTO batches (b, ts) VALUES (?, ?)', b, now);
-      this.saveCaps(day, touched, (r) => this.insert(r));
+      this.saveCaps(day, touched, (r) => this.insert(r), kept + 1);
       const closed = this.full(`c:${role}:i`) ? this.nextDay() : undefined;
       return { ok: true, kept, dropped, ...(closed ? { closed } : {}) };
     });
@@ -216,12 +232,16 @@ export class LogCore {
       for (const ev of evs) {
         if (!isLogEvent(ev.e) || LOG_EVENTS[ev.e].src !== 'r') continue;
         const l = levelOf(ev.l);
+        // (the record's rows for a request, the room's since its last close: before the cap, so a capped day still
+        // counts those it hears)
+        if (ev.e === 'req') this.wrote(touched, 'store', Number(ev.d?.rw));
+        if (ev.e === 'room.close') this.wrote(touched, 'room', Number(ev.d?.rw));
         if (!this.take(`r:${l === 3 ? 'e' : 'i'}`, touched)) continue;
         const role = ev.role === 'A' || ev.role === 'B' || ev.role === 'G' ? ev.role : null;
         this.insert([this.nextId(), null, l, ev.e, 'r', role, isLogId(ev.sid) ? ev.sid : null, isLogId(ev.rid) ? ev.rid : null, null, null, null, JSON.stringify(cleanData(ev.e, ev.d))]);
         kept++;
       }
-      this.saveCaps(day, touched, (r) => this.insert(r));
+      this.saveCaps(day, touched, (r) => this.insert(r), kept);
       const closed = this.full('r:i') ? this.nextDay() : undefined;
       return { ok: true as const, kept, ...(closed ? { closed } : {}) };
     });
@@ -285,6 +305,11 @@ export class LogCore {
       phones24h: count(now - DAY, "src = 'c'"),
       today: this.caps.get('all') ?? 0,
       budgetPct: Math.round(((this.caps.get('all') ?? 0) / LOG_CAPS.all) * 100),
+      // today's rows written (UTC), by object, and their share of the Free plan's ROWS_DAY (the alert warns past 50)
+      rowsLog: this.caps.get('rw:log') ?? 0,
+      rowsStore: this.caps.get('rw:store') ?? 0,
+      rowsRoom: this.caps.get('rw:room') ?? 0,
+      rowsPct: Math.round((['log', 'store', 'room'].reduce((n, o) => n + (this.caps.get(`rw:${o}`) ?? 0), 0) / ROWS_DAY) * 100),
       capped,
       oldestDays: oldest ? Math.round(((now - oldest / 1000) / DAY) * 10) / 10 : 0
     };
@@ -305,6 +330,10 @@ export class LogCore {
     }
     this.io.sql.exec('DELETE FROM batches WHERE ts < ?', now - 2 * DAY);
     this.io.sql.exec('DELETE FROM caps WHERE day < ?', new Date(now - 2 * DAY).toISOString().slice(0, 10));
+    // (a delete is a row written: today's count has them, a day's batches and caps roughly 1 % more)
+    const day = this.today(), touched = new Set<Bucket>();
+    this.wrote(touched, 'log', deleted);
+    this.saveCaps(day, touched, () => {}, 0);
     return { deleted, more };
   }
 

@@ -80,6 +80,12 @@ export class IslandRoom extends DurableObject<Env> {
   private wx: WxState = WX_EMPTY;
   /** The fetch under way (one at a time: the cron's and a hello's share it). */
   private wxBusy: Promise<WxTick> | null = null;
+  /** The rows written since the last room.close (each put one row of the object's SQLite): the log's `rw`. */
+  private rw = 0;
+  private put(k: string, v: unknown): Promise<void> {
+    this.rw++;
+    return this.ctx.storage.put(k, v);
+  }
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -101,14 +107,14 @@ export class IslandRoom extends DurableObject<Env> {
         setMeta: (s, m) => s.serializeAttachment(m),
         keys: { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C },
         now: () => Date.now(),
-        save: (r) => void ctx.storage.put(RING, r),
-        saveDay: (d) => void ctx.storage.put(DAY, d),
-        saveRec: (r) => void ctx.storage.put(REC, r),
-        saveRecG: (r) => void ctx.storage.put(REC_G, r),
-        saveAcked: (a) => void ctx.storage.put(ACKED, a),
-        hold: (h) => void ctx.storage.put(HELD, h),
-        saveGone: (g) => void ctx.storage.put(GONE, g),
-        saveMusic: (m) => void ctx.storage.put(MUSIC, m),
+        save: (r) => void this.put(RING, r),
+        saveDay: (d) => void this.put(DAY, d),
+        saveRec: (r) => void this.put(REC, r),
+        saveRecG: (r) => void this.put(REC_G, r),
+        saveAcked: (a) => void this.put(ACKED, a),
+        hold: (h) => void this.put(HELD, h),
+        saveGone: (g) => void this.put(GONE, g),
+        saveMusic: (m) => void this.put(MUSIC, m),
         // the heartbeat's last answer (the runtime's: HB_PING never wakes the room), for the ghosts' watch
         heardAt: (s) => ctx.getWebSocketAutoResponseTimestamp(s)?.getTime() ?? null,
         // the test copy has no cron: a hello fetches the weather when it's due (production's safety net too)
@@ -150,7 +156,7 @@ export class IslandRoom extends DurableObject<Env> {
    *  a new epoch (`restored`), so every phone refetches; kept in the room's storage (the record's is the bookmark's). */
   async restoring(): Promise<void> {
     const due = Date.now() + RESTORE_AFTER_MS;
-    await this.ctx.storage.put(RESTORE, { due, tries: 0 });
+    await this.put(RESTORE, { due, tries: 0 });
     await this.alarmBy(due);
   }
 
@@ -168,7 +174,8 @@ export class IslandRoom extends DurableObject<Env> {
   webSocketClose(ws: WebSocket, code: number): void {
     const m = ws.deserializeAttachment() as Meta | null;
     this.core.close(ws);
-    this.log([{ e: 'room.close', l: 1, role: m?.who ?? null, d: { code, secs: m?.opened ? Math.round((Date.now() - m.opened) / 1000) : -1, socks: this.ctx.getWebSockets().length - 1 } }]);
+    this.log([{ e: 'room.close', l: 1, role: m?.who ?? null, d: { code, secs: m?.opened ? Math.round((Date.now() - m.opened) / 1000) : -1, socks: this.ctx.getWebSockets().length - 1, ...(this.rw ? { rw: this.rw } : {}) } }]);
+    this.rw = 0;
     try {
       ws.close(code === 1005 || code === 1006 ? 1000 : code, 'bye');
     } catch {
@@ -205,7 +212,7 @@ export class IslandRoom extends DurableObject<Env> {
       try {
         const r = await fetchTick(this.wx, now, (u, i) => fetch(u, i), omUrl(lat, lon));
         this.wx = r.st;
-        await this.ctx.storage.put(WX, r.st);
+        await this.put(WX, r.st);
         if (r.fail) console.warn('wx-fail', r.fail);
         const heard = this.core.setWx(r.st.wx, r.send);
         return { ok: !r.fail, fetched: true, ...(r.fail ? { fail: r.fail } : {}), sent: r.send, heard, health: wxHealth(r.st, Date.now()) };
@@ -226,7 +233,7 @@ export class IslandRoom extends DurableObject<Env> {
       const st = typeof o.s === 'string' ? fixture(this.wx, o.s, fx, now) : null;
       if (!st) return { ok: false, error: 'bad_request' };
       this.wx = st;
-      await this.ctx.storage.put(WX, st);
+      await this.put(WX, st);
       return { ok: true, wx: st.wx, heard: this.core.setWx(st.wx, true) };
     }
     return { ok: true, wx: this.wx.wx, health: wxHealth(this.wx, now) };
@@ -254,7 +261,7 @@ export class IslandRoom extends DurableObject<Env> {
           due = r.tries + 1 < RESTORE_TRIES ? Date.now() + RESTORE_RETRY_MS : null;
         }
         if (due === null) await this.ctx.storage.delete(RESTORE);
-        else await this.ctx.storage.put(RESTORE, { due, tries: r.tries + 1 });
+        else await this.put(RESTORE, { due, tries: r.tries + 1 });
       }
       if (due !== null) next = next === null ? due : Math.min(next, due);
     }
@@ -298,8 +305,11 @@ export default {
     const url = new URL(req.url);
     const logObj = () => env.LOG.get(env.LOG.idFromName('log'));
     if (url.pathname === '/health') {
-      // the real weather's age (the runbook, the smoke test): never in the way of the health itself
-      const wx = await env.ROOM.get(env.ROOM.idFromName('island')).wxHealth().catch(() => null);
+      // the real weather's age (the runbook, the smoke test): never in the way of the health itself; asked of the room
+      // at most once a minute per isolate (an anonymous URL: a flood spends Worker requests, not the room's)
+      const now = Date.now();
+      if (!wxSeen || now - wxSeen.at > WX_HEALTH_MS) wxSeen = { at: now, wx: await env.ROOM.get(env.ROOM.idFromName('island')).wxHealth().catch(() => null) };
+      const wx = wxSeen.wx;
       return Response.json({ ok: true, v: LIVE_V, versions: LIVE_VS, t: Date.now(), wx }, { headers: { 'Cache-Control': 'no-store' } });
     }
     if (url.pathname === '/notify') return notify(req, env);
@@ -312,7 +322,7 @@ export default {
     }
     if (url.pathname === '/stt') return sttRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.STT_OFF === '1', roleOf: (k) => keyOwner(k, env), spend: (r) => logObj().spend(`stt:${r}`, Number(env.STT_DAY_MAX) || 300), ai: env.AI, log: sinkOf(env, ctx), now: Date.now });
     if (url.pathname === '/health/log') return logHealthRoute(req, env.HEALTH_TOKEN, logObj);
-    if (url.pathname === '/admin') return adminRoute(req, () => env.STORE.get(env.STORE.idFromName('record')));
+    if (url.pathname === '/admin') return adminRoute(req, () => env.STORE.get(env.STORE.idFromName('record')), { KEY_A: env.KEY_A, KEY_B: env.KEY_B });
     if (url.pathname !== '/room') return new Response('not found', { status: 404 });
     if (!originAllowed(req.headers.get('Origin'), env.ALLOWED_ORIGINS ?? '')) return new Response('forbidden', { status: 403 });
     if (req.headers.get('Upgrade')?.toLowerCase() !== 'websocket') return new Response('expected a WebSocket', { status: 426 });
@@ -321,6 +331,10 @@ export default {
     return env.ROOM.get(env.ROOM.idFromName('island')).fetch(adm);
   }
 } satisfies ExportedHandler<Env>;
+
+/** `/health`'s weather as the room last said it (per isolate), and how long that holds. */
+let wxSeen: { at: number; wx: WxHealth | null } | null = null;
+const WX_HEALTH_MS = 60_000;
 
 /** The relay's events to the log from a request or the cron (none with the off switch). */
 function sinkOf(env: Env, ctx: ExecutionContext): (evs: RelayEvent[]) => void {

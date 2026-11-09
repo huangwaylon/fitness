@@ -103,8 +103,13 @@ describe('/health', () => {
     expect(calls['ROOM.id']).toEqual([['island']]);
   });
 
-  it('is still ok with wx null when the room fails', async () => {
+  it('asks the room at most once a minute (an anonymous URL), and is still ok with wx null when the room fails', async () => {
+    vi.setSystemTime(NOW + 3_600_000);
+    await call('/health');
     room.wxHealth = () => Promise.reject(new Error('reset'));
+    expect(await (await call('/health')).json()).toMatchObject({ ok: true, wx: WX });
+    expect(calls['ROOM.id']).toHaveLength(1);
+    vi.setSystemTime(NOW + 3_661_000);
     expect(await (await call('/health')).json()).toMatchObject({ ok: true, wx: null });
   });
 });

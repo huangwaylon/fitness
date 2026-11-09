@@ -57,9 +57,9 @@ A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepal
 | `use` | info | counters `sheet:<i18n key>`, `ev:<event type>`, `route:<route>`, `act:<what>`, `swallow:<tag>` (a failure the app went on without: quiet.ts, e.g. `tex.idb`, `food.verify`, `stt.reply`) | summed, one a flush |
 | `log.drop` | warn | `n`, `why` (cap, full, day, pending) | the phone's log dropped events |
 | `mic.env` / `mic.perm` / `mic.duplex` / `mic.stt` | info | the mic probe's numbers and closed sets (docs/kikimimi-mic.md "The probe"): the page's capabilities; the permission (`st`, `ms`, `again`, `asked`, `ec`, `sr`, `inp`); per earphone route the bleed (dB), round trip (ms), loudness and restore; per recogniser and step its `ms`, `mb`, `audS`, `wer` (%, computed on the phone), `ok`, `err`. **Never heard text, a device label or a sentence** | せってい's 「マイク診断（テスト）」, on 「結果を送信」 |
-| `req` (relay) | info; warn refused; error `unavailable` | `action`, `st` (ok or the error code), `ms` (the Worker's wall time), `inB`, `outB`, `n`, `rej`, `dup`, `why` (the first refusal's rule: `buy.pocket_short`, `spend_void.no_such_spend`, `ingest.parse`), ingest's `m` (added), `sk` (skipped), `w` (warnings: a count); a snapshot's `pg` (its page size; 0: unpaged, an app from before paging); `exc` (a thrown class) | every `/api` request: the Shortcut's ingests, rate-limit hits (`busy`), validation refusals |
-| `room.close` / `room.full` | info / warn | `code`, `secs`, `socks` | the live room |
-| `ws.hello` (relay) | info | `v` (the protocol version), `build` (the app's, from the hello), `rep` (that person's sockets it replaced, the others told nothing); who | each welcomed hello: which phone speaks what (`report`'s *Live hellos*) |
+| `req` (relay) | info; warn refused; error `unavailable` | `action`, `st` (ok or the error code), `ms` (the Worker's wall time), `inB`, `outB`, `n`, `rej`, `dup`, `why` (the first refusal's rule: `buy.pocket_short`, `spend_void.no_such_spend`, `ingest.parse`), ingest's `m` (added), `sk` (skipped), `w` (warnings: a count); a snapshot's `pg` (its page size; 0: unpaged, an app from before paging); `rw`, `rr` (the rows the record wrote and read for it: its SQLite cursors); `exc` (a thrown class) | every `/api` request: the Shortcut's ingests, rate-limit hits (`busy`), validation refusals |
+| `room.close` / `room.full` | info / warn | `code`, `secs`, `socks`, `rw` (the room's storage rows written since its last close) | the live room |
+| `ws.hello` (relay) | info | `v` (the protocol version), `build` (the app's, from the hello), `rep` (that device's sockets it replaced, the others told nothing); who | each welcomed hello: which phone speaks what (`report`'s *Live hellos*) |
 | `store.corrupt` (relay) | warn | `where` (the fold: spend, board, food, tally, shop, decor) | a stored row of the record that isn't a JSON object, skipped by that fold (store.ts `rowRec`), once a request a place |
 | `cron.wx` | info; warn failed | `ok`, `fetched`, `fail`, `hours`, `age`, `ms` | a weather fetch (the cron at :15, :45) |
 | `cron.compact` | info | `dates`, `deleted`, `more`, `metrics`, `ms` | the record's compaction (the cron at 04:15 Tokyo when COMPACT_CRON=1, on hold; `more`: a backlog left for the next day; a failure is `do.error` `where: compact`) |
@@ -136,7 +136,10 @@ npm run logs -- --test ...                                 # the test relay
 ```
 
 ### Investigating (a checklist)
-1. `npm run logs -- stats`: errors in the last 1 h / 6 h, `unavailable` answers, caps, the oldest event.
+1. `npm run logs -- stats`: errors in the last 1 h / 6 h, `unavailable` answers, caps, the oldest event, today's (UTC)
+   rows written by object (`rowsLog`, `rowsStore`, `rowsRoom`: the log's own counted, the record's from each `req`'s
+   `rw`, the room's from `room.close`) and `rowsPct` of the Free plan's 100k (the alert warns past 50 %; `report`
+   prints the record's by action). A `req` the relay's capped day dropped isn't counted.
 2. `npm run logs -- report --since 1d`: what fails, for whom, since which build.
 3. `npm run logs -- --since 6h --level warn`, then `--sid` of a session in trouble (its whole story) and `--rid` of a
    failed request (the relay's `req`: its status, rule, time).
@@ -151,7 +154,8 @@ npm run logs -- --test ...                                 # the test relay
 `health.yml` (every 6 hours and on demand) reads `/health/log` with the `HEALTH_TOKEN` secret (a Worker secret and a
 repo secret: counts only) and opens one GitHub issue labelled `alert` (or comments on the open one when the state
 changes) when, in the last 6 hours, errors > 20 (not counting errors while leaving), the relay answered `unavailable`
-> 5 times, a cap was reached, the day's events passed 50 % of the cap, or the oldest event is older than 32 days (the
+> 5 times, a cap was reached, the day's events passed 50 % of the cap, the day's rows written passed 50 % of the Free
+plan's 100k (`rowsPct`), or the oldest event is older than 32 days (the
 prune is dead); it closes the issue on a green run. The issue holds counts and a link here, never a message (the repo
 is public). A failing `/health` still fails the job (GitHub's e-mail). Scheduled workflows stop after 60 days without
 a commit in a public repo: re-enable it in Actions.

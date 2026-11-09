@@ -268,6 +268,64 @@ describe('the island room', () => {
     expect(a2.sent.at(-1)).toMatchObject({ kind: 'act', who: 'B' });
   });
 
+  it('one device, one socket: a hello with `dev` replaces only that device, and the person\'s devices hear each other\'s decor ops', () => {
+    const hi = (key: string, dev?: string) => {
+      const s = join();
+      room.message(s, JSON.stringify({ v: 3, kind: 'hello', key, ...(dev ? { dev } : {}) }));
+      return s;
+    };
+    const b = join(KEY_B);
+    const phone = hi(KEY_A, 'phone1');
+    b.sent = [];
+    const mac = hi(KEY_A, 'mac111');
+    // the phone stays; the Mac hears it's there; the partner hears no presence again
+    expect(phone.closed).toBeNull();
+    expect(mac.sent[0]).toMatchObject({ kind: 'welcome', me: 'A', peer: true, mine: true });
+    expect(phone.sent.at(-1)).toMatchObject({ kind: 'presence', who: 'A', on: true });
+    expect(b.sent).toEqual([]);
+    // the Mac's editor op reaches the phone (and the partner); a presence-only intent stays off my own devices
+    say(mac, { kind: 'decor', sc: 'o', id: 'o1', at: now, k: 'bench', x: 3, z: 4, f: 0 });
+    expect(phone.sent.at(-1)).toMatchObject({ kind: 'decor', who: 'A', id: 'o1' });
+    expect(b.sent.at(-1)).toMatchObject({ kind: 'decor', who: 'A', id: 'o1' });
+    phone.sent = [];
+    say(mac, { kind: 'act', act: 'tap' });
+    expect(phone.sent).toEqual([]);
+    // the phone back before its old socket closed: only that one replaced
+    const phone2 = hi(KEY_A, 'phone1');
+    expect(phone.closed?.code).toBe(CLOSE.replaced);
+    room.close(phone);
+    expect(mac.closed).toBeNull();
+    expect(phone2.sent[0]).toMatchObject({ kind: 'welcome', mine: true });
+    // the Mac leaves: the phone hears it's alone, the partner nothing (A is still here)
+    b.sent = [];
+    bye(mac);
+    expect(phone2.sent.at(-1)).toMatchObject({ kind: 'presence', who: 'A', on: false });
+    expect(b.sent).toEqual([]);
+    bye(phone2);
+    expect(b.sent.at(-1)).toMatchObject({ kind: 'presence', who: 'A', on: false });
+  });
+
+  it('a hello without `dev` (a phone before it) replaces only the sockets without one, and hears nothing of my own', () => {
+    const mac = join();
+    room.message(mac, JSON.stringify({ v: 3, kind: 'hello', key: KEY_A, dev: 'mac111' }));
+    const old = join(KEY_A);
+    expect(mac.closed).toBeNull();
+    expect(old.sent[0]).not.toHaveProperty('mine');
+    say(mac, { kind: 'decor', sc: 'o', id: 'o1', at: now, k: 'bench', x: 3, z: 4, f: 0 });
+    expect(old.kinds()).toEqual(['welcome']);
+    const old2 = join(KEY_A);
+    expect(old.closed?.code).toBe(CLOSE.replaced);
+    expect(mac.closed).toBeNull();
+    expect(old2.sent[0]).toMatchObject({ kind: 'welcome' });
+  });
+
+  it('a change\'s notice carries the writer\'s session (`sid`)', () => {
+    const a = join(KEY_A);
+    room.notify({ what: 'event', who: 'A', at: '2026-11-09T00:00:00.000Z', rev: 'e1', sid: 'abc123' });
+    expect(a.sent.at(-1)).toMatchObject({ kind: 'changed', who: 'A', sid: 'abc123' });
+    expect(parseServer(JSON.stringify(a.raw.at(-1)))).toMatchObject({ kind: 'changed', sid: 'abc123' });
+  });
+
   it('tells the partner when the last socket of a person closes', () => {
     const a = join(KEY_A);
     const b = join(KEY_B);

@@ -52,17 +52,19 @@ jobs:
           echo "$s" | jq -e '.ok == true' > /dev/null || { echo "::error::/health/log did not answer: $(echo "$s" | head -c 200)"; exit 1; }
           echo "$s" | jq -c .
           # the thresholds (the last 6 hours): errors (not while leaving), the record's `unavailable`, a cap reached,
-          # the day's events past half the cap, the prune dead (an event older than 32 days)
+          # the day's events past half the cap, the day's rows written past half the Free plan's 100k, the prune dead (an
+          # event older than 32 days)
           why=$(echo "$s" | jq -r '[
             (if .e6h > 20 then "\(.e6h) errors in 6 h" else empty end),
             (if .unavailable6h > 5 then "the record answered unavailable \(.unavailable6h) times in 6 h" else empty end),
             (if (.capped | length) > 0 then "a day cap reached: \(.capped | join(", "))" else empty end),
             (if .budgetPct > 50 then "\(.budgetPct) % of the day'"'"'s log cap used" else empty end),
+            (if (.rowsPct // 0) > 50 then "\(.rowsPct) % of the Free plan'"'"'s rows written a day (UTC) used" else empty end),
             (if .oldestDays > 32 then "the oldest event is \(.oldestDays) days old (the prune)" else empty end)
           ] | join("; ")')
           [ "$(echo "$s" | jq '.phones24h')" = 0 ] && echo "::warning::no phone events in 24 h: the phones' log may be broken, or nobody opened the app"
           open=$(gh issue list --label alert --state open --json number --jq '.[0].number // empty')
-          counts=$(echo "$s" | jq -r '"errors 1 h \(.e1h), 6 h \(.e6h); warnings 6 h \(.w6h); unavailable 6 h \(.unavailable6h); phones 24 h \(.phones24h); today \(.today) (\(.budgetPct) %); oldest \(.oldestDays) d"')
+          counts=$(echo "$s" | jq -r '"errors 1 h \(.e1h), 6 h \(.e6h); warnings 6 h \(.w6h); unavailable 6 h \(.unavailable6h); phones 24 h \(.phones24h); today \(.today) (\(.budgetPct) %); rows written \(.rowsPct // 0) %; oldest \(.oldestDays) d"')
           body="$why
 
           $counts

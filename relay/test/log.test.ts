@@ -4,9 +4,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { LOG_CAPS, LOG_KEEP_DAYS, LogCore, type RelayEvent } from '../src/log.ts';
 import { logHealthRoute, logRoute, relaySink, resetLogRoute, type LogRoom } from '../src/logRoute.ts';
-import { apiWithMeta } from '../src/reqMeta.ts';
+import { apiWithMeta, countingSql } from '../src/reqMeta.ts';
 import { apiRoute, type StoreRoom } from '../src/storeRoute.ts';
-import { StoreCore } from '../src/store.ts';
+import { StoreCore, type Sql } from '../src/store.ts';
 import { keyOwner } from '../src/auth.ts';
 import { memSql } from './sqlite.ts';
 
@@ -109,6 +109,20 @@ describe('the relay’s events, the query, retention', () => {
     expect(log.stats()).toMatchObject({ e1h: 2, e6h: 1, w6h: 0, unavailable6h: 1, phones24h: 1, oldestDays: 0 });
   });
 
+  it('counts the day\'s rows written by object (the Free plan\'s 100k): the log\'s own, the record\'s `req` rw, the room\'s', () => {
+    log.ingestText(batch([ev('app.show'), ev('app.show')]));
+    // 2 events + the batch id + 3 caps rows (c:A:i, all, rw:log)
+    expect(log.stats()).toMatchObject({ rowsLog: 6, rowsStore: 0, rowsRoom: 0, rowsPct: 0 });
+    log.add([{ e: 'req', l: 1, d: { action: 'events', st: 'ok', rw: 40_000 } }, { e: 'room.close', l: 1, d: { code: 1000, rw: 12_000 } }]);
+    // + 2 events + 5 caps rows (r:i, all, rw:store, rw:room, rw:log)
+    expect(log.stats()).toMatchObject({ rowsLog: 13, rowsStore: 40_000, rowsRoom: 12_000, rowsPct: 52 });
+    // kept across a restart, and the next UTC day starts again
+    log = make();
+    expect(log.stats()).toMatchObject({ rowsStore: 40_000 });
+    now += DAY;
+    expect(log.stats()).toMatchObject({ rowsLog: 0, rowsStore: 0, rowsRoom: 0, rowsPct: 0 });
+  });
+
   it('purges by time and role', () => {
     log.ingestText(batch([ev('app.show')]));
     log.ingestText(batch([ev('app.show')], { key: KEY_B }));
@@ -179,6 +193,19 @@ describe('/api’s req meta', () => {
     // a snapshot's page size (0: an app from before paging asked for every row at once)
     expect([call({ key: KEY_A, action: 'snapshot' }).meta.pg, call({ key: KEY_A, action: 'snapshot', page: 4000 }).meta.pg]).toEqual([0, 4000]);
     expect([call({ action: 'whoami', key: 'f'.repeat(64) }).meta.st, apiWithMeta(s, '{x', roleOf).meta.st, call({ key: KEY_C, action: 'ingest' }).meta]).toEqual(['unauthorized', 'bad_request', expect.objectContaining({ st: 'forbidden', role: 'G' })]);
+  });
+
+  it('the rows the record wrote and read for it (the cursors\' counts, as Durable Objects give them)', () => {
+    const inner = memSql().sql;
+    // node:sqlite's cursors count nothing: each statement here says it wrote 2 rows and read 3
+    const fake = { exec: (q: string, ...b: (string | number | null)[]) => Object.assign(inner.exec(q, ...b), { rowsWritten: 2, rowsRead: 3 }) } as unknown as Sql;
+    const counted = countingSql(fake);
+    const s = new StoreCore({ sql: counted.sql, tx: (fn) => fn(), keys, now: () => now, notify: () => {} });
+    counted.take();
+    const r = apiWithMeta(s, JSON.stringify({ key: KEY_A, action: 'event', id: 'e1', type: 'harvest', data: { week: '2026-10-26' } }), roleOf, counted.take);
+    expect(r.meta.rw).toBeGreaterThan(0);
+    expect(r.meta.rr! / r.meta.rw!).toBe(1.5);
+    expect(counted.take()).toEqual({ rw: 0, rr: 0 });
   });
 
   it('the Worker times it, echoes the request id and hands the meta on', async () => {

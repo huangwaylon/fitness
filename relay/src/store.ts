@@ -32,7 +32,7 @@ import { foodAccept, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, repeatAcc
 import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { verifyNotify } from './notify.ts';
 import { errName } from './log.ts';
-import { scrubMsg } from '../../app/src/lib/contract/log.ts';
+import { isLogId, scrubMsg } from '../../app/src/lib/contract/log.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { guestMayWrite, rowsFor } from '../../app/src/lib/contract/guest.ts';
 import { buyOf, reowe, sellOf, shopLedger, shopRefusal, shopStep, type Ledger, type ShopRow } from '../../app/src/lib/contract/shop.ts';
@@ -177,6 +177,8 @@ export class StoreCore {
   private rate = { minute: 0, A: 0, B: 0, G: 0 };
   private pages = { minute: 0, A: 0, B: 0, G: 0 };
   private exc: string | null = null;
+  /** The request's page session (its body's `sid`): an event's notice carries it, so that page alone skips it. */
+  private sid: string | undefined;
   /** The places a corrupt row was skipped this request (each told once). */
   private told = new Set<string>();
 
@@ -300,6 +302,7 @@ export class StoreCore {
   handle(body: unknown, bytes: number): Reply {
     this.exc = null;
     this.told.clear();
+    this.sid = isRec(body) && isLogId(body.sid) ? body.sid : undefined;
     if (this.frozen) return fail('unavailable', 'restoring');
     try {
       return this.route(body, bytes);
@@ -606,7 +609,7 @@ export class StoreCore {
 
   private event(me: Who, body: Rec): Reply {
     const r = this.keep(me, body);
-    if (r.ok && r.at) this.io.notify({ what: 'event', who: me, at: r.at, rev: this.rev() });
+    if (r.ok && r.at) this.io.notify({ what: 'event', who: me, at: r.at, rev: this.rev(), ...(this.sid ? { sid: this.sid } : {}) });
     const { at: _at, ...reply } = r;
     return reply;
   }
@@ -636,7 +639,7 @@ export class StoreCore {
       }
       i = j;
     }
-    if (last) this.io.notify({ what: 'event', who: me, at: last, rev: this.rev() });
+    if (last) this.io.notify({ what: 'event', who: me, at: last, rev: this.rev(), ...(this.sid ? { sid: this.sid } : {}) });
     return { ok: true, results };
   }
 

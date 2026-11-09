@@ -1,6 +1,6 @@
 // The island room's logic, free of the Workers runtime so it is unit-testable: sockets, their attachments, the clock
 // and storage come in through RoomIO. The Durable Object (index.ts) is a thin adapter over this.
-import { CLOSE, HB_PING, HB_PONG, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, MAX_BYTES, NEST_GAP_MS, REPLAY_BYTES, claimOf, musicAt, musicBeats, musicLive, isStored, scopeMaySend, otherVersion, parseClient, tokyoDay, type Gone, type LiveV, type MusicRec, type MusicSrc, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
+import { CLOSE, HB_PING, HB_PONG, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, MAX_BYTES, NEST_GAP_MS, REPLAY_BYTES, claimOf, musicAt, musicBeats, musicLive, isStored, scopeMaySend, otherVersion, parseClient, tokyoDay, type ClientMsg, type Gone, type LiveV, type MusicRec, type MusicSrc, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
 import { AHEAD_MS } from '../../app/src/lib/contract/ops.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { Bucket } from './bucket.ts';
@@ -22,6 +22,9 @@ export interface Meta {
   /** Whose admission ticket it came with (contract/ticket.ts, the Worker's check): its hello must be that person's,
    *  and it is never let go to make room for another. */
   tk?: Who;
+  /** Its hello's device id (`dev`, 2026-11-09): a hello replaces only the same device's sockets, and the person's other
+   *  devices that said one hear their layout ops and `presence` (a phone from before it hears neither). */
+  dv?: string;
 }
 
 export interface Sock {
@@ -169,6 +172,17 @@ export class RoomCore<S extends Sock> {
     return this.authed().filter((s) => this.io.meta(s)?.who !== who);
   }
 
+  /** `s`'s person's other sockets that said their device (`dv`): they hear that person's layout ops and presence. */
+  private mine(s: S, who: Who): S[] {
+    return this.authed(who).filter((x) => x !== s && !!this.io.meta(x)?.dv);
+  }
+
+  /** Tell each of `who`'s devices that said theirs whether another of theirs is here. */
+  private ownPresence(who: Who, t: number): void {
+    const all = this.authed(who);
+    for (const p of all) if (this.io.meta(p)?.dv) this.send(p, { v: LIVE_V, kind: 'presence', who, on: all.length > 1, t });
+  }
+
   /** Who else is here, as `me`'s phone hears it. */
   private hereFor(me: Who): Who[] {
     const out = new Set<Who>();
@@ -241,7 +255,7 @@ export class RoomCore<S extends Sock> {
       }
       return;
     }
-    if (msg.kind === 'hello') return this.hello(s, meta, msg.key, msg.since, msg.v, msg.build, msg.beat);
+    if (msg.kind === 'hello') return this.hello(s, meta, msg);
     if (!meta.who) return this.shut(s, CLOSE.unauthorized, 'hello first');
     if (msg.kind === 'ping') return this.send(s, { v: LIVE_V, kind: 'pong', c: msg.c, t: now });
     const who = meta.who;
@@ -301,6 +315,8 @@ export class RoomCore<S extends Sock> {
       this.send(p, out);
       heard = true;
     }
+    // a decor op to my other devices too (the editor on the Mac, the island on the phone; 2026-11-09)
+    if (out.kind === 'decor') for (const p of this.mine(s, who)) this.send(p, out);
     // a high-five with nobody there to hear it: held for them, the last one only
     if (to && !heard) {
       this.held = { ...this.held, [`${who}>${to}`]: { from: who, to, at: (out as { at: number }).at, t: out.t } };
@@ -319,14 +335,17 @@ export class RoomCore<S extends Sock> {
     this.send(s, { v: LIVE_V, kind: 'ack', c, t, ok });
   }
 
-  private hello(s: S, meta: Meta, key: string, since: number | undefined, v: LiveV, build?: string, beat?: true): void {
+  private hello(s: S, meta: Meta, { key, since, v, build, beat, dev }: Extract<ClientMsg, { kind: 'hello' }>): void {
     const who = keyOwner(key, this.io.keys);
     if (!who) return this.shut(s, CLOSE.unauthorized, 'unknown key');
     // a ticket's socket is its person's alone
     if (meta.tk && meta.tk !== who) return this.shut(s, CLOSE.unauthorized, "not the ticket's");
     // a repeated hello: nothing changes
     if (meta.who) return;
-    const was = this.authed(who);
+    // the same device's earlier socket (a phone back before the room saw it go, another tab): replaced; the person's
+    // other devices stay (a hello without `dev` replaces those without it, as before)
+    const theirs = this.authed(who);
+    const was = theirs.filter((x) => this.io.meta(x)?.dv === dev);
     for (const old of was) {
       // drop it from the room first, so its close doesn't announce me gone
       this.io.setMeta(old, { who: null, opened: this.io.meta(old)?.opened ?? 0 });
@@ -336,7 +355,7 @@ export class RoomCore<S extends Sock> {
     // the ghosts of the others (a phone gone without closing) out before this one hears who's here (and before it's
     // in: it never hears of them)
     this.sweepSilent();
-    this.io.setMeta(s, { ...meta, who, v, hd: t, ...(beat ? { bt: true as const } : {}) });
+    this.io.setMeta(s, { ...meta, who, v, hd: t, ...(beat ? { bt: true as const } : {}), ...(dev ? { dv: dev } : {}) });
     // `peer`: a member's partner is here; the guest's, either member. `here`: everyone else who is
     const here = this.hereFor(who);
     const peer = who === 'G' ? here.some((w) => w !== 'G') : here.includes(other(who));
@@ -346,7 +365,8 @@ export class RoomCore<S extends Sock> {
     if (this.gone[who] !== undefined) this.setGone(who, undefined);
     // `hb`: this room answers the heartbeat (HB_PING) without waking (2026-11-05)
     const rec = who === 'G' ? this.recG : this.rec;
-    this.send(s, { v: LIVE_V, kind: 'welcome', me: who, peer, t, ...(rec ? { rec } : {}), here, ...(Object.keys(gone).length ? { gone } : {}), hb: true });
+    const mine = dev ? this.authed(who).some((x) => x !== s) : false;
+    this.send(s, { v: LIVE_V, kind: 'welcome', me: who, peer, t, ...(rec ? { rec } : {}), here, ...(Object.keys(gone).length ? { gone } : {}), hb: true, ...(mine ? { mine: true as const } : {}) });
     // the real sky, when the room has one that still serves
     const wx = served(this.wx, t);
     if (wx) this.send(s, { v: LIVE_V, kind: 'wx', ...wx, t });
@@ -368,7 +388,8 @@ export class RoomCore<S extends Sock> {
       if (t - h.t > HIGHFIVE_HOLD_MS) this.unhold(k);
       else this.send(s, { v: LIVE_V, kind: 'highfive', at: h.at, who: h.from, t: h.t, to: who });
     }
-    if (!was.length) for (const p of this.others(who)) this.send(p, { v: LIVE_V, kind: 'presence', who, on: true, t });
+    if (!theirs.length) for (const p of this.others(who)) this.send(p, { v: LIVE_V, kind: 'presence', who, on: true, t });
+    else for (const p of this.mine(s, who)) this.send(p, { v: LIVE_V, kind: 'presence', who, on: true, t });
     this.io.onHello?.(who, v, build, was.length);
   }
 
@@ -409,7 +430,7 @@ export class RoomCore<S extends Sock> {
       this.io.saveRecG?.(this.recG);
     }
     const to = this.authed().filter((s) => forG || this.io.meta(s)?.who !== 'G');
-    const m: ServerMsg = { v: LIVE_V, kind: 'changed', what: n.what, who: n.who, at: n.at, rev: n.rev, t: this.io.now() };
+    const m: ServerMsg = { v: LIVE_V, kind: 'changed', what: n.what, who: n.who, at: n.at, rev: n.rev, ...(n.sid ? { sid: n.sid } : {}), t: this.io.now() };
     for (const s of to) this.send(s, m);
     return to.length;
   }
@@ -429,8 +450,8 @@ export class RoomCore<S extends Sock> {
     const who = this.io.meta(s)?.who;
     if (!who) return;
     this.io.setMeta(s, { who: null, opened: 0 });
-    if (this.authed(who).some((x) => x !== s)) return;
     const t = this.io.now();
+    if (this.authed(who).length) return this.ownPresence(who, t);
     this.setGone(who, t);
     for (const p of this.others(who)) if (p !== s) this.send(p, { v: LIVE_V, kind: 'presence', who, on: false, t });
   }

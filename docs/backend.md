@@ -286,8 +286,15 @@ once (`e2e/live-sync.spec.ts`). **After an ack:** the record answers each event 
 row goes into the cache at once (`since` unmoved); only an ack without a row (a duplicate) is followed by a `fresh`
 re-read 1.5 s later.
 
-**Two tabs:** two tabs (or a PWA and a Safari tab) of one phone share its localStorage, and the second's hello replaces
-the first's socket (4002). The synced stores (`store/synced.svelte.ts`: the decorations, the rooms, the layout; a
+**One device, one socket:** each hello says the device (`dev`, `island.device`); a hello replaces only that device's
+earlier socket (4002: a second tab, a phone back before the room saw it go), never the person's other devices'. Those
+hear the person's decor ops live (the Mac's editor on the phone's island; `welcome.mine`, then a `presence` of my own
+`who`, says whether one is there), and the record's `changed` carries the writer's page session (`sid`): only that page
+skips its own event. A hello without `dev` (a build before 2026-11-09) replaces only those without it and hears none of
+its person's own ops.
+
+**Two tabs:** two tabs (or a PWA and a Safari tab) of one phone share its localStorage (and its `dev`), and the
+second's hello replaces the first's socket (4002). The synced stores (`store/synced.svelte.ts`: the decorations, the rooms, the layout; a
 commutative merge of every op's winning entry) merge what's in storage before they write, never writing a stale whole
 map over the other tab's ops, and fold the other tab's writes as their `storage` events land.
 
@@ -381,11 +388,12 @@ intents, never data of record: the record still catches an offline phone up.
   make room for another. A socket without a ticket is still let in (tickets are optional until required). Two
   ticketed sockets failing before they open and the phone goes without for 6 hours (`island.liveTicket`). The demo's
   test relays offer none.
-- **Auth:** the first message is `hello {key, since?, build?, beat?}` (`build` the app's version, logged as `ws.hello`).
-  The room compares the key in constant time with `KEY_A`/`KEY_B`/`KEY_C` and answers `welcome {me, peer, t, rec?,
-  here, gone?, hb?}` (`rec`: the record's last change; `here`: everyone else here; `gone`: when each person's last
-  socket closed, kept in its storage), or closes 4001. No hello within 12 s: 4003. A second socket of the same person
-  replaces the first (4002, no presence flicker), so there are at most three welcomed sockets; at most 4 wait for their
+- **Auth:** the first message is `hello {key, since?, build?, beat?, dev?}` (`build` the app's version, logged as
+  `ws.hello`; `dev` the device). The room compares the key in constant time with `KEY_A`/`KEY_B`/`KEY_C` and answers
+  `welcome {me, peer, t, rec?, here, gone?, hb?, mine?}` (`rec`: the record's last change; `here`: everyone else here;
+  `gone`: when each person's last socket closed, kept in its storage; `mine`: another device of mine is here), or
+  closes 4001. No hello within 12 s: 4003. A second socket of the same device replaces the first (4002, no presence
+  flicker): one welcomed socket per device; at most 4 wait for their
   hello (a new one lets the oldest go: 4003, the log's `room.full`), so silent sockets never keep a phone out.
 - **Protocol** (`app/src/lib/contract/live-protocol.ts`, imported by both sides and checked by the same parsers): JSON,
   `v: 3` (`LIVE_VS`), ≤ 256 bytes (an intent ~60–100; a `replay` ≤ 16,000). Client intents:
@@ -662,13 +670,14 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
   Each POST carries `X-Island-Time` (ms) and `X-Island-Sig` = HMAC-SHA256(secret, `"<time>.<body>"`), hex; the relay
   refuses a signature more than 5 minutes off (401), a body over 256 bytes (413) or a bad notice (400), and answers 204
   with `X-Island-Heard: <sockets>` (`relay/src/notify.ts`).
-- **Relay → phones:** the room sends `changed {what, who, at, rev, t}` to every authenticated socket, the writer's
+- **Relay → phones:** the room sends `changed {what, who, at, rev, sid?, t}` to every authenticated socket, the writer's
   too (a Shortcut upload reaches its own phone), the guest's only of what it may see. Only the last mark is kept (the
   welcomes' `rec`).
 - **The nudge:** after the queue gets an ack, the phone sends `saved {}` over its socket; the room relays it like any
   intent. It stops once a `changed` has reached the phone this session.
 - **Client** (`store/live.ts`, the one socket): `onChange` → one `refresh({fresh: true})` 300 ms later (changes arriving
-  together make one), skipped when the cache already has it and for my own `event` (its row came back in the ack). The
+  together make one), skipped when the cache already has it and for this page's own `event` (`sid`: its row came back
+  in the ack; my other devices' are fetched). The
   CSP's `connect-src` allows the relay's `wss://` origin.
 - **Measured** (Tokyo, test relay): notify POST → `changed` on both phones median 53–70 ms.
 

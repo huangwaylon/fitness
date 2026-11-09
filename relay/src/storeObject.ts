@@ -8,7 +8,7 @@ import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { StoreCore, type Sql } from './store.ts';
 import type { StoreRoom } from './storeRoute.ts';
 import type { Env } from './index.ts';
-import { apiWithMeta, type ReqMeta } from './reqMeta.ts';
+import { apiWithMeta, countingSql, type ReqMeta } from './reqMeta.ts';
 import { keyOwner } from './auth.ts';
 import { relaySink } from './logRoute.ts';
 import type { RelayEvent } from './log.ts';
@@ -18,11 +18,15 @@ import { errName } from './log.ts';
 
 export class IslandStore extends DurableObject<Env> implements StoreRoom {
   private core: StoreCore;
+  /** The rows each request wrote and read (reqMeta.ts countingSql): the log's `req` `rw`, `rr`. */
+  private rows: () => { rw: number; rr: number };
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
+    const counted = countingSql(ctx.storage.sql as unknown as Sql);
+    this.rows = counted.take;
     this.core = new StoreCore({
-      sql: ctx.storage.sql as unknown as Sql,
+      sql: counted.sql,
       tx: (fn) => ctx.storage.transactionSync(fn),
       keys: { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C },
       now: () => Date.now(),
@@ -70,7 +74,8 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   /** The same, with the request's meta for the log's `req` (reqMeta.ts; the Worker times it and sends it). */
   apiMeta(text: string): { body: string; meta: ReqMeta } {
     const keys = { KEY_A: this.env.KEY_A, KEY_B: this.env.KEY_B, KEY_C: this.env.KEY_C };
-    return apiWithMeta(this.core, text, (k) => (typeof k === 'string' && /^[0-9a-fA-F]{32,128}$/.test(k) ? keyOwner(k, keys) : null));
+    this.rows();
+    return apiWithMeta(this.core, text, (k) => (typeof k === 'string' && /^[0-9a-fA-F]{32,128}$/.test(k) ? keyOwner(k, keys) : null), this.rows);
   }
 
   /** A signed `/admin` body (storeRoute.ts): `{op, ...}` → its status and JSON reply. */

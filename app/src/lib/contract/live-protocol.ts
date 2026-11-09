@@ -235,8 +235,10 @@ export const HB_PONG = '{"v":3,"kind":"hb","t":0}';
  *  through the day) asks for an `ack`, and makes a resend of it (after a reconnect) the same intent, not a second. */
 export type ClientMsg =
   /** `beat` (2026-11-05): this phone sends something, the heartbeat at least, whenever it has sent nothing for 20 s, so
-   *  the room may take a minute's silence for a ghost (relay/src/room.ts sweepSilent). */
-  | { v: LiveV; kind: 'hello'; key: string; since?: number; build?: string; beat?: true }
+   *  the room may take a minute's silence for a ghost (relay/src/room.ts sweepSilent).
+   *  `dev` (2026-11-09): this device's id (sync/live.ts deviceId), so a hello replaces only this device's earlier socket,
+   *  not the person's other devices' (one without it replaces only the others without it: the phones before it). */
+  | { v: LiveV; kind: 'hello'; key: string; since?: number; build?: string; beat?: true; dev?: string }
   | { v: LiveV; kind: 'ping'; c: number }
   /** I heard the partner's high-five `at` (the one the room held for me goes). */
   | { v: LiveV; kind: 'got'; at: number }
@@ -250,8 +252,10 @@ export type Relayed = Intent & { v: LiveV; who: Who; t: number };
 export type ServerMsg =
   /** `peer`: a member's partner is here (the guest's: either member). `here`: everyone else who is. `gone`
    *  (2026-11): when the room last saw each person's last socket close, on its clock, for those not here (mine:
-   *  my previous one's): one gone quiet inside a room is out of it a while after (store/where.svelte.ts). */
-  | { v: LiveV; kind: 'welcome'; me: Who; peer: boolean; t: number; rec?: RecordMark; here?: Who[]; gone?: Gone; hb?: true }
+   *  my previous one's): one gone quiet inside a room is out of it a while after (store/where.svelte.ts). `mine`
+   *  (2026-11-09, to a hello with `dev`): another device of mine is here (it hears my layout ops; a `presence` of my
+   *  own `who` says when that changes). */
+  | { v: LiveV; kind: 'welcome'; me: Who; peer: boolean; t: number; rec?: RecordMark; here?: Who[]; gone?: Gone; hb?: true; mine?: true }
   | { v: LiveV; kind: 'pong'; c: number; t: number }
   /** The heartbeat's answer (HB_PONG: `t` 0, the runtime's fixed reply, never a clock). */
   | { v: LiveV; kind: 'hb'; t: number }
@@ -326,13 +330,17 @@ export interface Notice {
   who: Who;
   at: string;
   rev: string;
+  /** (2026-11-09) The writing page's session id (the /api body's `sid`): that page skips its own change, the writer's
+   *  other devices fetch it. */
+  sid?: string;
 }
 
 /** Close codes (4000–4999 are the application's). */
 export const CLOSE = {
   /** No or a wrong key, or a message before hello. */
   unauthorized: 4001,
-  /** The same person connected again (another tab or phone): this one stops until it is shown again. */
+  /** The same device connected again (another tab; a phone from before `dev`: the same person): this one stops until it
+   *  is shown again. */
   replaced: 4002,
   /** No hello in time. */
   timeout: 4003,
@@ -349,6 +357,8 @@ const KEY = /^[0-9a-f]{32,128}$/;
 const BUILD = /^[0-9A-Za-z.-]{1,24}$/;
 const AT = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/;
 const REV = /^[0-9a-z]{1,24}$/;
+/** A device's or a session's id (sync/log.ts logId's shape). */
+const SID = /^[0-9a-z]{6,15}$/;
 /** A decoration's id and its item (contract/decor.ts: the item list is the app's; any token here). */
 const DECOR_ID = /^d[0-9a-z]{6,24}$/;
 /** The tent's room: its tiles (a `decor` op's x and z with `sc: 't'`) and its extent in model units (a drag, a walk). */
@@ -647,7 +657,8 @@ export function parseClient(raw: unknown): ClientMsg | null {
     if (typeof o.key !== 'string' || !KEY.test(o.key) || !opt(o, 'since', isTime)) return null;
     // (a build that isn't one is left out, never the hello refused)
     const build = typeof o.build === 'string' && BUILD.test(o.build) ? o.build : undefined;
-    return { v, kind: 'hello', key: o.key, ...(o.since !== undefined ? { since: o.since as number } : {}), ...(build ? { build } : {}), ...(o.beat === true ? { beat: true as const } : {}) };
+    const dev = typeof o.dev === 'string' && SID.test(o.dev) ? o.dev : undefined;
+    return { v, kind: 'hello', key: o.key, ...(o.since !== undefined ? { since: o.since as number } : {}), ...(build ? { build } : {}), ...(o.beat === true ? { beat: true as const } : {}), ...(dev ? { dev } : {}) };
   }
   if (o.kind === 'ping') return isTime(o.c) ? { v, kind: 'ping', c: o.c } : null;
   if (o.kind === 'got') return isTime(o.at) ? { v, kind: 'got', at: o.at } : null;
@@ -672,7 +683,7 @@ export function otherVersion(raw: unknown): number | null {
 /** A notice's fields from `o` (known fields only), or null. */
 function noticeOf(o: Obj): Notice | null {
   if (!oneOf(NOTICE_WHAT)(o.what) || !isWho(o.who) || typeof o.at !== 'string' || !AT.test(o.at) || typeof o.rev !== 'string' || !REV.test(o.rev)) return null;
-  return { what: o.what, who: o.who, at: o.at, rev: o.rev };
+  return { what: o.what, who: o.who, at: o.at, rev: o.rev, ...(typeof o.sid === 'string' && SID.test(o.sid) ? { sid: o.sid } : {}) };
 }
 
 /** The body of a /notify POST as the relay accepts it (`{what, who, at, rev}`, ≤ MAX_BYTES), or null. @public (relay/, sync/live.ts) */
@@ -713,7 +724,7 @@ export function parseServer(raw: unknown): ServerMsg | null {
       const rec = isObj(o.rec) ? noticeOf({ ...o.rec, what: 'event', who: o.me }) : null;
       const here = Array.isArray(o.here) ? o.here.filter(isWho).filter((w, i, l) => w !== o.me && l.indexOf(w) === i) : null;
       const gone = isObj(o.gone) ? goneOf(o.gone) : null;
-      return { v: LIVE_V, kind: 'welcome', me: o.me, peer: o.peer, t, ...(rec ? { rec: { at: rec.at, rev: rec.rev } } : {}), ...(here ? { here } : {}), ...(gone ? { gone } : {}), ...(o.hb === true ? { hb: true as const } : {}) };
+      return { v: LIVE_V, kind: 'welcome', me: o.me, peer: o.peer, t, ...(rec ? { rec: { at: rec.at, rev: rec.rev } } : {}), ...(here ? { here } : {}), ...(gone ? { gone } : {}), ...(o.hb === true ? { hb: true as const } : {}), ...(o.mine === true ? { mine: true as const } : {}) };
     }
     case 'hb':
       return { v: LIVE_V, kind: 'hb', t };

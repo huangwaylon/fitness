@@ -11,7 +11,7 @@
 // I/O, so this is the round trip to the object, its queue and its work) and handed to `onReq` with the record's meta
 // (reqMeta.ts): the relay's `req` event in the log (docs/ops/observability.md).
 import { keyOwner, originAllowed, type Keys } from './auth.ts';
-import { NOTIFY_WINDOW_MS, SIG_HEADER, TIME_HEADER } from './notify.ts';
+import { NOTIFY_WINDOW_MS, SIG_HEADER, TIME_HEADER, verifyNotify } from './notify.ts';
 import { MAX_BODY_CHARS } from './store.ts';
 import { errName } from './log.ts';
 import type { ReqMeta } from './reqMeta.ts';
@@ -115,16 +115,16 @@ export async function apiRoute(req: Request, allowed: string, store: () => Store
   }
 }
 
-export async function adminRoute(req: Request, store: () => StoreRoom, now: () => number = Date.now): Promise<Response> {
+export async function adminRoute(req: Request, store: () => StoreRoom, keys: Keys, now: () => number = Date.now): Promise<Response> {
   if (req.method !== 'POST') return new Response('method not allowed', { status: 405, headers: { Allow: 'POST' } });
-  // the signature's shape and time, here (the record checks the signature itself): a stranger never reaches it
+  const unauthorized = () => new Response('unauthorized', { status: 401, headers: { 'Cache-Control': 'no-store' } });
   const t = req.headers.get(TIME_HEADER), sig = req.headers.get(SIG_HEADER);
-  if (!t || !sig || !/^\d{13}$/.test(t) || !/^[0-9a-f]{64}$/.test(sig) || Math.abs(now() - Number(t)) > NOTIFY_WINDOW_MS) {
-    return new Response('unauthorized', { status: 401, headers: { 'Cache-Control': 'no-store' } });
-  }
+  if (!t || !sig || !/^\d{13}$/.test(t) || !/^[0-9a-f]{64}$/.test(sig) || Math.abs(now() - Number(t)) > NOTIFY_WINDOW_MS) return unauthorized();
   if (Number(req.headers.get('Content-Length') ?? 0) > ADMIN_MAX_CHARS * 4) return new Response('too large', { status: 413 });
   const text = await req.text();
   if (text.length > ADMIN_MAX_CHARS) return new Response('too large', { status: 413 });
+  // the signature itself, here too (the record checks it again): a forged one never spends a Durable Object request
+  if (!(await verifyNotify(keys, t, sig, text, now()))) return unauthorized();
   const r = await store().adminSigned(text, t, sig);
   return new Response(r.body, { status: r.status, headers: { 'Content-Type': r.status === 200 ? 'application/json' : 'text/plain', 'Cache-Control': 'no-store' } });
 }

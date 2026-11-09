@@ -26,6 +26,35 @@ export interface ReqMeta {
   exc?: string;
   /** A snapshot's page size (0: unpaged, an app from before paging). */
   pg?: number;
+  /** The rows the record wrote and read for it (its SQLite cursors' counts: the Free plan's rows a day). */
+  rw?: number;
+  rr?: number;
+}
+
+type Bind = string | number | null;
+interface Cursor { toArray(): unknown[]; rowsWritten?: number; rowsRead?: number }
+
+/** `sql` with the rows its statements wrote and read counted (Durable Objects' cursors say so: `rowsWritten`, final
+ *  once consumed; node:sqlite's don't, and count nothing). `take()`: the counts since the last take. */
+export function countingSql<S extends { exec(q: string, ...b: Bind[]): Cursor }>(sql: S): { sql: S; take(): { rw: number; rr: number } } {
+  let open: Cursor[] = [];
+  const counted = { exec: (q: string, ...b: Bind[]) => {
+    const c = sql.exec(q, ...b);
+    open.push(c);
+    return c;
+  } } as unknown as S;
+  return {
+    sql: counted,
+    take() {
+      let rw = 0, rr = 0;
+      for (const c of open) {
+        rw += Number(c.rowsWritten) || 0;
+        rr += Number(c.rowsRead) || 0;
+      }
+      open = [];
+      return { rw, rr };
+    }
+  };
 }
 
 const utf8 = new TextEncoder();
@@ -45,7 +74,7 @@ function ruleOf(type: unknown, r: { error?: unknown; detail?: unknown }): string
 }
 
 /** The record's reply to `text` and its `req` meta (`role`: who the key is, from the store's own check). */
-export function apiWithMeta(core: StoreCore, text: string, roleOf: (key: unknown) => Who | null): { body: string; meta: ReqMeta } {
+export function apiWithMeta(core: StoreCore, text: string, roleOf: (key: unknown) => Who | null, rows?: () => { rw: number; rr: number }): { body: string; meta: ReqMeta } {
   const inB = utf8.encode(text).length;
   let parsed: unknown = undefined;
   try {
@@ -86,5 +115,8 @@ export function apiWithMeta(core: StoreCore, text: string, roleOf: (key: unknown
     if (typeof r.skipped === 'number') meta.sk = r.skipped;
     if (Array.isArray(r.warnings)) meta.w = r.warnings.length;
   }
+  const n = rows?.();
+  if (n?.rw) meta.rw = n.rw;
+  if (n?.rr) meta.rr = n.rr;
   return { body, meta };
 }
