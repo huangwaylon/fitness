@@ -734,9 +734,13 @@ the goal trees and every oak, cedar and palm (`sceneryTrees()`; bamboo doesn't).
 - **What falls (NH's):** a hardwood or a cedar: 1 in 8 a wasp nest, else 1 in 7 a dangling bug, else 1 in 5 a branch
   (picked up into the pocket). A palm: its two coconuts the first shake of the day, after that only a nest (1 in 8). At
   most one nest per tree an hour. No fruit from a goal tree.
-- **Wood** (`treeShake.ts woodFall`): any tree's shake knocks out a piece of wood 1 in 2 times (木材, やわらかい木材 or
-  かたい木材), three a tree a day at most, none while its present lies under it. Seeded, so every phone agrees; a `put`
-  (`wd:<tree>:<k>`, first wins). `?shake=wood` forces one.
+- **Wood** (`treeShake.ts woodFall`): any tree's shake knocks out a piece of wood 1 in 3 times (木材, やわらかい木材 or
+  かたい木材), three a tree a day at most, never with a branch, coconuts or a present. Seeded, so every phone agrees; a
+  `put` (`wd:<tree>:<k>`, first wins). `?shake=wood` forces one.
+- **No piles:** while anything a tree dropped lies under it (a branch, coconuts, wood, its present, a goal tree's fruit),
+  a shake only rustles it. A branch or a piece of wood lands on a free spot of a small ring round the foot (front and
+  inner side first, then behind; a goal tree's past its fruit row), a tap's width clear of what lies about and the
+  day's dig spots, picked by its id so both phones agree (`dropSpot`).
 - **A tree's present** (`island/treeGifts.ts`, `e2e/tree-gifts.spec.ts`): each day two oaks or cedars (`GIFT_TREES`)
   hold a piece of furniture the tent has a model of (`catalog.ts` treeItem), dropped wrapped by the first shake and
   opened where it lies like a balloon's present. From the date and the island's seed (`dayRand`). Furniture only, never

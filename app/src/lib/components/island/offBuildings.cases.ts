@@ -11,7 +11,7 @@ import { daySpots } from '#lib/layout/spots.ts';
 import { validate } from '#lib/layout/validate.ts';
 import { worldOf } from './layoutWorld.ts';
 import { setWorld } from './world.ts';
-import { dropAt, goalTree, sceneryTrees, woodAt, type ShakeTree } from './treeShake.ts';
+import { dropAt, dropSpots, goalTree, sceneryTrees, type ShakeTree } from './treeShake.ts';
 import { giftAt } from './treeGifts.ts';
 import { mushroomsOn } from './mushrooms.ts';
 import { bottleAt, fragmentsOn, shellsAt } from './beach.ts';
@@ -51,8 +51,8 @@ function everyDrop(l: Layout, g: LayoutNav): [string, number, number][] {
   const trees: ShakeTree[] = [...sceneryTrees(), goalTree('A'), goalTree('B')];
   for (const t of trees) {
     out.push([`present ${t.id}`, ...giftAt(t)]);
-    for (let k = 0; k < 3; k++) out.push([`wood ${t.id}:${k}`, ...woodAt(t, k)]);
-    for (const what of ['branch', 'nest', 'bagworm'] as const) {
+    dropSpots(t).forEach((p, k) => out.push([`wood or branch ${t.id}:${k}`, ...p]));
+    for (const what of ['nest', 'bagworm'] as const) {
       const p = dropAt(t, what);
       out.push([`${what} ${t.id}`, p.x, p.z]);
     }

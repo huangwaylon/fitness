@@ -1,13 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { mulberry32 } from '#lib/random.ts';
 import {
-  BUG_ODDS, NEST_GAP_MS, NEST_ODDS, dropAt, sceneryTrees, SHAKE_WINDOW_MS, SWARM_MS, WOOD_A_DAY, WOODS, bearsCoconuts, dropIds, fallen, legacyDropIds, goalTree, lastNestOf, netsSwarm,
-  shakeDrop, shakeTap, shakenBug, treeById, wireDrop, woodAt, woodFall, woodId, woodOut, woodTree
+  BUG_ODDS, NEST_GAP_MS, NEST_ODDS, apart, dropAt, dropSpot, dropSpots, sceneryTrees, SHAKE_WINDOW_MS, SWARM_MS, WOOD_A_DAY, WOOD_ODDS, WOODS, bearsCoconuts, dropIds, fallen,
+  legacyDropIds, liesUnder, goalTree, lastNestOf, netsSwarm, shakeDrop, shakeTap, shakenBug, treeById, wireDrop, woodFall, woodId, woodOut, woodTree, type Ground
 } from './treeShake.ts';
 import type { Put } from '#lib/sync/world-day.ts';
 import { BUGS, pickBug } from './critters.ts';
 import { CATCH_LINES } from './catchLines.ts';
 import { SCENERY, surfaceAt } from './world.ts';
+import { FRUIT_SPOTS, fruitLean } from './scene.ts';
+import { site } from './site.svelte.ts';
 import type { Shake } from '#lib/sync/world-day.ts';
 
 /** Taps at these times (ms), in order: which ones shake. */
@@ -118,6 +120,9 @@ describe('every tree shakes, each its own way (NH)', () => {
   });
 });
 
+/** The ground with only `ids` picked up (at 0), nothing else about. */
+const pickedOnly = (...ids: string[]): Ground => ({ pickedAt: (id) => (ids.includes(id) ? 0 : undefined) });
+
 describe("the day's shakes (shared by both phones)", () => {
   const shakes: Shake[] = [
     { tree: 'oak-k1', drop: 'branch', who: 'A', t: 1 },
@@ -142,7 +147,7 @@ describe("the day's shakes (shared by both phones)", () => {
   });
   it('a claim an older app made under the positional id still takes the drop', () => {
     expect(shakes.map((_, i) => legacyDropIds(shakes, i))).toEqual([['br:oak-k1:0'], [], ['ws:oak-k1:0'], ['br:oak-k1:1'], ['dg:cedar-k1:0'], ['br:goal-B:0']]);
-    expect(fallen(shakes, treeById, (id) => id === 'br:oak-k1:1').map((f) => f.id)).not.toContain('br:oak-k1:B4');
+    expect(fallen(shakes, treeById, pickedOnly('br:oak-k1:1')).map((f) => f.id)).not.toContain('br:oak-k1:B4');
   });
   it('the nest rule and the coconuts read the day', () => {
     expect(lastNestOf(shakes, 'oak-k1')).toBe(3);
@@ -151,7 +156,7 @@ describe("the day's shakes (shared by both phones)", () => {
     expect(bearsCoconuts(shakes, 'palm-3')).toBe(true);
   });
   it("what lies about (picked ones gone), beside its tree, a goal tree's on its person's side on both phones", () => {
-    const mine = fallen(shakes, treeById, (id) => id === 'br:oak-k1:A1');
+    const mine = fallen(shakes, treeById, pickedOnly('br:oak-k1:A1'));
     expect(mine.map((f) => f.id)).toEqual(['co:palm-1:0', 'co:palm-1:1', 'br:oak-k1:B4', 'br:goal-B:A6']);
     for (const f of mine) expect(['grass', 'sand', 'dirt']).toContain(surfaceAt(f.x, f.z));
     // B's tree stands on the right (the same island on both phones)
@@ -178,7 +183,7 @@ describe('the wood (NH’s axe, without one)', () => {
     const b = trees.map((t) => Object.values(shakeOut('2026-11-05', t.id, 6)).map((p) => p.what).join());
     expect(a).not.toEqual(b);
   });
-  it('gives at most WOOD_A_DAY a tree a day, about half the shakes until then, NH’s three kinds about alike', () => {
+  it('gives at most WOOD_A_DAY a tree a day, 1 in 3 shakes until then, NH’s three kinds about alike', () => {
     const kinds: Record<string, number> = {};
     let over = 0, first = 0, n = 0;
     for (let d = 1; d <= 60; d++) for (const t of trees) {
@@ -191,8 +196,9 @@ describe('the wood (NH’s axe, without one)', () => {
       n++;
     }
     expect(over).toBe(0);
-    expect(first / n).toBeGreaterThan(0.4);
-    expect(first / n).toBeLessThan(0.6);
+    expect(WOOD_ODDS).toBe(3);
+    expect(first / n).toBeGreaterThan(0.27);
+    expect(first / n).toBeLessThan(0.4);
     expect(Object.keys(kinds).sort()).toEqual([...WOODS].sort());
     for (const w of WOODS) expect(kinds[w] / (n * WOOD_A_DAY)).toBeGreaterThan(0.25);
     // the fourth and later: none, even forced
@@ -203,16 +209,90 @@ describe('the wood (NH’s axe, without one)', () => {
     // every id the relay takes (live-protocol's ID: at most 32), a put-down tree's longest (`d` + 24) too
     expect([...trees.map((t) => t.id), `d${'x'.repeat(24)}`].map((id) => woodId(id, WOOD_A_DAY - 1)).filter((id) => !/^[\w:.-]{1,32}$/.test(id))).toEqual([]);
   });
-  it('lands by its trunk on the ground (never the sea), a tap’s width clear of its others and of what else lies there', () => {
-    // apart on screen: the camera's tilt shortens z (cos 47°); a pick-up's button is ~30u wide
-    const apart = ([ax, az]: readonly number[], [bx, bz]: readonly number[]) => Math.hypot(ax - bx, (az - bz) * 0.68) >= 22;
-    const bad = trees.flatMap((t) => [0, 1, 2].flatMap((k) => {
-      const at = woodAt(t, k);
-      const others = [...[0, 1, 2].filter((j) => j !== k).map((j) => woodAt(t, j)),
-        ...(['branch', 'nest', 'bagworm'] as const).map((w) => dropAt(t, w)), dropAt(t, 'coconut', 0), dropAt(t, 'coconut', 1)].map((p) => ('x' in p ? [p.x, p.z] : p));
-      return ['grass', 'sand', 'dirt'].includes(surfaceAt(at[0], at[1])) && others.every((o) => apart(at, o)) ? [] : [`${t.id}:${k}`];
-    }));
+});
+
+describe('no piles under a tree (one drop lying at a time, each on its own spot)', () => {
+  const trees = [...sceneryTrees(), goalTree('A'), goalTree('B')];
+  const put = (id: string, at: readonly [number, number], t = 0): Put => ({ id, what: 'wood', at, who: 'A', t });
+  it('a tree drops nothing while its branch, coconuts, wood or present still lies there; another tree’s don’t count', () => {
+    const shakes: Shake[] = [{ tree: 'oak-k1', drop: 'branch', who: 'A', t: 1 }];
+    const lyingBranch = fallen(shakes, treeById, pickedOnly());
+    expect(liesUnder('oak-k1', lyingBranch, [])).toBe(true);
+    expect(liesUnder('oak-k1', fallen(shakes, treeById, pickedOnly('br:oak-k1:A1')), [])).toBe(false);
+    expect(liesUnder('cedar-k1', lyingBranch, [])).toBe(false);
+    expect(liesUnder('oak-k1', [], [put('wd:oak-k1:0', [0, 0])])).toBe(true);
+    expect(liesUnder('oak-k1', [], [put('tf:oak-k1', [0, 0])])).toBe(true);
+    expect(liesUnder('oak-k1', [], [put('wd:oak-k10:0', [0, 0]), put('tf:cedar-k1', [0, 0])])).toBe(false);
+    expect(liesUnder('palm-1', fallen([{ tree: 'palm-1', drop: 'coconut', who: 'B', t: 2 }], treeById, pickedOnly('co:palm-1:0')), [])).toBe(true);
+  });
+  it('a drop lands on the ring by its trunk, on the ground, its spots a tap’s width apart', () => {
+    const bad = trees.flatMap((t) => {
+      const spots = dropSpots(t);
+      const near = spots.every(([x, z]) => Math.hypot(x - t.x, z - t.z) <= (t.kind === 'goal' ? 64 : 56));
+      const land = spots.every(([x, z]) => ['grass', 'sand', 'dirt'].includes(surfaceAt(x, z)));
+      const spread = spots.every((a, i) => spots.every((b, j) => i === j || apart(a, b)));
+      // and clear of the nest's and the dangling bug's spot (the outer side) and a palm's coconuts
+      const others = [dropAt(t, 'nest'), dropAt(t, 'bagworm'), ...(t.kind === 'palm' ? [dropAt(t, 'coconut', 0), dropAt(t, 'coconut', 1)] : [])];
+      const clear = spots.every((s) => others.every((o) => apart(s, [o.x, o.z])));
+      return spots.length && near && land && spread && clear ? [] : [t.id];
+    });
     expect(bad).toEqual([]);
+  });
+  it('never on another thing lying there: the next free spot, whatever lies about', () => {
+    for (const t of trees) {
+      // a goal tree's keep off its fruit row (scene.ts FRUIT_SPOTS)
+      const fruit = t.kind === 'goal' ? FRUIT_SPOTS.map(([a, b]): [number, number] => [t.x + fruitLean(t.x, site.midX) + a, t.z + b]) : [];
+      const spots = dropSpots(t).filter((s) => fruit.every((f) => apart(s, f))), placed: [number, number][] = [];
+      expect(spots.length).toBeGreaterThanOrEqual(4);
+      for (let k = 0; k < spots.length; k++) {
+        const at = dropSpot(t, `wd:${t.id}:${k}`, placed);
+        expect([...placed, ...fruit].every((p) => apart(at, p))).toBe(true);
+        placed.push(at);
+      }
+    }
+  });
+  it('the spot is the drop id’s: both phones pick the same, different ids spread over the front spots', () => {
+    const t = treeById('oak-k1')!;
+    const ids = Array.from({ length: 40 }, (_, i) => `br:oak-k1:A${(1_762_000_000_000 + i * 977).toString(36)}`);
+    const a = ids.map((id) => dropSpot(t, id, [])), b = ids.map((id) => dropSpot({ ...t }, id, []));
+    expect(a).toEqual(b);
+    expect(new Set(a.map(String)).size).toBeGreaterThan(2);
+  });
+  it('the day’s branches lie at one spot on both phones, in whatever order the shakes arrived, clear of what lay about', () => {
+    const tA = treeById('oak-k1')!;
+    // a piece of wood of another tree lying on each of oak-k1's front spots but one; then a branch, a picked-up one, another
+    const spots = dropSpots(tA);
+    const puts = spots.slice(0, 3).map((p, i) => put(`wd:x${i}:0`, p, 0));
+    const shakes: Shake[] = [
+      { tree: 'oak-k1', drop: 'branch', who: 'A', t: 10 },
+      { tree: 'cedar-k1', drop: 'branch', who: 'B', t: 20 },
+      { tree: 'oak-k1', drop: 'branch', who: 'B', t: 30 }
+    ];
+    const g: Ground = { puts, pickedAt: (id) => (id === 'br:oak-k1:Aa' ? 25 : undefined) };
+    const here = fallen(shakes, treeById, g, true), there = fallen([shakes[2], shakes[0], shakes[1]], treeById, g, true);
+    expect(there.map((f) => [f.id, f.x, f.z])).toEqual(here.map((f) => [f.id, f.x, f.z]));
+    const first = here.find((f) => f.id === 'br:oak-k1:Aa')!;
+    expect(puts.every((p) => apart([first.x, first.z], p.at))).toBe(true);
+    // a later put (wood landing after) doesn't move it
+    const later = fallen(shakes, treeById, { ...g, puts: [...puts, put('wd:y:0', [first.x, first.z], 40)] }, true);
+    expect(later.find((f) => f.id === first.id)).toEqual(first);
+    // the picked-up ones gone unless asked for
+    expect(fallen(shakes, treeById, g).map((f) => f.id)).not.toContain('br:oak-k1:Aa');
+  });
+  it('fewer pieces: over seeded shakes about 1 in 3 knocks one out, never a fourth a day', () => {
+    let hits = 0, shakes = 0;
+    for (let d = 1; d <= 28; d++) for (const t of trees) {
+      const date = `2026-10-${String(d).padStart(2, '0')}`;
+      for (let n = 0; n < 6; n++) {
+        shakes++;
+        if (woodFall(date, t.id, n, 0)) hits++;
+      }
+      let out = 0;
+      for (let n = 0; n < 60; n++) if (woodFall(date, t.id, n, out)) out++;
+      expect(out).toBeLessThanOrEqual(WOOD_A_DAY);
+    }
+    expect(hits / shakes).toBeGreaterThan(0.29);
+    expect(hits / shakes).toBeLessThan(0.38);
   });
 });
 

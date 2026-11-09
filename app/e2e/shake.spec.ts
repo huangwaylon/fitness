@@ -111,6 +111,20 @@ test('a shaken branch lies beside the trunk until a tap picks it up', { tag: '@l
   await expect(page.locator('.detail')).toHaveCount(0);
 });
 
+test('no piles: while its branch lies under it, a tree’s shakes only rustle it (no wood, no bug, no nest, no second branch)', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
+  await open(page, '&shake=branch');
+  await shake(page, { onClock: true });
+  const twig = page.locator('button[data-branch]');
+  await expect(twig).toHaveCount(1);
+  for (let i = 0; i < 4; i++) {
+    await page.clock.runFor(1300); // (a new run of taps)
+    await shake(page, { onClock: true });
+  }
+  await page.clock.runFor(900); // (what would fall has fallen)
+  await expect(twig).toHaveCount(1);
+  await expect(page.locator('button[data-wood], [data-dangle], [data-nest], [data-swarm]')).toHaveCount(0);
+});
+
 test('a shake knocks out a piece of wood; picked up, it is in my pocket’s しげん at the shop and sells for かいがら', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=wood');
   await shake(page, { onClock: true });

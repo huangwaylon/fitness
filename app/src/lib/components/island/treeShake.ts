@@ -10,15 +10,20 @@
 // sting (a fright: a 「！」 and a sweat drop, and NH's swollen eye for a while). No ベル ever (scenery never pays). A shake is shared (docs/backend.md#
 // shared-world): its outcome goes to the partner, whose phone plays it at the same tree, and what it left (a branch,
 // coconuts) lies there on both phones, by ids from the day's shakes, until one of us picks it up. Every tree also gives
-// NH's wood, without an axe: a shake knocks a piece out now and then, three a tree a Tokyo day at most (`woodFall`,
+// NH's wood, without an axe: a shake knocks a piece out 1 in 3 times, three a tree a Tokyo day at most (`woodFall`,
 // seeded by the date and the tree's shakes, the same on both phones), put on the island for both (`wd:<tree>:<k>`).
-import type { Drop } from '#lib/contract/live-protocol.ts';
+// Nothing piles up: a tree drops nothing while anything it dropped still lies under it (`liesUnder`), and a drop lands
+// on a free spot of a small ring round the tree's foot (`dropSpot`, picked by its id: the same on both phones).
+import type { Drop, Pt } from '#lib/contract/live-protocol.ts';
 import { NEST_GAP_MS } from '#lib/contract/live-protocol.ts';
 import type { Put, Shake } from '#lib/sync/world-day.ts';
 import { BUGS, inHours } from './critters.ts';
 import { GOAL_TREES, SCENERY, TREE_H, offBuildingsAt, onBuildingAt, surfaceAt } from './world.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
 import { site } from './site.svelte.ts';
+import { FRUIT_SPOTS, fruitLean } from './scene.ts';
+import { seeded } from '#lib/random.ts';
+import { giftTree } from './treeGifts.ts';
 
 export { NEST_GAP_MS };
 
@@ -154,10 +159,10 @@ export function legacyDropIds(shakes: readonly Shake[], i: number): string[] {
   return [`${s.drop === 'branch' ? 'br' : s.drop === 'nest' ? 'ws' : 'dg'}:${s.tree}:${k}`];
 }
 
-/** Where things land beside a trunk (world units from its foot): just in front of the trunk's line (FRONT), a branch
- *  on the inner side, a nest and a dangling bug on the outer, a palm's coconuts round its foot. */
+/** Where a nest, a dangling bug and a palm's coconuts land beside a trunk (world units from its foot): just in front of
+ *  the trunk's line (FRONT), a nest and a dangling bug on the outer side, a palm's coconuts round its foot. */
 const FRONT = 2;
-const BRANCH_DX = 36, NEST_DX = 34, DANGLE_DX = 30;
+const NEST_DX = 34, DANGLE_DX = 30;
 const COCONUT_AT: readonly (readonly [number, number])[] = [[-12, -3], [10, -7]];
 
 export interface Fallen {
@@ -168,39 +173,99 @@ export interface Fallen {
   z: number;
 }
 
-/** Where a tree's drop lies (world): a branch inside, a nest or a dangling bug outside, a coconut (`n` 0 or 1); off a
- *  building beside the tree (world.ts offBuildingsAt), the same on every phone. */
-export function dropAt(t: ShakeTree, what: Exclude<Drop, 'none'>, n = 0): { x: number; z: number } {
-  const front = t.z - FRONT;
-  const [x, z] = what === 'branch' ? [t.x - t.out * BRANCH_DX, front]
-    : what === 'coconut' ? [t.x + t.out * COCONUT_AT[n % 2][0], t.z + COCONUT_AT[n % 2][1]]
-    : [t.x + t.out * (what === 'nest' ? NEST_DX : DANGLE_DX), front];
+/** Where a nest, a dangling bug or a coconut (`n` 0 or 1) of a tree lands (world); off a building beside the tree
+ *  (world.ts offBuildingsAt), the same on every phone. */
+export function dropAt(t: ShakeTree, what: 'nest' | 'bagworm' | 'spider' | 'coconut', n = 0): { x: number; z: number } {
+  const [x, z] = what === 'coconut' ? [t.x + t.out * COCONUT_AT[n % 2][0], t.z + COCONUT_AT[n % 2][1]]
+    : [t.x + t.out * (what === 'nest' ? NEST_DX : DANGLE_DX), t.z - FRONT];
   const [px, pz] = offBuildingsAt(x, z);
   return { x: px, z: pz };
 }
 
-/** What the day's shakes left lying (branches, coconuts) nobody has picked up yet, where on this phone. */
-export function fallen(shakes: readonly Shake[], tree: (id: string) => ShakeTree | null, taken: (id: string) => boolean): Fallen[] {
-  const out: Fallen[] = [];
-  shakes.forEach((s, i) => {
-    const what = s.drop;
-    if (what !== 'branch' && what !== 'coconut') return;
+/** NH's ring of spots round a tree's foot where a branch or a piece of wood lands (u from the foot, x toward its outer
+ *  side): the first four in front of the trunk and on its inner side, the last three behind it; never its outer side,
+ *  where a nest falls and a bug dangles. A tap's width apart on screen (CLEAR). */
+const RING: readonly (readonly [number, number])[] = [[0, -40], [34, -40], [-34, -36], [-42, 0], [0, 40], [34, 40], [-34, 40]];
+/** A goal tree's: its front row and inner spot further out, past the fruit row (scene.ts FRUIT_SPOTS) in front of it. */
+const GOAL_RING: readonly (readonly [number, number])[] = [[0, -52], [34, -52], [-34, -52], [-48, 0], [0, 40], [34, 40], [-34, 40]];
+const RING_FRONT = 4;
+/** Two things on the ground at least this far apart on screen (u; the camera's tilt shortens z: TILT_Z): a pick-up's
+ *  button each. */
+const CLEAR = 24;
+const TILT_Z = 0.68;
+/** Whether two spots on the ground are a tap's width apart on screen. */
+export const apart = (a: Pt, b: Pt): boolean => Math.hypot(a[0] - b[0], (a[1] - b[1]) * TILT_Z) >= CLEAR;
+const LAND = new Set(['sand', 'grass', 'dirt']);
+
+/** The ring's spots of a tree (world), in its order: those on land and off a building's ground (world.ts onBuildingAt:
+ *  a tree beside the museum keeps its drops off the museum's steps); none of those, the ring moved off the buildings. */
+export function dropSpots(t: ShakeTree): [number, number][] {
+  const ring = (t.kind === 'goal' ? GOAL_RING : RING).map(([a, b]): [number, number] => [Math.round(t.x + t.out * a), Math.round(t.z + b)]);
+  const land = ring.filter(([x, z]) => LAND.has(surfaceAt(x, z)) && !onBuildingAt(x, z));
+  return land.length ? land : ring.map(([x, z]) => offBuildingsAt(x, z));
+}
+
+/** Where a tree's drop (`key`: its shared id) lands (world): the first of the ring's spots clear of everything in
+ *  `busy` (what lies about, the day's dig spots, a goal tree's fruit row), starting at one picked by the key among the
+ *  front ones (seeded: every phone picks the same), then the ones behind; none clear, the key's own. */
+export function dropSpot(t: ShakeTree, key: string, busy: readonly Pt[]): [number, number] {
+  const spots = dropSpots(t);
+  const fruit = t.kind === 'goal' ? FRUIT_SPOTS.map(([a, b]): Pt => [t.x + fruitLean(t.x, site.midX) + a, t.z + b]) : [];
+  const front = Math.min(RING_FRONT, spots.length);
+  const k = Math.floor(seeded(key)() * front);
+  const order = [...spots.slice(k, front), ...spots.slice(0, k), ...spots.slice(front)];
+  return order.find((s) => [...busy, ...fruit].every((b) => apart(s, b))) ?? spots[k];
+}
+
+/** What else is on the ground, for where a drop lands: the day's puts (presents, wood) with when they were put, things
+ *  that never move (the day's dig spots and mushrooms), and when an id was picked up (its claim's time), if it was. */
+export interface Ground {
+  puts?: readonly Put[];
+  still?: readonly Pt[];
+  pickedAt: (id: string) => number | undefined;
+}
+
+/** What the day's shakes left lying (branches, coconuts) nobody has picked up yet (`all`: picked up too), where. A
+ *  branch lands at its dropSpot clear of what lay about when it fell (the day's puts and drops by then, not yet picked
+ *  up): the shared day's, in the shakes' own order (their time, then who), so it lies at one spot on both phones and
+ *  stays there as other things come and go. */
+export function fallen(shakes: readonly Shake[], tree: (id: string) => ShakeTree | null, g: Ground, all = false): Fallen[] {
+  const lay = (p: { id: string; t: number }, t: number) => p.t <= t && !((g.pickedAt(p.id) ?? Infinity) <= t);
+  const order = shakes.map((_, i) => i).sort((a, b) => shakes[a].t - shakes[b].t || shakes[a].who.localeCompare(shakes[b].who));
+  const out: (Fallen & { t: number; gone: boolean })[] = [];
+  for (const i of order) {
+    const s = shakes[i], what = s.drop;
+    if (what !== 'branch' && what !== 'coconut') continue;
     const t = tree(s.tree);
-    if (!t) return;
+    if (!t) continue;
     const old = legacyDropIds(shakes, i);
     dropIds(shakes, i).forEach((id, n) => {
-      if (!taken(id) && !(old[n] && taken(old[n]))) out.push({ id, tree: s.tree, what, ...dropAt(t, what, n) });
+      let at: Pt;
+      if (what === 'coconut') {
+        const c = dropAt(t, what, n);
+        at = [c.x, c.z];
+      } else {
+        const busy: Pt[] = [...(g.still ?? []), ...(g.puts ?? []).filter((p) => lay(p, s.t)).map((p) => p.at), ...out.filter((f) => lay(f, s.t)).map((f): Pt => [f.x, f.z])];
+        at = dropSpot(t, id, busy);
+      }
+      const gone = g.pickedAt(id) !== undefined || (!!old[n] && g.pickedAt(old[n]) !== undefined);
+      out.push({ id, tree: s.tree, what, x: at[0], z: at[1], t: s.t, gone });
     });
-  });
-  return out;
+  }
+  return out.filter((f) => all || !f.gone).map(({ id, tree: tr, what, x, z }) => ({ id, tree: tr, what, x, z }));
 }
+
+/** Whether something `tree` dropped still lies under it (a branch, coconuts, a piece of wood, its present: `lying` the
+ *  day's puts nobody has picked up yet): then a shake drops nothing (NH: no pile under a tree). */
+export const liesUnder = (tree: string, drops: readonly Fallen[], lying: readonly Put[]): boolean =>
+  drops.some((f) => f.tree === tree) || lying.some((p) => (woodTree(p.id) ?? giftTree(p.id)) === tree);
 
 // ---------- wood (NH's axe, without one) ----------
 
 /** A tree gives this many pieces of wood a Tokyo day (NH: three hits of an axe, then nothing till the next day). */
 export const WOOD_A_DAY = 3;
-/** A shake knocks a piece out 1 in WOOD_ODDS times, while the tree has some left today. */
-const WOOD_ODDS = 2;
+/** A shake knocks a piece out 1 in WOOD_ODDS times, while the tree has some left today (and nothing of it lies there). */
+export const WOOD_ODDS = 3;
 /** NH's three, each as likely (bamboo's none: it doesn't shake). */
 export const WOODS = ['wood', 'softwood', 'hardwood'] as const;
 export type Wood = (typeof WOODS)[number];
@@ -230,18 +295,3 @@ export function woodFall(date: string, tree: string, n: number, out: number, see
   if (!force && dayRand(date, `wood-shake:${tree}:${n}`, seed)() * WOOD_ODDS >= 1) return null;
   return { id: woodId(tree, out), what: woodOf(date, tree, out, seed) };
 }
-
-/** Where a tree's `k`-th piece lands (world): the k-th of WOOD_AT's spots on land (a beach palm's front may be the sea):
- *  a row out in front of the trunk, then one behind it; the three apart and a tap's width clear of what else lies there
- *  (the branch inside, the nest and the dangling bug outside, a palm's coconuts at its foot; never with a present: no
- *  wood on the shake that drops one, nor while it lies); never on a building's ground (world.ts onBuildingAt: a tree
- *  beside the museum keeps its wood off the museum's steps), else the k-th spot moved off it. */
-const WOOD_AT: readonly (readonly [number, number])[] = [[0, -40], [34, -36], [-34, -38], [0, 40], [34, 40], [-34, 40]];
-const LAND = new Set(['sand', 'grass', 'dirt']);
-export const woodAt = (t: ShakeTree, k: number): [number, number] => {
-  const spots = WOOD_AT.map(([a, b]): [number, number] => [Math.round(t.x + t.out * a), Math.round(t.z + b)]);
-  const land = spots.filter(([x, z]) => LAND.has(surfaceAt(x, z)) && !onBuildingAt(x, z));
-  if (land[k]) return land[k];
-  const [x, z] = spots[k % spots.length];
-  return offBuildingsAt(x, z);
-};

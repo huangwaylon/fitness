@@ -11,7 +11,7 @@ import { offBuildings, onBuilding, tapCovered } from '#lib/layout/clear.ts';
 import { tileAt } from '#lib/layout/grid.ts';
 import { worldOf } from './layoutWorld.ts';
 import { setWorld, offBuildingsAt } from './world.ts';
-import { dropAt, sceneryTrees, woodAt } from './treeShake.ts';
+import { dropSpots, sceneryTrees } from './treeShake.ts';
 import { giftAt } from './treeGifts.ts';
 import { digSpots } from './beach.ts';
 import { weedsAt } from './care.ts';
@@ -34,9 +34,7 @@ describe('nothing is dropped or spawned on a building’s ground (layout/clear.t
     expect(old.filter(([x, z]) => onBuilding(g, x, z, 0)).length).toBeGreaterThan(0);
     for (const t of sceneryTrees()) {
       expect(onBuilding(g, ...giftAt(t), 0)).toBe(false);
-      expect(onBuilding(g, ...woodAt(t, 0), 0)).toBe(false);
-      const b = dropAt(t, 'branch');
-      expect(onBuilding(g, b.x, b.z, 0)).toBe(false);
+      for (const p of dropSpots(t)) expect(onBuilding(g, ...p, 0)).toBe(false);
     }
   });
 });
