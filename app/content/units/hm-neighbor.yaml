@@ -90,9 +90,9 @@ items:
     tts: "Jus' a heads-up, they're shuttin' the water off tomorrow from ten ta two."
     ja: "前もってお知らせ。明日10時から2時まで断水します。 →「そうなんだ、助かります。ありがとう！」"
     note: "heads-up＝前もっての お知らせ"
-    choices: ["Oh, good to know. Thanks!", "Okay, I'll keep my head up.", "Sure, I'll turn it on."]
+    choices: ["Oh, good to know. Thanks!", "Okay, head up. Got it.", "Sure, I'll turn it on."]
     answer: 0
-    cja: ["そうなんだ、助かります。ありがとう！", "わかった、顔を上げておくね。", "いいよ、水を出しておく。"]
+    cja: ["そうなんだ、助かります。ありがとう！", "わかった、顔を上げとく。", "いいよ、水を出しておく。"]
     why: "a heads-up は「前もってのお知らせ」。頭を上げる話ではない。shutting the water off は断水なので、教えてもらったお礼を言うのが自然。"
     ctx: "マンションの廊下で、隣の人に会いました"
     scene: door
@@ -107,7 +107,7 @@ items:
     tts: "Jus' so ya know, the garbage truck comes early on Tuesdays now. Like, seven."
     ja: "ゴミ収集の新しい時間を教えてくれている。"
     note: "Just so you know＝念のため。親切な お知らせ"
-    choices: ["She's telling him the new garbage time.", "She wants him to take out her garbage.", "She's complaining about his garbage."]
+    choices: ["She's sharing the new garbage time.", "She wants him to take out her garbage.", "She's complaining about his garbage."]
     answer: 0
     cja: ["ゴミ収集の新しい時間を教えている。", "自分のゴミを出してほしい。", "彼のゴミに文句を言っている。"]
     why: "Just so you know は「念のため言っておくね」という前置き。火曜の収集が7時に早まったという親切なお知らせで、頼みごとや苦情ではない。"
@@ -144,9 +144,9 @@ items:
     tts: "We'll be away this weekend. Wouldja mind keepin' an eye on the place?"
     ja: "留守の間、家を気にかけていてほしい。"
     note: "keep an eye on＝見守る。目の 話 ではない"
-    choices: ["She wants him to watch her home while she's away.", "She wants him to look at her eye.", "She's inviting him to her place."]
+    choices: ["She wants him to watch her place.", "She wants him to look at her eye.", "She's inviting him over to her place."]
     answer: 0
-    cja: ["留守の間、家を見ていてほしい。", "目を見てほしい。", "家に招待している。"]
+    cja: ["留守中、家を見ていてほしい。", "目を見てほしい。", "家に招待している。"]
     why: "keep an eye on the place は「家を気にかけておく」。週末は留守なので、ときどき様子を見てほしいというお願い。目の話でも招待でもない。"
     ctx: "週末に出かける近所の人が、玄関に来ました"
     ask: "つまり、どういう こと？"
@@ -162,9 +162,9 @@ items:
     en: "Hey! How's it going? Nice weather, huh? Hi! Yeah, finally. What's up? So, this is no big deal, but your dog was barking kind of a lot last night. Just so you know. Oh no, I'm so sorry! I mean, I had no idea. I'll keep an eye on him."
     ja: "犬のことで、やんわり苦情を言っている。"
     note: "no big deal, but… の あとが 本題"
-    choices: ["He's politely complaining about her dog.", "He wants to borrow her dog.", "He's just talking about the weather."]
+    choices: ["He's hinting her dog was too loud.", "He wants to borrow her dog.", "He's just talking about the weather."]
     answer: 0
-    cja: ["犬のことを、やんわり苦情を言っている。", "犬を借りたい。", "天気の話をしているだけ。"]
+    cja: ["犬がうるさかったと、遠回しに伝えている。", "犬を借りたい。", "天気の話をしているだけ。"]
     why: "天気の話は前置き。no big deal, but のあとが本題で、昨夜の犬の鳴き声への遠回しな苦情。Just so you know で念を押している。"
     ctx: "朝、玄関先で隣の人に呼び止められました"
     focus: "your dog was barking kind of a lot last night"
@@ -187,9 +187,9 @@ items:
     tts: "Wouldja mind if I parked in fronna yer place for an hour?"
     ja: "1時間、お宅の前に車を停めてもかまいませんか？ →「ぜんぜん。どうぞ。」"
     note: "mind＝いやだと 思う。OK なら No"
-    choices: ["No, not at all. Go ahead.", "Yes, sure. Go ahead.", "I don't mind your place."]
+    choices: ["Not at all. Go ahead.", "Yes, sure. Go ahead.", "Oh, I don't mind your place."]
     answer: 0
-    cja: ["ぜんぜん。どうぞ。", "はい、いやです。どうぞ。", "あなたの家は気にしません。"]
+    cja: ["ぜんぜん。どうぞ。", "はい、いやです。どうぞ。", "あ、あなたの家は気にしません。"]
     why: "Would you mind if〜? は「〜したらいやですか？」。OK なら No, not at all。Yes と言うと「いやです」になり、Go ahead と食い違う。"
     ctx: "家の前で、隣の人が車の窓から聞いてきました"
     scene: door
@@ -205,9 +205,9 @@ items:
     tts: "Any chance ya could feed my cat Saturday? I'll leave the key under the mat."
     ja: "土曜に猫にえさをあげてほしい。"
     note: "Any chance〜? は 遠回しな お願い"
-    choices: ["He's asking her to feed his cat on Saturday.", "He thinks his cat might come over.", "He's giving her his cat."]
+    choices: ["He wants her to feed his cat.", "He thinks his cat might come over.", "He's giving her his cat for good."]
     answer: 0
-    cja: ["土曜に猫にえさをあげてほしい。", "猫が来るかもしれないと思っている。", "猫をゆずろうとしている。"]
+    cja: ["猫にえさをあげてほしい。", "猫が来るかもしれないと思っている。", "猫をずっとゆずろうとしている。"]
     why: "Any chance you could〜? は「〜してもらえたりする？」という遠回しなお願い。chance を「可能性の話」と取るのは罠。鍵はマットの下に置いていく。"
     ctx: "隣の人が、出かける前に玄関に来ました"
     ask: "つまり、どういう こと？"
@@ -240,9 +240,9 @@ items:
     en: "Hey, I'm gonna stop by later with your spare key, if that's okay. Sure! What time? Around six? Anyway, I'll let you get back to it."
     ja: "いいですね。じゃあ6時に！"
     note: "Anyway, I'll let you…＝話を 終える 合図"
-    choices: ["Sounds good. See you at six!", "No, I'll stop at six.", "Get back to what?"]
+    choices: ["Sounds good. See you at six!", "No, I'll stop at six, then.", "Wait, get back to what?"]
     answer: 0
-    cja: ["いいですね。じゃあ6時に！", "いや、6時にやめます。", "何に戻るの？"]
+    cja: ["いいですね。じゃあ6時に！", "いや、じゃあ6時にやめます。", "待って、何に戻るの？"]
     why: "stop by は「立ち寄る」。Anyway, I'll let you get back to it は「じゃまをしないね」という話の締め。6時の約束を確かめて終えるのが自然。"
     ctx: "隣の人が、合鍵を返しに来てくれるそうです"
     focus: "I'm gonna stop by later with your spare key"
@@ -260,11 +260,11 @@ items:
     voice: us
     cast: us-f6
     en: "Oh, I'm so sorry, I took your newspaper by mistake! Here you go."
-    ja: "ごめんなさい、間違えてお宅の新聞を持っていっちゃった！ はい、どうぞ。 →「大丈夫ですよ。気にしないで。」"
+    ja: "ごめんなさい、間違えてお宅の新聞を持っていっちゃった！ はい、どうぞ。 →「大丈夫。気にしないで！」"
     note: "No big deal＝大した ことじゃない"
-    choices: ["No big deal. Don't worry about it.", "It's not a big paper.", "Yes, it's a big deal."]
+    choices: ["No big deal. Don't worry!", "It's not a big paper, though.", "Yes, it's a pretty big deal."]
     answer: 0
-    cja: ["大丈夫ですよ。気にしないで。", "大きな新聞じゃないですよ。", "ええ、大問題です。"]
+    cja: ["大丈夫。気にしないで！", "大きな新聞じゃないけどね。", "ええ、けっこうな大問題です。"]
     why: "No big deal は「大したことじゃない」と相手を気づかう決まり文句。big を「大きさ」と取るのは罠。It's a big deal と言うと責めることになる。"
     ctx: "近所の人が、新聞を持って謝りに来ました"
     scene: door
@@ -304,7 +304,7 @@ items:
     tts: "Wouldja mind waterin' my plants while I'm gone? It's jus' three days."
     ja: "留守の間、植木に水をあげてもらえませんか？ 3日だけなんです。 →「ぜんぜん。喜んで！」"
     note: "Would you mind〜? に OK なら Not at all"
-    choices: ["Not at all. I'd be happy to!", "Yes, I would. No problem!", "I don't have any plants."]
+    choices: ["Not at all. Happy to!", "Yes, I would. No problem!", "I don't have any plants."]
     answer: 0
     cja: ["ぜんぜん。喜んで！", "はい、いやです。大丈夫！", "うちには植木がないんです。"]
     why: "Would you mind〜? を引き受けるなら Not at all（ぜんぜん）。Yes, I would は「いやです」なので No problem と矛盾する。"
@@ -321,9 +321,9 @@ items:
     tts: "I hay' ta ask, but could I borrow yer ladder? Mine's broken."
     ja: "はしごを貸してほしいと、ていねいに頼んでいる。"
     note: "I hate to ask＝頼みにくいけど。嫌い ではない"
-    choices: ["He's politely asking to borrow a ladder.", "He hates asking for ladders.", "He wants to fix her ladder."]
+    choices: ["He'd like to borrow her ladder.", "He hates having to borrow things.", "He wants to fix her ladder."]
     answer: 0
-    cja: ["はしごを貸してほしいと、ていねいに頼んでいる。", "はしごを頼むのが大嫌い。", "彼女のはしごを直したい。"]
+    cja: ["はしごを貸してほしい。", "物を借りるのが大嫌い。", "彼女のはしごを直したい。"]
     why: "I hate to ask, but は「頼みにくいんだけど」というお願いの前置き。本当に嫌いなわけではない。壊れているのは彼のはしご。"
     ctx: "隣の人が、少し申し訳なさそうに来ました"
     ask: "つまり、どういう こと？"
@@ -374,9 +374,9 @@ items:
     en: "Thanks again for watching the cat. Here, I brought you some cookies. Aw, you didn't have to do that! It's no big deal. Seriously, it was a huge help. Anyway, I'll let you go."
     ja: "こちらこそ、ありがとう。いつでもどうぞ！"
     note: "no big deal＝大した ものじゃない。お礼への 謙遜"
-    choices: ["Well, thank you. Anytime!", "Yes, it was a big deal.", "Go? Where am I going?"]
+    choices: ["Well, thank you. Anytime!", "Well, yes, it was a big deal.", "Go? Where am I going?"]
     answer: 0
-    cja: ["こちらこそ、ありがとう。いつでもどうぞ！", "ええ、大変でした。", "行く？ どこへ？"]
+    cja: ["こちらこそ、ありがとう。いつでもどうぞ！", "まあ、確かに大変でした。", "行く？ どこへ？"]
     why: "No big deal はお礼の品への謙遜。Anyway, I'll let you go は「そろそろ失礼するね」という締め。お礼と「いつでも」で返すのが自然。"
     ctx: "猫の世話をしたお礼に、隣の人が来ました"
     focus: "Anyway, I'll let you go."
@@ -500,9 +500,9 @@ items:
     en: "Hey! Sorry, quick thing, I know you're busy. So, my sister's flying in Friday, and I hate to ask, but would you mind if she parked in your spot? Just for the weekend. Oh, sure, no big deal. Which car? A little red one. I'll text you the plate number. Anyway, I'll let you go!"
     ja: "週末、彼の妹が彼女の駐車スペースを使う。"
     note: "would you mind if she parked＝停めても いい？"
-    choices: ["His sister will use her parking spot this weekend.", "His sister will stay at her place.", "He's selling his red car."]
+    choices: ["His sister will park in her spot.", "His sister will stay at her place.", "He's selling his little red car."]
     answer: 0
-    cja: ["週末、彼の妹が彼女の駐車スペースを使う。", "彼の妹が彼女の家に泊まる。", "彼が赤い車を売る。"]
+    cja: ["彼の妹が彼女の駐車スペースに停める。", "彼の妹が彼女の家に泊まる。", "彼が小さな赤い車を売る。"]
     why: "I hate to ask のあとが本題：妹が週末だけ、彼女の駐車スペース（your spot）に停めていいか。no big deal で引き受けた。赤い車は妹の車。"
     ctx: "出かけようとしたら、隣の人に呼び止められました"
     focus: "would you mind if she parked in your spot?"
@@ -524,9 +524,9 @@ items:
     tts: "So, heads-up, they're doin' work on the pipes Tuesday, so, like, no water till noon-ish."
     ja: "火曜の昼ごろまで水が出ない。"
     note: "noon-ish＝昼ごろ。heads-up＝前もって"
-    choices: ["There'll be no water Tuesday morning.", "The pipes are fixed now.", "She needs help with her pipes."]
+    choices: ["No water Tuesday morning.", "The pipes are fixed now.", "She needs help fixing her pipes."]
     answer: 0
-    cja: ["火曜の午前中は水が出ない。", "水道管はもう直った。", "水道管のことで手伝ってほしい。"]
+    cja: ["火曜の午前中は水が出ない。", "水道管はもう直った。", "水道管の修理を手伝ってほしい。"]
     why: "heads-up は「前もってのお知らせ」。火曜に配管工事があり、noon-ish（昼ごろ）まで断水する。もう直ったわけでも、手伝いを頼んでいるわけでもない。"
     ctx: "エレベーターで、同じ階の人と一緒になりました"
     ask: "つまり、どういう こと？"
@@ -562,9 +562,9 @@ items:
     tts: "Hey, any chance ya could grab my mail tomorrow? I'm stuck at work till late."
     ja: "ねえ、明日うちの郵便物を取っておいてもらえたりする？ 遅くまで仕事なの。 →「いいよ、取っておくね。」"
     note: "any chance〜? は 遠回しな お願い"
-    choices: ["Sure, no problem. I'll grab it.", "There's a good chance of rain.", "Sure, I'll mail it to you."]
+    choices: ["Sure, I'll grab it for you.", "Hmm, there's a good chance of rain.", "Sure, I'll mail it to you."]
     answer: 0
-    cja: ["いいよ、取っておくね。", "雨の可能性が高いよ。", "いいよ、郵送するね。"]
+    cja: ["いいよ、取っておくね。", "うーん、雨の可能性が高いよ。", "いいよ、郵送するね。"]
     why: "Any chance you could〜? は「〜してもらえたりする？」というお願い。chance を天気の「確率」と取るのは罠。mail it は「郵送する」こと。"
     ctx: "マンションの前で、近所の人が急いでいます"
     scene: door
@@ -580,9 +580,9 @@ items:
     tts: "Oh, the scratch on yer door? No big deal, honestly. I jus' thought you'd wanna know."
     ja: "怒っていない。知らせておきたかっただけ。"
     note: "No big deal＝気にしないで。知らせた だけ"
-    choices: ["He isn't upset; he just wanted to tell her.", "He's angry about the scratch.", "He wants her to pay for the door."]
+    choices: ["It's no big deal to him.", "He's angry about the scratch.", "He wants her to pay for the door."]
     answer: 0
-    cja: ["怒っていない。知らせたかっただけ。", "傷のことで怒っている。", "ドアの修理代を払ってほしい。"]
+    cja: ["彼は気にしていない。", "傷のことで怒っている。", "ドアの修理代を払ってほしい。"]
     why: "No big deal は「大したことじゃない」。I just thought you'd want to know は「一応知らせたくて」。怒っても、お金を求めてもいない。"
     ctx: "玄関ドアの傷のことで、隣の人が来ました"
     ask: "つまり、どういう こと？"
@@ -596,11 +596,11 @@ items:
     voice: us
     cast: us-f4
     en: "So that's Saturday, around noon? Yep, I'll stop by with the ladder. Anyway, I won't keep you."
-    ja: "ばっちり。じゃあ土曜に！"
+    ja: "ばっちり。じゃあ土曜にね！"
     note: "I won't keep you＝ひきとめないよ。話の 締め"
-    choices: ["Great. See you Saturday!", "Keep me? Where?", "No, it's Saturday night."]
+    choices: ["Great. See you Saturday, then!", "Keep me? Where?", "No, I said Saturday night."]
     answer: 0
-    cja: ["ばっちり。じゃあ土曜に！", "ひきとめる？ どこに？", "ううん、土曜の夜だよ。"]
+    cja: ["ばっちり。じゃあ土曜にね！", "ひきとめる？ どこに？", "ううん、土曜の夜って言ったよ。"]
     why: "So that's〜? で土曜の昼ごろと確認し、相手は Yep。Anyway, I won't keep you は「ひきとめないよ」という締めなので、約束を言って別れる。"
     ctx: "はしごを借りる約束を、玄関先でしています"
     focus: "Anyway, I won't keep you."

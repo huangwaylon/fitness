@@ -43,9 +43,9 @@ items:
     en: "Hi! Can I help you find anything? Do you have this jacket a size up? The medium's a little tight. Let me check in the back. Hmm, we're all out of large in black, but I have it in navy. Navy's fine. Can I try it on? Of course! The fitting rooms are right over there."
     ja: "ネイビーのLを試着する。"
     note: "all out of large in black＝黒の L だけ 在庫切れ"
-    choices: ["She'll try on the navy one, a size up.", "She'll buy the medium in black.", "She'll wait for a large in black."]
+    choices: ["She'll try a large in navy.", "She'll buy the medium in black.", "She'll wait for a large in black."]
     answer: 0
-    cja: ["ワンサイズ上のネイビーを試着する。", "黒のミディアムを買う。", "黒のラージが入るのを待つ。"]
+    cja: ["ネイビーのラージを試着する。", "黒のミディアムを買う。", "黒のラージが入るのを待つ。"]
     why: "Mがきついので a size up（L）を頼んだ。黒のLは在庫切れだが、ネイビーならあるので Navy's fine で試着する。待つ話はしていない。"
     ctx: "服屋で、ジャケットのサイズを聞いています"
     focus: "Navy's fine. Can I try it on?"
@@ -106,9 +106,9 @@ items:
     tts: "Ooh, that looks great on ya. Honestly, the green's bedder than the red."
     ja: "緑のほうが似合っていると思っている。"
     note: "looks great on you＝似合う。better は「ベダー」"
-    choices: ["She thinks the green one suits him best.", "She thinks the red one is better.", "She thinks the shirt is too big."]
+    choices: ["She likes the green one better.", "She thinks the red one is better.", "She thinks the shirt is too big."]
     answer: 0
-    cja: ["緑がいちばん似合うと思っている。", "赤のほうがいいと思っている。", "シャツが大きすぎると思っている。"]
+    cja: ["緑のほうがいいと思っている。", "赤のほうがいいと思っている。", "シャツが大きすぎると思っている。"]
     why: "looks great on you は「よく似合う」。続けて Honestly（正直）、緑のほうが赤より better と本音を言っている。サイズの話はしていない。"
     ctx: "友だちと服を選んでいて、緑のシャツを着てみました"
     ask: "つまり、どういう こと？"
@@ -161,9 +161,9 @@ items:
     en: "Sorry, we're all out of the white ones in a nine. Oh, no. Do you have them in a nine and a half? Let me check in the back. Okay, good news. I've got one pair left. Did you say one pair? Great! Can I try them on?"
     ja: "白い靴の9.5を試す。"
     note: "in a nine＝サイズ9。「9足」ではない"
-    choices: ["She'll try the white shoes in a nine and a half.", "She'll buy a size nine in black.", "There are no white shoes left at all."]
+    choices: ["She'll try on the last pair, a nine and a half.", "She'll get the white ones in a nine, the last pair.", "The store has no white shoes left in any size."]
     answer: 0
-    cja: ["白い靴の9.5を試す。", "黒のサイズ9を買う。", "白い靴はもう1足もない。"]
+    cja: ["最後の1足、9.5を試す。", "白の9を買う。最後の1足。", "店には白い靴がどのサイズもない。"]
     why: "白の9は在庫切れだが、奥を見ると9.5が one pair left（あと1足）。Did you say one pair? と確かめてから試着する。白がゼロではない。"
     ctx: "靴屋で、白いスニーカーのサイズを探しています"
     focus: "I've got one pair left."
@@ -236,9 +236,9 @@ items:
     en: "Which one should I get? This or that? The blue one. It looks great on you. Do you mean the light blue or the dark one? The dark one. The light one's a little big."
     ja: "じゃあ、濃い青にする。"
     note: "Do you mean A or B? で どちらか 決めて もらう"
-    choices: ["Okay, the dark blue it is.", "So you mean the big one?", "Light blue, then."]
+    choices: ["Okay, the dark blue it is.", "So you mean the bigger one, then?", "Okay, the light blue, then."]
     answer: 0
-    cja: ["よし、濃い青にする。", "じゃあ大きいほうってこと？", "じゃあ水色で。"]
+    cja: ["よし、濃い青にする。", "じゃあ大きいほうってこと？", "よし、じゃあ水色で。"]
     why: "Do you mean A or B? と聞き返して、答えは The dark one。水色は a little big（少し大きい）と言われたほう。濃い青に決めるのが自然。"
     ctx: "友だちと、シャツの色で迷っています"
     focus: "The dark one."
@@ -282,9 +282,9 @@ items:
     en: "Okay, be honest. Does this dress look weird? It's not weird! It's just a little big on you. Ugh, I knew it. They're out of the small, though. Let's ask. Maybe they have one in the back."
     ja: "ドレスが大きいので、Sが奥にないか店員に聞く。"
     note: "be honest＝本音で 言って。a little big が 本音"
-    choices: ["The dress is too big, so they'll ask for a small.", "The dress looks weird, so she won't buy it.", "The dress fits, so she'll buy it now."]
+    choices: ["It's big, so they'll ask about a small.", "It looks weird, so she won't buy it.", "It fits fine, so she'll buy it right now."]
     answer: 0
-    cja: ["ドレスが大きいので、小さいサイズがないか聞く。", "ドレスが変なので、買わない。", "ぴったりなので、今買う。"]
+    cja: ["大きいので、小さいサイズがないか聞く。", "変なので、買わない。", "ぴったりなので、今すぐ買う。"]
     why: "友だちの本音は「変じゃないけど a little big（少し大きい）」。Sは売り場にないが、in the back（奥の倉庫）にあるかもしれないので店員に聞く。"
     ctx: "試着室の前で、友だちに意見を聞いています"
     focus: "Maybe they have one in the back."
@@ -303,11 +303,11 @@ items:
     voice: us
     cast: us-m4
     en: "Just so you know, these boots run small. What size are you usually?"
-    ja: "念のため、このブーツは小さめなんです。ふだんのサイズは？ →「いつもは8なので、8.5ですかね？」"
+    ja: "念のため、このブーツは小さめなんです。ふだんのサイズは？ →「8です。じゃあ8.5ですかね？」"
     note: "run small＝小さめ。ふだんより 大きく 選ぶ"
-    choices: ["Usually an eight, so maybe an eight and a half?", "I usually run in the morning.", "Small, please."]
+    choices: ["An eight. So maybe an eight and a half?", "I usually run in the morning, actually.", "Small, I guess? I'm usually a small."]
     answer: 0
-    cja: ["いつもは8なので、8.5ですかね？", "いつも朝に走っています。", "スモールでお願いします。"]
+    cja: ["8です。じゃあ8.5ですかね？", "実はいつも朝に走っています。", "スモールかな？ いつもスモールなので。"]
     why: "run small は「作りが小さめ」。ふだんのサイズを答えて、少し大きめを選ぶのが自然。run を「走る」、small を「Sサイズ」と取るのは罠。"
     ctx: "靴屋で、ブーツを試そうとしています"
     cond: { kind: cafe, level: light }
@@ -321,9 +321,9 @@ items:
     en: "Sorry, we're totally out of that one. It should be back in next week."
     ja: "今は在庫がないが、来週また入荷する。"
     note: "be back in＝また 入荷する"
-    choices: ["None are left now, but more are coming.", "It's out on display outside.", "They'll never have it again."]
+    choices: ["It's sold out now, but back next week.", "It's out on display outside.", "They'll never get that one again."]
     answer: 0
-    cja: ["今は1つもないが、また入ってくる。", "外に飾ってある。", "もう二度と入らない。"]
+    cja: ["今は売り切れだが、来週また入る。", "外に飾ってある。", "もう二度と入荷しない。"]
     why: "totally out of は「完全に在庫切れ」で、out は「外」ではない。should be back in next week は「来週また入るはず」という意味。"
     ctx: "ほしいバッグの在庫を店員に聞きました"
     ask: "つまり、どういう こと？"
@@ -355,12 +355,12 @@ items:
     cast: us-f3
     en: "Oh, that looks great on you! You should totally get it."
     tts: "Oh, that looks great on ya! You should totally ged it."
-    ja: "わあ、すごく似合ってる！ 絶対買うべきだよ。 →「ほんと？ ありがとう！ 買おうかな。」"
+    ja: "わあ、すごく似合ってる！ 絶対買うべきだよ。 →「ほんと？ ありがとう！ じゃあ買う。」"
     note: "looks great on you＝似合う。get it＝買う"
-    choices: ["Really? Thanks! I think I will.", "Yes, I got it.", "I'll look at it later."]
+    choices: ["Really? Thanks! Then I'll get it.", "Yeah, I got it, thanks.", "I'll look for it later, then."]
     answer: 0
-    cja: ["ほんと？ ありがとう！ 買おうかな。", "うん、わかった。", "あとで見てみる。"]
-    why: "looks great on you は「似合う」、You should get it は「買いなよ」。ほめ言葉にはお礼で返す。I got it（わかった）は get の別の意味。"
+    cja: ["ほんと？ ありがとう！ じゃあ買う。", "うん、わかった、どうも。", "じゃあ、あとで探してみる。"]
+    why: "looks great on you は「似合う」、should get it は「買いなよ」。お礼を言って買うと返す。I got it（わかった）は get の別の意味。"
     ctx: "友だちの前で、帽子をかぶってみました"
     cond: { kind: cafe, level: light }
     tags: { seed: 26, register: friend, pragmatic: formula, features: [flap] }
@@ -495,9 +495,9 @@ items:
     en: "Hey! So the gray sweater you wanted? We're all out of the medium, but there's a large, and it runs a little small, so it might actually work. Oh, nice. Can I try it on real quick? Totally. Room three's open."
     ja: "小さめの作りのLを試着する。"
     note: "runs a little small なので L でも 合うかも"
-    choices: ["She'll try the large, since it runs small.", "She'll try the medium in gray.", "She'll come back later for a medium."]
+    choices: ["She'll try the large; it runs small.", "She'll try a medium in gray.", "She'll come back for a medium."]
     answer: 0
-    cja: ["小さめの作りなので、ラージを試着する。", "グレーのミディアムを試着する。", "あとでミディアムを買いに来る。"]
+    cja: ["ラージを試着する。小さめの作りなので。", "グレーのミディアムを試着する。", "ミディアムを買いにまた来る。"]
     why: "Mは在庫切れだが、Lは runs a little small（小さめ）なので合うかもしれない。real quick は「さっと」。Mを待つ話ではない。"
     ctx: "週末の混んだ服屋で、店員が戻ってきました"
     focus: "it runs a little small, so it might actually work"
@@ -518,9 +518,9 @@ items:
     tts: "Okay, so, honestly? The color's amazing, it's just, like, a liddle long on ya. Maybe go a size down?"
     ja: "色はいいが、大きすぎるので小さいサイズがいい。"
     note: "a size down＝ワンサイズ 下。本音は「大きい」"
-    choices: ["She likes the color but thinks it's too big.", "She thinks it's perfect.", "She doesn't like the color."]
+    choices: ["She likes the color, but it's too big.", "She thinks it's perfect as is.", "She loves the fit but not the color."]
     answer: 0
-    cja: ["色はいいが、大きすぎると思っている。", "完璧だと思っている。", "色が好きではない。"]
+    cja: ["色はいいが、大きすぎると思っている。", "このままで完璧だと思っている。", "サイズはいいが、色が好きではない。"]
     why: "色は amazing とほめているが、本音は a little long（少し丈が長い）。go a size down（ワンサイズ下）をすすめているので、大きすぎるということ。"
     ctx: "混んだ店で、友だちがコートを見てくれています"
     ask: "つまり、どういう こと？"
@@ -554,10 +554,10 @@ items:
     tts: "I've gotta check in the back fer yer size. It'll be like two minutes. You okay ta wait, or wanna look around?"
     ja: "サイズを奥で見てきますね。2分くらいです。お待ちになりますか、それとも見て回りますか？ →「見て回ってます、ありがとう。」"
     note: "in the back＝倉庫。wanna look around＝見て 回る？"
-    choices: ["I'll look around, thanks.", "Two sizes? No, just one.", "Sure, I'll go back."]
+    choices: ["I'll look around, thanks.", "Two sizes? No, just one.", "Sure, I'll go back with you."]
     answer: 0
-    cja: ["見て回ってます、ありがとう。", "2サイズ？ いえ、ひとつで。", "いいですよ、戻ります。"]
-    why: "店員が倉庫（in the back）を見る間、待つか見て回るかを聞いている。two は2分のことでサイズの数ではない。go back だと自分が帰ってしまう。"
+    cja: ["見て回ってます、ありがとう。", "2サイズ？ いえ、ひとつで。", "いいですよ、一緒に奥へ行きます。"]
+    why: "店員が倉庫（in the back）を見る間、待つか見て回るかを聞いている。two は2分のことでサイズの数ではない。客が倉庫について行くのは変。"
     ctx: "混んだ店で、サイズの在庫を頼みました"
     cond: { kind: cafe, level: heavy }
     tags: { seed: 26, register: service, pragmatic: literal, features: [gotta, wanna] }
@@ -571,9 +571,9 @@ items:
     tts: "Oh, thanks, I'm jus' lookin' fer now. I'll letcha know if I need anything."
     ja: "今は手伝いはいらない。"
     note: "just looking＝見て いる だけ。ていねいな 断り"
-    choices: ["He doesn't want help right now.", "He's looking for the clerk.", "He needs help finding a size."]
+    choices: ["He doesn't need help yet.", "He's looking for the clerk.", "He needs help finding a size."]
     answer: 0
-    cja: ["今は手伝いはいらない。", "店員を探している。", "サイズ探しを手伝ってほしい。"]
+    cja: ["今はまだ手伝いはいらない。", "店員を探している。", "サイズ探しを手伝ってほしい。"]
     why: "I'm just looking は「見ているだけ」で、手伝いをていねいに断る決まり文句。I'll let you know は「必要なら声をかけます」。今は助けは要らない。"
     ctx: "店員に何度も話しかけられました"
     ask: "つまり、どういう こと？"
@@ -588,9 +588,9 @@ items:
     en: "They're out of the red in my size. Did you say there's another store by the station? Yeah, on the second floor of the mall. Want me to text you the address?"
     ja: "うん、お願い！ 送って。"
     note: "text you＝メッセージで 送る"
-    choices: ["Yes, please! Send it to me.", "No, I'm not at the station.", "The red one's fine, thanks."]
+    choices: ["Yes, please! Send it to me.", "Oh, no, I'm not at the station.", "The red one's fine, thanks."]
     answer: 0
-    cja: ["うん、お願い！ 送って。", "ううん、駅にはいないよ。", "赤いのでいいよ、ありがとう。"]
+    cja: ["うん、お願い！ 送って。", "あ、ううん、駅にはいないよ。", "赤いのでいいよ、ありがとう。"]
     why: "赤はサイズがないので、駅の近くの別の店へ。text you the address は「住所をメッセージで送る」申し出なので、お願いするのが自然。"
     ctx: "ほしい色のサイズがなくて、友だちと話しています"
     focus: "Want me to text you the address?"

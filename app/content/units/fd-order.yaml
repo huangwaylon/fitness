@@ -42,10 +42,10 @@ items:
     en: "Hi there! Are you guys ready to order, or do you need a minute? I think we're ready. Can I get the chicken sandwich? Sure. That comes with fries or a side salad. Salad, please, with the dressing on the side. You got it. Anything to drink? Just water, thanks! Perfect. I'll be right back with your water."
     ja: "チキンサンドとサラダ。ドレッシングは別添え。"
     note: "on the side＝別添え。サラダに かけずに 来る"
-    choices: ["A chicken sandwich and a salad, dressing on the side.", "A chicken sandwich and fries.", "A salad with the dressing already on it."]
+    choices: ["Sandwich and salad, dressing on the side.", "A chicken sandwich and fries, plus a side salad.", "A chicken sandwich and a salad with dressing on it."]
     answer: 0
-    cja: ["チキンサンドとサラダ。ドレッシングは別添え。", "チキンサンドとポテト。", "ドレッシングがかかったサラダ。"]
-    why: "fries or a side salad から Salad を選んだ。dressing on the side は別の器で来るので、かかっていない。ポテトは選ばなかった。"
+    cja: ["サンドとサラダ。ドレッシングは別添え。", "チキンサンドとポテト、それにサラダ。", "チキンサンドと、ドレッシングがかかったサラダ。"]
+    why: "fries or a side salad から Salad を選んだ。dressing on the side は別の器で来るので、かかっていない。ポテトは選ばず、サラダだけ。"
     ctx: "ダイナーで、店員が注文を取りに来ました"
     focus: "with the dressing on the side"
     ask: "何が 来る？"
@@ -148,11 +148,11 @@ items:
     cast: us-f4
     en: "Can I get you anything else? Dessert, maybe a coffee?"
     tts: "Can I getcha anything else? Dessert, maybe a coffee?"
-    ja: "ほかに何かお持ちしましょうか？ デザートか、コーヒーでも？ →「大丈夫です、ありがとう。お会計をお願いできますか？」"
+    ja: "ほかに何かお持ちしましょうか？ デザートか、コーヒーでも？ →「大丈夫です。お会計だけお願いします。」"
     note: "I'm good＝もう 結構です。元気 ではない"
-    choices: ["I'm good, thanks. Could we get the check?", "Good, thanks. And you?", "Yes, everything was good."]
+    choices: ["I'm good. Just the check, please.", "Good, thanks. How's your night going?", "Yes, everything was really good, thanks."]
     answer: 0
-    cja: ["大丈夫です、ありがとう。お会計をお願いできますか？", "元気です、ありがとう。あなたは？", "はい、全部おいしかったです。"]
+    cja: ["大丈夫です。お会計だけお願いします。", "元気です、ありがとう。今夜はどうですか？", "はい、全部とてもおいしかったです、どうも。"]
     why: "ほかに何か要るかと聞かれたら、I'm good（もう結構です）が自然。あいさつの返事や、味の感想は質問に合っていない。"
     ctx: "食事が終わるころ、店員が聞いてきました"
     scene: cafe
@@ -168,10 +168,10 @@ items:
     en: "Quick question. Does the pad thai have peanuts in it? It does, but I can ask the kitchen to leave them off. Sorry? Leave them what? Leave them off. No peanuts. Or I can put them on the side for your friend. Oh, perfect. No peanuts, then. Thanks!"
     ja: "ピーナッツなしのパッタイが来る。"
     note: "leave off＝入れない。on the side は 別添え"
-    choices: ["The pad thai will come with no peanuts.", "It'll come with peanuts on top.", "He'll order a different dish."]
+    choices: ["No peanuts in the pad thai.", "The peanuts will come on the side.", "It'll come with peanuts on top."]
     answer: 0
-    cja: ["ピーナッツなしのパッタイが来る。", "ピーナッツがのって来る。", "別の料理を頼む。"]
-    why: "leave them off は「入れないでおく」。on the side（別添え）という案も出たが、最後に No peanuts, then と決めた。料理は変えていない。"
+    cja: ["パッタイはピーナッツ抜き。", "ピーナッツは別添えで来る。", "ピーナッツがのって来る。"]
+    why: "leave them off は「入れないでおく」。on the side（別添え）という案も出たが、最後に No peanuts, then と決めた。別添えでもない。"
     ctx: "タイ料理店で、料理の中身を聞いています"
     focus: "No peanuts, then."
     ask: "パッタイは どう なる？"
@@ -193,9 +193,9 @@ items:
     en: "The steak comes with two sides. The mashed potatoes are a dollar extra, though."
     ja: "付け合わせ2品は込みだが、マッシュポテトだけは追加料金。"
     note: "comes with＝込み。a dollar extra＝1ドル 追加"
-    choices: ["Two sides are included, but the potatoes cost more.", "Everything, potatoes too, is included.", "He has to pay extra for both sides."]
+    choices: ["Two sides are included; potatoes are extra.", "Everything's included, even the potatoes.", "He pays a dollar extra for each side."]
     answer: 0
-    cja: ["付け合わせ2品は込みだが、ポテトは追加料金。", "ポテトも含めて全部込み。", "付け合わせは2品とも追加料金。"]
+    cja: ["付け合わせ2品は込み、ポテトは追加料金。", "ポテトも含めて全部込み。", "付け合わせ1品ごとに1ドル追加。"]
     why: "comes with two sides は「付け合わせ2品付き」。ただし though の前で、マッシュポテトは a dollar extra（1ドル追加）と言っている。"
     ctx: "ステーキを頼もうとして、店員に聞きました"
     ask: "つまり、どういう こと？"
@@ -271,9 +271,9 @@ items:
     tts: "Want me ta box that up for ya? I can grab ya a to-go container."
     ja: "残りを持ち帰れるように包んでくれる。"
     note: "box up＝持ち帰り用に つめる"
-    choices: ["She'll pack the leftovers for him to take home.", "She wants him to leave now.", "She'll bring a new dish to go with it."]
+    choices: ["She'll pack up his leftovers.", "She wants him to pack up and leave.", "She'll bring a new dish to go with it."]
     answer: 0
-    cja: ["残りを持ち帰り用に包んでくれる。", "もう帰ってほしい。", "合う料理をもう一品持ってくる。"]
+    cja: ["残りを持ち帰り用に包んでくれる。", "荷物をまとめて帰ってほしい。", "合う料理をもう一品持ってくる。"]
     why: "box that up は「箱に詰める」、to-go container は持ち帰り用の容器。アメリカは量が多いので、残りを持ち帰るのはふつう。帰れという意味ではない。"
     ctx: "料理が多くて、食べきれずに残っています"
     ask: "つまり、どういう こと？"
@@ -290,9 +290,9 @@ items:
     en: "Morning! So, the pancakes come with eggs or fruit. Fruit, please. And could I get the syrup on the side? Sure thing. And it's two dollars extra for bacon, if you want it. Hmm, no, I'm good. Just the pancakes."
     ja: "フルーツ付きのパンケーキ。シロップは別添え、ベーコンなし。"
     note: "I'm good＝いらない。two dollars extra は 頼まなかった"
-    choices: ["Pancakes with fruit, syrup on the side, no bacon.", "Pancakes with eggs and bacon.", "Pancakes with fruit, plus bacon."]
+    choices: ["Pancakes with fruit, syrup on the side, no bacon.", "Pancakes with eggs, syrup on the side, no bacon.", "Fruit pancakes, syrup on the side, plus bacon."]
     answer: 0
-    cja: ["フルーツ付きのパンケーキ。シロップは別添え、ベーコンなし。", "卵とベーコン付きのパンケーキ。", "フルーツ付きのパンケーキに、ベーコンも追加。"]
+    cja: ["フルーツ付きのパンケーキ。シロップは別添え、ベーコンなし。", "卵付きのパンケーキ。シロップは別添え、ベーコンなし。", "フルーツ付きのパンケーキ。シロップは別添え、ベーコンも追加。"]
     why: "eggs or fruit から fruit を選び、シロップは on the side。ベーコンは2ドル追加と聞いて no, I'm good（いらない）と断った。"
     ctx: "週末のブランチで、パンケーキを頼みます"
     focus: "no, I'm good"
@@ -315,10 +315,10 @@ items:
     tts: "Okay, one oat milk latte. Is that fer here er ta go?"
     ja: "オーツミルクラテをおひとつですね。店内ですか、お持ち帰りですか？ →「店内で。」"
     note: "for here＝店内で。here の 前の for は「ファ」"
-    choices: ["For here, please.", "I'm going home.", "Here you go."]
+    choices: ["For here, please.", "I'm going home, thanks.", "Sure, here's my card."]
     answer: 0
-    cja: ["店内でお願いします。", "家に帰るところです。", "はい、どうぞ。"]
-    why: "for here or to go は「店内か、持ち帰りか」。店で飲むなら For here。to go を「行く」と取ると I'm going home になってしまう。"
+    cja: ["店内でお願いします。", "家に帰るところです、どうも。", "はい、カードでお願いします。"]
+    why: "for here or to go は「店内か、持ち帰りか」。店で飲むなら For here。to go を「行く」と取ると I'm going home になる。支払いはまだ。"
     ctx: "カフェのカウンターでラテを頼みました"
     scene: cafe
     cond: { kind: cafe, level: light }
@@ -332,9 +332,9 @@ items:
     en: "Sorry for the wait! Your pizzas are coming right out. The kitchen's just slammed tonight."
     ja: "ピザはもうすぐ来る。今夜は厨房がとても忙しい。"
     note: "coming right out＝すぐ 出てくる。slammed＝大忙し"
-    choices: ["The pizzas are almost ready; the kitchen is very busy.", "The pizzas will come out later tonight.", "The kitchen is closed tonight."]
+    choices: ["The pizzas are almost ready; it's a busy night.", "The pizzas won't come out until later tonight.", "The kitchen's closed, so no pizzas tonight."]
     answer: 0
-    cja: ["ピザはもうすぐ来る。厨房がとても忙しい。", "ピザは今夜遅くに出てくる。", "今夜は厨房が閉まっている。"]
+    cja: ["ピザはもうすぐ来る。今夜は大忙し。", "ピザは今夜遅くまで出てこない。", "厨房が閉まったので、今夜ピザは出ない。"]
     why: "coming right out は「すぐお持ちします」。slammed は「てんてこまい」で、待たせたことのおわび。閉まっているわけでも、ずっと後でもない。"
     ctx: "ピザがなかなか来ないので、店員を呼びました"
     ask: "つまり、どういう こと？"
@@ -370,9 +370,9 @@ items:
     tts: "Yer fish comes with soup er salad. The soup today is clam chowder."
     ja: "魚料理にはスープかサラダが付きます。今日のスープはクラムチャウダーです。 →「チャウダーをお願いします。」"
     note: "soup or salad＝どちらか 選ぶ"
-    choices: ["Ooh, the chowder, please.", "Yes, please.", "A super salad sounds great."]
+    choices: ["Ooh, the chowder, please.", "Yes, please.", "A super salad, please."]
     answer: 0
-    cja: ["わあ、チャウダーをお願いします。", "はい、お願いします。", "スーパーサラダ、いいですね。"]
+    cja: ["わあ、チャウダーをお願いします。", "はい、お願いします。", "スーパーサラダをお願いします。"]
     why: "soup or salad は二択。今日のスープ（クラムチャウダー）を選ぶのが自然。Yes では選んでいない。「スーパーサラダ」はつながった音の聞き違い。"
     ctx: "シーフードの店で、魚料理を頼みました"
     scene: cafe
@@ -387,9 +387,9 @@ items:
     en: "Can I get the fish tacos, but with rice instead of the beans? Sure, but just so you know, swapping is a dollar extra. Oh, that's fine. Go ahead."
     ja: "豆の代わりにご飯にして、1ドル多く払う。"
     note: "swapping is a dollar extra＝変更は 1ドル 追加"
-    choices: ["He'll get rice instead, and pay a dollar more.", "He'll keep the beans, since rice costs extra.", "He'll get rice and beans for free."]
+    choices: ["Rice instead of beans, for a dollar more.", "He'll keep beans; rice costs extra.", "Rice and beans, both free."]
     answer: 0
-    cja: ["ご飯に変えて、1ドル多く払う。", "ご飯は追加料金なので、豆のまま。", "ご飯も豆も無料で付く。"]
+    cja: ["豆の代わりにご飯、1ドル追加で。", "ご飯は追加料金なので、豆のまま。", "ご飯も豆も無料で付く。"]
     why: "rice instead of the beans で豆をご飯に変更。変更は a dollar extra だが、that's fine. Go ahead と了承した。"
     ctx: "タコスの店で、付け合わせを変えたいそうです"
     focus: "swapping is a dollar extra"
@@ -579,9 +579,9 @@ items:
     tts: "Next! Hi, fer here er ta go? An' d'you want the combo? It's two bucks more with a drink."
     ja: "次の方！ 店内ですか、お持ち帰りですか？ セットにしますか？ ドリンク付きで2ドル増しです。 →「持ち帰りで、セットはなしで。」"
     note: "二つの 質問に 一度に 答える"
-    choices: ["To go, and no combo, thanks.", "Yes, two, please.", "I'm going, thanks."]
+    choices: ["To go, and no combo, thanks.", "Yes, two, please. With a drink.", "I'm going, thanks. Have a good one."]
     answer: 0
-    cja: ["持ち帰りで、セットはなしで。", "はい、2つお願いします。", "もう行きます、どうも。"]
+    cja: ["持ち帰りで、セットはなしで。", "はい、2つお願いします。ドリンク付きで。", "もう行きます、どうも。それじゃ。"]
     why: "質問は二つ：店内か持ち帰りか、セットにするか。両方に答えているのは一つだけ。two bucks は値段（2ドル増し）で、個数ではない。"
     ctx: "昼どきのファストフード店、レジの前です"
     scene: cafe
@@ -597,9 +597,9 @@ items:
     tts: "Oh, I'm good, thanks. Just the check whenever ya get a chance."
     ja: "もう何もいらない。手が空いたら会計を持ってきてほしい。"
     note: "I'm good＝いりません。the check＝お会計"
-    choices: ["He doesn't want anything else; he's ready to pay.", "He's feeling well today.", "He wants to check the food."]
+    choices: ["He's done and ready to pay.", "He's feeling well.", "He wants to check his food first."]
     answer: 0
-    cja: ["もう何もいらない。会計をしたい。", "今日は体調がいい。", "料理を確かめたい。"]
+    cja: ["もう何もいらない。会計をしたい。", "体調がいい。", "まず料理を確かめたい。"]
     why: "I'm good は「もう結構です」。the check は「お会計（伝票）」で、確かめる意味ではない。whenever you get a chance は「手が空いたときに」。"
     ctx: "店員にデザートをすすめられて、答えました"
     ask: "つまり、どういう こと？"

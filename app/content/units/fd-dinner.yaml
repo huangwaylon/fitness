@@ -45,9 +45,9 @@ items:
     en: "Okay, I'm starving. What do you feel like? Thai? Pizza? Hmm, I'm good with whatever. Just nothing too heavy. That's not helpful! Okay, what about that tapas place? We could share a few plates. Ooh, yes. Small plates. I'm in."
     ja: "タパスの店で、何品か頼んでみんなで分ける。"
     note: "I'm good with whatever の 後の 条件を 聞く"
-    choices: ["A tapas place, sharing small plates.", "Pizza, because Judy is starving.", "Thai food, nothing too heavy."]
+    choices: ["A tapas place, sharing small plates.", "Pizza, since Judy's starving.", "Thai food, as long as it's not too heavy."]
     answer: 0
-    cja: ["タパスの店で、小皿料理を分ける。", "ジュディがお腹ぺこぺこなので、ピザ。", "タイ料理で、重すぎないもの。"]
+    cja: ["タパスの店で、小皿料理を分ける。", "ジュディがお腹ぺこぺこなので、ピザ。", "重すぎなければ、タイ料理。"]
     why: "ジュディは何でもいいが重いものはいやと言い、チェリーがタパスで share a few plates（何品か分ける）を提案。Small plates. I'm in. で決まった。"
     ctx: "仕事帰り、友だちと夕食の相談です"
     focus: "Okay, what about that tapas place? We could share a few plates."
@@ -69,9 +69,9 @@ items:
     en: "Hi, guys! So the special tonight is a grilled salmon with a pesto sauce. Ooh. Does the pesto have nuts in it? It does, yeah. Pine nuts. But I can do it without the sauce."
     ja: "よかった。じゃあ、ソースなしでお願い。"
     note: "I can do it without＝〜なしで 作れる"
-    choices: ["Perfect. No sauce for me, then.", "Great, extra pesto, please!", "Nuts? No thanks, I'm full."]
+    choices: ["Perfect. No sauce for me, then.", "Great, can I get extra pesto on it?", "Nuts? Oh, no thanks, I'm already full."]
     answer: 0
-    cja: ["よかった。じゃあ、ソースなしで。", "いいね、ジェノベーゼソース多めで！", "ナッツ？ いえ、もうお腹いっぱい。"]
+    cja: ["よかった。じゃあ、ソースなしで。", "いいね、ジェノベーゼソースを多めにしてもらえる？", "ナッツ？ あ、いえ、もうお腹いっぱいなので。"]
     why: "ジェノベーゼには松の実（pine nuts）が入っているが、店員はソースなしで作れると言った。ナッツがだめな人はソースなしを頼むのが自然。"
     ctx: "レストランで、店員がおすすめを説明します"
     focus: "It does, yeah. Pine nuts. But I can do it without the sauce."
@@ -110,9 +110,9 @@ items:
     tts: "Oh, I can't do dairy, so couldja get the tacos with no cheese an' no sour cream?"
     ja: "あ、乳製品がだめなので、タコスはチーズとサワークリーム抜きでもらえますか？ → つまり、乳製品を抜いてほしい。"
     note: "can't do＝食べられない。できない ではない"
-    choices: ["She can't eat dairy, so no cheese or sour cream.", "She doesn't know how to make tacos.", "She wants extra cheese on the side."]
+    choices: ["She can't have any dairy on her tacos.", "She doesn't know how to make the tacos.", "She wants the cheese and sour cream on the side."]
     answer: 0
-    cja: ["乳製品がだめなので、チーズもサワークリームも抜き。", "タコスの作り方を知らない。", "チーズを別添えで多めにほしい。"]
+    cja: ["タコスに乳製品を入れないでほしい。", "タコスの作り方を知らない。", "チーズとサワークリームを別添えにしてほしい。"]
     why: "can't do dairy は「乳製品が食べられない」。do は「食べる・飲む」の意味。だからチーズもサワークリームも抜いてと頼んでいる。"
     ctx: "メキシコ料理の店で、友だちが注文しています"
     ask: "つまり、どういう こと？"
@@ -148,7 +148,7 @@ items:
     tts: "How 'bout we just share a few plates? Then nobody has ta pick."
     ja: "何品か頼んで、みんなで分けるのはどう？ そうすれば誰も決めなくていいし。 → つまり、いろいろ頼んで取り分けよう。"
     note: "share a few plates＝何品か 取り分ける"
-    choices: ["Let's order several dishes for everyone.", "Let's all order the same thing.", "Let's bring our own plates."]
+    choices: ["Let's get a few dishes to share.", "Let's all order the same thing.", "Let's bring our own plates."]
     answer: 0
     cja: ["何品か頼んで、みんなで分けよう。", "全員同じものを頼もう。", "自分の皿を持ってこよう。"]
     why: "share a few plates は「何品か頼んで取り分ける」。決められない人が多いときの定番の提案。皿を持参する話でも、同じ料理を頼む話でもない。"
@@ -167,9 +167,9 @@ items:
     en: "Any allergies at the table I should know about? Yeah, I'm allergic to tree nuts. Does the chicken salad have nuts in it? It comes with candied pecans, but I can leave them off. Oh, actually, no. The dressing has walnuts too. I'd go with the grilled chicken instead. Grilled chicken it is. Thanks!"
     ja: "サラダはドレッシングにもナッツがあるので、チキンのグリルにした。"
     note: "actually, no の 後で 話が 変わる"
-    choices: ["The grilled chicken, because the salad has nuts.", "The chicken salad without the pecans.", "The chicken salad with a different dressing."]
+    choices: ["The grilled chicken, not the salad.", "The salad, minus the pecans.", "The chicken salad with another dressing."]
     answer: 0
-    cja: ["サラダにナッツがあるので、チキンのグリル。", "ピーカンナッツ抜きのチキンサラダ。", "ドレッシングを替えたチキンサラダ。"]
+    cja: ["サラダではなく、チキンのグリル。", "ピーカンナッツ抜きのサラダ。", "ドレッシングを替えたチキンサラダ。"]
     why: "ピーカンは抜けるが、Actually, no でドレッシングにもクルミ（walnuts）があると訂正。店員のすすめで grilled chicken にした。"
     ctx: "レストランで、ナッツアレルギーの友だちが注文"
     focus: "Oh, actually, no. The dressing has walnuts too."
@@ -191,9 +191,9 @@ items:
     en: "Honestly, I'm good with whatever. You pick!"
     ja: "正直、何でもいいよ。選んで！ →「じゃあ、あのタイ料理の店にしよう。」"
     note: "good with whatever＝何でも いい"
-    choices: ["Okay, let's do the Thai place.", "Great. So you're feeling better?", "Whatever? Fine, never mind, then."]
+    choices: ["Okay, let's do the Thai place.", "So you're feeling better?", "Whatever? Fine, forget it."]
     answer: 0
-    cja: ["じゃあ、タイ料理の店にしよう。", "よかった。体調よくなったの？", "どうでもいい？ じゃあ、もういいよ。"]
+    cja: ["じゃあ、タイ料理の店にしよう。", "じゃあ、体調よくなったの？", "どうでもいい？ じゃあ、もういいよ。"]
     why: "good with whatever は「何でもいい」。You pick! と任されたので、店を決めて返すのが自然。体調の話でも、投げやりな「どうでもいい」でもない。"
     ctx: "どこで食べるか、友だちに聞きました"
     scene: living
@@ -244,9 +244,9 @@ items:
     en: "Dessert? They have a chocolate lava cake. Ugh, I shouldn't. ...Okay, but only if we split it. Deal. Two spoons?"
     ja: "スプーン二つで。いっちゃおう。"
     note: "only if we split it＝分けるなら 食べる"
-    choices: ["Two spoons. Let's do it.", "No, I said I shouldn't.", "One cake each, then."]
+    choices: ["Two spoons. Let's do it.", "No, I already said I shouldn't.", "Okay, one cake each."]
     answer: 0
-    cja: ["スプーン二つで。いっちゃおう。", "だめ、やめとくって言ったでしょ。", "じゃあ、一人一個ずつね。"]
+    cja: ["スプーン二つで。いっちゃおう。", "だめ、やめとくってもう言ったでしょ。", "じゃあ、一人一個ずつね。"]
     why: "I shouldn't（やめておくべき）と言いつつ、only if we split it（分けるなら）で食べることにした。Two spoons? はその確認なので、乗るのが自然。"
     ctx: "食事のあと、友だちとメニューを見ています"
     focus: "...Okay, but only if we split it."
@@ -308,11 +308,11 @@ items:
     voice: us
     cast: us-f4
     en: "So the special tonight is the pesto chicken. Any allergies I should know about?"
-    ja: "今夜のおすすめはジェノベーゼソースのチキンです。何かアレルギーはありますか？ →「はい、ナッツです。そのソース、ナッツは入ってますか？」"
+    ja: "今夜のおすすめはジェノベーゼソースのチキンです。何かアレルギーはありますか？ →「はい、ナッツです。ジェノベーゼに入ってますか？」"
     note: "special＝その日の おすすめ 料理"
-    choices: ["Yes, nuts. Does the pesto have nuts in it?", "No thanks, I'm not that special.", "Tonight works for me, thanks."]
+    choices: ["Yes, nuts. Is there any in the pesto?", "Pesto? Sure, I'll take the special.", "Tonight works great for me, thanks."]
     answer: 0
-    cja: ["はい、ナッツです。ソースにナッツは入ってますか？", "いえ、私はそんなに特別じゃないので。", "今夜で大丈夫です、ありがとう。"]
+    cja: ["はい、ナッツです。ジェノベーゼに入ってますか？", "ジェノベーゼ？ じゃあ、おすすめにします。", "今夜でぜんぜん大丈夫です、ありがとう。"]
     why: "the special tonight は「今夜のおすすめ料理」。アレルギーを聞かれたので、ナッツと答えてソースに入っているか確かめるのが自然。"
     ctx: "レストランで、店員が注文を取りに来ました"
     scene: cafe
@@ -363,11 +363,11 @@ items:
     voice: us
     cast: us-m1
     en: "Wanna get the spicy wings to share? Ooh, I can't do spicy. Can we get the garlic ones instead? Sure. Garlic wings and... the nachos?"
-    ja: "いいね。ガーリックのウイングとナチョスで。"
+    ja: "じゃあ、ガーリックのウイングとナチョスで。"
     note: "can't do spicy＝辛いのは 食べられない"
-    choices: ["Perfect. Garlic wings and nachos.", "No, let's get the spicy ones.", "Nachos? I can't do garlic."]
+    choices: ["Garlic wings and nachos, then.", "No, let's just get the spicy ones.", "Nachos? Oh, but I can't do garlic."]
     answer: 0
-    cja: ["いいね。ガーリックのウイングとナチョスで。", "ううん、辛いほうにしよう。", "ナチョス？ にんにくはだめなの。"]
+    cja: ["じゃあ、ガーリックのウイングとナチョスで。", "ううん、やっぱり辛いほうにしよう。", "ナチョス？ あ、でもにんにくはだめなの。"]
     why: "チェリーは can't do spicy（辛いものが食べられない）ので、ガーリックのウイングに変えた。自分で頼んだのだから、にんにくがだめなはずはない。"
     ctx: "友だちとスポーツバーで、何を頼むか相談中"
     focus: "Ooh, I can't do spicy. Can we get the garlic ones instead?"
@@ -541,9 +541,9 @@ items:
     tts: "So that comes with a peanut sauce, but if you're allergic, I can todally sub in the ginger dressing, no charge."
     ja: "それにはピーナッツソースが付きますが、アレルギーなら、しょうがのドレッシングに無料で替えられますよ。 → つまり、アレルギーならソースを無料で替えられる。"
     note: "sub in＝代わりに 入れる"
-    choices: ["If you're allergic, she'll switch the sauce for free.", "The peanut sauce costs extra.", "You can't change anything on that dish."]
+    choices: ["She'll swap the sauce for free.", "The dressing costs extra.", "You can't change that dish."]
     answer: 0
-    cja: ["アレルギーなら、無料でソースを替えてくれる。", "ピーナッツソースは追加料金。", "その料理は何も変えられない。"]
+    cja: ["無料でソースを替えてくれる。", "ドレッシングは追加料金。", "その料理は変えられない。"]
     why: "comes with は「〜が付く」。sub in は「代わりに入れる」、no charge は無料。アレルギーなら、しょうがのドレッシングに替えてくれる。"
     ctx: "混んだアジア料理の店で、店員が早口で"
     ask: "つまり、どういう こと？"
@@ -558,11 +558,11 @@ items:
     cast: us-m3
     en: "You guys ready to order, or want me to go over the specials again?"
     tts: "You guys ready ta order, or wan' me ta go over the specials again?"
-    ja: "ご注文はお決まりですか？ それとも、おすすめをもう一度ご説明しましょうか？ →「おすすめをもう一度お願いできますか？」"
+    ja: "ご注文はお決まりですか？ それとも、おすすめをもう一度ご説明しましょうか？ →「おすすめをもう一度聞かせてもらえますか？」"
     note: "go over＝もう一度 説明する"
-    choices: ["Could you go over the specials again?", "We're ready to go home, thanks.", "Again? Sorry, we already paid."]
+    choices: ["Could we hear the specials again?", "We're ready to go, thanks.", "Again? Sorry, but we already paid."]
     answer: 0
-    cja: ["おすすめをもう一度お願いできますか？", "もう帰るところです、どうも。", "また？ すみません、もう払いました。"]
+    cja: ["おすすめをもう一度聞かせてもらえますか？", "もう帰ります、どうも。", "また？ すみません、でももう払いました。"]
     why: "go over the specials again は「おすすめをもう一度説明する」。注文が決まっていないなら、もう一度頼むのが自然。帰る話でも、支払いの話でもない。"
     ctx: "にぎやかなレストランで、店員が戻ってきました"
     scene: cafe
@@ -596,9 +596,9 @@ items:
     en: "Could I get the burger, but with the veggie patty? Sure! It comes with fries, or you can sub a side salad for a dollar extra."
     ja: "ポテトで大丈夫です、ありがとう。"
     note: "a dollar extra＝1ドル 追加"
-    choices: ["Fries are fine, thanks.", "A dollar? So the burger's just a dollar?", "No fries? Okay, a salad, then."]
+    choices: ["Fries are fine, thanks.", "Oh, so the burger's just a dollar?", "No fries? Okay, a salad, then."]
     answer: 0
-    cja: ["ポテトで大丈夫です、ありがとう。", "1ドル？ じゃあバーガーは1ドルだけ？", "ポテトなし？ じゃあサラダで。"]
+    cja: ["ポテトで大丈夫です、ありがとう。", "あ、じゃあバーガーは1ドルだけ？", "ポテトなし？ じゃあサラダで。"]
     why: "バーガーにはポテトが付く（comes with fries）。サラダに替えると a dollar extra（1ドル追加）。ポテトがないわけでも、バーガーが1ドルなわけでもない。"
     ctx: "混んだダイナーで、肉を食べない友だちが注文"
     focus: "It comes with fries, or you can sub a side salad for a dollar extra."
@@ -619,9 +619,9 @@ items:
     tts: "I mean, I'm goodwith whatever, but if we're doin' Italian again, I'm gonna lose it."
     ja: "まあ、何でもいいんだけど、またイタリアンだったら、さすがにキレるかも。 → つまり、イタリアンはもういや。"
     note: "lose it＝キレる・耐えられない"
-    choices: ["She doesn't want Italian again.", "She's happy to have Italian again.", "She lost her wallet at the Italian place."]
+    choices: ["She doesn't want Italian again.", "She's fine with Italian again.", "She lost her wallet at the Italian place."]
     answer: 0
-    cja: ["またイタリアンはいや。", "またイタリアンでうれしい。", "イタリアンの店で財布をなくした。"]
+    cja: ["またイタリアンはいや。", "またイタリアンでもいい。", "イタリアンの店で財布をなくした。"]
     why: "I'm good with whatever と言っても、but のあとが本音。I'm gonna lose it は「耐えられない」の冗談まじりの言い方。何かをなくす話ではない。"
     ctx: "騒がしい駅前で、友だちと夕食の相談です"
     ask: "本当は どう 思ってる？"

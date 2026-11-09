@@ -43,9 +43,9 @@ items:
     speaker: raymond
     voice: us
     cast: us-m5
-    choices: [ They made a real plan for Thursday., It's just a polite 'someday'., They're having lunch today. ]
+    choices: [ "They made a real plan for Thursday.", "It's just a polite 'someday'.", "They're eating together today." ]
     answer: 0
-    cja: ["木曜に本当にランチの約束をした。", "ただの社交辞令の「そのうち」。", "今日ランチをする。"]
+    cja: [ "木曜に本当にランチの約束をした。", "ただの社交辞令の「そのうち」。", "今日いっしょに食べる。" ]
     why: "one of these days だけなら社交辞令だが、Are you free Thursday? で曜日が出て、12時15分まで決まった。だから本気の約束。"
     ctx: "月曜の朝、コーヒーマシンの前で同僚と"
     focus: Are you free Thursday?
@@ -82,14 +82,14 @@ items:
     lv: 4
     type: reply
     en: Hey, stranger! Keeping busy?
-    ja: やあ、久しぶり！ 忙しくしてる？ →「うん、正直バタバタ。そっちは？」
+    ja: "やあ、久しぶり！ 忙しくしてる？ →「うん、忙しすぎ。そっちは？」"
     note: Keeping busy?＝最近どう？ 一言で返す
     speaker: tex
     voice: us
     cast: us-m6
-    choices: [ "Yeah, swamped, to be honest. You?", "No, I'm not a stranger.", "Yes, I keep it in my bag." ]
+    choices: [ "Yeah, too busy. You?", "No, I'm not a stranger, though.", "Yes, I keep it in my bag." ]
     answer: 0
-    cja: ["うん、正直バタバタ。そっちは？", "ううん、知らない人じゃないよ。", "うん、かばんに入れてる。"]
+    cja: [ "うん、忙しすぎ。そっちは？", "ううん、知らない人じゃないけど。", "うん、かばんに入れてる。" ]
     why: "Hey, stranger! は「久しぶり！」、Keeping busy? は「最近どう？」の決まり文句。一言答えて You? と返すのが自然。"
     ctx: "しばらく会っていなかった同僚に廊下で会いました"
     tags: { seed: 38, register: colleague, pragmatic: ritual }
@@ -103,9 +103,9 @@ items:
     speaker: ken
     voice: us
     cast: us-m6
-    choices: [ "It's a friendly line, not a real plan.", He wants dinner tonight., He's going back to the restaurant. ]
+    choices: [ "It's a friendly line; no dinner is planned.", "He wants to get dinner with you tonight.", "He's going back to the restaurant." ]
     answer: 0
-    cja: ["愛想の言葉で、本当の予定ではない。", "今夜夕食に行きたい。", "レストランに戻る。"]
+    cja: [ "愛想の言葉で、夕食の予定はない。", "今夜いっしょに夕食に行きたい。", "レストランに戻る。" ]
     why: "one of these days は「そのうち」で日時がない。続けて I'd better get back to it（仕事に戻らなきゃ）と話を切り上げているので、社交辞令。"
     ctx: "給湯室で同僚と立ち話をしています"
     ask: つまり、どういうこと？
@@ -152,9 +152,9 @@ items:
     speaker: tia
     voice: us
     cast: us-f4
-    choices: [ She's extremely busy and stressed., She's about to make a spreadsheet., She's enjoying work right now. ]
+    choices: [ "She's so busy she might scream.", "She's about to make a spreadsheet.", "She's enjoying work right now." ]
     answer: 0
-    cja: ["すごく忙しくて、ストレスがたまっている。", "これから表計算シートを作る。", "今は仕事を楽しんでいる。"]
+    cja: [ "叫びたくなるほど忙しい。", "これから表計算シートを作る。", "今は仕事を楽しんでいる。" ]
     why: "「あと一枚でも表を見たら叫ぶかも」は大げさな冗談で、忙しすぎて疲れていることを伝えている。最初の Ha. は苦笑い。"
     ctx: "同僚に「忙しくしてる？」と聞きました"
     ask: つまり、どういうこと？
@@ -164,14 +164,14 @@ items:
     lv: 4
     type: reply
     en: Not much, just a quiet one at home. What about you?
-    ja: 特に何も。家でのんびりしてた。そっちは？ →「同じく。日曜に試合を見たくらい。」
+    ja: "特に何も。家でのんびりしてた。そっちは？ →「こっちも同じ。試合を見たくらい。」"
     note: What about you?＝話を返された。自分の週末を一言
     speaker: olivia
     voice: us
     cast: us-f4
-    choices: [ "Same, really. Watched the game Sunday.", "Quiet? Sorry, I'll turn it down.", At home? Which one? ]
+    choices: [ "Same. Just watched the game.", "Quiet? Sorry, I'll turn it down.", "At home? Which one, the new place?" ]
     answer: 0
-    cja: ["こっちも似たようなもの。日曜に試合を見たくらい。", "静か？ ごめん、音を下げるね。", "家？ どの家？"]
+    cja: [ "こっちも同じ。試合を見たくらい。", "静か？ ごめん、音を下げるね。", "家？ どっちの、新しいほう？" ]
     why: "a quiet one は「のんびりした週末」。What about you? と話を返されたので、自分の週末を一言で答える。quiet を音の話と取らない。"
     ctx: "月曜の朝、同僚と週末の話をしています"
     tags: { seed: 38, register: colleague, pragmatic: ritual }
@@ -185,9 +185,9 @@ items:
     speaker: kidd
     voice: us
     cast: us-m4
-    choices: [ He's too busy and isn't really making a plan., He wants lunch at a set time., He thinks lunch is a crazy idea. ]
+    choices: [ "Things are crazy, so no real plan yet.", "He wants to set a time for lunch.", "He thinks having lunch is a crazy idea." ]
     answer: 0
-    cja: ["忙しすぎて、本気で予定を立てていない。", "決まった時間にランチしたい。", "ランチはばかげた考えだと思っている。"]
+    cja: [ "今はめちゃくちゃ忙しいので、まだ本当の予定はない。", "ランチの時間を決めたい。", "ランチに行くのはばかげた考えだと思っている。" ]
     why: "at some point は「いつかそのうち」。It's just crazy right now は「今はめちゃくちゃ忙しい」で、ランチの考えが変だという意味ではない。"
     ctx: "同僚をランチに誘ってみました"
     ask: つまり、どういうこと？
@@ -218,9 +218,9 @@ items:
     speaker: static
     voice: us
     cast: us-m6
-    choices: [ She worked all Saturday on a report that wasn't urgent., She had a relaxing weekend., She finished the report for Tuesday. ]
+    choices: [ "Her Saturday went to a report that could wait.", "She had a quiet, relaxing weekend for once.", "She finished the report for Tuesday, right on time." ]
     answer: 0
-    cja: ["急ぎではなかったレポートに土曜を丸一日使った。", "のんびりした週末だった。", "火曜のレポートを仕上げた。"]
+    cja: [ "急がなくてよいレポートに土曜を使った。", "珍しくのんびりした週末だった。", "火曜のレポートを期限どおりに仕上げた。" ]
     why: "火曜のレポートは pushed back（延期）になっていたのに、知らずに土曜を使った。Awesome. は皮肉で「最悪」の意味。"
     ctx: "月曜の朝、眠そうな同僚に声をかけました"
     focus: pushed back
@@ -292,14 +292,14 @@ items:
     lv: 4
     type: reply
     en: I've been meaning to ask, how was the trip to Hokkaido?
-    ja: ずっと聞こうと思ってたんだけど、北海道旅行どうだった？ →「最高だったけど、極寒。写真見せるね。」
+    ja: "ずっと聞こうと思ってたんだけど、北海道旅行どうだった？ →「最高だったけど、極寒！」"
     note: I've been meaning to ask＝前から聞きたかった
     speaker: tammy
     voice: us
     cast: us-f6
-    choices: [ "Amazing, but freezing. I'll show you photos.", "I've been meaning to go, yes.", Hokkaido? It's quite far north. ]
+    choices: [ "Amazing, but freezing!", "Yeah, I keep wanting to go.", "Hokkaido? It's quite far north." ]
     answer: 0
-    cja: ["最高だったけど、極寒。写真見せるね。", "うん、ずっと行こうと思ってた。", "北海道？ かなり北のほうだね。"]
+    cja: [ "最高だったけど、極寒！", "うん、ずっと行きたいと思ってる。", "北海道？ かなり北のほうだね。" ]
     why: "I've been meaning to ask は「ずっと聞こうと思ってた」という前置き。本題は旅行の感想なので、感想を答える。もう行った旅行の話。"
     ctx: "北海道旅行のあと、同僚に話しかけられました"
     tags: { seed: 38, register: colleague, pragmatic: ritual, features: [ contraction ] }
@@ -313,9 +313,9 @@ items:
     speaker: cyd
     voice: us
     cast: us-m4
-    choices: [ He's making a real plan for Thursday., He's being polite and doesn't mean it., He wants you to message the others. ]
+    choices: [ "He's making a real plan for Thursday.", "He's just being polite about it.", "He wants you to message the others." ]
     answer: 0
-    cja: ["木曜に本当に予定を立てている。", "社交辞令で、本気ではない。", "ほかの人に連絡してほしい。"]
+    cja: [ "木曜に本当に予定を立てている。", "ただ社交辞令を言っているだけ。", "ほかの人に連絡してほしい。" ]
     why: "sometime だけなら社交辞令だが、Actually, how's Thursday? で曜日を出して具体的にした。ほかの人に連絡するのは本人（I'll message）。"
     ctx: "仕事の合間に、同僚と話しています"
     ask: つまり、どういうこと？
@@ -343,14 +343,14 @@ items:
     type: reply
     en: How was your weekend? What'd you end up doing?
     tts: How was your weekend? Whadja end up doin'?
-    ja: 週末どうだった？ 結局何したの？ →「特に。ほとんど寝だめしてた。」
+    ja: "週末どうだった？ 結局何したの？ →「特に。ほとんど寝てた。」"
     note: What'd you＝What did you。end up＝結局
     speaker: gruff
     voice: us
     cast: us-m6
-    choices: [ "Not much. Caught up on sleep, mostly.", "It ended at seven, I think.", "I'm doing it next weekend." ]
+    choices: [ "Not much. Slept, mostly.", "It ended at seven, I think.", "I'm doing it next weekend." ]
     answer: 0
-    cja: ["特に。ほとんど寝だめしてた。", "7時に終わったと思う。", "来週末にやるよ。"]
+    cja: [ "特に。ほとんど寝てた。", "7時に終わったと思う。", "来週末にやるよ。" ]
     why: "What'd you end up doing? は「結局何したの？」。end up は「結局〜する」で、終わりの時間ではない。過ぎた週末のことを答える。"
     ctx: "月曜の朝、同僚に声をかけられました"
     tags: { seed: 38, register: colleague, pragmatic: ritual, features: [ ellipsis ] }
@@ -364,9 +364,9 @@ items:
     speaker: pashmina
     voice: us
     cast: us-f5
-    choices: [ She's ending the chat to go back to work., She wants to keep chatting., Her computer is broken. ]
+    choices: [ "She's wrapping up to get back to work.", "She wants to keep chatting a while.", "Her computer crashed, so she has to go." ]
     answer: 0
-    cja: ["雑談を切り上げて仕事に戻る。", "まだ話していたい。", "パソコンが壊れた。"]
+    cja: [ "話を切り上げて仕事に戻る。", "もう少し話していたい。", "パソコンが壊れたので行かなきゃ。" ]
     why: "I'd better get back は「そろそろ戻らなきゃ」という雑談の締め。inbox explodes はメールがたまることの大げさな言い方。"
     ctx: "コーヒーマシンの前で同僚と雑談中"
     ask: つまり、どういうこと？
@@ -445,14 +445,14 @@ items:
     lv: 4
     type: next
     en: Oh, hey! Long time no see. How've you been? Good! Crazy busy, but good. Hey, I heard you moved teams? Yeah, I'm in sales now. Ah, this is my floor. We should grab lunch and really catch up.
-    ja: ぜひ。来週のこと連絡するね。
+    ja: "ぜひ。連絡するね。"
     note: this is my floor＝もう降りる。誘いに軽く乗る
     speaker: sherb
     voice: us
     cast: us-m4
-    choices: [ Definitely. I'll message you about next week., "Sure, I'll take the stairs.", "Sales? No, I moved floors." ]
+    choices: [ "Definitely. I'll text you.", "Sure, I'll take the stairs.", "Sales? No, I just moved floors." ]
     answer: 0
-    cja: ["ぜひ。来週のこと連絡するね。", "いいよ、階段で行く。", "営業？ ううん、階を移っただけ。"]
+    cja: [ "ぜひ。連絡するね。", "いいよ、階段で行く。", "営業？ ううん、階を移っただけ。" ]
     why: "this is my floor は「ここで降りる」の合図。時間がないので、ランチの誘いに軽く乗って連絡すると言えばいい。異動したのは相手のほう。"
     ctx: "オフィスのエレベーターで、久しぶりの同僚と"
     focus: this is my floor
@@ -501,9 +501,9 @@ items:
     speaker: zucker
     voice: us
     cast: us-m6
-    choices: [ Three works. Come grab me., "Sure, jump on.", "No, I had coffee at three." ]
+    choices: [ "Three works. Come grab me.", "Sure, hop on. I'll drive.", "No thanks, I had coffee at three." ]
     answer: 0
-    cja: ["3時いいね。声かけて。", "いいよ、乗って。", "ううん、3時にコーヒー飲んだ。"]
+    cja: [ "3時いいね。声かけて。", "いいよ、乗って。運転するから。", "いや、3時にもうコーヒー飲んだよ。" ]
     why: "jump on a call は「電話会議に入る」。three-ish は「3時ごろ」で、時間つきの誘いなので、受けて「声かけて」と返す。"
     ctx: "廊下で話していた同僚が急いでいます"
     tags: { seed: 38, register: colleague, pragmatic: literal, features: [ gotta ] }
@@ -537,9 +537,9 @@ items:
     speaker: bea
     voice: us
     cast: us-f1
-    choices: [ "She's being friendly, but there's no real plan.", She's booked lunch for today., She wants you to text her right now. ]
+    choices: [ "Lunch is just talk; there's no plan.", "She's booked a table for lunch today.", "She wants you to text her right away." ]
     answer: 0
-    cja: ["愛想はいいが、本当の予定はない。", "今日のランチを予約した。", "今すぐメッセージしてほしい。"]
+    cja: [ "ランチは口だけで、予定はない。", "今日のランチの席を予約した。", "すぐにメッセージしてほしい。" ]
     why: "we have to do lunch! Text me! は熱っぽいが、日時を決めずに I'd better go と去っている。アメリカではこうした社交辞令がよくある。"
     ctx: "久しぶりの元同僚にばったり会いました"
     ask: つまり、どういうこと？
@@ -555,9 +555,9 @@ items:
     speaker: wolfgang
     voice: us
     cast: us-m5
-    choices: [ "Coffee at the market around ten, unless it pours.", Nothing. It was just small talk., Coffee at the office on Monday. ]
+    choices: [ "Coffee by the river around ten.", "Nothing. It was just small talk.", "Coffee at the office next Monday." ]
     answer: 0
-    cja: ["雨がひどくなければ、10時ごろ市場でコーヒー。", "何もない。ただの雑談。", "月曜にオフィスでコーヒー。"]
+    cja: [ "10時ごろ、川沿いでコーヒー。", "何もない。ただの雑談。", "来週の月曜にオフィスでコーヒー。" ]
     why: "最初はただの雑談だが、Ten-ish? で時間が決まり、本気の約束に。I'll text you if it's pouring は大雨のときの連絡。"
     ctx: "金曜の午後、同僚と週末の予定の話"
     focus: Ten-ish

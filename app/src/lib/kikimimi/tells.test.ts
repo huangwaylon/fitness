@@ -9,12 +9,9 @@ import { choiceSets } from './compile.ts';
 import { AUTHORED } from './source.ts';
 import { TELL_TYPES, overLimits, statsOfTells, tellReport, tellsOf } from './tells.ts';
 
-/** The levels rewritten so far (the rest are reported, not held, till theirs land). */
-const HELD = new Set(['L2', 'L3', 'L4', 'L5', 'L6', 'L7']);
-
 describe('answer-choice tells', () => {
   it('reports each level and holds it to the limits', () => {
-    const { lines, over } = tellReport(choiceSets(), HELD);
+    const { lines, over } = tellReport(choiceSets());
     console.log(lines.join('\n'));
     expect(over).toEqual([]);
   });

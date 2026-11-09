@@ -44,9 +44,9 @@ items:
     en: "Sunny Clinic, this is Pashmina. How can I help you? Hi, I'd like to make an appointment. I've had a sore throat for a few days. Okay. The soonest we have is Thursday at 10:15. Does that work? Sorry, did you say 10:15 or 10:50? 10:15. A quarter after ten. And please come in a few minutes early. Got it. Thursday at 10:15. Thanks!"
     ja: "木曜の10時15分。数分早めに行く。"
     note: "ten-fifTEEN＝10:15。a quarter after ten とも"
-    choices: ["Thursday at 10:15, a few minutes early.", "Thursday at 10:50.", "Today, as soon as possible."]
+    choices: ["Thursday at 10:15, a bit early.", "Thursday at 10:50, a bit early.", "Today, as early as they can."]
     answer: 0
-    cja: ["木曜の10時15分。数分早めに。", "木曜の10時50分。", "今日、できるだけ早く。"]
+    cja: ["木曜の10時15分、少し早めに。", "木曜の10時50分、少し早めに。", "今日、できるだけ早く。"]
     why: "最短の空きは木曜。15か50かを聞き返し、A quarter after ten（10時15分）と確かめた。a few minutes early は「数分早めに」。"
     ctx: "のどが痛くて、クリニックに電話しています"
     focus: "The soonest we have is Thursday at 10:15."
@@ -69,12 +69,12 @@ items:
     voice: us
     cast: us-f4
     en: "Hi there! Your prescription's ready. Can I get your date of birth? Sure. March 3rd. Perfect. Take one tablet twice a day, with food. Any questions?"
-    ja: "確認ですが、朝と夜、食事のあとですね？"
+    ja: "じゃあ、1日2回、食事と一緒にですね？"
     note: "twice a day, with food＝1日2回、食事と 一緒に"
-    choices: ["Just to check, morning and night, after meals?", "Food? No thanks, I already ate.", "Twice? So I come back again later?"]
+    choices: ["So, twice a day, with meals?", "Food? No thanks, I already ate.", "Twice? So I come back again later?"]
     answer: 0
-    cja: ["確認ですが、朝と夜、食事のあとですね？", "食べ物？ いえ、もう食べました。", "2回？ じゃあ、あとでまた来るんですか？"]
-    why: "twice a day は「1日2回」、with food は「食事と一緒に」。朝晩・食後かと確かめるのが自然。食事をすすめられたわけでも、2回来るわけでもない。"
+    cja: ["じゃあ、1日2回、食事と一緒にですね？", "食べ物？ いえ、もう食べました。", "2回？ じゃあ、あとでまた来るんですか？"]
+    why: "twice a day は「1日2回」、with food は「食事と一緒に」。それで合っているか確かめるのが自然。食事をすすめられたわけでも、2回来るわけでもない。"
     ctx: "薬局で、処方薬を受け取ります"
     focus: "Take one tablet twice a day, with food."
     ask: "次の ひとことは？"
@@ -94,9 +94,9 @@ items:
     tts: "Are ya allergic ta any medications?"
     ja: "お薬のアレルギーはありますか？ →「知っている限り、ないです。」"
     note: "allergic は「アラージック」。to は 弱く「タ」"
-    choices: ["Not that I know of.", "Just vitamins, every morning.", "No thanks, I'm fine without it."]
+    choices: ["Not that I know of.", "Just vitamins, every morning.", "Oh, no thanks, I'm fine without it."]
     answer: 0
-    cja: ["知っている限り、ないです。", "ビタミンだけ、毎朝飲んでます。", "いえ、なくても大丈夫です。"]
+    cja: ["知っている限り、ないです。", "ビタミンだけ、毎朝飲んでます。", "あ、いえ、なくても大丈夫です。"]
     why: "allergic は「アラージック」。聞かれたのはアレルギーの有無で、今の薬の話でも薬の勧めでもない。Not that I know of は「知る限りない」の決まり文句。"
     ctx: "薬局で、初めて薬をもらいます"
     scene: pharmacy
@@ -110,7 +110,7 @@ items:
     en: "Take these with food, or they might upset your stomach."
     ja: "何か食べてから飲む。"
     note: "with food＝食事と 一緒に。空腹で 飲まない"
-    choices: ["Take them after eating something.", "Don't eat while taking them.", "Mix them into your food."]
+    choices: ["Take them after eating.", "Don't eat while taking them.", "Mix them into your food."]
     answer: 0
     cja: ["何か食べてから飲む。", "飲んでいる間は食べない。", "食べ物にまぜる。"]
     why: "with food は「食事と一緒に」。空腹で飲むと胃が荒れる（upset your stomach）ので、食べてから飲む。食べ物にまぜるわけではない。"
@@ -186,9 +186,9 @@ items:
     en: "Can you come in this afternoon at four? Dr. Julian just had a cancellation."
     ja: "今日の午後4時に来られますか？ ジュリアン先生の予約にキャンセルが出たんです。 →「はい、4時で大丈夫です。助かります！」"
     note: "come in＝来院する。cancellation は 別の 患者"
-    choices: ["Yes, four is perfect. Thank you!", "Come in where? I'm at home.", "Oh no, is the doctor sick?"]
+    choices: ["Yes, four is perfect. Thank you!", "Wait, come in where? I'm home.", "Oh no, I hope the doctor's okay."]
     answer: 0
-    cja: ["はい、4時で大丈夫です。ありがとう！", "入るってどこに？ 家にいますよ。", "えっ、先生は病気ですか？"]
+    cja: ["はい、4時で大丈夫です。ありがとう！", "待って、入るってどこに？ 家にいますよ。", "えっ、先生が大丈夫だといいけど。"]
     why: "come in は「（病院に）来る」。had a cancellation は別の人が予約を取り消して空きが出たということ。先生が休むわけではない。空きに飛びつくのが自然。"
     ctx: "予約が取れずに待っていたら、電話が来ました"
     scene: living
@@ -263,7 +263,7 @@ items:
     en: "Sorry, your prescription's not ready yet. It'll be ready tomorrow after ten."
     ja: "明日の10時以降に、もう一度来る必要がある。"
     note: "not ready yet＝まだ。after ten＝10時 以降"
-    choices: ["You have to come back tomorrow.", "It's ready right now.", "You need a new prescription."]
+    choices: ["Come back tomorrow.", "It's ready right now.", "You need a new prescription."]
     answer: 0
     cja: ["明日また来る必要がある。", "今すぐ受け取れる。", "新しい処方せんが必要。"]
     why: "not ready yet は「まだできていない」。tomorrow after ten（明日の10時以降）にできるので、また来る。処方せんに問題があるわけではない。"
@@ -304,11 +304,11 @@ items:
     voice: us
     cast: us-m5
     en: "So that's one pill, twice a day. Morning and night. Any questions?"
-    ja: "1回1錠、1日2回です。朝と夜。何かご質問は？ →「いえ、よくわかりました。ありがとう！」"
+    ja: "1回1錠、1日2回です。朝と夜。何かご質問は？ →「わかりました、朝と夜ですね。ありがとう！」"
     note: "twice a day＝1日2回。一度に 2錠 ではない"
-    choices: ["No, that's clear. Thanks!", "So, two pills at once?", "One pill every two days?"]
+    choices: ["Got it, morning and night. Thanks!", "So, I take two pills at once?", "One pill every two days, then?"]
     answer: 0
-    cja: ["いえ、よくわかりました。ありがとう！", "じゃあ、一度に2錠？", "2日に1錠？"]
+    cja: ["わかりました、朝と夜ですね。ありがとう！", "じゃあ、一度に2錠飲むの？", "じゃあ、2日に1錠？"]
     why: "one pill, twice a day は「1回1錠を1日2回」で、朝と夜に飲む。一度に2錠でも、2日に1回でもない。説明がわかったならお礼で返す。"
     ctx: "薬局で、薬の飲み方の説明を受けました"
     scene: pharmacy
@@ -322,9 +322,9 @@ items:
     en: "I'm sorry, the soonest we have is next Friday. Should I put you on the waitlist in case something opens up?"
     ja: "来週の金曜まで空きはないが、キャンセル待ちで早まるかもしれない。"
     note: "waitlist＝キャンセル待ち。opens up＝空きが 出る"
-    choices: ["Nothing's open before next Friday, but it could open up.", "The clinic is closed until Friday.", "She has to come in this Friday."]
+    choices: ["Next Friday, unless something opens up.", "The clinic is closed until next Friday.", "She has to come in this Friday."]
     answer: 0
-    cja: ["来週金曜より前は空きがないが、空く可能性はある。", "金曜までクリニックが休み。", "今週の金曜に来なければならない。"]
+    cja: ["来週の金曜。ただし空きが出れば早まる。", "来週の金曜までクリニックが休み。", "今週の金曜に来なければならない。"]
     why: "最短は来週の金曜。waitlist（キャンセル待ち）に入れば、空きが出たとき早まるかもしれない。休みでも、今週の金曜でもない。"
     ctx: "早く診てほしくて、クリニックに電話しました"
     ask: "つまり、どういう こと？"
@@ -357,11 +357,11 @@ items:
     voice: us
     cast: us-f4
     en: "Could you come in ten minutes early? We need to update your insurance info."
-    ja: "10分早めにお越しいただけますか？ 保険の情報を更新したいので。 →「はい、大丈夫です。保険証を持っていきます。」"
+    ja: "10分早めにお越しいただけますか？ 保険の情報を更新したいので。 →「はい、保険証を持っていきます。」"
     note: "ten minutes early＝10分 早め。10時 ではない"
-    choices: ["Sure, no problem. I'll bring my card.", "Ten? Sorry, I'm only free at nine.", "Sure, I'll come in at ten."]
+    choices: ["Sure, I'll bring my insurance card.", "Ten? Sorry, I'm only free at nine.", "Sure, I'll come in at ten."]
     answer: 0
-    cja: ["はい、大丈夫です。保険証を持っていきます。", "10時？ すみません、9時しか空いていません。", "はい、10時に行きます。"]
+    cja: ["はい、保険証を持っていきます。", "10時？ すみません、9時しか空いていません。", "はい、10時に行きます。"]
     why: "ten minutes early は「10分早めに」で、10時のことではない。保険の情報を更新するので、保険証を持っていくと答えるのが自然。"
     ctx: "歯医者から、明日の予約の前に電話です"
     scene: living
@@ -525,9 +525,9 @@ items:
     tts: "Okay, so, two now, then one every eight hours, but no more than four in a day. An' with food if ya can."
     ja: "今2錠、そのあと8時間ごとに1錠。1日4錠まで。"
     note: "no more than four＝4錠 まで"
-    choices: ["Two now, then one every eight hours, four a day at most.", "Two every eight hours, all day.", "Four now, then wait eight hours."]
+    choices: ["Two now, then one every eight hours, max four.", "Two every eight hours, all day long, with food.", "Four now, then one more after eight hours."]
     answer: 0
-    cja: ["今2錠、その後8時間ごとに1錠。1日4錠まで。", "8時間ごとに2錠ずつ、一日中。", "今4錠飲んで、8時間待つ。"]
+    cja: ["今2錠、その後8時間ごとに1錠、最大4錠。", "8時間ごとに2錠ずつ、一日中、食事と一緒に。", "今4錠、8時間後にもう1錠。"]
     why: "最初だけ two now（今2錠）、その後は8時間ごとに1錠。no more than four in a day は「1日4錠まで」。数字の役割を聞き分ける。"
     ctx: "混んだ薬局で、早口で説明されました"
     ask: "つまり、どういう こと？"
@@ -562,11 +562,11 @@ items:
     cast: us-f5
     en: "We just had a cancellation. Can you come in in like twenty minutes? Otherwise it's next Tuesday."
     tts: "We just had a cancellation. Can ya come in in like twenty minutes? Otherwise it's next Tuesday."
-    ja: "今キャンセルが出ました。20分後くらいに来られますか？ 無理なら来週の火曜になります。 →「はい！ すぐ向かいます。」"
+    ja: "今キャンセルが出ました。20分後くらいに来られますか？ 無理なら来週の火曜になります。 →「はい！ 20分で行けます。」"
     note: "come in in twenty minutes＝20分後に 来る"
-    choices: ["Yes! I'm on my way.", "In twenty days? Sure.", "Tuesday's too soon, sorry."]
+    choices: ["Yes! I can be there in twenty.", "In twenty days? Sure.", "Tuesday's too soon, sorry."]
     answer: 0
-    cja: ["はい！ すぐ向かいます。", "20日後？ いいですよ。", "火曜は早すぎます、すみません。"]
+    cja: ["はい！ 20分で行けます。", "20日後？ いいですよ。", "火曜は早すぎます、すみません。"]
     why: "come in in like twenty minutes は「20分後くらいに来られる？」。in が二つ続く。来週火曜より早く診てもらえるので、すぐ行くのが自然。"
     ctx: "外出先に、クリニックから急な電話です"
     scene: street
@@ -601,9 +601,9 @@ items:
     en: "Next! Hi, checking in? Name and date of birth? Dom. July 30th. Sorry? July 13th?"
     ja: "いいえ、30日です。3と0。"
     note: "thirTIETH と thirTEENTH。数字で 言い直す"
-    choices: ["No, the 30th. Three-zero.", "Yes, the 13th. Thanks.", "No, I'm thirty."]
+    choices: ["No, the 30th. Three-zero.", "Yes, the 13th. Thanks.", "No, I turn thirty this year."]
     answer: 0
-    cja: ["いいえ、30日です。3と0。", "はい、13日です。どうも。", "いえ、30歳です。"]
+    cja: ["いいえ、30日です。3と0。", "はい、13日です。どうも。", "いえ、今年30歳になります。"]
     why: "受付は13日と聞き違えた。thirtieth と thirteenth はまぎらわしいので、Three-zero と数字で言い直すのが確実。年齢の話ではない。"
     ctx: "混んだクリニックの受付で、名前を言いました"
     focus: "Sorry? July 13th?"

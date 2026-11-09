@@ -91,12 +91,12 @@ items:
     cast: us-m1
     en: "Sounds fun! Let me check with my roommate, and I'll text you tonight. Cool?"
     tts: "Sounds fun! Lemme check with my roommate, an' I'll text ya tonight. Cool?"
-    ja: "楽しそう！ ルームメイトに確認して、今夜メッセージするね。いい？ →「いいよ、急がないで。」"
+    ja: "楽しそう！ ルームメイトに確認して、今夜メッセージするね。いい？ →「いいよ、今夜メッセージしてね。」"
     note: "Lemme check＝確認してから 返事する"
-    choices: ["Sure, no rush.", "Check what? It's free.", "Tonight? But the concert's on Saturday."]
+    choices: ["Cool, text me tonight.", "Oh, check what? It's free.", "Tonight? But it's on Saturday."]
     answer: 0
-    cja: ["いいよ、急がないで。", "確認って何を？ タダだよ。", "今夜？ でもコンサートは土曜だよ。"]
-    why: "Let me check は「確認してから返事する」。tonight はメッセージをくれる時間で、出かける日ではない。急がないでいいよ、と返すのが自然。"
+    cja: ["いいよ、今夜メッセージしてね。", "え、確認って何を？ タダだよ。", "今夜？ でも土曜だよ。"]
+    why: "Let me check は「確認してから返事する」。tonight はメッセージをくれる時間で、出かける日ではない。じゃあ今夜連絡してね、と返すのが自然。"
     ctx: "週末の野外コンサートに、友だちを誘いました"
     scene: street
     tags: { seed: 48, register: friend, pragmatic: literal, features: [lemme] }
@@ -109,9 +109,9 @@ items:
     en: "We could go Saturday, but the line's gonna be crazy. Like, two-hours crazy."
     ja: "土曜は2時間くらい並ぶことになる。"
     note: "crazy＝ものすごい。two-hours crazy＝2時間 並ぶ ほど"
-    choices: ["On Saturday, the wait will be really long.", "On Saturday, the people there will be wild.", "The ride is too scary on Saturday."]
+    choices: ["On Saturday, the wait will be really long.", "On Saturday, the crowd will be wild.", "The ride is too scary on Saturday."]
     answer: 0
-    cja: ["土曜は、待ち時間がすごく長い。", "土曜は、来ている人たちが騒がしい。", "土曜は、乗り物が怖すぎる。"]
+    cja: ["土曜は、待ち時間がすごく長い。", "土曜は、客が騒がしい。", "土曜は、乗り物が怖すぎる。"]
     why: "the line's gonna be crazy は「列がものすごい」。Like, two-hours crazy は「2時間並ぶほど」。人や乗り物の話ではない。"
     ctx: "人気の遊園地に行く日を、友だちと決めています"
     ask: "つまり、どういう こと？"
@@ -162,9 +162,9 @@ items:
     en: "Bad news. The dinosaur exhibit is sold out this weekend. Seriously? Okay, what about the aquarium? I mean, it's supposed to rain anyway, so the aquarium's perfect. And it's indoors. Let's do it. Saturday at one? Perfect. I'll text you when I'm on my way."
     ja: "土曜の1時に水族館へ。"
     note: "sold out＝売り切れ。雨なので 屋内の 水族館に"
-    choices: ["They'll go to the aquarium on Saturday at one.", "They'll go to the dinosaur exhibit on Saturday.", "They'll stay home because of the rain."]
+    choices: ["They'll go to the aquarium on Saturday at one.", "They'll see the dinosaurs on Saturday.", "They'll stay home because of the rain."]
     answer: 0
-    cja: ["土曜の1時に水族館へ行く。", "土曜に恐竜展へ行く。", "雨なので家にいる。"]
+    cja: ["土曜の1時に水族館へ行く。", "土曜に恐竜を見に行く。", "雨なので家にいる。"]
     why: "恐竜展は sold out（売り切れ）。雨の予報なので、屋内の水族館に決めた。Saturday at one? に Perfect と答えている。"
     ctx: "週末の予定を、友だちと立ち話で決めています"
     focus: "The dinosaur exhibit is sold out this weekend."
@@ -220,11 +220,11 @@ items:
     voice: us
     cast: us-f4
     en: "So, the barbecue's by the river at noon. Can you bring the drinks? Sure. Let me check what's in my fridge first. Oh, and bring a chair. There aren't any benches."
-    ja: "了解。飲み物と椅子ね。"
+    ja: "了解、飲み物と椅子ね。"
     note: "There aren't any benches＝だから 椅子が いる"
-    choices: ["No problem. Drinks and a chair.", "A chair? So it's indoors?", "Sure, I'll save us a bench."]
+    choices: ["Got it, drinks and a chair.", "A chair? So it's indoors?", "Sure, I'll save us a bench."]
     answer: 0
-    cja: ["了解。飲み物と椅子ね。", "椅子？ じゃあ屋内なの？", "いいよ、ベンチを取っておくね。"]
+    cja: ["了解、飲み物と椅子ね。", "椅子？ じゃあ屋内なの？", "いいよ、ベンチを取っておくね。"]
     why: "頼まれたのは飲み物と椅子。河原にはベンチがない（There aren't any benches）から椅子がいる。屋内でも、ベンチを取る話でもない。"
     ctx: "友だちと、河原のバーベキューの準備の話です"
     focus: "Oh, and bring a chair. There aren't any benches."
@@ -245,9 +245,9 @@ items:
     tts: "It's supposed ta clear up by noon, so let's not cancel yet."
     ja: "昼には晴れる予報だから、まだ中止にしないで様子を見る。"
     note: "clear up＝晴れる。片付ける ではない"
-    choices: ["The weather should get better, so wait and see.", "They have to clean up by noon.", "It's going to rain all day, so cancel."]
+    choices: ["It'll get nicer, so don't cancel yet.", "They have to clean up by noon.", "It's going to rain all day, so cancel."]
     answer: 0
-    cja: ["天気がよくなりそうだから、様子を見る。", "昼までに片付けなきゃいけない。", "一日中雨だから中止にする。"]
+    cja: ["天気がよくなるから、まだ中止しない。", "昼までに片付けなきゃいけない。", "一日中雨だから中止にする。"]
     why: "supposed to clear up は「晴れる予報」。だから let's not cancel yet（まだ中止しない）。掃除の clean up ではない。"
     ctx: "雨の朝、ハイキングに行くか友だちと相談中"
     ask: "つまり、どういう こと？"
@@ -261,11 +261,11 @@ items:
     cast: us-m1
     en: "If we want to beat the crowds, we have to leave by seven. You okay with that?"
     tts: "If we wanna beat the crowds, we hafta leave by seven. You okay with that?"
-    ja: "混む前に行きたいなら、7時までには出ないと。それでいい？ →「うわ、早い。でも、いいよ。」"
+    ja: "混む前に行きたいなら、7時までには出ないと。それでいい？ →「7時は早いけど、いいよ。行く。」"
     note: "beat the crowds＝混む 前に 行く"
-    choices: ["Ugh, that's early. But okay, I'm in.", "Beat them? I don't want a fight.", "Seven? Sure, after dinner works."]
+    choices: ["Seven's early, but okay. Count me in.", "Beat them? I don't want a fight.", "Seven? Sure, after dinner works."]
     answer: 0
-    cja: ["うわ、早いね。でも、いいよ。", "やっつける？ けんかはいやだよ。", "7時？ いいよ、夕食のあとなら。"]
+    cja: ["7時は早いけど、いいよ。行く。", "やっつける？ けんかはいやだよ。", "7時？ いいよ、夕食のあとなら。"]
     why: "beat the crowds は「混雑より先に行く」で、人と戦うことではない。朝早く出る話なので、夕食後の7時でもない。早いけど乗る、が自然。"
     ctx: "人気のパン屋の行列に、朝から並ぶ相談です"
     scene: street
@@ -280,7 +280,7 @@ items:
     en: "Hey, about tomorrow's hike. It's supposed to rain in the morning. Oh no. So, are we canceling? Nah, let's just play it by ear. If it clears up, we'll start at one instead of nine. Okay. Text me in the morning, then."
     ja: "晴れたら、9時ではなく1時に出発する。"
     note: "play it by ear＝様子を 見て 決める"
-    choices: ["If it clears up, they'll start at one.", "The hike is canceled.", "They'll start at nine, rain or shine."]
+    choices: ["If it clears up, they'll go at one.", "The hike is canceled.", "They'll start at nine, rain or shine."]
     answer: 0
     cja: ["晴れたら、1時に出発する。", "ハイキングは中止。", "雨でも晴れでも9時に出発する。"]
     why: "朝は雨の予報。中止ではなく play it by ear（様子を見る）にして、晴れたら9時ではなく1時に出発する。朝に連絡を取り合う。"
@@ -304,12 +304,12 @@ items:
     cast: us-f6
     en: "Ugh, the concert's sold out. Do you want to just grab dinner instead?"
     tts: "Ugh, the concert's sold out. D'you wanna just grab dinner instead?"
-    ja: "うわ、コンサート売り切れだって。代わりにごはんでも行く？ →「いいね、行こう。」"
+    ja: "うわ、コンサート売り切れだって。代わりにごはんでも行く？ →「いいね。どこに行く？」"
     note: "sold out＝売り切れ。外 ではない"
-    choices: ["Sure, I'm down.", "Sold? Who bought the concert?", "Out? Okay, let's eat outside."]
+    choices: ["Totally. Where should we go?", "Sold? Who bought the concert?", "Out? Okay, let's eat outside."]
     answer: 0
-    cja: ["いいね、行こう。", "売れた？ 誰がコンサートを買ったの？", "外？ じゃあ外で食べよう。"]
-    why: "sold out は「売り切れ」。コンサートに行けないので、代わりの夕食に誘われた。I'm down（いいね、乗った）と答えるのが自然。out＝外 ではない。"
+    cja: ["いいね。どこに行く？", "売れた？ 誰がコンサートを買ったの？", "外？ じゃあ外で食べよう。"]
+    why: "sold out は「売り切れ」。コンサートに行けないので、代わりの夕食に誘われた。乗って店を相談するのが自然。out＝外 ではない。"
     ctx: "週末のコンサートのチケットを、友だちが調べて"
     scene: street
     tags: { seed: 49, register: friend, pragmatic: literal, features: [wanna] }
@@ -323,9 +323,9 @@ items:
     tts: "I'm comin' from work, so I'll jus' meetcha there. Can ya save me a spot in line?"
     ja: "直接そこへ行くから、列で場所を取っておいてほしい。"
     note: "meet you there＝現地で 合流。save a spot＝場所 取り"
-    choices: ["She'll go straight there and wants you to hold her place.", "She wants you to pick her up at work.", "She can't come because of work."]
+    choices: ["She'll meet you there, so save her a spot.", "She wants you to pick her up from work.", "She can't make it because she's working late."]
     answer: 0
-    cja: ["直接そこへ行くので、場所を取っておいてほしい。", "職場まで迎えに来てほしい。", "仕事で来られない。"]
+    cja: ["現地で会うので、場所を取っておいてほしい。", "職場まで迎えに来てほしい。", "遅くまで仕事で来られない。"]
     why: "I'll meet you there は「現地で会おう」。仕事帰りに直接行くので、列で場所を取っておいて（save me a spot）と頼んでいる。"
     ctx: "人気のラーメン屋に、仕事帰りに行く約束です"
     ask: "つまり、どういう こと？"
@@ -359,11 +359,11 @@ items:
     cast: us-m1
     en: "Heads-up, the line at the ramen place is gonna be crazy. You okay waiting like an hour?"
     tts: "Heads-up, the line at the ramen place is gonna be crazy. You okay waitin' like an hour?"
-    ja: "言っておくけど、ラーメン屋の列はすごいよ。1時間くらい待っても平気？ →「うん、それだけの価値はあるよ。」"
+    ja: "言っておくけど、ラーメン屋の列はすごいよ。1時間くらい待っても平気？ →「1時間なら平気。それだけの価値はあるよ。」"
     note: "crazy＝ものすごい。like an hour＝1時間 くらい"
-    choices: ["Yeah, it's worth it.", "Crazy? Is the chef okay?", "An hour? Okay, I'll leave in an hour."]
+    choices: ["An hour's fine. It's worth it.", "Crazy? Is the chef okay?", "Okay, I'll leave in an hour."]
     answer: 0
-    cja: ["うん、それだけの価値はあるよ。", "おかしい？ 店主は大丈夫？", "1時間？ じゃあ1時間後に出るね。"]
+    cja: ["1時間なら平気。それだけの価値はあるよ。", "おかしい？ 店主は大丈夫？", "わかった、1時間後に出るね。"]
     why: "the line is gonna be crazy は「列がものすごい」。1時間待つか聞かれたので、待つ価値があると答える。人がおかしいわけでも、1時間後に出る話でもない。"
     ctx: "週末、有名なラーメン屋に行こうと話しています"
     scene: street
@@ -502,9 +502,9 @@ items:
     en: "Okay, so the fireworks start at 7:30, but the trains are gonna be packed. Then let's head over at like five and grab a spot by the river. Five's early. I mean, I'm down, but I work till four. So that's 5:30, at the station? I'll bring a mat. Perfect. Text me when you're there."
     ja: "5時半に駅で集合。彼がシートを持っていく。"
     note: "So that's〜 で 決まった 時間を 確認"
-    choices: ["They'll meet at the station at 5:30, and he'll bring a mat.", "They'll meet by the river at 7:30.", "They'll meet at five, and she'll bring a mat."]
+    choices: ["At the station at 5:30. He'll bring the mat.", "By the river at 7:30. He'll bring a mat.", "At the station at five. She'll bring a mat."]
     answer: 0
-    cja: ["5時半に駅で会い、彼がシートを持っていく。", "7時半に川のそばで会う。", "5時に会い、彼女がシートを持っていく。"]
+    cja: ["5時半に駅で。彼がシートを持っていく。", "7時半に川のそばで。彼がシートを持っていく。", "5時に駅で。彼女がシートを持っていく。"]
     why: "7時半は花火の開始。5時は早いので、So that's five-thirty, at the station? で5時半に駅に決まった。シートは彼が持っていく。"
     ctx: "花火大会の日、にぎやかな通りで友だちと"
     focus: "So that's 5:30, at the station? I'll bring a mat."
@@ -564,11 +564,11 @@ items:
     cast: us-m1
     en: "Did you see? It's supposed to pour on Saturday. Want to just move it to Sunday?"
     tts: "Didja see? It's supposed ta pour on Saturday. Wanna just move it ta Sunday?"
-    ja: "見た？ 土曜は土砂降りの予報だって。日曜にずらそうか？ →「うん、日曜でいいよ。」"
+    ja: "見た？ 土曜は土砂降りの予報だって。日曜にずらそうか？ →「うん、日曜にずらそう。」"
     note: "pour＝土砂降り。注ぐ ではない"
-    choices: ["Yeah, Sunday works for me.", "Pour? Okay, I'll bring drinks.", "Saturday? But it's sunny today."]
+    choices: ["Yeah, let's move it to Sunday.", "Pour? Okay, I'll bring drinks.", "Saturday? But it's sunny today."]
     answer: 0
-    cja: ["うん、日曜で大丈夫。", "注ぐ？ じゃあ飲み物を持っていくね。", "土曜？ でも今日は晴れてるよ。"]
+    cja: ["うん、日曜にずらそう。", "注ぐ？ じゃあ飲み物を持っていくね。", "土曜？ でも今日は晴れてるよ。"]
     why: "supposed to pour は「土砂降りの予報」。pour は天気では「激しく降る」で、飲み物を注ぐ話ではない。日曜にずらす提案に乗るのが自然。"
     ctx: "週末のバーベキューの件で、友だちから電話"
     scene: street
@@ -584,10 +584,10 @@ items:
     en: "If we're there by eight, we'll beat the crowds. After ten? Forget it. The line'll be insane."
     ja: "早く行かないと、ひどく並ぶことになる。"
     note: "Forget it＝無理。insane＝ものすごい"
-    choices: ["Go early, or the wait will be terrible.", "The place closes at ten.", "It's more fun after ten."]
+    choices: ["Go early, or the line will be insane.", "Nobody gets in until ten.", "It's more fun to go after ten."]
     answer: 0
-    cja: ["早く行かないと、待ち時間がひどい。", "その店は10時に閉まる。", "10時以降のほうが楽しい。"]
-    why: "8時までに着けば beat the crowds（混む前）。10時を過ぎたら Forget it（無理）、列が insane（ものすごい）になる。閉店時間の話ではない。"
+    cja: ["早く行かないと、列がものすごくなる。", "10時まで誰も入れない。", "10時以降に行くほうが楽しい。"]
+    why: "8時までに着けば beat the crowds（混む前）。10時を過ぎたら Forget it（無理）、列が insane（ものすごい）になる。10時に開く話ではない。"
     ctx: "週末の朝市について、にぎやかな駅前で"
     ask: "つまり、どういう こと？"
     scene: street

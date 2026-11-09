@@ -41,11 +41,11 @@ items:
     en: "Ha! Oh, I've missed you. Anyway, I should let you get back to your packing. Yeah, I still have the whole kitchen to do. So that's Sunday at the station, then? Sunday, ten o'clock, by the ticket gates. I'll text you when I'm on the train. Perfect. Good to catch up, Goldie. Talk soon!"
     ja: "日曜の10時に改札で。"
     note: "Anyway, I should let you〜＝もう 切る 合図"
-    choices: ["On Sunday at ten, by the ticket gates.", "On Sunday at two, on the train.", "On Saturday at ten, at his place."]
+    choices: ["Sunday at ten, by the ticket gates.", "Sunday at two, on the train platform.", "Saturday at ten, at the café."]
     answer: 0
     ctx: "引っ越し準備中の友だちと電話で話しています"
-    cja: ["日曜の10時に、改札のところで。", "日曜の2時に、電車で。", "土曜の10時に、彼の家で。"]
-    why: "切る流れで、最後に「Sunday, ten o'clock, by the ticket gates」と確認。電車はメッセージを送るときの話です。"
+    cja: ["日曜の10時に、改札のところで。", "日曜の2時に、電車のホームで。", "土曜の10時に、カフェで。"]
+    why: "切る流れで、最後に「Sunday, ten o'clock, by the ticket gates」と確認。電車はメッセージを送るときの話で、カフェは出てきません。"
     focus: "Sunday, ten o'clock, by the ticket gates"
     ask: "ふたりは いつ どこで あう？"
     scene: living
@@ -64,12 +64,12 @@ items:
     voice: us
     cast: us-m4
     en: "Hey! So did you end up watching that show I told you about? I'm three episodes in. It's so good! Listen, I've got to run, my bus is here."
-    ja: "大丈夫、行って！ 続きはまた今度ね。"
+    ja: "大丈夫、行って！ またあとでね。"
     note: "I've got to run＝いそいで 切る 合図"
-    choices: ["No worries, go! Tell me more later.", "Run? Is everything okay?", "Wait, which episode are you on?"]
+    choices: ["No worries, go! Talk later.", "Oh no, run? Is everything okay?", "Wait, I'm only on episode two!"]
     answer: 0
     ctx: "友だちとドラマの話を電話でしています"
-    cja: ["大丈夫、行って！ 続きはまた今度ね。", "走るの？ 何かあった？", "待って、いま何話目？"]
+    cja: ["大丈夫、行って！ またあとでね。", "えっ、走るの？ 何かあった？", "待って、こっちはまだ2話目なんだ！"]
     why: "I've got to run は走るのではなく「もう切らなきゃ」。バスが来たので、すぐ切らせてあげるのが自然です。質問で話を続けると相手が困ります。"
     focus: "I've got to run"
     ask: "つぎの ひとことは？"
@@ -109,10 +109,10 @@ items:
     en: "Oh, you're at work? I won't keep you, then. Just wanted to say happy Friday!"
     ja: "仕事のじゃまをしないように、すぐ切るつもり。"
     note: "won't keep you＝ひきとめない（すぐ 切る）"
-    choices: ["She'll end the call quickly so he can work.", "She wants him to stay on longer.", "She's keeping him from his job."]
+    choices: ["She'll hang up so he can keep working.", "She wants him to stay on longer.", "She's keeping him from his job."]
     answer: 0
     ctx: "金曜日、友だちに電話をかけました"
-    cja: ["仕事のじゃまをしないよう、すぐ切るつもり。", "もっと長く話していたい。", "彼の仕事のじゃまをしている。"]
+    cja: ["仕事を続けられるよう、すぐ切るつもり。", "もっと長く話していたい。", "彼の仕事のじゃまをしている。"]
     why: "I won't keep you は「引き止めないよ（すぐ切るね）」。仕事中だと気づいて、あいさつだけで切ろうとしています。じゃまをする、の逆です。"
     ask: "つまり、どういうこと？"
     scene: office
@@ -128,10 +128,10 @@ items:
     en: "Anyway, I should probably go start dinner."
     ja: "まあ、そろそろ夕飯作らないと。 →「うん、じゃあ切るね。またね！」"
     note: "Anyway＋自分の 用事＝もう 切りたい サイン"
-    choices: ["Sure, I'll let you go. Talk soon!", "What are you cooking? Tell me everything!", "Anyway, what?"]
+    choices: ["Sure, I'll let you go. Talk soon!", "Oh, what are you cooking? Tell me everything!", "Anyway, what?"]
     answer: 0
     ctx: "夕方、友だちと電話でおしゃべり中です"
-    cja: ["うん、じゃあ切るね。またね！", "何作るの？ 全部教えて！", "まあ、って何？"]
+    cja: ["うん、じゃあ切るね。またね！", "え、何作るの？ 全部教えて！", "まあ、って何？"]
     why: "文頭の Anyway と自分の用事は「そろそろ切りたい」のサイン。I'll let you go で気持ちよく終わらせます。料理の話を広げるのは逆効果です。"
     scene: living
     channel: phone
@@ -190,10 +190,10 @@ items:
     en: "Okay, I'm nearly home. Talk soon?"
     ja: "よし、もうすぐ家に着く。またね？ →「うん、またね！ 気をつけて帰ってね。」"
     note: "Talk soon? は さよならの あいさつ"
-    choices: ["Yeah, talk soon! Get home safe.", "Sure, let's talk right now.", "Soon? How soon?"]
+    choices: ["Yeah, talk soon! Get home safe.", "Sure, let's talk right now, then.", "Oh, soon? How soon, exactly?"]
     answer: 0
     ctx: "夜、友だちが帰り道に電話しています"
-    cja: ["うん、またね！ 気をつけて帰ってね。", "いいよ、いますぐ話そう。", "すぐって、どのくらい？"]
+    cja: ["うん、またね！ 気をつけて帰ってね。", "いいよ、じゃあいますぐ話そう。", "え、すぐって、具体的にどのくらい？"]
     why: "Talk soon? は「またね」というさよならのあいさつ。すぐに話す約束ではないので、Get home safe（気をつけて）と返すのが自然です。"
     scene: street
     channel: phone
@@ -225,12 +225,12 @@ items:
     voice: us
     cast: us-f1
     en: "Okay, I really have to go. Text me when you get home, yeah? Will do. Oh, and did I tell you about my new neighbor? Ha, tell me tomorrow! Seriously, I'm going to miss my train."
-    ja: "わかった、わかった！ 行って！ また明日。"
+    ja: "わかった！ 行って！ また明日。"
     note: "2回目の「もう 行く」。話を ひろげない"
-    choices: ["Okay, okay! Go! Talk tomorrow.", "So, my neighbor has this dog…", "Which train are you getting?"]
+    choices: ["Okay! Go! Talk tomorrow.", "So, my new neighbor has this dog…", "Just one more thing about work…"]
     answer: 0
     ctx: "電車の時間が迫る友だちと電話中です"
-    cja: ["わかった、わかった！ 行って！ また明日。", "でさ、お隣さんが犬を飼っててね…", "どの電車に乗るの？"]
+    cja: ["わかった！ 行って！ また明日。", "でさ、新しいお隣さんが犬を飼っててね…", "あとひとつだけ、仕事のことで…"]
     why: "相手は2回も「もう行かなきゃ」と言い、tell me tomorrow（明日聞かせて）と話を止めています。新しい話や質問はせず、送り出すのが正解です。"
     focus: "tell me tomorrow"
     ask: "つぎの ひとことは？"
@@ -250,13 +250,13 @@ items:
     cast: us-m3
     en: "Listen, I've got to head out, but let's really catch up this weekend."
     tts: "Listen, I've gotta head out, but let's really catch up this weekend."
-    ja: "ねえ、もう出なきゃ。でも週末にちゃんと話そう。 →「うん！ 空いてる日メッセージして。」"
+    ja: "ねえ、もう出なきゃ。でも週末にちゃんと話そう。 →「うん！ 土曜はどう？」"
     note: "head out＝出かける。catch up＝近況を 話す"
-    choices: ["Sure! Text me when you're free.", "Head out? Where to?", "I caught it, thanks."]
+    choices: ["Sure! Want to do Saturday?", "Head out? Wait, where are you going?", "Oh, I caught it last weekend, thanks."]
     answer: 0
     ctx: "友だちが出かける直前に電話しています"
-    cja: ["うん！ 空いてる日メッセージして。", "出かけるって、どこへ？", "ちゃんと受け取ったよ、ありがとう。"]
-    why: "head out は「出かける」、catch up は「近況を話す」。週末に会う話なので、空いている日を連絡してと返します。caught は catch のわなです。"
+    cja: ["うん！ 土曜はどう？", "出かける？ 待って、どこ行くの？", "あ、先週末に見たよ、ありがとう。"]
+    why: "head out は「出かける」、catch up は「近況を話す」。週末に会う話なので、土曜はどうかと日を決めて返します。caught は catch のわなです。"
     scene: street
     channel: phone
     cond: { kind: phone, level: light, bed: street }
@@ -340,10 +340,10 @@ items:
     tts: "Okay, I'm gonna jump in the shower. Text me the address and I'll see you there."
     ja: "電話を終えて、住所はメッセージで送ってほしい。"
     note: "jump in the shower＝もう 切る 理由"
-    choices: ["He's ending the call and wants the address by message.", "He'll call back from the shower.", "He doesn't want to go anymore."]
+    choices: ["He wants her to text him the address.", "He'll call back from the shower.", "He doesn't want to go anymore."]
     answer: 0
     ctx: "夜の約束について、友だちと電話中です"
-    cja: ["電話を終えて、住所はメッセージで送ってほしい。", "シャワーから電話をかけなおす。", "もう行きたくない。"]
+    cja: ["住所はメッセージで送ってほしい。", "シャワーから電話をかけなおす。", "もう行きたくない。"]
     why: "シャワーを浴びるのが電話を切る理由。Text me the address で住所はメッセージで、と頼み、see you there で行く気も伝えています。"
     ask: "つまり、どういうこと？"
     scene: living
@@ -357,12 +357,12 @@ items:
     voice: us
     cast: us-m6
     en: "Oh, you're cooking? I won't keep you long. Just quickly, is Saturday still okay?"
-    ja: "あ、料理中？ 長くは引き止めないよ。ひとつだけ、土曜はまだ大丈夫？ →「うん、土曜ばっちり。じゃあそのときに！」"
+    ja: "あ、料理中？ 長くは引き止めないよ。ひとつだけ、土曜はまだ大丈夫？ →「うん、土曜でいいよ。じゃあそのときに！」"
     note: "用件 だけ 聞いて 切る 流れ"
-    choices: ["Yep, Saturday's great. Talk then!", "Keep me? Where?", "I'm cooking pasta, actually."]
+    choices: ["Yep, Saturday works. Talk then!", "Keep me? Sorry, keep me where?", "Yeah, I'm cooking pasta tonight."]
     answer: 0
     ctx: "夕方、友だちが週末の予定を確認する電話です"
-    cja: ["うん、土曜ばっちり。じゃあそのときに！", "引き止めるって、どこに？", "実はパスタを作ってるの。"]
+    cja: ["うん、土曜でいいよ。じゃあそのときに！", "引き止める？ ごめん、どこに？", "うん、今夜はパスタを作ってるよ。"]
     why: "I won't keep you long は「長くは引き止めない」。用件は土曜の確認だけなので、短く答えて終わるのが親切です。料理の話を広げるのはずれています。"
     scene: living
     channel: phone
@@ -375,13 +375,13 @@ items:
     voice: us
     cast: us-m6
     en: "So that was my weekend. The game was crazy. You'd have loved it! Sounds amazing. Anyway, it's getting pretty late here."
-    ja: "あ、ごめん！ じゃあ切るね。おやすみ！"
+    ja: "あ、ごめん！ じゃあまた明日話そうか？"
     note: "Anyway＋遅い 時間＝もう 切りたい"
-    choices: ["Oh, sorry! I'll let you go. Night!", "It's only nine! Anyway, the second half…", "Late? For the game?"]
+    choices: ["Oh, sorry! Talk tomorrow, then?", "It's only nine! Anyway, the second half…", "Late? For the game?"]
     answer: 0
     ctx: "夜、友だちが週末の話を電話でしています"
-    cja: ["あ、ごめん！ じゃあ切るね。おやすみ！", "まだ9時だよ！ で、後半がさ…", "遅いって、試合が？"]
-    why: "Anyway, it's getting pretty late は「もう遅いし、そろそろ…」という遠回しな合図。気づいて謝り、I'll let you go で切るのが自然です。"
+    cja: ["あ、ごめん！ じゃあまた明日話そうか？", "まだ9時だよ！ で、後半がさ…", "遅いって、試合が？"]
+    why: "Anyway, it's getting pretty late は「もう遅いし、そろそろ…」という遠回しな合図。気づいて謝り、また明日と切り上げるのが自然です。"
     focus: "Anyway, it's getting pretty late"
     ask: "つぎの ひとことは？"
     scene: living
@@ -401,7 +401,7 @@ items:
     tts: "Oh! Someone's at the door. I've gotta go. Call you later!"
     ja: "いますぐ電話を切らないといけない。"
     note: "I've got to go＝いますぐ 切る"
-    choices: ["She has to end the call now.", "She's leaving the house.", "She wants him to come over."]
+    choices: ["She has to hang up right now.", "She's leaving the house.", "She wants him to come over."]
     answer: 0
     ctx: "家で友だちと電話中です"
     cja: ["いますぐ電話を切らないといけない。", "家を出るところ。", "彼に家に来てほしい。"]
@@ -543,11 +543,11 @@ items:
     tts: "Okay, that's super helpful, thanks. I'll letcha get back to it. Talk soon!"
     ja: "ていねいに電話を終えようとしている。"
     note: "let you get back to it＝仕事に もどって"
-    choices: ["He's politely ending the call.", "He wants her to call back soon.", "He's going back to the office."]
+    choices: ["He's politely ending the call.", "He wants her to call back soon.", "He's heading to the office now."]
     answer: 0
     ctx: "同僚に仕事のことを電話で聞きました"
-    cja: ["ていねいに電話を終えようとしている。", "すぐにかけなおしてほしい。", "オフィスに戻るところ。"]
-    why: "I'll let you get back to it は「お仕事に戻ってください」という、ていねいな終わらせ方。戻るのは相手の仕事で、彼がオフィスに戻るわけではありません。"
+    cja: ["ていねいに電話を終えようとしている。", "すぐにかけなおしてほしい。", "いまからオフィスに向かう。"]
+    why: "I'll let you get back to it は「お仕事に戻ってください」という、ていねいな終わらせ方。戻るのは相手の仕事で、彼がオフィスに向かうわけではありません。"
     ask: "つまり、どういうこと？"
     scene: office
     channel: phone
@@ -563,10 +563,10 @@ items:
     tts: "Anyway, I've gotta go, the kids are going wild. Catch ya later?"
     ja: "まあ、もう切らなきゃ、子どもたちが大暴れしてる。またあとで？ →「はは、行って！ またね。」"
     note: "going wild＝大さわぎ。got to go＝もう 切る"
-    choices: ["Ha, go! Catch you later.", "Go where?", "Wild? Like animals?"]
+    choices: ["Ha, go! Catch you later.", "Wait, go where? To the park?", "Oh, wild? Like animals?"]
     answer: 0
     ctx: "子どものいる友だちと電話で話しています"
-    cja: ["はは、行って！ またね。", "どこに行くの？", "ワイルドって、動物みたいに？"]
+    cja: ["はは、行って！ またね。", "待って、どこ行くの？ 公園？", "え、ワイルドって、動物みたいに？"]
     why: "Anyway, I've got to go は「もう切らなきゃ」。子どもが大騒ぎしているので、笑って送り出すのが自然。go は出かける意味ではありません。"
     scene: living
     channel: phone
@@ -600,10 +600,10 @@ items:
     en: "Hey, can I call you back? I'm in the middle of something. Talk soon!"
     ja: "いまは話せないので、あとでかけなおす。"
     note: "in the middle of＝手が はなせない"
-    choices: ["He can't talk now and will call later.", "He wants her to call him back.", "He's in the middle of town."]
+    choices: ["He'll call her back a bit later.", "He wants her to call him back.", "He's in the middle of town."]
     answer: 0
     ctx: "友だちに電話をかけたところです"
-    cja: ["いまは話せないので、あとでかけなおす。", "彼女にかけなおしてほしい。", "町の真ん中にいる。"]
+    cja: ["少ししたらかけなおす。", "彼女にかけなおしてほしい。", "町の真ん中にいる。"]
     why: "call you back は「こっちからかけなおす」。in the middle of something は「いま手がはなせない」で、場所の話ではありません。"
     ask: "つまり、どういうこと？"
     scene: street
@@ -617,12 +617,12 @@ items:
     voice: us
     cast: us-m3
     en: "So that's the cookout at my place, Saturday, from two. Bring a chair if you have one. Sorry, did you say a chair? Ha, okay, I've got a camping one. Anything else? Nah, that's it. Okay, I'll let you go. See you Saturday!"
-    ja: "ありがとう、じゃあそのときに！"
+    ja: "よかった、ありがとう！ じゃあ土曜に！"
     note: "cookout＝外で バーベキュー。あいさつで かえす"
-    choices: ["Thanks, see you then!", "Saturday? I thought Sunday.", "A chair? How many?"]
+    choices: ["Great, thanks! See you Saturday!", "Saturday? I thought Sunday.", "A chair? How many?"]
     answer: 0
     ctx: "友だちがバーベキューに誘う電話です"
-    cja: ["ありがとう、じゃあそのときに！", "土曜？ 日曜だと思ってた。", "椅子？ 何脚？"]
+    cja: ["よかった、ありがとう！ じゃあ土曜に！", "土曜？ 日曜だと思ってた。", "椅子？ 何脚？"]
     why: "I'll let you go. See you Saturday! で電話を終える流れ。椅子の確認ももう済んでいるので、あいさつで返すのが自然です。"
     focus: "I'll let you go"
     ask: "つぎの ひとことは？"

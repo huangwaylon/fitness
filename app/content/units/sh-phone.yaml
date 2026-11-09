@@ -47,10 +47,10 @@ items:
     en: "Hi. My battery dies by, like, two in the afternoon. It's only a year old. Have you tried restarting it? Sometimes an app's running in the background. Yeah, a bunch of times. Okay. Then it's probably the battery. Good news, it's still under warranty, so the replacement's free. It'll take about an hour."
     ja: "電池を無料で交換。1時間くらいかかる。"
     note: "under warranty＝保証期間内。だから 無料"
-    choices: ["The battery gets replaced for free, in about an hour.", "She needs to buy a new phone.", "Restarting fixed the problem."]
+    choices: ["A free new battery, in about an hour.", "A new battery for a fee, in about an hour.", "A restart fixed it, so nothing's needed."]
     answer: 0
-    cja: ["電池を無料で交換、1時間くらい。", "新しいスマホを買う必要がある。", "再起動で直った。"]
-    why: "再起動は何度も試した。原因は電池で、under warranty（保証期間内）なので交換は無料。It'll take about an hour は「1時間くらいかかる」。"
+    cja: ["電池を無料で交換、1時間くらい。", "電池を有料で交換、1時間くらい。", "再起動で直ったので、何もいらない。"]
+    why: "再起動は何度も試した。原因は電池で、under warranty（保証期間内）なので交換は無料。有料ではない。about an hour は「1時間くらい」。"
     ctx: "電池の減りが早くて、携帯ショップに来ました"
     focus: "Good news, it's still under warranty, so the replacement's free."
     ask: "どう なった？"
@@ -93,11 +93,11 @@ items:
     cast: us-m1
     en: "Have you tried turning it off and on again?"
     tts: "Have ya tried turnin' it off an' on again?"
-    ja: "電源を切って、もう一度入れてみましたか？ →「はい、2回ほど。だめでした。」"
+    ja: "電源を切って、もう一度入れてみましたか？ →「はい、2回。だめでした。」"
     note: "まず 試す 定番の 質問"
-    choices: ["Yeah, a couple of times. No luck.", "No, I just bought it on Tuesday.", "It's off right now, actually."]
+    choices: ["Yeah, twice. Didn't help.", "No, I just bought it Tuesday.", "Actually, it's off right now."]
     answer: 0
-    cja: ["はい、2回ほど。だめでした。", "いいえ、火曜に買ったばかりです。", "実は、今は電源が切れています。"]
+    cja: ["はい、2回。だめでした。", "いいえ、火曜に買ったばかりです。", "実は、今は電源が切れています。"]
     why: "tried turning it off and on again? は「電源を入れ直してみた？」という定番の質問。試したかどうかを答える。いつ買ったかや、今の状態の話ではない。"
     ctx: "スマホが固まって、携帯ショップで相談しています"
     scene: cafe
@@ -113,9 +113,9 @@ items:
     tts: "The warranty covers defects, but a cracked screen from a drop isn't covered. That'd be oudda pocket."
     ja: "保証は製品の不具合が対象で、落として割れた画面は対象外です。自己負担になります。 → つまり、落として割れた画面は保証がきかず、自分で払う。"
     note: "out of pocket＝自分の お金で"
-    choices: ["A screen cracked from a drop isn't free; you pay.", "The warranty pays for any cracked screen.", "He found the phone in his pocket."]
+    choices: ["A drop isn't covered, so you pay.", "The warranty pays for any cracked screen.", "He keeps the phone in his pocket now."]
     answer: 0
-    cja: ["落として割れた画面は無料ではなく、自分で払う。", "割れた画面なら何でも保証で直る。", "ポケットの中でスマホを見つけた。"]
+    cja: ["落とした画面は対象外で、自分で払う。", "割れた画面なら何でも保証で直る。", "今はスマホをポケットに入れている。"]
     why: "warranty は不具合（defects）だけが対象で、落とした画面は isn't covered（対象外）。out of pocket は「自腹で」。ポケットの話ではない。"
     ctx: "画面の割れたスマホを、携帯ショップに持ってきました"
     ask: "つまり、どういう こと？"
@@ -151,9 +151,9 @@ items:
     tts: "Once it's set up, you'll hafta sign in with yer old account, or yer photos won't show up."
     ja: "設定が済んだら、前のアカウントでサインインしてください。そうしないと写真が表示されません。 → つまり、前のアカウントでログインすれば写真が戻る。"
     note: "sign in＝ログイン。署名 ではない"
-    choices: ["Log in with the old account to get the photos back.", "Sign a form to get a new account.", "The photos are gone for good."]
+    choices: ["Log in to the old account to see your photos.", "Sign a form so they can make a new account.", "The photos were lost when the phone was reset."]
     answer: 0
-    cja: ["前のアカウントでログインすれば、写真が戻る。", "新しいアカウントのために書類に署名する。", "写真は完全に消えた。"]
+    cja: ["前のアカウントにログインすれば、写真が見られる。", "書類に署名して、新しいアカウントを作ってもらう。", "リセットしたときに写真は消えてしまった。"]
     why: "sign in は「ログインする」。前のアカウントでログインしないと写真が出ない（won't show up）。署名の話でも、写真が消えたわけでもない。"
     ctx: "新しいスマホを受け取るとき、店員が説明します"
     ask: "つまり、どう する？"
@@ -170,9 +170,9 @@ items:
     en: "I'm going to Seoul next week. Will my phone work there? It will, but roaming's five bucks a day. Or you can add the travel plan. It's forty a month, unlimited data. Wait, did you say five a day? I'm only there five days. Then the daily one's cheaper. Five days, that's twenty-five bucks."
     ja: "1日5ドルのローミングで、5日で25ドル。"
     note: "a day と a month を 比べる"
-    choices: ["The daily roaming, about $25 in all.", "The travel plan, $40 a month.", "Nothing. It works for free."]
+    choices: ["Daily roaming, $25 in all.", "The travel plan, $40 a month.", "Nothing. It's free there."]
     answer: 0
-    cja: ["1日ずつのローミングで、全部で25ドルくらい。", "旅行プランで、月40ドル。", "何もいらない。無料で使える。"]
+    cja: ["1日ずつのローミングで、全部で25ドル。", "旅行プランで、月40ドル。", "何もいらない。向こうでは無料。"]
     why: "ローミングは five bucks a day（1日5ドル）、旅行プランは forty a month（月40ドル）。5日だけなら1日ずつのほうが安く、合計25ドル。"
     ctx: "海外旅行の前に、携帯ショップで相談です"
     focus: "Then the daily one's cheaper. Five days, that's twenty-five bucks."
@@ -213,9 +213,9 @@ items:
     tts: "If ya trade in yer old phone, we'll take a hundred off the new one."
     ja: "古いスマホを下取りに出せば、新しいのから100ドル引きます。 → つまり、下取りで100ドル安くなる。"
     note: "trade in＝下取りに 出す"
-    choices: ["Give them your old phone and get $100 off.", "Swap phones with someone for a day.", "Pay $100 more for the new one."]
+    choices: ["Hand in your old phone and save $100.", "Swap phones with a friend for a day.", "Pay $100 more to keep the old one."]
     answer: 0
-    cja: ["古いスマホを渡すと、100ドル引き。", "誰かと1日スマホを交換する。", "新しいのに100ドル多く払う。"]
+    cja: ["古いスマホを渡して、100ドル安くなる。", "友だちと1日スマホを交換する。", "古いのを手元に残すには100ドル多く払う。"]
     why: "trade in は「下取りに出す」。take a hundred off は「100ドル引く」。人と交換するのでも、追加で払うのでもない。"
     ctx: "新しいスマホを見に、携帯ショップに来ました"
     ask: "つまり、どういう こと？"
@@ -250,7 +250,7 @@ items:
     en: "My phone won't connect to the Wi-Fi at home. Everything else does. Did you try forgetting the network and signing in again? Forgetting it? How do I do that?"
     ja: "やってみせますね。設定を開いてください。"
     note: "forget the network＝登録を 削除する"
-    choices: ["Here, I'll show you. Open your settings.", "Just try not to think about it.", "You'll have to buy a new router."]
+    choices: ["Here, I'll show you. Open Settings.", "Just try not to think about it.", "You'll have to buy a new router."]
     answer: 0
     cja: ["やってみせますね。設定を開いてください。", "そのことを考えないようにして。", "新しいルーターを買う必要があります。"]
     why: "forget the network は、スマホからネットワークの登録を削除すること。忘れようとする話ではない。やり方を聞かれたので、設定画面で教えるのが自然。"
@@ -274,9 +274,9 @@ items:
     tts: "We can fix it here, but we're swamped today, so it'll take about three hours. Or ya could come in tomorrow morning."
     ja: "ここで直せますが、今日は立て込んでいるので3時間くらいかかります。または、明日の朝に来ていただくこともできます。 → つまり、今日だと3時間、明日の朝なら早い。"
     note: "swamped＝すごく 忙しい"
-    choices: ["Today it'd take three hours; tomorrow morning is an option.", "They can't fix it at the store.", "It takes three hours, even tomorrow."]
+    choices: ["Three hours today, or try tomorrow morning.", "They can't fix it here; try another store.", "It takes three hours, even tomorrow."]
     answer: 0
-    cja: ["今日なら3時間。明日の朝という手もある。", "店では直せない。", "明日でも3時間かかる。"]
+    cja: ["今日なら3時間。明日の朝という手もある。", "ここでは直せないので、別の店へ。", "明日でも3時間かかる。"]
     why: "swamped は「とても忙しい」。今日なら3時間くらいかかるが、come in tomorrow morning（明日の朝来る）もできる。店で直せないわけではない。"
     ctx: "混んだ携帯ショップで、修理を頼みました"
     ask: "つまり、どういう こと？"
@@ -293,9 +293,9 @@ items:
     en: "So, the screen's cracked, and there's water damage too. Is that covered? It's under warranty. The warranty doesn't cover water damage, sorry. But you have insurance, so it's a $99 deductible, and we can do it today. Okay. How long will it take? About an hour. You'd have to back it up first."
     ja: "保険で99ドル、1時間ほど。先にバックアップ。"
     note: "deductible＝保険の 自己負担額"
-    choices: ["$99 through insurance, about an hour, back it up first.", "Free under the warranty, done today.", "$99, but it takes a week."]
+    choices: ["$99 through insurance, about an hour.", "Free under the warranty, done today.", "$99, but it'll take about a week."]
     answer: 0
-    cja: ["保険で99ドル、1時間くらい、先にバックアップ。", "保証で無料、今日できる。", "99ドルで、1週間かかる。"]
+    cja: ["保険で99ドル、1時間くらい。", "保証で無料、今日できる。", "99ドルだが、1週間くらいかかる。"]
     why: "水濡れは保証の対象外。でも端末の保険（insurance）があるので、自己負担の99ドルで今日直せる。1時間ほどで、先に back it up。"
     ctx: "画面が割れて水にも濡れたスマホを修理に"
     focus: "But you have insurance, so it's a $99 deductible, and we can do it today."
@@ -337,9 +337,9 @@ items:
     tts: "You'd hafta come im person with yer I D. We can't do it over the phone."
     ja: "身分証を持って、ご本人が来店してください。電話ではできないんです。 → つまり、身分証を持って店に行く必要がある。"
     note: "in person が「イムパーソン」"
-    choices: ["She has to go to the store with her ID.", "She can do it over the phone.", "Someone else can go for her."]
+    choices: ["She has to go in with her ID.", "She can do it all over the phone.", "Someone can go for her."]
     answer: 0
-    cja: ["身分証を持って店に行かなければならない。", "電話で済ませられる。", "代わりの人が行ってもいい。"]
+    cja: ["身分証を持って、本人が行く必要がある。", "電話で全部済ませられる。", "代わりの人が行ってもいい。"]
     why: "in person は「本人が直接」で、n が p の前で m になり「イムパーソン」。have to は「ハフタ」。電話ではできず、代理でもだめ。"
     ctx: "回線の名義変更について、携帯会社に電話しました"
     ask: "つまり、どう する？"
@@ -373,11 +373,11 @@ items:
     voice: us
     cast: us-m1
     en: "How much can I get for my old phone? Let me check. With a trade-in, up to two hundred. But yours has a cracked back, so probably more like eighty. Eighty? Hmm."
-    ja: "まあ、80ドルでもないよりはいいか。"
+    ja: "まあ、80ドルでもないよりはまし。"
     note: "more like〜＝むしろ〜くらい"
-    choices: ["Okay, eighty's still better than nothing.", "Great, two hundred it is!", "Eighteen? That's nothing."]
+    choices: ["Well, eighty beats nothing.", "Great, so two hundred it is, then!", "Eighteen? That's barely anything."]
     answer: 0
-    cja: ["まあ、80ドルでもないよりはいいか。", "よし、200ドルで決まり！", "18ドル？ それじゃ何にもならない。"]
+    cja: ["まあ、80ドルでもないよりはまし。", "よし、じゃあ200ドルで決まりだね！", "18ドル？ ほとんど何にもならない。"]
     why: "下取りは最大200ドルだが、背面が割れているので more like eighty（80ドルくらい）。eighty は前が強く、eighteen（18）とは違う。"
     ctx: "古いスマホの下取り額を、店員に聞きました"
     focus: "But yours has a cracked back, so probably more like eighty."
@@ -526,9 +526,9 @@ items:
     en: "Okay, so it's not the battery. It's the charging port. There's lint in it. Lint? Seriously? Happens all the time. I can clean it out right now, no charge. If that doesn't work, it's a $79 repair, and it's not covered. Let's try the free thing first."
     ja: "今すぐ無料で充電口を掃除する。だめなら79ドル。"
     note: "no charge＝無料。charge は 充電 ではない"
-    choices: ["He'll clean the port now for free; if that fails, it's $79.", "The battery needs replacing for $79.", "It's covered, so the repair is free."]
+    choices: ["Free cleaning now; maybe $79 later.", "The battery needs replacing for $79.", "It's covered, so the repair is free."]
     answer: 0
-    cja: ["今すぐ無料で充電口を掃除。だめなら79ドル。", "電池の交換が必要で79ドル。", "保証の対象なので修理は無料。"]
+    cja: ["今すぐ無料で掃除。だめなら79ドル。", "電池の交換が必要で79ドル。", "保証の対象なので修理は無料。"]
     why: "原因は電池ではなく充電口のほこり（lint）。掃除は no charge（無料）。それでだめなら79ドルの修理で、not covered（保証の対象外）。"
     ctx: "混んだ携帯ショップで、充電できないスマホを"
     focus: "I can clean it out right now, no charge."
@@ -551,9 +551,9 @@ items:
     tts: "So if ya don't turn off data roamin' before ya land, it'll just keep chargin' ya tem bucks a day, an' honestly, people come back to bills of, like, three hundred."
     ja: "着く前にデータローミングを切っておかないと、1日10ドルずつかかり続けます。正直、帰ってきたら300ドルくらいの請求が来る人もいるんです。 → つまり、着く前にローミングを切らないと高くつく。"
     note: "before you land＝着陸 する 前に"
-    choices: ["Turn off roaming before landing, or it costs $10 a day.", "Roaming is free for the first ten days.", "The bill is always $300."]
+    choices: ["Turn roaming off, or it's $10 a day.", "Roaming is free for the first ten days.", "Everyone ends up with a $300 bill."]
     answer: 0
-    cja: ["着く前にローミングを切らないと、1日10ドルかかる。", "ローミングは最初の10日間無料。", "請求はいつも300ドル。"]
+    cja: ["ローミングを切らないと、1日10ドルかかる。", "ローミングは最初の10日間無料。", "誰でも300ドルの請求が来る。"]
     why: "着く前に data roaming を切る。切らないと ten bucks a day（1日10ドル）かかり続け、300ドルの請求が来る人もいる。"
     ctx: "旅行前に、混んだ携帯ショップで店員が早口で"
     ask: "つまり、どう する？"
@@ -568,11 +568,11 @@ items:
     cast: us-m1
     en: "Did you back it up before you reset it? 'Cause if not, those photos are gone."
     tts: "Didja back it up before ya reset it? 'Cause if not, those photos are gone."
-    ja: "リセットする前に、バックアップは取りました？ 取っていないなら、写真は消えてますよ。 →「はい、毎晩自動でバックアップされてると思います。」"
+    ja: "リセットする前に、バックアップは取りました？ 取っていないなら、写真は消えてますよ。 →「はい、毎晩バックアップされてると思います。」"
     note: "back it up＝バックアップを 取る"
-    choices: ["Yeah, it backs up every night, I think.", "Back? No, I reset it from the front.", "Reset? I just set it up today."]
+    choices: ["Yeah, I think it backs up every night.", "Back? No, I reset it from the front.", "Reset? I just set it up this morning."]
     answer: 0
-    cja: ["はい、毎晩バックアップされてると思います。", "後ろ？ いいえ、前からリセットしました。", "リセット？ 今日設定したばかりです。"]
+    cja: ["はい、毎晩バックアップされてると思います。", "後ろ？ いいえ、前からリセットしました。", "リセット？ 今朝設定したばかりです。"]
     why: "back it up は「バックアップを取る」で、前後の話ではない。リセット前に取ったかを聞いているので、自動で取れていると答えるのが自然。"
     ctx: "混んだ店で、初期化したスマホを見せました"
     scene: cafe
@@ -604,12 +604,12 @@ items:
     voice: us
     cast: us-m5
     en: "Your phone's ready! New screen, and I updated the software. Great! Do I need to sign in again? Yeah, sorry, you'll have to sign back in to everything. Your photos are safe, though."
-    ja: "大丈夫です。写真を守ってくれてありがとう！"
+    ja: "大丈夫です。写真が無事でよかった！"
     note: "sign back in＝もう 一度 ログイン"
-    choices: ["No problem. Thanks for keeping them safe!", "Oh no, my photos are gone?", "Sign? Where's the pen?"]
+    choices: ["No problem. Glad they're safe!", "Oh no, so all my photos are gone?", "Sign? Sure, I'll need a pen, then."]
     answer: 0
-    cja: ["大丈夫です。写真を守ってくれてありがとう！", "えっ、写真が消えたの？", "署名？ ペンはどこ？"]
-    why: "sign back in は「もう一度ログインする」で、署名ではない。写真は safe（無事）と言われたので、消えたわけではない。お礼を言うのが自然。"
+    cja: ["大丈夫です。写真が無事でよかった！", "えっ、じゃあ写真は全部消えたの？", "署名？ いいですよ、じゃあペンを。"]
+    why: "sign back in は「もう一度ログインする」で、署名ではない。写真は safe（無事）と言われたので、消えたわけではない。ほっとして返すのが自然。"
     ctx: "混んだ店で、修理の終わったスマホを受け取ります"
     focus: "Yeah, sorry, you'll have to sign back in to everything."
     ask: "次の ひとことは？"
@@ -630,9 +630,9 @@ items:
     tts: "We could order the part, but honestly, it'll take about two weeks, so ya might be better off with a new phone. Ya can trade this one in."
     ja: "部品を取り寄せることもできますが、正直、2週間ほどかかるので、新しいスマホにしたほうがいいかもしれません。これは下取りに出せますし。 → つまり、修理は2週間かかるので、下取りして買い替えるのも手。"
     note: "better off＝〜の ほうが 得"
-    choices: ["The repair takes two weeks, so a new phone might be better.", "The part arrives tomorrow.", "She can't trade in a broken phone."]
+    choices: ["A new phone may beat a two-week wait.", "The part they order should come tomorrow.", "She can't trade in a broken phone."]
     answer: 0
-    cja: ["修理に2週間かかるので、買い替えたほうがいいかも。", "部品は明日届く。", "壊れたスマホは下取りに出せない。"]
+    cja: ["2週間待つより、買い替えたほうがいいかも。", "注文した部品は明日届く。", "壊れたスマホは下取りに出せない。"]
     why: "部品の取り寄せに2週間ほどかかる。だから better off with a new phone（買い替えたほうが得）かも。古いのは下取り（trade in）に出せる。"
     ctx: "混んだ携帯ショップで、古いスマホの修理を相談"
     ask: "つまり、どういう こと？"
