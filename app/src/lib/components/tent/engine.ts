@@ -22,6 +22,7 @@ import { seatOf } from '../villager3d/poses.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
 import { drawOff, shaderChecks } from '../../ui-state/testMode.ts';
 import { lean } from '../world3d/release.ts';
+import { LIDS, lidK, lidMoving, lidOpen, lidOpenIn, lidWant, splitLid, type Lid } from './lid.ts';
 import { keepUsed } from '../world3d/keepUsed.ts';
 import { plainImages } from '../world3d/gltf.ts';
 import { due, FPS } from '#lib/store/frameRate.ts';
@@ -78,6 +79,8 @@ export interface Pose {
   front: Pt;
   /** Its model's own seat (villager3d/seats3d.ts): a 3D villager sits or lies on it there (villager3d sitAt). */
   a?: Anchor;
+  /** The piece's id (a lid shuts over who lies in it: lid.ts). */
+  id?: string;
 }
 export interface Ghost {
   item: string;
@@ -151,6 +154,10 @@ export interface Tent {
    *  the walk's length (ms). */
   walk(who: Who, pts: readonly Pt[], o?: { from?: Pt; ago?: number; ms?: number }): number;
   walking(who: Who): boolean;
+  /** Ms till `who` gets up (a lid opening over it first: lid.ts), 0 when nothing holds it. */
+  upIn(who: Who): number;
+  /** The test hook's: how shut a piece's lid is (0 open … 1 shut), null with none. */
+  lid(id: string): number | null;
   /** A villager turns toward a point (left or right) or hops (a tap on it). */
   face(who: Who, toward: Pt): void;
   hop(who: Who): void;
@@ -195,6 +202,7 @@ export interface Tent {
 }
 
 const now = () => performance.now();
+const reduced = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function softDisc(): CanvasTexture {
   const c = document.createElement('canvas');
@@ -323,6 +331,8 @@ function loadModel(code: string): Promise<GLTF | null> {
       };
       m.material = Array.isArray(m.material) ? (m.material as MeshStandardMaterial[]).map(lam) : lam(m.material as MeshStandardMaterial);
     });
+    // a lid of its own (lid.ts): cut out once, under its hinge, the clones sharing it
+    if (LIDS[code]) splitLid(g.scene, LIDS[code]);
     if (models.get(code) === p) modelsIn.set(code, g);
     return lean(g);
   }, (e: unknown) => {
@@ -537,6 +547,8 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     bump: number;
     on: boolean | null;
     lit: MeshLambertMaterial[];
+    /** Its lid's hinge (lid.ts) and its motion. */
+    lid: { pivot: Object3D; run: Lid } | null;
   }
   const live = new Map<string, Live>();
   /** Pieces not drawn where they stand: the one I'm moving, the ones the partner holds. */
@@ -576,7 +588,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       root.userData.id = s.id;
       placeRoot(root, s);
       root.visible = !hidden.has(s.id);
-      const l: Live = { spot: s, root, body: null, pop: 0, bump: 0, on: null, lit: [] };
+      const l: Live = { spot: s, root, body: null, pop: 0, bump: 0, on: null, lit: [], lid: null };
       live.set(s.id, l);
       (isWallItem(s.item) ? walls[s.f]?.g ?? scene : scene).add(root);
       pending++;
@@ -596,6 +608,8 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
           }
         });
         body.traverse((n) => (n.userData.id = s.id));
+        const pivot = LIDS[s.item] ? body.getObjectByName('lid') : undefined;
+        l.lid = pivot ? { pivot, run: lidOpen() } : null;
         l.body = body;
         l.pop = now();
         root.add(body);
@@ -1009,6 +1023,8 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     posing: boolean;
     /** Where it last went or turned to (a yaw: its forward (sin, cos)): the first person's view starts looking there. */
     heading: number;
+    /** Getting up then (now's clock: a lid opens over it first), still lying till then; 0 not held. */
+    upAt: number;
   }
   /** The villagers' models are in the island's units (80 u tall): the room's are VILLAGER_H. */
   const V3_SCALE = VILLAGER_H / 80;
@@ -1064,7 +1080,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     const shadow = new Mesh(shadowGeo, shadowMat);
     shadow.rotation.x = -Math.PI / 2;
     shadow.renderOrder = 2;
-    const w: Walker = { look, card, mat, shadow, pos: [who === 'A' ? -6 : who === 'B' ? 6 : 0, 20], face: who === 'A' ? 1 : -1, path: null, hop: 0, alpha: null, pose: null, v3: null, was: [0, 0], yaw: 0, posing: true, heading: Math.PI };
+    const w: Walker = { look, card, mat, shadow, pos: [who === 'A' ? -6 : who === 'B' ? 6 : 0, 20], face: who === 'A' ? 1 : -1, path: null, hop: 0, alpha: null, pose: null, v3: null, was: [0, 0], yaw: 0, posing: true, heading: Math.PI, upAt: 0 };
     w.was = [...w.pos];
     villagers.set(who, w);
     scene.add(card, shadow);
@@ -1146,6 +1162,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     const w = villagers.get(who);
     if (!w) return;
     w.pose = p;
+    w.upAt = 0;
     if (p) {
       w.path = null;
       w.heading = Math.atan2(p.front[0], p.front[1]);
@@ -1155,14 +1172,28 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     place(w);
     invalidate();
   }
+  /** Lying under a lid that's shut (or shutting): it opens, and `w` stays lying till it has (upAt). The ms that takes. */
+  function rise(w: Walker): number {
+    const l = w.pose?.lie && w.pose.id ? live.get(w.pose.id)?.lid : null;
+    if (!l) return 0;
+    const t = now();
+    if (w.upAt) return Math.max(0, w.upAt - t);
+    l.run = lidWant(l.run, false, t, reduced());
+    const wait = lidOpenIn(l.run, t);
+    if (wait > 0) w.upAt = t + wait;
+    invalidate();
+    return wait;
+  }
   function walk(who: Who, pts: readonly Pt[], o: { from?: Pt; ago?: number; ms?: number } = {}): number {
     const w = villagers.get(who);
     if (!w || !pts.length) return 0;
     const from: [number, number] = o.from ? [o.from[0], o.from[1]] : [...w.pos];
     const { lens, total } = walkLens(from, pts);
     const ms = o.ms ?? (total / PACE) * 1000;
-    w.pose = null;
-    w.path = { from, pts: [...pts], t0: now() - (o.ago ?? 0), ms: Math.max(1, ms), lens, total };
+    // (a lid over it opens first: the walk starts once it has)
+    const wait = rise(w);
+    if (!wait) w.pose = null;
+    w.path = { from, pts: [...pts], t0: now() - (o.ago ?? 0) + wait, ms: Math.max(1, ms), lens, total };
     invalidate();
     return ms;
   }
@@ -1656,6 +1687,23 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       }
       l.body.scale.set(sx, sy, sx);
     }
+    // getting up from under a lid once it's open; a lid shut while someone lies in it (and not getting up)
+    for (const w of villagers.values()) if (w.upAt && t >= w.upAt) {
+      w.upAt = 0;
+      w.pose = null;
+    }
+    for (const l of live.values()) {
+      if (!l.lid) continue;
+      const id = l.spot.id, spec = LIDS[l.spot.item], inIt = [...villagers.values()].filter((w) => w.pose?.lie && w.pose.id === id);
+      l.lid.run = lidWant(l.lid.run, inIt.some((w) => !w.upAt), t, reduced());
+      const k = lidK(l.lid.run, t), z = spec.shut * k;
+      if (lidMoving(l.lid.run, t)) more = true;
+      if (z === l.lid.pivot.rotation.z) continue;
+      l.lid.pivot.rotation.z = z;
+      shadowsDirty = more = true;
+      // (the sleeper a little deeper under it, posed while it moves)
+      for (const w of inIt) if (w.v3) (w.v3.lower(spec.sink * k), (w.posing = true));
+    }
     for (const h of heldBy.values()) {
       // eased toward the latest spot heard (updates come ~10 a second): a glide, not a jump
       const dt = Math.min(100, t - h.t);
@@ -1878,7 +1926,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       const w = villagers.get(who);
       if (!w) return;
       w.path = null;
-      w.pose = null;
+      if (!rise(w)) w.pose = null;
       w.pos = [p[0], p[1]];
       if (f) setFace(w, f);
       place(w);
@@ -1899,7 +1947,9 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       const hb = v.head()?.getWorldPosition(new Vector3());
       return { state: v.state(), box: [[b.min.x - o.x, b.min.y - o.y, b.min.z - o.z], [b.max.x - o.x, b.max.y - o.y, b.max.z - o.z]], at: [o.x, o.y, o.z], head: hb ? [hb.x, hb.y, hb.z] : null };
     },
-    walk, walking: (who) => !!villagers.get(who)?.path, face, hop, headPoint, hit, floorAt, client, orbit, zoom, resetView, isDefault, moving, centre,
+    walk, walking: (who) => !!villagers.get(who)?.path, face,
+    upIn: (who) => Math.max(0, (villagers.get(who)?.upAt ?? 0) - now()),
+    lid: (id) => ((l) => (l ? lidK(l.run, now()) : null))(live.get(id)?.lid), hop, headPoint, hit, floorAt, client, orbit, zoom, resetView, isDefault, moving, centre,
     loading: () => pending,
     stats: () => ({ frames, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: cost.slice(), queued: !!raf,
       mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0], models: modelStats() }),

@@ -1,7 +1,7 @@
 // Lying down and sitting on a turned piece (docs/design.md "The tent": Sit, lie and switch): the bed's pose comes from
 // its model (villager3d/seats3d.json) turned with it, so at every facing my villager lies along the bed, its head on
 // the pillow's end (NH's beds: the model's −x), on the mattress and inside the footprint; a double bed sleeps two side
-// by side.
+// by side; the cold sleep pod's lid shuts over its sleeper and opens before they get up.
 import { expect, test, type Page } from './fixtures.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -16,6 +16,7 @@ type T = {
   tile(x: number, z: number): [number, number];
   seat(): { id: string; n: number; lie: boolean } | null;
   seatAs(w: string, id: string, n: number): boolean;
+  lid(id: string): number | null;
   v3(w: string): V;
 };
 const tent = <R,>(page: Page, fn: (t: T) => R) => page.evaluate(`(${fn.toString()})(window.__tent)`) as Promise<R>;
@@ -91,4 +92,24 @@ test('a double bed sleeps two side by side', async ({ page }) => {
   // turned half round, the bed's length is along x: the two apart across it (z), their boxes clear of each other
   const az = [a.box[0][2] + a.at[2], a.box[1][2] + a.at[2]], bz = [b.box[0][2] + b.at[2], b.box[1][2] + b.at[2]];
   expect(Math.min(az[1], bz[1]) - Math.max(az[0], bz[0])).toBeLessThan(1);
+});
+
+test('the cold sleep pod: its lid shuts over me lying in it, and opens before I get up', async ({ page }) => {
+  const p = await room(page, 'f13508', 1);
+  expect(await tent(page, (t) => t.lid(t.pieces()[0].id))).toBe(0);
+  await lieOn(page, p);
+  const lid = () => page.evaluate((id) => (window as unknown as { __tent: T }).__tent.lid(id), p.id);
+  await expect.poll(lid, { timeout: 5000 }).toBe(1);
+  // shut over me, still lying, settled a little deeper: my top (the head's) under its glass (11.2-11.7 over the floor
+  // over the head's middle)
+  await expect.poll(async () => ((v) => v && v.state === 'lie' && v.box[1][1] + v.at[1])(await tent(page, (t) => t.v3('A'))), { timeout: 3000 }).toBeLessThan(11.2);
+  // a tap on the floor away from it: the lid opens first, me lying till it has, then up and off
+  const [x, y] = await page.evaluate((z) => (window as unknown as { __tent: T }).__tent.tile(3, z), p.z >= 4 ? 1 : 6);
+  await page.mouse.click(x, y);
+  await expect.poll(lid, { timeout: 2000, intervals: [30] }).toBeLessThan(0.95);
+  const mid = await page.evaluate((id) => ({ k: (window as unknown as { __tent: T }).__tent.lid(id), v: (window as unknown as { __tent: T }).__tent.v3('A')?.state }), p.id);
+  if (mid.k! > 0.05) expect(mid.v).toBe('lie');
+  await expect.poll(lid, { timeout: 3000 }).toBe(0);
+  await expect.poll(() => tent(page, (t) => t.seat()), { timeout: 3000 }).toBeNull();
+  await expect.poll(async () => (await tent(page, (t) => t.v3('A')))?.state, { timeout: 5000 }).not.toBe('lie');
 });

@@ -187,7 +187,8 @@
     const ms = eng.walk(me, pts);
     myWalk = { from, via: pts.slice(0, -1), to: pts[pts.length - 1], s: relayNow(), ms };
     sayWhere();
-    if (then) arriving = setTimeout(then, ms + 30);
+    // (up from under a lid: it opens first)
+    if (then) arriving = setTimeout(then, eng.upIn(me) + ms + 30);
   }
   let arriving: ReturnType<typeof setTimeout> | undefined;
 
@@ -200,7 +201,7 @@
     const p = spots().find((q) => q.id === id);
     return p ? (seatsOf(p, canStand, near)[n] ?? null) : null;
   };
-  const poseOf = (st: Seat): Pose => ({ at: st.at, y: st.y, lie: st.lie, front: st.front, a: st.anchor });
+  const poseOf = (st: Seat): Pose => ({ at: st.at, y: st.y, lie: st.lie, front: st.front, a: st.anchor, id: st.id });
   function sitOn(id: string) {
     const p = spots().find((q) => q.id === id);
     if (!p || !eng) return false;
@@ -747,6 +748,8 @@
       starter: () => STARTER,
       /** Where my villager sits or lies (null: standing), and the partner's. */
       seat: () => ((st) => (st ? { id: st.id, n: st.n, lie: st.lie } : null))(seats.mine()),
+      /** How shut a piece's lid is (0 open … 1 shut; null: it has none). */
+      lid: (id: string) => eng?.lid(id) ?? null,
       partnerSeat: () => seats.their(partner),
       /** Another villager (`w`) put on seat `n` of piece `id`, as if heard from its phone. */
       seatAs: (w: Who, id: string, n: number) => {

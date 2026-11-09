@@ -974,7 +974,9 @@ stands just in front, facing out, on every phone. The homes' rooms are the same 
 - **Sit, lie and switch** (`tent/seats.ts`; shared with the museum's benches: `rooms/seating.ts`): NH's own interaction
   from the spreadsheet (a Chair is sat on, a Bed lain on): a tap walks my villager up to the nearest free side and it
   sits or lies, its pose its model's turned with the piece (along the bed, the head on the pillow, a double bed's two
-  side by side: [Seats and beds](world3d-assets.md#seats-and-beds)); a floor tap gets it up; the first to sit keeps the seat (the `tent` intent's `seat`). A light switches with a tap, kept with the
+  side by side: [Seats and beds](world3d-assets.md#seats-and-beds)); a floor tap gets it up; the first to sit keeps the seat (the `tent` intent's `seat`). The cold sleep pod's lid (`tent/lid.ts`) shuts over
+  its sleeper once lain (0.45 s, then 0.52 s eased; at once with reduced motion), the sleeper settling 1.2 deeper, and
+  opens before they get up (the get-up waits for it); each phone runs it off the shared lying pose. A light switches with a tap, kept with the
   piece (its op's `l`); NH's room light switch (💡) dims the room's own light.
 - **Phrases** ([Villager taps](#villager-taps)): the say button at the room's bottom right, in the tent and every home;
   hidden in もようがえ and under a sheet. The phrase shows in the island's balloon (`island/Says.svelte`) by the speaker's
