@@ -643,7 +643,9 @@
           ln = { obj, off: e.add(obj) };
           lines.set(n.id, ln);
         }
-        if (n.id === 'bobber') fishing = n.shown;
+        // (the line and the rod by the cast, not by the float's node on screen: a pinch or a scroll that took the float
+        // off the screen's edge hid the whole line, the rod's tip and the rest of it still in view)
+        if (n.id === 'bobber') fishing = true;
         // (a bobber's: from its 3D villager's rod's tip, where it holds one: mine `bobber`, another's `bobber-<slot>`)
         const tip = n.id === 'bobber' ? vil3?.tip('mine') : n.id.startsWith('bobber-') ? vil3?.tip(n.id.slice(7)) : null;
         let [sx, sz, sl] = n.m3.line(), y0 = heightOf(sx, sz) + sl;
@@ -668,7 +670,7 @@
           ln.obj.geometry.setDrawRange(0, LINE_N);
         }
         pos.needsUpdate = true;
-        ln.obj.visible = on;
+        ln.obj.visible = !n.m3.off;
         seenLine.add(n.id);
       }
     }

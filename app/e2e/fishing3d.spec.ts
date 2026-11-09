@@ -289,3 +289,37 @@ test(`3D fishing as a human player in the ${water}: facing, rod and line in one 
     expect(Math.hypot(t[0] - first[0], t[1] - first[1], t[2] - first[2])).toBeLessThan(8);
   }
 });
+
+// The line stays drawn as the camera moves (the user: "on the initial cast we can see the fishing line; changing zoom or
+// scrolling around can often cause the fishing line to disappear"): it was shown only while the float's node was on
+// screen, so a pinch in on my villager or a scroll that took the float past the screen's edge hid the whole line, the
+// rod's tip and most of it still in view. Now it's out for as long as the cast is.
+test('3D fishing: the line stays drawn as a pinch or a scroll takes the float off the screen', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-11-04T12:00:00+09:00') });
+  await page.goto('?demo&critter=fish&date=2026-11-04T12:00');
+  await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
+  await castIn(page, 'sea');
+  await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 8000 });
+  await expect.poll(() => v3(page, (v) => [v.tool('mine'), v.state('mine')]), { timeout: 15_000 }).toEqual(['tools/rod', 'fish']);
+  const camZ = await page.evaluate(() => (window as unknown as { __world3d: G }).__world3d.view().camZ);
+  await pauseNow(page);
+  type L = { line(): { visible: boolean; pts: number[][] } | null; client(x: number, z: number): [number, number] };
+  type F = { __fish: { line(): { x: number; z: number } | null }; __world: { mine(): [number, number]; at(x: number, z: number): [number, number] } };
+  /** The line as drawn, my villager (the line's start) and the float on screen (client px). */
+  const read = () => page.evaluate(() => {
+    const w = window as unknown as F & { __world3d: L }, ln = w.__world3d.line(), f = w.__fish.line()!;
+    const on = ([x, y]: number[]) => x >= 0 && x <= innerWidth && y >= 0 && y <= innerHeight;
+    return { visible: !!ln?.visible && ln.pts.length > 1, me: on(w.__world.at(...w.__world.mine())), float: on(w.__world3d.client(f.x, f.z)) };
+  });
+  let offScreen = 0;
+  // zoomed in on the bank (the float below the screen's bottom), scrolled, and back out
+  for (const [dz, k] of [[0, 1], [0, 2], [0, 2.6], [-60, 2.4], [0, 1.4], [150, 1], [-150, 1], [0, 1]] as const) {
+    await zoomToRest(page, camZ + dz, k);
+    const r = await read();
+    if (SHOTS) await page.screenshot({ path: `${SHOTS}/fish3d-line-z${dz}-k${k}.png` });
+    if (r.me) expect(r.visible, `the line at zoom ${k}, the camera ${dz} off the cast's: ${JSON.stringify(r)}`).toBe(true);
+    if (r.me && !r.float) offScreen++;
+  }
+  // (the float off the screen at least once, my villager on it: the case that hid the line)
+  expect(offScreen).toBeGreaterThan(0);
+});
