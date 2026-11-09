@@ -836,10 +836,12 @@ island, NH's way, with its own key (pairing: [runbook "Pair a phone"](ops/runboo
   and its own house, the editor, watering, wishes, waking a visitor, the weather, the shop, the museum, K.K., the board,
   ききみみ), its finds credited in the shared ずかん (「（おきゃくさん）」). It earns and spends no ベル, sets none of our goals
   and writes neither the wedding board nor a trip's notes (the record refuses those).
-- **Its villager on the island:** there only while its app is open (the relay's presence). Each time the app opens it
-  comes ashore at the front beach's right end and strolls to its spot by the campsite, on every phone. While here it is
-  in the island's life as a member's villager (ambient moves, chats, ふたりでぜんぶ's walk and high-five, the dusk
-  meet-up, group stretching), never an outing of its own. It dozes 22:00–05:00 with everyone.
+- **Its villager on the island:** always there, as the members' are (the user, 2026-11-09: "go for consistency"):
+  where its last walk left it (its spot by its house, or the campsite, till it has walked), its own phone opening it
+  there too. **Asleep while its app is closed** (the relay's presence: `cast.ts` guestAway, `islandLife.svelte.ts`
+  asleepNow; the night's doze and zzz, a tap wakes it for 10 s), **awake while it's open**, in the island's life then as
+  a member's villager (ambient moves, chats, ふたりでぜんぶ's walk and high-five, the dusk meet-up, group stretching),
+  never an outing of its own. It dozes 22:00–05:00 with everyone. (The members' villagers, offline, stay awake.)
 - **On our phones:** drawn like the partner's villager (lilac name tag); a tap is a high-five; its phrases and catches
   show there. A banner: 「おきゃくさんが あそびに きたよ！」.
 - **Who counts as "the partner"** (said once): the guest only where the island's life is everyone's
@@ -848,7 +850,7 @@ island, NH's way, with its own key (pairing: [runbook "Pair a phone"](ops/runboo
   - ふたりでぜんぶ: everyone on the island walks to the middle (the guest a step in front: `wander.ts` MEET.G) and
     high-fives.
   - The follow: a member's villager comes over to mine; on the guest's phone A's or B's comes to the guest's.
-  - Ambient life (`ambient.ts`): the members' villagers and the guest's while it's here; it shakes no tree.
+  - Ambient life (`ambient.ts`): the members' villagers and the guest's while it's awake; it shakes no tree.
   - The goal walks and meeting a visitor: the members' own. Sleep: everyone, by the relay's clock (`act wake`, `id`).
   - High-fives: one at a time per pair, each with its `to`.
 
@@ -1531,7 +1533,7 @@ Anywhere: `?panel=rewards` opens ごほうび at once; the 3D island's renderer 
   `playPartner`); only a phone opening, or the island hidden, puts it there.
 - **The camera never moves for a walk:** only the finger scrolls.
 - **A phone gone** (closed, hidden, offline, for any time): its villager stays where its last walk ended, on every phone
-  (the relay carries each person's last walk into each new day). Not the guest's ([The guest](#the-guest)).
+  (the relay carries each person's last walk into each new day). The guest's too, asleep there ([The guest](#the-guest)).
 - **Sheets and hiding:** a sheet stops everyone; uncovered, the outings wander back; hidden over 30 s, they're back on
   return. A balloon opens only over a villager standing still.
 - **Walk mask** (`walkGeo`): land, the bridge's deck and the stairs; not water, cliffs, footprints, trunks, the rock,

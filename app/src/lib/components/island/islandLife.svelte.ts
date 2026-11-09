@@ -11,7 +11,7 @@ import { startIdleLife } from '../motion/idleLife.svelte.ts';
 import { ambientPois, ambientVillager, goalWalk, meetUp, outing, presence, steered } from './avatar.ts';
 import { goalMoves } from './wander.ts';
 import { personHere, relayOffset } from './ambientClock.ts';
-import { actorOf, guestPhone, islandActors, whoOf } from '#lib/ui-state/cast.ts';
+import { actorOf, guestAway, guestPhone, islandActors, whoOf } from '#lib/ui-state/cast.ts';
 import type { AmbientWorld } from './ambient.ts';
 import { on } from '../motion/bus.svelte.ts';
 import { dayKey, jst, now } from '#lib/time/clock.ts';
@@ -41,6 +41,9 @@ const HOUR_MS = 3600_000;
  *  at whatever hour it is). Module-level: the director keeps it past the scene, and a closure made in the constructor
  *  would keep the whole island (its DOM, its renderer) alive through a room's visit. */
 const sleepyNow = () => !hookFlag('awake') && asleepHour(new Date(now().getTime() + relayOffset()));
+/** Whether a villager sleeps now: everyone at night; the guest's, always on the island, while its app is closed too
+ *  (the relay's presence: cast.ts guestAway; awake while it's open). */
+export const asleepNow = (id: string): boolean => sleepyNow() || (id === actorOf('G') && guestAway());
 
 /** True the first time `key` is seen today on this device. */
 const once = (key: string): boolean => firstOn(SCENE.beat(key), dayKey());
@@ -77,7 +80,7 @@ export class IslandLife {
     // Naps 22:00–5:00 on the relay's clock (the same moment on both phones; a tap wakes a villager for a moment, on
     // both: director.svelte.ts wake, villagerSync): put to sleep or woken at the hour it turns, not at every minute
     // (that put a woken villager back to sleep early).
-    setSleepClock(sleepyNow);
+    setSleepClock(asleepNow);
     $effect(() => {
       let was: boolean | null = null;
       let timer: ReturnType<typeof setTimeout>;
@@ -86,9 +89,9 @@ export class IslandLife {
         if (s !== was) {
           was = s;
           untrack(() => {
-            setAsleep('mine', s);
-            setAsleep('partner', s);
-            setAsleep('third', s);
+            setAsleep('mine', asleepNow('mine'));
+            setAsleep('partner', asleepNow('partner'));
+            setAsleep('third', asleepNow('third'));
           });
         }
         const t = now().getTime() + relayOffset();

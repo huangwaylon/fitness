@@ -531,8 +531,8 @@ the guest.
 - **Push:** its own `changed` notices reach every phone; of the members' it hears an event's, an ingest's only when it
   brought activity rows (`notify(n, guest)`), and a new epoch's. Its welcome's `rec` is the last change it heard of
   (the room's `rec-g`).
-- **The phones:** a member's draws the guest's villager while it's `here`, as a third actor (`ui-state/cast.ts`:
-  `mine`, `partner`, `third`; on the guest's phone `third` is B); the guest's phone guards what it sends by the same
+- **The phones:** a member's always draws the guest's villager, as a third actor (`ui-state/cast.ts`: `mine`,
+  `partner`, `third`; on the guest's phone `third` is B), asleep where its last walk left it while it isn't `here`; the guest's phone guards what it sends by the same
   rules (`week.send` by `guestMayWrite`), so nothing it may not do is queued or shown.
 - **Tests:** `relay/test/guest.test.ts` (no からだ row or goal in any snapshot or delta; the island's writes taken, the
   economy's refused; the dump has `G`'s rows; the room's three villagers), `contract/guest.test.ts`,
@@ -558,7 +558,7 @@ shows the same island without a message (decisions: *Ambient life from the clock
   an outing of 1–3 stops within 600u (30 % of slots, one villager out at a time; `avatar.ts outing`), a chat or a
   dance for two free villagers (dancing only with both scores ≥ 70), or the night's doze. A villager whose person has
   the island open makes small moves but no outings, and is left alone 12 slots after its person's last walk (`held`).
-  The guest's villager joins while its app is open: a third each, no outing of its own, no tree shaking.
+  The guest's villager joins while its app is open (closed, it sleeps): a third each, no outing of its own, no tree shaking.
 - **Visitor:** `Visitor.svelte beat(r)` runs `visitorLife.ts pickAct`, `pickEmote` and `strollSpots` on the slot's
   `visitor` PRNG; a phone whose visitor is speaking skips it.
 - **Critters** (`spawnsIn(date, slot, coasts)`, `crittersAt`): per channel (the sea off the front beach, `sea`, a

@@ -23,13 +23,10 @@ export const outOf = (id: BuildingId, who: 'A' | 'B' | 'G'): { at: Pt; face: 'ho
   return { at: who === 'G' ? [x, z - 46] : [x + (who === 'A' ? -12 : 12), z - 30], face: 'home' };
 };
 
-/** The guest's spot (docs/design.md "The guest"): where it stands once it has arrived. On the layout, in front of its
+/** The guest's spot (docs/design.md "The guest"): where its villager stands till it's moved. On the layout, in front of its
  *  own house (home-G), on the door's right; on world.ts's island (no house of its own) by the campsite, NH's visitors'
  *  clearing. */
 export const guestSpot = (): Pt => {
   const g = BUILDINGS.find((b) => b.id === 'home-G');
   return g ? [g.x + 36, g.z - 30] : [CAMPSITE.x + 42, CAMPSITE.z - 34];
 };
-/** Where the guest's villager comes ashore each time its app opens: the front beach's right end, as off a boat at the
- *  shore, then it walks up the island to its spot. */
-export const GUEST_ARRIVAL: Pt = [300, 20];

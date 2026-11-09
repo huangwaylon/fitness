@@ -517,7 +517,7 @@ export function setAsleep(id: ActorId, asleep: boolean) {
   const a = actors[id];
   if (a.asleep === asleep) return;
   if (asleep && napHold(id)) {
-    later(id, NAP_RETRY_MS, () => setAsleep(id, sleepy()));
+    later(id, NAP_RETRY_MS, () => setAsleep(id, sleepy(id)));
     return;
   }
   a.asleep = asleep;
@@ -531,10 +531,10 @@ export function setAsleep(id: ActorId, asleep: boolean) {
 
 /** How long a woken villager stays up (ms). */
 export const WAKE_MS = 10_000;
-/** Whether it's sleeping time now (islandLife: the night's hours on the relay's clock, the same on both phones): a woken
- *  villager goes back to sleep after WAKE_MS only then. */
-let sleepy: () => boolean = () => true;
-export function setSleepClock(fn: () => boolean): void {
+/** Whether a villager sleeps now (islandLife asleepNow: the night's hours on the relay's clock, the same on every phone;
+ *  the guest's too while its app is closed): a woken villager goes back to sleep after WAKE_MS only then. */
+let sleepy: (id: ActorId) => boolean = () => true;
+export function setSleepClock(fn: (id: ActorId) => boolean): void {
   sleepy = fn;
 }
 /** A villager was woken here (a tap, a high-five): the scene tells the other phone (villagerSync), whose own wake of it
@@ -560,7 +560,7 @@ export function wake(id: 'mine' | 'partner' | 'third', o: { remote?: boolean; ms
   setEmote(id, 'shocked');
   addFx(id, 'sweat');
   cue('emote-surprise');
-  later(id, o.ms ?? WAKE_MS, () => setAsleep(id, sleepy()));
+  later(id, o.ms ?? WAKE_MS, () => setAsleep(id, sleepy(id)));
 }
 
 /** Reset everything (scene unmount). */
