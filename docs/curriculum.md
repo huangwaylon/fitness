@@ -7,8 +7,7 @@ What ききみみ teaches, how content is made harder, the units, and what's wri
 | | |
 |---|---|
 | **Primary learner** | ウェイ: a Japanese adult in Tokyo, TOEIC 700+, reads well and follows clear speech. The gaps are what a 700 score hides: fast, reduced, overlapping and indirect speech; phone and PA audio; group talk; long-form (podcasts, news, meetings). |
-| **Second learner** | うめ, around B1+ (みみ チェック measures it). The design keeps a floor (はまべ) and per-player tiers, so two levels share one scene. |
-| **Guest** | Plays with its own private record; in no couple summary. |
+| **Second learner** | うめ, around B1+ (みみ チェック measures it). The design keeps a floor (はまべ) and per-player tiers, so two levels share one scene. The guest plays with its own private record, in no couple summary. |
 | **Goal (12 months)** | Natural-speed daily conversation, service calls, meetings and announcements on the first listen; then podcasts and the news at C1. |
 | **Focus** | Listening. Speaking only in the opt-in mic modes. |
 | **Sessions** | 3–10 minutes, solo or 2–3 live, iPhone Safari. No push notifications: the hook is in the app (the daily menu, しずえ's line). |
@@ -34,7 +33,7 @@ Every item and dialogue line is American by default: US vocabulary, idioms and s
 
 ## Stages and can-dos
 
-Stages are places, never やさしい / むずかしい; the UI shows ★ (kikimimi.md "Places").
+Stages are places, never やさしい / むずかしい; the UI shows ★ (kikimimi.md "Places"). L5 is the アナウンス pack beside もり (bank.ts `levelRank`), not a stage.
 
 | Stage | CEFR | Role | Listening can-do ("I can…") | Rate (syl/s) | Conditions |
 |---|---|---|---|---|---|
@@ -43,8 +42,6 @@ Stages are places, never やさしい / むずかしい; the UI shows ★ (kikim
 | **S2 もり** ★★★ | B2 | core (L4) | follow native-speed conversation between 2–3 people, phone calls and announcements; tell attitude and implied refusals; follow self-corrections ("Thursday — no, Friday") | 4.5–5.2 | overlap, phone band, PA reverb, SNR to +10 dB |
 | **S3 やま** ★★★★ | B2+ | core (L6) | follow fast group talk with interruptions, meetings, voicemail and support calls with complications; catch sarcasm, hedging and humour; cope with a less familiar accent | 5.0–5.8 | 3 speakers, interruptions, SNR to +5 dB; UK/AU exposure ≤ 10 % |
 | **S4 ほし** ★★★★★ | C1 | stretch (L7) | follow podcasts, news, lectures and debates on unfamiliar topics; infer stance; follow structure | casual 5.5–6.2, news ~4.5 dense | long-form; UK/AU exposure ≤ 10 % |
-
-L5 is the アナウンス pack beside もり (bank.ts `levelRank`), not a stage.
 
 **The sound-feature sequence** (one primary per unit, earlier ones reviewed; stages.ts `STAGES`):
 
@@ -88,7 +85,7 @@ Every scenario yields several question types from one recording, so audio is reu
 
 ### Difficulty levers
 
-An item's difficulty is the sum of its steps; adaptivity moves one lever at a time.
+An item's difficulty is the sum of its steps; adaptivity moves one lever at a time. The noise steps built so far are +15 dB (light) and +10 dB (heavy) (kikimimi-engine.md "Conditions"); +5 dB waits for S3 content.
 
 | Lever | Step 0 | Step 1 | Step 2 | Step 3 |
 |---|---|---|---|---|
@@ -103,8 +100,6 @@ An item's difficulty is the sum of its steps; adaptivity moves one lever at a ti
 | Distractors | far | heard in the clip | the corrected value | the plausible wrong inference |
 | Length | 1 line | 3–6 lines | 30–60 s | 2–6 min, segmented |
 | Support | 🐢 slow take | replay | segment replay | one play only |
-
-The noise steps built so far are +15 dB (light) and +10 dB (heavy) (kikimimi-engine.md "Conditions"); +5 dB waits for S3 content.
 
 ### The island frame
 
@@ -218,8 +213,7 @@ What each game trains, and why it's there (the rules: kikimimi.md and kikimimi-e
 | まるごと 聞く | C1 listening: 2–5 minute real and generated conversations heard whole; gist, implication, attitude, next step; dictation near misses | ほし; "Long listening" |
 | おやすみ ものがたり | extensive listening at 95 %+ comprehension | no score; 3 serials (st-johnny, st-cafe, st-tokyo) |
 | よみきき サンド | the listen → read → listen cycle (metacognition) | no new content; the clip always plays blind first |
-| おさらい | spaced review of what tripped you | |
-| みみ チェック | placement | |
+| おさらい, みみ チェック | spaced review of what tripped you; placement | |
 | the mic modes | prosody, sentence rebuilding, minimal pairs in production | private, opt-in (kikimimi-mic.md) |
 
 **Not built:** segmented talks with a comprehension map; トーン あて ("Backlog"); うわさの でんごん, めいたんてい フータ, ざつだん パーティ (turn-taking taps are fragile on the audio clock); かいぎの ぎじろく (work is already the heaviest domain); ながら ききみみ (WebKit suspends audio on lock); とたけけの よふかしラジオ, いっしょに クッキング, わらいどころ (humour is hard for TTS). **Cut:** minimal-pair fishing (barely transfers at TOEIC 700+), riddles (no listening target), karaoke and the K.K. chant (recall, and singing is embarrassing), ふたりで タイル (dictogloss) and an earphones-only split (the listening games' two roles cover the information gap).
@@ -251,8 +245,7 @@ The paper theme; lazy-loaded. Scene cards show the setting and the speakers, nev
 
 - **Placement, みみ チェック:** private, ~3 minutes, 8–12 adaptive items, starting at かわ (not はまべ, given the learners' level), up after 2 right, down after 1 wrong, stopping after two reversals; a band per skill gives とくい / これから. Re-check from せってい only. Not yet sampled: accent and phone clips; a stage-boundary re-check offer.
 - **Adaptivity:** one Elo-style ability per player, and each item's difficulty learned from that player's answers, seeded from where it's filed (its place and type; an item's own shift and its shelf's, bounded). おさらい picks the items nearest the 75–85 % target (the comfortable level at 80 %). Per-lever abilities aren't built.
-- **Spaced repetition:** the card is a chunk or a feature, never a clip; each review uses a different clip where one tests the same (a sibling: the same level, type and sound or skill), else the same clip with its choices turned. Intervals 1 / 3 / 7 / 16 / 35 / 90 days; right first play good, after a replay hard, wrong again. No streak guilt: a missed day only means more due cards (capped at 8 a day).
-- As built: kikimimi.md "Progress & feedback", kikimimi-engine.md "みみ チェック".
+- **Spaced repetition:** the card is a chunk or a feature, never a clip; each review uses a different clip where one tests the same (a sibling: the same level, type and sound or skill), else the same clip with its choices turned. Intervals 0 / 1 / 3 / 7 / 16 / 35 / 90 days; right first play good, after a replay hard, wrong again. No streak guilt: a missed day only means more due cards (capped at 8 a day). As built: kikimimi.md "Progress & feedback", kikimimi-engine.md "みみ チェック".
 
 ## The couple
 
@@ -276,8 +269,7 @@ The stage stays the spine; units are its stops. A **domain** is a tag, not a pla
 
 - **One situation, one can-do**, from the CEFR Companion Volume's listening scales: 「[だれ]が [なにを する]のを [どんな じょうけんで] きいて、[じょうほう／いと]が わかる」, with an English sentence ("I can follow …, and catch/tell …") and a one-line `short` for the UI.
 - **6–10 key phrases** (`ph`), each with register, scene and the trap a Japanese speaker falls into, heard in ≥ 3 items by ≥ 2 voices; ≥ 20 % of a unit's items recycle a lower stage's or the anchors' phrases. A phrase is **caught** when right on the first listen in 3 different items on ≥ 2 days.
-- **A host villager, a scene, one main sound feature** from the stage's list.
-- **Names are can-do verbs:** 「よていを かえる」, 「ききかえす」, 「おいわいする」. Never 「レッスン」.
+- **A host villager, a scene, one main sound feature** from the stage's list. **Names are can-do verbs:** 「よていを かえる」, 「ききかえす」, 「おいわいする」. Never 「レッスン」.
 - About 30 items, 100 % US; a 40–60-word letter from the host; a 「きょうの ひとこと」 (one line for the couple to say tonight, in the file's header comment).
 
 ### Lessons
@@ -338,8 +330,7 @@ letter:                     # the host's letter at my stamp, 40-60 words, one of
 Every lesson id not under `review` is homed in the unit (each item has ≤ 1 home; ids never encode a unit; shipped ids are frozen). The level banks stay TypeScript and keep their `lv`.
 - **Output:** `levels/parts/u-<id>.json` (the unit, its phrases with the items they're heard in, its lessons, tiers and homes, the items, clips and timings; ≤ 32 KB gzipped); the index's `units[<id>]` (parts, count, cv) and a `paths` line `[id, name, stage, domain, host, status, lesson bitmask, short?]`; `parts/letters.json`.
 - **Checks** (an error stops the compiler; warnings print): the schema; ids unique across the bank, ladders and units; ≤ 1 home; every reference exists (a rung named by its ladder); each item within one step of the stage (`levelRank`); the can-do template and its English; `short`; the recipe (a known `v`, the 3 core lessons, ≥ 6 ids each, であい with a dialogue, チェック held out with ≥ 2 voices, おと mostly words); tiers on lesson items only; American only; every clip past draft; each phrase in ≥ 3 items by ≥ 2 voices (error past draft); recycling ≥ 20 % (an error once 7 units are past draft, `WAVE1`); coverage per stage (an error once a stage has its `PLANNED` units); a letter past draft.
-- **Level-deck invariance:** the levels' chunks are byte-identical with and without units; `kikimimi/decks.golden.json` digests the decks for seeds 0–99 per level, so homing an item can't change a quiz deck (a deliberate bank change is `vitest -u`).
-- A unit shows from `voiced` (a draft only with the dev hooks on).
+- **Level-deck invariance:** the levels' chunks are byte-identical with and without units; `kikimimi/decks.golden.json` digests the decks for seeds 0–99 per level, so homing an item can't change a quiz deck (a deliberate bank change is `vitest -u`). A unit shows from `voiced` (a draft only with the dev hooks on).
 
 ### Lesson decks and stamps
 
@@ -380,7 +371,7 @@ lessons:
 - **29 listening files**, all `listened`: tiles (232: drafts, 65 derived from voiced bank items, 30 for the B2 features, the units' おと), calls (34), たちぎき (30), すうじ ラッシュ (240 customers), しずえの ニュース (30 bulletins and the weather tail), まるごと 聞く (10 pieces: "Long listening").
 - **音の へんしん:** 180 phrases at level 8, 15 phenomena of 12 ("Connected speech").
 - **3 bedtime serials:** st-johnny, st-cafe and st-tokyo (トウキョウ ひとりぐらし: an American newcomer's first month in Tokyo, 7 chapters of ~4 min, narrator us-f3, recycling the units' phrases).
-- **153 packs**, ~123 MiB (games 101.6, stories 21.4).
+- **The audio packs:** their count and sizes, kikimimi.md "Open items".
 - Every level and unit item has `ctx`, `cja` and `why` (音の へんしん's phrases `ctx`, `cja` and `note`).
 - **Stays outside units:** the はまべ island lines, the アナウンス pack and ほし's news, lectures and talks (modes and tracks), the number templates.
 
@@ -410,9 +401,7 @@ lessons:
 | fr-catchup | 久しぶりに 会う | もり | ともだち | rosie | cafe | self-repair | 2 |
 | mc-tickets | チケットを 取る | もり | まち | kicks | street | numbers | 2 |
 
-\* A planned backdrop, not painted yet ("Backdrops"). Coverage: かわ 7 of 9 domains, もり 9 of 9. Each recipe-2 unit has one call in s1-call-b (かわ) or s2-call-c (もり) and 6 おと tiles in s1-tile-c / s2-tile-c. The recipe-1 units move to recipe 2 once they have calls (wave 3).
-
-Notes for the writers: ききかえす covers both directions (recognising native repair, and picking your own "Sorry, fifteen or fifty?"); でんわを おえる checks pre-closings ("Anyway, I'll let you go"); ともだちを あんない makes the learner the host; every dialogue opens and closes naturally.
+\* A planned backdrop, not painted yet ("Backdrops"). Coverage: かわ 7 of 9 domains, もり 9 of 9. Each recipe-2 unit has one call in s1-call-b (かわ) or s2-call-c (もり) and 6 おと tiles in s1-tile-c / s2-tile-c. The recipe-1 units move to recipe 2 once they have calls (wave 3). Notes for the writers: ききかえす covers both directions (recognising native repair, and picking your own "Sorry, fifteen or fifty?"); でんわを おえる checks pre-closings ("Anyway, I'll let you go"); ともだちを あんない makes the learner the host; every dialogue opens and closes naturally.
 
 ### Backdrops
 
@@ -434,31 +423,27 @@ A choice set must not give its answer away without the audio. `tells.test` holds
 
 ## Long listening
 
-Step 3 of the English direction (user decisions 2026-11-09: everyday conversation and travel, both at the same level, ~15 min a day, American first, real recordings allowed if licensed, PD or CC and credited). The B2 → C1 step is following extended, unscripted talk and what's meant rather than said (CEFR CV 2020); まるごと 聞く (kikimimi.md) gives one piece a day, ~6 minutes with its questions and dictation.
-- **Real recordings** (s4-long-c, -d): 5 excerpts of 2.7–4.7 min, unscripted, American: NASA's *Houston We Have a Podcast* (two, PD), NPS Grand Canyon's *Behind the Scenery* (PD), CORAAL Valdosta (African American English, CC BY-NC-SA 4.0), Hacker Public Radio hpr4098 (CC BY-SA 4.0). Only PD, CC BY, CC BY-SA or CC BY-NC-SA (long.test); each piece's `credit`: title, by, page, file and its sha256, the excerpt's span, licence, its deed and the credit line. Downloads are data: their own directory, read by ffmpeg and Python with `-I` only, never run. The transcript is the official one where there is one, else whisper's; lines cut at sentence ends (≤ 16 s).
+Everyday conversation and travel, American first, real recordings allowed if licensed (PD or CC) and credited. The B2 → C1 step is following extended, unscripted talk and what's meant rather than said (CEFR CV 2020); まるごと 聞く (kikimimi.md) gives one piece a day, ~6 minutes with its questions and dictation.
+- **Real recordings** (s4-long-c, -d): 5 excerpts of 2.7–4.7 min, unscripted, American (CORAAL's is African American English; the sources and licences: kikimimi-engine.md "Generation"). Only PD, CC BY, CC BY-SA or CC BY-NC-SA (long.test); each piece's `credit`: title, by, page, file and its sha256, the excerpt's span, licence, its deed and the credit line. Downloads are data: their own directory, read by ffmpeg and Python with `-I` only, never run. The transcript is the official one where there is one, else whisper's; lines cut at sentence ends (≤ 16 s).
 - **Generated scenes** (s4-long-a, -b): 5 of 2.4–3.3 min, 3 villagers each, everyday and travel (a hotel at night, a missed connection, a flea-market haggle, dinner with news let out sideways, a neighbour's tree): refusals said politely, sarcasm, a sales trick, a budget never named; interruptions and overlap (a negative `at`), reductions in `tts`.
-- **Questions:** 4–5 a piece, the gist first, then the implied meaning, the attitude and the next step; 3 choices held to "Choice tells" against the whole transcript. **Dictation:** 2–4 lines a piece on connected speech (a henshin.ts phenomenon), 1–6 words each.
-- **Alignment:** whisper hears every line's clip; a piece's weighted WER ≤ 20 %, a line of 4+ words ≤ 60 % (align.ts; real 8.6 % mean, generated 1.9 %).
+- **Questions:** 4–5 a piece, the gist first, then the implied meaning, the attitude and the next step; 3 choices held to "Choice tells" against the whole transcript. **Dictation:** 2–4 lines a piece on connected speech (a henshin.ts phenomenon), 1–6 words each. **Alignment:** whisper hears every line's clip; a piece's weighted WER ≤ 20 %, a line of 4+ words ≤ 60 % (align.ts; real 8.6 % mean, generated 1.9 %).
 - **Listen-check:** the real pieces' cuts (a word clipped at a boundary: rl-canyon-questions-8, -12, rl-space-food-2), CORAAL's interviewer asides, and the generated scenes' flagged lines (homophones suite / steak, "Ms.—", numbers said as prices).
 
 ## Connected speech
 
-For a strong listener the biggest gain is decoding American connected speech, checked by dictation, from many voices (Field 2008; HVPT, Logan et al. 1991). 音の へんしん drills it daily (kikimimi.md "音の へんしん"; user decisions 2026-11-09: everyday conversation and travel, American first, ~15 min a day).
+For a strong listener the biggest gain is decoding American connected speech, checked by dictation, from many voices (Field 2008; HVPT, Logan et al. 1991). 音の へんしん drills it daily (kikimimi.md "音の へんしん").
 - **The phenomena,** in the order taught (henshin.ts `PHENOMENA`, each a feature under つながる おと): gonna, wanna, gotta / hafta, contractions (I'll, we've, should've), weak forms (fer, 'em, 'n), the flap (a lodda), linking (pi-ki-tup), t / d + you (didja, gotcha), lemme / gimme, kinda / outta, dunno, elided t / d (nex' week), the stopped t (tha' one), the dropped h (tell 'im), chains (whaddaya, gonna hafta).
-- **The phrases** (content/henshin.ts, level 8): 12 a phenomenon, 180 in all, everyday and travel, each in another of the 12 US voices (every phenomenon heard in all 12). A `word` item: `en` written in full, `focus` the changing chunk, `tts` the line as said, `hs.red` the chunk as said, `hs.full` a contraction's long form, two near-sound wrong chunks that fit, `ja`, `note`, `ctx`, `cja`.
-- **Takes:** natural, careful (`<id>-c`: the full form, its words set apart by commas, slowed to 0.8) and fast (`<id>-f`: the natural take at 1.25×).
-- **Validators** (content/henshin.test.ts): order and coverage; voices; focus in the sentence, wrong chunks not; a full form that types right; tiles at every tier; the choice tells near chance against what is said (tells.ts `DRILL_LIMITS`: length only, every word for the echo, no form gap); and every voiced phrase heard as said (`npm run kikimimi:reduce`, at its clips' hashes): whisper hears the careful take in full, and, where the spelling as said is one whisper writes (gonna, lemme, outta, gotcha, whaddaya, 'em…), it writes it for the natural take when prompted with them. A flap, a dropped t or h, a link or a weak vowel whisper spells as written whatever is said: for those the natural take is the respelling said (`tts`: "Pud it on", "nex' week"), every word still heard by the gate. (A timing measure was tried and dropped: whisper's word times are too coarse for a two-syllable chunk, and the engine sometimes says a careful line as fast as the natural one.)
+- **The phrases** (content/henshin.ts, level 8): 12 a phenomenon, 180 in all, everyday and travel, each in another of the 12 US voices (every phenomenon heard in all 12). A `word` item: `en` written in full, `focus` the changing chunk, `tts` the line as said, `hs.red` the chunk as said, `hs.full` a contraction's long form, two near-sound wrong chunks that fit, `ja`, `note`, `ctx`, `cja`. **Takes:** natural, careful (`<id>-c`: the full form, its words set apart by commas, slowed to 0.8) and fast (`<id>-f`: the natural take at 1.25×).
+- **Validators** (content/henshin.test.ts): order and coverage; voices; focus in the sentence, wrong chunks not; a full form that types right; tiles at every tier; the choice tells near chance against what is said (tells.ts `DRILL_LIMITS`: length only, every word for the echo, no form gap); and every voiced phrase heard as said (`npm run kikimimi:reduce`, at its clips' hashes): whisper hears the careful take in full, and, where the spelling as said is one whisper writes (gonna, lemme, outta, gotcha, whaddaya, 'em…), it writes it for the natural take when prompted with them. A flap, a dropped t or h, a link or a weak vowel whisper spells as written whatever is said: for those the natural take is the respelling said (`tts`: "Pud it on", "nex' week"), every word still heard by the gate. No timing measure: whisper's word times are too coarse for a two-syllable chunk.
 
 ## Listening check
 
-A person listens before a clip counts as done: every clip the gate flagged plus a 20 % sample, on the phone. `npm run audio:kikimimi -- --listen [--only <regex>]` plays each with its text on the Mac (only when a person runs it). The whole list is `app/scripts/tts/report.json`'s summary `flagged` (194 clips); most are whisper's own spellings. Worth a listen:
+A person listens before a clip counts as done: every clip the gate flagged plus a 20 % sample, on the phone. `npm run audio:kikimimi -- --listen [--only <regex>]` plays each with its text on the Mac (only when a person runs it). The whole list is the clips `app/scripts/tts/report.json` flags (its summary's `flagged` counts them); most are whisper's own spellings. Worth a listen:
 
-- **The bank:** whaddaya (ml-w-whaddaya, ya-r-whaddaya), mw-used-to, mw-ya-gonna, ya-w-whydja; voice drift on dya-capital-3, dya-parking-2; over a bed (`cond-wer`), mw-tickets and ya-n-rent; the conditions' d4-landlord-1, d4-installer-3, w2-read, w3-gotta, w3-shouldve.
-- **スピード はしご:** number formats, 'em heard as "him", a swallowed "Breakfast's" / "I've"; sp-key-code at 1.4× (UTMOS 3.38); 9 rungs clamped (tempo 0.7–1.6).
+- **The bank:** whaddaya (ml-w-whaddaya, ya-r-whaddaya), mw-used-to, mw-ya-gonna, ya-w-whydja; voice drift on dya-capital-3, dya-parking-2; over a bed (`cond-wer`), mw-tickets and ya-n-rent; the conditions' d4-landlord-1, d4-installer-3, w2-read, w3-gotta, w3-shouldve. **スピード はしご:** number formats, 'em heard as "him", a swallowed "Breakfast's" / "I've"; sp-key-code at 1.4× (UTMOS 3.38); 9 rungs clamped (tempo 0.7–1.6).
 - **Wave 1 units:** names, homophones and reductions (Marshal, Kicks, two/too, gotta, up ta).
 - **Listening files:** 'em heard "him" (tachi-standup-blocked-3/5), "kinduva trek" (tachi-im-easy-3), "manager's joinin'" (call-handouts-favour-5); tip's (dk-fast-check-2); Kid Cat and Bea as names (dk-pickup-fifteen-2, dk-fast-late-doc-1); "greadon" heard "great in" (kw-great-on, tile-shop-great-on-you); dk-hike-dinner-2 (UTMOS 3.49), dk-dentist-day-4 (similarity 0.49); couldja heard "Kuja" (wg-n-rsvp); "Will call" heard "We'll call" (tk-will-call-next-1); standin' / citin' / jus' an' (tk-fast-three-3, tachi-deposit-letter-7, tachi-movers-or-truck-8); cu-r-landlord's café mix; short lines' voice (tk-w-fifty and its tile, sm-eighty-next-3, UTMOS 3.02); the h-drop "but 'is" (tachi-hiring-pick-3).
-- **Stories:** serial-cafe-3-16's "Bean There" (heard "Being there": a pun on "been there"); serial-tokyo-4-30's "her sister's". st-tokyo's Japanese words in the US voices: "Nakameguro", "Meguro", "mikoshi", "wasshoi", "yukata", "konbini".
-- **はつおん's pair words** (`pr-*`): 65 single words flagged for low similarity or drift, as single words are; "berry" is heard "Barry" in every take.
+- **Stories:** serial-cafe-3-16's "Bean There" (heard "Being there": a pun on "been there"); serial-tokyo-4-30's "her sister's". st-tokyo's Japanese words in the US voices: "Nakameguro", "Meguro", "mikoshi", "wasshoi", "yukata", "konbini". **はつおん's pair words** (`pr-*`): 65 single words flagged for low similarity or drift, as single words are; "berry" is heard "Barry" in every take.
 
 A clip fixed after the listen is re-spoken with `PINNED` or a `tts` respelling, then `npm run audio:kikimimi-words`.
 
@@ -471,11 +456,8 @@ A clip fixed after the listen is re-spoken with `PINNED` or a `tts` respelling, 
   - corrected numbers ("X, sorry, Y"): sp-key-code, a5-key-code, n4-gate, n4-water, n4-platform, a5-track; every listen call turns on a slot that changes mid-call; the units' corrected times (kn-*-time, dk-cut-out, dk-fast-wrap);
   - medical: six clinic or pharmacy settings at level 4 (r4-anything-else, r4-triage, w4-cant-uk, w4-id-ill, d4-receptionist, d4-cough-drive), and the ladders' appointment slots;
   - transit PA: nine train and five airport announcements in アナウンス, nine flight items at もり, five commute disruptions at ほし;
-  - hotel desk: ml-* (7), d4-hotel-suite, r4-room-ready, m4-upgrade and tr-hotel's refuse-tonight-fix-tomorrow and checkout-fee items;
-  - customer-service calls (~14 in yama-b); leases and landlords (yama-b 6, r4-leak, m4-damp, d4-landlord: all Tom Nook, "sometime next week");
+  - customer-service calls (~14 in yama-b); leases and landlords (yama-b 6, r4-leak, m4-damp, d4-landlord: all Tom Nook, "sometime next week"); the hotel desk: ml-* (7), d4-hotel-suite, r4-room-ready, m4-upgrade and tr-hotel's refuse-tonight-fix-tomorrow and checkout-fee items;
   - near repeats: d4-installer ≈ call-installer-signal (8 to 1, someone over 18 at home; the near-dupes test doesn't compare them); rain check and ballpark taught at both もり and やま; Kyoto crowds three times in yama-b; the digits 4473 in ya-n-phone and call-gp-callback;
-  - openers: wk-chat opens five times with "How was your weekend?"; tr-hotel and tr-guide use "Sorry, did you say X?" six times;
-  - settings: the listening files are almost all in Tokyo (an American diner, Target or a ballgame would help); d4-oat-latte still opens on a misheard name;
-  - speakers: kk-slider is the radio host in all his ほし lines.
-- **Measure:** after real play, check each stage's first-listen success (75–85 %) before writing more.
-- **Questions:** mild swearing ("damn", "crap", "pissed off") at やま and ほし? The user's field of work, for meeting and client scenarios?
+  - openers: wk-chat opens five times with "How was your weekend?"; tr-hotel and tr-guide use "Sorry, did you say X?" six times; d4-oat-latte still opens on a misheard name;
+  - settings and speakers: the listening files are almost all in Tokyo (an American diner, Target or a ballgame would help); kk-slider is the radio host in all his ほし lines.
+- **Questions:** mild swearing ("damn", "crap", "pissed off") at やま and ほし? ウェイ's field of work, for meeting and client scenarios?

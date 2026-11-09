@@ -1,12 +1,6 @@
-# The full logic tier (docs/ops/testing.md "CI"): after each deploy (a green run of *Deploy
-# UI*) and on demand, every test the gate's way (the 3D engines drawing nothing, @render and @quarantine left out) on the
-# deployed commit, the auto-quarantined ones too; with the drawn smoke (advisory) and the test times for the shards'
-# plan. It never holds a deploy back (the user, 2026-11-08: a lean gate, fix-forward), so it's loud: a failure is an
-# ::error on its spec and a list in the summary, and this workflow goes red: the next push's to fix. One at a time,
-# never cancelled: a newer one waits, and one still waiting is replaced by the newest.
-# The throttle (docs/ops/testing.md "CI cost"), off while the repo is public (its minutes are free): to run it at most
-# every 30 min instead of after each deploy, swap the comments on `workflow_run` and `schedule` below. Scheduled, it
-# tests the newest green deploy, and only when one landed since its previous scheduled run (the `throttle` job).
+# The full logic tier, the drawn smoke and the shards' test times on the deployed commit, after each green *Deploy UI*
+# push run and on demand (docs/ops/testing.md "CI"). Never holds a deploy back, so a failure is red: the next push's.
+# The throttle (docs/ops/testing.md "CI cost"): to run at most every 30 min, swap `workflow_run` for `schedule` below.
 name: e2e logic full
 
 on:
@@ -21,8 +15,7 @@ on:
 permissions:
   contents: read
 
-# (the condition in the group's name: a run after a red, cancelled, pull request's or fork's Deploy UI run skips its
-# jobs, but in the group it would still replace a real one waiting: 42449903526 did)
+# (the condition in the group's name: a run that skips its jobs would still replace a real one waiting)
 concurrency:
   group: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository)) && 'e2e-logic-full' || format('skip-{0}', github.run_id) }}
   cancel-in-progress: false
@@ -51,9 +44,8 @@ jobs:
           echo "newest green deploy $sha at $at; the previous scheduled run $last: go=$go"
           { echo "go=$go"; echo "sha=$sha"; echo "run=$run"; } >> "$GITHUB_OUTPUT"
 
-  # Every test in 6 shards balanced by time (scripts/e2e-shards.ts plan, the committed e2e/timings.json), 3 workers each,
-  # one retry (playwright.config.ts): failing twice is red; flaky (failed, then passed) is named, annotated and written to
-  # the flaky ledger (flaky-<shard>: scripts/e2e-flakes.ts), which the gate reads.
+  # Every test in 6 shards balanced by time (e2e/timings.json), one retry: flaky ones go to the flaky ledger
+  # (flaky-<shard>), which the gate reads.
   e2e-logic:
     # (after a deploy: not after a red or cancelled gate, nor a pull request's: a fork's code, its own `main` too)
     needs: throttle
@@ -92,8 +84,8 @@ jobs:
       - run: npm run build
       - run: node scripts/e2e-shards.ts plan 6 shards e2e/timings.json -- --project=chromium --project=chromium-mic --grep-invert "@render|@quarantine"
       - id: e2e
-        # (the plan leaves them out, but a whole spec file in a shard list (e2e-shards.ts: serial or ›-titled) brings its
-        # quarantined tests back in: 32266e9a ran kikimimi-path:113; so filter here too)
+        # (the plan leaves them out, but a whole spec file in a shard list (serial or ›-titled) brings its quarantined
+        # tests back in: so filter here too)
         run: npx playwright test --project=chromium --project=chromium-mic --test-list shards/${{ matrix.shard }}.txt --grep-invert "@render|@quarantine" --max-failures=20
         env:
           E2E_FLAKY_FILE: flaky.json
@@ -118,9 +110,8 @@ jobs:
           if-no-files-found: ignore
           retention-days: 3
 
-  # The drawn smoke (docs/ops/testing.md): the tests that need the pixels (@render) and a few whole 3D flows
-  # (@smoke) with real (software) GL, on one runner. Advisory (the user, Nov 2026: CI's software GL isn't the phones'
-  # Metal): continue-on-error, so it never turns this workflow red; its failures are in its summary.
+  # The drawn smoke: @render and @smoke with real (software) GL, one runner. Advisory (CI's software GL isn't the
+  # phones' Metal): continue-on-error, its failures in its summary.
   e2e-render:
     needs: throttle
     if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.throttle.outputs.go == 'true' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository)) }}
@@ -156,10 +147,8 @@ jobs:
       - if: failure() && steps.e2e.outcome == 'failure'
         run: node scripts/e2e-report.ts playwright-results.json "Failed in the drawn smoke (e2e-render)" >> "$GITHUB_STEP_SUMMARY"
 
-  # The tier's test times folded into the committed e2e/timings.json, as an artifact (`npm run e2e:timings` takes the
-  # newest green run's into the repo) and how far apart this run's shards ended, in its summary. And the failing specs
-  # the deployed commit's gate didn't run, with its changed files (scripts/e2e-missed.ts, from that Deploy UI run's
-  # `gate-plan`): the next e2e/impact.json rule.
+  # The tier's test times folded into e2e/timings.json (the `e2e-timings` artifact) and the shards' spread; and the
+  # failing specs the deployed commit's gate didn't run (scripts/e2e-missed.ts): the next e2e/impact.json rule.
   timings:
     needs: [throttle, e2e-logic]
     if: always() && needs.e2e-logic.result != 'skipped'

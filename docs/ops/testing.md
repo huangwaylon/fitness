@@ -11,7 +11,7 @@ paid, and its macOS VMs draw in software too.
 
 | Tier | What | Where |
 |---|---|---|
-| Unit | pure rules and simulations: spawns, seeds, schedules, paths, scoring, sync merges | vitest (`src/**/*.test.ts`, ~340 files), the `unit` job |
+| Unit | pure rules and simulations: spawns, seeds, schedules, paths, scoring, sync merges | vitest (`src/**/*.test.ts`, ~360 files), the `unit` job |
 | Logic-mode e2e | the real app in a browser, gameplay and DOM tap areas live, the 3D engines drawing nothing | Playwright: the gate (a selection) and the full logic tier after each deploy (all) |
 | Drawn smoke | real WebGL: it draws, the camera, a tap lands on the model (`@render`, `@smoke`: ~16 tests) | after each deploy, advisory; everything drawn nightly |
 
@@ -30,7 +30,7 @@ paid, and its macOS VMs draw in software too.
   relay's room in-process): no network, deterministic, and in logic mode neither tab draws. Never two drawn 3D tabs in
   one test. The real relay is checked on demand (`RELAY_E2E=1`, `e2e/sync-harness.spec.ts`).
 - **A lean gate, fixed forward.** Two people use the app and a bad deploy is fixed in minutes (or the last green run's
-  deploy re-run), so the gate is lean (push to live in ~4 min) and the heavier tiers run after the deploy. A red gate
+  deploy re-run), so the gate is lean (push to live in ~3 min) and the heavier tiers run after the deploy. A red gate
   or a red full logic tier is the next push's first job.
 - **Ownership.** Each spec's header names its area; its owner is whoever last changed that area's code. Fix a flake
   at its cause (a missing hook, a wait on time, a tap where something wanders); never loosen an assertion.
@@ -45,9 +45,9 @@ A push to `main` that touches `app/**` (a docs-only push runs *Docs check*, `doc
 | Job | What | Gates the deploy |
 |---|---|---|
 | `build` | `npm run build` once (its budgets: the kikimimi budget, the headers, the precache limit); its `build-pages/` is the `site` artifact `deploy` ships | yes |
-| `checks`, `unit` | `checks`: first the **gate's plan**, once for all its shards (`gate-plan` artifact, ~20 s in): the selection (`scripts/e2e-impact.ts`), the auto-quarantine (`scripts/e2e-flakes.ts`) and the shards' plan (`scripts/e2e-shards.ts plan`, the committed `e2e/timings.json`); then `npm run check`, `npm run knip`, the quarantine listed in the summary (`scripts/e2e-quarantine.ts`: red when a quarantined test has no owner) and `scripts/docs-check.ts` (the docs' pointers). `unit`: `npx vitest run`. Both beside the build | yes |
-| `e2e-gate` ×4 | **the gate's e2e** ("The gate" below): Playwright in Chromium (iPhone 13 profile) in logic mode (`E2E_RENDER=none`), `@render` and `@quarantine` left out, on `site` served as Pages serves it (`scripts/serve-build.ts`): the plan (the gate set, the changed specs ×3 and the specs the push reaches; the shards wait for its artifact, not for `checks`); 3 workers each (4 made the short waits flaky on the 4-core runners); each shard builds the commit itself (no waiting for `build`) | yes |
-| `deploy` | `site` to Cloudflare Pages (`wrangler pages deploy`, project `island-fund`), once all of the above are green (it starts after `build` and gets the artifact, the models and wrangler ready meanwhile, then waits on the gate: `scripts/deploy-gate.ts`, every job in its `GATE` list once and `success`, else red); then checks https://island-fund.pages.dev answers this build (`_app/version.json`) with its CSP header. No `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` secret: a warning, nothing deployed | — |
+| `checks`, `unit` | `checks`: first the **gate's plan**, once for all its shards (each choosing its own could disagree: a test in no shard; the `gate-plan` artifact, ~20 s in): the selection (`scripts/e2e-impact.ts`), the auto-quarantine (`scripts/e2e-flakes.ts`) and the shards' plan (`scripts/e2e-shards.ts plan`, the committed `e2e/timings.json`); then `npm run check`, `npm run knip`, the quarantine listed in the summary (`scripts/e2e-quarantine.ts`: red when a quarantined test has no owner) and `scripts/docs-check.ts` (the docs' pointers). `unit`: `npx vitest run`. Both beside the build | yes |
+| `e2e-gate` ×4 | **the gate's e2e** ("The gate" below): Playwright in Chromium (iPhone 13 profile) in logic mode (`E2E_RENDER=none`), `@render` and `@quarantine` left out, on `site` served as Pages serves it (`scripts/serve-build.ts`): the plan (the gate set, the changed specs ×3 and the specs the push reaches; the shards wait for its artifact, not for `checks`: `needs: checks` cost ~35 s); 3 workers each (4 made the short waits flaky on the 4-core runners); each shard builds the commit itself (no waiting for `build`) | yes |
+| `deploy` | `site` to Cloudflare Pages (`wrangler pages deploy`, project `island-fund`), a direct upload, once all of the above are green (it starts after `build` and gets the artifact, ききみみ's recogniser for `stt/` (an Actions cache keyed on `src/lib/mic/models.ts`, filled on a miss by `scripts/stt-models.ts`) and wrangler ready meanwhile, ~30 s off push→live, then waits on the gate: `scripts/deploy-gate.ts`, every job in its `GATE` list once and `success`, else red); then checks https://island-fund.pages.dev answers this build (`_app/version.json`), with its CSP header and the `stt/` manifest. No `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` secret: a warning, nothing deployed | — |
 
 After a deploy, never holding one back:
 
@@ -59,14 +59,13 @@ After a deploy, never holding one back:
 | *e2e full tier* (`e2e-full.yml`) ×10 | **everything drawn**, nightly (02:30 Tokyo) and on demand: the whole suite with real GL (the quarantine too), one browser a runner, `E2E_SLOW=1` (a test 90 s, an expect 20 s: drawn under software GL the game itself runs slower); its failures in its summary and on their specs |
 
 - **Red main never deploys, never older over newer, and the newest green does.** Pushes' runs overlap, never
-  cancelled: a push's gate starts at once. Only `deploy` is one at a time (`cloudflare-deploy`; a newer one waiting
-  replaces an older one waiting, so that run ends cancelled), and its order guard (`scripts/deploy-order.ts`) checks
-  the live commit just before wrangler: older or the same, it deploys nothing (green, a notice); not sure, red. In a
-  burst a few gate jobs can queue for a runner (GitHub Free's 20, the full logic tier's 7 among them). The full
-  logic tier runs one at a time to the end (a newer one waits; one waiting is replaced by the newest): when its runs
-  cancelled each other, a burst of pushes left it never finishing, red for hours unseen.
-- **The gate** (`scripts/e2e-impact.ts`, `npm run e2e:impact` shows what it would run here): push to live in ~4 min, so
-  not every test. It runs (1) the **gate set**, `e2e/gate.json`: ~18 fast, stable spec files over the core flows (boot,
+  cancelled (cancelling older runs, nothing finished in a burst): a push's gate starts at once. Only `deploy` is one at
+  a time (`cloudflare-deploy`; a newer one waiting replaces an older one waiting), and its order guard
+  (`scripts/deploy-order.ts`) checks the live commit just before wrangler: older or the same, it deploys nothing
+  (green, a notice); not sure, red. A pull request's runs go one at a time on its branch. The full logic tier, too,
+  runs one at a time to the end (a newer one waits; one waiting is replaced by the newest).
+- **The gate** (`scripts/e2e-impact.ts`, `npm run e2e:impact` shows what it would run here): not every test, to keep
+  the push to live short. It runs (1) the **gate set**, `e2e/gate.json`: ~18 fast, stable spec files over the core flows (boot,
   the HUD, the tent, fishing, 健康 · ごはん and a health goal, ききみみ, the shop, two phones, the record offline
   (sync-offline), the editor, りょこう, the service worker, the CSP), ~450 s of tests; (2) the specs the push **changed**, each test 3× and never retried (the `chromium-x3`
   projects, `E2E_X3`): one failure in three is a flake the push brought, red; (3) the specs its files **reach**: a
@@ -97,33 +96,26 @@ After a deploy, never holding one back:
   there's no retry: a flake is red.
 - **Tags** (`test('…', { tag: '@render' }, …)`): `@render` needs real drawing (draw calls, pixels, the canvas's alpha):
   the drawn smoke only, never the logic tier. `@smoke` is a whole 3D flow worth drawing too: both tiers. `@quarantine`
-  is broken: out of the gate and the full logic tier, run in the nightly drawn tier until fixed. A quarantined test carries who owns it and why:
-  `{ tag: '@quarantine', annotation: { type: 'quarantine', description: 'owner: engine agent, 2026-11-03: the rod never
-  comes out on CI (#run)' } }`. List them: `npx playwright test --list --grep @quarantine`. `@logic` is the gate's
-  only, never drawn (the drawn full tier leaves it out): a timing a software-GL frame of 0.5–1 s can't meet (three quick taps
-  within 1.2 s, frame-by-frame smoothness, a wait sized for the game at full speed, a squish over before a frame shows
-  it), with why in `annotation: { type: 'logic', description: 'drawn: …' }`; it says nothing about the phones, whose
-  frames are 16 ms. List them: `npx playwright test --list --grep @logic`.
+  is broken: out of the gate and the full logic tier, run in the nightly drawn tier until fixed, with its owner and why
+  (`annotation: { type: 'quarantine', description: 'owner: …: the rod never comes out on CI (#run)' }`). `@logic` is
+  the logic tiers' only, never drawn: a timing a software-GL frame of 0.5–1 s can't meet (three quick taps within
+  1.2 s, a wait sized for the game at full speed), with why in `annotation: { type: 'logic', description: 'drawn: …' }`;
+  it says nothing about the phones, whose frames are 16 ms. List them: `npx playwright test --list --grep @quarantine` (or `@logic`).
 - **Logic mode** (`E2E_RENDER=none`; src/lib/ui-state/testMode.ts): the island's and the tent's 3D engines run every
-  frame (the scene, cameras, gestures, the World's step, the villagers' poses, effects, the tap areas) but never call
-  `renderer.render` or the shadow map: a frame costs ~1 ms. Set by `localStorage['e2e.render'] = 'none'` (the config does
-  it for `E2E_RENDER=none`) or `?render=none&demo`. `__world3d.stats().drawn` is false and `stats().calls` 0. Specs need
-  no change; one that reads draw calls or pixels is `@render`.
-- **WebKit, the users' browser** (Playwright's WebKit as an iPhone 15: the users' phones are an iPhone 15 and an iPhone 16
-  on Safari, and Playwright's two profiles have the same viewport), runs in **the flake hunt**
-  (`.github/workflows/e2e-flake-hunt.yml`) on **macOS** runners (Safari's own WebKit; Linux's draws the island at about
-  one frame a second, so its timing-bound specs fail there): weekly (Monday 03:30 Tokyo), and Actions → *e2e flake
-  hunt* → Run workflow (with how many runs each; 1 for a plain WebKit check). It runs the logic tier
-  (`E2E_RENDER=none`, `@render` and `@quarantine` left out), as the gate does: WebKit's signal is its DOM, events and
-  JS, and the VM's software GL isn't the phones' Metal (drawn, the logic specs timed out there, red on every run).
-  2 workers a runner (a 3-core VM: at 3, tests ran 3-6× their local time). Too slow to gate each push (5 macOS
-  runners, ~20 min a run each); once it's green across the board it replaces Chromium as the gate. Each test 3× over,
-  retries off; red when anything failed even once, its summary lists them worst first. It gates nothing. A test gets
-  60 s there (`--timeout=60000`): the VM runs a test 2–3× its Linux time, and it hunts flakes, not speed. WebKit
-  itself crashing under Playwright ("Cannot find parent object browser@…") is named in the summary but not red
-  (`scripts/e2e-report.ts` `VERDICT`). A test
-  WebKit can't run is `@chromium` with why; one the drawn tier can't (a timing software GL can't meet) is `@logic`
-  with why: tagged out, never a job left red.
+  frame (the scene, cameras, gestures, the World's step, poses, effects, the tap areas) but never call `renderer.render`
+  or the shadow map: a frame costs ~1 ms. Set by `localStorage['e2e.render'] = 'none'` (the config does it for
+  `E2E_RENDER=none`) or `?render=none&demo`; `__world3d.stats().drawn` is false and `stats().calls` 0.
+- **WebKit, the users' browser** (Playwright's WebKit as an iPhone 15: the same viewport as the users' iPhone 15 and
+  16), runs in **the flake hunt** (`.github/workflows/e2e-flake-hunt.yml`) on **macOS** runners (Safari's own WebKit;
+  Linux's draws the island at about one frame a second): weekly (Monday 03:30 Tokyo), and Actions → *e2e flake hunt*
+  → Run workflow (with how many runs each; 1 for a plain WebKit check). The logic tier as the gate runs it: WebKit's
+  signal is its DOM, events and JS, and the VM's software GL isn't the phones' Metal (drawn, the logic specs timed
+  out). Each test 3× over, retries off, 2 workers a runner (a 3-core VM: at 3, tests ran 3-6× their local time), 60 s
+  a test (`--timeout=60000`: the VM runs a test 2–3× its Linux time). Red when anything failed even once, its summary
+  lists them worst first; it gates nothing. WebKit itself crashing under Playwright ("Cannot find parent object
+  browser@…") is named but not red (`scripts/e2e-report.ts` `VERDICT`). Too slow to gate each push (5 macOS runners,
+  ~10–15 min each); once green across the board it replaces Chromium as the gate. A test WebKit can't run is
+  `@chromium` with why (`@logic`: "Tags"): tagged out, never a job left red.
 - **The base path.** The site is at the root (`BASE_PATH` unset or `''`); the specs follow `BASE_PATH` (`e2e/island.ts`
   `BASE`, `islandURL`), so a build under one (`BASE_PATH=/x npm run build`, then `BASE_PATH=/x npm run e2e`) is tested the same.
 - **The headers.** `npm run build` writes `build-pages/_headers` (`scripts/headers.ts`: the CSP SvelteKit put in the
@@ -158,26 +150,23 @@ npm run e2e -- --project=chromium-mic   # the mic's specs (kikimimi-mic*.spec.ts
 npm run e2e:ci-like -- e2e/world3d.spec.ts --repeat 5   # as CI runs it (below)
 npm run e2e -- e2e/csp.spec.ts --project=webkit --workers=8   # a worker a test (below)
 ```
-`csp.spec.ts` in WebKit on a Mac: a test with the sound on (its `watch`), then another in the same browser, and the
-next page's WebGL context is lost as it's made (`getShaderPrecisionFormat` null: the island shows `[data-no3d]`, `is3d`
-times out), so at `--workers=1` every second test fails. Local only (CI's macOS runners pass): give each test its own
-worker.
-`kk-sync.spec.ts` in WebKit on a Mac: two local-only reds (CI's macOS runners pass all five). WebKit's audio clock
-stands still here (an `AudioContext` with an oscillator: `currentTime` 0 after 1.5 s; the decks' `currentTime` frozen),
-so the K.K. test's positions never pass 0.5 s or drift apart; and the tent test's third page loses its WebGL context as
-above (the tent shows `tent.failed`). Check them on the flake hunt.
+Local-only WebKit reds on a Mac (CI's macOS runners pass): `csp.spec.ts` at `--workers=1`, every second test (after a
+test with the sound on, the next page's WebGL context is lost as it's made: `getShaderPrecisionFormat` null, the island
+shows `[data-no3d]`), so give each test its own worker; `kk-sync.spec.ts`, two (WebKit's audio clock stands still here,
+`currentTime` 0 after 1.5 s, so the K.K. test's positions never move; the tent test's third page loses its WebGL context
+as above, `tent.failed`): check them on the flake hunt.
 
 ## Before you push (a new or changed spec, or a change to the 3D engines, the tent or sync)
-1. `npm run verify` (~20 s): `checks` as CI runs it, all at once, the first red printed and the rest stopped: the lockfile
-   (`npm ci --dry-run`: an ERESOLVE peer conflict), `check`, `knip` (and relay/'s, once `npm ci` ran there), `vitest run`, the quarantine's owners, the docs' pointers (`scripts/docs-check.ts`: every relative link and
-   anchor in the docs resolves, every backticked repo path exists, every `docs/….md` "Heading" or §Section a comment
-   cites is there; rename a heading and repoint its citations in the same push). `-- --quick`:
-   vitest on the changes since origin/main only; `-- --build`: the build and its budgets too. No e2e.
-   **The pre-push hook runs it for you** (`.githooks/pre-push`, set up by app's `npm ci` / `npm install`: its
-   `prepare` sets `core.hooksPath .githooks`, shared by every worktree; once by hand: `git config core.hooksPath
-   .githooks`): a push that changes `app/` runs `npm run verify -- --build` on the working tree (the build beside
-   svelte-check: no longer), one that changes only `docs/` or README.md the docs check, and is refused when red. Emergency bypass: `git push --no-verify` (or
-   `SKIP_VERIFY=1 git push`), then fix forward.
+1. `npm run verify` (~20 s): `checks` as CI runs it, all at once, the first red printed and the rest stopped: the
+   lockfile (`npm ci --dry-run`: an ERESOLVE peer conflict), `check`, `knip` (and relay/'s, once `npm ci` ran there),
+   `vitest run`, the quarantine's owners, the docs' pointers (`scripts/docs-check.ts`: every relative link and anchor
+   in the docs resolves, every backticked repo path exists, every `docs/….md` "Heading" or §Section a comment cites is
+   there; rename a heading and repoint its citations in the same push). `-- --quick`: vitest on the changes since
+   origin/main only; `-- --build`: the build and its budgets too, beside svelte-check. No e2e.
+   **The pre-push hook runs it for you** (`.githooks/pre-push`; app's `npm ci` / `npm install` sets `core.hooksPath
+   .githooks` for every worktree): a push that changes `app/` runs `npm run verify -- --build` on the working tree, one
+   that changes only `docs/` or README.md the docs check, and is refused when red. Emergency bypass: `git push
+   --no-verify` (or `SKIP_VERIFY=1 git push`), then fix forward.
 2. `npm run e2e:ci-like -- --changed` (or `-- e2e/the.spec.ts --repeat 5`): the logic tier as CI runs it (a fresh build if `src/` is newer,
    software GL, CI's workers, `CI=1`, a free port), each test 5×. For a drawn (`@render`/`@smoke`) test add
    `--tier render`; `--tier full` draws everything; `--workers 6` loads the machine as a busy runner is.
@@ -202,13 +191,12 @@ Every e2e runs in a sealed world (e2e/fixtures.ts), so a run today and a run in 
   `?weather=` (forced). The demo has no relay timeline at all; never assert on whatever sky the day happens to have.
 - **Ambient life is off.** Nothing spawns or wanders on its own: no critter visits (fish, bubbles, fresh-water
   shadows, bugs), no day's visitor (an event's host still comes: Jack, Franklin, Reese, Celeste), no balloon, no idle
-  beats of the villagers, しずえ or a visitor (looks, hops, tree shakes, strolls, outings), no ordinary night's
-  shooting stars. The villagers are all there, where they stand, asleep while their phone isn't open (one tab: the others';
-  `?awake` keeps everyone up, `?grace=` / `?wake=` shorten the spans: design.md "Sleep"); the opening beats, the events and
-  everything a tap starts are as ever. It's `localStorage['e2e.ambient'] = 'off'` (every context, a second phone's
-  too), read with the hooks on (`?demo` or a dev build: island/devHooks.ts) as `critter=none`, `visitor=events`,
-  `balloon=none`, `idle=none` and `stars=none`. A URL's own param wins (`?critter=fish`, `?visitor=jack`, `?balloon`): say what
-  the test is about. A test of the ambient life itself opts back in: `test.use({ ambient: 'on' })` (visitors.spec,
+  beats of the villagers, しずえ or a visitor (looks, hops, tree shakes, strolls, outings), no ordinary night's shooting
+  stars. The villagers are all there, asleep while their phone isn't open (one tab: the others'; `?awake` keeps
+  everyone up, `?grace=` / `?wake=` shorten the spans: design.md "Sleep"); the opening beats, the events and what a tap
+  starts are as ever. It's `localStorage['e2e.ambient'] = 'off'` (every context), read with the hooks on (`?demo` or a
+  dev build: island/devHooks.ts) as `critter=none`, `visitor=events`, `balloon=none`, `idle=none` and `stars=none`. A
+  URL's own param wins (`?critter=fish`, `?visitor=jack`, `?balloon`): say what the test is about. A test of the ambient life itself opts back in: `test.use({ ambient: 'on' })` (visitors.spec,
   visitor-life.spec; a single test in an anonymous `test.describe`: critters.spec's balloon, pond.spec's fresh-water
   visits, guest.spec's idle guest).
 - **The tests' own relay agrees with its phones.** liveRoom.ts and record.ts run on the pinned time and shift their
@@ -224,8 +212,8 @@ Every e2e runs in a sealed world (e2e/fixtures.ts), so a run today and a run in 
 - **Storage**: each test has its own context (Playwright's), service workers blocked; two phones in one context share
   `localStorage` and a BroadcastChannel (the demo's relay). In Chromium every tab is visible and focused (Playwright
   emulates it: rAF runs at 60 in both), so a tab that missed a tap didn't miss it for being behind; still
-  `bringToFront()` the tab that acts (rule 6 below). A second tab opened last is still loading: wait for its island
-  (`is3d`, `quiet`) before timing anything across the two (highfive-star).
+  `bringToFront()` the tab that acts (rule 6 below). Wait for a second tab's island (`is3d`, `quiet`) before timing
+  anything across the two (highfive-star).
 - **Taps on the 3D island are frame-locked** (e2e/island.ts `tapAt`, `tapWorld`, `tapThing`, `tapWater`): the page's
   frames held (requestAnimationFrame's callbacks kept till after the tap), the point read in the page, a real touch
   (or `mouse: true`) there, then the frames let go, so no camera ease, walk or swim comes between the read and the tap
@@ -267,8 +255,7 @@ raises one: that's a hand edit to explain in the commit).
 ## A changed spec, three times
 The gate runs the specs a push adds or edits each test 3× over, never retried (the `chromium-x3` projects:
 `E2E_X3`, scripts/e2e-impact.ts; more than 8 changed is a sweep: each runs once). A flake fails the push that brings
-it, not the next ten runs. Before pushing: `npm run e2e:ci-like -- --changed` (the specs changed since origin/main,
-committed or not, 5× each).
+it, not the next ten runs. Before pushing: `npm run e2e:ci-like -- --changed` ("Before you push").
 
 ## Writing a stable spec
 Most red runs are the spec, not the app. Before pushing a new or changed spec, run it with
@@ -306,24 +293,19 @@ Most red runs are the spec, not the app. Before pushing a new or changed spec, r
    don't make one test do the work of three: a short test fails clearly and shards evenly.
 9. **Don't loosen an assertion to make it pass.** If the app is wrong, it's a bug: fix it or say so in the commit.
 10. **Fishing**: any water casts, however far from my villager; `e2e/island.ts` `toTheWater` puts it on the bank near
-    the shadow (the near case) and gives a water point to tap; the bite's window is short, so `reelOnBite` taps in the
-    page the moment the 「！」 shows. `__fish.why()` names what the last tap on water did; `__fish.line()` its phase.
-    The 「！」's spot on screen against the head is `__world3d.bite(slot)` (e2e/biteMark.ts `overHead`); to check it at
-    several zooms or seated, hold it up with `__world3d.pinBite('mine')` rather than wait for bites (bite-mark.spec).
-    The sea off the back beach (`?critter=fish&coast=back`) lies high on the screen at the camera's far stop, beside
-    the doors and the beach's finds: a real touch there casts (`page.touchscreen.tap`; ui-state/exactTaps.ts takes a
-    touch's click from its pointerup's point, so WebKit's touch adjustment never moves it onto a door, and a find's 44px
-    margin over the water is the water's: `e2e/exact-taps.spec.ts`). `toTheWater('sea')` gives a point on the sea
-    itself (a clifftop pool by the back beach is water too) and on the screen.
-    `tapWater(page, water)` taps it frame-locked (the world point under `toTheWater`'s, still that water at the tap) and
-    returns where, and the ground the float must land on; `castIn(page, water)` casts and retries until it did, and
-    returns where it cast, the place to reel (a fixed reel point can be a building's door, and with the line out a door
-    goes in: the bite is missed).
+    the shadow and gives a water point on the screen (`toTheWater('sea')`: on the sea itself, not a clifftop pool);
+    `tapWater` taps it frame-locked and returns where, and the ground the float must land on; `castIn` casts until it
+    did and returns where, the place to reel (a fixed reel point can be a door, and with the line out a door goes in:
+    the bite is missed). The bite's window is short, so `reelOnBite` taps in the page the moment the 「！」 shows.
+    `__fish.why()` names what the last tap on water did; `__fish.line()` its phase. The 「！」's spot against the head is
+    `__world3d.bite(slot)` (e2e/biteMark.ts `overHead`); hold it up with `__world3d.pinBite('mine')` rather than wait
+    for bites (bite-mark.spec). The sea off the back beach (`?critter=fish&coast=back`) lies by the doors and the
+    beach's finds: a real touch there casts (ui-state/exactTaps.ts takes a touch's click from its pointerup's point, so
+    WebKit's touch adjustment never moves it onto a door; a find's 44px margin over the water is the water's: exact-taps).
 11. **Tap a pill only once it's at rest.** Playwright calls a moving thing "stable" while a staggered transition is in
     its delay, then the tap lands where it has moved off to (the menu's せってい sits over the ベル row 110 ms first):
     `e2e/hud.ts` `unfoldMenu` / `fromMenu` wait for the pills' spring. A route that fails chunks fails every lazy load
     under it (a critter's, a visitor's): pin the scene and route just before the one tap it's for (`e2e/stale.spec.ts`).
-
 12. **One width, the phones'.** The users' phones are an iPhone 15 and an iPhone 16 (393 px wide): a flow runs at one
     width (390 or 393), not again at 320 or 375; a narrow width only where the layout itself is the test (the HUD's
     row, a sheet's fit). **Debug pictures** (`page.screenshot` that asserts nothing) only under `SHOTS=<dir>`:
@@ -333,15 +315,16 @@ Most red runs are the spec, not the app. Before pushing a new or changed spec, r
 ## Memory
 The PWA stays open for days, so a scene's round trip must leave nothing behind. `e2e/leaks.spec.ts` (`@chromium`, in
 the gate) goes in and out of the shop, the museum and うめ's house, opening いえを かえる, and the museum in first person
-and out (the eye button, a bench), すがた dressed (as ウェイ: no context or DOM node more a visit), the info sheets (りょこう's pages and maps, Okinawa's 地図 and campsites, けっこんしき, three
-trails), three rounds, and checks after a forced GC that no WebGL context (watched by
-WeakRefs) or window/document listener is left over, and that inside the museum only its own context lives. To hunt
-one: `npm run leak -- <flow> [cycles] --snap` (scripts/leak-probe.ts, its header lists the flows: the rooms, the island's mount
-left early (`abort`), each sheet, the picker, visibility, the museum's eye, benches, hours, curator and a wing rebuilt, fishing, selling, the
-sim's clock over midnight and over days; `FILL=1`: a room furnished first) against a served build (`E2E_PORT`), printing per cycle the heap, DOM nodes, listeners, rAF
-a second, live contexts and the room's renderer.info, then a heap-snapshot diff by constructor (`SNAP_AT=0`: the
-whole heap, for an A/B of two builds); `--path=<name>` (`=<name>`: exactly, e.g. `--path==WebGL2RenderingContext`)
-prints what retains the ones new since the first snapshot.
+and out (the eye button, a bench), すがた dressed (as ウェイ: no context or DOM node more a visit), the info sheets
+(りょこう's pages and maps, Okinawa's 地図 and campsites, けっこんしき, three trails), three rounds, and checks after a
+forced GC that no WebGL context (watched by WeakRefs) or window/document listener is left over, and that inside the
+museum only its own context lives. To hunt one: `npm run leak -- <flow> [cycles] --snap` (scripts/leak-probe.ts, its
+header lists the flows: the rooms, the island's mount left early (`abort`), each sheet, the picker, visibility, the
+museum's eye, benches, hours, curator and a wing rebuilt, fishing, selling, the sim's clock over midnight and over
+days; `FILL=1`: a room furnished first) against a served build (`E2E_PORT`), printing per cycle the heap, DOM nodes,
+listeners, rAF a second, live contexts and the room's renderer.info, then a heap-snapshot diff by constructor
+(`SNAP_AT=0`: the whole heap, for an A/B of two builds); `--path=<name>` (`=<name>`: exactly, e.g.
+`--path==WebGL2RenderingContext`) prints what retains the ones new since the first snapshot.
 - **What a scene leaves behind:** anything page-wide (a `window.__*` hook, a module's callback, a `<link>`'s
   listener) that holds a closure made in a component holds that whole component: its DOM, its renderer. A hook goes
   in the scene's cleanup (only if it's still its own); a callback kept by a module is made at module level. Vite's
@@ -393,10 +376,9 @@ Beside its list the probe writes `<file>.wasted`: what was downloaded into the D
 
 ## The iOS Simulator check (the real target, on the Mac)
 
-CI draws in software (SwiftShader): no judge of the phones' rendering (iPhone 15/16, Safari, Metal). The rendering is
-checked on the iOS Simulator instead, on this Mac: `npm run ios:check` (scripts/ios-sim-check.ts) boots the newest
-installed iOS's iPhone, turns on Safari's Remote Automation in it, drives Safari over WebDriver (safaridriver ships with
-macOS), opens the live site's demo (`--url` for another, e.g. a local build), and writes `test-results/ios-sim/<time>/`:
+CI's software GL is no judge of the phones' rendering, so it's checked on the iOS Simulator, on this Mac: `npm run
+ios:check` (scripts/ios-sim-check.ts) boots the newest iOS's iPhone, drives Safari over WebDriver (Remote Automation
+on; safaridriver ships with macOS), opens the live site's demo (`--url` for another, e.g. a local build), and writes `test-results/ios-sim/<time>/`:
 `report.md` / `report.json` (the 3D island's load time, idle and scrolling fps with the frames' p50/p95 and the long
 ones, the engine's stats and the frames it draws a second idle; then けんこう (1週, 1年) and ごはん (きろく, グラフ)
 opened from the HUD: the island's frames under each (0: it pauses), the CSS animations still running, and the
@@ -404,15 +386,14 @@ sheet's own scroll's fps; the page's errors) and four screenshots. `--seed FILE`
 things on it), `--then FILE` runs a script in the page once the island is up (my villager onto a piece), so an A/B of a
 change is the same island twice (the gym's ten pieces: design.md "Decorating"). Exit 1 when the island didn't come up or it failed.
 
-The indoor scenes likewise: `npm run ios:indoor -- --url <base>` (`--fpv`: every room at my villager's eyes; `--room N`: the tent and うめ's room furnished first with N pieces, `--varied` each a different model; scripts/ios-sim-indoor.ts; the base, e.g. a local
-`vite preview`'s `http://127.0.0.1:4962/`) seeds a full museum (every fish and bug found), opens the island,
-then goes into the shop, the tent, うめ's house and the museum by the app's own navigation, twice (cold, then warm):
-each one's time to its first frame and to everything in, the bytes fetched, the longest frame gaps on the way in, the
-frames it draws a second at rest and walking (the museum's hall, aquarium and bug wing), each frame's cost, its draw
-calls, triangles and the GPU's geometries, textures and programs, a camera orbit's frames (the rooms), the museum's
-hour swap and a wing rebuilt (its worst gaps, its programs); and out to the
-shop after each: the rAF callbacks, timer fires and intervals still running (a leak); the page's Web Content process's
-resident memory in each room. `report.json` and screenshots.
+The indoor scenes likewise: `npm run ios:indoor -- --url <base>` (scripts/ios-sim-indoor.ts; `--fpv`: every room at
+my villager's eyes; `--room N`: the tent and うめ's room furnished first with N pieces, `--varied` each a different
+model; the base, e.g. a local `vite preview`'s `http://127.0.0.1:4962/`) seeds a full museum, opens the island, then
+goes into the shop, the tent, うめ's house and the museum by the app's own navigation, twice (cold, then warm): each
+one's time to its first frame and to everything in, the bytes fetched, the longest gaps on the way in, the frames a
+second at rest and walking, each frame's cost, draw calls, triangles and the GPU's geometries, textures and programs,
+a camera orbit, the museum's hour swap and a wing rebuilt; out to the shop after each, the rAF callbacks, timers and
+intervals still running (a leak); the Web Content process's resident memory in each room. `report.json` and screenshots.
 
 Nightly, a launchd agent (`~/Library/LaunchAgents/fund.island.ios-check.plist`, then
 `launchctl load ~/Library/LaunchAgents/fund.island.ios-check.plist`):

@@ -88,13 +88,8 @@ fallback 2027-10-08), driven by `e2e/wedding-board.spec.ts`.
 
 ## Migration
 
-The old Apps Script's `doGet` reply was converted and loaded once: 63 events (52 `wtask`, 3 `wdone`, 7 `wconf`,
-1 `wnote`), each `imported: true`, person `A`, ids `wed-<id>-wtask`, `wed-<id>-wdone`, `wed-conf-<key>`, `wed-note`
-(a load again adds nothing); parity was byte-equal. The tools (`wedding-import.ts`, `wedding-sheet.ts`,
-`wedding-parity.ts`, their test and invented fixture) live at the git tag `wedding-import`, not on main. To audit:
-check out the tag, `node scripts/record.ts dump > dump.json` (mode 600), then
-`node scripts/wedding-parity.ts <doget.json> dump.json` (prints mismatches by id and field, never a value). The
-record must keep those rows valid: `relay/test/wedding.test.ts` "the imported shapes".
+The old board's rows were loaded once (`imported: true`); the import and parity tools are at the git tag `wedding-import`.
+The rows stay valid: `relay/test/wedding.test.ts` "the imported shapes".
 
 ## Open
 

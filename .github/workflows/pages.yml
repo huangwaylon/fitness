@@ -1,11 +1,5 @@
-# Builds the UI as a static site and deploys it to Cloudflare Pages: https://island-fund.pages.dev/ (its own origin; GitHub
-# Pages, https://huangwaylon.github.io/fitness/, until 2026-11-05).
-# The backend is the relay (relay/: the record at /api, the room at /room); its URLs are in the app (lib/sync/live.ts).
-# The layout (docs/ops/testing.md): the gate, lean (the user, 2026-11-08: two people use the
-# app, fix-forward is cheap): `build` (the `site` artifact: what is deployed, its budgets), `checks` (with the gate's
-# plan), `unit` → `e2e-gate` (the core e2e and what the push changed or reaches) all at once, and `deploy` getting
-# ready beside them, deploying once all are green. After it, never holding it back: the full logic tier and the drawn smoke
-# (e2e-logic-full.yml); nightly, everything drawn (e2e-full.yml).
+# Builds the app as a static site and deploys it to Cloudflare Pages (https://island-fund.pages.dev/). The jobs, the
+# gate and the tiers that run after a deploy: docs/ops/testing.md "CI". The backend is the relay (relay/).
 name: Deploy UI
 
 on:
@@ -22,17 +16,14 @@ on:
 permissions:
   contents: read
 
-# Pushes to main run at once, never cancelled: a push's gate no longer waits for the run before it (24–143 s in a burst,
-# 2026-11-08). Only `deploy` is one at a time (its own group, `cloudflare-deploy`: a newer one waiting replaces an older
-# one waiting), and its order guard (scripts/deploy-order.ts) never puts older code over newer. (Cancelling older runs
-# was tried: in a burst nothing finished.) A pull request's runs: one at a time on its branch, as before. The full
-# logic tier is its own workflow after this one (e2e-logic-full.yml): this run's result is the gate's alone.
+# Pushes' runs overlap, never cancelled: a push's gate starts at once. Only `deploy` is one at a time (its own group),
+# and its order guard never puts older code over newer. A pull request's runs: one at a time on its branch.
 concurrency:
   group: ${{ github.event_name == 'pull_request' && format('pages-{0}', github.ref) || format('pages-run-{0}', github.run_id) }}
   cancel-in-progress: false
 
 jobs:
-  # The deployable build, once (about 30 s).
+  # The deployable build, once: the `site` artifact.
   build:
     runs-on: ubuntu-latest
     defaults:
@@ -58,14 +49,9 @@ jobs:
           compression-level: 0
           retention-days: 1
 
-  # Red main never deploys: first the gate's plan, then the type-check (`check` runs svelte-kit sync first), knip, the
-  # quarantine's owners and the docs' pointers. The plan: what the gate's e2e runs, chosen once for all 4 shards (each
-  # choosing its own, an API call failing in one gave it another selection: tests in no shard, the gate green): the
-  # selection (scripts/e2e-impact.ts: the gate set, the changed specs, the reached ones), the auto-quarantine
-  # (scripts/e2e-flakes.ts) and the shards' plan (scripts/e2e-shards.ts), uploaded as `gate-plan` ~20 s in, while the
-  # shards still build (they wait for the artifact, not the job). (Its own `select` job until 2026-11-09: a billed
-  # minute a push for ~16 s of work.) The unit tests (golden fixtures included) in `unit`, beside it. Both with
-  # app/static/: Kit types asset() by its files, the tests read it.
+  # Red main never deploys. First the gate's plan, once for all 4 shards (each choosing its own could disagree: tests in
+  # no shard), uploaded as `gate-plan` ~20 s in; then check, knip, the quarantine's owners, the docs' pointers. With
+  # app/static/ (as `unit`): Kit types asset() by its files, the tests read it.
   checks:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -137,12 +123,8 @@ jobs:
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npx vitest run
 
-  # The gate's e2e (docs/ops/testing.md "The gate"): the `gate-plan` (from `checks`) in logic mode (E2E_RENDER=none:
-  # nothing drawn), @render and @quarantine left out; the changed specs 3× and never retried, any other test retried
-  # once (failing again: red; passing: flaky, in the summary and the ledger, flaky-<shard>). Each shard builds the
-  # commit itself.
-  # Not `needs: checks`: a shard waits for the plan's artifact after its own build, so the rest of `checks` isn't on
-  # the way to the deploy (needing the plan's job cost ~35 s: the job, then a runner for each shard).
+  # The gate's e2e (docs/ops/testing.md "The gate"): the `gate-plan` in logic mode. Not `needs: checks`: each shard
+  # builds, then waits for the plan's artifact, so the rest of `checks` isn't on the way to the deploy (~35 s).
   e2e-gate:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -199,8 +181,8 @@ jobs:
           path: app
       - run: echo "E2E_X3=$(tr '\n' ' ' < sel/x3.txt)" >> "$GITHUB_ENV"
       - id: e2e
-        # (the plan leaves them out, but a whole spec file in a shard list (e2e-shards.ts: serial or ›-titled) brings its
-        # quarantined tests back in: 32266e9a ran kikimimi-path:113; so filter here too)
+        # (the plan leaves them out, but a whole spec file in a shard list (serial or ›-titled) brings its quarantined
+        # tests back in: so filter here too)
         run: |
           if ! grep -q . shards/${{ matrix.shard }}.txt; then echo "nothing in this shard"; exit 0; fi
           npx playwright test --project='chromium*' --test-list shards/${{ matrix.shard }}.txt --test-list-invert sel/quarantine.txt --grep-invert "@render|@quarantine" --max-failures=10
@@ -217,20 +199,11 @@ jobs:
           if-no-files-found: ignore
           retention-days: 3
 
-  # Once the gate is green, the build to Cloudflare Pages (https://island-fund.pages.dev, project island-fund: direct
-  # upload, no Git integration, so this workflow stays the gate). Secrets CLOUDFLARE_API_TOKEN (Pages: Edit, this
-  # account only) and CLOUDFLARE_ACCOUNT_ID (docs/ops/runbook.md §1); without them the job says so and deploys nothing.
-  # It starts once `build` is done and gets everything ready while the gate runs (the 537 MB `site`, ~7–25 s; the
-  # models; wrangler, ~7 s by npx), then waits for the gate (its GATE list, below), else red and nothing deployed.
-  # (`needs` on the gate put all that after it: ~30 s of every push→live.) Its group holds while it waits, so a newer
-  # run's deploy waits for it (or, still waiting, replaces an older one waiting): the deploys go in push order, and the
-  # order guard, just before wrangler, skips one (green, a notice) whose commit is live already or older than the live.
-  # With the site: ききみみ's recogniser under stt/ (docs/kikimimi-mic.md "Hosting and the service worker", the stopgap till R2): whisper tiny.en and
-  # the ONNX runtime, ~67 MiB in parts ≤ 20 MiB, never in git nor in the `site` artifact, from an Actions cache keyed on
-  # their pins (app/src/lib/mic/models.ts), which scripts/stt-models.ts fills on a miss (Hugging Face at the pinned
-  # revision, npm; every file's sha256 checked; an older entry restored first, so only what changed is fetched). Pages
-  # uploads a file once (by its hash): an unchanged model costs a deploy a cache restore (~2 s). And app/functions/
-  # (functions/stt/[[path]].ts: R2 under /stt/ once the bucket is bound; till then it passes to the static files).
+  # Once the gate is green, `site` to Cloudflare Pages (direct upload; secrets: docs/ops/runbook.md §1). Not `needs` on
+  # the gate: it gets everything ready meanwhile (~30 s off push→live), then waits on GATE. With the site, ききみみ's
+  # recogniser under stt/ (~67 MiB, docs/kikimimi-mic.md "Hosting and the service worker"): from an Actions cache keyed
+  # on app/src/lib/mic/models.ts, filled on a miss by scripts/stt-models.ts; Pages static files, which
+  # functions/stt/[[path]].ts passes through with their cache rule (immutable, manifest.json revalidated).
   deploy:
     needs: [build]
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -292,11 +265,8 @@ jobs:
           node app/scripts/stt-models.ts --out ../stt
           cp -R stt site/stt
           npm install --prefix "$RUNNER_TEMP/wrangler" --no-audit --no-fund --no-save wrangler@4.156.0
-      # The gate, failing closed: each job in GATE exactly once in this run attempt (a re-run's carried-over jobs with
-      # them), each `completed` and `success`. Any other conclusion (failure, cancelled, skipped, neutral, timed out),
-      # a job twice, or a job of this workflow not in GATE (a new job or shard, GATE not updated) is red. Missing or
-      # running: it waits, 20 min at most. The API failing 5 times running: red. GATE is the one list of the gate's
-      # jobs (the e2e-gate matrix points here).
+      # The gate, failing closed (scripts/deploy-gate.ts): each job in GATE exactly once in this attempt and `success`;
+      # anything else (a job twice, one not in GATE) is red; waits 20 min at most. GATE is the one list of the gate's jobs.
       - if: steps.ready.outputs.go == 'true'
         env:
           GH_TOKEN: ${{ github.token }}

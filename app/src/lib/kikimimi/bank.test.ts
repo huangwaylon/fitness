@@ -372,7 +372,7 @@ describe('kikimimi bank', () => {
     expect(Object.keys(CLIPS).filter((id) => !ids.has(id))).toEqual([]);
   });
 
-  it('ships no other clips (no loose ones), and the clips stay small (each under 60 KB; level 4’s 80 KB, the アナウンス pack’s and やま’s 100 KB, ほし’s 2-4 sentences 160 KB, a ladder rung 80 KB, a story’s segment and a listening kind’s 100 KB, a はつおん word 20 KB; the games’ packs under 103 MiB, the stories’ 23 MiB)', () => {
+  it('ships no other clips (no loose ones), and the clips stay small (each under 60 KB; level 4’s 80 KB, the アナウンス pack’s and やま’s 100 KB, ほし’s 2-4 sentences 160 KB, a ladder rung 80 KB, a story’s segment and a listening kind’s 100 KB, a はつおん word 20 KB; the games’ packs under 160 MiB, the stories’ 32 MiB)', () => {
     expect(existsSync(join(STATIC, 'audio/kikimimi')), 'the loose clips are gone (increment 9: the packs)').toBe(false);
     const rungs = new Set(RUNG_ITEMS.map((it) => it.id));
     const want = new Set([...[...BANK, ...UNIT_ITEMS].flatMap((it) => takeIds(it).flatMap((id) => [id, ...(it.lv <= 2 ? [`${id}-slow`] : [])])), ...rungs, ...STORY_IDS, ...LISTEN_IDS, ...PAIR_IDS]);

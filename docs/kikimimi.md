@@ -2,19 +2,16 @@
 
 A listening game for Japanese speakers learning English, for one to three players (A, B and the guest), opened from the HUD menu's 「英語」 pill and synced so everyone plays the same round at once. Villagers speak the English; しずえ hosts. No ベル, かいがら or economy tie.
 
-This doc is the player's side: the games' rules, the screens, progress and rewards. The other ききみみ docs:
+This doc is the player's side: the games' rules, the screens, progress and rewards. The one-paragraph summary is docs/design.md "ききみみ クイズ"; the relay's side of the wire and the caches, docs/backend.md. The other ききみみ docs:
 - [kikimimi-engine.md](kikimimi-engine.md): the round engine, the wire, content loading, audio and each game's deal.
 - [kikimimi-mic.md](kikimimi-mic.md): the opt-in speaking modes and the microphone's privacy rule.
 - [curriculum.md](curriculum.md): what is taught (stages, scenarios, units) and the content.
 
-docs/design.md "ききみみ クイズ" has the one-paragraph summary; docs/backend.md the relay's side of the wire and the caches.
-
 ## Open items
 
-- **Audio on Pages.** The packs are 101.6 MiB (games) + 21.4 MiB (stories), under bank.test's budget (160 and 32 MiB). No R2 (the user, 2026-11-09: it needs a payment method on file); revisit only if Pages' per-file 25 MiB or the file cap binds.
+- **Audio on Pages.** The packs and `/stt/` are Pages static files, no R2 (it needs a payment method on file): 153 packs (`static/audio/listen/*.pak`), games 101.6 MiB and stories 21.4 MiB, under bank.test's budget (160 and 32 MiB); a pack is ≤ 1.2 MB and fetched whole (kikimimi-engine.md "Packs"). Revisit only if Pages' 25 MiB a file or 20,000 files a deploy binds.
 - **`QUIZ_ON_PLAY`** (round/wire.ts) is off: the quiz and スピード はしご still go out as `quiz`. Turn it on once `npm run logs` shows both phones on a build that hears `play` (kikimimi-engine.md "Wire migration").
-- **The mic probe** on both phones, then the backend thresholds (kikimimi-mic.md "The probe"). Workers AI's data terms still to be written into docs/ops; until then the relay recogniser is never 自動.
-- **Mic leftovers:** こたえて！'s 「これ？」 band and 「声で / タップで」 preference, くりかえし's device-local speaking span, the unit page's ロールプレイ row, the input latency off まねっこ's lag.
+- **The mic probe** on both phones, then the backend thresholds (kikimimi-mic.md "The probe"). Workers AI's data terms still to be written into docs/ops; until then the relay recogniser is never 自動. **Mic leftovers:** こたえて！'s 「これ？」 band and 「声で / タップで」 preference, くりかえし's device-local speaking span, the unit page's ロールプレイ row, the input latency off まねっこ's lag.
 - **The listening check** of the gate's flagged clips: curriculum.md "Listening check". Content work (backdrops, the tone spike, wave 3): curriculum.md "Backlog".
 - **Not built (UX):** the couple quest's 30 / 90 setting (needs the relay); the ずかん tile's new-entry count and the partner's 「ふたりとも しってる」 line; きろく's skill pages and recent games; the hours-heard meter and K.K. songs; villager gifts, week-stamp gifts and the tent's trophy and landmark items (no present path for English rewards); the asynchronous 「もう きいたよ」 and a synced shared review; lock-screen playback for stories.
 - **Questions:** keep the pill's sub-label for good? Gulliver and Blathers as hosts of ジョニーの たび / フータの おはなし, or island villagers only?
@@ -34,8 +31,7 @@ The quiz, ひとこと クイズ, is the base every other game reuses (kikimimi-
 - **Reveal.** Once everyone joined has answered, or at the limit. Untimed, so there's time to read: it stays until the host taps つぎへ (solo: you). The others tap 「よみおわった」 (📖 on their chip); the host's button counts them (「つぎへ（よみおわった 1/2）」) but can always go on; with the host gone everyone gets つぎへ. ○ on the right choice, × on a wrong pick (colour is never the only signal); the English at ≥ 17 px with the key word marked, played once; the Japanese, the voice's accent and the reactions (✨ / 💦).
 - **Scoring.** Right 100, wrong or timed out 0. No speed bonus (it rewards guessing) and no first-listen points: 「いっぱつ！」 (right with no replay or slow play) is a stamp on the reveal, the review and the results, so replaying is never punished. おなじへや never gives it (only the host's phone can replay).
 - **Results.** しずえ reads them out like the morning broadcast: co-op 「ふたりで n/8」, たいせん a ranking. Then the **review list**, the main learning moment: with any misses it opens on them (「まちがえた だけ」, the first missed row open). A row opens to the English with its sound marks and karaoke, the Japanese, the answer, the `note`, the skills it tripped, my pick, ▶︎ and 🐢 (L1/L2). 「まちがえた もんだいを もういちど」 replays just the misses solo, untimed, recorded as practice (`p: 1`) so they feed the SRS.
-- **Solo** is the same game with one player.
-- **おなじへや** (「おとを 1だいに まとめる」): only the host's phone speaks (phones slightly out of step sound like a chorus); the others show 🔁 / 🐢 off with 「ホストの スマホで ながれます」. Without it, earphones are suggested.
+- **Solo** is the same game with one player. **おなじへや** (「おとを 1だいに まとめる」): only the host's phone speaks (phones slightly out of step sound like a chorus); the others show 🔁 / 🐢 off with 「ホストの スマホで ながれます」. Without it, earphones are suggested.
 
 ## Question types
 
@@ -83,8 +79,7 @@ L5 is the アナウンス mode beside もり, not a place. The mapping is a UI t
 ## Visuals
 
 - **Scene card** (`scene/SceneCard.svelte`): a staged item's setting from the lead-in to the reveal: one of 8 painted backdrops (`cafe`, `platform`, `pharmacy`, `office`, `door`, `gate`, `street`, `living`; bank.ts `SCENE_IDS`) softened under a paper vignette, the place's name, and the channel: face to face the speakers stand in it full-body; `PhoneFrame` (「つうわちゅう」 or 「るすでん」, signal bars that drop on a `signal` line), `PaFrame` (a horn with ripples), `VideoFrame` (a 2×2 call grid), all CSS/SVG. Reduced motion stills them. Levels 1-3 stay on the plain stage.
-- **No visual gives the answer away:** backdrops hold no text or numbers; transcripts and marks appear only at the reveal.
-- **The backdrops** are generated paper-gouache (`npm run art:scenes`, scripts/scenes/scenes.ts: Z-Image-Turbo, Apache-2.0, through MFlux, seed 7, scenes.json's shared style; webp at 393×224 @1-3x under `static/art/scene/`), the villagers' official art composited over them by the app. No NH character or Nintendo look is ever generated.
+- **The backdrops** are generated paper-gouache (`npm run art:scenes`, scripts/scenes/scenes.ts: Z-Image-Turbo, Apache-2.0, through MFlux, seed 7, scenes.json's shared style; webp at 393×224 @1-3x under `static/art/scene/`; no text or numbers, so they never give an answer away), the villagers' official art composited over them by the app. No NH character or Nintendo look is ever generated.
 - **Sound marks at the reveal** (`SoundLine.svelte`, marks.ts): the English with the focus and `say` (Let me → *lemme*), `link` ‿, `drop` (tryin~~g~~), `stress` ●, keyed by `MarkLegend`; authored per clip for every `tts` respelling.
 - **Karaoke** while the clip replays: the words said in ink, the one being said underlined, timed by `words.json` (kikimimi-engine.md "Audio").
 
@@ -235,12 +230,10 @@ A bedtime story in the night palette whatever the hour, no score (`story/StoryFr
 
 ### First run
 
-1. **Welcome** (`onboarding/Welcome.svelte`, in the hub's place; for a player with no games on a phone whose `DEVICE.kikiOnboarded` lacks them): しずえ's hello and three points, あとで / はじめる.
+1. **Welcome** (`onboarding/Welcome.svelte`, in the hub's place; for a player with no games on a phone whose `DEVICE.kikiOnboarded` lacks them): しずえ's hello and three points, あとで / はじめる. Either way it's marked seen; あとで lands on the hub with the quiet 👂 card. The guest gets the same flow with its own data.
 2. **The sound check** (🔊, the volume-0 line).
 3. **みみ チェック**, the placement (kikimimi-engine.md "みみ チェック"): solo, about 3 minutes, a progress bar, no score.
 4. **The result** (`onboarding/Placed.svelte`): 「もりから はじめましょう！」 on the five-place strip, とくい / これから chips, 「🔒 この けっかは あなただけに みえます。」. It sets おまかせ.
-
-Either way the welcome is marked seen; あとで lands on the hub with the quiet 👂 card. The guest gets the same flow with its own data.
 
 ## Progress & feedback
 
@@ -327,14 +320,12 @@ One shared bar of minutes heard, Monday to Sunday, 60 min (fixed). Minutes, not 
 
 | Where | State |
 |---|---|
-| Hub, first open | the welcome |
 | Hub, no check yet | the quiet 👂 みみ チェック card; the menu as normal |
 | Menu, all done | three ✓, 「きょうは ここまでで じゅうぶんです！」 |
 | After a gap | the hour's greeting; the due cap holds (≤ 8), no count of missed days |
 | Lobby, host left | 「{name}が おわりに しました」; ‹ to the hub |
 | Offline, pack not cached | the game can't start its clips (a chunk that won't load drops what waited); cached packs play |
 | `cv` mismatch | 「アプリを こうしんしてね」 |
-| Night (21:00-04:00) | きまぐれ = おやすみ |
 | Guest | its own solo quest, place, ずかん and きろく; no partner lines |
 
 ## Words
@@ -355,6 +346,5 @@ Speaking is opt-in and private: off by default, per phone, recordings never stor
 
 ## Tests
 
-- **vitest:** the deck's determinism and mix; the bank's validity (speakers and art exist, answers in range, clips and caps); the choice tells per level (curriculum.md "Choice tells"); the session's state machine with fake time; the protocol's parse cases (size, guest, ≤ 256 B relayed); the stats, SRS, advice and tag table; each game's kinds.
-- **relay vitest:** `quiz` and `play` go to the others and are never stored; `listen` rows owner-only with summaries.
+- **vitest:** the deck's determinism and mix; the bank's validity (speakers and art exist, answers in range, clips and caps); the choice tells per level (curriculum.md "Choice tells"); the session's state machine with fake time; the protocol's parse cases (size, guest, ≤ 256 B relayed); the stats, SRS, advice and tag table; each game's kinds. **relay vitest:** `quiz` and `play` go to the others and are never stored; `listen` rows owner-only with summaries.
 - **e2e** (logic tier, Chromium; specs open past the welcome with `e2e/fixtures.ts` `kikiFirstRun` and go through the hub with `e2e/kikimimi-nav.ts`): two players over `?demo` and `?demo&as=B`, solo, every game solo and co-op; `?kikimimi=fast` shortens the timed windows. `KIKI_SHOTS=1` writes screenshots under /tmp/kikimimi-shots/. Rendering is judged on the iOS Simulator and the phones.

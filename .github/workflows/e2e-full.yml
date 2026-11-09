@@ -1,9 +1,5 @@
-# The full tier, drawn (docs/ops/testing.md): the whole e2e suite with real (software) GL,
-# the quarantine included, nightly (02:30 Tokyo) and on demand (Actions → e2e full tier → Run workflow). Ten runners:
-# after every deploy it held half of GitHub Free's 20 jobs and queued the next push's gate (the user, 2026-11-08: the
-# full logic tier runs after each deploy instead, e2e-logic-full.yml). It gates nothing. Its failures are in its
-# summary and annotated on their specs. A failed test is retried once (playwright.config.ts): passing then, it's
-# flaky, named in the summary. One at a time, never cancelled.
+# The full tier, drawn (docs/ops/testing.md "CI"): the whole suite with real (software) GL, the quarantine included,
+# nightly (02:30 Tokyo) and on demand. It gates nothing; its failures are in its summary and on their specs.
 name: e2e full tier
 
 on:
@@ -21,9 +17,8 @@ concurrency:
 jobs:
   e2e-full:
     runs-on: ubuntu-latest
-    # (one browser a runner, ten runners: three drawing tabs on a 4-core runner took 0.5–2 s a frame under SwiftShader,
-    # and 185 of ~530 tests ran out their 30 s or their waits, the game itself slowed, Nov 4; E2E_SLOW gives a drawn
-    # test 90 s and an expect 20 s)
+    # (one browser a runner: three drawing tabs on a 4-core runner took 0.5–2 s a frame under SwiftShader;
+    # E2E_SLOW gives a drawn test 90 s and an expect 20 s)
     timeout-minutes: 30
     strategy:
       fail-fast: false

@@ -80,7 +80,8 @@ The demo has a made-up note for each trip and うめ's ticks on NZ's list (a pas
 
 `components/travel/map/`: `TripMap.svelte` (light; mounted by `MapPane.svelte`), `engine.ts` (MapLibre, its own lazy
 chunk), `style.ts` (the source and the stack), `basemap.ts` + `theme.ts` (our layers on the OpenMapTiles schema, the
-NookPhone palette), `overlay.ts` (pins, legs, candidates, the location dot), `fonts.ts`, `geo.ts`.
+NookPhone palette), `overlay.ts` (pins, legs, candidates, the location dot), `fonts.ts`, `geo.ts`, `glmap.ts` (what
+the map shows, and `removeMap`), `cached.ts`, `tiles.ts`.
 
 - **Source:** `style.ts` `BASEMAP`, OpenFreeMap's planet TileJSON (`https://tiles.openfreemap.org/planet`). The one
   third party the phones contact, in the CSP's `connect-src` only (no `img-src` / `font-src` change): it sees the
@@ -97,7 +98,7 @@ NookPhone palette), `overlay.ts` (pins, legs, candidates, the location dot), `fo
   「地図はオフライン — ルートのみ」); `failed` (the chunk or WebGL didn't come: 「地図を読み込めません」 + もう一度; offline
   the chunk is asked for only if the service worker holds it, `map/cached.ts`, and it draws by itself when the phone
   is back online); `lost` (iOS took the WebGL
-  context, till restored). `map.remove()` on unmount.
+  context, till restored). `removeMap` on unmount (glmap.ts: the style's font faces go too).
 - **Locate:** the button asks permission the first time it's tapped (`geolocation=(self)`); the first fix flies the
   map there (zoom ≥ 14), unless the phone is more than 50 km from every stop: then the dot shows where it is, the map
   stays on the route and 「旅先から離れています」 shows for 8 s. Tapped again while on: back to the dot (or the route if

@@ -6,8 +6,8 @@ phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), neve
 ## Budgets
 - **Bytes, gated by the build** ([testing.md](testing.md#load-budget)): the first load ≤ 400 KB of JS and 70 KB of CSS
   gzipped (none of it three.js, MapLibre or a sheet), the service worker's precache ≤ 3 MB on the wire, the ききみみ
-  budget (`scripts/kikimimi-budget.ts`), Pages' file cap (`static-files.test.ts`). 2026-11-09: JS 373 KB, CSS 61 KB,
-  precache 2.61 MB (the wedding's and the trips' heroes cached on first view since, −0.33 MB).
+  budget (`scripts/kikimimi-budget.ts`), Pages' file cap (`static-files.test.ts`). The build prints the
+  current sizes (`scripts/load-budget.ts`).
 - **Startup:** the asleep guest's villager adds nothing to a member's launch: its model after `shown`, no card while
   it loads (Island3D `guestLate`). ごはん: products.json (2.7 MB) only with a search, or a day with a product logged
   (`db.wantMore`); a picture holds its canvas, not its decoded sheet (food/cells.ts).
@@ -22,6 +22,10 @@ phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), neve
 - **The phone's engine:** `npm run ios:check` and `ios:indoor` on the iOS Simulator
   ([testing.md](testing.md#the-ios-simulator-check-the-real-target-on-the-mac)); the phones' own numbers:
   `npm run logs -- report` (`perf.boot`, `perf.sheet`).
+- **Measured** (the relay's latency from Tokyo, edge NRT; `cd relay && npm run smoke`, `npm run latency`): connect ~65 ms, ping
+  RTT median 18–21 ms, partner one-way median 19 ms, a kept intent one way 21–22 ms and its ack 31–33 ms; a notify
+  POST → `changed` on both phones median 53–70 ms (the test relay); tap → the partner's villager sets off median
+  34–40 ms (`RELAY_E2E=1` sync-harness).
 - **Traps:**
   1. Headless Chromium draws with SwiftShader, which has no KHR_parallel_shader_compile: its "2 s long task" is
      shader compiles in software. For Chromium timings use `--use-angle=metal --enable-gpu --ignore-gpu-blocklist`.

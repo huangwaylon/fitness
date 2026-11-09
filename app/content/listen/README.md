@@ -4,8 +4,8 @@ Source units for the ききみみ games, one YAML file per unit (docs/kikimimi-e
 "Listen parts", "ことば タイル"; docs/curriculum.md "Scenarios", "Audio and script rules"). `npm run kikimimi:levels` checks them
 (src/lib/kikimimi/listen.ts) and compiles each, whatever its status, into `levels/parts/<unit>.json`, with its game,
 stage and status in the index's `listen`; a problem in any file stops it, and content.test runs the same checker. The
-games show `listened` files only (a story shows from `voiced`); a draft plays only with the dev hooks. All 25 files
-here are `listened` (2026-11-07).
+games show `listened` files only (a story shows from `voiced`); a draft plays only with the dev hooks. All 29 files
+here are `listened`.
 
 ## Files and names
 

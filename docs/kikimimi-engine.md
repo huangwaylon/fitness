@@ -16,7 +16,8 @@ app/src/lib/kikimimi/
     types.ts      GameDef, RoundKind, Round, RoundDeck, RoundTiming, AnswerValue
     registry.ts   LANES: EAGER (quiz, ladder, lesson, taikai, check) + LATER (one lazy line a game)
   games/<gm>/     def.ts (a pure GameDef) and lane.ts: quiz, ladder, lesson, taikai, check, tile, tachi, call, rush, news,
-                  mane, kuri, pair, role, henshin; listened.ts + listenLane.ts for the listening games; versions.ts (BUILD_V)
+                  mane, kuri, pair, role, henshin, long; listened.ts + listenLane.ts for the listening games; versions.ts
+                  (BUILD_V); modes.ts (the mic modes' metas)
   bank*.ts, dialogues.ts, content/, source.ts, ladders.ts   the TS banks (BANK, LADDERS)
   deck.ts, mix.ts, score.ts, clips.ts, staging.ts, marks.ts, conditions.ts, speech.ts, cast.ts
   compile.ts, pool.ts, packing.ts, units.ts, listen.ts, story.ts, levels/   the compiler and its output
@@ -30,8 +31,8 @@ app/src/lib/components/kikimimi/
   hub/, asobu/, mode/, path/, zukan/, story/, taikai/, settings/, onboarding/, lesson/, scene/, mic/   (lazy)
   Lobby, Play, Results, Verdict, Transcript, Progress, LessonIntro   the quiz's pages and shared pieces
   KikimimiHost.svelte, invite.svelte.ts   always loaded; hear `quiz` and `play`
-app/src/lib/sync/storage.ts   DEVICE: kikimimiLv, kikiStage, kikiSame, kikiJa, kikiWeekGoal, kikiOnboarded, kikiStory, kikiZukan,
-                              kikiLandmarks, kikiMada
+app/src/lib/sync/storage.ts   DEVICE: kikimimiLv, kikimimiTimer, kikimimiGames, kikimimiRecent, kikiStage, kikiSame, kikiJa,
+                              kikiWeekGoal, kikiOnboarded, kikiStory, kikiZukan, kikiLandmarks, kikiMada, kikiTiles, mic
 app/content/units/, app/content/listen/ (README.md: the listening schemas), app/content/mic/
 ```
 
@@ -42,13 +43,10 @@ app/content/units/, app/content/listen/ (README.md: the listening schemas), app/
 `round/types.ts`. A game's review, row, clips and pages live in its lane and views, not on the kind.
 - `GameId`: `/^[a-z][a-z0-9]{1,7}$/` (`GM_RE`). `AnswerValue`: an int 0–255, or ≤ 12 ints 0–63 (tiles, memo rows, faces).
 - `RoundTiming {lead, play, answer, auto?}` in ms: the pop-in (1500; 0 for a follow-up round), the audio as scheduled, the limit from the play's end (30 / 20 / 60 s or Infinity), and `auto` (the reveal moves on by itself after `WINDOWS.auto`, 3 s). Every other reveal is untimed.
-- `RoundKind {id, play, valid, grade, auto?}`; `Round {kind, id}`; `Graded {ok, pts}`.
-- `RoundDeck {count, round, timing, valid, grade, score?, maxScore}` (`score` for a deck scored as a whole: the ladder's climb).
+- `RoundKind {id, play, valid, grade, auto?}`; `Round {kind, id}`; `Graded {ok, pts}`. `RoundDeck {count, round, timing, valid, grade, score?, maxScore}` (`score` for a deck scored as a whole: the ladder's climb).
 - `GameDef {id, modes {solo, coop, vs, same}, opts {encode, decode}, seedBits?, deck(seed, o, ctx), cv?, tier?, roles?, next?}`: `seedBits` keeps the `quiz` wire's flags in the seed; `next` deals an adaptive game's next round (みみ チェック, くりかえし).
 
-**Roles.** `go` carries `pl`, the host's bitmask of players at the start (A=1, B=2, G=4). Every phone derives `players = ORDER.filter(in pl)` and `role(who) = index`, deterministic; a late joiner takes `index % roles` (`GameDef.roles`, default one each).
-
-**Tiers** (`GameDef.tier {of, with}`): the host's tier rides `o`, each player's their `join`'s `tr`. `Game.deckFor(w)` is that player's deck at their tier (same rounds and timing); tally.ts grades with it, so `team`, `teamFirst` and the scores agree on every phone.
+**Roles.** `go` carries `pl`, the host's bitmask of players at the start (A=1, B=2, G=4). Every phone derives `players = ORDER.filter(in pl)` and `role(who) = index`, deterministic; a late joiner takes `index % roles` (`GameDef.roles`, default one each). **Tiers** (`GameDef.tier {of, with}`): the host's tier rides `o`, each player's their `join`'s `tr`. `Game.deckFor(w)` is that player's deck at their tier (same rounds and timing); tally.ts grades with it, so `team`, `teamFirst` and the scores agree on every phone.
 
 ### RoundSession
 
@@ -74,13 +72,11 @@ Every game is a lane in `round/registry.ts`. The quiz, ladder, lesson, taikai an
 |---|---|
 | `id`, `def(phone)` | its GameDef over the phone's deck cache (`phone.items(d)`, `phone.cv(gm, unit)`) |
 | `chunks(d)`, `deal(d)` | the pool.ts chunks a deck needs, then its items from them (pure) |
-| `byIds?` | its deck is the open's `ids` |
+| `byIds?`, `myTier?` | its deck is the open's `ids`; my `join.tr` for a game I join |
 | `seed?`, `solo?` | the host's seed (recent.ts), a solo game's own deck |
-| `myTier?` | my `join.tr` for a game I join |
-| `ahead?` | chunks to preload while it runs |
+| `ahead?`, `title?` | chunks to preload while it runs; the title bar's key while it runs |
 | `opts?` | a lobby's options from the mode page (default `[lv, timer]`, always leading with those two) |
 | `record?` | my row's answers when they aren't choices (the row then carries its `gm`: recorder.ts) |
-| `title?` | the title bar's key while it runs |
 
 - **Pages:** `components/kikimimi/<gm>/views.ts` exports `views: { lobby?, play?, results? }`, each `import()`ed; the sheet mounts the one for the phase through `<Lazy>` (a failed chunk: the stale-build reload, もういちど), else the quiz's.
 - **Strings:** `i18n/kiki-<gm>.{ja,en}.json` (keys `kiki.<gm>.*`) plus a `kiki-<gm>.ts` that calls `addCatalog`, imported by the views (deps.test: kikimimi/ may not import i18n/).
@@ -93,7 +89,7 @@ Every game is a lane in `round/registry.ts`. The quiz, ladder, lesson, taikai an
 
 ## Sync
 
-Two presence-only intents (contract/live-protocol.ts): unstored, unacked, never replayed, sent to all others, allowed for the guest (`guestMaySend`). Client messages ≤ 210 bytes (the relay adds `who` and `t`, ~35; 256 is the cap); wire.test builds the maximal message for every op. The relay deploys first for any contract change. A lobby kept alone and its game send nothing. The banner and the sheet reuse the island's Live (`relay ?? demoRelay`).
+Two presence-only intents (contract/live-protocol.ts): unstored, unacked, never replayed, sent to all others, the guest's as the members' (no guest gate: contract/guest.ts `guestMayWrite` rules stored events only). Client messages ≤ 210 bytes (the relay adds `who` and `t`, ~35; 256 is the cap); live-protocol.test builds the maximal message for every op. The relay deploys first for any contract change. A lobby kept alone and its game send nothing. The banner and the sheet reuse the island's Live (`relay ?? demoRelay`).
 
 ### The quiz wire
 
@@ -155,8 +151,7 @@ export type PlayWire =
   - `ask` (pic, num) a short Japanese question shown while the clip plays; `pic` choices are art keys with Japanese labels (`PIC_JA`); `word`'s `focus` the answer as it appears in `en`; `tts` what's spoken when it isn't `en` (curriculum.md "Audio and script rules"); level 4 up: `note`, `tags {seed, register, pragmatic, conditions?, features?}`; any level: `cja`, `why`, `ctx`.
   - Dialogues: `lines: {who, cast, en, ja, tts?}[]`; `en` the lines joined, `speaker`/`cast`/`voice` the first line's.
   - Staging: `scene?`, `channel?` (`live | phone | pa | video`, defaulting from `tags.conditions`: bank.ts `channelOf`), `marks?` on items and lines (staging.ts's tables hold the older banks').
-- **Counts** (bank.test): levels 1-7 46 / 49 / 89 / 297 / 30 / 236 / 115, 862 items; 30 ladders (`sp-<name>`, rungs `-1…4`).
-- **Waiting sets.** A set written after its level was offered waits for its voices (content/index.ts `WAITING`): `BANK` and the compiler take its items only once all their clips exist. Every set is voiced.
+- **Counts** (bank.test): levels 1-7 46 / 49 / 89 / 297 / 30 / 236 / 115, 862 items; 30 ladders (`sp-<name>`, rungs `-1…4`). **Waiting sets.** A set written after its level was offered waits for its voices (content/index.ts `WAITING`): `BANK` and the compiler take its items only once all their clips exist. Every set is voiced.
 - **`deck.ts`**: `deck(seed, lv)` is deterministic over the level's loaded items: the mix (mix.ts), never one type more than twice in a row, choices shuffled by the seed, templates not drawn together while the pool allows. Every phone builds the same deck from `{seed, lv}`, so no text goes on the wire. `LEVELS` (= `playable`) are the levels this phone offers: a mix and a clip for every item. Level 4's dialogue mix only once every level-4 dialogue line has a clip (deck.ts `mixes`, compiled as `index.json`'s `dialogues`).
 - **`score.ts`**: `points(right)`, `firstListen(right, replayed, same)`. **`clips.ts`**: `clipAt(id, slow?)`, `clipDur(id)`, `itemDur`, `sequenceStarts`, `lineGaps` (a line's `at`, else `LINE_GAP` 0.3 s).
 
@@ -176,8 +171,7 @@ export type PlayWire =
 
 - ほし's `mean` and `gist` run 2-4 sentences (≤ 45 words); a single-clip `gist` asks what a bulletin is about, a single-clip `next` what the speaker says next. ほし is broadcast on the plain stage.
 - `withBed`: a live item in a café, street, platform or gate scene gets that bed, light; `word` items stay clean.
-- **Clip caps** (bank.test): length 8 s a line at levels 1-3, 10 at 4, 11 at やま, 22 at ほし, 18 in the pack; size 60 KB a clip, level 4 and a rung 80, the pack and やま 100, ほし 160, a story segment or listening line 100, a はつおん word 20.
-- Tests: content/sets.test.ts (sizes, splits, prefixes, words a clip), the shared bank / staging / conditions / near-dupes tests.
+- **Clip caps** (bank.test): length 8 s a line at levels 1-3, 10 at 4, 11 at やま, 22 at ほし, 18 in the pack; size 60 KB a clip, level 4 and a rung 80, the pack and やま 100, ほし 160, a story segment or listening line 100, a はつおん word 20. Tests: content/sets.test.ts (sizes, splits, prefixes, words a clip), the shared bank / staging / conditions / near-dupes tests.
 
 ### Variety
 
@@ -190,18 +184,19 @@ export type PlayWire =
 
 The listening kinds (`content/listen/*.yaml`, not story/; schemas in app/content/listen/README.md) compile with the levels. `kikimimi/listen.ts` holds their types, the checker and the clip ids, for the compiler, the scripts and the tests; the phone imports its types only. A problem in any file stops the compiler, and content.test runs the same checker.
 - **Part** `levels/parts/<unit>.json` (≤ 32 KB gz): `{"listen": {unit, game, stage, status, cando, items}, packs, clips, words}`. Items as authored minus `tts`, with a `clip` id on every tile and every line of a call or たちぎき; a derived tile's `clip` is its bank item's id.
-- **Index:** `units[<unit>] = {parts, n, cv}` (so `load(<unit>)` works as for a level); `listen[<unit>] = [game, stage, status]` for the catalog; `games['<gm>:<unit>']`, once games/versions.ts has the game's `BUILD_V`.
-- **Gate:** every status compiles; past `draft` every clip must exist; the games show `listened` files only. All 25 listening files are `listened`.
+- **Index:** `units[<unit>] = {parts, n, cv}` (so `load(<unit>)` works as for a level); `listen[<unit>] = [game, stage, status]` for the catalog; `games['<gm>:<unit>']`, once games/versions.ts has the game's `BUILD_V`. **Gate:** every status compiles; past `draft` every clip must exist; the games show `listened` files only. All 29 listening files are `listened`.
 - **Clip ids** (`listenClipIds`): a tile's id or its `clip`; a call's or たちぎき's lines `<id>-<n>`. The audio script speaks them at the file's stage + 1, a call's `me` in the file's `cast.me`, a call in its phone band, a draft only under `--only`; each file's clips in its own pack.
 - **Checks** beyond the README's: US voices only and the US-only lint (`notUs`, over `en`, lines and plan choices, never `tts`; `accent-exposure` exempt), an error on content/listen, units and the bank; ids apart from every bank, unit and rung clip; the Japanese help (`helpProblems`), required past draft.
 
 ## Loading
 
-- **The compiler** (`kikimimi/compile.ts`, `npm run kikimimi:levels`; the audio scripts run it at their end) writes `kikimimi/levels/`: `parts/lv<n>.json` a level's items with their clips and timings, split in order past 54 KB gzipped (`lv4-1`, `lv4-2`…); `parts/ladder.json`; a unit's `parts/u-<id>.json` (curriculum.md "The unit file"); `parts/letters.json`; a listening file's part ("Listen parts"); a story chapter's `parts/<serial>-<n>.json`; `parts/mic-pairs.json`. `index.json`: each part, the cvs, the gates (`offered`, `dialogues`, the ladder), the sound check's clip, every item's id, level, type, accent and features (for きろく), the units, path lines, stories and listening files. YAML is parsed by `yaml` and checked by hand-written checkers (units.ts, listen.ts, story.ts). Committed; levels.test fails while they differ from the compiler's output. The tournament's numeric ids are each item's place in the index (`numbering`).
+- **The compiler** (`kikimimi/compile.ts`, `npm run kikimimi:levels`; the audio scripts run it at their end) writes `kikimimi/levels/`:
+  - `parts/lv<n>.json` a level's items with their clips and timings, split in order past 54 KB gzipped (`lv4-1`, `lv4-2`…); `parts/ladder.json`; a unit's `parts/u-<id>.json` (curriculum.md "The unit file"); `parts/letters.json`; a listening file's part ("Listen parts"); a story chapter's `parts/<serial>-<n>.json`; `parts/mic-pairs.json`.
+  - `index.json`: each part, the cvs, the gates (`offered`, `dialogues`, the ladder), the sound check's clip, every item's id, level, type, accent and features (for きろく), the units, path lines, stories and listening files.
+  - YAML is parsed by `yaml` and checked by hand-written checkers (units.ts, listen.ts, story.ts). Committed; levels.test fails while they differ from the compiler's output. The tournament's numeric ids are each item's place in the index (`numbering`).
 - **The phone** (`kikimimi/pool.ts`): the index is in the sheet's chunk, and きろく, the advice and おさらい read it alone. Each part is its own lazy chunk (`import.meta.glob`): `load(...units)` fetches a level's (or `'ladder'`, a unit's, a file's), `loadChapter` a chapter's, `loadLetters`; `levelItems(lv)` throws for a level not loaded (a deck from half a bank would differ between phones).
 - **When.** The sheet loads the remembered level's chunk and those of lobbies heard; then a heard `open` waits for its chunk, and everything after it waits behind it, in order; my own taps likewise. おさらい loads its picks' levels, then deals. A chunk that won't load drops what waited; the host's re-sent `open` tries again.
-- **The budget** (scripts/kikimimi-budget.ts, run by `npm run build`, and levels.test): the sheet's chunk ≤ 80 KB gzipped, the hub ≤ 25, each other page, game view and later lane ≤ 15 (at least one view of a game folder lazy), each level's part ≤ 60, a unit or listening part ≤ 32; the path index ≤ 12 KB at 200 units (units.test).
-- Tests: levels.test, game.test (an `open` for a level not loaded; my taps behind it), units.test's golden decks.
+- **The budget** (scripts/kikimimi-budget.ts, run by `npm run build`, and levels.test): the sheet's chunk ≤ 80 KB gzipped, the hub ≤ 25, each other page, game view and later lane ≤ 15 (at least one view of a game folder lazy), each level's part ≤ 60, a unit or listening part ≤ 32; the path index ≤ 12 KB at 200 units (units.test). Tests: levels.test, game.test (an `open` for a level not loaded; my taps behind it), units.test's golden decks.
 
 ## Audio
 
@@ -211,8 +206,7 @@ The listening kinds (`content/listen/*.yaml`, not story/; schemas in app/content
 - **Engine:** Qwen3-TTS 1.7B Base (mlx-audio), seeded, cloning each cast voice's reference clip with its exact transcript, so a voice stays the same voice. `--engine qwen3 | voxcpm2 | kokoro` (`say` the legacy path, levels 1-3 only).
 - **Setup** (Apple silicon): `brew install uv ffmpeg whisper-cpp`, and `~/.cache/whisper/ggml-large-v3-turbo.bin` (`WHISPER_MODEL` names another). The first run makes the venvs (`requirements-{gen,qa,kokoro}.txt`, Python 3.12); a check before any synthesis names what's missing. Smoke test: `npm run audio:kikimimi -- --only '^p1-cake$' --out /tmp/kiki-pipe-test --force`. `--refs` re-makes references (the AU ones need VCTK's wavs under `.cache/tts/vctk/`).
 - **The cast** (`app/scripts/tts/cast.json`, 18 voices): 12 US (`us-f1…f6`, `us-m1…m6`, twenties to sixties, `us-f6` light Southern, `us-m6` light New York), designed by Qwen3-TTS VoiceDesign from descriptions (the best seed by UTMOS and most unlike the others, ECAPA ≤ 0.64), no real person; 6 for exposure items only: UK from Phonon 31m catalogue voices (Apache-2.0), AU from the VCTK corpus. References committed (`refs/<id>.m4a`). Each villager has one US voice for good (cast.ts `CAST`); an `accent-exposure` item uses the speaker's UK or AU voice (`EXPOSURE`).
-- **Text:** `speech.ts spokenText`: `tts`, else `en` with numbers written out (`sayNumbers`).
-- **Processing:** the raw take (cached by master hash and seed) → edges trimmed → −16 LUFS, a limiter at −1.5 dBTP → mono AAC 48 kbps 24 kHz (stories and しずえの ニュース at −18 LUFS: `SOFT`). L1's clips slowed to 0.92 and L1/L2's `-slow` to 0.75 by atempo from the same take.
+- **Text:** `speech.ts spokenText`: `tts`, else `en` with numbers written out (`sayNumbers`). **Processing:** the raw take (cached by master hash and seed) → edges trimmed → −16 LUFS, a limiter at −1.5 dBTP → mono AAC 48 kbps 24 kHz (stories and しずえの ニュース at −18 LUFS: `SOFT`). L1's clips slowed to 0.92 and L1/L2's `-slow` to 0.75 by atempo from the same take.
 - **The gate:** whisper-cli large-v3-turbo hears every clip (numbers, contractions and reductions normalised); a content word wrong or the voice drifting (ECAPA < 0.5) re-rolls with the next seed, up to 5 times; the best take is kept and the rest flagged for a person. UTMOS measured too. Re-rolls a person chose are pinned (`PINNED`). `app/scripts/tts/report.json` has every clip's text, seed, takes, what whisper heard, WER, UTMOS, similarity and flags (its summary's `flagged`: curriculum.md "Listening check").
 - **音の へんしん's takes:** a phrase's careful take is an item of its own through the same gate (speech.ts `carefulText`), slowed to 0.8 (`CAREFUL_TEMPO`); its fast take is its natural take that passed, at atempo 1.25 (`FAST`), heard by whisper and flagged, never re-rolled. `npm run kikimimi:reduce` then checks each phrase is heard reduced (curriculum.md "Connected speech") into `reduce.json`.
 - **Word timings** (`npm run audio:kikimimi-words`): whisper-cli hears every clip word by word (DTW timestamps), matched to the shown words by a DP over normalised spellings; `words.json` `{clip: [hash, start…, end]}` in centiseconds, compiled into the parts; `wordTimes` spreads the clip's length when the hash differs.
@@ -222,13 +216,12 @@ The listening kinds (`content/listen/*.yaml`, not story/; schemas in app/content
 
 ### Packs
 
-`static/audio/listen/<pack>.<hash>.pak`: whole m4a files end to end (`packing.ts`, `npm run kikimimi:packs`); `packs.json` holds each pack's hash and its clips' offsets and lengths. A clip's home is its level's pack (`lv4`), `ladder`, its unit's (`u-<id>`), its listening file's, its story chapter's or `mic-pairs`; slow takes in `-slow`; a home past 1.2 MB (slow 0.8 MB) splits into stable parts (`planHome`), so re-speaking a clip changes its own pack only. WebKit decodes a slice to the standalone file's very samples (a slice is the file's own bytes with `+faststart`); ADTS would lose the m4a's priming and padding, so the packs stay m4a. 149 packs: games 94.2 MiB, stories 21.4 MiB, under bank.test's lines (96 / 23 MiB) until R2 (kikimimi.md "Open items"). Pages takes files ≤ 25 MiB and 20,000 a deploy (static-files.test keeps static/ ≤ 15,000).
+`static/audio/listen/<pack>.<hash>.pak`: whole m4a files end to end (`packing.ts`, `npm run kikimimi:packs`); `packs.json` holds each pack's hash and its clips' offsets and lengths. A clip's home is its level's pack (`lv4`), `ladder`, its unit's (`u-<id>`), its listening file's, its story chapter's or `mic-pairs`; slow takes in `-slow`; a home past 1.2 MB (slow 0.8 MB) splits into stable parts (`planHome`), so re-speaking a clip changes its own pack only. WebKit decodes a slice to the standalone file's very samples (a slice is the file's own bytes with `+faststart`); ADTS would lose the m4a's priming and padding, so the packs stay m4a. They're Pages static files (the count, sizes and bank.test's budget: kikimimi.md "Open items"); Pages takes files ≤ 25 MiB and 20,000 a deploy (static-files.test keeps static/ ≤ 18,000: lib/static-budget.ts).
 
 ### Playback
 
-- **The engine** (sound/engine.ts, sound.svelte.ts): a `voice` bus following the master volume only (silent at 音量 0); `voiceSession(on)`, called inside a tap, creates and unlocks the context even when sound is off, holds it awake and sets `navigator.audioSession.type = 'playback'` (it plays with the silent switch on); `loadVoice` / `loadBytes` decode a pack slice; `playVoice(buf, {relayAt?})` → `{stop(), endsAt}` at `ctx.currentTime + (relayAt − serverNow())/1000`, ducking the music. Decoded buffers in an LRU of 4 (`CLIP_CAP`), cleared on `voiceSession(false)`.
-- **Dialogues** (clipPlayer.svelte.ts `playSequence`): each line at its relay time; `talk` keeps the latest line begun and `all` every line under way (two in an overlap).
-- **Fetching** (`components/kikimimi/packs.ts`, `lib/packStore.ts`): Pages answers a Range with the whole file, so a pack is fetched whole, once (its clips asked for at once share the fetch), held in memory (12 MB) and each clip cut from it. `prefetchClips` fetches a deck's packs, the first question's first, then the rest; none after the sheet closes (`clear`). A level-4 lesson start (3 packs): 6 GETs, 6.96 MB → 3, 3.48 MB (2026-11-10; each slice had fetched its whole pack). Smaller transfers would mean smaller packs, not Ranges. Each clip is decoded just in time (1-3 ms). The next question's backdrop and speakers come with its clip (stage.ts `preloadStage`).
+- **The engine** (sound/engine.ts, sound.svelte.ts): a `voice` bus following the master volume only (silent at 音量 0); `voiceSession(on)`, called inside a tap, creates and unlocks the context even when sound is off, holds it awake and sets `navigator.audioSession.type = 'playback'` (it plays with the silent switch on); `loadVoice` / `loadBytes` decode a pack slice; `playVoice(buf, {relayAt?})` → `{stop(), endsAt}` at `ctx.currentTime + (relayAt − serverNow())/1000`, ducking the music. Decoded buffers in an LRU of 4 (`CLIP_CAP`), cleared on `voiceSession(false)`. **Dialogues** (clipPlayer.svelte.ts `playSequence`): each line at its relay time; `talk` keeps the latest line begun and `all` every line under way (two in an overlap).
+- **Fetching** (`components/kikimimi/packs.ts`, `lib/packStore.ts`): Pages answers a Range with the whole file, so a pack is fetched whole, once (its clips asked for at once share the fetch), held in memory (12 MB) and each clip cut from it. `prefetchClips` fetches a deck's packs, the first question's first, then the rest; none after the sheet closes (`clear`). Smaller transfers mean smaller packs, not Ranges. Each clip is decoded just in time (1-3 ms). The next question's backdrop and speakers come with its clip (stage.ts `preloadStage`).
 - **Caching:** the service worker's `island-listen-v1` (caches.ts `LISTEN_CACHE`; docs/backend.md "Service worker"): cache first, never revalidated (the hash is in the name), LRU by pack under 30 MB, a pack used in the last 10 minutes never evicted. Offline, a deck plays only the packs it has had. Packs are never precached; backdrops are cached on first use.
 
 ## Conditions
@@ -246,9 +239,8 @@ A clip can carry `cond: {kind, level, bed?}` (bank.ts `Cond`): a channel (`phone
 - The SNR is the speech's integrated loudness over the bed's stretch (from 0.5 s before to 0.35 s after, at an offset by the clip's id). A call's bed sits before the phone line, a PA's after the hall; then −16 LUFS, a limiter, AAC. Only a line that breaks off gets `signal`, and the player asks again on the next line, so a dropout never falls on a memo answer.
 - **The beds** (`app/scripts/tts/beds/{cafe,street,station,party}.m4a`, committed, 24 s): `npm run audio:kikimimi-beds` synthesises them from our own TTS clips reversed and layered, seeded noise and simple synthesis, so there's no third-party audio and no licence to track. `party` ships as `static/audio/beds/party.<sha8>.m4a` for たちぎき.
 - **Hashes.** A conditioned clip's source hash is its master's plus the plan, the bed's hash and a version (`condSource`), so a changed bed or setting re-mixes only its clips and never re-speaks.
-- **QA.** The strict gate runs on the clean take; the mixed clip gets a loose whisper WER check (≤ 0.2 light, 0.3 heavy; signal 0.5 / 0.6), else it's flagged `cond-wer`. The clean take is kept (`.cache/tts/clean/<id>.m4a`) for the word timings.
+- **QA.** The strict gate runs on the clean take; the mixed clip gets a loose whisper WER check (≤ 0.2 light, 0.3 heavy; signal 0.5 / 0.6), else it's flagged `cond-wer`. The clean take is kept (`.cache/tts/clean/<id>.m4a`) for the word timings. Tests: conditions.test.
 - **Where:** level 4's phone and PA clips and noisy scenes (`staging.ts NOISE`; heavy under 15 %); the pack, the sets, the units and the listening files as written.
-- Tests: conditions.test.
 
 ## The games
 
@@ -276,18 +268,16 @@ The placement (`games/check/`): solo, nothing on the wire, rounds dealt one at a
 Rebuild what you heard (`games/tile/`, `components/kikimimi/tile/`). 6 sentences by the seed, the shortest first; the clip plays once with no tiles, then the words plus 1–4 sound decoys (weak forms, contractions) appear, tapped into order. A card is an Item whose `id` is the clip it plays, its `tile.id` the row's id.
 - **Tiers:** easy, the first authored decoy and my first slot placed; hard, decoys topped up to 3–4 from a sound-swap table over the sentence's own words.
 - **Answer:** the board's index per slot, `EMPTY` for none; valid: one per slot, each tile once. Right: every filled slot holds its word and they're the whole sentence or one role's half. 100 a sentence; a replay costs nothing.
-- **Co-op:** role 0 fills the odd slots, role 1 the others; the partner's slots dashed.
-- **Row:** `gm: 'tile'`, `[tile id, ok, wrong-slot mask, rp]` (`tileRecord`).
+- **Co-op:** role 0 fills the odd slots, role 1 the others; the partner's slots dashed. **Row:** `gm: 'tile'`, `[tile id, ok, wrong-slot mask, rp]` (`tileRecord`).
 
 ### たちぎき
 
 Overheard three-speaker talk (`games/tachi/`, `components/kikimimi/tachi/`). 2 conversations of 30–50 s, 3 rounds each: opinions (match three Japanese claims to three faces), changed (who changed their mind), plan (what happens next).
 - **Timing:** the conversation plays before the opinions round only (answer +10 s); changed and plan have no clip and nothing replays at their reveals (`quietReveal`). After the first play each line replays alone (`game.hear`, not counted as a replay).
 - **Offsets:** a line's `at` (negative = overlap, only where the line's start carries no answer) feeds `sequenceStarts` and `itemDur`, played on the audio clock, not baked, so a line still replays alone.
-- **The party bed:** a file tagged `party` loops `party.<sha8>.m4a` under the whole sequence at +15 dB SNR (`bedSamples`), so its lines are voiced dry.
+- **The party bed:** a file tagged `party` loops `party.<sha8>.m4a` under the whole sequence at +15 dB SNR (clipPlayer.svelte.ts `PARTY_BED`, `BED_GAIN`), so its lines are voiced dry.
 - **Answers:** opinions `[speaker of claim 0, 1, 2]`, right when every placed face is at its claim and the faces are all three or one role's two; changed a speaker; plan a choice. Easy: the third claim placed.
-- **Co-op 「たんとう」:** role 0 follows the first speaker, role 1 the second, the third is shared; everyone answers changed and plan.
-- **Row:** `gm: 'tachi'`, `[row id (<id>-op|ch|pl), ok, pick, rp]`, opinions in base 4.
+- **Co-op 「たんとう」:** role 0 follows the first speaker, role 1 the second, the third is shared; everyone answers changed and plan. **Row:** `gm: 'tachi'`, `[row id (<id>-op|ch|pl), ok, pick, rp]`, opinions in base 4.
 
 ### ようじ でんわ
 
@@ -295,15 +285,13 @@ Phone errands that change mid-call (`games/call/`, `components/kikimimi/call/`: 
 - **Tiers** (`tierAt`): easy 2 rows, as authored 3, hard 4 plus a sound-trap chip on a number's row (`trapOf`: teen ↔ -ty, else two digits swapped).
 - **Answer:** the chip per row; right: every filled row right and they're the whole memo or one role's share. The chips take taps while the call plays; 「メモできた」 sends once it ends.
 - **Co-op 「わけて メモ」:** both hear the whole call; a round's rows split by place; the team's memo (`unionOf`) shows a wrong chip over a right one.
-- **Reveal:** the right chip and its `cja`, the basket (`basketOf`), and at round 2 the `note`, 解説 and the transcript. PhoneFrame's bars drop to 1 while a `signal` line plays.
-- **Row:** `gm: 'call'`, `[call id, ok, wrong-rows mask, rp]` (`callRecord`).
+- **Reveal:** the right chip and its `cja`, the basket (`basketOf`), and at round 2 the `note`, 解説 and the transcript. PhoneFrame's bars drop to 1 while a `signal` line plays. **Row:** `gm: 'call'`, `[call id, ok, wrong-rows mask, rp]` (`callRecord`).
 
 ### すうじ ラッシュ
 
 A café rush of numbers (`games/rush/`, `components/kikimimi/rush/`). `scripts/kikimimi-rush.ts` (`npm run kikimimi:rush`; `--check`, `--clips`) expands 60 frames (30 かわ, 30 もり; café, konbini, ticket window, a deli abroad in dollars, taxi stand, pharmacy) four times each by four of the US voices into s1-rush.yaml and s2-rush.yaml: 240 customers, a third corrected at seeded random places, some with a second number; four chips each (the answer, the slip, the second number, the -teen / -ty twin and near values) with `cja`, `why` and `note`. rush.test checks the files are as generated (near-duplicates among rush items exempt).
 - **Deck:** 8 customers by the seed, never two of one frame; a card is a `num` Item with `rush: {ask, at, was, b}`.
-- **Tiers:** hard all 4; as authored 3 (never dropping `was` or the twin); easy 3, `was` dropped.
-- **Timing:** answers open when the order ends; 8 s (`WINDOW`) whatever こたえる じかん, none with なし.
+- **Tiers:** hard all 4; as authored 3 (never dropping `was` or the twin); easy 3, `was` dropped. **Timing:** answers open when the order ends; 8 s (`WINDOW`) whatever こたえる じかん, none with なし.
 - **Points:** `questionPoints(ear, b)` (b the place, +0.5 for a correction), so しょうぶ works against expectation. A **combo** counts first-listen rights in a row; a miss resets it and the customer repeats the line.
 - **Co-op 「ふたつの レジ」:** customer i goes to register `i % 2`; the other phone answers `PASS` (99): valid, never right, no row.
 
@@ -343,9 +331,7 @@ Segmented talks with a comprehension map and answers during play (まるごと �
 
 ## Performance
 
-- Nothing heavy loads before the sheet opens: the island's first load carries ~4 KB of ききみみ (the invite listener and host, the `listen` contract, the pill, the cues).
-- The sheet's chunk and each part are lazy and budgeted ("Loading"). The island's render loop idles under the sheet.
-- The packs live in the service worker's cache; in memory only the LRU of 4 decoded buffers.
+- Nothing heavy loads before the sheet opens: the island's first load carries ~4 KB of ききみみ (the invite listener and host, the `listen` contract, the pill, the cues). The sheet's chunk and each part are lazy and budgeted ("Loading"); the packs as in "Playback". The island's render loop idles under the sheet.
 - During play nothing renders per frame but the karaoke (only while a clip replays); bars, timer, bob and waves are CSS; the view refreshes at each phase's end (at least every 3 s).
 
 ## Risks
@@ -354,7 +340,6 @@ Segmented talks with a comprehension map and answers during play (まるごと �
 2. **`cv` too strict** (a deploy window blocks co-play): hash only what shapes the deck; the update card calls the reload path.
 3. **Byte budget creep** (`open` at ~197 B): size tests per op at worst case; `ids` capped at 8; extend through `o` and `ev`.
 4. **Evicting a pack mid-game:** never evict one used in the last 10 minutes; a missing pack refetches.
-5. **Audio on Pages:** bank.test's budget (160 MiB games, 32 MiB stories) bounds the packs; no R2 (kikimimi.md).
 
 ## Tests
 

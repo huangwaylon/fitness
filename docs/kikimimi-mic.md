@@ -1,6 +1,6 @@
 # ききみみ: speaking with the mic
 
-Opt-in speaking modes on ききみみ: まねっこ シャドーイング, くりかえし チャレンジ, こたえて！, はつおん ききわけ and ふたりで ロールプレイ. Speech to text runs on the phone first; no free LLM conversation. The game itself is [kikimimi.md](kikimimi.md); the engine, [kikimimi-engine.md](kikimimi-engine.md). Open items (the probe on both phones, R2, the leftovers) are in kikimimi.md "Open items".
+Opt-in speaking modes on ききみみ: まねっこ シャドーイング, くりかえし チャレンジ, こたえて！, はつおん ききわけ and ふたりで ロールプレイ. Speech to text runs on the phone first; no free LLM conversation. The game itself is [kikimimi.md](kikimimi.md); the engine, [kikimimi-engine.md](kikimimi-engine.md). Open items (the probe on both phones, the leftovers) are in kikimimi.md "Open items".
 
 **Rules for every mic mode:**
 - **Off by default**, turned on per phone in ききみみ's せってい. Solo by default. Earphones recommended on every mic screen.
@@ -56,18 +56,16 @@ Content reuse: single-speaker US items with a clean take, `reply` items, two-spe
 ### まねっこ シャドーイング
 
 - **The round:** a line heard once blind, then said over it (重ねて言う 🎧: shadowing, with earphones) or right after it (あとから言う: お手本, then the mic; for when the clip bleeds). The take ends on the VAD's silence; then the **two contours** overlay (the villager's melody and yours, the words under them from words.json), the villager reacts in spaced kana with ≤ 2 tips in kanji, praise first (「最後の 上がり調子が そっくりです」, 「もう少し 高い・低いを 大きく」, 「単語の 間を つなげて みよう」); 「自分の 声を 聞く」 plays the take from memory, then it's gone; もう一回, 次の文へ / この文はとばす. Never a number, never 「ちがう」. No co-op (private).
-- **Trains:** rhythm (stress against mora timing), pitch range (Japanese learners compress it), linking and weak forms.
+- **Trains:** rhythm (stress against mora timing), pitch range (Japanese learners compress it), linking and weak forms. **No speech to text:** pitch and timing are compared on the phone ("Pitch and timing").
 - **Lines:** 4 at my placed level (the mode page's おまかせ), single-speaker US items with a clean take (no `cond`, no `channel`), 4–12 words, no figures, shortest first; a line said with reductions shows its `tts` under it.
-- **No speech to text:** pitch and timing are compared on the phone ("Pitch and timing").
-- Files: games/mane/, components/kikimimi/mane/ (ManePlay, ManeResults), mic/Contour.svelte, lib/mic/{pitch,prosody}.ts. ModeDetail shows no 問 chip and no こたえる じかん for a mic mode; きろく shows the mic games' minutes as 「声に出す ○分」.
+- Files: games/mane/, components/kikimimi/mane/ (ManePlay, ManeResults), mic/Contour.svelte, lib/mic/{pitch,prosody}.ts.
 
 ### くりかえし チャレンジ
 
 Elicited imitation: sentence repetition tracks proficiency.
 - **The run:** a sentence ladder (8 → 22 syllables, at the mode page's おまかせ level); each sentence the unused eligible item (US, one voice, 5–16 words, clean; light conditions from もり) nearest its rung's syllables. Each clip plays once, a 1 s beat (so you rebuild it rather than echo it), you say it; the sentence shows with the words said lit and the missed grey (match.ts `align`, contractions both ways), then `ja` and `note` or `why`. ≥ 80 % of the content words climbs a rung; two misses in a row end the run (「ここまで 14語！」, only to you). 「もう一回 聞く」 is free, but that sentence can't climb. No co-op.
 - Answer `[hit, of, heard]`, `pts` 0. A take with nothing heard says why, then 「もう一度話す」 or 「この文はとばす」 (neither climbs nor misses). The take's cap is the clip × 2 + 2 s (≤ 15 s). 自動 without the model on the phone, or an unpaired relay, is known only at the round, which says so with やめる.
-- **The speaking span** (planned): the run's top rung kept on this phone only, checked against a month of placements before it touches みみ チェック or the listening stats.
-- Files: games/kuri/ (def.ts, lane.ts, mode.ts), components/kikimimi/kuri/.
+- **The speaking span** (planned, kikimimi.md "Open items"): the run's top rung kept on this phone only, checked against a month of placements before it touches みみ チェック or the listening stats.
 
 ### こたえて！
 
@@ -80,14 +78,13 @@ Production minimal pairs: the contrasts Japanese speakers merge (r/l, the hat/hu
 - **Check:** whisper scores the two candidates by forced decoding (each word's mean token log-probability given the audio): a two-way intelligibility judgement, not a free transcript. Safari's and the relay give only a transcript, so the mode matches it ("unsure" when neither word appears) and asks 「聞いて選んでね」. Measured on our 72 clips (tiny.en q8, WASM, local Chromium): candidates 70/72 right, ~1.3 s a take; the transcript fallback 62 right, 2 wrong, 8 unsure.
 - **Co-op 「あてっこ」:** role i % 2 sees the word and says it; the other hears it live and taps the picture (a human ear is the best judge). The team's 「通じた 6 / 8」, no per-person figure.
 - **Content:** app/content/mic/pairs.yaml, 36 pairs (r/l 7, b/v 4, th 4, s/sh 1, vowels 8, teen/ty 7, final consonants 5), each with a US villager, `ctx`, `why`, two words with a kanji label, a reading, an emoji, an everyday line and a mouth tip; compiled to `parts/mic-pairs.json`. 72 clips, each word alone (`<pair>-1`, `-2`), the best of ten seeds by UTMOS among the takes whisper heard as written, in their own pack `mic-pairs`.
-- Files: games/pair/ (pairs.ts, def.ts, lane.ts), components/kikimimi/pair/; `coop: true` (あてっこ in the みんなで picker).
 
 ### ふたりで ロールプレイ
 
 - **The round:** a unit's scene, two of its dialogues chained (7 scenes, one per wave-1 unit, 8–10 turns, roles' names and goals in kanji; the scene is the options' third int `[lv, timer, scene]`, the host's pick). Each phone gets a role card; each turn shows its speaker the line in Japanese with the key phrases in English as chips (the whole English faded on easy); the speaker's phone checks the key phrases (match.ts `phrases`) and sends the bitmask; the other phone shows ✓ chips, never a transcript. 「お手本」 at the end plays the villagers' version with the karaoke. Score: the team's 「ふたりで 9 / 11 フレーズ」, never per person.
 - **A turn:** a round with no clip (`play` 0, `quietReveal`), untimed, the reveal `auto`. The speaker's answer is the mask (bits 0–5 the phrases, bit 6 spoken; 「マイクなしで次へ」 always); the other phone acks (255). cv: the unit's lesson cv, `BUILD_V.role` and the scene's dialogues.
 - **Consent:** joining is the consent (no wire field). Before joining, the invitee's phone says 「マイクを使います」 with 参加する / やめる; a phone with the mic off can't join.
-- Files: games/role/ (scenes.ts, def.ts, lane.ts, mode.ts), components/kikimimi/role/ (RoleLobby, RolePlay, RoleResults, MicJoin; the mic: mic/TalkButton); group `together` (the みんなで picker only).
+- Files: games/role/ (scenes.ts, def.ts, lane.ts), components/kikimimi/role/ (RoleLobby, RolePlay, RoleResults, MicJoin; the mic: mic/TalkButton); group `together` (the みんなで picker only).
 
 ### Where they show
 
@@ -121,8 +118,8 @@ app/src/lib/components/kikimimi/mic/   MicProbe, MicOptIn, MicButton (72 px, rin
 app/src/lib/kikimimi/games/modes.ts   the mic modes' metas and gates
 app/src/lib/kikimimi/games/{mane,kuri,pair,role}/ and components/kikimimi/{mane,kuri,pair,role}/
 app/content/mic/pairs.yaml
-app/scripts/stt-models.ts   fetch the pinned files (HF, npm), verify, split ≤ 20 MiB, write the manifest; --r2 <bucket> uploads
-app/functions/stt/[[path]].ts   /stt/* from R2 once STT_BUCKET is bound, else the static files
+app/scripts/stt-models.ts   fetch the pinned files (HF, npm), verify, split ≤ 20 MiB, write the manifest
+app/functions/stt/[[path]].ts   /stt/*'s cache rule over the static files (its R2 branch is dormant: STT_BUCKET unbound)
 relay/src/sttRoute.ts      POST /stt
 ```
 
@@ -144,11 +141,9 @@ export interface Recogniser {
 }
 ```
 
-- The modes see only `Heard` and match.ts: swapping the backend changes no game. `Heard.text` lives in the round's memory only.
+- The modes see only `Heard` and match.ts: swapping the backend changes no game. `Heard.text` lives in the round's memory only. `heard` never rejects: a `Heard`, or `{ miss }`: none, aborted, denied, capped (429: 「今日は ここまで」), off, unpaired, network, timeout, oom, service-not-allowed or other.
 - `recogniser(be?)`: the stub under `e2e.stt`; else, mic on, pick.ts's choice (whisper only once its model is on the phone: a round never downloads; Safari and the relay only when picked by hand). One recogniser and one take at a time; `release()` when the sheet closes.
-- `heard` never rejects: a `Heard`, or `{ miss }`: none, aborted, denied, capped (429: 「今日は ここまで」), off, unpaired, network, timeout, oom, service-not-allowed or other.
-- Whisper runs in a dedicated Worker, on WebGPU, else WASM (one GPU failure keeps it on WASM); a timed-out request terminates the Worker. Its input is the VAD-trimmed take, so silence never reaches the model (no hallucinated "Thank you."). `candidates` runs the encoder once and scores each word by forced decoding.
-- The relay backend sends ≤ 10 s of 16 kHz WAV (≤ 340 KB) with a 20 s timeout; cancel aborts it.
+- Whisper runs in a dedicated Worker, on WebGPU, else WASM (one GPU failure keeps it on WASM); a timed-out request terminates the Worker. Its input is the VAD-trimmed take, so silence never reaches the model (no hallucinated "Thank you."). `candidates` runs the encoder once and scores each word by forced decoding. The relay backend sends ≤ 10 s of 16 kHz WAV (≤ 340 KB) with a 20 s timeout; cancel aborts it.
 
 ### Pitch and timing
 
@@ -176,39 +171,34 @@ Grading is pure over the ints: the device does the hearing and the session sees 
 - **Auth:** the record's key (`keyOwner`); CORS for our origin only.
 - **Body:** `audio/wav`, ≤ 340 KB (10 s at 16 kHz 16-bit), read no further (a streamed body is cut off at 413).
 - **Call:** `env.AI.run('@cf/openai/whisper-large-v3-turbo', …)`: the audio and language only, never a prompt. **Reply:** `{ text, words? }`, `Cache-Control: no-store`.
-- **Never kept:** the body is never written to a Durable Object, R2, KV or the log, nor `console.log`ged. Logs `stt` with sizes, ms, model and ok only.
-- **Caps:** 300 requests per role per day (`STT_DAY_MAX`; over it 429). `STT_OFF = "1"` switches it off.
+- **Never kept:** the body is never written to a Durable Object, R2, KV or the log, nor `console.log`ged. Logs `stt` with sizes, ms, model and ok only. **Caps:** 300 requests per role a UTC day (`STT_DAY_MAX`; over it 429). `STT_OFF = "1"` switches it off.
 
 ### Hosting and the service worker
 
 - **CSP:** `connect-src 'self'` covers `/stt/*`; `script-src 'self' 'wasm-unsafe-eval'` covers ort's wasm. No new origin: transformers.js's remote models are off, its paths point at `/stt/`, and the worker refuses any fetch outside it. **Permissions-Policy:** `microphone=(self)`.
-- **Pinned:** whisper-tiny.en q8 @ `2575352d`, onnxruntime-web `1.31.0-dev.20260914-8d85527a0` (package.json overrides; transformers.js 4.3.2 exact, its Node-only deps replaced by an empty package). Every file (each over Pages' 25 MiB) is split into ≤ 20 MiB parts (`<path>.<sha8>.pN`), listed with bytes and sha256 in `/stt/manifest.json`: ~70 MB in all (the model 41 MB + the runtime 27 MB). ensureStt fetches what's missing after the user opts in, assembles, checks the sha256 and keeps each file whole in `island-stt-v1`. Paths carry the revision; manifest.json is revalidated.
-- **Hosting:** functions/stt/[[path]].ts serves `/stt/*` from R2 once the Pages project has the bucket bound as `STT_BUCKET`; without it the request falls through to the static files. Today pages.yml's deploy restores the files from an Actions cache keyed on the pins into the site's `stt/` (never in git or the artifact) and checks the live manifest. Once R2 is bound: `node scripts/stt-models.ts --r2 <bucket>` and drop the deploy's copy step.
-- **The service worker:** caches.ts `isStt` (`/stt/` and `workers/stt.<hash>.js`, named by vite.config.ts's `stt-names` rule) and `STT_CACHE`; out of the precache; served cache-first and never stored by the SW (the page fills it on the download); せってい's 削除 deletes it. A user who never opts in downloads 0 bytes of it.
-- **Budgets:** load-budget.ts keeps `lib/mic/` and MicProbe out of the first load and the worker ≤ 450 KB gz.
+- **Pinned** (lib/mic/models.ts): whisper-tiny.en q8 @ `2575352d`, onnxruntime-web `1.31.0-dev.20260914-8d85527a0` (transformers.js 4.3.2 exact; package.json's overrides replace its Node-only deps with an empty package). A file over Pages' 25 MiB is split into ≤ 20 MiB parts (`<path>.<sha8>.pN`); all are listed with bytes and sha256 in `/stt/manifest.json`: ~70 MB in all (the model 44 MB + the runtime 27 MB). ensureStt fetches what's missing after the user opts in, assembles, checks the sha256 and keeps each file whole in `island-stt-v1`. Paths carry the revision; manifest.json is revalidated.
+- **Hosting:** Pages static files, no R2 (kikimimi.md "Open items"). pages.yml's deploy restores them from an Actions cache keyed on the pins (filled on a miss by stt-models.ts) into the site's `stt/` (never in git or the artifact) and checks the live manifest; functions/stt/[[path]].ts passes them through with their cache rule (immutable, manifest.json revalidated).
+- **The service worker:** caches.ts `isStt` (`/stt/` and `workers/stt.<hash>.js`, named by vite.config.ts's `stt-names` rule) and `STT_CACHE`; out of the precache; served cache-first and never stored by the SW (the page fills it on the download); せってい's 削除 deletes it. A user who never opts in downloads 0 bytes of it. **Budgets:** load-budget.ts keeps `lib/mic/` and MicProbe out of the first load and the worker ≤ 450 KB gz.
 
 ### Audio session
 
-- sound.svelte.ts `micSession(on)` layers the type: the mic's `play-and-record` over a game's `playback`, the one before back once both are over. `audioCtx()` wakes the voice's context, which capture.ts uses. Music is held ducked while recording.
+- sound.svelte.ts `micSession(on)` layers the type: the mic's `play-and-record` over a game's `playback`, the one before back once both are over. `audioCtx()` wakes the voice's context, which capture.ts uses. Music is held ducked while recording. MicOptIn: the switch asks the permission first (refused: off, with where to change it); `DEVICE.mic` `{ on, be }`.
 - session.ts owns a take: one at a time, ended by stop / cancel, the VAD (1 s quiet), the 15 s cap, 8 s without speech, a new take, `visibilitychange` hidden or `pagehide`; each end releases the track (the orange dot goes off at once). A take that opens after its button is gone is cancelled at once.
-- MicOptIn: the switch asks the permission first (refused: off, with where to change it); `DEVICE.mic` `{ on, be }`.
 
 ### Tests
 
 - **vitest (pure):** pitch, prosody and vad on synthetic signals (glides of known f0, pulse trains, a rise against a fall); match.ts; pick.ts; models.ts (parts, sha check, ensureStt's cache); stt.ts; each GameDef; caches.test `isStt`; relay stt.test (auth, sizes, the cap, a chunked body cut off, nothing kept); log.ts accepting `mic.*` and refusing text.
-- **e2e:** the Playwright project `chromium-mic` (`kikimimi-mic*.spec.ts`: probe, optin, mane, kuri, reply, pair, role) with Chromium's fake media device on a committed clip, `--mute-audio` (no audio plays on the dev Mac), no network, and the stub recogniser via `localStorage['e2e.stt']` (a JSON list of what it hears, one entry a take; pick.ts `stubbed()`, `stubScript()`, `stubNext()`).
-- **Not tested:** loading whisper, WebGPU, or the analysis's numbers; the real model was checked once by hand in local Chromium. Rendering and feel are judged on the iOS Simulator and the phones.
+- **e2e:** the Playwright project `chromium-mic` (`kikimimi-mic*.spec.ts`: probe, optin, mane, kuri, reply, pair, role) with Chromium's fake media device on a committed clip, `--mute-audio` (no audio plays on the dev Mac), no network, and the stub recogniser via `localStorage['e2e.stt']` (a JSON list of what it hears, one entry a take; pick.ts `stubbed()`, `stubScript()`, `stubNext()`). **Not tested:** loading whisper, WebGPU, or the analysis's numbers; the real model was checked once by hand in local Chromium. Rendering and feel are judged on the iOS Simulator and the phones.
 
 ## The privacy rule
 
 - Off by default. Turned on per phone in ききみみ's せってい and off again there.
 - Solo by default. The partner is involved only in ロールプレイ and あてっこ, and only when both players opted in: joining is consenting.
 - **Recordings are never stored or synced.** A take lives in memory for its round and is dropped at the next round, on leaving, or when the app hides. It's never written to localStorage, IndexedDB, the Cache API, the record, R2 or the log, and never sent to the partner. The partner hears only your live voice in the room.
-- **Speech to text runs on the phone first** (whisper in the page; the model, ~70 MB, is downloaded once after you agree, and can be deleted).
+- **Speech to text runs on the phone first** (whisper in the page; the model, ~70 MB, is downloaded once after you agree, and can be deleted). The opt-in names the backend in use.
   - If Safari's recogniser is used, the audio may go to Apple.
   - If the relay is used (`POST /stt`), the audio goes to our relay and Cloudflare's Workers AI for the request only, and nothing is kept; the relay logs only sizes and times, with a daily cap a person and an off switch.
-  - The opt-in names the backend in use.
-- **No transcript and no speaking score leaves the phone.** Mic games' rows carry minutes only. ロールプレイ shares only its ✓ per phrase, as the team's.
+  - **No transcript and no speaking score leaves the phone.** Mic games' rows carry minutes only. ロールプレイ shares only its ✓ per phrase, as the team's.
 - **No ranking or leaderboard for speaking.** Mic modes are not in たいかい or きまぐれ.
 - Heard text is never put into a log event or an `Error`; the probe's `mic.*` events are numbers and closed sets (contract/log.ts).
 - The Permissions-Policy allows the microphone to our origin only.

@@ -22,6 +22,14 @@ npm run verify     # every check CI runs but e2e, at once (before a push)
 ```
 Needs Node ≥ 24.
 
+The relay, from `relay/` (deploying: [runbook §8](docs/ops/runbook.md#8-deploy-the-live-relay)):
+```sh
+npm test               # unit tests (vitest)
+npm run deploy:test    # deploy the test copy
+npm run smoke          # check the test copy (keys in relay/.smoke-keys)
+npm run logs           # the log's reader (docs/ops/observability.md)
+```
+
 The meal log's food data (`app/static/food/`), rebuilt from the repo root ([docs](docs/food-data.md); Python ≥ 3.9, stdlib
 only; the raw downloads in `food-data/raw/` are gitignored):
 ```sh
@@ -39,6 +47,9 @@ python3 -I -m unittest discover -s food-data/scripts/tests
 | `app/src/lib/sync/`, `store/` | The relay's client (record and live socket), write queue, cache, pairing; the stores |
 | `app/src/lib/layout/` | The island's editable layout: its grid, ops, default, nav and checks |
 | `app/src/lib/food/`, `sound/` | The food data's loading and search; the music and sounds |
+| `app/src/lib/kikimimi/`, `mic/` | ききみみ: decks, content, the round's rules; the mic (capture, VAD, recognisers, matching) |
+| `app/src/lib/travel/`, `hiking/`, `wedding/` | りょこう's trip guides (`trips/`); トレイル's trails and tracks; けっこんしき's board settings and progress |
+| `app/src/lib/offline/` | Map areas saved ahead for offline: their tiles and size |
 | `app/src/lib/time/`, `ui-state/`, `villagers/`, `i18n/`, `styles/` | Clocks and holidays; UI state and test switches; the villager roster; ja/en strings; CSS tokens |
 | `app/src/lib/components/` | The UI: `island/` and `world3d/` (the 3D island), `tent/`, `museum/`, `shop/`, `rooms/` (the interiors), `food/`, `health/`, `look/` (すがた), `board/`, `editor/` and `layoutEdit/`, … |
 | `app/src/routes/` | The pages (the island, `/tent`, `/editor`, `/pair`, …) |

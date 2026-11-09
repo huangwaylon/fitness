@@ -1,10 +1,6 @@
-# The flake hunt (docs/ops/testing.md): the whole logic tier in WebKit, every test run several times over, retries off.
-# Logic mode (E2E_RENDER=none), as the gate: what WebKit can tell us is its DOM, events and JS; the macOS VM's software
-# GL isn't the phones' Metal (docs/ops/testing.md), and drawn, the logic specs time out on it (and the travel
-# map's stub specs draw a real map instead). 2 workers: the runner is a 3-core VM, and at 3 each test ran 3-6× its time.
-# Weekly (Monday 03:30 Tokyo) and on demand (Actions → e2e flake hunt → Run workflow, with how many runs each). It
-# gates no deploy: it goes red when any test failed even once, and its summary lists them, worst first, to fix at the
-# cause.
+# The flake hunt (docs/ops/testing.md "CI"): the logic tier in WebKit, each test several times, retries off; logic
+# mode, as the gate (the VM's software GL isn't the phones' Metal). 2 workers: a 3-core VM. Weekly (Monday 03:30
+# Tokyo) and on demand. It gates nothing: red when any test failed even once, its summary lists them worst first.
 name: e2e flake hunt
 
 on:
@@ -89,8 +85,7 @@ jobs:
         with:
           name: site
           path: app
-      # (a test 60 s, not 30: the VM runs a test 2-3× its time on CI's Linux, and the two-phone ききみみ games (~23 s
-      # there) ran out the 30 s on 2026-11-08 with nothing wrong; it hunts flakes, not speed. A test.slow() gets 3× that)
+      # (a test 60 s: the VM runs a test 2-3× its Linux time, and it hunts flakes, not speed)
       - id: e2e
         continue-on-error: true
         run: npx playwright test --project=webkit --repeat-each=${{ inputs.repeat || '3' }} --retries=0 --workers=2 --timeout=60000 --grep-invert "@render|@quarantine" --shard=${{ matrix.shard }}/5

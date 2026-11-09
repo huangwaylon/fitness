@@ -86,8 +86,8 @@ export const ROOM_KEEP_MS = 3 * 24 * 3600_000;
 export const ROOM_INDEX = '__room-index';
 export type RoomIndex = Record<string, [bytes: number, usedAt: number]>;
 
-/** A pack's slice (`?s=<from>-<to>`), as the worker kept them till 2026-11-10: never asked for again (a pack is fetched
- *  whole), let go at once. */
+/** A pack's slice (`?s=<from>-<to>`), as an older worker kept them: never asked for again (a pack is fetched whole),
+ *  let go at once. */
 const isSlice = (u: string): boolean => new URL(u, 'https://x/').searchParams.has('s');
 
 /** Which of the room cache's entries go (`index` in any order): a file's older versions (the same path under another
@@ -118,8 +118,8 @@ export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, k
  *  (an index of each pack's bytes and last use kept in the cache), so a few levels' and units' packs stay offline. */
 export const LISTEN_CACHE = 'island-listen-v1';
 export const isListenPack = (path: string): boolean => path.includes('/audio/listen/') && path.endsWith('.pak');
-/** The listen cache's bound: past it, the least recently used packs go (the 149 packs are ~116 MiB: the games' 94.2,
- *  the stories' 21.4, bank.test's stopgap lines till W2-R moves them to R2; a level-4 game's eight ~9 MB). */
+/** The listen cache's bound: past it, the least recently used packs go (of ~123 MiB of packs in all: docs/kikimimi.md
+ *  "Audio on Pages"; a level-4 game's eight are ~9 MB). */
 export const LISTEN_CAP_BYTES = 30_000_000;
 /** A pack used within this is never evicted (a game in progress keeps its packs; a page still on the last build its
  *  packs' older versions). */

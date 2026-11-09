@@ -1,14 +1,12 @@
-# Backend monitor (docs/ops/runbook.md §2): the relay's /health (the Worker and the room) and a keyless
-# {"action":"health"} to the record's /api (its Durable Object). It fails, so GitHub e-mails the owner, unless both
-# answer JSON with ok:true; and the app's site (https://island-fund.pages.dev: a build, its CSP header, the relay's
-# CORS for its origin). Then the log's alert (docs/ops/observability.md "The alert"): /health/log's counts (with the
-# HEALTH_TOKEN secret) over the thresholds open one issue labelled `alert` (counts only: the repo is public), a change
-# comments on it, a green run closes it.
+# Backend monitor (docs/ops/runbook.md §2): the relay's /health, the record's /api (a keyless {"action":"health"}) and
+# the site (a build, its CSP, the relay's CORS for its origin); red, so GitHub e-mails the owner, unless all answer ok.
+# Then the log's alert (docs/ops/observability.md "The alert"): counts over the thresholds open one issue labelled
+# `alert` (counts only: the repo is public), a change comments on it, a green run closes it.
 name: Backend health
 
 on:
   schedule:
-    - cron: '17 */6 * * *' # every 6 h (06:17, 12:17, 18:17, 00:17 JST)
+    - cron: '17 */6 * * *' # every 6 h (09:17, 15:17, 21:17, 03:17 JST)
   workflow_dispatch:
 
 permissions:
