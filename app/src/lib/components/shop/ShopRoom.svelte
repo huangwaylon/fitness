@@ -22,7 +22,7 @@
   import type { WeekView } from '#lib/types.ts';
   import { sellPrice } from '#lib/contract/shop.ts';
   import { buyPrice } from '#lib/contract/stock.ts';
-  import { buyPiece, buyRefusal, stockAt } from './stock.ts';
+  import { allOf, buyAll, buyPiece, buyRefusal, stockAt } from './stock.ts';
   import { shopView } from '#lib/model/shop.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { sell, undoBanner } from '#lib/store/actions.ts';
@@ -50,6 +50,8 @@
   let picks = $state<Record<string, number>>({});
   /** かう: the piece picked. */
   let pick = $state<string | null>(null);
+  /** かう: 全部 picked (every piece of the stock I don't have yet, bought at once: stock.ts buyAll). */
+  let every = $state(false);
   /** The twins' line (a key of `shop.say.*` and its params). */
   let say = $state<{ k: string; p?: Record<string, string> }>({ k: 'hello' });
 
@@ -120,15 +122,28 @@
   }
 
   // ---- かう
+  /** 全部: what I don't have of today's stock, and its price together. */
+  const rest = $derived((void shop, allOf(stock)));
+  const short = $derived(Math.max(0, rest.total - shop.shells));
   function choose(code: string) {
+    every = false;
     pick = pick === code ? null : code;
     cue('tick');
     if (!pick) return void (say = { k: 'hello' });
     const why = buyRefusal(code, stock);
     say = why === 'owned' ? { k: 'owned' } : why === 'wallet' ? { k: 'short', p: { name: itemName(code) } } : { k: 'price', p: { name: itemName(code), v: formatNum(buyPrice(code) ?? 0) } };
   }
-  const why = $derived(pick ? (void shop, buyRefusal(pick, stock)) : null);
+  const why = $derived(every ? (short ? 'wallet' : null) : pick ? (void shop, buyRefusal(pick, stock)) : null);
+  /** 全部: picks the lot (the twins say what it comes to, or how many かいがら short), again: none. */
+  function pickAll() {
+    pick = null;
+    if (!rest.items.length) return void cue('boop');
+    every = !every;
+    cue('tick');
+    say = !every ? { k: 'stock' } : short ? { k: 'allShort', p: { v: formatNum(short) } } : { k: 'allOffer', p: { n: String(rest.items.length), v: formatNum(rest.total) } };
+  }
   function buyPicked() {
+    if (every) return buyEvery();
     if (!pick || why) {
       if (pick) say = why === 'owned' ? { k: 'owned' } : { k: 'short', p: { name: itemName(pick) } };
       return void cue('boop');
@@ -138,6 +153,18 @@
     cue('buy');
     undoBanner(t('shop.bought', { name: itemName(pick), v: formatNum(r.price ?? 0) }), r);
     pick = null;
+    say = { k: 'thanks' };
+  }
+  function buyEvery() {
+    if (short) {
+      say = { k: 'allShort', p: { v: formatNum(short) } };
+      return void cue('boop');
+    }
+    const r = buyAll(stock);
+    if (!r.ok) return void cue('boop');
+    cue('buy');
+    undoBanner(t('shop.boughtMany', { n: String(r.n ?? 0), v: formatNum(r.total ?? 0) }), r);
+    every = false;
     say = { k: 'thanks' };
   }
 
@@ -153,6 +180,7 @@
     tab = id;
     picks = {};
     pick = null;
+    every = false;
     say = { k: id === 'sell' ? (shop.pocket.size ? 'hello' : 'empty') : 'stock' };
   }
 
@@ -266,8 +294,16 @@
         <p class="empty" data-shop-sold-out>{t('shop.soldOut')}</p>
       {/if}
       <div class="bar">
-        <p class="sum" data-shop-pick={pick ?? ''}>{pick ? `${itemName(pick)} · ${formatNum(buyPrice(pick) ?? 0)}` : t('shop.buyHint')}</p>
-        <button type="button" class="btn small" data-shop-buy data-sfx="self" aria-disabled={!pick || !!why} onclick={buyPicked}>{t('shop.buy')}</button>
+        <p class="sum" data-shop-pick={every ? 'all' : (pick ?? '')} data-shop-total={every ? rest.total : null}>
+          {every ? t('shop.offer', { n: String(rest.items.length), v: formatNum(rest.total) })
+            : pick ? `${itemName(pick)} · ${formatNum(buyPrice(pick) ?? 0)}`
+            : stock.length && !rest.items.length ? t('shop.allOwned') : t('shop.buyHint')}
+        </p>
+        {#if stock.length}
+          <button type="button" class="btn small paper" data-shop-buy-all data-sfx="self" aria-pressed={every} aria-disabled={!rest.items.length}
+            aria-label={t('shop.buyAll')} onclick={pickAll}>{t('shop.all')}</button>
+        {/if}
+        <button type="button" class="btn small" data-shop-buy data-sfx="self" aria-disabled={!(pick || every) || !!why} onclick={buyPicked}>{t('shop.buy')}</button>
       </div>
     {/if}
   </section>
@@ -275,7 +311,7 @@
 
 {#snippet piece(code: string)}
   {@const owned = shop.owned.includes(code)}
-  <li class="tile" class:on={pick === code} class:owned>
+  <li class="tile" class:on={pick === code || (every && !owned)} class:owned>
     <button type="button" class="pickable" data-shop-item={code} data-price={buyPrice(code)} data-owned={owned} data-sfx="self" aria-pressed={pick === code}
       aria-label={t(owned ? 'shop.itemOwned' : 'shop.itemLabel', { name: itemName(code), v: formatNum(buyPrice(code) ?? 0) })} onclick={() => choose(code)}>
       <span class="ic"><img src={iconUrl(code)} alt="" width="46" height="46" loading="lazy" decoding="async" /></span>
@@ -384,6 +420,7 @@
     display: flex; align-items: center; gap: 8px; background: var(--c-cream); box-shadow: 0 -2px 0 var(--c-lip);
   }
   .bar .btn { margin: 0; flex: none; }
+  .bar .btn.paper[aria-pressed='true'] { --fill: var(--c-yuzu); }
   .sum { flex: 1 1 auto; min-width: 0; margin: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); }
   @media (prefers-reduced-motion: reduce) { .pickable:active { transform: none; } }
 </style>

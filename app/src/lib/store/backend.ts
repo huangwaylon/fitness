@@ -13,6 +13,8 @@ export const HOLD_MAX_MS = 2 * 60_000;
 export interface SendOptions {
   /** An undo window: shown at once, not sent before then. */
   holdMs?: number;
+  /** Kept all or none with the other sends of this id (sync/queue.ts `group`): the shop's ぜんぶ かう. */
+  group?: string;
 }
 
 /** A tap's outcome, known at once (the queue retries until the server acks). */

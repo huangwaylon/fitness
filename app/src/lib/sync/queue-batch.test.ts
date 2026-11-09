@@ -221,3 +221,36 @@ describe('what the unsent line counts (health A10)', () => {
   });
 });
 
+
+describe('a group (the shop’s ぜんぶ かう: relay store.ts group)', () => {
+  const ids = (b: { body: Record<string, any> }) => b.body.events.map((e: { id: string }) => e.id);
+  const buy = (item: string, at: number, hold: number, group = 'g1') => enqueue('buy', { item, price: 10, d: '2026-11-04' }, at, hold, group);
+
+  it('waits while any of it is held, then goes whole in one request, each event naming its group', async () => {
+    const a = buy('f1', T, 5000), b = buy('f2', T + 1, 5000), c = buy('f3', T + 2, 5000);
+    const find = enqueue('find', { kind: 'fish', id: 'dab' }, T);
+    await flush(() => T + 5001); // a and b are due, c not yet
+    expect(bodies.map(ids)).toEqual([[find.id]]);
+    expect(nextRetryAt(T + 5001)).toBe(T + 5002);
+    await flush(() => T + 5002);
+    expect(ids(bodies[1])).toEqual([a.id, b.id, c.id]);
+    expect(bodies[1].body.events.map((e: { group?: string }) => e.group)).toEqual(['g1', 'g1', 'g1']);
+    expect(bodies[0].body.events[0]).not.toHaveProperty('group');
+    expect(queued()).toEqual([]);
+  });
+
+  it('is never cut by a batch’s end: it goes whole in the next request', async () => {
+    const before = Array.from({ length: 40 }, (_, i) => enqueue('find', { kind: 'fish', id: `x${i}` }, T));
+    const group = Array.from({ length: 20 }, (_, i) => buy(`f${i + 1}`, T, 0));
+    await flush(() => T);
+    expect(bodies.map(ids)).toEqual([before.map((e) => e.id), group.map((e) => e.id)]);
+  });
+
+  it('a buy of a piece I have already (my other phone’s) is dropped with the record’s `owned`, the rest acked', async () => {
+    const [a, b] = [buy('f1', T, 0), buy('f2', T, 0)];
+    answer = () => ({ ok: true, results: [{ id: a.id, ok: false, error: 'bad_request', detail: 'owned' }, { id: b.id, ok: true, at: '2026-11-02T00:00:00.000Z' }] });
+    const r = await flush(() => T);
+    expect(r.dropped.map((e) => [e.id, e.detail])).toEqual([[a.id, 'owned']]);
+    expect(r.acked.map((e) => e.id)).toEqual([b.id]);
+  });
+});

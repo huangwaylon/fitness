@@ -1234,7 +1234,11 @@ for them and buy furniture for the rooms. Each person's own pocket and かいが
   list (seeded by the date and the island's seed) less every piece the island had by the day's start, the shared
   ずかん's furniture finds (presents, tree gifts, digs) and anyone's buys, so both phones agree all day and a find today
   leaves it till tomorrow. No いつもの (folded in: all three were furniture). Fewer when the island has nearly
-  everything; none, 売り切れ. Each with its icon, name and price. A piece I own says もってる. A bought piece is mine for
+  everything; none, 売り切れ. Each with its icon, name and price. A piece I own says もってる. The bar's 全部 picks every
+  piece I don't have yet: the bar and the twins say the count and total (「ぜんぶ 23こで 5,026 かいがらだも！」), 買う buys
+  them at once (one undo), then every tile says 持っている and the bar 「すべて持っています」. Short of the total, the twins say
+  by how much and 買う only boops: never a part of the lot (which part would be the shop's pick, not mine; one at a time
+  does that). The record keeps the lot all or none (`events` group: [backend](backend.md#api)). A bought piece is mine for
   good in もようがえ (the かった tab, or かべかけ for a wall piece) in every room I arrange.
 - A sell or a buy shows at once with 取り消す for 5 s, then goes to the record, which checks it (the pocket, the
   wallet, the stock's day, the price: [backend](backend.md#events)).
