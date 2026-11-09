@@ -40,7 +40,7 @@ snapshots (`toHaveScreenshot` at a fixed camera, date and seed, baselines made o
 layout specs drawn in the full tier.
 
 ## CI (`.github/workflows/pages.yml`)
-A push to `main` that touches `app/**` (docs-only and relay-only pushes don't run it; relay changes run *Relay checks*):
+A push to `main` that touches `app/**` (a docs-only push runs *Docs check*, `docs.yml`: docs-check alone; relay changes run *Relay checks*, whose path filter `relay/test/paths.test.ts` keeps in step with what the relay imports):
 
 | Job | What | Gates the deploy |
 |---|---|---|
@@ -167,15 +167,15 @@ so the K.K. test's positions never pass 0.5 s or drift apart; and the tent test'
 above (the tent shows `tent.failed`). Check them on the flake hunt.
 
 ## Before you push (a new or changed spec, or a change to the 3D engines, the tent or sync)
-1. `npm run verify` (~25 s): `checks` as CI runs it, all at once, the first red printed and the rest stopped: the lockfile
+1. `npm run verify` (~20 s): `checks` as CI runs it, all at once, the first red printed and the rest stopped: the lockfile
    (`npm ci --dry-run`: an ERESOLVE peer conflict), `check`, `knip` (and relay/'s, once `npm ci` ran there), `vitest run`, the quarantine's owners, the docs' pointers (`scripts/docs-check.ts`: every relative link and
    anchor in the docs resolves, every backticked repo path exists, every `docs/….md` "Heading" or §Section a comment
    cites is there; rename a heading and repoint its citations in the same push). `-- --quick`:
    vitest on the changes since origin/main only; `-- --build`: the build and its budgets too. No e2e.
    **The pre-push hook runs it for you** (`.githooks/pre-push`, set up by app's `npm ci` / `npm install`: its
    `prepare` sets `core.hooksPath .githooks`, shared by every worktree; once by hand: `git config core.hooksPath
-   .githooks`): a push that changes `app/` runs `npm run verify` on the working tree and is refused when it's red (a
-   pipe like `| tail` once hid its exit code: red commits pushed). Emergency bypass: `git push --no-verify` (or
+   .githooks`): a push that changes `app/` runs `npm run verify -- --build` on the working tree (the build beside
+   svelte-check: no longer), one that changes only `docs/` or README.md the docs check, and is refused when red. Emergency bypass: `git push --no-verify` (or
    `SKIP_VERIFY=1 git push`), then fix forward.
 2. `npm run e2e:ci-like -- --changed` (or `-- e2e/the.spec.ts --repeat 5`): the logic tier as CI runs it (a fresh build if `src/` is newer,
    software GL, CI's workers, `CI=1`, a free port), each test 5×. For a drawn (`@render`/`@smoke`) test add

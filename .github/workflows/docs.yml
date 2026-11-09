@@ -1,0 +1,38 @@
+# A push that changes only the docs: their links, anchors, paths and the code's citations of them resolve
+# (app/scripts/docs-check.ts, the gate's `checks` job runs it on an app push). Node alone, no install.
+name: Docs check
+
+on:
+  push:
+    branches: [main]
+    paths: ['docs/**', 'README.md', 'app/content/listen/README.md', '.github/workflows/docs.yml']
+  pull_request:
+    paths: ['docs/**', 'README.md', 'app/content/listen/README.md', '.github/workflows/docs.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+          # what docs-check reads; app/static (its paths are checked against `git ls-files`) stays out
+          sparse-checkout: |
+            docs
+            app/src
+            app/scripts
+            app/e2e
+            app/content
+            app/functions
+            relay
+            food-data/scripts
+            .github
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+      - run: node scripts/docs-check.ts
+        working-directory: app

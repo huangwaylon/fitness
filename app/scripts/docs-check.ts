@@ -144,7 +144,13 @@ if (import.meta.filename === realpathSync(process.argv[1])) {
   }
   // a gitignored path (`food-data/raw/`) is fine: asked only of what's found nowhere else
   const ignored = (p: string) => [p, `${p}/`].some((q) => spawnSync('git', ['check-ignore', '-q', q], { cwd: repo }).status === 0);
-  const exists = (p: string) => (p.startsWith('*/') ? tails.has(p.slice(2)) : existsSync(join(repo, p)));
+  // (a tracked file or folder counts though not checked out: docs.yml's sparse checkout leaves out app/static)
+  const paths = new Set<string>();
+  for (const f of tracked) {
+    const parts = f.split('/');
+    for (let i = 1; i <= parts.length; i++) paths.add(parts.slice(0, i).join('/'));
+  }
+  const exists = (p: string) => (p.startsWith('*/') ? tails.has(p.slice(2)) : existsSync(join(repo, p)) || paths.has(p.replace(/\/+$/, '')));
   const cache = new Map<string, string | null>();
   const read = (p: string) => {
     if (!cache.has(p)) cache.set(p, existsSync(join(repo, p)) && statSync(join(repo, p)).isFile() ? readFileSync(join(repo, p), 'utf8') : null);
