@@ -188,7 +188,7 @@ const farGround = (page: Page, x: number, z: number, min: number, max: number) =
 // far up the island, a tap on the sea's shadow casts from where it stands, the float on the water tapped, and the
 // whole of it plays out there: the shadow notices the float (near the float: my villager's distance doesn't matter),
 // nibbles, bites, and a tap catches it. The line runs from the rod's tip to the float, sagging by its length, clear of the island.
-test('a far cast: from across the island the float lands where the tap was, the line sags to it, and the shadow is caught', async ({ page }) => {
+test('a far cast: from across the island the float lands where the tap was, the line sags to it, and the shadow is caught', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ page }) => {
   test.slow();
   await open(page, { q: '&critter=fish' });
   await expect.poll(() => hooks(page, (h) => h.__fish.fish().length), { timeout: 15_000 }).toBeGreaterThan(0);
