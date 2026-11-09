@@ -36,6 +36,30 @@ const T = 1_000_000;
 const bytes = (body: unknown) => new TextEncoder().encode(JSON.stringify(body)).length;
 
 describe('a batch to the record', () => {
+  it('a backlog writes the queue and the acked list once per batch, and parses neither again (2026-11-09: once per event)', async () => {
+    const kv = new Mem();
+    let writes = 0;
+    kv.setItem = (k, v) => void (writes++, kv.m.set(k, v));
+    configureStorage({ local: kv });
+    setKey('ab'.repeat(32), 'A');
+    for (let i = 0; i < 120; i++) enqueue('pref', { key: 'moveGoal', value: i }, T);
+    writes = 0;
+    const parse = JSON.parse;
+    let parsed = 0;
+    JSON.parse = ((t: string) => (t.startsWith("[") && parsed++, parse(t))) as typeof JSON.parse; // (the stored lists, not the bodies)
+    try {
+      await flush(() => T);
+    } finally {
+      JSON.parse = parse;
+    }
+    // 3 batches of ≤ 50: each the acked list, then the queue; the sent-at mark at the end
+    expect(bodies).toHaveLength(3);
+    expect(writes).toBe(3 * 2 + 1);
+    expect(parsed).toBe(0);
+    expect(queued()).toEqual([]);
+    expect(ackedEvents()).toHaveLength(120);
+  });
+
   it('sends what may go now in one request, in queue order, skipping a held one and what follows it on its subject', async () => {
     const goal = enqueue('pref', { key: 'moveGoal', value: 450 }, T);
     const buy = enqueue('spend', { spendId: 's1', item: 'snack', bells: 40 }, T, 5000); // held: the undo window

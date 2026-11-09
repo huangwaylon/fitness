@@ -2,7 +2,7 @@
 // until the server acks them. Undo windows (`holdMs`) are decided here.
 import type { EventType } from '#lib/contract/api.ts';
 import type { Who } from '#lib/types.ts';
-import { LIVE, getKey, localKV, readJson, remove, writeJson } from './storage.ts';
+import { LIVE, getKey, localKV, readJson, remove, writeJson, writeRaw, type KV } from './storage.ts';
 import { post, type ApiError } from './transport.ts';
 import { count, log } from './log.ts';
 
@@ -44,14 +44,45 @@ let unsaved: QueuedEvent[] | null = null;
 
 const isEvent = (x: unknown): x is QueuedEvent => !!x && typeof (x as QueuedEvent).id === 'string' && typeof (x as QueuedEvent).type === 'string';
 
-export function queued(): QueuedEvent[] {
-  if (unsaved) return unsaved;
-  const q = readJson<unknown>(localKV(), LIVE.queue);
-  return Array.isArray(q) ? q.filter(isEvent) : [];
+/** The queue and the acked list as last read or written here, by key, with the text they were read from: parsed again
+ *  only when storage holds another text (another tab's write, the tests'), never at every look (2026-11-09, review 4:
+ *  a flush of a backlog parsed and wrote the whole queue once per event, 110 MB written for a 732 KB queue). */
+const lists = new Map<string, { kv: KV | null; raw: string | null; list: QueuedEvent[] }>();
+function readList(k: string): QueuedEvent[] {
+  const kv = localKV();
+  let raw: string | null = null;
+  try {
+    raw = kv?.getItem(k) ?? null;
+  } catch {
+    /* unreadable: as empty */
+  }
+  const c = lists.get(k);
+  if (c && c.kv === kv && c.raw === raw) return c.list;
+  let q: unknown = null;
+  try {
+    q = raw ? JSON.parse(raw) : null;
+  } catch {
+    /* corrupt: as empty */
+  }
+  const list = Array.isArray(q) ? q.filter(isEvent) : [];
+  lists.set(k, { kv, raw, list });
+  return list;
+}
+/** False when storage refused it (the caller keeps it in memory). */
+function writeList(k: string, list: QueuedEvent[]): boolean {
+  const kv = localKV(), raw = JSON.stringify(list);
+  if (!writeRaw(kv, k, raw)) return false;
+  lists.set(k, { kv, raw, list });
+  return true;
+}
+
+/** The queue, oldest first (not to be changed in place: a copy goes to saveQueue). */
+export function queued(): readonly QueuedEvent[] {
+  return unsaved ?? readList(LIVE.queue);
 }
 
 function saveQueue(q: QueuedEvent[]): void {
-  unsaved = writeJson(localKV(), LIVE.queue, q) ? null : q;
+  unsaved = writeList(LIVE.queue, q) ? null : q;
 }
 
 /** Pairing as someone else: their unsent events are not mine to send (nor their acked ones mine to show). */
@@ -70,19 +101,17 @@ export function clearQueue(): void {
  */
 let unsavedAcked: QueuedEvent[] | null = null;
 
-export function ackedEvents(): QueuedEvent[] {
-  if (unsavedAcked) return unsavedAcked;
-  const q = readJson<unknown>(localKV(), LIVE.acked);
-  return Array.isArray(q) ? q.filter(isEvent) : [];
+export function ackedEvents(): readonly QueuedEvent[] {
+  return unsavedAcked ?? readList(LIVE.acked);
 }
 
-export function keepAcked(list: QueuedEvent[]): void {
+export function keepAcked(list: readonly QueuedEvent[]): void {
   if (!list.length) {
     unsavedAcked = null;
     remove(localKV(), LIVE.acked);
     return;
   }
-  unsavedAcked = writeJson(localKV(), LIVE.acked, list) ? null : list;
+  unsavedAcked = writeList(LIVE.acked, [...list]) ? null : [...list];
 }
 
 /** A day's whole row (a tally's counts only grow, an island day is sent whole): a newer one of the same day and
@@ -234,7 +263,7 @@ function subjectOf(ev: Pick<QueuedEvent, 'type' | 'data'>): string | null {
  * the rest. Held events are skipped (with every later event on the same subject); a backed-off one stops the scan.
  * `skip`: passed over (in this batch already); `defer`: passed over as a held one is (too big for a keepalive).
  */
-function due(q: QueuedEvent[], now: number, skip: (ev: QueuedEvent) => boolean = () => false, defer: (ev: QueuedEvent) => boolean = () => false): { ev: QueuedEvent | null; wake: number | null } {
+function due(q: readonly QueuedEvent[], now: number, skip: (ev: QueuedEvent) => boolean = () => false, defer: (ev: QueuedEvent) => boolean = () => false): { ev: QueuedEvent | null; wake: number | null } {
   const heldSubjects = new Set<string>();
   // a group waits while any of it is held (its undo window): then all of it goes, side by side
   const heldGroups = new Set(q.flatMap((x) => (x.group && isHeld(x, now) ? [x.group] : [])));
@@ -278,23 +307,36 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean 
     const tried = new Set<string>();
     /** Over a keepalive's cap alone: left for the next flush with the page open, the rest sent past it. */
     const tooBig = new Set<string>();
+    // A reply's acks, drops and backoffs, gathered and written once (commit): the acked list before the queue, so
+    // closing the app between the two never loses one
+    const gone = new Set<string>(), acked: QueuedEvent[] = [], changed = new Map<string, Partial<QueuedEvent>>();
+    const commit = () => {
+      if (acked.length) {
+        const ids = new Set(acked.map((x) => x.id));
+        keepAcked([...ackedEvents().filter((x) => !ids.has(x.id)), ...acked]);
+      }
+      if (gone.size || changed.size) saveQueue(queued().filter((x) => !gone.has(x.id)).map((x) => (changed.has(x.id) ? { ...x, ...changed.get(x.id) } : x)));
+      gone.clear();
+      acked.length = 0;
+      changed.clear();
+    };
     const ack = (ev: QueuedEvent, at?: string) => {
       out.sent++;
       out.acked.push(ev);
       if (at) out.stored.push({ ev, at });
-      // into the acked list before it leaves the queue: closing the app between the two never loses it
-      keepAcked([...ackedEvents().filter((x) => x.id !== ev.id), { ...ev, ackedAt: now() }]);
-      saveQueue(queued().filter((x) => x.id !== ev.id));
+      acked.push({ ...ev, ackedAt: now() });
+      gone.add(ev.id);
     };
     const drop = (ev: QueuedEvent, error: ApiError, detail?: string) => {
       log('queue.drop', { type: ev.type, err: error, tries: ev.tries + 1 }, 3);
       out.dropped.push(detail ? { ...ev, detail } : ev);
-      saveQueue(queued().filter((x) => x.id !== ev.id));
+      gone.add(ev.id);
     };
     /** Set aside, kept: it no longer blocks the queue (only its subject). */
     const park = (ev: QueuedEvent, error: ApiError) => {
       log('queue.poison', { type: ev.type, err: error, tries: ev.tries + 1 }, 3);
-      saveQueue(queued().map((x) => (x.id === ev.id ? { ...x, tries: x.tries + 1, parked: true as const } : x)));
+      changed.set(ev.id, { tries: ev.tries + 1, parked: true });
+      commit();
     };
     /** `served`: the record itself answered it so (its write threw), not the network. */
     /** True when it was set aside instead (the flush goes on). */
@@ -309,7 +351,8 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean 
       const tries = ev.tries + 1;
       // the first and every fifth (offline, it retries for as long as it takes)
       if (tries === 1 || tries % 5 === 0) log('queue.retry', { type: ev.type, err: error, tries, n: queued().length }, 2);
-      saveQueue(queued().map((x) => (x.id === ev.id ? { ...x, tries, nextAt: now() + backoffMs(tries), ...(n ? { served: n } : {}) } : x)));
+      changed.set(ev.id, { tries, nextAt: now() + backoffMs(tries), ...(n ? { served: n } : {}) });
+      commit();
       return false;
     };
     // (a keepalive's in bytes, the browser's measure; else characters, the record's)
@@ -379,6 +422,7 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean 
           break;
         }
       }
+      commit();
       if (stop) break;
     }
     out.remaining = queued().length;

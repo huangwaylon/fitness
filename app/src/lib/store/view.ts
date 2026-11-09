@@ -24,7 +24,7 @@ export interface ComposedModel {
  * States, unless a queued row is stamped before the latest lock (an old offline tap): the server will stamp it
  * later, so it must not pin a locked week.
  */
-export function composeModel(cache: SnapshotCache, queue: QueuedEvent[], clientNow: number, prev?: ComposedModel | null): ComposedModel {
+export function composeModel(cache: SnapshotCache, queue: readonly QueuedEvent[], clientNow: number, prev?: ComposedModel | null): ComposedModel {
   const known = eventIds(cache.rows);
   const seen = new Set<string>();
   const lastAt = cache.since ? Date.parse(cache.since) : 0;
@@ -67,13 +67,13 @@ function reduceRows(rows: SnapshotCache['rows'], rev: string | null): State {
 export const ACKED_MAX_UNSEEN_MS = 5 * 60_000;
 
 /** The acked events still to show: not in the cache yet, and not given up on (see ACKED_MAX_UNSEEN_MS). */
-export function pendingAcked<E extends { id: string; ackedAt?: number }>(cache: SnapshotCache, list: E[]): E[] {
+export function pendingAcked<E extends { id: string; ackedAt?: number }>(cache: SnapshotCache, list: readonly E[]): E[] {
   return notInCache(cache, list).filter((e) => e.ackedAt === undefined || cache.fetchedAt < e.ackedAt + ACKED_MAX_UNSEEN_MS);
 }
 
 /** The events from `list` whose rows the cache doesn't have yet (acked events drop out once fetched back). */
-export function notInCache<E extends { id: string }>(cache: SnapshotCache, list: E[]): E[] {
-  if (!list.length) return list;
+export function notInCache<E extends { id: string }>(cache: SnapshotCache, list: readonly E[]): E[] {
+  if (!list.length) return [];
   const known = eventIds(cache.rows);
   return list.filter((e) => !known.has(e.id));
 }
