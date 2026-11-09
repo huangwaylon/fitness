@@ -196,7 +196,7 @@ dishes, in one style (coloured pencil and watercolour on the paper colour): 5,02
   else with its category), so a common search's top 20 download about 100 KB of thumbnails; detail sheets go by category. Popular
   items come first. `slots.json` is append-only, so a full sheet never changes. The names carry the content hash (cached for a year, `scripts/headers.ts`).
   `index.json` maps each food id to its picture's two cells (`lib/food/images.ts` `imgOf`).
-- **Budget** (`lib/food/images.test.ts`): ≤ 1,100 files and 90 MB in food-img/ (projected over the whole table, within static/'s 15,000-file cap), a common search's top 20 ≤ 120 KB of thumbnails on average (350 at most), ≤ 400 KB a sheet, ≤ 19,000 files under
+- **Budget** (`lib/food/images.test.ts`): ≤ 1,100 files and 90 MB in food-img/ (projected over the whole table, within static/'s file cap, `lib/static-budget.ts`: 18,000 = Pages' 20,000 less the build's ~1,000 and a 1,000 margin), a common search's top 20 ≤ 120 KB of thumbnails on average (350 at most), ≤ 400 KB a sheet, ≤ 19,000 files under
   static/ (Cloudflare Pages takes 20,000 a deploy), and every generic food in a table row (a new catalogue item fails the test until it has one). The service worker caches the sheets on first use (`FOOD_IMG_CACHE`),
   never at install.
 

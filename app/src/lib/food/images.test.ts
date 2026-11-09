@@ -8,15 +8,14 @@ import { join } from 'node:path';
 import { imgOf, loadFoodImages, type FoodImageIndex } from './images.ts';
 import { addDataset, emptyDb, searchFoods } from './db.ts';
 import type { Dataset, FoodIndex } from './types.ts';
+import { STATIC_MAX_FILES } from '../static-budget.ts';
 
 const STATIC = join(import.meta.dirname, '../../../static');
 const DIR = join(STATIC, 'food-img');
-/** The budget: files in food-img/, its bytes, one sheet's bytes, and static/'s file cap (static-files.test.ts's
- *  STATIC_MAX_FILES: Pages takes 20,000 a deploy, the build adds its chunks). */
+/** The budget: files in food-img/, its bytes, one sheet's bytes, and static/'s file cap (lib/static-budget.ts). */
 const MAX_FILES = 1_100; // ~5,000 pictures: 3 × 3 detail sheets (~560) and 4 × 4 thumbnail sheets (~350)
 const MAX_BYTES = 90_000_000;
 const MAX_SHEET = 400_000;
-const STATIC_MAX_FILES = 15_000;
 
 /** A webp's canvas size from its header (VP8, VP8L or VP8X). */
 function webpSize(b: Buffer): [number, number] {
