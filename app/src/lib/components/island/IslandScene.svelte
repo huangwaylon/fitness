@@ -13,7 +13,7 @@
   // data, fruit stages, a received high-five), naps, the balloon; idle life runs while not `paused`.
   import Lazy from '#lib/components/ui/Lazy.svelte';
   import { lazyComponent } from '#lib/ui-state/lazyComponent.svelte.ts';
-  import { relayOffset } from './ambientClock.ts';
+  import { islandDay, relayOffset } from './ambientClock.ts';
   import { releaseWorker } from '#lib/ui-state/swLate.ts';
   import { showAt } from './fireworks.ts';
   import { hook, hookFlag, hooksOn } from './devHooks.ts';
@@ -104,7 +104,7 @@
   import { clearAt, guardsU, stageGeo } from './placement.ts';
   import { onMount, untrack } from 'svelte';
   import type { ActorId } from '../motion/reactions.ts';
-  import { dayKey, jst, minuteNow, now } from '#lib/time/clock.ts';
+  import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
   import { piecesOn, swapsOn } from './fixedDecor.ts';
   import { islandSeed } from './devHooks.ts';
   import { ARCH, DECOR_SLOTS, SCENERY } from './world.ts';
@@ -836,7 +836,8 @@
       islandLayout.sink = null;
     };
   });
-  // (only for a new State or a new day: the minute tick replaces the model but keeps its State, and these rows with it)
+  // (only for a new State or a new day, the relay's as the shared day's: the minute tick replaces the model but keeps
+  // its State, and these rows with it)
   // (and once the rows are the record's as of this session: my day's row waits for that, store/world.svelte.ts)
   let fed = '';
   let fedState: unknown = null;
@@ -844,7 +845,7 @@
   $effect(() => {
     const m = week.model;
     if (!m) return;
-    const day = dayKey(now()), current = week.current;
+    const day = islandDay(), current = week.current;
     if (m.state === fedState && day === fed && current === fedCurrent) return;
     fedState = m.state;
     fed = day;
