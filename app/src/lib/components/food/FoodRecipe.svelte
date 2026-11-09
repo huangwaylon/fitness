@@ -3,8 +3,9 @@
   // servings (−/＋, 1–20), its ingredients (each: its category's tile, the food, its amount and everyday name, its kcal; a tap → its amount to change or
   // take out), ＋ ざいりょうを ついか (→ the search → the amount), what it adds up to (a serving's kcal and P/F/C/salt, and
   // the whole's), then けす (a saved one; tapped twice: the board's ほんとうに？) and ほぞん. Anyone else's: the same,
-  // read-only, with who set it, 「コピーして へんしゅう」 (a copy of my own, opened here) and 「ごはんに ついか」. On top, its
-  // picture: the first four of its ingredients that have one, 2 × 2 (one alone: itself, 160 px); none: nothing.
+  // read-only, with who set it, 「コピーして へんしゅう」 (a copy of my own, opened here) and, opened from its amount, 「ごはんに
+  // ついか」. On top, its picture: four of its ingredients that have one, the most grams first (foodUi.ts recipePlate),
+  // 2 × 2 (one alone: itself, 160 px); none: nothing.
   import type { Who } from '#lib/types.ts';
   import { RECIPE, recipeTotals, type RepeatItem } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
@@ -13,7 +14,7 @@
   import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
   import { entryKcal } from '#lib/food/index.ts';
   import FoodThumb from './FoodThumb.svelte';
-  import { amountText, catalogOf, catOf, foodDbNow, glossOf, itemOf, servingOnly, withImages, type RecipeDraft } from './foodUi.ts';
+  import { amountText, catalogOf, catOf, foodDbNow, glossOf, itemOf, recipePlate, servingOnly, withImages, type RecipeDraft } from './foodUi.ts';
 
   interface Props {
     draft: RecipeDraft;
@@ -42,15 +43,11 @@
   let removing = $state(false);
   let imgs = $state.raw<FoodImageIndex | null>(null);
   $effect(() => withImages((ix) => (imgs = ix)));
-  /** The collage: up to four of the ingredients' pictures, in order (a food once). */
-  const hero = $derived.by(() => {
-    const seen = new Set<string>();
-    return draft.it.flatMap((x) => {
-      const img = !seen.has(x.f.id) && imgOf(imgs, x.f.id, 160);
-      seen.add(x.f.id);
-      return img ? [{ id: x.f.id, img }] : [];
-    }).slice(0, 4);
-  });
+  /** The collage: up to four of the ingredients' pictures, the most grams first (a food once: recipePlate). */
+  const hero = $derived(recipePlate(draft.it, (id) => !!imgOf(imgs, id, 160)).flatMap(({ id }) => {
+    const img = imgOf(imgs, id, 160);
+    return img ? [{ id, img }] : [];
+  }));
 
   function servings(d: -1 | 1) {
     draft.sv = Math.max(RECIPE.servings.min, Math.min(RECIPE.servings.max, draft.sv + d));
@@ -133,7 +130,7 @@
   <div class="acts level-acts">
     {#if ro}
       <button type="button" class="btn paper small" data-sfx="confirm" data-recipe-copy onclick={() => oncopy?.()}>{t('food.rcp.copy')}</button>
-      <button type="button" class="btn small" data-sfx="page" data-recipe-log onclick={() => onlog?.()}>{t('food.rcp.log')}</button>
+      {#if onlog}<button type="button" class="btn small" data-sfx="page" data-recipe-log onclick={() => onlog()}>{t('food.rcp.log')}</button>{/if}
     {:else}
       {#if saved}
         <button type="button" class="btn paper small" data-sfx={removing ? 'undo' : 'tick'} data-recipe-remove onclick={remove}>{t(removing ? 'food.rcp.removeSure' : 'food.rcp.remove')}</button>

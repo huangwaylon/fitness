@@ -15,7 +15,7 @@ import type { SnapshotCache } from '#lib/sync/cache.ts';
 import { maxAt } from '#lib/model/snapshot.ts';
 import { mulberry32 } from '#lib/random.ts';
 import { shopPrice } from '#lib/contract/rules.ts';
-import { WEEKDAYS, type FoodSnap, type Meal } from '#lib/contract/food.ts';
+import { recipePortion, recipeSnap, WEEKDAYS, type FoodSnap, type Meal } from '#lib/contract/food.ts';
 
 const DEMO_WEEKS_BACK = 8;
 /** About one day in 25 only steps reach the sheet (no Move, Exercise or Stand row: 記録なし in けんこう, no fruit). */
@@ -244,6 +244,9 @@ function demoRows(now: number, weeksBack: number, zeros = false): SnapshotRows {
   // A's recipe, everyone's to log (マイレシピ)
   const tr = at(addDays(today, -MEAL_DAYS), 20, 30);
   ev(tr, 'A', 'food_recipe', { ...CURRY_RECIPE, at: tr });
+  // and ウェイ had a serving of it two days ago (a recipe's entry: on anyone else's phone, its ingredients a tap away)
+  const dc = addDays(today, -2), one = recipePortion(CURRY_RECIPE), tb = at(dc, 12, 40);
+  if (tb < now) ev(tb, 'A', 'food', { id: `fdemo${dc.replace(/-/g, '')}acurry`, at: tb, d: dc, m: 'l', g: one.g, f: recipeSnap(CURRY_RECIPE, one.label) });
   // a custom food each, everyone's to log (マイ食品): A's canteen set meal, its weight unknown (a serving logs as a nominal 100 g),
   // and B's onigiri by weight
   const tc = at(addDays(today, -MEAL_DAYS), 20, 40);

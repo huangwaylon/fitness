@@ -646,6 +646,60 @@ test('マイレシピ: someone else’s recipe in the meal search is read-only f
   await expect.poll(async () => Math.abs((await kcalOf(page)) - (now + per))).toBeLessThanOrEqual(1);
 });
 
+// A recipe at a glance (the user 2026-11-09: "some small indicator to help distinguish between plain ingredients and my
+// recipes", "include in the icon at least a few of the images of the underlying ingredients", "tap into a my recipe of
+// someone else and see the underlying ingredients"): a recipe's box holds its ingredients' pictures, the most grams
+// first, and a small pot at its corner; a plain food's has none. ウェイ's serving of his おうちカレー (two days ago, the
+// demo's) on his day, from うめ's phone and the guest's: a tap opens it read-only (no field, no step, no 追加:
+// コピーして編集 only), its six ingredients with their amounts. On ウェイ's own phone: the search's recipe row and
+// さいきん's both the plate; his entry's amount opens it, his to edit (レシピを見る).
+test('マイレシピ at a glance: its ingredients in its box and the pot; someone else’s, a tap from their day, read-only', async ({ page }) => {
+  for (const as of ['&as=B', '&as=G']) {
+    await openFood(page, as);
+    await sheet(page).locator('select[data-pick=who]').selectOption('A');
+    await sheet(page).locator('[data-nav=back]').click();
+    await sheet(page).locator('[data-nav=back]').click();
+    await expect(sheet(page).locator('[data-food-date]')).toHaveAttribute('data-food-date', '2026-11-02');
+    const row = sheet(page).locator('section[data-meal=l] button[data-recipe-open=cdemoa1]');
+    await expect(row).toContainText('おうちカレー');
+    const th = row.locator('[data-thumb]');
+    await expect(th).toHaveAttribute('data-thumb', 'plate', { timeout: 15_000 });
+    await expect(th).toHaveAttribute('data-plate', '4'); // ごはん, たまねぎ, 鶏もも, じゃがいも: 4 of 6
+    await expect(row.locator('[data-recipe-mark]')).toBeVisible();
+    expect((await th.boundingBox())!.width).toBe(40); // the row's box, no bigger
+    // the pot only on a recipe; every other row of the day stays a div (read-only)
+    await expect(sheet(page).locator('[data-meal] [data-recipe-mark]')).toHaveCount(1);
+    await expect(sheet(page).locator('button[data-entry]:not([data-recipe-open]), [data-add]')).toHaveCount(0);
+    await row.click();
+    const view = sheet(page).locator('[data-recipe-level=view]');
+    await expect(view.locator('[data-recipe-name]')).toHaveText('おうちカレー');
+    await expect(view).toContainText('のレシピ');
+    await expect(view.locator('input, button[data-recipe-item], [data-recipe-add], [data-recipe-save], [data-recipe-remove], [data-sv-step], [data-recipe-log]')).toHaveCount(0);
+    await expect(view.locator('[data-recipe-copy]')).toHaveCount(1);
+    const items = view.locator('[data-recipe-items] li');
+    await expect(items).toHaveCount(6);
+    await expect(items.first()).toContainText('300g');
+    await expect(view.locator('[data-recipe-items] [data-thumb]')).toHaveCount(6);
+    // the hero: the pictured ones, the most grams first (ごはん 600 g leads)
+    await expect(view.locator('[data-recipe-hero] [data-thumb=img]')).toHaveCount(4, { timeout: 15_000 });
+    expect(await overflowOf(page)).toEqual([]);
+    await sheet(page).getByRole('button', { name: '戻る' }).click(); // ‹: back on his day
+    await expect(row).toBeFocused();
+  }
+
+  await openFood(page);
+  await sheet(page).locator('[data-add=d]').click();
+  await expect(sheet(page).locator('[data-food-recipes] [data-recipe=cdemoa1] [data-thumb]')).toHaveAttribute('data-thumb', 'plate', { timeout: 15_000 });
+  await expect(sheet(page).locator('[data-food-recent] [data-item="recipe:cdemoa1"] [data-thumb]')).toHaveAttribute('data-thumb', 'plate');
+  await expect(sheet(page).locator('[data-food-recent] [data-recipe-mark]')).toHaveCount(1); // plain foods: no pot
+  await sheet(page).getByRole('button', { name: '戻る' }).click();
+  await sheet(page).locator('[data-nav=back]').click();
+  await sheet(page).locator('[data-nav=back]').click();
+  await sheet(page).locator('button[data-entry=fdemo20261102acurry]').click(); // mine (the demo's entry): its amount
+  await sheet(page).locator('[data-amount-open]').click();
+  await expect(sheet(page).locator('[data-recipe-level=edit] [data-recipe-n]')).toHaveValue('おうちカレー');
+});
+
 // The title bar (the user: "move the user selector to the left of the title in the same row"): whose day left of
 // 健康 | ごはん (centred), ✕ at the right; a level's ‹ and title take the pill's and the switch's place.
 // グラフ's period sits in the range row, right of きょう, at the row's right end.

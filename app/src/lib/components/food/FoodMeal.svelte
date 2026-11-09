@@ -10,10 +10,13 @@
   // mealProteinTarget). On my day an empty meal offers its copies (`copies`), small links of いつものに する's weight:
   // 「きのうと おなじ」 (my own the day before) and 「〇〇と おなじ」 (another's that day), each with what it holds; one tap
   // copies it in. An entry of mine whose food has changed since (fresh.ts) has a small 「最新の値にする」 under its
-  // row (with the kcal it goes from and to): a tap re-snapshots it.
+  // row (with the kcal it goes from and to): a tap re-snapshots it. An entry logged from a recipe still there
+  // (マイレシピ) shows its ingredients' pictures and the recipe's pot (FoodThumb `plate`); on anyone else's day its row
+  // takes a tap all the same: the recipe, read-only (`onrecipe`).
   import type { FoodEntry, FoodSnap, Meal } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
-  import { amountText, daysText, foodDbNow, loggedCat, whenFoodDb, withImages } from './foodUi.ts';
+  import { amountText, daysText, foodDbNow, loggedCat, plateOf, recipeIdOf, whenFoodDb, withImages } from './foodUi.ts';
+  import type { Recipe } from '#lib/model/food.ts';
   import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
   import type { FoodDb } from '#lib/food/index.ts';
   import FoodThumb from './FoodThumb.svelte';
@@ -40,8 +43,15 @@
     /** My entries' foods as they are now, where they changed since logged (entry id → snapshot): 最新の値にする. */
     fresh?: ReadonlyMap<string, FoodSnap>;
     onfresh?: (e: FoodEntry, f: FoodSnap) => void;
+    /** The recipes still there, by id (an entry logged from one: its pictures), and one opened from anyone else's day. */
+    recipes?: ReadonlyMap<string, Recipe>;
+    onrecipe?: (r: Recipe, e: FoodEntry) => void;
   }
-  let { meal, entries, mine, days, onrepeat, onadd, onpick, ptarget, copies = [], fresh, onfresh }: Props = $props();
+  let { meal, entries, mine, days, onrepeat, onadd, onpick, ptarget, copies = [], fresh, onfresh, recipes, onrecipe }: Props = $props();
+  const recipeOf = (e: FoodEntry) => {
+    const id = recipeIdOf(e.f.id);
+    return id ? recipes?.get(id) : undefined;
+  };
   const protein = $derived(mealProtein(entries));
   const kcalOf = entryKcal;
   // the total rounds the sum once: a row each rounded may differ from it by ±1 (itemsKcal)
@@ -55,8 +65,8 @@
   $effect(() => (db ? undefined : whenFoodDb((d) => (db = d))));
 </script>
 
-{#snippet cells(e: FoodEntry & { rep?: string })}
-  <span class="th"><FoodThumb cat={loggedCat(db, e.f.id)} size={40} img={imgOf(imgs, e.f.id, 40)} /></span>
+{#snippet cells(e: FoodEntry & { rep?: string }, r?: Recipe)}
+  <span class="th"><FoodThumb cat={loggedCat(db, e.f.id)} size={40} img={imgOf(imgs, e.f.id, 40)} plate={r ? plateOf(r, imgs, db, 40) : null} /></span>
   <span class="nm">{e.f.n}</span>
   <small class="amt">{#if e.rep}<i class="rm" role="img" aria-label={t('food.rep.mark')}><RepeatMark size={12} /></i>{/if}{amountText(e)}</small>
   <b class="kc money">{formatNum(kcalOf(e))}<span class="sr-only"> kcal</span></b>
@@ -85,10 +95,11 @@
     <p class="pm" class:met={protein >= ptarget} data-meal-protein={protein} data-met={protein >= ptarget || undefined}>{t('food.mealP', { n: Math.round(protein) })}<span class="sr-only">{t('food.mealPAim', { goal: ptarget })}</span></p>
     <ul>
       {#each entries as e (e.id)}
+        {@const r = recipeOf(e)}
         <li>
           {#if mine}
             <button type="button" class="row" data-entry={e.id} data-rep={e.rep} data-sfx="page" onclick={() => onpick(e)}>
-              {@render cells(e)}
+              {@render cells(e, r)}
             </button>
             {@const f = fresh?.get(e.id)}
             {#if f && onfresh}
@@ -97,9 +108,13 @@
                 {k1 === kcalOf(e) ? t('food.fresh.act') : t('food.fresh.actK', { from: formatNum(kcalOf(e)), to: formatNum(k1) })}
               </button>
             {/if}
+          {:else if r && onrecipe}
+            <button type="button" class="row" data-entry={e.id} data-rep={e.rep} data-recipe-open={r.id} data-sfx="page" onclick={() => onrecipe(r, e)}>
+              {@render cells(e, r)}
+            </button>
           {:else}
             <div class="row" data-entry={e.id} data-rep={e.rep}>
-              {@render cells(e)}
+              {@render cells(e, r)}
             </div>
           {/if}
         </li>

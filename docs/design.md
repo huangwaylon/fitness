@@ -320,6 +320,14 @@ openings (Sheet's `keep`), so a reopening shows the day at once.
   then it logs by the serving, `sv`), カロリー (needed) and the nutrients; a weight too light for its values is refused
   (`customDensityOk`). Made from a meal's search, either saves and logs one serving in one tap. Anyone else's is read-only
   with 「コピーして へんしゅう」 and 「ごはんに ついか」; deletes are asked twice.
+  - **A recipe at a glance** (the user 2026-11-09): wherever a recipe or an entry of one shows (the search's マイレシピ,
+    さいきん, 記録), its box holds its ingredients' pictures (`foodUi.ts` recipePlate: a food once, the pictured ones
+    first, then the most grams, at most 4; 1 whole, 2 halves, 3 a half and two quarters, 4 a 2 × 2; one without a
+    picture its category's tile; `food/cells.ts` drawPlate, kept per what it holds) and a small round pot on its corner
+    (the レシピ tile's glyph): a recipe, not a food. A removed recipe's entry keeps the plain レシピ tile. No dish
+    picture is guessed from a recipe's name. On anyone else's day an entry of a recipe still there opens it read-only
+    (コピーして編集 only: no 追加 from there); my entry's amount has レシピを見る. Nothing new is seen: meals and
+    recipes are everyone's already, the guest's phone too.
 - **データの出典** at the foot: 「イメージ: AI生成の イメージ」, then each dataset's label, attribution and license.
 - Food names come from the data, so their kanji may be outside the trimmed Zen Maru subset: those fall back to the
   system font (the copy's own strings are covered: `npm run fonts:subset`).

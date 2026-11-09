@@ -90,6 +90,11 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     expect(r.per.kcal).toBeGreaterThan(500);
     expect(r.per.kcal).toBeLessThan(900);
     expect(recipes(reduce(demoCache(now, 'G').rows))).toEqual(recipes(s));
+    // A's serving of it, two days ago: logged from it (its id), seen by the guest too
+    const d = addDays(localDateAt(now), -2);
+    const e = foodDay(s, 'A', d).entries.find((x) => x.f.id === `recipe:${r.id}`);
+    expect([e?.m, e?.f.n, e?.f.u]).toEqual(['l', 'おうちカレー', '1人前']);
+    expect(foodDay(reduce(demoCache(now, 'G').rows), 'A', d).entries.map((x) => x.id)).toContain(e!.id);
   });
 
   it('NZ’s packing list as two phones left it: うめ’s ticks and item, A’s tick, a made-up note each trip; the guest’s too', () => {

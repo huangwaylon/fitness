@@ -9,7 +9,7 @@ import {
 import { quiet } from '#lib/quiet.ts';
 import type { Recipe } from '#lib/model/food.ts';
 import { itemById, loadFoodDb, portionsOf, unitOf, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
-import { loadFoodImages, type FoodImageIndex } from '#lib/food/images.ts';
+import { imgOf, loadFoodImages, type FoodImageIndex, type FoodImg } from '#lib/food/images.ts';
 import { searchKey } from '#lib/food/text.ts';
 import { formatNum, t } from '#lib/i18n/index.ts';
 import { nextChance } from '#lib/ui-state/retry.ts';
@@ -112,8 +112,40 @@ export function itemOf(f: FoodSnap, db: FoodDb | null, g?: number): Item {
 /** The catalog's item of an id, if the catalog is in and has it (db.ts byId). */
 export const catalogOf = itemById;
 
-/** A food's category tile (FoodThumb) by its id: the catalog item's, a recipe's レシピ (`c…`), else none (その他). */
-export const catOf = (db: FoodDb | null, id: string): string | undefined => catalogOf(db, id)?.cat ?? (/^c[0-9a-z]+$/.test(id) ? 'レシピ' : undefined);
+/** A food's category tile (FoodThumb) by its id: the catalog item's, a recipe's レシピ (`c…`, or as logged `recipe:c…`),
+ *  else none (その他). */
+export const catOf = (db: FoodDb | null, id: string): string | undefined => catalogOf(db, id)?.cat ?? (/^(recipe:)?c[0-9a-z]+$/.test(id) ? 'レシピ' : undefined);
+
+/** The recipe a logged food is (its snapshot's id `recipe:<recipe id>`: contract/food.ts recipeSnap), or null. */
+export const recipeIdOf = (foodId: string): string | null => (foodId.startsWith('recipe:') ? foodId.slice(7) : null);
+
+/** Cells a recipe's picture box holds at most (FoodThumb's `plate`: 1 the whole box, 2 halves, 3 a half and two
+ *  quarters, 4 a 2 × 2). */
+const PLATE_MAX = 4;
+/**
+ * Which of a recipe's ingredients its picture box shows (docs/design.md "Gohan" マイレシピ): a food once (its grams
+ * summed), those with a picture (`pictured`) before those without (theirs is their category's tile), then the most
+ * grams first (a tie: as listed), at most PLATE_MAX; drawn in that order, the biggest first, so the box reads as the
+ * dish (the rice and the onion of a curry before its roux).
+ */
+export function recipePlate(it: readonly { g: number; f: { id: string } }[], pictured: (id: string) => boolean, max = PLATE_MAX): { id: string; g: number }[] {
+  const by = new Map<string, { id: string; g: number; i: number; pic: boolean }>();
+  it.forEach(({ g, f }, i) => {
+    const x = by.get(f.id);
+    if (x) x.g += g;
+    else by.set(f.id, { id: f.id, g, i, pic: pictured(f.id) });
+  });
+  const all = [...by.values()];
+  const take = all.sort((a, b) => Number(b.pic) - Number(a.pic) || b.g - a.g || a.i - b.i).slice(0, max);
+  return take.sort((a, b) => b.g - a.g || a.i - b.i).map(({ id, g }) => ({ id, g }));
+}
+/** A recipe's picture box (FoodThumb `plate`) for a box of `px`: its recipePlate's cells, each its picture (images.ts
+ *  imgOf) or, with none, its category (catOf: その他 till the catalog is in). */
+export function plateOf(r: { it: readonly RepeatItem[] }, imgs: FoodImageIndex | null, db: FoodDb | null, px: number): PlatePart[] {
+  return recipePlate(r.it, (id) => !!imgOf(imgs, id, px)).map(({ id }) => ({ img: imgOf(imgs, id, px), cat: catOf(db, id) }));
+}
+/** One cell of a recipe's picture box: an ingredient's picture, else its category's tile. */
+export interface PlatePart { img: FoodImg | null; cat?: string }
 
 /** The latest logged foods' categories this phone has seen in the catalog (sync/storage.ts DEVICE.foodCats), at most: a
  *  logged row's tile on open, before the catalog is in. */
