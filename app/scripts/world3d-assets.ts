@@ -445,6 +445,8 @@ export function writeAssets(file: string, metas: Record<string, Meta>, poc: Reco
     const meta = metas[m] ?? poc[m];
     models[m] = meta;
     const [dx, dy, dz] = meta.max.map((n, i) => n - meta.min[i]);
+    // (a pack's member's one key is assets.ts packKey's, not written: the first load's bytes)
+    if ((meta as { pack?: string }).pack) continue;
     for (const u of uses) {
       const s = +(u.h ? u.h / Math.max(dx, dy, dz) : u.s ?? 3).toFixed(3);
       const turned = u.yaw === 90 || u.yaw === 270;
@@ -463,7 +465,10 @@ export function writeAssets(file: string, metas: Record<string, Meta>, poc: Reco
   const sorted = <T>(o: Record<string, T>) => Object.entries(o).sort(([a], [b]) => a.localeCompare(b));
   const kb: Partial<Record<Cat, number>> = {};
   const catOf = new Map(Object.values(keys).map((k) => [k.m as string, k.cat as Cat]));
-  for (const [m, meta] of Object.entries(models)) kb[catOf.get(m)!] = +((kb[catOf.get(m)!] ?? 0) + meta.kb).toFixed(1);
+  for (const [m, meta] of Object.entries(models)) {
+    const c = catOf.get(m) ?? 'decor';
+    kb[c] = +((kb[c] ?? 0) + meta.kb).toFixed(1);
+  }
   writeFileSync(file, `{
   "_": "scripts/world3d-models.ts (scripts/world3d-assets.ts): the island's NH models (docs/world3d-assets.md). models: under static/room/world3d/<name>.glb, bounds in model units, triangles, KB, content hash, lit (an emissive). keys: an art key → its model (m), kind, scale (u per model unit), anchor (feet: the origin on the ground; centre: the bounds' centre), footprint (tiles, unturned), hit radius (u), shadow, lit, yaw (degrees), winter (the key of its winter look), lazy (loaded with its group), standIn (no NH model of its own)",
   "budgetKb": ${JSON.stringify(BUDGET_KB)},

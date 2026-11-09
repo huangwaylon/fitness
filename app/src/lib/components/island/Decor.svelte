@@ -6,7 +6,8 @@
   // sitOn, island/sitting.ts): my villager walks up to it and on. The partner's change, just made, puffs where it lands.
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { art } from '#lib/art.ts';
-  import { t } from '#lib/i18n/index.ts';
+  import { i18n, t } from '#lib/i18n/index.ts';
+  import { kindDef } from '#lib/layout/catalog.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { useWorld } from './camera.svelte.ts';
   import { decorArt, decorH, decorPlace, DECOR_KINDS, type Facing } from './decor.ts';
@@ -43,6 +44,11 @@
     return { key, h, wd, style: p ? `left:calc(${-p.ax * wd} * var(--u));bottom:calc(${-(1 - p.ay) * h} * var(--u))` : '' };
   }
 
+  /** Its name: NH's in the world's kana (decor.item), else the editor's (a pack's kinds: catalog.ts, the first load's bytes). */
+  function nameOf(item: string): string {
+    const n = t(`decor.item.${item}`), d = kindDef(item);
+    return n !== `decor.item.${item}` || !d ? n : i18n.locale === 'ja' ? d.ja : d.en;
+  }
   function jiggle(el: Element) {
     echo3d(el);
     for (const a of el.getAnimations()) if (a.id === 'jiggle') a.cancel();
@@ -76,7 +82,7 @@
 {#each items as p (p.id)}
   {@const l = look(p.item, p.f)}
   <div class="spr" data-decor-node={p.id} data-scenery-id={p.id} {@attach w.at({ x: p.x, z: p.z, h: l.h, inv: true })}>
-    <button type="button" class="deco" data-decor={p.id} data-item={p.item} data-x={p.x} data-z={p.z} data-f={p.f} data-sfx="self" aria-label={t(`decor.item.${p.item}`)}
+    <button type="button" class="deco" data-decor={p.id} data-item={p.item} data-x={p.x} data-z={p.z} data-f={p.f} data-sfx="self" aria-label={nameOf(p.item)}
       style={l.style} style:height="calc({l.h} * var(--u))" style:width="calc({l.wd} * var(--u))"
       onclick={(e) => tap(e, p.id, p.x)}>
       <OfficialArt key={l.key} size="calc({l.h} * var(--u))" />

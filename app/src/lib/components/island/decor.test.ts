@@ -38,9 +38,10 @@ describe('decorations: art and sizes (island/decor.ts)', () => {
         bad.push(`${d.k}: model ${key}`);
         continue;
       }
-      // its names: the editor's (kanji, as the sheets' copy) and the world's (decor.item: NH's own, in kana), a decoration's
+      // its names (a pack's kind's are the editor's alone: Decor.svelte's label falls back to them), an older decoration's
+      // in the world's copy too (decor.item)
       if (!d.ja || !d.en) bad.push(`${d.k}: names`);
-      if (key.startsWith('decor/') && (!J[`decor.item.${d.k}`] || E[`decor.item.${d.k}`]?.toLowerCase() !== d.en.toLowerCase())) bad.push(`${d.k}: decor.item`);
+      if (key.startsWith('decor/') && !m.pack && d.k !== 'picnic-set' && (!J[`decor.item.${d.k}`] || E[`decor.item.${d.k}`]?.toLowerCase() !== d.en.toLowerCase())) bad.push(`${d.k}: decor.item`);
       // a footprint of whole tiles (one that turns with the piece, its block box inside it) the model fits
       const [w, h] = footprintOf(d, 1);
       if (!(d.w >= 1 && d.d >= 1 && d.block && d.foot && d.foot[0] <= d.w * 30 && d.foot[1] <= d.d * 30 && d.on === 'land')) bad.push(`${d.k}: footprint`);
