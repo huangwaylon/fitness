@@ -359,7 +359,7 @@ const DECOR_ID = /^d[0-9a-z]{6,24}$/;
 /** The tent's room: its tiles (a `decor` op's x and z with `sc: 't'`) and its extent in model units (a drag, a walk). */
 const TENT_TILES = [0, 7] as const;
 const TENT_U = [-40, 40] as const;
-/** The museum's extent (model units: its hall and two wings, routes/museum), a walk's points there. */
+/** The museum's extent (model units: every room of museum/plan.ts ROOMS within it, plan.test), a walk's points there. */
 const MUSEUM_U = [-320, 320] as const;
 /** The shop's floor (model units, shop/plan.ts RECT within it), a walk's points there. */
 const SHOP_U = [-80, 80] as const;

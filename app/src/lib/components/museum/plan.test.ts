@@ -8,6 +8,7 @@ import {
 } from './plan.ts';
 import { SPOTS, allBlocks, spot } from './spots.ts';
 import { PACE } from '../rooms/view.ts';
+import { LIVE_V, parseClient } from '#lib/contract/live-protocol.ts';
 
 const len = (from: Pt, pts: Pt[]) => pts.reduce((a, p, i) => a + Math.hypot(p[0] - (i ? pts[i - 1][0] : from[0]), p[1] - (i ? pts[i - 1][1] : from[1])), 0);
 const overlap = (a: Rect, b: Rect) => Math.min(a.x1, b.x1) > Math.max(a.x0, b.x0) && Math.min(a.z1, b.z1) > Math.max(a.z0, b.z0);
@@ -25,6 +26,8 @@ describe('the rooms', () => {
     // (one rect a room: no way in beside another room, nothing round a corner)
     expect(new Set(ROOMS.map((r) => r.id)).size).toBe(ROOMS.length);
     for (const id of ROOM_IDS) expect(roomIdAt(...spot(`room:${id}`))).toBe(id);
+    // (the relay's own check: every room's corners a museum walk's point, contract/live-protocol.ts MUSEUM_U)
+    for (const { id, r } of ROOMS) for (const to of [[r.x0, r.z0], [r.x1, r.z1]]) expect(parseClient(JSON.stringify({ v: LIVE_V, kind: 'tent', in: true, to, sc: 'm' })), `${id} ${to}`).not.toBeNull();
   });
   test('each doorway in the wall its two rooms share, a step wide or more, none on in a front wall; any room two doorways from the hall at most (F3 off the bug garden)', () => {
     for (const o of OPENINGS) {
