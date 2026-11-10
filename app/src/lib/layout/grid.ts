@@ -5,8 +5,9 @@
 
 /** A tile's side (world units). */
 export const TILE = 30;
-/** The grid: 20 × 80 tiles, x −90…510, z −90…2310 (the long island: まえ, the homes' middle, おく; a ring of sea). */
-export const GRID = { cols: 20, rows: 80, x0: -90, z0: -90 } as const;
+/** The grid: 20 × 156 tiles, x −90…510, z −90…4590 (the long island: まえ, the homes' middle, おく; a ring of sea, and
+ *  sea behind it for the island to grow back into: 152 rows of land at most, twice the 80-row grid's 76, 2026-11-10). */
+export const GRID = { cols: 20, rows: 156, x0: -90, z0: -90 } as const;
 /** A chunk's side (tiles): the unit of a terrain op and of a terrain rebuild (contract/layout.ts CHUNK). */
 export const CHUNK = 8;
 export const CHUNKS_X = Math.ceil(GRID.cols / CHUNK);

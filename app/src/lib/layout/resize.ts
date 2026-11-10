@@ -4,7 +4,7 @@
 // out and the tile it leaves takes the kind and tier of the one inside it (a river reaching the coast runs on to it; one
 // running along the coast isn't doubled: the beach widens there instead); pulled in, the outermost tile moves in over
 // the one inside it and the sea takes its place, so a push then a pull gives the island back as it was. The grid stays
-// (20 × 80, grid.ts): the land keeps MARGIN tiles of sea round it, and at least MIN tiles across and along. What stands
+// (20 × 156, grid.ts): the land keeps MARGIN tiles of sea round it, and at least MIN tiles across and along. What stands
 // in the way (on a tile the sea takes, or wrong on its new ground: validate's new issues) is listed, the fixed pieces
 // (a home, the museum, the shop, K.K.'s stool, the board, a goal tree: catalog `fixed`) marked: the editor moves them
 // inside (moveInside: resolve.ts clearTile), never deletes a fixed one.

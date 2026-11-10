@@ -17,8 +17,9 @@ import {
 import { bend, BEND_GLSL, bendU } from './bend.ts';
 import { withMaps } from './blank.ts';
 import { waterU } from './water.ts';
-import { CHUNK, CHUNKS_X, CHUNKS_Z, GRID, TILE, chunkOf, idx, kindOf } from '#lib/layout/grid.ts';
-import { chunkMesh, meshKeyOf, stairsMesh, type Part, type WallPart, type WaterPart } from '#lib/layout/mesh.ts';
+import { bandInView } from './islandCam.ts';
+import { CHUNKS_X, CHUNKS_Z, GRID, TILE, chunkOf } from '#lib/layout/grid.ts';
+import { chunkMesh, meshKeyOf, openSeaRow, stairsMesh, type Part, type WallPart, type WaterPart } from '#lib/layout/mesh.ts';
 import { FAR, STEP, fieldsOf } from '#lib/layout/fields.ts';
 import { SWASH_GLSL } from '#lib/layout/swash.ts';
 import { DEEP_Y, EDGE_FADE, SEA_Y, fieldOf } from '#lib/layout/height.ts';
@@ -34,8 +35,10 @@ export interface GroundOptions {
   look?: Look;
   /** Drawn stone steps for the stairs (false: the scene draws NH's inclines itself, structure.ts). */
   stairs?: boolean;
-  /** Bake pixels per world unit (1.6: the whole long island in ~21 MB). */
+  /** Bake pixels per world unit (1.6: a band's target ~2 MB with its mips). */
   px?: number;
+  /** Bands baked at most at once (BAND_BUDGET; the editor's preview, Infinity: its orbit sees the whole island). */
+  bands?: number;
 }
 /** engine.ts's BuiltGround, and the layout's own: a rebuild when it changes, the season's look, its bands. */
 export interface Ground {
@@ -52,8 +55,11 @@ export interface Ground {
    *  foam, the ponds' ripples, the sea's wash) runs on, at the ambient rate. */
   update(t: number): boolean | 'ambient';
   look(l: Look): void;
-  /** Each band's meshes (a row of chunks across the island: 4 draws), for the camera's culling (world z extent). */
+  /** Each baked band's meshes (a row of chunks across the island: 4 draws), for the camera's culling (world z extent). */
   chunks(): readonly { z0: number; z1: number; meshes: Mesh[] }[];
+  /** The camera's pivot moved to `camZ`: the bands in its reach baked (a long island's past BAND_BUDGET take a far
+   *  band's target), before the culling. */
+  near(camZ: number): void;
   /** A promise for the textures (the first bake waits on them). */
   ready: Promise<void>;
   /** The bands baked again (a lost context back: their render targets come back empty). */
@@ -88,6 +94,7 @@ precision highp int;
 in vec2 vW;
 out vec4 outColor;
 uniform vec4 uGrid;      // x0, z0, width, depth (u)
+uniform vec4 uSdfBox;    // the fields' raster: x0, z0, width, depth (u; fields.ts rasterRows)
 uniform sampler2D uSdfA; // land, sandy, fresh, path
 uniform sampler2D uSdfB; // tier ≥ 1, 2, 3
 uniform sampler2D uCodes;
@@ -111,7 +118,7 @@ float fbm(vec2 p, int s, int oct){ float a = 0.5, t = 0.0, n = 0.0; mat2 R = mat
 float sat(float x){ return clamp(x, 0.0, 1.0); }
 float aa(float d, float w){ return 1.0 - smoothstep(-w, w, d); }
 
-vec2 sdUv(vec2 p){ return (p - uGrid.xy) / uGrid.zw; }
+vec2 sdUv(vec2 p){ return (p - uSdfBox.xy) / uSdfBox.zw; }
 float dec(float v){ return (v * 2.0 - 1.0) * uFar; }
 
 float blade(vec2 q, float hw, float h){ float k = hw/h; return max(-q.y, (abs(q.x) - hw*(1.0 - q.y/h)) / sqrt(1.0 + k*k)); }
@@ -551,7 +558,11 @@ const WASH_SAND = /* glsl */ `
 // ---- the ground -------------------------------------------------------------------------------------------------------
 
 const GW = GRID.cols * TILE, GD = GRID.rows * TILE;
-const FW = GW / STEP, FD = GD / STEP;
+const FW = GW / STEP;
+/** Bands baked at most at once (each a ~2 MB render target at px 1.6): every band of today's island (8; the 80-row
+ *  grid's longest, 10) and the camera's reach (bandInView: ≤ 11); past it (the long island's 20) a band coming into
+ *  reach takes the farthest one's target (near()), so the GPU holds ~24 MB however long the island grows. */
+const BAND_BUDGET = 12;
 
 /** A band's built ground, CPU-side (each mount's GPU copies go with its renderer): its top with its uvs and normals,
  *  its walls, falls and water; null for open sea. */
@@ -605,37 +616,45 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     grassMix: nh('grass-mix', false), soilMix: nh('soil-mix', false), falls: nh('falls', false), steps: nh('stone')
   };
   if (!pendingTex) texDone();
-  const sdfA = new DataTexture(new Uint8Array(FW * FD * 4), FW, FD, RGBAFormat, UnsignedByteType);
-  const sdfB = new DataTexture(new Uint8Array(FW * FD * 4), FW, FD, RGBAFormat, UnsignedByteType);
-  for (const t of [sdfA, sdfB]) {
+  // the fields' rasters (fields.ts: as deep as the land and its sea, rasterRows), made again when that depth changes;
+  // the materials share these uniforms, so a new pair reaches them all, and the box they're sampled on
+  const sdfTex = (h: number) => {
+    const t = new DataTexture(new Uint8Array(FW * h * 4), FW, h, RGBAFormat, UnsignedByteType);
     t.magFilter = t.minFilter = LinearFilter;
     t.wrapS = t.wrapT = ClampToEdgeWrapping;
-  }
+    return t;
+  };
+  const sdfA = { value: sdfTex(1) }, sdfB = { value: sdfTex(1) };
+  const sdfBox = [GRID.x0, GRID.z0, GW, STEP];
   const codes = new DataTexture(new Uint8Array(GRID.cols * GRID.rows * 4), GRID.cols, GRID.rows, RGBAFormat, UnsignedByteType);
   codes.magFilter = codes.minFilter = NearestFilter;
   function upload(l: Layout) {
     const f = fieldsOf(l);
-    const a = sdfA.image.data as Uint8Array, b = sdfB.image.data as Uint8Array;
+    if (sdfA.value.image.height !== f.h) {
+      for (const u of [sdfA, sdfB]) (u.value.dispose(), (u.value = sdfTex(f.h)));
+      sdfBox[3] = f.h * STEP;
+    }
+    const a = sdfA.value.image.data as Uint8Array, b = sdfB.value.image.data as Uint8Array;
     const enc = (d: number) => Math.max(0, Math.min(255, Math.round((d / FAR) * 127.5 + 127.5)));
-    for (let i = 0; i < FW * FD; i++) {
+    for (let i = 0; i < FW * f.h; i++) {
       for (let k = 0; k < 4; k++) a[i * 4 + k] = enc(f.ch[k][i]);
       for (let k = 0; k < 3; k++) b[i * 4 + k] = enc(f.ch[4 + k][i]);
       b[i * 4 + 3] = 255;
     }
-    sdfA.needsUpdate = sdfB.needsUpdate = true;
+    sdfA.value.needsUpdate = sdfB.value.needsUpdate = true;
     const cd = codes.image.data as Uint8Array;
     for (let i = 0; i < GRID.cols * GRID.rows; i++) cd[i * 4] = l.codes[i];
     codes.needsUpdate = true;
   }
   upload(lay);
   // the waves on the sand: the land's field and the water's clock
-  const washU = { uTime: waterU.uTime, uWashSdf: { value: sdfA }, uWashGrid: { value: [GRID.x0, GRID.z0, GW, GD] }, uWashFar: { value: FAR } };
+  const washU = { uTime: waterU.uTime, uWashSdf: sdfA, uWashGrid: { value: sdfBox }, uWashFar: { value: FAR } };
 
   // the bake: one quad, a render target a chunk
   const bakeMat = new RawShaderMaterial({
     glslVersion: GLSL3, vertexShader: BAKE_VERT, fragmentShader: BAKE_FRAG, depthTest: false, depthWrite: false,
     uniforms: {
-      uBox: { value: [0, 0, 1, 1] }, uGrid: { value: [GRID.x0, GRID.z0, GW, GD] }, uSdfA: { value: sdfA }, uSdfB: { value: sdfB }, uCodes: { value: codes },
+      uBox: { value: [0, 0, 1, 1] }, uGrid: { value: [GRID.x0, GRID.z0, GW, GD] }, uSdfBox: { value: sdfBox }, uSdfA: sdfA, uSdfB: sdfB, uCodes: { value: codes },
       uStone: { value: tex.stone }, uBrick: { value: tex.brick }, uPlank: { value: tex.plank }, uGrassMix: { value: tex.grassMix }, uSoilMix: { value: tex.soilMix }, uSand: { value: tex.sand },
       uPx: { value: px }, uFar: { value: FAR }, uWinter: { value: 0 },
       ...Object.fromEntries(Object.keys(PALETTES.summer).map((k) => [k, { value: new Color() }]))
@@ -660,7 +679,9 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     row: number;
     z0: number;
     z1: number;
-    /** Its bake (none while the band is open sea: the deep plane shows there). */
+    /** Whether it has ground (open sea has none: the deep plane shows there). */
+    land: boolean;
+    /** Its bake (none on open sea, or past the budget till the camera nears it). */
     rt: WebGLRenderTarget | null;
     top: Mesh;
     walls: Mesh;
@@ -675,7 +696,8 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   const topMats: MeshLambertMaterial[] = [];
   const wallMat = bend(withMaps(new MeshLambertMaterial({ map: tex.cliff, color: 0xffffff })));
   const fallsMat = waterMat(FALLS_VERT, FALLS_FRAG, { uStreak: { value: tex.falls } });
-  const freshMat = waterMat(FRESH_VERT, FRESH_FRAG, { uSdfA: { value: sdfA }, uGrid: { value: [GRID.x0, GRID.z0, GW, GD] }, uFar: { value: FAR } });
+  // (the fresh water's and the sea's uGrid: the fields' box, all they sample on it)
+  const freshMat = waterMat(FRESH_VERT, FRESH_FRAG, { uSdfA: sdfA, uGrid: { value: sdfBox }, uFar: { value: FAR } });
   const BAND_D = 8 * TILE;
 
   /** Parts joined into one (their indices offset). */
@@ -718,18 +740,41 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     g.setAttribute('aPath', new Float32BufferAttribute(p.path, 4));
     return g;
   }
-  /** Whether a band is open sea, its neighbours' tiles a field's reach (FAR) away too: nothing to draw or bake (the
-   *  grid has rows of sea behind the island for it to grow into). */
-  function openSea(row: number): boolean {
-    const m = Math.ceil(FAR / TILE);
-    for (let r = Math.max(0, row * CHUNK - m); r < Math.min(GRID.rows, (row + 1) * CHUNK + m); r++)
-      for (let c = 0; c < GRID.cols; c++) if (kindOf(lay.codes[idx(c, r)]) !== 'sea') return false;
-    return true;
-  }
   function bandRt(): WebGLRenderTarget {
     const rt = new WebGLRenderTarget(Math.round(GW * px), Math.round(BAND_D * px), { generateMipmaps: true, minFilter: LinearMipmapLinearFilter, magFilter: LinearFilter, colorSpace: SRGBColorSpace });
     rt.texture.anisotropy = 4;
     return rt;
+  }
+  /** The band baking into `rt` (a new one, or a far band's), shown from the next culling. */
+  function give(b: Band, rt: WebGLRenderTarget) {
+    b.rt = rt;
+    (b.top.material as MeshLambertMaterial).map = rt.texture;
+    (b.top.material as MeshLambertMaterial).needsUpdate = true;
+    for (const m of b.meshes) m.visible = true;
+    landed = null;
+  }
+  /** Bands baked at most, and how many targets there are. */
+  const budget = opts.bands ?? BAND_BUDGET;
+  let rts = 0;
+  /** The pivot the camera last asked for (a rebuild's new bands baked for it). */
+  let lastZ: number | null = null;
+  function near(camZ: number) {
+    lastZ = camZ;
+    const mid = (b: Band) => Math.abs((b.z0 + b.z1) / 2 - (camZ + 400));
+    const want = bands.filter((b) => b.land && !b.rt && bandInView(b, camZ)).sort((p, q) => mid(p) - mid(q));
+    for (const b of want) {
+      if (rts < budget) (rts++, give(b, bandRt()));
+      else {
+        // (the farthest baked band out of reach gives its target up)
+        const far = bands.filter((x) => x.rt && !bandInView(x, camZ)).sort((p, q) => mid(q) - mid(p))[0];
+        if (!far) break;
+        const rt = far.rt!;
+        far.rt = null;
+        for (const m of far.meshes) m.visible = false;
+        give(b, rt);
+      }
+      bake(b);
+    }
   }
   function bake(b: Band) {
     if (!b.rt) return;
@@ -745,7 +790,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     if (kept?.key !== key) kept = { key, rows: [] };
     const had = kept.rows[b.row];
     if (had !== undefined) return had;
-    if (openSea(b.row)) return (kept.rows[b.row] = null);
+    if (openSeaRow(lay.codes, b.row)) return (kept.rows[b.row] = null);
     const ms = Array.from({ length: CHUNKS_X }, (_, cx) => chunkMesh(lay, b.row * CHUNKS_X + cx));
     const top = join(ms.map((m) => m.top), []);
     const n = top.pos.length / 3, uv = new Float32Array(n * 2);
@@ -764,19 +809,17 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   function build(b: Band) {
     for (const mesh of b.meshes) mesh.geometry.dispose();
     const a = arrays(b);
-    for (const mesh of b.meshes) mesh.visible = !!a;
+    b.land = !!a;
     landed = null;
     if (!a) {
-      for (const mesh of b.meshes) mesh.geometry = new BufferGeometry();
-      b.rt?.dispose();
+      for (const mesh of b.meshes) (mesh.geometry = new BufferGeometry()), (mesh.visible = false);
+      if (b.rt) (b.rt.dispose(), rts--);
       b.rt = null;
       return;
     }
-    if (!b.rt) {
-      b.rt = bandRt();
-      (b.top.material as MeshLambertMaterial).map = b.rt.texture;
-      (b.top.material as MeshLambertMaterial).needsUpdate = true;
-    }
+    // (past the budget, baked once the camera nears it: near())
+    if (!b.rt && rts < budget) (rts++, give(b, bandRt()));
+    for (const mesh of b.meshes) mesh.visible = !!b.rt;
     b.top.geometry = geometry(a.top);
     b.top.geometry.setAttribute('uv', new Float32BufferAttribute(a.top.uv, 2));
     b.top.geometry.setAttribute('normal', new Float32BufferAttribute(a.top.normal, 3));
@@ -799,7 +842,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
       mm.frustumCulled = false;
       group.add(mm);
     }
-    const b: Band = { row, z0: GRID.z0 + row * BAND_D, z1: GRID.z0 + (row + 1) * BAND_D, rt: null, top, walls, falls, water, meshes: [top, walls, falls, water] };
+    const b: Band = { row, z0: GRID.z0 + row * BAND_D, z1: GRID.z0 + (row + 1) * BAND_D, land: false, rt: null, top, walls, falls, water, meshes: [top, walls, falls, water] };
     bands.push(b);
     build(b);
   }
@@ -827,14 +870,16 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     const { x0, x1, z0, z1 } = extentOf(l).land;
     return x0 < x1 ? [x0, z0, x1, z1] : [0, 0, 1, 1];
   };
-  const seaGeo = new PlaneGeometry(4200, 6000, 24, 150);
+  // (the grid and 1800u either end; rows 40u apart, as the 80-row grid's 6000u in 150)
+  const SEA_D = GD + 3600;
+  const seaGeo = new PlaneGeometry(4200, SEA_D, 24, Math.round(SEA_D / 40));
   seaGeo.rotateX(-Math.PI / 2);
   seaGeo.translate(GRID.x0 + GW / 2, SEA_Y, -(GRID.z0 + GD / 2));
-  const seaMat = waterMat(SEA_VERT, SEA_FRAG, { uSdfA: { value: sdfA }, uGrid: { value: [GRID.x0, GRID.z0, GW, GD] }, uLand: { value: landBox(lay) }, uFar: { value: FAR } });
+  const seaMat = waterMat(SEA_VERT, SEA_FRAG, { uSdfA: sdfA, uGrid: { value: sdfBox }, uLand: { value: landBox(lay) }, uFar: { value: FAR } });
   const sea = new Mesh(seaGeo, seaMat);
   sea.renderOrder = 1;
   sea.frustumCulled = false;
-  const deepGeo = new PlaneGeometry(4200, 6000, 24, 150);
+  const deepGeo = new PlaneGeometry(4200, SEA_D, 24, Math.round(SEA_D / 40));
   deepGeo.rotateX(-Math.PI / 2);
   // (just under the bed's deepest, layout/height.ts DEEP_Y)
   deepGeo.translate(GRID.x0 + GW / 2, DEEP_Y - 0.1, -(GRID.z0 + GD / 2));
@@ -872,6 +917,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
         build(bands[row]);
         bake(bands[row]);
       }
+      if (lastZ !== null) near(lastZ);
       buildStairs();
     },
     heightAt: (x, z) => field.ground(x, z),
@@ -885,6 +931,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
       for (const b of bands) bake(b);
     },
     chunks: () => (landed ??= bands.filter((b) => b.rt)),
+    near,
     restore: () => bands.forEach(bake),
     dispose() {
       disposed = true;
@@ -894,7 +941,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
       }
       stairs.geometry.dispose();
       for (const m of [...topMats, wallMat, fallsMat, freshMat, seaMat, bakeMat, stairsMat, deep.material]) m.dispose();
-      for (const t of [...Object.values(tex), sdfA, sdfB, codes]) t.dispose();
+      for (const t of [...Object.values(tex), sdfA.value, sdfB.value, codes]) t.dispose();
       seaGeo.dispose();
       deepGeo.dispose();
       quad.geometry.dispose();

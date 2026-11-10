@@ -4,7 +4,7 @@
 // so the spec finds things through window.__editor (where a tile or a world point is on screen). The 3D preview is off
 // (`preview=0`): CI's headless Chromium draws WebGL in software, a frame every few seconds, and it starves the page.
 import { expect, test, type Page } from './fixtures.ts';
-import { islandUp } from './island.ts';
+import { islandUp, w3 } from './island.ts';
 
 test.use({ viewport: { width: 1440, height: 900 } });
 
@@ -218,6 +218,60 @@ test('しまの おおきさ: the back two rows out reaches a phone live (its ca
   await expect.poll(() => phoneKind(phone, 9, 59)).toBe('sea');
   await phone.bringToFront();
   await expect.poll(() => farEnd(phone)).toBeLessThan(far0 + 1);
+});
+
+test('しまの おおきさ: the longest island (152 rows, the user 2026-11-10: twice the old 76): shift steps the back out to it, an oak near its far end is kept, and a phone scrolls to it and shows it', async ({ context }) => {
+  const editor = await context.newPage(), phone = await context.newPage();
+  await openEditor(editor);
+  const grow = editor.locator('[data-resize="back"][data-by="1"]');
+  // shift: 8 rows a click, the last as far as it goes (95 from the default's 57)
+  for (let i = 0; i < 12; i++) await grow.click({ modifiers: ['Shift'] });
+  await expect(readout(editor)).toHaveText('15 × 152');
+  await expect(grow).toBeDisabled();
+  // an oak on the grass near the far end (the plan fitted to the land: 0; a few rows in, clear of the toast)
+  await editor.keyboard.press('0');
+  const spot = await editor.evaluate(() => {
+    const l = (window as unknown as { __editor: E }).__editor.layout();
+    const taken = new Set([...l.objects.values()].map((o) => `${o.x},${o.z}`));
+    for (let r = 144; r > 134; r--) for (let c = 6; c < 14; c++) if (l.kind(c, r) === 'grass' && !taken.has(`${c},${r}`) && !taken.has(`${c},${r + 1}`)) return [c, r] as [number, number];
+    return null;
+  });
+  expect(spot).not.toBeNull();
+  const ids = async () => editor.evaluate(() => [...(window as unknown as { __editor: E }).__editor.layout().objects.keys()]);
+  const before = new Set(await ids());
+  await editor.locator('[data-kind="oak"]').click();
+  const [gx, gy] = await editor.evaluate(([c, r]) => (window as unknown as { __editor: E }).__editor.tileScreen(c, r), spot!);
+  await editor.mouse.move(gx, gy);
+  await editor.mouse.click(gx, gy);
+  await expect.poll(async () => (await ids()).filter((id) => !before.has(id)).length).toBe(1);
+  const oak = (await ids()).find((id) => !before.has(id))!;
+  expect(await objAt(editor, oak)).toEqual(spot);
+  // kept: the editor opened again has the island and the oak
+  await editor.reload();
+  await editor.waitForFunction(() => (window as unknown as { __editor?: unknown }).__editor);
+  await expect(readout(editor)).toHaveText('15 × 152');
+  await expect.poll(() => objAt(editor, oak)).toEqual(spot);
+  // a phone (an iPhone 15's screen): the oak where the editor put it; scrolled to the far end, it's on screen; and back
+  // to the front
+  await phone.setViewportSize({ width: 393, height: 852 });
+  await phone.goto(`?demo&as=B&date=${DATE}`);
+  await islandUp(phone);
+  await phone.waitForFunction(() => (window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded());
+  await expect.poll(() => phone.evaluate((id) => (window as unknown as { __layout: PhoneLayout }).__layout.pos(id), oak)).toEqual([-90 + spot![0] * 30 + 15, -90 + spot![1] * 30 + 15]);
+  const vp = phone.viewportSize()!;
+  const onScreen = async (id: string) => {
+    const p = await phone.evaluate((id) => (window as unknown as { __world3d: { modelAt(id: string): [number, number] | null } }).__world3d.modelAt(id), id);
+    return !!p && p[0] > 0 && p[0] < vp.width && p[1] > 0 && p[1] < vp.height;
+  };
+  await w3(phone, (w) => (w as unknown as { go(z: number): void }).go(99999));
+  await expect.poll(() => w3(phone, (w) => w.camStill())).toBe(true);
+  await expect.poll(() => onScreen(oak), { timeout: 15_000 }).toBe(true);
+  if (process.env.SHOTS) await phone.screenshot({ path: `${process.env.SHOTS}/long-far-end.png` });
+  await w3(phone, (w) => (w as unknown as { go(z: number): void }).go(-99999));
+  await expect.poll(() => w3(phone, (w) => w.camStill())).toBe(true);
+  await expect.poll(() => onScreen('bench-mae'), { timeout: 15_000 }).toBe(true);
+  expect(await onScreen(oak)).toBe(false);
+  if (process.env.SHOTS) await phone.screenshot({ path: `${process.env.SHOTS}/long-front.png` });
 });
 
 test('しまの おおきさ: a pull blocked by a home lists what’s in the way (a click selects it); うごかす moves the pieces in, one ⌘Z', async ({ page }) => {

@@ -62,10 +62,12 @@ export function haze(fog: Fog, camera: PerspectiveCamera, camZ: number) {
   fog.near = depth * LAND_HAZE[0];
   fog.far = depth * LAND_HAZE[1];
 }
-/** The ground's bands in reach of a pivot at `camZ` (the bend drops the far ones behind the horizon). */
+/** Whether a band (world z0…z1) is in reach of a pivot at `camZ` (the bend drops the far ones behind the horizon). */
+export const bandInView = (b: { z0: number; z1: number }, camZ: number): boolean => b.z1 > camZ - 700 && b.z0 < camZ + 1500;
+/** The ground's bands in reach of a pivot at `camZ` shown, the rest hidden. */
 export function cullBands(bands: readonly { z0: number; z1: number; meshes: Mesh[] }[], camZ: number) {
   for (const b of bands) {
-    const on = b.z1 > camZ - 700 && b.z0 < camZ + 1500;
+    const on = bandInView(b, camZ);
     for (const m of b.meshes) m.visible = on;
   }
 }

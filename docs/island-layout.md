@@ -10,13 +10,16 @@ editing: the island is arranged in /editor only.
 - **One tile = 30 world units** = one NH tile (10 model units of NH's furniture at the island's scale, world.ts
   `DECOR_U` = 3u a model unit: a 2-tile bench is 60u, an 80u villager is NH's chibi). The tent's room uses the same
   tile, so an outdoor footprint and a room footprint mean the same thing.
-- **20 × 80 tiles**, x −90…510, z −90…2310 (`layout/grid.ts` `GRID`): the long island (land x −30…420, z −30…1680)
-  with a ring of sea, and 20 more rows of sea behind it for the island to grow back into (the editor's しまの おおきさ);
-  everything off the grid is sea. A band of chunks that is all sea has no bake or mesh (`terrain.ts`: the deep plane
-  shows there), so the empty rows cost nothing on the GPU. Tile (c, r) covers x `−90 + 30c … +30`, z `−90 + 30r … +30`;
+- **20 × 156 tiles**, x −90…510, z −90…4590 (`layout/grid.ts` `GRID`; 80 rows until 2026-11-10): the long island
+  (land x −30…420, z −30…1680) with a ring of sea, and 96 more rows of sea behind it for the island to grow back into
+  (the editor's しまの おおきさ: 152 rows of land at most, twice the old 76); everything off the grid is sea. The rows of
+  sea behind the land cost nothing: a band of chunks that is all sea has no bake or mesh (`terrain.ts`: the deep plane
+  shows there), the worker builds no chunk of it (`mesh.ts openSeaRow`), and the fields' raster stops 4 rows past the
+  land (`fields.ts rasterRows`, to a whole chunk: the default's 64 rows; behind it each channel's clamp, as off the
+  grid). Tile (c, r) covers x `−90 + 30c … +30`, z `−90 + 30r … +30`;
   `r` grows into the island (away from the camera), as world z does. Read the extent from the layout
   (`model.ts extentOf`), never a constant.
-- **Chunks of 8 × 8 tiles** (3 × 10 of them; the last column sticks out past the grid and is sea): the unit of a
+- **Chunks of 8 × 8 tiles** (3 × 20 of them; the last column sticks out past the grid and is sea): the unit of a
   terrain op. The ops allow up to 16 chunks across and 32 deep (128 × 256 tiles; deep was 16 until 2026-11-10), so the
   grid can grow without a relay deploy.
 
@@ -30,7 +33,7 @@ editing: the island is arranged in /editor only.
   the coast isn't doubled. Pulled in, the outermost tile moves in over the inner one and the sea takes its place, so a
   push then a pull gives the island back.
 - **Bounds:** the land keeps `MARGIN` (2) tiles of sea round it and at least `MIN` (6) tiles across and along. The
-  default (15 × 57) can grow its back 19 rows and its east a tile. The camera's middle across is the land box's middle
+  default (15 × 57) can grow its back 95 rows (to 15 × 152) and its east a tile; shift-click steps 8. The camera's middle across is the land box's middle
   (`model.ts midXOf`), so a lopsided pull stays centred.
 - **In the way:** what stands on a tile the sea takes, or is newly wrong on its new ground, its `fixed` marked
   (catalog: a home, the museum, the shop, K.K.'s stool, the board, a goal tree, the summer pieces). `moveInside` moves
@@ -179,7 +182,9 @@ latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (its pa
 - **The look is baked on the GPU** (`world3d/terrain.ts`): one shader paints each band from the fields and the tiles,
   NH's way, at load and again only for what a change touches; the season's palette (`ground.look`) rebakes it all.
 - **Bands:** a row of chunks (8 tile rows) is one band: 4 draws and one texture each, so the draws stay flat however
-  long the island grows; bands out of view are culled. The island renders at the 30 fps cap ([perf](ops/perf.md)).
+  long the island grows; bands out of view are culled. At most 12 bands are baked (`BAND_BUDGET`, ~2 MB a target):
+  today's island (8) bakes all at once; past 12 (the longest has 20) a band coming into the camera's reach takes the
+  farthest one's target (`near()`), so the GPU's bakes stay ~24 MB however long. The editor's 3D preview bakes all. The island renders at the 30 fps cap ([perf](ops/perf.md)).
 - **The water:** NH's sea round the island (the shore foam, the shallows' turquoise ~70u out then a ~200u fade into
   the deep blue, so a fish's shadow reads across the fishing range); NH's waves washing ashore (`layout/swash.ts`, design.md "The sea's
   wash": one rhythm on the ground, the sea's shader and the CPU, so what washes in rides a wave); the rivers' flow

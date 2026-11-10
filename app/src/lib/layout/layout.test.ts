@@ -388,15 +388,15 @@ describe('validation', () => {
   });
 });
 
-describe('the long island (20 × 80: rows of sea behind it to grow into) and its 3D ground (layout/mesh.ts)', () => {
+describe('the long island (20 × 156: rows of sea behind it to grow into) and its 3D ground (layout/mesh.ts)', () => {
   const l = defaultLayout();
   test('its extent: the land twice today’s length, the front shore, ウェイ’s door at the back', () => {
     const e = extentOf(l);
-    expect(e.grid).toEqual({ x0: -90, x1: 510, z0: -90, z1: 2310 });
+    expect(e.grid).toEqual({ x0: -90, x1: 510, z0: -90, z1: 4590 });
     expect(e.land.z1 - e.land.z0).toBeGreaterThan(1600);
-    // the land as it was (rows 2…58), the grid's last 20 rows the sea
+    // the land as it was (rows 2…58), the grid's last 96 rows the sea
     expect(e.land.z1).toBe(1680);
-    for (let r = 60; r < 80; r++) for (let c = 0; c < 20; c++) expect(l.kind(c, r)).toBe('sea');
+    for (let r = 60; r < 156; r++) for (let c = 0; c < 20; c++) expect(l.kind(c, r)).toBe('sea');
     expect(e.shore).toBe(-30);
     expect(Math.abs(e.home[1] - long(CAMPSITE.z))).toBeLessThanOrEqual(30);
   });

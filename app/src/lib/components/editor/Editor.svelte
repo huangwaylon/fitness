@@ -519,11 +519,13 @@
     return FIELD_OWNERS.filter(([w]) => n[w]).map(([w, name]) => `${name} ${n[w]}株`).join('・');
   }
   const EDGE_NAME: Record<Edge, string> = { front: '手前', back: '奥', left: '左', right: '右' };
-  /** An edge a tile out or in: one action, its ops one burst (commit); what's in the way listed instead, and 「うごかす」
-   *  (`moveIn`) moves it inside first (a fixed piece never deleted: one with nowhere to go holds it). */
+  /** An edge a tile out or in (shift: a chunk's 8, as far as it can go): one action, its ops one burst (commit); what's
+   *  in the way listed instead, and 「うごかす」 (`moveIn`) moves it inside first (a fixed piece never deleted: one with
+   *  nowhere to go holds it). */
   function resizeBy(edge: Edge, by: number, moveIn = false) {
+    while (Math.abs(by) > 1 && !resizedCodes(store.current, edge, by)) by -= Math.sign(by);
     const r = resize(store.current, edge, by, moveIn);
-    const label = `島を${by > 0 ? '広げた' : '狭めた'}（${EDGE_NAME[edge]}）`;
+    const label = `島を${by > 0 ? '広げた' : '狭めた'}（${EDGE_NAME[edge]}${Math.abs(by) > 1 ? ` ${Math.abs(by)}マス` : ''}）`;
     if (r.layout) {
       pending = null;
       commit(r.layout, label);
@@ -761,10 +763,10 @@
                 data-by={by}
                 disabled={!room[e][by > 0 ? 'out' : 'in']}
                 aria-label={`${EDGE_NAME[e]}を1マス${by > 0 ? '広げる' : '狭める'}`}
-                title={`${EDGE_NAME[e]}を1マス${by > 0 ? '広げる' : '狭める'}`}
+                title={`${EDGE_NAME[e]}を1マス${by > 0 ? '広げる' : '狭める'}（Shift: 8マス）`}
                 onpointerenter={() => (sizeHover = { edge: e, by })}
                 onpointerleave={() => (sizeHover = null)}
-                onclick={() => resizeBy(e, by)}>{by > 0 ? '＋' : '−'}</button>
+                onclick={(ev) => resizeBy(e, ev.shiftKey ? by * 8 : by)}>{by > 0 ? '＋' : '−'}</button>
             {/each}
           </div>
         {/each}

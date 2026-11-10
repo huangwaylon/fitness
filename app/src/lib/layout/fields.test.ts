@@ -5,13 +5,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import RECORD from './record-2026-11-03.json' with { type: 'json' };
 import { layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
-import { Ch, adoptFields, computeFields, fieldsOf, hasFields, type RawFields } from './fields.ts';
-import { codeOf, idx } from './grid.ts';
+import { Ch, FAR, adoptFields, computeFields, fieldsOf, hasFields, rasterRows, type RawFields } from './fields.ts';
+import { CHUNKS_X, GRID, SEA, codeOf, idx } from './grid.ts';
+import { resizedCodes, withTiles } from './resize.ts';
 import { Layout, defaultLayout, layoutOf } from './model.ts';
 import { primeFields } from './fieldsPrime.ts';
 import { configureFieldsCache, fieldsKey, fieldsWriter, readFields } from './fieldsCache.ts';
 import { IDBFactory } from 'fake-indexeddb';
-import { CHUNK_COUNT, adoptChunks, chunkMesh } from './mesh.ts';
+import { CHUNK_COUNT, adoptChunks, chunkMesh, noChunk, openSeaRow } from './mesh.ts';
 
 const record = () =>
   layoutOf((RECORD as Record<string, unknown>[]).map((r) => {
@@ -38,6 +39,49 @@ const fresh = async () => {
   vi.resetModules();
   return { fp: await import('./fieldsPrime.ts'), ff: await import('./fields.ts') };
 };
+
+describe('the fields as deep as the island (fields.ts rasterRows: the grid has 156 rows since 2026-11-10)', () => {
+  /** The longest island: its back grown to the grid's edge less the sea (152 rows of land). */
+  const longest = () => withTiles(defaultLayout(), resizedCodes(defaultLayout(), 'back', 95)!);
+  it('the raster reaches the land\'s back and 4 rows of sea, to a whole chunk: the default 64 rows, the longest 156', () => {
+    expect(rasterRows(defaultLayout().codes)).toBe(64);
+    expect(rasterRows(longest().codes)).toBe(GRID.rows);
+    expect(rasterRows(new Uint8Array(GRID.cols * GRID.rows).fill(SEA))).toBe(8);
+  });
+  it('the same numbers as the whole grid\'s raster where both reach, bit for bit (behind it, every channel at its clamp)', async () => {
+    const l = record(), part = computeFields(l), whole = computeFields(l, GRID.rows);
+    const n = part.ch[0].length;
+    expect(n).toBeLessThan(whole.ch[0].length);
+    part.ch.forEach((c, i) => expect(same(c, whole.ch[i].subarray(0, n)), `channel ${i}`).toBe(true));
+    if (part.sf && whole.sf) for (const k of ['d', 'fx', 'fz', 's', 'across'] as const) expect(same(part.sf[k], whole.sf[k].subarray(0, n)), k).toBe(true);
+    // (the whole grid's rows behind the land: each channel's clamp, what at() reads off the raster)
+    const tail = (k: number) => whole.ch[k].subarray(whole.ch[k].length - 240 * 12);
+    expect(tail(Ch.land).every((d) => d === FAR)).toBe(true);
+    expect(tail(Ch.sandy).every((d) => d === -FAR)).toBe(true);
+    // (a launch's modules: this module's own set stays unbuilt for the adoption tests below)
+    const f = (await fresh()).ff.fieldsOf(l);
+    for (const z of [2000, 3000, 4500]) for (const x of [0, 200, 400]) {
+      expect(f.at(Ch.land, x, z)).toBe(FAR);
+      expect(f.at(Ch.sandy, x, z)).toBe(-FAR);
+      expect(f.at(Ch.tier1, x, z)).toBe(FAR);
+    }
+  });
+  it('the longest island\'s build: the whole grid deep, its far back land and coast as the front\'s', { timeout: 30_000 }, async () => {
+    const l = longest(), raw = computeFields(l);
+    expect(raw.ch[0].length).toBe(240 * GRID.rows * 12);
+    for (const c of raw.ch) expect(c.every(Number.isFinite)).toBe(true);
+    const f = (await fresh()).ff.fieldsOf(l);
+    // the land to its new back row (153: z 4500…4530), the sea past it
+    expect(f.at(Ch.land, 200, 4400)).toBe(-FAR);
+    expect(f.at(Ch.land, 200, 4530)).toBeGreaterThan(-20);
+    expect(f.at(Ch.land, 200, 4580)).toBeGreaterThan(20);
+    // the worker builds no chunk of the open sea's rows: the default's 12 behind it, none of the longest's
+    const rows = (x: Layout) => Array.from({ length: CHUNK_COUNT / CHUNKS_X }, (_, r) => r).filter((r) => openSeaRow(x.codes, r)).length;
+    expect(rows(defaultLayout())).toBe(12);
+    expect(rows(l)).toBe(0);
+    expect(noChunk(CHUNK_COUNT - 1).box.z1).toBe(GRID.z0 + GRID.rows * 30);
+  });
+});
 
 describe('the fields off the main thread (fieldsPrime.ts)', () => {
   for (const [name, mk] of [['the default island', defaultLayout], ['the user’s island', record]] as const) {

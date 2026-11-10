@@ -45,3 +45,48 @@ describe('the ground kept for a layout', () => {
     expect(built.n).toBeGreaterThan(first);
   });
 });
+
+describe('the bands baked (terrain.ts BAND_BUDGET: the long island, 2026-11-10)', () => {
+  const longest = async () => {
+    const { resizedCodes, withTiles } = await import('#lib/layout/resize.ts');
+    return withTiles(defaultLayout(), resizedCodes(defaultLayout(), 'back', 95)!);
+  };
+  const bakes = { n: 0 };
+  const counting = { ...renderer, render: () => void bakes.n++ } as unknown as WebGLRenderer;
+  it('today\'s island bakes every band with ground at once, as before (8)', async () => {
+    const { buildGround } = await import('./terrain.ts');
+    const g = buildGround(defaultLayout(), { renderer, stairs: false });
+    expect(g.chunks()).toHaveLength(8);
+    g.near(0);
+    expect(g.chunks()).toHaveLength(8);
+    g.dispose();
+  });
+  it('the longest (20 bands) holds 12 targets: those in the camera\'s reach baked as it scrolls, a far one given up', async () => {
+    const { buildGround } = await import('./terrain.ts');
+    const { bandInView } = await import('./islandCam.ts');
+    bakes.n = 0;
+    const g = buildGround(await longest(), { renderer: counting, stairs: false });
+    expect(g.chunks()).toHaveLength(12);
+    const inView = (z: number) => g.chunks().filter((b) => bandInView(b, z)).length;
+    for (const z of [0, 1500, 3000, 4400, 2200, 0]) {
+      const before = bakes.n;
+      g.near(z);
+      expect(g.chunks().length, `at ${z}`).toBeLessThanOrEqual(12);
+      // every band with ground in reach is baked (the bands' world z: −90 + 240 a row; rows 0…19 have ground)
+      const want = Array.from({ length: 20 }, (_, r) => ({ z0: -90 + 240 * r, z1: -90 + 240 * (r + 1) })).filter((b) => bandInView(b, z)).length;
+      expect(inView(z), `at ${z}`).toBe(want);
+      expect(bakes.n - before, `at ${z}`).toBeLessThanOrEqual(want);
+    }
+    // the far end's bands in reach; the front's given up
+    g.near(4400);
+    expect(g.chunks().some((b) => b.z0 > 4300)).toBe(true);
+    expect(g.chunks().some((b) => b.z0 < 0)).toBe(false);
+    g.dispose();
+  });
+  it('the editor\'s preview (bands: Infinity) bakes all 20', async () => {
+    const { buildGround } = await import('./terrain.ts');
+    const g = buildGround(await longest(), { renderer, stairs: false, bands: Infinity });
+    expect(g.chunks()).toHaveLength(20);
+    g.dispose();
+  });
+});

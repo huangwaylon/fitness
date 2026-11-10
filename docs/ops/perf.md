@@ -12,6 +12,10 @@ phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), neve
   it loads (Island3D `guestLate`). ごはん: products.json (2.7 MB) only with a search, or a day with a product logged
   (`db.wantMore`); a picture holds its canvas, not its decoded sheet (food/cells.ts).
 - **The model:** `npm run bench`, year 3 compacted ≤ 15 ms ([runbook §1](runbook.md#1-deploy-the-ui)).
+- **The island's length** (2026-11-10, the grid 156 rows): the ground costs the land's length, not the grid's. The
+  default (57 rows): fields 8.8 MB / ~105 ms on the Mac (was 11.1 MB / ~124 ms on the 80-row grid), chunks 1.9 MB, 8
+  bakes. The longest (152 rows): fields 21.6 MB / ~230 ms, chunks 4.5 MB (the cache's record ~26 MB), 12 bakes at most
+  (`BAND_BUDGET`, ~24 MB; 20 unbudgeted would be ~39 MB). Draws and a scroll's frame are the same at either length.
 - **Frames:** the island at most 30 fps ([design](../design.md#frame-rate)); nothing in the log, the sync or the
   sheets runs per frame.
 

@@ -3,13 +3,28 @@
 // the signed distance (u) to its rounded edge on a 2.5u raster, negative inside. The heights read them (a beach that
 // slopes into the sea, banks that slope into the river, a path a little sunk in the grass), and the 3D ground's bake
 // (world3d/terrain.ts) shades with them: soft, NH-round edges that follow the tiles, without a hand-drawn shape.
-import { GRID, TILE, idx, kindOf, onGrid, tierOf, type Kind } from './grid.ts';
+import { CHUNK, GRID, TILE, idx, kindOf, onGrid, tierOf, type Kind } from './grid.ts';
 import type { Layout } from './model.ts';
 import { riverStems, stemField } from './river.ts';
 
-/** The raster's step (u) and its extent (the grid). */
+/** The raster's step (u) and its width (the grid's); its depth is the layout's (rasterRows). */
 export const STEP = 2.5;
-const W = (GRID.cols * TILE) / STEP, H = (GRID.rows * TILE) / STEP;
+const W = (GRID.cols * TILE) / STEP;
+const PER = TILE / STEP;
+/** The sea past the land's back the raster still covers (tiles): past FAR and the blur every channel is at its clamp. */
+const BACK_PAD = 4;
+/** The raster's depth (tile rows from the grid's front): the land's back row and BACK_PAD more, up to a whole chunk,
+ *  never past the grid. The sea behind it is a channel's clamp, as off the grid (at()), so it isn't rastered: a long
+ *  island's fields cost its own length, not the grid's (156 rows since 2026-11-10; the default's 64, the max's 156). */
+export function rasterRows(codes: ArrayLike<number>): number {
+  let last = -1;
+  for (let i = codes.length - 1; i >= 0; i--)
+    if (kindOf(codes[i]) !== 'sea') {
+      last = Math.floor(i / GRID.cols);
+      break;
+    }
+  return Math.min(GRID.rows, Math.max(CHUNK, Math.ceil((last + 1 + BACK_PAD) / CHUNK) * CHUNK));
+}
 /** Distances are clamped to this (u): nothing shades or shapes farther from an edge. */
 export const FAR = 48;
 /** The rounding's radius (a tile's share): NH's cliff corners, a third of a tile (mesh.ts builds their walls on it). */
@@ -58,6 +73,7 @@ export function masks(layout: Layout): ((c: number, r: number) => boolean)[] {
 }
 
 export interface Fields {
+  /** The raster's cells across and deep (deep: rasterRows × TILE / STEP). */
   readonly w: number;
   readonly h: number;
   /** Each channel's signed distance (u), row by row (z), clamped to ±FAR. */
@@ -113,7 +129,7 @@ export function adoptFields(layout: Layout, raw: RawFields): void {
 
 /** A chamfer distance transform (3 × 3, steps 1 and √2) of a boolean raster: each cell's distance to the nearest set
  *  cell (0 on it), in cells. */
-function chamfer(set: Uint8Array, out: Float32Array): void {
+function chamfer(set: Uint8Array, out: Float32Array, H: number): void {
   const big = 1e6, D = Math.SQRT2;
   for (let i = 0; i < set.length; i++) out[i] = set[i] ? 0 : big;
   for (let y = 0; y < H; y++)
@@ -146,7 +162,7 @@ function chamfer(set: Uint8Array, out: Float32Array): void {
 
 /** A box blur of radius `n` cells in place (along x, then z; the edges held), `tmp` the scratch. A field's straight
  *  edges stay where they are (the blur keeps a linear ramp), its corners and kinks round off. */
-function blur(a: Float32Array, tmp: Float32Array, n: number): void {
+function blur(a: Float32Array, tmp: Float32Array, n: number, H: number): void {
   const k = 1 / (2 * n + 1);
   for (let y = 0; y < H; y++) {
     const o = y * W;
@@ -175,8 +191,9 @@ const smin = (a: number, b: number, k: number) => {
   return Math.min(a, b) - (h * h * k) / 4;
 };
 
-/** The fields' rasters (pure: the codes and the bridges are all it reads). */
-export function computeFields(layout: Pick<Layout, 'codes' | 'objects'>): RawFields {
+/** The fields' rasters (pure: the codes and the bridges are all it reads), `rows` tile rows deep (the tests: the
+ *  whole grid's, the same numbers where both reach). */
+export function computeFields(layout: Pick<Layout, 'codes' | 'objects'>, rows = rasterRows(layout.codes)): RawFields {
   const ms = masks(layout as Layout);
   // the rivers' main stems are drawn from their curves (river.ts), not their tiles
   const stems = riverStems(layout as Layout);
@@ -184,12 +201,12 @@ export function computeFields(layout: Pick<Layout, 'codes' | 'objects'>): RawFie
   const freshTiles = ms[Ch.fresh];
   if (onStem.size) ms[Ch.fresh] = (c, r) => freshTiles(c, r) && !(onGrid(c, r) && onStem.has(idx(c, r)));
   const ch: Float32Array[] = [];
+  const H = rows * PER;
   const inside = new Uint8Array(W * H), outside = new Uint8Array(W * H);
   const dIn = new Float32Array(W * H), dOut = new Float32Array(W * H);
   // each mask on the tiles once, with a ring of sea round the grid
   const TW = GRID.cols + 2, TH = GRID.rows + 2;
   const tiles = new Uint8Array(TW * TH);
-  const PER = TILE / STEP;
   const tier = (c: number, r: number) => (onGrid(c, r) ? tierOf(layout.codes[idx(c, r)]) : 0);
   for (let k = 0; k < CHANNELS; k++) {
     const m = ms[k];
@@ -197,7 +214,7 @@ export function computeFields(layout: Pick<Layout, 'codes' | 'objects'>): RawFie
     for (let r = -1; r <= GRID.rows; r++) for (let c = -1; c <= GRID.cols; c++) tiles[(r + 1) * TW + c + 1] = m(c, r) ? 1 : k === Ch.fresh && !ms[Ch.land](c, r) ? 2 : 0;
     const t = (c: number, r: number) => (c < -1 || r < -1 || c > GRID.cols || r > GRID.rows ? tiles[(Math.max(-1, Math.min(GRID.rows, r)) + 1) * TW + Math.max(-1, Math.min(GRID.cols, c)) + 1] : tiles[(r + 1) * TW + c + 1]);
     const soft = k < SOFT_CH, R = soft ? SOFT_ROUND : ROUND;
-    for (let r = 0; r < GRID.rows; r++)
+    for (let r = 0; r < rows; r++)
       for (let c = 0; c < GRID.cols; c++) {
         const own = t(c, r) === 1 ? 1 : 0;
         for (let j = 0; j < PER; j++) {
@@ -221,14 +238,14 @@ export function computeFields(layout: Pick<Layout, 'codes' | 'objects'>): RawFie
         }
       }
     // distance to the region (from outside) and to its outside (from inside); the edge lies half a cell between
-    chamfer(inside, dOut);
-    chamfer(outside, dIn);
+    chamfer(inside, dOut, H);
+    chamfer(outside, dIn, H);
     const out = new Float32Array(W * H);
     for (let i = 0; i < W * H; i++) {
       const d = inside[i] ? -(dIn[i] - 0.5) * STEP : (dOut[i] - 0.5) * STEP;
       out[i] = d < -FAR ? -FAR : d > FAR ? FAR : d;
     }
-    if (soft) for (let pass = 0; pass < 2; pass++) blur(out, dIn, SOFT);
+    if (soft) for (let pass = 0; pass < 2; pass++) blur(out, dIn, SOFT, H);
     ch.push(out);
   }
   const sf = stems.length ? stemField(stems, W, H, STEP, FAR) : null;
@@ -240,6 +257,7 @@ export function computeFields(layout: Pick<Layout, 'codes' | 'objects'>): RawFie
 }
 
 function wrap({ ch, sf }: RawFields): Fields {
+  const H = ch[0].length / W, Z1 = GRID.z0 + H * STEP;
   return {
     w: W,
     h: H,
@@ -250,8 +268,8 @@ function wrap({ ch, sf }: RawFields): Fields {
       const a = ch[k], i = z0 * W + x0;
       const top = a[i] + (a[i + 1] - a[i]) * tx, bot = a[i + W] + (a[i + W + 1] - a[i + W]) * tx;
       let d = top + (bot - top) * tz;
-      // off the raster: farther out still (the sea beyond the grid)
-      const ox = Math.max(GRID.x0 - x, x - (GRID.x0 + GRID.cols * TILE), 0), oz = Math.max(GRID.z0 - z, z - (GRID.z0 + GRID.rows * TILE), 0);
+      // off the raster: farther out still (the sea beyond the grid, or behind the land's back)
+      const ox = Math.max(GRID.x0 - x, x - (GRID.x0 + GRID.cols * TILE), 0), oz = Math.max(GRID.z0 - z, z - Z1, 0);
       if (ox || oz) d = k === Ch.land || k === Ch.sandy ? (k === Ch.land ? Math.max(d, 0) + Math.hypot(ox, oz) : -FAR) : d + Math.hypot(ox, oz);
       return Math.max(-FAR, Math.min(FAR, d));
     },

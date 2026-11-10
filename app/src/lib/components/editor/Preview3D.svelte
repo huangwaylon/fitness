@@ -108,7 +108,7 @@
           const d = now();
           return previewDay(cur, { season, foliage, month: d.getMonth() + 1, date: dayKey(d), hour: jst(d).hour, seed: islandSeed() });
         };
-        const ground = buildGround(cur, { renderer, look: lk, stairs: false });
+        const ground = buildGround(cur, { renderer, look: lk, stairs: false, bands: Infinity });
         scene.add(ground.group);
         const things = createThings(scene, ground.heightAt, kick);
         things.tod(0, 0.32);

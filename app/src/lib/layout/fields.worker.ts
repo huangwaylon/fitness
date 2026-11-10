@@ -3,7 +3,8 @@
 // every chunk's arrays, their buffers transferred (fieldsPrime.ts). Given a cache key, it then keeps a copy for the
 // next launch (fieldsCache.ts: the write here, off the main thread), and closes once it's written.
 import { adoptFields, computeFields, type RawFields } from './fields.ts';
-import { CHUNK_COUNT, chunkMesh, type ChunkMesh } from './mesh.ts';
+import { CHUNK_COUNT, chunkMesh, noChunk, openSeaRow, type ChunkMesh } from './mesh.ts';
+import { CHUNKS_X } from './grid.ts';
 import { Layout } from './model.ts';
 import { fieldsWriter } from './fieldsCache.ts';
 
@@ -15,7 +16,8 @@ self.onmessage = async (e: MessageEvent<Pick<Layout, 'codes' | 'objects' | 'home
   const layout = new Layout(codes, objects, homes);
   // (the chunks read the fields: these, not built twice)
   adoptFields(layout, raw);
-  const chunks = Array.from({ length: CHUNK_COUNT }, (_, i) => chunkMesh(layout, i));
+  // (the open sea's rows behind the island: none, as the ground builds none)
+  const chunks = Array.from({ length: CHUNK_COUNT }, (_, i) => (openSeaRow(codes, Math.floor(i / CHUNKS_X)) ? noChunk(i) : chunkMesh(layout, i)));
   const primed: Primed = { raw, chunks };
   // (a copy kept for the cache, ~10 MB of memcpy: the answer goes first, its write after, here)
   const kept = key ? structuredClone(primed) : null;

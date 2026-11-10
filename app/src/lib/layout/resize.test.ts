@@ -16,7 +16,16 @@ const resized = (l: Layout, edge: Edge, by: number): Layout => {
 const errors = (l: Layout) => validate(l).filter((i) => i.level === 'error').map((i) => `${i.code}:${i.ids.join()}`);
 
 describe('the island’s size (layout/resize.ts)', () => {
-  it('the default: 15 × 57, room to grow the back 19 rows, none at the front or the left (the sea kept round it)', () => {
+  it('the longest: 152 rows of land, twice the 80-row grid’s 76 (the user, 2026-11-10), its back the grid’s edge less the sea', () => {
+    expect(GRID.rows).toBe(156);
+    const long = resized(l0, 'back', 95);
+    expect(landSize(long)).toMatchObject({ cols: 15, rows: 152, r0: 2, r1: 153 });
+    expect(resizeEdge(long, 'back', 1)).toEqual({ codes: null, blocked: [] });
+    // the default's own rows as they were (the back's coast moved out, the island behind it untouched up to its old cliff)
+    for (let i = 0; i < 20 * 50; i++) expect(long.codes[i]).toBe(l0.codes[i]);
+    expect(errors(long)).toEqual(errors(l0));
+  });
+  it('the default: 15 × 57, room to grow the back 95 rows, none at the front or the left (the sea kept round it)', () => {
     expect(landSize(l0)).toMatchObject({ cols: 15, rows: 57, c0: 2, c1: 16, r0: 2, r1: 58 });
     expect(resizeEdge(l0, 'back', GRID.rows - 1 - MARGIN - 58).codes).not.toBeNull();
     expect(resizeEdge(l0, 'back', GRID.rows - MARGIN - 58)).toEqual({ codes: null, blocked: [] });
