@@ -1,9 +1,9 @@
 // The museum's light (look.ts): every wing's look within the exposure cap, its walls lit at least near its floor's level,
-// night warmer and no darker than 0.8× day (the lamps take over), the night recipe's strengths, the blend between two
+// night the lamps' (the room dimmer, never under 0.6×, its pools standing out, amber), the night recipe's strengths, the blend between two
 // looks, and the look put on three's lights and renderer (Neutral tone mapping).
 import { describe, expect, test } from 'vitest';
 import { AmbientLight, Color, DirectionalLight, HemisphereLight, NeutralToneMapping, NoToneMapping, type ToneMapping } from 'three';
-import { KEY, LIFT, LOOK, POOL, TINT, applyLook, blendLook, lookAt, luma } from './look.ts';
+import { KEY, LIFT, LOOK, NIGHT, POOL, TINT, applyLook, blendLook, lookAt, luma } from './look.ts';
 import type { Wing } from './plan.ts';
 
 const WINGS: Wing[] = ['hall', 'bug', 'fish', 'sea', 'fossil', 'art'];
@@ -34,28 +34,36 @@ describe("the museum's looks", () => {
     expect(luma(LOOK.fish, UP)).toBeLessThan(luma(LOOK.hall, UP));
   });
 
-  test('night: at least 0.8× day everywhere (a wall, a floor in a pool), and warmer where lamps light it', () => {
+  test('night: the lamps take over: the room itself dimmer (not dark), a lamp pool still bright (≥ 0.6) and standing out more, warmer, the walls amber', () => {
+    const pool = [0.3, 0.25, 0.18] as const;
     for (const w of WINGS) {
       const d = lookAt(w, 0), n = lookAt(w, 1);
-      const pool = w === 'bug' ? ([0, 0, 0] as const) : ([0.3, 0.25, 0.18] as const);
-      for (const [nm, baked] of [[UP, pool], [WALL, [0, 0, 0]], [SIDE, [0, 0, 0]]] as const) {
-        expect(luma(n, nm, 0.8, baked)).toBeGreaterThanOrEqual(0.8 * luma(d, nm, 0.8, baked));
+      for (const nm of [UP, WALL, SIDE]) {
+        expect(luma(n, nm)).toBeLessThanOrEqual(luma(d, nm) + 1e-9);
+        expect(luma(n, nm)).toBeGreaterThan(0.6 * luma(d, nm));
       }
-      if (w !== 'fish' && w !== 'sea') expect(warmth(n.sky)).toBeGreaterThan(warmth(d.sky));
+      if (w === 'bug') continue;
+      expect(luma(n, UP, 0.8, pool) / luma(n, UP)).toBeGreaterThan(luma(d, UP, 0.8, pool) / luma(d, UP));
+      if (w !== 'fish' && w !== 'sea') {
+        expect(luma(n, UP, 0.8, pool)).toBeGreaterThan(0.6);
+        expect(warmth(n.sky)).toBeGreaterThan(warmth(d.sky));
+        expect(warmth(n.tint)).toBeGreaterThan(0.3);
+      } else expect(n.tint).toBe(0xffffff);
     }
   });
 
-  test("the night recipe: the pools ×1.5, the lamps 0.6 → 1, the cards ×1.4, the key ×0.6 (the bug wing's ×0.5), the tanks' glow ×1.3", () => {
+  test('the night recipe (NIGHT): the room light ×base, the pools and cards up, the lamps brighter, the key down (the bug wing only that), the tanks glowing more', () => {
     const d = lookAt('hall', 0), n = lookAt('hall', 1);
-    expect(n.lm).toBeCloseTo(d.lm * 1.5);
-    expect([d.lamp, n.lamp]).toEqual([0.6, 1]);
-    expect(n.cards).toBeCloseTo(1.4);
-    expect(n.keyI).toBeCloseTo(d.keyI * 0.6);
+    expect(n.lm).toBeCloseTo(d.lm * NIGHT.pools);
+    expect([d.lamp, n.lamp]).toEqual([0.6, NIGHT.lamp]);
+    expect(n.cards).toBeCloseTo(NIGHT.cards);
+    expect(n.keyI).toBeCloseTo(d.keyI * NIGHT.key);
+    expect(n.hemi).toBeCloseTo(d.hemi * NIGHT.base);
+    expect(n.ambI).toBeCloseTo(d.ambI * NIGHT.base);
     expect(n.exposure).toBeCloseTo(d.exposure - 0.05);
-    expect(n.ambI).toBe(d.ambI);
-    expect(lookAt('bug', 1).keyI).toBeCloseTo(LOOK.bug.keyI * 0.5);
-    expect([lookAt('fish', 1).glow, lookAt('hall', 1).glow]).toEqual([1.3, 1]);
-    expect(lookAt('fish', 1).hemi).toBeCloseTo(LOOK.fish.hemi * 0.75);
+    expect(n.tint).toBe(NIGHT.tint);
+    expect(lookAt('bug', 1).keyI).toBeCloseTo(LOOK.bug.keyI * NIGHT.key);
+    expect([lookAt('fish', 1).glow, lookAt('hall', 1).glow]).toEqual([NIGHT.glow, 1]);
     // (clamped: past night is night)
     expect(lookAt('art', 3)).toEqual(lookAt('art', 1));
     expect(lookAt('art', -1)).toEqual(lookAt('art', 0));
@@ -63,7 +71,7 @@ describe("the museum's looks", () => {
 
   test("a tuning's partial on the day look, carried through the night", () => {
     const n = lookAt('fossil', 1, { hemi: 3, bg: 0x102030 });
-    expect(n.hemi).toBeCloseTo(3 * 0.85);
+    expect(n.hemi).toBeCloseTo(3 * NIGHT.base);
     expect(n.bg).toBe(0x102030);
     expect(LOOK.fossil.hemi).toBe(2.1);
   });
@@ -78,8 +86,8 @@ describe("the museum's looks", () => {
     expect(b.b).toBeLessThan(f.b);
   });
 
-  test("the dark tints gone: every floor and wall tint light (the fossils' a warm sandstone), the pools' colours warm (the aquarium's blue), the exhibits' self-light", () => {
-    for (const w of WINGS) for (const hex of [TINT[w].floor, TINT[w].wall]) for (const sh of [16, 8, 0]) expect((hex >> sh) & 255).toBeGreaterThanOrEqual(0xb0);
+  test("the dark tints gone: every floor and wall tint light (the aquarium's a slate teal), the pools' colours warm (the aquarium's blue), the exhibits' self-light", () => {
+    for (const w of WINGS) for (const hex of [TINT[w].floor, TINT[w].wall]) for (const sh of [16, 8, 0]) expect((hex >> sh) & 255).toBeGreaterThanOrEqual(0x90);
     for (const w of ['hall', 'fossil', 'art'] as const) expect(warmth(POOL[w])).toBeGreaterThan(0);
     expect(warmth(POOL.fish)).toBeLessThan(0);
     // (the paintings lit most of the still exhibits, never past the creatures)

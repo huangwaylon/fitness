@@ -963,20 +963,23 @@ out.
   across, ±30 deep), so a 12 × 18 room stands still and F2 follows in depth. `__museum.tune({ viewW, pitch })` retunes
   it on the phone.
 - **One room at a time:** only the room my villager is in is drawn: its floor, walls, furnishing, exhibits and whoever
-  else is in it (engine.ts showRoom). Each doorway shows a card in the next room's mood colour (look.ts PORTAL); a tap
+  else is in it (engine.ts showRoom). Each doorway shows a card in the next room's mood colour (look.ts PORTAL) with a faint glimpse of it (fronds,
+  ripples, a skeleton, a frame); a tap
   on it, or on a floor past it, walks through, a step and a half in. The room (F1, F2 and F3 each one) changes 10 u past the doorway's line (at
   most every 400 ms), inside a dip: the screen fades to the next room's colour in 150 ms and back in 200, never taking a
   finger; a put (the e2e's) changes it at once. Its music changes with it. A cut front wall leaves its foot (a kick
   plate), and a warm apron runs past each room's front edge, so no void shows under it.
 - **Light** (`look.ts`, `bake.ts`; no real lamps, nothing per frame): Neutral tone mapping and one look a room
   (exposure, a sky over a warm bounce, ambient, a frontal key, a warm background), floors and walls lifted over their
-  textures' darkness (the fossil rooms a warm sandstone, the gallery's red and herringbone brighter). Each floor's
-  baked aoMap and lightMap (dark at the walls' feet and under what stands, warm pools under the exhibits and lamps, a
-  blue band round each tank; baked again when a room's exhibits change), the walls' foot and uplight ramps; NH's own
-  sconces, desk lamps and wall candles in the hall and the fossil rooms with a halo card each, a wash card over each
-  painting, a glow lip on each tank (one card mesh a kind a room). The fossils, paintings and statues lit a little by
-  their own colour, NH's bone light tan on light oak bases; the tanks' water the brightest thing. Night isn't dimmer:
-  the lamps take over (the sky toward lamplight, the key down, the pools ×1.5, the cards ×1.4, the tanks brighter).
+  textures' darkness (the fossil rooms a pale stone so the bone on its dark bases reads, the aquarium a slate-teal
+  stone under steel-blue walls, no checker; the gallery's red and herringbone brighter). Each floor's baked aoMap and
+  lightMap (dark at the walls' feet and under what stands, warm pools under the exhibits, lamps and benches, a wide
+  cyan band round each tank; baked again when a room's exhibits change), the walls' foot and uplight ramps; NH's own
+  sconces, desk lamps and wall candles in the hall and the fossil rooms with a halo card each (the candles' 1.5×), a
+  wash card over each painting, a glow lip on each tank (one card mesh a kind a room). The fossils, paintings and
+  statues lit a little by their own colour; the tanks' water lit past its colours (×1.6), the brightest thing, its fish
+  drawn 1.3× NH's size. Night (look.ts NIGHT): the lamps take over: the room's own light ×0.76, the pools ×2.4 and
+  the cards ×2, the floors and walls tinted amber (~2700 K): the hall ~0.41 luma with its pools ~0.67 (day 0.52).
   The carpets are one seamless carpet a room (`carpet.ts`: one texture over the strips, its
   border round their outline).
 - **Like the rooms:** a tap on the floor walks my villager there; a drag turns the camera, a pinch zooms, ⌂ puts it

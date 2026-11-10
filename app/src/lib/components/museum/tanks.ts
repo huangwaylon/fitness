@@ -67,6 +67,8 @@ export function openOf(t: Tank): Box {
 export const FIT = 0.68;
 /** The least a fish is drawn long (model units): a little one scaled up to it (NH's tanks show the little ones big). */
 const MIN_LEN = 6;
+/** NH's fish drawn this much bigger than its own size (a 6 px fish was a speck on a phone), a big one still fitted. */
+const DRAWN = 1.3;
 /** A fish's body as drawn in a tank: its scale, its model's box's half sizes (across, up, along) and its tail's sway
  *  (model units, at NH's own size), half its length drawn (a walker's spread, if longer), and its reach (reachOf, drawn). */
 export interface Body { s: number; half: [number, number, number]; sway: number; r: number; reach: [number, number] }
@@ -79,7 +81,7 @@ export function bodyIn(t: Tank, min: ArrayLike<number>, max: ArrayLike<number>, 
   const sway = walker ? 0 : half[2] * 2 * 0.06;
   const [h, v] = reachOf(half[0], half[1], half[2], sway, walker ? 0 : undefined, walker ? 0 : undefined);
   const across = Math.min(w.x1 - w.x0, w.z1 - w.z0), up = w.y1 - w.y0, long = Math.max(half[2], walker ? half[0] : 0);
-  const s = Math.min(Math.max(1, MIN_LEN / (2 * long)), (FIT * across) / (2 * h), (FIT * up) / (2 * v));
+  const s = Math.min(DRAWN * Math.max(1, MIN_LEN / (2 * long)), (FIT * across) / (2 * h), (FIT * up) / (2 * v));
   return { s, half, sway, r: long * s, reach: [h * s, v * s] };
 }
 

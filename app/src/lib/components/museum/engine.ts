@@ -40,6 +40,7 @@ import {
 } from './plan.ts';
 import { GAIN, LIFT, LOOK, POOL, PORTAL, TINT, applyLook, lookAt, type Look as Light } from './look.ts';
 import { CARD, cardsMesh, floorBake, wallRamps, type Block, type Card, type Pool } from './bake.ts';
+import { BENCHES, benchRect } from './seats.ts';
 import { FOV, PITCH, enter, follow, framingOf, type CamTune, type Framing } from './camera.ts';
 /** The exhibits' rate (a second) while only they move; no finger on the room for REST_MS (the island's rest:
  *  world3d/engine.ts), REST_FPS: the battery and the phone's heat at rest. */
@@ -295,17 +296,54 @@ function plaque(text: string, then: () => void): CanvasTexture {
   return t;
 }
 
-/** A doorway's glow (times its room's mood): full at the floor, deeper toward the top. */
-function portalGlow(): CanvasTexture {
-  const c = document.createElement('canvas');
-  c.width = 2;
-  c.height = 64;
-  const g = c.getContext('2d')!, v = g.createLinearGradient(0, 0, 0, 64);
+/** A doorway's glow (times its room's mood): full at the floor, deeper toward the top, and a glimpse of the room
+ *  beyond in a deeper tone (the garden's fronds, a tank's ripples, a skeleton, a hung frame; the hall none). */
+function portalGlow(wing: Wing): CanvasTexture {
+  const c = document.createElement('canvas'), W = 64, H = 96;
+  c.width = W;
+  c.height = H;
+  const g = c.getContext('2d')!, v = g.createLinearGradient(0, 0, 0, H);
   v.addColorStop(0, '#7a7a7a');
   v.addColorStop(0.7, '#ececec');
   v.addColorStop(1, '#ffffff');
   g.fillStyle = v;
-  g.fillRect(0, 0, 2, 64);
+  g.fillRect(0, 0, W, H);
+  g.fillStyle = g.strokeStyle = 'rgba(70, 60, 50, 0.24)';
+  g.lineCap = 'round';
+  if (wing === 'bug') {
+    // fronds up from either side
+    for (const [x0, k] of [[2, 1], [62, -1]] as const) {
+      for (let i = 0; i < 4; i++) {
+        g.beginPath();
+        g.ellipse(x0 + k * (4 + i * 5), 70 - i * 12, 5, 13, k * (0.5 + i * 0.25), 0, Math.PI * 2);
+        g.fill();
+      }
+    }
+  } else if (wing === 'fish' || wing === 'sea') {
+    // a tank's ripples
+    g.lineWidth = 2.5;
+    for (let y = 30; y < 80; y += 11) {
+      g.beginPath();
+      for (let x = 0; x <= W; x += 4) g.lineTo(x, y + Math.sin(x * 0.2 + y) * 2.5);
+      g.stroke();
+    }
+  } else if (wing === 'fossil') {
+    // a long-necked skeleton: its spine, ribs and legs
+    g.lineWidth = 2.5;
+    g.beginPath();
+    g.moveTo(10, 34);
+    g.quadraticCurveTo(18, 30, 22, 50);
+    g.lineTo(46, 52);
+    g.quadraticCurveTo(56, 54, 62, 66);
+    g.stroke();
+    for (let x = 26; x <= 42; x += 4) (g.beginPath(), g.moveTo(x, 51), g.lineTo(x, 60), g.stroke());
+    for (const x of [26, 42]) (g.beginPath(), g.moveTo(x, 52), g.lineTo(x - 2, 80), g.stroke());
+  } else if (wing === 'art') {
+    // a hung frame
+    g.lineWidth = 4;
+    g.strokeRect(18, 30, 28, 22);
+    g.fillRect(22, 34, 20, 14);
+  }
   const t = new CanvasTexture(c);
   t.colorSpace = SRGBColorSpace;
   return t;
@@ -436,12 +474,21 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   /** What else the look lights: the baked floors and walls (their light maps' strength), NH's lamps (their glow) and
    *  the lamps' halo cards. */
   const baked: MeshLambertMaterial[] = [], lampMats = new Set<MeshLambertMaterial>(), halos: ((k: number) => void)[] = [];
+  /** The floors' and walls' materials and their own colours (the look's tint over them: amber at night); a wall's
+   *  copies (its fade's) follow theirs (retint, once the walls are up). */
+  const tinted = new Map<MeshLambertMaterial, { c: Color; k: number }>(), lampTint = new Color(), white = new Color(1, 1, 1), tintBy = new Color();
+  /** `k` of the tint (a floor half: its pools the warm ones, the walls all of it). */
+  const tintable = (m: MeshLambertMaterial, k = 1) => (tinted.set(m, { c: m.color.clone(), k }), m);
+  let retint = () => {};
   const relight = () => {
     const l = lookNow();
     applyLook({ hemi, key, amb }, renderer, scene, l);
     for (const m of baked) m.lightMapIntensity = l.lm;
     for (const m of lampMats) m.emissiveIntensity = l.lamp;
     for (const h of halos) h(l.cards);
+    lampTint.setHex(l.tint);
+    for (const [m, { c, k }] of tinted) m.color.copy(c).multiply(tintBy.copy(white).lerp(lampTint, k));
+    retint();
   };
   relight();
 
@@ -552,7 +599,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   disposables.push(grassTex);
   const grassMat = lambert({ map: grassTex });
   /** Each wing's floor texture and its tile (model units); the garden's is its grass. */
-  const FLOOR: Record<Exclude<Wing, 'bug'>, [string, number]> = { hall: ['hall-floor', 40], fish: ['fish-floor', 40], sea: ['fish-floor', 40], fossil: ['fossil-floor', 50], art: ['art-floor', 30] };
+  const FLOOR_TINT = 0.35;
+  const FLOOR: Record<Exclude<Wing, 'bug'>, [string, number]> = { hall: ['hall-floor', 40], fish: ['fossil-floor', 50], sea: ['fossil-floor', 50], fossil: ['fossil-floor', 50], art: ['art-floor', 30] };
   /** Each room's floor (a wing's passage and room each a rect, tiled from the world's origin so they meet unseen),
    *  `dim` times its tint (the apron's). */
   const floorOf = (wing: Wing, r: Rect, dim = 1): MeshLambertMaterial => {
@@ -567,7 +615,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     // (lifted past white: look.ts GAIN)
     const m = lambert({ map: t });
     m.color.set(TINT[wing].floor).multiplyScalar(dim * GAIN[wing].floor);
-    return m;
+    return tintable(m, FLOOR_TINT);
   };
   /** The floors baked (bake.ts: the garden's grass is lit as outdoors), each its room's. */
   const floors: { room: RoomId; r: Rect; mat: MeshLambertMaterial }[] = [];
@@ -628,10 +676,10 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   //      (each wall its own copies of its materials: it fades out and in on its own, the cutaway)
   const wallMat: Record<Wing, MeshLambertMaterial> = {
     hall: lambert({ map: tex('hall-wall', [4, 2]) }),
-    fish: lambert({ map: tex('fish-wall', [6, 1.5]), color: TINT.fish.wall }),
-    sea: lambert({ map: tex('fish-wall', [3, 1.5]), color: TINT.sea.wall }),
+    fish: lambert({ map: tex('hall-wall', [4, 1.5]) }),
+    sea: lambert({ map: tex('hall-wall', [2, 1.5]) }),
     bug: lambert({ map: tex('bug-outside', [1, 1]) }),
-    fossil: lambert({ map: tex('fossil-wall', [5, 1]), color: TINT.fossil.wall }),
+    fossil: lambert({ map: tex('fossil-wall', [5, 1]) }),
     art: lambert({ map: tex('hall-red', [8, 1.6]) })
   };
   // (each wall's foot darker and an uplight under its top, bake.ts's ramps: the floors' program; not the garden's glass)
@@ -639,7 +687,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   disposables.push(ramps.ao, ramps.light);
   for (const [w, m] of Object.entries(wallMat) as [Wing, MeshLambertMaterial][]) {
     m.color.set(TINT[w].wall).multiplyScalar(GAIN[w].wall);
-    if (w !== 'bug') (m.aoMap = ramps.ao), (m.lightMap = ramps.light), baked.push(m);
+    if (w !== 'bug') (m.aoMap = ramps.ao), (m.lightMap = ramps.light), baked.push(m), tintable(m);
   }
   /** The walls' outside faces: the room's background (look.ts), so a cut wall's back never shows near-black. */
   const outMat = lambert({ color: LOOK.hall.bg });
@@ -664,6 +712,9 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     fade: number;
   }
   const walls: WallMesh[] = [];
+  retint = () => {
+    for (const wm of walls) for (const m of wm.mats) if (tinted.has(m.userData.of)) m.color.copy(m.userData.of.color);
+  };
   const own = (mats: Map<Material, MeshLambertMaterial>, m: MeshLambertMaterial) => {
     let c = mats.get(m);
     if (!c) {
@@ -780,8 +831,12 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   //      its opening shows that room's mood (look.ts PORTAL), a glow brighter at the floor; one card a side, each seen
   //      from its own room; a tap on it goes through. Each stands with its doorway's wall: once that's cut away (a front
   //      wall in the room view) the lintel goes, the card drops to the wall's foot and the plaque stands just over it ----
-  const glow = portalGlow();
-  disposables.push(glow);
+  const glows = new Map<Wing, CanvasTexture>();
+  const glowOf = (w: Wing) => {
+    let t = glows.get(w);
+    if (!t) glows.set(w, (t = portalGlow(w))), disposables.push(t);
+    return t;
+  };
   const portals: Mesh[] = [];
   /** A doorway: its lintel, plaque and cards, its jambs (the walls it's in), where the plaque hangs (x, y, z, yaw) with
    *  the wall standing and with it cut away, its top, and whether it's cut now. */
@@ -809,6 +864,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const wing = wingOfRoom(o.room), stone = wing === 'hall' || wing === 'bug';
     const lm = lambert({ map: stone ? tex('hall-wall', [len / 30, (wallTop - top) / 32]) : wallMat[wing].map });
     if (!stone) lm.color.copy(wallMat[wing].color);
+    tintable(lm);
     const lintel = new Mesh(o.axis === 'x' ? new BoxGeometry(T, wallTop - top, len) : new BoxGeometry(len, wallTop - top, T), lm);
     lintel.position.set(o.axis === 'x' ? o.at : mid, (wallTop + top) / 2, o.axis === 'x' ? mid : o.at);
     scene.add(inRooms(lintel, [o.room, o.next]));
@@ -835,7 +891,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     for (const kk of [1, -1]) {
       const near = o.axis === 'x' ? roomIdAt(o.at + kk * 5, mid) : roomIdAt(mid, o.at + kk * 5), far = near === o.room ? o.next : o.room;
       if (!near) continue;
-      const card = new Mesh(new PlaneGeometry(len, top), new MeshBasicMaterial({ map: glow, color: PORTAL[wingOfRoom(far)] }));
+      const card = new Mesh(new PlaneGeometry(len, top), new MeshBasicMaterial({ map: glowOf(wingOfRoom(far)), color: PORTAL[wingOfRoom(far)] }));
       disposables.push(card.material);
       card.position.set(o.axis === 'x' ? o.at : mid, top / 2, o.axis === 'x' ? mid : o.at);
       card.rotation.y = o.axis === 'x' ? (kk * Math.PI) / 2 : kk > 0 ? 0 : Math.PI;
@@ -936,7 +992,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     if (!l.wall) continue;
     const n = [Math.sin(l.yaw), Math.cos(l.yaw)];
     const list = haloBy.get(l.room) ?? haloBy.set(l.room, []).get(l.room)!;
-    list.push({ x: l.x + n[0] * 0.3, y: l.y + 3, z: l.z + n[1] * 0.3, w: 26, h: 34, yaw: l.yaw });
+    const k = l.code === CANDLE[0] ? 1.5 : 1;
+    list.push({ x: l.x + n[0] * 0.3, y: l.y + 3 * k, z: l.z + n[1] * 0.3, w: 26 * k, h: 34 * k, yaw: l.yaw });
   }
   for (const [room, list] of haloBy) {
     const h = cardsMesh('halo', list, cardMap);
@@ -1004,7 +1061,13 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const lampPools = (room: RoomId): Pool[] =>
     lamps.filter((l) => l.wall && l.room === room).map((l) => {
       const w = wingOfRoom(room) as Exclude<Wing, 'bug'>;
-      return { x: l.x + Math.sin(l.yaw) * 8, z: l.z + Math.cos(l.yaw) * 8, rx: 16, color: POOL[w], at: 0.55 };
+      return { x: l.x + Math.sin(l.yaw) * 10, z: l.z + Math.cos(l.yaw) * 10, rx: 24, rz: 20, color: POOL[w], at: 0.7 };
+    });
+  /** A pool round each bench out of the aquarium (its tanks light it): the lamps' at a seat. */
+  const benchPools = (room: RoomId): Pool[] =>
+    wingOfRoom(room) === 'fish' || wingOfRoom(room) === 'bug' ? [] : BENCHES.filter((b) => b.room === room).map((b) => {
+      const r = benchRect(b);
+      return { x: (r.x0 + r.x1) / 2, z: (r.z0 + r.z1) / 2, rx: (r.x1 - r.x0) / 2 + 12, rz: (r.z1 - r.z0) / 2 + 12, color: POOL[wingOfRoom(room) as Exclude<Wing, 'bug'>], at: 0.6 };
     });
   const bakeDue = new Set<RoomId>();
   let bakeT: ReturnType<typeof setTimeout> | undefined;
@@ -1022,7 +1085,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   function bakeNow(room: RoomId) {
     const mine = exhibits.filter((e) => roomOfExhibit(e) === room);
     const blocks: Block[] = [...BLOCKS, ...mine.flatMap((e) => [...e.blocks, ...(e.seats ?? [])])];
-    const pools: Pool[] = [...(room === 'hall' ? HALL_POOLS : []), ...lampPools(room), ...mine.flatMap((e) => e.pools ?? [])];
+    const pools: Pool[] = [...(room === 'hall' ? HALL_POOLS : []), ...lampPools(room), ...benchPools(room), ...mine.flatMap((e) => e.pools ?? [])];
     for (const f of floors) {
       if (f.room !== room) continue;
       const near = blocks.filter((b) => b.x1 > f.r.x0 - 8 && b.x0 < f.r.x1 + 8 && b.z1 > f.r.z0 - 8 && b.z0 < f.r.z1 + 8);

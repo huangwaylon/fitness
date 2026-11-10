@@ -166,7 +166,7 @@ export interface Card { x: number; y: number; z: number; w: number; h: number; y
 export const CARD = {
   wash: { color: 0xffe9c4, opacity: 0.35 },
   halo: { color: 0xffd9a0, opacity: 0.4 },
-  lip: { color: 0x7fd8ff, opacity: 0.5 }
+  lip: { color: 0x7fd8ff, opacity: 0.75 }
 } as const;
 
 /** The cards as one geometry (two triangles a card: position and uv, indexed), for one draw. */

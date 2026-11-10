@@ -35,7 +35,7 @@ import { batcher, decal, openBox, plainGeometry } from './geometry.ts';
 /** Each tank's water: its deep colour, its light colour, how bright its caustics, its glass's tint. */
 const WATER: Record<TankId, { deep: number; top: number; caustic: number; glow: number }> = {
   sea: { deep: 0x15548a, top: 0x5cc4ea, caustic: 0.26, glow: 0x7fd0f0 },
-  deep: { deep: 0x041226, top: 0x1c4878, caustic: 0.06, glow: 0x2a5a90 },
+  deep: { deep: 0x0a2648, top: 0x2c6aa4, caustic: 0.1, glow: 0x3a76b0 },
   river: { deep: 0x23604f, top: 0x7cc8ac, caustic: 0.28, glow: 0x9fe0c4 }
 };
 
@@ -43,10 +43,12 @@ export const WATER_VERT = /* glsl */ `
 varying vec2 vUv; varying vec3 vPos;
 void main() { vUv = uv; vec4 w = modelMatrix * vec4(position, 1.0); vPos = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`;
 // the water's back and floor: its colour by depth (deep below, light above), caustics (three sines folded: NH's
-// shimmering net of light) and soft rays from the surface; uFloor 1 on the floor (caustics over the sand, no rays)
+// shimmering net of light) and soft rays from the surface, lit past its colours (GLOW: the tanks the room's light);
+// uFloor 1 on the floor (caustics over the sand, no rays)
 export const WATER_FRAG = /* glsl */ `
 uniform float uTime; uniform vec3 uDeep; uniform vec3 uTop; uniform float uCaustic; uniform float uFloor; uniform float uNight;
 varying vec2 vUv; varying vec3 vPos;
+const float GLOW = 1.6;
 float caustic(vec2 p, float t) {
   float c = sin(p.x * 0.35 + t * 0.9) + sin(p.y * 0.41 - t * 1.1) + sin((p.x + p.y) * 0.23 + t * 0.6) + sin(length(p * 0.3 + vec2(sin(t * 0.3), cos(t * 0.27)) * 3.0));
   return pow(1.0 - abs(sin(c * 1.3)), 10.0);
@@ -58,7 +60,7 @@ void main() {
   float c = caustic(p, uTime) * uCaustic;
   float rays = uFloor > 0.5 ? 0.0 : pow(max(0.0, sin(vPos.x * 0.08 + vPos.z * 0.08 + sin(uTime * 0.2) * 0.6)), 8.0) * smoothstep(0.2, 1.0, vUv.y) * 0.35 * uCaustic;
   col += vec3(0.75, 0.95, 1.0) * (c * (0.55 + 0.45 * h) + rays);
-  gl_FragColor = vec4(col * (1.0 + uNight * 0.1), uFloor > 0.5 ? c * 0.45 : 1.0);
+  gl_FragColor = vec4(col * (GLOW + uNight * 0.15), uFloor > 0.5 ? c * 0.45 : 1.0);
   #include <colorspace_fragment>
 }`;
 /** A wing's tanks' light (bake.ts): a blue band round each on the floor, its caustics baked, and a glow lip along its
@@ -66,7 +68,7 @@ void main() {
 export function tankLight(kit: Kit, tanks: readonly { box: Box; top: number }[]): { pools: Pool[]; lip: ReturnType<Kit['cards']> } {
   const pools: Pool[] = [], lips: Card[] = [];
   for (const { box: b, top } of tanks) {
-    pools.push({ band: { x0: b.x0, x1: b.x1, z0: b.z0, z1: b.z1 }, feather: 16, caustic: 0.3, color: POOL.fish, at: 0.8 });
+    pools.push({ band: { x0: b.x0, x1: b.x1, z0: b.z0, z1: b.z1 }, feather: 30, caustic: 0.3, color: POOL.fish, at: 1 });
     if (alongX(b)) lips.push({ x: (b.x0 + b.x1) / 2, y: top - 4, z: b.z1 + 0.3, w: b.x1 - b.x0, h: 9, yaw: 0 });
     else lips.push({ x: b.x1 + 0.3, y: top - 4, z: (b.z0 + b.z1) / 2, w: b.z1 - b.z0, h: 9, yaw: Math.PI / 2 });
   }
@@ -203,7 +205,7 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
     // its glass (one pane each side, faint: the water's own colour over what swims in it, a deep tank darker) and its
     // frame's edges (open below: its floor is the sand's top)
     // (one pass: no depth written and one colour, its back and front panes in either order are the same)
-    const g = new MeshBasicMaterial({ color: WATER[id].glow, transparent: true, opacity: id === 'deep' ? 0.32 : 0.16, depthWrite: false, side: DoubleSide, forceSinglePass: true });
+    const g = new MeshBasicMaterial({ color: WATER[id].glow, transparent: true, opacity: id === 'deep' ? 0.24 : 0.16, depthWrite: false, side: DoubleSide, forceSinglePass: true });
     mats.push(g);
     glasses.add(g);
     const gb = pc.glass;
