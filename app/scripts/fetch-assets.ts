@@ -1,7 +1,8 @@
 // Fetch the official New Horizons art the UI uses (from Nookipedia's file pages) into static/art/. The critters', the
 // beach finds' and the balloon catalogue's icons are NH's own from the game files instead (scripts/nh-icons.ts: their
 // manifest source `nh:<folder>`), never fetched here.
-// Usage (from app/): npm run assets:fetch   [--force to re-download everything]
+// Usage (from app/): npm run assets:fetch   [--force to re-download everything] [--prune: drop this script's entries
+//                    no longer in SPECS, and their files]
 //                    npm run assets:fetch -- --only=trees/oak,host/   (re-download keys with these prefixes)
 //
 // The art is Nintendo's, used for a personal, non-commercial app: see docs/decisions.md#official-nh-art.
@@ -31,6 +32,7 @@ const OUT = join(import.meta.dirname, '..', 'static', 'art');
 const MANIFEST = join(OUT, 'manifest.json');
 const DELAY_MS = 400;
 const force = process.argv.includes('--force');
+const prune = process.argv.includes('--prune');
 const only = (process.argv.find((a) => a.startsWith('--only='))?.slice(7) ?? '').split(',').filter(Boolean);
 
 /** key → [max px on the longer side, ...candidate file titles in preference order]. */
@@ -108,84 +110,10 @@ const SPECS: Record<string, Spec> = {
   'finds/hardwood': [64, 'Hardwood_NH_Inv_Icon.png'],
   'finds/weeds': [64, 'Clump_of_Weeds_NH_Inv_Icon.png', 'Weeds_NH_Inv_Icon.png'],
 };
-// Scene critters (docs/design.md#scene-interactions): the critterpedia icon of each catch (fish, bugs, junk), shown
-// ~36px for a moment after a catch and only loaded then (island/critters.ts critterArt).
-for (const name of [
-  'Sea Bass', 'Horse Mackerel', 'Olive Flounder', 'Red Snapper', 'Dab', 'Squid', 'Sea Butterfly', 'Blowfish', 'Puffer Fish',
-  'Barred Knifejaw', 'Anchovy', 'Common Butterfly', 'Yellow Butterfly', 'Tiger Butterfly', 'Darner Dragonfly',
-  'Red Dragonfly', 'Firefly', 'Moth', 'Bell Cricket', 'Cricket', 'Ladybug', 'Boot', 'Old Tire', 'Empty Can',
-  'Peacock Butterfly', 'Emperor Butterfly', 'Honeybee', 'Banded Dragonfly', 'Robust Cicada', 'Evening Cicada',
-  'Rice Grasshopper', 'Grasshopper', 'Migratory Locust', 'Mantis', 'Orchid Mantis',
-  // the rest of NH's sea and pier fish
-  'Zebra Turkeyfish', 'Ribbon Eel', 'Football Fish', 'Clownfish', 'Surgeonfish', 'Butterfly Fish', 'Sea Horse', 'Moray Eel',
-  'Napoleonfish', 'Ray', 'Ocean Sunfish', 'Mahi-Mahi', 'Giant Trevally', 'Tuna', 'Blue Marlin', 'Suckerfish', 'Oarfish',
-  'Saw Shark', 'Hammerhead Shark', 'Great White Shark', 'Whale Shark', 'Barreleye', 'Coelacanth',
-  // more NH bugs: on the trees, on the beach and in the grass, flying
-  'Walker Cicada', 'Brown Cicada', 'Giant Cicada', 'Cicada Shell', 'Saw Stag', 'Miyama Stag', 'Giant Stag', 'Rainbow Stag',
-  'Horned Dynastid', 'Goliath Beetle', 'Drone Beetle', 'Jewel Beetle', 'Walking Stick', 'Hermit Crab', 'Wharf Roach',
-  'Pill Bug', 'Centipede', 'Snail', 'Paper Kite Butterfly', 'Agrias Butterfly', "Queen Alexandra's Birdwing",
-  "Rajah Brooke's Birdwing", 'Monarch Butterfly', 'Atlas Moth', 'Damselfly', 'Long Locust',
-  // the palm trees' beetles (Goliath Beetle is above)
-  'Cyclommatus Stag', 'Golden Stag', 'Horned Atlas', 'Horned Elephant',
-  // only from a shaken tree's wasp nest (island/treeShake.ts)
-  'Wasp',
-  // the rest of NH's bugs the island can hold (a flea off a villager, a bagworm or a spider from a shaken tree)
-  'Common Bluebottle', 'Great Purple Emperor', 'Madagascan Sunset Moth', 'Mosquito', 'Stinkbug', 'Man-Faced Stink Bug',
-  'Tiger Beetle', 'Earth-Boring Dung Beetle', 'Walking Leaf', 'Violin Beetle', 'Citrus Long-Horned Beetle',
-  'Rosalia Batesi Beetle', 'Scarab Beetle', 'Mole Cricket', 'Tarantula', 'Scorpion', 'Flea', 'Bagworm', 'Spider',
-  // NH 2.0's palm beetles, the dung beetle with its snowball, the ant and the fly by the campfire
-  'Blue Weevil Beetle', 'Giraffe Stag', 'Horned Hercules', 'Dung Beetle', 'Ant', 'Fly',
-  // the pond's bugs (on its water: island/Pond.svelte)
-  'Pondskater', 'Diving Beetle', 'Giant Water Bug',
-  // NH's 40 sea creatures, caught by diving at a bubble spot (island/sea.ts)
-  'Seaweed', 'Sea Grapes', 'Sea Cucumber', 'Sea Pig', 'Sea Star', 'Sea Urchin', 'Slate Pencil Urchin', 'Sea Anemone',
-  'Moon Jellyfish', 'Sea Slug', 'Pearl Oyster', 'Mussel', 'Oyster', 'Scallop', 'Whelk', 'Turban Shell', 'Abalone',
-  'Gigas Giant Clam', 'Chambered Nautilus', 'Octopus', 'Umbrella Octopus', 'Vampire Squid', 'Firefly Squid', 'Gazami Crab',
-  'Dungeness Crab', 'Snow Crab', 'Red King Crab', 'Acorn Barnacle', 'Spider Crab', 'Tiger Prawn', 'Sweet Shrimp',
-  'Mantis Shrimp', 'Spiny Lobster', 'Lobster', 'Giant Isopod', 'Horseshoe Crab', 'Sea Pineapple', 'Spotted Garden Eel',
-  'Flatworm', "Venus' Flower Basket",
-  // the pond's fish (island/pondFish.ts): NH's river, river-mouth, clifftop and pond fish
-  'Bitterling', 'Pale Chub', 'Crucian Carp', 'Dace', 'Carp', 'Koi', 'Goldfish', 'Pop-Eyed Goldfish', 'Ranchu Goldfish',
-  'Killifish', 'Crawfish', 'Soft-Shelled Turtle', 'Snapping Turtle', 'Tadpole', 'Frog', 'Freshwater Goby', 'Loach',
-  'Catfish', 'Giant Snakehead', 'Bluegill', 'Yellow Perch', 'Black Bass', 'Tilapia', 'Pike', 'Pond Smelt', 'Sweetfish',
-  'Cherry Salmon', 'Char', 'Golden Trout', 'Stringfish', 'Salmon', 'King Salmon', 'Mitten Crab', 'Guppy', 'Nibble Fish',
-  'Angelfish', 'Betta', 'Neon Tetra', 'Rainbowfish', 'Piranha', 'Arowana', 'Dorado', 'Gar', 'Arapaima', 'Saddled Bichir',
-  'Sturgeon'
-])
-  SPECS[`critters/${name.toLowerCase().replace(/'/g, '').replace(/ /g, '-')}`] = [96, `${name.replace(/ /g, '_')}_NH_Icon.png`];
-// Beach finds (docs/design.md#beach-finds): NH's seashells, fossils (the assessed icon), star fragments, the message
-// bottle and the shovel, shown small on the sand and on the catch plate, only loaded when one is about.
-const FIND_FILES: Record<string, string> = {
-  'sea-snail': 'Sea_Snail_NH_Inv_Icon.png', cowrie: 'Cowrie_NH_Inv_Icon.png', 'venus-comb': 'Venus_Comb_NH_Inv_Icon.png',
-  'sand-dollar': 'Sand_Dollar_NH_Inv_Icon.png', coral: 'Coral_NH_Inv_Icon.png', conch: 'Conch_NH_Inv_Icon.png',
-  'giant-clam': 'Giant_Clam_NH_Inv_Icon.png', 'summer-shell': 'Summer_Shell_NH_Inv_Icon.png',
-  pearl: 'Pearl_NH_Inv_Icon.png', 'message-bottle': 'Message_Bottle_NH_Inv_Icon.png', shovel: 'Shovel_NH_Icon.png',
-  'star-fragment': 'Star_Fragment_NH_Inv_Icon.png', 'large-star-fragment': 'Large_Star_Fragment_NH_Inv_Icon.png'
-};
-for (const z of ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpius', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'])
-  FIND_FILES[`${z.toLowerCase()}-fragment`] = `${z}_Fragment_NH_Inv_Icon.png`;
-for (const f of [
-  'Amber', 'Ammonite', 'Trilobite', 'Dinosaur Track', 'Shark-Tooth Pattern', 'Coprolite', 'Myllokunmingia', 'Juramaia',
-  'Anomalocaris', 'Archaeopteryx', 'Dunkleosteus', 'Eusthenopteron', 'Acanthostega', 'Australopith', 'T. Rex Skull',
-  'Tricera Skull', 'Stego Skull', 'Brachio Skull', 'Mammoth Skull', 'Sabertooth Skull', 'Dimetrodon Skull', 'Ankylo Skull',
-  'Plesio Skull', 'Spino Skull', 'Iguanodon Skull', 'Pachy Skull', 'Diplo Skull', 'Ptera Body', 'Megacero Skull',
-  'Parasaur Skull', 'Ophthalmo Skull', 'Archelon Skull',
-  // the rest of each dinosaur (beach.ts FOSSIL_SETS)
-  'T. Rex Torso', 'T. Rex Tail', 'Tricera Torso', 'Tricera Tail', 'Stego Torso', 'Stego Tail', 'Brachio Chest', 'Brachio Pelvis',
-  'Brachio Tail', 'Mammoth Torso', 'Sabertooth Tail', 'Dimetrodon Torso', 'Ankylo Torso', 'Ankylo Tail', 'Plesio Torso',
-  'Plesio Tail', 'Spino Torso', 'Spino Tail', 'Iguanodon Torso', 'Iguanodon Tail', 'Pachy Tail', 'Diplo Neck', 'Diplo Chest',
-  'Diplo Pelvis', 'Diplo Tail', 'Diplo Tail Tip', 'Left Ptera Wing', 'Right Ptera Wing', 'Megacero Torso', 'Megacero Tail',
-  'Parasaur Torso', 'Parasaur Tail', 'Ophthalmo Torso', 'Archelon Tail', 'Deinony Torso', 'Deinony Tail', 'Left Megalo Side',
-  'Right Megalo Side', 'Quetzal Torso', 'Left Quetzal Wing', 'Right Quetzal Wing'
-])
-  FIND_FILES[f.toLowerCase().replace(/\. /g, '-').replace(/ /g, '-')] = `${f.replace(/ /g, '_')}_NH_Icon.png`;
-// Island care: the watering can and the rock by the hedge (the weeds are ours: NH's icon is a sack of them).
-Object.assign(FIND_FILES, { 'watering-can': 'Watering_Can_NH_Icon.png', rock: 'Rock_NH_Icon.png' });
-// Mushroom season (island/mushrooms.ts): NH's four ground mushrooms beside the trees and the rare one dug up.
-for (const m of ['Round', 'Skinny', 'Flat', 'Elegant', 'Rare']) FIND_FILES[`${m.toLowerCase()}-mushroom`] = `${m}_Mushroom_NH_Icon.png`;
-// Bunny Day's eggs (island/eggs.ts): dug up, from a balloon, on the line.
-for (const e of ['Earth', 'Sky', 'Water']) FIND_FILES[`${e.toLowerCase()}-egg`] = `${e}_Egg_NH_Inv_Icon.png`;
-for (const [id, file] of Object.entries(FIND_FILES)) SPECS[`finds/${id}`] = [96, file];
+// The critters' and the beach finds' icons (fish, bugs, sea creatures, the junk, shells, fossils, fragments, eggs,
+// mushrooms, goods, the shovel and the watering can) are NH's own from the game files: scripts/nh-icons.ts (2026-11-10;
+// a new catch's icon too, from the catch names). Only the rock by the hedge is no item there: Nookipedia's.
+SPECS['finds/rock'] = [96, 'Rock_NH_Icon.png'];
 // The hybrid flowers a watered flower can grow the next day (NH's genetics, simplified: island/care.ts), trimmed alike.
 for (const f of ['Purple Tulips', 'Black Tulips', 'Orange Tulips', 'Pink Roses', 'Orange Roses', 'Black Roses', 'Purple Roses', 'Blue Roses',
   'Orange Cosmos', 'Black Cosmos', 'Pink Mums', 'Green Mums', 'Blue Pansies', 'Purple Pansies'])
@@ -340,8 +268,9 @@ async function main() {
       (force || only.some((o) => key.startsWith(o)) || !manifest.files[key] || !existsSync(join(OUT, manifest.files[key].path)))
   );
   console.log(`${Object.keys(SPECS).length} assets, ${todo.length} to fetch`);
-  // Drop manifest entries (and files) the UI no longer uses.
-  for (const [key, e] of Object.entries(manifest.files)) {
+  // Drop manifest entries (and files) the UI no longer uses: only with --prune (never another script's: rendered,
+  // nh-icons.ts's), so a run can't delete an icon other code still uses.
+  if (prune) for (const [key, e] of Object.entries(manifest.files)) {
     if (SPECS[key] || /^(derived|rendered|nh:)/.test(e.source)) continue; // models.ts's, nh-icons.ts's (and the old derived ones')
     rmSync(join(OUT, e.path), { force: true });
     delete manifest.files[key];

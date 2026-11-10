@@ -3,7 +3,8 @@
 // smaller room (NH's 6 × 6 house, 4 × 4 tent: contract/tent.ts ROOM_SIZES) is a square of those tiles against the same
 // front wall, its middle tiles across (Bounds), so a piece's tiles never change with the size. What
 // may stand where (a piece on its whole tiles, inside the room, off the door's tiles, not over another piece; a rug
-// under the furniture, never over another rug) and how a villager walks (A* on a half-tile grid round the furniture,
+// under the furniture, never over another rug; a ceiling piece over them, hung on the ceiling's tiles, never over
+// another ceiling piece) and how a villager walks (A* on a half-tile grid round the furniture,
 // the corners pulled straight).
 import { footprint, ITEMS } from './items.ts';
 import { ROOM_DEFAULT, type RoomSize } from '#lib/contract/tent.ts';
@@ -82,8 +83,12 @@ export function snapTo(item: string, f: Facing, px: number, pz: number, b: Bound
 }
 
 const isRug = (item: string) => !!ITEMS[item]?.rug;
+/** Hung from the ceiling (NH's ceiling decor): on the ceiling's tiles, over the floor's. */
+export const isCeiling = (item: string): boolean => !!ITEMS[item]?.cl;
+/** A piece's layer: the floor's furniture, the rugs under it, the ceiling's over it (each only meets its own). */
+const layerOf = (item: string): number => (isCeiling(item) ? 2 : isRug(item) ? 1 : 0);
 /** NH's surface: small things stand on its top. */
-export const isSurface = (item: string): boolean => !!ITEMS[item]?.s && !ITEMS[item]?.rug;
+export const isSurface = (item: string): boolean => !!ITEMS[item]?.s && !ITEMS[item]?.rug && !ITEMS[item]?.cl;
 /** On a wall (NH's wall-mounted things): its spot is the wall's (x across it, z its height step, f which wall). */
 export const isWallItem = (item: string): boolean => !!ITEMS[item]?.wl;
 /** The walls: 0 the back, 1 the left, 2 the right, 3 the front (the door's). */
@@ -121,7 +126,7 @@ export function wallWhy(others: readonly Spot[], s: Spot, b: Bounds = FULL): Why
 }
 
 /** A small thing that may stand on a surface: NH's miscellaneous (a 2 × 1 one, a 50-inch TV, on two tiles of it). */
-export const isSmall = (item: string): boolean => !!ITEMS[item]?.sm && !ITEMS[item]?.wl && !ITEMS[item]?.rug;
+export const isSmall = (item: string): boolean => !!ITEMS[item]?.sm && !ITEMS[item]?.wl && !ITEMS[item]?.rug && !ITEMS[item]?.cl;
 
 // ---- surfaces: a small thing's slot on a piece is a tile of the piece's own (unturned) footprint (a bigger one's:
 //      its back-left tile there); its facing there is relative to the piece's ----
@@ -224,12 +229,13 @@ export function placeWhy(others: readonly Spot[], s: Spot, b: Bounds = FULL): Wh
   const [w, d] = footprint(s.item, s.f);
   if (s.x < b.x0 || s.z < b.z0 || s.x + w > b.x1 || s.z + d > b.z1) return 'out';
   const mine = tilesOf(s);
-  const rug = isRug(s.item);
-  if (!rug && mine.some(([x, z]) => DOOR_TILES.some(([dx, dz]) => dx === x && dz === z))) return 'door';
+  const rug = isRug(s.item), layer = layerOf(s.item);
+  // (the door's tiles are the way in: a rug or a ceiling piece over them is no matter)
+  if (!layer && mine.some(([x, z]) => DOOR_TILES.some(([dx, dz]) => dx === x && dz === z))) return 'door';
   const key = (x: number, z: number) => x * ROOM + z;
   const at = new Set(mine.map(([x, z]) => key(x, z)));
   for (const o of others) {
-    if ((s.id && o.id === s.id) || o.on || isWallItem(o.item) || isRug(o.item) !== rug) continue;
+    if ((s.id && o.id === s.id) || o.on || isWallItem(o.item) || layerOf(o.item) !== layer) continue;
     if (tilesOf(o).some(([x, z]) => at.has(key(x, z)))) return rug ? 'rug' : 'taken';
   }
   return null;
@@ -261,7 +267,7 @@ export function blocked(spots: readonly Spot[], room: Bounds = FULL): Uint8Array
   for (let cx = 0; cx < N; cx++) for (let cz = 0; cz < N; cz++)
     if (cx < room.x0 * 2 || cx >= room.x1 * 2 || cz < room.z0 * 2 || cz >= room.z1 * 2) b[cx * N + cz] = 1;
   for (const s of spots) {
-    if (isRug(s.item) || s.on || isWallItem(s.item)) continue;
+    if (isRug(s.item) || s.on || isWallItem(s.item) || isCeiling(s.item)) continue;
     for (const [x, z] of tilesOf(s)) for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) {
       const cx = x * 2 + i, cz = z * 2 + j;
       if (cx >= 0 && cz >= 0 && cx < N && cz < N) b[cx * N + cz] = 1;

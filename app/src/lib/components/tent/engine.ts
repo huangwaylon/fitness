@@ -11,8 +11,8 @@ import {
   SpriteMaterial, SRGBColorSpace, Texture, DataTexture, TextureLoader, Vector3, type MeshStandardMaterial
 } from 'three';
 import { cubicOut } from '#lib/math.ts';
-import { FULL, HALF, TILE, centreOf, emitterOf, isSurface, isWallItem, onTop, rectOf, wallMid, wallSpot, type Bounds, type Facing, type Pt, type Spot } from './grid.ts';
-import { footprint, floorUrl, ITEMS, modelUrl, wallUrl } from './items.ts';
+import { FULL, HALF, TILE, centreOf, emitterOf, isCeiling, isSurface, isWallItem, onTop, rectOf, wallMid, wallSpot, type Bounds, type Facing, type Pt, type Spot } from './grid.ts';
+import { footprint, glowUrl, ITEMS, modelBytes, modelUrl, texUrl } from './items.ts';
 import { VILLAGER_S, createVillager, type Villager3D } from '../villager3d/villager3d.ts';
 import { hitsSkinned } from '../player3d/hit.ts';
 import type { Person3 } from '../person3d/person3d.ts';
@@ -268,7 +268,14 @@ function matTexture(): CanvasTexture {
 /** The furniture as loaded, by item, kept across the rooms' visits (world3d/modelCache.ts: where every one of the 440
  *  ever shown stayed for the page's life), the MODEL_KEEP last used of those no room uses. */
 const MODEL_KEEP = 48;
-const furniture = modelCache(MODEL_KEEP, (code) => glbLoader({ plain: true }).loadAsync(modelUrl(code)).then((g) => {
+/** A piece's model: its own file, or cut from its pack (items.ts modelBytes: the packed rest of NH's catalogue). */
+const loadPiece = async (code: string) => {
+  if (!ITEMS[code]?.pk) return glbLoader({ plain: true }).loadAsync(modelUrl(code));
+  const b = await modelBytes(code);
+  if (!b) throw new Error(`tent: no pack for ${code}`);
+  return glbLoader({ plain: true }).parseAsync(b, '');
+};
+const furniture = modelCache(MODEL_KEEP, (code) => loadPiece(code).then((g) => {
   g.scene.traverse((n) => {
     const m = n as Mesh;
     if (!m.isMesh) return;
@@ -544,20 +551,38 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   }
 
   function surfaces(wallCode: string, fl: string) {
-    const load = (url: string, m: MeshLambertMaterial, rx: number, ry: number) =>
-      tex.loadAsync(url).then((t) => {
-        if (disposed) return t.dispose();
-        t.colorSpace = SRGBColorSpace;
-        t.wrapS = t.wrapT = RepeatWrapping;
-        t.repeat.set(rx, ry);
-        t.anisotropy = 4;
+    const load = async (code: string, kind: 'wall' | 'floor', m: MeshLambertMaterial, rx: number, ry: number) => {
+      // its picture, and its glow where NH's has one (lit in the dark: night, or the room's light off)
+      const [url, glow] = await Promise.all([texUrl(kind, code), glowUrl(code)]);
+      const get = (u: string | null) => (u ? tex.loadAsync(u).catch(() => null) : Promise.resolve(null));
+      const [t, e] = await Promise.all([get(url), get(glow)]);
+      if (disposed || cur[kind] !== code) return void (t?.dispose(), e?.dispose());
+      for (const x of [t, e]) if (x) {
+        x.colorSpace = SRGBColorSpace;
+        x.wrapS = x.wrapT = RepeatWrapping;
+        x.repeat.set(rx, ry);
+        x.anisotropy = 4;
+      }
+      if (t) {
         m.map?.dispose();
         m.map = t;
-        invalidate();
-      }, () => {});
+      }
+      m.emissiveMap?.dispose();
+      m.emissiveMap = e;
+      m.emissive.set(e ? 0xffffff : 0x000000);
+      m.needsUpdate = true;
+      glows();
+      invalidate();
+    };
     // a wallpaper's tiling is in the walls' UVs; a floor is four tiles each way
-    if (wallCode !== cur.wall) void load(wallUrl((cur.wall = wallCode)), wallMat, 1, 1);
-    if (fl !== cur.floor) void load(floorUrl((cur.floor = fl)), floorMat, bounds.n / 4, bounds.n / 4);
+    if (wallCode !== cur.wall) void load((cur.wall = wallCode), 'wall', wallMat, 1, 1);
+    if (fl !== cur.floor) void load((cur.floor = fl), 'floor', floorMat, bounds.n / 4, bounds.n / 4);
+  }
+  /** A wallpaper's or a floor's glow: on in the dark, as NH's glowing ones (the static look of the moving ones:
+   *  docs/world3d-assets.md "Wallpapers and floors"). */
+  function glows() {
+    const k = roomOn ? Math.max(0, (nightN - 0.3) / 0.7) : 1;
+    for (const m of [wallMat, floorMat]) m.emissiveIntensity = m.emissiveMap ? 0.15 + 0.85 * k : 1;
   }
   const cur = { wall: '', floor: '' };
 
@@ -590,7 +615,8 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       return;
     }
     const [cx, cz] = s.at ?? centreOf(s);
-    root.position.set(cx, (s.y ?? 0) + lift, cz);
+    // (a ceiling piece hangs from the ceiling: its model's origin is its top; held, a little lower)
+    root.position.set(cx, isCeiling(s.item) ? WALL_H - lift : (s.y ?? 0) + lift, cz);
     root.rotation.y = (s.f * Math.PI) / 2;
   };
   /** Where a piece stands (a light's switch apart: the room's one shadow is the key light's, no lamp casts). */
@@ -1029,6 +1055,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     amb.intensity = (0.35 - 0.1 * k) * (roomOn ? 1 : 0.6);
     fill.intensity = (0.9 - 0.4 * k) * dim;
     ceilingMat.color.setScalar((0.86 - 0.36 * k) * (roomOn ? 1 : 0.45));
+    glows();
     for (const v of villagers.values()) {
       v.mat.color.set(0xffffff).lerp(new Color(0xd8cfe8), k * 0.35);
       v.v3?.lift(v3Lift());
@@ -1484,7 +1511,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     tall = [];
     for (const l of live.values()) {
       const m = ITEMS[l.spot.item];
-      if (!m || m.rug || l.spot.on || isWallItem(l.spot.item) || !l.root.visible || (l.spot.y ?? 0) + (m.h ?? 0) < EYE_H - 2) continue;
+      if (!m || m.rug || m.cl || l.spot.on || isWallItem(l.spot.item) || !l.root.visible || (l.spot.y ?? 0) + (m.h ?? 0) < EYE_H - 2) continue;
       const [w, d] = footprint(l.spot.item, l.spot.f), x0 = -HALF + l.spot.x * TILE, z0 = -HALF + l.spot.z * TILE;
       tall.push({ x0, x1: x0 + w * TILE, z0, z1: z0 + d * TILE });
     }
@@ -1577,7 +1604,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     let rug: string | null = null;
     // what stands highest first: a lamp on a table before the table
     for (const l of [...live.values()].sort((a, b) => (b.spot.y ?? 0) - (a.spot.y ?? 0))) {
-      if (!l.root.visible || isWallItem(l.spot.item)) continue;
+      if (!l.root.visible || isWallItem(l.spot.item) || isCeiling(l.spot.item)) continue;
       const [w, d] = footprint(l.spot.item, l.spot.f);
       if (tx < l.spot.x || tz < l.spot.z || tx >= l.spot.x + w || tz >= l.spot.z + d) continue;
       if (!ITEMS[l.spot.item]?.rug) return l.spot.id;
@@ -1602,7 +1629,8 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     toNdc(cx, cy);
     // (at my villager's eyes, not itself; the closed door in the doorway goes out as the doormat does)
     const me = eyes();
-    const objs: Object3D[] = [...[...villagers.values()].filter((v) => v !== me).map((v) => v.card), ...[...live.values()].filter(shown).map((l) => l.root), mat, ...(door.visible ? [door] : [])];
+    // (what hangs from the ceiling isn't in the way of a tap: the floor under it is; もようがえ picks it: pick)
+    const objs: Object3D[] = [...[...villagers.values()].filter((v) => v !== me).map((v) => v.card), ...[...live.values()].filter((l) => shown(l) && !isCeiling(l.spot.item)).map((l) => l.root), mat, ...(door.visible ? [door] : [])];
     for (const h of ray.intersectObjects(objs, true)) {
       if (h.object === mat || h.object === door) return { kind: 'door' };
       if (h.object.userData.who) {
@@ -1652,7 +1680,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   function invalidate() {
     if (!disposed) pace.kick();
   }
-  const POP_MS = 320, BUMP_MS = 360, HOP_MS = 420;
+  const POP_MS = 320, BUMP_MS = 360, HOP_MS = 420, GYROID_MS = 2400;
   /** A 3D villager's frame: its walk (its heading turned to, the stride by the distance), its seat, its hop; posed
    *  only while it moves (or the camera does), else only its face (a blink). True while it wants frames. */
   let lastT3 = 0;
@@ -1726,12 +1754,13 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
         }
       }
       if (l.bump) {
-        const k = (t - l.bump) / BUMP_MS;
+        // a gyroid bobs to its beat a while (NH's: it plays and dances; here silent), the rest jiggle
+        const gy = ITEMS[l.spot.item]?.gy, k = (t - l.bump) / (gy ? GYROID_MS : BUMP_MS);
         if (k >= 1) l.bump = 0;
         else {
-          const s = Math.sin(k * Math.PI * 3) * 0.07 * (1 - k);
-          sx *= 1 + s;
-          sy *= 1 - s;
+          const s = gy ? Math.abs(Math.sin(k * Math.PI * 8)) * 0.1 * Math.min(1, (1 - k) * 4) : Math.sin(k * Math.PI * 3) * 0.07 * (1 - k);
+          sx *= 1 + (gy ? -s / 2 : s);
+          sy *= 1 + (gy ? s : -s);
           more = true;
         }
       }

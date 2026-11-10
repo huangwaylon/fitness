@@ -80,6 +80,23 @@ describe('a sell and a buy', () => {
   });
 });
 
+describe('the buy prices (scripts/shop-prices.ts)', () => {
+  it('NH’s buy ÷ 20; a piece NH never sells, 4 × its NH sell ÷ 20 (at least 3); never the starter set, a rug or a critter’s tank', () => {
+    expect(buyPrice('f79')).toBe(165); // NH sells it: 3,300 Bells
+    // made up: the aluminoid gyroid (NH sell 828: 3,312 ÷ 20), the koi model (Flick's: 12,000), the chandelier (Nook's
+    // Cranny's 30,000 ÷ 20, for comparison)
+    expect(buyPrice('f14074')).toBe(166);
+    expect(buyPrice('f6991')).toBe(2400);
+    expect(buyPrice('f13154')).toBe(1500);
+    for (const c of ['f4081', 'f12214', 'f2220']) expect(buyPrice(c), c).toBeUndefined();
+    // everything the shop sells costs 3 to 5,000 かいがら (the 100,000-Bell cap: dearer pieces never come in)
+    const all = Object.values(BUY);
+    expect(all.length).toBeGreaterThan(1800);
+    expect(Math.min(...all)).toBeGreaterThanOrEqual(1);
+    expect(Math.max(...all)).toBeLessThanOrEqual(5000);
+  });
+});
+
 describe('the day’s stock', () => {
   it('is the date’s and the found set’s alone: the same every time, STOCK_N pieces, another the next day', () => {
     const a = stockOf('2026-11-04');
@@ -90,7 +107,7 @@ describe('the day’s stock', () => {
     for (const c of a) expect(buyPrice(c), c).toBeDefined();
     expect(stockOf('2026-11-05')).not.toEqual(a);
     // pinned: a change of the draw or the list changes what a day sold
-    expect(a.slice(0, 4)).toEqual(['f2592', 'f14354', 'f13305', 'f7802']);
+    expect(a.slice(0, 4)).toEqual(['f12419', 'f3972', 'f13969', 'f287']);
   });
   it('never holds a piece the island has: the next of the day’s order stands in', () => {
     const a = stockOf('2026-11-04');

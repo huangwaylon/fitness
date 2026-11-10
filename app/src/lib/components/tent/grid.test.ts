@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DOOR_TILES, FULL, HALF, ROOM, TILE, boundsOf, onFloor, outside, rectOf, wallMid, wallSpan, isWallItem, wallSnap, wallSpot, wallSteps, wallWhy, blocked, centreOf, clampIn, fitsOn, isSmall, isSurface, kidSpot, nearestFree, onTop, slotsOf, topY, placeWhy, resolve, slotTaken, slotToTile, snapTo, surfaceAt, tileToSlot, tilesOf, walkPath, type Spot } from './grid.ts';
+import { DOOR_TILES, FULL, HALF, ROOM, TILE, boundsOf, isCeiling, onFloor, outside, rectOf, wallMid, wallSpan, isWallItem, wallSnap, wallSpot, wallSteps, wallWhy, blocked, centreOf, clampIn, fitsOn, isSmall, isSurface, kidSpot, nearestFree, onTop, slotsOf, topY, placeWhy, resolve, slotTaken, slotToTile, snapTo, surfaceAt, tileToSlot, tilesOf, walkPath, type Spot } from './grid.ts';
 import { ITEMS, STARTER, footprint } from './items.ts';
 
 const furniture = STARTER.filter((c) => !ITEMS[c].rug);
@@ -54,6 +54,30 @@ describe('placing', () => {
     const full: Spot[] = [];
     for (let x = 0; x < ROOM; x++) for (let z = 0; z < ROOM; z++) if (!DOOR_TILES.some(([a, b]) => a === x && b === z)) full.push({ id: `p${x}${z}`, item: one, x, z, f: 0 });
     expect(nearestFree(full, one, 0, 0, 0)).toBeNull();
+  });
+});
+
+describe('the ceiling (NH\'s ceiling decor)', () => {
+  // the Moroccan lights (1 × 1) and the chandelier (2 × 2): hung over the floor's pieces, on the ceiling's own tiles
+  const lights = 'f13150', chandelier = 'f13154';
+  const room: Spot[] = [{ id: 'a', item: bed, x: 0, z: 0, f: 0 }, { id: 'r', item: rugs[0], x: 1, z: 1, f: 0 }, { id: 'c', item: chandelier, x: 4, z: 4, f: 0 }];
+
+  it('a layer of its own: over the furniture and the rugs, over the door’s tiles, never over another ceiling piece', () => {
+    expect(isCeiling(lights) && isCeiling(chandelier)).toBe(true);
+    expect(isCeiling(bed) || isCeiling(rugs[0])).toBe(false);
+    expect(placeWhy(room, { item: lights, x: 0, z: 0, f: 0 })).toBeNull();
+    expect(placeWhy(room, { item: lights, x: 1, z: 1, f: 0 })).toBeNull();
+    expect(placeWhy(room, { item: lights, x: 3, z: 7, f: 0 })).toBeNull();
+    expect(placeWhy(room, { item: lights, x: 5, z: 5, f: 0 })).toBe('taken');
+    expect(placeWhy(room, { item: chandelier, x: 7, z: 0, f: 0 })).toBe('out');
+    // and the floor's pieces go under it as if it weren't there
+    expect(placeWhy(room, { item: one, x: 5, z: 5, f: 0 })).toBeNull();
+  });
+
+  it('blocks no walk, holds nothing on its top, never stands on a surface', () => {
+    expect(blocked([{ item: chandelier, x: 3, z: 3, f: 0 }]).every((c) => c === 0)).toBe(true);
+    expect(isSurface(chandelier) || isSmall(chandelier) || isWallItem(chandelier)).toBe(false);
+    expect(surfaceAt([{ id: 'c', item: chandelier, x: 3, z: 3, f: 0 }], 3, 3)).toBeNull();
   });
 });
 

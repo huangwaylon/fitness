@@ -10,6 +10,8 @@ const SUFFIX = '.Nin_NX_NVN';
 export interface NhFolders {
   /** Whether the export has this folder, spelled exactly so. */
   has(folder: string): boolean;
+  /** The same, never collected (a guess among spellings: one of them is the export's). */
+  peek(folder: string): boolean;
   /** Names asked for that exist only in another case: [asked, the export's]. */
   caseOnly: [string, string][];
   /** Throws if any name asked for so far matched only in another case. */
@@ -27,6 +29,7 @@ export function nhFolders(root: string): NhFolders {
       if (other) caseOnly.set(folder, other);
       return false;
     },
+    peek: (folder) => names.has(folder),
     get caseOnly() {
       return [...caseOnly];
     },

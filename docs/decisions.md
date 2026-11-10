@@ -150,7 +150,8 @@ Shown only, with an optional goal. Why: paying for kilograms rewards crash diets
 
 ### The shop's かいがら
 The shop ([design](design.md#the-shop)), a counter screen, has its own per-person currency, かいがら, never ベル, at
-NH's sell : buy ratio; the pocket is derived from the day tallies, the stock from the date. Why: NH's prices, nothing
+NH's sell : buy ratio (a piece NH never sells: 4 × its NH sell price, NH's own ratio, then the same ÷ 20); the pocket is
+derived from the day tallies, the stock from the date. Why: NH's prices, nothing
 stored for the stock, and no request per catch.
 
 ## App and hosting

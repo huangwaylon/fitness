@@ -25,7 +25,8 @@ describe('shop plan: the day’s stock in the room', () => {
   });
 
   it('most of a day’s stock has a place (the rest in the list)', () => {
-    for (const d of days) expect(display(stockOf(d)).shown.length, d).toBeGreaterThanOrEqual(16);
+    // (at least half: NH's whole catalogue since 2026-11-10, a day may bring a few big pieces, a vehicle, a castle wall)
+    for (const d of days) expect(display(stockOf(d)).shown.length, d).toBeGreaterThanOrEqual(12);
   });
 
   it('each piece within its zone, none over another, on the zone’s top; wall things on the back wall', () => {

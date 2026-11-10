@@ -1,11 +1,13 @@
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { Box3, Matrix4, Quaternion, Vector3 } from 'three';
 import catalog from '../island/catalog.json';
 import ja from '#lib/i18n/tent.ja.json';
 import en from '#lib/i18n/tent.en.json';
-import { DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, GYM, ITEMS, STARTER, WALLS, codeOfFind, iconUrl } from './items.ts';
+import more from './more.json';
+import { DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, GYM, ITEMS, RUGS, STARTER, WALLS, codeOfCatch, codeOfFind, iconPacked, iconUrl } from './items.ts';
+import { entries } from '../world3d/ktx2Pack.ts';
 import { emitterOf, toRoom } from './grid.ts';
 
 interface Gltf {
@@ -16,10 +18,23 @@ interface Gltf {
   materials: { emissiveTexture?: object }[];
 }
 const NORM: Record<number, number> = { 5120: 127, 5121: 255, 5122: 32767, 5123: 65535 };
+const STATIC = join(import.meta.dirname, '..', '..', '..', '..', 'static');
+const PACKS = join(STATIC, 'room', 'pack');
+type Ref = readonly [string, number, number];
+const packBytes = new Map<string, Buffer>();
+/** A packed file's bytes (scripts/room-packs.ts: [pack, offset, bytes]), checked against the pack's own head. */
+function cut([stem, off, n]: Ref): Buffer {
+  let b = packBytes.get(stem);
+  if (!b) packBytes.set(stem, (b = readFileSync(join(PACKS, `${stem}.pak`))));
+  return b.subarray(off, off + n);
+}
+/** A piece's model: its file, or its cut of its pack. */
+const glb = (code: string): Buffer => (ITEMS[code].pk ? cut(ITEMS[code].pk!) : readFileSync(join(STATIC, 'room', 'models', `${code}.glb`)));
+
 /** A converted model's bounds, and its emissive part's (the meshes with an emissive map), from its glTF alone: each
  *  primitive's POSITION min/max (dequantised) through its node's transforms. */
-function boundsOf(file: string): { all: Box3; lit: Box3 } {
-  const b = readFileSync(file), j = JSON.parse(b.subarray(20, 20 + b.readUInt32LE(12)).toString()) as Gltf;
+function boundsOf(code: string): { all: Box3; lit: Box3 } {
+  const b = glb(code), j = JSON.parse(b.subarray(20, 20 + b.readUInt32LE(12)).toString()) as Gltf;
   const all = new Box3(), lit = new Box3();
   const walk = (i: number, parent: Matrix4) => {
     const n = j.nodes[i];
@@ -38,7 +53,6 @@ function boundsOf(file: string): { all: Box3; lit: Box3 } {
   return { all, lit };
 }
 
-const STATIC = join(import.meta.dirname, '..', '..', '..', '..', 'static');
 const JA = ja as Record<string, string>, EN = en as Record<string, string>;
 
 describe('the tent’s catalogue (scripts/room-models.ts)', () => {
@@ -55,37 +69,96 @@ describe('the tent’s catalogue (scripts/room-models.ts)', () => {
     expect(rugs.length).toBeGreaterThanOrEqual(4);
   });
 
-  it('every item has its model within the byte budget, a footprint in whole tiles and its names', () => {
-    let total = 0;
+  it('every item has its model within the byte budget (its file, or its cut of its pack), a footprint in whole tiles and its names', () => {
+    let loose = 0, packed = 0;
     for (const [code, m] of Object.entries(ITEMS)) {
       expect(code).toMatch(/^f\d+$/);
-      const f = join(STATIC, 'room', 'models', `${code}.glb`);
-      expect(existsSync(f), f).toBe(true);
-      const bytes = statSync(f).size;
-      total += bytes;
+      const bytes = glb(code).length;
+      // a GLB: its magic, its length its own
+      expect(glb(code).readUInt32LE(0), code).toBe(0x46546c67);
+      expect(glb(code).readUInt32LE(8), code).toBe(bytes);
+      if (m.pk) packed += bytes;
+      else {
+        loose += bytes;
+        expect(m.v).toMatch(/^[0-9a-f]{8}$/);
+      }
       expect(bytes, code).toBeLessThanOrEqual(120_000);
       expect(Number.isInteger(m.w) && m.w >= 1 && m.w <= 8 && Number.isInteger(m.d) && m.d >= 1 && m.d <= 8, code).toBe(true);
-      expect(m.v).toMatch(/^[0-9a-f]{8}$/);
       expect(JA[`tent.item.${code}`], code).toBeTruthy();
       expect(EN[`tent.item.${code}`], code).toBeTruthy();
+      if (iconPacked(code)) continue;
       const icon = m.icon || !m.cat ? join(STATIC, 'room', 'icons', `${code}.webp`) : join(STATIC, 'art', 'finds', 'items', `${m.cat}.webp`);
       expect(existsSync(icon), icon).toBe(true);
     }
-    // the whole set stays a few megabytes (~19 KB a piece; a room loads only its own)
-    expect(total).toBeLessThan(16_000_000);
+    // the loose set stays a few megabytes (~19 KB a piece; a room loads only its own), the packed ~30 MB in ~130 packs
+    expect(loose).toBeLessThan(16_000_000);
+    expect(packed).toBeLessThan(40_000_000);
   });
 
-  it('every wallpaper and floor has its texture, its icon and its names; the tent’s own come first', () => {
+  it('NH’s whole catalogue but character customisation (2026-11-10): every rug, the ceiling’s 39, the 36 gyroids and the critters’ tanks', () => {
+    expect(Object.keys(ITEMS).length).toBeGreaterThan(2300);
+    expect(RUGS.length).toBe(209);
+    expect(RUGS.slice(0, 6).every((c) => ITEMS[c].starter)).toBe(true);
+    const ceiling = Object.keys(ITEMS).filter((c) => ITEMS[c].cl);
+    expect(ceiling).toHaveLength(39);
+    // a ceiling piece hangs from its origin: its model under it (grid.ts isCeiling: engine.ts hangs it at the ceiling)
+    for (const c of ceiling) {
+      const { all } = boundsOf(c);
+      expect(all.max.y, c).toBeLessThan(0.6);
+      expect(-all.min.y, c).toBeGreaterThan(2);
+      expect(ITEMS[c].rug || ITEMS[c].wl || ITEMS[c].s || ITEMS[c].sm, c).toBeFalsy();
+    }
+    expect(Object.keys(ITEMS).filter((c) => ITEMS[c].gy)).toHaveLength(36);
+    // each of the island's catches has its tank (NH's critter put down indoors), bar a few the island doesn't have yet
+    const tanks = Object.keys(ITEMS).filter((c) => ITEMS[c].cr);
+    expect(tanks.length).toBeGreaterThan(170);
+    for (const c of tanks) expect(codeOfCatch(ITEMS[c].cr!), c).toBe(c);
+    expect(codeOfCatch('fish:koi')).toBe('f2220');
+    expect(codeOfCatch('fish:no-such')).toBeNull();
+  });
+
+  it('every pack is whole: its head names its files, each place in more.json its cut, none past its bound', () => {
+    const stems = readdirSync(PACKS).filter((f) => f.endsWith('.pak')).map((f) => f.slice(0, -4));
+    const used = new Set<string>();
+    const refs: [string, Ref][] = [
+      ...Object.entries(ITEMS).flatMap(([c, m]) => (m.pk ? [[`models/${c}.glb`, m.pk] as [string, Ref]] : [])),
+      ...Object.entries(more.tex as unknown as Record<string, Ref>).map(([c, r]): [string, Ref] => [`${r[0].startsWith('floor') ? 'floor' : 'wall'}/${c}.webp`, r]),
+      ...Object.entries(more.icons as unknown as Record<string, Ref>).map(([c, r]): [string, Ref] => [`icons/${c}.webp`, r])
+    ];
+    for (const [path, ref] of refs) {
+      expect(stems, path).toContain(ref[0]);
+      const head = entries(readFileSync(join(PACKS, `${ref[0]}.pak`)))!;
+      expect(head.get(path), path).toEqual([ref[1], ref[2]]);
+      used.add(ref[0]);
+    }
+    // every pack is used; a pack's name ends in its content's hash; ��� 320 KB (a lone file over it alone)
+    expect(stems.filter((s) => !used.has(s))).toEqual([]);
+    for (const s of stems) {
+      expect(s).toMatch(/^[a-z]+(-[a-z]+)?(-\d+)?\.[0-9a-f]{8}$/);
+      const n = statSync(join(PACKS, `${s}.pak`)).size, files = entries(readFileSync(join(PACKS, `${s}.pak`)))!.size;
+      expect(n <= 330_000 || files === 1, s).toBe(true);
+    }
+  });
+
+  it('every wallpaper and floor (NH’s 306 and 209) has its texture, its icon and its names; the tent’s own come first', () => {
     expect(WALLS[0]).toBe(DEFAULT_WALL);
     expect(FLOORS[0]).toBe(DEFAULT_FLOOR);
+    expect(WALLS).toHaveLength(306);
+    expect(FLOORS).toHaveLength(209);
+    const tex = more.tex as unknown as Record<string, Ref>, icons = more.icons as unknown as Record<string, Ref>;
     for (const [list, dir, k] of [[WALLS, 'wall', 'wall'], [FLOORS, 'floor', 'floor']] as const) {
-      expect(list.length).toBeGreaterThanOrEqual(30);
       for (const c of list) {
-        expect(existsSync(join(STATIC, 'room', dir, `${c}.webp`)), c).toBe(true);
-        expect(existsSync(join(STATIC, 'room', 'icons', `${c}.webp`)), c).toBe(true);
+        // the first set loose; the rest packed, its picture a WebP
+        if (tex[c]) expect(cut(tex[c]).subarray(8, 12).toString(), c).toBe('WEBP');
+        else expect(existsSync(join(STATIC, 'room', dir, `${c}.webp`)), c).toBe(true);
+        if (icons[c]) expect(cut(icons[c]).subarray(8, 12).toString(), c).toBe('WEBP');
+        else expect(existsSync(join(STATIC, 'room', 'icons', `${c}.webp`)), c).toBe(true);
         expect(JA[`tent.${k}.${c}`], c).toBeTruthy();
       }
     }
+    // NH's glowing ones glow (the aurora wall's emissive map: lit in the dark)
+    expect(Object.keys(tex).filter((c) => c.endsWith('.e')).length).toBeGreaterThan(20);
+    expect(tex['w13609.e']).toBeDefined();
   });
 
   it('every surface (NH’s, the spreadsheet’s flag) has its top from its model: under its bounds, inside its footprint', () => {
@@ -123,7 +196,7 @@ describe('the tent’s catalogue (scripts/room-models.ts)', () => {
     let byGlow = 0;
     for (const [code, m] of lights) {
       expect(m.e, code).toHaveLength(3);
-      const { all, lit } = boundsOf(join(STATIC, 'room', 'models', `${code}.glb`));
+      const { all, lit } = boundsOf(code);
       // the glow's part when it has one and the emitter isn't NH's own locator (the lantern's flame, the fireplace's fire)
       const part = !m.el && m.lit && !lit.isEmpty() ? lit : all;
       if (part === lit) byGlow++;

@@ -1,5 +1,5 @@
 {
-  "version": 62,
+  "version": 63,
   "files": {
     "bridges/stone-front": {
       "path": "bridges/stone-front.webp",
@@ -185,7 +185,7 @@
       "path": "critters/ant.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Ant_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins26"
     },
     "critters/arapaima": {
       "path": "critters/arapaima.webp",
@@ -269,7 +269,7 @@
       "path": "critters/blue-weevil-beetle.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Blue_Weevil_Beetle_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins80"
     },
     "critters/bluegill": {
       "path": "critters/bluegill.webp",
@@ -437,7 +437,7 @@
       "path": "critters/dung-beetle.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Dung_Beetle_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins40"
     },
     "critters/dungeness-crab": {
       "path": "critters/dungeness-crab.webp",
@@ -497,7 +497,7 @@
       "path": "critters/fly.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Fly_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins59"
     },
     "critters/football-fish": {
       "path": "critters/football-fish.webp",
@@ -575,7 +575,7 @@
       "path": "critters/giraffe-stag.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Giraffe_Stag_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins77"
     },
     "critters/golden-stag": {
       "path": "critters/golden-stag.webp",
@@ -665,7 +665,7 @@
       "path": "critters/horned-hercules.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Horned_Hercules_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins54"
     },
     "critters/horse-mackerel": {
       "path": "critters/horse-mackerel.webp",

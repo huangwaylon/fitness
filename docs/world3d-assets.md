@@ -102,6 +102,38 @@ of its members is on show):
   (`bug-museum`). NH's fish variants (35) and the ant's and cicada shell's are the catch's own meshes (only their
   textures differ), so the aquarium and the garden keep the catch models.
 
+## The rooms' catalogue
+
+`npm run room-models` (`scripts/room-models.ts`, its header; `room-models-page.js` converts): every housewares,
+miscellaneous, wall-mounted and ceiling piece of NH's (the spreadsheet's rows with a model in the export), every rug,
+every gyroid (its first colour: a piece is one colour, NH's catalogue one), and each island catch's tank (`cr`: NH's
+fish, bug or sea creature put down indoors): 2,341 pieces, 306 wallpapers, 209 floors. `-- --new` converts only what
+isn't yet.
+
+- **Materials:** a material's textures are the ones its Collada effect samples (a tank's `mLight` samples `mBody`'s);
+  a gray albedo takes its gradient's first row (NH's first colour: the frozen series, the fortune-telling set's ball).
+- **Tanks:** NH swims the critter in by its animation, which the files lack: at its bind pose it pokes out of its
+  tank, so it's turned side on and fitted in its container's glass (`fitCritter`); the water and the glass's inner
+  faces (NH's shader's) aren't drawn.
+- **Ceiling pieces** hang from their origin (`cl`: the model under it); `items.test` holds all 39 to it.
+- **Wallpapers and floors:** the albedo with NH's overlays flattened over it (a vista's clouds `AlbOry`, a railing in
+  front `AlbEx`; an animated one's first frame): the static look of NH's moving ones (the 68 VFX wallpapers' scrolling
+  and particles, the special walls' own geometry such as an arched window). Their glow (`Emi`, 41 of them: the aurora,
+  the glowing moss, the candles) is an emissive map lit in the dark (night, or the room's light off: engine.ts `glows`).
+
+### Room packs
+
+`scripts/room-packs.ts` (run at room-models' end; `--unpack` writes the files back to `.cache/room/`): every piece,
+wallpaper and floor past the starter set and the ずかん's pieces is packed into `static/room/pack/<group>[-k].<hash>.pak`
+(ktx2Pack's container, ≤ 320 KB; the packs are the only copy): the models by group (housewares, misc, model, wall,
+ceiling, rug, gyroid, critter; a group's series together), the wallpapers' and floors' pictures and glows, and the
+icons of the tabs browsed a tab at a time (rugs, critters, wallpapers, floors; ≤ 160 KB). A file's place `[pack,
+offset, bytes]` is in `tent/more.json` (`pk`, `tex`, `icons`); the phone cuts it from its pack, fetched whole and once
+(`items.ts` roomPacks: Pages ignores a Range), the service worker keeping it. 133 packs, 37 MB, for ~2,000 files. The
+shop's pieces keep loose icons (a day's stock is any 24 of them: their packs would cost more than the icons).
+`tent/more.json` and `tent/seats-more.json` load with the room's chunk only (items.json, the starter set's and the
+ずかん's, with the presents too).
+
 ## Seats and beds
 
 `villager3d/seats3d.ts`, `seats3d.json`; `npm run seat-anchors` (`scripts/seat-anchors.ts`): every piece a villager

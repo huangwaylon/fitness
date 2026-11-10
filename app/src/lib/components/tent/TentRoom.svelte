@@ -53,7 +53,7 @@
   import { createLocalLive } from '#lib/sync/live-local.ts';
   import { tokyoDay, type Intent, type SayScope, type Pt as WirePt, type Relayed } from '#lib/contract/live-protocol.ts';
   import { hook } from '../island/devHooks.ts';
-  import { DEFAULT_FLOOR, DEFAULT_WALL, ITEMS, STARTER, codeOfFind } from './items.ts';
+  import { DEFAULT_FLOOR, DEFAULT_WALL, ITEMS, STARTER, codeOfCatch, codeOfFind } from './items.ts';
   import { DOOR_IN, HALF, boundsOf, centreOf, clampIn, nearestFree, onFloor, outside, rectOf, resolve as resolveRoom, standable, wallMid, walkPath, type Facing, type Pt, type Resolved, type Spot } from './grid.ts';
   import { DragLink } from './dragLink.ts';
   import { seatsOf, type Seat } from './seats.ts';
@@ -153,6 +153,18 @@
       const f = fs[i];
       const c = f.kind === 'item' ? codeOfFind(f.id) : null;
       if (c && !ITEMS[c].starter && !out.includes(c)) out.push(c);
+    }
+    return out;
+  });
+
+  /** The critters' tanks of the ずかん's catches (anyone's first: NH's caught critter put down indoors), newest first. */
+  const catches = $derived.by(() => {
+    const fs = week.model?.state.finds ?? [];
+    const out: string[] = [];
+    for (let i = fs.length - 1; i >= 0; i--) {
+      const f = fs[i];
+      const c = f.kind === 'fish' || f.kind === 'bug' || f.kind === 'sea' ? codeOfCatch(`${f.kind}:${f.id}`) : null;
+      if (c && !out.includes(c)) out.push(c);
     }
     return out;
   });
@@ -852,7 +864,7 @@
     {/if}
   </div>
   {#if editing && eng}
-    <TentEdit bind:this={edit} {room} eng={() => eng} {link} {finds} {bought} {relayNow} holderName={(id) => nameOf(link.theirs().find((h) => h.id === id)?.who ?? partner)}
+    <TentEdit bind:this={edit} {room} eng={() => eng} {link} {finds} {bought} {catches} {relayNow} holderName={(id) => nameOf(link.theirs().find((h) => h.id === id)?.who ?? partner)}
       villagers={() => [eng?.at(me), ...others.map((w) => eng?.at(w))].filter((p): p is [number, number] => !!p)}
       ondone={() => {
         editing = false;

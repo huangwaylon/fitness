@@ -116,7 +116,8 @@ The art in `app/static/art/` comes from Nookipedia. Edit `SPECS` in `app/scripts
 names) is rebuilt with `npm run catalog:build` (`app/scripts/catalog.ts`); it prints anything the two sources disagree
 on. Its ~2,000 icons, the critters' and the beach finds' are NH's own from the game files (the export's `Layout_*`
 folders): `NH_MODELS=~/Downloads/acnh-2.0.0-models/Model npm run icons:nh` (`app/scripts/nh-icons.ts`; their manifest
-source `nh:<folder>`, which `assets:fetch` leaves alone).
+source `nh:<folder>`, which `assets:fetch` leaves alone; a new catch gets its icon from the catch names). `assets:fetch`
+removes its own entries no longer in `SPECS` only with `-- --prune`.
 
 The 3D-rendered art (the campsite, trees, bushes, lamps, rocks, the stone bridge: [design](../design.md#official-art))
 comes from NH's own models, a folder of `<Model>.Nin_NX_NVN` folders (Collada `.dae` + PNG textures) kept outside the

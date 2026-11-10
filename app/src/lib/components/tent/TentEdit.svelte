@@ -1,6 +1,7 @@
 <script lang="ts">
   // The tent's edit mode (docs/design.md "The tent"): NH's furniture arranging, one-handed. The tray at the foot, in
-  // the thumb's reach: its tabs (かぐ, ラグ, みつけた: what the balloons brought, かべがみ, ゆか) over NH's icons in a row
+  // the thumb's reach: its tabs (かぐ, ラグ, 天井, 生き物: the catches' tanks, みつけた: what the balloons brought, かべがみ,
+  // ゆか) over NH's icons in a row
   // that scrolls sideways, and ✓ おわる with the count. A tap on an icon puts that piece down as a ghost on the free
   // spot nearest my villager (lifted, its footprint green or red on the floor); a finger on it (or on a placed piece:
   // it's picked up) drags it a tile at a time; a tap on the floor moves it there; ↻ まわす turns it a quarter; ✓ おく
@@ -17,7 +18,8 @@
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { ROOM_SIZES, TENT_MAX, type RoomSize } from '#lib/contract/tent.ts';
-  import { DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, GYM, ITEMS, STARTER, WALLS, footprint, iconUrl } from './items.ts';
+  import { DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, GYM, ITEMS, RUGS, STARTER, WALLS, footprint } from './items.ts';
+  import { roomIcon } from './roomIcon.ts';
   import { HALF, ROOM, TILE, boundsOf, outside, wallSpan, centreOf, fitsOn, isSmall, isSurface, isWallItem, kidSpot, tilesOf, wallSnap, wallSteps, wallWhy, nearestFree, placeWhy, resolve, slotTaken, snapTo, surfaceAt, tileToSlot, type Facing, type Spot, type Why } from './grid.ts';
   import type { Tent } from './engine.ts';
   import type { DragLink } from './dragLink.ts';
@@ -31,6 +33,8 @@
     finds: readonly string[];
     /** What I bought at the shop (codes, newest first: model/shop.ts), mine to place. */
     bought: readonly string[];
+    /** The critters' tanks of the ずかん's catches (codes, newest first): NH's critter put down indoors. */
+    catches?: readonly string[];
     /** Where the villagers stand (a piece never lands on one). */
     villagers: () => readonly (readonly [number, number])[];
     /** The relay's clock (the hold's start: two people grabbing one piece). */
@@ -39,21 +43,24 @@
     holderName: (id: string) => string;
     ondone: () => void;
   }
-  let { room, eng, link, finds, bought, villagers, relayNow, holderName, ondone }: Props = $props();
+  let { room, eng, link, finds, bought, catches = [], villagers, relayNow, holderName, ondone }: Props = $props();
 
-  type Tab = 'recent' | 'furniture' | 'rugs' | 'walled' | 'finds' | 'bought' | 'gym' | 'wall' | 'floor' | 'size';
+  type Tab = 'recent' | 'furniture' | 'rugs' | 'walled' | 'ceiling' | 'critters' | 'finds' | 'bought' | 'gym' | 'wall' | 'floor' | 'size';
   /** The room's size (its tiles within the largest room's: grid.ts Bounds). */
   const bounds = $derived(boundsOf(room.size));
   /** The gym's pieces I have (found or bought: items.ts GYM), gathered on a tab of their own. */
   const gym = $derived([...new Set([...finds, ...bought])].filter((c) => GYM.has(c)));
+  /** What hangs from the ceiling that I have (found or bought): its own tab, the ceiling's layer. */
+  const ceiling = $derived([...new Set([...finds, ...bought])].filter((c) => ITEMS[c]?.cl));
   /** The pieces I picked last (this phone's, newest first): NH's quick access to what's at hand. */
   const RECENT_MAX = 12;
   let recent = $state<string[]>(((r) => (Array.isArray(r) ? r.filter((c): c is string => typeof c === 'string' && !!ITEMS[c]) : []))(readJson<unknown>(localKV(), DEVICE.tentRecent)));
-  const TABS = $derived<Tab[]>([...(recent.length ? ['recent' as const] : []), 'furniture', 'rugs', 'walled', 'finds', ...(bought.length ? ['bought' as const] : []), ...(gym.length ? ['gym' as const] : []), 'wall', 'floor', 'size']);
+  const TABS = $derived<Tab[]>([...(recent.length ? ['recent' as const] : []), 'furniture', 'rugs', 'walled', ...(ceiling.length ? ['ceiling' as const] : []), ...(catches.length ? ['critters' as const] : []), 'finds', ...(bought.length ? ['bought' as const] : []), ...(gym.length ? ['gym' as const] : []), 'wall', 'floor', 'size']);
   let tab = $state<Tab>('furniture');
   const list = $derived(
-    tab === 'recent' ? recent : tab === 'furniture' ? STARTER.filter((c) => !ITEMS[c].rug && !ITEMS[c].wl) : tab === 'rugs' ? STARTER.filter((c) => ITEMS[c].rug)
-      : tab === 'walled' ? [...new Set([...STARTER, ...finds, ...bought].filter((c) => ITEMS[c].wl))] : tab === 'finds' ? finds : tab === 'bought' ? bought : tab === 'gym' ? gym
+    tab === 'recent' ? recent : tab === 'furniture' ? STARTER.filter((c) => !ITEMS[c].rug && !ITEMS[c].wl) : tab === 'rugs' ? RUGS
+      : tab === 'walled' ? [...new Set([...STARTER, ...finds, ...bought].filter((c) => ITEMS[c].wl))] : tab === 'ceiling' ? ceiling : tab === 'critters' ? catches
+      : tab === 'finds' ? finds : tab === 'bought' ? bought : tab === 'gym' ? gym
       : tab === 'wall' ? WALLS : tab === 'floor' ? FLOORS : []
   );
   /** How many of each piece stand in the room (the icons' counts). */
@@ -110,7 +117,7 @@
     }
     const s: Spot = { id: sel.fresh ? undefined : sel.id, item: sel.item, x: at[0], z: at[1], f: sel.f };
     why = placeWhy(placed(), s, bounds);
-    if (!why && !ITEMS[sel.item]?.rug) {
+    if (!why && !ITEMS[sel.item]?.rug && !ITEMS[sel.item]?.cl) {
       const [w, d] = footprint(sel.item, sel.f), x0 = -HALF + at[0] * TILE, z0 = -HALF + at[1] * TILE;
       if (villagers().some(([x, z]) => x > x0 - 2 && x < x0 + w * TILE + 2 && z > z0 - 2 && z < z0 + d * TILE + 2)) why = 'villager';
     }
@@ -569,7 +576,7 @@
             aria-pressed={current ? current === code : !!sel?.fresh && sel.item === code} class:full={!current && room.room <= 0}
             onpointerdown={() => peekAt(code)}
             onclick={() => (current ? surface(tab as 'wall' | 'floor', code) : pickNew(code))}>
-            <img src={iconUrl(code)} alt="" width="48" height="48" loading="lazy" decoding="async" draggable="false" />
+            <img use:roomIcon={code} alt="" width="48" height="48" loading="lazy" decoding="async" draggable="false" />
             {#if n}<span class="n" aria-hidden="true">{n}</span>{/if}
           </button>
         {:else}

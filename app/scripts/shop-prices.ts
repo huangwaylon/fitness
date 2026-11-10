@@ -1,17 +1,18 @@
 // Build the shop's price list (docs/design.md "The shop", docs/decisions.md "The shop's かいがら"): NH's sell price of
 // everything a pocket holds (contract/pocket.ts: every fish, bug and sea creature the island has, its shells, fossils
 // and star fragments, and the goods: wood, fruit, mushrooms…), and NH's buy price of every piece of furniture the rooms have a model
-// of, both scaled to かいがら, into src/lib/contract/shopPrices.ts (sell) and buyPrices.ts (buy: its own module, so the
+// of (NH's or, for a piece NH sells nowhere, a made-up one: MADE_UP), both scaled to かいがら, into
+// src/lib/contract/shopPrices.ts (sell) and buyPrices.ts (buy: its own module, so the
 // first load never carries it) (shared by the record and the phones: what a sell is worth and what a buy costs are the
 // record's rules, so a refresh of this list is a relay deploy first).
 // Usage (from app/): npm run shop:prices
 //
 // Source: the ACNH community spreadsheet as JSON (Norviah/animal-crossing, json/data/*.json, as scripts/catalog.ts
 // reads it; cached for a day under the OS temp dir): Fish, Insects and Sea Creatures' `sell`, Fossils' (the assessed
-// piece's) and Other's (the shells, fragments and goods, by NH's English name), the furniture tabs' `buy`.
+// piece's) and Other's (the shells, fragments and goods, by NH's English name), the furniture tabs' `buy` and `sell`.
 // The island's species are the catch names' keys (i18n/catch.en.json `critter.name.<id>` / `sea.name.<id>`), matched
-// to the spreadsheet by the catalogue's slug of the English name; the furniture by the rooms' `cat` (tent/items.json:
-// the ずかん's id of a piece NH has a model of).
+// to the spreadsheet by the catalogue's slug of the English name; the furniture by the rooms' code (tent/items.json and
+// more.json: `f` + NH's internal id).
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -33,8 +34,14 @@ const BUY_DIV = 20;
 const SELL_MIN = 3;
 /** Pieces dearer than this in NH (Bells) never come into the stock: a month and more of catches (the grand piano). */
 const BUY_MAX_BELLS = 100_000;
+/** A piece NH's shops never sell (a DIY piece, an event's, Nook Miles', Nook Shopping's, a special character's: no
+ *  `buy`) gets a made-up price (docs/decisions.md "The shop's かいがら"): NH's own sell : buy, 1 : 4, from its NH sell
+ *  price, so it costs what it would if Nook's Cranny stocked it (a crafted piece its materials' worth ×4, as NH prices
+ *  its sell), then the same ÷ BUY_DIV and BUY_MAX_BELLS as any piece; at least SELL_MIN. */
+const MADE_UP = 4;
 
-type Row = { name: string; sell?: number; buy?: number; variations?: { buy?: number; sell?: number }[] };
+type Row = { name: string; sell?: number; buy?: number; variations?: { buy?: number; sell?: number; internalId?: number }[] };
+type Piece = { starter?: 1; rug?: 1; cr?: string };
 
 async function sheet(name: string): Promise<Row[]> {
   mkdirSync(CACHE, { recursive: true });
@@ -91,20 +98,35 @@ async function main() {
     else sell[key] = scale(bells, SELL_DIV, SELL_MIN);
   }
 
+  // the pieces by NH's internal id (the rooms' code: f + it)
   const furniture = new Map<string, Row>();
-  for (const tab of ['Housewares', 'Miscellaneous', 'Wall-mounted', 'Ceiling Decor', 'Rugs']) for (const r of await sheet(tab)) if (!furniture.has(slug(r.name))) furniture.set(slug(r.name), r);
-  const room = JSON.parse(readFileSync(join(APP, 'src', 'lib', 'components', 'tent', 'items.json'), 'utf8')) as { items: Record<string, { cat?: string; starter?: 1 }> };
+  for (const tab of ['Housewares', 'Miscellaneous', 'Wall-mounted', 'Ceiling Decor', 'Rugs', 'Gyroids'])
+    for (const r of await sheet(tab)) {
+      const id = (r as { internalId?: number }).internalId ?? r.variations?.[0]?.internalId;
+      if (id !== undefined && !furniture.has(`f${id}`)) furniture.set(`f${id}`, r);
+    }
+  const table = (f: string) => (JSON.parse(readFileSync(join(APP, 'src', 'lib', 'components', 'tent', f), 'utf8')) as { items: Record<string, Piece> }).items;
+  const room = { ...table('items.json'), ...table('more.json') };
   const buy: Record<string, number> = {};
-  for (const [code, m] of Object.entries(room.items)) {
-    if (!m.cat || m.starter) continue;
-    const r = furniture.get(m.cat);
-    const bells = r && price(r, 'buy');
+  let madeUp = 0;
+  for (const [code, m] of Object.entries(room)) {
+    // never sold: the starter set (always to hand), the rugs (all free in もようがえ's ラグ), a critter's tank (the
+    // ずかん's catch brings it)
+    if (m.starter || m.rug || m.cr) continue;
+    const r = furniture.get(code);
+    if (!r) {
+      problems.push(`not in the spreadsheet: ${code}`);
+      continue;
+    }
+    const nh = price(r, 'buy'), sold = price(r, 'sell');
+    const bells = nh ?? (sold ? sold * MADE_UP : undefined);
     if (!bells) {
-      if (!r) problems.push(`not in the spreadsheet: ${m.cat}`);
-      continue; // not for sale in NH (a model's, a prize)
+      problems.push(`no NH price at all: ${code} ${r.name}`);
+      continue;
     }
     if (bells > BUY_MAX_BELLS) continue;
-    buy[code] = scale(bells, BUY_DIV);
+    buy[code] = scale(bells, BUY_DIV, nh ? 1 : SELL_MIN);
+    if (!nh) madeUp++;
   }
 
   const obj = (o: Record<string, number>) => `{\n${Object.entries(o).map(([k, v]) => `  ${JSON.stringify(k)}: ${v}`).join(',\n')}\n}`;
@@ -114,12 +136,13 @@ async function main() {
 export const SELL: Readonly<Record<string, number>> = ${obj(sell)};
 `);
   writeFileSync(OUT_BUY, `// Generated by scripts/shop-prices.ts (npm run shop:prices): don't edit. NH's buy prices scaled to かいがら
-// (docs/decisions.md "The shop's かいがら"): a piece's (NH's ÷ ${BUY_DIV}), keyed by the rooms' code (tent/items.json), every
-// piece with a model that NH's shop sells for at most ${BUY_MAX_BELLS.toLocaleString('en')} Bells, the starter set aside.
+// (docs/decisions.md "The shop's かいがら"): a piece's (NH's ÷ ${BUY_DIV}; one NH never sells, ${MADE_UP} × its NH sell price ÷ ${BUY_DIV},
+// at least ${SELL_MIN}), keyed by the rooms' code (tent/items.json, more.json), every piece with a model at most
+// ${BUY_MAX_BELLS.toLocaleString('en')} Bells, the starter set, the rugs and the critters' tanks aside.
 
 export const BUY: Readonly<Record<string, number>> = ${obj(buy)};
 `);
-  console.log(`sell: ${Object.keys(sell).length} species; buy: ${Object.keys(buy).length} pieces`);
+  console.log(`sell: ${Object.keys(sell).length} species; buy: ${Object.keys(buy).length} pieces (${madeUp} at a made-up price)`);
   for (const p of problems) console.log(p);
 }
 

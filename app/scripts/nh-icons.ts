@@ -14,7 +14,8 @@
 //   Layout_Book*Icon are 1024 × 512 photos);
 // - fossils: `image` (Layout_FtrIcon_…, the assessed piece); shells, fragments, goods: Other's `inventoryImage`
 //   (Layout_MenuIcon_…), the junk a line pulls up and the mushrooms its `storageImage` (Layout_FtrIcon_…); the shovel and the watering can: Tools-Goods' `image`.
-// What the spreadsheet can't name keeps its file (the run lists them).
+// A catch new to the island (i18n/catch.en.json) gets its key here. What the spreadsheet can't name keeps its file
+// (the run lists them).
 //
 // The model folder is untrusted input: only a folder's PNG is read (by cwebp and dwebp); nothing in it is run.
 // Requires cwebp/dwebp (brew install webp).
@@ -131,6 +132,12 @@ async function main() {
   const STORAGE = /^(boot|empty-can|old-tire|.*-mushroom)$/;
   for (const r of await sheet('Other')) if (!finds.has(slug(r.name))) finds.set(slug(r.name), STORAGE.test(slug(r.name)) ? r.storageImage : r.inventoryImage);
   for (const r of await sheet('Tools-Goods')) if (!finds.has(slug(r.name))) finds.set(slug(r.name), field(r, 'image'));
+  // every catch the island has (i18n/catch.en.json) has its icon: a new one's key made here
+  const catches = JSON.parse(readFileSync(join(APP, 'src', 'lib', 'i18n', 'catch.en.json'), 'utf8')) as Record<string, string>;
+  for (const k of Object.keys(catches)) {
+    const id = /^(?:critter|sea)\.name\.([a-z0-9-]+)$/.exec(k)?.[1];
+    if (id && !manifest.files[`critters/${id}`]) manifest.files[`critters/${id}`] = { path: `critters/${id}.webp`, w: 96, h: 96, source: '' };
+  }
   const trims = (k: string) => /^finds\/(rock|.*-mushroom)$/.test(k);
   for (const [key, e] of Object.entries(manifest.files)) {
     const m = /^(critters|finds)\/([a-z0-9-]+)$/.exec(key);
@@ -161,6 +168,8 @@ async function main() {
     if (++n % 200 === 0) console.log(`  ${n}`);
   }
   rmSync(tmp, { recursive: true, force: true });
+  for (const [k, e] of Object.entries(manifest.files)) if (!e.source) delete manifest.files[k];
+  manifest.files = Object.fromEntries(Object.entries(manifest.files).sort(([a], [b]) => a.localeCompare(b)));
   manifest.version += n ? 1 : 0;
   writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2) + '\n');
   console.log(`${n} icons from the game files; ${kept.length} kept as they were${kept.length ? `:\n  ${kept.join('\n  ')}` : ''}`);

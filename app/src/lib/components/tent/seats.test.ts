@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { ITEMS, footprint } from './items.ts';
 import { TILE, centreOf, toRoom, type Facing, type Pt } from './grid.ts';
-import { seatsOf } from './seats.ts';
-import { shapeOf } from '../villager3d/seats3d.ts';
+import { seatShape, seatsOf } from './seats.ts';
 
 const FACINGS: Facing[] = [0, 1, 2, 3];
 /** The beds whose head isn't at NH's −x, checked by eye (scripts/seat-anchors.ts OVERRIDES): the inflatable sofa's
  *  tall closed end. */
-const HEAD_PLUS = new Set(['f3962']);
+// (the cardboard bed's: its tallest box at +x, by eye 2026-11-10)
+const HEAD_PLUS = new Set(['f3962', 'f7161']);
 const SLACK = 0.6;
 
 const at = (item: string, f: Facing) => ({ id: 'p', item, x: 3, z: 3, f });
@@ -32,7 +32,7 @@ describe('the tent’s seats and beds: each pose its model’s, turned and place
 
   it('lain on at every facing: inside the footprint, along its long axis, the head at the pillow end, on the mattress', () => {
     for (const c of lie) for (const f of FACINGS) {
-      const m = ITEMS[c], sh = shapeOf('tent', c)!, r = rectOf(c, f), [cx, cz] = centreOf(at(c, f)), k = `${c} f${f}`;
+      const m = ITEMS[c], sh = seatShape(c)!, r = rectOf(c, f), [cx, cz] = centreOf(at(c, f)), k = `${c} f${f}`;
       expect(sh.k, k).toBe('l');
       if (sh.k !== 'l') continue;
       const seats = seatsOf(at(c, f));

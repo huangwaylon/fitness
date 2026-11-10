@@ -770,8 +770,9 @@ out in front, facing out, on every phone). The homes' rooms are the same system.
   song list (おまかせ, or one by name); the song is his **aircheck** on the room's music stage
   ([Shared music](#shared-music)), heard by everyone in the room from the same point, the room's music stopped for it.
   Anyone's tap on the one playing stops it for all.
-- **もようがえ** (the foot's green button): the grid on the floor and a tray: かぐ (the starter set), ラグ, みつけた
-  (furniture found in presents), ジム, かった (bought in the shop), かべかけ, かべがみ, ゆか, and ✓ おわる with the count
+- **もようがえ** (the foot's green button): the grid on the floor and a tray: かぐ (the starter set), ラグ (all NH's 209),
+  かべかけ, 天井 (ceiling pieces found or bought), 生き物 (each ずかん catch's tank: NH's critter put down indoors), みつけた
+  (furniture found in presents), かった (bought in the shop), ジム, かべがみ (NH's 306), ゆか (209), and ✓ おわる with the count
   (「3/60」). A piece goes down as a ghost on the free spot nearest my villager, its footprint green or red with the
   reason; ↻ まわす turns it; ✓ 置く places it; 🗑 片付ける stores it (取り消す for 5 s); ✕ やめる puts it back. At most 60
   pieces a room, on whole tiles, off the door's two, not over a piece or a villager; a rug lies under furniture.
@@ -796,8 +797,14 @@ out in front, facing out, on every phone). The homes' rooms are the same system.
   drops back; the drop is the op (`tent/dragLink.ts`).
 - **Cost:** three.js and the room's code are their own chunk, fetched only when the tent opens; no MSAA; frames on
   demand ([Frame rate](#frame-rate)).
-- **The models** (`npm run room-models`: [world3d-assets.md](world3d-assets.md)): NH's furniture, rugs, wallpapers and
-  floors in `static/room/`, every ずかん piece NH has a model of, cached by the service worker on first use.
+- **The ceiling** (NH's ceiling decor, 39): a layer of its own over the floor's, on the ceiling's tiles (a piece under
+  it as if it weren't there, never one ceiling piece over another; the door's tiles too), hung from the walls' top;
+  its lamps light as the others. A tap goes through it to the floor; もようがえ picks it (`grid.ts` isCeiling).
+- **Gyroids** (NH's 36): a tap sets one bobbing to its beat a couple of seconds, silent.
+- **The models** (`npm run room-models`: [world3d-assets.md](world3d-assets.md)): NH's whole catalogue but character
+  customisation (2,341 pieces, 306 wallpapers, 209 floors): the starter set and the ずかん's pieces loose in
+  `static/room/`, the rest in packs fetched whole ([Room packs](world3d-assets.md#room-packs)); all cached by the
+  service worker on first use.
 
 ### Critters
 
@@ -1006,8 +1013,10 @@ furniture for the rooms. Each person's own pocket and かいがら, the guest's 
   もようがえ (the かった tab, or かべかけ for a wall piece) in every room I arrange.
 - A sell or a buy shows at once with 取り消す for 5 s, then goes to the record, which checks it
   ([backend](backend.md#events)).
-- **Prices:** NH's Bells ÷ 20 both ways (a sell at least 3): a sea bass 20, a koi 200, a whale shark 650, wood 3; a
-  median piece 130 (745 pieces: every room model NH sells for up to 100,000 Bells), one or two catches.
+- **Prices:** NH's Bells ÷ 20 both ways (a sell at least 3): a sea bass 20, a koi 200, a whale shark 650, wood 3. A
+  piece NH never sells (DIY, events, Nook Miles, Nook Shopping, the special characters', the gyroids) is **made up**: 4 ×
+  its NH sell price (NH's own sell : buy) ÷ 20, at least 3: a gyroid 166, Flick's koi model 2,400. The stock: 1,837
+  pieces (877 made up), every room model up to 100,000 Bells but the starter set, the rugs and the tanks; a median 190.
 - **The building:** NH's Nook's Cranny, one to an island, moved and turned in the editor, never removed
   ([island-layout.md](island-layout.md#the-islands-buildings)); the only way in.
 

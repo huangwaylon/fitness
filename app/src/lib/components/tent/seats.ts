@@ -1,10 +1,16 @@
 // Sitting and lying in the tent (docs/design.md "The tent": NH's chairs, sofas and beds), pure: a piece's seats (NH's
 // interaction from the ACNH spreadsheet: a Chair is sat on, a Bed lain on; a sofa seats one a tile across, a double bed
 // two), each its model's own pose (villager3d/seats3d.json: the seat's or the mattress's top, a bed's long axis and
-// pillow end, from its geometry) turned and placed with the piece, and the free side one gets on and off it from.
+// pillow end, from its geometry; a packed piece's in seats-more.json, the room's chunk's alone) turned and placed with
+// the piece, and the free side one gets on and off it from.
 import { ITEMS } from './items.ts';
 import { TILE, centreOf, toRoom, type Facing, type Pt } from './grid.ts';
 import { anchorsOf, shapeOf, type Anchor } from '../villager3d/seats3d.ts';
+import more from './seats-more.json';
+
+const MORE = more.tent as unknown as Record<string, ReturnType<typeof shapeOf>>;
+/** A piece's seat or bed: its model's own (villager3d/seats3d.json, or seats-more.json for a packed piece). */
+export const seatShape = (item: string): ReturnType<typeof shapeOf> => shapeOf('tent', item) ?? MORE[item] ?? null;
 
 export interface Seat {
   /** The piece's id and which of its seats. */
@@ -27,7 +33,7 @@ const STEP = 4;
 /** A seat's steps in the piece's own frame (+z its front), the one it prefers first: a seat's front, then its sides
  *  (a chair pushed in at a table); a bed's own side (a double bed's slot its half's), the other, then its foot. */
 function stepsOf(item: string, n: number): [number, number][] {
-  const m = ITEMS[item], sh = shapeOf('tent', item)!, W = (m.w * TILE) / 2 + STEP, D = (m.d * TILE) / 2 + STEP;
+  const m = ITEMS[item], sh = seatShape(item)!, W = (m.w * TILE) / 2 + STEP, D = (m.d * TILE) / 2 + STEP;
   if (sh.k === 's') {
     const x = sh.x[n], z = (sh.z0 + sh.z1) / 2;
     return [[x, D], [x < 0 ? -W : W, z], [x < 0 ? W : -W, z]];
@@ -46,7 +52,7 @@ export function seatsOf(p: { id: string; item: string; x: number; z: number; f: 
   const m = ITEMS[p.item];
   if (!m?.u || (p.y ?? 0) > 0) return [];
   const n = Math.max(1, m.n ?? 1), [cx, cz] = centreOf(p);
-  const own = anchorsOf(shapeOf('tent', p.item), { x: cx, z: cz, y: 0, yaw: (p.f * Math.PI) / 2, s: 1 });
+  const own = anchorsOf(seatShape(p.item), { x: cx, z: cz, y: 0, yaw: (p.f * Math.PI) / 2, s: 1 });
   if (own.length !== n || own.some((a) => a.lie !== (m.u === 'l'))) return [];
   const [fx, , fz] = toRoom([0, 0, 1], p.f), front: Pt = [fx, fz];
   return own.map((an, i) => {

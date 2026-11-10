@@ -53,10 +53,30 @@ function grdFor(name, all) {
   return all.find((x) => !/TrunkColor|FlowColor|PetalColor/.test(x)) ?? null;
 }
 
-/** One material baked: { mat, tex: px or 0, lit }. */
-async function bake(name, files, o) {
+/** The textures each material's Collada effect samples, by the material's name → their files' stem (`mBody` for
+ *  `mBody_Alb.png`): a material may sample another's (a tank's mLight samples mBody's, the frozen series' mReBody
+ *  their mBody's), which its own name doesn't find. From the .dae's text: material → effect → its surfaces' images. */
+async function samples(url) {
+  const out = new Map();
+  const r = await fetch(url);
+  if (!r.ok) return out;
+  const x = new DOMParser().parseFromString(await r.text(), 'application/xml');
+  const files = new Map([...x.querySelectorAll('library_images > image')].map((im) => [im.getAttribute('id'), im.querySelector('init_from')?.textContent?.trim() ?? '']));
+  for (const m of x.querySelectorAll('library_materials > material')) {
+    const fx = x.getElementById((m.querySelector('instance_effect')?.getAttribute('url') ?? '').slice(1));
+    const alb = [...(fx?.querySelectorAll('surface > init_from') ?? [])].map((i) => files.get(i.textContent.trim()) ?? '').find((f) => /_Alb(Gry)?\.png$/.test(f));
+    if (alb) out.set(m.getAttribute('name') ?? m.getAttribute('id'), alb.replace(/_Alb(Gry)?\.png$/, ''));
+  }
+  return out;
+}
+
+/** One material baked: { mat, tex: px or 0, lit }; `own`: the stem of the textures its effect samples, when its name
+ *  has none of its own. */
+async function bake(name, files, o, own) {
+  const has = (n, suffix) => files.some(([, list]) => list.includes(`${n}_${suffix}.png`));
+  const stem = !has(name, 'Alb') && !has(name, 'AlbGry') && own ? own : name;
   const find = (suffix) => {
-    for (const [folder, list] of files) if (list.includes(`${name}_${suffix}.png`)) return `/src/${folder}/${name}_${suffix}.png`;
+    for (const [folder, list] of files) if (list.includes(`${stem}_${suffix}.png`)) return `/src/${folder}/${stem}_${suffix}.png`;
     return null;
   };
   const allGrd = files.flatMap(([f, l]) => l.filter((x) => x.endsWith('_Grd.png')).map((x) => `/src/${f}/${x}`));
@@ -167,14 +187,49 @@ function plain(mesh) {
   return g;
 }
 
-/** o: { parts: [{folder, dae}], files: [[folder, names]], maxTex, maxEmi, grdRow?, hide? } → the glTF (JSON, images
+/** A critter's tank (o.fit): NH's caught fish, bug or sea creature in its tank, bucket or cage. NH swims it there by its
+ *  animation, which the files don't have: at its bind pose it pokes out (a fish along z, half under the floor). So when
+ *  it does, it's turned side on (its long side across, as NH shows one) and fitted in the middle of its container's
+ *  glass (its tank's mGlass, a bucket's where its water meets its pail, a cage's mGlassIn, else its body), a little
+ *  under its middle, at most TANK_FILL of it each way. */
+const TANK = new Set(['mBody', 'mGlass', 'mGlassBack', 'mGlassIn', 'mGlassOut', 'mWater', 'mLight']);
+const TANK_FILL = 0.72;
+function fitCritter(byKey) {
+  const mat = (k) => k.split('|').pop();
+  const box = (gs) => gs.reduce((b, g) => (g.computeBoundingBox(), b.union(g.boundingBox)), new THREE.Box3());
+  const critter = [...byKey].filter(([k]) => !TANK.has(mat(k))).flatMap(([, gs]) => gs);
+  const glass = [...byKey].filter(([k]) => mat(k) === 'mGlass' || mat(k) === 'mGlassIn').flatMap(([, gs]) => gs);
+  const body = [...byKey].filter(([k]) => mat(k) === 'mBody').flatMap(([, gs]) => gs);
+  // (a bucket's glass is its water over the pail: where the two meet)
+  const both = glass.length && body.length ? box(glass).intersect(box(body)) : null;
+  const into = both && !both.isEmpty() ? both : glass.length ? box(glass) : body.length ? box(body) : null;
+  if (!critter.length || !into) return;
+  const c = box(critter);
+  if (into.containsBox(c)) return;
+  const size = c.getSize(new THREE.Vector3()), room = into.getSize(new THREE.Vector3());
+  const m = new THREE.Matrix4().makeTranslation(-(c.min.x + c.max.x) / 2, -(c.min.y + c.max.y) / 2, -(c.min.z + c.max.z) / 2);
+  // side on: its longer side across (x), facing the room's front
+  const turn = size.z > size.x;
+  if (turn) m.premultiply(new THREE.Matrix4().makeRotationY(Math.PI / 2));
+  const [sx, sz] = turn ? [size.z, size.x] : [size.x, size.z];
+  const k = Math.min(1, (room.x * TANK_FILL) / sx, (room.y * TANK_FILL) / size.y, (room.z * TANK_FILL) / sz);
+  m.premultiply(new THREE.Matrix4().makeScale(k, k, k));
+  // (a little under the middle: seen from the room's camera above, the lid hides a tank's top)
+  const mid = into.getCenter(new THREE.Vector3());
+  m.premultiply(new THREE.Matrix4().makeTranslation(mid.x, into.min.y + room.y * 0.42, mid.z));
+  for (const g of critter) g.applyMatrix4(m);
+}
+
+/** o: { parts: [{folder, dae}], files: [[folder, names]], maxTex, maxEmi, grdRow?, hide?, fit? } → the glTF (JSON, images
  *  as PNG data URIs), the bounds, triangles and materials. */
 window.convert = async (o) => {
   const group = new THREE.Group();
+  const sampled = new Map();
   for (const p of o.parts) {
     const c = await dae.loadAsync(`/src/${p.folder}/${p.dae}`);
     c.scene.traverse((n) => { if (n.isMesh) n.userData.folder = p.folder; });
     group.add(c.scene);
+    sampled.set(p.folder, await samples(`/src/${p.folder}/${p.dae}`));
   }
   group.updateMatrixWorld(true);
   const meshes = [];
@@ -188,13 +243,14 @@ window.convert = async (o) => {
     if (!baked.has(key)) {
       const others = new Set(o.parts.map((q) => q.folder).filter((f) => f !== m.userData.folder));
       const files = [...o.files.filter(([f]) => !others.has(f)), ...o.files.filter(([f]) => others.has(f))];
-      baked.set(key, await bake(name, files, o));
+      baked.set(key, await bake(name, files, o, sampled.get(m.userData.folder)?.get(name)));
     }
     const g = plain(m);
     tris += g.attributes.position.count / 3;
     if (!byKey.has(key)) byKey.set(key, []);
     byKey.get(key).push(g);
   }
+  if (o.fit) fitCritter(byKey);
   const scene = new THREE.Scene();
   const box = new THREE.Box3();
   let lit = false;

@@ -3,9 +3,11 @@
 // scripts/room-surfaces-page.js, the rules in scripts/room-surfaces.ts seatOf / bedOf), plus OVERRIDES for the odd
 // ones. The tent's and the homes' furniture (tent/items.json: `u` s or l, by n) and the island's seats (the park bench,
 // the log bench, the log stools, the hammock, the iron garden chair, the beach chair: world3d/assets.json). Writes
-// src/lib/components/villager3d/seats3d.json.
+// src/lib/components/villager3d/seats3d.json, and the packed pieces' (tent/more.json) into tent/seats-more.json (the
+// room's chunk alone loads that: seats3d.json is in the first load).
 //   npm run seat-anchors [-- --only=f4039,park-bench]
-// Needs Google Chrome (Playwright's channel 'chrome'); reads only the repo's own converted GLBs (static/room/).
+// Needs Google Chrome (Playwright's channel 'chrome'); reads only the repo's own converted GLBs (static/room/; a packed
+// piece's from .cache/room/models: npm run room-packs -- --unpack puts them there).
 import { chromium } from '@playwright/test';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, extname, join, resolve, sep } from 'node:path';
@@ -15,7 +17,11 @@ import { bedOf, seatOf, type BedShape, type Sample, type SeatShape } from './roo
 const APP = join(import.meta.dirname, '..');
 const ROOM = join(APP, 'static', 'room');
 const OUT = join(APP, 'src', 'lib', 'components', 'villager3d', 'seats3d.json');
-const ITEMS = JSON.parse(readFileSync(join(APP, 'src', 'lib', 'components', 'tent', 'items.json'), 'utf8')).items as Record<string, { w: number; d: number; h: number; u?: 's' | 'l'; n?: number }>;
+const OUT_MORE = join(APP, 'src', 'lib', 'components', 'tent', 'seats-more.json');
+const WORK = join(APP, '.cache', 'room');
+type Item = { w: number; d: number; h: number; u?: 's' | 'l'; n?: number; pk?: unknown };
+const table = (f: string) => JSON.parse(readFileSync(join(APP, 'src', 'lib', 'components', 'tent', f), 'utf8')).items as Record<string, Item>;
+const ITEMS: Record<string, Item> = { ...table('items.json'), ...table('more.json') };
 const ASSETS = JSON.parse(readFileSync(join(APP, 'src', 'lib', 'components', 'world3d', 'assets.json'), 'utf8')) as { keys: Record<string, { m: string; foot?: [number, number] }>; models: Record<string, { max: number[] }> };
 const only = (process.argv.find((a) => a.startsWith('--only='))?.slice(7) ?? '').split(',').filter(Boolean);
 
@@ -81,7 +87,8 @@ await page.route('http://room.local/**', (route) => {
     return f.startsWith(root + sep) ? f : null;
   };
   if (u === '/') return route.fulfill({ contentType: 'text/html', body: '<!doctype html><script type="importmap">{"imports":{"three":"/three/build/three.module.js","three/addons/":"/three/examples/jsm/"}}</script><script type="module" src="/page.js"></script>' });
-  const f = u === '/page.js' ? PAGE : u.startsWith('/three/') ? within(three, u.slice(7)) : u.startsWith('/m/') ? within(ROOM, u.slice(3)) : null;
+  const room = (rel: string) => [within(ROOM, rel), within(WORK, rel)].find((x) => x && existsSync(x)) ?? null;
+  const f = u === '/page.js' ? PAGE : u.startsWith('/three/') ? within(three, u.slice(7)) : u.startsWith('/m/') ? room(u.slice(3)) : null;
   if (!f || !existsSync(f)) return route.fulfill({ status: 404, body: '' });
   return route.fulfill({ body: readFileSync(f), contentType: extname(f) === '.js' ? 'text/javascript' : 'application/octet-stream' });
 });
@@ -99,7 +106,8 @@ async function shape(url: string, w: number, d: number, h: number, u: 's' | 'l',
 }
 
 const prev = existsSync(OUT) ? (JSON.parse(readFileSync(OUT, 'utf8')) as { tent: Record<string, Shape>; island: Record<string, Shape> }) : { tent: {}, island: {} };
-const out = { tent: { ...prev.tent }, island: { ...prev.island } };
+const prevMore = existsSync(OUT_MORE) ? (JSON.parse(readFileSync(OUT_MORE, 'utf8')) as { tent: Record<string, Shape> }).tent : {};
+const out = { tent: { ...prev.tent, ...prevMore }, island: { ...prev.island } };
 const want = (k: string) => !only.length || only.includes(k);
 for (const [code, m] of Object.entries(ITEMS)) {
   if (!m.u || !want(code)) continue;
@@ -120,4 +128,6 @@ for (const [model, it] of Object.entries(ISLAND)) {
 for (const [model, sh] of Object.entries(USE)) if (want(model)) out.island[model] = { ...sh, yaw: Math.round(sh.yaw * 1e4) / 1e4 } as Shape;
 await browser.close();
 const sorted = (o: Record<string, Shape>) => Object.keys(o).sort().map((k) => `    ${JSON.stringify(k)}: ${JSON.stringify(o[k])}`).join(',\n');
-writeFileSync(OUT, `{\n  "_": "scripts/seat-anchors.ts (npm run seat-anchors): each seat's and bed's shape in its model's own frame (model units, +z its front)",\n  "tent": {\n${sorted(out.tent)}\n  },\n  "island": {\n${sorted(out.island)}\n  }\n}\n`);
+const pick = (packed: boolean) => Object.fromEntries(Object.entries(out.tent).filter(([c]) => ITEMS[c] && !!ITEMS[c].pk === packed));
+writeFileSync(OUT, `{\n  "_": "scripts/seat-anchors.ts (npm run seat-anchors): each seat's and bed's shape in its model's own frame (model units, +z its front)",\n  "tent": {\n${sorted(pick(false))}\n  },\n  "island": {\n${sorted(out.island)}\n  }\n}\n`);
+writeFileSync(OUT_MORE, `{\n  "_": "scripts/seat-anchors.ts: the packed pieces' seats and beds (tent/more.json), as villager3d/seats3d.json's tent",\n  "tent": {\n${sorted(pick(true))}\n  }\n}\n`);

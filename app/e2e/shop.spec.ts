@@ -166,15 +166,15 @@ test('全部 past my かいがら: the twins say how many short, かう only boo
 
 // (a piece found before the day leaves the stock: shop/stock.test; the demo stamps its seeded rows today)
 test('a piece found or bought today stays in the day’s stock till tomorrow, the same on every phone', async ({ page }) => {
-  // the day's first two pieces (contract/shop.test pins the order): the tin bucket found by the guest this morning,
-  // the unicorn toy bought by B
+  // the day's first two pieces (contract/shop.test pins the order): the Bunny Day merry balloons bought by B (at its
+  // made-up price), the imperial chest found by the guest this morning
   await seed(page, [tally({ 'fish:whale-shark': 1 }, 'B'), ['sell', { species: 'fish:whale-shark', n: 1, v: 650 }, 'B'],
-    ['find', { kind: 'item', id: 'tin-bucket' }, 'G'], ['buy', { item: 'f14354', price: 70, d: '2026-11-04' }, 'B']]);
+    ['buy', { item: 'f12419', price: 240, d: '2026-11-04' }, 'B'], ['find', { kind: 'item', id: 'imperial-chest' }, 'G']]);
   await page.goto(`shop${Q}`);
   await openList(page, 'buy');
   await expect(stock(page)).toHaveCount(24);
-  await expect(stock(page).nth(0)).toHaveAttribute('data-shop-item', 'f2592');
-  await expect(stock(page).nth(1)).toHaveAttribute('data-shop-item', 'f14354');
+  await expect(stock(page).nth(0)).toHaveAttribute('data-shop-item', 'f12419');
+  await expect(stock(page).nth(1)).toHaveAttribute('data-shop-item', 'f3972');
   await expect(page.locator('[data-shop-sold-out]')).toHaveCount(0);
 });
 
