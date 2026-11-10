@@ -7,7 +7,7 @@
 //   RELAY_E2E=1 npm run e2e -- sync-harness --workers=1   two browser contexts against the test relay (relay/.smoke-keys;
 //                                                         one at a time: each person's key opens one socket)
 import { expect, test, type Browser, type Page } from './fixtures.ts';
-import { lawnTap, oku, tapOn, quiet, watchComings } from './island.ts';
+import { islandUp, lawnTap, oku, tapOn, quiet, watchComings } from './island.ts';
 import { sayOwn } from './say.ts';
 import { existsSync, readFileSync } from 'node:fs';
 
@@ -268,7 +268,12 @@ test('a phrase is presence: the partner sees it over my villager at once, a phon
   const { open, ctxB, close } = await phones(browser);
   const a = await open('A'), b = await open('B');
   for (const p of [a, b]) await expect.poll(() => w<{ connected: boolean; peer: boolean } | null>(p, 'status').then((s) => !!s?.connected && s.peer), { timeout: 10_000 }).toBe(true);
-  await quiet(a); // the opening beats are over
+  // both islands up and their opening beats over: "at once" is a phone that's up (B still loading its island on CI's
+  // 2 cores held its main thread: the first phrase there took 1.3 s, once past the 2 s)
+  for (const p of [a, b]) {
+    await islandUp(p);
+    await quiet(p);
+  }
   const said = b.locator('[data-say="partner"]');
   // a phrase, each way (A's first: nothing kept yet, the field at once; the demo's tabs share one storage, so B's
   // picker lists A's and goes through じぶんで かく…)

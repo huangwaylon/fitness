@@ -1,0 +1,125 @@
+[chromium] › leaks.spec.ts › the trip map in and out: no WebGL context or window listener left behind
+[chromium] › leaks.spec.ts › the museum in first person and out, the eye button, a bench: no context or listener left, the island gone inside
+[chromium] › sw-update.spec.ts › a slow install is waited for (no reload before its worker is in); a static file that fails costs only itself; the unchanged ones are copied
+[chromium] › kikimimi-tile.spec.ts › co-op on two phones: each fills its own half of one sentence; the reveal shows the team’s; the results count the sentences built whole
+[chromium] › tent.spec.ts › the HHA: the first time in after a day’s decorating, ハニワくん’s letter rates the room (its points and its ハニワ); once a day; its button shows it again
+[chromium] › sheet-idle.spec.ts › under travel's sheet at rest the island draws no frames, nothing animates behind it, no frame is asked for
+[chromium] › editor-preview.spec.ts › the plan's pond and K.K.'s stool in the preview: the pond the island's, K.K. on his stool, moved and turned with it
+[chromium-mic] › kikimimi-mic-kuri.spec.ts › くりかえし チャレンジ: a solo run, said, heard again, nothing heard, two misses, the results and a minutes-only row
+[chromium] › exact-taps.spec.ts › default island, the camera at its far stop: a tap on the water beside a building casts
+[chromium] › gym.spec.ts › the weight bench, a human player on it: lying down, the gym's barbell takes the small bar's place and is pressed in the hands (on both phones); getting up racks the small bar
+[chromium] › visitors.spec.ts › visitors stand where NH puts them (Daisy Mae and Wisp at centre stage, Gulliver on the beach) clear of every control; the first tap is an introduction
+[chromium] › popups.spec.ts › at 390 › the catch plates stack at the bottom centre, the newest at the bottom, and go on their own
+[chromium] › visitor-spot.spec.ts › take the visitors’ spot away (🗑): Kicks back where he stood before on both phones
+[chromium-mic] › kikimimi-mic-optin.spec.ts › the mic opt-in: off by default, on after the permission, a check that stops by itself, the choices, the model, kept
+[chromium] › kikimimi-rush.spec.ts › co-op on two phones: two registers, the customers alternating, the other phone passing; the team serves the line
+[chromium] › profile.spec.ts › a member sets both profiles; the partner’s phone has them; the guest sees only its own
+[chromium] › players.spec.ts › in the tent and the museum: my human player, and my villager once I wear it
+[chromium] › shared-world.spec.ts › two players: a shake on one tab plays on the other (their villager stays where it is), and a pick-up there is gone here
+[chromium] › exact-taps.spec.ts › default island, the camera at its far stop: a tap on the sea beside a find by the back beach casts, a tap on it picks it up
+[chromium] › kikimimi-coop.spec.ts › co-op lesson: A picks a unit’s チェック for both, B waits on its intro card; B scores 2 but the team’s first listens are 6: both stamped
+[chromium] › kikimimi-news.spec.ts › co-op on two phones: both answer every question; the team’s are the ones both got
+[chromium] › fish-sync.spec.ts › B away while A’s line ends: back on the island, A’s villager no longer holds a rod
+[chromium] › present-taps.spec.ts › presents and wood are collected where they’re drawn: a tree’s present and wood under its canopy, a present before a building, one at the water’s edge
+[chromium] › editor-preview.spec.ts › the orbit view's turn and zoom redraw the frame, not the shadow map (its sun and shadow camera stay put)
+[chromium] › halloween.spec.ts › nothing for Jack: his trick puts goofy glasses on my villager
+[chromium] › editor-preview.spec.ts › the phone view pans with a drag on open ground (kept over the island), ⌖ puts it back; a still preview draws nothing
+[chromium] › finds.spec.ts › a bottle the waves bring washes up from the waterline to its spot, fading in, its tap area with it; a tap reads it as ever
+[chromium] › positions.spec.ts › the other phone sees me gone while I’m in the shop, then come out of its door
+[chromium] › building-taps.spec.ts › on the user’s island the shop’s tap area covers its roof and walls, as drawn, and opens it
+[chromium] › presence-sleep.spec.ts › back online it wakes where it was, at any hour, in the island’s life; closed, awake for the grace, then asleep
+[chromium] › kikimimi-henshin.spec.ts › solo: the page’s phenomena, a pick and a dictation typed and tapped, the reveal’s takes, the results and my row
+[chromium] › fish-sync.spec.ts › a line cast at a new spot (its off never came) frees the shadow the old one was at
+[chromium] › radio.spec.ts › the guest’s phone: a tap on the deck and its villager stretches; the members’, their apps closed, sleep through it
+[chromium] › sky.spec.ts › ?fireworks starts a show on any night; none on an ordinary one
+[chromium] › sheet-keep.spec.ts › ごはん kept closed: an entry logged on the other phone meanwhile shows on the reopening
+[chromium] › preview.spec.ts › ハロウィン in せってい brings Halloween night now; the chip shows it, a reload keeps it, its tap goes back
+[chromium] › tent.spec.ts › the tent opens through the door and goes back out to the island as it was
+[chromium] › fishing-taps.spec.ts › default island: a tap on the mouth by my villager casts there, the shadow bites, a tap catches it
+[chromium] › kikimimi-rush.spec.ts › solo: the mode once listened, a queue of 8 with one ticket wrong (the run goes on), the results and my row
+[chromium] › fishing-taps.spec.ts › default island: a tap on the clifftop by my villager casts there, the shadow bites, a tap catches it
+[chromium] › kk-sync.spec.ts › a stereo in the tent is everyone’s in there, and heard only inside: A in the tent asks, G in there hears it, B on the island doesn’t
+[chromium] › bug-taps.spec.ts › a tarantula rears up in 3D under a 「！」 at the first tap; settled, a tap nets it
+[chromium] › critters.spec.ts › a popped balloon's present lands in the front of the view, on open ground, clear of the controls: at おく, over the far side
+[chromium] › visitor-life.spec.ts › wisp arrives and leaves by float
+[chromium] › editor-phone.spec.ts › the editor's move, placement, paste and undo show the same on a phone, every tree and bush a model
+[chromium] › stretch.spec.ts › at 320x568 › the capped popup fits on both trees
+[chromium] › tent.spec.ts › edit: place a piece from the tray, turn it, drag it, put it away; the wallpaper; red where it can’t go; kept across a reload
+[chromium] › sync-offline.spec.ts › kill: a change made offline and the app killed before it went is sent when the app opens again
+[chromium] › visitors.spec.ts › anyone asks K.K. for a song at any time: A at 15:00
+[chromium] › fixed-decor.spec.ts › the snowboy says a line in its voice; it melts over three days
+[chromium] › shake.spec.ts › a shaken branch lies beside the trunk until a tap picks it up
+[chromium] › chat.spec.ts › a tap on my villager: its squish, no balloon of its own, no picker, no sheet, no ベル
+[chromium] › kk-sync.spec.ts › the island’s moments on its stage: A’s stretch plays on B’s deck with the deck thumping there; A’s birthday song puts B’s candles out
+[chromium] › music.spec.ts › K.K.: his request prompt, then おまかせ plays one of his songs (not the placeholder tune)
+[chromium] › sit-outdoors.spec.ts › another of the island's things (the pump) still answers where it stands: nobody walks
+[chromium] › sky.spec.ts › fireworks at 390: bursts in the sky clear of the UI; a tap in the sky sends one more
+[chromium] › demo.spec.ts › けんこう: the steps goal, 8,000 for both by default, 1,000–30,000 by 500, from today on; either person’s; the tree and the chart follow it
+[chromium] › no-notify.spec.ts › nothing asks, subscribes or calls /push; せってい has no つうち
+[chromium] › critters.spec.ts › a popped balloon's present lands in the front of the view, on open ground, clear of the controls: over the sea off the side
+[chromium] › fishing-taps.spec.ts › user island: every tap on water casts, near or far, and every tap with the line out reels it in
+[chromium] › board.spec.ts › writing with the keyboard up: the field, its controls and the face with the note as typed stay above it
+[chromium] › say.spec.ts › the say button hides under the island panel (its picker with it)
+[chromium] › kikimimi-call.spec.ts › night: the phone and the memo in the night palette
+[chromium] › kikimimi-tachi.spec.ts › night: the claims and a reveal in the night palette
+[chromium] › travel.spec.ts › pictures › every screen, day
+[chromium] › say.spec.ts › the picker closes on ✕, Esc and a tap elsewhere (which walks nobody); the button again only closes it
+[chromium] › bug-taps.spec.ts › a bug in front of my villager: a tap on it nets it, not my villager
+[chromium] › wedding-board.spec.ts › a half-filled task form asks before ✕, the backdrop or Esc throw it away
+[chromium] › travel.spec.ts › a kit trip: the photo, its pages on the tab bar, a chip a day, 準備; the title bar once scrolled; ‹ back
+[chromium] › bugs.spec.ts › a stink bug on the flowers is netted, clear of every control
+[chromium] › fishing-taps.spec.ts › with the line out, a tap on my villager reels it in (NH’s A button), not its squish
+[chromium] › kenkou-header.spec.ts › the guest’s phone: ごはん on its own day, 健康 on a member’s, its pill dashed and a line saying so; no からだ; picking there syncs ごはん
+[chromium] › travel-pack.spec.ts › Okinawa’s list (over): its six categories and 35 items, each category its NH item, nothing to tick or edit
+[chromium] › bugs.spec.ts › a scorpion: a second tap while it is reared up and it charges off (gone, nothing caught)
+[chromium] › halloween.spec.ts › Oct 31 by day: pumpkins on the lawn and round the campsite, clear of every control; no Jack, no lanterns
+[chromium] › scroll.spec.ts › at 393 × 852 › a tree’s popup opens wholly in view, the other tree still tappable, never dimmed
+[chromium] › wedding.spec.ts › 100 days to go: Reese and Cyrus on the centre stage under their heart float, counting down
+[chromium] › zukan.spec.ts › the picked fish stays pinned over the scrolling grid, another pick keeps the grid's scroll (390x844)
+[chromium] › picker.spec.ts › iPhone 15 with the search typed in: the stage is a strip and the first row of heads is above the keyboard
+[chromium] › bubbles.spec.ts › jack: the balloon by their head, not floated above the campsite
+[chromium] › stale.spec.ts › a sheet’s lazy part that fails to load says so with もういちど, which loads it
+[chromium] › travel-map.spec.ts › the locate button far from the trip (Tokyo): on, and a note instead of a flight there
+[chromium] › halloween.spec.ts › ?event=halloween brings the evening on any day
+[chromium] › finds.spec.ts › shells lie on the front beach (the newest three); a tap picks one up, and it stays picked after a reload
+[chromium] › demo.spec.ts › ごほうび at 320px: the reward tiles keep no empty band over their art, and ⓘ's examples read in a few lines, not one per line
+[chromium] › hits.spec.ts › ?hit draws every tap target over the island
+[chromium] › popups.spec.ts › at 390 › a wish on a shooting star
+[chromium] › museum.spec.ts › the guest visits too: in, walking, the finds on show
+[chromium] › wedding-board.spec.ts › ticking: the tick marks it done with my name, it stays where it was, the counts follow; again, it is open again
+[chromium] › visitors.spec.ts › the weekday rotation brings its visitor with no hook: Redd on Wednesday Nov 4 2026, at centre stage, and he talks
+[chromium] › preview.spec.ts › 天気: 自動 (Tokyo's, its line and credit), ゲーム, or a forced sky; one heading, and 自動に戻す sets the weather back too
+[chromium] › hud-menu.spec.ts › by keyboard: the leaf, a pill, Enter opens its sheet, Esc closes it and the focus is back on the leaf
+[chromium] › bugs.spec.ts › fireflies: a little cloud of lights blinking out of step
+[chromium] › picker.spec.ts › heads load as they near the view: opening fetches about a screenful, not the roster
+[chromium] › scroll.spec.ts › at 393 × 852 › the HUD covers none of the key content at either end; the front shows sea under the beach
+[chromium] › csp.spec.ts › the museum: no CSP violation
+[chromium] › demo.spec.ts › the HUD row at 402, 12:00: [the dumbbell] [the menu] in the top-right corner, the leaf at the screen's side, no jar, the sky's left clear, every target ≥ 44px, under a notch
+[chromium] › wedding-board.spec.ts › the ＋ sits over the tab bar, clear of every row's tick and heading's count (659 px tall)
+[chromium] › weather.spec.ts › 390px › rain: the streaks and the grey sky, under every control
+[chromium] › sheet-hits.spec.ts › けっこんしき’s filter chips and トレイル’s: a 44 × 44 hit each
+[chromium] › seats3d.spec.ts › island seatMaeL: my villager sits on it
+[chromium] › offline.spec.ts › a photo that fails to load is the paper placeholder with its box kept, and the photo once it comes
+[chromium] › wedding-board.spec.ts › a slice: 期限切れ only, its heading counting its rows; the chips stay pinned as the plan scrolls
+[chromium] › museum.spec.ts › the canvas never shows blank: each resize of its buffer (a drag’s lighter pixel ratio, its end, a new size) is drawn over in the same task
+[chromium] › demo.spec.ts › focus ring: none on せってい’s かえる after tap → ‹ back; the keyboard still shows it
+[chromium] › music.spec.ts › 2026-11-26T09:30 plays music/turkey-day.m4a
+[chromium] › purchases.spec.ts › history at 375x667: ten rows, もっと見る, nothing overlaps
+[chromium] › layout-island.spec.ts › the layout’s seats: my villager put on stoolE sits there
+[chromium] › homes.spec.ts › うめ’s house is hers to arrange: her piece stays in her room, not the tent’s; the guest comes in, sees it, can’t arrange it
+[chromium] › demo.spec.ts › the panel: titled ごほうび, no tabs, and it reaches the screen’s bottom
+[chromium] › stretch.spec.ts › no stretch: no chip, only its faint ghosts, and がんばり +0 in the ledger
+[chromium] › first-person.spec.ts › the museum: a drag mid-walk turns the camera alone (the walk goes on to its spot); the walk never turns it
+[chromium] › editor.spec.ts › the guest has the editor as a member does (2026-11-06)
+[chromium] › fixed-decor.spec.ts › the pump waters the flowers round it (each glitters for the day, on both phones as a tap’s watering)
+[chromium] › seats3d.spec.ts › island seatPondR: my villager sits on it
+[chromium] › tent.spec.ts › on a table: a small thing stands on its top, rides along when the table moves, and the table won’t go away under it
+[chromium] › island-edit.spec.ts › a new piece from the tray: down near the middle, ✓ puts it there; the other phone has it
+[chromium] › visitor-life.spec.ts › daisy-mae: on its spot as NH's own 3D model (no card, no render), posed as the villagers are
+[chromium] › guest.spec.ts › the guest’s 健康: the period on the range row; ごはん: its pill the avatar alone, the switch centred
+[chromium] › tent-picker.spec.ts › iPhone 16 › the floor’s middle is the middle of the usable screen: NH’s view, turned, back, and with the tray open
+[chromium] › decor.spec.ts › in the editor: a tap picks a placed piece up, a drag and ✓ move it, ✕ puts it back, 🗑 puts it away
+[chromium] › decor.spec.ts › in the editor: a piece from the tray goes down on fine ground, a drag moves it a tile at a time, a tap on the ground puts it there, red over the water, ✓ places it
+[chromium] › boot.spec.ts › not paired: to /pair without the 3D island
+[chromium] › shop.spec.ts › an empty pocket opens the shop on かう; うる says it’s empty, no 売る bar
+[chromium] › museum.spec.ts › what’s on show: exactly the fish anyone has found (the guest’s too), each in its tank; nothing else
