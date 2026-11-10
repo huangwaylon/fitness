@@ -124,7 +124,9 @@ test('a piece NH never sells, bought at its made-up price, is in my もようが
   await seed(page, day, [['tally', { date: day, counts: { 'fish:whale-shark': 2 } }, 'A']]);
   await page.goto(`shop?demo&date=${day}T12:00`);
   // the counter's うる list (the shop is a 3D room: shop.spec)
-  await page.locator('[data-shop-open="sell"]').click();
+  await page.waitForFunction(() => !!(window as unknown as { __shop?: object }).__shop);
+  await page.evaluate(() => (window as unknown as { __shop: { talk(): void } }).__shop.talk());
+  await page.locator('[data-shop-choice="sell"]').click();
   await page.locator('[data-shop-all]').click();
   await page.locator('[data-shop-sell]').click();
   await page.locator('[data-shop-tab="buy"]').click();

@@ -6,9 +6,12 @@
   // blue table, by the left wall and on the back wall (plan.ts display: the same on every phone).
   // The finger is the rooms' (rooms/gesture.ts): a tap on the floor walks my villager there; a tap on a piece picks it
   // in place (my villager turns to it, a card with its name, price and 買う: stock.ts buyPiece); a tap on the twins is
-  // their greeting and NH's choice box (うりたい: the うる list; しなもの: the day's list, its 全部 buying every piece
-  // I don't have at once: stock.ts buyAll); a drag turns the camera, a pinch zooms; the doormat or ‹ 島へ goes out.
-  // The two lists are the old counter panel, now a sheet over the room: うる (my pocket, everything I caught, found or
+  // NH's choice box, the only way to the lists (うりたい: the うる list; しなもの: the day's list, its 全部 buying every
+  // piece I don't have at once: stock.ts buyAll); a drag turns the camera, a pinch zooms; the doormat or ‹ 島へ goes out.
+  // The twins say いらっしゃいませ once I reach the counter (plan.ts atCounter), not at the door; their balloon goes after
+  // a few seconds or at a tap on it, and never takes a tap meant for the room.
+  // The two lists are the old counter panel, now a sheet over the room (its head and tabs pinned, the list scrolling
+  // under them): うる (my pocket, everything I caught, found or
   // picked up less what I sold: model/shop.ts; by its sections, shop/pocket.ts) and かう (the day's stock, never a piece
   // the island had by the day's start: shop/stock.ts). A sell or a buy shows at once with もとに戻す; a bought piece joins
   // my もようがえ. The guest's pocket and かいがら are its own. Never ベル.
@@ -58,7 +61,7 @@
   import '#lib/i18n/catch.ts';
   import { loadTentNames } from '#lib/i18n/tent.ts';
   import { staticUrl } from '#lib/staticUrl.ts';
-  import { COUNTER_FRONT, DOOR, DOOR_IN, FRONT, RECT, TWINS, WALL_H, blocked, display, side, standable, walkPath, type Shown } from './plan.ts';
+  import { COUNTER_FRONT, DOOR, DOOR_IN, FRONT, RECT, TWINS, WALL_H, atCounter, blocked, display, side, standable, walkPath, type Shown } from './plan.ts';
   import M from './models.json' with { type: 'json' };
   /** The room's default view: nearer than the whole room (too wide for a phone held upright), its middle following my
    *  villager from the stage's left to the counter. */
@@ -82,15 +85,25 @@
   /** The twins' line (a key of `shop.say.*` and its params), and whether their choice box is up. */
   let say = $state<{ k: string; p?: Record<string, string> }>({ k: 'hello' });
   let asking = $state(false);
-  /** The line shows by まめきち a while after it changes (always on the list's top while that's open). */
-  let sayUntil = $state(Date.now() + 4500);
+  /** The line shows by まめきち for SAY_MS after it changes, or till it's tapped (always on the list's top while that's
+   *  open; with their choice box up, till it's answered). */
+  let sayOn = $state(false);
+  const SAY_MS = 4000;
   let sayTimer: ReturnType<typeof setTimeout> | undefined;
   const speak = (k: string, p?: Record<string, string>) => {
     say = { k, p };
-    sayUntil = Date.now() + 4500;
+    sayOn = true;
     clearTimeout(sayTimer);
-    sayTimer = setTimeout(() => (sayUntil = 0), 4600);
+    sayTimer = setTimeout(() => (sayOn = false), SAY_MS);
   };
+  /** The balloon gone (a tap on it, a card closed): its choice box too. */
+  function hush() {
+    clearTimeout(sayTimer);
+    sayOn = false;
+    asking = false;
+  }
+  /** Whether the twins said hello this visit (once I first reach the counter). */
+  let greeted = false;
 
   const viewer: Who = untrack(() => view.viewer);
   const me = $derived(week.model?.me ?? viewer);
@@ -225,6 +238,7 @@
     switchTab(id);
   }
   function closePanel() {
+    hush();
     panel = null;
     pick = null;
     every = false;
@@ -251,7 +265,6 @@
     pick = null;
     asking = true;
     speak('ask');
-    sayUntil = Infinity;
     clearTimeout(sayTimer);
     eng?.hop('n:timmy');
     eng?.face(viewer, TWINS.timmy);
@@ -347,8 +360,13 @@
   /** The twins' line by まめきち's head (client px: where the balloon stands, kept on screen, and how far its tail is
    *  off its middle to point at him), followed as the camera moves; null at my villager's eyes with him out of view. */
   let sayAt = $state<{ x: number; y: number; tail: number } | null>(null);
-  const SAY_HALF = 130;
+  const SAY_HALF = 110;
   function placeSay() {
+    const at = eng?.at(viewer);
+    if (!greeted && at && atCounter(at)) {
+      greeted = true;
+      if (!panel && !asking) speak('hello');
+    }
     const h = eng?.headPoint('n:timmy');
     // (off the view to a side, the balloon stands at that edge, its tail toward him; behind the eyes, none)
     if (!h || !eng || !canvas || (fpv && !eng.inView(h[0], h[1], h[2]))) return void (sayAt = null);
@@ -356,7 +374,7 @@
     const x = Math.min(r.right - SAY_HALF - 8, Math.max(r.left + SAY_HALF + 8, hx));
     sayAt = { x, y: hy, tail: Math.max(-SAY_HALF + 20, Math.min(SAY_HALF - 20, hx - x)) };
   }
-  const sayShown = $derived(!!panel || asking || sayUntil > Date.now());
+  const sayShown = $derived(!!panel || asking || sayOn);
 
   // ---- the finger: a tap walks or acts in place; a drag turns the camera; two fingers pinch ----
   let turned = $state(false);
@@ -559,6 +577,8 @@
       walkTo: (x: number, z: number) => walkTo([x, z]),
       standable: (x: number, z: number) => standable(walls, [x, z]),
       counter: () => COUNTER_FRONT,
+      /** As a tap on the twins (their choice box), wherever my villager stands. */
+      talk: () => twinsTalk(),
       orbit: (a: number, p = 0) => eng?.orbit(a, p),
       zoom: (f: number) => eng?.zoom(f)
     };
@@ -589,7 +609,9 @@
     <!-- the twins' line by まめきち in the room (NH's balloon), and their choice box after a tap on them -->
     <div class="say float" class:on={sayShown && !!sayAt} style:left={sayAt ? `${sayAt.x}px` : undefined} style:top={sayAt ? `${sayAt.y}px` : undefined}
       style:--tail={sayAt ? `${sayAt.tail}px` : '0px'}>
-      <p role="status" aria-live="polite" data-shop-say={say.k}>{line}</p>
+      <!-- (a tap on the line hides it; it goes by itself anyway, so no key needed) -->
+      <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
+      <p role="status" aria-live="polite" data-shop-say={say.k} data-sfx="tick" onclick={hush}>{line}</p>
       {#if asking}
         <div class="choices" data-shop-choices>
           <button type="button" data-shop-choice="sell" data-sfx="tick" onclick={() => answer('sell')}>{t('shop.choice.sell')}</button>
@@ -608,47 +630,50 @@
           {:else}<span class="price"><span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={16} /></span>{formatNum(buyPrice(pick) ?? 0)}</span>{/if}
         </div>
         <button type="button" class="btn small" data-shop-card-buy data-sfx="self" aria-disabled={!!why} onclick={buyPicked}>{t('shop.buy')}</button>
-        <NavButton kind="close" data-shop-card-close onclick={() => ((pick = null), speak('hello'))} />
+        <NavButton kind="close" data-shop-card-close onclick={() => ((pick = null), hush())} />
       </section>
     {/if}
     <div class="foot" bind:this={foot}>
-      <div class="eye-dock"><EyeToggle /></div>
-      <button type="button" class="btn small paper" data-shop-open="sell" data-sfx="open" onclick={() => openPanel('sell')}>{t('shop.open.sell')}</button>
-      <button type="button" class="btn small" data-shop-open="buy" data-sfx="open" onclick={() => openPanel('buy')}>{t('shop.open.buy')}</button>
+      <EyeToggle />
     </div>
   {:else}
     <section class="menu sheet-copy" data-shop-panel={panel}>
-      <div class="head">
-        <p class="say docked" role="status" aria-live="polite" data-shop-say={say.k}>{line}</p>
-        <NavButton kind="close" data-shop-close onclick={closePanel} />
-      </div>
-      <Segmented items={[{ id: 'sell', label: t('shop.tab.sell') }, { id: 'buy', label: t('shop.tab.buy') }]} value={tab} label={t('shop.title')} attr="shop-tab" onpick={switchTab} />
+      <!-- the head (the twins' line, ×) and the tabs stay put; the list scrolls under them, the bar stays at the foot -->
+      <header class="pin">
+        <div class="head">
+          <p class="say docked" role="status" aria-live="polite" data-shop-say={say.k}>{line}</p>
+          <NavButton kind="close" data-shop-close onclick={closePanel} />
+        </div>
+        <Segmented items={[{ id: 'sell', label: t('shop.tab.sell') }, { id: 'buy', label: t('shop.tab.buy') }]} value={tab} label={t('shop.title')} attr="shop-tab" onpick={switchTab} />
+      </header>
 
       {#if tab === 'sell'}
-        {#if pocket.length}
-          <div class="pocket" data-shop-pocket>
-            {#each sections as { s, rows } (s)}
-              <h2 class="sec-label" data-shop-sec={s}>{t(`shop.sec.${s}`)}</h2>
-              <ul class="grid">
-                {#each rows as { k, n, p, it } (k)}
-                  {@const c = picks[k] ?? 0}
-                  <li class="tile" class:on={c > 0}>
-                    <button type="button" class="pickable" data-shop-catch={k} data-n={n} data-picked={c} data-sfx="self"
-                      aria-label={t('shop.catchLabel', { name: speciesName(k), n: String(n), v: String(p), c: String(c) })} onclick={() => more(k)}>
-                      <span class="ic"><OfficialArt key={it.art} size={46} /></span>
-                      <span class="nm">{speciesName(k)}</span>
-                      <span class="price"><span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={14} /></span>{formatNum(p)}</span>
-                      <span class="count" aria-hidden="true">{c ? `${c}/${n}` : `×${n}`}</span>
-                    </button>
-                    {#if c}<button type="button" class="less" data-shop-less={k} data-sfx="tick" aria-label={t('shop.less', { name: speciesName(k) })} onclick={() => less(k)}>−</button>{/if}
-                  </li>
-                {/each}
-              </ul>
-            {/each}
-          </div>
-        {:else}
-          <p class="empty" data-shop-empty>{t('shop.emptyPocket')}</p>
-        {/if}
+        <div class="list" data-shop-list>
+          {#if pocket.length}
+            <div class="pocket" data-shop-pocket>
+              {#each sections as { s, rows } (s)}
+                <h2 class="sec-label" data-shop-sec={s}>{t(`shop.sec.${s}`)}</h2>
+                <ul class="grid">
+                  {#each rows as { k, n, p, it } (k)}
+                    {@const c = picks[k] ?? 0}
+                    <li class="tile" class:on={c > 0}>
+                      <button type="button" class="pickable" data-shop-catch={k} data-n={n} data-picked={c} data-sfx="self"
+                        aria-label={t('shop.catchLabel', { name: speciesName(k), n: String(n), v: String(p), c: String(c) })} onclick={() => more(k)}>
+                        <span class="ic"><OfficialArt key={it.art} size={46} /></span>
+                        <span class="nm">{speciesName(k)}</span>
+                        <span class="price"><span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={14} /></span>{formatNum(p)}</span>
+                        <span class="count" aria-hidden="true">{c ? `${c}/${n}` : `×${n}`}</span>
+                      </button>
+                      {#if c}<button type="button" class="less" data-shop-less={k} data-sfx="tick" aria-label={t('shop.less', { name: speciesName(k) })} onclick={() => less(k)}>−</button>{/if}
+                    </li>
+                  {/each}
+                </ul>
+              {/each}
+            </div>
+          {:else}
+            <p class="empty" data-shop-empty>{t('shop.emptyPocket')}</p>
+          {/if}
+        </div>
         {#if pocket.length}
           <div class="bar">
             <p class="sum" data-shop-offer={pickedV}>{pickedN ? t('shop.offer', { n: String(pickedN), v: formatNum(pickedV) }) : t('shop.pickHint')}</p>
@@ -657,14 +682,16 @@
           </div>
         {/if}
       {:else}
-        <h2 class="sec-label">{t('shop.today')}</h2>
-        {#if stock.length}
-          <ul class="grid" data-shop-stock>
-            {#each stock as code (code)}{@render piece(code)}{/each}
-          </ul>
-        {:else if week.model}
-          <p class="empty" data-shop-sold-out>{t('shop.soldOut')}</p>
-        {/if}
+        <div class="list" data-shop-list>
+          <h2 class="sec-label">{t('shop.today')}</h2>
+          {#if stock.length}
+            <ul class="grid" data-shop-stock>
+              {#each stock as code (code)}{@render piece(code)}{/each}
+            </ul>
+          {:else if week.model}
+            <p class="empty" data-shop-sold-out>{t('shop.soldOut')}</p>
+          {/if}
+        </div>
         <div class="bar">
           <p class="sum" data-shop-pick={every ? 'all' : (pick ?? '')} data-shop-total={every ? rest.total : null}>
             {every ? t('shop.offer', { n: String(rest.items.length), v: formatNum(rest.total) })
@@ -723,18 +750,21 @@
   }
   .reset svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 
-  /* the twins' balloon: over まめきち's head, its tail down to him; hidden (still there for its line) when quiet */
+  /* the twins' balloon: over まめきち's head, its tail down to him, a speech balloon's size; hidden (still there for its
+     line) when quiet */
   .say.float {
-    position: absolute; z-index: 2; left: 70%; top: 40%; translate: -50% calc(-100% - 10px); width: max-content; max-width: 260px;
+    position: absolute; z-index: 2; left: 70%; top: 40%; translate: -50% calc(-100% - 10px); width: max-content; max-width: 220px;
     opacity: 0; pointer-events: none; transition: opacity .18s;
   }
   .say.float.on { opacity: 1; }
-  /* (the balloon never takes a tap meant for the room: only its choices do) */
-  .say.float.on .choices { pointer-events: auto; }
+  /* (the balloon takes no tap meant for the room: only its line, which hides it, and its choices) */
+  .say.float.on p, .say.float.on .choices { pointer-events: auto; }
+  .say.float p { cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .say p, .say.docked {
     margin: 0; padding: 8px 14px; border-radius: 18px; background: var(--c-cream); color: var(--c-ink);
     box-shadow: 0 3px 0 var(--c-lip), var(--sh-float); font: 700 var(--fs-body)/1.35 var(--font-ui); text-align: center;
   }
+  .say.float p { padding: 6px 12px; border-radius: 16px; font-size: var(--fs-s); }
   .say.float p::after {
     content: ''; position: absolute; left: calc(50% + var(--tail)); bottom: -8px; width: 14px; height: 14px; translate: -50% 0; rotate: 45deg;
     background: var(--c-cream); border-radius: 0 0 4px 0;
@@ -761,22 +791,31 @@
   .card .btn { margin: 0; flex: none; }
   .foot {
     position: absolute; z-index: 3; left: calc(var(--safe-left, 0px) + 8px); right: calc(var(--side) + var(--safe-right));
-    bottom: calc(var(--safe-bottom, 0px) + 14px); display: flex; align-items: center; gap: 8px; justify-content: flex-end;
+    bottom: calc(var(--safe-bottom, 0px) + 14px); display: flex; align-items: center;
   }
-  .foot .btn { margin: 0; }
-  .eye-dock { margin-right: auto; }
 
+  /* the sheet: its head and tabs pinned at the top and the bar at the foot, only the list between them scrolls (its own
+     scroller, so iOS Safari's rubber band never drags the head off) */
   .menu {
-    position: absolute; z-index: 4; left: 0; right: 0; bottom: 0; max-height: 72%; display: flex; flex-direction: column; gap: 10px;
-    padding: 12px var(--side) 0; background: var(--c-cream); border-radius: var(--r-card) var(--r-card) 0 0;
-    box-shadow: 0 -4px 0 var(--c-lip); overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y;
+    position: absolute; z-index: 4; left: 0; right: 0; bottom: 0; max-height: 72%; display: flex; flex-direction: column;
+    background: var(--c-cream); border-radius: var(--r-card) var(--r-card) 0 0; box-shadow: 0 -4px 0 var(--c-lip); overflow: hidden;
     /* the panel's own controls keep the day's look (fixed cream, ink) at every time of day */
     --text: var(--c-ink); --text-soft: var(--c-ink-soft); --ctl: var(--c-card); --ctl-sel: var(--c-yuzu); --ctl-off: #EADBB8;
     --sh-ctl: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); --sh-ctl-press: inset 0 0 0 2px var(--c-edge), 0 2px 0 var(--c-edge);
     animation: sheet-in .2s ease-out;
   }
   @keyframes sheet-in { from { translate: 0 24px; opacity: 0; } }
+  .pin {
+    flex: none; display: grid; gap: 10px; padding: 12px calc(var(--side) + var(--safe-right)) 10px calc(var(--side) + var(--safe-left));
+    box-shadow: 0 2px 0 var(--c-lip);
+  }
   .head { display: flex; align-items: center; gap: 8px; }
+  .list {
+    flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; -webkit-overflow-scrolling: touch;
+    display: flex; flex-direction: column; gap: 10px; padding: 12px calc(var(--side) + var(--safe-right)) 12px calc(var(--side) + var(--safe-left));
+  }
+  /* (no bar under it, an empty うる: the list keeps clear of the home indicator) */
+  .list:last-child { padding-bottom: var(--pad-foot); }
   .say.docked { flex: 1 1 auto; text-align: left; background: var(--c-card); box-shadow: inset 0 0 0 2px var(--c-edge); }
   .pocket { display: flex; flex-direction: column; gap: 10px; }
   .grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
@@ -813,7 +852,7 @@
   .less::after { content: ''; position: absolute; inset: -6px; }
   .empty { margin: 18px 4px; text-align: center; color: var(--c-ink-soft); font-weight: 700; }
   .bar {
-    position: sticky; bottom: 0; margin: auto calc(-1 * var(--side)) 0; padding: 10px var(--side) var(--pad-foot);
+    flex: none; padding: 10px calc(var(--side) + var(--safe-right)) var(--pad-foot) calc(var(--side) + var(--safe-left));
     display: flex; align-items: center; gap: 8px; background: var(--c-cream); box-shadow: 0 -2px 0 var(--c-lip);
   }
   .bar .btn { margin: 0; flex: none; }

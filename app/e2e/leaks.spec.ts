@@ -87,7 +87,9 @@ test('the rooms and the home picker, in and out: no WebGL context or window list
     await nav(page, `${BASE}/shop${Q}`);
     await framed(page, '__shop');
     inRoom.push((await measure(page)).gl);
-    await page.locator('[data-shop-open="buy"]').click();
+    await page.waitForFunction(() => !!(window as unknown as { __shop?: object }).__shop);
+    await page.evaluate(() => (window as unknown as { __shop: { talk(): void } }).__shop.talk());
+    await page.locator('[data-shop-choice="buy"]').click();
     await page.locator('[data-shop-close]').click();
     await back();
     await nav(page, `${BASE}/museum${Q}`);

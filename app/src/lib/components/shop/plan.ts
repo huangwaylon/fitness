@@ -23,6 +23,9 @@ export const COUNTER_FRONT: Pt = [36, 27];
 export const TWINS: Readonly<Record<'timmy' | 'tommy', Pt>> = { timmy: [61, 23], tommy: [61, 34] };
 /** The shop part's right wall (it stands out to the counter corner's back wall) and the corner's back wall. */
 const INNER_X = 22.5, CORNER_Z = 5;
+/** Whether one stands at the counter: in the counter corner, past the shop part's right wall (the twins greet one
+ *  there, not at the door). */
+export const atCounter = (p: Pt): boolean => p[0] > INNER_X + 4 && p[1] > CORNER_Z;
 
 /** Which wall a point of the model (over the floor) belongs to: 0 the back (the stage's, and the counter corner's),
  *  1 the left, 2 the right (the corner's, and the shop part's own, standing in), or null (the floor and what stands

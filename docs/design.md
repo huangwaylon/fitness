@@ -1005,10 +1005,11 @@ furniture for the rooms. Each person's own pocket and かいがら, the guest's 
   for an older app, which drops a shop walk. Out of the door, or gone quiet past the presence's grace, they're gone.
 - **The finger** (the rooms' rule): a floor tap walks (round the stage, the table and the counter); a tap on a piece
   picks it in place (my villager turns to it, a card: its icon, name, price and 買う, or 持っている); a tap on the
-  twins is their greeting and NH's choice box (うりたい · しなものを みたい · なんでもない). Their line is a balloon by
-  まめきち (at the screen's edge, its tail toward him, when he's out of view). The foot's うる and しなもの open the
-  counter's list over the room: the old panel as a sheet (its ✕ back to the room), where 全部 still buys every piece I
-  don't have at once.
+  twins is NH's choice box (うりたい · しなものを みたい · なんでもない), the only way to the counter's list over the room:
+  the old panel as a sheet (its ✕ back to the room; its head, ✕ and tabs pinned while the list scrolls), where 全部
+  still buys every piece I don't have at once. Their line is a small balloon by まめきち (at the screen's edge, its tail
+  toward him, when he's out of view): いらっしゃいませ once I first reach the counter (not at the door), gone after 4 s
+  or at a tap on it; it takes no other tap meant for the room (2026-11-10).
 - **うる** (sell): my pocket, everything I caught, found or picked up less what I sold, in sections (虫, 魚, 海の幸,
   かいがら, 資源, 果物, 化石, その他), dearest first. A tap picks one more, − one less, ぜんぶ all; the bar says 「3こで 120
   かいがら」 and うる sells. Selling never takes anything out of the ずかん or the museum. A present's furniture or recipe

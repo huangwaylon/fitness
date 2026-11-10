@@ -28,9 +28,11 @@ const pieceOf = async (page: Page, ok: (price: number) => boolean): Promise<[str
 };
 const SHOTS = process.env.SHOTS;
 const tally = (counts: Record<string, number>, who: 'A' | 'B' | 'G' = 'A'): Seed => ['tally', { date: '2026-11-04', counts }, who];
-/** The counter's list over the room: うる or かう. */
+/** The counter's list over the room: うる or かう, by the twins' choice box (as a tap on them: the 3D tests tap them). */
 const openList = async (page: Page, tab: 'sell' | 'buy') => {
-  await page.locator(`[data-shop-open="${tab}"]`).click();
+  await page.waitForFunction(() => !!(window as unknown as { __shop?: object }).__shop);
+  await page.evaluate(() => (window as unknown as { __shop: { talk(): void } }).__shop.talk());
+  await page.locator(`[data-shop-choice="${tab}"]`).click();
   await expect(page.locator('[data-shop-panel]')).toHaveAttribute('data-shop-panel', tab);
 };
 type ShopHooks = {
@@ -302,6 +304,37 @@ test('a tap on the twins is their choice box: うりたい opens うる at the c
   await page.locator('[data-shop-choice="buy"]').click();
   await expect(page.locator('[data-shop-panel]')).toHaveAttribute('data-shop-panel', 'buy');
   await expect(stock(page)).toHaveCount(24);
+});
+
+// The twins' hello (docs/design.md "The shop"): not at the door, once I reach the counter; a small balloon that goes by
+// itself after a few seconds or at a tap on it, never in the way of a tap on the room.
+test('the twins say いらっしゃいませ once I reach the counter, not at the door; gone at a tap on it, or by itself', async ({ page }) => {
+  await seed(page, []);
+  const balloon = page.locator('.say.float');
+  const toCounter = async () => {
+    await roomIn(page);
+    await expect(balloon).not.toHaveClass(/\bon\b/);
+    const counter = await page.evaluate(() => (window as unknown as { __shop: { counter(): [number, number] } }).__shop.counter());
+    await page.evaluate(([x, z]) => (window as unknown as { __shop: { walkTo(x: number, z: number): void } }).__shop.walkTo(x, z), counter);
+    await expect(balloon).toHaveClass(/\bon\b/);
+    await expect(balloon.locator('[data-shop-say]')).toHaveAttribute('data-shop-say', 'hello');
+  };
+  await page.goto(`shop${Q}`);
+  await toCounter();
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/shop-hello.png`, animations: 'disabled' });
+  // a small balloon, not over the screen
+  const box = (await balloon.boundingBox())!;
+  expect(box.width).toBeLessThanOrEqual(240);
+  expect(box.height).toBeLessThan(120);
+  // tapped: gone at once (well before it would go by itself)
+  await balloon.locator('p').click();
+  await expect(balloon).not.toHaveClass(/\bon\b/, { timeout: 1000 });
+  // in again, left alone: gone by itself after a few seconds; the counter again says nothing more this visit
+  await page.reload();
+  await toCounter();
+  await expect(balloon).not.toHaveClass(/\bon\b/, { timeout: 8000 });
+  await roomIn(page);
+  await expect(balloon).not.toHaveClass(/\bon\b/);
 });
 
 test('a floor tap walks my villager round what stands, never onto the stage or behind the counter', async ({ page }) => {

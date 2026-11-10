@@ -138,7 +138,9 @@ test('a shake knocks out a piece of wood; picked up, it is in my pocket’s し�
   await expect(page.locator('.detail')).toHaveCount(0);
   await page.goto('shop?demo&date=2026-11-04T12:00');
   // the counter's うる list over the 3D shop
-  await page.locator('[data-shop-open="sell"]').click();
+  await page.waitForFunction(() => !!(window as unknown as { __shop?: object }).__shop);
+  await page.evaluate(() => (window as unknown as { __shop: { talk(): void } }).__shop.talk());
+  await page.locator('[data-shop-choice="sell"]').click();
   const tile = page.locator(`[data-shop-sec="material"] + ul [data-shop-catch="goods:${what}"]`);
   await expect(tile).toHaveAttribute('data-n', '1');
   const shells = () => page.locator('[data-shop]').getAttribute('data-shells').then(Number);

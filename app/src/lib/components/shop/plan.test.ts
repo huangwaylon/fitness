@@ -4,7 +4,7 @@ import { stockOf } from '#lib/contract/stock.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { footprint, ITEMS } from '../tent/items.ts';
 import { isWallItem } from '../tent/grid.ts';
-import { COUNTER_FRONT, DOOR_IN, RECT, TWINS, WALL_ZONE, ZONES, blocked, display, side, standable, walkPath } from './plan.ts';
+import { COUNTER_FRONT, DOOR_IN, atCounter, RECT, TWINS, WALL_ZONE, ZONES, blocked, display, side, standable, walkPath } from './plan.ts';
 
 const days = Array.from({ length: 30 }, (_, i) => addDays('2026-11-01', i));
 /** A shown piece's box on its zone's top (model units: x0, x1, z0, z1) and the zone it's in. */
@@ -116,5 +116,15 @@ describe('shop plan: the walls’ sides (the cutaway)', () => {
     expect(side(40, 10, 4)).toBe(0);
     expect(side(0, 0.2, 0)).toBeNull();
     expect(side(50, 8, 25)).toBeNull();
+  });
+});
+
+describe('shop plan: at the counter (the twins’ hello)', () => {
+  it('the counter’s front is at the counter; the door, the stage and the shop floor aren’t', () => {
+    expect(atCounter(COUNTER_FRONT)).toBe(true);
+    expect(atCounter(DOOR_IN)).toBe(false);
+    expect(atCounter([DOOR_IN[0] + 8, DOOR_IN[1] - 12])).toBe(false);
+    expect(atCounter([0, 10])).toBe(false);
+    expect(atCounter([-40, 12])).toBe(false);
   });
 });
