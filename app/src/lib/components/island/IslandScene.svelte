@@ -40,6 +40,8 @@
   import Says from './Says.svelte';
   import SayPicker from './SayPicker.svelte';
   import SayButton from './SayButton.svelte';
+  import FarmMenu from './FarmMenu.svelte';
+  import { layoutPlots } from '#lib/layout/field.ts';
   import CatchStack from './CatchStack.svelte';
   import { SAY_TAG, rememberSay, sayGate } from './say.ts';
   import { HIGHFIVE_LIVE_MS, heardHighFive } from './highFives.ts';
@@ -240,6 +242,8 @@
   let sayBtn = $state<HTMLButtonElement>();
   /** The say button shows on the live island with nothing over it: no sheet, the harvest, a tree's popup, もようがえ. */
   const sayShown = $derived(!covered && !openTree && !ui.sheets.length);
+  /** The island has a field (docs/farming.md): the farm menu shows. */
+  const fieldsHere = $derived((void site.rev, site.layout ? layoutPlots(site.layout).length > 0 : false));
   const vilEls = $state<Record<VillagerActor, HTMLElement | undefined>>({ mine: undefined, partner: undefined, third: undefined });
   function openPicker(el: HTMLElement) {
     if (!sayShown) return;
@@ -1149,6 +1153,10 @@
   {#if sayShown}
     <!-- the picker's door: bottom right, over the sea, clear of the home indicator and しずえ's box (--news-lift) -->
     <div class="say-dock"><SayButton bind:el={sayBtn} open={!!picking} onopen={openPicker} /></div>
+    {#if fieldsHere}
+      <!-- the farm menu: its mirror at the bottom left (docs/farming.md), while the island has a field -->
+      <div class="farm-dock"><FarmMenu /></div>
+    {/if}
   {/if}
   <!-- every catch's plate: a stack at the bottom centre, outside the viewport (the newest at the bottom) -->
   <CatchStack scene={sceneEl} />
@@ -1238,7 +1246,7 @@
         <SceneTaps bind:this={sceneTaps} scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden} swallowed={() => closedBy} walk={walkThere} sit={sitOn}
           exercise={view.people.A.rings.peach.met || view.people.B.rings.peach.met} cake={bday.length > 0}
           skyTap={(x, y) => !!fireworks?.tap(x, y)}
-          say={(name, parts, from, o) => talk?.say(name, parts, from, o)} ontrick={faces.trick} tree={treeTap} />
+          say={(name, parts, from, o) => talk?.say(name, parts, from, o)} ontrick={faces.trick} tree={treeTap} mutter={(text) => showSay('mine', text)} />
         <Talk bind:this={talk} scene={sceneEl} />
         <Says bind:this={says} scene={sceneEl} />
         {#if hookFlag('hit')}
@@ -1276,6 +1284,11 @@
      the home indicator; with しずえ's box up it sits over the box (the page's --news-lift) */
   .say-dock {
     position: absolute; z-index: 2; right: calc(var(--safe-right, 0px) + 8px);
+    bottom: calc(var(--pad-bottom, 8px) + 8px + var(--news-lift, 0px));
+  }
+  /* the farm menu: the say button's mirror at the bottom left */
+  .farm-dock {
+    position: absolute; z-index: 2; left: calc(var(--safe-left, 0px) + 8px);
     bottom: calc(var(--pad-bottom, 8px) + 8px + var(--news-lift, 0px));
   }
   /* the 3D island: the finger is world3d/gestures.ts' (no native scroll, no page zoom); the canvas draws what the DOM's

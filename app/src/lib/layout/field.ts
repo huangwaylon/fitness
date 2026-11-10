@@ -29,13 +29,13 @@ export const fieldS = (f: FieldDef): string => `${f.who.toLowerCase()}-${Math.ma
 /** One plot: its id, its owner, its tile. */
 export interface PlotTile { p: string; who: Who; c: number; r: number }
 
-const memo = new WeakMap<Layout, { plots: PlotTile[] }>();
+const memo = new WeakMap<Layout, { plots: PlotTile[]; at: Map<string, PlotTile> }>();
 function plotsMemo(layout: Layout) {
   let m = memo.get(layout);
   if (!m) {
     const plots: PlotTile[] = [];
     for (const o of layout.objects.values()) if (o.k === 'field') plots.push(...fieldPlots(o));
-    m = { plots };
+    m = { plots, at: new Map(plots.map((t) => [`${t.c},${t.r}`, t])) };
     memo.set(layout, m);
   }
   return m;
@@ -50,3 +50,16 @@ export function fieldPlots(o: Pick<Obj, 'id' | 'x' | 'z' | 's'>): PlotTile[] {
 
 /** Every plot of the layout's fields. */
 export const layoutPlots = (layout: Layout): readonly PlotTile[] => plotsMemo(layout).plots;
+/** The plot on tile (c, r), if a field covers it. */
+export const plotAt = (layout: Layout, c: number, r: number): PlotTile | undefined => plotsMemo(layout).at.get(`${c},${r}`);
+
+/** The plots round `t` (its 3 × 3, itself included, any field's): the can's reach (NH's golden can). */
+export function plotsAround(layout: Layout, t: PlotTile): PlotTile[] {
+  const out: PlotTile[] = [];
+  for (let dz = -1; dz <= 1; dz++)
+    for (let dx = -1; dx <= 1; dx++) {
+      const n = plotAt(layout, t.c + dx, t.r + dz);
+      if (n) out.push(n);
+    }
+  return out;
+}

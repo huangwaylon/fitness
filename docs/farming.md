@@ -3,8 +3,9 @@
 NH 2.0's vegetables on the island (decided 2026-11-10; the user's changes the same day: a field each, 40 plants). Buy
 starts at the shop, plant them on your field, water, harvest, and the plant grows back. The produce sells for かいがら,
 never ベル. Code: `contract/farm.ts` (the rules, shared by the record and the phones), `contract/wet.ts` (rain),
-`model/farm.ts`, `layout/field.ts`, `island/farm.ts` (the scene), `world3d/objects.ts` (drawn); tests
-`contract/farm.test.ts`, `relay/test/farm.test.ts`.
+`model/farm.ts`, `layout/field.ts`, `store/farm.svelte.ts` (the writes, たね), `island/farm.ts` (the scene),
+`island/farmTap.ts` (a plot's tap), `island/FarmMenu.svelte`, `farm/FarmSheet.svelte`, `world3d/objects.ts` (drawn);
+tests `contract/farm.test.ts`, `island/farmTap.test.ts`, `relay/test/farm.test.ts`, `e2e/farm.spec.ts`.
 
 ## Decisions
 
@@ -64,12 +65,15 @@ levers, if the live numbers drift (`npm run logs`, the sells): `FARM.regrowDays`
 
 - **The farm button** (bottom left, the say button's mirror, NH's seed bag): たね (pick what to plant: each start and
   vegetable I have, kept on this phone), スコップ (armed for one dig, 取り消す 5 s) and はたけ (the 畑 sheet). Only on
-  the island, hidden with the say button.
-- **A tap on a plot** acts in place (never a walk; my villager turns to it), in order: the shovel armed on my plant
+  the island while it has a field, hidden with the say button.
+- **A tap on a plot** (its tile under the finger, before a weed's or a find's finger slack) acts in place (never a
+  walk; my villager turns to it), in order: the shovel armed on my plant
   digs it; my ripe plant is harvested (the catch plate 「トマトを しゅうかく！ ×3」); a plant not watered today is watered
   with its neighbours; my empty plot is planted with the picked crop (none picked: the picker opens); else a bubble
   (「うめの ニンジン・あと 1にち」, 「みずやり ずみ」).
-- **Watered soil** is dark for the rest of the day; a ripe plant shows its yield's model.
+- **Watered soil** is dark for the rest of the day (the soil's instance colour); a ripe plant shows its yield's model.
+  The partner's watering shows at once (the shared world's day, the flowers' own); their plant or harvest on their
+  next sync (a few seconds: a batch waits 2 s for the next tap).
 - **The 畑 sheet:** my plants (収穫できる, 育成中 with days left, 空き区画), today's harvest and its かいがら, 「12/40株」,
   the partner's and the guest's plants folded, the rule line and 「苗はタヌキ商店で買えます」.
 - **The shop:** うる's 野菜 section (vegetables and starts); かう's 「なえ」 row of the six starts with a count.

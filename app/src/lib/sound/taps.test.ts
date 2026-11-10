@@ -27,6 +27,7 @@ const SELF: Record<string, string> = {
   'lib/components/wallet/BuyConfirm.svelte': '買う！ → purchase (the wallet’s buy), or the boop if the wallet fell short',
   'lib/components/island/IslandScene.svelte': 'a villager → villager-tap or emote-surprise (woken)',
   'lib/components/island/HudHealth.svelte': 'the dumbbell → jar-tap (R18: both look up at it), then the popup plays panel-open',
+  'lib/components/island/FarmMenu.svelte': 'はたけ → jar-tap (R18: both look up at it), then the 畑 sheet plays panel-open',
   'lib/components/island/HudMenu.svelte': 'ベル / 旅行 / 結婚式 / トレイル / 英語 / 設定 → jar-tap (R18: both look up at it), then the panel or its sheet plays panel-open',
   'lib/components/shop/ShopRoom.svelte': 'a catch or a piece → tick; うる / かう → purchase, or the boop when nothing is picked or it can\'t be had; ‹ 島へ → scene-bench (out of the door)',
   'lib/components/island/FruitTree.svelte': 'canopy → tree-shake; the fruit row and closing the popup → tick; the popup\'s ごはん button → its sheet plays panel-open',

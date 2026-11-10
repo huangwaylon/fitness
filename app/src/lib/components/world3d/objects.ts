@@ -81,7 +81,7 @@ export interface Day {
 }
 
 /** Watered soil: NH's darker tilled earth (the soil's colour multiplied). */
-const WET_SOIL = 0x8a7464;
+const WET_SOIL = 0x3c2a20;
 
 const MU = ISLAND_MODELS as unknown as Record<string, { mu: [number, number] }>;
 const MODELS = W3D.models as Record<string, { min: number[]; max: number[] }>;

@@ -25,7 +25,7 @@ export const isFarmCrop = (c: unknown): c is Crop => (CROPS as readonly unknown[
  */
 export const FARM = { startBuy: 14, cap: 40, growDays: 3, regrowDays: 3, maxYield: 3, batchMax: 40 } as const;
 
-type FarmSrc = 'start' | 'crop';
+export type FarmSrc = 'start' | 'crop';
 export type FarmOp = { o: 'plant'; p: string; c: Crop; src: FarmSrc } | { o: 'harvest'; p: string; n: number } | { o: 'dig'; p: string };
 export interface FarmData { d: LocalDate; ops: FarmOp[] }
 
@@ -34,10 +34,10 @@ export interface FarmData { d: LocalDate; ops: FarmOp[] }
 const PLOT_RE = /^fd:[\w:.-]{1,29}$/;
 export const plotOf = (fieldId: string, col: number, row: number): string => `fd:${fieldId}.${col}.${row}`;
 /** A crop's pocket keys: its vegetable (`goods:tomato`) and its start (`goods:tomato-start`). */
-const cropKey = (c: Crop): string => `goods:${c}`;
+export const cropKey = (c: Crop): string => `goods:${c}`;
 export const startKey = (c: Crop): string => `goods:${c}-start`;
 /** What a plant takes from the pocket. */
-const seedKey = (c: Crop, src: FarmSrc): string => (src === 'start' ? startKey(c) : cropKey(c));
+export const seedKey = (c: Crop, src: FarmSrc): string => (src === 'start' ? startKey(c) : cropKey(c));
 
 const keysAre = (d: Record<string, unknown>, keys: readonly string[]): boolean => {
   const k = Object.keys(d);
@@ -89,7 +89,7 @@ export interface Farm { plots: Map<string, Plot>; net: Partial<Record<Who, Map<s
 export const emptyFarm = (): Farm => ({ plots: new Map(), net: {} });
 
 /** Plants `who` has on the field. */
-const plantsOf = (f: Farm, who: Who): number => {
+export const plantsOf = (f: Farm, who: Who): number => {
   let n = 0;
   for (const pl of f.plots.values()) if (pl.who === who) n++;
   return n;

@@ -56,6 +56,22 @@
   import { onMount } from 'svelte';
   import { fx3d } from './fx3d.ts';
   import { echo3d } from './echo3d.ts';
+  import { farmUi } from './farmUi.svelte.ts';
+  import { farmTap } from './farmTap.ts';
+  import { farmToday } from './farm.ts';
+  import { isRain } from './weather.ts';
+  import { showCatch } from './catchCard.ts';
+  import { loadNames } from './catchLine.ts';
+  import { plantsOf } from '#lib/contract/farm.ts';
+  import { plotAt, plotsAround } from '#lib/layout/field.ts';
+  import { tileAt, tileMid } from '#lib/layout/grid.ts';
+  import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
+  import { week } from '#lib/store/week.svelte.ts';
+  import { dig as digPlot, harvest as harvestPlot, plant as plantPlot, seed as farmSeed } from '#lib/store/farm.svelte.ts';
+  import { UNDO_MS } from '#lib/store/actions.ts';
+  import { shopView } from '#lib/model/shop.ts';
+  import { toasts } from '#lib/ui-state/toast.svelte.ts';
+  import type { Who } from '#lib/types.ts';
 
   interface Props {
     /** The .if-scene element (the listener's home; the stage, orb and clouds are found inside it). */
@@ -84,8 +100,10 @@
     /** A tap on a seat (Scenery's data-sit, its piece's id: a bench, a stool, the hammock): my villager walks up to it and
      *  sits or lies on it (IslandScene sitOn; true when it took the tap). */
     sit?: (piece: string) => boolean;
+    /** A word over my villager (IslandScene's Says: a field's 「みずやり ずみ」). */
+    mutter?: (text: string) => void;
   }
-  let { scene, season, tod, enabled, swallowed, say, ontrick, exercise = false, skyTap, cake = false, walk, tree, sit }: Props = $props();
+  let { scene, season, tod, enabled, swallowed, say, ontrick, exercise = false, skyTap, cake = false, walk, tree, sit, mutter }: Props = $props();
   const w = useWorld();
 
   type Kind = 'bush' | 'fire' | 'flower' | 'cloud' | 'sun' | 'moon' | 'star' | 'shoot' | 'wish' | 'splash' | 'sand' | 'grass';
@@ -282,6 +300,10 @@
     // own boxes; then the visitor's reach (a finger's slack round it, its spot); then K.K. on his stool with a chat or a
     // song (his figure's box is wider than he is: a shell by his stool is the shell's)
     if (visitor?.tap(cx, cy, true) || guest?.tap(cx, cy, true)) return;
+    // a plot under the finger (a field's tile, docs/farming.md): farmed where it is, before a weed's or a find's slack
+    // round them reaches over it (and never walked to)
+    const ground = cy - r.top < w.view.horizon ? null : w.worldAtClient(cx, cy);
+    if (ground && farmAt(ground.x, ground.z)) return;
     if (finds?.tap(cx, cy)) return;
     if (care?.tap(cx, cy)) return;
     if (visitor?.tap(cx, cy) || guest?.tap(cx, cy)) return;
@@ -416,6 +438,75 @@
     sceneSfx('water');
     if (rare === 'butterfly') sceneSfx('butterfly');
   }
+
+  /**
+   * A tap on a plot (docs/farming.md "Playing", island/farmTap.ts): it acts where it is (nobody walks; my villager turns
+   * to it): the armed shovel digs my plant (one shot, 取り消す 5 s), my ripe plant is harvested (the plate), a plant
+   * not watered today is watered with its neighbours (NH's golden can, on every phone: the shared day's `watered`), my
+   * empty plot planted (or the picker opens), else a word. False: no field there. The shovel is disarmed by any tap.
+   */
+  function farmAt(x: number, z: number): boolean {
+    const armed = farmUi.shovel;
+    farmUi.shovel = false;
+    const m = week.model, layout = site.layout ?? layoutStore.current;
+    const [c, r] = tileAt(x, z);
+    const plot = layout ? plotAt(layout, c, r) : undefined;
+    if (!m || !plot) return false;
+    const date = week.view?.today ?? dayKey();
+    const live = date === dayKey();
+    const { farm, watered } = farmToday(m.state, date, { ids: new Set(live ? Object.keys(shared.day.watered) : []), wet: live && (isRain(weather.sky) || weather.sky === 'snow') });
+    const pocket = shopView(m.state, m.me).pocket;
+    const pl = farm.plots.get(plot.p);
+    const [px, pz] = tileMid(plot.c, plot.r);
+    const act = farmTap({ me: m.me, plot, plant: pl, date, watered, shovel: armed, seed: farmSeed.pick, have: (k) => pocket.get(k) ?? 0, mine: plantsOf(farm, m.me) });
+    if (act.a !== 'pick') turnTo(px);
+    const name = (c: string) => t(`beach.name.${c}`);
+    switch (act.a) {
+      case 'dig': {
+        const res = digPlot(date, plot.p);
+        spawn({ kind: 'grass', x: px, y: pz, flip: roll(2) });
+        sceneSfx('dig');
+        if (res.ok && res.undo) toasts.show(t('world.farm.dug', { name: name(act.c) }), UNDO_MS, { action: { label: t('common.undo'), run: () => void res.undo!() } });
+        return true;
+      }
+      case 'harvest': {
+        harvestPlot(date, plot.p, act.n);
+        spawn({ kind: 'grass', x: px, y: pz, flip: roll(2) });
+        sceneSfx('catch');
+        const [sx, sy] = w.screenU(px, pz, 4);
+        void loadNames().then(() => showCatch(sx, sy, `finds/${act.c}`, t('world.farm.harvest', { name: name(act.c), n: act.n })), () => {});
+        return true;
+      }
+      case 'water': {
+        // (the plants round it, its own the first: NH's golden can waters 3 × 3)
+        for (const n of plotsAround(layout, plot)) if (n.p === plot.p || farm.plots.has(n.p)) shared.share({ kind: 'world', op: 'watered', id: n.p });
+        spawn({ kind: 'flower', x: px, y: pz, lift: 8, color: '#8FD0F5', flip: px > site.midX });
+        sceneSfx('water');
+        return true;
+      }
+      case 'plant':
+        plantPlot(date, plot.p, act.c, act.src);
+        spawn({ kind: 'grass', x: px, y: pz, flip: roll(2) });
+        sceneSfx('dig');
+        return true;
+      case 'pick':
+        farmUi.picker = true;
+        return true;
+      case 'cap':
+        mutter?.(t('world.farm.cap'));
+        return true;
+      case 'none-left':
+        mutter?.(t('world.farm.noneLeft', { name: name(act.c) }));
+        return true;
+      default: {
+        const who = whoName(act.who);
+        mutter?.(!act.c ? t('world.farm.whose', { who }) : act.left ? t('world.farm.left', { who, name: name(act.c), n: act.left }) : act.watered ? t('world.farm.watered') : t('world.farm.ripe', { who, name: name(act.c) }));
+        return true;
+      }
+    }
+  }
+  /** A player's villager name (the farm's words). */
+  const whoName = (who: Who): string => (who === 'G' ? week.view?.guest.villagerName : week.view?.people[who].villagerName) ?? who;
 
   /** A tap in the sky (x, y: px from the stage's top-left). */
   function sky(e: MouseEvent, r: DOMRect, x: number, y: number) {
