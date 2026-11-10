@@ -29,7 +29,8 @@ const BUG: Record<string, string> = {
   'golden-stag': 'Ougononikuwagata', 'horned-dynastid': 'Kabutomushi', 'horned-atlas': 'Kohkasasuohkabuto', 'horned-elephant': 'Zoukabuto',
   'walking-stick': 'Nanafushi', 'walking-leaf': 'Konohamushi', bagworm: 'Minomushi', 'hermit-crab': 'Yadokari', 'wharf-roach': 'Funamushi',
   mosquito: 'Ka', flea: 'Nomi', snail: 'Katatsumuri', 'pill-bug': 'Dangomushi', centipede: 'Mukade', spider: 'Kumo', tarantula: 'Taranchura',
-  scorpion: 'Sasori'
+  scorpion: 'Sasori', 'blue-weevil-beetle': 'Housekizoumushi', 'giraffe-stag': 'Girafanokogirikuwagata', 'horned-hercules': 'Herakuresuohkabuto',
+  'dung-beetle': 'Funkorogashi', ant: 'Ari', fly: 'Hae'
 };
 
 /** The fish (critters.ts FishId, pondFish.ts) → NH's Fish<Name> models (the one the player holds up). */
@@ -139,6 +140,9 @@ const bugs = Object.entries(BUGS).map(([id, b]): AssetJob => ({
   name: `critters/bugs/${id}`, parts: one(`Insect${BUG[id]}`), maxTex: 128, tris: 2500,
   uses: [{ key: `critters/${id}`, cat: 'bug', s: VILLAGER_S, anchor: FLYING.has(b.flight) ? 'centre' : 'feet', lazy: 'bug' }]
 }));
+// the snowball NH's dung beetle rolls (the snowboy's, its middle at its origin), on the island before its head
+// (Critters.svelte, critterMotion3d.ts ball3), its snow unshaded white as the snowboy's
+bugs.push({ name: 'critters/bugs/dung-beetle-ball', parts: one('SnowBall'), maxTex: 64, tris: 600, noAo: true, uses: [{ key: 'critters/dung-beetle-ball', cat: 'bug', h: 14, anchor: 'centre', lazy: 'bug' }] });
 // the wasps that chase you (NH's field wasp: the swarm's)
 bugs.push({ name: 'critters/bugs/wasp-swarm', parts: [['InsectHachiField', 'InsectHachi']], maxTex: 64, tris: 600, uses: [{ key: 'critters/wasp-swarm', cat: 'bug', s: VILLAGER_S, anchor: 'centre', lazy: 'bug' }] });
 const fish = Object.keys({ ...FISH_TABLE, ...POND_FISH }).map((id): AssetJob => ({

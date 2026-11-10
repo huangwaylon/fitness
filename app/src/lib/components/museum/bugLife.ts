@@ -144,8 +144,9 @@ export function slotsOf(id: string, hab: Habitat): readonly Slot[] {
     case 'water': return each(2, 'water');
     // (not the strip by the bushes: a locust's too big for it; the far corner's by the log's soil)
     case 'hop': return [0, 1, 2, 4, 5].map((i) => ({ i, takes: [`grass${i}`, ...(i === 4 ? ['soil2'] : [])] }));
-    // (the spider, a big one, not on the ferns' little patch: it would hardly move)
-    case 'ground': return each(GROUND.length, 'soil').filter((s) => id !== 'spider' || s.i !== 1);
+    // (the spider, a big one, not on the ferns' little patch: it would hardly move; the dung beetle, wider still, its
+    // wings out, only on the log's big patch)
+    case 'ground': return each(GROUND.length, 'soil').filter((s) => (id === 'dung-beetle' ? s.i === 0 : id !== 'spider' || s.i !== 1));
     case 'leaf': return each(LEAVES.length, 'leaf');
     case 'terrarium': return each(CASES.length, 'case');
     case 'trunk': return each(OAKS.length, 'oak');

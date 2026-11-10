@@ -14,6 +14,11 @@ import { shadowLen, type Flight } from './critters.ts';
 import type { Line as MyLine } from './fishing.ts';
 import type { Bug, Fish, P3 } from './critterTypes.ts';
 
+/** The dung beetle's snowball: across (u: assets.json's `h`), and its middle ahead of the beetle's (its head's 8.6u, then
+ *  the ball's radius). */
+const BALL_U = 14;
+const BALL_AHEAD = 15.6;
+
 /** What the frame reads of the component: my line, my line's fish nose to the float (from `at`, for line `n`), the
  *  line's number now, the relay's clock (the shared itineraries'), and a plain copy of a state proxy's value. */
 export interface Motion3Deps {
@@ -139,8 +144,27 @@ export function critterMotion3d(d: Motion3Deps) {
     return m.xyz;
   }
   const bugYaw = (bp: Bug) => ((b) => mos.get(b.id)?.out ?? (b.flip ? Math.PI : 0))(srcBug(bp));
+  /** The dung beetle's snowball (NH: it rolls one; assets.json critters/dung-beetle-ball, BALL_U across): just before
+   *  its head, its middle a radius up, rolled by the way it's gone (`roll`, radians about its axle, for the node's
+   *  pitch). */
+  const balls = new Map<string, { xyz: [number, number, number]; roll: number; x: number; z: number }>();
+  function ball3(bp: Bug): [number, number, number] {
+    const b = srcBug(bp), m = mos.get(b.id);
+    let o = balls.get(b.id);
+    if (!o) balls.set(b.id, (o = { xyz: [bp.ax, bp.az, BALL_U / 2], roll: 0, x: NaN, z: NaN }));
+    if (!m) return o.xyz;
+    const x = m.xyz[0] + Math.sin(m.yaw) * BALL_AHEAD, z = m.xyz[1] - Math.cos(m.yaw) * BALL_AHEAD;
+    if (!Number.isNaN(o.x)) o.roll += Math.hypot(x - o.x, z - o.z) / (BALL_U / 2);
+    [o.x, o.z] = [x, z];
+    o.xyz[0] = x;
+    o.xyz[1] = z;
+    return o.xyz;
+  }
+  const ballRoll = (bp: Bug) => balls.get(srcBug(bp).id)?.roll ?? 0;
+  /** The snowball's out of sight with its beetle: netted (held up) or leaving. */
+  const ballOff = (bp: Bug) => srcBug(bp).held || bugOff(bp);
   /** Hidden in 3D: once it's leaving, over its leave's last FADE3_MS (it fades out as it goes). */
   const bugOff = (bp: Bug) => ((b) => b.gone && performance.now() >= b.goneAt + b.ms - FADE3_MS)(srcBug(bp));
 
-  return { mos, fishId, bugId, len3, fishGlide, mirrorFish, mirrorBug, srcBug, fish3, fishYaw, bug3, bugYaw, bugOff };
+  return { mos, fishId, bugId, len3, fishGlide, mirrorFish, mirrorBug, srcBug, fish3, fishYaw, bug3, bugYaw, bugOff, ball3, ballRoll, ballOff };
 }

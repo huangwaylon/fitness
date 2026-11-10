@@ -825,11 +825,14 @@ Tokyo clock, frequent, and the same on every phone (ambient life's slots: [backe
   way; wings beat in the vertex shader (`world3d/wings.ts`).
 - **Fish** (all 34 of NH's sea and pier fish): NH's shadows by size (a fin for the sharks); the coelacanth only in rain
   or snow.
-- **Bugs** (74 of NH's 80), each where NH keeps it (flowers, water, trunks, palms, grass, the beach, under a chirping
+- **Bugs** (all 80 of NH's), each where NH keeps it (flowers, water, trunks, palms, grass, the beach, under a chirping
   mound, at night the tarantula and the scorpion: a first tap rears one up, a second makes it charge off; a flea off my
   villager 1 in 10 taps, Apr–Nov). A tap nets one, judged where the 3D island draws it (`e2e/bug-taps.spec.ts`); a near
-  miss startles it, as does my villager running at it (`critters.ts` fleesFrom). Left out: those NH's icons or our
-  island can't hold ([decisions](decisions.md#nhs-calendar-and-critters)).
+  miss startles it, as does my villager running at it (`critters.ts` fleesFrom). Where the island lacks NH's spot:
+  the ant (NH: rotten food) crawls and the fly (NH: trash; the rod's junk goes to the pocket) buzzes just in front of
+  the campfire, all year; the dung beetle rolls NH's snowball (its own model, before its head) over the lawn, and only
+  Dec–Feb (its months a gate: no snowball on summer grass); the blue weevil, the giraffe stag and the horned hercules
+  are palm beetles like the rest.
 - **Diving** (`island/sea.ts`, NH's 40 sea creatures; `e2e/dive.spec.ts`): a spot of bubbles rises off the front beach
   now and then (gone after 30 s). A tap dives: still and slow creatures are caught at once; a medium one half the time,
   else its shadow darts off and a second tap in time catches it; a very fast one gets away 1 in 3. 1 spot in 25 is a

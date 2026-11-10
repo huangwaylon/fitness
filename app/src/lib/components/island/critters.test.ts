@@ -96,8 +96,8 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
     for (const id of ['ladybug', 'mantis', 'orchid-mantis'] as BugId[]) expect(BUGS[id].flight, id).toBe('flower');
     for (const b of Object.values(BUGS)) expect(['flutter', 'dart', 'drift', 'flower', 'hop', 'perch', 'crawl', 'stalk', 'burrow', 'dangle']).toContain(b.flight);
   });
-  it('74 NH bugs: the beetles and cicadas on the trunks, crawlers on the beach, the grass, the beds and the water (and the wasp of a shaken nest)', () => {
-    expect(Object.keys(BUGS)).toHaveLength(74);
+  it('all 80 of NH’s bugs: the beetles and cicadas on the trunks, crawlers on the beach, the grass, the beds and the water (and the wasp of a shaken nest)', () => {
+    expect(Object.keys(BUGS)).toHaveLength(80);
     // the pond's three keep to its water, in NH's months and hours (the giant water bug at night)
     for (const id of ['pondskater', 'diving-beetle', 'giant-water-bug'] as BugId[]) expect(BUGS[id].ground, id).toBe('pond');
     expect(oddsAt(BUGS.pondskater, 7, 12)).toBe(BUGS.pondskater.weight * IN_SEASON);
@@ -142,21 +142,63 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
     expect(seen.has('tarantula')).toBe(true);
     expect(seen.has('scorpion')).toBe(true); // out of season, still possible
   });
-  it("NH's palm beetles on the palms (5: the Goliath, the cyclommatus and golden stags, the horned atlas and elephant), summer nights", () => {
+  it("NH's palm beetles on the palms (8: the Goliath, the cyclommatus, golden and giraffe stags, the horned atlas, elephant and hercules, the blue weevil), summer nights but the weevil", () => {
     const palm = (Object.keys(BUGS) as BugId[]).filter((id) => BUGS[id].tree === 'palm').sort();
-    expect(palm).toEqual(['cyclommatus-stag', 'golden-stag', 'goliath-beetle', 'horned-atlas', 'horned-elephant']);
-    for (const id of palm) {
+    expect(palm).toEqual(['blue-weevil-beetle', 'cyclommatus-stag', 'giraffe-stag', 'golden-stag', 'goliath-beetle', 'horned-atlas', 'horned-elephant', 'horned-hercules']);
+    for (const id of palm.filter((p) => p !== 'blue-weevil-beetle')) {
       expect(BUGS[id].flight, id).toBe('perch');
       expect(bugPlace(id), id).toBe('palm');
       expect(BUGS[id].hours, id).toEqual([17, 8]); // NH: 5 pm – 8 am
       expect(oddsAt(BUGS[id], 7, 22), id).toBe(BUGS[id].weight * IN_SEASON);
       expect(oddsAt(BUGS[id], 7, 12), id).toBe(0);
     }
-    for (const id of ['cyclommatus-stag', 'golden-stag', 'horned-atlas', 'horned-elephant'] as BugId[]) expect(BUGS[id].months, id).toEqual([7, 8]);
+    for (const id of ['cyclommatus-stag', 'golden-stag', 'horned-atlas', 'horned-elephant', 'giraffe-stag', 'horned-hercules', 'blue-weevil-beetle'] as BugId[]) expect(BUGS[id].months, id).toEqual([7, 8]);
     expect(BUGS['goliath-beetle'].months).toEqual([6, 7, 8, 9]);
     // NH's golden stag sells for 12,000 against the others' 8,000: the rarest
     expect(BUGS['golden-stag'].weight).toBeLessThan(BUGS['horned-atlas'].weight);
     expect(bugPlace('rainbow-stag')).toBe('trunk');
+  });
+  it("NH 2.0's last six: the palm beetles' months, hours and rarity; the dung beetle only in its snowy months; the ant and the fly by the campfire, all year", () => {
+    // the blue weevil all day (NH's spawn rate as the horned atlas's); the giraffe stag and the horned hercules on
+    // summer nights only, as rare as the golden stag (12,000 ベル)
+    expect(oddsAt(BUGS['blue-weevil-beetle'], 7, 12)).toBe(BUGS['blue-weevil-beetle'].weight * IN_SEASON);
+    expect(BUGS['blue-weevil-beetle'].weight).toBe(BUGS['horned-atlas'].weight);
+    expect(bugPlace('blue-weevil-beetle')).toBe('palm');
+    for (const id of ['giraffe-stag', 'horned-hercules'] as BugId[]) {
+      expect(oddsAt(BUGS[id], 7, 12), id).toBe(0);
+      expect(oddsAt(BUGS[id], 7, 22), id).toBe(BUGS[id].weight * IN_SEASON);
+      expect(oddsAt(BUGS[id], 1, 22), id).toBe(BUGS[id].weight); // out of season: still about, a flavour
+      expect(BUGS[id].weight, id).toBe(BUGS['golden-stag'].weight);
+    }
+    // the dung beetle rolls a snowball: NH's Dec–Feb a gate, not a flavour; all day, on the lawn
+    expect(BUGS['dung-beetle']).toMatchObject({ flight: 'crawl', ground: 'grass', months: [12, 1, 2], only: true });
+    for (const m of [12, 1, 2]) expect(oddsAt(BUGS['dung-beetle'], m, 3), `month ${m}`).toBe(BUGS['dung-beetle'].weight * IN_SEASON);
+    for (const m of [3, 7, 11]) expect(oddsAt(BUGS['dung-beetle'], m, 12), `month ${m}`).toBe(0);
+    // the ant on the ground and the fly in the air in front of the campfire (the island's food), all year, all day
+    expect(BUGS.ant).toMatchObject({ flight: 'crawl', ground: 'camp' });
+    expect(BUGS.fly).toMatchObject({ flight: 'flutter', haunt: 'camp' });
+    expect([bugPlace('ant'), bugPlace('fly')]).toEqual(['camp', 'camp-air']);
+    for (const id of ['ant', 'fly'] as BugId[]) for (const [m, h] of [[1, 3], [7, 12], [11, 22]]) expect(oddsAt(BUGS[id], m, h), id).toBe(BUGS[id].weight * IN_SEASON);
+    const fire = SCENERY.find((x) => x.key === 'deco/campfire')!;
+    for (const pl of ['camp', 'camp-air'] as const) {
+      const list = patches(pl);
+      expect(list.length, pl).toBe(3 * SCENERY.filter((x) => x.key === 'deco/campfire').length);
+      for (const a of list) {
+        // in front of it or beside it, never in its flames nor behind it
+        const dx = Math.abs((a.x0 + a.x1) / 2 - fire.x), dz = fire.z - (a.z0 + a.z1) / 2;
+        expect(dx < 1 ? dz > 12 : dx > 20 && dx < 40 && dz >= 0, `${pl} ${JSON.stringify(a)}`).toBe(true);
+      }
+    }
+    expect(patches('camp').every((a) => a.l1 === 0)).toBe(true);
+    expect(patches('camp-air').every((a) => a.l0 > 0)).toBe(true);
+    // a winter day's visits bring the dung beetle, the ant and the fly; a summer night's the two big palm beetles and
+    // never a dung beetle
+    const r = mulberry32(5);
+    const winter = new Set(Array.from({ length: 20_000 }, () => pickBug(1, 12, r)));
+    for (const id of ['dung-beetle', 'ant', 'fly'] as BugId[]) expect(winter.has(id), id).toBe(true);
+    const summer = new Set(Array.from({ length: 20_000 }, () => pickBug(7, 22, r)));
+    expect(summer.has('dung-beetle')).toBe(false);
+    for (const id of ['giraffe-stag', 'horned-hercules', 'ant', 'fly'] as BugId[]) expect(summer.has(id), id).toBe(true);
   });
   it("where NH keeps each bug: trunks, palms, flowers, lamps, near water, the grass, the beach, the water, the rock, under trees, bushes", () => {
     expect(bugPlace('robust-cicada')).toBe('trunk');
@@ -196,6 +238,7 @@ describe('seasons and hours (NH, northern hemisphere)', () => {
     expect(inside('beach', (x, z) => surfaceAt(x, z) === 'sand')).toBeGreaterThan(0.9);
     expect(inside('grass', (x, z) => ['grass', 'dirt'].includes(surfaceAt(x, z)))).toBeGreaterThan(0.9);
     expect(inside('water', (x, z) => waterAt(x, z) !== null)).toBe(1);
+    expect(inside('camp', (x, z) => !['sea', 'water'].includes(surfaceAt(x, z)))).toBe(1);
   });
   it('a tarantula or a scorpion: the first tap makes it rear up; a tap while reared and it charges; settled, a tap nets it', () => {
     expect(stalkTap('calm', 'catch')).toBe('rear'); // came at it too fast

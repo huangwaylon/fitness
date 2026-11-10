@@ -19,7 +19,7 @@
    *  long-horned beetle with its feelers, a stick. */
   const PERCH: Partial<Record<BugId, 'stag' | 'beetle' | 'longhorn' | 'stick'>> = {
     'saw-stag': 'stag', 'miyama-stag': 'stag', 'giant-stag': 'stag', 'rainbow-stag': 'stag', 'cyclommatus-stag': 'stag', 'golden-stag': 'stag',
-    'horned-atlas': 'beetle', 'horned-elephant': 'beetle',
+    'giraffe-stag': 'stag', 'horned-atlas': 'beetle', 'horned-elephant': 'beetle', 'horned-hercules': 'beetle', 'blue-weevil-beetle': 'beetle',
     'horned-dynastid': 'beetle', 'goliath-beetle': 'beetle', 'drone-beetle': 'beetle', 'jewel-beetle': 'beetle', 'walking-stick': 'stick',
     'violin-beetle': 'beetle', 'scarab-beetle': 'beetle', 'citrus-long-horned-beetle': 'longhorn', 'rosalia-batesi-beetle': 'longhorn'
   };
@@ -47,7 +47,7 @@
       <ellipse class="shellb" cx="0" cy="1.2" rx="3.4" ry="4.8" /><path class="seam" d="M0 -2.6 V5.8" /><ellipse class="bhead" cx="0" cy="-4.4" rx="2.3" ry="1.6" /></svg>
   {:else if flight === 'perch' && PERCH[id] === 'beetle'}
     <!-- a beetle on the trunk (the horned ones with their horn) -->
-    <svg viewBox="-6 -9 12 17">{#if id === 'horned-dynastid' || id === 'horned-atlas' || id === 'horned-elephant'}<path class="horn" d="M0 -5 C-.2 -7.4 .8 -8.8 2.2 -8.8" />{/if}
+    <svg viewBox="-6 -9 12 17">{#if id === 'horned-dynastid' || id === 'horned-atlas' || id === 'horned-elephant' || id === 'horned-hercules'}<path class="horn" d="M0 -5 C-.2 -7.4 .8 -8.8 2.2 -8.8" />{/if}
       <ellipse class="shellb" cx="0" cy="1.2" rx="3.7" ry="4.8" /><path class="seam" d="M0 -2.4 V5.8" /><ellipse class="bhead" cx="0" cy="-4.2" rx="2.4" ry="1.7" /></svg>
   {:else if flight === 'perch' && PERCH[id] === 'longhorn'}
     <!-- a long-horned beetle on the trunk: a slim body, spots, its long feelers swept back -->
@@ -104,7 +104,7 @@
         <path class="shield" d="M0 -5.4 L4.6 -2.6 C4.6 2 2.6 5 0 6 C-2.6 5 -4.6 2 -4.6 -2.6 Z" />
         {#if id === 'man-faced-stink-bug'}<circle class="face2" cx="-1.5" cy="-.6" r=".9" /><circle class="face2" cx="1.5" cy="-.6" r=".9" /><path class="face2l" d="M-1.4 2.4 Q0 3.4 1.4 2.4" />{/if}
         <ellipse class="shead" cx="0" cy="-5.6" rx="1.4" ry="1" /></svg>
-    {:else if id === 'tiger-beetle' || id === 'earth-boring-dung-beetle'}
+    {:else if id === 'tiger-beetle' || id === 'earth-boring-dung-beetle' || id === 'dung-beetle' || id === 'ant'}
       <!-- a ground beetle from above: the tiger beetle's long legs, the dung beetle round and metallic -->
       <svg viewBox="-7 -7 14 14"><path class="gleg" d="M-2.4 -1 L-6 -3.4 M-2.6 1 L-6.2 1.6 M-2.2 2.8 L-5 6 M2.4 -1 L6 -3.4 M2.6 1 L6.2 1.6 M2.2 2.8 L5 6" />
         <ellipse class="gbody" cx="0" cy="1.2" rx={id === 'tiger-beetle' ? 2.6 : 3.4} ry="3.8" /><path class="seam" d="M0 -1.8 V5" />
@@ -119,7 +119,7 @@
         {#each [-7.6, -4.6, -1.6, 1.4, 4.4] as cx (cx)}<circle class="cseg" {cx} cy="0" r="1.8" />{/each}<circle class="chead" cx="7.2" cy="0" r="2" /></svg>
     {:else}
       <!-- a pill bug or a wharf roach: a segmented little oval (the roach with feelers) -->
-      <svg viewBox="-8 -5 16 10">{#if id === 'wharf-roach'}<path class="ant" d="M4.4 -1 Q7.6 -4 8.6 -2.4 M4.4 1 Q7.6 4 8.6 2.4" />{/if}
+      <svg viewBox="-8 -5 16 10">{#if id === 'wharf-roach'}<path class="antenna" d="M4.4 -1 Q7.6 -4 8.6 -2.4 M4.4 1 Q7.6 4 8.6 2.4" />{/if}
         <ellipse class="pill" rx={id === 'wharf-roach' ? 5 : 4.2} ry="2.9" /><path class="seg" d="M-2 -2.6 V2.6 M.4 -2.8 V2.8 M2.8 -2.3 V2.3" /></svg>
     {/if}
   {:else if flight === 'perch'}
@@ -132,11 +132,11 @@
       <path class="mhead" d="M2.6 -1.8 L5.2 -3 L5 -.6 Z" /></svg>
   {:else if flight === 'hop'}
     <svg viewBox="-8 -6 16 12"><path class="leg" d="M-1 1 L-5 -3.5 L-7 3" /><ellipse class="cbody" cx="0" cy="0" rx="4.6" ry="2.6" />
-      <circle class="cbody" cx="4.4" cy="-.6" r="1.8" /><path class="ant" d="M5.5 -1.8 Q8 -6 3 -5.6 M5.8 -1.4 Q9 -4 6 -6" /></svg>
+      <circle class="cbody" cx="4.4" cy="-.6" r="1.8" /><path class="antenna" d="M5.5 -1.8 Q8 -6 3 -5.6 M5.8 -1.4 Q9 -4 6 -6" /></svg>
   {:else if id === 'flea'}
     <!-- a flea: a speck with long back legs, hopping -->
     <svg viewBox="-5 -4 10 8"><path class="fleg" d="M.6 1 L-2 3.4 L-3.8 2.2 M1.6 1.2 L2.4 3.4" /><ellipse class="flea-b" cx="0" cy="0" rx="2.4" ry="1.8" /><circle class="flea-b" cx="2.4" cy="-.4" r=".9" /></svg>
-  {:else if id === 'mosquito'}
+  {:else if id === 'mosquito' || id === 'fly'}
     <!-- a mosquito: a thin body, long dangling legs, two narrow wings in a blur -->
     <svg viewBox="-8 -8 16 16"><path class="mqleg" d="M-1 .6 L-4 5.6 M0 .8 L-1 6.4 M1 .6 L3 5.8" />
       <g class="wing"><ellipse cx="-1" cy="-3.6" rx="1.2" ry="3.4" transform="rotate(-30 -1 -3.6)" /></g><g class="wing r"><ellipse cx="1" cy="-3.6" rx="1.2" ry="3.4" transform="rotate(30 1 -3.6)" /></g>
@@ -229,7 +229,7 @@
   .ciwing path { fill: rgba(232, 242, 236, .55); stroke: rgba(80, 110, 90, .7); stroke-width: .4; }
   .perch.sat .ciwing { animation: buzz .07s linear infinite alternate; }
   @keyframes buzz { to { translate: .25px 0; } }
-  .leg, .ant { fill: none; stroke: #4A3420; stroke-width: .7; stroke-linecap: round; }
+  .leg, .antenna { fill: none; stroke: #4A3420; stroke-width: .7; stroke-linecap: round; }
   /* more cicadas, the shell a cicada left behind (amber, see-through), the beetles and the walking stick */
   .walker-cicada .cibody { fill: #5C7A4A; }
   .giant-cicada .cibody { fill: #2E2A26; }
@@ -254,6 +254,10 @@
   .golden-stag { --beetle: #E2B83A; --beetle-head: #7A5A12; }
   .horned-atlas { --beetle: #23261F; --beetle-head: #151711; }
   .horned-elephant { --beetle: #7A5236; --beetle-head: #3A2616; }
+  /* NH 2.0's: the blue weevil's turquoise, the giraffe stag's black, the hercules's olive-gold wing cases */
+  .blue-weevil-beetle { --beetle: #3FB8A8; --beetle-head: #1E1E22; }
+  .giraffe-stag { --beetle: #1E1A16; --beetle-head: #0E0C0A; }
+  .horned-hercules { --beetle: #B8A050; --beetle-head: #1A1612; }
   .goliath-beetle .seam { stroke: #2A2420; stroke-width: 1; }
   .drone-beetle { --beetle: #3F6E3C; --beetle-head: #2A4A28; }
   .jewel-beetle { --beetle: #2FA05A; --beetle-head: #1F6E3E; }
@@ -330,6 +334,9 @@
   .gspot { fill: #F4EED8; }
   .earth-boring-dung-beetle .gbody { fill: #4A5FC4; }
   .earth-boring-dung-beetle .ghead { fill: #3A4A9E; }
+  .dung-beetle .gbody, .ant .gbody { fill: #2A2622; }
+  .dung-beetle .ghead, .ant .ghead { fill: #1A1714; }
+  .ant svg { width: calc(6 * var(--su)); }
   .walking-leaf svg { width: calc(15 * var(--su)); }
   .leaf { fill: #8CC250; stroke: #5E9032; stroke-width: .5; }
   .rib { fill: none; stroke: #5E9032; stroke-width: .45; }

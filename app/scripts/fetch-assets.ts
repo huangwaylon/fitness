@@ -133,6 +133,8 @@ for (const name of [
   'Common Bluebottle', 'Great Purple Emperor', 'Madagascan Sunset Moth', 'Mosquito', 'Stinkbug', 'Man-Faced Stink Bug',
   'Tiger Beetle', 'Earth-Boring Dung Beetle', 'Walking Leaf', 'Violin Beetle', 'Citrus Long-Horned Beetle',
   'Rosalia Batesi Beetle', 'Scarab Beetle', 'Mole Cricket', 'Tarantula', 'Scorpion', 'Flea', 'Bagworm', 'Spider',
+  // NH 2.0's palm beetles, the dung beetle with its snowball, the ant and the fly by the campfire
+  'Blue Weevil Beetle', 'Giraffe Stag', 'Horned Hercules', 'Dung Beetle', 'Ant', 'Fly',
   // the pond's bugs (on its water: island/Pond.svelte)
   'Pondskater', 'Diving Beetle', 'Giant Water Bug',
   // NH's 40 sea creatures, caught by diving at a bubble spot (island/sea.ts)

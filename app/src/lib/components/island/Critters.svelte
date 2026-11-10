@@ -536,7 +536,7 @@
   // behind it. While it plays with my line its nose meets the float: backed off a little, each nibble a bump on it with
   // the float's dip (fishing3d.ts), the bite a lunge onto it as it plunges; scared, it darts off with a quick tail
   // wiggle. The models fade in and out (world3d/things.ts: never popped).
-  const { mos, fishId, bugId, len3, fishGlide, mirrorFish, mirrorBug, srcBug, fish3, fishYaw, bug3, bugYaw, bugOff } = critterMotion3d({
+  const { mos, fishId, bugId, len3, fishGlide, mirrorFish, mirrorBug, srcBug, fish3, fishYaw, bug3, bugYaw, bugOff, ball3, ballRoll, ballOff } = critterMotion3d({
     line: () => line, nose: () => nose, lineN: () => lineN, relayNow: () => shared.now(), snapshot: (v) => $state.snapshot(v) as typeof v
   });
   /** My line's fish, nose to the float from `at` (performance.now() ms) on, for that line (`n`: lineN). */
@@ -713,8 +713,14 @@
         }
       }
       if (!spot && (pinned || area) && list.length) {
-        patch = list.find((a) => w.inView((a.x0 + a.x1) / 2, (a.z0 + a.z1) / 2)) ?? list[0];
-        spot = { x: (patch.x0 + patch.x1) / 2, z: (patch.z0 + patch.z1) / 2, lift: patch.l0 };
+        // (one in view first; on its own ground where a patch has any, off screen or not: a bench may stand in front of
+        // the campfire)
+        const seenFirst = [...list].sort((a, b) => +w.inView((b.x0 + b.x1) / 2, (b.z0 + b.z1) / 2) - +w.inView((a.x0 + a.x1) / 2, (a.z0 + a.z1) / 2));
+        for (const a of seenFirst) if ((spot = freeIn(a, (p) => groundOk(place, p.x, p.z)))) { patch = a; break; }
+        if (!spot) {
+          patch = seenFirst[0];
+          spot = { x: (patch.x0 + patch.x1) / 2, z: (patch.z0 + patch.z1) / 2, lift: patch.l0 };
+        }
       }
     }
     if (!spot) return false;
@@ -1515,6 +1521,10 @@
       // perched on a trunk: flat on its bark, its back to the camera (read each frame, as its yaw: a turn or a perch
       // read here made the attach build its node again)
       get pitch() { return b.sat && (b.place === 'trunk' || b.place === 'palm') ? (b.flip ? -1 : 1) * Math.PI / 2 : 0; } } })} {@attach mirrorBug(b)}></i>
+    {#if b.id === 'dung-beetle'}
+      <!-- NH's dung beetle rolls a snowball before it (critterMotion3d.ts ball3) -->
+      <i class="m3n" {@attach w.at({ bare: true, x: b.ax, z: b.az, lift: 0, h: 4, always: true, live: () => ball3(b), m3: { key: 'critters/dung-beetle-ball', id: `ball-${b.n}`, get yaw() { return bugYaw(b); }, get pitch() { return ballRoll(b); }, get off() { return ballOff(b); } } })}></i>
+    {/if}
   {/each}
   {/if}
   {#each Object.entries(fishes) as [pk, f] (pk)}

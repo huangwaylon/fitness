@@ -176,7 +176,7 @@ offset, bytes]`), is in both part tables.
 Written by `npm run world3d-models` from assets.json (the per-key rows are in the manifest).
 
 <!-- assets:start -->
-591 keys, 488 models, 6.25 MB in all.
+598 keys, 495 models, 6.34 MB in all.
 
 | kind | keys | models | KB | loads |
 | --- | --- | --- | --- | --- |
@@ -185,7 +185,7 @@ Written by `npm run world3d-models` from assets.json (the per-key rows are in th
 | scenery | 4 | 2 | 68.2 | with the island |
 | bush | 25 | 25 | 298.5 | with the island |
 | sea | 40 | 40 | 495 | lazily (sea) |
-| bug | 75 | 75 | 1020 | lazily (bug) |
+| bug | 82 | 82 | 1106.3 | lazily (bug) |
 | fish | 83 | 83 | 891.5 | lazily (fish) |
 | deco | 48 | 39 | 862.8 | with the island |
 | event | 6 | 6 | 115.2 | lazily (event) |

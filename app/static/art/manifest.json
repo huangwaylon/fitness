@@ -1,5 +1,5 @@
 {
-  "version": 61,
+  "version": 62,
   "files": {
     "bridges/stone-front": {
       "path": "bridges/stone-front.webp",
@@ -181,6 +181,12 @@
       "h": 96,
       "source": "nh:Layout_MenuIcon_Fish30"
     },
+    "critters/ant": {
+      "path": "critters/ant.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Ant_NH_Icon.png"
+    },
     "critters/arapaima": {
       "path": "critters/arapaima.webp",
       "w": 96,
@@ -258,6 +264,12 @@
       "w": 96,
       "h": 96,
       "source": "nh:Layout_MenuIcon_Fish58"
+    },
+    "critters/blue-weevil-beetle": {
+      "path": "critters/blue-weevil-beetle.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Blue_Weevil_Beetle_NH_Icon.png"
     },
     "critters/bluegill": {
       "path": "critters/bluegill.webp",
@@ -421,6 +433,12 @@
       "h": 96,
       "source": "nh:Layout_MenuIcon_Ins75"
     },
+    "critters/dung-beetle": {
+      "path": "critters/dung-beetle.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Dung_Beetle_NH_Icon.png"
+    },
     "critters/dungeness-crab": {
       "path": "critters/dungeness-crab.webp",
       "w": 96,
@@ -474,6 +492,12 @@
       "w": 96,
       "h": 96,
       "source": "nh:Layout_MenuIcon_Ins56"
+    },
+    "critters/fly": {
+      "path": "critters/fly.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Fly_NH_Icon.png"
     },
     "critters/football-fish": {
       "path": "critters/football-fish.webp",
@@ -546,6 +570,12 @@
       "w": 96,
       "h": 96,
       "source": "nh:Layout_MenuIcon_Shakogai"
+    },
+    "critters/giraffe-stag": {
+      "path": "critters/giraffe-stag.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Giraffe_Stag_NH_Icon.png"
     },
     "critters/golden-stag": {
       "path": "critters/golden-stag.webp",
@@ -630,6 +660,12 @@
       "w": 96,
       "h": 96,
       "source": "nh:Layout_MenuIcon_Ins53"
+    },
+    "critters/horned-hercules": {
+      "path": "critters/horned-hercules.webp",
+      "w": 96,
+      "h": 96,
+      "source": "https://nookipedia.com/wiki/File:Horned_Hercules_NH_Icon.png"
     },
     "critters/horse-mackerel": {
       "path": "critters/horse-mackerel.webp",

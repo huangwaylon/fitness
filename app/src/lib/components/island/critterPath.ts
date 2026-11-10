@@ -13,7 +13,8 @@ import {
   type BugId, type BugPlace, type Flight, type Patch, type Swim, type Water
 } from './critters.ts';
 import { clamp } from '#lib/math.ts';
-import { FLOWERS, surfaceAt, type FreshWhere } from './world.ts';
+import { FLOWERS, layoutNav, surfaceAt, type FreshWhere } from './world.ts';
+import { walkable } from '#lib/layout/nav.ts';
 import { FLOWER_U } from './scene.ts';
 import { coastOf } from './coast.ts';
 import { site } from './site.svelte.ts';
@@ -116,7 +117,9 @@ export const PACE: Partial<Record<BugId, [number, number, number]>> = {
   'hermit-crab': [30, 450, 700], 'tiger-beetle': [34, 260, 420], snail: [4, 3500, 5000], 'walking-leaf': [6, 3000, 4200],
   stinkbug: [10, 2200, 3200], 'man-faced-stink-bug': [10, 2200, 3200], tarantula: [14, 1800, 2600], scorpion: [16, 1600, 2400],
   // on the water: the pondskater skates in quick glides, the diving beetle paddles, the giant water bug lurks
-  pondskater: [12, 260, 420], 'diving-beetle': [8, 900, 1400], 'giant-water-bug': [5, 1800, 2600]
+  pondskater: [12, 260, 420], 'diving-beetle': [8, 900, 1400], 'giant-water-bug': [5, 1800, 2600],
+  // the ant scurries by the campfire; the dung beetle rolls its snowball slowly
+  ant: [10, 700, 1100], 'dung-beetle': [8, 2200, 3000]
 };
 
 /** The ground a place's bugs keep to (the spot's surface). */
@@ -126,6 +129,8 @@ export function groundOk(place: BugPlace, x: number, z: number): boolean {
   if (place === 'beach') return s === 'sand';
   if (place === 'grass' || place === 'under-tree' || place === 'rock') return s === 'grass' || s === 'dirt';
   if (place === 'water-air') return true;
+  // (by the campfire: open ground, never under what stands round it, a bench or a lantern put in front of it)
+  if (place === 'camp' || place === 'camp-air') return s !== 'sea' && s !== 'water' && ((g) => !g || walkable(g, x, z))(layoutNav());
   return s !== 'sea';
 }
 
@@ -266,7 +271,7 @@ export function bugPath(id: BugId, seed: number, stayMs: number, o: BugOpts = {}
     else go(spot, same(spot) ? 0 : 1200);
     return done;
   }
-  const pace = id === 'honeybee' ? FLY_UPS.bee : flight === 'flutter' || flight === 'drift' || flight === 'dart' ? FLY_UPS[flight] : null;
+  const pace = id === 'honeybee' || id === 'fly' ? FLY_UPS.bee : flight === 'flutter' || flight === 'drift' || flight === 'dart' ? FLY_UPS[flight] : null;
   legs.push(...bugLegs(flight, {
     ok, pace, crawl: PACE[id] ?? CRAWL,
     // NH's butterflies: every few turns it lands on a flower head of its own clump (its patch holds them), rests

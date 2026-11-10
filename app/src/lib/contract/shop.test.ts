@@ -23,8 +23,8 @@ describe('the price list (scripts/shop-prices.ts)', () => {
     expect(buyPrice('f7047')).toBe(25); // the zen cushion, 500
   });
   it('has every species the island has, and only pieces the rooms can place', () => {
-    // 80 fish, 74 bugs, 40 sea creatures; 9 shells (the pearl's), 73 fossils, 14 star fragments; 21 goods
-    expect(Object.keys(SELL).length).toBe(194 + 9 + 73 + 14 + Object.keys(GOODS).length);
+    // 80 fish, 80 bugs, 40 sea creatures; 9 shells (the pearl's), 73 fossils, 14 star fragments; 21 goods
+    expect(Object.keys(SELL).length).toBe(200 + 9 + 73 + 14 + Object.keys(GOODS).length);
     for (const [k, v] of Object.entries(SELL)) expect(isSellable(k) && Number.isInteger(v) && v >= 1, k).toBe(true);
     for (const [code, v] of Object.entries(BUY)) {
       expect(ITEMS[code], code).toBeDefined();

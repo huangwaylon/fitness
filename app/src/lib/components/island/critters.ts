@@ -8,7 +8,7 @@ import { pickOne, weighted } from '#lib/random.ts';
 import type { SeaId } from './sea.ts';
 import type { Sky } from './weather.ts';
 import {
-  BEACH_BOX, BRIDGE, CLIFF, FLOWERS, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, POND, RIVER, ROCK, SCENERY, SEA_BOX, SHORE_Z, TREE_H, freshWhere, surfaceAt,
+  BEACH_BOX, BRIDGE, CAMPSITE, CLIFF, FLOWERS, FALLS_POOL, GOAL_TREES, HEDGE_XS, HEDGE_Z, POND, RIVER, ROCK, SCENERY, SEA_BOX, SHORE_Z, TREE_H, freshWhere, surfaceAt,
   LAWN_SPOTS, PONDS, RIVER_BEND, onLayout, riverNS, worldGen, type FreshWhere
 } from './world.ts';
 
@@ -23,6 +23,8 @@ export interface Seasonal {
   /** NH's weather (island/weather.ts): `dry` never in the rain (most butterflies, moths, dragonflies, grasshoppers…),
    *  `rain` only while it rains (the snail), `wet` only in rain or snow (the coelacanth). Snow isn't rain. */
   weather?: 'dry' | 'rain' | 'wet';
+  /** Its months are a gate, not a flavour: the dung beetle rolls a snowball, so only in NH's snowy months. */
+  only?: true;
 }
 
 export const ALL_YEAR = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
@@ -119,7 +121,7 @@ export type BugId =
   | 'man-faced-stink-bug' | 'tiger-beetle' | 'earth-boring-dung-beetle' | 'walking-leaf' | 'violin-beetle'
   | 'citrus-long-horned-beetle' | 'rosalia-batesi-beetle' | 'scarab-beetle' | 'mole-cricket' | 'tarantula' | 'scorpion'
   | 'flea' | 'bagworm' | 'spider' | 'pondskater' | 'diving-beetle' | 'giant-water-bug' | 'cyclommatus-stag' | 'golden-stag'
-  | 'horned-atlas' | 'horned-elephant';
+  | 'horned-atlas' | 'horned-elephant' | 'blue-weevil-beetle' | 'giraffe-stag' | 'horned-hercules' | 'dung-beetle' | 'ant' | 'fly';
 
 /** How a bug moves: a butterfly (or a bee, a moth) flutters about the flowers (a butterfly lands on one now and then), a
  *  dragonfly darts and hovers over the lawn, a few fireflies drift and blink, a ladybug or a mantis sits on a flower's
@@ -131,13 +133,15 @@ export type BugId =
 export type Flight = 'flutter' | 'dart' | 'drift' | 'flower' | 'hop' | 'perch' | 'crawl' | 'stalk' | 'burrow' | 'dangle';
 /** Where a crawler keeps to: the front beach (NH's shoreline and beach rocks), the grass, the flowers, the water (the
  *  pond and the river's still reach), by the rock (NH: out from under a hit rock), under a tree (the walking leaf), on a
- *  bush (the snail in the rain: NH's rocks and bushes). */
-type Ground = 'beach' | 'grass' | 'beds' | 'pond' | 'rock' | 'tree' | 'bush';
+ *  bush (the snail in the rain: NH's rocks and bushes), by the campfire (the ant: NH's rotten food is the camp's here). */
+type Ground = 'beach' | 'grass' | 'beds' | 'pond' | 'rock' | 'tree' | 'bush' | 'camp';
 
 interface Bug extends Seasonal {
   flight: Flight;
   /** A crawler's ground. */
   ground?: Ground;
+  /** A flier that keeps to a place of its own, not the flowers: the fly round the campfire (NH: round trash). */
+  haunt?: 'camp';
   /** A percher's tree: NH's palm beetles keep to the palms; every other percher to the hardwood and cedar trunks. */
   tree?: 'palm';
 }
@@ -241,7 +245,20 @@ export const BUGS: Record<BugId, Bug> = {
   // night) a spider dangles from a shaken tree (island/treeShake.ts)
   flea: { months: span(4, 11), hours: ALL_DAY, flight: 'hop', weight: 0 },
   bagworm: { months: ALL_YEAR, hours: ALL_DAY, flight: 'dangle', weight: 0 },
-  spider: { months: ALL_YEAR, hours: [19, 8], flight: 'dangle', weight: 0 }
+  spider: { months: ALL_YEAR, hours: [19, 8], flight: 'dangle', weight: 0 },
+  // NH 2.0's other palm beetles: the blue weevil all day (NH's spawn rate as the horned atlas's), the giraffe stag and
+  // the horned hercules on summer nights, as rare as the golden stag (12,000 ベル)
+  'blue-weevil-beetle': { months: [7, 8], hours: ALL_DAY, flight: 'perch', tree: 'palm', weight: 0.5 },
+  'giraffe-stag': { months: [7, 8], hours: [17, 8], flight: 'perch', tree: 'palm', weight: 0.3 },
+  'horned-hercules': { months: [7, 8], hours: [17, 8], flight: 'perch', tree: 'palm', weight: 0.3 },
+  // NH's dung beetle rolls a snowball across the snow: its model rolls one (scripts/world3d-assets.ts), over the lawn,
+  // and only in NH's months (Dec–Feb: the island's snowy ground is Dec 11 – Feb 24), never a snowball in summer
+  'dung-beetle': { months: [12, 1, 2], hours: ALL_DAY, flight: 'crawl', ground: 'grass', weight: 1.5, only: true },
+  // NH's ant and fly come to rotten food and trash; the island has neither lying about (the rod's junk goes to the
+  // pocket), so they come to its food: the campfire, the ant on the ground by it, the fly buzzing round it. All year,
+  // all day, as NH's; uncommon
+  ant: { months: ALL_YEAR, hours: ALL_DAY, flight: 'crawl', ground: 'camp', weight: 0.7 },
+  fly: { months: ALL_YEAR, hours: ALL_DAY, flight: 'flutter', haunt: 'camp', weight: 0.7 }
 };
 
 /** Where a bug is found on the island (NH's locations, docs/design.md "Critters"): on a hardwood or cedar trunk (the
@@ -249,11 +266,12 @@ export const BUGS: Record<BugId, Bug> = {
  *  flower (the ladybug, the mantises), flying over the flowers (the butterflies, the bee), round a lamp at night (the
  *  moth: NH's light sources), flying near water (the dragonflies, the fireflies), on the ground in the grass, on the
  *  beach, crawling over the flowers (the stink bugs), on the water (the pond and the river's still reach), by the rock, under
- *  a tree (the walking leaf), on a bush (the snail). */
-export type BugPlace = 'trunk' | 'palm' | 'flower' | 'flowers' | 'lights' | 'water-air' | 'grass' | 'beach' | 'beds' | 'water' | 'rock' | 'under-tree' | 'bush';
-const GROUND_PLACE: Record<Ground, BugPlace> = { beach: 'beach', grass: 'grass', beds: 'beds', pond: 'water', rock: 'rock', tree: 'under-tree', bush: 'bush' };
+ *  a tree (the walking leaf), on a bush (the snail), by the campfire on the ground (the ant) and in the air (the fly). */
+export type BugPlace = 'trunk' | 'palm' | 'flower' | 'flowers' | 'lights' | 'water-air' | 'grass' | 'beach' | 'beds' | 'water' | 'rock' | 'under-tree' | 'bush' | 'camp' | 'camp-air';
+const GROUND_PLACE: Record<Ground, BugPlace> = { beach: 'beach', grass: 'grass', beds: 'beds', pond: 'water', rock: 'rock', tree: 'under-tree', bush: 'bush', camp: 'camp' };
 export function bugPlace(id: BugId): BugPlace {
   const b = BUGS[id];
+  if (b.haunt) return 'camp-air';
   if (b.flight === 'perch') return b.tree === 'palm' ? 'palm' : 'trunk';
   if (b.flight === 'flower') return 'flower';
   if (b.flight === 'dart' || b.flight === 'drift') return 'water-air';
@@ -275,9 +293,10 @@ function weatherLets(c: Seasonal, sky: Sky): boolean {
   const rain = sky === 'rain' || sky === 'heavy';
   return c.weather === 'dry' ? !rain : c.weather === 'rain' ? rain : c.weather === 'wet' ? rain || sky === 'snow' : true;
 }
-/** Its odds at (month, hour, sky): 0 outside its hours or its weather, else its weight, ×IN_SEASON in its months. */
+/** Its odds at (month, hour, sky): 0 outside its hours or its weather (or its months, for one `only` in them), else
+ *  its weight, ×IN_SEASON in its months. */
 export const oddsAt = (c: Seasonal, month: number, hour: number, sky: Sky = 'clear'): number =>
-  !inHoursOf(c, hour) || !weatherLets(c, sky) ? 0 : c.weight * (c.months.includes(month) ? IN_SEASON : 1);
+  !inHoursOf(c, hour) || !weatherLets(c, sky) ? 0 : c.months.includes(month) ? c.weight * IN_SEASON : c.only ? 0 : c.weight;
 
 /** A weighted pick among the ids that can come at (month, hour, sky), or null. `r` is a uniform [0, 1) source. */
 export function pick<K extends string>(table: Record<K, Seasonal>, month: number, hour: number, r: () => number, sky: Sky = 'clear'): K | null {
@@ -527,6 +546,15 @@ function lawnOnLayout(): Patch[] {
   return patches;
 }
 
+/** The ground by each campfire (the camp's food: the ant's and the fly's), in front of it and either side (never behind
+ *  it, out of view), `l0`…`l1` above it; with no campfire on the island, in front of the campsite's tent. Where
+ *  something stands there (a bench, a lantern put by the fire) the bug keeps off it (critterPath.ts groundOk). */
+function campFronts(l0: number, l1: number): Patch[] {
+  const fires = SCENERY.filter((s) => s.key === 'deco/campfire');
+  if (!fires.length) return [patch(CAMPSITE.x, CAMPSITE.z - 26, 24, 6, l0, l1)];
+  return fires.flatMap((f) => [patch(f.x, f.z - 20, 22, 6, l0, l1), patch(f.x - 30, f.z - 4, 6, 10, l0, l1), patch(f.x + 30, f.z - 4, 6, 10, l0, l1)]);
+}
+
 /** Where a bug of `place` keeps to (not the trunks or the flower heads: `perches`, FLOWERS). */
 export function patches(place: BugPlace): Patch[] {
   switch (place) {
@@ -548,6 +576,8 @@ export function patches(place: BugPlace): Patch[] {
     case 'beach': return [{ x0: BEACH_BOX.x0 - 40, x1: BEACH_BOX.x1, z0: BEACH_BOX.z0, z1: BEACH_BOX.z1 - 10, l0: 0, l1: 0 }];
     case 'rock': return [{ x0: ROCK[0] - 18, x1: ROCK[0] + 20, z0: ROCK[1] - 14, z1: ROCK[1] - 6, l0: 0, l1: 0 }];
     case 'under-tree': return perches(false).filter((p) => !/cedar/.test(p.tree)).map((p) => ({ x0: p.x - 20, x1: p.x + 20, z0: p.z - 18, z1: p.z - 8, l0: 0, l1: 0 }));
+    case 'camp': return campFronts(0, 0);
+    case 'camp-air': return campFronts(8, 28);
     default: return onLayout() ? lawnOnLayout() : LAWN;
   }
 }
