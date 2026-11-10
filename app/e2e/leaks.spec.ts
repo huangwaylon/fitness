@@ -334,13 +334,13 @@ test('the info sheets in and out (the trips, Okinawa’s map and campsites, the 
 const note = (what: string, a: Probe, b: Probe) =>
   test.info().annotations.push({ type: 'memory', description: `${what}: ArrayBuffers ${a.ab} → ${b.ab} MB, JS heap ${a.heap} → ${b.heap} MB, Blink ${a.emb} → ${b.emb} MB` });
 
-// The editor (docs/island-layout.md "The editor") with its 3D preview: ten strokes painted, each a new layout the
+// The editor (docs/island-layout.md "The editor") with its 3D preview: four strokes painted, each a new layout the
 // preview builds its ground for (layout/fields.ts: ~4 MB of rasters a layout). Undo keeps each action, never the
-// layouts it went between: a layout held by the history held its fields too (before the fix: 27.6 → 116.4 MB of
-// ArrayBuffers after ten strokes, ~1.8 GB at the history's 200).
+// layouts it went between: a layout held by the history held its fields too (before the fix ~9 MB a stroke: 27.6 →
+// 116.4 MB of ArrayBuffers after ten, ~1.8 GB at the history's 200). (Four: on CI's two cores a stroke's ground takes ~3 s.)
 test.describe('the editor', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
-  test('with its 3D preview, ten strokes painted: no layout’s fields kept by the history', { tag: '@chromium' }, async ({ page }) => {
+  test('with its 3D preview, four strokes painted: no layout’s fields kept by the history', { tag: '@chromium' }, async ({ page }) => {
     await watch(page);
     await page.goto('editor/?demo&date=2026-11-04T12:00');
     type H = { __editor?: { tileScreen(c: number, r: number): [number, number]; layout(): { kind(c: number, r: number): string } }; __preview3d?: { frames(): number } };
@@ -359,15 +359,15 @@ test.describe('the editor', () => {
       await expect.poll(() => kind(6, r)).toBe(brush);
       await page.waitForFunction((f) => (window as unknown as H).__preview3d!.frames() > f, f0, { timeout: 30_000 });
     };
-    // (rows of grass by the plaza: sand on five, then grass back on them, each stroke a change)
-    const rows = [12, 13, 14, 15, 16];
+    // (rows of grass by the plaza: sand on two, then grass back on them, each stroke a change)
+    const rows = [12, 13];
     expect(await Promise.all(rows.map((r) => kind(6, r)))).toEqual(rows.map(() => 'grass'));
     await stroke(11, 'sand');
     const first = await measure(page);
     for (const brush of ['sand', 'grass']) for (const r of rows) await stroke(r, brush);
     const after = await measure(page);
-    note('the editor, ten strokes', first, after);
-    expect(after.ab - first.ab, 'ArrayBuffers grown over ten strokes (MB)').toBeLessThan(2);
+    note('the editor, four strokes', first, after);
+    expect(after.ab - first.ab, 'ArrayBuffers grown over four strokes (MB)').toBeLessThan(2);
     expect(after.gl, 'WebGL contexts alive').toBeLessThanOrEqual(first.gl);
   });
 });
