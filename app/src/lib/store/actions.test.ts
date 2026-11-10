@@ -603,3 +603,35 @@ describe('my foods (マイ食品)', () => {
   });
 });
 
+
+describe('a room’s whole change and its saved arrangements', () => {
+  const NOW = Date.parse('2026-11-18T12:00:00.000Z');
+  const model = async () => {
+    const { reduce } = await import('#lib/model/state.ts');
+    const events = queued().map((e, i) => [new Date(NOW + i).toISOString(), 'A', e.id, e.type, JSON.stringify(e.data)]);
+    week.model = { state: reduce({ metrics: [], events: events as never }), me: 'A', now: NOW } as unknown as typeof week.model;
+  };
+
+  it('sendDecorGroup queues the ops as one group (kept all or none); nothing without a model', async () => {
+    const { sendDecorGroup } = await import('./actions.ts');
+    week.model = null;
+    sendDecorGroup([{ sc: 'u', id: 'dpiece01', at: NOW, rm: true }]);
+    expect(queued()).toEqual([]);
+    await model();
+    sendDecorGroup([{ sc: 'u', id: 'dpiece01', at: NOW, rm: true }, { sc: 'u', id: 'dpiece02', at: NOW, rm: true }]);
+    const q = queued();
+    expect(q.map((e) => e.type)).toEqual(['decor', 'decor']);
+    expect(q[0].group).toMatch(/^g/);
+    expect(q[1].group).toBe(q[0].group);
+  });
+
+  it('sendRoomSave queues a slot’s save or its emptying, which the model then holds', async () => {
+    const { sendRoomSave } = await import('./actions.ts');
+    week.model = null;
+    expect(sendRoomSave({ sc: 't', n: 1, at: NOW, rm: true })).toBe(false);
+    await model();
+    expect(sendRoomSave({ sc: 't', n: 2, at: NOW, name: 'いつもの', pieces: [{ i: 'f4081', x: 1, z: 2, f: 0 }], wall: null, floor: null, size: 8 })).toBe(true);
+    await model();
+    expect(week.model!.state.roomSaves.map((s) => [s.sc, s.n, 'name' in s ? s.name : null])).toEqual([['t', 2, 'いつもの']]);
+  });
+});
