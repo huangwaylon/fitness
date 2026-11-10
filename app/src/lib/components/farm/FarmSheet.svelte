@@ -5,18 +5,15 @@
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { FARM, plantsOf, stageOf, yieldOf, type Plot } from '#lib/contract/farm.ts';
+  import { FARM, cropKey, plantsOf, stageOf, yieldOf, type Plot } from '#lib/contract/farm.ts';
   import { sellPrice } from '#lib/contract/shop.ts';
   import { dayNum } from '#lib/contract/tokyo.ts';
   import { layoutPlots } from '#lib/layout/field.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { world as shared } from '#lib/store/world.svelte.ts';
   import { site } from '../island/site.svelte.ts';
   import { farmToday } from '../island/farm.ts';
   import { islandDay } from '../island/ambientClock.ts';
-  import { weather } from '../island/weatherNow.svelte.ts';
-  import { isRain } from '../island/weather.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import type { Who } from '#lib/types.ts';
 
@@ -27,9 +24,7 @@
   const names = $derived<Record<Who, string>>({ A: week.view?.people.A.villagerName ?? 'A', B: week.view?.people.B.villagerName ?? 'B', G: week.view?.guest.villagerName ?? 'G' });
   const view = $derived.by(() => {
     if (!m) return null;
-    void shared.rev;
-    const live = date === islandDay();
-    const { farm, watered } = farmToday(m.state, date, { ids: new Set(live ? Object.keys(shared.day.watered) : []), wet: live && (isRain(weather.sky) || weather.sky === 'snow') });
+    const { farm, watered } = farmToday(m.state, date);
     const rows = (who: Who) => [...farm.plots].filter(([, pl]) => pl.who === who).map(([p, pl]) => row(p, pl, watered)).sort((a, b) => a.left - b.left || a.c.localeCompare(b.c));
     const plots = layoutPlots(site.layout ?? layoutStore.current);
     const empty = plots.filter((x) => x.who === m.me && !farm.plots.has(x.p)).length;
@@ -42,6 +37,7 @@
   const ripe = $derived(view?.mine.filter((r) => r.ripe) ?? []);
   const growing = $derived(view?.mine.filter((r) => !r.ripe) ?? []);
   const harvestN = $derived(ripe.reduce((a, r) => a + r.n, 0));
+  const harvestV = $derived(ripe.reduce((a, r) => a + r.n * (sellPrice(cropKey(r.c)) ?? 0), 0));
   const crop = (c: string) => t(`beach.name.${c}`);
 </script>
 
@@ -50,7 +46,7 @@
   <div class="fs-body" data-farm-sheet>
     {#if view}
       <section class="card sum">
-        <p data-farm-today>{t('farm.today', { n: ripe.length, max: harvestN, shells: formatNum(harvestN * (sellPrice('goods:tomato') ?? 0)) })}</p>
+        <p data-farm-today>{t('farm.today', { n: ripe.length, max: harvestN, shells: formatNum(harvestV) })}</p>
         <p class="cap" data-farm-count>{t('farm.count', { n: view.n, cap: FARM.cap })}</p>
       </section>
       {#each [{ k: 'ripe', rows: ripe }, { k: 'growing', rows: growing }] as g (g.k)}

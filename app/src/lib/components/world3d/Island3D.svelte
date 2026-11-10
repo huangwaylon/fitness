@@ -56,9 +56,6 @@
   import { gardenReady, loadGarden, wantsGarden } from './garden.ts';
   import { farmScene, farmToday } from '../island/farm.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { world as shared } from '#lib/store/world.svelte.ts';
-  import { islandDay } from '../island/ambientClock.ts';
-  import { isRain } from '../island/weather.ts';
   import { rooms } from '#lib/store/tent.svelte.ts';
   import { homeTod } from './home.ts';
   import { createBuilt } from './built.ts';
@@ -768,9 +765,7 @@
   const farmNow = $derived.by(() => {
     const m = week.model, lay = layoutNow();
     if (!m || !date) return null;
-    const live = date === islandDay();
-    void shared.rev;
-    const { farm, watered } = farmToday(m.state, date, { ids: new Set(live ? Object.keys(shared.day.watered) : []), wet: live && (isRain(weather.sky) || weather.sky === 'snow') });
+    const { farm, watered } = farmToday(m.state, date);
     return farmScene(lay, farm, date, watered);
   });
   $effect(() => {

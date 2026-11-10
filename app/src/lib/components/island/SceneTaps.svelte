@@ -59,7 +59,6 @@
   import { farmUi } from './farmUi.svelte.ts';
   import { farmTap } from './farmTap.ts';
   import { farmToday } from './farm.ts';
-  import { isRain } from './weather.ts';
   import { showCatch } from './catchCard.ts';
   import { loadNames } from './catchLine.ts';
   import { plantsOf } from '#lib/contract/farm.ts';
@@ -453,8 +452,7 @@
     const plot = layout ? plotAt(layout, c, r) : undefined;
     if (!m || !plot) return false;
     const date = week.view?.today ?? dayKey();
-    const live = date === dayKey();
-    const { farm, watered } = farmToday(m.state, date, { ids: new Set(live ? Object.keys(shared.day.watered) : []), wet: live && (isRain(weather.sky) || weather.sky === 'snow') });
+    const { farm, watered } = farmToday(m.state, date);
     const pocket = shopView(m.state, m.me).pocket;
     const pl = farm.plots.get(plot.p);
     const [px, pz] = tileMid(plot.c, plot.r);

@@ -1,11 +1,15 @@
 // The fields on the island today (docs/farming.md): each plot's plant and soil as the scene draws them, from the record's
-// rows (model/farm.ts) and today's live watering (the shared world's day: the partner's at once) and sky. Pure helpers
-// and one reactive view; nothing here sends (store/farm.svelte.ts does).
+// rows (model/farm.ts) and today's live watering (the shared world's day: the partner's at once) and sky; the scene,
+// a plot's tap and the 畑 sheet read them alike. Nothing here sends (store/farm.svelte.ts does).
 import { stageOf, yieldOf, type Farm, type Plot, type Watered } from '#lib/contract/farm.ts';
 import { farmOfState, wateredOf } from '#lib/model/farm.ts';
 import { layoutPlots } from '#lib/layout/field.ts';
 import type { Layout } from '#lib/layout/model.ts';
 import type { LocalDate } from '#lib/types.ts';
+import { world as shared } from '#lib/store/world.svelte.ts';
+import { islandDay } from './ambientClock.ts';
+import { weather } from './weatherNow.svelte.ts';
+import { isRain } from './weather.ts';
 
 /** A plant's model on `date` (the garden's pack, world3d/garden.ts): its stage 0–2, else the ripe plant of its yield
  *  (NH's Lv1–3: the garden's stages 3, 4, 5); the pumpkin orange (P1). */
@@ -33,12 +37,16 @@ export function farmScene(layout: Layout, farm: Farm, date: LocalDate, watered: 
 type FarmRows = Parameters<typeof farmOfState>[0];
 
 /**
- * The fields today: the plants (the record's rows, the queued ones as it will judge them) and what's watered: the
- * record's rows' waterings and wet days, and today's live ones (`today`: the shared world's watered ids; `wet`: it's
- * raining or snowing now, before the record's wet row comes).
+ * The fields on `date`: the plants (the record's rows, the queued ones as it will judge them) and what's watered: the
+ * record's rows' waterings and wet days and, on the island's today, its live ones (the shared world's day: the
+ * partner's at once) and its sky (raining or snowing now, before the record's wet row comes). Reactive (the shared day,
+ * the weather).
  */
-export function farmToday(s: FarmRows, date: LocalDate, today: { ids: ReadonlySet<string>; wet: boolean }): { farm: Farm; watered: Watered } {
+export function farmToday(s: FarmRows, date: LocalDate): { farm: Farm; watered: Watered } {
   const rows = wateredOf(s);
-  const watered: Watered = (p, d) => rows(p, d) || (d === date && (today.wet || today.ids.has(p)));
+  const live = date === islandDay();
+  void shared.rev;
+  const ids = new Set(live ? Object.keys(shared.day.watered) : []), wet = live && (isRain(weather.sky) || weather.sky === 'snow');
+  const watered: Watered = (p, d) => rows(p, d) || (d === date && (wet || ids.has(p)));
   return { farm: farmOfState(s), watered };
 }

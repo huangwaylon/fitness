@@ -358,6 +358,11 @@ NH's harvest feel, with the goals in one place.
 The third tap within 1.2 s shakes; a single tap stays the popup ([design](design.md#shaking-a-tree)). Why: how people
 shake trees in NH, never ベル.
 
+### Farming: NH 2.0's vegetables on a field each
+Starts at the shop, a field each placed in the editor, NH's ÷ 20 prices (14, 4, 18), 40 plants each, ripe in 3 days
+and again 3 days after a harvest, 1–3 by the watering ([farming.md](farming.md)). Why: faithful to NH, worth a daily
+minute (~720 かいがら a full field) without outearning fishing; the cadence is the lever, never a price.
+
 ### Mushrooms are cosmetic
 November's mushrooms have no ずかん page; they go into the pocket to sell (`goods`). Why: NH's mushrooms are crafting
 materials with no catalogue page.
