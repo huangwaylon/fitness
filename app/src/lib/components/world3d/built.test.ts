@@ -10,7 +10,8 @@ import { builtWants, createBuilt, type BuiltAt } from './built.ts';
 import { homePlaces } from './objects.ts';
 import { FAMILIES } from '#lib/layout/homes.ts';
 
-vi.mock('./home.ts', () => ({ buildHome: async () => new Group() }));
+const released = vi.hoisted(() => [] as unknown[]);
+vi.mock('./home.ts', () => ({ buildHome: async () => new Group(), releaseHome: (g: unknown) => void (g && released.push(g)) }));
 vi.mock('./structure.ts', async (actual) => ({ ...(await actual<typeof import('./structure.ts')>()), buildStructure: async () => new Group() }));
 
 const flat = () => 2;
@@ -47,6 +48,27 @@ describe('the built groups', () => {
     built.sync(defaultLayout(), flat);
     await settle();
     expect(placed).toEqual([['pond:t-pond', null, undefined]]);
+  });
+
+  test('a home’s parts let go of as its group goes: replaced, taken away or the scene stopped (home.ts releaseHome)', async () => {
+    const placed = new Map<string, Object3D | null>();
+    const built = createBuilt((id, g) => placed.set(id, g));
+    built.sync(defaultLayout(), flat);
+    await settle();
+    const homes = [...placed].filter(([id]) => id.startsWith('home:'));
+    expect(homes.length).toBeGreaterThan(0);
+    released.length = 0;
+    // (a smaller room: うめ's house rebuilt, the old one let go of once the new one's in)
+    const [id, old] = homes.find(([id]) => id === 'home:home-B')!;
+    built.sync(defaultLayout(), flat, (w) => (w === 'B' ? 4 : 8));
+    await settle();
+    expect(placed.get(id)).not.toBe(old);
+    expect(released).toEqual([old]);
+    // (every group placed: a bridge's or a pond's holds nothing, so lets go of nothing)
+    built.stop();
+    const groups = [...placed.values()].filter(Boolean);
+    expect(released.length).toBe(1 + groups.length);
+    expect(groups.every((g) => released.includes(g))).toBe(true);
   });
 
   test('stopped (the scene going), nothing more is placed', async () => {

@@ -90,7 +90,7 @@
     // `?preview=0`: no 3D (the e2e: a software GL in CI)
     if (new URLSearchParams(location.search).get('preview') === '0') return;
     let gone = false, stop = () => {};
-    void Promise.all([import('../world3d/threePreview.ts'), import('../world3d/home.ts'), import('../world3d/release.ts'), import('../world3d/stage.ts')]).then(([T, { buildHome }, { resourcesOf }, { createStage }]) => {
+    void Promise.all([import('../world3d/threePreview.ts'), import('../world3d/home.ts'), import('../world3d/release.ts'), import('../world3d/stage.ts')]).then(([T, { buildHome, releaseHome, trimHomes }, { resourcesOf }, { createStage }]) => {
       if (gone || !canvas) return;
       const scene = new T.Scene();
       scene.add(new T.HemisphereLight(0xffffff, 0xd8e4c8, 2.6));
@@ -121,8 +121,9 @@
       show = (s: HomeStyle) => {
         const n = ++seq;
         void buildHome(s, base).then((g) => {
-          if (gone || n !== seq || !g) return;
+          if (gone || n !== seq || !g) return releaseHome(g);
           resourcesOf(spin, shown);
+          spin.children.forEach(releaseHome);
           spin.clear();
           // centred on its footprint's middle, the camera a little above, the whole house in view
           const box = new T.Box3().setFromObject(g), c = box.getCenter(new T.Vector3()), size = box.getSize(new T.Vector3());
@@ -139,7 +140,12 @@
       show(style);
       // the cached models' geometries and textures let go of with the renderer: three's listeners on each kept this
       // renderer, its context and the sheet's whole DOM alive, one more each time the picker opened
-      stop = () => stage.dispose([scene], shown);
+      // (and the parts and colours shown let go of, but the island's homes': home.ts trimHomes)
+      stop = () => {
+        stage.dispose([scene], shown);
+        spin.children.forEach(releaseHome);
+        trimHomes(Object.values(islandLayout.current.homes));
+      };
     });
     return () => {
       gone = true;

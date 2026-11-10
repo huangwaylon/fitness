@@ -4,7 +4,7 @@
 // share NH's origin (the house's front wall, its middle); the door stands in the wall's doorway (homes.json `door`: NH's
 // DoorModel0 joint); a colour swaps the albedo of the materials it names. NH's soft look: Lambert, lit a little by its own colour (things.ts's), a lamp's own glow its night
 // light. The scene places the group (engine.ts attach: bent there; homePlaces for where).
-import { Group, MeshLambertMaterial, SRGBColorSpace, type Material, type Mesh, type MeshStandardMaterial, type Object3D, type Side, type Texture } from 'three';
+import { Group, MeshLambertMaterial, SRGBColorSpace, type CompressedTexture, type Material, type Mesh, type MeshStandardMaterial, type Object3D, type Side, type Texture } from 'three';
 import { nhLambert, withMaps } from './blank.ts';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { loadTexture } from './ktx2.ts';
@@ -13,6 +13,8 @@ import { splitSides } from './sides.ts';
 import { lean } from './release.ts';
 import { quiet } from '#lib/quiet.ts';
 import { glbLoader } from './gltf.ts';
+import { keepUsed } from './keepUsed.ts';
+import { freeModel } from './modelCache.ts';
 
 /** World units a model unit (the island's furniture scale: 10 model units a 30u tile). */
 export const HOME_U = 3;
@@ -20,6 +22,45 @@ export const HOME_U = 3;
 const loader = glbLoader({ ktx2: true });
 const glbs = new Map<string, Promise<GLTF | null>>();
 const maps = new Map<string, Promise<Texture | null>>();
+/** The parts and colours no home built uses, kept (the island's three homes', ~11, back at once after a room). */
+export const HOME_KEEP = 12;
+// Each built home holds what it's made of (`glb:<family>`, `map:<family.colour.mat>`) till releaseHome: of those no
+// home holds, the HOME_KEEP last stay and the older go (geometry, textures, images), and a picker closed lets go of
+// all but the island's own (trimHomes: a browse of the catalogue kept every one for the page's life, ~8-18 MB).
+const kept = keepUsed<string>(HOME_KEEP, (k) => {
+  const [kind, key] = [k.slice(0, 3), k.slice(4)];
+  if (kind === 'glb') {
+    const p = glbs.get(key);
+    glbs.delete(key);
+    void p?.then((g) => g && freeModel(g.scene, true));
+  } else {
+    const p = maps.get(key);
+    maps.delete(key);
+    void p?.then((t) => {
+      if (!t) return;
+      t.dispose();
+      (t.image as { close?: () => void } | null)?.close?.();
+      if ((t as CompressedTexture).isCompressedTexture) (t as CompressedTexture).mipmaps = [];
+    });
+  }
+});
+/** What a built home holds (its group's userData). */
+const HOLDS = 'homeHolds';
+/** A built home's parts and colours let go of (the group's left the scene for good: replaced, or the scene gone). */
+export function releaseHome(g: Object3D | null | undefined): void {
+  const holds = g?.userData[HOLDS] as string[] | undefined;
+  if (!holds) return;
+  delete g!.userData[HOLDS];
+  for (const k of holds) kept.unuse(k);
+}
+/** What a home of `style` is made of (its parts' models, their colours' albedos), as held. */
+const holdsOf = (style: HomeStyle): string[] =>
+  partsOf(style).flatMap(({ family, colour }) => [`glb:${family}`, ...(FAMILIES[family]?.colours[colour] ?? []).map((mat) => `map:${family}.${colour}.${mat}`)]);
+/** The parts and colours no home holds let go of, but those of `styles` (the island's homes: back on it, at once). */
+export function trimHomes(styles: HomeStyle[]): void {
+  const spare = new Set(styles.flatMap(holdsOf));
+  kept.drop((k) => spare.has(k));
+}
 const baseUrl = (base?: string) => base ?? new URL('room/homes/', new URL(document.baseURI)).href;
 
 function glb(base: string, family: string): Promise<GLTF | null> {
@@ -67,8 +108,12 @@ export async function buildHome(style: HomeStyle, base?: string): Promise<Group 
   }
   const parts = partsOf(style);
   if (!parts.length) return null;
+  // (held before the loads: an eviction meanwhile never frees what this home is about to draw)
+  const holds = holdsOf(style);
+  for (const k of holds) kept.use(k);
   const group = new Group();
   group.name = `home:${style.m}`;
+  group.userData[HOLDS] = holds;
   const loaded = await Promise.all(parts.map(async ({ family, colour, at }) => {
     const g = await glb(b, family);
     const fam = FAMILIES[family];
@@ -83,7 +128,7 @@ export async function buildHome(style: HomeStyle, base?: string): Promise<Group 
     lambertAll(root, (src) => swap.get(src.name) ?? null, true);
     group.add(root);
   }
-  if (!group.children.length) return null;
+  if (!group.children.length) return (releaseHome(group), null);
   group.scale.setScalar(HOME_U);
   return group;
 }

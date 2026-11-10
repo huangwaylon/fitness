@@ -21,4 +21,15 @@ describe('keepUsed (a cache bound by use)', () => {
     expect(gone).toEqual(['b', 'd']);
     expect(k.stats()).toEqual({ used: 1, idle: 2 });
   });
+  it('drops the unused it is told to, never one in use', () => {
+    const gone: string[] = [];
+    const k = keepUsed<string>(4, (x) => gone.push(x));
+    for (const x of ['a', 'b', 'c']) k.use(x);
+    for (const x of ['a', 'b']) k.unuse(x);
+    k.drop((x) => x === 'a');
+    expect(gone).toEqual(['b']);
+    k.drop(() => false);
+    expect(gone).toEqual(['b', 'a']);
+    expect(k.stats()).toEqual({ used: 1, idle: 0 });
+  });
 });

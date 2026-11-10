@@ -8,6 +8,8 @@ export interface Kept<K> {
   use(k: K): void;
   /** One user fewer: at none it's unused, the unused past `keep` evicted. */
   unuse(k: K): void;
+  /** Every unused one `spare` doesn't keep evicted now (a browse's leftovers: home.ts trimHomes). */
+  drop(spare: (k: K) => boolean): void;
   /** In use (by how many keys), unused and kept. */
   stats(): { used: number; idle: number };
 }
@@ -30,6 +32,9 @@ export function keepUsed<K>(keep: number, evict: (k: K) => void): Kept<K> {
         idle.delete(old);
         evict(old);
       }
+    },
+    drop(spare) {
+      for (const k of [...idle]) if (!spare(k)) (idle.delete(k), evict(k));
     },
     stats: () => ({ used: users.size, idle: idle.size })
   };

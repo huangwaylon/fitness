@@ -9,7 +9,7 @@ import type { Layout } from '#lib/layout/model.ts';
 import type { Who } from '#lib/layout/homes.ts';
 import { pondPlaces } from '#lib/layout/ponds.ts';
 import { homePlaces } from './objects.ts';
-import { buildHome } from './home.ts';
+import { buildHome, releaseHome } from './home.ts';
 import { buildStructure, structurePlaces } from './structure.ts';
 import { buildPond } from './pond.ts';
 
@@ -56,7 +56,7 @@ export interface Built {
   sync(lay: Layout, heightOf: (x: number, z: number) => number, roomOf?: (who: Who) => number): void;
   /** Each group in now, by id (a home's `home:` prefixed). */
   each(fn: (id: string, g: Object3D) => void): void;
-  /** Nothing built from now on (the scene is going). */
+  /** Nothing built from now on, and the homes' parts let go of (the scene is going). */
   stop(): void;
 }
 
@@ -64,12 +64,16 @@ export interface Built {
  *  each as it comes in, before it's placed (a home's lamps for the time of day). */
 export function createBuilt(place: (id: string, g: Object3D | null, at?: BuiltAt) => void, onIn?: (id: string, g: Group) => void): Built {
   const built = new Map<string, { key: string; g: Object3D | null }>();
+  /** The group placed for each id (a newer one may be on its way): a home's parts let go of as it goes (home.ts). */
+  const placed = new Map<string, Object3D>();
   let stopped = false;
+  const unplace = (id: string) => (releaseHome(placed.get(id)), placed.delete(id));
   return {
     sync(lay, heightOf, roomOf) {
       const want = builtWants(lay, heightOf, roomOf);
       for (const id of built.keys()) if (!want.has(id)) {
         place(id, null);
+        unplace(id);
         built.delete(id);
       }
       for (const [id, w] of want) {
@@ -77,10 +81,12 @@ export function createBuilt(place: (id: string, g: Object3D | null, at?: BuiltAt
         const entry = { key: w.key, g: null as Object3D | null };
         built.set(id, entry);
         void w.make().then((g) => {
-          if (stopped || built.get(id) !== entry) return;
+          if (stopped || built.get(id) !== entry) return releaseHome(g);
           entry.g = g;
           if (g) onIn?.(id, g as Group);
           place(id, g, w.at);
+          unplace(id);
+          if (g) placed.set(id, g);
         });
       }
     },
@@ -89,6 +95,7 @@ export function createBuilt(place: (id: string, g: Object3D | null, at?: BuiltAt
     },
     stop() {
       stopped = true;
+      for (const id of [...placed.keys()]) unplace(id);
     }
   };
 }

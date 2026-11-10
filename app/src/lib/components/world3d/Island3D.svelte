@@ -1141,6 +1141,7 @@
       if (loaded) releaseWorker();
       setDrawnFps(null);
       watch?.stop();
+      built.stop();
       e.onDrawn(null);
       offRest();
       boot = timed = null;

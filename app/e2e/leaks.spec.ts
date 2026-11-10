@@ -371,3 +371,45 @@ test.describe('the editor', () => {
     expect(after.gl, 'WebGL contexts alive').toBeLessThanOrEqual(first.gl);
   });
 });
+
+// いえを かえる (docs/island-layout.md "Homes"): half the walls and roofs of a house and every door shown in its
+// preview, the picker closed and back on the island. The preview's models and colours are the island's homes' cache
+// (world3d/home.ts): the picker closed, all but the island's homes' go (before the fix every one stayed for the page's
+// life: +2.0-2.4 MB of ArrayBuffers on the island after this sweep, +7.2 MB after every wall, roof and door).
+test('いえを かえる’s walls, roofs and doors swept: back on the island, the previews’ models and colours let go of', { tag: '@chromium' }, async ({ page }) => {
+  await watch(page);
+  await page.goto(Q);
+  await islandUp(page);
+  const shown = page.locator('[data-home-picker] [data-home-preview]');
+  /** A swatch tapped, its house built in the preview (a token of what's on show: `has`). */
+  const pick = async (sel: string, has: (tokens: string[]) => boolean) => {
+    await page.locator(sel).click();
+    await expect.poll(async () => has(((await shown.getAttribute('data-shown')) ?? '').split(' ')), { timeout: 20_000 }).toBe(true);
+  };
+  /** In うめ's house, the picker opened (its house on show, then, `all`, every other wall and roof and every door), back
+   *  on the island. */
+  const sweep = async (all: boolean) => {
+    await nav(page, `${BASE}/tent${Q}&home=B`);
+    await framed(page, '__tent');
+    await page.locator('[data-home-look]').click();
+    await page.locator('[data-home-picker] [data-model="house"]').click();
+    if (all) for (const part of ['wall', 'roof'] as const) {
+      const ids = await page.locator(`[data-home-picker] [data-${part}]`).evaluateAll((bs, p) => bs.map((b) => (b as HTMLElement).dataset[p]!), part);
+      for (const id of ids.filter((_, i) => i % 2 === 0)) await pick(`[data-home-picker] [data-${part}="${id}"]`, (ts) => ts.some((t) => t.endsWith(id)));
+    }
+    const doors = !all ? [] : await page.locator('[data-home-picker] [data-door]').evaluateAll((bs) => bs.map((b) => (b as HTMLElement).dataset.door!));
+    for (const id of doors) await pick(`[data-home-picker] [data-door="${id}"]`, (ts) => ts.some((t) => t.startsWith(`${id}.`)));
+    await page.keyboard.press('Escape');
+    await expect(page.locator('[data-home-picker]')).toHaveCount(0);
+    await nav(page, `${BASE}/${Q}`);
+    await islandUp(page);
+  };
+  // (the baseline after a visit with no sweep: the room's own packs and models as they stay)
+  await sweep(false);
+  const base = await measure(page);
+  await sweep(true);
+  const after = await measure(page);
+  note('いえを かえる, half the walls and roofs, every door', base, after);
+  expect(after.ab - base.ab, 'ArrayBuffers on the island after the sweep (MB)').toBeLessThan(1);
+  expect(after.gl, 'WebGL contexts alive').toBeLessThanOrEqual(base.gl);
+});
