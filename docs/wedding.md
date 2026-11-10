@@ -24,8 +24,8 @@ Sheet): the HUD menu's 結婚式 pill (the menu: [design](design.md#island)).
   完全に削除 (final). No time zone row (one wedding, in Japan; a `tz` the record holds still applies).
 - **Categories** (`lib/contract/wedCats.ts`): the starter list in Japanese, 予算 · 会場 · 招待客 · 業者 · 衣装 · 料理 ·
   ペーパーアイテム · 写真 · 音楽 · 美容 · ギフト · 手続き · 新婚旅行 · その他 (free text: a typed one as typed). The old board's
-  English names (Guests, Paperwork, …) were renamed on the record once (`relay/scripts/wedding-cats.ts`: A's ops
-  through `/api`; idempotent, a dry run by default).
+  English names (Guests, Paperwork, …) were renamed on the record once (`catsRenameOps`, A's ops
+  through `/api`, by wedding-cats.ts at the `probes` tag: idempotent, a dry run by default).
 - Dropped from the old board: the accent colours, the edit link and read-only toggle (the keys replace them), the
   starter templates.
 

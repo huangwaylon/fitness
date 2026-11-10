@@ -1,5 +1,5 @@
 // Saving a map area ahead (offline phase B, docs/backend.md "Service worker" › Offline): which tiles an area takes and
-// about how many MB. Pure: the tests and scripts/offline-measure.ts run it without a map.
+// about how many MB. Pure: the tests (and scripts/offline-measure.ts, at the `probes` git tag) run it without a map.
 //
 // A trip (OpenFreeMap's vector tiles): z5–9 over its whole box, z10–12 within 3 km of its legs and places, z13–14 within
 // 1 km of its places. A trail (USGS or GSI raster): z12–13 within 3 km of its track, z14–16 within 1 km. The zooms are
@@ -30,8 +30,8 @@ export interface Plan {
 }
 
 /**
- * Mean bytes a tile, per source and zoom, over every planned area's tiles as stored (scripts/offline-measure.ts --full,
- * 2026-11-07: each tile once, OpenFreeMap's .pbf as fetch decodes it). A zoom not listed: its nearest one.
+ * Mean bytes a tile, per source and zoom, over every planned area's tiles as stored (scripts/offline-measure.ts --full at
+ * the `probes` tag, 2026-11-07: each tile once, OpenFreeMap's .pbf as fetch decodes it). A zoom not listed: its nearest one.
  */
 const MEAN_BYTES: Record<Source, Record<number, number>> = {
   ofm: { 5: 133_878, 6: 41_760, 7: 44_364, 8: 34_063, 9: 27_408, 10: 45_755, 11: 31_281, 12: 25_738, 13: 30_470, 14: 55_958 },
@@ -41,7 +41,7 @@ const MEAN_BYTES: Record<Source, Record<number, number>> = {
 /** An area's measured bytes over its mean-based estimate (the same run): a city's vector tiles weigh several times a
  *  coast's at z14 (NZ's 145 KB, Okinawa's 24 KB), more than one table of means can tell. A plan that changes keeps its
  *  area's factor; an area not measured is 1. */
-export const DENSITY: Record<string, number> = { 'trip-nz': 1.399, 'trip-okinawa': 0.566 };
+const DENSITY: Record<string, number> = { 'trip-nz': 1.399, 'trip-okinawa': 0.566 };
 
 /** A trail's deepest saved zoom (GSI's map goes to 18; saved to here, the user's 2026-11-07). */
 export const SAVED_MAX_Z = 16;

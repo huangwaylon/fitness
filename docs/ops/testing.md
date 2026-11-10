@@ -150,6 +150,10 @@ npm run e2e -- --project=chromium-mic   # the mic's specs (kikimimi-mic*.spec.ts
 npm run e2e:ci-like -- e2e/world3d.spec.ts --repeat 5   # as CI runs it (below)
 npm run e2e -- e2e/csp.spec.ts --project=webkit --workers=8   # a worker a test (below)
 ```
+One-off measuring probes, done and deleted, are at the `probes` git tag (`git show probes:app/scripts/<name>.ts`):
+`sw-measure.ts` (a service worker install A/B), `perf-sheets.ts` (sheet open A/B), `offline-measure.ts` (map tiles'
+bytes), relay's `wedding-cats.ts` (the categories' one rename).
+
 Local-only WebKit reds on a Mac (CI's macOS runners pass): `csp.spec.ts` at `--workers=1`, every second test (after a
 test with the sound on, the next page's WebGL context is lost as it's made: `getShaderPrecisionFormat` null, the island
 shows `[data-no3d]`), so give each test its own worker; `kk-sync.spec.ts`, two (WebKit's audio clock stands still here,

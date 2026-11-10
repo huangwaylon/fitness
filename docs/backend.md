@@ -669,7 +669,7 @@ None ([decisions](decisions.md#no-notifications); `e2e/no-notify.spec.ts`: nothi
   photos, MapLibre or ききみみ's parts: those on first use). The hashed chunks are all or nothing (`addAll`, an older
   shell's copy where it has one); the static files go by content hash (`caches.ts installStatics`, hashes from
   `vite.config.ts swPrecacheOnly`), copied from an older shell or fetched `no-cache`, each on its own.
-  `npm run sw:measure -- <buildA> <buildB>` measures an install after a deploy.
+  (An install after a deploy measured: sw-measure.ts at the `probes` tag.)
 - **Activate:** keeps the current shell (`island-shell-<version>`), the previous one (an old page loads its lazy chunks
   from it) and the runtime caches; deletes the rest.
 - **Navigations:** this version's cached shell at once (installed with its chunks, so the HTML matches them;
@@ -709,7 +709,7 @@ None ([decisions](decisions.md#no-notifications); `e2e/no-notify.spec.ts`: nothi
     worker's fetches), served by `index.ts serveTile`, the saved areas first. The TileJSON (`island-map-meta-v1`): the
     copy within an hour, else the network within 2.5 s, else the copy.
   - *Saved areas* ([design](design.md#offline-maps)): `lib/offline/plan.ts` (pure) sizes an area's tiles by measured
-    means per source and zoom (`npm run offline:measure -- --full`, never in CI; within ±20 %, plan.test);
+    means per source and zoom (offline-measure.ts `--full` at the `probes` tag, never in CI; within ±20 %, plan.test);
     `lib/offline/save.ts` fetches them (OpenFreeMap 4 at a time, USGS and GSI 2 with 150 ms after each; header
     `x-island-save`) into `island-offline-<id>` with the TileJSON and a manifest. Resumable; a failed tile tried 3 more
     passes, then `done: false` (「一部のみ」). An OpenFreeMap area keeps its week's build (更新 starts it again, offered

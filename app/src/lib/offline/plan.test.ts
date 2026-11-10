@@ -6,7 +6,7 @@ import { nz } from '#lib/travel/trips/nz.ts';
 import { okinawa } from '#lib/travel/trips/okinawa.ts';
 import { OFM_MAX_BYTES, OFM_MAX_TILES, TOTAL_CAP_BYTES, overCaps, planTrail, planTrip, tileX, tileY, type Plan } from './plan.ts';
 
-/** Every tile of every area fetched once (scripts/offline-measure.ts --full, 2026-11-07): [tiles, bytes]. A trip or a
+/** Every tile of every area fetched once (scripts/offline-measure.ts --full at the `probes` tag, 2026-11-07): [tiles, bytes]. A trip or a
  *  track edited since keeps within its bound by its area's DENSITY. */
 const MEASURED: Record<string, [number, number]> = {
   'trip-nz': [438, 20_442_800], 'trip-okinawa': [310, 7_597_431],

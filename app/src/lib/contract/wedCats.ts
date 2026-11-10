@@ -1,7 +1,7 @@
 // けっこんしき's categories in Japanese (health plan C8; docs/wedding.md "Categories"). The starter list was the old
 // board's English (Budget, Venue, …); the board's own words are Japanese now. The record's rows were renamed once
-// (`catsRenameOps`: relay/scripts/wedding-cats.ts, run on 2026-11-09 after a bookmark; idempotent, should an old
-// phone's queued op bring an English one back).
+// (`catsRenameOps`: relay/scripts/wedding-cats.ts at the `probes` git tag, run on 2026-11-09 after a bookmark;
+// idempotent, should an old phone's queued op bring an English one back).
 import type { WConf, WTaskSet, WedBook } from './wedding.ts';
 
 /** The starter categories, in the order the board offers them. */

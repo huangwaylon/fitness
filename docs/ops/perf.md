@@ -18,7 +18,8 @@ phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), neve
 ## Measuring
 - **Launch, an A/B on the desktop:** `npm run perf:start -- <port> [runs] [webkit|chromium]` against
   `node scripts/serve-build.ts <port>` (cold, or `WARM=1`); the how-to: [testing.md](testing.md#load-budget).
-- **Sheets:** `npm run perf:sheets` (tap → dialog shown, content ready, longest frame), interleaved A/B.
+- **Sheets:** perf-sheets.ts (tap → dialog shown, content ready, longest frame), interleaved A/B: at the
+  `probes` tag ([testing.md](testing.md#run-it-locally)).
 - **The phone's engine:** `npm run ios:check` and `ios:indoor` on the iOS Simulator
   ([testing.md](testing.md#the-ios-simulator-check-the-real-target-on-the-mac)); the phones' own numbers:
   `npm run logs -- report` (`perf.boot`, `perf.sheet`).
