@@ -19,7 +19,7 @@ pack food-images-raw "$HOME" food-images-raw            # → ~/food-images-raw
 pack tts-work "$ROOT/app/.cache/tts" clean refs          # → app/.cache/tts/
 pack food-data-raw "$ROOT/food-data" raw                 # → food-data/
 (cd "$OUT" && shasum -a 256 *.part-* > SHA256SUMS)
-gh release create "$TAG" -R "$REPO" --latest=false -t "$TAG (raw sources)" -F "$HERE/assets-release.md" "$OUT"/*
+gh release create "$TAG" -R "$REPO" --latest=false -t "$TAG" -F "$HERE/assets-release.md" "$OUT"/*
 gh release list -R "$REPO" --limit 100 --json tagName --jq '.[].tagName' | grep '^assets-' | sort -r | tail -n +3 | while read -r old; do
   gh release delete "$old" -R "$REPO" --cleanup-tag -y
 done
