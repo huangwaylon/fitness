@@ -6,18 +6,25 @@
 //   trip map's locate button).
 // - Hashed files (`_app/immutable/`) are cached for a year, and so is the audio (`audio/`): every audio URL the app
 //   fetches carries its file's content hash (`?v=`, lib/sound/manifest.ts), and so are ごはん's picture sheets (`food-img/*.webp`:
-//   their names carry their content hash), the players' parts' packs (`room/player/*.pak`: `<home>.<hash>.pak`, parts.json
-//   names them), and ききみみ's recogniser under `stt/<dir>/` (each dir carries its revision or
-//   version); everything else keeps Pages' default (revalidated: `stt/manifest.json` too).
+//   their names carry their content hash), the rooms' and the players' packs (`room/pack/*.pak`, `room/player/*.pak`:
+//   `<name>.<hash>.pak`, more.json and parts.json name them), the island's KTX2 packs (`room/tex/`: named by their
+//   images' hashes, fetched with the encoder's `?e=`), the Basis transcoder (`room/basis/`, fetched with its `?v=`) and
+//   ききみみ's recogniser under `stt/<dir>/` (each dir carries its revision or version); everything else keeps Pages'
+//   default (revalidated: `stt/manifest.json`, the models, room/homes' loose KTX2s). One rule a path: Pages joins two
+//   rules' same header with a comma.
 // - index.html (the SPA shell every route opens with) preloads the island's page too: Kit's fallback page preloads
 //   only the root layout's chunks, so the island page's chunk and its own imports were asked for only once the
 //   layout's had run (the startup review). Its chunk and its static imports, transitively, as modulepreload; its
 //   stylesheets as preload, crossorigin as Vite asks for them (else the preload goes unused and they come twice).
 //   (Before 404.html is copied from it: `npm run build`.)
-// - The models (`*.glb`, ~1,800 files, 51 MB) go as application/x-protobuf: Cloudflare compresses only the types on its
-//   list, and model/gltf-binary isn't (gzip takes 28 % off them); the loaders read the bytes whatever the type.
+// - The models (`*.glb`, ~1,800 files, 51 MB), the room and player packs and the recogniser's parts (`stt/**.pN`; not
+//   its whole files: the runtime's .mjs is imported by its URL) go as application/x-protobuf: Cloudflare compresses only
+//   the types on its list, and model/gltf-binary and octet-stream aren't (gzip takes 28 % off the models, ~16 % off the
+//   packs, ~50 % off the recogniser); the loaders read the bytes whatever the type, and none trusts content-length (a
+//   compressed answer has none).
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { STT_SETS } from '../src/lib/mic/models.ts';
 
 const root = join(import.meta.dirname, '..', 'build-pages');
 const base = (process.env.BASE_PATH ?? '').replace(/\/$/, '');
@@ -63,6 +70,12 @@ const permissions = ['camera', 'payment', 'usb', 'serial', 'bluetooth', 'hid', '
   .concat('microphone=(self)')
   .join(', ');
 
+/** The recogniser's parts (`<path>.<sha8>.p<i>`, lib/mic/models.ts partNames), one rule an index. */
+const sttParts = Array.from({ length: Math.max(...STT_SETS.flatMap((s) => s.files.map((f) => f.parts))) }, (_, i) => `
+${base}/stt/*.p${i}
+  Content-Type: application/x-protobuf
+`).join('');
+
 const headers = `${base}/*
   Content-Security-Policy: ${csp.replace(/&#39;/g, "'").replace(/&quot;/g, '"')}; frame-ancestors 'none'
   X-Content-Type-Options: nosniff
@@ -81,12 +94,23 @@ ${base}/audio/*
 ${base}/food-img/*.webp
   Cache-Control: public, max-age=31536000, immutable
 
+${base}/room/pack/*.pak
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: application/x-protobuf
+
 ${base}/room/player/*.pak
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: application/x-protobuf
+
+${base}/room/tex/*
+  Cache-Control: public, max-age=31536000, immutable
+
+${base}/room/basis/*
   Cache-Control: public, max-age=31536000, immutable
 
 ${base}/stt/:dir/*
   Cache-Control: public, max-age=31536000, immutable
-
+${sttParts}
 ${base}/*.glb
   Content-Type: application/x-protobuf
 `;
