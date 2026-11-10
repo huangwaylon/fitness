@@ -1,7 +1,7 @@
 <script lang="ts">
-  // Ask before spending: the reward's picture, name and price, and my wallet before → after. やめる beside the one CTA
-  // (買う！), as NH pairs every purchase; the page spends it and shows the banner with とりけす.
-  //   <BuyConfirm item="snack" balance={31} price={20} onconfirm={(item) => …} onclose={() => …} />
+  // Ask before spending: the reward's picture, name and price, and my wallet by my name before → after (「ウェイのベル
+  // 53 → 33」). やめる beside the one CTA (買う！), as NH pairs every purchase; the page spends it and shows the banner with とりけす.
+  //   <BuyConfirm item="snack" balance={31} payer="ウェイ" price={20} onconfirm={(item) => …} onclose={() => …} />
   import Sheet from '../ui/Sheet.svelte';
   import Bells from '../ui/Bells.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -12,14 +12,15 @@
   interface Props {
     /** The reward asked about (null = closed). */
     item: ShopItemId | null;
-    /** My own wallet. */
+    /** My own wallet and whose it is (my name: the payer). */
+    payer: string;
     balance: number;
     /** The reward's price now. */
     price: number;
     onconfirm: (item: ShopItemId) => void;
     onclose: () => void;
   }
-  let { item, balance, price: asked, onconfirm, onclose }: Props = $props();
+  let { item, balance, payer, price: asked, onconfirm, onclose }: Props = $props();
   let open = $state(false);
   /** Kept while the sheet slides away, so its content doesn't vanish first. */
   let shown = $state<ShopItemId | null>(null);
@@ -41,7 +42,7 @@
       <b class="nm">{t(`shop.${shown}`)}</b>
       <Bells bells={price} class="price" />
       <p class="after">
-        <span>{t('wallet.after')}</span>
+        <span data-buy-payer>{t('wallet.after', { name: payer })}</span>
         <span class="money">{formatBells(balance)} → <b>{formatBells(Math.max(0, balance - price))}</b></span>
       </p>
     </div>

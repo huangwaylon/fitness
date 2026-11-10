@@ -635,7 +635,7 @@
 
 <div class="ed sheet-copy" data-editor data-tool={tool}>
   <aside class="tools">
-    <h1>島のエディター <small>{me === 'A' ? 'ウェイ' : me === 'B' ? 'うめ' : 'お客さん'}</small></h1>
+    <h1>島のエディター <small>{me === 'A' ? 'ウェイ' : me === 'B' ? 'うめ' : 'ゲスト'}</small></h1>
     <div class="row" role="group" aria-label="tools">
       <button type="button" aria-pressed={tool === 'select'} onclick={() => setTool('select')} title="V">選択</button>
       <button type="button" aria-pressed={tool === 'paint'} onclick={() => setTool('paint')} title="B">塗る</button>

@@ -79,7 +79,7 @@
     </div>
 
     {#if guest}
-      <p class="card guest" data-guest-jar>{t('guest.jarNote')}</p>
+      <p class="card guest" data-guest-jar>{t('guest.jarNote', { a: names.A, b: names.B })}</p>
     {:else}
       <Shop onbuy={(item) => (ask = item)} {balance} {prices} />
     {/if}
@@ -94,7 +94,7 @@
     <Purchases {spends} {names} {villagers} onerase={guest ? undefined : erase} />
   </div>
 
-  {#if !guest}<BuyConfirm item={ask} {balance} price={ask ? prices[ask] : 0} onconfirm={buy} onclose={() => (ask = null)} />{/if}
+  {#if !guest}<BuyConfirm item={ask} {balance} payer={names[view.me as PersonId]} price={ask ? prices[ask] : 0} onconfirm={buy} onclose={() => (ask = null)} />{/if}
 {/if}
 
 <style>

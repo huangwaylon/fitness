@@ -120,6 +120,7 @@ test('from 2026-11-11 00:00 (PRICE_HALVED_MS): the rewards at 20 / 35, a buy spe
   const [mine, theirs] = [await balance(page), await partner()];
   expect(mine).toBeGreaterThanOrEqual(20);
   await page.locator('.shop button[data-item="snack"]').click();
+  await expect(sheet(page).locator('[data-buy-payer]')).toHaveText('ウェイのベル');
   await expect(sheet(page).locator('.after .money b')).toHaveText(new RegExp(`^${mine - 20}\\sベル$`));
   await sheet(page).getByRole('button', { name: '買う！' }).click();
   await expect.poll(() => balance(page)).toBe(mine - 20);

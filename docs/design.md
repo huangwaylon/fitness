@@ -97,8 +97,8 @@ zoom, a tap on empty ground walks my villager there.
   lands). The guest sees both, buys nothing.
 - **The rewards:** two tiles with NH item art, name and price: 🍦 おやつ 20 ベル and 🍜 外食 35 ベル, paid from my own
   wallet. One it can't cover is sunk. A small ⓘ at each tile's corner shows what counts as that reward in a cream speech bubble as wide as
-  both tiles; ⓘ again, a tap elsewhere or Esc folds it. 買う！ asks first, applies at once and waits 5 s with 取り消す
-  before it is sent.
+  both tiles; ⓘ again, a tap elsewhere or Esc folds it. 買う！ asks first (my wallet by name:
+  「ウェイのベル 53 → 33」), applies at once and waits 5 s with 取り消す before it is sent.
 - **貯めたベル:** the ベル ledger ([Kiroku](#kiroku)); a day pushes a level.
 - **買い物の記録** (`wallet/Purchases.svelte`), folded by default behind a 44px disclosure (「買い物の記録 3件」); the
   buys newest first (art, name, day, who, price), ten at a time (「もっと見る」). 🗑 on any line (either of us, any buy)
@@ -693,8 +693,8 @@ where it stands while it's closed**, at any hour (no night's sleep).
 [decisions](decisions.md#the-guest)). A third person, 「おきゃくさん」: a visitor to our island, NH's way, with its own
 key (pairing: [runbook "Pair a phone"](ops/runbook.md#10-pair-a-phone)). `?demo&as=G` is its phone.
 
-- **What it sees:** our island, the trees and their popups, the menu's ベル row and ごほうび view-only (「ちょきんばこは
-  ふたりの もの。」 in place of the shop), the ずかん, けんこう's かつどう (either member's, goals read-only) and everyone's
+- **What it sees:** our island, the trees and their popups, the menu's ベル row and ごほうび view-only (「ベルはウェイとうめが
+  それぞれ貯めています。…ゲストは見るだけです。」 in place of the shop), the ずかん, けんこう's かつどう (either member's, goals read-only) and everyone's
   meals. Never a からだ figure: the record leaves them out of its snapshot. せってい as ours, with a line saying it's
   visiting. ききみみ: the members' games as their summaries.
 - **What it does:** everything on the island a member does (walks, catches, digs, shakes, phrases, high-fives, every
@@ -1427,7 +1427,7 @@ Two zones, by where a string shows (`i18n/linebreaks.test.ts` WORLD lists the wo
   is keep-all wherever it is.
 - **One spelling a term** in every sheet: 設定 · 記録 · 目標 · 歩数 · 体重 · 完了 · 削除 · 取り消す · 保存 · 編集 · 決定 ·
   キャンセル · 閉じる · 戻る · 元に戻す (restore; an undo is 取り消す) · もう一度 · 今日 · 変更 · 同期 · オフライン · 住民 ·
-  お客さん · 姿 · 模様替え · 片付ける · 季節 · 天気 · 図鑑 · 捕まえた · 作る · 資料 · a range with 〜; the game's own words stay
+  ゲスト (the guest player; お客さん only for NH's visitors) · 姿 · 模様替え · 片付ける · 季節 · 天気 · 図鑑 · 捕まえた · 作る · 資料 · a range with 〜; the game's own words stay
   (ベル, かいがら, がんばり, ふたりで全部, いつもの, ごはん, ごほうび) and official names as NH writes them. A sheet's title may
   differ from its button (けんこう → 健康, 英語 → ききみみ). linebreaks.test checks the sheets' keys for spaces between
   Japanese characters and for the kana spellings of the list.

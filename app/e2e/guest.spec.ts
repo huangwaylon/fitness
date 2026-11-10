@@ -71,7 +71,7 @@ test('the guest’s phone: the members’ activity and ベル, never a からだ
   expect(bells).toBeGreaterThan(0);
   await expect(row.locator('.num')).toHaveText(bells.toLocaleString('en-US'));
   await openRewards(page);
-  await expect(panel.locator('[data-guest-jar]')).toBeVisible();
+  await expect(panel.locator('[data-guest-jar]')).toHaveText('ベルはウェイとうめがそれぞれ貯めています。ごほうびはふたりが選び、ゲストは見るだけです。');
   const purses = panel.locator('.hero .purse');
   await expect(purses).toHaveCount(2);
   await expect.poll(async () => (await purses.evaluateAll((els) => els.map((e) => Number((e as HTMLElement).dataset.balance)))).reduce((a, b) => a + b, 0)).toBe(bells);

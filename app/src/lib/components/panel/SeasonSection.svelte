@@ -96,7 +96,8 @@
 </div>
 
 <style>
-  .season { display: grid; padding: 6px 12px 6px 16px; }
+  /* (the settings' control, as 言語's dropdown and the 図鑑 row: its fill and outline, open or folded) */
+  .season { display: grid; padding: 4px 12px 4px 16px; background: var(--ctl); box-shadow: var(--sh-ctl); }
   .head { display: flex; align-items: center; gap: 8px; }
   /* the folded row: what's showing and the chevron (Purchases' disclosure), turning up when open */
   .toggle {

@@ -53,7 +53,7 @@ const GROUP_COLOUR: Record<string, string> = {
   tree: '#2f8a3f', bush: '#3f9a4f', flower: '#d2589b', rock: '#7d7468', light: '#e6b22e', furniture: '#937047',
   season: '#5aa0d0', structure: '#6b5544', home: '#2f86bd', spot: '#d2701f', visitor: '#c2477a', crop: '#8a6a2f', fence: '#7a5530'
 };
-const OWNER: Record<string, [string, string]> = { 'home-A': ['#8fd3ff', 'ウェイ'], 'home-B': ['#ffb8cc', 'うめ'], 'home-G': ['#cdb4f2', 'お客さん'] };
+const OWNER: Record<string, [string, string]> = { 'home-A': ['#8fd3ff', 'ウェイ'], 'home-B': ['#ffb8cc', 'うめ'], 'home-G': ['#cdb4f2', 'ゲスト'] };
 
 export interface Draw {
   layout: Layout;
