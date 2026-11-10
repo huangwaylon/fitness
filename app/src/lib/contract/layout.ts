@@ -22,9 +22,10 @@ export const isRoomScope = (sc: unknown): sc is RoomScope => (ROOM_SCOPES as rea
 
 /** A chunk's side (tiles) and how many chunks fit across and deep at most (the grid may grow up to this). */
 const CHUNK = 8;
-const CHUNKS_MAX = 16;
-/** An object's tile at most (128 × 128 tiles: room for the grid to grow without a relay deploy). */
-const TILES_MAX = CHUNK * CHUNKS_MAX - 1;
+const CHUNKS_ACROSS = 16, CHUNKS_DEEP = 32;
+/** An object's tile at most (128 across × 256 deep: room for the grid to grow without a relay deploy; deep was 128
+ *  until the long island's max doubled, 2026-11-10). */
+const X_MAX = CHUNK * CHUNKS_ACROSS - 1, Z_MAX = CHUNK * CHUNKS_DEEP - 1;
 /** A tile's character: kind × 4 + tier, base 36 (lib/layout/grid.ts). */
 const TILE_RE = /^[0-9a-z]{64}$/;
 /** At most this many outdoor objects standing at once (the default's and ours; a removed one's row is kept, uncounted). */
@@ -32,7 +33,7 @@ export const LAYOUT_MAX = 1500;
 
 /** An object's id: a default one's (world.ts's: `palm-1`, `fl:52:180`, `home-B`) or a new one (`o` + random). */
 const OBJ_ID = /^[A-Za-z0-9][A-Za-z0-9:._-]{0,31}$/;
-const CHUNK_ID = /^c(?:[0-9]|1[0-5])x(?:[0-9]|1[0-5])$/;
+const CHUNK_ID = /^c(?:[0-9]|1[0-5])x(?:[0-9]|[12][0-9]|3[01])$/;
 const HOME_ID = /^h[ABG]$/;
 const TOKEN = /^[a-z][a-z0-9-]{0,23}$/;
 /** A home part (homes.json's ids: `NABrickC`, `SimpleAR`). */
@@ -56,7 +57,7 @@ export function layoutOpOf(d: Record<string, unknown>): LayoutOp | null {
       if (!OBJ_ID.test(d.id)) return null;
       if (d.rm !== undefined) return d.rm === true && only(d, ['sc', 'id', 'at', 'rm']) ? { sc: 'o', id: d.id, at: d.at, rm: true } : null;
       if (!only(d, ['sc', 'id', 'at', 'k', 'x', 'z', 'f', 's', 'on'])) return null;
-      if (typeof d.k !== 'string' || !TOKEN.test(d.k) || !isInt(d.x, 0, TILES_MAX) || !isInt(d.z, 0, TILES_MAX) || !isInt(d.f, 0, 3)) return null;
+      if (typeof d.k !== 'string' || !TOKEN.test(d.k) || !isInt(d.x, 0, X_MAX) || !isInt(d.z, 0, Z_MAX) || !isInt(d.f, 0, 3)) return null;
       if (d.s !== undefined && (typeof d.s !== 'string' || !TOKEN.test(d.s))) return null;
       if (d.on !== undefined && (typeof d.on !== 'string' || !OBJ_ID.test(d.on) || d.on === d.id)) return null;
       return { sc: 'o', id: d.id, at: d.at, k: d.k, x: d.x, z: d.z, f: d.f as Facing, ...(d.s !== undefined ? { s: d.s as string } : {}), ...(d.on !== undefined ? { on: d.on as string } : {}) };

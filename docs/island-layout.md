@@ -17,7 +17,8 @@ editing: the island is arranged in /editor only.
   `r` grows into the island (away from the camera), as world z does. Read the extent from the layout
   (`model.ts extentOf`), never a constant.
 - **Chunks of 8 × 8 tiles** (3 × 10 of them; the last column sticks out past the grid and is sea): the unit of a
-  terrain op. The ops allow up to 16 × 16 chunks (128 × 128 tiles), so the grid can grow without a relay deploy.
+  terrain op. The ops allow up to 16 chunks across and 32 deep (128 × 256 tiles; deep was 16 until 2026-11-10), so the
+  grid can grow without a relay deploy.
 
 ## The island's size
 

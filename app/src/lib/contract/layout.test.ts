@@ -14,6 +14,11 @@ describe('layout ops (contract/layout.ts)', () => {
     // a thing on a table's top: `on` its table's id
     expect(layoutOpOf({ sc: 'o', id: 'okettle', at: T0, k: 'kettle', x: 5, z: 12, f: 1, on: 'otable' })).toEqual({ sc: 'o', id: 'okettle', at: T0, k: 'kettle', x: 5, z: 12, f: 1, on: 'otable' });
     expect(layoutOpOf({ sc: 'c', id: 'c2x5', at: T0, g: '4'.repeat(64) })).not.toBeNull();
+    // the long island's back (2026-11-10: the max length doubled, the grid 156 rows deep; room to 256)
+    expect(layoutOpOf({ sc: 'c', id: 'c2x19', at: T0, g: '4'.repeat(64) })).not.toBeNull();
+    expect(layoutOpOf({ sc: 'c', id: 'c0x31', at: T0, g: '4'.repeat(64) })).not.toBeNull();
+    expect(layoutOpOf({ sc: 'o', id: 'far', at: T0, k: 'oak', x: 7, z: 155, f: 0 })).not.toBeNull();
+    expect(layoutOpOf({ sc: 'o', id: 'far', at: T0, k: 'oak', x: 7, z: 255, f: 0 })).not.toBeNull();
     expect(layoutOpOf({ sc: 'r', id: 'reset', at: T0 })).not.toBeNull();
     expect(layoutOpOf({ sc: 'h', id: 'hB', at: T0, m: 'house', w: 'NAStucco.A', r: 'NATile.A', d: 'Simple.R.A' })).not.toBeNull();
     expect(layoutOpOf({ sc: 'h', id: 'hB', at: T0, m: 'tent-p', f: 3 })).toMatchObject({ f: 3 });
@@ -28,6 +33,8 @@ describe('layout ops (contract/layout.ts)', () => {
       { sc: 'o', id: 'x', at: T0, k: 'kettle', x: 0, z: 0, f: 0, on: 'bad id!' },
       { sc: 'o', id: 'x', at: T0, k: 'kettle', x: 0, z: 0, f: 0, on: 3 },
       { sc: 'c', id: 'c16x0', at: T0, g: '4'.repeat(64) },
+      { sc: 'c', id: 'c0x32', at: T0, g: '4'.repeat(64) },
+      { sc: 'o', id: 'x', at: T0, k: 'oak', x: 0, z: 256, f: 0 },
       { sc: 'c', id: 'c0x0', at: T0, g: '4'.repeat(63) },
       { sc: 'r', id: 'other', at: T0 },
       { sc: 'h', id: 'hC', at: T0, m: 'house' },
