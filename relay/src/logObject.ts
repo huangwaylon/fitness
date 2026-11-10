@@ -1,13 +1,12 @@
 // The log's Durable Object (docs/ops/observability.md, log.ts): one instance (`idFromName('log')`), SQLite-backed,
 // apart from the record and the room. The Worker hands it a phone's batch (`/log`, its key already checked) and the
 // relay's own events by RPC (best effort: `ctx.waitUntil`, never in a reply's path); the record's signed admin ops
-// read it. Its alarm prunes it once a day.
+// read it. Its alarm prunes it once a day; a timer writes the caps' counts within CAPS_SAVE_MS of a write (log.ts).
 import { DurableObject } from 'cloudflare:workers';
-import { LogCore, type LogQuery, type RelayEvent } from './log.ts';
+import { DAY, LogCore, type LogQuery, type RelayEvent } from './log.ts';
 import type { Sql } from './store.ts';
 import type { Env } from './index.ts';
 
-const DAY = 86_400_000;
 
 export class IslandLog extends DurableObject<Env> {
   private core: LogCore;
@@ -26,14 +25,31 @@ export class IslandLog extends DurableObject<Env> {
     });
   }
 
+  /** The caps' counts not written yet (log.ts pending) are written by a timer in this instance: memory is all they're in
+   *  (an alarm 30 s on often woke a fresh instance, the counts gone, on the test relay 2026-11-10), and the timer keeps
+   *  the instance up meanwhile. */
+  private saving: ReturnType<typeof setTimeout> | null = null;
+  private soon(): void {
+    const at = this.core.pending();
+    if (at === null || this.saving) return;
+    this.saving = setTimeout(() => {
+      this.saving = null;
+      this.core.saveCaps();
+    }, Math.max(0, at - Date.now()));
+  }
+
   /** A phone's batch (its body as sent). */
   ingest(text: string): Record<string, unknown> {
-    return this.core.ingestText(text);
+    const r = this.core.ingestText(text);
+    this.soon();
+    return r;
   }
 
   /** The relay's own events. */
   add(evs: RelayEvent[]): { ok: true; kept: number; closed?: number } {
-    return this.core.add(evs);
+    const r = this.core.add(evs);
+    this.soon();
+    return r;
   }
 
   query(q: LogQuery): ReturnType<LogCore['query']> {

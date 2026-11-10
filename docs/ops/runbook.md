@@ -74,7 +74,7 @@ record by hand; run it after a restore whose reply says the room wasn't told).
 | Site says 「まだ 設定されていません」 | The build had no relay URL (`VITE_LIVE_URL` and `VITE_RECORD_URL` emptied) |
 | App can't reach the island | The relay (§2, §8: `npx wrangler tail`) |
 | `unauthorized` | Wrong or rotated key: re-paste it (app) or fix the Shortcut's **Key** |
-| `busy` | Over 120 requests/minute for that key. The app retries; the Shortcut sends again next run |
+| `busy` | Over 120 requests/minute for that key. The app paces its writes (≤ ~100 a minute) and retries; the Shortcut sends again next run |
 | `too_large` | Body over 1 MB: send a long baseline in chunks of a few weeks |
 | Health numbers didn't move | The `uploads` audit, below |
 
@@ -122,7 +122,8 @@ umeway1122@gmail.com account. Once per machine: `npx wrangler login`. Then, from
 2. `npm run deploy:test`, then `npm run smoke` (the test copy; its keys are in the gitignored `relay/.smoke-keys`,
    `KEY_A=…`/`KEY_B=…` lines; new ones: `openssl rand -hex 32` twice, then `npx wrangler secret bulk .smoke-keys --env
    test`). Every line should say `ok`, including the `/notify` checks (a signed one reaches both test clients; an unsigned or
-   6-minute-old one gets 401) and the log's.
+   6-minute-old one gets 401), the admission (a socket without its ticket, or with one under an unknown key, is
+   refused: the smoke's clients make tickets) and the log's.
 3. `npm run deploy` (production), only from a commit that is on `origin/main` (push first: the Durable Object
    migrations are the account's, so a deploy from a branch blocks everyone else's from main). `curl https://island-fund-relay.island-fund-relay.workers.dev/health` → `ok:true`.
 

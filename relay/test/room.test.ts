@@ -443,11 +443,12 @@ describe('the island room', () => {
 
   it('a welcome carries the record’s last change it heard of (kept across restarts), so a phone that has it needn’t fetch', () => {
     const marks: unknown[] = [];
-    room = new RoomCore({ ...io(), saveRec: (r) => void marks.push(r) });
+    room = new RoomCore({ ...io(), saveRec: (r, g) => void marks.push([r, g]) });
     expect(join(KEY_A).sent[0]).not.toHaveProperty('rec');
     room.notify({ what: 'ingest', who: 'A', at: '2026-11-01T01:02:03.456Z', rev: 'e1' });
-    room.notify({ what: 'event', who: 'B', at: '2026-11-01T01:00:00.000Z', rev: 'e1' }); // an older copy, late
-    expect(marks).toEqual([{ at: '2026-11-01T01:02:03.456Z', rev: 'e1' }]);
+    room.notify({ what: 'event', who: 'B', at: '2026-11-01T01:00:00.000Z', rev: 'e1' }); // an older copy, late (the guest's first)
+    // one write a notify, both marks in it
+    expect(marks).toEqual([[{ at: '2026-11-01T01:02:03.456Z', rev: 'e1' }, null], [{ at: '2026-11-01T01:02:03.456Z', rev: 'e1' }, { at: '2026-11-01T01:00:00.000Z', rev: 'e1' }]]);
     expect(join(KEY_B).sent[0]).toEqual({ v: 3, kind: 'welcome', me: 'B', peer: true, t: now, rec: { at: '2026-11-01T01:02:03.456Z', rev: 'e1' }, here: ['A'], hb: true });
     room = new RoomCore(io(), [], { at: '2026-11-01T01:02:03.456Z', rev: 'e1' });
     socks = [];
@@ -637,7 +638,8 @@ describe('ghosts (a phone gone without closing its socket: relay review O2)', ()
     }
     expect(a.closed).toBeNull();
     expect(b.closed).toEqual({ code: CLOSE.timeout, reason: 'silent' });
-    expect(a.sent).toEqual([{ v: 3, kind: 'presence', who: 'B', on: false, t: now }]); // no probe, only B gone
+    // no probe, only B gone, since its last beat (its hello): the partner's grace runs from then, not from the sweep
+    expect(a.sent).toEqual([{ v: 3, kind: 'presence', who: 'B', on: false, t: now - SILENT_MS }]);
     expect(join(KEY_C).sent[0]).toMatchObject({ kind: 'welcome', here: ['A'] });
   });
 

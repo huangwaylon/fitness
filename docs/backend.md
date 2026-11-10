@@ -413,8 +413,9 @@ intents, never data of record: the record still catches an offline phone up.
   `island-v1` and `tk.<who>.<exp base 36>.<HMAC-SHA256 under the person's key>` (`exp` ≤ 10 minutes ahead of the
   relay's clock; the phones make it for 5). The Worker checks it first: bad or stale, 403; good, marked with its person
   (`X-Island-Ticket`, set only by the Worker), its hello must be that person's (else 4001) and it is never let go to
-  make room for another. A ticketless socket is still let in (a phone with a wrong clock gets its first welcome);
-  after two ticketed sockets fail to open, the phone goes without for 6 hours (`island.liveTicket`).
+  make room for another. A ticketless socket is refused too (2026-11-10: every build since 11-05 sends one; it cost
+  the room a request and a hello's alarm). A phone whose two ticketed sockets fail tries one without
+  (`island.liveTicket`), which the 403 sends back to tickets; a phone clock over 5 minutes off has no live socket.
 - **Auth:** the first message is `hello {key, since?, build?, beat?, dev?}` (`build` logged as `ws.hello`; `dev` the
   device: [One device, one socket](#live-sync)). The room compares the key in constant time with `KEY_A`/`KEY_B`/`KEY_C`
   and answers `welcome {me, peer, t, rec?, here, gone?, hb?, mine?}` (`rec`: the record's last change; `here`: everyone
@@ -447,7 +448,8 @@ intents, never data of record: the record still catches an offline phone up.
 - **Heartbeat:** `{"v":3,"kind":"hb"}` → `{"v":3,"kind":"hb","t":0}` (`HB_PING` / `HB_PONG`), answered by the runtime
   (`setWebSocketAutoResponse`): it never wakes the room or bills duration; `hb: true` in the welcome says so.
   **Ghosts:** a hello with `beat: true` sends something after 20 s of silence; the room closes such a socket silent
-  for 60 s (4003 `silent`, its person gone for the others: `sweepSilent`).
+  for 60 s (4003 `silent`, its person gone for the others: `sweepSilent`), stamped gone at its last beat, so the
+  partner's grace runs from when the phone went (was from the sweep, up to ~90 s later).
 - **Versions:** an unknown `v` closes 4004 and the client waits for a reload; a bump ships as decisions.md
   [Relay versions side by side](decisions.md#relay-versions-side-by-side) says (`npm run logs -- report`, *Live hellos*).
 - **Limits:** per socket a token bucket of 20, refilled 20/s; beyond it messages are dropped, and a numbered intent
@@ -491,7 +493,7 @@ Tokyo's sky by the hour for the island ([design](design.md#weather); decisions: 
   `precipitation`, `cloud_cover`, `visibility`, `temperature_2m`; `past_hours=13`, `forecast_hours=36`), for one fixed
   point (`wrangler.toml` `WX_LAT` / `WX_LON`: central Tokyo). No key, CC BY 4.0, credited in 設定; no phone calls a
   weather API. JMA's model gives no snow, fog or thunder codes for Tokyo: snow comes by temperature.
-- **When:** the Worker's `*/15` cron calls `weatherTick`. A fetch is due 30 minutes after a good one, or past :45 with
+- **When:** the Worker's cron at :15 and :45 calls `weatherTick` (48 wakes a day; `*/15` woke the room 96 times). A fetch is due 30 minutes after a good one, or past :45 with
   none since (the next hour locked before it begins; `weather.ts due`): about 48 a day; a hello fetches too when due
   (the test copy has no cron). One at a time, a 5 s timeout; a failure keeps the timeline, logs `wx-fail <why>` and
   backs off 30 min, 1 h, then 2 h.
@@ -538,7 +540,8 @@ ingest, the trees, きろく, けんこう and ふたりでぜんぶ stay A + B.
   (`scopeMaySend`). `peer` stays the partner for a member and either member for the guest; a high-five names whom it
   is for (`to`).
 - **Push:** its own `changed` notices reach every phone; of the members' it hears an event's, an ingest's only when it
-  brought activity rows (`notify(n, guest)`), and a new epoch's; its welcome's `rec` is the room's `rec-g`.
+  brought activity rows (`notify(n, guest)`), and a new epoch's; its welcome's `rec` is the room's `recG` (both marks in the room's one `marks` key, with its rows
+  written: `index.ts Marks`).
 - **The phones:** a member's draws the guest's villager as a third actor (`ui-state/cast.ts`: `mine`, `partner`,
   `third`; on the guest's phone `third` is B); the guest's phone guards what it sends by the same rules (`week.send`
   by `guestMayWrite`).

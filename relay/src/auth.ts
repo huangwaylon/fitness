@@ -2,21 +2,13 @@
 // Script, and KEY_C, the guest's: docs/backend.md#the-guest) and the page origins a browser may open the socket from. The origin check only keeps other sites' pages out; the key is
 // the authentication.
 import type { Who } from '../../app/src/lib/contract/live-protocol.ts';
-import { ROOM_PROTOCOL, ticketIn, ticketOwner } from '../../app/src/lib/contract/ticket.ts';
+import { ROOM_PROTOCOL, sameKey, ticketIn, ticketOwner } from '../../app/src/lib/contract/ticket.ts';
 
 export interface Keys {
   KEY_A?: string;
   KEY_B?: string;
   /** The guest's key (role `guest`: who `G`). Unset: no guest. Never part of the notify secret (notify.ts). */
   KEY_C?: string;
-}
-
-/** Equal strings, in time independent of where they differ (the length is not secret: keys are 32–128 hex). */
-export function sameKey(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let d = 0;
-  for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return d === 0;
 }
 
 /** Whose key this is (`G`: the guest's), or null. An unset or empty secret matches nothing, so a relay without secrets lets nobody in. */
@@ -31,6 +23,11 @@ export function keyOwner(key: string, keys: Keys): Who | null {
   return null;
 }
 
+/** A key's shape (32–128 hex, either case). */
+const KEY_RE = /^[0-9a-fA-F]{32,128}$/;
+/** Whose key a body's `key` is (a string of the key's shape), or null. */
+export const roleOfKey = (key: unknown, keys: Keys): Who | null => (typeof key === 'string' && KEY_RE.test(key) ? keyOwner(key, keys) : null);
+
 const LOCAL = /^http:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d{1,5})?$/;
 
 /** The page origins allowed to open the socket: the listed ones (ALLOWED_ORIGINS, comma-separated) and localhost. */
@@ -40,23 +37,29 @@ export function originAllowed(origin: string | null, allowed: string): boolean {
   return allowed.split(',').map((s) => s.trim()).filter(Boolean).includes(origin);
 }
 
+/** CORS for a page on an allowed origin (a request without an Origin, a Shortcut's or a server's, needs none); null:
+ *  refused (403). */
+export function corsOf(origin: string | null, allowed: string): Record<string, string> | null {
+  if (!origin) return {};
+  return originAllowed(origin, allowed) ? { 'Access-Control-Allow-Origin': origin, Vary: 'Origin' } : null;
+}
+
 /** The header the Worker tells the room whose ticket a socket came with (never a client's: always set or removed here). */
 export const TICKET_HEADER = 'X-Island-Ticket';
 
 /**
  * The admission (relay review O3, the server half): a socket's request with a ticket among its subprotocols
- * (contract/ticket.ts) goes on marked with whose it is (TICKET_HEADER); a bad or stale ticket is refused (null: 403).
- * One without a ticket still goes on, unmarked (the phones send one, sync/live.ts; an older build may not).
+ * (contract/ticket.ts) goes on marked with whose it is (TICKET_HEADER); one without a ticket, or with a bad or stale
+ * one, is refused (null: 403) before it costs the room a request and a hello's alarm (2026-11-10, review 5: every
+ * build since 11-05 sends one; a phone whose two ticketed handshakes failed tries once without, is refused, and
+ * tickets again: sync/live.ts).
  */
 export async function admission(req: Request, keys: Keys, now: number): Promise<Request | null> {
   const t = ticketIn(req.headers.get('Sec-WebSocket-Protocol'));
+  const who = t ? await ticketOwner(t, keys, now) : null;
+  if (!who) return null;
   const headers = new Headers(req.headers);
-  headers.delete(TICKET_HEADER);
-  if (t) {
-    const who = await ticketOwner(t, keys, now);
-    if (!who) return null;
-    headers.set(TICKET_HEADER, who);
-  }
+  headers.set(TICKET_HEADER, who);
   return new Request(req, { headers });
 }
 

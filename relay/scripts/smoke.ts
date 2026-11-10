@@ -4,6 +4,8 @@
 //   RELAY_URL=wss://… npm run smoke     (another deployment with those keys)
 import { createHmac } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { makeTicket, ROOM_PROTOCOL, TICKET_TTL_MS } from '../../app/src/lib/contract/ticket.ts';
+import { NOTIFY_LABEL, SIG_HEADER, TIME_HEADER } from '../src/notify.ts';
 
 const URL_ = process.env.RELAY_URL ?? 'wss://island-fund-relay-test.island-fund-relay.workers.dev/room';
 // the app's page (Cloudflare Pages); the old one, GitHub Pages, is refused since 2026-11-05
@@ -25,9 +27,10 @@ class Client {
   inbox: Msg[] = [];
   waiters: { pred: (m: Msg) => boolean; res: (m: Msg) => void }[] = [];
   closed: Promise<number>;
-  constructor(origin = ORIGIN) {
+  /** `ticket`: the room's admission ticket (contract/ticket.ts; without one the Worker refuses the socket, 403). */
+  constructor(ticket?: string, origin = ORIGIN) {
     // Node's WebSocket (undici) takes headers; a browser sends its page's Origin by itself.
-    this.ws = new WebSocket(URL_, { headers: { Origin: origin } } as never);
+    this.ws = new WebSocket(URL_, { headers: { Origin: origin }, ...(ticket ? { protocols: [ROOM_PROTOCOL, ticket] } : {}) } as never);
     this.ws.addEventListener('message', (e) => {
       const msg = JSON.parse(String(e.data)) as Msg;
       // (a `replay`: the day's changes, each heard in its place)
@@ -77,26 +80,40 @@ function check(ok: boolean, what: string) {
 
 const { KEY_A, KEY_B, KEY_C } = keys();
 const http = URL_.replace(/^ws/, 'http');
+/** A socket with `who`'s admission ticket (made now, under their key). */
+const as = async (who: 'A' | 'B' | 'G'): Promise<Client> => new Client(await makeTicket(who === 'A' ? KEY_A : who === 'B' ? KEY_B : KEY_C!, who, Date.now() + TICKET_TTL_MS));
+/** The server-to-server signature's headers (src/notify.ts) for `text` at `t`. */
+const secret = createHmac('sha256', `${KEY_A}:${KEY_B}`).update(NOTIFY_LABEL).digest('hex');
+const signedBy = (t: string, text: string) => ({ [TIME_HEADER]: t, [SIG_HEADER]: createHmac('sha256', secret).update(`${t}.${text}`).digest('hex') });
+/** A signed POST to the test relay's /admin. */
+const admin = async (body: object): Promise<Record<string, unknown>> => {
+  const text = JSON.stringify(body);
+  return fetch(new URL('/admin', http), { method: 'POST', headers: signedBy(String(Date.now()), text), body: text }).then((r) => r.json() as Promise<Record<string, unknown>>);
+};
 
 const health = await fetch(new URL('/health', http)).then((r) => r.json() as Promise<{ ok: boolean; t: number; versions?: number[] }>);
 check(health.ok === true, `/health answers ok (versions ${health.versions?.join(', ') ?? '1'})`);
 
 const bad = await fetch(http, { headers: { Origin: 'https://evil.test' } });
 check(bad.status === 403, `a foreign origin is refused (${bad.status})`);
-const evil = await new Client('https://evil.test').open().then(() => 'opened', () => 'refused');
+const evil = await new Client(undefined, 'https://evil.test').open().then(() => 'opened', () => 'refused');
 check(evil === 'refused', `a foreign origin's socket is refused (${evil})`);
-const gh = new Client(OLD_ORIGIN);
+const gh = new Client(undefined, OLD_ORIGIN);
 const oldOpen = await gh.open().then(() => 'opened', () => 'refused');
 gh.ws.close();
 check(oldOpen === 'refused', `the old page's origin (GitHub Pages) is refused (${oldOpen})`);
 
-const stranger = new Client();
+const bare = await new Client().open().then(() => 'opened', () => 'refused');
+check(bare === 'refused', `a socket without an admission ticket is refused (${bare})`);
+const forged = await new Client(await makeTicket('c3'.repeat(32), 'A', Date.now() + TICKET_TTL_MS)).open().then(() => 'opened', () => 'refused');
+check(forged === 'refused', `a ticket under an unknown key is refused (${forged})`);
+const stranger = await as('A');
 await stranger.open();
 stranger.send({ kind: 'hello', key: 'c3'.repeat(32) });
-check((await stranger.closed) === 4001, 'an unknown key is closed with 4001');
+check((await stranger.closed) === 4001, "an unknown key on A's ticket is closed with 4001");
 
 const t0 = performance.now();
-const a = new Client();
+const a = await as('A');
 await a.open();
 const tOpen = performance.now() - t0;
 a.send({ kind: 'hello', key: KEY_A });
@@ -115,7 +132,7 @@ check(wa.me === 'A', `A welcomed (connect ${tOpen.toFixed(0)} ms, hello → welc
   console.log(`     heartbeat RTT: ${stats(hb)}`);
 }
 
-const b = new Client();
+const b = await as('B');
 await b.open();
 b.send({ kind: 'hello', key: KEY_B });
 const wb = await b.next((m) => m.kind === 'welcome');
@@ -165,14 +182,14 @@ const since = (w.t as number) - 1;
 b.ws.close(1000);
 check((await a.next((m) => m.kind === 'presence')).on === false, 'A hears B leave');
 
-const b2 = new Client();
+const b2 = await as('B');
 await b2.open();
 b2.send({ kind: 'hello', key: KEY_B, since });
 await b2.next((m) => m.kind === 'welcome');
 const missed = await b2.next((m) => m.kind === 'world');
 check(missed.id === 'smoke', 'a reconnecting B gets the world op it missed');
 
-const a2 = new Client();
+const a2 = await as('A');
 await a2.open();
 a2.send({ kind: 'hello', key: KEY_A });
 await a2.next((m) => m.kind === 'welcome');
@@ -183,7 +200,6 @@ const notifyUrl = new URL('/notify', http);
 const unsigned = await fetch(notifyUrl, { method: 'POST', body: '{}' });
 check(unsigned.status === 401, `an unsigned notify is refused (${unsigned.status})`);
 check((await fetch(notifyUrl)).status === 405, 'a GET /notify is refused');
-const secret = createHmac('sha256', `${KEY_A}:${KEY_B}`).update('island-relay-notify/1').digest('hex');
 const pushes: number[] = [];
 for (let i = 0; i < Math.min(N, 10); i++) {
   const at = new Date().toISOString();
@@ -192,7 +208,7 @@ for (let i = 0; i < Math.min(N, 10); i++) {
   const p0 = performance.now();
   const r = await fetch(notifyUrl, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Island-Time': t, 'X-Island-Sig': createHmac('sha256', secret).update(`${t}.${body}`).digest('hex') },
+    headers: { 'Content-Type': 'application/json', ...signedBy(t, body) },
     body
   });
   if (i === 0) check(r.status === 204 && r.headers.get('X-Island-Heard') === '2', `a signed notify is accepted (${r.status}, heard by ${r.headers.get('X-Island-Heard')})`);
@@ -203,7 +219,7 @@ for (let i = 0; i < Math.min(N, 10); i++) {
 console.log(`     notify POST → changed on both phones: ${stats(pushes)}`);
 const replay = JSON.stringify({ what: 'ingest', who: 'A', at: new Date().toISOString(), rev: 'smoke1' });
 const old = String(Date.now() - 6 * 60_000);
-const stale = await fetch(notifyUrl, { method: 'POST', headers: { 'X-Island-Time': old, 'X-Island-Sig': createHmac('sha256', secret).update(`${old}.${replay}`).digest('hex') }, body: replay });
+const stale = await fetch(notifyUrl, { method: 'POST', headers: signedBy(old, replay), body: replay });
 check(stale.status === 401, `a notify signed 6 min ago is refused (${stale.status})`);
 
 // The nudge after an acked write: B says `saved`, A hears it.
@@ -222,7 +238,7 @@ b2.ws.close(1000);
 
 // Protocol versions (docs/backend.md#live-relay): v3 only (v1 and v2 went on 2026-11-05); another is closed 4004.
 for (const v of [1, 2, 4]) {
-  const old = new Client();
+  const old = await as('A');
   await old.open();
   old.v = v;
   old.send({ kind: 'hello', key: KEY_A });
@@ -233,11 +249,11 @@ for (const v of [1, 2, 4]) {
 // the day's world reaches a phone that opens later; one nest per tree per hour. Ids unique per run (the test room keeps
 // its day).
 const run = Date.now().toString(36);
-const sa = new Client();
+const sa = await as('A');
 await sa.open();
 sa.send({ kind: 'hello', key: KEY_A });
 await sa.next((m) => m.kind === 'welcome');
-const sb = new Client();
+const sb = await as('B');
 await sb.open();
 sb.send({ kind: 'hello', key: KEY_B });
 await sb.next((m) => m.kind === 'welcome');
@@ -269,7 +285,7 @@ await sb.next((m) => m.kind === 'walk' && m.who === 'A');
 const sinceDay = Date.now() - 60_000;
 sb.ws.close(1000);
 await sa.next((m) => m.kind === 'presence' && m.on === false);
-const sb2 = new Client();
+const sb2 = await as('B');
 await sb2.open();
 const tl = performance.now();
 sb2.send({ kind: 'hello', key: KEY_B, since: sinceDay });
@@ -283,7 +299,7 @@ sb2.ws.close(1000);
 // The guest (docs/backend.md#the-guest), when the test copy has a KEY_C: both members hear it come, its walk reaches
 // them, what it may not send goes nowhere, and the record leaves the からだ out.
 if (KEY_C) {
-  const ga = new Client(), gb = new Client(), g = new Client();
+  const ga = await as('A'), gb = await as('B'), g = await as('G');
   await Promise.all([ga.open(), gb.open(), g.open()]);
   ga.send({ kind: 'hello', key: KEY_A });
   await ga.next((m) => m.kind === 'welcome');
@@ -322,8 +338,7 @@ if (KEY_C) {
     pages++;
   } while (after && pages < 10);
   check(rows === n && pages <= 4, `a paged snapshot is the whole one (${n} rows in ${pages} pages)`);
-  const text = JSON.stringify({ op: 'compact' }), t = String(Date.now());
-  const c = await fetch(new URL('/admin', http), { method: 'POST', headers: { 'X-Island-Time': t, 'X-Island-Sig': createHmac('sha256', secret).update(`${t}.${text}`).digest('hex') }, body: text }).then((r) => r.json() as Promise<Record<string, unknown>>);
+  const c = await admin({ op: 'compact' });
   // (it deletes Health history rows: refused without its confirm, which the smoke never sends)
   check(c.ok === false && typeof c.detail === 'string' && c.detail.includes('delete-health-history'), `the record's compaction is refused without its confirm (${JSON.stringify(c).slice(0, 80)})`);
 }
@@ -332,14 +347,9 @@ if (KEY_C) {
 // after its welcome and when it changes, a fetch now from Open-Meteo (JMA's models) gives 30+
 // hours, and /health says how old it is.
 {
-  const admin = async (body: object): Promise<Record<string, unknown>> => {
-    const text = JSON.stringify(body), t = String(Date.now());
-    const r = await fetch(new URL('/admin', http), { method: 'POST', headers: { 'X-Island-Time': t, 'X-Island-Sig': createHmac('sha256', secret).update(`${t}.${text}`).digest('hex') }, body: text });
-    return r.json() as Promise<Record<string, unknown>>;
-  };
   const put = await admin({ op: 'wx', s: 'rrohsc', fx: [2] });
   check(put.ok === true && (put.wx as { src?: string })?.src === 'fx', 'an /admin wx fixture is put in');
-  const w3 = new Client();
+  const w3 = await as('A');
   await w3.open();
   w3.send({ kind: 'hello', key: KEY_A });
   await w3.next((m) => m.kind === 'welcome');
@@ -359,11 +369,6 @@ if (KEY_C) {
 // The log (docs/ops/observability.md): a phone's batch with a forced error, and an /api request with its request id,
 // both read back through the signed admin op as `npm run logs` reads them; a stranger's batch is refused by the Worker.
 {
-  const admin = async (body: object): Promise<Record<string, unknown>> => {
-    const text = JSON.stringify(body), t = String(Date.now());
-    const r = await fetch(new URL('/admin', http), { method: 'POST', headers: { 'X-Island-Time': t, 'X-Island-Sig': createHmac('sha256', secret).update(`${t}.${text}`).digest('hex') }, body: text });
-    return r.json() as Promise<Record<string, unknown>>;
-  };
   const id = () => Math.random().toString(36).slice(2, 12).padEnd(10, '0');
   const sid = id(), rid = id(), since = Date.now() - 60_000;
   const logUrl = new URL('/log', http);

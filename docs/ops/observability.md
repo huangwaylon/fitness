@@ -57,11 +57,11 @@ A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepal
 | `use` | info | counters `sheet:<i18n key>`, `ev:<event type>`, `route:<route>`, `act:<what>`, `swallow:<tag>` (a failure the app went on without: quiet.ts, e.g. `tex.idb`, `food.verify`, `stt.reply`) | summed, one a flush |
 | `log.drop` | warn | `n`, `why` (cap, full, day, pending) | the phone's log dropped events |
 | `mic.env` / `mic.perm` / `mic.duplex` / `mic.stt` | info | the mic probe's numbers and closed sets (docs/kikimimi-mic.md "The probe"): the page's capabilities; the permission (`st`, `ms`, `again`, `asked`, `ec`, `sr`, `inp`); per earphone route the bleed (dB), round trip (ms), loudness and restore; per recogniser and step its `ms`, `mb`, `audS`, `wer` (%, computed on the phone), `ok`, `err`. **Never heard text, a device label or a sentence** | せってい's 「マイク診断（テスト）」, on 「結果を送信」 |
-| `req` (relay) | info; warn refused; error `unavailable` | `action`, `st` (ok or the error code), `ms` (the Worker's wall time), `inB`, `outB`, `n`, `rej`, `dup`, `why` (the first refusal's rule: `buy.pocket_short`, `spend_void.no_such_spend`, `ingest.parse`), ingest's `m` (added), `sk` (skipped), `w` (warnings: a count); a snapshot's `pg` (its page size; 0: unpaged, an app from before paging); `rw`, `rr` (the rows the record wrote and read for it: its SQLite cursors); `exc` (a thrown class) | every `/api` request: the Shortcut's ingests, rate-limit hits (`busy`), validation refusals |
-| `room.close` / `room.full` | info / warn | `code`, `secs`, `socks`, `rw` (the room's storage rows written since its last close) | the live room |
+| `req` (relay) | info; warn refused; error `unavailable` | `action`, `st` (ok or the error code), `ms` (the Worker's wall time), `inB`, `outB`, `n`, `rej`, `dup`, `why` (the first refusal's rule: `buy.pocket_short`, `spend_void.no_such_spend`, `ingest.parse`), ingest's `m` (added), `sk` (skipped), `w` (warnings: a count); a snapshot's `pg` (its page size; 0: unpaged, an app from before paging); `rw`, `rr` (the rows the record wrote and read for it: its SQLite cursors); `exc` (a thrown class); `kh` (refused `unauthorized`: the first 4 hex of the presented key's SHA-256, never the key) | every `/api` request: the Shortcut's ingests, rate-limit hits (`busy`), validation refusals |
+| `room.close` / `room.full` | info / warn | `code`, `secs`, `socks`, `rw` (the room's storage rows written since it last said, on `ws.hello` too; kept with its `marks`) | the live room |
 | `ws.hello` (relay) | info | `v` (the protocol version), `build` (the app's, from the hello), `rep` (that device's sockets it replaced, the others told nothing); who | each welcomed hello: which phone speaks what (`report`'s *Live hellos*) |
 | `store.corrupt` (relay) | warn | `where` (the fold: spend, board, food, tally, shop, decor) | a stored row of the record that isn't a JSON object, skipped by that fold (store.ts `rowRec`), once a request a place |
-| `cron.wx` | info; warn failed | `ok`, `fetched`, `fail`, `hours`, `age`, `ms` | a weather fetch (a `*/15` cron tick when one is due: ~30 min after a good one, or past :45 with none since) |
+| `cron.wx` | info; warn failed | `ok`, `fetched`, `fail`, `hours`, `age`, `ms` | a weather fetch (the cron at :15 and :45 when one is due: ~30 min after a good one, or past :45 with none since) |
 | `cron.compact` | info | `dates`, `deleted`, `more`, `metrics`, `ms` | the record's compaction (the cron at 04:15 Tokyo when COMPACT_CRON=1, on hold; `more`: a backlog left for the next day; a failure is `do.error` `where: compact`) |
 | `admin` | info | `op`, `st` | each signed admin op (an audit) |
 | `log.cap` | warn | `bucket` | a day's cap reached (once) |
@@ -110,9 +110,10 @@ own token. Retention 30 days; `npm run logs -- purge --before … [--person A]` 
   path. An object still on the old code (no `apiMeta`, the seconds after a deploy) is asked the plain way.
 - The room (`room.close`, `room.full`, `ws.hello`), the cron (`cron.wx`, `cron.compact`) and the admin ops (`admin`) send theirs the same way,
   best effort.
-- **Caps** (UTC day, `caps` table, one row written per write): phones 1,000 info/warn and 200 errors per role; the
-  relay 4,000 and 500; 8,000 in all (the hard guard on the account's rows written). Over a cap: dropped, `log.cap`
-  once.
+- **Caps** (UTC day, `caps` table): phones 1,000 info/warn and 200 errors per role; the relay 4,000 and 500; 8,000 in
+  all (the hard guard on the account's rows written). Counted in memory, written by a timer within 10 s
+  (`CAPS_SAVE_MS`: a burst shares one write; a restart in between loses those seconds' counts), at once when one
+  fills. Over a cap: dropped, `log.cap` once. A `req` costs the log ~1 row (was 3: its own and two caps rows).
 - `POST /stt` (`sttRoute.ts`): a person's key in `Authorization`, a WAV ≤ 340 KB to Workers AI and the text back;
   nothing of either kept. A role's calls a UTC day: `STT_DAY_MAX` (300, the `caps` table's `stt:<role>` rows, not
   in `all`), then 429. Off: `STT_OFF = "1"` in `[vars]` and deploy (503).
@@ -137,8 +138,8 @@ npm run logs -- --test ...                                 # the test relay
 
 ### Investigating (a checklist)
 1. `npm run logs -- stats`: errors in the last 1 h / 6 h, `unavailable` answers, caps, the oldest event, today's (UTC)
-   rows written by object (`rowsLog`, `rowsStore`, `rowsRoom`: the log's own counted, the record's from each `req`'s
-   `rw`, the room's from `room.close`) and `rowsPct` of the Free plan's 100k (the alert warns past 50 %; `report`
+   rows written by object (`rowsLog`, `rowsStore`, `rowsRoom`: the log's own by its cursors, the record's from each
+   `req`'s `rw`, the room's from `ws.hello` and `room.close`) and `rowsPct` of the Free plan's 100k (the alert warns past 50 %; `report`
    prints the record's by action). A `req` the relay's capped day dropped isn't counted.
 2. `npm run logs -- report --since 1d`: what fails, for whom, since which build.
 3. `npm run logs -- --since 6h --level warn`, then `--sid` of a session in trouble (its whole story) and `--rid` of a
@@ -190,7 +191,7 @@ the guest:
 | Record reads: snapshots (opens not current, pushes, taps; ~5 rows each; a full one is the whole record, [backend](../backend.md#the-record) "Snapshot size") | ~300 | 300 | 300 | ~30 | ~3,000 (+ the record per full fetch) | |
 | Record writes: `events` batches (~100 events) and their notice to the room | ~100 | 100 | 200 | ~10 | ~1,000 (ids, slots, decor) | ~1,000 (a row, its id, its indexes, `last_at`) |
 | Shortcut ingests (2 phones, ~24 runs each; ≤ ~260 latest rows read for 32 days) | ~50 | 50 | 100 | ~5 | ~15,000 | ~1,500 |
-| The real weather (the `*/15` cron's room tick, a fetch ~30 min after a good one, a `wx` on change) | 96 ticks, ~48 fetches | 0 | 96 | ~10 | | ~48 (one storage key) |
+| The real weather (the cron's room tick at :15 and :45, a fetch ~30 min after a good one, a `wx` on change) | 48 ticks, ~48 fetches | 0 | 48 | ~10 | | ~48 (one storage key) |
 | The log (above) | ~600 RPCs, ~60 batches | ~60 | ~700 | ~10 | ~2,000 (queries) | ~2,500 |
 | **Total** | | **~630 (0.6 %)** | **~1,650 (1.7 %)** | **~380 (2.9 %)** | **~22,000 (0.4 %)** | **~7,050 (7 %)** |
 

@@ -1,5 +1,5 @@
 // Tokyo's real weather by the hour (docs/design.md "Weather", docs/backend.md "The real weather"): Open-Meteo's
-// forecast from JMA's models, fetched by the room (index.ts weatherTick, on the 15-minute cron and at a hello when
+// forecast from JMA's models, fetched by the room (index.ts weatherTick, on the cron at :15 and :45 and at a hello when
 // it's due), mapped to the game's skies with dead bands so the sky doesn't flicker, and kept as a 36-hour timeline
 // (live-protocol.ts Wx). An hour is locked once it starts (the next one from :45): every phone that has the timeline
 // shows the same sky at the same hour, whenever it got it. Pure but for `tick`'s fetch, which comes in.
@@ -15,6 +15,9 @@ const FRESH_MS = 30 * 60_000;
 const LOCK_MIN = 45;
 /** After a failure, wait this long before the next try (the 1st, the 2nd, the 3rd and on). */
 export const BACKOFF_MS = [30 * 60_000, 60 * 60_000, 120 * 60_000] as const;
+/** The cron's ticks come 30 minutes apart, a few seconds late or early: a fetch (or a failure) this much short of its
+ *  30 minutes is due at the next tick, not the one after. */
+const TICK_SLACK_MS = 2 * 60_000;
 /** A fetch gives up after this long. */
 const FETCH_MS = 5000;
 /** A timeline at most this old (its fetch) is still served. */
@@ -213,10 +216,10 @@ export const WX_EMPTY: WxState = { wx: null, fails: 0 };
 /** Whether a fetch is due at `now`: none kept, the last good one 30 minutes old, or past :45 with none since; never
  *  inside a failure's backoff. */
 export function due(st: WxState, now: number): boolean {
-  if (st.fails > 0 && st.failAt !== undefined && now - st.failAt < BACKOFF_MS[Math.min(st.fails, BACKOFF_MS.length) - 1]) return false;
+  if (st.fails > 0 && st.failAt !== undefined && now - st.failAt < BACKOFF_MS[Math.min(st.fails, BACKOFF_MS.length) - 1] - TICK_SLACK_MS) return false;
   if (!st.wx) return true;
   const lockMark = Math.floor(now / HOUR_MS) * HOUR_MS + LOCK_MIN * 60_000;
-  return now - st.wx.at >= FRESH_MS || (now >= lockMark && st.wx.at < lockMark);
+  return now - st.wx.at >= FRESH_MS - TICK_SLACK_MS || (now >= lockMark && st.wx.at < lockMark);
 }
 
 /** The kept timeline, if it still serves at `now`: fetched within 36 hours and covering the current hour. */

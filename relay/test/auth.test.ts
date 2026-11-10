@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { keyOwner, originAllowed, sameKey } from '../src/auth.ts';
+import { keyOwner, originAllowed } from '../src/auth.ts';
+import { sameKey } from '../../app/src/lib/contract/ticket.ts';
 import { Bucket } from '../src/bucket.ts';
 
 const A = 'a1'.repeat(16);

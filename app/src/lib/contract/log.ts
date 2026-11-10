@@ -76,14 +76,17 @@ export const LOG_EVENTS = {
   "mic.duplex": { src: 'c', f: { ear: ['none', 'wired', 'bluetooth'], aec: 'b', bleed: 'n', rtl: 'n', loud: ['none', 'quiet', 'ok'], pick: 'b', restored: 'b', err: 't' } },
   "mic.stt": { src: 'c', f: { be: ['whisper-gpu', 'whisper-wasm', 'webkit', 'relay'], model: ['tiny.en', 'base.en', 'tiny.en-f16', 'turbo', 'none'], step: ['dl', 'load', 'clip', 'spoken'], ms: 'n', mb: 'n', audS: 'n', wer: 'n', ok: 'b', err: ['not-allowed', 'service-not-allowed', 'network', 'no-speech', 'aborted', 'audio-capture', 'oom', 'timeout', 'other'] } },
   // ---- the relay
-  // rw, rr: the rows the record wrote and read for it (SQLite cursors: the Free plan's 100k rows written a day)
-  req: { src: 'r', f: { action: LOG_ACTIONS, st: LOG_STATUS, ms: 'n', inB: 'n', outB: 'n', n: 'n', rej: 'n', why: 't', m: 'n', sk: 'n', w: 'n', dup: 'n', exc: 't', pg: 'n', rw: 'n', rr: 'n' } },
-  // rw: the rows the room wrote (its storage puts) since its last room.close (the Free plan's rows written a day)
+  // rw, rr: the rows the record wrote and read for it (SQLite cursors: the Free plan's 100k rows written a day); kh, on
+  // `unauthorized`: the first 4 hex of the SHA-256 of the key it presented (never the key: a stale device, an e2e's
+  // fake and a stranger told apart)
+  req: { src: 'r', f: { action: LOG_ACTIONS, st: LOG_STATUS, ms: 'n', inB: 'n', outB: 'n', n: 'n', rej: 'n', why: 't', m: 'n', sk: 'n', w: 'n', dup: 'n', exc: 't', pg: 'n', rw: 'n', rr: 'n', kh: 't' } },
+  // rw (here and on ws.hello): the rows the room wrote (its storage puts) since it last said (the Free plan's rows
+  // written a day)
   "room.close": { src: 'r', f: { code: 'n', secs: 'n', socks: 'n', rw: 'n' } },
   "room.full": { src: 'r', f: { socks: 'n' } },
   // rep: that person's sockets the hello replaced (a phone back before the room saw its old socket go: the others
   // hear no presence off and on)
-  "ws.hello": { src: 'r', f: { v: 'n', build: 't', rep: 'n' } },
+  "ws.hello": { src: 'r', f: { v: 'n', build: 't', rep: 'n', rw: 'n' } },
   "cron.wx": { src: 'r', f: { ok: 'b', fetched: 'b', fail: 't', hours: 'n', age: 'n', ms: 'n' } },
   "cron.compact": { src: 'r', f: { dates: 'n', deleted: 'n', more: 'b', metrics: 'n', ms: 'n' } },
   "do.error": { src: 'r', f: { where: 't', name: 't', msg: 'msg' } },

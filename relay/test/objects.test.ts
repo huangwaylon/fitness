@@ -20,7 +20,7 @@ import { SILENT_MS } from '../src/room.ts';
 import { LIVE_V } from '../../app/src/lib/contract/live-protocol.ts';
 import { IslandStore } from '../src/storeObject.ts';
 import { IslandLog } from '../src/logObject.ts';
-import { LogCore, type RelayEvent } from '../src/log.ts';
+import { CAPS_SAVE_MS, LogCore, type RelayEvent } from '../src/log.ts';
 import { notifySecret, notifySig } from '../src/notify.ts';
 import { resetLogRoute } from '../src/logRoute.ts';
 import { memSql } from './sqlite.ts';
@@ -263,6 +263,22 @@ describe('IslandLog', () => {
     await l.alarm();
     expect(st.alarm()).toBe(NOW + 3_600_000);
   });
+
+  it('a write has the caps\' counts written by a timer in the instance within CAPS_SAVE_MS, one write for a burst', async () => {
+    vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] });
+    vi.setSystemTime(NOW);
+    const st = fakeState();
+    const l = new IslandLog(st.state, envOf());
+    await settle();
+    l.stats(); // (the day read)
+    const saves = vi.spyOn(LogCore.prototype, 'saveCaps');
+    for (let i = 0; i < 5; i++) l.add([{ e: 'cron.wx', l: 1, d: { ok: true } }]);
+    expect(saves).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(CAPS_SAVE_MS);
+    expect(saves).toHaveBeenCalledTimes(1);
+    // written: a new object (after an eviction) reads them back
+    expect(new IslandLog(st.state, envOf()).stats().today).toBe(5);
+  });
 });
 
 describe('IslandRoom', () => {
@@ -316,6 +332,38 @@ describe('IslandRoom', () => {
     expect(st.kv.get('wx')).toMatchObject({ fails: 1 });
     r.webSocketClose(ws as unknown as WebSocket, 1000);
     expect(st.kv.get('gone')).toEqual({ A: NOW });
+  });
+
+  it('its rows written: kept with the record\'s marks (one row a notify), said on the next hello or close, kept across a restart', async () => {
+    let meta: unknown = { who: null, opened: NOW };
+    const ws = { deserializeAttachment: () => meta, serializeAttachment: (m: unknown) => void (meta = m), send() {}, close() {} };
+    const { r, st } = await make({ sockets: () => [ws] });
+    vi.stubGlobal('fetch', () => Promise.reject(new Error('offline')));
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    r.notify({ what: 'event', who: 'B', at: '2026-11-02T02:59:00.000Z', rev: 'e1' });
+    r.notify({ what: 'event', who: 'B', at: '2026-11-02T02:59:01.000Z', rev: 'e1' });
+    // one key for both marks (was two rows a notify)
+    expect([st.kv.has('rec'), st.kv.has('rec-g'), st.kv.get('marks')]).toEqual([false, false, { rec: { at: '2026-11-02T02:59:01.000Z', rev: 'e1' }, recG: { at: '2026-11-02T02:59:01.000Z', rev: 'e1' }, rw: 2, sent: 0 }]);
+    // a restart (a hibernation) keeps the count; the hello says it (and the weather's failure, a row)
+    const again = new IslandRoom(st.state, envOf());
+    await settle();
+    again.webSocketMessage(ws as unknown as WebSocket, JSON.stringify({ v: LIVE_V, kind: 'hello', key: KEY_A }));
+    await settle();
+    expect(added().find((e) => e.e === 'ws.hello')).toMatchObject({ d: { rw: 2 } });
+    again.webSocketClose(ws as unknown as WebSocket, 1000);
+    await settle();
+    // since the hello: the weather's failure and the close's `gone`
+    expect(added().find((e) => e.e === 'room.close')).toMatchObject({ d: { rw: 2 } });
+    // a room from before the marks: its two keys read (the welcome's `rec`)
+    let m2: unknown = { who: null, opened: NOW };
+    const sent: string[] = [];
+    const ws2 = { deserializeAttachment: () => m2, serializeAttachment: (m: unknown) => void (m2 = m), send: (d: string) => void sent.push(d), close() {} };
+    const old = fakeState({ sockets: () => [ws2] });
+    await old.storage.put('rec', { at: '2026-11-01T00:00:00.000Z', rev: 'e1' });
+    const was = new IslandRoom(old.state, envOf());
+    await settle();
+    was.webSocketMessage(ws2 as unknown as WebSocket, JSON.stringify({ v: LIVE_V, kind: 'hello', key: KEY_A }));
+    expect(JSON.parse(sent[0])).toMatchObject({ kind: 'welcome', rec: { at: '2026-11-01T00:00:00.000Z', rev: 'e1' } });
   });
 
   it('a closing socket is logged as `room.close` and closed with a clean code', async () => {

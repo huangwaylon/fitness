@@ -19,9 +19,21 @@ export const TICKET_TTL_MS = 5 * 60_000;
 const TICKET_RE = /^tk\.([ABG])\.([0-9a-z]{1,12})\.([0-9a-f]{64})$/;
 const enc = new TextEncoder();
 
-async function sign(key: string, msg: string): Promise<string> {
-  const k = await crypto.subtle.importKey('raw', enc.encode(key.trim().toLowerCase()), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-  return [...new Uint8Array(await crypto.subtle.sign('HMAC', k, enc.encode(msg)))].map((b) => b.toString(16).padStart(2, '0')).join('');
+/** HMAC-SHA256 of `msg` under `key`, hex. @public (relay/src/notify.ts: the server-to-server signature) */
+export async function hmacHex(key: string, msg: string): Promise<string> {
+  const k = await crypto.subtle.importKey('raw', enc.encode(key), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  return Array.from(new Uint8Array(await crypto.subtle.sign('HMAC', k, enc.encode(msg))), (b) => b.toString(16).padStart(2, '0')).join('');
+}
+/** Under a person's key (lower case, as keys compare). */
+const sign = (key: string, msg: string): Promise<string> => hmacHex(key.trim().toLowerCase(), msg);
+
+/** Equal strings, in time independent of where they differ (the length is not secret: keys are 32–128 hex).
+ *  @public (relay/src/auth.ts) */
+export function sameKey(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let d = 0;
+  for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return d === 0;
 }
 
 /** `who`'s ticket under `key`, counting until `exp` (ms). @public (the phones' half: sync/live.ts) */
@@ -54,8 +66,5 @@ export async function ticketOwner(ticket: string, keys: { KEY_A?: string; KEY_B?
   if (!(exp > now) || exp > now + TICKET_MAX_MS) return null;
   const key = who === 'A' ? keys.KEY_A : who === 'B' ? keys.KEY_B : keys.KEY_C;
   if (!key?.trim()) return null;
-  const want = await sign(key, `island-room.${who}.${m[2]}`);
-  let d = 0;
-  for (let i = 0; i < want.length; i++) d |= want.charCodeAt(i) ^ m[3].charCodeAt(i);
-  return d === 0 ? who : null;
+  return sameKey(await sign(key, `island-room.${who}.${m[2]}`), m[3]) ? who : null;
 }

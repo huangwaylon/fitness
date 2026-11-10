@@ -6,6 +6,7 @@
 //   npm run latency                      (the test copy; N=30 each)
 //   RELAY_URL=wss://… N=50 npm run latency
 import { readFileSync } from 'node:fs';
+import { makeTicket, ROOM_PROTOCOL, TICKET_TTL_MS } from '../../app/src/lib/contract/ticket.ts';
 
 const URL_ = process.env.RELAY_URL ?? 'wss://island-fund-relay-test.island-fund-relay.workers.dev/room';
 const ORIGIN = 'https://island-fund.pages.dev';
@@ -26,8 +27,9 @@ class Client {
   waiters: { pred: (m: Msg) => boolean; res: (x: { m: Msg; at: number; bytes: number }) => void }[] = [];
   bytesIn = 0;
   msgsIn = 0;
-  constructor() {
-    this.ws = new WebSocket(URL_, { headers: { Origin: ORIGIN } } as never);
+  /** `ticket`: the room's admission ticket (contract/ticket.ts: a socket without one is refused, 403). */
+  constructor(ticket: string) {
+    this.ws = new WebSocket(URL_, { headers: { Origin: ORIGIN }, protocols: [ROOM_PROTOCOL, ticket] } as never);
     this.ws.addEventListener('message', (e) => {
       const at = performance.now(), raw = String(e.data), m = JSON.parse(raw) as Msg;
       this.bytesIn += raw.length;
@@ -87,7 +89,7 @@ const { KEY_A, KEY_B } = keys();
 const run = Date.now().toString(36).slice(-5);
 
 async function hello(key: string, since?: number): Promise<{ c: Client; welcome: { m: Msg; at: number }; sent: number }> {
-  const c = new Client();
+  const c = new Client(await makeTicket(key, key === KEY_A ? 'A' : 'B', Date.now() + TICKET_TTL_MS));
   await c.open();
   const s = c.send({ kind: 'hello', key, ...(since !== undefined ? { since } : {}) });
   const welcome = await c.next((m) => m.kind === 'welcome');

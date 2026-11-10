@@ -8,7 +8,8 @@
 //   (a secret the health workflow holds: it reads counts, nothing else).
 // - `relaySink`: the relay's own events to the object, best effort, never in a reply's path; once the relay's day is
 //   capped it stops sending until midnight (per isolate).
-import { originAllowed, sameKey } from './auth.ts';
+import { corsOf } from './auth.ts';
+import { sameKey } from '../../app/src/lib/contract/ticket.ts';
 import { LOG_BODY_MAX } from '../../app/src/lib/contract/log.ts';
 import { errName, type RelayEvent } from './log.ts';
 import type { Who } from '../../app/src/lib/contract/api.ts';
@@ -33,11 +34,6 @@ const closed = new Map<string, number>();
 export const resetLogRoute = (): void => closed.clear();
 
 const MAX_CHARS = LOG_BODY_MAX * 2;
-
-function corsOf(origin: string | null, allowed: string): Record<string, string> | null {
-  if (!origin) return {};
-  return originAllowed(origin, allowed) ? { 'Access-Control-Allow-Origin': origin, Vary: 'Origin' } : null;
-}
 
 export async function logRoute(req: Request, env: LogEnv, log: () => LogRoom): Promise<Response> {
   const cors = corsOf(req.headers.get('Origin'), env.allowed);

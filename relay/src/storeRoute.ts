@@ -10,9 +10,9 @@
 // Each `/api` request is timed here (the wall time of the record's answer: in a Worker the clock moves only across
 // I/O, so this is the round trip to the object, its queue and its work) and handed to `onReq` with the record's meta
 // (reqMeta.ts): the relay's `req` event in the log (docs/ops/observability.md).
-import { keyOwner, originAllowed, type Keys } from './auth.ts';
-import { NOTIFY_WINDOW_MS, SIG_HEADER, TIME_HEADER, verifyNotify } from './notify.ts';
-import { MAX_BODY_CHARS } from './store.ts';
+import { corsOf, keyOwner, type Keys } from './auth.ts';
+import { SIG_HEADER, TIME_HEADER, sigShaped, verifyNotify } from './notify.ts';
+import { MAX_BODY_CHARS } from '../../app/src/lib/contract/api.ts';
 import { errName } from './log.ts';
 import type { ReqMeta } from './reqMeta.ts';
 
@@ -38,25 +38,27 @@ const KEYLESS_MAX = 512;
 /**
  * Whether a body may go on to the record (the Worker's check, before it spends a Durable Object request): one of its
  * first 8 `"key"` members is a person's key, or it has none and is small (keyless `health`). A bounded scan, not a
- * parse: the record parses and checks the key again.
+ * parse: the record parses and checks the key again. Refused: `ok` false and the first key it presented, if any.
  */
-function keyGate(text: string, keys: Keys): boolean {
-  let n = 0;
+function keyGate(text: string, keys: Keys): { ok: boolean; seen?: string } {
+  let n = 0, seen: string | undefined;
   for (const m of text.matchAll(KEY_FIELD)) {
-    if (keyOwner(m[1], keys)) return true;
-    if (++n >= 8) return false;
+    if (keyOwner(m[1], keys)) return { ok: true };
+    seen ??= m[1];
+    if (++n >= 8) return { ok: false, seen };
   }
-  return n === 0 && text.length <= KEYLESS_MAX;
+  return { ok: n === 0 && text.length <= KEYLESS_MAX, seen };
+}
+
+/** A presented key's hash as the log keeps it (`kh`): the first 4 hex of its SHA-256 (lower case, as keys compare), never
+ *  the key. */
+async function keyHash(key: string): Promise<string> {
+  const d = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(key.toLowerCase())));
+  return Array.from(d.slice(0, 2), (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 /** An object still on the code before `apiMeta` (the seconds after a deploy): the RPC's own refusal, nothing else. */
 const noApiMeta = (e: unknown): boolean => e instanceof TypeError && /\bapiMeta\b|does not implement the method/.test(e.message);
-
-/** CORS for a page on an allowed origin (a request without an Origin, a Shortcut's or a server's, needs none). */
-function corsOf(origin: string | null, allowed: string): Record<string, string> | null {
-  if (!origin) return {};
-  return originAllowed(origin, allowed) ? { 'Access-Control-Allow-Origin': origin, Vary: 'Origin' } : null;
-}
 
 /** A request's `req` event, with its wall time (ms). */
 export type OnReq = (meta: ReqMeta, ms: number) => void;
@@ -84,9 +86,10 @@ export async function apiRoute(req: Request, allowed: string, store: () => Store
     onReq?.(bare('too_large', text.length), Date.now() - t0);
     return json('{"ok":false,"error":"too_large"}');
   }
-  // no person's key: refused here (a stranger's body never reaches the record)
-  if (keys && !keyGate(text, keys)) {
-    onReq?.(bare('unauthorized', text.length), Date.now() - t0);
+  // no person's key: refused here (a stranger's body never reaches the record), its key's hash in the log
+  const gate = keys ? keyGate(text, keys) : { ok: true };
+  if (!gate.ok) {
+    onReq?.({ ...bare('unauthorized', text.length), ...(gate.seen ? { kh: await keyHash(gate.seen) } : {}) }, Date.now() - t0);
     return json('{"ok":false,"error":"unauthorized"}');
   }
   try {
@@ -119,7 +122,7 @@ export async function adminRoute(req: Request, store: () => StoreRoom, keys: Key
   if (req.method !== 'POST') return new Response('method not allowed', { status: 405, headers: { Allow: 'POST' } });
   const unauthorized = () => new Response('unauthorized', { status: 401, headers: { 'Cache-Control': 'no-store' } });
   const t = req.headers.get(TIME_HEADER), sig = req.headers.get(SIG_HEADER);
-  if (!t || !sig || !/^\d{13}$/.test(t) || !/^[0-9a-f]{64}$/.test(sig) || Math.abs(now() - Number(t)) > NOTIFY_WINDOW_MS) return unauthorized();
+  if (!sigShaped(t, sig, now())) return unauthorized();
   if (Number(req.headers.get('Content-Length') ?? 0) > ADMIN_MAX_CHARS * 4) return new Response('too large', { status: 413 });
   const text = await req.text();
   if (text.length > ADMIN_MAX_CHARS) return new Response('too large', { status: 413 });

@@ -41,10 +41,9 @@ export interface RoomIO<S extends Sock> {
   now(): number;
   /** Persist the day's world (fire and forget). */
   save(ring: Kept[]): void;
-  /** Persist the record's last change (`notify`), for the welcomes (fire and forget). */
-  saveRec?(rec: RecordMark): void;
-  /** The same, of the last change the guest hears of (no member's ingest: guestNotice). */
-  saveRecG?(rec: RecordMark): void;
+  /** Persist the record's last change (`notify`) and the last the guest hears of (no member's ingest: guestNotice),
+   *  for the welcomes (fire and forget; once per notify that moved either). */
+  saveRec?(rec: RecordMark | null, recG: RecordMark | null): void;
   /** Persist the high-fives held for a partner who was away (fire and forget). */
   hold?(held: Held): void;
   /** Persist when each person's phone last left (fire and forget). */
@@ -421,14 +420,16 @@ export class RoomCore<S extends Sock> {
    *  too, but the guest only what it may see of (guestNotice; `guest`: the record's word on it). Returns how many. */
   notify(n: Notice, guest?: boolean): number {
     const forG = this.guestNotice(n, guest);
+    let moved = false;
     if (!this.rec || n.at > this.rec.at || n.rev !== this.rec.rev) {
       this.rec = { at: n.at, rev: n.rev };
-      this.io.saveRec?.(this.rec);
+      moved = true;
     }
     if (forG && (!this.recG || n.at > this.recG.at || n.rev !== this.recG.rev)) {
       this.recG = { at: n.at, rev: n.rev };
-      this.io.saveRecG?.(this.recG);
+      moved = true;
     }
+    if (moved) this.io.saveRec?.(this.rec, this.recG);
     const to = this.authed().filter((s) => forG || this.io.meta(s)?.who !== 'G');
     const m: ServerMsg = { v: LIVE_V, kind: 'changed', what: n.what, who: n.who, at: n.at, rev: n.rev, ...(n.sid ? { sid: n.sid } : {}), t: this.io.now() };
     for (const s of to) this.send(s, m);
@@ -445,12 +446,13 @@ export class RoomCore<S extends Sock> {
     return n.what !== 'ingest' || guest === true || (was !== null && n.rev !== was.rev);
   }
 
-  /** A socket closed (or errored). Its person's partner hears they left, unless another socket of theirs is open. */
-  close(s: S): void {
+  /** A socket closed (or errored). Its person's partner hears they left, unless another socket of theirs is open.
+   *  `at`: when it went (a ghost's last beat: sweepSilent), else now. */
+  close(s: S, at?: number): void {
     const who = this.io.meta(s)?.who;
     if (!who) return;
     this.io.setMeta(s, { who: null, opened: 0 });
-    const t = this.io.now();
+    const t = at ?? this.io.now();
     if (this.authed(who).length) return this.ownPresence(who, t);
     this.setGone(who, t);
     for (const p of this.others(who)) if (p !== s) this.send(p, { v: LIVE_V, kind: 'presence', who, on: false, t });
@@ -471,7 +473,9 @@ export class RoomCore<S extends Sock> {
       if (!m.bt) continue;
       const last = Math.max(m.hd ?? m.opened, this.io.heardAt?.(s) ?? 0);
       if (now - last >= SILENT_MS) {
-        this.close(s);
+        // gone since its last beat, not since the sweep found it (up to a minute later): the partner's grace (the app's
+        // ui-state/presence.ts) runs from when the phone really went
+        this.close(s, last);
         this.shut(s, CLOSE.timeout, 'silent');
       } else next = next === null ? last + SILENT_MS : Math.min(next, last + SILENT_MS);
     }

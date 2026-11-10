@@ -3,7 +3,7 @@
 // Hibernation API, so an idle connection costs nothing; a phone connects only while the app is on screen.
 import { DurableObject } from 'cloudflare:workers';
 import { HB_PING, HB_PONG, LIVE_V, LIVE_VS, MAX_BYTES, parseNotice, type Notice, type RecordMark, type Gone } from '../../app/src/lib/contract/live-protocol.ts';
-import { admission, originAllowed, subprotocolOf, TICKET_HEADER } from './auth.ts';
+import { admission, originAllowed, roleOfKey, subprotocolOf, TICKET_HEADER } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER, verifyNotify } from './notify.ts';
 import { HELLO_MS, RoomCore, SILENT_MS, type Acked, type DayIndex, type Held, type Kept, type Meta, type Music } from './room.ts';
 import { IslandStore } from './storeObject.ts';
@@ -12,7 +12,6 @@ import { IslandLog } from './logObject.ts';
 import { adminRoute, apiRoute } from './storeRoute.ts';
 import { logHealthRoute, logRoute, relaySink } from './logRoute.ts';
 import { sttRoute, type SttAi } from './sttRoute.ts';
-import { keyOwner } from './auth.ts';
 import { errName, type RelayEvent } from './log.ts';
 import type { ReqMeta } from './reqMeta.ts';
 import { TOKYO, WX_EMPTY, due, fetchTick, fixture, omUrl, wxHealth, type WxState } from './weather.ts';
@@ -54,10 +53,14 @@ export type WxHealth = ReturnType<typeof wxHealth>;
 const RING = 'ring';
 /** The day's claims and nests (room.ts DayIndex): apart from the ring, which trims. */
 const DAY = 'day';
-/** The record's last change (welcome `rec`). */
+/** The record's last change (welcome `rec`), the last the guest heard of (room.ts guestNotice: no member's ingest), and
+ *  the room's rows written (`rw`: all since the object began; `sent`: those the log has heard of): one key, written on
+ *  nearly every record write (Marks). Before 2026-11-10: REC and REC_G, two rows a write, and the count in memory only
+ *  (a hibernation lost it). */
+const MARKS = 'marks';
 const REC = 'rec';
-/** The last change the guest heard of (room.ts guestNotice: no member's ingest), its welcome's `rec`. */
 const REC_G = 'rec-g';
+type Marks = { rec: RecordMark | null; recG: RecordMark | null; rw: number; sent: number };
 /** What the room acked but doesn't keep (room.ts Acked): a resend after a wake is acked again. */
 const ACKED = 'acked';
 /** The high-fives held for a partner who was away (room.ts Held). */
@@ -80,11 +83,17 @@ export class IslandRoom extends DurableObject<Env> {
   private wx: WxState = WX_EMPTY;
   /** The fetch under way (one at a time: the cron's and a hello's share it). */
   private wxBusy: Promise<WxTick> | null = null;
-  /** The rows written since the last room.close (each put one row of the object's SQLite): the log's `rw`. */
-  private rw = 0;
+  /** The rows this room wrote (each put one row of the object's SQLite), kept on MARKS with each of its writes. */
+  private marks: Marks = { rec: null, recG: null, rw: 0, sent: 0 };
   private put(k: string, v: unknown): Promise<void> {
-    this.rw++;
+    this.marks.rw++;
     return this.ctx.storage.put(k, v);
+  }
+  /** The rows written since the log last heard (ws.hello's and room.close's `rw`), now heard. */
+  private unsaid(): number {
+    const n = this.marks.rw - this.marks.sent;
+    this.marks.sent = this.marks.rw;
+    return n;
   }
 
   constructor(ctx: DurableObjectState, env: Env) {
@@ -93,11 +102,11 @@ export class IslandRoom extends DurableObject<Env> {
     ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair(HB_PING, HB_PONG));
     void ctx.blockConcurrencyWhile(async () => {
       const ring = (await ctx.storage.get<Kept[]>(RING)) ?? [];
-      const rec = (await ctx.storage.get<RecordMark>(REC)) ?? null;
+      // (a room from before MARKS: its two marks; the old keys are left, unread)
+      this.marks = (await ctx.storage.get<Marks>(MARKS)) ?? { rec: (await ctx.storage.get<RecordMark>(REC)) ?? null, recG: (await ctx.storage.get<RecordMark>(REC_G)) ?? null, rw: 0, sent: 0 };
       const held = (await ctx.storage.get<Held>(HELD)) ?? {};
       const gone = (await ctx.storage.get<Gone>(GONE)) ?? {};
       const day = (await ctx.storage.get<DayIndex>(DAY)) ?? null;
-      const recG = (await ctx.storage.get<RecordMark>(REC_G)) ?? null;
       const acked = (await ctx.storage.get<Acked>(ACKED)) ?? [];
       const music = (await ctx.storage.get<Music>(MUSIC)) ?? {};
       this.wx = (await ctx.storage.get<WxState>(WX)) ?? WX_EMPTY;
@@ -109,8 +118,10 @@ export class IslandRoom extends DurableObject<Env> {
         now: () => Date.now(),
         save: (r) => void this.put(RING, r),
         saveDay: (d) => void this.put(DAY, d),
-        saveRec: (r) => void this.put(REC, r),
-        saveRecG: (r) => void this.put(REC_G, r),
+        saveRec: (rec, recG) => {
+          this.marks = { ...this.marks, rec, recG, rw: this.marks.rw + 1 };
+          void this.ctx.storage.put(MARKS, this.marks);
+        },
         saveAcked: (a) => void this.put(ACKED, a),
         hold: (h) => void this.put(HELD, h),
         saveGone: (g) => void this.put(GONE, g),
@@ -121,12 +132,13 @@ export class IslandRoom extends DurableObject<Env> {
         onHello: (who, v, build, rep) => {
           // each phone's protocol version and build (the log's ws.hello: which phones speak what), and a socket it
           // replaced
-          this.log([{ e: 'ws.hello', l: 1, role: who, d: { v, ...(build ? { build } : {}), ...(rep ? { rep } : {}) } }]);
+          const rw = this.unsaid();
+          this.log([{ e: 'ws.hello', l: 1, role: who, d: { v, ...(build ? { build } : {}), ...(rep ? { rep } : {}), ...(rw ? { rw } : {}) } }]);
           // the ghosts' watch (room.ts sweepSilent) while anyone is in
           void this.alarmBy(Date.now() + SILENT_MS).catch((e) => console.warn('alarm', errName(e)));
           void this.weatherTick().catch((e) => console.warn('wx-fail', e));
         }
-      }, ring, rec, held, gone, this.wx.wx, day, recG, acked, music);
+      }, ring, this.marks.rec, held, gone, this.wx.wx, day, this.marks.recG, acked, music);
     });
   }
 
@@ -174,8 +186,8 @@ export class IslandRoom extends DurableObject<Env> {
   webSocketClose(ws: WebSocket, code: number): void {
     const m = ws.deserializeAttachment() as Meta | null;
     this.core.close(ws);
-    this.log([{ e: 'room.close', l: 1, role: m?.who ?? null, d: { code, secs: m?.opened ? Math.round((Date.now() - m.opened) / 1000) : -1, socks: this.ctx.getWebSockets().length - 1, ...(this.rw ? { rw: this.rw } : {}) } }]);
-    this.rw = 0;
+    const rw = this.unsaid();
+    this.log([{ e: 'room.close', l: 1, role: m?.who ?? null, d: { code, secs: m?.opened ? Math.round((Date.now() - m.opened) / 1000) : -1, socks: this.ctx.getWebSockets().length - 1, ...(rw ? { rw } : {}) } }]);
     try {
       ws.close(code === 1005 || code === 1006 ? 1000 : code, 'bye');
     } catch {
@@ -200,7 +212,7 @@ export class IslandRoom extends DurableObject<Env> {
 
   /**
    * The real weather (weather.ts, docs/backend.md "The real weather"): fetch Open-Meteo's forecast when it's due (or
-   * `force`), keep the timeline, and send `wx` to the phones when it changed. From the cron (every 15 minutes) and a
+   * `force`), keep the timeline, and send `wx` to the phones when it changed. From the cron (at :15 and :45) and a
    * hello. A failure keeps the timeline it had and backs off.
    */
   async weatherTick(force = false): Promise<WxTick> {
@@ -273,7 +285,7 @@ export class IslandRoom extends DurableObject<Env> {
 type WxTick = { ok: boolean; fetched: boolean; fail?: string; sent?: boolean; heard: number; health: WxHealth };
 
 export default {
-  /** Every 15 minutes: the real weather when it's due (IslandRoom weatherTick); once a day, at 04:15 Tokyo (just after a
+  /** At :15 and :45: the real weather when it's due (IslandRoom weatherTick); once a day, at 04:15 Tokyo (just after a
    *  Wednesday's week lock), the record's compaction (store.ts compact) when COMPACT_CRON is `1`. */
   async scheduled(ev: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
     const t0 = Date.now();
@@ -318,9 +330,9 @@ export default {
       return apiRoute(req, env.ALLOWED_ORIGINS ?? '', () => env.STORE.get(env.STORE.idFromName('record')), (m, ms) => log([reqEvent(m, ms)]), { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C });
     }
     if (url.pathname === '/log') {
-      return logRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.LOG_OFF === '1', roleOf: (k) => (typeof k === 'string' && /^[0-9a-fA-F]{32,128}$/.test(k) ? keyOwner(k, env) : null), now: Date.now }, logObj);
+      return logRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.LOG_OFF === '1', roleOf: (k) => roleOfKey(k, env), now: Date.now }, logObj);
     }
-    if (url.pathname === '/stt') return sttRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.STT_OFF === '1', roleOf: (k) => keyOwner(k, env), spend: (r) => logObj().spend(`stt:${r}`, Number(env.STT_DAY_MAX) || 300), ai: env.AI, log: sinkOf(env, ctx), now: Date.now });
+    if (url.pathname === '/stt') return sttRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.STT_OFF === '1', roleOf: (k) => roleOfKey(k, env), spend: (r) => logObj().spend(`stt:${r}`, Number(env.STT_DAY_MAX) || 300), ai: env.AI, log: sinkOf(env, ctx), now: Date.now });
     if (url.pathname === '/health/log') return logHealthRoute(req, env.HEALTH_TOKEN, logObj);
     if (url.pathname === '/admin') return adminRoute(req, () => env.STORE.get(env.STORE.idFromName('record')), { KEY_A: env.KEY_A, KEY_B: env.KEY_B });
     if (url.pathname !== '/room') return new Response('not found', { status: 404 });

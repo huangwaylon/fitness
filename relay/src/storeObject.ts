@@ -9,7 +9,7 @@ import { StoreCore, type Sql } from './store.ts';
 import type { StoreRoom } from './storeRoute.ts';
 import type { Env } from './index.ts';
 import { apiWithMeta, countingSql, type ReqMeta } from './reqMeta.ts';
-import { keyOwner } from './auth.ts';
+import { roleOfKey } from './auth.ts';
 import { relaySink } from './logRoute.ts';
 import type { RelayEvent } from './log.ts';
 import { isToken } from '../../app/src/lib/contract/log.ts';
@@ -75,7 +75,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   apiMeta(text: string): { body: string; meta: ReqMeta } {
     const keys = { KEY_A: this.env.KEY_A, KEY_B: this.env.KEY_B, KEY_C: this.env.KEY_C };
     this.rows();
-    return apiWithMeta(this.core, text, (k) => (typeof k === 'string' && /^[0-9a-fA-F]{32,128}$/.test(k) ? keyOwner(k, keys) : null), this.rows);
+    return apiWithMeta(this.core, text, (k) => roleOfKey(k, keys), this.rows);
   }
 
   /** A signed `/admin` body (storeRoute.ts): `{op, ...}` → its status and JSON reply. */

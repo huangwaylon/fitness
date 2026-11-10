@@ -2,7 +2,7 @@
 // rules (its key gives the role, never kept), once per batch id, within the day's caps; the relay's own events; the
 // admin's query; retention; and no key, health value, food name, name or free text ever reaches a stored row.
 import { beforeEach, describe, expect, it } from 'vitest';
-import { LOG_CAPS, LOG_KEEP_DAYS, LogCore, type RelayEvent } from '../src/log.ts';
+import { CAPS_SAVE_MS, LOG_CAPS, LOG_KEEP_DAYS, LogCore, type RelayEvent } from '../src/log.ts';
 import { logHealthRoute, logRoute, relaySink, resetLogRoute, type LogRoom } from '../src/logRoute.ts';
 import { apiWithMeta, countingSql } from '../src/reqMeta.ts';
 import { apiRoute, type StoreRoom } from '../src/storeRoute.ts';
@@ -111,14 +111,18 @@ describe('the relay’s events, the query, retention', () => {
 
   it('counts the day\'s rows written by object (the Free plan\'s 100k): the log\'s own, the record\'s `req` rw, the room\'s', () => {
     log.ingestText(batch([ev('app.show'), ev('app.show')]));
-    // 2 events + the batch id + 2 caps rows (c:A:i; all, which keeps these counts: no row of their own)
-    expect(log.stats()).toMatchObject({ rowsLog: 5, rowsStore: 0, rowsRoom: 0, rowsPct: 0 });
-    log.add([{ e: 'req', l: 1, d: { action: 'events', st: 'ok', rw: 40_000 } }, { e: 'room.close', l: 1, d: { code: 1000, rw: 12_000 } }]);
-    // + 2 events + 2 caps rows (r:i, all)
-    expect(log.stats()).toMatchObject({ rowsLog: 9, rowsStore: 40_000, rowsRoom: 12_000, rowsPct: 52 });
-    // kept across a restart, and the next UTC day starts again
+    // 2 events + the batch id (the caps' rows not yet: CAPS_SAVE_MS)
+    expect(log.stats()).toMatchObject({ rowsLog: 3, rowsStore: 0, rowsRoom: 0, rowsPct: 0 });
+    log.add([{ e: 'req', l: 1, d: { action: 'events', st: 'ok', rw: 40_000 } }, { e: 'room.close', l: 1, d: { code: 1000, rw: 12_000 } }, { e: 'ws.hello', l: 1, role: 'A', d: { v: 3, rw: 7 } }]);
+    // + 3 events
+    expect(log.stats()).toMatchObject({ rowsLog: 6, rowsStore: 40_000, rowsRoom: 12_007, rowsPct: 52 });
+    // written once CAPS_SAVE_MS passed (here by the object's timer): 3 caps rows (c:A:i, r:i, all); kept across a
+    // restart, and the next UTC day starts again
+    log.saveCaps();
     log = make();
-    expect(log.stats()).toMatchObject({ rowsStore: 40_000 });
+    expect(log.stats()).toMatchObject({ rowsLog: 9, rowsStore: 40_000, rowsRoom: 12_007 });
+    log.add([{ e: 'cron.wx', l: 1, d: { ok: true } }]);
+    expect(log.stats()).toMatchObject({ rowsLog: 10 });
     now += DAY;
     expect(log.stats()).toMatchObject({ rowsLog: 0, rowsStore: 0, rowsRoom: 0, rowsPct: 0 });
     // a log from before the column: it is added, the old rows kept
@@ -127,6 +131,26 @@ describe('the relay’s events, the query, retention', () => {
     old.sql.exec("INSERT INTO caps (day, bucket, n) VALUES (?, 'all', 7)", new Date(now).toISOString().slice(0, 10));
     const was = new LogCore({ sql: old.sql, tx: old.tx, keys, now: () => now });
     expect(was.stats()).toMatchObject({ today: 7, rowsLog: 0 });
+  });
+
+  it('writes the caps\' rows at most every CAPS_SAVE_MS (2026-11-10: on every write they were ~2/3 of the account\'s rows), at once when one fills', () => {
+    const capsWrites = () => Number((db.db.prepare('SELECT count(*) AS n FROM caps').get() as { n: number }).n);
+    for (let i = 0; i < 100; i++) {
+      log.add([{ e: 'req', l: 1, d: { action: 'events', st: 'ok', rw: 3 } }]);
+      now += 100;
+    }
+    // 100 requests: 100 rows, the caps none yet (a timer is asked for)
+    expect([capsWrites(), log.stats().rowsLog, log.pending()]).toEqual([0, 100, T0 + CAPS_SAVE_MS]);
+    now = T0 + CAPS_SAVE_MS;
+    log.add([{ e: 'req', l: 1, d: { action: 'events', st: 'ok' } }]);
+    expect([capsWrites(), log.pending()]).toEqual([2, null]);
+    // (before: 3 rows a request, 303 in all; now 101 + 2)
+    expect(log.stats()).toMatchObject({ rowsLog: 103, rowsStore: 300, today: 101 });
+    // a bucket that fills: its `log.cap` and the counts at once
+    now += 1000;
+    log.add(Array.from({ length: LOG_CAPS.relay - 101 }, () => ({ e: 'cron.wx' as const, l: 1 as const, d: { ok: true } })));
+    expect(log.query({ since: 0, ev: 'log.cap' }).rows.map((r) => r.d)).toEqual([{ bucket: 'r:i' }]);
+    expect(log.pending()).toBe(null);
   });
 
   it('purges by time and role', () => {

@@ -180,20 +180,22 @@ describe('the real weather (relay)', () => {
     ]).toEqual([false, false, true, true, true, true, true]);
   });
 
-  it('fetches when due: none kept, 30 minutes on, past :45 once; never inside the backoff', () => {
+  it('fetches when due: none kept, 30 minutes on (the next :15/:45 tick, a little early), past :45 once; never inside the backoff', () => {
     const hours = hoursOf('clear');
     const t0 = nowOf(hours); // :10
     const st = fold(WX_EMPTY, hours, t0, 'om')!.st;
+    const slack = 2 * 60_000;
     const got = [
       due(WX_EMPTY, t0),
       due(st, t0 + 19 * 60_000), // :29
-      due(st, t0 + 30 * 60_000), // :40, 30 minutes on
+      due(st, t0 + 30 * 60_000 - slack - 1), // :38
+      due(st, t0 + 30 * 60_000 - slack), // :38, a tick that came early
       due(st, t0 + 35 * 60_000), // :45
       due({ ...st, wx: { ...st.wx!, at: t0 + 35 * 60_000 } }, t0 + 40 * 60_000) // fetched at :45, :50
     ];
-    expect(got).toEqual([true, false, true, true, false]);
+    expect(got).toEqual([true, false, false, true, true, false]);
     const failed = (n: number): WxState => ({ wx: st.wx, fails: n, failAt: t0 });
-    const backoff = [1, 2, 3, 4].map((n) => [due(failed(n), t0 + BACKOFF_MS[Math.min(n, 3) - 1] - 1), due(failed(n), t0 + BACKOFF_MS[Math.min(n, 3) - 1])]);
+    const backoff = [1, 2, 3, 4].map((n) => [due(failed(n), t0 + BACKOFF_MS[Math.min(n, 3) - 1] - slack - 1), due(failed(n), t0 + BACKOFF_MS[Math.min(n, 3) - 1] - slack)]);
     expect(backoff).toEqual([[false, true], [false, true], [false, true], [false, true]]);
   });
 

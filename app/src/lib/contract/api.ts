@@ -166,6 +166,13 @@ export const SNAPSHOT_PAGE_MAX = 10_000;
 /** A page's cursor (`next`, `after`): the last row's `at`, its table (`m` metrics, `e` events) and its `seq`.
  *  @public (relay/src/store.ts) */
 export const CURSOR_RE = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)\|([me])\|(\d{1,15})$/;
+/** A row's `at` (the record's clock, ISO with ms). @public (relay/src/store.ts) */
+export const ISO_AT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+/** The record's caps on one `/api` request: its body's characters, and an `events` batch's events. The phones' queue
+ *  (sync/queue.ts) sends under them; never lower them below what a build in use sends. @public (relay/src/store.ts) */
+export const MAX_BODY_CHARS = 1_000_000;
+/** @public (relay/src/store.ts) */
+export const EVENTS_MAX = 50;
 /** `build`: the record's code (relay/src/store.ts STORE_BUILD), to tell which code the deployment runs. `me`: `G` for the
  *  guest's key. */
 export type WhoamiReply = { ok: true; me: Who; build: string } | Fail;

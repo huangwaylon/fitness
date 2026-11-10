@@ -17,7 +17,7 @@ import { parseShortcut } from './parse.ts';
 import { auditNotes, auditRow } from './audit.ts';
 import { eventSlot, validEventData } from '../../app/src/lib/contract/record.ts';
 import {
-  CURSOR_RE, eventSubject, EVENT_TYPES, isActivityMetric, isId, isMetricKey, isPersonId, isRec, isWho, SNAPSHOT_PAGE_MAX,
+  CURSOR_RE, eventSubject, EVENTS_MAX, EVENT_TYPES, isActivityMetric, isId, ISO_AT, isMetricKey, isPersonId, isRec, isWho, SNAPSHOT_PAGE_MAX,
   type ApiError, type EventRow, type Fail, type MetricRow, type SnapshotRows
 } from '../../app/src/lib/contract/api.ts';
 import { compactKeep, weekLockMs } from '../../app/src/lib/contract/compact.ts';
@@ -33,7 +33,7 @@ import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { verifyNotify } from './notify.ts';
 import { errName } from './log.ts';
 import { isLogId, scrubMsg } from '../../app/src/lib/contract/log.ts';
-import { keyOwner, type Keys } from './auth.ts';
+import { roleOfKey, type Keys } from './auth.ts';
 import { guestMayWrite, rowsFor } from '../../app/src/lib/contract/guest.ts';
 import { buyOf, reowe, sellOf, shopLedger, shopRefusal, shopStep, type Ledger, type ShopRow } from '../../app/src/lib/contract/shop.ts';
 import { backCovered, isTally, mergeTally } from '../../app/src/lib/contract/tally.ts';
@@ -64,7 +64,6 @@ export interface StoreIO {
 
 /** What the store answers to `health` and `whoami` (`build`): bumped with the store's code. */
 export const STORE_BUILD = 'relay-2';
-export const MAX_BODY_CHARS = 1_000_000;
 export const RATE_PER_MINUTE = 120;
 /** A snapshot's later pages (`after`) per key per minute: their own budget, so a cold fetch of a big record (a page
  *  each SNAPSHOT_PAGE rows) never spends the writes' (O9). */
@@ -73,11 +72,8 @@ const MAX_EVENT_DATA_CHARS = 20_000;
 const UPLOADS_SHOWN = 20;
 /** The ingest audit keeps this long (ms): each ingest lets older rows go. */
 const UPLOADS_KEEP_MS = 60 * 86_400_000;
-/** At most this many events in one `events` request (a queue that grew offline goes in a few). */
-const EVENTS_MAX = 50;
 /** A late row is returned to a poll whose `since` is at most this much after its arrival (the servers' clocks). */
 export const LATE_MARGIN_MS = 10_000;
-const KEY_RE = /^[0-9a-fA-F]{32,128}$/;
 /** The admin ops taken once per signature (a replay within the window would restore, start an epoch or purge again). */
 const ADMIN_ONCE = ['restore', 'rev', 'logpurge'];
 /** How long their signatures are remembered: past the signature's own window (±5 minutes) on both sides. */
@@ -96,7 +92,6 @@ const DELETE_CHUNK = 90;
 const COMPACT_DATES_PER_TX = 7;
 const SEQ_MAX = 9e15;
 const utf8 = new TextEncoder();
-const ISO_AT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
 /** The meal log's events, each one's latest op per id kept by its owner's rule (contract/food.ts foodAccept). */
 const FOOD_PARSE = { food: foodOp, food_repeat: foodRepeatOp, food_recipe: foodRecipeOp, food_custom: foodCustomOp } as const;
@@ -386,7 +381,7 @@ export class StoreCore {
   private route(body: unknown, bytes: number): Reply {
     if (!isRec(body)) return fail('bad_request');
     if (body.action === 'health' && body.key === undefined) return { ok: true, build: STORE_BUILD };
-    const me = typeof body.key === 'string' && KEY_RE.test(body.key) ? keyOwner(body.key, this.io.keys) : null;
+    const me = roleOfKey(body.key, this.io.keys);
     if (!me) return fail('unauthorized');
     if (!this.underRateLimit(me, body.action === 'snapshot' && body.page !== undefined && body.after !== undefined)) return fail('busy');
     // the guest (docs/backend.md#the-guest): no health data in, no audit to read
@@ -533,7 +528,7 @@ export class StoreCore {
       }
       // a past Tokyo day never drops to 0 from a value above it: a run that read nothing (Health locked, Fill
       // Missing's 0 for every day) would rewrite the history; today may still go down to 0
-      const today = new Date(this.io.now() + 9 * 3600_000).toISOString().slice(0, 10);
+      const today = localDateAt(this.io.now());
       let n = 0, zeros = 0, act = false;
       for (const m of parsed.metrics) {
         const k = `${m.date}|${m.metric}`;

@@ -86,7 +86,7 @@ export async function sttRoute(req: Request, env: SttEnv): Promise<Response> {
   if (env.off || !env.ai) return json({ ok: false, error: 'off' }, 503);
   const auth = req.headers.get('Authorization') ?? '';
   const key = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
-  const role = /^[0-9a-fA-F]{32,128}$/.test(key) ? env.roleOf(key) : null;
+  const role = env.roleOf(key);
   if (!role) return json({ ok: false, error: 'unauthorized' }, 401);
   const t0 = env.now();
   // only a person's calls are logged (a stranger's flood never spends the log's requests)

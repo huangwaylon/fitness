@@ -28,6 +28,8 @@ export interface ReqMeta {
   pg?: number;
   /** The rows the record wrote and read for it (its SQLite cursors' counts: the Free plan's rows a day). */
   rw?: number;
+  /** Refused `unauthorized` at the Worker: the presented key's hash (storeRoute.ts keyHash). */
+  kh?: string;
   rr?: number;
 }
 

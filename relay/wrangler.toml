@@ -24,9 +24,10 @@ STT_DAY_MAX = "300"
 [ai]
 binding = "AI"
 
-# Every 15 minutes: the real weather when it's due (at :15 and :45).
+# At :15 and :45: the real weather when it's due (2026-11-10: every 15 minutes woke the room 96 times a day, half of
+# them with nothing due). 19:15 UTC (04:15 Tokyo) is the compaction's tick, gated off (COMPACT_CRON).
 [triggers]
-crons = ["*/15 * * * *"]
+crons = ["15,45 * * * *"]
 
 [[durable_objects.bindings]]
 name = "ROOM"

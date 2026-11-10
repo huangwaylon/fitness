@@ -1,11 +1,13 @@
 // The record's HTTP side (src/storeRoute.ts) in front of a real store (src/store.ts on node:sqlite): /api from a page,
 // a Shortcut or a server, and the signed /import.
+import { createHash } from 'node:crypto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { adminRoute, apiRoute, type StoreRoom } from '../src/storeRoute.ts';
 import { notifySecret, notifySig } from '../src/notify.ts';
 import { StoreCore } from '../src/store.ts';
 import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { memSql } from './sqlite.ts';
+import type { ReqMeta } from '../src/reqMeta.ts';
 
 const KEY_A = 'a1'.repeat(16);
 const KEY_B = 'b2'.repeat(16);
@@ -76,6 +78,17 @@ describe('/api before the record (the Worker)', () => {
     expect(await (await apiRoute(req('{"action":"health"}'), ALLOWED, () => counting, undefined, keys)).json()).toMatchObject({ ok: true });
     expect(await (await apiRoute(req('{oops'), ALLOWED, () => counting, undefined, keys)).json()).toEqual({ ok: false, error: 'bad_request' });
     expect(heard).toBe(3);
+  });
+
+  it('logs a refused key by its hash (`kh`: 4 hex of its SHA-256, never the key), none for a body without one', async () => {
+    const metas: ReqMeta[] = [];
+    const fake = 'a1'.repeat(32);
+    await apiRoute(req(JSON.stringify({ key: fake, action: 'whoami' })), ALLOWED, () => room, (m) => void metas.push(m), keys);
+    await apiRoute(req(JSON.stringify({ key: fake.toUpperCase(), action: 'whoami' })), ALLOWED, () => room, (m) => void metas.push(m), keys);
+    await apiRoute(req('x'.repeat(5000)), ALLOWED, () => room, (m) => void metas.push(m), keys);
+    const want = createHash('sha256').update(fake).digest('hex').slice(0, 4);
+    expect(metas.map((m) => [m.st, m.kh])).toEqual([['unauthorized', want], ['unauthorized', want], ['unauthorized', undefined]]);
+    expect(JSON.stringify(metas)).not.toContain(fake);
   });
 
   it('falls back to the plain call only when the object has no apiMeta yet, never after another TypeError', async () => {

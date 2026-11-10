@@ -1,6 +1,6 @@
 // The room's admission ticket (contract/ticket.ts, relay/src/auth.ts admission: relay review O3, the server half): a
 // ticket among a socket's subprotocols names its person, signed under their key; the Worker marks the request with
-// it, refuses a bad one, lets one without go on (not required yet); the room's answer names a subprotocol offered.
+// it, refuses a bad one or none (required since 2026-11-10); the room's answer names a subprotocol offered.
 import { describe, expect, it } from 'vitest';
 import { admission, subprotocolOf, TICKET_HEADER } from '../src/auth.ts';
 import { makeTicket, ROOM_PROTOCOL, TICKET_MAX_MS, TICKET_TTL_MS, ticketIn, ticketOwner } from '../../app/src/lib/contract/ticket.ts';
@@ -39,14 +39,13 @@ describe('the ticket', () => {
 });
 
 describe('the admission', () => {
-  it('marks a ticketed socket with its person, refuses a bad ticket, lets one without go on (unmarked), and never trusts a client’s mark', async () => {
+  it('marks a ticketed socket with its person, refuses a bad ticket or none (it never reaches the room), and never trusts a client’s mark', async () => {
     const t = await makeTicket(KEY_B, 'B', NOW + TICKET_TTL_MS);
-    const ok = await admission(up(`${ROOM_PROTOCOL}, ${t}`), keys, NOW);
+    const ok = await admission(up(`${ROOM_PROTOCOL}, ${t}`, { [TICKET_HEADER]: 'A' }), keys, NOW);
     expect(ok?.headers.get(TICKET_HEADER)).toBe('B');
     expect(ok?.headers.get('Sec-WebSocket-Protocol')).toBe(`${ROOM_PROTOCOL}, ${t}`);
     expect(await admission(up(`${ROOM_PROTOCOL}, ${t}`), keys, NOW + TICKET_TTL_MS)).toBeNull();
-    const none = await admission(up(undefined, { [TICKET_HEADER]: 'A' }), keys, NOW);
-    expect(none).not.toBeNull();
-    expect(none!.headers.get(TICKET_HEADER)).toBeNull();
+    expect(await admission(up(undefined, { [TICKET_HEADER]: 'A' }), keys, NOW)).toBeNull();
+    expect(await admission(up(ROOM_PROTOCOL), keys, NOW)).toBeNull();
   });
 });
