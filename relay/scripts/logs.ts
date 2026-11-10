@@ -100,13 +100,13 @@ function report(rows: Row[], since: number): void {
     const bad = xs.filter((x) => x.d.st !== 'ok');
     return [a, xs.length, ms(pct(t, 0.5)), ms(pct(t, 0.95)), ms(Math.max(...t)), bad.length, xs.reduce((n, x) => n + (Number(x.d.rej) || 0), 0), countBy(bad, (x) => String(x.d.st)).map(([s, ys]) => `${s} ${ys.length}`).join(', ')];
   }));
-  // the Free plan's rows written (100k a day, the account's): the record's per request, the room's per close (the log's
-  // own: `stats` rowsLog)
+  // the Free plan's rows written (100k a day, the account's): the record's per request, the room's as it says them
+  // (ws.hello, room.close); the log's own only in `stats` (rowsLog)
   const sum = (xs: Row[]) => xs.reduce((n, x) => n + (Number(x.d.rw) || 0), 0);
   const days = Math.max(1, (Date.now() - since) / 86_400_000);
-  const rwStore = sum(req), rwRoom = sum(rows.filter((r) => r.ev === 'room.close'));
-  console.log(`\nRows written: the record ${rwStore} (${countBy(req.filter((r) => r.d.rw), (r) => String(r.d.action)).map(([a, xs]) => `${a} ${sum(xs)}`).join(', ')}), the room ${rwRoom}; ` +
-    `${Math.round((rwStore + rwRoom) / days)} a day of the plan's 100,000 (the log's own: stats)`);
+  const rwStore = sum(req), rwRoom = sum(rows.filter((r) => r.ev === 'room.close' || r.ev === 'ws.hello'));
+  console.log(`\nRows written in the window: the record ${rwStore} (${countBy(req.filter((r) => r.d.rw), (r) => String(r.d.action)).map(([a, xs]) => `${a} ${sum(xs)}`).join(', ')}), the room ${rwRoom}; ` +
+    `${Math.round((rwStore + rwRoom) / days)} a day of the plan's 100,000, the log's own left out (today's: stats rowsLog)`);
   table('Refusals by rule', ['n', 'rule'], countBy(req.filter((r) => r.d.why), (r) => String(r.d.why)).slice(0, 10).map(([w, xs]) => [xs.length, w]));
   const api = rows.filter((r) => r.ev === 'api.ok' || r.ev === 'api.fail');
   table('Phones: /api as they saw it (ok 10 % sampled; ms)', ['action', 'ok', 'p50', 'p95', 'fail', 'by error'], countBy(api, (r) => String(r.d.action ?? '?')).map(([a, xs]) => {

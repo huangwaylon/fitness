@@ -120,6 +120,18 @@ describe('the write queue paced', () => {
     expect(queued()).toEqual([]);
   });
 
+  it('a drag (125 ops at 10 a second): about one request per SEND_PACE_MS, several ops each', async () => {
+    const b = await open();
+    for (let i = 0; i < 125; i++) {
+      b.send('decor', { op: 'move', id: 'd1', x: i }, {});
+      await vi.advanceTimersByTimeAsync(100);
+    }
+    await vi.advanceTimersByTimeAsync(5000);
+    // (2026-11-10, before the pace: 123 requests, 3 refused busy; after: 22, none)
+    expect([busy, sends <= Math.ceil(12_500 / 600) + 2]).toEqual([0, true]);
+    expect(queued()).toEqual([]);
+  });
+
   it('the first op after a quiet spell goes at once; one right after it waits for the trailing flush, with the rest', async () => {
     const b = await open();
     b.send('decor', { op: 'move', id: 'd1', x: 1 }, {});
