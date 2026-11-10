@@ -74,13 +74,6 @@ first. It brought the 2.0 villagers, Brewster, Kapp'n and Wilbur, and 376 tent p
   load (assets.ts packKey: none written, the island turns it by its facing); things.ts reads the node out (`member`).
   island/decor.ts knows them by catalog.ts `packed`, never assets.json (that would pull it into the first load). Eight files for 52 models, not three an item. A member's seat is found on the tent's
   model of the same NH piece (seat-anchors.ts ISLAND `room`).
-- **The garden** (`GARDEN` in the map; docs/island-layout.md "Fences and the garden"): packs under
-  `static/room/world3d/garden/` (the fences five kinds a file, each kind's six pieces; the crops' stages and soil; the
-  garden's flowers and vines; the cedar's lights), their models in `world3d/garden.json` (`writeGarden`), not
-  assets.json, so the first load never carries them (`world3d/garden.ts` loads it when the island has one). A pack's
-  repeated textures are kept once. NH's remake fences have no albedo: their `_Mix` map's B picks the colour along the
-  gradient's row (`grdMix`, its row the icon's colour, the frozen fence's gray lifted). `node scripts/world3d-sheet.ts
-  --garden` draws each member.
 - **Held tools and accessories:** the bug net, the rod and its bobber (NH's wooden ones: the plain ones have no
   textures in the files), the birthday's cake hats and NH's party glasses, at the villagers' scale, `anchor: joint`.
 - The plumeria isn't in NH's files: NH's hibiscus stands in, in the plumeria's white and pink.

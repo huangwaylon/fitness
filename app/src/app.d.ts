@@ -15,6 +15,7 @@ declare global {
     __museum?: unknown;
     __music?: unknown;
     __preview3d?: unknown;
+    __shop?: unknown;
     __tent?: unknown;
     __villagers3?: unknown;
     __world?: unknown;

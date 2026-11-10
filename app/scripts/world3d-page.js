@@ -100,26 +100,6 @@ async function bake(name, files, o) {
   // the snow of a winter look (`snow`): white and rough, NH's shared snow textures being flat placeholders
   if (name === 'mWinterSnow') return { mat: new THREE.MeshStandardMaterial({ ...std, color: 0xf6f9ff }), tex: 0 };
   if (name === 'mMyDesign') return { mat: new THREE.MeshStandardMaterial({ ...std, color: 0xede3cf }), tex: 0 };
-  if (!alb && grdPx && mix && o.grdMix !== undefined) {
-    // no albedo (NH's remake fences): the _Mix map's B (plus `grdMix`, a lift) is the gray that picks the colour along
-    // the gradient's row (the colour variant), its G the occlusion
-    const s = Math.min(1, o.maxTex / Math.max(mix.width, mix.height));
-    const w = Math.max(4, Math.round(mix.width * s)), h = Math.max(4, Math.round(mix.height * s));
-    const src = pixels(mix, w, h).data, img = new ImageData(w, h), d = img.data;
-    for (let i = 0; i < d.length; i += 4) {
-      const [r, g, b] = grdAt(Math.min(0.99, Math.max(0.01, src[i + 2] / 255 + o.grdMix)));
-      const ao = 1 - (o.noAo ? 0 : AO) * (1 - src[i + 1] / 255);
-      d[i] = Math.round(linToSrgb(srgbToLin(r) * ao) * 255);
-      d[i + 1] = Math.round(linToSrgb(srgbToLin(g) * ao) * 255);
-      d[i + 2] = Math.round(linToSrgb(srgbToLin(b) * ao) * 255);
-      d[i + 3] = 255;
-    }
-    const map = new THREE.CanvasTexture(canvasOf(img));
-    map.colorSpace = THREE.SRGBColorSpace;
-    map.wrapS = map.wrapT = THREE.RepeatWrapping;
-    map.flipY = true;
-    return { mat: new THREE.MeshStandardMaterial({ ...std, map }), tex: w };
-  }
   if (!alb) {
     // a gradient's colour (a painted part), or a glass pane (no texture at all)
     if (grdPx) {

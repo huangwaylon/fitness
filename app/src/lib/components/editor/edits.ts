@@ -10,7 +10,6 @@ import { HOME_IDS, WHO_OF_HOME, type HomeStyle, type Who } from '#lib/layout/hom
 import { validate } from '#lib/layout/validate.ts';
 import { isSmallKind, seat } from '#lib/layout/tops.ts';
 import { moveInside, resizeEdge, withTiles, type Blocker, type Edge } from '#lib/layout/resize.ts';
-import { isCrop, isFence } from '#lib/layout/garden.ts';
 
 type Facing = Obj['f'];
 
@@ -247,29 +246,3 @@ export const ghostFoot = (k: string, f: number): [number, number] => {
   const def = kindDef(k);
   return def ? footprintOf(def, f) : [1, 1];
 };
-
-/** A kind put down in a run, a drag across tiles (the garden's: a fence, a crop; layout/garden.ts): one tile at a time. */
-export const runs = (k: string): boolean => isFence(k) || isCrop(k);
-
-/** The tiles a drag crosses from tile a to b, four-connected (each beside the last: a fence's run joins), a's not
- *  among them: across first, then along. */
-export function runTiles(a: readonly [number, number], b: readonly [number, number]): [number, number][] {
-  const out: [number, number][] = [];
-  let [c, r] = a;
-  while (c !== b[0]) out.push([(c += Math.sign(b[0] - c)), r]);
-  while (r !== b[1]) out.push([c, (r += Math.sign(b[1] - r))]);
-  return out;
-}
-
-/** A run's next pieces: one of the kind on each of `tiles` that's free (on land, nothing standing on it), facing f. */
-export function placeRun(l: Layout, k: string, tiles: readonly (readonly [number, number])[], f: Facing, s: string | undefined, at: number): { layout: Layout; ids: string[] } {
-  const ids: string[] = [];
-  for (const [c, r] of tiles) {
-    if (!onGrid(c, r) || isWater(l.kind(c, r)) || l.kind(c, r) === 'sea' || objectAt(l, c, r)) continue;
-    const p = place(l, k, c, r, f, s, at + ids.length);
-    if (!p) continue;
-    l = p.layout;
-    ids.push(p.id);
-  }
-  return { layout: l, ids };
-}

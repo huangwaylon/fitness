@@ -46,7 +46,7 @@ export function phoneDays(layout: Layout, year = 2026): (Day & { date: string })
 export function islandDay(layout: Layout, d: { season: Season; foliage: string; month: number; date: string; hour: number; seed?: string }): Day {
   const w = worldOf(layout), sw = swapsOn(d.date);
   const swaps = Object.fromEntries(w.SCENERY.map((s) => [s.id, sw[s.id] ?? { key: s.key, h: s.h }]));
-  return { season: d.season, foliage: d.foliage, month: d.month, date: d.date, swaps, pieces: piecesOn(d.date, d.hour, d.seed, w.ARCH), structures: true };
+  return { season: d.season, foliage: d.foliage, month: d.month, swaps, pieces: piecesOn(d.date, d.hour, d.seed, w.ARCH), structures: true };
 }
 
 /** The editor's preview's day (editor/Preview3D.svelte): the island's, with what the island draws by other means as

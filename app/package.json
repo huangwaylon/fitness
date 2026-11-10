@@ -53,7 +53,6 @@
     "seat-anchors": "node scripts/seat-anchors.ts",
     "world3d-models": "node scripts/world3d-models.ts",
     "world3d-ktx2": "node scripts/world3d-ktx2.ts",
-    "garden-icons": "node scripts/garden-icons.ts",
     "world3d-sheet": "node scripts/world3d-sheet.ts",
     "villagers3d": "node scripts/villagers3d-models.ts",
     "players3d": "node scripts/players3d-models.ts",

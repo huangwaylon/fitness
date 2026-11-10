@@ -63,10 +63,14 @@ const SPECIAL: Record<string, [string, string?, string?]> = {
   brewster: ['Pge'], harvey: ['Spn'], 'daisy-mae': ['Boc'], redd: ['Fox', 'NpcSpTopsFoxOuterL'], flick: ['Chy'], cj: ['Bey'], saharah: ['Cml'],
   leif: ['Slo'], gulliver: ['Gul'], kappn: ['Kpp'], wisp: ['GstA'], pascal: ['Seo'], orville: ['Dod'], wilbur: ['Doc']
 };
-/** The visitors that aren't in the picker's roster (island/visitors.ts: the holiday hosts, Jack, the wedding's pair),
- *  their NH codes: converted as the special characters are (face at rest), into the same folder and manifest
- *  (`visitors`). Pavé is in the files (NpcSpPck) but has no visit yet, so he isn't converted. */
-const VISITOR_ONLY: Record<string, string> = { franklin: 'Tuk', jack: 'Pkn', jingle: 'Rei', zipper: 'Pyn', reese: 'Alw', cyrus: 'Alp' };
+/** The characters that aren't in the picker's roster (island/visitors.ts: the holiday hosts, Jack, the wedding's pair;
+ *  the shop's twins), their NH codes (and, for one whose clothes aren't part of its body, its top's mesh and texture):
+ *  converted as the special characters are (face at rest), into the same folder and manifest. Tommy is Timmy's model
+ *  (NH ships one for the two). */
+const VISITOR_ONLY: Record<string, string | [code: string, tops: string, tex: string]> = {
+  franklin: 'Tuk', jack: 'Pkn', jingle: 'Rei', zipper: 'Pyn', reese: 'Alw', cyrus: 'Alp',
+  timmy: ['Rcm', 'NpcSpTopsRcmYshirtsapronH', 'TopsTexTopYshirtsapronHRcm00']
+};
 async function buildMap(): Promise<Record<string, MapRow>> {
   registerHooks({
     resolve: (spec, ctx, next) => (spec === '$app/paths' ? { url: 'data:text/javascript,export const asset = (p) => p;', shortCircuit: true } : next(spec, ctx)),
@@ -125,7 +129,10 @@ if (process.argv.includes('--map') || !existsSync(MAP)) {
   console.log(`map: ${Object.values(map).filter((r) => r[0]).length} of ${Object.keys(map).length} have a model`);
 }
 
-for (const [id, c] of Object.entries(VISITOR_ONLY)) map[id] = has(`NpcSp${c}`) ? [`NpcSp${c}`, null, null] : [null, null, null, 'not in the game files'];
+for (const [id, v] of Object.entries(VISITOR_ONLY)) {
+  const [c, tops, tex] = typeof v === 'string' ? [v, null, null] : v;
+  map[id] = has(`NpcSp${c}`) ? [`NpcSp${c}`, has(tops) ? tops : null, has(tex) ? tex : null] : [null, null, null, 'not in the game files'];
+}
 const todo = Object.entries(map).filter(([id, r]) => r[0] && (!only.length || only.includes(id)));
 const scratch = mkdtempSync(join(tmpdir(), 'nh-villagers3d-'));
 const work = mkdtempSync(join(tmpdir(), 'nh-villagers3d-out-'));

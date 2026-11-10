@@ -38,9 +38,7 @@ window.sheet = async ({ items, villager, cols, title }) => {
     const x0 = (i % cols) * CELL, y0 = 36 + Math.floor(i / cols) * CELL;
     let gltf;
     try { gltf = await loader.loadAsync(it.url); } catch (e) { g.fillStyle = '#c00'; g.fillText(`✗ ${it.label}`, x0 + 6, y0 + 20); continue; }
-    // (a pack's member: its node, named its id)
-    const model = it.node ? (gltf.scene.getObjectByName(it.node) ?? gltf.scene) : gltf.scene;
-    if (it.node) model.removeFromParent();
+    const model = gltf.scene;
     model.scale.setScalar(it.s);
     model.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(model);

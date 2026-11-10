@@ -1,0 +1,6 @@
+{
+  "_": "scripts/world3d-models.ts --shop: the shop's inside (bounds in model units, triangles, KB, content hash)",
+  "models": {
+    "shell": {"min":[-72.43,-3,-52.5],"max":[72.43,48,65],"tris":16000,"kb":189.3,"v":"be4576e2"}
+  }
+}

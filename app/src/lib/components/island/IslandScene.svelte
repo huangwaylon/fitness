@@ -1156,7 +1156,7 @@
         {#if life.balloon}<Balloon ondone={() => (life.balloon = false)} />{/if}
         {#if WeatherC}<WeatherC where="sky" skyH={horizonPx + 6} />{/if}
         {#if r3 && Island3DC && sceneEl}
-          <Island3DC bind:this={island3d} {world} scene={sceneEl} {season} {foliage} {month} date={today} {tod} scenery={scenery3} pieces={pieces3} {hybrid} floating={ev.cherry ? 'petal' : ev.maple ? 'maple' : null}
+          <Island3DC bind:this={island3d} {world} scene={sceneEl} {season} {foliage} {month} {tod} scenery={scenery3} pieces={pieces3} {hybrid} floating={ev.cherry ? 'petal' : ev.maple ? 'maple' : null}
             wet={wetNow.a} cast={cast3} enabled={() => !covered && !life.hidden}
             start={start3} onscroll={onScroll} onhorizon={(px) => (horizonPx = px)} onfail={() => ((failed3 = true), releaseWorker())} onready={() => measure()} />
         {:else if failed3}

@@ -6,7 +6,6 @@ import { goesIn, kindDef } from '#lib/layout/catalog.ts';
 import { doorOf, facingVec, footOf, objMid, originOf, type Layout, type Obj } from '#lib/layout/model.ts';
 import type { Issue } from '#lib/layout/validate.ts';
 import type { Stem } from '#lib/layout/river.ts';
-import { fenceMask, isFence } from '#lib/layout/garden.ts';
 
 export interface View {
   /** Pixels per world unit, and where the grid's back-left corner (x0, z1) lands on the canvas (CSS px). */
@@ -51,7 +50,7 @@ function tileColour(kind: Kind, tier: number): string {
 }
 const GROUP_COLOUR: Record<string, string> = {
   tree: '#2f8a3f', bush: '#3f9a4f', flower: '#d2589b', rock: '#7d7468', light: '#e6b22e', furniture: '#937047',
-  season: '#5aa0d0', structure: '#6b5544', home: '#2f86bd', spot: '#d2701f', visitor: '#c2477a', crop: '#8a6a2f', fence: '#7a5530'
+  season: '#5aa0d0', structure: '#6b5544', home: '#2f86bd', spot: '#d2701f', visitor: '#c2477a'
 };
 const OWNER: Record<string, [string, string]> = { 'home-A': ['#8fd3ff', 'ウェイ'], 'home-B': ['#ffb8cc', 'うめ'], 'home-G': ['#cdb4f2', 'お客さん'] };
 
@@ -382,29 +381,6 @@ function drawObj(ctx: CanvasRenderingContext2D, d: Draw, o: Obj, selected: boole
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     ctx.fillText(o.s === 'stage' ? 'ステージ' : o.s === 'villager-b' ? 'うめ' : 'ウェイ', mx, my + T * 0.18);
-  } else if (isFence(o.k)) {
-    // a fence as NH's map has it: a post and a bar to each neighbour it joins (layout/garden.ts), a lone one across or
-    // along by its facing
-    const [mx, my] = toScreen(v, ...objMid(l, o)), mask = fenceMask(l, o);
-    ctx.strokeStyle = '#7a5530';
-    ctx.lineWidth = Math.max(2, T * 0.16);
-    ctx.beginPath();
-    if (!mask) {
-      const along = o.f % 2 === 1;
-      ctx.moveTo(mx - (along ? 0 : T * 0.4), my - (along ? T * 0.4 : 0));
-      ctx.lineTo(mx + (along ? 0 : T * 0.4), my + (along ? T * 0.4 : 0));
-    }
-    // (E, N, W, S: north is up the plan)
-    [[1, 0], [0, -1], [-1, 0], [0, 1]].forEach(([dx, dy], i) => {
-      if (!(mask & (1 << i))) return;
-      ctx.moveTo(mx, my);
-      ctx.lineTo(mx + dx * T * 0.5, my + dy * T * 0.5);
-    });
-    ctx.stroke();
-    ctx.fillStyle = '#5b3d20';
-    ctx.beginPath();
-    ctx.arc(mx, my, Math.max(2, T * 0.13), 0, Math.PI * 2);
-    ctx.fill();
   } else {
     // its footprint, softly, and its icon over it (a default piece at its exact spot)
     ctx.fillStyle = `${GROUP_COLOUR[def.group] ?? '#937047'}33`;

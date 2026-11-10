@@ -1,7 +1,9 @@
-// The shop (docs/design.md "The shop"): タヌキ商店's counter, its うる (my pocket: what I caught, from my day tallies,
-// less what I sold) and かう (the day's stock), my かいがら; a bought piece in my もようがえ; the guest's pocket and
-// かいがら its own; overselling and overspending refused. On `?demo` (no backend): the demo's events in localStorage, as
-// a catch writes them. In by its door and back out: positions.spec (both islands).
+// The shop (docs/design.md "The shop"): タヌキ商店 in 3D (the twins at the counter, today's stock shown in the room: a
+// tap on a piece is its card and 買う; a tap on the twins their choice box), and its counter's lists over the room: うる
+// (my pocket: what I caught, from my day tallies, less what I sold) and かう (the day's stock, 全部), my かいがら; a bought
+// piece in my もようがえ; the guest's pocket and かいがら its own; overselling and overspending refused. On `?demo` (no
+// backend): the demo's events in localStorage, as a catch writes them. In by its door and back out: positions.spec
+// (both islands).
 import { expect, test, type Page } from './fixtures.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -24,13 +26,32 @@ const pieceOf = async (page: Page, ok: (price: number) => boolean): Promise<[str
   const all = await stock(page).evaluateAll((els) => els.map((e): [string, number] => [e.getAttribute('data-shop-item')!, Number(e.getAttribute('data-price'))]));
   return all.find(([, p]) => ok(p))!;
 };
+const SHOTS = process.env.SHOTS;
 const tally = (counts: Record<string, number>, who: 'A' | 'B' | 'G' = 'A'): Seed => ['tally', { date: '2026-11-04', counts }, who];
+/** The counter's list over the room: うる or かう. */
+const openList = async (page: Page, tab: 'sell' | 'buy') => {
+  await page.locator(`[data-shop-open="${tab}"]`).click();
+  await expect(page.locator('[data-shop-panel]')).toHaveAttribute('data-shop-panel', tab);
+};
+type ShopHooks = {
+  stats(): { frames: number } | undefined; loading(): number; still(): boolean;
+  shown(): { item: string; at: [number, number]; y: number }[]; rest(): string[];
+  piece(code: string): [number, number] | null; twin(id: 'timmy' | 'tommy'): [number, number] | null;
+  mine(): [number, number] | null; walking(): boolean; standable(x: number, z: number): boolean;
+};
+/** The room up: its first frame, every model in, the camera at rest. */
+const roomIn = (page: Page) => page.waitForFunction(() => {
+  const s = (window as unknown as { __shop?: ShopHooks }).__shop;
+  return !!s && (s.stats()?.frames ?? 0) > 0 && s.loading() === 0 && s.still() && !s.walking();
+}, undefined, { timeout: 30_000 });
+const hooks = <T>(page: Page, f: (s: ShopHooks) => T) => page.evaluate((src) => new Function('s', `return (${src})(s)`)((window as unknown as { __shop: ShopHooks }).__shop), f.toString()) as Promise<T>;
 
 test('a catch is in my pocket; sold, かいがら rise; a piece bought from the stock is in my もようがえ and かいがら fall', async ({ page }) => {
   await seed(page, [tally({ 'fish:whale-shark': 2, 'bug:tarantula': 1, 'shell:cowrie': 3 })]);
   await page.goto(`shop${Q}`);
   await expect(page.locator('[data-shop]')).toBeVisible();
   expect(await shells(page)).toBe(0);
+  await openList(page, 'sell');
   // the pocket by its sections (むし, さかな, …, かいがら), each dearest first
   const pocket = page.locator('[data-shop-pocket] [data-shop-catch]');
   await expect(pocket).toHaveCount(3);
@@ -75,7 +96,6 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
   await expect(page.locator(`[data-tent-items] [data-tent-item="${code}"]`)).toBeVisible();
 });
 
-const SHOTS = process.env.SHOTS;
 /** The price of each piece of the day's stock, in its order. */
 const prices = (page: Page) => stock(page).evaluateAll((els) => els.map((e): [string, number] => [e.getAttribute('data-shop-item')!, Number(e.getAttribute('data-price'))]));
 
@@ -84,7 +104,7 @@ test('全部: every piece of the stock I don’t have, its count and total said 
   await page.goto(`shop${Q}`);
   const S = 999 * 650;
   await expect.poll(() => shells(page)).toBe(S);
-  await expect(page.locator('[data-shop-tab="buy"]')).toHaveAttribute('aria-pressed', 'true'); // nothing left to sell
+  await openList(page, 'buy');
   await expect(stock(page)).toHaveCount(24);
   const all = await prices(page);
   // one bought first: 全部 leaves it out
@@ -130,6 +150,7 @@ test('全部 past my かいがら: the twins say how many short, かう only boo
   await seed(page, [tally({ 'fish:whale-shark': 1 }), ['sell', { species: 'fish:whale-shark', n: 1, v: 650 }, 'A']]);
   await page.goto(`shop${Q}`);
   await expect.poll(() => shells(page)).toBe(650);
+  await openList(page, 'buy');
   await expect(stock(page)).toHaveCount(24);
   const total = (await prices(page)).reduce((a, [, p]) => a + p, 0);
   expect(total).toBeGreaterThan(650);
@@ -150,6 +171,7 @@ test('a piece found or bought today stays in the day’s stock till tomorrow, th
   await seed(page, [tally({ 'fish:whale-shark': 1 }, 'B'), ['sell', { species: 'fish:whale-shark', n: 1, v: 650 }, 'B'],
     ['find', { kind: 'item', id: 'tin-bucket' }, 'G'], ['buy', { item: 'f14354', price: 70, d: '2026-11-04' }, 'B']]);
   await page.goto(`shop${Q}`);
+  await openList(page, 'buy');
   await expect(stock(page)).toHaveCount(24);
   await expect(stock(page).nth(0)).toHaveAttribute('data-shop-item', 'f2592');
   await expect(stock(page).nth(1)).toHaveAttribute('data-shop-item', 'f14354');
@@ -161,7 +183,7 @@ test('overspending is refused: too dear, かう only boops and the twins say so;
   await seed(page, [tally({ 'fish:sea-bass': 1 }), ['sell', { species: 'fish:koi', n: 5, v: 200 }, 'A'], ['sell', { species: 'fish:sea-bass', n: 1, v: 4 }, 'A']]);
   await page.goto(`shop${Q}`);
   await expect.poll(() => shells(page)).toBe(4);
-  await page.locator('[data-shop-tab="buy"]').click();
+  await openList(page, 'buy');
   const [dear] = await pieceOf(page, (p) => p > 4);
   await page.locator(`[data-shop-item="${dear}"]`).click();
   await expect(page.locator('[data-shop-say]')).toHaveAttribute('data-shop-say', 'short');
@@ -171,12 +193,12 @@ test('overspending is refused: too dear, かう only boops and the twins say so;
   await expect(page.locator(`[data-shop-item="${dear}"]`)).toHaveAttribute('data-owned', 'false');
 });
 
-// Nothing to sell: the shop opens on かう (health plan C7: an empty うる was a dead end, its bar's 売る disabled under
-// 500 px of nothing); うる then says why, with no bar.
-test('an empty pocket opens the shop on かう; うる says it’s empty, no 売る bar', async ({ page }) => {
+// Nothing to sell: うる says why, with no bar (health plan C7: an empty うる was a dead end, its bar's 売る disabled
+// under 500 px of nothing).
+test('an empty pocket: うる says it’s empty, no 売る bar; かう has the day’s stock', async ({ page }) => {
   await seed(page, []);
   await page.goto(`shop${Q}`);
-  await expect(page.locator('[data-shop-tab="buy"]')).toHaveAttribute('aria-pressed', 'true');
+  await openList(page, 'buy');
   await expect(stock(page).first()).toBeVisible();
   await expect(page.locator('[data-shop-say]')).toHaveAttribute('data-shop-say', 'stock');
   await page.locator('[data-shop-tab="sell"]').click();
@@ -191,6 +213,7 @@ test('the guest’s pocket and かいがら are its own', async ({ browser }) =>
   await g.goto(`shop${Q}&as=G`);
   await expect(g.locator('[data-shop]')).toBeVisible();
   expect(await shells(g)).toBe(0); // A's 1,170 aren't the guest's
+  await openList(g, 'sell');
   await expect(g.locator('[data-shop-pocket] [data-shop-catch]')).toHaveCount(1);
   await g.locator('[data-shop-catch="bug:tarantula"]').click();
   await g.locator('[data-shop-sell]').click();
@@ -204,7 +227,92 @@ test('the guest’s pocket and かいがら are its own', async ({ browser }) =>
   const a = await ctx.newPage();
   await a.goto(`shop${Q}`);
   await expect.poll(() => shells(a)).toBe(1170);
+  await openList(a, 'sell');
   await expect(a.locator('[data-shop-pocket] [data-shop-catch]')).toHaveCount(0);
   await ctx.close();
 });
 
+
+test('the 3D shop: the twins at the counter, the day’s stock in the room; a tap on a piece is its card, 買う buys it in place', async ({ page }) => {
+  await seed(page, [tally({ 'fish:whale-shark': 99 }), ['sell', { species: 'fish:whale-shark', n: 99, v: 99 * 650 }, 'A']]);
+  await page.goto(`shop${Q}`);
+  await roomIn(page);
+  const S = 99 * 650;
+  await expect.poll(() => shells(page)).toBe(S);
+  // every piece of the day's stock in the room or (no place left) in the list: most shown
+  const shownList = await hooks(page, (s) => s.shown());
+  const rest = await hooks(page, (s) => s.rest());
+  expect(shownList.length + rest.length).toBe(24);
+  expect(shownList.length).toBeGreaterThanOrEqual(18);
+  expect(await hooks(page, (s) => s.twin('timmy'))).not.toBeNull();
+  // a piece on the stage, on screen and clear of the controls: tapped, its card (my villager turns to it, no walk)
+  const vh = page.viewportSize()!.height;
+  let target: { code: string; at: [number, number] } | null = null;
+  for (const p of shownList) {
+    const px = await page.evaluate((c) => (window as unknown as { __shop: ShopHooks }).__shop.piece(c), p.item);
+    if (px && px[0] > 30 && px[0] < 363 && px[1] > 140 && px[1] < vh - 200) {
+      target = { code: p.item, at: px };
+      break;
+    }
+  }
+  expect(target).not.toBeNull();
+  const before = await hooks(page, (s) => s.mine());
+  await page.mouse.click(target!.at[0], target!.at[1]);
+  await expect(page.locator('[data-shop-card]')).toHaveAttribute('data-shop-card', target!.code);
+  await expect(page.locator('[data-shop-say]')).toHaveAttribute('data-shop-say', 'price');
+  expect(await hooks(page, (s) => s.walking())).toBe(false);
+  expect(await hooks(page, (s) => s.mine())).toEqual(before);
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/shop3d-card.png`, animations: 'disabled' });
+  await page.locator('[data-shop-card-buy]').click();
+  await expect(page.locator('[data-shop-say]')).toHaveAttribute('data-shop-say', 'thanks');
+  await expect(page.locator('[data-shop-card] .owned-tag')).toBeVisible();
+  await expect(page.locator('[data-shop-card-buy]')).toHaveAttribute('aria-disabled', 'true');
+  // in the list too, mine now, and the かいがら gone
+  await openList(page, 'buy');
+  const item = page.locator(`[data-shop-item="${target!.code}"]`);
+  await expect(item).toHaveAttribute('data-owned', 'true');
+  expect(await shells(page)).toBe(S - Number(await item.getAttribute('data-price')));
+});
+
+test('a tap on the twins is their choice box: うりたい opens うる at the counter, しなものを みたい the day’s list', async ({ page }) => {
+  await seed(page, [tally({ 'fish:whale-shark': 1 })]);
+  await page.goto(`shop${Q}`);
+  await roomIn(page);
+  // up to the counter (a floor tap there): the camera follows my villager, the twins come into view
+  const counter = await page.evaluate(() => (window as unknown as { __shop: { counter(): [number, number]; walkTo(x: number, z: number): void } }).__shop.counter());
+  await page.evaluate(([x, z]) => (window as unknown as { __shop: { walkTo(x: number, z: number): void } }).__shop.walkTo(x, z), counter);
+  await roomIn(page);
+  const twin = await hooks(page, (s) => s.twin('timmy'));
+  expect(twin).not.toBeNull();
+  await page.mouse.click(twin![0], twin![1] + 12);
+  await expect(page.locator('[data-shop-choices]')).toBeVisible();
+  await expect(page.locator('[data-shop-say]')).toHaveAttribute('data-shop-say', 'ask');
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/shop3d-twins.png`, animations: 'disabled' });
+  await page.locator('[data-shop-choice="sell"]').click();
+  await expect(page.locator('[data-shop-panel]')).toHaveAttribute('data-shop-panel', 'sell');
+  await page.locator('[data-shop-catch="fish:whale-shark"]').click();
+  await page.locator('[data-shop-sell]').click();
+  await expect.poll(() => shells(page)).toBe(650);
+  // closed: the room again; the twins again, the day's list
+  await page.locator('[data-shop-close]').click();
+  await expect(page.locator('[data-shop-panel]')).toHaveCount(0);
+  await roomIn(page);
+  const again = (await hooks(page, (s) => s.twin('timmy')))!;
+  await page.mouse.click(again[0], again[1] + 12);
+  await page.locator('[data-shop-choice="buy"]').click();
+  await expect(page.locator('[data-shop-panel]')).toHaveAttribute('data-shop-panel', 'buy');
+  await expect(stock(page)).toHaveCount(24);
+});
+
+test('a floor tap walks my villager round what stands, never onto the stage or behind the counter', async ({ page }) => {
+  await seed(page, []);
+  await page.goto(`shop${Q}`);
+  await roomIn(page);
+  expect(await hooks(page, (s) => [s.standable(-20, 30), s.standable(-30, -30), s.standable(60, 25), s.standable(0, 10)])).toEqual([true, false, false, false]);
+  await page.evaluate(() => (window as unknown as { __shop: { walkTo(x: number, z: number): void } }).__shop.walkTo(-40, -30));
+  await roomIn(page);
+  const at = (await hooks(page, (s) => s.mine()))!;
+  // as near as the floor goes: off the stage, on the floor in front of it
+  expect(at[1]).toBeGreaterThan(3);
+  expect(await page.evaluate(([x, z]) => (window as unknown as { __shop: ShopHooks }).__shop.standable(x, z), at)).toBe(true);
+});

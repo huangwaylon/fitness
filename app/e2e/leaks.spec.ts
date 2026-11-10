@@ -71,7 +71,7 @@ const nav = (page: Page, path: string) => page.evaluate((h) => {
   a.remove();
 }, path);
 const islandUp = (page: Page) => page.waitForFunction(() => !!(window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded(), null, { timeout: 30_000 });
-const framed = (page: Page, hook: '__tent' | '__museum') =>
+const framed = (page: Page, hook: '__tent' | '__museum' | '__shop') =>
   page.waitForFunction((h) => ((window as unknown as Record<string, { stats(): { frames: number } } | undefined>)[h]?.stats()?.frames ?? 0) > 1, hook, { timeout: 30_000 });
 
 test('the rooms and the home picker, in and out: no WebGL context or window listener left behind', { tag: '@chromium' }, async ({ page }) => {
@@ -83,8 +83,12 @@ test('the rooms and the home picker, in and out: no WebGL context or window list
   /** The contexts alive in each room: its own only (the island's gone with its renderer). */
   const inRoom: number[] = [];
   const trips = async () => {
+    // the shop: its room (the twins, the day's stock) up, a piece's card and the counter's list opened
     await nav(page, `${BASE}/shop${Q}`);
-    await expect(page.locator('[data-shop]')).toBeVisible();
+    await framed(page, '__shop');
+    inRoom.push((await measure(page)).gl);
+    await page.locator('[data-shop-open="buy"]').click();
+    await page.locator('[data-shop-close]').click();
     await back();
     await nav(page, `${BASE}/museum${Q}`);
     await framed(page, '__museum');
@@ -111,7 +115,7 @@ test('the rooms and the home picker, in and out: no WebGL context or window list
   // the island's own context: never one a trip (2 before a lazy chunk's CSS link stopped holding the first island;
   // before the picker's fix, 5 after one round and 11 after three); in a room the room's alone (2 before things.ts
   // freed every cached model's textures with the island: a lazy find's held the dead island's renderer)
-  expect(inRoom, 'WebGL contexts alive in the museum and the tent').toEqual(inRoom.map(() => 1));
+  expect(inRoom, 'WebGL contexts alive in the shop, the museum and the tent').toEqual(inRoom.map(() => 1));
   expect(first.gl, 'WebGL contexts alive after one round').toBe(1);
   expect(after.gl, 'WebGL contexts alive after three').toBeLessThanOrEqual(first.gl);
   expect(after.ls, 'window and document listeners').toBeLessThanOrEqual(first.ls);
@@ -202,7 +206,7 @@ test('the museum in first person and out, the eye button, a bench: no context or
 });
 
 // The trip map (docs/travel.md "Maps"), drawn: in and out three times (its trip's ちず in the trips' sheet on the
-// island, then the shop, a page without WebGL, between). Its context goes with it (map.remove() loses it; before engine.ts read the workers' abort Error's stack, that Error held
+// island, then the shop between: a page off the island). Its context goes with it (map.remove() loses it; before engine.ts read the workers' abort Error's stack, that Error held
 // the last map and its context till the next), and so do its listeners (MapLibre's one page-wide visibilitychange
 // listener, added with the first map, stays: none more after it).
 test('the trip map in and out: no WebGL context or window listener left behind', { tag: '@chromium' }, async ({ page }) => {

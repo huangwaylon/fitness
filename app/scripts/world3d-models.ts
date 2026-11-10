@@ -10,7 +10,11 @@
 // into static/room/museum/<name>.glb and src/lib/components/museum/models.json, and NH's museum floors and walls into
 // static/room/museum/tex/<name>.webp (each its own albedo, scaled down, tiled at run time).
 //
-// Usage (from app/): NH_MODELS=~/Downloads/Model npm run world3d-models [-- --only=oak,cedar] [--museum]
+// With --shop it converts the shop's inside (routes/shop, components/shop): NH's built-up Nook's Cranny (IdrMarket02:
+// its walls, its checkered floor, the tiered stage, the counter corner), one GLB, static/room/shop/shell.glb, and
+// src/lib/components/shop/models.json.
+//
+// Usage (from app/): NH_MODELS=~/Downloads/Model npm run world3d-models [-- --only=oak,cedar] [--museum | --shop]
 // The model folder is untrusted input and never part of the repo: only the named folders' .dae and .png files are
 // copied into a scratch dir (three.js reads them in the page; nothing in them is run). Needs Google Chrome
 // (Playwright's channel 'chrome') and cwebp.
@@ -21,7 +25,7 @@ import { tmpdir } from 'node:os';
 import { dirname, extname, join, resolve, sep } from 'node:path';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
-import { ASSETS, POC_USES, writeAssets, writeDoc, writeGarden, type Use } from './world3d-assets.ts';
+import { ASSETS, POC_USES, writeAssets, writeDoc, type Use } from './world3d-assets.ts';
 import { fxGltf, type Fx } from './world3d-fx.ts';
 import { nhFolders } from './nh-folders.ts';
 
@@ -29,8 +33,11 @@ const APP = join(import.meta.dirname, '..');
 /** Try a list of jobs from a JSON file instead (`--probe=jobs.json --out=dir`): GLBs only, the manifests untouched. */
 const probe = process.argv.find((a) => a.startsWith('--probe='))?.slice(8);
 const MUSEUM = process.argv.includes('--museum');
-const OUT = probe ? resolve(process.argv.find((a) => a.startsWith('--out='))?.slice(6) ?? join(tmpdir(), 'world3d-probe')) : join(APP, 'static', 'room', MUSEUM ? 'museum' : 'world3d');
-const META = join(APP, 'src', 'lib', 'components', MUSEUM ? 'museum' : 'world3d', 'models.json');
+const SHOP = process.argv.includes('--shop');
+/** A building's inside (--museum, --shop): its own folder and manifest. */
+const PLACE = MUSEUM ? 'museum' : SHOP ? 'shop' : null;
+const OUT = probe ? resolve(process.argv.find((a) => a.startsWith('--out='))?.slice(6) ?? join(tmpdir(), 'world3d-probe')) : join(APP, 'static', 'room', PLACE ?? 'world3d');
+const META = join(APP, 'src', 'lib', 'components', PLACE ?? 'world3d', 'models.json');
 const arg = (k: string) => process.argv.find((a) => a.startsWith(`--${k}=`))?.slice(k.length + 3);
 const only = (arg('only') ?? '').split(',').filter(Boolean);
 /** Triangles over this are simplified (gltfpack -si). */
@@ -65,9 +72,6 @@ interface Job {
   snow?: boolean;
   /** No occlusion baked in (the snowboy: NH's snow is white). */
   noAo?: boolean;
-  /** No albedo: its _Mix map's B (plus this lift) picks its colour along the gradient's row (NH's remake fences:
-   *  world3d-page.js bake). */
-  grdMix?: number;
   /** Not NH's: one of scripts/world3d-fx.ts's stylised effects (a sparkle, a splash). */
   fx?: Fx;
   /** A part lifted out as its own node, the same material (scripts/world3d-page.js splitOff): the connected pieces of
@@ -77,7 +81,7 @@ interface Job {
   uses?: Use[];
   /** A pack (scripts/world3d-assets.ts PACKS): its members in this one GLB, each under a node named its id, model
    *  `decor/<id>` in assets.json (`pack`: this file). */
-  pack?: (Pick<Job, 'parts' | 'tex' | 'maxTex' | 'uses'> & Partial<Pick<Job, 'grdRow' | 'grdRows' | 'grdFile' | 'snow' | 'alias' | 'grdMix'>> & { id: string })[];
+  pack?: (Pick<Job, 'parts' | 'tex' | 'maxTex' | 'uses'> & { id: string })[];
 }
 /** A pack member's model name (assets.json): the pack's folder and its id. */
 const memberName = (j: Job, id: string) => `${j.name.slice(0, j.name.lastIndexOf('/') + 1)}${id}`;
@@ -155,6 +159,11 @@ const MUSEUM_JOBS: Job[] = [
   bug2('logs-ferns', 'IdrMuseumInsect2Obj03'), bug2('cacti', 'IdrMuseumInsect2Obj04'), bug2('terrarium', 'IdrMuseumInsect2Obj10')
   // (the curator at the front desk is the villagers' skinned Blathers: scripts/villagers3d-models.ts, museum/curator.ts)
 ];
+// the shop's inside (--shop): NH's built-up Nook's Cranny in one piece, its untextured parts left out (the light map's
+// `mMarketMap` and `mBlack`, the window's glass, the cloth's soft mesh: drawn as glass panes over the whole room)
+const SHOP_JOBS: Job[] = [
+  { name: 'shell', parts: [['IdrMarket02', 'IdrMarket02']], tex: ['IdrMarket02_Tex'], maxTex: 512, tris: 16000, hide: ['mMarketMap', 'mBlack', 'mWindowGlass', 'mSoftmesh'] }
+];
 /** The museum's floors and walls (--museum): [name, NH's texture folder, longest side px]. */
 const MUSEUM_TEX: [string, string, number][] = [
   ['hall-floor', 'IdrMuseumArt_0_Tex_mStoneFloor_Alb', 512], ['hall-wall', 'IdrMuseumEnt02_Tex_mBrick_Alb', 512],
@@ -179,6 +188,7 @@ const has = (folder: string) => SAFE.test(folder) && FOLDERS.has(folder);
 
 if (probe) JOBS.splice(0, JOBS.length, ...(JSON.parse(readFileSync(probe, 'utf8')) as Job[]));
 else if (MUSEUM) JOBS.splice(0, JOBS.length, ...MUSEUM_JOBS);
+else if (SHOP) JOBS.splice(0, JOBS.length, ...SHOP_JOBS);
 else JOBS.push(...ASSETS);
 const todo = JOBS.filter((j) => !only.length || only.some((o) => j.name.includes(o)));
 const scratch = mkdtempSync(join(tmpdir(), 'nh-world3d-'));
@@ -234,9 +244,6 @@ const metas: Record<string, Meta> = existsSync(META) ? (JSON.parse(readFileSync(
 const ASSET_META = join(dirname(META), 'assets.json');
 /** The island's things' models (assets.json `models`; the POC's stay in models.json too). */
 const assetMetas: Record<string, Meta> = existsSync(ASSET_META) ? (JSON.parse(readFileSync(ASSET_META, 'utf8')) as { models: Record<string, Meta> }).models : {};
-/** (and the garden's: world3d/garden.json, loaded only by an island that has a fence or a crop: world3d/garden.ts) */
-const gardenFile = join(dirname(META), 'garden.json');
-if (!MUSEUM && existsSync(gardenFile)) Object.assign(assetMetas, (JSON.parse(readFileSync(gardenFile, 'utf8')) as { models: Record<string, Meta> }).models);
 let total = 0;
 /** A pack's members' bounds, triangles and light (convertPack), by member. */
 type Member = { id: string; box: [number[], number[]]; tris: number; lit: boolean };
@@ -247,27 +254,15 @@ for (const j of todo) {
   const r = j.pack ? await page.evaluate(async (o) => {
     const p = await (window as unknown as { convertPack: (o: unknown) => Promise<{ gltf: string; members: Member[] }> }).convertPack(o);
     return { gltf: p.gltf, members: p.members };
-  }, { maxTex: j.maxTex ?? 256, maxEmi: 128, members: j.pack.map((m) => ({ id: m.id, parts: m.parts.map(([f, d, at]) => ({ folder: F(f), dae: `${d}.dae`, at })), files: filesOf(m), ...(m.maxTex ? { maxTex: m.maxTex } : {}), grdRow: m.grdRow, grdRows: m.grdRows, grdFile: m.grdFile, snow: m.snow, alias: m.alias, grdMix: m.grdMix })) }).then((p) => {
+  }, { maxTex: j.maxTex ?? 256, maxEmi: 128, members: j.pack.map((m) => ({ id: m.id, parts: m.parts.map(([f, d, at]) => ({ folder: F(f), dae: `${d}.dae`, at })), files: filesOf(m), ...(m.maxTex ? { maxTex: m.maxTex } : {}) })) }).then((p) => {
     members = p.members;
     const min = [0, 1, 2].map((i) => Math.min(...p.members.map((m) => m.box[0][i]))), max = [0, 1, 2].map((i) => Math.max(...p.members.map((m) => m.box[1][i])));
     return { gltf: p.gltf, box: [min, max] as [number[], number[]], tris: p.members.reduce((n, m) => n + m.tris, 0), lit: p.members.some((m) => m.lit), split: null };
   }) : j.fx ? { ...fxGltf(j.fx), lit: j.fx === 'flame' } : await page.evaluate((o) => (window as unknown as { convert: (o: unknown) => Promise<{ gltf: string; box: [number[], number[]]; tris: number; lit: boolean; split: Part | null }> }).convert(o), {
     parts: j.parts.map(([f, d, at]) => ({ folder: F(f), dae: `${d}.dae`, at })), files, maxTex: j.maxTex ?? 256, maxEmi: 128,
-    grdRow: j.grdRow, grdRows: j.grdRows, grdBlock: j.grdBlock, hide: j.hide, alias: j.alias, flat: j.flat, pose: j.pose, grdFile: j.grdFile, snow: j.snow, variant: j.variant, noAo: j.noAo, split: j.split, grdMix: j.grdMix
+    grdRow: j.grdRow, grdRows: j.grdRows, grdBlock: j.grdBlock, hide: j.hide, alias: j.alias, flat: j.flat, pose: j.pose, grdFile: j.grdFile, snow: j.snow, variant: j.variant, noAo: j.noAo, split: j.split
   });
   const g = JSON.parse(r.gltf) as { buffers: { uri: string }[]; images?: { uri?: string; mimeType?: string }[]; textures?: { source?: number; extensions?: object }[]; extensionsUsed?: string[]; extensionsRequired?: string[] };
-  // the same picture once (a pack's members bake one material each, a fence's six pieces the same texture six times)
-  if (g.images?.length) {
-    const first = new Map<string, number>(), keep: number[] = [], to = g.images.map((im, i) => {
-      const at = first.get(im.uri!);
-      if (at !== undefined) return at;
-      first.set(im.uri!, keep.length);
-      keep.push(i);
-      return keep.length - 1;
-    });
-    g.images = keep.map((i) => g.images![i]);
-    for (const t of g.textures ?? []) if (t.source !== undefined) t.source = to[t.source];
-  }
   const dir = join(work, j.name);
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
@@ -333,6 +328,14 @@ if (MUSEUM) {
   rmSync(work, { recursive: true, force: true });
   process.exit(0);
 }
+if (SHOP) {
+  const sortedS = Object.fromEntries(Object.entries(metas).filter(([k]) => SHOP_JOBS.some((j) => j.name === k)).sort(([a], [b]) => a.localeCompare(b)));
+  writeFileSync(META, `{\n  "_": "scripts/world3d-models.ts --shop: the shop's inside (bounds in model units, triangles, KB, content hash)",\n  "models": {\n${Object.entries(sortedS).map(([k, m]) => `    ${JSON.stringify(k)}: ${JSON.stringify(m)}`).join(',\n')}\n  }\n}\n`);
+  console.log(`${todo.length} models, ${(total / 1024 / 1024).toFixed(2)} MB`);
+  rmSync(scratch, { recursive: true, force: true });
+  rmSync(work, { recursive: true, force: true });
+  process.exit(0);
+}
 if (probe) {
   // the scratch copies of NH's files never outlive the run
   rmSync(scratch, { recursive: true, force: true });
@@ -342,9 +345,7 @@ if (probe) {
 }
 const jobUses = JOBS.flatMap((j) => (j.pack ? j.pack.map((m) => [memberName(j, m.id), m.uses!] as const) : j.uses ? [[j.name, j.uses] as const] : []));
 for (const k of Object.keys(assetMetas)) if (!jobUses.some(([n]) => n === k)) delete assetMetas[k];
-const GARDEN_META = join(dirname(META), 'garden.json'), isGarden = (k: string) => k.startsWith('garden/');
-writeGarden(GARDEN_META, Object.fromEntries(Object.entries(assetMetas).filter(([k]) => isGarden(k))));
-writeAssets(ASSET_META, Object.fromEntries(Object.entries(assetMetas).filter(([k]) => !isGarden(k))), metas, POC_USES, jobUses);
+writeAssets(ASSET_META, assetMetas, metas, POC_USES, jobUses);
 writeDoc(join(APP, '..', 'docs', 'world3d-assets.md'), ASSET_META);
 const sorted = Object.fromEntries(Object.entries(metas).sort(([a], [b]) => a.localeCompare(b)));
 writeFileSync(META, `{\n  "_": "scripts/world3d-models.ts: the 3D island POC's models (bounds in model units, triangles, KB, content hash)",\n  "models": {\n${Object.entries(sorted).map(([k, m]) => `    ${JSON.stringify(k)}: ${JSON.stringify(m)}`).join(',\n')}\n  }\n}\n`);

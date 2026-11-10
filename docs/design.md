@@ -952,8 +952,21 @@ during もようがえ.
 かいがら (shells), never ベル ([decisions](decisions.md#the-shops-かいがら)): the island's catches sell for them and buy
 furniture for the rooms. Each person's own pocket and かいがら, the guest's too.
 
-- **Inside:** a screen, not a 3D room: honey wood walls, the sign, a window with the sky, まめきち and つぶきち behind the
-  counter, their line in a cream balloon, and NH's counter menu under it. My かいがら top right; ‹ 島へ goes back out.
+- **Inside, in 3D** (`shop/plan.ts`, the rooms' engine with the shop's model as its shell: tent/engine.ts `Shell`): NH's
+  built-up Nook's Cranny (IdrMarket02: `npm run world3d-models -- --shop`, static/room/shop/shell.glb, 190 KB), in by
+  its door as the tent and the museum (the door's iris). まめきち and つぶきち stand behind the counter (NH's NpcSpRcm in
+  his shop apron, one model for the two: villagers3d `timmy`). Today's stock stands in the room (`display`, the same on
+  every phone): the largest first on the stage's two tiers, small things on the blue table, a few by the left wall, wall
+  things on the back wall over the stage; a piece with no place left is in the list only. The camera is nearer than the
+  whole room (too wide for a phone held upright) and follows my villager from the stage's left to the counter; a drag
+  turns it, a pinch zooms, ⌂ puts it back; the eye button as in the rooms. The walls between the camera and the room
+  are cut away. Others in the shop aren't drawn (presence only, as before).
+- **The finger** (the rooms' rule): a floor tap walks (round the stage, the table and the counter); a tap on a piece
+  picks it in place (my villager turns to it, a card: its icon, name, price and 買う, or 持っている); a tap on the
+  twins is their greeting and NH's choice box (うりたい · しなものを みたい · なんでもない). Their line is a balloon by
+  まめきち (at the screen's edge, its tail toward him, when he's out of view). The foot's うる and しなもの open the
+  counter's list over the room: the old panel as a sheet (its ✕ back to the room), where 全部 still buys every piece I
+  don't have at once.
 - **うる** (sell): my pocket, everything I caught, found or picked up less what I sold, in sections (虫, 魚, 海の幸,
   かいがら, 資源, 果物, 化石, その他), dearest first. A tap picks one more, − one less, ぜんぶ all; the bar says 「3こで 120
   かいがら」 and うる sells. Selling never takes anything out of the ずかん or the museum. A present's furniture or recipe

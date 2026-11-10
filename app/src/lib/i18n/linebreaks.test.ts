@@ -31,7 +31,7 @@ const WORLD: RegExp[] = [
   /^island\.(health|food|menu)/, /^zukan\.title$/, /^wallet\.title$/,
   /^say\./, /^room\./, /^tree\./, /^preview\.chip/, /^preview\.(event|season|weather|tod)\./, /^sound\.tapToHear$/, /^sync\./, /^board\.(name|open|new|empty)$/,
   // the rooms' signs and HUD
-  /^museum\.(title|room)$/, /^shop\.(title|sign|out|wallet|counter|twins)$/, /^tent\.(title|room|back|whose|failed|lights|resetView|edit|homeLook)$/,
+  /^museum\.(title|room)$/, /^shop\.(title|sign|out|wallet|counter|twins|room|fail)$/, /^shop\.(open|choice)\./, /^tent\.(title|room|back|whose|failed|lights|resetView|edit|homeLook)$/,
   // official names
   /\.name\./, /^fossil\.set\./, /^decor\.item\./, /^travel\.air$/ /* the boarding pass's airline */
 ];

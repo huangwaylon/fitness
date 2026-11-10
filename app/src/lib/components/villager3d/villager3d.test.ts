@@ -27,8 +27,8 @@ describe('the villagers’ 3D models (villagers.json)', () => {
 
   it('accounts for every villager the picker offers: a model, or why not', () => {
     for (const id of ROSTER_IDS) expect(id in M.villagers || id in M.none, id).toBe(true);
-    // (and the visitors outside the roster: the holiday hosts, Jack, the wedding's pair: island/visitors.ts)
-    const visitorsOnly = ['franklin', 'jack', 'jingle', 'zipper', 'reese', 'cyrus'];
+    // (and the characters outside the roster: the holiday hosts, Jack, the wedding's pair: island/visitors.ts; the shop's twins)
+    const visitorsOnly = ['franklin', 'jack', 'jingle', 'zipper', 'reese', 'cyrus', 'timmy'];
     for (const id of Object.keys(M.villagers)) expect((ROSTER_IDS as readonly string[]).includes(id) || visitorsOnly.includes(id), id).toBe(true);
     // (the map the converter read: a model where it found a body)
     for (const [id, row] of Object.entries(MAP as Record<string, (string | null)[]>)) expect(!!row[0], id).toBe(id in M.villagers);
@@ -54,7 +54,7 @@ describe('the villagers’ 3D models (villagers.json)', () => {
 
   it('keeps every face part: eyes, a mouth, and a bird’s beak (NH’s FaceNothing mesh: once dropped, Anchovy had none)', () => {
     /** NH draws these mouths on the body (anteaters, hedgehogs, Nook, Redd, Daisy Mae, Kicks, Jack's carved pumpkin, Zipper's costume): no mesh of its own. */
-    const ON_BODY = new Set(['anabelle', 'annalisa', 'antonio', 'cyrano', 'olaf', 'pango', 'snooty', 'zoe', 'tom-nook', 'redd', 'daisy-mae', 'kicks', 'label', 'mabel', 'sable', 'jack', 'zipper']);
+    const ON_BODY = new Set(['anabelle', 'annalisa', 'antonio', 'cyrano', 'olaf', 'pango', 'snooty', 'zoe', 'tom-nook', 'redd', 'daisy-mae', 'kicks', 'label', 'mabel', 'sable', 'jack', 'zipper', 'timmy']);
     const names = (id: string): string[] => {
       const b = readFileSync(join(DIR, `${id}.glb`)), j = JSON.parse(b.subarray(20, 20 + b.readUInt32LE(12)).toString());
       return [...(j.meshes ?? []), ...(j.nodes ?? [])].map((n: { name?: string }) => n.name ?? '');

@@ -462,7 +462,7 @@
       } else cue('scene-decor');
       return;
     }
-    walkTo([h.x, h.z]);
+    if (h.kind === 'floor') walkTo([h.x, h.z]);
   }
 
   /** This room's music stage (sound/stage.svelte.ts: the tent's `t`, うめ's `u`, the guest's `v`), shared by everyone
