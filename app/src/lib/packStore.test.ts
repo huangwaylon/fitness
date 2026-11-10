@@ -110,4 +110,21 @@ describe('PackStore', () => {
     await new Promise((r) => setTimeout(r, 0));
     expect(t.asked).toEqual(['/p/x.pak', '/p/x.pak']);
   });
+
+  it('dropOnHide: every pack let go as the page is hidden or goes (pagehide), asked again after', async () => {
+    const doc = Object.assign(new EventTarget(), { visibilityState: 'visible' }), win = new EventTarget();
+    vi.stubGlobal('document', doc);
+    vi.stubGlobal('window', win);
+    const n = net({ a: 10 });
+    const s = new PackStore({ url: (x) => `/p/${x}.pak`, get: n.get, tag: 't', dropOnHide: true });
+    await s.pack('a');
+    await s.pack('a');
+    doc.visibilityState = 'hidden';
+    doc.dispatchEvent(new Event('visibilitychange'));
+    await s.pack('a');
+    win.dispatchEvent(new Event('pagehide'));
+    await s.pack('a');
+    expect(count(n, 'a')).toBe(3);
+    vi.unstubAllGlobals();
+  });
 });

@@ -17,6 +17,21 @@ export interface PackStoreOpts {
   cap?: number;
   /** The failures' log tag (`<tag>.pack`). */
   tag: string;
+  /** Everything held let go of as the page is hidden (pagehide, or hidden: iOS ranks a background tab for its end
+   *  by its footprint; the service worker keeps every pack, so a read after is cheap). */
+  dropOnHide?: boolean;
+}
+
+/** The stores let go of as the page is hidden (one listener each for the page's life). */
+const hiding = new Set<PackStore>();
+function dropOnHide(s: PackStore): void {
+  if (typeof document === 'undefined') return;
+  if (!hiding.size) {
+    const drop = () => hiding.forEach((h) => h.clear());
+    document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && drop());
+    window.addEventListener('pagehide', drop);
+  }
+  hiding.add(s);
 }
 
 export class PackStore {
@@ -36,6 +51,7 @@ export class PackStore {
     this.#get = o.get ?? ((u) => fetch(u));
     this.#cap = o.cap ?? 12_000_000;
     this.#tag = o.tag;
+    if (o.dropOnHide) dropOnHide(this);
   }
 
   /** A pack's bytes, whole: fetched once at a time, held among the most recently used within the cap (the newest
