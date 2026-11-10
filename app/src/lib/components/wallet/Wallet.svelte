@@ -68,11 +68,13 @@
     <div class="hero">
       {#each order as p (p)}
         {@const purse = view.wallet.people[p]}
-        <section class="purse" class:mine={!guest && p === view.me} data-purse={p} data-balance={purse.balance} aria-label={t('wallet.of', { name: names[p] })}>
+        <section class="purse" data-purse={p} data-balance={purse.balance} aria-label={t('wallet.of', { name: names[p] })}>
           <span class="jar"><Jar fill={walletFill(purse.balance)} width="var(--jar-w)" /></span>
-          <span class="who"><Avatar worn person={p} villager={villagers[p]} size={20} />{names[p]}</span>
-          <Bells bells={purse.balance} class="total" />
-          <p class="today" class:none={purse.today <= 0} data-today={purse.today}><span class="tk">{t('wallet.today')}</span><Bells bells={purse.today} signed /></p>
+          <div class="sums">
+            <span class="who"><Avatar worn person={p} villager={villagers[p]} size={20} />{names[p]}</span>
+            <Bells bells={purse.balance} class="total" />
+            <p class="today" class:none={purse.today <= 0} data-today={purse.today}><span class="tk">{t('wallet.today')}</span><Bells bells={purse.today} signed /></p>
+          </div>
         </section>
       {/each}
     </div>
@@ -98,20 +100,17 @@
 
 <style>
   .wallet { display: grid; gap: 16px; }
-  /* the wallets: two cards side by side (mine first, ringed), each its jar, its owner, the balance (the plate's number)
-     and today's ベル under it, centred */
+  /* the wallets, side by side on the panel itself (mine first): each its jar at the left, and to its right its owner,
+     the balance (the plate's number) and today's ベル under it */
   .hero {
-    --jar-w: clamp(44px, calc(6.4 * var(--vh1)), 58px);
+    --jar-w: clamp(40px, calc(6 * var(--vh1)), 54px);
     display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 4px 0 2px; color: var(--text);
   }
-  .purse {
-    min-width: 0; display: grid; justify-items: center; align-content: start; gap: 6px; padding: 10px 6px 12px;
-    border-radius: var(--r-card); background: var(--c-cream); box-shadow: 0 2px 0 var(--c-lip);
-  }
-  .purse.mine { box-shadow: 0 0 0 2px var(--c-yuzu-lip), 0 2px 0 var(--c-lip); }
-  .jar { display: block; line-height: 0; filter: drop-shadow(0 3px 0 rgb(0 0 0 / .08)); }
+  .purse { min-width: 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .jar { flex: none; display: block; line-height: 0; filter: drop-shadow(0 3px 0 rgb(0 0 0 / .08)); }
+  .sums { min-width: 0; display: grid; justify-items: start; gap: 6px; }
   .who { max-width: 100%; display: inline-flex; align-items: center; gap: 4px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .hero :global(.total) { font-size: var(--fs-title); line-height: 1; }
+  .hero :global(.total) { font-size: var(--fs-title); line-height: 1; white-space: nowrap; }
   /* today's ベル: a soft yuzu pill under the balance (NH's "+N Bells" bubble), smaller than it; at 0 a faint cream one,
      so nothing jumps when the first coin lands */
   .today {
@@ -119,7 +118,7 @@
     border-radius: var(--r-pill); background: var(--c-yuzu); color: var(--c-ink); box-shadow: 0 2px 0 var(--c-yuzu-lip);
     font: 700 var(--fs-s)/1.2 var(--font-ui); white-space: nowrap;
   }
-  .today.none { background: var(--c-paper); color: var(--c-ink-soft); box-shadow: 0 2px 0 var(--c-lip); }
+  .today.none { background: var(--c-cream); color: var(--c-ink-soft); box-shadow: 0 2px 0 var(--c-lip); }
   .guest { margin: 0; padding: 12px 14px; font-weight: 700; color: var(--text-soft); text-align: center; line-height: var(--lh); }
   /* the ledger, under the shop: the same small soft heading as the buys' */
   .ledger { display: grid; gap: 8px; }

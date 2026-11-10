@@ -91,8 +91,8 @@ zoom, a tap on empty ground walks my villager there.
 
 ごほうび, the island panel (`wallet/Wallet.svelte`, `wallet/Shop.svelte`), top to bottom:
 
-- **The wallets:** two cards side by side, mine first (ringed): each a jar (`Jar.svelte`, filling as it grows:
-  `walletFill`), its owner's avatar and name, the balance, big, and under it today's ベル into it in a soft yuzu pill
+- **The wallets:** side by side on the panel, mine first: each a jar (`Jar.svelte`, filling as it grows:
+  `walletFill`) and to its right its owner's avatar and name, the balance, big, and under it today's ベル into it in a soft yuzu pill
   (「今日 +5」: their goals, がんばり and half of ふたりでぜんぶ), at 0 a faint one (so nothing jumps when the first coin
   lands). The guest sees both, buys nothing.
 - **The rewards:** two tiles with NH item art, name and price: 🍦 おやつ 20 ベル and 🍜 外食 35 ベル, paid from my own
