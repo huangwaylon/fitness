@@ -9,6 +9,8 @@
   // a bug, a sea creature, a fossil or an artwork shows it: its icon, its names (Japanese and English), a fossil's
   // skeleton (its pieces in, 「コンプリート！」 once whole, as the ずかん says) or an artwork's real title and artist, who found it first
   // and when, and how many we've had (the tallies, as the ずかん counts them). A tap anywhere else, ✕ or Esc closes it.
+  // `dock`: the bottom (above the HUD row) or the top (under the back pill), whichever leaves the exhibit in view
+  // (hud.ts cardDock); it slides across when the next exhibit tapped wants the other edge.
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Avatar from '../characters/Avatar.svelte';
   import ja from '#lib/i18n/catch.ja.json';
@@ -22,7 +24,7 @@
   import type { WeekView, Who } from '#lib/types.ts';
   import { bare } from '../kiroku/zukan.ts';
 
-  let { shown, counts, view, onclose }: { shown: Shown; counts: Totals; view: WeekView; onclose: () => void } = $props();
+  let { shown, counts, view, onclose, dock = 'top' }: { shown: Shown; counts: Totals; view: WeekView; onclose: () => void; dock?: 'top' | 'bottom' } = $props();
 
   const NAME = { fish: 'critter.name', bug: 'critter.name', sea: 'sea.name', fossil: 'beach.name', art: 'art.name' } as const;
   const ICON = { fish: 'critters', bug: 'critters', sea: 'critters', fossil: 'finds', art: 'finds/art' } as const;
@@ -53,7 +55,7 @@
   });
 </script>
 
-<div class="card" role="dialog" aria-label={nameJa} data-museum-card={shown.id}>
+<div class="card" class:bottom={dock === 'bottom'} role="dialog" aria-label={nameJa} data-museum-card={shown.id} data-museum-dock={dock}>
   <span class="icon"><OfficialArt key={`${ICON[shown.kind]}/${shown.id}`} size={52} eager /></span>
   <div class="txt">
     <b class="ja">{nameJa}</b>
@@ -67,11 +69,14 @@
 
 <style>
   .card {
-    position: absolute; z-index: 4; left: 50%; top: calc(var(--ui-top, 0px) + 70px); transform: translateX(-50%);
+    position: absolute; z-index: 4; left: 50%; top: calc(var(--ui-top, 0px) + 70px); transform: translate(-50%, 0);
     width: min(420px, calc(100% - 2 * var(--side))); display: flex; gap: 10px; align-items: center; padding: 12px 12px 12px 14px;
     border-radius: var(--r-card); background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip), var(--sh-float);
-    animation: pop .2s var(--ease-bounce) both;
+    animation: pop .2s var(--ease-bounce) both; transition: top .26s var(--ease-soft), transform .26s var(--ease-soft);
   }
+  /* docked at the bottom: its foot 76px over the safe area, clear of the 目 and say buttons' row (one `top` either way,
+     so a change of edge slides) */
+  .card.bottom { top: calc(100% - var(--safe-bottom, 0px) - 76px); transform: translate(-50%, -100%); }
   .icon { flex: none; width: 58px; height: 58px; border-radius: 50%; background: color-mix(in srgb, var(--c-lip) 45%, var(--c-cream)); display: grid; place-items: center; }
   .txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
   /* a fixed-cream game card at every hour: the ink pair, never the night chrome's text tokens */
@@ -83,4 +88,5 @@
   /* the app's ✕ (NavButton) */
   .x { flex: none; align-self: flex-start; display: flex; }
   @keyframes pop { from { scale: .7; opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .card { transition: none; } }
 </style>
