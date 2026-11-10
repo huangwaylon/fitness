@@ -295,7 +295,7 @@ One rule app-wide; `ui/nav.test.ts` enforces it.
   form, ごはん's マイレシピ / マイ食品 / クイック editors), ✕, the backdrop, Esc and the editor's ‹ ask
   「入力した内容を破棄しますか？」 [破棄する] [編集を続ける]. Untouched, they close at once.
 - **One button**, `ui/NavButton`, for ‹, ✕ and the bar's tools: a 32px disc in the 44px hit, one look everywhere,
-  over a photo or a map too (‹ grown into a pill: ‹ 島へ in a room, ‹ 戻る on the board). No other ✕ or ‹. Floating
+  over a photo or a map too (‹ grown into a pill: ‹ しまへ in a room, ‹ 戻る on the board). No other ✕ or ‹. Floating
   cards put the same ✕ at their top-right corner.
 - **Lead and trailing:** on a top level the lead slot may hold one compact control: ⚙ (ききみみ), whose data (けんこう,
   ごはん), km | mi (りょこう). Trailing, before ✕: tool icons only (＋). Never words in the bar but the title, or, in its
@@ -538,7 +538,7 @@ changes or the shadow box moves on (`world3d/shadowBox.ts`); the tent's and the 
 
 `island/buildings.ts`, `island/doorOut.ts`, `e2e/tapwalk.spec.ts`. The campsite, the homes, the museum
 ([The museum](#the-museum)) and the shop ([The shop](#the-shop)): a tap on one walks my villager up to its door and goes
-in. ‹ 島へ comes out of the door, NH's way: my villager stands just in front of it, facing out, on every phone at once
+in. ‹ しまへ comes out of the door, NH's way: my villager stands just in front of it, facing out, on every phone at once
 (`layout/nav.ts` exitOf). Inside, my villager is nowhere on the others' islands.
 
 ### Environment
@@ -770,7 +770,7 @@ out in front, facing out, on every phone). The homes' rooms are the same system.
   point lights where they glow.
 - **The villagers** are NH's 3D models where they have one, else billboards of their official renders. A tap on the
   floor walks mine there (round the furniture, rugs walkable); a tap on a villager hops it; a tap on a piece acts in
-  place; the doormat or ‹ 島へ goes back out. The partner's villager is theirs to move while they're in the room; away,
+  place; the doormat or ‹ しまへ goes back out. The partner's villager is theirs to move while they're in the room; away,
   it rests where it last stood.
 - **Stereos** (`tent/stereo.ts`, `kk-sync.spec.ts`): NH's music players in any room play K.K.'s songs. A tap opens the
   song list (おまかせ, or one by name); the song is his **aircheck** on the room's music stage
@@ -935,7 +935,7 @@ silhouette and ？？？ otherwise, 「コンプリート！」 when all are in;
 `museum/` (each file's header has its part), `e2e/museum.spec.ts`, `e2e/museum-visitors.spec.ts`,
 `e2e/first-person.spec.ts`. NH's museum (はくぶつかん) is a building on the layout
 ([island-layout.md](island-layout.md#the-islands-buildings)): NH's own model, one to an island, moved and turned in the
-editor, never removed. A tap walks my villager to its door and in (the door's iris); ‹ 島へ or the doormat comes back
+editor, never removed. A tap walks my villager to its door and in (the door's iris); ‹ しまへ or the doormat comes back
 out.
 
 - **Rooms** (`plan.ts`): one floor of portrait rooms, each one rect, 12 tiles across (the screen's way) and deeper the

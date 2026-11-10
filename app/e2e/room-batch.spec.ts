@@ -38,9 +38,13 @@ test('全部片付ける in うめ’s house from ウェイ’s phone: confirmed
   await editing(a);
   await expect(a.locator('[data-tent-undo]')).toHaveAttribute('aria-disabled', 'true');
   await a.locator('[data-tent-clear]').click();
-  // the confirmation first: nothing gone yet
+  // the confirmation first: nothing gone yet; キャンセル keeps it all
   await expect(a.locator('[data-action="clear"]')).toBeVisible();
   expect(await tent(a, (t) => t.pieces().length)).toBe(5);
+  await a.locator('[data-action="cancel"]').click();
+  await expect(a.locator('[data-action="clear"]')).toHaveCount(0);
+  expect(await tent(a, (t) => t.pieces().length)).toBe(5);
+  await a.locator('[data-tent-clear]').click();
   await a.locator('[data-action="clear"]').click();
   await expect.poll(() => tent(a, (t) => t.pieces().length)).toBe(0);
   await expect(a.locator('[data-tent-count]')).toHaveText('0/60');

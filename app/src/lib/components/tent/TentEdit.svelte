@@ -23,7 +23,6 @@
   // (every piece away after a confirmation, the wallpaper, floor and size kept; one batch, one undo) and 保存 (the room's
   // three saved arrangements: 保存, 呼び出す after a confirmation as one batch and one undo, 削除; contract/roomSave.ts).
   import { onMount } from 'svelte';
-  import ActionSheet from '#lib/components/ui/ActionSheet.svelte';
   import Sheet from '#lib/components/ui/Sheet.svelte';
   import { sendRoomSave } from '#lib/store/actions.ts';
   import { SAVE_NAME_CHARS, saveName, type RoomSaveOp } from '#lib/contract/roomSave.ts';
@@ -63,9 +62,11 @@
     saves?: readonly (Extract<RoomSaveOp, { name: string }> | null)[];
     /** Whether the room's owner has a piece (their buys): a saved arrangement may use it. */
     ownerHas?: (item: string) => boolean;
+    /** The home's a house (NH's), not a tent: the hint says 家. */
+    house?: boolean;
     ondone: () => void;
   }
-  let { room, eng, link, finds, bought, catches = [], villagers, relayNow, holderName, saves = [], ownerHas = () => false, ondone }: Props = $props();
+  let { room, eng, link, finds, bought, catches = [], villagers, relayNow, holderName, saves = [], ownerHas = () => false, house = false, ondone }: Props = $props();
 
   type Tab = 'recent' | 'furniture' | 'rugs' | 'walled' | 'ceiling' | 'critters' | 'finds' | 'bought' | 'gym' | 'wall' | 'floor' | 'size';
   /** The room's size (its tiles within the largest room's: grid.ts Bounds). */
@@ -542,6 +543,15 @@
     return true;
   }
   let clearAsk = $state(false);
+  /** The tab strip faded at its right while more tabs are off it (a scroll's cue). */
+  function moreFade(el: HTMLElement) {
+    const f = () => el.classList.toggle('more', el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+    f();
+    el.addEventListener('scroll', f, { passive: true });
+    const ro = new ResizeObserver(f);
+    ro.observe(el);
+    return () => (el.removeEventListener('scroll', f), ro.disconnect());
+  }
   function clearAll() {
     if (sel) cancel(false);
     if (!room.pieces.length) return void cue('boop');
@@ -690,7 +700,7 @@
     </div>
   {:else}
     <div class="bar">
-      <span class="say hint" class:bad={!!note} data-tent-hint data-note={note?.k ?? ''}>{note ? note.text : peek ? nameOf(peek) : t(tab === 'size' ? 'tent.sizeHint' : room.pieces.length ? 'tent.hintMove' : 'tent.hint')}</span>
+      <span class="say hint" class:bad={!!note} data-tent-hint data-note={note?.k ?? ''}>{note ? note.text : peek ? nameOf(peek) : t(tab === 'size' ? 'tent.sizeHint' : room.pieces.length ? 'tent.hintMove' : house ? 'tent.hintHouse' : 'tent.hint')}</span>
       <button type="button" class="act" data-tent-undo data-sfx="self" aria-label={t('common.undo')} aria-disabled={!undoN} onclick={() => (undoN ? takeBack() : cue('boop'))}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" /></svg>
       </button>
@@ -703,7 +713,7 @@
     </div>
   {/if}
   <div class="tray">
-    <div class="tabs" role="tablist" aria-label={t('tent.edit')}>
+    <div class="tabs" role="tablist" aria-label={t('tent.edit')} {@attach moreFade}>
       {#each TABS as k (k)}
         <button type="button" role="tab" class="tab" data-tab={k} data-sfx="self" aria-selected={tab === k} onclick={() => ((tab = k), cue('tick'))}>{t(`tent.tab.${k}`)}</button>
       {/each}
@@ -746,15 +756,22 @@
       </div>
       {/if}
       <button type="button" class="done" data-tent-done data-sfx="confirm" onclick={done}>
-        <span class="count" data-tent-count>{room.pieces.length}/{TENT_MAX}</span>
+        <span class="count"><span data-tent-count>{room.pieces.length}/{TENT_MAX}</span>{t('tent.countUnit')}</span>
         <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg><span>{t('decor.done')}</span>
       </button>
     </div>
   </div>
 </div>
 
-<ActionSheet bind:open={clearAsk} title={t('tent.clearTitle')} note={t('tent.clearNote', { n: room.pieces.length })}
-  groups={[[{ id: 'clear', label: t('tent.clear'), danger: true }]]} onpick={doClear} />
+<Sheet bind:open={clearAsk} label={t('tent.clearTitle')} title={t('tent.clearTitle')}>
+  <p class="clear-note">{t('tent.clearNote', { n: room.pieces.length })}</p>
+  {#snippet footer()}
+    <div class="two-cta">
+      <button type="button" class="btn paper" data-action="cancel" data-sfx="back" onclick={() => (clearAsk = false)}>{t('common.cancel')}</button>
+      <button type="button" class="btn danger" data-action="clear" data-sfx="tick" onclick={() => ((clearAsk = false), doClear())}>{t('tent.clear')}</button>
+    </div>
+  {/snippet}
+</Sheet>
 
 <Sheet bind:open={savesOpen} label={t('tent.saves')} title={saving.k === 'save' ? t('tent.saveTitle') : t('tent.saves')}>
   {#if saving.k === 'list'}
@@ -836,6 +853,11 @@
   .it.full { opacity: .45; }
   .empty { grid-column: 1 / -1; margin: 0; align-self: center; padding: 12px 8px; color: var(--c-ink-soft); font-weight: 700; white-space: normal; text-align: center; }
   .count { font: 700 var(--fs-xs)/1 var(--font-num); color: var(--c-ink); }
+  .tabs:global(.more) { mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
+  /* 全部片付ける asked: キャンセル beside the coral one (BuyConfirm's footer) */
+  .clear-note { margin: 0 4px 8px; text-align: center; text-wrap: pretty; word-break: auto-phrase; }
+  .two-cta { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
+  .two-cta .btn { margin: 0; }
   .hint.bad { color: var(--c-ink); }
   .hint.bad::before { content: '! '; color: var(--c-coral); }
   /* 広さ: three cards, each NH's room as a plan */

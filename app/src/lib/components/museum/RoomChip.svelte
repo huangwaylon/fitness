@@ -3,7 +3,7 @@
   // doorway plaque's name, word for word (museum/hud.ts chipName: 「さ か な」, 「か せ き 2」), and what's on show in this
   // room of how many it holds 「12/120」; the hall its name only. Under it, while any came in the last day, a gold
   // 「あたらしい n」 tag (this room's new finds; the hall's, the museum's). The world HUD's sizes (34 high in the back pill's 44
-  // row, the 4px lip), between ‹ 島へ and ⌂; static, the name crossfading as the room changes. Not a button: it keeps a
+  // row, the 4px lip), between ‹ しまへ and ⌂; static, the name crossfading as the room changes. Not a button: it keeps a
   // finger off the floor under it.
   let { name, found, total, fresh = 0 }: { name: string; found?: number; total?: number; fresh?: number } = $props();
   const count = $derived(found !== undefined && total !== undefined ? `${found}/${total}` : '');
@@ -16,7 +16,7 @@
 </div>
 
 <style>
-  /* centred in the back pill's row (its 44px hit at --ui-top + 8: 5px each side of 34), never under ‹ 島へ (≤ ~84px
+  /* centred in the back pill's row (its 44px hit at --ui-top + 8: 5px each side of 34), never under ‹ しまへ (≤ ~84px
      from the side) nor ⌂ (52px) */
   .chip {
     position: absolute; z-index: 2; left: 50%; top: calc(var(--ui-top) + 13px); transform: translateX(-50%);

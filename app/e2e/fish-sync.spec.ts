@@ -98,7 +98,7 @@ test('a tab coming while a line is out sees it; the angler’s tab gone, its lin
   await ctx.close();
 });
 
-/** Through the museum's door (a button: no tap on the ground reels a line in first), and back out (‹ 島へ). */
+/** Through the museum's door (a button: no tap on the ground reels a line in first), and back out (‹ しまへ). */
 async function intoMuseum(page: Page) {
   const door = await page.evaluate(() => (window as unknown as { __world: { site(): { doors: Record<string, [number, number]> } } }).__world.site().doors.museum);
   await page.evaluate(`window.__world.go(${door[1] - 120})`);
@@ -111,7 +111,7 @@ async function intoMuseum(page: Page) {
   await expect(page).toHaveURL(/\/museum\/?\?/, { timeout: 20_000 });
 }
 async function outOfMuseum(page: Page) {
-  await page.getByRole('button', { name: '島へ' }).click();
+  await page.getByRole('button', { name: 'しまへ' }).click();
   await expect(page).toHaveURL(islandURL());
   expect(await is3d(page)).toBe(true);
 }

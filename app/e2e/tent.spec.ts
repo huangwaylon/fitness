@@ -1,6 +1,6 @@
 // The tent (docs/design.md "The tent"): the campsite's door opens its inside, NH's largest room in 3D, as a screen of
 // its own: the room's code and three.js come only then (the island never loads them); my villager walks where the
-// floor is tapped; the doormat and ‹ 島へ go back out, to the island as it was.
+// floor is tapped; the doormat and ‹ しまへ go back out, to the island as it was.
 import { expect, test, type Page } from './fixtures.ts';
 import { campDoor, camTo, geo, is3d, islandURL, tapOn } from './island.ts';
 
@@ -94,7 +94,7 @@ test('the tent opens through the door and goes back out to the island as it was'
   await expect(page.locator('[data-tent]')).toHaveCount(0);
 });
 
-test('a tap on the floor walks my villager there; ‹ 島へ goes back out; nothing is drawn while nothing moves', { tag: '@smoke' }, async ({ page }) => {
+test('a tap on the floor walks my villager there; ‹ しまへ goes back out; nothing is drawn while nothing moves', { tag: '@smoke' }, async ({ page }) => {
   test.slow(drawn, 'the island and the room loaded drawn under software GL');
   await enter(page);
   await page.waitForFunction(() => !(window as unknown as { __tent: { walking(w: string): boolean } }).__tent.walking('A'));
@@ -126,7 +126,7 @@ test('a tap on the floor walks my villager there; ‹ 島へ goes back out; noth
   await page.locator('[data-tent-reset]').click();
   await expect.poll(() => page.evaluate(() => (window as unknown as { __tent: { isDefault(): boolean } }).__tent.isDefault()), { timeout: SLOW }).toBe(true);
   await expect(page.locator('[data-tent-reset]')).toHaveCount(0);
-  await page.getByRole('button', { name: '島へ' }).click();
+  await page.getByRole('button', { name: 'しまへ' }).click();
   await expect(page).toHaveURL(islandURL());
 });
 
@@ -427,7 +427,7 @@ test('the HHA: the first time in after a day’s decorating, ハニワくん’s
   type H = { total: number; badge: string | null; note: { k: string; v?: string } };
   const hha = () => page.evaluate(() => (window as unknown as { __tent: { hha(): Promise<H> } }).__tent.hha());
   const out = async () => {
-    await page.getByRole('button', { name: '島へ' }).click();
+    await page.getByRole('button', { name: 'しまへ' }).click();
     await expect(page).toHaveURL(islandURL());
   };
   const letter = page.locator('[data-tent-letter]');

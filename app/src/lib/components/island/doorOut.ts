@@ -1,4 +1,4 @@
-// Out of a building's door (docs/design.md "Buildings"): the room's ‹ 島へ (the tent, a home, the museum, the shop).
+// Out of a building's door (docs/design.md "Buildings"): the room's ‹ しまへ (the tent, a home, the museum, the shop).
 // My villager stands just out of its door, facing out (buildings.ts outOf), on this phone (the island puts it there as
 // it opens: ui.outAt) and on every other at once: the put is my villager's newest walk in the shared day, sent now
 // (the island's own link tells nothing until its socket's welcome, and keeps it as where my villager is).

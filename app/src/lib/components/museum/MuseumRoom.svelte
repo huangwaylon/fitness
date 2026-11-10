@@ -8,7 +8,7 @@
   // rooms/seating.ts, its seats seats.ts), the first tap then gets it up (only that); a tap on the curator at the desk (フータ: curator.ts, his idle life) is his line in NH's balloon (Talk, lines.ts),
   // and he greets my villager once on the way in; with a card open, any tap only closes it; a doorway's dip closes every
   // balloon; the finds of the last day get a NEW tag (newTags.ts), the chip's 「あたらしい n」 and a dot on the hall's plaque;
-  // the doormat or ‹ 島へ goes back out. What's on show is the ずかん's (model/finds.ts: every fish, bug, sea creature
+  // the doormat or ‹ しまへ goes back out. What's on show is the ずかん's (model/finds.ts: every fish, bug, sea creature
   // and fossil anyone has found, the guest's too, and every genuine artwork a present has held), and comes as it's
   // found; the sea creatures', the fossils' and the art's wings are built (their models fetched) only once my villager
   // comes near (plan.ts nearRooms). The others in here are seen (the relay's `tent` with `sc: 'm'`,

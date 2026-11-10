@@ -85,7 +85,7 @@ for (const room of ROOMS) {
     expect((await r(page, (h) => h.fpv()))!.inside).toBe(false);
     // kept on this phone: on, out and back in, it's at the eyes from the first frame; off, it's off
     await eyeBtn.click();
-    await page.getByRole('button', { name: '島へ' }).click();
+    await page.getByRole('button', { name: 'しまへ' }).click();
     await expect(page).toHaveURL(islandURL());
     await open(page);
     await expect(page.locator('[data-fpv]')).toHaveAttribute('data-fpv', 'on');

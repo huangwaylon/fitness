@@ -516,7 +516,7 @@ test('one place at a time: A in the tent is gone from B’s island, there with B
   await expect.poll(() => tt(a, (t) => t.partner()), { timeout: 6000 }).not.toBeNull();
   // A comes out: at the door on A's island, gone from B's tent
   await a.bringToFront();
-  await a.getByRole('button', { name: '島へ' }).click();
+  await a.getByRole('button', { name: 'しまへ' }).click();
   await a.waitForFunction(() => (window as unknown as { __world?: { state?: unknown } }).__world?.state);
   const out = await OUT(a, 'A');
   await expect.poll(async () => {
@@ -526,7 +526,7 @@ test('one place at a time: A in the tent is gone from B’s island, there with B
   await expect.poll(() => tt(b, (t) => t.partner()), { timeout: 4000 }).toBeNull();
   // B comes out: A on B's island, at the door too
   await b.bringToFront();
-  await b.getByRole('button', { name: '島へ' }).click();
+  await b.getByRole('button', { name: 'しまへ' }).click();
   await b.waitForFunction(() => (window as unknown as { __world?: { state?: unknown } }).__world?.state);
   await expect.poll(() => inside(b), { timeout: 4000 }).toBeNull();
   // (where A's own phone has it: both phones agree; A's own villager is A's phone's to move)

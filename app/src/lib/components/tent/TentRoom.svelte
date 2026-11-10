@@ -2,7 +2,7 @@
   // The tent's inside (docs/design.md "The tent"): NH's largest room in 3D, behind its door on the island. The room
   // (engine.ts, three.js) comes in its own chunk once the screen opens; until its first frame the door's black covers
   // it (ui-state/doorTransition.ts). A tap on the floor walks my villager there (round the furniture); a tap on a piece
-  // acts where I stand (my villager turns to it, it jiggles, a lamp turns on or off); the doormat or ‹ 島へ goes back
+  // acts where I stand (my villager turns to it, it jiggles, a lamp turns on or off); the doormat or ‹ しまへ goes back
   // out; もようがえ arranges the room (TentEdit). The room is both of ours (store/tent.svelte.ts: the relay live, the
   // sheet for good); the partner's villager is here while they are (each phone moves its own: the `tent` intent, the
   // very walk) or while they're away; what they drag moves here as they drag it (dragLink.ts). Nothing gives ベル.
@@ -876,7 +876,7 @@
     {/if}
   </div>
   {#if editing && eng}
-    <TentEdit bind:this={edit} {room} eng={() => eng} {link} {finds} {bought} {catches} {saves} ownerHas={(c) => ownerBought.has(c)} {relayNow} holderName={(id) => nameOf(link.theirs().find((h) => h.id === id)?.who ?? partner)}
+    <TentEdit bind:this={edit} {room} eng={() => eng} {link} {finds} {bought} {catches} {saves} ownerHas={(c) => ownerBought.has(c)} {relayNow} house={islandLayout.home(home).m === 'house'} holderName={(id) => nameOf(link.theirs().find((h) => h.id === id)?.who ?? partner)}
       villagers={() => [eng?.at(me), ...others.map((w) => eng?.at(w))].filter((p): p is [number, number] => !!p)}
       ondone={() => {
         editing = false;

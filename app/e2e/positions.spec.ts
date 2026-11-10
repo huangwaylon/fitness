@@ -29,9 +29,9 @@ async function goIn(page: Page, id: 'shop' | 'museum') {
   await expect(page).toHaveURL(new RegExp(`/${id}/?\\?`), { timeout: 20_000 });
   await expect(page.locator(id === 'shop' ? '[data-shop]' : '[data-museum]')).toBeVisible();
 }
-/** Out by ‹ 島へ. */
+/** Out by ‹ しまへ. */
 async function goOut(page: Page) {
-  await page.getByRole('button', { name: '島へ' }).click();
+  await page.getByRole('button', { name: 'しまへ' }).click();
   await expect(page).toHaveURL(islandURL());
 }
 async function inAndOut(page: Page, id: 'shop' | 'museum') {

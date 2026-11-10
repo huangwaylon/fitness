@@ -3,8 +3,8 @@
   // sheet), or a `tool` (⚙ ＋, km|mi…: the lead slot on a top level, or before ✕). One size app-wide: a 32px disc drawn in
   // the 44px hit, the kit's control (`--ctl`, `--sh-ctl-s`: cream by day, navy at night), the glyph `ui/Icon` at stroke 2.4.
   // The same disc over a photo or a map (a trip's hero, a trail's map): one look everywhere.
-  // `text`: ‹ grown into a labelled pill, a full page's way back (‹ 島へ in a room).
-  //   <NavButton kind="close" onclick={…} />   <NavButton kind="back" text="島へ" onclick={…} />
+  // `text`: ‹ grown into a labelled pill, a full page's way back (‹ しまへ in a room).
+  //   <NavButton kind="close" onclick={…} />   <NavButton kind="back" text="しまへ" onclick={…} />
   //   <NavButton kind="tool" icon="gear" label="設定" sfx="open" onclick={…} />
   import { t } from '#lib/i18n/index.ts';
   import Icon, { type IconName } from './Icon.svelte';
