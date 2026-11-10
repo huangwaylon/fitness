@@ -15,6 +15,10 @@ import type { RelayEvent } from './log.ts';
 import { isToken } from '../../app/src/lib/contract/log.ts';
 import { twice } from './notify.ts';
 import { errName } from './log.ts';
+import { after, backoff, due, dumpText, NO_STATE, retryAt, runArchive, type ArchiveRun, type ArchiveState } from './archive.ts';
+
+/** The backups' state (archive.ts): one key of the object's storage, never the record's tables. */
+const ARCHIVE = 'archive';
 
 export class IslandStore extends DurableObject<Env> implements StoreRoom {
   private core: StoreCore;
@@ -71,6 +75,49 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     return { ok: true, ...r };
   }
 
+  /** RPC from the Worker's cron at 03:00 Tokyo (index.ts): the backup is due, so the alarm runs it (on the object's
+   *  CPU budget, not the cron's); a failure's retry is the alarm's own. */
+  async archiveKick(): Promise<{ due: string }> {
+    const s = (await this.ctx.storage.get<ArchiveState>(ARCHIVE)) ?? NO_STATE;
+    const d = due(s, Date.now());
+    const at = await this.ctx.storage.getAlarm();
+    if (at === null && d !== 'done') await this.ctx.storage.setAlarm(d === 'run' ? Date.now() : s.lastAt + backoff(s.fails));
+    return { due: d };
+  }
+
+  async alarm(): Promise<void> {
+    const s = (await this.ctx.storage.get<ArchiveState>(ARCHIVE)) ?? NO_STATE;
+    const d = due(s, Date.now());
+    if (d === 'wait') await this.ctx.storage.setAlarm(s.lastAt + backoff(s.fails));
+    if (d === 'run') await this.archive(s);
+  }
+
+  /** The backup now (the alarm's, or the admin `backup`'s with `force`), one at a time; logged; never throws. */
+  private archiving: Promise<ArchiveRun> | null = null;
+  private archive(s: ArchiveState, force = false): Promise<ArchiveRun> {
+    return (this.archiving ??= this.archiveRun(s, force).finally(() => (this.archiving = null)));
+  }
+
+  private async archiveRun(s: ArchiveState, force: boolean): Promise<ArchiveRun> {
+    this.rows();
+    const r = await runArchive({
+      dump: () => dumpText(this.core),
+      gh: { fetch: (u, i) => fetch(u, i), token: this.env.ARCHIVE_TOKEN?.trim(), repo: this.env.ARCHIVE_REPO ?? '', tag: this.env.ARCHIVE_RELEASE ?? '' },
+      recipient: this.env.ARCHIVE_RECIPIENT?.trim(),
+      now: Date.now
+    });
+    // the record's rows the run wrote (0: it only reads) and read
+    const { rw, rr } = this.rows();
+    const next = after(s, r, Date.now());
+    await this.ctx.storage.put(ARCHIVE, next);
+    const retry = retryAt(next, r);
+    if (retry !== null) await this.ctx.storage.setAlarm(retry);
+    const { slot: _slot, ...d } = r;
+    this.log([{ e: 'cron.backup', l: r.ok ? 1 : r.st === 'no_token' ? 2 : 3, d: { ...d, rw, rr, fails: next.fails, ...(force ? { force } : {}) } }]);
+    console.log('backup', JSON.stringify({ ...d, rw, rr }));
+    return r;
+  }
+
   /** The same, with the request's meta for the log's `req` (reqMeta.ts; the Worker times it and sends it). */
   apiMeta(text: string): { body: string; meta: ReqMeta } {
     const keys = { KEY_A: this.env.KEY_A, KEY_B: this.env.KEY_B, KEY_C: this.env.KEY_C };
@@ -111,6 +158,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    *   its rules (idempotent: what it has is skipped);
    * - `logs {since?, until?, after?, before?, desc?, lvl?, ev?, role?, sid?, rid?, src?, build?, limit?}`: the log's
    *   events (log.ts query; relay/scripts/logs.ts); `logstats`: its health; `logpurge {before?, role?}`: deletes;
+   * - `backup`: the daily backup now (archive.ts), whether or not today's is up (it replaces it); its outcome;
    * - `wx {refresh?, s?, fx?}`: the room's real weather (index.ts wxAdmin): fetch it now, put a fixture timeline in, or
    *   say how it is.
    */
@@ -120,6 +168,10 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       // the real weather, the room's (index.ts wxAdmin): a fetch now, a fixture timeline, or how it is
       case 'wx':
         return this.env.ROOM.get(this.env.ROOM.idFromName('island')).wxAdmin(o);
+      case 'backup': {
+        const r = await this.archive((await storage.get<ArchiveState>(ARCHIVE)) ?? NO_STATE, true);
+        return { ...r, ok: r.ok, state: await storage.get<ArchiveState>(ARCHIVE) };
+      }
       case 'counts':
         return { ok: true, counts: this.core.counts(), rev: this.core.rev(), newest: this.core.newestAt(), schema_v: this.core.schemaV() };
       case 'bookmark': {

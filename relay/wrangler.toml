@@ -19,15 +19,22 @@ WX_LON = "139.75"
 # `/stt` (src/sttRoute.ts, docs/kikimimi-mic.md §3.5): "1" turns it off (503); a role's calls a UTC day (then 429)
 STT_OFF = "0"
 STT_DAY_MAX = "300"
+# The record's daily backup (src/archive.ts, docs/ops/runbook.md#6-backups): the private archive repo, its release, and
+# the age recipient (the public key: the secret one never leaves the Mac). The token is a secret: `npx wrangler secret
+# put ARCHIVE_TOKEN` (a fine-grained token, that repo only, Contents read/write); unset, no backup ("no_token").
+ARCHIVE_REPO = "huangwaylon/fitness-archive"
+ARCHIVE_RELEASE = "dumps"
+ARCHIVE_RECIPIENT = "age18lxeem3mkp978qr7pm7r5sdd6qktv5z6rt2qfmjm8p7weufcypcqxsj6vu"
 
 # Workers AI for `/stt` (whisper-large-v3-turbo): the audio for the request only, nothing kept. No secret.
 [ai]
 binding = "AI"
 
 # At :15 and :45: the real weather when it's due (2026-11-10: every 15 minutes woke the room 96 times a day, half of
-# them with nothing due). 19:15 UTC (04:15 Tokyo) is the compaction's tick, gated off (COMPACT_CRON).
+# them with nothing due). 19:15 UTC (04:15 Tokyo) is the compaction's tick, gated off (COMPACT_CRON). 18:00 UTC (03:00
+# Tokyo): the record's backup (src/archive.ts ARCHIVE_CRON), nothing else.
 [triggers]
-crons = ["15,45 * * * *"]
+crons = ["15,45 * * * *", "0 18 * * *"]
 
 [[durable_objects.bindings]]
 name = "ROOM"
@@ -90,6 +97,10 @@ WX_LAT = "35.69"
 WX_LON = "139.75"
 STT_OFF = "0"
 STT_DAY_MAX = "300"
+# its backup only by hand (`record.ts backup --test`), into its own release
+ARCHIVE_REPO = "huangwaylon/fitness-archive"
+ARCHIVE_RELEASE = "dumps-test"
+ARCHIVE_RECIPIENT = "age18lxeem3mkp978qr7pm7r5sdd6qktv5z6rt2qfmjm8p7weufcypcqxsj6vu"
 
 [env.test.ai]
 binding = "AI"

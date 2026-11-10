@@ -8,6 +8,7 @@ import { SIG_HEADER, TIME_HEADER, verifyNotify } from './notify.ts';
 import { HELLO_MS, RoomCore, SILENT_MS, type Acked, type DayIndex, type Held, type Kept, type Meta, type Music } from './room.ts';
 import { IslandStore } from './storeObject.ts';
 import { isCompactTick } from './store.ts';
+import { ARCHIVE_CRON } from './archive.ts';
 import { IslandLog } from './logObject.ts';
 import { adminRoute, apiRoute } from './storeRoute.ts';
 import { logHealthRoute, logRoute, relaySink } from './logRoute.ts';
@@ -45,6 +46,12 @@ export interface Env {
   AI?: SttAi;
   STT_OFF?: string;
   STT_DAY_MAX?: string;
+  /** The daily backup (archive.ts): the private repo (`owner/name`), its release's tag, the age recipient (public), and
+   *  the GitHub token (a secret: a fine-grained token, that repo's Contents read/write). No token: no backup. */
+  ARCHIVE_REPO?: string;
+  ARCHIVE_RELEASE?: string;
+  ARCHIVE_RECIPIENT?: string;
+  ARCHIVE_TOKEN?: string;
 }
 
 /** What `/health` and the room's weather ops say of the real weather (weather.ts wxHealth). */
@@ -285,11 +292,23 @@ export class IslandRoom extends DurableObject<Env> {
 type WxTick = { ok: boolean; fetched: boolean; fail?: string; sent?: boolean; heard: number; health: WxHealth };
 
 export default {
-  /** At :15 and :45: the real weather when it's due (IslandRoom weatherTick); once a day, at 04:15 Tokyo (just after a
+  /** At 03:00 Tokyo (ARCHIVE_CRON): the record's backup only. At :15 and :45: the real weather when it's due
+   *  (IslandRoom weatherTick); once a day, at 04:15 Tokyo (just after a
    *  Wednesday's week lock), the record's compaction (store.ts compact) when COMPACT_CRON is `1`. */
   async scheduled(ev: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
     const t0 = Date.now();
     const log = sinkOf(env, ctx);
+    // 03:00 Tokyo: the record's backup, on its own alarm (archive.ts; storeObject.ts archiveKick); nothing else
+    if (ev.cron === ARCHIVE_CRON) {
+      ctx.waitUntil(env.STORE.get(env.STORE.idFromName('record')).archiveKick().then(
+        (r) => console.log('backup-kick', r.due),
+        (e) => {
+          console.warn('backup-kick-fail', errName(e));
+          log([{ e: 'do.error', l: 3, d: { where: 'backup', name: errName(e) } }]);
+        }
+      ));
+      return;
+    }
     if (env.COMPACT_CRON === '1' && isCompactTick(ev.scheduledTime)) {
       ctx.waitUntil(env.STORE.get(env.STORE.idFromName('record')).compactTick().then(
         (r) => console.log('compact', JSON.stringify(r)),

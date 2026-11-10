@@ -12,6 +12,8 @@
 //                       the record's compaction now: it DELETES Health history rows (the locked weeks' superseded
 //                       values; the user's rule is to keep them all: dump first). Refused without the flag. `rev`: a
 //                       new epoch after it
+//   backup              the daily backup now (src/archive.ts: dumped, encrypted, uploaded by the relay; it replaces
+//                       today's), its outcome (--test: into the release dumps-test)
 //   load <file>         a dump into the record (its rows by the record's rules, in chunks; what it has is skipped)
 //   held [A|B]          the values an ingest held back (a past day's 0 over a value above it), never served
 //   promote <person> <date> <metric> [value]   a held value made a row of the day's history (its latest now)
@@ -69,6 +71,7 @@ const [cmd, arg] = args;
 switch (cmd) {
   case 'counts':
   case 'rev':
+  case 'backup':
     console.log(JSON.stringify(await signed({ op: cmd })));
     break;
   case 'bookmark':
@@ -102,6 +105,6 @@ switch (cmd) {
     await load((JSON.parse(readFileSync(arg, 'utf8')) as { rows: Record<string, unknown[][]> }).rows);
     break;
   default:
-    console.error('commands: counts | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | held [person] | promote <person> <date> <metric> [value]  [--test]');
+    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | held [person] | promote <person> <date> <metric> [value]  [--test]');
     process.exit(1);
 }

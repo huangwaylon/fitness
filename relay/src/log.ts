@@ -346,12 +346,16 @@ export class LogCore {
    * The log's health (the signed `/health/log`, the alert): the last hour's and 6 hours' errors and warnings, the
    * relay's `unavailable` answers, today's caps (and which filled), the phones' events in 24 h, the oldest event's age.
    */
-  stats(): Record<string, number | boolean | string[]> {
+  stats(): Record<string, number | boolean | string | string[]> {
     const now = this.io.now();
     this.today();
     this.tally();
     const count = (sinceMs: number, cond: string) => Number(this.sql.exec<{ n: number }>(`SELECT count(*) AS n FROM log WHERE id >= ? AND ${cond}`, sinceMs * 1000).toArray()[0]?.n ?? 0);
     const oldest = Number(this.sql.exec<{ m: number | null }>('SELECT min(id) AS m FROM log').toArray()[0]?.m ?? 0);
+    // the record's last backup (archive.ts, `cron.backup`): hours since the last good one (-1: none in the log's 30
+    // days) and how the last run ended
+    const good = Number(this.sql.exec<{ m: number | null }>("SELECT max(id) AS m FROM log WHERE ev = 'cron.backup' AND d LIKE '%\"ok\":true%'").toArray()[0]?.m ?? 0);
+    const last = this.sql.exec<{ d: string }>("SELECT d FROM log WHERE ev = 'cron.backup' ORDER BY id DESC LIMIT 1").toArray()[0];
     const capped = [...this.caps.keys()].filter((k) => k.startsWith('capped:')).map((k) => k.slice(7));
     return {
       ok: true,
@@ -368,6 +372,8 @@ export class LogCore {
       rowsRoom: this.rw.room,
       rowsPct: Math.round(((this.rw.log + this.rw.store + this.rw.room) / ROWS_DAY) * 100),
       capped,
+      backupH: good ? Math.round((now - good / 1000) / 360_000) / 10 : -1,
+      backupSt: last ? String((JSON.parse(last.d) as { st?: unknown }).st ?? '') : 'none',
       oldestDays: oldest ? Math.round(((now - oldest / 1000) / DAY) * 10) / 10 : 0
     };
   }
