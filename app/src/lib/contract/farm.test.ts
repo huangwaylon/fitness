@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { emptyFarm, FARM, farmFromJson, farmJson, farmOf, farmRefusal, farmStep, plotOf, stageOf, yieldOf, type FarmData, type Plot } from './farm.ts';
+import { daysLeft, emptyFarm, FARM, farmFromJson, farmJson, farmOf, farmRefusal, farmStep, plotOf, stageOf, yieldOf, type FarmData, type Plot } from './farm.ts';
 import { gameWet, wxWetDays } from './wet.ts';
 import { dayWeather } from '../components/island/weather.ts';
 import { seeded } from '../random.ts';
@@ -15,6 +15,7 @@ describe('the fields (contract/farm.ts)', () => {
     farmStep(f, 'A', { d: D, ops: [{ o: 'plant', p: P, c: 'tomato', src: 'start' }] }, judge());
     const pl = f.plots.get(P)!;
     expect([D, D1, D2, D3, '2026-11-20'].map((d) => stageOf(pl, d))).toEqual([0, 1, 2, 3, 3]);
+    expect([D, D1, D2, D3, '2026-11-20'].map((d) => daysLeft(pl, d))).toEqual([3, 2, 1, 0, 0]);
     farmStep(f, 'A', { d: D3, ops: [{ o: 'harvest', p: P, n: 1 }] }, judge());
     const again = f.plots.get(P)!;
     expect(again.from).toBe('2026-11-10');

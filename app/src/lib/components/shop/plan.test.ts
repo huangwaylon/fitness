@@ -4,7 +4,7 @@ import { stockOf } from '#lib/contract/stock.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { footprint, ITEMS } from '../tent/items.ts';
 import { isWallItem } from '../tent/grid.ts';
-import { COUNTER_FRONT, DOOR_IN, atCounter, RECT, TWINS, WALL_ZONE, ZONES, blocked, display, side, standable, walkPath } from './plan.ts';
+import { COUNTER_FRONT, DOOR_IN, SIGN, TWINS_BOX, atCounter, corners, inHull, RECT, TWINS, WALL_ZONE, ZONES, blocked, display, side, standable, walkPath } from './plan.ts';
 
 const days = Array.from({ length: 30 }, (_, i) => addDays('2026-11-01', i));
 /** A shown piece's box on its zone's top (model units: x0, x1, z0, z1) and the zone it's in. */
@@ -126,5 +126,19 @@ describe('shop plan: at the counter (the twins’ hello)', () => {
     expect(atCounter([DOOR_IN[0] + 8, DOOR_IN[1] - 12])).toBe(false);
     expect(atCounter([0, 10])).toBe(false);
     expect(atCounter([-40, 12])).toBe(false);
+  });
+});
+
+describe('shop plan: where a tap talks to the twins', () => {
+  it('their box is over the counter corner one never walks on, the twins inside it; the floor in front walks', () => {
+    const [x0, x1, , , z0, z1] = TWINS_BOX, b = blocked([]);
+    for (let x = x0; x <= x1; x += 2) for (let z = z0; z <= z1; z += 2) expect(standable(b, [x, z]), `${x},${z}`).toBe(false);
+    for (const t of Object.values(TWINS)) expect(t[0] > x0 && t[0] < x1 && t[1] > z0 && t[1] < z1).toBe(true);
+    expect(standable(b, COUNTER_FRONT)).toBe(true);
+    expect(standable(b, [SIGN[0], SIGN[2] - 4])).toBe(true);
+  });
+  it('a point is in the hull of a box’s corners as projected, or not', () => {
+    const sq = corners([0, 10, 0, 10, 0, 1]).map(([x, y]) => [x, y] as const);
+    expect([inHull(sq, 5, 5), inHull(sq, 0, 0), inHull(sq, 11, 5), inHull(sq, 5, -1)]).toEqual([true, true, false, false]);
   });
 });

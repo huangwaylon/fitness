@@ -26,6 +26,32 @@ const INNER_X = 22.5, CORNER_Z = 5;
 /** Whether one stands at the counter: in the counter corner, past the shop part's right wall (the twins greet one
  *  there, not at the door). */
 export const atCounter = (p: Pt): boolean => p[0] > INNER_X + 4 && p[1] > CORNER_Z;
+/** Where a tap talks to the twins (model units: x0, x1, y0, y1, z0, z1): the counter's top and their bodies over it
+ *  (the counter corner past the counter is never walked on), never the floor in front of it, which walks. */
+export const TWINS_BOX = [45, 66, 7, 19, 12, 42] as const;
+/** The sign by the door (its foot on the floor, model units): 「かう・うるは カウンターで」, a tap their choice box. */
+export const SIGN: readonly [number, number, number] = [4, 0, 41];
+
+/** A box's eight corners (x0, x1, y0, y1, z0, z1). */
+export const corners = (b: readonly number[]): [number, number, number][] =>
+  [0, 1].flatMap((i) => [2, 3].flatMap((j) => [4, 5].map((k) => [b[i], b[j], b[k]] as [number, number, number])));
+/** Whether (x, y) is inside the convex hull of `pts` (screen px). */
+export function inHull(pts: readonly (readonly [number, number])[], x: number, y: number): boolean {
+  // (Andrew's monotone chain, then the point left of every edge)
+  const p = [...pts].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const cross = (o: readonly number[], a: readonly number[], b: readonly number[]) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const half = (list: typeof p) => {
+    const h: (typeof p)[number][] = [];
+    for (const q of list) {
+      while (h.length >= 2 && cross(h[h.length - 2], h[h.length - 1], q) <= 0) h.pop();
+      h.push(q);
+    }
+    return h.slice(0, -1);
+  };
+  const hull = [...half(p), ...half([...p].reverse())];
+  if (hull.length < 3) return false;
+  return hull.every((a, i) => cross(a, hull[(i + 1) % hull.length], [x, y]) >= 0);
+}
 
 /** Which wall a point of the model (over the floor) belongs to: 0 the back (the stage's, and the counter corner's),
  *  1 the left, 2 the right (the corner's, and the shop part's own, standing in), or null (the floor and what stands

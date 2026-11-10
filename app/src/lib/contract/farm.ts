@@ -67,10 +67,13 @@ export function farmOf(d: Record<string, unknown>): FarmData | null {
 /** A plant: whose, which crop, the day it is (or was) ripe from, and `r` once harvested (growing back). */
 export interface Plot { who: Who; c: Crop; from: LocalDate; r?: true }
 
+/** Days till a plant is ripe on `date` (0: ripe). */
+export const daysLeft = (plot: Plot, date: LocalDate): number => Math.max(0, dayNum(plot.from) - dayNum(date));
+
 /** A plant's stage on `date`: 0 the day it was planted, 1, 2, 3 ripe; one growing back after a harvest 2 till ripe. */
 export function stageOf(plot: Plot, date: LocalDate): 0 | 1 | 2 | 3 {
-  const left = dayNum(plot.from) - dayNum(date);
-  if (left <= 0) return 3;
+  const left = daysLeft(plot, date);
+  if (!left) return 3;
   return plot.r ? 2 : left >= 3 ? 0 : ((3 - left) as 1 | 2);
 }
 

@@ -45,6 +45,8 @@ html[lang="ja"] .bubble { word-break: keep-all; }
    keeps the world's breaking, at its spaces only, balanced so no line is left with one word */
 html[lang="ja"] .kana { word-break: keep-all; text-wrap: pretty; }
 h1, h2, h3 { font-family: var(--font-ui); font-weight: 700; margin: 0; line-height: 1.2; font-size: var(--fs-title); }
+/* a paragraph's last line never a lone word or character (「…わかりま / す」, 「ひとりでも / OK」) */
+p { text-wrap: pretty; }
 button { font: inherit; color: inherit; }
 button, [role="button"], [role="switch"], a {
   touch-action: manipulation; -webkit-tap-highlight-color: transparent;

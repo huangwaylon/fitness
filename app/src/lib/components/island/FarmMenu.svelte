@@ -1,8 +1,8 @@
 <script lang="ts">
   // The farm menu (docs/farming.md "Playing"): a round cream disc at the island's bottom left, the say button's
   // mirror, NH's seed bag in it. A tap unfolds three cream pills upward, left-aligned (the disc turns yuzu):
-  // 「たね」 with what I plant next and how many (the seed picker: each start and vegetable I hold, kept on this
-  // phone), 「スコップ」 (armed for one dig, yuzu while armed) and 「はたけ」 (the 畑 sheet). It folds as the leaf menu does:
+  // 「たね」 with what I plant next and how many (the seed picker: each start and vegetable I hold by its crop's name, kept
+  // on this phone; a pick said by my villager and worn on the disc), 「スコップ」 (armed for one dig, yuzu while armed) and 「はたけ」 (the 畑 sheet). It folds as the leaf menu does:
   // a second tap, a tap anywhere else, Esc, a pick, a sheet opening. IslandScene places and hides it with the say button.
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { CROPS, cropKey, startKey, type Crop, type FarmSrc } from '#lib/contract/farm.ts';
@@ -17,6 +17,9 @@
   import { farmSheet } from '../farm/open.svelte.ts';
   import { loadNames } from './catchLine.ts';
 
+  /** My villager's word on the island (IslandScene's showSay): what I picked. */
+  let { mutter }: { mutter?: (text: string) => void } = $props();
+
   let open = $state(false);
   let root: HTMLElement | undefined = $state();
   let toggleEl: HTMLButtonElement | undefined = $state();
@@ -28,11 +31,12 @@
   );
   const picked = $derived(seed.pick ? { ...seed.pick, n: pocket.get(seed.pick.src === 'start' ? startKey(seed.pick.c) : cropKey(seed.pick.c)) ?? 0 } : null);
   const art = (c: Crop, src: FarmSrc) => `finds/${src === 'start' ? `${c}-start` : c}`;
-  const name = (c: Crop, src: FarmSrc) => t(`beach.name.${src === 'start' ? `${c}-start` : c}`);
-
-  // the crops' names (the catch catalog, out of the island's first load) once the menu or the picker opens
+  /** The crops' names: the catch catalog's, loaded (out of the island's first load) once the menu or the picker opens,
+   *  read again once in (its merge isn't reactive). */
+  let named = $state(false);
+  const name = (c: Crop, src: FarmSrc) => (void named, t(`beach.name.${src === 'start' ? `${c}-start` : c}`));
   $effect(() => {
-    if (open || farmUi.picker) void loadNames();
+    if (open || farmUi.picker) void loadNames().then(() => (named = true), () => {});
   });
   // a sheet opening folds it (the picker too)
   $effect(() => {
@@ -73,11 +77,12 @@
         <div class="grid">
           {#each seeds as s (s.src + s.c)}
             <button type="button" class="cell" data-sfx="tick" class:on={seed.pick?.c === s.c && seed.pick?.src === s.src} data-farm-pick="{s.src}:{s.c}" aria-label={name(s.c, s.src)}
-              onclick={() => { pickSeed({ c: s.c, src: s.src }); farmUi.picker = false; }}>
+              onclick={() => { pickSeed({ c: s.c, src: s.src }); farmUi.picker = false; mutter?.(t('world.farm.picked', { name: name(s.c, s.src) })); }}>
               <OfficialArt key={art(s.c, s.src)} size={34} />
               <!-- (a start's seedling is NH's one for all six: its crop's own icon on it) -->
               {#if s.src === 'start'}<span class="tag"><OfficialArt key={art(s.c, 'crop')} size={18} /></span>{/if}
               <b class="n">{s.n}</b>
+              <span class="cn" aria-hidden="true">{name(s.c, 'crop')}</span>
             </button>
           {/each}
         </div>
@@ -103,7 +108,7 @@
   </div>
   <button type="button" class="toggle" class:armed={farmUi.shovel} bind:this={toggleEl} aria-label={t('world.farm.open')} aria-expanded={open} data-farm-open
     data-sfx={open ? 'toggle-off' : 'toggle-on'} onclick={() => { open = !open; farmUi.picker = false; }}>
-    <span class="bag"><OfficialArt key={farmUi.shovel ? 'finds/shovel' : 'finds/seed-bag'} size={24} eager /></span>
+    <span class="bag"><OfficialArt key={farmUi.shovel ? 'finds/shovel' : picked?.n ? art(picked.c, picked.src) : 'finds/seed-bag'} size={24} eager /></span>
   </button>
 </div>
 
@@ -149,12 +154,14 @@
     box-shadow: 0 var(--lip-h) 0 var(--c-lip), 0 8px 18px rgb(60 40 20 / .18);
   }
   .ph { margin: 0 0 8px; font: 700 var(--fs-s)/1.4 var(--font-ui); word-break: keep-all; }
-  .grid { display: grid; grid-template-columns: repeat(4, var(--hit, 44px)); gap: 8px; }
+    /* (each cell its crop's name under the icon: the seedling is NH's one for all six) */
+  .grid { display: grid; grid-template-columns: repeat(4, 58px); gap: 8px; }
   .cell {
-    position: relative; width: var(--hit, 44px); height: var(--hit, 44px); display: grid; place-items: center; margin: 0; padding: 0;
+    position: relative; width: 58px; height: 60px; display: grid; place-items: center; align-content: center; gap: 2px; margin: 0; padding: 4px 0 3px;
     appearance: none; border: 0; border-radius: 12px; background: rgb(255 255 255 / .6); cursor: pointer; line-height: 0;
   }
   .cell.on { background: var(--c-yuzu); }
-  .cell .n { position: absolute; right: 2px; bottom: 2px; }
-  .tag { position: absolute; left: 1px; top: 1px; line-height: 0; }
+  .cell .n { position: absolute; right: 4px; top: 4px; }
+  .cn { font: 700 var(--fs-xs)/1.1 var(--font-ui); white-space: nowrap; }
+  .tag { position: absolute; left: 4px; top: 3px; line-height: 0; }
 </style>

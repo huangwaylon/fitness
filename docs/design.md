@@ -1067,18 +1067,20 @@ furniture for the rooms. Each person's own pocket and かいがら, the guest's 
   for an older app, which drops a shop walk. Out of the door, or gone quiet past the presence's grace, they're gone.
 - **The finger** (the rooms' rule): a floor tap walks (round the stage, the table and the counter); a tap on a piece
   picks it in place (my villager turns to it, a card: its icon, name, price and 買う, or 持っている); a tap on the
-  twins is NH's choice box (うりたい · しなものを みたい · なんでもない), the only way to the counter's list over the room:
+  twins (their bodies and the counter's top: `TWINS_BOX`, never the floor before it), on their balloon or on the sign by
+  the door (「かう・うるは カウンターで」) is NH's choice box (うりたい · しなものを みたい · なんでもない), the only way to the counter's list over the room:
   the old panel as a sheet (its ✕ back to the room; its head, ✕ and tabs pinned while the list scrolls), where 全部
   still buys every piece I don't have at once. Their line is a small balloon by まめきち (at the screen's edge, its tail
-  toward him, when he's out of view): いらっしゃいませ once I first reach the counter (not at the door), gone after 4 s
-  or at a tap on it; it takes no other tap meant for the room (2026-11-10).
+  toward him, when he's out of view): いらっしゃいませ once I first reach the counter (not at the door), gone after 4 s;
+  it takes no other tap meant for the room. In うる they ask 「なにを うってくれるだも？」. A tile's name breaks only
+  between its words (`shop/words.ts`).
 - **うる** (sell): my pocket, everything I caught, found or picked up less what I sold, in sections (虫, 魚, 海の幸,
   かいがら, 資源, 果物, 野菜, 化石, その他), dearest first; 野菜 the fields' vegetables and starts
   ([farming.md](farming.md)). A tap picks one more, − one less, ぜんぶ all; the bar says 「3こで 120
   かいがら」 and うる sells. Selling never takes anything out of the ずかん or the museum. A present's furniture or recipe
   never sells, nor a message bottle. An empty pocket opens the shop on かう.
-- **かう** (buy): first 苗, the six crops' starts for the fields (always in stock, 14 each: a tap one more, − one
-  less, their own 買う); then today's stock, 24 pieces of NH furniture a Tokyo day, seeded, less every piece the island had by the
+- **かう** (buy): first 苗, the six crops' starts for the fields (「トマトの苗」…「種芋」, always in stock, 14 each: a tap
+  one more, − one less, their own 買う, all or none); then today's stock, 24 pieces of NH furniture a Tokyo day, seeded, less every piece the island had by the
   day's start (the ずかん's furniture finds and anyone's buys), so both phones agree all day. Fewer when the island has
   nearly everything; none, 売り切れ. A piece I own says もってる. The bar's 全部 picks every piece I don't have yet
   (「ぜんぶ 23こで 5,026 かいがらだも！」) and 買う buys them at once (one undo); short of the total, the twins say by how

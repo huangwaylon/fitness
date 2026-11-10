@@ -6,9 +6,8 @@
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { FARM, cropKey, plantsOf, stageOf, yieldOf, type Plot } from '#lib/contract/farm.ts';
+  import { FARM, cropKey, daysLeft, plantsOf, stageOf, yieldOf, type Plot } from '#lib/contract/farm.ts';
   import { sellPrice } from '#lib/contract/shop.ts';
-  import { dayNum } from '#lib/contract/tokyo.ts';
   import { layoutPlots } from '#lib/layout/field.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
@@ -32,8 +31,7 @@
     return { mine: rows(m.me), others: (['A', 'B', 'G'] as const).filter((w) => w !== m.me).map((w) => ({ who: w, rows: rows(w) })).filter((o) => o.rows.length), empty, n: plantsOf(farm, m.me) };
   });
   function row(p: string, pl: Plot, watered: (p: string, d: string) => boolean) {
-    const left = Math.max(0, dayNum(pl.from) - dayNum(date));
-    return { p, c: pl.c, left, ripe: stageOf(pl, date) === 3, wet: watered(p, date), n: yieldOf(p, pl, watered) };
+    return { p, c: pl.c, left: daysLeft(pl, date), ripe: stageOf(pl, date) === 3, wet: watered(p, date), n: yieldOf(p, pl, watered) };
   }
   const ripe = $derived(view?.mine.filter((r) => r.ripe) ?? []);
   const growing = $derived(view?.mine.filter((r) => !r.ripe) ?? []);
@@ -47,7 +45,7 @@
   <div class="fs-body" data-farm-sheet>
     {#if view}
       <section class="card sum">
-        <p data-farm-today>{t('farm.today', { n: ripe.length, max: harvestN, shells: formatNum(harvestV) })}</p>
+        <p data-farm-today>{ripe.length ? t('farm.today', { n: ripe.length, max: harvestN, shells: formatNum(harvestV) }) : t('farm.noneToday')}</p>
         <p class="cap" data-farm-count>{t('farm.count', { n: view.n, cap: FARM.cap })}</p>
       </section>
       {#each [{ k: 'ripe', rows: ripe }, { k: 'growing', rows: growing }] as g (g.k)}

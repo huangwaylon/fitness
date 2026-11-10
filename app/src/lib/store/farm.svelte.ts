@@ -4,8 +4,9 @@
 // (`buy_starts`, with the shop's 5 s 取り消す); what I plant next (たね: kept on this phone).
 import { week } from './week.svelte.ts';
 import type { SendResult } from './backend.ts';
-import { UNDO_MS } from './actions.ts';
-import { FARM, isFarmCrop, type Crop, type FarmOp, type FarmSrc } from '#lib/contract/farm.ts';
+import { UNDO_MS, together } from './actions.ts';
+import { newId } from '#lib/sync/queue.ts';
+import { CROPS, FARM, isFarmCrop, type Crop, type FarmOp, type FarmSrc } from '#lib/contract/farm.ts';
 import { localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import type { LocalDate } from '#lib/types.ts';
 
@@ -51,11 +52,14 @@ export function dig(d: LocalDate, p: string): { ok: boolean; undo?: () => boolea
   };
 }
 
-/** Starts from the shop's かう: `n` of `crop` at FARM.startBuy each (the record checks the cover). */
-export function buyStarts(crop: Crop, n: number): SendResult & { v?: number } {
-  if (!week.model || !Number.isInteger(n) || n < 1 || n > 99) return { ok: false };
-  const v = n * FARM.startBuy;
-  return { ...week.send('buy_starts', { crop, n, v }, { holdMs: UNDO_MS }), v };
+/** Starts from the shop's かう: `n` of each crop at FARM.startBuy each (the record checks the cover): one `buy_starts` a
+ *  crop, all in one group (kept all or none, relay store.ts group, as the shop's ぜんぶ), one undo. */
+export function buyStarts(picks: Partial<Record<Crop, number>>): SendResult & { v?: number } {
+  const list = CROPS.flatMap((c) => (picks[c] ? [[c, picks[c]] as const] : []));
+  if (!week.model || !list.length || list.some(([, n]) => !Number.isInteger(n) || n < 1 || n > 99)) return { ok: false };
+  const group = newId();
+  const r = together(list.map(([crop, n]) => week.send('buy_starts', { crop, n, v: n * FARM.startBuy }, { holdMs: UNDO_MS, group })));
+  return { ...r, v: list.reduce((a, [, n]) => a + n * FARM.startBuy, 0) };
 }
 
 // ---- what I plant next (たね), this phone's

@@ -5,8 +5,7 @@
 //   3. a plant (anyone's) not watered today: water it and its neighbours;
 //   4. my field's empty plot: plant the picked crop (none picked: the picker; at the cap or none left: say so);
 //   5. else a word: whose plant and how long, or watered already, or whose field.
-import { FARM, seedKey, stageOf, yieldOf, type Crop, type FarmSrc, type Plot, type Watered } from '#lib/contract/farm.ts';
-import { dayNum } from '#lib/contract/tokyo.ts';
+import { FARM, daysLeft, seedKey, stageOf, yieldOf, type Crop, type FarmSrc, type Plot, type Watered } from '#lib/contract/farm.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
 
 export type FarmTap =
@@ -48,5 +47,5 @@ export function farmTap(i: FarmTapIn): FarmTap {
     return { a: 'plant', c: i.seed.c, src: i.seed.src };
   }
   if (!pl) return { a: 'about', who: i.plot.who };
-  return { a: 'about', who: pl.who, c: pl.c, left: Math.max(0, dayNum(pl.from) - dayNum(i.date)), watered: i.watered(i.plot.p, i.date) };
+  return { a: 'about', who: pl.who, c: pl.c, left: daysLeft(pl, i.date), watered: i.watered(i.plot.p, i.date) };
 }

@@ -65,7 +65,7 @@ levers, if the live numbers drift (`npm run logs`, the sells): `FARM.regrowDays`
 ## Playing
 
 - **The farm button** (bottom left, the say button's mirror, NH's seed bag): たね (pick what to plant: each start and
-  vegetable I have, kept on this phone), スコップ (armed for one dig, 取り消す 5 s) and はたけ (the 畑 sheet). Only on
+  vegetable I have by its crop's name, kept on this phone; my villager says 「トマトの なえを もった」 and the disc wears it), スコップ (armed for one dig, 取り消す 5 s) and はたけ (the 畑 sheet). Only on
   the island while it has a field, hidden with the say button.
 - **A tap on a plot** (its tile under the finger, before a weed's or a find's finger slack) acts in place (never a
   walk; my villager turns to it), in order: the shovel armed on my plant
@@ -75,7 +75,7 @@ levers, if the live numbers drift (`npm run logs`, the sells): `FARM.regrowDays`
 - **Watered soil** is dark for the rest of the day (the soil's instance colour); a ripe plant shows its yield's model.
   The partner's watering shows at once (the shared world's day, the flowers' own); their plant or harvest on their
   next sync (a few seconds: a batch waits 2 s for the next tap).
-- **The 畑 sheet:** my plants (収穫できる, 育成中 with days left, 空き区画), today's harvest and its かいがら, 「12/40株」,
+- **The 畑 sheet:** my plants (収穫できる, 育成中 with days left, 空き区画), today's harvest and its かいがら (none: 「今日収穫できるものはありません」), 「12/40株」,
   the partner's and the guest's plants folded, the rule line and 「苗はタヌキ商店で買えます」.
 - **The shop:** うる's 野菜 section (vegetables and starts); かう's 苗, the six starts above today's stock, a tap one
   more and − one less, 「5個で70かいがら」 and their own 買う (the shop's 取り消す 5 s).

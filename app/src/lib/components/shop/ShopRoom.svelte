@@ -5,11 +5,13 @@
   // (NH's model, static/room/villagers3d/timmy.glb: one for the two), today's stock shown on the stage's tiers, the
   // blue table, by the left wall and on the back wall (plan.ts display: the same on every phone).
   // The finger is the rooms' (rooms/gesture.ts): a tap on the floor walks my villager there; a tap on a piece picks it
-  // in place (my villager turns to it, a card with its name, price and 買う: stock.ts buyPiece); a tap on the twins is
-  // NH's choice box, the only way to the lists (うりたい: the うる list; しなもの: the day's list, its 全部 buying every
+  // in place (my villager turns to it, a card with its name, price and 買う: stock.ts buyPiece); a tap on the twins (their
+  // model, or their bodies and the counter's top: plan.ts TWINS_BOX, never the floor before it), on their balloon or on
+  // the sign by the door (「かう・うるは カウンターで」) is NH's choice box, the only way to the lists (うりたい: the うる list;
+  // しなもの: the day's list, its 全部 buying every
   // piece I don't have at once: stock.ts buyAll); a drag turns the camera, a pinch zooms; the doormat or ‹ 島へ goes out.
   // The twins say いらっしゃいませ once I reach the counter (plan.ts atCounter), not at the door; their balloon goes after
-  // a few seconds or at a tap on it, and never takes a tap meant for the room.
+  // a few seconds, and never takes a tap meant for the room.
   // The two lists are the old counter panel, now a sheet over the room (its head and tabs pinned, the list scrolling
   // under them): うる (my pocket, everything I caught, found or
   // picked up less what I sold: model/shop.ts; by its sections, shop/pocket.ts) and かう (the day's stock, never a piece
@@ -44,9 +46,10 @@
   import { allOf, buyAll, buyPiece, buyRefusal, stockAt } from './stock.ts';
   import { shopView } from '#lib/model/shop.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { sell, together, undoBanner } from '#lib/store/actions.ts';
+  import { sell, undoBanner } from '#lib/store/actions.ts';
   import { buyStarts } from '#lib/store/farm.svelte.ts';
-  import { CROPS, FARM, type Crop } from '#lib/contract/farm.ts';
+  import { CROPS, FARM, isFarmCrop, type Crop } from '#lib/contract/farm.ts';
+  import { isLong, words } from './words.ts';
   import { layout as islandLayout } from '#lib/store/layout.svelte.ts';
   import { leaveBy } from '../island/doorOut.ts';
   import { hook } from '../island/devHooks.ts';
@@ -63,7 +66,7 @@
   import '#lib/i18n/catch.ts';
   import { loadTentNames } from '#lib/i18n/tent.ts';
   import { staticUrl } from '#lib/staticUrl.ts';
-  import { COUNTER_FRONT, DOOR, DOOR_IN, FRONT, RECT, TWINS, WALL_H, atCounter, blocked, display, side, standable, walkPath, type Shown } from './plan.ts';
+  import { COUNTER_FRONT, DOOR, DOOR_IN, FRONT, RECT, SIGN, TWINS, TWINS_BOX, WALL_H, atCounter, blocked, corners, display, inHull, side, standable, walkPath, type Shown } from './plan.ts';
   import M from './models.json' with { type: 'json' };
   /** The room's default view: nearer than the whole room (too wide for a phone held upright), its middle following my
    *  villager from the stage's left to the counter. */
@@ -126,8 +129,12 @@
   const inside = (on: boolean) => relay?.send({ kind: 'tent', in: on, sc: 's' });
   const relayNow = () => relay?.serverNow() ?? Date.now();
 
-  /** A tally key's name and icon (the pocket's table: the ずかん's names, the official icon). */
-  const speciesName = (k: string) => bare(t(pocketItem(k)?.name ?? k));
+  /** A tally key's name (the pocket's table: the ずかん's names; a start's the list's own kanji, 「トマトの苗」). */
+  const speciesName = (k: string) => {
+    const c = /^goods:(\w+)-start$/.exec(k)?.[1];
+    return c && isFarmCrop(c) ? startName(c) : bare(t(pocketItem(k)?.name ?? k));
+  };
+  const startName = (c: Crop) => t(`farm.start.${c}`);
   /** The pieces' names (NH's, i18n/tent.ts: loaded with the screen, the language on screen). */
   let names = $state(0);
   $effect(() => void loadTentNames(i18n.locale).then(() => names++, () => {}));
@@ -152,12 +159,12 @@
     picks = { ...picks, [k]: n >= max ? 0 : n + 1 };
     cue('tick');
     if (pickedN) speak('offer', { v: formatNum(pickedV) });
-    else speak('hello');
+    else speak('sell');
   }
   function less(k: string) {
     picks = { ...picks, [k]: Math.max(0, (picks[k] ?? 0) - 1) };
     if (pickedN) speak('offer', { v: formatNum(pickedV) });
-    else speak('hello');
+    else speak('sell');
   }
   function all() {
     picks = Object.fromEntries(pocket.map(({ k, n }) => [k, n]));
@@ -220,7 +227,8 @@
     eng?.bump(`s-${bought}`);
     speak('thanks');
   }
-  // ---- かう's なえ (docs/farming.md): the six starts, always in stock, a tap one more, − one less; 買う buys them at once
+  // ---- かう's 苗 (docs/farming.md): the six starts, always in stock, a tap one more, − one less; 買う buys them at once,
+  // all or none (one group: store/farm.svelte.ts buyStarts)
   let starts = $state<Partial<Record<Crop, number>>>({});
   const startsN = $derived(CROPS.reduce((a, c) => a + (starts[c] ?? 0), 0));
   const startsV = $derived(startsN * FARM.startBuy);
@@ -237,7 +245,7 @@
       speak('short', { name: t('shop.starts') });
       return void cue('boop');
     }
-    const r = together(CROPS.flatMap((c) => (starts[c] ? [buyStarts(c, starts[c]!)] : [])));
+    const r = buyStarts(starts);
     if (!r.ok) return void cue('boop');
     cue('buy');
     undoBanner(t('shop.boughtStarts', { n: String(startsN), v: formatNum(startsV) }), r);
@@ -275,7 +283,7 @@
     picks = {};
     pick = null;
     every = false;
-    speak(id === 'sell' ? (shop.pocket.size ? 'hello' : 'empty') : 'stock');
+    speak(id === 'sell' ? (shop.pocket.size ? 'sell' : 'empty') : 'stock');
   }
   // an empty pocket (once the record is in): the list opens on かう, nothing to sell
   let opened = false;
@@ -386,6 +394,8 @@
   /** The twins' line by まめきち's head (client px: where the balloon stands, kept on screen, and how far its tail is
    *  off its middle to point at him), followed as the camera moves; null at my villager's eyes with him out of view. */
   let sayAt = $state<{ x: number; y: number; tail: number } | null>(null);
+  /** The sign by the door's foot (client px), null out of view. */
+  let signAt = $state<{ x: number; y: number } | null>(null);
   const SAY_HALF = 110;
   function placeSay() {
     const at = eng?.at(viewer);
@@ -394,6 +404,8 @@
       if (!panel && !asking) speak('hello');
     }
     const h = eng?.headPoint('n:timmy');
+    // the sign by the door, where it stands (none out of view)
+    signAt = eng && eng.inView(SIGN[0], SIGN[1] + 6, SIGN[2]) ? (([x, y]) => ({ x, y }))(eng.client(SIGN[0], SIGN[1], SIGN[2])) : null;
     // (off the view to a side, the balloon stands at that edge, its tail toward him; behind the eyes, none)
     if (!h || !eng || !canvas || (fpv && !eng.inView(h[0], h[1], h[2]))) return void (sayAt = null);
     const [hx, hy] = eng.client(h[0], h[1] + 2, h[2]), r = canvas.getBoundingClientRect();
@@ -450,11 +462,19 @@
     asking = false;
     choose(code, false);
   }
+  /** Whether client px are over the twins' box (their bodies and the counter's top: plan.ts TWINS_BOX) as drawn. */
+  function atTwins(cx: number, cy: number): boolean {
+    if (!eng) return false;
+    const [x0, x1, y0, y1, z0, z1] = TWINS_BOX;
+    if (!eng.inView((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2)) return false;
+    return inHull(corners(TWINS_BOX).map(([x, y, z]) => eng!.client(x, y, z)), cx, cy);
+  }
   function tap(cx: number, cy: number) {
     if (!eng) return;
     const h = eng.hit(cx, cy);
+    // (the twins: their model, or their box where no one, no piece and no floor one walks on is under the finger)
+    if (h?.kind === 'npc' || ((!h || (h.kind === 'floor' && !standable(walls, [h.x, h.z]))) && atTwins(cx, cy))) return twinsTalk();
     if (!h) return void cue('boop');
-    if (h.kind === 'npc') return twinsTalk();
     if (h.kind === 'villager') {
       eng.hop(h.who);
       return void cue('villager-tap');
@@ -632,12 +652,17 @@
   {/if}
 
   {#if !panel}
+    {#if signAt}
+      <!-- the sign by the door: where to buy and sell, a tap the twins' choice box (as a tap on them) -->
+      <button type="button" class="sign" data-shop-sign data-sfx="self" style:left="{signAt.x}px" style:top="{signAt.y}px" onclick={twinsTalk}>{t('shop.sign')}</button>
+    {/if}
     <!-- the twins' line by まめきち in the room (NH's balloon), and their choice box after a tap on them -->
     <div class="say float" class:on={sayShown && !!sayAt} style:left={sayAt ? `${sayAt.x}px` : undefined} style:top={sayAt ? `${sayAt.y}px` : undefined}
       style:--tail={sayAt ? `${sayAt.tail}px` : '0px'}>
-      <!-- (a tap on the line hides it; it goes by itself anyway, so no key needed) -->
+      <!-- (a tap on the line is a tap on them, their choice box; with it up, the line and the box go. It goes by itself
+           anyway, so no key needed) -->
       <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
-      <p role="status" aria-live="polite" data-shop-say={say.k} data-sfx="tick" onclick={hush}>{line}</p>
+      <p role="status" aria-live="polite" data-shop-say={say.k} data-sfx={asking ? 'tick' : 'self'} onclick={() => (asking ? hush() : twinsTalk())}>{line}</p>
       {#if asking}
         <div class="choices" data-shop-choices>
           <button type="button" data-shop-choice="sell" data-sfx="tick" onclick={() => answer('sell')}>{t('shop.choice.sell')}</button>
@@ -651,7 +676,7 @@
       <section class="card sheet-copy" data-shop-card={pick} aria-label={itemName(pick)}>
         <img class="ic" src={iconUrl(pick)} alt="" width="48" height="48" decoding="async" />
         <div class="what">
-          <b class="nm">{itemName(pick)}</b>
+          {@render nm(itemName(pick))}
           {#if cardOwned}<span class="price owned-tag">{t('shop.owned')}</span>
           {:else}<span class="price"><span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={16} /></span>{formatNum(buyPrice(pick) ?? 0)}</span>{/if}
         </div>
@@ -686,7 +711,7 @@
                       <button type="button" class="pickable" data-shop-catch={k} data-n={n} data-picked={c} data-sfx="self"
                         aria-label={t('shop.catchLabel', { name: speciesName(k), n: String(n), v: String(p), c: String(c) })} onclick={() => more(k)}>
                         <span class="ic"><OfficialArt key={it.art} size={46} /></span>
-                        <span class="nm">{speciesName(k)}</span>
+                        {@render nm(speciesName(k))}
                         <span class="price"><span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={14} /></span>{formatNum(p)}</span>
                         <span class="count" aria-hidden="true">{c ? `${c}/${n}` : `×${n}`}</span>
                       </button>
@@ -715,13 +740,13 @@
             {#each CROPS as c (c)}
               {@const n = starts[c] ?? 0}
               <li class="tile" class:on={n > 0}>
-                <button type="button" class="pickable" data-shop-start={c} data-picked={n} data-sfx="self" aria-label={t('shop.startLabel', { name: t(`beach.name.${c}-start`), v: String(FARM.startBuy), c: String(n) })} onclick={() => moreStart(c)}>
+                <button type="button" class="pickable" data-shop-start={c} data-picked={n} data-sfx="self" aria-label={t('shop.startLabel', { name: startName(c), v: String(FARM.startBuy), c: String(n) })} onclick={() => moreStart(c)}>
                   <span class="ic"><OfficialArt key="finds/{c}-start" size={46} /><span class="tag"><OfficialArt key="finds/{c}" size={20} /></span></span>
-                  <span class="nm">{t(`beach.name.${c}-start`)}</span>
+                  {@render nm(startName(c))}
                   <span class="price"><span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={14} /></span>{FARM.startBuy}</span>
                   {#if n}<span class="count" aria-hidden="true">×{n}</span>{/if}
                 </button>
-                {#if n}<button type="button" class="less" data-shop-start-less={c} data-sfx="tick" aria-label={t('shop.less', { name: t(`beach.name.${c}-start`) })} onclick={() => lessStart(c)}>−</button>{/if}
+                {#if n}<button type="button" class="less" data-shop-start-less={c} data-sfx="tick" aria-label={t('shop.less', { name: startName(c) })} onclick={() => lessStart(c)}>−</button>{/if}
               </li>
             {/each}
           </ul>
@@ -758,13 +783,18 @@
   {#if failed}<p class="fail" role="alert">{t('shop.fail')}</p>{/if}
 </main>
 
+<!-- a tile's name: two lines, breaking only between its words (words.ts), smaller with a word too long for a line -->
+{#snippet nm(name: string)}
+  <span class="nm" class:xs={isLong(name, i18n.locale)}>{#each words(name, i18n.locale) as w, i (i)}{#if i}<wbr />{/if}{w}{/each}</span>
+{/snippet}
+
 {#snippet piece(code: string)}
   {@const owned = shop.owned.includes(code)}
   <li class="tile" class:on={pick === code || (every && !owned)} class:owned>
     <button type="button" class="pickable" data-shop-item={code} data-price={buyPrice(code)} data-owned={owned} data-sfx="self" aria-pressed={pick === code}
       aria-label={t(owned ? 'shop.itemOwned' : 'shop.itemLabel', { name: itemName(code), v: formatNum(buyPrice(code) ?? 0) })} onclick={() => choose(code)}>
       <span class="ic"><img src={iconUrl(code)} alt="" width="46" height="46" loading="lazy" decoding="async" /></span>
-      <span class="nm">{itemName(code)}</span>
+      {@render nm(itemName(code))}
       {#if owned}<span class="price owned-tag">{t('shop.owned')}</span>
       {:else}<span class="price"><span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={14} /></span>{formatNum(buyPrice(code) ?? 0)}</span>{/if}
     </button>
@@ -797,6 +827,19 @@
     color: var(--c-ink); background: var(--c-card); box-shadow: var(--sh-obj); -webkit-tap-highlight-color: transparent;
   }
   .reset svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* the sign by the door: a little wooden board on a post, standing on the floor (its foot at its point), the world's
+     spaced kana; at least a finger's size to tap */
+  .sign {
+    position: absolute; z-index: 2; translate: -50% calc(-100% - 12px); appearance: none; border: 0; margin: 0; cursor: pointer;
+    min-height: 36px; padding: 6px 10px; border-radius: 8px; white-space: nowrap; background: #A0703F; color: var(--c-cream);
+    box-shadow: inset 0 0 0 2px #7A512A, 0 3px 0 #6A4524, var(--sh-float); font: 700 var(--fs-s)/1.2 var(--font-ui);
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .sign::before { content: ''; position: absolute; left: 50%; top: 100%; width: 6px; height: 12px; translate: -50% 0; background: #7A512A; }
+  .sign::after { content: ''; position: absolute; inset: -6px -4px -16px; }
+  .sign:active { translate: -50% calc(-100% - 10px); }
+  .sign:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
   /* the twins' balloon: over まめきち's head, its tail down to him, a speech balloon's size; hidden (still there for its
      line) when quiet */
@@ -880,8 +923,10 @@
   .owned .ic { opacity: .55; }
   .ic { width: 46px; height: 46px; display: grid; place-items: center; line-height: 0; }
   .ic img { width: 46px; height: 46px; object-fit: contain; }
-  /* a long name breaks between its kana where it must, balanced (アウトド / アベンチ, not アウトドアベン / チ) */
-  .nm { font: 700 var(--fs-s)/1.2 var(--font-ui); text-align: center; word-break: normal; overflow-wrap: anywhere; text-wrap: balance; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  /* a long name breaks only between its words (its <wbr>s: words.ts), balanced (プラスチックの / ベンチ, not プラスチッ / クの
+     ベンチ); a word longer than the line still breaks where it must */
+  .nm { font: 700 var(--fs-s)/1.2 var(--font-ui); text-align: center; word-break: keep-all; overflow-wrap: anywhere; text-wrap: balance; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .nm.xs { font-size: var(--fs-xs); }
   .card .nm { text-align: left; font-size: var(--fs-body); }
   .price { display: inline-flex; align-items: center; gap: 3px; font: 700 var(--fs-s)/1 var(--font-num); font-variant-numeric: tabular-nums; }
   .card .price { font-size: var(--fs-body); }

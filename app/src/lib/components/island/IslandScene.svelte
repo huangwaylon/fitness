@@ -1155,7 +1155,7 @@
     <div class="say-dock"><SayButton bind:el={sayBtn} open={!!picking} onopen={openPicker} /></div>
     {#if fieldsHere}
       <!-- the farm menu: its mirror at the bottom left (docs/farming.md), while the island has a field -->
-      <div class="farm-dock"><FarmMenu /></div>
+      <div class="farm-dock"><FarmMenu mutter={(text) => showSay('mine', text)} /></div>
     {/if}
   {/if}
   <!-- every catch's plate: a stack at the bottom centre, outside the viewport (the newest at the bottom) -->

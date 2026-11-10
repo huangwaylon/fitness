@@ -30,12 +30,13 @@ const farmRows = (page: Page) => page.evaluate(() => (JSON.parse(localStorage.ge
 
 test('starts bought at the shop’s かう; the farm menu at the bottom left: たね picks them, a tap on my empty plot plants one; the 畑 sheet counts them', async ({ page }) => {
   await seed(page, D, [FIELD, ...POCKET.slice(0, 2)]);
-  // three tomato starts from かう's 苗 (3 × 14)
+  // three tomato starts from かう's 苗 (3 × 14), by the list's own name, kanji
   await page.goto(`shop?demo&date=${D}T12:00`);
   await expect(page.locator('[data-shop]')).toHaveAttribute('data-shells', '200');
   await page.waitForFunction(() => !!(window as unknown as { __shop?: object }).__shop);
   await page.evaluate(() => (window as unknown as { __shop: { talk(): void } }).__shop.talk());
   await page.locator('[data-shop-choice="buy"]').click();
+  await expect(page.locator('[data-shop-start="tomato"] .nm')).toHaveText('トマトの苗');
   for (let i = 0; i < 3; i++) await page.locator('[data-shop-start="tomato"]').click();
   await expect(page.locator('[data-shop-starts-offer]')).toHaveAttribute('data-shop-starts-offer', '42');
   await page.locator('[data-shop-starts-buy]').click();
@@ -50,8 +51,11 @@ test('starts bought at the shop’s かう; the farm menu at the bottom left: �
   // a tap on my empty plot with nothing picked: the picker
   await tapWorld(page, plot(0).x, plot(0).z);
   await expect(page.locator('[data-farm-picker]')).toBeVisible();
+  // each start by its crop's name; picked, my villager says what it holds
+  await expect(page.locator('[data-farm-pick="start:tomato"]')).toContainText('トマト');
   await page.locator('[data-farm-pick="start:tomato"]').click();
   await expect(page.locator('[data-farm-picker]')).toHaveCount(0);
+  await expect(page.locator('[data-fx="say"]')).toContainText('トマトの なえを もった');
   const three = [plot(0), plot(1), plot(0, 1)];
   for (const t of three) await tapWorld(page, t.x, t.z);
   await expect.poll(() => farmRows(page)).toEqual(three.map((t) => ({ o: 'plant', p: t.p, c: 'tomato', src: 'start' })));
@@ -63,6 +67,8 @@ test('starts bought at the shop’s かう; the farm menu at the bottom left: �
   await expect(page.locator('[data-farm-seed-n]')).toHaveText('0');
   await page.locator('[data-farm-field]').click();
   await expect(page.locator('[data-farm-count]')).toHaveText('3/40株');
+  // nothing ripe yet: said so, not 「0株・0個」
+  await expect(page.locator('[data-farm-today]')).toHaveText('今日収穫できるものはありません');
   await expect(page.locator('[data-farm-group="growing"] li')).toHaveCount(3);
   // the crops by name (the catch catalog loaded), never a raw key; the rows' text in the theme's own colour on its card
   await expect(page.locator('[data-farm-group="growing"] li').first()).toContainText('トマト');
