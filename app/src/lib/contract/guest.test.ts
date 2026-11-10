@@ -6,7 +6,7 @@ import { guestMayWrite, rowsFor } from './guest.ts';
 
 describe('guestMayWrite', () => {
   it('takes every island event type a member writes, and refuses the economy and the members’ records', () => {
-    const island = ['find', 'tally', 'tally_back', 'island', 'decor', 'board', 'food', 'food_repeat', 'food_recipe', 'food_custom', 'sell', 'buy', 'buy_starts', 'farm', 'listen', 'pack', 'pack_chk', 'pack_reset'];
+    const island = ['find', 'tally', 'tally_back', 'island', 'decor', 'board', 'food', 'food_repeat', 'food_recipe', 'food_custom', 'sell', 'buy', 'buy_starts', 'farm', 'listen', 'pack', 'pack_chk', 'pack_reset', 'room_save'];
     // (and `wet`: the record's own, never a phone's)
     const members = ['spend', 'spend_void', 'harvest', 'trip_note', 'wtask', 'wdone', 'wconf', 'wnote', 'wet'];
     // every type is one or the other (pref apart): a new type has to be placed here

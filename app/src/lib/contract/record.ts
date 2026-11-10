@@ -17,6 +17,7 @@ import { foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp } from './food.ts';
 import { shopPriced } from './shop.ts';
 import { AHEAD_MS } from './ops.ts';
 import { listenOf } from './listen.ts';
+import { roomSaveOf, roomSaveSlot } from './roomSave.ts';
 import { LIMITS, shopPrice } from './rules.ts';
 import { isBirth, isBmiStd, isProfileKey, isSex, profileValueOk } from './profile.ts';
 import { lookPrefOk, lookPrefRead, savedLooksOk } from './look.ts';
@@ -112,6 +113,11 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
     case 'wet':
       // a wet day: the record's own (relay/src/store.ts wetTick), never a phone's
       return false;
+    case 'room_save': {
+      // a room's saved arrangement or its slot emptied (contract/roomSave.ts: its name already clean), its `at` as decor's
+      const op = roomSaveOf(d);
+      return op !== null && atNear(op.at, now);
+    }
     case 'listen': {
       // a ききみみ game's answers (contract/listen.ts), its day not after tomorrow
       const row = listenOf(d);
@@ -190,7 +196,8 @@ export function prefTaken(key: unknown, v: unknown): boolean {
  * - a `wtask` and a `wdone` op: its task's id, a `wconf` its key, the `wnote` one for the board (contract/wedding.ts
  *   WedBook decides whether it replaces);
  * - a `food` op: its entry's id, a `food_repeat` op its repeat's, a `food_recipe` op its recipe's, a `food_custom` op
- *   its custom food's (`foodAccept` decides whether it replaces).
+ *   its custom food's (`foodAccept` decides whether it replaces);
+ * - a `room_save`: its room and slot (the latest to arrive wins, contract/roomSave.ts).
  * A pref the model would ignore takes no slot, so it never replaces one it takes. `subject`: `eventSubject`.
  */
 export function eventSlot(type: EventType | string, sender: Who, subject: Who, d: Rec, at: number): string | null {
@@ -208,6 +215,8 @@ export function eventSlot(type: EventType | string, sender: Who, subject: Who, d
       return typeof d.id === 'string' ? `board|${d.id}` : null;
     case 'wet':
       return typeof d.date === 'string' ? `wet|${d.date}` : null;
+    case 'room_save':
+      return roomSaveSlot(d);
     case 'food':
       return typeof d.id === 'string' ? `food|${d.id}` : null;
     case 'food_repeat':

@@ -13,6 +13,7 @@ import { packRowOf, type PackEntry } from '#lib/contract/pack.ts';
 import { wedRowOf, type WedEntry } from '#lib/contract/wedding.ts';
 import { goalFallback, goalKeysOf, goalOfKey, GOALS, isGoalValue, type DailyGoalId, type LatestGoalKey } from '#lib/contract/goals.ts';
 import { tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
+import { roomSaveOf, type RoomSaveOp } from '#lib/contract/roomSave.ts';
 import { isRoomScope, layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
 import { buyOf, sellOf, startsOf, type ShopRowAt } from '#lib/contract/shop.ts';
 import { farmOf } from '#lib/contract/farm.ts';
@@ -112,6 +113,9 @@ export interface State {
    *  contract/layout.ts), in server order (store/layout.svelte.ts merges them over the default). Never read by the
    *  economy. The homes' interiors (`sc` u and v) are rooms like the tent's, in `tent` with their scope. */
   layout: LayoutEntry[];
+  /** The rooms' saved arrangements (`room_save`: contract/roomSave.ts), in server order: a slot's last row is it. Never
+   *  read by the economy. */
+  roomSaves: (RoomSaveOp & { who: Who })[];
   /** The bulletin board (`board`: each post's ops, contract/board.ts), in server order, a queued one marked `queued`;
    *  the posts are their fold (components/board/posts.svelte.ts). Never read by the economy. */
   board: BoardRow[];
@@ -291,6 +295,7 @@ function reduceAll(r: SnapshotRows, rev: string | null, queued?: ReadonlySet<str
     decor: [],
     tent: [],
     layout: [],
+    roomSaves: [],
     board: [],
     pack: [],
     wedding: [],
@@ -473,6 +478,7 @@ function copyLists(base: State, rev: string | null): State {
     decor: [...base.decor],
     tent: [...base.tent],
     layout: [...base.layout],
+    roomSaves: [...base.roomSaves],
     board: [...base.board],
     pack: [...base.pack],
     wedding: [...base.wedding],
@@ -628,6 +634,10 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
   },
   wet(s, _person, _at, d) {
     if (typeof d.date === 'string' && DATE_RE.test(d.date) && !s.wet.includes(d.date)) s.wet.push(d.date);
+  },
+  room_save(s, person, _at, d) {
+    const op = roomSaveOf(d);
+    if (op) s.roomSaves.push({ ...op, who: person });
   },
   board(s, person, _at, d) {
     const op = boardOpOf(d);

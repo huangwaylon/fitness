@@ -19,7 +19,7 @@ import { parseShortcut } from './parse.ts';
 import { auditNotes, auditRow } from './audit.ts';
 import { eventSlot, validEventData } from '../../app/src/lib/contract/record.ts';
 import {
-  CURSOR_RE, eventSubject, EVENTS_MAX, EVENT_TYPES, isActivityMetric, isId, ISO_AT, isMetricKey, isPersonId, isRec, isWho, SNAPSHOT_PAGE_MAX,
+  CURSOR_RE, eventSubject, EVENTS_MAX, EVENT_TYPES, GROUP_MAX, isActivityMetric, isId, ISO_AT, isMetricKey, isPersonId, isRec, isWho, SNAPSHOT_PAGE_MAX,
   type ApiError, type EventRow, type Fail, type MetricRow, type SnapshotRows
 } from '../../app/src/lib/contract/api.ts';
 import { compactKeep, weekLockMs } from '../../app/src/lib/contract/compact.ts';
@@ -37,6 +37,7 @@ import { errName } from './log.ts';
 import { isLogId, scrubMsg } from '../../app/src/lib/contract/log.ts';
 import { roleOfKey, type Keys } from './auth.ts';
 import { guestMayWrite, rowsFor } from '../../app/src/lib/contract/guest.ts';
+import { saveName } from '../../app/src/lib/contract/roomSave.ts';
 import { buyOf, reowe, sellOf, shopLedger, shopRefusal, shopStep, startsOf, type Ledger, type ShopRow } from '../../app/src/lib/contract/shop.ts';
 import { emptyFarm, farmFromJson, farmJson, farmOf, farmStep, type Farm, type FarmData } from '../../app/src/lib/contract/farm.ts';
 import { gameWet } from '../../app/src/lib/contract/wet.ts';
@@ -614,14 +615,16 @@ export class StoreCore {
   }
 
   /**
-   * `events: [{id, type, data, group?}, …]` (≤ EVENTS_MAX), kept in order, each as `event` would: `{ok, results}`, one
+   * `events: [{id, type, data, group?}, …]` (≤ EVENTS_MAX; one group alone ≤ GROUP_MAX), kept in order, each as `event` would: `{ok, results}`, one
    * per event (`{id, ok, duplicate?, at?}` or `{id, ok: false, error, detail?}`), `at` the stored row's. One notice for
    * the lot. An event whose write throws is `unavailable` alone (nothing of it kept), never the batch. A `group` (the
    * shop's ぜんぶ: one id, its events side by side) is all or none, in one transaction (`group`).
    */
   private events(me: Who, body: Rec): Reply {
     const list = body.events;
-    if (!Array.isArray(list) || !list.length || list.length > EVENTS_MAX) return fail('bad_request');
+    // (one group alone may be up to GROUP_MAX: a room's whole change, all or none)
+    const oneGroup = Array.isArray(list) && list.length <= GROUP_MAX && !!groupOf(list[0]) && list.every((e) => groupOf(e) === groupOf(list[0]));
+    if (!Array.isArray(list) || !list.length || (list.length > EVENTS_MAX && !oneGroup)) return fail('bad_request');
     let last: string | null = null;
     const results: (Reply & { id: string | null })[] = [];
     for (let i = 0; i < list.length; ) {
@@ -704,7 +707,9 @@ export class StoreCore {
       // a packing list's names and notes, a trip note's values: one clean line each (contract/pack.ts packClean)
       : isPackType(body.type) ? packClean(body.type, sent)
       // the wedding board's titles, categories and settings: one clean line each (contract/wedding.ts wedClean)
-      : isWedType(body.type) ? wedClean(body.type, sent) : sent;
+      : isWedType(body.type) ? wedClean(body.type, sent)
+      // a saved room's name: one clean line (contract/roomSave.ts saveName)
+      : body.type === 'room_save' && typeof sent.name === 'string' ? { ...sent, name: saveName(sent.name) } : sent;
     // the guest writes everything on the island a member does, never the economy, a goal of the members' or the
     // members' own records (contract/guest.ts)
     if (me === 'G' && !guestMayWrite(body.type, data)) return fail('forbidden');

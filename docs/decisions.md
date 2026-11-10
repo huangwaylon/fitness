@@ -324,6 +324,14 @@ three (2026-11-10, the user: until then each room its owner's, the tent's everyo
 The record and the room enforce it (`scopeMayWrite`, `scopeMaySend`). Why: decorating each other's homes is the game's
 fun, and with nothing consumed there's no inventory to hand back.
 
+### A room's whole change is one group; undo puts back new pieces
+The clear, a saved arrangement called up and their undo are one `group` of decor ops (up to `GROUP_MAX` in a request)
+that the record keeps all or none, and the other phones get by the record's push rather than the room's live intents
+(256-byte intents, a 20-a-second bucket). An undo of a removal is a new piece where the old one stood: a removal is
+final in the record (decor merge), and a room's look is what's compared, not ids. Saved arrangements are their own
+event (`room_save`, three slots a room, the latest arrival wins). Why: atomic, no protocol change, and older apps skip
+an unknown event type.
+
 ### The tent's surfaces are NH's flag
 Which pieces hold things is the ACNH spreadsheet's `surface` flag; where things stand is found from the converted model
 and kept in items.json. Why: faithful to NH, nothing added by hand.

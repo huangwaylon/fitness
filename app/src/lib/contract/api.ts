@@ -7,7 +7,7 @@ import type { PersonId, Who } from '../types.ts';
 export type { PersonId, Who };
 
 /** The event types the server accepts and the model reads (anything else is refused with `bad_request`). */
-export const EVENT_TYPES = ['spend', 'spend_void', 'harvest', 'pref', 'find', 'tally', 'island', 'decor', 'board', 'food', 'food_repeat', 'food_recipe', 'food_custom', 'sell', 'buy', 'tally_back', 'listen', 'pack', 'pack_chk', 'pack_reset', 'trip_note', 'wtask', 'wdone', 'wconf', 'wnote', 'farm', 'buy_starts', 'wet'] as const;
+export const EVENT_TYPES = ['spend', 'spend_void', 'harvest', 'pref', 'find', 'tally', 'island', 'decor', 'board', 'food', 'food_repeat', 'food_recipe', 'food_custom', 'sell', 'buy', 'tally_back', 'listen', 'pack', 'pack_chk', 'pack_reset', 'trip_note', 'wtask', 'wdone', 'wconf', 'wnote', 'farm', 'buy_starts', 'wet', 'room_save'] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
 /**
@@ -173,6 +173,9 @@ export const ISO_AT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 export const MAX_BODY_CHARS = 1_000_000;
 /** @public (relay/src/store.ts) */
 export const EVENTS_MAX = 50;
+/** A batch that is one `group` alone may hold this many (a room's whole change at once, all or none: up to TENT_MAX
+ *  removals, TENT_MAX placements, the wallpaper, the floor and the size; 2026-11-10). @public (relay/src/store.ts) */
+export const GROUP_MAX = 128;
 /** `build`: the record's code (relay/src/store.ts STORE_BUILD), to tell which code the deployment runs. `me`: `G` for the
  *  guest's key. */
 export type WhoamiReply = { ok: true; me: Who; build: string } | Fail;

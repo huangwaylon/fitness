@@ -50,6 +50,7 @@ export function guestMayWrite(type: string, d: Rec): boolean {
     case 'pack':
     case 'pack_chk':
     case 'pack_reset':
+    case 'room_save':
       return true;
     case 'pref':
       return d.person === undefined && GUEST_PREF_KEYS.includes(d.key);

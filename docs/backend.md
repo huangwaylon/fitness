@@ -85,6 +85,12 @@ whole state or its removal, anyone's.
   objects, terrain chunks, resets and a home's look; the outdoors and the rooms anyone's, a home's look its owner's (`scopeMayWrite`); at
   most `LAYOUT_MAX` objects (`layout full`). Any lower-case kind passes: no relay deploy.
 
+<a id="room_save"></a>**`room_save`** `{sc, n, at, name, pieces, wall, floor, size}` or `{sc, n, at, rm: true}`
+(`contract/roomSave.ts`, [design](design.md#the-tent) "Saved arrangements"): a room's slot `n` (1–3) holding the room
+as saved (≤ `TENT_MAX` pieces `{i, x, z, f, on?, l?}`, `on` an earlier piece's index; the name one clean line ≤ 20),
+or emptied; anyone's, in any room; the slot keeps the latest to arrive (`room_save|<sc>|<n>`). Older apps skip the type.
+No live intent: the record's notice brings it.
+
 <a id="board"></a>**`board`** `{id, at, p, t}` or `{id, at, rm: true}` ([board.md](board.md), `contract/board.ts`):
 a note's whole text (`cleanText`) or its removal; edits by its author, removals by anyone (`boardMayWrite`),
 `BOARD_MAX` kept. No live intent: the record's notice brings it to every open phone (`boardFold`).
@@ -151,13 +157,14 @@ preflight; a Shortcut's `application/json` is fine), `{key, action, ...}`. Every
 |---|---|---|
 | `ingest` | the Shortcut's fields ([Ingest](#ingest)) | `{ok, metrics, skipped?, warnings?}` |
 | `event` | `id, type, data` | `{ok, duplicate?}`: a repeated `id` is acked as a duplicate before any check, so retries are safe |
-| `events` | `events: [{id, type, data, group?}, …]` (≤ 50) | `{ok, results: [{id, ok, duplicate?, at?} \| {id, ok: false, error, detail?}]}`: each as `event` would, in order, `at` its stored row's; a `group` ([below](#groups)) is all or none |
+| `events` | `events: [{id, type, data, group?}, …]` (≤ 50; one group alone ≤ `GROUP_MAX` 128) | `{ok, results: [{id, ok, duplicate?, at?} \| {id, ok: false, error, detail?}]}`: each as `event` would, in order, `at` its stored row's; a `group` ([below](#groups)) is all or none |
 | `snapshot` | `since?` (the max `at` cached); `page?` (1–10,000 rows), `after?` (the last page's `next`) | `{ok, me, now, rev, rows:{metrics, events}, next?}`: compact arrays in column order, rows with `at > since`, paged in (at, table, seq) order while `next` comes |
 | `uploads` | | `{ok, rows:[{at, status, bytes, notes}]}`: the caller's last 20 audit rows |
 | `whoami` | | `{ok, me, build}` (pairing) |
 | `health` | no `key` | `{ok, build: 'relay-2'}` |
 
-<a id="groups"></a>**Groups:** side-by-side events of one `group` (the shop's 全部) are all or none in one
+<a id="groups"></a>**Groups:** side-by-side events of one `group` (the shop's 全部; a room's whole change: the clear, a
+saved arrangement called up, their undo, up to `GROUP_MAX` in a request of that group alone) are all or none in one
 transaction: a piece already owned is refused `owned` alone, any other refusal rolls the lot back (`detail: 'group'`);
 a retry of a kept group is all duplicates. A bad `since`, `page` or `after` is `bad_request`; an unknown action too.
 
@@ -238,7 +245,8 @@ characters) answered by id; a request refused whole is halved and sent again, on
 - **Unsent:** online, a write 2 minutes past its hold (`unsentStuck`) shows on the sync chip and in 設定 with 送信.
 - **Holds:** a held event (`holdMs`, the undo window) is skipped, not waited for; `unqueue` takes it back.
   **Subjects:** a later event on the same spend never overtakes a held one.
-- **Groups** (`group`): none goes while any of it is held; then all of it in one request.
+- **Groups** (`group`): none goes while any of it is held; then all of it in one request (one over 50 alone in its
+  request, up to `GROUP_MAX`; once a refused request is halved, it may split).
 - **Replies:** acked (`ok` or `duplicate`) → into `island.acked` (in the view until a snapshot holds the id), out of the
   queue. `bad_request` / `too_large` → dropped with a message; `unauthorized` → pairing; other errors keep it and all
   after it, backing off to 5 min.
