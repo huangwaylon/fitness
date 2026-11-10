@@ -94,9 +94,19 @@ The record on the relay is the only copy of buys and goal changes (health number
 re-sent: [shortcut §5](shortcut-health-sync.md#5-one-time-baseline-optional)). Two layers:
 
 - **Point-in-time recovery** (the Durable Object's, on the Free plan, the last 30 days): §9 `bookmark` / `restore`.
-- **The dump:** monthly, `node scripts/record.ts dump > island-record-YYYY-MM-DD.json` from `relay/` (§9),
-  kept somewhere private (never in the repo). It fetches the record a page at a time (the admin `dump {limit, after}`)
-  and writes one file (`load` takes it); it starts over if the epoch changes under it.
+- **The daily dump, on the relay** (`relay/src/archive.ts`): at 03:00 Tokyo the cron (`0 18 * * *`) hands it to the
+  record's alarm, which dumps it (the file `record.ts dump` writes), encrypts it with age to the public key in
+  `ARCHIVE_RECIPIENT` and uploads `island-record-YYYY-MM-DD.json.age` to the `dumps` release of the private
+  `huangwaylon/fitness-archive` (the test relay: `dumps-test`), replacing that day's; the last 90 are kept. A failure is
+  retried after 30 min, doubling to 6 h. The log's `cron.backup` says each run (`npm run logs -- --event cron.backup`);
+  the alert ([observability](observability.md#the-alert)) flags none good in 48 h. By hand: `node scripts/record.ts
+  backup [--test]`.
+  - **The token:** `ARCHIVE_TOKEN`, a fine-grained GitHub token for that repo only, *Contents: Read and write*
+    (Metadata read comes with it). `npx wrangler secret put ARCHIVE_TOKEN` from `relay/` (and `--env test`); unset,
+    each run logs `no_token` and uploads nothing. Rotate it the same way before it expires.
+  - **Read one:** `gh release download dumps -R huangwaylon/fitness-archive -p island-record-YYYY-MM-DD.json.age`, then
+    `age -d -i ~/.config/island-fund/archive-age.key island-record-YYYY-MM-DD.json.age > record.json` (the secret key is
+    only on the Mac and in the password manager).
 
 **Restore** after a bad change: the record to a bookmark from before it (§9; the new epoch follows by itself: `counts` shows the new rev a few seconds on). From a dump into a new, empty record: `load <file>`, then `rev`.
 
@@ -145,7 +155,7 @@ keys; without either, the keys file: §3). It signs `POST /admin` with the serve
 - **Backups:** point-in-time recovery works on the Free plan (tested on the test relay: a bookmark from before an
   ingest restored the empty record). `bookmark [ms]` prints the bookmark now and `ms` ago (any moment of the
   last 30 days); `restore <bookmark>` restarts the object on it (from the moment it's asked until the restart every request is answered `unavailable`, which the phones retry: nothing is acknowledged that the bookmark then drops; a Shortcut run in those seconds is covered by its next one), and the room (told before the restart, its own storage) calls the restored record ~5 s later (retrying every 30 s, 10 tries) to start a new epoch, so every phone refetches; only when the reply's `note` says the room wasn't told, run `rev` yourself. Beyond 30 days:
-  `dump > island-record-YYYY-MM-DD.json` (every row, the held values too, fetched a page at a time: the admin's `dump` pages by default, 10,000 rows; keep it off the repo) and `load <file>` into an empty record.
+  the daily dump (§6), or `dump > island-record-YYYY-MM-DD.json` (every row, the held values too, fetched a page at a time: the admin's `dump` pages by default, 10,000 rows; keep it off the repo) and `load <file>` into an empty record.
 - **`rev`**: a new epoch: every phone drops its cache and fetches everything on its next refresh.
 - **`counts`** also says `schema_v` (the record's migrations run). The admin ops `shopcheck
   {fix?}` and `decorcheck {fix?}` (signed like the rest: `scripts/admin.ts`) compare the record's running shop ledgers

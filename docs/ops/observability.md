@@ -62,6 +62,7 @@ A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepal
 | `ws.hello` (relay) | info | `v` (the protocol version), `build` (the app's, from the hello), `rep` (that device's sockets it replaced, the others told nothing); who | each welcomed hello: which phone speaks what (`report`'s *Live hellos*) |
 | `store.corrupt` (relay) | warn | `where` (the fold: spend, board, food, tally, shop, decor) | a stored row of the record that isn't a JSON object, skipped by that fold (store.ts `rowRec`), once a request a place |
 | `cron.wx` | info; warn failed | `ok`, `fetched`, `fail`, `hours`, `age`, `ms` | a weather fetch (the cron at :15 and :45 when one is due: ~30 min after a good one, or past :45 with none since) |
+| `cron.backup` | info; warn `no_token`; error failed | `ok`, `st`, `step`, `http`, `kB`, `metrics`, `events`, `kept`, `del`, `ms`, `dumpMs`, `encMs`, `upMs`, `rw`, `rr`, `fails`, `force` | the record's daily dump ([runbook §6](runbook.md#6-backups)): `st` `ok`, `no_token`, `empty` (nothing uploaded), `github` (its `step` and `http`), or an error's class; wall ms; `rw` the record's rows written (0); `force` the admin's `backup` |
 | `cron.compact` | info | `dates`, `deleted`, `more`, `metrics`, `ms` | the record's compaction (the cron at 04:15 Tokyo when COMPACT_CRON=1, on hold; `more`: a backlog left for the next day; a failure is `do.error` `where: compact`) |
 | `admin` | info | `op`, `st` | each signed admin op (an audit) |
 | `log.cap` | warn | `bucket` | a day's cap reached (once) |
@@ -108,7 +109,7 @@ own token. Retention 30 days; `npm run logs -- purge --before … [--person A]` 
   round trip to the object, its queue and its work); the record returns its reply with a small `meta`
   (`reqMeta.ts`: enums and counts) and the Worker sends a `req` event by RPC in `ctx.waitUntil`, never in the reply's
   path. An object still on the old code (no `apiMeta`, the seconds after a deploy) is asked the plain way.
-- The room (`room.close`, `room.full`, `ws.hello`), the cron (`cron.wx`, `cron.compact`) and the admin ops (`admin`) send theirs the same way,
+- The room (`room.close`, `room.full`, `ws.hello`), the cron (`cron.wx`, `cron.compact`, `cron.backup`) and the admin ops (`admin`) send theirs the same way,
   best effort.
 - **Caps** (UTC day, `caps` table): phones 1,000 info/warn and 200 errors per role; the relay 4,000 and 500; 8,000 in
   all (the hard guard on the account's rows written). Counted in memory, written by a timer within 10 s
@@ -156,8 +157,8 @@ npm run logs -- --test ...                                 # the test relay
 repo secret: counts only) and opens one GitHub issue labelled `alert` (or comments on the open one when the state
 changes) when, in the last 6 hours, errors > 20 (not counting errors while leaving), the relay answered `unavailable`
 > 5 times, a cap was reached, the day's events passed 50 % of the cap, the day's rows written passed 50 % of the Free
-plan's 100k (`rowsPct`), or the oldest event is older than 32 days (the
-prune is dead); it closes the issue on a green run. The issue holds counts and a link here, never a message (the repo
+plan's 100k (`rowsPct`), the oldest event is older than 32 days (the
+prune is dead), or no record backup has been good in 48 h (`backupH`, `backupSt`: the last run's `st`); it closes the issue on a green run. The issue holds counts and a link here, never a message (the repo
 is public). A failing `/health` still fails the job (GitHub's e-mail). Scheduled workflows stop after 60 days without
 a commit in a public repo: re-enable it in Actions.
 Set up once: `openssl rand -hex 32` → `npx wrangler secret put HEALTH_TOKEN` (and `--env test`) and

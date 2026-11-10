@@ -387,7 +387,7 @@ one tile").
 - **Admin:** `POST /admin`, signed like `/notify` ([Push](#push) "Auth"; the Worker verifies the signature and its
   5-minute window before the object, else 401; a `restore`, `rev` or `logpurge` is taken once per signature,
   `admin_seen`). Its ops ([runbook §9](ops/runbook.md#9-the-record)): counts, bookmarks, restore, a new epoch, a paged
-  dump, the compaction, `held` / `promote`, `shopcheck`, `decorcheck`, the log's (on its own object), the weather, and
+  dump, the daily backup now (`backup`, [runbook §6](ops/runbook.md#6-backups)), the compaction, `held` / `promote`, `shopcheck`, `decorcheck`, the log's (on its own object), the weather, and
   `load`: rows with their `at`, by the same rules, idempotent; a slot's row kept unless the one it holds beats it (a
   dump holds each slot's latest only: `test/restore.test.ts`).
 - **Push-driven:** after a write the object tells the room ([Push](#push); a failed call tried once more), which keeps

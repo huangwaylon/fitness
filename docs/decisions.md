@@ -9,7 +9,8 @@ The decisions in force, each with its reason. The numbers live in the code (`app
 The data of record (metrics, events, the ingest audit) is SQLite in a Durable Object on the relay (`IslandStore`), on the
 Workers Free plan beside the live room, its own class so the two change apart. Event ids are primary keys, `since` an
 index, and a slot row (a tally, an island day, a pref, a decoration) is replaced by its later event. Backups are
-point-in-time recovery (30 days) and `node scripts/record.ts dump` ([runbook](ops/runbook.md)). There is no Google Sheet
+point-in-time recovery (30 days) and the relay's daily encrypted dump to a private repo (2026-11-10: moved off the Mac,
+[runbook §6](ops/runbook.md#6-backups)). There is no Google Sheet
 and no Apps Script. Why: the old Apps Script took 1–15 s a request under its lock; the record answers in ~0.1 s at about
 1 % of the Free plan, and one copy of the health data is one fewer to guard.
 
