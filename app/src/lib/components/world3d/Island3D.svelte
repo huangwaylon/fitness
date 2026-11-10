@@ -50,6 +50,7 @@
   import { hasFields } from '#lib/layout/fields.ts';
   import { version } from '$app/env';
   import { bootReport, watchBoot, type BootClock } from './boot.ts';
+  import { watchRest } from './rest.ts';
   import { ktx2Stats } from './ktx2.ts';
   import { placeObjects, type Inst, type Standin } from './objects.ts';
   import { homeTod } from './home.ts';
@@ -754,7 +755,7 @@
       placedIds = new Set(insts.map((i) => i.id));
       void e.place(insts).then(() => {
         if (!loaded) {
-          boot?.loaded(performance.now());
+          timed?.loaded(performance.now());
           queueMicrotask(onready);
           // the flourishes' models on the GPU ahead of their first use (a high five's sparkles whole at once)
           pending.later(() => void e.warmFx().catch(() => {}), 400);
@@ -891,8 +892,9 @@
     }
   }
 
-  /** The launch's clock (boot.ts: the page's first mount only), and how long the mount waited for the fields. */
-  let boot: BootClock | null = null, fieldsMs = 0;
+  /** The launch's clock (boot.ts: the page's first mount only), the mount's timed (that, or the first return's), and
+   *  how long the mount waited for the fields. */
+  let boot: BootClock | null = null, timed: BootClock | null = null, fieldsMs = 0;
   onMount(() => {
     let stop: (() => void) | undefined, gone = false;
     const t0 = performance.now();
@@ -932,12 +934,15 @@
       return;
     }
     eng = e;
-    // (the launch timed: the page's first mount)
+    // (the launch timed: the page's first mount; the first return to it, perf.back)
     const watch = watchBoot(() => ({ progs: e.stats().programs, fieldsMs: Math.round(fieldsMs), fields }), () => e.isPaused());
-    boot = watch?.clock ?? null;
-    boot?.mount(mountAt);
+    timed = watch?.clock ?? null;
+    boot = watch && !watch.back ? watch.clock : null;
+    timed?.mount(mountAt);
     lateFrom = performance.now();
-    if (boot) e.onDrawn(boot.frame);
+    if (timed) e.onDrawn(timed.frame);
+    // (the island at rest, once a load: perf.rest)
+    const offRest = watchRest({ stats: () => e.stats(), ok: () => loaded && !document.hidden && !e.isPaused() });
     // (?ambient= the frames a second of the ambience, anywhere)
     // (not in the e2e's logic mode: nothing's drawn, a frame costs nothing, and the island's life runs in its frames)
     const amb = num('ambient') ?? (soft && !drawOff() ? 2 : null);
@@ -1101,7 +1106,8 @@
       setDrawnFps(null);
       watch?.stop();
       e.onDrawn(null);
-      boot = null;
+      offRest();
+      boot = timed = null;
       offLayout();
       listen3d(null);
       useIdlePainter(null);

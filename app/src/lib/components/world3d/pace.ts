@@ -19,6 +19,8 @@ export function moveFast(ms: number, fled: boolean, from: OnScreen | null, to: O
   return (on(from) || on(to)) && (Math.hypot(from.sx - to.sx, from.sy - to.sy) / ms) * 1000 >= SLOW_PX;
 }
 
+/** The display frames the pacers have asked for, all told (the log's perf.rest: wake-ups a second at rest). */
+export const wakes = { n: 0 };
 /** Half a 60 Hz vsync's slack (ms): a display frame this early is on time. */
 const SLACK = 6;
 /** What the pacer runs on (the page's; a test's own clock). */
@@ -53,7 +55,9 @@ export function pacer(frame: (vsync: number) => void, clock: PaceClock = PAGE) {
     frame(vsync);
   };
   const ask = () => {
-    if (!raf) raf = clock.raf(tick);
+    if (raf) return;
+    raf = clock.raf(tick);
+    wakes.n++;
   };
   const unTime = () => {
     if (timer) clock.clearTimeout(timer);

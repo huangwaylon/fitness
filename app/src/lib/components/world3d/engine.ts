@@ -101,6 +101,8 @@ interface Stats {
   frames: number;
   /** The last frame's time (performance.now's clock: what the scene moved to; a sampler's own may be a tick off). */
   at: number;
+  /** The last finger's (or wheel's) time on the camera. */
+  input: number;
   loading: number;
   camZ: number;
   zoom: number;
@@ -1244,7 +1246,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       return {
         fps: stamps.length, cpu: [pctl(cpu, 0.5), pctl(cpu, 0.95)], gap: [pctl(gaps, 0.5), pctl(gaps, 0.95)],
         calls: renderer.info.render.calls, tris: renderer.info.render.triangles, textures: renderer.info.memory.textures,
-        geometries: renderer.info.memory.geometries, programs: renderer.info.programs?.length ?? 0, shadows: shadowsDrawn, compiles, linking: warm.size(), dpr: renderer.getPixelRatio(), frames, at: lastFrame,
+        geometries: renderer.info.memory.geometries, programs: renderer.info.programs?.length ?? 0, shadows: shadowsDrawn, compiles, linking: warm.size(), dpr: renderer.getPixelRatio(), frames, at: lastFrame, input: lastInput,
         loading: things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps, fx: effects.count(),
         fxShown: effects.shown(), why: [...why], paused, drawn: !noDraw
       };

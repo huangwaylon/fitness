@@ -64,6 +64,20 @@ describe('the launch clock (perf.boot)', () => {
     }
   });
 
+  it('after the launch, the first return is watched (perf.back), none after it', () => {
+    vi.stubGlobal('requestAnimationFrame', () => 1);
+    vi.stubGlobal('cancelAnimationFrame', () => {});
+    vi.stubGlobal('document', { hidden: false, addEventListener() {}, removeEventListener() {} });
+    try {
+      const x = () => ({ progs: 1, fieldsMs: 0, fields: 'cache' as const });
+      // (the launch this one's, or the test above's)
+      const got = [0, 1, 2].map(() => watchBoot(x, () => false)).map((w) => (w ? (w.back ? 'back' : 'launch') : null));
+      expect([['launch', 'back', null], ['back', null, null]]).toContainEqual(got);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('counts the models from the network, and reads the service worker', () => {
     expect(modelFetches([
       { name: 'https://x/room/world3d/tree.glb?v=3', transferSize: 0 },

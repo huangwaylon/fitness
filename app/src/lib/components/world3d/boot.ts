@@ -97,20 +97,23 @@ export function createBootClock(settleMs = SETTLE_MS) {
 }
 export type BootClock = ReturnType<typeof createBootClock>;
 
-/** A launch watched already (one a page load: back from a room, the island's mount is no launch). */
-let launched = false;
+/** A launch watched already (one a page load: back from a room, the island's mount is no launch), and a return. */
+let launched = false, returned = false;
 let report: BootReport | null = null;
 /** The launch's report once its watch is over (the perf scripts read it: window.__world3d.boot), else null. */
 export const bootReport = (): BootReport | null => report;
 
 /**
- * The launch's watch, from the island's mount (null: not the page's first): its clock for the engine's frames and the
- * marks, the display frames counted here; at the end, the report logged (`perf.boot`) and kept. `extra()` at the end:
- * the programs, the fields' wait and source. Nothing logged when the page was hidden or the island paused meanwhile, or
- * the watch ran past WATCH_MAX_MS.
+ * The launch's watch, from the island's mount: its clock for the engine's frames and the marks, the display frames
+ * counted here; at the end, the report logged (`perf.boot`) and kept. `extra()` at the end: the programs, the fields'
+ * wait and source. Nothing logged when the page was hidden or the island paused meanwhile, or the watch ran past
+ * WATCH_MAX_MS. A later mount (`back`: from a room, another screen) is watched the same way once a page load, its marks
+ * from the mount (`perf.back`: the return's worst frame); null after that.
  */
-export function watchBoot(extra: () => Pick<BootReport, 'progs' | 'fieldsMs' | 'fields'>, paused: () => boolean): { clock: BootClock; stop(): void } | null {
-  if (launched || typeof requestAnimationFrame === 'undefined') return null;
+export function watchBoot(extra: () => Pick<BootReport, 'progs' | 'fieldsMs' | 'fields'>, paused: () => boolean): { clock: BootClock; stop(): void; back: boolean } | null {
+  if (returned || typeof requestAnimationFrame === 'undefined') return null;
+  const back = launched;
+  if (back) returned = true;
   launched = true;
   const clock = createBootClock(), sw = swState();
   let raf = 0;
@@ -130,11 +133,16 @@ export function watchBoot(extra: () => Pick<BootReport, 'progs' | 'fieldsMs' | '
     if (clock.spoiled() || t > WATCH_MAX_MS) return stop();
     if (!clock.done()) return void (raf = requestAnimationFrame(loop));
     stop();
+    if (back) {
+      const { mount, first, loaded, shown, long, draw, appear, steps } = clock.marks();
+      log('perf.back', { first: first - mount, loaded: loaded - mount, shown: shown - mount, long, draw, appear, steps, progs: extra().progs });
+      return;
+    }
     const { n, net } = modelFetches(performance.getEntriesByType?.('resource') ?? []);
     report = { ...clock.marks(), ...extra(), sw, warm: n > 0 && net === 0, net };
     log('perf.boot', { ...report });
   };
   document.addEventListener('visibilitychange', onVis);
   raf = requestAnimationFrame(loop);
-  return { clock, stop };
+  return { clock, stop, back };
 }
