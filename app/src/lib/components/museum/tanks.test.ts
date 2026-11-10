@@ -2,7 +2,8 @@
 import { describe, expect, test } from 'vitest';
 import { Matrix4, Quaternion, Vector3 } from 'three';
 import { bandOf, cruiseOf, poseOf, spawn, stepSchool, stepWalker, swimBox, type Swimmer } from './boids.ts';
-import { FIT, TANKS, backOf, bodyIn, openOf, propsOf, waterOf, type Box, type Tank } from './tanks.ts';
+import { FIT, TANKS, backOf, bodyIn, frontOf, openOf, propsOf, waterOf, yawOf, type Box, type Tank } from './tanks.ts';
+import { SEA_SPOTS, SEA_TANKS } from './seaTanks.ts';
 import { FISH_IDS, PER_TANK, WALKERS, tankOf } from './species.ts';
 import { ENTRANCE, FISH_WING, navOf, walkPath } from './plan.ts';
 import { allBlocks, spot } from './spots.ts';
@@ -77,6 +78,34 @@ describe('the tanks', () => {
         }
       }
     }
+  });
+});
+
+describe('every tank faces the walkway', () => {
+  const mid = (b: { x0: number; x1: number; z0: number; z1: number }) => [(b.x0 + b.x1) / 2, (b.z0 + b.z1) / 2];
+  const all = [...TANKS, ...SEA_TANKS] as Tank[];
+  test('its front (the glass looked through) toward the room’s middle, its back toward its nearest wall', () => {
+    const [cx, cz] = mid(FISH_WING);
+    for (const t of all) {
+      const [fx, fz] = frontOf(t.box), [x, z] = mid(t.box);
+      expect(fx * (cx - x) + fz * (cz - z), t.id).toBeGreaterThan(0);
+      // (the wall behind it nearer than the one ahead)
+      const b = t.box, behind = fz ? (fz > 0 ? b.z0 - FISH_WING.z0 : FISH_WING.z1 - b.z1) : fx > 0 ? b.x0 - FISH_WING.x0 : FISH_WING.x1 - b.x1;
+      const ahead = fz ? (fz > 0 ? FISH_WING.z1 - b.z1 : b.z0 - FISH_WING.z0) : fx > 0 ? FISH_WING.x1 - b.x1 : b.x0 - FISH_WING.x0;
+      expect(behind, t.id).toBeLessThan(ahead);
+      // (a +z facing turned by its yaw faces its front)
+      expect([Math.sin(yawOf(b)), Math.cos(yawOf(b))].map((v) => Math.round(v)), t.id).toEqual([fx, fz]);
+    }
+  });
+  test('its props at its back, its fish’s open water in front of them; the sea creatures’ back rows behind their front rows', () => {
+    for (const t of TANKS) {
+      const [fx, fz] = frontOf(t.box), d = (b: Box) => ((m) => m[0] * fx + m[1] * fz)(mid(b));
+      expect(d(backOf(t)), t.id).toBeLessThan(d(openOf(t)));
+      for (const p of propsOf(t)) expect(p.yaw, `${t.id} ${p.name}`).toBe(yawOf(t.box));
+    }
+    const reef = SEA_TANKS.find((t) => t.id === 'reef')!, [fx, fz] = frontOf(reef.box);
+    const d = (id: string) => ((s) => s.x * fx + s.z * fz)(SEA_SPOTS.get(id)!);
+    expect(d('seaweed')).toBeLessThan(d('octopus'));
   });
 });
 

@@ -4,11 +4,13 @@
 // arch), the deep-sea tank along the left wall toward the front (clear of the arch: never between the camera and one
 // coming in), the river tank low in the front corner (never hiding the great one); the benches face the great tank
 // (seats.ts), the sea creatures' reef along the right wall and their tide pool in the middle (seaTanks.ts).
-// Each tank's long side is its swimmers' way (they keep mostly along it, as in NH's tanks).
+// Each tank's long side is its swimmers' way (they keep mostly along it, as in NH's tanks); each faces the walkway
+// (frontOf), its back to its wall.
 import M from './models.json' with { type: 'json' };
 import { reachOf } from './boids.ts';
 import type { TankId } from './species.ts';
 import { frameOf } from './geometry.ts';
+import { FISH_WING } from './plan.ts';
 
 export interface Box { x0: number; x1: number; y0: number; y1: number; z0: number; z1: number }
 export interface Tank {
@@ -44,6 +46,27 @@ export function piecesOf(t: Tank): { base: Box; glass: Box; frame: Box[] } {
 }
 /** Whether a tank's long side runs along x (else z). */
 export const alongX = (b: Box): boolean => b.x1 - b.x0 >= b.z1 - b.z0;
+/** A tank's front: the way its glass is looked through (x, z: a unit along x or z), across its narrow side toward
+ *  the aquarium's middle, so a tank by any wall faces the walkway, its back (its props, its water's backdrop) to the
+ *  wall. (Every tank's back was one fixed side, z0 or x1: the deep tank by the left wall and the river tank by the
+ *  front wall had theirs to the room.) */
+export function frontOf(b: Box): [number, number] {
+  const mx = (FISH_WING.x0 + FISH_WING.x1) / 2, mz = (FISH_WING.z0 + FISH_WING.z1) / 2;
+  return alongX(b) ? [0, (b.z0 + b.z1) / 2 > mz ? -1 : 1] : [(b.x0 + b.x1) / 2 > mx ? -1 : 1, 0];
+}
+/** The yaw (about y) that turns a +z facing to a tank's front (its backdrop's, its props', its lip's). */
+export const yawOf = (b: Box): number => ((f) => Math.atan2(f[0], f[1]))(frontOf(b));
+/** A face of box `b` square to tank `t`'s front, `k` across its narrow side (0 its back): its middle, its width (its
+ *  long side) and its yaw (a +z facing plane turned to face the front: its water's backdrop, its glow lip). */
+export function faceOf(t: Box, b: Box, k: number): { x: number; z: number; w: number; yaw: number } {
+  const c = across(b, k), along = alongX(t);
+  return { x: along ? (b.x0 + b.x1) / 2 : c, z: along ? c : (b.z0 + b.z1) / 2, w: along ? b.x1 - b.x0 : b.z1 - b.z0, yaw: yawOf(t) };
+}
+/** Where across a tank's narrow side `k` (0 its back, 1 its front) of the way lies (x or z: its long side the other). */
+export function across(b: Box, k: number): number {
+  const [fx, fz] = frontOf(b);
+  return fz ? (fz > 0 ? b.z0 + k * (b.z1 - b.z0) : b.z1 - k * (b.z1 - b.z0)) : fx > 0 ? b.x0 + k * (b.x1 - b.x0) : b.x1 - k * (b.x1 - b.x0);
+}
 
 /** How much of a tank's water, in from its back across its narrow side, is its props' (NH's: the rocks, kelp and logs
  *  along the back, the fish swimming in front of them). */
@@ -52,14 +75,14 @@ const BACK = 0.4;
 const MARGIN = 0.5;
 /** A tank's back strip: its props' (all of each inside it). */
 export function backOf(t: Tank): Box {
-  const w = waterOf(t), k = BACK;
-  return alongX(t.box) ? { ...w, z1: w.z0 + (w.z1 - w.z0) * k } : { ...w, x0: w.x1 - (w.x1 - w.x0) * k };
+  const w = waterOf(t), [fx, fz] = frontOf(t.box), c = across(w, BACK);
+  return fz ? (fz > 0 ? { ...w, z1: c } : { ...w, z0: c }) : fx > 0 ? { ...w, x1: c } : { ...w, x0: c };
 }
 /** A tank's open water, in front of its back strip (its swimmers' and walkers': all of each inside it, so none ever
  *  touches a prop). */
 export function openOf(t: Tank): Box {
-  const w = waterOf(t), b = backOf(t);
-  return alongX(t.box) ? { ...w, z0: b.z1 + MARGIN } : { ...w, x1: b.x0 - MARGIN };
+  const w = waterOf(t), b = backOf(t), [fx, fz] = frontOf(t.box);
+  return fz ? (fz > 0 ? { ...w, z0: b.z1 + MARGIN } : { ...w, z1: b.z0 - MARGIN }) : fx > 0 ? { ...w, x0: b.x1 + MARGIN } : { ...w, x1: b.x0 - MARGIN };
 }
 
 /** How much of its open water's narrowest side (and its depth) a fish may reach across at most: the rest is its room
@@ -107,9 +130,11 @@ export function propsOf(t: Tank): Placed[] {
     const [ex, ez] = along ? [sx, sz] : [sz, sx];
     const s = Math.min(s0, (w.x1 - w.x0 - 2 * m) / ex, (w.z1 - w.z0 - 2 * m) / ez, (w.y1 - w.y0 - m) / sy);
     const hx = (ex * s) / 2 + m, hz = (ez * s) / 2 + m;
-    const x0 = along ? w.x0 + (w.x1 - w.x0) * u : w.x1 - (w.x1 - w.x0) * v;
-    const z0 = along ? w.z0 + (w.z1 - w.z0) * v : w.z0 + (w.z1 - w.z0) * u;
-    return { name, x: Math.min(w.x1 - hx, Math.max(w.x0 + hx, x0)), z: Math.min(w.z1 - hz, Math.max(w.z0 + hz, z0)), y: w.y0, s, yaw: along ? 0 : -Math.PI / 2 };
+    // (v in from its back glass, u along its long side: each tank its layout turned to face its front)
+    const [fx, fz] = frontOf(t.box), cut = across(w, v);
+    const x0 = along ? (fz > 0 ? w.x0 + (w.x1 - w.x0) * u : w.x1 - (w.x1 - w.x0) * u) : cut;
+    const z0 = along ? cut : fx > 0 ? w.z1 - (w.z1 - w.z0) * u : w.z0 + (w.z1 - w.z0) * u;
+    return { name, x: Math.min(w.x1 - hx, Math.max(w.x0 + hx, x0)), z: Math.min(w.z1 - hz, Math.max(w.z0 + hz, z0)), y: w.y0, s, yaw: yawOf(t.box) };
   });
 }
 

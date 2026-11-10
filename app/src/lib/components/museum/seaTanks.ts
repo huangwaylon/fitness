@@ -7,7 +7,7 @@
 // has one (`*Museum`: the octopus sprawled, the seaweed in a clump, the eels out of their sand, the barnacles on their
 // rock...) and as the island's catch model otherwise.
 
-import { alongX, type Box } from './tanks.ts';
+import { across, alongX, type Box } from './tanks.ts';
 
 /** NH's museum-tank variants (scripts/world3d-models.ts --museum: the `sea-museum` pack, each member its id). */
 export const SEA_MUSEUM_MODEL: Readonly<Record<string, string>> = {
@@ -44,10 +44,10 @@ const SAND = 3;
 export const SEA_SPOTS: ReadonlyMap<string, SeaSpot> = (() => {
   const out = new Map<string, SeaSpot>();
   const [reef, pool] = SEA_TANKS.map((t) => t.box);
-  // (a row along a tank's long side, `back` of the way from its back (the wall, or its far side) to its front)
+  // (a row along a tank's long side, `back` of the way from its back (the wall, or its far side from the room's middle: tanks.ts frontOf) to its front)
   const row = (ids: readonly string[], tank: SeaTankId, b: Box, back: number, y: number, fit: number, drifts = false) =>
     ids.forEach((id, k) => {
-      const t = (k + 0.5) / ids.length, [x, z] = alongX(b) ? [b.x0 + t * (b.x1 - b.x0), b.z0 + back * (b.z1 - b.z0)] : [b.x1 - back * (b.x1 - b.x0), b.z0 + t * (b.z1 - b.z0)];
+      const t = (k + 0.5) / ids.length, c = across(b, back), [x, z] = alongX(b) ? [b.x0 + t * (b.x1 - b.x0), c] : [c, b.z0 + t * (b.z1 - b.z0)];
       out.set(id, { tank, x, y, z, fit, drifts });
     });
   const depth = (b: Box) => Math.min(b.x1 - b.x0, b.z1 - b.z0);

@@ -2,7 +2,7 @@
 // glass, frame, water), nor the wing's floor and the first person's ceiling, lie in one plane over the same spot facing
 // the same way (a double-sided pane faces both); only a decal (geometry.ts decal: polygonOffset) may.
 import { describe, expect, test } from 'vitest';
-import { TANKS, alongX, piecesOf, waterOf, type Box } from './tanks.ts';
+import { TANKS, across, alongX, piecesOf, waterOf, type Box } from './tanks.ts';
 import { CASES, casePieces } from './garden.ts';
 import { BUG_WING, FISH_WING, WING_H, type Rect } from './plan.ts';
 
@@ -51,10 +51,10 @@ describe('no surfaces fighting', () => {
     const out: string[] = [];
     for (const t of TANKS) {
       const p = piecesOf(t), w = waterOf(t);
-      // its water's back (aquarium.ts: a double-sided plane against its back glass); the floor's caustics are a decal
+      // its water's back (aquarium.ts: a plane against its back glass, facing its front); the floor's caustics are a decal
       const back: Face = alongX(t.box)
-        ? { what: 'water', axis: 2, at: w.z0, dir: 0, r: [w.x0, w.x1, w.y0, w.y1] }
-        : { what: 'water', axis: 0, at: w.x1, dir: 0, r: [w.y0, w.y1, w.z0, w.z1] };
+        ? { what: 'water', axis: 2, at: across(w, 0), dir: 0, r: [w.x0, w.x1, w.y0, w.y1] }
+        : { what: 'water', axis: 0, at: across(w, 0), dir: 0, r: [w.y0, w.y1, w.z0, w.z1] };
       const faces = [
         ...room(FISH_WING),
         ...facesOf('base', p.base),

@@ -24,7 +24,7 @@ import { smallHash } from '#lib/random.ts';
 import type { Exhibit, Kit } from './engine.ts';
 import { WALKERS, onDisplay, type Specimen, type TankId } from './species.ts';
 import { ditherMaterial, fadeMaterial, fadeStep, hourWatch } from './hourFader.ts';
-import { FISH_PLANTS, TANKS, alongX, bodyIn, openOf, piecesOf, propsOf, waterOf, type Body, type Box, type Tank } from './tanks.ts';
+import { FISH_PLANTS, TANKS, bodyIn, faceOf, frontOf, openOf, piecesOf, propsOf, waterOf, type Body, type Box, type Tank } from './tanks.ts';
 import { bandOf, cruiseOf, poseOf, spawn, stepSchool, stepWalker, type Swimmer } from './boids.ts';
 import { FEEDERS, FEEDER_R, PREDATORS, feedersIn, feedingOf, stepFeeding, type Feeding } from './feeding.ts';
 import type { Rect } from './plan.ts';
@@ -69,8 +69,8 @@ export function tankLight(kit: Kit, tanks: readonly { box: Box; top: number }[])
   const pools: Pool[] = [], lips: Card[] = [];
   for (const { box: b, top } of tanks) {
     pools.push({ band: { x0: b.x0, x1: b.x1, z0: b.z0, z1: b.z1 }, feather: 30, caustic: 0.3, color: POOL.fish, at: 1 });
-    if (alongX(b)) lips.push({ x: (b.x0 + b.x1) / 2, y: top - 4, z: b.z1 + 0.3, w: b.x1 - b.x0, h: 9, yaw: 0 });
-    else lips.push({ x: b.x1 + 0.3, y: top - 4, z: (b.z0 + b.z1) / 2, w: b.z1 - b.z0, h: 9, yaw: Math.PI / 2 });
+    const [fx, fz] = frontOf(b), f = faceOf(b, b, 1);
+    lips.push({ x: f.x + fx * 0.3, y: top - 4, z: f.z + fz * 0.3, w: f.w, h: 9, yaw: f.yaw });
   }
   return { pools, lip: kit.cards('lip', lips) };
 }
@@ -158,8 +158,9 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
     batch.add(new BoxGeometry(b.x1 - b.x0, b.y1 - b.y0, b.z1 - b.z0), m, at.makeTranslation((b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2, (b.z0 + b.z1) / 2));
   const waterMat = (id: TankId, floor: boolean) => {
     const w = WATER[id];
+    // (one-sided: the backdrop faces its tank's front, unseen from behind (the cutaway's camera past the front wall), the caustics up)
     const m = new ShaderMaterial({
-      vertexShader: WATER_VERT, fragmentShader: WATER_FRAG, side: DoubleSide,
+      vertexShader: WATER_VERT, fragmentShader: WATER_FRAG,
       uniforms: { uTime, uNight, uDeep: { value: new Color(w.deep) }, uTop: { value: new Color(w.top) }, uCaustic: { value: w.caustic }, uFloor: { value: floor ? 1 : 0 } },
       ...(floor ? { transparent: true, depthWrite: false, blending: AdditiveBlending } : {})
     });
@@ -183,15 +184,12 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
   const bubbleBase: number[] = [], bubblePhase: number[] = [];
   for (const t of TANKS) {
     const b = t.box, w = waterOf(t), id = t.id;
-    const along = alongX(b);
     const pc = piecesOf(t);
     // its base
     box(pc.base, id === 'deep' ? dark : sand);
-    // its water's back (the side toward the wall: the back for the sea's, the far wall for the deep's; the river's, all
-    // round glass, its back the far long side) and its floor's caustics
-    const back = new PlaneGeometry(along ? w.x1 - w.x0 : w.z1 - w.z0, w.y1 - w.y0);
-    if (along) batch.add(back, waterMat(id, false), at.makeTranslation((w.x0 + w.x1) / 2, (w.y0 + w.y1) / 2, w.z0));
-    else batch.add(back, waterMat(id, false), at.makeRotationY(-Math.PI / 2).setPosition(w.x1, (w.y0 + w.y1) / 2, (w.z0 + w.z1) / 2));
+    // its water's back (against its back glass, the side toward its wall: tanks.ts frontOf) and its floor's caustics
+    const bk = faceOf(b, w, 0);
+    batch.add(new PlaneGeometry(bk.w, w.y1 - w.y0), waterMat(id, false), at.makeRotationY(bk.yaw).setPosition(bk.x, (w.y0 + w.y1) / 2, bk.z));
     batch.add(new PlaneGeometry(w.x1 - w.x0, w.z1 - w.z0), waterMat(id, true), at.makeRotationX(-Math.PI / 2).setPosition((w.x0 + w.x1) / 2, w.y0 + 0.08, (w.z0 + w.z1) / 2));
     // its props on the sand, each inside its glass (tanks.ts propsOf)
     for (const p of propsOf(t)) kit.prop(p.name, p.x, p.z, { s: p.s, y: p.y, yaw: p.yaw, parent: group });

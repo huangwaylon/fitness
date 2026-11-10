@@ -1006,8 +1006,9 @@ out.
   villager is within a few tiles of their doorway (plan.ts nearRooms); the hall, aquarium and garden at once. Models
   stay loaded across visits (`world3d/modelCache.ts`; packs: [world3d-assets](world3d-assets.md#the-museum)).
 - **The aquarium:** NH's three tanks (the great sea tank across the back, the deep-sea tank low along the left wall, the
-  river tank low in the front corner), two park benches facing the great tank; one coming in stands 1.5 tiles clear of
-  glass, never behind a tank (spots.test). Up to seven of each tank's caught species an hour, the same on every phone,
+  river tank low in the front corner), each facing the walkway, its props and backdrop to its wall (tanks.ts frontOf;
+  tanks.test), two park benches facing the great tank; one coming in stands 1.5 tiles clear of glass, never behind a
+  tank (spots.test). Up to seven of each tank's caught species an hour, the same on every phone,
   a caught predator in the great tank if any; calm long passes, never clipping the glass; feeder fish hunted now and
   then (each phone's own).
 - **The bug garden:** NH's garden under glass with cases; up to ten caught bugs an hour, each living as on the island.

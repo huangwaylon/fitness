@@ -9,7 +9,7 @@ import type { Exhibit, Kit } from './engine.ts';
 import type { Rect } from './plan.ts';
 import { WATER_FRAG, WATER_VERT, tankLight } from './aquarium.ts';
 import { lookAt } from './look.ts';
-import { alongX, piecesOf, waterOf, type Box, type Tank } from './tanks.ts';
+import { faceOf, piecesOf, waterOf, type Box, type Tank } from './tanks.ts';
 import { batcher, decal, openBox } from './geometry.ts';
 import { MIN_ACROSS, SEA_MUSEUM_MODEL, SEA_SPOTS, SEA_TANKS, type SeaTankId } from './seaTanks.ts';
 import type { Specimen } from './species.ts';
@@ -48,8 +48,9 @@ export function buildSeaLife(kit: Kit, list: readonly Specimen[]): Exhibit {
   const glasses = new Set<Material>();
   const water = (id: SeaTankId, floor: boolean) => {
     const w = WATER[id];
+    // (one-sided: the backdrop faces its tank's front, unseen from behind (the cutaway's camera past the front wall), the caustics up)
     const m = new ShaderMaterial({
-      vertexShader: WATER_VERT, fragmentShader: WATER_FRAG, side: DoubleSide,
+      vertexShader: WATER_VERT, fragmentShader: WATER_FRAG,
       uniforms: { uTime, uNight, uDeep: { value: new Color(w.deep) }, uTop: { value: new Color(w.top) }, uCaustic: { value: w.caustic }, uFloor: { value: floor ? 1 : 0 } },
       ...(floor ? { transparent: true, depthWrite: false, blending: AdditiveBlending } : {})
     });
@@ -64,8 +65,8 @@ export function buildSeaLife(kit: Kit, list: readonly Specimen[]): Exhibit {
     box(pc.base, sand);
     // the reef's water's back against the wall; the pool, all glass, looked down into: its floor's caustics only
     if (st.id === 'reef') {
-      const ax = alongX(b), back = new PlaneGeometry(ax ? w.x1 - w.x0 : w.z1 - w.z0, w.y1 - w.y0);
-      batch.add(back, water(st.id, false), ax ? at.makeTranslation((w.x0 + w.x1) / 2, (w.y0 + w.y1) / 2, w.z0) : at.makeRotationY(-Math.PI / 2).setPosition(w.x1, (w.y0 + w.y1) / 2, (w.z0 + w.z1) / 2));
+      const bk = faceOf(b, w, 0);
+      batch.add(new PlaneGeometry(bk.w, w.y1 - w.y0), water(st.id, false), at.makeRotationY(bk.yaw).setPosition(bk.x, (w.y0 + w.y1) / 2, bk.z));
     }
     batch.add(new PlaneGeometry(w.x1 - w.x0, w.z1 - w.z0), water(st.id, true), at.makeRotationX(-Math.PI / 2).setPosition((w.x0 + w.x1) / 2, w.y0 + 0.08, (w.z0 + w.z1) / 2));
     const g = new MeshBasicMaterial({ color: WATER[st.id].glow, transparent: true, opacity: st.id === 'pool' ? 0.2 : 0.16, depthWrite: false, side: DoubleSide, forceSinglePass: true });
