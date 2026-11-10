@@ -14,7 +14,7 @@ import { localDateAt } from '#lib/time/dates.ts';
 import { shopPrice } from '#lib/contract/rules.ts';
 import { GOALS, isGoalValue, type GoalId } from '#lib/contract/goals.ts';
 import {
-  customSnap, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, newCustomId, newFoodId, newRecipeId, newRepeatId, recipeSnap, repeatCovers,
+  customSnap, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, newCustomId, newFoodId, newRecipeId, newRepeatId, recipeSnap, repeatCovers, round1,
   type FoodEntry, type FoodRepeat, type FoodSnap, type Meal, type RepeatItem, type RepeatOp
 } from '#lib/contract/food.ts';
 import { nextDay } from '#lib/contract/tokyo.ts';
@@ -549,7 +549,7 @@ export function saveRecipe(e: { id?: string; n: string; sv: number; it: RepeatIt
   if (e.id !== undefined && held?.who !== me) return { ok: false };
   const at = foodNow(held?.at);
   const id = held?.id ?? newRecipeId(at);
-  const it = e.it.map(({ g, f }) => ({ g: Math.round(g * 10) / 10, f }));
+  const it = e.it.map(({ g, f }) => ({ g: round1(g), f }));
   const r = sendRecipe({ id, at, n: e.n, sv: e.sv, it });
   return r.ok ? { ...r, id } : r;
 }

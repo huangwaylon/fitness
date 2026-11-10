@@ -31,7 +31,7 @@
   import FoodThumb from './FoodThumb.svelte';
   import FoodOpen, { type Set } from './FoodOpen.svelte';
   import NavButton from '../ui/NavButton.svelte';
-  import { amountText, catOf, customItem, defaultPortion, stemName, foodDb, glossOf, itemOf, servingText, snapGloss, typedKcal, withImages, plateOf, recipeIdOf } from './foodUi.ts';
+  import { amountText, catOf, customItem, defaultPortion, stemName, foodDb, glossOf, itemOf, servingText, snapGloss, typedKcal, withImages, plateOf, recipeOfEntry } from './foodUi.ts';
 
   interface Props {
     /** My recent entries (recentOf). */
@@ -337,8 +337,7 @@
       {#each recent as e (e.id)}
         {#snippet cells()}
           {@const gl = snapGloss(db, e.f)}
-          {@const rid = recipeIdOf(e.f.id)}
-          {@const r = rid ? recipeById.get(rid) : undefined}
+          {@const r = recipeOfEntry(recipeById, e)}
           <FoodThumb cat={catOf(db, e.f.id)} img={imgOf(imgs, e.f.id, 48)} plate={r ? plateOf(r, imgs, db, 48) : null} />
           <span class="nm">{e.f.n}</span>
           <small class="meta"><span class="as">{amountText(e)}{#if gl}{' · '}{/if}</span>{#if gl}<span class="gl" data-gloss>{gl}</span>{/if}</small>

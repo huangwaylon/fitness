@@ -115,6 +115,11 @@ export const catOf = (db: FoodDb | null, id: string): string | undefined => item
 
 /** The recipe a logged food is (its snapshot's id `recipe:<recipe id>`: contract/food.ts recipeSnap), or null. */
 export const recipeIdOf = (foodId: string): string | null => (foodId.startsWith('recipe:') ? foodId.slice(7) : null);
+/** The recipe an entry was logged from, if it's still there (`byId`: the recipes by id). */
+export const recipeOfEntry = <R,>(byId: ReadonlyMap<string, R> | undefined, e: { f: { id: string } }): R | undefined => {
+  const id = recipeIdOf(e.f.id);
+  return id ? byId?.get(id) : undefined;
+};
 
 /** Cells a recipe's picture box holds at most (FoodThumb's `plate`: 1 the whole box, 2 halves, 3 a half and two
  *  quarters, 4 a 2 × 2). */

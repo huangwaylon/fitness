@@ -15,7 +15,7 @@
   // takes a tap all the same: the recipe, read-only (`onrecipe`).
   import type { FoodEntry, FoodSnap, Meal } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
-  import { amountText, daysText, foodDbNow, loggedCat, plateOf, recipeIdOf, whenFoodDb, withImages } from './foodUi.ts';
+  import { amountText, daysText, foodDbNow, loggedCat, plateOf, recipeOfEntry, whenFoodDb, withImages } from './foodUi.ts';
   import type { Recipe } from '#lib/model/food.ts';
   import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
   import type { FoodDb } from '#lib/food/index.ts';
@@ -48,10 +48,7 @@
     onrecipe?: (r: Recipe, e: FoodEntry) => void;
   }
   let { meal, entries, mine, days, onrepeat, onadd, onpick, ptarget, copies = [], fresh, onfresh, recipes, onrecipe }: Props = $props();
-  const recipeOf = (e: FoodEntry) => {
-    const id = recipeIdOf(e.f.id);
-    return id ? recipes?.get(id) : undefined;
-  };
+  const recipeOf = (e: FoodEntry) => recipeOfEntry(recipes, e);
   const protein = $derived(mealProtein(entries));
   const kcalOf = entryKcal;
   // the total rounds the sum once: a row each rounded may differ from it by ±1 (itemsKcal)

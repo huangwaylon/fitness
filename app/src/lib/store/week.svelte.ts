@@ -19,7 +19,8 @@ import type { Backend, Host, SendOptions, SendResult } from './backend.ts';
 import type { DemoMode } from './demo/backend.ts';
 
 class WeekStore implements Host {
-  view = $state<WeekView | null>(null);
+  /** Replaced at each change and each minute, never written into: raw (a deep proxy only added signals to every read). */
+  view = $state.raw<WeekView | null>(null);
   /** The reduced state behind `view` (きろく computes its history from it). Replaced, never mutated. */
   model = $state.raw<ComposedModel | null>(null);
   status = $state<Host['status']>('loading');

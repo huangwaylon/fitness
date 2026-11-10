@@ -20,17 +20,18 @@
   // Several foods a trip: a new entry logged from a meal's search (its amount's ついか, a row's own ＋, a recipe's or a
   // custom food's) comes back to that search, listed at its top (each with ✕), its field focused; おわり ends the trip.
   // クイック (the search's ⚡, or a kcal typed): kcal and what else is known as one entry (FoodCustom `quick`), no food saved.
+  // Here the levels' router; the stack in levels.svelte.ts, the recipe and custom food editors' drafts and buttons in
+  // recipeFlow / customFlow.svelte.ts.
   // Kept mounted between openings (HealthSheet's ごはん tab, Sheet's `keep`): `open` false (closed, or 健康's tab shown) resets what an opening resets (reset()).
   import '#lib/i18n/food.ts'; // the meal log's strings, loaded with it
   import '#lib/i18n/kenkou.ts'; // けんこう's: the period dropdown
-  import { flushSync, tick, untrack, type Snippet } from 'svelte';
+  import { flushSync, untrack, type Snippet } from 'svelte';
   import type { LocalDate, Who } from '#lib/types.ts';
-  import { customGrams, customSnap, MEALS, newFoodId, RECIPE, type FoodCustom as Custom, type FoodEntry, type FoodSnap, type Meal, type RepeatItem } from '#lib/contract/food.ts';
-  import { copySources, customs, foodDay, foodEntries, foodGoals, recipes, repeatOn, repeats, type CopySource, type Recipe } from '#lib/model/food.ts';
+  import { customSnap, MEALS, newFoodId, RECIPE, type FoodEntry, type FoodSnap, type Meal } from '#lib/contract/food.ts';
+  import { copySources, customs, foodDay, foodEntries, foodGoals, recipes, repeatOn, repeats, type CopySource } from '#lib/model/food.ts';
   import { mealProteinTarget } from '#lib/model/profile.ts';
   import {
-    copyMeal, detachDay, editFood, logCustom, logFood, logRecipe, refreshFood, removeCustom, removeFood, removeRecipe, saveCustom, saveRecipe, startRepeat,
-    stopRepeat, updateRepeat
+    copyMeal, detachDay, editFood, logCustom, logFood, refreshFood, removeFood, startRepeat, stopRepeat, updateRepeat
   } from '#lib/store/actions.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -58,9 +59,12 @@
   import { askDiscard, guardForm } from '../ui/discard.svelte.ts';
   import { pickWhose, whose } from '../health/whose.svelte.ts';
   import {
-    customDraft, customItem, customOf, DAYS, foodDb, foodDbNow, foodDbSoon, whenFoodDb, inState, itemOf, portionLabel, recentOf, recipeIdOf, recipeItem,
-    quickDraft, quickSnap, recipeServing, sameItems, servingOnly, type CustomDraft, type RecipeDraft
+    customItem, DAYS, foodDb, foodDbNow, foodDbSoon, whenFoodDb, inState, itemOf, portionLabel, recentOf, recipeItem, recipeOfEntry,
+    quickDraft, quickSnap, recipeServing, sameItems, servingOnly, type CustomDraft
   } from './foodUi.ts';
+  import { Levels, type Level, type Picked } from './levels.svelte.ts';
+  import { mealName, RecipeFlow, type FoodFlowEnv } from './recipeFlow.svelte.ts';
+  import { CustomFlow } from './customFlow.svelte.ts';
 
   let { title = $bindable(''), back = $bindable(null), lead = $bindable(null), open = true }: {
     title?: string; back?: (() => void) | null; lead?: Snippet | null; open?: boolean
@@ -113,27 +117,10 @@
   /** My repeat of a meal still going (the one to manage; an ended one only fills its days). */
   const liveRepeat = (k: Meal) => (m ? (repeats(m.state, me).find((r) => r.m === k && (!r.to || r.to > today)) ?? null) : null);
 
-  /** A food picked: a custom food still there logs afresh (`cid`); a serving with no weight (`sv`) by the serving; an
-   *  `sv` snapshot whose food is gone (or a recipe's) logs from that snapshot (`snap`). */
-  type Picked = { item: Item; cid?: string; sv?: boolean; snap?: FoodSnap };
-  /** Where the custom food editor goes on to once saved: a meal's amount, a recipe's ingredient, or back (to the search). */
-  type Then = { meal: Meal } | { ingredient: true } | null;
-  type Level =
-    | { k: 'search'; meal: Meal; added: string[] }
-    | ({ k: 'amount'; meal: Meal; g0?: number; u0?: string; entry?: FoodEntry } & Picked)
-    | { k: 'custom'; id: string | null; then: Then; who?: Who }
-    | { k: 'quick'; meal: Meal }
-    | { k: 'repeat'; meal: Meal }
-    | { k: 'recipe'; id: string | null; who?: Who }
-    | { k: 'rsearch'; from: number }
-    | ({ k: 'ritem'; g0?: number; u0?: string; i?: number } & Picked)
-    | { k: 'rlog'; r: Recipe; meal: Meal };
-  let stack = $state<Level[]>([]);
-  const top = $derived(stack.at(-1) ?? null);
-  /** Under each level: where the one below was scrolled and what opened it (`[data-add="b"]`), restored on ‹. */
-  let under: { top: number; focus: string | null }[] = [];
-  let scroller: Element | null = null;
   let root: HTMLElement | undefined = $state();
+  let scroller: Element | null = null;
+  const levels = new Levels({ scroller: () => (scroller ??= root?.closest('[data-food-sheet]') ?? null), root: () => root, leave });
+  const top = $derived(levels.top);
   $effect(() => {
     title = !top ? '' : top.k === 'repeat' ? t('food.rep.title', { meal: t(`food.meal.${top.meal}`) })
       : top.k === 'recipe' ? t(top.id ? 'food.rcp.title' : 'food.rcp.new') : top.k === 'rsearch' ? t('food.rcp.addItem')
@@ -142,26 +129,7 @@
     back = top ? up : null;
     lead = !top ? whoPill : null;
   });
-  const sheet = () => (scroller ??= root?.closest('[data-food-sheet]') ?? null);
-  /** Push a level; `focus`: what opened it (a selector, found again once the level below is back: Safari never
-   *  focuses a tapped button, so it is named, not read off document.activeElement). */
-  function go(l: Level, focus: string | null = null) {
-    leave();
-    under = [...under.slice(0, stack.length), { top: sheet()?.scrollTop ?? 0, focus }];
-    stack = [...stack, l];
-    void tick().then(() => sheet()?.scrollTo({ top: 0 }));
-  }
-  /** Back to the level `n` deep (0: the day), where it was scrolled, the focus on what opened the one left. */
-  function backTo(n: number) {
-    const was = under[n];
-    stack = stack.slice(0, n);
-    under = under.slice(0, n);
-    if (!was) return;
-    void tick().then(() => {
-      sheet()?.scrollTo({ top: was.top });
-      if (was.focus) root?.querySelector<HTMLElement>(was.focus)?.focus({ preventScroll: true });
-    });
-  }
+  const go = (l: Level, focus: string | null = null) => levels.go(l, focus);
   /** A level left by hand: its banner goes with it (its とりけす would undo what is no longer on screen). One shown by
    *  what moved the level (追加しました, then back to the search) stays. */
   function leave() {
@@ -171,12 +139,12 @@
     const pop = () => {
       cue('back');
       leave();
-      backTo(stack.length - 1);
+      levels.backTo(levels.stack.length - 1);
     };
     if (top && (top.k === 'recipe' || top.k === 'custom' || top.k === 'quick') && changed(top.k)) ask(pop);
     else pop();
   }
-  const home = () => backTo(0);
+  const home = () => levels.backTo(0);
   /** データの出典 opened (closed at each opening). */
   let credits = $state(false);
   /** The sheet closed (this kept mounted, not drawn): the next opening as a fresh one, on きろく, today, the day (no
@@ -185,15 +153,12 @@
     tab = 'log';
     period = 'week';
     picked_d = null;
-    stack = [];
-    under = [];
+    levels.reset();
     credits = false;
   }
   $effect.pre(() => {
     if (!open) untrack(reset);
   });
-  /** Back to the meal's search under the levels (a recipe or custom food saved, removed); none: the day. */
-  const toSearch = () => backTo(stack.findIndex((l) => l.k === 'search') + 1);
 
   function setWho(w: Who) {
     if (w === who || !order.includes(w)) return;
@@ -217,11 +182,11 @@
   /** A new entry logged from a meal's search (`id`; none: it failed): back to that search, the entry listed at its top
    *  and its field focused in the same tap (the keyboard up for the next food); from anywhere else, the day. */
   function logged(id: string | undefined) {
-    const i = stack.findIndex((l) => l.k === 'search');
-    const l = stack[i];
+    const i = levels.stack.findIndex((l) => l.k === 'search');
+    const l = levels.stack[i];
     if (!l || l.k !== 'search') return home();
     if (id) l.added = [...l.added, id];
-    backTo(i + 1);
+    levels.backTo(i + 1);
     focusQ();
   }
   /** This trip's entries, in the order added (one taken back is gone). */
@@ -265,16 +230,17 @@
   }
   // ---- クイック: one entry of kcal (and what else is known), no food saved (foodUi.ts quickSnap: an `sv` snapshot)
   let qdraft = $state<CustomDraft>(quickDraft());
-  /** Each editor's draft as it opened: changed, leaving it (its ‹, the sheet's ✕, backdrop or Esc) asks first. */
-  let started = { recipe: '', custom: '', quick: '' };
-  const drafts = () => ({ recipe: draft, custom: cdraft, quick: qdraft });
-  const changed = (k: keyof typeof started) => stack.some((l) => l.k === k) && JSON.stringify(drafts()[k]) !== started[k];
+  /** The quick form as it opened; each editor's draft changed, leaving it (its ‹, the sheet's ✕, backdrop or Esc) asks
+   *  first. */
+  let qstarted = '';
+  const changed = (k: 'recipe' | 'custom' | 'quick') =>
+    k === 'recipe' ? rf.changed : k === 'custom' ? cf.changed : levels.has('quick') && JSON.stringify(qdraft) !== qstarted;
   guardForm(() => changed('recipe') || changed('custom') || changed('quick'));
   const ask = askDiscard();
   /** The quick form, its kcal field focused in the tap (`k`: a kcal typed in the search). */
   function openQuick(meal: Meal, k?: number) {
     qdraft = quickDraft(k === undefined ? '' : String(k));
-    started.quick = JSON.stringify(qdraft);
+    qstarted = JSON.stringify(qdraft);
     go({ k: 'quick', meal }, k === undefined ? '[data-quick-new]' : '[data-quick-row]');
     flushSync();
     root?.querySelector<HTMLInputElement>('[data-custom-k]')?.focus({ preventScroll: true });
@@ -329,9 +295,9 @@
   function openSnap(l: Extract<Level, { item: Item }>, x: { g: number; f: FoodSnap }, focus: string) {
     go(l, focus);
     if (foodDbNow()) return;
-    const lv = stack.at(-1);
+    const lv = levels.top;
     foodDb().then((db) => {
-      if (lv && 'item' in lv && stack.includes(lv)) lv.item = itemOf(x.f, db, x.g);
+      if (lv && 'item' in lv && levels.stack.includes(lv)) lv.item = itemOf(x.f, db, x.g);
     }, () => {});
   }
   /** The entry to change: a いつもの's leaves the repeat now (the day's items its own, in one go), the real one. */
@@ -381,7 +347,6 @@
     }
     home();
   }
-  const mealName = (k: Meal) => t(`food.meal.${k}`);
   function repStart(meal: Meal, w: number) {
     if (startRepeat({ meal, date, w }).ok) said('food.rep.started', { meal: mealName(meal) });
     home();
@@ -399,150 +364,15 @@
     home();
   }
 
-  // ---- マイレシピ: the recipe level edits a draft of mine (kept here, under the search and the amount it opens)
+  // ---- マイレシピ and マイ食品: each editor's draft and what its buttons do (recipeFlow, customFlow)
   const allRecipes = $derived(m ? recipes(m.state) : []);
   const recipeById = $derived(new Map(allRecipes.map((r) => [r.id, r])));
-  /** The recipe an entry was logged from, if it's still there. */
-  const recipeOfEntry = (e: FoodEntry) => {
-    const id = recipeIdOf(e.f.id);
-    return id ? recipeById.get(id) : undefined;
-  };
-  let draft = $state<RecipeDraft>({ n: '', sv: 2, it: [] });
-  /** The draft as last saved (null: a new one): ほぞん waits while nothing changed. */
-  let savedAs = $state<string | null>(null);
-  const clean = $derived(savedAs !== null && savedAs === JSON.stringify(draft));
-  const ownerOf = (r: { who: Who }) => ({ who: r.who, name: names[r.who], villager: villagerOf(r.who) });
-  const toRecipeLevel = () => backTo(stack.findIndex((l) => l.k === 'recipe') + 1);
-
-  function openRecipe(r: Recipe | null, focus = r ? '[data-amount-open]' : '[data-recipe-new]') {
-    draft = r ? { n: r.n, sv: r.sv, it: r.it.map((x) => ({ ...x })) } : { n: '', sv: 2, it: [] };
-    savedAs = r ? JSON.stringify(draft) : null;
-    started.recipe = JSON.stringify(draft);
-    go({ k: 'recipe', id: r?.id ?? null, who: r?.who }, focus);
-  }
-  /** A new ingredient from the ingredient search (its amount's 追加, a custom food made for it) comes back to that
-   *  search, its field focused, for the next (as a meal's trip); a changed one, to the recipe. */
-  function itemDone(l: Extract<Level, { k: 'ritem' }>, v: { g: number; u: string | null }) {
-    const x = { g: v.g, f: snapOf(l, v.u) };
-    if (l.i === undefined) draft.it.push(x);
-    else draft.it[l.i] = x;
-    const i = stack.findIndex((s) => s.k === 'rsearch');
-    if (l.i !== undefined || i < 0) return toRecipeLevel();
-    backTo(i + 1);
-    focusQ();
-  }
-  /** A row's ＋ in the ingredient search: into the recipe as it comes, the search kept for the next. */
-  function itemNow(item: Item, g?: number, u?: string, f?: FoodSnap) {
-    if (draft.it.length >= RECIPE.items) return;
-    const { p, gg, uu } = asItComes(item, g, u, f);
-    draft.it.push({ g: gg, f: snapOf(p, uu) });
-  }
-  /** This trip's ingredients (`from` on), each with an id of its own while it's in the draft (✕ takes out that one:
-   *  an index would point at the next one once a row before it is gone). */
-  const tripIds = new WeakMap<RepeatItem, string>();
-  let tripN = 0;
-  const tripId = (x: RepeatItem) => tripIds.get(x) ?? (tripIds.set(x, String(++tripN)), String(tripN));
-  const tripOf = (from: number) => draft.it.slice(from).map((x) => ({ id: tripId(x), ...x }));
-  function untrip(id: string) {
-    const i = draft.it.findIndex((x) => tripIds.get(x) === id);
-    if (i >= 0) draft.it.splice(i, 1);
-  }
-  function itemRemove(i: number) {
-    draft.it.splice(i, 1);
-    toRecipeLevel();
-  }
-  function editItem(i: number) {
-    const x = draft.it[i];
-    const sv = servingOnly(x.f);
-    openSnap({ k: 'ritem', item: itemOf(x.f, foodDbNow(), x.g), ...(sv ? { sv, snap: x.f } : {}), g0: x.g, u0: x.f.u, i }, x, `[data-recipe-item="${i}"]`);
-  }
-  /** The meal a new recipe is being made from (its search under it), to log one serving into on 保存して追加. */
-  const madeFor = (id: string | null): Meal | null => {
-    const l = id ? null : stack.find((x) => x.k === 'search');
-    return l?.k === 'search' ? l.meal : null;
-  };
-  function recipeSave(id: string | null) {
-    const res = saveRecipe({ id: id ?? undefined, n: draft.n, sv: draft.sv, it: draft.it });
-    // (refused: the editor stays, the draft kept)
-    if (!res.ok) {
-      said('food.rcp.saveFailed', {}, true);
-      return;
-    }
-    said('food.rcp.saved', { name: draft.n.trim() });
-    const meal = madeFor(id);
-    const r = meal && res.ok && res.id && m ? recipes(m.state).find((x) => x.id === res.id) : undefined;
-    if (!meal || !r) return toSearch();
-    // 保存して追加: one serving (1人前) logged too, back to the meal's search
-    const one = recipeItem(r).portions![0];
-    const lr = logRecipe({ recipeId: r.id, d: date, m: meal, g: one.g, u: one.label });
-    if (lr.ok) said('food.added', { meal: mealName(meal) });
-    logged(lr.id);
-  }
-  function recipeRemove(id: string) {
-    if (removeRecipe(id).ok) said('food.rcp.removed', { name: draft.n }, true);
-    toSearch();
-  }
-  /** Someone else's → a recipe of mine with its name, servings and ingredients, opened in the editor. */
-  function recipeCopy() {
-    const res = saveRecipe({ n: draft.n, sv: draft.sv, it: draft.it });
-    if (!res.ok || !res.id) return;
-    savedAs = started.recipe = JSON.stringify(draft);
-    stack = [...stack.slice(0, -1), { k: 'recipe', id: res.id, who: me }];
-    said('food.rcp.copied');
-  }
-  /** A recipe logged as a meal of mine on the day shown. */
-  function recipeLog(l: Extract<Level, { k: 'rlog' }>, v: { m: Meal; g: number; u: string | null }) {
-    const r = logRecipe({ recipeId: l.r.id, d: date, m: v.m, g: v.g, u: v.u ?? undefined });
-    if (r.ok) said('food.added', { meal: mealName(v.m) });
-    logged(r.id);
-  }
-
-  // ---- マイ食品: the editor edits a draft (kept here, as the recipe's); ほぞん goes on where it came from (Then)
   const allCustoms = $derived(m ? customs(m.state) : []);
-  let cdraft = $state<CustomDraft>(customDraft(null));
-  /** The draft as last saved (null: a new one): ほぞん waits while nothing changed. */
-  let csaved = $state<string | null>(null);
-  const cclean = $derived(csaved !== null && csaved === JSON.stringify(cdraft));
-
-  function openCustom(c: Custom | null, then: Then, focus: string, name = '') {
-    cdraft = customDraft(c, name);
-    csaved = c ? JSON.stringify(cdraft) : null;
-    started.custom = JSON.stringify(cdraft);
-    go({ k: 'custom', id: c?.id ?? null, then, who: c?.who }, focus);
-  }
-  /** Swap the level on top for another (the editor for the amount it goes on to, a copy's editor). */
-  function swap(l: Level) {
-    stack = [...stack.slice(0, -1), l];
-    void tick().then(() => sheet()?.scrollTo({ top: 0 }));
-  }
-  function customSave(l: Extract<Level, { k: 'custom' }>) {
-    const v = customOf(cdraft);
-    const res = saveCustom({ id: l.id ?? undefined, ...v });
-    if (!res.ok || !res.id) return;
-    said('food.my.saved', { name: v.n });
-    if (!l.then) return toSearch();
-    const c: Custom = { ...v, id: res.id, at: 0, who: me };
-    if ('meal' in l.then && !l.id) {
-      // ほぞんして ついか: one serving logged too, back to the meal's search
-      const r = logCustom({ customId: res.id, d: date, m: l.then.meal, g: customGrams(c), u: c.u });
-      if (r.ok) said('food.added', { meal: mealName(l.then.meal) });
-      return logged(r.id);
-    }
-    const p: Picked = { item: customItem(c), cid: res.id, sv: c.g === undefined };
-    swap('meal' in l.then ? { k: 'amount', meal: l.then.meal, ...p } : { k: 'ritem', ...p });
-  }
-  function customRemove(id: string) {
-    if (removeCustom(id).ok) said('food.my.removed', { name: cdraft.n }, true);
-    toSearch();
-  }
-  /** Someone else's → a custom food of mine with the same values, opened in the editor. */
-  function customCopy(l: Extract<Level, { k: 'custom' }>) {
-    const res = saveCustom(customOf(cdraft));
-    if (!res.ok || !res.id) return;
-    csaved = started.custom = JSON.stringify(cdraft);
-    swap({ k: 'custom', id: res.id, then: l.then, who: me });
-    said('food.my.copied');
-  }
+  const ownerOf = (who: Who) => ({ who, name: names[who], villager: villagerOf(who) });
+  const env: FoodFlowEnv = {
+    levels, me: () => me, date: () => date, recipes: () => allRecipes, said: (k, v, sad) => void said(k, v, sad), logged, focusQ, snapOf, asItComes, openSnap
+  };
+  const rf = new RecipeFlow(env), cf = new CustomFlow(env);
 
   // ---- 最新の値にする (fresh.ts): my own day's entries (not a いつもの's) whose food has changed since they were logged
   // (the data fixed, the recipe or custom food edited). The catalogue comes once a day with an entry of it shows, at
@@ -589,12 +419,12 @@
 <div class="food" bind:this={root}>
   {#if m && view && day}
     <!-- a level slides in (けんこう's .lvl); the day comes back as it was -->
-    {#key stack.length}<div class="lv" class:lvl={!!top}>
+    {#key levels.stack.length}<div class="lv" class:lvl={!!top}>
     {#if top?.k === 'search'}
       {@const meal = top.meal}
       <FoodSearch {recent} onpick={(item, g, u, f) => add(item, meal, g, u, f)} recipes={allRecipes} {names} onrecipe={(r) => go({ k: 'rlog', r, meal })}
-        onnewrecipe={() => openRecipe(null)} customs={allCustoms} oncustom={(c) => go({ k: 'amount', meal, ...pickOf(customItem(c)) })}
-        oncreate={(n) => openCustom(null, { meal }, '[data-custom-new]', n)} onquick={(item, g, u, f) => quick(item, meal, g, u, f)}
+        onnewrecipe={() => rf.open(null)} customs={allCustoms} oncustom={(c) => go({ k: 'amount', meal, ...pickOf(customItem(c)) })}
+        oncreate={(n) => cf.open(null, { meal }, '[data-custom-new]', n)} onquick={(item, g, u, f) => quick(item, meal, g, u, f)}
         oncustomquick={(c) => quick(customItem(c), meal)} added={addedOf(top.added)} onunadd={unadd} onfinish={home}
         onquicknew={(k) => openQuick(meal, k)} onquicklog={(k) => quickNow(meal, k)} inline={inlineOf(meal)} />
     {:else if top?.k === 'quick'}
@@ -604,10 +434,10 @@
       {@const l = top}
       {#key l}
         {@const c = !l.entry && l.cid ? allCustoms.find((x) => x.id === l.cid) : undefined}
-        {@const r = l.entry && recipeOfEntry(l.entry)}
+        {@const r = l.entry && recipeOfEntry(recipeById, l.entry)}
         <FoodAmount item={l.item} meal={l.meal} g0={l.g0} u0={l.u0} serving={!!l.sv} editing={!!l.entry} once={!!l.entry?.rep} ondone={(v) => done(l, v)} onremove={() => l.entry && remove(l.entry)}
           onitem={l.cid || l.snap ? undefined : (it) => (l.item = it)}
-          open={c ? { label: t('food.my.open'), run: () => openCustom(c, null, '[data-amount-open]') } : r ? { label: t('food.rcp.open'), run: () => openRecipe(r) } : null} />
+          open={c ? { label: t('food.my.open'), run: () => cf.open(c, null, '[data-amount-open]') } : r ? { label: t('food.rcp.open'), run: () => rf.open(r) } : null} />
       {/key}
     {:else if top?.k === 'recipe'}
       <!-- (whose and whether it's still there from what opened it: one deleted meanwhile stays read-only, never an editor) -->
@@ -615,38 +445,38 @@
       {@const theirs = !!top.who && top.who !== me}
       {@const gone = !!id && !recipeById.has(id)}
       {#key id}
-        <FoodRecipe bind:draft owner={theirs ? ownerOf({ who: top.who! }) : null} saved={!!id && !theirs && !gone} {gone} clean={clean} onadd={() => { go({ k: 'rsearch', from: draft.it.length }, '[data-recipe-add]'); focusQ(); }} andLog={!!madeFor(id)}
-          onitem={editItem} onsave={() => recipeSave(id)} onremove={() => id && recipeRemove(id)} oncopy={recipeCopy}
-          onlog={stack.at(-2)?.k === 'rlog' ? up : undefined} />
+        <FoodRecipe bind:draft={rf.draft} owner={theirs ? ownerOf(top.who!) : null} saved={!!id && !theirs && !gone} {gone} clean={rf.clean} onadd={() => rf.addItem()}
+          andLog={!!rf.madeFor(id)} onitem={(i) => rf.editItem(i)} onsave={() => rf.save(id)} onremove={() => id && rf.remove(id)} oncopy={() => rf.copy()}
+          onlog={levels.stack.at(-2)?.k === 'rlog' ? up : undefined} />
       {/key}
     {:else if top?.k === 'rsearch'}
-      {@const room = draft.it.length < RECIPE.items}
+      {@const room = rf.draft.it.length < RECIPE.items}
       <FoodSearch {recent} onpick={(item, g, u, f) => go({ k: 'ritem', ...pickOf(item, f), g0: g, u0: u })} {names} recipes={allRecipes} customs={allCustoms}
-        oncustom={(c) => go({ k: 'ritem', ...pickOf(customItem(c)) })} oncreate={(n) => openCustom(null, { ingredient: true }, '[data-custom-new]', n)}
-        onquick={room ? itemNow : undefined} oncustomquick={room ? (c) => itemNow(customItem(c)) : undefined}
-        added={tripOf(top.from)} onunadd={untrip} addedHead="food.rcp.addedHead" onfinish={toRecipeLevel} />
+        oncustom={(c) => go({ k: 'ritem', ...pickOf(customItem(c)) })} oncreate={(n) => cf.open(null, { ingredient: true }, '[data-custom-new]', n)}
+        onquick={room ? (item, g, u, f) => rf.itemNow(item, g, u, f) : undefined} oncustomquick={room ? (c) => rf.itemNow(customItem(c)) : undefined}
+        added={rf.tripOf(top.from)} onunadd={(id) => rf.untrip(id)} addedHead="food.rcp.addedHead" onfinish={() => rf.toRecipe()} />
     {:else if top?.k === 'custom'}
       {@const l = top}
       {@const theirs = !!l.who && l.who !== me}
       {@const gone = !!l.id && !allCustoms.some((x) => x.id === l.id)}
       {#key l.id}
-        <FoodCustom bind:draft={cdraft} owner={theirs ? ownerOf({ who: l.who! }) : null} saved={!!l.id && !theirs && !gone} {gone} clean={cclean} onsave={() => customSave(l)}
+        <FoodCustom bind:draft={cf.draft} owner={theirs ? ownerOf(l.who!) : null} saved={!!l.id && !theirs && !gone} {gone} clean={cf.clean} onsave={() => cf.save(l)}
           andLog={!l.id && !!l.then && 'meal' in l.then}
-          onremove={() => l.id && customRemove(l.id)} oncopy={() => customCopy(l)}
+          onremove={() => l.id && cf.remove(l.id)} oncopy={() => cf.copy(l)}
           onlog={up} />
       {/key}
     {:else if top?.k === 'ritem'}
       {@const l = top}
       {#key l}
-        <FoodAmount item={l.item} meal="b" g0={l.g0} u0={l.u0} serving={!!l.sv} editing={l.i !== undefined} pick ondone={(v) => itemDone(l, v)}
+        <FoodAmount item={l.item} meal="b" g0={l.g0} u0={l.u0} serving={!!l.sv} editing={l.i !== undefined} pick ondone={(v) => rf.itemDone(l, v)}
           onitem={l.cid || l.snap ? undefined : (it) => (l.item = it)}
-          onremove={() => l.i !== undefined && itemRemove(l.i)} />
+          onremove={() => l.i !== undefined && rf.itemRemove(l.i)} />
       {/key}
     {:else if top?.k === 'rlog'}
       {@const l = top}
       {#key l}
-        <FoodAmount item={recipeItem(l.r)} meal={l.meal} serving={recipeServing(l.r)} ondone={(v) => recipeLog(l, v)}
-          open={{ label: t('food.rcp.open'), run: () => openRecipe(allRecipes.find((x) => x.id === l.r.id) ?? l.r) }} />
+        <FoodAmount item={recipeItem(l.r)} meal={l.meal} serving={recipeServing(l.r)} ondone={(v) => rf.log(l, v)}
+          open={{ label: t('food.rcp.open'), run: () => rf.open(allRecipes.find((x) => x.id === l.r.id) ?? l.r) }} />
       {/key}
     {:else if top?.k === 'repeat'}
       {@const meal = top.meal}
@@ -679,7 +509,7 @@
           {@const r = live ?? repeatOn(m.state, who, k, date)}
           <FoodMeal meal={k} entries={byMeal(k)} {mine} days={r?.w ?? null} onadd={() => openSearch(k)} copies={copiesOf(k)}
             onrepeat={mine && (live || (!r && date === today)) ? () => go({ k: 'repeat', meal: k }, `[data-repeat="${k}"], [data-repeat-new="${k}"]`) : null} onpick={edit} {ptarget}
-            {fresh} onfresh={refresh} recipes={recipeById} onrecipe={mine ? undefined : (r, e) => openRecipe(r, `[data-entry="${e.id}"]`)} />
+            {fresh} onfresh={refresh} recipes={recipeById} onrecipe={mine ? undefined : (r, e) => rf.open(r, `[data-entry="${e.id}"]`)} />
         {/each}
         <FoodCredits bind:open={credits} />
       {/if}
