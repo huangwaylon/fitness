@@ -2,7 +2,6 @@
 // their own, merged in when its pages load (components/kikimimi/mane/). usage.test, linebreaks.test and fonts.test read
 // them.
 import ja from './kiki-mane.ja.json';
-import en from './kiki-mane.en.json';
-import { addCatalog } from './index.ts';
+import { addStrings } from './index.ts';
 
-addCatalog({ ja, en });
+addStrings(ja, () => import('./kiki-mane.en.json'));

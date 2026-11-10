@@ -2,7 +2,6 @@
 // own, merged in when the game's pages load (components/kikimimi/rush/board.ts). usage.test, linebreaks.test and
 // fonts.test read them.
 import ja from './kiki-rush.ja.json';
-import en from './kiki-rush.en.json';
-import { addCatalog } from './index.ts';
+import { addStrings } from './index.ts';
 
-addCatalog({ ja, en });
+addStrings(ja, () => import('./kiki-rush.en.json'));

@@ -79,7 +79,7 @@ Every game is a lane in `round/registry.ts`. The quiz, ladder, lesson, taikai an
 | `record?` | my row's answers when they aren't choices (the row then carries its `gm`: recorder.ts) |
 
 - **Pages:** `components/kikimimi/<gm>/views.ts` exports `views: { lobby?, play?, results? }`, each `import()`ed; the sheet mounts the one for the phase through `<Lazy>` (a failed chunk: the stale-build reload, もういちど), else the quiz's.
-- **Strings:** `i18n/kiki-<gm>.{ja,en}.json` (keys `kiki.<gm>.*`) plus a `kiki-<gm>.ts` that calls `addCatalog`, imported by the views (deps.test: kikimimi/ may not import i18n/).
+- **Strings:** `i18n/kiki-<gm>.{ja,en}.json` (keys `kiki.<gm>.*`) plus a `kiki-<gm>.ts` that calls `addStrings` (the Japanese at once, the English chunk only once English is wanted), imported by the views (deps.test: kikimimi/ may not import i18n/).
 - **Catalog:** each mode has a shelf, an icon, `places` and `game` (catalog.ts). A lane's mode shows once its `LATER` line exists and a file of its game is `listened` (`LANES.ready`), or its line's `content()` says so. A mic mode brings its own `mode` (`addMode`): the shelf `koe`, `gate()` and `requires: 'mic'`. きまぐれ never picks a mic mode.
 - **A new game:** its lane, views and content; its `BUILD_V` line (games/versions.ts); `npm run kikimimi:levels`; teach cv.test's `decksOf` its deal. Tests: its kinds (determinism, grade, team, the row's round-trip through `listenOf`, `valid` bounds), the budget, one e2e solo and one co-op (Chromium, logic only).
 

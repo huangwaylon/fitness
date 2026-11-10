@@ -9,11 +9,21 @@ export { i18n, type Locale };
 type Catalog = Record<string, string>;
 const catalogs: Record<Locale, Catalog> = { ja, en: {} };
 
+type English = () => Promise<{ default: Catalog }>;
+/** The lazily loaded parts' English strings (addStrings), each a chunk of its own. */
+const parts: English[] = [];
+const partEnglish = (load: English): Promise<void> =>
+  load().then((m) => {
+    Object.assign(catalogs.en, m.default);
+    i18n.rev++;
+  });
+
 let english: Promise<void> | null = null;
-/** Load the English catalog (once). Lazily loaded parts may have added their English strings already: they stay. */
+/** Load the English catalog (once), and every part's loaded so far. Lazily loaded parts may have added their English
+ *  strings already: they stay. */
 export const loadEnglish = (): Promise<void> =>
-  (english ??= import('./en.json').then(
-    (m) => void (catalogs.en = { ...m.default, ...catalogs.en }),
+  (english ??= Promise.all([import('./en.json').then((m) => void (catalogs.en = { ...m.default, ...catalogs.en })), ...parts.map(partEnglish)]).then(
+    () => {},
     (e: unknown) => {
       english = null;
       throw e;
@@ -30,10 +40,18 @@ export function setLocale(locale: Locale): void {
 
 type Params = Record<string, string | number | null | undefined>;
 
-/** A lazily loaded part's own strings (kenkou.ts), merged in once its chunk loads. */
+/** Strings merged in as they are (the tent's and the catalogue's names: their own loaders, one language each). */
 export function addCatalog(extra: Record<Locale, Catalog>): void {
   Object.assign(catalogs.ja, extra.ja);
   Object.assign(catalogs.en, extra.en);
+}
+
+/** A lazily loaded part's own strings (kenkou.ts), merged in once its chunk loads: its Japanese at once, its English
+ *  (`en`, a chunk of its own) fetched only once English is wanted (now, or at the switch); Japanese meanwhile. */
+export function addStrings(ja: Catalog, en: English): void {
+  Object.assign(catalogs.ja, ja);
+  parts.push(en);
+  if (english) void english.then(() => partEnglish(en)).catch(() => swallowed('i18n.en'));
 }
 
 function interpolate(msg: string, params?: Params): string {
@@ -58,6 +76,7 @@ export function keyOfText(text: string): string | null {
 
 /** Translate `key`; falls back to Japanese, then to the key itself. */
 export function t(key: string, params?: Params, locale: Locale = i18n.locale): string {
+  void i18n.rev;
   const msg = catalogs[locale][key] ?? catalogs.ja[key];
   if (msg === undefined) return key;
   return interpolate(msg, params);
@@ -75,14 +94,17 @@ export function hostLine(key: string, params?: Params): string {
   return t(full, p);
 }
 
+/** One formatter for every tile and row (making one is the cost). */
+const NUM = new Intl.NumberFormat('en-US');
+
 /** `1,234 ベル` / `1,234 Bells` (play money). `signed`: `+620 ベル` (a gain; a loss is always `−`). */
 export function formatBells(amount: number, opts: { signed?: boolean } = {}): string {
   const n = Math.round(amount);
-  const digits = new Intl.NumberFormat('en-US').format(Math.abs(n));
+  const digits = NUM.format(Math.abs(n));
   const sign = n < 0 ? '−' : opts.signed && n > 0 ? '+' : '';
   return t('bells.amount', { n: sign + digits });
 }
 
 /** Just the digits with separators: `1,234` (when the unit is drawn apart, e.g. a big total). */
-export const formatNum = (n: number): string => new Intl.NumberFormat('en-US').format(Math.round(n));
+export const formatNum = (n: number): string => NUM.format(Math.round(n));
 

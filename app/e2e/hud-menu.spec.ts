@@ -158,6 +158,23 @@ test('ずかん opens the ずかん (its kinds, a kind\'s page with ‹), せっ
   await expect(dlg).toHaveCount(0);
 });
 
+// A sheet's own strings come in Japanese only (i18n addStrings): switched to English, ききみみ's, loaded before the
+// switch, turn English with it.
+test('English after a sheet’s strings came in Japanese: its strings English too', async ({ page }) => {
+  await page.goto('?demo&date=2026-11-04T12:00');
+  await islandUp(page);
+  const dlg = page.locator('dialog[open]');
+  await fromMenu(page, 'kikimimi');
+  await expect(dlg.locator('.navbar')).toContainText('ききみみ');
+  await page.keyboard.press('Escape');
+  await fromMenu(page, 'settings');
+  await dlg.locator('select[data-pick="lang"]').selectOption('en');
+  await expect(dlg.locator('.navbar')).toContainText('Settings');
+  await dlg.locator('.titlebar .close').click();
+  await fromMenu(page, 'kikimimi');
+  await expect(dlg.locator('.navbar')).toContainText('Kikimimi');
+});
+
 test.describe('reduced motion', () => {
   test.use({ reducedMotion: 'reduce' });
   test('the pills fade in where they stand (no drop, no tipped leaf)', async ({ page }) => {

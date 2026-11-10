@@ -21,10 +21,11 @@ export function monthLabel(d: string, { year = true, long = false }: { year?: bo
 /** A week from its Monday: `10/26–11/1`. */
 export const weekRange = (wk: string): string => t('kiroku.range', { a: md(wk), b: md(addDays(wk, 6)) });
 
+let enDate: Intl.DateTimeFormat | undefined;
 /** `10月28日(水)` / `Wed, Oct 28`. */
 export function formatDate(d: string): string {
   if (i18n.locale === 'ja') return `${Number(d.slice(5, 7))}月${Number(d.slice(8, 10))}日(${weekdayOf(d)})`;
-  return new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(dateMs(d)));
+  return (enDate ??= new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' })).format(new Date(dateMs(d)));
 }
 
 
