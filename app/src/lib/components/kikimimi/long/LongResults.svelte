@@ -10,7 +10,7 @@
   import { rawOf } from '#lib/kikimimi/games/listened.ts';
   import { dictFor, longOpts, longTier, type LongCard } from '#lib/kikimimi/games/long/def.ts';
   import { lineItem, okFor } from './board.ts';
-  import { isCoop, playAgain } from '../listenView.ts';
+  import { hostLine, isCoop, playAgain } from '../listenView.ts';
   import { jaMode } from '../prefs.ts';
   import ResultsFrame from '../frame/Results.svelte';
   import ReviewList from '../frame/ReviewList.svelte';
@@ -37,12 +37,12 @@
   const rows = $derived(cards.map((c, i) => ({ c, i, ok: okFor(c, v.answers[i]), right: said(c, c.answer), mine: said(c, mine[i]) })));
   const tally = $derived(rows.filter((r) => r.ok).length);
   const made = $derived(coop ? v.team.all : tally);
-  const line = $derived(t(made >= cards.length ? 'kiki.long.host.all' : made * 2 >= cards.length ? 'kiki.long.host.some' : 'kiki.long.host.few'));
+  const line = $derived(t(hostLine('kiki.long.host', made, cards.length)));
   const frameV = $derived({ ...v, team: { ...v.team, right: v.team.all, all: 0 } });
 
   // with misses, the list opens on them, the first one open
   const review = new Review(() => rows.filter((r) => !r.ok).map((r) => r.i));
-  const shown = $derived(rows.filter((r) => !review.missedOnly || !r.ok));
+  const shown = $derived(review.shown(rows));
 
   // the dictation: picked once from my answers as the results open (game.svelte.ts keeps the view's answers)
   const dicts = untrack(() => dictFor(cards, mine));

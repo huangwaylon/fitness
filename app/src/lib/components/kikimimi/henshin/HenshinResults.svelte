@@ -11,7 +11,7 @@
   import { PHENOMENA } from '#lib/kikimimi/henshin.ts';
   import { firstListen } from '#lib/kikimimi/score.ts';
   import { TAKES, roundFor, takeOf } from './round.ts';
-  import { playAgain } from '../listenView.ts';
+  import { hostLine, playAgain } from '../listenView.ts';
   import ResultsFrame from '../frame/Results.svelte';
   import ReviewList from '../frame/ReviewList.svelte';
   import { Review } from '../frame/review.svelte.ts';
@@ -30,12 +30,12 @@
   }));
   const tally = $derived(rows.filter((r) => r.ok).length);
   const firsts = $derived(rows.filter((r) => r.first).length);
-  const line = $derived(t(tally >= cards.length ? 'kiki.henshin.host.all' : tally * 2 >= cards.length ? 'kiki.henshin.host.some' : 'kiki.henshin.host.few'));
+  const line = $derived(t(hostLine('kiki.henshin.host', tally, cards.length)));
   const today = $derived(PHENOMENA[henshinOpts.decode(v.o)?.focus ?? 0]);
 
   // with misses, the list opens on them, the first one open
   const review = new Review(() => rows.filter((r) => !r.ok).map((r) => r.i));
-  const shown = $derived(rows.filter((r) => !review.missedOnly || !r.ok));
+  const shown = $derived(review.shown(rows));
   const playing = (c: HenshinCard) => (game.sounding && game.sounding.i === -1 && game.sounding.at === c.id ? game.sounding.from : null);
 
   const again = () => playAgain(game, 'henshin', onagain);

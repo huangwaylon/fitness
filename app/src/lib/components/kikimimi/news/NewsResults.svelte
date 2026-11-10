@@ -8,7 +8,7 @@
   import { rawOf } from '#lib/kikimimi/games/listened.ts';
   import type { NewsCard } from '#lib/kikimimi/games/news/def.ts';
   import { okFor } from './board.ts';
-  import { isCoop, playAgain } from '../listenView.ts';
+  import { hostLine, isCoop, playAgain } from '../listenView.ts';
   import ResultsFrame from '../frame/Results.svelte';
   import ReviewList from '../frame/ReviewList.svelte';
   import { Review } from '../frame/review.svelte.ts';
@@ -33,12 +33,12 @@
   const tally = $derived(rows.filter((r) => r.ok).length);
   /** The team's questions right together (co-op), else mine. */
   const made = $derived(coop ? v.team.all : tally);
-  const line = $derived(t(made >= cards.length ? 'kiki.news.host.all' : made * 2 >= cards.length ? 'kiki.news.host.some' : 'kiki.news.host.few'));
+  const line = $derived(t(hostLine('kiki.news.host', made, cards.length)));
   const frameV = $derived({ ...v, team: { ...v.team, right: v.team.all, all: 0 } });
 
   // with misses, the list opens on them, the first one open
   const review = new Review(() => rows.filter((r) => !r.ok).map((r) => r.i));
-  const shown = $derived(rows.filter((r) => !review.missedOnly || !r.ok));
+  const shown = $derived(review.shown(rows));
   const ask = (c: NewsCard) => (c.news.q === 'detail' ? c.news.ask : t(`kiki.news.ask.${c.news.q}`));
   const playing = $derived(game.talk && game.talk.i === -1 && game.talk.at === news?.id ? game.talk.all : []);
 

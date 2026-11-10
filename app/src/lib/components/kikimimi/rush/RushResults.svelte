@@ -8,7 +8,7 @@
   import { PASS, type RushCard } from '#lib/kikimimi/games/rush/def.ts';
   import { firstListen } from '#lib/kikimimi/score.ts';
   import { authoredPick, comboBest, myTurn, othersAt, roundFor } from './board.ts';
-  import { isCoop, playAgain } from '../listenView.ts';
+  import { hostLine, isCoop, playAgain } from '../listenView.ts';
   import ResultsFrame from '../frame/Results.svelte';
   import ReviewList from '../frame/ReviewList.svelte';
   import { Review } from '../frame/review.svelte.ts';
@@ -36,12 +36,12 @@
   const firsts = $derived(mineRows.filter((r) => r.first).length);
   const served = $derived(coop ? v.team.right : tally);
   const best = $derived(comboBest(v, cards, game.me));
-  const line = $derived(t(served >= cards.length ? 'kiki.rush.host.all' : served * 2 >= cards.length ? 'kiki.rush.host.some' : 'kiki.rush.host.few'));
+  const line = $derived(t(hostLine('kiki.rush.host', served, cards.length)));
   const frameV = $derived({ ...v, team: { ...v.team, all: 0 } });
 
   // with misses, the list opens on them, the first one open
   const review = new Review(() => rows.filter((r) => !r.ok).map((r) => r.i));
-  const shown = $derived(rows.filter((r) => !review.missedOnly || !r.ok));
+  const shown = $derived(review.shown(rows));
 </script>
 
 {#snippet more()}

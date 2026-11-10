@@ -9,7 +9,7 @@
   import { EMPTY, rawOf } from '#lib/kikimimi/games/listened.ts';
   import type { TachiCard } from '#lib/kikimimi/games/tachi/def.ts';
   import { okFor } from './board.ts';
-  import { isCoop, playAgain } from '../listenView.ts';
+  import { hostLine, isCoop, playAgain } from '../listenView.ts';
   import ResultsFrame from '../frame/Results.svelte';
   import ReviewList from '../frame/ReviewList.svelte';
   import { Review } from '../frame/review.svelte.ts';
@@ -34,7 +34,7 @@
   const tally = $derived(rows.filter((r) => r.ok).length);
   /** The team's rounds right together (co-op), else mine. */
   const made = $derived(coop ? v.team.all : tally);
-  const line = $derived(t(made >= cards.length ? 'kiki.tachi.host.all' : made * 2 >= cards.length ? 'kiki.tachi.host.some' : 'kiki.tachi.host.few'));
+  const line = $derived(t(hostLine('kiki.tachi.host', made, cards.length)));
   const frameV = $derived({ ...v, team: { ...v.team, right: v.team.all, all: 0 } });
 
   /** An answer in words: the claims' speakers, a face's name, a choice. */

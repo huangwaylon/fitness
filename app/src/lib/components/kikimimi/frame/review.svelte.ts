@@ -12,6 +12,8 @@ export class Review {
     this.missedOnly = m.length > 0;
     this.#open = m.slice(0, 1);
   }
+  /** The rows the list shows: only the missed ones while 「まちがえた だけ」. */
+  shown = <T extends { ok: boolean }>(rows: readonly T[]): readonly T[] => (this.missedOnly ? rows.filter((r) => !r.ok) : rows);
   isOpen = (i: number): boolean => this.#open.includes(i);
   toggle = (i: number): void => void (this.#open = this.#open.includes(i) ? this.#open.filter((x) => x !== i) : [...this.#open, i]);
 }

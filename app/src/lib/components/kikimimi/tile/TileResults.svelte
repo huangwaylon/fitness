@@ -10,7 +10,7 @@
   import { tileOk, slotOk, type TileCard } from '#lib/kikimimi/games/tile/def.ts';
   import { firstListen } from '#lib/kikimimi/score.ts';
   import { boardFor, mySlots } from './board.ts';
-  import { isCoop, playAgain } from '../listenView.ts';
+  import { hostLine, isCoop, playAgain } from '../listenView.ts';
   import ResultsFrame from '../frame/Results.svelte';
   import ReviewList from '../frame/ReviewList.svelte';
   import { Review } from '../frame/review.svelte.ts';
@@ -37,12 +37,12 @@
   const firsts = $derived(rows.filter((r) => r.first).length);
   /** The team's sentences built whole (co-op), else mine. */
   const made = $derived(coop ? v.team.all : tally);
-  const line = $derived(t(made >= cards.length ? 'kiki.tile.host.all' : made * 2 >= cards.length ? 'kiki.tile.host.some' : 'kiki.tile.host.few'));
+  const line = $derived(t(hostLine('kiki.tile.host', made, cards.length)));
   const frameV = $derived({ ...v, team: { ...v.team, right: v.team.all, all: 0 } });
 
   // with misses, the list opens on them, the first one open
   const review = new Review(() => rows.filter((r) => !r.ok).map((r) => r.i));
-  const shown = $derived(rows.filter((r) => !review.missedOnly || !r.ok));
+  const shown = $derived(review.shown(rows));
   const playing = (c: TileCard) => (game.sounding && game.sounding.i === -1 && game.sounding.at === c.id ? game.sounding.from : null);
 
   const again = () => playAgain(game, 'tile', onagain);

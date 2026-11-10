@@ -8,7 +8,7 @@
   import { phrasesIn, roundsOf, saidOf, teamSaid, type RoleCard } from '#lib/kikimimi/games/role/def.ts';
   import { rawOf } from '#lib/kikimimi/games/listened.ts';
   import { partsOf, saidAt } from './board.ts';
-  import { playAgain } from '../listenView.ts';
+  import { hostLine, playAgain } from '../listenView.ts';
   import Transcript from '../Transcript.svelte';
   import ResultsShell from '../frame/ResultsShell.svelte';
   import ScoreCard from '../frame/ScoreCard.svelte';
@@ -27,7 +27,7 @@
     const m = saidOf(rawOf(v.answers[i]))?.mask ?? saidAt(v.g ?? '', i);
     return c.turn.keys.map((k, j) => ({ k, i, ok: m === null ? null : (m & (1 << j)) !== 0 }));
   }));
-  const line = $derived(t(of && said >= of ? 'kiki.role.host.all' : said * 2 >= of ? 'kiki.role.host.some' : 'kiki.role.host.few'));
+  const line = $derived(t(hostLine('kiki.role.host', said, of)));
   const parts = $derived(partsOf(cards));
   const again = () => playAgain(game, 'role', onagain);
 </script>

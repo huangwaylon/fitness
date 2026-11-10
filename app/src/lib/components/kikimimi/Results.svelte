@@ -70,7 +70,7 @@
   const firsts = $derived(items.filter((_, i) => first(i)).length);
   // with misses, the results open on them, the first one open
   const review = new Review(() => items.flatMap((_, i) => (ok(i) ? [] : [i])));
-  const rows = $derived(items.map((it, i) => ({ it, i, ok: ok(i), k: v.answers[i]?.k ?? null })).filter((r) => !review.missedOnly || !r.ok));
+  const rows = $derived(review.shown(items.map((it, i) => ({ it, i, ok: ok(i), k: v.answers[i]?.k ?? null }))));
   /** The ladders shown in the review (the misses only: those not climbed to the top). */
   const shown = $derived(ladders.map((l, j) => ({ l, j })).filter(({ l, j }) => !review.missedOnly || mine[j] < l.n));
   /** A review row's ▶︎ playing this item: when it started (its karaoke). */

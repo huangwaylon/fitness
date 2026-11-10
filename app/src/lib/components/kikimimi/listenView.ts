@@ -6,6 +6,9 @@ import type { GameId } from '#lib/kikimimi/round/types.ts';
 import type { QuizGame } from './game.svelte.ts';
 import { EMPTY, listenOpts, tierAt } from '#lib/kikimimi/games/listened.ts';
 
+/** The results' しずえ line's key for `made` of `n` (`prefix`.all / .some, half or more / .few). */
+export const hostLine = (prefix: string, made: number, n: number): string => `${prefix}.${n && made >= n ? 'all' : made * 2 >= n ? 'some' : 'few'}`;
+
 /** Co-op: several players, not たいせん (the listening games have none). */
 export const isCoop = (v: Pick<QuizView, 'players' | 'vs'>): boolean => v.players.length > 1 && !v.vs;
 

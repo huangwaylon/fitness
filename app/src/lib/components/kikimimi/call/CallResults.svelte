@@ -11,7 +11,7 @@
   import { basketOf, myRows, roundFor, whyOf } from './board.ts';
   import Basket from './Basket.svelte';
   import CallLog from './CallLog.svelte';
-  import { playAgain } from '../listenView.ts';
+  import { hostLine, playAgain } from '../listenView.ts';
   import ResultsFrame from '../frame/Results.svelte';
   import ReviewList from '../frame/ReviewList.svelte';
   import { Review } from '../frame/review.svelte.ts';
@@ -43,14 +43,14 @@
   const tally = $derived(rounds.filter((r) => r.ok).length);
   const firsts = $derived(rounds.filter((r) => r.first).length);
   const errands = $derived(calls.filter((x) => x.done).length);
-  const line = $derived(t(errands >= calls.length ? 'kiki.call.host.all' : errands * 2 >= calls.length ? 'kiki.call.host.some' : 'kiki.call.host.few'));
+  const line = $derived(t(hostLine('kiki.call.host', errands, calls.length)));
   const frameV = $derived({ ...v, team: { ...v.team, right: v.team.all, all: 0 } });
 
   // with misses, the list opens on them, the first one open
   const review = new Review(() => calls.filter((x) => !x.ok).map((x) => x.i));
   let logs = $state<number[]>([]);
   const toggle = (list: number[], i: number) => (list.includes(i) ? list.filter((x) => x !== i) : [...list, i]);
-  const shown = $derived(calls.filter((x) => !review.missedOnly || !x.ok));
+  const shown = $derived(review.shown(calls));
 
   const again = () => playAgain(game, 'call', onagain);
 </script>
