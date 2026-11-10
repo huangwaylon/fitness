@@ -49,7 +49,7 @@ export type Who = 'A' | 'B' | 'G';
 /** Who draws a villager here (person3d: the look they wear). */
 /** Who draws a person: its model, and for a villager with none (villagers.json none) its render, drawn as a card. */
 export type Look = Person3 & { card?: { url: string; aspect: number } };
-export type Hit = { kind: 'villager'; who: Who } | { kind: 'creature'; id: string } | { kind: 'seat'; id: string } | { kind: 'door' } | { kind: 'floor'; x: number; z: number };
+export type Hit = { kind: 'villager'; who: Who } | { kind: 'visitor'; id: string } | { kind: 'creature'; id: string } | { kind: 'seat'; id: string } | { kind: 'door' } | { kind: 'floor'; x: number; z: number };
 
 /** One wing's exhibits (aquarium.ts, garden.ts): its group, what stands on the floor (the walk keeps off it), its frame
  *  (t ms; `seen`: whether a sphere is in the camera's view: what isn't rests), whether something on screen moved (the
@@ -63,6 +63,8 @@ export interface Exhibit {
   /** What one sits on (the aquarium's benches: seats.ts): its id, its box on the floor (`h` tall). The walk keeps off
    *  it; a tap on it is the seat's; a seated villager's eye may be over it. */
   seats?: readonly (Rect & { id: string; h: number })[];
+  /** Its picks are people (the visitors: crowd3d.ts), not creatures: a tap's after the players', before the creatures. */
+  people?: boolean;
   frame(t: number, dt: number, seen: (s: Sphere) => boolean): boolean;
   pick(project: (x: number, y: number, z: number) => [number, number] | null, cx: number, cy: number): { id: string; d: number } | null;
   /** A creature's world point (the card and the e2e), or null. */
@@ -91,6 +93,8 @@ export interface Kit {
   /** `layer`: a decal's on the floor (decal): a layer over what lies under it. */
   lambert(o: { color?: number; map?: Texture | null; transparent?: boolean; opacity?: number; layer?: number }): MeshLambertMaterial;
   invalidate(): void;
+  /** A model added outside the loads above (a visitor's): its programs compiled ahead (the warm-up). */
+  warm(): void;
   noDraw: boolean;
 }
 
@@ -477,7 +481,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     return holder;
   }
   const kit: Kit = {
-    tex, model, prop, lambert, invalidate: () => invalidate(), noDraw,
+    tex, model, prop, lambert, invalidate: () => invalidate(), warm: () => warmSoon(), noDraw,
     critter: (kind, id) => kit.island(`critters/${kind}/${id}`),
     island: (name) => {
       const b = modelBounds(name);
@@ -1295,6 +1299,12 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       const half = Math.max(10, (fy - hy) * 0.32);
       if (cx >= fx - half && cx <= fx + half && cy >= hy - 4 && cy <= fy + 4) return { kind: 'villager', who };
     }
+    // a visitor (crowd3d.ts: the nearest body round the finger)
+    for (const e of exhibits) {
+      if (!e.people || roomOfExhibit(e) !== cur) continue;
+      const p = e.pick(project, cx, cy), at = p && e.where(p.id);
+      if (p && at && nearer(at[0], at[1] / 2, at[2])) return { kind: 'visitor', id: p.id };
+    }
     // a seat (the nearest box on the ray, nearer than the first wall)
     let seat: string | null = null, seatD = Infinity;
     // (at the eyes, not the bench I'm sitting on: the ray from my head to the floor in front of it may cross its seat,
@@ -1309,7 +1319,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     // a creature (the nearest drawn within a finger's reach; not one behind the seat the ray meets)
     let best: { id: string; d: number } | null = null;
     for (const e of exhibits) {
-      if (roomOfExhibit(e) !== cur) continue;
+      if (e.people || roomOfExhibit(e) !== cur) continue;
       const p = e.pick(project, cx, cy), at = p && e.where(p.id);
       if (p && (!best || p.d < best.d) && (!at || (nearer(at[0], at[1], at[2]) && camera.position.distanceTo(hitV.set(at[0], at[1], at[2])) < seatD))) best = p;
     }

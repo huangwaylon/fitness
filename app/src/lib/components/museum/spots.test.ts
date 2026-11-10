@@ -3,8 +3,9 @@
 // carpets, a chatting pair face to face.
 import { describe, expect, test } from 'vitest';
 import { CARPETS, ENTRANCE, OPENINGS, ROOM_IDS, inRect, navOf, roomIdAt, walkPath, walkable } from './plan.ts';
-import { LINGER, SPOTS, allBlocks, spot } from './spots.ts';
-import { BENCHES } from './seats.ts';
+import { LINGER, SPOTS, VISITOR_POINTS, VISITOR_ROOMS, allBlocks, spot } from './spots.ts';
+import { MAX_IN, MAX_ROOM, crowdOf, usablePoints } from './visitors.ts';
+import { BENCHES, benchSeats } from './seats.ts';
 
 const g = navOf(allBlocks());
 
@@ -45,5 +46,36 @@ describe('the visitors’ places', () => {
       expect(Math.hypot(a.x - b.x, a.z - b.z)).toBeLessThan(16);
       expect(Math.abs(Math.abs(a.faceYaw - b.faceYaw) - Math.PI)).toBeLessThan(1e-9);
     }
+  });
+});
+
+describe('the visitors on the real plan', () => {
+  test('every place kept (none in a doorway), its id its own, a pair each other’s, a seat its bench’s', () => {
+    expect(usablePoints(VISITOR_POINTS, VISITOR_ROOMS).length).toBe(VISITOR_POINTS.length);
+    expect(new Set(VISITOR_POINTS.map((p) => p.id)).size).toBe(VISITOR_POINTS.length);
+    const byId = new Map(VISITOR_POINTS.map((p) => [p.id, p]));
+    for (const p of VISITOR_POINTS) {
+      if (p.kind === 'chat') expect(byId.get(p.pair!)?.pair, p.id).toBe(p.id);
+      if (p.kind === 'sit') {
+        const [id, n] = p.id.split(':');
+        expect(benchSeats(id)[Number(n)]?.from, p.id).toEqual(p.from);
+      }
+    }
+    for (const r of VISITOR_ROOMS) expect(roomIdAt(...r.door), r.id).toBe(r.id);
+  });
+  test(`a day on the real plan: ${MAX_IN} in the museum and ${MAX_ROOM} a room at most, somebody in most rooms`, () => {
+    const c = crowdOf({ rooms: VISITOR_ROOMS, points: VISITOR_POINTS, path: () => [], name: () => null });
+    const seen = new Set<string>();
+    for (let t = Date.UTC(2026, 10, 10, 0); t < Date.UTC(2026, 10, 10, 15); t += 30_000) {
+      let all = 0;
+      for (const r of ROOM_IDS) {
+        const n = c.step(t, r).poses.length;
+        expect(n).toBeLessThanOrEqual(MAX_ROOM);
+        if (n) seen.add(r);
+        all += n;
+      }
+      expect(all).toBeLessThanOrEqual(MAX_IN);
+    }
+    expect(seen.size).toBeGreaterThanOrEqual(6);
   });
 });

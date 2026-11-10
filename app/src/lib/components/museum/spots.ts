@@ -9,7 +9,8 @@ import { SPOTS as FOSSIL_SPOTS, footOf } from './fossils.ts';
 import { FISH_PLANTS, TANKS, type Box } from './tanks.ts';
 import { SEA_TANKS } from './seaTanks.ts';
 import { CASE, CASES, OAKS, PALM, POND, PROPS, SOLIDS } from './bugLife.ts';
-import { DESK, ENTRANCE, HALL, HALL_PLANTS, OPENINGS, rectsOf, type Pt, type Rect, type RoomId } from './plan.ts';
+import { DESK, DOORMAT, ENTRANCE, HALL, HALL_PLANTS, OPENINGS, ROOM_IDS, rectsOf, wingOfRoom, type Pt, type Rect, type RoomId } from './plan.ts';
+import type { LingerPoint as VisitorPoint, VisitorRoom } from './visitors.ts';
 
 const flat = (b: Box): Rect => ({ x0: b.x0, x1: b.x1, z0: b.z0, z1: b.z1 });
 /** Everything that stands on the floor with every exhibit on show (the walk keeps off it: engine.ts's and each
@@ -115,3 +116,35 @@ export function spot(name: string): Pt {
   if (!p) throw new Error(`no museum spot ${name}`);
   return p;
 }
+
+/** The visitors' rooms (visitors.ts): each its wing's kind (the lines'), its way in (`in:<id>`, the hall's just inside
+ *  the front door) and its doorways' boxes (a wall's thickness either side of its line). */
+export const VISITOR_ROOMS: readonly VisitorRoom[] = ROOM_IDS.map((id) => ({
+  id,
+  kind: wingOfRoom(id),
+  door: id === 'hall' ? [ENTRANCE[0], ENTRANCE[1] - 6] : spot(`in:${id}`),
+  doorways: [
+    ...OPENINGS.filter((o) => o.room === id || o.next === id).map((o): Rect =>
+      o.axis === 'x' ? { x0: o.at - 5, x1: o.at + 5, z0: o.from, z1: o.to } : { x0: o.from, x1: o.to, z0: o.at - 5, z1: o.at + 5 }),
+    ...(id === 'hall' ? [DOORMAT] : [])
+  ]
+}));
+/** LINGER as visitors.ts takes it: an id each (a seat's `<bench>:<n>`, what a player sitting there blocks), a chat
+ *  point's pair (LINGER lists a pair's halves one after the other), a seat's step (where one stands by it). */
+export const VISITOR_POINTS: readonly VisitorPoint[] = (() => {
+  const ids = LINGER.map((l, i) => {
+    if (l.kind !== 'sit') return `${l.room}.${i}`;
+    const n = benchSeats(l.exhibitId!).findIndex((s) => s.at[0] === l.x && s.at[1] === l.z);
+    return `${l.exhibitId}:${n}`;
+  });
+  return LINGER.map((l, i): VisitorPoint => {
+    const p: VisitorPoint = { ...l, id: ids[i] };
+    if (l.kind === 'chat') {
+      // (the first of a pair: the next one, else the one before)
+      const first = LINGER.slice(0, i).filter((q) => q.kind === 'chat').length % 2 === 0;
+      p.pair = ids[first ? i + 1 : i - 1];
+    }
+    if (l.kind === 'sit') p.from = benchSeats(l.exhibitId!)[Number(ids[i].split(':')[1])].from;
+    return p;
+  });
+})();

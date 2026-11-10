@@ -8,8 +8,12 @@ export const CURATOR = 'curator';
  *  {art}; .10 how the art comes: a balloon's present now and then). */
 const LINES = 11;
 
-/** His line on a tap (an i18n key): `last` the one before (none yet: his welcome). */
-export function curatorLine(r: () => number, last?: string): string {
+/** His news: the newest find of the last day by name (museum.curator.new, {name}). */
+const NEWS = 'museum.curator.new';
+/** His line on a tap (an i18n key): `last` the one before (none yet: his welcome); `fresh`: a find of the last day is
+ *  on show (every other tap or so his news, never twice running). */
+export function curatorLine(r: () => number, last?: string, fresh = false): string {
   if (!last) return 'museum.curator.hello';
+  if (fresh && last !== NEWS && r() < 0.5) return NEWS;
   return pickOne(Array.from({ length: LINES }, (_, i) => `museum.curator.${i}`).filter((k) => k !== last), r);
 }
