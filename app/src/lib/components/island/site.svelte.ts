@@ -22,6 +22,7 @@ class Site {
   #applied: Layout | null = null;
   #nav: LayoutNav | null = null;
   #extent: ReturnType<typeof extentOf> | null = null;
+  #storeExtent: { of: Layout; e: ReturnType<typeof extentOf> } | null = null;
   #heard = false;
   get on(): boolean {
     return true;
@@ -37,7 +38,12 @@ class Site {
   /** The layout's box (extentOf: the applied layout's, else the store's). */
   get extent(): ReturnType<typeof extentOf> {
     void this.rev;
-    if (!this.#applied) return extentOf(layout.current);
+    if (!this.#applied) {
+      // (once a layout, not a scan of the grid each read: midX is read per tree, per bush, per shake)
+      const cur = layout.current;
+      if (this.#storeExtent?.of !== cur) this.#storeExtent = { of: cur, e: extentOf(cur) };
+      return this.#storeExtent.e;
+    }
     return (this.#extent ??= extentOf(this.#applied));
   }
   /** The island's middle across (midXOf: its land box's), where a thing turns to face the other way. */
