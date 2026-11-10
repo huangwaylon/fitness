@@ -7,6 +7,7 @@ import { foldEvents, reduce } from './state.ts';
 import { shopView } from './shop.ts';
 import { weekBells } from './bells.ts';
 import { stockOf, buyPrice } from '#lib/contract/stock.ts';
+import { caughtOf, isShopEvent, shopLedger, shopRowOf } from '#lib/contract/shop.ts';
 import type { EventRow } from '#lib/contract/api.ts';
 import type { Who } from '#lib/types.ts';
 
@@ -120,6 +121,48 @@ describe('a catch given back (tally_back: a claim race lost after its tally came
     expect(shopView(s, 'A')).toEqual({ pocket: new Map(), shells: 40, owned: [] });
     const later = reduce({ metrics: [], events: [...rows, ev(at('09:30'), 'A', 'tally', { date: D, counts: { 'fish:koi': 3 } })] }, null);
     expect(shopView(later, 'A')).toEqual({ pocket: new Map(), shells: 80, owned: [] });
+  });
+});
+
+describe('the phone and the record agree (contract/shop.ts caughtOf: one fold, no floor on either side)', () => {
+  /** The record's fold of these rows (relay/src/store.ts shopFold): a slot a person's day (its largest counts:
+   *  tallyKept), Σ tallies − give-backs then the field's net (none here), the shop rows in order. */
+  const recordOf = (rows: EventRow[], who: Who) => {
+    const days = new Map<string, { back: boolean; counts: Record<string, number> }>();
+    for (const [, p, , type, raw] of rows) {
+      if (p !== who || (type !== 'tally' && type !== 'tally_back')) continue;
+      const d = JSON.parse(raw) as { date: string; counts: Record<string, number> };
+      const k = `${type}|${d.date}`, held = days.get(k)?.counts ?? {};
+      const counts = { ...held };
+      for (const [c, n] of Object.entries(d.counts)) counts[c] = Math.max(n, held[c] ?? 0);
+      days.set(k, { back: type === 'tally_back', counts });
+    }
+    const { caught, back } = caughtOf(days.values());
+    const shop = rows.flatMap(([, p, , type, raw]) => (p === who && isShopEvent(type) ? [shopRowOf(type, JSON.parse(raw) as Record<string, unknown>)!] : []));
+    return shopLedger(caught, shop, back).shells;
+  };
+  it('a give-back the phone holds before its day\'s tally (a cache mid-sync): the same かいがら as the record\'s fold of the same rows', () => {
+    const rows = [
+      ev(at('09:00'), 'A', 'tally', { date: D, counts: { 'fish:koi': 2 } }),
+      ev(at('09:01'), 'A', 'sell', { species: 'fish:koi', n: 2, v: 80 }),
+      // (the next day's give-back in, its tally not yet: koi 2 − 3 = −1)
+      ev(at('09:02', '2026-11-05'), 'A', 'tally_back', { date: '2026-11-05', counts: { 'fish:koi': 3 } })
+    ];
+    const s = reduce({ metrics: [], events: rows }, null);
+    expect(shopView(s, 'A').shells).toBe(recordOf(rows, 'A'));
+    expect([...shopView(s, 'A').pocket]).toEqual([]);
+  });
+  it('every person, over the rows of this file\'s other cases', () => {
+    const cases: EventRow[][] = [
+      [ev(at('09:00'), 'A', 'tally', { date: D, counts: { 'fish:koi': 3, 'bug:tarantula': 1 } }), ev(at('09:01'), 'A', 'tally_back', { date: D, counts: { 'fish:koi': 2 } }),
+        ev(at('09:02'), 'A', 'sell', { species: 'fish:koi', n: 1, v: 40 }), ev(at('09:03'), 'B', 'tally_back', { date: D, counts: { 'bug:tarantula': 1 } })],
+      [ev(at('09:00'), 'G', 'tally', { date: D, counts: { 'shell:cowrie': 4 } }), ev(at('09:01'), 'G', 'sell', { species: 'shell:cowrie', n: 4, v: 40 }),
+        ev(at('09:02'), 'G', 'buy_starts', { crop: 'tomato', n: 1, v: 14 }), ev(at('09:03'), 'G', 'tally_back', { date: D, counts: { 'shell:cowrie': 1 } })]
+    ];
+    for (const rows of cases) {
+      const s = reduce({ metrics: [], events: rows }, null);
+      for (const who of ['A', 'B', 'G'] as const) expect(shopView(s, who).shells, who).toBe(recordOf(rows, who));
+    }
   });
 });
 

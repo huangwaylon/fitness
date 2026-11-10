@@ -38,7 +38,7 @@ import { isLogId, scrubMsg } from '../../app/src/lib/contract/log.ts';
 import { roleOfKey, type Keys } from './auth.ts';
 import { guestMayWrite, rowsFor } from '../../app/src/lib/contract/guest.ts';
 import { saveName } from '../../app/src/lib/contract/roomSave.ts';
-import { buyOf, reowe, sellOf, shopLedger, shopRefusal, shopStep, startsOf, type Ledger, type ShopRow } from '../../app/src/lib/contract/shop.ts';
+import { caughtOf, isShopEvent, reowe, shopLedger, shopRefusal, shopRowOf, shopStep, SHOP_EVENTS, type Ledger, type ShopEvent, type ShopRow, type TallyDay } from '../../app/src/lib/contract/shop.ts';
 import { emptyFarm, farmFromJson, farmJson, farmOf, farmStep, type Farm, type FarmData } from '../../app/src/lib/contract/farm.ts';
 import { gameWet } from '../../app/src/lib/contract/wet.ts';
 import { backCovered, isTally, mergeTally } from '../../app/src/lib/contract/tally.ts';
@@ -733,11 +733,10 @@ export class StoreCore {
         const v = this.decorTarget(me, data);
         if (v === 'full') return fail('bad_request', isRoomScope(data.sc) ? 'tent full' : data.sc ? 'layout full' : 'decor full');
         if (v === 'stale') {
-          this.io.sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
-          return { ok: true, duplicate: true };
+          return this.stale(id);
         }
       }
-      if (type === 'sell' || type === 'buy' || type === 'buy_starts') {
+      if (isShopEvent(type)) {
         // the shop: only what the sender's pocket holds, only what their かいがら cover, a piece once (contract/shop.ts)
         const why = this.shopTarget(me, type, data);
         if (why) return fail('bad_request', why === 'owned' ? 'owned' : `${why} short`);
@@ -747,8 +746,7 @@ export class StoreCore {
         const v = this.boardTarget(me, data);
         if (v.v === 'forbidden') return fail('forbidden');
         if (v.v === 'stale') {
-          this.io.sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
-          return { ok: true, duplicate: true };
+          return this.stale(id);
         }
         if (v.v === 'append') drop = v.drop;
       }
@@ -764,8 +762,7 @@ export class StoreCore {
         if (v.v !== 'append') {
           if (v.v === 'forbidden') return fail('forbidden');
           if (v.v !== 'stale') return fail('bad_request', `${kind} ${v.v}`);
-          this.io.sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
-          return { ok: true, duplicate: true };
+          return this.stale(id);
         }
         bookDrop = v.drop;
         kept = JSON.stringify(v.row.op);
@@ -781,8 +778,7 @@ export class StoreCore {
         const next = nx === undefined ? null : this.foodHeld('food_repeat', nx);
         if (nx !== undefined && (!next || next.rm || next.who !== me)) return fail('bad_request', 'no such repeat');
         if (v === 'stale') {
-          this.io.sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
-          return { ok: true, duplicate: true };
+          return this.stale(id);
         }
         kept = JSON.stringify(v);
       }
@@ -811,11 +807,17 @@ export class StoreCore {
       // the running shop ledger (shopNote): a tally's or a give-back's change is the kept row less the one it replaces
       const was = (type === 'tally' || type === 'tally_back') && slot ? this.slotTally(slot) : null;
       this.put(id, at, me, type, kept, slot, null);
-      if (type === 'tally' || type === 'tally_back' || type === 'sell' || type === 'buy' || type === 'buy_starts') this.shopNote(me, type, kept, was);
+      if (type === 'tally' || type === 'tally_back' || isShopEvent(type)) this.shopNote(me, type, kept, was);
       if (farm) this.farmNote(me, farm.f);
       if (type === 'decor') this.decorNote(me, data, wasDecor);
       return { ok: true, at };
     });
+  }
+
+  /** An op beaten by the one held (a board's, a book's, a food's, a decoration's): only its id kept, acknowledged. */
+  private stale(id: string): Reply {
+    this.io.sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
+    return { ok: true, duplicate: true };
   }
 
   private known(id: string): boolean {
@@ -1051,10 +1053,11 @@ export class StoreCore {
   /** Why a sell or a buy of `me`'s isn't covered by their rows (contract/shop.ts shopRefusal), or null: against the
    *  running ledger (shopState: meta, one row), never their history (until 2026-11-05 every sale reread it: a year's
    *  20-sale batch read 153k rows). */
-  private shopTarget(me: Who, type: 'sell' | 'buy' | 'buy_starts', d: Rec): 'pocket' | 'wallet' | 'owned' | null {
+  private shopTarget(me: Who, type: ShopEvent, d: Rec): 'pocket' | 'wallet' | 'owned' | null {
     const st = this.shopState(me);
-    const row: ShopRow = type === 'sell' ? { type, data: sellOf(d)! } : type === 'buy' ? { type, data: buyOf(d)! } : { type: 'starts', data: startsOf(d)! };
-    return shopRefusal(st.l, st.caught, row);
+    // (its data checked already: validEventData)
+    const row = shopRowOf(type, d);
+    return row ? shopRefusal(st.l, st.caught, row) : 'pocket';
   }
 
   /** A tally slot's counts as held (none: empty). */
@@ -1080,7 +1083,7 @@ export class StoreCore {
   /** A kept row into `who`'s running ledger, when it has one (else the next sale folds it from the rows, this one's
    *  included): a tally's or a give-back's change (its kept counts less `was`, the row it replaced), a sell or a buy
    *  by the fold's own step (contract/shop.ts shopStep), each touched species' debt again (reowe). */
-  private shopNote(who: Who, type: 'tally' | 'tally_back' | 'sell' | 'buy' | 'buy_starts', kept: string, was: Record<string, number> | null): void {
+  private shopNote(who: Who, type: 'tally' | 'tally_back' | ShopEvent, kept: string, was: Record<string, number> | null): void {
     const raw = this.meta(`shop|${who}`);
     const st = raw ? shopStateOf(raw) : null;
     if (!st) return;
@@ -1097,10 +1100,8 @@ export class StoreCore {
         if (st.l.sold.has(k)) reowe(st.l, k, st.caught, st.back);
       }
     } else {
-      const s = type === 'sell' ? sellOf(d) : null, b = type === 'buy' ? buyOf(d) : null, g = type === 'buy_starts' ? startsOf(d) : null;
-      if (s) shopStep(st.l, st.caught, st.back, { type: 'sell', data: s });
-      else if (b) shopStep(st.l, st.caught, st.back, { type: 'buy', data: b });
-      else if (g) shopStep(st.l, st.caught, st.back, { type: 'starts', data: g });
+      const row = shopRowOf(type, d);
+      if (row) shopStep(st.l, st.caught, st.back, row);
     }
     this.setMeta(`shop|${who}`, shopStateJson(st));
   }
@@ -1128,27 +1129,20 @@ export class StoreCore {
    *  their day tallies (one row a day: ≤ 366 a year) and their shop rows, in the object, never the Worker. */
   private shopFold(me: Who): ShopState {
     const parse = (raw: string): Rec | null => this.rowRec(raw, 'shop');
-    const caught = new Map<string, number>(), back = new Map<string, number>();
-    // (less what was given back: a claim race lost; and that kept apart, for what a sold one owes)
+    // (their days' tallies less what was given back, a claim race lost, and the field's net: contract/shop.ts caughtOf,
+    // the phones' fold too)
+    const days: TallyDay[] = [];
     for (const r of this.io.sql.exec<{ type: string; data: string }>("SELECT type, data FROM events WHERE type IN ('tally', 'tally_back') AND person = ?", me).toArray()) {
       const t = parse(r.data);
-      const sign = r.type === 'tally_back' ? -1 : 1;
-      if (t && isTally(t)) for (const k in t.counts) {
-        caught.set(k, (caught.get(k) ?? 0) + sign * t.counts[k]);
-        if (sign < 0) back.set(k, (back.get(k) ?? 0) + t.counts[k]);
-      }
+      if (t && isTally(t)) days.push({ back: r.type === 'tally_back', counts: t.counts });
     }
+    const { caught, back } = caughtOf(days, this.farmState().net[me]);
     const rows: ShopRow[] = [];
-    // (and what the field put in or took out: contract/farm.ts)
-    for (const [k, n] of this.farmState().net[me] ?? []) caught.set(k, (caught.get(k) ?? 0) + n);
-    for (const r of this.io.sql.exec<{ type: string; data: string }>("SELECT type, data FROM events WHERE type IN ('sell', 'buy', 'buy_starts') AND person = ? ORDER BY at, seq", me).toArray()) {
+    const types = SHOP_EVENTS.map((t) => `'${t}'`).join(', ');
+    for (const r of this.io.sql.exec<{ type: string; data: string }>(`SELECT type, data FROM events WHERE type IN (${types}) AND person = ? ORDER BY at, seq`, me).toArray()) {
       const x = parse(r.data);
-      const s = x && r.type === 'sell' ? sellOf(x) : null;
-      const b = x && r.type === 'buy' ? buyOf(x) : null;
-      const g = x && r.type === 'buy_starts' ? startsOf(x) : null;
-      if (s) rows.push({ type: 'sell', data: s });
-      else if (b) rows.push({ type: 'buy', data: b });
-      else if (g) rows.push({ type: 'starts', data: g });
+      const row = x && isShopEvent(r.type) ? shopRowOf(r.type, x) : null;
+      if (row) rows.push(row);
     }
     return { caught, back, l: shopLedger(caught, rows, back) };
   }

@@ -303,7 +303,7 @@ one tile").
   `decorAccept`, `foodAccept`, …). A pref the model ignores takes no slot; a `highfive` event is acked and kept nowhere.
 - **The shop's check** (`shopTarget`): against each person's running ledger (meta `shop|<who>`, kept with each tally,
   give-back, sell and buy by the fold's own step, `contract/shop.ts shopStep`); `shopcheck {fix?}` compares it with
-  the full fold.
+  the full fold (`caughtOf`, `shopLedger`: the phones fold by the same two).
 - **A decor op's check** (`decorTarget`): only its own slots' rows and the caps' counts (meta `decor_live`;
   `decorcheck {fix?}`); a reset drops the voided rows (`dropVoided`).
 - **Ingest:** `relay/src/parse.ts`, the audit row (`relay/src/audit.ts`), each day's latest value from

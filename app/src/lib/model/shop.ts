@@ -1,13 +1,13 @@
-// The shop as each person's phone shows it (docs/design.md "The shop"): their pocket (what they caught of each fish,
-// bug and sea creature, from their day tallies, less what they sold), their かいがら and the pieces they bought, the
-// guest's its own. The fold is the record's (contract/shop.ts shopLedger), so a row the record would refuse counts for
-// nothing here either. Pure. Never ベル: the economy never imports this, and this never imports the economy
+// The shop as each person's phone shows it (docs/design.md "The shop"): their pocket (what they caught, found or
+// grew of each sellable kind, contract/pocket.ts, from their day tallies and the field, less what they sold), their
+// かいがら and the pieces they bought, the guest's its own. The fold is the record's (contract/shop.ts caughtOf and
+// shopLedger), so a row the record would refuse counts for nothing here either. Pure. Never ベル: the economy never imports this, and this never imports the economy
 // (deps.test.ts).
 //
 // Cost: one pass over the tallies (model/tally.ts, memoised) and the person's shop rows, memoised per row list.
 import type { Who } from '#lib/types.ts';
-import { isSellable, shopLedger, type Ledger, type ShopRowAt } from '#lib/contract/shop.ts';
-import { dayTallies, tallyTotals, type TallyRow } from './tally.ts';
+import { caughtOf, isSellable, shopLedger, type Ledger, type ShopRowAt } from '#lib/contract/shop.ts';
+import { dayTallies, type TallyRow } from './tally.ts';
 import { farmOfState, type FarmRow } from './farm.ts';
 import type { Farm } from '#lib/contract/farm.ts';
 import type { LocalDate } from '#lib/types.ts';
@@ -18,7 +18,7 @@ interface ShopState { tallies: readonly TallyRow[]; shop: readonly ShopRowAt[]; 
 export interface ShopView {
   /** `kind:id` → how many the pocket holds (only the sellable kinds, only more than none). */
   pocket: ReadonlyMap<string, number>;
-  /** The person's かいがら: Σ sells − Σ buys. */
+  /** The person's かいがら: Σ sells − Σ buys and starts − what is owed (contract/shop.ts Ledger). */
   shells: number;
   /** The pieces they bought (room codes), in the order bought. */
   owned: readonly string[];
@@ -26,24 +26,6 @@ export interface ShopView {
 
 const memo = new WeakMap<ShopState['shop'], WeakMap<ShopState['tallies'], WeakMap<Farm, Partial<Record<Who, ShopView>>>>>();
 
-/** `who`'s caught tally per sellable species (their tallies' totals), with what the fields put in or took out
- *  (contract/farm.ts: a harvest's vegetables, a planted start). */
-function caughtBy(s: Pick<ShopState, 'tallies'>, farm: Farm, who: Who): Map<string, number> {
-  const out = new Map<string, number>();
-  for (const [k, n] of tallyTotals(s.tallies).by[who]) if (isSellable(k)) out.set(k, n);
-  for (const [k, n] of farm.net[who] ?? []) out.set(k, (out.get(k) ?? 0) + n);
-  return out;
-}
-
-/** `who`'s given-back counts per sellable species (their `tally_back` days, each day's largest: dayTallies). */
-function backBy(s: Pick<ShopState, 'tallies'>, who: Who): Map<string, number> {
-  const out = new Map<string, number>();
-  for (const r of dayTallies(s.tallies)) {
-    if (!r.back || r.person !== who) continue;
-    for (const k in r.counts) if (isSellable(k)) out.set(k, (out.get(k) ?? 0) + r.counts[k]);
-  }
-  return out;
-}
 
 /** `who`'s pocket, かいがら and bought pieces. Memoised per State lists. */
 export function shopView(s: ShopState, who: Who): ShopView {
@@ -56,12 +38,16 @@ export function shopView(s: ShopState, who: Who): ShopView {
   if (!views) byFarm.set(farm, (views = {}));
   const hit = views[who];
   if (hit) return hit;
-  const caught = caughtBy(s, farm, who);
-  // (a sold catch given back costs its かいがら: contract/shop.ts owedOf, the record's rule)
-  const l: Ledger = shopLedger(caught, s.shop.filter((r) => r.person === who), backBy(s, who));
+  // (their days as the record holds them, a day's rows one: dayTallies; a sold catch given back costs its かいがら:
+  // contract/shop.ts owedOf, the record's rule)
+  const net = farm.net[who];
+  const { caught, back } = caughtOf(dayTallies(s.tallies).filter((r) => r.person === who), net);
+  const l: Ledger = shopLedger(caught, s.shop.filter((r) => r.person === who), back);
   const pocket = new Map<string, number>();
-  // (the starts bought count in as a sale taken back: contract/shop.ts shopStep)
+  // (the starts bought count in as a sale taken back: contract/shop.ts shopStep; a recipe or a present is in the
+  // tallies, never the pocket)
   for (const k of new Set([...caught.keys(), ...l.sold.keys()])) {
+    if (!isSellable(k) && !net?.has(k) && !l.sold.has(k)) continue;
     const left = (caught.get(k) ?? 0) - (l.sold.get(k) ?? 0);
     if (left > 0) pocket.set(k, left);
   }

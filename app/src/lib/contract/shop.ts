@@ -4,7 +4,8 @@
 // - **The pocket** is derived: what a person caught, found or picked up of a kind (the sum of their day tallies,
 //   contract/tally.ts: one row per person and day, its counts only ever growing) less what they sold of it (`sell`).
 //   No write per catch. What it holds: contract/pocket.ts.
-// - **かいがら** are derived too: Σ the sells' values − Σ the buys' prices, per person (the guest's its own).
+// - **かいがら** are derived too: Σ the sells' values − Σ the buys' and the starts' prices − what a sold catch given back
+//   owes (owedOf), per person (the guest's its own).
 // - **The stock** (contract/stock.ts): 24 pieces a Tokyo day, never one the island had by the day's start; a buy names
 //   the day whose stock it was bought from.
 //
@@ -25,7 +26,7 @@ import { FARM, isFarmCrop, startKey, type Crop } from './farm.ts';
 export interface SellData { species: string; n: number; v: number }
 export interface BuyData { item: string; price: number; d: LocalDate }
 /** A `buy_starts` (docs/farming.md): `n` starts of a crop for `v` かいがら (n × FARM.startBuy), always in stock. */
-export interface StartsData { crop: Crop; n: number; v: number }
+interface StartsData { crop: Crop; n: number; v: number }
 
 /** At most this many of a species in one sell (a day's tally holds at most 999 of it). */
 const SELL_MAX_N = 999;
@@ -57,7 +58,7 @@ export function buyOf(d: Record<string, unknown>): BuyData | null {
 }
 
 /** A `buy_starts`'s data as the model reads it: its shape only. */
-export function startsOf(d: Record<string, unknown>): StartsData | null {
+function startsOf(d: Record<string, unknown>): StartsData | null {
   if (!keysAre(d, ['crop', 'n', 'v']) || !isFarmCrop(d.crop) || !isWhole(d.n, 99) || !isWhole(d.v, 99 * FARM.startBuy)) return null;
   return { crop: d.crop, n: d.n, v: d.v };
 }
@@ -87,6 +88,47 @@ export function shopPriced(type: 'sell' | 'buy' | 'buy_starts', d: Record<string
 }
 
 // ---- the ledger
+
+/** The shop's event types: a sale, a piece bought, a crop's starts bought. @public (relay/src/store.ts) */
+export const SHOP_EVENTS = ['sell', 'buy', 'buy_starts'] as const;
+export type ShopEvent = (typeof SHOP_EVENTS)[number];
+export const isShopEvent = (type: string): type is ShopEvent => (SHOP_EVENTS as readonly string[]).includes(type);
+
+/** A shop event's row for the fold (its data as `sellOf`, `buyOf`, `startsOf` read it), or null when malformed. */
+export function shopRowOf(type: ShopEvent, d: Record<string, unknown>): ShopRow | null {
+  if (type === 'sell') {
+    const data = sellOf(d);
+    return data && { type, data };
+  }
+  if (type === 'buy') {
+    const data = buyOf(d);
+    return data && { type, data };
+  }
+  const data = startsOf(d);
+  return data && { type: 'starts', data };
+}
+
+/** A day's tally of one person's (contract/tally.ts), or the day's give-back (`back`), as the shop reads it. */
+export interface TallyDay { back?: boolean; counts: Readonly<Record<string, number>> }
+
+/**
+ * What a person's pocket was filled with, as the record and the phones both fold it: per key, Σ their days' tallies
+ * − Σ what they gave back, then the field's net (contract/farm.ts: a harvest in, a planted start out); and the
+ * given-back counts apart (`back`, for what a sold one owes: owedOf). No floor at 0, on either side: the record's days
+ * never give back more than they hold (tally.ts backCovered), and a phone's cache that holds a give-back before its
+ * day's tally counts it against the pocket, never for it (the phone then offers less than the record would, never more).
+ */
+export function caughtOf(days: Iterable<TallyDay>, farmNet: Iterable<readonly [string, number]> = []): { caught: Map<string, number>; back: Map<string, number> } {
+  const caught = new Map<string, number>(), back = new Map<string, number>();
+  for (const day of days)
+    for (const k in day.counts) {
+      const n = day.counts[k];
+      caught.set(k, (caught.get(k) ?? 0) + (day.back ? -n : n));
+      if (day.back) back.set(k, (back.get(k) ?? 0) + n);
+    }
+  for (const [k, n] of farmNet) caught.set(k, (caught.get(k) ?? 0) + n);
+  return { caught, back };
+}
 
 /** A person's shop as their rows leave it: sold per species (and what they fetched, `soldV`), かいがら (less what is
  *  owed), the pieces bought (in order), and the かいがら owed per species (`owed`: sold catches given back since). */

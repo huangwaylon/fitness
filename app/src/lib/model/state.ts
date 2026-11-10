@@ -15,7 +15,7 @@ import { goalFallback, goalKeysOf, goalOfKey, GOALS, isGoalValue, type DailyGoal
 import { tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import { roomSaveOf, type RoomSaveOp } from '#lib/contract/roomSave.ts';
 import { isRoomScope, layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
-import { buyOf, sellOf, startsOf, type ShopRowAt } from '#lib/contract/shop.ts';
+import { shopRowOf, type ShopEvent, type ShopRowAt } from '#lib/contract/shop.ts';
 import { farmOf } from '#lib/contract/farm.ts';
 import type { FarmRow } from './farm.ts';
 import { isBirth, isBmiStd, isProfileKey, isSex, PROFILE_KEYS, type BmiStd, type ProfileKey, type Sex } from '#lib/contract/profile.ts';
@@ -566,6 +566,11 @@ const rowEvent = <K extends 'pack' | 'wedding'>(list: K, rowOf: (type: string, d
   const r = rowOf(type, d, person);
   if (r) (s[list] as State[K][number][]).push(r);
 };
+/** A shop row (contract/shop.ts shopRowOf) onto the shop's list. */
+const shopRow = (type: ShopEvent): OnEvent => (s, person, at, d) => {
+  const r = shopRowOf(type, d);
+  if (r) s.shop.push({ ...r, at, person });
+};
 
 /** One handler per event type: each accepts (indexes) the event or ignores it. */
 const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
@@ -615,18 +620,9 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
     const op = decorOpOf(d);
     if (op) s.decor.push({ ...op, who: person } as DecorEntry);
   },
-  sell(s, person, at, d) {
-    const data = sellOf(d);
-    if (data) s.shop.push({ type: 'sell', data, at, person });
-  },
-  buy(s, person, at, d) {
-    const data = buyOf(d);
-    if (data) s.shop.push({ type: 'buy', data, at, person });
-  },
-  buy_starts(s, person, at, d) {
-    const data = startsOf(d);
-    if (data) s.shop.push({ type: 'starts', data, at, person });
-  },
+  sell: shopRow('sell'),
+  buy: shopRow('buy'),
+  buy_starts: shopRow('buy_starts'),
   farm(s, person, at, d) {
     const data = farmOf(d);
     if (data) s.farm.push({ at, person, data });

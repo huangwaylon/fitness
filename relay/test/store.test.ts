@@ -1,6 +1,5 @@
 // The record (src/store.ts) on node:sqlite: auth, ingest's latest-wins, events and their slots, `since` deltas, the
 // import of rows that already have their `at`, and the notices after writes.
-import { createHmac } from 'node:crypto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { LATE_MARGIN_MS, PAGES_PER_MINUTE, RATE_PER_MINUTE, STORE_BUILD, StoreCore } from '../src/store.ts';
 import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';

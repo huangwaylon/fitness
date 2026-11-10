@@ -1,6 +1,7 @@
 // The write queue (docs/backend.md#write-queue): events persisted in localStorage and replayed in order, with backoff,
 // until the server acks them. Undo windows (`holdMs`) are decided here.
 import { EVENTS_MAX, GROUP_MAX, MAX_BODY_CHARS, type EventType } from '#lib/contract/api.ts';
+import { isShopEvent } from '#lib/contract/shop.ts';
 import type { Who } from '#lib/types.ts';
 import { LIVE, getKey, localKV, readJson, remove, writeJson, writeRaw, type KV } from './storage.ts';
 import { post, type ApiError } from './transport.ts';
@@ -254,7 +255,7 @@ const isHeld = (ev: QueuedEvent, now: number): boolean => ev.tries === 0 && ev.n
  * a catch given back after a reload, its tally still held). Null: nothing else touches it.
  */
 function subjectOf(ev: Pick<QueuedEvent, 'type' | 'data'>): string | null {
-  if (ev.type === 'tally' || ev.type === 'tally_back' || ev.type === 'sell' || ev.type === 'buy' || ev.type === 'buy_starts' || ev.type === 'farm') return 'shop';
+  if (ev.type === 'tally' || ev.type === 'tally_back' || isShopEvent(ev.type) || ev.type === 'farm') return 'shop';
   return ev.type === 'spend' || ev.type === 'spend_void' ? `spend|${String(ev.data.spendId)}` : null;
 }
 
