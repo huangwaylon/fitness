@@ -102,6 +102,17 @@ test('solo: the lobby, eight questions answered, the reveal, the results and the
   await expect(sheet(page).locator('[data-review="3"] [data-kiki-review-en]')).toBeVisible();
   await expect(sheet(page).locator('[data-review="3"] [data-kiki-picked]')).toContainText('あなたの答え');
   await expect(sheet(page).locator('[data-kiki-hear="3"]')).toBeVisible();
+  // its ▶︎ plays through the 3 s refreshes after it (review 5: each one stopped it): no source stopped by the app
+  await page.evaluate(() => {
+    const W = window as unknown as { __stops: number; __starts: number }, P = AudioBufferSourceNode.prototype, start = P.start, stop = P.stop;
+    W.__starts = W.__stops = 0;
+    P.start = function (...a) { W.__starts++; return start.apply(this, a); };
+    P.stop = function (...a) { W.__stops++; return stop.apply(this, a); };
+  });
+  await sheet(page).locator('[data-kiki-hear="3"]').click();
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __starts: number }).__starts)).toBeGreaterThan(0);
+  await page.clock.runFor(7000);
+  expect(await page.evaluate(() => (window as unknown as { __stops: number }).__stops)).toBe(0);
   // a row folds and opens
   await sheet(page).locator('[data-kiki-row="3"]').click();
   await expect(sheet(page).locator('[data-kiki-detail="3"]')).toHaveCount(0);

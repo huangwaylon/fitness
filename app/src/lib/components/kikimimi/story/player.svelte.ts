@@ -51,6 +51,7 @@ export class StoryPlayer {
   #fading = false;
   /** Paused in the wait between two chapters: ▶ goes on into the next one. */
   #onward = false;
+  #disposed = false;
   #handle: { stop(): void } | null = null;
   #step: ReturnType<typeof setTimeout> | undefined;
   #tick: ReturnType<typeof setInterval> | undefined;
@@ -84,7 +85,7 @@ export class StoryPlayer {
   }
 
   play(): void {
-    if (this.playing || this.ended === 'timer') return;
+    if (this.playing || this.ended === 'timer' || this.#disposed) return;
     this.ended = null;
     this.playing = true;
     this.#mark = this.#clock();
@@ -118,8 +119,11 @@ export class StoryPlayer {
   forward(): void {
     this.seek(Math.min(this.seg + 1, this.chapter.segments.length - 1));
   }
+  /** (in the wait between two chapters too: this chapter's segment, the wait and its ▶'s onward dropped) */
   seek(k: number): void {
     this.#account();
+    this.between = false;
+    this.#onward = false;
     this.#stopSound();
     this.seg = Math.max(0, Math.min(k, this.chapter.segments.length - 1));
     if (this.playing) void this.#sound();
@@ -136,6 +140,7 @@ export class StoryPlayer {
 
   /** Another chapter (the end card's つぎの おはなし, a timed story's next), played at once. */
   open(chapter: Chapter, seg = 0): void {
+    if (this.#disposed) return;
     this.#account();
     this.#stopSound();
     this.chapter = chapter;
@@ -147,8 +152,9 @@ export class StoryPlayer {
     else this.play();
   }
 
-  /** The page hidden or the sheet closed: it stops, keeping its place when it hadn't ended. */
+  /** The sheet closed: it stops for good, keeping its place when it hadn't ended (a chapter still loading never plays). */
   dispose(): void {
+    this.#disposed = true;
     const was = this.playing || this.between;
     this.#account();
     this.#halt();

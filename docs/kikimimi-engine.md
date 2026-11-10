@@ -332,7 +332,7 @@ Segmented talks with a comprehension map and answers during play (まるごと �
 ## Performance
 
 - Nothing heavy loads before the sheet opens: the island's first load carries ~4 KB of ききみみ (the invite listener and host, the `listen` contract, the pill, the cues). The sheet's chunk and each part are lazy and budgeted ("Loading"); the packs as in "Playback". The island's render loop idles under the sheet.
-- During play nothing renders per frame but the karaoke (only while a clip replays); bars, timer, bob and waves are CSS; the view refreshes at each phase's end (at least every 3 s).
+- During play nothing renders per frame but the karaoke (only while a clip replays); bars, timer, bob and waves are CSS; the view refreshes at each phase's end (at least every 3 s; not while the page is hidden, once when it's back). Outside the questions (idle, a lobby, the results) the clips stop on entering, and a replay there (a review ▶︎, まるごと's 「通しで もう一度」, the lobby's 🔊) plays through the refreshes.
 
 ## Risks
 

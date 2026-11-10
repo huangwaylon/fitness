@@ -103,6 +103,8 @@ export class QuizGame {
   #timer: ReturnType<typeof setTimeout> | undefined;
   /** The phase last cued. */
   #cued = '';
+  /** The view last assigned, as JSON. */
+  #viewKey = '';
   #gone = false;
   readonly #record: ((row: ListenRow) => void) | undefined;
   readonly #recorder = new GameRecorder();
@@ -149,8 +151,11 @@ export class QuizGame {
     // what's heard from now on: in order, each once the chunk it needs is in
     const link = this.#link;
     this.#wire = wire(this.#session, { ...link, on: (fn) => link.on((m) => this.#queue.then(() => wants(m), () => fn(m))) }, () => this.#refresh());
+    // (no wake-ups while the page is hidden: a refresh at once when it's back; what's heard meanwhile still refreshes)
+    if (typeof document !== 'undefined') document.addEventListener('visibilitychange', this.#onShow);
     this.#refresh();
   }
+  readonly #onShow = () => !document.hidden && this.#refresh();
 
   // ---------- taps ----------
 
@@ -360,6 +365,7 @@ export class QuizGame {
     this.#act((s, now) => s.leave(now)); // (now: not after what waits for a chunk, which is dropped)
     this.#gone = true;
     clearTimeout(this.#timer);
+    if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', this.#onShow);
     this.#wire.stop();
     this.#offHere();
     this.#clips.dispose();
@@ -392,11 +398,17 @@ export class QuizGame {
     if (ahead && v.phase !== 'results') void load(...ahead(v, itemsOf(v))).catch(() => {});
     this.#recorder.seen(v, now);
     if (v.phase === 'results' && v.g) this.#keep(v, now, true);
-    this.view = v;
+    // (the same view kept: what derives from it doesn't run again at each wake-up of a lobby or the results)
+    const key = JSON.stringify(v);
+    if (key !== this.#viewKey) {
+      this.#viewKey = key;
+      this.view = v;
+    }
     this.now = now;
     this.#clips.follow(v, this.items, now, hidesLine);
     this.#cues(v);
     clearTimeout(this.#timer);
+    if (typeof document !== 'undefined' && document.hidden) return;
     let wait = Number.isFinite(v.until) ? v.until - now : WAKE;
     if (v.phase === 'countdown') wait = Math.min(wait, (v.until - now) % 1000 || 1000);
     this.#timer = setTimeout(() => this.#refresh(), Math.max(20, Math.min(WAKE, wait)) + 10);

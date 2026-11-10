@@ -1,6 +1,6 @@
 // ききみみ's game on a phone (game.svelte.ts) and the levels' chunks (pool.ts): what's heard, and my own taps, wait in
 // order for the chunk the deck they touch needs; the deck is then the one every other phone builds.
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { Relayed } from '#lib/contract/live-protocol.ts';
 import type { LiveStatus } from '#lib/sync/live.ts';
 import { deck } from '#lib/kikimimi/deck.ts';
@@ -59,5 +59,33 @@ describe('ききみみ game: a deck waits for its level’s chunk', () => {
     expect(g.view).toMatchObject({ lv: 7, timer: 60 });
     expect(g.items.every((it) => it.lv === 7)).toBe(true);
     g.dispose();
+  });
+});
+
+describe('ききみみ game: its wake-ups', () => {
+  it('none while the page is hidden, one when it’s back; a lobby’s wake-up with nothing new keeps its view', async () => {
+    const doc = Object.assign(new EventTarget(), { hidden: false });
+    vi.stubGlobal('document', doc);
+    vi.useFakeTimers();
+    try {
+      const g = new QuizGame({ live: null, me: 'A' });
+      g.open(1);
+      await vi.advanceTimersByTimeAsync(50);
+      const v = g.view, t = g.now;
+      await vi.advanceTimersByTimeAsync(3100);
+      expect([g.view === v, g.now > t]).toEqual([true, true]); // (woken, the same view)
+      doc.hidden = true;
+      await vi.advanceTimersByTimeAsync(3100); // (the wake-up already set)
+      const hidden = g.now;
+      await vi.advanceTimersByTimeAsync(15_000);
+      expect(g.now).toBe(hidden);
+      doc.hidden = false;
+      doc.dispatchEvent(new Event('visibilitychange'));
+      expect(g.now).toBeGreaterThan(hidden);
+      g.dispose();
+    } finally {
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+    }
   });
 });

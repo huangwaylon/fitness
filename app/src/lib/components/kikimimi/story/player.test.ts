@@ -1,7 +1,9 @@
 // The story player's chapter-to-chapter run (player.svelte.ts): a timed story goes on after the wait between chapters,
-// and a pause in that wait (the phone locked: StoryFrame pauses on visibilitychange) doesn't leave it stuck.
+// and a pause or a ⏮ / ⏭ in that wait (the phone locked: StoryFrame pauses on visibilitychange) doesn't leave it stuck; a
+// chapter loaded after the sheet closed never plays.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-vi.mock('#lib/sound/sound.svelte.ts', () => ({ fadeVoice: () => {}, holdVoiceDuck: () => {}, playVoice: () => ({ stop() {} }) }));
+let played = 0;
+vi.mock('#lib/sound/sound.svelte.ts', () => ({ fadeVoice: () => {}, holdVoiceDuck: () => {}, playVoice: () => (played++, { stop() {} }) }));
 vi.mock('../packs.ts', () => ({ prefetchClips: () => {}, voiceClip: async () => ({ duration: 1 }) }));
 import { NEXT_CHAPTER_MS } from '#lib/kikimimi/bedtime.ts';
 import { StoryPlayer } from './player.svelte.ts';
@@ -23,7 +25,7 @@ async function toTheWait() {
   return { p, finished };
 }
 
-beforeEach(() => { vi.useFakeTimers(); now = 0; });
+beforeEach(() => { vi.useFakeTimers(); now = 0; played = 0; });
 afterEach(() => vi.useRealTimers());
 
 describe('story player between chapters', () => {
@@ -46,5 +48,36 @@ describe('story player between chapters', () => {
     const heard = p.heard;
     await step(500);
     expect({ chapter: p.chapter.chapter, seg: p.seg, between: p.between, counted: p.heard > heard, finished }).toEqual({ chapter: 2, seg: 0, between: false, counted: true, finished: [1] });
+  });
+
+  it('⏮ in the wait: this chapter again, counted, the wait gone', async () => {
+    const { p } = await toTheWait();
+    p.back();
+    await step(300);
+    const heard = p.heard;
+    await step(1000); // (segment 0 again, then 1, then the wait once more: ~3 s)
+    expect({ chapter: p.chapter.chapter, seg: p.seg, between: p.between, counted: p.heard > heard }).toEqual({ chapter: 1, seg: 0, between: false, counted: true });
+  });
+
+  it('⏸ in the wait, ⏮, ▶: the segment sought, not the next chapter', async () => {
+    const { p } = await toTheWait();
+    p.pause();
+    p.back();
+    p.play();
+    await step(300);
+    expect({ chapter: p.chapter.chapter, seg: p.seg, playing: p.playing }).toEqual({ chapter: 1, seg: 0, playing: true });
+  });
+});
+
+describe('story player after the sheet closed', () => {
+  it('open() after dispose() (つぎの おはなし loading as it closed): nothing plays', async () => {
+    const p = new StoryPlayer(ch(1), 0, null as never, { finished: () => {}, place: () => {}, next: async (c) => ch(c + 1) }, () => now);
+    p.play();
+    await step(200);
+    p.dispose();
+    played = 0;
+    p.open(ch(2));
+    await step(500);
+    expect({ playing: p.playing, played }).toEqual({ playing: false, played: 0 });
   });
 });

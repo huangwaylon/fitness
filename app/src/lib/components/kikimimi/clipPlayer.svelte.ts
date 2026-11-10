@@ -60,6 +60,8 @@ export class ClipPlayer {
   #revealed = -1;
   #fetched = '';
   #talked = '';
+  /** The game and phase outside its questions (idle, lobby, results) last silenced on entering it. */
+  #rest = '';
   #gone = false;
   #soundingTimer: ReturnType<typeof setTimeout> | undefined;
   #talkTimers: ReturnType<typeof setTimeout>[] = [];
@@ -86,13 +88,18 @@ export class ClipPlayer {
       if (v.speaks && hints(items[0]).bed) void partyBed();
       preloadStage(items[0]);
     }
+    // outside a game's questions: silence on entering it, then a results ▶︎, まるごと's replay or the lobby's 🔊 left to play
     if (v.phase === 'idle' || v.phase === 'lobby' || v.phase === 'results') {
-      if (this.#planned || this.#handles.size) this.#stopAll();
+      const rest = `${v.g}:${v.phase}`;
+      if (rest === this.#rest) return;
+      this.#rest = rest;
+      this.#stopAll();
       this.#planned = null;
       this.#revealed = -1;
       this.#untalk();
       return;
     }
+    this.#rest = '';
     const it = items[v.i];
     if (!it || v.i < 0) return;
     if (this.#planned && this.#planned.i !== v.i) {
