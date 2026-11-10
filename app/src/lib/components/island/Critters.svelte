@@ -1466,7 +1466,7 @@
   {#each Object.entries(fishes) as [pk, f] (pk)}
     {#if f}
       <!-- (its moves, its heading and its nose at the float: fish3, each frame; it fades in and out: world3d/things.ts) -->
-      <i class="m3n" {@attach w.at({ bare: true, x: f.ax, z: f.az, lift: -2.5, h: 4, always: true, live: () => fish3(f), m3: { key: f.shape ? `shadow/${f.shape}` : `shadow/${f.water === 'sea' ? 'sea' : 'fresh'}-${Math.max(1, Math.min(6, Math.round(f.size)))}`, id: fishId(f), water: true, off: f.gone, get yaw() { return fishYaw(f); }, art: () => fishEls[f.pool] } })} {@attach mirrorFish(f)}></i>
+      <i class="m3n" {@attach w.at({ bare: true, x: f.ax, z: f.az, lift: -2.5, h: 4, always: true, live: () => fish3(f), m3: { key: f.shape ? `shadow/${f.shape}` : `shadow/${f.water === 'sea' ? 'sea' : 'fresh'}-${Math.max(1, Math.min(6, Math.round(f.size)))}`, id: fishId(f), water: true, get off() { return f.gone; }, get yaw() { return fishYaw(f); }, art: () => fishEls[f.pool] } })} {@attach mirrorFish(f)}></i>
     {/if}
   {/each}
   {#if diving?.chase}
@@ -1512,8 +1512,9 @@
   {#each bugs as b (b.n)}
     <!-- (its moves and its turns: bug3, each frame; it fades in where it comes, and out over its leave's end) -->
     <i class="m3n" {@attach w.at({ bare: true, x: b.ax, z: b.az, lift: 0, h: 4, always: true, live: () => bug3(b), m3: { key: `critters/${b.id}`, id: bugId(b), get yaw() { return bugYaw(b); }, get flap() { return mos.get(srcBug(b).id)?.flap ?? 0; }, get off() { return bugOff(b); }, art: () => bugEls[b.n],
-      // perched on a trunk: flat on its bark, its back to the camera
-      pitch: b.sat && (b.place === 'trunk' || b.place === 'palm') ? (b.flip ? -1 : 1) * Math.PI / 2 : 0 } })} {@attach mirrorBug(b)}></i>
+      // perched on a trunk: flat on its bark, its back to the camera (read each frame, as its yaw: a turn or a perch
+      // read here made the attach build its node again)
+      get pitch() { return b.sat && (b.place === 'trunk' || b.place === 'palm') ? (b.flip ? -1 : 1) * Math.PI / 2 : 0; } } })} {@attach mirrorBug(b)}></i>
   {/each}
   {/if}
   {#each Object.entries(fishes) as [pk, f] (pk)}
