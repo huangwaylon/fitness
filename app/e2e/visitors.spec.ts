@@ -4,7 +4,7 @@
 // opens at まえ), Gulliver on the front beach, never under a control; a tap gives a line (an introduction first), no
 // trading, no ベル.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, controlsUnder, geo, islandUp, offFrom, quiet, tapFigure } from './island.ts';
+import { camTo, controlsUnder, geo, islandUp, offFrom, quiet, tapAt, tapFigure } from './island.ts';
 import { hudBells } from './hud.ts';
 
 // the day's visitor and their life are ambient life (e2e/fixtures.ts): on here; a test pins its own with ?visitor=
@@ -39,16 +39,16 @@ async function readOut(page: Page) {
 
 /** A tap on K.K. where nothing else takes it (a villager wandering past in front of him is theirs). */
 async function tapKK(page: Page) {
-  const pt = await page.evaluate(() => {
-    const r = document.querySelector('[data-kk] .art')!.getBoundingClientRect();
+  // (frame-locked, tapAt: a bare spot on him found and tapped with no frame between; a villager walking by took it)
+  await tapAt(page, (w) => {
+    const r = w.document.querySelector('[data-kk] .art')?.getBoundingClientRect();
+    if (!r?.width) return null;
     for (const fy of [0.5, 0.35, 0.65, 0.2, 0.8]) for (const fx of [0.5, 0.3, 0.7]) {
       const x = r.left + r.width * fx, y = r.top + r.height * fy;
-      if (!document.elementFromPoint(x, y)?.closest('button, [data-actor], [data-visitor]')) return [x, y];
+      if (!w.document.elementFromPoint(x, y)?.closest('button, [data-actor], [data-visitor]')) return [x, y];
     }
     return null;
-  });
-  expect(pt, 'a bare spot on K.K.').not.toBeNull();
-  await page.mouse.click(pt![0], pt![1]);
+  }, null, { clear: null, mouse: true, message: 'a bare spot on K.K.' });
 }
 
 /** K.K.'s stool on the page's layout (its middle, u). */
@@ -116,7 +116,8 @@ test('K.K. with the music off still takes a request: the pick turns ミュージ
   await page.goto('?demo&date=2026-10-24T20:00&critter=none');
   await islandUp(page);
   await camTo(page, (await geo(page)).CAMS.mae, false);
-  await tapFigure(page, '[data-kk] .art');
+  await quiet(page); // (the opening beats over: the greeting cut a tap short)
+  await tapKK(page);
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('リクエストは あるかな？');
   await readOut(page);
   await choose(page, page.locator('.choice', { hasText: 'おまかせ' }));
