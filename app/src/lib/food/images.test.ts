@@ -93,6 +93,8 @@ describe('static/food-img', () => {
       const sheet = index.sheets[index.keys[k]![0]]!;
       expect(sheet.startsWith('t-') || (products.has(id) && sheet.startsWith('p-')), id).toBe(true);
     }
+    // the products' confident matches (food-data/images/pmatch.py): 8,944 of 13,916 on 2026-11-10, was 7,978
+    expect([...products].filter((id) => id in index.ids).length / products.size).toBeGreaterThan(0.62);
   });
 
   it("fits the whole table's pictures in static/'s file cap (projected from what is shipped)", () => {

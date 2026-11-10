@@ -14,8 +14,8 @@ sheets in app/static/food-img/.
   python3 -I food-data/images/fi.py split <lines> <dest>  # items that look different get their own row (or join another's)
 
 Committed here: the table (table/*.json: rows {key, ja, desc, items, refs, why}; a row without items, `cat` instead, is
-a products-only subcategory picture), the product words (products.txt: a product's picture by the word its name ends
-with), the verdict log (verdicts.jsonl) and the slots (slots.json: a key's sheet cell, append-only so a shipped sheet
+a products-only subcategory picture), the product rules (products.txt, pmatch.py: a product's picture from its name,
+brand and Open Food Facts tags; pack reads the tags from $FOOD_RAW/off), the verdict log (verdicts.jsonl) and the slots (slots.json: a key's sheet cell, append-only so a shipped sheet
 never changes). Everything else (reference
 photos, generated images, sheets for review) lives in $FOOD_IMG_RAW (default ~/food-images-raw), never in the repo:
 reference photos are look-only. Downloads are untrusted: nothing is run from them. Python with PIL (pack, sheets) and
@@ -32,6 +32,7 @@ import binascii, hashlib, io, json, os, re, subprocess, sys, time, unicodedata, 
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))  # pmatch (python -I leaves the script's own folder off the path)
 REPO = HERE.parents[1]
 APP_FOOD = REPO / 'app' / 'static' / 'food'
 OUT = REPO / 'app' / 'static' / 'food-img'
@@ -616,85 +617,36 @@ def cat_of(row, byid):
     return byid[row['items'][0]]['cat'] if row['items'] else row['cat']
 
 
-# ---------- products: a subcategory picture by the word a name ends with (products.txt; never a package)
+# ---------- products: a generic picture of the same food (pmatch.py, products.txt; never a package)
 
 PRODUCTS = HERE / 'products.txt'
-_KANA = [('芋', 'いも'), ('玉子', 'たまご'), ('卵', 'たまご'), ('葱', 'ねぎ'), ('海老', 'えび'), ('烏賊', 'いか'), ('鮭', 'さけ'),
-         ('しゃけ', 'さけ'), ('胡麻', 'ごま'), ('醤油', 'しょうゆ'), ('味噌', 'みそ'), ('から揚げ', '唐揚げ'), ('からあげ', '唐揚げ'),
-         ('餃子', 'ぎょうざ'), ('ギョーザ', 'ぎょうざ'), ('焼売', 'しゅうまい'), ('シュウマイ', 'しゅうまい'), ('ー', ''), ('・', '')]
-# a name's last bits that say nothing of the food: sizes, counts, brackets, marks
-_JUNK = re.compile(r'([^\w]|\d+(\.\d+)?(g|ml|kg|l|個|枚|本|袋|食|粒|切|切れ|貫|人前|p|入|入り|コ)+|内容量.*|[!！?？☆★♪〈〉<>【】\[\]「」『』'
-                   r'（）()／/、,.。~〜%％+＋&＆-]|大|小|中|ミニ|特大|徳用|業務用|お徳用|スライス|切り落とし|切り落し|切落し|切落とし|詰め合わせ|詰合せ|セット|生食用|刺身用|加熱用|焼肉用|味付|解凍品|冷凍品|加工品)+$')
+# the raw Open Food Facts download (gitignored, never shipped): the products' category tags and generic names
+OFF_RAW = Path(os.environ.get('FOOD_RAW', MAIN / 'food-data' / 'raw')).expanduser() / 'off'
 
 
-def _kana(s):
-    return ''.join(chr(ord(c) - 0x60) if 'ァ' <= c <= 'ヶ' else c for c in s)
+def product_rules(rows=None, byid=None):
+    """pmatch.Rules over products.txt, the catalog words and the pictures' categories (rows: those that ship)."""
+    import pmatch
+    byid = byid or items_by_id()
+    rows = rows if rows is not None else table()
+    return pmatch.Rules(PRODUCTS.read_text(), pmatch.catalog_words(rows, lambda r: cat_of(r, byid), byid),
+                        {r['key']: cat_of(r, byid) for r in rows})
 
 
-def pnorm(s):
-    """A word as products.txt compares it: NFKC, katakana as hiragana, lower case, a few kanji / kana spellings one."""
-    s = _kana(unicodedata.normalize('NFKC', s)).lower()
-    for a, b in _KANA:
-        s = s.replace(_kana(a), b)
-    return s
-
-
-def product_words():
-    """products.txt: word -> (row key, whole token only, weak, first token only, may end a word)."""
-    out = {}
-    for line in PRODUCTS.read_text().splitlines():
-        line = line.split('#')[0].strip()
-        if line:
-            words, key = (x.strip() for x in line.split(' = '))
-            for w in words.split('|'):
-                mark = w[:len(w) - len(w.lstrip('^~!+'))]
-                out[pnorm(w[len(mark):])] = (key, '^' in mark, '~' in mark, '!' in mark, '+' in mark)
-    return out
-
-
-def _script(c):
-    return 'k' if 'ァ' <= c <= 'ヺ' or c == 'ー' else 'h' if 'ぁ' <= c <= 'ゖ' else 'a' if c.isascii() and c.isalnum() else 'x'
-
-
-def product_key(name, words):
-    """A product's picture row: the word one of its name's tokens ends with (a token ending in 味 is a flavour), not
-    starting inside a word of its own script unless 3+ letters long or marked `+` (レモンケーキ: ケーキ, タコグミ: グミ;
-    ショコラ is not コーラ); a `!` word only in the first token (堅あげポテト 九州しょうゆ is no soy sauce). A
-    food's form beats a weak word (~: an ingredient that is often a flavour, 博多明太子 おにぎり: おにぎり), then the longer
-    word, then the earlier token. None: its category's tile."""
-    best = None
-    for ti, tok in enumerate(t for t in re.split(r'\s+', unicodedata.normalize('NFKC', name)) if t):
-        tok = re.sub(r'[（(][^）)]*[）)]', '', tok)
-        for _ in range(3):
-            tok = _JUNK.sub('', tok)
-        if not tok or re.search(r'(味|風味|フレーバー)$', tok):
-            continue
-        for st in range(len(tok)):
-            w = pnorm(tok[st:])
-            if len(w) < 2 or w not in words:
-                continue
-            key, whole, weak, first, tail = words[w]
-            if (whole and st) or (first and ti):
-                continue
-            if st and _script(tok[st]) == _script(tok[st - 1]) and len(tok) - st < 3 and not tail:
-                continue
-            sc = (not weak, len(w), -ti)
-            if best is None or sc > best[0]:
-                best = (sc, key)
-            break
-    return best and best[1]
-
-
-def product_pictures():
-    """off id -> picture row key, for the products a word in products.txt names."""
-    words = product_words()
+def product_pictures(rows=None, byid=None):
+    """off id -> picture row key, for the products matched with confidence (pmatch.CONFIDENT)."""
+    import pmatch
+    if not (OFF_RAW / 'off_jp.jsonl').exists():
+        sys.exit(f'products: no {OFF_RAW}/off_jp.jsonl (set FOOD_RAW to the raw downloads)')
+    rules, off = product_rules(rows, byid), pmatch.load_off(OFF_RAW)
     idx = json.loads((APP_FOOD / 'index.json').read_text())
     out = {}
     for d in idx['datasets']:
         if d.get('lazy'):
             for it in json.loads((APP_FOOD / d['file']).read_text())['items']:
-                k = product_key(it['name'], words)
-                if k:
+                tags, generic = off.get(it['id'], ((), ''))
+                k, conf, _ = rules.match(it['name'], it['cat'], it.get('brand', ''), tags, generic)
+                if k and conf >= pmatch.CONFIDENT:
                     out[it['id']] = k
     return out
 
@@ -715,7 +667,7 @@ def cmd_pack():
     # products' pictures (products.txt): their own thumbnail sheets per search neighbourhood, the most used first, so a
     # search's products touch few sheets (the same picture's generic cell sits with the generic foods)
     shipping = {r['key']: r for r in rows}
-    prodmap = {i: k for i, k in product_pictures().items() if k in shipping}
+    prodmap = {i: k for i, k in product_pictures(rows, byid).items() if k in shipping}
     # a product's sheet: its own name's search neighbourhood (たまねぎドレッシング with the onions), else its picture's
     pnames = {it['id']: it['name'] for d in json.loads((APP_FOOD / 'index.json').read_text())['datasets'] if d.get('lazy')
               for it in json.loads((APP_FOOD / d['file']).read_text())['items']}

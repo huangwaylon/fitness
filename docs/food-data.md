@@ -173,18 +173,21 @@ line (also a narrower key's way to drop a broader one's), and a key matching no 
 ## Pictures
 ごはん's food pictures are AI-generated イメージ (ours: Z-Image-Turbo, Apache-2.0, run locally) of generic foods and
 dishes, in one style (coloured pencil and watercolour on the paper colour): 5,123 pictures cover all 6,185 generic foods,
-and 7,978 of the 13,916 packaged products show a subcategory's picture (24 of them products-only; 977 sheets). Custom
-foods and the other products keep their category's tile. `food-data/images/fi.py` (its docstring has the commands) does the following:
+and 8,944 of the 13,916 packaged products show a generic picture of the same food (24 of them products-only; 984 sheets).
+Custom foods and the other products keep their category's tile. `food-data/images/fi.py` (its docstring has the commands) does the following:
 - **Table** (`food-data/images/table/*.json`, hand-written): one row per visual concept, `{key, ja, desc, items}`. Variants
   that look alike share a row (脂身つき / なし, 和牛 / 輸入牛, a dish's sizes, the same dish in dishes and eatout); states
   that look different get their own (生 / 焼き, 乾 / ゆで). `desc` is a short English description of what the food looks
   like. A name alone draws the wrong food (白和え as a potato, ほうとう as bread). `propose <phase>` drafts the groups,
   and `rows` turns `name|name = description` lines into rows; `split` gives items their own row when they look
   different (a 定食 apart from its main dish, おでん in its broth, a MEXT state, a prefecture's 郷土料理 from its MAFF page).
-- **Products** (`food-data/images/products.txt`; never a package photo): a product's picture is the row named by the
-  word one of its name's tokens ends with (干し芋, 食パン, のむヨーグルト), or a products-only row (`sub.json`: グミ,
-  スコーン...); the matching rules are fi.py `product_key`'s and products.txt's header. About 1 in 15 is a lookalike (a
-  fish 竜田揚げ drawn as chicken); a product no word names keeps its tile.
+- **Products** (`food-data/images/pmatch.py`, rules in `products.txt`; never a package photo): a product borrows the
+  picture of the food its name ends with (干し芋, 食パン; a products-only row in `sub.json`: グミ, スコーン...), or of a
+  catalogue dish it is named like, corrected by context rules (竜田揚げ beside さば is fish, いか照焼 is no ぶり), its Open
+  Food Facts tags (pack reads them from `$FOOD_RAW/off`, the raw download) and one-form brands (ハリボー). Each match has
+  a confidence (pmatch.py's docstring); a doubtful one keeps the tile. On a hand-checked random sample (363 products,
+  every category), 86 % of the old last-word matches showed the right food; on an untouched one (150), 92 % of these.
+  The rules' tests: `food-data/scripts/tests/test_pmatch.py` (the lookalike classes).
 - **Generation** (`gen`, the mflux tool's Python): a fixed seed per row and roll, cached outside the repo in
   `$FOOD_IMG_RAW/gen/` (default ~/food-images-raw), so a re-run is resumable; the prompt and settings are fi.py's header.
 - **Checks** (optional; not run yet): the images ship unchecked, listed in `food-data/images/shipped.json`
@@ -196,8 +199,8 @@ foods and the other products keep their category's tile. `food-data/images/fi.py
 - **Pack** (`pack`, PIL): the background evened to the paper colour, webp sprite sheets in `app/static/food-img/`:
   small thumbnail sheets per search neighbourhood, so a common search's top 20 download about 120 KB, and detail sheets
   per category (one open fetches ~100 KB); the layout is fi.py's header. `slots.json` is append-only, so a full sheet
-  never changes; the names carry the content hash (cached for a year, `scripts/headers.ts`). `index.json` (~495 KB,
-  132 KB gzipped) maps each food id to its picture's two cells (`lib/food/images.ts` `imgOf`).
+  never changes; the names carry the content hash (cached for a year, `scripts/headers.ts`). `index.json` (~520 KB,
+  138 KB gzipped) maps each food id to its picture's two cells (`lib/food/images.ts` `imgOf`).
 - **Budget** (`lib/food/images.test.ts`): ≤ 1,100 files and 90 MB in food-img/ (projected over the whole table,
   within static/'s file cap, `lib/static-budget.ts`), ≤ 400 KB a sheet, a common search's top 20 ≤ 128 KB of thumbnails
   on average (350 at most), and every generic food in a table row (a new catalogue item fails the test until it has
