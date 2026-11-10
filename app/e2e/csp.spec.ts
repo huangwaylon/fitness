@@ -5,7 +5,7 @@
 import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, openKenkou } from './hud.ts';
 import { is3d } from './island.ts';
-import { drawn, fixtureTiles, gotoTrip, mapReady } from './trips.ts';
+import { fixtureTiles, gotoTrip, mapReady, mapsDrawn } from './trips.ts';
 
 const Q = '?demo&date=2026-11-04T12:00';
 
@@ -99,7 +99,7 @@ for (const [name, path, up] of rooms)
 test('the trip map: its worker, fonts, tiles and the location dot, no CSP violation', async ({ page, context }) => {
   test.setTimeout(60_000);
   const seen = await watch(page);
-  await drawn(page);
+  await mapsDrawn(page); // (the map made; the island needn't draw)
   const net = await fixtureTiles(page);
   await context.grantPermissions(['geolocation']);
   await context.setGeolocation({ latitude: 26.6944, longitude: 127.8779, accuracy: 25 });

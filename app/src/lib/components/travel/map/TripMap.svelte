@@ -4,13 +4,13 @@
   // name), the candidate layers, and the location dot behind the locate button. This component is light: the map's
   // library (engine.ts: maplibre-gl, its worker, the fonts) is its own chunk, fetched only when a map is drawn and
   // kept by the service worker from then on (with the tiles it drew: docs/travel.md "Offline"); offline before it came: a
-  // 「もういちど」 panel, and a map whose tiles don't come shows its route with a note. Under drawOff() (the e2e's logic tier) no map is made: a stub with the same pins as buttons.
+  // 「もういちど」 panel, and a map whose tiles don't come shows its route with a note. Under mapStub() (the e2e's logic tier) no map is made: a stub with the same pins as buttons.
   // `window.__travelMap` (hooks on) is the specs' view.
   import { onMount } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
   import { online } from '#lib/ui-state/online.svelte.ts';
   import { lazy } from '#lib/ui-state/reload.ts';
-  import { drawOff } from '#lib/ui-state/testMode.ts';
+  import { mapStub } from '#lib/ui-state/testMode.ts';
   import { pick } from '../text.ts';
   import { LocWatch } from './geo.ts';
   import { mapLoader } from './cached.ts';
@@ -24,7 +24,7 @@
 
   let host: HTMLDivElement;
   let mapEl = $state<HTMLDivElement>();
-  let mode = $state<MapState['mode']>(drawOff() ? 'stub' : 'loading');
+  let mode = $state<MapState['mode']>(mapStub() ? 'stub' : 'loading');
   let loc = $state<MapState['loc']>('off');
   let engine: Engine | null = null;
 

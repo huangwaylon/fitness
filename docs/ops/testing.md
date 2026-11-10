@@ -94,7 +94,8 @@ After a deploy, never holding one back:
   --list --grep @quarantine` (or `@logic`).
 - **Logic mode** (`E2E_RENDER=none`; src/lib/ui-state/testMode.ts): the 3D engines run every frame (the scene, the
   cameras, gestures, the World's step, poses, the tap areas) but never draw: a frame costs ~1 ms.
-  `__world3d.stats().drawn` is false.
+  `__world3d.stats().drawn` is false. A map is its stub there; `e2e.render` `map` (e2e/trips.ts `mapsDrawn`) makes the
+  maps while the island still doesn't draw.
 - **WebKit, the users' browser** (Playwright's WebKit as an iPhone 15), runs in **the flake hunt**
   (`.github/workflows/e2e-flake-hunt.yml`) on macOS runners (Linux's WebKit draws the island at ~1 fps): weekly
   (Monday 03:30 Tokyo) and on demand, the logic tier each test 3×, retries off, 2 workers a runner, 60 s a test. Red

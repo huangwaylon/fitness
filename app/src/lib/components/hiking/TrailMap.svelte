@@ -1,12 +1,12 @@
 <script lang="ts">
   // A trail's map (docs/hiking.md "Map"): MapLibre on the region's raster topo (map/engine.ts, its own lazy chunk, kept
   // by the service worker once drawn, with the tiles seen: docs/hiking.md "Offline"), the track, its ends and
-  // waypoints, the scrub's dot, the location dot (map/style.ts C). Under drawOff() (the e2e's logic tier) no map is
+  // waypoints, the scrub's dot, the location dot (map/style.ts C). Under mapStub() (the e2e's logic tier) no map is
   // made: a stub that draws the track and the dots as SVG and says where they are. Offline before the chunk came: a retry; the tiles not coming: the track alone, with a note.
   // `window.__trailMap` (hooks on) is the specs' view of a drawn map.
   import { onMount } from 'svelte';
   import { lazy } from '#lib/ui-state/reload.ts';
-  import { drawOff } from '#lib/ui-state/testMode.ts';
+  import { mapStub } from '#lib/ui-state/testMode.ts';
   import { online } from '#lib/ui-state/online.svelte.ts';
   import type { Prepared } from '#lib/hiking/track.ts';
   import type { Region } from '#lib/hiking/types.ts';
@@ -33,7 +33,7 @@
 
   const loadEngine = lazy(() => import('./map/engine.ts'));
   let el: HTMLDivElement | undefined = $state();
-  let mode = $state<'stub' | 'loading' | 'ready' | 'offline' | 'failed' | 'lost'>(drawOff() ? 'stub' : 'loading');
+  let mode = $state<'stub' | 'loading' | 'ready' | 'offline' | 'failed' | 'lost'>(mapStub() ? 'stub' : 'loading');
   const feed = new EngineFeed({
     get prep() { return prep; },
     get scrub() { return scrub; },

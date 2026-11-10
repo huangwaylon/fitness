@@ -13,13 +13,19 @@ const has = (k: string): string | null => {
   }
 };
 
-/** Whether the 3D engines skip drawing (their scenes, frames, cameras and hooks all run as ever). */
+/** Whether the 3D engines skip drawing (their scenes, frames, cameras and hooks all run as ever). `e2e.render` `map`:
+ *  they skip it, but the maps are made (`mapStub`), for a spec about a map whose island needn't draw. */
 export function drawOff(): boolean {
   if (typeof location === 'undefined') return false;
-  if (has('e2e.render') === 'none') return true;
+  const r = has('e2e.render');
+  if (r === 'none' || r === 'map') return true;
   const q = new URLSearchParams(location.search);
   return q.get('render') === 'none' && (import.meta.env.DEV || q.has('demo'));
 }
+
+/** Whether a trip's or a trail's map is its logic-tier stub (pins as buttons, no MapLibre): drawing off, but for
+ *  `e2e.render` `map`. */
+export const mapStub = (): boolean => drawOff() && has('e2e.render') !== 'map';
 
 /** Whether three checks each shader program as it links (renderer.debug.checkShaderErrors): a sync readback of the
  *  link status and the info logs, per program, on the first frames. In development and the demo (the e2e's builds:
