@@ -712,7 +712,8 @@ export function createShooter(name: string, dir: string) {
   let made: Promise<Player3D> | null = null;
   return {
     async shoot(renderer: WebGLRenderer, look: PlayerLook, px: number, gone: () => boolean): Promise<string | null> {
-      made ??= createPlayer(name, look, dir, 0).then((p) => (p.step(0), p.step(1000), p));
+      // (a failed one let go of: the next shot tries again)
+      made ??= createPlayer(name, look, dir, 0).then((p) => (p.step(0), p.step(1000), p), (e: unknown) => ((made = null), Promise.reject(e)));
       const p = await made;
       await p.dress(look);
       p.face(null);

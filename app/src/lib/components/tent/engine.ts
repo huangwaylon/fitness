@@ -50,8 +50,8 @@ export interface Look {
   /** Its render never drawn, only its tap area (a human player: not its villager's picture while its model loads). */
   cardless?: boolean;
 }
-export type Hit = { kind: 'piece'; id: string } | { kind: 'villager'; who: Who } | { kind: 'door' } | { kind: 'floor'; x: number; z: number };
-export interface Placed extends Spot {
+type Hit = { kind: 'piece'; id: string } | { kind: 'villager'; who: Who } | { kind: 'door' } | { kind: 'floor'; x: number; z: number };
+interface Placed extends Spot {
   id: string;
   /** How high it stands (a surface's top: a small thing on a table), and its middle there (model units). */
   y?: number;
@@ -70,7 +70,7 @@ export interface Pose {
   /** The piece's id (a lid shuts over who lies in it: lid.ts). */
   id?: string;
 }
-export interface Ghost {
+interface Ghost {
   item: string;
   x: number;
   z: number;
@@ -178,7 +178,7 @@ export interface Tent {
   loading(): number;
   /** Frames drawn, and the last frame's draw calls and triangles (the e2e's budget); `queued`: a frame is asked for
    *  (something moves: a walk, a camera glide, a model popping in); `mem`: the GPU's geometries, textures and programs. */
-  stats(): { frames: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean; mem: [number, number, number]; models: ReturnType<typeof furniture.stats> };
+  stats(): { frames: number; shadows: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean; mem: [number, number, number]; models: ReturnType<typeof furniture.stats> };
   /** The first frame was drawn (the room on screen). */
   ready: Promise<void>;
   dispose(): void;
@@ -482,22 +482,33 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     root.position.set(cx, (s.y ?? 0) + lift, cz);
     root.rotation.y = (s.f * Math.PI) / 2;
   };
+  /** Where a piece stands (a light's switch apart: the room's one shadow is the key light's, no lamp casts). */
+  const standsAt = (s: Placed) => `${s.x},${s.z},${s.f},${s.on ?? ''},${s.y ?? ''},${s.at ?? ''}`;
+  const letGo = (l: Live) => {
+    l.root.removeFromParent();
+    for (const m of l.lit) m.dispose();
+  };
   function pieces(list: readonly Placed[]) {
     const ids = new Set(list.map((p) => p.id));
+    // (the shadow map redrawn only when a piece came, went or moved: a light switched alone redrew it)
+    let moved = false;
     for (const [id, l] of live) if (!ids.has(id)) {
-      l.root.removeFromParent();
-      for (const m of l.lit) m.dispose();
+      letGo(l);
       live.delete(id);
+      moved = true;
     }
     for (const s of list) {
       const was = live.get(s.id);
       if (was && was.spot.item === s.item && (!isWallItem(s.item) || was.spot.f === s.f)) {
+        if (standsAt(was.spot) !== standsAt(s)) moved = true;
         was.spot = s;
         placeRoot(was.root, s);
         continue;
       }
+      moved = true;
       if (was) {
-        was.root.removeFromParent();
+        // (another item in its place: the old one's lamp materials too)
+        letGo(was);
         live.delete(s.id);
       }
       const root = new Group();
@@ -536,15 +547,16 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     }
     lights();
     tallOnes();
-    shadowsDirty = true;
+    if (moved) shadowsDirty = true;
     invalidate();
   }
   function hide(ids: readonly string[]) {
+    const was = hidden;
     hidden = new Set(ids);
     for (const [id, l] of live) l.root.visible = !hidden.has(id);
     tallOnes();
     lights();
-    shadowsDirty = true;
+    if (hidden.size !== was.size || [...hidden].some((id) => !was.has(id))) shadowsDirty = true;
     invalidate();
   }
 
@@ -1263,7 +1275,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
    *  museum's black flashes, 3928d20f), so a resize is drawn over in the same task. */
   function redraw() {
     if (disposed) return;
-    if (shadowsDirty) (renderer.shadowMap.needsUpdate = true), (shadowsDirty = false);
+    if (shadowsDirty) (renderer.shadowMap.needsUpdate = true), (shadowsDirty = false), shadowPasses++;
     if (!noDraw) renderer.render(scene, camera);
   }
   const still = () => !framing && !easing && !fp.busy();
@@ -1311,20 +1323,20 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   }
   const isDefault = () => Math.abs(view.az) < 0.02 && Math.abs(view.pitch - DEF.pitch) < 0.02 && Math.abs(view.k - 1) < 0.02;
   /** A gesture under way: a lighter pixel ratio while the camera moves, the full one when it rests. */
-  let movingNow = false, restTimer: ReturnType<typeof setTimeout> | undefined;
+  /** A gesture under way (and REST_DPR_MS after it): drawn at DPR_MOVING, the ratio set in the frame (before its draw:
+   *  a resize clears the canvas), not a buffer resize, a fit and a draw of their own at each start and end. */
+  let movingNow = false, light = false, restTimer: ReturnType<typeof setTimeout> | undefined;
+  const REST_DPR_MS = 160;
   function moving(on: boolean) {
     clearTimeout(restTimer);
-    if (on && !movingNow) {
-      movingNow = true;
-      renderer.setPixelRatio(Math.min(DPR_MOVING, dpr));
-      fit();
-    } else if (!on) {
+    if (on) {
+      movingNow = light = true;
+      invalidate();
+    } else {
       settle();
-      if (movingNow) restTimer = setTimeout(() => {
-        movingNow = false;
-        renderer.setPixelRatio(dpr);
-        fit();
-      }, 160);
+      if (!movingNow) return;
+      movingNow = false;
+      restTimer = setTimeout(() => ((light = false), invalidate()), REST_DPR_MS);
     }
   }
   /** Where the floor's middle is on screen and where the usable band's middle is (client px: the e2e's check). */
@@ -1499,7 +1511,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   }
 
   // ---- the frames: on demand ----
-  let frames = 0, disposed = false, shadowsDirty = true;
+  let frames = 0, shadowPasses = 0, disposed = false, shadowsDirty = true;
   // (the frames: a change's at the next display frame, at most FPS a second: world3d/pace.ts, the island's and the museum's)
   const pace = pacer((vsync) => frame(vsync));
   /** The first frame waits for the villagers' models asked for by then (up to ENTRY_HOLD_MS): their programs (skinned,
@@ -1730,11 +1742,14 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       place(w, bob, squash);
     }
     if (shadowsDirty) {
+      shadowPasses++;
       renderer.shadowMap.needsUpdate = true;
       shadowsDirty = false;
     }
     // pieces still popping change their shadows
     if (more && [...live.values()].some((l) => l.pop || l.bump)) shadowsDirty = true;
+    const ratio = light ? Math.min(DPR_MOVING, dpr) : dpr;
+    if (ratio !== renderer.getPixelRatio()) renderer.setPixelRatio(ratio);
     if (!noDraw) renderer.render(scene, camera);
     drawn?.();
     // the frame's own cost (the CPU side: three's work and the GL calls), for the budget checks
@@ -1863,7 +1878,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     upIn: (who) => Math.max(0, (villagers.get(who)?.upAt ?? 0) - now()),
     lid: (id) => ((l) => (l ? lidK(l.run, now()) : null))(live.get(id)?.lid), hop, headPoint, hit, floorAt, client, orbit, zoom, resetView, isDefault, moving, centre,
     loading: () => pending,
-    stats: () => ({ frames, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: cost.slice(), queued: pace.queued(),
+    stats: () => ({ frames, shadows: shadowPasses, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: cost.slice(), queued: pace.queued(),
       mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0], models: furniture.stats() }),
     ready,
     dispose() {

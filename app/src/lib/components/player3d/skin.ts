@@ -52,7 +52,7 @@ function writeJoints(g: BufferGeometry, src: BufferGeometry, map: readonly numbe
   to.needsUpdate = true;
 }
 
-export interface SharedSkin {
+interface SharedSkin {
   readonly skeleton: Skeleton;
   /** Bind `m` (as loaded: its own skeleton, its GLB's geometry) to the shared skeleton, its joint `i` being the
    *  player's `to[i]`; or, when its rest isn't the player's, to a skeleton of its own over those joints. */
@@ -165,8 +165,9 @@ export function sharedSkin(model: Object3D): SharedSkin {
     uses: (m) => bound.get(m)?.to ?? m.skeleton.bones,
     shares: (m) => !!bound.get(m)?.shared,
     drop(m) {
-      own.delete(m.geometry);
-      m.geometry.dispose();
+      // (only this player's own remap: a common one is every player's, the island's too, and its GLB's the cache's;
+      // disposed, they went off every renderer and were uploaded again on its next frame, a stall at each top changed)
+      if (own.delete(m.geometry)) m.geometry.dispose();
       // (its skeleton's bone texture, three's float texture kept on the GPU till the skeleton goes)
       if (!bound.get(m)?.shared) m.skeleton.dispose();
       bound.delete(m);

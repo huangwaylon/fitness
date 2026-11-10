@@ -177,9 +177,7 @@ export class IslandLife {
   #start(): () => void {
     const ctx = this.#ctx;
     const offs = [
-      on('open', () => once('open') && react('R1')),
       on('highfive-sent', () => react('R4')),
-      on('highfive-received', () => react('R5')),
       on('sync-error', () => react('R17')),
       // The dev gallery's triggers: compiled out of the production build.
       ...(import.meta.env.DEV

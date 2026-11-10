@@ -18,7 +18,8 @@ import { smooth01 } from '#lib/math.ts';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { lean } from '../world3d/release.ts';
-import { nhLambert, withMaps } from '../world3d/blank.ts';
+import { nhLambert, WHITE, withMaps } from '../world3d/blank.ts';
+import { keepUsed } from '../world3d/keepUsed.ts';
 import { ACTION_MS, FADE_MS, action, base, isGym, mix, over, poseBuf, strideOf, type Action, type Body, type Pose, type State } from './poses.ts';
 import { cellTransform, eyeAt, faceChangeIn, mouthAt, type Face } from './faces.ts';
 import { rigOf, type Rig, type RigOpts } from './rig.ts';
@@ -102,6 +103,23 @@ export interface Villager3D {
 
 const loader = glbLoader({ ktx2: true });
 const cache = new Map<string, Promise<GLTF>>();
+/** Of the villagers' models no villager shows, the VILLAGER_KEEP last shown stay decoded (a visitor back, a look
+ *  changed back: at once); the older let go of (its GPU copies, its images closed; fetched again if it comes). Before,
+ *  every villager ever shown stayed for the page's life (the roster's 442, the visitors', the curator). */
+const VILLAGER_KEEP = 12;
+const used = keepUsed<string>(VILLAGER_KEEP, (url) => {
+  const p = cache.get(url);
+  cache.delete(url);
+  void p?.then((g) => g.scene.traverse((n) => {
+    const m = n as Mesh;
+    if (!m.isMesh) return;
+    m.geometry.dispose();
+    for (const mat of ([] as Material[]).concat(m.material)) {
+      for (const v of Object.values(mat)) if (v instanceof Texture && v !== WHITE) (v.dispose(), (v.image as { close?: () => void } | null)?.close?.());
+      mat.dispose();
+    }
+  }), () => {});
+});
 
 /** A villager's GLB (once per id: a second villager of the same kind clones it). */
 function load(url: string): Promise<GLTF> {
@@ -129,8 +147,17 @@ const BLOB = new CircleGeometry(1, 20).rotateX(-Math.PI / 2);
 
 /** A villager's 3D model, standing at its group's origin (its feet), facing +z (three's: toward the island's camera). */
 export async function createVillager(id: string, url: string, seed = 0): Promise<Villager3D> {
-  const g = await load(url);
-  return animateModel(id, cloneSkinned(g.scene), seed);
+  // (taken before its load is awaited: an eviction never frees what this villager is about to clone)
+  used.use(url);
+  try {
+    const v = animateModel(id, cloneSkinned((await load(url)).scene), seed), end = v.dispose;
+    let done = false;
+    v.dispose = () => (end(), done || ((done = true), used.unuse(url)));
+    return v;
+  } catch (e) {
+    used.unuse(url);
+    throw e;
+  }
 }
 
 /** What a kind of character does its own way over a villager's (NH's human players: player3d/tune.ts). */

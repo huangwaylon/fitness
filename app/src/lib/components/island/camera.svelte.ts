@@ -19,7 +19,7 @@ const newAt = (): At => ({ sx: 0, sy: 0, k: 0, up: 0, ground: 0, depth: 0, visib
 const Q = newAt(), BODY = Array.from({ length: 8 }, newAt);
 
 type NodeMode = 'up' | 'flat' | 'body';
-export interface NodeSpec {
+interface NodeSpec {
   x: number;
   z: number;
   mode?: NodeMode;
@@ -117,7 +117,7 @@ interface M3 {
   art?: () => Element | null | undefined;
 }
 /** A node the 3D island draws as a model: its id, its art key, where it is now. */
-export interface Model3 {
+interface Model3 {
   id: string;
   m3: M3;
   x: number;

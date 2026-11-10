@@ -114,10 +114,12 @@
       if (!f) return end();
       setFlight(f, model);
       flight = f;
+      // (flying: no more looks, 5 a second for the whole flight)
+      clearInterval(wait);
       // (its frames are the island's ambience: a slow drift, world3d/Island3D)
       w.kick();
     };
-    const wait = setInterval(start, 200);
+    const wait: ReturnType<typeof setInterval> = setInterval(start, 200);
     start();
     // (no 3D island: never)
     const give = setTimeout(() => !flight && end(), 10_000);

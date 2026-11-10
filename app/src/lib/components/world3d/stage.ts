@@ -18,7 +18,7 @@ import { FPS } from '#lib/store/frameRate.ts';
 const DPR_MAX = 2;
 export const DPR_MOVING = 1.5;
 
-export interface RendererOpts {
+interface RendererOpts {
   /** MSAA (never in the logic mode). */
   antialias?: boolean;
   /** A see-through canvas (cleared to transparent): the page shows behind it. */

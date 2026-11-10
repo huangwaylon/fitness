@@ -4,7 +4,7 @@
 //   import { emit } from '#lib/components/motion/bus.svelte.ts';
 //   emit('highfive-sent');
 type IslandEvent =
-  | 'open' | 'highfive-sent' | 'highfive-received' | 'sync-error'
+  | 'highfive-sent' | 'sync-error'
   /** Dev gallery only: play a catalogue reaction by id (`detail` = 'R1'…'R19'), or force an event. */
   | 'dev:react' | 'dev:balloon' | 'dev:fireworks';
 
