@@ -51,9 +51,11 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     expect(ledger.spends.filter((x) => x.voided).map((x) => x.spendId)).toEqual(sent.includes('demo-snack-void') ? ['demo-snack-void'] : []);
     const m = composeModel(cache, [], now);
     const view = buildWeekView(m.state, m.me, m.now);
-    // everything earned less the live buys: in the one shared wallet, or both wallets (less an odd ベル the split dropped)
+    // everything earned less the live buys: both wallets
     const left = ledger.earned - ledger.spends.reduce((n, x) => (x.voided ? n : n + x.bells), 0);
-    expect(left - walletAt(s, now).total).toBeOneOf([0, 1]);
+    expect(walletAt(s, now).total).toBe(left);
+    // both of us buy
+    expect(new Set(ledger.spends.map((x) => x.by))).toEqual(new Set(['A', 'B']));
     // the demo can always buy either reward, from either wallet
     for (const p of ['A', 'B'] as const) expect(view.wallet.people[p].balance).toBeGreaterThanOrEqual(shopPrice('dinner', now)!);
     if (process.env.DEMO_DEBUG) console.log(iso, view.wallet, view.people.A.today, view.together);

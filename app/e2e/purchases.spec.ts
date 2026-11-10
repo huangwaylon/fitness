@@ -73,18 +73,22 @@ test('buy → it heads the history → erase it (削除) → the ベル come bac
   await expect(hist.locator(`li[data-spend="${id}"]`)).toHaveCount(1);
 });
 
-test('either of us can erase any buy, the partner\'s too', async ({ page }) => {
+test('either of us can erase any buy, the partner\'s too: its ベル go back to the buyer\'s wallet', async ({ page }) => {
   await page.goto('jar?demo');
   const hist = await history(page);
   await expect(hist.locator('li').first()).toBeVisible();
   const names = await hist.locator('li .who').allTextContents();
   expect(new Set(names.map((n) => n.trim())).size, names.join(',')).toBe(2); // the demo has buys by both of us
-  const before = await balance(page);
-  const row = hist.locator('li').filter({ hasText: names.find((n) => n !== names[0])! }).first();
+  const theirs = page.locator('.hero .purse').last();
+  const partnerName = (await theirs.locator('.who').innerText()).trim();
+  const partner = async () => Number(await theirs.getAttribute('data-balance'));
+  const [mine, before] = [await balance(page), await partner()];
+  const row = hist.locator('li').filter({ hasText: partnerName }).first();
   const price = Number((await row.locator('.amt').innerText()).replace(/\D/g, ''));
   await row.locator('button.x').click();
   await sheet(page).getByRole('button', { name: '削除', exact: true }).click();
-  await expect.poll(() => balance(page)).toBe(before + price);
+  await expect.poll(partner).toBe(before + price);
+  expect(await balance(page)).toBe(mine);
 });
 
 for (const vp of [{ width: 375, height: 667 }, { width: 390, height: 844 }]) {
@@ -107,7 +111,7 @@ for (const vp of [{ width: 375, height: 667 }, { width: 390, height: 844 }]) {
   });
 }
 
-test('after the wallets\' split (2026-11-11 00:00): a wallet each, the rewards at 20 / 35, a buy spends mine alone, its erase refunds it', async ({ page }) => {
+test('from 2026-11-11 00:00 (PRICE_HALVED_MS): the rewards at 20 / 35, a buy spends mine alone, its erase refunds it', async ({ page }) => {
   await page.goto('jar?demo&date=2026-11-12T12:00');
   const purses = page.locator('.hero .purse');
   await expect(purses).toHaveCount(2);

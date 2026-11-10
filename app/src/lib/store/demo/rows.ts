@@ -173,13 +173,15 @@ function demoRows(now: number, weeksBack: number, zeros = false): SnapshotRows {
   // うめ raises her Move goal to 450 kcal (3 weeks ago, from that Wednesday on: earlier days keep 400).
   ev(at(addDays(w(3), 2), 7, 30), 'B', 'pref', { key: 'moveGoal', value: 450 });
 
-  // The wallets, as a typical week (~50 ベル) affords it: in each three weeks an おやつ, a 外食 and a week of saving
-  // (110 of ~150), so the jar keeps growing; and one buy taken back by its buyer. Over the whole history
-  // (`?demo&weeks=20`: more than ten buys, for the jar's もっと見る).
+  // The wallets, as a typical week (~25 ベル each) affords it: the first weeks saved, then in each three weeks an
+  // おやつ and a 外食, the buyer taking turns (each from their own wallet), so both jars keep growing; and one buy taken
+  // back by its buyer. Over the whole history (`?demo&weeks=20`: more than ten buys, for the jar's もっと見る).
   const buy = (t: number, p: PersonId, spendId: string, item: ShopItemId) => ev(t, p, 'spend', { spendId, item, bells: shopPrice(item, t) });
-  for (let k = weeksBack - 1; k >= 1; k--) {
-    if (k % 3 === 1) buy(at(addDays(w(k), 2), 15, 20), k % 2 ? 'A' : 'B', `demo-snack-${k}`, 'snack');
-    if (k % 3 === 0) buy(at(addDays(w(k), 6), 12, 30), k % 2 ? 'A' : 'B', `demo-dinner-${k}`, 'dinner');
+  let turn = 0;
+  const buyer = (): PersonId => (turn++ % 2 ? 'B' : 'A');
+  for (let k = weeksBack - 3; k >= 1; k--) {
+    if (k % 3 === 1) buy(at(addDays(w(k), 2), 15, 20), buyer(), `demo-snack-${k}`, 'snack');
+    if (k % 3 === 0) buy(at(addDays(w(k), 6), 12, 30), buyer(), `demo-dinner-${k}`, 'dinner');
   }
   buy(at(addDays(w(4), 3), 19, 30), 'A', 'demo-snack-void', 'snack');
   ev(at(addDays(w(4), 3), 19, 34), 'A', 'spend_void', { spendId: 'demo-snack-void' });

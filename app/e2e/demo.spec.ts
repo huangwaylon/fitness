@@ -72,7 +72,7 @@ test('buy: a reward comes back with とりけす', async ({ page }) => {
   await expect.poll(balance).toBe(before);
 });
 
-test('ごほうび: the two wallets side by side, mine first (a jar, the owner, the balance, today\'s under it); exactly two rewards with their art: おやつ 40, 外食 70 before the split, no examples, no 「あと」', async ({ page }) => {
+test('ごほうび: the two wallets side by side, mine first (a jar, the owner, the balance, today\'s under it); exactly two rewards with their art: おやつ 40, 外食 70 before PRICE_HALVED_MS, no examples, no 「あと」', async ({ page }) => {
   await page.goto('?demo');
   await islandReady(page);
   await toPanel(page);

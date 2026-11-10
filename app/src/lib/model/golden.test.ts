@@ -4,9 +4,9 @@
 // The rows are real-shaped (both people, every row stamped with its server `at`); they include Move goals, late
 // Health syncs (one before a lock, one after), a double-counted day corrected by a lower re-sync (A, 12-03: latest
 // wins), a lower re-sync after a lock (A, 11-29: the locked week stays put), ふたりでぜんぶ days (11-05, 12-16, 12-20),
-// がんばり days (a goal at 1.5×; both stretched past the cap on 12-14 and 12-15), a buy from the shared wallet before
-// the split (2026-11-11 00:00 JST, at its old price) and buys from each member's own after it, a void, a void by the
-// partner (it counts: the ベル go back to the buyer), buys at a wrong price (an old one after the split too) or of an
+// がんばり days (a goal at 1.5×; both stretched past the cap on 12-14 and 12-15), buys from each member's own wallet
+// (one before PRICE_HALVED_MS, 2026-11-11 00:00 JST, at its old price), a void, a void by the
+// partner (it counts: the ベル go back to the buyer), buys at a wrong price (an old one after PRICE_HALVED_MS too) or of an
 // unknown item (ignored) and a buy beyond its buyer's wallet while the other's could pay (ignored).
 // - fixtures/timeline-rows.json: the sheet rows (both people, every row stamped with its server `at`). The view at
 //   instant t is built from the rows with `at <= t`.
@@ -24,7 +24,6 @@ import type { PersonId, WeekView } from '#lib/types.ts';
 import { buildWeekView } from './week.ts';
 import { bellsLedger, weekBells } from './bells.ts';
 import { provisionalMs, reduce } from './state.ts';
-import { WALLET_SPLIT_MS } from '#lib/contract/rules.ts';
 import type { SnapshotRows } from '#lib/contract/api.ts';
 import rowsJson from './fixtures/timeline-rows.json' with { type: 'json' };
 import viewsJson from './fixtures/timeline-views.json' with { type: 'json' };
@@ -94,14 +93,14 @@ describe('golden: the WeekView on a 10-week timeline', () => {
     expect(new Set(all.map((v) => v.people.A.moveGoal))).toEqual(new Set([600, 500]));
     expect(new Set(all.map((v) => v.people.B.moveGoal))).toEqual(new Set([400, 300]));
     const end = bellsLedger(reduce(ROWS), END);
-    // bs-wrong (8 ベル: an older おやつ price), bs-trip (no such reward), bs-old (40: the shared wallet's おやつ, after the
-    // split) and bs-b16 (an おやつ beyond B's wallet: 5 left, though A's holds 63) are ignored; B's void of A's dinner
-    // gives its 35 back to A (either of us may undo any buy).
+    // bs-wrong (8 ベル: an older おやつ price), bs-trip (no such reward), bs-old (40: the old おやつ price, after
+    // PRICE_HALVED_MS) and bs-b16 (a 外食 beyond B's wallet: 22 left, though A's holds 46) are ignored; B's void of A's
+    // dinner gives its 35 back to A (either of us may undo any buy).
     expect(end.spends.map((x) => [x.spendId, x.by, x.bells, x.voided]).reverse()).toEqual([
       ['bs-early', 'A', 40, false], ['bs-snack', 'A', 20, true], ['bs-dinner', 'A', 35, true], ['bs-snack-2', 'B', 20, false],
       ...(['b10:A', 'b11:B', 'b12:A', 'b13:B', 'b14:B'].map((x) => [`bs-${x.slice(0, 3)}`, x.slice(4), 35, false]))
     ]);
-    expect(buildWeekView(reduce(ROWS), 'A', END).wallet.people).toEqual({ A: { balance: 63, today: 0 }, B: { balance: 5, today: 0 } });
+    expect(buildWeekView(reduce(ROWS), 'A', END).wallet.people).toEqual({ A: { balance: 46, today: 0 }, B: { balance: 22, today: 0 } });
     // がんばり in the ledger, capped at 2 where more were reached
     expect(end.days.some((d) => d.people.A.stretch === 2 || d.people.B.stretch === 2)).toBe(true);
     expect(end.days.every((d) => d.people.A.stretch <= 2 && d.people.B.stretch <= 2)).toBe(true);
@@ -130,14 +129,14 @@ describe('golden: the WeekView on a 10-week timeline', () => {
       const l = bellsLedger(s, tMs);
       const earned = l.days.reduce((n, d) => n + d.bells, 0);
       expect(l.earned, t).toBe(earned);
-      // everything earned less the live buys: the shared wallet, then both (less an odd ベル the split dropped)
+      // everything earned less the live buys: both wallets
       const left = l.earned - l.spends.reduce((n, x) => (x.voided ? n : n + x.bells), 0);
       const g = buildWeekView(s, 'G', tMs).wallet.balance;
-      expect(left - g, t).toBeOneOf(tMs < WALLET_SPLIT_MS ? [0] : [0, 1]);
+      expect(left, t).toBe(g);
       for (const me of PEOPLE) {
         const v = buildWeekView(s, me, tMs);
         expect(v.wallet.balance, t).toBe(v.wallet.people[me].balance);
-        if (tMs >= WALLET_SPLIT_MS) expect(v.wallet.people.A.balance + v.wallet.people.B.balance, t).toBe(g);
+        expect(v.wallet.people.A.balance + v.wallet.people.B.balance, t).toBe(g);
         const h = v.harvest;
         if (h) expect(h.totalBells, `${t} harvest`).toBe(l.days.filter((d) => d.weekKey === h.weekKey).reduce((n, d) => n + d.bells, 0));
       }

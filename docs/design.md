@@ -382,14 +382,12 @@ earlier day); everything that reads a goal reads that day's. The ベル price Ex
 ### Rewards
 
 Exactly two (`SHOP`): 🍦 **おやつ 20 ベル** (`snack`) and 🍜 **外食 35 ベル** (`dinner`), each bought from the buyer's
-own wallet. A buy is `spend {spendId, item, bells}` with `bells` exactly the item's price at the record's clock
-(`shopPrice`; the server refuses anything else). Either undoes any buy (`spend_void`). Against the numbers check (each
+own wallet. A buy is `spend {spendId, item, bells, day?}` with `bells` exactly the item's price at the record's clock
+(`shopPrice`: おやつ 40 / 外食 70 before `PRICE_HALVED_MS`, 2026-11-11 00:00 JST; the server refuses anything else) and
+`day` the Tokyo day it was for (optional: the record's Tokyo day or up to 14 days before it, `spendOf`). Either undoes
+any buy (`spend_void`). Against the numbers check (each
 wallet gets half the pair's week) each is something to save for: a typical person has two おやつ and one 外食 every
 three weeks; a perfect week buys each exactly one 外食; a lazy week (14 each) buys nothing.
-
-**The split (`WALLET_SPLIT_MS`, 2026-11-11 00:00 JST):** until then one shared wallet, both people's days and the whole
-ふたりでぜんぶ in it, おやつ 40 / 外食 70; every buy from then stays as it was. At the split each member gets half of
-what was left, rounded down (an odd ベル is dropped); days from 11-11 fill each person's own wallet.
 
 ### The first week
 
@@ -404,13 +402,13 @@ The economy starts with the data: its first week is the first one with an activi
 
 ### Wallet and buys
 
-A day's ベル count in its wallet from that day: each person's own and half of ふたりでぜんぶ (`walletAt`). Buys and
-voids replay in server order.
+Each person's wallet runs from the economy's first day: a day's ベル count in it from that day, their own and half of
+ふたりでぜんぶ (`walletAt`). Buys and voids replay in server order (by `at`).
 
-- **Coverage:** a buy counts only if its buyer's wallet covers it (what it got up to the buy's date minus earlier
-  accepted buys; before the split the shared wallet's); an uncovered buy is ignored, so no balance goes negative.
-- **Voids:** either of us, any buy, once; the ベル return to the wallet that paid (a pre-split buy undone after the
-  split: to its buyer's). Buys and voids never lock.
+- **Coverage:** a buy counts only if its buyer's wallet covers it (what it got up to the buy's `day`, else its `at`'s
+  Tokyo day, minus their earlier accepted buys); an uncovered buy is ignored, so no balance goes negative. The history
+  shows each buy's day.
+- **Voids:** either of us, any buy, once; the ベル return to the buyer's wallet. Buys and voids never lock.
 
 ## Health data
 

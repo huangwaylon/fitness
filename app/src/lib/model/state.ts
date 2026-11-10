@@ -3,7 +3,7 @@
 // Health data comes only from the Shortcut's `metrics` rows: Apple Health is the source of truth.
 import type { LocalDate, PersonId, ShopItemId, WeekKey, Who } from '#lib/types.ts';
 import { CUTOFFS } from '#lib/config/rules.ts';
-import { LIMITS, shopPrice } from '#lib/contract/rules.ts';
+import { LIMITS } from '#lib/contract/rules.ts';
 import { addDays, instantOrNull, jstMs, localDateAt, toLocalDate, weekKeyOf } from '#lib/time/dates.ts';
 import { isTally } from '#lib/contract/tally.ts';
 import { isIslandDay, type IslandDayData } from '#lib/contract/island.ts';
@@ -20,7 +20,7 @@ import { farmOf } from '#lib/contract/farm.ts';
 import type { FarmRow } from './farm.ts';
 import { isBirth, isBmiStd, isProfileKey, isSex, PROFILE_KEYS, type BmiStd, type ProfileKey, type Sex } from '#lib/contract/profile.ts';
 import { lookPrefRead, readSavedLooks, type SavedLook } from '#lib/contract/look.ts';
-import { goalDay } from '#lib/contract/record.ts';
+import { goalDay, spendOf } from '#lib/contract/record.ts';
 import type { TallyRow } from './tally.ts';
 import { appendedTo, rowAt } from './snapshot.ts';
 import {
@@ -62,7 +62,8 @@ export function lastLockAt(t: number): number {
 
 interface Timed<T> { at: number; v: T }
 /** A buy from the wallet: `{spendId, item, bells}`, a SHOP item at its price. */
-interface BellSpendRec { at: number; person: PersonId; spendId: string; item: ShopItemId; bells: number }
+/** `day`: the Tokyo day the buy was for (its own, else its `at`'s): what its wallet must have earned by. */
+interface BellSpendRec { at: number; person: PersonId; spendId: string; item: ShopItemId; bells: number; day: LocalDate }
 
 /** The goals kept as their latest (contract/goals.ts history `latest`: `goalWeight`, `goalBodyFat`, `goalBmi`,
  *  `goalLean`, the meal log's `kcalGoal` … `saltGoal`), each optional and shown only: none ever earns. */
@@ -569,13 +570,11 @@ const rowEvent = <K extends 'pack' | 'wedding'>(list: K, rowOf: (type: string, d
 /** One handler per event type: each accepts (indexes) the event or ignores it. */
 const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
   spend: members((s, person, at, d) => {
-    // A buy from the buyer's wallet: a SHOP item at exactly its price at the buy (the old one before the wallets' split:
-    // contract/rules.ts shopPrice). Whether the wallet covered it is decided on read (bells.ts).
-    const { spendId, item } = d;
-    const bells = shopPrice(item, at);
-    if (!isId(spendId) || bells === undefined || d.bells !== bells) return;
-    if (s.bellSpends.some((x) => x.spendId === spendId)) return;
-    s.bellSpends.push({ at, person, spendId, item: item as ShopItemId, bells });
+    // A buy from the buyer's wallet, as the record took it (contract/record.ts spendOf: its price at the buy, the day it
+    // was for). Whether the wallet covered it is decided on read (bells.ts).
+    const sp = spendOf(d, at);
+    if (!sp || s.bellSpends.some((x) => x.spendId === sp.spendId)) return;
+    s.bellSpends.push({ at, person, ...sp });
   }),
   spend_void: members((s, person, at, d) => {
     const spendId = d.spendId;

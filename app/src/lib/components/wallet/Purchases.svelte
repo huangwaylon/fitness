@@ -4,7 +4,7 @@
 </script>
 
 <script lang="ts">
-  // ごほうびの きろく, at the very bottom of ごほうび: the buys from the wallets, newest first (the day, the reward,
+  // ごほうびの きろく, at the very bottom of ごほうび: the buys from the wallets, newest first (the day it was for, the reward,
   // who bought it, the price), each with ✕ to erase it. Folded by default: its heading is a disclosure (「かいもの きろく
   // 3件」 and a chevron, aria-expanded) that opens the list on a smooth grow and folds it again. Either of us may erase
   // any buy (its ベル go back to the wallet that paid). ✕ asks first (キャンセル / 削除, docs/design.md "Navigation"), then `onerase` (the page sends the `spend_void`: the
@@ -12,7 +12,6 @@
   //   <Purchases spends={…} names={…} villagers={…} onerase={(s) => …} />
   import type { PersonId } from '#lib/types.ts';
   import type { LedgerSpend } from '#lib/model/bells.ts';
-  import { localDateAt } from '#lib/time/dates.ts';
   import Sheet from '../ui/Sheet.svelte';
   import Avatar from '../characters/Avatar.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -49,7 +48,7 @@
 </script>
 
 {#snippet when(s: LedgerSpend)}
-  <span class="money">{dayTitle(localDateAt(s.at))}</span>
+  <span class="money">{dayTitle(s.day)}</span>
   <span class="who"><Avatar worn person={s.by} villager={villagers[s.by]} size={20} />{names[s.by]}</span>
 {/snippet}
 

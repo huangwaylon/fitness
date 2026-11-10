@@ -1,8 +1,8 @@
 // The record's rules (contract/record.ts): `prefTaken` agrees with what the model takes, and the slots.
 import { describe, expect, it } from 'vitest';
-import { eventSlot, goalDay, prefTaken, TALLY_PAST_DAYS, validEventData } from './record.ts';
+import { eventSlot, goalDay, prefTaken, SPEND_PAST_DAYS, spendOf, TALLY_PAST_DAYS, validEventData } from './record.ts';
 import { DEFAULT_LOOKS } from './look.ts';
-import { WALLET_SPLIT_MS } from './rules.ts';
+import { PRICE_HALVED_MS } from './rules.ts';
 import { stockOf, buyPrice } from './stock.ts';
 import { reduce } from '../model/state.ts';
 import type { EventRow } from './api.ts';
@@ -85,11 +85,11 @@ describe('validEventData: each type\'s shape', () => {
     expect(ok('spend', { spendId: 's1', item: 'snack', bells: 39 })).toBe(false);
     expect(ok('spend', { spendId: 's1', item: 'caviar', bells: 40 })).toBe(false);
     expect(ok('spend', { spendId: '', item: 'snack', bells: 40 })).toBe(false);
-    // at its price as of the record's clock: the halved ones only from the wallets' split (rules.ts WALLET_SPLIT_MS)
+    // at its price as of the record's clock: the halved ones only from rules.ts PRICE_HALVED_MS
     expect(ok('spend', { spendId: 's1', item: 'dinner', bells: 35 })).toBe(false);
-    expect(validEventData('spend', { spendId: 's1', item: 'dinner', bells: 35 }, WALLET_SPLIT_MS)).toBe(true);
-    expect(validEventData('spend', { spendId: 's1', item: 'dinner', bells: 70 }, WALLET_SPLIT_MS)).toBe(false);
-    expect(validEventData('spend', { spendId: 's1', item: 'dinner', bells: 70 }, WALLET_SPLIT_MS - 1)).toBe(true);
+    expect(validEventData('spend', { spendId: 's1', item: 'dinner', bells: 35 }, PRICE_HALVED_MS)).toBe(true);
+    expect(validEventData('spend', { spendId: 's1', item: 'dinner', bells: 70 }, PRICE_HALVED_MS)).toBe(false);
+    expect(validEventData('spend', { spendId: 's1', item: 'dinner', bells: 70 }, PRICE_HALVED_MS - 1)).toBe(true);
     expect(ok('spend_void', { spendId: 's1' })).toBe(true);
     expect(ok('spend_void', {})).toBe(false);
     expect(ok('harvest', { week: '2026-11-04' })).toBe(true);
@@ -97,6 +97,24 @@ describe('validEventData: each type\'s shape', () => {
     expect(ok('find', { kind: 'fish', id: 'koi' })).toBe(true);
     expect(ok('find', { kind: 'gold', id: 'koi' })).toBe(false);
   });
+
+  it('a spend may say the day it was for: a real date from SPEND_PAST_DAYS before the record’s Tokyo day to that day', () => {
+    const T = Date.parse('2026-11-20T03:00:00.000Z'); // 12:00 on 11-20 in Tokyo
+    const day = (d: unknown, at = T) => validEventData('spend', { spendId: 's1', item: 'snack', bells: 20, day: d }, at);
+    expect(SPEND_PAST_DAYS).toBe(14);
+    for (const d of ['2026-11-20', '2026-11-19', '2026-11-06']) expect(day(d), d).toBe(true);
+    for (const d of ['2026-11-21', '2026-11-05', '2026-02-30', '2026-11-2', 20261120, null, '']) expect(day(d), String(d)).toBe(false);
+    // the record's Tokyo day: at 23:59 JST the day is that one, at 00:00 the next
+    expect(day('2026-11-21', Date.parse('2026-11-21T14:59:00.000Z'))).toBe(true);
+    expect(day('2026-11-22', Date.parse('2026-11-21T14:59:00.000Z'))).toBe(false);
+    expect(day('2026-11-08', Date.parse('2026-11-21T15:00:00.000Z'))).toBe(true);
+    expect(day('2026-11-07', Date.parse('2026-11-21T15:00:00.000Z'))).toBe(false);
+    // the model reads it the same way (spendOf): the day it was for, else the Tokyo day of its `at`
+    expect(spendOf({ spendId: 's1', item: 'snack', bells: 20, day: '2026-11-09' }, T)).toEqual({ spendId: 's1', item: 'snack', bells: 20, day: '2026-11-09' });
+    expect(spendOf({ spendId: 's1', item: 'snack', bells: 20 }, T)?.day).toBe('2026-11-20');
+    expect(spendOf({ spendId: 's1', item: 'snack', bells: 20, day: '2026-11-21' }, T)).toBeNull();
+  });
+
 
   it('a pref: a known key with a value, a profile value in range, a day only on a goal a day keeps, a season look', () => {
     expect(ok('pref', { key: 'locale', value: 'ja' })).toBe(true);

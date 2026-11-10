@@ -1,8 +1,7 @@
 <script lang="ts">
   // ごほうび, the wallets: the island panel (design.md "Wallet"). Top to bottom: the two members' wallets side by side
   // (mine first; each its jar, its owner's avatar and name, its balance, big, and under it today's ベル into it so far in
-  // a yuzu pill, a faint cream one at 0; before the wallets' split, contract/rules.ts WALLET_SPLIT_MS, both show the one
-  // shared wallet), then the two rewards as tiles (Shop, paid from my own wallet; buying asks first, then shows at once
+  // a yuzu pill, a faint cream one at 0), then the two rewards as tiles (Shop, paid from my own wallet; buying asks first, then shows at once
   // and waits 5 s with とりけす on the banner before it is sent), then the ベル ledger (BellsLog: by week, a day →
   // `onday`, the panel pushes it), and at the very bottom the buys so far, folded (Purchases), each erasable by either
   // of us (asked first; the ベル go back to the wallet that paid, with とりけす on the banner).
@@ -34,7 +33,7 @@
   /** My own wallet: what the rewards are paid from. */
   const balance = $derived(view ? view.wallet.people[view.me].balance : 0);
   const m = $derived(week.model);
-  /** The rewards' prices now (the old ones before the wallets' split). */
+  /** The rewards' prices now (contract/rules.ts shopPrice). */
   const prices = $derived(Object.fromEntries(SHOP.map((x) => [x.id, shopPrice(x.id, m?.now ?? 0) ?? x.bells])) as Record<ShopItemId, number>);
   /** The buys, newest first (walletAt is memoised per model and minute, as the view computed it). */
   const spends = $derived(m ? [...walletAt(m.state, m.now).spends].reverse() : []);

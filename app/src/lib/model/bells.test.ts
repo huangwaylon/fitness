@@ -1,15 +1,15 @@
 // The ベル economy on read: earnings land in each member's wallet as they happen (+1 a goal, ふたりでぜんぶ +1 each),
 // the Sunday harvest recaps the week, buys of the two rewards replay against their buyer's wallet (never below zero),
-// voids, locks, the shared wallet before the split and the split itself, the economy's first week, the Move goal in
-// force per day and the きろく ledger. (WK is after the split: contract/rules.ts WALLET_SPLIT_MS.)
+// voids, locks, each wallet from the first day at the prices of the time, a buy's `day`, the economy's first week, the
+// Move goal in force per day and the きろく ledger. (WK is after contract/rules.ts PRICE_HALVED_MS.)
 import { describe, expect, it } from 'vitest';
 import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
 import { weekDays } from '#lib/time/dates.ts';
 import { firstWeek, reduce } from './state.ts';
 import { buildWeekView } from './week.ts';
-import { bellsLedger, economyWeeks, SPLIT_DAY, walletAt, weekBells } from './bells.ts';
-import { shopPrice, WALLET_SPLIT_MS } from '#lib/contract/rules.ts';
+import { bellsLedger, economyWeeks, walletAt, weekBells } from './bells.ts';
+import { shopPrice, PRICE_HALVED_MS } from '#lib/contract/rules.ts';
 import { dayDetail } from './history.ts';
 
 const WK = '2026-11-16'; // Sunday 19:30 = 11-22 10:30Z; lock = Wednesday 11-25 04:00 JST
@@ -161,7 +161,7 @@ describe('locks: earnings change until the Wednesday 04:00 lock, then they are f
 });
 
 describe('buys: one of the two rewards, at its price, from the buyer’s own wallet; either of us can undo', () => {
-  const P = weekDays('2026-11-09'); // the week before WK: its Monday and Tuesday before the split (20 shared, 10 each)
+  const P = weekDays('2026-11-09'); // the week before WK (its Monday and Tuesday at the old prices)
   const r = plus(perfectWeek(['A', 'B'], P), perfectWeek()); // by Monday 10 + 5 × 5 + 7 × 5 = 70 in each wallet
   const at = (events: EventRow[], now = MON_AFTER) => walletAt(reduce(plus(r, { events })), now);
 
@@ -232,7 +232,7 @@ describe('buys: one of the two rewards, at its price, from the buyer’s own wal
     expect(p.balance.A).toBe(p.balance.B);
   });
 
-  it('anything but a reward at exactly its price is ignored (the old prices too, after the split)', () => {
+  it('anything but a reward at exactly its price is ignored (the old prices too, after PRICE_HALVED_MS)', () => {
     const t = jst(MON, '10:00');
     const p = at([
       ev(t, 'A', 'spend', { spendId: 7, item: 'snack', bells: 20 }),
@@ -242,7 +242,7 @@ describe('buys: one of the two rewards, at its price, from the buyer’s own wal
       ev(t, 'A', 'spend', { spendId: 'x4', item: 'cafe', bells: 20 }),
       ev(t, 'A', 'spend', { spendId: 'x5', bells: 20 }),
       ev(t, 'A', 'spend', { spendId: 'x6', item: 'snack', bells: '20' }),
-      ev(t, 'A', 'spend', { spendId: 'x7', item: 'snack', bells: 40 }), // the shared wallet's prices
+      ev(t, 'A', 'spend', { spendId: 'x7', item: 'snack', bells: 40 }), // the old prices
       ev(t, 'A', 'spend', { spendId: 'x8', item: 'dinner', bells: 70 }),
       ev(t, 'A', 'spend', { spendId: 'x9', item: 'snack', bells: 8 }),
       ev(t, 'A', 'spend', { spendId: 'ok', item: 'snack', bells: 20 }),
@@ -253,56 +253,63 @@ describe('buys: one of the two rewards, at its price, from the buyer’s own wal
   });
 });
 
-describe('the split (contract/rules.ts WALLET_SPLIT_MS, 2026-11-11 00:00 JST): the shared wallet before, halved into two at it', () => {
-  const PRE = weekDays('2026-11-02'); // a whole week before the split
-  const r = plus(perfectWeek(['A', 'B'], PRE), perfectWeek(['A', 'B'], ['2026-11-09', '2026-11-10'])); // 90 shared
+describe('each member’s wallet from the first day (their own ベル and half of ふたりでぜんぶ), at the prices of the time', () => {
+  const PRE = weekDays('2026-11-02'); // a whole week before PRICE_HALVED_MS
+  const r = plus(perfectWeek(['A', 'B'], PRE), perfectWeek(['A', 'B'], ['2026-11-09', '2026-11-10'])); // 45 each by 11-10
   const at = (events: EventRow[], now: number) => walletAt(reduce(plus(r, { events })), now);
-  const BEFORE = WALLET_SPLIT_MS - 60_000;
-  const AFTER = ms('2026-11-12', '12:00'); // (no earnings from SPLIT_DAY on)
+  const BEFORE = PRICE_HALVED_MS - 60_000;
+  const AFTER = ms('2026-11-12', '12:00'); // (no earnings from 11-11 on)
   const old = (t: string, p: PersonId, id: string, item = 'snack') => spend(t, p, id, item, item === 'snack' ? 40 : 70);
+  const dated = (t: string, p: PersonId, id: string, day: string, item = 'snack', bells = item === 'snack' ? 20 : 35) =>
+    ev(t, p, 'spend', { spendId: id, item, bells, day });
 
-  it('the cutover: SPLIT_DAY is its Tokyo day; the old prices until it, the halved ones from it', () => {
-    expect(SPLIT_DAY).toBe('2026-11-11');
-    expect([shopPrice('snack', WALLET_SPLIT_MS - 1), shopPrice('dinner', WALLET_SPLIT_MS - 1)]).toEqual([40, 70]);
-    expect([shopPrice('snack', WALLET_SPLIT_MS), shopPrice('dinner', WALLET_SPLIT_MS)]).toEqual([20, 35]);
+  it('the prices: the old ones until PRICE_HALVED_MS, the halved ones from it', () => {
+    expect([shopPrice('snack', PRICE_HALVED_MS - 1), shopPrice('dinner', PRICE_HALVED_MS - 1)]).toEqual([40, 70]);
+    expect([shopPrice('snack', PRICE_HALVED_MS), shopPrice('dinner', PRICE_HALVED_MS)]).toEqual([20, 35]);
   });
 
-  it('before it, one wallet both spend from at the old prices, judged as ever; a buy at the new price is ignored', () => {
-    const p = at([old(jst('2026-11-06', '20:00'), 'A', 's1'), old(jst('2026-11-10', '20:00'), 'B', 's2', 'dinner'), spend(jst('2026-11-10', '21:00'), 'B', 's3')], BEFORE);
-    // 50 earned by the Friday: the おやつ; then 90 − 40 = 50 left: the 外食 refused
+  it('before it too each pays from their own wallet alone, at the old prices; a buy at the new price is ignored', () => {
+    const p = at([old(jst('2026-11-10', '20:00'), 'A', 's1'), old(jst('2026-11-10', '20:01'), 'B', 's2', 'dinner'), spend(jst('2026-11-10', '21:00'), 'B', 's3')], BEFORE);
+    // A's 45: the おやつ; B's 45 can't pay a 70 外食 (A's wallet never helps)
     expect(p.spends.map((x) => [x.spendId, x.by, x.bells])).toEqual([['s1', 'A', 40]]);
-    expect(p.balance).toEqual({ A: 50, B: 50 });
+    expect(p.balance).toEqual({ A: 5, B: 45 });
     expect(p.total).toBe(50);
-    expect(buildWeekView(reduce(plus(r, { events: [old(jst('2026-11-06', '20:00'), 'A', 's1')] })), 'B', ms('2026-11-10', '23:00')).wallet)
-      .toEqual({ balance: 50, today: 10, people: { A: { balance: 50, today: 10 }, B: { balance: 50, today: 10 } } });
+    expect(p.earned).toBe(90);
+    expect(buildWeekView(reduce(plus(r, { events: [old(jst('2026-11-10', '20:00'), 'A', 's1')] })), 'B', ms('2026-11-10', '23:00')).wallet)
+      .toEqual({ balance: 45, today: 5, people: { A: { balance: 5, today: 5 }, B: { balance: 45, today: 5 } } });
   });
 
-  it('at it, each member gets half of what was left (rounded down), then spends from their own at the new prices', () => {
-    const pre = [old(jst('2026-11-06', '20:00'), 'A', 's1')];
-    expect(at(pre, WALLET_SPLIT_MS).balance).toEqual({ A: 25, B: 25 });
-    expect(at(pre, AFTER).total).toBe(50);
-    const p = at([...pre, spend(jst('2026-11-12', '10:00'), 'A', 'n1'), spend(jst('2026-11-12', '10:01'), 'B', 'n2', 'dinner'), old(jst('2026-11-12', '10:02'), 'B', 'n3')], AFTER);
-    expect(p.spends.map((x) => x.spendId)).toEqual(['s1', 'n1']); // B's 25 can't pay a 外食; an old price is no buy
-    expect(p.balance).toEqual({ A: 5, B: 25 });
-    // an odd ベル left is dropped: 91 → 45 each
-    const odd = plus(r, { metrics: [metric(jst('2026-11-10', '22:30'), 'A', '2026-11-10', 'stand_min', 130), metric(jst('2026-11-10', '22:30'), 'A', '2026-11-10', 'steps', 13000)] });
-    expect(walletAt(reduce(odd), AFTER).balance).toEqual({ A: 45, B: 45 });
+  it('from it the new prices, from the same wallets; a buy from before it undone after it gives its old price back to its buyer', () => {
+    const pre = old(jst('2026-11-10', '20:00'), 'A', 's1');
+    expect(at([pre], PRICE_HALVED_MS).balance).toEqual({ A: 5, B: 45 });
+    const p = at([pre, spend(jst('2026-11-12', '10:00'), 'A', 'n1'), spend(jst('2026-11-12', '10:01'), 'B', 'n2', 'dinner'), old(jst('2026-11-12', '10:02'), 'B', 'n3')], AFTER);
+    expect(p.spends.map((x) => x.spendId)).toEqual(['s1', 'n2']); // A's 5 can't pay an おやつ; an old price is no buy
+    expect(p.balance).toEqual({ A: 5, B: 10 });
+    expect(at([pre, ev(jst('2026-11-12', '09:00'), 'B', 'spend_void', { spendId: 's1' })], AFTER).balance).toEqual({ A: 45, B: 45 });
   });
 
-  it('a buy from before it stays listed; undone after it, its old price goes back to its buyer’s wallet', () => {
-    const buy = old(jst('2026-11-08', '20:00'), 'B', 's1', 'dinner'); // 70 earned by that Sunday
-    const p = at([buy, ev(jst('2026-11-12', '09:00'), 'A', 'spend_void', { spendId: 's1' })], AFTER);
-    expect(p.spends).toMatchObject([{ spendId: 's1', by: 'B', bells: 70, voided: true }]);
-    expect(p.balance).toEqual({ A: 10, B: 80 }); // 90 − 70 = 20 halved, then B's 70 back
-    // undone before it: back in the shared wallet, halved with the rest
-    expect(at([buy, ev(jst('2026-11-09', '09:00'), 'A', 'spend_void', { spendId: 's1' })], AFTER).balance).toEqual({ A: 45, B: 45 });
-  });
-
-  it('from SPLIT_DAY each member’s ベル and half of ふたりでぜんぶ go to their own wallet', () => {
+  it('each member’s ベル and half of ふたりでぜんぶ go to their own wallet, any day', () => {
     const more = plus(r, { metrics: [...allFour(jst('2026-11-11', '22:00'), 'A', '2026-11-11'), ...allFour(jst('2026-11-11', '22:00'), 'B', '2026-11-11'), ...allFour(jst('2026-11-12', '22:00'), 'A', '2026-11-12')] });
     const now = ms('2026-11-12', '23:00');
     expect(walletAt(reduce(more), now).balance).toEqual({ A: 45 + 5 + 4, B: 45 + 5 });
     expect(buildWeekView(reduce(more), 'A', now).wallet).toEqual({ balance: 54, today: 4, people: { A: { balance: 54, today: 4 }, B: { balance: 50, today: 0 } } });
+    expect(buildWeekView(reduce(more), 'G', now).wallet).toMatchObject({ balance: 104, today: 4 });
+  });
+
+  it('a buy’s `day`: covered by its buyer’s days up to it, shown as its day; else its Tokyo day', () => {
+    // A had 20 by Thursday 11-05, 15 by the Wednesday: judged on 11-12 by the day it was for, not the 45 held then
+    expect(at([dated(jst('2026-11-12', '10:00'), 'A', 'd1', '2026-11-05')], AFTER).spends).toMatchObject([{ spendId: 'd1', day: '2026-11-05', at: ms('2026-11-12', '10:00') }]);
+    expect(at([dated(jst('2026-11-12', '10:00'), 'A', 'd1', '2026-11-04')], AFTER).spends).toEqual([]);
+    expect(at([spend(jst('2026-11-12', '00:30'), 'A', 'n1')], AFTER).spends[0].day).toBe('2026-11-12');
+    // the price follows the buy's time, not its day
+    expect(at([dated(jst('2026-11-12', '10:00'), 'A', 'd1', '2026-11-09', 'snack', 40)], AFTER).spends).toEqual([]);
+    // replayed by time: an earlier day's buy after a bigger one counts what was spent before it
+    const p = at([spend(jst('2026-11-12', '10:00'), 'A', 'x', 'dinner'), dated(jst('2026-11-12', '10:01'), 'A', 'y', '2026-11-05')], AFTER);
+    expect(p.spends.map((x) => x.spendId)).toEqual(['x']);
+    expect(p.balance.A).toBe(10);
+    // a day after the buy's Tokyo day or more than 14 days before it: the record would refuse it, so it is no buy
+    for (const day of ['2026-11-13', '2026-10-28', '2026-11-31', 'yesterday']) expect(at([dated(jst('2026-11-12', '10:00'), 'A', 'd1', day)], AFTER).spends, day).toEqual([]);
+    expect(at([dated(jst('2026-11-12', '10:00'), 'A', 'd1', '2026-11-12')], AFTER).spends).toHaveLength(1);
   });
 });
 

@@ -23,12 +23,12 @@ import { isBirth, isBmiStd, isProfileKey, isSex, profileValueOk } from './profil
 import { lookPrefOk, lookPrefRead, savedLooksOk } from './look.ts';
 import { localDateAt, nextDay, prevDay } from './tokyo.ts';
 import { farmOf } from './farm.ts';
-import type { LocalDate, Who } from '../types.ts';
+import type { LocalDate, ShopItemId, Who } from '../types.ts';
 
 type Rec = Record<string, unknown>;
 
 /**
- * Shape checks per event type: a spend names one of the two rewards (SHOP) at exactly its price now (rules.ts shopPrice). Whether the wallet
+ * Shape checks per event type: a spend as spendOf takes it (its price and `day` judged by the record's clock). Whether the wallet
  * covers it and the pref values stay read-time rules in the model (`model/state.ts`), so the record stays a dumb log.
  * `now`: the server's clock (a tally's or island day's date may not be after tomorrow). @public (relay/src/store.ts)
  */
@@ -41,7 +41,7 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
   if (isWedType(type)) return wedOpOf(type, d, { now }) !== null;
   switch (type) {
     case 'spend':
-      return isId(d.spendId) && shopPrice(d.item, now) !== undefined && d.bells === shopPrice(d.item, now);
+      return spendOf(d, now) !== null;
     case 'pref':
       // the profile's values are checked here (contract/profile.ts: a sex, a birth date 1900 … 10 years ago, a BMI
       // standard, or null), and the look's (contract/look.ts: a whole look, at most 20 コーデ); the other prefs' at read
@@ -126,6 +126,24 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
     default:
       return true;
   }
+}
+
+/** How many days before the record's Tokyo day a buy may say it was for (`spend.day`). */
+export const SPEND_PAST_DAYS = 14;
+
+/**
+ * A buy as the record takes it at `at` (the record's clock: now on write, the row's `at` on read), or null: one of the
+ * two rewards (SHOP) at exactly its price at `at` (rules.ts shopPrice), and the Tokyo day it was for: its `day` when
+ * given (a LocalDate from SPEND_PAST_DAYS before `at`'s Tokyo day to that day; any other `day` refuses the buy), else
+ * `at`'s. @public (model/state.ts)
+ */
+export function spendOf(d: Rec, at: number): { spendId: string; item: ShopItemId; bells: number; day: LocalDate } | null {
+  const bells = shopPrice(d.item, at), own = localDateAt(at);
+  if (!isId(d.spendId) || bells === undefined || d.bells !== bells) return null;
+  if (d.day === undefined) return { spendId: d.spendId, item: d.item as ShopItemId, bells, day: own };
+  const day = d.day;
+  if (!isLocalDate(day) || day > own || day < localDateAt(at - SPEND_PAST_DAYS * 86_400_000)) return null;
+  return { spendId: d.spendId, item: d.item as ShopItemId, bells, day };
 }
 
 /** How many days before the record's a tally or a give-back may be dated. @public (relay/test/shop.test.ts) */

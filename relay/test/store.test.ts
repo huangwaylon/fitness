@@ -4,7 +4,7 @@ import { createHmac } from 'node:crypto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { LATE_MARGIN_MS, PAGES_PER_MINUTE, RATE_PER_MINUTE, STORE_BUILD, StoreCore } from '../src/store.ts';
 import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
-import { WALLET_SPLIT_MS } from '../../app/src/lib/contract/rules.ts';
+import { PRICE_HALVED_MS } from '../../app/src/lib/contract/rules.ts';
 import { memSql } from './sqlite.ts';
 
 const KEY_A = 'a'.repeat(64);
@@ -225,17 +225,21 @@ describe('events', () => {
     expect(events().map((r) => r[1])).toEqual(['p1', 't2']);
   });
 
-  it('a buy at its price as of the record’s clock: おやつ 40, 外食 70 before the wallets’ split, 20 and 35 from it', () => {
-    now = WALLET_SPLIT_MS - 1;
+  it('a buy at its price as of the record’s clock: おやつ 40, 外食 70 before PRICE_HALVED_MS, 20 and 35 from it', () => {
+    now = PRICE_HALVED_MS - 1;
     expect(a('event', ev('w1', 'spend', { spendId: 'w1', item: 'snack', bells: 40 })).ok).toBe(true);
     expect(a('event', ev('w2', 'spend', { spendId: 'w2', item: 'dinner', bells: 35 }))).toEqual({ ok: false, error: 'bad_request' });
-    now = WALLET_SPLIT_MS;
+    now = PRICE_HALVED_MS;
     expect(a('event', ev('w3', 'spend', { spendId: 'w3', item: 'dinner', bells: 70 }))).toEqual({ ok: false, error: 'bad_request' });
     expect(b('event', ev('w4', 'spend', { spendId: 'w4', item: 'dinner', bells: 35 })).ok).toBe(true);
     expect(b('event', ev('w5', 'spend', { spendId: 'w5', item: 'snack', bells: 20 })).ok).toBe(true);
-    // a buy from before the split is still undone after it
+    // the day it was for (contract/record.ts spendOf): up to 14 days before the record's Tokyo day (11-11), never after it
+    expect(a('event', ev('w7', 'spend', { spendId: 'w7', item: 'snack', bells: 20, day: '2026-11-09' })).ok).toBe(true);
+    expect(a('event', ev('w8', 'spend', { spendId: 'w8', item: 'snack', bells: 20, day: '2026-11-12' }))).toEqual({ ok: false, error: 'bad_request' });
+    expect(a('event', ev('w9', 'spend', { spendId: 'w9', item: 'snack', bells: 20, day: '2026-10-27' }))).toEqual({ ok: false, error: 'bad_request' });
+    // a buy from before it is still undone after it
     expect(b('event', ev('w6', 'spend_void', { spendId: 'w1' })).ok).toBe(true);
-    expect(events().map((r) => r[1])).toEqual(['w1', 'w4', 'w5', 'w6']);
+    expect(events().map((r) => r[1])).toEqual(['w1', 'w4', 'w5', 'w7', 'w6']);
   });
 
   it('checks shapes as the sheet did; a highfive (the room’s only, since 2026-11-02) is no event', () => {
@@ -245,7 +249,7 @@ describe('events', () => {
     // the old prices (おやつ 8, 外食 15: a phone still on the old app) are refused
     expect(a('event', ev('x2o', 'spend', { spendId: 's', item: 'snack', bells: 8 }))).toEqual({ ok: false, error: 'bad_request' });
     expect(a('event', ev('x2p', 'spend', { spendId: 's', item: 'dinner', bells: 15 }))).toEqual({ ok: false, error: 'bad_request' });
-    // the halved prices (contract/rules.ts SHOP) only from the wallets' split on
+    // the halved prices (contract/rules.ts SHOP) only from PRICE_HALVED_MS on
     expect(a('event', ev('x2q', 'spend', { spendId: 's', item: 'snack', bells: 20 }))).toEqual({ ok: false, error: 'bad_request' });
     expect(a('event', ev('x3', 'find', { kind: 'shell', id: 'cowrie', person: 'B' }))).toEqual({ ok: false, error: 'bad_request' });
     expect(a('event', { id: 'x4', type: 'pref', data: { value: 'x'.repeat(30_000), key: 'villagerName' } })).toEqual({ ok: false, error: 'too_large' });

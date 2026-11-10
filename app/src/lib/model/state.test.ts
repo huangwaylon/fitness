@@ -100,7 +100,7 @@ describe('reduce: events', () => {
       ev(at(WK, '13:00'), 'B', 'spend_void', { spendId: '7' }), // twice
       ev(at(WK, '14:00'), 'A', 'spend_void', { spendId: '7' }) // three times
     ]));
-    expect(s.bellSpends).toEqual([{ at: Date.parse(at(WK)), person: 'B', spendId: '7', item: 'snack', bells: 40 }]);
+    expect(s.bellSpends).toEqual([{ at: Date.parse(at(WK)), person: 'B', spendId: '7', item: 'snack', bells: 40, day: '2026-11-09' }]);
     expect(s.spendVoids.map((v) => [v.person, v.at])).toEqual([['A', Date.parse(at(WK, '12:30'))]]);
   });
 

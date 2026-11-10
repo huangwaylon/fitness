@@ -65,14 +65,16 @@ test('the guest’s phone: the members’ activity and ベル, never a からだ
   await expect(panel.locator('#sec-lang')).toBeVisible();
   await expect(panel.locator('[data-wx-mode="game"]')).not.toHaveAttribute('aria-disabled', 'true');
   await page.keyboard.press('Escape');
-  // ごほうび, from the menu's ベル row (the shared balance): its balance and the buys, view-only (no shop, no erase)
+  // ごほうび, from the menu's ベル row (both wallets): their balances and the buys, view-only (no shop, no erase)
   const row = hudBells(page);
   const bells = Number(await row.getAttribute('data-bells'));
   expect(bells).toBeGreaterThan(0);
   await expect(row.locator('.num')).toHaveText(bells.toLocaleString('en-US'));
   await openRewards(page);
   await expect(panel.locator('[data-guest-jar]')).toBeVisible();
-  await expect.poll(async () => Number((await panel.locator('.hero .purse:first-child .total').innerText()).replace(/\D/g, ''))).toBe(bells);
+  const purses = panel.locator('.hero .purse');
+  await expect(purses).toHaveCount(2);
+  await expect.poll(async () => (await purses.evaluateAll((els) => els.map((e) => Number((e as HTMLElement).dataset.balance)))).reduce((a, b) => a + b, 0)).toBe(bells);
   await expect(panel.locator('[data-item]')).toHaveCount(0);
   await panel.locator('[data-hist-toggle]').click();
   await expect(panel.locator('[data-spend]').first()).toBeVisible();
@@ -100,7 +102,7 @@ test('the guest’s 健康: the period on the range row; ごはん: its pill the
   await expect(pill.locator('select option:checked')).toHaveText('おきゃくさん'); // (its name in the picker)
 });
 
-test('the guest’s ごほうび shows today’s ベル under the balance: the members’ jar’s (both of them, ふたりでぜんぶ in), as a member’s phone has it', async ({ browser }) => {
+test('the guest’s ベル row: today’s into both wallets (ふたりでぜんぶ in); its ごほうび each member’s today as a member’s phone has it', async ({ browser }) => {
   const ctx = await browser.newContext({ viewport: VIEW });
   const at = '&date=2026-10-28T22:00&critter=none&visitor=none';
   const member = await ctx.newPage();
@@ -111,12 +113,15 @@ test('the guest’s ごほうび shows today’s ベル under the balance: the m
   const g = await ctx.newPage();
   await g.goto(`?demo${at}&as=G`);
   await islandUp(g);
-  await expect(hudBells(g)).toHaveAttribute('data-today', String(today));
-  await expect(hudBells(g)).toHaveAttribute('aria-label', new RegExp(` · 今日 ${today}\\sベル$`));
   await openRewards(g);
   const panel = g.locator('dialog[open]');
   await expect(panel.locator('[data-guest-jar]')).toBeVisible();
   await expect(panel.locator('.hero .purse:first-child .today')).toHaveText(new RegExp(`^\\s*今日\\s*\\+${today}\\s*ベル\\s*$`));
+  const both = (await panel.locator('.hero .purse .today').evaluateAll((els) => els.map((e) => Number((e as HTMLElement).dataset.today)))).reduce((a, b) => a + b, 0);
+  expect(both).toBeGreaterThan(today);
+  await g.keyboard.press('Escape');
+  await expect(hudBells(g)).toHaveAttribute('data-today', String(both));
+  await expect(hudBells(g)).toHaveAttribute('aria-label', new RegExp(` · 今日 ${both}\\sベル$`));
   await ctx.close();
 });
 

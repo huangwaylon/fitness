@@ -30,11 +30,11 @@ export type ShopItemId = 'snack' | 'dinner';
 interface PurseView {
   /** What it holds: earned minus the accepted buys (never negative: a buy above it is ignored on read). */
   balance: number;
-  /** Today's ベル into it so far (a member's own and half of ふたりでぜんぶ; before the wallets' split the pair's). */
+  /** Today's ベル into it so far (a member's own and half of ふたりでぜんぶ; the guest's: the pair's). */
   today: number;
 }
 
-/** The wallets: each member's own (before the split both the one shared wallet), and the HUD's ベル row. */
+/** The wallets: each member's own, and the HUD's ベル row. */
 interface WalletView extends PurseView {
   people: Record<PersonId, PurseView>;
 }
