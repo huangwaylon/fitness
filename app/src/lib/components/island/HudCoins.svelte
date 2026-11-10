@@ -81,13 +81,16 @@
     return true;
   }
 
-  /** New earnings since this phone last showed them → flights (and the seen marks move up to now). */
+  /** New earnings since this phone last showed them → flights (and the seen marks move up to now). The stage is
+   *  measured only for some (a layout read: as the island opens it forced one, ~5 ms at 4× CPU, for nothing new). */
   function newFlights(): Flight[] {
     const kv = localKV();
     const seen = readJson<Seen>(kv, SCENE.bellsSeen);
     const base = seen && seen.date === view.today ? seen.parts : { A: zero(), B: zero() };
     const now: Record<PersonId, RingBells> = { A: { ...view.people.A.today.rings }, B: { ...view.people.B.today.rings } };
     writeJson(kv, SCENE.bellsSeen, { date: view.today, parts: now } satisfies Seen);
+    const some = [view.me, view.partner].some((p) => RING_FRUITS.some((f) => now[p][f] > (base[p]?.[f] ?? 0)));
+    if (!some || !measure()) return [];
     const out: Flight[] = [];
     for (const p of [view.me, view.partner]) {
       RING_FRUITS.forEach((f, i) => {
@@ -106,9 +109,8 @@
     void view.people.B.today.rings;
     if (covered || !drawn) return;
     untrack(() => {
-      const measured = measure();
       const fresh = newFlights();
-      if (!fresh.length || !measured) return;
+      if (!fresh.length) return;
       flights = [...flights, ...fresh];
       // the first "+N" pops: the bells jingle once for the batch (each coin then clinks as it lands, CoinFlow)
       cue('bells-arrive');

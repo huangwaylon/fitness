@@ -501,10 +501,16 @@
 
   // ---- the camera: the 3D island's engine's (world3d/engine.ts, gestures.ts); still → world.rest.z ----
   let settle: ReturnType<typeof setTimeout> | undefined;
-  function measure() {
+  /** The scene's size and corner from its box (the ResizeObserver's, after a layout; `onready`). As it mounts, the
+   *  page's size instead (the scene fills it: --scene-h): a read then forced a style and layout of everything mounted so
+   *  far, mid-flush (27 ms of a launch's 71 ms task at 4× CPU), and the ResizeObserver's first call measures it anyway. */
+  function measure(guess = false) {
     if (!scroller) return;
-    const r = scroller.getBoundingClientRect();
-    world.fit(scroller.clientWidth, scroller.clientHeight, r.left, r.top);
+    if (guess) world.fit(innerWidth, innerHeight);
+    else {
+      const r = scroller.getBoundingClientRect();
+      world.fit(scroller.clientWidth, scroller.clientHeight, r.left, r.top);
+    }
     vh = world.view.vh;
     s = world.view.s;
     horizonPx = world.view.horizon;
@@ -613,7 +619,7 @@
   }
   onMount(() => {
     if (!scroller) return;
-    measure();
+    measure(true);
     world.onTick(() => {
       // (the camera is the 3D island's engine's: Island3D writes camZ in each of its frames)
       edgeCheck();
@@ -626,11 +632,10 @@
     const offMove = onMove(() => world.kick());
     let first = true;
     const ro = new ResizeObserver(() => {
-      // the first call is the observe itself (already measured)
-      if (first) return void (first = false);
-      // a new screen: the same camera, refitted
+      // (the first call is the observe itself: the mount's guess made exact; after it a new screen, the same camera refitted)
       measure();
-      requestAnimationFrame(() => world.invalidate());
+      if (first) first = false;
+      else requestAnimationFrame(() => world.invalidate());
     });
     ro.observe(scroller);
     const hooks = expose();
