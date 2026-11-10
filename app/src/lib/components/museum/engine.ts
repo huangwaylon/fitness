@@ -889,7 +889,10 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const touched = () => void (lastInput = now());
   function fit() {
     const W = canvas.clientWidth || 1, H = canvas.clientHeight || 1;
-    renderer.setSize(W, H, false);
+    // (only a new size: setting the canvas's width clears it even to the same value, and the ResizeObserver's first
+    // look, the same size, came before the first frame drew: museum.spec's "never blank", 2 in 10)
+    const pr = renderer.getPixelRatio();
+    if (canvas.width !== Math.floor(W * pr) || canvas.height !== Math.floor(H * pr)) renderer.setSize(W, H, false);
     camera.aspect = W / H;
     const bandH = Math.max(0.3 * H, H - insets.top - insets.bottom);
     // VIEW_W across the floor at the target, within the screen's width
