@@ -4,9 +4,11 @@
 // - apple-touch-icon-180 and icon-192 (PNG), icon-512 and icon-maskable-512 (WebP via cwebp: ~30 KB instead of ~370 KB
 //   of photographic PNG, since they're in the install precache): the full square (both faces sit well inside the
 //   maskable 80% safe circle).
+// - icon-192 (the manifest's, revalidated every launch) to 256 colours via ffmpeg (palettegen, no dither: 70 -> 24 KB,
+//   SSIM 0.96; the dithered one was noisier at no gain).
 // - favicon-32: a crop of the two faces, since the whole scene is mush at 32 px.
 import { execFileSync } from 'node:child_process';
-import { readFileSync, rmSync } from 'node:fs';
+import { readFileSync, renameSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from '@playwright/test';
 
@@ -42,6 +44,12 @@ for (const [c, px, file] of jobs) {
   if (webp) {
     execFileSync('cwebp', ['-quiet', '-q', '82', png, '-o', join(ICONS, file)]);
     rmSync(png);
+  }
+  if (file === 'icon-192.png') {
+    const full = `${png}.full.png`;
+    renameSync(png, full);
+    execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-i', full, '-vf', 'split[a][b];[a]palettegen=max_colors=256:stats_mode=full[p];[b][p]paletteuse=dither=none', '-compression_level', '100', png]);
+    rmSync(full);
   }
   console.log(file);
 }
