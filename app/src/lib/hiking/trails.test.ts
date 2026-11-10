@@ -57,7 +57,7 @@ describe('formats', () => {
     expect(fmtDur(120, 'ja')).toBe('2時間');
     expect(fmtDur(39, 'en')).toBe('39 min');
     expect(fmtDur(0, 'ja')).toBe('0分');
-    expect(fmtPlanDate('2026-06-27', 'ja')).toBe('2026年6月27日（土）');
+    expect(fmtPlanDate('2026-06-27', 'ja')).toBe('2026年6月27日(土)');
     expect(fmtPlanDate('2026-06-27', 'en')).toBe('Sat, Jun 27, 2026');
     expect(span('9:20', '11:20')).toBe(120);
     expect(span('23:30', '0:10')).toBe(40);

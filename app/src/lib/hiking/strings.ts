@@ -79,11 +79,11 @@ export function fmtDur(min: number, l: Locale): string {
   return [h ? `${h} h` : '', m ? `${m} min` : ''].filter(Boolean).join(' ') || '0 min';
 }
 
-/** '2026-06-27' → '2026年6月27日（土）' (ja), 'Sat, Jun 27, 2026' (en): the date's own weekday (no time zone). */
+/** '2026-06-27' → '2026年6月27日(土)' (ja), 'Sat, Jun 27, 2026' (en): the date's own weekday (no time zone). */
 export function fmtPlanDate(iso: string, l: Locale): string {
   const [y, m, d] = iso.split('-').map(Number);
   const wd = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
-  if (l === 'ja') return `${y}年${m}月${d}日（${'日月火水木金土'[wd]}）`;
+  if (l === 'ja') return `${y}年${m}月${d}日(${'日月火水木金土'[wd]})`; // (formatDate's weekday, half-width)
   return `${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][wd]}, ${MON[m - 1]} ${d}, ${y}`;
 }
 
