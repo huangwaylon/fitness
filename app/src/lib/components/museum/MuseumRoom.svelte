@@ -409,18 +409,27 @@
           doorReady();
           return;
         }
-        walkPathOf = (from, to) => walkPath(e.nav(), from, to);
-        e.resize(insets());
-        e.night(nightOf(theme.tod));
-        e.villager(me, lookOf(me));
-        e.follow(me);
-        curator = buildCurator(e.kit, { model: url3d('blathers', staticUrl('room/villagers3d/')), me: () => e.at(me) });
-        e.exhibit(curator);
-        // in at the front door, a few steps into the hall
-        e.put(me, [ENTRANCE[0] + sideX(me), ENTRANCE[1] + 6], Math.PI);
-        e.firstPerson(fpv, true);
-        // (the balloons carried with their speakers while the camera moves: Talk.track, Says.track)
-        e.onDrawn(() => (talk?.track(), says?.track(), heardMusic()));
+        try {
+          walkPathOf = (from, to) => walkPath(e.nav(), from, to);
+          e.resize(insets());
+          e.night(nightOf(theme.tod));
+          e.villager(me, lookOf(me));
+          e.follow(me);
+          curator = buildCurator(e.kit, { model: url3d('blathers', staticUrl('room/villagers3d/')), me: () => e.at(me) });
+          e.exhibit(curator);
+          // in at the front door, a few steps into the hall
+          e.put(me, [ENTRANCE[0] + sideX(me), ENTRANCE[1] + 6], Math.PI);
+          e.firstPerson(fpv, true);
+          // (the balloons carried with their speakers while the camera moves: Talk.track, Says.track)
+          e.onDrawn(() => (talk?.track(), says?.track(), heardMusic()));
+        } catch (err) {
+          // (its renderer let go of: before eng, nothing else would)
+          console.warn('museum', err);
+          e.dispose();
+          failed = true;
+          doorReady();
+          return;
+        }
         eng = e;
         othersShown();
         // (once the hall's first frame is drawn: it waits for my villager's model, engine.ts holding)

@@ -1867,6 +1867,8 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0], models: furniture.stats() }),
     ready,
     dispose() {
+      // (once: a second call ended an ended renderer, and the room's failure path may follow its own)
+      if (disposed) return;
       disposed = true;
       pace.stop();
       clearTimeout(restTimer);

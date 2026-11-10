@@ -366,7 +366,7 @@
       shared.share({ kind: 'world', op: 'watered', id: f.id });
     }
     for (const f of near.slice(0, 2)) spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, color: petalOf(wildFlower(f, season)), flip: f.x > site.midX });
-    if (near.length) setTimeout(() => sceneSfx('water'), 420);
+    if (near.length) later(() => sceneSfx('water'), 420);
   }
   /** The fixed decor (fixedDecor.ts) tapped: it answers where it stands (nobody walks), my villager turns to it. */
   function fixture(el: HTMLElement, id: string, look: string) {

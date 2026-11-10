@@ -1421,6 +1421,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0] }),
     ready,
     dispose() {
+      // (once: a second call ended an ended renderer, and the room's failure path may follow its own)
+      if (disposed) return;
       disposed = true;
       pace.stop();
       document.removeEventListener('visibilitychange', onVis);

@@ -188,23 +188,21 @@
   });
 
   // the issues, a moment after a change
-  let vTimer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => {
-    const l = store.current;
-    clearTimeout(vTimer);
-    vTimer = setTimeout(() => (issues = validate(l)), 120);
+    const l = store.current, t = setTimeout(() => (issues = validate(l)), 120);
+    return () => clearTimeout(t);
   });
   const errors = $derived(issues.filter((i) => i.level === 'error').length);
 
   // `?check`: what the phones' 3D island leaves undrawn of the layout, and why (world3d/drawCheck.ts), a moment after a change
   const drawCheckOn = new URLSearchParams(location.search).has('check');
   let undrawnList = $state<Undrawn[] | null>(null);
-  let dTimer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => {
     const l = store.current;
     if (!drawCheckOn) return;
-    clearTimeout(dTimer);
-    dTimer = setTimeout(() => void import('../world3d/drawCheck.ts').then(({ undrawn }) => (undrawnList = undrawn(l))), 200);
+    // (cleared on the next change and as the editor goes: no import after leaving)
+    const t = setTimeout(() => void import('../world3d/drawCheck.ts').then(({ undrawn }) => (undrawnList = undrawn(l))), 200);
+    return () => clearTimeout(t);
   });
   const WHY: Record<string, string> = {
     'unknown-kind': '不明な種類（unknown kind: nothing drawn）',
@@ -571,6 +569,7 @@
     };
     return () => {
       ro.disconnect();
+      clearTimeout(toastTimer);
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('keyup', onKeyUp);
       delete window.__editor;

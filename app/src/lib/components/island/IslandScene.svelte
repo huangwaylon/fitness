@@ -597,19 +597,27 @@
     if (e !== edge) edge = e;
   }
 
+  /** When the camera's last move is SETTLE_MS old: one timer for a scroll, put off as it goes on (not a clear and a new
+   *  one each moving frame). */
+  const SETTLE_MS = 140;
+  let settleAt = 0;
+  function settled() {
+    const left = settleAt - performance.now();
+    if (left > 1) return void (settle = setTimeout(settled, left));
+    settle = undefined;
+    world.rest.z = Math.round(world.view.camZ);
+    talk?.hold(false);
+    says?.hold(false);
+  }
   function onScroll() {
     world.kick();
-    clearTimeout(settle);
     talk?.hold(true);
     says?.hold(true);
     // (in the camera's frame: the balloons carried with their speakers)
     talk?.track();
     says?.track();
-    settle = setTimeout(() => {
-      world.rest.z = Math.round(world.view.camZ);
-      talk?.hold(false);
-      says?.hold(false);
-    }, 140);
+    settleAt = performance.now() + SETTLE_MS;
+    settle ??= setTimeout(settled, SETTLE_MS);
   }
   /** Put the camera at a world z at once (the e2e hook). */
   function goTo(z: number) {
@@ -651,6 +659,8 @@
       offMove();
       ro.disconnect();
       clearTimeout(settle);
+      // (a sting's or a trick's up to a minute: its closure held this island past its going)
+      for (const t of [...Object.values(unsting), ...Object.values(unswell), untrick]) clearTimeout(t);
       world.stop();
       dropLive(world);
     };

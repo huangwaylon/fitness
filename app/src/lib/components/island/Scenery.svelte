@@ -60,11 +60,12 @@
   let tipped = $state(false);
   let shishiEl = $state<HTMLElement>();
   const TIP_MS = 700;
+  let tipT: ReturnType<typeof setTimeout> | undefined;
   function tip() {
     if (tipped) return;
     tipped = true;
     pose3d('shishi', 'deco/shishiodoshi-tip');
-    setTimeout(() => {
+    tipT = setTimeout(() => {
       tipped = false;
       pose3d('shishi', null);
       if (shishiEl && shownNow(shishiEl)) sceneSfx('kon');
@@ -79,7 +80,7 @@
     const next = () => (timer = window.setTimeout(() => (idle() || tip(), next()), 15_000 + Math.random() * 10_000));
     next();
     document.addEventListener('island:shishi', tip);
-    return () => (clearTimeout(timer), document.removeEventListener('island:shishi', tip));
+    return () => (clearTimeout(timer), clearTimeout(tipT), document.removeEventListener('island:shishi', tip));
   });
   /** The winter look: a derived one (sceneryKey) or a render's own (<key>-winter: NH's snowy model). */
   const wintry = (k: string) => (season === 'winter' && !k.endsWith('-winter') && art(`${k}-winter`) ? `${k}-winter` : k);

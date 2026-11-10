@@ -635,14 +635,21 @@
         } catch {
           return fail();
         }
-        e.resize(insets());
-        e.night(nightOf(theme.tod));
-        e.villager(me, lookOf(me));
-        // in at the door, a few steps into the room (at my villager's eyes from the first frame, if that's the choice)
-        e.put(me, DOOR_IN, faceOf(me));
-        e.firstPerson(fpv ? me : null, true);
-        // (a balloon carried with its villager while the camera moves: Says.track)
-        e.onDrawn(() => says?.track());
+        try {
+          e.resize(insets());
+          e.night(nightOf(theme.tod));
+          e.villager(me, lookOf(me));
+          // in at the door, a few steps into the room (at my villager's eyes from the first frame, if that's the choice)
+          e.put(me, DOOR_IN, faceOf(me));
+          e.firstPerson(fpv ? me : null, true);
+          // (a balloon carried with its villager while the camera moves: Says.track)
+          e.onDrawn(() => says?.track());
+        } catch (err) {
+          // (its renderer let go of: before eng, nothing else would)
+          console.warn('tent', err);
+          e.dispose();
+          return fail();
+        }
         eng = e;
         partnerShown();
         // (once the room's first frame is drawn, the iris opening: it waits for my villager's model, engine.ts holding)

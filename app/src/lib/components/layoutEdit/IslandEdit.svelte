@@ -397,7 +397,10 @@
         return p ? [b.left + p[0], b.top + p[1]] : null;
       }
     };
-    return () => delete window.__islandEdit;
+    return () => {
+      clearTimeout(noteTimer);
+      delete window.__islandEdit;
+    };
   });
 </script>
 

@@ -13,6 +13,7 @@
   import { decorArt, decorH, decorPlace, DECOR_KINDS, type Facing } from './decor.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { onMount } from 'svelte';
+  import { timers } from './timers.ts';
   import { echo3d } from './echo3d.ts';
   import { site } from './site.svelte.ts';
   import { layout } from '#lib/store/layout.svelte.ts';
@@ -71,8 +72,9 @@
   // the partner's change, just made: a puff where it stands, their villager turning to it
   let puffs = $state<{ n: number; x: number; z: number }[]>([]);
   let n = 0;
-  onMount(() =>
-    layout.on(({ diff, who, live }) => {
+  const pending = timers();
+  onMount(() => {
+    const off = layout.on(({ diff, who, live }) => {
       // the partner's change on the layout, just made (any piece they put down or moved)
       if (!live || who === castMe()) return;
       const l = layout.current, o = [...diff.objects.add, ...diff.objects.move].at(-1);
@@ -80,9 +82,10 @@
       const [x, z] = objMid(l, o), k = ++n;
       puffs = [...puffs.slice(-2), { n: k, x, z }];
       partnerTurnTo(x, who);
-      setTimeout(() => (puffs = puffs.filter((p) => p.n !== k)), 700);
-    })
-  );
+      pending.later(() => (puffs = puffs.filter((p) => p.n !== k)), 700);
+    });
+    return () => (off(), pending.clear());
+  });
 </script>
 
 {#each items as p (p.id)}
