@@ -72,20 +72,23 @@ export async function is3d(page: Page): Promise<boolean> {
 /** A tap on `target` at the first point of its box (row by row from the top) that hit-tests to it: never through
  *  something standing in front of it (polled: a villager in front may still be walking). */
 export async function tapOn(page: Page, target: Locator) {
-  const find = () => target.evaluate((el) => {
-    const r = el.getBoundingClientRect();
+  // (frame-locked, tapAt: the point found and tapped with no frame between, a villager walking by never in time to
+  // cover it; the target marked for the page's look)
+  await target.evaluate((el) => {
+    for (const e of document.querySelectorAll('[data-e2e-tap]')) e.removeAttribute('data-e2e-tap');
+    el.setAttribute('data-e2e-tap', '');
+  });
+  await tapAt(page, (w) => {
+    const el = w.document.querySelector('[data-e2e-tap]'), r = el?.getBoundingClientRect();
+    if (!r?.width) return null;
     for (let fy = 0.1; fy < 1; fy += 0.1)
       for (const fx of [0.5, 0.35, 0.65, 0.2, 0.8]) {
         const x = r.left + r.width * fx, y = r.top + r.height * fy;
-        if (el.contains(document.elementFromPoint(x, y))) return [x, y];
+        if (el.contains(w.document.elementFromPoint(x, y))) return [x, y];
       }
     return null;
-  });
-  // (the point the poll found: a villager walking by may cover it again a moment later)
-  let pt: number[] | null = null;
-  await expect.poll(async () => (pt = await find()), { message: 'a point of the target not covered by anything in front of it' }).not.toBeNull();
-  const [x, y] = pt!;
-  await page.mouse.click(x, y);
+  }, null, { clear: null, mouse: true, message: 'a point of the target not covered by anything in front of it' });
+  await page.evaluate(() => document.querySelector('[data-e2e-tap]')?.removeAttribute('data-e2e-tap')).catch(() => {});
 }
 
 /** Watch from the page's first script for things that come and go before a slow island (CI's software GL) lets the
@@ -180,6 +183,15 @@ export async function tapAt<A>(page: Page, aim: Aim<A>, arg: A, o: { clear?: str
 export const tapWorld = (page: Page, x: number, z: number, o: { lift?: number; clear?: string | null; message?: string; mouse?: boolean } = {}) =>
   tapAt(page, (w, [x, z, lift]) => (w.__world3d ? w.__world3d.client(x, z, lift) : w.__world.at(x, z)), [x, z, o.lift ?? 0] as const, { message: `a tap on the island at ${x}, ${z}`, ...o });
 
+/** A frame-locked tap (`tapAt`) at the middle of the first element `sel` matches, where its box is at the tap (a bug's
+ *  sprite, a 0 × 0 anchor whose box is its point; a villager's button: the island moves them each frame). `clear` as
+ *  tapAt's (a bug never under a button: 'button'). */
+export const tapBox = (page: Page, sel: string, o: { clear?: string | null; message?: string; timeout?: number; mouse?: boolean } = {}) =>
+  tapAt(page, (w, sel) => {
+    const r = w.document.querySelector(sel)?.getBoundingClientRect();
+    return r && (r.width || r.height || r.left || r.top) ? [r.left + r.width / 2, r.top + r.height / 2] : null;
+  }, sel, { message: `a tap on ${sel}`, ...o });
+
 /** A tap on the 3D island's model `id` (`__world3d.where`), at its point `lift` above its feet, through the camera's
  *  own projection: the game's state says where it is, not the pixels. Frame-locked (`tapAt`): polled until the model is
  *  in and shown, then read and tapped in one task (anything over it counts: it's the topmost there that's tapped). */
@@ -229,10 +241,12 @@ export const offFrom = (page: Page, sel: string, x: number, z: number) =>
 /** A tap on a figure the scene hit-tests itself (a visitor's `.art`, the cake: their layer takes no pointer, so a tap
  *  goes through to the scene, SceneTaps asks them): at its box's middle (`fy` down it). `tapOn` can't: nothing there
  *  hit-tests to the figure's own node. */
-export async function tapFigure(page: Page, sel: string, fy = 0.5) {
-  const r = (await page.locator(sel).first().boundingBox())!;
-  await page.mouse.click(r.x + r.width / 2, r.y + r.height * fy);
-}
+export const tapFigure = (page: Page, sel: string, fy = 0.5) =>
+  // (frame-locked, tapAt: its box read at the tap; a figure walks, bobs and the camera eases)
+  tapAt(page, (w, [sel, fy]) => {
+    const r = w.document.querySelector(sel)?.getBoundingClientRect();
+    return r?.width ? [r.left + r.width / 2, r.top + r.height * fy] : null;
+  }, [sel, fy] as const, { clear: null, mouse: true, message: `the figure ${sel}` });
 
 /** Time on: the page's clock (`page.clock.install()` first) runs `ms`, the 3D engines' frames included (the clock fakes
  *  requestAnimationFrame): the sim step. Quick in the logic tier (nothing drawn); drawn under software GL a minute of
@@ -265,11 +279,18 @@ export async function geo(page: Page): Promise<Geo> {
 /** A tap at (x, y) the moment the fish bites (the 「！」, `[data-bite]`): watched for and tapped in the page (a
  *  MutationObserver, then a click on what's at (x, y), as a finger's goes), not by expect's polling and a round trip
  *  back, which under CI's load came after NH's short window (island/fishing.ts BITE_WINDOW_MS). Work out (x, y) before
- *  the bite. */
+ *  the bite; at the bite, the nearest point to it (within 60 px) under none of the island's tap areas (a villager or a
+ *  tree there then takes the tap, and the fish got away: dialogue's flake). */
 export async function reelOnBite(page: Page, x: number, y: number, timeout = 12_000) {
-  await page.evaluate(([x, y, timeout]) => new Promise<void>((ok, no) => {
+  await page.evaluate(([x0, y0, timeout, areas]) => new Promise<void>((ok, no) => {
     const bit = () => !!document.querySelector('[data-bite]');
     const tap = () => {
+      let [x, y] = [x0, y0];
+      for (let r = 0, done = false; r <= 60 && !done; r += 6)
+        for (let a = 0; a < (r ? 16 : 1) && !done; a++) {
+          const px = Math.min(innerWidth - 2, Math.max(2, x0 + Math.cos((a / 8) * Math.PI) * r)), py = y0 + Math.sin((a / 8) * Math.PI) * r;
+          if (!document.elementFromPoint(px, py)?.closest(areas)) [x, y, done] = [px, py, true];
+        }
       document.elementFromPoint(x, y)?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0 }));
       ok();
     };
@@ -277,7 +298,7 @@ export async function reelOnBite(page: Page, x: number, y: number, timeout = 12_
     const mo = new MutationObserver(() => bit() && (mo.disconnect(), clearTimeout(t), tap()));
     const t = setTimeout(() => (mo.disconnect(), no(new Error('no bite'))), timeout);
     mo.observe(document, { childList: true, subtree: true, attributes: true });
-  }), [x, y, timeout] as const);
+  }), [x, y, timeout, TAP_AREAS] as const);
 }
 
 type Fishing = {

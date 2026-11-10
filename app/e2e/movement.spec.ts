@@ -3,7 +3,7 @@
 // wanders between points of interest with footsteps under it. Neither ends up over a control, mine stays a
 // thumb-sized button while it walks, and a sheet stops them where they are.
 import { expect, test, type Page } from './fixtures.ts';
-import { islandUp, lawnTap, openNear, plateOnly, quiet, sawIt, tapWorld, watchFor } from './island.ts';
+import { camTo, islandUp, openNear, plateOnly, quiet, sawIt, tapAt, tapBox, tapWorld, watchFor } from './island.ts';
 import { openRewards } from './hud.ts';
 
 async function open(page: Page, q = '') {
@@ -20,11 +20,6 @@ const feet = (page: Page, id = 'mine') =>
     const m = new DOMMatrixReadOnly(getComputedStyle(el).transform);
     const s = el.parentElement!.getBoundingClientRect();
     return { x: s.left + m.m41, y: s.top + m.m42 };
-  });
-const centre = (page: Page, sel: string, n = 0) =>
-  page.locator(sel).nth(n).evaluate((el) => {
-    const r = el.getBoundingClientRect();
-    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   });
 /** Controls the standing figure (≈ 0.45 × 0.92 of its height above the feet) overlaps: none, ever. */
 const overlaps = (page: Page, id = 'mine') =>
@@ -69,7 +64,11 @@ test('a tap on a weed pulls it where it is: my villager stays put', async ({ pag
     const p = (await weed())!;
     const mine = () => page.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine());
     const at0 = await mine();
-    await page.mouse.click(p.x, p.y - 4);
+    // (frame-locked: the weed where it's drawn at the tap, the island still settling a px or two)
+    await tapAt(page, (w, uid) => {
+      const r = w.document.querySelector(`[data-care="weed"][data-uid="${uid}"]`)?.getBoundingClientRect();
+      return r && (r.width || r.left) ? [r.left + r.width / 2, r.top + r.height / 2 - 4] : null;
+    }, p.uid, { clear: null, mouse: true, message: 'the weed' });
     // pulled at once (that one: another may come into view as the island settles), nobody walked
     await expect(weeds.and(page.locator(`[data-uid="${p.uid}"]`))).toHaveCount(0, { timeout: 3000 });
     await page.waitForTimeout(400);
@@ -107,8 +106,8 @@ test('a netted bug holds still under the net, swung where it is (no walk); the c
   await expect(bug).toBeAttached();
   await page.waitForTimeout(1600); // it has flown in
   const home = await feet(page);
-  const p = await centre(page, '[data-critter="common-butterfly"]');
-  await page.mouse.click(p.x, p.y);
+  // (frame-locked: it flutters)
+  const p = await tapBox(page, '[data-critter="common-butterfly"]', { clear: 'button', mouse: true });
   // held still where it was under the net
   const still = await page.evaluate(() => {
     const el = document.querySelector('[data-critter="common-butterfly"]')!;
@@ -133,8 +132,7 @@ test('a netted bug holds still under the net, swung where it is (no walk); the c
 test('a sheet stops the walk where it is', async ({ page }) => {
   await open(page);
   // (open lawn read from the page's island: a fixed point may be where a building or the day's things stand)
-  const p = await lawnTap(page, 210, 290);
-  await page.mouse.click(p.x, p.y);
+  await tapWorld(page, ...(await openNear(page, 210, 290, 45, true)), { mouse: true });
   await page.waitForTimeout(120);
   await openRewards(page);
   await expect(page.locator('dialog[open]')).toBeVisible();
@@ -200,13 +198,12 @@ test('a visitor: a tap and they speak, my villager turning to them where it stan
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('?demo&date=2026-11-04T12:00&visitor=jingle');
     await islandUp(page);
-    await page.waitForTimeout(800);
+    await quiet(page);
     // a host stands on centre stage, the campsite's clearing (おく)
-    await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(642));
-    await page.waitForTimeout(400);
+    await camTo(page, 642, false);
     const home = await page.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine());
-    const v = await centre(page, '[data-visitor="jingle"] .art');
-    await page.mouse.click(v.x, v.y);
+    // (frame-locked: the figure where it's drawn at the tap; its layer takes no pointer, the scene asks it)
+    await tapBox(page, '[data-visitor="jingle"] .art', { clear: null, mouse: true });
     await expect(page.locator('[data-fx="talk"].placed')).toBeVisible({ timeout: 4000 });
     await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
     expect(await page.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine())).toEqual(home);

@@ -8,7 +8,7 @@
 // browser's own gesture timing, not the page's clock: a real wait), two points a view, the nearest and one further off.
 import { expect, test, type Page } from './fixtures.ts';
 import RECORD from '../src/lib/layout/record-2026-11-03.json' with { type: 'json' };
-import { is3d, quiet } from './island';
+import { is3d, quiet, tapAt, type Aim } from './island';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -111,19 +111,27 @@ async function dayWithDigBySea(page: Page, layout: 'default' | 'user', from: str
   throw new Error(`no day from ${from} with a dig spot by the back beach`);
 }
 
+/** `tapAt`'s aim at a point on the screen while the ground there is the sea or the river (the camera still: it stays);
+ *  tapAt's default `clear` waits out a villager or a visitor walking over it. A real touch (WebKit's touch adjustment
+ *  is what these guard), frame-locked: nothing moves in over the point between the look and the tap. */
+const onWater: Aim<readonly [number, number]> = (w, [x, y]) => {
+  const g = w.__world3d.ground(x, y), s = g && w.__world.ground(g.x, g.z).surface;
+  return s === 'sea' || s === 'water' ? [x, y] : null;
+};
+
 /** A tap on the sea at each point casts, and the next tap there reels in: never a door, never a find. */
 async function castsAt(page: Page, pts: Pt[], url: string) {
   for (const [x, y, r] of pts) {
     const near = (await findsNear(page, x, y, 30)).map((f) => f.uid);
     await page.waitForTimeout(400);
-    await page.touchscreen.tap(x, y);
+    await tapAt(page, onWater, [x, y] as const, { message: `the water at ${x},${y}` });
     const why = () => hooks(page, (h) => `${h.__fish.why()} (${h.__cues.slice(-3).join(' ')})`);
     await expect.poll(why, { message: `a tap on the water at ${x},${y}, ${r} px off` }).toMatch(/^cast in the /);
     expect(page.url()).toBe(url);
     // (the finds beside it still there)
     for (const uid of near) await expect(page.locator(`[data-find][data-uid="${uid}"]`)).toHaveCount(1);
     await page.waitForTimeout(400);
-    await page.touchscreen.tap(x, y);
+    await tapAt(page, onWater, [x, y] as const, { message: `the water at ${x},${y}` });
     await expect.poll(() => hooks(page, (h) => h.__fish.line()), { message: `the reel at ${x},${y}` }).toBeNull();
     expect(page.url()).toBe(url);
   }
@@ -150,25 +158,27 @@ for (const layout of ['default', 'user'] as const) {
     test.slow();
     await open(page, layout);
     // (from the far stop on down: on the default island it stands lower down)
-    let door: [number, number] | null = null;
+    // (the door's own tap area, read at the tap: frame-locked, a villager walking in front of it waited out)
+    const door: Aim<null> = (w) => {
+      const el = w.document.querySelector('[data-building="shop"] .door'), r = el?.getBoundingClientRect();
+      if (!r?.width) return null;
+      for (let fy = 0.3; fy < 0.9; fy += 0.1)
+        for (const fx of [0.5, 0.4, 0.6]) {
+          const x = r.left + r.width * fx, y = r.top + r.height * fy;
+          if (y > 120 && w.document.elementFromPoint(x, y) === el) return [x, y];
+        }
+      return null;
+    };
+    let seen = false;
     const { max } = await hooks(page, (h) => h.__world3d.limits());
-    for (let z = max; z > 0 && !door; z -= 200) {
+    for (let z = max; z > 0 && !seen; z -= 200) {
       await page.evaluate((z) => (window as unknown as Hooks).__world3d.go(z, 1), z);
       await expect.poll(() => hooks(page, (h) => h.__world3d.camStill())).toBe(true);
-      door = await page.evaluate(() => {
-        const el = document.querySelector('[data-building="shop"] .door'), r = el?.getBoundingClientRect();
-        if (!r?.width) return null;
-        for (let fy = 0.3; fy < 0.9; fy += 0.1)
-          for (const fx of [0.5, 0.4, 0.6]) {
-            const x = r.left + r.width * fx, y = r.top + r.height * fy;
-            if (y > 120 && document.elementFromPoint(x, y) === el) return [x, y] as [number, number];
-          }
-        return null;
-      });
+      seen = await page.evaluate(`(${door.toString()})(window) !== null`);
     }
-    expect(door, 'the shop on screen').not.toBeNull();
+    expect(seen, 'the shop on screen').toBe(true);
     await page.waitForTimeout(400);
-    await page.touchscreen.tap(door![0], door![1]);
+    await tapAt(page, door, null, { clear: null, message: "the shop's door" });
     // (my villager walks up to it first: from the far end of the island, a long walk)
     await expect(page).toHaveURL(/\/shop/, { timeout: 30_000 });
   });
@@ -198,7 +208,11 @@ for (const layout of ['default', 'user'] as const) {
     const [on] = await findsNear(page, last!.pt[0], last!.pt[1], 20);
     expect(on, 'the find by the sea').toBeDefined();
     await page.waitForTimeout(400);
-    await page.touchscreen.tap(on.x, on.y);
+    // (its art's middle at the tap, frame-locked)
+    await tapAt(page, (w, uid) => {
+      const b = w.document.querySelector(`[data-find][data-uid="${uid}"]`)?.querySelector('img, svg')?.getBoundingClientRect();
+      return b?.width ? [b.left + b.width / 2, b.top + b.height / 2] : null;
+    }, on.uid, { clear: null, message: 'the find by the sea' });
     await expect(page.locator(`[data-find][data-uid="${on.uid}"]`)).toHaveCount(0);
   });
 }

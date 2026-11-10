@@ -1,7 +1,7 @@
 // NH's dialogue box (docs/design.md "Dialogue"): the speech balloon and the catch plate type their text in, two lines a
 // page; a tap finishes the page, the next turns it (a ▼ bobs only while a page follows), the last tap closes it.
 import { expect, test, type Locator, type Page } from './fixtures.ts';
-import { castIn, islandUp, reelOnBite, tapFigure } from './island.ts';
+import { castIn, islandUp, reelOnBite, tapAt, tapBox } from './island.ts';
 import { hudBells } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -30,10 +30,12 @@ test('a visitor’s introduction: typed, two pages, the ▼ only before the last
   await islandUp(page);
   const bells = await hudBells(page).getAttribute('aria-label');
   // he sleeps face down until the fifth nudge (NH); then his introduction
-  await tapFigure(page, '[data-visitor="gulliver"] .art');
+  // (frame-locked taps on his figure: its layer takes no pointer, the scene asks it)
+  const nudge = () => tapBox(page, '[data-visitor="gulliver"] .art', { clear: null, mouse: true });
+  await nudge();
   await page.waitForTimeout(400); // the first nudge
   for (let i = 1; i < 5; i++) {
-    await tapFigure(page, '[data-visitor="gulliver"] .art');
+    await nudge();
     if (i < 4) await page.waitForTimeout(250);
   }
   const box = page.locator('[data-fx="talk"].placed');
@@ -57,9 +59,12 @@ test('a visitor’s introduction: typed, two pages, the ▼ only before the last
   await page.waitForTimeout(300); // a person's pause between taps
   // the next tap on him: one of his lines, one page
   await expect.poll(async () => {
-    // his head (the balloon may sit over the rest of him)
-    const g = (await page.locator('[data-visitor="gulliver"] .art').boundingBox())!;
-    if (!(await page.locator('[data-fx="talk"]').count())) await page.mouse.click(g.x + g.width / 2, g.y + g.height * 0.12);
+    // his head (the balloon may sit over the rest of him), frame-locked
+    if (!(await page.locator('[data-fx="talk"]').count()))
+      await tapAt(page, (w) => {
+        const g = w.document.querySelector('[data-visitor="gulliver"] .art')?.getBoundingClientRect();
+        return g?.width ? [g.left + g.width / 2, g.top + g.height * 0.12] : null;
+      }, null, { clear: null, mouse: true, message: 'his head' });
     return page.locator('[data-fx="talk"].placed').getAttribute('data-pages').catch(() => null);
   }, { timeout: 8000 }).toBe('1');
   await expect(page.locator('dialog[open]')).toHaveCount(0);

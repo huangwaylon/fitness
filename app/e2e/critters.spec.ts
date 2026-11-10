@@ -4,7 +4,7 @@
 // navigates. `?critter=` (with ?demo) brings one on at once and keeps it until caught.
 import { expect, test, type Page } from './fixtures.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
-import { castIn, islandUp, plateOnly, reelOnBite, tapAt, toTheWater, type Aim } from './island.ts';
+import { castIn, islandUp, plateOnly, reelOnBite, tapAt, tapBox, tapFigure, toTheWater, type Aim } from './island.ts';
 import { hudBells } from './hud.ts';
 
 /** NH's own catch line (ja), as the plate shows it (whitespace collapsed). */
@@ -43,8 +43,8 @@ test('a tap pops the balloon; its present falls onto the island and lies there u
   const balloon = page.locator('.if-scene .balloon');
   // it drifts in from off the screen's edge: wait until it's well inside
   await expect.poll(async () => { const r = await balloon.boundingBox(); return !!r && r.x > 40 && r.x + r.width < 350; }, { timeout: 15_000 }).toBe(true);
-  const b = (await balloon.boundingBox())!;
-  await page.mouse.click(b.x + b.width / 2, b.y + b.height * 0.25);
+  // (frame-locked: it drifts)
+  await tapFigure(page, '.if-scene .balloon', 0.25);
   await expect(page.locator('[data-fx="present"]')).toHaveCount(1);
   await expect(balloon).toHaveCount(0);
   expect(await cues(page)).toContain('scene-balloon');
@@ -64,7 +64,7 @@ test('a tap pops the balloon; its present falls onto the island and lies there u
   }
   // a tap: the present pops open where it lies (confetti), and what was inside (NH's furniture, clothing or a
   // DIY recipe) is on its plate with 「◯◯を てにいれた！」, nothing over my villager's head; no ベル
-  await page.mouse.click(g.x + g.width / 2, g.y + g.height / 2);
+  await tapFigure(page, '[data-find="present"] > *');
   await expect(page.locator('[data-fx="present-open"]')).toHaveCount(1, { timeout: 2000 });
   await expect(page.locator('[data-fx="present-open"] .bit')).toHaveCount(14);
   await expect(page.locator('[data-fx="catch"]')).toContainText('を てにいれた！', { timeout: 4000 });
@@ -108,7 +108,7 @@ test('a balloon flies over the island in world space (its height steady, its sha
   await expect.poll(async () => { const r = await balloon.boundingBox(); return !!r && r.x > 40 && r.x + r.width < 350; }, { timeout: 15_000 }).toBe(true);
   const r = (await balloon.boundingBox())!;
   expect(Math.min(r.width, r.height)).toBeGreaterThanOrEqual(44);
-  await page.mouse.click(r.x + r.width / 2, r.y + r.height * 0.25);
+  await tapFigure(page, '.if-scene .balloon', 0.25);
   // gone at once, the 3D models and the tap area alike: only the falling present remains (its own model on its arc)
   await expect.poll(() => W3b(page), { timeout: 300 }).toBeNull();
   await expect(balloon).toHaveCount(0);
@@ -201,9 +201,10 @@ const awayAim: Aim<null> = (w) => {
     }
   return null;
 };
+/** awayAim's point, polled (a villager or a ripple may lie over every such point for a moment: WebKit's 1 in 20). */
 const awayFromFloat = async (page: Page): Promise<[number, number]> => {
-  const pt = await page.evaluate(`(${awayAim.toString()})(window, null)`) as [number, number] | null;
-  expect(pt, 'the sea away from the float, no control over it').not.toBeNull();
+  let pt: [number, number] | null = null;
+  await expect.poll(async () => (pt = (await page.evaluate(`(${awayAim.toString()})(window, null)`)) as [number, number] | null), { message: 'the sea away from the float, no control over it' }).not.toBeNull();
   return pt!;
 };
 /** A tap on the sea well away from the float and the shadow (any tap is the reel while the line is out): frame-locked,
@@ -312,8 +313,8 @@ test('a tap on a butterfly nets it', async ({ page }) => {
   const before = await open(page, '&critter=common-butterfly');
   await expect(page.locator('[data-critter="common-butterfly"]')).toBeAttached();
   await page.waitForTimeout(2200); // in over its flowers
-  const b = await at(page, '[data-critter="common-butterfly"]');
-  await page.mouse.click(b.x, b.y);
+  // (frame-locked: it flutters; never under a control)
+  await tapBox(page, '[data-critter="common-butterfly"]', { clear: 'button', mouse: true });
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('common-butterfly'));
   await expect(page.locator('[data-critter]')).toHaveCount(0);
   // the shared ずかん: the first catch is a `find` (the demo keeps its events in localStorage), never ベル
@@ -327,10 +328,8 @@ test('a cicada perches on a trunk, clear of the tree, and a tap on it nets it', 
   await open(page, '&critter=robust-cicada');
   const c = page.locator('[data-critter="robust-cicada"].sat');
   await expect(c).toBeAttached({ timeout: 5000 });
-  const p = await at(page, '[data-critter="robust-cicada"]');
-  const target = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('button')?.className ?? '', p);
-  expect(target).toBe(''); // not on the canopy or the fruit row
-  await page.mouse.click(p.x, p.y);
+  // (frame-locked, once no control is over it: not on the canopy or the fruit row, nor a villager walking by)
+  await tapBox(page, '[data-critter="robust-cicada"]', { clear: 'button', mouse: true });
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('robust-cicada'));
 });
 
@@ -341,10 +340,8 @@ test('a hermit crab crawls on the beach at night, clear of every control, and a 
   const crab = page.locator('[data-critter="hermit-crab"]');
   await expect(crab).toBeAttached();
   await page.waitForTimeout(1000);
-  const p = await at(page, '[data-critter="hermit-crab"]');
-  const sand = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('button')?.className ?? '', p);
-  expect(sand).toBe('');
-  await page.mouse.click(p.x, p.y);
+  // (frame-locked: it crawls; clear of every control)
+  await tapBox(page, '[data-critter="hermit-crab"]', { clear: 'button', mouse: true });
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('hermit-crab'));
 });
 
