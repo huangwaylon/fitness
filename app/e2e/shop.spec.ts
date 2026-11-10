@@ -383,3 +383,12 @@ test('two phones in the shop see each other: B’s walk is drawn on A’s phone,
   await expect.poll(() => who(page, 'B'), { timeout: 10_000 }).toBeNull();
   await other.close();
 });
+
+test('a link straight into the shop draws the players from their KTX2s: their everyday pack, never the WebP pack', async ({ page }) => {
+  const packs: string[] = [];
+  page.on('request', (r) => r.url().includes('/room/player/') && packs.push(new URL(r.url()).pathname));
+  await page.goto(`shop${Q}`);
+  await roomIn(page);
+  expect(packs.some((p) => /\/everyday\.\w+\.pak$/.test(p))).toBe(true);
+  expect(packs.filter((p) => /\/webp\.\w+\.pak$/.test(p))).toEqual([]);
+});

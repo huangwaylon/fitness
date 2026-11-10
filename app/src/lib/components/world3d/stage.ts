@@ -13,6 +13,7 @@ import { releaseAll, type Res } from './release.ts';
 import { pacer } from './pace.ts';
 import { drawOff, shaderChecks } from '#lib/ui-state/testMode.ts';
 import { FPS } from '#lib/store/frameRate.ts';
+import { ktx2Default } from './ktx2.ts';
 
 /** The pixel ratio at most (an iPhone's 3 costs too much for what it adds), and while a gesture moves the camera. */
 const DPR_MAX = 2;
@@ -39,6 +40,7 @@ export function makeRenderer(canvas: HTMLCanvasElement, o: RendererOpts = {}): {
   renderer.setPixelRatio(dpr);
   renderer.outputColorSpace = SRGBColorSpace;
   if (o.alpha) renderer.setClearColor(0x000000, 0);
+  ktx2Default(renderer);
   return { renderer, noDraw, dpr };
 }
 

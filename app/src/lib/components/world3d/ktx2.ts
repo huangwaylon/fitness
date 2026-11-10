@@ -35,15 +35,25 @@ const FORMATS: Record<Target, [PixelFormat | CompressedPixelFormat, PixelFormat 
   rgba: [RGBAFormat, RGBAFormat]
 };
 
-/** This page's GPU format (set by the island's renderer: ktx2Target), or null: the plugin stands aside. */
+/** This page's GPU format (set by the first renderer: ktx2Target), or null: the plugin stands aside. */
 let target: Target | null = null;
+/** Whether a renderer said the format yet (ktx2Target). */
+let said = false;
 /** The island's renderer takes KTX2 textures (`on` false: `?ktx2=0`, the WebPs as before, for an A/B). The cache is
  *  opened now, ahead of the models' textures; none kept (a first launch, a new pipeline), the transcoder starts too,
  *  while the models download. */
 export function ktx2Target(r: Pick<WebGLRenderer, 'extensions'>, on = true): void {
+  said = true;
   target = on ? pickTarget((e) => r.extensions.has(e)) : null;
   ktx2Stats.target = target;
   if (target && !worker) void hasTex(PIPE).then((kept) => kept || post());
+}
+
+/** Every renderer (stage.ts makeRenderer): the format said if none was yet, so a room reached by a reload or a link
+ *  (the shop, the tent, the museum: no island renderer made) draws its players and villagers from their KTX2s too, not
+ *  their WebPs (the players' 757 KB webp pack); the island's own ktx2Target after it has the last word. */
+export function ktx2Default(r: Pick<WebGLRenderer, 'extensions'>): void {
+  if (!said) ktx2Target(r);
 }
 
 // ---- the transcoder's worker: made on the first miss (or ahead, on a first launch), let go of when idle ----
