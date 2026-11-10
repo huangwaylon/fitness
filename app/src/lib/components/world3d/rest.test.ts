@@ -23,9 +23,9 @@ function sim() {
 }
 
 describe('perf.rest', () => {
-  it('a minute untouched, then 10 s of frames, shadow passes and wake-ups a second; again after a touch; once a load', () => {
+  it('a minute untouched, then 10 s of frames, shadow passes and wake-ups a second, and the scene calls and triangles; again after a touch; once a load', () => {
     const s = sim();
-    const st = { frames: 0, shadows: 0, input: 0 };
+    const st = { frames: 0, shadows: 0, input: 0, sceneCalls: 240, sceneTris: 290_000, dpr: 2, camZ: 412.4 };
     let ok = true;
     // 12 frames a second, a shadow pass every 4th, one wake-up each, ticking with the clock
     const stats = () => ((st.frames = Math.floor(s.at() / (1000 / 12))), (st.shadows = Math.floor(st.frames / 4)), (wakes.n = st.frames), { ...st });
@@ -40,7 +40,7 @@ describe('perf.rest', () => {
     s.run(st.input + REST_MS + SAMPLE_MS + 100);
     expect(logged).toHaveLength(1);
     expect(logged[0][0]).toBe('perf.rest');
-    expect(logged[0][1]).toMatchObject({ fps: expect.closeTo(12, 0) as number, shadows: expect.closeTo(3, 0) as number, wakes: expect.closeTo(12, 0) as number });
+    expect(logged[0][1]).toMatchObject({ fps: expect.closeTo(12, 0) as number, shadows: expect.closeTo(3, 0) as number, wakes: expect.closeTo(12, 0) as number, calls: 240, tris: 290_000, dpr: 2, camZ: 412 });
     expect(s.pending()).toBe(0);
     stop();
     // (once a load)

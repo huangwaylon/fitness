@@ -50,9 +50,9 @@ export const LOG_EVENTS = {
   "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n' } },
   // (2026-11-10) the island's first return to it a load (back from a room: perf.boot's marks, ms from the mount), and
   // the island at rest once a load (a minute untouched, then 10 s: drawn frames, shadow passes, the pacers' wake-ups a
-  // second: world3d/rest.ts)
+  // second, and (2026-11-11) the scene's draw calls and triangles a frame, the pixel ratio and the camera's z: world3d/rest.ts)
   "perf.back": { src: 'c', f: { first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n' } },
-  "perf.rest": { src: 'c', f: { fps: 'n', shadows: 'n', wakes: 'n' } },
+  "perf.rest": { src: 'c', f: { fps: 'n', shadows: 'n', wakes: 'n', calls: 'n', tris: 'n', dpr: 'n', camZ: 'n' } },
   "js.error": { src: 'c', f: { kind: ['error', 'rejection'], msg: 'msg', stack: 'stack', src: 't', n: 'n', leaving: 'b', route: LOG_ROUTES } },
   "api.fail": { src: 'c', f: API },
   "api.ok": { src: 'c', f: API },

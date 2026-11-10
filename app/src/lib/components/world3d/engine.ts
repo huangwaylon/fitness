@@ -88,8 +88,12 @@ interface Stats {
   /** CPU per frame (ms: the World's step, three's work and the GL calls) and the interval between frames drawn. */
   cpu: [number, number];
   gap: [number, number];
+  /** The last frame's draw calls and triangles (with the shadow map's, when it redrew), and the last frame's without a
+   *  shadow redraw (the scene alone: perf.rest). */
   calls: number;
   tris: number;
+  sceneCalls: number;
+  sceneTris: number;
   textures: number;
   geometries: number;
   /** The GPU programs compiled (three's). */
@@ -721,7 +725,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   }
 
   // ---- the frames ----
-  let frames = 0, shadowsDrawn = 0, shadowAt = 0, disposed = false, activeUntil = 0, lastFrame = 0, lastInput = now();
+  let frames = 0, sceneCalls = 0, sceneTris = 0, shadowsDrawn = 0, shadowAt = 0, disposed = false, activeUntil = 0, lastFrame = 0, lastInput = now();
   /** The ground's water wanted its ambience in the last frame; the water's test and whether it's in view (as of
    *  the camera's rev `waterRev`). */
   let groundAmb = false, waterAt: ((x: number, z: number) => boolean) | null = null, waterRev = -1, waterOn = true;
@@ -1039,7 +1043,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     // (the first frame only compiles: all of it is held back, and its draw was another ~20 ms of programs on top in one
     // frame; drawn in the next)
     const compileOnly = held && frames === 0;
-    if (opts.shadows && !compileOnly && t >= shadowBy(t)) {
+    const shadowFrame = opts.shadows && !compileOnly && t >= shadowBy(t);
+    if (shadowFrame) {
       renderer.shadowMap.needsUpdate = true;
       shadowDue = Infinity;
       shadowsNow = false;
@@ -1048,6 +1053,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     }
     if (!noDraw) {
       if (!compileOnly) renderer.render(scene, camera);
+      if (!compileOnly && !shadowFrame) (sceneCalls = renderer.info.render.calls), (sceneTris = renderer.info.render.triangles);
       if (held) {
         for (const o of heldBack) o.visible = true;
         heldBack.length = 0;
@@ -1248,7 +1254,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       const l = lights.stats();
       return {
         fps: stamps.length, cpu: [pctl(cpu, 0.5), pctl(cpu, 0.95)], gap: [pctl(gaps, 0.5), pctl(gaps, 0.95)],
-        calls: renderer.info.render.calls, tris: renderer.info.render.triangles, textures: renderer.info.memory.textures,
+        calls: renderer.info.render.calls, tris: renderer.info.render.triangles, sceneCalls, sceneTris, textures: renderer.info.memory.textures,
         geometries: renderer.info.memory.geometries, programs: renderer.info.programs?.length ?? 0, shadows: shadowsDrawn, compiles, linking: warm.size(), dpr: renderer.getPixelRatio(), frames, at: lastFrame, input: lastInput,
         loading: things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps, fx: effects.count(),
         fxShown: effects.shown(), why: [...why], paused, drawn: !noDraw
