@@ -327,6 +327,19 @@ test('the art gallery: a present’s genuine artwork on show, a painting on its 
   await expect(card.locator('[data-museum-more]')).toContainText('モナ・リザ');
 });
 
+test('a gallery panel between the camera and my villager fades out (its paintings with it) and stands again once I’m clear', async ({ page }) => {
+  await seed(page, [['item', 'calm-painting', 'A'], ['item', 'flowery-painting', 'B']]);
+  await open(page);
+  const panels = () => mu<string>(page, 'panels()');
+  await putAt(page, 'in:G1');
+  await expect.poll(panels, { timeout: 15_000 }).toMatch(/^0{6}$/);
+  // behind the second row's long panel (the first row's calm painting before me)
+  await putAt(page, 'art:calm-painting');
+  await expect.poll(panels).toMatch(/1/);
+  await putAt(page, 'in:G1');
+  await expect.poll(panels).toMatch(/^0{6}$/);
+});
+
 test('the bug wing: every bug found lives there as it lives (flying, perched, crawling, in a case), drawn; a tap shows its card', async ({ page }) => {
   await seed(page, [['bug', 'common-butterfly', 'A'], ['bug', 'robust-cicada', 'B'], ['bug', 'tarantula', 'G'], ['bug', 'pondskater', 'A'], ['fish', 'sea-bass', 'B']]);
   await open(page);
@@ -489,7 +502,7 @@ test('the aquarium’s benches: a tap sits my villager on one, the other phone s
   await other.close();
 });
 
-test('the hall’s benches: a tap on one walks up and sits my villager facing the runner', async ({ page }) => {
+test('the hall’s benches: a tap on one walks up and sits my villager facing the camera', async ({ page }) => {
   await open(page);
   await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
   const [x, y] = (await mu<[number, number]>(page, 'benchPx("hbench1", 0)'))!;

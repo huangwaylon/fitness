@@ -1,5 +1,5 @@
 // The museum in 3D (docs/design.md "The museum"): three.js, loaded only when the museum opens (its own chunk). NH's
-// museum on one floor (plan.ts): the entrance hall (its stone floor, NH's lobby brick, its red runner and spurs, the
+// museum on one floor (plan.ts): the entrance hall (its stone floor, NH's lobby brick, its red runner, the
 // owl's medallion, Blathers at his desk), the bug garden to the left (garden.ts), the aquarium to the right (its tanks:
 // aquarium.ts, the sea creatures' alcove: seaLife.ts), the fossils' three rooms and the gallery's two behind the hall
 // (fossilWing.ts, gallery.ts), a plaque over each doorway. NH's floors and walls (scripts/world3d-models.ts
@@ -69,6 +69,9 @@ export interface Exhibit {
   seats?: readonly (Rect & { id: string; h: number })[];
   /** Its picks are people (the visitors: crowd3d.ts), not creatures: a tap's after the players', before the creatures. */
   people?: boolean;
+  /** What stands up in its room and may hide my villager (the gallery's panels, their paintings with them): `rect` its
+   *  floor, `h` its height, `objs` what fades. Faded out while it hides my villager, as the cutaway fades a wall. */
+  screens?: readonly Screen[];
   frame(t: number, dt: number, seen: (s: Sphere) => boolean): boolean;
   pick(project: (x: number, y: number, z: number) => [number, number] | null, cx: number, cy: number): { id: string; d: number } | null;
   /** A creature's world point (the card and the e2e), or null. */
@@ -80,6 +83,13 @@ export interface Exhibit {
    *  fade (the hour's fish) never compiles one mid-frame. Only those not fading now. */
   dither?(on: boolean): void;
   dispose(): void;
+}
+export interface Screen {
+  rect: Rect;
+  h: number;
+  objs: readonly Object3D[];
+  /** Its foot, shown while it's faded (a cut wall's kick plate): where it stands still reads. */
+  foot?: Object3D;
 }
 /** What an exhibit is built with: the textures and models the museum loads, its lights' warmth. */
 export interface Kit {
@@ -155,6 +165,8 @@ export interface Museum {
   nav(): Nav;
   /** Which walls the cutaway takes away (WALLS' order: 1 cut, 0 standing; the e2e). */
   walls(): string;
+  /** The room's screens (the gallery's panels) faded out: 1 out, 0 standing, in their exhibits' order (the e2e). */
+  screensCut(): string;
   /** The room drawn (only it: the one my villager is in). */
   room(): RoomId;
   /** Told when a doorway's dip starts (its colour) and ends (null): the screen fades to it and back; the room changes
@@ -245,8 +257,11 @@ function medallion(): CanvasTexture {
 /** A doorway's plaque (NH's lobby plaques: the room beyond's name, cream on walnut in a gold rim), PLAQUE_W × PLAQUE_H
  *  model units; drawn again once the app's font is in (`then`: a frame for it). */
 const PLAQUE_W = 30, PLAQUE_H = 8;
-/** A side wall's plaque's turn from facing the room view (out from the wall into the room). */
-const BLADE = Math.PI / 6;
+/** A side wall's plaque's turn from facing the room view: none, a flag sign standing straight out from the wall, so the
+ *  room view reads it whole even with the wall itself just off the screen's edge. */
+const BLADE = 0;
+/** How far a side wall's flag plaque stands off its wall (a hand's breadth: its words a little further in). */
+const FLAG_OFF = 2.5;
 const PLAQUE_FONT = '"Zen Maru Gothic", "Hiragino Maru Gothic ProN", system-ui, sans-serif';
 function plaque(text: string, then: () => void): CanvasTexture {
   const c = document.createElement('canvas');
@@ -571,7 +586,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     floor(r, decal(floorOf(o.wing === 'bug' ? 'hall' : o.wing, r), 1), [o.room, o.next], 0.01);
   }
   // the carpets (plan.ts CARPETS; carpet.ts: each room's strips one seamless carpet, its border round them all): the
-  // hall's runner from the door to the desk and its spurs to the arches, the fossils' and the gallery's ways in; the
+  // hall's runner from the door to the desk, the fossils' and the gallery's ways in; the
   // T. rex's island its own green rug
   const carpets: { room: RoomId; rects: readonly Rect[]; pile?: 'green' }[] = [...CARPETS, { room: 'F2', rects: [ISLAND_RUG], pile: 'green' }];
   for (const { room, rects: strips, pile } of carpets) {
@@ -594,7 +609,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     m.userData.floor = true;
     scene.add(inRooms(m, [room]));
   }
-  // the owl's medallion where the runner meets the side arches' spurs (3.8 tiles across: a mark, not a pit)
+  // the owl's medallion on the runner between the side arches (3.8 tiles across: a mark, not a pit)
   const medTex = medallion();
   disposables.push(medTex);
   const med = new Mesh(new CircleGeometry(19, 48), lambert({ map: medTex, layer: 3 }));
@@ -774,6 +789,17 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const doorways: Doorway[] = [];
   const plaqueGeo = new PlaneGeometry(PLAQUE_W, PLAQUE_H);
   disposables.push(plaqueGeo);
+  /** A plaque: `text` on two faces back to back (a turned one is seen from either side). */
+  function plaqueBoard(text: string): Group {
+    const pm = new MeshBasicMaterial({ map: plaque(text, () => invalidate()), transparent: true });
+    disposables.push(pm.map!, pm);
+    const board = new Group(), front = new Mesh(plaqueGeo, pm), back = new Mesh(plaqueGeo, pm);
+    back.rotation.y = Math.PI;
+    front.position.z = 0.05;
+    back.position.z = -0.05;
+    board.add(front, back);
+    return board;
+  }
   for (const o of OPENINGS) {
     const mid = (o.from + o.to) / 2, len = o.to - o.from, top = doorTop(o);
     const along = (w: Wall) => (o.axis === 'x' ? w.a[0] === o.at && w.b[0] === o.at : w.a[1] === o.at && w.b[1] === o.at);
@@ -789,21 +815,21 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     // its plaque, read from its room (two faces back to back: a turned one is seen from either side)
     const k = (o.axis === 'x' ? roomIdAt(o.at + 5, mid) : roomIdAt(mid, o.at + 5)) === o.room ? 1 : -1;
     const py = (top + wallTop) / 2;
-    const up = o.axis === 'z' ? [mid, py, o.at + k * (T / 2 + 0.2), k > 0 ? 0 : Math.PI] : [o.at + k * (T / 2 + 0.3 + (PLAQUE_W / 2) * Math.cos(BLADE)), py, mid, k * BLADE];
+    const up = o.axis === 'z' ? [mid, py, o.at + k * (T / 2 + 0.2), k > 0 ? 0 : Math.PI] : [o.at + k * (T / 2 + FLAG_OFF + (PLAQUE_W / 2) * Math.cos(BLADE)), py, mid, k * BLADE];
     const down = o.axis === 'z' ? [mid, KICK + 3 + PLAQUE_H / 2, o.at, 0] : up;
     let board: Group | null = null;
     if (o.next !== 'hall') {
-      const pm = new MeshBasicMaterial({ map: plaque(PLAQUE[o.next], () => invalidate()), transparent: true });
-      disposables.push(pm.map!, pm);
-      board = new Group();
-      const front = new Mesh(plaqueGeo, pm), back = new Mesh(plaqueGeo, pm);
-      back.rotation.y = Math.PI;
-      front.position.z = 0.05;
-      back.position.z = -0.05;
-      board.add(front, back);
+      board = plaqueBoard(PLAQUE[o.next]);
       board.position.set(up[0], up[1], up[2]);
       board.rotation.y = up[3];
       scene.add(inRooms(board, [o.room]));
+    }
+    // (a doorway between two rooms of a wing: on the way back, the room behind on its other side, its wall's mirror)
+    if (o.room !== 'hall' && o.next !== 'hall') {
+      const back = plaqueBoard(PLAQUE[o.room]);
+      if (o.axis === 'z') back.position.set(mid, py, o.at - k * (T / 2 + 0.2)), (back.rotation.y = k > 0 ? Math.PI : 0);
+      else back.position.set(2 * o.at - up[0], py, mid), (back.rotation.y = -up[3]);
+      scene.add(inRooms(back, [o.next]));
     }
     const cards: Mesh[] = [];
     for (const kk of [1, -1]) {
@@ -941,6 +967,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     // (one built after the room was left: the exhibits' chunk landing late)
     if (disposed) return e.dispose();
     exhibits.push(e);
+    // (its screens looked at afresh)
+    cutWas[0] = NaN;
     scene.add(e.group);
     blocksChanged();
     rebake(roomOfExhibit(e));
@@ -1279,12 +1307,27 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
    *    back only once clear by a wider margin.
    *  A wall going or coming fades (wallFade), not pops. */
   const cutWas = new Float64Array(9).fill(NaN);
+  /** Each exhibit's screen's cut and fade (screens()), and its box as a wall's (hides). */
+  const screenState = new WeakMap<Screen, { cut: boolean; fade: number; box: WallMesh['box'] }>();
+  const stateOf = (sc: Screen) => {
+    let st = screenState.get(sc);
+    if (!st) {
+      const r = sc.rect;
+      screenState.set(sc, (st = { cut: false, fade: 1, box: { x: (r.x0 + r.x1) / 2, z: (r.z0 + r.z1) / 2, l: (r.x1 - r.x0) / 2, t: (r.z1 - r.z0) / 2, h: sc.h, c: 1, s: 0 } }));
+    }
+    return st;
+  };
+  /** The screens of the room drawn. */
+  function* screens() {
+    for (const e of exhibits) if (e.screens && roomOfExhibit(e) === cur) yield* e.screens;
+  }
   function cutaway() {
     for (const m of fpvOnly) m.visible = fp.mix > 0 && shell.get(m)!.includes(cur);
     for (const d of doorways) doorwayShown(d);
     // (at the eyes, inside: every wall stands)
     if (fp.inside()) {
       for (const wm of walls) wm.cut = false;
+      for (const sc of screens()) stateOf(sc).cut = false;
       cutWas[0] = NaN;
       return;
     }
@@ -1310,6 +1353,12 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
           hides(o, m, cx, cy, cz, mx + sx * 4, 2, mz + sz * 4) || hides(o, m, cx, cy, cz, mx + sx * 4, VILLAGER_H, mz + sz * 4);
       }
       wm.cut = cut;
+    }
+    // (a screen only for my villager: it never stands between the camera and the room's middle)
+    for (const sc of screens()) {
+      const st = stateOf(sc), m = st.cut ? 8 : 4, o = st.box;
+      st.cut = !!mp && (hides(o, m, cx, cy, cz, mx - sx * 4, 2, mz - sz * 4) || hides(o, m, cx, cy, cz, mx - sx * 4, VILLAGER_H, mz - sz * 4) ||
+        hides(o, m, cx, cy, cz, mx + sx * 4, 2, mz + sz * 4) || hides(o, m, cx, cy, cz, mx + sx * 4, VILLAGER_H, mz + sz * 4));
     }
   }
   /** Whether a wall's box (grown by m) crosses the segment from (ax, ay, az) to (bx, by, bz): the slab test in its frame
@@ -1350,7 +1399,36 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       wallShown(wm);
       if (mid) busy = true;
     }
+    for (const sc of screens()) {
+      const st = stateOf(sc), to = st.cut ? 0 : 1;
+      if (st.fade === to) continue;
+      st.fade = snap ? to : to ? Math.min(1, st.fade + dt / WALL_FADE) : Math.max(0, st.fade - dt / WALL_FADE);
+      screenFade(sc, st.fade);
+      if (st.fade > 0 && st.fade < 1) busy = true;
+    }
     return busy;
+  }
+  /** A screen `k` in (dithered between, hidden out): its materials its own first (a pack's paintings share theirs). */
+  function screenFade(sc: Screen, k: number) {
+    const mid = k > 0 && k < 1;
+    if (sc.foot) sc.foot.visible = k < 1;
+    for (const o of sc.objs) {
+      o.visible = k > 0;
+      o.traverse((n) => {
+        const mesh = n as Mesh;
+        if (!mesh.isMesh) return;
+        if (!mesh.userData.ownFade) {
+          mesh.userData.ownFade = true;
+          const own = ([] as Material[]).concat(mesh.material).map((m) => m.clone());
+          disposables.push(...own);
+          mesh.material = Array.isArray(mesh.material) ? own : own[0];
+        }
+        for (const m of ([] as Material[]).concat(mesh.material)) {
+          if (m.alphaHash !== mid) (m.alphaHash = mid), (m.needsUpdate = true);
+          m.opacity = k;
+        }
+      });
+    }
   }
   /** A wall drawn while it's of the room one's in: its slab while not all faded out, its foot while not all in. */
   function wallShown(wm: WallMesh) {
@@ -1567,7 +1645,12 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
         // (the walls' and the fish's fading programs too: dithered, alphaHash, compiled with the rest; solid again after)
         const hashed = (on: boolean) => {
           for (const wm of walls) if (wm.fade === 0 || wm.fade === 1) for (const m of wm.mats) (m.alphaHash = on), (m.needsUpdate = true);
-          for (const e of exhibits) e.dither?.(on);
+          for (const e of exhibits) {
+            e.dither?.(on);
+            for (const sc of e.screens ?? []) if (stateOf(sc).fade === 1) for (const o of sc.objs) o.traverse((n) => {
+              for (const m of ([] as Material[]).concat((n as Mesh).material ?? [])) (m.alphaHash = on), (m.needsUpdate = true);
+            });
+          }
         };
         // (three's compileAsync, its poll ours: three's throws in a timer once a material it waits on is disposed, the
         // room left or a fish's hour over, and never settles)
@@ -1867,6 +1950,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       invalidate();
     },
     kit,
+    screensCut: () => [...screens()].map((sc) => (stateOf(sc).fade < 0.5 ? '1' : '0')).join(''),
     stats: () => ({ frames, draws, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: [...cost], queued: pace.asked(), ambient: ambientOn, loading: pending, warming,
       mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0] }),
     ready,

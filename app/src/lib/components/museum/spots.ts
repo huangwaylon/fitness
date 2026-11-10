@@ -49,7 +49,7 @@ const seaTank = (id: string) => SEA_TANKS.find((t) => t.id === id)!.box;
 export const LINGER: readonly LingerPoint[] = [
   // the hall: Blathers' desk from either side of the runner, two pairs by the side walls
   look('hall', -28, -8, [0, -26]), look('hall', 28, -8, [0, -26]),
-  ...chat('hall', [-32, 40], [-20, 40]),
+  ...chat('hall', [-30, 52], [-18, 52]),
   // the garden: the oaks, the pond, the flower bed, the cases; a pair by the path
   look('bug', -120, -26, OAKS[0]), look('bug', -128, 82, [(POND.x0 + POND.x1) / 2, (POND.z0 + POND.z1) / 2]),
   look('bug', -98, 34, [-88, 62]), look('bug', -165, 0, CASES[0]),

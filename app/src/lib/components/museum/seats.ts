@@ -1,6 +1,6 @@
 // The museum's seats (docs/design.md "The museum": its benches), pure: NH's park benches, two seats each, in the
-// rooms where one lingers (the aquarium's aisle facing the great sea tank, the hall's sides facing the runner, the
-// gallery's front bands facing their front rows, before the big skeletons' front row), where each stands, and where
+// rooms where one lingers (the aquarium's aisle facing the great sea tank; the hall's sides and the gallery's front
+// bands facing the camera, so their fronts and who sits there read; beside the T. rex's island facing it), where each stands, and where
 // and how a villager sits on it: the island's park bench's own seats (villager3d/seats3d.ts, from its model's geometry: scripts/seat-anchors.ts),
 // at the museum's scale. The sitting itself is the rooms' (rooms/seating.ts).
 import { anchorsOf, shapeOf, type Anchor } from '../villager3d/seats3d.ts';
@@ -15,10 +15,10 @@ export interface Bench { id: string; room: RoomId; x: number; z: number; yaw: nu
 export const BENCHES: readonly Bench[] = [
   { id: 'dmbench1', room: 'fish', x: 104, z: 20, yaw: Math.PI },
   { id: 'dmbench2', room: 'fish', x: 152, z: 20, yaw: Math.PI },
-  { id: 'hbench1', room: 'hall', x: -52, z: 40, yaw: Math.PI / 2 },
-  { id: 'hbench2', room: 'hall', x: 52, z: 40, yaw: -Math.PI / 2 },
-  { id: 'g1bench', room: 'G1', x: 75, z: -70, yaw: Math.PI },
-  { id: 'g2bench', room: 'G2', x: 160, z: -70, yaw: Math.PI },
+  { id: 'hbench1', room: 'hall', x: -42, z: 34, yaw: 0 },
+  { id: 'hbench2', room: 'hall', x: 42, z: 34, yaw: 0 },
+  { id: 'g1bench', room: 'G1', x: 75, z: -70, yaw: 0 },
+  { id: 'g2bench', room: 'G2', x: 160, z: -70, yaw: 0 },
   { id: 'f2bench', room: 'F2', x: -262, z: -170, yaw: Math.PI / 2 }
 ];
 /** A bench's floor (its model's, about: benches.ts measures it), turned with it. */

@@ -942,21 +942,24 @@ editor, never removed. A tap walks my villager to its door and in (the door's ir
 out.
 
 - **Inside** (`plan.ts`): one floor of portrait rooms, 12 tiles across (the screen's way) and deeper the other. The
-  hall 12 × 12: marble, a red runner from the door to Blathers' desk at the back in the middle and a spur to each arch,
-  a small owl medallion (3.8 tiles) where they cross, four plants, two benches facing the runner. Through its left arch
+  hall 12 × 12: marble, a red runner from the door to Blathers' desk at the back in the middle (no spurs: the arches
+  read by their plaques), a small owl medallion (3.8 tiles) on it between the side arches, four plants, two benches
+  by the sides facing the camera. Through its left arch
   the bug garden (12 × 20), its right the aquarium (12 × 20, the sea creatures' 9 × 9 alcove open off its right wall:
   the same room, no fade), and through its back wall, either side of the desk, the fossils in a line (F1 the standalone
   ones → F2 the big skeletons round the T. rex on its green island rug → F3 the rest) and the gallery (G1 → G2; NH's is
-  upstairs). Benches where one lingers: the hall, the aquarium, each gallery room's front, beside the T. rex (a tap
+  upstairs). Benches where one lingers: the hall, the aquarium (facing the great tank), each gallery room's front, beside
+  the T. rex (a tap
   sits). NH's own floors and walls; no two faces share a plane (surfaces.test). Named spots (`spots.ts`,
   `__museum.spot(name)`) are what the e2e puts my villager at, never coordinates; LINGER the visitors' places.
 - **Doorways:** each has a lintel and a plaque over it naming the room beyond in spaced kana (む し, さ か な, か せ き,
-  び じゅ つ; inside a wing か せ き 2, び じゅ つ 2…), cream on walnut in the app's font; in a side wall it stands out
-  from the wall half turned toward the camera, so the room view reads it; in a cut front wall it stands just over the
-  wall's foot.
+  び じゅ つ; inside a wing か せ き 2, び じゅ つ 2…), cream on walnut in the app's font; in a side wall it's a flag sign
+  standing straight out toward the camera, so the room view reads it; in a cut front wall it stands just over the
+  wall's foot. Between two rooms of a wing (F1 ↔ F2 ↔ F3, G1 ↔ G2) the way back has one too, naming the room behind.
 - **The camera** (`camera.ts`): each room framed for the portrait phone: the floor VIEW_W across at the target (the hall
-  124, its side arches and plaques in view from the door; the wings 112, a villager ~36 px), its back wall's top under
-  the back button and its front edge over the HUD; the target follows inside the room's range with a dead zone (±12 u
+  108, Blathers and all four arches' plaques in view from the door, a villager ~37 px, its spare rows mostly under it so
+  no dark band sits over its back wall; the wings 112, a villager ~36 px), its back wall's top under the back button
+  and its front edge over the HUD; the target follows inside the room's range with a dead zone (±12 u
   across, ±30 deep), so a 12 × 18 room stands still and F2 follows in depth. `__museum.tune({ viewW, pitch })` retunes
   it on the phone.
 - **One room at a time:** only the room my villager is in is drawn: its floor, walls, furnishing, exhibits and whoever
@@ -1017,7 +1020,8 @@ out.
   skeleton's pieces stand in a row on their own bases, each where it joins the next; a piece found later fills its
   gap, and once all are in the animal is whole.
 - **The art gallery** (`art.ts`, `gallery.ts`): NH's 43 genuine artworks only (no forgeries, no Redd): the paintings
-  hung on G1's and G2's red back walls and three rows of panels (40 high, the gap alternating sides), the statues on
+  hung on G1's and G2's red back walls and three rows of panels (40 high, the gap alternating sides; one between the camera and my villager fades out with
+  its paintings, its foot left, as a cut wall does), the statues on
   marble plinths in the side-wall bays, the wild painting's halves as a folding screen on G1's dais. **How art comes:** a balloon's present now and then (1 in 10, `island/catalog.ts` ART_ONE_IN) holds a
   genuine artwork the museum hasn't got, 「ゆうめいな めいがを てにいれた！」; once all 43 are in, none. The curator
   hints at it.

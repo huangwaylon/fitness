@@ -76,7 +76,7 @@ describe('the rooms', () => {
       }
     }
   });
-  test('the carpets: inside their rooms, strips edge to edge (none over another), one joined run, flush to a doorway', () => {
+  test('the carpets: inside their rooms, strips edge to edge (none over another), one joined run, flush to a doorway (the hall’s to its front door)', () => {
     for (const { room, rects } of CARPETS) {
       for (const r of rects) expect(rectsOf(room).some((q) => inRect(q, r.x0, r.z0) && inRect(q, r.x1, r.z1)), `${room} ${JSON.stringify(r)}`).toBe(true);
       for (let i = 0; i < rects.length; i++) for (let k = i + 1; k < rects.length; k++) expect(overlap(rects[i], rects[k]), room).toBe(false);
@@ -85,7 +85,7 @@ describe('the rooms', () => {
       for (let k = 0; k < rects.length; k++) rects.forEach((r, i) => [...joined].some((j) => meet(rects[j], r)) && joined.add(i));
       expect(joined.size, room).toBe(rects.length);
       const flush = OPENINGS.some((o) => (o.room === room || o.next === room) && rects.some((r) => (o.axis === 'x' ? (r.x0 === o.at || r.x1 === o.at) && r.z1 > o.from && r.z0 < o.to : (r.z0 === o.at || r.z1 === o.at) && r.x1 > o.from && r.x0 < o.to)));
-      expect(flush, room).toBe(true);
+      expect(flush || (room === 'hall' && rects.some((r) => r.z1 === HALL.z1 && r.x0 < 0 && r.x1 > 0)), room).toBe(true);
     }
   });
 });

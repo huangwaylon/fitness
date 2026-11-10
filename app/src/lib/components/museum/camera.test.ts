@@ -8,8 +8,8 @@ import { HALL_H, ROOM_IDS, WING_H, boundsOf, inRect, rectsOf, type Pt } from './
 const camAt = (room: (typeof ROOM_IDS)[number], t: Pt): Cam => ({ x: t[0], z: t[1], pitch: PITCH, d: framingOf(room).d, s: PORTRAIT });
 
 describe('the framing', () => {
-  test('the hall 124 across (its side arches and their plaques in view), the wings 112; a 12 × 18 room fixed in depth, a 12 × 20 one nearly (a few units), F2 followed', () => {
-    expect(VIEW_W.hall).toBe(124);
+  test('the hall 108 across (its arches’ plaques in view), the wings 112; a 12 × 18 room fixed in depth, a 12 × 20 one nearly (a few units), F2 followed', () => {
+    expect(VIEW_W.hall).toBe(108);
     for (const id of ROOM_IDS) if (id !== 'hall') expect(VIEW_W[id]).toBe(112);
     const span = (id: (typeof ROOM_IDS)[number]) => framingOf(id).z[1] - framingOf(id).z[0];
     expect(span('hall')).toBe(0);
@@ -52,8 +52,8 @@ describe('the framing', () => {
     // (never past the range: the side walls stay at the screen's edges)
     expect(follow(f, t, [1000, t[1]])[0]).toBe(f.x[1]);
   });
-  test('a villager about 36 px tall in a wing at 112, 33 in the hall at 124 (55-60 px would want ~70: a third of a room)', () => {
-    for (const [id, px] of [['hall', 33], ['G1', 36]] as const) {
+  test('a villager about 36 px tall in a wing at 112, 37 in the hall at 108 (55-60 px would want ~70: a third of a room)', () => {
+    for (const [id, px] of [['hall', 37], ['G1', 36]] as const) {
       const f = framingOf(id), t = enter(f, [(f.x[0] + f.x[1]) / 2, (f.z[0] + f.z[1]) / 2]);
       const h = project(camAt(id, t), t[0], 0, t[1])![1] - project(camAt(id, t), t[0], 16, t[1])![1];
       expect(Math.abs(h - px), id).toBeLessThan(2);

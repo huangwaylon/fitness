@@ -95,13 +95,11 @@ export const PLAQUE: Readonly<Record<Exclude<RoomId, 'hall'>, string>> = {
 };
 
 /** The carpets: each room's strips (meeting square, edge to edge, none overlapping, flush to the doorways they lead
- *  to; the engine lays a room's as one seamless mesh). The hall's: one runner from the door to the desk, a spur to
- *  each arch. */
+ *  to; the engine lays a room's as one seamless mesh). The hall's: one runner from the front door to the desk (the
+ *  arches read by their plaques and cards, no cross of spurs to them). */
 export const CARPETS: readonly { room: RoomId; rects: readonly Rect[] }[] = [
   { room: 'hall', rects: [
-    { x0: -12, x1: 12, z0: DESK.z1, z1: HALL.z1 },
-    { x0: HALL.x0, x1: -12, z0: 0, z1: 20 }, { x0: 12, x1: HALL.x1, z0: 0, z1: 20 },
-    { x0: -48, x1: -36, z0: HALL.z0, z1: 0 }, { x0: 36, x1: 48, z0: HALL.z0, z1: 0 }
+    { x0: -12, x1: 12, z0: DESK.z1, z1: HALL.z1 }
   ] },
   // F1: in from the hall's arch across the front band, up the left aisle to F2's door
   { room: 'F1', rects: [

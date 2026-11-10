@@ -12,10 +12,13 @@ export const PITCH = 50;
 export const FOV = 32;
 /** The target's height (a villager's middle, engine.ts). */
 const TARGET_Y = 8;
-/** The floor across the screen at the target, each room's (model units: the hall whole, its side arches and their
- *  plaques in view from the door; the wings' 11.2 tiles of their 12, the side walls a soft follow away). Tuned on the
- *  phone by __museum.tune({ viewW }). */
-export const VIEW_W: Readonly<Record<RoomId, number>> = { hall: 124, bug: 112, fish: 112, F1: 112, F2: 112, F3: 112, G1: 112, G2: 112 };
+/** The floor across the screen at the target, each room's (model units: the hall nearly whole, its side walls just off
+ *  the edges but their arches' flag plaques and the back arches' in view from the door; the wings' 11.2 tiles of their
+ *  12, the side walls a soft follow away). Tuned on the phone by __museum.tune({ viewW }). */
+export const VIEW_W: Readonly<Record<RoomId, number>> = { hall: 108, bug: 112, fish: 112, F1: 112, F2: 112, F3: 112, G1: 112, G2: 112 };
+/** A room that fits the band between the bars: the share of the spare rows over its back wall (the rest under its
+ *  front edge, the floor's apron: the hall's less, no dark band over it). */
+const OVER: Partial<Record<RoomId, number>> = { hall: 0.3 };
 /** How far my villager may stray from the target before the camera follows (x, z: model units). */
 export const DEAD: Pt = [12, 30];
 /** The phone's screen and what covers it (css px): the top bar to its back button's foot, the HUD's height. */
@@ -77,7 +80,8 @@ function framing(room: RoomId, s: Screen = PORTRAIT, b: Rect = boundsOf(room), o
   const backTop = (z: number) => row(z, wallH(room), b.z0);
   const front = (z: number) => row(z, 0, b.z1);
   const zBack = solve((z) => backTop(z) - s.top), zFront = solve((z) => s.H - s.bottom - front(z));
-  const zs: Pt = zFront <= zBack ? ((z) => [z, z] as Pt)(solve((z) => backTop(z) - s.top - (s.H - s.bottom - front(z)))) : [zBack, zFront];
+  const over = OVER[room] ?? 0.5;
+  const zs: Pt = zFront <= zBack ? ((z) => [z, z] as Pt)(solve((z) => (backTop(z) - s.top) * (1 - over) - (s.H - s.bottom - front(z)) * over)) : [zBack, zFront];
   // the side walls at the screen's edges at the target's depth, but a front corner (a villager a body in from it) on
   // the screen too: the floor across is narrower there, nearer the camera
   const p = rad(pitch), camZ = zs[1] + d * Math.cos(p), depthFront = (TARGET_Y + d * Math.sin(p)) * Math.sin(p) + (camZ - b.z1) * Math.cos(p);

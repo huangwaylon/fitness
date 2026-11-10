@@ -645,6 +645,8 @@
       hit: (cx: number, cy: number) => eng?.hit(cx, cy),
       /** The walls the cutaway takes away (engine.ts walls). */
       walls: () => eng?.walls(),
+      /** The gallery's panels faded out round my villager (engine.ts screensCut). */
+      panels: () => eng?.screensCut(),
       /** The room drawn (only it), and its look retuned (look.ts: the Simulator's tuning). */
       room: () => eng?.room(),
       /** The room's look (look.ts) or camera (viewW: this room's, the wings' all at once; pitch: degrees) retuned. */

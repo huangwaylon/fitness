@@ -2,8 +2,8 @@
 // and every genuine artwork anyone has had (art.ts: its place) as NH's own model (models.json: four packs, each fetched
 // once one of its artworks is on show): the paintings hung on the walls and the panels, the statues on marble plinths,
 // the wild painting's halves as a screen on a dais. Still: it asks for no frames of its own.
-import { BoxGeometry, Group, Matrix4, type BufferGeometry, type Material } from 'three';
-import type { Exhibit, Kit } from './engine.ts';
+import { BoxGeometry, Group, Matrix4, Mesh, type BufferGeometry, type Material, type Object3D } from 'three';
+import type { Exhibit, Kit, Screen } from './engine.ts';
 import { ART_SPOTS, DAIS, PANELS, PANEL_H, PANEL_T, plinthOf, type ArtOnShow } from './art.ts';
 import { batcher } from './geometry.ts';
 import type { Card, Pool } from './bake.ts';
@@ -14,6 +14,8 @@ import M from './models.json' with { type: 'json' };
 const MODELS = M.models as Record<string, { min: number[]; max: number[] } | undefined>;
 /** How near a tap (client px) picks an artwork, at least. */
 const REACH = 24;
+/** A faded panel's foot (u high). */
+const KICK = 2.5;
 
 export { PANELS };
 /** A gallery room's exhibits (its panels, its artworks on show: `shown` its own). */
@@ -22,19 +24,34 @@ export function buildGallery(kit: Kit, shown: readonly ArtOnShow[], room: RoomId
   const group = new Group();
   const geos: BufferGeometry[] = [];
   // (the kit's materials: the museum lets go of them)
-  // (NH's damask red, as bright as the walls: look.ts GAIN)
-  const panel = kit.lambert({ map: kit.tex('hall-red', [4, 1.4]) });
-  panel.color.set(TINT.art.wall).multiplyScalar(GAIN.art.wall);
-  const cap = kit.lambert({ color: 0xc9a24a });
+  // (NH's damask red, as bright as the walls: look.ts GAIN; each panel its own, to fade alone)
+  const red = () => {
+    const m = kit.lambert({ map: kit.tex('hall-red', [4, 1.4]) });
+    m.color.set(TINT.art.wall).multiplyScalar(GAIN.art.wall);
+    return m;
+  };
+  const capLook = { color: 0xc9a24a };
+  const foot = red();
   const marble = kit.lambert({ map: kit.tex('marble', [0.5, 0.5]), color: 0xf0e8dc });
   const wood = kit.lambert({ color: 0x5a3a27 });
   const batch = batcher(), at = new Matrix4();
-  for (const r of panels) {
+  // each panel its own (its materials too): one hiding my villager fades out with its paintings (engine.ts screens)
+  const screens: (Screen & { objs: Object3D[] })[] = panels.map((r) => {
     const w = r.x1 - r.x0, mx = (r.x0 + r.x1) / 2, mz = (r.z0 + r.z1) / 2;
-    batch.add(new BoxGeometry(w, PANEL_H, PANEL_T), panel, at.makeTranslation(mx, PANEL_H / 2, mz));
+    const body = new Mesh(new BoxGeometry(w, PANEL_H, PANEL_T), red());
+    body.position.set(mx, PANEL_H / 2, mz);
     // a gold rail along its top (a little proud, so no face shares the panel's top)
-    batch.add(new BoxGeometry(w + 1, 1.2, PANEL_T + 1), cap, at.makeTranslation(mx, PANEL_H + 0.6, mz));
-  }
+    const rail = new Mesh(new BoxGeometry(w + 1, 1.2, PANEL_T + 1), kit.lambert(capLook));
+    rail.position.set(mx, PANEL_H + 0.6, mz);
+    body.userData.ownFade = rail.userData.ownFade = true;
+    // (its foot, while it's faded out)
+    const kick = new Mesh(new BoxGeometry(w - 0.4, KICK, PANEL_T + 0.4), foot);
+    kick.position.set(mx, KICK / 2, mz);
+    kick.visible = false;
+    group.add(body, rail, kick);
+    geos.push(body.geometry, rail.geometry, kick.geometry);
+    return { rect: r, h: PANEL_H + 1.2, objs: [body, rail], foot: kick };
+  });
   const ids = shown.map((a) => a.id).filter((id) => ART_SPOTS.has(id));
   const blocks: Rect[] = [...panels];
   if (ids.some((id) => id.startsWith('wild-painting'))) {
@@ -47,7 +64,9 @@ export function buildGallery(kit: Kit, shown: readonly ArtOnShow[], room: RoomId
       batch.add(new BoxGeometry(sp.plinth, sp.plinthH, sp.plinth), marble, at.makeTranslation(sp.x, sp.plinthH / 2, sp.z));
       blocks.push(foot);
     }
-    kit.prop(id, sp.x, sp.z, { y: sp.y, yaw: sp.yaw, s: sp.s, parent: group, origin: true });
+    const held = kit.prop(id, sp.x, sp.z, { y: sp.y, yaw: sp.yaw, s: sp.s, parent: group, origin: true });
+    // (a painting on a panel's face fades with it)
+    screens.find(({ rect: r }) => sp.x > r.x0 && sp.x < r.x1 && Math.abs(sp.z - r.z1) < 1)?.objs.push(held);
   }
   geos.push(...batch.done(group));
   // a wash of light on the wall over each painting (one mesh: bake.ts cards) and a pool on the floor before it; a pool
@@ -77,6 +96,7 @@ export function buildGallery(kit: Kit, shown: readonly ArtOnShow[], room: RoomId
     wing: 'art',
     blocks,
     pools,
+    screens,
     frame: () => false,
     pick(project, cx, cy) {
       let best: { id: string; d: number } | null = null;
