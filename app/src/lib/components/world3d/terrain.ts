@@ -12,12 +12,13 @@
 import {
   BufferGeometry, ClampToEdgeWrapping, Color, DataTexture, DoubleSide, Float32BufferAttribute, GLSL3, Group, LinearFilter, LinearMipmapLinearFilter, Mesh,
   MeshLambertMaterial, NearestFilter, OrthographicCamera, PlaneGeometry, RawShaderMaterial, RepeatWrapping, RGBAFormat, SRGBColorSpace,
-  Scene, ShaderChunk, ShaderMaterial, Texture, TextureLoader, Uint32BufferAttribute, UnsignedByteType, WebGLRenderTarget, type WebGLRenderer
+  Scene, ShaderChunk, ShaderMaterial, Texture, Uint32BufferAttribute, UnsignedByteType, WebGLRenderTarget, type WebGLRenderer
 } from 'three';
 import { bend, BEND_GLSL, bendU } from './bend.ts';
 import { withMaps } from './blank.ts';
 import { waterU } from './water.ts';
 import { bandInView } from './islandCam.ts';
+import { NH_GROUND, nhImage, nhURL } from './groundTex.ts';
 import { CHUNKS_X, CHUNKS_Z, GRID, TILE, chunkOf } from '#lib/layout/grid.ts';
 import { chunkMesh, meshKeyOf, openSeaRow, stairsMesh, type Part, type WallPart, type WaterPart } from '#lib/layout/mesh.ts';
 import { FAR, STEP, fieldsOf } from '#lib/layout/fields.ts';
@@ -57,12 +58,12 @@ export interface Ground {
   look(l: Look): void;
   /** Each baked band's meshes (a row of chunks across the island: 4 draws), for the camera's culling (world z extent). */
   chunks(): readonly { z0: number; z1: number; meshes: Mesh[] }[];
-  /** The camera's pivot moved to `camZ`: the bands in its reach baked (a long island's past BAND_BUDGET take a far
-   *  band's target), before the culling. */
+  /** A frame's camera, its pivot at `camZ` (engine.ts draw, before the culling and the draw): the bands in its reach
+   *  given targets (a long island's past BAND_BUDGET take a far band's), and every bake due done. */
   near(camZ: number): void;
-  /** A promise for the textures (the first bake waits on them). */
+  /** A promise for NH's textures. */
   ready: Promise<void>;
-  /** The bands baked again (a lost context back: their render targets come back empty). */
+  /** The bands baked again by the next frame (a lost context back: their render targets come back empty). */
   restore(): void;
   dispose(): void;
 }
@@ -578,9 +579,6 @@ export const keptBytes = (): number =>
 /** Tests: forget the kept set. */
 export const forgetBands = (): void => void (kept = null);
 
-/** NH's ground textures' images once loaded (by URL; ~100 KB of WebP in all), for the next ground's build. */
-const nhImages = new Map<string, HTMLImageElement>();
-
 export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   const { renderer } = opts;
   const px = opts.px ?? 1.6;
@@ -591,17 +589,17 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   let look: Look = opts.look ?? 'summer';
 
   // the textures: NH's, and the layout's own (the fields, the tiles)
-  const loader = new TextureLoader();
   /** NH's texture by name: `srgb` for the lit materials (the walls), raw for the bake (it paints in sRGB); its image
-   *  the one loaded before (back from a room: in at once, so the ground bakes once, not the palette then again). */
-  const nh = (name: string, srgb = true): Texture => {
-    const url = `${base}terrain/nh/${name}.webp`, had = nhImages.get(url);
-    let t: Texture;
-    if (had) (t = new Texture(had)), (t.needsUpdate = true);
+   *  page-wide (groundTex.ts: the launch asked for it with the fields; back from a room, in already). */
+  const nh = (name: (typeof NH_GROUND)[number], srgb = true): Texture => {
+    const im = nhImage(nhURL(name, base)), t = new Texture(im.img);
+    if (im.img) t.needsUpdate = true;
     else {
-      const done = () => (pendingTex--, pendingTex || texDone());
-      t = loader.load(url, (x) => (nhImages.set(url, x.image as HTMLImageElement), done()), undefined, done);
       pendingTex++;
+      void im.p.then((img) => {
+        if (img) (t.image = img), (t.needsUpdate = true);
+        if (!--pendingTex) texDone();
+      });
     }
     t.wrapS = t.wrapT = RepeatWrapping;
     if (srgb) t.colorSpace = SRGBColorSpace;
@@ -760,6 +758,11 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   let lastZ: number | null = null;
   function near(camZ: number) {
     lastZ = camZ;
+    reach(camZ);
+    flush();
+  }
+  function reach(camZ: number) {
+    if (!bands.some((b) => b.land && !b.rt && bandInView(b, camZ))) return;
     const mid = (b: Band) => Math.abs((b.z0 + b.z1) / 2 - (camZ + 400));
     const want = bands.filter((b) => b.land && !b.rt && bandInView(b, camZ)).sort((p, q) => mid(p) - mid(q));
     for (const b of want) {
@@ -776,13 +779,25 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
       bake(b);
     }
   }
-  function bake(b: Band) {
-    if (!b.rt) return;
-    bakeMat.uniforms.uBox.value = [GRID.x0, b.z0, GRID.x0 + GW, b.z1];
+  /** The bands whose bake is due: baked by the next frame's near(), just before its draw, once however many times
+   *  they were asked for meanwhile (the launch's build and NH's textures landing, the camera's ends solved through a
+   *  hundred poses: Island3D fitEnds), and only for the camera that frame draws. */
+  const due = new Set<Band>();
+  /** Whether a band has been baked yet (NH's textures landing after it: the palette's bake replaced). */
+  let baked = false;
+  const bake = (b: Band) => void due.add(b);
+  function flush() {
+    if (!due.size) return;
     const was = renderer.getRenderTarget();
-    renderer.setRenderTarget(b.rt);
-    renderer.render(bakeScene, bakeCam);
+    for (const b of due) {
+      if (!b.rt) continue;
+      bakeMat.uniforms.uBox.value = [GRID.x0, b.z0, GRID.x0 + GW, b.z1];
+      renderer.setRenderTarget(b.rt);
+      renderer.render(bakeScene, bakeCam);
+      baked = true;
+    }
     renderer.setRenderTarget(was);
+    due.clear();
   }
   /** A band's arrays: kept (the same layout's, built on an earlier mount) or built now (and kept). */
   function arrays(b: Band): BandArrays | null {
@@ -857,11 +872,12 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     stairs.geometry = opts.stairs === false ? new BufferGeometry() : wallGeometry(stairsMesh(lay));
   };
   buildStairs();
-  // the bake once NH's textures are in; while they load, one with the palette alone first (none twice when they're in
-  // already: back from a room, ~40 ms at 4x CPU)
+  // baked now with NH's textures if they're in, as a rule (the launch asked for them with the fields; back from a room,
+  // kept); else by the first frame (near()), maybe still with the palette alone, baked again once they land
   for (const b of bands) bake(b);
-  if (pendingTex) void ready.then(() => {
-    if (!disposed) for (const b of bands) bake(b);
+  if (!pendingTex) flush();
+  else void ready.then(() => {
+    if (!disposed && baked) for (const b of bands) bake(b);
   });
 
   // the sea: far out every way, rows dense enough along z for the bend; under it, the deep seabed
@@ -917,7 +933,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
         build(bands[row]);
         bake(bands[row]);
       }
-      if (lastZ !== null) near(lastZ);
+      if (lastZ !== null) reach(lastZ);
       buildStairs();
     },
     heightAt: (x, z) => field.ground(x, z),

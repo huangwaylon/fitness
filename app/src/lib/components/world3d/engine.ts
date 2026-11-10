@@ -62,7 +62,8 @@ export interface BuiltGround {
   land: Land;
   /** Its bands (a row of chunks across the island), culled with the camera. */
   chunks?(): readonly { z0: number; z1: number; meshes: Mesh[] }[];
-  /** The pivot moved: the bands in its reach baked (terrain.ts near), before the culling. */
+  /** A frame's camera (each draw, not each pose: Island3D's fitEnds solves through a hundred): the bands in its reach
+   *  given targets and every bake due done (terrain.ts near), before the culling. */
   near?(camZ: number): void;
   /** Called in each frame (its water's time, a paint stroke's rebuild): true while it moves (frames at the full rate),
    *  'ambient' while only its ambience does (its water: the ambient rate), false when still. */
@@ -363,8 +364,6 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       sunOn(sun, (shadowAim = box), todLook.sunAt);
       shadowed();
     }
-    ground.near?.(camZ);
-    if (ground.chunks) cullBands(ground.chunks(), camZ);
     rev++;
     horizonY = NaN;
   }
@@ -1037,6 +1036,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       else want(g, 'ground');
     }
     want(lights.frame(t, camX, camZ + 110, bendU.uBendR.value, -camZ), 'lights');
+    ground.near?.(camZ);
+    if (ground.chunks) cullBands(ground.chunks(), camZ);
     cullGroups();
     // (new programs compiled ahead, what waits on them held back: before the shadow map's turn, which they join once in)
     const held = !noDraw && hold();

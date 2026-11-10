@@ -67,6 +67,10 @@ describe('the bands baked (terrain.ts BAND_BUDGET: the long island, 2026-11-10)'
     bakes.n = 0;
     const g = buildGround(await longest(), { renderer: counting, stairs: false });
     expect(g.chunks()).toHaveLength(12);
+    // (the first frame bakes the 12 the build gave targets, each once)
+    expect(bakes.n).toBe(0);
+    g.near(0);
+    expect(bakes.n).toBe(12);
     const inView = (z: number) => g.chunks().filter((b) => bandInView(b, z)).length;
     for (const z of [0, 1500, 3000, 4400, 2200, 0]) {
       const before = bakes.n;
@@ -87,6 +91,87 @@ describe('the bands baked (terrain.ts BAND_BUDGET: the long island, 2026-11-10)'
     const { buildGround } = await import('./terrain.ts');
     const g = buildGround(await longest(), { renderer, stairs: false, bands: Infinity });
     expect(g.chunks()).toHaveLength(20);
+    g.dispose();
+  });
+});
+
+describe('each band baked once per real change (2026-11-11: a launch baked its 8 twice, the palette\'s then NH\'s)', () => {
+  // NH's textures (groundTex.ts, page-wide by URL: each test its own base), landed by hand
+  const loads: (() => void)[] = [];
+  const img = () => {
+    const on: Record<string, () => void> = {};
+    loads.push(() => on.load?.());
+    return { addEventListener: (k: string, f: () => void) => void (on[k] = f), removeEventListener() {}, style: {}, set src(_: string) {} };
+  };
+  beforeEach(() => {
+    loads.length = 0;
+    vi.stubGlobal('document', { baseURI: 'http://x/', createElementNS: img, createElement: img });
+  });
+  const land = async () => {
+    for (const f of loads.splice(0)) f();
+    await new Promise((r) => setTimeout(r, 0));
+  };
+  const bakes = { n: 0 };
+  const counting = { ...renderer, render: () => void bakes.n++ } as unknown as WebGLRenderer;
+  const launch = async (base: string, primed: boolean) => {
+    const { buildGround } = await import('./terrain.ts');
+    const { primeGround } = await import('./groundTex.ts');
+    if (primed) (primeGround(base), await land());
+    bakes.n = 0;
+    return buildGround(defaultLayout(), { renderer: counting, stairs: false, base });
+  };
+
+  it('a launch with its textures in (the launch asked for them): each band once, as it\'s built; frames after, none', async () => {
+    const g = await launch('http://a/', true);
+    expect(bakes.n).toBe(8);
+    g.near(0);
+    expect(bakes.n).toBe(8);
+    for (const z of [0, 0, 300, 138]) g.near(z);
+    expect(bakes.n).toBe(8);
+    g.dispose();
+  });
+  it('textures landing before the first frame: once, with them; after it: the palette\'s bake replaced, once', async () => {
+    const early = await launch('http://b/', false);
+    await land();
+    await early.ready;
+    early.near(0);
+    expect(bakes.n).toBe(8);
+    early.dispose();
+    const late = await launch('http://c/', false);
+    late.near(0);
+    expect(bakes.n).toBe(8);
+    await land();
+    await late.ready;
+    late.near(0);
+    late.near(0);
+    expect(bakes.n).toBe(16);
+    late.dispose();
+  });
+  it('a fields change re-bakes the bands it reaches; no change, none; the season\'s look all; a lost context all', async () => {
+    const g = await launch('http://d/', true);
+    g.near(0);
+    const l = defaultLayout(), codes = l.codes.slice();
+    codes[idx(3, 3)] = codeOf('grass', 0);
+    const { diffLayouts } = await import('#lib/layout/diff.ts');
+    const next = new Layout(codes, new Map(l.objects), l.homes), d = diffLayouts(l, next);
+    expect(d.chunks.length).toBeGreaterThan(0);
+    bakes.n = 0;
+    g.rebuild(next, d.chunks);
+    g.near(0);
+    // (the changed band and those either side of it with ground)
+    expect(bakes.n).toBeGreaterThan(0);
+    expect(bakes.n).toBeLessThanOrEqual(3);
+    bakes.n = 0;
+    g.rebuild(next, []);
+    g.look('summer');
+    g.near(0);
+    expect(bakes.n).toBe(0);
+    g.look('winter');
+    g.near(0);
+    expect(bakes.n).toBe(8);
+    g.restore();
+    g.near(0);
+    expect(bakes.n).toBe(16);
     g.dispose();
   });
 });

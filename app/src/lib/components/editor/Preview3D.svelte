@@ -325,6 +325,8 @@
             // (only when it changes: three's setPixelRatio sets the canvas's size, reallocating its buffers)
             const dpr = gesturing ? Math.min(dprFull, DPR_MOVING) : dprFull;
             if (dpr !== renderer.getPixelRatio()) renderer.setPixelRatio(dpr);
+            // (the ground's bakes due: terrain.ts bakes them for the frame that draws them)
+            ground.near(camZ);
             // (the e2e's logic mode: the frame's work done, nothing drawn: CI's software GL took seconds a frame)
             if (!st.noDraw) renderer.render(scene, camera);
             frames++;

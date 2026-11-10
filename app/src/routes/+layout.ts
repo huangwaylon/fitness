@@ -21,6 +21,8 @@ export const load: LayoutLoad = async ({ url, untrack }) => {
     // island finds them built as it mounts (layout/fieldsPrime.ts: one job, the mount's own call shares it, or starts
     // it if it runs first)
     void Promise.all([import('#lib/store/layout.svelte.ts'), import('#lib/layout/fieldsPrime.ts')]).then(([{ layout }, { primeFields }]) => primeFields(layout.current, version), () => {});
+    // and NH's ground textures (world3d/groundTex.ts): in as the ground is built, its bands baked once, with them
+    void import('#lib/components/world3d/groundTex.ts').then(({ primeGround }) => primeGround(), () => {});
   }
   if (readJson(localKV(), DEVICE.locale) !== 'en') return;
   await quiet(loadEnglish(), 'i18n.en');
