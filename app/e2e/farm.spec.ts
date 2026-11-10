@@ -64,6 +64,17 @@ test('starts bought at the shop’s かう; the farm menu at the bottom left: �
   await page.locator('[data-farm-field]').click();
   await expect(page.locator('[data-farm-count]')).toHaveText('3/40株');
   await expect(page.locator('[data-farm-group="growing"] li')).toHaveCount(3);
+  // the crops by name (the catch catalog loaded), never a raw key; the rows' text in the theme's own colour on its card
+  await expect(page.locator('[data-farm-group="growing"] li').first()).toContainText('トマト');
+  await expect(page.locator('dialog[open]').last()).not.toContainText('beach.name.');
+  const [fg, text] = await page.locator('[data-farm-group="growing"] li').first().evaluate((el) => {
+    const probe = el.appendChild(document.createElement('i'));
+    probe.style.color = 'var(--text)';
+    const want = getComputedStyle(probe).color;
+    probe.remove();
+    return [getComputedStyle(el).color, want];
+  });
+  expect(fg).toBe(text);
 });
 
 test('three days on: ripe, watered on the two days before it gives three; sold at the shop for 54 かいがら; the partner waters, never harvests', async ({ page, context }) => {

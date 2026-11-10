@@ -15,6 +15,7 @@
   import { t } from '#lib/i18n/index.ts';
   import { farmUi } from './farmUi.svelte.ts';
   import { farmSheet } from '../farm/open.svelte.ts';
+  import { loadNames } from './catchLine.ts';
 
   let open = $state(false);
   let root: HTMLElement | undefined = $state();
@@ -29,6 +30,10 @@
   const art = (c: Crop, src: FarmSrc) => `finds/${src === 'start' ? `${c}-start` : c}`;
   const name = (c: Crop, src: FarmSrc) => t(`beach.name.${src === 'start' ? `${c}-start` : c}`);
 
+  // the crops' names (the catch catalog, out of the island's first load) once the menu or the picker opens
+  $effect(() => {
+    if (open || farmUi.picker) void loadNames();
+  });
   // a sheet opening folds it (the picker too)
   $effect(() => {
     if (ui.sheets.length) open = farmUi.picker = false;

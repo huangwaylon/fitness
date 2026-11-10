@@ -2,6 +2,7 @@
   // 畑 (docs/farming.md "Playing"): my plants by where they are (収穫できる, 育成中 with the days left, 空き区画), today's
   // harvest and what it fetches, my plants against the cap, the partner's and the guest's folded, the rule and where
   // the starts are sold. Kanji (a sheet's copy). Read-only: a plot's tap on the island does the farming.
+  import '#lib/i18n/catch.ts'; // the crops' names (their own catalog, out of the island's first load)
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -87,15 +88,15 @@
 
 <style>
   .fs-body { flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; margin: 0 -8px; padding: 6px 8px var(--body-pad); display: grid; gap: 10px; align-content: start; }
-  .card { padding: 12px 14px; border-radius: var(--r-card, 18px); background: var(--c-cream); }
+  .card { padding: 12px 14px; border-radius: var(--r-card, 18px); background: var(--card); color: var(--text); }
   .sum p { margin: 0; font: 700 var(--fs-body)/1.5 var(--font-ui); }
-  .sum .cap { font-weight: 600; color: var(--c-ink-soft, inherit); }
+  .sum .cap { font-weight: 600; color: var(--text-soft); }
   .h { margin: 6px 2px 0; font: 700 var(--fs-s)/1.3 var(--font-ui); }
   .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-  .row { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 12px; background: var(--c-cream); line-height: 0; }
+  .row { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 12px; background: var(--card); color: var(--text); line-height: 0; }
   .nm { font: 700 var(--fs-body)/1.2 var(--font-ui); }
   .meta { margin-left: auto; display: flex; gap: 8px; font: 600 var(--fs-s)/1.2 var(--font-ui); }
-  .wet { color: var(--c-sea-text, #2f6f9f); }
+  .wet { color: var(--text-soft); }
   .note { margin: 0 2px; font: 500 var(--fs-s)/1.5 var(--font-ui); }
   .others summary { cursor: pointer; font: 700 var(--fs-s)/2 var(--font-ui); }
 </style>
