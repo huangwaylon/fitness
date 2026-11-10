@@ -16,8 +16,11 @@ phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), neve
   sheets runs per frame.
 
 ## Measuring
-- **Launch, an A/B on the desktop:** `npm run perf:start -- <port> [runs] [webkit|chromium]` against
-  `node scripts/serve-build.ts <port>` (cold, or `WARM=1`); the how-to: [testing.md](testing.md#load-budget).
+- **Launch, an A/B on the desktop:** timing is never CI's (the build's budgets are bytes only). `npm run perf:start --
+  <port> [runs] [webkit|chromium]` against `node scripts/serve-build.ts <port>`, cold or `WARM=1` (`THROTTLE=4` for
+  Chromium; what each run measures and the medians: `scripts/perf-start.ts`'s header). The phone's numbers: the iOS
+  Simulator's warm launches (`npm run ios:check -- --boots 8 --url 'http://127.0.0.1:<port>/?demo&checks=0'`) and the
+  phones' own `perf.boot`.
 - **Sheets:** perf-sheets.ts (tap → dialog shown, content ready, longest frame), interleaved A/B: at the
   `probes` tag ([testing.md](testing.md#run-it-locally)).
 - **The phone's engine:** `npm run ios:check` and `ios:indoor` on the iOS Simulator
@@ -27,6 +30,9 @@ phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), neve
   RTT median 18–21 ms, partner one-way median 19 ms, a kept intent one way 21–22 ms and its ack 31–33 ms; a notify
   POST → `changed` on both phones median 53–70 ms (the test relay); tap → the partner's villager sets off median
   34–40 ms (`RELAY_E2E=1` sync-harness).
+- **The record's size:** `compact.test.ts`'s synthetic year of three people: 49,215 rows, 5.16 MB of JSON
+  ([backend](../backend.md#the-record) "Snapshot size"). `npm run bench` (year 3): a poll plus one row → the view in
+  3–4 ms, 2–3 ms without the meal log's rows.
 - **Traps:**
   1. Headless Chromium draws with SwiftShader, which has no KHR_parallel_shader_compile: its "2 s long task" is
      shader compiles in software. For Chromium timings use `--use-angle=metal --enable-gpu --ignore-gpu-blocklist`.

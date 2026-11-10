@@ -85,16 +85,13 @@ keys: the operator. No phone reads the log, the guest's events included. `/healt
 own token. Retention 30 days; `npm run logs -- purge --before … [--person A]` deletes sooner.
 
 ## The phone (`sync/log.ts`)
-- `log()` only pushes onto a ring: no I/O, no JSON beyond the payload's check, never in the render loop (the frames
-  sample is its own rAF loop of 5 s, once a load). The ring: 300 events, evicting the oldest of the lowest level
-  first (debug, info, warn), keeping the 15 before each error; caps: 600 a session (50 errors; a repeated message
-  folds into `n`), 1,500 a day on the phone; dropped ones counted (`log.drop`).
-- Persisted to `localStorage` (`island.log`, ≤ 24 KB: errors and warnings first, then the newest 100) 2 s after a
-  change and at once when hidden, on `pagehide` and before the app reloads itself; read back on the next load (its
-  events go as a batch of their own session). On a quota error the log's key goes first, never the user's data.
-- Flushed 30 s after the first event (5 s after an error), at 50 events, and when hidden (`fetch` with `keepalive`,
-  one batch ≤ 32 KB in flight). A batch stays stored until the relay acks its id; a re-sent one is a `dup`. Failure:
-  backoff 5 s → 5 min; offline: until `online`. A capped day (`closed`): errors only until midnight UTC.
+- `log()` only pushes onto a bounded ring (no I/O, never in the render loop; the frames sample is its own 5 s of rAF
+  once a load), which keeps the trail before each error; per-session and per-day caps, what's dropped counted
+  (`log.drop`). The ring's size, the caps, the persisting and the flush timings: `sync/log.ts`'s header.
+- Persisted to `localStorage` (`island.log`) when idle and at once when the page goes; read back on the next load. On
+  a quota error the log goes first, never the user's data.
+- Flushed in batches (`keepalive` when hidden), each stored until the relay acks its id (a re-sent one is a `dup`); a
+  capped day (`closed`): errors only until midnight UTC.
 - Off in the demo and under automation (`navigator.webdriver`, unless `?log=on`). Unpaired, events wait for a key;
   pairing as someone else clears them.
 - `/api` requests carry `rid` (per request) and `sid` (per load) in the body; the relay logs them on `req` and echoes
@@ -103,24 +100,19 @@ own token. Retention 30 days; `npm run logs -- purge --before … [--person A]` 
 ## The relay
 - `POST /log` (the Worker, `logRoute.ts`): origin, size (64 KB), **the key checked before any request to the object**
   (a stranger's flood never spends Durable Object requests), and a role whose day is capped is answered by the Worker
-  until midnight; then the text to `IslandLog.ingest` (parsing on the object's budget). `LOG_OFF=1` (a var): acked,
-  nothing kept.
-- `/api`: the Worker times the record's answer (wall time: in a Worker the clock moves only across I/O, so it is the
-  round trip to the object, its queue and its work); the record returns its reply with a small `meta`
-  (`reqMeta.ts`: enums and counts) and the Worker sends a `req` event by RPC in `ctx.waitUntil`, never in the reply's
-  path. An object still on the old code (no `apiMeta`, the seconds after a deploy) is asked the plain way.
-- The room (`room.close`, `room.full`, `ws.hello`), the cron (`cron.wx`, `cron.compact`, `cron.backup`) and the admin ops (`admin`) send theirs the same way,
-  best effort.
-- **Caps** (UTC day, `caps` table): phones 1,000 info/warn and 200 errors per role; the relay 4,000 and 500; 8,000 in
-  all (the hard guard on the account's rows written). Counted in memory, written by a timer within 10 s
-  (`CAPS_SAVE_MS`: a burst shares one write; a restart in between loses those seconds' counts), at once when one
-  fills. Over a cap: dropped, `log.cap` once. A `req` costs the log ~1 row (was 3: its own and two caps rows).
+  until midnight; then the text to `IslandLog.ingest`. `LOG_OFF=1` (a var): acked, nothing kept.
+- `/api`: the Worker times the record's answer (`storeRoute.ts`: the round trip to the object, its queue and its
+  work); the record returns a small `meta` (`reqMeta.ts`) and the Worker sends a `req` event by RPC in
+  `ctx.waitUntil`, never in the reply's path.
+- The room (`room.close`, `room.full`, `ws.hello`), the cron (`cron.wx`, `cron.compact`, `cron.backup`) and the admin
+  ops (`admin`) send theirs the same way, best effort.
+- **Caps** (UTC day, `LOG_CAPS`: per role and the relay, 8,000 in all, the hard guard on the account's rows written;
+  counted in memory, written within `CAPS_SAVE_MS`): over a cap, dropped, `log.cap` once. The tables and the
+  retention: `relay/src/log.ts`'s header.
 - `POST /stt` (`sttRoute.ts`): a person's key in `Authorization`, a WAV ≤ 340 KB to Workers AI and the text back;
-  nothing of either kept. A role's calls a UTC day: `STT_DAY_MAX` (300, the `caps` table's `stt:<role>` rows, not
-  in `all`), then 429. Off: `STT_OFF = "1"` in `[vars]` and deploy (503).
-- **Tables:** `log` (primary key `id`, no other index), `batches (b, ts)` (two days), `caps (day, bucket, n)`.
-- **Retention:** the object's alarm, daily: events older than 30 days (5,000 a chunk, 4 chunks; a backlog goes on
-  hourly), batch ids and caps older than 2 days.
+  nothing of either kept. A role's calls a UTC day: `STT_DAY_MAX` (300), then 429. Off: `STT_OFF = "1"` (503).
+- **Tables:** `log` (primary key `id`, no other index), `batches`, `caps`.
+- **Retention:** the object's daily alarm: events older than 30 days, batch ids and caps older than 2 days.
 
 ## Reading
 From `relay/`; the keys from `KEY_A`/`KEY_B`, `KEYS_FILE`, else `~/.config/island-fund/keys` (production) or
@@ -139,9 +131,8 @@ npm run logs -- --test ...                                 # the test relay
 
 ### Investigating (a checklist)
 1. `npm run logs -- stats`: errors in the last 1 h / 6 h, `unavailable` answers, caps, the oldest event, today's (UTC)
-   rows written by object (`rowsLog`, `rowsStore`, `rowsRoom`: the log's own by its cursors, the record's from each
-   `req`'s `rw`, the room's from `ws.hello` and `room.close`) and `rowsPct` of the Free plan's 100k (the alert warns past 50 %; `report`
-   prints the record's by action). A `req` the relay's capped day dropped isn't counted.
+   rows written by object (`rowsLog`, `rowsStore`, `rowsRoom`: how each is counted, `relay/src/log.ts`'s header) and
+   `rowsPct` of the Free plan's 100k (the alert warns past 50 %; `report` prints the record's by action).
 2. `npm run logs -- report --since 1d`: what fails, for whom, since which build.
 3. `npm run logs -- --since 6h --level warn`, then `--sid` of a session in trouble (its whole story) and `--rid` of a
    failed request (the relay's `req`: its status, rule, time).
