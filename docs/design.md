@@ -691,8 +691,8 @@ key (pairing: [runbook "Pair a phone"](ops/runbook.md#10-pair-a-phone)). `?demo&
   ふたりの もの。」 in place of the shop), the ずかん, けんこう's かつどう (either member's, goals read-only) and everyone's
   meals. Never a からだ figure: the record leaves them out of its snapshot. せってい as ours, with a line saying it's
   visiting. ききみみ: the members' games as their summaries.
-- **What it does:** everything on the island a member does (walks, catches, digs, shakes, phrases, high-fives, the tent
-  and its own house, the editor, watering, wishes, the weather, the shop, the museum, K.K., the board, ききみみ), its
+- **What it does:** everything on the island a member does (walks, catches, digs, shakes, phrases, high-fives, every
+  home's room and its own house's look, the editor, watering, wishes, the weather, the shop, the museum, K.K., the board, ききみみ), its
   finds credited in the shared ずかん (「（おきゃくさん）」). It earns and spends no ベル, sets none of our goals and writes
   neither the wedding board nor a trip's notes (the record refuses those).
 - **Its villager:** always there, as the members' are: where its last walk left it, asleep while its app is closed
@@ -708,7 +708,7 @@ key (pairing: [runbook "Pair a phone"](ops/runbook.md#10-pair-a-phone)). `?demo&
 `layout/`, `store/layout.svelte.ts`: the outdoors is data anyone of us can change: NH's tiles on a grid, each grass,
 sand, a path, a river, a pond or the sea, on cliff tiers, with every tree, bush, rock, lamp, piece of furniture, the
 bridge, the stairs and the homes an object on its tiles. The contract is [island-layout.md](island-layout.md). Each
-home is its owner's (its look and its room); anyone changes the outdoors, in /editor only ([Decorating](#decorating)).
+home's look is its owner's, its room anyone's; anyone changes the outdoors, in /editor only ([Decorating](#decorating)).
 
 ### Decorating
 
@@ -772,7 +772,7 @@ out in front, facing out, on every phone). The homes' rooms are the same system.
   Anyone's tap on the one playing stops it for all.
 - **もようがえ** (the foot's green button): the grid on the floor and a tray: かぐ (the starter set), ラグ (all NH's 209),
   かべかけ, 天井 (ceiling pieces found or bought), 生き物 (each ずかん catch's tank: NH's critter put down indoors), みつけた
-  (furniture found in presents), かった (bought in the shop), ジム, かべがみ (NH's 306), ゆか (209), and ✓ おわる with the count
+  (furniture found in presents), かった (bought in the shop: my own), ジム, かべがみ (NH's 306), ゆか (209), and ✓ おわる with the count
   (「3/60」). A piece goes down as a ghost on the free spot nearest my villager, its footprint green or red with the
   reason; ↻ まわす turns it; ✓ 置く places it; 🗑 片付ける stores it (取り消す for 5 s); ✕ やめる puts it back. At most 60
   pieces a room, on whole tiles, off the door's two, not over a piece or a villager; a rug lies under furniture.
@@ -781,6 +781,12 @@ out in front, facing out, on every phone). The homes' rooms are the same system.
   (NH's surfaces): small things go one a tile on a surface's top, and moving the table carries them; not put away with
   things on it. The island's tables outdoors follow the same rules (island-layout.md "Table tops"). **On the walls**
   (かべかけ): a piece hangs on a wall's grid.
+- **Whose room:** anyone arranges any room, the guest too (2026-11-10): places, moves, turns and puts away pieces, the
+  wallpaper, the floor, the rugs, the ceiling, the size and the lights; only a home's look (いえを かえる) stays its
+  owner's. The tray is the **editor's**: the starter set, the island's finds and catches (everyone's) and their own buys.
+  A piece is a catalogue entry, not a count: placing one spends nothing and putting one away gives nothing back, so a
+  piece someone else put down is just taken out of the room (its buyer still has it). Two editing at once merge as
+  every decor op (decisions: *Decor is a last-writer-wins map*); 取り消す is each phone's own.
 - **Loading:** the furniture's models are kept page-wide as loaded (the 48 last used that no room uses), so a room comes
   back with no fetch or decode; at rest the room draws only a blink.
 - **Sit, lie and switch** (`tent/seats.ts`; the museum's benches too): a Chair is sat on, a Bed lain on: a tap walks my
@@ -1017,8 +1023,10 @@ furniture for the rooms. Each person's own pocket and かいがら, the guest's 
   ([backend](backend.md#events)).
 - **Prices:** NH's Bells ÷ 20 both ways (a sell at least 3): a sea bass 20, a koi 200, a whale shark 650, wood 3. A
   piece NH never sells (DIY, events, Nook Miles, Nook Shopping, the special characters', the gyroids) is **made up**: 4 ×
-  its NH sell price (NH's own sell : buy) ÷ 20, at least 3: a gyroid 166, Flick's koi model 2,400. The stock: 1,837
-  pieces (877 made up), every room model up to 100,000 Bells but the starter set, the rugs and the tanks; a median 190.
+  its NH sell price (NH's own sell : buy) ÷ 20, at least 3: a gyroid 166, Flick's koi model 2,400. **At most 10,000**:
+  a dearer piece costs 10,000 (13 pieces: the grand piano, the throne, the golden toilet, the yacht…). The stock: 1,902
+  pieces (915 made up), every room model but the starter set, the rugs and the tanks; a median 190. (Until 2026-11-10 a
+  100,000-Bell cap left the 65 dearest out: golden furniture, vehicles, castle and plaza pieces, big critter models.)
 - **The building:** NH's Nook's Cranny, one to an island, moved and turned in the editor, never removed
   ([island-layout.md](island-layout.md#the-islands-buildings)); the only way in.
 

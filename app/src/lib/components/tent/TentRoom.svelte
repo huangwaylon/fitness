@@ -64,7 +64,8 @@
   import { staticUrl } from '#lib/staticUrl.ts';
 
   // `home`: whose home this is (docs/island-layout.md "Homes"): ウェイ's the tent's room (as it always was), うめ's house's
-  // (`sc: 'u'`), the guest's (`v`); its owner arranges it (the tent's: all three), anyone may come in
+  // (`sc: 'u'`), the guest's (`v`); anyone comes in and arranges it (2026-11-10: each of us any room, with what they
+  // have: the starter set, the island's finds, their own buys), its look its owner's
   let { view, home = 'A' }: { view: WeekView; home?: Who } = $props();
   // svelte-ignore state_referenced_locally
   const room = rooms[home];
@@ -103,8 +104,6 @@
   const send = (i: Intent) => relay?.send(homeSc && (i.kind === 'tent' || i.kind === 'drag') ? ({ ...i, sc: homeSc } as Intent) : i) ?? false;
   /** Whether a relayed tent or drag is about this home. */
   const here = (m: { sc?: string }) => (m.sc ?? undefined) === homeSc;
-  // svelte-ignore state_referenced_locally
-  const canEdit = home === 'A' || view.viewer === home;
   /** いえを かえる: a home's look is its owner's alone. */
   // svelte-ignore state_referenced_locally
   const mine = view.viewer === home;
@@ -467,7 +466,7 @@
         }
         return;
       }
-      if (p && meta?.lt && canEdit) {
+      if (p && meta?.lt) {
         const on = (p.l ?? 1) !== 1;
         room.switchLight(p.id, on);
         cue(on ? 'toggle-on' : 'toggle-off');
@@ -829,7 +828,7 @@
     {#if !editing}<NavButton kind="back" text={t('tent.back')} onclick={leave} sfx="self" />{/if}
   </div>
   {#if home !== 'A'}<p class="whose" data-guard data-home={home}>{t('tent.whose', { name: nameOf(home) })}</p>{/if}
-  {#if !editing && canEdit}
+  {#if !editing}
     <!-- NH's room light switch: the room's own light on or off (the lamps that are on light it then) -->
     <button type="button" class="switch" class:off={!room.lights} data-tent-lights={room.lights ? 'on' : 'off'} data-sfx="self"
       aria-label={t('tent.lights')} aria-pressed={room.lights}
@@ -856,7 +855,7 @@
         <span>{t('tent.homeLook')}</span>
       </button>
     {/if}
-    {#if !editing && canEdit}
+    {#if !editing}
       <button type="button" class="edit" data-tent-edit-open data-sfx="open" onclick={() => (editing = true)}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h16v5H4zM6 13V9a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4M6 18v2M18 18v2" /></svg>
         <span>{t('tent.edit')}</span>

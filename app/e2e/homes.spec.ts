@@ -1,6 +1,6 @@
 // The homes (docs/island-layout.md "Homes"): うめ's house and the guest's are rooms like the tent's (the same room, its
-// own pieces: `sc` u and v), each arranged by its owner alone (the tent's by all three), anyone may come in; and each
-// owner changes their home's look (いえを かえる: NH's houses, the tents), which every phone's island holds live. The demo's
+// own pieces: `sc` u and v), anyone comes in and arranges any of them (2026-11-10: was its owner's alone, the tent's
+// all three's); and each owner changes their home's look (いえを かえる: NH's houses, the tents), which every phone's island holds live. The demo's
 // players are tabs of one browser (`?demo&as=B`), as two phones over the relay.
 import { expect, test, type Browser, type Page } from './fixtures.ts';
 import { newRecord } from './record.ts';
@@ -17,7 +17,7 @@ async function openRoom(page: Page, as: 'A' | 'B' | 'G', home: 'A' | 'B' | 'G') 
   await expect(page.locator(`[data-room-home="${home}"]`)).toBeVisible();
 }
 
-test('うめ’s house is hers to arrange: her piece stays in her room, not the tent’s; the guest comes in, sees it, can’t arrange it', async ({ context }) => {
+test('うめ’s house: her piece stays in her room, not the tent’s; the guest comes in, sees it and may arrange it (its look not)', async ({ context }) => {
   const b = await context.newPage();
   await openRoom(b, 'B', 'B');
   await expect(b.locator('[data-home="B"]')).toContainText('の いえ');
@@ -33,13 +33,37 @@ test('うめ’s house is hers to arrange: her piece stays in her room, not the 
   const a = await context.newPage();
   await openRoom(a, 'A', 'A');
   expect(await tent(a, (t) => t.pieces().map((p) => p.id))).not.toContain(mine[0].id);
-  // the guest in うめ's house: the piece is there, nothing to arrange or switch
+  // the guest in うめ's house: the piece is there; it may arrange the room and switch its light, never change its look
   const g = await context.newPage();
   await openRoom(g, 'G', 'B');
   await expect.poll(() => tent(g, (t) => t.pieces().map((p) => p.id))).toContain(mine[0].id);
-  await expect(g.locator('[data-tent-edit-open]')).toHaveCount(0);
-  await expect(g.locator('[data-tent-lights]')).toHaveCount(0);
+  await expect(g.locator('[data-tent-edit-open]')).toBeVisible();
+  await expect(g.locator('[data-tent-lights]')).toBeVisible();
   await expect(g.locator('[data-home-look]')).toHaveCount(0);
+});
+
+test('ウェイ arranges うめ’s house while she is in it: her phone shows his piece at once, and hers his', async ({ context }) => {
+  const b = await context.newPage();
+  await openRoom(b, 'B', 'B');
+  const a = await context.newPage();
+  await openRoom(a, 'A', 'B');
+  await expect(a.locator('[data-home-look]')).toHaveCount(0);
+  expect(await tent(a, (t) => t.fill([t.starter()[0]]))).toBe(1);
+  const his = (await tent(a, (t) => t.pieces()))[0];
+  await b.bringToFront();
+  await expect.poll(() => tent(b, (t) => t.pieces().map((p) => p.id))).toEqual([his.id]);
+  // and she puts one down beside it from her tray
+  await b.locator('[data-tent-edit-open]').click();
+  await b.waitForFunction(() => (window as unknown as { __tent: { still(): boolean } }).__tent.still());
+  await b.locator('[data-tent-item="f4081"]').click();
+  await b.locator('[data-act="place"]').click();
+  await expect.poll(() => tent(b, (t) => t.pieces().length)).toBe(2);
+  await a.bringToFront();
+  await expect.poll(() => tent(a, (t) => t.pieces().length)).toBe(2);
+  // the tent's room is another room: nothing went there
+  const t = await context.newPage();
+  await openRoom(t, 'A', 'A');
+  expect(await tent(t, (x) => x.pieces().map((p) => p.id))).not.toContain(his.id);
 });
 
 test('いえを かえる: うめ picks a Japanese house for hers; the other phone’s island holds the new look live; the guest’s own is the guest’s', async ({ context }) => {
@@ -190,13 +214,24 @@ test('うめ and the guest arrange the tent on the record; ウェイ’s phone o
   await a.context().close();
 });
 
-test('ウェイ can’t arrange うめ’s house: no tray in there, and the record refuses a room op of hers from his phone', async ({ browser }) => {
+test('ウェイ arranges うめ’s house on the record (never its look); her phone opening later has his piece', async ({ browser }) => {
   const rec = newRecord();
-  const page = await phone(browser, rec, 'A', 'B');
-  await expect(page.locator('[data-tent-edit-open]')).toHaveCount(0);
-  await expect(page.locator('[data-home-look]')).toHaveCount(0);
-  const at = rec.now();
-  expect(rec.event('A', 'decor', { sc: 'u', id: 'dpiece123', at, item: 'f4081', x: 2, z: 3, f: 0, p: at })).toEqual({ ok: false, error: 'forbidden' });
-  expect(rec.decor()).toEqual([]);
-  await page.context().close();
+  const a = await phone(browser, rec, 'A', 'B');
+  await expect(a.locator('[data-home-look]')).toHaveCount(0);
+  const p = await placeMoveTurn(a, rec, 'A', 'B');
+  expect(rec.event('A', 'decor', { sc: 'h', id: 'hB', at: rec.now(), m: 'log' })).toEqual({ ok: false, error: 'forbidden' });
+  await a.context().close();
+  const b = await phone(browser, rec, 'B', 'B');
+  await expect.poll(() => room(b, (t) => t.pieces().map(({ id, x, z, f, who }) => ({ id, x, z, f, who })))).toEqual([{ ...p, f: 3, who: 'A' }]);
+  await b.context().close();
+});
+
+test('the guest arranges ウェイ’s room on the record; his phone opening later has its piece', async ({ browser }) => {
+  const rec = newRecord();
+  const g = await phone(browser, rec, 'G', 'A');
+  const q = await placeMoveTurn(g, rec, 'G', 'A');
+  await g.context().close();
+  const a = await phone(browser, rec, 'A', 'A');
+  await expect.poll(() => room(a, (t) => t.pieces().map((x) => [x.id, x.who]))).toEqual([[q.id, 'G']]);
+  await a.context().close();
 });
