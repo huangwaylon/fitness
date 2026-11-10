@@ -2,7 +2,7 @@
 // down by dragging across the plan go out as layout ops at once; the phone's island draws them, the fence's pieces
 // joined (its ends end pieces, its middle straights, turned along the run) and the crops as sprouts on their soil; and my
 // villager's walk across the fence goes round its end, never through it (layout/nav.ts: a fence takes its tile).
-import { expect, test, type Page } from './fixtures.ts';
+import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { camTo, islandUp, quiet, tapWorld } from './island.ts';
 
 const DATE = '2026-11-04T12:00';
@@ -28,13 +28,12 @@ const kinds = (page: Page, k: string) => page.evaluate((k) => [...(window as unk
 const FENCE: [number, number][] = [[6, 11], [6, 13], [6, 15]];
 const BOX = { x0: 90, x1: 120, z0: 240, z1: 390 };
 
-test('a fence run and a tomato patch put down in the editor: drawn joined on the island, and the walk goes round the fence', async ({ context }) => {
-  test.slow();
+/** The phone (B) up, and the editor open beside it in the same demo (A): a run of country fence put down by a drag. */
+async function withFence(context: BrowserContext): Promise<{ phone: Page; ed: Page }> {
   const phone = await context.newPage();
   await phone.goto(`?demo&as=B&date=${DATE}`);
   await islandUp(phone);
   await phone.waitForFunction(() => (window as unknown as { __layout?: unknown }).__layout);
-
   const ed = await context.newPage();
   await ed.setViewportSize({ width: 1440, height: 900 });
   await ed.goto(`editor/?demo&preview=0&date=${DATE}`);
@@ -45,6 +44,11 @@ test('a fence run and a tomato patch put down in the editor: drawn joined on the
   await dragTiles(ed, FENCE);
   await expect.poll(() => kinds(ed, 'fence-country')).toHaveLength(5);
   expect((await kinds(ed, 'fence-country')).map(([, z]) => z).sort()).toEqual([11, 12, 13, 14, 15]);
+  return { phone, ed };
+}
+
+test('a fence run and a tomato patch put down in the editor: drawn on the island, the fence joined', async ({ context }) => {
+  const { phone, ed } = await withFence(context);
   // a 2 × 2 patch of tomatoes (across, then along: every tile beside the last)
   await ed.locator('[data-kind="crop-tomato"]').click();
   await dragTiles(ed, [[7, 19], [8, 19], [8, 20], [7, 20]]);
@@ -71,8 +75,14 @@ test('a fence run and a tomato patch put down in the editor: drawn joined on the
   ]);
   // the tomatoes are sprouts today (planted today: stage 0), each on its soil
   await expect.poll(async () => (await models('crop-tomato')).sort()).toEqual(Array(4).fill('garden/crop-tomato-0'));
+});
 
-  // my villager west of the fence, a tap east of it: the way goes round the run's end, never through its tiles
+test('my villager’s walk across a fence run goes round its end, never through it', async ({ context }) => {
+  const { phone, ed } = await withFence(context);
+  await ed.close();
+  await phone.bringToFront();
+  await expect.poll(() => phone.evaluate("window.__layout.count('fence-country')")).toBe(5);
+  // my villager west of the fence, a tap east of it
   await quiet(phone);
   await camTo(phone, 300);
   const from: [number, number] = [45, 315], to: [number, number] = [165, 315];
