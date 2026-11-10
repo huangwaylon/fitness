@@ -7,7 +7,7 @@ import type { Exhibit, Kit, Screen } from './engine.ts';
 import { ART_SPOTS, DAIS, PANELS, PANEL_H, PANEL_T, plinthOf, type ArtOnShow } from './art.ts';
 import { batcher } from './geometry.ts';
 import type { Card, Pool } from './bake.ts';
-import { GAIN, POOL, TINT, lookAt } from './look.ts';
+import { GAIN, POOL, TINT, WALL_GLOW, lookAt } from './look.ts';
 import type { Rect, RoomId } from './plan.ts';
 import M from './models.json' with { type: 'json' };
 
@@ -24,28 +24,25 @@ export function buildGallery(kit: Kit, shown: readonly ArtOnShow[], room: RoomId
   const group = new Group();
   const geos: BufferGeometry[] = [];
   // (the kit's materials: the museum lets go of them)
-  // (NH's damask red, as bright as the walls: look.ts GAIN; each panel its own, to fade alone)
-  const red = () => {
-    const m = kit.lambert({ map: kit.tex('hall-red', [4, 1.4]) });
-    m.color.set(TINT.art.wall).multiplyScalar(GAIN.art.wall);
-    return m;
-  };
-  const capLook = { color: 0xc9a24a };
-  const foot = red();
+  // (NH's damask red, as bright as the walls: look.ts GAIN, WALL_GLOW; one red and one gold for every panel: a panel
+  // fading gets its own copies then, engine.ts screenFade)
+  const red = kit.lambert({ map: kit.tex('hall-red', [4, 1.4]) });
+  red.color.set(TINT.art.wall).multiplyScalar(GAIN.art.wall);
+  red.emissive.setHex(WALL_GLOW.art ?? 0);
+  const gold = kit.lambert({ color: 0xc9a24a });
   const marble = kit.lambert({ map: kit.tex('marble', [0.5, 0.5]), color: 0xf0e8dc });
   const wood = kit.lambert({ color: 0x5a3a27 });
   const batch = batcher(), at = new Matrix4();
-  // each panel its own (its materials too): one hiding my villager fades out with its paintings (engine.ts screens)
+  // each panel a screen of its own: one hiding my villager fades out with its paintings (engine.ts screens)
   const screens: (Screen & { objs: Object3D[] })[] = panels.map((r) => {
     const w = r.x1 - r.x0, mx = (r.x0 + r.x1) / 2, mz = (r.z0 + r.z1) / 2;
-    const body = new Mesh(new BoxGeometry(w, PANEL_H, PANEL_T), red());
+    const body = new Mesh(new BoxGeometry(w, PANEL_H, PANEL_T), red);
     body.position.set(mx, PANEL_H / 2, mz);
     // a gold rail along its top (a little proud, so no face shares the panel's top)
-    const rail = new Mesh(new BoxGeometry(w + 1, 1.2, PANEL_T + 1), kit.lambert(capLook));
+    const rail = new Mesh(new BoxGeometry(w + 1, 1.2, PANEL_T + 1), gold);
     rail.position.set(mx, PANEL_H + 0.6, mz);
-    body.userData.ownFade = rail.userData.ownFade = true;
     // (its foot, while it's faded out)
-    const kick = new Mesh(new BoxGeometry(w - 0.4, KICK, PANEL_T + 0.4), foot);
+    const kick = new Mesh(new BoxGeometry(w - 0.4, KICK, PANEL_T + 0.4), red);
     kick.position.set(mx, KICK / 2, mz);
     kick.visible = false;
     group.add(body, rail, kick);
@@ -81,6 +78,13 @@ export function buildGallery(kit: Kit, shown: readonly ArtOnShow[], room: RoomId
       washes.push({ x: sp.x, y: sp.y + 0.2 * h, z: sp.z + 0.1, w: w * 1.4, h: h * 1.25, yaw: sp.yaw });
       pools.push({ x: sp.x, z: sp.z + 10, rx: w * 0.6 + 4, rz: 9, color: POOL.art, at: 0.7 });
     }
+  }
+  // two pools up the aisle between the panels (the room's middle: lit, not a dark slot)
+  if (panels.length) {
+    const mx = (Math.min(...panels.map((p) => p.x0)) + Math.max(...panels.map((p) => p.x1))) / 2;
+    const ax0 = Math.max(...panels.filter((p) => p.x1 <= mx).map((p) => p.x1)), ax1 = Math.min(...panels.filter((p) => p.x0 >= mx).map((p) => p.x0));
+    const z0 = Math.min(...panels.map((p) => p.z0)), z1 = Math.max(...panels.map((p) => p.z1));
+    if (Number.isFinite(ax0) && Number.isFinite(ax1)) for (const k of [0.3, 0.75]) pools.push({ x: (ax0 + ax1) / 2, z: z0 + k * (z1 - z0), rx: (ax1 - ax0) / 2 + 6, rz: 16, edge: 0.3, color: POOL.art, at: 0.8 });
   }
   const wash = washes.length ? kit.cards('wash', washes) : null;
   if (wash) group.add(wash.mesh);

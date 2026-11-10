@@ -3,8 +3,8 @@
 // (Khronos PBR Neutral: NH's saturated hues kept, where ACES turns yellows and AgX greys them), its sky over a warm
 // bounce (walls lit near the floor's level, not half of it), its key from the upper front left, its background (a
 // deep tone of the room, never the old near-black void) and the strengths of its baked light (bake.ts), lamps, wash
-// cards and tank glow. Night: the lamps take over (NIGHT: the room dimmer, its pools and halos brighter, amber; the
-// tanks light the aquarium). Also the materials' tints in place of the old dark ones, the exhibits' self-light, and a
+// cards and tank glow. Night: the lamps take over (NIGHT: the room dimmer, its pools and halos brighter, amber, what's
+// outside it dark; the tanks light the aquarium). Also the materials' tints in place of the old dark ones, the exhibits' self-light, and a
 // rough screen-brightness estimate the tests hold the table to (look.test.ts). The engine (engine.ts) applies it.
 import { Color, NeutralToneMapping, type ToneMapping } from 'three';
 import type { Wing } from './plan.ts';
@@ -35,6 +35,8 @@ export interface Look {
   /** The floors' and walls' colour over their tints (sRGB hex: white by day, amber at night, so the pools and the
    *  walls' uplight read as lamplight). */
   tint: number;
+  /** What lies outside the room (the doorways' cards, the floor past its front edge), a share of its day colour. */
+  out: number;
 }
 
 /** The key's position (its target the origin): more frontal than the rooms', so the camera-facing walls and the
@@ -42,12 +44,12 @@ export interface Look {
 export const KEY = [-60, 220, 180] as const;
 const MAX_EXPOSURE = 1.15;
 
-const base = { lm: 1.6, lamp: 0.6, cards: 1, glow: 1, tint: 0xffffff };
+const base = { lm: 1.6, lamp: 0.6, cards: 1, glow: 1, tint: 0xffffff, out: 1 };
 /** Each wing's look by day (the lighting proposal's table). */
 export const LOOK: Record<Wing, Look> = {
   hall: { exposure: 1.1, sky: 0xfff4e4, ground: 0xd8c0a0, hemi: 2.2, amb: 0xfff0dc, ambI: 0.55, key: 0xfff2dc, keyI: 0.9, bg: 0xb09474, ...base },
   fossil: { exposure: 1.1, sky: 0xfff0dc, ground: 0xc4a882, hemi: 2.1, amb: 0xfff0dc, ambI: 0.55, key: 0xffe8c8, keyI: 0.85, bg: 0x967a5c, ...base },
-  art: { exposure: 1.12, sky: 0xfff6ea, ground: 0xc8b098, hemi: 2.0, amb: 0xfff2e2, ambI: 0.5, key: 0xfff4e6, keyI: 0.8, bg: 0x7c4a3a, ...base },
+  art: { exposure: 1.15, sky: 0xfff6ea, ground: 0xc8b098, hemi: 2.4, amb: 0xfff2e2, ambI: 0.6, key: 0xfff4e6, keyI: 0.85, bg: 0xa87460, ...base, cards: 1.6 },
   fish: { exposure: 1.05, sky: 0xdfeaff, ground: 0x6a86a8, hemi: 1.7, amb: 0xd6e6ff, ambI: 0.45, key: 0xeef4ff, keyI: 0.55, bg: 0x22507a, ...base, lm: 2.4 },
   sea: { exposure: 1.05, sky: 0xd4e4ff, ground: 0x5a7898, hemi: 1.6, amb: 0xd6e6ff, ambI: 0.45, key: 0xeef4ff, keyI: 0.5, bg: 0x0c2034, ...base, lm: 2.4 },
   bug: { exposure: 1.0, sky: 0xfff6e0, ground: 0x7a9a5a, hemi: 2.0, amb: 0xfff0dc, ambI: 0.35, key: 0xfff4dc, keyI: 1.4, bg: 0x41603f, ...base }
@@ -67,7 +69,7 @@ export const TINT: Record<Wing, { floor: number; wall: number; ceil?: number }> 
 /** Each wing's floors and walls lifted over their textures' own darkness (a multiply over 1 on the tint, linear: the
  *  aquarium's dark checker, the gallery's walnut, the fossils' stone), so a room reads as lit, not as its texture. */
 export const GAIN: Record<Wing, { floor: number; wall: number }> = {
-  hall: { floor: 1.3, wall: 1.15 }, fossil: { floor: 2.6, wall: 2.6 }, art: { floor: 4.4, wall: 1.9 },
+  hall: { floor: 1.3, wall: 1.15 }, fossil: { floor: 2.6, wall: 2.6 }, art: { floor: 5.4, wall: 2.7 },
   fish: { floor: 2.6, wall: 1 }, sea: { floor: 2.6, wall: 1 }, bug: { floor: 1, wall: 1 }
 };
 
@@ -75,8 +77,17 @@ export const GAIN: Record<Wing, { floor: number; wall: number }> = {
  *  room-change dip's colour, mixed with its background. */
 export const PORTAL: Record<Wing, number> = { hall: 0xf2dcb4, fossil: 0xe2c89c, art: 0xd49478, fish: 0x78c0e0, sea: 0x68acd4, bug: 0xb4d894 };
 
+/** A wing's walls' own light (sRGB hex, their emissive: a uniform, no new program): NH's damask red has no green for
+ *  any light to lift (its texture ~(99, 11, 21)), so its dark ground read near-black; a warm self-light lifts it. */
+export const WALL_GLOW: Partial<Record<Wing, number>> = { art: 0x44302a };
+
 /** The baked light pools' colour per wing (bake.ts Pool.color; the bug wing has none: it's lit as outdoors). */
 export const POOL: Record<Exclude<Wing, 'bug'>, number> = { hall: 0xffe6c0, fossil: 0xffd8a0, art: 0xfff0d8, fish: 0x6fc6e8, sea: 0x6fc6e8 };
+
+/** NH's lamps the museum hangs (the tent's: tent/items.json, its code and its model's `v`; look.test.ts holds them to
+ *  it, so a lamp converted again is never asked for by a stale ?v=): the floral sconce, the elegant lamp, the
+ *  wall-mounted candle. */
+export const LAMP_MODELS = { sconce: ['f14524', '37b4d5a0'], desk: ['f13142', '23fb4a4b'], candle: ['f5165', '841e4c2c'] } as const;
 
 /** The exhibits' self-light (nhLambert's `lift`, the museum's only): paintings, statues, fossils; tank creatures as now. */
 export const LIFT = { painting: 0.22, statue: 0.2, fossil: 0.25, creature: 0.25 } as const;
@@ -97,17 +108,19 @@ export function blendLook(a: Look, b: Look, t: number): Look {
   return out;
 }
 
-/** Night's recipe (lookAt): the room's own light (the hemisphere, the ambient, the key) down to `base`, the lamps'
- *  (the baked pools and the walls' uplight, the halo cards) up `pools` and `cards` times, NH's lamps to `lamp`, the
- *  floors and walls tinted `tint` (amber: the lamps ~2700 K), the sky toward lamplight; the aquarium's toward a deep
- *  blue, untinted, its tanks' glow `glow` times. */
-export const NIGHT = { base: 0.76, key: 0.5, pools: 2.4, cards: 2, lamp: 1.2, tint: 0xffd4a4, glow: 1.4 } as const;
+/** Night's recipe (lookAt): the room's own light (the hemisphere, the ambient) down to `base` and the key to `key`,
+ *  the lamps' (the baked pools and the walls' uplight, the halo cards) up `pools` and `cards` times, NH's lamps to
+ *  `lamp`, the floors and walls tinted `tint` (amber: the lamps ~2700 K), the sky toward lamplight; what's outside the
+ *  room (the background toward `bg`, a deep night blue, by `dark`; the doorways' cards and the floor past the front
+ *  ×`out`) dark, so night reads at a glance; the aquarium's toward a deep blue, untinted, its tanks' glow `glow` times. */
+export const NIGHT = { base: 0.56, key: 0.35, pools: 3, cards: 2.6, lamp: 1.6, tint: 0xffcc98, glow: 1.5, bg: 0x1c1a2c, dark: 0.5, out: 0.5 } as const;
 
 /** A wing's look at `night` (0 day … 1 night), `over` its day look's tuning (the dev hook's partial): the lamps take
- *  over (NIGHT). The exposure −0.05; the bug wing (lit as outdoors, its glass dusk the engine's) only its key ×0.5. */
+ *  over (NIGHT). The exposure −0.05; the bug wing (lit as outdoors, its glass dusk the engine's) only its key and its
+ *  outside. */
 export function lookAt(wing: Wing, night: number, over: Partial<Look> = {}): Look {
   const n = Math.max(0, Math.min(1, night)), d: Look = { ...LOOK[wing], ...over };
-  const water = wing === 'fish' || wing === 'sea', bug = wing === 'bug', base = lerp(1, bug ? 0.85 : NIGHT.base, n);
+  const water = wing === 'fish' || wing === 'sea', bug = wing === 'bug', base = lerp(1, bug ? 0.75 : NIGHT.base, n);
   return {
     ...d,
     exposure: Math.min(MAX_EXPOSURE, d.exposure - 0.05 * n),
@@ -116,11 +129,13 @@ export function lookAt(wing: Wing, night: number, over: Partial<Look> = {}): Loo
     ambI: d.ambI * base,
     key: water ? d.key : mix(d.key, 0xffc890, n),
     keyI: d.keyI * lerp(1, NIGHT.key, n),
+    bg: mix(d.bg, NIGHT.bg, NIGHT.dark * n),
     lm: d.lm * lerp(1, NIGHT.pools, n),
     lamp: lerp(d.lamp, NIGHT.lamp, n),
     cards: d.cards * lerp(1, NIGHT.cards, n),
     glow: d.glow * lerp(1, water ? NIGHT.glow : 1, n),
-    tint: water || bug ? d.tint : mix(d.tint, NIGHT.tint, n)
+    tint: water || bug ? d.tint : mix(d.tint, NIGHT.tint, n),
+    out: d.out * lerp(1, NIGHT.out, n)
   };
 }
 

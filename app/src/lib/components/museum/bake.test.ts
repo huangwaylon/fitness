@@ -62,6 +62,12 @@ describe("the floors' light", () => {
     expect(rgb(at(R, 90, 150))[0]).toBeCloseTo(0.5, 1);
     expect(rgb(at(R, 106, 150))[0]).toBeGreaterThan(rgb(at(R, 90, 158))[0]);
   });
+  test("a lamp's pool with an edge: full over that share of its radius, then a quick fall, none past it", () => {
+    const soft = lightValues(R, [{ x: 60, z: 100, rx: 40, color: 0xffffff }], N, N), hard = lightValues(R, [{ x: 60, z: 100, rx: 40, edge: 0.5, color: 0xffffff }], N, N);
+    expect(hard[at(R, 78, 100) * 3]).toBeGreaterThan(0.97);
+    expect(hard[at(R, 78, 100) * 3]).toBeGreaterThan(soft[at(R, 78, 100) * 3] + 0.2);
+    expect(hard[at(R, 102, 100) * 3]).toBe(0);
+  });
   test('overlapping pools add, clipped at 1', () => {
     const two = lightValues(R, [pools[0], { ...pools[0], at: 0.5 }], N, N);
     expect(two[at(R, 30, 62) * 3 + 2]).toBeGreaterThan(lm[at(R, 30, 62) * 3 + 2]);

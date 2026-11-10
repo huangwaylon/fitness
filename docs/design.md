@@ -975,14 +975,25 @@ out.
 - **Light** (`look.ts`, `bake.ts`; no real lamps, nothing per frame): Neutral tone mapping and one look a room
   (exposure, a sky over a warm bounce, ambient, a frontal key, a warm background), floors and walls lifted over their
   textures' darkness (the fossil rooms a pale stone so the bone on its dark bases reads, the aquarium a slate-teal
-  stone under steel-blue walls, no checker; the gallery's red and herringbone brighter). Each floor's baked aoMap and
-  lightMap (dark at the walls' feet and under what stands, warm pools under the exhibits, lamps and benches, a wide
-  cyan band round each tank; baked again when a room's exhibits change), the walls' foot and uplight ramps; NH's own
-  sconces, desk lamps and wall candles in the hall and the fossil rooms with a halo card each (the candles' 1.5×), a
-  wash card over each painting, a glow lip on each tank (one card mesh a kind a room). The fossils, paintings and
-  statues lit a little by their own colour; the tanks' water lit past its colours (×1.6), the brightest thing, its fish
-  drawn 1.3× NH's size. Night (look.ts NIGHT): the lamps take over: the room's own light ×0.76, the pools ×2.4 and
-  the cards ×2, the floors and walls tinted amber (~2700 K): the hall ~0.41 luma with its pools ~0.67 (day 0.52).
+  stone under steel-blue walls, no checker; the gallery lighter: its damask red ×2.7 with a warm self-light (NH's red
+  has no green to light), stronger picture washes, two pools up its aisle: G1/G2 ~0.43/0.42 luma, ≤ 8 % near-black).
+  Each floor's baked aoMap and lightMap (dark at the walls' feet and under what stands, warm pools under the exhibits,
+  lamps (an edged pool under each, not a haze) and benches, a wide cyan band round each tank; baked again when a
+  room's exhibits change), the walls' foot and uplight ramps; NH's own sconces, desk lamps and wall candles in the hall
+  and the fossil rooms with a halo card each (the candles' 1.5×; the desk lamps' and their glow on the wall behind
+  Blathers), a wash card over each painting, a glow lip on each tank (one card mesh a kind a room). The fossils,
+  paintings and statues lit a little by their own colour; the tanks' water lit past its colours (×1.6), the brightest
+  thing, its fish drawn 1.3× NH's size. Night (look.ts NIGHT, obvious at a glance): the room's own light ×0.56 and its
+  key ×0.35, the pools ×3 and the cards ×2.6, the floors and walls amber (~2700 K), Blathers lit by his lamps, and what's
+  outside the room dark (the background toward night blue, the doorways' cards and the floor past the front ×0.5): the
+  hall ~0.36 luma, its lamp pools 0.62-0.72 with the floor between ~0.3 (day 0.53).
+- **Draw cost** (engine.ts): a wall 2-3 draws (its cap's ends and top one, each face one, both one when alike; its
+  bottom never drawn), a room ~100-230 calls (renderer.info); a floor or wall texture decoded and sent to the GPU once
+  however many repeats use it (copies of one Source); the panels share one red and one gold (a fading one copies its
+  own). The warm-up queues every texture not yet sent and sends 8 every 32 ms on its own timer (a later ask only adds
+  to the queue), marking each only once sent, then compiles every room's programs, solid and dithered, the dither set
+  for that compile only; a room change compiles nothing (museum.spec @render). The walk grid and the floors' bake are
+  made again once, a tick after a run of exhibit changes (each block over its own cells).
   The carpets are one seamless carpet a room (`carpet.ts`: one texture over the strips, its
   border round their outline).
 - **Like the rooms:** a tap on the floor walks my villager there; a drag turns the camera, a pinch zooms, ⌂ puts it

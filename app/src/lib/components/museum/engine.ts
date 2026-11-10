@@ -38,7 +38,7 @@ import {
   BUG_WING, CARPETS, CORNICE, DESK, DOOR_HALF, DOORMAT, G1, HALL, HALL_H, HALL_PLANTS, ISLAND_RUG, OPENINGS, PLAQUE, PLAQUE_H, PLAQUE_W, ROOMS, TILE, WALLS, WALL_T, WING_H, doorTop, inRect,
   navOf, roomHeld, roomIdAt, roomOf, walkable, wallDistance, wallEnds, wingOfRoom, type Nav, type Opening, type Pt, type Rect, type RoomId, type Wall, type Wing
 } from './plan.ts';
-import { GAIN, LIFT, LOOK, POOL, PORTAL, TINT, applyLook, lookAt, type Look as Light } from './look.ts';
+import { GAIN, LAMP_MODELS, LIFT, LOOK, POOL, PORTAL, TINT, WALL_GLOW, applyLook, lookAt, type Look as Light } from './look.ts';
 import { CARD, cardsMesh, floorBake, wallRamps, type Block, type Card, type Pool } from './bake.ts';
 import { BENCHES, benchRect } from './seats.ts';
 import { FOV, PITCH, enter, follow, framingOf, plaqueOf, type CamTune, type Framing } from './camera.ts';
@@ -474,9 +474,12 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const baked: MeshLambertMaterial[] = [], lampMats = new Set<MeshLambertMaterial>(), halos: ((k: number) => void)[] = [];
   /** The floors' and walls' materials and their own colours (the look's tint over them: amber at night); a wall's
    *  copies (its fade's) follow theirs (retint, once the walls are up). */
-  const tinted = new Map<MeshLambertMaterial, { c: Color; k: number }>(), lampTint = new Color(), white = new Color(1, 1, 1), tintBy = new Color();
-  /** `k` of the tint (a floor half: its pools the warm ones, the walls all of it). */
-  const tintable = (m: MeshLambertMaterial, k = 1) => (tinted.set(m, { c: m.color.clone(), k }), m);
+  const tinted = new Map<MeshLambertMaterial, { c: Color; k: number; out: number }>(), lampTint = new Color(), white = new Color(1, 1, 1), tintBy = new Color();
+  /** `k` of the tint (a floor half: its pools the warm ones, the walls all of it); `out` 1: outside the room (the floor
+   *  past its front edge: the look's `out` over it). */
+  const tintable = (m: MeshLambertMaterial, k = 1, out = 0) => (tinted.set(m, { c: m.color.clone(), k, out }), m);
+  /** The doorways' cards and their day colours (the look's `out` over them). */
+  const portalMats: { m: MeshBasicMaterial; c: Color }[] = [];
   let retint = () => {};
   const relight = () => {
     const l = lookNow();
@@ -485,27 +488,48 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     for (const m of lampMats) m.emissiveIntensity = l.lamp;
     for (const h of halos) h(l.cards);
     lampTint.setHex(l.tint);
-    for (const [m, { c, k }] of tinted) m.color.copy(c).multiply(tintBy.copy(white).lerp(lampTint, k));
+    for (const [m, { c, k, out }] of tinted) m.color.copy(c).multiply(tintBy.copy(white).lerp(lampTint, k)).multiplyScalar(out ? l.out : 1);
+    for (const { m, c } of portalMats) m.color.copy(c).multiplyScalar(l.out);
     retint();
   };
   relight();
 
   // ---- what the rooms are made of ----
   const texLoader = new TextureLoader();
-  const texCache = new Map<string, Texture>();
+  const texCache = new Map<string, Texture>(), texBase = new Map<string, Texture>(), texWaiting = new Map<string, Texture[]>();
   const disposables: { dispose(): void }[] = [];
+  /** A texture's copy with its own repeat (and offset): one image a name, decoded and sent to the GPU once (three shares
+   *  a Source's upload among its copies of the same settings), every repeat a copy of it. */
+  function texCopy(name: string): Texture {
+    let base = texBase.get(name);
+    if (!base) {
+      const copies: Texture[] = [];
+      texWaiting.set(name, copies);
+      base = texLoader.load(`${o.base}tex/${name}.webp`, () => {
+        // (each copy made meanwhile sent once it's there: all of them before the first upload, so one upload)
+        for (const c of copies) c.needsUpdate = true;
+        texWaiting.delete(name);
+        invalidate();
+        warmSoon();
+      }, undefined, () => swallowed('museum.tex'));
+      base.colorSpace = SRGBColorSpace;
+      base.wrapS = base.wrapT = RepeatWrapping;
+      base.anisotropy = 4;
+      texBase.set(name, base);
+      disposables.push(base);
+    }
+    // (clone() marks the shared source for upload again: kept as it was, so a copy made after the upload sends nothing;
+    // one made before the image is in waits for it, unmarked, not drawn without it)
+    const v = base.source.version, t = base.clone(), waiting = texWaiting.get(name);
+    t.source.version = v;
+    if (waiting) (t.version = 0), waiting.push(t);
+    disposables.push(t);
+    return t;
+  }
   function tex(name: string, repeat: [number, number] = [1, 1]): Texture {
     const k = `${name}|${repeat}`;
     let t = texCache.get(k);
-    if (!t) {
-      t = texLoader.load(`${o.base}tex/${name}.webp`, () => invalidate(), undefined, () => swallowed('museum.tex'));
-      t.colorSpace = SRGBColorSpace;
-      t.wrapS = t.wrapT = RepeatWrapping;
-      t.repeat.set(repeat[0], repeat[1]);
-      t.anisotropy = 4;
-      texCache.set(k, t);
-      disposables.push(t);
-    }
+    if (!t) texCache.set(k, (t = texCopy(name))), t.repeat.set(repeat[0], repeat[1]);
     return t;
   }
   const lambert = (p: { color?: number; map?: Texture | null; transparent?: boolean; opacity?: number; layer?: number }) => {
@@ -601,19 +625,15 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const FLOOR: Record<Exclude<Wing, 'bug'>, [string, number]> = { hall: ['hall-floor', 40], fish: ['fossil-floor', 50], sea: ['fossil-floor', 50], fossil: ['fossil-floor', 50], art: ['art-floor', 30] };
   /** Each room's floor (a wing's passage and room each a rect, tiled from the world's origin so they meet unseen),
    *  `dim` times its tint (the apron's). */
-  const floorOf = (wing: Wing, r: Rect, dim = 1): MeshLambertMaterial => {
+  const floorOf = (wing: Wing, r: Rect, dim = 1, out = 0): MeshLambertMaterial => {
     if (wing === 'bug' && dim === 1) return grassMat;
     const [name, u] = wing === 'bug' ? [] : FLOOR[wing];
-    const t = name && u ? tex(name, tw(r, u)).clone() : grassTex;
-    if (name && u) {
-      t.offset.set(r.x0 / u, -r.z1 / u);
-      t.needsUpdate = true;
-      disposables.push(t);
-    }
+    const t = name && u ? texCopy(name) : grassTex;
+    if (name && u) t.repeat.set(...tw(r, u)), t.offset.set(r.x0 / u, -r.z1 / u);
     // (lifted past white: look.ts GAIN)
     const m = lambert({ map: t });
     m.color.set(TINT[wing].floor).multiplyScalar(dim * GAIN[wing].floor);
-    return tintable(m, FLOOR_TINT);
+    return tintable(m, FLOOR_TINT, out);
   };
   /** The floors baked (bake.ts: the garden's grass is lit as outdoors), each its room's. */
   const floors: { room: RoomId; r: Rect; mat: MeshLambertMaterial }[] = [];
@@ -623,7 +643,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     floor(r, fm, [id]);
     // (below the floors: under a neighbour's, hidden with it)
     const apron = { x0: r.x0, x1: r.x1, z0: r.z1, z1: r.z1 + APRON };
-    floor(apron, floorOf(wing, apron, 0.8), [id], -1);
+    floor(apron, floorOf(wing, apron, 0.8, 1), [id], -1);
   }
   // the openings' thresholds: a walnut sill through the wall, a hand past it either side (a doorway reads as a way
   // through, not a painted panel; both rooms')
@@ -686,6 +706,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   disposables.push(ramps.ao, ramps.light);
   for (const [w, m] of Object.entries(wallMat) as [Wing, MeshLambertMaterial][]) {
     m.color.set(TINT[w].wall).multiplyScalar(GAIN[w].wall);
+    m.emissive.setHex(WALL_GLOW[w] ?? 0);
     if (w !== 'bug') (m.aoMap = ramps.ao), (m.lightMap = ramps.light), baked.push(m), tintable(m);
   }
   /** The walls' outside faces: the room's background (look.ts), so a cut wall's back never shows near-black. */
@@ -726,6 +747,16 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     return c;
   };
   const T = WALL_T, KICK = 5;
+  /** A slab's draws (BoxGeometry's faces, 6 indices each: +x, −x, +y, −y, +z, −z): its ends and top one, the cap's
+   *  (material 0); its bottom never seen, so not drawn; its two faces (materials 1, 2), one draw when they're the same.
+   *  2-3 draws a wall, not 6. */
+  const slabGroups = (g: BoxGeometry, same: boolean) => {
+    g.clearGroups();
+    g.addGroup(0, 18, 0);
+    if (same) g.addGroup(24, 12, 1);
+    else (g.addGroup(24, 6, 1), g.addGroup(30, 6, 2));
+    return g;
+  };
   /** A slab along a wall from a to b, its ends run on or held back at the joints (plan.ts wallEnds: no two slabs
    *  overlap, so no faces share a plane), its middle and its yaw. */
   const span = (i: number, run: number, free: number) => {
@@ -742,10 +773,10 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const side = (k: number) => roomIdAt(mx + nx * k * 4, mz + nz * k * 4);
     // BoxGeometry's faces: +x, −x, +y, −y, +z, −z; turned by the yaw below, its local +z is the wall's normal (nx, nz)
     // (the bug wing's backdrop: one picture across each wall, its sky and palms, not tiled)
-    const geo = new BoxGeometry(s.len, wl.h, T);
     const mats = new Map<Material, MeshLambertMaterial>();
     const matFor = (r: RoomId | null) => own(mats, r ? wallMat[wingOfRoom(r)] : outMat), cap = own(mats, capMat);
-    const mesh = new Mesh(geo, [cap, cap, cap, cap, matFor(side(1)), matFor(side(-1))]);
+    const front = matFor(side(1)), back = matFor(side(-1));
+    const mesh = new Mesh(slabGroups(new BoxGeometry(s.len, wl.h, T), front === back), [cap, front, back]);
     mesh.position.set(s.x, wl.h / 2, s.z);
     mesh.rotation.y = s.yaw;
     scene.add(mesh);
@@ -754,7 +785,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     // is cut or fading)
     const kg = new BoxGeometry(s.len, KICK, T + 0.3), uv = kg.attributes.uv;
     for (let k = 16; k < 24; k++) uv.setY(k, uv.getY(k) * (KICK / wl.h));
-    const kick = new Mesh(kg, [capMat, capMat, capMat, capMat, capMat, capMat]);
+    const kick = new Mesh(slabGroups(kg, false), [capMat, capMat, capMat]);
     kick.position.set(s.x, KICK / 2, s.z);
     kick.rotation.y = s.yaw;
     kick.visible = false;
@@ -866,7 +897,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const h = Math.max(WING_H, ...jambs.map((w) => w.w.h)), wallTop = h === HALL_H ? CORNICE : h;
     const wing = wingOfRoom(o.room), stone = wing === 'hall' || wing === 'bug';
     const lm = lambert({ map: stone ? tex('hall-wall', [len / 30, (wallTop - top) / 32]) : wallMat[wing].map });
-    if (!stone) lm.color.copy(wallMat[wing].color);
+    if (!stone) (lm.color.copy(wallMat[wing].color), lm.emissive.copy(wallMat[wing].emissive));
     tintable(lm);
     const lintel = new Mesh(o.axis === 'x' ? new BoxGeometry(T, wallTop - top, len) : new BoxGeometry(len, wallTop - top, T), lm);
     lintel.position.set(o.axis === 'x' ? o.at : mid, (wallTop + top) / 2, o.axis === 'x' ? mid : o.at);
@@ -903,6 +934,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       if (!near) continue;
       const card = new Mesh(new PlaneGeometry(len, top), new MeshBasicMaterial({ map: glowOf(wingOfRoom(far)), color: PORTAL[wingOfRoom(far)] }));
       disposables.push(card.material);
+      portalMats.push({ m: card.material, c: card.material.color.clone() });
       card.position.set(o.axis === 'x' ? o.at : mid, top / 2, o.axis === 'x' ? mid : o.at);
       card.rotation.y = o.axis === 'x' ? (kk * Math.PI) / 2 : kk > 0 ? 0 : Math.PI;
       card.userData.portal = { o, into: far };
@@ -958,7 +990,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   /** A lamp: its model (code, version), where it stands (a wall's: its back on the wall's face, toward the room; else its
    *  foot), its turn, its scale, its room, whether it's on a wall. */
   interface Lamp { code: string; v: string; x: number; y: number; z: number; yaw: number; s: number; room: RoomId; wall: boolean }
-  const SCONCE = ['f14524', '37b4d5a0'] as const, DESK_LAMP = ['f13142', '23fb4a4b'] as const, CANDLE = ['f5165', '841e4c2c'] as const;
+  const { sconce: SCONCE, desk: DESK_LAMP, candle: CANDLE } = LAMP_MODELS;
   const LAMP_S = 1.9, FACE = T / 2;
   const lamps: Lamp[] = [];
   const onWall = ([code, v]: readonly [string, string], room: RoomId, axis: 'x' | 'z', at: number, along: number, y: number, k: 1 | -1) => {
@@ -999,15 +1031,21 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       invalidate();
     });
   }
-  /** The halo cards, each room's one mesh (on the wall round a wall lamp, a little over it). */
+  /** The halo cards, each room's one mesh (on the wall round a wall lamp, a little over it; round a desk lamp's shade,
+   *  toward the room: at night Blathers' desk the brightest place in the hall). */
   const haloBy = new Map<RoomId, Card[]>();
   for (const l of lamps) {
-    if (!l.wall) continue;
     const n = [Math.sin(l.yaw), Math.cos(l.yaw)];
     const list = haloBy.get(l.room) ?? haloBy.set(l.room, []).get(l.room)!;
+    if (!l.wall) {
+      list.push({ x: l.x, y: l.y + 7, z: l.z + 2, w: 30, h: 26, yaw: l.yaw });
+      continue;
+    }
     const k = l.code === CANDLE[0] ? 1.5 : 1;
     list.push({ x: l.x + n[0] * 0.3, y: l.y + 3 * k, z: l.z + n[1] * 0.3, w: 26 * k, h: 34 * k, yaw: l.yaw });
   }
+  // (and their glow on the wall behind Blathers)
+  haloBy.get('hall')?.push({ x: (DESK.x0 + DESK.x1) / 2, y: DESK.h + 14, z: HALL.z0 + FACE + 0.3, w: 56, h: 44, yaw: 0 });
   for (const [room, list] of haloBy) {
     const h = cardsMesh('halo', list, cardMap);
     disposables.push(h.mesh.geometry, h.mesh.material as Material);
@@ -1039,8 +1077,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     exhibits.push(e);
     // (its screens looked at afresh)
     cutWas[0] = NaN;
+    roomScreens = null;
     scene.add(e.group);
-    blocksChanged();
     rebake(roomOfExhibit(e));
     e.night(nightN);
     invalidate();
@@ -1055,10 +1093,10 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const i = exhibits.indexOf(e);
     if (i < 0) return;
     exhibits.splice(i, 1);
+    roomScreens = null;
     e.group.removeFromParent();
     if (noDraw) e.dispose();
     else retired.push(e);
-    blocksChanged();
     rebake(roomOfExhibit(e));
     invalidate();
     warmSoon();
@@ -1068,13 +1106,13 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   //      exhibits' pools of light (and the hall's, the lamps'); a room's baked again as its exhibits change ----
   const BAKE = 128;
   const GAPS = OPENINGS.map((o) => ({ axis: o.axis, at: o.at, from: o.from, to: o.to }));
-  /** The hall's own pools: over the owl's medallion and at Blathers' desk. */
-  const HALL_POOLS: Pool[] = [{ x: 0, z: 10, rx: 26, color: POOL.hall, at: 0.8 }, { x: 0, z: -24, rx: 32, rz: 22, color: POOL.hall }];
-  /** Under each wall lamp, a pool at the wall's foot. */
+  /** The hall's own pools: over the owl's medallion and at Blathers' desk (its lamps': the brightest). */
+  const HALL_POOLS: Pool[] = [{ x: 0, z: 10, rx: 26, color: POOL.hall, at: 0.6 }, { x: 0, z: (DESK.z0 + DESK.z1) / 2 + 4, rx: 34, rz: 24, edge: 0.3, color: POOL.hall }];
+  /** Under each wall lamp, a pool on the floor before the wall (an edge to it: the floor between the lamps darker). */
   const lampPools = (room: RoomId): Pool[] =>
     lamps.filter((l) => l.wall && l.room === room).map((l) => {
       const w = wingOfRoom(room) as Exclude<Wing, 'bug'>;
-      return { x: l.x + Math.sin(l.yaw) * 10, z: l.z + Math.cos(l.yaw) * 10, rx: 24, rz: 20, color: POOL[w], at: 0.7 };
+      return { x: l.x + Math.sin(l.yaw) * 12, z: l.z + Math.cos(l.yaw) * 12, rx: 20, rz: 17, edge: 0.4, color: POOL[w], at: 0.9 };
     });
   /** A pool round each bench out of the aquarium (its tanks light it): the lamps' at a seat. */
   const benchPools = (room: RoomId): Pool[] =>
@@ -1084,12 +1122,14 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     });
   const bakeDue = new Set<RoomId>();
   let bakeT: ReturnType<typeof setTimeout> | undefined;
-  /** A room's floors baked again (soon: an exhibit's rebuild drops one and puts another). */
+  /** A room's floors baked again and the walk's grid made again (soon, once for all: an exhibit's rebuild drops one and
+   *  puts another, a dozen at the way in). */
   function rebake(room: RoomId) {
     bakeDue.add(room);
     bakeT ??= setTimeout(() => {
       bakeT = undefined;
       if (disposed) return;
+      blocksChanged();
       for (const r of bakeDue) bakeNow(r);
       bakeDue.clear();
       invalidate();
@@ -1393,9 +1433,15 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     }
     return st;
   };
-  /** The screens of the room drawn. */
-  function* screens() {
-    for (const e of exhibits) if (e.screens && roomOfExhibit(e) === cur) yield* e.screens;
+  /** The screens of the room drawn (looked at twice a frame: kept, made again only once the exhibits or the room
+   *  change). */
+  let roomScreens: Screen[] | null = null;
+  function screens(): readonly Screen[] {
+    if (!roomScreens) {
+      roomScreens = [];
+      for (const e of exhibits) if (e.screens && roomOfExhibit(e) === cur) roomScreens.push(...e.screens);
+    }
+    return roomScreens;
   }
   function cutaway() {
     for (const m of fpvOnly) m.visible = fp.mix > 0 && shell.get(m)!.includes(cur);
@@ -1526,7 +1572,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       wm.here = wm.rooms.includes(cur);
       // (a cut wall's foot: the room's own face inside, stone toward the next room as toward the outside)
       const ms = wm.kick.material as Material[];
-      wm.sides.forEach((r, k) => (ms[4 + k] = r === cur ? wallMat[wingOfRoom(r)] : capMat));
+      wm.sides.forEach((r, k) => (ms[1 + k] = r === cur ? wallMat[wingOfRoom(r)] : capMat));
       wallShown(wm);
     }
     for (const d of doorways) doorwayShown(d);
@@ -1541,6 +1587,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     dipping = false;
     if (w === cur) return;
     cur = w;
+    roomScreens = null;
     if (gap) swapAt = now();
     relight();
     showRoom();
@@ -1710,8 +1757,13 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
 
   // ---- what isn't on screen yet made ready once everything is in: its textures up a few at a time and its programs
   //      compiled, so a wing's first sight is no hitch (its hundred-odd critters' textures at once: ~100 ms) ----
-  const warmed = new WeakSet<Texture>();
-  let warmT: ReturnType<typeof setTimeout> | undefined, compileT: ReturnType<typeof setTimeout> | undefined;
+  /** Textures sent to the GPU, and those waiting (in order). A scan (warm, 250 ms after the last ask: warmSoon) only
+   *  adds to the queue; the queue's own chain (stepT, never cleared by a new ask) sends 8 every 32 ms and marks each
+   *  sent only once it is (one whose image isn't in yet waits for its load's ask), then compiles. An ask mid-way (a
+   *  model in, a visitor, a wing rebuilt) used to kill the chain with the rest of its textures already marked, which
+   *  then uploaded mid-frame at first sight. */
+  const warmed = new WeakSet<Texture>(), warmQ = new Set<Texture>();
+  let warmT: ReturnType<typeof setTimeout> | undefined, stepT: ReturnType<typeof setTimeout> | undefined, compileT: ReturnType<typeof setTimeout> | undefined;
   /** A warm-up is due or under way (the e2e's: the programs settled once it's done). */
   let warming = false;
   function warmSoon() {
@@ -1724,67 +1776,74 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   function warm() {
     if (disposed || pending) return void (warming = !!pending);
     if (document.hidden) return void (warmHeld = true);
-    const todo: Texture[] = [];
     scene.traverse((n) => {
       const ms = (n as Mesh).material;
       if (!ms) return;
       for (const m of Array.isArray(ms) ? ms : [ms]) for (const t of [(m as MeshLambertMaterial).map, (m as MeshLambertMaterial).emissiveMap, (m as MeshLambertMaterial).aoMap, (m as MeshLambertMaterial).lightMap]) {
-        if (t && !warmed.has(t)) (warmed.add(t), todo.push(t));
+        if (t && !warmed.has(t)) warmQ.add(t);
       }
     });
-    const step = () => {
-      if (disposed) return;
-      if (document.hidden) {
-        // (the rest when shown: warm() again finds them)
-        for (const t of todo) warmed.delete(t);
-        return void (warmHeld = true);
-      }
-      for (const t of todo.splice(0, 8)) renderer.initTexture(t);
-      if (todo.length) warmT = setTimeout(step, 32);
-      else {
-        // (the walls' and the fish's fading programs too: dithered, alphaHash, compiled with the rest; solid again after)
-        const hashed = (on: boolean) => {
-          for (const wm of walls) if (wm.fade === 0 || wm.fade === 1) for (const m of wm.mats) (m.alphaHash = on), (m.needsUpdate = true);
-          for (const e of exhibits) {
-            e.dither?.(on);
-            for (const sc of e.screens ?? []) if (stateOf(sc).fade === 1) for (const o of sc.objs) o.traverse((n) => {
-              for (const m of ([] as Material[]).concat((n as Mesh).material ?? [])) (m.alphaHash = on), (m.needsUpdate = true);
-            });
-          }
-        };
-        // (three's compileAsync, its poll ours: three's throws in a timer once a material it waits on is disposed, the
-        // room left or a fish's hour over, and never settles)
-        clearTimeout(compileT);
-        // (those taken down by now go once this compile is done: their programs were there for it)
-        const going = retired.slice();
-        // (three compiles only what's visible: every room built shown for it, so walking into one compiles nothing,
-        // solid and dithered; hidden again at once, before any frame)
-        const shown: Object3D[] = [];
-        scene.traverse((n) => void (!n.visible && (shown.push(n), (n.visible = true))));
-        const compiling = renderer.compile(scene, camera);
-        hashed(true);
-        for (const m of renderer.compile(scene, camera)) compiling.add(m);
-        for (const n of shown) n.visible = false;
-        const poll = () => {
-          if (disposed) return;
-          for (const m of compiling) {
-            const p = (renderer.properties.get(m) as { currentProgram?: { isReady(): boolean } }).currentProgram;
-            if (!p || p.isReady()) compiling.delete(m);
-          }
-          if (compiling.size) compileT = setTimeout(poll, 10);
-          else {
-            hashed(false);
-            warming = false;
-            for (const e of going) {
-              const i = retired.indexOf(e);
-              if (i >= 0) (retired.splice(i, 1), e.dispose());
-            }
-          }
-        };
-        poll();
+    if (stepT === undefined) warmStep();
+  }
+  function warmStep() {
+    stepT = undefined;
+    if (disposed) return;
+    // (the rest when shown: the queue kept)
+    if (document.hidden) return void (warmHeld = true);
+    let n = 0;
+    for (const t of warmQ) {
+      warmQ.delete(t);
+      // (its image not in yet: its load asks again)
+      if (t.version === 0) continue;
+      renderer.initTexture(t);
+      warmed.add(t);
+      if (++n === 8) break;
+    }
+    if (warmQ.size) stepT = setTimeout(warmStep, 32);
+    else warmCompile();
+  }
+  /** The programs compiled: every room's (each built shown for it, so walking into one compiles nothing), solid and
+   *  dithered (the walls' and the fish's fades, alphaHash). The dither is set only for the compile's span, in the same
+   *  task: never left on a shared material (the art packs', kept across visits) nor seen by a frame. */
+  function warmCompile() {
+    const hashed = (on: boolean) => {
+      for (const wm of walls) if (wm.fade === 0 || wm.fade === 1) for (const m of wm.mats) (m.alphaHash = on), (m.needsUpdate = true);
+      for (const e of exhibits) {
+        e.dither?.(on);
+        for (const sc of e.screens ?? []) if (stateOf(sc).fade === 1) for (const o of sc.objs) o.traverse((n) => {
+          for (const m of ([] as Material[]).concat((n as Mesh).material ?? [])) (m.alphaHash = on), (m.needsUpdate = true);
+        });
       }
     };
-    step();
+    // (three's compileAsync, its poll ours: three's throws in a timer once a material it waits on is disposed, the
+    // room left or a fish's hour over, and never settles)
+    clearTimeout(compileT);
+    // (those taken down by now go once this compile is done: their programs were there for it)
+    const going = retired.slice();
+    const shown: Object3D[] = [];
+    scene.traverse((n) => void (!n.visible && (shown.push(n), (n.visible = true))));
+    const compiling = renderer.compile(scene, camera);
+    hashed(true);
+    for (const m of renderer.compile(scene, camera)) compiling.add(m);
+    // (solid again: each material keeps both programs, so the next frame switches back without compiling)
+    hashed(false);
+    for (const n of shown) n.visible = false;
+    const poll = () => {
+      if (disposed) return;
+      for (const m of compiling) {
+        const p = (renderer.properties.get(m) as { currentProgram?: { isReady(): boolean } }).currentProgram;
+        if (!p || p.isReady()) compiling.delete(m);
+      }
+      if (compiling.size) compileT = setTimeout(poll, 10);
+      else {
+        warming = false;
+        for (const e of going) {
+          const i = retired.indexOf(e);
+          if (i >= 0) (retired.splice(i, 1), e.dispose());
+        }
+      }
+    };
+    poll();
   }
 
   // (shown again: a frame for what changed meanwhile, the warm-up taken up)
@@ -2055,7 +2114,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       invalidate();
     },
     kit,
-    screensCut: () => [...screens()].map((sc) => (stateOf(sc).fade < 0.5 ? '1' : '0')).join(''),
+    screensCut: () => screens().map((sc) => (stateOf(sc).fade < 0.5 ? '1' : '0')).join(''),
     stats: () => ({ frames, draws, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: [...cost], queued: pace.asked(), ambient: ambientOn, loading: pending, warming,
       mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0] }),
     ready,
@@ -2066,6 +2125,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       pace.stop();
       document.removeEventListener('visibilitychange', onVis);
       clearTimeout(warmT);
+      clearTimeout(stepT);
       clearTimeout(compileT);
       clearTimeout(bakeT);
       clearTimeout(holdT);

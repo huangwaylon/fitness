@@ -305,13 +305,16 @@ function floorsOpen(): Uint8Array {
  *  by a body). */
 export function navOf(blocks: readonly Rect[] = []): Nav {
   const open = floorsOpen().slice();
-  for (let j = 0; j < ROWS; j++)
-    for (let i = 0; i < COLS; i++) {
-      const k = j * COLS + i;
-      if (!open[k]) continue;
-      const [x, z] = cellMid(i, j);
-      if (blocks.some((b) => inRect({ x0: b.x0 - BODY, x1: b.x1 + BODY, z0: b.z0 - BODY, z1: b.z1 + BODY }, x, z))) open[k] = 0;
-    }
+  // (each block over its own cells only, its padded rect tested as a cell's middle: a dozen rebuilds at the way in)
+  for (const b of blocks) {
+    const x0 = b.x0 - BODY, x1 = b.x1 + BODY, z0 = b.z0 - BODY, z1 = b.z1 + BODY;
+    const [i0, j0] = cellOf(x0, z0), [i1, j1] = cellOf(x1, z1);
+    for (let j = Math.max(0, j0); j <= Math.min(ROWS - 1, j1); j++)
+      for (let i = Math.max(0, i0); i <= Math.min(COLS - 1, i1); i++) {
+        const x = X0 + (i + 0.5) * CELL, z = Z0 + (j + 0.5) * CELL;
+        if (x >= x0 && x <= x1 && z >= z0 && z <= z1) open[j * COLS + i] = 0;
+      }
+  }
   return { open, cols: COLS, rows: ROWS };
 }
 

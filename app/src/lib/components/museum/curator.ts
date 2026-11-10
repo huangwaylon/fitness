@@ -305,7 +305,9 @@ export function buildCurator(kit: Kit, o: { model: string | null; me: () => Pt |
   sphere.center.set(AT[0], CURATOR_TOP / 2, AT[1]);
   sphere.radius = CURATOR_TOP * 0.7;
   const brain = mind(7);
-  let v: Villager3D | null = null, disposed = false;
+  let v: Villager3D | null = null, disposed = false, nightN = 0;
+  /** His own light: more at night, his desk lamps on him (the hall's brightest at night: docs/design.md "The museum"). */
+  const lift = () => 0.32 + 1.2 * nightN;
   // (where my villager is, read 4 times a second: his head eases toward it)
   let me: Pt | null = null, meAt = -1e9;
   if (o.model) void createVillager('blathers', o.model, 3).then((x) => {
@@ -313,7 +315,7 @@ export function buildCurator(kit: Kit, o: { model: string | null; me: () => Pt |
     v = x;
     x.group.position.set(AT[0], 0, AT[1]);
     x.group.scale.setScalar(S / VILLAGER_S);
-    x.lift(0.32);
+    x.lift(lift());
     x.hold(brain.pose);
     group.add(x.group);
     kit.invalidate();
@@ -342,7 +344,10 @@ export function buildCurator(kit: Kit, o: { model: string | null; me: () => Pt |
     },
     where: (id) => (id === CURATOR ? [AT[0], CURATOR_TOP, AT[1]] : null),
     shown: () => [],
-    night() {},
+    night(n) {
+      nightN = n;
+      v?.lift(lift());
+    },
     talk(chars) {
       brain.talk(performance.now(), chars);
       kit.invalidate();

@@ -68,11 +68,11 @@ export function aoValues(r: Rect, blocks: readonly Block[], gaps: readonly Gap[]
   return out;
 }
 
-/** A light pool on a floor: round or elliptic (x, z, its radii), or a band over a rect (its light fading over
- *  `feather` u out from it; `caustic`: that share of it a static ripple). `color` sRGB hex (look.ts POOL), `at` its
- *  peak (default 1). */
+/** A light pool on a floor: round or elliptic (x, z, its radii; `edge`: that share of its radius at full, so a lamp's
+ *  reads as a pool with an edge, not a haze), or a band over a rect (its light fading over `feather` u out from it;
+ *  `caustic`: that share of it a static ripple). `color` sRGB hex (look.ts POOL), `at` its peak (default 1). */
 export type Pool =
-  | { x: number; z: number; rx: number; rz?: number; color: number; at?: number }
+  | { x: number; z: number; rx: number; rz?: number; edge?: number; color: number; at?: number }
   | { band: Rect; feather?: number; caustic?: number; color: number; at?: number };
 
 /** A deterministic ripple 0…1 (two crossed sines broken by a hash: the caustics, baked). */
@@ -97,8 +97,8 @@ export function lightValues(r: Rect, pools: readonly Pool[], w: number, h: numbe
           f = 1 - smooth(signedDist(p.band, x, z) / (p.feather ?? 10));
           if (p.caustic) f *= 1 - p.caustic + p.caustic * ripple(x, z);
         } else {
-          const d = Math.hypot((x - p.x) / p.rx, (z - p.z) / (p.rz ?? p.rx));
-          f = 1 - smooth(d);
+          const d = Math.hypot((x - p.x) / p.rx, (z - p.z) / (p.rz ?? p.rx)), e = p.edge ?? 0;
+          f = 1 - smooth((d - e) / (1 - e));
         }
         f *= p.at ?? 1;
         lr += cols[k].r * f;
