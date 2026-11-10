@@ -1,9 +1,11 @@
-// A room's changes as steps (docs/design.md "Whose room"): what a change takes away, moves back,
+// A room's changes as steps (docs/design.md "Whose room", "Saved arrangements"): what a change takes away, moves back,
 // puts down anew and sets (the wallpaper, the floor, the size), planned against the room as it stands into the room's
-// ops (contract/tent.ts) and the step that undoes it. The clear and every undo are steps; a removal is final in the record (a removed piece's id never comes back), so what a step puts back is a new
+// ops (contract/tent.ts) and the step that undoes it. The clear, a saved arrangement called up and every undo are
+// steps; a removal is final in the record (a removed piece's id never comes back), so what a step puts back is a new
 // piece where the old one stood: the same item, tile, facing, layer (on another piece's top: on that piece's new self),
 // light and order (its `p`). Pure.
 import { TENT_FLOOR, TENT_MAX, TENT_SIZE, TENT_WALL, type RoomSize, type TentOp, type TentPiece } from '#lib/contract/tent.ts';
+import type { RoomSaveOp, SavedPiece } from '#lib/contract/roomSave.ts';
 
 type Sc = TentOp['sc'];
 /** A piece as it stood (its id: the one it had, for the `on` of the pieces put back with it). */
@@ -92,3 +94,34 @@ function setOp(sc: Sc, id: string, s: Omit<Snap, 'id' | 'p'>, at: number, p: num
 
 /** 全部片付ける: every piece taken away (the wallpaper, the floor and the size stay: nothing is "put away" of them). */
 export const clearStep = (now: RoomNow): Step => ({ rm: now.pieces.map((p) => p.id) });
+
+/** The room as a saved arrangement's pieces: each piece in placing order, one on another's top by that one's index. */
+export function savedPieces(now: RoomNow): SavedPiece[] {
+  const floor = now.pieces.filter((p) => !p.on), tops = now.pieces.filter((p) => p.on && floor.some((q) => q.id === p.on));
+  const order = [...floor, ...tops];
+  const at = new Map(order.map((p, k) => [p.id, k]));
+  return order.map((p) => ({ i: p.item, x: p.x, z: p.z, f: p.f, ...(p.on ? { on: at.get(p.on)! } : {}), ...(p.l !== undefined ? { l: p.l } : {}) }));
+}
+
+/**
+ * A saved arrangement called up: the room's pieces taken away and the saved ones put down, the wallpaper, floor and size
+ * set. A piece is there to put down if anyone could put it there now (`has`: the caller's rule: it stands in the room,
+ * it's in my tray, or the room's owner has it); one that isn't is left out (and what stands on it): `missing` lists
+ * them, by item.
+ */
+export function restoreStep(now: RoomNow, save: Extract<RoomSaveOp, { name: string }>, has: (item: string) => boolean): { step: Step; missing: string[] } {
+  const missing: string[] = [];
+  const out = new Set<number>();
+  save.pieces.forEach((p, k) => {
+    if (!has(p.i) || (p.on !== undefined && out.has(p.on))) {
+      out.add(k);
+      missing.push(p.i);
+    }
+  });
+  const add: Snap[] = [];
+  save.pieces.forEach((p, k) => {
+    if (out.has(k)) return;
+    add.push({ id: `s${k}`, item: p.i, x: p.x, z: p.z, f: p.f, p: save.at + k, ...(p.on !== undefined ? { on: `s${p.on}` } : {}), ...(p.l !== undefined ? { l: p.l } : {}) });
+  });
+  return { step: { rm: now.pieces.map((p) => p.id), add, wall: save.wall, floor: save.floor, size: save.size }, missing };
+}

@@ -19,17 +19,23 @@
   // it's given: the home's own (the tent's `t`, うめ's house's `u`, the guest's `v`). 広さ picks the room's size from NH's
   // main rooms (contract/tent.ts ROOM_SIZES): a smaller one only once nothing would be left outside it (else those
   // pieces glow red and the bar says to move or put them away first; there is no storage to send them to).
-  // Holding nothing, the bar has 取り消す (the last change of mine in this room taken back, ⌘Z too: steps.ts) and
-  // 全部片付ける (every piece away after a confirmation, the wallpaper, floor and size kept; one batch, one undo).
+  // Holding nothing, the bar has 取り消す (the last change of mine in this room taken back, ⌘Z too: steps.ts), 全部片付ける
+  // (every piece away after a confirmation, the wallpaper, floor and size kept; one batch, one undo) and 保存 (the room's
+  // three saved arrangements: 保存, 呼び出す after a confirmation as one batch and one undo, 削除; contract/roomSave.ts).
   import { onMount } from 'svelte';
   import ActionSheet from '#lib/components/ui/ActionSheet.svelte';
-  import { clearStep, plan, type Snap } from './steps.ts';
+  import Sheet from '#lib/components/ui/Sheet.svelte';
+  import { sendRoomSave } from '#lib/store/actions.ts';
+  import { SAVE_NAME_CHARS, saveName, type RoomSaveOp } from '#lib/contract/roomSave.ts';
+  import { clearStep, plan, restoreStep, savedPieces, type Snap } from './steps.ts';
   import { t } from '#lib/i18n/index.ts';
+  import { formatSyncTime } from '#lib/i18n/format.ts';
   import type { rooms } from '#lib/store/tent.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { ROOM_SIZES, TENT_MAX, type RoomSize } from '#lib/contract/tent.ts';
+  import { SAVE_SLOTS } from '#lib/contract/roomSave.ts';
   import { DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, GYM, ITEMS, RUGS, STARTER, WALLS, footprint } from './items.ts';
   import { roomIcon } from './roomIcon.ts';
   import { HALF, ROOM, TILE, boundsOf, outside, wallSpan, centreOf, fitsOn, isSmall, isSurface, isWallItem, kidSpot, tilesOf, wallSnap, wallSteps, wallWhy, nearestFree, placeWhy, resolve, slotTaken, snapTo, surfaceAt, tileToSlot, type Facing, type Spot, type Why } from './grid.ts';
@@ -53,9 +59,13 @@
     relayNow: () => number;
     /** The name of whoever else holds a piece (the partner, or with the guest here, the one holding it). */
     holderName: (id: string) => string;
+    /** The room's saved arrangements, slot by slot (null: empty). */
+    saves?: readonly (Extract<RoomSaveOp, { name: string }> | null)[];
+    /** Whether the room's owner has a piece (their buys): a saved arrangement may use it. */
+    ownerHas?: (item: string) => boolean;
     ondone: () => void;
   }
-  let { room, eng, link, finds, bought, catches = [], villagers, relayNow, holderName, ondone }: Props = $props();
+  let { room, eng, link, finds, bought, catches = [], villagers, relayNow, holderName, saves = [], ownerHas = () => false, ondone }: Props = $props();
 
   type Tab = 'recent' | 'furniture' | 'rugs' | 'walled' | 'ceiling' | 'critters' | 'finds' | 'bought' | 'gym' | 'wall' | 'floor' | 'size';
   /** The room's size (its tiles within the largest room's: grid.ts Bounds). */
@@ -484,7 +494,7 @@
     toasts.show(t('tent.removed', { name: t(`tent.item.${p.item}`) }), 5000, { action: { label: t('common.undo'), run: () => void takeBack(key) } });
   }
 
-  // ---- 取り消す, 全部片付ける (steps.ts: each a batch, one undo) ----
+  // ---- 取り消す, 全部片付ける, the saved arrangements (steps.ts: each a batch, one undo) ----
   const snapOf = (p: Snap): Snap => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f, p: p.p, ...(p.on ? { on: p.on } : {}), ...(p.l !== undefined ? { l: p.l } : {}) });
   const stack = () => undos.get(room.sc) ?? (undos.set(room.sc, []), undos.get(room.sc)!);
   /** How many steps there are to take back (the button's state). */
@@ -543,6 +553,55 @@
     toasts.show(t('tent.cleared', { n }), 5000, { action: { label: t('common.undo'), run: () => void takeBack(key) } });
   }
 
+  /** The saved arrangements' sheet: the slots, or one slot's 保存 (its name), 呼び出す or 削除 asked. */
+  let savesOpen = $state(false);
+  let saving = $state<{ k: 'list' } | { k: 'save' | 'load' | 'del'; n: number }>({ k: 'list' });
+  let saveDraft = $state('');
+  const slotName = (n: number) => saves[n - 1]?.name ?? t('tent.saveDefault', { n });
+  function openSaves() {
+    if (sel) cancel(false);
+    saving = { k: 'list' };
+    savesOpen = true;
+  }
+  function ask(k: 'save' | 'load' | 'del', n: number) {
+    if (k !== 'save' && !saves[n - 1]) return void cue('boop');
+    saveDraft = slotName(n);
+    saving = { k, n };
+  }
+  /** A piece a saved arrangement may put down: one standing here, one in my tray, one the room's owner has. */
+  const has = (item: string): boolean => !!ITEMS[item] && (room.pieces.some((p) => p.item === item) || STARTER.includes(item) || !!ITEMS[item].rug || finds.includes(item) || bought.includes(item) || catches.includes(item) || ownerHas(item));
+  const missingOf = (n: number) => (saves[n - 1] ? restoreStep(roomNow(), saves[n - 1]!, has).missing : []);
+  const listOf = (items: readonly string[]) => {
+    const names = [...new Set(items)].map((c) => nameOf(c));
+    return names.length > 3 ? t('tent.missingMore', { list: names.slice(0, 3).join('、'), n: names.length - 3 }) : names.join('、');
+  };
+  function doSave(n: number) {
+    const name = saveName(saveDraft) || t('tent.saveDefault', { n });
+    const r = roomNow();
+    if (!sendRoomSave({ sc: room.sc, n, at: room.clock(), name, pieces: savedPieces(r), wall: r.wall, floor: r.floor, size: r.size })) return void cue('boop');
+    cue('confirm');
+    savesOpen = false;
+    toasts.show(t('tent.saved', { name }), 2600);
+  }
+  function doLoad(n: number) {
+    const save = saves[n - 1];
+    savesOpen = false;
+    if (!save) return;
+    const { step, missing } = restoreStep(roomNow(), save, has);
+    const key = remember(run(step));
+    if (key < 0) return void cue('boop');
+    cue('confirm');
+    const undo = { action: { label: t('common.undo'), run: () => void takeBack(key) } };
+    if (missing.length) toasts.show(t('tent.loadedMissing', { name: save.name, n: missing.length, list: listOf(missing) }), 6000, undo);
+    else toasts.show(t('tent.loaded', { name: save.name }), 5000, undo);
+  }
+  function doDelete(n: number) {
+    savesOpen = false;
+    if (!saves[n - 1] || !sendRoomSave({ sc: room.sc, n, at: room.clock(), rm: true })) return;
+    cue('undo');
+    toasts.show(t('tent.saveDeleted'), 2600);
+  }
+  const savedAt = (at: number) => formatSyncTime(new Date(at));
   /** 広さ: the room to NH's size `n`. Larger always; smaller only with nothing left outside it (NH's rooms keep what's
    *  in them, and here nothing is ever lost): else those pieces glow red and the bar says how many to move first. */
   function resize(n: RoomSize) {
@@ -581,10 +640,10 @@
     const esc = (e: KeyboardEvent) => {
       const typing = e.target instanceof HTMLElement && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA');
       // ⌘Z / Ctrl+Z: 取り消す (the editor's)
-      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key.toLowerCase() === 'z' && !typing && !clearAsk) {
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key.toLowerCase() === 'z' && !typing && !savesOpen && !clearAsk) {
         e.preventDefault();
         takeBack();
-      } else if (e.key === 'Escape' && !clearAsk) {
+      } else if (e.key === 'Escape' && !savesOpen && !clearAsk) {
         if (sel) cancel();
         else done();
       }
@@ -636,6 +695,9 @@
       </button>
       <button type="button" class="act" data-tent-clear data-sfx="self" aria-label={t('tent.clear')} aria-disabled={!room.pieces.length} onclick={clearAll}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" /><path d="M10 11v5M14 11v5" /></svg>
+      </button>
+      <button type="button" class="act" data-tent-saves data-sfx="self" aria-label={t('tent.saves')} onclick={openSaves}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z" /></svg>
       </button>
     </div>
   {/if}
@@ -693,9 +755,104 @@
 <ActionSheet bind:open={clearAsk} title={t('tent.clearTitle')} note={t('tent.clearNote', { n: room.pieces.length })}
   groups={[[{ id: 'clear', label: t('tent.clear'), danger: true }]]} onpick={doClear} />
 
+<Sheet bind:open={savesOpen} label={t('tent.saves')} title={saving.k === 'save' ? t('tent.saveTitle') : t('tent.saves')}>
+  {#if saving.k === 'list'}
+    <div class="slots" data-tent-slots>
+      {#each Array.from({ length: SAVE_SLOTS }, (_, i) => i + 1) as n (n)}
+        {@const sv = saves[n - 1]}
+        <div class="slot card dense" data-tent-slot={n} data-filled={sv ? 'true' : 'false'}>
+          <div class="who"><span class="nm">{sv ? sv.name : t('tent.saveEmpty')}</span>{#if sv}<span class="dt">{savedAt(sv.at)} · {t('tent.savePieces', { n: sv.pieces.length })}</span>{/if}</div>
+          <div class="acts">
+            <button type="button" class="btn paper sm" data-slot-act="save" data-sfx="tick" onclick={() => ask('save', n)}>{t('common.save')}</button>
+            <button type="button" class="btn sm" data-slot-act="load" data-sfx="tick" aria-disabled={!sv} onclick={() => ask('load', n)}>{t('tent.load')}</button>
+            <button type="button" class="btn paper sm danger" data-slot-act="del" data-sfx="tick" aria-disabled={!sv} onclick={() => ask('del', n)}>{t('tent.saveDelete')}</button>
+          </div>
+        </div>
+      {/each}
+    </div>
+  {:else if saving.k === 'save'}
+    {@const n = saving.n}
+    <form class="ask" data-tent-save-form onsubmit={(e) => (e.preventDefault(), doSave(n))}>
+      {#if saves[n - 1]}<p>{t('tent.saveOver', { name: saves[n - 1]!.name })}</p>{/if}
+      <label class="field"><span>{t('tent.saveName', { n: SAVE_NAME_CHARS })}</span>
+        <!-- svelte-ignore a11y_autofocus -->
+        <input type="text" maxlength={SAVE_NAME_CHARS} data-tent-save-name data-sfx="none" bind:value={saveDraft} autofocus enterkeyhint="done" />
+      </label>
+    </form>
+  {:else}
+    {@const n = saving.n}
+    {@const miss = saving.k === 'load' ? missingOf(n) : []}
+    <div class="ask" data-tent-ask={saving.k}>
+      <p>{t(saving.k === 'load' ? 'tent.loadAsk' : 'tent.saveDeleteAsk', { name: slotName(n) })}</p>
+      {#if miss.length}<p class="miss" data-tent-missing={miss.length}>{t('tent.missingAsk', { n: miss.length, list: listOf(miss) })}</p>{/if}
+    </div>
+  {/if}
+  {#snippet footer()}
+    {#if saving.k === 'save'}
+      {@const n = saving.n}
+      <button type="button" class="btn" data-tent-save-ok data-sfx="none" onclick={() => doSave(n)}>{t('common.save')}</button>
+    {:else if saving.k !== 'list'}
+      {@const n = saving.n}
+      {@const k = saving.k}
+      <div class="two">
+        <button type="button" class="btn paper" data-sfx="back" onclick={() => (saving = { k: 'list' })}>{t('common.cancel')}</button>
+        <button type="button" class="btn" class:danger={k === 'del'} data-tent-ask-ok data-sfx="none" onclick={() => (k === 'load' ? doLoad(n) : doDelete(n))}>{t(k === 'load' ? 'tent.load' : 'tent.saveDelete')}</button>
+      </div>
+    {/if}
+  {/snippet}
+</Sheet>
+
 <style>
   /* the tray's look is the editors' one (theme.css .edit-tray); the tent's own bits: */
   .say.hint { color: var(--c-ink-soft); white-space: normal; font-size: var(--fs-s); line-height: 1.3; padding-left: 2px; }
   .act[aria-disabled='true'] { opacity: .4; }
+  .slots { display: grid; gap: 8px; padding-bottom: 4px; }
+  .slot { display: grid; gap: 8px; padding: 12px; }
+  .slot .who { display: grid; gap: 2px; }
+  .slot .nm { font-weight: 700; }
+  .slot[data-filled='false'] .nm { color: var(--text-soft); }
+  .slot .dt { font-size: var(--fs-xs); color: var(--text-soft); }
+  .slot .acts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .btn.sm { min-height: 40px; padding: 0 8px; font-size: var(--fs-s); }
+  .btn[aria-disabled='true'] { opacity: .45; }
+  .ask { display: grid; gap: 10px; padding: 0 0 8px; text-align: center; }
+  .ask .miss { font-size: var(--fs-s); color: var(--text-soft); }
+  .field { display: grid; gap: 4px; text-align: left; }
+  .field span { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  .field input {
+    width: 100%; min-height: 48px; border-radius: var(--r-btn); border: 0; font: 700 var(--fs-input)/1.2 var(--font-ui);
+    background: var(--c-card); color: var(--c-ink); padding: 0 14px; box-shadow: inset 0 0 0 2px var(--c-edge), inset 0 4px 0 var(--c-lip);
+  }
+  .field input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .te { z-index: 3; }
+  .bar { animation: up .2s var(--ease-soft) both; }
+  /* how many already stand in the room */
+  .n {
+    position: absolute; right: 4px; top: 4px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; display: grid; place-items: center;
+    font: 700 var(--fs-xs)/1 var(--font-num); color: var(--c-ink); background: color-mix(in srgb, var(--c-lip) 60%, var(--c-cream));
+  }
+  .it.full { opacity: .45; }
+  .empty { grid-column: 1 / -1; margin: 0; align-self: center; padding: 12px 8px; color: var(--c-ink-soft); font-weight: 700; white-space: normal; text-align: center; }
+  .count { font: 700 var(--fs-xs)/1 var(--font-num); color: var(--c-ink); }
+  .hint.bad { color: var(--c-ink); }
+  .hint.bad::before { content: '! '; color: var(--c-coral); }
+  /* 広さ: three cards, each NH's room as a plan */
+  .sizes { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 2px; }
+  .sz {
+    appearance: none; border: 0; margin: 0; font: inherit; color: var(--c-ink); cursor: pointer; -webkit-tap-highlight-color: transparent;
+    display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-radius: var(--r-btn);
+    background: var(--c-card); box-shadow: inset 0 0 0 2px var(--c-edge);
+  }
+  .sz[aria-pressed='true'] { box-shadow: inset 0 0 0 3px var(--c-leaf-edge); background: color-mix(in srgb, var(--c-leaf) 14%, var(--c-card)); }
+  .sz:active { transform: translateY(2px); }
+  .sz:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .sz svg { width: 52px; height: 56px; }
+  .sz .all { fill: none; stroke: var(--c-edge); stroke-width: .12; stroke-dasharray: .3 .25; }
+  .sz .mine { fill: color-mix(in srgb, var(--c-lip) 55%, var(--c-cream)); stroke: var(--c-ink-soft); stroke-width: .18; }
+  .sz path { stroke: var(--c-ink-soft); stroke-width: .06; opacity: .6; }
+  .sz .door { fill: var(--c-ink-soft); }
+  .sz .nm { font-size: var(--fs-xs); white-space: nowrap; }
+  .sz .dim { font: 700 var(--fs-xs)/1 var(--font-num); color: var(--c-ink-soft); }
   @keyframes up { from { translate: 0 8px; opacity: 0; } to { translate: 0 0; opacity: 1; } }
 </style>

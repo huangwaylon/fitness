@@ -796,12 +796,17 @@ out in front, facing out, on every phone). The homes' rooms are the same system.
   piece someone else put down is just taken out of the room (its buyer still has it). Two editing at once merge as
   every decor op (decisions: *Decor is a last-writer-wins map*).
 - **取り消す, 全部片付ける** (the もようがえ bar, holding nothing; `tent/steps.ts`, `e2e/room-batch.spec.ts`): ↶ takes back
-  my last change in this room (placed, moved, put away, wallpaper, floor, size, a clear; ⌘Z
+  my last change in this room (placed, moved, put away, wallpaper, floor, size, a clear, an arrangement called up; ⌘Z
   too; this phone's, while the page is open). 🗑 全部片付ける, after a confirmation, puts every piece away (furniture,
   rugs, wall and ceiling pieces, what's on tables); the wallpaper, floor and size stay (nothing is "put away" of them).
   Its undo puts each back exactly (tile, facing, layer, light, order) as new pieces (a removal is final in the record).
-  A clear and its undo are each one batch: one group the record keeps all or none (backend "Groups"); a big
+  A clear, a call-up and their undo are one batch: one group the record keeps all or none (backend "Groups"); a big
   one reaches the other phones by the record's push, at once.
+- **Saved arrangements** (🔖 部屋の保存; `contract/roomSave.ts`): three slots a room, in the record, anyone's: 保存 (a
+  name, the date), 呼び出す (after a confirmation: the room replaced by it, wallpaper, floor and size too, one batch, one
+  取り消す) and 削除. A saved piece is put down if anyone could put it there now: it stands in the room, it's in the
+  caller's tray, or the room's owner bought it; the rest (and what stands on them) are left out, 「{n}個足りません」
+  with their names, asked before and told after.
 - **Loading:** the furniture's models are kept page-wide as loaded (the 48 last used that no room uses), so a room comes
   back with no fetch or decode; at rest the room draws only a blink.
 - **Sit, lie and switch** (`tent/seats.ts`; the museum's benches too): a Chair is sat on, a Bed lain on: a tap walks my

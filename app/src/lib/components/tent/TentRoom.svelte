@@ -49,6 +49,7 @@
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { leaveBy } from '../island/doorOut.ts';
   import { sendDecor, sendDecorGroup, sendDecors } from '#lib/store/actions.ts';
+  import { SAVE_SLOTS, type RoomSaveOp } from '#lib/contract/roomSave.ts';
   import { LIVE_URL, createLive, liveRelay, type Live } from '#lib/sync/live.ts';
   import { createLocalLive } from '#lib/sync/live-local.ts';
   import { tokyoDay, type Intent, type SayScope, type Pt as WirePt, type Relayed } from '#lib/contract/live-protocol.ts';
@@ -171,6 +172,14 @@
   /** What I bought at the shop (model/shop.ts: mine, the guest's its own), newest first: mine to place in any room I
    *  arrange. */
   const bought = $derived(week.model ? [...shopView(week.model.state, me).owned].reverse().filter((c) => ITEMS[c]) : []);
+  /** What this home's owner bought (a saved arrangement may put it down: TentEdit's rule). */
+  const ownerBought = $derived(new Set(week.model ? shopView(week.model.state, home).owned : []));
+  /** This room's saved arrangements, slot by slot (each slot's last row; emptied: null). */
+  const saves = $derived.by(() => {
+    const out: (Extract<RoomSaveOp, { name: string }> | null)[] = Array(SAVE_SLOTS).fill(null);
+    for (const s of week.model?.state.roomSaves ?? []) if (s.sc === room.sc) out[s.n - 1] = s.rm ? null : s;
+    return out;
+  });
 
   // ---- my villager in the tent, told to the partner (the very walk) ----
   /** My last walk (for a partner who joins while it's under way). */
@@ -739,6 +748,8 @@
       /** The room's size (tiles a side). */
       size: () => room.size,
       edit: () => edit?.snapshot() ?? null,
+      /** The room's saved arrangements' names, slot by slot (null: empty). */
+      saves: () => saves.map((s) => s?.name ?? null),
       held: () => link.theirs().map((h) => ({ id: h.id, item: h.item, x: h.x, z: h.z, f: h.f })),
       partner: () => (eng?.at(partner) ? { at: eng.at(partner), walking: eng.walking(partner) } : null),
       starter: () => STARTER,
@@ -865,7 +876,7 @@
     {/if}
   </div>
   {#if editing && eng}
-    <TentEdit bind:this={edit} {room} eng={() => eng} {link} {finds} {bought} {catches} {relayNow} holderName={(id) => nameOf(link.theirs().find((h) => h.id === id)?.who ?? partner)}
+    <TentEdit bind:this={edit} {room} eng={() => eng} {link} {finds} {bought} {catches} {saves} ownerHas={(c) => ownerBought.has(c)} {relayNow} holderName={(id) => nameOf(link.theirs().find((h) => h.id === id)?.who ?? partner)}
       villagers={() => [eng?.at(me), ...others.map((w) => eng?.at(w))].filter((p): p is [number, number] => !!p)}
       ondone={() => {
         editing = false;

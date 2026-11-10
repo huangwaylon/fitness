@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { mergeTent, tentLayout, TENT_MAX, type TentEntry, type TentOp } from '#lib/contract/tent.ts';
-import { clearStep, plan, type Ctx, type RoomNow, type Step } from './steps.ts';
+import { roomSaveOf, type RoomSaveOp } from '#lib/contract/roomSave.ts';
+import { clearStep, plan, restoreStep, savedPieces, type Ctx, type RoomNow, type Step } from './steps.ts';
 
 const T0 = Date.parse('2026-11-10T03:00:00.000Z');
 
@@ -78,5 +79,40 @@ describe('the clear and its undo', () => {
     r.put([{ sc: 'u', id: 'dclock01', at: T0 + 60, rm: true }]);
     r.run({ add: [clock] });
     expect(seen(r.now())).toEqual(before);
+  });
+});
+
+describe('a saved arrangement', () => {
+  const saveOf = (r: ReturnType<typeof room>, at = T0): Extract<RoomSaveOp, { name: string }> => {
+    const n = r.now();
+    const op = roomSaveOf({ sc: 'u', n: 1, at, name: 'いつもの', pieces: savedPieces(n), wall: n.wall, floor: n.floor, size: n.size });
+    expect(op).not.toBeNull();
+    return op as Extract<RoomSaveOp, { name: string }>;
+  };
+
+  it('saves the room as the record takes it, and calls it up exactly over a rearranged room; the undo brings that back', () => {
+    const r = furnished();
+    const saved = seen(r.now());
+    const save = saveOf(r);
+    // rearranged: the chair moved, the table (and its lamp) away, a new piece, another wallpaper, a smaller room
+    r.put([{ sc: 'u', id: 'dchair01', at: T0 + 10, item: 'f1432', x: 1, z: 1, f: 0, p: T0 }, { sc: 'u', id: 'dlamp001', at: T0 + 10, rm: true }, { sc: 'u', id: 'dtable01', at: T0 + 11, rm: true },
+      { sc: 'u', id: 'dnew0001', at: T0 + 12, item: 'f9999', x: 4, z: 1, f: 2, p: T0 + 12 }, { sc: 'u', id: 'dtentwall', at: T0 + 13, item: 'w1', x: 0, z: 0, f: 0, p: T0 }, { sc: 'u', id: 'dtentsize', at: T0 + 14, item: 's6', x: 0, z: 0, f: 0, p: T0 }]);
+    const changed = seen(r.now());
+    const { step, missing } = restoreStep(r.now(), save, () => true);
+    expect(missing).toEqual([]);
+    const res = r.run(step)!;
+    expect(res.ops.length).toBeLessThanOrEqual(2 * TENT_MAX + 3);
+    expect(seen(r.now())).toEqual(saved);
+    r.run(res.undo);
+    expect(seen(r.now())).toEqual(changed);
+  });
+
+  it('a piece nobody has to put down is left out, with what stands on it, and listed', () => {
+    const r = furnished();
+    const save = saveOf(r);
+    const { step, missing } = restoreStep(r.now(), save, (item) => item !== 'f4081');
+    expect(missing).toEqual(['f4081', 'f2220']);
+    r.run(step);
+    expect(r.now().pieces.map((p) => p.item).sort()).toEqual(['f1300', 'f1432', 'f7000']);
   });
 });

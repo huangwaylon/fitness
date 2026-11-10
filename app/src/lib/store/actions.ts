@@ -19,6 +19,7 @@ import {
 } from '#lib/contract/food.ts';
 import { nextDay } from '#lib/contract/tokyo.ts';
 import { newOpId } from '#lib/contract/ops.ts';
+import type { RoomSaveOp } from '#lib/contract/roomSave.ts';
 import { customs, foodDay, foodEntries, mealItems, recipes, repeats } from '#lib/model/food.ts';
 import { sellPrice } from '#lib/contract/shop.ts';
 import { GOODS } from '#lib/contract/pocket.ts';
@@ -339,6 +340,11 @@ export function sendDecors(ops: readonly object[]): void {
  *  record as one group: kept all or none (relay store.ts group, contract/api.ts GROUP_MAX). */
 export function sendDecorGroup(ops: readonly object[]): void {
   if (week.model && ops.length) week.sendMany('decor', ops.map((op) => ({ ...op })), newOpId('g', Date.now()));
+}
+
+/** A room's saved arrangement or its slot emptied (contract/roomSave.ts): false when the record wouldn't take it. */
+export function sendRoomSave(op: RoomSaveOp): boolean {
+  return week.model ? week.send('room_save', { ...op }).ok : false;
 }
 
 // ---- The meal log (ごはん, docs/backend.md#events `food`): each change of mine is one op carrying the entry's whole
