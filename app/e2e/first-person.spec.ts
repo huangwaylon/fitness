@@ -140,11 +140,11 @@ test('the tent: もようがえ arranges with the room’s camera, and the eyes 
 
 test('the museum: seated on a bench, the eye at the seated head, a look round keeps it seated, a tap on the floor gets up and walks', async ({ page }) => {
   test.setTimeout(60_000);
-  type H = R & { put(x: number, z: number): void; still(): boolean; seat(): { id: string; n: number } | null; benchPx(id: string, n: number): [number, number]; look(dx: number, dy: number): void };
+  type H = R & { put(x: number, z: number): void; still(): boolean; seat(): { id: string; n: number } | null; benchPx(id: string, n: number): [number, number]; look(dx: number, dy: number): void; spot(name: string): Promise<[number, number]> };
   const m = <T,>(fn: (h: H) => T) => page.evaluate(`(${fn.toString()})(window.__museum)`) as Promise<T>;
   await page.goto('museum' + Q);
   await page.waitForFunction(() => ((window as unknown as { __museum?: R }).__museum?.stats()?.frames ?? 0) > 0);
-  await m((h) => h.put(150, 10));
+  await m((h) => h.spot('room:fish').then(([x, z]) => h.put(x, z)));
   await expect.poll(() => m((h) => h.still()), { timeout: 10_000 }).toBe(true);
   const [bx, by] = await m((h) => h.benchPx('dmbench1', 0));
   await page.mouse.click(bx, by);
@@ -156,9 +156,10 @@ test('the museum: seated on a bench, the eye at the seated head, a look round ke
   await expect.poll(() => m((h) => !h.fpv()?.busy), { timeout: 10_000 }).toBe(true);
   const f0 = (await m((h) => h.fpv()))!;
   const seat = (await m((h) => h.seat()))!;
-  // (the bench's seats: x 124 ± 4.68, museum/seats.ts)
-  expect(Math.abs(f0.eye[0] - (seat.n === 0 ? 128.68 : 119.32))).toBeLessThan(3);
-  expect(Math.abs(f0.eye[2] + 21)).toBeLessThan(5);
+  // (the bench's seat: museum/seats.ts, its named spot)
+  const at = await page.evaluate((n) => (window as unknown as { __museum: H }).__museum.spot(`bench:dmbench1:${n}`), seat.n);
+  expect(Math.abs(f0.eye[0] - at[0])).toBeLessThan(3);
+  expect(Math.abs(f0.eye[2] - at[1])).toBeLessThan(5);
   expect(f0.eye[1]).toBeGreaterThan(10);
   expect(f0.eye[1]).toBeLessThan(17);
   // facing the great tank (−z)

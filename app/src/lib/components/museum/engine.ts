@@ -1,15 +1,16 @@
 // The museum in 3D (docs/design.md "The museum"): three.js, loaded only when the museum opens (its own chunk). NH's
-// museum on one floor (plan.ts): the entrance hall (its stone floor, NH's lobby brick, a red carpet to each wing, the
-// owl's medallion, Blathers at his desk), the bug wing to the left (a garden under glass: garden.ts), the aquarium to
-// the right (its tanks: aquarium.ts) and the sea creatures' room off it (seaLife.ts), the fossils and the art gallery
-// behind the hall (fossilWing.ts, gallery.ts). NH's floors and walls (scripts/world3d-models.ts
+// museum on one floor (plan.ts): the entrance hall (its stone floor, NH's lobby brick, its red runner and spurs, the
+// owl's medallion, Blathers at his desk), the bug garden to the left (garden.ts), the aquarium to the right (its tanks:
+// aquarium.ts, the sea creatures' alcove: seaLife.ts), the fossils' three rooms and the gallery's two behind the hall
+// (fossilWing.ts, gallery.ts), a plaque over each doorway. NH's floors and walls (scripts/world3d-models.ts
 // --museum: static/room/museum/tex/), lit warm. The camera is the rooms' (tent/engine.ts): NH's steep view, a drag turns
-// it, a pinch zooms; here it follows my villager through the rooms, and a wall between it and my villager is cut away.
+// it, a pinch zooms; here each room framed for the phone (camera.ts), following my villager, and a wall between it and
+// my villager is cut away.
 // The villagers are NH's own 3D models (villager3d/), walking as in the rooms. Drawn on demand: the full rate while
 // something moves (a walk, the camera), the exhibits' ambient rate (30 a second) while only they do, and nothing while
 // nothing on screen does. Plain TS; the screen (MuseumRoom.svelte) drives it.
 import {
-  AmbientLight, Box3, BoxGeometry, CanvasTexture, CircleGeometry, Color, CylinderGeometry, DirectionalLight, Frustum, Group, HemisphereLight,
+  AmbientLight, Box3, BoxGeometry, CanvasTexture, CircleGeometry, Color, DirectionalLight, Frustum, Group, HemisphereLight,
   Matrix4, Mesh, Sphere, MeshBasicMaterial, MeshLambertMaterial, PerspectiveCamera, Plane, PlaneGeometry, DoubleSide, Raycaster, RepeatWrapping,
   Scene, SRGBColorSpace, TextureLoader, Vector3, BufferGeometry, DataTexture, Float32BufferAttribute, LinearFilter, LinearMipmapLinearFilter, type Material, type MeshStandardMaterial, type Object3D, type Texture
 } from 'three';
@@ -33,16 +34,11 @@ import { modelBounds } from '../world3d/models3d.ts';
 import { ENTRY_HOLD_MS, PACE, VILLAGER_H, along, roomScreen, walkLens, type Insets, type Walk } from '../rooms/view.ts';
 import { EYE_MARGIN, clampEye, firstPerson as createFirstPerson, headAnchor, wrapAngle } from '../rooms/firstPerson.ts';
 import {
-  ART_WING, BACK_OPENING, BUG_WING, OPENING, SEA_OPENING, DESK, DOOR_HALF, DOORMAT, FISH_WING, FOSSIL_WING, HALL, HALL_H, OPENINGS, ROOMS, SEA_WING, WALLS, WING_H, inRect,
-  navOf, roomAt, walkable, wallEnds, wingAt, wingHeld, type Nav, type Pt, type Rect, type Wall, type Wing
+  BUG_WING, CARPETS, DESK, DOOR_HALF, DOORMAT, G1, HALL, HALL_H, HALL_PLANTS, ISLAND_RUG, OPENINGS, PLAQUE, ROOMS, WALLS, WING_H, doorTop, inRect,
+  navOf, roomHeld, roomIdAt, roomOf, walkable, wallEnds, wingOfRoom, type Nav, type Opening, type Pt, type Rect, type RoomId, type Wall, type Wing
 } from './plan.ts';
 import { GAIN, LIFT, LOOK, PORTAL, TINT, applyLook, lookAt, type Look as Light } from './look.ts';
-
-/** The rooms' camera: degrees down from level, the lens. */
-const PITCH = 47;
-const FOV = 32;
-/** How much of the floor the default view shows across (model units): about fifteen tiles. */
-const VIEW_W = 92;
+import { FOV, PITCH, enter, follow, framingOf, type CamTune, type Framing } from './camera.ts';
 /** The exhibits' rate (a second) while only they move; no finger on the room for REST_MS (the island's rest:
  *  world3d/engine.ts), REST_FPS: the battery and the phone's heat at rest. */
 const AMBIENT = 30, REST_MS = 2500, REST_FPS = 15;
@@ -60,8 +56,9 @@ export type Hit = { kind: 'villager'; who: Who } | { kind: 'creature'; id: strin
  *  ambient rate), the creature nearest client px (its id, its distance in px). */
 export interface Exhibit {
   group: Group;
-  /** The room it's in (the first person sees a wing only through its opening: hidden behind the walls, it rests). */
+  /** Its wing (what it shows), and the room it's drawn in (exhibits.ts sets it; else its wing's room). */
   wing: Wing;
+  room?: RoomId;
   blocks: readonly Rect[];
   /** What one sits on (the aquarium's benches: seats.ts): its id, its box on the floor (`h` tall). The walk keeps off
    *  it; a tap on it is the seat's; a seated villager's eye may be over it. */
@@ -148,12 +145,13 @@ export interface Museum {
   /** Which walls the cutaway takes away (WALLS' order: 1 cut, 0 standing; the e2e). */
   walls(): string;
   /** The room drawn (only it: the one my villager is in). */
-  room(): Wing;
+  room(): RoomId;
   /** Told when a doorway's dip starts (its colour) and ends (null): the screen fades to it and back; the room changes
    *  inside it. */
   onDip(fn: ((color: string | null) => void) | null): void;
-  /** The room's look retuned (look.ts; the dev hook's: the Simulator's tuning). */
-  tune(over: Partial<Light>): void;
+  /** The room's look retuned (look.ts), or its camera (camera.ts: viewW for this room, the wings' all at once; pitch
+   *  in degrees for every room): the dev hook's, the Simulator's tuning. */
+  tune(over: Partial<Light> & CamTune): void;
   kit: Kit;
   stats(): { frames: number; draws: number; calls: number; tris: number; dpr: number; cost: number[]; queued: boolean; ambient: number; loading: number; warming: boolean; mem: [number, number, number] };
   ready: Promise<void>;
@@ -233,26 +231,41 @@ function medallion(): CanvasTexture {
   return t;
 }
 
-/** A sign over an opening (NH's lobby plaques: the wing's name). */
-function plaque(text: string): CanvasTexture {
+/** A doorway's plaque (NH's lobby plaques: the room beyond's name, cream on walnut in a gold rim), PLAQUE_W × PLAQUE_H
+ *  model units; drawn again once the app's font is in (`then`: a frame for it). */
+const PLAQUE_W = 30, PLAQUE_H = 8;
+/** A side wall's plaque's turn from facing the room view (out from the wall into the room). */
+const BLADE = Math.PI / 6;
+const PLAQUE_FONT = '"Zen Maru Gothic", "Hiragino Maru Gothic ProN", system-ui, sans-serif';
+function plaque(text: string, then: () => void): CanvasTexture {
   const c = document.createElement('canvas');
-  c.width = 256;
-  c.height = 64;
+  c.width = 480;
+  c.height = 128;
   const g = c.getContext('2d')!;
-  g.fillStyle = '#5b3f2a';
-  g.beginPath();
-  g.roundRect(2, 2, 252, 60, 12);
-  g.fill();
-  g.strokeStyle = '#d5ad55';
-  g.lineWidth = 4;
-  g.stroke();
-  g.fillStyle = '#f6ecd2';
-  g.font = '700 30px "Zen Maru Gothic", "Hiragino Maru Gothic ProN", system-ui, sans-serif';
-  g.textAlign = 'center';
-  g.textBaseline = 'middle';
-  g.fillText(text, 128, 34);
+  const paint = () => {
+    g.clearRect(0, 0, 480, 128);
+    g.fillStyle = '#5b3f2a';
+    g.beginPath();
+    g.roundRect(3, 3, 474, 122, 22);
+    g.fill();
+    g.strokeStyle = '#d5ad55';
+    g.lineWidth = 7;
+    g.stroke();
+    g.fillStyle = '#fbf2dc';
+    g.font = `700 70px ${PLAQUE_FONT}`;
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillText(text, 240, 68, 430);
+  };
+  paint();
   const t = new CanvasTexture(c);
   t.colorSpace = SRGBColorSpace;
+  t.anisotropy = 4;
+  void document.fonts?.load(`700 70px "Zen Maru Gothic"`, text).then(() => {
+    paint();
+    t.needsUpdate = true;
+    then();
+  }, () => {});
   return t;
 }
 
@@ -385,9 +398,9 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const hemi = new HemisphereLight(), key = new DirectionalLight(), amb = new AmbientLight();
   scene.add(hemi, key, amb);
   /** The room drawn (only it: its shell, its exhibits, who's in it), and its look's tuning (the dev hook's). */
-  let cur: Wing = 'hall', nightN = 0;
+  let cur: RoomId = 'hall', nightN = 0;
   const tuned: Partial<Record<Wing, Partial<Light>>> = {};
-  const lookNow = () => lookAt(cur, nightN, tuned[cur]);
+  const lookNow = () => lookAt(wingOfRoom(cur), nightN, tuned[wingOfRoom(cur)]);
   const relight = () => applyLook({ hemi, key, amb }, renderer, scene, lookNow());
   relight();
 
@@ -475,12 +488,12 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
 
   // ---- the rooms: only the one my villager is in is drawn (its shell, its exhibits, who's in it); what each piece of
   //      the shell belongs to (a wall, a doorway's: both its rooms), shown by showRoom ----
-  const shell = new Map<Object3D, readonly Wing[]>();
-  const inRooms = <T extends Object3D>(o: T, ws: readonly Wing[]): T => (shell.set(o, ws), o);
+  const shell = new Map<Object3D, readonly RoomId[]>();
+  const inRooms = <T extends Object3D>(o: T, rs: readonly RoomId[]): T => (shell.set(o, rs), o);
 
   // ---- the floors (each room's, a warm apron past its front edge: under the cut front wall, never the void) ----
   const APRON = 60;
-  const floor = (r: Rect, mat: Material, ws: readonly Wing[], y = 0) => {
+  const floor = (r: Rect, mat: Material, ws: readonly RoomId[], y = 0) => {
     const m = new Mesh(new PlaneGeometry(r.x1 - r.x0, r.z1 - r.z0), mat);
     m.rotation.x = -Math.PI / 2;
     m.position.set((r.x0 + r.x1) / 2, y, (r.z0 + r.z1) / 2);
@@ -511,28 +524,24 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     m.color.set(TINT[wing].floor).multiplyScalar(dim * GAIN[wing].floor);
     return m;
   };
-  for (const { wing, r } of ROOMS) {
-    floor(r, floorOf(wing, r), [wing]);
+  for (const { id, wing, r } of ROOMS) {
+    floor(r, floorOf(wing, r), [id]);
     // (below the floors: under a neighbour's, hidden with it)
     const apron = { x0: r.x0, x1: r.x1, z0: r.z1, z1: r.z1 + APRON };
-    floor(apron, floorOf(wing, apron, 0.62), [wing], -1);
+    floor(apron, floorOf(wing, apron, 0.62), [id], -1);
   }
   // the openings' thresholds (through the walls: the floor of the room each is counted to; both rooms')
   for (const o of OPENINGS) {
     const r = o.axis === 'x' ? { x0: o.at - 2, x1: o.at + 2, z0: o.from, z1: o.to } : { x0: o.from, x1: o.to, z0: o.at - 2, z1: o.at + 2 };
     // (its room's floor run on through the wall, tiled from the origin as it is: no seam)
-    floor(r, decal(floorOf(o.wing === 'bug' ? 'hall' : o.wing, r), 1), [o.wing, o.beyond], 0.01);
+    floor(r, decal(floorOf(o.wing === 'bug' ? 'hall' : o.wing, r), 1), [o.room, o.next], 0.01);
   }
-  // the red carpets (carpet.ts: each room's strips one seamless carpet, its border round them all): the door to the
-  // medallion and on to each opening; the fossils' along the front row and down the middle aisle (fossils.ts)
-  const RUN = 8, BACK_X = (BACK_OPENING.x0 + BACK_OPENING.x1) / 2;
-  const STRIPS: Rect[] = [
-    { x0: -RUN, x1: RUN, z0: 20, z1: HALL.z1 }, { x0: HALL.x0, x1: -16, z0: 10 - RUN, z1: 10 + RUN }, { x0: 16, x1: HALL.x1, z0: 10 - RUN, z1: 10 + RUN },
-    { x0: -BACK_X - RUN, x1: -BACK_X + RUN, z0: HALL.z0, z1: 10 }, { x0: BACK_X - RUN, x1: BACK_X + RUN, z0: HALL.z0, z1: 10 },
-    { x0: -296, x1: -4, z0: -130 - RUN, z1: -130 + RUN }, { x0: -150 - RUN, x1: -150 + RUN, z0: -372, z1: -130 }
-  ];
-  for (const ws of new Set(STRIPS.map((r) => wingAt((r.x0 + r.x1) / 2, (r.z0 + r.z1) / 2)))) {
-    const strips = STRIPS.filter((r) => wingAt((r.x0 + r.x1) / 2, (r.z0 + r.z1) / 2) === ws), ct = carpetTexture(strips), g = carpetGeometry(strips, ct);
+  // the carpets (plan.ts CARPETS; carpet.ts: each room's strips one seamless carpet, its border round them all): the
+  // hall's runner from the door to the desk and its spurs to the arches, the fossils' and the gallery's ways in; the
+  // T. rex's island its own green rug
+  const carpets: { room: RoomId; rects: readonly Rect[]; pile?: 'green' }[] = [...CARPETS, { room: 'F2', rects: [ISLAND_RUG], pile: 'green' }];
+  for (const { room, rects: strips, pile } of carpets) {
+    const ct = carpetTexture(strips, pile), g = carpetGeometry(strips, ct);
     const t = new DataTexture(ct.data, ct.w, ct.h);
     t.colorSpace = SRGBColorSpace;
     t.magFilter = LinearFilter;
@@ -549,12 +558,12 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const m = new Mesh(geo, lambert({ map: t, layer: 2 }));
     m.position.y = 0.05;
     m.userData.floor = true;
-    scene.add(inRooms(m, [ws]));
+    scene.add(inRooms(m, [room]));
   }
-  // the owl's medallion in the middle
+  // the owl's medallion where the runner meets the side arches' spurs (3.8 tiles across: a mark, not a pit)
   const medTex = medallion();
   disposables.push(medTex);
-  const med = new Mesh(new CircleGeometry(22, 48), lambert({ map: medTex, layer: 3 }));
+  const med = new Mesh(new CircleGeometry(19, 48), lambert({ map: medTex, layer: 3 }));
   med.rotation.x = -Math.PI / 2;
   med.position.set(0, 0.08, 10);
   med.userData.floor = true;
@@ -586,7 +595,9 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   interface WallMesh {
     w: Wall;
     /** The rooms either side (drawn while one's in either), and whether that's now. */
-    rooms: Wing[];
+    rooms: RoomId[];
+    /** The room on its +z face and on its −z (its local frame), or the outside. */
+    sides: [RoomId | null, RoomId | null];
     here: boolean;
     mesh: Mesh;
     trim: Mesh | null;
@@ -622,22 +633,22 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     // its two sides: +z of the slab (its local frame) and −z, each facing a room or the outside
     const len = Math.hypot(wl.b[0] - wl.a[0], wl.b[1] - wl.a[1]), nx = -(wl.b[1] - wl.a[1]) / len, nz = (wl.b[0] - wl.a[0]) / len;
     const mx = (wl.a[0] + wl.b[0]) / 2, mz = (wl.a[1] + wl.b[1]) / 2;
-    const side = (k: number) => roomAt(mx + nx * k * 4, mz + nz * k * 4);
+    const side = (k: number) => roomIdAt(mx + nx * k * 4, mz + nz * k * 4);
     // BoxGeometry's faces: +x, −x, +y, −y, +z, −z; turned by the yaw below, its local +z is the wall's normal (nx, nz)
     // (the bug wing's backdrop: one picture across each wall, its sky and palms, not tiled)
     const geo = new BoxGeometry(s.len, wl.h, T);
     const mats = new Map<Material, MeshLambertMaterial>();
-    const matFor = (r: Wing | null) => own(mats, r ? wallMat[r] : outMat), cap = own(mats, capMat);
+    const matFor = (r: RoomId | null) => own(mats, r ? wallMat[wingOfRoom(r)] : outMat), cap = own(mats, capMat);
     const mesh = new Mesh(geo, [cap, cap, cap, cap, matFor(side(1)), matFor(side(-1))]);
     mesh.position.set(s.x, wl.h / 2, s.z);
     mesh.rotation.y = s.yaw;
     scene.add(mesh);
-    // its foot: the room's face (the bottom of its texture, not squashed), the cap's stone elsewhere, a little proud of
-    // the slab (seen only while the slab is cut or fading)
+    // its foot: the face toward the room drawn its wall (the bottom of its texture, not squashed), the cap's stone
+    // elsewhere (the outside, or the next room's side: kickFaces), a little proud of the slab (seen only while the slab
+    // is cut or fading)
     const kg = new BoxGeometry(s.len, KICK, T + 0.3), uv = kg.attributes.uv;
     for (let k = 16; k < 24; k++) uv.setY(k, uv.getY(k) * (KICK / wl.h));
-    const kickFor = (r: Wing | null) => (r ? wallMat[r] : capMat);
-    const kick = new Mesh(kg, [capMat, capMat, capMat, capMat, kickFor(side(1)), kickFor(side(-1))]);
+    const kick = new Mesh(kg, [capMat, capMat, capMat, capMat, capMat, capMat]);
     kick.position.set(s.x, KICK / 2, s.z);
     kick.rotation.y = s.yaw;
     kick.visible = false;
@@ -651,27 +662,26 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       trimMesh.rotation.y = t.yaw;
       scene.add(trimMesh);
     }
-    const rooms = [...new Set([side(1), side(-1)].filter((r): r is Wing => !!r))];
+    const rooms = [...new Set([side(1), side(-1)].filter((r): r is RoomId => !!r))];
     walls.push({
-      w: wl, rooms, here: rooms.includes(cur), mesh, trim: trimMesh, kick, mats: [...mats.values()], cut: false, fade: 1,
+      w: wl, rooms, sides: [side(1), side(-1)], here: rooms.includes(cur), mesh, trim: trimMesh, kick, mats: [...mats.values()], cut: false, fade: 1,
       box: { x: s.x, z: s.z, c: Math.cos(s.yaw), s: Math.sin(s.yaw), l: s.len / 2, h: wl.h + 2.5, t: T / 2 }
     });
   });
 
   // ---- the first person's (fpvOnly: shown only then): the ceilings, facing down (from above, their backs: culled, so the
-  //      glide down past them shows nothing), a lintel over each opening from the wings' height up to the hall's
-  //      cornice, the front doorway's lintel and its closed door ----
+  //      glide down past them shows nothing), the front doorway's lintel and its closed door ----
   const fpvOnly: Mesh[] = [];
-  const fpvMesh = (m: Mesh, ws: readonly Wing[]) => {
+  const fpvMesh = (m: Mesh, rs: readonly RoomId[]) => {
     m.visible = false;
     m.userData.fpv = true;
     fpvOnly.push(m);
-    scene.add(inRooms(m, ws));
+    scene.add(inRooms(m, rs));
     return m;
   };
   const CORNICE = HALL_H + 2.45;
-  const ceil = (r: Rect, y: number, m: Material, wing: Wing) => {
-    const c = fpvMesh(new Mesh(new PlaneGeometry(r.x1 - r.x0, r.z1 - r.z0), m), [wing]);
+  const ceil = (r: Rect, y: number, m: Material, room: RoomId) => {
+    const c = fpvMesh(new Mesh(new PlaneGeometry(r.x1 - r.x0, r.z1 - r.z0), m), [room]);
     c.rotation.x = Math.PI / 2;
     c.position.set((r.x0 + r.x1) / 2, y, (r.z0 + r.z1) / 2);
     c.userData.ceiling = true;
@@ -684,71 +694,110 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   // gallery's coffers warmer)
   const CEIL_DAY = [0xe6dccb, TINT.fish.ceil!, 0xffffff, TINT.fossil.ceil!, 0xf0dcc0];
   const galleryTex = cofferTex.clone();
-  galleryTex.repeat.set(...tw(ART_WING, 24));
+  galleryTex.repeat.set(...tw(G1, 24));
   const ceilMats = [new MeshBasicMaterial({ map: cofferTex }), new MeshBasicMaterial(), new MeshBasicMaterial({ map: roofTex }), new MeshBasicMaterial(), new MeshBasicMaterial({ map: galleryTex })];
   ceilMats.forEach((m, i) => m.color.set(CEIL_DAY[i]));
   disposables.push(cofferTex, roofTex, galleryTex, ...ceilMats);
   ceil(HALL, CORNICE, ceilMats[0], 'hall');
-  // (the wings' from the far face of the hall's wall: the lintels' undersides lie at WING_H too, over the wall)
+  // (the rooms' from the far face of the hall's walls: the hall's lintels' undersides lie at WING_H too, over the wall)
   const CEIL_OF: Record<Exclude<Wing, 'hall'>, MeshBasicMaterial> = { fish: ceilMats[1], sea: ceilMats[1], bug: ceilMats[2], fossil: ceilMats[3], art: ceilMats[4] };
-  for (const { wing, r } of ROOMS) {
+  for (const { id, wing, r } of ROOMS) {
     if (wing === 'hall') continue;
     const c = { ...r };
-    if (c.x0 === HALL.x1 && c.z0 <= HALL.z0 + 1 && c.z1 >= HALL.z1 - 1) c.x0 += T / 2;
-    if (c.x1 === HALL.x0 && c.z0 <= HALL.z0 + 1 && c.z1 >= HALL.z1 - 1) c.x1 -= T / 2;
+    if (c.x0 === HALL.x1) c.x0 += T / 2;
+    if (c.x1 === HALL.x0) c.x1 -= T / 2;
     if (c.z1 === HALL.z0) c.z1 -= T / 2;
-    ceil(c, WING_H, CEIL_OF[wing], wing);
-  }
-  const lintel = (x0: number, x1: number, y0: number, z0: number, z1: number, ws: readonly Wing[]) => {
-    const b = fpvMesh(new Mesh(new BoxGeometry(x1 - x0, CORNICE - y0, z1 - z0), lambert({ map: tex('hall-wall', [Math.max(x1 - x0, z1 - z0) / 30, (CORNICE - y0) / 32]) })), ws);
-    b.position.set((x0 + x1) / 2, (CORNICE + y0) / 2, (z0 + z1) / 2);
-  };
-  // (over the hall's doorways from the wings' height to its cornice; over the sea creatures' a lintel of its own, lower)
-  const SEA_DOOR_H = 38;
-  for (const o of OPENINGS) {
-    const ws = [o.wing, o.beyond];
-    if (o.wing === 'hall' && o.axis === 'x') lintel(o.at - T / 2, o.at + T / 2, WING_H, o.from, o.to, ws);
-    else if (o.wing === 'hall') lintel(o.from, o.to, WING_H, o.at - T / 2, o.at + T / 2, ws);
-    else {
-      const b = fpvMesh(new Mesh(new BoxGeometry(T, WING_H - SEA_DOOR_H, o.to - o.from), lambert({ map: tex('fish-wall', [1, 0.4]), color: TINT.fish.wall })), ws);
-      b.position.set(o.at, (WING_H + SEA_DOOR_H) / 2, (o.from + o.to) / 2);
-    }
+    ceil(c, WING_H, CEIL_OF[wing], id);
   }
   const DOOR_H = 32;
-  lintel(-DOOR_HALF, DOOR_HALF, DOOR_H, HALL.z1 - T / 2, HALL.z1 + T / 2, ['hall']);
+  const frontLintel = fpvMesh(new Mesh(new BoxGeometry(DOOR_HALF * 2, CORNICE - DOOR_H, T), lambert({ map: tex('hall-wall', [(DOOR_HALF * 2) / 30, (CORNICE - DOOR_H) / 32]) })), ['hall']);
+  frontLintel.position.set(0, (CORNICE + DOOR_H) / 2, HALL.z1);
   const doorT = doorTex();
   disposables.push(doorT);
   const frontDoor = fpvMesh(new Mesh(new PlaneGeometry(DOOR_HALF * 2, DOOR_H), lambert({ map: doorT })), ['hall']);
   frontDoor.position.set(0, DOOR_H / 2, HALL.z1 + 0.5);
   frontDoor.rotation.y = Math.PI;
 
-  // ---- each doorway's card: the room beyond isn't drawn, so its opening shows that room's mood (look.ts PORTAL), a
-  //      glow brighter at the floor; one card a side, each seen from its own room; a tap on it goes through ----
+  // ---- each doorway: a lintel over it (its wall's stone, from the doorway's top up to the wall's), a plaque on it naming
+  //      the room beyond (spaced kana, toward the room it's read from; in a side wall standing out from it, turned most
+  //      of the way toward the camera, so the room view reads it too), and a card in the opening: the room beyond isn't drawn, so
+  //      its opening shows that room's mood (look.ts PORTAL), a glow brighter at the floor; one card a side, each seen
+  //      from its own room; a tap on it goes through. Each stands with its doorway's wall: once that's cut away (a front
+  //      wall in the room view) the lintel goes, the card drops to the wall's foot and the plaque stands just over it ----
   const glow = portalGlow();
   disposables.push(glow);
   const portals: Mesh[] = [];
+  /** A doorway: its lintel, plaque and cards, its jambs (the walls it's in), where the plaque hangs (x, y, z, yaw) with
+   *  the wall standing and with it cut away, its top, and whether it's cut now. */
+  interface Doorway { o: Opening; jambs: WallMesh[]; lintel: Mesh; plaque: Group | null; up: number[]; down: number[]; cards: Mesh[]; top: number; cut: boolean }
+  const doorways: Doorway[] = [];
+  const plaqueGeo = new PlaneGeometry(PLAQUE_W, PLAQUE_H);
+  disposables.push(plaqueGeo);
   for (const o of OPENINGS) {
-    const mid = (o.from + o.to) / 2, len = o.to - o.from;
-    const onEdge = (p: Pt) => (o.axis === 'x' ? p[0] === o.at && (p[1] === o.from || p[1] === o.to) : p[1] === o.at && (p[0] === o.from || p[0] === o.to));
-    const h = Math.max(WING_H, ...WALLS.filter((w) => onEdge(w.a) || onEdge(w.b)).map((w) => w.h));
-    for (const k of [1, -1]) {
-      const near = o.axis === 'x' ? roomAt(o.at + k * 5, mid) : roomAt(mid, o.at + k * 5), far = near === o.wing ? o.beyond : o.wing;
+    const mid = (o.from + o.to) / 2, len = o.to - o.from, top = doorTop(o);
+    const along = (w: Wall) => (o.axis === 'x' ? w.a[0] === o.at && w.b[0] === o.at : w.a[1] === o.at && w.b[1] === o.at);
+    const onEdge = (p: Pt) => (o.axis === 'x' ? p[1] === o.from || p[1] === o.to : p[0] === o.from || p[0] === o.to);
+    const jambs = walls.filter((w) => along(w.w) && (onEdge(w.w.a) || onEdge(w.w.b)));
+    const h = Math.max(WING_H, ...jambs.map((w) => w.w.h)), wallTop = h === HALL_H ? CORNICE : h;
+    const wing = wingOfRoom(o.room), stone = wing === 'hall' || wing === 'bug';
+    const lm = lambert({ map: stone ? tex('hall-wall', [len / 30, (wallTop - top) / 32]) : wallMat[wing].map });
+    if (!stone) lm.color.copy(wallMat[wing].color);
+    const lintel = new Mesh(o.axis === 'x' ? new BoxGeometry(T, wallTop - top, len) : new BoxGeometry(len, wallTop - top, T), lm);
+    lintel.position.set(o.axis === 'x' ? o.at : mid, (wallTop + top) / 2, o.axis === 'x' ? mid : o.at);
+    scene.add(inRooms(lintel, [o.room, o.next]));
+    // its plaque, read from its room (two faces back to back: a turned one is seen from either side)
+    const k = (o.axis === 'x' ? roomIdAt(o.at + 5, mid) : roomIdAt(mid, o.at + 5)) === o.room ? 1 : -1;
+    const py = (top + wallTop) / 2;
+    const up = o.axis === 'z' ? [mid, py, o.at + k * (T / 2 + 0.2), k > 0 ? 0 : Math.PI] : [o.at + k * (T / 2 + 0.3 + (PLAQUE_W / 2) * Math.cos(BLADE)), py, mid, k * BLADE];
+    const down = o.axis === 'z' ? [mid, KICK + 3 + PLAQUE_H / 2, o.at, 0] : up;
+    let board: Group | null = null;
+    if (o.next !== 'hall') {
+      const pm = new MeshBasicMaterial({ map: plaque(PLAQUE[o.next], () => invalidate()), transparent: true });
+      disposables.push(pm.map!, pm);
+      board = new Group();
+      const front = new Mesh(plaqueGeo, pm), back = new Mesh(plaqueGeo, pm);
+      back.rotation.y = Math.PI;
+      front.position.z = 0.05;
+      back.position.z = -0.05;
+      board.add(front, back);
+      board.position.set(up[0], up[1], up[2]);
+      board.rotation.y = up[3];
+      scene.add(inRooms(board, [o.room]));
+    }
+    const cards: Mesh[] = [];
+    for (const kk of [1, -1]) {
+      const near = o.axis === 'x' ? roomIdAt(o.at + kk * 5, mid) : roomIdAt(mid, o.at + kk * 5), far = near === o.room ? o.next : o.room;
       if (!near) continue;
-      const card = new Mesh(new PlaneGeometry(len, h), new MeshBasicMaterial({ map: glow, color: PORTAL[far] }));
+      const card = new Mesh(new PlaneGeometry(len, top), new MeshBasicMaterial({ map: glow, color: PORTAL[wingOfRoom(far)] }));
       disposables.push(card.material);
-      card.position.set(o.axis === 'x' ? o.at : mid, h / 2, o.axis === 'x' ? mid : o.at);
-      card.rotation.y = o.axis === 'x' ? (k * Math.PI) / 2 : k > 0 ? 0 : Math.PI;
+      card.position.set(o.axis === 'x' ? o.at : mid, top / 2, o.axis === 'x' ? mid : o.at);
+      card.rotation.y = o.axis === 'x' ? (kk * Math.PI) / 2 : kk > 0 ? 0 : Math.PI;
       card.userData.portal = { o, into: far };
       scene.add(inRooms(card, [near]));
       portals.push(card);
+      cards.push(card);
     }
+    doorways.push({ o, jambs, lintel, plaque: board, up, down, cards, top, cut: false });
+  }
+  /** A doorway's dressing with its wall: standing, or cut away (the lintel gone, the card at the wall's foot, the plaque
+   *  just over it). */
+  function doorwayShown(d: Doorway) {
+    const cut = d.jambs.some((w) => w.fade < 0.5);
+    d.lintel.visible = (d.o.room === cur || d.o.next === cur) && !cut;
+    if (cut === d.cut) return;
+    d.cut = cut;
+    for (const c of d.cards) {
+      c.scale.y = cut ? KICK / d.top : 1;
+      c.position.y = (cut ? KICK : d.top) / 2;
+    }
+    const at = cut ? d.down : d.up;
+    d.plaque?.position.set(at[0], at[1], at[2]);
+    d.plaque?.rotation.set(0, at[3], 0);
   }
   /** What a tap's ray stops at, at the eyes: the walls, their cornices, the lintels, the door, the ceilings, the doorways' cards. */
-  const occluders: Object3D[] = [...walls.flatMap((w) => (w.trim ? [w.mesh, w.trim] : [w.mesh])), ...fpvOnly, ...portals];
-  /** Each room's exhibits drawn (only the room one is in). */
-  const wingSeen: Record<Wing, boolean> = { hall: true, bug: false, fish: false, sea: false, fossil: false, art: false };
+  const occluders: Object3D[] = [...walls.flatMap((w) => (w.trim ? [w.mesh, w.trim] : [w.mesh])), ...doorways.map((d) => d.lintel), ...fpvOnly, ...portals];
 
-  // ---- the hall's furnishing: banners, the plaques, Blathers' desk ----
+  // ---- the hall's furnishing: banners, Blathers' desk at the back in the middle, the plants ----
   const wood0 = lambert({ color: 0x7a5234 });
   const redTex = tex('hall-red', [1, 2]);
   for (const x of [-26, 26]) {
@@ -756,58 +805,38 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     b.position.set(x, 30, HALL.z0 + 2);
     scene.add(b);
   }
-  // each wing's sign by its opening (NH's lobby signs: on a post, facing whoever comes in)
-  const postGeo = new CylinderGeometry(0.7, 0.7, 14, 8);
-  disposables.push(postGeo);
-  const sign = (text: string) => {
-    const t = plaque(text);
-    disposables.push(t);
-    return new Mesh(new PlaneGeometry(18, 4.5), new MeshBasicMaterial({ map: t, transparent: true }));
-  };
-  const SIGNS: [string, number, number][] = [
-    ['こんちゅう', HALL.x0 + 14, OPENING.z1 + 6], ['さかな', HALL.x1 - 14, OPENING.z1 + 6],
-    ['かせき', -BACK_OPENING.x0 + 3, HALL.z0 + 8], ['びじゅつ', BACK_OPENING.x0 - 3, HALL.z0 + 8], ['うみの さち', FISH_WING.x1 - 14, SEA_OPENING.z1 + 4]
-  ];
-  for (const [text, x, z] of SIGNS) {
-    const board = sign(text);
-    board.position.set(x, 15, z);
-    board.rotation.x = -0.35;
-    const post = new Mesh(postGeo, wood0);
-    post.position.set(x, 7, z - 0.4);
-    scene.add(board, post);
-  }
-  // Blathers' desk at the back of the hall, NH's: wood, a green top; Blathers behind it (curator.ts, an exhibit)
+  // Blathers' desk, NH's: wood, a green top; Blathers behind it (curator.ts, an exhibit)
   const desk = new Group();
-  const wood = wood0;
   const top = new Mesh(new BoxGeometry(DESK.x1 - DESK.x0, 1.6, DESK.z1 - DESK.z0), lambert({ color: 0x3f6b4a }));
   top.position.y = DESK.h - 0.8;
-  const body = new Mesh(new BoxGeometry(DESK.x1 - DESK.x0 - 2, DESK.h - 1.6, DESK.z1 - DESK.z0 - 2), wood);
+  const body = new Mesh(new BoxGeometry(DESK.x1 - DESK.x0 - 2, DESK.h - 1.6, DESK.z1 - DESK.z0 - 2), wood0);
   body.position.y = (DESK.h - 1.6) / 2;
   desk.add(top, body);
   desk.position.set((DESK.x0 + DESK.x1) / 2, 0, (DESK.z0 + DESK.z1) / 2);
   scene.add(desk);
   const BLOCKS: Rect[] = [{ x0: DESK.x0 - 1, x1: DESK.x1 + 1, z0: DESK.z0, z1: DESK.z1 }, { x0: DESK.x0 - 2, x1: DESK.x1 + 2, z0: HALL.z0, z1: DESK.z0 }];
-  for (const [x, z] of [[-50, 58], [50, 58]] as const) {
-    prop(x < 0 ? 'heliconia' : 'anthurium', x, z, { s: x < 0 ? 1.6 : 2.4 });
+  for (const [name, x, z, sc] of HALL_PLANTS) {
+    prop(name, x, z, { s: sc });
     BLOCKS.push({ x0: x - 4, x1: x + 4, z0: z - 4, z1: z + 4 });
   }
   // (the rest of the shell, the furnishing: the room each stands in)
-  for (const n of scene.children) if (!shell.has(n) && !(n as { isLight?: boolean }).isLight && !walls.some((w) => w.mesh === n || w.trim === n || w.kick === n)) shell.set(n, [wingAt(n.position.x, n.position.z)]);
+  for (const n of scene.children) if (!shell.has(n) && !(n as { isLight?: boolean }).isLight && !walls.some((w) => w.mesh === n || w.trim === n || w.kick === n)) shell.set(n, [roomIdAt(n.position.x, n.position.z) ?? 'hall']);
   showRoom();
 
-  // ---- the exhibits ----
+  // ---- the exhibits (each drawn only in its room) ----
   const exhibits: Exhibit[] = [];
+  const roomOfExhibit = (e: Exhibit): RoomId => e.room ?? (e.wing === 'sea' ? 'fish' : e.wing === 'fossil' ? 'F1' : e.wing === 'art' ? 'G1' : e.wing);
   let nav = navOf(BLOCKS);
   /** What stands on the floors (the walk keeps off it; the first person's eye too). */
   let solids: Rect[] = BLOCKS;
   /** The same less the seats (a seated villager's eye is over its own), and the seats to tap (their boxes). */
   let solidsSeated: Rect[] = BLOCKS;
-  let seatBoxes: { id: string; box: Box3; wing: Wing }[] = [];
+  let seatBoxes: { id: string; box: Box3; room: RoomId }[] = [];
   function blocksChanged() {
     solidsSeated = [...BLOCKS, ...exhibits.flatMap((x) => x.blocks)];
-    const seats = exhibits.flatMap((x) => (x.seats ?? []).map((r) => ({ ...r, wing: x.wing })));
+    const seats = exhibits.flatMap((x) => (x.seats ?? []).map((r) => ({ ...r, room: roomOfExhibit(x) })));
     nav = navOf((solids = [...solidsSeated, ...seats]));
-    seatBoxes = seats.map((r) => ({ id: r.id, wing: r.wing, box: new Box3(new Vector3(r.x0, 0, r.z0), new Vector3(r.x1, r.h, r.z1)) }));
+    seatBoxes = seats.map((r) => ({ id: r.id, room: r.room, box: new Box3(new Vector3(r.x0, 0, r.z0), new Vector3(r.x1, r.h, r.z1)) }));
   }
   function exhibit(e: Exhibit) {
     // (one built after the room was left: the exhibits' chunk landing late)
@@ -1021,18 +1050,31 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     return v.blink(t) && false;
   }
 
-  // ---- the camera: NH's room view, following my villager ----
+  // ---- the camera: NH's room view, each room framed for the phone (camera.ts: its view's width, the target's range in
+  //      it, a dead zone either side), following my villager ----
   const DEF = { az: 0, pitch: (PITCH * Math.PI) / 180, k: 1 };
   const PITCH_MIN = (28 * Math.PI) / 180, PITCH_MAX = (78 * Math.PI) / 180;
   const K_MIN = 0.45, K_MAX = 1.8;
   const view = { ...DEF };
   const target = new Vector3(0, 8, 50);
+  /** Where the camera means to look (camera.ts follow: still while my villager is within the dead zone), the target
+   *  eased toward it. */
+  let goal: Pt = [0, 50];
   let baseD = 400, shiftY = 0;
   let easing: { from: typeof DEF; t0: number } | null = null;
   let gesturing = false;
   /** A finger's last on the room (a drag, a pinch, a tap, the first person's look): the exhibits' rest after REST_MS. */
   let lastInput = now();
   const touched = () => void (lastInput = now());
+  /** The camera's tuning (the dev hook's): a view width a room, a pitch for all. */
+  const camTune: { viewW: Partial<Record<RoomId, number>>; pitch?: number } = { viewW: {} };
+  /** The room drawn's framing on this screen. */
+  let framed: Framing = framingOf('hall');
+  function frameRoom() {
+    const W = canvas.clientWidth || 1, H = canvas.clientHeight || 1;
+    framed = framingOf(cur, { W, H, top: insets.top, bottom: insets.bottom }, { viewW: camTune.viewW[cur], pitch: camTune.pitch });
+    baseD = Math.min(900, Math.max(180, framed.d));
+  }
   function fit() {
     const W = canvas.clientWidth || 1, H = canvas.clientHeight || 1;
     // (only a new size: setting the canvas's width clears it even to the same value, and the ResizeObserver's first
@@ -1041,9 +1083,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     if (canvas.width !== Math.floor(W * pr) || canvas.height !== Math.floor(H * pr)) renderer.setSize(W, H, false);
     camera.aspect = W / H;
     const bandH = Math.max(0.3 * H, H - insets.top - insets.bottom);
-    // VIEW_W across the floor at the target, within the screen's width
-    baseD = VIEW_W / 2 / (Math.tan(((FOV / 2) * Math.PI) / 180) * camera.aspect);
-    baseD = Math.min(900, Math.max(180, baseD));
+    frameRoom();
     shiftY = H / 2 - (insets.top + bandH / 2);
     camera.setViewOffset(W, H, 0, shiftY, W, H);
     camera.updateProjectionMatrix();
@@ -1072,19 +1112,12 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     fp.apply(camera, FOV, Math.max(4, 0.8 * (camera.position.y - TOP)), target);
     cutaway();
   }
-  /** Where the camera looks for a villager at (x, z): a little ahead of it, kept over the floors (the view's lower edge
-   *  never far past the front walls: the hall's is nearer than the wings'; nor past the side walls; behind the hall, the
-   *  fossils' and the art's own depth). */
-  const CAM_Z: Record<Wing, [number, number]> = {
-    hall: [-30, HALL.z1 - 84], bug: [-60, BUG_WING.z1 - 84], fish: [-60, FISH_WING.z1 - 84], sea: [-60, SEA_WING.z1 - 84],
-    // (behind the hall a little further back: the view's foot stops near the front wall, the wing in front of it the
-    // bug wing's or the aquarium's, not the outside's dark)
-    fossil: [FOSSIL_WING.z0 + 40, FOSSIL_WING.z1 - 110], art: [ART_WING.z0 + 40, ART_WING.z1 - 110]
-  };
-  function camSpot(x: number, z: number): [number, number] {
-    // (in a passage behind the hall the hall's view: the room beyond comes into it once one's through)
-    const w = wingAt(x, z), [lo, hi] = CAM_Z[(w === 'fossil' || w === 'art') && z > FOSSIL_WING.z1 ? 'hall' : w];
-    return [Math.max(BUG_WING.x0 + 70, Math.min(SEA_WING.x1 - 50, x)), Math.max(lo, Math.min(hi, z - 4))];
+  /** The camera on my villager at (x, z) at once (a room entered, a put): as near as the room's framing lets. */
+  function snapCamera(x: number, z: number) {
+    frameRoom();
+    goal = enter(framed, [x, z]);
+    target.set(goal[0], 8, goal[1]);
+    aim();
   }
   /** The cutaway: which walls go. Two rules, each stable as one walks (a wall changes only when the camera turns past
    *  it or one passes it, never back and forth on the way):
@@ -1098,6 +1131,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const cutWas = new Float64Array(9).fill(NaN);
   function cutaway() {
     for (const m of fpvOnly) m.visible = fp.mix > 0 && shell.get(m)!.includes(cur);
+    for (const d of doorways) doorwayShown(d);
     // (at the eyes, inside: every wall stands)
     if (fp.inside()) {
       for (const wm of walls) wm.cut = false;
@@ -1173,27 +1207,31 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     wm.mesh.visible = wm.here && wm.fade > 0;
     if (wm.trim) wm.trim.visible = wm.mesh.visible;
     wm.kick.visible = wm.here && wm.fade < 1;
+    for (const d of doorways) if (d.jambs.includes(wm)) doorwayShown(d);
   }
 
   // ---- the room drawn: the one my villager is in (held a band past a doorway, a while between changes), changed
   //      inside a dip of the screen to its colour (the screen's: onDip), never on a put (at once: the e2e's) ----
   const SWAP_BAND = 10, SWAP_GAP = 400, DIP_OUT = 150;
-  let held: Wing = 'hall', swapAt = -Infinity, dipT: ReturnType<typeof setTimeout> | undefined, dipping = false;
+  let held: RoomId = 'hall', swapAt = -Infinity, dipT: ReturnType<typeof setTimeout> | undefined, dipping = false;
   let onDip: ((color: string | null) => void) | null = null;
   /** Only the room one is in shown: its shell, its walls, its exhibits (frame), its look. */
   function showRoom() {
     for (const [o, ws] of shell) o.visible = ws.includes(cur) && (!o.userData.fpv || fp.mix > 0);
     for (const wm of walls) {
       wm.here = wm.rooms.includes(cur);
+      // (a cut wall's foot: the room's own face inside, stone toward the next room as toward the outside)
+      const ms = wm.kick.material as Material[];
+      wm.sides.forEach((r, k) => (ms[4 + k] = r === cur ? wallMat[wingOfRoom(r)] : capMat));
       wallShown(wm);
     }
-    for (const k of Object.keys(wingSeen) as Wing[]) wingSeen[k] = k === cur;
+    for (const d of doorways) doorwayShown(d);
     outMat.color.setHex(lookNow().bg);
     for (const wm of walls) for (const m of wm.mats) if (m.userData.of === outMat) m.color.copy(outMat.color);
   }
   /** Into room `w` now: its look, its shell, the camera on my villager there at once (`gap`: the next change only a
    *  while after). */
-  function toRoom(w: Wing, gap = true) {
+  function toRoom(w: RoomId, gap = true) {
     clearTimeout(dipT);
     if (dipping) onDip?.(null);
     dipping = false;
@@ -1203,17 +1241,15 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     relight();
     showRoom();
     const me = villagers.get(followed);
-    if (me) {
-      const [x, z] = camSpot(...spotOf(me));
-      target.set(x, 8, z);
-    }
+    if (me) snapCamera(...spotOf(me));
+    else frameRoom();
     snapWalls = true;
     invalidate();
   }
   /** Through a doorway: the screen dips to the room's colour, the room changes inside the dip, then it lifts. */
   function dip() {
     dipping = true;
-    onDip?.(`#${new Color(LOOK[held].bg).lerp(new Color(PORTAL[held]), 0.45).getHexString()}`);
+    onDip?.(`#${new Color(LOOK[wingOfRoom(held)].bg).lerp(new Color(PORTAL[wingOfRoom(held)]), 0.45).getHexString()}`);
     dipT = setTimeout(() => {
       if (disposed) return;
       dipping = false;
@@ -1265,7 +1301,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     // more so the further back the eyes sit (a human player's): a tap there is a step off it)
     const me = eyes ? villagers.get(followed) : undefined, on = me?.seat ? spotOf(me) : null;
     for (const s of seatBoxes) {
-      if (s.wing !== cur) continue;
+      if (s.room !== cur) continue;
       if (on && on[0] >= s.box.min.x && on[0] <= s.box.max.x && on[1] >= s.box.min.z && on[1] <= s.box.max.z) continue;
       const p = ray.ray.intersectBox(s.box, hitV), d = p ? camera.position.distanceTo(p) : Infinity;
       if (d < seatD && nearer(hitV.x, hitV.y, hitV.z)) (seat = s.id), (seatD = d);
@@ -1273,7 +1309,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     // a creature (the nearest drawn within a finger's reach; not one behind the seat the ray meets)
     let best: { id: string; d: number } | null = null;
     for (const e of exhibits) {
-      if (!wingSeen[e.wing]) continue;
+      if (roomOfExhibit(e) !== cur) continue;
       const p = e.pick(project, cx, cy), at = p && e.where(p.id);
       if (p && (!best || p.d < best.d) && (!at || (nearer(at[0], at[1], at[2]) && camera.position.distanceTo(hitV.set(at[0], at[1], at[2])) < seatD))) best = p;
     }
@@ -1288,29 +1324,28 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       hitV.set(wall.point.x - (dx / l) * 4, 0, wall.point.z - (dz / l) * 4);
     }
     if (inRect(DORMAT_PAD, hitV.x, hitV.z)) return { kind: 'door' };
-    if (!roomAt(hitV.x, hitV.z) && !walkable(nav, hitV.x, hitV.z)) return null;
+    if (!roomIdAt(hitV.x, hitV.z) && !walkable(nav, hitV.x, hitV.z)) return null;
     // (a room not drawn: through its doorway from here, if it has one, a step and a half in)
-    const there = wingAt(hitV.x, hitV.z);
+    const there = roomOf(hitV.x, hitV.z) ?? cur;
     if (there !== cur) return through(there);
     return { kind: 'floor', x: hitV.x, z: hitV.z };
   }
   /** A tap toward a room not drawn: a walk through the doorway between it and the room one's in, THROUGH past its line
    *  (null: none between them). */
   const THROUGH = 15;
-  function through(w: Wing): Hit | null {
-    const o = OPENINGS.find((o) => (o.wing === cur && o.beyond === w) || (o.wing === w && o.beyond === cur));
+  function through(r: RoomId): Hit | null {
+    const o = OPENINGS.find((o) => (o.room === cur && o.next === r) || (o.room === r && o.next === cur));
     if (!o) return null;
-    const mid = (o.from + o.to) / 2, k = (o.axis === 'x' ? roomAt(o.at + 5, mid) : roomAt(mid, o.at + 5)) === w ? 1 : -1;
+    const mid = (o.from + o.to) / 2, k = (o.axis === 'x' ? roomIdAt(o.at + 5, mid) : roomIdAt(mid, o.at + 5)) === r ? 1 : -1;
     return o.axis === 'x' ? { kind: 'floor', x: o.at + k * THROUGH, z: mid } : { kind: 'floor', x: mid, z: o.at + k * THROUGH };
   }
   const DORMAT_PAD: Rect = { x0: DOORMAT.x0 - 2, x1: DOORMAT.x1 + 2, z0: DOORMAT.z0, z1: DOORMAT.z1 + 4 };
 
   // ---- the first person's eye: my villager's (its model's eyes), kept off the walls and what stands on the floors ----
   const eyeT = new Vector3(), eyeXZ: [number, number] = [0, 0];
-  /** The floors the eye may be over: the rooms and the openings through the hall's walls. */
-  /** (a passage's run on into its room: the eye goes on over the seam between them, no wall there) */
+  /** The floors the eye may be over: the rooms and their doorways. */
   const FLOORS: Rect[] = [
-    ...ROOMS.map(({ r }) => (r.z1 === HALL.z0 ? { ...r, z0: r.z0 - 40 } : r)),
+    ...ROOMS.map(({ r }) => r),
     ...OPENINGS.map((o) => (o.axis === 'x' ? { x0: o.at - 10, x1: o.at + 10, z0: o.from, z1: o.to } : { x0: o.from, x1: o.to, z0: o.at - 10, z1: o.at + 10 }))
   ];
   function headOf(w: Walker): Vector3 {
@@ -1480,14 +1515,14 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       // will be at the dip's darkest, so the change lands as it gets there (at the eyes, as they cross the doorway's
       // line: its card never fills the view)
       const [hx, hz] = me.path && !me.seat ? along(me.path, t + DIP_OUT).p : spotOf(me);
-      held = fp.on ? (roomAt(hx, hz) ?? held) : wingHeld(held, hx, hz, SWAP_BAND);
+      held = fp.on ? (roomIdAt(hx, hz) ?? held) : roomHeld(held, hx, hz, SWAP_BAND);
       if (held !== cur && !dipping && t - swapAt >= SWAP_GAP) dip();
     }
     if (me) {
-      // (kept over the floors: near the front door the camera stays back, not over the dark outside)
-      const [mx, mz] = spotOf(me), [fx, fz] = camSpot(mx, mz);
+      // (the room's framing: kept still within the dead zone, never past the room's range)
+      goal = follow(framed, goal, spotOf(me));
       const f = Math.min(1, (6 * dt) / 1000);
-      const dx = fx - target.x, dz = fz - target.z;
+      const dx = goal[0] - target.x, dz = goal[1] - target.z;
       if (Math.hypot(dx, dz) > 0.05) {
         target.x += dx * f;
         target.z += dz * f;
@@ -1505,7 +1540,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     for (const [who, w] of villagers) {
       if (stepVillager(w, t, camMoved)) full = true;
       // (the others only while in the room I'm in)
-      if (who !== followed) shownIn(w, wingAt(...spotOf(w)) === cur);
+      if (who !== followed) shownIn(w, (roomOf(...spotOf(w)) ?? 'hall') === cur);
     }
     lastV = t;
     if (gesturing) full = true;
@@ -1517,7 +1552,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     ambientOn = 0;
     // (only the room one is in: the others' exhibits hidden and resting)
     for (const e of exhibits) {
-      e.group.visible = wingSeen[e.wing];
+      e.group.visible = roomOfExhibit(e) === cur;
       if (!e.group.visible || !e.frame(t, dt, seen)) continue;
       ambient = true;
       ambientOn++;
@@ -1567,8 +1602,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       if (yaw !== undefined) w.yaw = yaw;
       if (who === followed) {
         // (in that room at once, no dip)
-        toRoom((held = wingAt(p[0], p[1])), false);
-        target.set(...camSpot(p[0], p[1]).flatMap((v, i) => (i ? [8, v] : [v])) as [number, number, number]);
+        toRoom((held = roomOf(p[0], p[1]) ?? 'hall'), false);
+        snapCamera(p[0], p[1]);
         snapWalls = true;
       }
       place(w);
@@ -1660,10 +1695,19 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     onDip(fn) {
       onDip = fn;
     },
-    tune(over) {
-      tuned[cur] = { ...tuned[cur], ...over };
+    tune({ viewW, pitch, ...over }) {
+      const w = wingOfRoom(cur);
+      tuned[w] = { ...tuned[w], ...over };
+      // (the wings share a width: one tuned, all)
+      if (viewW) for (const r of cur === 'hall' ? ['hall' as const] : ROOMS.map((q) => q.id).filter((q) => q !== 'hall')) camTune.viewW[r] = viewW;
+      if (pitch) {
+        camTune.pitch = pitch;
+        DEF.pitch = view.pitch = (pitch * Math.PI) / 180;
+      }
       relight();
       showRoom();
+      const me = villagers.get(followed);
+      if (me) snapCamera(...spotOf(me));
       invalidate();
     },
     kit,

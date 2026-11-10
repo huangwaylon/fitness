@@ -82,7 +82,7 @@ type Slot = SetId | Standalone;
  *  stands across the room (in the middle, or against a side wall with its aisle on the other side). */
 interface Row { room: RoomId; z: number; slots: readonly Slot[]; at?: 'mid' | 'left' | 'right' }
 const BACK_Z = 12;
-export const FOSSIL_ROWS: readonly Row[] = [
+const FOSSIL_ROWS: readonly Row[] = [
   { room: 'F1', z: BACK_Z, slots: ['trilobite', 'ammonite', 'anomalocaris', 'myllokunmingia', 'amber', 'shark-tooth-pattern', 'coprolite'] },
   { room: 'F1', z: 48, slots: ['eusthenopteron', 'acanthostega', 'dinosaur-track', 'juramaia', 'archaeopteryx'] },
   { room: 'F1', z: 84, slots: ['dunkleosteus', 'ophthalmo'] },
@@ -101,8 +101,6 @@ export const FOSSIL_ROWS: readonly Row[] = [
   { room: 'F3', z: 156, slots: ['quetzal'] },
   { room: 'F3', z: 192, slots: ['mammoth', 'sabertooth'] }
 ];
-/** The hero of each room (framed from its door: spots.ts, the visitors'). */
-export const FOSSIL_HERO: Readonly<Record<'F1' | 'F2' | 'F3', Slot>> = { F1: 'trilobite', F2: 't-rex', F3: 'ptera' };
 /** A row's island's margin to a side wall it stands against. */
 const WALL_M = 4;
 const ROOM_RECT: Readonly<Record<string, Rect>> = { F1, F2, F3 };

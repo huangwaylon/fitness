@@ -13,11 +13,18 @@ type M = {
   shown(): string[];
   nextHour(): void;
   creature(id: string): [number, number] | null;
-  spot(id: string): [number, number, number] | null;
+  where(id: string): [number, number, number] | null;
+  spot(name: string): Promise<[number, number]>;
   card(): string | null;
   put(x: number, z: number): void;
+  walkTo(x: number, z: number): void;
 };
 const mu = <R,>(page: Page, fn: string) => page.evaluate(`window.__museum.${fn}`) as Promise<R>;
+/** A named spot on the museum's floor (museum/spots.ts: no coordinates in here, so a re-layout moves no spec). */
+const sp = (page: Page, name: string) => page.evaluate((n) => (window as unknown as { __museum: M }).__museum.spot(n), name);
+/** My villager put at a named spot, or walked there. */
+const putAt = (page: Page, name: string) => page.evaluate((n) => (window as unknown as { __museum: M }).__museum.spot(n).then(([x, z]) => (window as unknown as { __museum: M }).__museum.put(x, z)), name);
+const walkToSpot = (page: Page, name: string) => page.evaluate((n) => (window as unknown as { __museum: M }).__museum.spot(n).then(([x, z]) => (window as unknown as { __museum: M }).__museum.walkTo(x, z)), name);
 const open = async (page: Page, url = MUSEUM) => {
   await page.goto(url);
   await page.waitForFunction(() => ((window as unknown as { __museum?: M }).__museum?.stats()?.frames ?? 0) > 0);
@@ -35,17 +42,20 @@ const seed = (page: Page, finds: [kind: 'fish' | 'bug' | 'sea' | 'fossil' | 'ite
 test('a tap on the floor walks there, through the hall into a wing', async ({ page }) => {
   await open(page);
   await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
-  await page.evaluate('window.__museum.walkTo(150, 20)');
+  const [gx, gz] = await sp(page, 'room:fish');
+  await walkToSpot(page, 'room:fish');
   await expect.poll(async () => {
     const [x, z] = await mu<[number, number]>(page, 'mine()');
-    return Math.hypot(x - 150, z - 20);
+    return Math.hypot(x - gx, z - gz);
   }, { timeout: 15_000 }).toBeLessThan(6);
+  await expect.poll(() => mu<string>(page, 'room()')).toBe('fish');
 });
 
 test('the walls the camera cuts away stay put as one walks: each goes at most once on a walk, and comes back at most once (a jamb one passed), never back and forth', async ({ page }) => {
   await open(page);
   // through the openings into each wing and back, the cutaway read every frame
-  for (const [from, to] of [[[30, 10], [110, 10]], [[110, 10], [30, 10]], [[-30, 10], [-110, 10]], [[-110, 10], [-30, 10]]] as const) {
+  const [fish, bug] = [await sp(page, 'in:fish'), await sp(page, 'in:bug')];
+  for (const [from, to] of [[[30, 10], fish], [fish, [30, 10]], [[-30, 10], bug], [bug, [-30, 10]]] as const) {
     await page.evaluate(`window.__museum.put(${from[0]}, ${from[1]})`);
     await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
     const log = await page.evaluate(([x, z]) => new Promise<string[]>((done) => {
@@ -70,7 +80,10 @@ test('only the room my villager is in is drawn: a put changes it at once, a walk
   const room = () => mu<string>(page, 'room()');
   expect(await room()).toBe('hall');
   // (a put: that room at once, no dip)
-  await page.evaluate('window.__museum.put(180, 10)');
+  await putAt(page, 'room:fish');
+  expect(await room()).toBe('fish');
+  // (the sea creatures' alcove: the aquarium's own, no swap)
+  await putAt(page, 'tank:reef');
   expect(await room()).toBe('fish');
   await page.evaluate('window.__museum.put(30, 10)');
   expect(await room()).toBe('hall');
@@ -82,18 +95,30 @@ test('only the room my villager is in is drawn: a put changes it at once, a walk
   };
   await walked(66);
   expect(await room()).toBe('hall');
-  await walked(110);
+  await walked(84);
   expect(await room()).toBe('fish');
   // from the hall, a tap past its side wall (the garden, not drawn): through its doorway, a step and a half in
   await page.evaluate('window.__museum.put(-40, 10)');
   await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
   const [tx, ty] = await mu<[number, number]>(page, 'px(-72, 12)');
   await page.mouse.click(tx, ty);
+  const [bx, bz] = await sp(page, 'in:bug');
   await expect.poll(async () => {
     const [x, z] = await mu<[number, number]>(page, 'mine()');
-    return Math.hypot(x + 75, z - 10);
+    return Math.hypot(x - bx, z - bz);
   }, { timeout: 10_000 }).toBeLessThan(2);
   await expect.poll(room, { timeout: 10_000 }).toBe('bug');
+  // the fossils in a line: F1, then through its side door F2 (a fade, not a put), then F3
+  await putAt(page, 'room:F1');
+  expect(await room()).toBe('F1');
+  for (const next of ['F2', 'F3']) {
+    await walkToSpot(page, `in:${next}`);
+    await expect.poll(room, { timeout: 15_000 }).toBe(next);
+  }
+  // the gallery's two rooms the same
+  await putAt(page, 'room:G1');
+  await walkToSpot(page, 'in:G2');
+  await expect.poll(room, { timeout: 15_000 }).toBe('G2');
 });
 
 test('a room change compiles nothing: every built room’s programs are made in the warm-up, shown for it', { tag: '@render' }, async ({ page }) => {
@@ -105,14 +130,14 @@ test('a room change compiles nothing: every built room’s programs are made in 
   await warmed();
   const stats = () => mu<{ frames: number; mem: number[] }>(page, 'stats()');
   const before = (await stats()).mem[2], seen: Record<string, number> = {};
-  for (const [x, z] of [[180, 10], [350, 60], [-180, 10], [-150, -240], [150, -240], [0, 10]]) {
+  for (const name of ['room:fish', 'tank:reef', 'room:bug', 'room:F1', 'room:F2', 'room:F3', 'room:G1', 'room:G2', 'entrance']) {
     const f0 = (await stats()).frames;
-    await page.evaluate(`window.__museum.put(${x}, ${z})`);
+    await putAt(page, name);
     await expect.poll(async () => (await stats()).frames, { timeout: 15_000 }).toBeGreaterThan(f0);
     await expect.poll(() => mu<boolean>(page, 'still()'), { timeout: 15_000 }).toBe(true);
     seen[await mu<string>(page, 'room()')] = (await stats()).mem[2];
   }
-  expect(Object.keys(seen).sort()).toEqual(['art', 'bug', 'fish', 'fossil', 'hall', 'sea']);
+  expect(Object.keys(seen).sort()).toEqual(['F1', 'F2', 'F3', 'G1', 'G2', 'bug', 'fish', 'hall']);
   expect(seen).toEqual(Object.fromEntries(Object.keys(seen).map((k) => [k, before])));
 });
 
@@ -190,7 +215,7 @@ test('seven at most a tank, from what was caught, the great tank’s with its on
   await other.close();
   // in front of the river tank as the hour turns: a new seven (the old fading out, the new in), still none but those
   // caught; the tuna still in the great tank
-  await page.evaluate('window.__museum.put(160, 80)');
+  await putAt(page, 'tank:river');
   await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
   await page.evaluate('window.__museum.nextHour()');
   await expect.poll(riverShown, { timeout: 15_000 }).not.toEqual(first);
@@ -206,13 +231,17 @@ test('a tap on a fish shows its card: its names, who found it first and when, ho
   await open(page);
   await expect.poll(async () => (await mu<string[]>(page, 'shown()')).length, { timeout: 15_000 }).toBe(1);
   // in front of the river tank, the camera on it
-  await page.evaluate('window.__museum.put(160, 80)');
+  await putAt(page, 'tank:river');
   await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
+  const at = await mu<[number, number]>(page, 'mine()');
   await expect.poll(async () => {
     const p = await mu<[number, number] | null>(page, 'creature("koi")');
     if (p) await page.mouse.click(p[0], p[1]);
     return mu<string | null>(page, 'card()');
   }, { timeout: 10_000 }).toBe('koi');
+  // (an exhibit's tap opens its card where one stands: it never walks; a walk would have begun with the tap)
+  expect(await mu<[number, number]>(page, 'mine()')).toEqual(at);
+  expect(await mu<boolean>(page, 'walking("A")')).toBe(false);
   const card = page.locator('[data-museum-card="koi"]');
   await expect(card).toContainText('ニシキゴイ');
   await expect(card).toContainText(/koi/i);
@@ -240,16 +269,18 @@ test('the fossils: a fossil found is on show in its wing, built once my villager
   await open(page);
   await page.evaluate('window.__museum.withhold("t-rex-tail")');
   expect((await mu<{ id: string }[]>(page, 'fossils()')).map((f) => f.id)).toEqual(['amber', 't-rex-skull', 't-rex-torso']);
-  // in the hall: the fossils' wing not built, nothing of it fetched
+  // in the hall: the fossils' rooms not built, nothing of them fetched
   await expect.poll(() => mu<string[]>(page, 'shown()'), { timeout: 15_000 }).toEqual(['sea-bass']);
-  expect(await mu<string[]>(page, 'awake()')).not.toContain('fossil');
-  // through the back opening: woken, the T. rex's and the standalone ones' packs fetched, each found one drawn
-  await page.evaluate('window.__museum.walkTo(-42, -60)');
-  await expect.poll(() => mu<string[]>(page, 'awake()'), { timeout: 15_000 }).toContain('fossil');
+  expect(await mu<string[]>(page, 'awake()')).not.toContain('F1');
+  // through the back opening: the first room woken, the standalone ones' pack fetched, the amber drawn
+  await walkToSpot(page, 'in:F1');
+  await expect.poll(() => mu<string[]>(page, 'awake()'), { timeout: 15_000 }).toContain('F1');
+  await expect.poll(async () => (await mu<string[]>(page, 'shown()')).filter((id) => id !== 'sea-bass').sort(), { timeout: 15_000 }).toEqual(['amber']);
+  expect([...new Set(packs)].sort()).toEqual(['fossils.glb']);
+  // in front of the T. rex in the next room: woken, its pack fetched, its card, two of its three pieces
+  await putAt(page, 'fossil:t-rex-torso');
   await expect.poll(async () => (await mu<string[]>(page, 'shown()')).filter((id) => id !== 'sea-bass').sort(), { timeout: 15_000 }).toEqual(['amber', 't-rex-skull', 't-rex-torso']);
   expect([...new Set(packs)].sort()).toEqual(['fossil-t-rex.glb', 'fossils.glb']);
-  // in front of the T. rex: its card, two of its three pieces
-  await page.evaluate('window.__museum.put(-108, -128)');
   await tapOn(page, 't-rex-skull');
   const card = page.locator('[data-museum-card="t-rex-skull"]');
   await expect(card).toContainText('Tレックスの あたま');
@@ -259,19 +290,20 @@ test('the fossils: a fossil found is on show in its wing, built once my villager
   // its tail donated (the find arrives): drawn in its place at the skeleton's end, and the skeleton whole
   await page.evaluate('window.__museum.withhold(null)');
   await expect.poll(async () => (await mu<string[]>(page, 'shown()')).includes('t-rex-tail'), { timeout: 15_000 }).toBe(true);
-  const [skull, tail] = await Promise.all(['t-rex-skull', 't-rex-tail'].map((id) => mu<[number, number, number]>(page, `spot("${id}")`)));
-  expect([tail[0] - skull[0], tail[2] - skull[2]]).toEqual([40, 0]);
+  const [skull, tail] = await Promise.all(['t-rex-skull', 't-rex-tail'].map((id) => mu<[number, number, number]>(page, `where("${id}")`)));
+  // (two pieces along: fossils.ts PIECE_W 17)
+  expect([tail[0] - skull[0], tail[2] - skull[2]]).toEqual([34, 0]);
   await tapOn(page, 't-rex-tail');
   await expect(page.locator('[data-museum-card="t-rex-tail"] [data-museum-more]')).toHaveText('Tレックス コンプリート！');
 });
 
-test('the sea creatures’ room off the aquarium: each caught one in its tank, NH’s museum-tank model where it has one; a tap shows its card', async ({ page }) => {
+test('the sea creatures’ alcove in the aquarium: each caught one in its tank, NH’s museum-tank model where it has one; a tap shows its card', async ({ page }) => {
   await seed(page, [['sea', 'octopus', 'A'], ['sea', 'sea-star', 'G'], ['sea', 'moon-jellyfish', 'B'], ['fish', 'sea-bass', 'B']]);
   const files: string[] = [];
   page.on('request', (r) => /\/(sea-museum|critters\/sea\/)/.test(r.url()) && files.push(r.url().replace(/^.*\/(museum|world3d)\/|\?.*$/g, '')));
   await open(page);
   expect((await mu<{ id: string; tank: string }[]>(page, 'specimens()')).filter((s) => s.tank !== 'sea').map((s) => [s.id, s.tank])).toEqual([['sea-star', 'pool'], ['moon-jellyfish', 'reef'], ['octopus', 'reef']]);
-  await page.evaluate('window.__museum.put(350, 60)');
+  await putAt(page, 'tank:reef');
   await expect.poll(async () => (await mu<string[]>(page, 'shown()')).filter((id) => id !== 'sea-bass').sort(), { timeout: 15_000 }).toEqual(['moon-jellyfish', 'octopus', 'sea-star']);
   // the octopus and the jellyfish NH's museum ones (one pack), the sea star the island's catch model
   await expect.poll(() => [...new Set(files)].sort(), { timeout: 15_000 }).toEqual(['critters/sea/sea-star.glb', 'sea-museum.glb']);
@@ -283,10 +315,10 @@ test('the art gallery: a present’s genuine artwork on show, a painting on its 
   await seed(page, [['item', 'famous-painting', 'A'], ['item', 'gallant-statue', 'B'], ['item', 'froggy-chair', 'A']]);
   await open(page);
   expect((await mu<{ id: string }[]>(page, 'art()')).map((a) => a.id)).toEqual(['famous-painting', 'gallant-statue']);
-  await page.evaluate('window.__museum.put(40, -190)');
+  await putAt(page, 'art:famous-painting');
   await expect.poll(async () => (await mu<string[]>(page, 'shown()')).sort(), { timeout: 15_000 }).toEqual(['famous-painting', 'gallant-statue']);
   // the painting hung at eye height on its panel, the statue standing on its plinth
-  const [p, st] = await Promise.all(['famous-painting', 'gallant-statue'].map((id) => mu<[number, number, number]>(page, `spot("${id}")`)));
+  const [p, st] = await Promise.all(['famous-painting', 'gallant-statue'].map((id) => mu<[number, number, number]>(page, `where("${id}")`)));
   expect(p[1]).toBe(22);
   expect(st[1]).toBeGreaterThan(20);
   await tapOn(page, 'famous-painting');
@@ -302,7 +334,7 @@ test('the bug wing: every bug found lives there as it lives (flying, perched, cr
   expect(sp.filter((s) => s.kind === 'bug').map((s) => [s.id, s.tank]).sort()).toEqual([['common-butterfly', 'fly'], ['pondskater', 'water'], ['robust-cicada', 'trunk'], ['tarantula', 'terrarium']]);
   await expect.poll(async () => (await mu<string[]>(page, 'shown()')).sort(), { timeout: 15_000 }).toEqual(['common-butterfly', 'pondskater', 'robust-cicada', 'sea-bass', 'tarantula']);
   // the guest's tarantula in its case at the back: its card names the guest
-  await page.evaluate('window.__museum.put(-250, -50)');
+  await putAt(page, 'room:bug');
   await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
   await expect.poll(async () => {
     const p = await mu<[number, number] | null>(page, 'creature("tarantula")');
@@ -325,7 +357,7 @@ test('ten bugs at most, from what was caught, each in a place of its own (none o
   const first = await bugsShown();
   // none on another: each two of them apart in the garden, a few times over as they go
   const apart = async () => {
-    const at = await Promise.all(first.map((id) => mu<[number, number, number] | null>(page, `spot(${JSON.stringify(id)})`)));
+    const at = await Promise.all(first.map((id) => mu<[number, number, number] | null>(page, `where(${JSON.stringify(id)})`)));
     let least = Infinity;
     for (let i = 0; i < at.length; i++) for (let k = i + 1; k < at.length; k++) {
       const a = at[i], b = at[k];
@@ -333,7 +365,7 @@ test('ten bugs at most, from what was caught, each in a place of its own (none o
     }
     return least;
   };
-  await page.evaluate('window.__museum.put(-170, 10)');
+  await putAt(page, 'room:bug');
   await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
   for (let i = 0; i < 4; i++) {
     expect(await apart()).toBeGreaterThan(8);
@@ -355,10 +387,11 @@ test('the guest visits too: in, walking, the finds on show', async ({ page }) =>
   await seed(page, [['fish', 'koi', 'G']]);
   await open(page, 'museum?demo&as=G&date=2026-11-04T12:00');
   await expect.poll(async () => (await mu<string[]>(page, 'shown()')), { timeout: 15_000 }).toEqual(['koi']);
-  await page.evaluate('window.__museum.walkTo(-150, 10)');
+  const [gx, gz] = await sp(page, 'room:bug');
+  await walkToSpot(page, 'room:bug');
   await expect.poll(async () => {
     const [x, z] = await mu<[number, number]>(page, 'mine()');
-    return Math.hypot(x + 150, z - 10);
+    return Math.hypot(x - gx, z - gz);
   }, { timeout: 15_000 }).toBeLessThan(6);
 });
 
@@ -417,8 +450,8 @@ test('the aquarium’s benches: a tap sits my villager on one, the other phone s
   await open(other, 'museum?demo&as=B&date=2026-11-04T12:00');
   // (each sees the other in here)
   await expect.poll(async () => !!(await mu<Who>(page, 'who("B")')) && !!(await mu<Who>(other, 'who("A")')), { timeout: 15_000 }).toBe(true);
-  for (const [p, x] of [[page, 150], [other, 130]] as const) {
-    await p.evaluate(`window.__museum.put(${x}, 10)`);
+  for (const [p, name] of [[page, 'room:fish'], [other, 'tank:sea']] as const) {
+    await putAt(p, name);
     await expect.poll(() => mu<boolean>(p, 'still()'), { timeout: 10_000 }).toBe(true);
   }
   const tapBench = async (p: Page, n: number) => {
@@ -443,16 +476,26 @@ test('the aquarium’s benches: a tap sits my villager on one, the other phone s
   // A: a tap on the floor gets up and walks there
   await page.bringToFront();
   await expect.poll(() => mu<boolean>(page, 'still()'), { timeout: 10_000 }).toBe(true);
-  const [fx, fy] = await mu<[number, number]>(page, 'px(150, 15)');
+  const [gx, gz] = await sp(page, 'room:fish');
+  const [fx, fy] = await mu<[number, number]>(page, `px(${gx}, ${gz})`);
   await page.mouse.click(fx, fy);
   await expect.poll(() => mu<Seat>(page, 'seat()')).toBeNull();
   await expect.poll(async () => {
     const w = (await mu<Who>(page, 'who("A")'))!;
-    return !w.seated && Math.hypot(w.at[0] - 150, w.at[1] - 15) < 6;
+    return !w.seated && Math.hypot(w.at[0] - gx, w.at[1] - gz) < 6;
   }, { timeout: 10_000 }).toBe(true);
   await expect.poll(async () => (await mu<Who>(other, 'who("A")'))?.seated, { timeout: 5_000 }).toBe(false);
   await expect.poll(() => mu<Seat>(other, 'theirSeat("A")')).toBeNull();
   await other.close();
+});
+
+test('the hall’s benches: a tap on one walks up and sits my villager facing the runner', async ({ page }) => {
+  await open(page);
+  await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
+  const [x, y] = (await mu<[number, number]>(page, 'benchPx("hbench1", 0)'))!;
+  await page.mouse.click(x, y);
+  await expect.poll(() => mu<{ id: string } | null>(page, 'seat()'), { timeout: 10_000 }).toMatchObject({ id: 'hbench1' });
+  expect(await mu<string>(page, 'room()')).toBe('hall');
 });
 
 test('while a drag turns the camera the curator’s balloon stays whole (its box, not only its text) by him', async ({ page }) => {
@@ -483,7 +526,7 @@ test('a wing rebuilt with a new find keeps its programs: none freed with the old
   const river = ['koi', 'carp', 'goldfish', 'catfish', 'crawfish', 'bluegill', 'pike', 'char', 'loach', 'pond-smelt'];
   await seed(page, river.map((id) => ['fish', id, 'A'] as ['fish', string, 'A']));
   await open(page);
-  await page.evaluate('window.__museum.put(160, 80)');
+  await putAt(page, 'tank:river');
   const shown = async () => (await mu<string[]>(page, 'shown()')).length;
   await expect.poll(shown, { timeout: 15_000 }).toBe(7);
   const programs = async () => (await mu<{ mem: number[] }>(page, 'stats()')).mem[2];

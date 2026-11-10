@@ -196,17 +196,17 @@ test('the museum in first person and out, the eye button, a bench, its fossils, 
     await expect.poll(() => mu<boolean>('m => !!m.fpv()?.inside && !m.fpv().busy'), { timeout: 15_000 }).toBe(true);
     await eye(false);
     // a bench: a tap sits my villager on it, a tap on the floor gets it up
-    await page.evaluate('window.__museum.put(150, 10)');
+    await page.evaluate("window.__museum.spot('room:fish').then(([x, z]) => window.__museum.put(x, z))");
     await expect.poll(() => mu<boolean>('m => m.still()'), { timeout: 10_000 }).toBe(true);
     const [bx, by] = await mu<[number, number]>('m => m.benchPx("dmbench1", 0)');
     await page.mouse.click(bx, by);
     await expect.poll(() => mu<boolean>('m => !!m.seat() && m.still()'), { timeout: 15_000 }).toBe(true);
-    const [fx, fy] = await mu<[number, number]>('m => m.px(150, 15)');
+    const [fx, fy] = await page.evaluate("window.__museum.spot('room:fish').then(([x, z]) => window.__museum.px(x, z))") as [number, number];
     await page.mouse.click(fx, fy);
     await expect.poll(() => mu<boolean>('m => !m.seat() && m.still()'), { timeout: 15_000 }).toBe(true);
     // the lazy wings: each woken where it is, its finds drawn
-    for (const [x, z, id] of [[-100, -130, 't-rex-skull'], [40, -190, 'famous-painting'], [350, 60, 'octopus']] as const) {
-      await page.evaluate(`window.__museum.put(${x}, ${z})`);
+    for (const [name, id] of [['fossil:t-rex-skull', 't-rex-skull'], ['art:famous-painting', 'famous-painting'], ['tank:reef', 'octopus']] as const) {
+      await page.evaluate(`window.__museum.spot('${name}').then(([x, z]) => window.__museum.put(x, z))`);
       await expect.poll(() => mu<boolean>(`m => m.shown().includes("${id}") && !m.stats().loading && m.still()`), { timeout: 20_000 }).toBe(true);
     }
     inside.push((await measure(page)).gl);

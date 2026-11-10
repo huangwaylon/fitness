@@ -3,24 +3,23 @@
 // where the island's visiting villagers linger (visitors.ts: in front of each room's hero and display faces, on the
 // benches, in pairs to chat), every one on open floor with everything on show, clear of the doorways' bands and the
 // carpets' runs, facing what it looks at.
-import { benchSeats, BENCHES } from './seats.ts';
+import { benchRect, benchSeats, BENCHES } from './seats.ts';
 import { ART_SPOTS, DAIS, PANELS, plinthOf } from './art.ts';
 import { SPOTS as FOSSIL_SPOTS, footOf } from './fossils.ts';
-import { TANKS, type Box } from './tanks.ts';
+import { FISH_PLANTS, TANKS, type Box } from './tanks.ts';
 import { SEA_TANKS } from './seaTanks.ts';
 import { CASE, CASES, OAKS, PALM, POND, PROPS, SOLIDS } from './bugLife.ts';
-import { DESK, ENTRANCE, HALL, OPENINGS, rectsOf, type Pt, type Rect, type RoomId } from './plan.ts';
+import { DESK, ENTRANCE, HALL, HALL_PLANTS, OPENINGS, rectsOf, type Pt, type Rect, type RoomId } from './plan.ts';
 
 const flat = (b: Box): Rect => ({ x0: b.x0, x1: b.x1, z0: b.z0, z1: b.z1 });
-/** A bench's floor (its model's, about: aquarium.ts measures it). */
-const BENCH_HALF: Pt = [11, 6];
 /** Everything that stands on the floor with every exhibit on show (the walk keeps off it: engine.ts's and each
  *  exhibit's blocks). */
 export function allBlocks(): Rect[] {
   return [
     { x0: DESK.x0 - 1, x1: DESK.x1 + 1, z0: DESK.z0, z1: DESK.z1 }, { x0: DESK.x0 - 2, x1: DESK.x1 + 2, z0: HALL.z0, z1: DESK.z0 },
     ...TANKS.map((t) => flat(t.box)), ...SEA_TANKS.map((t) => flat(t.box)),
-    ...BENCHES.map((b) => ({ x0: b.x - BENCH_HALF[0], x1: b.x + BENCH_HALF[0], z0: b.z - BENCH_HALF[1], z1: b.z + BENCH_HALF[1] })),
+    ...HALL_PLANTS.map(([, x, z]) => ({ x0: x - 4, x1: x + 4, z0: z - 4, z1: z + 4 })),
+    ...BENCHES.map((b) => benchRect(b)), ...FISH_PLANTS.map(([, x, z]) => ({ x0: x - 5, x1: x + 5, z0: z - 5, z1: z + 5 })),
     ...CASES.map(([x, z]) => ({ x0: x - CASE.w / 2, x1: x + CASE.w / 2, z0: z - CASE.d / 2, z1: z + CASE.d / 2 })), POND,
     ...OAKS.map(([x, z]) => ({ x0: x - 5, x1: x + 5, z0: z - 5, z1: z + 5 })), { x0: PALM[0] - 4, x1: PALM[0] + 4, z0: PALM[1] - 4, z1: PALM[1] + 4 },
     ...SOLIDS.filter((s) => PROPS.some(([n]) => n === s.what)).map(({ x0, x1, z0, z1 }) => ({ x0, x1, z0, z1 })),
@@ -49,13 +48,14 @@ const seaTank = (id: string) => SEA_TANKS.find((t) => t.id === id)!.box;
 export const LINGER: readonly LingerPoint[] = [
   // the hall: Blathers' desk from either side of the runner, two pairs by the side walls
   look('hall', -28, -8, [0, -26]), look('hall', 28, -8, [0, -26]),
-  ...chat('hall', [-46, 40], [-34, 40]), ...chat('hall', [34, 40], [46, 40]),
+  ...chat('hall', [-32, 40], [-20, 40]),
   // the garden: the oaks, the pond, the flower bed, the cases; a pair by the path
   look('bug', -120, -26, OAKS[0]), look('bug', -128, 82, [(POND.x0 + POND.x1) / 2, (POND.z0 + POND.z1) / 2]),
   look('bug', -98, 34, [-88, 62]), look('bug', -165, 0, CASES[0]),
   ...chat('bug', [-150, 30], [-138, 30]),
-  // the aquarium: the benches' seats, the great tank from beside them, the deep tank, the reef and the pool
-  ...BENCHES.flatMap((b) => benchSeats(b.id).map((s): LingerPoint => ({ room: 'fish', x: s.at[0], z: s.at[1], faceYaw: faceYaw(b.x, b.z, b.x, b.z - 10), exhibitId: b.id, kind: 'sit' }))),
+  // every bench's seats (the hall's, the aquarium's, the gallery's, the big skeletons'), facing as the bench does
+  ...BENCHES.flatMap((b) => benchSeats(b.id).map((s): LingerPoint => ({ room: b.room, x: s.at[0], z: s.at[1], faceYaw: b.yaw, exhibitId: b.id, kind: 'sit' }))),
+  // the aquarium: the great tank from beside its benches, the deep tank, the reef and the pool
   look('fish', 128, 2, mid(tank('sea')), 'tank:sea'), look('fish', 112, 66, mid(tank('deep')), 'tank:deep'),
   look('fish', 220, 70, mid(seaTank('reef')), 'tank:reef'), look('fish', 188, 96, mid(seaTank('pool')), 'tank:pool'),
   // the fossils: each room's hero and rows; a pair in each front band
@@ -67,7 +67,7 @@ export const LINGER: readonly LingerPoint[] = [
   look('F3', -262, 86, fossil('megacero-torso'), 'megacero-torso'), ...chat('F3', [-290, 124], [-278, 124]),
   // the gallery: the screen (G1) and the solemn painting (G2) from the back bay, the rows from the bays, a pair in front
   look('G1', 60, -222, art('wild-painting-left-half'), 'wild-painting-left-half'), look('G1', 30, -180, art('calm-painting'), 'calm-painting'),
-  look('G1', 80, -132, art('moving-painting'), 'moving-painting'), ...chat('G1', [74, -78], [86, -78]),
+  look('G1', 80, -132, art('moving-painting'), 'moving-painting'), ...chat('G1', [96, -60], [108, -60]),
   look('G2', 180, -222, art('solemn-painting'), 'solemn-painting'), look('G2', 150, -180, art('amazing-painting'), 'amazing-painting'),
   look('G2', 196, -132, art('warm-painting'), 'warm-painting'), ...chat('G2', [194, -78], [206, -78])
 ];

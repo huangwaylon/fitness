@@ -9,7 +9,9 @@ import type { Rect } from './plan.ts';
 const PX = 4, MAX = 2048;
 /** Distances from the outline (model units): the gold band, the thin dark line inside it. */
 const GOLD: [number, number] = [1, 1.75], LINE: [number, number] = [2.25, 2.55];
-const PILE = [0x8f, 0x24, 0x30], GOLD_C = [0xd5, 0xad, 0x55], LINE_C = [0x74, 0x1c, 0x26];
+/** The pile's colours: NH's red, and the green of the T. rex's island rug. */
+export const PILE = { red: [0x8f, 0x24, 0x30], green: [0x3f, 0x6e, 0x45] } as const;
+const GOLD_C = [0xd5, 0xad, 0x55], LINE_C = [0x74, 0x1c, 0x26];
 
 export interface CarpetTex { data: Uint8Array<ArrayBuffer>; w: number; h: number; x0: number; z0: number; px: number }
 
@@ -23,7 +25,7 @@ function carpetBounds(strips: readonly Rect[]): Rect {
 
 /** The carpet's texture (RGBA, row 0 at z0: v = (z − z0) / depth): each pixel's distance in from the union's outline
  *  (a chamfer transform) picks the pile, the gold band or the dark line, their edges soft. */
-export function carpetTexture(strips: readonly Rect[]): CarpetTex {
+export function carpetTexture(strips: readonly Rect[], pile: keyof typeof PILE = 'red'): CarpetTex {
   const b = carpetBounds(strips);
   const px = Math.min(PX, MAX / Math.max(b.x1 - b.x0, b.z1 - b.z0));
   const w = Math.ceil((b.x1 - b.x0) * px), h = Math.ceil((b.z1 - b.z0) * px);
@@ -51,7 +53,7 @@ export function carpetTexture(strips: readonly Rect[]): CarpetTex {
   for (let k = 0; k < w * h; k++) {
     const u = d[k] / px;
     const g = band(u, GOLD), l = band(u, LINE), weave = 1 + (hash(k) - 0.5) * 0.05;
-    for (let c = 0; c < 3; c++) data[k * 4 + c] = Math.round(Math.min(255, (PILE[c] * (1 - g - l) + GOLD_C[c] * g + LINE_C[c] * l) * weave));
+    for (let c = 0; c < 3; c++) data[k * 4 + c] = Math.round(Math.min(255, (PILE[pile][c] * (1 - g - l) + GOLD_C[c] * g + LINE_C[c] * l) * weave));
     data[k * 4 + 3] = 255;
   }
   return { data, w, h, x0: b.x0, z0: b.z0, px };

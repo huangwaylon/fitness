@@ -109,3 +109,6 @@ export function propsOf(t: Tank): Placed[] {
     return { name, x: Math.min(w.x1 - hx, Math.max(w.x0 + hx, x0)), z: Math.min(w.z1 - hz, Math.max(w.z0 + hz, z0)), y: w.y0, s, yaw: along ? 0 : -Math.PI / 2 };
   });
 }
+
+/** The aquarium's plants in its free corners ([model, x, z, scale]: aquarium.ts; the walk keeps 5 off each). */
+export const FISH_PLANTS: readonly [string, number, number, number][] = [['heliconia', 70, 134, 1.8], ['anthurium', 262, 112, 2.6], ['heliconia', 174, 108, 2]];

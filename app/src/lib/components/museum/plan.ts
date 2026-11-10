@@ -32,9 +32,6 @@ export const F2: Rect = { x0: -280, x1: -120, z0: -300, z1: -50 };
 export const F3: Rect = { x0: -300, x1: -180, z0: -50, z1: 160 };
 export const G1: Rect = { x0: 0, x1: 120, z0: -250, z1: -50 };
 export const G2: Rect = { x0: 120, x1: 240, z0: -250, z1: -50 };
-/** (The old names: the fossils' biggest room, the gallery's first.) */
-export const FOSSIL_WING = F2;
-export const ART_WING = G1;
 /** Every room's floor (no two rects overlap; two of one room meet with no wall). */
 export const ROOMS: readonly { id: RoomId; wing: Wing; r: Rect }[] = [
   { id: 'hall', wing: 'hall', r: HALL }, { id: 'bug', wing: 'bug', r: BUG_WING },
@@ -83,9 +80,19 @@ export const DOORMAT: Rect = { x0: -DOOR_HALF, x1: DOOR_HALF, z0: 60, z1: 70 };
 /** Blathers' reception desk at the back of the hall (its green top's extents and its height: engine.ts builds it, the
  *  walk keeps off it; the curator stands behind it, curator.ts AT, clear of it in every pose: curator.test). */
 export const DESK: Rect & { h: number } = { x0: -22, x1: 22, z0: -32, z1: -20, h: 8.6 };
+/** The hall's plants ([model, x, z, scale]: a pair by the front door, a pair by the side arches' back jambs). */
+export const HALL_PLANTS: readonly [string, number, number, number][] = [
+  ['heliconia', -52, 62, 1.6], ['anthurium', 52, 62, 2.4], ['anthurium', -53, -18, 2.2], ['heliconia', 53, -18, 1.6]
+];
 /** The walls' heights: the hall's grand, the wings' a little lower. */
 export const HALL_H = 64;
 export const WING_H = 52;
+/** A doorway's top (its lintel's foot): the hall's arches to the wings' height, those between two wings lower. */
+export const doorTop = (o: Opening): number => (o.room === 'hall' ? WING_H : 40);
+/** The plaque over each doorway, the room beyond's name in spaced kana (the island's world copy: no kanji). */
+export const PLAQUE: Readonly<Record<Exclude<RoomId, 'hall'>, string>> = {
+  bug: 'む し', fish: 'さ か な', F1: 'か せ き', F2: 'か せ き 2', F3: 'か せ き 3', G1: 'び じゅ つ', G2: 'び じゅ つ 2'
+};
 
 /** The carpets: each room's strips (meeting square, edge to edge, none overlapping, flush to the doorways they lead
  *  to; the engine lays a room's as one seamless mesh). The hall's: one runner from the door to the desk, a spur to
@@ -100,12 +107,15 @@ export const CARPETS: readonly { room: RoomId; rects: readonly Rect[] }[] = [
   { room: 'F1', rects: [
     { x0: -54, x1: -30, z0: -100, z1: F1.z1 }, { x0: -104, x1: -54, z0: -100, z1: -86 }, { x0: F1.x0, x1: -104, z0: -205, z1: -86 }
   ] },
-  // F2: in from F1's door to a green square under the T. rex's island
-  { room: 'F2', rects: [{ x0: -240, x1: -160, z0: -190, z1: -150 }, { x0: -160, x1: F2.x1, z0: -190, z1: -175 }] },
+  // F2: in from F1's door to the T. rex's island (its own green rug: ISLAND_RUG)
+  { room: 'F2', rects: [{ x0: -160, x1: F2.x1, z0: -190, z1: -175 }] },
   // the gallery: in from the arch (the door) along the front band
   { room: 'G1', rects: [{ x0: 30, x1: 54, z0: -95, z1: G1.z1 }] },
   { room: 'G2', rects: [{ x0: G2.x0, x1: 150, z0: -240, z1: -210 }] }
 ];
+
+/** The green rug under the T. rex's island in F2, where its carpet from F1's door ends. */
+export const ISLAND_RUG: Rect = { x0: -240, x1: -160, z0: -190, z1: -150 };
 
 /** A wall: from a to b (x, z) and its height (each side looks as the room it faces: roomBeside). */
 export interface Wall { a: Pt; b: Pt; h: number }

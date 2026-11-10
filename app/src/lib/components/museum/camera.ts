@@ -11,10 +11,11 @@ import { WING_H, HALL_H, boundsOf, type Pt, type Rect, type RoomId } from './pla
 export const PITCH = 50;
 export const FOV = 32;
 /** The target's height (a villager's middle, engine.ts). */
-export const TARGET_Y = 8;
-/** The floor across the screen at the target, each room's (model units: the hall's 12 tiles nearly whole, the wings'
- *  10.8 of their 12 with the side walls a soft follow away). */
-export const VIEW_W: Readonly<Record<RoomId, number>> = { hall: 92, bug: 108, fish: 108, F1: 108, F2: 108, F3: 108, G1: 108, G2: 108 };
+const TARGET_Y = 8;
+/** The floor across the screen at the target, each room's (model units: the hall whole, its side arches and their
+ *  plaques in view from the door; the wings' 11.2 tiles of their 12, the side walls a soft follow away). Tuned on the
+ *  phone by __museum.tune({ viewW }). */
+export const VIEW_W: Readonly<Record<RoomId, number>> = { hall: 124, bug: 112, fish: 112, F1: 112, F2: 112, F3: 112, G1: 112, G2: 112 };
 /** How far my villager may stray from the target before the camera follows (x, z: model units). */
 export const DEAD: Pt = [12, 30];
 /** The phone's screen and what covers it (css px): the top bar to its back button's foot, the HUD's height. */
@@ -25,7 +26,7 @@ export const PORTRAIT: Screen = { W: 393, H: 852, top: 110, bottom: 72 };
 export interface Cam { x: number; z: number; pitch: number; d: number; s: Screen }
 const rad = (deg: number) => (deg * Math.PI) / 180;
 /** The distance that shows `viewW` across at the target (engine.ts fit: its horizontal half angle's). */
-export const distanceFor = (viewW: number, s: Screen): number => viewW / 2 / (Math.tan(rad(FOV / 2)) * (s.W / s.H));
+const distanceFor = (viewW: number, s: Screen): number => viewW / 2 / (Math.tan(rad(FOV / 2)) * (s.W / s.H));
 /** Where a point lands on the screen (css px, the canvas's: the target at the middle of the band between the top bar
  *  and the HUD, engine.ts's view offset), or null behind the camera. */
 export function project(c: Cam, x: number, y: number, z: number): [number, number] | null {
@@ -39,7 +40,7 @@ export function project(c: Cam, x: number, y: number, z: number): [number, numbe
   return [W / 2 + (vx / (depth * t * (W / H))) * (W / 2), H / 2 - (up / (depth * t)) * (H / 2) - shift];
 }
 /** The floor's z under a screen row (css px), for a target. */
-export function floorZAt(c: Cam, py: number): number {
+function floorZAt(c: Cam, py: number): number {
   // (by bisection: the floor's rows fall monotonically with z under the camera)
   let lo = c.z - 2000, hi = c.z + c.d * Math.cos(rad(c.pitch)) - 1;
   for (let k = 0; k < 60; k++) {
@@ -52,11 +53,13 @@ export function floorZAt(c: Cam, py: number): number {
 
 /** A room's framing: its view's width, the target's range (x, z: a range of one value, fixed), and the apron the floor
  *  needs past the front wall to reach the screen's foot from the frontmost target. */
-export interface Framing { room: RoomId; viewW: number; d: number; x: Pt; z: Pt; apron: number }
+export interface Framing { room: RoomId; viewW: number; pitch: number; d: number; x: Pt; z: Pt; apron: number }
+/** A framing's tuning (the Simulator's: __museum.tune): another view width or pitch. */
+export interface CamTune { viewW?: number; pitch?: number }
 const wallH = (room: RoomId) => (room === 'hall' ? HALL_H : WING_H);
-export function framing(room: RoomId, s: Screen = PORTRAIT, b: Rect = boundsOf(room)): Framing {
-  const viewW = VIEW_W[room], d = distanceFor(viewW, s), cx = (b.x0 + b.x1) / 2;
-  const cam = (z: number): Cam => ({ x: cx, z, pitch: PITCH, d, s });
+function framing(room: RoomId, s: Screen = PORTRAIT, b: Rect = boundsOf(room), o: CamTune = {}): Framing {
+  const viewW = o.viewW ?? VIEW_W[room], pitch = o.pitch ?? PITCH, d = distanceFor(viewW, s), cx = (b.x0 + b.x1) / 2;
+  const cam = (z: number): Cam => ({ x: cx, z, pitch, d, s });
   // the back wall's top just under the top bar (the target no further forward), the front edge just over the HUD (no
   // further back); between them, or both at once at the target that leaves as much room over the one as under the other
   // (each a row moving up the screen as the target comes forward: a root by bisection)
@@ -77,18 +80,18 @@ export function framing(room: RoomId, s: Screen = PORTRAIT, b: Rect = boundsOf(r
   const zs: Pt = zFront <= zBack ? ((z) => [z, z] as Pt)(solve((z) => backTop(z) - s.top - (s.H - s.bottom - front(z)))) : [zBack, zFront];
   // the side walls at the screen's edges at the target's depth, but a front corner (a villager a body in from it) on
   // the screen too: the floor across is narrower there, nearer the camera
-  const p = rad(PITCH), camZ = zs[1] + d * Math.cos(p), depthFront = (TARGET_Y + d * Math.sin(p)) * Math.sin(p) + (camZ - b.z1) * Math.cos(p);
+  const p = rad(pitch), camZ = zs[1] + d * Math.cos(p), depthFront = (TARGET_Y + d * Math.sin(p)) * Math.sin(p) + (camZ - b.z1) * Math.cos(p);
   const halfFront = depthFront * Math.tan(rad(FOV / 2)) * (s.W / s.H) * (1 - 48 / s.W) - 8;
   const lo = Math.min(b.x0 + viewW / 2, b.x0 + 8 + halfFront), hi = Math.max(b.x1 - viewW / 2, b.x1 - 8 - halfFront);
   const xs: Pt = lo < hi ? [lo, hi] : [cx, cx];
   const apron = Math.max(0, floorZAt(cam(zs[1]), s.H) - b.z1);
-  return { room, viewW, d, x: xs, z: zs, apron };
+  return { room, viewW, pitch, d, x: xs, z: zs, apron };
 }
-/** The framings, made once a screen. */
+/** The framings, made once a screen (and a tuning). */
 const made = new Map<string, Framing>();
-export function framingOf(room: RoomId, s: Screen = PORTRAIT): Framing {
-  const k = `${room} ${s.W} ${s.H} ${s.top} ${s.bottom}`;
-  return made.get(k) ?? made.set(k, framing(room, s)).get(k)!;
+export function framingOf(room: RoomId, s: Screen = PORTRAIT, o: CamTune = {}): Framing {
+  const k = `${room} ${s.W} ${s.H} ${s.top} ${s.bottom} ${o.viewW} ${o.pitch}`;
+  return made.get(k) ?? made.set(k, framing(room, s, boundsOf(room), o)).get(k)!;
 }
 /** The target for my villager at `me`, from the last one (`was`): kept while it's within the dead zone, else brought
  *  just near enough, always within the room's range. A room's first frame: `was` its framing's middle (enter()). */

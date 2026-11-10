@@ -1,18 +1,32 @@
-// The museum's seats (docs/design.md "The museum": the aquarium's benches), pure: NH's two park benches in the
-// aquarium's aisle facing the great sea tank, two seats each, where each stands, and where and how a villager sits on
-// it: the island's park bench's own seats (villager3d/seats3d.ts, from its model's geometry: scripts/seat-anchors.ts),
+// The museum's seats (docs/design.md "The museum": its benches), pure: NH's park benches, two seats each, in the
+// rooms where one lingers (the aquarium's aisle facing the great sea tank, the hall's sides facing the runner, the
+// gallery's front bands facing their front rows, before the big skeletons' front row), where each stands, and where
+// and how a villager sits on it: the island's park bench's own seats (villager3d/seats3d.ts, from its model's geometry: scripts/seat-anchors.ts),
 // at the museum's scale. The sitting itself is the rooms' (rooms/seating.ts).
 import { anchorsOf, shapeOf, type Anchor } from '../villager3d/seats3d.ts';
 import type { RoomSeat } from '../rooms/seating.ts';
-import type { Pt } from './plan.ts';
+import type { Pt, Rect, RoomId } from './plan.ts';
 
-/** The benches: each its id (a seat's piece on the relay: the `tent` intent's `seat`), its middle (x, z), its turn
- *  (three's yaw: π, its front toward −z, the great tank). The island's park bench (static/room/world3d), BENCH_S its
- *  model's units a museum unit. */
-export const BENCHES: readonly { id: string; x: number; z: number; yaw: number }[] = [
-  { id: 'dmbench1', x: 104, z: 20, yaw: Math.PI },
-  { id: 'dmbench2', x: 152, z: 20, yaw: Math.PI }
+/** A bench: its id (a seat's piece on the relay: the `tent` intent's `seat`), its room, its middle (x, z), its turn
+ *  (three's yaw: 0 its front toward +z, π toward −z). */
+export interface Bench { id: string; room: RoomId; x: number; z: number; yaw: number }
+/** The benches (the island's park bench, static/room/world3d; BENCH_S its model's units a museum unit). The aquarium's
+ *  keep their ids (a seat heard from an older phone still lands). */
+export const BENCHES: readonly Bench[] = [
+  { id: 'dmbench1', room: 'fish', x: 104, z: 20, yaw: Math.PI },
+  { id: 'dmbench2', room: 'fish', x: 152, z: 20, yaw: Math.PI },
+  { id: 'hbench1', room: 'hall', x: -52, z: 40, yaw: Math.PI / 2 },
+  { id: 'hbench2', room: 'hall', x: 52, z: 40, yaw: -Math.PI / 2 },
+  { id: 'g1bench', room: 'G1', x: 75, z: -70, yaw: Math.PI },
+  { id: 'g2bench', room: 'G2', x: 160, z: -70, yaw: Math.PI },
+  { id: 'f2bench', room: 'F2', x: -262, z: -170, yaw: Math.PI / 2 }
 ];
+/** A bench's floor (its model's, about: benches.ts measures it), turned with it. */
+export const BENCH_HALF: Pt = [11, 6];
+export function benchRect(b: Bench, half: Pt = BENCH_HALF): Rect {
+  const side = Math.abs(Math.sin(b.yaw)) > 0.7, [hx, hz] = side ? [half[1], half[0]] : half;
+  return { x0: b.x - hx, x1: b.x + hx, z0: b.z - hz, z1: b.z + hz };
+}
 export const BENCH_S = 1.2;
 /** The bench's model (the island's). */
 export const BENCH_MODEL = 'park-bench';

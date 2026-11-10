@@ -24,11 +24,10 @@ import { smallHash } from '#lib/random.ts';
 import type { Exhibit, Kit } from './engine.ts';
 import { WALKERS, onDisplay, type Specimen, type TankId } from './species.ts';
 import { ditherMaterial, fadeMaterial, fadeStep, hourWatch } from './hourFader.ts';
-import { TANKS, alongX, bodyIn, openOf, piecesOf, propsOf, waterOf, type Body, type Box, type Tank } from './tanks.ts';
+import { FISH_PLANTS, TANKS, alongX, bodyIn, openOf, piecesOf, propsOf, waterOf, type Body, type Box, type Tank } from './tanks.ts';
 import { bandOf, cruiseOf, poseOf, spawn, stepSchool, stepWalker, type Swimmer } from './boids.ts';
 import { FEEDERS, FEEDER_R, PREDATORS, feedersIn, feedingOf, stepFeeding, type Feeding } from './feeding.ts';
 import type { Rect } from './plan.ts';
-import { BENCHES, BENCH_MODEL, BENCH_S } from './seats.ts';
 import { batcher, decal, openBox, plainGeometry } from './geometry.ts';
 
 /** Each tank's water: its deep colour, its light colour, how bright its caustics, its glass's tint. */
@@ -127,8 +126,6 @@ function sphereOf(b: Box): Sphere {
   return new Sphere(c, Math.hypot(b.x1 - b.x0, b.y1 - b.y0, b.z1 - b.z0) / 2);
 }
 
-/** The corners' plants ([model, x, z, scale]); the aisle's benches are seats.ts's. */
-const PLANTS: readonly [string, number, number, number][] = [['heliconia', 70, 90, 1.8], ['anthurium', 290, -90, 2.6], ['heliconia', 278, -66, 2]];
 
 export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => number = Date.now): Exhibit {
   const group = new Group();
@@ -215,25 +212,9 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
   // (the glass over all else, the caustics over the sand)
   geos.push(...batch.done(group, (m) => (glasses.has(m) ? 4 : m.userData.floor ? 1 : 0)));
 
-  // ---- the hall's benches and plants ----
+  // ---- the corners' plants ----
   const blocks: Rect[] = TANKS.map((t) => ({ x0: t.box.x0, x1: t.box.x1, z0: t.box.z0, z1: t.box.z1 }));
-  const bench = kit.islandBounds(BENCH_MODEL);
-  const seats: (Rect & { id: string; h: number })[] = [];
-  for (const { id, x, z, yaw } of BENCHES) {
-    const holder = new Group();
-    holder.position.set(x, 0, z);
-    holder.rotation.y = yaw;
-    holder.scale.setScalar(BENCH_S);
-    group.add(holder);
-    void kit.island(BENCH_MODEL).then((g) => {
-      if (!g || disposed) return;
-      holder.add(g.scene.clone(true));
-      kit.invalidate();
-    });
-    const hw = ((bench ? bench.max[0] - bench.min[0] : 18) * BENCH_S) / 2, hd = ((bench ? bench.max[2] - bench.min[2] : 10) * BENCH_S) / 2;
-    seats.push({ id, x0: x - hw, x1: x + hw, z0: z - hd, z1: z + hd, h: (bench ? bench.max[1] : 10) * BENCH_S });
-  }
-  for (const [name, x, z, s] of PLANTS) {
+  for (const [name, x, z, s] of FISH_PLANTS) {
     kit.prop(name, x, z, { s, parent: group });
     blocks.push({ x0: x - 5, x1: x + 5, z0: z - 5, z1: z + 5 });
   }
@@ -438,7 +419,6 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
     group,
     wing: 'fish',
     blocks,
-    seats,
     frame(t, dt, seen) {
       // (a new hour: a new pick)
       if (hour.tick(t)) pick(seen);

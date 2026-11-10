@@ -9,7 +9,7 @@
   // the doormat or ‹ 島へ goes back out. What's on show is the ずかん's (model/finds.ts: every fish, bug, sea creature
   // and fossil anyone has found, the guest's too, and every genuine artwork a present has held), and comes as it's
   // found; the sea creatures', the fossils' and the art's wings are built (their models fetched) only once my villager
-  // comes near (plan.ts nearWings). The others in here are seen (the relay's `tent` with `sc: 'm'`,
+  // comes near (plan.ts nearRooms). The others in here are seen (the relay's `tent` with `sc: 'm'`,
   // the rooms' presence); the say button says a phrase here (`say` with `sc: 'm'`). Nothing gives ベル.
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
@@ -49,7 +49,7 @@
   import type { Intent, Pt as WirePt, Relayed } from '#lib/contract/live-protocol.ts';
   import { hook } from '../island/devHooks.ts';
   import { now } from '#lib/time/clock.ts';
-  import { ENTRANCE, nearWings, type Pt, type Wing } from './plan.ts';
+  import { ENTRANCE, ROOM_IDS, nearRooms, wingOfRoom, type Pt, type RoomId, type Wing } from './plan.ts';
   import { onShow, type Specimen } from './species.ts';
   import { ROW, fossilsOnShow, type FossilOnShow } from './fossils.ts';
   import { artOnShow, type ArtOnShow } from './art.ts';
@@ -93,12 +93,16 @@
   const specimens = $derived<Specimen[]>(finds ? onShow(finds).filter((s) => s.id !== withheld) : []);
   const fossils = $derived<FossilOnShow[]>(finds ? fossilsOnShow(finds).filter((f) => f.id !== withheld) : []);
   const artworks = $derived<ArtOnShow[]>(finds ? artOnShow(finds).filter((a) => a.id !== withheld) : []);
-  /** The wings woken (near my villager once: plan.ts nearWings), their exhibits built and their models fetched. */
-  let awake = $state<ReadonlySet<Wing>>(new Set());
-  function wake(ws: readonly Wing[]) {
+  /** The rooms woken (near my villager once: plan.ts nearRooms; or a whole wing, the hook's), their exhibits built and
+   *  their models fetched. */
+  let awake = $state<ReadonlySet<Wing | RoomId>>(new Set());
+  function wake(ws: readonly (Wing | RoomId)[]) {
     if (ws.every((w) => awake.has(w))) return;
     awake = new Set([...awake, ...ws]);
-    for (const w of ws) if (w === 'fossil' || w === 'art') prefetchPlace(MUSEUM_MUSIC[w]);
+    for (const w of ws) {
+      const wing = (ROOM_IDS as readonly string[]).includes(w) ? wingOfRoom(w as RoomId) : (w as Wing);
+      if (wing === 'fossil' || wing === 'art') prefetchPlace(MUSEUM_MUSIC[wing]);
+    }
   }
 
   // ---- my villager, told to the others (the very walk) ----
@@ -140,8 +144,8 @@
     const at = eng?.at(me);
     if (!at || !eng) return;
     // (the room drawn: it changes inside the doorway's dip, the music with it)
-    music.to(MUSEUM_MUSIC[eng.room()]);
-    wake(nearWings(at[0], at[1]));
+    music.to(MUSEUM_MUSIC[wingOfRoom(eng.room())]);
+    wake(nearRooms(at[0], at[1]));
   }
   /** The doorway's dip: the screen fades to the next room's colour and back (engine.ts onDip), never in a finger's way. */
   let dip = $state<string | null>(null), dipColor = $state('#000');
@@ -519,15 +523,17 @@
       art: () => artworks.map((a) => ({ id: a.id, kind: a.art.kind, by: a.found.person })),
       awake: () => [...awake],
       /** Wake a wing now (its exhibits built, its models fetched), as coming near it does. */
-      wake: (w: Wing) => wake([w]),
+      wake: (w: Wing | RoomId) => wake([w]),
       shown: () => eng?.exhibits().flatMap((x) => x.shown()) ?? [],
       /** A creature's client px (null: not drawn). */
       creature: (id: string) => {
         const p = eng?.exhibits().map((x) => x.where(id)).find(Boolean);
         return p && eng ? eng.client(p[0], p[1], p[2]) : null;
       },
-      /** A creature's world point (null: not drawn). */
-      spot: (id: string) => eng?.exhibits().map((x) => x.where(id)).find(Boolean) ?? null,
+      /** An exhibit's world point (null: not drawn). */
+      where: (id: string) => eng?.exhibits().map((x) => x.where(id)).find(Boolean) ?? null,
+      /** A named spot on the floor (spots.ts: 'room:F2', 'in:fish', 'tank:reef', 'fossil:t-rex-skull', 'bench:hbench1:0'…). */
+      spot: (name: string) => import('./spots.ts').then((m) => m.spot(name)),
       card: () => (card ? card.id : null),
       /** The aquarium's clock an hour on (its pick changes). */
       withhold: (id: string | null) => (withheld = id),
@@ -553,6 +559,7 @@
       walls: () => eng?.walls(),
       /** The room drawn (only it), and its look retuned (look.ts: the Simulator's tuning). */
       room: () => eng?.room(),
+      /** The room's look (look.ts) or camera (viewW: this room's, the wings' all at once; pitch: degrees) retuned. */
       tune: (over: Record<string, number>) => eng?.tune(over),
       who: (w: Who) => (eng?.at(w) ? { at: eng.at(w), walking: eng.walking(w), seated: !!eng.seated(w) } : null),
       /** My seat (a bench's id, which of its seats), another's as heard, and a bench's seat's client px (its seat's top). */
