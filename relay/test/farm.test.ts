@@ -43,7 +43,7 @@ describe('the fields in the record', () => {
   const plant = (p: string, c = 'tomato', src = 'start') => ({ o: 'plant', p, c, src });
   const sell = (who: W, species: string, k: number) => send(who, 'sell', { species, n: k, v: k * sellPrice(species)! });
   const water = (who: W, date: string, ids: string[]) => send(who, 'island', { date, taken: [], puts: [], shakes: [], watered: ids, wishes: {} });
-  const rows = () => ((store.handle({ key: KEY_A, action: 'snapshot' }, 10) as { rows: { events: unknown[][] } }).rows.events).filter((r) => r[3] === 'farm').map((r) => JSON.parse(r[4] as string));
+  const rows = () => ((store.handle({ key: KEY_A, action: 'snapshot' }, 10) as Record<string, any>).rows.events as unknown[][]).filter((r) => r[3] === 'farm').map((r) => JSON.parse(r[4] as string));
   const refused = (detail: string) => ({ ok: false, error: 'bad_request', detail });
 
   it('starts at exactly their price, only with the かいがら to cover them', () => {
