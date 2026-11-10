@@ -7,6 +7,8 @@
   import { onMount, untrack } from 'svelte';
   import { layout as store } from '#lib/store/layout.svelte.ts';
   import { KIND_LIST, kindDef, type KindDef } from '#lib/layout/catalog.ts';
+  import { loadOutdoor, outdoorReady } from '#lib/layout/outdoor.ts';
+  import { roomIconUrl } from './roomIcon.ts';
   import { GRID, PATHS, TILE, type Kind } from '#lib/layout/grid.ts';
   import { extentOf, fromJson, footOf, objMid, opsBetween, toJson, type Layout, type Obj } from '#lib/layout/model.ts';
   import { validate, type Issue } from '#lib/layout/validate.ts';
@@ -110,7 +112,10 @@
   /** The garden's icons (gardenIcons.ts: one sheet, cut up once it's in). */
   let garden = $state<Readonly<Record<string, string>>>({});
   onMount(() => void gardenIcons().then((g) => (garden = g)));
-  const iconUrl = (key: string): string | null => (key.startsWith('garden:') ? (garden[key] ?? null) : artUrl(key));
+  /** The outdoor catalogue's kinds (layout/outdoor.ts: the rooms' pieces NH puts outdoors), in the palette once in. */
+  let outdoorIn = $state(outdoorReady());
+  onMount(() => void loadOutdoor().then(() => ((outdoorIn = true), iconRev++), () => say('屋外カタログを読み込めません')));
+  const iconUrl = (key: string): string | null => (key.startsWith('garden:') ? (garden[key] ?? null) : (roomIconUrl(key) ?? artUrl(key)));
   function icon(key: string): HTMLImageElement | null {
     if (!key) return null;
     let im = icons.get(key);
@@ -492,7 +497,7 @@
   // ---- the panel ----
   const BRUSHES: Kind[] = ['grass', 'sand', ...PATHS, 'river', 'pond', 'sea'];
   const BRUSH_NAME: Record<Kind, string> = { grass: '草', sand: '砂', dirt: '土', stone: '石', brick: 'レンガ', plank: '板', river: '川', pond: '池', sea: '海' };
-  const GROUPS: [string, string][] = [['tree', '木'], ['bush', '低木'], ['flower', '花'], ['crop', '野菜'], ['fence', 'フェンス'], ['rock', '岩'], ['light', '明かり'], ['furniture', '家具'], ['camp', 'キャンプ'], ['food', '食べ物'], ['gym', 'ジム'], ['season', '季節'], ['structure', '橋・坂'], ['building', '建物'], ['visitor', 'お客さん']];
+  const GROUPS: [string, string][] = [['tree', '木'], ['bush', '低木'], ['flower', '花'], ['crop', '野菜'], ['fence', 'フェンス'], ['rock', '岩'], ['light', '明かり'], ['furniture', '家具'], ['camp', 'キャンプ'], ['food', '食べ物'], ['gym', 'ジム'], ['garden', '庭'], ['park', '公園'], ['town', '街'], ['beach', '海辺'], ['statue', 'オブジェ'], ['event', '行事'], ['gyroid', 'はにわ'], ['season', '季節'], ['structure', '橋・坂'], ['building', '建物'], ['visitor', 'お客さん']];
   const one = $derived(selected.size === 1 ? (cur.objects.get([...selected][0]) ?? null) : null);
   function setVariant(s: string) {
     if (one) commit(restyle(store.current, one.id, s), '変更した');
@@ -600,7 +605,7 @@
     };
   });
 
-  const palette = (g: string) => KIND_LIST.filter((d) => d.group === g && !d.hidden);
+  const palette = (g: string) => (void outdoorIn, KIND_LIST).filter((d) => d.group === g && !d.hidden);
   const present = (d: KindDef) => d.fixed && [...cur.objects.values()].some((o) => o.k === d.k);
   const footText = (o: Obj) => footOf(cur, o).join('×');
 </script>

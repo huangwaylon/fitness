@@ -121,6 +121,9 @@ isn't yet.
   and particles, the special walls' own geometry such as an arched window). Their glow (`Emi`, 41 of them: the aurora,
   the glowing moss, the candles) is an emissive map lit in the dark (night, or the room's light off: engine.ts `glows`).
 
+The island's outdoor catalogue draws these same room pieces (docs/island-layout.md "The outdoor catalogue"): the
+room's GLB, from its pack or loose, at NH's furniture scale; nothing converted twice.
+
 ### Room packs
 
 `scripts/room-packs.ts` (run at room-models' end; `--unpack` writes the files back to `.cache/room/`): every piece,

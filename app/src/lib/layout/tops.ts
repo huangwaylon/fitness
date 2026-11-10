@@ -9,6 +9,7 @@ import { kindDef } from './catalog.ts';
 import { GRID, TILE } from './grid.ts';
 import { footOf, objMid, originOf, withChanges, type Layout, type Obj } from './model.ts';
 import { yawOf } from './nav.ts';
+import { outdoorSmall, outdoorTop } from './outdoor.ts';
 
 type Facing = Obj['f'];
 /** A model unit (NH's: a tile is 10) in world units at NH's furniture scale (DECOR_U). */
@@ -36,12 +37,13 @@ const SMALL: ReadonlySet<string> = new Set([
 
 /** @public (tops.test) A surface kind's room piece (tent/items.json), null for the iron table. */
 export const roomOf = (k: string): string | null | undefined => TOPS[k]?.[0];
-export const isSurfaceKind = (k: string): boolean => k in TOPS;
-export const isSmallKind = (k: string): boolean => SMALL.has(k);
+// (the outdoor catalogue's: its room piece's top, its small things: layout/outdoor.ts)
+export const isSurfaceKind = (k: string): boolean => k in TOPS || !!outdoorTop(k);
+export const isSmallKind = (k: string): boolean => SMALL.has(k) || outdoorSmall(k);
 /** A surface kind's top (lib/surface.ts). */
 export function topOf(k: string): Top | null {
   const t = TOPS[k], def = kindDef(k);
-  return t && def ? { w: def.w, d: def.d, sy: t[1], st: t[2] } : null;
+  return t && def ? { w: def.w, d: def.d, sy: t[1], st: t[2] } : outdoorTop(k);
 }
 
 /** The footprint's middle (u: no default's offset), the tiles' frame. */

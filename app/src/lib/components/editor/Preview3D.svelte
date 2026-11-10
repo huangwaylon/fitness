@@ -11,6 +11,7 @@
   // but a hand. A layout change rebuilds only the chunks and models that changed; a frame is drawn (world3d/stage.ts:
   // at most 30 a second, none hidden) only when something changed (an edit, the camera, a model in, a wobble), never
   // on a timer; the shadow map only when what casts or the shadow box moved.
+  import { loadOutdoor, outdoorReady, wantsOutdoor } from '#lib/layout/outdoor.ts';
   import { onMount, untrack } from 'svelte';
   import type { Layout } from '#lib/layout/model.ts';
   import { diffLayouts } from '#lib/layout/diff.ts';
@@ -115,6 +116,8 @@
         const place = () => {
           const d = day();
           if (!gardenReady() && wantsGarden(cur, d.date)) void loadGarden().then(() => !gone && (void things.place(placeObjects(cur, day()).insts), kick()));
+          // (the outdoor catalogue's kinds: layout/outdoor.ts)
+          if (!outdoorReady() && wantsOutdoor(cur)) void loadOutdoor().then(() => !gone && (void things.place(placeObjects(cur, day()).insts), kick()));
           void things.place(placeObjects(cur, d).insts);
         };
         place();

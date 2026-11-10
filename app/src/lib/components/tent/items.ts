@@ -7,7 +7,8 @@
 import data from './items.json';
 import more from './more.json';
 import { staticUrl } from '#lib/staticUrl.ts';
-import { PackStore, type PackRef } from '#lib/packStore.ts';
+import type { PackRef } from '#lib/packStore.ts';
+import { roomPacks } from './roomPacks.ts';
 
 export interface ItemMeta {
   /** Footprint in tiles in its own facing: w across, d deep. */
@@ -98,9 +99,6 @@ export function footprint(code: string, f: number): [number, number] {
 /** A loose piece's model (items.json's: a packed one's bytes are `modelBytes`). */
 export const modelUrl = (code: string): string => `${staticUrl(`room/models/${code}.glb`)}?v=${ITEMS[code]?.v ?? ''}`;
 
-/** The rooms' packs (scripts/room-packs.ts): each fetched whole and once (Pages ignores a Range), held a while here and
- *  for good by the service worker (its room cache: every /room/ file on first use). */
-const roomPacks = new PackStore({ url: (stem) => staticUrl(`room/pack/${stem}.pak`), cap: 6_000_000, tag: 'room' });
 /** A packed piece's model, cut from its pack (null: not packed, or the pack can't be had). */
 export const modelBytes = (code: string): Promise<ArrayBuffer | null> => (ITEMS[code]?.pk ? roomPacks.bytes(ITEMS[code].pk!) : Promise.resolve(null));
 /** Object URLs of packed pictures, made once (a few KB each: kept for the page's life). */

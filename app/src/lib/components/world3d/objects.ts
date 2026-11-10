@@ -18,6 +18,7 @@ import { doorOf, facingVec, footOf, objMid, type Layout } from '#lib/layout/mode
 import { WHO_OF_HOME, exteriorOf, homePorch, type HomeStyle, type Who } from '#lib/layout/homes.ts';
 import { KK_STOOL_H } from '../island/kkSlider.ts';
 import { topSpot } from '#lib/layout/tops.ts';
+import { outdoorModel, outdoorPiece } from '#lib/layout/outdoor.ts';
 import { FENCE_SNOW, cropStage, fenceJoin, isCrop, isFence, isGarden } from '#lib/layout/garden.ts';
 import { cedarLit, gardenReady } from './garden.ts';
 
@@ -154,6 +155,13 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
       } else if (o.k === 'vine') thing(`garden/vine-${o.s ?? 'a'}${winter ? '-snow' : ''}`, DECOR_U);
       else if (o.k === 'cedar') thing(`garden/cedar-deco${winter || /winter/.test(day.swaps?.[o.id]?.key ?? '') ? '-snow' : ''}`, scaleOf('trees/cedar', 'cedar', day.swaps?.[o.id]?.h ?? h), { tap: 'tree' });
       else thing(`garden/${o.k}`, DECOR_U);
+      continue;
+    }
+    // the outdoor catalogue's (layout/outdoor.ts): its room piece's own model at NH's furniture scale, turned by its
+    // facing (nothing till the table's in: kindDef knows none of them before)
+    if (def.room) {
+      const p = outdoorPiece(o.k);
+      if (p) thing(outdoorModel(p), DECOR_U);
       continue;
     }
     // a look of the day in its place: a model, else a card

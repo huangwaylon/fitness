@@ -338,6 +338,31 @@ editor's 野菜 and フェンス tabs and NH's garden flowers under 花.
   of it; with one, the manifest, then the packs it draws. The icons are one sheet for the editors
   (`static/room/editor/garden-icons.webp`, `npm run garden-icons`).
 
+## The outdoor catalogue
+
+The rooms' pieces outdoors (the user, 2026-11-10: NH's catalogue but character customisation): every housewares and
+miscellaneous piece NH lets one put outdoors (the ACNH spreadsheet's `outdoor`, 415) and the 36 gyroids, less the 57
+the editor already has as kinds of its own (by NH's model file, or its name): 394 pieces. Critter tanks stay indoors
+(the rooms' 生き物 gives each ずかん catch's; the editor isn't gated by the ずかん).
+
+- **Data:** `npm run outdoor-catalog` (`scripts/outdoor-catalog.ts`) writes `layout/outdoor.json` from the room data
+  (tent/items.json, more.json, the seats, NH's names in i18n/tent.*.json): each piece a kind `nh-<code>`, its tab by
+  NH's tag. Rerun it after room-models; `layout/outdoor.test.ts` fails while the two differ.
+- **Tabs:** NH's lamps under 明かり, seats, tables, beds and baths under 家具, the ranch under キャンプ, dishes under
+  食べ物; new tabs 庭 (garden, plants, Japanese), 公園 (playground, sports, the plaza's rides and stalls, shop signs,
+  music), 街 (vehicles, works, screens and walls, the castle, arches), 海辺, オブジェ (landmarks, space, toys, Mario,
+  Sanrio), 行事 (the seasons' and Festivale's) and はにわ. Both editors; icons NH's own (static/room/icons) or the ずかん's.
+- **Same indoors and out:** a piece is drawn from its room model (loose, or cut from its room pack: one shared
+  `tent/roomPacks.ts` store; `world3d/outdoorModels.ts`) at NH's furniture scale, turned by its facing; its footprint,
+  top (layout/tops.ts), small flag, seat (nav.ts, villager3d/seats3d.ts) and light (things.ts lamps: its room emitter
+  for a piece with NH's lighting; a glowing piece's emissive lit at night) are the room's. Nothing is converted again:
+  no new static files.
+- **Loading:** `layout/outdoor.ts` imports the table only when the layout has an `nh-` piece (the layout store
+  rebuilds once it's in, so the walk, the checks and the scene see them) or an editor opens; till then the kinds are
+  unknown and nothing of them is drawn. First load: the table and the models stay out of it.
+- **The e2e:** `e2e/editor-catalogue.spec.ts` (the phone もようがえ's はにわ tab, four pieces put down, on the island
+  at their room height, the streetlight lit at night).
+
 ## Table tops
 
 NH's surfaces outdoors, the rooms' rules (design.md "The tent" › Table tops; the shared geometry `lib/surface.ts`,

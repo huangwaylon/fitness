@@ -3,6 +3,7 @@
 // stands in, the piece put there by its middle, its turn (yaw: three's, about y; 0 its front toward +z) and its scale
 // (that space's units a model unit). Pure: unit-tested.
 import DATA from './seats3d.json' with { type: 'json' };
+import { outdoorSeat } from '#lib/layout/outdoor.ts';
 
 /** What a villager does on a piece of the gym (the island's: layout/catalog.ts group 'gym'; poses.ts plays each):
  *  presses lying on the weight bench, pedals the bike, runs on the treadmill, punches the bag, bounces on the ball,
@@ -59,8 +60,9 @@ export interface Place {
 
 /** What one does on an island piece of the gym (by its model name: the layout's kind), or null: not the gym's. */
 export const useOf = (key: string): Use | null => D.island[key]?.use ?? null;
-/** The shape of a piece: the tent's by item code, the island's by model name. */
-export const shapeOf = (where: 'tent' | 'island', key: string): Shape | null => D[where][key] ?? null;
+/** The shape of a piece: the tent's by item code, the island's by model name (an outdoor catalogue piece's, its kind
+ *  `nh-<code>`: its room piece's, layout/outdoor.ts). */
+export const shapeOf = (where: 'tent' | 'island', key: string): Shape | null => D[where][key] ?? (where === 'island' ? (outdoorSeat(key) as Shape | null) : null);
 
 /** A piece's anchors (one a seat or a sleeper), or [] when it has no shape. */
 export function anchorsOf(sh: Shape | null, p: Place): Anchor[] {

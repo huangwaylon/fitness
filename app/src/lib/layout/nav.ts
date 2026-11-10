@@ -10,6 +10,7 @@
 import { GRID, TILE, isWater, kindOf, tierOf, idx, onGrid, tileX, tileZ } from './grid.ts';
 import { doorOf, facingVec, footOf, objMid, originOf, type Layout, type Obj } from './model.ts';
 import { goesIn, kindDef } from './catalog.ts';
+import { outdoorSeatOn } from './outdoor.ts';
 
 type Pt = readonly [number, number];
 /** A box (u; y is z, as island/geom.ts's). */
@@ -218,7 +219,9 @@ const SEAT_ON: Readonly<Record<string, { x: readonly number[]; front: number; li
  *  (world3d/objects.ts): a turning kind by its facing, a look-only facing (odd) a little turned. */
 export const yawOf = (o: Obj): number => (kindDef(o.k)?.turns ? (o.f * Math.PI) / 2 : o.f % 2 ? 0.9 : 0);
 /** Whether one lies on a seat (a hammock, a beach chair) rather than sits, by its piece's kind. */
-export const liesOn = (k: string): boolean => !!SEAT_ON[k]?.lie;
+export const liesOn = (k: string): boolean => !!seatOn(k)?.lie;
+/** A kind's seats: the island's own, else an outdoor catalogue piece's (its room piece's seat: layout/outdoor.ts). */
+const seatOn = (k: string) => SEAT_ON[k] ?? outdoorSeatOn(k);
 
 /** @public (the scene's seats) Where a villager gets on a seat (a bench's two, a stool, a chair, a hammock: a step in
  *  front of it, where the 3D villager turns and sits or lies down) or a piece of the gym (the pull-up bar, the bike…: it
@@ -227,7 +230,7 @@ export const liesOn = (k: string): boolean => !!SEAT_ON[k]?.lie;
  *  to a bench `seat-<id>-0|1`, left to right as it faces us). */
 export function seatsOf(layout: Layout, o: Obj): [string, Pt][] {
   const [mx, mz] = objMid(layout, o);
-  const on = SEAT_ON[o.k];
+  const on = seatOn(o.k);
   // (a bench or a stool with things on its top is no seat: tops.ts)
   if (on && ![...layout.objects.values()].some((t) => t.on === o.id)) {
     const NAMES: Record<string, readonly string[]> = { 'bench-mae': ['seatMaeL', 'seatMaeR'], 'bench-pond': ['seatPondL', 'seatPondR'], 'stool-1': ['stoolW'], 'stool-2': ['stoolE'], pullup: ['pullup'] };

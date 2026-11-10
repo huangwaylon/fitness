@@ -13,6 +13,8 @@ import { defaultLayout, layoutOf, objMid, type Layout, type Obj } from '#lib/lay
 import { resolveMoves } from '#lib/layout/resolve.ts';
 import { diffLayouts, type LayoutDiff } from '#lib/layout/diff.ts';
 import { migrationOps } from '#lib/layout/migrate.ts';
+import { loadOutdoor, outdoorReady, wantsOutdoor } from '#lib/layout/outdoor.ts';
+import { swallowed } from '#lib/quiet.ts';
 import type { Placed } from '#lib/contract/decor.ts';
 import type { HomeStyle } from '#lib/layout/homes.ts';
 import type { Relayed, Who } from '#lib/contract/live-protocol.ts';
@@ -48,6 +50,13 @@ class IslandLayout extends Synced<LayoutEntry, LayoutOp, LayoutNews> {
   }
   protected rebuild(): void {
     this.#layout = layoutOf(this.map);
+    // (a piece of the outdoor catalogue's: its kinds fetched, then the layout made again, so every reader of it, the
+    // walk, the checks, the scene, sees them: layout/outdoor.ts)
+    if (!outdoorReady() && wantsOutdoor(this.#layout))
+      void loadOutdoor().then(() => {
+        this.#layout = layoutOf(this.map);
+        this.rev++;
+      }, () => swallowed('layout.outdoor'));
   }
   protected load(): void {
     if (this.loaded) return;

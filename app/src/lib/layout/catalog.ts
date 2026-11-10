@@ -5,7 +5,9 @@
 
 import { CROPS, FENCES, PLANTS, PUMPKINS, VINES } from './garden.ts';
 
-type Group = 'tree' | 'bush' | 'flower' | 'crop' | 'fence' | 'rock' | 'light' | 'furniture' | 'camp' | 'food' | 'gym' | 'season' | 'structure' | 'building' | 'home' | 'spot' | 'visitor';
+type Group = 'tree' | 'bush' | 'flower' | 'crop' | 'fence' | 'rock' | 'light' | 'furniture' | 'camp' | 'food' | 'gym' | 'season' | 'structure' | 'building' | 'home' | 'spot' | 'visitor'
+  // (the outdoor catalogue's own tabs: layout/outdoor.ts)
+  | 'garden' | 'park' | 'town' | 'beach' | 'statue' | 'event' | 'gyroid';
 /** Where a kind may stand: any land tile (`land`), on grass only (`grass`: a tree, a flower), over water with land at
  *  both ends (`span`: a bridge), in front of a cliff one tier up (`cliff`: stairs). */
 type On = 'land' | 'grass' | 'span' | 'cliff';
@@ -46,6 +48,9 @@ export interface KindDef {
   /** A pack's (scripts/world3d-assets.ts PACKS): a decoration (island/decor.ts) drawn as its model `decor/<k>`, its
    *  icon the ずかん's or NH's own. */
   packed?: true;
+  /** The outdoor catalogue's (layout/outdoor.ts: `nh-<code>`): its room piece's code (tent/items.json, more.json), drawn
+   *  as that model; its icon `room:<code>` NH's own (static/room/icons) or the ずかん's. */
+  room?: string;
 }
 
 const k = (def: KindDef): KindDef => def;
@@ -131,7 +136,7 @@ const GARDEN_KINDS: KindDef[] = [
 ];
 const TREE_FOOT = [24, 12] as const;
 
-export const KIND_LIST: readonly KindDef[] = [
+const LIST: KindDef[] = [
   // trees: one tile each, their trunk blocks
   k({ k: 'oak', group: 'tree', ja: '木', en: 'Hardwood', w: 1, d: 1, block: true, foot: TREE_FOOT, on: 'grass', h: 112, icon: 'trees/oak-summer' }),
   k({ k: 'cedar', group: 'tree', ja: '針葉樹', en: 'Cedar', w: 1, d: 1, block: true, foot: TREE_FOOT, on: 'grass', h: 140, icon: 'trees/cedar' }),
@@ -239,8 +244,14 @@ export const KIND_LIST: readonly KindDef[] = [
   k({ k: 'spot', group: 'spot', ja: '場所', en: 'Spot', w: 1, d: 1, block: false, on: 'land', h: 0, icon: '', variants: ['villager-a', 'villager-b', 'stage'], fixed: true, hidden: true })
 ];
 
-const KINDS: Readonly<Record<string, KindDef>> = Object.fromEntries(KIND_LIST.map((d) => [d.k, d]));
+/** Every kind: the island's own, then the outdoor catalogue's once its table is in (addKinds). */
+export const KIND_LIST: readonly KindDef[] = LIST;
+const KINDS: Record<string, KindDef> = Object.fromEntries(LIST.map((d) => [d.k, d]));
 export const kindDef = (k: string): KindDef | undefined => KINDS[k];
+/** The outdoor catalogue's kinds (layout/outdoor.ts), added once its table loads (each once). */
+export function addKinds(defs: readonly KindDef[]): void {
+  for (const d of defs) if (!KINDS[d.k]) LIST.push((KINDS[d.k] = d));
+}
 /** Whether one goes into it at its door: a home, or a building of the island's (the museum, the shop). */
 /** A visitors' spot (a mark, never drawn in play, standing on nothing: nothing's ground is taken by it). */
 export const isMarker = (k: string): boolean => KINDS[k]?.group === 'visitor';

@@ -22,6 +22,8 @@ import { ASSET_KEYS } from './assets.ts';
 import { nightLift, nightTag } from './nightLift.ts';
 import { procScene } from './proc3d.ts';
 import { FLAPS, flapGlsl, wingHinge } from './wings.ts';
+import { loadRoomModel, roomLamp } from './outdoorModels.ts';
+import { isRoomModel, outdoorByCode } from '#lib/layout/outdoor.ts';
 
 /** Where a lit model's light is (a share of its height; or `e`, its emitter in model units, its own frame: turned and
  *  scaled with it, as the rooms' lamps' are, tent/grid.ts toRoom), its colour and the halo's and pool's sizes (u). */
@@ -247,7 +249,8 @@ function load(url: string, name: string): Promise<GLTF | null> {
   let p = loaded.get(url);
   if (p) return p;
   if (!loader) (loader = ktx2Plugin(new GLTFLoader())).setMeshoptDecoder(MeshoptDecoder);
-  p = loader.loadAsync(url).then(
+  // (an outdoor catalogue piece's: its room piece's own model, outdoorModels.ts)
+  p = (isRoomModel(name) ? loadRoomModel(name) : loader.loadAsync(url)).then(
     (g) => {
       lean(g);
       if (loaded.get(url) === p) inNow.set(url, g);
@@ -288,7 +291,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     }
     return p;
   };
-  const urlOf = (name: ModelName) => `${base}${MODELS[name]?.pack ?? name}.glb?v=${MODELS[name]?.v ?? 0}`;
+  const urlOf = (name: ModelName) => (isRoomModel(name) ? `room:${name}` : `${base}${MODELS[name]?.pack ?? name}.glb?v=${MODELS[name]?.v ?? 0}`);
   /** A lazy model's last instance gone: its GPU copies and this mount's materials of it let go of, its load handed
    *  back (kept decoded a while: unuse). Asked for again, it's built afresh; asked for again before its load's tick
    *  (a critter gone and another of its species come in one regroup), its new build has these very materials
@@ -638,9 +641,11 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
   function lamps(): LampSpot[] {
     const out: LampSpot[] = [];
     for (const g of groups.values()) {
-      const L = LAMP[g.name];
+      // (an outdoor catalogue piece's light: its room emitter, outdoorModels.ts)
+      const piece = isRoomModel(g.name) ? outdoorByCode(g.name.slice(3)) : undefined;
+      const L = piece ? roomLamp(piece) : LAMP[g.name];
       if (!L) continue;
-      const h = MODELS[g.name].max[1];
+      const h = MODELS[g.name]?.max[1] ?? 0;
       for (const o of g.list) {
         if (overs.get(o.id)?.hidden) continue;
         const gy = height(o.x, o.z);

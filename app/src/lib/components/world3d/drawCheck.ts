@@ -4,6 +4,7 @@
 // listed: a home of NH's parts (home.ts), the bridges and stairs (structure.ts), the bulletin board (its DOM node's
 // model), a named spot (never drawn), a seasonal spot out of its season.
 import { art } from '#lib/art.ts';
+import { isRoomModel, outdoorByCode } from '#lib/layout/outdoor.ts';
 import { isMarker, kindDef } from '#lib/layout/catalog.ts';
 import type { Layout } from '#lib/layout/model.ts';
 import { WHO_OF_HOME } from '#lib/layout/homes.ts';
@@ -80,7 +81,7 @@ export function undrawn(layout: Layout, days: readonly Day[] = phoneDays(layout)
       const at = { id: o.id, k: o.k, x: o.x, z: o.z };
       if (!kindDef(o.k)) note({ ...at, why: 'unknown-kind' }, day.season);
       else if (models.has(o.id)) {
-        for (const m of models.get(o.id)!) if (!modelBounds(m)) note({ ...at, why: 'model-missing', detail: m }, day.season);
+        for (const m of models.get(o.id)!) if (!modelBounds(m) && !(isRoomModel(m) && outdoorByCode(m.slice(3)))) note({ ...at, why: 'model-missing', detail: m }, day.season);
       } else if (elsewhere(layout, o.id, o.k, day)) continue;
       else if (cards.has(o.id)) {
         // (a card of art that isn't there is nothing at all: Island3D's artCard draws none)

@@ -2,7 +2,7 @@
   // The island's もようがえ in /editor's phone view (`?view=phone&edit`; docs/island-layout.md "Phone editing": the game
   // itself has none since 2026-11-08): NH's outdoor arranging, one-handed, on
   // the island's layout (store/layout.svelte.ts), the tent's way (tent/TentEdit.svelte). The tray at the foot: its tabs
-  // (き, かんぼく, はな, 野菜, フェンス, いわ, あかり, かぐ, キャンプ, 食べ物, ジム, はし・さか, たてもの, おきゃくさん) over each kind's icon; a tap puts that kind down as a ghost on the
+  // (木, 低木, 花, 野菜, フェンス, 岩, 明かり, 家具, キャンプ, 食べ物, ジム, 庭, 公園, 街, 海辺, オブジェ, 行事, はにわ, 橋・坂, 建物, お客さん) over each kind's icon; a tap puts that kind down as a ghost on the
   // free tile nearest the middle of the view, its footprint on the ground green or red (and why, in the bar); a finger
   // on it, or on a placed thing (it's picked up), drags it a tile at a time; a tap on the ground moves it there; ↻ turns
   // it; ✓ puts it down; 🗑 しまう takes a placed one away (the island's one-offs, the goal trees, the homes never); ✕
@@ -16,6 +16,9 @@
   // no plaza is put down, and a mark nobody can stand at now (something put on it) shows red, its reason in the bar.
   //   stage: the island's projection (world ⇄ the host's px) and the model to hide while it's held
   import { isMarker, kindDef, KIND_LIST, type KindDef } from '#lib/layout/catalog.ts';
+  import { loadOutdoor, outdoorReady } from '#lib/layout/outdoor.ts';
+  import { roomIconUrl } from '../editor/roomIcon.ts';
+  import { swallowed } from '#lib/quiet.ts';
   import { markerOf, markerSpot, stageOf } from '#lib/layout/spots.ts';
   import { GRID, TILE } from '#lib/layout/grid.ts';
   import { footOf, newObjId, objMid, opsBetween, originOf, withChanges, type Layout, type Obj } from '#lib/layout/model.ts';
@@ -61,15 +64,19 @@
   /** The garden's icons (one sheet: editor/gardenIcons.ts), else the art's. */
   let gardenArt = $state<Readonly<Record<string, string>>>({});
   $effect(() => void gardenIcons().then((g) => (gardenArt = g)));
-  const iconUrl = (key: string): string | null => (key.startsWith('garden:') ? (gardenArt[key] ?? null) : artUrl(key));
-  const TABS = ['tree', 'bush', 'flower', 'crop', 'fence', 'rock', 'light', 'furniture', 'camp', 'food', 'gym', 'structure', 'building', 'visitor'] as const;
+  const iconUrl = (key: string): string | null => (key.startsWith('garden:') ? (gardenArt[key] ?? null) : (roomIconUrl(key) ?? artUrl(key)));
+  // (the outdoor catalogue's tabs among them: 庭, 公園, 街, 海辺, オブジェ, 行事, はにわ; its pieces in their tabs and
+  // in 明かり, 家具, キャンプ and 食べ物 too, once its table's in: layout/outdoor.ts)
+  const TABS = ['tree', 'bush', 'flower', 'crop', 'fence', 'rock', 'light', 'furniture', 'camp', 'food', 'gym', 'garden', 'park', 'town', 'beach', 'statue', 'event', 'gyroid', 'structure', 'building', 'visitor'] as const;
+  let outdoorIn = $state(outdoorReady());
+  $effect(() => void loadOutdoor().then(() => (outdoorIn = true), () => swallowed('edit.outdoor')));
   const MARKS = ['plaza', 'beach-spot'] as const;
   /** A kind's or an issue's name in this phone's language. */
   const say = (x: { ja: string; en: string }) => (i18n.locale === 'ja' ? x.ja : x.en);
   let tab = $state('tree');
   // (the island's one-off buildings only while it has none of them: the museum stands there already, moved by a tap on it)
   const present = (d: KindDef) => [...store.current.objects.values()].some((o) => o.k === d.k);
-  const list = $derived(KIND_LIST.filter((d) => d.group === tab && !d.hidden && (!d.fixed || (d.group === 'building' && !present(d)))));
+  const list = $derived((void outdoorIn, KIND_LIST).filter((d) => d.group === tab && !d.hidden && (!d.fixed || (d.group === 'building' && !present(d)))));
   const ICON_FALLBACK: Record<string, string> = { stairs: '⛰', board: '📋' };
 
   /** What's held: a new kind (`id` null) or a placed thing, its tile (its footprint's anchor) and facing. */

@@ -51,6 +51,7 @@
     "models": "node scripts/models.ts",
     "room-models": "node scripts/room-models.ts",
     "room-packs": "node scripts/room-packs.ts",
+    "outdoor-catalog": "node scripts/outdoor-catalog.ts",
     "seat-anchors": "node scripts/seat-anchors.ts",
     "world3d-models": "node scripts/world3d-models.ts",
     "world3d-ktx2": "node scripts/world3d-ktx2.ts",
