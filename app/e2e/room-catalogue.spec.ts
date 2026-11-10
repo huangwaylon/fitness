@@ -153,7 +153,9 @@ test('a piece past the old 100,000-Bell cap (unobtainable until 2026-11-10) is b
   // 16 whale sharks: 10,400 かいがら
   await seed(page, day, [['tally', { date: day, counts: { 'fish:whale-shark': 16 } }, 'A']]);
   await page.goto(`shop?demo&date=${day}T12:00`);
-  await page.locator('[data-shop-open="sell"]').click();
+  await page.waitForFunction(() => !!(window as unknown as { __shop?: object }).__shop);
+  await page.evaluate(() => (window as unknown as { __shop: { talk(): void } }).__shop.talk());
+  await page.locator('[data-shop-choice="sell"]').click();
   await page.locator('[data-shop-all]').click();
   await page.locator('[data-shop-sell]').click();
   await page.locator('[data-shop-tab="buy"]').click();
