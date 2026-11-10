@@ -102,19 +102,23 @@ test('a find of the last day: a NEW tag over it in its room, none elsewhere', as
 });
 
 test('with a card open, a tap on another exhibit only closes it; the next tap opens that one', async ({ page }) => {
-  await seed(page, [['fish', 'koi', 'A'], ['fish', 'sea-bass', 'B']]);
+  // (the koi low in its tank, its card at the top; the octopus in the reef, mid-screen, clear of it)
+  await seed(page, [['fish', 'koi', 'A'], ['sea', 'octopus', 'B']]);
   await open(page);
-  await expect.poll(async () => (await mu<string[]>(page, 'shown()')).length, { timeout: 15_000 }).toBe(2);
   await putAt(page, 'room:fish');
+  await expect.poll(async () => (await mu<string[]>(page, 'shown()')).length, { timeout: 15_000 }).toBe(2);
   await still(page);
   const tapOn = async (id: string) => {
     const p = (await mu<[number, number] | null>(page, `creature(${JSON.stringify(id)})`))!;
     await page.mouse.click(p[0], p[1]);
   };
   await expect.poll(async () => (await tapOn('koi'), mu<string | null>(page, 'card()')), { timeout: 15_000 }).toBe('koi');
-  await tapOn('sea-bass');
+  // (the octopus where it shows, not under the card)
+  const box = (await page.locator('[data-museum-card]').boundingBox())!, p = (await mu<[number, number] | null>(page, 'creature("octopus")'))!;
+  expect(p[1] < box.y || p[1] > box.y + box.height, `octopus at ${p} under the card ${JSON.stringify(box)}`).toBe(true);
+  await tapOn('octopus');
   await expect(page.locator('[data-museum-card]')).toHaveCount(0);
-  await expect.poll(async () => (await tapOn('sea-bass'), mu<string | null>(page, 'card()')), { timeout: 15_000 }).toBe('sea-bass');
+  await expect.poll(async () => (await tapOn('octopus'), mu<string | null>(page, 'card()')), { timeout: 15_000 }).toBe('octopus');
 });
 
 test('Blathers greets once on the way in, untapped, briefly and clear of the plaques; a doorway’s dip closes every balloon at its start', async ({ page }) => {
