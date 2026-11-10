@@ -193,7 +193,6 @@ export function buildCrowd(kit: Kit, o: {
 
   return {
     group,
-    wing: 'hall',
     get room() {
       return o.room();
     },

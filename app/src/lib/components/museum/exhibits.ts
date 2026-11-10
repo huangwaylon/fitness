@@ -44,8 +44,6 @@ export function show(m: Museum, on: OnShow, clock?: () => number, awake: Readonl
     if (was && was.key === key) return;
     if (was) m.drop(was.e);
     const e = build();
-    // (the room it's drawn in: the engine draws a room's own only)
-    e.room = u.room;
     m.exhibit(e);
     units.set(u.key, { key, e });
   };
@@ -57,7 +55,7 @@ export function show(m: Museum, on: OnShow, clock?: () => number, awake: Readonl
       put(u, mine, () => (kind === 'fish' ? buildAquarium(m.kit, mine, clock) : kind === 'bug' ? buildGarden(m.kit, mine, clock) : buildSeaLife(m.kit, mine)));
     } else if (u.wing === 'fossil') {
       const mine = on.fossils.filter((f) => FOSSIL_SPOTS.get(f.id)?.room === u.room);
-      put(u, mine, () => buildFossils(m.kit, mine));
+      put(u, mine, () => buildFossils(m.kit, mine, u.room));
     } else {
       const mine = on.art.filter((a) => ART_SPOTS.get(a.id)?.room === u.room);
       put(u, mine, () => buildGallery(m.kit, mine, u.room));

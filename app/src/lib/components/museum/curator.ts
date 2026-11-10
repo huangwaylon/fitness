@@ -324,7 +324,7 @@ export function buildCurator(kit: Kit, o: { model: string | null; me: () => Pt |
   const blocks: Rect[] = [];
   return {
     group,
-    wing: 'hall',
+    room: 'hall',
     blocks,
     frame(t, dt, seen) {
       if (!v) return false;

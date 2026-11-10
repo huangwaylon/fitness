@@ -4,8 +4,10 @@
 // for one visitor. The world's copy: spaced kana (visitorLines.test holds every line to the world's keep-all runs).
 // [ja, en] pairs, as catchLines.ts: loaded with the museum, out of the first load.
 import type { Personality } from '#lib/villagers/species.ts';
+import type { Wing } from './plan.ts';
 
-export type RoomKind = 'hall' | 'bug' | 'fish' | 'sea' | 'fossil' | 'art';
+/** Where a visitor is, for its lines: its room's wing, or `sea` before the aquarium's sea creatures' tanks. */
+export type RoomKind = Wing | 'sea';
 export type LineContext = 'look' | 'new' | 'sit' | 'chat' | RoomKind;
 export interface Line {
   /** `<personality>.<pool>.<n>`: the one before, so the next isn't it. */

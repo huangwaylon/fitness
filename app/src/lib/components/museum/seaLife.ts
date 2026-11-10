@@ -116,7 +116,7 @@ export function buildSeaLife(kit: Kit, list: readonly Specimen[]): Exhibit {
   };
   return {
     group,
-    wing: 'fish',
+    room: 'fish',
     blocks,
     pools: light.pools,
     frame(t, _dt, seen) {

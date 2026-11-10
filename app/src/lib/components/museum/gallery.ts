@@ -17,7 +17,6 @@ const REACH = 24;
 /** A faded panel's foot (u high). */
 const KICK = 2.5;
 
-export { PANELS };
 /** A gallery room's exhibits (its panels, its artworks on show: `shown` its own). */
 export function buildGallery(kit: Kit, shown: readonly ArtOnShow[], room: RoomId = 'G1'): Exhibit {
   const panels = PANELS.filter((p) => p.room === room);
@@ -97,7 +96,7 @@ export function buildGallery(kit: Kit, shown: readonly ArtOnShow[], room: RoomId
   };
   return {
     group,
-    wing: 'art',
+    room,
     blocks,
     pools,
     screens,

@@ -3,14 +3,14 @@
 import { describe, expect, test } from 'vitest';
 import {
   DOCK_LOW, HALL_NAME, NEW_MS, TAG_MAX, cardDock, chipName, drawnIn, fingerQuad, freshFinds, freshIn, freshWings, inPoly, plaqueInView, roomOfFind, roomTally,
-  roomTotal, segDist, tagsOf, type Px
+  roomTotal, segDist, tagsOf, unitOf, type Px
 } from './hud.ts';
 import { OPENINGS, PLAQUE, PLAQUE_H, PLAQUE_W, ROOM_IDS, roomIdAt } from './plan.ts';
 import { BUG_IDS, FISH_IDS, PER_TANK, habitatOf, hourOf, onDisplay, tankOf, type Specimen } from './species.ts';
 import { BUGS_SHOWN } from './bugShow.ts';
 import { PORTRAIT, enter, framingOf, project } from './camera.ts';
 import { SPOTS } from './spots.ts';
-import { SPOTS as FOSSIL_SPOTS, fossilsIn } from './fossils.ts';
+import { SPOTS as FOSSIL_SPOTS, ROW, fossilsIn } from './fossils.ts';
 import { ART_SPOTS, artIn } from './art.ts';
 
 const T = Date.UTC(2026, 10, 10, 3);
@@ -87,7 +87,7 @@ describe('NEW: the finds of the last day', () => {
   test('a tank with more than three new: one tag on the tank with them all; three or fewer, a tag each', () => {
     const sea = FISH_IDS.filter((id) => tankOf(id) === 'sea'), at = T - 60_000;
     const many = freshFinds({ specimens: sea.slice(0, TAG_MAX + 1).map((id) => S('fish', id, at)), fossils: [{ id: fossil, ...F(at) }], artworks: [] }, T);
-    expect(tagsOf(many)).toEqual([{ key: 'case:sea', room: 'fish', ids: sea.slice(0, TAG_MAX + 1), tank: 'sea' }, { key: fossil, room: 'F2', ids: [fossil] }]);
+    expect(tagsOf(many)).toEqual([{ key: 'case:sea', room: 'fish', ids: sea.slice(0, TAG_MAX + 1), tank: 'sea' }, { key: unitOf(many.find((x) => x.id === fossil)!), room: 'F2', ids: [fossil] }]);
     const few = freshFinds({ specimens: sea.slice(0, TAG_MAX).map((id) => S('fish', id, at)), fossils: [], artworks: [] }, T);
     expect(tagsOf(few).map((t) => t.key)).toEqual(sea.slice(0, TAG_MAX));
   });
@@ -98,6 +98,17 @@ describe('NEW: the finds of the last day', () => {
     expect(freshIn('F2', f)).toBe(1);
     expect(freshIn('hall', f)).toBe(2);
     expect([...freshWings(f)].sort()).toEqual(['fish', 'fossil']);
+  });
+  test('a skeleton’s new pieces: one tag over the set and one on the chip; a standalone fossil its own', () => {
+    const at = T - 60_000, pieces = ROW['t-rex'], lone = [...FOSSIL_SPOTS.keys()].find((id) => !Object.values(ROW).flat().includes(id))!;
+    const f = freshFinds({ specimens: [], fossils: [...pieces, lone].map((id) => ({ id, ...F(at) })), artworks: [] }, T);
+    const room = FOSSIL_SPOTS.get(pieces[0])!.room;
+    expect(tagsOf(f).filter((t) => t.key.startsWith('set:'))).toEqual([{ key: 'set:t-rex', room, ids: [...pieces] }]);
+    expect(tagsOf(f).map((t) => t.key)).toContain(lone);
+    expect(tagsOf(f)).toHaveLength(2);
+    expect(freshIn('hall', f)).toBe(2);
+    expect(freshIn(room, f)).toBe(tagsOf(f).filter((t) => t.room === room).length);
+    expect(new Set(f.filter((x) => pieces.includes(x.id)).map(unitOf))).toEqual(new Set(['set:t-rex']));
   });
 });
 

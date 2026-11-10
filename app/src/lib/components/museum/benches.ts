@@ -3,7 +3,7 @@
 // loaded once, a clone a bench. Nothing on them moves (frame never asks for one).
 import { Group } from 'three';
 import type { Exhibit, Kit } from './engine.ts';
-import { wingOfRoom, type RoomId } from './plan.ts';
+import type { RoomId } from './plan.ts';
 import { BENCHES, BENCH_HALF, BENCH_MODEL, BENCH_S, benchRect } from './seats.ts';
 
 /** The rooms with benches. */
@@ -31,7 +31,6 @@ export function buildBenches(kit: Kit, room: RoomId): Exhibit {
   });
   return {
     group,
-    wing: wingOfRoom(room),
     room,
     blocks: [],
     seats: mine.map((q) => ({ id: q.id, h, ...benchRect(q, half) })),

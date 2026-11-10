@@ -362,7 +362,7 @@ export function buildGarden(kit: Kit, list: readonly Specimen[], clock: () => nu
 
   return {
     group,
-    wing: 'bug',
+    room: 'bug',
     blocks,
     frame(t, dt, seen) {
       // (a new hour: a new pick)

@@ -2,14 +2,14 @@
 // artworks, what's on show (anyone's first find: a present's), where each hangs or stands; every sea creature's place.
 import { describe, expect, test } from 'vitest';
 import { findKey, type FirstFind } from '#lib/model/finds.ts';
-import { ART, ART_IDS, ART_SPOTS, DAIS, PANEL_H, artIn, artOnShow, artPack, isArt, plinthOf } from './art.ts';
+import { ART_SPOTS, DAIS, PANELS, PANEL_H, artIn, artOnShow, artPack, plinthOf } from './art.ts';
+import { ART, ART_IDS, isArt } from './artIds.ts';
 import { SEA_MUSEUM_MODEL, SEA_SPOTS, SEA_TANKS } from './seaTanks.ts';
 import { SEA } from '../island/sea.ts';
 import { onShow } from './species.ts';
 import { ENTRANCE, FISH_WING, inRect, navOf, rectsOf, walkPath, walkable, type Rect } from './plan.ts';
 import { allBlocks, spot } from './spots.ts';
 import { waterOf, type Tank } from './tanks.ts';
-import { PANELS } from './gallery.ts';
 import M from './models.json' with { type: 'json' };
 
 const models = M.models as Record<string, { pack?: string; min: number[]; max: number[] } | undefined>;

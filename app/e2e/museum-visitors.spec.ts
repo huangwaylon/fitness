@@ -187,6 +187,23 @@ test('NEW clears once its card is opened (on this phone, kept across a visit); t
   expect(await mu<string[]>(page, 'dotted()')).toEqual(['fossil']);
 });
 
+test('a skeleton’s new pieces: one NEW over the set (one on the chip), cleared by any piece’s card', async ({ page }) => {
+  await seed(page, [['fossil', 't-rex-skull', 'A'], ['fossil', 't-rex-torso', 'A'], ['fossil', 't-rex-tail', 'B']]);
+  await open(page);
+  await expect(page.locator('[data-museum-chip-new]')).toHaveText('あたらしい 1');
+  await putAt(page, 'room:F2');
+  await expect.poll(() => mu<string[]>(page, 'tagged()'), { timeout: 15_000 }).toEqual(['set:t-rex']);
+  await expect(page.locator('[data-museum-chip-new]')).toHaveText('あたらしい 1');
+  await still(page);
+  await expect.poll(async () => {
+    const p = await mu<[number, number] | null>(page, 'creature("t-rex-torso")');
+    if (p) await page.mouse.click(p[0], p[1]);
+    return mu<string | null>(page, 'card()');
+  }, { timeout: 15_000 }).toMatch(/^t-rex-/);
+  await expect.poll(() => mu<string[]>(page, 'tagged()')).toEqual([]);
+  expect(await mu<string[]>(page, 'fresh()')).toEqual([]);
+});
+
 test('NEW counts only what is drawn now (the hour’s pick of a tank: one not swimming isn’t new yet); four or more new in a tank, one 「NEW ×n」 on it', async ({ page }) => {
   const SEA = ['sea-bass', 'horse-mackerel', 'olive-flounder', 'red-snapper', 'dab', 'blowfish', 'puffer-fish', 'barred-knifejaw', 'anchovy', 'zebra-turkeyfish'];
   await seed(page, SEA.map((id) => ['fish', id, 'A'] as const));

@@ -4,6 +4,7 @@
 // all are in), a standalone fossil on a marble stand. Still: nothing here moves, so it asks for no frames of its own.
 import { BoxGeometry, Group, Matrix4, type BufferGeometry } from 'three';
 import type { Exhibit, Kit } from './engine.ts';
+import type { RoomId } from './plan.ts';
 import { SET_S, SPOTS, footOf, setOf, type FossilOnShow } from './fossils.ts';
 import { batcher } from './geometry.ts';
 import { POOL } from './look.ts';
@@ -22,7 +23,7 @@ function heightOf(id: string): { s: number; h: number; mid: number } {
   return { s, h: h0 * s, mid: s0.stand + (h0 * s) / 2 };
 }
 
-export function buildFossils(kit: Kit, shown: readonly FossilOnShow[]): Exhibit {
+export function buildFossils(kit: Kit, shown: readonly FossilOnShow[], room: RoomId): Exhibit {
   const group = new Group();
   const geos: BufferGeometry[] = [];
   // (the kit's materials: the museum lets go of them)
@@ -52,7 +53,7 @@ export function buildFossils(kit: Kit, shown: readonly FossilOnShow[]): Exhibit 
   };
   return {
     group,
-    wing: 'fossil',
+    room,
     blocks,
     pools,
     frame: () => false,

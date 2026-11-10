@@ -8,7 +8,6 @@ import { G1, G2, type Rect, type RoomId } from './plan.ts';
 import M from './models.json' with { type: 'json' };
 
 import { ART, artwork, type Artwork } from './artIds.ts';
-export { ART, ART_IDS, isArt } from './artIds.ts';
 
 /** The pack an artwork's model is in (models.json `pack`): the paintings in two, the statues in two (each under
  *  ~400 KB), fetched whole and only once one of theirs is on show. */

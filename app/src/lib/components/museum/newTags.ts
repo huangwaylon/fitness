@@ -1,6 +1,6 @@
 // The museum's NEW tags (docs/design.md "The museum"): a little gold 「NEW」 card with a sparkle over each exhibit found in
-// the last day, drawn now and not yet looked at on this phone (hud.ts freshFinds), in the room drawn only; a tank with
-// more than three, one 「NEW ×n」 over the tank (hud.ts tagsOf). Still: a sprite each, its texture drawn once (again once
+// the last day, drawn now and not yet looked at on this phone (hud.ts freshFinds), in the room drawn only; a skeleton's
+// new pieces one tag over the set; a tank with more than three, one 「NEW ×n」 over the tank (hud.ts tagsOf). Still: a sprite each, its texture drawn once (again once
 // the font is in); it sits over its exhibit's point (Exhibit.where) as that is on each frame drawn for other reasons (a
 // fish swimming: framed after the other exhibits, `late`, so it never trails a frame), and never asks for a frame of its
 // own, so a room at rest stays at 0 frames. Depth-tested (never through a wall); hidden at my villager's eyes.
@@ -64,7 +64,7 @@ function tagTex(n: number): { t: CanvasTexture; aspect: number } {
 const boxOf = (id: string | undefined) => (id ? (TANKS.find((t) => t.id === id) ?? SEA_TANKS.find((t) => t.id === id))?.box : undefined);
 
 export interface NewTags extends Exhibit {
-  /** The tags now (hud.ts tagsOf: an exhibit's id, or a tank's `case:<tank>` with its finds). */
+  /** The tags now (hud.ts tagsOf: an exhibit's id, a skeleton's `set:<set>` or a tank's `case:<tank>` with its finds). */
   set(tags: readonly { key: string; room: RoomId; ids: readonly string[]; tank?: string }[]): void;
   /** The tags shown in the room drawn (the e2e's: their keys). */
   tagged(): string[];
@@ -83,30 +83,35 @@ export function buildNewTags(kit: Kit, o: { room: () => RoomId; where: (id: stri
     }
     return x;
   };
-  const tags = new Map<string, { room: RoomId; n: number; s: Sprite; tank?: string }>();
+  const tags = new Map<string, { room: RoomId; s: Sprite; ids: readonly string[]; tank?: string }>();
   // (one hidden from the start: the warm-up compiles its program)
   const spare = new Sprite(matOf(1).m);
   spare.visible = false;
   group.add(spare);
-  /** A tag's point: over its exhibit; one in a tank over the glass's top (never behind its frame), a tank's own over
-   *  its middle. */
-  const pointOf = (key: string, tank?: string): [number, number, number] | null => {
+  /** A tag's point: over its exhibit; a skeleton's over its new pieces' middle, above the tallest; one in a tank over
+   *  the glass's top (never behind its frame), a tank's own over its middle. */
+  const pointOf = (key: string, ids: readonly string[], tank?: string): [number, number, number] | null => {
     const b = boxOf(tank);
     if (key.startsWith('case:')) return b ? [(b.x0 + b.x1) / 2, b.y1 + OVER_TANK, (b.z0 + b.z1) / 2] : null;
-    const p = o.where(key);
-    return p ? [p[0], Math.max(p[1] + LIFT, b ? b.y1 + OVER_TANK : 0), p[2]] : null;
+    let x = 0, y = 0, z = 0, n = 0;
+    for (const id of ids) {
+      const p = o.where(id);
+      if (p) (x += p[0], z += p[2], y = Math.max(y, p[1]), n++);
+    }
+    return n ? [x / n, Math.max(y + LIFT, b ? b.y1 + OVER_TANK : 0), z / n] : null;
   };
   return {
     group,
-    wing: 'hall',
     get room() {
       return o.room();
     },
     blocks: [],
     late: true,
     set(want) {
-      const keys = new Set(want.map((w) => w.key));
-      for (const [k, t] of tags) if (!keys.has(k) || t.n !== (want.find((w) => w.key === k)!.ids.length)) (t.s.removeFromParent(), tags.delete(k));
+      for (const [k, t] of tags) {
+        const w = want.find((x) => x.key === k);
+        if (!w || t.ids.join() !== w.ids.join()) (t.s.removeFromParent(), tags.delete(k));
+      }
       for (const w of want) {
         if (tags.has(w.key)) continue;
         const n = w.key.startsWith('case:') ? w.ids.length : 1, { m, aspect } = matOf(n), s = new Sprite(m);
@@ -114,14 +119,14 @@ export function buildNewTags(kit: Kit, o: { room: () => RoomId; where: (id: stri
         s.renderOrder = 4;
         s.visible = false;
         group.add(s);
-        tags.set(w.key, { room: w.room, n, s, tank: w.tank });
+        tags.set(w.key, { room: w.room, s, ids: w.ids, tank: w.tank });
       }
       kit.invalidate();
     },
     frame() {
       const room = o.room(), off = o.hidden();
       for (const [k, t] of tags) {
-        const p = !off && t.room === room ? pointOf(k, t.tank) : null;
+        const p = !off && t.room === room ? pointOf(k, t.ids, t.tank) : null;
         t.s.visible = !!p;
         if (p) t.s.position.set(p[0], p[1], p[2]);
       }

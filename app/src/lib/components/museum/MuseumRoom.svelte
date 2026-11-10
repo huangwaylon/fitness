@@ -27,7 +27,7 @@
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
   import MuseumCard, { type Shown } from './MuseumCard.svelte';
   import RoomChip from './RoomChip.svelte';
-  import { DIP_FADE_MS, NEW_MS, cardDock, chipName, freshFinds, freshIn, freshWings, roomTally, tagsOf } from './hud.ts';
+  import { DIP_FADE_MS, NEW_MS, cardDock, chipName, freshFinds, freshIn, freshWings, roomTally, tagsOf, unitOf } from './hud.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import { SAY_TAG, rememberSay, sayGate, type SaySpeaker } from '../island/say.ts';
   import { url3d } from '../villager3d/manifest.ts';
@@ -361,9 +361,11 @@
   function sawFind(id: string) {
     const f = fresh.find((x) => x.id === id);
     if (!f) return;
-    const t = syncedNow();
-    // (only those still within their day kept: a day and a little for the clocks)
-    seen = Object.fromEntries([...Object.entries(seen).filter(([, at]) => t - at < 2 * NEW_MS), [id, f.at]]);
+    const t = syncedNow(), unit = unitOf(f);
+    // (a skeleton's new pieces all seen with any one's card: its one tag; only those still within their day kept: a day
+    // and a little for the clocks)
+    const saw = fresh.filter((x) => unitOf(x) === unit).map((x) => [x.id, x.at] as const);
+    seen = Object.fromEntries([...Object.entries(seen).filter(([, at]) => t - at < 2 * NEW_MS), ...saw]);
     writeJson(localKV(), DEVICE.museumSeen, seen);
   }
   /** The finds of the last day drawn now and not yet looked at here (hud.ts freshFinds): the tags, the chip, the dots, Blathers' news. */
@@ -723,8 +725,8 @@
       /** The visitors drawn in the room I'm in (crowd3d.ts: id, x, z, state, fade), and one's head's client px. */
       visitors: () => crowd3?.drawn() ?? [],
       visitorPx: (id: string) => ((p) => (p && eng ? eng.client(p[0], p[1] * 0.6, p[2]) : null))(crowd3?.where(id)),
-      /** The NEW tags shown in the room drawn (ids; a tank's `case:<tank>`), the new finds counted (ids), and the hall's
-       *  plaques with a dot (their wings). */
+      /** The NEW tags shown in the room drawn (ids; a skeleton's `set:<set>`, a tank's `case:<tank>`), the new finds
+       *  counted (ids), and the hall's plaques with a dot (their wings). */
       tagged: () => tags?.tagged() ?? [],
       fresh: () => fresh.map((f) => f.id),
       /** The room drawn's doorways on the screen (engine.ts doorways: the room beyond, its floor line and plaques in

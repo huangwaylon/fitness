@@ -9,7 +9,7 @@ import { BUG_IDS, FISH_IDS, onDisplay, type Specimen } from './species.ts';
 import { bugsOnDisplay } from './bugShow.ts';
 import { plaqueOf } from './camera.ts';
 import { SEA } from '../island/sea.ts';
-import { SPOTS as FOSSIL_SPOTS, fossilsIn } from './fossils.ts';
+import { SPOTS as FOSSIL_SPOTS, fossilsIn, setOf, type SetId } from './fossils.ts';
 import { ART_SPOTS, artIn } from './art.ts';
 
 /** The hall's name on the chip (its own plaque is the museum's). */
@@ -29,10 +29,13 @@ export function roomOfFind(kind: 'fish' | 'bug' | 'sea' | 'fossil' | 'art', id: 
   return (kind === 'fossil' ? FOSSIL_SPOTS.get(id)?.room : ART_SPOTS.get(id)?.room) ?? null;
 }
 /** Everything on show with its room. */
-function placed(on: OnShow): { id: string; room: RoomId | null; at: number; tank?: string }[] {
+function placed(on: OnShow): { id: string; room: RoomId | null; at: number; tank?: string; set?: SetId }[] {
   return [
     ...on.specimens.map((s) => ({ id: s.id, room: roomOfFind(s.kind, s.id), at: s.found.at, ...(s.kind === 'bug' ? {} : { tank: s.tank }) })),
-    ...on.fossils.map((f) => ({ id: f.id, room: roomOfFind('fossil', f.id), at: f.found.at })),
+    ...on.fossils.map((f) => {
+      const set = setOf(f.id);
+      return { id: f.id, room: roomOfFind('fossil', f.id), at: f.found.at, ...(set ? { set } : {}) };
+    }),
     ...on.artworks.map((a) => ({ id: a.id, room: roomOfFind('art', a.id), at: a.found.at }))
   ];
 }
@@ -53,8 +56,10 @@ export function roomTally(room: RoomId, on: OnShow): { found: number; total: num
 
 /** A find this new (ms) is NEW: its tag over it, the chip's 「あたらしい n」 (and Blathers' news). */
 export const NEW_MS = 86_400_000;
-/** A new find: its room, its first find's time, its tank (a fish's, a sea creature's). */
-export interface Fresh { id: string; room: RoomId; at: number; tank?: string }
+/** A new find: its room, its first find's time, its tank (a fish's, a sea creature's), its skeleton (a fossil piece's). */
+export interface Fresh { id: string; room: RoomId; at: number; tank?: string; set?: SetId }
+/** What one NEW stands for: a skeleton's new pieces are one (`set:<set>`, as NH's one card a skeleton), else the find. */
+export const unitOf = (f: { id: string; set?: SetId }): string => (f.set ? `set:${f.set}` : f.id);
 /** What's drawn in the hour (species.ts hourOf's): the aquarium's fish and the garden's bugs the hour's pick (species.ts
  *  onDisplay, bugShow.ts bugsOnDisplay); the sea creatures, the fossils and the art always. */
 export function drawnIn(on: OnShow, hour: number): Set<string> {
@@ -77,18 +82,29 @@ export function freshFinds(on: OnShow, now: number, o: { hour?: number; seen?: R
 }
 /** More new than this in one tank: one tag on the tank, 「NEW ×n」. */
 export const TAG_MAX = 3;
-/** The NEW tags: one over each new find (its tank's too: the tag kept over the glass), but one for a whole tank with
- *  more than TAG_MAX (`case:<tank>`, its finds). */
+/** The NEW tags: one over each new find (its tank's too: the tag kept over the glass), one over a skeleton's new pieces
+ *  (`set:<set>`, its pieces), but one for a whole tank with more than TAG_MAX (`case:<tank>`, its finds). */
 export function tagsOf(fresh: readonly Fresh[]): { key: string; room: RoomId; ids: string[]; tank?: string }[] {
   const byTank = new Map<string, Fresh[]>();
   for (const f of fresh) if (f.tank) byTank.set(f.tank, [...(byTank.get(f.tank) ?? []), f]);
   const out: { key: string; room: RoomId; ids: string[]; tank?: string }[] = [];
   for (const [tank, fs] of byTank) if (fs.length > TAG_MAX) out.push({ key: `case:${tank}`, room: fs[0].room, ids: fs.map((f) => f.id), tank });
-  for (const f of fresh) if (!f.tank || byTank.get(f.tank)!.length <= TAG_MAX) out.push({ key: f.id, room: f.room, ids: [f.id], ...(f.tank ? { tank: f.tank } : {}) });
+  const bySet = new Map<string, { key: string; room: RoomId; ids: string[] }>();
+  for (const f of fresh) {
+    if (f.tank && byTank.get(f.tank)!.length > TAG_MAX) continue;
+    const key = unitOf(f), had = bySet.get(key);
+    if (had) had.ids.push(f.id);
+    else {
+      const t = { key, room: f.room, ids: [f.id], ...(f.tank ? { tank: f.tank } : {}) };
+      if (f.set) bySet.set(key, t);
+      out.push(t);
+    }
+  }
   return out;
 }
-/** The chip's 「あたらしい n」: the room's new finds (the hall: the whole museum's). */
-export const freshIn = (room: RoomId, fresh: readonly { room: RoomId }[]): number => (room === 'hall' ? fresh.length : fresh.filter((f) => f.room === room).length);
+/** The chip's 「あたらしい n」: the room's new finds, a skeleton's pieces one, as the tags (the hall: the whole museum's). */
+export const freshIn = (room: RoomId, fresh: readonly { id: string; room: RoomId; set?: SetId }[]): number =>
+  new Set(fresh.filter((f) => room === 'hall' || f.room === room).map(unitOf)).size;
 /** The wings with a new find (the hall's plaques get a dot). */
 export const freshWings = (fresh: readonly { room: RoomId }[]): Set<Wing> => new Set(fresh.map((f) => wingOfRoom(f.room)));
 

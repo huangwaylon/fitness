@@ -15,7 +15,8 @@
 import type { Personality } from '#lib/villagers/species.ts';
 import { ISLAND_SEED } from '#lib/contract/wet.ts';
 import { seeded, weighted } from '#lib/random.ts';
-import type { Pt, Rect } from './plan.ts';
+import type { Pt, Rect, Wing } from './plan.ts';
+import { SEA_TANKS } from './seaTanks.ts';
 import { visitorLine, type Line, type LineContext, type RoomKind } from './visitorLines.ts';
 
 /** Who visits: three of each NH personality from ききみみ's cast (kikimimi/cast.ts), each with NH's model
@@ -50,7 +51,7 @@ export interface LingerPoint {
  *  front is used, where the room view puts one at the screen's edge or under the HUD). */
 export interface VisitorRoom {
   id: string;
-  kind: RoomKind;
+  kind: Wing;
   door: Pt;
   doorways: readonly Rect[];
   bounds?: Rect;
@@ -101,9 +102,9 @@ const BY_HOUR = [0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 8, 8, 8, 8, 7, 7, 
 /** From this Tokyo hour the hall is one of the rooms filled first (a night owl in the lobby, as the aquarium and the
  *  bug garden all day). */
 const NIGHT_HALL = 20;
-const ROOM_W: Record<RoomKind, number> = { hall: 1, bug: 3, fish: 3, sea: 1.5, fossil: 2.5, art: 2.5 };
+const ROOM_W: Record<Wing, number> = { hall: 1, bug: 3, fish: 3, fossil: 2.5, art: 2.5 };
 /** What each personality likes: rooms (×), and how it lingers (a kind's weight, its time ×). */
-const LIKES: Record<Personality, { room: Partial<Record<RoomKind, number>>; kind: Record<LingerPoint['kind'], number>; slow: number }> = {
+const LIKES: Record<Personality, { room: Partial<Record<Wing, number>>; kind: Record<LingerPoint['kind'], number>; slow: number }> = {
   normal: { room: { bug: 1.4, fish: 1.3 }, kind: { look: 3, sit: 1, chat: 1.5 }, slow: 1 },
   lazy: { room: { fish: 1.6 }, kind: { look: 2, sit: 3, chat: 1 }, slow: 1.4 },
   peppy: { room: { fish: 1.5, art: 1.2 }, kind: { look: 3, sit: 0.5, chat: 2 }, slow: 0.8 },
@@ -113,6 +114,8 @@ const LIKES: Record<Personality, { room: Partial<Record<RoomKind, number>>; kind
   smug: { room: { art: 1.8, fossil: 1.2 }, kind: { look: 3, sit: 0.8, chat: 1.2 }, slow: 1 },
   sisterly: { room: { bug: 1.4, fossil: 1.3 }, kind: { look: 2, sit: 1, chat: 2.5 }, slow: 1 }
 };
+/** The look points before the sea creatures' tanks (spots.ts `tank:<id>`). */
+const SEA_TANK_POINTS = new Set(SEA_TANKS.map((t) => `tank:${t.id}`));
 const STAY_MS: Record<LingerPoint['kind'], readonly [number, number]> = { look: [18_000, 40_000], sit: [45_000, 100_000], chat: [30_000, 70_000] };
 
 /** A visitor's time in one room: in at `t0`, out by `t1`. */
@@ -425,9 +428,11 @@ export function crowdOf(o: CrowdOptions): Crowd {
         // what it says: of what it's looking at, new or not; else of where it sits, talks or strolls
         const ex = s.point?.kind === 'look' && s.point.exhibitId ? s.point.exhibitId : null;
         const name = ex ? o.name(ex) : null;
+        // (before a sea creatures' tank: the sea's lines)
+        const kind: RoomKind = s.point?.kind === 'look' && SEA_TANK_POINTS.has(s.point.exhibitId ?? '') ? 'sea' : m.kind;
         const ctx: LineContext = name ? (t - (fresh.get(ex!) ?? -Infinity) < FRESH_MS ? 'new' : 'look')
-          : s.point?.kind === 'sit' ? 'sit' : s.point?.kind === 'chat' ? 'chat' : m.kind;
-        const line = visitorLine(v[1], ctx, rand, l.lastLine, name ?? undefined, m.kind);
+          : s.point?.kind === 'sit' ? 'sit' : s.point?.kind === 'chat' ? 'chat' : kind;
+        const line = visitorLine(v[1], ctx, rand, l.lastLine, name ?? undefined, kind);
         l.lastLine = line.key;
         return line;
       }

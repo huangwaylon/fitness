@@ -934,152 +934,100 @@ silhouette and ？？？ otherwise, 「コンプリート！」 when all are in;
 
 ### The museum
 
-`museum/` (each file's header has its part: plan, camera, spots, engine, curator, species, aquarium, boids, feeding,
-garden, bugShow, seaTanks, seaLife, fossils, fossilWing, art, gallery, seats, benches, visitors, crowd3d, hud, newTags),
-`e2e/museum.spec.ts`, `e2e/museum-visitors.spec.ts`. NH's museum (はくぶつかん) is a building on the layout
+`museum/` (each file's header has its part), `e2e/museum.spec.ts`, `e2e/museum-visitors.spec.ts`,
+`e2e/first-person.spec.ts`. NH's museum (はくぶつかん) is a building on the layout
 ([island-layout.md](island-layout.md#the-islands-buildings)): NH's own model, one to an island, moved and turned in the
 editor, never removed. A tap walks my villager to its door and in (the door's iris); ‹ 島へ or the doormat comes back
 out.
 
-- **Inside** (`plan.ts`): one floor of portrait rooms, all 12 tiles across (the screen's way) and deeper the other. The
-  hall 12 × 16: marble, a red runner from the door to Blathers' desk at the back in the middle (no spurs: the arches
-  read by their plaques), a small owl medallion (3.8 tiles) on it between the side arches, six plants, two benches
-  by the sides facing the camera. Through its left arch the bug garden (12 × 20), its right the aquarium (12 × 20),
-  and through its back wall, either side of the desk, the fossils and the gallery (G1 → G2; NH's is upstairs). The
-  fossils: F1 (12 × 22) the standalone ones and four small skeletons → F2 the big skeletons round the T. rex (through
-  F1's left wall); F3 (12 × 22, the rest) through the bug garden's left wall, off its cross path. One rect a room: no
-  single rect meets both F2's left wall and the bug garden's, so the fossils are no loop; any room two doorways from the
-  hall at most. No doorway on is in a room's front wall (the
-  screen's foot, under the HUD): every room goes on through a side or back wall (plan.test). Benches where one lingers,
-  each on the screen from a room's ways in and its nearest within 6 tiles of the first: the hall, the aquarium
-  (facing the great tank), each gallery room's front band, beside the T. rex (a tap sits). NH's own floors and walls; no two faces share a plane (surfaces.test). Named spots (`spots.ts`,
-  `__museum.spot(name)`) are what the e2e puts my villager at, never coordinates; LINGER the visitors' places.
-- **Doorways:** each has a lintel and a plaque over it naming the room beyond in spaced kana (む し, さ か な, か せ き,
-  び じゅ つ; inside a wing か せ き 2, び じゅ つ 2…), cream on walnut in the app's font; the hall's back arches' just
-  under the cornice; in a side wall a flag sign at the doorway's front jamb standing straight out toward the camera, as
-  far off the wall as the room view needs to show it whole (camera.ts plaqueOf), so a side arch's and a back arch's
-  never stack. The way back has one too, naming the room behind: はくぶつかん (the chip's word) over every way back to
-  the hall, at a cut front wall's foot in F1 and G1 (hud.ts plaqueInView). Every plaque of a room is on the screen,
-  clear of the bars, from each of its ways in (camera.test, hud.test). A walnut sill runs through each doorway.
-- **The camera** (`camera.ts`): each room framed for the portrait phone, NH's room view: the whole room across (VIEW_W
-  its width and a tile, 130; a villager ~31 px), the target's x at its middle, its back wall's top under the back button
-  and its front edge over the HUD; a room that fits stands still (the hall framed lower; F1 higher, so the hall plaque at its front wall clears the buttons), F2 follows in depth
-  with a dead zone (±30 u). From any way in, nothing on show is in the screen's bottom 120 px (camera.test). `__museum.tune({ viewW, pitch })` retunes
-  it on the phone.
-- **One room at a time:** only the room my villager is in is drawn: its floor, walls, furnishing, exhibits and whoever
-  else is in it (engine.ts showRoom). Each doorway shows a card in the next room's mood colour (look.ts PORTAL) with a
-  faint glimpse of it (fronds, ripples, a skeleton, a frame); a tap on it, its plaque (at least a finger's 44 px), the
-  tile of floor before it, or a floor past its line, walks through, a step and a half in: one tap, under 4.5 s (timed
-  on the phone's viewport). Each is tested as the quad it's drawn as, never a screen box; where two hold the finger,
-  the doorway whose floor line is nearest wins (a back arch's floor isn't the side arch's whose card and flag stand
-  over it), and floor two tiles from a doorway is the room's. The room changes 10 u past the doorway's line (at most
-  every 400 ms, a dip turned back counting too), inside a dip: the screen fades to the next room's colour in 120 ms,
-  the room changes at 150 (dark by then; hud.ts DIP_MS) and it lifts in 200, never taking a finger; a put (the e2e's)
-  changes it at once. Its music changes with it. A cut front wall leaves its foot (a kick
-  plate), and a warm apron runs past each room's front edge, so no void shows under it.
-- **Light** (`look.ts`, `bake.ts`; no real lamps, nothing per frame): Neutral tone mapping and one look a room
-  (exposure, a sky over a warm bounce, ambient, a frontal key, a warm background), floors and walls lifted over their
-  textures' darkness (the fossil rooms a pale stone so the bone on its dark bases reads, the aquarium a slate-teal
-  stone under steel-blue walls, no checker; the gallery lighter: its damask red ×2.7 with a warm self-light (NH's red
-  has no green to light), stronger picture washes, two pools up its aisle: G1/G2 ~0.43/0.42 luma, ≤ 8 % near-black).
-  Each floor's baked aoMap and lightMap (dark at the walls' feet and under what stands, warm pools under the exhibits,
-  lamps (an edged pool under each, not a haze) and benches, a wide cyan band round each tank; baked again when a
-  room's exhibits change), the walls' foot and uplight ramps; NH's own sconces, desk lamps and wall candles in the hall
-  and the fossil rooms with a halo card each (the candles' 1.5×; the desk lamps' and their glow on the wall behind
-  Blathers), a wash card over each painting, a glow lip on each tank (one card mesh a kind a room). The fossils,
-  paintings and statues lit a little by their own colour; the tanks' water lit past its colours (×1.6), the brightest
-  thing, its fish drawn 1.3× NH's size. Night (look.ts NIGHT, obvious at a glance): the room's own light ×0.56 and its
-  key ×0.35, the pools ×3 and the cards ×2.6, the floors and walls amber (~2700 K), Blathers lit by his lamps, and what's
-  outside the room dark (the background toward night blue, the doorways' cards and the floor past the front ×0.5): the
-  hall ~0.36 luma, its lamp pools 0.62-0.72 with the floor between ~0.3 (day 0.53).
-- **Draw cost** (engine.ts): a wall 2-3 draws (its cap's ends and top one, each face one, both one when alike; its
-  bottom never drawn), a room ~100-230 calls (renderer.info); a floor or wall texture decoded and sent to the GPU once
-  however many repeats use it (copies of one Source); the panels share one red and one gold (a fading one copies its
-  own). The warm-up queues every texture not yet sent and sends 8 every 32 ms on its own timer (a later ask only adds
-  to the queue), marking each only once sent, then compiles every room's programs, solid and dithered, the dither set
-  for that compile only; a room change compiles nothing (museum.spec @render). The walk grid and the floors' bake are
-  made again once, a tick after a run of exhibit changes (each block over its own cells).
-  The carpets are one seamless carpet a room (`carpet.ts`: one texture over the strips, its
-  border round their outline).
-- **Like the rooms:** a tap on the floor walks my villager there; a drag turns the camera, a pinch zooms, ⌂ puts it
-  back; the camera follows my villager through the rooms, the walls in the way cut away. The say button says a phrase
-  in here only. Who else is in: the rooms' presence with the museum's scope; the guest comes in like anyone.
-- **The curator:** フータ (Blathers) behind his desk, NH's owl: breathing, glances, blinks, a wing now and then; he
-  watches my villager in front of him and nods off when alone. He greets my villager once a visit on the way in,
-  untapped (his welcome's first line, ~2 s, its balloon kept off the plaques). A tap perks him up and is his line in
-  NH's balloon: one of his lines, never the same twice running; with a NEW find, every other tap or so his news of the
-  newest by name. A doorway's dip (or a put into another room) closes every balloon, his, the visitors' and the phrases.
-- **Visitors** (`visitors.ts`, `crowd3d.ts`): 24 NH villagers from ききみみ's cast (three of each personality) come in
-  through the Tokyo day, none at night (23–07), a few at dusk and late (4–5 at 21–23, a night owl in the hall ~90 % of
-  the time), up to eight in the museum and two a room, each one room for 25–65 min: in at its door, from one LINGER place to the next (admiring an exhibit with a hop now and then,
-  sitting on a bench, chatting in pairs), out again. They spread out: a room with nobody first, the aquarium and the
-  bug garden before all (in the afternoon and evening ~80 % of the rooms have someone, those two ~85 % of the time);
-  no place at a room's very sides or front (out of a finger's reach). Every ~40 s each shows an emote bubble over its
-  head (♪ ！ 💡 …, the plan's, 2.5 s, still between). The day's plan is seeded by the date and read at the relay's
-  clock, so every phone shows the same visitors in the same places with nothing sent. NH's own models at the players'
-  size, in the room drawn only; frames only while one moves. My villager coming within 2 tiles gets a turn and a wave
-  (once a visitor a visit, this phone's; seen firing on a drawn run). A tap (a box at least 44 px round each): it stops, turns to my villager with
-  a hop and says a line in NH's balloon under its name (of what it's looking at, a new find, its bench, the room), then
-  strolls back onto its plan; my villager stays put. A find put on show while one's inside turns its room's visitors
-  to it.
-- **The HUD:** a room chip at the top centre, the room's doorway plaque word for word (はくぶつかん, さ か な, か せ き 2…:
-  one term a room) and what's on show in that room of what it holds 「さ か な 34/120」 (the aquarium its fish and sea
-  creatures, a fossil or gallery room its own spots), hidden at the eyes. An exhibit's card docks at the bottom, or at
-  the top when the exhibit is low on the screen (`hud.ts` cardDock); with a card open any tap only closes it, an
-  exhibit's too.
-- **NEW:** a find of the last 24 h that's drawn now (the hour's pick: a fish not in its tank this hour isn't new yet)
-  and whose card hasn't been opened on this phone (DEVICE.museumSeen) has a gold 「NEW」 card with a sparkle over it
-  (`newTags.ts`: still sprites placed after the exhibits each frame, never a frame of their own; depth-tested, over a
-  tank's glass, hidden at the eyes); more than three in one tank, one 「NEW ×n」 over the tank (hud.ts tagsOf). The chip
-  a gold 「あたらしい n」 under it (the room's; the hall's the museum's), the hall's plaque to its wing a gold dot;
-  worked out again on a room change and once a minute.
-- **Seated:** the first tap that isn't someone (a villager, a visitor) only gets my villager up at the seat's step;
-  never a card, a walk or Blathers.
+- **Rooms** (`plan.ts`): one floor of portrait rooms, each one rect, 12 tiles across (the screen's way) and deeper the
+  other. The hall (12 × 16): marble, a red runner from the door to Blathers' desk at the back, the owl's medallion
+  between the side arches, plants, two benches. Left arch: the bug garden (12 × 20); right arch: the aquarium (12 × 20,
+  the sea creatures' tanks among its fish tanks); back arches either side of the desk: the fossils (F1 12 × 22, on to F2
+  12 × 25 through F1's left wall) and the gallery (G1 → G2, 12 × 20 each). F3 (12 × 22) is entered from the bug garden's
+  left wall. **No loop:** F2, F3 and G2 are dead ends, any room at most two doorways from the hall, no doorway on in a
+  room's front wall (the screen's foot, under the HUD) (plan.test). Benches in the hall, the aquarium (facing the great
+  tank), each gallery room and beside the T. rex. NH's own floors and walls; no two faces share a plane
+  (surfaces.test). The e2e puts my villager at named spots (`spots.ts`, `__museum.spot(name)`); LINGER is the visitors'
+  places.
+- **Plaques:** a lintel and a plaque over each doorway naming the room beyond in spaced kana (む し, さ か な, か せ き 2,
+  び じゅ つ 2…), cream on walnut; the hall's back arches' under the cornice, a side doorway's a flag at its front jamb
+  standing out toward the camera (camera.ts plaqueOf). Every way back to the hall says はくぶつかん (at a cut front
+  wall's foot in F1 and G1: hud.ts plaqueInView). Every plaque of a room is whole on screen from each of its ways in
+  (camera.test, hud.test).
+- **The camera** (`camera.ts`): NH's room view for the portrait phone: the whole room across (VIEW_W its width and a
+  tile), x fixed at its middle, its back wall's top under the back button and its front edge over the HUD; a room that
+  fits stands still, a deeper one (F2) follows in depth with a dead zone. Nothing on show in the screen's bottom 120 px
+  from any way in (camera.test). A drag turns it, a pinch zooms, ⌂ puts it back; the walls in the way cut away (a cut
+  wall leaves its kick plate, a warm apron runs past each front edge). `__museum.tune({ viewW, pitch })` retunes it.
+  At the eyes: [First person](#first-person).
+- **Like the rooms:** a tap on the floor walks my villager there, the say button says a phrase in here only, and who
+  else is in is the rooms' presence with the museum's scope (the guest too).
+- **One room at a time** (engine.ts showRoom): only my villager's room is drawn, with whoever else is in it. Each
+  doorway shows a card in the next room's colour (look.ts PORTAL) with a glimpse of it; a tap on the card, its plaque
+  (≥ 44 px), the tile before it or the floor past its line walks through, one tap (each tested as the quad drawn; the
+  nearest floor line wins a tie). The room changes 10 u past the line inside a dip (a fade to the next room's colour
+  in 120 ms, the swap at 150, lifted in 200; at most every 400 ms; hud.ts DIP_MS); its music changes with it
+  ([Place music](#place-music)). The dip closes every balloon.
+- **Light and night** (`look.ts`, `bake.ts`; no real lamps, nothing per frame): Neutral tone mapping, one look a room,
+  floors and walls lifted over their textures (the fossil rooms pale stone, the aquarium slate-teal, the gallery's
+  damask red ×2.7 with a self-light). Each floor's baked aoMap and lightMap (dark at wall feet and under what stands,
+  warm pools under exhibits, lamps and benches, cyan round each tank; re-baked when a room's exhibits change). NH's
+  sconces, desk lamps and candles with halo cards, a wash over each painting, the tanks' water the brightest thing.
+  Night (look.ts NIGHT, plain at a glance): the room's own light ×0.56, its key ×0.35, the pools ×3 and cards ×2.6, an
+  amber cast, Blathers lit by his lamps, everything outside the room dark (hall ~0.36 luma, day 0.53).
+- **Draw cost** (engine.ts): a wall 2-3 draws, a room ~100-230 calls; each texture decoded and uploaded once however
+  many repeats use it. The warm-up uploads every texture (8 every 32 ms on its own timer) and compiles every room's
+  programs, so a room change compiles nothing (museum.spec @render). The walk grid and the bake are rebuilt once, a
+  tick after a run of exhibit changes. 0 frames at rest: exhibits step at 30/s while something on screen moves (15/s
+  after 2.5 s with no finger), the fossils and art never.
+- **The curator:** フータ (Blathers) behind his desk, NH's owl: breathing, glances, blinks; he watches my villager and
+  nods off alone. He greets me once a visit on the way in; a tap is one of his lines in NH's balloon (never twice
+  running), with a NEW find now and then his news of the newest by name.
+- **Visitors** (`visitors.ts`, `crowd3d.ts`, `visitorLines.ts`): 24 NH villagers from ききみみ's cast (three of each
+  personality) through the Tokyo day, none 23–07, up to eight in the museum and two a room, each one room for 25–65
+  min, going between LINGER places (admiring, sitting, chatting in pairs), with an emote now and then. The plan is
+  seeded by the date at the relay's clock, so every phone shows the same with nothing sent. Within 2 tiles one waves
+  to my villager once a visit. A tap (≥ 44 px): a hop and a line in its personality's voice of what it's doing (an
+  exhibit, a new find, a sea creature's tank, its bench, the room), then back to its plan. A find put on show turns
+  its room's visitors to it.
 - **What's on show:** one of each fish, bug, sea creature and fossil in the ずかん's first finds (anyone's) and each
-  genuine artwork a present has held, never the pockets' (selling takes nothing out: NH's donation, the record's `find`
-  events, so every phone shows the same). A tap: its card (MuseumCard: icon, names, a fossil's skeleton 「Tレックス 2/3」
-  or 「コンプリート！」, an artwork's real title and artist, who found it and when, ×n).
-- **Built as one comes near:** the sea creatures' tanks and each fossil and gallery room are built (their packs fetched)
-  only once my villager comes within a few tiles of their doorway (plan.ts nearRooms); the hall, the aquarium and the
-  garden at once.
-- **The aquarium:** NH's three tanks (the great sea tank across the back wall, the deep-sea tank along the left wall
-  toward the front as low as the river tank (no tall dark mass), the river tank low in the front corner), the sea creatures' two among them, and two park benches
-  facing the great tank (sat on as in the tent). One coming in stands 1.5 tiles clear of any glass, never behind a
-  tank from the camera (spots.test). **The hour's fish:** at most seven of each tank's caught species, the same on every
-  phone, new each hour; the great tank always shows a caught predator if there is one. Fish swim NH's calm long passes,
-  never clipping the glass; where a predator is on show, little generic feeder fish come now and then and are hunted,
-  a cosmetic of each phone's own.
-- **The bug wing:** NH's garden under glass with display cases; at most ten of the caught bugs an hour, each living as
-  on the island in a place of its own (the dung beetle NH's museum one, with its ball).
-- **The sea creatures** (`seaTanks.ts`, `seaLife.ts`): all of them at once in two tanks, each in a place of its own: the
-  reef tank along the aquarium's right wall (the drifters bobbing in its water, the big crawlers on its sand), the tide
-  pool a low island in the middle, looked down into (the shells, urchins, stars). NH's museum-tank models where NH has one (12: the octopus
-  sprawled, the seaweed in a clump, the eels out of the sand), the catch model otherwise.
-- **The fossils** (`fossils.ts`, `fossilWing.ts`): NH's 73 as NH's own models (pieces at 0.85, F3's 0.75) in three rooms: F1
-  the early life, two small skeletons and two cases on its back wall, its hero (the dunkleosteus ×1.3 on a plinth at the
-  head of the runner) and short rows of marble stands; F2
-  the diplodocus on the back wall, rows 5 tiles apart of a skeleton by either wall, the T. rex alone in the middle on
-  its green rug 3 tiles clear of anything, the front band clear; F3 the rest, the brachiosaurus on its back wall at the head
-  of a 2-tile aisle up the middle, five rows of two either side of it (fossils.test). A skeleton's pieces stand in a row on their own bases, each where it
-  joins the next; a piece found later fills its gap, and once all are in the animal is whole. Any two exhibits 8 u apart
-  (stands 4), every one's named spot reached (fossils.test).
-- **The art gallery** (`art.ts`, `gallery.ts`): NH's 43 genuine artworks only (no forgeries, no Redd): the paintings
-  hung on G1's and G2's red back walls (the heroes, ×1.8) and three rows of low panels (30 high, ×1.6; a panel from each
-  wall, a 3-tile aisle up the middle so the hero shows from the door; one between the camera and my villager fades out
-  with its paintings, its foot left, as a cut wall does), the statues on marble plinths in two rows in the front band,
-  never behind a panel, G1 ↔ G2 through the front band, the wild painting's halves as a folding screen on G1's dais. **How art comes:** a balloon's present now and then (1 in 10, `island/catalog.ts` ART_ONE_IN) holds a
-  genuine artwork the museum hasn't got, 「ゆうめいな めいがを てにいれた！」; once all 43 are in, none. The curator
-  hints at it.
-- **Performance:** the exhibits are built once the finds are in and rebuilt only when a wing's list changes; they step
-  at the ambient rate, nothing while nothing on screen moves (the fossils and the art never: 0 frames at rest); the rest
-  is made ready while the hall is still, every built room shown for the warm-up's compile, so walking into one compiles
-  nothing (museum.spec @render); its models stay loaded across visits (`world3d/modelCache.ts`). The exhibits
-  come in packs, fetched whole and only once one of theirs is on show ([world3d-assets](world3d-assets.md#the-museum)).
-  With everything in (iPhone 15 viewport, WebKit): the fossils ~110 draw calls and ~110k triangles at the front,
-  3.5 MB in 22 packs, ~11 MB of textures; the gallery ~70 calls, 0.8 MB in 4 packs, ~19 MB of textures; the sea
-  creatures ~130 calls (the aquarium beside them), 0.14 MB; no new shader programs. The canvas is never shown blank: its buffer is resized only for a
-  new size, just before a draw (engine.ts `fit`, draw).
-- Its music: [Place music](#place-music).
+  genuine artwork a present has held (the record's `find` events; selling takes nothing out). A tap: its card
+  (MuseumCard: names, a fossil's skeleton 「Tレックス 2/3」 or 「コンプリート！」, an artwork's title and artist, who
+  found it and when), docked at the bottom or at the top when the exhibit is low (`hud.ts` cardDock); with a card open
+  any tap only closes it. Seated, the first tap only gets my villager up.
+- **HUD:** a room chip at the top centre: the room's plaque word for word (はくぶつかん, さ か な, か せ き 2…) and what's
+  on show of what it holds (「さ か な 34/120」), hidden at the eyes.
+- **NEW** (`newTags.ts`, hud.ts freshFinds/tagsOf): a find of the last 24 h that's drawn now (the hour's pick) and whose
+  card hasn't been opened on this phone (DEVICE.museumSeen) gets a gold 「NEW」 card over it: one over a skeleton's new
+  pieces (opening any piece's card clears the set), one 「NEW ×n」 over a tank with more than three. Still sprites,
+  depth-tested, hidden at the eyes, never a frame of their own. The chip shows 「あたらしい n」, counted as the tags (a
+  skeleton one; the hall the whole museum's), and the hall's plaque to that wing a gold dot; worked out again on a room
+  change and once a minute.
+- **Built as one comes near:** the sea creatures and each fossil and gallery room are built (packs fetched) only once my
+  villager is within a few tiles of their doorway (plan.ts nearRooms); the hall, aquarium and garden at once. Models
+  stay loaded across visits (`world3d/modelCache.ts`; packs: [world3d-assets](world3d-assets.md#the-museum)).
+- **The aquarium:** NH's three tanks (the great sea tank across the back, the deep-sea tank low along the left wall, the
+  river tank low in the front corner), two park benches facing the great tank; one coming in stands 1.5 tiles clear of
+  glass, never behind a tank (spots.test). Up to seven of each tank's caught species an hour, the same on every phone,
+  a caught predator in the great tank if any; calm long passes, never clipping the glass; feeder fish hunted now and
+  then (each phone's own).
+- **The bug garden:** NH's garden under glass with cases; up to ten caught bugs an hour, each living as on the island.
+- **The sea creatures** (`seaTanks.ts`, `seaLife.ts`): all at once in the aquarium's reef tank (right wall) and tide
+  pool (a low island in the middle); NH's museum-tank models where NH has one, the catch model otherwise.
+- **The fossils** (`fossils.ts`, `fossilWing.ts`): NH's 73 as NH's models (pieces ×0.85, F3's ×0.75). F1 the early life
+  (the dunkleosteus ×1.3 at the head of the runner, two small skeletons and cases on its back wall, rows of stands); F2
+  the diplodocus on the back wall, a skeleton by either wall, the T. rex alone in the middle on its rug; F3 the rest
+  round a 2-tile aisle to the brachiosaurus on its back wall. A skeleton's pieces stand in a row, each where it joins
+  the next; once all are in the animal is whole. Spacing and reach: fossils.test.
+- **The art gallery** (`art.ts`, `gallery.ts`): NH's 43 genuine artworks only. Paintings on G1's and G2's red back walls
+  (×1.8) and three rows of low panels (×1.6) with a 3-tile aisle up the middle (a panel between the camera and my
+  villager fades out, its foot left); statues on plinths in the front band; the wild painting a folding screen on
+  G1's dais. A balloon's present now and then (1 in 10, `island/catalog.ts` ART_ONE_IN) holds an artwork the museum
+  hasn't got; none once all 43 are in.
+- **Cost** (iPhone 15 viewport, WebKit, everything in): the fossils ~110 calls, ~110k triangles, 3.5 MB in 22 packs; the
+  gallery ~70 calls, 0.8 MB in 4 packs; the sea creatures ~130 calls with the aquarium. The canvas is resized only for
+  a new size, just before a draw (engine.ts `fit`), so it never shows blank.
 
 ### First person
 

@@ -4,7 +4,7 @@
 import { describe, expect, test } from 'vitest';
 import ITEMS from '../tent/items.json' with { type: 'json' };
 import { AmbientLight, Color, DirectionalLight, HemisphereLight, NeutralToneMapping, NoToneMapping, type ToneMapping } from 'three';
-import { KEY, LAMP_MODELS, LIFT, LOOK, NIGHT, POOL, TINT, applyLook, blendLook, lookAt, luma } from './look.ts';
+import { KEY, LAMP_MODELS, LIFT, LOOK, NIGHT, POOL, TINT, applyLook, lookAt, luma } from './look.ts';
 import type { Wing } from './plan.ts';
 
 const WINGS: Wing[] = ['hall', 'bug', 'fish', 'fossil', 'art'];
@@ -80,16 +80,6 @@ describe("the museum's looks", () => {
     expect(n.hemi).toBeCloseTo(3 * NIGHT.base);
     expect(lookAt('fossil', 0, { bg: 0x102030 }).bg).toBe(0x102030);
     expect(LOOK.fossil.hemi).toBe(2.1);
-  });
-
-  test('two looks blended: each end itself, between them in the middle', () => {
-    expect(blendLook(LOOK.hall, LOOK.fish, 0)).toEqual(LOOK.hall);
-    expect(blendLook(LOOK.hall, LOOK.fish, 1)).toEqual(LOOK.fish);
-    const m = blendLook(LOOK.hall, LOOK.fish, 0.5);
-    expect(m.hemi).toBeCloseTo((LOOK.hall.hemi + LOOK.fish.hemi) / 2);
-    const b = new Color(m.bg), h = new Color(LOOK.hall.bg), f = new Color(LOOK.fish.bg);
-    expect(b.b).toBeGreaterThan(h.b);
-    expect(b.b).toBeLessThan(f.b);
   });
 
   test("the dark tints gone: every floor and wall tint light (the aquarium's a slate teal), the pools' colours warm (the aquarium's blue), the exhibits' self-light", () => {

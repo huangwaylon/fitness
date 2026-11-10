@@ -437,7 +437,7 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
 
   return {
     group,
-    wing: 'fish',
+    room: 'fish',
     blocks,
     pools: light.pools,
     frame(t, dt, seen) {

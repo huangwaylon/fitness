@@ -97,15 +97,6 @@ function mix(a: number, b: number, t: number): number {
 }
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
-/** Two looks blended (the wing-change fade: frames run for it anyway; none at rest). */
-export function blendLook(a: Look, b: Look, t: number): Look {
-  const out = { ...a };
-  for (const k of Object.keys(a) as (keyof Look)[]) {
-    out[k] = k === 'sky' || k === 'ground' || k === 'amb' || k === 'key' || k === 'bg' || k === 'tint' ? mix(a[k], b[k], t) : lerp(a[k], b[k], t);
-  }
-  return out;
-}
-
 /** Night's recipe (lookAt): the room's own light (the hemisphere, the ambient) down to `base` and the key to `key`,
  *  the lamps' (the baked pools and the walls' uplight, the halo cards) up `pools` and `cards` times, NH's lamps to
  *  `lamp`, the floors and walls tinted `tint` (amber: the lamps ~2700 K), the sky toward lamplight; what's outside the

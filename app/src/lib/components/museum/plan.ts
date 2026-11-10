@@ -67,8 +67,8 @@ export const OPENINGS: readonly Opening[] = [
   door('x', G1.x1, -95, -65, 'G1', 'G2'),
   door('x', BUG_WING.x0, OPENING.z0, OPENING.z1, 'bug', 'F3')
 ];
-/** The front door's half width (its gap in the hall's front wall). */
-export const DOOR_HALF = 12;
+/** The front door's half width (its gap in the hall's front wall) and its height. */
+export const DOOR_HALF = 12, DOOR_H = 32;
 /** Where one comes in (just inside the front door) and the doormat's tap area (a tap there goes back out). */
 export const ENTRANCE: Pt = [0, HALL.z1 - 14];
 export const DOORMAT: Rect = { x0: -DOOR_HALF, x1: DOOR_HALF, z0: HALL.z1 - 10, z1: HALL.z1 };
