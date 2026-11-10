@@ -303,7 +303,7 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
         out.push({ id: `${o.id}:lily-flower`, model: 'proc/lily-flower' as ModelName, x: fx, z: fz, lift: POND_Y + 0.1, scale: 1.7 });
         break;
       }
-      case 'stairs': case 'spot': case 'plaza': case 'beach-spot':
+      case 'stairs': case 'spot': case 'plaza': case 'beach-spot': case 'guest-spot':
         break; // the stairs are the ground's (terrain.ts); a spot, a visitors' spot (IslandEdit marks it), is never drawn
       case 'board': {
         // NH's bulletin board (its winter look in winter), as Board.svelte stands it: at its own scale, turned its way

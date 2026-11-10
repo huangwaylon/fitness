@@ -68,7 +68,8 @@ test('a tap pops the balloon; its present falls onto the island and lies there u
   await expect(page.locator('[data-fx="present-open"]')).toHaveCount(1, { timeout: 2000 });
   await expect(page.locator('[data-fx="present-open"] .bit')).toHaveCount(14);
   await expect(page.locator('[data-fx="catch"]')).toContainText('を てにいれた！', { timeout: 4000 });
-  await plateOnly(page, /\/(finds\/items\/[^/]+|presents\/diy-recipe)\.webp/);
+  // (or a genuine artwork for the museum: 1 present in 10, island/catalog.ts ART_ONE_IN)
+  await plateOnly(page, /\/(finds\/(items|art)\/[^/]+|presents\/diy-recipe)\.webp/);
   // the ずかん's カタログ / レシピ: a first find of it, and one more in today's tally (held a minute before it's sent)
   const sent = await page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? []) as { type: string; data: Record<string, unknown> }[]);
   const find = sent.find((e) => e.type === 'find')!.data as { kind: string; id: string };

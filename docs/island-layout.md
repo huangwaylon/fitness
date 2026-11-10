@@ -130,10 +130,11 @@ latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (its pa
   seed)`: Gulliver's beach, his mark when usable, else a free sand tile two in from the sea, by the date. The day's
   weeds and fossils keep off the stage; the wedding's arch and a birthday's cake stand by it (layoutWorld.ts ARCH,
   CAKE); the idle walks keep off it. Pure: every phone with the layout agrees.
-- **The visitors' spots** (catalog.ts group `visitor`, kinds `plaza` おきゃくさんの ばしょ and `beach-spot` ジョニーの
-  ばしょ, one each, removable): a mark never drawn in play, standing on nothing (no overlap, no block). Every visitor
-  but Gulliver stands at centre stage, so one plaza places them all; Gulliver's is its own and optional.
-  `markerSpot(layout, k)`: the latest put down, where they stand, or `at: null` when nobody can. Usable: the plaza's
+- **The visitors' spots** (catalog.ts group `visitor`, kinds `plaza` おきゃくさんの ばしょ, `beach-spot` ジョニーの
+  ばしょ and `guest-spot` ゲストの場所, one each, removable): a mark never drawn in play, standing on nothing (no overlap,
+  no block). Every visitor but Gulliver stands at centre stage, so one plaza places them all; Gulliver's is its own and
+  optional; the day's guest's (`guestSpot`; none: centre stage, `besideStage` while a visitor's on it) too.
+  `markerSpot(layout, k)`: the latest put down, where they stand, or `at: null` when nobody can. Usable: the plaza's (and the guest's)
   `plazaOk` (grass or a path, a clear 3 × 3 patch, reachable), Gulliver's `beachOk` (sand each side, clear round and
   behind, reachable). Unusable: the derived spot, and validate.ts's `visitor-spot` warning. An ordinary `sc: 'o'` op.
 - **Validation** (`layout/validate.ts` `validate(layout)` → issues, each `error` or `warn` with its tiles and ids): an

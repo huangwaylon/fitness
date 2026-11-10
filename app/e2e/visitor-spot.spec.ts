@@ -3,7 +3,7 @@
 // the visitors stand on it on both phones, move with it, and go back to the island's usual spot when it's taken away.
 // The editor's phone view without WebGL (`preview=0`), as island-edit.spec's.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
-import { geo, offFrom } from './island.ts';
+import { camTo, geo, islandUp, offFrom } from './island.ts';
 import { GRID, TILE } from '../src/lib/layout/grid.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -134,3 +134,54 @@ test('something put on the spot: red, why in the bar, the usual spot’s ring ag
   await expect.poll(() => ie(page, (e) => e.sel()?.why ?? null)).toContain('立てない');
   await expect(page.locator('[data-act="place"]')).toHaveAttribute('aria-disabled', 'true');
 });
+
+// The day's guest (docs/design.md "Visitors: roles"): the おきゃくさん tab's guest spot (one on the island) is where
+// they stand on both phones; with none down they stand by centre stage, beside the day's visitor on it.
+test('the guest’s spot: none down, Gracie beside Kicks at centre stage; put down in the editor, she stands on it on both phones', async ({ context }) => {
+  const isl = '?demo&date=2026-11-04T12:00&visitor=kicks&guest=gracie';
+  const a = await context.newPage();
+  await a.goto(isl);
+  const g = await geo(a);
+  await expect(a.locator('[data-visitor="gracie"][data-slot="guest"] .art')).toBeAttached();
+  await expect.poll(() => offFrom(a, '[data-visitor="kicks"]', g.CENTRE_STAGE[0], g.CENTRE_STAGE[1])).toBeLessThan(2);
+  // (beside: 2-3 tiles across from the stage)
+  const off = await offFrom(a, '[data-visitor="gracie"]', g.CENTRE_STAGE[0], g.CENTRE_STAGE[1]);
+  expect(off).toBeGreaterThan(TILE * 1.5);
+  expect(off).toBeLessThan(TILE * 3.5);
+  if (SHOTS) await shot(a, g.CAMS.mae, 'guest-beside-stage');
+  // the editor: the guest spot put down
+  const ed = await context.newPage();
+  await ed.goto(`editor/${Q}&view=phone&edit&cam=300`);
+  await ed.waitForFunction(() => (window as unknown as { __islandEdit?: unknown }).__islandEdit);
+  await ed.locator('[data-tab="visitor"]').click();
+  await ed.locator('[data-island-item="guest-spot"]').click();
+  await expect.poll(() => ie(ed, (e) => e.sel()?.k ?? null)).toBe('guest-spot');
+  expect(await ie(ed, (e) => e.sel()!.why)).toBeNull();
+  await ed.locator('[data-act="place"]').click();
+  const spotOf = (p: Page) => p.evaluate(() => {
+    const l = (window as unknown as { __layout: L }).__layout, id = l.ids('guest-spot')[0];
+    return id ? [l.obj(id).x, l.obj(id).z] as [number, number] : null;
+  });
+  await expect.poll(() => spotOf(ed)).not.toBeNull();
+  await expect(ed.locator('[data-mark="guest-spot"][data-mark-ok="true"]')).toHaveCount(1);
+  if (SHOTS) await ed.screenshot({ path: `${SHOTS}/editor-guest-spot.png`, animations: 'disabled' });
+  const at = mid((await spotOf(ed))!);
+  await ed.close();
+  // both phones: she stands there (her next appearance), Kicks still on centre stage
+  const b = await context.newPage();
+  await b.goto(`${isl}&as=B`);
+  for (const p of [a, b]) {
+    await p.reload();
+    await expect(p.locator('[data-visitor="gracie"] .art')).toBeAttached();
+    await expect.poll(() => offFrom(p, '[data-visitor="gracie"]', at[0], at[1])).toBeLessThan(2);
+    await expect.poll(() => offFrom(p, '[data-visitor="kicks"]', g.CENTRE_STAGE[0], g.CENTRE_STAGE[1])).toBeLessThan(2);
+  }  if (SHOTS) await shot(a, at[1] - 150, 'guest-at-spot');
+});
+const SHOTS = process.env.SHOTS;
+/** A drawn screenshot with the camera at `z` (SHOTS: the WebKit 393×852 checks). */
+async function shot(p: Page, z: number, name: string) {
+  await p.bringToFront();
+  await islandUp(p);
+  await camTo(p, z);
+  await p.screenshot({ path: `${SHOTS}/${name}.png`, animations: 'disabled' });
+}

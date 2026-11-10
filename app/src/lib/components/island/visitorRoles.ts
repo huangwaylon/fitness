@@ -9,10 +9,12 @@
 // - `fortune`: Katrina's reading of the day, each person's own, the same on their phones all day (fortuneOf);
 // - `fish`: Wendell, washed up hungry on the beach: the next fish caught that day feeds him, and he gives a piece;
 // - `cheer`: Chip (the fish) and Nat (the bugs) watch the catches, a cheer at each one of their kind while they're here.
-// When: one guest on Sunday afternoons (12:00–22:00, after Daisy Mae), and every other week on the weekday the draw of
-// NH's weekday visitors leaves quiet (visitors.ts dayVisitor); each guest once before any comes
-// again (a seeded cycle of the guests, by the week: both phones agree). Pavé dances on Festivale (NH's: the Monday 48
-// days before Easter). Beach guests (Gullivarrr, Wendell) wash up on Gulliver's beach, by day only (06:00–18:00).
+// When: one guest every day (the user, 2026-11-10), 06:00–22:00, in a slot of their own beside the visitors' (visitors.ts
+// guestNow: NH's weekday visitors, Daisy Mae and the events' hosts keep theirs), at the guest spot the editor puts down
+// (layout/spots.ts guestSpot; none: centre stage, beside the day's visitor when one stands there); each guest once
+// before any comes again (a seeded cycle of the guests, by the date: both phones agree). Pavé dances on Festivale (NH's:
+// the Monday 48 days before Easter), the visitors' slot. Beach guests (Gullivarrr, Wendell) wash up on Gulliver's
+// beach, by day only (06:00–18:00), at the guest spot on a day Gulliver lies there.
 // Not visitors (their role is elsewhere): Resetti in the editor's island reset, Booker and Copper at the pairing
 // page's gate. The rest, with models but no sensible role on our island, are in the ずかん's cast only (CAST below).
 import { shuffle } from '#lib/random.ts';
@@ -56,24 +58,31 @@ const CODES: Readonly<Record<GuestId, string>> = {
 export const GUESTS: readonly GuestId[] = ['gracie', 'wardell', 'katrina', 'wendell', 'gullivarrr', 'pete', 'leilani', 'lottie', 'chip', 'nat', 'rover', 'shrunk', 'tortimer', 'phineas'];
 export const isGuest = (id: string): id is GuestId => Object.hasOwn(ROLES, id);
 
-/** Whole weeks from 2026-01-05 (a Monday) to `monday` (a Monday). */
-const weekNo = (monday: string): number => Math.round((Date.parse(`${monday}T00:00:00Z`) - Date.parse('2026-01-05T00:00:00Z')) / (7 * 86_400_000));
+/** Whole days from 2026-01-05 to `date`. */
+const dayNo = (date: string): number => Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse('2026-01-05T00:00:00Z')) / 86_400_000);
+/** A cycle's order of the guests (seeded by the cycle): never the last cycle's last guest first (no guest two days
+ *  running across cycles). */
+function cycleOf(cycle: number, seed: string): GuestId[] {
+  const order = shuffle([...GUESTS], dayRand(`cycle-${cycle}`, 'guests', seed));
+  if (cycle !== 0) {
+    const prev = shuffle([...GUESTS], dayRand(`cycle-${cycle - 1}`, 'guests', seed)), last = prev[prev.length - 1];
+    if (order[0] === last) [order[0], order[1]] = [order[1], order[0]];
+  }
+  return order;
+}
 /**
- * The guest of a week's slot (`slot` 0: Sunday afternoon; 1: the quiet weekday of a guest week): the cycle's next,
- * each guest once in a cycle before any comes again (each cycle its own seeded order), by the week's Monday.
+ * The day's guest (the user, 2026-11-10: one every day): the cycle's next, each guest once in a cycle before any comes
+ * again (each cycle its own seeded order), by the date: both phones agree.
  */
-export function guestOf(monday: string, slot: 0 | 1, seed = ISLAND_SEED): GuestId {
-  // (the slots in order: each week's Sunday, and the weekday of every other week: guestWeek)
-  const w = weekNo(monday), s = w + Math.ceil(w / 2) + slot, n = GUESTS.length, cycle = Math.floor(s / n);
-  return shuffle([...GUESTS], dayRand(`cycle-${cycle}`, 'guests', seed))[((s % n) + n) % n];
+export function guestOn(date: string, seed = ISLAND_SEED): GuestId {
+  const d = dayNo(date), n = GUESTS.length, cycle = Math.floor(d / n);
+  return cycleOf(cycle, seed)[((d % n) + n) % n];
 }
 
-/** Whether a week's quiet day (visitors.ts dayVisitor) is a guest's: every other week. */
-export const guestWeek = (monday: string): boolean => weekNo(monday) % 2 === 0;
-/** A guest's hours: the plaza's 06:00–22:00 (from 12:00 on a Sunday, after Daisy Mae), the beach's by day. */
-export function guestHere(id: GuestId, hour: number, sunday: boolean): boolean {
-  const from = sunday ? 12 : 6, to = ROLES[id].beach ? 18 : 22;
-  return hour >= from && hour < to;
+/** A guest's hours: 06:00–22:00 (the beach guests' by day, 06:00–18:00), till 18:00 on a Saturday (K.K.'s show). */
+export function guestHere(id: GuestId, hour: number, weekday: number): boolean {
+  const to = Math.min(ROLES[id].beach ? 18 : 22, weekday === 6 ? 18 : 24);
+  return hour >= 6 && hour < to;
 }
 
 /** Katrina's reading for one person on a day: a luck (0 the best … 4) and a lucky colour (indices: the lines' keys). */

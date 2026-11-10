@@ -49,7 +49,8 @@
   import { BUILDINGS, CENTRE_STAGE } from './world.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { beachedAt, onBeach, visitorLine, visitorNow, type VisitorId } from './visitors.ts';
+  import { beachedAt, dayVisitor, guestNow, onBeach, visitorLine, visitorNow, type VisitorId } from './visitors.ts';
+  import { besideStage, guestSpot } from '#lib/layout/spots.ts';
   import { ROLES, fortuneOf, giftOf, isGuest, type GuestId } from './visitorRoles.ts';
   import { findKey, findsView } from '#lib/model/finds.ts';
   import { recordFind } from '#lib/store/actions.ts';
@@ -73,8 +74,15 @@
     say?: (name: string, parts: string | string[], from: Element, o?: { colour?: string; choices?: Choice[]; ondone?: () => void }) => void;
     /** Jack's trick, when he gets no candy (IslandScene: my villager's goofy face for a while). */
     ontrick?: () => void;
+    /** Whose slot: the day's visitor's (visitors.ts visitorNow, centre stage), or the day's guest's (guestNow: the guest
+     *  spot, visitorRoles.ts), each its own director actor and 3D figure. */
+    slot?: 'visitor' | 'guest';
+    /** The guest's: whether the day's visitor stands on centre stage now (no guest spot down: the guest stands beside). */
+    stageTaken?: () => boolean;
   }
-  let { scene, enabled, say: rawSay, ontrick }: Props = $props();
+  let { scene, enabled, say: rawSay, ontrick, slot = 'visitor', stageTaken = () => false }: Props = $props();
+  /** The slot's director actor (fixed for the component's life). */
+  const A = untrack(() => slot);
 
 
   /** A pair standing side by side (Reese and Cyrus): how many figures wide the clearance is, and how far apart their
@@ -85,7 +93,17 @@
   const FLOAT: Partial<Record<VisitorId, number>> = { wisp: 12 };
   /** Gulliver lies washed up face down at the front beach's water's edge (NH), somewhere new each day (visitors.ts
    *  beachedAt: the layout's sand, by the date); the rest stand on centre stage (spots.ts stageOf: the layout's plaza). */
-  const spotOf = (id: VisitorId, date: string): Pt | null => (onBeach(id) ? [...beachedAt(site.layout, date, islandSeed())] : null);
+  const spotOf = (id: VisitorId, date: string): Pt | null => {
+    if (A === 'visitor') return onBeach(id) ? [...beachedAt(site.layout, date, islandSeed())] : null;
+    // the guest (docs/design.md "Visitors: roles"): a beach guest on Gulliver's beach (at the guest spot on a day he lies
+    // there), the rest at the guest spot; none down: centre stage, or beside it while the day's visitor stands there
+    const l = site.layout, own = l && guestSpot(l);
+    if (onBeach(id) && !(gulliverToday(date) || own)) return [...beachedAt(l, date, islandSeed())];
+    if (own) return [...own];
+    return stageTaken() && l ? ((b) => (b ? [...b] : null))(besideStage(l)) : null;
+  };
+  /** Gulliver washes up today (the visitors' slot's: the rotation's draw). */
+  const gulliverToday = (date: string) => dayVisitor(date, new Date(`${date}T00:00:00Z`).getUTCDay(), islandSeed()) === 'gulliver';
   /** The campsite's door: walkers arrive from it and leave into it (spec §3). */
   const camp = (): Pt => ((b) => [b.x, b.z - 16] as Pt)(BUILDINGS.find((b) => b.id === 'campsite')!);
   /** The partner comes over only to a visitor this near its home (u): never across the island to centre stage. */
@@ -102,7 +120,7 @@
   const CYRUS_TAG = '#4DDCD9';
 
   const clock = $derived(minuteNow());
-  const who = $derived(visitorNow(clock));
+  const who = $derived(A === 'guest' ? guestNow(clock) : visitorNow(clock));
   const date = $derived(dayKey(clock));
   /** `?leave=<ms>` (dev or ?demo): the visit ends after that long (the departure's hook). */
   let gone = $state(false);
@@ -165,7 +183,7 @@
     arrivedFor = id;
     untrack(() => arrive(id, s));
   });
-  $effect(() => () => untrack(() => cancel('visitor')));
+  $effect(() => () => untrack(() => cancel(A)));
   // the stage moved under them (the island's layout came in after they arrived, or a もようがえ moved the visitors'
   // spot, spots.ts stageOf): they're on the new one at once, as on their next appearance
   let arrivedAt = '';
@@ -179,23 +197,23 @@
     if (first) return;
     untrack(() => {
       if (phase === 'leave') return;
-      cancel('visitor');
+      cancel(A);
       st.home = [s.x, s.z];
-      placeActor('visitor', s.x, s.z);
+      placeActor(A, s.x, s.z);
       w.kick();
       if (phase === 'arrive' || phase === 'pop') phase = 'here';
     });
   });
 
-  const st = actors.visitor;
+  const st = actors[A];
   const rand = (a: number, b: number) => a + Math.random() * (b - a);
   const home = (): Pt => [spot?.x ?? CENTRE_STAGE[0], spot?.z ?? CENTRE_STAGE[1]];
   /** Where the feet are right now (world u), mid-walk included. */
-  const where = (): Pt => livePos('visitor');
+  const where = (): Pt => livePos(A);
   /** Here they come: from the campsite (walking or hopping) along the walk graph, down from the sky, or appearing; a
    *  pop in place on the page's first paint. */
   function arrive(id: VisitorId, s: NonNullable<typeof spot>) {
-    cancel('visitor');
+    cancel(A);
     edge = false;
     const at: Pt = [s.x, s.z], b = BEHAVIOUR[id];
     st.home = at;
@@ -203,12 +221,12 @@
     st.fx = [];
     st.emote = null;
     way = id === 'gulliver' && sleeping ? 'appear' : b.arrive;
-    if (sleeping) later('visitor', 400, () => addFx('visitor', 'zzz'));
+    if (sleeping) later(A, 400, () => addFx(A, 'zzz'));
     if (!liveArrival) {
-      placeActor('visitor', at[0], at[1]);
+      placeActor(A, at[0], at[1]);
       w.kick();
       phase = 'pop';
-      later('visitor', POP_MS, () => (phase = 'here'));
+      later(A, POP_MS, () => (phase = 'here'));
       return;
     }
     phase = 'arrive';
@@ -216,20 +234,20 @@
     if (way === 'walk' || way === 'hop') {
       const from = camp(), pts = visitorRoute(from, at);
       if (pts) {
-        placeActor('visitor', from[0], from[1]);
+        placeActor(A, from[0], from[1]);
         edge = true;
-        later('visitor', EDGE_FADE_MS, () => (edge = false));
-        walkTo('visitor', pts, { speed: VISITOR_SPEED.arrive, from, face: 'home', then: () => {
+        later(A, EDGE_FADE_MS, () => (edge = false));
+        walkTo(A, pts, { speed: VISITOR_SPEED.arrive, from, face: 'home', then: () => {
           phase = 'here';
-          setMotion('visitor', 'hop');
+          setMotion(A, 'hop');
         } });
         return;
       }
       way = 'appear';
     }
-    placeActor('visitor', at[0], at[1]);
+    placeActor(A, at[0], at[1]);
     w.kick();
-    later('visitor', wayMs(way), () => (phase = 'here'));
+    later(A, wayMs(way), () => (phase = 'here'));
   }
 
   /** Their time is up: off the way they came (back to the campsite and into it, up into the sky, gone in a puff),
@@ -237,7 +255,7 @@
   function depart() {
     const id = shown;
     if (!id) return;
-    cancel('visitor');
+    cancel(A);
     phase = 'leave';
     wayT0 = performance.now();
     edge = false;
@@ -258,15 +276,15 @@
     if (way === 'walk' || way === 'hop') {
       const from = where(), to = camp(), pts = visitorRoute(from, to);
       if (pts) {
-        walkTo('visitor', pts, { speed: VISITOR_SPEED.arrive, from, then: () => {
+        walkTo(A, pts, { speed: VISITOR_SPEED.arrive, from, then: () => {
           edge = true;
-          later('visitor', EDGE_FADE_MS, done);
+          later(A, EDGE_FADE_MS, done);
         } });
         return;
       }
       way = 'appear';
     }
-    later('visitor', wayMs(way), done);
+    later(A, wayMs(way), done);
   }
 
   /** A line of theirs is in the balloon (until it closes, or 20 s at most: another speaker may replace it). */
@@ -285,42 +303,43 @@
     const id = shown, s = spot;
     if (!id || !s || phase !== 'here' || !enabled()) return;
     const act = pickAct(id, {
-      speaking: speaking(), asleep: sleeping, walking: st.walking, away: awayFromHome('visitor'),
+      speaking: speaking(), asleep: sleeping, walking: st.walking, away: awayFromHome(A),
       sinceMeet: lastMeet ? Date.now() - lastMeet : Infinity, villagerFree: meetable(s) && villagerFree()
     }, r);
     if (!act) return;
     if (act === 'signature') signature(id);
-    else if (act === 'emote') setEmote('visitor', (lastEmote = pickEmote(id, r, lastEmote)));
+    else if (act === 'emote') setEmote(A, (lastEmote = pickEmote(id, r, lastEmote)));
     else if (act === 'look') look();
     else if (act === 'wander') stroll(r);
     else if (act === 'home') back(VISITOR_SPEED.stroll);
     else if (act === 'meet') meet(id);
-    if (follow && (act === 'signature' || act === 'emote' || act === 'look') && r() < 0.5) later('visitor', 4000 + r() * 2500, () => beat(r, false));
+    if (follow && (act === 'signature' || act === 'emote' || act === 'look') && r() < 0.5) later(A, 4000 + r() * 2500, () => beat(r, false));
   }
   $effect(() => {
     if (!shown) return;
-    presence.beat = beat;
+    const k = A === 'guest' ? 'guestBeat' : 'beat';
+    presence[k] = beat;
     return () => {
-      if (presence.beat === beat) presence.beat = null;
+      if (presence[k] === beat) presence[k] = null;
     };
   });
 
   /** Their NH signature (visitorLife.ts BEHAVIOUR): Gulliver's sleeping twitch, Franklin looking about for food, … */
   function signature(id: VisitorId) {
     if (sleeping) {
-      setMotion('visitor', 'twitch');
-      if (!st.fx.some((f) => f.kind === 'zzz')) addFx('visitor', 'zzz');
+      setMotion(A, 'twitch');
+      if (!st.fx.some((f) => f.kind === 'zzz')) addFx(A, 'zzz');
       return;
     }
     const sig = BEHAVIOUR[id].signature;
-    if (sig.motion) setMotion('visitor', sig.motion);
-    if (sig.fx) addFx('visitor', sig.fx);
-    if (sig.emote && Math.random() < 0.5) setEmote('visitor', sig.emote);
+    if (sig.motion) setMotion(A, sig.motion);
+    if (sig.fx) addFx(A, sig.fx);
+    if (sig.emote && Math.random() < 0.5) setEmote(A, sig.emote);
     if (id === 'franklin') {
       // a look one way, then the other, for something to cook
       st.face = Math.random() < 0.5 ? 'l' : 'r';
-      later('visitor', 1100, () => (st.face = st.face === 'l' ? 'r' : 'l'));
-      later('visitor', 2300, () => (st.face = 'home'));
+      later(A, 1100, () => (st.face = st.face === 'l' ? 'r' : 'l'));
+      later(A, 2300, () => (st.face = 'home'));
     }
   }
 
@@ -331,8 +350,8 @@
   function look(x?: number) {
     const [vx, vz] = where();
     const tx = x ?? (['mine', 'partner'] as const).map((v) => livePos(v)).sort((a, b) => Math.hypot(a[0] - vx, a[1] - vz) - Math.hypot(b[0] - vx, b[1] - vz))[0][0];
-    faceToward('visitor', tx);
-    later('visitor', rand(1800, 2800), () => !speaking() && (st.face = 'home'));
+    faceToward(A, tx);
+    later(A, rand(1800, 2800), () => !speaking() && (st.face = 'home'));
   }
 
   /** A stroll (the ones who roam in NH): to a spot near theirs that's walkable, clear of the villagers and, where it's
@@ -347,9 +366,9 @@
       if ((['mine', 'partner'] as const).some((v) => Math.hypot(livePos(v)[0] - p[0], livePos(v)[1] - p[1]) < 44)) continue;
       const pts = visitorRoute(from, p);
       if (!pts) continue;
-      walkTo('visitor', pts, { speed: VISITOR_SPEED.stroll, from, then: () => {
-        setMotion('visitor', id === 'zipper' ? 'hop' : 'turn');
-        later('visitor', rand(4000, 7000), () => !speaking() && back(VISITOR_SPEED.stroll));
+      walkTo(A, pts, { speed: VISITOR_SPEED.stroll, from, then: () => {
+        setMotion(A, id === 'zipper' ? 'hop' : 'turn');
+        later(A, rand(4000, 7000), () => !speaking() && back(VISITOR_SPEED.stroll));
       } });
       return true;
     }
@@ -368,16 +387,16 @@
     const from = where(), to = home();
     if (Math.hypot(from[0] - to[0], from[1] - to[1]) < 2) return (then?.(), 0);
     const pts = visitorRoute(from, to) ?? [to];
-    return walkTo('visitor', pts, { speed, from, face: 'home', then });
+    return walkTo(A, pts, { speed, from, face: 'home', then });
   }
 
   /** The partner comes over to say hello: they face each other, the visitor answers with their own emote. */
   function meet(id: VisitorId): boolean {
     const ok = meetVisitor(where(), (x) => {
-      faceToward('visitor', x);
-      setMotion('visitor', 'hop');
-      later('visitor', 500, () => setEmote('visitor', BEHAVIOUR[id].hello));
-      later('visitor', 3600, () => !speaking() && (st.face = 'home'));
+      faceToward(A, x);
+      setMotion(A, 'hop');
+      later(A, 500, () => setEmote(A, BEHAVIOUR[id].hello));
+      later(A, 3600, () => !speaking() && (st.face = 'home'));
     });
     if (ok) lastMeet = Date.now();
     return ok;
@@ -395,11 +414,11 @@
       // the star's screen x (px from the scene's left) → a world x level with her
       if (Number.isFinite(x)) {
         const [vx, vz] = where(), p = w.screenAt(vx, vz);
-        faceToward('visitor', vx + (x - p.sx) / (p.scale * w.view.s));
+        faceToward(A, vx + (x - p.sx) / (p.scale * w.view.s));
       }
-      setMotion('visitor', 'point');
-      setEmote('visitor', Math.random() < 0.5 ? 'mark-sparkle' : 'inspiration');
-      later('visitor', 2600, () => !speaking() && (st.face = 'home'));
+      setMotion(A, 'point');
+      setEmote(A, Math.random() < 0.5 ? 'mark-sparkle' : 'inspiration');
+      later(A, 2600, () => !speaking() && (st.face = 'home'));
     };
     host.addEventListener('island:star', onStar);
     return () => host.removeEventListener('island:star', onStar);
@@ -426,7 +445,7 @@
   $effect(() => {
     const m = pose;
     void stretch.n;
-    if (m) untrack(() => setMotion('visitor', m));
+    if (m) untrack(() => setMotion(A, m));
   });
   /** How high it floats now (u, read by the 3D island each frame): Wisp a little off the ground; floating or flying
    *  down on arriving (up again on leaving), from about a figure and a half above its spot. */
@@ -651,9 +670,9 @@
       return;
     }
     if (role.kind === 'cheer' && c.kind === role.cheer && !speaking()) {
-      setEmote('visitor', 'glee');
-      setMotion('visitor', 'hop');
-      faceToward('visitor', actors.mine.x);
+      setEmote(A, 'glee');
+      setMotion(A, 'hop');
+      faceToward(A, actors.mine.x);
       clearTimeout(thanksTimer);
       thanksTimer = setTimeout(() => {
         const what = t(`critter.name.${c.id}`);
@@ -709,10 +728,10 @@
     // little hop, then their line
     const backMs = phase === 'here' ? back(VISITOR_SPEED.back) : 0;
     const turn = () => {
-      faceToward('visitor', actors.mine.x);
-      setMotion('visitor', tapMotion(id));
+      faceToward(A, actors.mine.x);
+      setMotion(A, tapMotion(id));
     };
-    if (backMs) later('visitor', backMs, turn);
+    if (backMs) later(A, backMs, turn);
     else turn();
     speakingUntil = Date.now() + 20_000; // stand still from now
     talkTimer = setTimeout(() => {
@@ -745,19 +764,19 @@
     st.fx = st.fx.filter((f) => f.kind !== 'zzz');
     if (!show) return;
     cue('emote-surprise');
-    setMotion('visitor', 'surprise');
-    setEmote('visitor', 'surprise');
-    addFx('visitor', 'sweat');
+    setMotion(A, 'surprise');
+    setEmote(A, 'surprise');
+    addFx(A, 'sweat');
     // up on his feet (the pose eases upright), a look about (then, woken here, his introduction)
-    later('visitor', 700, () => faceToward('visitor', actors.mine.x));
+    later(A, 700, () => faceToward(A, actors.mine.x));
   }
   function nudgeGulliver() {
     const r = nudge(nudges);
     nudges = r.taps;
     sceneSfx('visitor');
     if (!r.woke) {
-      setMotion('visitor', 'twitch');
-      if (!st.fx.some((f) => f.kind === 'zzz')) addFx('visitor', 'zzz');
+      setMotion(A, 'twitch');
+      if (!st.fx.some((f) => f.kind === 'zzz')) addFx(A, 'zzz');
       mumble = { n: nudges, key: `visitor.gulliver.zzz.${(nudges - 1) % MUMBLES}` };
       clearTimeout(mumbleTimer);
       mumbleTimer = setTimeout(() => (mumble = null), 1600);
@@ -776,6 +795,7 @@
   const WAKE_MS = 1300;
   // centre stage and the shore in front of it are the visitor's while one is out (the villagers wander elsewhere)
   $effect(() => {
+    if (A !== 'visitor') return;
     presence.visitor = !!(shown && spot);
     return () => (presence.visitor = false);
   });
@@ -788,9 +808,9 @@
 {#if shown && spot}
   <!-- one world node at the feet (camera.svelte.ts): its live position is the director's while it walks; the 3D island
        draws its model there (v3), the node's .art its tap area and its balloon's anchor -->
-  <span class="visitor {shown}" aria-hidden="true" {@attach w.at({ x: spot.x, z: spot.z, h: spot.h + 40, live: () => livePos('visitor'), always: true, inv: true,
-        v3: { id: shown, lift: liftNow, prone: proneNow, away: awayNow, also: shown === 'reese' ? { id: 'cyrus', dx: spot.h * PAIR_DX } : undefined } })}
-      class:walking={st.walking} data-visitor={shown} data-stage={spot.stage || undefined}
+  <span class="visitor {shown}" aria-hidden="true" {@attach w.at({ x: spot.x, z: spot.z, h: spot.h + 40, live: () => livePos(A), always: true, inv: true,
+        v3: { id: shown, actor: A, lift: liftNow, prone: proneNow, away: awayNow, also: shown === 'reese' ? { id: 'cyrus', dx: spot.h * PAIR_DX } : undefined } })}
+      class:walking={st.walking} data-visitor={shown} data-slot={A} data-stage={spot.stage || undefined}
       data-phase={phase} data-way={way} data-asleep={sleeping ? (spot.lie ? 'lie' : 'stand') : undefined} data-motion={st.motion ?? undefined} bind:this={el}
       style:--h={su(spot.h)} style:--lift={su(FLOAT[shown] ?? 0)} style:--wide={WIDE[shown] ?? 1}>
       {#if shown === 'wisp'}<i class="glow"></i>{/if}
@@ -803,7 +823,7 @@
       <span class="over">
         {#if emote}<span class="emote">{#key st.emoteN}<Emote id={emote} size="var(--emote-size, 40px)" bare />{/key}</span>{/if}
         {#each st.fx as f (f.n)}
-          <span class="fxa {f.kind}"><Fx kind={f.kind} dir={f.kind === 'zzz' ? -1 : 1} spread="calc(var(--h) * .55)" ondone={() => removeFx('visitor', f.n)} /></span>
+          <span class="fxa {f.kind}"><Fx kind={f.kind} dir={f.kind === 'zzz' ? -1 : 1} spread="calc(var(--h) * .55)" ondone={() => removeFx(A, f.n)} /></span>
         {/each}
         {#if mumble}{#key mumble.n}<span class="mumble if-caption" data-mumble bind:this={mumbleEl} style:--shift="{mumbleShift}px">{t(mumble.key)}</span>{/key}{/if}
       </span>

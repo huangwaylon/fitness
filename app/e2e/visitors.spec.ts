@@ -6,6 +6,8 @@
 import { expect, test, type Page } from './fixtures.ts';
 import { camTo, controlsUnder, geo, islandUp, offFrom, quiet, tapAt, tapFigure } from './island.ts';
 import { hudBells } from './hud.ts';
+import { guestOn, ROLES } from '../src/lib/components/island/visitorRoles.ts';
+import JA from '../src/lib/i18n/ja.json' with { type: 'json' };
 
 // the day's visitor and their life are ambient life (e2e/fixtures.ts): on here; a test pins its own with ?visitor=
 test.use({ ambient: 'on' });
@@ -158,10 +160,11 @@ test('visitors stand where NH puts them (Daisy Mae and Wisp at centre stage, Gul
   }
 });
 
-test('nobody visits on a quiet day (about one in ten of the rotation’s)', async ({ page }) => {
+test('nobody visits on a quiet day (about one in ten of the rotation’s): the day’s guest only, in their own slot', async ({ page }) => {
   await page.goto('?demo&date=2026-11-19T19:00');
   await islandUp(page);
-  await expect(page.locator('[data-visitor]')).toHaveCount(0);
+  await expect(page.locator('[data-visitor][data-slot="guest"]')).toHaveAttribute('data-visitor', guestOn('2026-11-19'));
+  await expect(page.locator('[data-visitor][data-slot="visitor"]')).toHaveCount(0);
 });
 
 test('the day brings its visitor with no hook: Daisy Mae on a Sunday morning, drawn on the 3D island as her NH model, and she talks', async ({ page }) => {
@@ -190,7 +193,7 @@ test('the weekday rotation brings its visitor with no hook: Redd on Wednesday No
 });
 
 test('a tap in a visitor’s reach (a finger’s slack beside its figure) with nothing exact under it still talks', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-04T12:00&critter=none');
+  await page.goto('?demo&date=2026-11-04T12:00&critter=none&guest=none');
   await islandUp(page);
   const { CAMS } = await geo(page);
   await camTo(page, CAMS.mae, false);
@@ -212,15 +215,24 @@ test('a tap in a visitor’s reach (a finger’s slack beside its figure) with n
 });
 
 // The guests (docs/design.md "Visitors: roles", island/visitorRoles.ts): NH's other special characters, each with a role.
-test('a guest day with no hook: Dr. Shrunk on Sunday afternoon Nov 8 2026 (after Daisy Mae), at centre stage, his introduction', async ({ page }) => {
-  await page.goto('?demo&date=2026-11-08T13:00&critter=none');
-  await islandUp(page);
-  const { CAMS, CENTRE_STAGE } = await geo(page);
-  await camTo(page, CAMS.mae, false);
-  await expect(page.locator('[data-visitor="shrunk"] .art')).toBeVisible();
-  expect(await offFrom(page, '[data-visitor="shrunk"]', ...CENTRE_STAGE)).toBeLessThan(2);
-  await tapFigure(page, '[data-visitor="shrunk"] .art');
-  await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('ししょー');
+test('a guest every day with no hook: Sunday afternoon Nov 8 2026 (after Daisy Mae) the day’s guest at centre stage, Redd’s Wednesday beside him, their introduction', async ({ page }) => {
+  for (const [date, wd, beside] of [['2026-11-08', 0, false], ['2026-11-04', 3, true]] as const) {
+    const g = guestOn(date);
+    expect(ROLES[g].beach, `${date}: ${g} on the beach`).toBeFalsy();
+    await page.goto(`?demo&date=${date}T13:00&critter=none`);
+    await islandUp(page);
+    const { CAMS, CENTRE_STAGE } = await geo(page);
+    await camTo(page, CAMS.mae, false);
+    const sel = `[data-visitor="${g}"][data-slot="guest"]`;
+    await expect(page.locator(`${sel} .art`)).toBeVisible();
+    // (no guest spot on the demo's island: centre stage, beside it while the day's visitor stands there)
+    const off = await offFrom(page, sel, ...CENTRE_STAGE);
+    if (beside) expect(off).toBeGreaterThan(40);
+    else expect(off).toBeLessThan(2);
+    expect(await page.locator('[data-visitor][data-slot="visitor"]').count()).toBe(wd === 0 ? 0 : 1);
+    await tapFigure(page, `${sel} .art`);
+    await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText((JA as Record<string, string>)[`visitor.${g}`]);
+  }
 });
 
 test('Gracie’s shop: her offer’s choice box opens her sheet, and a piece bought there is mine (the shop’s かいがら)', async ({ page }) => {

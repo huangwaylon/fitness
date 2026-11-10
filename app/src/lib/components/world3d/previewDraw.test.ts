@@ -18,7 +18,7 @@ import { loadGarden } from './garden.ts';
 beforeAll(() => loadGarden());
 
 /** The visitors' and villagers' spots: marks on the ground in the もようがえ, never a thing in the world. */
-const MARKS = new Set(['spot', 'plaza', 'beach-spot']);
+const MARKS = new Set(['spot', 'plaza', 'beach-spot', 'guest-spot']);
 /** A day of each season as the preview has it (its pieces at noon). */
 const DAYS = [
   { season: 'spring', foliage: 'blossom', month: 4, date: '2026-04-05' },

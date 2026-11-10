@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { defaultLayout, extentOf, layoutOf, objMid, objTiles, withChanges, type Layout } from './model.ts';
-import { beachOk, daySpots, markerOf, openGrass, plazaOk, stageOf, washedUp } from './spots.ts';
+import { beachOk, besideStage, daySpots, guestSpot, markerOf, openGrass, plazaOk, stageOf, washedUp } from './spots.ts';
 import { validate } from './validate.ts';
 import { frontRows } from './hides.ts';
 import { tapCovered } from './clear.ts';
@@ -165,6 +165,22 @@ describe('the visitors’ spots: the members’ marks (spots.ts markerSpot)', ()
     // the plaza is the others': it never moves him, his never moves them
     if (JSON.stringify(stageOf(g)) !== JSON.stringify(auto)) bad.push('his moved the stage');
     expect([sand.length > 0, bad]).toEqual([true, []]);
+  });
+  test('the guest’s: they stand on it; none down (or nobody can stand there): the fallback, centre stage or beside it', () => {
+    // none down: no guest spot (the guest at centre stage), and the stage-side spot 2-3 tiles across, usable
+    expect(guestSpot(l)).toBeNull();
+    const side = besideStage(l)!, [sc, sr] = tileAt(side[0], side[1]);
+    expect([Math.abs(sc - ac) >= 2 && Math.abs(sc - ac) <= 3, Math.abs(sr - ar) <= 1, plazaOk(l, sc, sr)]).toEqual([true, true, true]);
+    // put down: there; the stage and the day's weeds unmoved by it, the weeds kept off it
+    const g = mark(l, 'o4', 'guest-spot', qc, qr);
+    expect(guestSpot(g)).toEqual(tileMid(qc, qr));
+    expect(stageOf(g)).toEqual(auto);
+    expect(daySpots(g, '2026-11-04', 'island-fund').lawn.every(([x, z]) => Math.abs(tileAt(x, z)[0] - qc) > 1 || Math.abs(tileAt(x, z)[1] - qr) > 3)).toBe(true);
+    // something put on it: the fallback, and the editor's warning
+    const walled = mark(g, 'o5', 'brick-well', qc, qr);
+    expect(guestSpot(walled)).toBeNull();
+    expect(validate(walled).filter((i) => i.code === 'visitor-spot').map((i) => i.ids)).toEqual([['o4']]);
+    expect(layoutOpOf({ sc: 'o', id: 'o4', at: 1.8e12, k: 'guest-spot', x: 9, z: 30, f: 0 })).toMatchObject({ k: 'guest-spot' });
   });
   test('an op of the new kinds passes the contract as it is (no relay change; an older app keeps it as a thing it doesn’t know)', () => {
     expect([layoutOpOf({ sc: 'o', id: 'o1', at: 1.8e12, k: 'plaza', x: 9, z: 30, f: 0 }), layoutOpOf({ sc: 'o', id: 'o2', at: 1.8e12, k: 'beach-spot', x: 9, z: 3, f: 0 })].map((o) => (o && 'k' in o ? o.k : null))).toEqual(['plaza', 'beach-spot']);

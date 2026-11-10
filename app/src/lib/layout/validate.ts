@@ -149,7 +149,7 @@ export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[
     if (!reachable(nav, x, z)) add('unreachable', 'error', objTiles(layout, o), [o.id], '場所まで行けない', `The spot (${o.s}) can't be reached`);
   }
   // the visitors' spots: where they can stand now (else the island's own spot: a warning, nothing breaks)
-  for (const k of ['plaza', 'beach-spot'] as const) {
+  for (const k of ['plaza', 'beach-spot', 'guest-spot'] as const) {
     const m = markerSpot(layout, k), o = m && layout.objects.get(m.id);
     if (!o || m.at) continue;
     const def = kindDef(k)!;

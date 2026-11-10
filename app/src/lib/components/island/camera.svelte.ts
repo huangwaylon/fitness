@@ -73,8 +73,9 @@ export interface V3 {
   /** A second figure beside it (Reese's Cyrus): its model and how far across (u: each stands half of it off the
    *  node). */
   also?: { id: string; dx: number };
-  /** Its director's actor (default the visitor's; K.K. on his stool his own, `kk`: drawn beside the day's visitor). */
-  actor?: 'visitor' | 'kk';
+  /** Its director's actor (default the visitor's; the day's guest's, `guest`; K.K. on his stool his own, `kk`: each drawn
+   *  beside the day's visitor). */
+  actor?: 'visitor' | 'guest' | 'kk';
   /** Seated: how high its seat's top is over the ground (u: K.K.'s stool), and the way it faces (three's yaw). */
   seat?: number;
   yaw?: number;

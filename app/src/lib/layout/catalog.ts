@@ -234,11 +234,13 @@ const LIST: KindDef[] = [
   k({ k: 'shop', group: 'building', ja: 'タヌキ商店', en: "Nook's Cranny", w: 7, d: 4, block: true, on: 'land', h: 118, icon: 'host/timmy-tommy', turns: true, fixed: true, door: true }),
   // the homes (their footprint is their style's: layout/homes.ts)
   k({ k: 'home', group: 'home', ja: '家', en: 'Home', w: 3, d: 2, block: true, on: 'land', h: 80, icon: 'deco/campsite', fixed: true, turns: true, hidden: true }),
-  // the visitors' spots (docs/design.md "Visitors"): where the visitors stand, NH's plaza (spots.ts stageOf), and where
-  // Gulliver lies washed up (spots.ts washedUp), the members' choice in the もようがえ; a mark on the ground only in it,
+  // the visitors' spots (docs/design.md "Visitors"): where the visitors stand, NH's plaza (spots.ts stageOf), where
+  // Gulliver lies washed up (spots.ts washedUp) and where the day's guest stands (spots.ts guestSpot), the members' choice in the もようがえ; a mark on the ground only in it,
   // nothing in play. Without one (or where it can't be used now) the island's own spot, derived from the layout.
   k({ k: 'plaza', group: 'visitor', ja: 'お客さんの場所', en: "Visitors' spot", w: 1, d: 1, block: false, on: 'land', h: 0, icon: 'deco/campsite-sign', one: true }),
   k({ k: 'beach-spot', group: 'visitor', ja: 'ジョニーの場所', en: "Gulliver's spot", w: 1, d: 1, block: false, on: 'land', h: 0, icon: 'villagers/gulliver-icon', one: true }),
+  // where the day's guest stands (NH's special characters: island/visitorRoles.ts; spots.ts guestSpot), one an island
+  k({ k: 'guest-spot', group: 'visitor', ja: 'ゲストの場所', en: "Guest's spot", w: 1, d: 1, block: false, on: 'land', h: 0, icon: 'deco/party-popper', one: true }),
   // named spots: where a villager stands at home, nothing drawn ('stage': the old fixed visitors' spot, kept so the
   // layouts fold as they did; the visitors' stage is derived now, spots.ts stageOf)
   k({ k: 'spot', group: 'spot', ja: '場所', en: 'Spot', w: 1, d: 1, block: false, on: 'land', h: 0, icon: '', variants: ['villager-a', 'villager-b', 'stage'], fixed: true, hidden: true })

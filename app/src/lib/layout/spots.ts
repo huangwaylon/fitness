@@ -109,8 +109,8 @@ function groundOf(layout: Layout): Ground {
   return g;
 }
 
-type MarkerKind = 'plaza' | 'beach-spot';
-/** A visitors' spot of a kind on the layout (catalog.ts `plaza`, `beach-spot`): the latest put down (two phones may
+type MarkerKind = 'plaza' | 'beach-spot' | 'guest-spot';
+/** A visitors' spot of a kind on the layout (catalog.ts `plaza`, `beach-spot`, `guest-spot`): the latest put down (two phones may
  *  each have put one down at once: a new one's id is its time's), or null. */
 export function markerOf(layout: Layout, k: MarkerKind): Obj | null {
   let best: Obj | null = null;
@@ -150,7 +150,31 @@ export function beachOk(layout: Layout, c: number, r: number): boolean {
 export function markerSpot(layout: Layout, k: MarkerKind): { id: string; at: Pt | null } | null {
   const o = markerOf(layout, k);
   if (!o) return null;
-  return { id: o.id, at: (k === 'plaza' ? plazaOk : beachOk)(layout, o.x, o.z) ? tileMid(o.x, o.z) : null };
+  return { id: o.id, at: (k === 'beach-spot' ? beachOk : plazaOk)(layout, o.x, o.z) ? tileMid(o.x, o.z) : null };
+}
+
+/** Where the day's guest stands (docs/design.md "Visitors: roles"): the guest spot's mark when the members have put
+ *  one down and it can be used (plazaOk), else null: centre stage (stageOf), or beside it (besideStage) while the day's
+ *  visitor stands there. */
+export const guestSpot = (layout: Layout): Pt | null => markerSpot(layout, 'guest-spot')?.at ?? null;
+
+const besides = new WeakMap<Layout, Pt | null>();
+/** Beside centre stage (the guest's while the day's visitor stands on it and no guest spot is down): the nearest tile
+ *  2–3 across from the stage on its row or one off (left before right), usable as a plaza, else open grass a walker
+ *  reaches, else two tiles left of the stage itself. Null: no stage. Pure: every phone agrees. */
+export function besideStage(layout: Layout): Pt | null {
+  if (besides.has(layout)) return besides.get(layout)!;
+  const st = stageOf(layout);
+  let best: Pt | null = null;
+  if (st) {
+    const [sc, sr] = tileAt(st[0], st[1]), grass = new Set(openGrass(layout).map(([c, r]) => idx(c, r)));
+    const near: [number, number][] = [];
+    for (const dc of [-2, 2, -3, 3]) for (const dr of [0, 1, -1]) near.push([sc + dc, sr + dr]);
+    const t = near.find(([c, r]) => plazaOk(layout, c, r)) ?? near.find(([c, r]) => onGrid(c, r) && grass.has(idx(c, r)));
+    best = t ? tileMid(t[0], t[1]) : [st[0] - 2 * TILE, st[1]];
+  }
+  besides.set(layout, best);
+  return best;
 }
 
 /** Where the visitors stand (docs/design.md "Visitors"), NH's plaza on our island: the plaza's mark when the members
@@ -212,8 +236,9 @@ export function daySpots(layout: Layout, date: string, seed: string): { lawn: Pt
   const had = days.get(key);
   if (had && had.layout === layout) return had;
   // (the visitors' stage and the tiles round it stay clear, and a few behind it: a figure there covers their tap)
-  const st = stageOf(layout), [sc, sr] = st ? tileAt(st[0], st[1]) : [-9, -9];
-  const tiles = openGrass(layout).filter(([c, r]) => Math.abs(c - sc) > 1 || r - sr > 3 || sr - r > 2);
+  // (and the guest spot's, as the stage's)
+  const keep = [stageOf(layout), guestSpot(layout)].flatMap((p) => (p ? [tileAt(p[0], p[1])] : []));
+  const tiles = openGrass(layout).filter(([c, r]) => keep.every(([sc, sr]) => Math.abs(c - sc) > 1 || r - sr > 3 || sr - r > 2));
   const rand = seeded(`${seed}|${date}|layout-spots`);
   const jit = (t: [number, number]): Pt => {
     const [x, z] = tileMid(t[0], t[1]);

@@ -270,6 +270,9 @@
   let visN = 0;
   // K.K. on his stool (island/KKSlider.svelte): one more, the director's 'kk' actor, seated on it, facing its way
   const kkSpec: VSpec = { ...visSpecs[0], slot: 'kk' };
+  // the day's guest (island/visitorRoles.ts: its own slot, the director's 'guest' actor, at the guest spot)
+  const npcGuestSpec: VSpec = { ...visSpecs[0], slot: 'npc-guest' };
+  let npcGuestOn = false;
   /** K.K. is out (his node registered), and has been in view: his model loads the first time he is (never fetched for
    *  an island opened and left without a look at him), then stays, hidden while he's out of view. */
   let kkOn = false, kkLoad = false;
@@ -310,6 +313,11 @@
     if (v.actor === 'kk') {
       visSpec(kkSpec, v.id, x, z, v, shown);
       kkOn = true;
+      return;
+    }
+    if (v.actor === 'guest') {
+      visSpec(npcGuestSpec, v.id, x, z, v, shown);
+      npcGuestOn = true;
       return;
     }
     if (visN) return; // (one visitor at a time)
@@ -354,9 +362,11 @@
     specs.length = 0;
     visN = 0;
     kkOn = false;
+    npcGuestOn = false;
     world.eachV3(onV3);
     for (let i = 0; i < visN; i++) specs.push(visSpecs[i]);
     if (kkOn && (kkLoad ||= kkSpec.shown)) specs.push(kkSpec);
+    if (npcGuestOn) specs.push(npcGuestSpec);
     const people = cast();
     // (the asleep guest's model only after the launch's first whole frame: guestLate)
     if (guestLate && (!boot || boot.marks().shown || boot.spoiled() || t - lateFrom > GUEST_LATE_MAX_MS)) guestLate = false;

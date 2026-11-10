@@ -11,11 +11,11 @@ const query = (): URLSearchParams => new URLSearchParams(typeof location === 'un
 export const hooksOn = (q: URLSearchParams = query()): boolean => on(q);
 
 /** The island's ambient life, by the hook that turns each off: the critters' visits (sea fish and bubbles, fresh-water
- *  shadows, bugs), the day's visitor (an event's still comes: visitors.ts), the balloon present, the idle beats of the
+ *  shadows, bugs), the day's visitor (an event's still comes: visitors.ts) and guest, the balloon present, the idle beats of the
  *  villagers, しずえ and a visitor (looks, hops, tree shakes, strolls, outings: idleLife.svelte.ts) and an ordinary
  *  night's shooting stars. The villagers stay, where they are, and dozing at night; the opening beats and the events
  *  too. */
-const AMBIENT: Readonly<Record<string, string>> = { critter: 'none', visitor: 'events', balloon: 'none', idle: 'none', stars: 'none' };
+const AMBIENT: Readonly<Record<string, string>> = { critter: 'none', visitor: 'events', guest: 'none', balloon: 'none', idle: 'none', stars: 'none' };
 
 /** The e2e's ambient life off (`localStorage['e2e.ambient'] = 'off'`: e2e/fixtures.ts, every test unless
  *  `test.use({ ambient: 'on' })`; docs/ops/testing.md "Hermetic"): each of AMBIENT's hooks reads its off value when

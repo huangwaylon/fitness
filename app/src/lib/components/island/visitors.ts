@@ -10,8 +10,8 @@
 // trick). On a meteor shower's night (meteor.ts, at most once a week) Celeste comes to watch it, 20:00–04:00. NH's
 // holiday hosts take the slot on their day (events.ts): Franklin on Turkey Day (he asks for a fish), Jingle on Toy Day,
 // Zipper on the first and last days of Bunny Day. Every visitor is NH's own 3D model (villager3d/villagers.json):
-// one with none never comes. NH's other special characters come as guests (visitorRoles.ts: Sunday afternoons, every
-// other week's quiet weekday, Pavé on Festivale). On the wedding countdown's milestone days
+// one with none never comes. NH's other special characters come as guests, one every day in a slot of their own
+// (guestNow, visitorRoles.ts: at the editor's guest spot), and Pavé on Festivale in this one. On the wedding countdown's milestone days
 // (wedding.ts) Reese and Cyrus come together (one visitor, `reese`, drawn as the pair).
 import { pickOne, shuffle } from '#lib/random.ts';
 import { dayKey, jst } from '#lib/time/clock.ts';
@@ -24,7 +24,7 @@ import { showerAt } from './meteor.ts';
 import { coupleAt } from './wedding.ts';
 import { washedUp } from '#lib/layout/spots.ts';
 import { fromEaster } from '#lib/time/holidays.ts';
-import { GUESTS, guestHere, guestOf, guestWeek, ROLES, type GuestId } from './visitorRoles.ts';
+import { GUESTS, ROLES, guestHere, guestOn, type GuestId } from './visitorRoles.ts';
 import type { Layout } from '#lib/layout/model.ts';
 
 export type VisitorId = 'daisy-mae' | 'wisp' | 'gulliver' | 'kicks' | 'label' | 'saharah' | 'leif' | 'redd' | 'cj' | 'flick'
@@ -35,23 +35,21 @@ export const VISITORS: readonly VisitorId[] = ['daisy-mae', 'wisp', 'gulliver', 
 export const HOSTS: Partial<Record<EventId, VisitorId>> = { halloween: 'jack', 'turkey-day': 'franklin', 'toy-day': 'jingle', 'bunny-day': 'zipper' };
 /** NH's weekday visitors: one a day Monday to Saturday, each at most once a week. */
 export const ROTATION: readonly VisitorId[] = ['gulliver', 'wisp', 'kicks', 'label', 'saharah', 'leif', 'redd', 'cj', 'flick'];
-/** Quiet days in a week's draw (with ROTATION's nine): about one Monday-to-Saturday day in ten has no visitor; every
- *  other week (visitorRoles.ts guestWeek) that day is a guest's instead. */
+/** Quiet days in a week's draw (with ROTATION's nine): about one Monday-to-Saturday day in ten has no visitor (the
+ *  day's guest is there all the same: guestAt). */
 const QUIET = 1;
 /** The Monday of `date`'s week (weekday 0 Sunday: the week's last day, NH's). */
 const mondayOf = (date: string, weekday: number): string => addDays(date, weekday === 0 ? -6 : 1 - weekday);
 /** Lines each visitor has (chat.sp.<id>.0 …). */
 export const VISITOR_LINES = 4;
 
-/** The rotation's visitor of a day (null: Sunday, Daisy Mae's and the week's guest's, or a quiet day): the week's draw
- *  (seeded by its Monday) of ROTATION and the quiet days, one a day from Monday; the quiet day every other week a
- *  guest's (visitorRoles.ts guestOf's weekday slot). */
+/** The rotation's visitor of a day (null: Sunday, Daisy Mae's, or a quiet day): the week's draw (seeded by its Monday)
+ *  of ROTATION and the quiet days, one a day from Monday. */
 export function dayVisitor(date: string, weekday: number, seed = ISLAND_SEED): VisitorId | null {
   if (weekday === 0) return null;
   const monday = mondayOf(date, weekday);
   const week: (VisitorId | null)[] = [...ROTATION, ...Array<null>(QUIET).fill(null)];
-  const v = shuffle(week, dayRand(monday, 'visitors', seed))[weekday - 1];
-  return v ?? (guestWeek(monday) ? guestOf(monday, 1, seed) : null);
+  return shuffle(week, dayRand(monday, 'visitors', seed))[weekday - 1] ?? null;
 }
 /** NH's Festivale (the Monday 48 days before Easter): Pavé dances on the plaza all day. */
 export const festivale = (date: string): boolean => fromEaster(date) === -48;
@@ -72,18 +70,12 @@ export function visitorAt(date: string, prevDate: string, hour: number, weekday:
   if (host) return host;
   // Saturday evening is K.K.'s show on his stool (kkSlider.ts): the plaza's his
   if (weekday === 6 && hour >= 18) return null;
-  if (weekday === 0 && hour >= 5 && hour < 12) return 'daisy-mae';
-  // Sunday afternoon: the week's guest (visitorRoles.ts)
-  if (weekday === 0) {
-    const g = guestOf(mondayOf(date, 0), 0, seed);
-    return guestHere(g, hour, true) ? g : null;
-  }
+  if (weekday === 0) return hour >= 5 && hour < 12 ? 'daisy-mae' : null;
   // Wisp's night: from 20:00 on his day to 04:00 the next morning (none on a Saturday: K.K.'s night)
   if (hour < 4) return weekday !== 0 && dayVisitor(prevDate, weekday - 1, seed) === 'wisp' ? 'wisp' : null;
   const v = dayVisitor(date, weekday, seed);
   if (v === 'wisp') return hour >= 20 ? 'wisp' : null;
   if (v === 'gulliver') return hour >= 6 && hour < 18 ? 'gulliver' : null;
-  if (v && Object.hasOwn(ROLES, v)) return guestHere(v as GuestId, hour, false) ? v : null;
   return v && hour >= 6 && hour < 22 ? v : null;
 }
 
@@ -95,13 +87,29 @@ export function visitorNow(clock: Date): VisitorId | null {
   const h = hook('visitor');
   if (h === 'none') return null;
   const want = hookOneOf('visitor', VISITORS);
-  if (want) return want;
+  // (`?visitor=<a guest>`: that guest in their own slot, nobody in this one: guestNow)
+  if (want) return GUESTS.includes(want as GuestId) ? null : want;
   const shown = scenePreview().event;
   if (shown === 'wedding') return 'reese';
   const date = dayKey(clock), prev = addDays(date, -1), seed = islandSeed();
   const { hour, weekday } = jst(clock);
   const ev = eventAt(date, hour, shown), shower = showerAt(date, prev, hour, seed, shown === 'shower');
   return h === 'events' ? eventVisitor(date, hour, ev, shower) : visitorAt(date, prev, hour, weekday, seed, ev, shower);
+}
+
+/** The day's guest at this Tokyo moment (visitorRoles.ts guestOn, guestHere), or null. */
+export function guestAt(date: string, hour: number, weekday: number, seed = ISLAND_SEED): GuestId | null {
+  const g = guestOn(date, seed);
+  return guestHere(g, hour, weekday) ? g : null;
+}
+/** The day's guest at a scene-clock moment, the dev hooks included (`?guest=<id>|none`, or `?visitor=<a guest>`; the
+ *  e2e's ambient life off: none, devHooks.ts). */
+export function guestNow(clock: Date): GuestId | null {
+  const forced = hookOneOf('guest', GUESTS) ?? hookOneOf('visitor', GUESTS);
+  if (forced) return forced;
+  if (hook('guest') === 'none' || hook('visitor') === 'none') return null;
+  const { hour, weekday } = jst(clock);
+  return guestAt(dayKey(clock), hour, weekday, islandSeed());
 }
 
 /** A visitor's line on a tap (an i18n key): one of theirs, never the last one again. */

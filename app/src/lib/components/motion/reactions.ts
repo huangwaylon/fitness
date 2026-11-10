@@ -25,7 +25,7 @@ export type FxKind = 'sparkles' | 'hearts' | 'notes' | 'sweat' | 'zzz' | 'confet
 
 /** The villagers (mine, the partner's, and a third: the guest's on a member's phone, B's on the guest's: island/cast.ts),
  *  しずえ, the visitor of the day on centre stage (island/Visitor.svelte) and K.K. on his stool (island/KKSlider.svelte). */
-export type ActorId = 'mine' | 'partner' | 'third' | 'host' | 'visitor' | 'kk';
+export type ActorId = 'mine' | 'partner' | 'third' | 'host' | 'visitor' | 'guest' | 'kk';
 
 export interface Step {
   actor: ActorId | 'both';

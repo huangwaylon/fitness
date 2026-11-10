@@ -1105,10 +1105,21 @@ model, each with a role (the one framework plays it, the data is per character):
 | cheer | うおまさ (Chip: fish), カメヤマさん (Nat: bugs) | a hop and a line at each catch of their kind while they're here |
 | chat | かいぞく (Gullivarrr, on the beach), みしらぬネコ (Rover), ししょー (Shrunk), コトブキ (Tortimer), パロンチーノ (Phineas), ベルリーナ (Pavé) | their introduction and lines |
 
-**When:** one guest every Sunday afternoon (12:00–22:00, after Daisy Mae), and every other week on the weekday the
-rotation's draw leaves quiet (the other weeks it stays quiet); a seeded cycle, each guest once before any comes again,
-the same on both phones. Beach guests by day only (06:00–18:00). Pavé dances on Festivale (NH's: the Monday 48 days
-before Easter), all day. The week's draw of NH's weekday visitors is as before.
+**When (the user, 2026-11-10):** **one guest every day**, 06:00–22:00 (the beach guests 06:00–18:00; on a Saturday
+till 18:00, K.K.'s show), in a slot of their own (`visitors.ts guestNow`, Visitor.svelte's `guest` slot: its own
+director actor and 3D figure). A seeded cycle (`visitorRoles.ts guestOn`, by the date): each guest once before any
+comes again, never the same two days running across cycles, the same on both phones. NH's weekday visitors, Daisy Mae,
+Wisp and the events' hosts keep their own slot and schedule unchanged (the week's draw as before: Redd still on Nov 4;
+Sunday afternoons are quiet there now). Pavé dances on Festivale (NH's: the Monday 48 days before Easter), all day, in
+the visitors' slot.
+
+**Where:** at the **guest spot** the editor puts down (catalog.ts `guest-spot` ゲストの場所, おきゃくさん tab, one an
+island, saved with the layout; `spots.ts guestSpot`, usable as a plaza: plazaOk). They walk there on arriving and idle
+there. **The collision rule:** with no guest spot down (or one nobody can stand at) the guest stands at centre stage,
+but while the day's visitor stands there too, beside it (`besideStage`: a tile 2–3 across); the beach guests wash up on
+Gulliver's beach, but at the guest spot (or that fallback) on a day Gulliver lies there or a guest spot is down. The
+day's weeds and fossils keep off the guest spot. Hooks: `?guest=<id>|none` (`?visitor=<a guest>` too); the e2e's
+ambient life off: none.
 
 **Elsewhere:** リセットさん (Resetti) asks first in the editor's island reset; Copper (おまわりさん) turns a wrong key away
 at the pairing page's gate, Booker asks to wait when it can't be checked. **The cast** (ずかん's なかま, `kiroku/Cast.svelte`):

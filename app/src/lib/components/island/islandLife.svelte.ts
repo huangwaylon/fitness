@@ -247,7 +247,7 @@ export class IslandLife {
         };
       },
       outing,
-      visitor: (r) => (presence.beat?.(r), presence.kk?.(r)),
+      visitor: (r) => (presence.beat?.(r), presence.guestBeat?.(r), presence.kk?.(r)),
       treeShake: (id) => {
         const w = whoOf(id);
         if (w !== 'G') this.shakeN[w]++;

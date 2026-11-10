@@ -48,7 +48,7 @@ const away: { since: number; followed: Villager | null } = { since: 0, followed:
 /** A visitor is on the island (Visitor.svelte): centre stage is theirs. `beat`: the visitor's turn on idle life's slot,
  *  with the slot's PRNG (Visitor.svelte sets it while one is out; island/visitorLife.ts); `kk` K.K.'s on his stool, the
  *  same slot's (KKSlider.svelte; island/kkSlider.ts). */
-export const presence: { visitor: boolean; beat: ((r: () => number) => void) | null; kk: ((r: () => number) => void) | null } = { visitor: false, beat: null, kk: null };
+export const presence: { visitor: boolean; beat: ((r: () => number) => void) | null; guestBeat: ((r: () => number) => void) | null; kk: ((r: () => number) => void) | null } = { visitor: false, beat: null, guestBeat: null, kk: null };
 /** The villagers (ui-state/cast.ts): mine, the partner's and the third (the guest's on a member's phone, B's on the
  *  guest's). */
 type Villager = 'mine' | 'partner' | 'third';
@@ -128,7 +128,7 @@ const FOLLOW_RANGE = 600;
 
 export function attachAvatar(c: AvatarCtx): () => void {
   ctx = c;
-  setRouter((id) => (id === 'host' || id === 'visitor' || id === 'kk' ? null : route(c.geo(), c.where(id), restOf(id))));
+  setRouter((id) => (id === 'host' || id === 'visitor' || id === 'guest' || id === 'kk' ? null : route(c.geo(), c.where(id), restOf(id))));
   return () => {
     if (ctx === c) {
       ctx = null;

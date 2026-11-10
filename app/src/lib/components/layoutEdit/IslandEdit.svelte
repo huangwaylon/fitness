@@ -70,7 +70,7 @@
   const TABS = ['tree', 'bush', 'flower', 'crop', 'fence', 'rock', 'light', 'furniture', 'camp', 'food', 'gym', 'garden', 'park', 'town', 'beach', 'statue', 'event', 'gyroid', 'structure', 'building', 'visitor'] as const;
   let outdoorIn = $state(outdoorReady());
   $effect(() => void loadOutdoor().then(() => (outdoorIn = true), () => swallowed('edit.outdoor')));
-  const MARKS = ['plaza', 'beach-spot'] as const;
+  const MARKS = ['plaza', 'beach-spot', 'guest-spot'] as const;
   /** A kind's or an issue's name in this phone's language. */
   const say = (x: { ja: string; en: string }) => (i18n.locale === 'ja' ? x.ja : x.en);
   let tab = $state('tree');
