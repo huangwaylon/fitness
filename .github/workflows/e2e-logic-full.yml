@@ -1,5 +1,5 @@
-# The full logic tier, the drawn smoke and the shards' test times on the deployed commit, after each green *Deploy UI*
-# push run and on demand (docs/ops/testing.md "CI"). Never holds a deploy back, so a failure is red: the next push's.
+# The full logic tier, the drawn smoke, the unit tests' coverage floors and the shards' test times on the deployed
+# commit, after each green *Deploy UI* push run and on demand (docs/ops/testing.md "CI"). Never holds a deploy back, so a failure is red: the next push's.
 # The throttle (docs/ops/testing.md "CI cost"): to run at most every 30 min, swap `workflow_run` for `schedule` below.
 name: e2e logic full
 
@@ -109,6 +109,30 @@ jobs:
           path: app/flaky.json
           if-no-files-found: ignore
           retention-days: 3
+
+  # The unit tests' coverage floors (scripts/coverage-floors.ts: contract/, sync/ and store/actions.ts per file), on
+  # the deployed commit: red when a file falls under its floor.
+  coverage:
+    needs: throttle
+    if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.throttle.outputs.go == 'true' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_repository.full_name == github.repository)) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+          ref: ${{ needs.throttle.outputs.sha || github.event.workflow_run.head_sha || github.sha }}
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx vitest run --coverage --testTimeout=30000
+      - run: node scripts/coverage-floors.ts >> "$GITHUB_STEP_SUMMARY"
 
   # The drawn smoke: @render and @smoke with real (software) GL, one runner. Advisory (CI's software GL isn't the
   # phones' Metal): continue-on-error, its failures in its summary.

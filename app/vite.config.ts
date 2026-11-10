@@ -280,5 +280,6 @@ export default defineConfig({
   },
   // (worker threads, not forked processes: the same isolation per file, a third to almost half less wall time at
   // CI's 4 vCPU, 2026-11-08)
-  test: { include: ['src/**/*.test.ts'], pool: 'threads' }
+  // (coverage: `npm run coverage`, scripts/coverage-floors.ts)
+  test: { include: ['src/**/*.test.ts'], pool: 'threads', coverage: { include: ['src/**/*.ts'], reporter: ['json-summary', 'text-summary'] } }
 });
