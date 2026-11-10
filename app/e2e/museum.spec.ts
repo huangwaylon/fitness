@@ -65,6 +65,57 @@ test('the walls the camera cuts away stay put as one walks: each goes at most on
   }
 });
 
+test('only the room my villager is in is drawn: a put changes it at once, a walk once through the doorway; a tap on a room not drawn walks through its doorway', async ({ page }) => {
+  await open(page);
+  const room = () => mu<string>(page, 'room()');
+  expect(await room()).toBe('hall');
+  // (a put: that room at once, no dip)
+  await page.evaluate('window.__museum.put(180, 10)');
+  expect(await room()).toBe('fish');
+  await page.evaluate('window.__museum.put(30, 10)');
+  expect(await room()).toBe('hall');
+  // a walk: the hall's still drawn in the doorway (to 10 past its line), the aquarium after
+  const walked = async (x: number) => {
+    await page.evaluate(`window.__museum.walkTo(${x}, 10)`);
+    await expect.poll(async () => Math.abs((await mu<[number, number]>(page, 'mine()'))[0] - x), { timeout: 10_000 }).toBeLessThan(1);
+    await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
+  };
+  await walked(66);
+  expect(await room()).toBe('hall');
+  await walked(110);
+  expect(await room()).toBe('fish');
+  // from the hall, a tap past its side wall (the garden, not drawn): through its doorway, a step and a half in
+  await page.evaluate('window.__museum.put(-40, 10)');
+  await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
+  const [tx, ty] = await mu<[number, number]>(page, 'px(-72, 12)');
+  await page.mouse.click(tx, ty);
+  await expect.poll(async () => {
+    const [x, z] = await mu<[number, number]>(page, 'mine()');
+    return Math.hypot(x + 75, z - 10);
+  }, { timeout: 10_000 }).toBeLessThan(2);
+  await expect.poll(room, { timeout: 10_000 }).toBe('bug');
+});
+
+test('a room change compiles nothing: every built room’s programs are made in the warm-up, shown for it', { tag: '@render' }, async ({ page }) => {
+  await seed(page, [['fish', 'koi', 'A'], ['bug', 'tarantula', 'B'], ['sea', 'octopus', 'A'], ['fossil', 'amber', 'G'], ['fossil', 't-rex-skull', 'A'], ['item', 'famous-painting', 'A'], ['item', 'gallant-statue', 'B']]);
+  await open(page);
+  await page.evaluate(() => ['sea', 'fossil', 'art'].forEach((w) => (window as unknown as { __museum: { wake(w: string): void } }).__museum.wake(w)));
+  await expect.poll(async () => (await mu<string[]>(page, 'shown()')).length, { timeout: 30_000 }).toBe(7);
+  const warmed = () => expect.poll(() => page.evaluate('((s) => s.warming || s.loading > 0)(window.__museum.stats())'), { timeout: 30_000 }).toBe(false);
+  await warmed();
+  const stats = () => mu<{ frames: number; mem: number[] }>(page, 'stats()');
+  const before = (await stats()).mem[2], seen: Record<string, number> = {};
+  for (const [x, z] of [[180, 10], [350, 60], [-180, 10], [-150, -240], [150, -240], [0, 10]]) {
+    const f0 = (await stats()).frames;
+    await page.evaluate(`window.__museum.put(${x}, ${z})`);
+    await expect.poll(async () => (await stats()).frames, { timeout: 15_000 }).toBeGreaterThan(f0);
+    await expect.poll(() => mu<boolean>(page, 'still()'), { timeout: 15_000 }).toBe(true);
+    seen[await mu<string>(page, 'room()')] = (await stats()).mem[2];
+  }
+  expect(Object.keys(seen).sort()).toEqual(['art', 'bug', 'fish', 'fossil', 'hall', 'sea']);
+  expect(seen).toEqual(Object.fromEntries(Object.keys(seen).map((k) => [k, before])));
+});
+
 test('the canvas never shows blank: each resize of its buffer (a drag’s lighter pixel ratio, its end, a new size) is drawn over in the same task', async ({ page }) => {
   // (a resize clears the canvas, and WebKit shows it cleared, the museum's dark, till the next draw: resized after a
   // frame's draw, a drag's start and end flashed black on the phone. The logic tier's pixel ratio is 1 either way, so

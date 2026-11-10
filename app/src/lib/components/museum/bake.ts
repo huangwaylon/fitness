@@ -32,7 +32,7 @@ function signedDist(r: Rect, x: number, z: number): number {
 /** Something standing on a floor (a tank, a plinth, a bench, a partition): darker under it, `ao` (default 0.6). */
 export interface Block extends Rect { ao?: number }
 /** A gap in a room's walls (plan.ts Opening's span: no dark foot there). */
-type Gap = Pick<Opening, 'axis' | 'at' | 'from' | 'to'>;
+type Gap = Pick<Opening, 'axis' | 'at' | 'to'> & { from: number };
 
 const WALL_RISE = 12, WALL_FOOT = 0.55, CORNER = 0.45, FEATHER = 6, VIGNETTE = 0.85, AO_MIN = 0.3;
 

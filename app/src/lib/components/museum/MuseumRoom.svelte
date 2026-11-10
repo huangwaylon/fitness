@@ -49,7 +49,7 @@
   import type { Intent, Pt as WirePt, Relayed } from '#lib/contract/live-protocol.ts';
   import { hook } from '../island/devHooks.ts';
   import { now } from '#lib/time/clock.ts';
-  import { ENTRANCE, nearWings, wingHeld, type Pt, type Wing } from './plan.ts';
+  import { ENTRANCE, nearWings, type Pt, type Wing } from './plan.ts';
   import { onShow, type Specimen } from './species.ts';
   import { ROW, fossilsOnShow, type FossilOnShow } from './fossils.ts';
   import { artOnShow, type ArtOnShow } from './art.ts';
@@ -131,19 +131,20 @@
   }
   let walkPathOf: (from: Pt, to: Pt) => Pt[] = () => [];
 
-  // ---- the music: each room its own (sound/places.ts), as in NH; it changes once my villager has gone through a
-  // doorway and stayed (wingHeld, then Settle), read on the frames drawn (none while nothing moves) ----
-  let wing: Wing = 'hall';
+  // ---- the music: each room its own (sound/places.ts), as in NH; it changes with the room drawn (once my villager has
+  // gone through a doorway: engine.ts, then Settle), read on the frames drawn (none while nothing moves) ----
   const music = new Settle<PlaceId>(setPlace);
   /** The wings' tracks are fetched this long after the hall opens (its own first). */
   const WINGS_AHEAD_MS = 4000;
   function heardMusic() {
     const at = eng?.at(me);
-    if (!at) return;
-    wing = wingHeld(wing, at[0], at[1]);
-    music.to(MUSEUM_MUSIC[wing]);
+    if (!at || !eng) return;
+    // (the room drawn: it changes inside the doorway's dip, the music with it)
+    music.to(MUSEUM_MUSIC[eng.room()]);
     wake(nearWings(at[0], at[1]));
   }
+  /** The doorway's dip: the screen fades to the next room's colour and back (engine.ts onDip), never in a finger's way. */
+  let dip = $state<string | null>(null), dipColor = $state('#000');
 
   // ---- the benches (seats.ts): walk up to the nearest free seat, then on; one villager a seat, the first keeps it ----
   const seats = createSeating<MuseumSeat>(me);
@@ -446,6 +447,7 @@
           e.firstPerson(fpv, true);
           // (the balloons carried with their speakers while the camera moves: Talk.track, Says.track)
           e.onDrawn(() => (talk?.track(), says?.track(), heardMusic()));
+          e.onDip((c) => (c && (dipColor = c), (dip = c)));
         } catch (err) {
           // (its renderer let go of: before eng, nothing else would)
           console.warn('museum', err);
@@ -549,6 +551,9 @@
       hit: (cx: number, cy: number) => eng?.hit(cx, cy),
       /** The walls the cutaway takes away (engine.ts walls). */
       walls: () => eng?.walls(),
+      /** The room drawn (only it), and its look retuned (look.ts: the Simulator's tuning). */
+      room: () => eng?.room(),
+      tune: (over: Record<string, number>) => eng?.tune(over),
       who: (w: Who) => (eng?.at(w) ? { at: eng.at(w), walking: eng.walking(w), seated: !!eng.seated(w) } : null),
       /** My seat (a bench's id, which of its seats), another's as heard, and a bench's seat's client px (its seat's top). */
       seat: () => ((st) => (st ? { id: st.id, n: st.n } : null))(seats.mine()),
@@ -566,6 +571,7 @@
   <h1 class="sr-only">{t('museum.title')}</h1>
   <canvas bind:this={canvas} class="room" data-museum-room onpointerdown={onDown} onpointermove={onMove} onpointerup={onUp}
     onpointercancel={onCancel} onwheel={onWheel} aria-label={t('museum.room')}></canvas>
+  <div class="dip" class:on={!!dip} style:background={dipColor} aria-hidden="true"></div>
   <div class="top" bind:this={top}>
     <NavButton kind="back" text={t('tent.back')} onclick={leave} sfx="self" />
   </div>
@@ -596,6 +602,9 @@
 <style>
   .museum { position: relative; max-width: var(--col); margin: 0 auto; height: var(--vh-fill); overflow: hidden; background: #1d1712; touch-action: none; }
   .room { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; -webkit-tap-highlight-color: transparent; }
+  /* (the doorway's dip: out quick, in a little slower; never takes a finger) */
+  .dip { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity 200ms ease-out; }
+  .dip.on { opacity: 1; transition: opacity 150ms ease-in; }
   .top { position: absolute; left: calc(var(--side) + var(--safe-left)); top: calc(var(--ui-top) + 8px); z-index: 2; min-height: var(--hit); }
   .say-dock { position: absolute; z-index: 3; right: calc(var(--safe-right, 0px) + 8px); bottom: calc(var(--safe-bottom, 0px) + 14px); }
   .eye-dock { position: absolute; z-index: 3; left: calc(var(--safe-left, 0px) + 8px); bottom: calc(var(--safe-bottom, 0px) + 14px); }

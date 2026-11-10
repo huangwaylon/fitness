@@ -943,8 +943,18 @@ out.
 - **Inside:** one floor, NH's layout: the entrance hall (marble, red carpets, Blathers at his desk), the bug wing to the
   left (こんちゅう), the aquarium to the right (さかな) with the sea creatures' room off its far end (うみの さち), and
   through the hall's back wall, either side of the desk, the fossils (かせき, left) and the art gallery (びじゅつ, right;
-  NH's is upstairs, here on the one floor); NH's own floors and walls, lit warm, dimmer at night. No two faces share a
-  plane (surfaces.test). The room's camera shows a wing's exhibits from its own room or a room next to it, no further.
+  NH's is upstairs, here on the one floor); NH's own floors and walls. No two faces share a plane (surfaces.test).
+- **One room at a time:** only the room my villager is in is drawn: its floor, walls, furnishing, exhibits and whoever
+  else is in it (engine.ts showRoom). Each doorway shows a card in the next room's mood colour (look.ts PORTAL); a tap
+  on it, or on a floor past it, walks through, a step and a half in. The room changes 10 u past the doorway's line (at
+  most every 400 ms), inside a dip: the screen fades to the next room's colour in 150 ms and back in 200, never taking a
+  finger; a put (the e2e's) changes it at once. Its music changes with it. A cut front wall leaves its foot (a kick
+  plate), and a warm apron runs past each room's front edge, so no void shows under it.
+- **Light** (`look.ts`): Neutral tone mapping and one look a room (exposure, a sky over a warm bounce, ambient, a
+  frontal key, a warm background), floors and walls lifted over their textures' darkness; the fossils, paintings and
+  statues lit a little by their own colour. Night isn't dimmer: the sky warms toward lamplight, the key drops, the
+  aquarium goes bluer. The carpets are one seamless carpet a room (`carpet.ts`: one texture over the strips, its
+  border round their outline).
 - **Like the rooms:** a tap on the floor walks my villager there; a drag turns the camera, a pinch zooms, ⌂ puts it
   back; the camera follows my villager through the rooms, the walls in the way cut away. The say button says a phrase
   in here only. Who else is in: the rooms' presence with the museum's scope; the guest comes in like anyone.
@@ -980,7 +990,8 @@ out.
   hints at it.
 - **Performance:** the exhibits are built once the finds are in and rebuilt only when a wing's list changes; they step
   at the ambient rate, nothing while nothing on screen moves (the fossils and the art never: 0 frames at rest); the rest
-  is made ready while the hall is still; its models stay loaded across visits (`world3d/modelCache.ts`). The exhibits
+  is made ready while the hall is still, every built room shown for the warm-up's compile, so walking into one compiles
+  nothing (museum.spec @render); its models stay loaded across visits (`world3d/modelCache.ts`). The exhibits
   come in packs, fetched whole and only once one of theirs is on show ([world3d-assets](world3d-assets.md#the-museum)).
   With everything in (iPhone 15 viewport, WebKit): the fossils ~110 draw calls and ~110k triangles at the front,
   3.5 MB in 22 packs, ~11 MB of textures; the gallery ~70 calls, 0.8 MB in 4 packs, ~19 MB of textures; the sea
