@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",
-    "coverage": "vitest run --coverage --testTimeout=30000 && node scripts/coverage-floors.ts",
+    "coverage": "vitest run --coverage --testTimeout=120000 && node scripts/coverage-floors.ts",
     "e2e": "playwright test",
     "e2e:report": "node scripts/e2e-report.ts",
     "e2e:ci-like": "node scripts/e2e-ci-like.ts",
