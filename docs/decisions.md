@@ -438,8 +438,8 @@ The English listening game's decisions in force; detail in [kikimimi](kikimimi.m
 - **Audio in packs** (whole m4a files with a byte index), each pack fetched whole and once (Pages answers a Range with
   the whole file), its clips cut from it, cached; Pages static, no R2. Why: Pages' 20,000-file limit, and few refetches
   when a clip changes.
-- **`play` beside `quiz`:** later games send `play`; the quiz keeps `quiz` (`QUIZ_ON_PLAY` off) until every phone runs a
-  build that knows `play`. Why: an older phone must still hear it.
+- **`play` beside `quiz`:** later games send `play`; the quiz kept `quiz` until every phone ran a build that knows
+  `play` (`QUIZ_ON_PLAY` on 2026-11-10). Why: an older phone must still hear it.
 - **The microphone** is off by default and per phone; recordings stay in memory for their round; recognition runs on the
   phone first, with disclosed fallbacks; no transcript or speaking score leaves the phone. Why: the voice is the most
   personal data the app would touch.

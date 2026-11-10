@@ -1337,7 +1337,8 @@ describe('ききみみ session: the wiring', () => {
     for (const f of subs) f({ kind: 'quiz', g: 'abcd', op: 'open', seed: 1, lv: 1, same: false, v: 3, who: 'A', t: T0 });
     expect(s.view(T0).invite).toMatchObject({ g: 'abcd' });
     w.act((x, now) => x.join(now));
-    expect(out).toEqual([{ kind: 'quiz', g: 'abcd', op: 'join' }]);
+    // (QUIZ_ON_PLAY: an invite heard on `quiz` is answered on `play`, which every phone in use hears)
+    expect(out).toEqual([{ kind: 'play', g: 'abcd', gm: 'quiz', op: 'join' }]);
     // A's phone back: B sends its join again
     st = { ...st, here: [] };
     for (const f of statusSubs) f(st);

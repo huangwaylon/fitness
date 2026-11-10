@@ -11,7 +11,7 @@ import { F_SAME, F_VS, type AnswerValue, type GameId } from './types.ts';
 export const SEND_PLAY = true;
 /** The quiz family (the quiz, スピード はしご) on `play` too; off: still on `quiz` (a guarded rollout while a phone from
  *  before 8b, which hears only `quiz`, may be about), and only what `quiz` can't carry (a co-op lesson) on `play`. */
-export const QUIZ_ON_PLAY = false;
+export const QUIZ_ON_PLAY = true;
 
 /** How a phone sends: 'quiz' (8b: the `quiz` wire only; the e2e's `?wire=quiz`), 'guarded' (the quiz family on `quiz`,
  *  every other game on `play`), 'play' (every game on `play`). */

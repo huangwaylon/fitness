@@ -93,7 +93,7 @@ Two presence-only intents (contract/live-protocol.ts): unstored, unacked, never 
 
 ### The quiz wire
 
-`{kind:'quiz', g, op, …}`, the quiz family's while `QUIZ_ON_PLAY` is off:
+`{kind:'quiz', g, op, …}`, the quiz family's from builds before `QUIZ_ON_PLAY` (2026-11-10; heard, no longer sent):
 
 | op | sender | fields | meaning |
 |---|---|---|---|
@@ -138,7 +138,7 @@ export type PlayWire =
 
 ### Wire migration
 
-`SEND_PLAY` is on and `QUIZ_ON_PLAY` off (`WIRE` 'guarded'): the quiz family goes out as `quiz`, everything else as `play`; every build since the dual stack hears both. `?wire=quiz|guarded|play` forces a mode in the e2e. Left: `QUIZ_ON_PLAY = true` (one line; wire.test pins the mode) once `npm run logs -- report` *Live hellos* shows no phone on a build that can't hear `play`; then stop parsing `quiz` on the client (two weeks later at least), then drop it from the contract, relay last.
+`SEND_PLAY` and `QUIZ_ON_PLAY` are on (`WIRE` 'play', 2026-11-10: the log's hellos showed no phone on a build before the dual stack since 11-08): every game goes out as `play`; every build since the dual stack hears both. `?wire=quiz|guarded|play` forces a mode in the e2e. Left: stop parsing `quiz` on the client (no sooner than 11-24), then drop it from the contract, relay last.
 
 ### The listen row
 
