@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fetchKeep, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, kikiPartOf, keepable, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgFetch, foodImgStale, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
+import { fetchKeep, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, kikiPartOf, keepable, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -663,6 +663,19 @@ describe("ごはん's picture fetches (foodImgFetch)", () => {
     expect(done).toBe(true);
     return p;
   };
+
+  it('marks each sheet used for the bound (its bytes once stored), and the bound lets the oldest sheets go, never index.json', async () => {
+    const marks: [string, number | undefined][] = [];
+    const f = 't-a-0-11111111.webp';
+    await foodImgFetch(new Request(BASE + f), cache as unknown as Cache, net, (p) => bg.push(p), 40, (u, n) => void marks.push([u, n]));
+    await settled();
+    await foodImgFetch(new Request(BASE + f), cache as unknown as Cache, net, (p) => bg.push(p), 40, (u, n) => void marks.push([u, n]));
+    expect(marks).toEqual([[BASE + f, 5], [BASE + f, undefined]]);
+    const MB = 1_000_000;
+    const idx: RoomIndex = { [`${BASE}index.json`]: [1000, 1], [`${BASE}a.webp`]: [25 * MB, 2], [`${BASE}b.webp`]: [20 * MB, 3], [`${BASE}c.webp`]: [10 * MB, 4] };
+    expect(FOOD_IMG_CAP_BYTES).toBe(40 * MB);
+    expect(foodImgEvict(idx, 10)).toEqual([`${BASE}a.webp`]);
+  });
 
   it('answers a sheet before it is stored, from the cache after; a failed store still shows it', async () => {
     cache.failPut = true;

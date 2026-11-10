@@ -290,6 +290,11 @@ once a batch. What may go now goes in one `events` request (≤ 50 events, ≤ 9
 holds and subjects below kept), answered by id. A request refused whole (`too_large`, `bad_request`) is halved and
 sent again at once; one event alone so refused, or too large to send at all, is set aside.
 
+- **Paced** (`store/live.ts SEND_PACE_MS`, 600 ms): a send within 600 ms of the last flush's start waits for one
+  trailing flush that takes everything gathered; the first after a quiet spell goes at once, and a batch short of
+  full ends the flush (`flush({paced})`). An editor burst of 125 ops a minute is ~100 requests, none `busy` (was one
+  per op, past the record's 120 a minute a person). Hidden, the keepalive flush doesn't wait.
+
 - **Day rows** (`tally`, `island`): a newer row of the same day replaces the queued ones (not in flight) in the first
   one's place.
 - **Set aside** (`parked`): an event the record fails (`unavailable`) 30 times (`PARK_AFTER`, ~2 h) is kept and shown
@@ -333,14 +338,15 @@ relay says the record changed ([Push](#push)). Each refresh flushes the queue, t
 - **After an ack:** the record answers each event with its stored row's `at`, and that row goes into the cache at once
   (`since` unmoved); only an ack without a row (a duplicate) is followed by a `fresh` re-read 1.5 s later.
 
-**One device, one socket:** each hello says the device (`dev`: `island.device`, `sync/live.ts deviceId`) and replaces
-only that device's earlier socket (4002), never the person's other devices'. Those hear the person's decor ops live
+**One device, one socket:** each hello says the device and the tab (`dev`: `island.device` + `island.tab`, the tab's in
+sessionStorage, `sync/live.ts deviceId`) and replaces only that tab's earlier socket (4002: a reload's ghost), never
+the person's other devices' or tabs'. Those hear the person's decor ops live
 (the Mac's editor on the phone's island; `welcome.mine` and a `presence` of my own `who` say whether one is there),
 and only the writing page skips its own `changed` (`sid`). A hello without `dev` replaces only those without it and
 hears none of its person's own ops.
 
-**Two tabs:** two tabs (or a PWA and a Safari tab) of one phone share its localStorage and `dev`: the second's hello
-replaces the first's socket (4002). The synced stores (`store/synced.svelte.ts`: the decorations, the rooms, the
+**Two tabs:** two tabs (or a PWA and a Safari tab) of one browser are two devices to the room (2026-11-10: they shared
+a `dev`, and the second's hello left the first deaf). The synced stores (`store/synced.svelte.ts`: the decorations, the rooms, the
 layout) merge what's in storage before they write and fold the other tab's writes as their `storage` events land.
 
 **Conflicts:** every op merges commutatively per id (`at`, then who); two layout pieces moved onto one tile at once
@@ -687,6 +693,8 @@ None ([decisions](decisions.md#no-notifications); `e2e/no-notify.spec.ts`: nothi
 - **Room cache** (`island-room-v1`: the rooms' and the 3D island's models, the players' parts and packs, the
   villagers' models): cache-first on first use, outliving builds (`caches.ts roomEvict`, `__room-index`): a file's
   older `?v=` goes at once, then past 40 MB the least recently used, never one used within 3 days.
+- **Art cache** (`island-villagers-v1`: the villagers', critters', finds', ground's and decor's art on first use):
+  past 30 MB the least recently used, never one used within a day (`ART_CAP_BYTES`, `__art-index`).
 - **Listen cache** (`island-listen-v1`: `/audio/listen/<pack>.<hash>.pak`, [kikimimi.md](kikimimi.md) "Audio"): cache
   first, never revalidated, outliving builds; a Range request passes to the network. `listenEvict`: a pack's older
   version once unused for 10 minutes, then past 30 MB the least recently used, never one used in the last 10 minutes.
@@ -726,7 +734,8 @@ None ([decisions](decisions.md#no-notifications); `e2e/no-notify.spec.ts`: nothi
   files, K.K.'s 2, 8 of the rest). The food data (`/food/*.json`, `island-food-v1`) cache-first by `?v=`; `index.json`
   from the network within 2.5 s, else the cached copy, a newer one replacing it only once every file it names is
   cached. ごはん's pictures (`/food-img/`, `island-food-img-v1`, [food-data.md](food-data.md#pictures)): the sheets
-  cache-first, `index.json` network first, a new index dropping the sheets it no longer names. Other GETs: this
+  cache-first, `index.json` network first, a new index dropping the sheets it no longer names; past 40 MB the least
+recently used sheets go (`foodImgEvict`, `__food-img-index`). Other GETs: this
   version's cache, the previous one, the network. The relay is cross-origin and always live.
 
 ## Tests

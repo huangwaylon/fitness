@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { LIVE_URL, backoff, bestOffset, createLive, type KeptOut, type Live, type LiveEnv, type LiveStatus, type OutboxStore, type SinceStore } from './live.ts';
+import { LIVE_URL, backoff, bestOffset, createLive, deviceId, type KeptOut, type Live, type LiveEnv, type LiveStatus, type OutboxStore, type SinceStore } from './live.ts';
 import { dayStart, tokyoDay, type Relayed } from '../contract/live-protocol.ts';
-import { configureStorage, type KV } from './storage.ts';
+import { configureStorage, LIVE, type KV } from './storage.ts';
 import { ROOM_PROTOCOL, ticketOwner } from '../contract/ticket.ts';
 import { log } from './log.ts';
 
@@ -277,6 +277,26 @@ describe('live: messages', () => {
     expect(cs[0]! < cs[1]! && cs[1]! < cs[2]!).toBe(true);
     last().recv({ kind: 'presence', who: 'B', on: false, t: Date.now() });
     expect(live.send({ kind: 'act', act: 'tap' })).toBe(false);
+  });
+
+  it('the hello\'s `dev`: the device\'s id and the tab\'s, so a second tab of one browser is another device; a reload keeps it', () => {
+    const mem = (): KV & { m: Map<string, string> } => {
+      const m = new Map<string, string>();
+      return { m, getItem: (k) => m.get(k) ?? null, setItem: (k, v) => void m.set(k, v), removeItem: (k) => void m.delete(k) };
+    };
+    const local = mem(), tab1 = mem(), tab2 = mem();
+    configureStorage({ local, session: tab1 });
+    const a = deviceId()!;
+    expect(a).toMatch(/^[0-9a-z]{14}$/);
+    expect(deviceId()).toBe(a);
+    configureStorage({ session: tab2 });
+    const b = deviceId()!;
+    expect([b === a, b.slice(0, 10) === a.slice(0, 10)]).toEqual([false, true]);
+    // a device id from before the tab's (10 of [0-9a-z]) is kept; no sessionStorage: the device's alone
+    local.m.set(LIVE.device, JSON.stringify('was0000000'));
+    configureStorage({ session: null });
+    expect(deviceId()).toBe('was0000000');
+    configureStorage({ local: null, session: null });
   });
 
   it('my other device (one device, one socket: the hello\'s `dev`): its decor ops are heard, my layout ops go to it', () => {

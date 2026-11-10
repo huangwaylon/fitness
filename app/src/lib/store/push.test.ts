@@ -148,7 +148,7 @@ describe('LiveBackend: the relay push', () => {
     await settle();
     expect(snapshots).toBe(n);
     b.send('harvest', { week: '2026-10-26' }, {});
-    await settle(0);
+    await settle(600); // (the trailing flush: store/live.ts SEND_PACE_MS on the real clock)
     expect(events).toHaveLength(2);
     expect(relay.sent).toHaveLength(1);
   });

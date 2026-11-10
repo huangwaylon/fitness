@@ -2,9 +2,10 @@
 // closed when it is hidden or offline (zero cost then), reconnecting with backoff, estimating the relay's clock from
 // pings. send() is a no-op unless the socket is up (and, for what the room doesn't keep, the partner is there too); it
 // never throws and never waits. Plain TS: the socket, the visibility source and the key are injectable for tests.
-import { LIVE, getKey, getStoredMe, localKV, readJson, remove, writeJson } from './storage.ts';
+import { LIVE, getKey, getStoredMe, localKV, readJson, remove, sessionKV, writeJson } from './storage.ts';
 import { fnv1a } from '../random.ts';
 import { log, logId } from './log.ts';
+import { isLogId } from '../contract/log.ts';
 import { takeWx } from './wx.ts';
 import { ROOM_PROTOCOL, TICKET_TTL_MS, makeTicket } from '../contract/ticket.ts';
 import { CLOSE, HB_PING, LIVE_V, MAX_BYTES, dayStart, isAcked, isLayoutIntent, isStored, parseClient, parseServer, scopeMaySend, tokyoDay, type Gone, type Intent, type Notice, type RecordMark, type Relayed, type Who } from '../contract/live-protocol.ts';
@@ -964,13 +965,25 @@ function safe(f: () => void): void {
 let shared: Live | null = null;
 let appBuild: string | undefined;
 
-/** This device's id (LIVE.device: made once, logId's shape), or none when storage can't keep it. */
-function deviceId(): string | undefined {
+/** This device's id (LIVE.device: made once, logId's shape) and this tab's (LIVE.tab, sessionStorage: 4 more), or none
+ *  when storage can't keep it. Two tabs of one browser (a Mac's editor and island) were one device: the second
+ *  replaced the first (4002), which then stayed deaf (review 5); a reload keeps its tab's id, so it still replaces its
+ *  own socket. @internal (exported for the tests) */
+export function deviceId(): string | undefined {
   const kv = localKV();
-  const was = readJson<string>(kv, LIVE.device);
-  if (typeof was === 'string' && /^[0-9a-z]{6,15}$/.test(was)) return was;
-  const id = logId();
-  return writeJson(kv, LIVE.device, id) ? id : undefined;
+  let id = readJson<string>(kv, LIVE.device);
+  if (!isLogId(id)) {
+    id = logId();
+    if (!writeJson(kv, LIVE.device, id)) return undefined;
+  }
+  const s = sessionKV();
+  let tab = readJson<string>(s, LIVE.tab);
+  if (typeof tab !== 'string' || !/^[0-9a-z]{4}$/.test(tab)) {
+    tab = logId().slice(0, 4);
+    if (!writeJson(s, LIVE.tab, tab)) return id;
+  }
+  // (the hello's `dev` is 6-15 of [0-9a-z]: contract/live-protocol.ts)
+  return id.slice(0, 11) + tab;
 }
 
 /** The app's version for the hello (+layout.svelte, from `$app/env`). */

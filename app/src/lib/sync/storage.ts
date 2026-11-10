@@ -32,6 +32,9 @@ export const LIVE = {
   /** This device's id, made once (sync/live.ts deviceId): the hello's `dev`, so the relay replaces only this device's
    *  earlier socket, never my other devices'. */
   device: 'island.device',
+  /** sessionStorage: this tab's id (sync/live.ts deviceId: the hello's `dev` is the device's and the tab's, so two tabs
+   *  of one browser are two devices to the relay; a reload keeps it). */
+  tab: 'island.tab',
   /** `{ me, d, cs }`: the day's claims I counted (`cs`: claim → tally key; store/actions.ts): a race lost after a reload
    *  or a kill still takes its catch back. Today's only, mine only. */
   counted: 'island.counted',

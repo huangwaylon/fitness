@@ -160,6 +160,18 @@ export const isFoodData = (path: string): boolean => /\/food\/[\w-]+\.json$/.tes
  *  Once a new index is in, the sheets it no longer names go (foodImgStale). */
 export const FOOD_IMG_CACHE = 'island-food-img-v1';
 export const isFoodImg = (path: string): boolean => path.includes('/food-img/');
+/** The pictures' bound (of ~75 MB of sheets in all, 2026-11-10): past it the least recently used sheets go (never
+ *  index.json; index.ts boundedCache). */
+export const FOOD_IMG_CAP_BYTES = 40_000_000;
+/** Which of the picture cache's sheets go: bytesEvict over the sheets alone (index.json is never let go). */
+export const foodImgEvict = (index: RoomIndex, now: number, cap = FOOD_IMG_CAP_BYTES): string[] =>
+  bytesEvict(Object.fromEntries(Object.entries(index).filter(([u]) => new URL(u, 'https://x/').pathname.endsWith('.webp'))), now, cap);
+/** The on-use art cache's bound (index.ts VILLAGERS: the villagers' renders and icons, the critters, the finds, the
+ *  ground's textures, the decor's pictures; static/art is ~23 MB with more villagers than anyone sees): past it the least
+ *  recently used go, never one used within ART_KEEP_MS (what the island shows now). Before 2026-11-10 it was unbounded,
+ *  and renamed art stayed for good. */
+export const ART_CAP_BYTES = 30_000_000;
+export const ART_KEEP_MS = 24 * 3600_000;
 /** The cached sheets (`keys`: their URLs) that `index` (the index.json's text) no longer names. */
 export function foodImgStale(keys: readonly string[], index: string): string[] {
   let sheets: unknown;
@@ -266,14 +278,20 @@ export async function foodFetch(req: Request, cache: FoodCacheLike, net: (r: Req
  * than `timeoutMs`, then (or offline) its cached copy; a fresh one is stored whenever it comes, and the sheets it no
  * longer names are dropped.
  */
-export async function foodImgFetch(req: Request, cache: FoodCacheLike, net: (r: Request) => Promise<Response>, after: (p: Promise<unknown>) => void, timeoutMs = FOOD_INDEX_TIMEOUT_MS): Promise<Response> {
+export async function foodImgFetch(req: Request, cache: FoodCacheLike, net: (r: Request) => Promise<Response>, after: (p: Promise<unknown>) => void, timeoutMs = FOOD_INDEX_TIMEOUT_MS, used?: (url: string, bytes?: number) => void): Promise<Response> {
   if (new URL(req.url).pathname.endsWith('.webp')) {
     const hit = await cache.match(req).catch(() => undefined);
-    if (hit) return hit;
+    if (hit) {
+      used?.(req.url);
+      return hit;
+    }
     const res = await net(req);
     if (res.ok) {
-      const copy = res.clone();
-      after(cache.put(req, copy).catch(() => {}));
+      const copy = res.clone(), sized = res.clone();
+      after((async () => {
+        await cache.put(req, copy);
+        used?.(req.url, (await sized.blob()).size);
+      })().catch(() => {}));
     }
     return res;
   }

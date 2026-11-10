@@ -1,6 +1,6 @@
 // The write queue (docs/backend.md#write-queue): events persisted in localStorage and replayed in order, with backoff,
 // until the server acks them. Undo windows (`holdMs`) are decided here.
-import type { EventType } from '#lib/contract/api.ts';
+import { EVENTS_MAX, MAX_BODY_CHARS, type EventType } from '#lib/contract/api.ts';
 import type { Who } from '#lib/types.ts';
 import { LIVE, getKey, localKV, readJson, remove, writeJson, writeRaw, type KV } from './storage.ts';
 import { post, type ApiError } from './transport.ts';
@@ -226,11 +226,11 @@ export function backoffMs(tries: number, rand = Math.random): number {
  */
 interface FlushResult { sent: number; acked: QueuedEvent[]; stored: { ev: QueuedEvent; at: string }[]; dropped: (QueuedEvent & { detail?: string })[]; remaining: number; error?: ApiError }
 
-/** At most this many events in one request to the record (its EVENTS_MAX). */
-const BATCH_MAX = 50;
-/** At most this many characters of events in one request: the record's body cap is 1,000,000 (storeRoute.ts
- *  MAX_BODY_CHARS), and one event may be 20k (a wedding note 140k). */
-const BATCH_CHARS = 900_000;
+/** At most this many events in one request to the record. */
+const BATCH_MAX = EVENTS_MAX;
+/** At most this many characters of events in one request, under the record's body cap (the envelope's room left), and
+ *  one event may be 20k (a wedding note 140k). */
+const BATCH_CHARS = MAX_BODY_CHARS - 100_000;
 /** A request that outlives the page (`keepalive`): the browser's cap is 64 KiB of body, in bytes (UTF-8: a Japanese
  *  character is 3), ~1 KB of it left for the envelope (key, action, rid, sid). */
 const KEEPALIVE_BYTES = 64 * 1024 - 1024;
@@ -296,9 +296,10 @@ function due(q: readonly QueuedEvent[], now: number, skip: (ev: QueuedEvent) => 
  * `too_large` / `forbidden` can never succeed → dropped (reported). Transient errors keep the event (and everything after it,
  * so order is preserved) with a backoff; the record's own failure of one event PARK_AFTER times sets it aside
  * (`parked`, kept). A batch is at most BATCH_MAX events and BATCH_CHARS; one refused whole is halved. `unauthorized`
- * stops the flush.
+ * stops the flush. `paced`: a batch short of full is the flush's last (what came while it was out waits for the caller's
+ * next flush: store/live.ts SEND_PACE_MS), so a stream of taps can't make a request each.
  */
-export function flush(now: () => number = Date.now, opts: { keepalive?: boolean } = {}): Promise<FlushResult> {
+export function flush(now: () => number = Date.now, opts: { keepalive?: boolean; paced?: boolean } = {}): Promise<FlushResult> {
   if (flushing) return flushing;
   const most = opts.keepalive ? KEEPALIVE_BYTES : BATCH_CHARS;
   const p = (async (): Promise<FlushResult> => {
@@ -363,7 +364,7 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean 
     for (;;) {
       // what may go now, in send order: the record takes up to BATCH_MAX at once, in order, under its body cap
       const batch: QueuedEvent[] = [];
-      let chars = 0;
+      let chars = 0, full = false;
       while (batch.length < cap) {
         const { ev } = due(queued(), now(), (x) => tried.has(x.id), (x) => tooBig.has(x.id));
         if (!ev) break;
@@ -373,7 +374,10 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean 
           tooBig.add(ev.id);
           continue;
         }
-        if (batch.length && chars + n > most) break;
+        if (batch.length && chars + n > most) {
+          full = true;
+          break;
+        }
         tried.add(ev.id);
         batch.push(ev);
         chars += n;
@@ -423,7 +427,7 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean 
         }
       }
       commit();
-      if (stop) break;
+      if (stop || (opts.paced && !full && batch.length < cap)) break;
     }
     out.remaining = queued().length;
     if (out.sent) writeJson(localKV(), LIVE.sentAt, { at: now() });

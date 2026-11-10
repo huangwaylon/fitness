@@ -3,7 +3,7 @@
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
-import { fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, isShellOf, fetchShared, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, keepShell, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
+import { ART_CAP_BYTES, ART_KEEP_MS, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, isShellOf, fetchShared, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, keepShell, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -150,6 +150,8 @@ const roomUsed = boundedCache(ROOM_CACHE, ROOM_INDEX, (idx, now) => roomEvict(id
 const listenUsed = boundedCache(LISTEN_CACHE, LISTEN_INDEX, (idx, now) => listenEvict(idx, now));
 const photoUsed = boundedCache(PHOTO_CACHE, '__photo-index', (idx, now) => bytesEvict(idx, now, PHOTO_CAP_BYTES));
 const tileUsed = boundedCache(TILE_CACHE, '__tile-index', (idx, now) => bytesEvict(idx, now, TILE_CAP_BYTES));
+const artUsed = boundedCache(VILLAGERS, '__art-index', (idx, now) => bytesEvict(idx, now, ART_CAP_BYTES, ART_KEEP_MS));
+const foodImgUsed = boundedCache(FOOD_IMG_CACHE, '__food-img-index', (idx, now) => foodImgEvict(idx, now));
 
 /** The saved areas' caches (offline phase B, lib/offline/save.ts), listed again at most every 2 s (a burst of tiles
  *  asks once). */
@@ -298,10 +300,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // ごはん's pictures (caches.ts FOOD_IMG_CACHE, foodImgFetch): a sheet from the cache, else the network (stored after);
-  // index.json from the network within 2.5 s, else its last copy
+  // ごはん's pictures (caches.ts FOOD_IMG_CACHE, foodImgFetch): a sheet from the cache, else the network (stored after),
+  // bounded by bytes (foodImgEvict); index.json from the network within 2.5 s, else its last copy
   if (isFoodImg(url.pathname)) {
-    event.respondWith(caches.open(FOOD_IMG_CACHE).then((cache) => foodImgFetch(req, cache, (r) => fetch(r, r.url.endsWith('.webp') ? undefined : { cache: 'no-cache' }), (p) => event.waitUntil(p))));
+    const used = (u: string, n?: number) => event.waitUntil(foodImgUsed(u, n).catch(() => {}));
+    event.respondWith(caches.open(FOOD_IMG_CACHE).then((cache) => foodImgFetch(req, cache, (r) => fetch(r, r.url.endsWith('.webp') ? undefined : { cache: 'no-cache' }), (p) => event.waitUntil(p), undefined, used)));
     return;
   }
 
@@ -333,7 +336,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   // fonts, villagers, critters, the decor and the tent's room: cached on first use (critters and the decor share the
-  // villagers' on-use art cache; the room has its own)
+  // villagers' on-use art cache, bounded by bytes: ART_CAP_BYTES; the room has its own)
   if (isFont(url.pathname) || isVillagerArt(url.pathname) || isCritterArt(url.pathname) || isDecorArt(url.pathname) || isRoomAsset(url.pathname)) {
     const font = isFont(url.pathname), room = isRoomAsset(url.pathname);
     event.respondWith(
@@ -342,16 +345,17 @@ self.addEventListener('fetch', (event) => {
         const precached = room ? undefined : await caches.open(CACHE).then((c) => c.match(req));
         if (precached) return precached;
         const cache = await caches.open(font ? FONTS : room ? ROOM_CACHE : VILLAGERS);
+        const used = font ? null : room ? roomUsed : artUsed;
         const hit = await cache.match(req);
         if (hit) {
-          if (room) event.waitUntil(roomUsed(req.url).catch(() => {}));
+          if (used) event.waitUntil(used(req.url).catch(() => {}));
           return hit;
         }
         // (once at a time: a player's pack asked by two tabs, fetchShared)
         return fetchShared(flying, req.url, () => fetchKeep(req, fetch, async (copy) => {
-          const sized = room ? copy.clone() : null;
+          const sized = used ? copy.clone() : null;
           await cache.put(req, copy);
-          if (sized) await roomUsed(req.url, await sizeOf(sized));
+          if (sized) await used!(req.url, await sizeOf(sized));
         }, (p) => event.waitUntil(p)));
       })()
     );

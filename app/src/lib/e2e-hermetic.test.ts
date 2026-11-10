@@ -3,7 +3,10 @@
 // - fixed waits, wall-clock sampling, long tests: ratcheted in e2e-budgets.test.ts;
 // - no randomness and no real time in what a spec asks for: `Math.random` (seed it), a `?date=` built from the real
 //   clock (`Date.now()` / `new Date()` beside `date=`);
-// - no URL off the local preview but a relay the spec routes itself (ROUTED).
+// - no URL off the local preview but a relay the spec routes itself (ROUTED);
+// - a spec that lets the service worker run is Chromium's only (@chromium): WebKit's Playwright doesn't route a worker's
+//   fetches, so the worker of a build that knows the real relay would reach it (review 5: unauthorized requests from
+//   fake keys in the production log).
 import { describe, expect, it } from 'vitest';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -55,5 +58,25 @@ describe('the e2e are hermetic', () => {
       });
     }
     expect(bad).toEqual([]);
+  });
+
+  it("a spec that lets the service worker run tags each of its tests @chromium", () => {
+    const bad: string[] = [];
+    for (const f of files) {
+      const lines = src(f).split('\n');
+      lines.forEach((l, i) => {
+        if (!/serviceWorkers:\s*'allow'/.test(l) || /^\s*(\/\/|\*)/.test(l)) return;
+        // its scope: the file (a top-level test.use), else its describe block (to the describe's closing line)
+        const indent = /^\s*/.exec(l)![0].length;
+        let from = 0, to = lines.length;
+        if (indent > 0) {
+          for (from = i; from > 0 && !(/^\s*test\.describe\(/.test(lines[from]) && /^\s*/.exec(lines[from])![0].length < indent); from--);
+          const outer = /^\s*/.exec(lines[from])![0];
+          for (to = i; to < lines.length && !lines[to].startsWith(`${outer}});`); to++);
+        }
+        for (let k = from; k < to; k++) if (/^\s*test\(/.test(lines[k]) && !lines[k].includes('@chromium')) bad.push(`${f}:${k + 1}`);
+      });
+    }
+    expect(bad, "add { tag: '@chromium' } (or block the worker)").toEqual([]);
   });
 });

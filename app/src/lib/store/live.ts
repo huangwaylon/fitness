@@ -24,6 +24,10 @@ const REFRESH_FLOOR_MS = 30_000;
 const KICK_FLOOR_MS = 30_000;
 /** After acked writes the record stored no row for (a duplicate), re-read so server rows replace the optimistic ones. */
 const RECONCILE_MS = 1500;
+/** A send within this of the last flush's start waits for one trailing flush, which takes everything gathered meanwhile
+ *  (review 5: an editor burst went as one request per op, past the record's 120 a minute for a person, then backed off
+ *  `busy`). The first send after a quiet spell goes at once. */
+const SEND_PACE_MS = 600;
 /** Sheet changes arriving together (a burst of pushes) make one refresh. */
 const PUSH_GATHER_MS = 300;
 /** How long opening waits for the relay's welcome (its `rec`) before fetching anyway. */
@@ -43,6 +47,9 @@ export class LiveBackend implements Backend {
   #retryTimer: ReturnType<typeof setTimeout> | null = null;
   #reconcileTimer: ReturnType<typeof setTimeout> | null = null;
   #pushTimer: ReturnType<typeof setTimeout> | null = null;
+  /** When the last flush started (SEND_PACE_MS), and the trailing flush armed meanwhile. */
+  #flushedAt = -Infinity;
+  #paceTimer: ReturnType<typeof setTimeout> | null = null;
   /** The relay socket (docs/backend.md#push): the record's changes in, `saved` nudges out. */
   #live: Live | null = null;
   /** The record's push (`changed`) reached this phone this session, so it covers events too: no `saved` nudges. */
@@ -296,7 +303,7 @@ export class LiveBackend implements Backend {
     const holdMs = opts.holdMs ?? 0;
     const ev = enqueue(type, data, Date.now(), holdMs, opts.group);
     this.#host.changed();
-    void this.#flush(true);
+    this.#paced();
     if (holdMs <= 0) return { ok: true };
     const undo = () => {
       const ok = unqueue(ev.id);
@@ -317,13 +324,26 @@ export class LiveBackend implements Backend {
   sendMany(events: readonly { type: EventType; data: Record<string, unknown> }[]): void {
     if (!enqueueAll(events).length) return;
     this.#host.changed();
-    void this.#flush(true);
+    this.#paced();
+  }
+
+  /** A flush now, or (within SEND_PACE_MS of the last one's start) one trailing flush when the pace allows. */
+  #paced(): void {
+    const wait = this.#flushedAt + SEND_PACE_MS - Date.now();
+    if (wait <= 0) return void this.#flush(true);
+    this.#paceTimer ??= setTimeout(() => {
+      this.#paceTimer = null;
+      void this.#flush(true);
+    }, wait);
   }
 
   async #flush(reconcile: boolean): Promise<void> {
     if (this.#retryTimer) clearTimeout(this.#retryTimer);
     this.#retryTimer = null;
-    const r = await flush(Date.now);
+    // (only a flush with something to send paces: a refresh's over an empty queue sends nothing)
+    if (queued().length) this.#flushedAt = Date.now();
+    // (paced: a batch short of full ends it; what came meanwhile waits for the next, SEND_PACE_MS on: #scheduleRetry)
+    const r = await flush(Date.now, { paced: true });
     // Only events the server acked stay on screen until the snapshot has them (flush keeps them: ackedEvents()). An
     // event that left the queue because it was undone mid-flush must not come back.
     if (r.dropped.length) {
@@ -381,6 +401,7 @@ export class LiveBackend implements Backend {
     this.#retryTimer = null;
     const next = nextRetryAt();
     if (next === null) return;
-    this.#retryTimer = setTimeout(() => void this.#flush(true), Math.max(250, next - Date.now()));
+    const now = Date.now();
+    this.#retryTimer = setTimeout(() => void this.#flush(true), Math.max(250, next - now, this.#flushedAt + SEND_PACE_MS - now));
   }
 }
