@@ -150,6 +150,28 @@ describe('the write queue paced', () => {
     expect(sends).toBe(3);
   });
 
+  it('two sends in one tick (a villager look: its villager, then the look): both reach the record, the second trailing', async () => {
+    const b = await open();
+    b.send('pref', { key: 'villager', value: 'raymond' }, {});
+    b.send('pref', { key: 'look', value: { kind: 'villager' } }, {});
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(queued()).toEqual([]);
+    expect(sends).toBe(2);
+  });
+
+  it('hidden while a send waits for the trailing flush (a look changed, the phone locked at once): it goes now, keepalive', async () => {
+    const b = await open();
+    b.send('pref', { key: 'villager', value: 'raymond' }, {});
+    await vi.advanceTimersByTimeAsync(100);
+    b.send('pref', { key: 'look', value: { kind: 'villager' } }, {});
+    doc.visibilityState = 'hidden';
+    on['doc:visibilitychange']();
+    await vi.advanceTimersByTimeAsync(100);
+    expect([keepalive, queued()]).toEqual([[false, true], []]);
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(sends).toBe(2);
+  });
+
   it('hidden: the trailing flush is not waited for (keepalive, at once)', async () => {
     const b = await open();
     b.send('decor', { op: 'move', id: 'd1', x: 1 }, {});

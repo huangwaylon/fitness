@@ -378,9 +378,13 @@ export class LiveBackend implements Backend {
     if (r.remaining > 0) this.#scheduleRetry();
   }
 
-  /** The page is being hidden: the held tally and island rows go (queue.ts releaseHeld), keepalive. */
+  /** The page is being hidden: the held tally and island rows go (queue.ts releaseHeld), and what waits for the pace's
+   *  trailing flush (a look changed just before the phone locked), keepalive. */
   #hidden(): void {
-    if (!releaseHeld()) return;
+    const paced = this.#paceTimer !== null;
+    if (paced) clearTimeout(this.#paceTimer!);
+    this.#paceTimer = null;
+    if (!releaseHeld() && !paced) return;
     void flush(Date.now, { keepalive: true });
   }
 

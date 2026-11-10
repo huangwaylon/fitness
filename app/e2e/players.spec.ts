@@ -58,7 +58,9 @@ test('the look picks the model: A and B human players, a villager look its villa
   expect(Math.hypot(now!.x - was!.x, now!.z - was!.z)).toBeLessThan(1);
   expect(await model(a, 'partner')).toBe(usualB);
 
-  // a phone opening later draws it too
+  // a phone opening later (once A's writes are in the record: the second waits out the pace, store/live.ts
+  // SEND_PACE_MS, and this record pushes nothing) draws it too
+  await expect.poll(() => a.evaluate(() => localStorage.getItem('island.queue') ?? '[]'), { timeout: 10_000 }).toBe('[]');
   const b = await phone(browser, rec, 'B');
   await expect.poll(() => model(b, 'partner'), { timeout: 30_000 }).toBe('v:raymond');
   await expect.poll(() => model(b, 'mine'), { timeout: 30_000 }).toBe(usualB);
