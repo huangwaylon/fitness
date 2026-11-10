@@ -3,7 +3,9 @@
 // reach: a changed e2e helper, its importers; a src or content file, e2e/impact.json's rules (else its own name). A
 // file nothing maps (a store, the config, a fixture, the package) adds nothing: the gate set, and the full logic tier
 // after the deploy. Over the budget (CAP_MS of tests by e2e/timings.json, ~110 s a gate shard) the reached ones drop
-// out first, then the changed specs run once each; a changed spec always runs.
+// out first, then the changed specs run once each; a changed spec always runs, but in a sweep (over 8): cheapest first
+// up to the budget. A base thousands of files away (over 500) or meeting HEAD only at the first commit (a rewritten
+// history) is no base.
 //
 //   node scripts/e2e-impact.ts [--base <rev>] [--out <dir>]
 //     the base: --base, else the last commit deployed (the cloudflare-pages environment's newest successful
@@ -19,7 +21,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const CAP_MS = 1_300_000, MAX_CHANGED = 8, MAX_IMPORTERS = 10, UNTIMED_MS = 60_000;
+const CAP_MS = 1_300_000, MAX_CHANGED = 8, MAX_IMPORTERS = 10, UNTIMED_MS = 60_000, MAX_FILES = 500;
 type Rule = [glob: string, specs: string[]];
 export type Ctx = {
   /** every spec file's name (tent.spec.ts) */
@@ -71,11 +73,16 @@ export function select(changed: string[], ctx: Ctx): Selection {
   }
   const sum = (xs: string[]) => xs.reduce((a, s) => a + ctx.cost(s), 0);
   const gate = ctx.gate.filter((s) => has.has(s));
-  // the changed specs always run: 3× each, or once in a sweep or over the budget; the reached ones drop out first
+  // the changed specs run 3× each, or once over the budget (the reached ones drop out first); a sweep once each up to it
   let x3 = [...new Set(changedSpecs)].sort(), once: string[] = [];
   if (x3.length > MAX_CHANGED) {
-    notes.push(`${x3.length} specs changed, over ${MAX_CHANGED} (a sweep): each runs once`);
-    [once, x3] = [x3, []];
+    // (a sweep: once each, cheapest first, up to the budget beside the gate set; the rest are the full tier's)
+    let room = CAP_MS - sum(gate);
+    const more = x3.filter((s) => !gate.includes(s)).sort((a, b) => ctx.cost(a) - ctx.cost(b) || a.localeCompare(b));
+    once = more.filter((s) => (room -= ctx.cost(s)) >= 0).sort();
+    const left = more.length - once.length;
+    notes.push(`${x3.length} specs changed, over ${MAX_CHANGED} (a sweep): each runs once${left ? `, the cheapest up to the budget (${left} left to the full logic tier)` : ''}`);
+    x3 = [];
   }
   for (const s of [...gate, ...x3, ...once]) reached.delete(s);
   let ms = sum(gate) + 3 * sum(x3) + sum(once);
@@ -110,6 +117,7 @@ const tryGit = (...a: string[]) => { try { return git(...a); } catch { return ''
 const isCommit = (rev: string) => !!rev && !/^0+$/.test(rev) && tryGit('cat-file', '-t', `${rev}^{commit}`) === 'commit';
 /** the point to diff from: <rev> itself, else (force-pushed away) where it and HEAD meet; '' if they never do */
 const isAncestor = (rev: string) => { try { git('merge-base', '--is-ancestor', rev, 'HEAD'); return true; } catch { return false; } };
+const short = (r: string) => git('rev-parse', '--short=8', r);
 const forkPoint = (rev: string) => (isAncestor(rev) ? git('rev-parse', rev) : tryGit('merge-base', rev, 'HEAD'));
 
 /** the commit live on the site: the cloudflare-pages environment's newest successful deployment; else (that API down)
@@ -203,12 +211,17 @@ if (import.meta.main) {
   }
   // (a deploy force-pushed away: not in the clone till fetched by its sha)
   if (/^[0-9a-f]{40}$/.test(base) && !isCommit(base)) tryGit('fetch', '--quiet', '--no-tags', '--filter=blob:none', 'origin', base);
-  const point = isCommit(base) ? forkPoint(base) : '';
+  let point = isCommit(base) ? forkPoint(base) : '';
   if (point && point !== git('rev-parse', base)) from += `; not an ancestor (a force push): from where it and HEAD meet`;
   if (base && !point) from += `; ${base.slice(0, 8)} not in the history`;
   const head = git('rev-parse', 'HEAD');
   const ctx = context();
-  const changed = point ? changedSince(point, head) : [];
+  let changed = point ? changedSince(point, head) : [];
+  // (a history rewritten under the base: it meets HEAD only at the first commit, or thousands of files apart: no base)
+  if (point && (!tryGit('rev-parse', '--verify', '--quiet', `${point}^`) || changed.length > MAX_FILES)) {
+    from += `; ${short(point)} is ${changed.length > MAX_FILES ? `${changed.length} files from HEAD (over ${MAX_FILES})` : 'the first commit'}: no base`;
+    [point, changed] = ['', []];
+  }
   const sel = point ? select(changed, ctx) : fill(ctx);
   // (a workflow command, on stderr: stdout is the summary)
   if (!point) console.error(`::warning title=e2e-impact::no base to diff against (${from}): the gate set and more specs up to the budget`);
@@ -221,7 +234,6 @@ if (import.meta.main) {
     writeFileSync(join(out, 'changed.txt'), changed.map((f) => `${f}\n`).join(''));
   }
   const n = new Set([...sel.gate, ...sel.x3, ...sel.once, ...sel.reached.keys()]).size;
-  const short = (r: string) => git('rev-parse', '--short=8', r);
   console.log(`### The gate's e2e: ${n} spec files, ~${Math.round(sel.ms / 1000)} s of tests\n`);
   console.log(point ? `Changes since ${short(point)} (${from}) to ${short(head)}.\n` : `No base to diff against (${from}).\n`);
   console.log(`- the gate set (e2e/gate.json): ${sel.gate.length} files`);

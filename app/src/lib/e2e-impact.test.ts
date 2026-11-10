@@ -60,6 +60,14 @@ describe('e2e impact', () => {
     expect([s.x3, s.once]).toEqual([[], many]);
   });
 
+  it('a sweep over the budget runs the cheapest changed specs up to it, the rest left to the full tier', () => {
+    const many = Array.from({ length: 9 }, (_, i) => `m${i}.spec.ts`);
+    const s = select([...many, 'big.spec.ts', 'boot.spec.ts'].map((f) => `e2e/${f}`), { ...ctx, specs: [...ctx.specs, ...many] });
+    expect([s.x3, s.once]).toEqual([[], many]);
+    expect(s.ms).toBe(10 * 10_000);
+    expect(s.notes[0]).toMatch(/11 specs changed.*1 left to the full logic tier/);
+  });
+
   it('no base: the gate set, then the cheapest specs up to the budget', () => {
     const s = fill(ctx);
     expect(s.gate).toEqual(['boot.spec.ts']);

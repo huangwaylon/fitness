@@ -1,14 +1,17 @@
 #!/bin/sh
 # Blocks a push whose checks are red (docs/ops/testing.md "Before you push"). A push that changes app/ runs
-# `npm run verify -- --build` in app/ (~20 s: the build and its budgets beside svelte-check); one that changes only
-# docs/ or README.md runs the docs check (~1 s). Its own exit code, never a pipe's. Installed by app's `npm ci`
-# (`prepare`: core.hooksPath .githooks, shared by every worktree). Skipped for a branch delete or nothing of either.
+# `npm run verify -- --build` in app/ (the build and its budgets beside svelte-check), on the working tree: uncommitted
+# changes under app/ are named in a warning; one that changes only docs/ or README.md runs the docs check. Its own exit
+# code, never a pipe's. And the repo's growth: the blobs new to the remote, over 10 MB a warning, over 50 MB refused
+# (BIG_PUSH=1 to push them: a regenerated pack or images, each try kept in history for good). Installed by app's
+# `npm ci` (`prepare`: core.hooksPath .githooks, shared by every worktree). Skipped for a branch delete or nothing new.
 # Emergency bypass: `git push --no-verify` (or SKIP_VERIFY=1), then fix forward.
 [ -n "$SKIP_VERIFY" ] && { echo "pre-push: SKIP_VERIFY set, checks skipped"; exit 0; }
 root=$(git rev-parse --show-toplevel) || exit 1
 zero=0000000000000000000000000000000000000000
 app=0
 docs=0
+blobs=$(mktemp) && trap 'rm -f "$blobs"' EXIT
 while read -r _local local_sha _remote remote_sha; do
   [ "$local_sha" = "$zero" ] && continue
   if [ "$remote_sha" = "$zero" ] || ! git cat-file -e "$remote_sha^{commit}" 2>/dev/null; then
@@ -18,7 +21,17 @@ while read -r _local local_sha _remote remote_sha; do
   fi
   [ -n "$(git diff --name-only "$base" "$local_sha" -- app)" ] && app=1
   [ -n "$(git diff --name-only "$base" "$local_sha" -- docs README.md)" ] && docs=1
+  git rev-list --objects "$base..$local_sha" | git cat-file --batch-check='%(objecttype) %(objectsize) %(rest)' | awk '$1 == "blob"' >> "$blobs"
 done
+mb=$(awk '{ s += $2 } END { printf "%d", s / 1048576 }' "$blobs")
+if [ "$mb" -ge 10 ]; then
+  echo "pre-push: $mb MB of new files (the largest below): history keeps every version of a file for good" >&2
+  sort -k2 -n -r "$blobs" | head -8 | awk '{ printf "  %6.1f MB  %s\n", $2 / 1048576, $3 }' >&2
+  if [ "$mb" -ge 50 ] && [ -z "$BIG_PUSH" ]; then
+    echo "pre-push: over 50 MB, nothing pushed. Iterate generated assets outside git (app/.cache) and commit the accepted set once; to push these anyway: BIG_PUSH=1 git push" >&2
+    exit 1
+  fi
+fi
 [ "$app" = 0 ] && [ "$docs" = 0 ] && exit 0
 if [ ! -d "$root/app/node_modules" ]; then
   echo "pre-push: no app/node_modules in $root: run npm ci in app/ first (or push with --no-verify)" >&2
@@ -30,6 +43,8 @@ if [ "$app" = 0 ]; then
   echo "pre-push: docs-check is red, nothing pushed" >&2
   exit 1
 fi
+dirty=$(git -C "$root" status --porcelain -- app | head -10)
+[ -n "$dirty" ] && printf 'pre-push: warning: verify checks the working tree, and these under app/ are not committed (what is pushed may differ):\n%s\n' "$dirty" >&2
 echo "pre-push: npm run verify -- --build in app/ (the working tree; bypass: git push --no-verify)"
 if ! (cd "$root/app" && npm run verify --silent -- --build); then
   echo "pre-push: verify is red, nothing pushed. Fix it, or in an emergency: git push --no-verify" >&2

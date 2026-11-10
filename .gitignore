@@ -10,3 +10,5 @@ food-data/raw/
 food-data/out/
 food-data/.build-*/
 food-data/**/__pycache__/
+# agents' worktrees and local settings (git worktree add .claude/worktrees/…): never committed
+.claude/

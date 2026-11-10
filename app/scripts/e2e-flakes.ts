@@ -22,7 +22,8 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { inflateRawSync } from 'node:zlib';
 
-const HOURS = 48, MIN_SHAS = 2, MAX_QUARANTINED = 5, SHARDS = 12, RUNNER_FLAKY = 10;
+// (SHARDS: the most flaky-<n> any workflow uploads: the full logic tier's 6, the gate's 4)
+const HOURS = 48, MIN_SHAS = 2, MAX_QUARANTINED = 5, SHARDS = 6, RUNNER_FLAKY = 10;
 type Entry = { key: string; project: string; file: string; line: number; error: string };
 /** a shard's entry: its flaky tests, and (since 2026-11-09) how many tests it ran and how many failed outright */
 export type Ledger = { run: string; sha: string; workflow: string; at: string; flaky: Entry[]; total?: number; failed?: number };
@@ -83,12 +84,21 @@ function owner(file: string) {
   }
 }
 
-/** whether `sha` has `file`'s last change (`git merge-base --is-ancestor`); not sure (a commit not here): yes */
+/** whether `sha` has `file`'s last change (`git merge-base --is-ancestor`). Not sure: yes. That is a commit not on
+ *  this history (not an ancestor of HEAD or origin/main: rewritten away, or not fetched), whether or not its objects
+ *  are in the clone, so CI (which may hold a rewritten-away base e2e-impact fetched) and a local clone agree. */
 function lastChange() {
   const last = new Map<string, string>();
   const known = new Map<string, boolean>();
   const git = (args: string[]) => execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+  const ok = (args: string[]) => { try { git(args); return true; } catch { return false; } };
+  const here = new Map<string, boolean>();
+  const onHistory = (sha: string) => {
+    if (!here.has(sha)) here.set(sha, ok(['cat-file', '-e', `${sha}^{commit}`]) && ['HEAD', 'origin/main'].some((r) => ok(['merge-base', '--is-ancestor', sha, r])));
+    return here.get(sha)!;
+  };
   return (file: string, sha: string) => {
+    if (!onHistory(sha)) return true;
     if (!last.has(file)) {
       try {
         last.set(file, git(['log', '-1', '--format=%H', '--', file]));
@@ -116,16 +126,26 @@ async function read(): Promise<{ ledgers: Ledger[]; since: Date; until: Date; dr
   const repo = process.env.GITHUB_REPOSITORY ?? execFileSync('gh', ['repo', 'view', '--json', 'nameWithOwner', '-q', '.nameWithOwner'], { encoding: 'utf8' }).trim();
   const token = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN ?? execFileSync('gh', ['auth', 'token'], { encoding: 'utf8' }).trim();
   const signal = AbortSignal.timeout(10_000);
-  const api = async (path: string) => {
-    const r = await fetch(`https://api.github.com/repos/${repo}${path && `/${path}`}`, { signal, headers: { authorization: `Bearer ${token}`, accept: 'application/vnd.github+json' } });
-    if (!r.ok) throw new Error(`${path.split('?')[0] || 'the repo'}: ${r.status}`);
+  const api = async (path: string, o: { redirect?: RequestRedirect } = {}) => {
+    const r = await fetch(`https://api.github.com/repos/${repo}${path && `/${path}`}`, { signal, redirect: o.redirect, headers: { authorization: `Bearer ${token}`, accept: 'application/vnd.github+json' } });
+    if (!r.ok && !(o.redirect === 'manual' && r.status === 302)) throw new Error(`${path.split('?')[0] || 'the repo'}: ${r.status}`);
     return r;
   };
   const json = async <T>(path: string) => (await (await api(path)).json()) as T;
   const repoId = Number(process.env.GITHUB_REPOSITORY_ID) || (await json<{ id: number }>('')).id;
   const until = process.env.GITHUB_RUN_ID ? new Date((await json<{ created_at: string }>(`actions/runs/${process.env.GITHUB_RUN_ID}`)).created_at) : new Date();
   const since = new Date(until.getTime() - HOURS * 3600_000);
-  const lists = await Promise.all(Array.from({ length: SHARDS }, (_, i) => json<{ artifacts: Artifact[] }>(`actions/artifacts?per_page=100&name=flaky-${i + 1}`)));
+  // (newest first, a page of 100 at a time till one reaches back past the window: a busy day passes 100 in 48 h)
+  const listed = async (name: string) => {
+    const all: Artifact[] = [];
+    for (let page = 1; page <= 10; page++) {
+      const { artifacts } = await json<{ artifacts: Artifact[] }>(`actions/artifacts?per_page=100&page=${page}&name=${name}`);
+      all.push(...artifacts);
+      if (artifacts.length < 100 || new Date(artifacts.at(-1)!.created_at) < since) break;
+    }
+    return { artifacts: all };
+  };
+  const lists = await Promise.all(Array.from({ length: SHARDS }, (_, i) => listed(`flaky-${i + 1}`)));
   const ours = (r: Pick<Run, 'head_branch' | 'head_repository'>) => r.head_branch === 'main' && r.head_repository?.id === repoId;
   // a run counts if this repo's main pushed or dispatched it, or it ran after one such (the full logic tier: workflow_run)
   const pushed = new Map<string, Promise<boolean>>();
@@ -147,8 +167,21 @@ async function read(): Promise<{ ledgers: Ledger[]; since: Date; until: Date; dr
   for (const a of arts) if (!runs.has(a.workflow_run!.id)) runs.set(a.workflow_run!.id, trusted(a.workflow_run!.id));
   const ok = new Map(await Promise.all([...runs].map(async ([id, p]) => [id, await p] as const)));
   const keep = arts.filter((a) => ok.get(a.workflow_run!.id));
+  // (the zip: a redirect to blob storage, followed without the token; the store's 403s now and then: twice more)
+  const zip = async (id: number) => {
+    for (let n = 0; ; n++) {
+      try {
+        const to = (await api(`actions/artifacts/${id}/zip`, { redirect: 'manual' })).headers.get('location');
+        const r = to ? await fetch(to, { signal }) : null;
+        if (r?.ok) return Buffer.from(await r.arrayBuffer());
+        if (n === 2) throw new Error(`actions/artifacts/${id}/zip: ${r ? r.status : 'no redirect'}`);
+      } catch (e) {
+        if (n === 2) throw e;
+      }
+    }
+  };
   const ledgers = await Promise.all(keep.map(async (a) => {
-    const l = JSON.parse(unzipOne(Buffer.from(await (await api(`actions/artifacts/${a.id}/zip`)).arrayBuffer())).toString('utf8')) as Ledger;
+    const l = JSON.parse(unzipOne(await zip(a.id)).toString('utf8')) as Ledger;
     const flaky = (Array.isArray(l.flaky) ? l.flaky : []).filter((e) => typeof e?.key === 'string' && typeof e.project === 'string');
     const n = (v: unknown) => (typeof v === 'number' && v >= 0 ? v : undefined);
     return { ...l, flaky, total: n(l.total), failed: n(l.failed), run: String(a.workflow_run!.id), sha: a.workflow_run!.head_sha, at: typeof l.at === 'string' ? l.at : a.created_at };

@@ -151,12 +151,18 @@ describe('the fields off the main thread (fieldsPrime.ts)', () => {
     const m = altered(defaultLayout(), 15);
     class Mute { onmessage = null; onerror = null; onmessageerror = null; postMessage() {} terminate() {} }
     vi.stubGlobal('Worker', Mute);
+    // (the timers faked: given up at its 50 ms, not the wall clock's say on a loaded runner)
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     try {
-      const t = Date.now();
-      await primeFields(m, 'test', 50);
-      expect(Date.now() - t).toBeLessThan(1000);
+      let out = false;
+      void primeFields(m, 'test', 50).then(() => (out = true));
+      await vi.advanceTimersByTimeAsync(49);
+      expect(out).toBe(false);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(out).toBe(true);
       expect(hasFields(m)).toBe(false);
     } finally {
+      vi.useRealTimers();
       vi.unstubAllGlobals();
     }
   });

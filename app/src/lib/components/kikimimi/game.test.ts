@@ -25,8 +25,6 @@ function fakeLive() {
   };
 }
 
-/** Till what waits for a chunk has run. */
-const settle = () => new Promise((r) => setTimeout(r, 50));
 
 describe('ききみみ game: a deck waits for its level’s chunk', () => {
   it('a heard open for a level not loaded: the invite once its chunk is in, its deck the seed’s', async () => {
@@ -38,9 +36,9 @@ describe('ききみみ game: a deck waits for its level’s chunk', () => {
     // what's heard after it waits behind it, in order
     f.hear({ g: 'abcd', op: 'end' });
     f.hear({ g: 'efgh', op: 'open', seed: 1000, lv: 6, same: false });
-    await settle();
+    // (polled: what waits for the chunk runs once its import is in)
+    await vi.waitFor(() => expect(g.view.invite).toMatchObject({ g: 'efgh', lv: 6 }));
     expect(loaded(6)).toBe(true);
-    expect(g.view.invite).toMatchObject({ g: 'efgh', lv: 6 });
     g.join('efgh');
     expect(g.items.map((it) => it.id)).toEqual(deck(1000, 6).map((it) => it.id));
     g.dispose();
@@ -49,14 +47,12 @@ describe('ききみみ game: a deck waits for its level’s chunk', () => {
   it('my own lobby moved to a level not loaded: it moves once the chunk is in; a tap after it waits behind it', async () => {
     const g = new QuizGame({ live: null, me: 'A' });
     g.open(1);
-    await settle();
-    expect(g.view.phase).toBe('lobby');
+    await vi.waitFor(() => expect(g.view.phase).toBe('lobby'));
     expect(loaded(7)).toBe(false);
     g.configure({ lv: 7 });
     g.configure({ timer: 60 });
     expect(g.view.lv).toBe(1);
-    await settle();
-    expect(g.view).toMatchObject({ lv: 7, timer: 60 });
+    await vi.waitFor(() => expect(g.view).toMatchObject({ lv: 7, timer: 60 }));
     expect(g.items.every((it) => it.lv === 7)).toBe(true);
     g.dispose();
   });
