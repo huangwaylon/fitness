@@ -11,7 +11,7 @@
   // but a hand. A layout change rebuilds only the chunks and models that changed; a frame is drawn (world3d/stage.ts:
   // at most 30 a second, none hidden) only when something changed (an edit, the camera, a model in, a wobble), never
   // on a timer; the shadow map only when what casts or the shadow box moved.
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import type { Layout } from '#lib/layout/model.ts';
   import { diffLayouts } from '#lib/layout/diff.ts';
   import { lookOf, type Look } from '../world3d/groundLook.ts';
@@ -41,7 +41,7 @@
     let gone = false, stop = () => {};
     const camZ0 = camZ;
     void Promise.all([import('../world3d/threePreview.ts'), import('three/examples/jsm/controls/OrbitControls.js'), import('../world3d/terrain.ts'), import('../world3d/objects.ts'), import('../world3d/things.ts'), import('../world3d/bend.ts'), import('../world3d/water.ts'), import('../world3d/home.ts'), import('../world3d/built.ts'), import('../world3d/release.ts'), import('../world3d/drawCheck.ts'), import('../island/kkSlider.ts'), import('../island/devHooks.ts'), import('#lib/time/clock.ts'), import('#lib/layout/model.ts'), import('../rooms/gesture.ts'), import('./previewCam.ts'), import('../world3d/stage.ts'), import('../world3d/islandCam.ts'), import('../world3d/shadowBox.ts')]).then(
-      ([T, { OrbitControls }, { buildGround }, { placeObjects }, { createThings }, { bendU, bendTree, bendPoint, unbendRay }, { waterU, waterFog }, { homeTod }, { createBuilt, builtObject }, { resourcesOf }, { previewDay }, KK, { hookOneOf, islandSeed }, { dayKey, jst, now }, { extentOf }, { gestures }, C, { createStage }, I, { shadowBox, sunOn }]) => {
+      ([T, { OrbitControls }, { buildGround }, { placeObjects }, { createThings }, { bendU, bendTree, bendPoint, unbendRay }, { waterU, waterFog }, { homeTod }, { createBuilt, builtObject }, { resourcesOf }, { previewDay }, KK, { hookOneOf, islandSeed }, { dayKey, jst, now }, { extentOf }, { gestures }, C, { createStage, DPR_MOVING }, I, { shadowBox, sunOn }]) => {
         if (gone || !canvas) return;
         /** The canvas's size (the stage's, from its ResizeObserver: no layout read a call), and whether the scene's up. */
         let cw = 300, ch = 150, ready = false;
@@ -55,7 +55,7 @@
           failed = true;
           return;
         }
-        const renderer = st.renderer;
+        const renderer = st.renderer, dprFull = renderer.getPixelRatio();
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = T.PCFSoftShadowMap;
         // (the shadow map redrawn only with a frame that changed what casts or where the sun is: kick(), not kick(false))
@@ -175,12 +175,17 @@
         // ---- the camera ----
         let m: 'orbit' | 'phone' = mode;
         /** The phone view's camera: its spot along the island (camZ), across it, and its zoom; the sun's: the orbit's own
-         *  or the phone view's shadow box. */
+         *  or the phone view's shadow box. A hand's move only sets them (`aimDue`): the camera's aimed once in the next frame
+         *  or read (toScreen, toGround, the e2e's cam), not on each pointer event (most never drawn at 30 a second).
+         *  `gesturing`: a drag or a pinch under way, drawn at DPR_MOVING (the island's way). */
         let camX = C.midX(extentOf(cur)), zoom = 1, lit: import('../world3d/shadowBox.ts').ShadowBox | 'orbit' | null = null;
+        let aimDue = false, gesturing = false;
+        const aimed = () => void (aimDue && aim());
         const bounds = () => C.panBounds(extentOf(cur));
         /** What follows the camera (IslandEdit's: EditStage moved). */
         const movers = new Set<() => void>();
         function aim() {
+          aimDue = false;
           if (m === 'orbit') {
             bendU.uBendR.value = 3e5;
             controls.enabled = true;
@@ -209,10 +214,12 @@
             I.cullBands(ground.chunks(), camZ);
             // (the day's sun on the island's shadow box: redrawn only as it moves on; zoomed out past the phone's widest,
             // as wide as the view)
-            const b = shadowBox(lit === 'orbit' ? null : lit, camZ, camX, zoom, I.DAY_SUN, I.VIEW_W, Math.min(I.ZOOM.min, zoom));
+            const b = shadowBox(lit === 'orbit' ? null : lit, camZ, camX, zoom, I.DAY_SUN, I.VIEW_W, Math.min(I.ZOOM.min, zoom), gesturing);
             if (b) (sunOn(sun, (lit = b), I.DAY_SUN), (shade = true));
           }
-          for (const f of movers) f();
+          // (untracked: a mover writes IslandEdit's state, and aim runs inside the prop effects below; read there, it
+          // looped till Svelte stopped it, as PlanStage's did: 2f48bb0b)
+          untrack(() => movers.forEach((f) => f()));
         }
         function resize() {
           camera.aspect = cw / Math.max(1, ch);
@@ -252,7 +259,7 @@
           camX -= mx;
           camZ += mz;
           zoom *= k;
-          aim();
+          aimDue = true;
           kick(false);
         }
         const onWheel = (e: WheelEvent) => {
@@ -263,14 +270,21 @@
           else {
             camX += (e.deltaX * 0.8 * (I.VIEW_W / Math.max(1, cw))) / zoom;
             camZ -= e.deltaY * 0.8;
-            aim();
+            aimDue = true;
             kick(false);
           }
         };
         canvas.addEventListener('wheel', onWheel, { passive: false });
         // the phone view's fingers (rooms/gesture.ts's rule): a drag on open ground pans, two fingers pinch (and pan
         // along the island with their middle); a piece under the finger is IslandEdit's (it takes the press first)
-        const g = gestures({ tap() {}, start() {}, end() {}, drag: (dx, dy) => move(dx, dy), pinch: (k, dy) => move(0, dy, k) });
+        const g = gestures({
+          tap() {},
+          start: () => (gesturing = true),
+          // (the full ratio, and the shadow box built for where it ended)
+          end: () => ((gesturing = false), (aimDue = true), kick(false)),
+          drag: (dx, dy) => move(dx, dy),
+          pinch: (k, dy) => move(0, dy, k)
+        });
         const ptr = (f: (e: PointerEvent) => void) => (e: PointerEvent) => {
           if (m !== 'phone') return;
           f(e);
@@ -284,6 +298,7 @@
 
         /** A frame (createStage's: at most 30 a second): 0 another wanted at once, Infinity none till a kick. */
         function frame(t: number): number {
+          aimed();
           let more = false;
           if (m === 'orbit' && controls.update()) more = true;
           // (a wobble, a fade, K.K. settling: what casts moves)
@@ -297,6 +312,9 @@
             if (shade) shadowFrames++;
             renderer.shadowMap.needsUpdate = shade;
             shade = false;
+            // (only when it changes: three's setPixelRatio sets the canvas's size, reallocating its buffers)
+            const dpr = gesturing ? Math.min(dprFull, DPR_MOVING) : dprFull;
+            if (dpr !== renderer.getPixelRatio()) renderer.setPixelRatio(dpr);
             // (the e2e's logic mode: the frame's work done, nothing drawn: CI's software GL took seconds a frame)
             if (!st.noDraw) renderer.render(scene, camera);
             frames++;
@@ -312,7 +330,7 @@
           frames: () => frames,
           /** Of them, those that redrew the shadow map. */
           shadowFrames: () => shadowFrames,
-          cam: () => (m === 'orbit' ? { mode: m, x: controls.target.x, z: -controls.target.z, zoom: 1 } : { mode: m, x: camX, z: camZ, zoom }),
+          cam: () => (aimed(), m === 'orbit' ? { mode: m, x: controls.target.x, z: -controls.target.z, zoom: 1 } : { mode: m, x: camX, z: camZ, zoom }),
           groups: () => [...groups.keys()],
           kk: () => (kkOn ? { x: kkSpec.x, z: kkSpec.z, yaw: kkSpec.yaw ?? 0, shown: kkSpec.shown, model: !!vil } : null)
         };
@@ -364,12 +382,14 @@
           host: wrapEl!,
           pans: true,
           toScreen(x: number, z: number, lift = 0) {
+            aimed();
             const [bx, by, bz] = bendPoint(x, ground.feet(x, z) + lift, -z, bendU.uBendZ.value, bendU.uBendR.value);
             pv.set(bx, by, bz).project(camera);
             if (pv.z > 1) return null;
             return [((pv.x + 1) / 2) * cw, ((1 - pv.y) / 2) * ch];
           },
           toGround(sx: number, sy: number) {
+            aimed();
             pv.set((sx / cw) * 2 - 1, -(sy / ch) * 2 + 1, 0.5).unproject(camera);
             const o = camera.position, d = pv.sub(o).normalize();
             let h = 3, hit: [number, number] | null = null;
