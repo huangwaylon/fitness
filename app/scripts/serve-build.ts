@@ -1,5 +1,5 @@
-// Serves build-pages/ the way Cloudflare Pages does, for the e2e tests: the exact bytes CI deploys (the build job's
-// artifact), under the base path, with 404.html (the SPA fallback) for any other path, and the headers Cloudflare Pages
+// Serves build-pages/ the way Cloudflare Pages does, for the e2e tests: the exact bytes CI deploys (the gate's build,
+// `site`), under the base path, with 404.html (the SPA fallback) for any other path, and the headers Cloudflare Pages
 // adds (build-pages/_headers, scripts/headers.ts: the CSP and the rest; not its Cache-Control: here nothing is cached).
 // No dependencies, starts at once.
 // `node scripts/serve-build.ts <port> [base]`.

@@ -9,8 +9,8 @@ How it works: [backend.md](../backend.md). Code and workflows cite these section
 
 ## 1. Deploy the UI
 Push to `main`. Any change under `app/**` (or to the workflow) runs *Deploy UI* (`.github/workflows/pages.yml`): the
-build, the checks and the gate's e2e (4 shards in logic mode) side by side, then the deploy to Cloudflare Pages and a
-check that the site answers this build with its headers; after it, the full logic tier (6 shards). The jobs, the
+checks and the gate's e2e (4 shards in logic mode, each building) side by side, then the deploy to Cloudflare Pages and
+a check that the site answers this build with its headers; after it, the full logic tier (6 shards). The jobs, the
 gate's selection and the flaky ledger: [testing.md](testing.md#ci-githubworkflowspagesyml). `health.yml` checks the
 site every 6 hours too.
 
@@ -25,7 +25,10 @@ written by the build ([testing.md](testing.md) "The headers"). The build also co
 purpose: with a top-level `404.html` Pages answers a missing file (an old build's chunk, an asset) with a real 404, not
 its single-page fallback's `index.html` and 200, which the app's stale-chunk reload relies on.
 
-A red gate stops the deploy; pull requests run the gate without the deploy. Re-run: Actions → *Deploy UI* →
+A red gate stops the deploy; pull requests run the gate without the deploy. After the upload: a **Pages alias lag**
+warning (the deployment's own URL serves the build, island-fund.pages.dev not yet after 6 min) needs nothing, it
+catches up (check the site later); **Deploy not served** (red: neither URL serves it) means the upload didn't take:
+re-run the job, then look at `wrangler pages deployment list` in its log. Re-run: Actions → *Deploy UI* →
 **Run workflow**. Before a model change, also run `npm run bench` (year 3 compacted ≤ 15 ms).
 
 ## 2. Check the backend
