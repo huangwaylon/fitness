@@ -7,8 +7,41 @@ import { islandUp } from './island.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 
 test.use({ serviceWorkers: 'allow' });
+// one test at a time, in order: a deploy (scripts/serve-build.ts /__e2e/deploy) changes the worker's script for the
+// whole server, so another of these running at once took it as its own new worker in the middle of its reload
+test.describe.configure({ mode: 'default' });
 
 const controlled = (page: Page) => page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 60_000 });
+
+/**
+ * Chromium's ask to swap the old worker out again, once it can act on it. A deploy's worker installed (it called
+ * skipWaiting()), Chromium tells the old one to stop as soon as it's idle, but only if it's running then: one still
+ * starting up (a page's fetch had just woken it) isn't told, and is stopped only by its idle timeout, which Chromium
+ * skips for a worker DevTools is attached to, as Playwright is to every service worker. The new worker then waited
+ * out Chromium's 5-minute lame-duck timer (CI: ~1 run in 80, the old worker running with nothing in flight, the new
+ * one installed; stopping the old one swapped them at once). So when an old worker comes up running while a new one
+ * waits, the swap is asked for once more (CDP ServiceWorker.skipWaiting: what the install's own call did), and the
+ * old one goes once its events are done. (Not on a phone: WebKit, and no DevTools.)
+ */
+async function askSwapAgain(page: Page, context: import('@playwright/test').BrowserContext) {
+  const cdp = await context.newCDPSession(page);
+  const versions = new Map<string, { status: string; running: string; reg: string }>();
+  const scopes = new Map<string, string>();
+  cdp.on('ServiceWorker.workerRegistrationUpdated', ({ registrations }) => {
+    for (const r of registrations) scopes.set(r.registrationId, r.scopeURL);
+  });
+  cdp.on('ServiceWorker.workerVersionUpdated', ({ versions: vs }) => {
+    for (const v of vs) {
+      const was = versions.get(v.versionId);
+      versions.set(v.versionId, { status: v.status, running: v.runningStatus, reg: v.registrationId });
+      const waiting = [...versions.values()].some((w) => w.status === 'installed' && w.reg === v.registrationId);
+      const cameUp = v.status === 'activated' && v.runningStatus === 'running' && was?.running === 'starting';
+      const scopeURL = scopes.get(v.registrationId);
+      if (waiting && cameUp && scopeURL) void cdp.send('ServiceWorker.skipWaiting', { scopeURL }).catch(() => {});
+    }
+  });
+  await cdp.send('ServiceWorker.enable');
+}
 
 // (in Chromium: WebKit's Playwright build doesn't route a service worker's own fetches)
 test('a navigation is the cached shell at once; a deploy reloads once its worker is in', { tag: '@chromium' }, async ({ page, context }) => {
@@ -37,6 +70,7 @@ test('a navigation is the cached shell at once; a deploy reloads once its worker
 
   // a deploy: a changed worker, and version.json naming a new version
   // (the server's stand-in for a deploy: the worker's script changes; scripts/serve-build.ts)
+  await askSwapAgain(page, context);
   await page.request.get('/__e2e/deploy');
   let asked = 0;
   await context.route('**/_app/version.json', (route) => (asked++, route.fulfill({ contentType: 'application/json', body: '{"version":"next"}' })));
@@ -97,6 +131,7 @@ const notCached = (page: Page) => page.evaluate(async () => {
 });
 /** A deploy seen as the app comes back to the front (the first test's stand-ins). */
 async function deploy(page: Page, context: import('@playwright/test').BrowserContext) {
+  await askSwapAgain(page, context);
   await page.request.get('/__e2e/deploy');
   let asked = 0;
   await context.route('**/_app/version.json', (route) => (asked++, route.fulfill({ contentType: 'application/json', body: '{"version":"next"}' })));
