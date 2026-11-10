@@ -383,6 +383,8 @@ self.addEventListener('message', (event) => {
       }
     }
     await Promise.allSettled(kept);
+    // (done: sw-update.spec counts the install's own fetches only after it)
+    (event.source as Client | null)?.postMessage({ k: 'warmed' });
   })());
 });
 

@@ -12,6 +12,12 @@ test.use({ serviceWorkers: 'allow' });
 test.describe.configure({ mode: 'default' });
 
 const controlled = (page: Page) => page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 60_000 });
+/** A first launch's warm-up done (service-worker/index.ts `warm`: the worker's fetches of the models and art the page
+ *  had before it was in), so the worker's fetches after it are the test's own. Before the goto. */
+const warmed = async (page: Page) => {
+  await page.addInitScript(() => navigator.serviceWorker?.addEventListener('message', (e) => (e.data as { k?: string } | null)?.k === 'warmed' && ((window as unknown as { __warmed?: boolean }).__warmed = true)));
+  return () => page.waitForFunction(() => (window as unknown as { __warmed?: boolean }).__warmed === true, null, { timeout: 60_000 });
+};
 
 /**
  * Chromium's ask to swap the old worker out again, once it can act on it. A deploy's worker installed (it called
@@ -146,9 +152,11 @@ async function deploy(page: Page, context: import('@playwright/test').BrowserCon
 
 test('a deploy whose install fails reloads nothing, and the next time the app comes back it installs and reloads', { tag: '@chromium' }, async ({ page, context }) => {
   test.setTimeout(120_000);
+  const warm = await warmed(page);
   await page.goto('?demo');
   await islandUp(page);
   await controlled(page);
+  await warm();
   const chunk = await notCached(page);
   const fail = (route: import('@playwright/test').Route) => route.fulfill({ status: 503, body: '' });
   await context.route(`**${chunk}`, fail);
@@ -177,9 +185,11 @@ test('a deploy whose install fails reloads nothing, and the next time the app co
 
 test('a slow install is waited for (no reload before its worker is in); a static file that fails costs only itself; the unchanged ones are copied', { tag: '@chromium' }, async ({ page, context }) => {
   test.setTimeout(120_000);
+  const warm = await warmed(page);
   await page.goto('?demo');
   await islandUp(page);
   await controlled(page);
+  await warm();
   const chunk = await notCached(page);
   // the manifest gone from the old shell, so the install fetches it (the unchanged static files are copied: below)
   await page.evaluate(async () => {
