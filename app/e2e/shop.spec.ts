@@ -316,3 +316,37 @@ test('a floor tap walks my villager round what stands, never onto the stage or b
   expect(at[1]).toBeGreaterThan(3);
   expect(await page.evaluate(([x, z]) => (window as unknown as { __shop: ShopHooks }).__shop.standable(x, z), at)).toBe(true);
 });
+
+// The others in the shop (docs/design.md "The shop"): each phone draws whoever else is in here, walking where they walk
+// (the rooms' presence, `tent` with `sc: 's'` and the very walk); out of the door, they're gone.
+test('two phones in the shop see each other: B’s walk is drawn on A’s phone, and B gone once out of the door', async ({ page, context }) => {
+  type Who = { at: [number, number]; walking: boolean } | null;
+  const who = (p: Page, w: 'A' | 'B') => p.evaluate((w) => (window as unknown as { __shop: { who(w: string): Who } }).__shop.who(w), w);
+  await seed(page, []);
+  const other = await context.newPage();
+  await page.goto(`shop${Q}`);
+  await roomIn(page);
+  await other.goto(`shop${Q}&as=B`);
+  await roomIn(other);
+  // each sees the other in here
+  await expect.poll(async () => !!(await who(page, 'B')) && !!(await who(other, 'A')), { timeout: 15_000 }).toBe(true);
+  // B walks to the floor before the stage: A's phone draws it walking there, then standing where it stopped
+  await other.evaluate(() => (window as unknown as { __shop: { walkTo(x: number, z: number): void } }).__shop.walkTo(-40, 12));
+  await expect.poll(async () => (await who(page, 'B'))?.walking, { timeout: 5_000 }).toBe(true);
+  await roomIn(other);
+  const end = (await hooks(other, (s) => s.mine()))!;
+  await expect.poll(async () => {
+    const b = await who(page, 'B');
+    return !!b && !b.walking && Math.hypot(b.at[0] - end[0], b.at[1] - end[1]) < 3;
+  }, { timeout: 10_000 }).toBe(true);
+  if (SHOTS) {
+    await page.bringToFront();
+    await page.screenshot({ path: `${SHOTS}/shop-two-players.png`, animations: 'disabled' });
+  }
+  // out of B's door: gone from A's shop
+  await other.bringToFront();
+  await other.locator('.top button').first().click();
+  await expect(other.locator('[data-shop]')).toHaveCount(0);
+  await expect.poll(() => who(page, 'B'), { timeout: 10_000 }).toBeNull();
+  await other.close();
+});

@@ -994,7 +994,9 @@ furniture for the rooms. Each person's own pocket and かいがら, the guest's 
   things on the back wall over the stage; a piece with no place left is in the list only. The camera is nearer than the
   whole room (too wide for a phone held upright) and follows my villager from the stage's left to the counter; a drag
   turns it, a pinch zooms, ⌂ puts it back; the eye button as in the rooms. The walls between the camera and the room
-  are cut away. Others in the shop aren't drawn (presence only, as before).
+  are cut away. **Others in the shop are drawn** (2026-11-10), walking where they walk, as in the museum: the rooms'
+  `tent` presence with `sc: 's'` and the very walk (its points within the protocol's SHOP_U); a bare `in` is said first
+  for an older app, which drops a shop walk. Out of the door, or gone quiet past the presence's grace, they're gone.
 - **The finger** (the rooms' rule): a floor tap walks (round the stage, the table and the counter); a tap on a piece
   picks it in place (my villager turns to it, a card: its icon, name, price and 買う, or 持っている); a tap on the
   twins is their greeting and NH's choice box (うりたい · しなものを みたい · なんでもない). Their line is a balloon by

@@ -13,7 +13,9 @@
   // the island had by the day's start: shop/stock.ts). A sell or a buy shows at once with もとに戻す; a bought piece joins
   // my もようがえ. The guest's pocket and かいがら are its own. Never ベル.
   // While I'm in here the others' islands show my villager nowhere, as in the museum and the rooms (the rooms' `tent`
-  // presence with `sc: 's'`: store/where.svelte.ts); out of the door they see it there.
+  // presence with `sc: 's'`: store/where.svelte.ts); out of the door they see it there. The others in here are drawn,
+  // walking where they walk (the very walk, as the museum's: `tent` with `sc: 's'` and its points; a bare `in` first,
+  // an older app's, which drops a shop walk); out of the door, or gone quiet past the presence's grace, they're not.
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import { onMount, untrack } from 'svelte';
@@ -62,6 +64,8 @@
    *  villager from the stage's left to the counter. */
   const FOLLOW = { k: 0.64, x: [-28, 26] as [number, number], z: [-2.5, -2.5] as [number, number] };
   import type { Look, Tent } from '../tent/engine.ts';
+  import type { Pt } from '../tent/grid.ts';
+  import type { Pt as WirePt, Relayed } from '#lib/contract/live-protocol.ts';
 
   let { view }: { view: WeekView } = $props();
 
@@ -105,6 +109,7 @@
   const own = demo ? (testRelay() ?? createLocalLive(viewer)) : null;
   const relay: Live | null = demo ? own : LIVE_URL ? liveRelay() : null;
   const inside = (on: boolean) => relay?.send({ kind: 'tent', in: on, sc: 's' });
+  const relayNow = () => relay?.serverNow() ?? Date.now();
 
   /** A tally key's name and icon (the pocket's table: the ずかん's names, the official icon). */
   const speciesName = (k: string) => bare(t(pocketItem(k)?.name ?? k));
@@ -271,8 +276,54 @@
     return a && url ? { url, aspect: a.w / a.h, looksRight: l.looksRight, noMirror: l.noMirror, person: person.has3d ? person : undefined, cardless: person.kind === 'player' } : null;
   }
   $effect(() => {
-    void wornOf(viewer);
-    untrack(() => eng?.at(viewer) && eng.villager(viewer, lookOf(viewer)));
+    for (const w of ['A', 'B', 'G'] as const) void wornOf(w);
+    untrack(() => {
+      if (eng?.at(viewer)) eng.villager(viewer, lookOf(viewer));
+      othersShown();
+    });
+  });
+
+  // ---- my villager, told to the others (the very walk: where it set off, by way of, to, when, how long) ----
+  let myWalk: { from: Pt; via: Pt[]; to: Pt; s: number; ms: number } | null = null;
+  const r = (p: Pt): WirePt => [Math.round(Math.max(-80, Math.min(80, p[0]))), Math.round(Math.max(-80, Math.min(80, p[1])))];
+  function sayWhere() {
+    const at = eng?.at(viewer);
+    if (!at || !relay) return;
+    const w = myWalk && relayNow() < myWalk.s + myWalk.ms ? myWalk : null;
+    relay.send(w ? { kind: 'tent', in: true, from: r(w.from), ...(w.via.length ? { via: w.via.map(r).slice(0, 10) } : {}), to: r(w.to), s: Math.round(w.s), ms: Math.round(w.ms), sc: 's' }
+      : { kind: 'tent', in: true, to: r(at), sc: 's' });
+  }
+
+  // ---- the others: each drawn only while they're in the shop (store/where.svelte.ts), walking as they walk ----
+  const others = (['A', 'B', 'G'] as const).filter((w) => w !== viewer);
+  /** Where each one comes in (a little apart: A left, B right, the guest in the middle), and last stood. */
+  const sideX = (w: Who) => (w === 'A' ? -8 : w === 'B' ? 8 : 0);
+  const theirAt = new Map<Who, Pt>(others.map((w) => [w, [DOOR_IN[0] + sideX(w), DOOR_IN[1] - 6] as Pt]));
+  function othersShown() {
+    if (!eng) return;
+    for (const w of others) {
+      const on = where.inTent[w] && where.home[w] === 'S', fresh = on && !eng.at(w);
+      eng.villager(w, on ? lookOf(w) : null);
+      if (fresh) eng.put(w, theirAt.get(w)!, 1);
+    }
+  }
+  function heardTent(m: Extract<Relayed, { kind: 'tent' }>) {
+    where.heard(m);
+    if (!eng) return;
+    if (m.sc !== 's') return othersShown();
+    const w = m.who;
+    if (m.to) theirAt.set(w, m.to);
+    othersShown();
+    if (!m.in || !m.to) return;
+    if (m.from && m.s !== undefined && m.ms) {
+      const ago = relayNow() - m.s;
+      if (ago < m.ms) eng.walk(w, [...(m.via ?? []), m.to], { from: m.from, ago, ms: m.ms });
+      else eng.put(w, m.to);
+    } else eng.put(w, m.to);
+  }
+  $effect(() => {
+    for (const w of others) void (where.inTent[w], where.home[w]);
+    untrack(() => othersShown());
   });
   /** Today's stock as shown (plan.ts display) and what one may walk round. */
   const shown = $derived(display(stock));
@@ -287,7 +338,10 @@
     const at = eng.at(viewer);
     if (!at) return;
     const pts = walkPath(walls, at, to);
-    if (pts.length) eng.walk(viewer, pts);
+    if (!pts.length) return;
+    const ms = eng.walk(viewer, pts);
+    myWalk = { from: at, via: pts.slice(0, -1), to: pts[pts.length - 1], s: relayNow(), ms };
+    sayWhere();
   }
 
   /** The twins' line by まめきち's head (client px: where the balloon stands, kept on screen, and how far its tail is
@@ -407,10 +461,11 @@
         relay.onStatus((st) => {
           const was = hereNow, here = st.connected ? st.here : [];
           hereNow = here;
-          if (here.some((w) => !was.includes(w))) inside(true);
+          if (here.some((w) => !was.includes(w))) (inside(true), sayWhere());
           for (const w of ['A', 'B', 'G'] as const) if (w !== me) where.presence(w, here.includes(w));
+          othersShown();
         }),
-        relay.on((m) => m.who !== me && m.kind === 'tent' && where.heard(m))
+        relay.on((m) => m.who !== me && m.kind === 'tent' && heardTent(m))
       );
     }
     const offDoor = provideDoor(() => (eng?.inView(DOOR[0], 0, FRONT - 2) ? (([x, y]) => ({ x, y }))(eng.client(DOOR[0], 0, FRONT - 2)) : null));
@@ -440,6 +495,7 @@
         return fail();
       }
       eng = e;
+      othersShown();
       void e.ready.then(() => {
         if (!alive) return;
         walkTo([DOOR_IN[0] + 8, DOOR_IN[1] - 12]);
@@ -481,6 +537,11 @@
       still: () => !!eng?.still(),
       mine: () => eng?.at(viewer),
       walking: () => eng?.walking(viewer),
+      /** Someone in here as drawn (null: not here): where, walking. */
+      who: (w: Who) => {
+        const at = eng?.at(w);
+        return at ? { at, walking: !!eng?.walking(w) } : null;
+      },
       /** The stock as shown (each piece's code and where) and what has no place (the list has it). */
       shown: () => shown.shown.map((s: Shown) => ({ item: s.item, at: s.at, y: s.y })),
       rest: () => shown.rest,
