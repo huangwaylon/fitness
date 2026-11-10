@@ -25,7 +25,8 @@
 // The cast (docs/curriculum.md "Audio and script rules"): scripts/tts/cast.json, 18 voices (US 6 a gender; UK and AU 3, only for the やま/ほし
 // accent-exposure items), each villager one US voice for good (cast.ts CAST, EXPOSURE; speech.ts castOf). Every voice is a reference clip with its exact transcript, cloned for
 // every line: US voices designed by Qwen3-TTS VoiceDesign from a text description (no real person), UK voices spoken by
-// Phonon's synthetic catalogue voices, AU voices from the VCTK corpus (CC BY 4.0; credited in docs/kikimimi.md).
+// Phonon's synthetic catalogue voices, AU voices from the VCTK corpus (CC BY 4.0; credited in docs/kikimimi-engine.md
+// "Generation").
 // Spoken text: speech.ts spokenText (`tts`, else `en` with its numbers written out).
 // Each clip: the engine (seeded) → a raw WAV cached by source hash and seed under .cache/tts/raw (the masters) → ffmpeg:
 // edge silence trimmed, loudness gain to −16 LUFS (true peak ≤ −1.5 dBTP via a limiter), mono AAC ~48 kbps at 24 kHz,

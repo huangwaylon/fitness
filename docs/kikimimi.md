@@ -10,7 +10,7 @@ This doc is the player's side: the games' rules, the screens, progress and rewar
 ## Open items
 
 - **Audio on Pages.** The packs and `/stt/` are Pages static files, no R2 (it needs a payment method on file): 153 packs (`static/audio/listen/*.pak`), games 101.6 MiB and stories 21.4 MiB, under bank.test's budget (160 and 32 MiB); a pack is ≤ 1.2 MB and fetched whole (kikimimi-engine.md "Packs"). Revisit only if Pages' 25 MiB a file or 20,000 files a deploy binds.
-- **`QUIZ_ON_PLAY`** (round/wire.ts) is on since 2026-11-10: every game goes out as `play` (`npm run logs`: A, B and the guest only on builds that hear it since 11-08). Next: stop parsing `quiz` on the client no sooner than 11-24 (kikimimi-engine.md "Wire migration").
+- **`QUIZ_ON_PLAY`** is on: every game goes out as `play`; next, stop parsing `quiz` (kikimimi-engine.md "Wire migration").
 - **The mic probe** on both phones, then the backend thresholds (kikimimi-mic.md "The probe"). Workers AI's data terms still to be written into docs/ops; until then the relay recogniser is never 自動. **Mic leftovers:** こたえて！'s 「これ？」 band and 「声で / タップで」 preference, くりかえし's device-local speaking span, the unit page's ロールプレイ row, the input latency off まねっこ's lag.
 - **The listening check** of the gate's flagged clips: curriculum.md "Listening check". Content work (backdrops, the tone spike, wave 3): curriculum.md "Backlog".
 - **Not built (UX):** the couple quest's 30 / 90 setting (needs the relay); the ずかん tile's new-entry count and the partner's 「ふたりとも しってる」 line; きろく's skill pages and recent games; the hours-heard meter and K.K. songs; villager gifts, week-stamp gifts and the tent's trophy and landmark items (no present path for English rewards); the asynchronous 「もう きいたよ」 and a synced shared review; lock-screen playback for stories.
@@ -42,11 +42,11 @@ The quiz, ひとこと クイズ, is the base every other game reuses (kikimimi-
 - **`mean`**: what the speaker really means, from 3 paraphrases (the literal reading, the opposite, a plausible wrong inference): 「つまり、どういうこと？」.
 - **`gist`** and **`next`**: over a 2-4-line dialogue (or a single bulletin at ほし and in the pack), what's going on, or the best next line.
 
-**Mix per 8 questions** (mix.ts): L1 3 pic, 3 word, 2 num. L2 2 pic, 2 word, 2 num, 2 reply. L3 1 pic, 2 word, 2 num, 3 reply. L4 2 word, 1 num, 1 reply, 2 mean, 1 gist, 1 next. L5 3 num, 2 gist, 2 mean, 1 reply. L6 2 reply, 2 mean, 1 gist, 1 next, 1 word, 1 num. L7 2 mean, 2 gist, 1 next, 1 reply, 1 word, 1 num.
+**Mix per 8 questions** (mix.ts, per level): はまべ and かわ lean on `pic`, `word`, `num` and (from L2) `reply`; もり up on what's meant and what's going on (`mean`, `gist`, `next`, `reply`), a word and a number kept for the sounds.
 
 ## Japanese help
 
-On every level, dialogue, unit item and listening game, each optional: `ctx`, the situation before the clip (≤ 30 字, under the speaker); `cja`, each choice in Japanese (under it at the reveal, carried through the shuffle, no English letters); `why`, the かいせつ (≤ 90 字, a 「解説」 box); `note`, the trap (≤ 40 字). The same in the review, lessons and dialogues; a missing field is hidden (frame/Why.svelte, ChoiceGrid `ja`). bank.ts `helpProblems` checks them; past draft they're required in the listening files (kikimimi-engine.md "Listen parts"). せってい's にほんごやく いつも / まちがえたら / みない hides the Japanese on right answers or always.
+On every level, dialogue, unit item and listening game, each optional (their caps: curriculum.md "Audio and script rules"): `ctx`, the situation before the clip (under the speaker); `cja`, each choice in Japanese (under it at the reveal, carried through the shuffle); `why`, the かいせつ (a 「解説」 box); `note`, the trap. The same in the review, lessons and dialogues; a missing field is hidden (frame/Why.svelte, ChoiceGrid `ja`). bank.ts `helpProblems` checks them; past draft they're required in the listening files (kikimimi-engine.md "Listen parts"). せってい's にほんごやく いつも / まちがえたら / みない hides the Japanese on right answers or always.
 
 ## Places
 
@@ -78,8 +78,8 @@ L5 is the アナウンス mode beside もり, not a place. The mapping is a UI t
 
 ## Visuals
 
-- **Scene card** (`scene/SceneCard.svelte`): a staged item's setting from the lead-in to the reveal: one of 8 painted backdrops (`cafe`, `platform`, `pharmacy`, `office`, `door`, `gate`, `street`, `living`; bank.ts `SCENE_IDS`) softened under a paper vignette, the place's name, and the channel: face to face the speakers stand in it full-body; `PhoneFrame` (「つうわちゅう」 or 「るすでん」, signal bars that drop on a `signal` line), `PaFrame` (a horn with ripples), `VideoFrame` (a 2×2 call grid), all CSS/SVG. Reduced motion stills them. Levels 1-3 stay on the plain stage.
-- **The backdrops** are generated paper-gouache (`npm run art:scenes`, scripts/scenes/scenes.ts: Z-Image-Turbo, Apache-2.0, through MFlux, seed 7, scenes.json's shared style; webp at 393×224 @1-3x under `static/art/scene/`; no text or numbers, so they never give an answer away), the villagers' official art composited over them by the app. No NH character or Nintendo look is ever generated.
+- **Scene card** (`scene/SceneCard.svelte`): a staged item's setting from the lead-in to the reveal: one of the painted backdrops (bank.ts `SCENE_IDS`) softened under a paper vignette, the place's name, and the channel: face to face the speakers stand in it full-body; `PhoneFrame` (「つうわちゅう」 or 「るすでん」, signal bars that drop on a `signal` line), `PaFrame` (a horn with ripples), `VideoFrame` (a 2×2 call grid), all CSS/SVG. Reduced motion stills them. Levels 1-3 stay on the plain stage.
+- **The backdrops** are generated paper-gouache (`npm run art:scenes`, scripts/scenes/scenes.ts; webp under `static/art/scene/`; no text or numbers, so they never give an answer away), the villagers' official art composited over them by the app. No NH character or Nintendo look is ever generated.
 - **Sound marks at the reveal** (`SoundLine.svelte`, marks.ts): the English with the focus and `say` (Let me → *lemme*), `link` ‿, `drop` (tryin~~g~~), `stress` ●, keyed by `MarkLegend`; authored per clip for every `tts` respelling.
 - **Karaoke** while the clip replays: the words said in ink, the one being said underlined, timed by `words.json` (kikimimi-engine.md "Audio").
 
@@ -103,10 +103,10 @@ A daily drill of American connected speech (about 3–4 minutes of the 15-minute
   - 「書きとり」: write the missing words. Typed on the phone, matched forgivingly: case and punctuation aside, a contraction as good as its long form either way, the apostrophe optional where no other word is spelled so (dont), a reduced spelling as good as what it stands for (gonna, whaddaya); never a near spelling (then / than). 「タイルで答える」 instead: the words and 1–4 decoys to tap (remembered per phone, `DEVICE.kikiTiles`).
 - **Reveal:** ○ / ×, the line with its sound mark, the full form beside the spelling as said (「didja」＝ did you), the Japanese and the trap's note, and 聞きくらべ: はっきり (a careful take, the full form word by word), ふつう, 速く (1.25×). The same three takes on every review row.
 - **Tiers** as the listening games': easy two choices and one decoy tile, hard four decoys. Co-op counts a phrase anyone got; no たいせん.
-- **Today's phenomenon** (henshin.ts `focusOf`): the first in order not yet 習得 (≥ 80 % over ≥ 6 answers, recency-weighted, first listen 1, after a replay 0.6); one tried 24 times without it waits in review. The host's rides the lobby's options.
+- **Today's phenomenon** (henshin.ts `focusOf`; 習得's share and the give-up count in its header): the first in order not yet 習得; one tried long without it waits in review. The host's rides the lobby's options.
 - **The mode page** lists each phenomenon in order with its bar (outlined till 3 answers), 「今日」 and 「✓ 習得」; a tap plays that one instead, till 「今日の音に戻す」. Mine alone, never the partner's.
 - **Recycling:** a missed phrase is an item card like any; おさらい asks it through another phrase of its phenomenon (another voice and sentence: srs.ts `isSibling`), the drill's phrases joining おさらい only that way.
-- **The row:** `gm: 'henshin'`, `lv` 8, `[id, ok, pick, rp]` (a choice as authored; the dictation's wrong words as a mask). Level 8 trains the sounds, not a place: きろく's つながる おと and the features count it; the ability, the item difficulties, the trend and the level nudge leave it out.
+- **The row** (kikimimi-engine.md "音の へんしん"): level 8 trains the sounds, not a place: きろく's つながる おと and the features count it; the ability, the item difficulties, the trend and the level nudge leave it out.
 
 ## まるごと 聞く
 
@@ -205,8 +205,8 @@ The frame (frame/RoundFrame, RevealFrame) owns the bar (players' chips at the le
 
 A bedtime story in the night palette whatever the hour, no score (`story/StoryFrame.svelte`, its own chunk; 3 serials: st-johnny, st-cafe, st-tokyo).
 - **The frame:** the scene dimmed to 42 % with the heads of who's in it; ⏮ ⏯ ⏭; the sleep timer 10 / 20 / 30 ぷん of listening (a pause stops it) or ぜんぶ, with 「のこり m:ss」; ほんぶんを みる (the words with a karaoke underline, hidden by default) and くわしく (the summary and the chapter's phrases). The end card: 「だい Nわ おしまい」, the morning's guess revealed, 「つぎの おはなしが ひらきました」.
-- **The model** (`kikimimi/bedtime.ts`, pure): the timeline (0.6 s between lines of one voice, 0.9 s at a change of speaker), the timer's equal-power fade over its last 20 s, chapters unlocked one by one (finished: played to the end, or the timer ran out in its last third), つづき from the segment left at, the morning card.
-- **Playing** (`story/player.svelte.ts`): segments through packs.ts `voiceClip` → `playVoice` (a clip that can't sound passes after 3 s), the music held down (`holdDuck`), the fade on the voice bus (`fadeVoice`); a timed story goes on into the next chapter after 4 s (paused in those 4 s, ▶ goes straight on: player.test). The timer's end fades the sheet out and closes it.
+- **The model** (`kikimimi/bedtime.ts`, pure: its gaps and fade): the timeline, the timer's fade at its end, chapters unlocked one by one (finished: played to the end, or the timer ran out in its last third), つづき from the segment left at, the morning card.
+- **Playing** (`story/player.svelte.ts`): segments on the voice bus, the music held down; a clip that can't sound passes; a timed story goes on into the next chapter after a pause (bedtime.ts `NEXT_CHAPTER_MS`; ▶ goes straight on). The timer's end fades the sheet out and closes it.
 - **The list** (`story/StoryList.svelte`, あそぶ › ねる まえに): each serial's chapters, ✓ heard, the next green-edged, later ones locked; a serial shows once past `draft`.
 - **The hub:** 21:00-04:00 (today.ts `isNight`) the menu's きまぐれ is the story. By day `MorningCard` asks 「きのうの つづき、どうなると おもう？」 (the chapter's three `predict` choices).
 - **Minutes, no score:** a `listen` row `{gm: 'story', u: <serial>, lv 4, n 1, r: []}` of the time heard (≥ 10 s), one game id a sitting: きろく's minutes, the quest, a week stamp, a menu tick at ≥ 3 min. Progress and the last timer per player on the phone (`DEVICE.kikiStory`).
@@ -214,7 +214,7 @@ A bedtime story in the night palette whatever the hour, no score (`story/StoryFr
 
 ### きろく
 
-`Progress.svelte` (lazy): the place and its bar, the eight sub-skills as horizontal bars (one hue, the value at the end, unmeasured as an outline: bars read better than a radar at 8 skills), the trend sparkline, the week's dots, the trophy shelf, the couple line 「ふたりで こんしゅう: いっしょに Nかい · Mふん」 (minutes only, never a level), the mic games' 「声に出す ○分」, and 「くわしく」 (per type, accent and level; the CEFR). Empty: 「まだ まっしろ…」 with あそぶ. The guest sees its own きろく without the couple line. Day `#3E9E4C`, night `--c-leaf`.
+`Progress.svelte` (lazy): the place and its bar, the eight sub-skills as horizontal bars (one hue, the value at the end, unmeasured as an outline: bars read better than a radar at 8 skills), the trend sparkline, the week's dots, the trophy shelf, the couple line 「ふたりで こんしゅう: いっしょに Nかい · Mふん」 (minutes only, never a level), the mic games' 「声に出す ○分」, and 「くわしく」 (per type, accent and level; the CEFR). Empty: 「まだ まっしろ…」 with あそぶ. The guest sees its own きろく without the couple line.
 
 ### ずかん
 
@@ -242,21 +242,10 @@ Both learners are B1+ (TOEIC 700+), so the point is which sounds and skills stil
 ### What's measured
 
 - **Every answer:** the item, right or not, the authored choice picked (so distractors diagnose), first listen or not, replays, the level, whether practice.
-- **Sub-skills** (the bars): each item's primary skill (its type, or its first feature for `word`) and secondaries (its other features, half weight). Levels 4 up carry `tags`; levels 1-3 a table (`kikimimi/tags.ts`); bank.test checks every item has tags and every tag maps to a skill.
+- **Sub-skills** (the bars, tags.ts `SKILLS`): L と R, ship と sheep, b・v・th, つながる おと, すうじ, こまかい じょうほう, へんじ, ほんね (an unsaid pragmatic layer). Each item counts for its primary skill (its type, or its first feature for `word`) and, at half weight, its other features' (tags.ts `FEATURE_SKILL`, `skillsOf`). Levels 4 up carry `tags`; levels 1-3 tags.ts's table; bank.test checks every item has tags and every tag maps to a skill.
 
-  | skill | label | from |
-  |---|---|---|
-  | `lr` | L と R | `l-r` |
-  | `vowel` | ship と sheep | `vowel` |
-  | `cons` | b・v・th | `b-v`, `th`, `sh-s`, `f-h`, `ending`; a `word` item with no feature |
-  | `reduce` | つながる おと | `contraction`, `weak-form`, `flap`, `yod`, `gonna` … `kinda`, `can-cant`, `t-glottal`, `ellipsis` |
-  | `num` | すうじ | type `num`; `numbers`, `teen-ty`, `clock`, `self-repair` |
-  | `detail` | こまかい じょうほう | type `pic`, `gist`; `contrast`, `katakana` |
-  | `reply` | へんじ | `reply`, `next`; `idiom` |
-  | `indirect` | ほんね | type `mean`; a `reply`, `next` or `gist` whose pragmatic layer is unsaid; `intonation` |
-
-- **Mastery** (0-1): a recency-weighted (half-life 21 days), smoothed (prior 0.7 × 2) mean: first listen right 1, after a replay 0.6, wrong 0. Shown from 3 answers.
-- **The level estimate:** an Elo-style ability θ against each item's learned difficulty (progress.ts `difficultyOf`): filed at its place (L1 −1 … もり 2, やま 3, ほし 4; the pack as もり) plus a type offset, then shifted by my answers, the item's own shift (0.4 / (1 + n) a step, ± 1.5) and its shelf's (a place and a type, 0.04 a step, ± 1). θ's K is 0.3 for the first 24 answers, then 0.15. Learned on each phone from its owner's rows only: the record never sends anyone else's answers, and pooling three people's item results would reveal them. The comfortable level is where θ predicts 80 % (θ − ln 4), capped at the hardest played + 0.5. 「はかっている とちゅう」 until 16 answers.
+- **Mastery** (0-1): a recency-weighted, smoothed mean (first listen right 1, after a replay 0.6, wrong 0; the half-life and prior: progress.ts), shown from 3 answers.
+- **The level estimate:** an Elo-style ability θ against each item's learned difficulty (progress.ts `difficultyOf`: filed at its place plus a type offset, the item and its shelf shifted by my answers; the steps and bounds in progress.ts). Learned on each phone from its owner's rows only: the record never sends anyone else's answers, and pooling three people's item results would reveal them. The comfortable level is where θ predicts 80 %, capped at the hardest played + 0.5. 「はかっている とちゅう」 until 16 answers.
 - **Trend:** first-listen accuracy over the last 12 games. **Consistency, never a streak:** the days played this Tokyo week.
 
 ### Storage
@@ -346,5 +335,5 @@ Speaking is opt-in and private: off by default, per phone, recordings never stor
 
 ## Tests
 
-- **vitest:** the deck's determinism and mix; the bank's validity (speakers and art exist, answers in range, clips and caps); the choice tells per level (curriculum.md "Choice tells"); the session's state machine with fake time; the protocol's parse cases (size, guest, ≤ 256 B relayed); the stats, SRS, advice and tag table; each game's kinds. **relay vitest:** `quiz` and `play` go to the others and are never stored; `listen` rows owner-only with summaries.
+- **vitest:** kikimimi-engine.md "Tests"; the choice tells per level (curriculum.md "Choice tells"). **relay vitest:** `quiz` and `play` go to the others and are never stored; `listen` rows owner-only with summaries.
 - **e2e** (logic tier, Chromium; specs open past the welcome with `e2e/fixtures.ts` `kikiFirstRun` and go through the hub with `e2e/kikimimi-nav.ts`): two players over `?demo` and `?demo&as=B`, solo, every game solo and co-op; `?kikimimi=fast` shortens the timed windows. `KIKI_SHOTS=1` writes screenshots under /tmp/kikimimi-shots/. Rendering is judged on the iOS Simulator and the phones.

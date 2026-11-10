@@ -224,7 +224,7 @@ The paper theme; lazy-loaded. Scene cards show the setting and the speakers, nev
 
 ## Audio and script rules
 
-- **The cast:** 18 voices, 12 US (`us-f1…f6`, `us-m1…m6`; ten General American, `us-f6` light Southern, `us-m6` light New York) and 6 for exposure only (`uk-f1`, `uk-m1`, `uk-m2`, `au-f1`, `au-m1`, `au-m2`). Each villager has one voice for good (`CAST`); ≥ 4 voices per minimal-pair contrast and per target phrase. Designed voices only; no cloning of real people. Later exposure voices (Irish, Scottish, Indian, non-native) only at S3–S4, tagged the same way.
+- **The cast** (kikimimi-engine.md "Generation"; `app/scripts/tts/cast.json`): 12 US voices (ten General American, a light Southern, a light New York) and 6 UK/AU for exposure only; each villager one voice for good; ≥ 4 voices per minimal-pair contrast and per target phrase. Designed voices only; no cloning of real people. Later exposure voices (Irish, Scottish, Indian, non-native) only at S3–S4, tagged the same way.
 - **🐢** is an atempo stretch at 0.75 for L1 and L2 only (it kept UTMOS); from L3 there's no 🐢, since a stretch undoes reductions: support is replay and the transcript.
 
 | Rule | Detail |
@@ -366,7 +366,7 @@ lessons:
 
 ### What's written
 
-- **The level banks:** 862 items (L1–L7: 46 / 49 / 89 / 297 / 30 / 236 / 115), plus 30 ladders (kikimimi-engine.md "Content").
+- **The level banks:** 862 items and 30 ladders (per level: kikimimi-engine.md "Content").
 - **21 units** (かわ 11, もり 10), all `voiced`; the plan (units.ts `PLANNED`) is はまべ 3, かわ 10, もり 14, やま 14, ほし 10.
 - **29 listening files**, all `listened`: tiles (232: drafts, 65 derived from voiced bank items, 30 for the B2 features, the units' おと), calls (34), たちぎき (30), すうじ ラッシュ (240 customers), しずえの ニュース (30 bulletins and the weather tail), まるごと 聞く (10 pieces: "Long listening").
 - **音の へんしん:** 180 phrases at level 8, 15 phenomena of 12 ("Connected speech").
@@ -377,31 +377,9 @@ lessons:
 
 ### The 21 units
 
-| Unit | Name | Stage | Domain | Host | Scene | Sound | Recipe |
-|---|---|---|---|---|---|---|---|
-| gl-clarify | ききかえす | かわ | glue | brewster | cafe | numbers | 1 |
-| gl-endcall | でんわを おえる | かわ | glue | goldie | living | gotta | 1 |
-| fr-replan | よていを かえる | かわ | ともだち | maple | street | gonna | 1 |
-| ev-bday | おいわいする | かわ | イベント | poppy | living | linking | 1 |
-| gl-intro | 紹介する | かわ | glue | marshal | party* | yod | 2 |
-| gl-invite | 誘う・断る | かわ | glue | maple | street | wanna | 2 |
-| fd-order | 注文する | かわ | たべもの | brewster | restaurant* | weak-form | 2 |
-| sh-shop | お店で 聞く | かわ | かいもの | label | shop* | flap | 2 |
-| hm-neighbor | 近所の 人 | かわ | いえ | tom-nook | door | elision | 2 |
-| hl-clinic | 受付と 薬局 | かわ | からだ | pashmina | clinic* | numbers | 2 |
-| mc-weekend | 週末 どこ行く | かわ | まち | punchy | park* | lemme | 2 |
-| tr-guide | ともだちを あんない | もり | たび | gulliver | street | dunno | 1 |
-| tr-hotel | ホテルで こまった | もり | たび | diana | lobby* | contrast | 1 |
-| wk-chat | しごとの ざつだん | もり | しごと | raymond | office | filler | 1 |
-| ev-wedding | 結婚式に 出る | もり | イベント | diana | party* | intonation | 2 |
-| fd-dinner | 食事で 決める | もり | たべもの | cherry | restaurant* | chain | 2 |
-| hl-doctor | 診察で | もり | からだ | julian | clinic* | stress | 2 |
-| hm-repair | 修理を 頼む | もり | いえ | cyd | living | h-drop | 2 |
-| sh-phone | スマホの トラブル | もり | かいもの | kid-cat | shop* | assimilation | 2 |
-| fr-catchup | 久しぶりに 会う | もり | ともだち | rosie | cafe | self-repair | 2 |
-| mc-tickets | チケットを 取る | もり | まち | kicks | street | numbers | 2 |
+Each unit's name, domain, host, scene, sound and recipe are its file's (`app/content/units/<id>.yaml`). かわ (11): gl-clarify, gl-endcall, fr-replan, ev-bday (recipe 1), gl-intro, gl-invite, fd-order, sh-shop, hm-neighbor, hl-clinic, mc-weekend (recipe 2). もり (10): tr-guide, tr-hotel, wk-chat (recipe 1), ev-wedding, fd-dinner, hl-doctor, hm-repair, sh-phone, fr-catchup, mc-tickets (recipe 2).
 
-\* A planned backdrop, not painted yet ("Backdrops"). Coverage: かわ 7 of 9 domains, もり 9 of 9. Each recipe-2 unit has one call in s1-call-b (かわ) or s2-call-c (もり) and 6 おと tiles in s1-tile-c / s2-tile-c. The recipe-1 units move to recipe 2 once they have calls (wave 3). Notes for the writers: ききかえす covers both directions (recognising native repair, and picking your own "Sorry, fifteen or fifty?"); でんわを おえる checks pre-closings ("Anyway, I'll let you go"); ともだちを あんない makes the learner the host; every dialogue opens and closes naturally.
+Their party, restaurant, shop, clinic, park and lobby scenes are planned backdrops, not painted yet ("Backdrops"). Coverage: かわ 7 of 9 domains, もり 9 of 9. Each recipe-2 unit has one call in s1-call-b (かわ) or s2-call-c (もり) and 6 おと tiles in s1-tile-c / s2-tile-c. The recipe-1 units move to recipe 2 once they have calls (wave 3). Notes for the writers: ききかえす covers both directions (recognising native repair, and picking your own "Sorry, fifteen or fifty?"); でんわを おえる checks pre-closings ("Anyway, I'll let you go"); ともだちを あんない makes the learner the host; every dialogue opens and closes naturally.
 
 ### Backdrops
 

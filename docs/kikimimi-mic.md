@@ -30,14 +30,7 @@ On an iPhone 15/16 in Safari 26/27: getUserMedia in the home-screen app; playing
 | 6 | サーバーで文字起こし | round trip, WER | taps 送る (disclosed) |
 | 7 | 結果 | a table on screen; 「結果を送信」 posts the events | taps |
 
-The sentences are 3 pinned US clips (lib/mic/probe/steps.ts `SENTENCES`). The WER is computed on the phone (match.ts); heard text shows on screen only. **The log events** (contract/log.ts, `src: 'c'`; numbers, booleans, closed sets):
-
-| Event | Fields |
-|---|---|
-| `mic.env` | `pwa`, `coi`, `gpu`, `gpuW`, `f16` b, `arch` t, `wks` b, `ses` b, `mr` ['mp4','webm','none'], `wl` b |
-| `mic.perm` | `st` ['granted','denied','prompt','unsupported'], `ms` n, `again`, `asked`, `ec` b, `sr` n, `inp` ['builtin','bluetooth','wired','other'] |
-| `mic.duplex` | `ear` ['none','wired','bluetooth'], `aec` b, `bleed` n (dB), `rtl` n (ms), `loud` ['none','quiet','ok'], `pick` b, `restored` b, `err` t |
-| `mic.stt` | `be` ['whisper-gpu','whisper-wasm','webkit','relay'], `model` ['tiny.en','base.en','tiny.en-f16','turbo','none'], `step` ['dl','load','clip','spoken'], `ms`, `mb`, `audS`, `wer` n, `ok` b, `err` [closed set] |
+The sentences are 3 pinned US clips (lib/mic/probe/steps.ts `SENTENCES`). The WER is computed on the phone (match.ts); heard text shows on screen only. **The log events** `mic.env`, `mic.perm`, `mic.duplex` and `mic.stt` (`src: 'c'`; numbers, booleans, closed sets: their fields in contract/log.ts's registry).
 
 The relay adds `stt` (`src: 'r'`: `ms`, `inB`, `model`, `ok`, `err`). Read with `npm run logs -- --event mic. --since 1d --json` and `--event stt`.
 
@@ -103,23 +96,15 @@ No hub card; きまぐれ never picks a mic mode (it would surprise people into 
 
 ```
 app/src/lib/mic/
-  capture.ts, capture.worklet.js   getUserMedia → the voice's context → the worklet; 16 kHz mono; level; stop() releases the track
-  vad.ts                           20 ms frames, energy over a following floor + zero-crossing, 300 ms hang
-  session.ts                       one take at a time and its ends ("Audio session")
-  stt.ts                           the Recogniser interface; recogniser() picks and lazily loads a backend
-  pick.ts                          the backend choice from DEVICE.mic and what can run here (pure)
-  match.ts                         normalise (US contractions and reductions both ways, digits ⇄ words, fillers out), align,
-                                   WER, content-word recall, choose (with a margin), phrases (a bitmask), candidate (pure)
-  pitch.ts, prosody.ts             YIN f0, the envelope, syllable nuclei, DTW, the comparison → feedback codes (pure)
-  models.ts                        the pinned manifest: files, bytes, sha256, parts; ensureStt
-  backends/{whisper.ts, whisper.worker.ts, webkit.ts, relay.ts, stub.ts}
-  probe/{steps.ts, run.ts, gpu.worker.ts}
+  capture.ts, capture.worklet.js, vad.ts   getUserMedia → the voice's context → the worklet; 16 kHz mono; the VAD
+  session.ts, stt.ts, pick.ts              one take at a time ("Audio session"); the Recogniser; the backend choice
+  match.ts, pitch.ts, prosody.ts           the text comparisons; f0, the envelope and the comparison (pure)
+  models.ts                                the pinned manifest (files, bytes, sha256, parts); ensureStt
+  backends/, probe/                        whisper (and its worker), webkit, relay, stub; the probe's steps
 app/src/lib/components/kikimimi/mic/   MicProbe, MicOptIn, MicButton (72 px, ring meter), MicAnswer, Contour, sttRound.ts
 app/src/lib/kikimimi/games/modes.ts   the mic modes' metas and gates
 app/src/lib/kikimimi/games/{mane,kuri,pair,role}/ and components/kikimimi/{mane,kuri,pair,role}/
-app/content/mic/pairs.yaml
-app/scripts/stt-models.ts   fetch the pinned files (HF, npm), verify, split ≤ 20 MiB, write the manifest
-relay/src/sttRoute.ts      POST /stt
+app/content/mic/pairs.yaml; app/scripts/stt-models.ts (the pinned files: fetch, verify, split); relay/src/sttRoute.ts
 ```
 
 ### The Recogniser
@@ -146,12 +131,7 @@ export interface Recogniser {
 
 ### Pitch and timing
 
-prosody.ts, for まねっこ:
-- **Input:** the take's 16 kHz PCM and the reference clip's decoded buffer, resampled once, through the same code.
-- **f0:** YIN, 32 ms window, 10 ms hop, 70–400 Hz, threshold 0.15; a 5-point median and octave-jump repair; semitones against each speaker's own median (a male learner and a female villager compare fairly).
-- **Envelope and nuclei:** RMS in dB at 10 ms; nuclei are voiced peaks ≥ 2 dB above their dips. The reference's word starts come from words.json.
-- **Alignment:** DTW over [semitone z-score, energy z-score], band ±25 %.
-- **Outputs:** rate ratio; lag (the take's start on the voice's clock minus the clip's speech start, less the output latency; the input latency isn't taken off yet); range ratio (p90−p10); final direction (the last voiced 300 ms); the 3 loudest nuclei's alignment; extra pauses. Outputs → codes → i18n lines; the codes, never the PCM, go to the view.
+prosody.ts, for まねっこ (the parameters in pitch.ts's and prosody.ts's headers): the take's 16 kHz PCM and the reference clip, through the same code; YIN's f0 in semitones against each speaker's own median (a male learner and a female villager compare fairly), the level and the syllable nuclei (the reference's word starts from words.json), aligned by DTW. **Outputs:** rate ratio; lag (the take's start on the voice's clock minus the clip's speech start, less the output latency; the input latency isn't taken off yet); range ratio; final direction; the loudest nuclei's alignment; extra pauses. Outputs → codes → i18n lines; the codes, never the PCM, go to the view.
 
 ### In the registry
 
@@ -175,7 +155,7 @@ Grading is pure over the ints: the device does the hearing and the session sees 
 ### Hosting and the service worker
 
 - **CSP:** `connect-src 'self'` covers `/stt/*`; `script-src 'self' 'wasm-unsafe-eval'` covers ort's wasm. No new origin: transformers.js's remote models are off, its paths point at `/stt/`, and the worker refuses any fetch outside it. **Permissions-Policy:** `microphone=(self)`.
-- **Pinned** (lib/mic/models.ts): whisper-tiny.en q8 @ `2575352d`, onnxruntime-web `1.31.0-dev.20260914-8d85527a0` (transformers.js 4.3.2 exact; package.json's overrides replace its Node-only deps with an empty package). A file over Pages' 25 MiB is split into ≤ 20 MiB parts (`<path>.<sha8>.pN`); all are listed with bytes and sha256 in `/stt/manifest.json`: ~70 MB in all (the model 44 MB + the runtime 27 MB). ensureStt fetches what's missing after the user opts in, assembles, checks the sha256 and keeps each file whole in `island-stt-v1`. Paths carry the revision; manifest.json is revalidated.
+- **Pinned** (lib/mic/models.ts: the model's revision, the runtime's version, every file's bytes and sha256): whisper-tiny.en q8 and onnxruntime-web, ~70 MB in all, transformers.js exact (package.json's overrides replace its Node-only deps with an empty package). A file over Pages' 25 MiB is split into parts, all listed in `/stt/manifest.json`. ensureStt fetches what's missing after the user opts in, assembles, checks the sha256 and keeps each file whole in `island-stt-v1`. Paths carry the revision; manifest.json is revalidated.
 - **Hosting:** Pages static files, no R2 (kikimimi.md "Open items"). pages.yml's deploy restores them from an Actions cache keyed on the pins (filled on a miss by stt-models.ts) into the site's `stt/` (never in git or the artifact) and checks the live manifest; `_headers` (scripts/headers.ts) makes `stt/<dir>/` immutable, and `manifest.json` keeps Pages' revalidation.
 - **The service worker:** caches.ts `isStt` (`/stt/` and `workers/stt.<hash>.js`, named by vite.config.ts's `stt-names` rule) and `STT_CACHE`; out of the precache; served cache-first and never stored by the SW (the page fills it on the download); せってい's 削除 deletes it. A user who never opts in downloads 0 bytes of it. **Budgets:** load-budget.ts keeps `lib/mic/` and MicProbe out of the first load and the worker ≤ 450 KB gz.
 
