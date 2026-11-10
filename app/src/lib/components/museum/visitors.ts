@@ -96,8 +96,11 @@ const WAVE_MS = 2500;
 const SIDE = 10, FRONT = 14, BACK = 4;
 const DAY = 86_400_000, Q = 900_000, MIN = 60_000, ZONE = 9 * 3_600_000;
 /** How many come at each Tokyo hour (±1 a quarter): none in the small hours, a few at dusk, most in the afternoon and
- *  evening (after work, when we're in). */
-const BY_HOUR = [0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 8, 8, 8, 8, 7, 7, 4, 2, 0];
+ *  evening (after work, when we're in), still a few late (our evening visits: the museum never empty before 23:00). */
+const BY_HOUR = [0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 8, 8, 8, 8, 7, 7, 5, 4, 0];
+/** From this Tokyo hour the hall is one of the rooms filled first (a night owl in the lobby, as the aquarium and the
+ *  bug garden all day). */
+const NIGHT_HALL = 20;
 const ROOM_W: Record<RoomKind, number> = { hall: 1, bug: 3, fish: 3, sea: 1.5, fossil: 2.5, art: 2.5 };
 /** What each personality likes: rooms (×), and how it lingers (a kind's weight, its time ×). */
 const LIKES: Record<Personality, { room: Partial<Record<RoomKind, number>>; kind: Record<LingerPoint['kind'], number>; slow: number }> = {
@@ -153,25 +156,28 @@ export function dayPlan(day: number, rooms: readonly VisitorRoom[], points: read
     return Math.max(0, ...[a, ...near.map((s) => s.t0).filter((t) => t > a)].map((t) => near.filter((s) => s.t0 <= t && s.t1 > t).length));
   };
   for (let q = 0; q < 96 && open.length; q++) {
-    const t = start + q * Q, base = BY_HOUR[Math.floor(q / 4)], x = r();
+    const t = start + q * Q, hour = Math.floor(q / 4), base = BY_HOUR[hour], x = r();
+    const first = (m: VisitorRoom) => m.kind === 'fish' || m.kind === 'bug' || (hour >= NIGHT_HALL && m.kind === 'hall');
     const want = base && Math.min(MAX_IN, Math.max(0, base + (x < 0.2 ? -1 : x > 0.85 ? 1 : 0)));
     for (let tries = 0; tries < 6; tries++) {
       const t0 = t + Math.floor(r() * 10 * MIN), t1 = Math.min(end, t0 + (2 + Math.floor(r() * 3)) * Q + Math.floor((r() - 0.5) * 10 * MIN));
       // (the hour's number in at its start, one more while the aquarium or the bug garden has nobody; never more than
       // MAX_IN at once while it stays)
-      const bare = open.some((m) => (m.kind === 'fish' || m.kind === 'bug') && !peak(t0, t0, (s) => s.room === m.id));
+      const bare = open.some((m) => first(m) && !peak(t0, t0, (s) => s.room === m.id));
       if (!want || t1 - t0 < 10 * MIN || peak(t0, t0, () => true) >= want + (bare ? 1 : 0) || peak(t0, t1, () => true) >= MAX_IN) break;
       const free = VISITORS.map((_, i) => i).filter((i) => !over(t0 - 10 * MIN, t1, (s) => s.who === i));
       if (!free.length) break;
       const who = free[Math.floor(r() * free.length)], likes = LIKES[VISITORS[who][1]];
       const can = open.filter((m) => peak(t0, t1, (s) => s.room === m.id) < MAX_ROOM);
       if (!can.length) break;
-      // (the aquarium and the bug garden first, while either has nobody; else a room with nobody, by taste; else any)
+      // (the aquarium and the bug garden first (at night the hall too), while one has nobody; else a room with nobody,
+      // by taste; else any)
       const empty = can.filter((m) => !over(t0, t1, (s) => s.room === m.id));
-      const must = empty.filter((m) => m.kind === 'fish' || m.kind === 'bug');
+      const must = empty.filter(first);
       const room = must.length ? must[Math.floor(r() * must.length)]
         : weighted((empty.length ? empty : can).map((m) => [m, ROOM_W[m.kind] * (likes.room[m.kind] ?? 1)] as const), r);
-      stints.push({ who, room: room.id, t0, t1 });
+      // (a night owl in the hall stays the longer: fewer gaps between one leaving and the next coming)
+      stints.push({ who, room: room.id, t0, t1: hour >= NIGHT_HALL && room.kind === 'hall' ? Math.min(end, Math.max(t1, t0 + 5 * Q)) : t1 });
     }
   }
   stints.sort((a, b) => a.t0 - b.t0);

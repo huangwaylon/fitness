@@ -117,10 +117,19 @@ test('with a card open, a tap on another exhibit only closes it; the next tap op
   await expect.poll(async () => (await tapOn('sea-bass'), mu<string | null>(page, 'card()')), { timeout: 15_000 }).toBe('sea-bass');
 });
 
-test('Blathers greets once on the way in, untapped; a doorway’s dip closes every balloon at its start', async ({ page }) => {
+test('Blathers greets once on the way in, untapped, briefly and clear of the plaques; a doorway’s dip closes every balloon at its start', async ({ page }) => {
   await open(page);
   const balloon = page.locator('[data-fx="talk"]');
   await expect(balloon).toHaveAttribute('aria-label', /^フータ: .*ようこそ/, { timeout: 15_000 });
+  await expect(page.locator('[data-fx="talk"].placed')).toBeVisible();
+  const b = (await page.locator('[data-fx="talk"].placed').boundingBox())!;
+  type D = { plaques: [number, number][][] };
+  for (const q of (await mu<D[]>(page, 'doorways()')).flatMap((d) => d.plaques)) {
+    const [x0, x1, y0, y1] = [Math.min(...q.map((p) => p[0])), Math.max(...q.map((p) => p[0])), Math.min(...q.map((p) => p[1])), Math.max(...q.map((p) => p[1]))];
+    expect(b.x + b.width <= x0 || b.x >= x1 || b.y + b.height <= y0 || b.y >= y1, `balloon ${JSON.stringify(b)} over a plaque ${[x0, x1, y0, y1]}`).toBe(true);
+  }
+  // (about two seconds: its line typed, then a short read)
+  await expect(balloon).toHaveCount(0, { timeout: 3_000 });
   // (a balloon up as my villager sets off for the bug garden: Blathers' line on a tap)
   const c = (await mu<{ at: [number, number] } | null>(page, 'curator()'))!;
   await page.mouse.click(c.at[0], c.at[1] + 10);
@@ -143,6 +152,49 @@ test('Blathers greets once on the way in, untapped; a doorway’s dip closes eve
   const f0 = (await mu<{ frames: number }>(page, 'stats()')).frames;
   await expect.poll(async () => (await mu<{ frames: number }>(page, 'stats()')).frames).toBeGreaterThan(f0 + 5);
   await expect(balloon).toHaveCount(0);
+});
+
+test('NEW clears once its card is opened (on this phone, kept across a visit); tags hidden at the eyes', async ({ page }) => {
+  await seed(page, [['fish', 'koi', 'A'], ['fossil', 't-rex-skull', 'B']]);
+  await open(page);
+  const fresh = page.locator('[data-museum-chip-new]');
+  await expect(fresh).toHaveText('あたらしい 2');
+  await putAt(page, 'room:fish');
+  await expect.poll(() => mu<string[]>(page, 'tagged()'), { timeout: 15_000 }).toEqual(['koi']);
+  await still(page);
+  // at the eyes: no tag (the chip goes too)
+  await page.locator('[data-fpv]').click();
+  await expect.poll(() => mu<string[]>(page, 'tagged()')).toEqual([]);
+  await page.locator('[data-fpv]').click();
+  await expect.poll(() => mu<string[]>(page, 'tagged()'), { timeout: 10_000 }).toEqual(['koi']);
+  await still(page);
+  await expect.poll(async () => {
+    const p = await mu<[number, number] | null>(page, 'creature("koi")');
+    if (p) await page.mouse.click(p[0], p[1]);
+    return mu<string | null>(page, 'card()');
+  }, { timeout: 15_000 }).toBe('koi');
+  await expect.poll(() => mu<string[]>(page, 'tagged()')).toEqual([]);
+  expect(await mu<string[]>(page, 'fresh()')).toEqual(['t-rex-skull']);
+  await expect(fresh).toHaveCount(0);
+  // (another visit: still looked at; the fossil still new)
+  await open(page);
+  await expect(page.locator('[data-museum-chip-new]')).toHaveText('あたらしい 1');
+  expect(await mu<string[]>(page, 'fresh()')).toEqual(['t-rex-skull']);
+  expect(await mu<string[]>(page, 'dotted()')).toEqual(['fossil']);
+});
+
+test('NEW counts only what is drawn now (the hour’s pick of a tank: one not swimming isn’t new yet); four or more new in a tank, one 「NEW ×n」 on it', async ({ page }) => {
+  const SEA = ['sea-bass', 'horse-mackerel', 'olive-flounder', 'red-snapper', 'dab', 'blowfish', 'puffer-fish', 'barred-knifejaw', 'anchovy', 'zebra-turkeyfish'];
+  await seed(page, SEA.map((id) => ['fish', id, 'A'] as const));
+  await open(page);
+  await putAt(page, 'room:fish');
+  await expect.poll(async () => (await mu<string[]>(page, 'shown()')).length, { timeout: 15_000 }).toBeGreaterThan(0);
+  const shown = (await mu<string[]>(page, 'shown()')).filter((id) => SEA.includes(id));
+  // (seven a tank: three of the ten not in the water this hour)
+  expect(shown.length).toBe(7);
+  expect((await mu<string[]>(page, 'fresh()')).sort()).toEqual([...shown].sort());
+  await expect(page.locator('[data-museum-chip-new]')).toHaveText(`あたらしい ${shown.length}`);
+  await expect.poll(() => mu<string[]>(page, 'tagged()')).toEqual(['case:sea']);
 });
 
 test('an exhibit’s card docks clear of it (low on the screen: the card at the top), and a tap on the floor only closes it', async ({ page }) => {

@@ -957,20 +957,23 @@ out.
   び じゅ つ; inside a wing か せ き 2, び じゅ つ 2…), cream on walnut in the app's font; the hall's back arches' just
   under the cornice; in a side wall a flag sign at the doorway's front jamb standing straight out toward the camera, as
   far off the wall as the room view needs to show it whole (camera.ts plaqueOf), so a side arch's and a back arch's
-  never stack. Between two non-hall rooms (F1 ↔ F2 ↔ F3 → bug, G1 ↔ G2) the way back has one too, naming the room
-  behind. Every plaque of a room is on the screen, clear of the bars, from each of its ways in (camera.test). A walnut
-  sill runs through each doorway.
+  never stack. The way back has one too, naming the room behind: はくぶつかん (the chip's word) over every way back to
+  the hall, at a cut front wall's foot in F1 and G1 (hud.ts plaqueInView). Every plaque of a room is on the screen,
+  clear of the bars, from each of its ways in (camera.test, hud.test). A walnut sill runs through each doorway.
 - **The camera** (`camera.ts`): each room framed for the portrait phone, NH's room view: the whole room across (VIEW_W
   its width and a tile, 130; a villager ~31 px), the target's x at its middle, its back wall's top under the back button
   and its front edge over the HUD; a room that fits stands still, F2 and F3 follow in depth with a dead zone (±30 u). `__museum.tune({ viewW, pitch })` retunes
   it on the phone.
 - **One room at a time:** only the room my villager is in is drawn: its floor, walls, furnishing, exhibits and whoever
   else is in it (engine.ts showRoom). Each doorway shows a card in the next room's mood colour (look.ts PORTAL) with a
-  faint glimpse of it (fronds, ripples, a skeleton, a frame); a tap on it, its plaque, the tile of floor before it (at
-  least a finger's 44 px round them), or a floor past it, walks through, a step and a half in: one tap, under 4.5 s
-  (timed on the phone's viewport). The room (F1, F2 and F3 each one) changes 10 u past the doorway's line (at
-  most every 400 ms), inside a dip: the screen fades to the next room's colour in 150 ms and back in 200, never taking a
-  finger; a put (the e2e's) changes it at once. Its music changes with it. A cut front wall leaves its foot (a kick
+  faint glimpse of it (fronds, ripples, a skeleton, a frame); a tap on it, its plaque (at least a finger's 44 px), the
+  tile of floor before it, or a floor past its line, walks through, a step and a half in: one tap, under 4.5 s (timed
+  on the phone's viewport). Each is tested as the quad it's drawn as, never a screen box; where two hold the finger,
+  the doorway whose floor line is nearest wins (a back arch's floor isn't the side arch's whose card and flag stand
+  over it), and floor two tiles from a doorway is the room's. The room changes 10 u past the doorway's line (at most
+  every 400 ms, a dip turned back counting too), inside a dip: the screen fades to the next room's colour in 120 ms,
+  the room changes at 150 (dark by then; hud.ts DIP_MS) and it lifts in 200, never taking a finger; a put (the e2e's)
+  changes it at once. Its music changes with it. A cut front wall leaves its foot (a kick
   plate), and a warm apron runs past each room's front edge, so no void shows under it.
 - **Light** (`look.ts`, `bake.ts`; no real lamps, nothing per frame): Neutral tone mapping and one look a room
   (exposure, a sky over a warm bounce, ambient, a frontal key, a warm background), floors and walls lifted over their
@@ -1001,19 +1004,19 @@ out.
   in here only. Who else is in: the rooms' presence with the museum's scope; the guest comes in like anyone.
 - **The curator:** フータ (Blathers) behind his desk, NH's owl: breathing, glances, blinks, a wing now and then; he
   watches my villager in front of him and nods off when alone. He greets my villager once a visit on the way in,
-  untapped (his welcome's first line, brief). A tap perks him up and is his line in NH's balloon: one of his lines,
-  never the same twice running; with a find of the last day on show, every other tap or so his news of the newest by
-  name. A doorway's dip (or a put into another room) closes every balloon, his, the visitors' and the phrases.
+  untapped (his welcome's first line, ~2 s, its balloon kept off the plaques). A tap perks him up and is his line in
+  NH's balloon: one of his lines, never the same twice running; with a NEW find, every other tap or so his news of the
+  newest by name. A doorway's dip (or a put into another room) closes every balloon, his, the visitors' and the phrases.
 - **Visitors** (`visitors.ts`, `crowd3d.ts`): 24 NH villagers from ききみみ's cast (three of each personality) come in
-  through the Tokyo day, none at night (23–07), a few at dusk, up to eight in the museum and two a room, each one room
-  for 25–65 min: in at its door, from one LINGER place to the next (admiring an exhibit with a hop now and then,
+  through the Tokyo day, none at night (23–07), a few at dusk and late (4–5 at 21–23, a night owl in the hall ~90 % of
+  the time), up to eight in the museum and two a room, each one room for 25–65 min: in at its door, from one LINGER place to the next (admiring an exhibit with a hop now and then,
   sitting on a bench, chatting in pairs), out again. They spread out: a room with nobody first, the aquarium and the
   bug garden before all (in the afternoon and evening ~80 % of the rooms have someone, those two ~85 % of the time);
   no place at a room's very sides or front (out of a finger's reach). Every ~40 s each shows an emote bubble over its
   head (♪ ！ 💡 …, the plan's, 2.5 s, still between). The day's plan is seeded by the date and read at the relay's
   clock, so every phone shows the same visitors in the same places with nothing sent. NH's own models at the players'
   size, in the room drawn only; frames only while one moves. My villager coming within 2 tiles gets a turn and a wave
-  (once a visitor a visit, this phone's). A tap (a box at least 44 px round each): it stops, turns to my villager with
+  (once a visitor a visit, this phone's; seen firing on a drawn run). A tap (a box at least 44 px round each): it stops, turns to my villager with
   a hop and says a line in NH's balloon under its name (of what it's looking at, a new find, its bench, the room), then
   strolls back onto its plan; my villager stays put. A find put on show while one's inside turns its room's visitors
   to it.
@@ -1022,9 +1025,14 @@ out.
   creatures, a fossil or gallery room its own spots), hidden at the eyes. An exhibit's card docks at the bottom, or at
   the top when the exhibit is low on the screen (`hud.ts` cardDock); with a card open any tap only closes it, an
   exhibit's too.
-- **NEW:** a find of the last 24 h has a gold 「NEW」 card with a sparkle over it (`newTags.ts`: still sprites, never a
-  frame of their own), the chip a gold 「あたらしい n」 under it (the room's; the hall's the museum's), and the hall's
-  plaque to its wing a gold dot.
+- **NEW:** a find of the last 24 h that's drawn now (the hour's pick: a fish not in its tank this hour isn't new yet)
+  and whose card hasn't been opened on this phone (DEVICE.museumSeen) has a gold 「NEW」 card with a sparkle over it
+  (`newTags.ts`: still sprites placed after the exhibits each frame, never a frame of their own; depth-tested, over a
+  tank's glass, hidden at the eyes); more than three in one tank, one 「NEW ×n」 over the tank (hud.ts tagsOf). The chip
+  a gold 「あたらしい n」 under it (the room's; the hall's the museum's), the hall's plaque to its wing a gold dot;
+  worked out again on a room change and once a minute.
+- **Seated:** the first tap that isn't someone (a villager, a visitor) only gets my villager up at the seat's step;
+  never a card, a walk or Blathers.
 - **What's on show:** one of each fish, bug, sea creature and fossil in the ずかん's first finds (anyone's) and each
   genuine artwork a present has held, never the pockets' (selling takes nothing out: NH's donation, the record's `find`
   events, so every phone shows the same). A tap: its card (MuseumCard: icon, names, a fossil's skeleton 「Tレックス 2/3」

@@ -119,6 +119,9 @@ export const DEVICE = {
   softGL: 'island.softGL',
   /** localStorage: `1` | `0`: the rooms' and the museum's first-person view (store/firstPerson.svelte.ts; off by default). */
   fpv: 'island.fpv',
+  /** localStorage: `{[id]: at}`: the museum's new finds whose card was opened on this phone (their NEW cleared; `at`
+   *  their first find's time; components/museum/MuseumRoom.svelte, those past their day dropped). */
+  museumSeen: 'island.museumSeen',
   /** localStorage: the Tokyo date whose midnight Happy New Year! this phone played (lib/sound/sound.svelte.ts: once,
    *  not again after a reload). */
   newYearIntro: 'island.newYearIntro',

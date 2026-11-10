@@ -18,10 +18,24 @@ type M = {
   card(): string | null;
   put(x: number, z: number): void;
   walkTo(x: number, z: number): void;
+  hit(cx: number, cy: number): { kind: string; x?: number; z?: number } | null;
+  doorways(): Door[];
 };
+/** A doorway of the room drawn (engine.ts doorways): the room beyond, its floor line and plaques on the screen, its
+ *  middle on the floor and the way into this room. */
+type Door = { to: string; line: [[number, number], [number, number]]; plaques: [number, number][][]; at: [number, number]; inward: [number, number] };
 const mu = <R,>(page: Page, fn: string) => page.evaluate(`window.__museum.${fn}`) as Promise<R>;
 /** A named spot on the museum's floor (museum/spots.ts: no coordinates in here, so a re-layout moves no spec). */
 const sp = (page: Page, name: string) => page.evaluate((n) => (window as unknown as { __museum: M }).__museum.spot(n), name);
+/** The room drawn's doorway to `to`. */
+const doorTo = async (page: Page, to: string) => (await mu<Door[]>(page, 'doorways()')).find((d) => d.to === to)!;
+/** A floor point `k` units into the room drawn from its doorway to `to` (out through it, k < 0). */
+const offDoor = async (page: Page, to: string, k: number): Promise<[number, number]> => {
+  const d = await doorTo(page, to);
+  return [d.at[0] + d.inward[0] * k, d.at[1] + d.inward[1] * k];
+};
+/** On the screen clear of the bars (portrait). */
+const onScreen = ([x, y]: [number, number]) => x >= 8 && x <= 385 && y >= 60 && y <= 852 - 120;
 /** My villager put at a named spot, or walked there. */
 const putAt = (page: Page, name: string) => page.evaluate((n) => (window as unknown as { __museum: M }).__museum.spot(n).then(([x, z]) => (window as unknown as { __museum: M }).__museum.put(x, z)), name);
 const walkToSpot = (page: Page, name: string) => page.evaluate((n) => (window as unknown as { __museum: M }).__museum.spot(n).then(([x, z]) => (window as unknown as { __museum: M }).__museum.walkTo(x, z)), name);
@@ -54,8 +68,8 @@ test('a tap on the floor walks there, through the hall into a wing', async ({ pa
 test('the walls the camera cuts away stay put as one walks: each goes at most once on a walk, and comes back at most once (a jamb one passed), never back and forth', async ({ page }) => {
   await open(page);
   // through the openings into each wing and back, the cutaway read every frame
-  const [fish, bug] = [await sp(page, 'in:fish'), await sp(page, 'in:bug')];
-  for (const [from, to] of [[[30, 10], fish], [fish, [30, 10]], [[-30, 10], bug], [bug, [-30, 10]]] as const) {
+  const [fish, bug, hf, hb] = [await sp(page, 'in:fish'), await sp(page, 'in:bug'), await sp(page, 'in:hall:fish'), await sp(page, 'in:hall:bug')];
+  for (const [from, to] of [[hf, fish], [fish, hf], [hb, bug], [bug, hb]] as const) {
     await page.evaluate(`window.__museum.put(${from[0]}, ${from[1]})`);
     await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
     const log = await page.evaluate(([x, z]) => new Promise<string[]>((done) => {
@@ -85,22 +99,24 @@ test('only the room my villager is in is drawn: a put changes it at once, a walk
   // (the sea creatures' reef: the aquarium's own)
   await putAt(page, 'tank:reef');
   expect(await room()).toBe('fish');
-  await page.evaluate('window.__museum.put(30, 10)');
+  await putAt(page, 'in:hall:fish');
   expect(await room()).toBe('hall');
-  // a walk: the hall's still drawn in the doorway (to 10 past its line), the aquarium after
-  const walked = async (x: number) => {
-    await page.evaluate(`window.__museum.walkTo(${x}, 10)`);
-    await expect.poll(async () => Math.abs((await mu<[number, number]>(page, 'mine()'))[0] - x), { timeout: 10_000 }).toBeLessThan(1);
+  // a walk: the hall's still drawn in the doorway (to 10 past its line: engine.ts SWAP_BAND), the aquarium after
+  const walked = async ([x, z]: [number, number]) => {
+    await page.evaluate(`window.__museum.walkTo(${x}, ${z})`);
+    await expect.poll(async () => ((p) => Math.hypot(p[0] - x, p[1] - z))(await mu<[number, number]>(page, 'mine()')), { timeout: 10_000 }).toBeLessThan(1);
     await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
   };
-  await walked(66);
+  const [past, beyond] = [await offDoor(page, 'fish', -6), await offDoor(page, 'fish', -24)];
+  await walked(past);
   expect(await room()).toBe('hall');
-  await walked(84);
+  await walked(beyond);
   expect(await room()).toBe('fish');
   // from the hall, a tap past its side wall (the garden, not drawn): through its doorway, a step and a half in
-  await page.evaluate('window.__museum.put(-40, 10)');
+  await putAt(page, 'in:hall:bug');
   await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
-  const [tx, ty] = await mu<[number, number]>(page, 'px(-63, 12)');
+  const garden = await offDoor(page, 'bug', -3);
+  const [tx, ty] = await mu<[number, number]>(page, `px(${garden[0]}, ${garden[1]})`);
   await page.mouse.click(Math.max(4, tx), ty);
   const [bx, bz] = await sp(page, 'in:bug');
   await expect.poll(async () => {
@@ -124,23 +140,70 @@ test('only the room my villager is in is drawn: a put changes it at once, a walk
   await expect.poll(room, { timeout: 15_000 }).toBe('G2');
 });
 
+/** From a way in, a tap on the doorway to `to` at `where` (its floor's middle, half a tile in; its plaque's middle; its
+ *  card, half way up the opening) goes through, a step and a half in. */
+async function through(page: Page, from: string, to: string, where: 'floor' | 'plaque' | 'card') {
+  const room = () => mu<string>(page, 'room()');
+  const mid = (q: [number, number][]): [number, number] => [q.reduce((a, p) => a + p[0], 0) / q.length, q.reduce((a, p) => a + p[1], 0) / q.length];
+  await putAt(page, from);
+  await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
+  const was = await room(), d = await doorTo(page, to), k = where === 'floor' ? 5 : 0;
+  const [x, y] = where === 'plaque' ? mid(d.plaques[0]) : await mu<[number, number]>(page, `px(${d.at[0] + d.inward[0] * k}, ${d.at[1] + d.inward[1] * k}, ${where === 'card' ? 20 : 0})`);
+  // (a finger on the part of it on the screen: a side wall is at the screen's edge)
+  await page.mouse.click(Math.max(4, Math.min(389, x)), y);
+  await expect.poll(room, { timeout: 10_000 }).toBe(to);
+  const [fx, fz] = await sp(page, `in:${to}:${was}`);
+  await expect.poll(async () => ((p) => Math.hypot(p[0] - fx, p[1] - fz))((await mu<[number, number]>(page, 'mine()'))!), { timeout: 10_000 }).toBeLessThan(2);
+}
+
+test('a tap on each of the hall’s arches at its floor’s middle walks through it (a back arch’s floor isn’t the side arch’s, whose card and flag stand over it)', async ({ page }) => {
+  await open(page);
+  for (const to of ['F1', 'G1', 'bug', 'fish']) await through(page, 'entrance', to, 'floor');
+});
+
 test('a tap on a doorway (its card, its plaque, the floor before it) always walks through it, into the next room', async ({ page }) => {
   await open(page);
-  const room = () => mu<string>(page, 'room()');
-  // (F2's way on to F3, in its left wall: the card in the opening, the plaque over it, a step of floor before it)
-  for (const [x, y, z] of [[-240, 20, -90], [-240, 46, -80], [-234, 0, -90]]) {
-    await putAt(page, 'in:F2');
-    await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
-    expect(await room()).toBe('F2');
-    // (a finger on the part of it on the screen: the wall itself is at the screen's edge)
-    const [tx, ty] = await mu<[number, number]>(page, `px(${x}, ${z}, ${y})`);
-    await page.mouse.click(Math.max(4, tx), ty);
-    await expect.poll(room, { timeout: 10_000 }).toBe('F3');
-    const [fx, fz] = await sp(page, 'in:F3');
-    await expect.poll(async () => {
-      const [mx, mz] = (await mu<[number, number]>(page, 'mine()'))!;
-      return Math.hypot(mx - fx, mz - fz);
-    }, { timeout: 10_000 }).toBeLessThan(2);
+  // (F2's way on to F3, in its side wall)
+  for (const where of ['card', 'plaque', 'floor'] as const) await through(page, 'in:F2:F1', 'F3', where);
+});
+
+test('the floor near a doorway is the room’s: two tiles in from any doorway a tap stays in the room', async ({ page }) => {
+  // (no visitors in: a floor tap is the floor's)
+  await open(page, 'museum?demo&date=2026-11-04T03:00');
+  let tried = 0;
+  for (const r of ['hall', 'bug', 'fish', 'F1', 'F2', 'F3', 'G1', 'G2']) {
+    await putAt(page, `room:${r}`);
+    await expect.poll(() => mu<boolean>(page, 'still()'), { timeout: 10_000 }).toBe(true);
+    for (const d of await mu<Door[]>(page, 'doorways()')) {
+      // (before its middle and toward either end: F1's left column, G1's right floor)
+      const along: [number, number] = [Math.abs(d.inward[1]), Math.abs(d.inward[0])];
+      for (const k of [-10, 0, 10]) {
+        const at: [number, number] = [d.at[0] + d.inward[0] * 20 + along[0] * k, d.at[1] + d.inward[1] * 20 + along[1] * k];
+        const px = await mu<[number, number]>(page, `px(${at[0]}, ${at[1]})`);
+        // (on the screen, and not under a plaque: one standing out from its wall is drawn over the floor behind it)
+        const underPlaque = (await mu<Door[]>(page, 'doorways()')).some((o) => o.plaques.some((q) => {
+          const xs = q.map((p) => p[0]), ys = q.map((p) => p[1]), cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+          return Math.abs(px[0] - cx) <= Math.max(44, Math.max(...xs) - Math.min(...xs)) / 2 && Math.abs(px[1] - cy) <= Math.max(44, Math.max(...ys) - Math.min(...ys)) / 2;
+        }));
+        if (!onScreen(px) || underPlaque) continue;
+        tried++;
+        const h = await page.evaluate(([x, y]) => (window as unknown as { __museum: M }).__museum.hit(x, y), px);
+        // (the floor on this side of the doorway's line, or what stands there: never a walk through it)
+        if (h?.kind === 'floor') expect((h.x! - d.at[0]) * d.inward[0] + (h.z! - d.at[1]) * d.inward[1], `${r} → ${d.to} at ${at}`).toBeGreaterThan(0);
+      }
+    }
+  }
+  expect(tried).toBeGreaterThan(10);
+});
+
+test('a plaque naming the hall over every way back to it, whole on the screen from the way in', async ({ page }) => {
+  await open(page);
+  for (const r of ['bug', 'fish', 'F1', 'G1']) {
+    await putAt(page, `in:${r}:hall`);
+    await expect.poll(() => mu<boolean>(page, 'still()'), { timeout: 10_000 }).toBe(true);
+    const d = await doorTo(page, 'hall');
+    expect(d.plaques.length, r).toBe(1);
+    for (const p of d.plaques[0]) expect(onScreen(p), `${r}: ${p}`).toBe(true);
   }
 });
 
@@ -444,19 +507,21 @@ test('the curator at the desk: his welcome untapped on the way in, he watches my
     return c ? c.doing : 'not in';
   };
   // my villager in front of the desk: he watches it, and the hall draws while he's on screen (his idle)
-  await page.evaluate('window.__museum.put(0, -12)');
+  await putAt(page, 'desk');
   await expect.poll(doing, { timeout: 15_000 }).toBe('look');
   const frames = async () => (await mu<{ frames: number }>(page, 'stats()')).frames;
   const f0 = await frames();
+  // (what's measured: the frames drawn over a while)
   await page.waitForTimeout(600);
   expect(await frames()).toBeGreaterThan(f0 + 5);
   // nodding off; my villager walking away and back up wakes him
   await page.evaluate('window.__museum.curatorDoze()');
   expect(await doing()).toBe('doze');
-  await page.evaluate('window.__museum.put(0, 60)');
+  await putAt(page, 'entrance');
+  // (what's measured: still asleep a while later, my villager far off)
   await page.waitForTimeout(500);
   expect(await doing()).toBe('doze');
-  await page.evaluate('window.__museum.put(0, -12)');
+  await putAt(page, 'desk');
   await expect.poll(doing, { timeout: 5_000 }).toBe('look');
   const tapHim = async () => {
     const c = (await mu<C>(page, 'curator()'))!;
@@ -512,13 +577,15 @@ test('the aquarium’s benches: a tap sits my villager on one, the other phone s
   await expect.poll(() => mu<Seat>(other, 'seat()'), { timeout: 10_000 }).toEqual({ id: 'dmbench1', n: 1 - mine.n });
   await expect.poll(() => mu<Seat>(page, 'theirSeat("B")'), { timeout: 5_000 }).toMatchObject({ id: 'dmbench1', n: 1 - mine.n });
   expect(await mu<Seat>(page, 'seat()')).toEqual(mine);
-  // A: a tap on the floor gets up and walks there
+  // A: a tap on the floor gets up (at the seat's step), the next walks there
   await page.bringToFront();
   await expect.poll(() => mu<boolean>(page, 'still()'), { timeout: 10_000 }).toBe(true);
   const [gx, gz] = await sp(page, 'room:fish');
   const [fx, fy] = await mu<[number, number]>(page, `px(${gx}, ${gz})`);
   await page.mouse.click(fx, fy);
   await expect.poll(() => mu<Seat>(page, 'seat()')).toBeNull();
+  expect((await mu<Who>(page, 'who("A")'))!.walking).toBe(false);
+  await page.mouse.click(fx, fy);
   await expect.poll(async () => {
     const w = (await mu<Who>(page, 'who("A")'))!;
     return !w.seated && Math.hypot(w.at[0] - gx, w.at[1] - gz) < 6;
@@ -528,36 +595,59 @@ test('the aquarium’s benches: a tap sits my villager on one, the other phone s
   await other.close();
 });
 
-test('the hall’s benches: a tap on one walks up and sits my villager facing the camera', async ({ page }) => {
+test('the hall’s benches: a tap on one walks up and sits my villager facing the camera; seated, the first tap (Blathers, the floor) only gets it up', async ({ page }) => {
   // (late, nobody else in: a visitor sitting there would take the tap)
-  await open(page, 'museum?demo&date=2026-11-04T23:30');
+  await open(page, 'museum?demo&date=2026-11-04T23:59');
   await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
-  const [x, y] = (await mu<[number, number]>(page, 'benchPx("hbench1", 0)'))!;
-  await page.mouse.click(x, y);
-  await expect.poll(() => mu<{ id: string } | null>(page, 'seat()'), { timeout: 10_000 }).toMatchObject({ id: 'hbench1' });
+  const sit = async () => {
+    const [x, y] = (await mu<[number, number]>(page, 'benchPx("hbench1", 0)'))!;
+    await page.mouse.click(x, y);
+    await expect.poll(() => mu<{ id: string } | null>(page, 'seat()'), { timeout: 10_000 }).toMatchObject({ id: 'hbench1' });
+    await expect.poll(() => mu<boolean>(page, 'still()'), { timeout: 10_000 }).toBe(true);
+  };
+  type Who = { at: [number, number]; walking: boolean; seated: boolean };
+  await sit();
   expect(await mu<string>(page, 'room()')).toBe('hall');
+  // (the seat's step: where it got up from, and gets up at)
+  const step = (await mu<Who>(page, 'who("A")'))!.at;
+  // (a tap on what would otherwise answer or walk: Blathers, then the floor across the hall)
+  const targets = [
+    async () => ((c) => [c.at[0], c.at[1] + 10] as [number, number])((await mu<{ at: [number, number] }>(page, 'curator()'))!),
+    async () => mu<[number, number]>(page, `px(${(await sp(page, 'room:hall')).join(', ')})`)
+  ];
+  for (const target of targets) {
+    const [x, y] = await target();
+    await page.mouse.click(x, y);
+    await expect.poll(() => mu<{ id: string } | null>(page, 'seat()')).toBeNull();
+    const w = (await mu<Who>(page, 'who("A")'))!;
+    expect(w.walking || w.seated).toBe(false);
+    expect(Math.hypot(w.at[0] - step[0], w.at[1] - step[1])).toBeLessThan(3);
+    await expect(page.locator('[data-fx="talk"]')).toHaveCount(0);
+    expect(await mu<string | null>(page, 'card()')).toBeNull();
+    await sit();
+  }
 });
 
 test('while a drag turns the camera the curator’s balloon stays whole (its box, not only its text) by him', async ({ page }) => {
   await open(page);
   type C = { at: [number, number]; doing: string | null } | null;
-  await page.evaluate('window.__museum.put(0, -12)');
+  await putAt(page, 'desk');
   await expect.poll(async () => (await mu<C>(page, 'curator()'))?.doing, { timeout: 15_000 }).toBe('look');
   const him = async () => ((c) => ({ x: c.at[0], y: c.at[1] }))((await mu<C>(page, 'curator()'))!);
   const h = await him();
   await page.mouse.click(h.x, h.y + 10);
   await expect(page.locator('[data-fx="talk"].placed')).toBeVisible();
-  await page.waitForTimeout(300); // (its pop-in)
+  // (its pop-in over)
+  await expect.poll(() => page.locator('[data-fx="talk"]').evaluate((e) => e.getAnimations().filter((a) => a.playState === 'running').length)).toBe(0);
   const near = (await balloonState(page, '[data-fx="talk"]', await him()))!.dist + 8;
   const box = (await page.locator('[data-museum-room]').boundingBox())!;
   const [cx, cy] = [box.x + box.width / 2, box.y + box.height * 0.75];
   await page.mouse.move(cx, cy);
   await page.mouse.down();
   for (let i = 1; i <= 6; i++) await page.mouse.move(cx + i * 12, cy);
-  await page.waitForTimeout(100);
   // (the camera turned: he moved on screen)
+  await expect.poll(async () => ((p) => Math.hypot(p.x - h.x, p.y - h.y))(await him())).toBeGreaterThan(10);
   const h1 = await him();
-  expect(Math.hypot(h1.x - h.x, h1.y - h.y)).toBeGreaterThan(10);
   await expectWhole(page, '[data-fx="talk"]', h1, near);
   await page.mouse.up();
 });

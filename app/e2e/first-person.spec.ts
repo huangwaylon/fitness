@@ -138,7 +138,7 @@ test('the tent: もようがえ arranges with the room’s camera, and the eyes 
   await expect.poll(async () => (await t())?.inside).toBe(true);
 });
 
-test('the museum: seated on a bench, the eye at the seated head, a look round keeps it seated, a tap on the floor gets up and walks', async ({ page }) => {
+test('the museum: seated on a bench, the eye at the seated head, a look round keeps it seated, a tap on the floor gets up, the next walks', async ({ page }) => {
   test.setTimeout(60_000);
   type H = R & { put(x: number, z: number): void; still(): boolean; seat(): { id: string; n: number } | null; benchPx(id: string, n: number): [number, number]; look(dx: number, dy: number): void; spot(name: string): Promise<[number, number]> };
   const m = <T,>(fn: (h: H) => T) => page.evaluate(`(${fn.toString()})(window.__museum)`) as Promise<T>;
@@ -171,7 +171,7 @@ test('the museum: seated on a bench, the eye at the seated head, a look round ke
   expect(Math.abs(Math.atan2(Math.sin(f1.yaw - f0.yaw), Math.cos(f1.yaw - f0.yaw)))).toBeGreaterThan(0.3);
   expect(await m((h) => h.seat())).not.toBeNull();
   expect(Math.hypot(f1.eye[0] - f0.eye[0], f1.eye[2] - f0.eye[2])).toBeLessThan(1.5);
-  // a tap on the floor ahead (toward the tank, from the eyes' own camera): up and walking there
+  // a tap on the floor ahead (toward the tank, from the eyes' own camera): up at the seat's step, the next walks there
   await m((h) => h.look(150, -120));
   await expect.poll(() => m((h) => !h.fpv()?.busy), { timeout: 10_000 }).toBe(true);
   const f2 = (await m((h) => h.fpv()))!;
@@ -179,6 +179,10 @@ test('the museum: seated on a bench, the eye at the seated head, a look round ke
   const [tx, ty] = await page.evaluate(([x, z]) => (window as unknown as { __museum: R }).__museum.px(x, z), goal);
   await page.mouse.click(tx, ty);
   await expect.poll(() => m((h) => h.seat())).toBeNull();
+  expect(await m((h) => h.walking('A'))).toBe(false);
+  await expect.poll(() => m((h) => !h.fpv()?.busy), { timeout: 10_000 }).toBe(true);
+  const [ux, uy] = await page.evaluate(([x, z]) => (window as unknown as { __museum: R }).__museum.px(x, z), goal);
+  await page.mouse.click(ux, uy);
   await expect.poll(async () => {
     const [x, z] = await m((h) => h.mine());
     return !(await m((h) => h.walking('A'))) && Math.hypot(x - goal[0], z - goal[1]) < 4;

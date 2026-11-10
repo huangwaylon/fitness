@@ -15,9 +15,11 @@
   // does nothing (left alone 15 s, it closes unanswered).
   //   <Talk bind:this={talk} scene={el} />   talk.say(name, ['page…', 'next part…'], speakerEl, { colour, choices, ondone })
   // `ondone` runs once the box closes (tapped away, answered or read through; at once when there's no room for it),
-  // not when a new line replaces it.
+  // not when a new line replaces it. `read`: the last page's time left alone (ms; a brief greeting's shorter), `avoid`:
+  // boxes it keeps off besides (client px: the museum's plaques).
   import { tick } from 'svelte';
   import { TAIL_IN, placeBy, type Side } from './placement.ts';
+  import type { Box } from './geom.ts';
   import type { SaySpeaker } from './say.ts';
   import { followOf } from './balloonFollow.ts';
   import { useWorld } from './camera.svelte.ts';
@@ -27,7 +29,7 @@
   // (the island's: its speakers are in world nodes; a room has none, its speakers are boxes from its camera)
   const world = useWorld() as ReturnType<typeof useWorld> | undefined;
 
-  interface Said { n: number; name: string; colour: string; x: number; y: number; tail: number; side: Side; follow: boolean; placed: boolean; choices: Choice[]; mx: number; my: number; mw: number; mh: number }
+  interface Said { n: number; name: string; colour: string; x: number; y: number; tail: number; side: Side; follow: boolean; placed: boolean; choices: Choice[]; mx: number; my: number; mw: number; mh: number; read?: number; avoid?: () => readonly Box[] }
   let said = $state<Said | null>(null);
   let pg = $state<PagerState>({ pages: [''], page: 0, shown: 0 });
   let el = $state<HTMLElement>();
@@ -77,7 +79,7 @@
     clearTimeout(idle);
     const last = pg.page >= pg.pages.length - 1;
     // a question waits longer for its answer (then closes unanswered)
-    const read = said?.choices.length ? 15000 : Math.max(2800, 900 + [...pg.pages[pg.page]].length * 70);
+    const read = said?.choices.length ? 15000 : (said?.read ?? Math.max(2800, 900 + [...pg.pages[pg.page]].length * 70));
     idle = setTimeout(() => {
       if (said?.n !== n) return;
       if (last) close();
@@ -112,7 +114,7 @@
 
   /** Say `parts` (each starts a page; long ones split two lines a page) from `from` (its top centre is the speaker's
    *  head); `colour`: the name tag's. */
-  export async function say(name: string, parts: string | readonly string[], from: SaySpeaker, o: { colour?: string; choices?: Choice[]; ondone?: () => void } = {}) {
+  export async function say(name: string, parts: string | readonly string[], from: SaySpeaker, o: { colour?: string; choices?: Choice[]; ondone?: () => void; read?: number; avoid?: () => readonly Box[] } = {}) {
     halt();
     const n = ++seq;
     // (a new box: none of the last one's carry)
@@ -120,7 +122,7 @@
     follow = null;
     done = o.ondone;
     pg = { pages: paginate(parts), page: 0, shown: 0 };
-    said = { n, name, colour: o.colour ?? '#FFD84D', x: 0, y: 0, tail: 0, side: 'top', follow: false, placed: false, choices: o.choices ?? [], mx: 0, my: 0, mw: 0, mh: 0 };
+    said = { n, name, colour: o.colour ?? '#FFD84D', x: 0, y: 0, tail: 0, side: 'top', follow: false, placed: false, choices: o.choices ?? [], mx: 0, my: 0, mw: 0, mh: 0, read: o.read, avoid: o.avoid };
     await tick();
     // the answers' row: measured first, then the balloon keeps its room at its foot
     const m = menu?.getBoundingClientRect();
@@ -185,7 +187,7 @@
     const src = (seen = speaker.getBoundingClientRect());
     const from = { x0: src.left, x1: src.right, y0: src.top, y1: src.bottom };
     // never over the speaker
-    const p = placeBy(scene, box.width, box.height, from, [{ x0: src.left - 4, x1: src.right + 4, y0: src.top - 4, y1: src.bottom + 4 }], layer);
+    const p = placeBy(scene, box.width, box.height, from, [{ x0: src.left - 4, x1: src.right + 4, y0: src.top - 4, y1: src.bottom + 4 }, ...(said.avoid?.() ?? [])], layer);
     if (!p) return false;
     shift('');
     follow = followOf(speaker, src, p.side, world && ((e) => world.frameOf(e)));

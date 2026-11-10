@@ -253,6 +253,21 @@ describe('the museum’s visitors on the real plan: busy rooms, emotes, a wave',
     expect(peak).toBeGreaterThanOrEqual(7);
   });
 
+  it('still a few in late (20:00–23:00, our evening visits): the hall nearly always has a night owl, never an empty museum', () => {
+    let samples = 0, hall = 0, two = 0;
+    for (const d of DAYS) {
+      const c = real();
+      for (let t = at(20, 0, d); t < at(23, 0, d); t += 60_000) {
+        const n = ROOM_IDS.map((r) => c.step(t, r).poses.length);
+        samples++;
+        if (n[ROOM_IDS.indexOf('hall')]) hall++;
+        if (n.reduce((a, b) => a + b, 0) >= 2) two++;
+      }
+    }
+    expect(hall / samples).toBeGreaterThan(0.85);
+    expect(two / samples).toBeGreaterThan(0.9);
+  });
+
   it('no place at a room’s very sides or front (the room view’s edge, under the HUD), and every room still has places', () => {
     const used = usablePoints(VISITOR_POINTS, rooms);
     for (const p of used) {

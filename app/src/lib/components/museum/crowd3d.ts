@@ -27,7 +27,7 @@ const NAP = 60_000;
 /** A finger's reach (px): a visitor's tap box is at least this wide and tall. */
 const FINGER = 44;
 /** An emote bubble's size (u) and its glyphs. */
-const BUBBLE = 8;
+const BUBBLE = 11;
 const GLYPH: Readonly<Record<Emote, string>> = { note: '♪', bang: '！', idea: '💡', dots: '…' };
 /** An emote's bubble (NH's: white, a tail down to the head, the glyph inside). */
 function bubbleTex(e: Emote): CanvasTexture {
@@ -57,8 +57,9 @@ function bubbleTex(e: Emote): CanvasTexture {
 }
 
 export interface Crowd3D extends Exhibit {
-  /** The visitors drawn now (the e2e's): id, where, doing what, faded how far. */
-  drawn(): { id: string; x: number; z: number; state: string; fade: number; emote: string | null }[];
+  /** The visitors drawn now (the e2e's): id, where, doing what, faded how far, its emote, its last act played (a hop,
+   *  a wave…). */
+  drawn(): { id: string; x: number; z: number; state: string; fade: number; emote: string | null; act: string | null }[];
   /** A visitor's names and NH colour (its balloon's tag: the roster's, in this chunk, never the first load's). */
   nameOf(id: string): { ja: string; en: string; colour: string } | null;
 }
@@ -107,6 +108,7 @@ export function buildCrowd(kit: Kit, o: {
   bubbleOf();
   let disposed = false, wake: ReturnType<typeof setTimeout> | undefined, seq = 0;
   let poses: readonly VisitorPose[] = [];
+  const acted = new Map<string, string>();
   const box = new Box3(), v3 = new Vector3();
 
   function bodyOf(id: string): Body {
@@ -213,7 +215,7 @@ export function buildCrowd(kit: Kit, o: {
       for (const p of poses) if (pose(p, t)) busy = true;
       for (const a of step.acts) {
         const b = bodies.get(a.id);
-        if (b?.v) (b.v.act(a.act), (b.busy = true), (busy = true));
+        if (b?.v) (b.v.act(a.act), (b.busy = true), (busy = true), acted.set(a.id, a.act));
       }
       if (busy) return true;
       // (still: asleep till the plan's next change)
@@ -251,7 +253,7 @@ export function buildCrowd(kit: Kit, o: {
       const r = ROSTER[id as keyof typeof ROSTER];
       return r ? { ja: r.nameJa, en: r.nameEn, colour: r.colour } : null;
     },
-    drawn: () => poses.filter((p) => bodies.get(p.id)?.v?.group.visible).map((p) => ({ id: p.id, x: Math.round(p.x * 10) / 10, z: Math.round(p.z * 10) / 10, state: p.state, fade: p.fade, emote: p.emote })),
+    drawn: () => poses.filter((p) => bodies.get(p.id)?.v?.group.visible).map((p) => ({ id: p.id, x: Math.round(p.x * 10) / 10, z: Math.round(p.z * 10) / 10, state: p.state, fade: p.fade, emote: p.emote, act: acted.get(p.id) ?? null })),
     dispose() {
       disposed = true;
       clearTimeout(wake);
