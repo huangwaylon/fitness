@@ -38,6 +38,9 @@ cd app && npm run food:data                  # → app/static/food/
 python3 -I -m unittest discover -s food-data/scripts/tests
 ```
 
+The raw sources git doesn't hold (`~/food-images-raw`, `app/.cache/tts/{clean,refs}`, `food-data/raw/`) are this
+repo's `assets-*` release assets: `app/scripts/assets-release.sh` after a batch changes them (restore steps in its header).
+
 ## Layout
 | Path | Contents |
 |---|---|
