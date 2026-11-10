@@ -210,3 +210,63 @@ test('a tap in a visitor’s reach (a finger’s slack beside its figure) with n
   await page.mouse.click(p!.x, p!.y);
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('つねきち');
 });
+
+// The guests (docs/design.md "Visitors: roles", island/visitorRoles.ts): NH's other special characters, each with a role.
+test('a guest day with no hook: Dr. Shrunk on Sunday afternoon Nov 8 2026 (after Daisy Mae), at centre stage, his introduction', async ({ page }) => {
+  await page.goto('?demo&date=2026-11-08T13:00&critter=none');
+  await islandUp(page);
+  const { CAMS, CENTRE_STAGE } = await geo(page);
+  await camTo(page, CAMS.mae, false);
+  await expect(page.locator('[data-visitor="shrunk"] .art')).toBeVisible();
+  expect(await offFrom(page, '[data-visitor="shrunk"]', ...CENTRE_STAGE)).toBeLessThan(2);
+  await tapFigure(page, '[data-visitor="shrunk"] .art');
+  await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('ししょー');
+});
+
+test('Gracie’s shop: her offer’s choice box opens her sheet, and a piece bought there is mine (the shop’s かいがら)', async ({ page }) => {
+  await page.addInitScript(() => {
+    if (localStorage.getItem('island-demo.events')) return;
+    const at = Date.parse('2026-11-04T09:00:00+09:00');
+    const rows = [['tally', { date: '2026-11-04', counts: { 'fish:whale-shark': 20 } }], ['sell', { species: 'fish:whale-shark', n: 20, v: 13000 }]]
+      .map(([type, data], i) => ({ id: `seed-${i}`, type, data, queuedAt: at + i, tries: 0, nextAt: 0, ackedAt: at + i, person: 'A' }));
+    localStorage.setItem('island-demo.events', JSON.stringify({ day: '2026-11-04', events: rows }));
+  });
+  await page.goto('?demo&date=2026-11-04T12:00&visitor=gracie&critter=none');
+  await islandUp(page);
+  const { CAMS } = await geo(page);
+  await camTo(page, CAMS.mae, false);
+  await tapFigure(page, '[data-visitor="gracie"] .art');
+  await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('グレース');
+  await readOut(page);
+  await choose(page, page.locator('.choices.asking button').first());
+  const sheet = page.locator('[data-guest-shop="gracie"]');
+  await expect(sheet).toBeVisible();
+  const items = sheet.locator('[data-guest-item]');
+  await expect(items).toHaveCount(6);
+  const before = Number(await sheet.locator('[data-guest-shells]').getAttribute('data-guest-shells'));
+  expect(before).toBe(13000);
+  const first = items.first(), price = Number(await first.getAttribute('data-price'));
+  expect(price).toBeGreaterThanOrEqual(500);
+  await first.click();
+  await sheet.locator('[data-guest-buy]').click();
+  await expect(first).toHaveAttribute('data-owned', 'true');
+  await expect(sheet.locator('[data-guest-shells]')).toHaveAttribute('data-guest-shells', String(before - price));
+});
+
+test('a giver’s gift: Pete’s present goes to the island once (a find in the ずかん), the same piece for whoever asks again', async ({ page }) => {
+  await page.goto('?demo&date=2026-11-04T12:00&visitor=pete&critter=none');
+  await islandUp(page);
+  const { CAMS } = await geo(page);
+  await camTo(page, CAMS.mae, false);
+  const box = page.locator('[data-fx="talk"].placed');
+  await tapFigure(page, '[data-visitor="pete"] .art');
+  await expect(box.locator('.who')).toHaveText('ぺりお');
+  // again (his introduction given): his delivery, the piece to the island's ずかん
+  await tapFigure(page, '[data-visitor="pete"] .art');
+  const finds = () => page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{"events":[]}') as { events: { type: string; data: { kind?: string } }[] }).events.filter((e) => e.type === 'find' && e.data.kind === 'item').length);
+  await expect.poll(finds).toBe(1);
+  // asked once more: the same piece already given, nothing more
+  await tapFigure(page, '[data-visitor="pete"] .art');
+  await expect.poll(() => page.locator('[data-fx="talk"].placed').getAttribute('data-pages')).not.toBeNull();
+  expect(await finds()).toBe(1);
+});

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ROTATION, VISITORS, VISITOR_LINES, dayVisitor, visitorAt, visitorLine } from './visitors.ts';
+import { ROTATION, VISITORS, VISITOR_LINES, dayVisitor, festivale, visitorAt, visitorLine } from './visitors.ts';
+import { GUESTS, ROLES, guestOf, guestWeek, isGuest } from './visitorRoles.ts';
 import { showerAt } from './meteor.ts';
 import { eventAt } from './events.ts';
 import { milestoneOn } from './wedding.ts';
@@ -38,7 +39,7 @@ describe('visitors (NH)', () => {
     expect(at('2026-11-01', 11, 0)).toBe('daisy-mae');
     expect(at('2026-11-01', 12, 0)).not.toBe('daisy-mae');
   });
-  it('a visitor most days (NH): Monday to Saturday one of the rotation, each at most once a week, seeded by the week', () => {
+  it('a visitor most days (NH): Monday to Saturday one of the rotation (or the week’s guest), each at most once a week, seeded by the week', () => {
     let days = 0, visited = 0;
     const seen = new Map<string, number>();
     for (let d = 0; d < 7 * 60; d++) {
@@ -48,7 +49,7 @@ describe('visitors (NH)', () => {
       expect(dayVisitor(date, wd)).toBe(v); // the same on every phone
       if (wd === 0) expect(v).toBeNull(); // Sunday: Daisy Mae's
       if (!v) continue;
-      expect(ROTATION).toContain(v);
+      expect([...ROTATION, ...GUESTS]).toContain(v);
       seen.set(v, (seen.get(v) ?? 0) + 1);
       expect(seen.get(v), `${date} ${v}`).toBe(1);
     }
@@ -63,7 +64,7 @@ describe('visitors (NH)', () => {
     // their hours: Gulliver by day, Wisp by night (past midnight too), the plaza's 06:00 to 22:00
     for (let d = 0; d < 7 * 60; d++) {
       const date = addDays('2026-01-05', d), wd = (d + 1) % 7, next = addDays(date, 1), prev = addDays(date, -1);
-      if (wd === 0 || wd === 6 || eventAt(date, 12) || eventAt(next, 2) || eventAt(date, 21) || milestoneOn(date) !== null || milestoneOn(next) !== null || showerAt(date, prev, 21) || showerAt(next, date, 2)) continue;
+      if (wd === 0 || wd === 6 || festivale(date) || eventAt(date, 12) || eventAt(next, 2) || eventAt(date, 21) || milestoneOn(date) !== null || milestoneOn(next) !== null || showerAt(date, prev, 21) || showerAt(next, date, 2)) continue;
       const v = dayVisitor(date, wd);
       if (v === 'wisp') {
         expect(at(date, 12, wd)).toBeNull();
@@ -71,6 +72,9 @@ describe('visitors (NH)', () => {
         expect(visitorAt(next, date, 2, (wd + 1) % 7)).toBe('wisp');
       } else if (v === 'gulliver') {
         expect(at(date, 6, wd)).toBe('gulliver');
+        expect(at(date, 18, wd)).toBeNull();
+      } else if (v && isGuest(v) && ROLES[v].beach) {
+        expect(at(date, 6, wd)).toBe(v);
         expect(at(date, 18, wd)).toBeNull();
       } else if (v) {
         expect(at(date, 6, wd)).toBe(v);
@@ -104,5 +108,25 @@ describe('visitors (NH)', () => {
     // when he has no songs yet (asleep a mumble)
     for (const k of ['hello', 'dayHello', 'wake', 'which', 'tuning', 'playing', 'bye', 'byeDay', 'byeNight', 'asleep']) for (const c of [ja, en] as Record<string, string>[]) expect(c[`chat.sp.kk-slider.${k}`], k).toBeTruthy();
     for (const k of ['hello', 'wake']) expect((ja as Record<string, string>)[`chat.sp.kk-slider.${k}`]).toContain('リクエスト');
+  });
+  it('the guests (visitorRoles.ts): Sunday afternoons the week’s guest, each guest once a cycle before any comes again', () => {
+    const monday = '2026-01-05';
+    expect(at('2026-01-11', 11, 0)).toBe('daisy-mae');
+    const g = guestOf(monday, 0);
+    expect(at('2026-01-11', 13, 0)).toBe(g);
+    expect(at('2026-01-11', ROLES[g].beach ? 18 : 22, 0)).toBeNull();
+    // a cycle's slots (each Sunday, every other week's quiet weekday): every guest once
+    const n = GUESTS.length, slots: string[] = [];
+    for (let w = 0; slots.length < n; w++) for (const s of [0, 1] as const) if (slots.length < n && (s === 0 || guestWeek(addDays(monday, w * 7)))) slots.push(guestOf(addDays(monday, w * 7), s));
+    expect([...slots].sort()).toEqual([...GUESTS].sort());
+    // the same on every phone
+    expect(guestOf('2026-03-02', 1)).toBe(guestOf('2026-03-02', 1));
+  });
+  it('Pavé dances on Festivale (the Monday 48 days before Easter), all day', () => {
+    // Easter 2027: March 28 → Festivale February 8 (a Monday)
+    expect(festivale('2027-02-08')).toBe(true);
+    expect(at('2027-02-08', 10, 1)).toBe('pave');
+    expect(at('2027-02-08', 22, 1)).not.toBe('pave');
+    expect(festivale('2027-02-09')).toBe(false);
   });
 });

@@ -69,7 +69,11 @@ const SPECIAL: Record<string, [string, string?, string?]> = {
  *  (NH ships one for the two). */
 const VISITOR_ONLY: Record<string, string | [code: string, tops: string, tex: string]> = {
   franklin: 'Tuk', jack: 'Pkn', jingle: 'Rei', zipper: 'Pyn', reese: 'Alw', cyrus: 'Alp',
-  timmy: ['Rcm', 'NpcSpTopsRcmYshirtsapronH', 'TopsTexTopYshirtsapronHRcm00']
+  timmy: ['Rcm', 'NpcSpTopsRcmYshirtsapronH', 'TopsTexTopYshirtsapronHRcm00'],
+  // the guests (island/visitorRoles.ts)
+  gracie: 'Grf', wardell: ['Man', 'NpcSpTopsManYshirtsH', 'TopsTexTopYshirtsHMan00'], katrina: 'Bpt', wendell: 'Wrl', gullivarrr: 'GulB', pete: 'Plo',
+  leilani: 'Kpm', lottie: ['OtgA', 'NpcSpTopsOtgOnepieceAlineH', 'TopsTexOnepieceAlineHOtg00'], chip: 'Bev', nat: 'Chm',
+  rover: ['Xct', 'NpcSpTopsXctTshirtsN', 'TopsTexTopTshirtsNXct00'], shrunk: 'Upa', tortimer: 'TtlA', phineas: 'Fsl', pave: 'Pck'
 };
 async function buildMap(): Promise<Record<string, MapRow>> {
   registerHooks({

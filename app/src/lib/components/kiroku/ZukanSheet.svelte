@@ -7,6 +7,7 @@
   import NavBar from '../ui/NavBar.svelte';
   import ZukanCard from './ZukanCard.svelte';
   import Zukan from './Zukan.svelte';
+  import Cast from './Cast.svelte';
   import type { ZukanKind } from './zukan.ts';
   import type { PersonId, Who } from '#lib/types.ts';
   import { findsView } from '#lib/model/finds.ts';
@@ -19,7 +20,7 @@
   /** `onback`: opened from 設定 (Hud): ‹ on the rows goes back there (this closes, 設定 reopens where it was). */
   let { open = $bindable(), onback = null }: { open: boolean; onback?: (() => void) | null } = $props();
   /** The kind whose page is open (null: the rows). */
-  let kind = $state<ZukanKind | null>(null);
+  let kind = $state<ZukanKind | 'cast' | null>(null);
 
   const m = $derived(week.model);
   const view = $derived(week.view);
@@ -55,14 +56,16 @@
 
 <Sheet bind:open tunes label={t('title.zukan')} variant="pop" onclose={closed} timed="zukan">
   <div class="titlebar"><NavBar title={kind ? t(`zukan.kind.${kind}`) : t('title.zukan')} onback={kind ? back : onback ? toSettings : null} onclose={() => (open = false)} sfx="self" /></div>
-  <div class="zs-body" class:fill={kind !== null} data-zukan-sheet>
+  <div class="zs-body" class:fill={kind !== null && kind !== 'cast'} data-zukan-sheet>
     {#if m && finds}
       {#key kind}
         <div class="lvl">
-          {#if kind}
+          {#if kind === 'cast'}
+            <Cast />
+          {:else if kind}
             <Zukan {kind} {finds} counts={tallyTotals(m.state.tallies)} {order} {names} {villagers} />
           {:else}
-            <ZukanCard {finds} onopen={(k) => (kind = k)} />
+            <ZukanCard {finds} onopen={(k) => (kind = k)} oncast={() => (kind = 'cast')} />
           {/if}
         </div>
       {/key}

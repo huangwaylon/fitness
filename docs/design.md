@@ -1070,6 +1070,32 @@ night, **Celeste** on a meteor shower's night, the holiday hosts and the wedding
 **Gulliver washes up on the front beach** (**ジョニーの ばしょ**), face down. A tap: my villager turns to them, their
 introduction the first time, then a line. No trading, no ベル.
 
+### Visitors: roles
+
+`island/visitorRoles.ts` (pure), `island/Visitor.svelte`, `island/VisitorShop.svelte`, `island/visitorShop.ts`,
+`e2e/visitors.spec.ts`. NH's other special characters come as **guests** through the visitors' one slot, each NH's own 3D
+model, each with a role (the one framework plays it, the data is per character):
+
+| role | who | what |
+| --- | --- | --- |
+| shop | グレース (Gracie: pieces of 500 かいがら and up), ナッティー (Wardell: any) | their offer and NH's choice box (みせて · また こんど) open their sheet: 6 pieces of the shop's price list, seeded by the day, never today's stock or one the island has; bought as the shop's (the record's checks) |
+| gift | ぺりお (Pete), クーコ (Leilani), タクミ (Lottie) | a piece for the rooms (a present's find: みつけた), once a visit to whoever asks first, the same piece on every phone |
+| fortune | ハッケミィ (Katrina) | the day's luck and lucky colour, each person's own, the same all day |
+| fish | セイイチ (Wendell, on the beach) | hungry: the next fish caught that day feeds him (this phone's record), then his gift |
+| cheer | うおまさ (Chip: fish), カメヤマさん (Nat: bugs) | a hop and a line at each catch of their kind while they're here |
+| chat | かいぞく (Gullivarrr, on the beach), みしらぬネコ (Rover), ししょー (Shrunk), コトブキ (Tortimer), パロンチーノ (Phineas), ベルリーナ (Pavé) | their introduction and lines |
+
+**When:** one guest every Sunday afternoon (12:00–22:00, after Daisy Mae), and every other week on the weekday the
+rotation's draw leaves quiet (the other weeks it stays quiet); a seeded cycle, each guest once before any comes again,
+the same on both phones. Beach guests by day only (06:00–18:00). Pavé dances on Festivale (NH's: the Monday 48 days
+before Easter), all day. The week's draw of NH's weekday visitors is as before.
+
+**Elsewhere:** リセットさん (Resetti) asks first in the editor's island reset; Copper (おまわりさん) turns a wrong key away
+at the pairing page's gate, Booker asks to wait when it can't be checked. **The cast** (ずかん's なかま, `kiroku/Cast.svelte`):
+every special character with NH's own head icon (`npm run npc-icons`: static/room/npc/), its official name and where we
+meet them. With no sensible role on our island (no clothing, hair, turnips, dreams, trains, insurance or post office here),
+Blanca, Digby, Don, Grams, Harriet, Joan, Katie, Leila, Luna, Lyle, Niko, Pelly, Phyllis and Porter are in the cast only.
+
 ### K.K. on his stool
 
 `island/KKSlider.svelte`, `island/kkSlider.ts`, `e2e/visitors.spec.ts`. K.K. Slider (とたけけ) lives on the island on

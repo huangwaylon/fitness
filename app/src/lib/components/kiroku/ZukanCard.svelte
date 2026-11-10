@@ -6,12 +6,16 @@
   import { t } from '#lib/i18n/index.ts';
   import { KIND_ART, ZUKAN_KINDS, entries, type ZukanKind } from './zukan.ts';
   import { findKey, type FirstFind } from '#lib/model/finds.ts';
+  import { CAST } from '../island/visitorRoles.ts';
+  import { staticUrl } from '#lib/staticUrl.ts';
 
   interface Props {
     finds: Map<string, FirstFind>;
     onopen: (kind: ZukanKind) => void;
+    /** なかま: NH's special characters (Cast.svelte). */
+    oncast: () => void;
   }
-  let { finds, onopen }: Props = $props();
+  let { finds, onopen, oncast }: Props = $props();
   const rows = $derived(ZUKAN_KINDS.map((kind) => {
     const all = entries(kind);
     return { kind, total: all.length, n: all.filter((e) => finds.has(findKey(kind, e.id))).length };
@@ -27,6 +31,12 @@
       <span class="go" aria-hidden="true">›</span>
     </button>
   {/each}
+  <button type="button" class="zrow" data-sfx="page" data-zukan="cast" onclick={oncast}>
+    <span class="ic"><img src={staticUrl('room/npc/isabelle.webp')} alt="" width="30" height="30" /></span>
+    <span class="k">{t('zukan.kind.cast')}</span>
+    <b class="v money">{t('cast.count', { n: CAST.length })}</b>
+    <span class="go" aria-hidden="true">›</span>
+  </button>
 </section>
 
 <style>
@@ -37,6 +47,7 @@
   }
   .zrow:active { background: color-mix(in srgb, var(--text) 8%, transparent); }
   .ic { flex: none; width: 34px; display: grid; place-items: center; line-height: 0; }
+  .ic img { width: 30px; height: 30px; object-fit: contain; }
   .k { flex: 1; font-weight: 700; font-size: var(--fs-body); }
   .v { font-size: var(--fs-body); }
   .v.all { color: var(--leaf-text, #2E8A3E); }

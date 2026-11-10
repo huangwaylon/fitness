@@ -56,6 +56,7 @@
     "garden-icons": "node scripts/garden-icons.ts",
     "world3d-sheet": "node scripts/world3d-sheet.ts",
     "villagers3d": "node scripts/villagers3d-models.ts",
+    "npc-icons": "node scripts/npc-icons.ts",
     "players3d": "node scripts/players3d-models.ts",
     "player:packs": "node scripts/player-packs.ts",
     "layout": "node scripts/layout.ts",

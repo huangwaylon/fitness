@@ -169,8 +169,10 @@ Their skinned models are converted apart (`scripts/villagers3d-models.ts`, `scri
 `app/static/room/villagers3d/<id>.glb` (442 files, ≤ 100 KB each), posed in code: the villagers, the roster's special
 characters (K.K., Daisy Mae, Wisp, Gulliver, Celeste, Kicks, Label, Saharah, Leif, Redd, C.J., Flick, Brewster, Kapp'n,
 Wilbur) and, by
-`VISITOR_ONLY` (not in the picker), Franklin, Jack, Jingle, Zipper, Reese and Cyrus. Pavé is in NH's files (NpcSpPck)
-but has no visit yet, so he isn't converted. A material's textures are the ones its Collada effect samples, not the ones named after it (`mCapVis`
+`VISITOR_ONLY` (not in the picker), Franklin, Jack, Jingle, Zipper, Reese and Cyrus, the shop's twins (`timmy`: NH's
+NpcSpRcm in his shop apron, one model for Timmy and Tommy) and the guests (island/visitorRoles.ts: Gracie, Wardell,
+Katrina, Wendell, Gullivarrr, Pete, Leilani, Lottie, Chip, Nat, Rover, Shrunk, Tortimer, Phineas, Pavé; 64-99 KB each,
+loaded only on their day); one whose clothes aren't part of its body names its top's mesh and texture there. A material's textures are the ones its Collada effect samples, not the ones named after it (`mCapVis`
 and `mGlassCap` sample `mBody_Alb` and `mGlass_Alb`); the converter fails a villager whose GLB has a material without
 a base colour where the source has one. Each villager wears its default top's texture (a single-look top, as the Sanrio tees, is the data's row itself, not a variation: `villager3d.test` holds every material to its texture). Tulin, Mineru, Cece and Viché aren't in
 the 2.0.0 export: their cards stay.

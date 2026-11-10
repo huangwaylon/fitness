@@ -212,6 +212,9 @@ export const SCENE = {
   /** localStorage `scene-franklin` = `{ date, asked, fed }`: Turkey Day on this phone (island/Visitor.svelte): whether
    *  Franklin asked for his fish and whether a catch made him happy. */
   franklin: 'scene-franklin',
+  /** localStorage `scene-wendell` = `{ date, asked, fed }`: Wendell on the beach on this phone (island/Visitor.svelte):
+   *  whether he asked for a fish and whether a catch fed him. */
+  wendell: 'scene-wendell',
   /** localStorage `scene-wedding` = the date the wedding day's confetti last burst on this phone (island/Wedding.svelte). */
   wedding: 'scene-wedding',
   /** localStorage `scene-presence.<A|B|G>` = `{ here, gone, at }`: what the relay last said of who's online, for this

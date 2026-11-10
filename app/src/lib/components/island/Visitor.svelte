@@ -49,7 +49,15 @@
   import { BUILDINGS, CENTRE_STAGE } from './world.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { beachedAt, visitorLine, visitorNow, type VisitorId } from './visitors.ts';
+  import { beachedAt, onBeach, visitorLine, visitorNow, type VisitorId } from './visitors.ts';
+  import { ROLES, fortuneOf, giftOf, isGuest, type GuestId } from './visitorRoles.ts';
+  import { findKey, findsView } from '#lib/model/finds.ts';
+  import { recordFind } from '#lib/store/actions.ts';
+  import { week } from '#lib/store/week.svelte.ts';
+  import { toasts } from '#lib/ui-state/toast.svelte.ts';
+  import { i18n } from '#lib/i18n/index.ts';
+  import { dateMs, ZONE_OFFSET_MS } from '#lib/time/dates.ts';
+  import type { Component } from 'svelte';
   import type { Choice } from './pager.ts';
   import { stretch } from '../motion/stretch.svelte.ts';
   import { SCENE } from '#lib/sync/storage.ts';
@@ -77,7 +85,7 @@
   const FLOAT: Partial<Record<VisitorId, number>> = { wisp: 12 };
   /** Gulliver lies washed up face down at the front beach's water's edge (NH), somewhere new each day (visitors.ts
    *  beachedAt: the layout's sand, by the date); the rest stand on centre stage (spots.ts stageOf: the layout's plaza). */
-  const spotOf = (id: VisitorId, date: string): Pt | null => (id === 'gulliver' ? [...beachedAt(site.layout, date, islandSeed())] : null);
+  const spotOf = (id: VisitorId, date: string): Pt | null => (onBeach(id) ? [...beachedAt(site.layout, date, islandSeed())] : null);
   /** The campsite's door: walkers arrive from it and leave into it (spec §3). */
   const camp = (): Pt => ((b) => [b.x, b.z - 16] as Pt)(BUILDINGS.find((b) => b.id === 'campsite')!);
   /** The partner comes over only to a visitor this near its home (u): never across the island to centre stage. */
@@ -85,7 +93,12 @@
   const w = useWorld();
   /** Visitors outside the roster (an event's guest): their name-tag colour (Jack: his robe's purple; the holiday hosts:
    *  Nookipedia's title colours). */
-  const TAG: Partial<Record<VisitorId, string>> = { jack: '#7A4FB8', franklin: '#FF97CA', jingle: '#E10000', zipper: '#FFE20B', reese: '#FFAAD1' };
+  const TAG: Partial<Record<VisitorId, string>> = {
+    jack: '#7A4FB8', franklin: '#FF97CA', jingle: '#E10000', zipper: '#FFE20B', reese: '#FFAAD1',
+    // the guests (the ACNH data's bubble colours)
+    gracie: '#D254C7', wardell: '#3E8FB0', katrina: '#1C2F60', wendell: '#8C99FD', gullivarrr: '#F52C2C', pete: '#44C04F', leilani: '#7DCC00',
+    lottie: '#FFA6AA', chip: '#77614C', nat: '#72AA1C', rover: '#5A66D2', shrunk: '#E86A6A', tortimer: '#C9A800', phineas: '#D38856', pave: '#0A96AE'
+  };
   const CYRUS_TAG = '#4DDCD9';
 
   const clock = $derived(minuteNow());
@@ -495,7 +508,9 @@
     const host = scene;
     if (!host) return;
     const onCatch = (e: Event) => {
-      const fish = (e as CustomEvent<{ kind: string; id: string }>).detail?.id;
+      const c = (e as CustomEvent<{ kind: string; id: string }>).detail;
+      if (shown && isGuest(shown)) return guestCatch(shown, c);
+      const fish = c?.kind === 'fish' ? c.id : undefined;
       const d = franklinDay.read(today());
       if (shown !== 'franklin' || !fish || !d.asked || d.fed) return;
       franklinDay.patch(d.date, { fed: true });
@@ -542,17 +557,109 @@
     if (id === 'jack') return jack(name, target, TAG.jack!);
     if (id === 'franklin') return franklin(name, target, TAG.franklin!);
     if (id === 'reese') return couple(target);
+    // a guest: their role's (a shop's first tap is its introduction and its offer at once)
+    if (isGuest(id) && (met.has(id) || ROLES[id].kind === 'shop')) {
+      const first = !met.has(id);
+      met.add(id);
+      return guest(id, name, target, TAG[id]!, first);
+    }
     // their name tag in their own NH colour (the roster, loaded on the first visit's tap)
     const colour = TAG[id] ?? ((await import('#lib/villagers/roster.ts')).ROSTER as Record<string, { colour?: string }>)[id]?.colour;
     // the first tap of a visit: their introduction (a few pages, as NH's visitors open)
     if (!met.has(id)) {
       met.add(id);
+      if (id === 'wendell') wendellDay.patch(today(), { asked: true });
       return say(name, t(`chat.sp.${id}.intro`), target, { colour });
     }
     last = visitorLine(id, Math.random, last);
     // Celeste names the season's sign (its zodiac fragment is the likelier one after tonight's wishes)
     const sign = zodiacOf(localDateAt(now().getTime())).replace(/-fragment$/, '');
     say(name, t(last, { sign: t(`zodiac.${sign}`) }), target, { colour });
+  }
+
+  // ---- the guests' roles (visitorRoles.ts): a shop, a gift, Katrina's reading, Wendell's fish, a cheer at a catch ----
+  const wendellDay = dayRecord(SCENE.wendell, { asked: false, fed: false });
+  let shopOpen = $state(false);
+  let shopFor = $state<{ id: GuestId; pool: 'dear' | 'any'; name: string } | null>(null);
+  let ShopSheet = $state<Component<{ open: boolean; id: GuestId; pool: 'dear' | 'any'; name: string }> | null>(null);
+  function openShop(id: GuestId, name: string) {
+    void import('./VisitorShop.svelte').then((m) => {
+      ShopSheet = m.default as unknown as typeof ShopSheet;
+      shopFor = { id, pool: ROLES[id].pool ?? 'any', name };
+      shopOpen = true;
+    }, () => {});
+  }
+  /** The piece a giver gives today (the same on every phone), whether the island has it already, its name. */
+  async function giftNow(id: GuestId): Promise<{ item: string; given: boolean; name: string } | null> {
+    const m = week.model;
+    if (!m) return null;
+    const C = await import('./catalog.ts');
+    const { loadCatalogNames } = await import('#lib/i18n/catalog.ts');
+    await loadCatalogNames(i18n.locale);
+    const date = today(), start = dateMs(date) - ZONE_OFFSET_MS;
+    const before = new Set(m.state.finds.filter((f) => f.kind === 'item' && f.at < start).map((f) => f.id));
+    const item = giftOf(id, date, C.treeFurniture(date).map((i) => i.id), before, islandSeed());
+    if (!item) return null;
+    return { item, given: findsView(m.state).has(findKey('item', item)), name: t(C.catalogName({ kind: 'item', id: item })) };
+  }
+  /** Their gift handed over (a present's find: in the ずかん's みつけた, the もようがえ's), their line, a word on it. */
+  async function give(id: GuestId, name: string, target: Element, colour: string, key = 'gift') {
+    const g = await giftNow(id);
+    if (!g) return say(name, t(`chat.sp.${id}.given`), target, { colour });
+    if (g.given) return say(name, t(`chat.sp.${id}.given`), target, { colour });
+    recordFind('item', g.item);
+    cue('emote-joy');
+    say(name, t(`chat.sp.${id}.${key}`, { item: g.name }), target, { colour });
+    toasts.show(t('guestShop.got', { item: g.name }), 3600, { reaction: 'joy' });
+  }
+  /** A guest's tap after their introduction: their role's. */
+  function guest(id: GuestId, name: string, target: Element, colour: string, first = false) {
+    const role = ROLES[id];
+    if (role.kind === 'shop')
+      return say(name, [...(first ? [t(`chat.sp.${id}.intro`)] : []), t(`chat.sp.${id}.offer`)], target, { colour, choices: [
+        { label: t('visitor.shop.open'), pick: () => openShop(id, name) },
+        { label: t('visitor.shop.no'), pick: () => {} }
+      ] });
+    if (role.kind === 'gift') return void give(id, name, target, colour);
+    if (role.kind === 'fortune') {
+      const f = fortuneOf(today(), week.model?.me ?? 'A', islandSeed());
+      return say(name, [t('chat.sp.katrina.read'), t(`visitor.fortune.luck.${f.luck}`), t('visitor.fortune.colour', { c: t(`visitor.fortune.c.${f.colour}`) })], target, { colour });
+    }
+    if (role.kind === 'fish' && !wendellDay.read(today()).fed) {
+      wendellDay.patch(today(), { asked: true });
+      return say(name, t('chat.sp.wendell.ask'), target, { colour });
+    }
+    last = visitorLine(id, Math.random, last);
+    say(name, t(last), target, { colour });
+  }
+  /** A catch while a guest is here: Wendell fed (his gift), Chip's or Nat's cheer for one of theirs. */
+  function guestCatch(id: GuestId, c: { kind: string; id: string } | undefined) {
+    const role = ROLES[id], a = el?.querySelector('.art');
+    if (!c || !a || phase !== 'here') return;
+    if (role.kind === 'fish' && c.kind === 'fish') {
+      const d = wendellDay.read(today());
+      if (!d.asked || d.fed) return;
+      wendellDay.patch(d.date, { fed: true });
+      clearTimeout(thanksTimer);
+      thanksTimer = setTimeout(() => {
+        treatArt = critterArt(c.id as FishId);
+        treat++;
+        clearTimeout(treatTimer);
+        treatTimer = setTimeout(() => (treat = 0), 2400);
+        void give(id, t(`visitor.${id}`), a, TAG[id]!, 'thanks');
+      }, 2800);
+      return;
+    }
+    if (role.kind === 'cheer' && c.kind === role.cheer && !speaking()) {
+      setEmote('visitor', 'glee');
+      setMotion('visitor', 'hop');
+      faceToward('visitor', actors.mine.x);
+      clearTimeout(thanksTimer);
+      thanksTimer = setTimeout(() => {
+        const what = t(`critter.name.${c.id}`);
+        if (!speaking()) say(t(`visitor.${id}`), t(`chat.sp.${id}.cheer`, { name: what }), a, { colour: TAG[id] });
+      }, 2600);
+    }
   }
 
   /** A tap on the scene (client px): true when the visitor took it. `body`: only a tap on its figure itself (what's
@@ -677,6 +784,7 @@
   const emote = $derived(st.emote ? villagerEmote(st.emote) : null);
 </script>
 
+{#if ShopSheet && shopFor}<ShopSheet bind:open={shopOpen} {...shopFor} />{/if}
 {#if shown && spot}
   <!-- one world node at the feet (camera.svelte.ts): its live position is the director's while it walks; the 3D island
        draws its model there (v3), the node's .art its tap area and its balloon's anchor -->

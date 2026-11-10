@@ -61,7 +61,29 @@ export const BEHAVIOUR: Record<VisitorId, Behaviour> = {
   // Zipper: hops on the spot (CSS) and hops about
   zipper: { roam: 48, arrive: 'hop', leave: 'hop', emotes: ['glee', 'mark-heart', 'mark-note'], signature: { motion: 'hop2', fx: 'sparkles' }, hello: 'glee' },
   // Reese and Cyrus: lean toward each other (CSS), a nuzzle with hearts
-  reese: { roam: 0, arrive: 'walk', leave: 'walk', emotes: ['mark-heart', 'love', 'mark-note'], signature: { motion: 'nuzzle', fx: 'hearts' }, hello: 'mark-heart' }
+  reese: { roam: 0, arrive: 'walk', leave: 'walk', emotes: ['mark-heart', 'love', 'mark-note'], signature: { motion: 'nuzzle', fx: 'hearts' }, hello: 'mark-heart' },
+  // the guests (visitorRoles.ts): Gracie poses, chic; Wardell shows off a piece of furniture, a proud nod
+  gracie: { roam: 0, arrive: 'walk', leave: 'walk', emotes: ['mark-sparkle', 'inspiration', 'glee'], signature: { motion: 'proud', fx: 'sparkles' }, hello: 'mark-sparkle' },
+  wardell: { roam: 0, arrive: 'walk', leave: 'walk', emotes: ['glee', 'inspiration', 'mark-note'], signature: { motion: 'nod', fx: 'glint' }, hello: 'glee' },
+  // Katrina: still, her crystal ball's glint, mysterious
+  katrina: { roam: 0, arrive: 'walk', leave: 'walk', emotes: ['thought', 'mark-sparkle', 'mark-question'], signature: { motion: 'hum', fx: 'glint' }, hello: 'thought' },
+  // Wendell, hungry on the beach: looks about for food, a sigh; Gullivarrr looks out to sea for his ship
+  wendell: { roam: 0, arrive: 'appear', leave: 'walk', emotes: ['mark-sweat', 'thought', 'mark-question'], signature: { motion: 'turn' }, hello: 'mark-sweat' },
+  gullivarrr: { roam: 0, arrive: 'appear', leave: 'fly', emotes: ['surprise', 'glee', 'mark-question'], signature: { motion: 'lookup' }, hello: 'glee' },
+  // Pete with his mailbag, Leilani with her gifts, Lottie with her notebook: cheerful, about the plaza
+  pete: { roam: 40, arrive: 'fly', leave: 'fly', emotes: ['glee', 'mark-note', 'mark-sweat'], signature: { motion: 'flap' }, hello: 'glee' },
+  leilani: { roam: 0, arrive: 'walk', leave: 'walk', emotes: ['glee', 'mark-heart', 'mark-note'], signature: { motion: 'wiggle', fx: 'notes' }, hello: 'glee' },
+  lottie: { roam: 40, arrive: 'walk', leave: 'walk', emotes: ['inspiration', 'glee', 'mark-sparkle'], signature: { motion: 'hop', fx: 'sparkles' }, hello: 'inspiration' },
+  // Chip and Nat watch for catches, a hop at each
+  chip: { roam: 48, arrive: 'walk', leave: 'walk', emotes: ['glee', 'surprise', 'mark-sparkle'], signature: { motion: 'hop' }, hello: 'glee' },
+  nat: { roam: 48, arrive: 'walk', leave: 'walk', emotes: ['curiosity', 'glee', 'surprise'], signature: { motion: 'nod', emote: 'curiosity' }, hello: 'curiosity' },
+  // Rover, the traveller; Shrunk does a little bit; Tortimer, old and slow; Phineas, bowing with his badges
+  rover: { roam: 0, arrive: 'walk', leave: 'walk', emotes: ['glee', 'mark-question', 'thought'], signature: { motion: 'turn' }, hello: 'glee' },
+  shrunk: { roam: 0, arrive: 'walk', leave: 'walk', emotes: ['glee', 'mark-note', 'surprise'], signature: { motion: 'wiggle', fx: 'notes' }, hello: 'glee' },
+  tortimer: { roam: 0, arrive: 'walk', leave: 'walk', emotes: ['thought', 'glee', 'mark-sweat'], signature: { motion: 'nod' }, hello: 'glee' },
+  phineas: { roam: 0, arrive: 'walk', leave: 'walk', emotes: ['mark-sparkle', 'glee', 'inspiration'], signature: { motion: 'proud', fx: 'sparkles' }, hello: 'mark-sparkle' },
+  // Pavé dances for Festivale
+  pave: { roam: 40, arrive: 'walk', leave: 'walk', emotes: ['glee', 'mark-note', 'mark-sparkle'], signature: { motion: 'twirl', fx: 'sparkles' }, hello: 'glee' }
 };
 
 /** What a visitor does on a beat. */

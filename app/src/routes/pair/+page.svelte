@@ -13,6 +13,7 @@
   import OfficialArt from '#lib/components/characters/OfficialArt.svelte';
   import { withKeyboardInset } from '#lib/components/ui/keyboardInset.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
+  import { staticUrl } from '#lib/staticUrl.ts';
 
   let code = $state('');
   let busy = $state(false);
@@ -91,6 +92,14 @@
     />
     <!-- A key that can't be right yet (too short) says what a key looks like, instead of a silent grey button. -->
     <p id="pair-msg" class="msg" class:info={!msg} role="status">{msg || (code && !ready ? t('pair.keyHint') : '')}</p>
+    {#if msg}
+      <!-- the gate's police (NH's Copper turns a wrong key away; Booker asks to wait while it can't be checked) -->
+      {@const guard = msg === t('pair.wrong') ? 'copper' : 'booker'}
+      <p class="guard" data-gate={guard}>
+        <img src={staticUrl(`room/npc/${guard}.webp`)} alt={t(`cast.name.${guard}`)} width="44" height="44" />
+        <span>{t(guard === 'copper' ? 'chat.sp.copper.wrong' : 'chat.sp.booker.wait')}</span>
+      </p>
+    {/if}
     <button type="submit" class="btn" aria-disabled={!ready} disabled={busy} data-sfx="confirm">{t('pair.go')}</button>
   </form>
   <p class="hint" class:strong={!standalone}>{t('pair.hint')}</p>
@@ -122,6 +131,8 @@
   .msg { min-height: 1.4em; margin: 0; font-weight: 700; text-align: center; }
   .msg:not(.info):not(:empty) { background: var(--c-coral); color: var(--c-ink); border-radius: var(--r-chip); padding: 4px 8px; }
   .msg.info { color: var(--text-soft); font-size: var(--fs-s); }
+  .guard { margin: 0; display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: var(--fs-s); white-space: pre-line; word-break: keep-all; }
+  .guard img { flex: none; width: 44px; height: 44px; }
   .hint { margin: 0; text-align: center; color: var(--text-soft); padding: 10px 14px; font-weight: 700; font-size: var(--fs-s); }
   .hint.strong { background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-btn); }
   @media (max-height: 700px), (max-width: 359px) {

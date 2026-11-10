@@ -961,8 +961,8 @@
     const added = kind ? recordFind(kind, item, cid && `catch:${cid}`) : false;
     // junk is no find, but it's kept (the shop buys it: contract/pocket.ts goods)
     if (!kind) recordGoods(item, cid && `catch:${cid}`);
-    // a fish tells the island (Turkey Day: Franklin is waiting for one)
-    if (kind === 'fish') scene?.dispatchEvent(new CustomEvent('island:catch', { detail: { kind: 'fish', id: item } }));
+    // a fish or a bug tells the island (Turkey Day's Franklin and Wendell wait for a fish; Chip and Nat cheer)
+    if (kind === 'fish' || kind === 'bug') scene?.dispatchEvent(new CustomEvent('island:catch', { detail: { kind, id: item } }));
     const n = ++plates;
     const text = pearl ? await loadNames().then(() => t('beach.picked', { name: t('beach.name.pearl') }), () => '') : await catchLine(item as Catch);
     if (plates !== n) return;
