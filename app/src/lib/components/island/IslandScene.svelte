@@ -1208,7 +1208,7 @@
         {#each VILLAGERS as id (id)}
           {@const sd = sides[id]}
           <div class="actor" class:walking={actors[id].walking} class:inside={inTent(id)} data-inside={inTent(id) || undefined} data-actor={id} data-who={sd.person.person} data-seat={seated[id]} data-gym={gymUse[id] || undefined} style:--seat-drop={u(SEAT_DROP)} style:--rep-lift={u(9)} data-person={sd.person.person} data-stung={stung[id] || null} style:--bob-delay={id === 'partner' ? '-1.2s' : id === 'third' ? '-0.6s' : '0s'}
-            {@attach world.at({ x: sd.home[0], z: sd.home[1], h: VILLAGER.h, live: () => livePos(id), always: true })}>
+            {@attach world.at({ x: sd.home[0], z: sd.home[1], h: VILLAGER.h, live: () => livePos(id), always: true, inv: true })}>
             <button type="button" class="vil" data-sfx="self" bind:this={vilEls[id]}
               aria-label={id !== 'mine'
                 ? t('island.highfive', { name: sd.person.villagerName })
@@ -1367,7 +1367,9 @@
   .vil:disabled { cursor: default; }
   /* a 3D villager: its tap area its model's core (Island3D sets --v3w, --v3h in u; rounded, as the figure), not the 2D
      render's with its padding and least size: in front of the tent it covered most of the door) */
-  .scene[data-r3] :global(.actor[data-v3] .vil) { width: calc(var(--v3w, 46) * 100cqw / 390); height: calc(var(--v3h, 76) * 100cqw / 390); min-width: 0; min-height: 0; padding: 0; }
+  /* (at least a thumb on screen, 48px, by the node's own --inv: written with its scale in the same frame, where
+     Island3D's --v3w floor reads the camera a frame apart from the node's placing: 40px on a loaded runner mid-walk) */
+  .scene[data-r3] :global(.actor[data-v3] .vil) { width: calc(var(--v3w, 46) * 100cqw / 390); height: calc(var(--v3h, 76) * 100cqw / 390); min-width: calc(48px * var(--inv, 1)); min-height: calc(48px * var(--inv, 1)); padding: 0; }
   .scene[data-r3] :global(.actor[data-v3] .vil > *) { pointer-events: none; }
   .vil:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
