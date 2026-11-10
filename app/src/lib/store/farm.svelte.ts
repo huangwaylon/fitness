@@ -51,6 +51,13 @@ export function dig(d: LocalDate, p: string): { ok: boolean; undo?: () => boolea
   };
 }
 
+/** Starts from the shop's かう: `n` of `crop` at FARM.startBuy each (the record checks the cover). */
+export function buyStarts(crop: Crop, n: number): SendResult & { v?: number } {
+  if (!week.model || !Number.isInteger(n) || n < 1 || n > 99) return { ok: false };
+  const v = n * FARM.startBuy;
+  return { ...week.send('buy_starts', { crop, n, v }, { holdMs: UNDO_MS }), v };
+}
+
 // ---- what I plant next (たね), this phone's
 
 const SEED_KEY = 'farm.seed';

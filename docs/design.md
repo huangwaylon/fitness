@@ -1033,10 +1033,12 @@ furniture for the rooms. Each person's own pocket and かいがら, the guest's 
   toward him, when he's out of view): いらっしゃいませ once I first reach the counter (not at the door), gone after 4 s
   or at a tap on it; it takes no other tap meant for the room (2026-11-10).
 - **うる** (sell): my pocket, everything I caught, found or picked up less what I sold, in sections (虫, 魚, 海の幸,
-  かいがら, 資源, 果物, 化石, その他), dearest first. A tap picks one more, − one less, ぜんぶ all; the bar says 「3こで 120
+  かいがら, 資源, 果物, 野菜, 化石, その他), dearest first; 野菜 the fields' vegetables and starts
+  ([farming.md](farming.md)). A tap picks one more, − one less, ぜんぶ all; the bar says 「3こで 120
   かいがら」 and うる sells. Selling never takes anything out of the ずかん or the museum. A present's furniture or recipe
   never sells, nor a message bottle. An empty pocket opens the shop on かう.
-- **かう** (buy): today's stock, 24 pieces of NH furniture a Tokyo day, seeded, less every piece the island had by the
+- **かう** (buy): first 苗, the six crops' starts for the fields (always in stock, 14 each: a tap one more, − one
+  less, their own 買う); then today's stock, 24 pieces of NH furniture a Tokyo day, seeded, less every piece the island had by the
   day's start (the ずかん's furniture finds and anyone's buys), so both phones agree all day. Fewer when the island has
   nearly everything; none, 売り切れ. A piece I own says もってる. The bar's 全部 picks every piece I don't have yet
   (「ぜんぶ 23こで 5,026 かいがらだも！」) and 買う buys them at once (one undo); short of the total, the twins say by how

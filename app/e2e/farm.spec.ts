@@ -28,8 +28,18 @@ const POCKET: Seed[] = [['tally', { date: D, counts: { 'fish:koi': 1 } }, 'A'], 
 const farmRows = (page: Page) => page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{"events":[]}').events as { id: string; type: string; data: { ops: { o: string; p: string; n?: number }[] } }[])
   .filter((e) => e.type === 'farm' && !e.id.startsWith('seed-')).flatMap((e) => e.data.ops));
 
-test('the farm menu at the bottom left: たね picks my starts, a tap on my empty plot plants one; the 畑 sheet counts them', async ({ page }) => {
-  await seed(page, D, [FIELD, ...POCKET]);
+test('starts bought at the shop’s かう; the farm menu at the bottom left: たね picks them, a tap on my empty plot plants one; the 畑 sheet counts them', async ({ page }) => {
+  await seed(page, D, [FIELD, ...POCKET.slice(0, 2)]);
+  // three tomato starts from かう's 苗 (3 × 14)
+  await page.goto(`shop?demo&date=${D}T12:00`);
+  await expect(page.locator('[data-shop]')).toHaveAttribute('data-shells', '200');
+  await page.waitForFunction(() => !!(window as unknown as { __shop?: object }).__shop);
+  await page.evaluate(() => (window as unknown as { __shop: { talk(): void } }).__shop.talk());
+  await page.locator('[data-shop-choice="buy"]').click();
+  for (let i = 0; i < 3; i++) await page.locator('[data-shop-start="tomato"]').click();
+  await expect(page.locator('[data-shop-starts-offer]')).toHaveAttribute('data-shop-starts-offer', '42');
+  await page.locator('[data-shop-starts-buy]').click();
+  await expect(page.locator('[data-shop]')).toHaveAttribute('data-shells', '158');
   await page.goto(`?demo&date=${D}T12:00`);
   await islandUp(page);
   await quiet(page);

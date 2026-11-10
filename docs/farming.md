@@ -4,7 +4,8 @@ NH 2.0's vegetables on the island (decided 2026-11-10; the user's changes the sa
 starts at the shop, plant them on your field, water, harvest, and the plant grows back. The produce sells for かいがら,
 never ベル. Code: `contract/farm.ts` (the rules, shared by the record and the phones), `contract/wet.ts` (rain),
 `model/farm.ts`, `layout/field.ts`, `store/farm.svelte.ts` (the writes, たね), `island/farm.ts` (the scene),
-`island/farmTap.ts` (a plot's tap), `island/FarmMenu.svelte`, `farm/FarmSheet.svelte`, `world3d/objects.ts` (drawn);
+`island/farmTap.ts` (a plot's tap), `island/FarmMenu.svelte`, `farm/FarmSheet.svelte`, `shop/ShopRoom.svelte` (苗),
+`world3d/objects.ts` (drawn);
 tests `contract/farm.test.ts`, `island/farmTap.test.ts`, `relay/test/farm.test.ts`, `e2e/farm.spec.ts`.
 
 ## Decisions
@@ -76,4 +77,5 @@ levers, if the live numbers drift (`npm run logs`, the sells): `FARM.regrowDays`
   next sync (a few seconds: a batch waits 2 s for the next tap).
 - **The 畑 sheet:** my plants (収穫できる, 育成中 with days left, 空き区画), today's harvest and its かいがら, 「12/40株」,
   the partner's and the guest's plants folded, the rule line and 「苗はタヌキ商店で買えます」.
-- **The shop:** うる's 野菜 section (vegetables and starts); かう's 「なえ」 row of the six starts with a count.
+- **The shop:** うる's 野菜 section (vegetables and starts); かう's 苗, the six starts above today's stock, a tap one
+  more and − one less, 「5個で70かいがら」 and their own 買う (the shop's 取り消す 5 s).

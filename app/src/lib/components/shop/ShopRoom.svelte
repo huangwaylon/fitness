@@ -44,7 +44,9 @@
   import { allOf, buyAll, buyPiece, buyRefusal, stockAt } from './stock.ts';
   import { shopView } from '#lib/model/shop.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { sell, undoBanner } from '#lib/store/actions.ts';
+  import { sell, together, undoBanner } from '#lib/store/actions.ts';
+  import { buyStarts } from '#lib/store/farm.svelte.ts';
+  import { CROPS, FARM, type Crop } from '#lib/contract/farm.ts';
   import { layout as islandLayout } from '#lib/store/layout.svelte.ts';
   import { leaveBy } from '../island/doorOut.ts';
   import { hook } from '../island/devHooks.ts';
@@ -216,6 +218,30 @@
     // (a piece bought in the room: its card stays, saying it's mine now)
     if (panel) pick = null;
     eng?.bump(`s-${bought}`);
+    speak('thanks');
+  }
+  // ---- かう's なえ (docs/farming.md): the six starts, always in stock, a tap one more, − one less; 買う buys them at once
+  let starts = $state<Partial<Record<Crop, number>>>({});
+  const startsN = $derived(CROPS.reduce((a, c) => a + (starts[c] ?? 0), 0));
+  const startsV = $derived(startsN * FARM.startBuy);
+  function moreStart(c: Crop) {
+    starts = { ...starts, [c]: ((starts[c] ?? 0) + 1) % 100 };
+    cue('tick');
+  }
+  function lessStart(c: Crop) {
+    starts = { ...starts, [c]: Math.max(0, (starts[c] ?? 0) - 1) };
+  }
+  function buyStartsPicked() {
+    if (!startsN) return void cue('boop');
+    if (startsV > shop.shells) {
+      speak('short', { name: t('shop.starts') });
+      return void cue('boop');
+    }
+    const r = together(CROPS.flatMap((c) => (starts[c] ? [buyStarts(c, starts[c]!)] : [])));
+    if (!r.ok) return void cue('boop');
+    cue('buy');
+    undoBanner(t('shop.boughtStarts', { n: String(startsN), v: formatNum(startsV) }), r);
+    starts = {};
     speak('thanks');
   }
   function buyEvery() {
@@ -683,6 +709,28 @@
         {/if}
       {:else}
         <div class="list" data-shop-list>
+          <!-- the starts for the fields (docs/farming.md): always in stock, a count each, bought by their own 買う -->
+          <h2 class="sec-label">{t('shop.starts')}</h2>
+          <ul class="grid" data-shop-starts>
+            {#each CROPS as c (c)}
+              {@const n = starts[c] ?? 0}
+              <li class="tile" class:on={n > 0}>
+                <button type="button" class="pickable" data-shop-start={c} data-picked={n} data-sfx="self" aria-label={t('shop.startLabel', { name: t(`beach.name.${c}-start`), v: String(FARM.startBuy), c: String(n) })} onclick={() => moreStart(c)}>
+                  <span class="ic"><OfficialArt key="finds/{c}-start" size={46} /><span class="tag"><OfficialArt key="finds/{c}" size={20} /></span></span>
+                  <span class="nm">{t(`beach.name.${c}-start`)}</span>
+                  <span class="price"><span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={14} /></span>{FARM.startBuy}</span>
+                  {#if n}<span class="count" aria-hidden="true">×{n}</span>{/if}
+                </button>
+                {#if n}<button type="button" class="less" data-shop-start-less={c} data-sfx="tick" aria-label={t('shop.less', { name: t(`beach.name.${c}-start`) })} onclick={() => lessStart(c)}>−</button>{/if}
+              </li>
+            {/each}
+          </ul>
+          {#if startsN}
+            <div class="starts-bar">
+              <p class="sum" data-shop-starts-offer={startsV}>{t('shop.offer', { n: String(startsN), v: formatNum(startsV) })}</p>
+              <button type="button" class="btn small" data-shop-starts-buy data-sfx="self" aria-disabled={startsV > shop.shells} onclick={buyStartsPicked}>{t('shop.buy')}</button>
+            </div>
+          {/if}
           <h2 class="sec-label">{t('shop.today')}</h2>
           {#if stock.length}
             <ul class="grid" data-shop-stock>
@@ -858,6 +906,12 @@
   .bar .btn { margin: 0; flex: none; }
   .bar .btn.paper[aria-pressed='true'] { --fill: var(--c-yuzu); }
   .sum { flex: 1 1 auto; min-width: 0; margin: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); }
+  /* the starts' own 買う, under their row */
+  .starts-bar { display: flex; align-items: center; gap: 8px; }
+  .starts-bar .btn { margin: 0; flex: none; }
+  /* a start's seedling (NH's one for all six) wears its crop */
+  .ic { position: relative; }
+  .tag { position: absolute; right: -6px; bottom: -4px; line-height: 0; }
   .fail { position: absolute; left: 16px; right: 16px; top: 40%; text-align: center; color: #F5E4BC; font-weight: 700; }
   @media (prefers-reduced-motion: reduce) { .pickable:active { transform: none; } .card, .menu { animation: none; } }
 </style>
