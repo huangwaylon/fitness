@@ -465,7 +465,7 @@ const cedarDeco = gardenPack('cedar-deco', [
   { id: 'cedar-deco-snow', parts: [['PltTreeCedarDecoSnow', 'PltTreeCedarDecoASnow']], snow: true, alias: { mPltTreeDecoA: 'mPltTreeDeco' }, uses: [] }
 ]);
 /** The garden's jobs (their models go to world3d/garden.json). */
-export const GARDEN: AssetJob[] = [...fencePacks, crops, plants, cedarDeco];
+const GARDEN: AssetJob[] = [...fencePacks, crops, plants, cedarDeco];
 
 export const ASSETS: AssetJob[] = [...bugs, ...fish, ...sea, ...shadows, ...finds, ...flowers, ...bushes, ...trees, ...decos, ...decor, ...packs, ...events, ...board, ...fxs, ...tools, ...accessories, ...GARDEN];
 
