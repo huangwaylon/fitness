@@ -30,6 +30,13 @@ export function failedSpecs(reports: { suites?: Suite[] }[]): string[] {
 /** the failed specs the gate didn't run (its plan's spec files, e2e/ paths) */
 export const missed = (failed: string[], ran: string[]) => failed.filter((f) => !ran.some((r) => r.split('/').pop() === f));
 
+/** the impact.json rules to consider for the missed specs: each changed source directory (src/, content/) to them */
+export function rulesFor(miss: string[], changed: string[]): string[] {
+  const dirs = [...new Set(changed.filter((f) => /^(src|content)\//.test(f) && !f.endsWith('.test.ts')).map((f) => f.slice(0, f.lastIndexOf('/'))))].sort();
+  const specs = JSON.stringify(miss.map((f) => f.replace(/\.spec\.ts$/, '')));
+  return dirs.slice(0, 8).map((d) => `["${d}/**", ${specs}],`);
+}
+
 if (import.meta.main) {
   const [dir, ...files] = process.argv.slice(2);
   const lines = (f: string) => (existsSync(join(dir, f)) ? readFileSync(join(dir, f), 'utf8').split('\n').filter(Boolean) : null);
@@ -45,6 +52,8 @@ if (import.meta.main) {
       console.log(`The gate didn't select ${miss.length} failing spec${miss.length > 1 ? 's' : ''}. If the commit broke ${miss.length > 1 ? 'them' : 'it'}, add an e2e/impact.json rule from the file that did to the spec.\n`);
       for (const f of miss) console.log(`- \`e2e/${f}\``);
       console.log(`\nThe commit's changed files: ${files}`);
+      const rules = rulesFor(miss, changed);
+      if (rules.length) console.log(`\nThe e2e/impact.json rule for the directory that broke ${miss.length > 1 ? 'them' : 'it'} (merge into its existing rule, if there is one):\n\n\`\`\`json\n${rules.join('\n')}\n\`\`\`\n`);
       for (const f of miss) console.error(`::warning file=app/e2e/${f},title=Missed by the gate::${f} failed in the full logic tier but the gate didn't run it: an e2e/impact.json rule for the change that broke it?`);
     }
   }

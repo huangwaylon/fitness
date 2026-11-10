@@ -2,9 +2,9 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { fill, mapFile, select, type Ctx } from '../../scripts/e2e-impact.ts';
+import { context, fill, mapFile, select, type Ctx } from '../../scripts/e2e-impact.ts';
 import { runnerTrouble, tally } from '../../scripts/e2e-flakes.ts';
-import { failedSpecs, missed } from '../../scripts/e2e-missed.ts';
+import { failedSpecs, missed, rulesFor } from '../../scripts/e2e-missed.ts';
 
 const ctx: Ctx = {
   specs: ['boot.spec.ts', 'tent.spec.ts', 'tent-hold.spec.ts', 'kikimimi-call.spec.ts', 'kikimimi-mic-role.spec.ts', 'fishing3d.spec.ts', 'offline.spec.ts', 'big.spec.ts'],
@@ -88,6 +88,19 @@ describe('e2e/impact.json', () => {
     expect(Object.keys(impact.unmapped).filter((d) => !unmapped.includes(d))).toEqual([]);
   });
 
+  // c5d8f757 broke /editor/?view=phone&edit (decor, gym red in the full tier) and the gate, with no rule to them, passed
+  const repo = context(app);
+  const phone = specs.filter((f) => /openEditor\(|view=phone/.test(readFileSync(join(app, 'e2e', f), 'utf8'))).sort();
+  it("runs every spec that opens the phone editor for an editor or layoutEdit change, within the budget (c5d8f757's slip)", () => {
+    expect(phone).toEqual(expect.arrayContaining(['decor.spec.ts', 'gym.spec.ts']));
+    const slipped = ['src/lib/components/editor/Preview3D.svelte', 'src/lib/components/editor/previewCam.ts', 'src/lib/components/layoutEdit/IslandEdit.svelte', 'src/lib/components/layoutEdit/PlanStage.svelte', 'src/lib/components/world3d/engine.ts', 'src/lib/components/world3d/islandCam.ts'];
+    const s = select(slipped, repo);
+    const ran = new Set([...s.gate, ...s.x3, ...s.once, ...s.reached.keys()]);
+    expect(phone.filter((f) => !ran.has(f)), 'specs opening /editor/?view=phone left out').toEqual([]);
+    for (const f of ['src/lib/components/layoutEdit/PlanStage.svelte', 'src/lib/components/editor/Preview3D.svelte', 'src/routes/editor/+page.svelte'])
+      expect(phone.filter((p) => !repo.gate.includes(p) && !mapFile(f, repo).includes(p)), f).toEqual([]);
+  });
+
   it('names only specs there are', () => {
     const none = impact.rules.flatMap(([glob, pats]) => pats.filter((p) => !p.includes('$1') && !specs.some((s) => new RegExp(`^${p.replace(/[.-]/g, '\\$&').replace(/\*/g, '.*')}\\.spec\\.ts$`).test(s))).map((p) => `${glob}: ${p}`));
     expect(none).toEqual([]);
@@ -103,6 +116,10 @@ describe('what the gate missed', () => {
 
   it("the failed specs that weren't in the gate's plan", () => {
     expect(missed(['a.spec.ts', 'd.spec.ts'], ['e2e/a.spec.ts', 'e2e/boot.spec.ts'])).toEqual(['d.spec.ts']);
+  });
+
+  it("each changed source directory's impact.json rule to the missed specs", () => {
+    expect(rulesFor(['decor.spec.ts', 'gym.spec.ts'], ['src/lib/components/layoutEdit/PlanStage.svelte', 'src/lib/components/layoutEdit/IslandEdit.svelte', 'src/lib/x.test.ts', 'static/a.webp'])).toEqual(['["src/lib/components/layoutEdit/**", ["decor","gym"]],']);
   });
 });
 

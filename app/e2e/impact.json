@@ -1,5 +1,5 @@
 {
-  "//": "Which e2e specs a changed file reaches (scripts/e2e-impact.ts, docs/ops/testing.md \"The gate\"): [path glob, [spec names]], paths under app/, the first rule whose specs exist wins. A spec name is its file without .spec.ts, `*` any run of letters, $1 the path's first `*`. A src file no rule maps tries its own name (fishing3d.ts: fishing3d*.spec.ts); one still unmapped adds nothing: the gate set runs, and the full logic tier after the deploy. Over the gate's budget, the push gets the gate set only. Every directory under src/ and content/ has a file some rule (or its name) maps, or is in `unmapped` with why (src/lib/e2e-impact.test.ts).",
+  "//": "Which e2e specs a changed file reaches (scripts/e2e-impact.ts, docs/ops/testing.md \"The gate\"): [path glob, [spec names]], paths under app/, the first rule whose specs exist wins. /editor/?view=phone is the island's もようがえ (e2e/island.ts openEditor): every spec that opens it is in the editor/ and layoutEdit/ rules. A spec name is its file without .spec.ts, `*` any run of letters, $1 the path's first `*`. A src file no rule maps tries its own name (fishing3d.ts: fishing3d*.spec.ts); one still unmapped adds nothing: the gate set runs, and the full logic tier after the deploy. Over the gate's budget, the push gets the gate set only. Every directory under src/ and content/ has a file some rule (or its name) maps, or is in `unmapped` with why (src/lib/e2e-impact.test.ts).",
   "rules": [
     ["content/units/**", ["kikimimi-units", "kikimimi-zukan", "kikimimi-path", "kikimimi-tile", "kikimimi-check", "offline"]],
     ["content/listen/story/**", ["kikimimi-story", "kikimimi-zukan", "kikimimi-path", "kikimimi-tile", "kikimimi-check", "offline"]],
@@ -44,9 +44,9 @@
     ["src/lib/components/wallet/**", ["shop", "purchases"]],
     ["src/routes/shop/**", ["shop", "purchases"]],
     ["src/lib/*/shop*", ["shop", "purchases"]],
-    ["src/lib/components/editor/**", ["editor*"]],
-    ["src/routes/editor/**", ["editor*"]],
-    ["src/lib/components/layoutEdit/**", ["island-edit", "layout-island"]],
+    ["src/lib/components/editor/**", ["editor*", "island-edit", "decor", "gym", "camp", "island3d-layout", "visitor-spot"]],
+    ["src/routes/editor/**", ["editor*", "island-edit", "decor", "gym", "camp", "island3d-layout", "visitor-spot"]],
+    ["src/lib/components/layoutEdit/**", ["editor*", "island-edit", "layout-island", "decor", "gym", "camp", "island3d-layout", "visitor-spot"]],
     ["src/lib/layout/**", ["layout-island", "island3d-layout", "island-edit", "editor"]],
     ["src/lib/*/layout*", ["layout-island", "island3d-layout", "editor"]],
     ["src/lib/components/board/**", ["board"]],

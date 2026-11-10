@@ -144,12 +144,14 @@ async function deployed(): Promise<{ sha: string; from: string }> {
   throw new Error(why.join('; '));
 }
 
-function context(): Ctx {
-  const specs = readdirSync('e2e').filter((f) => f.endsWith('.spec.ts')).sort();
+/** the repo's own: its specs, their helpers' importers, impact.json's rules, the gate set, timings.json's costs (`app`: app/) */
+export function context(app = '.'): Ctx {
+  const e2e = join(app, 'e2e');
+  const specs = readdirSync(e2e).filter((f) => f.endsWith('.spec.ts')).sort();
   // the helpers' import graph: e2e/*.ts importing './x.ts'
   const imports = new Map<string, string[]>();
-  for (const f of readdirSync('e2e').filter((f) => f.endsWith('.ts')))
-    imports.set(f, [...readFileSync(join('e2e', f), 'utf8').matchAll(/from '\.\/([\w.-]+?)(?:\.ts)?'/g)].map((m) => `${m[1]}.ts`));
+  for (const f of readdirSync(e2e).filter((f) => f.endsWith('.ts')))
+    imports.set(f, [...readFileSync(join(e2e, f), 'utf8').matchAll(/from '\.\/([\w.-]+?)(?:\.ts)?'/g)].map((m) => `${m[1]}.ts`));
   const importers = new Map<string, string[]>();
   for (const h of imports.keys()) {
     if (h.endsWith('.spec.ts') || h === 'fixtures.ts') continue; // (fixtures.ts: every spec's: the gate set)
@@ -159,14 +161,14 @@ function context(): Ctx {
       return seen.has(h);
     }));
   }
-  const times: Record<string, number> = JSON.parse(readFileSync('e2e/timings.json', 'utf8'));
+  const times: Record<string, number> = JSON.parse(readFileSync(join(e2e, 'timings.json'), 'utf8'));
   const perFile = new Map<string, number>();
   for (const [k, ms] of Object.entries(times)) perFile.set(k.split(' › ')[0], (perFile.get(k.split(' › ')[0]) ?? 0) + ms);
   return {
     specs,
     importers,
-    rules: (JSON.parse(readFileSync('e2e/impact.json', 'utf8')) as { rules: Rule[] }).rules,
-    gate: Object.keys((JSON.parse(readFileSync('e2e/gate.json', 'utf8')) as { specs: Record<string, string> }).specs),
+    rules: (JSON.parse(readFileSync(join(e2e, 'impact.json'), 'utf8')) as { rules: Rule[] }).rules,
+    gate: Object.keys((JSON.parse(readFileSync(join(e2e, 'gate.json'), 'utf8')) as { specs: Record<string, string> }).specs),
     cost: (s) => perFile.get(s) ?? UNTIMED_MS
   };
 }
