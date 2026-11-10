@@ -64,6 +64,7 @@
   import { TIER_H } from '#lib/layout/grid.ts';
   import { drawOff } from '../../ui-state/testMode.ts';
   import { releaseWorker } from '#lib/ui-state/swLate.ts';
+  import { timers } from '../island/timers.ts';
   import { DEVICE, localKV } from '#lib/sync/storage.ts';
   import { setDrawnFps } from '#lib/sync/log.ts';
   import { weather } from '../island/weatherNow.svelte.ts';
@@ -733,6 +734,8 @@
   let b3: Balloon3 | null = null;
 
   // ---- the island's day: its models and stand-ins ----
+  /** (cleared as the island goes: a pending one held its engine, context and canvas while in a room) */
+  const pending = timers();
   let placed = '';
   /** The ids the layout's objects draw (placeObjects'): a DOM node's model of the same id isn't added again. */
   let placedIds = new Set<string>();
@@ -754,9 +757,10 @@
           boot?.loaded(performance.now());
           queueMicrotask(onready);
           // the flourishes' models on the GPU ahead of their first use (a high five's sparkles whole at once)
-          setTimeout(() => void e.warmFx().catch(() => {}), 400);
-          // the service worker registered once every model is in (loaded()), not competing with them (ui-state/swLate.ts)
-          const settled = () => void (eng !== e || !e.stats().loading ? releaseWorker() : setTimeout(settled, 250));
+          pending.later(() => void e.warmFx().catch(() => {}), 400);
+          // the service worker registered once every model is in (loaded()), not competing with them (ui-state/swLate.ts;
+          // the island gone first, at once)
+          const settled = () => void (eng !== e || !e.stats().loading ? releaseWorker() : pending.later(settled, 250));
           settled();
         }
         loaded = true;
@@ -1091,6 +1095,9 @@
     };
     setDrawnFps(() => e.stats().fps);
     return () => {
+      pending.clear();
+      // (settled's wait cut short: what its next tick did)
+      if (loaded) releaseWorker();
       setDrawnFps(null);
       watch?.stop();
       e.onDrawn(null);

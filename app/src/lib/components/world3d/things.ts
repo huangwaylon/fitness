@@ -178,6 +178,8 @@ const SHAPE_DIRS: readonly Vector3[] = Array.from({ length: 64 }, (_, i) => {
  *  builds from them at once, with no fetch, meshopt or image decode again (~60 of them). Each mount's GPU copies go with
  *  its renderer (dispose: three uploads them again to the next). A failed load isn't kept. */
 const loaded = new Map<string, Promise<GLTF | null>>();
+/** Those of them in (as `loaded` lets go of them): what a mount's dispose frees on its renderer, whichever mount asked. */
+const inNow = new Map<string, GLTF>();
 /** The models that come and go with the island's life (a critter, a find, a sea creature: ~250 species over the days),
  *  as against the layout's few dozen that stand: one's GPU copies go when its last instance does (each mount's), and
  *  of their loads, not in use on any mount, the LAZY_KEEP last used stay decoded (the rest let go of: geometry and
@@ -207,6 +209,7 @@ function unuse(url: string, lazy: boolean) {
     idle.delete(old);
     const p = loaded.get(old);
     loaded.delete(old);
+    inNow.delete(old);
     void p?.then((g) => g && free(g, true));
   }
 }
@@ -244,11 +247,18 @@ function load(url: string, name: string): Promise<GLTF | null> {
   let p = loaded.get(url);
   if (p) return p;
   if (!loader) (loader = ktx2Plugin(new GLTFLoader())).setMeshoptDecoder(MeshoptDecoder);
-  p = loader.loadAsync(url).then(lean, (e: unknown) => {
-    console.warn('world3d: model', name, e);
-    loaded.delete(url);
-    return null;
-  });
+  p = loader.loadAsync(url).then(
+    (g) => {
+      lean(g);
+      if (loaded.get(url) === p) inNow.set(url, g);
+      return g;
+    },
+    (e: unknown) => {
+      console.warn('world3d: model', name, e);
+      loaded.delete(url);
+      return null;
+    }
+  );
   loaded.set(url, p);
   return p;
 }
@@ -900,8 +910,11 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       for (const x of kept.values()) x.dispose();
       kept.clear();
       // (now, not once every load is in: a model still loading was never on this renderer, and the next island may
-      // already have the shared ones on its own: a late dispose would drop its copies too)
+      // already have the shared ones on its own: a late dispose would drop its copies too). Every model in, not only
+      // this mount's: a lazy one released while a villager still held it (heldIn, lift) was drawn here outside `got`,
+      // and its texture's dispose listener held this dead renderer, its context and canvas, while in a room.
       for (const g of got) free(g);
+      for (const g of inNow.values()) free(g);
       got.clear();
       // (this mount's loads handed back: the lazy ones may be let go of now, as no mount uses them)
       for (const name of gltfs.keys()) if (!name.startsWith('proc/')) unuse(urlOf(name), LAZY.has(name));

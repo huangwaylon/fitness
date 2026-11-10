@@ -80,16 +80,20 @@ test('the rooms and the home picker, in and out: no WebGL context or window list
   await page.goto(Q);
   await islandUp(page);
   const back = async () => (await nav(page, `${BASE}/${Q}`), await islandUp(page));
+  /** The contexts alive in each room: its own only (the island's gone with its renderer). */
+  const inRoom: number[] = [];
   const trips = async () => {
     await nav(page, `${BASE}/shop${Q}`);
     await expect(page.locator('[data-shop]')).toBeVisible();
     await back();
     await nav(page, `${BASE}/museum${Q}`);
     await framed(page, '__museum');
+    inRoom.push((await measure(page)).gl);
     await back();
     // うめ's house, as うめ: いえを かえる opened, two homes previewed, closed
     await nav(page, `${BASE}/tent${Q}&home=B`);
     await framed(page, '__tent');
+    inRoom.push((await measure(page)).gl);
     for (let i = 0; i < 2; i++) {
       await page.locator('[data-home-look]').click();
       const models = page.locator('[data-home-picker] [data-model]');
@@ -104,10 +108,11 @@ test('the rooms and the home picker, in and out: no WebGL context or window list
   const first = await measure(page);
   for (let i = 0; i < 2; i++) await trips();
   const after = await measure(page);
-  // the island's own context (and at most one an earlier island's, held a while by the page): never one a trip
-  // (1 here; 2 before a lazy chunk's CSS link stopped holding the first island; before the picker's fix, 5 after one
-  // round and 11 after three)
-  expect(first.gl, 'WebGL contexts alive after one round').toBeLessThanOrEqual(2);
+  // the island's own context: never one a trip (2 before a lazy chunk's CSS link stopped holding the first island;
+  // before the picker's fix, 5 after one round and 11 after three); in a room the room's alone (2 before things.ts
+  // freed every cached model's textures with the island: a lazy find's held the dead island's renderer)
+  expect(inRoom, 'WebGL contexts alive in the museum and the tent').toEqual(inRoom.map(() => 1));
+  expect(first.gl, 'WebGL contexts alive after one round').toBe(1);
   expect(after.gl, 'WebGL contexts alive after three').toBeLessThanOrEqual(first.gl);
   expect(after.ls, 'window and document listeners').toBeLessThanOrEqual(first.ls);
 });

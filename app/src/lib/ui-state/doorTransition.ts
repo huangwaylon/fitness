@@ -17,15 +17,19 @@ const wayOf = (from: string | null, to: string | null): Way | null =>
   from === '/' && to?.startsWith('/tent') ? 'in' : from?.startsWith('/tent') && to === '/' ? 'out' : null;
 
 /** Where each screen's door is (client px), asked when the iris closes on it or opens from it. */
-let doorOf: () => { x: number; y: number } | null = () => null;
+type Door = () => { x: number; y: number } | null;
+/** (module-level: an arrow made in provideDoor's cleanup kept its scope, `fn` with it, and through it the gone island's
+ *  DOM and renderer, while in the shop) */
+const NO_DOOR: Door = () => null;
+let doorOf: Door = NO_DOOR;
 /** The arriving screen says it's drawn: the iris opens. */
 let opened: (() => void) | null = null;
 
 /** The island's tent door, or the room's: the screen showing it says where it is. */
-export function provideDoor(fn: () => { x: number; y: number } | null): () => void {
+export function provideDoor(fn: Door): () => void {
   doorOf = fn;
   return () => {
-    if (doorOf === fn) doorOf = () => null;
+    if (doorOf === fn) doorOf = NO_DOOR;
   };
 }
 
