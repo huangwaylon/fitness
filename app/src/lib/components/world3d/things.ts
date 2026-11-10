@@ -55,10 +55,10 @@ export const LAMP: Partial<Record<string, { at: number; e?: readonly [number, nu
 };
 
 /** The models that cast no shadow (assets.json `shadow`: the flat things, a fish's shadow, a dig spot, the
- *  flourishes): no caster in the shadow map, and a move of one doesn't redraw it (a fish swimming redrew the whole
- *  island's map every frame). */
+ *  flourishes; and a field's tilled soil, a hand high: 80 casters for nothing, review 11/10 r1): no caster in the
+ *  shadow map, and a move of one doesn't redraw it (a fish swimming redrew the whole island's map every frame). */
 const FLAT = (() => {
-  const casts = new Map<string, boolean>();
+  const casts = new Map<string, boolean>([['garden/crop-soil', false]]);
   for (const k of Object.values(ASSET_KEYS)) casts.set(k.m, (casts.get(k.m) ?? false) || k.shadow);
   return new Set([...casts].filter(([, c]) => !c).map(([m]) => m));
 })();
@@ -591,9 +591,10 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
         im.receiveShadow = true;
         im.customDepthMaterial = depth;
         if (SHADOWS.has(name)) im.renderOrder = UNDER_WATER;
-        // a flower's petals take its colour, a field's soil its watered dark (objects.ts WET_SOIL)
+        // a flower's petals take its colour, a field's soil its watered dark (objects.ts WET_SOIL; the soil's colours
+        // always there, white dry: its first watering compiled a program of its own, a hitch on the phone)
         const mname = (mesh.material as Material).name;
-        if (insts.some((o) => o.tint !== undefined) && ((/Flower|Petal|Flow|Bloom/.test(mname) && !/Body|Leaf/.test(mname)) || name === 'garden/crop-soil'))
+        if (name === 'garden/crop-soil' || (insts.some((o) => o.tint !== undefined) && /Flower|Petal|Flow|Bloom/.test(mname) && !/Body|Leaf/.test(mname)))
           insts.forEach((o, i) => im.setColorAt(i, new Color(o.tint ?? 0xffffff)));
         g.meshes.push({ im, local: mesh.matrixWorld.clone(), grey: ga, fade: fa, flap: wa, part });
         scene.add(im);
