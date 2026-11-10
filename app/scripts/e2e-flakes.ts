@@ -9,7 +9,7 @@
 // most tests failed or were flaky (or 10 flaky at once) is the runner, not the tests: its entry is left out of the
 // tally and named in the summary. No commit, no tag: the @quarantine tag is for a test that's broken, with an owner
 // (scripts/e2e-quarantine.ts).
-// The repo is public: only this repo's own runs on main count (a push or a dispatch, or the full logic tier after
+// Only this repo's own runs on main count (a push or a dispatch, or the full logic tier after
 // one), never a fork's pull request, which writes its artifacts itself; an entry's run and commit are the API's.
 //
 //   npm run e2e:flakes                     the ledger: each flaky test, how often, where, the last error

@@ -112,13 +112,13 @@ After a deploy, never holding one back:
 - Playwright's browsers are cached by its version; bumping `@playwright/test` downloads them once.
 
 ## CI cost
-The repo is public (the user's choice, 11-05): Actions minutes are free. Measured 11-09/11-10: ~70 billed min a push
-(Deploy UI ~20, the full logic tier ~50; each job rounds up to whole minutes), ~5,200 a day with the weekly hunt's
-macOS runs (×10 billing). Private, GitHub Free's 2,000 min a month would last under a day: ~$550–800 a month at
-today's push rate. Before going private choose: stay public; a self-hosted runner on the Mac for the e2e jobs; or cut
-the per-push spend (the full logic tier on a schedule: in `e2e-logic-full.yml` swap `workflow_run` for the commented
-`schedule`, whose `throttle` job runs only when a deploy landed since; the hunt run on the Mac) with fewer, larger
-pushes. Either way set an Actions spending limit first.
+The repo is private (since 11-10): GitHub Free includes 2,000 Actions minutes a month. Measured 11-09/11-10, while
+public: ~70 billed min a push (Deploy UI ~20, the full logic tier ~50; each job rounds up to whole minutes), ~5,200 a
+day with the weekly hunt's macOS runs (×10 billing): the allowance lasts under a day at that rate, ~$550–800 a month
+over it. So: batch pushes (one per finished, verified group of fixes), measure locally (`npm run e2e:ci-like`, the
+hunt on the Mac) rather than dispatching CI, and set an Actions spending limit. The cuts available: the full logic tier
+on a schedule (in `e2e-logic-full.yml` swap `workflow_run` for the commented `schedule`, whose `throttle` job runs
+only when a deploy landed since) and a self-hosted runner for the e2e jobs (the user's call).
 
 ## Run it locally
 ```sh
