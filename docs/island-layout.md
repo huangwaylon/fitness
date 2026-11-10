@@ -86,11 +86,11 @@ latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (its pa
 | `r` | a reset `{id: 'reset', at}`: every `o` and `c` op older than it is void (the default again); the record drops them | A, B, G |
 | `h` | a home's style `{id: 'hA'\|'hB'\|'hG', at, m, w?, r?, d?, f?}` (`f` its facing 0–3) | its owner alone |
 | `t` | ウェイ's home's interior (the tent's room) | A, B, G |
-| `u` | うめ's home's interior | B |
-| `v` | the guest's home's interior | G |
+| `u` | うめ's home's interior | A, B, G |
+| `v` | the guest's home's interior | A, B, G |
 
 - The server enforces it (`contract/layout.ts` `scopeMayWrite` in the record, `live-protocol.ts` `scopeMaySend` in the
-  room; `relay/test/guest.test.ts`): the outdoors anyone's; a home's look and room its owner's alone.
+  room; `relay/test/guest.test.ts`): the outdoors and every home's room anyone's (2026-11-10); a home's look its owner's alone.
 - A room scope (`t`, `u`, `v`) is contract/tent.ts's op: its own ids, its own cap of 60 pieces.
 - The room relays a layout op live but never keeps it in the day's ring (an afternoon in the editor would push the
   shared world out); a phone opening later reads it from the record. A `drag` with `sc: 'o'` is an outdoor object
@@ -265,7 +265,7 @@ to `/pair`). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the
   is refused: the editor's R / wheel (own home only), the phone view's ↻ (shown to the owner), いえを かえる's ↻ まわす.
 - **The rooms:** every home's inside is the tent's room system (`routes/tent/?home=B|G`, `TentRoom.svelte`'s `home`;
   `store/tent.svelte.ts` `rooms.A` the tent's `t`, `rooms.B` うめ's `u`, `rooms.G` the guest's `v`), the same 8 × 8 room
-  whatever the outside. Its owner arranges it (the tent's by all three) and switches its light; anyone may come in.
+  whatever the outside. Anyone comes in, arranges it and switches its light (2026-11-10; design.md "Whose room").
   Presence says which home (`tent` and `drag` with `sc`; `store/where.svelte.ts`). Out of the door: in front of that
   home's door on the layout.
 - **The e2e** (`e2e/homes.spec.ts`): うめ arranges her room, the guest sees it but can't arrange it; うめ swaps her

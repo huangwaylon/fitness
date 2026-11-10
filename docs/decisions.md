@@ -150,7 +150,8 @@ Shown only, with an optional goal. Why: paying for kilograms rewards crash diets
 
 ### The shop's かいがら
 The shop ([design](design.md#the-shop)), a counter screen, has its own per-person currency, かいがら, never ベル, at
-NH's sell : buy ratio (a piece NH never sells: 4 × its NH sell price, NH's own ratio, then the same ÷ 20); the pocket is
+NH's sell : buy ratio (a piece NH never sells: 4 × its NH sell price, NH's own ratio, then the same ÷ 20), a piece at most
+10,000 (2026-11-10: every piece buyable; a 100,000-Bell cap had left 65 out); the pocket is
 derived from the day tallies, the stock from the date. Why: NH's prices, nothing
 stored for the stock, and no request per catch.
 
@@ -315,9 +316,12 @@ A room's layout, wallpaper and floor are `decor` ops scoped `t` / `u` / `v` (`co
 room); a held piece's spot crosses as `drag` (presence), the drop is the op. Why: one record path for every room, and the
 partner sees it arranged live.
 
-### Every home is a room; a home's look is its owner's
-Each home is the tent's room system with its own scope, its look and room its owner's alone (the tent's everyone's); its
-door is its anchor. Why: three homes, each changing only their own.
+### Every home is a room; a home's look is its owner's, its room anyone's
+Each home is the tent's room system with its own scope; its look its owner's alone, its room arranged by any of the
+three (2026-11-10, the user: until then each room its owner's, the tent's everyone's), with the editor's own pieces
+(placing spends nothing, putting away returns nothing: a piece is owned as a catalogue entry); its door is its anchor.
+The record and the room enforce it (`scopeMayWrite`, `scopeMaySend`). Why: decorating each other's homes is the game's
+fun, and with nothing consumed there's no inventory to hand back.
 
 ### The tent's surfaces are NH's flag
 Which pieces hold things is the ACNH spreadsheet's `surface` flag; where things stand is found from the converted model

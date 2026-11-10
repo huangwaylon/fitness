@@ -138,3 +138,30 @@ test('a piece NH never sells, bought at its made-up price, is in my もようが
   await page.locator('[data-tab="bought"]').click();
   await expect(page.locator(`[data-tent-items] [data-tent-item="${code}"]`)).toBeVisible();
 });
+
+test('a piece past the old 100,000-Bell cap (unobtainable until 2026-11-10) is bought at the 10,000 cap', async ({ page }) => {
+  // the first day from 11-04 whose stock holds a capped piece (golden furniture, a vehicle, the grand piano…)
+  let day = '', code = '';
+  for (let d = 4; d < 400 && !code; d++) {
+    const date = new Date(Date.UTC(2026, 10, d)).toISOString().slice(0, 10);
+    code = stockOf(date).find((c) => buyPrice(c) === 10_000) ?? '';
+    day = date;
+  }
+  expect(code).not.toBe('');
+  // 16 whale sharks: 10,400 かいがら
+  await seed(page, day, [['tally', { date: day, counts: { 'fish:whale-shark': 16 } }, 'A']]);
+  await page.goto(`shop?demo&date=${day}T12:00`);
+  await page.locator('[data-shop-open="sell"]').click();
+  await page.locator('[data-shop-all]').click();
+  await page.locator('[data-shop-sell]').click();
+  await page.locator('[data-shop-tab="buy"]').click();
+  const item = page.locator(`[data-shop-item="${code}"]`);
+  await expect(item).toHaveAttribute('data-price', '10000');
+  await item.click();
+  await page.locator('[data-shop-buy]').click();
+  await expect(item).toHaveAttribute('data-owned', 'true');
+  await expect.poll(async () => Number(await page.locator('[data-shop]').getAttribute('data-shells'))).toBe(16 * 650 - 10_000);
+  await openTent(page, day);
+  await page.locator('[data-tab="bought"]').click();
+  await expect(page.locator(`[data-tent-items] [data-tent-item="${code}"]`)).toBeVisible();
+});

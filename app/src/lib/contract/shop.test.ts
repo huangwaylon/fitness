@@ -29,7 +29,7 @@ describe('the price list (scripts/shop-prices.ts)', () => {
     for (const [code, v] of Object.entries(BUY)) {
       expect(ITEMS[code], code).toBeDefined();
       expect(ITEMS[code].starter, code).toBeUndefined();
-      expect(Number.isInteger(v) && v >= 1 && v <= 5000, code).toBe(true);
+      expect(Number.isInteger(v) && v >= 1 && v <= 10_000, code).toBe(true);
     }
     expect(isSellable('item:froggy-chair')).toBe(false); // a present's furniture: もようがえ's, never the pocket's
     expect(isSellable('recipe:log-stool')).toBe(false);
@@ -89,11 +89,14 @@ describe('the buy prices (scripts/shop-prices.ts)', () => {
     expect(buyPrice('f6991')).toBe(2400);
     expect(buyPrice('f13154')).toBe(1500);
     for (const c of ['f4081', 'f12214', 'f2220']) expect(buyPrice(c), c).toBeUndefined();
-    // everything the shop sells costs 3 to 5,000 かいがら (the 100,000-Bell cap: dearer pieces never come in)
+    // everything the shop sells costs 1 to 10,000 かいがら: a dearer piece costs the cap (2026-11-10: every piece
+    // buyable; the grand piano and the golden toilet were out under the old 100,000-Bell cap)
+    expect(buyPrice('f1875')).toBe(10_000);
+    expect(buyPrice('f3472')).toBe(10_000);
     const all = Object.values(BUY);
-    expect(all.length).toBeGreaterThan(1800);
+    expect(all.length).toBeGreaterThan(1900);
     expect(Math.min(...all)).toBeGreaterThanOrEqual(1);
-    expect(Math.max(...all)).toBeLessThanOrEqual(5000);
+    expect(Math.max(...all)).toBe(10_000);
   });
 });
 
@@ -107,7 +110,7 @@ describe('the day’s stock', () => {
     for (const c of a) expect(buyPrice(c), c).toBeDefined();
     expect(stockOf('2026-11-05')).not.toEqual(a);
     // pinned: a change of the draw or the list changes what a day sold
-    expect(a.slice(0, 4)).toEqual(['f12419', 'f3972', 'f13969', 'f287']);
+    expect(a.slice(0, 4)).toEqual(['f12830', 'f1326', 'f13476', 'f14831']);
   });
   it('never holds a piece the island has: the next of the day’s order stands in', () => {
     const a = stockOf('2026-11-04');

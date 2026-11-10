@@ -172,9 +172,9 @@ describe('the record and the guest', () => {
     expect(a('event', ev('a1', 'board', { id: 'b1234567', at: now, p: now, t: 'やあ' }))).toMatchObject({ ok: true });
     tick();
     expect(g('event', ev('g8', 'board', { id: 'b1234567', at: now, rm: true }))).toMatchObject({ ok: true });
-    // still never another's home: its owner's alone, as for a member
+    // still never another's home's look: its owner's alone, as for a member; its room anyone's (2026-11-10)
     expect(g('event', ev('g9', 'decor', { sc: 'h', id: 'hA', at: now, m: 'log' }))).toEqual({ ok: false, error: 'forbidden' });
-    expect(g('event', ev('g10', 'decor', { sc: 'u', id: 'dg1abc23', at: now, item: 'f1234', x: 2, z: 3, f: 0, p: now }))).toEqual({ ok: false, error: 'forbidden' });
+    expect(g('event', ev('g10', 'decor', { sc: 'u', id: 'dg1abc23', at: now, item: 'f1234', x: 2, z: 3, f: 0, p: now }))).toMatchObject({ ok: true });
     expect(a('event', ev('a2', 'decor', { sc: 'h', id: 'hG', at: now, m: 'log' }))).toEqual({ ok: false, error: 'forbidden' });
   });
 
@@ -349,22 +349,23 @@ describe('the layout’s permissions', () => {
   const room = (sc: string) => ({ sc, id: 'dpiece123', at: T0, item: 'f1234', x: 2, z: 3, f: 0, p: T0 });
   const rows = () => (store.handle({ key: KEY_A, action: 'snapshot' }, 100) as Record<string, any>).rows.events as unknown[][];
 
-  it('the record: the guest writes the outdoors as a member does; a home only its own', () => {
+  it('the record: the guest writes the outdoors and every room as a member does; a home’s look only its own', () => {
     const forbidden = { ok: false, error: 'forbidden' };
-    for (const d of [look('A'), look('B'), room('u')]) expect(call(KEY_C, ev(d)), JSON.stringify(d)).toEqual(forbidden);
-    for (const d of [obj(), chunk, look('G'), room('v'), room('t'), { ...look('G'), at: T0 + 1, f: 2 }]) expect(call(KEY_C, ev(d)), JSON.stringify(d)).toMatchObject({ ok: true });
+    for (const d of [look('A'), look('B')]) expect(call(KEY_C, ev(d)), JSON.stringify(d)).toEqual(forbidden);
+    for (const d of [obj(), chunk, look('G'), room('v'), room('t'), room('u'), { ...look('G'), at: T0 + 1, f: 2 }]) expect(call(KEY_C, ev(d)), JSON.stringify(d)).toMatchObject({ ok: true });
     // turning a home is its look: the owner's alone
     expect(call(KEY_A, ev({ ...look('G'), at: T0 + 2, f: 3 }))).toEqual(forbidden);
-    expect(rows().map((r) => r[1])).toEqual(['G', 'G', 'G', 'G', 'G']);
+    expect(rows().map((r) => r[1])).toEqual(['G', 'G', 'G', 'G', 'G', 'G']);
     // and a reset of the outdoors: the object's and the chunk's ops go, as a member's reset drops them
     expect(call(KEY_C, ev(reset))).toMatchObject({ ok: true });
-    expect(rows().map((r) => JSON.parse(r[4] as string).sc).sort()).toEqual(['h', 'r', 't', 'v']);
+    expect(rows().map((r) => JSON.parse(r[4] as string).sc).sort()).toEqual(['h', 'r', 't', 'u', 'v']);
   });
 
-  it('the record: the members write the outdoors; each only their own home', () => {
-    for (const [key, d] of [[KEY_A, obj()], [KEY_B, chunk], [KEY_A, look('A')], [KEY_B, look('B')], [KEY_B, room('u')]] as const)
+  it('the record: the members write the outdoors and every room; each only their own home’s look', () => {
+    const at = (d: object, n: number) => ({ ...d, at: T0 + n });
+    for (const [key, d] of [[KEY_A, obj()], [KEY_B, chunk], [KEY_A, look('A')], [KEY_B, look('B')], [KEY_B, room('u')], [KEY_A, at(room('u'), 1)], [KEY_A, room('v')], [KEY_B, at(room('v'), 1)]] as const)
       expect(call(key, ev(d)), JSON.stringify(d)).toMatchObject({ ok: true });
-    for (const [key, d] of [[KEY_A, look('B')], [KEY_B, look('A')], [KEY_A, look('G')], [KEY_B, look('G')], [KEY_A, room('u')], [KEY_A, room('v')], [KEY_B, room('v')]] as const)
+    for (const [key, d] of [[KEY_A, look('B')], [KEY_B, look('A')], [KEY_A, look('G')], [KEY_B, look('G')]] as const)
       expect(call(key, ev(d)), JSON.stringify(d)).toEqual({ ok: false, error: 'forbidden' });
   });
 
@@ -429,14 +430,15 @@ describe('the room and the layout', () => {
     expect(replayed.some((e) => e.kind === 'decor' && e.sc === 'o')).toBe(false);
   });
 
-  it('a home’s room is its owner’s: the guest’s own goes through, うめ’s doesn’t', () => {
+  it('every home’s room is anyone’s (2026-11-10): the guest’s own and うめ’s go through; another’s look doesn’t', () => {
     const a = join(KEY_A), g = join(KEY_C);
     a.sent = [];
     const piece = { id: 'dpiece123', at: now, item: 'f1234', x: 2, z: 3, f: 0, p: now };
     say(g, { kind: 'decor', sc: 'v', ...piece, c: 1 });
     say(g, { kind: 'decor', sc: 'u', ...piece, c: 2 });
     say(g, { kind: 'decor', sc: 'h', id: 'hG', at: now, m: 'house', w: 'NBLog.A', c: 3 });
-    expect(a.sent.map((m) => (m as { sc?: string }).sc)).toEqual(['v', 'h']);
-    expect(g.sent.filter((m) => m.kind === 'ack').map((m) => (m as { ok: boolean }).ok)).toEqual([true, false, true]);
+    say(g, { kind: 'decor', sc: 'h', id: 'hB', at: now, m: 'house', w: 'NBLog.A', c: 4 });
+    expect(a.sent.map((m) => (m as { sc?: string }).sc)).toEqual(['v', 'u', 'h']);
+    expect(g.sent.filter((m) => m.kind === 'ack').map((m) => (m as { ok: boolean }).ok)).toEqual([true, true, true, false]);
   });
 });

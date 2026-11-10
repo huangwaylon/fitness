@@ -21,7 +21,7 @@ type Rec = Record<string, unknown>;
  * Whether the guest may write this event: everything on the island a member may (the record's own rules then apply to
  * it as to anyone: a `decor` op's scope, contract/layout.ts scopeMayWrite; a board note's author, a meal's owner, a
  * pocket's catches): its catches (`find`, `tally`, `tally_back`) and its part of the island's day (`island`), any
- * `decor` op (the island's decorations and its layout, the tent's room, its own home's room and look), the `board`, its
+ * `decor` op (the island's decorations and its layout, every home's room, its own home's look), the `board`, its
  * meals (`food`, `food_repeat`, `food_recipe`, `food_custom`), the shop (`sell`, `buy`: its own pocket and かいがら),
  * its ききみみ games (`listen`), a trip's packing list (`pack`: adding, and changing only what it added,
  * contract/pack.ts; its own `pack_chk` and `pack_reset`) and its own cosmetic `pref`, meal-log goal, profile or the

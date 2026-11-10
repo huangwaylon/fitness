@@ -41,7 +41,7 @@ describe('layout ops (contract/layout.ts)', () => {
     const cases: [Record<string, unknown>, string][] = [
       [{}, 'ABG'], [{ sc: 'o' }, 'ABG'], [{ sc: 'c' }, 'ABG'], [{ sc: 'r' }, 'ABG'],
       [{ sc: 'h', id: 'hA' }, 'A'], [{ sc: 'h', id: 'hB' }, 'B'], [{ sc: 'h', id: 'hG' }, 'G'],
-      [{ sc: 't' }, 'ABG'], [{ sc: 'u' }, 'B'], [{ sc: 'v' }, 'G'], [{ sc: 'q' }, '']
+      [{ sc: 't' }, 'ABG'], [{ sc: 'u' }, 'ABG'], [{ sc: 'v' }, 'ABG'], [{ sc: 'q' }, '']
     ];
     for (const [d, may] of cases)
       for (const who of ['A', 'B', 'G'] as const) {
@@ -57,7 +57,7 @@ describe('layout ops (contract/layout.ts)', () => {
     expect(guestMay({ sc: 'v', id: 'x' })).toBe(true);
     expect(guestMay({ sc: 'h', id: 'hG' })).toBe(true);
     expect(guestMay({ sc: 'h', id: 'hA' })).toBe(false);
-    expect(guestMay({ sc: 'u', id: 'x' })).toBe(false);
+    expect(guestMay({ sc: 'u', id: 'x' })).toBe(true); // every room anyone's (2026-11-10)
   });
 
   test('the merge: later wins, then a removal, then G over B over A', () => {

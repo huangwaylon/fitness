@@ -108,6 +108,21 @@ describe('the shop in the record', () => {
     expect(sell('A', 'fish:koi', 0, 0)).toEqual(refused());
   });
 
+  it('a piece past the old 100,000-Bell cap is bought at the 10,000 cap (2026-11-10): exactly 10,000, never above', () => {
+    // the grand piano (NH 1,000,000 Bells) and the golden toilet: out of the shop until 2026-11-10, now 10,000 each
+    const piano = 'f1875';
+    expect(buyPrice(piano)).toBe(10_000);
+    expect(buyPrice('f3472')).toBe(10_000);
+    expect(Math.max(...Object.values(BUY))).toBe(10_000);
+    const k = Math.ceil(10_000 / W);
+    tally('A', { 'fish:whale-shark': k });
+    expect(sell('A', 'fish:whale-shark', k, k * W)).toEqual({ ok: true });
+    expect(buy('A', piano, 10_001)).toEqual(refused());
+    expect(buy('A', piano, 9_999)).toEqual(refused());
+    expect(buy('A', piano, 10_000)).toEqual({ ok: true });
+    expect(buy('A', piano, 10_000)).toEqual(refused('owned'));
+  });
+
   it('keeps a tally of the goods and sells them, the beach’s finds too, from the pocket (contract/pocket.ts)', () => {
     const wood = sellPrice('goods:wood')!, coral = sellPrice('shell:coral')!, rex = sellPrice('fossil:t-rex-skull')!;
     expect(tally('A', { 'goods:wood': 3, 'goods:tree-branch': 1, 'shell:coral': 2, 'fossil:t-rex-skull': 1 })).toMatchObject({ ok: true });

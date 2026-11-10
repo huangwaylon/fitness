@@ -79,10 +79,10 @@ erase claims.
 whole state or its removal, anyone's.
 - **The decorations** ([Decorating](design.md#decorating)): at most `DECOR_MAX` (`decor full`).
 - **The rooms** ([The tent](design.md#the-tent), `contract/tent.ts`): `sc` `t` / `u` / `v`, a piece on a tile, the
-  wallpaper, floor and size; 60 pieces a room (`tent full`). **A light's switch** is a slot of its own, so a move and a
+  wallpaper, floor and size, anyone's in any room (2026-11-10); 60 pieces a room (`tent full`). **A light's switch** is a slot of its own, so a move and a
   switch made at once both stand.
 - **The island's layout** ([island-layout.md](island-layout.md#ops-the-record-and-the-relay), `contract/layout.ts`):
-  objects, terrain chunks, resets and a home's look; the outdoors anyone's, a home its owner's (`scopeMayWrite`); at
+  objects, terrain chunks, resets and a home's look; the outdoors and the rooms anyone's, a home's look its owner's (`scopeMayWrite`); at
   most `LAYOUT_MAX` objects (`layout full`). Any lower-case kind passes: no relay deploy.
 
 <a id="board"></a>**`board`** `{id, at, p, t}` or `{id, at, rm: true}` ([board.md](board.md), `contract/board.ts`):
@@ -415,8 +415,8 @@ ingest, the trees, きろく, けんこう and ふたりでぜんぶ stay A + B.
   prefs, profile and pack items. Not `spend`, `spend_void`, `harvest`, a member's or an activity / からだ goal, a
   `trip_note`, the wedding board, `ingest` or `uploads`: `forbidden` (the queue drops it). Its rows are `person = G`
   (the merge order A < B < G).
-- **The room:** the guest sends anything a member does; a scoped `decor` op of another's home is refused for anyone
-  (`scopeMaySend`). `peer` stays the partner for a member and either member for the guest; a high-five names whom it
+- **The room:** the guest sends anything a member does; a `decor` op of another's home's look is refused for anyone,
+  every home's room is anyone's (`scopeMaySend`, 2026-11-10). `peer` stays the partner for a member and either member for the guest; a high-five names whom it
   is for (`to`).
 - **Push:** its own `changed` notices reach every phone; of the members' it hears an event's, an ingest's only when it
   brought activity rows (`notify(n, guest)`), and a new epoch's; its welcome's `rec` is the room's `recG`

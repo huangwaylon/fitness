@@ -3,16 +3,19 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { StoreCore } from '../src/store.ts';
 import { LAYOUT_MAX } from '../../app/src/lib/contract/layout.ts';
+import { buyPrice, stockOf } from '../../app/src/lib/contract/stock.ts';
+import { sellPrice } from '../../app/src/lib/contract/shop.ts';
 import { memSql } from './sqlite.ts';
 
 const KEY_A = 'a'.repeat(64);
 const KEY_B = 'b'.repeat(64);
+const KEY_C = 'c'.repeat(64);
 const T0 = Date.parse('2026-11-02T03:00:00.000Z');
 
 let now: number;
 let db: ReturnType<typeof memSql>;
 let store: StoreCore;
-const make = () => new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B }, now: () => now, notify: () => {} });
+const make = () => new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B, KEY_C }, now: () => now, notify: () => {} });
 
 beforeEach(() => {
   now = T0;
@@ -96,3 +99,48 @@ describe('an op’s time (health A6, sync #3)', () => {
   });
 });
 
+
+describe('every home’s room is anyone’s (2026-11-10)', () => {
+  const keyOf = { A: KEY_A, B: KEY_B, G: KEY_C } as const;
+  const as = (who: 'A' | 'B' | 'G', type: string, data: object) => store.handle({ key: keyOf[who], action: 'event', id: `e${++seq}`, type, data }, 100) as Record<string, any>;
+  const piece = (sc: string, id: string, item: string, at: number, x = 2) => ({ sc, id, at, item, x, z: 3, f: 0, p: T0 });
+  const room = (sc: string) => (store.handle({ key: KEY_A, action: 'snapshot' }, 100) as Record<string, any>).rows.events
+    .filter((r: unknown[]) => r[3] === 'decor').map((r: unknown[]) => [r[1], JSON.parse(r[4] as string)]).filter(([, d]: [string, { sc?: string }]) => d.sc === sc);
+
+  it('A arranges うめ’s room, the guest ウェイ’s, うめ the guest’s: placed, moved, turned, removed, the wallpaper and floor too', () => {
+    expect(as('A', 'decor', piece('u', 'dpiecea1', 'f4081', T0 + 1))).toEqual({ ok: true });
+    expect(as('B', 'decor', piece('u', 'dpiecea1', 'f4081', T0 + 2, 5))).toEqual({ ok: true }); // the owner moves it
+    expect(as('G', 'decor', { ...piece('t', 'dpieceg1', 'f4081', T0 + 3), f: 2 })).toEqual({ ok: true });
+    expect(as('B', 'decor', piece('v', 'dpieceb1', 'f4081', T0 + 4))).toEqual({ ok: true });
+    expect(as('A', 'decor', { sc: 'v', id: 'dpieceb1', at: T0 + 5, rm: true })).toEqual({ ok: true });
+    expect(as('G', 'decor', { sc: 'u', id: 'dtentwall', at: T0 + 6, item: 'w1', x: 0, z: 0, f: 0, p: T0 })).toEqual({ ok: true });
+    expect(as('A', 'decor', { sc: 'v', id: 'dtentfloor', at: T0 + 7, item: 'g1', x: 0, z: 0, f: 0, p: T0 })).toEqual({ ok: true });
+    expect(as('G', 'decor', { sc: 'u', id: 'dpiecea1', at: T0 + 8, lt: 0 })).toEqual({ ok: true });
+    // each id's latest op, whoever sent it (the merge as ever: G over B over A at the same time)
+    expect(room('u').map(([who, d]: [string, { id: string; x?: number }]) => [who, d.id, d.x])).toEqual(
+      expect.arrayContaining([['B', 'dpiecea1', 5], ['G', 'dtentwall', 0], ['G', 'dpiecea1', undefined]])
+    );
+    expect(room('v').map(([who, d]: [string, { id: string; rm?: boolean }]) => [who, d.id, !!d.rm])).toEqual(expect.arrayContaining([['A', 'dpieceb1', true], ['A', 'dtentfloor', false]]));
+    // two at once on one piece: the later wins, a tie G over A (tentBeats), a removal over both
+    expect(as('A', 'decor', piece('t', 'dpieceg1', 'f4081', T0 + 9, 6))).toEqual({ ok: true });
+    expect(as('G', 'decor', piece('t', 'dpieceg1', 'f4081', T0 + 9, 1))).toEqual({ ok: true });
+    expect(as('A', 'decor', piece('t', 'dpieceg1', 'f4081', T0 + 9, 7))).toEqual({ ok: true, duplicate: true });
+    expect(room('t').map(([who, d]: [string, { x: number }]) => [who, d.x])).toEqual([['G', 1]]);
+    // a home's look stays its owner's
+    expect(as('A', 'decor', { sc: 'h', id: 'hB', at: T0 + 10, m: 'log' })).toEqual({ ok: false, error: 'forbidden' });
+  });
+
+  it('the pieces stay their owner’s: a piece うめ bought, put in ウェイ’s room and taken out by him, is still hers alone', () => {
+    const D = '2026-11-02', code = stockOf(D)[0], price = buyPrice(code)!, W = sellPrice('fish:whale-shark')!;
+    const k = Math.ceil(price / W);
+    as('B', 'tally', { date: D, counts: { 'fish:whale-shark': k } });
+    expect(as('B', 'sell', { species: 'fish:whale-shark', n: k, v: k * W })).toEqual({ ok: true });
+    expect(as('B', 'buy', { item: code, price, d: D })).toEqual({ ok: true });
+    expect(as('B', 'decor', piece('t', 'dbought1', code, T0 + 1))).toEqual({ ok: true });
+    expect(as('A', 'decor', piece('t', 'dbought1', code, T0 + 2, 6))).toEqual({ ok: true });
+    expect(as('A', 'decor', { sc: 't', id: 'dbought1', at: T0 + 3, rm: true })).toEqual({ ok: true });
+    // placing and taking out spend nor give anything: うめ owns it still (a second buy is refused), ウェイ never did
+    expect(as('B', 'buy', { item: code, price, d: D })).toEqual({ ok: false, error: 'bad_request', detail: 'owned' });
+    expect(as('A', 'buy', { item: code, price, d: D })).toEqual({ ok: false, error: 'bad_request', detail: 'wallet short' });
+  });
+});

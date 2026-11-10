@@ -7,7 +7,7 @@
 //   c  a terrain chunk `{id: 'c<cx>x<cz>', at, g}`: its 8 × 8 tiles row by row, one character each
 //   r  a reset `{id: 'reset', at}`: every o and c op older than it is void (the default layout again)
 //   h  a home's look `{id: 'hA' | 'hB' | 'hG', at, m, w?, r?, d?, f?}` (f its facing 0–3): its owner's alone
-//   t, u, v  the interiors of ウェイ's, うめ's and the guest's homes (contract/tent.ts's ops)
+//   t, u, v  the interiors of ウェイ's, うめ's and the guest's homes (contract/tent.ts's ops): anyone's (2026-11-10)
 import { isInt, isMs, only } from './ops.ts';
 
 /** Who sent it: the merge's tie-break is a fixed order, A < B < G. */
@@ -83,22 +83,20 @@ export function layoutOpOf(d: Record<string, unknown>): LayoutOp | null {
 
 /** Whether `who` may write a `decor` op of this data's scope (docs/island-layout.md "Ops"): the outdoors and the
  *  island's decorations (no scope) anyone, the guest too (2026-11-06: the island is everyone's alike); a home's look its
- *  owner alone; an interior its owner's (the tent's, ウェイ's, all three as before). The record and the room both apply it. */
+ *  owner alone; every home's interior anyone's, the guest too (2026-11-10: each of us arranges any room; was its
+ *  owner's, the tent's all three). The record and the room both apply it. */
 export function scopeMayWrite(who: Who, d: Record<string, unknown>): boolean {
   switch (d.sc) {
     case undefined:
     case 'o':
     case 'c':
     case 'r':
+    case 't':
+    case 'u':
+    case 'v':
       return true;
     case 'h':
       return d.id === `h${who}`;
-    case 't':
-      return true;
-    case 'u':
-      return who === 'B';
-    case 'v':
-      return who === 'G';
     default:
       return false;
   }

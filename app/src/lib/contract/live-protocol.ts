@@ -453,15 +453,12 @@ function layoutWire(o: Obj): DecorWire | null | undefined {
 }
 
 /** Whether `who` may send a `decor` op of this scope (contract/layout.ts scopeMayWrite, again here: the Worker bundles
- *  this file alone): the outdoors and the island's decorations anyone, the guest too; a home's look and room its
- *  owner's (the tent's room all three). @public (relay/, sync/live.ts) */
+ *  this file alone): the outdoors, the island's decorations and every home's room anyone, the guest too; a home's look
+ *  its owner's. @public (relay/, sync/live.ts) */
 export function scopeMaySend(who: Who, sc: string | undefined, id: string): boolean {
   switch (sc) {
-    case undefined: case 'o': case 'c': case 'r': return true;
+    case undefined: case 'o': case 'c': case 'r': case 't': case 'u': case 'v': return true;
     case 'h': return id === `h${who}`;
-    case 't': return true;
-    case 'u': return who === 'B';
-    case 'v': return who === 'G';
     default: return false;
   }
 }
