@@ -3,7 +3,9 @@
 // stand, its drawn height (u: the 2D sprites' and the 3D models' size), its palette icon (an art key) and its names.
 // The editor's palette, the validation, the nav and the 3D placement (world3d/objects.ts) all read this one table.
 
-type Group = 'tree' | 'bush' | 'flower' | 'rock' | 'light' | 'furniture' | 'camp' | 'food' | 'gym' | 'season' | 'structure' | 'building' | 'home' | 'spot' | 'visitor';
+import { CROPS, FENCES, PLANTS, PUMPKINS, VINES } from './garden.ts';
+
+type Group = 'tree' | 'bush' | 'flower' | 'crop' | 'fence' | 'rock' | 'light' | 'furniture' | 'camp' | 'food' | 'gym' | 'season' | 'structure' | 'building' | 'home' | 'spot' | 'visitor';
 /** Where a kind may stand: any land tile (`land`), on grass only (`grass`: a tree, a flower), over water with land at
  *  both ends (`span`: a bridge), in front of a cliff one tier up (`cliff`: stairs). */
 type On = 'land' | 'grass' | 'span' | 'cliff';
@@ -116,6 +118,17 @@ const PACKED_GYM = packed('gym', [
   'massage-chair|マッサージチェア|Plush massage chair|11|24,21,43|plush-massage-chair',
   'dumbbell|ダンベル|Dumbbell|11|13,8,7|',
 ].join(';'));
+/** The garden's kinds (layout/garden.ts: NH's fences, crops and garden flowers), their models lazy (world3d/garden.ts),
+ *  their icon NH's own in the garden's sheet (`garden:<NH icon>`: garden.ts GARDEN_ICONS). A fence takes its whole tile
+ *  (nobody walks through it: nav.ts) and joins the same fence beside it (garden.ts fenceJoin); a lone one stands across
+ *  or along by its facing. A crop is walked over, as a flower is. */
+const GARDEN_KINDS: KindDef[] = [
+  ...FENCES.map(([id, ja, en, , icon]): KindDef => ({ k: `fence-${id}`, group: 'fence', ja, en, w: 1, d: 1, block: true, on: 'land', h: 30, icon: `garden:FtrIcon_${icon}` })),
+  ...CROPS.map(([id, ja, en, , icon]): KindDef => ({ k: `crop-${id}`, group: 'crop', ja, en, w: 1, d: 1, block: false, on: 'land', h: 24, icon: `garden:GardeningIcon_${icon}`, ...(id === 'pumpkin' ? { variants: PUMPKINS } : {}) })),
+  ...PLANTS.map(([k, ja, en, , , icon]): KindDef => k === 'vine'
+    ? { k, group: 'flower', ja, en, w: 1, d: 1, block: true, foot: [20, 10], on: 'land', h: 50, icon: `garden:GardeningIcon_${icon}`, variants: VINES }
+    : { k, group: 'flower', ja, en, w: 1, d: 1, block: false, on: 'grass', h: 18, icon: `garden:GardeningIcon_${icon}` })
+];
 const TREE_FOOT = [24, 12] as const;
 
 export const KIND_LIST: readonly KindDef[] = [
@@ -128,11 +141,15 @@ export const KIND_LIST: readonly KindDef[] = [
   // bushes: NH's bushes (a month's pair takes turns: month-a, month-b), the hedge along the stream
   k({
     k: 'bush', group: 'bush', ja: '低木', en: 'Bush', w: 1, d: 1, block: true, foot: [32, 14], on: 'grass', h: 34, icon: 'bushes/holly',
-    variants: ['holly', 'month-a', 'month-b', 'white-plumeria', 'pink-plumeria', 'white-azalea', 'pink-azalea', 'red-hibiscus', 'orange-tea-olive']
+    variants: ['holly', 'month-a', 'month-b', 'white-plumeria', 'pink-plumeria', 'white-azalea', 'pink-azalea', 'red-hibiscus', 'orange-tea-olive',
+      // (NH's other bushes, their own models: assets.json bushes/<id>)
+      'yellow-hibiscus', 'blue-hydrangea', 'pink-hydrangea', 'yellow-tea-olive', 'red-camellia', 'pink-camellia']
   }),
   k({ k: 'hedge', group: 'bush', ja: '生け垣', en: 'Hedge bush', w: 1, d: 1, block: true, foot: [36, 14], on: 'grass', h: 40, icon: 'bushes/holly', variants: ['month-a', 'month-b'] }),
   // wild flowers: `c<n>` the scatter's clump n (its kind the season's), else a flower of its own
   k({ k: 'flower', group: 'flower', ja: '花', en: 'Flower', w: 1, d: 1, block: false, on: 'grass', h: 16, icon: 'flowers/red-tulips', variants: ['c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15', 'c16', 'c17'] }),
+  // the garden: NH's gold roses, lily of the valley and vines, the crops, the fences (GARDEN_KINDS)
+  ...GARDEN_KINDS,
   // rocks: the one a shovel hits, the flat rock by the pond, a garden rock
   k({ k: 'rock', group: 'rock', ja: '岩', en: 'Rock', w: 1, d: 1, block: true, foot: [24, 10], on: 'land', h: 26, icon: 'deco/garden-rock', fixed: true }),
   k({ k: 'flat-rock', group: 'rock', ja: '平たい岩', en: 'Flat rock', w: 2, d: 1, block: true, foot: [52, 18], on: 'land', h: 12, icon: 'deco/flat-rock', turns: true }),

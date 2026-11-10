@@ -18,6 +18,8 @@ import { doorOf, facingVec, footOf, objMid, type Layout } from '#lib/layout/mode
 import { WHO_OF_HOME, homePorch, type HomeStyle } from '#lib/layout/homes.ts';
 import { KK_STOOL_H } from '../island/kkSlider.ts';
 import { topSpot } from '#lib/layout/tops.ts';
+import { FENCE_SNOW, cropStage, fenceJoin, isCrop, isFence, isGarden } from '#lib/layout/garden.ts';
+import { cedarLit, gardenReady } from './garden.ts';
 
 /** A model (static/room/world3d/<name>.glb). */
 export type ModelName = string;
@@ -68,6 +70,8 @@ export interface Day {
   /** The bulletin board as an instance here (the editor's preview); the 3D island's is its DOM node's model
    *  (board/Board.svelte: the same model at the same spot), so none by default. */
   board?: boolean;
+  /** The day (Tokyo's `YYYY-MM-DD`): a crop's stage (layout/garden.ts cropStage), the cedars' festive lights. */
+  date?: string;
 }
 
 const MU = ISLAND_MODELS as unknown as Record<string, { mu: [number, number] }>;
@@ -126,6 +130,7 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
   const pieces = day.pieces ? new Map(day.pieces.map((p) => [p.id, p])) : null;
   const out: Inst[] = [], standins: Standin[] = [];
   const FRUIT: ModelName[] = ['fruit-pear', 'fruit-peach', 'fruit-cherry', 'fruit-apple'];
+  const lit = cedarLit(day.date);
   for (const o of layout.objects.values()) {
     const [x, z] = objMid(layout, o);
     const def = kindDef(o.k);
@@ -133,6 +138,24 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
     const yaw = yawOf(o);
     const h = SCENERY_H[o.id] ?? def.h;
     const thing = (model: ModelName, scale: number, extra: Partial<Inst> = {}) => out.push({ id: o.id, model, x, z, scale, yaw, tap: 'thing', ...extra });
+    // the garden (layout/garden.ts; its models lazy, world3d/garden.ts: nothing till they're known) at NH's furniture
+    // scale: a fence its piece for its neighbours, turned to them; a crop its stage today on its soil; a garden flower;
+    // a cedar in its festive lights (its own model's scale: the same tree, lit)
+    if (isGarden(o.k) || (o.k === 'cedar' && lit)) {
+      if (!gardenReady()) continue;
+      const winter = season === 'winter';
+      if (isFence(o.k)) {
+        const id = o.k.slice(6), j = fenceJoin(layout, o);
+        out.push({ id: o.id, model: `garden/fence-${id}${winter && FENCE_SNOW[id] ? '-snow' : ''}-${j.part}`, x, z, scale: DECOR_U, yaw: (j.turns * Math.PI) / 2 });
+      } else if (isCrop(o.k)) {
+        const id = o.k.slice(5), n = cropStage(o.id, day.date);
+        out.push({ id: `${o.id}:soil`, model: 'garden/crop-soil', x, z, scale: DECOR_U, yaw });
+        thing(id === 'pumpkin' && n >= 3 ? `garden/crop-pumpkin-${o.s ?? 'orange'}-${n}` : `garden/crop-${id}-${n}`, DECOR_U);
+      } else if (o.k === 'vine') thing(`garden/vine-${o.s ?? 'a'}${winter ? '-snow' : ''}`, DECOR_U);
+      else if (o.k === 'cedar') thing(`garden/cedar-deco${winter || /winter/.test(day.swaps?.[o.id]?.key ?? '') ? '-snow' : ''}`, scaleOf('trees/cedar', 'cedar', day.swaps?.[o.id]?.h ?? h), { tap: 'tree' });
+      else thing(`garden/${o.k}`, DECOR_U);
+      continue;
+    }
     // a look of the day in its place: a model, else a card
     // (the island passes every piece of scenery's look, today's swaps among them: a look is the 2D island's key, and
     // two of those name no art of their own, an oak's `oak` and a month's bush's `month-bush-a|b`: the season's oak and
@@ -185,6 +208,12 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
       case 'bush': case 'hedge': {
         const s = o.s ?? 'holly';
         const id = s === 'month-a' ? hedgeA : s === 'month-b' ? hedgeB : s;
+        // (NH's bushes the POC has no model of: their own, assets.json bushes/<id>)
+        const own = !has(`bush-${id}`) && !/plumeria/.test(id) ? keyModel(`bushes/${id}`) : null;
+        if (own) {
+          thing(own.m as ModelName, (o.k === 'hedge' ? 40 : h) / modelH(own.m as ModelName), { yaw: 0 });
+          break;
+        }
         const m = bushModel(id);
         thing(m, scaleOf(`bushes/${id}`, m, o.k === 'hedge' ? 40 : h), { yaw: 0 });
         break;

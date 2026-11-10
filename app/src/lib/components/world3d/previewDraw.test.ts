@@ -3,7 +3,7 @@
 // preview's day), a group the island's own builders build (built.ts: the homes, bridges, stairs and ponds), K.K. on his
 // stool, or one of the marks that are never drawn in 3D. A new kind with none of these fails here. (The built groups
 // both scenes keep: built.test.ts; the preview's own groups in the browser: e2e/editor-preview.spec.ts.)
-import { describe, expect, test } from 'vitest';
+import { beforeAll, describe, expect, test } from 'vitest';
 import { KIND_LIST } from '#lib/layout/catalog.ts';
 import { defaultLayout, layoutOf, type Layout } from '#lib/layout/model.ts';
 import type { LayoutEntry } from '#lib/contract/layout.ts';
@@ -12,6 +12,10 @@ import { placeObjects } from './objects.ts';
 import { builtWants } from './built.ts';
 import { modelBounds } from './models3d.ts';
 import { previewDay } from './drawCheck.ts';
+import { loadGarden } from './garden.ts';
+
+// (the garden's models, lazy on the phones: known here as an island with a fence has them)
+beforeAll(() => loadGarden());
 
 /** The visitors' and villagers' spots: marks on the ground in the もようがえ, never a thing in the world. */
 const MARKS = new Set(['spot', 'plaza', 'beach-spot']);

@@ -293,6 +293,42 @@ to `/pair`). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the
   as `o` ops `m-<its id>` on its tile (`layout.migrateDecor`); already moved (any op of that id) never again. The
   island draws the layout's copy, not contract/decor's.
 
+## Fences and the garden
+
+`layout/garden.ts` (pure: the kinds, the joining, the crops' growth), `world3d/garden.ts` (their models, lazy), the
+editor's 野菜 and フェンス tabs and NH's garden flowers under 花.
+
+- **The kinds** (catalog.ts `GARDEN_KINDS`, NH's official names in kanji): all 30 of NH 2.0's fence items
+  (`fence-<id>`; not placeable: FenceIkegakiSnow, the hedge's winter look; FenceShareTexture, a texture;
+  FenceGardenPegRope, no item, its rope hung below its posts with no T or cross piece), six crops (`crop-<id>`: tomato,
+  wheat, sugarcane, potato, carrot, pumpkin, its colour the variant), the gold roses, the lily of the valley and the
+  vine (variant a | b | c). Ordinary `o` ops: the relay takes any kind token, no relay change.
+- **A fence** takes its whole tile (catalog `block`, no `foot`): nobody stands or walks on it (nav.ts blocks its four
+  cells), so the villagers' and players' ways go round a run (`e2e/garden.spec.ts`). A crop or a flower is walked over.
+- **Joining** (NH's way, `fenceJoin`): a fence joins the same kind on the tile east, north, west or south of it on the
+  same tier (never across a cliff, never another kind, never a diagonal). Its four neighbours pick one of NH's six
+  pieces and its quarter turns (`fencePiece`): none `a` (across, or along when its facing is odd), one `b` (an end, its
+  arm to the neighbour), two opposite `c`, two beside `d` (a corner), three `g` (a T), four `h`. NH's `e`, `f`, `i`
+  (capped corners, a lone piece with a stub) have no neighbourhood of their own on a four-neighbour grid. The plan draws
+  a fence as a post and a bar to each neighbour it joins. `layout/garden.test.ts` holds all 16 neighbourhoods.
+- **Crops grow by the date** (`cropStage`): the day planted (the piece's id is `o` + its time, model.ts newObjId) a
+  sprout, a stage a day after, ripe on the third and fuller on the fourth and fifth (NH's 0, 1, 2, 3Lv1–3), the same on
+  every phone. No watering (NH's crops grow unwatered); a crop of the default's, or with no date, is grown. Each stands
+  on NH's soil mound.
+- **The garden's flowers** are always in bloom where they're put: no season, no watering, no hybrid (the wild flowers'
+  watering and hybrids, care.ts, stay theirs).
+- **The cedars' festive lights** (PltTreeCedarDeco, its lights lit at night, in the snow in winter): every cedar in the
+  illuminated tree's weeks (fixedDecor.ts `WINDOWS.illumi`, Dec 15 – Jan 6).
+- **NH's other bushes** (yellow hibiscus, blue and pink hydrangeas, yellow tea olive, red and pink camellias) are
+  `bush` variants, their own models (assets.json `bushes/<id>`).
+- **Placing** (`editor/edits.ts placeRun`): with a fence or a crop held, a press puts one down and a drag puts one on
+  each tile it crosses, four-connected (across, then along, so a run joins), skipping tiles taken; the run is one action
+  (⌘Z). The phone view's もようがえ has the same tabs, a piece at a time.
+- **Loading**: their models are packs (scripts/world3d-assets.ts `GARDEN`, docs/world3d-assets.md) listed in
+  `world3d/garden.json`, not assets.json: an island without a fence, a crop, a garden flower or lit cedars fetches none
+  of it; with one, the manifest, then the packs it draws. The icons are one sheet for the editors
+  (`static/room/editor/garden-icons.webp`, `npm run garden-icons`).
+
 ## Table tops
 
 NH's surfaces outdoors, the rooms' rules (design.md "The tent" › Table tops; the shared geometry `lib/surface.ts`,
@@ -314,7 +350,7 @@ piece's (tent/items.json `sy`, `st`: the same NH model, `tops.test.ts`).
 ## Phone editing
 
 `components/layoutEdit/IslandEdit.svelte`: the island's もようがえ in the editor's phone view (the tent's もようがえ
-stays the room's), the tent's way (TentEdit's tray, bar and buttons). The tray's tabs (き, かんぼく, はな, いわ, あかり,
+stays the room's), the tent's way (TentEdit's tray, bar and buttons). The tray's tabs (き, かんぼく, はな, 野菜, フェンス, いわ, あかり,
 かぐ, キャンプ, 食べ物, ジム (design.md "Decorating"), はし・さか, たてもの, おきゃくさん: the visitors' marks drawn over the ground only in
 this mode, red when nobody can stand there with the reason in the bar) over every placeable kind; a tap on one puts
 it down as a ghost on the free tile nearest the view's middle, its footprint green or red, the bar saying why; a finger

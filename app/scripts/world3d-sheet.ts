@@ -2,7 +2,8 @@
 // src/lib/components/world3d/assets.json at its world scale beside an 80u villager card, at the island's 30° pitch,
 // a close-up in each cell's corner, one sheet per kind, to /tmp/world3d-assets/sheet-<kind>-<n>.png.
 //
-// Usage (from app/): node scripts/world3d-sheet.ts [-- --only=bug,fish] [-- --dir=<GLB folder> --s=5.4] [-- --night]
+// Usage (from app/): node scripts/world3d-sheet.ts [-- --only=bug,fish] [-- --dir=<GLB folder> --s=5.4] [-- --garden] [-- --night]
+// (--garden: world3d/garden.json's pack members, a sheet a pack)
 // Needs Google Chrome (Playwright's channel 'chrome'). Reads only the repo's own files.
 import { chromium } from '@playwright/test';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -17,7 +18,7 @@ const only = (arg('only') ?? '').split(',').filter(Boolean);
 const night = process.argv.includes('--night');
 const PER = 30;
 
-interface Item { url: string; label: string; s: number; anchor?: string; night?: boolean }
+interface Item { url: string; label: string; s: number; anchor?: string; night?: boolean; node?: string }
 const groups = new Map<string, Item[]>();
 const roots: [string, string][] = [];
 const route = (prefix: string, root: string) => roots.push([prefix, root]);
@@ -27,6 +28,15 @@ if (dir) {
   const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(join(d, e.name)) : e.name.endsWith('.glb') ? [join(d, e.name)] : []));
   groups.set('probe', walk(root).map((f) => ({ url: `/probe/${f.slice(root.length + 1)}`, label: f.slice(root.length + 1), s: Number(arg('s') ?? 3), anchor: arg('anchor'), night })));
   route('/probe/', root);
+} else if (process.argv.includes('--garden')) {
+  // the garden's (world3d/garden.json): each pack's members, one cell each, at NH's furniture scale
+  const G = JSON.parse(readFileSync(join(APP, 'src', 'lib', 'components', 'world3d', 'garden.json'), 'utf8')) as { models: Record<string, { kb: number; pack: string }> };
+  for (const [name, m] of Object.entries(G.models)) {
+    const id = name.slice(name.lastIndexOf('/') + 1), cat = m.pack.slice(m.pack.lastIndexOf('/') + 1);
+    if (only.length && !only.some((o) => id.includes(o) || cat.includes(o))) continue;
+    (groups.get(cat) ?? groups.set(cat, []).get(cat)!).push({ url: `/w3d/${m.pack}.glb`, node: id, label: `${id} ${m.kb}KB`, s: 3, night: night || undefined });
+  }
+  route('/w3d/', W3D);
 } else {
   const A = JSON.parse(readFileSync(join(APP, 'src', 'lib', 'components', 'world3d', 'assets.json'), 'utf8')) as {
     models: Record<string, { kb: number }>; keys: Record<string, { m: string; cat: string; s: number; anchor: string; lit?: number }>;

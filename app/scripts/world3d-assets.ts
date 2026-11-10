@@ -9,6 +9,7 @@ import { BUGS, FISH as FISH_TABLE } from '../src/lib/components/island/critters.
 import { POND_FISH } from '../src/lib/components/island/pondFish.ts';
 import { SEA as SEA_TABLE } from '../src/lib/components/island/sea.ts';
 import { FOSSILS } from '../src/lib/components/island/beach.ts';
+import { CROPS, FENCES, FENCE_PARTS, FENCE_SNOW, PLANTS, PUMPKINS, VINES } from '../src/lib/layout/garden.ts';
 
 /** The bugs (critters.ts BugId) → NH's Insect<Name> models. */
 const BUG: Record<string, string> = {
@@ -111,13 +112,15 @@ export interface AssetJob {
   variant?: number;
   /** No occlusion baked in (the snowboy). */
   noAo?: boolean;
+  /** No albedo: its _Mix map's B (plus this lift) picks its colour along the gradient's row (NH's remake fences). */
+  grdMix?: number;
   /** A part lifted out as its own node (scripts/world3d-models.ts Job `split`: the weight bench's barbell). */
   split?: { name: string; above: number };
   /** Not NH's: a stylised effect (scripts/world3d-fx.ts). */
   fx?: 'sparkle' | 'bang' | 'dust' | 'splash' | 'ripple' | 'zzz' | 'sweat' | 'confetti' | 'flame' | 'lily-pad';
   /** A pack: several models in this one GLB (`name` its file), each under a node named its id, its model
    *  `decor/<id>` (assets.json `pack`: the file it's in); the job's own `uses` none. */
-  pack?: (Pick<AssetJob, 'parts' | 'tex' | 'maxTex' | 'uses'> & { id: string })[];
+  pack?: (Pick<AssetJob, 'parts' | 'tex' | 'maxTex' | 'uses'> & Partial<Pick<AssetJob, 'grdRow' | 'grdRows' | 'grdFile' | 'snow' | 'alias' | 'grdMix'>> & { id: string })[];
   uses: Use[];
 }
 
@@ -417,7 +420,58 @@ const accessories: AssetJob[] = [
   { name: 'accessories/party-glasses', parts: one('AccessoryGlassBirthday0'), maxTex: 128, uses: [{ key: 'accessories/party-glasses', cat: 'accessory', s: VILLAGER_S, anchor: 'joint', lazy: 'event' }] }
 ];
 
-export const ASSETS: AssetJob[] = [...bugs, ...fish, ...sea, ...shadows, ...finds, ...flowers, ...bushes, ...trees, ...decos, ...decor, ...packs, ...events, ...board, ...fxs, ...tools, ...accessories];
+// the garden (layout/garden.ts: the editor's フェンス, 野菜 and the garden's flowers; docs/island-layout.md "Fences and the
+// garden"): packs under garden/, their models in world3d/garden.json, not assets.json (loaded only by an island that has
+// one: world3d/garden.ts). A fence's six pieces (a, b, c, d, g, h: layout/garden.ts FencePart) in its first colour (a
+// remake fence's colour is its gradient's row 0, picked by its _Mix map's B: `grdMix`), a few fences a file; each crop's
+// six stages and its soil; the gold roses, the lily of the valley and the vines (and their winter looks); the cedar's
+// festive lights (Dec 15 – Jan 6, in the snow in winter)
+type GardenMember = NonNullable<AssetJob['pack']>[number];
+const gardenPack = (name: string, members: GardenMember[]): AssetJob => ({ name: `garden/${name}`, parts: [], uses: [], pack: members });
+const GRD_MIX = new Set(['FenceCorrugatedIron', 'FenceIce', 'FenceJapanese', 'FenceJuneBride', 'FenceLattice', 'FenceLatticeBig', 'FencePark', 'FenceSteel', 'FenceVerticalWood', 'FenceWoodWhite']);
+/** A fence's colour as NH's icon wears it (its first remake): the gradient's row where it isn't the first, a lift of its
+ *  gray where its _Mix map's B is darker than NH draws it (the frozen fence's ice), the hedge's leaves' summer row. */
+const FENCE_ROW: Record<string, number> = { FenceLattice: row(2), FenceWoodWhite: row(3), FenceIkegaki: 0.72 };
+const FENCE_LIFT: Record<string, number> = { FenceIce: 0.45 };
+const fenceMembers = (id: string, model: string, dae = model): GardenMember[] =>
+  FENCE_PARTS.map((p): GardenMember => ({
+    id: `fence-${id}-${p}`, parts: [[model, `${dae}_${p.toUpperCase()}`]], maxTex: 128, uses: [],
+    ...(GRD_MIX.has(model) ? { grdMix: FENCE_LIFT[model] ?? 0, grdRow: FENCE_ROW[model] ?? row(0) } : FENCE_ROW[model] ? { grdRow: FENCE_ROW[model] } : {})
+  }));
+/** The fences a file (alphabetical, ~150 KB each: one fence's file costs its neighbours' bytes too). */
+const FENCES_A_FILE = 5;
+const fencePacks: AssetJob[] = [];
+for (let i = 0; i < FENCES.length; i += FENCES_A_FILE)
+  fencePacks.push(gardenPack(`fences-${i / FENCES_A_FILE + 1}`, FENCES.slice(i, i + FENCES_A_FILE).flatMap(([id, , , model]) => [
+    ...fenceMembers(id, model),
+    ...(FENCE_SNOW[id] ? fenceMembers(`${id}-snow`, FENCE_SNOW[id], model).map((m) => ({ ...m, snow: true })) : [])
+  ])));
+const STAGE_DAE = ['0', '1', '2', '3Lv1', '3Lv2', '3Lv3'];
+const crops = gardenPack('crops', [
+  { id: 'crop-soil', parts: one('PltVgtSoil'), maxTex: 128, uses: [] },
+  ...CROPS.flatMap(([id, , , m]): GardenMember[] => STAGE_DAE.flatMap((s, n): GardenMember[] => {
+    const parts: GardenMember['parts'] = [[`PltVgt${m}`, `PltVgt${m}${s}`]];
+    // (the ripe pumpkins in NH's four colours: their gradient's rows)
+    if (id === 'pumpkin' && n >= 3) return PUMPKINS.map((c, r): GardenMember => ({ id: `crop-pumpkin-${c}-${n}`, parts, maxTex: 128, grdRows: { 'mPltVgtPumpkin$': row(r) }, uses: [] }));
+    return [{ id: `crop-${id}-${n}`, parts, maxTex: 128, uses: [] }];
+  }))
+]);
+const plants = gardenPack('plants', [
+  ...PLANTS.filter(([k]) => k !== 'vine').map(([k, , , m, dae]): GardenMember => ({ id: k, parts: [[m, dae]], maxTex: 128, uses: [] })),
+  ...VINES.flatMap((v): GardenMember[] => [
+    { id: `vine-${v}`, parts: [['PltVine', `PltVine${v.toUpperCase()}`]], maxTex: 128, uses: [] },
+    { id: `vine-${v}-snow`, parts: [['PltVineSnow', `PltVine${v.toUpperCase()}Snow`]], maxTex: 128, snow: true, uses: [] }
+  ])
+]);
+const cedarDeco = gardenPack('cedar-deco', [
+  // (the lights' material is mPltTreeDecoA, its textures mPltTreeDeco_*)
+  { id: 'cedar-deco', parts: [['PltTreeCedarDeco', 'PltTreeCedarDecoA']], grdRow: 0.3, alias: { mPltTreeDecoA: 'mPltTreeDeco' }, uses: [] },
+  { id: 'cedar-deco-snow', parts: [['PltTreeCedarDecoSnow', 'PltTreeCedarDecoASnow']], snow: true, alias: { mPltTreeDecoA: 'mPltTreeDeco' }, uses: [] }
+]);
+/** The garden's jobs (their models go to world3d/garden.json). */
+const GARDEN: AssetJob[] = [...fencePacks, crops, plants, cedarDeco];
+
+export const ASSETS: AssetJob[] = [...bugs, ...fish, ...sea, ...shadows, ...finds, ...flowers, ...bushes, ...trees, ...decos, ...decor, ...packs, ...events, ...board, ...fxs, ...tools, ...accessories, ...GARDEN];
 
 /** The POC's models (models.json: static/room/world3d/<name>.glb) serving the island's keys as they are. */
 export const POC_USES: [string, Use[]][] = [
@@ -529,4 +583,17 @@ export function writeDoc(file: string, assets: string) {
   const doc = readFileSync(file, 'utf8');
   const [a, b] = ['<!-- assets:start -->', '<!-- assets:end -->'];
   writeFileSync(file, `${doc.slice(0, doc.indexOf(a) + a.length)}\n${lines.join('\n')}\n${doc.slice(doc.indexOf(b))}`);
+}
+
+/** world3d/garden.json: the garden's models (as assets.json's `models`: bounds, triangles, KB, its pack's hash and file),
+ *  apart from assets.json so the island's first load doesn't carry them (world3d/garden.ts loads it when one is down). */
+export function writeGarden(file: string, metas: Record<string, Meta>) {
+  const sorted = Object.entries(metas).sort(([a], [b]) => a.localeCompare(b));
+  writeFileSync(file, `{
+  "_": "scripts/world3d-models.ts (scripts/world3d-assets.ts GARDEN): the garden's NH models (the fences, the crops, the garden's flowers, the cedar's lights: layout/garden.ts), each a member of its pack (static/room/world3d/<pack>.glb), loaded by world3d/garden.ts only when the island has one",
+  "models": {
+${sorted.map(([k, m]) => `    ${JSON.stringify(k)}: ${JSON.stringify(m)}`).join(',\n')}
+  }
+}
+`);
 }

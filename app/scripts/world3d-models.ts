@@ -28,7 +28,7 @@ import { tmpdir } from 'node:os';
 import { dirname, extname, join, resolve, sep } from 'node:path';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
-import { ASSETS, POC_USES, writeAssets, writeDoc, type Use } from './world3d-assets.ts';
+import { ASSETS, POC_USES, writeAssets, writeDoc, writeGarden, type Use } from './world3d-assets.ts';
 import { fxGltf, type Fx } from './world3d-fx.ts';
 import { nhFolders } from './nh-folders.ts';
 import { FOSSIL_MODEL, packOf } from '../src/lib/components/museum/fossils.ts';
@@ -80,6 +80,9 @@ interface Job {
   snow?: boolean;
   /** No occlusion baked in (the snowboy: NH's snow is white). */
   noAo?: boolean;
+  /** No albedo: its _Mix map's B (plus this lift) picks its colour along the gradient's row (NH's remake fences:
+   *  world3d-page.js bake). */
+  grdMix?: number;
   /** Not NH's: one of scripts/world3d-fx.ts's stylised effects (a sparkle, a splash). */
   fx?: Fx;
   /** A part lifted out as its own node, the same material (scripts/world3d-page.js splitOff): the connected pieces of
@@ -91,7 +94,7 @@ interface Job {
   lift?: Record<string, number>;
   /** A pack (scripts/world3d-assets.ts PACKS): its members in this one GLB, each under a node named its id, model
    *  `decor/<id>` in assets.json (`pack`: this file). */
-  pack?: (Pick<Job, 'parts' | 'tex' | 'maxTex' | 'uses' | 'lift'> & { id: string })[];
+  pack?: (Pick<Job, 'parts' | 'tex' | 'maxTex' | 'uses' | 'lift'> & Partial<Pick<Job, 'grdRow' | 'grdRows' | 'grdFile' | 'snow' | 'alias' | 'grdMix'>> & { id: string })[];
 }
 /** A pack member's model name (assets.json): the pack's folder and its id. */
 const memberName = (j: Job, id: string) => `${j.name.slice(0, j.name.lastIndexOf('/') + 1)}${id}`;
@@ -270,6 +273,9 @@ const metas: Record<string, Meta> = existsSync(META) ? (JSON.parse(readFileSync(
 const ASSET_META = join(dirname(META), 'assets.json');
 /** The island's things' models (assets.json `models`; the POC's stay in models.json too). */
 const assetMetas: Record<string, Meta> = existsSync(ASSET_META) ? (JSON.parse(readFileSync(ASSET_META, 'utf8')) as { models: Record<string, Meta> }).models : {};
+/** (and the garden's: world3d/garden.json, loaded only by an island that has a fence or a crop: world3d/garden.ts) */
+const gardenFile = join(dirname(META), 'garden.json');
+if (!MUSEUM && existsSync(gardenFile)) Object.assign(assetMetas, (JSON.parse(readFileSync(gardenFile, 'utf8')) as { models: Record<string, Meta> }).models);
 let total = 0;
 /** A pack's members' bounds, triangles and light (convertPack), by member. */
 type Member = { id: string; box: [number[], number[]]; tris: number; lit: boolean };
@@ -280,15 +286,27 @@ for (const j of todo) {
   const r = j.pack ? await page.evaluate(async (o) => {
     const p = await (window as unknown as { convertPack: (o: unknown) => Promise<{ gltf: string; members: Member[] }> }).convertPack(o);
     return { gltf: p.gltf, members: p.members };
-  }, { maxTex: j.maxTex ?? 256, maxEmi: 128, members: j.pack.map((m) => ({ id: m.id, parts: m.parts.map(([f, d, at]) => ({ folder: F(f), dae: `${d}.dae`, at })), files: filesOf(m), ...(m.maxTex ? { maxTex: m.maxTex } : {}), ...(m.lift ? { lift: m.lift } : {}) })) }).then((p) => {
+  }, { maxTex: j.maxTex ?? 256, maxEmi: 128, members: j.pack.map((m) => ({ id: m.id, parts: m.parts.map(([f, d, at]) => ({ folder: F(f), dae: `${d}.dae`, at })), files: filesOf(m), ...(m.maxTex ? { maxTex: m.maxTex } : {}), ...(m.lift ? { lift: m.lift } : {}), grdRow: m.grdRow, grdRows: m.grdRows, grdFile: m.grdFile, snow: m.snow, alias: m.alias, grdMix: m.grdMix })) }).then((p) => {
     members = p.members;
     const min = [0, 1, 2].map((i) => Math.min(...p.members.map((m) => m.box[0][i]))), max = [0, 1, 2].map((i) => Math.max(...p.members.map((m) => m.box[1][i])));
     return { gltf: p.gltf, box: [min, max] as [number[], number[]], tris: p.members.reduce((n, m) => n + m.tris, 0), lit: p.members.some((m) => m.lit), split: null };
   }) : j.fx ? { ...fxGltf(j.fx), lit: j.fx === 'flame' } : await page.evaluate((o) => (window as unknown as { convert: (o: unknown) => Promise<{ gltf: string; box: [number[], number[]]; tris: number; lit: boolean; split: Part | null }> }).convert(o), {
     parts: j.parts.map(([f, d, at]) => ({ folder: F(f), dae: `${d}.dae`, at })), files, maxTex: j.maxTex ?? 256, maxEmi: 128,
-    grdRow: j.grdRow, grdRows: j.grdRows, grdBlock: j.grdBlock, hide: j.hide, alias: j.alias, flat: j.flat, pose: j.pose, grdFile: j.grdFile, snow: j.snow, variant: j.variant, noAo: j.noAo, split: j.split
+    grdRow: j.grdRow, grdRows: j.grdRows, grdBlock: j.grdBlock, hide: j.hide, alias: j.alias, flat: j.flat, pose: j.pose, grdFile: j.grdFile, snow: j.snow, variant: j.variant, noAo: j.noAo, split: j.split, grdMix: j.grdMix
   });
   const g = JSON.parse(r.gltf) as { buffers: { uri: string }[]; images?: { uri?: string; mimeType?: string }[]; textures?: { source?: number; extensions?: object }[]; extensionsUsed?: string[]; extensionsRequired?: string[] };
+  // the same picture once (a pack's members bake one material each, a fence's six pieces the same texture six times)
+  if (g.images?.length) {
+    const first = new Map<string, number>(), keep: number[] = [], to = g.images.map((im, i) => {
+      const at = first.get(im.uri!);
+      if (at !== undefined) return at;
+      first.set(im.uri!, keep.length);
+      keep.push(i);
+      return keep.length - 1;
+    });
+    g.images = keep.map((i) => g.images![i]);
+    for (const t of g.textures ?? []) if (t.source !== undefined) t.source = to[t.source];
+  }
   const dir = join(work, j.name);
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
@@ -382,7 +400,9 @@ if (probe) {
 }
 const jobUses = JOBS.flatMap((j) => (j.pack ? j.pack.map((m) => [memberName(j, m.id), m.uses!] as const) : j.uses ? [[j.name, j.uses] as const] : []));
 for (const k of Object.keys(assetMetas)) if (!jobUses.some(([n]) => n === k)) delete assetMetas[k];
-writeAssets(ASSET_META, assetMetas, metas, POC_USES, jobUses);
+const GARDEN_META = join(dirname(META), 'garden.json'), isGarden = (k: string) => k.startsWith('garden/');
+writeGarden(GARDEN_META, Object.fromEntries(Object.entries(assetMetas).filter(([k]) => isGarden(k))));
+writeAssets(ASSET_META, Object.fromEntries(Object.entries(assetMetas).filter(([k]) => !isGarden(k))), metas, POC_USES, jobUses);
 writeDoc(join(APP, '..', 'docs', 'world3d-assets.md'), ASSET_META);
 const sorted = Object.fromEntries(Object.entries(metas).sort(([a], [b]) => a.localeCompare(b)));
 writeFileSync(META, `{\n  "_": "scripts/world3d-models.ts: the 3D island POC's models (bounds in model units, triangles, KB, content hash)",\n  "models": {\n${Object.entries(sorted).map(([k, m]) => `    ${JSON.stringify(k)}: ${JSON.stringify(m)}`).join(',\n')}\n  }\n}\n`);

@@ -53,6 +53,7 @@
   import { watchRest } from './rest.ts';
   import { ktx2Stats } from './ktx2.ts';
   import { placeObjects, type Inst, type Standin } from './objects.ts';
+  import { gardenReady, loadGarden, wantsGarden } from './garden.ts';
   import { homeTod } from './home.ts';
   import { createBuilt } from './built.ts';
   import { lookOf } from './groundLook.ts';
@@ -102,6 +103,8 @@
     season: Season;
     foliage: string;
     month: number;
+    /** Today (Tokyo's `YYYY-MM-DD`): the crops' stages, the cedars' festive lights (world3d/garden.ts). */
+    date?: string;
     tod: Tod;
     /** The day's scenery (its swaps) and the fixed decor's pieces (Scenery's own). */
     scenery: readonly Scenery[];
@@ -126,7 +129,7 @@
     /** The camera is up and the island's models are in (once). */
     onready: () => void;
   }
-  let { world, scene, season, foliage, month, tod, scenery, pieces, hybrid, floating, wet, cast, enabled, start, onscroll, onhorizon, onfail, onready }: Props = $props();
+  let { world, scene, season, foliage, month, date, tod, scenery, pieces, hybrid, floating, wet, cast, enabled, start, onscroll, onhorizon, onfail, onready }: Props = $props();
 
   let canvas = $state<HTMLCanvasElement>();
   let eng = $state.raw<Island3 | null>(null);
@@ -742,16 +745,19 @@
   let placedIds = new Set<string>();
   const layoutN = new WeakMap<Layout, number>();
   let layouts = 0;
+  /** The garden's models known (world3d/garden.ts: fetched only once the island has a fence, a crop… or lit cedars). */
+  let gardenIn = $state(gardenReady());
   $effect(() => {
     const e = eng;
     if (!e) return;
     const lay = layoutNow();
     if (!layoutN.has(lay)) layoutN.set(lay, ++layouts);
-    const sig = `${season}|${foliage}|${month}|${hybrid?.id}:${hybrid?.flower}|${scenery.map((s) => s.id + s.key).join()}|${pieces.map((p) => p.id + p.key).join()}|${layoutN.get(lay)}`;
+    if (!gardenIn && wantsGarden(lay, date)) void loadGarden().then(() => (gardenIn = true));
+    const sig = `${season}|${foliage}|${month}|${date}|${gardenIn}|${hybrid?.id}:${hybrid?.flower}|${scenery.map((s) => s.id + s.key).join()}|${pieces.map((p) => p.id + p.key).join()}|${layoutN.get(lay)}`;
     if (sig === placed) return;
     placed = sig;
     untrack(() => {
-      const { insts, standins: st } = placeObjects(lay, { season, foliage, month, pieces, hybrid, swaps: Object.fromEntries(scenery.map((s) => [s.id, { key: s.key, h: s.h }])), fruit: false, structures: true });
+      const { insts, standins: st } = placeObjects(lay, { season, foliage, month, date, pieces, hybrid, swaps: Object.fromEntries(scenery.map((s) => [s.id, { key: s.key, h: s.h }])), fruit: false, structures: true });
       placedIds = new Set(insts.map((i) => i.id));
       void e.place(insts).then(() => {
         if (!loaded) {

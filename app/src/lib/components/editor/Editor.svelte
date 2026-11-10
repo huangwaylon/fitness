@@ -21,8 +21,9 @@
   import { draw, fitView, tileUnder, toScreen, toWorld, zoomAt, type View } from './plan.ts';
   import { carryTops } from '#lib/layout/tops.ts';
   import {
-    brushTiles, cliff, copy, ghostFoot, inBox, move, objectAt, paint, paste, place, remove, removable, resize, restyle, revert, rotate, sameLayout, wetAt, type Clip
+    brushTiles, cliff, copy, ghostFoot, inBox, move, objectAt, paint, paste, place, placeRun, remove, removable, resize, restyle, revert, rotate, runs, runTiles, sameLayout, wetAt, type Clip
   } from './edits.ts';
+  import { gardenIcons, variantName } from './gardenIcons.ts';
 
   let { me, relay }: { me: 'A' | 'B' | 'G'; relay: Live | null } = $props();
 
@@ -106,11 +107,15 @@
   let W = $state(800), H = $state(600);
   const icons = new Map<string, HTMLImageElement>();
   let iconRev = $state(0);
+  /** The garden's icons (gardenIcons.ts: one sheet, cut up once it's in). */
+  let garden = $state<Readonly<Record<string, string>>>({});
+  onMount(() => void gardenIcons().then((g) => (garden = g)));
+  const iconUrl = (key: string): string | null => (key.startsWith('garden:') ? (garden[key] ?? null) : artUrl(key));
   function icon(key: string): HTMLImageElement | null {
     if (!key) return null;
     let im = icons.get(key);
     if (!im) {
-      const url = artUrl(key);
+      const url = iconUrl(key);
       if (!url) return null;
       im = new Image();
       im.onload = () => iconRev++;
@@ -121,7 +126,8 @@
   }
 
   interface Drag {
-    mode: 'move' | 'box' | 'paint' | 'cliff' | 'pan';
+    /** (`place`: a run of the garden's, a fence or a crop a tile, as the pointer goes: edits.ts placeRun) */
+    mode: 'move' | 'box' | 'paint' | 'cliff' | 'pan' | 'place';
     x: number;
     y: number;
     tile: [number, number];
@@ -237,6 +243,12 @@
       const fixedHere = placing.fixed && [...cur.objects.values()].some((o) => o.k === placing!.k && (o.s ?? '') === (placeS ?? placing!.variants?.[0] ?? ''));
       if (fixedHere) return say('これは島に1つだけです');
       const r = place(cur, placing.k, ghost.x, ghost.z, placeF, placeS, store.stamp());
+      if (r && runs(placing.k)) {
+        // a fence or a crop: one a tile as the pointer goes on, the run one action as it lifts
+        drag = { mode: 'place', x: px, y: py, tile: [ghost.x, ghost.z], before: store.current, ids: [r.id] };
+        work = r.layout;
+        return;
+      }
       if (r) {
         commit(r.layout, `${placing.ja}を置いた`);
         if (placing.fixed) setTool('select');
@@ -277,6 +289,13 @@
       view = { ...drag.view!, ox: drag.view!.ox + px - drag.x, oy: drag.view!.oy + py - drag.y };
       return;
     }
+    if (drag.mode === 'place') {
+      if (!placing || !hover || (hover[0] === drag.tile[0] && hover[1] === drag.tile[1])) return;
+      const r = placeRun(work ?? store.current, placing.k, runTiles(drag.tile, hover), placeF, placeS, store.stamp() + (drag.ids?.length ?? 0));
+      work = r.layout;
+      drag = { ...drag, tile: hover, ids: [...(drag.ids ?? []), ...r.ids] };
+      return;
+    }
     if (drag.mode === 'paint' || drag.mode === 'cliff') {
       // a cliff stroke lifts each tile once; paint follows the pointer
       if (drag.mode === 'cliff' && drag.tile[0] === tile[0] && drag.tile[1] === tile[1]) return;
@@ -312,7 +331,12 @@
     drag = null;
     if (!d) return;
     canvas?.releasePointerCapture(e.pointerId);
-    if (d.mode === 'paint' || d.mode === 'cliff') {
+    if (d.mode === 'place') {
+      const next = work;
+      work = null;
+      // (put down over the island as it was when it began: its pieces sent over the island as it is now)
+      if (next) commit(revert(store.current, next, d.before!), `${kindDef(next.objects.get(d.ids![0])?.k ?? '')?.ja ?? ''}を${d.ids!.length > 1 ? `${d.ids!.length}個` : ''}置いた`);
+    } else if (d.mode === 'paint' || d.mode === 'cliff') {
       const next = work;
       work = null;
       if (next) {
@@ -468,7 +492,7 @@
   // ---- the panel ----
   const BRUSHES: Kind[] = ['grass', 'sand', ...PATHS, 'river', 'pond', 'sea'];
   const BRUSH_NAME: Record<Kind, string> = { grass: '草', sand: '砂', dirt: '土', stone: '石', brick: 'レンガ', plank: '板', river: '川', pond: '池', sea: '海' };
-  const GROUPS: [string, string][] = [['tree', '木'], ['bush', '低木'], ['flower', '花'], ['rock', '岩'], ['light', '明かり'], ['furniture', '家具'], ['camp', 'キャンプ'], ['food', '食べ物'], ['gym', 'ジム'], ['season', '季節'], ['structure', '橋・坂'], ['building', '建物'], ['visitor', 'お客さん']];
+  const GROUPS: [string, string][] = [['tree', '木'], ['bush', '低木'], ['flower', '花'], ['crop', '野菜'], ['fence', 'フェンス'], ['rock', '岩'], ['light', '明かり'], ['furniture', '家具'], ['camp', 'キャンプ'], ['food', '食べ物'], ['gym', 'ジム'], ['season', '季節'], ['structure', '橋・坂'], ['building', '建物'], ['visitor', 'お客さん']];
   const one = $derived(selected.size === 1 ? (cur.objects.get([...selected][0]) ?? null) : null);
   function setVariant(s: string) {
     if (one) commit(restyle(store.current, one.id, s), '変更した');
@@ -615,7 +639,7 @@
           <div class="items">
             {#each palette(g) as d (d.k)}
               <button type="button" class="item" data-kind={d.k} aria-pressed={placing?.k === d.k} disabled={present(d)} title={`${d.ja} · ${d.en}${present(d) ? '（島にある）' : ''}`} onclick={() => pick(d)}>
-                {#if d.icon && artUrl(d.icon)}<img src={artUrl(d.icon)} alt="" />{:else}<span class="glyph">{d.k === 'stairs' ? '⛰' : d.k === 'board' ? '📋' : '・'}</span>{/if}
+                {#if d.icon && iconUrl(d.icon)}<img src={iconUrl(d.icon)} alt="" />{:else}<span class="glyph">{d.k === 'stairs' ? '⛰' : d.k === 'board' ? '📋' : '・'}</span>{/if}
                 <span class="lbl">{d.ja}</span>
               </button>
             {/each}
@@ -623,9 +647,12 @@
         </div>
       {/each}
     </div>
+    {#if placing && runs(placing.k)}
+      <p class="hint">ドラッグで続けて置けます。隣り合う同じフェンスはつながります</p>
+    {/if}
     {#if placing?.variants}
       <label class="row small">種類
-        <select bind:value={placeS}>{#each placing.variants as v (v)}<option value={v}>{v}</option>{/each}</select>
+        <select bind:value={placeS}>{#each placing.variants as v (v)}<option value={v}>{variantName(placing.k, v)}</option>{/each}</select>
       </label>
     {/if}
     <p class="hint">
@@ -671,7 +698,7 @@
         {#if d?.variants && one.k !== 'goal-tree' && one.k !== 'spot'}
           <label class="row small">種類
             <select value={one.s ?? d.variants[0]} onchange={(e) => setVariant((e.target as HTMLSelectElement).value)}>
-              {#each d.variants as v (v)}<option value={v}>{v}</option>{/each}
+              {#each d.variants as v (v)}<option value={v}>{variantName(d.k, v)}</option>{/each}
             </select>
           </label>
         {/if}
