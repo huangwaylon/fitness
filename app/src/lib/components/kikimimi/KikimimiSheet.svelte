@@ -330,6 +330,12 @@
   $effect(() => {
     if (hosting && !page && v?.gm === 'taikai') untrack(() => (pages = taikaiStack()));
   });
+  // a game in sight (あそぶ and what's under it, みんなで, a lesson's card, another's lobby): its deck's packs fetched
+  // now; a look at the hub, きろく or ずかん fetches none (game.svelte.ts ahead)
+  $effect(() => {
+    const g = game, on = !!lesson || guest || (!!page && ['asobu', 'mode', 'lobby', 'taikai'].includes(page.k));
+    untrack(() => g?.ahead(on));
+  });
   /** A co-op lesson in my shared lobby: who's in it, whether I start it, the others' wait line. */
   const shared = $derived(v && !v.local && lesson ? { players: v.players.map((p) => p.who), host: v.amHost, wait: t('kiki.waitHost', { name: v.host ? hostName(v.host) : '' }) } : null);
   /** The countdown (WINDOWS.countdown, 4 s): 「よーい」 for its first second (4), then 3-2-1. */

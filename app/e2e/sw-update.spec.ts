@@ -265,6 +265,7 @@ test('ききみみ’s packs: the lobby’s deck’s pack goes into the listen c
   await controlled(page);
   await fromMenu(page, 'kikimimi');
   await expect(page.locator('dialog[open] [data-kikimimi]')).toHaveAttribute('data-phase', 'lobby');
+  await page.locator('dialog[open] [data-kikimimi] [data-kiki-tile="asobu"]').click(); // (a game in sight: its deck's packs)
   const listen = () => page.evaluate(async () => {
     const c = await caches.open('island-listen-v1');
     const idx = await c.match(new URL('__listen-index', (await navigator.serviceWorker.getRegistration())!.scope).href);

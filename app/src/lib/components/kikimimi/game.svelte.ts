@@ -352,6 +352,15 @@ export class QuizGame {
     return this.#link.now();
   }
 
+  /** A game in sight (the sheet: あそぶ, a game's page, みんなで, a lesson's card, another's lobby): my lobby's deck's packs
+   *  fetched now, not at its countdown. Never for a look at the hub (its level-1 pack is 0.65 MB). */
+  ahead(on: boolean): void {
+    if (on === this.#ahead) return;
+    this.#ahead = on;
+    if (on) this.#refresh();
+  }
+  #ahead = false;
+
   /** The lobby's 🔊 「きこえる？」: whether a clip could play (false: no voice session, interrupted). */
   test(): Promise<boolean> {
     return this.#clips.test();
@@ -405,7 +414,7 @@ export class QuizGame {
       this.view = v;
     }
     this.now = now;
-    this.#clips.follow(v, this.items, now, hidesLine);
+    this.#clips.follow(v, this.items, now, hidesLine, this.#ahead);
     this.#cues(v);
     clearTimeout(this.#timer);
     if (typeof document !== 'undefined' && document.hidden) return;

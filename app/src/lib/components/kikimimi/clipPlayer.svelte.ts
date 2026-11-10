@@ -75,13 +75,14 @@ export class ClipPlayer {
   /**
    * The clips a view calls for, at each refresh: the lobby's deck fetched, the first play planned on the relay's clock
    * (planned again when a `skip` moves it), a dialogue's turns, the reveal's replay; outside a game, silence.
-   * `hidesLine`: a スピード はしご rung below the top (no replay at its reveal).
+   * `hidesLine`: a スピード はしご rung below the top (no replay at its reveal). `ahead`: a game in sight (game.svelte.ts
+   * ahead), the lobby's deck fetched before its countdown.
    */
-  follow(v: QuizView, items: readonly Item[], now: number, hidesLine: (it: Item) => boolean): void {
-    // the lobby: the deck's packs fetched (packs.ts: the first question's alone, then the rest; a level-1 deck's one
-    // pack, ~0.7 MB, a level-4 deck's up to eight), the first clip decoded
+  follow(v: QuizView, items: readonly Item[], now: number, hidesLine: (it: Item) => boolean, ahead = false): void {
+    // the lobby, a game in sight, or the countdown: the deck's packs fetched (packs.ts: the first question's alone, then
+    // the rest; a level-1 deck's one pack, ~0.7 MB, a level-4 deck's up to eight), the first clip decoded
     const dealt = `${v.gm}:${v.seed}:${v.o}:${v.u ?? ''}`;
-    if (v.g && (v.phase === 'lobby' || v.phase === 'countdown') && this.#fetched !== dealt && items.length) {
+    if (v.g && ((v.phase === 'lobby' && ahead) || v.phase === 'countdown') && this.#fetched !== dealt && items.length) {
       this.#fetched = dealt;
       prefetchClips(items.flatMap((it) => clipIds(it)));
       if (v.speaks) void voiceClip(clipIds(items[0])[0]);
