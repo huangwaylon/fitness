@@ -1281,7 +1281,8 @@ scale the island down. Check at 393×852, 375×667 and 320×568, day, dusk, nigh
 
 Official NH renders only from `static/art/` through `<OfficialArt>`, with a fallback so a missing file never breaks a
 screen; WebP, never upscaled. Manifest and helpers `lib/art.ts` (the build packs the manifest's sizes per folder:
-`vite.config.ts` `slimArtManifest`); files from `scripts/fetch-assets.ts`. Groups: villagers (all 417 + 23 special
+`vite.config.ts` `slimArtManifest`); files from `scripts/fetch-assets.ts`, but the catalogue's, the critters' and the
+finds' icons: NH's own 2D icons from the game files (`scripts/nh-icons.ts`). Groups: villagers (all 417 + 23 special
 characters; roster `lib/villagers/roster.ts`; `lib/villagers/look.ts`), host (しずえ, たぬきち), fruit, trees, bushes,
 flowers, particles, reactions, money, deco, critters, finds, presents. Ours: sky, sea, ground, the jar, effects, marks, UI
 sprites. Names follow the Japanese game; no Nintendo fonts.

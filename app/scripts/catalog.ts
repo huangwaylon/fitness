@@ -1,15 +1,13 @@
 // Build the balloon presents' catalogue (docs/design.md "Balloon"): NH's furniture and clothing a balloon can hold and
 // NH's DIY recipes balloons carry, with their official ja/en names and icons.
-// Usage (from app/): npm run catalog:build                 (data + any icon not on disk yet)
-//                    npm run catalog:build -- --data    (data only)   --force (re-download every icon)
+// Usage (from app/): npm run catalog:build   [-- --force: fetch the sources again]
+// The icons are NH's own from the game files: npm run icons:nh (scripts/nh-icons.ts) after a change here.
 //
 // Sources:
 // - The ACNH community spreadsheet as JSON (Norviah/animal-crossing, json/data/*.json): every NH item with its catalog
 //   status ("For sale" = orderable from the catalogue), its sources, its season event, its shop season and the game's
 //   own ja/en names (translations.jPja / uSen). The pool rules below read these fields.
-// - Nookipedia's Cargo tables (nh_furniture_variation, nh_clothing_variation, nh_recipe): the file of each item's
-//   official icon (the first variation's) and each recipe's DIY icon; the recipes' "balloons" availability cross-checks
-//   the spreadsheet's.
+// - Nookipedia's Cargo table nh_recipe: the recipes' "balloons" availability cross-checks the spreadsheet's.
 //
 // Pool rules (NH: a balloon holds furniture, clothing, a DIY recipe, Bells or materials (Nookipedia, Balloon); the
 // furniture and clothing are the shops' random stock): an item is in when it is orderable ("For sale"), sold by Nook's
@@ -21,26 +19,22 @@
 // "Balloons" (the seasonal sets, Halloween, Shamrock Day) or "Egg balloons" (Bunny Day).
 //
 // Output: src/lib/components/island/catalog.json (ids, category, season; the pool in island/catalog.ts reads it),
-// src/lib/i18n/catalog.{ja,en}.json (`item.name.<id>`, `recipe.name.<id>`), static/art/finds/{items,recipes}/<id>.webp
-// (96 px, cwebp -q 75: ~2 KB each; under art/finds/ so the service worker caches them on first use, never at install).
-// Requires `cwebp` (brew install webp).
-import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync, readdirSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
+// src/lib/i18n/catalog.{ja,en}.json (`item.name.<id>`, `recipe.name.<id>`); the icons, static/art/finds/{items,recipes}/<id>.webp
+// (96 px, ~2 KB each; under art/finds/ so the service worker caches them on first use, never at install), are
+// scripts/nh-icons.ts's.
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const APP = join(import.meta.dirname, '..');
 const DATA_OUT = join(APP, 'src', 'lib', 'components', 'island', 'catalog.json');
 const NAMES_OUT = (lang: string) => join(APP, 'src', 'lib', 'i18n', `catalog.${lang}.json`);
-const ART = join(APP, 'static', 'art', 'finds');
 const SHEET = 'https://raw.githubusercontent.com/Norviah/animal-crossing/master/json/data/';
 const API = 'https://nookipedia.com/w/api.php';
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15';
 const CACHE = join(tmpdir(), 'island-catalog-src');
-const ICON_PX = 96;
 const DELAY_MS = 150;
 const force = process.argv.includes('--force');
-const dataOnly = process.argv.includes('--data');
 
 /** The spreadsheet's tabs → our category (the ずかん's tabs, NH's catalogue order). */
 const FURNITURE = { Housewares: 'housewares', Miscellaneous: 'misc', 'Wall-mounted': 'wall', 'Ceiling Decor': 'ceiling' } as const;
@@ -158,27 +152,11 @@ function names(i: Raw, byName?: Map<string, Raw>): { ja: string; en: string } {
   return { ja, en };
 }
 
-/** en name (lowercase) → the icon file title of its first variation and pattern. */
-function iconIndex(rows: Record<string, string>[]): Map<string, { title: string; url: string; rank: number }> {
-  const out = new Map<string, { title: string; url: string; rank: number }>();
-  for (const r of rows) {
-    if (!r.image) continue;
-    const key = (r['en name'] ?? '').toLowerCase();
-    const rank = Number(r['variation number'] || 0) * 100 + Number(r['pattern number'] || 0);
-    const prev = out.get(key);
-    if (!prev || rank < prev.rank) out.set(key, { title: r.image, url: r['image url'], rank });
-  }
-  return out;
-}
-
-interface Item { id: string; cat: string; stock: string; style: string; order: number; ja: string; en: string; icon?: string }
-interface Recipe { id: string; season: string; order: number; ja: string; en: string; icon?: string }
+interface Item { id: string; cat: string; stock: string; style: string; order: number; ja: string; en: string }
+interface Recipe { id: string; season: string; order: number; ja: string; en: string }
 
 async function main() {
-  const furnitureIcons = iconIndex(await cargo('nh_furniture_variation', 'en_name,variation_number,pattern_number,image,image_url'));
-  const clothingIcons = iconIndex(await cargo('nh_clothing_variation', 'en_name,variation_number,image,image_url'));
   const recipeRows = await cargo('nh_recipe', 'en_name,image,image_url,serial_id,diy_availability1,diy_availability2,diy_availability3,diy_availability4');
-  const recipeIcons = iconIndex(recipeRows);
   const problems: string[] = [];
 
   const items: Item[] = [];
@@ -186,15 +164,12 @@ async function main() {
   const byName = new Map<string, Raw>();
   for (const tab of ['Bags']) for (const i of await sheet(tab)) byName.set(i.name.toLowerCase(), i);
   for (const [tab, cat] of [...Object.entries(FURNITURE), ...Object.entries(CLOTHING)]) {
-    const icons = tab in FURNITURE ? furnitureIcons : clothingIcons;
     for (const i of await sheet(tab)) {
       byName.set(i.name.toLowerCase(), i);
       if (!inPool(i)) continue;
       const n = names(i);
       const { stock, style } = seasons(i);
-      const icon = icons.get(i.name.toLowerCase()) ?? (tab === 'Umbrellas' ? furnitureIcons.get(i.name.toLowerCase()) : undefined);
-      if (!icon) problems.push(`no icon: ${i.name}`);
-      items.push({ id: slug(n.en), cat, stock, style, order: Number(field(i, 'internalId') ?? 0), ...n, icon: icon?.url });
+      items.push({ id: slug(n.en), cat, stock, style, order: Number(field(i, 'internalId') ?? 0), ...n });
     }
   }
   // A balloon recipe by either source: the spreadsheet's "Balloons" / "Egg balloons" or Nookipedia's "balloons" /
@@ -209,9 +184,7 @@ async function main() {
     const season = RECIPE_SEASONS[String(r.seasonEvent)];
     if (!season) { problems.push(`recipe without a season: ${r.name}`); continue; }
     const n = names(r, byName);
-    const icon = recipeIcons.get(r.name.toLowerCase());
-    if (!icon) problems.push(`no DIY icon: ${r.name}`);
-    recipes.push({ id: slug(n.en), season, order: Number(r.serialId ?? 0), ...n, icon: icon?.url });
+    recipes.push({ id: slug(n.en), season, order: Number(r.serialId ?? 0), ...n });
   }
   const ours = new Set(recipes.map((r) => r.en.toLowerCase()));
   for (const n of npBalloon) if (!ours.has(n)) problems.push(`Nookipedia lists a balloon recipe we don't have: ${n}`);
@@ -243,29 +216,7 @@ async function main() {
   writeFileSync(NAMES_OUT('en'), JSON.stringify(en, null, 2) + '\n');
   console.log(`${items.length} items (${CATS.map((c) => `${c} ${items.filter((i) => i.cat === c).length}`).join(', ')}), ${recipes.length} recipes`);
   if (problems.length) console.log(`check:\n  ${problems.join('\n  ')}`);
-  if (dataOnly) return;
-
-  // Icons: 96 px webp, skipped when on disk; files of ids no longer in the catalogue are removed.
-  const tmp = join(tmpdir(), `island-catalog-${process.pid}`);
-  mkdirSync(tmp, { recursive: true });
-  for (const [dir, list] of [['items', items], ['recipes', recipes]] as const) {
-    const out = join(ART, dir);
-    mkdirSync(out, { recursive: true });
-    const want = new Set(list.map((e) => `${e.id}.webp`));
-    for (const f of readdirSync(out)) if (!want.has(f)) rmSync(join(out, f));
-    let n = 0;
-    for (const e of list) {
-      const dest = join(out, `${e.id}.webp`);
-      if (!e.icon || (existsSync(dest) && !force)) continue;
-      const src = join(tmp, 'src.png');
-      writeFileSync(src, Buffer.from(await (await get(e.icon)).arrayBuffer()));
-      execFileSync('cwebp', ['-quiet', '-q', '75', '-alpha_q', '80', '-m', '6', '-resize', String(ICON_PX), String(ICON_PX), src, '-o', dest]);
-      if (++n % 100 === 0) console.log(`  ${dir}: ${n}`);
-      await sleep(DELAY_MS);
-    }
-    console.log(`${dir}: ${n} fetched`);
-  }
-  rmSync(tmp, { recursive: true, force: true });
+  console.log('icons: npm run icons:nh (scripts/nh-icons.ts)');
 }
 
 // Run, not imported (catalog.test.ts reads the pool rules and the id and article helpers).

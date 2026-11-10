@@ -1,4 +1,6 @@
-// Fetch the official New Horizons art the UI uses (from Nookipedia's file pages) into static/art/.
+// Fetch the official New Horizons art the UI uses (from Nookipedia's file pages) into static/art/. The critters', the
+// beach finds' and the balloon catalogue's icons are NH's own from the game files instead (scripts/nh-icons.ts: their
+// manifest source `nh:<folder>`), never fetched here.
 // Usage (from app/): npm run assets:fetch   [--force to re-download everything]
 //                    npm run assets:fetch -- --only=trees/oak,host/   (re-download keys with these prefixes)
 //
@@ -329,14 +331,16 @@ async function main() {
   const manifest: Manifest = existsSync(MANIFEST)
     ? JSON.parse(readFileSync(MANIFEST, 'utf8'))
     : { version: 1, files: {} };
+  // (an icon from the game files is scripts/nh-icons.ts's: never fetched here)
   const todo = Object.entries(SPECS).filter(
     ([key]) =>
-      force || only.some((o) => key.startsWith(o)) || !manifest.files[key] || !existsSync(join(OUT, manifest.files[key].path))
+      !manifest.files[key]?.source.startsWith('nh:') &&
+      (force || only.some((o) => key.startsWith(o)) || !manifest.files[key] || !existsSync(join(OUT, manifest.files[key].path)))
   );
   console.log(`${Object.keys(SPECS).length} assets, ${todo.length} to fetch`);
   // Drop manifest entries (and files) the UI no longer uses.
   for (const [key, e] of Object.entries(manifest.files)) {
-    if (SPECS[key] || e.source.startsWith('derived') || e.source.startsWith('rendered')) continue; // models.ts's (and the old derived ones')
+    if (SPECS[key] || /^(derived|rendered|nh:)/.test(e.source)) continue; // models.ts's, nh-icons.ts's (and the old derived ones')
     rmSync(join(OUT, e.path), { force: true });
     delete manifest.files[key];
   }

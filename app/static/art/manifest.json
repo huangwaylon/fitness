@@ -1,5 +1,5 @@
 {
-  "version": 57,
+  "version": 61,
   "files": {
     "bridges/stone-front": {
       "path": "bridges/stone-front.webp",
@@ -155,1183 +155,1183 @@
       "path": "critters/abalone.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Abalone_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Awabi"
     },
     "critters/acorn-barnacle": {
       "path": "critters/acorn-barnacle.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Acorn_Barnacle_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fujitsubo"
     },
     "critters/agrias-butterfly": {
       "path": "critters/agrias-butterfly.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Agrias_Butterfly_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins6"
     },
     "critters/anchovy": {
       "path": "critters/anchovy.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Anchovy_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish81"
     },
     "critters/angelfish": {
       "path": "critters/angelfish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Angelfish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish30"
     },
     "critters/arapaima": {
       "path": "critters/arapaima.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Arapaima_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish36"
     },
     "critters/arowana": {
       "path": "critters/arowana.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Arowana_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish33"
     },
     "critters/atlas-moth": {
       "path": "critters/atlas-moth.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Atlas_Moth_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins10"
     },
     "critters/bagworm": {
       "path": "critters/bagworm.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Bagworm_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins36"
     },
     "critters/banded-dragonfly": {
       "path": "critters/banded-dragonfly.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Banded_Dragonfly_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins24"
     },
     "critters/barred-knifejaw": {
       "path": "critters/barred-knifejaw.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Barred_Knifejaw_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish47"
     },
     "critters/barreleye": {
       "path": "critters/barreleye.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Barreleye_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish84"
     },
     "critters/bell-cricket": {
       "path": "critters/bell-cricket.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Bell_Cricket_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins31"
     },
     "critters/betta": {
       "path": "critters/betta.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Betta_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish77"
     },
     "critters/bitterling": {
       "path": "critters/bitterling.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Bitterling_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish0"
     },
     "critters/black-bass": {
       "path": "critters/black-bass.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Black_Bass_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish19"
     },
     "critters/blowfish": {
       "path": "critters/blowfish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Blowfish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish73"
     },
     "critters/blue-marlin": {
       "path": "critters/blue-marlin.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Blue_Marlin_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish58"
     },
     "critters/bluegill": {
       "path": "critters/bluegill.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Bluegill_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish17"
     },
     "critters/boot": {
       "path": "critters/boot.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Boot_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_TrashBoot"
     },
     "critters/brown-cicada": {
       "path": "critters/brown-cicada.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Brown_Cicada_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins17"
     },
     "critters/butterfly-fish": {
       "path": "critters/butterfly-fish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Butterfly_Fish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish42"
     },
     "critters/carp": {
       "path": "critters/carp.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Carp_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish5"
     },
     "critters/catfish": {
       "path": "critters/catfish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Catfish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish14"
     },
     "critters/centipede": {
       "path": "critters/centipede.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Centipede_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins60"
     },
     "critters/chambered-nautilus": {
       "path": "critters/chambered-nautilus.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Chambered_Nautilus_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Oumugai"
     },
     "critters/char": {
       "path": "critters/char.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Char_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish24"
     },
     "critters/cherry-salmon": {
       "path": "critters/cherry-salmon.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Cherry_Salmon_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish23"
     },
     "critters/cicada-shell": {
       "path": "critters/cicada-shell.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Cicada_Shell_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins69"
     },
     "critters/citrus-long-horned-beetle": {
       "path": "critters/citrus-long-horned-beetle.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Citrus_Long-Horned_Beetle_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins39"
     },
     "critters/clownfish": {
       "path": "critters/clownfish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Clownfish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish40"
     },
     "critters/coelacanth": {
       "path": "critters/coelacanth.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Coelacanth_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish63"
     },
     "critters/common-bluebottle": {
       "path": "critters/common-bluebottle.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Common_Bluebottle_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins72"
     },
     "critters/common-butterfly": {
       "path": "critters/common-butterfly.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Common_Butterfly_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins0"
     },
     "critters/crawfish": {
       "path": "critters/crawfish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Crawfish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish10"
     },
     "critters/cricket": {
       "path": "critters/cricket.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Cricket_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins30"
     },
     "critters/crucian-carp": {
       "path": "critters/crucian-carp.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Crucian_Carp_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish2"
     },
     "critters/cyclommatus-stag": {
       "path": "critters/cyclommatus-stag.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Cyclommatus_Stag_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins49"
     },
     "critters/dab": {
       "path": "critters/dab.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Dab_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish50"
     },
     "critters/dace": {
       "path": "critters/dace.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Dace_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish3"
     },
     "critters/damselfly": {
       "path": "critters/damselfly.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Damselfly_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins81"
     },
     "critters/darner-dragonfly": {
       "path": "critters/darner-dragonfly.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Darner_Dragonfly_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins23"
     },
     "critters/diving-beetle": {
       "path": "critters/diving-beetle.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Diving_Beetle_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins28"
     },
     "critters/dorado": {
       "path": "critters/dorado.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Dorado_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish34"
     },
     "critters/drone-beetle": {
       "path": "critters/drone-beetle.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Drone_Beetle_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins75"
     },
     "critters/dungeness-crab": {
       "path": "critters/dungeness-crab.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Dungeness_Crab_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_DungenessCrab"
     },
     "critters/earth-boring-dung-beetle": {
       "path": "critters/earth-boring-dung-beetle.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Earth-Boring_Dung_Beetle_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins42"
     },
     "critters/emperor-butterfly": {
       "path": "critters/emperor-butterfly.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Emperor_Butterfly_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins5"
     },
     "critters/empty-can": {
       "path": "critters/empty-can.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Empty_Can_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_TrashCan"
     },
     "critters/evening-cicada": {
       "path": "critters/evening-cicada.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Evening_Cicada_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins20"
     },
     "critters/firefly": {
       "path": "critters/firefly.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Firefly_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins41"
     },
     "critters/firefly-squid": {
       "path": "critters/firefly-squid.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Firefly_Squid_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Hotaruika"
     },
     "critters/flatworm": {
       "path": "critters/flatworm.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Flatworm_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Hiramushi"
     },
     "critters/flea": {
       "path": "critters/flea.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Flea_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins56"
     },
     "critters/football-fish": {
       "path": "critters/football-fish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Football_Fish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish56"
     },
     "critters/freshwater-goby": {
       "path": "critters/freshwater-goby.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Freshwater_Goby_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish12"
     },
     "critters/frog": {
       "path": "critters/frog.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Frog_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish11"
     },
     "critters/gar": {
       "path": "critters/gar.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Gar_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish35"
     },
     "critters/gazami-crab": {
       "path": "critters/gazami-crab.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Gazami_Crab_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Gazami"
     },
     "critters/giant-cicada": {
       "path": "critters/giant-cicada.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Giant_Cicada_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins65"
     },
     "critters/giant-isopod": {
       "path": "critters/giant-isopod.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Giant_Isopod_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Daiougusokumushi"
     },
     "critters/giant-snakehead": {
       "path": "critters/giant-snakehead.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Giant_Snakehead_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish16"
     },
     "critters/giant-stag": {
       "path": "critters/giant-stag.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Giant_Stag_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins47"
     },
     "critters/giant-trevally": {
       "path": "critters/giant-trevally.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Giant_Trevally_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish70"
     },
     "critters/giant-water-bug": {
       "path": "critters/giant-water-bug.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Giant_Water_Bug_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins76"
     },
     "critters/gigas-giant-clam": {
       "path": "critters/gigas-giant-clam.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Gigas_Giant_Clam_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Shakogai"
     },
     "critters/golden-stag": {
       "path": "critters/golden-stag.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Golden_Stag_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins50"
     },
     "critters/golden-trout": {
       "path": "critters/golden-trout.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Golden_Trout_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish79"
     },
     "critters/goldfish": {
       "path": "critters/goldfish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Goldfish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish7"
     },
     "critters/goliath-beetle": {
       "path": "critters/goliath-beetle.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Goliath_Beetle_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins55"
     },
     "critters/grasshopper": {
       "path": "critters/grasshopper.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Grasshopper_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins32"
     },
     "critters/great-purple-emperor": {
       "path": "critters/great-purple-emperor.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Great_Purple_Emperor_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins74"
     },
     "critters/great-white-shark": {
       "path": "critters/great-white-shark.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Great_White_Shark_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish62"
     },
     "critters/guppy": {
       "path": "critters/guppy.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Guppy_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish29"
     },
     "critters/hammerhead-shark": {
       "path": "critters/hammerhead-shark.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Hammerhead_Shark_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish61"
     },
     "critters/hermit-crab": {
       "path": "critters/hermit-crab.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Hermit_Crab_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins66"
     },
     "critters/honeybee": {
       "path": "critters/honeybee.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Honeybee_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins11"
     },
     "critters/horned-atlas": {
       "path": "critters/horned-atlas.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Horned_Atlas_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins52"
     },
     "critters/horned-dynastid": {
       "path": "critters/horned-dynastid.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Horned_Dynastid_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins51"
     },
     "critters/horned-elephant": {
       "path": "critters/horned-elephant.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Horned_Elephant_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins53"
     },
     "critters/horse-mackerel": {
       "path": "critters/horse-mackerel.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Horse_Mackerel_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish46"
     },
     "critters/horseshoe-crab": {
       "path": "critters/horseshoe-crab.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Horseshoe_Crab_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Kabutogani"
     },
     "critters/jewel-beetle": {
       "path": "critters/jewel-beetle.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Jewel_Beetle_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins44"
     },
     "critters/killifish": {
       "path": "critters/killifish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Killifish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish9"
     },
     "critters/king-salmon": {
       "path": "critters/king-salmon.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:King_Salmon_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish28"
     },
     "critters/koi": {
       "path": "critters/koi.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Koi_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish6"
     },
     "critters/ladybug": {
       "path": "critters/ladybug.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Ladybug_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins37"
     },
     "critters/loach": {
       "path": "critters/loach.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Loach_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish13"
     },
     "critters/lobster": {
       "path": "critters/lobster.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Lobster_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish54"
     },
     "critters/long-locust": {
       "path": "critters/long-locust.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Long_Locust_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins13"
     },
     "critters/madagascan-sunset-moth": {
       "path": "critters/madagascan-sunset-moth.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Madagascan_Sunset_Moth_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins79"
     },
     "critters/mahi-mahi": {
       "path": "critters/mahi-mahi.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Mahi-Mahi_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish82"
     },
     "critters/man-faced-stink-bug": {
       "path": "critters/man-faced-stink-bug.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Man-Faced_Stink_Bug_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins78"
     },
     "critters/mantis": {
       "path": "critters/mantis.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Mantis_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins15"
     },
     "critters/mantis-shrimp": {
       "path": "critters/mantis-shrimp.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Mantis_Shrimp_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Shako"
     },
     "critters/migratory-locust": {
       "path": "critters/migratory-locust.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Migratory_Locust_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins14"
     },
     "critters/mitten-crab": {
       "path": "critters/mitten-crab.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Mitten_Crab_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish66"
     },
     "critters/miyama-stag": {
       "path": "critters/miyama-stag.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Miyama_Stag_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins45"
     },
     "critters/mole-cricket": {
       "path": "critters/mole-cricket.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Mole_Cricket_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins33"
     },
     "critters/monarch-butterfly": {
       "path": "critters/monarch-butterfly.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Monarch_Butterfly_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins4"
     },
     "critters/moon-jellyfish": {
       "path": "critters/moon-jellyfish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Moon_Jellyfish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Mizukurage"
     },
     "critters/moray-eel": {
       "path": "critters/moray-eel.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Moray_Eel_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish55"
     },
     "critters/mosquito": {
       "path": "critters/mosquito.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Mosquito_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins58"
     },
     "critters/moth": {
       "path": "critters/moth.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Moth_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins9"
     },
     "critters/mussel": {
       "path": "critters/mussel.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Mussel_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Muhrugai"
     },
     "critters/napoleonfish": {
       "path": "critters/napoleonfish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Napoleonfish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish43"
     },
     "critters/neon-tetra": {
       "path": "critters/neon-tetra.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Neon_Tetra_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish31"
     },
     "critters/nibble-fish": {
       "path": "critters/nibble-fish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Nibble_Fish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish67"
     },
     "critters/oarfish": {
       "path": "critters/oarfish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Oarfish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish69"
     },
     "critters/ocean-sunfish": {
       "path": "critters/ocean-sunfish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Ocean_Sunfish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish60"
     },
     "critters/octopus": {
       "path": "critters/octopus.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Octopus_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Tako"
     },
     "critters/old-tire": {
       "path": "critters/old-tire.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Old_Tire_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_TrashTire"
     },
     "critters/olive-flounder": {
       "path": "critters/olive-flounder.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Olive_Flounder_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish51"
     },
     "critters/orchid-mantis": {
       "path": "critters/orchid-mantis.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Orchid_Mantis_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins16"
     },
     "critters/oyster": {
       "path": "critters/oyster.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Oyster_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Kaki"
     },
     "critters/pale-chub": {
       "path": "critters/pale-chub.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Pale_Chub_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish1"
     },
     "critters/paper-kite-butterfly": {
       "path": "critters/paper-kite-butterfly.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Paper_Kite_Butterfly_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins73"
     },
     "critters/peacock-butterfly": {
       "path": "critters/peacock-butterfly.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Peacock_Butterfly_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins3"
     },
     "critters/pearl-oyster": {
       "path": "critters/pearl-oyster.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Pearl_Oyster_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Akoyagai"
     },
     "critters/pike": {
       "path": "critters/pike.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Pike_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish20"
     },
     "critters/pill-bug": {
       "path": "critters/pill-bug.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Pill_Bug_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins57"
     },
     "critters/piranha": {
       "path": "critters/piranha.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Piranha_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish32"
     },
     "critters/pond-smelt": {
       "path": "critters/pond-smelt.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Pond_Smelt_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish21"
     },
     "critters/pondskater": {
       "path": "critters/pondskater.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Pondskater_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins27"
     },
     "critters/pop-eyed-goldfish": {
       "path": "critters/pop-eyed-goldfish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Pop-Eyed_Goldfish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish8"
     },
     "critters/puffer-fish": {
       "path": "critters/puffer-fish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Puffer_Fish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish45"
     },
     "critters/queen-alexandras-birdwing": {
       "path": "critters/queen-alexandras-birdwing.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Queen_Alexandra's_Birdwing_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins8"
     },
     "critters/rainbow-stag": {
       "path": "critters/rainbow-stag.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Rainbow_Stag_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins48"
     },
     "critters/rainbowfish": {
       "path": "critters/rainbowfish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Rainbowfish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish80"
     },
     "critters/rajah-brookes-birdwing": {
       "path": "critters/rajah-brookes-birdwing.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Rajah_Brooke's_Birdwing_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins7"
     },
     "critters/ranchu-goldfish": {
       "path": "critters/ranchu-goldfish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Ranchu_Goldfish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish85"
     },
     "critters/ray": {
       "path": "critters/ray.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Ray_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish59"
     },
     "critters/red-dragonfly": {
       "path": "critters/red-dragonfly.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Red_Dragonfly_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins22"
     },
     "critters/red-king-crab": {
       "path": "critters/red-king-crab.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Red_King_Crab_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Tarabagani"
     },
     "critters/red-snapper": {
       "path": "critters/red-snapper.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Red_Snapper_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish49"
     },
     "critters/ribbon-eel": {
       "path": "critters/ribbon-eel.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Ribbon_Eel_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish71"
     },
     "critters/rice-grasshopper": {
       "path": "critters/rice-grasshopper.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Rice_Grasshopper_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins67"
     },
     "critters/robust-cicada": {
       "path": "critters/robust-cicada.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Robust_Cicada_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins18"
     },
     "critters/rosalia-batesi-beetle": {
       "path": "critters/rosalia-batesi-beetle.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Rosalia_Batesi_Beetle_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins82"
     },
     "critters/saddled-bichir": {
       "path": "critters/saddled-bichir.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Saddled_Bichir_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish68"
     },
     "critters/salmon": {
       "path": "critters/salmon.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Salmon_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish27"
     },
     "critters/saw-shark": {
       "path": "critters/saw-shark.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Saw_Shark_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish74"
     },
     "critters/saw-stag": {
       "path": "critters/saw-stag.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Saw_Stag_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins46"
     },
     "critters/scallop": {
       "path": "critters/scallop.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Scallop_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Hotate"
     },
     "critters/scarab-beetle": {
       "path": "critters/scarab-beetle.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Scarab_Beetle_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins43"
     },
     "critters/scorpion": {
       "path": "critters/scorpion.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Scorpion_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins63"
     },
     "critters/sea-anemone": {
       "path": "critters/sea-anemone.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Sea_Anemone_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Isogintyaku"
     },
     "critters/sea-bass": {
       "path": "critters/sea-bass.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Sea_Bass_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish48"
     },
     "critters/sea-butterfly": {
       "path": "critters/sea-butterfly.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Sea_Butterfly_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish37"
     },
     "critters/sea-cucumber": {
       "path": "critters/sea-cucumber.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Sea_Cucumber_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Namako"
     },
     "critters/sea-grapes": {
       "path": "critters/sea-grapes.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Sea_Grapes_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Umibudou"
     },
     "critters/sea-horse": {
       "path": "critters/sea-horse.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Sea_Horse_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish39"
     },
     "critters/sea-pig": {
       "path": "critters/sea-pig.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Sea_Pig_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Senjunamako"
     },
     "critters/sea-pineapple": {
       "path": "critters/sea-pineapple.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Sea_Pineapple_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Hoya"
     },
     "critters/sea-slug": {
       "path": "critters/sea-slug.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Sea_Slug_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Umiushi"
     },
     "critters/sea-star": {
       "path": "critters/sea-star.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Sea_Star_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Hitode"
     },
     "critters/sea-urchin": {
       "path": "critters/sea-urchin.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Sea_Urchin_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Uni"
     },
     "critters/seaweed": {
       "path": "critters/seaweed.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Seaweed_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Wakame"
     },
     "critters/slate-pencil-urchin": {
       "path": "critters/slate-pencil-urchin.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Slate_Pencil_Urchin_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Paipuuni"
     },
     "critters/snail": {
       "path": "critters/snail.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Snail_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins29"
     },
     "critters/snapping-turtle": {
       "path": "critters/snapping-turtle.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Snapping_Turtle_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish78"
     },
     "critters/snow-crab": {
       "path": "critters/snow-crab.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Snow_Crab_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Zuwaigani"
     },
     "critters/soft-shelled-turtle": {
       "path": "critters/soft-shelled-turtle.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Soft-Shelled_Turtle_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish65"
     },
     "critters/spider": {
       "path": "critters/spider.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Spider_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins61"
     },
     "critters/spider-crab": {
       "path": "critters/spider-crab.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Spider_Crab_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Takaashigani"
     },
     "critters/spiny-lobster": {
       "path": "critters/spiny-lobster.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Spiny_Lobster_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Iseebi"
     },
     "critters/spotted-garden-eel": {
       "path": "critters/spotted-garden-eel.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Spotted_Garden_Eel_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Chinanago"
     },
     "critters/squid": {
       "path": "critters/squid.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Squid_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish52"
     },
     "critters/stinkbug": {
       "path": "critters/stinkbug.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Stinkbug_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins64"
     },
     "critters/stringfish": {
       "path": "critters/stringfish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Stringfish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish26"
     },
     "critters/sturgeon": {
       "path": "critters/sturgeon.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Sturgeon_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish75"
     },
     "critters/suckerfish": {
       "path": "critters/suckerfish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Suckerfish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish83"
     },
     "critters/surgeonfish": {
       "path": "critters/surgeonfish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Surgeonfish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish41"
     },
     "critters/sweet-shrimp": {
       "path": "critters/sweet-shrimp.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Sweet_Shrimp_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Amaebi"
     },
     "critters/sweetfish": {
       "path": "critters/sweetfish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Sweetfish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish22"
     },
     "critters/tadpole": {
       "path": "critters/tadpole.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Tadpole_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish64"
     },
     "critters/tarantula": {
       "path": "critters/tarantula.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Tarantula_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins62"
     },
     "critters/tiger-beetle": {
       "path": "critters/tiger-beetle.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Tiger_Beetle_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins70"
     },
     "critters/tiger-butterfly": {
       "path": "critters/tiger-butterfly.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Tiger_Butterfly_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins2"
     },
     "critters/tiger-prawn": {
       "path": "critters/tiger-prawn.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Tiger_Prawn_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Kurumaebi"
     },
     "critters/tilapia": {
       "path": "critters/tilapia.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Tilapia_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish76"
     },
     "critters/tuna": {
       "path": "critters/tuna.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Tuna_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish57"
     },
     "critters/turban-shell": {
       "path": "critters/turban-shell.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Turban_Shell_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Sazae"
     },
     "critters/umbrella-octopus": {
       "path": "critters/umbrella-octopus.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Umbrella_Octopus_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Mendako"
     },
     "critters/vampire-squid": {
       "path": "critters/vampire-squid.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Vampire_Squid_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Koumoridako"
     },
     "critters/venus-flower-basket": {
       "path": "critters/venus-flower-basket.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Venus'_Flower_Basket_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Kairoudouketsu"
     },
     "critters/violin-beetle": {
       "path": "critters/violin-beetle.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Violin_Beetle_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins38"
     },
     "critters/walker-cicada": {
       "path": "critters/walker-cicada.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Walker_Cicada_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins19"
     },
     "critters/walking-leaf": {
       "path": "critters/walking-leaf.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Walking_Leaf_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins34"
     },
     "critters/walking-stick": {
       "path": "critters/walking-stick.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Walking_Stick_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins35"
     },
     "critters/wasp": {
       "path": "critters/wasp.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Wasp_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins12"
     },
     "critters/whale-shark": {
       "path": "critters/whale-shark.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Whale_Shark_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish72"
     },
     "critters/wharf-roach": {
       "path": "critters/wharf-roach.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Wharf_Roach_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins71"
     },
     "critters/whelk": {
       "path": "critters/whelk.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Whelk_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Baigai"
     },
     "critters/yellow-butterfly": {
       "path": "critters/yellow-butterfly.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Yellow_Butterfly_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Ins1"
     },
     "critters/yellow-perch": {
       "path": "critters/yellow-perch.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Yellow_Perch_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish18"
     },
     "critters/zebra-turkeyfish": {
       "path": "critters/zebra-turkeyfish.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Zebra_Turkeyfish_NH_Icon.png"
+      "source": "nh:Layout_MenuIcon_Fish44"
     },
     "deco/airport": {
       "path": "deco/airport.webp",
@@ -1739,469 +1739,469 @@
       "path": "finds/acanthostega.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Acanthostega_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilFirstFourLegs"
     },
     "finds/amber": {
       "path": "finds/amber.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Amber_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilAmber"
     },
     "finds/ammonite": {
       "path": "finds/ammonite.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Ammonite_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilAmmonoidea"
     },
     "finds/ankylo-skull": {
       "path": "finds/ankylo-skull.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Ankylo_Skull_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilAnkylosaurusA"
     },
     "finds/ankylo-tail": {
       "path": "finds/ankylo-tail.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Ankylo_Tail_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilAnkylosaurusC"
     },
     "finds/ankylo-torso": {
       "path": "finds/ankylo-torso.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Ankylo_Torso_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilAnkylosaurusB"
     },
     "finds/anomalocaris": {
       "path": "finds/anomalocaris.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Anomalocaris_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilAnomalocaris"
     },
     "finds/aquarius-fragment": {
       "path": "finds/aquarius-fragment.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Aquarius_Fragment_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_StarpieceAquarius"
     },
     "finds/archaeopteryx": {
       "path": "finds/archaeopteryx.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Archaeopteryx_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilArchaeopteryx"
     },
     "finds/archelon-skull": {
       "path": "finds/archelon-skull.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Archelon_Skull_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilArchelonA"
     },
     "finds/archelon-tail": {
       "path": "finds/archelon-tail.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Archelon_Tail_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilArchelonB"
     },
     "finds/aries-fragment": {
       "path": "finds/aries-fragment.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Aries_Fragment_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_StarpieceAries"
     },
     "finds/australopith": {
       "path": "finds/australopith.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Australopith_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilAustralopithecus"
     },
     "finds/brachio-chest": {
       "path": "finds/brachio-chest.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Brachio_Chest_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilBrachiosaurusB"
     },
     "finds/brachio-pelvis": {
       "path": "finds/brachio-pelvis.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Brachio_Pelvis_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilBrachiosaurusC"
     },
     "finds/brachio-skull": {
       "path": "finds/brachio-skull.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Brachio_Skull_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilBrachiosaurusA"
     },
     "finds/brachio-tail": {
       "path": "finds/brachio-tail.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Brachio_Tail_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilBrachiosaurusD"
     },
     "finds/cancer-fragment": {
       "path": "finds/cancer-fragment.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Cancer_Fragment_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_StarpieceCancer"
     },
     "finds/capricorn-fragment": {
       "path": "finds/capricorn-fragment.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Capricorn_Fragment_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_StarpieceCapricornus"
     },
     "finds/coconut": {
       "path": "finds/coconut.webp",
       "w": 64,
       "h": 64,
-      "source": "https://nookipedia.com/wiki/File:Coconut_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_Coconut"
     },
     "finds/conch": {
       "path": "finds/conch.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Conch_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_Shell1"
     },
     "finds/coprolite": {
       "path": "finds/coprolite.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Coprolite_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilCoprolite"
     },
     "finds/coral": {
       "path": "finds/coral.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Coral_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_Shell3"
     },
     "finds/cowrie": {
       "path": "finds/cowrie.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Cowrie_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_Shell7"
     },
     "finds/deinony-tail": {
       "path": "finds/deinony-tail.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Deinony_Tail_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilDeinonychusB"
     },
     "finds/deinony-torso": {
       "path": "finds/deinony-torso.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Deinony_Torso_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilDeinonychusA"
     },
     "finds/dimetrodon-skull": {
       "path": "finds/dimetrodon-skull.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Dimetrodon_Skull_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilDimetrodonA"
     },
     "finds/dimetrodon-torso": {
       "path": "finds/dimetrodon-torso.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Dimetrodon_Torso_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilDimetrodonB"
     },
     "finds/dinosaur-track": {
       "path": "finds/dinosaur-track.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Dinosaur_Track_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilIchnology"
     },
     "finds/diplo-chest": {
       "path": "finds/diplo-chest.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Diplo_Chest_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilDiplodocusC"
     },
     "finds/diplo-neck": {
       "path": "finds/diplo-neck.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Diplo_Neck_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilDiplodocusB"
     },
     "finds/diplo-pelvis": {
       "path": "finds/diplo-pelvis.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Diplo_Pelvis_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilDiplodocusD"
     },
     "finds/diplo-skull": {
       "path": "finds/diplo-skull.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Diplo_Skull_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilDiplodocusA"
     },
     "finds/diplo-tail": {
       "path": "finds/diplo-tail.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Diplo_Tail_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilDiplodocusE"
     },
     "finds/diplo-tail-tip": {
       "path": "finds/diplo-tail-tip.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Diplo_Tail_Tip_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilDiplodocusF"
     },
     "finds/dunkleosteus": {
       "path": "finds/dunkleosteus.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Dunkleosteus_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilDunkleosteus"
     },
     "finds/earth-egg": {
       "path": "finds/earth-egg.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Earth_Egg_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_EggGround"
     },
     "finds/elegant-mushroom": {
       "path": "finds/elegant-mushroom.webp",
       "w": 51,
       "h": 93,
-      "source": "https://nookipedia.com/wiki/File:Elegant_Mushroom_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_MushSplendid"
     },
     "finds/eusthenopteron": {
       "path": "finds/eusthenopteron.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Eusthenopteron_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilFirstAmphibian"
     },
     "finds/flat-mushroom": {
       "path": "finds/flat-mushroom.webp",
       "w": 92,
       "h": 61,
-      "source": "https://nookipedia.com/wiki/File:Flat_Mushroom_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_MushFlat"
     },
     "finds/gemini-fragment": {
       "path": "finds/gemini-fragment.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Gemini_Fragment_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_StarpieceGemini"
     },
     "finds/giant-clam": {
       "path": "finds/giant-clam.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Giant_Clam_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_Shell2"
     },
     "finds/hardwood": {
       "path": "finds/hardwood.webp",
       "w": 64,
       "h": 64,
-      "source": "https://nookipedia.com/wiki/File:Hardwood_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_DIYWoodHard"
     },
     "finds/iguanodon-skull": {
       "path": "finds/iguanodon-skull.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Iguanodon_Skull_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilIguanodonA"
     },
     "finds/iguanodon-tail": {
       "path": "finds/iguanodon-tail.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Iguanodon_Tail_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilIguanodonC"
     },
     "finds/iguanodon-torso": {
       "path": "finds/iguanodon-torso.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Iguanodon_Torso_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilIguanodonB"
     },
     "finds/juramaia": {
       "path": "finds/juramaia.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Juramaia_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilFirstMammal"
     },
     "finds/large-star-fragment": {
       "path": "finds/large-star-fragment.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Large_Star_Fragment_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_StarPieceRare"
     },
     "finds/left-megalo-side": {
       "path": "finds/left-megalo-side.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Left_Megalo_Side_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilMegalocerosB"
     },
     "finds/left-ptera-wing": {
       "path": "finds/left-ptera-wing.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Left_Ptera_Wing_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilPteranodonC"
     },
     "finds/left-quetzal-wing": {
       "path": "finds/left-quetzal-wing.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Left_Quetzal_Wing_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilQuetzalcoatlusC"
     },
     "finds/leo-fragment": {
       "path": "finds/leo-fragment.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Leo_Fragment_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_StarpieceLeo"
     },
     "finds/libra-fragment": {
       "path": "finds/libra-fragment.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Libra_Fragment_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_StarpieceLibra"
     },
     "finds/mammoth-skull": {
       "path": "finds/mammoth-skull.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Mammoth_Skull_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilMammothA"
     },
     "finds/mammoth-torso": {
       "path": "finds/mammoth-torso.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Mammoth_Torso_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilMammothB"
     },
     "finds/megacero-skull": {
       "path": "finds/megacero-skull.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Megacero_Skull_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilBrontotheriumA"
     },
     "finds/megacero-tail": {
       "path": "finds/megacero-tail.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Megacero_Tail_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilBrontotheriumC"
     },
     "finds/megacero-torso": {
       "path": "finds/megacero-torso.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Megacero_Torso_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilBrontotheriumB"
     },
     "finds/message-bottle": {
       "path": "finds/message-bottle.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Message_Bottle_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_BottleRecipe"
     },
     "finds/myllokunmingia": {
       "path": "finds/myllokunmingia.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Myllokunmingia_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilFirstFish"
     },
     "finds/ophthalmo-skull": {
       "path": "finds/ophthalmo-skull.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Ophthalmo_Skull_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilOphthalmosaurusA"
     },
     "finds/ophthalmo-torso": {
       "path": "finds/ophthalmo-torso.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Ophthalmo_Torso_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilOphthalmosaurusB"
     },
     "finds/pachy-skull": {
       "path": "finds/pachy-skull.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Pachy_Skull_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilPachycephalosaurusA"
     },
     "finds/pachy-tail": {
       "path": "finds/pachy-tail.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Pachy_Tail_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilPachycephalosaurusB"
     },
     "finds/parasaur-skull": {
       "path": "finds/parasaur-skull.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Parasaur_Skull_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilParasaurolophusA"
     },
     "finds/parasaur-tail": {
       "path": "finds/parasaur-tail.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Parasaur_Tail_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilParasaurolophusC"
     },
     "finds/parasaur-torso": {
       "path": "finds/parasaur-torso.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Parasaur_Torso_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilParasaurolophusB"
     },
     "finds/pearl": {
       "path": "finds/pearl.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Pearl_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_Pearl"
     },
     "finds/pisces-fragment": {
       "path": "finds/pisces-fragment.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Pisces_Fragment_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_StarpiecePisces"
     },
     "finds/plesio-skull": {
       "path": "finds/plesio-skull.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Plesio_Skull_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilElasmosaurusA"
     },
     "finds/plesio-tail": {
       "path": "finds/plesio-tail.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Plesio_Tail_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilElasmosaurusC"
     },
     "finds/plesio-torso": {
       "path": "finds/plesio-torso.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Plesio_Torso_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilElasmosaurusB"
     },
     "finds/ptera-body": {
       "path": "finds/ptera-body.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Ptera_Body_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilPteranodonA"
     },
     "finds/quetzal-torso": {
       "path": "finds/quetzal-torso.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Quetzal_Torso_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilQuetzalcoatlusA"
     },
     "finds/rare-mushroom": {
       "path": "finds/rare-mushroom.webp",
       "w": 62,
       "h": 62,
-      "source": "https://nookipedia.com/wiki/File:Rare_Mushroom_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_MushRare"
     },
     "finds/right-megalo-side": {
       "path": "finds/right-megalo-side.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Right_Megalo_Side_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilMegalocerosA"
     },
     "finds/right-ptera-wing": {
       "path": "finds/right-ptera-wing.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Right_Ptera_Wing_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilPteranodonB"
     },
     "finds/right-quetzal-wing": {
       "path": "finds/right-quetzal-wing.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Right_Quetzal_Wing_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilQuetzalcoatlusB"
     },
     "finds/rock": {
       "path": "finds/rock.webp",
@@ -2213,211 +2213,211 @@
       "path": "finds/round-mushroom.webp",
       "w": 80,
       "h": 56,
-      "source": "https://nookipedia.com/wiki/File:Round_Mushroom_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_MushRound"
     },
     "finds/sabertooth-skull": {
       "path": "finds/sabertooth-skull.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Sabertooth_Skull_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilSmilodonA"
     },
     "finds/sabertooth-tail": {
       "path": "finds/sabertooth-tail.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Sabertooth_Tail_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilSmilodonB"
     },
     "finds/sagittarius-fragment": {
       "path": "finds/sagittarius-fragment.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Sagittarius_Fragment_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_StarpieceSagittarius"
     },
     "finds/sand-dollar": {
       "path": "finds/sand-dollar.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Sand_Dollar_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_Shell8"
     },
     "finds/scorpius-fragment": {
       "path": "finds/scorpius-fragment.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Scorpius_Fragment_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_StarpieceScorpio"
     },
     "finds/sea-snail": {
       "path": "finds/sea-snail.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Sea_Snail_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_Shell6"
     },
     "finds/shark-tooth-pattern": {
       "path": "finds/shark-tooth-pattern.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Shark-Tooth_Pattern_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilShark"
     },
     "finds/shovel": {
       "path": "finds/shovel.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Shovel_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_ToolScoop_Remake_0_0"
     },
     "finds/skinny-mushroom": {
       "path": "finds/skinny-mushroom.webp",
       "w": 58,
       "h": 83,
-      "source": "https://nookipedia.com/wiki/File:Skinny_Mushroom_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_MushSlender"
     },
     "finds/sky-egg": {
       "path": "finds/sky-egg.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Sky_Egg_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_EggSky"
     },
     "finds/softwood": {
       "path": "finds/softwood.webp",
       "w": 64,
       "h": 64,
-      "source": "https://nookipedia.com/wiki/File:Softwood_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_DIYWoodSoft"
     },
     "finds/spino-skull": {
       "path": "finds/spino-skull.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Spino_Skull_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilSpinosaurusA"
     },
     "finds/spino-tail": {
       "path": "finds/spino-tail.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Spino_Tail_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilSpinosaurusC"
     },
     "finds/spino-torso": {
       "path": "finds/spino-torso.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Spino_Torso_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilSpinosaurusB"
     },
     "finds/star-fragment": {
       "path": "finds/star-fragment.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Star_Fragment_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_StarPiece"
     },
     "finds/stego-skull": {
       "path": "finds/stego-skull.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Stego_Skull_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilStegosaurusA"
     },
     "finds/stego-tail": {
       "path": "finds/stego-tail.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Stego_Tail_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilStegosaurusC"
     },
     "finds/stego-torso": {
       "path": "finds/stego-torso.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Stego_Torso_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilStegosaurusB"
     },
     "finds/summer-shell": {
       "path": "finds/summer-shell.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Summer_Shell_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_ShellSummer"
     },
     "finds/t-rex-skull": {
       "path": "finds/t-rex-skull.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:T._Rex_Skull_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilTRexA"
     },
     "finds/t-rex-tail": {
       "path": "finds/t-rex-tail.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:T._Rex_Tail_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilTRexC"
     },
     "finds/t-rex-torso": {
       "path": "finds/t-rex-torso.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:T._Rex_Torso_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilTRexB"
     },
     "finds/taurus-fragment": {
       "path": "finds/taurus-fragment.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Taurus_Fragment_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_StarpieceTaurus"
     },
     "finds/tree-branch": {
       "path": "finds/tree-branch.webp",
       "w": 64,
       "h": 64,
-      "source": "https://nookipedia.com/wiki/File:Tree_Branch_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_DIYBranch"
     },
     "finds/tricera-skull": {
       "path": "finds/tricera-skull.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Tricera_Skull_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilTriceratopsA"
     },
     "finds/tricera-tail": {
       "path": "finds/tricera-tail.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Tricera_Tail_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilTriceratopsC"
     },
     "finds/tricera-torso": {
       "path": "finds/tricera-torso.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Tricera_Torso_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilTriceratopsB"
     },
     "finds/trilobite": {
       "path": "finds/trilobite.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Trilobite_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_FtrFossilTrilobite"
     },
     "finds/venus-comb": {
       "path": "finds/venus-comb.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Venus_Comb_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_Shell4"
     },
     "finds/virgo-fragment": {
       "path": "finds/virgo-fragment.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Virgo_Fragment_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_StarpieceVirgo"
     },
     "finds/water-egg": {
       "path": "finds/water-egg.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Water_Egg_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_EggFish"
     },
     "finds/watering-can": {
       "path": "finds/watering-can.webp",
       "w": 96,
       "h": 96,
-      "source": "https://nookipedia.com/wiki/File:Watering_Can_NH_Icon.png"
+      "source": "nh:Layout_FtrIcon_ToolWatering_Remake_0_0"
     },
     "finds/weeds": {
       "path": "finds/weeds.webp",
       "w": 64,
       "h": 64,
-      "source": "https://nookipedia.com/wiki/File:Clump_of_Weeds_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_Weed"
     },
     "finds/wood": {
       "path": "finds/wood.webp",
       "w": 64,
       "h": 64,
-      "source": "https://nookipedia.com/wiki/File:Wood_NH_Inv_Icon.png"
+      "source": "nh:Layout_MenuIcon_DIYWoodNormal"
     },
     "flowers/black-cosmos": {
       "path": "flowers/black-cosmos.webp",

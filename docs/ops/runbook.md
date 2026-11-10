@@ -112,9 +112,11 @@ re-sent: [shortcut §5](shortcut-health-sync.md#5-one-time-baseline-optional)). 
 
 ## 7. Refresh the official art
 The art in `app/static/art/` comes from Nookipedia. Edit `SPECS` in `app/scripts/fetch-assets.ts`, then
-`cd app && npm run assets:fetch` (needs `cwebp`: `brew install webp`). The balloon catalogue (its items, recipes, names
-and ~2,000 icons) is rebuilt with `npm run catalog:build` (`app/scripts/catalog.ts`; `-- --data` skips the icons); it
-prints anything the two sources disagree on.
+`cd app && npm run assets:fetch` (needs `cwebp`: `brew install webp`). The balloon catalogue (its items, recipes and
+names) is rebuilt with `npm run catalog:build` (`app/scripts/catalog.ts`); it prints anything the two sources disagree
+on. Its ~2,000 icons, the critters' and the beach finds' are NH's own from the game files (the export's `Layout_*`
+folders): `NH_MODELS=~/Downloads/acnh-2.0.0-models/Model npm run icons:nh` (`app/scripts/nh-icons.ts`; their manifest
+source `nh:<folder>`, which `assets:fetch` leaves alone).
 
 The 3D-rendered art (the campsite, trees, bushes, lamps, rocks, the stone bridge: [design](../design.md#official-art))
 comes from NH's own models, a folder of `<Model>.Nin_NX_NVN` folders (Collada `.dae` + PNG textures) kept outside the
