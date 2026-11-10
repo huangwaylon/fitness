@@ -128,11 +128,11 @@ room's GLB, from its pack or loose, at NH's furniture scale; nothing converted t
 
 `scripts/room-packs.ts` (run at room-models' end; `--unpack` writes the files back to `.cache/room/`): every piece,
 wallpaper and floor past the starter set and the ずかん's pieces is packed into `static/room/pack/<group>[-k].<hash>.pak`
-(ktx2Pack's container, ≤ 320 KB; the packs are the only copy): the models by group (housewares, misc, model, wall,
+(ktx2Pack's container, ≤ 64 KB, ~3-4 models: a room pays a whole pack for each piece it shows; the packs are the only copy): the models by group (housewares, misc, model, wall,
 ceiling, rug, gyroid, critter; a group's series together), the wallpapers' and floors' pictures and glows, and the
 icons of the tabs browsed a tab at a time (rugs, critters, wallpapers, floors; ≤ 160 KB). A file's place `[pack,
 offset, bytes]` is in `tent/more.json` (`pk`, `tex`, `icons`); the phone cuts it from its pack, fetched whole and once
-(`items.ts` roomPacks: Pages ignores a Range), the service worker keeping it. 133 packs, 37 MB, for ~2,000 files. The
+(`items.ts` roomPacks: Pages ignores a Range), the service worker keeping it. 694 packs, 37 MB, for ~2,800 files (a shop's day: 2.6-4.2 MB of packs at 320 KB, 0.5-0.9 MB at 64 KB). The
 shop's pieces keep loose icons (a day's stock is any 24 of them: their packs would cost more than the icons).
 `tent/more.json` and `tent/seats-more.json` load with the room's chunk only (items.json, the starter set's and the
 ずかん's, with the presents too).

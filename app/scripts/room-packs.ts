@@ -22,8 +22,8 @@ export const PACKS = join(APP, 'static', 'room', 'pack');
 const MORE = join(APP, 'src', 'lib', 'components', 'tent', 'more.json');
 const HHA = join(APP, 'src', 'lib', 'components', 'tent', 'hha.json');
 const WORK = join(APP, '.cache', 'room');
-/** A pack's bound (bytes): a room's first piece of a group costs its pack, ~12 models' worth. */
-const MAX = 320_000;
+/** A pack's bound (bytes): a room's first piece of a group costs its pack, ~3-4 models' worth (the shop's day of 24 pieces from ~10 groups: 320 KB packs cost it ~3 MB). */
+const MAX = 64_000;
 /** The icons' packs: a tab's screenful or two. */
 const ICON_MAX = 160_000;
 
