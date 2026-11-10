@@ -98,8 +98,9 @@ export type Intent =
    *  room, the piece's middle), its facing, `it` the item when it isn't placed yet, `end` when the finger let go. */
   | { kind: 'drag'; id: string; x: number; z: number; f: number; it?: string; end?: true; sc?: 'u' | 'v' | 'o' }
   /** My villager in a home (presence only, like a drag; `sc` which: none the tent, ウェイ's, `u` うめ's, `v` the
-   *  guest's; `m` the museum, routes/museum, its points within MUSEUM_U; `s` the shop, no points: a screen, not a room,
-   *  2026-11-04): `in` whether it's inside; a walk there (`from` → `via` → `to`,
+   *  guest's; `m` the museum, routes/museum, its points within MUSEUM_U; `s` the shop, its points within SHOP_U, no
+   *  seats (points since 2026-11-10: an older app drops a shop walk, so the shop says a bare `in` too, which it reads):
+   *  `in` whether it's inside; a walk there (`from` → `via` → `to`,
    *  model units of the room, set off at `s` on the relay's clock, `ms` long), or where it stands (`to` alone); sitting
    *  or lying on a piece (`seat`: its id, `n`: which of its seats, `lie`), since `s`. */
   | { kind: 'tent'; in: boolean; to?: Pt; from?: Pt; via?: Pt[]; s?: number; ms?: number; seat?: string; n?: number; lie?: true; sc?: 'u' | 'v' | 'm' | 's' }
@@ -366,6 +367,8 @@ const TENT_TILES = [0, 7] as const;
 const TENT_U = [-40, 40] as const;
 /** The museum's extent (model units: its hall and two wings, routes/museum), a walk's points there. */
 const MUSEUM_U = [-320, 320] as const;
+/** The shop's floor (model units, shop/plan.ts RECT within it), a walk's points there. */
+const SHOP_U = [-80, 80] as const;
 /** The layout's ids and tokens (contract/layout.ts). */
 const OBJ_ID = /^[A-Za-z0-9][A-Za-z0-9:._-]{0,31}$/;
 const CHUNK_ID = /^c(?:[0-9]|1[0-5])x(?:[0-9]|1[0-5])$/;
@@ -376,6 +379,7 @@ const LAYOUT_TILES = [0, 127] as const;
 const ROOMS: readonly unknown[] = ['t', 'u', 'v'];
 const isTentPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && within(x[0], TENT_U) && within(x[1], TENT_U);
 const isMuseumPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && within(x[0], MUSEUM_U) && within(x[1], MUSEUM_U);
+const isShopPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && within(x[0], SHOP_U) && within(x[1], SHOP_U);
 
 /** A phrase's length at most (code points; NH's balloon scale). */
 export const SAY_MAX = 20;
@@ -528,14 +532,14 @@ function intentOf(o: Obj): Intent | null {
       };
     }
     case 'tent': {
-      // (the museum's points over its own extent)
-      const isPt = o.sc === 'm' ? isMuseumPt : isTentPt;
+      // (the museum's and the shop's points over their own extents)
+      const isPt = o.sc === 'm' ? isMuseumPt : o.sc === 's' ? isShopPt : isTentPt;
       if (typeof o.in !== 'boolean' || !opt(o, 'to', isPt) || (o.from !== undefined && !isPt(o.from)) || !opt(o, 's', isTime) || !opt(o, 'ms', isWalkMs)) return null;
       if (o.via !== undefined && !(Array.isArray(o.via) && o.via.length <= VIA_MAX && o.via.every(isPt))) return null;
       if ((o.seat !== undefined && (typeof o.seat !== 'string' || !DECOR_ID.test(o.seat))) || !opt(o, 'n', (x): x is number => within(x, [0, 7])) || (o.lie !== undefined && o.lie !== true)) return null;
       if (o.sc !== undefined && o.sc !== 'u' && o.sc !== 'v' && o.sc !== 'm' && o.sc !== 's') return null;
-      // (the shop: a screen, nowhere to stand)
-      if (o.sc === 's' && (o.to !== undefined || o.from !== undefined || o.via !== undefined || o.seat !== undefined)) return null;
+      // (the shop: walks, nowhere to sit)
+      if (o.sc === 's' && o.seat !== undefined) return null;
       return {
         ...(o.sc !== undefined ? { sc: o.sc as 'u' | 'v' | 'm' | 's' } : {}),
         ...(o.seat !== undefined ? { seat: o.seat as string } : {}), ...(o.n !== undefined ? { n: o.n as number } : {}), ...(o.lie ? { lie: true as const } : {}),

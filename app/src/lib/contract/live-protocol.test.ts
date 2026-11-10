@@ -279,10 +279,13 @@ describe('live protocol: the tent (v2)', () => {
     expect(parseClient(j(museum))).toEqual({ v: 3, ...museum });
     expect(parseServer(j({ kind: 'tent', in: true, to: [-250, 80], sc: 'm', who: 'G', t: T }))).toEqual({ v: 3, kind: 'tent', in: true, to: [-250, 80], sc: 'm', who: 'G', t: T });
     for (const bad of [j({ ...museum, to: [400, 0] }), j({ ...museum, sc: 'u' }), j({ ...museum, sc: 'x' })]) expect(parseClient(bad), bad).toBeNull();
-    // in the shop (`sc: 's'`): in or out, nowhere to stand
+    // in the shop (`sc: 's'`): in or out (an older app's, no points), or a walk over its floor; nowhere to sit
     expect(parseClient(j({ kind: 'tent', in: true, sc: 's' }))).toEqual({ v: 3, kind: 'tent', in: true, sc: 's' });
     expect(parseServer(j({ kind: 'tent', in: true, sc: 's', who: 'A', t: T }))).toEqual({ v: 3, kind: 'tent', in: true, sc: 's', who: 'A', t: T });
-    for (const bad of [j({ kind: 'tent', in: true, sc: 's', to: [0, 0] }), j({ kind: 'tent', in: true, sc: 's', seat: 'dmh1sofa01', s: T })]) expect(parseClient(bad), bad).toBeNull();
+    const shop = { kind: 'tent', in: true, from: [-20, 38], via: [[-12, 26]], to: [-68, -45], s: T, ms: 2400, sc: 's' };
+    expect(parseClient(j(shop))).toEqual({ v: 3, ...shop });
+    expect(parseServer(j({ kind: 'tent', in: true, to: [61, 23], sc: 's', who: 'G', t: T }))).toEqual({ v: 3, kind: 'tent', in: true, to: [61, 23], sc: 's', who: 'G', t: T });
+    for (const bad of [j({ ...shop, to: [90, 0] }), j({ kind: 'tent', in: true, sc: 's', seat: 'dmh1sofa01', s: T })]) expect(parseClient(bad), bad).toBeNull();
     // sitting or lying on a piece
     const sit = { kind: 'tent', in: true, to: [0, 10], seat: 'dmh1sofa01', n: 1, s: T };
     expect(parseClient(j(sit))).toEqual({ v: 3, ...sit });
