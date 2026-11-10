@@ -2,7 +2,7 @@
   // The island's もようがえ in /editor's phone view (`?view=phone&edit`; docs/island-layout.md "Phone editing": the game
   // itself has none since 2026-11-08): NH's outdoor arranging, one-handed, on
   // the island's layout (store/layout.svelte.ts), the tent's way (tent/TentEdit.svelte). The tray at the foot: its tabs
-  // (き, かんぼく, はな, いわ, あかり, かぐ, キャンプ, 食べ物, ジム, はし・さか, たてもの, おきゃくさん) over each kind's icon; a tap puts that kind down as a ghost on the
+  // (き, かんぼく, はな, 野菜, フェンス, いわ, あかり, かぐ, キャンプ, 食べ物, ジム, はし・さか, たてもの, おきゃくさん) over each kind's icon; a tap puts that kind down as a ghost on the
   // free tile nearest the middle of the view, its footprint on the ground green or red (and why, in the bar); a finger
   // on it, or on a placed thing (it's picked up), drags it a tile at a time; a tap on the ground moves it there; ↻ turns
   // it; ✓ puts it down; 🗑 しまう takes a placed one away (the island's one-offs, the goal trees, the homes never); ✕
@@ -23,6 +23,7 @@
   import { layout as store } from '#lib/store/layout.svelte.ts';
   import { site } from '../island/site.svelte.ts';
   import { artUrl } from '#lib/art.ts';
+  import { gardenIcons } from '../editor/gardenIcons.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import type { Live } from '#lib/sync/live.ts';
@@ -57,7 +58,11 @@
   let { stage, relay, me, ondone }: Props = $props();
 
   type Facing = Obj['f'];
-  const TABS = ['tree', 'bush', 'flower', 'rock', 'light', 'furniture', 'camp', 'food', 'gym', 'structure', 'building', 'visitor'] as const;
+  /** The garden's icons (one sheet: editor/gardenIcons.ts), else the art's. */
+  let gardenArt = $state<Readonly<Record<string, string>>>({});
+  $effect(() => void gardenIcons().then((g) => (gardenArt = g)));
+  const iconUrl = (key: string): string | null => (key.startsWith('garden:') ? (gardenArt[key] ?? null) : artUrl(key));
+  const TABS = ['tree', 'bush', 'flower', 'crop', 'fence', 'rock', 'light', 'furniture', 'camp', 'food', 'gym', 'structure', 'building', 'visitor'] as const;
   const MARKS = ['plaza', 'beach-spot'] as const;
   /** A kind's or an issue's name in this phone's language. */
   const say = (x: { ja: string; en: string }) => (i18n.locale === 'ja' ? x.ja : x.en);
@@ -415,13 +420,13 @@
     {/if}
   </svg>
   {#each markShown as m (m.id)}
-    {@const icon = m.k === 'usual' ? null : artUrl(kindDef(m.k)?.icon ?? '')}
+    {@const icon = m.k === 'usual' ? null : iconUrl(kindDef(m.k)?.icon ?? '')}
     <div class="pin" class:bad={!m.ok} style:left={`${m.at[0]}px`} style:top={`${m.at[1]}px`} data-mark={m.k} data-mark-ok={m.ok}>
       {#if icon}<img src={icon} alt="" draggable="false" />{:else}<span class="usual">{t('decor.island.usual')}</span>{/if}
     </div>
   {/each}
   {#if ghost?.top && ghost.foot && def}
-    {@const icon = def.icon ? artUrl(sel?.k === 'bush' && sel.s && !sel.s.startsWith('month') ? `bushes/${sel.s}` : def.icon) : null}
+    {@const icon = def.icon ? iconUrl(sel?.k === 'bush' && sel.s && !sel.s.startsWith('month') ? `bushes/${sel.s}` : def.icon) : null}
     {@const ih = Math.max(22, ghost.foot[1] - ghost.top[1])}
     <div class="lift" style:left={`${ghost.foot[0]}px`} style:top={`${ghost.foot[1] - ih}px`}>
       {#if icon}<img src={icon} alt="" draggable="false" style:height={`${ih}px`} />{:else}<span class="glyph">{ICON_FALLBACK[def.k] ?? '・'}</span>{/if}
@@ -459,7 +464,7 @@
         <div class="items" role="group" aria-label={t(`decor.tab.${tab}`)}>
           {#each list as d (d.k)}
             <button type="button" class="it" data-island-item={d.k} data-sfx="self" aria-label={say(d)} aria-pressed={!!sel && !sel.id && sel.k === d.k} onclick={() => pickNew(d)}>
-              {#if d.icon && artUrl(d.icon)}<img src={artUrl(d.icon)} alt="" width="48" height="48" loading="lazy" draggable="false" />{:else}<span class="glyph">{ICON_FALLBACK[d.k] ?? '・'}</span>{/if}
+              {#if d.icon && iconUrl(d.icon)}<img src={iconUrl(d.icon)} alt="" width="48" height="48" loading="lazy" draggable="false" />{:else}<span class="glyph">{ICON_FALLBACK[d.k] ?? '・'}</span>{/if}
             </button>
           {/each}
           {#if !list.length}<span class="none" data-island-none>{t('decor.island.none')}</span>{/if}

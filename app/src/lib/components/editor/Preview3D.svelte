@@ -40,8 +40,8 @@
   onMount(() => {
     let gone = false, stop = () => {};
     const camZ0 = camZ;
-    void Promise.all([import('../world3d/threePreview.ts'), import('three/examples/jsm/controls/OrbitControls.js'), import('../world3d/terrain.ts'), import('../world3d/objects.ts'), import('../world3d/things.ts'), import('../world3d/bend.ts'), import('../world3d/water.ts'), import('../world3d/home.ts'), import('../world3d/built.ts'), import('../world3d/release.ts'), import('../world3d/drawCheck.ts'), import('../island/kkSlider.ts'), import('../island/devHooks.ts'), import('#lib/time/clock.ts'), import('#lib/layout/model.ts'), import('../rooms/gesture.ts'), import('./previewCam.ts'), import('../world3d/stage.ts'), import('../world3d/islandCam.ts'), import('../world3d/shadowBox.ts')]).then(
-      ([T, { OrbitControls }, { buildGround }, { placeObjects }, { createThings }, { bendU, bendTree, bendPoint, unbendRay }, { waterU, waterFog }, { homeTod }, { createBuilt, builtObject }, { resourcesOf }, { previewDay }, KK, { hookOneOf, islandSeed }, { dayKey, jst, now }, { extentOf }, { gestures }, C, { createStage, DPR_MOVING }, I, { shadowBox, sunOn }]) => {
+    void Promise.all([import('../world3d/threePreview.ts'), import('three/examples/jsm/controls/OrbitControls.js'), import('../world3d/terrain.ts'), import('../world3d/objects.ts'), import('../world3d/things.ts'), import('../world3d/bend.ts'), import('../world3d/water.ts'), import('../world3d/home.ts'), import('../world3d/built.ts'), import('../world3d/release.ts'), import('../world3d/drawCheck.ts'), import('../island/kkSlider.ts'), import('../island/devHooks.ts'), import('#lib/time/clock.ts'), import('#lib/layout/model.ts'), import('../rooms/gesture.ts'), import('./previewCam.ts'), import('../world3d/stage.ts'), import('../world3d/islandCam.ts'), import('../world3d/shadowBox.ts'), import('../world3d/garden.ts')]).then(
+      ([T, { OrbitControls }, { buildGround }, { placeObjects }, { createThings }, { bendU, bendTree, bendPoint, unbendRay }, { waterU, waterFog }, { homeTod }, { createBuilt, builtObject }, { resourcesOf }, { previewDay }, KK, { hookOneOf, islandSeed }, { dayKey, jst, now }, { extentOf }, { gestures }, C, { createStage, DPR_MOVING }, I, { shadowBox, sunOn }, { gardenReady, loadGarden, wantsGarden }]) => {
         if (gone || !canvas) return;
         /** The canvas's size (the stage's, from its ResizeObserver: no layout read a call), and whether the scene's up. */
         let cw = 300, ch = 150, ready = false;
@@ -110,7 +110,13 @@
         scene.add(ground.group);
         const things = createThings(scene, ground.heightAt, kick);
         things.tod(0, 0.32);
-        void things.place(placeObjects(cur, day()).insts);
+        /** The things drawn on the island as it is (the garden's models fetched first where it has any: garden.ts). */
+        const place = () => {
+          const d = day();
+          if (!gardenReady() && wantsGarden(cur, d.date)) void loadGarden().then(() => !gone && (void things.place(placeObjects(cur, day()).insts), kick()));
+          void things.place(placeObjects(cur, d).insts);
+        };
+        place();
         void ground.ready.then(() => kick());
         // the homes, bridges, stairs and ponds: the island's own (built.ts); a replaced or removed one's resources (the
         // models' cache's) let go of with the rest at the end
@@ -342,7 +348,7 @@
             cur = l;
             if (d.chunks.length) ground.rebuild(l, d.chunks);
             else if (d.objects.add.length || d.objects.move.length || d.objects.remove.length) ground.rebuild(l, []);
-            void things.place(placeObjects(l, day()).insts);
+            place();
             built.sync(l, ground.heightAt);
             placeKK(l);
             if (m === 'phone') aim();
@@ -352,7 +358,7 @@
             if (l === lk) return;
             lk = l;
             ground.look(l);
-            void things.place(placeObjects(cur, day()).insts);
+            place();
             kick();
           },
           mode(mm) {
