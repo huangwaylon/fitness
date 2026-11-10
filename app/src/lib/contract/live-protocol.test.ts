@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { ACTS, MUSIC_MS_MAX, MUSIC_SKEW_MS, MUSIC_STOP_KEEP_MS, musicAt, musicBeats, musicEnd, musicLive, newerMusic, DROPS, FISH_PHASES, HOWS, MAX_BYTES, SAY_MAX, isAcked, VIA_MAX, cleanSay, WORLD_OPS, WORLD_X, WORLD_Z, claimOf, dayStart, isStored, isWorldPt, otherVersion, parseClient, parseServer, tokyoDay, type Act, type Target, type WorldOp } from './live-protocol.ts';
+import { ACTS, MUSIC_MS_MAX, MUSIC_SKEW_MS, MUSIC_STOP_KEEP_MS, musicAt, musicBeats, musicEnd, musicLive, newerMusic, DROPS, FISH_PHASES, HOWS, MAX_BYTES, SAY_MAX, isAcked, VIA_MAX, cleanSay, WORLD_OPS, claimOf, dayStart, isStored, isWorldPt, otherVersion, parseClient, parseServer, tokyoDay, type Act, type Target, type WorldOp } from './live-protocol.ts';
 import { PLAN } from '#lib/components/island/world.ts';
+import { CHUNK, GRID, tileMid, tileX, tileZ } from '#lib/layout/grid.ts';
+import { WORLD_X, WORLD_Z, layoutOpOf } from './layout.ts';
 
 const KEY = 'ab'.repeat(32);
 /** As the one version speaks (v3: v1 and v2 went on 2026-11-05). */
@@ -106,10 +108,11 @@ describe('live protocol: world points', () => {
     expect(WORLD_X[1]).toBeGreaterThanOrEqual(PLAN.x1);
     expect(WORLD_Z[0]).toBeLessThanOrEqual(PLAN.z0);
     expect(WORLD_Z[1]).toBeGreaterThanOrEqual(PLAN.z1);
-    expect(parseClient(j({ kind: 'walk', to: [-230, 2650], at: 9 }))).toEqual({ v: 3, kind: 'walk', to: [-230, 2650], at: 9 });
+    const far = [WORLD_X[0], WORLD_Z[1]];
+    expect(parseClient(j({ kind: 'walk', to: far, at: 9 }))).toEqual({ v: 3, kind: 'walk', to: far, at: 9 });
     expect(parseClient(j({ kind: 'walk', to: 'bridgeStoneN' }))).toEqual({ v: 3, kind: 'walk', to: 'bridgeStoneN' });
-    for (const to of [[621, 0], [0, -461], [-231, 0], [0, 2651], [0.5, 0], [0, 0, 0]]) expect(parseClient(j({ kind: 'walk', to })), String(to)).toBeNull();
-    expect(parseServer(j({ kind: 'walk', to: [700, 0], who: 'B', t: 4 }))).toBeNull();
+    for (const to of [[WORLD_X[1] + 1, 0], [0, -461], [-231, 0], [0, WORLD_Z[1] + 1], [0.5, 0], [0, 0, 0]]) expect(parseClient(j({ kind: 'walk', to })), String(to)).toBeNull();
+    expect(parseServer(j({ kind: 'walk', to: [WORLD_X[1] + 80, 0], who: 'B', t: 4 }))).toBeNull();
     expect(isWorldPt([620, -460])).toBe(true);
   });
 
@@ -175,7 +178,7 @@ describe('live protocol: the very walk, acks and the day in one replay', () => {
     expect(parseClient(j({ ...w, ms: 60_001 }))).toBeNull();
     expect(parseClient(j({ ...w, from: [1.5, 2] }))).toBeNull();
     // the longest, sent (with its number) and relayed (with who and t), fits a message
-    const most = { ...w, to: [-230, 2650], from: [-230, 2650], via: Array.from({ length: VIA_MAX }, () => [-230, 2650]), ms: 60_000 };
+    const far = [WORLD_X[0], WORLD_Z[1]], most = { ...w, to: far, from: far, via: Array.from({ length: VIA_MAX }, () => far), ms: 60_000 };
     expect(j({ ...most, c: 1_793_500_000_123 }).length).toBeLessThanOrEqual(MAX_BYTES);
     expect(parseServer(j({ ...most, who: 'A', t: 1_793_500_000_123 }))).not.toBeNull();
   });
@@ -226,6 +229,40 @@ describe('live protocol: decorations (v2)', () => {
     const big = { ...set, id: 'd' + 'z'.repeat(24), item: 'garden-wagon', x: -230, z: -460 };
     expect(j({ ...big, c: 1e15 - 1 }).length).toBeLessThanOrEqual(MAX_BYTES);
     expect(j({ ...big, who: 'B', t: T }).length).toBeLessThanOrEqual(MAX_BYTES);
+  });
+});
+
+describe('live protocol: the island layout at the grid\'s far end (o, c ops, walks and drags: contract/layout.ts bounds)', () => {
+  const T = 1_793_000_000_000;
+  // the last land row (the grid's last row is its ring of sea) and its last column
+  const c = GRID.cols - 1, r = GRID.rows - 2;
+  const [x, z] = tileMid(c, r);
+  const lastChunk = `c${Math.ceil(GRID.cols / CHUNK) - 1}x${Math.ceil(GRID.rows / CHUNK) - 1}`;
+  it('relays an object, a chunk, a walk and a drag there', () => {
+    const o = { kind: 'decor', sc: 'o', id: 'o1abc', at: T, k: 'bench', x: c, z: GRID.rows - 1, f: 0 };
+    expect(parseClient(j(o))).toEqual({ v: 3, ...o });
+    const ch = { kind: 'decor', sc: 'c', id: lastChunk, at: T, g: '4'.repeat(64) };
+    expect(parseClient(j(ch))).toEqual({ v: 3, ...ch });
+    const walk = { kind: 'walk', to: [x, z], from: [x, z - 30], via: [[x - 30, z]] };
+    expect(parseClient(j(walk))).toEqual({ v: 3, ...walk });
+    expect(parseServer(j({ ...walk, who: 'B', t: T }))).not.toBeNull();
+    const drag = { kind: 'drag', sc: 'o', id: 'o1abc', x, z, f: 1 };
+    expect(parseClient(j(drag))).toEqual({ v: 3, ...drag });
+    expect(parseClient(j({ kind: 'act', act: 'cast', pt: [x, z] }))).not.toBeNull();
+  });
+  it('takes the layout ops the record takes, no more (the same edges as contract/layout.ts layoutOpOf)', () => {
+    const o = (x: number, z: number) => ({ sc: 'o', id: 'o1abc', at: T, k: 'bench', x, z, f: 0 });
+    const ch = (id: string) => ({ sc: 'c', id, at: T, g: '0'.repeat(64) });
+    const ops = [
+      o(0, 0), o(GRID.cols - 1, GRID.rows - 1), o(127, 255), o(128, 0), o(0, 256), o(-1, 0), o(0, 155.5),
+      ch('c0x0'), ch(lastChunk), ch('c15x31'), ch('c16x0'), ch('c0x32'), ch('c00x1')
+    ];
+    for (const op of ops) expect(parseClient(j({ kind: 'decor', ...op })) !== null, JSON.stringify(op)).toBe(layoutOpOf(op) !== null);
+  });
+  it('the world extent holds the grid at its largest and the island plan (island/world.ts PLAN: its depth order to the grid\'s far end)', () => {
+    expect(WORLD_X[1]).toBeGreaterThanOrEqual(tileX(128));
+    expect(WORLD_Z[1]).toBeGreaterThanOrEqual(tileZ(256));
+    expect(PLAN.z1).toBe(tileZ(GRID.rows));
   });
 });
 

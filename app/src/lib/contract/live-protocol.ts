@@ -1,7 +1,9 @@
 // The live relay's wire protocol (docs/backend.md#live-relay), shared by the Worker (relay/, imported by relative path)
 // and the client (live.ts). Intents, not positions: a tap's target and what it did, never a stream of coordinates.
 // Every message is one small JSON object (≤ MAX_BYTES), versioned by `v`, and checked by the same parsers on both
-// sides. No imports: the Worker bundles this file as is.
+// sides. Its one import is contract/layout.ts (the layout's bounds, the record's).
+
+import { WORLD_X, WORLD_Z, X_MAX, Z_MAX, isChunkId } from './layout.ts';
 
 export const LIVE_V = 3;
 /** @public (relay/) The versions the relay speaks: v3 only (the rolling-log world with the guest, `G`:
@@ -17,14 +19,6 @@ export const REPLAY_BYTES = 16_000;
 export const VIA_MAX = 10;
 /** A walk takes at most this long (ms). */
 const WALK_MS_MAX = 60_000;
-
-/**
- * The world's extent (world units): a walk's point lies within it. island/world.ts PLAN lies inside it (its test):
- * the two-section island's plan is shorter than the extent the deployed relay checks, which stays as it was. Here
- * because the Worker bundles this file alone (and sync/ may not import components/).
- */
-export const WORLD_X = [-230, 620] as const;
-export const WORLD_Z = [-460, 2650] as const;
 
 /** Who is on the island: the two members, and the guest (`G`). */
 export type Who = 'A' | 'B' | 'G';
@@ -371,11 +365,9 @@ const MUSEUM_U = [-320, 320] as const;
 const SHOP_U = [-80, 80] as const;
 /** The layout's ids and tokens (contract/layout.ts). */
 const OBJ_ID = /^[A-Za-z0-9][A-Za-z0-9:._-]{0,31}$/;
-const CHUNK_ID = /^c(?:[0-9]|1[0-5])x(?:[0-9]|1[0-5])$/;
 const HOME_ID = /^h[ABG]$/;
 const PART = /^[A-Za-z0-9.]{1,24}$/;
 const CHUNK_G = /^[0-9a-z]{64}$/;
-const LAYOUT_TILES = [0, 127] as const;
 const ROOMS: readonly unknown[] = ['t', 'u', 'v'];
 const isTentPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && within(x[0], TENT_U) && within(x[1], TENT_U);
 const isMuseumPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && within(x[0], MUSEUM_U) && within(x[1], MUSEUM_U);
@@ -407,7 +399,7 @@ const isId = (x: unknown): x is string => typeof x === 'string' && ID.test(x);
 const isWhat = (x: unknown): x is string => typeof x === 'string' && WHAT.test(x);
 const isSeq = (x: unknown): x is number => Number.isInteger(x) && (x as number) > 0 && (x as number) < 1e15;
 const within = (x: unknown, [lo, hi]: readonly [number, number]): boolean => Number.isInteger(x) && (x as number) >= lo && (x as number) <= hi;
-/** A world point within the plan's extent. @public (tests) */
+/** A world point within the world's extent (contract/layout.ts WORLD_X, WORLD_Z). @public (tests) */
 export const isWorldPt = (x: unknown): x is readonly [number, number] =>
   Array.isArray(x) && x.length === 2 && within(x[0], WORLD_X) && within(x[1], WORLD_Z);
 /** A walk's target: a node id, or a world point. */
@@ -432,12 +424,12 @@ function layoutWire(o: Obj): DecorWire | null | undefined {
     case 'o': {
       if (!OBJ_ID.test(id)) return null;
       if (o.rm !== undefined) return o.rm === true ? { sc: 'o', id, at, rm: true } : null;
-      if (typeof o.k !== 'string' || !TOKEN.test(o.k) || !within(o.x, LAYOUT_TILES) || !within(o.z, LAYOUT_TILES) || !within(o.f, [0, 3])) return null;
+      if (typeof o.k !== 'string' || !TOKEN.test(o.k) || !within(o.x, [0, X_MAX]) || !within(o.z, [0, Z_MAX]) || !within(o.f, [0, 3])) return null;
       if (o.s !== undefined && (typeof o.s !== 'string' || !TOKEN.test(o.s))) return null;
       return { sc: 'o', id, at, k: o.k, x: o.x as number, z: o.z as number, f: o.f as number, ...(o.s !== undefined ? { s: o.s as string } : {}) };
     }
     case 'c':
-      return CHUNK_ID.test(id) && typeof o.g === 'string' && CHUNK_G.test(o.g) ? { sc: 'c', id, at, g: o.g } : null;
+      return isChunkId(id) && typeof o.g === 'string' && CHUNK_G.test(o.g) ? { sc: 'c', id, at, g: o.g } : null;
     case 'r':
       return id === 'reset' ? { sc: 'r', id: 'reset', at } : null;
     case 'h': {

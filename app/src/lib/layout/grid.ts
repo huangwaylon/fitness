@@ -3,13 +3,15 @@
 // X0 + 30c … +30, z Z0 + 30r … +30; r grows into the island (away from the camera), as world z does. Off the grid is
 // sea. Each tile is one kind and one tier, one character in a chunk op: (kind × 4 + tier) in base 36.
 
+import { CHUNK, GRID_X0, GRID_Z0, TILE } from '#lib/contract/layout.ts';
+
 /** A tile's side (world units). */
-export const TILE = 30;
+export { TILE };
 /** The grid: 20 × 156 tiles, x −90…510, z −90…4590 (the long island: まえ, the homes' middle, おく; a ring of sea, and
  *  sea behind it for the island to grow back into: 152 rows of land at most, twice the 80-row grid's 76, 2026-11-10). */
-export const GRID = { cols: 20, rows: 156, x0: -90, z0: -90 } as const;
-/** A chunk's side (tiles): the unit of a terrain op and of a terrain rebuild (contract/layout.ts CHUNK). */
-export const CHUNK = 8;
+export const GRID = { cols: 20, rows: 156, x0: GRID_X0, z0: GRID_Z0 } as const;
+/** A chunk's side (tiles): the unit of a terrain op and of a terrain rebuild. */
+export { CHUNK };
 export const CHUNKS_X = Math.ceil(GRID.cols / CHUNK);
 export const CHUNKS_Z = Math.ceil(GRID.rows / CHUNK);
 

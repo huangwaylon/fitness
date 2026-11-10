@@ -21,11 +21,17 @@ const ROOM_SCOPES: readonly RoomScope[] = ['t', 'u', 'v'];
 export const isRoomScope = (sc: unknown): sc is RoomScope => (ROOM_SCOPES as readonly unknown[]).includes(sc);
 
 /** A chunk's side (tiles) and how many chunks fit across and deep at most (the grid may grow up to this). */
-const CHUNK = 8;
+export const CHUNK = 8;
 const CHUNKS_ACROSS = 16, CHUNKS_DEEP = 32;
 /** An object's tile at most (128 across × 256 deep: room for the grid to grow without a relay deploy; deep was 128
- *  until the long island's max doubled, 2026-11-10). */
-const X_MAX = CHUNK * CHUNKS_ACROSS - 1, Z_MAX = CHUNK * CHUNKS_DEEP - 1;
+ *  until the long island's max doubled, 2026-11-10). The live protocol checks the same (live-protocol.ts). */
+export const X_MAX = CHUNK * CHUNKS_ACROSS - 1, Z_MAX = CHUNK * CHUNKS_DEEP - 1;
+/** A tile's side and the grid's corner (world units: lib/layout/grid.ts TILE and GRID's x0, z0 are these). */
+export const TILE = 30, GRID_X0 = -90, GRID_Z0 = -90;
+/** The world's extent (world units): the grid at its largest, and the sea in front of it and to its left as far as the
+ *  island's plan (island/world.ts PLAN). A walk's, a cast's or a drag's point (live-protocol.ts) and the villager's
+ *  spot in the record (island.ts) lie within it. */
+export const WORLD_X = [-230, GRID_X0 + (X_MAX + 1) * TILE] as const, WORLD_Z = [-460, GRID_Z0 + (Z_MAX + 1) * TILE] as const;
 /** A tile's character: kind × 4 + tier, base 36 (lib/layout/grid.ts). */
 const TILE_RE = /^[0-9a-z]{64}$/;
 /** At most this many outdoor objects standing at once (the default's and ours; a removed one's row is kept, uncounted). */
@@ -33,7 +39,12 @@ export const LAYOUT_MAX = 1500;
 
 /** An object's id: a default one's (world.ts's: `palm-1`, `fl:52:180`, `home-B`) or a new one (`o` + random). */
 const OBJ_ID = /^[A-Za-z0-9][A-Za-z0-9:._-]{0,31}$/;
-const CHUNK_ID = /^c(?:[0-9]|1[0-5])x(?:[0-9]|[12][0-9]|3[01])$/;
+/** A terrain chunk's id: `c<cx>x<cz>`, within the chunks across and deep. */
+const CHUNK_RE = /^c(0|[1-9][0-9]?)x(0|[1-9][0-9]?)$/;
+export const isChunkId = (id: string): boolean => {
+  const m = CHUNK_RE.exec(id);
+  return m !== null && Number(m[1]) < CHUNKS_ACROSS && Number(m[2]) < CHUNKS_DEEP;
+};
 const HOME_ID = /^h[ABG]$/;
 const TOKEN = /^[a-z][a-z0-9-]{0,23}$/;
 /** A home part (homes.json's ids: `NABrickC`, `SimpleAR`). */
@@ -63,7 +74,7 @@ export function layoutOpOf(d: Record<string, unknown>): LayoutOp | null {
       return { sc: 'o', id: d.id, at: d.at, k: d.k, x: d.x, z: d.z, f: d.f as Facing, ...(d.s !== undefined ? { s: d.s as string } : {}), ...(d.on !== undefined ? { on: d.on as string } : {}) };
     }
     case 'c':
-      if (!CHUNK_ID.test(d.id) || !only(d, ['sc', 'id', 'at', 'g']) || typeof d.g !== 'string' || !TILE_RE.test(d.g)) return null;
+      if (!isChunkId(d.id) || !only(d, ['sc', 'id', 'at', 'g']) || typeof d.g !== 'string' || !TILE_RE.test(d.g)) return null;
       return { sc: 'c', id: d.id, at: d.at, g: d.g };
     case 'r':
       return d.id === 'reset' && only(d, ['sc', 'id', 'at']) ? { sc: 'r', id: 'reset', at: d.at } : null;

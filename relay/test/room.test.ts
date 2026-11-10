@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CLOSE, HB_PING, HB_PONG, parseServer, type ServerMsg, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
+import { WORLD_X, WORLD_Z } from '../../app/src/lib/contract/layout.ts';
+/** The 20 × 156 grid's last land row, its last column's middle (app/src/lib/layout/grid.ts tileMid(19, 154): the grid's
+ *  last row is its ring of sea) and its last chunk row. */
+const LAST_LAND: [number, number] = [495, 4545];
+const LAST_CHUNK_ROW = 19;
 import { HELLO_MS, MAX_PENDING, RING_MAX, RoomCore, SILENT_MS, type Held, type Meta, type RoomIO } from '../src/room.ts';
 
 const KEY_A = 'a1'.repeat(16);
@@ -600,13 +605,29 @@ describe('the island room', () => {
     const a = join(KEY_A);
     const b = join(KEY_B);
     b.sent = [];
+    // the island's last land row (the long island's back, 2026-11-10)
+    const last = LAST_LAND;
     say(a, { kind: 'walk', to: [-230, 2500] });
+    say(a, { kind: 'walk', to: last });
     say(a, { kind: 'walk', to: 'bridgeStoneN' });
-    say(a, { kind: 'walk', to: [621, 0] });
+    say(a, { kind: 'walk', to: [WORLD_X[1] + 1, 0] });
+    say(a, { kind: 'walk', to: [0, WORLD_Z[1] + 1] });
     say(a, { kind: 'walk', to: [0, -461] });
     say(a, { kind: 'walk', to: [1.5, 2] });
-    expect(b.sent.map((m) => (m as { to: unknown }).to)).toEqual([[-230, 2500], 'bridgeStoneN']);
+    expect(b.sent.map((m) => (m as { to: unknown }).to)).toEqual([[-230, 2500], last, 'bridgeStoneN']);
     expect(a.closed).toBeNull();
+  });
+
+  it('relays the layout\'s ops and drags at the grid\'s far end (its last row and chunk)', () => {
+    const a = join(KEY_A);
+    const b = join(KEY_B);
+    b.sent = [];
+    const [x, z] = LAST_LAND;
+    say(a, { kind: 'decor', sc: 'o', id: 'o1', at: now, k: 'bench', x: 19, z: 155, f: 0 });
+    say(a, { kind: 'decor', sc: 'c', id: `c2x${LAST_CHUNK_ROW}`, at: now, g: '4'.repeat(64) });
+    say(a, { kind: 'drag', sc: 'o', id: 'o1', x, z, f: 0 });
+    expect(b.sent.map((m) => m.kind)).toEqual(['decor', 'decor', 'drag']);
+    expect(b.sent[1]).toMatchObject({ sc: 'c', id: 'c2x19' });
   });
 });
 

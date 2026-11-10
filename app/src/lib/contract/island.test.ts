@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { ISLAND_MAX, PLAN_X, PLAN_Z, isIslandDay } from './island.ts';
-import { WORLD_X, WORLD_Z, tokyoDay } from '#lib/contract/live-protocol.ts';
+import { ISLAND_MAX, isIslandDay } from './island.ts';
+import { WORLD_X, WORLD_Z } from './layout.ts';
+import { GRID, tileMid } from '#lib/layout/grid.ts';
+import { tokyoDay } from '#lib/contract/live-protocol.ts';
 import { apply, emptyDay, rowOf, type DayEvent } from '#lib/sync/world-day.ts';
 
 const ok = { date: '2026-11-01', taken: ['s1000'], puts: [['pa1', 'present', 120, 300]], shakes: [['oak-p1', 'nest', 1_793_000_000_000]], watered: ['fl:130:344'], wishes: { '2026-11-02': 2 } };
@@ -18,13 +20,16 @@ describe('an island day (contract/island.ts)', () => {
     for (const bad of [
       { ...ok, extra: 1 }, { ...ok, date: '2026-02-30' }, { ...ok, taken: 'x' }, { ...ok, taken: ['a b'] },
       { ...ok, puts: [['p', 'Present', 0, 0]] }, { ...ok, puts: [['p', 'present', 0]] }, { ...ok, shakes: [['t', 'none', 1]] },
-      { ...ok, watered: ['fl 1'] }, { ...ok, wishes: { '2026-11-02': 0 } }, { ...ok, at: [0, PLAN_Z[1] + 1] },
+      { ...ok, watered: ['fl 1'] }, { ...ok, wishes: { '2026-11-02': 0 } }, { ...ok, at: [0, WORLD_Z[1] + 1] },
       { ...ok, taken: Array.from({ length: ISLAND_MAX.taken + 1 }, (_, i) => `w${i}`) }
     ]) expect(isIslandDay(bad as Record<string, unknown>), JSON.stringify(bad).slice(0, 80)).toBe(false);
   });
 
-  it('its plan is the relay protocol\'s', () => {
-    expect([PLAN_X, PLAN_Z]).toEqual([WORLD_X, WORLD_Z]);
+  it('keeps the villager\'s spot and a present anywhere on the grid, its last land row too (the record\'s plan is the relay protocol\'s world: contract/layout.ts WORLD_X, WORLD_Z)', () => {
+    const [x, z] = tileMid(GRID.cols - 1, GRID.rows - 2);
+    expect(isIslandDay({ ...ok, at: [x, z], puts: [['pa1', 'present', x, z]] })).toBe(true);
+    expect(isIslandDay({ ...ok, at: [WORLD_X[1], WORLD_Z[1]] })).toBe(true);
+    expect(isIslandDay({ ...ok, at: [WORLD_X[0] - 1, 0] })).toBe(false);
   });
 
   it('a phone\'s row of a busy day is always one the server takes, and under the event size limit', () => {

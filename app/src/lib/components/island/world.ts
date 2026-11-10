@@ -7,14 +7,15 @@
 import SCATTER from './scatter.json' with { type: 'json' };
 import type { LayoutNav } from '#lib/layout/nav.ts';
 import { offBuildings, onBuilding } from '#lib/layout/clear.ts';
+import { GRID, tileZ } from '#lib/layout/grid.ts';
 
 export type Pt = readonly [number, number];
 type RoundRect = { readonly x0: number; readonly x1: number; readonly z0: number; readonly z1: number; readonly r: number };
 type Box4 = { readonly x0: number; readonly x1: number; readonly z0: number; readonly z1: number };
 type Oval = { readonly x: number; readonly z: number; readonly rx: number; readonly rz: number };
 
-/** The plan's extent (wider than the land: the depth order's far end, camera.svelte.ts). */
-export const PLAN = { x0: -230, x1: 620, z0: -460, z1: 1700 } as const;
+/** The plan's extent (wider than the land; z1 the grid's far end: the depth order's, camera.svelte.ts). */
+export const PLAN = { x0: -230, x1: 620, z0: -460, z1: tileZ(GRID.rows) } as const;
 
 /** The island (land incl. beaches): a rounded rectangle with a 130u corner radius and a ±4u wobble. */
 const LAND_2D = { x0: -40, x1: 430, z0: -30, z1: 1260, r: 130 } as const;

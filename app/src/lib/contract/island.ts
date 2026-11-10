@@ -8,6 +8,7 @@ import { isLocalDate, isRec } from './api.ts';
 import type { LocalDate } from '../types.ts';
 import { isInt } from './ops.ts';
 import { nextDay } from './tokyo.ts';
+import { WORLD_X, WORLD_Z } from './layout.ts';
 
 export interface IslandDayData {
   date: LocalDate;
@@ -33,9 +34,8 @@ const WHAT = /^[a-z][\w:.-]{0,63}$/;
 /** What a shake can leave (the relay protocol's drops but `none`). */
 const DROPS = ['branch', 'nest', 'bagworm', 'spider', 'coconut'] as const;
 type IslandDrop = (typeof DROPS)[number];
-/** A world point within the plan (live-protocol WORLD_X × WORLD_Z, kept equal by island.test). */
-export const PLAN_X = [-230, 620] as const, PLAN_Z = [-460, 2650] as const;
-const isPt = (p: unknown): p is [number, number] => Array.isArray(p) && p.length === 2 && isInt(p[0], PLAN_X[0], PLAN_X[1]) && isInt(p[1], PLAN_Z[0], PLAN_Z[1]);
+/** A world point within the world's extent (the live protocol's: contract/layout.ts). */
+const isPt = (p: unknown): p is [number, number] => Array.isArray(p) && p.length === 2 && isInt(p[0], WORLD_X[0], WORLD_X[1]) && isInt(p[1], WORLD_Z[0], WORLD_Z[1]);
 const list = (x: unknown, max: number, ok: (v: unknown) => boolean): boolean => Array.isArray(x) && x.length <= max && x.every(ok);
 
 /**
