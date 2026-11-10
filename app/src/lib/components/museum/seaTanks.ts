@@ -1,13 +1,13 @@
 // The sea creatures' room's tanks (docs/design.md "The museum"), pure: NH's 40 sea creatures (island/sea.ts), each
-// shown once anyone has caught it, in one of the room's two tanks (plan.ts SEA_WING):
-//   the reef tank   along the back wall, tall: the drifters in its water (the jellyfish, the squid, the octopuses that
+// shown once anyone has caught it, in one of the aquarium's two tanks of theirs (plan.ts FISH_WING):
+//   the reef tank   along the right wall, tall: the drifters in its water (the jellyfish, the squid, the octopuses that
 //                   swim, the nautilus) and the big crawlers on its sand
-//   the tide pool   an island in the middle, low (looked down into): the shells, urchins, stars and the little ones
+//   the tide pool   a low island in the middle (looked down into): the shells, urchins, stars and the little ones
 // Each creature has its own place in its tank (the same whatever else is in), drawn as NH's museum-tank model where NH
 // has one (`*Museum`: the octopus sprawled, the seaweed in a clump, the eels out of their sand, the barnacles on their
 // rock...) and as the island's catch model otherwise.
 
-import type { Box } from './tanks.ts';
+import { alongX, type Box } from './tanks.ts';
 
 /** NH's museum-tank variants (scripts/world3d-models.ts --museum: the `sea-museum` pack, each member its id). */
 export const SEA_MUSEUM_MODEL: Readonly<Record<string, string>> = {
@@ -21,8 +21,8 @@ export type SeaTankId = 'reef' | 'pool';
 export interface SeaTank { id: SeaTankId; box: Box }
 /** The two tanks' glass boxes (on the floor; under the room's ceiling, plan.ts WING_H). */
 export const SEA_TANKS: readonly SeaTank[] = [
-  { id: 'reef', box: { x0: 186, x1: 264, y0: 0, y1: 38, z0: 32, z1: 58 } },
-  { id: 'pool', box: { x0: 202, x1: 254, y0: 0, y1: 15, z0: 80, z1: 112 } }
+  { id: 'reef', box: { x0: 150, x1: 176, y0: 0, y1: 38, z0: 28, z1: 110 } },
+  { id: 'pool', box: { x0: 106, x1: 130, y0: 0, y1: 15, z0: 40, z1: 84 } }
 ];
 /** The drifters (in the reef tank's water, bobbing), the reef's floor (its big crawlers, NH's tall ones at the back) and
  *  the tide pool's (the little ones, a grid), each list in its places' order. */
@@ -44,12 +44,17 @@ const SAND = 3;
 export const SEA_SPOTS: ReadonlyMap<string, SeaSpot> = (() => {
   const out = new Map<string, SeaSpot>();
   const [reef, pool] = SEA_TANKS.map((t) => t.box);
-  const row = (ids: readonly string[], tank: SeaTankId, b: Box, z: number, y: number, fit: number, drifts = false) =>
-    ids.forEach((id, k) => out.set(id, { tank, x: b.x0 + ((k + 0.5) * (b.x1 - b.x0)) / ids.length, y, z, fit, drifts }));
-  row(REEF_BACK, 'reef', reef, reef.z0 + 6, SAND, 9);
-  row(REEF_FRONT, 'reef', reef, reef.z1 - 7, SAND, 9);
-  row(DRIFTERS, 'reef', reef, (reef.z0 + reef.z1) / 2, 22, 8, true);
+  // (a row along a tank's long side, `back` of the way from its back (the wall, or its far side) to its front)
+  const row = (ids: readonly string[], tank: SeaTankId, b: Box, back: number, y: number, fit: number, drifts = false) =>
+    ids.forEach((id, k) => {
+      const t = (k + 0.5) / ids.length, [x, z] = alongX(b) ? [b.x0 + t * (b.x1 - b.x0), b.z0 + back * (b.z1 - b.z0)] : [b.x1 - back * (b.x1 - b.x0), b.z0 + t * (b.z1 - b.z0)];
+      out.set(id, { tank, x, y, z, fit, drifts });
+    });
+  const depth = (b: Box) => Math.min(b.x1 - b.x0, b.z1 - b.z0);
+  row(REEF_BACK, 'reef', reef, 6 / depth(reef), SAND, 9);
+  row(REEF_FRONT, 'reef', reef, 1 - 7 / depth(reef), SAND, 9);
+  row(DRIFTERS, 'reef', reef, 0.5, 22, 8, true);
   // the tide pool: three rows of seven
-  for (let r = 0; r < 3; r++) row(POOL.slice(r * 7, r * 7 + 7), 'pool', pool, pool.z0 + ((r + 0.5) * (pool.z1 - pool.z0)) / 3, SAND, 6.5);
+  for (let r = 0; r < 3; r++) row(POOL.slice(r * 7, r * 7 + 7), 'pool', pool, (r + 0.5) / 3, SAND, 6.5);
   return out;
 })();

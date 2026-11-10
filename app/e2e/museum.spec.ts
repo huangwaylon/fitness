@@ -82,7 +82,7 @@ test('only the room my villager is in is drawn: a put changes it at once, a walk
   // (a put: that room at once, no dip)
   await putAt(page, 'room:fish');
   expect(await room()).toBe('fish');
-  // (the sea creatures' alcove: the aquarium's own, no swap)
+  // (the sea creatures' reef: the aquarium's own)
   await putAt(page, 'tank:reef');
   expect(await room()).toBe('fish');
   await page.evaluate('window.__museum.put(30, 10)');
@@ -100,8 +100,8 @@ test('only the room my villager is in is drawn: a put changes it at once, a walk
   // from the hall, a tap past its side wall (the garden, not drawn): through its doorway, a step and a half in
   await page.evaluate('window.__museum.put(-40, 10)');
   await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
-  const [tx, ty] = await mu<[number, number]>(page, 'px(-72, 12)');
-  await page.mouse.click(tx, ty);
+  const [tx, ty] = await mu<[number, number]>(page, 'px(-63, 12)');
+  await page.mouse.click(Math.max(4, tx), ty);
   const [bx, bz] = await sp(page, 'in:bug');
   await expect.poll(async () => {
     const [x, z] = await mu<[number, number]>(page, 'mine()');
@@ -115,10 +115,33 @@ test('only the room my villager is in is drawn: a put changes it at once, a walk
     await walkToSpot(page, `in:${next}`);
     await expect.poll(room, { timeout: 15_000 }).toBe(next);
   }
+  // and on through F3's side door into the bug garden (the fossils a loop back to the hall)
+  await walkToSpot(page, 'in:bug:F3');
+  await expect.poll(room, { timeout: 15_000 }).toBe('bug');
   // the gallery's two rooms the same
   await putAt(page, 'room:G1');
   await walkToSpot(page, 'in:G2');
   await expect.poll(room, { timeout: 15_000 }).toBe('G2');
+});
+
+test('a tap on a doorway (its card, its plaque, the floor before it) always walks through it, into the next room', async ({ page }) => {
+  await open(page);
+  const room = () => mu<string>(page, 'room()');
+  // (F2's way on to F3, in its left wall: the card in the opening, the plaque over it, a step of floor before it)
+  for (const [x, y, z] of [[-240, 20, -90], [-240, 46, -80], [-234, 0, -90]]) {
+    await putAt(page, 'in:F2');
+    await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
+    expect(await room()).toBe('F2');
+    // (a finger on the part of it on the screen: the wall itself is at the screen's edge)
+    const [tx, ty] = await mu<[number, number]>(page, `px(${x}, ${z}, ${y})`);
+    await page.mouse.click(Math.max(4, tx), ty);
+    await expect.poll(room, { timeout: 10_000 }).toBe('F3');
+    const [fx, fz] = await sp(page, 'in:F3');
+    await expect.poll(async () => {
+      const [mx, mz] = (await mu<[number, number]>(page, 'mine()'))!;
+      return Math.hypot(mx - fx, mz - fz);
+    }, { timeout: 10_000 }).toBeLessThan(2);
+  }
 });
 
 test('a room change compiles nothing: every built room’s programs are made in the warm-up, shown for it', { tag: '@render' }, async ({ page }) => {
@@ -297,7 +320,7 @@ test('the fossils: a fossil found is on show in its wing, built once my villager
   await expect(page.locator('[data-museum-card="t-rex-tail"] [data-museum-more]')).toHaveText('Tレックス コンプリート！');
 });
 
-test('the sea creatures’ alcove in the aquarium: each caught one in its tank, NH’s museum-tank model where it has one; a tap shows its card', async ({ page }) => {
+test('the sea creatures in the aquarium: each caught one in its tank (the reef, the tide pool), NH’s museum-tank model where it has one; a tap shows its card', async ({ page }) => {
   await seed(page, [['sea', 'octopus', 'A'], ['sea', 'sea-star', 'G'], ['sea', 'moon-jellyfish', 'B'], ['fish', 'sea-bass', 'B']]);
   const files: string[] = [];
   page.on('request', (r) => /\/(sea-museum|critters\/sea\/)/.test(r.url()) && files.push(r.url().replace(/^.*\/(museum|world3d)\/|\?.*$/g, '')));
@@ -319,7 +342,8 @@ test('the art gallery: a present’s genuine artwork on show, a painting on its 
   await expect.poll(async () => (await mu<string[]>(page, 'shown()')).sort(), { timeout: 15_000 }).toEqual(['famous-painting', 'gallant-statue']);
   // the painting hung at eye height on its panel, the statue standing on its plinth
   const [p, st] = await Promise.all(['famous-painting', 'gallant-statue'].map((id) => mu<[number, number, number]>(page, `where("${id}")`)));
-  expect(p[1]).toBe(22);
+  // (on a panel, at its middle: art.ts PANEL_H)
+  expect(p[1]).toBe(15.5);
   expect(st[1]).toBeGreaterThan(20);
   await tapOn(page, 'famous-painting');
   const card = page.locator('[data-museum-card="famous-painting"]');
@@ -333,7 +357,7 @@ test('a gallery panel between the camera and my villager fades out (its painting
   const panels = () => mu<string>(page, 'panels()');
   await putAt(page, 'in:G1');
   await expect.poll(panels, { timeout: 15_000 }).toMatch(/^0{6}$/);
-  // behind the second row's long panel (the first row's calm painting before me)
+  // behind the second row's panel (the first row's calm painting before me)
   await putAt(page, 'art:calm-painting');
   await expect.poll(panels).toMatch(/1/);
   await putAt(page, 'in:G1');
@@ -505,7 +529,8 @@ test('the aquarium’s benches: a tap sits my villager on one, the other phone s
 });
 
 test('the hall’s benches: a tap on one walks up and sits my villager facing the camera', async ({ page }) => {
-  await open(page);
+  // (late, nobody else in: a visitor sitting there would take the tap)
+  await open(page, 'museum?demo&date=2026-11-04T23:30');
   await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
   const [x, y] = (await mu<[number, number]>(page, 'benchPx("hbench1", 0)'))!;
   await page.mouse.click(x, y);

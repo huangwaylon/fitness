@@ -1,7 +1,7 @@
 // The museum in 3D (docs/design.md "The museum"): three.js, loaded only when the museum opens (its own chunk). NH's
 // museum on one floor (plan.ts): the entrance hall (its stone floor, NH's lobby brick, its red runner, the
 // owl's medallion, Blathers at his desk), the bug garden to the left (garden.ts), the aquarium to the right (its tanks:
-// aquarium.ts, the sea creatures' alcove: seaLife.ts), the fossils' three rooms and the gallery's two behind the hall
+// aquarium.ts, the sea creatures' tanks in it: seaLife.ts), the fossils' three rooms and the gallery's two behind the hall
 // (fossilWing.ts, gallery.ts), a plaque over each doorway. NH's floors and walls (scripts/world3d-models.ts
 // --museum: static/room/museum/tex/), lit warm. The camera is the rooms' (tent/engine.ts): NH's steep view, a drag turns
 // it, a pinch zooms; here each room framed for the phone (camera.ts), following my villager, and a wall between it and
@@ -35,13 +35,13 @@ import { modelBounds } from '../world3d/models3d.ts';
 import { ENTRY_HOLD_MS, PACE, VILLAGER_H, along, roomScreen, walkLens, type Insets, type Walk } from '../rooms/view.ts';
 import { EYE_MARGIN, clampEye, firstPerson as createFirstPerson, headAnchor, wrapAngle } from '../rooms/firstPerson.ts';
 import {
-  BUG_WING, CARPETS, DESK, DOOR_HALF, DOORMAT, G1, HALL, HALL_H, HALL_PLANTS, ISLAND_RUG, OPENINGS, PLAQUE, ROOMS, WALLS, WING_H, doorTop, inRect,
-  navOf, roomHeld, roomIdAt, roomOf, walkable, wallEnds, wingOfRoom, type Nav, type Opening, type Pt, type Rect, type RoomId, type Wall, type Wing
+  BUG_WING, CARPETS, CORNICE, DESK, DOOR_HALF, DOORMAT, G1, HALL, HALL_H, HALL_PLANTS, ISLAND_RUG, OPENINGS, PLAQUE, PLAQUE_H, PLAQUE_W, ROOMS, TILE, WALLS, WALL_T, WING_H, doorTop, inRect,
+  navOf, roomHeld, roomIdAt, roomOf, walkable, wallDistance, wallEnds, wingOfRoom, type Nav, type Opening, type Pt, type Rect, type RoomId, type Wall, type Wing
 } from './plan.ts';
 import { GAIN, LIFT, LOOK, POOL, PORTAL, TINT, applyLook, lookAt, type Look as Light } from './look.ts';
 import { CARD, cardsMesh, floorBake, wallRamps, type Block, type Card, type Pool } from './bake.ts';
 import { BENCHES, benchRect } from './seats.ts';
-import { FOV, PITCH, enter, follow, framingOf, type CamTune, type Framing } from './camera.ts';
+import { FOV, PITCH, enter, follow, framingOf, plaqueOf, type CamTune, type Framing } from './camera.ts';
 /** The exhibits' rate (a second) while only they move; no finger on the room for REST_MS (the island's rest:
  *  world3d/engine.ts), REST_FPS: the battery and the phone's heat at rest. */
 const AMBIENT = 30, REST_MS = 2500, REST_FPS = 15;
@@ -260,13 +260,7 @@ function medallion(): CanvasTexture {
 }
 
 /** A doorway's plaque (NH's lobby plaques: the room beyond's name, cream on walnut in a gold rim), PLAQUE_W × PLAQUE_H
- *  model units; drawn again once the app's font is in (`then`: a frame for it). */
-const PLAQUE_W = 30, PLAQUE_H = 8;
-/** A side wall's plaque's turn from facing the room view: none, a flag sign standing straight out from the wall, so the
- *  room view reads it whole even with the wall itself just off the screen's edge. */
-const BLADE = 0;
-/** How far a side wall's flag plaque stands off its wall (a hand's breadth: its words a little further in). */
-const FLAG_OFF = 2.5;
+ *  model units (plan.ts plaqueAt: where it hangs); drawn again once the app's font is in (`then`: a frame for it). */
 const PLAQUE_FONT = '"Zen Maru Gothic", "Hiragino Maru Gothic ProN", system-ui, sans-serif';
 function plaque(text: string, then: () => void): CanvasTexture {
   const c = document.createElement('canvas');
@@ -631,11 +625,12 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const apron = { x0: r.x0, x1: r.x1, z0: r.z1, z1: r.z1 + APRON };
     floor(apron, floorOf(wing, apron, 0.8), [id], -1);
   }
-  // the openings' thresholds (through the walls: the floor of the room each is counted to; both rooms')
+  // the openings' thresholds: a walnut sill through the wall, a hand past it either side (a doorway reads as a way
+  // through, not a painted panel; both rooms')
+  const sill = lambert({ color: 0x5b3f2a, layer: 4 });
   for (const o of OPENINGS) {
-    const r = o.axis === 'x' ? { x0: o.at - 2, x1: o.at + 2, z0: o.from, z1: o.to } : { x0: o.from, x1: o.to, z0: o.at - 2, z1: o.at + 2 };
-    // (its room's floor run on through the wall, tiled from the origin as it is: no seam)
-    floor(r, decal(floorOf(o.wing === 'bug' ? 'hall' : o.wing, r), 1), [o.room, o.next], 0.01);
+    const r = o.axis === 'x' ? { x0: o.at - 3, x1: o.at + 3, z0: o.from, z1: o.to } : { x0: o.from, x1: o.to, z0: o.at - 3, z1: o.at + 3 };
+    floor(r, sill, [o.room, o.next], 0.01);
   }
   // the carpets (plan.ts CARPETS; carpet.ts: each room's strips one seamless carpet, its border round them all): the
   // hall's runner from the door to the desk, the fossils' and the gallery's ways in; the
@@ -730,7 +725,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     }
     return c;
   };
-  const T = 3, KICK = 5;
+  const T = WALL_T, KICK = 5;
   /** A slab along a wall from a to b, its ends run on or held back at the joints (plan.ts wallEnds: no two slabs
    *  overlap, so no faces share a plane), its middle and its yaw. */
   const span = (i: number, run: number, free: number) => {
@@ -790,7 +785,6 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     scene.add(inRooms(m, rs));
     return m;
   };
-  const CORNICE = HALL_H + 2.45;
   const ceil = (r: Rect, y: number, m: Material, room: RoomId) => {
     const c = fpvMesh(new Mesh(new PlaneGeometry(r.x1 - r.x0, r.z1 - r.z0), m), [room]);
     c.rotation.x = Math.PI / 2;
@@ -878,9 +872,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     lintel.position.set(o.axis === 'x' ? o.at : mid, (wallTop + top) / 2, o.axis === 'x' ? mid : o.at);
     scene.add(inRooms(lintel, [o.room, o.next]));
     // its plaque, read from its room (two faces back to back: a turned one is seen from either side)
-    const k = (o.axis === 'x' ? roomIdAt(o.at + 5, mid) : roomIdAt(mid, o.at + 5)) === o.room ? 1 : -1;
-    const py = (top + wallTop) / 2;
-    const up = o.axis === 'z' ? [mid, py, o.at + k * (T / 2 + 0.2), k > 0 ? 0 : Math.PI] : [o.at + k * (T / 2 + FLAG_OFF + (PLAQUE_W / 2) * Math.cos(BLADE)), py, mid, k * BLADE];
+    const p = plaqueOf(o), up = [p.x, p.y, p.z, p.yaw];
     const down = o.axis === 'z' ? [mid, KICK + 3 + PLAQUE_H / 2, o.at, 0] : up;
     let board: Group | null = null;
     if (o.next !== 'hall') {
@@ -900,9 +892,9 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     }
     // (a doorway between two rooms of a wing: on the way back, the room behind on its other side, its wall's mirror)
     if (o.room !== 'hall' && o.next !== 'hall') {
-      const back = plaqueBoard(PLAQUE[o.room]);
-      if (o.axis === 'z') back.position.set(mid, py, o.at - k * (T / 2 + 0.2)), (back.rotation.y = k > 0 ? Math.PI : 0);
-      else back.position.set(2 * o.at - up[0], py, mid), (back.rotation.y = -up[3]);
+      const back = plaqueBoard(PLAQUE[o.room]), q = plaqueOf(o, 'next');
+      back.position.set(q.x, q.y, q.z);
+      back.rotation.y = q.yaw;
       scene.add(inRooms(back, [o.next]));
     }
     const cards: Mesh[] = [];
@@ -972,12 +964,15 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const onWall = ([code, v]: readonly [string, string], room: RoomId, axis: 'x' | 'z', at: number, along: number, y: number, k: 1 | -1) => {
     // (none in or beside a doorway)
     if (OPENINGS.some((o) => o.axis === axis && Math.abs(o.at - at) < 1 && along > o.from - 12 && along < o.to + 12)) return;
+    // (nor where a room's two rects meet: no wall there)
+    const [ax, az] = axis === 'x' ? [at, along] : [along, at];
+    if (!WALLS.some((w) => wallDistance(w, ax, az) < 1)) return;
     const yaw = axis === 'z' ? (k > 0 ? 0 : Math.PI) : (k * Math.PI) / 2;
     lamps.push({ code, v, x: axis === 'x' ? at + k * FACE : along, y, z: axis === 'z' ? at + k * FACE : along, yaw, s: LAMP_S, room, wall: true });
   };
   // the hall: sconces either side of Blathers on the back wall and on the side walls, lamps on the desk's ends
   for (const x of [-14, 14]) onWall(SCONCE, 'hall', 'z', HALL.z0, x, 36, 1);
-  for (const z of [-30, 45]) (onWall(SCONCE, 'hall', 'x', HALL.x0, z, 36, 1), onWall(SCONCE, 'hall', 'x', HALL.x1, z, 36, -1));
+  for (const z of [-30, 40, 88]) (onWall(SCONCE, 'hall', 'x', HALL.x0, z, 36, 1), onWall(SCONCE, 'hall', 'x', HALL.x1, z, 36, -1));
   for (const x of [DESK.x0 + 4, DESK.x1 - 4]) lamps.push({ code: DESK_LAMP[0], v: DESK_LAMP[1], x, y: DESK.h, z: (DESK.z0 + DESK.z1) / 2 - 2, yaw: 0, s: 1.2, room: 'hall', wall: false });
   // the fossil rooms: candles along the back and long walls
   for (const { id, wing, r } of ROOMS) {
@@ -1631,6 +1626,9 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     if (best) return { kind: 'creature', id: best.id };
     if (seat) return { kind: 'seat', id: seat };
     if (wall?.object === frontDoor) return { kind: 'door' };
+    // a doorway (its card, its plaque, a tile of floor before it: at least a finger's 44 px round), always through it
+    const door = eyes ? null : doorwayAt(cx, cy);
+    if (door) return through(door);
     if (wall?.object.userData.portal) return through(wall.object.userData.portal.into);
     if (!ray.ray.intersectPlane(floorPlane, hitV) || camera.position.distanceTo(hitV) > wallD) {
       // a wall's foot: walk up to it (a little short, on this side); a ceiling, the sky: nowhere
@@ -1644,6 +1642,27 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const there = roomOf(hitV.x, hitV.z) ?? cur;
     if (there !== cur) return through(there);
     return { kind: 'floor', x: hitV.x, z: hitV.z };
+  }
+  /** The room beyond the doorway whose tap area holds (cx, cy) (client px): its card (as it stands, or cut to the
+   *  wall's foot), its plaque and a tile of floor on this side, their box on the screen grown to 44 px at least. */
+  const FINGER = 44;
+  function doorwayAt(cx: number, cy: number): RoomId | null {
+    for (const d of doorways) {
+      const o = d.o;
+      if (o.room !== cur && o.next !== cur) continue;
+      const mid = (o.from + o.to) / 2, k = (o.axis === 'x' ? roomIdAt(o.at + 5, mid) : roomIdAt(mid, o.at + 5)) === cur ? 1 : -1;
+      const top = d.cut ? KICK : d.top, pts: [number, number, number][] = [];
+      for (const t of [o.from, o.to])
+        for (const [y, off] of [[0, 0], [top, 0], [0, k * TILE]] as const) pts.push(o.axis === 'x' ? [o.at + off, y, t] : [t, y, o.at + off]);
+      const p = d.plaque && (o.room === cur ? d.plaque.position : null);
+      if (p) for (const dx of [-PLAQUE_W / 2, PLAQUE_W / 2]) for (const dy of [-PLAQUE_H / 2, PLAQUE_H / 2]) pts.push([p.x + dx, p.y + dy, p.z]);
+      const sp = pts.map((q) => client(...q));
+      let x0 = Math.min(...sp.map((q) => q[0])), x1 = Math.max(...sp.map((q) => q[0])), y0 = Math.min(...sp.map((q) => q[1])), y1 = Math.max(...sp.map((q) => q[1]));
+      if (x1 - x0 < FINGER) (x0 = (x0 + x1 - FINGER) / 2), (x1 = x0 + FINGER);
+      if (y1 - y0 < FINGER) (y0 = (y0 + y1 - FINGER) / 2), (y1 = y0 + FINGER);
+      if (cx >= x0 && cx <= x1 && cy >= y0 && cy <= y1) return o.room === cur ? o.next : o.room;
+    }
+    return null;
   }
   /** A tap toward a room not drawn: a walk through the doorway between it and the room one's in, THROUGH past its line
    *  (null: none between them). */

@@ -5,11 +5,11 @@
 // carpets' runs, facing what it looks at.
 import { benchRect, benchSeats, BENCHES } from './seats.ts';
 import { ART_SPOTS, DAIS, PANELS, plinthOf } from './art.ts';
-import { SPOTS as FOSSIL_SPOTS, footOf } from './fossils.ts';
+import { SPOTS as FOSSIL_SPOTS, ROW, footOf, setOf } from './fossils.ts';
 import { FISH_PLANTS, TANKS, type Box } from './tanks.ts';
 import { SEA_TANKS } from './seaTanks.ts';
 import { CASE, CASES, OAKS, PALM, POND, PROPS, SOLIDS } from './bugLife.ts';
-import { DESK, DOORMAT, ENTRANCE, HALL, HALL_PLANTS, OPENINGS, ROOM_IDS, rectsOf, wingOfRoom, type Pt, type Rect, type RoomId } from './plan.ts';
+import { DESK, DOORMAT, ENTRANCE, HALL, HALL_PLANTS, OPENINGS, ROOM_IDS, rectsOf, roomIdAt, wingOfRoom, type Pt, type Rect, type RoomId } from './plan.ts';
 import type { LingerPoint as VisitorPoint, VisitorRoom } from './visitors.ts';
 
 const flat = (b: Box): Rect => ({ x0: b.x0, x1: b.x1, z0: b.z0, z1: b.z1 });
@@ -47,56 +47,64 @@ const seaTank = (id: string) => SEA_TANKS.find((t) => t.id === id)!.box;
 
 /** The visitors' places, 4-8 a room. */
 export const LINGER: readonly LingerPoint[] = [
-  // the hall: Blathers' desk from either side of the runner, two pairs by the side walls
+  // the hall: Blathers' desk from either side of the runner, a pair toward the door
   look('hall', -28, -8, [0, -26]), look('hall', 28, -8, [0, -26]),
-  ...chat('hall', [-30, 52], [-18, 52]),
+  ...chat('hall', [-30, 90], [-18, 90]),
   // the garden: the oaks, the pond, the flower bed, the cases; a pair by the path
   look('bug', -120, -26, OAKS[0]), look('bug', -128, 82, [(POND.x0 + POND.x1) / 2, (POND.z0 + POND.z1) / 2]),
-  look('bug', -98, 34, [-88, 62]), look('bug', -165, 0, CASES[0]),
+  look('bug', -98, 34, [-88, 62]), look('bug', -150, -12, CASES[0]),
   ...chat('bug', [-150, 30], [-138, 30]),
   // every bench's seats (the hall's, the aquarium's, the gallery's, the big skeletons'), facing as the bench does
   ...BENCHES.flatMap((b) => benchSeats(b.id).map((s): LingerPoint => ({ room: b.room, x: s.at[0], z: s.at[1], faceYaw: b.yaw, exhibitId: b.id, kind: 'sit' }))),
-  // the aquarium: the great tank from beside its benches, the deep tank, the reef and the pool
-  look('fish', 128, 2, mid(tank('sea')), 'tank:sea'), look('fish', 112, 66, mid(tank('deep')), 'tank:deep'),
-  look('fish', 220, 70, mid(seaTank('reef')), 'tank:reef'), look('fish', 188, 96, mid(seaTank('pool')), 'tank:pool'),
-  // the fossils: each room's hero and rows; a pair in each front band
-  look('F1', -80, -202, fossil('ammonite'), 'ammonite'), look('F1', -42, -202, fossil('shark-tooth-pattern'), 'shark-tooth-pattern'),
-  look('F1', -60, -164, fossil('dunkleosteus'), 'dunkleosteus'), ...chat('F1', [-92, -76], [-80, -76]),
-  look('F2', -215, -144, fossil('t-rex-skull'), 't-rex-skull'), look('F2', -185, -144, fossil('t-rex-tail'), 't-rex-tail'),
-  look('F2', -200, -272, fossil('diplo-chest'), 'diplo-chest'), ...chat('F2', [-150, -66], [-138, -66]),
-  look('F3', -262, 14, fossil('ptera-body'), 'ptera-body'), look('F3', -222, 52, fossil('plesio-torso'), 'plesio-torso'),
-  look('F3', -262, 86, fossil('megacero-torso'), 'megacero-torso'), ...chat('F3', [-290, 124], [-278, 124]),
-  // the gallery: the screen (G1) and the solemn painting (G2) from the back bay, the rows from the bays, a pair in front
-  look('G1', 60, -222, art('wild-painting-left-half'), 'wild-painting-left-half'), look('G1', 30, -180, art('calm-painting'), 'calm-painting'),
-  look('G1', 80, -132, art('moving-painting'), 'moving-painting'), ...chat('G1', [96, -60], [108, -60]),
-  look('G2', 180, -222, art('solemn-painting'), 'solemn-painting'), look('G2', 150, -180, art('amazing-painting'), 'amazing-painting'),
-  look('G2', 196, -132, art('warm-painting'), 'warm-painting'), ...chat('G2', [194, -78], [206, -78])
+  // the aquarium: the great tank between its benches, the deep tank, the reef and the tide pool
+  look('fish', 128, 2, mid(tank('sea')), 'tank:sea'), look('fish', 104, 112, mid(tank('deep')), 'tank:deep'),
+  look('fish', 140, 62, mid(seaTank('reef')), 'tank:reef'), look('fish', 118, 96, mid(seaTank('pool')), 'tank:pool'),
+  // the fossils: each room's heroes; a pair in each (F3's in its way in)
+  look('F1', -66, -194, fossil('dunkleosteus'), 'dunkleosteus'), look('F1', -98, -200, fossil('ophthalmo-skull'), 'ophthalmo-skull'),
+  look('F1', -98, -126, fossil('archelon-skull'), 'archelon-skull'), ...chat('F1', [-104, -161], [-92, -161]),
+  look('F2', -214, -112, fossil('t-rex-skull'), 't-rex-skull'), look('F2', -146, -112, fossil('t-rex-tail'), 't-rex-tail'),
+  look('F2', -200, -272, fossil('diplo-chest'), 'diplo-chest'), look('F2', -210, -220, fossil('stego-torso'), 'stego-torso'),
+  ...chat('F2', [-190, -58], [-178, -58]),
+  look('F3', -218, -22, fossil('brachio-chest'), 'brachio-chest'), look('F3', -210, 70, fossil('plesio-torso'), 'plesio-torso'),
+  look('F3', -215, 160, fossil('ptera-body'), 'ptera-body'), ...chat('F3', [-272, -56], [-260, -56]),
+  // the gallery: the screen (G1) and the solemn painting (G2) up the middle, the panels from their bays, a pair in front
+  look('G1', 60, -222, art('wild-painting-left-half'), 'wild-painting-left-half'), look('G1', 30, -200, art('calm-painting'), 'calm-painting'),
+  look('G1', 96, -164, art('proper-painting'), 'proper-painting'), ...chat('G1', [66, -60], [78, -60]),
+  look('G2', 180, -222, art('solemn-painting'), 'solemn-painting'), look('G2', 150, -200, art('amazing-painting'), 'amazing-painting'),
+  look('G2', 210, -200, art('warm-painting'), 'warm-painting'), ...chat('G2', [206, -60], [218, -60])
 ];
 
 /** Named spots (x, z) on open floor: 'entrance', 'desk' (before Blathers), 'room:<id>' (a room's middle), 'in:<id>' (just
- *  inside a room from the doorway one comes in by), 'bench:<id>:<n>' (a seat's step), 'tank:<id>' (before a tank's
- *  glass), 'fossil:<id>', 'art:<id>' (before it). */
+ *  inside a room from the doorway one comes in by first: the bug garden's from the hall), 'in:<id>:<from>' (inside
+ *  <id> by its doorway to <from>, either way through), 'bench:<id>:<n>' (a seat's step), 'tank:<id>' (before a tank's glass), 'fossil:<id>', 'art:<id>' (before it). */
 export const SPOTS: ReadonlyMap<string, Pt> = (() => {
   const out = new Map<string, Pt>([['entrance', ENTRANCE], ['desk', [0, -12]]]);
-  const rooms: Record<RoomId, Pt> = { hall: [0, 30], bug: [-120, 60], fish: [130, 60], F1: [-60, -130], F2: [-200, -146], F3: [-240, 50], G1: [60, -132], G2: [180, -132] };
+  const rooms: Record<RoomId, Pt> = { hall: [0, 30], bug: [-120, 60], fish: [120, 104], F1: [-42, -130], F2: [-180, -165], F3: [-210, 120], G1: [60, -132], G2: [180, -132] };
   for (const [id, p] of Object.entries(rooms)) out.set(`room:${id}`, p);
   for (const o of OPENINGS) {
     const m = (o.from + o.to) / 2;
-    // (the side of the wall the room beyond lies on: its rect's middle's)
-    const sign = Math.sign((o.axis === 'x' ? rooms[o.next][0] : rooms[o.next][1]) - o.at);
-    out.set(`in:${o.next}`, o.axis === 'x' ? [o.at + sign * 15, m] : [m, o.at + sign * 15]);
+    // (the side of the wall the room beyond lies on)
+    const sign = (o.axis === 'x' ? roomIdAt(o.at + 5, m) : roomIdAt(m, o.at + 5)) === o.next ? 1 : -1;
+    const p: Pt = o.axis === 'x' ? [o.at + sign * 15, m] : [m, o.at + sign * 15];
+    out.set(`in:${o.next}:${o.room}`, p);
+    if (!out.has(`in:${o.next}`)) out.set(`in:${o.next}`, p);
+    // (and the way back)
+    out.set(`in:${o.room}:${o.next}`, o.axis === 'x' ? [o.at - sign * 15, m] : [m, o.at - sign * 15]);
   }
   for (const b of BENCHES) for (const s of benchSeats(b.id)) out.set(`bench:${b.id}:${s.n}`, s.at);
   for (const t of TANKS) {
     const b = t.box;
-    out.set(`tank:${t.id}`, t.id === 'deep' ? [b.x1 + 12, (b.z0 + b.z1) / 2] : t.id === 'river' ? [(b.x0 + b.x1) / 2, b.z0 - 12] : [(b.x0 + b.x1) / 2 - 20, b.z1 + 8]);
+    out.set(`tank:${t.id}`, t.id === 'deep' ? [b.x1 + 12, (b.z0 + b.z1) / 2] : t.id === 'river' ? [b.x0 + 18, b.z0 - 12] : [(b.x0 + b.x1) / 2 + 8, b.z1 + 8]);
   }
-  for (const t of SEA_TANKS) out.set(`tank:${t.id}`, t.id === 'reef' ? [(t.box.x0 + t.box.x1) / 2, t.box.z1 + 12] : [t.box.x0 - 12, (t.box.z0 + t.box.z1) / 2]);
+  for (const t of SEA_TANKS) out.set(`tank:${t.id}`, t.id === 'reef' ? [t.box.x0 - 10, (t.box.z0 + t.box.z1) / 2] : [(t.box.x0 + t.box.x1) / 2, t.box.z1 + 10]);
+  const blocks = allBlocks(), clear = (x: number, z: number) => !blocks.some((b) => x > b.x0 - 7 && x < b.x1 + 7 && z > b.z0 - 7 && z < b.z1 + 7);
   for (const id of FOSSIL_SPOTS.keys()) {
-    const r = footOf(id);
-    // (from in front, or from behind for a row by the front wall)
-    const room = rectsOf(FOSSIL_SPOTS.get(id)!.room)[0];
-    out.set(`fossil:${id}`, [(r.x0 + r.x1) / 2, r.z1 + 15 < room.z1 ? r.z1 + 9 : r.z0 - 9]);
+    // (from in front, or from behind for a row by the front wall; a piece of a skeleton turned along a wall from the
+    // end of the whole skeleton toward the room's middle, else its other end)
+    const f = FOSSIL_SPOTS.get(id)!, set = f.yaw ? ROW[setOf(id)!].map(footOf) : [footOf(id)], room = rectsOf(f.room)[0];
+    const r = { x0: Math.min(...set.map((q) => q.x0)), x1: Math.max(...set.map((q) => q.x1)), z0: Math.min(...set.map((q) => q.z0)), z1: Math.max(...set.map((q) => q.z1)) };
+    const x = (r.x0 + r.x1) / 2, front = r.z1 + 9, back = r.z0 - 9;
+    out.set(`fossil:${id}`, [x, f.yaw ? (clear(x, back) ? back : front) : r.z1 + 15 < room.z1 ? front : back]);
   }
   const stands = [...PANELS, DAIS, ...[...ART_SPOTS.keys()].flatMap((id) => plinthOf(id) ?? [])];
   for (const [id, s] of ART_SPOTS) {
@@ -104,9 +112,8 @@ export const SPOTS: ReadonlyMap<string, Pt> = (() => {
     // (a painting's from in front, along its row a little if a statue stands there)
     const free = (x: number, z: number) => !stands.some((r) => x > r.x0 - 9 && x < r.x1 + 9 && z > r.z0 - 9 && z < r.z1 + 9);
     const r = rectsOf(s.room)[0], dx = [0, 10, -10, 20, -20, 30, -30, 40, -40].find((d) => s.x + d > r.x0 + 8 && s.x + d < r.x1 - 8 && free(s.x + d, s.z + 12)) ?? 0;
-    // (a statue's from beside it, toward the room's middle: the next row's panel stands close in front)
-    const inward = s.x < (r.x0 + r.x1) / 2 ? 1 : -1;
-    out.set(`art:${id}`, foot ? [s.x + inward * ((foot.x1 - foot.x0) / 2 + 10), s.z - 4] : [s.x + dx, s.z + 12]);
+    // (a statue's from in front of its plinth, else behind it; the screen's from in front of its dais)
+    out.set(`art:${id}`, foot ? [s.x, clear(s.x, foot.z1 + 9) ? foot.z1 + 9 : foot.z0 - 9] : id.startsWith('wild-painting') ? [s.x, DAIS.z1 + 8] : [s.x + dx, s.z + 12]);
   }
   return out;
 })();

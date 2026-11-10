@@ -941,31 +941,34 @@ garden, bugShow, seaTanks, seaLife, fossils, fossilWing, art, gallery, seats, be
 editor, never removed. A tap walks my villager to its door and in (the door's iris); ‹ 島へ or the doormat comes back
 out.
 
-- **Inside** (`plan.ts`): one floor of portrait rooms, 12 tiles across (the screen's way) and deeper the other. The
-  hall 12 × 12: marble, a red runner from the door to Blathers' desk at the back in the middle (no spurs: the arches
-  read by their plaques), a small owl medallion (3.8 tiles) on it between the side arches, four plants, two benches
-  by the sides facing the camera. Through its left arch
-  the bug garden (12 × 20), its right the aquarium (12 × 20, the sea creatures' 9 × 9 alcove open off its right wall:
-  the same room, no fade), and through its back wall, either side of the desk, the fossils in a line (F1 the standalone
-  ones → F2 the big skeletons round the T. rex on its green island rug → F3 the rest) and the gallery (G1 → G2; NH's is
-  upstairs). Benches where one lingers: the hall, the aquarium (facing the great tank), each gallery room's front, beside
-  the T. rex (a tap
-  sits). NH's own floors and walls; no two faces share a plane (surfaces.test). Named spots (`spots.ts`,
+- **Inside** (`plan.ts`): one floor of portrait rooms, all 12 tiles across (the screen's way) and deeper the other. The
+  hall 12 × 16: marble, a red runner from the door to Blathers' desk at the back in the middle (no spurs: the arches
+  read by their plaques), a small owl medallion (3.8 tiles) on it between the side arches, six plants, two benches
+  by the sides facing the camera. Through its left arch the bug garden (12 × 20), its right the aquarium (12 × 20),
+  and through its back wall, either side of the desk, the fossils and the gallery (G1 → G2; NH's is upstairs). The
+  fossils are a loop: F1 the standalone ones → F2 the big skeletons round the T. rex (through F1's left wall) → F3 the
+  rest (12 × 25 and its 6 × 10 way in beside F2, through F2's left wall) → the bug garden (F3's right wall, onto its
+  cross path) → the hall: any room two doorways from the hall at most. No doorway on is in a room's front wall (the
+  screen's foot, under the HUD): every room goes on through a side or back wall (plan.test). Benches where one lingers,
+  each on the screen from a room's ways in and its nearest within 6 tiles of the first: the hall, the aquarium
+  (facing the great tank), each gallery room's front band, beside the T. rex (a tap sits). NH's own floors and walls; no two faces share a plane (surfaces.test). Named spots (`spots.ts`,
   `__museum.spot(name)`) are what the e2e puts my villager at, never coordinates; LINGER the visitors' places.
 - **Doorways:** each has a lintel and a plaque over it naming the room beyond in spaced kana (む し, さ か な, か せ き,
-  び じゅ つ; inside a wing か せ き 2, び じゅ つ 2…), cream on walnut in the app's font; in a side wall it's a flag sign
-  standing straight out toward the camera, so the room view reads it; in a cut front wall it stands just over the
-  wall's foot. Between two rooms of a wing (F1 ↔ F2 ↔ F3, G1 ↔ G2) the way back has one too, naming the room behind.
-- **The camera** (`camera.ts`): each room framed for the portrait phone: the floor VIEW_W across at the target (the hall
-  108, Blathers and all four arches' plaques in view from the door, a villager ~37 px, its spare rows mostly under it so
-  no dark band sits over its back wall; the wings 112, a villager ~36 px), its back wall's top under the back button
-  and its front edge over the HUD; the target follows inside the room's range with a dead zone (±12 u
-  across, ±30 deep), so a 12 × 18 room stands still and F2 follows in depth. `__museum.tune({ viewW, pitch })` retunes
+  び じゅ つ; inside a wing か せ き 2, び じゅ つ 2…), cream on walnut in the app's font; the hall's back arches' just
+  under the cornice; in a side wall a flag sign at the doorway's front jamb standing straight out toward the camera, as
+  far off the wall as the room view needs to show it whole (camera.ts plaqueOf), so a side arch's and a back arch's
+  never stack. Between two non-hall rooms (F1 ↔ F2 ↔ F3 → bug, G1 ↔ G2) the way back has one too, naming the room
+  behind. Every plaque of a room is on the screen, clear of the bars, from each of its ways in (camera.test). A walnut
+  sill runs through each doorway.
+- **The camera** (`camera.ts`): each room framed for the portrait phone, NH's room view: the whole room across (VIEW_W
+  its width and a tile, 130; a villager ~31 px), the target's x at its middle, its back wall's top under the back button
+  and its front edge over the HUD; a room that fits stands still, F2 and F3 follow in depth with a dead zone (±30 u). `__museum.tune({ viewW, pitch })` retunes
   it on the phone.
 - **One room at a time:** only the room my villager is in is drawn: its floor, walls, furnishing, exhibits and whoever
-  else is in it (engine.ts showRoom). Each doorway shows a card in the next room's mood colour (look.ts PORTAL) with a faint glimpse of it (fronds,
-  ripples, a skeleton, a frame); a tap
-  on it, or on a floor past it, walks through, a step and a half in. The room (F1, F2 and F3 each one) changes 10 u past the doorway's line (at
+  else is in it (engine.ts showRoom). Each doorway shows a card in the next room's mood colour (look.ts PORTAL) with a
+  faint glimpse of it (fronds, ripples, a skeleton, a frame); a tap on it, its plaque, the tile of floor before it (at
+  least a finger's 44 px round them), or a floor past it, walks through, a step and a half in: one tap, under 4.5 s
+  (timed on the phone's viewport). The room (F1, F2 and F3 each one) changes 10 u past the doorway's line (at
   most every 400 ms), inside a dip: the screen fades to the next room's colour in 150 ms and back in 200, never taking a
   finger; a put (the e2e's) changes it at once. Its music changes with it. A cut front wall leaves its foot (a kick
   plate), and a warm apron runs past each room's front edge, so no void shows under it.
@@ -1018,25 +1021,31 @@ out.
 - **Built as one comes near:** the sea creatures' tanks and each fossil and gallery room are built (their packs fetched)
   only once my villager comes within a few tiles of their doorway (plan.ts nearRooms); the hall, the aquarium and the
   garden at once.
-- **The aquarium:** NH's three tanks (the great sea tank across the back wall, the dark deep-sea tank along the left, the
-  river tank low in front) and two park benches facing the great tank (sat on as in the tent). **The hour's fish:** at most seven of each tank's caught species, the same on every
+- **The aquarium:** NH's three tanks (the great sea tank across the back wall, the dark deep-sea tank along the left wall
+  toward the front, the river tank low in the front corner), the sea creatures' two among them, and two park benches
+  facing the great tank (sat on as in the tent). One coming in stands 1.5 tiles clear of any glass, never behind a
+  tank from the camera (spots.test). **The hour's fish:** at most seven of each tank's caught species, the same on every
   phone, new each hour; the great tank always shows a caught predator if there is one. Fish swim NH's calm long passes,
   never clipping the glass; where a predator is on show, little generic feeder fish come now and then and are hunted,
   a cosmetic of each phone's own.
 - **The bug wing:** NH's garden under glass with display cases; at most ten of the caught bugs an hour, each living as
   on the island in a place of its own (the dung beetle NH's museum one, with its ball).
 - **The sea creatures** (`seaTanks.ts`, `seaLife.ts`): all of them at once in two tanks, each in a place of its own: the
-  alcove's reef tank along its back wall (the drifters bobbing in its water, the big crawlers on its sand), the tide pool
-  in front, looked down into (the shells, urchins, stars). NH's museum-tank models where NH has one (12: the octopus
+  reef tank along the aquarium's right wall (the drifters bobbing in its water, the big crawlers on its sand), the tide
+  pool a low island in the middle, looked down into (the shells, urchins, stars). NH's museum-tank models where NH has one (12: the octopus
   sprawled, the seaweed in a clump, the eels out of the sand), the catch model otherwise.
 - **The fossils** (`fossils.ts`, `fossilWing.ts`): NH's 73 as NH's own models (pieces at 0.85) in three rooms: F1 the
-  early life on marble stands, F2 the big skeletons in rows round the T. rex's island, F3 the rest down its middle. A
-  skeleton's pieces stand in a row on their own bases, each where it joins the next; a piece found later fills its
-  gap, and once all are in the animal is whole.
+  early life, its hero (the dunkleosteus ×1.3 on a plinth at the head of the runner) and short rows of marble stands; F2
+  the diplodocus on the back wall, rows 5 tiles apart of a skeleton by either wall, the T. rex alone in the middle on
+  its green rug 3 tiles clear of anything, the front band clear; F3 the rest, some turned along its walls facing in, an
+  aisle from the bug garden's door to its front. A skeleton's pieces stand in a row on their own bases, each where it
+  joins the next; a piece found later fills its gap, and once all are in the animal is whole. Any two exhibits 8 u apart
+  (stands 4), every one's named spot reached (fossils.test).
 - **The art gallery** (`art.ts`, `gallery.ts`): NH's 43 genuine artworks only (no forgeries, no Redd): the paintings
-  hung on G1's and G2's red back walls and three rows of panels (40 high, the gap alternating sides; one between the camera and my villager fades out with
-  its paintings, its foot left, as a cut wall does), the statues on
-  marble plinths in the side-wall bays, the wild painting's halves as a folding screen on G1's dais. **How art comes:** a balloon's present now and then (1 in 10, `island/catalog.ts` ART_ONE_IN) holds a
+  hung on G1's and G2's red back walls (the heroes, ×1.8) and three rows of low panels (30 high, ×1.6; a panel from each
+  wall, a 3-tile aisle up the middle so the hero shows from the door; one between the camera and my villager fades out
+  with its paintings, its foot left, as a cut wall does), the statues on marble plinths in two rows in the front band,
+  never behind a panel, G1 ↔ G2 through the front band, the wild painting's halves as a folding screen on G1's dais. **How art comes:** a balloon's present now and then (1 in 10, `island/catalog.ts` ART_ONE_IN) holds a
   genuine artwork the museum hasn't got, 「ゆうめいな めいがを てにいれた！」; once all 43 are in, none. The curator
   hints at it.
 - **Performance:** the exhibits are built once the finds are in and rebuilt only when a wing's list changes; they step

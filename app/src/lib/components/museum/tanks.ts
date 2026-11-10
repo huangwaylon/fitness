@@ -1,8 +1,9 @@
 // The aquarium's tanks (docs/design.md "The museum"), pure: where each stands in the aquarium (plan.ts FISH_WING,
 // model units), its glass box, the water a fish swims in, how big a fish is drawn in it, and its props on its sand.
 // NH's three (species.ts tankOf): the great sea tank across the back wall (the room's first sight from the hall's
-// arch), the deep-sea tank along the left wall past the arch, the river tank low in front (never hiding the great
-// one); the benches between face the great tank (seats.ts), the sea creatures' alcove opens on the right (seaTanks.ts).
+// arch), the deep-sea tank along the left wall toward the front (clear of the arch: never between the camera and one
+// coming in), the river tank low in the front corner (never hiding the great one); the benches face the great tank
+// (seats.ts), the sea creatures' reef along the right wall and their tide pool in the middle (seaTanks.ts).
 // Each tank's long side is its swimmers' way (they keep mostly along it, as in NH's tanks).
 import M from './models.json' with { type: 'json' };
 import { reachOf } from './boids.ts';
@@ -20,7 +21,7 @@ export interface Tank {
  *  tank's glass top was the ceiling's plane, the two fighting over it from below.) */
 export const TANKS: readonly Tank[] = [
   { id: 'sea', box: { x0: 64, x1: 176, y0: 0, y1: 48, z0: -48, z1: -6 } },
-  { id: 'deep', box: { x0: 64, x1: 100, y0: 0, y1: 48, z0: 36, z1: 116 } },
+  { id: 'deep', box: { x0: 64, x1: 94, y0: 0, y1: 44, z0: 64, z1: 144 } },
   { id: 'river', box: { x0: 120, x1: 176, y0: 0, y1: 24, z0: 120, z1: 146 } }
 ];
 
@@ -113,4 +114,4 @@ export function propsOf(t: Tank): Placed[] {
 }
 
 /** The aquarium's plants in its free corners ([model, x, z, scale]: aquarium.ts; the walk keeps 5 off each). */
-export const FISH_PLANTS: readonly [string, number, number, number][] = [['heliconia', 70, 134, 1.8], ['anthurium', 262, 112, 2.6], ['heliconia', 174, 108, 2]];
+export const FISH_PLANTS: readonly [string, number, number, number][] = [['heliconia', 106, 140, 1.8]];

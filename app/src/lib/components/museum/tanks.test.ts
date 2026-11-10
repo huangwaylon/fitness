@@ -40,7 +40,7 @@ describe('the tanks', () => {
     for (const a of TANKS)
       for (const b of TANKS)
         if (a !== b) expect(a.box.x0 < b.box.x1 + 8 && b.box.x0 < a.box.x1 + 8 && a.box.z0 < b.box.z1 + 8 && b.box.z0 < a.box.z1 + 8, `${a.id} ${b.id}`).toBe(false);
-    // from the door up to each tank's glass (its named spot: spots.ts), every bench and the alcove's tanks standing too
+    // from the door up to each tank's glass (its named spot: spots.ts), every bench and the sea creatures' tanks standing too
     const g = navOf(allBlocks());
     for (const t of [...TANKS.map((t) => t.id), 'reef', 'pool']) {
       const to = spot(`tank:${t}`), p = walkPath(g, ENTRANCE, to);

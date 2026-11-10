@@ -1,14 +1,17 @@
 // The museum's plan (docs/design.md "The museum"), pure: NH's museum on one floor, in model units (a tile is 10, a
 // villager 16 tall: the tent's room's scale, tent/grid.ts), +z toward the camera (the front door). Only the room one is
 // in is drawn, so the rooms need only not overlap and meet at their doorways; each is a "portrait room" (12 tiles
-// across, the screen's way, deep the other) but the second fossil room:
-//   hall      12 × 12 round the middle, its front door at +z, an arch in each side wall and two in its back wall
+// across, the screen's way, deep the other: the camera shows one whole across, camera.ts):
+//   hall      12 × 16 round the middle, its front door at +z, an arch in each side wall and two in its back wall
 //   bug       through the left arch, 12 × 20: the garden under glass
-//   fish      through the right arch, 12 × 20: the aquarium's three tanks, and the sea creatures' alcove (9 × 9) off
-//             its right wall, drawn with it (the `sea` wing: its exhibits, its finds, its music; the room the aquarium's)
-//   F1 F2 F3  through the back-left arch, in a line: F1 12 × 18 (the standalone fossils), F2 16 × 25 (the big
-//             skeletons round the T. rex), F3 12 × 21 (the rest)
+//   fish      through the right arch, 12 × 20: the aquarium's tanks, the sea creatures' among them (the `sea` wing: its
+//             exhibits, its finds, its music; the room the aquarium's)
+//   F1 F2 F3  through the back-left arch, a loop back to the hall: F1 12 × 18 (the standalone fossils), F2 12 × 25 (the
+//             big skeletons round the T. rex) through F1's left wall, F3 (the rest: 12 × 25 and its 6 × 10 way in
+//             beside F2) through F2's left wall, and on through F3's right wall into the bug garden
 //   G1 G2     through the back-right arch, in a line, 12 × 20 each: the paintings and the statues
+// No doorway on in a room's front wall (the screen's foot, under the HUD): each room's ways on are in its side or back
+// walls (plan.test).
 // Its rooms (a room may be two rects, no wall between), its walls (made from the rooms: each side's room, for its look),
 // its doorways, its carpets, where one may walk (the floors less the walls and what stands on them) and the walk itself
 // (a grid of half-tile cells, A* with its corners pulled straight), read by the engine (engine.ts) and the screen
@@ -22,21 +25,20 @@ export type Wing = 'hall' | 'bug' | 'fish' | 'sea' | 'fossil' | 'art';
 export type RoomId = 'hall' | 'bug' | 'fish' | 'F1' | 'F2' | 'F3' | 'G1' | 'G2';
 
 export const TILE = 10;
-export const HALL: Rect = { x0: -60, x1: 60, z0: -50, z1: 70 };
+export const HALL: Rect = { x0: -60, x1: 60, z0: -50, z1: 110 };
 export const BUG_WING: Rect = { x0: -180, x1: -60, z0: -50, z1: 150 };
 export const FISH_WING: Rect = { x0: 60, x1: 180, z0: -50, z1: 150 };
-/** The sea creatures' alcove: off the aquarium's right wall, open to it all along (no wall: one room). */
-export const SEA_WING: Rect = { x0: 180, x1: 270, z0: 30, z1: 120 };
 export const F1: Rect = { x0: -120, x1: 0, z0: -230, z1: -50 };
-export const F2: Rect = { x0: -280, x1: -120, z0: -300, z1: -50 };
-export const F3: Rect = { x0: -300, x1: -180, z0: -50, z1: 160 };
+export const F2: Rect = { x0: -240, x1: -120, z0: -300, z1: -50 };
+export const F3: Rect = { x0: -300, x1: -180, z0: -50, z1: 200 };
+/** F3's way in from F2: beside F2's left wall, open to F3 all along its front (no wall: one room). */
+export const F3_WAY: Rect = { x0: -300, x1: -240, z0: -150, z1: -50 };
 export const G1: Rect = { x0: 0, x1: 120, z0: -250, z1: -50 };
 export const G2: Rect = { x0: 120, x1: 240, z0: -250, z1: -50 };
 /** Every room's floor (no two rects overlap; two of one room meet with no wall). */
 export const ROOMS: readonly { id: RoomId; wing: Wing; r: Rect }[] = [
-  { id: 'hall', wing: 'hall', r: HALL }, { id: 'bug', wing: 'bug', r: BUG_WING },
-  { id: 'fish', wing: 'fish', r: FISH_WING }, { id: 'fish', wing: 'fish', r: SEA_WING },
-  { id: 'F1', wing: 'fossil', r: F1 }, { id: 'F2', wing: 'fossil', r: F2 }, { id: 'F3', wing: 'fossil', r: F3 },
+  { id: 'hall', wing: 'hall', r: HALL }, { id: 'bug', wing: 'bug', r: BUG_WING }, { id: 'fish', wing: 'fish', r: FISH_WING },
+  { id: 'F1', wing: 'fossil', r: F1 }, { id: 'F2', wing: 'fossil', r: F2 }, { id: 'F3', wing: 'fossil', r: F3 }, { id: 'F3', wing: 'fossil', r: F3_WAY },
   { id: 'G1', wing: 'art', r: G1 }, { id: 'G2', wing: 'art', r: G2 }
 ];
 export const ROOM_IDS: readonly RoomId[] = ['hall', 'bug', 'fish', 'F1', 'F2', 'F3', 'G1', 'G2'];
@@ -56,8 +58,6 @@ export function boundsOf(id: RoomId): Rect {
 export const OPENING = { z0: -5, z1: 25 } as const;
 /** The openings in the hall's back wall (x, either side of the middle), to the fossils (−) and the art (+). */
 export const BACK_OPENING = { x0: 30, x1: 54 } as const;
-/** The aquarium's side open to the sea creatures' alcove (z). */
-export const SEA_OPENING = { z0: SEA_WING.z0, z1: SEA_WING.z1 } as const;
 /** A doorway between two rooms: the wall it's in (x = `at` for 'x', z = `at` for 'z'), its span along the wall, the
  *  room it's counted to (`room`, the side one comes from: the hall's, then each room's on along the line), the room
  *  beyond (`next`), and their wings. */
@@ -68,21 +68,24 @@ export const OPENINGS: readonly Opening[] = [
   door('x', HALL.x1, OPENING.z0, OPENING.z1, 'hall', 'fish'),
   door('z', HALL.z0, -BACK_OPENING.x1, -BACK_OPENING.x0, 'hall', 'F1'),
   door('z', HALL.z0, BACK_OPENING.x0, BACK_OPENING.x1, 'hall', 'G1'),
-  door('x', F1.x0, -205, -175, 'F1', 'F2'),
-  door('z', F2.z1, -255, -225, 'F2', 'F3'),
-  door('x', G1.x1, -240, -210, 'G1', 'G2')
+  door('x', F1.x0, -95, -65, 'F1', 'F2'),
+  door('x', F2.x0, -105, -75, 'F2', 'F3'),
+  door('x', G1.x1, -95, -65, 'G1', 'G2'),
+  door('x', F3.x1, OPENING.z0, OPENING.z1, 'F3', 'bug')
 ];
 /** The front door's half width (its gap in the hall's front wall). */
 export const DOOR_HALF = 12;
 /** Where one comes in (just inside the front door) and the doormat's tap area (a tap there goes back out). */
-export const ENTRANCE: Pt = [0, 56];
-export const DOORMAT: Rect = { x0: -DOOR_HALF, x1: DOOR_HALF, z0: 60, z1: 70 };
+export const ENTRANCE: Pt = [0, HALL.z1 - 14];
+export const DOORMAT: Rect = { x0: -DOOR_HALF, x1: DOOR_HALF, z0: HALL.z1 - 10, z1: HALL.z1 };
 /** Blathers' reception desk at the back of the hall (its green top's extents and its height: engine.ts builds it, the
  *  walk keeps off it; the curator stands behind it, curator.ts AT, clear of it in every pose: curator.test). */
 export const DESK: Rect & { h: number } = { x0: -22, x1: 22, z0: -32, z1: -20, h: 8.6 };
-/** The hall's plants ([model, x, z, scale]: a pair by the front door, a pair by the side arches' back jambs). */
+/** The hall's plants ([model, x, z, scale]: a pair in the front corners, a pair by the side walls between the
+ *  benches and the door, a pair by the side arches' back jambs). */
 export const HALL_PLANTS: readonly [string, number, number, number][] = [
-  ['heliconia', -52, 62, 1.6], ['anthurium', 52, 62, 2.4], ['anthurium', -53, -18, 2.2], ['heliconia', 53, -18, 1.6]
+  ['heliconia', -52, HALL.z1 - 8, 1.6], ['anthurium', 52, HALL.z1 - 8, 2.4], ['anthurium', -53, 76, 2.2], ['heliconia', 53, 76, 1.6],
+  ['anthurium', -53, -18, 2.2], ['heliconia', 53, -18, 1.6]
 ];
 /** The walls' heights: the hall's grand, the wings' a little lower. */
 export const HALL_H = 64;
@@ -94,6 +97,28 @@ export const PLAQUE: Readonly<Record<Exclude<RoomId, 'hall'>, string>> = {
   bug: 'む し', fish: 'さ か な', F1: 'か せ き', F2: 'か せ き 2', F3: 'か せ き 3', G1: 'び じゅ つ', G2: 'び じゅ つ 2'
 };
 
+/** A wall's thickness; the hall's walls' top (its cornice's foot: the hall's height and its moulding). */
+export const WALL_T = 3;
+export const CORNICE = HALL_H + 2.45;
+/** A doorway's plaque's board (model units), and how far a side wall's flag stands off its wall at least (a hand's
+ *  breadth: further where the room view needs it, camera.ts plaqueOf). */
+export const PLAQUE_W = 30, PLAQUE_H = 8;
+export const FLAG_OFF = 2.5;
+/** Where a doorway's plaque hangs, read from `side` (its own room's, naming the room beyond; or the room beyond's, on
+ *  the way back, naming the room behind): its middle and its turn (three's yaw; a board facing +z, two faces back to
+ *  back). Over its arch in a back or front wall (the hall's back arches just under the cornice); in a side wall a flag
+ *  sign standing straight out toward the camera at the doorway's front jamb, so a back arch's plaque and a side arch's
+ *  never stack on the screen. */
+export function plaqueAt(o: Opening, side: 'room' | 'next' = 'room', off = FLAG_OFF): { x: number; y: number; z: number; yaw: number } {
+  const mid = (o.from + o.to) / 2, wallTop = o.room === 'hall' ? CORNICE : WING_H, top = doorTop(o);
+  const k = (o.axis === 'x' ? roomIdAt(o.at + 5, mid) : roomIdAt(mid, o.at + 5)) === o.room ? 1 : -1, s = side === 'room' ? k : -k;
+  if (o.axis === 'z') {
+    const y = o.room === 'hall' ? wallTop - PLAQUE_H / 2 - 1 : (top + wallTop) / 2;
+    return { x: mid, y, z: o.at + s * (WALL_T / 2 + 0.2), yaw: s > 0 ? 0 : Math.PI };
+  }
+  return { x: o.at + s * (WALL_T / 2 + off + PLAQUE_W / 2), y: (top + wallTop) / 2, z: o.to - 5, yaw: 0 };
+}
+
 /** The carpets: each room's strips (meeting square, edge to edge, none overlapping, flush to the doorways they lead
  *  to; the engine lays a room's as one seamless mesh). The hall's: one runner from the front door to the desk (the
  *  arches read by their plaques and cards, no cross of spurs to them). */
@@ -101,19 +126,17 @@ export const CARPETS: readonly { room: RoomId; rects: readonly Rect[] }[] = [
   { room: 'hall', rects: [
     { x0: -12, x1: 12, z0: DESK.z1, z1: HALL.z1 }
   ] },
-  // F1: in from the hall's arch across the front band, up the left aisle to F2's door
-  { room: 'F1', rects: [
-    { x0: -54, x1: -30, z0: -100, z1: F1.z1 }, { x0: -104, x1: -54, z0: -100, z1: -86 }, { x0: F1.x0, x1: -104, z0: -205, z1: -86 }
-  ] },
-  // F2: in from F1's door to the T. rex's island (its own green rug: ISLAND_RUG)
-  { room: 'F2', rects: [{ x0: -160, x1: F2.x1, z0: -190, z1: -175 }] },
-  // the gallery: in from the arch (the door) along the front band
-  { room: 'G1', rects: [{ x0: 30, x1: 54, z0: -95, z1: G1.z1 }] },
-  { room: 'G2', rects: [{ x0: G2.x0, x1: 150, z0: -240, z1: -210 }] }
+  // F1: up the middle from the hall's arch to the hero, a branch to F2's door
+  { room: 'F1', rects: [{ x0: -54, x1: -30, z0: -196, z1: F1.z1 }, { x0: F1.x0, x1: -54, z0: -94, z1: -70 }] },
+  // F2: across its front band, F1's door to F3's (the T. rex's island its own green rug: ISLAND_RUG)
+  { room: 'F2', rects: [{ x0: F2.x0, x1: F2.x1, z0: -90, z1: -66 }] },
+  // the gallery: a mat in from the arch (the door), and from G1's door into G2
+  { room: 'G1', rects: [{ x0: 30, x1: 54, z0: -64, z1: G1.z1 }] },
+  { room: 'G2', rects: [{ x0: G2.x0, x1: 150, z0: -95, z1: -65 }] }
 ];
 
-/** The green rug under the T. rex's island in F2, where its carpet from F1's door ends. */
-export const ISLAND_RUG: Rect = { x0: -240, x1: -160, z0: -190, z1: -150 };
+/** The green rug under the T. rex's island in the middle of F2. */
+export const ISLAND_RUG: Rect = { x0: -218, x1: -142, z0: -150, z1: -120 };
 
 /** A wall: from a to b (x, z) and its height (each side looks as the room it faces: roomBeside). */
 export interface Wall { a: Pt; b: Pt; h: number }

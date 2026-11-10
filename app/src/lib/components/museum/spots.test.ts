@@ -3,6 +3,9 @@
 // carpets, a chatting pair face to face.
 import { describe, expect, test } from 'vitest';
 import { CARPETS, ENTRANCE, OPENINGS, ROOM_IDS, inRect, navOf, roomIdAt, walkPath, walkable } from './plan.ts';
+import { PITCH, PORTRAIT, enter, framingOf, project } from './camera.ts';
+import { TANKS } from './tanks.ts';
+import { SEA_TANKS } from './seaTanks.ts';
 import { LINGER, SPOTS, VISITOR_POINTS, VISITOR_ROOMS, allBlocks, spot } from './spots.ts';
 import { MAX_IN, MAX_ROOM, crowdOf, usablePoints } from './visitors.ts';
 import { BENCHES, benchSeats } from './seats.ts';
@@ -20,6 +23,31 @@ describe('the named spots', () => {
     for (const b of BENCHES) for (const n of [0, 1]) expect(SPOTS.has(`bench:${b.id}:${n}`)).toBe(true);
     for (const t of ['sea', 'deep', 'river', 'reef', 'pool']) expect(roomIdAt(...spot(`tank:${t}`)), t).toBe('fish');
     expect(() => spot('nowhere')).toThrow();
+  });
+});
+
+describe('the ways in', () => {
+  const ways = () => [['entrance', ENTRANCE] as const, ...[...SPOTS].filter(([k]) => /^in:[^:]+:/.test(k))];
+  test('each clear of the tanks: 1.5 tiles from any glass, and never behind a tall one from the camera (its height’s fall on the floor toward the back)', () => {
+    const fall = 1 / Math.tan((PITCH * Math.PI) / 180);
+    for (const [k, [x, z]] of ways().filter(([, p]) => roomIdAt(...p) === 'fish'))
+      for (const b of [...TANKS, ...SEA_TANKS].map((t) => t.box)) {
+        expect(Math.max(b.x0 - x, x - b.x1, b.z0 - z, z - b.z1), `${k} by ${JSON.stringify(b)}`).toBeGreaterThanOrEqual(15);
+        expect(inRect({ x0: b.x0 - 5, x1: b.x1 + 5, z0: b.z0 - b.y1 * fall - 5, z1: b.z1 + 5 }, x, z), `${k} behind ${JSON.stringify(b)}`).toBe(false);
+      }
+  });
+  test('every bench on the screen from each way into its room; a room’s nearest 6 tiles from its first way in', () => {
+    for (const b of BENCHES) {
+      const f = framingOf(b.room);
+      for (const [k, at] of ways().filter(([, p]) => roomIdAt(...p) === b.room)) {
+        const t = enter(f, at), p = project({ x: t[0], z: t[1], pitch: PITCH, d: f.d, s: PORTRAIT }, b.x, 6, b.z)!;
+        expect(p[0] > 20 && p[0] < PORTRAIT.W - 20 && p[1] > PORTRAIT.top && p[1] < PORTRAIT.H - PORTRAIT.bottom, `${b.id} from ${k}`).toBe(true);
+      }
+    }
+    for (const room of new Set(BENCHES.map((b) => b.room).filter((r) => r !== 'hall'))) {
+      const [x, z] = spot(`in:${room}`);
+      expect(Math.min(...BENCHES.filter((b) => b.room === room).map((b) => Math.hypot(b.x - x, b.z - z))), room).toBeLessThanOrEqual(60);
+    }
   });
 });
 

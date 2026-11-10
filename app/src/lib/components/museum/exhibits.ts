@@ -1,7 +1,7 @@
 // The museum's exhibits (docs/design.md "The museum"): what's on show (species.ts, fossils.ts, art.ts), built into the
 // rooms once the engine is up and again as the finds come: the aquarium's tanks and fish (aquarium.ts), the garden's
 // bugs (garden.ts), and, each once my villager has come near its room (MuseumRoom: their models fetched only then), the
-// sea creatures' tanks in the aquarium's alcove (seaLife.ts), each fossil room's fossils (fossilWing.ts) and each
+// sea creatures' tanks in the aquarium (seaLife.ts), each fossil room's fossils (fossilWing.ts) and each
 // gallery room's art (gallery.ts); and the benches of each room that has some (benches.ts). A unit is rebuilt only
 // when its own list changed (a new fish rebuilds the aquarium, not the garden; a new T. rex piece F2, not F1).
 import type { Exhibit, Museum } from './engine.ts';

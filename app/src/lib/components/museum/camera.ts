@@ -1,25 +1,24 @@
 // The museum's room camera, pure (docs/design.md "The museum"): one room drawn at a time, each framed for the portrait
 // phone (393 × 852, iPhone 15/16): NH's room view (pitched down PITCH, a vertical FOV of FOV), the floor VIEW_W across at
-// the target (the hall a little closer, its 12 × 12 whole). The framing per room: the target's x kept so the side walls
-// stay at the screen's edges (a soft follow inside, a dead zone either side), its z fixed where the room fits between the
-// back button and the HUD (its back wall's top under the one, its front edge over the other), or else followed in depth
-// between those two (a dead zone too). The floor goes on past the front wall (the apron) down to the screen's foot.
+// the target: the whole room across (its width and a little), so the target's x stays at the room's middle and every
+// doorway's plaque is on the screen. Its z fixed where the room fits between the back button and the HUD (its back
+// wall's top under the one, its front edge over the other), or else followed in depth between those two (a dead zone).
+// The floor goes on past the front wall (the apron) down to the screen's foot.
 // engine.ts aims the camera by it (target, distance), camera.test.ts holds the framing to the phone.
-import { WING_H, HALL_H, boundsOf, type Pt, type Rect, type RoomId } from './plan.ts';
+import { FLAG_OFF, WALL_T, WING_H, HALL_H, ROOM_IDS, boundsOf, plaqueAt, type Opening, type Pt, type Rect, type RoomId } from './plan.ts';
 
 /** The camera's pitch (degrees down) and vertical field of view (degrees). */
 export const PITCH = 50;
 export const FOV = 32;
 /** The target's height (a villager's middle, engine.ts). */
 const TARGET_Y = 8;
-/** The floor across the screen at the target, each room's (model units: the hall nearly whole, its side walls just off
- *  the edges but their arches' flag plaques and the back arches' in view from the door; the wings' 11.2 tiles of their
- *  12, the side walls a soft follow away). Tuned on the phone by __museum.tune({ viewW }). */
-export const VIEW_W: Readonly<Record<RoomId, number>> = { hall: 108, bug: 112, fish: 112, F1: 112, F2: 112, F3: 112, G1: 112, G2: 112 };
-/** A room that fits the band between the bars: the share of the spare rows over its back wall (the rest under its
- *  front edge, the floor's apron: the hall's less, no dark band over it). */
-const OVER: Partial<Record<RoomId, number>> = { hall: 0.3 };
-/** How far my villager may stray from the target before the camera follows (x, z: model units). */
+/** The floor across the screen at the target, each room's (model units): the room's width and a tile, its walls just
+ *  inside the screen's edges. Tuned on the phone by __museum.tune({ viewW }). */
+export const VIEW_W: Readonly<Record<RoomId, number>> = Object.fromEntries(
+  ROOM_IDS.map((id) => [id, ((b) => b.x1 - b.x0 + 10)(boundsOf(id))])
+) as Record<RoomId, number>;
+/** How far my villager may stray from the target before the camera follows (x, z: model units; x only where a room is
+ *  wider than its view). */
 export const DEAD: Pt = [12, 30];
 /** The phone's screen and what covers it (css px): the top bar to its back button's foot, the HUD's height. */
 export interface Screen { W: number; H: number; top: number; bottom: number }
@@ -64,7 +63,7 @@ function framing(room: RoomId, s: Screen = PORTRAIT, b: Rect = boundsOf(room), o
   const viewW = o.viewW ?? VIEW_W[room], pitch = o.pitch ?? PITCH, d = distanceFor(viewW, s), cx = (b.x0 + b.x1) / 2;
   const cam = (z: number): Cam => ({ x: cx, z, pitch, d, s });
   // the back wall's top just under the top bar (the target no further forward), the front edge just over the HUD (no
-  // further back); between them, or both at once at the target that leaves as much room over the one as under the other
+  // further back); between them, or, a room that fits, the target that leaves as much room over the one as under the other
   // (each a row moving up the screen as the target comes forward: a root by bisection)
   const solve = (f: (z: number) => number) => {
     let lo = b.z0 - 250, hi = b.z1 + 100;
@@ -80,14 +79,10 @@ function framing(room: RoomId, s: Screen = PORTRAIT, b: Rect = boundsOf(room), o
   const backTop = (z: number) => row(z, wallH(room), b.z0);
   const front = (z: number) => row(z, 0, b.z1);
   const zBack = solve((z) => backTop(z) - s.top), zFront = solve((z) => s.H - s.bottom - front(z));
-  const over = OVER[room] ?? 0.5;
-  const zs: Pt = zFront <= zBack ? ((z) => [z, z] as Pt)(solve((z) => (backTop(z) - s.top) * (1 - over) - (s.H - s.bottom - front(z)) * over)) : [zBack, zFront];
-  // the side walls at the screen's edges at the target's depth, but a front corner (a villager a body in from it) on
-  // the screen too: the floor across is narrower there, nearer the camera
-  const p = rad(pitch), camZ = zs[1] + d * Math.cos(p), depthFront = (TARGET_Y + d * Math.sin(p)) * Math.sin(p) + (camZ - b.z1) * Math.cos(p);
-  const halfFront = depthFront * Math.tan(rad(FOV / 2)) * (s.W / s.H) * (1 - 48 / s.W) - 8;
-  const lo = Math.min(b.x0 + viewW / 2, b.x0 + 8 + halfFront), hi = Math.max(b.x1 - viewW / 2, b.x1 - 8 - halfFront);
-  const xs: Pt = lo < hi ? [lo, hi] : [cx, cx];
+  const zs: Pt = zFront <= zBack ? ((z) => [z, z] as Pt)(solve((z) => (backTop(z) - s.top) - (s.H - s.bottom - front(z)))) : [zBack, zFront];
+  // the target's x at the room's middle (the whole room across), but where it's wider than the view (a tuning): a
+  // follow between the side walls at the screen's edges
+  const xs: Pt = viewW >= b.x1 - b.x0 ? [cx, cx] : [b.x0 + viewW / 2, b.x1 - viewW / 2];
   const apron = Math.max(0, floorZAt(cam(zs[1]), s.H) - b.z1);
   return { room, viewW, pitch, d, x: xs, z: zs, apron };
 }
@@ -105,3 +100,17 @@ export function follow(f: Framing, was: Pt, me: Pt): Pt {
 }
 /** The target on entering a room at `me` (a fade's cut, a put): as near me as the room's range lets. */
 export const enter = (f: Framing, me: Pt): Pt => [Math.min(f.x[1], Math.max(f.x[0], me[0])), Math.min(f.z[1], Math.max(f.z[0], me[1]))];
+
+/** How far in from the screen's edge a side wall's flag plaque keeps (css px). */
+const EDGE = 14;
+/** A doorway's plaque as hung (plan.ts plaqueAt), a side wall's flag stood far enough off its wall that its room's view
+ *  (its target furthest back: the narrowest at the flag's depth) shows it whole, EDGE in from the screen's edge. */
+export function plaqueOf(o: Opening, side: 'room' | 'next' = 'room', s: Screen = PORTRAIT): { x: number; y: number; z: number; yaw: number } {
+  const p = plaqueAt(o, side);
+  if (o.axis === 'z') return p;
+  const f = framingOf(side === 'room' ? o.room : o.next, s), c: Cam = { x: f.x[0], z: f.z[0], pitch: f.pitch, d: f.d, s };
+  // (the wall's side of the board: its x on the screen falls straight with the world's at its depth)
+  const k = Math.sign(p.x - o.at), wallSide = (off: number) => o.at + k * (WALL_T / 2 + off);
+  const a = project(c, wallSide(0), p.y, p.z)![0], b = project(c, wallSide(10), p.y, p.z)![0], want = k > 0 ? EDGE : s.W - EDGE;
+  return plaqueAt(o, side, Math.max(FLAG_OFF, ((want - a) / (b - a)) * 10));
+}

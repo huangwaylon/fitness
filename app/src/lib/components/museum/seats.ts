@@ -13,13 +13,13 @@ export interface Bench { id: string; room: RoomId; x: number; z: number; yaw: nu
 /** The benches (the island's park bench, static/room/world3d; BENCH_S its model's units a museum unit). The aquarium's
  *  keep their ids (a seat heard from an older phone still lands). */
 export const BENCHES: readonly Bench[] = [
-  { id: 'dmbench1', room: 'fish', x: 104, z: 20, yaw: Math.PI },
-  { id: 'dmbench2', room: 'fish', x: 152, z: 20, yaw: Math.PI },
-  { id: 'hbench1', room: 'hall', x: -42, z: 34, yaw: 0 },
-  { id: 'hbench2', room: 'hall', x: 42, z: 34, yaw: 0 },
-  { id: 'g1bench', room: 'G1', x: 75, z: -70, yaw: 0 },
-  { id: 'g2bench', room: 'G2', x: 160, z: -70, yaw: 0 },
-  { id: 'f2bench', room: 'F2', x: -262, z: -170, yaw: Math.PI / 2 }
+  { id: 'dmbench1', room: 'fish', x: 104, z: 16, yaw: Math.PI },
+  { id: 'dmbench2', room: 'fish', x: 152, z: 16, yaw: Math.PI },
+  { id: 'hbench1', room: 'hall', x: -42, z: 54, yaw: 0 },
+  { id: 'hbench2', room: 'hall', x: 42, z: 54, yaw: 0 },
+  { id: 'g1bench', room: 'G1', x: 88, z: -72, yaw: 0 },
+  { id: 'g2bench', room: 'G2', x: 163, z: -72, yaw: 0 },
+  { id: 'f2bench', room: 'F2', x: -132, z: -136, yaw: -Math.PI / 2 }
 ];
 /** A bench's floor (its model's, about: benches.ts measures it), turned with it. */
 export const BENCH_HALF: Pt = [11, 6];

@@ -4,7 +4,8 @@ import { describe, expect, test } from 'vitest';
 import { FOSSILS, FOSSIL_SETS } from '../island/fossilIds.ts';
 import { findKey, type FirstFind } from '#lib/model/finds.ts';
 import { FOSSIL_MODEL, PIECE_W, ROW, SPOTS, footOf, fossilsIn, fossilsOnShow, packOf, setOf, skeletons } from './fossils.ts';
-import { ENTRANCE, inRect, navOf, rectsOf, walkPath, walkable, type Pt } from './plan.ts';
+import { ENTRANCE, F2, ISLAND_RUG, inRect, navOf, rectsOf, walkPath, walkable } from './plan.ts';
+import { allBlocks, spot } from './spots.ts';
 import M from './models.json' with { type: 'json' };
 
 const at = (person: 'A' | 'B' | 'G', day = 4): FirstFind => ({ date: `2026-11-0${day}`, at: Date.parse(`2026-11-0${day}T09:00:00+09:00`), person });
@@ -56,15 +57,16 @@ describe('where they stand', () => {
     expect(ids.filter((id) => !SPOTS.has(id))).toEqual([]);
     for (const id of ids) {
       const r = footOf(id);
-      const room = rectsOf(SPOTS.get(id)!.room)[0];
-      expect(inRect(room, r.x0, r.z0, 3) && inRect(room, r.x1, r.z1, 3), id).toBe(true);
+      expect(rectsOf(SPOTS.get(id)!.room).some((room) => inRect(room, r.x0, r.z0, 3) && inRect(room, r.x1, r.z1, 3)), id).toBe(true);
     }
   });
-  test('a skeleton’s pieces side by side on one line, a base’s width apart (NH’s pieces join there)', () => {
+  test('a skeleton’s pieces side by side on one line, a base’s width apart (NH’s pieces join there), turned as one', () => {
     for (const [set, row] of Object.entries(ROW)) {
-      const s = row.map((id) => SPOTS.get(id)!);
-      expect(new Set(s.map((p) => p.z)).size, set).toBe(1);
-      for (let i = 1; i < s.length; i++) expect(s[i].x - s[i - 1].x, set).toBeCloseTo(PIECE_W);
+      const s = row.map((id) => SPOTS.get(id)!), yaw = s[0].yaw;
+      expect(new Set(s.map((p) => p.yaw)).size, set).toBe(1);
+      expect(new Set(s.map((p) => (yaw ? p.x : p.z))).size, set).toBe(1);
+      // (along +x facing the camera; turned along z, skull to the front by the left wall and to the back by the right)
+      for (let i = 1; i < s.length; i++) expect(yaw ? (s[i - 1].z - s[i].z) * Math.sign(yaw) : s[i].x - s[i - 1].x, set).toBeCloseTo(PIECE_W);
     }
   });
   test('no two exhibits’ floors overlap, nor touch but a skeleton’s own pieces', () => {
@@ -77,28 +79,24 @@ describe('where they stand', () => {
         expect(gap, `${ids[i]} × ${ids[k]}`).toBeGreaterThanOrEqual(same ? -1e-6 : stands ? 4 : 8);
       }
   });
-  test('each room’s rows 2 tiles apart, each island an aisle of 2 tiles past it to a wall (the back wall’s cases aside), the doorways’ bands clear', () => {
-    for (const room of ['F1', 'F2', 'F3'] as const) {
-      const r = rectsOf(room)[0], feet = fossilsIn(room).map(footOf);
-      expect(feet.length, room).toBeGreaterThan(10);
-      // (a row: the feet on one line)
-      const rows = [...new Set(feet.map((f) => (f.z0 + f.z1) / 2))].sort((a, b) => a - b).map((z) => feet.filter((f) => Math.abs((f.z0 + f.z1) / 2 - z) < 0.01));
-      const box = (fs: typeof feet) => ({ x0: Math.min(...fs.map((f) => f.x0)), x1: Math.max(...fs.map((f) => f.x1)), z0: Math.min(...fs.map((f) => f.z0)), z1: Math.max(...fs.map((f) => f.z1)) });
-      rows.forEach((row, i) => {
-        const b = box(row);
-        if (i) expect(b.z0 - box(rows[i - 1]).z1, `${room} row ${i}`).toBeGreaterThanOrEqual(19.9);
-        if (b.z0 - r.z0 > 10) expect(Math.max(b.x0 - r.x0, r.x1 - b.x1), `${room} row ${i}`).toBeGreaterThanOrEqual(20);
-      });
-    }
+  test('F2: the T. rex alone in the middle, its rug 3 tiles clear of anything else; the rows 5 tiles apart; its front band clear', () => {
+    const rex = new Set(ROW['t-rex']), others = fossilsIn('F2').filter((id) => !rex.has(id)).map(footOf);
+    const rexMid = (SPOTS.get('t-rex-torso')!.x - (F2.x0 + F2.x1) / 2);
+    expect(Math.abs(rexMid)).toBeLessThan(0.01);
+    for (const f of others) expect(Math.max(ISLAND_RUG.x0 - f.x1, f.x0 - ISLAND_RUG.x1, ISLAND_RUG.z0 - f.z1, f.z0 - ISLAND_RUG.z1)).toBeGreaterThanOrEqual(30);
+    const rows = [...new Set(fossilsIn('F2').map((id) => SPOTS.get(id)!.z))].sort((a, b) => a - b);
+    for (let i = 1; i < rows.length; i++) expect(rows[i] - rows[i - 1]).toBeGreaterThanOrEqual(50);
+    // (nothing in the front 3 tiles: a tap away from a card lands on the floor)
+    for (const id of fossilsIn('F2')) expect(footOf(id).z1, id).toBeLessThanOrEqual(F2.z1 - 30);
   });
-  test('with every fossil in, a walk from the door reaches each one (its front, or its back by the front wall)', () => {
-    const g = navOf(ids.map(footOf));
+  test('with every fossil in, a walk from the door reaches each one (its named spot: its front, or its back by the front wall)', () => {
+    const g = navOf(allBlocks());
     for (const id of ids) {
-      const r = footOf(id), mid = (r.x0 + r.x1) / 2, front: Pt = walkable(g, mid, r.z1 + 8) ? [mid, r.z1 + 8] : [mid, r.z0 - 8];
-      expect(walkable(g, ...front), id).toBe(true);
-      const p = walkPath(g, ENTRANCE, front);
+      const to = spot(`fossil:${id}`);
+      expect(walkable(g, ...to), id).toBe(true);
+      const p = walkPath(g, ENTRANCE, to);
       expect(p.length, id).toBeGreaterThan(0);
-      expect(Math.hypot(p[p.length - 1][0] - front[0], p[p.length - 1][1] - front[1]), id).toBeLessThan(1);
+      expect(Math.hypot(p[p.length - 1][0] - to[0], p[p.length - 1][1] - to[1]), id).toBeLessThan(1);
     }
   });
 });

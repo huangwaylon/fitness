@@ -1,5 +1,5 @@
-// The sea creatures' room's exhibits (docs/design.md "The museum"): its two tanks (seaTanks.ts: the reef tank along the
-// back wall, the tide pool in the middle) and in them every sea creature anyone has caught, each in its own place: NH's
+// The sea creatures' exhibits in the aquarium (docs/design.md "The museum"): their two tanks (seaTanks.ts: the reef tank along the
+// right wall, the tide pool in the middle) and in them every sea creature anyone has caught, each in its own place: NH's
 // museum-tank model where NH has one (the `sea-museum` pack), the island's catch model otherwise
 // (static/room/world3d/critters/sea/), scaled to its place. The drifters (a jellyfish, the squid, the nautilus) bob in
 // the reef tank's water, the rest lie still on the sand. The water and the glass are the aquarium's (aquarium.ts WATER_*);
@@ -9,7 +9,7 @@ import type { Exhibit, Kit } from './engine.ts';
 import type { Rect } from './plan.ts';
 import { WATER_FRAG, WATER_VERT, tankLight } from './aquarium.ts';
 import { lookAt } from './look.ts';
-import { piecesOf, waterOf, type Box, type Tank } from './tanks.ts';
+import { alongX, piecesOf, waterOf, type Box, type Tank } from './tanks.ts';
 import { batcher, decal, openBox } from './geometry.ts';
 import { MIN_ACROSS, SEA_MUSEUM_MODEL, SEA_SPOTS, SEA_TANKS, type SeaTankId } from './seaTanks.ts';
 import type { Specimen } from './species.ts';
@@ -21,8 +21,6 @@ const WATER: Record<SeaTankId, { deep: number; top: number; caustic: number; glo
   reef: { deep: 0x154f86, top: 0x64cae8, caustic: 0.28, glow: 0x86d6f2 },
   pool: { deep: 0x226a88, top: 0x84d8e4, caustic: 0.32, glow: 0xa8e6ee }
 };
-/** The room's plants ([model, x, z, scale]). */
-const PLANTS: readonly [string, number, number, number][] = [['anthurium', 390, 92, 2.4], ['heliconia', 392, -60, 1.8], ['anthurium', 308, -62, 2.2]];
 /** How near a tap (client px) picks a creature, at least. */
 const REACH = 22;
 
@@ -65,7 +63,10 @@ export function buildSeaLife(kit: Kit, list: readonly Specimen[]): Exhibit {
     const t = st as unknown as Tank, b = st.box, w = waterOf(t), pc = piecesOf(t);
     box(pc.base, sand);
     // the reef's water's back against the wall; the pool, all glass, looked down into: its floor's caustics only
-    if (st.id === 'reef') batch.add(new PlaneGeometry(w.x1 - w.x0, w.y1 - w.y0), water(st.id, false), at.makeTranslation((w.x0 + w.x1) / 2, (w.y0 + w.y1) / 2, w.z0));
+    if (st.id === 'reef') {
+      const ax = alongX(b), back = new PlaneGeometry(ax ? w.x1 - w.x0 : w.z1 - w.z0, w.y1 - w.y0);
+      batch.add(back, water(st.id, false), ax ? at.makeTranslation((w.x0 + w.x1) / 2, (w.y0 + w.y1) / 2, w.z0) : at.makeRotationY(-Math.PI / 2).setPosition(w.x1, (w.y0 + w.y1) / 2, (w.z0 + w.z1) / 2));
+    }
     batch.add(new PlaneGeometry(w.x1 - w.x0, w.z1 - w.z0), water(st.id, true), at.makeRotationX(-Math.PI / 2).setPosition((w.x0 + w.x1) / 2, w.y0 + 0.08, (w.z0 + w.z1) / 2));
     const g = new MeshBasicMaterial({ color: WATER[st.id].glow, transparent: true, opacity: st.id === 'pool' ? 0.2 : 0.16, depthWrite: false, side: DoubleSide, forceSinglePass: true });
     mats.push(g);
@@ -107,11 +108,6 @@ export function buildSeaLife(kit: Kit, list: readonly Specimen[]): Exhibit {
   geos.push(light.lip.mesh.geometry);
   mats.push(light.lip.mesh.material as Material);
   const blocks: Rect[] = SEA_TANKS.map(({ box: b }) => ({ x0: b.x0, x1: b.x1, z0: b.z0, z1: b.z1 }));
-  // a plant in each front corner and by the reef's end
-  for (const [name, x, z, s] of PLANTS) {
-    kit.prop(name, x, z, { s, parent: group });
-    blocks.push({ x0: x - 5, x1: x + 5, z0: z - 5, z1: z + 5 });
-  }
   const where = (id: string): [number, number, number] | null => {
     const h = holders.get(id), fit = fitOf(id);
     if (!h || !fit) return null;

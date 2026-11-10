@@ -4,7 +4,7 @@
 // all are in), a standalone fossil on a marble stand. Still: nothing here moves, so it asks for no frames of its own.
 import { BoxGeometry, Group, Matrix4, type BufferGeometry } from 'three';
 import type { Exhibit, Kit } from './engine.ts';
-import { SET_S, SPOTS, STAND_W, footOf, setOf, type FossilOnShow } from './fossils.ts';
+import { SET_S, SPOTS, footOf, setOf, type FossilOnShow } from './fossils.ts';
 import { batcher } from './geometry.ts';
 import { POOL } from './look.ts';
 import M from './models.json' with { type: 'json' };
@@ -18,7 +18,7 @@ const REACH = 26;
 /** A fossil's height as drawn (its model's, scaled), its middle's height over the floor. */
 function heightOf(id: string): { s: number; h: number; mid: number } {
   const b = MODELS[id], s0 = SPOTS.get(id)!;
-  const h0 = b ? b.max[1] - Math.max(0, b.min[1]) : 10, s = s0.stand && h0 < SMALL ? SMALL_S : setOf(id) ? SET_S : 1;
+  const h0 = b ? b.max[1] - Math.max(0, b.min[1]) : 10, s = s0.s ?? (s0.stand && h0 < SMALL ? SMALL_S : setOf(id) ? SET_S : 1);
   return { s, h: h0 * s, mid: s0.stand + (h0 * s) / 2 };
 }
 
@@ -36,11 +36,11 @@ export function buildFossils(kit: Kit, shown: readonly FossilOnShow[]): Exhibit 
     const { s } = heightOf(id);
     if (sp.stand) {
       // NH's display stand: a marble block on an oak plinth
-      batch.add(new BoxGeometry(STAND_W, sp.stand - 1, STAND_W), marble, at.makeTranslation(sp.x, 1 + (sp.stand - 1) / 2, sp.z));
-      batch.add(new BoxGeometry(STAND_W + 1.2, 1, STAND_W + 1.2), trim, at.makeTranslation(sp.x, 0.5, sp.z));
+      batch.add(new BoxGeometry(sp.w, sp.stand - 1, sp.w), marble, at.makeTranslation(sp.x, 1 + (sp.stand - 1) / 2, sp.z));
+      batch.add(new BoxGeometry(sp.w + 1.2, 1, sp.w + 1.2), trim, at.makeTranslation(sp.x, 0.5, sp.z));
     }
     // (a skeleton's piece by NH's origin: its base's middle, so the pieces join; a standalone one by its bounds)
-    kit.prop(id, sp.x, sp.z, { y: sp.stand, s, parent: group, origin: !!setOf(id) });
+    kit.prop(id, sp.x, sp.z, { y: sp.stand, s, yaw: sp.yaw, parent: group, origin: !!setOf(id) });
   }
   geos.push(...batch.done(group));
   const blocks = ids.filter((id) => SPOTS.has(id)).map(footOf);

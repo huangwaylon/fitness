@@ -2,11 +2,11 @@
 // artworks, what's on show (anyone's first find: a present's), where each hangs or stands; every sea creature's place.
 import { describe, expect, test } from 'vitest';
 import { findKey, type FirstFind } from '#lib/model/finds.ts';
-import { ART, ART_IDS, ART_SPOTS, DAIS, artIn, artOnShow, artPack, isArt, plinthOf } from './art.ts';
+import { ART, ART_IDS, ART_SPOTS, DAIS, PANEL_H, artIn, artOnShow, artPack, isArt, plinthOf } from './art.ts';
 import { SEA_MUSEUM_MODEL, SEA_SPOTS, SEA_TANKS } from './seaTanks.ts';
 import { SEA } from '../island/sea.ts';
 import { onShow } from './species.ts';
-import { ENTRANCE, SEA_WING, inRect, navOf, rectsOf, walkPath, walkable, type Rect } from './plan.ts';
+import { ENTRANCE, FISH_WING, inRect, navOf, rectsOf, walkPath, walkable, type Rect } from './plan.ts';
 import { allBlocks, spot } from './spots.ts';
 import { waterOf, type Tank } from './tanks.ts';
 import { PANELS } from './gallery.ts';
@@ -57,8 +57,8 @@ describe('the art', () => {
       expect(a.x1 <= b.x0 || b.x1 <= a.x0 || a.z1 <= b.z0 || b.z1 <= a.z0, `${ia} × ${ib}`).toBe(true);
     }
     expect(PANELS.length).toBe(12);
-    // (G1 the screen and 14 paintings, 7 statues; G2 14 paintings, 6 statues; every painting faces +z)
-    expect([artIn('G1').length, artIn('G2').length]).toEqual([2 + 14 + 7, 14 + 6]);
+    // (G1 the screen and 13 paintings, 7 statues; G2 15 paintings, 6 statues; every painting faces +z)
+    expect([artIn('G1').length, artIn('G2').length]).toEqual([2 + 13 + 7, 15 + 6]);
     for (const a of flat) expect(ART_SPOTS.get(a.id)!.yaw, a.id).toBe(0);
   });
   test('with everything in, a walk from the door reaches the front of each artwork (its named spot), a body clear of the panels and plinths', () => {
@@ -69,17 +69,23 @@ describe('the art', () => {
       expect(p.length, id).toBeGreaterThan(0);
     }
   });
-  test('the panels: three rows a room, 2 tiles between the rows, a 2-tile gap in each row (left and right in turn), no painting past a panel’s ends', () => {
+  test('the panels: three low rows a room, 3 tiles between the rows, each row a panel from either wall with a 3-tile aisle between (the hero up it from the door), no painting past a panel’s ends or over its top; the statues in front of the rows', () => {
     for (const room of ['G1', 'G2'] as const) {
       const ps = PANELS.filter((p) => p.room === room), r = rectsOf(room)[0];
       const rows = [...new Set(ps.map((p) => p.z0))].sort((a, b) => a - b);
       expect(rows.length).toBe(3);
       rows.forEach((z, i) => {
-        if (i) expect(z - rows[i - 1] - 3, `${room} ${i}`).toBeGreaterThanOrEqual(40);
+        if (i) expect(z - rows[i - 1] - 3, `${room} ${i}`).toBeGreaterThanOrEqual(29.9);
         const [a, b] = ps.filter((p) => p.z0 === z).sort((p, q) => p.x0 - q.x0);
-        expect(b.x0 - a.x1, `${room} ${i}`).toBeGreaterThanOrEqual(20);
+        expect(b.x0 - a.x1, `${room} ${i}`).toBeGreaterThanOrEqual(28);
+        expect(b.x0 - r.x0 > 60 && a.x1 - r.x0 < 60, `${room} ${i}: the aisle up the middle`).toBe(true);
         expect([a.x0 - r.x0, r.x1 - b.x1].every((m) => m < 2), `${room} ${i}`).toBe(true);
       });
+      for (const id of artIn(room).filter((id) => plinthOf(id))) expect(plinthOf(id)!.z0, id).toBeGreaterThan(Math.max(...rows) + 3);
+    }
+    for (const id of ART_IDS) {
+      const s = ART_SPOTS.get(id)!, p = PANELS.find((q) => q.room === s.room && Math.abs(s.z - q.z1) < 1);
+      if (p) expect(s.y + ((models[id]!.max[1] - models[id]!.min[1]) * s.s) / 2, id).toBeLessThanOrEqual(PANEL_H);
     }
     const on = (r: Rect & { room: string }, id: string) => {
       const s = ART_SPOTS.get(id)!, w = ((models[id]!.max[0] - models[id]!.min[0]) * s.s) / 2;
@@ -98,7 +104,7 @@ describe('the sea creatures', () => {
     for (const [id, s] of SEA_SPOTS) {
       const t = SEA_TANKS.find((x) => x.id === s.tank)!, w = waterOf(t as unknown as Tank);
       expect(s.x > w.x0 + s.fit / 2 - 1 && s.x < w.x1 - s.fit / 2 + 1 && s.z > w.z0 && s.z < w.z1 && s.y >= w.y0 - 1 && s.y < w.y1, id).toBe(true);
-      expect(inRect(SEA_WING, s.x, s.z), id).toBe(true);
+      expect(inRect(FISH_WING, s.x, s.z), id).toBe(true);
     }
     expect(Object.keys(SEA_MUSEUM_MODEL).length).toBe(12);
     for (const id of Object.keys(SEA_MUSEUM_MODEL)) expect(models[id]?.pack, id).toBe('sea-museum');
