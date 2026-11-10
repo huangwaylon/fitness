@@ -275,7 +275,7 @@ export class World {
   private moving = 0;
   private lastCam = NaN;
   private win: [number, number] = [-Infinity, Infinity];
-  private hook: ((ts: number) => boolean) | null = null;
+  private hook: ((ts: number) => boolean | 'ambient') | null = null;
   /** The game's own clock under the 3D island (docs/decisions.md "The island in 3D"): the engine steps the World in
    *  its frames (the DOM in step with the picture), and this steps it whenever no frame has for SIM_MS while anything
    *  moves, so the island's life keeps real time however slowly (or seldom: the ambience's rate, a software renderer,
@@ -512,8 +512,9 @@ export class World {
   }
 
   /** One frame of the projector: the scene's hook, then what moved (everything when the camera did). True: more
-   *  frames wanted (something moves). The 3D island's engine runs it in its own frame, before it draws. */
-  step(ts: number): boolean {
+   *  frames wanted (something moves); 'ambient': only the ambience's (someone walking off screen). The 3D island's
+   *  engine runs it in its own frame, before it draws. */
+  step(ts: number): boolean | 'ambient' {
     this.lastStep = performance.now();
     this.perf.writes = 0;
     this.perf.frames++;
@@ -542,10 +543,12 @@ export class World {
       for (const n of this.unshaped) this.placeNode(n);
     }
     this.perf.nodes = this.nodes.size;
-    const going = more || this.moving > 0;
-    this.simWants = going;
-    if (going) this.simLater();
-    return going;
+    const going = more === true || this.moving > 0;
+    // (someone walking off screen: the ambience's frames, the game clock stepping it between them, its tap area and
+    // its walking into view)
+    this.simWants = going || more === 'ambient';
+    if (this.simWants) this.simLater();
+    return going || (more === 'ambient' && 'ambient');
   }
 
   /** The game clock's next step, SIM_MS on (it waits while the engine's frames step it). */
@@ -577,8 +580,8 @@ export class World {
     this.kick();
   }
 
-  /** The scene's per-frame hook (true keeps the frames coming: someone moving). */
-  onTick(fn: ((ts: number) => boolean) | null): void {
+  /** The scene's per-frame hook (true keeps the frames coming: someone moving; 'ambient' the ambience's: off screen). */
+  onTick(fn: ((ts: number) => boolean | 'ambient') | null): void {
     this.hook = fn;
   }
 

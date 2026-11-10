@@ -61,7 +61,8 @@
   import { lookOf as wornOf } from '#lib/store/look.ts';
   import type { Look as Worn } from '#lib/contract/look.ts';
   import { IslandLife } from './islandLife.svelte.ts';
-  import { VILLAGER, eventsAt, u, wildFlower, type Tod } from './scene.ts';
+  import { VILLAGER, charInView, eventsAt, u, wildFlower, type Tod } from './scene.ts';
+  import type { At } from '../world3d/engine.ts';
   import { CAMS, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, SEAT_DROP, flowerById, freshWhere, seatAt, surfaceAt, worldGen, BUILDINGS, LAWN_SPOTS, type BuildingId } from './world.ts';
   import { guestSpot, doorAt, outOf, partnerOnline } from './buildings.ts';
   import { site } from './site.svelte.ts';
@@ -495,7 +496,22 @@
     s = world.view.s;
     horizonPx = world.view.horizon;
   }
-  const anyMoving = () => inMotion('mine') || inMotion('partner') || inMotion('third') || inMotion('visitor');
+  /** Someone walking: the full rate while one is on screen or about to be (scene.ts charInView's margin: one walking in
+   *  gets it a frame before it shows); one off it only the ambience's (the game clock still steps it). */
+  const WALKERS = ['mine', 'partner', 'third', 'visitor'] as const;
+  const AT3: At = { sx: 0, sy: 0, k: 0, up: 0, ground: 0, depth: 0, visible: false };
+  function anyMoving(): boolean | 'ambient' {
+    let off = false;
+    for (const id of WALKERS) {
+      if (!inMotion(id)) continue;
+      const three = world.three;
+      if (!three) return true;
+      const [x, z] = livePos(id);
+      if (charInView(three, x, z, world.view.vw, world.view.vh, AT3)) return true;
+      off = true;
+    }
+    return off && 'ambient';
+  }
 
   // ---- tap-to-walk (spec §4): a tap on the ground sends my villager there; a cream ring marks the spot ----
   let rings = $state<{ n: number; x: number; z: number; partner?: boolean; in3d?: boolean }[]>([]);

@@ -18,7 +18,7 @@
   import { actors, livePos } from '../motion/director.svelte.ts';
   import type { Proj3, V3, World } from '../island/camera.svelte.ts';
   import { CAMPSITE, GOAL_TREES, SEAT_DROP, TREE_H } from '../island/world.ts';
-  import { GLOW_AT, VILLAGER, type Tod } from '../island/scene.ts';
+  import { charInView, GLOW_AT, VILLAGER, type Tod } from '../island/scene.ts';
   import { LAMP_GLOW, type Piece } from '../island/fixedDecor.ts';
   import type { Scenery } from '../island/world.ts';
   import { listen3d, listenPose3d } from '../island/echo3d.ts';
@@ -278,18 +278,10 @@
   /** K.K. is out (his node registered), and has been in view: his model loads the first time he is (never fetched for
    *  an island opened and left without a look at him), then stays, hidden while he's out of view. */
   let kkOn = false, kkLoad = false;
-  /** A character at (x, z) on screen or near it: its feet or its head inside the canvas, a margin of its height and a
-   *  finger's round it (the log bends the far ones down: their head may show over its horizon). Off it, it's hidden
-   *  and not posed (villagers.ts VSpec seen). */
   /** A scratch point for the engine's at() where it's read at once (the frame's own: no object a call). */
   const AT: At = { sx: 0, sy: 0, k: 0, up: 0, ground: 0, depth: 0, visible: false };
-  function onScreen(e: Island3, x: number, z: number): boolean {
-    for (const lift of [0, VILLAGER.h * 1.3]) {
-      const p = e.at(x, z, lift, AT), m = 40 + p.k * VILLAGER.h;
-      if (p.depth > 1 && p.sx > -m && p.sx < cw + m && p.sy > -m && p.sy < ch + m) return true;
-    }
-    return false;
-  }
+  /** A character on screen or near it (scene.ts charInView); off it, it's hidden and not posed (villagers.ts VSpec seen). */
+  const onScreen = (e: Island3, x: number, z: number) => charInView(e, x, z, cw, ch, AT);
   function visSpec(s: VSpec, id: string, x: number, z: number, v: V3, shown: boolean) {
     const a = actors[v.actor ?? 'visitor'];
     s.id = id;
@@ -468,9 +460,15 @@
       const a = actors[id];
       if (!a.fx.length) continue;
       const [x, z] = livePos(id);
+      // (one off screen: nothing to see, and each of a walk's dust puffs held the full rate a while: seen, not played)
+      const shown = onScreen(e, x, z);
       for (const f of a.fx) {
         const k = FX3[f.kind];
         if (!k) continue;
+        if (!shown) {
+          if (f.kind !== 'zzz') fxSeen.add(`${id}:${f.n}`);
+          continue;
+        }
         if (f.kind === 'zzz') {
           // a sleeper's zzz: one every couple of seconds while it sleeps
           if (t - (zzzAt[id] ?? -Infinity) < 1900) continue;
@@ -1025,7 +1023,7 @@
       fall(e, t);
       b3?.frame(performance.now());
       actorFx(e, t);
-      const posed = villagerCards(t, camMoved || more);
+      const posed = villagerCards(t, camMoved || more === true);
       // (after the villagers are posed: the 「！」 on the head where it's drawn this frame)
       bites(e);
       let falling: 'ambient' | false = false;
@@ -1033,12 +1031,12 @@
         precipSurface(p3);
         falling = p3.frame(t, cv.camX, z, cv.zoom, e.at(cv.camX, z, 0, AT).depth, ch);
       }
-      if (posed || more || moving === true) return true;
+      if (posed || more === true || moving === true) return true;
       // a still villager's next blink: one frame then (not the ambient rate's for as long as it stands still)
       e.wake(vilWake);
       // the ambience (the ambient rate): a slow move, the season's fall, the stream's floats, an emitter, a gym
-      // piece's loop or a card's breathing, the balloon drifting over
-      return moving || falling || ambient3.kind || floatsOn || emitting || vilAmbient || b3?.shown() ? 'ambient' : false;
+      // piece's loop or a card's breathing, the balloon drifting over, someone walking off screen
+      return more || moving || falling || ambient3.kind || floatsOn || emitting || vilAmbient || b3?.shown() ? 'ambient' : false;
     });
     // the DOM island's reactions on its (invisible) art: the model, or the stand-in's card, moves too
     listenFx3((kind, x, z, lift, o) => e.fx(kind, x, z, lift, o));
