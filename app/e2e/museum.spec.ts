@@ -408,9 +408,12 @@ test('the guest visits too: in, walking, the finds on show', async ({ page }) =>
   }, { timeout: 15_000 }).toBeLessThan(6);
 });
 
-test('the curator at the desk: he watches my villager, dozes off and wakes as it comes up, and a tap is his line, a new one each time', async ({ page }) => {
+test('the curator at the desk: his welcome untapped on the way in, he watches my villager, dozes off and wakes as it comes up, and a tap is his line, a new one each time', async ({ page }) => {
   await seed(page, [['fish', 'koi', 'B'], ['bug', 'tarantula', 'A']]);
   await open(page);
+  const balloon = page.locator('[data-fx="talk"]');
+  // (his welcome once in the visit, brief: its first line, no tap)
+  await expect(balloon).toHaveAttribute('aria-label', /^フータ: ホーッ！ ようこそ はくぶつかんへ！$/, { timeout: 15_000 });
   type C = { at: [number, number]; doing: string | null } | null;
   const doing = async () => {
     const c = await mu<C>(page, 'curator()');
@@ -431,15 +434,14 @@ test('the curator at the desk: he watches my villager, dozes off and wakes as it
   expect(await doing()).toBe('doze');
   await page.evaluate('window.__museum.put(0, -12)');
   await expect.poll(doing, { timeout: 5_000 }).toBe('look');
-  const balloon = page.locator('[data-fx="talk"]');
   const tapHim = async () => {
     const c = (await mu<C>(page, 'curator()'))!;
     await page.mouse.click(c.at[0], c.at[1] + 10);
   };
   await tapHim();
-  await expect(balloon).toHaveAttribute('aria-label', /^フータ: .*ようこそ/);
+  await expect(balloon).toHaveAttribute('aria-label', /^フータ: /);
   expect(await doing()).toBe('talk');
-  const lines = new Set<string>();
+  const lines = new Set([(await balloon.getAttribute('aria-label'))!]);
   for (let i = 0; i < 3; i++) {
     const was = await balloon.getAttribute('aria-label');
     await tapHim();

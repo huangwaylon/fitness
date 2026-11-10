@@ -173,6 +173,10 @@ export interface Museum {
   /** Told when a doorway's dip starts (its colour) and ends (null): the screen fades to it and back; the room changes
    *  inside it. */
   onDip(fn: ((color: string | null) => void) | null): void;
+  /** The wings with a find of the last day: the hall's plaques to them get a gold dot. */
+  newWings(ws: ReadonlySet<Wing>): void;
+  /** The hall's plaques with a dot (their wings: the e2e's). */
+  dotted(): Wing[];
   /** The room's look retuned (look.ts), or its camera (camera.ts: viewW for this room, the wings' all at once; pitch
    *  in degrees for every room): the dev hook's, the Simulator's tuning. */
   tune(over: Partial<Light> & CamTune): void;
@@ -844,6 +848,11 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const doorways: Doorway[] = [];
   const plaqueGeo = new PlaneGeometry(PLAQUE_W, PLAQUE_H);
   disposables.push(plaqueGeo);
+  // (a hall plaque's NEW dot: gold in a cream ring at its right end, shown while its wing has a new find)
+  const dotGeo = new CircleGeometry(1.4, 20), ringGeo = new CircleGeometry(1.95, 20);
+  const dotMat = new MeshBasicMaterial({ color: 0xf2c14e }), ringMat = new MeshBasicMaterial({ color: 0xfbf2dc });
+  disposables.push(dotGeo, ringGeo, dotMat, ringMat);
+  const dots = new Map<Wing, Group>();
   /** A plaque: `text` on two faces back to back (a turned one is seen from either side). */
   function plaqueBoard(text: string): Group {
     const pm = new MeshBasicMaterial({ map: plaque(text, () => invalidate()), transparent: true });
@@ -879,6 +888,15 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       board.position.set(up[0], up[1], up[2]);
       board.rotation.y = up[3];
       scene.add(inRooms(board, [o.room]));
+      if (o.room === 'hall') {
+        const dot = new Group(), ring = new Mesh(ringGeo, ringMat), core = new Mesh(dotGeo, dotMat);
+        core.position.z = 0.05;
+        dot.add(ring, core);
+        dot.position.set(PLAQUE_W / 2 - 3, 0, 0.15);
+        dot.visible = false;
+        board.add(dot);
+        dots.set(wingOfRoom(o.next), dot);
+      }
     }
     // (a doorway between two rooms of a wing: on the way back, the room behind on its other side, its wall's mirror)
     if (o.room !== 'hall' && o.next !== 'hall') {
@@ -1997,6 +2015,11 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     onDip(fn) {
       onDip = fn;
     },
+    newWings(ws) {
+      for (const [w, d] of dots) d.visible = ws.has(w);
+      invalidate();
+    },
+    dotted: () => [...dots].filter(([, d]) => d.visible).map(([w]) => w),
     tune({ viewW, pitch, ...over }) {
       const w = wingOfRoom(cur);
       tuned[w] = { ...tuned[w], ...over };

@@ -1,7 +1,8 @@
 // The museum's visitors and its HUD (docs/design.md "The museum"): the day's NH villagers in the rooms, the same on
 // every phone (museum/visitors.ts, seeded by the date: no relay), a tap one's line in a balloon (nobody walks); the
-// room chip (its name, its wing's finds of the whole; hidden at the eyes); an exhibit's card docked clear of it, and a
-// tap anywhere else only closes it.
+// room chip (its plaque's name, what's on show in the room of what it holds, the last day's new finds; hidden at the
+// eyes); the NEW tags and the hall plaques' dots; an exhibit's card docked clear of it, and any tap off it only closing
+// it; a doorway's dip closing every balloon.
 import { expect, test, type Page } from './fixtures.ts';
 
 // (an afternoon: three or four in the museum)
@@ -70,19 +71,78 @@ test('two phones see the same visitors in the same places (the date’s plan, no
   await other.close();
 });
 
-test('the room chip: the room’s name and its wing’s finds of the whole, the hall its name only; hidden at the eyes', async ({ page }) => {
+test('the room chip: the room’s plaque word for word and what’s on show in it of what it holds, the hall its name only; 「あたらしい n」 for the last day’s finds; the hall’s plaques dotted; hidden at the eyes', async ({ page }) => {
+  // (found this morning: new at 14:00)
   await seed(page, [['fish', 'koi', 'A'], ['fossil', 't-rex-skull', 'B']]);
   await open(page);
-  const chip = page.locator('[data-museum-chip]');
+  const chip = page.locator('[data-museum-chip]'), fresh = chip.locator('[data-museum-chip-new]');
   await expect(chip).toHaveAttribute('data-museum-chip', 'はくぶつかん');
   await expect(chip.locator('[data-museum-chip-n]')).toHaveCount(0);
-  for (const [spot, name, n] of [['room:fish', 'さかな', '1/80'], ['room:F2', 'かせき 2', '1/73'], ['room:G1', 'びじゅつ 1', '0/43']] as const) {
+  await expect(fresh).toHaveText('あたらしい 2');
+  expect((await mu<string[]>(page, 'dotted()')).sort()).toEqual(['fish', 'fossil']);
+  for (const [spot, name, n, f] of [['room:fish', 'さ か な', /^1\/120$/, 'あたらしい 1'], ['room:F2', 'か せ き 2', /^1\/\d+$/, 'あたらしい 1'], ['room:G1', 'び じゅ つ', /^0\/\d+$/, null]] as const) {
     await putAt(page, spot);
     await expect(chip).toHaveAttribute('data-museum-chip', name);
     await expect(chip.locator('[data-museum-chip-n]')).toHaveText(n);
+    if (f) await expect(fresh).toHaveText(f);
+    else await expect(fresh).toHaveCount(0);
   }
   await page.locator('[data-fpv]').click();
   await expect(chip).toHaveCount(0);
+});
+
+test('a find of the last day: a NEW tag over it in its room, none elsewhere', async ({ page }) => {
+  await seed(page, [['fish', 'koi', 'A']]);
+  await open(page);
+  expect(await mu<string[]>(page, 'tagged()')).toEqual([]);
+  await putAt(page, 'room:fish');
+  await expect.poll(() => mu<string[]>(page, 'tagged()'), { timeout: 15_000 }).toEqual(['koi']);
+  await putAt(page, 'room:bug');
+  await expect.poll(() => mu<string[]>(page, 'tagged()')).toEqual([]);
+});
+
+test('with a card open, a tap on another exhibit only closes it; the next tap opens that one', async ({ page }) => {
+  await seed(page, [['fish', 'koi', 'A'], ['fish', 'sea-bass', 'B']]);
+  await open(page);
+  await expect.poll(async () => (await mu<string[]>(page, 'shown()')).length, { timeout: 15_000 }).toBe(2);
+  await putAt(page, 'room:fish');
+  await still(page);
+  const tapOn = async (id: string) => {
+    const p = (await mu<[number, number] | null>(page, `creature(${JSON.stringify(id)})`))!;
+    await page.mouse.click(p[0], p[1]);
+  };
+  await expect.poll(async () => (await tapOn('koi'), mu<string | null>(page, 'card()')), { timeout: 15_000 }).toBe('koi');
+  await tapOn('sea-bass');
+  await expect(page.locator('[data-museum-card]')).toHaveCount(0);
+  await expect.poll(async () => (await tapOn('sea-bass'), mu<string | null>(page, 'card()')), { timeout: 15_000 }).toBe('sea-bass');
+});
+
+test('Blathers greets once on the way in, untapped; a doorway’s dip closes every balloon at its start', async ({ page }) => {
+  await open(page);
+  const balloon = page.locator('[data-fx="talk"]');
+  await expect(balloon).toHaveAttribute('aria-label', /^フータ: .*ようこそ/, { timeout: 15_000 });
+  // (a balloon up as my villager sets off for the bug garden: Blathers' line on a tap)
+  const c = (await mu<{ at: [number, number] } | null>(page, 'curator()'))!;
+  await page.mouse.click(c.at[0], c.at[1] + 10);
+  await expect(balloon).toHaveCount(1);
+  await page.evaluate(() => {
+    const d = document.querySelector('[data-museum-dip]')!, w = window as unknown as { dipSaw: number[] };
+    w.dipSaw = [];
+    new MutationObserver(() => void (d.getAttribute('data-museum-dip') === 'on' && w.dipSaw.push(document.querySelectorAll('[data-fx="talk"]').length)))
+      .observe(d, { attributes: true, attributeFilter: ['data-museum-dip'] });
+  });
+  await page.evaluate('window.__museum.spot("in:bug").then(([x, z]) => window.__museum.walkTo(x, z))');
+  await expect.poll(() => page.evaluate('window.dipSaw.length'), { timeout: 15_000 }).toBeGreaterThan(0);
+  expect(await page.evaluate('window.dipSaw')).toEqual([0]);
+  await expect.poll(() => mu<string>(page, 'room()')).toBe('bug');
+  // (back in the hall: no second welcome)
+  await page.evaluate('window.__museum.spot("room:hall").then(([x, z]) => window.__museum.walkTo(x, z))');
+  await expect.poll(() => mu<string>(page, 'room()'), { timeout: 15_000 }).toBe('hall');
+  // (frames drawn there with him on screen, each one where a welcome would come)
+  await expect.poll(() => mu<boolean>(page, 'walking("A")'), { timeout: 15_000 }).toBe(false);
+  const f0 = (await mu<{ frames: number }>(page, 'stats()')).frames;
+  await expect.poll(async () => (await mu<{ frames: number }>(page, 'stats()')).frames).toBeGreaterThan(f0 + 5);
+  await expect(balloon).toHaveCount(0);
 });
 
 test('an exhibit’s card docks clear of it (low on the screen: the card at the top), and a tap on the floor only closes it', async ({ page }) => {

@@ -1,15 +1,18 @@
 <script lang="ts">
   // The museum's room chip (docs/design.md "The museum"): a cream pill at the top centre, the room one is in by its
-  // plaque's name in spaced kana (museum/hud.ts roomLabel) and its wing's finds of its whole 「さかな 34/80」; the hall its
-  // name only. The world HUD's sizes (34 high in the back pill's 44 row, the 4px lip), between ‹ 島へ and ⌂; static, the
-  // name crossfading as the room changes. Not a button: it keeps a finger off the floor under it.
-  let { name, found, total }: { name: string; found?: number; total?: number } = $props();
-  const count = $derived(found !== undefined && total !== undefined ? `${found}/${total}` : found !== undefined ? `${found}` : '');
+  // doorway plaque's name, word for word (museum/hud.ts chipName: 「さ か な」, 「か せ き 2」), and what's on show in this
+  // room of how many it holds 「12/120」; the hall its name only. Under it, while any came in the last day, a gold
+  // 「あたらしい n」 tag (this room's new finds; the hall's, the museum's). The world HUD's sizes (34 high in the back pill's 44
+  // row, the 4px lip), between ‹ 島へ and ⌂; static, the name crossfading as the room changes. Not a button: it keeps a
+  // finger off the floor under it.
+  let { name, found, total, fresh = 0 }: { name: string; found?: number; total?: number; fresh?: number } = $props();
+  const count = $derived(found !== undefined && total !== undefined ? `${found}/${total}` : '');
 </script>
 
-<div class="chip" role="status" aria-label={count ? `${name} ${count}` : name} data-museum-chip={name}>
+<div class="chip" role="status" aria-label={[name, count, fresh ? `あたらしい ${fresh}` : ''].filter(Boolean).join(' ')} data-museum-chip={name}>
   {#key name}<span class="name" aria-hidden="true">{name}</span>{/key}
   {#if count}<span class="n" aria-hidden="true" data-museum-chip-n>{count}</span>{/if}
+  {#if fresh}<span class="new" aria-hidden="true" data-museum-chip-new>あたらしい {fresh}</span>{/if}
 </div>
 
 <style>
@@ -22,9 +25,14 @@
     border-radius: var(--r-pill); background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip);
     font: 700 var(--fs-body)/1 var(--font-ui); white-space: nowrap; -webkit-tap-highlight-color: transparent; user-select: none;
   }
-  /* (a plaque's letters, a little apart) */
-  .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; letter-spacing: .08em; animation: in 220ms ease-out both; }
+  .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; animation: in 220ms ease-out both; }
   .n { flex: none; color: var(--c-ink-soft); font-variant-numeric: tabular-nums; }
+  /* the gold NEW tag hangs under the pill (static: no pulse, no frames) */
+  .new {
+    position: absolute; top: calc(100% + var(--lip-h) + 4px); left: 50%; transform: translateX(-50%);
+    padding: 3px 9px; border-radius: var(--r-pill); background: #f2c14e; color: #4a3210; box-shadow: 0 2px 0 #b8862a;
+    font: 700 var(--fs-s)/1.1 var(--font-ui); font-variant-numeric: tabular-nums; pointer-events: none;
+  }
   @keyframes in { from { opacity: 0; } }
   @media (prefers-reduced-motion: reduce) { .name { animation: none; } }
 </style>

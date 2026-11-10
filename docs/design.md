@@ -935,7 +935,7 @@ silhouette and ？？？ otherwise, 「コンプリート！」 when all are in;
 ### The museum
 
 `museum/` (each file's header has its part: plan, camera, spots, engine, curator, species, aquarium, boids, feeding,
-garden, bugShow, seaTanks, seaLife, fossils, fossilWing, art, gallery, seats, benches, visitors, crowd3d, hud),
+garden, bugShow, seaTanks, seaLife, fossils, fossilWing, art, gallery, seats, benches, visitors, crowd3d, hud, newTags),
 `e2e/museum.spec.ts`, `e2e/museum-visitors.spec.ts`. NH's museum (はくぶつかん) is a building on the layout
 ([island-layout.md](island-layout.md#the-islands-buildings)): NH's own model, one to an island, moved and turned in the
 editor, never removed. A tap walks my villager to its door and in (the door's iris); ‹ 島へ or the doormat comes back
@@ -986,20 +986,31 @@ out.
   back; the camera follows my villager through the rooms, the walls in the way cut away. The say button says a phrase
   in here only. Who else is in: the rooms' presence with the museum's scope; the guest comes in like anyone.
 - **The curator:** フータ (Blathers) behind his desk, NH's owl: breathing, glances, blinks, a wing now and then; he
-  watches my villager in front of him and nods off when alone. A tap perks him up and is his line in NH's balloon: his
-  welcome first in a visit, then one of his lines, never the same twice running; with a find of the last day on show,
-  every other tap or so his news of the newest by name.
+  watches my villager in front of him and nods off when alone. He greets my villager once a visit on the way in,
+  untapped (his welcome's first line, brief). A tap perks him up and is his line in NH's balloon: one of his lines,
+  never the same twice running; with a find of the last day on show, every other tap or so his news of the newest by
+  name. A doorway's dip (or a put into another room) closes every balloon, his, the visitors' and the phrases.
 - **Visitors** (`visitors.ts`, `crowd3d.ts`): 24 NH villagers from ききみみ's cast (three of each personality) come in
-  through the Tokyo day, none at night, up to four in the museum and two a room, each one room for 25–65 min: in at its
-  door, from one LINGER place to the next (admiring an exhibit with a hop now and then, sitting on a bench, chatting in
-  pairs), out again. The day's plan is seeded by the date and read at the relay's clock, so every phone shows the same
-  visitors in the same places with nothing sent. NH's own models at the players' size, in the room drawn only; frames
-  only while one moves. A tap: it stops, turns to my villager with a hop and says a line in NH's balloon under its
-  name (of what it's looking at, a new find, its bench, the room), then strolls back onto its plan; my villager stays
-  put. A find put on show while one's inside turns its room's visitors to it.
-- **The HUD:** a room chip at the top centre, the room's plaque name (はくぶつかん, さかな, かせき 2…) and its wing's
-  finds of the whole 「さかな 34/80」, hidden at the eyes. An exhibit's card docks at the bottom, or at the top when the
-  exhibit is low on the screen (`hud.ts` cardDock); a tap anywhere but another exhibit only closes it.
+  through the Tokyo day, none at night (23–07), a few at dusk, up to eight in the museum and two a room, each one room
+  for 25–65 min: in at its door, from one LINGER place to the next (admiring an exhibit with a hop now and then,
+  sitting on a bench, chatting in pairs), out again. They spread out: a room with nobody first, the aquarium and the
+  bug garden before all (in the afternoon and evening ~80 % of the rooms have someone, those two ~85 % of the time);
+  no place at a room's very sides or front (out of a finger's reach). Every ~40 s each shows an emote bubble over its
+  head (♪ ！ 💡 …, the plan's, 2.5 s, still between). The day's plan is seeded by the date and read at the relay's
+  clock, so every phone shows the same visitors in the same places with nothing sent. NH's own models at the players'
+  size, in the room drawn only; frames only while one moves. My villager coming within 2 tiles gets a turn and a wave
+  (once a visitor a visit, this phone's). A tap (a box at least 44 px round each): it stops, turns to my villager with
+  a hop and says a line in NH's balloon under its name (of what it's looking at, a new find, its bench, the room), then
+  strolls back onto its plan; my villager stays put. A find put on show while one's inside turns its room's visitors
+  to it.
+- **The HUD:** a room chip at the top centre, the room's doorway plaque word for word (はくぶつかん, さ か な, か せ き 2…:
+  one term a room) and what's on show in that room of what it holds 「さ か な 34/120」 (the aquarium its fish and sea
+  creatures, a fossil or gallery room its own spots), hidden at the eyes. An exhibit's card docks at the bottom, or at
+  the top when the exhibit is low on the screen (`hud.ts` cardDock); with a card open any tap only closes it, an
+  exhibit's too.
+- **NEW:** a find of the last 24 h has a gold 「NEW」 card with a sparkle over it (`newTags.ts`: still sprites, never a
+  frame of their own), the chip a gold 「あたらしい n」 under it (the room's; the hall's the museum's), and the hall's
+  plaque to its wing a gold dot.
 - **What's on show:** one of each fish, bug, sea creature and fossil in the ずかん's first finds (anyone's) and each
   genuine artwork a present has held, never the pockets' (selling takes nothing out: NH's donation, the record's `find`
   events, so every phone shows the same). A tap: its card (MuseumCard: icon, names, a fossil's skeleton 「Tレックス 2/3」

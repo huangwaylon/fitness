@@ -5,7 +5,9 @@
   // a tap on an exhibit (a fish, a bug, a sea creature, a fossil, an artwork) shows its card (MuseumCard: its names, who
   // found it first and when, how many we've had);
   // a tap on a bench walks my villager up to its free seat and sits it down facing the great tank (the rooms' sitting:
-  // rooms/seating.ts, its seats seats.ts), a tap on the floor gets it up; a tap on the curator at the desk (フータ: curator.ts, his idle life) is his line in NH's balloon (Talk, lines.ts);
+  // rooms/seating.ts, its seats seats.ts), a tap on the floor gets it up; a tap on the curator at the desk (フータ: curator.ts, his idle life) is his line in NH's balloon (Talk, lines.ts),
+  // and he greets my villager once on the way in; with a card open, any tap only closes it; a doorway's dip closes every
+  // balloon; the finds of the last day get a NEW tag (newTags.ts), the chip's 「あたらしい n」 and a dot on the hall's plaque;
   // the doormat or ‹ 島へ goes back out. What's on show is the ずかん's (model/finds.ts: every fish, bug, sea creature
   // and fossil anyone has found, the guest's too, and every genuine artwork a present has held), and comes as it's
   // found; the sea creatures', the fossils' and the art's wings are built (their models fetched) only once my villager
@@ -25,7 +27,7 @@
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
   import MuseumCard, { type Shown } from './MuseumCard.svelte';
   import RoomChip from './RoomChip.svelte';
-  import { cardDock, roomLabel, wingTally } from './hud.ts';
+  import { cardDock, chipName, freshFinds, freshIn, freshWings, roomTally } from './hud.ts';
   import { SAY_TAG, rememberSay, sayGate, type SaySpeaker } from '../island/say.ts';
   import { url3d } from '../villager3d/manifest.ts';
   import { person3, type Dirs } from '../person3d/person3d.ts';
@@ -51,7 +53,7 @@
   import type { Intent, Pt as WirePt, Relayed } from '#lib/contract/live-protocol.ts';
   import { hook } from '../island/devHooks.ts';
   import { now } from '#lib/time/clock.ts';
-  import { ENTRANCE, ROOM_IDS, nearRooms, wingOfRoom, type Pt, type RoomId, type Wing } from './plan.ts';
+  import { ENTRANCE, ROOM_IDS, boundsOf, nearRooms, wingOfRoom, type Pt, type RoomId, type Wing } from './plan.ts';
   import { onShow, type Specimen } from './species.ts';
   import { ROW, fossilsOnShow, type FossilOnShow } from './fossils.ts';
   import { artOnShow, type ArtOnShow } from './art.ts';
@@ -64,6 +66,7 @@
   import type { Crowd } from './visitors.ts';
   import type { Crowd3D } from './crowd3d.ts';
   import type { Curator } from './curator.ts';
+  import type { NewTags } from './newTags.ts';
   import type { Hit, Look, Museum, Who } from './engine.ts';
   import { staticUrl } from '#lib/staticUrl.ts';
 
@@ -149,14 +152,16 @@
   function heardMusic() {
     const at = eng?.at(me);
     if (!at || !eng) return;
-    // (the room drawn: it changes inside the doorway's dip, the music and the chip with it)
+    // (the room drawn: it changes inside the doorway's dip, the music and the chip with it; a put's at once, no balloon
+    // carried over either)
+    if (eng.room() !== roomId) hushAll();
     roomId = eng.room();
     music.to(MUSEUM_MUSIC[wingOfRoom(roomId)]);
     wake(nearRooms(at[0], at[1]));
   }
-  /** The room drawn (the chip's: its plaque's name, its wing's finds of the whole). */
+  /** The room drawn (the chip's: its plaque's name, what's on show in it of how many it holds, its new finds). */
   let roomId = $state<RoomId>('hall');
-  const chipTally = $derived(wingTally(wingOfRoom(roomId), { specimens, fossils, artworks }));
+  const chipTally = $derived(roomTally(roomId, { specimens, fossils, artworks }));
   /** The doorway's dip: the screen fades to the next room's colour and back (engine.ts onDip), never in a finger's way. */
   let dip = $state<string | null>(null), dipColor = $state('#000');
 
@@ -291,14 +296,35 @@
     cue('host-tap');
     // (the newest find of the last day: now and then he tells of it by name)
     const newest = [...specimens, ...fossils, ...artworks].reduce<{ id: string; found: { at: number } } | null>((a, b) => (!a || b.found.at > a.found.at ? b : a), null);
-    const fresh = newest && syncedNow() - newest.found.at < FRESH_FIND_MS ? kanaName(newest.id) : null;
-    curatorSaid = curatorLine(Math.random, curatorSaid, !!fresh);
+    const news = newest && syncedNow() - newest.found.at < FRESH_FIND_MS ? kanaName(newest.id) : null;
+    curatorSaid = curatorLine(Math.random, curatorSaid, !!news);
     const fish = specimens.filter((s) => s.kind === 'fish').length, bugs = specimens.filter((s) => s.kind === 'bug').length;
-    const line = t(curatorSaid, { fish, bugs, fossils: fossils.length, art: artworks.length, name: fresh ? fresh[i18n.locale === 'en' ? 'en' : 'ja'] : '' }), him = curator;
-    him.talk([...line].length);
-    talk?.say(t('museum.curator'), line, curatorSpeaker, { colour: CURATOR_TAG, ondone: () => him.quiet() });
+    curatorSay(t(curatorSaid, { fish, bugs, fossils: fossils.length, art: artworks.length, name: news ? news[i18n.locale === 'en' ? 'en' : 'ja'] : '' }));
     const p = curator.where(CURATOR);
     if (p) eng.face(me, [p[0], p[2]]);
+  }
+  /** Every balloon closed (a doorway's dip: none carried into the next room). */
+  function hushAll() {
+    talk?.hush();
+    says?.hush();
+    curator?.quiet();
+  }
+  function curatorSay(line: string) {
+    const him = curator;
+    if (!him) return;
+    him.talk([...line].length);
+    talk?.say(t('museum.curator'), line, curatorSpeaker, { colour: CURATOR_TAG, ondone: () => him.quiet() });
+  }
+  /** His welcome, once a visit, untapped: the first frame on the way in with him drawn and on screen (its first line
+   *  only, brief); a tap then has his other lines. */
+  let greeted = false;
+  function greet() {
+    if (greeted || !eng || !curator || dip || eng.room() !== 'hall') return;
+    const p = curator.where(CURATOR);
+    if (!p || !eng.inView(p[0], p[1], p[2])) return;
+    greeted = true;
+    curatorSaid = curatorLine(Math.random);
+    curatorSay(t(curatorSaid).split('\n')[0]);
   }
 
   // ---- the visitors (visitors.ts: the day's NH villagers, the same on every phone; crowd3d.ts draws the room's) ----
@@ -307,6 +333,16 @@
   /** A find this new (ms) is Blathers' news. */
   const FRESH_FIND_MS = 86_400_000;
   let crowd: Crowd | null = null, crowd3: Crowd3D | null = null;
+  /** The finds of the last day (at the synced clock as the finds change: a visit is minutes, a NEW a day). */
+  const fresh = $derived(freshFinds({ specimens, fossils, artworks }, syncedNow()));
+  let tags: NewTags | null = null;
+  $effect(() => {
+    const f = fresh, e = eng;
+    untrack(() => {
+      tags?.set(f);
+      e?.newWings(freshWings(f));
+    });
+  });
   /** An exhibit's name as the world writes it (the catch's), if it's on show. */
   function kanaName(id: string): { ja: string; en: string } | null {
     const s = specimens.find((x) => x.id === id), kind = s ? s.kind : fossils.some((f) => f.id === id) ? 'fossil' : artworks.some((a) => a.id === id) ? 'art' : null;
@@ -409,9 +445,9 @@
   }
   function tap(cx: number, cy: number) {
     if (!eng) return;
+    // (a card open: a tap anywhere off it only closes it, an exhibit's too; nobody walks off)
+    if (card) return void (card = null);
     const h: Hit | null = eng.hit(cx, cy);
-    // (a card open: a tap anywhere but another exhibit only closes it, nobody walks off)
-    if (card && h?.kind !== 'creature') return void (card = null);
     // (nothing there: a soft no)
     if (!h) return void cue('boop');
     if (h.kind === 'visitor') return visitorTalk(h.id);
@@ -504,8 +540,8 @@
       }));
     }
     const offDoor = provideDoor(() => (eng?.inView(ENTRANCE[0], 0, ENTRANCE[1] + 10) ? (([x, y]) => ({ x, y }))(eng.client(ENTRANCE[0], 0, ENTRANCE[1] + 10)) : null));
-    void Promise.all([import('./engine.ts'), import('./plan.ts'), import('./curator.ts'), import('./visitors.ts'), import('./crowd3d.ts'), import('./spots.ts')]).then(
-      ([{ createMuseum }, { walkPath }, { buildCurator }, { crowdOf }, { buildCrowd }, { VISITOR_ROOMS, VISITOR_POINTS }]) => {
+    void Promise.all([import('./engine.ts'), import('./plan.ts'), import('./curator.ts'), import('./visitors.ts'), import('./crowd3d.ts'), import('./spots.ts'), import('./newTags.ts')]).then(
+      ([{ createMuseum }, { walkPath }, { buildCurator }, { crowdOf }, { buildCrowd }, { VISITOR_ROOMS, VISITOR_POINTS }, { buildNewTags }]) => {
         if (!alive || !canvas) return;
         let e: ReturnType<typeof createMuseum>;
         try {
@@ -525,18 +561,28 @@
           e.follow(me);
           curator = buildCurator(e.kit, { model: url3d('blathers', staticUrl('room/villagers3d/')), me: () => e.at(me) });
           e.exhibit(curator);
-          crowd = crowdOf({ rooms: VISITOR_ROOMS, points: VISITOR_POINTS, path: (_room, a, b) => walkPath(e.nav(), a, b), name: kanaName });
+          // (no visitor at a room's very sides or front: framed, in a finger's reach)
+          const rooms = VISITOR_ROOMS.map((r) => ({ ...r, bounds: boundsOf(r.id as RoomId) }));
+          crowd = crowdOf({ rooms, points: VISITOR_POINTS, path: (_room, a, b) => walkPath(e.nav(), a, b), name: kanaName });
           crowd3 = buildCrowd(e.kit, {
-            crowd, clock: syncedNow, room: () => e.room(), blocked: seatsHeld, dir: staticUrl('room/villagers3d/'),
+            crowd, clock: syncedNow, room: () => e.room(), blocked: seatsHeld, dir: staticUrl('room/villagers3d/'), me: () => e.at(me),
             anchor: (pid) => ((id, n) => seatOf(id, Number(n))?.anchor ?? null)(...(pid.split(':') as [string, string]))
           });
           e.exhibit(crowd3);
+          tags = buildNewTags(e.kit, { room: () => e.room(), where: (id) => e.exhibits().map((x) => x.where(id)).find(Boolean) ?? null });
+          tags.set(fresh);
+          e.exhibit(tags);
+          e.newWings(freshWings(fresh));
           // in at the front door, a few steps into the hall
           e.put(me, [ENTRANCE[0] + sideX(me), ENTRANCE[1] + 6], Math.PI);
           e.firstPerson(fpv, true);
           // (the balloons carried with their speakers while the camera moves: Talk.track, Says.track)
-          e.onDrawn(() => (talk?.track(), says?.track(), heardMusic()));
-          e.onDip((c) => (c && (dipColor = c), (dip = c)));
+          e.onDrawn(() => (talk?.track(), says?.track(), heardMusic(), greet()));
+          // (a dip's start: every balloon closes, none carried into the next room)
+          e.onDip((c) => {
+            if (c) (dipColor = c), hushAll();
+            dip = c;
+          });
         } catch (err) {
           // (its renderer let go of: before eng, nothing else would)
           console.warn('museum', err);
@@ -635,6 +681,9 @@
       /** The visitors drawn in the room I'm in (crowd3d.ts: id, x, z, state, fade), and one's head's client px. */
       visitors: () => crowd3?.drawn() ?? [],
       visitorPx: (id: string) => ((p) => (p && eng ? eng.client(p[0], p[1] * 0.6, p[2]) : null))(crowd3?.where(id)),
+      /** The NEW tags shown in the room drawn (ids), and the hall's plaques with a dot (their wings). */
+      tagged: () => tags?.tagged() ?? [],
+      dotted: () => eng?.dotted() ?? [],
       put: (x: number, z: number) => eng?.put(me, [x, z]),
       walkTo: (x: number, z: number) => walkTo([x, z]),
       orbit: (a: number, p = 0) => eng?.orbit(a, p),
@@ -668,11 +717,11 @@
   <h1 class="sr-only">{t('museum.title')}</h1>
   <canvas bind:this={canvas} class="room" data-museum-room onpointerdown={onDown} onpointermove={onMove} onpointerup={onUp}
     onpointercancel={onCancel} onwheel={onWheel} aria-label={t('museum.room')}></canvas>
-  <div class="dip" class:on={!!dip} style:background={dipColor} aria-hidden="true"></div>
+  <div class="dip" class:on={!!dip} style:background={dipColor} aria-hidden="true" data-museum-dip={dip ? 'on' : 'off'}></div>
   <div class="top" bind:this={top}>
     <NavButton kind="back" text={t('tent.back')} onclick={leave} sfx="self" />
   </div>
-  {#if eng && !fpv}<RoomChip name={roomLabel(roomId, ROOM_IDS)} found={chipTally?.found} total={chipTally?.total} />{/if}
+  {#if eng && !fpv}<RoomChip name={chipName(roomId)} found={chipTally?.found} total={chipTally?.total} fresh={freshIn(roomId, fresh)} />{/if}
   {#if turned && !fpv}
     <button type="button" class="reset" data-museum-reset data-sfx="tick" aria-label={t('tent.resetView')} onclick={resetView}>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5M6.5 10v9h11v-9" /><path d="M10 19v-5h4v5" /></svg>

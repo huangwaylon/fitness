@@ -1,14 +1,16 @@
 // The museum's visitors (docs/design.md "The museum"), pure: NH villagers (ききみみ's friends, VISITORS below, NH's own
-// 3D models) come in through the day, up to four across the museum and two to a room, each for half an hour or so in
-// one room: in at its door, from one linger point to the next (admiring an exhibit, a little hop now and then; sitting
-// on a bench; chatting in pairs at two points that face each other), out at the door again. Who, where and when is the
-// Tokyo day's, seeded (dayPlan): every phone shows the same visitors in the same places, with nothing on the relay.
+// 3D models) come in through the day, up to eight across the museum and two to a room (spread so most rooms have
+// someone, the aquarium and the bug garden first), each for half an hour or so in one room: in at its door, from one
+// linger point to the next (admiring an exhibit, a little hop now and then; sitting on a bench; chatting in pairs at two
+// points that face each other), an emote bubble (♪ ! 💡 …) over its head every 40 s or so, out at the door again. Who,
+// where and when is the Tokyo day's, seeded (dayPlan): every phone shows the same visitors in the same places, with
+// nothing on the relay.
 // Nothing is stepped: a pose at t is read off the day's plan (its walks' times from straight-line lengths, so no path
 // is searched to plan; a walk drawn takes the caller's path at the speed that ends it on time). A tap is this phone's
 // alone: the visitor stops, turns to my villager, hops and talks (visitorLines.ts), then strolls back onto its plan;
-// a new find on show turns the room's visitors to it with a start. The engine draws only the room it's in
-// (step(t, room)) and sleeps between changes (nextChange).
-//   const c = crowdOf({ rooms, points, path, name })  ·  c.step(t, room) → poses + acts  ·  c.tap(id, t, me) → line
+// a new find on show turns the room's visitors to it with a start; my villager coming close gets a wave (once a visitor a
+// visit, this phone's). The engine draws only the room it's in (step(t, room)) and sleeps between changes (nextChange).
+//   const c = crowdOf({ rooms, points, path, name })  ·  c.step(t, room, blocked, me) → poses + acts  ·  c.tap(id, t, me) → line
 //   c.notice(exhibitId, t)  ·  c.nextChange(t, room)
 import type { Personality } from '#lib/villagers/species.ts';
 import { ISLAND_SEED } from '#lib/contract/wet.ts';
@@ -44,14 +46,19 @@ export interface LingerPoint {
   from?: Pt;
 }
 /** A room: its kind (the lines' and the room's draw), where visitors come in and go out (`door`: just inside its
- *  doorway), and its doorways' boxes (no point in one is used). */
+ *  doorway), its doorways' boxes (no point in one is used), and its floor's box (`bounds`: no point at its very sides or
+ *  front is used, where the room view puts one at the screen's edge or under the HUD). */
 export interface VisitorRoom {
   id: string;
   kind: RoomKind;
   door: Pt;
   doorways: readonly Rect[];
+  bounds?: Rect;
 }
 type Act = 'hop' | 'surprise' | 'wave';
+/** An idle emote's bubble over a visitor's head (NH's): ♪, !, 💡, …. */
+export type Emote = 'note' | 'bang' | 'idea' | 'dots';
+const EMOTES: readonly Emote[] = ['note', 'bang', 'idea', 'dots'];
 type VisitorState = 'walk' | 'look' | 'sit' | 'chat' | 'stand' | 'talk';
 export interface VisitorPose {
   id: string;
@@ -66,10 +73,12 @@ export interface VisitorPose {
   fade: number;
   /** The point it's at (a seat's: sitAt its anchor), or null. */
   point: LingerPoint | null;
+  /** Its emote bubble now (the plan's), or null. */
+  emote: Emote | null;
 }
 
 /** At most this many in the museum, and in a room. */
-export const MAX_IN = 4, MAX_ROOM = 2;
+export const MAX_IN = 8, MAX_ROOM = 2;
 /** Visitors' stroll (u/s: under the players' PACE), and a walk's straight line to its length. */
 const STROLL = 24, DETOUR = 1.25;
 const MIN_WALK = 1500, MIN_STAY = 8000, FADE_MS = 500;
@@ -77,9 +86,18 @@ const MIN_WALK = 1500, MIN_STAY = 8000, FADE_MS = 500;
 const TALK_MS = 6000, CATCH = 34;
 /** A notice's turn (ms), and how long a find is new (the `new` lines). */
 const NOTICE_MS = 3000, FRESH_MS = 600_000;
+/** An emote bubble: shown this long (ms), one every EMOTE_EVERY ± EMOTE_JIT while it stays. */
+export const EMOTE_MS = 2500, EMOTE_EVERY = 40_000;
+const EMOTE_JIT = 8000;
+/** My villager this close (u: 2 tiles) gets a wave and a turn (ms), once a visitor a visit. */
+export const WAVE_R = 20;
+const WAVE_MS = 2500;
+/** A point this near its room's sides or front (u) isn't used (the screen's edge, the HUD), nor this near its back. */
+const SIDE = 10, FRONT = 14, BACK = 4;
 const DAY = 86_400_000, Q = 900_000, MIN = 60_000, ZONE = 9 * 3_600_000;
-/** How many come at each Tokyo hour (±1 a quarter): none in the small hours, most in the afternoon. */
-const BY_HOUR = [0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 3, 4, 4, 3, 3, 2, 2, 2, 1, 1, 0];
+/** How many come at each Tokyo hour (±1 a quarter): none in the small hours, a few at dusk, most in the afternoon and
+ *  evening (after work, when we're in). */
+const BY_HOUR = [0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 8, 8, 8, 8, 7, 7, 4, 2, 0];
 const ROOM_W: Record<RoomKind, number> = { hall: 1, bug: 3, fish: 3, sea: 1.5, fossil: 2.5, art: 2.5 };
 /** What each personality likes: rooms (×), and how it lingers (a kind's weight, its time ×). */
 const LIKES: Record<Personality, { room: Partial<Record<RoomKind, number>>; kind: Record<LingerPoint['kind'], number>; slow: number }> = {
@@ -97,7 +115,7 @@ const STAY_MS: Record<LingerPoint['kind'], readonly [number, number]> = { look: 
 /** A visitor's time in one room: in at `t0`, out by `t1`. */
 interface Stint { who: number; room: string; t0: number; t1: number }
 /** A stretch of a visitor's plan: a walk (`from` → `to`), or a stay at its point (an `act` at its middle). */
-interface Seg { t0: number; t1: number; walk: boolean; from: Pt; to: Pt; point: LingerPoint | null; enter?: true; leave?: true; act?: { at: number; a: Act } }
+interface Seg { t0: number; t1: number; walk: boolean; from: Pt; to: Pt; point: LingerPoint | null; enter?: true; leave?: true; act?: { at: number; a: Act }; emotes?: { at: number; e: Emote }[] }
 interface Plan { stints: Stint[]; segs: Map<Stint, Seg[]> }
 
 const dayOf = (ms: number) => Math.floor((ms + ZONE) / DAY);
@@ -108,10 +126,15 @@ const yawTo = (from: Pt, to: Pt) => Math.atan2(to[0] - from[0], to[1] - from[1])
 /** A visitor's body's reach (u): a point closer than this to a doorway is in it. */
 const BODY = 6;
 
-/** The points a room's visitors use: none in a doorway (one would stand in the way). */
+/** The points a room's visitors use: none in a doorway (one would stand in the way), none at its floor's very sides or
+ *  front (the room view's edge, under the HUD: out of a finger's reach). */
 export function usablePoints(points: readonly LingerPoint[], rooms: readonly VisitorRoom[]): LingerPoint[] {
-  const doorways = new Map(rooms.map((r) => [r.id, r.doorways]));
-  return points.filter((p) => doorways.has(p.room) && !doorways.get(p.room)!.some((d) => inBox(d, p.x, p.z, BODY)));
+  const byId = new Map(rooms.map((r) => [r.id, r]));
+  return points.filter((p) => {
+    const r = byId.get(p.room), b = r?.bounds;
+    if (!r || r.doorways.some((d) => inBox(d, p.x, p.z, BODY))) return false;
+    return !b || (p.x > b.x0 + SIDE && p.x < b.x1 - SIDE && p.z > b.z0 + BACK && p.z < b.z1 - FRONT);
+  });
 }
 
 /** The Tokyo day's plan (`day`: days since the epoch, Tokyo's): who comes when to which room, and each one's walks and
@@ -124,18 +147,30 @@ export function dayPlan(day: number, rooms: readonly VisitorRoom[], points: read
   const open = rooms.filter((m) => byRoom.get(m.id)!.length > MAX_ROOM);
   const stints: Stint[] = [];
   const over = (a: number, b: number, f: (s: Stint) => boolean) => stints.filter((s) => s.t0 < b && s.t1 > a && f(s)).length;
+  /** The most of those `f` keeps in at once between a and b (at a, or as one of them comes in). */
+  const peak = (a: number, b: number, f: (s: Stint) => boolean) => {
+    const near = stints.filter((s) => s.t0 < b && s.t1 > a && f(s));
+    return Math.max(0, ...[a, ...near.map((s) => s.t0).filter((t) => t > a)].map((t) => near.filter((s) => s.t0 <= t && s.t1 > t).length));
+  };
   for (let q = 0; q < 96 && open.length; q++) {
     const t = start + q * Q, base = BY_HOUR[Math.floor(q / 4)], x = r();
     const want = base && Math.min(MAX_IN, Math.max(0, base + (x < 0.2 ? -1 : x > 0.85 ? 1 : 0)));
     for (let tries = 0; tries < 6; tries++) {
       const t0 = t + Math.floor(r() * 10 * MIN), t1 = Math.min(end, t0 + (2 + Math.floor(r() * 3)) * Q + Math.floor((r() - 0.5) * 10 * MIN));
-      if (t1 - t0 < 10 * MIN || over(t0, t1, () => true) >= want) break;
+      // (the hour's number in at its start, one more while the aquarium or the bug garden has nobody; never more than
+      // MAX_IN at once while it stays)
+      const bare = open.some((m) => (m.kind === 'fish' || m.kind === 'bug') && !peak(t0, t0, (s) => s.room === m.id));
+      if (!want || t1 - t0 < 10 * MIN || peak(t0, t0, () => true) >= want + (bare ? 1 : 0) || peak(t0, t1, () => true) >= MAX_IN) break;
       const free = VISITORS.map((_, i) => i).filter((i) => !over(t0 - 10 * MIN, t1, (s) => s.who === i));
       if (!free.length) break;
       const who = free[Math.floor(r() * free.length)], likes = LIKES[VISITORS[who][1]];
-      const can = open.filter((m) => over(t0, t1, (s) => s.room === m.id) < MAX_ROOM);
+      const can = open.filter((m) => peak(t0, t1, (s) => s.room === m.id) < MAX_ROOM);
       if (!can.length) break;
-      const room = weighted(can.map((m) => [m, ROOM_W[m.kind] * (likes.room[m.kind] ?? 1)] as const), r);
+      // (the aquarium and the bug garden first, while either has nobody; else a room with nobody, by taste; else any)
+      const empty = can.filter((m) => !over(t0, t1, (s) => s.room === m.id));
+      const must = empty.filter((m) => m.kind === 'fish' || m.kind === 'bug');
+      const room = must.length ? must[Math.floor(r() * must.length)]
+        : weighted((empty.length ? empty : can).map((m) => [m, ROOM_W[m.kind] * (likes.room[m.kind] ?? 1)] as const), r);
       stints.push({ who, room: room.id, t0, t1 });
     }
   }
@@ -185,7 +220,10 @@ function roomPlan(room: VisitorRoom, pts: readonly LingerPoint[], stints: readon
     segs.push({ t0: t, t1: arrive, walk: true, from: v.at, to, point: null, ...(first ? { enter: true as const } : {}) });
     const x = r();
     const act = p.kind === 'look' && x < 0.6 ? { at: arrive + (stayEnd - arrive) * (0.3 + 0.4 * r()), a: (x < 0.3 ? 'hop' : x < 0.45 ? 'wave' : 'surprise') as Act } : undefined;
-    segs.push({ t0: arrive, t1: stayEnd, walk: false, from: to, to, point: p, ...(act ? { act } : {}) });
+    // (its emotes: the first a little after it arrives, then one every 40 s or so, each over before it moves on)
+    const emotes: { at: number; e: Emote }[] = [];
+    for (let at = arrive + 4000 + r() * 20_000; at + EMOTE_MS < stayEnd - 1000; at += EMOTE_EVERY + (r() * 2 - 1) * EMOTE_JIT) emotes.push({ at, e: EMOTES[Math.floor(r() * EMOTES.length)] });
+    segs.push({ t0: arrive, t1: stayEnd, walk: false, from: to, to, point: p, ...(act ? { act } : {}), ...(emotes.length ? { emotes } : {}) });
     v.seen.add(p.id);
     v.at = to;
     v.point = p;
@@ -206,9 +244,10 @@ function segAt(segs: readonly Seg[], t: number): Seg | null {
 }
 
 export interface Crowd {
-  /** The visitors in `room` at t (ms: the clock's, Tokyo's day from it), posed; `acts` the emotes due since the last
-   *  step (play each once: villager3d act). `blocked`: seats a player sits on (a visitor stands by one instead). */
-  step(t: number, room: string, blocked?: ReadonlySet<string>): { poses: readonly VisitorPose[]; acts: readonly { id: string; act: Act }[] };
+  /** The visitors in `room` at t (ms: the clock's, Tokyo's day from it), posed; `acts` the acts due since the last
+   *  step (play each once: villager3d act). `blocked`: seats a player sits on (a visitor stands by one instead); `me`:
+   *  my villager (one standing within WAVE_R of it turns and waves, once a visit). */
+  step(t: number, room: string, blocked?: ReadonlySet<string>, me?: Pt | null): { poses: readonly VisitorPose[]; acts: readonly { id: string; act: Act }[] };
   /** A tap on visitor `id` (this phone's): it stops, turns to my villager at `me`, hops; its line (null: not here). */
   tap(id: string, t: number, me: Pt): Line | null;
   /** A find just put on show (a `look` point's exhibitId): that room's visitors turn to it with a start; their lines
@@ -230,7 +269,7 @@ export interface CrowdOptions {
   rand?: () => number;
 }
 
-interface Local { talk: number; held: Pt | null; faceYaw: number; notice: number; noticeYaw: number; shown: Pt | null; lastLine?: string }
+interface Local { talk: number; held: Pt | null; faceYaw: number; notice: number; noticeYaw: number; shown: Pt | null; waved: boolean; greet: number; greetYaw: number; lastLine?: string }
 
 export function crowdOf(o: CrowdOptions): Crowd {
   const points = usablePoints(o.points, o.rooms);
@@ -261,7 +300,7 @@ export function crowdOf(o: CrowdOptions): Crowd {
     return w;
   };
   const local = new Map<string, Local>();
-  const localOf = (id: string) => local.get(id) ?? (local.set(id, { talk: -Infinity, held: null, faceYaw: 0, notice: -Infinity, noticeYaw: 0, shown: null }), local.get(id)!);
+  const localOf = (id: string) => local.get(id) ?? (local.set(id, { talk: -Infinity, held: null, faceYaw: 0, notice: -Infinity, noticeYaw: 0, shown: null, waved: false, greet: -Infinity, greetYaw: 0 }), local.get(id)!);
   const fresh = new Map<string, number>();
   const pending: { id: string; act: Act }[] = [];
   const poses = new Map<string, VisitorPose>();
@@ -277,6 +316,7 @@ export function crowdOf(o: CrowdOptions): Crowd {
     into.speed = 0;
     into.fade = 1;
     into.point = s.point;
+    into.emote = s.emotes?.find((e) => t >= e.at && t < e.at + EMOTE_MS)?.e ?? null;
     if (s.walk) {
       const w = walkOf(st.room, s), dur = s.t1 - s.t0, k = Math.min(1, (t - s.t0) / dur);
       let d = k * w.total, a = s.from, i = 0;
@@ -317,18 +357,18 @@ export function crowdOf(o: CrowdOptions): Crowd {
   }
 
   return {
-    step(t, room, blocked) {
+    step(t, room, blocked, me) {
       out.length = 0;
       acts.length = 0;
       const dt = room === lastRoom ? Math.min(250, Math.max(0, t - lastT)) : 0;
       for (const [st, s] of here(t, room)) {
         const id = VISITORS[st.who][0];
         let p = poses.get(id);
-        if (!p) poses.set(id, (p = { id, personality: VISITORS[st.who][1], x: 0, z: 0, yaw: 0, state: 'stand', speed: 0, fade: 1, point: null }));
+        if (!p) poses.set(id, (p = { id, personality: VISITORS[st.who][1], x: 0, z: 0, yaw: 0, state: 'stand', speed: 0, fade: 1, point: null, emote: null }));
         planned(st, s, t, blocked, p);
         const l = localOf(id);
         if (t < l.talk && l.held) {
-          (p.x = l.held[0]), (p.z = l.held[1]), (p.yaw = l.faceYaw), (p.state = 'talk'), (p.speed = 0), (p.fade = 1);
+          (p.x = l.held[0]), (p.z = l.held[1]), (p.yaw = l.faceYaw), (p.state = 'talk'), (p.speed = 0), (p.fade = 1), (p.emote = null);
           l.shown = l.held;
         } else if (l.shown) {
           // (back onto the plan after a talk, at a stroll's pace)
@@ -342,6 +382,16 @@ export function crowdOf(o: CrowdOptions): Crowd {
           }
           l.held = null;
         } else if (t < l.notice && p.state !== 'sit' && p.state !== 'walk') p.yaw = l.noticeYaw;
+        else if (p.state !== 'sit' && p.state !== 'walk' && p.fade === 1) {
+          // (my villager come close: a turn and a wave, once a visit)
+          if (me && !l.waved && dist(me, [p.x, p.z]) < WAVE_R) {
+            l.waved = true;
+            l.greet = t + WAVE_MS;
+            l.greetYaw = yawTo([p.x, p.z], me);
+            acts.push({ id, act: 'wave' });
+          }
+          if (t < l.greet) p.yaw = l.greetYaw;
+        }
         // (an emote of the plan's, once, only if it came due just now in this room)
         if (s.act && dt && s.act.at > lastT && s.act.at <= t && t >= l.talk) acts.push({ id, act: s.act.a });
         out.push(p);
@@ -393,7 +443,9 @@ export function crowdOf(o: CrowdOptions): Crowd {
       for (const [st, s] of here(t, room)) {
         const l = local.get(VISITORS[st.who][0]);
         if (s.walk || l?.shown || (l && t < l.talk + 100)) return 0;
-        next = Math.min(next, s.t1 - t, s.act && s.act.at > t ? s.act.at - t : Infinity, l && l.notice > t ? l.notice - t : Infinity);
+        next = Math.min(next, s.t1 - t, s.act && s.act.at > t ? s.act.at - t : Infinity, l && l.notice > t ? l.notice - t : Infinity, l && l.greet > t ? l.greet - t : Infinity);
+        // (an emote's bubble coming or going)
+        for (const e of s.emotes ?? []) if (e.at + EMOTE_MS > t) next = Math.min(next, e.at > t ? e.at - t : e.at + EMOTE_MS - t);
       }
       // (the next to come in)
       const pl = planAt(t);

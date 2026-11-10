@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { crowdOf, dayPlan, usablePoints, VISITORS, MAX_IN, MAX_ROOM, type LingerPoint, type VisitorRoom, type VisitorPose } from './visitors.ts';
+import { crowdOf, dayPlan, usablePoints, VISITORS, MAX_IN, MAX_ROOM, EMOTE_MS, WAVE_R, type LingerPoint, type VisitorRoom, type VisitorPose } from './visitors.ts';
+import { VISITOR_POINTS, VISITOR_ROOMS } from './spots.ts';
+import { boundsOf, ROOM_IDS, type RoomId } from './plan.ts';
 import { LINES, visitorLine, type LineContext } from './visitorLines.ts';
 import { ROSTER } from '#lib/villagers/roster.ts';
 import { has3d } from '../villager3d/manifest.ts';
@@ -219,6 +221,95 @@ describe('the museum’s visitors: a tap, a find, the frames', () => {
 
 /** The longest stretch with no break opportunity under keep-all (i18n/linebreaks.test's rule), {name} one character. */
 const longestRun = (s: string) => Math.max(...s.replace(/\{[^}]+\}/g, 'X').split(/[\s、。！？!?）)」』・〜~/]|(?<=[（(「『])/).map((r) => [...r].length));
+
+describe('the museum’s visitors on the real plan: busy rooms, emotes, a wave', () => {
+  const rooms = VISITOR_ROOMS.map((r) => ({ ...r, bounds: boundsOf(r.id as RoomId) }));
+  const real = (rand = Math.random) => crowdOf({ rooms, points: VISITOR_POINTS, path: () => [], name: () => null, rand });
+  const DAYS = [10, 11, 12, 13, 14, 15, 16];
+
+  it(`up to ${MAX_IN} in, ${MAX_ROOM} a room; in the afternoon and evening most rooms have someone, the aquarium and the bug garden nearly always`, () => {
+    let samples = 0, busy = 0, total = 0, fishBug = 0, fishBugN = 0, peak = 0;
+    for (const d of DAYS) {
+      const c = real();
+      for (let t = at(13, 0, d); t < at(20, 0, d); t += 60_000) {
+        let all = 0;
+        for (const r of ROOM_IDS) {
+          const n = c.step(t, r).poses.length;
+          expect(n).toBeLessThanOrEqual(MAX_ROOM);
+          samples++;
+          if (n) busy++;
+          if (r === 'fish' || r === 'bug') (fishBugN++, n && fishBug++);
+          all += n;
+        }
+        expect(all).toBeLessThanOrEqual(MAX_IN);
+        total += all;
+        peak = Math.max(peak, all);
+      }
+    }
+    // (~70 % of the rooms one walks into)
+    expect(busy / samples).toBeGreaterThan(0.7);
+    expect(fishBug / fishBugN).toBeGreaterThan(0.8);
+    expect(total / (samples / ROOM_IDS.length)).toBeGreaterThan(5);
+    expect(peak).toBeGreaterThanOrEqual(7);
+  });
+
+  it('no place at a room’s very sides or front (the room view’s edge, under the HUD), and every room still has places', () => {
+    const used = usablePoints(VISITOR_POINTS, rooms);
+    for (const p of used) {
+      const b = boundsOf(p.room as RoomId);
+      expect(p.x - b.x0 >= 10 && b.x1 - p.x >= 10 && b.z1 - p.z >= 14, `${p.id} ${p.x},${p.z}`).toBe(true);
+    }
+    for (const r of ROOM_IDS) expect(used.filter((p) => p.room === r).length, r).toBeGreaterThan(MAX_ROOM);
+    const box: VisitorRoom = { id: 'x', kind: 'hall', door: [0, 0], doorways: [], bounds: { x0: 0, x1: 100, z0: 0, z1: 100 } };
+    const kept = usablePoints([P('a', 'x', 5, 50, 'look'), P('b', 'x', 50, 90, 'look'), P('c', 'x', 50, 50, 'look')], [box]).map((p) => p.id);
+    expect(kept).toEqual(['c']);
+  });
+
+  it('an emote bubble (♪ ! 💡 …) every 40 s or so while one stays, still between, the same on every phone', () => {
+    const a = real(mulberry32(1)), b = real(mulberry32(2));
+    const starts: number[] = [], kinds = new Set<string>();
+    let stayMs = 0;
+    const was = new Map<string, string | null>();
+    for (let t = at(13); t < at(17); t += 500) {
+      for (const r of ROOM_IDS) {
+        const pa = a.step(t, r).poses, pb = b.step(t, r).poses;
+        expect(pa.map((p) => `${p.id}:${p.emote}`)).toEqual(pb.map((p) => `${p.id}:${p.emote}`));
+        for (const p of pa) {
+          if (p.state !== 'walk') stayMs += 500;
+          if (p.emote && !was.get(p.id)) (starts.push(t), kinds.add(p.emote));
+          if (p.emote) expect(p.state, p.id).not.toBe('walk');
+          was.set(p.id, p.emote);
+        }
+      }
+    }
+    expect(kinds.size).toBe(4);
+    const every = stayMs / starts.length;
+    expect(every).toBeGreaterThan(30_000);
+    expect(every).toBeLessThan(60_000);
+    expect(EMOTE_MS).toBeLessThan(4000);
+  });
+
+  it(`waves once a visit at my villager come within ${WAVE_R} u (2 tiles), turned to it; this phone's only`, () => {
+    const c = real(), plain = real();
+    for (let t = at(14); t < at(18); t += 1000) {
+      for (const r of ROOM_IDS) {
+        const p = c.step(t, r).poses.find((q) => q.state === 'look' && q.fade === 1);
+        if (!p) continue;
+        const me: Pt = [p.x + WAVE_R - 4, p.z];
+        expect(c.step(t + 20, r, undefined, [p.x + 60, p.z]).acts).toEqual([]);
+        const near = c.step(t + 40, r, undefined, me);
+        expect(near.acts).toContainEqual({ id: p.id, act: 'wave' });
+        expect(near.poses.find((q) => q.id === p.id)!.yaw).toBeCloseTo(Math.PI / 2);
+        expect(c.step(t + 80, r, undefined, me).acts.filter((x) => x.act === 'wave')).toEqual([]);
+        // (the turn over, the plan's pose again: as a phone that never came near)
+        const later = t + 4000;
+        expect(snap(c.step(later, r, undefined, me).poses)).toEqual(snap(plain.step(later, r).poses));
+        return;
+      }
+    }
+    throw new Error('no one looking');
+  });
+});
 
 describe('the museum’s visitors: their lines', () => {
   const all = Object.entries(LINES).flatMap(([p, pools]) => Object.entries(pools).flatMap(([k, v]) =>
