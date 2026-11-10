@@ -14,7 +14,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  BRIDGE, CAMPSITE, CENTRE_STAGE, CLIFF, DECOR_SLOTS, FLOWERS, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, PATHS, POND, RIVER, ROCK, SCENERY, SPRING, TAPE_DECK,
+  BRIDGE, CAMPSITE, CLIFF, DECOR_SLOTS, FLOWERS, GOAL_TREES, HEDGE_XS, HEDGE_Z, HOMES, PATHS, POND, RIVER, ROCK, SCENERY, SPRING, TAPE_DECK,
   inOval, onGrass, onLand, type Pt
 } from '../src/lib/components/island/world.ts';
 import { CHUNK, GRID, KINDS, TILE, codeOf, idx, kindOf, tierOf, tileAt, tileX, tileZ, type Kind } from '../src/lib/layout/grid.ts';
@@ -248,7 +248,6 @@ mid('kk-slider', 'kk-stool', 6, 22);
 for (const o of objects) if (o.k === 'home') o.x += Math.floor((homeFoot(DEFAULT_HOMES[o.id.slice(-1) as 'A']).at(0)! - 1) / 2);
 put('spot-villager-A', 'spot', HOMES.A[0], HOMES.A[1], { s: 'villager-a' });
 put('spot-villager-B', 'spot', HOMES.B[0], HOMES.B[1], { s: 'villager-b' });
-put('spot-stage', 'spot', CENTRE_STAGE[0], CENTRE_STAGE[1], { s: 'stage' });
 for (const f of FLOWERS) put(f.id, 'flower', f.x, f.z, { s: `c${f.clump}` });
 
 // ---- on the grid, nothing over anything: each piece where it snapped, else the nearest free tile round it ----

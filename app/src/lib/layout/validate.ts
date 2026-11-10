@@ -4,7 +4,7 @@
 import { GRID, isWater, kindOf, tierOf, idx, onGrid, type Kind } from './grid.ts';
 import { doorOf, footOf, objMid, objTiles, originOf, type Layout, type Obj } from './model.ts';
 import { isMarker, kindDef } from './catalog.ts';
-import { markerSpot } from './spots.ts';
+import { markerSpot, spotWhy, type SpotWhy } from './spots.ts';
 import { HOME_IDS } from './homes.ts';
 import { blockBox, navOf, reachable, type LayoutNav } from './nav.ts';
 
@@ -53,6 +53,25 @@ export function overlap(layout: Layout, a: Obj, b: Obj): boolean {
   if ((sa && !sb && !kindDef(b.k)?.block) || (sb && !sa && !kindDef(a.k)?.block)) return false;
   const ba = standBox(layout, a), bb = standBox(layout, b);
   return ba.x0 < bb.x1 && bb.x0 < ba.x1 && ba.y0 < bb.y1 && bb.y0 < ba.y1;
+}
+
+/** A visitors' spot's reason in words (the editor's sheets: kanji; and English). */
+function whyText(w: SpotWhy): { ja: string; en: string } {
+  const d = w.k ? kindDef(w.k) : undefined, ja = w.k === 'spot' ? '住民' : d?.ja ?? '物', en = w.k === 'spot' ? 'villager' : (d?.en ?? 'thing').toLowerCase();
+  switch (w.why) {
+    case 'water': return { ja: '水の上です', en: 'on water' };
+    case 'ground': return { ja: '草地か道ではありません', en: 'not on grass or a path' };
+    case 'sand': return { ja: '砂浜ではありません', en: 'not on the sand' };
+    case 'tier': return { ja: '段差があります', en: 'a step in the ground' };
+    case 'unreachable': return { ja: '歩いて行けません', en: "can't be walked to" };
+    case 'door': return d?.front ? { ja: `${ja}の前です`, en: `in front of the ${en}` } : { ja: '入口の前です', en: 'in front of a door' };
+    case 'on': return { ja: `${ja}の上です`, en: `on the ${en}` };
+    case 'beside': return { ja: `横に${ja}があります`, en: `a ${en} beside it` };
+    case 'behind': return { ja: `後ろに${ja}があります`, en: `a ${en} behind it` };
+    case 'front': return { ja: `前に${ja}があります`, en: `a ${en} in front of it` };
+    case 'hidden': return { ja: `${ja}に隠れます`, en: `hidden by the ${en}` };
+    case 'covers': return { ja: `${ja}を隠します`, en: `covers the ${en}` };
+  }
 }
 
 export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[] {
@@ -148,12 +167,15 @@ export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[
     const [x, z] = objMid(layout, o);
     if (!reachable(nav, x, z)) add('unreachable', 'error', objTiles(layout, o), [o.id], '場所まで行けない', `The spot (${o.s}) can't be reached`);
   }
-  // the visitors' spots: where they can stand now (else the island's own spot: a warning, nothing breaks)
+  // the visitors' spots: where they can stand now (else the island's own spot: a warning, nothing breaks), each reason
+  // with what blocks marked (spots.ts spotWhy)
   for (const k of ['plaza', 'beach-spot', 'guest-spot'] as const) {
     const m = markerSpot(layout, k), o = m && layout.objects.get(m.id);
     if (!o || m.at) continue;
-    const def = kindDef(k)!;
-    add('visitor-spot', 'warn', objTiles(layout, o), [o.id], `${def.ja}に立てない（いつもの場所に立ちます）`, `Nobody can stand at the ${def.en.toLowerCase()} (the usual spot instead)`);
+    const def = kindDef(k)!, whys = spotWhy(layout, k, o.x, o.z), said = whys.map(whyText);
+    const ja = [...new Set(said.map((w) => w.ja))].join('、'), en = [...new Set(said.map((w) => w.en))].join('; ');
+    const tiles = [...objTiles(layout, o), ...whys.flatMap((w) => w.tiles)].filter(([c, r], i, a) => a.findIndex(([x, y]) => x === c && y === r) === i);
+    add('visitor-spot', 'warn', tiles, [o.id, ...new Set(whys.flatMap((w) => w.ids))], `${def.ja}に立てない：${ja}（いつもの場所に立ちます）`, `Nobody can stand at the ${def.en.toLowerCase()}: ${en} (the usual spot instead)`);
   }
   // pockets: land nobody can walk to (a tile whose every walkable cell is off the main region)
   const pocket: [number, number][] = [];

@@ -5,9 +5,9 @@
 // off the paths, the water and the sand, a walker can reach, and not right before a door, a board's front, a named
 // spot or the stairs' foot. The picks spread out (farthest first, Mitchell's), each a little off its tile's middle.
 import { seeded } from '#lib/random.ts';
-import { GRID, PATHS, TILE, idx, kindOf, onGrid, tileAt, tileMid, tileX, tileZ } from './grid.ts';
+import { GRID, PATHS, TILE, idx, isWater, kindOf, onGrid, tileAt, tileMid, tileX, tileZ } from './grid.ts';
 import { doorOf, extentOf, footOf, objMid, objTiles, originOf, type Layout, type Obj } from './model.ts';
-import { isMarker, kindDef } from './catalog.ts';
+import { goesIn, isMarker, kindDef } from './catalog.ts';
 import { navOf, reachable } from './nav.ts';
 import { onBuilding, tapCovered } from './clear.ts';
 import { FIGURE_HIDES } from './hides.ts';
@@ -83,9 +83,9 @@ function groundOf(layout: Layout): Ground {
     if (isMarker(o.k)) continue;
     for (const [c, r] of objTiles(layout, o)) used.add(idx(c, r));
     if (o.k === 'home' || o.k === 'museum' || o.k === 'shop' || kindDef(o.k)?.front) for (const [c, r] of doorOf(layout, o).tiles) used.add(idx(c, r));
-    const def = kindDef(o.k), villager = o.k === 'spot' && o.s !== 'stage', h = villager ? VILLAGER_H : (def?.h ?? 0);
+    const def = kindDef(o.k), villager = o.k === 'spot', h = villager ? VILLAGER_H : (def?.h ?? 0);
     // (everything one taps: a short thing hides nothing, but a figure standing just in front covers its tap area)
-    if (o.k === 'spot' && !villager || o.k === 'bridge' || o.k === 'stairs' || o.k === 'pond') continue;
+    if (o.k === 'bridge' || o.k === 'stairs' || o.k === 'pond') continue;
     const [w, d] = footOf(layout, o), [c0, r0] = originOf(layout, o), mid = tileX(c0) + (w * TILE) / 2;
     // (a tree's canopy, and its tap area, is wider than its tile)
     const hw = def?.group === 'tree' ? 50 : villager ? 18 : (w * TILE) / 2;
@@ -118,17 +118,124 @@ export function markerOf(layout: Layout, k: MarkerKind): Obj | null {
   return best;
 }
 
-/** Whether the visitors may stand on a tile (the plaza's mark there): grass or a path, a clear patch round it (a tile
- *  each side, one behind for the wedding's arch, one in front for a birthday's cake) and a walker reaches it. What
- *  stands in front of it on screen is the members' choice (the derived stage keeps clear of that too). */
-export function plazaOk(layout: Layout, c: number, r: number): boolean {
-  if (!onGrid(c, r) || !groundOf(layout).patch(c, r, 1, 1)) return false;
-  const [x, z] = tileMid(c, r);
-  return reachable(navOf(layout), x, z);
+/** Why a visitors' spot can't be used on a tile: the reason, the tiles that block (to mark on the plan) and the things
+ *  standing there (their ids; `k`, the kind named in the reason). */
+export interface SpotWhy {
+  why: 'water' | 'ground' | 'sand' | 'on' | 'beside' | 'behind' | 'front' | 'door' | 'tier' | 'unreachable' | 'hidden' | 'covers';
+  tiles: [number, number][];
+  ids: string[];
+  k?: string;
+}
+type Thing = { id: string; k: string; tiles: [number, number][]; x0: number; x1: number; cx0: number; cx1: number; z0: number; z1: number; h: number };
+type Occupied = { owner: Map<number, { id: string; k: string; door: boolean }>; things: Thing[] };
+const occupied = new WeakMap<Layout, Occupied>();
+/** What stands on the layout, for the visitors' spots: each tile's owner (a thing's tiles, a building's door or a
+ *  board's front: `door`) and what one sees or taps (its footprint, a tree's canopy `cx`, its height), the marks aside. */
+function occupiedOf(layout: Layout): Occupied {
+  const had = occupied.get(layout);
+  if (had) return had;
+  const owner: Occupied['owner'] = new Map(), things: Thing[] = [];
+  for (const o of layout.objects.values()) {
+    if (isMarker(o.k)) continue;
+    const def = kindDef(o.k), tiles = objTiles(layout, o);
+    for (const [c, r] of tiles) owner.set(idx(c, r), { id: o.id, k: o.k, door: false });
+    if (goesIn(o.k) || def?.front) for (const [c, r] of doorOf(layout, o).tiles) if (!owner.has(idx(c, r))) owner.set(idx(c, r), { id: o.id, k: o.k, door: true });
+    if (o.k === 'bridge' || o.k === 'stairs' || o.k === 'pond') continue;
+    const villager = o.k === 'spot', [w, d] = footOf(layout, o), [c0, r0] = originOf(layout, o), mid = tileX(c0) + (w * TILE) / 2;
+    const hw = villager ? 18 : (w * TILE) / 2, cw = def?.group === 'tree' ? 50 : hw;
+    things.push({ id: o.id, k: o.k, tiles, x0: mid - hw, x1: mid + hw, cx0: mid - cw, cx1: mid + cw, z0: tileZ(r0), z1: tileZ(r0 + d), h: villager ? VILLAGER_H : (def?.h ?? 0) });
+  }
+  const got = { owner, things };
+  occupied.set(layout, got);
+  return got;
 }
 
+/** A figure on a tile (docs/island-layout.md "Derived, never hand-made"): what hides it (a thing in front or beside it,
+ *  its canopy over it, within FIGURE_HIDES of its height) and what it covers (a thing right behind, in its own columns, whose tap its body
+ *  takes: out to `cover` u). `half`: its half width (u) in front, `coverHalf` behind. */
+function figureWhy(layout: Layout, c: number, r: number, half: number, cover: number, coverHalf: number): SpotWhy[] {
+  const [x, z] = tileMid(c, r), out: SpotWhy[] = [];
+  for (const b of occupiedOf(layout).things) {
+    // (in front, or beside it: a tree's canopy hangs over a figure next to it, a palm's fronds over Gulliver's feet)
+    if (b.z0 < tileZ(r + 1) && z < b.z1 + b.h * FIGURE_HIDES && x + half > b.cx0 && x - half < b.cx1) out.push({ why: 'hidden', tiles: b.tiles, ids: [b.id], k: b.k });
+    else if (b.z0 >= tileZ(r + 1) && b.z0 < z + cover && x + coverHalf > b.x0 && x - coverHalf < b.x1) out.push({ why: 'covers', tiles: b.tiles, ids: [b.id], k: b.k });
+  }
+  return out;
+}
+
+/** A tile's ground and what's on it, for one of the spot's tiles (`pos`: where it is, for the reason): `want` the
+ *  ground it must be, `tier` the tier it must be at. */
+function tileWhy(layout: Layout, c: number, r: number, want: 'plaza' | 'land' | 'sand', tier: number, pos: 'on' | 'beside' | 'behind' | 'front'): SpotWhy[] {
+  const k = layout.kind(c, r);
+  if (!onGrid(c, r) || isWater(k)) return [{ why: 'water', tiles: [[c, r]], ids: [] }];
+  const out: SpotWhy[] = [];
+  if (want === 'sand' ? k !== 'sand' : want === 'plaza' && k !== 'grass' && !PATHS.includes(k)) out.push({ why: want === 'sand' ? 'sand' : 'ground', tiles: [[c, r]], ids: [] });
+  if (layout.tier(c, r) !== tier) out.push({ why: 'tier', tiles: [[c, r]], ids: [] });
+  const o = occupiedOf(layout).owner.get(idx(c, r));
+  if (o) out.push({ why: o.door ? 'door' : pos, tiles: [[c, r]], ids: [o.id], k: o.k });
+  return out;
+}
+
+/** Why a visitors' spot of kind `k` can't be used on a tile (none: it can):
+ *   plaza: the visitors' (and the events': a wedding's arch behind, a birthday's cake in front): grass or a path, a
+ *     clear patch round it (a tile each side, one behind, one in front) of its tier, nothing on it, no door;
+ *   guest-spot: the day's guest alone on its tile: dry land (grass, a path, sand), nothing on it, no door, nothing
+ *     hiding them on screen nor right behind them (their head would take its tap);
+ *   beach-spot: Gulliver lying across (his 81u body over three tiles): sand under him, level, nothing on it, nothing
+ *     hiding him, nor right behind him lying or standing up once woken (as tall as a villager).
+ *  And a walker reaches it. The same on every phone (the layout's alone). */
+export function spotWhy(layout: Layout, k: MarkerKind, c: number, r: number): SpotWhy[] {
+  if (!onGrid(c, r)) return [{ why: 'water', tiles: [], ids: [] }];
+  const t = layout.tier(c, r), out: SpotWhy[] = [];
+  if (k === 'plaza') {
+    for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) out.push(...tileWhy(layout, c + i, r + j, 'plaza', t, j > 0 ? 'behind' : j < 0 ? 'front' : i ? 'beside' : 'on'));
+  } else if (k === 'guest-spot') {
+    out.push(...tileWhy(layout, c, r, 'land', t, 'on'));
+    if (!out.length) out.push(...figureWhy(layout, c, r, GUEST_HALF, OVER, GUEST_HALF));
+  } else {
+    for (const i of [-1, 0, 1]) out.push(...tileWhy(layout, c + i, r, 'sand', t, i ? 'beside' : 'on'));
+    if (!out.length) {
+      // lying (his length across, his tap area 0.45 of it tall) and stood up (a villager's figure)
+      const lying = figureWhy(layout, c, r, GULLIVER_HALF, OVER * 0.45, GULLIVER_HALF), up = figureWhy(layout, c, r, GUEST_HALF, OVER, GUEST_HALF);
+      out.push(...lying, ...up.filter((u) => !lying.some((w) => w.ids[0] === u.ids[0])));
+    }
+  }
+  if (!out.length) {
+    const [x, z] = tileMid(c, r);
+    if (!reachable(navOf(layout), x, z)) out.push({ why: 'unreachable', tiles: [[c, r]], ids: [] });
+  }
+  return merged(out);
+}
+const RANK: readonly SpotWhy['why'][] = ['on', 'door', 'front', 'beside', 'behind'];
+/** One reason a thing (a big one on several of the patch's tiles: the nearest way it's in the way) and one each of
+ *  the rest (the sand missing under him: all its tiles). */
+function merged(ws: SpotWhy[]): SpotWhy[] {
+  const out: SpotWhy[] = [];
+  for (const w of ws) {
+    const had = out.find((o) => (w.ids.length ? o.ids[0] === w.ids[0] : !o.ids.length && o.why === w.why));
+    if (!had) out.push({ ...w, tiles: [...w.tiles] });
+    else {
+      had.tiles.push(...w.tiles.filter(([c, r]) => !had.tiles.some(([a, b]) => a === c && b === r)));
+      const rw = RANK.indexOf(w.why), rh = RANK.indexOf(had.why);
+      if (rw >= 0 && (rh < 0 || rw < rh)) had.why = w.why;
+    }
+  }
+  return out;
+}
+/** A guest's half width (u): one tile's column. Gulliver's lying (u): half his 81u length. */
+const GUEST_HALF = TILE / 2, GULLIVER_HALF = 40;
+
+/** Whether the visitors may stand on a tile (the plaza's mark there): spotWhy's plaza rule. What stands in front of it
+ *  on screen is the members' choice (the derived stage keeps clear of that too). */
+export const plazaOk = (layout: Layout, c: number, r: number): boolean => !spotWhy(layout, 'plaza', c, r).length;
+/** Whether the day's guest may stand on a tile (the guest spot's mark there): spotWhy's guest rule. */
+export const guestOk = (layout: Layout, c: number, r: number): boolean => !spotWhy(layout, 'guest-spot', c, r).length;
+/** Whether Gulliver may lie on a tile (his mark there): spotWhy's beach rule. */
+export const beachOk = (layout: Layout, c: number, r: number): boolean => !spotWhy(layout, 'beach-spot', c, r).length;
+
 const beachTaken = new WeakMap<Layout, Set<number>>();
-/** The tiles round what stands on the layout (a tile each side, three behind, one in front), the marks aside. */
+/** The tiles round what stands on the layout (a tile each side, three behind, one in front), the marks aside: the
+ *  dated pick's clearance (washedUp). */
 function beachUsed(layout: Layout): Set<number> {
   const had = beachTaken.get(layout);
   if (had) return had;
@@ -137,30 +244,23 @@ function beachUsed(layout: Layout): Set<number> {
   beachTaken.set(layout, used);
   return used;
 }
-/** Whether Gulliver may lie on a tile (his mark there): sand, sand each side (he lies across), nothing standing a tile
- *  round it nor a few tiles behind (awake, he stands as tall as a villager), and a walker reaches it. */
-export function beachOk(layout: Layout, c: number, r: number): boolean {
-  if (!onGrid(c, r) || layout.kind(c, r) !== 'sand' || layout.kind(c - 1, r) !== 'sand' || layout.kind(c + 1, r) !== 'sand' || beachUsed(layout).has(idx(c, r))) return false;
-  const [x, z] = tileMid(c, r);
-  return reachable(navOf(layout), x, z);
-}
 
 /** A visitors' spot on the layout (null: none put down): its id and where they stand by it (`at` null: they can't
  *  now, something's in the way, so the island's own spot instead). The same on every phone (the layout's alone). */
 export function markerSpot(layout: Layout, k: MarkerKind): { id: string; at: Pt | null } | null {
   const o = markerOf(layout, k);
   if (!o) return null;
-  return { id: o.id, at: (k === 'beach-spot' ? beachOk : plazaOk)(layout, o.x, o.z) ? tileMid(o.x, o.z) : null };
+  return { id: o.id, at: spotWhy(layout, k, o.x, o.z).length ? null : tileMid(o.x, o.z) };
 }
 
 /** Where the day's guest stands (docs/design.md "Visitors: roles"): the guest spot's mark when the members have put
- *  one down and it can be used (plazaOk), else null: centre stage (stageOf), or beside it (besideStage) while the day's
+ *  one down and it can be used (guestOk), else null: centre stage (stageOf), or beside it (besideStage) while the day's
  *  visitor stands there. */
 export const guestSpot = (layout: Layout): Pt | null => markerSpot(layout, 'guest-spot')?.at ?? null;
 
 const besides = new WeakMap<Layout, Pt | null>();
 /** Beside centre stage (the guest's while the day's visitor stands on it and no guest spot is down): the nearest tile
- *  2–3 across from the stage on its row or one off (left before right), usable as a plaza, else open grass a walker
+ *  2–3 across from the stage on its row or one off (left before right), usable as the guest's (guestOk), else open grass a walker
  *  reaches, else two tiles left of the stage itself. Null: no stage. Pure: every phone agrees. */
 export function besideStage(layout: Layout): Pt | null {
   if (besides.has(layout)) return besides.get(layout)!;
@@ -170,7 +270,7 @@ export function besideStage(layout: Layout): Pt | null {
     const [sc, sr] = tileAt(st[0], st[1]), grass = new Set(openGrass(layout).map(([c, r]) => idx(c, r)));
     const near: [number, number][] = [];
     for (const dc of [-2, 2, -3, 3]) for (const dr of [0, 1, -1]) near.push([sc + dc, sr + dr]);
-    const t = near.find(([c, r]) => plazaOk(layout, c, r)) ?? near.find(([c, r]) => onGrid(c, r) && grass.has(idx(c, r)));
+    const t = near.find(([c, r]) => guestOk(layout, c, r)) ?? near.find(([c, r]) => onGrid(c, r) && grass.has(idx(c, r)));
     best = t ? tileMid(t[0], t[1]) : [st[0] - 2 * TILE, st[1]];
   }
   besides.set(layout, best);
@@ -189,7 +289,7 @@ export function stageOf(layout: Layout): Pt | null {
   let best: Pt | null = markerSpot(layout, 'plaza')?.at ?? null;
   if (!best) {
     const tiles = openGrass(layout), { patch, seen } = groundOf(layout);
-    const ext = extentOf(layout), spots = [...layout.objects.values()].filter((o) => o.k === 'spot' && o.s !== 'stage').map((o) => objMid(layout, o));
+    const ext = extentOf(layout), spots = [...layout.objects.values()].filter((o) => o.k === 'spot').map((o) => objMid(layout, o));
     const ax = (ext.land.x0 + ext.land.x1) / 2;
     const az = (spots.length ? spots.reduce((s, p) => s + p[1], 0) / spots.length : ext.shore + 255) + STAGE_BACK;
     const cost = ([c, r]: [number, number]) => {

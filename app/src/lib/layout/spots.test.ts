@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import { defaultLayout, extentOf, layoutOf, objMid, objTiles, withChanges, type Layout } from './model.ts';
-import { beachOk, besideStage, daySpots, guestSpot, markerOf, openGrass, plazaOk, stageOf, washedUp } from './spots.ts';
+import { defaultLayout, doorOf, extentOf, fromJson, layoutOf, objMid, objTiles, toJson, withChanges, type Layout } from './model.ts';
+import { KIND_LIST } from './catalog.ts';
+import { beachOk, besideStage, daySpots, guestOk, guestSpot, markerOf, openGrass, plazaOk, spotWhy, stageOf, washedUp } from './spots.ts';
 import { validate } from './validate.ts';
 import { frontRows } from './hides.ts';
 import { tapCovered } from './clear.ts';
@@ -123,7 +124,7 @@ describe('the visitors’ spots: the members’ marks (spots.ts markerSpot)', ()
   const auto = stageOf(l)!, [ac, ar] = tileAt(auto[0], auto[1]);
   // a tile the plaza may go on, well away from the usual spot; one more for a move
   const ok = openGrass(l).filter(([c, r]) => plazaOk(l, c, r) && Math.hypot(c - ac, r - ar) > 4);
-  const [pc, pr] = ok[0], [qc, qr] = ok.find(([c, r]) => Math.hypot(c - pc, r - pr) > 4)!;
+  const [pc, pr] = ok[0], [qc, qr] = ok.find(([c, r]) => Math.hypot(c - pc, r - pr) > 4 && guestOk(l, c, r))!;
   const mark = (g: Layout, id: string, k: string, x: number, z: number) => withChanges(g, { set: [{ id, k, x, z, f: 0 }] });
   test('the plaza: they stand on it, it moves them, the day’s weeds and fossils keep off it; a mark gone, or nobody able to stand there, the usual spot', () => {
     const bad: string[] = [];
@@ -141,7 +142,8 @@ describe('the visitors’ spots: the members’ marks (spots.ts markerSpot)', ()
     for (const [dx, why] of [[0, 'on it'], [1, 'beside it']] as const) {
       const walled = mark(marked, 'o2', 'brick-well', pc + dx, pr);
       want(`a well ${why}`, stageOf(walled), stageOf(withChanges(walled, { remove: ['o1'] })));
-      want(`a well ${why}: the warning`, validate(walled).filter((i) => i.code === 'visitor-spot').map((i) => [i.level, i.ids]), [['warn', ['o1']]]);
+      want(`a well ${why}: the warning, the well named and marked`, validate(walled).filter((i) => i.code === 'visitor-spot').map((i) => [i.level, i.ids, i.ja, i.tiles.some(([c, r]) => c === pc + dx && r === pr)]),
+        [['warn', ['o1', 'o2'], `お客さんの場所に立てない：${dx ? '横に' : ''}レンガのいど${dx ? 'があります' : 'の上です'}（いつもの場所に立ちます）`, true]]);
       want(`a well ${why}: no overlap`, validate(walled).filter((i) => i.code === 'overlap').length, 0);
     }
     // on the water, on sand: never
@@ -170,7 +172,7 @@ describe('the visitors’ spots: the members’ marks (spots.ts markerSpot)', ()
     // none down: no guest spot (the guest at centre stage), and the stage-side spot 2-3 tiles across, usable
     expect(guestSpot(l)).toBeNull();
     const side = besideStage(l)!, [sc, sr] = tileAt(side[0], side[1]);
-    expect([Math.abs(sc - ac) >= 2 && Math.abs(sc - ac) <= 3, Math.abs(sr - ar) <= 1, plazaOk(l, sc, sr)]).toEqual([true, true, true]);
+    expect([Math.abs(sc - ac) >= 2 && Math.abs(sc - ac) <= 3, Math.abs(sr - ar) <= 1, guestOk(l, sc, sr)]).toEqual([true, true, true]);
     // put down: there; the stage and the day's weeds unmoved by it, the weeds kept off it
     const g = mark(l, 'o4', 'guest-spot', qc, qr);
     expect(guestSpot(g)).toEqual(tileMid(qc, qr));
@@ -179,11 +181,77 @@ describe('the visitors’ spots: the members’ marks (spots.ts markerSpot)', ()
     // something put on it: the fallback, and the editor's warning
     const walled = mark(g, 'o5', 'brick-well', qc, qr);
     expect(guestSpot(walled)).toBeNull();
-    expect(validate(walled).filter((i) => i.code === 'visitor-spot').map((i) => i.ids)).toEqual([['o4']]);
+    expect(validate(walled).filter((i) => i.code === 'visitor-spot').map((i) => i.ids)).toEqual([['o4', 'o5']]);
     expect(layoutOpOf({ sc: 'o', id: 'o4', at: 1.8e12, k: 'guest-spot', x: 9, z: 30, f: 0 })).toMatchObject({ k: 'guest-spot' });
   });
   test('an op of the new kinds passes the contract as it is (no relay change; an older app keeps it as a thing it doesn’t know)', () => {
     expect([layoutOpOf({ sc: 'o', id: 'o1', at: 1.8e12, k: 'plaza', x: 9, z: 30, f: 0 }), layoutOpOf({ sc: 'o', id: 'o2', at: 1.8e12, k: 'beach-spot', x: 9, z: 3, f: 0 })].map((o) => (o && 'k' in o ? o.k : null))).toEqual(['plaza', 'beach-spot']);
+  });
+});
+
+describe('the guest’s and Gulliver’s rules, relaxed (2026-11-11: what they draw and where they walk), and why a spot fails (spots.ts spotWhy)', () => {
+  const put = (g: Layout, ...os: [string, string, number, number][]) => withChanges(g, { set: os.map(([id, k, x, z]) => ({ id, k, x, z, f: 0 as const })) });
+  const why = (g: Layout, k: 'plaza' | 'guest-spot' | 'beach-spot', c: number, r: number) => spotWhy(g, k, c, r).map((w) => w.why);
+  /** Gulliver's old rule: sand under him and each side, nothing a tile round his tile, three in front of a thing. */
+  const oldBeachOk = (g: Layout, c: number, r: number) =>
+    [-1, 0, 1].every((i) => g.kind(c + i, r) === 'sand') && ![...g.objects.values()].some((o) => !['plaza', 'guest-spot', 'beach-spot'].includes(o.k) && objTiles(g, o).some(([a, b]) => Math.abs(a - c) <= 1 && r - b >= -3 && r - b <= 1));
+  // an open tile for the guest (grass, nothing round it for two tiles) and a beach tile for Gulliver, on the default
+  // (the guest's tile: open grass usable as the plaza, what stands within two tiles of it and three rows taken away)
+  const open = openGrass(l).find(([c, r]) => plazaOk(l, c, r) && guestOk(l, c, r))!;
+  const bare = withChanges(l, { remove: [...l.objects.values()].filter((o) => o.k !== 'home' && objTiles(l, o).some(([a, b]) => Math.abs(a - open[0]) <= 2 && Math.abs(b - open[1]) <= 3)).map((o) => o.id) });
+  const sand: [number, number][] = [];
+  for (let r = 0; r < 60; r++) for (let c = 1; c < 19; c++) if (beachOk(l, c, r) && oldBeachOk(l, c, r) && beachOk(l, c, r + 2)) sand.push([c, r]);
+  test('the guest: next to a flower, a fence (the old 3×3 patch refused each); never on water, a building, a door, out of reach or hidden', () => {
+    const [c, r] = open;
+    const fence = KIND_LIST.find((d) => d.group === 'fence')!.k;
+    const passes = [put(bare, ['f1', 'flower', c + 1, r]), put(bare, ['f1', fence, c - 1, r]), put(bare, ['f1', 'flower', c + 1, r], ['f2', fence, c - 1, r], ['f3', 'flower', c, r - 2])];
+    expect(passes.map((g) => [guestOk(g, c, r), plazaOk(g, c, r)])).toEqual(passes.map(() => [true, false]));
+    expect(validate(put(passes[2], ['gs', 'guest-spot', c, r])).filter((i) => i.code === 'visitor-spot')).toEqual([]);
+    const wet = withChanges(bare, { tiles: [[c, r, codeOf('pond', l.tier(c, r))]] });
+    const ringed = withChanges(bare, { tiles: [-1, 0, 1].flatMap((i) => [-1, 0, 1].filter((j) => i || j).map((j) => [c + i, r + j, codeOf('pond', l.tier(c, r))] as [number, number, number])) });
+    const museum = l.objects.get('museum') ?? [...l.objects.values()].find((o) => o.k === 'home')!;
+    const [mc, mr] = objTiles(l, museum)[0];
+    expect([why(wet, 'guest-spot', c, r), why(ringed, 'guest-spot', c, r), why(bare, 'guest-spot', mc, mr), why(put(bare, ['t1', 'oak', c, r - 1]), 'guest-spot', c, r), why(put(bare, ['t1', 'flower', c, r + 1]), 'guest-spot', c, r)])
+      .toEqual([['water'], ['unreachable'], ['on'], ['hidden'], ['covers']]);
+    const home = l.objects.get('home-A')!, [dc, dr] = doorOf(l, home).tiles[0];
+    expect(why(l, 'guest-spot', dc, dr)).toEqual(['door']);
+  });
+  test('Gulliver: by a palm, behind his feet or three rows before it (the old clearance refused both); never off the sand, on a thing, out of reach, hidden or under its fronds', () => {
+    expect(sand.length).toBeGreaterThan(0);
+    const [c, r] = sand[0];
+    for (const [pc, pr] of [[c + 1, r + 2], [c, r + 3], [c + 3, r]] as const) {
+      const g = put(l, ['p1', 'palm', pc, pr]);
+      expect([`${pc - c},${pr - r}`, beachOk(g, c, r)]).toEqual([`${pc - c},${pr - r}`, true]);
+      if (pc - c !== 3) expect(oldBeachOk(g, c, r)).toBe(false);
+    }
+    const grass = withChanges(l, { tiles: [[c + 1, r, codeOf('grass', l.tier(c, r))]] }), wet = withChanges(l, { tiles: [[c - 1, r, codeOf('sea', 0)]] });
+    const ringed = withChanges(l, { tiles: [-2, -1, 0, 1, 2].flatMap((i) => [-1, 1].map((j) => [c + i, r + j, codeOf('pond', 0)] as [number, number, number])).concat([[c - 2, r, codeOf('pond', 0)], [c + 2, r, codeOf('pond', 0)]]) });
+    expect([why(grass, 'beach-spot', c, r), why(wet, 'beach-spot', c, r), why(put(l, ['w1', 'brick-well', c + 1, r]), 'beach-spot', c, r), why(put(l, ['p1', 'palm', c, r - 1]), 'beach-spot', c, r), why(ringed, 'beach-spot', c, r), why(put(l, ['p1', 'palm', c, r + 1]), 'beach-spot', c, r), why(put(l, ['p1', 'palm', c + 2, r]), 'beach-spot', c, r)])
+      .toEqual([['sand'], ['water'], ['beside'], ['hidden'], ['unreachable'], ['covers'], ['hidden']]);
+  });
+  test('the warning says why in words (kanji, and English) and marks the tiles that block', () => {
+    const [c, r] = open;
+    const g = put(bare, ['pz', 'plaza', c, r], ['f1', 'flower', c + 1, r]);
+    const is = validate(g).filter((i) => i.code === 'visitor-spot');
+    expect(is.map((i) => [i.ja, i.en, i.ids, i.tiles])).toEqual([['お客さんの場所に立てない：横に花があります（いつもの場所に立ちます）', "Nobody can stand at the visitors' spot: a flower beside it (the usual spot instead)", ['pz', 'f1'], [[c, r], [c + 1, r]]]]);
+    const [bc, br] = sand[0];
+    const off = validate(put(withChanges(l, { tiles: [[bc + 1, br, codeOf('grass', 0)]] }), ['bs', 'beach-spot', bc, br])).find((i) => i.code === 'visitor-spot')!;
+    expect([off.ja, off.tiles]).toEqual(['ジョニーの場所に立てない：砂浜ではありません（いつもの場所に立ちます）', [[bc, br], [bc + 1, br]]]);
+    const step = withChanges(bare, { tiles: [[c, r + 1, codeOf('grass', l.tier(c, r) + 1)]] });
+    expect(validate(put(step, ['pz', 'plaza', c, r])).find((i) => i.code === 'visitor-spot')!.ja).toContain('段差があります');
+  });
+});
+
+describe('the old fixed visitors’ spot (spot variant "stage") is gone from the layout (model.ts isLegacyStage)', () => {
+  test('not in the default; an older record’s op of it or an export with it reads as before, without it', () => {
+    const stage = { id: 'spot-stage', k: 'spot', x: 8, z: 45, f: 0 as const, s: 'stage' };
+    expect([...l.objects.values()].filter((o) => o.s === 'stage')).toEqual([]);
+    const m = new Map<string, LayoutEntry>();
+    for (const r of [{ sc: 'o', ...stage, at: 1.7e12 }, { sc: 'o', id: 'o9', k: 'flower', x: 9, z: 30, f: 0, s: 'c1', at: 1.7e12 + 1 }]) mergeLayout(m, { ...layoutOpOf(r)!, who: 'A' } as LayoutEntry);
+    const g = layoutOf(m);
+    expect([g.objects.has('spot-stage'), g.objects.has('o9'), stageOf(g)]).toEqual([false, true, stageOf(withChanges(l, { set: [{ id: 'o9', k: 'flower', x: 9, z: 30, f: 0, s: 'c1' }] }))]);
+    const j = toJson(l);
+    expect(fromJson({ ...j, objects: [...j.objects, stage] })!.objects.has('spot-stage')).toBe(false);
   });
 });
 

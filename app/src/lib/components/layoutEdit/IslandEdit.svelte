@@ -111,8 +111,9 @@
     }
     const [w, d] = footOf(h.l, h.l.objects.get(h.id)!), [x0, z0] = originOf(h.l, h.l.objects.get(h.id)!);
     if (x0 < 0 || z0 < 0 || x0 + w > GRID.cols || z0 + d > GRID.rows) return void (why = t('decor.island.outside'));
-    // (a visitors' spot: where nobody can stand is no place for it)
-    const mine = validate(h.l).filter((i) => (i.level === 'error' || i.code === 'visitor-spot') && i.ids.includes(h.id) && i.code !== 'unreachable');
+    // (a visitors' spot: where nobody can stand is no place for it; its issue names what's in the way after it, never
+    // a reason that thing can't stand)
+    const mine = validate(h.l).filter((i) => (i.code === 'visitor-spot' ? i.ids[0] === h.id : i.level === 'error' && i.ids.includes(h.id) && i.code !== 'unreachable'));
     why = mine[0] ? say(mine[0]) : null;
   }
 

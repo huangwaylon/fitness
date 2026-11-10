@@ -44,8 +44,8 @@ describe('the editor’s edits', () => {
     expect([b.id, plazas(b.layout), plazas(remove(b.layout, [b.id]))]).toEqual([a.id, [[a.id, 9, 20]], []]);
   });
   test('the fixed pieces stay: a goal tree, a home, the villagers’ spots', () => {
-    const r = remove(l, ['goal-A', 'home-B', 'spot-stage', 'palm-1']);
-    expect(r.objects.has('goal-A') && r.objects.has('home-B') && r.objects.has('spot-stage')).toBe(true);
+    const r = remove(l, ['goal-A', 'home-B', 'spot-villager-A', 'palm-1']);
+    expect(r.objects.has('goal-A') && r.objects.has('home-B') && r.objects.has('spot-villager-A')).toBe(true);
     expect(r.objects.has('palm-1')).toBe(false);
   });
   test('what is under a tile, and in a box', () => {

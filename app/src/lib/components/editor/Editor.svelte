@@ -20,7 +20,8 @@
   import type { Undrawn } from '../world3d/drawCheck.ts';
   import HomePicker from '../homes/HomePicker.svelte';
   import ResetConfirm from './ResetConfirm.svelte';
-  import { draw, fitView, tileUnder, toScreen, toWorld, zoomAt, type View } from './plan.ts';
+  import { draw, fitView, tileUnder, toScreen, toWorld, zoomAt, type AutoSpot, type View } from './plan.ts';
+  import { besideStage, guestSpot, markerSpot, stageOf } from '#lib/layout/spots.ts';
   import { carryTops } from '#lib/layout/tops.ts';
   import {
     brushTiles, cliff, copy, ghostFoot, inBox, move, objectAt, paint, paste, place, placeRun, remove, removable, resize, restyle, revert, rotate, runs, runTiles, sameLayout, wetAt, type Clip
@@ -204,12 +205,20 @@
       c.height = Math.round(H * dpr);
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    draw(ctx, { layout: cur, view, w: W, h: H, grid, selected, hover, moved, ghost, brush: brushAt, box, issues, focus, icon, river: riverLine ? stems : null, coast });
+    draw(ctx, { layout: cur, view, w: W, h: H, grid, selected, hover, moved, ghost, brush: brushAt, box, issues, focus, auto, icon, river: riverLine ? stems : null, coast });
   });
 
-  // the issues, a moment after a change
+  // the issues, a moment after a change, and where the visitors and the guest stand while no usable mark of theirs is
+  // down (spots.ts stageOf; besideStage: the guest's beside the day's visitor on centre stage, else on it)
+  let auto = $state<AutoSpot[]>([]);
+  function autoSpots(l: Layout): AutoSpot[] {
+    const out: AutoSpot[] = [], st = markerSpot(l, 'plaza')?.at ? null : stageOf(l), side = guestSpot(l) ? null : besideStage(l);
+    if (st) out.push({ k: 'plaza', label: 'お客さん（自動）', x: st[0], z: st[1] });
+    if (side) out.push({ k: 'guest', label: 'ゲスト（自動）', x: side[0], z: side[1] });
+    return out;
+  }
   $effect(() => {
-    const l = store.current, t = setTimeout(() => (issues = validate(l)), 120);
+    const l = store.current, t = setTimeout(() => ((issues = validate(l)), (auto = autoSpots(l))), 120);
     return () => clearTimeout(t);
   });
   const errors = $derived(issues.filter((i) => i.level === 'error').length);
@@ -605,7 +614,7 @@
     window.addEventListener('keydown', onKey);
     window.addEventListener('keyup', onKeyUp);
     window.__editor = {
-      view: () => view, layout: () => store.current, select: (ids: string[]) => (selected = new Set(ids)), issues: () => issues, undrawn: () => undrawnList,
+      view: () => view, layout: () => store.current, select: (ids: string[]) => (selected = new Set(ids)), issues: () => issues, auto: () => auto, undrawn: () => undrawnList,
       screenOf: (x: number, z: number) => {
         const [sx, sy] = toScreen(view, x, z), b = canvas!.getBoundingClientRect();
         return [b.left + sx, b.top + sy];

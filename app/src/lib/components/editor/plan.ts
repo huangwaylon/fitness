@@ -55,6 +55,13 @@ const GROUP_COLOUR: Record<string, string> = {
 };
 const OWNER: Record<string, [string, string]> = { 'home-A': ['#8fd3ff', 'ウェイ'], 'home-B': ['#ffb8cc', 'うめ'], 'home-G': ['#cdb4f2', 'ゲスト'] };
 
+export interface AutoSpot {
+  k: 'plaza' | 'guest';
+  label: string;
+  x: number;
+  z: number;
+}
+
 export interface Draw {
   layout: Layout;
   view: View;
@@ -75,6 +82,9 @@ export interface Draw {
   focus?: Issue | null;
   /** A resize's new coast (しまの おおきさ: its grid codes): the land it gains or loses tinted, its outline dashed. */
   coast?: Uint8Array | null;
+  /** Where the visitors and the day's guest stand while no usable mark of theirs is down (spots.ts stageOf,
+   *  besideStage): a dashed tile and its label. */
+  auto?: readonly AutoSpot[];
   /** The rivers' drawn lines and their turns' arcs (layout/river.ts), marked over the tiles; none: not shown. */
   river?: readonly Stem[] | null;
   icon(key: string): HTMLImageElement | null;
@@ -159,6 +169,7 @@ export function draw(ctx: CanvasRenderingContext2D, d: Draw): void {
     const m = d.moved?.get(o.id);
     drawObj(ctx, d, m ? { ...o, x: m.x, z: m.z, f: m.f as Obj['f'], n: undefined } : o, d.selected.has(o.id), !!m);
   }
+  for (const a of d.auto ?? []) drawAuto(ctx, v, a);
   if (d.ghost) {
     const g = d.ghost;
     drawObj(ctx, d, { id: '', k: g.k, x: g.x, z: g.z, f: g.f as Obj['f'] }, false, true, g.ok ? 'ok' : 'bad');
@@ -189,6 +200,28 @@ export function draw(ctx: CanvasRenderingContext2D, d: Draw): void {
     ctx.fillStyle = 'rgba(255,249,227,0.12)';
     ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
   }
+}
+
+/** A derived spot (where they'll stand with no mark of theirs down): its tile dashed and its label over it, softer than
+ *  a mark. */
+function drawAuto(ctx: CanvasRenderingContext2D, v: View, a: AutoSpot): void {
+  const T = TILE * v.s, [mx, my] = toScreen(v, a.x, a.z);
+  ctx.save();
+  ctx.setLineDash([Math.max(3, T * 0.18), Math.max(2, T * 0.12)]);
+  ctx.lineWidth = Math.max(1.5, T * 0.07);
+  ctx.strokeStyle = a.k === 'plaza' ? 'rgba(255,249,227,0.95)' : 'rgba(255,214,240,0.95)';
+  roundRect(ctx, mx - T / 2 + 2, my - T / 2 + 2, T - 4, T - 4, T * 0.2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.font = `600 ${Math.max(9, Math.min(13, T * 0.36))}px system-ui, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = 'rgba(74,58,44,0.75)';
+  ctx.strokeText(a.label, mx, my - T / 2);
+  ctx.fillStyle = '#fff9e3';
+  ctx.fillText(a.label, mx, my - T / 2);
+  ctx.restore();
 }
 
 /** A resize's ghost (the new codes over the layout): the tiles that turn land green, those the sea takes red, and the
@@ -381,7 +414,7 @@ function drawObj(ctx: CanvasRenderingContext2D, d: Draw, o: Obj, selected: boole
     ctx.font = `600 ${Math.max(8, T * 0.28)}px system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
-    ctx.fillText(o.s === 'stage' ? 'ステージ' : o.s === 'villager-b' ? 'うめ' : 'ウェイ', mx, my + T * 0.18);
+    ctx.fillText(o.s === 'villager-b' ? 'うめ' : 'ウェイ', mx, my + T * 0.18);
   } else if (isFence(o.k)) {
     // a fence as NH's map has it: a post and a bar to each neighbour it joins (layout/garden.ts), a lone one across or
     // along by its facing

@@ -1156,7 +1156,10 @@ Monday to Saturday one of NH's weekday visitors (each at most once a week, about
 night, **Celeste** on a meteor shower's night, the holiday hosts and the wedding couple on their days. Priority
 (`visitorAt`): the event's host, the wedding couple, Celeste, (Saturday evening: nobody), Daisy Mae, then the day's.
 `?visitor=none`: nobody. They stand on centre stage (where we put **おきゃくさんの ばしょ** in the editor);
-**Gulliver washes up on the front beach** (**ジョニーの ばしょ**), face down. A tap: my villager turns to them, their
+**Gulliver washes up on the front beach** (**ジョニーの ばしょ**), face down. Where the guest (ゲストの場所) and Gulliver
+may be put is what they need, no more (2026-11-11): the guest one free tile of land in view, Gulliver sand under his
+body; the editor names what's in the way and draws the derived spots (docs/island-layout.md "Derived, never
+hand-made"). A tap: my villager turns to them, their
 introduction the first time, then a line. No trading, no ベル.
 
 ### Visitors: roles

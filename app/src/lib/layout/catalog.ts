@@ -244,9 +244,9 @@ const LIST: KindDef[] = [
   k({ k: 'beach-spot', group: 'visitor', ja: 'ジョニーの場所', en: "Gulliver's spot", w: 1, d: 1, block: false, on: 'land', h: 0, icon: 'villagers/gulliver-icon', one: true }),
   // where the day's guest stands (NH's special characters: island/visitorRoles.ts; spots.ts guestSpot), one an island
   k({ k: 'guest-spot', group: 'visitor', ja: 'ゲストの場所', en: "Guest's spot", w: 1, d: 1, block: false, on: 'land', h: 0, icon: 'deco/party-popper', one: true }),
-  // named spots: where a villager stands at home, nothing drawn ('stage': the old fixed visitors' spot, kept so the
-  // layouts fold as they did; the visitors' stage is derived now, spots.ts stageOf)
-  k({ k: 'spot', group: 'spot', ja: '場所', en: 'Spot', w: 1, d: 1, block: false, on: 'land', h: 0, icon: '', variants: ['villager-a', 'villager-b', 'stage'], fixed: true, hidden: true })
+  // named spots: where a villager stands at home, nothing drawn (the old fixed visitors' spot, variant 'stage', is
+  // dropped as a layout is read: model.ts isLegacyStage; the visitors' stage is derived, spots.ts stageOf)
+  k({ k: 'spot', group: 'spot', ja: '場所', en: 'Spot', w: 1, d: 1, block: false, on: 'land', h: 0, icon: '', variants: ['villager-a', 'villager-b'], fixed: true, hidden: true })
 ];
 
 /** Every kind: the island's own, then the outdoor catalogue's once its table is in (addKinds). */

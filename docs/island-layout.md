@@ -62,7 +62,8 @@ editing: the island is arranged in /editor only.
   `kk-slider`: 1 × 1, one on the island, never deleted, its front tile `front-kk-slider` clear and reachable; the
   default puts it on まえ's lawn west of the main path at tile 6 × 22; docs/design.md "K.K. on his stool"), the pieces
   that join terrain (`bridge` over water, `stairs` up a cliff), the homes (`home`), the buildings (below) and named
-  spots (`spot`: `villager-a|b` the villagers' home spots; `stage`, kept but unused: the stage is derived).
+  spots (`spot`: `villager-a|b` the villagers' home spots; the old fixed `stage` spot is dropped as a layout is read,
+  model.ts `isLegacyStage`, since 2026-11-11: the stage is derived).
   Each: `id`, kind `k`, tile `x, z` (its footprint's lowest column and row), facing `f` 0–3 (0 toward the camera, −z;
   1 +x, 2 away, 3 −x), variant `s`. A footprint is `w × d` tiles, turned by `f` for the kinds that `turn`; for the
   others an odd `f` only mirrors the look. Every object's spot is a tile (no offsets).
@@ -138,9 +139,19 @@ latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (its pa
   ばしょ and `guest-spot` ゲストの場所, one each, removable): a mark never drawn in play, standing on nothing (no overlap,
   no block). Every visitor but Gulliver stands at centre stage, so one plaza places them all; Gulliver's is its own and
   optional; the day's guest's (`guestSpot`; none: centre stage, `besideStage` while a visitor's on it) too.
-  `markerSpot(layout, k)`: the latest put down, where they stand, or `at: null` when nobody can. Usable: the plaza's (and the guest's)
-  `plazaOk` (grass or a path, a clear 3 × 3 patch, reachable), Gulliver's `beachOk` (sand each side, clear round and
-  behind, reachable). Unusable: the derived spot, and validate.ts's `visitor-spot` warning. An ordinary `sc: 'o'` op.
+  `markerSpot(layout, k)`: the latest put down, where they stand, or `at: null` when nobody can. `spotWhy(layout, k,
+  c, r)`: why not, each reason with the tiles and things in the way (none: usable; `plazaOk`, `guestOk`, `beachOk`):
+  - plaza: grass or a path, a clear 3 × 3 patch of its tier (the events' arch behind, cake in front), no door;
+  - guest (since 2026-11-11; was the plaza's): its own tile of dry land (grass, a path, sand), nothing on it, no
+    door, nothing in front or beside hiding them (hides.ts FIGURE_HIDES of its height, a tree's canopy), nothing within 60u
+    behind in its column (their head takes its tap). A flower or a fence beside it is fine;
+  - Gulliver (since 2026-11-11; was a tile round and three rows clear): lying across, his 81u body over three tiles,
+    so those three sand of one tier with nothing on them, nothing in front or beside hiding his ±40u (a palm's fronds),
+    nothing right behind his body (lying, 27u) nor his column once he stands up (60u). A palm diagonally behind his
+    feet, or three tiles across, is fine.
+  And reachable. Unusable: the derived spot, and validate.ts's `visitor-spot` warning naming the reasons
+  (「横に花があります」, 「砂浜ではありません」, 「入口の前です」, 「段差があります」, 「歩いて行けません」, 「木に隠れます」…)
+  with the blocking tiles and things. An ordinary `sc: 'o'` op.
 - **Validation** (`layout/validate.ts` `validate(layout)` → issues, each `error` or `warn` with its tiles and ids): an
   object off the land or in water, one straddling a cliff, overlapping footprints, a tree off the grass (warn), stairs
   that join no cliff, a bridge over no water, a door or front that can't be reached, a missing or second goal tree, an
@@ -200,7 +211,9 @@ to `/pair`). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the
 
 - **The plan:** the layout top-down, the back of the island at the top: tiles in NH's map colours (the higher a tier,
   the lighter), the cliffs' edges dark, a fall white, the objects by their icons, the homes labelled with their doors,
-  the named spots as pins; what's wrong tinted on its tiles.
+  the named spots as pins; what's wrong tinted on its tiles (a visitors' spot's warning: the tiles in the way too).
+  Where the visitors and the guest stand while no usable mark of theirs is down (`stageOf`, `besideStage`) a dashed
+  tile, 「お客さん（自動）」 / 「ゲスト（自動）」, recomputed with the checks.
 - **The mouse:** えらぶ (V) picks up a piece and drags it on the grid (shift adds to the selection, a drag on empty
   ground draws a box); ぬる (B) paints a brush (くさ, すな, つち, いし, レンガ, いた, かわ, いけ, うみ; sizes 1–3); がけ (C)
   raises or lowers a tier; おく places from the palette (the island's one-offs greyed while they stand), its ghost

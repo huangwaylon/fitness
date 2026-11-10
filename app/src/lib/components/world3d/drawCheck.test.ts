@@ -42,7 +42,7 @@ describe("the record's layout", () => {
     expect(ops.filter((e) => e.sc === 'o' && !('k' in e)).every((e) => 'rm' in e && e.rm)).toBe(true);
     const l = record();
     const count = (k: string) => [...l.objects.values()].filter((o) => o.k === k).length;
-    expect(l.objects.size).toBe(113); // (the museum, the shop and K.K.'s stool among them, the ten pieces they cleared gone)
+    expect(l.objects.size).toBe(112); // (the museum, the shop and K.K.'s stool among them, the ten pieces they cleared gone; the old stage spot dropped)
     expect([count('oak'), count('cedar'), count('bush'), count('hedge'), count('flower')]).toEqual([2, 8, 7, 0, 52]);
     expect(validate(l).filter((i) => i.level === 'error')).toEqual([]);
   });
