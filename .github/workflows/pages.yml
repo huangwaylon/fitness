@@ -16,16 +16,14 @@ on:
 permissions:
   contents: read
 
-# Pushes' runs overlap, never cancelled: a push's gate starts at once. Only `deploy` is one at a time (its own group),
-# and its order guard never puts older code over newer. A pull request's runs: one at a time on its branch.
+# Pushes' runs overlap, never cancelled; a pull request's go one at a time on its branch.
 concurrency:
   group: ${{ github.event_name == 'pull_request' && format('pages-{0}', github.ref) || format('pages-run-{0}', github.run_id) }}
   cancel-in-progress: false
 
 jobs:
-  # Red main never deploys. First the gate's plan, once for all 4 shards (each choosing its own could disagree: tests in
-  # no shard), uploaded as `gate-plan` ~20 s in; then check, knip, the quarantine's owners, the docs' pointers. With
-  # app/static/ (as `unit`): Kit types asset() by its files, the tests read it.
+  # The gate's plan first, once for all 4 shards (each choosing its own could disagree), then the checks. With
+  # app/static/: Kit types asset() by its files.
   checks:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -97,8 +95,7 @@ jobs:
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npx vitest run
 
-  # The gate's e2e (docs/ops/testing.md "The gate"): the `gate-plan` in logic mode. Not `needs: checks`: each shard
-  # builds, then waits for the plan's artifact, so the rest of `checks` isn't on the way to the deploy (~35 s).
+  # The gate's e2e (docs/ops/testing.md "The gate"). Not `needs: checks`: each shard builds, then waits for the plan.
   e2e-gate:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -183,11 +180,9 @@ jobs:
           if-no-files-found: ignore
           retention-days: 3
 
-  # Once the gate is green, `site` to Cloudflare Pages (direct upload; secrets: docs/ops/runbook.md §1). Not `needs` on
-  # the gate: it gets everything ready meanwhile (~30 s off push→live), then waits on GATE. With the site, ききみみ's
-  # recogniser under stt/ (~67 MiB, docs/kikimimi-mic.md "Hosting and the service worker"): from an Actions cache keyed
-  # on app/src/lib/mic/models.ts, filled on a miss by scripts/stt-models.ts; Pages static files under _headers' cache
-  # rule (stt/<dir>/ immutable, manifest.json revalidated).
+  # Once the gate is green, `site` to Cloudflare Pages (secrets: docs/ops/runbook.md §1); no `needs`: it gets ready
+  # meanwhile, then waits on GATE. With ききみみ's recogniser under stt/ (docs/kikimimi-mic.md "Hosting and the service
+  # worker").
   deploy:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
@@ -261,8 +256,7 @@ jobs:
           path: site
       - if: steps.ready.outputs.go == 'true'
         run: cp -R stt site/stt
-      # The gate, failing closed (scripts/deploy-gate.ts): each job in GATE exactly once in this attempt and `success`;
-      # anything else (a job twice, one not in GATE) is red; waits 20 min at most. GATE is the one list of the gate's jobs.
+      # The gate, failing closed (scripts/deploy-gate.ts), 20 min at most. GATE is the one list of the gate's jobs.
       - if: steps.ready.outputs.go == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -285,8 +279,7 @@ jobs:
             sleep 3
           done
           echo "::error::the gate not done in 20 min (${verdict:-no answer}): nothing deployed"; exit 1
-      # The order guard: what is live against this commit (Cloudflare's live deployment, GitHub's compare), deploy=true
-      # only if this one is newer (or, on a dispatch, the same); not sure or an API down: red.
+      # The order guard (scripts/deploy-order.ts): never older code over newer.
       - id: order
         if: steps.ready.outputs.go == 'true'
         env:
@@ -306,10 +299,8 @@ jobs:
           set -o pipefail
           deploy() { "$RUNNER_TEMP/wrangler/node_modules/.bin/wrangler" pages deploy ../site --project-name island-fund --branch main --commit-hash "$GITHUB_SHA" --commit-message "${GITHUB_SHA::12}" | tee "$RUNNER_TEMP/deploy.log"; }
           deploy || { echo "::warning::wrangler failed, once more in 15 s"; sleep 15; deploy; }
-      # the site answers this commit's build (the version SvelteKit polls), with its headers: every 2 s, 6 min (Pages has
-      # served a deploy it called complete only minutes later). Not by then: this deployment's own URL is asked. It
-      # serves the build: a warning (Cloudflare's alias lagging; it catches up by itself) and the checks on that URL;
-      # it doesn't either: red (docs/ops/runbook.md §1).
+      # the site answers this build, with its headers, within 6 min; else this deployment's own URL serving it is
+      # Cloudflare's alias lag, a warning (docs/ops/runbook.md §1)
       - if: steps.order.outputs.deploy == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
