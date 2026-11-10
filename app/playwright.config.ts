@@ -4,6 +4,7 @@
 // `npm run e2e -- --project=webkit`.
 // Rules for stable specs: docs/ops/testing.md. Specs import `test` from e2e/fixtures.ts: the scene clock pinned, no network
 // outside the local preview (docs/ops/testing.md "Hermetic").
+import { availableParallelism } from 'node:os';
 import { defineConfig, devices, type Project } from '@playwright/test';
 
 // Locally the preview is reused (reuseExistingServer), so each checkout gets its own port from its path: two worktrees on
@@ -91,7 +92,9 @@ export default defineConfig({
   // names it (summary, annotation) and writes it to the flaky ledger (docs/ops/testing.md "Flakes")
   retries: process.env.CI ? 1 : 0,
   fullyParallel: true,
-  workers: process.env.CI ? 3 : undefined,
+  // (CI: 3 on GitHub's 4-core runners (4 made the short waits flaky); 2 on fewer cores: the private repo's runners have 2,
+  // where 3 timed tests out across the gate from 11-10)
+  workers: process.env.CI ? (availableParallelism() >= 4 ? 3 : 2) : undefined,
   reporter: process.env.CI ? [['./e2e/reporters/flaky.ts'], ['list'], ['json', { outputFile: 'playwright-results.json' }]] : 'list',
   projects: [
     // the users' browser (CI: on macOS, Safari's own WebKit; Linux's draws the island at ~1 frame a second)
