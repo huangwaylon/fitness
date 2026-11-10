@@ -15,6 +15,7 @@ import {
   Scene, SRGBColorSpace, TextureLoader, Vector3, BufferGeometry, DataTexture, Float32BufferAttribute, LinearFilter, LinearMipmapLinearFilter, type Material, type MeshStandardMaterial, type Object3D, type Texture
 } from 'three';
 import { swallowed } from '#lib/quiet.ts';
+import { staticUrl } from '#lib/staticUrl.ts';
 import { cubicOut } from '#lib/math.ts';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { Villager3D } from '../villager3d/villager3d.ts';
@@ -37,7 +38,8 @@ import {
   BUG_WING, CARPETS, DESK, DOOR_HALF, DOORMAT, G1, HALL, HALL_H, HALL_PLANTS, ISLAND_RUG, OPENINGS, PLAQUE, ROOMS, WALLS, WING_H, doorTop, inRect,
   navOf, roomHeld, roomIdAt, roomOf, walkable, wallEnds, wingOfRoom, type Nav, type Opening, type Pt, type Rect, type RoomId, type Wall, type Wing
 } from './plan.ts';
-import { GAIN, LIFT, LOOK, PORTAL, TINT, applyLook, lookAt, type Look as Light } from './look.ts';
+import { GAIN, LIFT, LOOK, POOL, PORTAL, TINT, applyLook, lookAt, type Look as Light } from './look.ts';
+import { CARD, cardsMesh, floorBake, wallRamps, type Block, type Card, type Pool } from './bake.ts';
 import { FOV, PITCH, enter, follow, framingOf, type CamTune, type Framing } from './camera.ts';
 /** The exhibits' rate (a second) while only they move; no finger on the room for REST_MS (the island's rest:
  *  world3d/engine.ts), REST_FPS: the battery and the phone's heat at rest. */
@@ -60,6 +62,8 @@ export interface Exhibit {
   wing: Wing;
   room?: RoomId;
   blocks: readonly Rect[];
+  /** Its light pools on the room's floor (bake.ts: baked into the floor's lightMap with the room's). */
+  pools?: readonly Pool[];
   /** What one sits on (the aquarium's benches: seats.ts): its id, its box on the floor (`h` tall). The walk keeps off
    *  it; a tap on it is the seat's; a seated villager's eye may be over it. */
   seats?: readonly (Rect & { id: string; h: number })[];
@@ -92,6 +96,9 @@ export interface Kit {
   islandBounds(name: string): { min: number[]; max: number[] } | null;
   /** `layer`: a decal's on the floor (decal): a layer over what lies under it. */
   lambert(o: { color?: number; map?: Texture | null; transparent?: boolean; opacity?: number; layer?: number }): MeshLambertMaterial;
+  /** Wash, halo or glow-lip cards (bake.ts cardsMesh: one mesh, one draw; `cards(k)` its strength, the look's). Its
+   *  material the caller's to dispose with the mesh's geometry. */
+  cards(kind: keyof typeof CARD, cards: readonly Card[]): { mesh: Mesh; cards(k: number): void };
   invalidate(): void;
   /** A model added outside the loads above (a visitor's): its programs compiled ahead (the warm-up). */
   warm(): void;
@@ -374,12 +381,18 @@ function grass(): CanvasTexture {
 const MUSEUM_KEEP = 64;
 /** An exhibit's own light by its pack (look.ts LIFT: the fossils, the paintings, the statues stand out of the room). */
 const liftOf = (key: string) => (/\/fossil/.test(key) ? LIFT.fossil : /\/art-paintings/.test(key) ? LIFT.painting : /\/art-statues/.test(key) ? LIFT.statue : 0);
+/** The fossil bases' tint over NH's walnut (linear, past white: a light warm oak). */
+const BASE_OAK = [5.2, 4.6, 4.0] as const, BONE = [2.8, 2.5, 2.1] as const;
 const museumModels = modelCache(MUSEUM_KEEP, (key) => glbLoader({ ktx2: key.startsWith('i:'), plain: true }).loadAsync(key.slice(2)).then((g) => {
   const lift = key.startsWith('m:') ? liftOf(key) : 0;
   g.scene.traverse((n) => {
     const m = n as Mesh;
     if (!m.isMesh) return;
     const s = m.material as MeshStandardMaterial, l = nhLambert(s, { lift, lamp: { color: 0xffe2a8, at: 0.6 }, see: true });
+    // (NH's walnut fossil bases a light warm oak here: the dark wood held the fossil rooms down)
+    // (and NH's bone a light tan, as its museum shows it, over the converted texture's dim olive)
+    if (s.name.startsWith('mFossilBase')) l.color.setRGB(...BASE_OAK);
+    else if (lift === LIFT.fossil) l.color.multiply(new Color().setRGB(...BONE));
     l.depthWrite = !s.transparent;
     s.dispose();
     m.material = l;
@@ -405,7 +418,16 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   let cur: RoomId = 'hall', nightN = 0;
   const tuned: Partial<Record<Wing, Partial<Light>>> = {};
   const lookNow = () => lookAt(wingOfRoom(cur), nightN, tuned[wingOfRoom(cur)]);
-  const relight = () => applyLook({ hemi, key, amb }, renderer, scene, lookNow());
+  /** What else the look lights: the baked floors and walls (their light maps' strength), NH's lamps (their glow) and
+   *  the lamps' halo cards. */
+  const baked: MeshLambertMaterial[] = [], lampMats = new Set<MeshLambertMaterial>(), halos: ((k: number) => void)[] = [];
+  const relight = () => {
+    const l = lookNow();
+    applyLook({ hemi, key, amb }, renderer, scene, l);
+    for (const m of baked) m.lightMapIntensity = l.lm;
+    for (const m of lampMats) m.emissiveIntensity = l.lamp;
+    for (const h of halos) h(l.cards);
+  };
   relight();
 
   // ---- what the rooms are made of ----
@@ -480,8 +502,12 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     });
     return holder;
   }
+  /** The cards' soft gradient (bake.ts cardsMesh: the blob shadows' program). */
+  const cardMap = softDisc('255,255,255', 2, false);
+  disposables.push(cardMap);
   const kit: Kit = {
     tex, model, prop, lambert, invalidate: () => invalidate(), warm: () => warmSoon(), noDraw,
+    cards: (kind, cards) => cardsMesh(kind, cards, cardMap),
     critter: (kind, id) => kit.island(`critters/${kind}/${id}`),
     island: (name) => {
       const b = modelBounds(name);
@@ -528,11 +554,15 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     m.color.set(TINT[wing].floor).multiplyScalar(dim * GAIN[wing].floor);
     return m;
   };
+  /** The floors baked (bake.ts: the garden's grass is lit as outdoors), each its room's. */
+  const floors: { room: RoomId; r: Rect; mat: MeshLambertMaterial }[] = [];
   for (const { id, wing, r } of ROOMS) {
-    floor(r, floorOf(wing, r), [id]);
+    const fm = floorOf(wing, r);
+    if (wing !== 'bug') floors.push({ room: id, r, mat: fm });
+    floor(r, fm, [id]);
     // (below the floors: under a neighbour's, hidden with it)
     const apron = { x0: r.x0, x1: r.x1, z0: r.z1, z1: r.z1 + APRON };
-    floor(apron, floorOf(wing, apron, 0.62), [id], -1);
+    floor(apron, floorOf(wing, apron, 0.8), [id], -1);
   }
   // the openings' thresholds (through the walls: the floor of the room each is counted to; both rooms')
   for (const o of OPENINGS) {
@@ -589,7 +619,13 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     fossil: lambert({ map: tex('fossil-wall', [5, 1]), color: TINT.fossil.wall }),
     art: lambert({ map: tex('hall-red', [8, 1.6]) })
   };
-  for (const [w, m] of Object.entries(wallMat) as [Wing, MeshLambertMaterial][]) m.color.set(TINT[w].wall).multiplyScalar(GAIN[w].wall);
+  // (each wall's foot darker and an uplight under its top, bake.ts's ramps: the floors' program; not the garden's glass)
+  const ramps = wallRamps();
+  disposables.push(ramps.ao, ramps.light);
+  for (const [w, m] of Object.entries(wallMat) as [Wing, MeshLambertMaterial][]) {
+    m.color.set(TINT[w].wall).multiplyScalar(GAIN[w].wall);
+    if (w !== 'bug') (m.aoMap = ramps.ao), (m.lightMap = ramps.light), baked.push(m);
+  }
   /** The walls' outside faces: the room's background (look.ts), so a cut wall's back never shows near-black. */
   const outMat = lambert({ color: LOOK.hall.bg });
   const capMat = lambert({ color: 0xe9dcc2 });
@@ -618,6 +654,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     if (!c) {
       c = m.clone();
       c.userData.of = m;
+      if (c.lightMap) baked.push(c);
       mats.set(m, c);
       disposables.push(c);
     }
@@ -823,6 +860,64 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     prop(name, x, z, { s: sc });
     BLOCKS.push({ x0: x - 4, x1: x + 4, z0: z - 4, z1: z + 4 });
   }
+  // ---- the lamps: NH's own (tent/items.json: the floral sconce, the elegant lamp, the wall-mounted candle; their glow
+  //      nhLambert's lamp, the look's strength), a halo card on the wall round each (one mesh a room) and a pool of light
+  //      on the floor under it (the floor's bake). No real lights: all static ----
+  /** A lamp: its model (code, version), where it stands (a wall's: its back on the wall's face, toward the room; else its
+   *  foot), its turn, its scale, its room, whether it's on a wall. */
+  interface Lamp { code: string; v: string; x: number; y: number; z: number; yaw: number; s: number; room: RoomId; wall: boolean }
+  const SCONCE = ['f14524', '37b4d5a0'] as const, DESK_LAMP = ['f13142', '23fb4a4b'] as const, CANDLE = ['f5165', '841e4c2c'] as const;
+  const LAMP_S = 1.9, FACE = T / 2;
+  const lamps: Lamp[] = [];
+  const onWall = ([code, v]: readonly [string, string], room: RoomId, axis: 'x' | 'z', at: number, along: number, y: number, k: 1 | -1) => {
+    // (none in or beside a doorway)
+    if (OPENINGS.some((o) => o.axis === axis && Math.abs(o.at - at) < 1 && along > o.from - 12 && along < o.to + 12)) return;
+    const yaw = axis === 'z' ? (k > 0 ? 0 : Math.PI) : (k * Math.PI) / 2;
+    lamps.push({ code, v, x: axis === 'x' ? at + k * FACE : along, y, z: axis === 'z' ? at + k * FACE : along, yaw, s: LAMP_S, room, wall: true });
+  };
+  // the hall: sconces either side of Blathers on the back wall and on the side walls, lamps on the desk's ends
+  for (const x of [-14, 14]) onWall(SCONCE, 'hall', 'z', HALL.z0, x, 36, 1);
+  for (const z of [-30, 45]) (onWall(SCONCE, 'hall', 'x', HALL.x0, z, 36, 1), onWall(SCONCE, 'hall', 'x', HALL.x1, z, 36, -1));
+  for (const x of [DESK.x0 + 4, DESK.x1 - 4]) lamps.push({ code: DESK_LAMP[0], v: DESK_LAMP[1], x, y: DESK.h, z: (DESK.z0 + DESK.z1) / 2 - 2, yaw: 0, s: 1.2, room: 'hall', wall: false });
+  // the fossil rooms: candles along the back and long walls
+  for (const { id, wing, r } of ROOMS) {
+    if (wing !== 'fossil') continue;
+    for (let x = r.x0 + 30; x <= r.x1 - 30; x += 50) onWall(CANDLE, id, 'z', r.z0, x, 32, 1);
+    for (let z = r.z0 + 35; z <= r.z1 - 25; z += 55) (onWall(CANDLE, id, 'x', r.x0, z, 32, 1), onWall(CANDLE, id, 'x', r.x1, z, 32, -1));
+  }
+  for (const l of lamps) {
+    const holder = new Group();
+    holder.position.set(l.x, l.y, l.z);
+    holder.rotation.y = l.yaw;
+    holder.scale.setScalar(l.s);
+    scene.add(inRooms(holder, [l.room]));
+    void load(`m:${staticUrl(`room/models/${l.code}.glb`)}?v=${l.v}`).then((g) => {
+      if (!g || disposed) return;
+      const body = g.scene.clone(true), b = new Box3().setFromObject(body);
+      // (a wall's: its back on the wall, its middle at y; a lamp on the desk: its foot there)
+      body.position.set(-(b.min.x + b.max.x) / 2, l.wall ? -(b.min.y + b.max.y) / 2 : -b.min.y, l.wall ? -b.min.z : -(b.min.z + b.max.z) / 2);
+      body.traverse((n) => {
+        const m = (n as Mesh).material as MeshLambertMaterial | undefined;
+        if (m?.emissiveMap) (lampMats.add(m), (m.emissiveIntensity = lookNow().lamp));
+      });
+      holder.add(body);
+      invalidate();
+    });
+  }
+  /** The halo cards, each room's one mesh (on the wall round a wall lamp, a little over it). */
+  const haloBy = new Map<RoomId, Card[]>();
+  for (const l of lamps) {
+    if (!l.wall) continue;
+    const n = [Math.sin(l.yaw), Math.cos(l.yaw)];
+    const list = haloBy.get(l.room) ?? haloBy.set(l.room, []).get(l.room)!;
+    list.push({ x: l.x + n[0] * 0.3, y: l.y + 3, z: l.z + n[1] * 0.3, w: 26, h: 34, yaw: l.yaw });
+  }
+  for (const [room, list] of haloBy) {
+    const h = cardsMesh('halo', list, cardMap);
+    disposables.push(h.mesh.geometry, h.mesh.material as Material);
+    halos.push(h.cards);
+    scene.add(inRooms(h.mesh, [room]));
+  }
   // (the rest of the shell, the furnishing: the room each stands in)
   for (const n of scene.children) if (!shell.has(n) && !(n as { isLight?: boolean }).isLight && !walls.some((w) => w.mesh === n || w.trim === n || w.kick === n)) shell.set(n, [roomIdAt(n.position.x, n.position.z) ?? 'hall']);
   showRoom();
@@ -848,6 +943,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     exhibits.push(e);
     scene.add(e.group);
     blocksChanged();
+    rebake(roomOfExhibit(e));
     e.night(nightN);
     invalidate();
     // (a rebuilt wing's models are cached: no load to wait for, so its materials are warmed from here)
@@ -865,9 +961,59 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     if (noDraw) e.dispose();
     else retired.push(e);
     blocksChanged();
+    rebake(roomOfExhibit(e));
     invalidate();
     warmSoon();
   }
+
+  // ---- the floors' baked light (bake.ts): dark at the walls' feet and in the corners and under what stands on them, the
+  //      exhibits' pools of light (and the hall's, the lamps'); a room's baked again as its exhibits change ----
+  const BAKE = 128;
+  const GAPS = OPENINGS.map((o) => ({ axis: o.axis, at: o.at, from: o.from, to: o.to }));
+  /** The hall's own pools: over the owl's medallion and at Blathers' desk. */
+  const HALL_POOLS: Pool[] = [{ x: 0, z: 10, rx: 26, color: POOL.hall, at: 0.8 }, { x: 0, z: -24, rx: 32, rz: 22, color: POOL.hall }];
+  /** Under each wall lamp, a pool at the wall's foot. */
+  const lampPools = (room: RoomId): Pool[] =>
+    lamps.filter((l) => l.wall && l.room === room).map((l) => {
+      const w = wingOfRoom(room) as Exclude<Wing, 'bug'>;
+      return { x: l.x + Math.sin(l.yaw) * 8, z: l.z + Math.cos(l.yaw) * 8, rx: 16, color: POOL[w], at: 0.55 };
+    });
+  const bakeDue = new Set<RoomId>();
+  let bakeT: ReturnType<typeof setTimeout> | undefined;
+  /** A room's floors baked again (soon: an exhibit's rebuild drops one and puts another). */
+  function rebake(room: RoomId) {
+    bakeDue.add(room);
+    bakeT ??= setTimeout(() => {
+      bakeT = undefined;
+      if (disposed) return;
+      for (const r of bakeDue) bakeNow(r);
+      bakeDue.clear();
+      invalidate();
+    }, 0);
+  }
+  function bakeNow(room: RoomId) {
+    const mine = exhibits.filter((e) => roomOfExhibit(e) === room);
+    const blocks: Block[] = [...BLOCKS, ...mine.flatMap((e) => [...e.blocks, ...(e.seats ?? [])])];
+    const pools: Pool[] = [...(room === 'hall' ? HALL_POOLS : []), ...lampPools(room), ...mine.flatMap((e) => e.pools ?? [])];
+    for (const f of floors) {
+      if (f.room !== room) continue;
+      const near = blocks.filter((b) => b.x1 > f.r.x0 - 8 && b.x0 < f.r.x1 + 8 && b.z1 > f.r.z0 - 8 && b.z0 < f.r.z1 + 8);
+      const b = floorBake(f.r, near, pools, { gaps: GAPS, size: BAKE });
+      if (!f.mat.aoMap) {
+        (f.mat.aoMap = b.ao), (f.mat.lightMap = b.light), baked.push(f.mat);
+        disposables.push(b.ao, b.light);
+        continue;
+      }
+      // (into the textures it has: the same program, no texture to warm, only its pixels sent again)
+      for (const [to, from] of [[f.mat.aoMap, b.ao], [f.mat.lightMap!, b.light]] as const) {
+        (to.image.data as Uint8Array).set(from.image.data as Uint8Array);
+        to.needsUpdate = true;
+        from.dispose();
+      }
+    }
+  }
+  for (const r of new Set(floors.map((f) => f.room))) bakeNow(r);
+  relight();
 
   // ---- the villagers ----
   interface Walker {
@@ -1404,7 +1550,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     scene.traverse((n) => {
       const ms = (n as Mesh).material;
       if (!ms) return;
-      for (const m of Array.isArray(ms) ? ms : [ms]) for (const t of [(m as MeshLambertMaterial).map, (m as MeshLambertMaterial).emissiveMap]) {
+      for (const m of Array.isArray(ms) ? ms : [ms]) for (const t of [(m as MeshLambertMaterial).map, (m as MeshLambertMaterial).emissiveMap, (m as MeshLambertMaterial).aoMap, (m as MeshLambertMaterial).lightMap]) {
         if (t && !warmed.has(t)) (warmed.add(t), todo.push(t));
       }
     });
@@ -1732,6 +1878,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       document.removeEventListener('visibilitychange', onVis);
       clearTimeout(warmT);
       clearTimeout(compileT);
+      clearTimeout(bakeT);
       clearTimeout(holdT);
       clearTimeout(dipT);
       for (const e of [...exhibits, ...retired]) e.dispose();

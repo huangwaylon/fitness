@@ -6,6 +6,7 @@ import { BoxGeometry, Group, Matrix4, type BufferGeometry } from 'three';
 import type { Exhibit, Kit } from './engine.ts';
 import { SET_S, SPOTS, STAND_W, footOf, setOf, type FossilOnShow } from './fossils.ts';
 import { batcher } from './geometry.ts';
+import { POOL } from './look.ts';
 import M from './models.json' with { type: 'json' };
 
 const MODELS = M.models as Record<string, { min: number[]; max: number[] }>;
@@ -26,7 +27,7 @@ export function buildFossils(kit: Kit, shown: readonly FossilOnShow[]): Exhibit 
   const geos: BufferGeometry[] = [];
   // (the kit's materials: the museum lets go of them)
   const marble = kit.lambert({ map: kit.tex('marble', [0.5, 0.5]), color: 0xeae2d6 });
-  const trim = kit.lambert({ color: 0x6b5442 });
+  const trim = kit.lambert({ color: 0xb48a5e });
   const batch = batcher(), at = new Matrix4();
   const ids = shown.map((f) => f.id);
   for (const id of ids) {
@@ -34,7 +35,7 @@ export function buildFossils(kit: Kit, shown: readonly FossilOnShow[]): Exhibit 
     if (!sp) continue;
     const { s } = heightOf(id);
     if (sp.stand) {
-      // NH's display stand: a marble block on a dark plinth
+      // NH's display stand: a marble block on an oak plinth
       batch.add(new BoxGeometry(STAND_W, sp.stand - 1, STAND_W), marble, at.makeTranslation(sp.x, 1 + (sp.stand - 1) / 2, sp.z));
       batch.add(new BoxGeometry(STAND_W + 1.2, 1, STAND_W + 1.2), trim, at.makeTranslation(sp.x, 0.5, sp.z));
     }
@@ -43,6 +44,8 @@ export function buildFossils(kit: Kit, shown: readonly FossilOnShow[]): Exhibit 
   }
   geos.push(...batch.done(group));
   const blocks = ids.filter((id) => SPOTS.has(id)).map(footOf);
+  // (a warm pool under each, a little wider than its foot: bake.ts)
+  const pools = blocks.map((b) => ({ x: (b.x0 + b.x1) / 2, z: (b.z0 + b.z1) / 2, rx: ((b.x1 - b.x0) / 2) * 1.25 + 6, rz: ((b.z1 - b.z0) / 2) * 1.25 + 6, color: POOL.fossil }));
   const where = (id: string): [number, number, number] | null => {
     const sp = SPOTS.get(id);
     return sp && ids.includes(id) ? [sp.x, heightOf(id).mid, sp.z] : null;
@@ -51,6 +54,7 @@ export function buildFossils(kit: Kit, shown: readonly FossilOnShow[]): Exhibit 
     group,
     wing: 'fossil',
     blocks,
+    pools,
     frame: () => false,
     pick(project, cx, cy) {
       let best: { id: string; d: number } | null = null;

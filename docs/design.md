@@ -965,10 +965,16 @@ out.
   most every 400 ms), inside a dip: the screen fades to the next room's colour in 150 ms and back in 200, never taking a
   finger; a put (the e2e's) changes it at once. Its music changes with it. A cut front wall leaves its foot (a kick
   plate), and a warm apron runs past each room's front edge, so no void shows under it.
-- **Light** (`look.ts`): Neutral tone mapping and one look a room (exposure, a sky over a warm bounce, ambient, a
-  frontal key, a warm background), floors and walls lifted over their textures' darkness; the fossils, paintings and
-  statues lit a little by their own colour. Night isn't dimmer: the sky warms toward lamplight, the key drops, the
-  aquarium goes bluer. The carpets are one seamless carpet a room (`carpet.ts`: one texture over the strips, its
+- **Light** (`look.ts`, `bake.ts`; no real lamps, nothing per frame): Neutral tone mapping and one look a room
+  (exposure, a sky over a warm bounce, ambient, a frontal key, a warm background), floors and walls lifted over their
+  textures' darkness (the fossil rooms a warm sandstone, the gallery's red and herringbone brighter). Each floor's
+  baked aoMap and lightMap (dark at the walls' feet and under what stands, warm pools under the exhibits and lamps, a
+  blue band round each tank; baked again when a room's exhibits change), the walls' foot and uplight ramps; NH's own
+  sconces, desk lamps and wall candles in the hall and the fossil rooms with a halo card each, a wash card over each
+  painting, a glow lip on each tank (one card mesh a kind a room). The fossils, paintings and statues lit a little by
+  their own colour, NH's bone light tan on light oak bases; the tanks' water the brightest thing. Night isn't dimmer:
+  the lamps take over (the sky toward lamplight, the key down, the pools ×1.5, the cards ×1.4, the tanks brighter).
+  The carpets are one seamless carpet a room (`carpet.ts`: one texture over the strips, its
   border round their outline).
 - **Like the rooms:** a tap on the floor walks my villager there; a drag turns the camera, a pinch zooms, ⌂ puts it
   back; the camera follows my villager through the rooms, the walls in the way cut away. The say button says a phrase

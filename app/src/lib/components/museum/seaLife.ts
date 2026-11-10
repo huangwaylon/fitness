@@ -7,7 +7,8 @@
 import { AdditiveBlending, BoxGeometry, Color, DoubleSide, Group, Matrix4, MeshBasicMaterial, PlaneGeometry, ShaderMaterial, Sphere, Vector3, type BufferGeometry, type Material, type Object3D } from 'three';
 import type { Exhibit, Kit } from './engine.ts';
 import type { Rect } from './plan.ts';
-import { WATER_FRAG, WATER_VERT } from './aquarium.ts';
+import { WATER_FRAG, WATER_VERT, tankLight } from './aquarium.ts';
+import { lookAt } from './look.ts';
 import { piecesOf, waterOf, type Box, type Tank } from './tanks.ts';
 import { batcher, decal, openBox } from './geometry.ts';
 import { MIN_ACROSS, SEA_MUSEUM_MODEL, SEA_SPOTS, SEA_TANKS, type SeaTankId } from './seaTanks.ts';
@@ -17,8 +18,8 @@ import M from './models.json' with { type: 'json' };
 
 const MODELS = M.models as Record<string, { min: number[]; max: number[] }>;
 const WATER: Record<SeaTankId, { deep: number; top: number; caustic: number; glow: number }> = {
-  reef: { deep: 0x0b3a66, top: 0x48b4d8, caustic: 0.24, glow: 0x86d6f2 },
-  pool: { deep: 0x17506a, top: 0x6cc8d6, caustic: 0.3, glow: 0xa8e6ee }
+  reef: { deep: 0x154f86, top: 0x64cae8, caustic: 0.28, glow: 0x86d6f2 },
+  pool: { deep: 0x226a88, top: 0x84d8e4, caustic: 0.32, glow: 0xa8e6ee }
 };
 /** The room's plants ([model, x, z, scale]). */
 const PLANTS: readonly [string, number, number, number][] = [['anthurium', 390, 92, 2.4], ['heliconia', 392, -60, 1.8], ['anthurium', 308, -62, 2.2]];
@@ -101,6 +102,10 @@ export function buildSeaLife(kit: Kit, list: readonly Specimen[]): Exhibit {
     const got = SEA_MUSEUM_MODEL[id] ? kit.model(id) : kit.critter('sea', id);
     void got.then((g) => g && !disposed && put(g.scene.clone(true)));
   }
+  const light = tankLight(kit, SEA_TANKS.map((st) => ({ box: st.box, top: waterOf(st as unknown as Tank).y1 })));
+  group.add(light.lip.mesh);
+  geos.push(light.lip.mesh.geometry);
+  mats.push(light.lip.mesh.material as Material);
   const blocks: Rect[] = SEA_TANKS.map(({ box: b }) => ({ x0: b.x0, x1: b.x1, z0: b.z0, z1: b.z1 }));
   // a plant in each front corner and by the reef's end
   for (const [name, x, z, s] of PLANTS) {
@@ -117,6 +122,7 @@ export function buildSeaLife(kit: Kit, list: readonly Specimen[]): Exhibit {
     group,
     wing: 'sea',
     blocks,
+    pools: light.pools,
     frame(t, _dt, seen) {
       uTime.value = t / 1000;
       if (!drifters.length && ![...spheres.values()].some(seen)) return false;
@@ -141,6 +147,8 @@ export function buildSeaLife(kit: Kit, list: readonly Specimen[]): Exhibit {
     shown: () => [...holders.keys()],
     night(n) {
       uNight.value = n;
+      const l = lookAt('sea', n);
+      light.lip.cards(l.cards * l.glow);
     },
     dispose() {
       disposed = true;

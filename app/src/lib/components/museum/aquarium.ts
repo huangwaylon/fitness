@@ -28,13 +28,15 @@ import { FISH_PLANTS, TANKS, alongX, bodyIn, openOf, piecesOf, propsOf, waterOf,
 import { bandOf, cruiseOf, poseOf, spawn, stepSchool, stepWalker, type Swimmer } from './boids.ts';
 import { FEEDERS, FEEDER_R, PREDATORS, feedersIn, feedingOf, stepFeeding, type Feeding } from './feeding.ts';
 import type { Rect } from './plan.ts';
+import type { Card, Pool } from './bake.ts';
+import { POOL, lookAt } from './look.ts';
 import { batcher, decal, openBox, plainGeometry } from './geometry.ts';
 
 /** Each tank's water: its deep colour, its light colour, how bright its caustics, its glass's tint. */
 const WATER: Record<TankId, { deep: number; top: number; caustic: number; glow: number }> = {
-  sea: { deep: 0x0b3f6e, top: 0x3aa6cf, caustic: 0.22, glow: 0x7fd0f0 },
-  deep: { deep: 0x02060f, top: 0x0f2d52, caustic: 0.04, glow: 0x2a5a90 },
-  river: { deep: 0x1a4a40, top: 0x5fae95, caustic: 0.25, glow: 0x9fe0c4 }
+  sea: { deep: 0x15548a, top: 0x5cc4ea, caustic: 0.26, glow: 0x7fd0f0 },
+  deep: { deep: 0x041226, top: 0x1c4878, caustic: 0.06, glow: 0x2a5a90 },
+  river: { deep: 0x23604f, top: 0x7cc8ac, caustic: 0.28, glow: 0x9fe0c4 }
 };
 
 export const WATER_VERT = /* glsl */ `
@@ -56,9 +58,20 @@ void main() {
   float c = caustic(p, uTime) * uCaustic;
   float rays = uFloor > 0.5 ? 0.0 : pow(max(0.0, sin(vPos.x * 0.08 + vPos.z * 0.08 + sin(uTime * 0.2) * 0.6)), 8.0) * smoothstep(0.2, 1.0, vUv.y) * 0.35 * uCaustic;
   col += vec3(0.75, 0.95, 1.0) * (c * (0.55 + 0.45 * h) + rays);
-  gl_FragColor = vec4(col * (1.0 - uNight * 0.25), uFloor > 0.5 ? c * 0.45 : 1.0);
+  gl_FragColor = vec4(col * (1.0 + uNight * 0.1), uFloor > 0.5 ? c * 0.45 : 1.0);
   #include <colorspace_fragment>
 }`;
+/** A wing's tanks' light (bake.ts): a blue band round each on the floor, its caustics baked, and a glow lip along its
+ *  water's top on its front glass (one mesh: its strength the look's cards × glow); the tanks the brightest thing. */
+export function tankLight(kit: Kit, tanks: readonly { box: Box; top: number }[]): { pools: Pool[]; lip: ReturnType<Kit['cards']> } {
+  const pools: Pool[] = [], lips: Card[] = [];
+  for (const { box: b, top } of tanks) {
+    pools.push({ band: { x0: b.x0, x1: b.x1, z0: b.z0, z1: b.z1 }, feather: 16, caustic: 0.3, color: POOL.fish, at: 0.8 });
+    if (alongX(b)) lips.push({ x: (b.x0 + b.x1) / 2, y: top - 4, z: b.z1 + 0.3, w: b.x1 - b.x0, h: 9, yaw: 0 });
+    else lips.push({ x: b.x1 + 0.3, y: top - 4, z: (b.z0 + b.z1) / 2, w: b.z1 - b.z0, h: 9, yaw: Math.PI / 2 });
+  }
+  return { pools, lip: kit.cards('lip', lips) };
+}
 const BUBBLE_VERT = /* glsl */ `
 uniform float uTime; uniform float uPx;
 attribute vec4 aBase; attribute float aPhase;
@@ -211,6 +224,11 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
   }
   // (the glass over all else, the caustics over the sand)
   geos.push(...batch.done(group, (m) => (glasses.has(m) ? 4 : m.userData.floor ? 1 : 0)));
+
+  const light = tankLight(kit, TANKS.map((t) => ({ box: t.box, top: waterOf(t).y1 })));
+  group.add(light.lip.mesh);
+  geos.push(light.lip.mesh.geometry);
+  mats.push(light.lip.mesh.material as Material);
 
   // ---- the corners' plants ----
   const blocks: Rect[] = TANKS.map((t) => ({ x0: t.box.x0, x1: t.box.x1, z0: t.box.z0, z1: t.box.z1 }));
@@ -419,6 +437,7 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
     group,
     wing: 'fish',
     blocks,
+    pools: light.pools,
     frame(t, dt, seen) {
       // (a new hour: a new pick)
       if (hour.tick(t)) pick(seen);
@@ -481,6 +500,8 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
     shown: () => [...schools.values()].filter((s) => s.mesh && s.dir >= 0).map((s) => s.sp.id),
     night(n) {
       uNight.value = n;
+      const l = lookAt('fish', n);
+      light.lip.cards(l.cards * l.glow);
     },
     dither(on) {
       // (one program for every fish: the first settled one's compiles it for the hour's fades)

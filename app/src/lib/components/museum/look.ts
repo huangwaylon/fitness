@@ -30,7 +30,7 @@ export interface Look {
   lamp: number;
   /** The wash and halo cards' brightness, a share of theirs (bake.ts CARD). */
   cards: number;
-  /** The tanks' water emissive, a share of WATER_GLOW's. */
+  /** The tanks' glow lips (bake.ts CARD.lip), times the cards'. */
   glow: number;
 }
 
@@ -39,13 +39,13 @@ export interface Look {
 export const KEY = [-60, 220, 180] as const;
 const MAX_EXPOSURE = 1.15;
 
-const base = { lm: 1.2, lamp: 0.6, cards: 1, glow: 1 };
+const base = { lm: 1.6, lamp: 0.6, cards: 1, glow: 1 };
 /** Each wing's look by day (the lighting proposal's table). */
 export const LOOK: Record<Wing, Look> = {
-  hall: { exposure: 1.1, sky: 0xfff4e4, ground: 0xd8c0a0, hemi: 2.2, amb: 0xfff0dc, ambI: 0.55, key: 0xfff2dc, keyI: 0.9, bg: 0x54402c, ...base },
-  fossil: { exposure: 1.1, sky: 0xfff0dc, ground: 0xc4a882, hemi: 2.1, amb: 0xfff0dc, ambI: 0.55, key: 0xffe8c8, keyI: 0.85, bg: 0x4a3c2e, ...base },
-  art: { exposure: 1.12, sky: 0xfff6ea, ground: 0xc8b098, hemi: 2.0, amb: 0xfff2e2, ambI: 0.5, key: 0xfff4e6, keyI: 0.8, bg: 0x34201c, ...base },
-  fish: { exposure: 1.05, sky: 0xdfeaff, ground: 0x6a86a8, hemi: 1.7, amb: 0xd6e6ff, ambI: 0.45, key: 0xeef4ff, keyI: 0.55, bg: 0x10263c, ...base },
+  hall: { exposure: 1.1, sky: 0xfff4e4, ground: 0xd8c0a0, hemi: 2.2, amb: 0xfff0dc, ambI: 0.55, key: 0xfff2dc, keyI: 0.9, bg: 0xb09474, ...base },
+  fossil: { exposure: 1.1, sky: 0xfff0dc, ground: 0xc4a882, hemi: 2.1, amb: 0xfff0dc, ambI: 0.55, key: 0xffe8c8, keyI: 0.85, bg: 0x967a5c, ...base },
+  art: { exposure: 1.12, sky: 0xfff6ea, ground: 0xc8b098, hemi: 2.0, amb: 0xfff2e2, ambI: 0.5, key: 0xfff4e6, keyI: 0.8, bg: 0x7c4a3a, ...base },
+  fish: { exposure: 1.05, sky: 0xdfeaff, ground: 0x6a86a8, hemi: 1.7, amb: 0xd6e6ff, ambI: 0.45, key: 0xeef4ff, keyI: 0.55, bg: 0x22507a, ...base },
   sea: { exposure: 1.05, sky: 0xd4e4ff, ground: 0x5a7898, hemi: 1.6, amb: 0xd6e6ff, ambI: 0.45, key: 0xeef4ff, keyI: 0.5, bg: 0x0c2034, ...base },
   bug: { exposure: 1.0, sky: 0xfff6e0, ground: 0x7a9a5a, hemi: 2.0, amb: 0xfff0dc, ambI: 0.35, key: 0xfff4dc, keyI: 1.4, bg: 0x41603f, ...base }
 };
@@ -53,9 +53,9 @@ export const LOOK: Record<Wing, Look> = {
 /** The materials' tints in place of the old dark ones (white: none); a threshold takes its own room's. The new floor
  *  and wall materials skip the ceilings' night multiply (the exposure covers it). */
 export const TINT: Record<Wing, { floor: number; wall: number; ceil?: number }> = {
-  hall: { floor: 0xffffff, wall: 0xffffff },
-  fossil: { floor: 0xece4d6, wall: 0xfff8ee, ceil: 0xb09a7c },
-  art: { floor: 0xffffff, wall: 0xffffff },
+  hall: { floor: 0xffeedc, wall: 0xfff6ea },
+  fossil: { floor: 0xf6dcb4, wall: 0xffe4c0, ceil: 0xb09a7c },
+  art: { floor: 0xf0f0ff, wall: 0xffffff },
   fish: { floor: 0xe8eef6, wall: 0xffffff, ceil: 0x3e6a96 },
   sea: { floor: 0xe8eef6, wall: 0xf0f6ff, ceil: 0x3e6a96 },
   bug: { floor: 0xffffff, wall: 0xffffff }
@@ -64,8 +64,8 @@ export const TINT: Record<Wing, { floor: number; wall: number; ceil?: number }> 
 /** Each wing's floors and walls lifted over their textures' own darkness (a multiply over 1 on the tint, linear: the
  *  aquarium's dark checker, the gallery's walnut, the fossils' stone), so a room reads as lit, not as its texture. */
 export const GAIN: Record<Wing, { floor: number; wall: number }> = {
-  hall: { floor: 1.15, wall: 1.1 }, fossil: { floor: 1.5, wall: 1.45 }, art: { floor: 2, wall: 1.15 },
-  fish: { floor: 2.4, wall: 1.3 }, sea: { floor: 2.4, wall: 1.3 }, bug: { floor: 1, wall: 1 }
+  hall: { floor: 1.3, wall: 1.15 }, fossil: { floor: 1.9, wall: 2.6 }, art: { floor: 4.4, wall: 1.9 },
+  fish: { floor: 3.6, wall: 2 }, sea: { floor: 3.6, wall: 2 }, bug: { floor: 1, wall: 1 }
 };
 
 /** Each wing's mood (sRGB hex): its doorway's card seen from the next room (only the room one is in is drawn) and the
@@ -76,10 +76,7 @@ export const PORTAL: Record<Wing, number> = { hall: 0xf2dcb4, fossil: 0xe2c89c, 
 export const POOL: Record<Exclude<Wing, 'bug'>, number> = { hall: 0xffe6c0, fossil: 0xffd8a0, art: 0xfff0d8, fish: 0x6fc6e8, sea: 0x6fc6e8 };
 
 /** The exhibits' self-light (nhLambert's `lift`, the museum's only): paintings, statues, fossils; tank creatures as now. */
-export const LIFT = { painting: 0.22, statue: 0.12, fossil: 0.12, creature: 0.25 } as const;
-
-/** The tanks' water faces' emissive (a uniform, not a new program), times the look's glow. */
-export const WATER_GLOW = 0x1a5a78;
+export const LIFT = { painting: 0.22, statue: 0.2, fossil: 0.25, creature: 0.25 } as const;
 
 const c0 = new Color(), c1 = new Color();
 /** `a` toward `b` by t, in linear light (three's Color: its hex sRGB, held linear). */

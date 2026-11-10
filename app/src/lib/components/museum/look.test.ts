@@ -3,7 +3,7 @@
 // looks, and the look put on three's lights and renderer (Neutral tone mapping).
 import { describe, expect, test } from 'vitest';
 import { AmbientLight, Color, DirectionalLight, HemisphereLight, NeutralToneMapping, NoToneMapping, type ToneMapping } from 'three';
-import { KEY, LIFT, LOOK, POOL, TINT, WATER_GLOW, applyLook, blendLook, lookAt, luma } from './look.ts';
+import { KEY, LIFT, LOOK, POOL, TINT, applyLook, blendLook, lookAt, luma } from './look.ts';
 import type { Wing } from './plan.ts';
 
 const WINGS: Wing[] = ['hall', 'bug', 'fish', 'sea', 'fossil', 'art'];
@@ -78,14 +78,13 @@ describe("the museum's looks", () => {
     expect(b.b).toBeLessThan(f.b);
   });
 
-  test("the dark tints gone: every floor and wall tint near white, the pools' colours warm (the aquarium's blue), the exhibits' self-light", () => {
-    for (const w of WINGS) for (const hex of [TINT[w].floor, TINT[w].wall]) for (const sh of [16, 8, 0]) expect((hex >> sh) & 255).toBeGreaterThanOrEqual(0xd6);
+  test("the dark tints gone: every floor and wall tint light (the fossils' a warm sandstone), the pools' colours warm (the aquarium's blue), the exhibits' self-light", () => {
+    for (const w of WINGS) for (const hex of [TINT[w].floor, TINT[w].wall]) for (const sh of [16, 8, 0]) expect((hex >> sh) & 255).toBeGreaterThanOrEqual(0xb0);
     for (const w of ['hall', 'fossil', 'art'] as const) expect(warmth(POOL[w])).toBeGreaterThan(0);
     expect(warmth(POOL.fish)).toBeLessThan(0);
-    // (the paintings lit most of the still exhibits, never past the creatures; the water's glow a deep blue)
+    // (the paintings lit most of the still exhibits, never past the creatures)
     expect(LIFT.painting).toBeGreaterThan(LIFT.statue);
     for (const v of Object.values(LIFT)) (expect(v).toBeGreaterThan(0), expect(v).toBeLessThanOrEqual(LIFT.creature));
-    expect(warmth(WATER_GLOW)).toBeLessThan(0);
   });
 
   test("applied: three's lights, Neutral tone mapping and the exposure, the key's place, the background", () => {

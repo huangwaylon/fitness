@@ -2,10 +2,12 @@
 // and every genuine artwork anyone has had (art.ts: its place) as NH's own model (models.json: four packs, each fetched
 // once one of its artworks is on show): the paintings hung on the walls and the panels, the statues on marble plinths,
 // the wild painting's halves as a screen on a dais. Still: it asks for no frames of its own.
-import { BoxGeometry, Group, Matrix4, type BufferGeometry } from 'three';
+import { BoxGeometry, Group, Matrix4, type BufferGeometry, type Material } from 'three';
 import type { Exhibit, Kit } from './engine.ts';
 import { ART_SPOTS, DAIS, PANELS, PANEL_H, PANEL_T, plinthOf, type ArtOnShow } from './art.ts';
 import { batcher } from './geometry.ts';
+import type { Card, Pool } from './bake.ts';
+import { GAIN, POOL, TINT, lookAt } from './look.ts';
 import type { Rect, RoomId } from './plan.ts';
 import M from './models.json' with { type: 'json' };
 
@@ -20,7 +22,9 @@ export function buildGallery(kit: Kit, shown: readonly ArtOnShow[], room: RoomId
   const group = new Group();
   const geos: BufferGeometry[] = [];
   // (the kit's materials: the museum lets go of them)
-  const panel = kit.lambert({ map: kit.tex('hall-red', [4, 1.4]), color: 0xd8c8c0 });
+  // (NH's damask red, as bright as the walls: look.ts GAIN)
+  const panel = kit.lambert({ map: kit.tex('hall-red', [4, 1.4]) });
+  panel.color.set(TINT.art.wall).multiplyScalar(GAIN.art.wall);
   const cap = kit.lambert({ color: 0xc9a24a });
   const marble = kit.lambert({ map: kit.tex('marble', [0.5, 0.5]), color: 0xf0e8dc });
   const wood = kit.lambert({ color: 0x5a3a27 });
@@ -46,6 +50,21 @@ export function buildGallery(kit: Kit, shown: readonly ArtOnShow[], room: RoomId
     kit.prop(id, sp.x, sp.z, { y: sp.y, yaw: sp.yaw, s: sp.s, parent: group, origin: true });
   }
   geos.push(...batch.done(group));
+  // a wash of light on the wall over each painting (one mesh: bake.ts cards) and a pool on the floor before it; a pool
+  // round each statue
+  const washes: Card[] = [], pools: Pool[] = [];
+  for (const id of ids) {
+    const sp = ART_SPOTS.get(id)!, b = MODELS[id];
+    if (!b) continue;
+    const w = (b.max[0] - b.min[0]) * sp.s, h = (b.max[1] - b.min[1]) * sp.s;
+    if (sp.plinth) pools.push({ x: sp.x, z: sp.z, rx: sp.plinth / 2 + 9, color: POOL.art, at: 0.8 });
+    else if (b.min[1] < -0.5 && !id.startsWith('wild-painting')) {
+      washes.push({ x: sp.x, y: sp.y + 0.2 * h, z: sp.z + 0.1, w: w * 1.4, h: h * 1.25, yaw: sp.yaw });
+      pools.push({ x: sp.x, z: sp.z + 10, rx: w * 0.6 + 4, rz: 9, color: POOL.art, at: 0.7 });
+    }
+  }
+  const wash = washes.length ? kit.cards('wash', washes) : null;
+  if (wash) group.add(wash.mesh);
   /** An artwork's middle, and how tall it's drawn. */
   const mid = (id: string): { p: [number, number, number]; h: number } | null => {
     const sp = ART_SPOTS.get(id), b = MODELS[id];
@@ -57,6 +76,7 @@ export function buildGallery(kit: Kit, shown: readonly ArtOnShow[], room: RoomId
     group,
     wing: 'art',
     blocks,
+    pools,
     frame: () => false,
     pick(project, cx, cy) {
       let best: { id: string; d: number } | null = null;
@@ -70,9 +90,12 @@ export function buildGallery(kit: Kit, shown: readonly ArtOnShow[], room: RoomId
     },
     where: (id) => mid(id)?.p ?? null,
     shown: () => [...ids],
-    night() {},
+    night(n) {
+      wash?.cards(lookAt('art', n).cards);
+    },
     dispose() {
       for (const g of geos) g.dispose();
+      if (wash) (wash.mesh.geometry.dispose(), (wash.mesh.material as Material).dispose());
     }
   };
 }

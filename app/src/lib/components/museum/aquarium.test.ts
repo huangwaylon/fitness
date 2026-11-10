@@ -21,6 +21,7 @@ const kit = {
   island: async () => null,
   islandBounds: () => null,
   lambert: () => new MeshLambertMaterial(),
+  cards: () => ({ mesh: new Mesh(), cards: () => {} }),
   invalidate: () => {},
   noDraw: true
 } as unknown as Kit;
