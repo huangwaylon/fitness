@@ -181,6 +181,7 @@
     try {
       const got = await downloadWhisper((g, of) => ((wGot = g), (wOf = of)));
       keep('mic.stt', { be: 'whisper-wasm', model, step: 'dl', ms: Math.round(performance.now() - t0), mb: mb(got), ok: true });
+      if (gone) return;
     } catch {
       keep('mic.stt', { be: 'whisper-wasm', model, step: 'dl', ms: Math.round(performance.now() - t0), ok: false, err: 'network' });
       wStep = 'fail';
@@ -192,9 +193,11 @@
       const b = await clipBuffer(s.clip);
       return b ? to16k(b.getChannelData(0), b.sampleRate) : null;
     }));
+    if (gone) return; // (the page left meanwhile: no Worker made)
     const w = (whisper = openWhisper());
     let best: { dev: Device; ms: number; pct: number } | null = null;
     for (const dev of (env?.gpuW ? ['webgpu', 'wasm'] : ['wasm']) as Device[]) {
+      if (gone) return;
       wDev = dev;
       wClip = 0;
       const be = beOf(dev), l = await w.load(dev);

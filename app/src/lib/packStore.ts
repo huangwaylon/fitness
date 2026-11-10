@@ -52,7 +52,7 @@ export class PackStore {
       if (!b) this.#held.delete(stem);
       else {
         this.#size.set(stem, b.byteLength);
-        this.#trim();
+        this.#trim(stem);
       }
       return b;
     });
@@ -60,10 +60,13 @@ export class PackStore {
     return p;
   }
 
-  #trim(): void {
+  /** The least recently used out till within the cap, never `kept` (the pack just in: the newest key may be one still
+   *  on its way). */
+  #trim(kept: string): void {
     let total = [...this.#size.values()].reduce((s, n) => s + n, 0);
-    for (const k of [...this.#held.keys()].slice(0, -1)) {
+    for (const k of this.#held.keys()) {
       if (total <= this.#cap) break;
+      if (k === kept) continue;
       const n = this.#size.get(k);
       if (n === undefined) continue; // (on its way)
       total -= n;

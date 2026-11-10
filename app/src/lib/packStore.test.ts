@@ -75,6 +75,20 @@ describe('PackStore', () => {
     expect(count(n, 'big')).toBe(2);
   });
 
+  it('the pack just in is kept though a newer one is still on its way (review 5: it was let go, then fetched again)', async () => {
+    const n = net({ a: 400, big: 2000, e: 400 });
+    const s = store(n, 1000);
+    await s.pack('a');
+    n.hold();
+    const big = s.pack('big'), e = s.pack('e');
+    n.go('/p/big.pak');
+    await big;
+    await s.bytes(['big', 0, 4]); // (its files asked as it lands: from it, not a second fetch)
+    expect([count(n, 'big'), count(n, 'a')]).toEqual([1, 1]);
+    n.go();
+    await e;
+  });
+
   it('prefetch: each pack once, in order, the first first; a clear meanwhile (the sheet closed) stops the rest', async () => {
     const n = net({ x: 100, home: 1000, y: 100 });
     const s = store(n);

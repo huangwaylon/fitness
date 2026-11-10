@@ -39,6 +39,8 @@ class Areas {
   job = $state<{ id: string; done: number; total: number; bytes: number } | null>(null);
   private abort: AbortController | null = null;
   private checked = false;
+  /** A save past its tap, still checking whether it may start. */
+  private starting = false;
 
   private keep(): void {
     writeJson(localKV(), DEVICE.offlineAreas, this.list);
@@ -88,11 +90,17 @@ class Areas {
 
   /** Save (or go on with, or update) an area; null once it ran (done or 一部のみ), else why it didn't start. */
   async save(plan: Plan, name: L): Promise<Refusal | null> {
-    if (this.job) return 'busy';
-    const why = await this.refusal(plan);
-    if (why) return why;
-    // the first save asks that the storage be kept (WebKit may evict an origin's caches after weeks unused)
-    if (!Object.keys(this.list).length) await navigator.storage?.persist?.().catch(() => false);
+    // (the slot taken before the first wait: a second tap meanwhile is busy, never a second save on the same abort)
+    if (this.job || this.starting) return 'busy';
+    this.starting = true;
+    try {
+      const why = await this.refusal(plan);
+      if (why) return why;
+      // the first save asks that the storage be kept (WebKit may evict an origin's caches after weeks unused)
+      if (!Object.keys(this.list).length) await navigator.storage?.persist?.().catch(() => false);
+    } finally {
+      this.starting = false;
+    }
     this.abort = new AbortController();
     this.job = { id: plan.id, done: 0, total: plan.tiles.length, bytes: 0 };
     const entry = (m: Pick<Manifest, 'bytes' | 'done' | 'at' | 'tileVersion'>): Entry => ({ name, source: plan.source, bytes: m.bytes, at: m.at, done: m.done, tileVersion: m.tileVersion });
