@@ -12,7 +12,6 @@ const SCOPE = /^src\/lib\/(contract|sync)\/[^/]+\.ts$|^src\/lib\/store\/actions\
 /** below FLOOR today (2026-11-10): their own floors, the next to test */
 export const RATCHET: Record<string, number> = {
   'src/lib/sync/live-local.ts': 77,
-  'src/lib/contract/island.ts': 73,
   'src/lib/contract/ticket.ts': 80,
   'src/lib/store/actions.ts': 79
 };

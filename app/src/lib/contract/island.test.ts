@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ISLAND_MAX, isIslandDay } from './island.ts';
+import { ISLAND_MAX, isIslandDay, mergeIslandDay, type IslandDayData } from './island.ts';
 import { WORLD_X, WORLD_Z } from './layout.ts';
 import { GRID, tileMid } from '#lib/layout/grid.ts';
 import { tokyoDay } from '#lib/contract/live-protocol.ts';
@@ -50,5 +50,24 @@ describe('an island day (contract/island.ts)', () => {
     expect(isIslandDay(row)).toBe(true);
     expect(JSON.stringify(row).length).toBeLessThan(20_000);
     expect(row.puts.some((p) => p[1].startsWith('bug:'))).toBe(false); // a bush's bug is gone in seconds: not kept
+  });
+});
+
+describe('mergeIslandDay (contract/island.ts: the row kept when a sent day replaces a held one)', () => {
+  const day = (o: Partial<IslandDayData>): IslandDayData => ({ date: '2026-11-11', taken: [], puts: [], shakes: [], watered: [], wishes: {}, ...o });
+  it('only what can only grow is merged: the wishes their max, the watered both rows\', the spot the sent one\'s or else the held one\'s', () => {
+    const held = day({ taken: ['t1'], watered: ['f1', 'f2'], wishes: { '2026-11-10': 3, '2026-11-11': 1 }, at: [10, 20] });
+    const sent = day({ taken: [], watered: ['f2', 'f3'], wishes: { '2026-11-11': 2 } });
+    expect(mergeIslandDay(held, sent)).toEqual({ ...sent, watered: ['f1', 'f2', 'f3'], wishes: { '2026-11-10': 3, '2026-11-11': 2 }, at: [10, 20] });
+    expect(mergeIslandDay(held, { ...sent, at: [30, 40] }).at).toEqual([30, 40]);
+    expect('at' in mergeIslandDay(day({}), day({}))).toBe(false);
+  });
+  it('within ISLAND_MAX: the newest mornings and the latest watered kept', () => {
+    const many = (n: number, p: string) => Array.from({ length: n }, (_, i) => `${p}${i}`);
+    const wishes = Object.fromEntries(Array.from({ length: ISLAND_MAX.wishes + 2 }, (_, i) => [`2026-10-${String(i + 1).padStart(2, '0')}`, 1]));
+    const m = mergeIslandDay(day({ watered: many(ISLAND_MAX.watered, 'a') }), day({ watered: ['b0'], wishes }));
+    expect(m.watered).toHaveLength(ISLAND_MAX.watered);
+    expect(m.watered.at(-1)).toBe('b0');
+    expect(Object.keys(m.wishes)).toEqual(Object.keys(wishes).slice(-ISLAND_MAX.wishes));
   });
 });
