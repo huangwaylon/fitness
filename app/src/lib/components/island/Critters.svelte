@@ -1426,8 +1426,13 @@
     const bugFor = (id: BugId) => {
       if (!spawnBug(id, { stay: false, pinned: tries >= 4, cid }) && ++tries < 10) later(() => bugFor(id), 400);
     };
+    // (and for the 3D island's camera a poll before, a few seconds at most: till it's up and has placed the nodes
+    // through it, every control is hidden and a guard skips a hidden one: on a slow CPU a percher sat behind a goal
+    // tree's fruit row, shown a moment later, bugs.spec's and critters.spec's cicada)
+    let waits = 0, threeAt = 0;
     const go = () => {
-      if (!enabled() || !w.rest.ready) return later(go, 300);
+      if (w.rest.three) threeAt ||= ++waits;
+      if (!enabled() || !w.rest.ready || ((!threeAt || threeAt === waits) && ++waits < 20)) return later(go, 300);
       // ?sea=<id> | pearl | (anything else: the usual pick)
       if (dive !== null) void loadSea().then((m) => spawnBubbles(false, dive in m.SEA || dive === m.PEARL ? dive : undefined, true, rand, { cid }));
       else if (want === 'fish') void fishFor('sea');
