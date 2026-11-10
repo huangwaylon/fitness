@@ -67,7 +67,7 @@ const SPECS: Record<string, Spec> = {
   'money/bells': [128, '99k_Bells_NH_Inv_Icon.png'],
   'money/leaf': [128, 'Leaf_NH_Icon.png'],
   // The trees, the hedge's and the campsite's bushes, the campsite, the lamps and the rocks are NH's own models rendered by
-  // scripts/models.ts (source "rendered"). NH has no model of the plumeria: its catalog renders (128 px, trimmed: TRIM).
+  // scripts/models.ts (source "rendered"). The plumeria's are its catalog renders (128 px, trimmed: TRIM), from before NH's model was in the files.
   'bushes/white-plumeria': [128, 'White-Plumeria_Bush_NH_Icon.png'],
   'bushes/pink-plumeria': [128, 'Pink-Plumeria_Bush_NH_Icon.png'],
   // Island decorations.

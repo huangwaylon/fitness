@@ -87,7 +87,7 @@ export interface Use {
   winter?: string;
   /** Loaded with its group, lazily (a critter: when one of the month's is about). */
   lazy?: 'bug' | 'fish' | 'sea' | 'event';
-  /** No NH model of its own: another stands in (the plumeria: NH's hibiscus in its colours). */
+  /** No NH model of its own: another stands in. */
   standIn?: true;
 }
 export type Cat = 'bug' | 'fish' | 'shadow' | 'sea' | 'find' | 'fruit' | 'flower' | 'bush' | 'tree' | 'deco' | 'decor' | 'event' | 'scenery' | 'fx' | 'tool' | 'accessory';
@@ -235,7 +235,7 @@ const flowers = FLOWER_KEYS.map((id): AssetJob => {
 });
 
 // the bushes in bloom (stage 3; the colour a row of the flowers' gradient: scripts/models.ts's rows), and in winter
-// NH's snowy bush (the plumeria: below)
+// NH's snowy bush (the plumeria's own: below)
 const BUSH = [
   ['white-azalea', 'Azalea', 'Petal', 0.03, 2], ['pink-azalea', 'Azalea', 'Petal', 0.09, 2],
   ['red-hibiscus', 'Hibiscus', 'Flow', 0.03, 2], ['yellow-hibiscus', 'Hibiscus', 'Flow', 0.09, 2],
@@ -251,12 +251,15 @@ const bushes: AssetJob[] = BUSH.flatMap(([id, sp, part, r, snow]): AssetJob[] =>
   { name: `bushes/${id}-winter`, parts: [[`PltBush${sp}Snow`, `PltBush${sp}${snow}Snow`]], snow: true, uses: [{ key: `bushes/${id}-winter`, cat: 'bush', s: DECOR_U }] }
 ]);
 
-// the plumeria isn't in NH's files under any name: NH's hibiscus (its five broad petals, the closest shape) in the
-// plumeria's colours, the camellia's near-white and the azalea's pink rows; in winter the snowy hibiscus
-bushes.push(...([['white', 'PltBushCamellia', 'mPltBushCamelliaFlowColor', 1], ['pink', 'PltBushAzalea', 'mPltBushAzaleaPetalColor', 0]] as const).map(([c, f, grd, r]): AssetJob => ({
-  name: `bushes/${c}-plumeria`, parts: [['PltBushHibiscus', 'PltBushHibiscus3']], tex: [f], grdFile: { Flow: grd, Leaf: 'mPltBushHibiscusColor' }, grdRows: { Flow: row(r) },
-  uses: [{ key: `bushes/${c}-plumeria`, cat: 'bush', s: DECOR_U, standIn: true, winter: 'bushes/red-hibiscus-winter' }]
-})));
+// NH's plumeria (PltBushPlumeria, in bloom), its petals' gradient rows white (0) and pink (1) (the file is NH's own
+// misspelt `PetalColer`, so named here); in winter its one snowy look, the flowers gone, for both
+bushes.push(
+  ...([['white', 0], ['pink', 1]] as const).map(([c, r]): AssetJob => ({
+    name: `bushes/${c}-plumeria`, parts: [['PltBushPlumeria', 'PltBushPlumeria3']], grdFile: { Flow: 'PltBushPlumeriaPetalColer' }, grdRows: { Flow: row(r) },
+    uses: [{ key: `bushes/${c}-plumeria`, cat: 'bush', s: DECOR_U, winter: 'bushes/plumeria-winter' }]
+  })),
+  { name: 'bushes/plumeria-winter', parts: [['PltBushPlumeriaSnow', 'PltBushPlumeria2Snow']], snow: true, uses: [{ key: 'bushes/plumeria-winter', cat: 'bush', s: DECOR_U }] }
+);
 
 // the trees' winter looks (NH's snowy trees: the snow drawn)
 const trees: AssetJob[] = ([['oak', 'Oak', 0.5], ['cedar', 'Cedar', 0.3], ['palm', 'Palm', 0.5], ['bamboo', 'Bamboo', 0.5]] as const).map(([id, t, r]) => ({
@@ -497,7 +500,6 @@ ${sorted(keys).map(([k, v]) => `    ${JSON.stringify(k)}: ${JSON.stringify(v)}`)
 /** The island's art without a model of its own (a key or a group `<group>/*`) and why: it stays a billboard (or 2D). */
 const NO_MODEL: [string, string][] = [
   ['villagers/*', 'not here: the villagers and the visitors are skinned models of their own (scripts/villagers3d-models.ts); a villager with none is its card'],
-  ['bushes/white-plumeria, bushes/pink-plumeria', 'no plumeria in NH’s files (no other name either): NH’s hibiscus (the closest shape) in the plumeria’s white and pink (`standIn`)'],
   ['trees/*-canopy, trees/*-trunk', '2D only: the 2D oak’s two layers; the 3D tree is one model'],
   ['reactions/*', 'billboard: the villagers’ emotes'],
   ['fx/* (sparkle, bang, dust, splash, ripple)', 'not NH’s: NH’s files have no effect models (no Eff*/Emo*), so these are stylised meshes in the 2D’s colours (scripts/world3d-fx.ts)'],

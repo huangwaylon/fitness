@@ -176,14 +176,14 @@ offset, bytes]`), is in both part tables.
 Written by `npm run world3d-models` from assets.json (the per-key rows are in the manifest).
 
 <!-- assets:start -->
-590 keys, 487 models, 6.24 MB in all.
+591 keys, 488 models, 6.25 MB in all.
 
 | kind | keys | models | KB | loads |
 | --- | --- | --- | --- | --- |
 | accessory | 3 | 3 | 52.6 | lazily (event) |
 | find | 129 | 52 | 406.8 | with the island |
 | scenery | 4 | 2 | 68.2 | with the island |
-| bush | 24 | 24 | 287 | with the island |
+| bush | 25 | 25 | 298.5 | with the island |
 | sea | 40 | 40 | 495 | lazily (sea) |
 | bug | 75 | 75 | 1020 | lazily (bug) |
 | fish | 83 | 83 | 891.5 | lazily (fish) |
@@ -202,7 +202,6 @@ Written by `npm run world3d-models` from assets.json (the per-key rows are in th
 | keys | status |
 | --- | --- |
 | villagers/* | not here: the villagers and the visitors are skinned models of their own (scripts/villagers3d-models.ts); a villager with none is its card |
-| bushes/white-plumeria, bushes/pink-plumeria | no plumeria in NH’s files (no other name either): NH’s hibiscus (the closest shape) in the plumeria’s white and pink (`standIn`) |
 | trees/*-canopy, trees/*-trunk | 2D only: the 2D oak’s two layers; the 3D tree is one model |
 | reactions/* | billboard: the villagers’ emotes |
 | fx/* (sparkle, bang, dust, splash, ripple) | not NH’s: NH’s files have no effect models (no Eff*/Emo*), so these are stylised meshes in the 2D’s colours (scripts/world3d-fx.ts) |

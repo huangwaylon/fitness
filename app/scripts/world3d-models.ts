@@ -88,7 +88,7 @@ const JOBS: Job[] = [
   { name: 'cedar', parts: [['PltTreeCedar', 'PltTreeCedar4']], grdRow: 0.3 },
   { name: 'palm', parts: [['PltTreePalm', 'PltTreePalm4']], grdRow: 0.5 },
   { name: 'bamboo', parts: [['PltTreeBamboo', 'PltTreeBamboo4']], grdRow: 0.5 },
-  // bushes in bloom (stage 3); the plumeria isn't in the files: NH's azaleas stand in, white and pink
+  // bushes in bloom (stage 3)
   { name: 'bush-holly', parts: [['PltBushHolly', 'PltBushHolly3']], grdRows: { Flow: 0.03 } },
   { name: 'bush-white-azalea', parts: [['PltBushAzalea', 'PltBushAzalea3']], grdRows: { Petal: 0.03 } },
   { name: 'bush-pink-azalea', parts: [['PltBushAzalea', 'PltBushAzalea3']], grdRows: { Petal: 0.09 } },
