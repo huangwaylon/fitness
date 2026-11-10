@@ -135,7 +135,7 @@ test('ずかん opens the ずかん (its kinds, a kind\'s page with ‹), せっ
   await folded(page);
   const dlg = page.locator('dialog[open]');
   await expect(dlg.locator('.navbar')).toContainText('図鑑');
-  await expect(dlg.locator('[data-zukan]')).toHaveCount(7);
+  await expect(dlg.locator('[data-zukan]')).toHaveCount(8); // (the seven kinds and なかま)
   await dlg.locator('[data-zukan="fish"]').click();
   await expect(dlg.locator('[data-zukan-head]')).toContainText('魚');
   await dlg.locator('.titlebar .back').click();
