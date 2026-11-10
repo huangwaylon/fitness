@@ -21,6 +21,8 @@ import { topSpot } from '#lib/layout/tops.ts';
 import { outdoorModel, outdoorPiece } from '#lib/layout/outdoor.ts';
 import { FENCE_SNOW, cropStage, fenceJoin, isCrop, isFence, isGarden } from '#lib/layout/garden.ts';
 import { cedarLit, gardenReady } from './garden.ts';
+import { fieldPlots } from '#lib/layout/field.ts';
+import { tileMid } from '#lib/layout/grid.ts';
 
 /** A model (static/room/world3d/<name>.glb). */
 export type ModelName = string;
@@ -73,7 +75,13 @@ export interface Day {
   board?: boolean;
   /** The day (Tokyo's `YYYY-MM-DD`): a crop's stage (layout/garden.ts cropStage), the cedars' festive lights. */
   date?: string;
+  /** The fields' plots (docs/farming.md, island/farm.svelte.ts): a plot id → its plant's model (fieldPlant) and whether
+   *  it was watered today (its soil dark); a plot not here is bare dry soil. */
+  farm?: ReadonlyMap<string, { m?: string; wet?: boolean }>;
 }
+
+/** Watered soil: NH's darker tilled earth (the soil's colour multiplied). */
+const WET_SOIL = 0x8a7464;
 
 const MU = ISLAND_MODELS as unknown as Record<string, { mu: [number, number] }>;
 const MODELS = W3D.models as Record<string, { min: number[]; max: number[] }>;
@@ -152,6 +160,13 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
         const id = o.k.slice(5), n = cropStage(o.id, day.date);
         out.push({ id: `${o.id}:soil`, model: 'garden/crop-soil', x, z, scale: DECOR_U, yaw });
         thing(id === 'pumpkin' && n >= 3 ? `garden/crop-pumpkin-${o.s ?? 'orange'}-${n}` : `garden/crop-${id}-${n}`, DECOR_U);
+      } else if (o.k === 'field') {
+        // a field: NH's tilled soil a plot (dark once watered), its plant on it
+        for (const t of fieldPlots(o)) {
+          const [px, pz] = tileMid(t.c, t.r), at = day.farm?.get(t.p);
+          out.push({ id: `${o.id}:${t.p}`, model: 'garden/crop-soil', x: px, z: pz, scale: DECOR_U, ...(at?.wet ? { tint: WET_SOIL } : {}) });
+          if (at?.m) out.push({ id: t.p, model: at.m, x: px, z: pz, scale: DECOR_U });
+        }
       } else if (o.k === 'vine') thing(`garden/vine-${o.s ?? 'a'}${winter ? '-snow' : ''}`, DECOR_U);
       else if (o.k === 'cedar') thing(`garden/cedar-deco${winter || /winter/.test(day.swaps?.[o.id]?.key ?? '') ? '-snow' : ''}`, scaleOf('trees/cedar', 'cedar', day.swaps?.[o.id]?.h ?? h), { tap: 'tree' });
       else thing(`garden/${o.k}`, DECOR_U);

@@ -5,6 +5,7 @@
 import DEFAULT from './default.json' with { type: 'json' };
 import { CHUNKS_X, CHUNKS_Z, GRID, SEA, TILE, chunkId, chunkIndex, chunkString, idx, kindOf, onGrid, tierOf, tileX, tileZ, writeChunk, type Kind, type Tile } from './grid.ts';
 import { footprintOf, kindDef } from './catalog.ts';
+import { fieldOf } from './field.ts';
 import { DEFAULT_HOMES, WHO_OF_HOME, homeFoot, type HomeStyle, type Who } from './homes.ts';
 import { isVoid, mergeLayout, resetAt, type LayoutEntry, type LayoutOp } from '#lib/contract/layout.ts';
 
@@ -111,7 +112,12 @@ export function layoutOf(entries: Iterable<LayoutEntry> | Map<string, LayoutEntr
 // ---- an object's place ----------------------------------------------------------------------------------------------
 
 /** An object's footprint in tiles (across × deep, turned): a home's is its style's. */
-export function footOf(layout: Layout, o: Pick<Obj, 'id' | 'k' | 'f'>): [number, number] {
+export function footOf(layout: Layout, o: Pick<Obj, 'id' | 'k' | 'f'> & { s?: string }): [number, number] {
+  // (a field's is its size, layout/field.ts)
+  if (o.k === 'field') {
+    const f = fieldOf(o.s);
+    return [f.w, f.d];
+  }
   if (o.k === 'home') {
     const [w, d] = homeFoot(layout.homes[WHO_OF_HOME[o.id] ?? 'A']);
     return o.f % 2 ? [d, w] : [w, d];

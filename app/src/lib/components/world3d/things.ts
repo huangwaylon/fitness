@@ -591,9 +591,9 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
         im.receiveShadow = true;
         im.customDepthMaterial = depth;
         if (SHADOWS.has(name)) im.renderOrder = UNDER_WATER;
-        // a flower's petals take its colour
+        // a flower's petals take its colour, a field's soil its watered dark (objects.ts WET_SOIL)
         const mname = (mesh.material as Material).name;
-        if (insts.some((o) => o.tint !== undefined) && /Flower|Petal|Flow|Bloom/.test(mname) && !/Body|Leaf/.test(mname))
+        if (insts.some((o) => o.tint !== undefined) && ((/Flower|Petal|Flow|Bloom/.test(mname) && !/Body|Leaf/.test(mname)) || name === 'garden/crop-soil'))
           insts.forEach((o, i) => im.setColorAt(i, new Color(o.tint ?? 0xffffff)));
         g.meshes.push({ im, local: mesh.matrixWorld.clone(), grey: ga, fade: fa, flap: wa, part });
         scene.add(im);

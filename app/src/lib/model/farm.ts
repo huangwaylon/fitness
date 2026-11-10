@@ -19,7 +19,7 @@ interface FarmState { farm: readonly FarmRow[]; islandDays: readonly { data: { d
 const wateredMemo = new WeakMap<FarmState['islandDays'], WeakMap<FarmState['wet'], Watered>>();
 
 /** Whether a plot was watered on a day by the State's rows: in anyone's island day of it, or every plot on a wet day. */
-function wateredOf(s: Pick<FarmState, 'islandDays' | 'wet'>): Watered {
+export function wateredOf(s: Pick<FarmState, 'islandDays' | 'wet'>): Watered {
   let byWet = wateredMemo.get(s.islandDays);
   if (!byWet) wateredMemo.set(s.islandDays, (byWet = new WeakMap()));
   const hit = byWet.get(s.wet);

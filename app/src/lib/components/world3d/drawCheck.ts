@@ -75,13 +75,14 @@ export function undrawn(layout: Layout, days: readonly Day[] = phoneDays(layout)
   for (const day of days) {
     const { insts, standins } = placeObjects(layout, day);
     const models = new Map<string, string[]>();
-    for (const i of insts) (models.get(i.id) ?? models.set(i.id, []).get(i.id)!).push(i.model);
+    // (a piece of several, a field's plots: `<id>:<part>`, under `<id>:` too)
+    for (const i of insts) for (const k of [i.id, ...(layout.objects.has(i.id.slice(0, i.id.indexOf(':'))) ? [i.id.slice(0, i.id.indexOf(':') + 1)] : [])]) (models.get(k) ?? models.set(k, []).get(k)!).push(i.model);
     const cards = new Map(standins.map((s) => [s.id, s.key]));
     for (const o of layout.objects.values()) {
       const at = { id: o.id, k: o.k, x: o.x, z: o.z };
       if (!kindDef(o.k)) note({ ...at, why: 'unknown-kind' }, day.season);
-      else if (models.has(o.id)) {
-        for (const m of models.get(o.id)!) if (!modelBounds(m) && !(isRoomModel(m) && outdoorByCode(m.slice(3)))) note({ ...at, why: 'model-missing', detail: m }, day.season);
+      else if (models.has(o.id) || models.has(`${o.id}:`)) {
+        for (const m of [...(models.get(o.id) ?? []), ...(models.get(`${o.id}:`) ?? [])]) if (!modelBounds(m) && !(isRoomModel(m) && outdoorByCode(m.slice(3)))) note({ ...at, why: 'model-missing', detail: m }, day.season);
       } else if (elsewhere(layout, o.id, o.k, day)) continue;
       else if (cards.has(o.id)) {
         // (a card of art that isn't there is nothing at all: Island3D's artCard draws none)

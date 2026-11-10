@@ -46,7 +46,7 @@ const covered = { all: new WeakMap<Layout, Set<string>>(), canopy: new WeakMap<L
 /** The tiles ("c,r") something stands on or one taps over (spots.ts openGrass's: what the day's weeds and fossils keep
  *  off): its tiles, a home's or a board's door, a spot's ring, the stairs' foot, a tree's canopy (the tiles beside and
  *  behind it, and in front), a bush's, a flower's or a block's tap area round it. `canopy`: only the trees' and the
- *  bushes' (their tap areas are buttons over the ground: what a find moved off a building keeps off). */
+ *  bushes' (their tap areas are buttons over the ground: what a find moved off a building keeps off) and the fields'. */
 export function tapCovered(layout: Layout, which: keyof typeof covered = 'all'): Set<string> {
   const had = covered[which].get(layout);
   if (had) return had;
@@ -58,7 +58,8 @@ export function tapCovered(layout: Layout, which: keyof typeof covered = 'all'):
   };
   for (const o of layout.objects.values()) {
     // (a visitors' spot is a mark: nothing stands on it)
-    if (isMarker(o.k) || (which === 'canopy' && kindDef(o.k)?.group !== 'tree' && kindDef(o.k)?.group !== 'bush')) continue;
+    // (and a field's: nothing dropped lands on its plots, docs/farming.md)
+    if (isMarker(o.k) || (which === 'canopy' && kindDef(o.k)?.group !== 'tree' && kindDef(o.k)?.group !== 'bush' && o.k !== 'field')) continue;
     for (const [c, r] of objTiles(layout, o)) mark(c, r);
     const def = kindDef(o.k);
     // what one walks up to: its door's tiles (a home, a board) and a spot's ring stay clear

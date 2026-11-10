@@ -54,6 +54,11 @@
   import { ktx2Stats } from './ktx2.ts';
   import { placeObjects, type Inst, type Standin } from './objects.ts';
   import { gardenReady, loadGarden, wantsGarden } from './garden.ts';
+  import { farmScene, farmToday } from '../island/farm.ts';
+  import { week } from '#lib/store/week.svelte.ts';
+  import { world as shared } from '#lib/store/world.svelte.ts';
+  import { islandDay } from '../island/ambientClock.ts';
+  import { isRain } from '../island/weather.ts';
   import { rooms } from '#lib/store/tent.svelte.ts';
   import { homeTod } from './home.ts';
   import { createBuilt } from './built.ts';
@@ -758,17 +763,28 @@
   let layouts = 0;
   /** The garden's models known (world3d/garden.ts: fetched only once the island has a fence, a crop… or lit cedars). */
   let gardenIn = $state(gardenReady());
+  /** The fields today (island/farm.ts): each plot's plant and wet soil, from the record's rows and today's live
+   *  watering and sky. */
+  const farmNow = $derived.by(() => {
+    const m = week.model, lay = layoutNow();
+    if (!m || !date) return null;
+    const live = date === islandDay();
+    void shared.rev;
+    const { farm, watered } = farmToday(m.state, date, { ids: new Set(live ? Object.keys(shared.day.watered) : []), wet: live && (isRain(weather.sky) || weather.sky === 'snow') });
+    return farmScene(lay, farm, date, watered);
+  });
   $effect(() => {
     const e = eng;
     if (!e) return;
     const lay = layoutNow();
     if (!layoutN.has(lay)) layoutN.set(lay, ++layouts);
     if (!gardenIn && wantsGarden(lay, date)) void loadGarden().then(() => (gardenIn = true));
-    const sig = `${season}|${foliage}|${month}|${date}|${gardenIn}|${hybrid?.id}:${hybrid?.flower}|${scenery.map((s) => s.id + s.key).join()}|${pieces.map((p) => p.id + p.key).join()}|${layoutN.get(lay)}`;
+    const farm = farmNow;
+    const sig = `${season}|${foliage}|${month}|${date}|${gardenIn}|${hybrid?.id}:${hybrid?.flower}|${scenery.map((s) => s.id + s.key).join()}|${pieces.map((p) => p.id + p.key).join()}|${layoutN.get(lay)}|${farm?.sig ?? ''}`;
     if (sig === placed) return;
     placed = sig;
     untrack(() => {
-      const { insts, standins: st } = placeObjects(lay, { season, foliage, month, date, pieces, hybrid, swaps: Object.fromEntries(scenery.map((s) => [s.id, { key: s.key, h: s.h }])), fruit: false, structures: true });
+      const { insts, standins: st } = placeObjects(lay, { season, foliage, month, date, pieces, hybrid, swaps: Object.fromEntries(scenery.map((s) => [s.id, { key: s.key, h: s.h }])), fruit: false, structures: true, ...(farm ? { farm: farm.plots } : {}) });
       placedIds = new Set(insts.map((i) => i.id));
       void e.place(insts).then(() => {
         if (!loaded) {

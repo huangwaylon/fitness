@@ -160,5 +160,5 @@ export const VINES = ['a', 'b', 'c'] as const;
 export const GARDEN_ICONS: readonly string[] = [...FENCES.map((f) => `FtrIcon_${f[4]}`), ...CROPS.map((c) => `GardeningIcon_${c[4]}`), ...PLANTS.map((p) => `GardeningIcon_${p[5]}`)];
 export const ICON_PX = 64, ICON_COLS = 8;
 
-/** Drawn from the garden's lazy models (world3d/garden.ts): the fences, the crops, the garden flowers. */
-export const isGarden = (k: string): boolean => isFence(k) || isCrop(k) || PLANTS.some((p) => p[0] === k);
+/** Drawn from the garden's lazy models (world3d/garden.ts): the fences, the crops, the fields (their soil and plants), the garden flowers. */
+export const isGarden = (k: string): boolean => isFence(k) || isCrop(k) || k === 'field' || PLANTS.some((p) => p[0] === k);

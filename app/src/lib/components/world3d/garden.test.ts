@@ -38,7 +38,8 @@ describe('the garden’s models (garden.json)', () => {
       'cedar-deco', 'cedar-deco-snow'
     ].map((id) => `garden/${id}`);
     expect(Object.keys(GM).sort()).toEqual(want.sort());
-    expect(KIND_LIST.filter((d) => isGarden(d.k)).length).toBe(FENCES.length + CROPS.length + PLANTS.length);
+    // (and the field: its soil and the crops' models)
+    expect(KIND_LIST.filter((d) => isGarden(d.k)).length).toBe(FENCES.length + CROPS.length + PLANTS.length + 1);
   });
   it('none of them in assets.json (the island’s first load)', () => {
     expect(Object.keys(ASSET_MODELS).filter((m) => m.startsWith('garden/'))).toEqual([]);
@@ -51,7 +52,7 @@ describe('loading them', () => {
     expect(wantsGarden(l, '2026-11-10')).toBe(false);
     expect(wantsGarden(l)).toBe(false);
     expect(wantsGarden(l, '2026-12-20')).toBe([...l.objects.values()].some((o) => o.k === 'cedar'));
-    for (const k of ['fence-stone', 'crop-wheat', 'gold-roses', 'vine']) expect(wantsGarden(withChanges(l, { set: [{ id: 'x', k, x: 5, z: 12, f: 0 }] }), '2026-11-10'), k).toBe(true);
+    for (const k of ['fence-stone', 'crop-wheat', 'gold-roses', 'vine', 'field']) expect(wantsGarden(withChanges(l, { set: [{ id: 'x', k, x: 5, z: 12, f: 0 }] }), '2026-11-10'), k).toBe(true);
   });
   it('the cedars’ lights: Dec 15 – Jan 6 (the illuminated tree’s weeks)', () => {
     expect(['2026-12-14', '2026-12-15', '2027-01-06', '2027-01-07', '2026-07-01'].map(cedarLit)).toEqual([false, true, true, false, false]);

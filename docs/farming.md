@@ -3,14 +3,18 @@
 NH 2.0's vegetables on the island (decided 2026-11-10; the user's changes the same day: a field each, 40 plants). Buy
 starts at the shop, plant them on your field, water, harvest, and the plant grows back. The produce sells for かいがら,
 never ベル. Code: `contract/farm.ts` (the rules, shared by the record and the phones), `contract/wet.ts` (rain),
-`model/farm.ts`; tests `contract/farm.test.ts`, `relay/test/farm.test.ts`.
+`model/farm.ts`, `layout/field.ts`, `island/farm.ts` (the scene), `world3d/objects.ts` (drawn); tests
+`contract/farm.test.ts`, `relay/test/farm.test.ts`.
 
 ## Decisions
 
-1. **A field each.** A field is a layout object (kind `field`) of its owner and size, placed, moved, resized and
-   given an owner in /editor only (the editor-only rule). The default island has a 4 × 10 field for ウェイ and one for
-   うめ, each 4 tiles across and 10 deep (the island is too narrow beside its path for 10 across), on the front lawn
-   either side of the path. The guest has none by default; the editor can give it one.
+1. **A field each.** A field is a layout object (kind `field`, `layout/field.ts`): its owner and size are its variant
+   (`a-10x4`: ウェイ's, 10 tiles across and 4 deep). It's placed, moved, resized and given an owner in /editor only (the
+   editor-only rule; the 畑 tab of 野菜). Our island has a 10 × 4 field for ウェイ and one for うめ, one behind the
+   other on the open lawn behind the shop (laid as editor ops on 2026-11-10). The default island (`default.json`) has
+   none: no 10 tiles across are free beside its path, and 4 × 10 on the front lawn pushed the visitors' stage and
+   K.K. off it; a layout reset drops them (place them again in the editor). The guest has none; the editor can give
+   it one.
 2. **Only the owner plants, harvests or digs** on a field; anyone waters anything (NH's visitors), the guest too.
 3. **At most 40 plants each** (`FARM.cap`), whatever the field's size.
 4. **Prices: NH ÷ 20,** as every shop price: a start costs 14 (280 Bells) and sells back for 4, a vegetable sells for

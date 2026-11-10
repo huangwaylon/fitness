@@ -31,5 +31,7 @@ export function gardenIcons(): Promise<Readonly<Record<string, string>>> {
 export function variantName(k: string, v: string): string {
   if (k === 'crop-pumpkin') return ({ orange: 'オレンジ', yellow: '黄色', green: '緑', white: '白' } as Record<string, string>)[v] ?? v;
   if (k === 'vine') return `${v.toUpperCase()}型`;
+  // (a field's owner and size, layout/field.ts)
+  if (k === 'field') return `${({ a: 'ウェイ', b: 'うめ', g: 'ゲスト' } as Record<string, string>)[v[0]] ?? v}の畑 ${v.slice(2).replace('x', '×')}`;
   return v;
 }

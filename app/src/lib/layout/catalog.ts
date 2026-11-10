@@ -130,6 +130,9 @@ const PACKED_GYM = packed('gym', [
 const GARDEN_KINDS: KindDef[] = [
   ...FENCES.map(([id, ja, en, , icon]): KindDef => ({ k: `fence-${id}`, group: 'fence', ja, en, w: 1, d: 1, block: true, on: 'land', h: 30, icon: `garden:FtrIcon_${icon}` })),
   ...CROPS.map(([id, ja, en, , icon]): KindDef => ({ k: `crop-${id}`, group: 'crop', ja, en, w: 1, d: 1, block: false, on: 'land', h: 24, icon: `garden:GardeningIcon_${icon}`, ...(id === 'pumpkin' ? { variants: PUMPKINS } : {}) })),
+  // a player's field (layout/field.ts: its owner and size its variant, its footprint its size; docs/farming.md): walked
+  // over, NH's tilled soil a tile, the plants the record's
+  { k: 'field', group: 'crop', ja: '畑', en: 'Field', w: 1, d: 1, block: false, on: 'grass', h: 4, icon: 'finds/tomato-start', variants: ['a-10x4', 'b-10x4', 'g-10x4'] },
   ...PLANTS.map(([k, ja, en, , , icon]): KindDef => k === 'vine'
     ? { k, group: 'flower', ja, en, w: 1, d: 1, block: true, foot: [20, 10], on: 'land', h: 50, icon: `garden:GardeningIcon_${icon}`, variants: VINES }
     : { k, group: 'flower', ja, en, w: 1, d: 1, block: false, on: 'grass', h: 18, icon: `garden:GardeningIcon_${icon}` })
