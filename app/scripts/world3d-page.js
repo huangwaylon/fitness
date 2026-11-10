@@ -293,6 +293,8 @@ async function sceneOf(o) {
       baked.set(key, await bake(name, files, o));
     }
     const g = plain(m);
+    // (a material lifted toward the front: a painting's canvas over the slivers its frame's rig leaves across it)
+    if (o.lift?.[name]) g.translate(0, 0, o.lift[name]);
     tris += g.attributes.position.count / 3;
     if (!byKey.has(key)) byKey.set(key, []);
     byKey.get(key).push(g);

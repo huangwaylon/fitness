@@ -87,9 +87,11 @@ interface Job {
   split?: { name: string; above: number };
   /** The art keys it serves (scripts/world3d-assets.ts: the island's things, into assets.json; not the POC's models.json). */
   uses?: Use[];
+  /** Materials moved toward +z (model units): a painting's canvas, over the thin slivers NH's frame has across it. */
+  lift?: Record<string, number>;
   /** A pack (scripts/world3d-assets.ts PACKS): its members in this one GLB, each under a node named its id, model
    *  `decor/<id>` in assets.json (`pack`: this file). */
-  pack?: (Pick<Job, 'parts' | 'tex' | 'maxTex' | 'uses'> & { id: string })[];
+  pack?: (Pick<Job, 'parts' | 'tex' | 'maxTex' | 'uses' | 'lift'> & { id: string })[];
 }
 /** A pack member's model name (assets.json): the pack's folder and its id. */
 const memberName = (j: Job, id: string) => `${j.name.slice(0, j.name.lastIndexOf('/') + 1)}${id}`;
@@ -169,16 +171,16 @@ const MUSEUM_JOBS: Job[] = [
   // the exhibits' packs: [members (id, NH folder)], their textures' side (the paintings' 256 to be read, the bones' and
   // the statues' 128: their plain colours, a quarter of the memory), triangles a member
   ...packs(Object.entries(FOSSIL_MODEL), packOf, 128, 3000),
-  ...packs(ART.filter((a) => a.kind === 'painting' || a.kind === 'screen').map((a) => [a.id, a.model]), artPack, 256, 3000),
+  ...packs(ART.filter((a) => a.kind === 'painting' || a.kind === 'screen').map((a) => [a.id, a.model]), artPack, 256, 3000, (id) => (ART.find((a) => a.id === id)?.kind === 'painting' ? { lift: { mBody: 0.25 } } : {})),
   ...packs(ART.filter((a) => a.kind === 'statue' || a.kind === 'bust').map((a) => [a.id, a.model]), artPack, 128, 3000),
   ...packs(Object.entries(SEA_MUSEUM_MODEL), () => 'sea-museum', 256, 1500),
   ...packs(Object.entries(BUG_MUSEUM_MODEL), () => 'bug-museum', 128, 1500)
 ];
 /** The exhibits' packs: each member (its id, its NH model folder, the model's own textures) in the pack `of` names. */
-function packs(members: [string, string][], of: (id: string) => string, maxTex: number, tris: number): Job[] {
+function packs(members: [string, string][], of: (id: string) => string, maxTex: number, tris: number, extra: (id: string) => Partial<Job> = () => ({})): Job[] {
   const by = new Map<string, [string, string][]>();
   for (const m of members) (by.get(of(m[0])) ?? by.set(of(m[0]), []).get(of(m[0]))!).push(m);
-  return [...by].map(([name, ms]) => ({ name, parts: [], maxTex, tris: tris * ms.length, pack: ms.map(([id, f]) => ({ id, parts: [[f, f]], tex: [] })) }));
+  return [...by].map(([name, ms]) => ({ name, parts: [], maxTex, tris: tris * ms.length, pack: ms.map(([id, f]) => ({ id, parts: [[f, f]], tex: [], ...extra(id) })) }));
 }
 // the shop's inside (--shop): NH's built-up Nook's Cranny in one piece, its untextured parts left out (the light map's
 // `mMarketMap` and `mBlack`, the window's glass, the cloth's soft mesh: drawn as glass panes over the whole room)
@@ -278,7 +280,7 @@ for (const j of todo) {
   const r = j.pack ? await page.evaluate(async (o) => {
     const p = await (window as unknown as { convertPack: (o: unknown) => Promise<{ gltf: string; members: Member[] }> }).convertPack(o);
     return { gltf: p.gltf, members: p.members };
-  }, { maxTex: j.maxTex ?? 256, maxEmi: 128, members: j.pack.map((m) => ({ id: m.id, parts: m.parts.map(([f, d, at]) => ({ folder: F(f), dae: `${d}.dae`, at })), files: filesOf(m), ...(m.maxTex ? { maxTex: m.maxTex } : {}) })) }).then((p) => {
+  }, { maxTex: j.maxTex ?? 256, maxEmi: 128, members: j.pack.map((m) => ({ id: m.id, parts: m.parts.map(([f, d, at]) => ({ folder: F(f), dae: `${d}.dae`, at })), files: filesOf(m), ...(m.maxTex ? { maxTex: m.maxTex } : {}), ...(m.lift ? { lift: m.lift } : {}) })) }).then((p) => {
     members = p.members;
     const min = [0, 1, 2].map((i) => Math.min(...p.members.map((m) => m.box[0][i]))), max = [0, 1, 2].map((i) => Math.max(...p.members.map((m) => m.box[1][i])));
     return { gltf: p.gltf, box: [min, max] as [number[], number[]], tris: p.members.reduce((n, m) => n + m.tris, 0), lit: p.members.some((m) => m.lit), split: null };
