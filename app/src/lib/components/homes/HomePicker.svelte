@@ -128,6 +128,8 @@
           const box = new T.Box3().setFromObject(g), c = box.getCenter(new T.Vector3()), size = box.getSize(new T.Vector3());
           g.position.sub(new T.Vector3(c.x, box.min.y, c.z));
           spin.add(g);
+          // (the look on show, for the e2e: set once a house is built, never per frame)
+          if (canvas) canvas.dataset.shown = [s.m, s.w, s.r, s.d, s.f].filter((x) => x !== undefined).join(' ');
           const d = Math.max(size.x, size.y, size.z) * 2.4;
           cam.position.set(0, size.y * 0.9 + d * 0.35, d);
           cam.lookAt(0, size.y * 0.42, 0);
@@ -152,7 +154,7 @@
 
 <Sheet bind:open label={t('homes.title')} title={t('homes.title')}>
   <div class="pick" data-home-picker={who}>
-    <canvas bind:this={canvas} class="preview" aria-hidden="true"></canvas>
+    <div class="stage"><canvas bind:this={canvas} class="preview" data-home-preview aria-hidden="true"></canvas></div>
     <div class="chips" role="group" aria-label={t('homes.facing')}>
       <span class="lbl sec-label">{t('homes.facing')}</span>
       <button type="button" class="chip" data-sfx="tick" data-home-turn onclick={() => (style = { ...style, f: ((((style.f ?? islandLayout.current.objects.get(HOME_IDS[who])?.f ?? 0) + 1) % 4) as 0 | 1 | 2 | 3) })}>↻ {t('decor.turn')}</button>
@@ -238,7 +240,13 @@
 <style>
   /* the sheet's skin: the chips (theme.css .chip), the swatches and doors as controls (the edge, yuzu when chosen) */
   .pick { display: flex; flex-direction: column; gap: 10px; padding-bottom: 12px; }
-  .preview { width: 100%; height: 190px; border-radius: var(--r-card); background: linear-gradient(#bfe6ff, #e8f6d8); display: block; }
+  /* the preview pinned under the title bar (Sheet .bar: 10 + 48 + 6 px and its 2 px margin;
+     reaching 12 px up under the bar's fading foot, so no choice shows between the two) while the choices scroll under it, so each
+     change shows at once (the user, 2026-11-10); its height in svh, steady as Safari's bars come and go, so a scroll
+     never resizes the canvas. A short screen (landscape) has no room for it pinned: it scrolls with the rest. */
+  .stage { position: sticky; top: 54px; z-index: 2; margin: -12px 0 -8px; padding: 12px 0 8px; background: linear-gradient(var(--surface) calc(100% - 8px), transparent); }
+  @media (max-height: 560px) { .stage { position: static; } }
+  .preview { width: 100%; height: clamp(150px, 27svh, 240px); border-radius: var(--r-card); background: linear-gradient(#bfe6ff, #e8f6d8); display: block; }
   .chips { align-items: center; }
   .lbl.sec-label { margin: 0 4px; }
   .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
