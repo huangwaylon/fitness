@@ -10,7 +10,7 @@
 import {
   AmbientLight, Box3, BoxGeometry, CanvasTexture, CircleGeometry, Color, CylinderGeometry, DirectionalLight, Frustum, Group, HemisphereLight,
   Matrix4, Mesh, Sphere, MeshBasicMaterial, MeshLambertMaterial, PerspectiveCamera, Plane, PlaneGeometry, DoubleSide, Raycaster, RepeatWrapping,
-  Scene, SRGBColorSpace, TextureLoader, Vector3, type Material, type Object3D, type Texture
+  Scene, SRGBColorSpace, TextureLoader, Vector3, type Material, type MeshStandardMaterial, type Object3D, type Texture
 } from 'three';
 import { swallowed } from '#lib/quiet.ts';
 import { cubicOut } from '#lib/math.ts';
@@ -23,6 +23,7 @@ import { decal } from './geometry.ts';
 import { FPS } from '#lib/store/frameRate.ts';
 import { pacer } from '../world3d/pace.ts';
 import { glbLoader } from '../world3d/gltf.ts';
+import { nhLambert } from '../world3d/blank.ts';
 import { softDisc } from '../world3d/cards.ts';
 import { modelCache } from '../world3d/modelCache.ts';
 import M from './models.json' with { type: 'json' };
@@ -350,12 +351,8 @@ const museumModels = modelCache(MUSEUM_KEEP, (key) => glbLoader({ ktx2: key.star
   g.scene.traverse((n) => {
     const m = n as Mesh;
     if (!m.isMesh) return;
-    const s = m.material as Material & { map?: Texture | null; color?: Color; alphaTest?: number; transparent?: boolean; opacity?: number; emissiveMap?: Texture | null };
-    const l = new MeshLambertMaterial({
-      name: s.name, map: s.map ?? null, color: s.color ?? new Color(0xffffff), alphaTest: s.alphaTest ?? 0, side: s.side,
-      transparent: !!s.transparent, opacity: s.opacity ?? 1, depthWrite: !s.transparent, emissiveMap: s.emissiveMap ?? null,
-      emissive: new Color(s.emissiveMap ? 0xffe2a8 : 0x000000), emissiveIntensity: s.emissiveMap ? 0.6 : 0
-    });
+    const s = m.material as MeshStandardMaterial, l = nhLambert(s, { lift: 0, lamp: { color: 0xffe2a8, at: 0.6 }, see: true });
+    l.depthWrite = !s.transparent;
     s.dispose();
     m.material = l;
   });

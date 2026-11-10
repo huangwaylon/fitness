@@ -4,13 +4,13 @@
 // redrawn for a flier, a stale real shadow would stay behind). Bent with the island like everything else (engine.ts
 // add). Shot down, both models go at once: the present that falls is SceneTaps' (its own model on its arc).
 import {
-  BufferGeometry, CircleGeometry, Color, Float32BufferAttribute, Group, Line, LineBasicMaterial, Mesh, MeshBasicMaterial,
+  BufferGeometry, CircleGeometry, Float32BufferAttribute, Group, Line, LineBasicMaterial, Mesh, MeshBasicMaterial,
   MeshLambertMaterial, type MeshStandardMaterial, type Object3D
 } from 'three';
 import { keyModel, MODELS } from './models3d.ts';
 import { softDisc } from './cards.ts';
 import { bend } from './bend.ts';
-import { withMaps } from './blank.ts';
+import { nhLambert, withMaps } from './blank.ts';
 import { RIG, flying, rigAt } from '../island/balloonFlight.ts';
 import { glbLoader } from './gltf.ts';
 
@@ -47,7 +47,7 @@ export function createBalloon3(add: (o: Object3D) => () => void, heightOf: (x: n
           const m = n as Mesh;
           if (!m.isMesh) return;
           const s0 = m.material as MeshStandardMaterial;
-          const mat = new MeshLambertMaterial({ map: s0.map, color: s0.color, alphaTest: s0.alphaTest, side: s0.side, emissive: s0.map ? new Color(0xffffff) : s0.color.clone(), emissiveMap: s0.map, emissiveIntensity: liftL });
+          const mat = nhLambert(s0, { lift: liftL, byColour: true });
           mats.push(mat);
           // (in after the group was added: bent here, as engine.ts add() bends what's in it then)
           m.material = bend(withMaps(mat));

@@ -18,7 +18,7 @@ import { smooth01 } from '#lib/math.ts';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { lean } from '../world3d/release.ts';
-import { withMaps } from '../world3d/blank.ts';
+import { nhLambert, withMaps } from '../world3d/blank.ts';
 import { ACTION_MS, FADE_MS, action, base, isGym, mix, over, poseBuf, strideOf, type Action, type Body, type Pose, type State } from './poses.ts';
 import { cellTransform, eyeAt, faceChangeIn, mouthAt, type Face } from './faces.ts';
 import { rigOf, type Rig, type RigOpts } from './rig.ts';
@@ -112,11 +112,7 @@ function load(url: string): Promise<GLTF> {
       g.scene.traverse((n) => {
         const m = n as Mesh;
         if (!m.isMesh) return;
-        const s = m.material as MeshStandardMaterial;
-        const l = new MeshLambertMaterial({
-          name: s.name, map: s.map, color: s.color, alphaTest: s.alphaTest, side: s.side, transparent: false,
-          emissive: new Color(0xffffff), emissiveMap: s.map, emissiveIntensity: 0.32
-        });
+        const s = m.material as MeshStandardMaterial, l = nhLambert(s, { lift: 0.32 });
         l.userData = { ...s.userData };
         s.dispose();
         m.material = withMaps(l);

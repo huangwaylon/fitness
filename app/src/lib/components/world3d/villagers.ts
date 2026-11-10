@@ -7,7 +7,7 @@
 // visitor is drawn once its model is in. Still, a villager holds its pose: its bones are posed only while something moves
 // (it walks, it acts, the camera moves); its blinks are a texture's offset, so the island idles as it did. What it
 // wears (a birthday hat, the party glasses: assets.json `joint` models, their origin NH's head joint) rides its head bone.
-import { MeshLambertMaterial, Color, Matrix4, Vector3 as V3, type Vector3, type Material, type Mesh, type MeshStandardMaterial, type Object3D } from 'three';
+import { Matrix4, Vector3 as V3, type Vector3, type Material, type Mesh, type MeshStandardMaterial, type Object3D } from 'three';
 import { keyModel, MODELS } from './models3d.ts';
 import { VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
 import { villager3, type Person3 } from '../person3d/person3d.ts';
@@ -15,7 +15,7 @@ import { drawOff } from '../../ui-state/testMode.ts';
 import { ACTION_MS, seatOf, type Action, type State } from '../villager3d/poses.ts';
 import { anglerOf, type Phase } from './fishing3d.ts';
 import { bend } from './bend.ts';
-import { withMaps } from './blank.ts';
+import { nhLambert, withMaps } from './blank.ts';
 import { overHead } from './biteMark.ts';
 import { faceFloat, FACE_FLOAT_K, rodTarget, turn } from './facing.ts';
 import { anchorsOf, shapeOf, type Anchor } from '../villager3d/seats3d.ts';
@@ -309,7 +309,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
           // (bent with the island, as the villager it's put on: engine.ts add() bent what the villager had then, not
           // what its hand or head takes later; unbent, the rod and a hat were drawn off their hand and head by the
           // bend's drop, more the further from the camera's pivot, and slid as a pinch or a scroll moved the camera)
-          m.material = bend(withMaps(new MeshLambertMaterial({ map: s0.map, color: s0.color, alphaTest: s0.alphaTest, side: s0.side, emissive: new Color(0xffffff), emissiveMap: s0.map, emissiveIntensity: liftL })));
+          m.material = bend(withMaps(nhLambert(s0, { lift: liftL })));
           m.castShadow = false;
           m.frustumCulled = false;
         });

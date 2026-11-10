@@ -4,8 +4,8 @@
 // share NH's origin (the house's front wall, its middle); the door stands in the wall's doorway (homes.json `door`: NH's
 // DoorModel0 joint); a colour swaps the albedo of the materials it names. NH's soft look: Lambert, lit a little by its own colour (things.ts's), a lamp's own glow its night
 // light. The scene places the group (engine.ts attach: bent there; homePlaces for where).
-import { Color, Group, MeshLambertMaterial, SRGBColorSpace, type Material, type Mesh, type MeshStandardMaterial, type Object3D, type Side, type Texture } from 'three';
-import { withMaps } from './blank.ts';
+import { Group, MeshLambertMaterial, SRGBColorSpace, type Material, type Mesh, type MeshStandardMaterial, type Object3D, type Side, type Texture } from 'three';
+import { nhLambert, withMaps } from './blank.ts';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { loadTexture } from './ktx2.ts';
 import { FAMILIES, partsOf, type HomeStyle } from '#lib/layout/homes.ts';
@@ -103,13 +103,8 @@ export function lambertAll(root: Object3D, mapOf: (src: MeshStandardMaterial) =>
 
 /** NH's soft look on a part's material (things.ts's): Lambert, a little self-light, a lamp's own map its glow. */
 export function homeLambert(src: MeshStandardMaterial, map: Texture | null = null, side: Side = src.side): Material {
-  const own = !!src.emissiveMap;
-  const m = new MeshLambertMaterial({
-    map: map ?? src.map, color: src.color, transparent: src.transparent, opacity: src.opacity, alphaTest: src.alphaTest, side,
-    emissive: own ? new Color(0xffe2a8) : new Color(0xffffff), emissiveMap: own ? src.emissiveMap : (map ?? src.map), emissiveIntensity: own ? 0 : 0.32
-  });
-  m.name = src.name;
-  m.userData.lamp = own;
+  const m = nhLambert(src, { lift: 0.32, lamp: { color: 0xffe2a8, at: 0 }, side, map, see: true });
+  m.userData.lamp = !!src.emissiveMap;
   return withMaps(m);
 }
 
