@@ -158,7 +158,7 @@ if (import.meta.filename === realpathSync(process.argv[1])) {
   };
   const docs = ['README.md', 'app/content/listen/README.md', ...walk(join(repo, 'docs'), (p) => p.endsWith('.md')).map(rel)];
   const src = /\.(ts|js|svelte|py|ya?ml|css|html)$/;
-  const code = ['app/src', 'app/scripts', 'app/e2e', 'app/content', 'app/functions', 'relay/src', 'relay/scripts', 'relay/test', 'food-data/scripts', '.github']
+  const code = ['app/src', 'app/scripts', 'app/e2e', 'app/content', 'relay/src', 'relay/scripts', 'relay/test', 'food-data/scripts', '.github']
     .filter(exists)
     .flatMap((d) => walk(join(repo, d), (p) => src.test(p) && !p.endsWith('docs-check.test.ts')).map(rel)) // (its fixtures)
     .concat(readdirSync(join(repo, 'app')).filter((n) => src.test(n)).map((n) => `app/${n}`));

@@ -186,8 +186,8 @@ jobs:
   # Once the gate is green, `site` to Cloudflare Pages (direct upload; secrets: docs/ops/runbook.md §1). Not `needs` on
   # the gate: it gets everything ready meanwhile (~30 s off push→live), then waits on GATE. With the site, ききみみ's
   # recogniser under stt/ (~67 MiB, docs/kikimimi-mic.md "Hosting and the service worker"): from an Actions cache keyed
-  # on app/src/lib/mic/models.ts, filled on a miss by scripts/stt-models.ts; Pages static files, which
-  # functions/stt/[[path]].ts passes through with their cache rule (immutable, manifest.json revalidated).
+  # on app/src/lib/mic/models.ts, filled on a miss by scripts/stt-models.ts; Pages static files under _headers' cache
+  # rule (stt/<dir>/ immutable, manifest.json revalidated).
   deploy:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
@@ -221,7 +221,6 @@ jobs:
         with:
           persist-credentials: false
           sparse-checkout: |
-            app/functions
             app/scripts/stt-models.ts
             app/src/lib/mic/models.ts
             app/scripts/deploy-gate.ts

@@ -8,8 +8,7 @@
 //   fetches carries its file's content hash (`?v=`, lib/sound/manifest.ts), and so are ごはん's picture sheets (`food-img/*.webp`:
 //   their names carry their content hash), the players' parts' packs (`room/player/*.pak`: `<home>.<hash>.pak`, parts.json
 //   names them), and ききみみ's recogniser under `stt/<dir>/` (each dir carries its revision or
-//   version; functions/stt/[[path]].ts sets the same, its manifest.json revalidated); everything else keeps Pages' default
-//   (revalidated).
+//   version); everything else keeps Pages' default (revalidated: `stt/manifest.json` too).
 // - index.html (the SPA shell every route opens with) preloads the island's page too: Kit's fallback page preloads
 //   only the root layout's chunks, so the island page's chunk and its own imports were asked for only once the
 //   layout's had run (the startup review). Its chunk and its static imports, transitively, as modulepreload; its

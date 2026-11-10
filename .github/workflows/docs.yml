@@ -27,7 +27,6 @@ jobs:
             app/scripts
             app/e2e
             app/content
-            app/functions
             relay
             food-data/scripts
             .github

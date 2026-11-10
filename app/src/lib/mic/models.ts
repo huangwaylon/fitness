@@ -1,7 +1,7 @@
 // The recogniser's files (docs/kikimimi-mic.md "Hosting and the service worker"): whisper tiny.en int8 at a pinned Hugging Face revision and the
 // ONNX runtime's WebAssembly at the pinned onnxruntime-web, each file's bytes and sha256. They're served same-origin
-// under `/stt/<dir>/` (never git: scripts/stt-models.ts fetches them, checks them and writes them for the deploy or
-// R2), each file over Pages' 25 MiB in parts of ≤ 20 MiB (`<path>.<sha8>.p0…`), `/stt/manifest.json` beside them.
+// under `/stt/<dir>/` (never git: scripts/stt-models.ts fetches them, checks them and writes them for the deploy),
+// each file over Pages' 25 MiB in parts of ≤ 20 MiB (`<path>.<sha8>.p0…`), `/stt/manifest.json` beside them.
 // The page fetches them only on the probe's tap (opted in), assembles and checks each, and keeps it whole in the
 // service worker's STT cache (ensureStt), from which the worker's transformers.js reads it. Pure but for the Cache
 // and fetch it's handed: the unit tests drive it with fakes.

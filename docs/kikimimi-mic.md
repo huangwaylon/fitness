@@ -119,7 +119,6 @@ app/src/lib/kikimimi/games/modes.ts   the mic modes' metas and gates
 app/src/lib/kikimimi/games/{mane,kuri,pair,role}/ and components/kikimimi/{mane,kuri,pair,role}/
 app/content/mic/pairs.yaml
 app/scripts/stt-models.ts   fetch the pinned files (HF, npm), verify, split ≤ 20 MiB, write the manifest
-app/functions/stt/[[path]].ts   /stt/*'s cache rule over the static files (its R2 branch is dormant: STT_BUCKET unbound)
 relay/src/sttRoute.ts      POST /stt
 ```
 
@@ -177,7 +176,7 @@ Grading is pure over the ints: the device does the hearing and the session sees 
 
 - **CSP:** `connect-src 'self'` covers `/stt/*`; `script-src 'self' 'wasm-unsafe-eval'` covers ort's wasm. No new origin: transformers.js's remote models are off, its paths point at `/stt/`, and the worker refuses any fetch outside it. **Permissions-Policy:** `microphone=(self)`.
 - **Pinned** (lib/mic/models.ts): whisper-tiny.en q8 @ `2575352d`, onnxruntime-web `1.31.0-dev.20260914-8d85527a0` (transformers.js 4.3.2 exact; package.json's overrides replace its Node-only deps with an empty package). A file over Pages' 25 MiB is split into ≤ 20 MiB parts (`<path>.<sha8>.pN`); all are listed with bytes and sha256 in `/stt/manifest.json`: ~70 MB in all (the model 44 MB + the runtime 27 MB). ensureStt fetches what's missing after the user opts in, assembles, checks the sha256 and keeps each file whole in `island-stt-v1`. Paths carry the revision; manifest.json is revalidated.
-- **Hosting:** Pages static files, no R2 (kikimimi.md "Open items"). pages.yml's deploy restores them from an Actions cache keyed on the pins (filled on a miss by stt-models.ts) into the site's `stt/` (never in git or the artifact) and checks the live manifest; functions/stt/[[path]].ts passes them through with their cache rule (immutable, manifest.json revalidated).
+- **Hosting:** Pages static files, no R2 (kikimimi.md "Open items"). pages.yml's deploy restores them from an Actions cache keyed on the pins (filled on a miss by stt-models.ts) into the site's `stt/` (never in git or the artifact) and checks the live manifest; `_headers` (scripts/headers.ts) makes `stt/<dir>/` immutable, and `manifest.json` keeps Pages' revalidation.
 - **The service worker:** caches.ts `isStt` (`/stt/` and `workers/stt.<hash>.js`, named by vite.config.ts's `stt-names` rule) and `STT_CACHE`; out of the precache; served cache-first and never stored by the SW (the page fills it on the download); せってい's 削除 deletes it. A user who never opts in downloads 0 bytes of it. **Budgets:** load-budget.ts keeps `lib/mic/` and MicProbe out of the first load and the worker ≤ 450 KB gz.
 
 ### Audio session

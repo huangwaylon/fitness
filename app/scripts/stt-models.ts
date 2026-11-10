@@ -4,12 +4,10 @@
 // (`<dir>/<path>.<sha8>.p0…`, a whole file at its path, `manifest.json`). Files already there and right are kept, the
 // rest of the folder removed: only what's missing is fetched. Never into git: the deploy job (pages.yml) keeps the
 // folder in an Actions cache (keyed on the pins; an older entry restored first, so a change fetches only what changed)
-// and copies it into the site's stt/ (until R2: then `--r2 <bucket>` uploads it under stt/, and the
-// Pages Function functions/stt/[[path]].ts serves it). The only place the model is downloaded from Hugging Face.
+// and copies it into the site's stt/, Pages static files (_headers' cache rule: scripts/headers.ts). The only place the
+// model is downloaded from Hugging Face.
 //   node scripts/stt-models.ts [--out .cache/stt]   (fetch, check, split, write)
 //   node scripts/stt-models.ts --pin                (a new revision or version: print the files' bytes and sha256 for models.ts)
-//   node scripts/stt-models.ts --r2 <bucket>        (then upload them to R2 with wrangler)
-import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { gunzipSync } from 'node:zlib';
@@ -112,10 +110,3 @@ for (const f of walk(OUT)) if (!keep.has(f)) rmSync(join(OUT, f));
 const bytes = [...keep].reduce((a, f) => a + statSync(join(OUT, f)).size, 0);
 console.log(`${OUT}: ${keep.size} files, ${(bytes / 1048576).toFixed(1)} MiB (${todo.length} written)`);
 
-const bucket = arg('--r2');
-if (bucket) {
-  for (const f of keep) {
-    console.log(`r2 ${bucket}/stt/${f}`);
-    execFileSync('npx', ['--yes', 'wrangler@4.156.0', 'r2', 'object', 'put', `${bucket}/stt/${f}`, '--remote', '--file', join(OUT, f)], { stdio: 'inherit' });
-  }
-}
