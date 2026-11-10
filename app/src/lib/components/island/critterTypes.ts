@@ -1,7 +1,7 @@
 // The island's critters' shapes (Critters.svelte): a fish shadow, a bug, another's line, the net, and where a shadow
 // swims (a pool). Pure.
 import type { Who } from '#lib/contract/live-protocol.ts';
-import type { Leg } from './critterPath.ts';
+import type { Leg, P3 } from './critterPath.ts';
 import type { BugId, BugPlace, FishId, Flight, JunkId, StalkState, Swim, Water } from './critters.ts';
 import type { PondFishId } from './pondFish.ts';
 
@@ -12,7 +12,7 @@ export const seaPool = (coast = 0): Pool => (coast ? `sea${coast}` : 'sea');
 export const poolOf = (water: Water, coast = 0): Pool => (water === 'sea' ? seaPool(coast) : water);
 
 /** A world point (units) and its height above the ground. */
-export interface P3 { x: number; z: number; lift: number }
+export type { P3 } from './critterPath.ts';
 export interface Fish {
   n: number; item: FishId | PondFishId | JunkId; water: Water; pool: Pool; size: number; shape?: 'narrow' | 'fin';
   /** Where it is heading (world) and how long that takes; its node's anchor (its spawn point). */

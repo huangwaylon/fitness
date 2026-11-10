@@ -51,8 +51,9 @@
   import { FIREWORKS_FROM, archOn, weddingDay } from './wedding.ts';
   import { eventAt } from './events.ts';
   import { scenePreview } from '#lib/ui-state/preview.svelte.ts';
-  import { TRICK_MS, beachedAt } from './visitors.ts';
-  import { STUNG_SWEAT_MS, SWOLLEN_MS, goalTree, shakeTap, treeById, type ShakeTree } from './treeShake.ts';
+  import { beachedAt } from './visitors.ts';
+  import { goalTree, shakeTap, treeById, type ShakeTree } from './treeShake.ts';
+  import { Faces } from './faces.svelte.ts';
   import { RING_FRUITS } from '#lib/config/rules.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
   import { lookOf as wornOf } from '#lib/store/look.ts';
@@ -387,35 +388,9 @@
     const both = shared.wateredYesterday().filter(flowerById);
     return both.length ? hybridFor(today, both, kindOf) : mine;
   });
-  // Shaking a tree (TreeShakes): its wasps sting the villager on their side: a fright (a 「！」), then a sweat drop, and
-  // NH's swollen eye for a while.
+  // a wasp's sting from a shaken tree (TreeShakes), Jack's trick: the villagers' faces a while (faces.svelte.ts)
   let shakes = $state<ReturnType<typeof TreeShakes>>();
-  let stung = $state<Record<VillagerActor, boolean>>({ mine: false, partner: false, third: false });
-  const unsting: Partial<Record<VillagerActor, ReturnType<typeof setTimeout>>> = {};
-  let swollen = $state<Record<VillagerActor, boolean>>({ mine: false, partner: false, third: false });
-  const unswell: Partial<Record<VillagerActor, ReturnType<typeof setTimeout>>> = {};
-  function sting(side: VillagerActor) {
-    setMotion(side, 'surprise');
-    setEmote(side, 'mark-bang');
-    stung[side] = swollen[side] = true;
-    clearTimeout(unswell[side]);
-    unswell[side] = setTimeout(() => (swollen[side] = false), SWOLLEN_MS);
-    clearTimeout(unsting[side]);
-    unsting[side] = setTimeout(() => {
-      setEmote(side, 'mark-sweat');
-      unsting[side] = setTimeout(() => (stung[side] = false), STUNG_SWEAT_MS);
-    }, STUNG_SWEAT_MS);
-  }
-  // Jack's trick (no candy for him): my villager's face goes goofy for a minute (NH's trick changes your look)
-  let tricked = $state(false);
-  let untrick: ReturnType<typeof setTimeout> | undefined;
-  function trick() {
-    setMotion('mine', 'surprise');
-    setEmote('mine', 'mark-bang');
-    tricked = true;
-    clearTimeout(untrick);
-    untrick = setTimeout(() => (tricked = false), TRICK_MS);
-  }
+  const faces = new Faces();
   // The world: its camera (the 3D island's, fitted to the viewport) and projector, shared with every part of the island
   // (camera.svelte.ts).
   const world = new World();
@@ -659,8 +634,7 @@
       offMove();
       ro.disconnect();
       clearTimeout(settle);
-      // (a sting's or a trick's up to a minute: its closure held this island past its going)
-      for (const t of [...Object.values(unsting), ...Object.values(unswell), untrick]) clearTimeout(t);
+      faces.clear();
       world.stop();
       dropLive(world);
     };
@@ -1147,7 +1121,7 @@
   const goalTrees = $derived((void site.rev, GOAL_TREES));
   const cast3 = () => VILLAGERS.map((id) => ({
     id, person: sides[id].person.person, villager: sides[id].person.villager, look: sides[id].person.worn, side: sides[id].side,
-    shown: !inTent(id), seated: !!seated[id], seat: seated[id], stung: swollen[id], gym: gymUse[id], hat: hatOf(id, sides[id].person)
+    shown: !inTent(id), seated: !!seated[id], seat: seated[id], stung: faces.swollen[id], gym: gymUse[id], hat: hatOf(id, sides[id].person)
   }));
 </script>
 
@@ -1207,7 +1181,7 @@
 
         {#each VILLAGERS as id (id)}
           {@const sd = sides[id]}
-          <div class="actor" class:walking={actors[id].walking} class:inside={inTent(id)} data-inside={inTent(id) || undefined} data-actor={id} data-who={sd.person.person} data-seat={seated[id]} data-gym={gymUse[id] || undefined} style:--seat-drop={u(SEAT_DROP)} style:--rep-lift={u(9)} data-person={sd.person.person} data-stung={stung[id] || null} style:--bob-delay={id === 'partner' ? '-1.2s' : id === 'third' ? '-0.6s' : '0s'}
+          <div class="actor" class:walking={actors[id].walking} class:inside={inTent(id)} data-inside={inTent(id) || undefined} data-actor={id} data-who={sd.person.person} data-seat={seated[id]} data-gym={gymUse[id] || undefined} style:--seat-drop={u(SEAT_DROP)} style:--rep-lift={u(9)} data-person={sd.person.person} data-stung={faces.stung[id] || null} style:--bob-delay={id === 'partner' ? '-1.2s' : id === 'third' ? '-0.6s' : '0s'}
             {@attach world.at({ x: sd.home[0], z: sd.home[1], h: VILLAGER.h, live: () => livePos(id), always: true, inv: true })}>
             <button type="button" class="vil" data-sfx="self" bind:this={vilEls[id]}
               aria-label={id !== 'mine'
@@ -1221,7 +1195,7 @@
                 } else highFiveTap(id);
               }}>
               <Villager person={sd.person.person} villager={sd.person.villager} size={u(VILLAGER.h)} eager
-                actor={id} side={sd.side} emoteSize="var(--emote-size)" shadow animate tricked={id === 'mine' && tricked} swollen={swollen[id]} hat={hatOf(id, sd.person)} />
+                actor={id} side={sd.side} emoteSize="var(--emote-size)" shadow animate tricked={id === 'mine' && faces.tricked} swollen={faces.swollen[id]} hat={hatOf(id, sd.person)} />
             </button>
           </div>
         {/each}
@@ -1252,7 +1226,7 @@
         <SceneTaps bind:this={sceneTaps} scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden} swallowed={() => closedBy} walk={walkThere} sit={sitOn}
           exercise={view.people.A.rings.peach.met || view.people.B.rings.peach.met} cake={bday.length > 0}
           skyTap={(x, y) => !!fireworks?.tap(x, y)}
-          say={(name, parts, from, o) => talk?.say(name, parts, from, o)} ontrick={trick} tree={treeTap} />
+          say={(name, parts, from, o) => talk?.say(name, parts, from, o)} ontrick={faces.trick} tree={treeTap} />
         <Talk bind:this={talk} scene={sceneEl} />
         <Says bind:this={says} scene={sceneEl} />
         {#if hookFlag('hit')}
@@ -1260,7 +1234,7 @@
           <Lazy load={() => import('./HitOverlay.svelte')}>{#snippet children(HitOverlay)}<HitOverlay scene={sceneEl} />{/snippet}</Lazy>
         {/if}
         <!-- what a shaken tree drops: a branch, now and then a wasp nest -->
-        <TreeShakes bind:this={shakes} scene={sceneEl} onsting={sting} {treeOf} rustle={(tr) => rustle(tr, true, true)} />
+        <TreeShakes bind:this={shakes} scene={sceneEl} onsting={faces.sting} {treeOf} rustle={(tr) => rustle(tr, true, true)} />
         <!-- the partner's catches and finds: their plates in the bottom stack -->
         <PartnerNews scene={sceneEl} />
         <KikimimiHost live={relay ?? demoRelay} />

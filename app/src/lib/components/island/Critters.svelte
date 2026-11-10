@@ -254,7 +254,8 @@
   // ---------- fish ----------
   /** The fresh-water fish table: its own chunk, fetched with the first fresh-water shadow. */
   let pondChunk: Promise<typeof import('./pondFish.ts')> | null = null;
-  const loadPond = () => (pondChunk ??= import('./pondFish.ts'));
+  // (a failed fetch let go of: the next shadow asks again, as loadSea does)
+  const loadPond = () => (pondChunk ??= import('./pondFish.ts').catch((e) => ((pondChunk = null), Promise.reject(e))));
 
   /** A shadow in `water`, `want` being one of its fish: a shared one (`o.path`) where its seed puts it, wherever that is
    *  (the projector shows it when the camera sees it); else (a dev hook's) where the camera can see it (`pinned`: or
@@ -931,6 +932,9 @@
   // ---------- the catch ----------
   /** The catch: NH's caption on a plate with the official icon, popping up out of the catch at (x, y) (stage
    *  units) (in the bottom stack: CatchStack.svelte). */
+  /** The plates asked for: only a newer one drops one still waiting for its words (a spawn, a line or a dig in the
+   *  meantime dropped it, its find already recorded: the session's first catch, its names' fetch the wait). */
+  let plates = 0;
   async function show(item: Catch | DiveItem, x: number, y: number, cid?: string) {
     // the partner's claim reached the relay first: it's theirs (its plate is the news's)
     if (!stillMine(cid)) return;
@@ -939,9 +943,9 @@
     // Bunny Day's celebrations: now and then a fish on the line (any water's) is NH's water egg (a caption only, no find)
     const t0 = now();
     if (kind === 'fish' && eggTime(eventNow(t0)) && eggOnLine(rand)) {
-      const n = ++seq;
+      const n = ++plates;
       await loadNames().catch(() => {});
-      if (seq !== n) return;
+      if (plates !== n) return;
       recordGoods('water-egg', cid && `catch:${cid}`);
       showCatch(x, y, findArt('water-egg'), t('beach.fished', { name: t('beach.name.water-egg') }));
       return;
@@ -953,9 +957,9 @@
     if (!kind) recordGoods(item, cid && `catch:${cid}`);
     // a fish tells the island (Turkey Day: Franklin is waiting for one)
     if (kind === 'fish') scene?.dispatchEvent(new CustomEvent('island:catch', { detail: { kind: 'fish', id: item } }));
-    const n = ++seq;
+    const n = ++plates;
     const text = pearl ? await loadNames().then(() => t('beach.picked', { name: t('beach.name.pearl') }), () => '') : await catchLine(item as Catch);
-    if (seq !== n) return;
+    if (plates !== n) return;
     const art = pearl ? findArt(item) : critterArt(item as Catch);
     showCatch(x, y, art, text, added);
   }
@@ -1472,16 +1476,20 @@
   {#if bubbles}
     <i class="m3n" {@attach w.at({ bare: true, x: bubbles.x, z: bubbles.z, h: 4, always: true, m3: { key: '', water: true, emit: { kind: 'bubbles', every: 420 }, art: () => scene?.querySelector('[data-bubbles]') } })}></i>
   {/if}
+  <!-- each nibble's small ring on the water at a float, and the bite's splash and big ring (once each: a node of its own) -->
+  {#snippet ring(x: number, z: number, id: string, n: number, under: boolean)}
+    {#key n}
+      {#if n > 1}
+        <i class="m3n" {@attach w.at({ bare: true, x, z, h: 4, always: true, m3: { key: '', id: `ring-${id}`, water: true, emit: under ? { kind: 'splash', every: 60_000 } : { kind: 'ripple', every: 60_000, size: 0.7 } } })}></i>
+      {/if}
+    {/key}
+  {/snippet}
   {#each Object.values(lines) as l (l.n)}
     {#if l}
       <!-- another's float and the line from their villager's rod (or the bank) to it (their phone's steps) -->
       <i class="m3n" {@attach w.at({ bare: true, x: l.x, z: l.z, h: 4, always: true, live: () => floatOf(l), m3: { key: 'tools/bobber', id: `bobber-${l.slot}`, water: true, off: !l.landed && !l.under,
         emit: l.landed && !l.under ? { kind: 'ripple', every: 2600, size: 0.45 } : undefined, line: () => [l.sx, l.sz, 4] as const } })}></i>
-      {#key l.rings}
-        {#if l.rings > 1}
-          <i class="m3n" {@attach w.at({ bare: true, x: l.x, z: l.z, h: 4, always: true, m3: { key: '', id: `ring-${l.slot}-${l.rings}`, water: true, emit: l.under ? { kind: 'splash', every: 60_000 } : { kind: 'ripple', every: 60_000, size: 0.7 } } })}></i>
-        {/if}
-      {/key}
+      {@render ring(l.x, l.z, `${l.slot}-${l.rings}`, l.rings, l.under)}
     {/if}
   {/each}
   {#if line}
@@ -1499,12 +1507,7 @@
         const [mx, mz] = livePos('mine'), d = Math.hypot(l.x - mx, l.z - mz) || 1, k = Math.min(1, 10 / d);
         return [mx + (l.x - mx) * k, mz + (l.z - mz) * k, 34] as const;
       } } })}></i>
-    <!-- each nibble's small ring on the water, and the bite's splash and big ring (once each: a node of its own) -->
-    {#key rings}
-      {#if rings > 1}
-        <i class="m3n" {@attach w.at({ bare: true, x: l.x, z: l.z, h: 4, always: true, m3: { key: '', id: `ring-${rings}`, water: true, emit: under ? { kind: 'splash', every: 60_000 } : { kind: 'ripple', every: 60_000, size: 0.7 } } })}></i>
-      {/if}
-    {/key}
+    {@render ring(l.x, l.z, `${rings}`, rings, under)}
   {/if}
   {#each bugs as b (b.n)}
     <!-- (its moves and its turns: bug3, each frame; it fades in where it comes, and out over its leave's end) -->
