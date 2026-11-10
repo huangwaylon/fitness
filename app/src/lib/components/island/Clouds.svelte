@@ -5,15 +5,20 @@
   // 320. Lanes keep clear of the HUD at the band's top: C1 high (6% down), C2 low, over the horizon cloud bank
   // (12% up); the sun (Sky.svelte, low at the left) is drawn above them. Short skies (band ≤ 190px): C1 just above
   // the horizon, C2 high. Night: --cloud-op.
+  // Moved by the island's frames (clouds.ts: no endless animation running at rest).
+  import { onMount } from 'svelte';
+  import { holdClouds } from './clouds.ts';
   const uid = $props.id();
+  const els: SVGSVGElement[] = [];
+  onMount(() => holdClouds(els));
   const CLOUDS: { id: string; w: number; h: number; dur: number; op: number; delay: number; circles: number[][] }[] = [
     { id: 'c1', w: 150, h: 52, dur: 140, op: 0.97, delay: 0.3, circles: [[30, 32, 17], [62, 22, 22], [98, 25, 19], [126, 34, 13]] },
     { id: 'c2', w: 108, h: 38, dur: 100, op: 0.93, delay: 0.62, circles: [[24, 24, 13], [50, 15, 15], [76, 20, 13], [93, 27, 9]] }
   ];
 </script>
 
-{#each CLOUDS as c (c.id)}
-  <svg class="cloud {c.id}" viewBox="-4 -4 {c.w + 8} {c.h + 8}" style:--op={c.op} style:animation-duration="{c.dur}s"
+{#each CLOUDS as c, i (c.id)}
+  <svg bind:this={els[i]} class="cloud {c.id}" viewBox="-4 -4 {c.w + 8} {c.h + 8}" style:--op={c.op} style:animation-duration="{c.dur}s"
     style:animation-delay="{-c.delay * c.dur}s" aria-hidden="true">
     <defs>
       <linearGradient id="{uid}-{c.id}" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2={c.h}>

@@ -1321,9 +1321,10 @@
   .scene[data-r3] :global([data-m3]:not(.m3off) :is([data-m3art], .official)) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global(.mover.m3on > *) { opacity: 0 !important; --art3d: off; }
   /* (and what animates for ever under art drawn there, none of it on screen, held: a fish's wag, a cicada's buzz, the
-     bottle's rock, a 3D villager's 2D bob, but a hat's or the trick's glasses riding it; else their style and layers
-     ran every frame for nothing. No animationend waits on them) */
-  .scene[data-r3] :global(:is(.mover.m3on *, [data-m3]:not(.m3off) .bottle .rock, .vil .body.bob:not(:has(> [data-hat], > [data-tricked])))) { animation-play-state: paused; }
+     bottle's rock, a 3D villager's 2D bob or a sleeper's breath, but a hat's or the trick's glasses riding it, the
+     characters' hidden flourishes (a sleeper's zzz: Fx ends them by its timer); else their style and layers ran every
+     frame for nothing, and an endless one kept the compositor at 60 Hz. No animationend waits on them) */
+  .scene[data-r3] :global(:is(.mover.m3on *, [data-m3]:not(.m3off) .bottle .rock, .vil .body:is(.bob, .sleep):not(:has(> [data-hat], > [data-tricked])), :is(.actor, .visitor) .fxa:not(.sweat) *)) { animation-play-state: paused; }
   /* (and a fish shadow's own swim, its invisible sprite's transition, its turn's too: the canvas moves its model by the
      same curves, Critters' glide, and a tap on it goes by the model's spot, so the sprite stands at its move's end at
      once; the shadows' running transitions held the page at 60 frames a second at rest whatever the canvas drew, half
