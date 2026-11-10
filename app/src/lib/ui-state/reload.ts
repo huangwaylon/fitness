@@ -47,26 +47,32 @@ export function newWorker(sw: ServiceWorkerContainer | undefined = globalThis.na
     const mine = (async () => {
       const reg = await sw.getRegistration().catch(() => undefined);
       if (!reg) return false;
-      const changed = new Promise<boolean>((ok) => sw.addEventListener('controllerchange', () => ok(true), { once: true }));
+      // (every listener goes with the ask, whatever its end: one left per failed ask, an offline one, kept its promise)
+      const ask = new AbortController(), signal = ask.signal;
       try {
-        await reg.update();
-      } catch {
-        return false;
-      }
-      let next = reg.installing ?? reg.waiting;
-      if (!next) return true;
-      const redundant = (w: ServiceWorker) =>
-        new Promise<false>((ok) => {
-          const gone = () => w.state === 'redundant' && ok(false);
-          w.addEventListener('statechange', gone);
-          gone();
-        });
-      // (one gone redundant for a newer one, a deploy landing during its install: that one's waited for)
-      for (;;) {
-        if (await Promise.race([changed, redundant(next)])) return true;
-        const after = reg.installing ?? reg.waiting;
-        if (!after || after === next) return false;
-        next = after;
+        const changed = new Promise<boolean>((ok) => sw.addEventListener('controllerchange', () => ok(true), { once: true, signal }));
+        try {
+          await reg.update();
+        } catch {
+          return false;
+        }
+        let next = reg.installing ?? reg.waiting;
+        if (!next) return true;
+        const redundant = (w: ServiceWorker) =>
+          new Promise<false>((ok) => {
+            const gone = () => w.state === 'redundant' && ok(false);
+            w.addEventListener('statechange', gone, { signal });
+            gone();
+          });
+        // (one gone redundant for a newer one, a deploy landing during its install: that one's waited for)
+        for (;;) {
+          if (await Promise.race([changed, redundant(next)])) return true;
+          const after = reg.installing ?? reg.waiting;
+          if (!after || after === next) return false;
+          next = after;
+        }
+      } finally {
+        ask.abort();
       }
     })();
     waits.set(sw, (w = mine));

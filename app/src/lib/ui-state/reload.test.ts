@@ -171,6 +171,24 @@ describe('newWorker (a deploy\'s reload waits for its service worker)', () => {
       vi.useRealTimers();
     }
   });
+  it('leaves no listener behind, whatever the end (offline, a failed install, already the newest, claimed)', async () => {
+    type L = { f: () => void; signal?: AbortSignal };
+    const live = (ls: L[]) => ls.filter((l) => !l.signal?.aborted).length;
+    for (const o of [{ offline: true }, { installs: 'fails' as const }, {}, { installs: 'claims' as const }]) {
+      const page: L[] = [], worker: L[] = [];
+      const w = { state: 'installing', addEventListener: (_: string, f: () => void, opt?: { signal?: AbortSignal }) => worker.push({ f, signal: opt?.signal }) };
+      const reg = { installing: null as unknown, waiting: null, update: async () => {
+        if ('offline' in o) throw new TypeError('Failed to update a ServiceWorker');
+        if (!('installs' in o)) return;
+        reg.installing = w;
+        if (o.installs === 'claims') setTimeout(() => page.forEach((l) => l.f()), 10);
+        else setTimeout(() => ((w.state = 'redundant'), worker.forEach((l) => l.f())), 10);
+      } };
+      const sw = { controller: {}, getRegistration: async () => reg, addEventListener: (_: string, f: () => void, opt?: { signal?: AbortSignal }) => page.push({ f, signal: opt?.signal }) };
+      for (let i = 0; i < 3; i++) await newWorker(sw as unknown as ServiceWorkerContainer);
+      expect([live(page), live(worker)], JSON.stringify(o)).toEqual([0, 0]);
+    }
+  });
   it('false when the install fails or the update can\'t be fetched; the next call asks again', async () => {
     for (const o of [{ installs: 'fails' as const }, { offline: true }]) {
       const { sw, reg } = container({ controller: true, ...o });
