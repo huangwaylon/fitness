@@ -894,6 +894,8 @@ wins). The first of each shell, fossil and fragment is a ずかん `find`.
 - **The rock** (on the health lawn): a tap clonks it with the shovel; 1 in 4 a sparkle, 1 in 8 a pill bug or a
   centipede crawls out.
 - Weeds, dig spots and the rock are measured clear of the controls on each screen.
+- **The fields (はたけ):** NH 2.0's vegetables on a field each, starts from the shop, produce sold for かいがら:
+  [farming.md](farming.md).
 
 ### Pond
 

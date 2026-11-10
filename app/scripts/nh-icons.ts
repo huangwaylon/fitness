@@ -125,7 +125,7 @@ async function main() {
   const critters = new Map<string, Raw>();
   for (const tab of ['Fish', 'Insects', 'Sea Creatures']) for (const r of await sheet(tab)) critters.set(slug(r.name), r);
   /** The island's ids the spreadsheet spells otherwise. */
-  const ALIAS: Record<string, string> = { clownfish: 'clown-fish', weeds: 'clump-of-weeds' };
+  const ALIAS: Record<string, string> = { clownfish: 'clown-fish', weeds: 'clump-of-weeds', pumpkin: 'orange-pumpkin', 'potato-start': 'seed-potato' };
   const finds = new Map<string, unknown>();
   for (const r of await sheet('Fossils')) finds.set(slug(r.name), r.image);
   /** Shown as their storage picture (the app's look: the junk, the mushrooms), not the pocket's. */

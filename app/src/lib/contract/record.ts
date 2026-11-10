@@ -20,7 +20,8 @@ import { listenOf } from './listen.ts';
 import { LIMITS, shopPrice } from './rules.ts';
 import { isBirth, isBmiStd, isProfileKey, isSex, profileValueOk } from './profile.ts';
 import { lookPrefOk, lookPrefRead, savedLooksOk } from './look.ts';
-import { localDateAt, nextDay } from './tokyo.ts';
+import { localDateAt, nextDay, prevDay } from './tokyo.ts';
+import { farmOf } from './farm.ts';
 import type { LocalDate, Who } from '../types.ts';
 
 type Rec = Record<string, unknown>;
@@ -97,9 +98,20 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
     }
     case 'sell':
     case 'buy':
-      // the shop (contract/shop.ts): a sell at its species' price, a buy at its piece's from a stock of about today;
-      // whether the pocket or the かいがら cover it is the record's check against the person's rows (shopRefusal)
+    case 'buy_starts':
+      // the shop (contract/shop.ts): a sell at its species' price, a buy at its piece's from a stock of about today,
+      // starts at theirs; whether the pocket or the かいがら cover it is the record's check against the person's rows
+      // (shopRefusal)
       return shopPriced(type, d, localDateAt(now));
+    case 'farm': {
+      // the field (contract/farm.ts): its day the sender's, from yesterday to tomorrow; each op is the record's to judge
+      // against the field and the pocket (farmStep)
+      const f = farmOf(d), today = localDateAt(now);
+      return f !== null && f.d >= prevDay(today) && f.d <= nextDay(today);
+    }
+    case 'wet':
+      // a wet day: the record's own (relay/src/store.ts wetTick), never a phone's
+      return false;
     case 'listen': {
       // a ききみみ game's answers (contract/listen.ts), its day not after tomorrow
       const row = listenOf(d);
@@ -172,6 +184,7 @@ export function prefTaken(key: unknown, v: unknown): boolean {
  * - a `decor` op: its scope and item id (`decorAccept` / `tentAccept` decide whether it replaces), a room light's switch
  *   (`lt`) its own beside its piece's;
  * - a `board` op: its post's id (`boardAccept` decides whether it replaces);
+ * - a `wet` day (the record's own): its date;
  * - a `pack` op: its trip and id, a `pack_chk` its trip, id and sender, a `pack_reset` its trip and sender, a
  *   `trip_note` its trip (contract/pack.ts PackBook decides whether it replaces);
  * - a `wtask` and a `wdone` op: its task's id, a `wconf` its key, the `wnote` one for the board (contract/wedding.ts
@@ -193,6 +206,8 @@ export function eventSlot(type: EventType | string, sender: Who, subject: Who, d
       return typeof d.id === 'string' ? `decor|${typeof d.sc === 'string' ? d.sc : ''}|${d.id}${d.lt !== undefined ? '|l' : ''}` : null;
     case 'board':
       return typeof d.id === 'string' ? `board|${d.id}` : null;
+    case 'wet':
+      return typeof d.date === 'string' ? `wet|${d.date}` : null;
     case 'food':
       return typeof d.id === 'string' ? `food|${d.id}` : null;
     case 'food_repeat':

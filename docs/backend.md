@@ -103,6 +103,12 @@ the phones fold by the same rules (`shopLedger`).
   **The pocket is derived**: the tallies' catches less give-backs and sells; past it, `pocket short`.
 - **`buy`** `{item, price, d}`: a room's piece from day `d`'s stock (`contract/stock.ts`). **かいがら are derived**:
   sells' `v` less buys' `price` (less what give-backs owe); past them `wallet short`.
+- **`buy_starts`** `{crop, n, v}`: starts for the fields at 14 each ([farming.md](farming.md)), into the pocket.
+
+<a id="farm"></a>**The fields** ([farming.md](farming.md#rules-the-records), `contract/farm.ts`): no slot; the guest's too.
+- **`farm`** `{d, ops}`: plant, harvest, dig ops on the sender's day; each op judged against the field and the pocket, a
+  refused one dropped, a harvest kept at the record's yield (`farmStep`); the field is meta `farm`, kept per row.
+- **`wet`** `{date}` (slot `wet|<date>`): a wet day, the record's own from the weather cron (`wetTick`); never a phone's.
 
 <a id="listen"></a>**`listen`** `{d, g, gm?, u?, l?, tm?, lv, n, ms, p?, r}` ([kikimimi.md](kikimimi.md),
 `contract/listen.ts`): one ききみみ game's answers of the sender's, written once at the results. **Private**

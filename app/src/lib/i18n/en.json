@@ -591,6 +591,7 @@
   "shop.sec.shell": "Shells",
   "shop.sec.material": "Materials",
   "shop.sec.fruit": "Fruit",
+  "shop.sec.veg": "Vegetables",
   "shop.sec.fossil": "Fossils",
   "shop.sec.other": "Other",
   "shop.catchLabel": "{name} ×{n} · {v} shells each · {c} picked",

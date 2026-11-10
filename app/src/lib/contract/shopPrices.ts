@@ -318,5 +318,17 @@ export const SELL: Readonly<Record<string, number>> = {
   "goods:water-egg": 10,
   "goods:boot": 3,
   "goods:old-tire": 3,
-  "goods:empty-can": 3
+  "goods:empty-can": 3,
+  "goods:tomato": 18,
+  "goods:wheat": 18,
+  "goods:sugarcane": 18,
+  "goods:potato": 18,
+  "goods:carrot": 18,
+  "goods:pumpkin": 18,
+  "goods:tomato-start": 4,
+  "goods:wheat-start": 4,
+  "goods:sugarcane-start": 4,
+  "goods:potato-start": 4,
+  "goods:carrot-start": 4,
+  "goods:pumpkin-start": 4
 };

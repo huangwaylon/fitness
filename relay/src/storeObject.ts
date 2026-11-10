@@ -67,6 +67,11 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     return this.core.handleText(text);
   }
 
+  /** RPC from the Worker's cron at each weather tick (index.ts): the wet days into the record (store.ts wetTick). */
+  wetTick(real: string[]): string[] {
+    return this.core.wetTick(real);
+  }
+
   /** RPC from the Worker's cron, once a day (index.ts): the record's compaction (store.ts compact), logged. */
   compactTick(): { ok: true; dates: number; deleted: number; more: boolean; metrics: number } {
     const t0 = Date.now();

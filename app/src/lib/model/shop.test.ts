@@ -122,3 +122,35 @@ describe('a catch given back (tally_back: a claim race lost after its tally came
     expect(shopView(later, 'A')).toEqual({ pocket: new Map(), shells: 80, owned: [] });
   });
 });
+
+describe('the fields in the pocket (contract/farm.ts)', () => {
+  const P = 'fd:field-A.0.0', Q = 'fd:field-A.1.0';
+  const D3 = '2026-11-07';
+  const rows: EventRow[] = [
+    ev(at('09:00'), 'A', 'tally', { date: D, counts: { 'fish:koi': 2 } }),
+    ev(at('09:01'), 'A', 'sell', { species: 'fish:koi', n: 2, v: 80 }),
+    ev(at('09:02'), 'A', 'buy_starts', { crop: 'tomato', n: 3, v: 42 }),
+    ev(at('09:03'), 'A', 'farm', { d: D, ops: [{ o: 'plant', p: P, c: 'tomato', src: 'start' }, { o: 'plant', p: Q, c: 'tomato', src: 'start' }] }),
+    ev(at('09:04'), 'B', 'island', { date: '2026-11-06', taken: [], puts: [], shakes: [], watered: [P], wishes: {} }),
+    ev(at('09:05', D3), 'A', 'farm', { d: D3, ops: [{ o: 'harvest', p: P, n: 2 }] }),
+    ev(at('09:06', D3), 'A', 'sell', { species: 'goods:tomato', n: 1, v: 18 })
+  ];
+
+  it('bought starts in, planted ones out, a harvest’s vegetables in, sold like any catch', () => {
+    const s = reduce({ metrics: [], events: rows }, null);
+    const a = shopView(s, 'A');
+    expect(Object.fromEntries(a.pocket)).toEqual({ 'goods:tomato': 1, 'goods:tomato-start': 1 });
+    expect(a.shells).toBe(80 - 42 + 18);
+  });
+
+  it('a queued harvest at the yield the record will give (the waterings), a plant on another’s plant refused', () => {
+    const s = reduce({ metrics: [], events: rows.slice(0, 5) }, null);
+    const later = foldEvents(s, [
+      ev(at('09:05', D3), 'A', 'farm', { d: D3, ops: [{ o: 'harvest', p: P, n: 3 }, { o: 'harvest', p: Q, n: 3 }] }),
+      ev(at('09:06', D3), 'B', 'farm', { d: D3, ops: [{ o: 'plant', p: P, c: 'carrot', src: 'start' }] })
+    ], null)!;
+    expect(shopView(later, 'A').pocket.get('goods:tomato')).toBe(2 + 1);
+    expect(shopView(later, 'B').pocket.size).toBe(0);
+    expect(later.farm.at(-1)?.queued).toBe(true);
+  });
+});

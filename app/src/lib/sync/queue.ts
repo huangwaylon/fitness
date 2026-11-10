@@ -254,7 +254,7 @@ const isHeld = (ev: QueuedEvent, now: number): boolean => ev.tries === 0 && ev.n
  * a catch given back after a reload, its tally still held). Null: nothing else touches it.
  */
 function subjectOf(ev: Pick<QueuedEvent, 'type' | 'data'>): string | null {
-  if (ev.type === 'tally' || ev.type === 'tally_back' || ev.type === 'sell' || ev.type === 'buy') return 'shop';
+  if (ev.type === 'tally' || ev.type === 'tally_back' || ev.type === 'sell' || ev.type === 'buy' || ev.type === 'buy_starts' || ev.type === 'farm') return 'shop';
   return ev.type === 'spend' || ev.type === 'spend_void' ? `spend|${String(ev.data.spendId)}` : null;
 }
 

@@ -8,9 +8,12 @@
 import type { Who } from '#lib/types.ts';
 import { isSellable, shopLedger, type Ledger, type ShopRowAt } from '#lib/contract/shop.ts';
 import { dayTallies, tallyTotals, type TallyRow } from './tally.ts';
+import { farmOfState, type FarmRow } from './farm.ts';
+import type { Farm } from '#lib/contract/farm.ts';
+import type { LocalDate } from '#lib/types.ts';
 
 /** What the fold reads of the model's State (model/state.ts: never imported here, so the shop never reaches ベル). */
-interface ShopState { tallies: readonly TallyRow[]; shop: readonly ShopRowAt[] }
+interface ShopState { tallies: readonly TallyRow[]; shop: readonly ShopRowAt[]; farm: readonly FarmRow[]; islandDays: readonly { data: { date: LocalDate; watered: readonly string[] } }[]; wet: readonly LocalDate[] }
 
 export interface ShopView {
   /** `kind:id` → how many the pocket holds (only the sellable kinds, only more than none). */
@@ -21,12 +24,14 @@ export interface ShopView {
   owned: readonly string[];
 }
 
-const memo = new WeakMap<ShopState['shop'], WeakMap<ShopState['tallies'], Partial<Record<Who, ShopView>>>>();
+const memo = new WeakMap<ShopState['shop'], WeakMap<ShopState['tallies'], WeakMap<Farm, Partial<Record<Who, ShopView>>>>>();
 
-/** `who`'s caught tally per sellable species (their tallies' totals). */
-function caughtBy(s: Pick<ShopState, 'tallies'>, who: Who): Map<string, number> {
+/** `who`'s caught tally per sellable species (their tallies' totals), with what the fields put in or took out
+ *  (contract/farm.ts: a harvest's vegetables, a planted start). */
+function caughtBy(s: Pick<ShopState, 'tallies'>, farm: Farm, who: Who): Map<string, number> {
   const out = new Map<string, number>();
   for (const [k, n] of tallyTotals(s.tallies).by[who]) if (isSellable(k)) out.set(k, n);
+  for (const [k, n] of farm.net[who] ?? []) out.set(k, (out.get(k) ?? 0) + n);
   return out;
 }
 
@@ -44,16 +49,20 @@ function backBy(s: Pick<ShopState, 'tallies'>, who: Who): Map<string, number> {
 export function shopView(s: ShopState, who: Who): ShopView {
   let byTally = memo.get(s.shop);
   if (!byTally) memo.set(s.shop, (byTally = new WeakMap()));
-  let views = byTally.get(s.tallies);
-  if (!views) byTally.set(s.tallies, (views = {}));
+  let byFarm = byTally.get(s.tallies);
+  if (!byFarm) byTally.set(s.tallies, (byFarm = new WeakMap()));
+  const farm = farmOfState(s);
+  let views = byFarm.get(farm);
+  if (!views) byFarm.set(farm, (views = {}));
   const hit = views[who];
   if (hit) return hit;
-  const caught = caughtBy(s, who);
+  const caught = caughtBy(s, farm, who);
   // (a sold catch given back costs its かいがら: contract/shop.ts owedOf, the record's rule)
   const l: Ledger = shopLedger(caught, s.shop.filter((r) => r.person === who), backBy(s, who));
   const pocket = new Map<string, number>();
-  for (const [k, n] of caught) {
-    const left = n - (l.sold.get(k) ?? 0);
+  // (the starts bought count in as a sale taken back: contract/shop.ts shopStep)
+  for (const k of new Set([...caught.keys(), ...l.sold.keys()])) {
+    const left = (caught.get(k) ?? 0) - (l.sold.get(k) ?? 0);
     if (left > 0) pocket.set(k, left);
   }
   return (views[who] = { pocket, shells: l.shells, owned: l.owned });

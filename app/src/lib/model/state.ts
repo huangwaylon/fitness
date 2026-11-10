@@ -14,7 +14,9 @@ import { wedRowOf, type WedEntry } from '#lib/contract/wedding.ts';
 import { goalFallback, goalKeysOf, goalOfKey, GOALS, isGoalValue, type DailyGoalId, type LatestGoalKey } from '#lib/contract/goals.ts';
 import { tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import { isRoomScope, layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
-import { buyOf, sellOf, type ShopRowAt } from '#lib/contract/shop.ts';
+import { buyOf, sellOf, startsOf, type ShopRowAt } from '#lib/contract/shop.ts';
+import { farmOf } from '#lib/contract/farm.ts';
+import type { FarmRow } from './farm.ts';
 import { isBirth, isBmiStd, isProfileKey, isSex, PROFILE_KEYS, type BmiStd, type ProfileKey, type Sex } from '#lib/contract/profile.ts';
 import { lookPrefRead, readSavedLooks, type SavedLook } from '#lib/contract/look.ts';
 import { goalDay } from '#lib/contract/record.ts';
@@ -139,6 +141,11 @@ export interface State {
    *  a queued one marked `queued`; the pockets and かいがら are their fold over the tallies (model/shop.ts). Never read
    *  by the economy. */
   shop: ShopRowAt[];
+  /** The field's rows (`farm`: contract/farm.ts), whose, in server order, a queued one marked `queued`; the field and
+   *  what it puts in the pockets are their fold (model/farm.ts). Never read by the economy. */
+  farm: FarmRow[];
+  /** The wet days (`wet`: the record's own, contract/wet.ts): every plant watered. */
+  wet: LocalDate[];
   /** Each person's prefs; the guest's (`G`) only ever hold its locale, name, villager and kcal goal (contract/guest.ts). */
   prefs: Record<Who, Prefs>;
   /** The island's weather (`pref weatherMode`: the last anyone set, the guest too; unset, `real`): Tokyo's real sky or the game's. */
@@ -293,6 +300,8 @@ function reduceAll(r: SnapshotRows, rev: string | null, queued?: ReadonlySet<str
     foodCustom: [],
     listen: [],
     shop: [],
+    farm: [],
+    wet: [],
     prefs: { A: {}, B: {}, G: {} },
     dailyGoals: { A: noGoals(), B: noGoals() },
     lastSync: { A: null, B: null },
@@ -473,6 +482,8 @@ function copyLists(base: State, rev: string | null): State {
     foodCustom: [...base.foodCustom],
     listen: [...base.listen],
     shop: [...base.shop],
+    farm: [...base.farm],
+    wet: [...base.wet],
     prefs: { A: { ...base.prefs.A }, B: { ...base.prefs.B }, G: { ...base.prefs.G } },
     dailyGoals: { A: copyGoals(base.dailyGoals.A), B: copyGoals(base.dailyGoals.B) },
     rev,
@@ -512,7 +523,7 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
 }
 
 /** The lists whose rows a queued event marks `queued` (not the record's yet). */
-const QUEUED_LISTS = ['shop', 'pack', 'board', 'wedding'] as const;
+const QUEUED_LISTS = ['shop', 'pack', 'board', 'wedding', 'farm'] as const;
 /** Each such list's length: where an event's rows will start. */
 const queuedFrom = (s: State): number[] => QUEUED_LISTS.map((k) => s[k].length);
 /** The rows each list gained from `from` on are queued ones. */
@@ -606,6 +617,17 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
   buy(s, person, at, d) {
     const data = buyOf(d);
     if (data) s.shop.push({ type: 'buy', data, at, person });
+  },
+  buy_starts(s, person, at, d) {
+    const data = startsOf(d);
+    if (data) s.shop.push({ type: 'starts', data, at, person });
+  },
+  farm(s, person, at, d) {
+    const data = farmOf(d);
+    if (data) s.farm.push({ at, person, data });
+  },
+  wet(s, _person, _at, d) {
+    if (typeof d.date === 'string' && DATE_RE.test(d.date) && !s.wet.includes(d.date)) s.wet.push(d.date);
   },
   board(s, person, _at, d) {
     const op = boardOpOf(d);

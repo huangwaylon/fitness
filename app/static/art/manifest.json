@@ -1,5 +1,5 @@
 {
-  "version": 63,
+  "version": 64,
   "files": {
     "bridges/stone-front": {
       "path": "bridges/stone-front.webp",
@@ -1885,6 +1885,18 @@
       "h": 96,
       "source": "nh:Layout_MenuIcon_StarpieceCapricornus"
     },
+    "finds/carrot": {
+      "path": "finds/carrot.webp",
+      "w": 96,
+      "h": 96,
+      "source": "nh:Layout_MenuIcon_Carrot"
+    },
+    "finds/carrot-start": {
+      "path": "finds/carrot-start.webp",
+      "w": 96,
+      "h": 96,
+      "source": "nh:Layout_MenuIcon_SeedlingVegetable"
+    },
     "finds/coconut": {
       "path": "finds/coconut.webp",
       "w": 64,
@@ -2203,11 +2215,35 @@
       "h": 96,
       "source": "nh:Layout_FtrIcon_FtrFossilElasmosaurusB"
     },
+    "finds/potato": {
+      "path": "finds/potato.webp",
+      "w": 96,
+      "h": 96,
+      "source": "nh:Layout_MenuIcon_Potato"
+    },
+    "finds/potato-start": {
+      "path": "finds/potato-start.webp",
+      "w": 96,
+      "h": 96,
+      "source": "nh:Layout_MenuIcon_SeedlingVegetable"
+    },
     "finds/ptera-body": {
       "path": "finds/ptera-body.webp",
       "w": 96,
       "h": 96,
       "source": "nh:Layout_FtrIcon_FtrFossilPteranodonA"
+    },
+    "finds/pumpkin": {
+      "path": "finds/pumpkin.webp",
+      "w": 96,
+      "h": 96,
+      "source": "nh:Layout_MenuIcon_SquashOrange"
+    },
+    "finds/pumpkin-start": {
+      "path": "finds/pumpkin-start.webp",
+      "w": 96,
+      "h": 96,
+      "source": "nh:Layout_MenuIcon_SeedlingVegetable"
     },
     "finds/quetzal-torso": {
       "path": "finds/quetzal-torso.webp",
@@ -2359,6 +2395,18 @@
       "h": 96,
       "source": "nh:Layout_FtrIcon_FtrFossilStegosaurusB"
     },
+    "finds/sugarcane": {
+      "path": "finds/sugarcane.webp",
+      "w": 96,
+      "h": 96,
+      "source": "nh:Layout_MenuIcon_SugarCane"
+    },
+    "finds/sugarcane-start": {
+      "path": "finds/sugarcane-start.webp",
+      "w": 96,
+      "h": 96,
+      "source": "nh:Layout_MenuIcon_SeedlingVegetable"
+    },
     "finds/summer-shell": {
       "path": "finds/summer-shell.webp",
       "w": 96,
@@ -2388,6 +2436,18 @@
       "w": 96,
       "h": 96,
       "source": "nh:Layout_MenuIcon_StarpieceTaurus"
+    },
+    "finds/tomato": {
+      "path": "finds/tomato.webp",
+      "w": 96,
+      "h": 96,
+      "source": "nh:Layout_MenuIcon_Tomato"
+    },
+    "finds/tomato-start": {
+      "path": "finds/tomato-start.webp",
+      "w": 96,
+      "h": 96,
+      "source": "nh:Layout_MenuIcon_SeedlingVegetable"
     },
     "finds/tree-branch": {
       "path": "finds/tree-branch.webp",
@@ -2448,6 +2508,18 @@
       "w": 64,
       "h": 64,
       "source": "nh:Layout_MenuIcon_Weed"
+    },
+    "finds/wheat": {
+      "path": "finds/wheat.webp",
+      "w": 96,
+      "h": 96,
+      "source": "nh:Layout_MenuIcon_Wheat"
+    },
+    "finds/wheat-start": {
+      "path": "finds/wheat-start.webp",
+      "w": 96,
+      "h": 96,
+      "source": "nh:Layout_MenuIcon_SeedlingVegetable"
     },
     "finds/wood": {
       "path": "finds/wood.webp",

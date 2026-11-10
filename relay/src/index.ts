@@ -16,6 +16,7 @@ import { sttRoute, type SttAi } from './sttRoute.ts';
 import { errName, type RelayEvent } from './log.ts';
 import type { ReqMeta } from './reqMeta.ts';
 import { TOKYO, WX_EMPTY, due, fetchTick, fixture, omUrl, wxHealth, type WxState } from './weather.ts';
+import { wxWetDays } from '../../app/src/lib/contract/wet.ts';
 
 export { IslandStore, IslandLog };
 
@@ -225,7 +226,7 @@ export class IslandRoom extends DurableObject<Env> {
   async weatherTick(force = false): Promise<WxTick> {
     if (this.wxBusy) return this.wxBusy;
     const now = Date.now();
-    if (!force && !due(this.wx, now)) return { ok: true, fetched: false, heard: 0, health: wxHealth(this.wx, now) };
+    if (!force && !due(this.wx, now)) return { ok: true, fetched: false, heard: 0, health: wxHealth(this.wx, now), wet: wxWetDays(this.wx.wx, now) };
     const lat = Number(this.env.WX_LAT) || TOKYO.lat, lon = Number(this.env.WX_LON) || TOKYO.lon;
     this.wxBusy = (async () => {
       try {
@@ -234,7 +235,7 @@ export class IslandRoom extends DurableObject<Env> {
         await this.put(WX, r.st);
         if (r.fail) console.warn('wx-fail', r.fail);
         const heard = this.core.setWx(r.st.wx, r.send);
-        return { ok: !r.fail, fetched: true, ...(r.fail ? { fail: r.fail } : {}), sent: r.send, heard, health: wxHealth(r.st, Date.now()) };
+        return { ok: !r.fail, fetched: true, ...(r.fail ? { fail: r.fail } : {}), sent: r.send, heard, health: wxHealth(r.st, Date.now()), wet: wxWetDays(r.st.wx, Date.now()) };
       } finally {
         this.wxBusy = null;
       }
@@ -289,7 +290,7 @@ export class IslandRoom extends DurableObject<Env> {
 }
 
 /** A weather tick's outcome (the cron's log, the `/admin` op). */
-type WxTick = { ok: boolean; fetched: boolean; fail?: string; sent?: boolean; heard: number; health: WxHealth };
+type WxTick = { ok: boolean; fetched: boolean; fail?: string; sent?: boolean; heard: number; health: WxHealth; wet: string[] };
 
 export default {
   /** At 03:00 Tokyo (ARCHIVE_CRON): the record's backup only. At :15 and :45: the real weather when it's due
@@ -324,6 +325,11 @@ export default {
           if (r.fetched) console.log('wx', JSON.stringify({ ok: r.ok, fail: r.fail, hours: r.health.hours }));
           // a tick that fetched (at :15 and :45) or failed: the log's `cron.wx`
           if (r.fetched) log([{ e: 'cron.wx', l: r.ok ? 1 : 2, d: { ok: r.ok, fetched: true, fail: r.fail, hours: r.health.hours, age: r.health.age, ms: Date.now() - t0 } }]);
+          // the wet days into the record (the fields' rain: store.ts wetTick), every tick (the game mode's too)
+          return env.STORE.get(env.STORE.idFromName('record')).wetTick(r.wet).then(
+            (kept) => kept.length && console.log('wet', kept.join(',')),
+            (e) => console.warn('wet-fail', errName(e))
+          );
         },
         (e) => {
           console.warn('wx-fail', errName(e));

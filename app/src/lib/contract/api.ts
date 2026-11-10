@@ -7,7 +7,7 @@ import type { PersonId, Who } from '../types.ts';
 export type { PersonId, Who };
 
 /** The event types the server accepts and the model reads (anything else is refused with `bad_request`). */
-export const EVENT_TYPES = ['spend', 'spend_void', 'harvest', 'pref', 'find', 'tally', 'island', 'decor', 'board', 'food', 'food_repeat', 'food_recipe', 'food_custom', 'sell', 'buy', 'tally_back', 'listen', 'pack', 'pack_chk', 'pack_reset', 'trip_note', 'wtask', 'wdone', 'wconf', 'wnote'] as const;
+export const EVENT_TYPES = ['spend', 'spend_void', 'harvest', 'pref', 'find', 'tally', 'island', 'decor', 'board', 'food', 'food_repeat', 'food_recipe', 'food_custom', 'sell', 'buy', 'tally_back', 'listen', 'pack', 'pack_chk', 'pack_reset', 'trip_note', 'wtask', 'wdone', 'wconf', 'wnote', 'farm', 'buy_starts', 'wet'] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
 /**

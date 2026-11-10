@@ -2,15 +2,18 @@
 // its section, its name's i18n key and its official icon, one place for all. Prices are the record's
 // (contract/shopPrices.ts); the names load with the catch names (i18n/catch.ts).
 import { GOODS, type PocketKind } from '#lib/contract/pocket.ts';
+import { CROPS } from '#lib/contract/farm.ts';
 
 /** うる's sections, in its order (NH's pocket-ish: the critters, the beach, the trees' and the ground's). */
-export const SECTIONS = ['bug', 'fish', 'sea', 'shell', 'material', 'fruit', 'fossil', 'other'] as const;
+export const SECTIONS = ['bug', 'fish', 'sea', 'shell', 'material', 'fruit', 'veg', 'fossil', 'other'] as const;
 type Section = (typeof SECTIONS)[number];
 
 /** The goods by section (anything else is その他: mushrooms, eggs, junk), and their icons where not `finds/<id>`. */
 const GOODS_SECTION: Readonly<Record<string, Section>> = {
   wood: 'material', softwood: 'material', hardwood: 'material', 'tree-branch': 'material', weeds: 'material',
-  apple: 'fruit', pear: 'fruit', peach: 'fruit', cherry: 'fruit', coconut: 'fruit'
+  apple: 'fruit', pear: 'fruit', peach: 'fruit', cherry: 'fruit', coconut: 'fruit',
+  // the fields' (contract/farm.ts): the vegetables and their starts
+  ...Object.fromEntries(CROPS.flatMap((c) => [[c, 'veg'], [`${c}-start`, 'veg']]))
 };
 const GOODS_ART: Readonly<Record<string, string>> = {
   apple: 'fruit/apple', pear: 'fruit/pear', peach: 'fruit/peach', cherry: 'fruit/cherry',

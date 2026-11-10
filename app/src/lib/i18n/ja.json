@@ -591,6 +591,7 @@
   "shop.sec.shell": "かいがら",
   "shop.sec.material": "資源",
   "shop.sec.fruit": "果物",
+  "shop.sec.veg": "野菜",
   "shop.sec.fossil": "化石",
   "shop.sec.other": "その他",
   "shop.catchLabel": "{name} ×{n} · 1個 {v}かいがら · {c}個選択",

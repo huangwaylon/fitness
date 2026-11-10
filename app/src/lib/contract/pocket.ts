@@ -23,5 +23,9 @@ export const GOODS: Readonly<Record<string, string>> = {
   // Bunny Day's eggs (island/eggs.ts): dug up, off a balloon, on the line
   'earth-egg': 'earth egg', 'sky-egg': 'sky egg', 'water-egg': 'water egg',
   // junk off the line (island/critters.ts JUNK)
-  boot: 'boot', 'old-tire': 'old tire', 'empty-can': 'empty can'
+  boot: 'boot', 'old-tire': 'old tire', 'empty-can': 'empty can',
+  // the field's (contract/farm.ts): a harvest's vegetables and the starts (the shop's かう, a dug-up plant)
+  tomato: 'tomato', wheat: 'wheat', sugarcane: 'sugarcane', potato: 'potato', carrot: 'carrot', pumpkin: 'orange pumpkin',
+  'tomato-start': 'tomato start', 'wheat-start': 'wheat start', 'sugarcane-start': 'sugarcane start', 'potato-start': 'seed potato',
+  'carrot-start': 'carrot start', 'pumpkin-start': 'pumpkin start'
 };

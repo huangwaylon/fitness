@@ -17,7 +17,7 @@ export interface IslandDayData {
   puts: [string, string, number, number][];
   /** Shakes that left something: [tree, drop, t]. */
   shakes: [string, IslandDrop, number][];
-  /** The flowers watered (island/world.ts FLOWERS ids: `fl:<x>:<z>`). */
+  /** The flowers watered (island/world.ts FLOWERS ids: `fl:<x>:<z>`) and the field's plants (`fd:<id>`: contract/farm.ts). */
   watered: string[];
   /** Wishes: the morning each brings its fragment → how many. */
   wishes: Record<string, number>;
@@ -26,7 +26,7 @@ export interface IslandDayData {
 }
 
 /** Caps that keep a row well under the event data limit (20,000 characters): a busy day is a few dozen of each. */
-export const ISLAND_MAX = { taken: 400, puts: 60, shakes: 120, watered: 40, wishes: 4 } as const;
+export const ISLAND_MAX = { taken: 400, puts: 60, shakes: 120, watered: 160, wishes: 4 } as const;
 
 const ID = /^[\w:.-]{1,32}$/;
 const WHAT = /^[a-z][\w:.-]{0,63}$/;

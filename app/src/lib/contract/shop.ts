@@ -20,9 +20,12 @@ import { buyPrice } from './stock.ts';
 import type { LocalDate, Who } from '../types.ts';
 import { POCKET_KINDS } from './pocket.ts';
 import { nextDay, prevDay } from './tokyo.ts';
+import { FARM, isFarmCrop, startKey, type Crop } from './farm.ts';
 
 export interface SellData { species: string; n: number; v: number }
 export interface BuyData { item: string; price: number; d: LocalDate }
+/** A `buy_starts` (docs/farming.md): `n` starts of a crop for `v` かいがら (n × FARM.startBuy), always in stock. */
+export interface StartsData { crop: Crop; n: number; v: number }
 
 /** At most this many of a species in one sell (a day's tally holds at most 999 of it). */
 const SELL_MAX_N = 999;
@@ -53,6 +56,12 @@ export function buyOf(d: Record<string, unknown>): BuyData | null {
   return { item: d.item, price: d.price, d: d.d };
 }
 
+/** A `buy_starts`'s data as the model reads it: its shape only. */
+export function startsOf(d: Record<string, unknown>): StartsData | null {
+  if (!keysAre(d, ['crop', 'n', 'v']) || !isFarmCrop(d.crop) || !isWhole(d.n, 99) || !isWhole(d.v, 99 * FARM.startBuy)) return null;
+  return { crop: d.crop, n: d.n, v: d.v };
+}
+
 /**
  * Whether the record keeps this `sell` or `buy` now (`today`: the server's Tokyo date), cover aside (`shopRefusal`): a
  * sell at most n × its species' price (an app from before a price rise sells at its own lower list; never above the
@@ -61,7 +70,12 @@ export function buyOf(d: Record<string, unknown>): BuyData | null {
  * (contract/stock.ts), so the record doesn't check it: the phones only offer the stock (and an app from before 2026-11-09
  * drew another).
  */
-export function shopPriced(type: 'sell' | 'buy', d: Record<string, unknown>, today: LocalDate): boolean {
+export function shopPriced(type: 'sell' | 'buy' | 'buy_starts', d: Record<string, unknown>, today: LocalDate): boolean {
+  if (type === 'buy_starts') {
+    // (starts at exactly their price)
+    const st = startsOf(d);
+    return !!st && st.v === st.n * FARM.startBuy;
+  }
   if (type === 'sell') {
     const s = sellOf(d);
     const p = s ? sellPrice(s.species) : undefined;
@@ -80,7 +94,7 @@ export interface Ledger { sold: Map<string, number>; soldV: Map<string, number>;
 
 /** A row of the shop: a sell or a buy, as `sellOf` / `buyOf` read it; `queued` when the record hasn't kept it yet (a
  *  phone's queue, model/state.ts foldEvents). */
-export type ShopRow = ({ type: 'sell'; data: SellData } | { type: 'buy'; data: BuyData }) & { queued?: true };
+export type ShopRow = ({ type: 'sell'; data: SellData } | { type: 'buy'; data: BuyData } | { type: 'starts'; data: StartsData }) & { queued?: true };
 /** A shop row as the model keeps it (model/state.ts `shop`): whose, and the record's time. */
 export type ShopRowAt = ShopRow & { at: number; person: Who };
 
@@ -88,6 +102,7 @@ export type ShopRowAt = ShopRow & { at: number; person: Who };
  *  `pocket` (selling more than the pocket holds), `wallet` (more than the かいがら cover), `owned` (bought already). */
 export function shopRefusal(l: Ledger, caught: ReadonlyMap<string, number>, row: ShopRow): 'pocket' | 'wallet' | 'owned' | null {
   if (row.type === 'sell') return row.data.n > (caught.get(row.data.species) ?? 0) - (l.sold.get(row.data.species) ?? 0) ? 'pocket' : null;
+  if (row.type === 'starts') return row.data.v > l.shells ? 'wallet' : null;
   if (l.owned.includes(row.data.item)) return 'owned';
   return row.data.price > l.shells ? 'wallet' : null;
 }
@@ -132,6 +147,11 @@ export function shopStep(l: Ledger, caught: ReadonlyMap<string, number>, back: R
     l.soldV.set(k, (l.soldV.get(k) ?? 0) + row.data.v);
     l.shells += row.data.v;
     reowe(l, k, caught, back);
+  } else if (row.type === 'starts') {
+    // (starts bought count into the pocket as a sale taken back: never owed, contract/farm.ts)
+    const k = startKey(row.data.crop);
+    l.sold.set(k, (l.sold.get(k) ?? 0) - row.data.n);
+    l.shells -= row.data.v;
   } else {
     l.owned.push(row.data.item);
     l.shells -= row.data.price;

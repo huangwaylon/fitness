@@ -10,7 +10,8 @@ import { weighted } from '#lib/random.ts';
 import type { Wx, WxSky } from '#lib/contract/live-protocol.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
 import { showAt } from './fireworks.ts';
-import { showerAt, showerNight } from './meteor.ts';
+import { showerAt } from './meteor.ts';
+import { gameWet, showerNight } from '#lib/contract/wet.ts';
 import { FIREWORKS_FROM, weddingDay } from './wedding.ts';
 import { addDays } from '#lib/time/dates.ts';
 
@@ -46,9 +47,6 @@ export interface WeatherNow {
   aurora: boolean;
 }
 
-/** About one day in six is wet; in winter about one in four (NH's snowy season). */
-const WET_ODDS = 1 / 6;
-const WINTER_WET_ODDS = 1 / 4;
 const RAIN_PATTERNS = [['rain', 4], ['heavy', 2], ['am-rain', 2], ['clears', 2]] as const;
 const SNOW_PATTERNS = [['snow', 7], ['heavy-snow', 3]] as const;
 const FOG_ODDS = 1 / 8;
@@ -61,13 +59,6 @@ const RAINBOW_HOUR = 16;
 const FOG_HOUR = 7;
 const winterMonth = (m: number) => m === 12 || m <= 2;
 
-/** Days that are always fine: NH's fireworks (August Sundays, New Year's Eve and Day) and meteor showers. */
-function alwaysFine(date: string, seed: string): boolean {
-  const [y, m, d] = date.split('-').map(Number);
-  const weekday = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
-  return (m === 8 && weekday === 0) || (m === 12 && d === 31) || (m === 1 && d === 1) || showerNight(date, seed);
-}
-
 /** A day's seeded treats, whatever its sky: the 07:00 fog (October–March), the aurora (a winter night, not a meteor
  *  shower's) and a double rainbow; the seeded day has them on a fine day (the double on its `clears` day), the real
  *  weather on a real clear hour (a rainbow: after real rain). */
@@ -75,11 +66,11 @@ function dayDraw(date: string, seed: string): { pattern: Pattern; fog: boolean; 
   const r = dayRand(date, 'weather', seed);
   const month = Number(date.slice(5, 7));
   const winter = winterMonth(month);
-  const wet = r() < (winter ? WINTER_WET_ODDS : WET_ODDS);
+  r(); // (the wet draw: contract/wet.ts gameWet, the record's rain)
   const kind = weighted<Pattern>(winter ? SNOW_PATTERNS : RAIN_PATTERNS, r);
   const fogRoll = r(), auroraRoll = r(), doubleRoll = r();
   return {
-    pattern: wet && !alwaysFine(date, seed) ? kind : 'clear',
+    pattern: gameWet(date, seed) ? kind : 'clear',
     fog: (month >= 10 || month <= 3) && fogRoll < FOG_ODDS,
     aurora: winter && !showerNight(date, seed) && auroraRoll < AURORA_ODDS,
     double: doubleRoll < DOUBLE_ODDS

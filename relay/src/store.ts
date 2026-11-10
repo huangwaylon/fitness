@@ -10,6 +10,8 @@
 //   post, a meal entry, a repeat, a recipe and a custom food one per id (each one's latest op).
 // - A `sell` or a `buy` (the shop, contract/shop.ts) is kept only when the sender's own rows cover it: their tallies'
 //   catches less their sells (the pocket), their sells' かいがら less their buys (shopLedger), a piece bought once.
+// - A `farm` batch (the field, contract/farm.ts) keeps the ops the field and the sender's pocket allow, a harvest at the
+//   yield the record reckons; a `buy_starts` only what their かいがら cover. A `wet` day is the record's own (wetTick).
 // - `since` is answered from the `at` index. A row that arrives out of `at` order (an admin `load` of rows older
 //   than the record's) is marked `late` with its arrival time, and a poll also returns the late rows that arrived after
 //   `since` (less LATE_MARGIN_MS), so no phone misses one.
@@ -21,7 +23,7 @@ import {
   type ApiError, type EventRow, type Fail, type MetricRow, type SnapshotRows
 } from '../../app/src/lib/contract/api.ts';
 import { compactKeep, weekLockMs } from '../../app/src/lib/contract/compact.ts';
-import { localDateAt } from '../../app/src/lib/contract/tokyo.ts';
+import { localDateAt, prevDay } from '../../app/src/lib/contract/tokyo.ts';
 import { decorAccept, decorOpOf, type DecorEntry } from '../../app/src/lib/contract/decor.ts';
 import { isTentPiece, tentAccept, tentOpOf, type TentEntry } from '../../app/src/lib/contract/tent.ts';
 import { isRoomScope, isStanding, layoutAccept, layoutOpOf, scopeMayWrite, type LayoutEntry } from '../../app/src/lib/contract/layout.ts';
@@ -35,7 +37,9 @@ import { errName } from './log.ts';
 import { isLogId, scrubMsg } from '../../app/src/lib/contract/log.ts';
 import { roleOfKey, type Keys } from './auth.ts';
 import { guestMayWrite, rowsFor } from '../../app/src/lib/contract/guest.ts';
-import { buyOf, reowe, sellOf, shopLedger, shopRefusal, shopStep, type Ledger, type ShopRow } from '../../app/src/lib/contract/shop.ts';
+import { buyOf, reowe, sellOf, shopLedger, shopRefusal, shopStep, startsOf, type Ledger, type ShopRow } from '../../app/src/lib/contract/shop.ts';
+import { emptyFarm, farmFromJson, farmJson, farmOf, farmStep, type Farm, type FarmData } from '../../app/src/lib/contract/farm.ts';
+import { gameWet } from '../../app/src/lib/contract/wet.ts';
 import { backCovered, isTally, mergeTally } from '../../app/src/lib/contract/tally.ts';
 import { isIslandDay, mergeIslandDay } from '../../app/src/lib/contract/island.ts';
 import type { PersonId, Who } from '../../app/src/lib/contract/api.ts';
@@ -728,7 +732,7 @@ export class StoreCore {
           return { ok: true, duplicate: true };
         }
       }
-      if (type === 'sell' || type === 'buy') {
+      if (type === 'sell' || type === 'buy' || type === 'buy_starts') {
         // the shop: only what the sender's pocket holds, only what their かいがら cover, a piece once (contract/shop.ts)
         const why = this.shopTarget(me, type, data);
         if (why) return fail('bad_request', why === 'owned' ? 'owned' : `${why} short`);
@@ -781,6 +785,12 @@ export class StoreCore {
       // lower send (a second phone's, a queue that waited) never takes back a catch a sale counted (contract/tally.ts)
       if (type === 'tally') kept = this.tallyKept(me, data);
       if (type === 'island') kept = this.islandKept(me, data);
+      // the field: the ops it allows, a harvest at the record's yield (contract/farm.ts farmStep); none: refused
+      const farm = type === 'farm' ? this.farmKept(me, data) : null;
+      if (type === 'farm') {
+        if (!farm) return fail('bad_request', 'farm refused');
+        kept = JSON.stringify(farm.data);
+      }
       // what's given back of a day (a claim race lost after its tally came in): only grows, and only what that day's
       // tally holds (contract/tally.ts backCovered)
       if (type === 'tally_back') {
@@ -796,7 +806,8 @@ export class StoreCore {
       // the running shop ledger (shopNote): a tally's or a give-back's change is the kept row less the one it replaces
       const was = (type === 'tally' || type === 'tally_back') && slot ? this.slotTally(slot) : null;
       this.put(id, at, me, type, kept, slot, null);
-      if (type === 'tally' || type === 'tally_back' || type === 'sell' || type === 'buy') this.shopNote(me, type, kept, was);
+      if (type === 'tally' || type === 'tally_back' || type === 'sell' || type === 'buy' || type === 'buy_starts') this.shopNote(me, type, kept, was);
+      if (farm) this.farmNote(me, farm.f);
       if (type === 'decor') this.decorNote(me, data, wasDecor);
       return { ok: true, at };
     });
@@ -1035,9 +1046,9 @@ export class StoreCore {
   /** Why a sell or a buy of `me`'s isn't covered by their rows (contract/shop.ts shopRefusal), or null: against the
    *  running ledger (shopState: meta, one row), never their history (until 2026-11-05 every sale reread it: a year's
    *  20-sale batch read 153k rows). */
-  private shopTarget(me: Who, type: 'sell' | 'buy', d: Rec): 'pocket' | 'wallet' | 'owned' | null {
+  private shopTarget(me: Who, type: 'sell' | 'buy' | 'buy_starts', d: Rec): 'pocket' | 'wallet' | 'owned' | null {
     const st = this.shopState(me);
-    const row: ShopRow = type === 'sell' ? { type, data: sellOf(d)! } : { type, data: buyOf(d)! };
+    const row: ShopRow = type === 'sell' ? { type, data: sellOf(d)! } : type === 'buy' ? { type, data: buyOf(d)! } : { type: 'starts', data: startsOf(d)! };
     return shopRefusal(st.l, st.caught, row);
   }
 
@@ -1064,7 +1075,7 @@ export class StoreCore {
   /** A kept row into `who`'s running ledger, when it has one (else the next sale folds it from the rows, this one's
    *  included): a tally's or a give-back's change (its kept counts less `was`, the row it replaced), a sell or a buy
    *  by the fold's own step (contract/shop.ts shopStep), each touched species' debt again (reowe). */
-  private shopNote(who: Who, type: 'tally' | 'tally_back' | 'sell' | 'buy', kept: string, was: Record<string, number> | null): void {
+  private shopNote(who: Who, type: 'tally' | 'tally_back' | 'sell' | 'buy' | 'buy_starts', kept: string, was: Record<string, number> | null): void {
     const raw = this.meta(`shop|${who}`);
     const st = raw ? shopStateOf(raw) : null;
     if (!st) return;
@@ -1081,16 +1092,17 @@ export class StoreCore {
         if (st.l.sold.has(k)) reowe(st.l, k, st.caught, st.back);
       }
     } else {
-      const s = type === 'sell' ? sellOf(d) : null, b = type === 'buy' ? buyOf(d) : null;
+      const s = type === 'sell' ? sellOf(d) : null, b = type === 'buy' ? buyOf(d) : null, g = type === 'buy_starts' ? startsOf(d) : null;
       if (s) shopStep(st.l, st.caught, st.back, { type: 'sell', data: s });
       else if (b) shopStep(st.l, st.caught, st.back, { type: 'buy', data: b });
+      else if (g) shopStep(st.l, st.caught, st.back, { type: 'starts', data: g });
     }
     this.setMeta(`shop|${who}`, shopStateJson(st));
   }
 
   /** The running ledgers let go (a load or an import brought rows past them): the next sale folds each again. */
   private shopForget(): void {
-    this.io.sql.exec("DELETE FROM meta WHERE k IN ('shop|A', 'shop|B', 'shop|G')");
+    this.io.sql.exec("DELETE FROM meta WHERE k IN ('shop|A', 'shop|B', 'shop|G', 'farm')");
   }
 
   /** The admin's `shopcheck {fix?}`: each person's running ledger against the full fold of their rows; `fix`: the
@@ -1122,14 +1134,105 @@ export class StoreCore {
       }
     }
     const rows: ShopRow[] = [];
-    for (const r of this.io.sql.exec<{ type: string; data: string }>("SELECT type, data FROM events WHERE type IN ('sell', 'buy') AND person = ? ORDER BY at, seq", me).toArray()) {
+    // (and what the field put in or took out: contract/farm.ts)
+    for (const [k, n] of this.farmState().net[me] ?? []) caught.set(k, (caught.get(k) ?? 0) + n);
+    for (const r of this.io.sql.exec<{ type: string; data: string }>("SELECT type, data FROM events WHERE type IN ('sell', 'buy', 'buy_starts') AND person = ? ORDER BY at, seq", me).toArray()) {
       const x = parse(r.data);
       const s = x && r.type === 'sell' ? sellOf(x) : null;
       const b = x && r.type === 'buy' ? buyOf(x) : null;
+      const g = x && r.type === 'buy_starts' ? startsOf(x) : null;
       if (s) rows.push({ type: 'sell', data: s });
       else if (b) rows.push({ type: 'buy', data: b });
+      else if (g) rows.push({ type: 'starts', data: g });
     }
     return { caught, back, l: shopLedger(caught, rows, back) };
+  }
+
+  // ---------------------------------------------------------------- the field
+
+  /** The field (contract/farm.ts) as its rows leave it: meta `farm`, kept by each farm row (farmNote), folded from the
+   *  rows (each as kept) when it isn't there (after a deploy, a load). */
+  private farmState(): Farm {
+    const raw = this.meta('farm');
+    if (raw) {
+      try {
+        const f = farmFromJson(JSON.parse(raw));
+        if (f) return f;
+      } catch { /* folded again */ }
+    }
+    const f = emptyFarm();
+    for (const r of this.io.sql.exec<{ person: string; data: string }>("SELECT person, data FROM events WHERE type = 'farm' ORDER BY at, seq").toArray()) {
+      const x = this.rowRec(r.data, 'farm');
+      const d = x ? farmOf(x) : null;
+      if (d && isWho(r.person)) farmStep(f, r.person, d);
+    }
+    this.setMeta('farm', JSON.stringify(farmJson(f)));
+    return f;
+  }
+
+  /** A farm batch of `me`'s judged against the field and their pocket (their running shop ledger: tallies and the
+   *  field's goods less sold, with the starts bought), the waterings the island days hold and the wet days: the field
+   *  after it and the row as kept, or null when no op stands. */
+  private farmKept(me: Who, d: Rec): { f: Farm; data: FarmData } | null {
+    const f = this.farmState(), st = this.shopState(me);
+    const days = new Map<string, Set<string> | true>();
+    const watered = (p: string, date: string): boolean => {
+      let w = days.get(date);
+      if (w === undefined) days.set(date, (w = this.wateredOn(date)));
+      return w === true || w.has(p);
+    };
+    const data = farmStep(f, me, farmOf(d)!, { watered, pocket: (k) => (st.caught.get(k) ?? 0) - (st.l.sold.get(k) ?? 0) });
+    return data ? { f, data } : null;
+  }
+
+  /** What was watered on `date`: everything (a wet day), else the plots in anyone's island day of it. */
+  private wateredOn(date: string): Set<string> | true {
+    if (this.slotRow(`wet|${date}`)) return true;
+    const out = new Set<string>();
+    for (const who of ['A', 'B', 'G']) {
+      const r = this.slotRow(`island|${who}|${date}`);
+      const x = r ? this.rowRec(r.data, 'island') : null;
+      if (x && Array.isArray(x.watered)) for (const id of x.watered) if (typeof id === 'string') out.add(id);
+    }
+    return out;
+  }
+
+  /** A farm row kept: the field after it into meta, and what it put in or took out of `me`'s pocket into their running
+   *  shop ledger (when it has one: else its next fold reads the field). */
+  private farmNote(me: Who, f: Farm): void {
+    const before = this.farmState().net[me];
+    this.setMeta('farm', JSON.stringify(farmJson(f)));
+    const raw = this.meta(`shop|${me}`);
+    const st = raw ? shopStateOf(raw) : null;
+    if (!st) return;
+    for (const [k, n] of f.net[me] ?? []) {
+      const delta = n - (before?.get(k) ?? 0);
+      if (delta) st.caught.set(k, (st.caught.get(k) ?? 0) + delta);
+    }
+    this.setMeta(`shop|${me}`, shopStateJson(st));
+  }
+
+  /**
+   * The wet days (contract/wet.ts), from the room's weather cron (index.ts): `real`, the Tokyo days its timeline had a
+   * wet hour of. The island's weather mode decides: `real` keeps those of yesterday and today, `game` its seeded wet
+   * days of yesterday and today. Each a `wet` row of the record's own (slot `wet|<date>`), once; the dates kept.
+   */
+  wetTick(real: readonly string[]): string[] {
+    const today = localDateAt(this.io.now()), days = [prevDay(today), today];
+    const r = this.slotRow('pref|island|weatherMode');
+    const game = r ? this.rowRec(r.data, 'pref')?.value === 'game' : false;
+    const wet = days.filter((d) => (game ? gameWet(d) : real.includes(d)) && !this.slotRow(`wet|${d}`));
+    if (!wet.length) return [];
+    let last = '';
+    this.io.tx(() => {
+      for (const d of wet) {
+        last = this.nextAt();
+        // (the record's own row: its person a placeholder, every phone reads it alike)
+        this.put(`wet-${d}`, last, 'A', 'wet', JSON.stringify({ date: d }), `wet|${d}`, null);
+      }
+    });
+    this.io.notify({ what: 'event', who: 'A', at: last, rev: this.rev() });
+    return wet;
   }
 
   /** Every decor row (its seq, sender and data). */
