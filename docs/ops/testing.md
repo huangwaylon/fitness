@@ -237,7 +237,8 @@ builds or with `?demo`; `?date`, `?theme` and `?season` work everywhere:
 | `?render=none` | The 3D engines run but draw nothing (the e2e's logic mode: `ui-state/testMode.ts`) |
 
 Anywhere: `?panel=rewards` opens ごほうび at once; the 3D island's renderer takes `?dpr=<ratio>`, `?aa=0|1`,
-`?shadows=0|1` and `?ambient=<fps>`. The editor's params: [island-layout.md](../island-layout.md). The live island
+`?shadows=0|1`, `?ambient=<fps>`, and for the phones' A/B (perf.drag, perf.rest) `?dprmove=<ratio>` (while the camera
+moves: 1.5; at `dpr` or above no swap) and `?shadow=<px>` (the shadow map's size: 2048). The editor's params: [island-layout.md](../island-layout.md). The live island
 sets `window.__world` (`cam()`, `go(z)`, `at(x, z)`, `put(x, z)`, `idle()`, `quiet()`, `perf`, `stops()`, `mine()`,
 `partner()`, `geo()`, `site()`, …) for the e2e and the console (e2e/island.ts wraps them).
 

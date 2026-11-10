@@ -86,6 +86,10 @@ export interface Options {
   ambient: number;
   /** The models' textures from their KTX2 (ktx2.ts; default on): off, their WebPs (`?ktx2=0`, an A/B). */
   ktx2?: boolean;
+  /** The pixel ratio while the camera moves (stage.ts DPR_MOVING; `?dprmove=`, an A/B: at `dpr` or above, no swap). */
+  dprMoving?: number;
+  /** The shadow map's size (2048; `?shadow=`, an A/B). */
+  shadowSize?: number;
 }
 interface Stats {
   fps: number;
@@ -108,6 +112,8 @@ interface Stats {
   compiles: number;
   linking: number;
   dpr: number;
+  /** The shadow map's size. */
+  shadowSize: number;
   frames: number;
   /** The last frame's time (performance.now's clock: what the scene moved to; a sampler's own may be a tick off). */
   at: number;
@@ -285,6 +291,9 @@ export interface Island3 {
   /** After each frame drawn: its start and end (ms) and whether it was whole (nothing held back, nothing loading: the
    *  launch's clock, boot.ts). */
   onDrawn(fn: ((t0: number, t1: number, whole: boolean) => void) | null): void;
+  /** Each pixel-ratio swap a gesture makes (light: down as the camera starts moving, back once it's still): the ms of
+   *  setPixelRatio and setSize, and the first frame's own after it (its CPU: the buffers made again as it draws). */
+  onSwap(fn: ((on: boolean, setMs: number, frameMs: number) => void) | null): void;
   options(o: Partial<Options>): void;
   stats(): Stats;
   dispose(): void;
@@ -311,7 +320,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   const hemi = new HemisphereLight(0xeaf6ff, 0x9ac276, 1.55);
   const sun = new DirectionalLight(0xfff3df, 1.9);
   sun.castShadow = opts.shadows;
-  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.mapSize.set(opts.shadowSize ?? 2048, opts.shadowSize ?? 2048);
   sun.shadow.bias = -0.0006;
   sun.shadow.normalBias = 1.2;
   scene.add(hemi, sun, sun.target);
@@ -510,11 +519,19 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   const clampZ = (z: number) => (z < lim.min ? lim.min - rubber(lim.min - z) : z > lim.max ? lim.max + rubber(z - lim.max) : z);
   /** A lighter pixel ratio while the camera moves (the tent's way), back once it's still; never for a tap. */
   let lightened = false;
+  /** A swap made, its first frame not yet drawn: when, the set's ms, which way (onSwap). */
+  let swapAt = 0, swapSet = 0, swapOn = false;
+  let swapHook: ((on: boolean, setMs: number, frameMs: number) => void) | null = null;
   function light(on: boolean) {
-    if (on === lightened || opts.dpr <= DPR_MOVING) return;
+    const moving = opts.dprMoving ?? DPR_MOVING;
+    if (on === lightened || opts.dpr <= moving) return;
     lightened = on;
-    renderer.setPixelRatio(on ? DPR_MOVING : opts.dpr);
+    const t0 = now();
+    renderer.setPixelRatio(on ? moving : opts.dpr);
     renderer.setSize(W, H, false);
+    swapAt = t0;
+    swapSet = now() - t0;
+    swapOn = on;
   }
   /** The sideways room at a zoom (u either side of the middle): none at the default or wider; zoomed in, as far as
    *  keeps the view over the land and SEA_X of sea, growing in over X_RAMP of zoom. */
@@ -1072,6 +1089,10 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     else renderer.info.reset();
     const t1 = now();
     drawnHook?.(t, t1, !held && !things.pending() && !cards.pending());
+    if (swapAt && !noDraw && !compileOnly) {
+      swapHook?.(swapOn, swapSet, t1 - t);
+      swapAt = 0;
+    }
     cpu.push(t1 - t);
     if (lastFrame) gaps.push(t - lastFrame);
     lastFrame = t;
@@ -1257,12 +1278,15 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     onDrawn(fn) {
       drawnHook = fn;
     },
+    onSwap(fn) {
+      swapHook = fn;
+    },
     stats: () => {
       const l = lights.stats();
       return {
         fps: stamps.length, cpu: [pctl(cpu, 0.5), pctl(cpu, 0.95)], gap: [pctl(gaps, 0.5), pctl(gaps, 0.95)],
         calls: renderer.info.render.calls, tris: renderer.info.render.triangles, sceneCalls, sceneTris, textures: renderer.info.memory.textures,
-        geometries: renderer.info.memory.geometries, programs: renderer.info.programs?.length ?? 0, shadows: shadowsDrawn, compiles, linking: warm.size(), dpr: renderer.getPixelRatio(), frames, at: lastFrame, input: lastInput,
+        geometries: renderer.info.memory.geometries, programs: renderer.info.programs?.length ?? 0, shadows: shadowsDrawn, compiles, linking: warm.size(), dpr: renderer.getPixelRatio(), shadowSize: sun.shadow.mapSize.x, frames, at: lastFrame, input: lastInput,
         loading: things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps, fx: effects.count(),
         fxShown: effects.shown(), why: [...why], paused, drawn: !noDraw
       };

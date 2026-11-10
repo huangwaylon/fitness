@@ -52,6 +52,8 @@
   import { version } from '$app/env';
   import { bootReport, watchBoot, type BootClock } from './boot.ts';
   import { watchRest } from './rest.ts';
+  import { watchDrag } from './drag.ts';
+  import { DPR_MOVING } from './stage.ts';
   import { ktx2Stats } from './ktx2.ts';
   import { placeObjects, type Inst, type Standin } from './objects.ts';
   import { gardenReady, loadGarden, wantsGarden } from './garden.ts';
@@ -575,6 +577,8 @@
   /** A model's move slower on screen than SLOW_PX (pace.ts) or off it is ambience (the ambient rate: a fish's shadow
    *  drifting); the canvas's size from the ResizeObserver (a read in the frame forced a layout each frame). */
   let cw = 0, ch = 0, slowAmbient = true;
+  /** The last pixel-ratio swaps (on, the set's ms, its first frame's ms): the e2e's and a measure's (perf.drag). */
+  const swaps: [boolean, number, number][] = [];
   function mirror(e: Island3, t: number): boolean | 'ambient' {
     // (per frame for every model: nothing new made where nothing changed, its sets kept from frame to frame)
     const winter = season === 'winter', seen = seen3, add: Inst[] = [];
@@ -961,7 +965,11 @@
         dpr: num('dpr') ?? (soft ? 0.5 : Math.min(2, window.devicePixelRatio || 1)),
         shadows: soft ? q.get('shadows') === '1' : q.get('shadows') !== '0',
         aa: q.get('aa') !== null ? q.get('aa') !== '0' : !soft,
-        ktx2: q.get('ktx2') !== '0'
+        ktx2: q.get('ktx2') !== '0',
+        // (the phones' A/B, perf.drag and perf.rest: the pixel ratio while moving, at the full one no swap; the shadow
+        // map's size)
+        dprMoving: num('dprmove') ?? undefined,
+        shadowSize: num('shadow') ?? undefined
       });
     } catch (err) {
       console.warn('world3d', err);
@@ -978,6 +986,9 @@
     if (timed) e.onDrawn(timed.frame);
     // (the island at rest, once a load: perf.rest)
     const offRest = watchRest({ stats: () => e.stats(), ok: () => loaded && !document.hidden && !e.isPaused() });
+    // (the first drag's pixel-ratio swaps, once a load: perf.drag)
+    const logSwap = watchDrag({ stats: () => e.stats() }, num('dprmove') ?? DPR_MOVING);
+    e.onSwap((on, set, frame) => (logSwap(on, set, frame), swaps.push([on, set, frame]) > 20 && swaps.shift()));
     // (?ambient= the frames a second of the ambience, anywhere)
     // (not in the e2e's logic mode: nothing's drawn, a frame costs nothing, and the island's life runs in its frames)
     const amb = num('ambient') ?? (soft && !drawOff() ? 2 : null);
@@ -1068,7 +1079,7 @@
     });
     ro.observe(canvas);
     window.__world3d = {
-      stats: () => e.stats(), view: () => e.view(), limits: () => e.limits(), loaded: () => loaded && !e.stats().loading,
+      stats: () => e.stats(), swaps: () => swaps.slice(), view: () => e.view(), limits: () => e.limits(), loaded: () => loaded && !e.stats().loading,
       go: (z: number, k?: number, x?: number) => e.go(z, k, false, x), pan: (dy: number, dx?: number) => (e.touching(true), e.pan(dy, dx), e.touching(false)), xRoom: (k?: number) => e.xRoom(k), zoomRange: () => e.zoomRange(),
       zoom: (f: number) => e.zoom(f), fling: (vy: number, vx?: number) => e.fling(vy, vx),
       /** A world point on screen (client px), `lift` above the ground. */
