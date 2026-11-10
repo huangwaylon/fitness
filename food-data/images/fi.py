@@ -20,6 +20,13 @@ never changes). Everything else (reference
 photos, generated images, sheets for review) lives in $FOOD_IMG_RAW (default ~/food-images-raw), never in the repo:
 reference photos are look-only. Downloads are untrusted: nothing is run from them. Python with PIL (pack, sheets) and
 the mflux tool's Python (gen) are the only non-stdlib parts.
+
+gen: PROMPT / PROMPT_V with the row's desc, seed crc32(key) % 100000 + roll, STEPS steps at GEN_PX (~15-50 s an image
+on a shared GPU), cached in $FOOD_IMG_RAW/gen/ (a re-run skips what exists: resumable). A failed check re-rolls at most
+MAX_ROLL times, then the row goes back to its tile. pack: the background evened to PAPER (a per-channel gain from the
+border's median), webp sheets: thumbnails T_COLS x T_COLS cells of T_PX (q T_QUALITY) per search neighbourhood
+(FAMILY, else the category), details D_COLS x D_COLS of D_PX (q QUALITY) per category, popular items first; a product
+uses its picture's cell in its own neighbourhood, else a cell in a product sheet (p-*); names carry the content hash.
 """
 import binascii, hashlib, io, json, os, re, subprocess, sys, time, unicodedata, urllib.parse, zlib
 from pathlib import Path

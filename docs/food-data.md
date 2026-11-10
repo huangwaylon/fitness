@@ -27,13 +27,10 @@ validates. The MEXT Excel and the 熊谷市 CSVs have to be downloaded by hand (
 Open Food Facts CSV dump (~1 GB) is only needed to refresh `raw/off/off_jp.jsonl`, its Japan subset, which is what
 the build reads.
 
-`npm run food:data` (`app/scripts/food-data.ts`) checks that `index.json` and the files agree, replaces
-`app/static/food/` whole, adds each core item's search keys (`keys`; a lazy dataset's, products' 239 KB gzipped, are
-built on load in `db.ts`'s slices: about 90 ms more main thread at 4× CPU, ≤ 22 ms a slice) and drops a product's `jan`
-when its id has it (`load.ts` puts it back). The
-barcode shards (`jan/`) are built but not shipped (no barcode scanning). The app fetches the files at runtime
-(`lib/food/load.ts`) under `?v=<index.version>`; the shipped `index.json` is written last, its `version` that of the
-files as shipped (so a change to the keys alone is a new version too; `load.test.ts` recomputes it). A meal keeps a per-100 g snapshot, so a data refresh never rewrites one.
+`npm run food:data` (`app/scripts/food-data.ts`, its header has the checks and the search keys it adds) replaces
+`app/static/food/` whole; the barcode shards (`jan/`) are built but not shipped (no barcode scanning). The app fetches
+the files at runtime (`lib/food/load.ts`) under `?v=<index.version>`. A meal keeps a per-100 g snapshot, so a data
+refresh never rewrites one.
 
 ## Format
 
@@ -185,31 +182,26 @@ foods and the other products keep their category's tile. `food-data/images/fi.py
   and `rows` turns `name|name = description` lines into rows; `split` gives items their own row when they look
   different (a 定食 apart from its main dish, おでん in its broth, a MEXT state, a prefecture's 郷土料理 from its MAFF page).
 - **Products** (`food-data/images/products.txt`; never a package photo): a product's picture is the row named by the
-  word one of its name's tokens ends with (干し芋, 食パン, のむヨーグルト, ドレッシング), or a products-only row (`sub.json`:
-  グミ, スコーン, あんみつ...). A word does not start inside a katakana word unless 3+ letters long (ショコラ is no コーラ);
-  `~` weak words (an ingredient, often a flavour) lose to a form word (博多明太子 おにぎり), `!` words count only in the
-  first token (堅あげポテト 九州しょうゆ), `^` only as a whole token (fruit, sauces); a token ending in 味 is a flavour.
-  About 1 in 15 is a lookalike (a fish 竜田揚げ drawn as chicken); a product no word names keeps its tile.
-- **Generation** (`gen`, the mflux tool's Python, about 15–50 s per image on a shared GPU): the prompt (`PROMPT`,
-  `PROMPT_V`) with the row's `desc`, seed `crc32(key) % 100000 + roll`, 9 steps, 512 px. Images are cached in
-  `$FOOD_IMG_RAW/gen/` (default ~/food-images-raw, outside the repo), so a re-run skips what exists and is resumable.
+  word one of its name's tokens ends with (干し芋, 食パン, のむヨーグルト), or a products-only row (`sub.json`: グミ,
+  スコーン...); the matching rules are fi.py `product_key`'s and products.txt's header. About 1 in 15 is a lookalike (a
+  fish 竜田揚げ drawn as chicken); a product no word names keeps its tile.
+- **Generation** (`gen`, the mflux tool's Python): a fixed seed per row and roll, cached outside the repo in
+  `$FOOD_IMG_RAW/gen/` (default ~/food-images-raw), so a re-run is resumable; the prompt and settings are fi.py's header.
 - **Checks** (optional; not run yet): the images ship unchecked, listed in `food-data/images/shipped.json`
   (each key's description, seed, prompt hash and `checked: false`). The checks, when run (`FI_CHECKS=1`), are
   (a) `verify`: a second vision model (qwen via ollama) compares each image with at least 2 vetted reference photos
   (`refs`: Commons, Wikidata P18, Wikipedia, the MAFF photos; look-only, kept outside the repo, never shipped);
   (b) a by-eye review of `checksheet` contact sheets, logged with `eye`. A wrong image is re-rolled (at most 2 times) and
   then goes back to the tile. Every verdict is appended to `verdicts.jsonl`.
-- **Pack** (`pack`, PIL): it evens the background to the paper colour (#F5E4BC, a per-channel gain from the border's median), then
-  writes webp q72 sprite sheets into `app/static/food-img/`. Thumbnail sheets hold 4 × 4 cells of 128 px (webp q65) (rows, 40–64 px
-  at 3×). Detail sheets hold 3 × 3 cells of 384 px (the amount's 160 px picture: one open fetches ~100 KB and decodes 5.3 MB). Thumbnail sheets are per search
-  neighbourhood (`FAMILY`: a row whose name holds a common search word, e.g. カレー or 卵, sits with that word's family,
-  else with its category), so a common search's top 20 download about 120 KB of thumbnails; detail sheets go by category. Popular
-  items come first. A product uses its picture's cell when that sits in its own name's neighbourhood, else a cell in a
-  product sheet (`p-*`, per neighbourhood: たまねぎドレッシング with the onions). `slots.json` is append-only, so a full sheet never changes. The names carry the content hash (cached for a year, `scripts/headers.ts`).
-  `index.json` (~495 KB, 132 KB gzipped) maps each food id to its picture's two cells (`lib/food/images.ts` `imgOf`).
-- **Budget** (`lib/food/images.test.ts`): ≤ 1,100 files and 90 MB in food-img/ (projected over the whole table, within static/'s file cap, `lib/static-budget.ts`: 18,000 = Pages' 20,000 less the build's ~1,000 and a 1,000 margin), a common search's top 20 ≤ 128 KB of thumbnails on average (~125 now; 120 before the products' pictures; 350 at most), ≤ 400 KB a sheet, ≤ 19,000 files under
-  static/ (Cloudflare Pages takes 20,000 a deploy), and every generic food in a table row (a new catalogue item fails the test until it has one). The service worker caches the sheets on first use (`FOOD_IMG_CACHE`),
-  never at install.
+- **Pack** (`pack`, PIL): the background evened to the paper colour, webp sprite sheets in `app/static/food-img/`:
+  small thumbnail sheets per search neighbourhood, so a common search's top 20 download about 120 KB, and detail sheets
+  per category (one open fetches ~100 KB); the layout is fi.py's header. `slots.json` is append-only, so a full sheet
+  never changes; the names carry the content hash (cached for a year, `scripts/headers.ts`). `index.json` (~495 KB,
+  132 KB gzipped) maps each food id to its picture's two cells (`lib/food/images.ts` `imgOf`).
+- **Budget** (`lib/food/images.test.ts`): ≤ 1,100 files and 90 MB in food-img/ (projected over the whole table,
+  within static/'s file cap, `lib/static-budget.ts`), ≤ 400 KB a sheet, a common search's top 20 ≤ 128 KB of thumbnails
+  on average (350 at most), and every generic food in a table row (a new catalogue item fails the test until it has
+  one). The service worker caches the sheets on first use (`FOOD_IMG_CACHE`), never at install.
 
 ## Sources evaluated and not used
 - Konbini and chain menus (7-Eleven, Lawson, FamilyMart, McDonald's, Yoshinoya, Sukiya ...): every ToS forbids copying. Link out or let the user enter values; never bundle them.

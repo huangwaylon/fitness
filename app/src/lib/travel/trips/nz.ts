@@ -1,5 +1,45 @@
 // The nz guide (docs/travel.md "Content"), ported from the old travel-plans site (its page, map tables and OSRM
 // legs) and edited here since. Private values are {p:key} tokens (the trip note on the relay).
+//
+// The trip's facts (from the old repo's TRIPS.md; docs/travel.md "Trip facts"): what the markup can't show, what was
+// verified, and the decisions that would otherwise get undone by accident. They bind every edit here.
+// - Flights booked and ticketed: NZ 98 Narita 18:30 Feb 10 → Auckland 09:00 Feb 11, NZ 95 Auckland 00:10 Feb 17 →
+//   Narita 07:05. Air NZ confirmation `{p:flightRef}`, Expedia itinerary `{p:expediaRef}`. Economy, one checked bag each,
+//   no seats chosen, cancellation not included.
+// - The base is the host mother's home in New Lynn, west Auckland. The street address is deliberately not in the
+//   data (someone else's home): the map pin and every "New Lynn" use the suburb centre (−36.90939, 174.68405).
+// - Taranaki is days 3–4 (Feb 13–14), in the middle, on purpose. As days 5–6 it put a 03:10 climb and a 362 km drive
+//   on the day of the flight, with no slack for weather or a slow road. Days 1–2 and 5–6 are Auckland. Day 3 still starts
+//   at Parnell Farmers' Market: Saturday-only, and Feb 13 is the trip's one Saturday; the Wintergardens moved to day 6
+//   with the North Shore. The split is why the map fits each day (at island scale an Auckland day is a blob).
+// - Taranaki and Taupō don't both fit into Feb 13–14. The itinerary takes Taranaki (Waitomo caves, then sunrise at the
+//   Pouākai Tarns, the hero photo); the Taupō loop (Tīrau, Orakei Korako, Huka Falls) is in the "Not Scheduled Yet" card
+//   with its real drive times, as the alternative. Don't merge them.
+// - Sunrise at the tarns drives Day 4, and the climb is 2 h 45, not 2 h. DOC gives the Mangorei Track 2 h 30 to
+//   Pouākai Hut and the tarns are past it, so the day is built backwards from a 06:49 New Plymouth sunrise (Feb 14
+//   2027, NOAA; sunset the evening before 20:28): leave 03:10, trailhead 03:30, climbing from 03:45, tarns 06:30. An 04:45
+//   start reached them *after* the sun. The descent is allowed 2 h. The other way round (sunset the evening before) means
+//   coming down by headlamp after a 5 h drive.
+// - Drive times are OSRM free-flow, per leg: AKL ↔ New Lynn 20 km / 22 min, Parnell → Waitomo 193 km / 2 h 31,
+//   Waitomo → New Plymouth 181 km / 2 h 30, New Plymouth → New Lynn 362 km / 4 h 49, New Lynn → Wintergardens 14 km /
+//   20 min. Auckland at peak adds 20–40 min; the Feb 14 return lands on a Sunday evening instead.
+// - Orakei Korako keeps the operator's own unmacronised spelling, unlike every other Māori name in the guide: it is
+//   the trading name. Don't "fix" it.
+// - Pouākai Tarns has no Google place. The coordinate (−39.24930, 174.05300) is the centroid of the OSM
+//   `natural=water` cluster on the Pouākai plateau; the day's link is the Mangorei Track trailhead instead.
+// - The day cards' Open in Maps links are place *searches*, not pins (the place ids resolved once from the short links
+//   the traveller sent aren't kept; a search beats an invented pin).
+// - Verified: the flight times and references (the booking email), the sunrise and sunset times for Auckland and New
+//   Plymouth, every place's coordinates, every drive time above.
+// - Still unverified: the Waitomo tour times and price, the Waiheke ferry timetable, getting around Waiheke without a
+//   car, the Mangorei Track's length and climb (DOC's figures; and whether it is open), Parnell Farmers' Market hours, the
+//   opening hours of every shop and cafe on the Auckland days (with Waiheke a Monday and the Wintergardens a Tuesday:
+//   whether Allpress, Batch and Amano open on a Monday). One Tree Hill (182 m) and Mount Victoria (87 m) are the commonly
+//   published heights, not checked against LINZ.
+// - Still to book: the rental car, the cave tour, a bed in New Plymouth for Feb 13, the ferry, seats on both flights.
+// - Border facts: both passports need an NZeTA plus the visitor levy before boarding. Biosecurity is strict: no
+//   food, seeds, honey or plants, and hiking boots declared and scrubbed clean. An American licence is valid to drive for
+//   12 months (no international permit). Plugs are Type I at 230 V, which Japanese plugs don't fit.
 import type { Trip } from '../types.ts';
 
 export const nz: Trip = {
