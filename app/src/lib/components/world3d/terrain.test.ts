@@ -175,3 +175,16 @@ describe('each band baked once per real change (2026-11-11: a launch baked its 8
     g.dispose();
   });
 });
+
+describe("the deep seabed's flat colour (terrain.ts deepLit: unlit, review 11/10 r1 C3)", () => {
+  it("is a Lambert's facing up: (the hemisphere's sky + the sun × its height) × the colour / π", async () => {
+    const { deepLit } = await import('./terrain.ts');
+    const { Color } = await import('three');
+    const base = new Color(0.2, 0.4, 0.8), sky = new Color(1, 1, 1).multiplyScalar(Math.PI), sun = new Color(1, 0.5, 0).multiplyScalar(Math.PI);
+    expect(deepLit(base, sky, sun, 0).toArray()).toEqual(base.toArray());
+    const c = deepLit(base, sky, sun, 0.5);
+    expect([c.r, c.g, c.b].map((v) => +v.toFixed(6))).toEqual([0.3, 0.5, 0.8]);
+    // (a sun below the horizon lights none of it)
+    expect(deepLit(base, sky, sun, -1).toArray()).toEqual(base.toArray());
+  });
+});

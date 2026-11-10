@@ -70,6 +70,9 @@ export interface BuiltGround {
   update?(t: number): Want;
   /** A lost context back: what it baked on the GPU baked again. */
   restore?(): void;
+  /** The light now (the time of day's, the weather's): the hemisphere's sky and the sun's colour × intensity, the sun's
+   *  height (terrain.ts: the deep seabed's flat colour). */
+  light?(sky: Color, sun: Color, up: number): void;
   dispose?(): void;
 }
 /** What a frame's part wants next: true something moves (the full rate), 'ambient' only its ambience (the ambient rate),
@@ -686,6 +689,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   }
 
   // ---- time of day ----
+  const skyNow = new Color(), sunNow = new Color();
   function tod(t: Tod, wet = 0, fogCss?: string) {
     todLook = TOD[t];
     const dim = 1 - 0.35 * wet;
@@ -695,6 +699,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     hemi.intensity = todLook.hemi[2] * dim;
     sun.color.set(todLook.sun[0]);
     sun.intensity = todLook.sun[1] * (1 - 0.6 * wet);
+    const [sx, sy, sz] = todLook.sunAt;
+    ground.light?.(skyNow.copy(hemi.color).multiplyScalar(hemi.intensity), sunNow.copy(sun.color).multiplyScalar(sun.intensity), sy / Math.hypot(sx, sy, sz));
     waterU.uTint.value.set(todLook.tint).multiplyScalar(dim);
     things.tod(todLook.lamps, todLook.lift * dim);
     lights.level(todLook.lamps);

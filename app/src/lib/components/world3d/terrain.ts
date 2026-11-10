@@ -11,13 +11,13 @@
 // Everything is bent (bend.ts) like the rest of the scene.
 import {
   BufferGeometry, ClampToEdgeWrapping, Color, DataTexture, DoubleSide, Float32BufferAttribute, GLSL3, Group, LinearFilter, LinearMipmapLinearFilter, Mesh,
-  MeshLambertMaterial, NearestFilter, OrthographicCamera, PlaneGeometry, RawShaderMaterial, RepeatWrapping, RGBAFormat, SRGBColorSpace,
+  MeshBasicMaterial, MeshLambertMaterial, NearestFilter, OrthographicCamera, PlaneGeometry, RawShaderMaterial, RepeatWrapping, RGBAFormat, SRGBColorSpace,
   Scene, ShaderChunk, ShaderMaterial, Texture, Uint32BufferAttribute, UnsignedByteType, WebGLRenderTarget, type WebGLRenderer
 } from 'three';
 import { bend, BEND_GLSL, bendU } from './bend.ts';
 import { withMaps } from './blank.ts';
 import { waterU } from './water.ts';
-import { bandInView } from './islandCam.ts';
+import { bandInView, DAY_SUN } from './islandCam.ts';
 import { NH_GROUND, nhImage, nhURL } from './groundTex.ts';
 import { CHUNKS_X, CHUNKS_Z, GRID, TILE, chunkOf } from '#lib/layout/grid.ts';
 import { chunkMesh, meshKeyOf, openSeaRow, stairsMesh, type Part, type WallPart, type WaterPart } from '#lib/layout/mesh.ts';
@@ -56,6 +56,9 @@ export interface Ground {
    *  foam, the ponds' ripples, the sea's wash) runs on, at the ambient rate. */
   update(t: number): boolean | 'ambient';
   look(l: Look): void;
+  /** The scene's light now (engine.ts tod): the hemisphere's sky and the sun's colours times their intensities, and the
+   *  sun's height (its direction's y): the deep seabed's colour, as a Lambert facing up would be lit by them. */
+  light(sky: Color, sun: Color, up: number): void;
   /** Each baked band's meshes (a row of chunks across the island: 4 draws), for the camera's culling (world z extent). */
   chunks(): readonly { z0: number; z1: number; meshes: Mesh[] }[];
   /** A frame's camera, its pivot at `camZ` (engine.ts draw, before the culling and the draw): the bands in its reach
@@ -579,6 +582,15 @@ export const keptBytes = (): number =>
 /** Tests: forget the kept set. */
 export const forgetBands = (): void => void (kept = null);
 
+/** A Lambert's colour facing up (three's, r170: (the hemisphere's sky + the sun × its height) × the colour / π, all
+ *  linear), its point lights left out (the lamps' pools light the land, never the open sea's floor). @public (test) */
+export function deepLit(base: Color, sky: Color, sun: Color, up: number): Color {
+  return new Color().copy(sun).multiplyScalar(Math.max(0, up)).add(sky).multiply(base).multiplyScalar(1 / Math.PI);
+}
+/** The day's light (engine.ts TOD.day, the editor's preview's): the deep seabed's till the engine says. */
+const DAY_SKY = new Color(0xffffff).multiplyScalar(3.0), DAY_SUN_C = new Color(0xfff3df).multiplyScalar(1.5);
+const DAY_UP = DAY_SUN[1] / Math.hypot(...DAY_SUN);
+
 export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   const { renderer } = opts;
   const px = opts.px ?? 1.6;
@@ -738,8 +750,9 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     g.setAttribute('aPath', new Float32BufferAttribute(p.path, 4));
     return g;
   }
+  // (no depth buffer: the bake is one quad; its ~1.5 MB each a band went unused, review 11/10 r1 C4)
   function bandRt(): WebGLRenderTarget {
-    const rt = new WebGLRenderTarget(Math.round(GW * px), Math.round(BAND_D * px), { generateMipmaps: true, minFilter: LinearMipmapLinearFilter, magFilter: LinearFilter, colorSpace: SRGBColorSpace });
+    const rt = new WebGLRenderTarget(Math.round(GW * px), Math.round(BAND_D * px), { generateMipmaps: true, minFilter: LinearMipmapLinearFilter, magFilter: LinearFilter, colorSpace: SRGBColorSpace, depthBuffer: false });
     rt.texture.anisotropy = 4;
     return rt;
   }
@@ -900,8 +913,13 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   // (just under the bed's deepest, layout/height.ts DEEP_Y)
   deepGeo.translate(GRID.x0 + GW / 2, DEEP_Y - 0.1, -(GRID.z0 + GD / 2));
   // (lit as the ground's top is, the bed's deep blue under its tint: seen through the shallows' see-through water, the
-  // grid's edge never shows, day or night)
-  const deep = new Mesh(deepGeo, bend(withMaps(new MeshLambertMaterial({ color: new Color(0x2f74b8).multiply(new Color(0xf4f4f4)) }))));
+  // grid's edge never shows, day or night. Flat and facing up, its light is the same all over: worked out here, not per
+  // pixel by six point lights and the sun under most of the sea, review 11/10 r1 C3; `light`)
+  const DEEP = new Color(0x2f74b8).multiply(new Color(0xf4f4f4));
+  const deepMat = bend(withMaps(new MeshBasicMaterial({ color: DEEP.clone() })));
+  const deep = new Mesh(deepGeo, deepMat);
+  const lightDeep = (sky: Color, sun: Color, up: number) => void deepMat.color.copy(deepLit(DEEP, sky, sun, up));
+  lightDeep(DAY_SKY, DAY_SUN_C, DAY_UP);
   deep.frustumCulled = false;
   group.add(sea, deep);
 
@@ -938,6 +956,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     },
     heightAt: (x, z) => field.ground(x, z),
     feet: (x, z) => field.feet(x, z),
+    light: lightDeep,
     look(l: Look) {
       if (l === look) return;
       look = l;
@@ -956,7 +975,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
         for (const m of b.meshes) m.geometry.dispose();
       }
       stairs.geometry.dispose();
-      for (const m of [...topMats, wallMat, fallsMat, freshMat, seaMat, bakeMat, stairsMat, deep.material]) m.dispose();
+      for (const m of [...topMats, wallMat, fallsMat, freshMat, seaMat, bakeMat, stairsMat, deepMat]) m.dispose();
       for (const t of [...Object.values(tex), sdfA.value, sdfB.value, codes]) t.dispose();
       seaGeo.dispose();
       deepGeo.dispose();
