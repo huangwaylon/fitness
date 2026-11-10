@@ -58,6 +58,23 @@ describe('pacer', () => {
     expect(bad).toEqual([]);
   });
 
+  it('one display frame asked for an ambient frame, the rAF at once or at a vsync (not one early and another)', () => {
+    for (const atOnce of [false, true]) for (const fps of [12, 15, 30]) {
+      const s = sim(atOnce), drawn: number[] = [];
+      let asked = 0;
+      const raf = s.clock.raf;
+      s.clock.raf = (fn) => (asked++, raf(fn));
+      const p = pacer((v) => {
+        if (!p.due(v, fps)) return;
+        drawn.push(v);
+        p.later(fps);
+      }, s.clock);
+      p.kick();
+      s.run(5000);
+      expect(asked / drawn.length, `atOnce ${atOnce} at ${fps}`).toBeLessThan(1.05);
+    }
+  });
+
   it('a kick draws on the next display frame; at the full rate every other vsync at 30', () => {
     const s = sim(false), drawn: number[] = [];
     let n = 0;

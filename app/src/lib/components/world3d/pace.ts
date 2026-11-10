@@ -71,7 +71,9 @@ export function pacer(frame: (vsync: number) => void, clock: PaceClock = PAGE) {
       // (from the last due time when the last frame was the ambience's own and on time, else from the last drawn)
       target = Math.max(anchor + period, last + period - SLACK);
       paced = true;
-      const ms = target - clock.now() - 10;
+      // (the timer a little inside the slack: a rAF at once after it is due on it, one at a vsync on the vsync due; 10 ms
+      // early, the rAF at once came before the slack and asked for another: two wake-ups an ambient frame)
+      const ms = target - clock.now() - (SLACK - 1);
       if (ms <= 4) ask();
       else timer = clock.setTimeout(() => {
         timer = 0;
