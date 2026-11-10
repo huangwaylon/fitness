@@ -10,15 +10,15 @@ const VIEW_W = 420;
 function stepped(camZ: number, zoom: number): ShadowBox {
   const zq = Math.round(camZ / STEP) * STEP, kq = Math.round(zoom * 8) / 8;
   const half = Math.max(200, (VIEW_W / Math.max(1, kq - 0.0625)) * 0.75 + STEP);
-  return { k: kq, sun: [], x: 0, z: zq, left: -half, right: half, top: half * 1.4, bottom: -half * 1.1, target: [0, 0, -zq - 120] };
+  return { k: kq, half, lead: 0, sun: [], x: 0, z: zq, left: -half, right: half, top: half * 1.4, bottom: -half * 1.1, target: [0, 0, -zq - 120] };
 }
 /** How far the box reaches past the pivot's point ahead (its own space: left, right, bottom, top). */
-function cover(b: ShadowBox, camZ: number, sunAt: readonly number[]): number[] {
+function cover(b: ShadowBox, camZ: number, sunAt: readonly number[], camX = 0): number[] {
   const c = new OrthographicCamera(), [tx, ty, tz] = b.target;
   c.position.set(tx + sunAt[0] * 700, ty + sunAt[1] * 700, tz + sunAt[2] * 700);
   c.lookAt(tx, ty, tz);
   c.updateMatrixWorld();
-  const a = new Vector3(0, 0, -camZ - 120).applyMatrix4(c.matrixWorldInverse);
+  const a = new Vector3(camX, 0, -camZ - 120).applyMatrix4(c.matrixWorldInverse);
   return [a.x - b.left, b.right - a.x, a.y - b.bottom, b.top - a.y];
 }
 /** A scroll forward then back over 600 u in 0.5 u steps. */
@@ -64,6 +64,38 @@ describe('shadowBox', () => {
           // (the old box sampled every 0.5 u: its worst a little short of a whole half step)
           cover(box, z, sun).forEach((c, i) => expect(c, `sun ${sun} zoom ${zoom} z ${z} side ${i}`).toBeGreaterThanOrEqual(worst[i] - 0.5));
         }
+      }
+  });
+
+  /** A pinch in to 3.2 and back out over 80 steps, the pivot drifting along and `side` u across with the zoom. */
+  const pinch = (side: number) =>
+    [...Array(81).keys()].map((i) => {
+      const k = 1 + (2.2 * (40 - Math.abs(40 - i))) / 40;
+      return { k, z: 400 + i * 1.5, x: (side * (k - 1)) / 2.2 };
+    });
+  /** The box's worst cover at a zoom when not moving: a fresh one, its pivot at the corners of its play. */
+  function worstAt(k: number, sun: readonly number[]) {
+    const b = shadowBox(null, 0, 0, k, sun, VIEW_W, 1)!;
+    const w = [Infinity, Infinity, Infinity, Infinity];
+    for (const dx of [-STEP / 2, STEP / 2]) for (const dz of [-b.lead, b.lead]) cover(b, dz, sun, dx).forEach((c, i) => (w[i] = Math.min(w[i], c)));
+    return w;
+  }
+
+  it('mid-gesture keeps the box zooming in and builds it wider zooming out: a third the redraws, the view covered', () => {
+    for (const sun of SUNS)
+      for (const side of [0, 160, -120]) {
+        let still: ShadowBox | null = null, moving: ShadowBox | null = null, a = 0, b = 0;
+        for (const { k, z, x } of pinch(side)) {
+          const s = shadowBox(still, z, x, k, sun, VIEW_W, 1), m = shadowBox(moving, z, x, k, sun, VIEW_W, 1, true);
+          if (s) (still = s), a++;
+          if (m) (moving = m), b++;
+          const w = worstAt(k, sun);
+          cover(moving!, z, sun, x).forEach((c, i) => expect(c, `sun ${sun} side ${side} zoom ${k} side ${i}`).toBeGreaterThanOrEqual(w[i] - 0.5));
+        }
+        expect(a).toBeGreaterThanOrEqual(36);
+        expect(b).toBeLessThanOrEqual(a / 2.5);
+        // the gesture over: built for the zoom it ended on
+        expect((shadowBox(moving, 520, 0, 1, sun, VIEW_W, 1) ?? moving)!.k).toBe(1);
       }
   });
 });

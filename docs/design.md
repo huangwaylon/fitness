@@ -637,7 +637,9 @@ moveFast, no flourish). Any of those, or a touch, draws at the full rate at once
 
 **Shadows** (the island's: `world3d/shadowBox.ts`, the editor's phone view's too): the map redraws only when a caster
 changes (a fish shadow casts none; a critter's fade only as it passes half; a bug's move or a thing shown or hidden at
-most every 66 ms) or its box moves on (once per 0.3 of the view's width of scroll); at rest at most every 250 ms. The
+most every 66 ms, every 200 ms while a finger or a fling moves the camera) or its box moves on (once per 0.3 of the
+view's width of scroll; mid-gesture a zoom in keeps the wider box and a zoom out builds it two buckets wider, built for
+the zoom once it ends); at rest at most every 250 ms. The
 tent's and the homes' one small map (1024²) redraws only when a piece changes. Under the 3D island a fish shadow's own
 CSS transition is off (the canvas moves the model).
 

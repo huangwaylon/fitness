@@ -135,8 +135,10 @@ const LEAN = 0.42;
  *  moving at the full rate: a walk, a fast critter, a flourish, a jiggle); either of those draws at the full rate at
  *  once. At rest the shadow map redraws at most every REST_SHADOW_MS whatever moves (a walking villager's frames, its
  *  shadow a blob, redrew it for a crawling bug's), once more after the last change; else a slow caster's move (a bug's,
- *  a thing shown or hidden: things.ts) at most every SLOW_SHADOW_MS, the rest's in their frame. */
-const REST_MS = 2000, REST_FPS = 12, REST_SHADOW_MS = 250, SLOW_SHADOW_MS = 66;
+ *  a thing shown or hidden: things.ts) at most every SLOW_SHADOW_MS, while a finger or a fling moves the camera every
+ *  MOVING_SHADOW_MS (a crawling bug's speck, a thing at the view's edge: 13 of a pinch's 18 redraws a second), the
+ *  rest's in their frame. */
+const REST_MS = 2000, REST_FPS = 12, REST_SHADOW_MS = 250, SLOW_SHADOW_MS = 66, MOVING_SHADOW_MS = 200;
 /** A fling faster than this (px/ms) rushes (Island3['rushing']): a touch on it only stops it, as iOS's scroll. */
 const RUSH_V = 0.1;
 /** The flourishes' warm-up waits this long after the last held-back batch was drawn (ms): its programs' first uses
@@ -347,8 +349,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     waterFog(fog);
     lampFog.near.value = fog.near;
     lampFog.far.value = fog.far;
-    // the shadow's box follows the pivot (shadowBox.ts): the map redraws only when it moves on
-    const box = shadowBox(shadowAim, camZ, camX, zoomK, todLook.sunAt, VIEW_W, ZOOM.min);
+    // the shadow's box follows the pivot (shadowBox.ts): the map redraws only when it moves on, mid-gesture less
+    const box = shadowBox(shadowAim, camZ, camX, zoomK, todLook.sunAt, VIEW_W, ZOOM.min, touch || rushing());
     if (box) {
       sunOn(sun, (shadowAim = box), todLook.sunAt);
       shadowed();
@@ -754,7 +756,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   let shadowDue = -Infinity, shadowsNow = false;
   /** The shadows changed (a caster moved or came or went; `slow`: a slow caster moved). */
   function shadowed(slow = false) {
-    shadowDue = Math.min(shadowDue, slow ? shadowAt + SLOW_SHADOW_MS : -Infinity);
+    shadowDue = Math.min(shadowDue, slow ? shadowAt + (touch || rushing() ? MOVING_SHADOW_MS : SLOW_SHADOW_MS) : -Infinity);
     if (!inFrame && !slow) shadowsNow = true;
   }
   const shadowBy = (t: number) => (shadowsNow || !resting(t) ? shadowDue : Math.max(shadowDue, shadowAt + REST_SHADOW_MS));
