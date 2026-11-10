@@ -7,7 +7,6 @@ import { camTo, islandUp, quiet, tapWorld } from './island.ts';
 
 const DATE = '2026-11-04T12:00';
 type E = { tileScreen(c: number, r: number): [number, number]; layout(): { objects: Map<string, { k: string; x: number; z: number }> } };
-type L = { count(k: string): number; ids(k: string): string[] };
 type Wd = { put(x: number, z: number): void; mine(): [number, number] };
 
 /** Press on a tile of the plan, drag through `via` (tiles), lift on the last. */
