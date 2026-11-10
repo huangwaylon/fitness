@@ -387,7 +387,7 @@ own wallet. A buy is `spend {spendId, item, bells}` with `bells` exactly the ite
 wallet gets half the pair's week) each is something to save for: a typical person has two おやつ and one 外食 every
 three weeks; a perfect week buys each exactly one 外食; a lazy week (14 each) buys nothing.
 
-**The split (`WALLET_SPLIT_MS`, 2026-11-11 04:00 JST):** until then one shared wallet, both people's days and the whole
+**The split (`WALLET_SPLIT_MS`, 2026-11-11 00:00 JST):** until then one shared wallet, both people's days and the whole
 ふたりでぜんぶ in it, おやつ 40 / 外食 70; every buy from then stays as it was. At the split each member gets half of
 what was left, rounded down (an odd ベル is dropped); days from 11-11 fill each person's own wallet.
 

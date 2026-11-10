@@ -143,7 +143,7 @@ Sunday 19:30 the recap opens (ceremony only); the Wednesday 04:00 after, the wee
 ### A wallet each, two rewards
 Each person earns into and buys from their own wallet (ふたりでぜんぶ split +1 each), two treats, おやつ 20 and 外食 35
 ([design](design.md#rewards)); either person erases any buy (`spend_void`). Why: the user (2026-11-10) wanted each
-to earn and spend their own; prices halved with the wallets. Until 2026-11-11 04:00 JST one shared wallet at 40 / 70
+to earn and spend their own; prices halved with the wallets. Until 2026-11-11 00:00 JST one shared wallet at 40 / 70
 (every old buy kept as it was), then halved into the two.
 
 ### Weight never earns

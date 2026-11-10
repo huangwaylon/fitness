@@ -3,11 +3,11 @@
 import type { ShopItemId } from '../types.ts';
 
 /**
- * The wallets' cutover (2026-11-11 04:00 JST, that Wednesday's week lock). Before it: one shared wallet, the rewards at
+ * The wallets' cutover (2026-11-11 00:00 JST, moved up from 04:00 by the user). Before it: one shared wallet, the rewards at
  * OLD_SHOP's prices (every buy then stays as it was). From it: a wallet per member (model/bells.ts walletAt: each
  * starts with half of what the shared one held, rounded down), the rewards at SHOP's.
  */
-export const WALLET_SPLIT_MS = Date.parse('2026-11-11T04:00:00+09:00');
+export const WALLET_SPLIT_MS = Date.parse('2026-11-11T00:00:00+09:00');
 
 /** The two rewards: a buy must name one of these ids at exactly its price as of the buy (shopPrice). */
 export const SHOP = [

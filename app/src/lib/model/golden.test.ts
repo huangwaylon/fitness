@@ -5,7 +5,7 @@
 // Health syncs (one before a lock, one after), a double-counted day corrected by a lower re-sync (A, 12-03: latest
 // wins), a lower re-sync after a lock (A, 11-29: the locked week stays put), ふたりでぜんぶ days (11-05, 12-16, 12-20),
 // がんばり days (a goal at 1.5×; both stretched past the cap on 12-14 and 12-15), a buy from the shared wallet before
-// the split (2026-11-11 04:00 JST, at its old price) and buys from each member's own after it, a void, a void by the
+// the split (2026-11-11 00:00 JST, at its old price) and buys from each member's own after it, a void, a void by the
 // partner (it counts: the ベル go back to the buyer), buys at a wrong price (an old one after the split too) or of an
 // unknown item (ignored) and a buy beyond its buyer's wallet while the other's could pay (ignored).
 // - fixtures/timeline-rows.json: the sheet rows (both people, every row stamped with its server `at`). The view at

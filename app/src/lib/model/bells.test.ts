@@ -253,7 +253,7 @@ describe('buys: one of the two rewards, at its price, from the buyer’s own wal
   });
 });
 
-describe('the split (contract/rules.ts WALLET_SPLIT_MS, 2026-11-11 04:00 JST): the shared wallet before, halved into two at it', () => {
+describe('the split (contract/rules.ts WALLET_SPLIT_MS, 2026-11-11 00:00 JST): the shared wallet before, halved into two at it', () => {
   const PRE = weekDays('2026-11-02'); // a whole week before the split
   const r = plus(perfectWeek(['A', 'B'], PRE), perfectWeek(['A', 'B'], ['2026-11-09', '2026-11-10'])); // 90 shared
   const at = (events: EventRow[], now: number) => walletAt(reduce(plus(r, { events })), now);

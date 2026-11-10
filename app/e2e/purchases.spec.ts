@@ -107,7 +107,7 @@ for (const vp of [{ width: 375, height: 667 }, { width: 390, height: 844 }]) {
   });
 }
 
-test('after the wallets\' split (2026-11-11 04:00): a wallet each, the rewards at 20 / 35, a buy spends mine alone, its erase refunds it', async ({ page }) => {
+test('after the wallets\' split (2026-11-11 00:00): a wallet each, the rewards at 20 / 35, a buy spends mine alone, its erase refunds it', async ({ page }) => {
   await page.goto('jar?demo&date=2026-11-12T12:00');
   const purses = page.locator('.hero .purse');
   await expect(purses).toHaveCount(2);

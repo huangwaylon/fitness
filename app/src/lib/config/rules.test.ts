@@ -9,7 +9,7 @@ describe('rules', () => {
   });
 
   it('has exactly two rewards, おやつ 20 and 外食 35 (40 and 70 before the wallets’ split); shopPrice knows nothing else', () => {
-    expect(WALLET_SPLIT_MS).toBe(Date.parse('2026-11-10T19:00:00Z')); // 2026-11-11 04:00 Tokyo
+    expect(WALLET_SPLIT_MS).toBe(Date.parse('2026-11-10T15:00:00Z')); // 2026-11-11 00:00 Tokyo
     expect(SHOP.map((x) => [x.id, x.bells])).toEqual([['snack', 20], ['dinner', 35]]);
     expect([shopPrice('snack', WALLET_SPLIT_MS), shopPrice('dinner', WALLET_SPLIT_MS)]).toEqual([20, 35]);
     expect([shopPrice('snack', WALLET_SPLIT_MS - 1), shopPrice('dinner', 0)]).toEqual([40, 70]);
