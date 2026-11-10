@@ -8,7 +8,7 @@ describe('coverage floors', () => {
     const r = floors({
       '/x/app/src/lib/contract/a.ts': at(FLOOR - 1),
       '/x/app/src/lib/sync/b.ts': at(FLOOR),
-      '/x/app/src/lib/sync/log.ts': at(RATCHET['src/lib/sync/log.ts']),
+      '/x/app/src/lib/sync/live-local.ts': at(RATCHET['src/lib/sync/live-local.ts']),
       '/x/app/src/lib/store/actions.ts': at(RATCHET['src/lib/store/actions.ts'] - 1),
       '/x/app/src/lib/store/week.svelte.ts': at(10),
       '/x/app/src/lib/contract/empty.ts': at(0, 0)
@@ -18,6 +18,6 @@ describe('coverage floors', () => {
   });
 
   it('names a ratchet floor 5 points under its file, to raise', () => {
-    expect(floors({ '/x/app/src/lib/sync/log.ts': at(RATCHET['src/lib/sync/log.ts'] + 5) }).raise).toHaveLength(1);
+    expect(floors({ '/x/app/src/lib/sync/live-local.ts': at(RATCHET['src/lib/sync/live-local.ts'] + 5) }).raise).toHaveLength(1);
   });
 });
