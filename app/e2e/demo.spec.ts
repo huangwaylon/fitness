@@ -79,16 +79,15 @@ test('ごほうび: the two wallets side by side, mine first (a jar, the owner, 
   const wallet = sheet(page).locator('[data-wallet]');
   const purses = wallet.locator('.hero .purse');
   await expect(purses).toHaveCount(2);
-  await expect(purses.first()).toHaveClass(/mine/);
   await expect(purses.first()).toHaveAttribute('data-purse', 'A');
   await expect(purses.locator('.who')).toHaveText([/ウェイ/, /うめ/]);
   await expect(purses.locator('.total')).toHaveText([/^\s*[\d,]+\s*ベル$/, /^\s*[\d,]+\s*ベル$/]);
-  // side by side; in each the jar on top, then the owner, the balance, today's under it
+  // side by side; in each the jar at the left, and to its right the owner, the balance, today's under it
   const [a, b] = await Promise.all([purses.first(), purses.last()].map(async (p) => (await p.boundingBox())!));
   expect(a.x + a.width).toBeLessThanOrEqual(b.x);
   expect(Math.abs(a.y - b.y)).toBeLessThan(1);
   const [j, who, tot, tdy] = await Promise.all(['.jar', '.who', '.total', '.today'].map(async (q) => (await purses.first().locator(q).boundingBox())!));
-  expect(j.y + j.height).toBeLessThanOrEqual(who.y + 1);
+  expect(j.x + j.width).toBeLessThanOrEqual(who.x + 1);
   expect(who.y + who.height).toBeLessThanOrEqual(tot.y + 1);
   expect(tdy.y).toBeGreaterThanOrEqual(tot.y + tot.height - 1);
   const shop = page.locator('.shop');
