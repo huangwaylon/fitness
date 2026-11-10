@@ -316,10 +316,12 @@ export function awayFromHome(id: ActorId): boolean {
   return Math.hypot(a.x - a.home[0], a.y - a.home[1]) > 2;
 }
 
-/** Where an actor lives; puts it there unless it's out walking (the scene calls this as it mounts). */
+/** Where an actor lives; puts it there unless it's out walking (the scene calls this as it mounts and on each of the
+ *  layout's recomputes: the same home does nothing, so no put is told to the room, nor a walk home cut short). */
 export function setHome(id: ActorId, x: number, y: number) {
-  const a = actors[id];
-  const atHome = !awayFromHome(id) || (a.x === 0 && a.y === 0);
+  const a = actors[id], unplaced = a.x === 0 && a.y === 0;
+  if (a.home[0] === x && a.home[1] === y && !unplaced) return;
+  const atHome = unplaced || (!a.walking && !awayFromHome(id));
   a.home = [x, y];
   if (atHome) place(id, x, y);
 }

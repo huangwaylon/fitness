@@ -135,6 +135,31 @@ describe('two phones linked through a relay', () => {
     d.setSleepClock(() => true);
   });
 
+  it('the same home again tells nothing and leaves a walk home on its way (the scene sets it on every layout recompute)', async () => {
+    const d = await load();
+    d.resetAll();
+    d.setHome('mine', 132, 214);
+    const told: Walk[] = [];
+    const link = d.linkVillagers({ share: (w) => void (w.kind === 'walk' && told.push(w)), me: () => 'A', serverNow: () => 50_000, enabled: () => true });
+    link.joined();
+    await Promise.resolve();
+    told.length = 0;
+    d.setHome('mine', 132, 214);
+    await Promise.resolve();
+    expect(told).toEqual([]);
+    // on the last leg home (its x, y already the leg's end): not snapped there
+    d.place('mine', 132, 400);
+    d.walkTo('mine', [[132, 214]], { ms: 2000, face: 'home' });
+    await vi.advanceTimersByTimeAsync(500);
+    told.length = 0;
+    d.setHome('mine', 132, 214);
+    d.setHome('mine', 140, 214);
+    await Promise.resolve();
+    expect(d.actors.mine.walking).toBe(true);
+    expect(told).toEqual([]);
+    link.detach();
+  });
+
   it('every move of mine is told (a burst as one), and the other phone ends with my villager where mine is', async () => {
     const d = await load();
     d.resetAll();
