@@ -92,5 +92,5 @@ export const noDropOn = (cases: [string, () => Layout | null][]) => {
       const l = get();
       expect(l, 'a spot for the building').not.toBeNull();
       expect(onBuildings(l!)).toEqual([]);
-    }, 30_000);
+    }, 120_000); // (a hang guard: instrumented for coverage on a 2-core runner it ran past 30 s)
 };

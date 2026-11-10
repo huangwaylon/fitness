@@ -4,7 +4,7 @@
 import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, openKenkou } from './hud.ts';
 import { pauseNow } from './island.ts';
-import { drawn, fixtureTiles, mapReady } from './trips.ts';
+import { fixtureTiles, mapReady, mapsDrawn } from './trips.ts';
 
 /** A blank topo tile (トレイル's map: hiking.spec's). */
 const TILE = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', 'base64');
@@ -69,7 +69,7 @@ for (const [k, settle] of Object.entries(infoSheets))
         return raf(f);
       };
     });
-    await drawn(page);
+    await mapsDrawn(page); // (the maps made; the island's frames counted either way, it needn't draw)
     await fixtureTiles(page);
     await page.route(/^https:\/\/(basemap\.nationalmap\.gov|cyberjapandata\.gsi\.go\.jp)\//, (r) => r.fulfill({ contentType: 'image/png', body: TILE, headers: { 'access-control-allow-origin': '*' } }));
     await page.goto('?demo&date=2026-11-04T12:30');

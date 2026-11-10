@@ -6,7 +6,7 @@
 // one more and ~700 DOM nodes a すがた visit (the page-wide white stand-in texture's listeners: world3d/stage.ts).
 import { expect, test, type Page } from './fixtures.ts';
 import { BASE } from './island.ts';
-import { drawn, fixtureTiles, mapReady, openTrip, tripsSheet } from './trips.ts';
+import { fixtureTiles, mapReady, mapsDrawn, openTrip, tripsSheet } from './trips.ts';
 import { fromMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -208,7 +208,7 @@ test('the museum in first person and out, the eye button, a bench: no context or
 test('the trip map in and out: no WebGL context or window listener left behind', { tag: '@chromium' }, async ({ page }) => {
   test.setTimeout(120_000);
   await watch(page);
-  await drawn(page);
+  await mapsDrawn(page); // (the map made; the island needn't draw)
   await fixtureTiles(page);
   await page.goto(`${BASE}/shop${Q}`);
   await expect(page.locator('[data-shop]')).toBeVisible();
@@ -244,7 +244,7 @@ test('the trip map in and out: no WebGL context or window listener left behind',
 test('the info sheets in and out (the trips, Okinawa’s map and campsites, the wedding board, three trails): nothing left behind', { tag: '@chromium' }, async ({ page }) => {
   test.setTimeout(180_000);
   await watch(page);
-  await drawn(page);
+  await mapsDrawn(page); // (the maps made; the island needn't draw: on a 2-core runner, drawn, this ran past its time)
   await fixtureTiles(page);
   await page.route(/^https:\/\/(basemap\.nationalmap\.gov|cyberjapandata\.gsi\.go\.jp)\//, (r) => r.fulfill({ contentType: 'image/png', body: TILE, headers: { 'access-control-allow-origin': '*' } }));
   await page.goto(Q);
