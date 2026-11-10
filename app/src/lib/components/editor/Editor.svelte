@@ -10,7 +10,7 @@
   import { loadOutdoor, outdoorReady } from '#lib/layout/outdoor.ts';
   import { roomIconUrl } from './roomIcon.ts';
   import { GRID, PATHS, TILE, type Kind } from '#lib/layout/grid.ts';
-  import { extentOf, fromJson, footOf, objMid, opsBetween, toJson, type Layout, type Obj } from '#lib/layout/model.ts';
+  import { Layout, extentOf, fromJson, footOf, objMid, opsBetween, toJson, type Obj } from '#lib/layout/model.ts';
   import { validate, type Issue } from '#lib/layout/validate.ts';
   import { riverStems } from '#lib/layout/river.ts';
   import { EDGES, landSize, resizedCodes, type Blocker, type Edge } from '#lib/layout/resize.ts';
@@ -62,9 +62,14 @@
   const stems = $derived(riverLine || new URLSearchParams(location.search).has('check') ? riverStems(cur) : []);
 
   // ---- history: each action's before and after; undo reverts it over the island as it is now ----
-  interface Action { before: Layout; after: Layout; label: string }
-  let undoStack = $state<Action[]>([]);
-  let redoStack = $state<Action[]>([]);
+  // Kept as plain data, never the Layouts: the caches keyed by a layout (layout/fields.ts, height.ts, mesh.ts: the 3D
+  // preview's ~4 MB of rasters a layout) live as long as it does. Raw: the layouts aren't proxied.
+  type Snap = Pick<Layout, 'codes' | 'objects' | 'homes'>;
+  interface Action { before: Snap; after: Snap; label: string }
+  const snap = (l: Layout): Snap => ({ codes: l.codes, objects: l.objects, homes: l.homes });
+  const unsnap = (s: Snap): Layout => new Layout(s.codes, s.objects, s.homes);
+  let undoStack = $state.raw<Action[]>([]);
+  let redoStack = $state.raw<Action[]>([]);
 
   function send(next: Layout): number {
     const now = store.current;
@@ -80,14 +85,14 @@
     next = carryTops(before, next);
     if (sameLayout(before, next)) return;
     if (!send(next)) return;
-    undoStack = [...undoStack.slice(-199), { before, after: next, label }];
+    undoStack = [...undoStack.slice(-199), { before: snap(before), after: snap(next), label }];
     redoStack = [];
   }
   function undo(): void {
     const a = undoStack.at(-1);
     if (!a) return;
     undoStack = undoStack.slice(0, -1);
-    send(revert(store.current, a.before, a.after));
+    send(revert(store.current, unsnap(a.before), unsnap(a.after)));
     redoStack = [...redoStack, a];
     say(`取り消した: ${a.label}`);
   }
@@ -95,7 +100,7 @@
     const a = redoStack.at(-1);
     if (!a) return;
     redoStack = redoStack.slice(0, -1);
-    send(revert(store.current, a.after, a.before));
+    send(revert(store.current, unsnap(a.after), unsnap(a.before)));
     undoStack = [...undoStack, a];
     say(`やり直した: ${a.label}`);
   }
@@ -579,7 +584,7 @@
     const before = store.current;
     const at = store.stamp();
     store.apply([{ sc: 'r', id: 'reset', at }]);
-    undoStack = [...undoStack, { before, after: store.current, label: '最初の島に戻した' }];
+    undoStack = [...undoStack, { before: snap(before), after: snap(store.current), label: '最初の島に戻した' }];
     redoStack = [];
     say('最初の島に戻した');
   }

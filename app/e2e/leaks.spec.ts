@@ -14,8 +14,11 @@ const Q = '?demo&date=2026-11-04T12:00&as=B';
 /** A blank topo tile (トレイル's map: hiking.spec's). */
 const TILE = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', 'base64');
 
-/** WebGL contexts alive (all; `map`: the trip map's, a `maplibregl-canvas`'s) and window/document listeners. */
-type Probe = { gl: number; map: number; ls: number; fonts: number; nodes: number };
+/** WebGL contexts alive (all; `map`: the trip map's, a `maplibregl-canvas`'s) and window/document listeners; `ab` the
+ *  ArrayBuffers' bytes (MB: typed arrays, decoded models and images; outside the JS heap, `heap`) and `emb` Blink's own
+ *  (decoded images, MB). */
+type Probe = { gl: number; map: number; ls: number; fonts: number; nodes: number; ab: number; heap: number; emb: number };
+type Leaks = Omit<Probe, 'nodes' | 'ab' | 'heap' | 'emb'>;
 async function watch(page: Page) {
   await page.addInitScript(() => {
     const gls: WeakRef<object>[] = [], maps: WeakRef<object>[] = [];
@@ -46,7 +49,7 @@ async function watch(page: Page) {
       if (s?.delete(k)) n--;
       return rem.call(this, type, f as EventListener, o as EventListenerOptions);
     };
-    (window as unknown as { __leaks: () => Omit<Probe, 'nodes'> }).__leaks = () => ({ gl: gls.filter((r) => r.deref()).length, map: maps.filter((r) => r.deref()).length, ls: n, fonts: document.fonts.size });
+    (window as unknown as { __leaks: () => Leaks }).__leaks = () => ({ gl: gls.filter((r) => r.deref()).length, map: maps.filter((r) => r.deref()).length, ls: n, fonts: document.fonts.size });
   });
 }
 async function measure(page: Page): Promise<Probe> {
@@ -55,11 +58,14 @@ async function measure(page: Page): Promise<Probe> {
   for (let i = 0; i < 3; i++) await cdp.send('HeapProfiler.collectGarbage');
   // (the DOM nodes alive, in the document or detached and still held)
   const { metrics } = await cdp.send('Performance.getMetrics');
+  // (the ArrayBuffers' bytes: JSHeapUsedSize leaves them out, and on the island they're most of the page's memory)
+  const hu = (await cdp.send('Runtime.getHeapUsage')) as { usedSize: number; backingStorageSize?: number; embedderHeapUsedSize?: number };
   await cdp.detach();
   // (a WeakRef's target is collected only after the task that last read it: read in a fresh one)
   await page.evaluate(() => new Promise((ok) => setTimeout(ok, 50)));
-  const p = await page.evaluate(() => (window as unknown as { __leaks: () => Omit<Probe, 'nodes'> }).__leaks());
-  return { ...p, nodes: metrics.find((m) => m.name === 'Nodes')?.value ?? 0 };
+  const p = await page.evaluate(() => (window as unknown as { __leaks: () => Leaks }).__leaks());
+  const mb = (n = 0) => Math.round(n / 1e4) / 100;
+  return { ...p, nodes: metrics.find((m) => m.name === 'Nodes')?.value ?? 0, ab: mb(hu.backingStorageSize), heap: mb(hu.usedSize), emb: mb(hu.embedderHeapUsedSize) };
 }
 
 /** The app's own navigation (a link's click: SvelteKit's router), as a door does. */
@@ -322,4 +328,46 @@ test('the info sheets in and out (the trips, Okinawa’s map and campsites, the 
   expect(after.fonts, "the maps' font faces in document.fonts").toBeLessThanOrEqual(first.fonts);
   // (a few: the island's own life between rounds)
   expect(after.nodes - first.nodes, 'DOM nodes alive, attached or not').toBeLessThan(100);
+});
+
+/** ArrayBuffer growth's note on the test (MB: the report's numbers, before → after). */
+const note = (what: string, a: Probe, b: Probe) =>
+  test.info().annotations.push({ type: 'memory', description: `${what}: ArrayBuffers ${a.ab} → ${b.ab} MB, JS heap ${a.heap} → ${b.heap} MB, Blink ${a.emb} → ${b.emb} MB` });
+
+// The editor (docs/island-layout.md "The editor") with its 3D preview: ten strokes painted, each a new layout the
+// preview builds its ground for (layout/fields.ts: ~4 MB of rasters a layout). Undo keeps each action, never the
+// layouts it went between: a layout held by the history held its fields too (before the fix: 27.6 → 116.4 MB of
+// ArrayBuffers after ten strokes, ~1.8 GB at the history's 200).
+test.describe('the editor', () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+  test('with its 3D preview, ten strokes painted: no layout’s fields kept by the history', { tag: '@chromium' }, async ({ page }) => {
+    await watch(page);
+    await page.goto('editor/?demo&date=2026-11-04T12:00');
+    type H = { __editor?: { tileScreen(c: number, r: number): [number, number]; layout(): { kind(c: number, r: number): string } }; __preview3d?: { frames(): number } };
+    await page.waitForFunction(() => !!(window as unknown as H).__editor && ((window as unknown as H).__preview3d?.frames() ?? 0) > 0, null, { timeout: 60_000 });
+    await page.getByRole('button', { name: '塗る' }).click();
+    const kind = (c: number, r: number) => page.evaluate(([c, r]) => (window as unknown as H).__editor!.layout().kind(c, r), [c, r] as const);
+    /** A stroke over three tiles of row `r` in `brush`, its new layout drawn by the preview. */
+    const stroke = async (r: number, brush: string) => {
+      await page.locator(`[data-brush="${brush}"]`).click();
+      const f0 = await page.evaluate(() => (window as unknown as H).__preview3d!.frames());
+      const [a, b] = await page.evaluate(([r]) => [(window as unknown as H).__editor!.tileScreen(5, r), (window as unknown as H).__editor!.tileScreen(7, r)], [r] as const);
+      await page.mouse.move(a[0], a[1]);
+      await page.mouse.down();
+      for (let i = 1; i <= 6; i++) await page.mouse.move(a[0] + ((b[0] - a[0]) * i) / 6, a[1]);
+      await page.mouse.up();
+      await expect.poll(() => kind(6, r)).toBe(brush);
+      await page.waitForFunction((f) => (window as unknown as H).__preview3d!.frames() > f, f0, { timeout: 30_000 });
+    };
+    // (rows of grass by the plaza: sand on five, then grass back on them, each stroke a change)
+    const rows = [12, 13, 14, 15, 16];
+    expect(await Promise.all(rows.map((r) => kind(6, r)))).toEqual(rows.map(() => 'grass'));
+    await stroke(11, 'sand');
+    const first = await measure(page);
+    for (const brush of ['sand', 'grass']) for (const r of rows) await stroke(r, brush);
+    const after = await measure(page);
+    note('the editor, ten strokes', first, after);
+    expect(after.ab - first.ab, 'ArrayBuffers grown over ten strokes (MB)').toBeLessThan(2);
+    expect(after.gl, 'WebGL contexts alive').toBeLessThanOrEqual(first.gl);
+  });
 });

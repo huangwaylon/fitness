@@ -315,7 +315,9 @@ Most red runs are the spec, not the app. Before pushing a new or changed spec, r
 ## Memory
 The PWA stays open for days, so a scene's round trip must leave nothing behind: `e2e/leaks.spec.ts` (`@chromium`)
 goes in and out of the rooms and the info sheets and checks, after a forced GC, that no WebGL context or
-window/document listener is left over. To hunt one: `npm run leak -- <flow> [cycles] --snap` (scripts/leak-probe.ts:
+window/document listener is left over, and that the editor's strokes and the home picker's swatches leave no
+ArrayBuffers behind (`Runtime.getHeapUsage` `backingStorageSize`: typed arrays and decoded models, most of the page's
+memory and outside the JS heap; leak-probe prints it as `abMB`). To hunt one: `npm run leak -- <flow> [cycles] --snap` (scripts/leak-probe.ts:
 its header lists the flows, the flags and what each cycle prints) against a served build (`E2E_PORT`). What the leaks
 so far taught:
 - **A page-wide hold keeps its component**: a `window.__*` hook, a module's callback or a `<link>`'s listener holding a
@@ -324,6 +326,8 @@ so far taught:
   listeners: vite.config.ts `preloadListenersOff`.
 - **three.js**: a renderer stays alive while anything it drew is undisposed; every surface ends its renderer with
   world3d/stage.ts `endRenderer` (its header: why WHITE too). Models kept page-wide are lean (release.ts `lean`).
+- **A cache keyed by a value lives as long as it does**: a layout kept (the editor's undo) kept its WeakMap'd fields
+  (~9 MB a layout). Keep history as plain data; bound a page-wide cache by its users (world3d/keepUsed.ts).
 - **MapLibre**: a map goes by travel/map/glmap.ts `removeMap`, not `map.remove()` alone.
 - **The probe's own handles** keep what they point at: wait on booleans. A steady +0.3 MB a trip that's all `[code]` is
   V8 compiling; `blink::NetworkResourcesData` is DevTools'.

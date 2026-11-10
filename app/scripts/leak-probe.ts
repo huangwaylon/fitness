@@ -1,5 +1,6 @@
 // The memory-leak probe (docs/ops/testing.md "Memory"): N cycles of a flow in Chromium as an iPhone 13 (or WebKit as
-// an iPhone 15: --webkit, no CDP: no GC, no heap), after each a forced GC and the JS heap, DOM nodes, JS listeners, the
+// an iPhone 15: --webkit, no CDP: no GC, no heap), after each a forced GC and the JS heap, the ArrayBuffers' and Blink's
+// bytes (Runtime.getHeapUsage: outside the JS heap), DOM nodes, JS listeners, the
 // WebGL contexts still alive (WeakRefs), intervals, document.fonts' faces, rAF callbacks a second, the window's/document's listeners and the
 // island's renderer.info.
 //   npm run leak -- <flow> [cycles] [--snap] [--path=<name>]     (the build served at E2E_PORT, default 4693)
@@ -7,7 +8,7 @@
 // (the island's mount left 30-250 ms in, for the shop), food
 // health zukan settings bells sheets (open, close), trips okinawa wedding trails info (the info sheets, their maps drawn on
 // fixture tiles: NZ's pages, Okinawa's 地図, a task and メモ, three trails; info: all four), look (すがた: a villager's look, then いつもの), clothes (すがた: four
-// tops and their colours worn, then いつもの; the island's and the room's textures must not grow), picker (いえを かえる; Q='&as=B'), vis (hidden ⇄ visible), sim (the
+// tops and their colours worn, then いつもの; the island's and the room's textures must not grow), picker (いえを かえる, as うめ), vis (hidden ⇄ visible), sim (the
 // page's clock 10 sim minutes a cycle from SIM_AT, default 23:00: the island's day running and rolling over; LOGIC=1:
 // not drawn), days (DAY_H sim hours a cycle, fast-forwarded: the visitors coming and going), idle (IDLE_MS of real
 // time; DWELL: ms in a room, default 1500), dressrace (すがた closed while a top it was tapped for still loads), stereo (the tent's jukebox list scrolled, closed: blob URLs), lookidle (すがた open at rest: its rAFs), fish (10 casts and reels; Q='&critter=fish'), sell (the shop's うる, 5 sells). Inside the museum: eye (the eye
@@ -112,7 +113,11 @@ async function measure(label: string) {
   }).catch(() => null);
   // (rAF a second, over a real second: none under the sim's clock)
   const rafs = SIM ? 0 : await page.evaluate(() => new Promise<number>((ok) => { const W = window as unknown as { __rafs(): number }, r0 = W.__rafs(); setTimeout(() => ok(W.__rafs() - r0), 1000); }));
-  const row = { label, rafs, heapMB: +((m.JSHeapUsedSize ?? 0) / 1e6).toFixed(2), nodes: m.Nodes, listeners: m.JSEventListeners, docs: m.Documents, gl: p.gl, ivs: p.ivs, fonts: p.fonts, ls: Object.values(p.ls).reduce((a, b) => a + b, 0), r3 };
+  // (the ArrayBuffers' bytes, abMB: JSHeapUsedSize leaves them out, and on the island they're most of the page's memory;
+  // embMB: Blink's own, its decoded images)
+  const hu = cdp ? ((await cdp.send('Runtime.getHeapUsage')) as { backingStorageSize?: number; embedderHeapUsedSize?: number }) : {};
+  const mb = (n = 0) => +(n / 1e6).toFixed(2);
+  const row = { label, rafs, heapMB: mb(m.JSHeapUsedSize), abMB: mb(hu.backingStorageSize), embMB: mb(hu.embedderHeapUsedSize), nodes: m.Nodes, listeners: m.JSEventListeners, docs: m.Documents, gl: p.gl, ivs: p.ivs, fonts: p.fonts, ls: Object.values(p.ls).reduce((a, b) => a + b, 0), r3 };
   console.log(JSON.stringify(row));
   return { row, ls: p.ls };
 }
@@ -349,7 +354,8 @@ const cycle = async () => {
   } else if (flow === 'vis') {
     await vis('hidden'); await page.waitForTimeout(500); await vis('visible'); await page.waitForTimeout(1500);
   } else if (flow === 'picker') {
-    if (!(await page.evaluate(() => location.pathname.includes('tent')))) { await nav(`${PATH}/tent${Q}&as=B&home=B`); await tentUp(); await page.waitForTimeout(1500); }
+    // (as うめ, her house: `as` is read at the page's load, so a load of its own)
+    if (!(await page.evaluate(() => location.pathname.includes('tent')))) { await page.goto(`${BASE}tent${Q}&as=B&home=B`); await tentUp(); await page.waitForTimeout(1500); }
     await page.locator('[data-home-look]').click(); await sel('[data-home-picker]'); await page.waitForTimeout(800);
     const ms = await page.locator('[data-home-picker] [data-model]').count();
     for (let k = 0; k < Math.min(ms, 4); k++) { await page.locator('[data-home-picker] [data-model]').nth(k).click(); await page.waitForTimeout(700); }
@@ -531,7 +537,12 @@ const cycle = async () => {
     }
   } else if (flow === 'sell') {
     // the shop's うる: one catch picked and sold, five times a cycle (the demo's pocket seeded with 999 sea bass)
-    if (!(await page.evaluate(() => location.pathname.includes('shop')))) { await nav(`${PATH}/shop${Q}`); await sel('[data-shop-pocket] [data-shop-catch]'); await page.waitForTimeout(1500); }
+    // (うる: the twins' choice box, then its list: e2e/shop.spec.ts openList)
+    if (!(await page.evaluate(() => location.pathname.includes('shop')))) {
+      await nav(`${PATH}/shop${Q}`); await sel('[data-shop]'); await until('!!window.__shop');
+      await page.evaluate('window.__shop.talk()'); await page.locator('[data-shop-choice="sell"]').click();
+      await sel('[data-shop-pocket] [data-shop-catch]'); await page.waitForTimeout(1500);
+    }
     for (let k = 0; k < 5; k++) {
       const n0 = await page.locator('[data-shop]').getAttribute('data-shells');
       await page.locator('[data-shop-catch="fish:sea-bass"]').click();
