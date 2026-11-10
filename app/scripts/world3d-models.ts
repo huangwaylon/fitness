@@ -23,6 +23,7 @@ import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 import { ASSETS, POC_USES, writeAssets, writeDoc, type Use } from './world3d-assets.ts';
 import { fxGltf, type Fx } from './world3d-fx.ts';
+import { nhFolders } from './nh-folders.ts';
 
 const APP = join(import.meta.dirname, '..');
 /** Try a list of jobs from a JSON file instead (`--probe=jobs.json --out=dir`): GLBs only, the manifests untouched. */
@@ -170,7 +171,8 @@ const ROOT: string = MODELS;
 const F = (n: string) => `${n}.Nin_NX_NVN`;
 const SAFE = /^[A-Za-z0-9_]+$/;
 const roomTex = (prefix: string) => readdirSync(ROOT).filter((d) => d.startsWith(`${prefix}_`) && d.endsWith('.Nin_NX_NVN')).map((d) => d.slice(0, -11));
-const has = (folder: string) => SAFE.test(folder) && existsSync(join(ROOT, F(folder)));
+const FOLDERS = nhFolders(ROOT);
+const has = (folder: string) => SAFE.test(folder) && FOLDERS.has(folder);
 
 if (probe) JOBS.splice(0, JOBS.length, ...(JSON.parse(readFileSync(probe, 'utf8')) as Job[]));
 else if (MUSEUM) JOBS.splice(0, JOBS.length, ...MUSEUM_JOBS);
@@ -186,11 +188,16 @@ const copy = (folder: string) => {
   for (const n of readdirSync(src)) if (/^[A-Za-z0-9_]+(\.[0-9]+)?\.(dae|png)$/.test(n) && statSync(join(src, n)).isFile()) cpSync(join(src, n), join(dst, n));
 };
 for (const j of todo.flatMap((t) => [t, ...(t.pack ?? [])])) {
-  for (const [f, d] of j.parts) if (!has(f) || !SAFE.test(d)) throw new Error(`${'name' in j ? j.name : j.id}: no model ${f}/${d}`);
+  for (const [f, d] of j.parts)
+    if (!has(f) || !SAFE.test(d)) {
+      FOLDERS.assertExact('world3d-models');
+      throw new Error(`${'name' in j ? j.name : j.id}: no model ${f}/${d}`);
+    }
   // (a room's textures, `<room>_Tex`: every one of its own folders, `<room>_Tex_<material>_<map>`)
   j.tex = (j.tex ?? []).flatMap((t) => (t.endsWith('_Tex') ? roomTex(t) : [t])).filter(has);
   for (const f of [...j.parts.map((p) => p[0]), ...j.tex]) copy(f);
 }
+FOLDERS.assertExact('world3d-models');
 mkdirSync(OUT, { recursive: true });
 mkdirSync(dirname(META), { recursive: true });
 

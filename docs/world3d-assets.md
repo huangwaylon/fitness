@@ -11,6 +11,9 @@ The source is NH's 2.0.0 export (archive.org `acnh-2.0.0-models`, `ACNH_2.0.0_Ex
 It holds the old `~/Downloads/Model` set but for 15 layout icons; a run on both can take a folder of symlinks, the new
 first. It brought the 2.0 villagers, Brewster, Kapp'n and Wilbur, and 376 tent pieces; nothing the island lacked.
 
+- Every converter looks a folder up by its exact name (`scripts/nh-folders.ts`): a name that matches only in another
+  case (the sheet's `FtrPressbench` for the export's `FtrPressBench`) fails the run, since a case-sensitive disk has
+  no such folder; room-models.ts's SHEET_CASE spells the sheet's few that way as the export does.
 - `scripts/world3d-assets.ts`: the map (art key → NH model folder, the conversion's options, the key's scale and
   anchor). `scripts/world3d-models.ts` converts them: NH's materials baked into one WebP each (≤ 128 px for small
   things, 256 for furniture, 512 for the tent and the countdown board), merged per material, quantised and
@@ -142,8 +145,8 @@ Their skinned models are converted apart (`scripts/villagers3d-models.ts`, `scri
 `app/static/room/villagers3d/<id>.glb` (442 files, ≤ 100 KB each), posed in code: the villagers, the roster's special
 characters (K.K., Daisy Mae, Wisp, Gulliver, Celeste, Kicks, Label, Saharah, Leif, Redd, C.J., Flick, Brewster, Kapp'n,
 Wilbur) and, by
-`VISITOR_ONLY` (not in the picker), Franklin, Jack, Jingle, Zipper, Reese and Cyrus. Pavé isn't in NH's files: he
-never visits. A material's textures are the ones its Collada effect samples, not the ones named after it (`mCapVis`
+`VISITOR_ONLY` (not in the picker), Franklin, Jack, Jingle, Zipper, Reese and Cyrus. Pavé is in NH's files (NpcSpPck)
+but has no visit yet, so he isn't converted. A material's textures are the ones its Collada effect samples, not the ones named after it (`mCapVis`
 and `mGlassCap` sample `mBody_Alb` and `mGlass_Alb`); the converter fails a villager whose GLB has a material without
 a base colour where the source has one. Each villager wears its default top's texture (a single-look top, as the Sanrio tees, is the data's row itself, not a variation: `villager3d.test` holds every material to its texture). Tulin, Mineru, Cece and Viché aren't in
 the 2.0.0 export: their cards stay.

@@ -65,7 +65,7 @@ const SPECIAL: Record<string, [string, string?, string?]> = {
 };
 /** The visitors that aren't in the picker's roster (island/visitors.ts: the holiday hosts, Jack, the wedding's pair),
  *  their NH codes: converted as the special characters are (face at rest), into the same folder and manifest
- *  (`visitors`). Pavé isn't in the files. */
+ *  (`visitors`). Pavé is in the files (NpcSpPck) but has no visit yet, so he isn't converted. */
 const VISITOR_ONLY: Record<string, string> = { franklin: 'Tuk', jack: 'Pkn', jingle: 'Rei', zipper: 'Pyn', reese: 'Alw', cyrus: 'Alp' };
 async function buildMap(): Promise<Record<string, MapRow>> {
   registerHooks({

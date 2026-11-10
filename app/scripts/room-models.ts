@@ -32,6 +32,7 @@ import { dirname, extname, join, resolve, sep } from 'node:path';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 import { topOf, type Sample, type Top } from './room-surfaces.ts';
+import { nhFolders } from './nh-folders.ts';
 
 const APP = join(import.meta.dirname, '..');
 const OUT = join(APP, 'static', 'room');
@@ -117,7 +118,15 @@ if (!MODELS || !existsSync(MODELS)) {
 const ROOT: string = MODELS;
 const F = (n: string) => `${n}.Nin_NX_NVN`;
 const SAFE = /^[A-Za-z0-9_]+$/;
-const has = (folder: string) => SAFE.test(folder) && existsSync(join(ROOT, F(folder)));
+const FOLDERS = nhFolders(ROOT);
+const has = (folder: string) => SAFE.test(folder) && FOLDERS.has(folder);
+/** The spreadsheet's file names that the export spells in another case (macOS's disk found them all the same; a
+ *  case-sensitive one doesn't): the sheet's → the export's. FOLDERS.assertExact fails the run on any other. */
+const SHEET_CASE: Record<string, string> = {
+  FtrPressbench: 'FtrPressBench', FtrWashingmachine: 'FtrWashingMachine', FtrMountainbike: 'FtrMountainBike',
+  FtrDigitalclock: 'FtrDigitalClock', FtrKatakatatoy: 'FtrKatakataToy'
+};
+const exportCase = (fn: string) => fn.replace(/^[A-Za-z0-9]+/, (b) => SHEET_CASE[b] ?? b);
 
 interface Piece {
   code: string;
@@ -172,7 +181,7 @@ const bySlug = new Map([...furniture, ...walled].map((r) => [slug(names(r).en), 
 const byName = new Map([...furniture, ...rugs, ...walled].map((r) => [r.name.toLowerCase(), r]));
 
 function piece(r: Raw, extra: Partial<Piece>): Piece | null {
-  const fn = String(field(r, 'filename') ?? '');
+  const fn = exportCase(String(field(r, 'filename') ?? ''));
   const folder = fn.replace(/_Remake_\d+_\d+$/, '');
   if (!has(folder)) return null;
   const tex = [`${folder}ReBody0`, `${folder}ReFabric0`].filter(has);
@@ -222,6 +231,7 @@ const texOf = async (tab: string, files: string[], k: string): Promise<Tex[]> =>
 };
 const walls = await texOf('Wallpaper', WALLS, 'w');
 const floors = await texOf('Floors', FLOORS, 'g');
+FOLDERS.assertExact('room-models');
 console.log(`${pieces.size} pieces (${STARTER.length} starter, ${pool.size - poolMissing} of the ずかん's ${pool.size} furniture with a model), ${walls.length} wallpapers, ${floors.length} floors`);
 
 const wanted = (code: string, n: { ja: string; en: string }) => !only.length || only.some((o) => o === code || n.en.includes(o));
