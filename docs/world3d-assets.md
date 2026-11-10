@@ -19,14 +19,10 @@ first. It brought the 2.0 villagers, Brewster, Kapp'n and Wilbur, and 376 tent p
   the repo; the converted GLBs are public.
 - Output: `app/static/room/world3d/<kind>/<id>.glb` (under `/room/`: the service worker caches a file on first use,
   never at install). The first 45 models stay in `models.json` and serve their keys from there.
-- **Then `npm run world3d-ktx2`** (needs `basisu`: `brew install basis_universal`): each model's WebPs (world3d,
-  homes, structures, villagers3d, the players' packs) as KTX2 (UASTC, mipmaps built), one pack a model in
-  `static/room/tex/<id>.ktx2p` (`world3d/ktx2Pack.ts`); the loose WebPs those models wear (the homes' other colours,
-  the players' faces and the bundled closet's garments: `texHash.ts looseTextures`) as KTX2 beside them (the players'
-  into their packs: `scripts/player-packs.ts`); and three's
-  transcoder wasm in `static/room/basis/`. The island draws those (`world3d/ktx2.ts`: ASTC on an iPhone, kept
-  transcoded in IndexedDB); the WebPs stay for the museum's own models, the tent's furniture and a fallback.
-  `world3d/ktx2.test.ts` fails until it's run after a model, a home or a player part changes.
+- **Then `npm run world3d-ktx2`** (`scripts/world3d-ktx2.ts`, its header: the packs, the loose textures, the
+  transcoder, what it needs): the island draws KTX2 (`world3d/ktx2.ts`: ASTC on an iPhone, kept transcoded in
+  IndexedDB); the WebPs stay for the museum's own models, the tent's furniture and a fallback. `world3d/ktx2.test.ts`
+  fails until it's run after a model, a home or a player part changes.
 - See-through two-sided parts (glass, curtains, a critter's fade, the particles) are two meshes, one a side
   (`world3d/sides.ts`): three's own two passes re-derive the program twice a draw every frame. The same pixels.
 - **Validation:** `node scripts/world3d-sheet.ts [-- --only=bug,fish] [-- --night]` draws every model at its world
@@ -93,9 +89,8 @@ the seat, feet down or dangling (poses.ts sitOn), or lies along the bed (a hammo
 tent's seats (`tent/seats.ts`), the museum's benches (`museum/seats.ts`) and the island's (`world3d/villagers.ts`, by
 world.ts SEATS's names) pass their anchors.
 
-A lid (`tent/lid.ts` LIDS: the cold sleep pod's, f13508): NH ships no clip, bone or shut variant (FtrSFBedS: one Root
-joint), so at load `splitLid` cuts the hood out of the body mesh (its loose parts over `over`) and puts it and the glass
-meshes under a `lid` group at the hinge; the engine turns it `shut` rad about z. No re-export.
+A lid (`tent/lid.ts` LIDS, the cold sleep pod's): cut out of the body's mesh at load and turned about its hinge (its
+header: NH ships no clip, bone or shut variant). No re-export.
 
 **The pose data** (`seats3d.json` `tent[code]` / `island[model]`, model units, the model's own frame: +z its front, its
 middle at 0; a new piece, like a hammock or a sleeping bag, adds one entry and needs nothing else):
@@ -125,27 +120,21 @@ items.test checks each inside its emissive part (or its model) at every facing.
 
 `world3d/fishing3d.ts`: Critters.svelte says each step of my line (cast, wait, bite, reel) and where its float is; my
 3D villager holds NH's rod while the line is out (`VSpec.tool`), swings it out on the cast, is tugged at the bite and
-reels in.
+reels in. Each part's header has its numbers:
 
-- **Facing** (`world3d/facing.ts`, the same on every phone): standing, it turns to the float (~0.2 s) and keeps
-  facing it, the rod pointed at it; seated or lying it doesn't turn. The rod is a child of the hand bone (`Hand_R`),
-  its material bent with the island (`bend.ts`; `e2e/fishing3d.spec.ts`: its tip against the feet the same at every
-  zoom).
-- **The float** (`floatLift`): a ±0.6u bob over 1.5 s while it waits and a soft ring (`fx/ripple`) every 2.6 s; a
-  380 ms dip and a small ring at each nibble; at the bite a hop and a plunge 7u under, a splash and a big ring
-  (emitters on the water's surface).
-- **The 「！」** (`world3d/biteMark.ts`, from the angler's step, on every phone): one quad a villager, its art a canvas
-  drawn once (NH's cream disc, red rim and ！), over the head as posed this frame (villager3d `crown()`, OVER_U 3u
-  above). Its own vertex shader bends only its anchor and lays the quad out in the camera's plane, so it stays upright
-  and square on at every pitch. 20u in the world, held to 30–52 px on screen; no depth test, drawn last. Its pop
-  overshoots (320 ms); 140 ms out at the reel or the miss. `__world3d.bite(slot)` / `pinBite(slot)` (dev and ?demo;
-  `e2e/bite-mark.spec.ts`).
-- **The line** (`world3d/fishLine.ts`, pure and unit-tested; Island3D's bent `Line` from `tip()`): one quadratic from
-  the tip to the float, a point every 16u (12 to 64), sagging by its length (6u short, 4% long), lifted only where it
-  must to stay 4u over the ground, the water and every blocking object's tiles. Its shape is worked out when its ends
-  move, not each frame (`__world3d.line()`; `e2e/fishing-taps.spec.ts`).
-- Frames run at the full rate (30 fps, not the rest's 12) while the float is out (`moveStart`). `window.__fx3` (dev and ?demo): each source's live
-  parts and the spawns' log.
+- **Facing** (`world3d/facing.ts`, the same on every phone): standing, it turns to the float and keeps facing it, the
+  rod pointed at it; seated or lying it doesn't turn. The rod is a child of the hand bone, bent with the island
+  (`e2e/fishing3d.spec.ts`: its tip against the feet the same at every zoom).
+- **The float** (fishing3d.ts `floatLift`): a bob and a soft ring while it waits, a dip and a small ring at each
+  nibble, at the bite a hop, a plunge, a splash and a big ring (emitters on the water's surface).
+- **The 「！」** (`world3d/biteMark.ts`, on every phone): NH's mark over the head as posed this frame, upright and square
+  on at every pitch, NH's size in the world held to a readable size on screen, never under anything.
+  `__world3d.bite(slot)` / `pinBite(slot)` (dev and ?demo; `e2e/bite-mark.spec.ts`).
+- **The line** (`world3d/fishLine.ts`, pure and unit-tested): one quadratic from the tip to the float, sagging by its
+  length, lifted only where it must to clear the ground, the water and what blocks; worked out when its ends move, not
+  each frame (`__world3d.line()`; `e2e/fishing-taps.spec.ts`).
+- Frames run at the full rate (30 fps, not the rest's 12) while the float is out (`moveStart`). `window.__fx3` (dev and
+  ?demo): each source's live parts and the spawns' log.
 
 ## Villagers and visitors
 

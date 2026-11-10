@@ -146,99 +146,44 @@ latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (its pa
 
 ## API for the 3D scene
 
-Pure (`app/src/lib/layout/`, no three.js):
-
-```ts
-layoutOf(entries: Iterable<LayoutEntry>): Layout          // the default with the ops merged over it
-layout.tile(c, r): { kind, tier }; layout.objects: ReadonlyMap<string, Obj>; layout.homes: Record<Who, HomeStyle>
-objMid(layout, obj): [x, z]; footOf(layout, obj); doorOf(layout, home)
-heightAt(layout, x, z): number                             // the ground's height (feet, taps)
-navOf(layout): LayoutNav; findPath(nav, from, to); snapTap(nav, x, z); planTap(nav, …)
-diffLayouts(a, b): { chunks: number[]; objects: { add: Obj[]; move: Obj[]; remove: string[] }; homes }
-```
-
-The live layout (`store/layout.svelte.ts`, Svelte runes; what the scene and the editor read):
-
-```ts
-layout.current: Layout          // reactive: reading it in an $effect or $derived subscribes
-layout.pos(id): [x, z] | null   // where an object stands (u); null when it's gone
-layout.obj(id); layout.ofKind('flower'); layout.home('B')
-layout.on(({ diff, who, live }) => …)   // every change as it lands, with what changed
-layout.apply(ops)               // my changes (the editor's save, its phone view's もようがえ): merged, kept, sent
-```
-
-IslandScene attaches it (the relay, the record's `state.layout` rows, the sink to the record); every phone keeps the
-layout in localStorage.
-
-three.js (`world3d/terrain.ts`, `objects.ts`):
-
-```ts
-buildGround(layout, { renderer, look?, base?, stairs?, px? }): Ground   // engine.ts's BuiltGround, and more
-  ground.group: Group                 // the land, the walls, the falls, the water, the sea, the stairs
-  ground.heightAt(x, z) / ground.feet(x, z)   // = layout/height.ts; where feet stand (stairs, bridge decks)
-  ground.land: { x0, x1, z0, z1, r }  // the land's box (updated by a rebuild)
-  ground.update(t): boolean | 'ambient'   // the engine's per-frame hook (the water's clock, at the ambient rate)
-  ground.rebuild(layout, chunks?)     // the bands those chunks are in (and either side); all when none given
-  ground.look('summer' | … | 'autumn-leaves')
-  ground.chunks(): { z0, z1, meshes }[]     // each band, for the camera's culling
-  ground.ready: Promise<void>         // NH's textures in (the bands bake again then)
-  ground.restore()                    // a lost context back: the bands bake again
-  ground.dispose()
-placeObjects(layout, day): { insts: Inst[]; standins: Standin[] }   // the engine's instances, from the layout
-  day = { season, foliage, month, swaps?: swapsOn(date), pieces?: piecesOn(date, hour, seed), fruit? }
-extentOf(layout): { grid, land, shore, home }   // model.ts: the island's box, the front shoreline's z, ウェイ's door
-```
+- **Pure** (`app/src/lib/layout/`, no three.js): `layoutOf(entries)` (the default with the ops merged over it), the
+  `Layout`'s tiles, objects and homes (model.ts: `objMid`, `footOf`, `doorOf`, `extentOf`), `heightAt`, `navOf` /
+  `findPath` / `snapTap` / `planTap`, `diffLayouts`.
+- **The live layout** (`store/layout.svelte.ts`, its header lists the API): `layout.current` (reactive), `pos`, `obj`,
+  `ofKind`, `home`, `on(fn)` (every change with its diff) and `apply(ops)` (mine: merged, kept, sent). IslandScene
+  attaches it (the relay, the record's `state.layout` rows); every phone keeps the layout in localStorage.
+- **three.js:** `buildGround(layout, { renderer, look })` (`world3d/terrain.ts`: the `Ground` interface, its group,
+  heights, rebuild by chunk, season look, bands, `ready`, `restore`) and `placeObjects(layout, day)`
+  (`world3d/objects.ts`: the engine's instances and the stand-ins, `day` the season and the date's swaps and pieces).
 
 ## The 3D ground
 
-- **The geometry** (`layout/mesh.ts`, pure): NH's scheme. Each tile is four quadrants of 15u, each 3 × 3 cells of 5u;
-  a quadrant whose corner is rounded (`fields.ts roundedIn`) has its corner's 2 × 2 cells replaced by a quarter disc,
-  on vertices that meet the neighbours' exactly. A tier's edge stands a vertical wall (NH's cliff strata,
-  `static/terrain/nh/cliff.webp`); where water meets water a tier down the wall is a waterfall. Stairs are stone steps
-  (8 to a tier) with their sides walled.
-- **The distance fields** (`layout/fields.ts`): each region's signed distance (2.5u raster, ±48u) to its rounded edge:
-  the land, the beach's sand, the fresh water, the paths, each tier. The heights, the bake, the shore wash and the
-  fresh water's edge all read them (~110 ms for the island on a desktop, ~300 on a phone). Built once per tiles and
-  bridges; on `/` a worker builds them as the app starts (`fieldsPrime.ts`, `fields.worker.ts`: the same
-  `computeFields`, bit for bit, `fields.test.ts`) from the layout in localStorage, kept for the next launch
-  (`fieldsCache.ts`, IndexedDB: a hit starts no worker), and the mount waits for that job (or starts it); the main
-  thread builds them only if the worker can't (none, an error, stalled 4 s) or the layout is another.
-- **Soft edges** (NH's coast is round): the data and the objects stay on tiles, only the drawn edge is round. The
-  coast, the beach's sand, the fresh water and the paths are rounded on half a tile; a staircase of tiles is cut
-  straight, so a diagonal of tiles is a diagonal shore, river or path; then each soft field is box-blurred (2 cells,
-  twice: a straight edge stays on its tile's side, a one-tile path keeps its breadth). Where a cliff wall stands a
-  corner keeps the cliff's third of a tile. A river runs out to the sea square. The fresh water's surface also covers
-  a bank's tile where the filled corner dips it under, its edge fading on the field (`FRESH_FRAG`); the seabed is
-  continuous at the shoreline; a path's rounded-out corner takes the nearest path tile's kind (`pathTile`). The
-  editor's plan stays tile-exact; its 3D preview is the same ground.
-- **The river's turns** (`layout/river.ts`): each river's main stem (far end to the sea, a fall or a pond) is drawn as
-  straights and circular arcs, one breadth (13.5u a side; broader at the mouth); the fresh water's field, the flow and
-  the streaks follow it. A **straight** is a run of 3+ tile steps one way (or the run at either end), on its tiles'
-  middles. Two straights at an angle with a staircase between are **one arc** tangent to both through the staircase's
-  middle (where one circle can't, an arc at each end of the diagonal); a plain L gets a small fillet (0.75 tile). Every
-  arc shrinks until its middle is on water and its banks within `EDGE_TOL` (0.3 tile) of water tiles, and stays
-  within 3u of its straight at a bridge. A river mostly not one stem (a delta) keeps its tiles. Walking, fishing and
-  casts go by tiles. The editor marks it on the plan (`かわの せん`); `/editor?check` lists the arcs (かわの カーブ).
-- **The look is baked on the GPU** (`world3d/terrain.ts`): one shader paints each band's texture from the fields and
-  the tiles, NH's way (grass and its flecks, the beach wet at the sea, the seabed deepening, the dirt path and its
-  pebbles, NH's stone, brick and plank, a river's rim and bed, a shade at a cliff's foot), once at load and again only
-  for what a change touches. The season's palette (`ground.look`) rebakes it all.
-- **Bands:** a row of chunks (8 tile rows) is one band, 10 on the grid: 4 draws each (the ground, the walls, the falls,
-  the fresh water), one 960 × 384 texture (1.6 px a unit, ~21 MB for the island with mips), so the draws stay flat
-  however long the island grows; bands out of view are culled. The island renders at the 30 fps cap; its numbers are
-  in [ops/perf.md](ops/perf.md).
-- **The water:** NH's sea round the island: the shore foam where the land's field says, the shallows' turquoise
-  ~70u out then a ~200u fade into the deep blue, so a fish's shadow reads across the fishing range; past the field's
-  reach the bed is the deep plane's blue, lit as the ground is. NH's waves wash ashore (`layout/swash.ts`, design.md
-  "The sea's wash"): a point's phase is its nearest shoreline point's; the ground draws the run-up, foam and wet sand,
-  the sea's shader the foam line and backwash: one rhythm, the same maths (SWASH_GLSL) on both and on the CPU (what
-  washes in rides a wave). The rivers' flow (each tile's way down, breadth-first to the sea or a fall), the ponds'
-  ripples, the falls' streaks: all on water.ts's shared clock, tint and fog uniforms. On a stem the river's streaks
-  (terrain.ts `FRESH_FRAG`) run along the stem (each water vertex's `path`, from `fields.along`): 26 u/s,
-  hurrying to 90 u/s and whitening over the last 22u before a fall, a foam pool over the first 34u below it (`flow.w`);
-  the falls' wall long streaks at 110 u/s over NH's streak texture. Off a stem the tiles' flow.
-- NH's textures: `npm run terrain-textures` (NH_MODELS=~/Downloads/acnh-2.0.0-models/Model) converts the few PNGs from
-  `FldUnit.Nin_NX_NVN` into `static/terrain/nh/*.webp` (94 KB).
+- **The geometry** (`layout/mesh.ts`, pure: its header has NH's quadrant scheme): rounded corners on vertices that meet
+  the neighbours' exactly, a vertical wall at a tier's edge (NH's cliff strata), a waterfall where water steps down a
+  tier, stone steps for the stairs.
+- **The distance fields** (`layout/fields.ts`): each region's signed distance to its rounded edge (the land, the
+  beach's sand, the fresh water, the paths, each tier), which the heights, the bake, the shore wash and the fresh
+  water's edge read (~110 ms for the island on a desktop, ~300 on a phone). Built once per tiles and bridges, off the
+  main thread as the app starts and cached for the next launch (`fieldsPrime.ts`, `fieldsCache.ts`: their headers);
+  the mount waits for them.
+- **Soft edges** (NH's coast is round): the data and the objects stay on tiles, only the drawn edge is round: the
+  coast, the beach, the fresh water and the paths on half a tile, a staircase of tiles cut to a straight diagonal; a
+  cliff's corner on a third of a tile; a river runs out to the sea square. The editor's plan stays tile-exact; its 3D
+  preview is the same ground.
+- **The river's turns** (`layout/river.ts`, its header has the rules): each river's main stem drawn as a **straight** for a run
+  of tiles one way and **one arc** through a staircase between two, of one breadth, the arcs kept on the river's own tiles and straight at a bridge; a delta keeps its
+  tiles. Walking, fishing and casts go by tiles. The editor marks it on the plan (`かわの せん`); `/editor?check` lists
+  the arcs (かわの カーブ).
+- **The look is baked on the GPU** (`world3d/terrain.ts`): one shader paints each band from the fields and the tiles,
+  NH's way, at load and again only for what a change touches; the season's palette (`ground.look`) rebakes it all.
+- **Bands:** a row of chunks (8 tile rows) is one band: 4 draws and one texture each, so the draws stay flat however
+  long the island grows; bands out of view are culled. The island renders at the 30 fps cap ([perf](ops/perf.md)).
+- **The water:** NH's sea round the island (the shore foam, the shallows' turquoise ~70u out then a ~200u fade into
+  the deep blue, so a fish's shadow reads across the fishing range); NH's waves washing ashore (`layout/swash.ts`, design.md "The sea's
+  wash": one rhythm on the ground, the sea's shader and the CPU, so what washes in rides a wave); the rivers' flow
+  along their stems hurrying white into a fall, the ponds' ripples, the falls' streaks (terrain.ts `FRESH_FRAG`), all
+  on water.ts's shared clock, tint and fog.
+- NH's textures: `npm run terrain-textures` (scripts/terrain-textures.ts) into `static/terrain/nh/*.webp`.
 
 ## The editor
 
@@ -398,12 +343,10 @@ plan, the e2e's; `?view=orbit` the 3D preview, `&eye=x,y,z&at=x,y,z` its camera)
 - **The homes:** `homePlaces(layout.current)` → `buildHome(style)` (`world3d/built.ts` createBuilt, with the bridges,
   stairs and ponds; rebuilt on `diff.homes`); a tap on `home-B` / `home-G` walks to its door and goes in to
   `/tent?home=B|G` (the campsite's to `/tent`); their lamps `homeTod`.
-- **The gameplay:** `island/site.svelte.ts` `site.on`: `island/layoutWorld.ts worldOf(layout)` derives every value
-  world.ts exports (`HOMES`, `CAMPSITE` / `BUILDINGS`, `CENTRE_STAGE` / `ARCH` / `CAKE`, `SEATS` / `PULLUP_AT`,
-  `SCENERY`, `DECOR_SLOTS`, `FLOWERS`, `GOAL_TREES`, `ROCK`, `TAPE_DECK`, `RIVER`, `POND` / `SPRING`, `CLIFF`, `BRIDGE`,
-  `SHORE_Z`, `LAND`, `SEA_BOX`, `BEACH_BOX`, `CAMS`, `LAWN_SPOTS` / `DIG_SPOTS`; `surfaceAt`, `freshWhere`, `inRiver`,
-  `onLand`, `onGrass`) and `setWorld` swaps them in (ES live bindings; a cache keys on `worldGen()`; a DOM overlay
-  reads `site.rev`). Before it's applied (and in the unit tests), world.ts's own.
+- **The gameplay:** `island/site.svelte.ts` `site.on`: `island/layoutWorld.ts worldOf(layout)` derives every place
+  world.ts exports (its homes, buildings, stage, seats, scenery, flowers, goal trees, waters, boxes, cameras and spots)
+  and `setWorld` swaps them in (ES live bindings; a cache keys on `worldGen()`; a DOM overlay reads `site.rev`). Before
+  it's applied (and in the unit tests), world.ts's own.
 - **The walk:** layout/nav.ts's (`nav.ts walkNav()`: the layout's grid with the island's named spots) for a tap;
   walkGraph.ts's geo for the idle walks and the visitors.
 - **The decorations:** Decor.svelte draws the layout's decoration objects as tap areas only (placeObjects draws them).
