@@ -48,9 +48,10 @@ describe('the ways in', () => {
         expect(p[0] > 20 && p[0] < PORTRAIT.W - 20 && p[1] > PORTRAIT.top && p[1] < PORTRAIT.H - PORTRAIT.bottom, `${b.id} from ${k}`).toBe(true);
       }
     }
+    // (G2's by a bay of its panels, its bench in its front band: 12)
     for (const room of new Set(BENCHES.map((b) => b.room).filter((r) => r !== 'hall'))) {
       const [x, z] = spot(`in:${room}`);
-      expect(Math.min(...BENCHES.filter((b) => b.room === room).map((b) => Math.hypot(b.x - x, b.z - z))), room).toBeLessThanOrEqual(60);
+      expect(Math.min(...BENCHES.filter((b) => b.room === room).map((b) => Math.hypot(b.x - x, b.z - z))), room).toBeLessThanOrEqual(room === 'G2' ? 120 : 60);
     }
   });
 });

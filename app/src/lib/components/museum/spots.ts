@@ -62,16 +62,16 @@ export const LINGER: readonly LingerPoint[] = [
   // the fossils: each room's heroes and rows; a pair in each
   look('F1', -66, -194, fossil('dunkleosteus'), 'dunkleosteus'), look('F1', -98, -200, fossil('ophthalmo-skull'), 'ophthalmo-skull'),
   look('F1', -98, -126, fossil('archelon-skull'), 'archelon-skull'), ...chat('F1', [-104, -161], [-92, -161]),
-  look('F2', -214, -112, fossil('t-rex-skull'), 't-rex-skull'), look('F2', -146, -112, fossil('t-rex-tail'), 't-rex-tail'),
-  look('F2', -200, -272, fossil('diplo-chest'), 'diplo-chest'), look('F2', -210, -220, fossil('stego-torso'), 'stego-torso'),
-  ...chat('F2', [-190, -58], [-178, -58]),
-  look('F3', -232, 14, fossil('brachio-chest'), 'brachio-chest'), look('F3', -210, 45, fossil('plesio-torso'), 'plesio-torso'),
-  look('F3', -210, 121, fossil('ptera-body'), 'ptera-body'), ...chat('F3', [-276, 159], [-264, 159]),
+  look('F2', -34, -332, fossil('t-rex-skull'), 't-rex-skull'), look('F2', 34, -332, fossil('t-rex-tail'), 't-rex-tail'),
+  look('F2', -20, -492, fossil('diplo-chest'), 'diplo-chest'), look('F2', -30, -440, fossil('stego-torso'), 'stego-torso'),
+  ...chat('F2', [-50, -286], [-38, -286]),
+  look('F3', 68, -236, fossil('brachio-chest'), 'brachio-chest'), look('F3', 90, -205, fossil('plesio-torso'), 'plesio-torso'),
+  look('F3', 90, -129, fossil('ptera-body'), 'ptera-body'), ...chat('F3', [24, -91], [36, -91]),
   // the gallery: the screen (G1) and the solemn painting (G2) up the middle, the panels from their bays, a pair in front
-  look('G1', 60, -222, art('wild-painting-left-half'), 'wild-painting-left-half'), look('G1', 52, -200, art('calm-painting'), 'calm-painting'),
-  look('G1', 96, -164, art('proper-painting'), 'proper-painting'), ...chat('G1', [66, -60], [78, -60]),
-  look('G2', 180, -222, art('solemn-painting'), 'solemn-painting'), look('G2', 150, -200, art('amazing-painting'), 'amazing-painting'),
-  look('G2', 210, -200, art('warm-painting'), 'warm-painting'), ...chat('G2', [206, -60], [218, -60])
+  look('G1', -240, -142, art('wild-painting-left-half'), 'wild-painting-left-half'), look('G1', -248, -120, art('calm-painting'), 'calm-painting'),
+  look('G1', -204, -84, art('proper-painting'), 'proper-painting'), ...chat('G1', [-234, 20], [-222, 20]),
+  look('G2', -240, 58, art('solemn-painting'), 'solemn-painting'), look('G2', -270, 80, art('amazing-painting'), 'amazing-painting'),
+  look('G2', -210, 80, art('warm-painting'), 'warm-painting'), ...chat('G2', [-214, 220], [-202, 220])
 ];
 
 /** Named spots (x, z) on open floor: 'entrance', 'desk' (before Blathers), 'room:<id>' (a room's middle), 'in:<id>' (just
@@ -79,7 +79,7 @@ export const LINGER: readonly LingerPoint[] = [
  *  <id> by its doorway to <from>, either way through), 'bench:<id>:<n>' (a seat's step), 'tank:<id>' (before a tank's glass), 'fossil:<id>', 'art:<id>' (before it). */
 export const SPOTS: ReadonlyMap<string, Pt> = (() => {
   const out = new Map<string, Pt>([['entrance', ENTRANCE], ['desk', [0, -12]]]);
-  const rooms: Record<RoomId, Pt> = { hall: [0, 30], bug: [-120, 60], fish: [120, 104], F1: [-42, -130], F2: [-180, -165], F3: [-240, 100], G1: [60, -132], G2: [180, -132] };
+  const rooms: Record<RoomId, Pt> = { hall: [0, 30], bug: [-120, 60], fish: [120, 104], F1: [-42, -130], F2: [0, -385], F3: [60, -150], G1: [-240, -30], G2: [-240, 148] };
   for (const [id, p] of Object.entries(rooms)) out.set(`room:${id}`, p);
   for (const o of OPENINGS) {
     const m = (o.from + o.to) / 2;

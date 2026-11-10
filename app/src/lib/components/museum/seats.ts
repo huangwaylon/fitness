@@ -5,7 +5,7 @@
 // at the museum's scale. The sitting itself is the rooms' (rooms/seating.ts).
 import { anchorsOf, shapeOf, type Anchor } from '../villager3d/seats3d.ts';
 import type { RoomSeat } from '../rooms/seating.ts';
-import type { Pt, Rect, RoomId } from './plan.ts';
+import { F2, G1, G2, type Pt, type Rect, type RoomId } from './plan.ts';
 
 /** A bench: its id (a seat's piece on the relay: the `tent` intent's `seat`), its room, its middle (x, z), its turn
  *  (three's yaw: 0 its front toward +z, π toward −z). */
@@ -17,9 +17,9 @@ export const BENCHES: readonly Bench[] = [
   { id: 'dmbench2', room: 'fish', x: 152, z: 16, yaw: Math.PI },
   { id: 'hbench1', room: 'hall', x: -42, z: 54, yaw: 0 },
   { id: 'hbench2', room: 'hall', x: 42, z: 54, yaw: 0 },
-  { id: 'g1bench', room: 'G1', x: 88, z: -72, yaw: 0 },
-  { id: 'g2bench', room: 'G2', x: 163, z: -72, yaw: 0 },
-  { id: 'f2bench', room: 'F2', x: -132, z: -136, yaw: -Math.PI / 2 }
+  { id: 'g1bench', room: 'G1', x: G1.x0 + 88, z: G1.z0 + 178, yaw: 0 },
+  { id: 'g2bench', room: 'G2', x: G2.x0 + 43, z: G2.z0 + 178, yaw: 0 },
+  { id: 'f2bench', room: 'F2', x: F2.x0 + 100, z: F2.z0 + 216, yaw: -Math.PI / 2 }
 ];
 /** A bench's floor (its model's, about: benches.ts measures it), turned with it. */
 export const BENCH_HALF: Pt = [11, 6];

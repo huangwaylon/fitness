@@ -69,7 +69,7 @@ export const packOf = (id: string): string => {
   return 'fossils';
 };
 
-// ---- where everything stands (the fossil rooms: plan.ts F1 and F2 from the hall's back-left arch, F3 off the bug garden) ----
+// ---- where everything stands (the fossil rooms, plan.ts: F1 from the hall's back-left arch, F3 from its back-right, F2 behind both) ----
 //   F1   NH's room 1, early life: its hero (the dunkleosteus, bigger, on a plinth on the back wall at the head of the
 //        runner from the hall's arch), the small skeletons (two pieces each) in rows on the left, each with a case
 //        beside it, a row of four cases between; a column of cases on the right
@@ -90,15 +90,15 @@ const PLINTH_W = 32, PLINTH_H = 3;
  *  back). */
 interface Place { room: RoomId; slot: Slot; u: number; v: number; turn?: 1 | -1 }
 const PLACES: readonly Place[] = [
-  // F1: the two small skeletons along the back wall with two cases; before them the hero over the runner (u 66..90),
-  // the cases in short staggered rows on the left, a column on the right, two more small skeletons
+  // F1: two small skeletons along the back wall (F2's door beside them, u 92..116); before them the hero over the
+  // runner (u 66..90), the cases in short staggered rows on the left, a column on the right, two more small skeletons
   { room: 'F1', slot: 'pachy', u: 20, v: 14 }, { room: 'F1', slot: 'dimetrodon', u: 62, v: 14 },
-  { room: 'F1', slot: 'dinosaur-track', u: 92.5, v: 14 }, { room: 'F1', slot: 'juramaia', u: 107.5, v: 14 },
   { room: 'F1', slot: HERO, u: 78, v: 60 },
   { room: 'F1', slot: 'ophthalmo', u: 24, v: 54 },
-  { room: 'F1', slot: 'shark-tooth-pattern', u: 12, v: 92 }, { room: 'F1', slot: 'coprolite', u: 46, v: 92 },
+  { room: 'F1', slot: 'shark-tooth-pattern', u: 12, v: 92 }, { room: 'F1', slot: 'coprolite', u: 46, v: 92 }, { room: 'F1', slot: 'juramaia', u: 61, v: 92 },
   { room: 'F1', slot: 'archelon', u: 22, v: 126 }, { room: 'F1', slot: 'archaeopteryx', u: 56, v: 126 },
   { room: 'F1', slot: 'eusthenopteron', u: 20, v: 160 }, { room: 'F1', slot: 'ammonite', u: 37, v: 160 }, { room: 'F1', slot: 'acanthostega', u: 54, v: 160 },
+  { room: 'F1', slot: 'dinosaur-track', u: 12, v: 194 },
   { room: 'F1', slot: 'anomalocaris', u: 108, v: 80 },
   { room: 'F1', slot: 'myllokunmingia', u: 108, v: 110 }, { room: 'F1', slot: 'amber', u: 108, v: 140 },
   { room: 'F1', slot: 'australopith', u: 108, v: 170 }, { room: 'F1', slot: 'trilobite', u: 108, v: 200 },
@@ -114,7 +114,7 @@ const PLACES: readonly Place[] = [
   { room: 'F3', slot: 'iguanodon', u: 27.5, v: 84 }, { room: 'F3', slot: 'quetzal', u: 92.5, v: 84 },
   { room: 'F3', slot: 'parasaur', u: 27.5, v: 122 }, { room: 'F3', slot: 'ptera', u: 92.5, v: 122 },
   { room: 'F3', slot: 'ankylo', u: 27.5, v: 160 }, { room: 'F3', slot: 'megacero', u: 92.5, v: 160 },
-  { room: 'F3', slot: 'mammoth', u: 22, v: 198 }, { room: 'F3', slot: 'sabertooth', u: 98, v: 198 }
+  { room: 'F3', slot: 'mammoth', u: 18, v: 198 }, { room: 'F3', slot: 'sabertooth', u: 98, v: 198 }
 ];
 const ORIGIN: Readonly<Record<string, Rect>> = { F1, F2, F3 };
 const isStand = (s: Slot) => !(s in ROW) && !ON_BASE.has(s);

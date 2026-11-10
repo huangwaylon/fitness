@@ -5,11 +5,13 @@
 //   hall      12 × 16 round the middle, its front door at +z, an arch in each side wall and two in its back wall
 //   bug       through the left arch, 12 × 20: the garden under glass
 //   fish      through the right arch, 12 × 20: the aquarium's tanks, the sea creatures' among them
-//   F1 F2     through the back-left arch: F1 12 × 22 (the standalone fossils, the small skeletons), F2 12 × 25 (the
-//             big skeletons round the T. rex) through F1's left wall
-//   F3        through the bug garden's left wall, 12 × 22 (the rest of the skeletons): one rect can't meet both F2's
-//             left wall (x −240) and the bug garden's (x −180), so the fossils are no loop
-//   G1 G2     through the back-right arch, in a line, 12 × 20 each: the paintings and the statues
+//   F1 F2 F3  the fossils, NH's loop: F1 12 × 22 (the standalone fossils, the small skeletons) through the back-left
+//             arch, F3 12 × 22 (the rest of the skeletons) through the back-right, F2 12 × 25 (the big skeletons round
+//             the T. rex) behind both, its two doorways in its front wall (each a way back, toward F1 and F3): hall >
+//             F1 > F2 > F3 > hall
+//   G1 G2     through the bug garden's left (far) wall, each its own doorway, 12 × 20 each: the paintings and the
+//             statues (G2 in front of G1, entered by a bay of its panels: two rooms 20 deep can't both meet the
+//             garden's wall in their front bands)
 // No doorway on in a room's front wall (the screen's foot, under the HUD): each room's ways on are in its side or back
 // walls; any room two doorways from the hall at most (plan.test).
 // Its rooms (one rect each), its walls (made from the rooms: each side's room, for its look),
@@ -30,10 +32,10 @@ export const HALL: Rect = { x0: -60, x1: 60, z0: -50, z1: 110 };
 export const BUG_WING: Rect = { x0: -180, x1: -60, z0: -50, z1: 150 };
 export const FISH_WING: Rect = { x0: 60, x1: 180, z0: -50, z1: 150 };
 export const F1: Rect = { x0: -120, x1: 0, z0: -270, z1: -50 };
-export const F2: Rect = { x0: -240, x1: -120, z0: -300, z1: -50 };
-export const F3: Rect = { x0: -300, x1: -180, z0: -20, z1: 200 };
-export const G1: Rect = { x0: 0, x1: 120, z0: -250, z1: -50 };
-export const G2: Rect = { x0: 120, x1: 240, z0: -250, z1: -50 };
+export const F2: Rect = { x0: -60, x1: 60, z0: -520, z1: -270 };
+export const F3: Rect = { x0: 0, x1: 120, z0: -270, z1: -50 };
+export const G1: Rect = { x0: -300, x1: -180, z0: -170, z1: 30 };
+export const G2: Rect = { x0: -300, x1: -180, z0: 30, z1: 230 };
 /** Every room's floor (no two overlap). */
 export const ROOMS: readonly { id: RoomId; wing: Wing; r: Rect }[] = [
   { id: 'hall', wing: 'hall', r: HALL }, { id: 'bug', wing: 'bug', r: BUG_WING }, { id: 'fish', wing: 'fish', r: FISH_WING },
@@ -51,7 +53,7 @@ export function boundsOf(id: RoomId): Rect {
 }
 /** The openings in the hall's side walls (z), to the bug wing and the aquarium. */
 export const OPENING = { z0: -5, z1: 25 } as const;
-/** The openings in the hall's back wall (x, either side of the middle), to the fossils (−) and the art (+). */
+/** The openings in the hall's back wall (x, either side of the middle), to the fossils' F1 (−) and F3 (+). */
 export const BACK_OPENING = { x0: 30, x1: 54 } as const;
 /** A doorway between two rooms: the wall it's in (x = `at` for 'x', z = `at` for 'z'), its span along the wall, the
  *  room it's counted to (`room`, the side one comes from: the hall's, then each room's on along the line), the room
@@ -62,10 +64,13 @@ export const OPENINGS: readonly Opening[] = [
   door('x', HALL.x0, OPENING.z0, OPENING.z1, 'hall', 'bug'),
   door('x', HALL.x1, OPENING.z0, OPENING.z1, 'hall', 'fish'),
   door('z', HALL.z0, -BACK_OPENING.x1, -BACK_OPENING.x0, 'hall', 'F1'),
-  door('z', HALL.z0, BACK_OPENING.x0, BACK_OPENING.x1, 'hall', 'G1'),
-  door('x', F1.x0, -95, -65, 'F1', 'F2'),
-  door('x', G1.x1, -95, -65, 'G1', 'G2'),
-  door('x', BUG_WING.x0, OPENING.z0, OPENING.z1, 'bug', 'F3')
+  door('z', HALL.z0, BACK_OPENING.x0, BACK_OPENING.x1, 'hall', 'F3'),
+  // (the loop's far side: F2 behind F1 and F3, by their back walls; each its way back in F2's front wall)
+  door('z', F1.z0, -28, -4, 'F1', 'F2'),
+  door('z', F3.z0, 4, 28, 'F3', 'F2'),
+  // (the gallery off the bug garden's far wall: G1 by its front band at the garden's stone path, G2 by a bay of its panels)
+  door('x', BUG_WING.x0, G1.z0 + 155, G1.z0 + 185, 'bug', 'G1'),
+  door('x', BUG_WING.x0, G2.z0 + 68, G2.z0 + 92, 'bug', 'G2')
 ];
 /** The front door's half width (its gap in the hall's front wall) and its height. */
 export const DOOR_HALF = 12, DOOR_H = 32;
@@ -120,17 +125,17 @@ export const CARPETS: readonly { room: RoomId; rects: readonly Rect[] }[] = [
   { room: 'hall', rects: [
     { x0: -12, x1: 12, z0: DESK.z1, z1: HALL.z1 }
   ] },
-  // F1: up the middle from the hall's arch to the hero's plinth, a branch to F2's door
-  { room: 'F1', rects: [{ x0: -54, x1: -30, z0: -194, z1: F1.z1 }, { x0: F1.x0, x1: -54, z0: -94, z1: -70 }] },
-  // F2: from F1's door across its front band and up to the T. rex's island (its own green rug: ISLAND_RUG)
-  { room: 'F2', rects: [{ x0: -192, x1: F2.x1, z0: -90, z1: -66 }, { x0: -192, x1: -168, z0: -120, z1: -90 }] },
-  // the gallery: a mat in from the arch (the door), and from G1's door into G2
-  { room: 'G1', rects: [{ x0: 30, x1: 54, z0: -64, z1: G1.z1 }] },
-  { room: 'G2', rects: [{ x0: G2.x0, x1: 150, z0: -95, z1: -65 }] }
+  // F1: up the middle from the hall's arch to the hero's plinth
+  { room: 'F1', rects: [{ x0: -54, x1: -30, z0: -194, z1: F1.z1 }] },
+  // F2: across its front band from F1's door to F3's, and up the middle to the T. rex's island (its own green rug: ISLAND_RUG)
+  { room: 'F2', rects: [{ x0: -28, x1: 28, z0: F2.z1 - 24, z1: F2.z1 }, { x0: -12, x1: 12, z0: -340, z1: F2.z1 - 24 }] },
+  // the gallery: a mat in from each one's door
+  { room: 'G1', rects: [{ x0: BUG_WING.x0 - 18, x1: BUG_WING.x0, z0: G1.z0 + 155, z1: G1.z0 + 185 }] },
+  { room: 'G2', rects: [{ x0: BUG_WING.x0 - 18, x1: BUG_WING.x0, z0: G2.z0 + 68, z1: G2.z0 + 92 }] }
 ];
 
 /** The green rug under the T. rex's island in the middle of F2. */
-export const ISLAND_RUG: Rect = { x0: -218, x1: -142, z0: -150, z1: -120 };
+export const ISLAND_RUG: Rect = { x0: -38, x1: 38, z0: -370, z1: -340 };
 
 /** A wall: from a to b (x, z) and its height (each side looks as the room it faces: roomBeside). */
 export interface Wall { a: Pt; b: Pt; h: number }
@@ -311,17 +316,29 @@ export function nearestOpen(g: Nav, x: number, z: number): Pt | null {
   return best;
 }
 
-/** Whether a straight walk from a to b keeps to open cells. */
+/** Whether a straight walk from a to b keeps to open cells: every cell the segment passes through, a corner's both
+ *  neighbours (a grid walk, not samples: a sample a quarter cell apart could step over a jamb's corner). */
 function clear(g: Nav, a: Pt, b: Pt): boolean {
-  // (a quarter cell apart: at half, a leg could clip a doorway's jamb between its samples)
-  const n = Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / (CELL / 4));
-  for (let k = 0; k <= n; k++) {
-    const t = n ? k / n : 0;
-    if (!walkable(g, a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)) return false;
+  let [i, j] = cellOf(a[0], a[1]);
+  const [ei, ej] = cellOf(b[0], b[1]);
+  const dx = b[0] - a[0], dz = b[1] - a[1], si = Math.sign(dx), sj = Math.sign(dz);
+  const open = (ci: number, cj: number) => ci >= 0 && cj >= 0 && ci < g.cols && cj < g.rows && g.open[cj * g.cols + ci] === 1;
+  // (the segment's parameter at its next vertical and horizontal cell edge, and the step between them)
+  const edge = (p: number, d: number, k: number, o: number) => (d === 0 ? Infinity : ((o + (k + (d > 0 ? 1 : 0)) * CELL) - p) / d);
+  let tx = edge(a[0], dx, i, X0), tz = edge(a[1], dz, j, Z0);
+  const sx = dx === 0 ? Infinity : CELL / Math.abs(dx), sz = dz === 0 ? Infinity : CELL / Math.abs(dz);
+  if (!open(i, j)) return false;
+  for (let n = 0; (i !== ei || j !== ej) && n < 4 * (g.cols + g.rows); n++) {
+    if (Math.abs(tx - tz) < 1e-9) {
+      // (through a corner: both cells beside it as well as the one across)
+      if (!open(i + si, j) || !open(i, j + sj)) return false;
+      i += si, j += sj, tx += sx, tz += sz;
+    } else if (tx < tz) (i += si), (tx += sx);
+    else (j += sj), (tz += sz);
+    if (!open(i, j)) return false;
   }
   return true;
 }
-
 /** A walk from `from` to `to` (snapped to the nearest open point): its points after `from`, its corners pulled
  *  straight; [] when there's none (or nowhere to go). */
 export function walkPath(g: Nav, from: Pt, to: Pt): Pt[] {

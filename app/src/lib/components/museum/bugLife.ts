@@ -22,9 +22,9 @@ export const BUG_S = 1.9;
 // ---------- the garden (the bug wing's model units; laid out from its back-left corner, u across, v toward the front) ----------
 //   v   0-18   four glass cases along the back wall
 //      18-52   the two oaks (the room's hero, framed from the hall's arch), a row of flowers between them
-//      52-68   the stone path in from the hall's arch (the right wall) across the room
-//      68-200  a path down the middle; left of it a row of flowers, the pond, hydrangeas, cacti, the fallen log and
-//              ferns; right of it the rest of the flowers, the flower bed, the bushes, the palm and the fifth case
+//      52-68   the stone path in from the hall's arch (the right wall) across the room to G1's door (the left wall)
+//      68-200  a path down the middle; left of it a row of flowers, the pond, G2's door, the fallen log and ferns;
+//              right of it the rest of the flowers, the flower bed, the bushes, the hydrangeas, the palm and the fifth case
 
 const GX = BUG_WING.x0, GZ = BUG_WING.z0;
 const at = (u: number, v: number): Pt => [GX + u, GZ + v];
@@ -55,7 +55,7 @@ export const FLOWERS: [string, number, number][] = (
 const FLOWER_TOP = 6.7, FLOWER_HALF = 5;
 /** The garden's props: [model, x, z, scale, yaw]. */
 export const PROPS: [string, number, number, number, number][] = (
-  [['flower-bed', 92, 112, 1, 0], ['bushes', 106, 150, 0.4, 0], ['hydrangeas', 15, 158, 0.8, 0], ['autumn-log', 36, 184, 0.9, 0], ['logs-ferns', 12, 186, 1, 0]] as const
+  [['flower-bed', 92, 112, 1, 0], ['bushes', 106, 150, 0.4, 0], ['hydrangeas', 106, 172, 0.55, 0], ['autumn-log', 36, 184, 0.9, 0], ['logs-ferns', 12, 186, 1, 0]] as const
 ).map(([name, u, v, s, yaw]) => [name, ...at(u, v), s, yaw]);
 /** The soil patches drawn on the grass ([x, z], radius): the ground crawlers keep to them (GROUND). */
 export const SOIL: [number, number, number][] = ([[40, 162, 9], [112, 82, 7], [8, 23, 7]] as const).map(([u, v, r]) => [...at(u, v), r]);
@@ -108,7 +108,7 @@ const GRASS: Patch[] = [lbox(32, 52, 147, 155, 0), lbox(68, 88, 134, 166, 0), lb
 /** The soil by the log, by the long row's end and in the far corner under the first oak: the ground crawlers'. */
 const GROUND: Patch[] = [lbox(28, 52, 160, 167, 0), lbox(106, 118, 72, 92, 0), lbox(2, 14, 18, 28, 0)];
 /** The bushes' tops (the leaf crawlers': the snail, the walking leaf). */
-const LEAVES: { on: string; at: Patch }[] = [{ on: 'bushes', at: lbox(100, 112, 146, 154, 0) }, { on: 'hydrangeas', at: lbox(9, 21, 154, 162, 0) }];
+const LEAVES: { on: string; at: Patch }[] = [{ on: 'bushes', at: lbox(100, 112, 146, 154, 0) }, { on: 'hydrangeas', at: lbox(102, 110, 168, 176, 0) }];
 for (const l of LEAVES) l.at.l0 = l.at.l1 = solid(l.on).y1 - 0.6;
 /** The row by the oak's flower heads (the stink bugs amble over them). */
 const ROW = lbox(42, 78, 44, 48, FLOWER_TOP);

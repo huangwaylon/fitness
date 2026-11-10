@@ -16,12 +16,12 @@ const overlap = (a: Rect, b: Rect) => Math.min(a.x1, b.x1) > Math.max(a.x0, b.x0
 const doorOf = (r: RoomId) => OPENINGS.find((o) => o.next === r)!;
 
 describe('the rooms', () => {
-  test('the hall as the engine builds it, every room a portrait room 12 across (the camera shows it whole), all within ±300 (the relay keeps ±320), none over another', () => {
+  test('the hall as the engine builds it, every room a portrait room 12 across (the camera shows it whole), all within ±540 (the relay keeps ±560), none over another', () => {
     expect(HALL).toEqual({ x0: -60, x1: 60, z0: -50, z1: 110 });
     const size = (id: RoomId) => ((b) => [(b.x1 - b.x0) / 10, (b.z1 - b.z0) / 10])(rectsOf(id)[0]);
     expect(Object.fromEntries(ROOM_IDS.map((id) => [id, size(id)]))).toEqual({ hall: [12, 16], bug: [12, 20], fish: [12, 20], F1: [12, 22], F2: [12, 25], F3: [12, 22], G1: [12, 20], G2: [12, 20] });
     for (const id of ROOM_IDS) expect(boundsOf(id).x1 - boundsOf(id).x0, id).toBe(120);
-    for (const { r } of ROOMS) for (const v of [r.x0, r.x1, r.z0, r.z1]) expect(Math.abs(v)).toBeLessThanOrEqual(300);
+    for (const { r } of ROOMS) for (const v of [r.x0, r.x1, r.z0, r.z1]) expect(Math.abs(v)).toBeLessThanOrEqual(540);
     for (let i = 0; i < ROOMS.length; i++) for (let k = i + 1; k < ROOMS.length; k++) expect(overlap(ROOMS[i].r, ROOMS[k].r), `${ROOMS[i].id} ${ROOMS[k].id}`).toBe(false);
     // (one rect a room: no way in beside another room, nothing round a corner)
     expect(new Set(ROOMS.map((r) => r.id)).size).toBe(ROOMS.length);
@@ -29,7 +29,7 @@ describe('the rooms', () => {
     // (the relay's own check: every room's corners a museum walk's point, contract/live-protocol.ts MUSEUM_U)
     for (const { id, r } of ROOMS) for (const to of [[r.x0, r.z0], [r.x1, r.z1]]) expect(parseClient(JSON.stringify({ v: LIVE_V, kind: 'tent', in: true, to, sc: 'm' })), `${id} ${to}`).not.toBeNull();
   });
-  test('each doorway in the wall its two rooms share, a step wide or more, none on in a front wall; any room two doorways from the hall at most (F3 off the bug garden)', () => {
+  test('each doorway in the wall its two rooms share, a step wide or more, none on in a front wall; any room two doorways from the hall at most; the fossils a loop, the gallery off the bug garden', () => {
     for (const o of OPENINGS) {
       expect(o.to - o.from, `${o.room}>${o.next}`).toBeGreaterThanOrEqual(24);
       for (const id of [o.room, o.next]) {
@@ -44,7 +44,11 @@ describe('the rooms', () => {
     for (let k = 0; k < 5; k++)
       for (const o of OPENINGS)
         for (const [a, b] of [[o.room, o.next], [o.next, o.room]] as const) if (depth[a] !== undefined && (depth[b] === undefined || depth[b]! > depth[a]! + 1)) depth[b] = depth[a]! + 1;
-    expect(depth).toEqual({ hall: 0, bug: 1, fish: 1, F1: 1, G1: 1, F2: 2, G2: 2, F3: 2 });
+    expect(depth).toEqual({ hall: 0, bug: 1, fish: 1, F1: 1, F3: 1, F2: 2, G1: 2, G2: 2 });
+    // (the fossils a loop, NH's: the hall > F1 > F2 > F3 > the hall; the gallery's rooms each off the bug garden)
+    const joined = (a: RoomId, b: RoomId) => OPENINGS.some((o) => (o.room === a && o.next === b) || (o.room === b && o.next === a));
+    for (const [a, b] of [['hall', 'F1'], ['F1', 'F2'], ['F2', 'F3'], ['F3', 'hall'], ['bug', 'G1'], ['bug', 'G2']] as const) expect(joined(a, b), `${a}-${b}`).toBe(true);
+    expect(joined('F1', 'F3')).toBe(false);
   });
   test('every room closed but for its doorways (and the front door): along each rect’s edge between two rooms, or a room and outside, a wall', () => {
     const covered = (x: number, z: number) => WALLS.some((w) => (w.a[0] === w.b[0] ? x === w.a[0] && z >= Math.min(w.a[1], w.b[1]) && z <= Math.max(w.a[1], w.b[1]) : z === w.a[1] && x >= Math.min(w.a[0], w.b[0]) && x <= Math.max(w.a[0], w.b[0])));
@@ -172,6 +176,7 @@ describe('the walk (everything on show)', () => {
     // (the grid round every room: the far corners walkable)
     for (const id of ROOM_IDS) for (const r of rectsOf(id)) expect(walkable(navOf(), r.x0 + 8, r.z1 - 8), id).toBe(true);
     expect(walkPath(g, ENTRANCE, ENTRANCE)).toEqual([]);
-    expect(doorOf('F3').room).toBe('bug');
+    expect(doorOf('F3').room).toBe('hall');
+    expect(doorOf('G2').room).toBe('bug');
   });
 });

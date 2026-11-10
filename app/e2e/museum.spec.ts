@@ -124,20 +124,19 @@ test('only the room my villager is in is drawn: a put changes it at once, a walk
     return Math.hypot(x - bx, z - bz);
   }, { timeout: 10_000 }).toBeLessThan(2);
   await expect.poll(room, { timeout: 10_000 }).toBe('bug');
-  // the fossils: F1, then through its side door F2 (a fade, not a put); F3 through the bug garden's far wall, and back
+  // the fossils' loop, walked (each a fade, not a put): F1, F2 behind it, F3, and out to the hall by its back-right arch
   await putAt(page, 'room:F1');
   expect(await room()).toBe('F1');
-  await walkToSpot(page, 'in:F2');
-  await expect.poll(room, { timeout: 15_000 }).toBe('F2');
-  await putAt(page, 'room:bug');
-  await walkToSpot(page, 'in:F3');
-  await expect.poll(room, { timeout: 15_000 }).toBe('F3');
-  await walkToSpot(page, 'in:bug:F3');
-  await expect.poll(room, { timeout: 15_000 }).toBe('bug');
-  // the gallery's two rooms the same
-  await putAt(page, 'room:G1');
-  await walkToSpot(page, 'in:G2');
-  await expect.poll(room, { timeout: 15_000 }).toBe('G2');
+  for (const [to, from] of [['F2', 'F1'], ['F3', 'F2'], ['hall', 'F3']] as const) {
+    await walkToSpot(page, `in:${to}:${from}`);
+    await expect.poll(room, { timeout: 15_000 }).toBe(to);
+  }
+  // the gallery's two rooms, each off the bug garden's far wall
+  for (const g of ['G1', 'G2']) {
+    await putAt(page, 'room:bug');
+    await walkToSpot(page, `in:${g}`);
+    await expect.poll(room, { timeout: 15_000 }).toBe(g);
+  }
 });
 
 /** From a way in, a tap on the doorway to `to` at `where` (its floor's middle, half a tile in; its plaque's middle; its
@@ -158,13 +157,15 @@ async function through(page: Page, from: string, to: string, where: 'floor' | 'p
 
 test('a tap on each of the hall’s arches at its floor’s middle walks through it (a back arch’s floor isn’t the side arch’s, whose card and flag stand over it)', async ({ page }) => {
   await open(page);
-  for (const to of ['F1', 'G1', 'bug', 'fish']) await through(page, 'entrance', to, 'floor');
+  for (const to of ['F1', 'F3', 'bug', 'fish']) await through(page, 'entrance', to, 'floor');
 });
 
 test('a tap on a doorway (its card, its plaque, the floor before it) always walks through it, into the next room', async ({ page }) => {
   await open(page);
-  // (the bug garden's way on to F3, in its side wall)
-  for (const where of ['card', 'plaque', 'floor'] as const) await through(page, 'in:bug:F3', 'F3', where);
+  // (the bug garden's ways on to the gallery, in its side wall; F1's on to F2, in its back wall, from beside it: in front of it my villager would take the tap)
+  for (const where of ['card', 'plaque', 'floor'] as const) await through(page, 'in:bug:G1', 'G1', where);
+  for (const where of ['card', 'plaque', 'floor'] as const) await through(page, 'in:bug:G2', 'G2', where);
+  for (const where of ['card', 'plaque', 'floor'] as const) await through(page, 'fossil:dimetrodon-skull', 'F2', where);
 });
 
 test('the floor near a doorway is the room’s: two tiles in from any doorway a tap stays in the room', async ({ page }) => {
@@ -175,7 +176,7 @@ test('the floor near a doorway is the room’s: two tiles in from any doorway a 
     await putAt(page, `room:${r}`);
     await expect.poll(() => mu<boolean>(page, 'still()'), { timeout: 10_000 }).toBe(true);
     for (const d of await mu<Door[]>(page, 'doorways()')) {
-      // (before its middle and toward either end: F1's left column, G1's right floor)
+      // (before its middle and toward either end: F1's left column, F3's floor)
       const along: [number, number] = [Math.abs(d.inward[1]), Math.abs(d.inward[0])];
       for (const k of [-10, 0, 10]) {
         const at: [number, number] = [d.at[0] + d.inward[0] * 20 + along[0] * k, d.at[1] + d.inward[1] * 20 + along[1] * k];
@@ -198,7 +199,7 @@ test('the floor near a doorway is the room’s: two tiles in from any doorway a 
 
 test('a plaque naming the hall over every way back to it, whole on the screen from the way in', async ({ page }) => {
   await open(page);
-  for (const r of ['bug', 'fish', 'F1', 'G1']) {
+  for (const r of ['bug', 'fish', 'F1', 'F3']) {
     await putAt(page, `in:${r}:hall`);
     await expect.poll(() => mu<boolean>(page, 'still()'), { timeout: 10_000 }).toBe(true);
     const d = await doorTo(page, 'hall');

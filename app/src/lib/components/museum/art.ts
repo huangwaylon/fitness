@@ -29,7 +29,7 @@ export function artOnShow(finds: ReadonlyMap<string, FirstFind>): ArtOnShow[] {
   return out;
 }
 
-// ---- where each hangs or stands (the gallery's two rooms: plan.ts G1, G2, in a line from the hall's back-right arch) ----
+// ---- where each hangs or stands (the gallery's two rooms: plan.ts G1, G2, each off the bug garden's far wall) ----
 // Each room NH's way for a portrait screen: its paintings only on faces toward +z (the camera looks along −z), on its
 // back wall (the tallest there, the room's hero: G1 the wild painting's screen between the two hanging scrolls, G2 the
 // solemn painting) and on three rows of low panels across it, each row a panel from either side wall with a 3-tile

@@ -941,17 +941,20 @@ out.
 - **Rooms** (`plan.ts`): one floor of portrait rooms, each one rect, 12 tiles across (the screen's way) and deeper the
   other. The hall (12 × 16): marble, a red runner from the door to Blathers' desk at the back, the owl's medallion
   between the side arches, plants, two benches. Left arch: the bug garden (12 × 20); right arch: the aquarium (12 × 20,
-  the sea creatures' tanks among its fish tanks); back arches either side of the desk: the fossils (F1 12 × 22, on to F2
-  12 × 25 through F1's left wall) and the gallery (G1 → G2, 12 × 20 each). F3 (12 × 22) is entered from the bug garden's
-  left wall. **No loop:** F2, F3 and G2 are dead ends, any room at most two doorways from the hall, no doorway on in a
-  room's front wall (the screen's foot, under the HUD) (plan.test). Benches in the hall, the aquarium (facing the great
+  the sea creatures' tanks among its fish tanks). **The fossils a loop** (NH's, approved 2026-11-11): the back-left arch
+  to F1 (12 × 22), the back-right to F3 (12 × 22), F2 (12 × 25) behind both, its two doorways in its front wall (each a
+  way back): hall > F1 > F2 > F3 > hall. The gallery (G1, G2, 12 × 20 each) off the bug garden's far (left) wall, each
+  its own doorway: G1 by its front band where the garden's stone path ends, G2 (in front of G1) by a bay of its panels.
+  Any room at most two doorways from the hall, no doorway on in a room's front wall (the screen's foot, under the HUD)
+  (plan.test). The museum spans ±540 (live-protocol MUSEUM_U ±560 since 2026-11-11; an older phone drops a walk past
+  ±320, presence only). Benches in the hall, the aquarium (facing the great
   tank), each gallery room and beside the T. rex. NH's own floors and walls; no two faces share a plane
   (surfaces.test). The e2e puts my villager at named spots (`spots.ts`, `__museum.spot(name)`); LINGER is the visitors'
   places.
 - **Plaques:** a lintel and a plaque over each doorway naming the room beyond in spaced kana (む し, さ か な, か せ き 2,
   び じゅ つ 2…), cream on walnut; the hall's back arches' under the cornice, a side doorway's a flag at its front jamb
   standing out toward the camera (camera.ts plaqueOf). Every way back to the hall says はくぶつかん (at a cut front
-  wall's foot in F1 and G1: hud.ts plaqueInView). Every plaque of a room is whole on screen from each of its ways in
+  wall's foot in F1 and F3: hud.ts plaqueInView). Every plaque of a room is whole on screen from each of its ways in
   (camera.test, hud.test).
 - **The camera** (`camera.ts`): NH's room view for the portrait phone: the whole room across (VIEW_W its width and a
   tile), x fixed at its middle, its back wall's top under the back button and its front edge over the HUD; a room that
@@ -1015,7 +1018,7 @@ out.
 - **The sea creatures** (`seaTanks.ts`, `seaLife.ts`): all at once in the aquarium's reef tank (right wall) and tide
   pool (a low island in the middle); NH's museum-tank models where NH has one, the catch model otherwise.
 - **The fossils** (`fossils.ts`, `fossilWing.ts`): NH's 73 as NH's models (pieces ×0.85, F3's ×0.75). F1 the early life
-  (the dunkleosteus ×1.3 at the head of the runner, two small skeletons and cases on its back wall, rows of stands); F2
+  (the dunkleosteus ×1.3 at the head of the runner, two small skeletons on its back wall by F2's door, rows of stands); F2
   the diplodocus on the back wall, a skeleton by either wall, the T. rex alone in the middle on its rug; F3 the rest
   round a 2-tile aisle to the brachiosaurus on its back wall. A skeleton's pieces stand in a row, each where it joins
   the next; once all are in the animal is whole. Spacing and reach: fossils.test.

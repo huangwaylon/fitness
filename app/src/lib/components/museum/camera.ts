@@ -23,7 +23,7 @@ export const DEAD: Pt = [12, 30];
 /** A room that fits framed off the balance, this share of its spare rows moved: + down (its front edge toward the HUD:
  *  the hall, so no wide band of bare floor shows under its front wall), − up (its back wall's top toward the top bar:
  *  F1, so the hall's plaque at its cut front wall's foot clears the HUD's buttons). */
-const LEAN: Partial<Record<RoomId, number>> = { hall: 0.5, F1: -0.5 };
+const LEAN: Partial<Record<RoomId, number>> = { hall: 0.5, F1: -0.5, F3: -0.5 };
 /** The phone's screen and what covers it (css px): the top bar to its back button's foot, the HUD's height. */
 export interface Screen { W: number; H: number; top: number; bottom: number }
 export const PORTRAIT: Screen = { W: 393, H: 852, top: 110, bottom: 72 };
