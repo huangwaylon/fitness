@@ -6,6 +6,7 @@
 // changes, the old one drawn till the new one's in.
 import type { Group, Object3D } from 'three';
 import type { Layout } from '#lib/layout/model.ts';
+import type { Who } from '#lib/layout/homes.ts';
 import { pondPlaces } from '#lib/layout/ponds.ts';
 import { homePlaces } from './objects.ts';
 import { buildHome } from './home.ts';
@@ -28,9 +29,9 @@ interface Want {
 }
 
 /** The groups a layout has built, by id, each with its place's signature (a change rebuilds it). */
-export function builtWants(lay: Layout, heightOf: (x: number, z: number) => number): Map<string, Want> {
+export function builtWants(lay: Layout, heightOf: (x: number, z: number) => number, roomOf?: (who: Who) => number): Map<string, Want> {
   const want = new Map<string, Want>();
-  for (const p of homePlaces(lay))
+  for (const p of homePlaces(lay, roomOf))
     want.set(`home:${p.id}`, { key: JSON.stringify(p), make: () => buildHome(p.style), at: { x: p.x, z: p.z, yaw: p.yaw }, home: true });
   for (const p of structurePlaces(lay)) {
     // its origin on the lower ground: the lower of its two ends' (a bridge's banks, the stairs' foot)
@@ -50,8 +51,9 @@ export function builtWants(lay: Layout, heightOf: (x: number, z: number) => numb
 export const builtObject = (id: string): string => id.slice(id.indexOf(':') + 1);
 
 export interface Built {
-  /** The layout's groups: the gone ones taken away, the new and changed ones built (and placed once in). */
-  sync(lay: Layout, heightOf: (x: number, z: number) => number): void;
+  /** The layout's groups: the gone ones taken away, the new and changed ones built (and placed once in); `roomOf` each
+   *  home's room's size (its outside follows it: homes.ts exteriorOf). */
+  sync(lay: Layout, heightOf: (x: number, z: number) => number, roomOf?: (who: Who) => number): void;
   /** Each group in now, by id (a home's `home:` prefixed). */
   each(fn: (id: string, g: Object3D) => void): void;
   /** Nothing built from now on (the scene is going). */
@@ -64,8 +66,8 @@ export function createBuilt(place: (id: string, g: Object3D | null, at?: BuiltAt
   const built = new Map<string, { key: string; g: Object3D | null }>();
   let stopped = false;
   return {
-    sync(lay, heightOf) {
-      const want = builtWants(lay, heightOf);
+    sync(lay, heightOf, roomOf) {
+      const want = builtWants(lay, heightOf, roomOf);
       for (const id of built.keys()) if (!want.has(id)) {
         place(id, null);
         built.delete(id);

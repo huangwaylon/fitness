@@ -435,7 +435,7 @@ describe('the homes (layout/homes.ts)', () => {
       const at = w.door!;
       expect(at, wf).toHaveLength(3);
       expect(at[1], `${wf}: up its step`).toBeGreaterThan(1);
-      expect(Math.abs(at[0]), `${wf}: the player house's door in the middle, a villager's to the right`).toBe(wf.includes('pa04') ? 0 : 5);
+      expect(Math.abs(at[0]), `${wf}: the player house's door (its first level's too) in the middle, a villager's to the right`).toBe(/pa0[04]/.test(wf) ? 0 : 5);
       for (const [df, d] of doors) {
         const lo = d.min.map((n, i) => n + at[i]), hi = d.max.map((n, i) => n + at[i]);
         // inside the wall's bounds across, up and deep (no further out than its front, its porch's step)

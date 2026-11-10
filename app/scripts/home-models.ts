@@ -59,8 +59,8 @@ const add = (name: string, kind: Family['kind'], colour: string, parts: string[]
 };
 for (const d of folders.sort()) {
   let m: RegExpExecArray | null;
-  if ((m = /^HouseWall(N[A-D]|PA04)([A-Z][a-z]+)([A-J])$/.exec(d))) add(`wall-${m[1].toLowerCase()}-${kebab(m[2])}`, 'wall', m[3], [d], 256);
-  else if ((m = /^HouseRoof(N[A-D]|PA04)([A-Z][a-z]+)([A-J])$/.exec(d))) add(`roof-${m[1].toLowerCase()}-${kebab(m[2])}`, 'roof', m[3], [d], 256);
+  if ((m = /^HouseWall(N[A-D]|PA0[04])([A-Z][a-z]+)([A-J])$/.exec(d))) add(`wall-${m[1].toLowerCase()}-${kebab(m[2])}`, 'wall', m[3], [d], 256);
+  else if ((m = /^HouseRoof(N[A-D]|PA0[04])([A-Z][a-z]+)([A-J])$/.exec(d))) add(`roof-${m[1].toLowerCase()}-${kebab(m[2])}`, 'roof', m[3], [d], 256);
   else if ((m = /^HouseDoor([A-Z][A-Za-z]*?)([A-J])([RS])$/.exec(d))) add(`door-${kebab(m[1])}-${m[3].toLowerCase()}`, 'door', m[2], [d], 128);
 }
 // the move-in tents: NA and NB are one tent in two colours; PA the player's own

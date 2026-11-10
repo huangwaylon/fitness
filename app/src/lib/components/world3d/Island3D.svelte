@@ -54,6 +54,7 @@
   import { ktx2Stats } from './ktx2.ts';
   import { placeObjects, type Inst, type Standin } from './objects.ts';
   import { gardenReady, loadGarden, wantsGarden } from './garden.ts';
+  import { rooms } from '#lib/store/tent.svelte.ts';
   import { homeTod } from './home.ts';
   import { createBuilt } from './built.ts';
   import { lookOf } from './groundLook.ts';
@@ -775,7 +776,7 @@
       standins(st);
       e.glows((lamps3 = standinLamps(st)));
       lground?.look(lookNow());
-      built.sync(lay, heightOf);
+      built.sync(lay, heightOf, roomOf);
       e.water(isWater);
       fitEnds(e);
     });
@@ -787,6 +788,14 @@
   const TOD_LAMPS = { day: 0, dusk: 0.7, night: 1 } as const;
   const built = createBuilt((id, g, at) => eng?.placeGroup(id, g, at), (id, g) => {
     if (id.startsWith('home:')) homeTod(g, TOD_LAMPS[todNow()], LIFT[todNow()]);
+  });
+  // each home's outside as its room's size has it (homes.ts exteriorOf: NH's first house for a smaller room), again as
+  // a room's size changes
+  const roomOf = (who: Who) => rooms[who].size;
+  $effect(() => {
+    void [rooms.A.size, rooms.B.size, rooms.G.size];
+    if (!eng) return;
+    untrack(() => built.sync(layoutNow(), heightOf, roomOf));
   });
   // the homes' lamps and self-light with the time of day
   $effect(() => {

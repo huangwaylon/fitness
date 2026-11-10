@@ -243,6 +243,15 @@ to `/pair`). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the
     the player's tent and the campsite 4 × 3; the porch inside the front row.
 - **The defaults:** うめ's NH's player house (stucco, a western tile roof), the guest's a villager's log house (a
   thatched roof).
+- **Sizes** (`homes.ts exteriorOf`): NH's player house has levels; the app's rooms have three sizes (design.md "The tent"
+  › Room size), so the player house's outside follows its room: the chosen look (PA04) for 増築した部屋 8 × 8, NH's first
+  house (PA00: its one wall, its roof in the same colour letter of NH's eight) for 初めての家 6 × 6 and テント 4 × 4.
+  The footprint, porch and door stay the style's (PA00 stands inside PA04's): nothing on the layout moves. The island
+  reads each room's size from the rooms' store (loaded after the first load), the editor's preview too. Not used: PA01
+  (NH's 8 × 8 main room alone: it would replace the chosen look the largest room wears), PA02–PA03 (NH's back and side
+  rooms: the app's homes have one room); PB04, PC04 and PD04 are NH's other final-house sidings and roofs (brick, log,
+  stone, Japanese… with their own shapes), looks rather than sizes, not in いえを かえる yet. A villager's house and the
+  tents have no levels.
 - **Drawing them** (`world3d/home.ts buildHome(style)`: the three parts at 3u a model unit, NH's soft Lambert, a
   lamp's own glow; `world3d/objects.ts homePlaces(layout)`: each home's origin, front wall's middle and yaw; the
   campsite's tent stays placeObjects' instance).

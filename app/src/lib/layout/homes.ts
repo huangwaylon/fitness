@@ -57,7 +57,7 @@ const OTHER: Record<string, { foot: readonly [number, number]; porch: number }> 
 const kebab = (s: string) => s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
 /** A wall's or a roof's part id (`PA04Stucco.B`) → its shape, material, colour and family (`wall-pa04-stucco`). */
 export function partOf(kind: 'wall' | 'roof', id: string | undefined): { shape: string; material: string; colour: string; family: string } | null {
-  const m = /^(N[A-D]|PA04)([A-Z][a-z]+)\.([A-J])$/.exec(id ?? '');
+  const m = /^(N[A-D]|PA0[04])([A-Z][a-z]+)\.([A-J])$/.exec(id ?? '');
   if (!m) return null;
   const family = `${kind}-${m[1].toLowerCase()}-${kebab(m[2])}`;
   if (!FAMILIES[family]?.colours[m[3]]) return null;
@@ -104,6 +104,19 @@ export function homePorch(s: HomeStyle | undefined): number {
   return OTHER[s?.m ?? 'campsite']?.porch ?? 0;
 }
 
+
+/** The room's largest size (contract/tent.ts ROOM_SIZES: 増築した部屋, NH's expanded main room). */
+const ROOM_FULL = 8;
+/** What a home's outside shows for its room's size (docs/island-layout.md "Homes" › sizes): NH's player house is its
+ *  last level (PA04) for the largest room, and NH's first house (PA00: the one-room house, its walls NH's one, its roof
+ *  in the same colour letter of NH's eight) while the room is a smaller one (テント 4 × 4, 初めての家 6 × 6). Its
+ *  footprint, porch and door stay the style's (PA00 stands inside PA04's), so nothing on the layout moves. A villager's
+ *  house and the tents have no levels in NH: as they are. */
+export function exteriorOf(s: HomeStyle, room: number): HomeStyle {
+  if (s.m !== 'house' || room >= ROOM_FULL || partOf('wall', s.w)?.shape !== 'PA04') return s;
+  const colours = FAMILIES['roof-pa00-standard']?.colours, c = partOf('roof', s.r)?.colour ?? 'A';
+  return colours ? { ...s, w: 'PA00Standard.A', r: `PA00Standard.${colours[c] ? c : 'A'}` } : s;
+}
 
 /** The catalogue's choices for a picker: each shape's wall and roof materials (their colours), the doors (shapes,
  *  colours). */

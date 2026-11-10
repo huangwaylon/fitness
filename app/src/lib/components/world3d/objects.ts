@@ -15,7 +15,7 @@ import { yawOf } from '#lib/layout/nav.ts';
 import type { Season } from '#lib/ui-state/theme.svelte.ts';
 import { kindDef } from '#lib/layout/catalog.ts';
 import { doorOf, facingVec, footOf, objMid, type Layout } from '#lib/layout/model.ts';
-import { WHO_OF_HOME, homePorch, type HomeStyle } from '#lib/layout/homes.ts';
+import { WHO_OF_HOME, exteriorOf, homePorch, type HomeStyle, type Who } from '#lib/layout/homes.ts';
 import { KK_STOOL_H } from '../island/kkSlider.ts';
 import { topSpot } from '#lib/layout/tops.ts';
 import { FENCE_SNOW, cropStage, fenceJoin, isCrop, isFence, isGarden } from '#lib/layout/garden.ts';
@@ -333,7 +333,7 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
 /** Where each home built from NH's parts stands (world3d/home.ts buildHome draws it): its model's origin (its front
  *  wall's middle: the footprint's front edge, the porch in front of the wall inside it) and its turn. The campsite's
  *  tent is placeObjects' (a model of the island's own). */
-export function homePlaces(layout: Layout): { id: string; style: HomeStyle; x: number; z: number; yaw: number }[] {
+export function homePlaces(layout: Layout, roomOf?: (who: Who) => number): { id: string; style: HomeStyle; x: number; z: number; yaw: number }[] {
   const out: { id: string; style: HomeStyle; x: number; z: number; yaw: number }[] = [];
   for (const id of ['home-A', 'home-B', 'home-G'] as const) {
     const o = layout.objects.get(id);
@@ -344,7 +344,8 @@ export function homePlaces(layout: Layout): { id: string; style: HomeStyle; x: n
     const [w, d] = footOf(layout, o);
     const half = (o.f % 2 ? w : d) * 15;
     const back = half - homePorch(style);
-    out.push({ id, style, x: mx + fx * back, z: mz + fz * back, yaw: (o.f * Math.PI) / 2 });
+    // (drawn as its room's size has it: NH's first house for a smaller room, homes.ts exteriorOf)
+    out.push({ id, style: roomOf ? exteriorOf(style, roomOf(WHO_OF_HOME[id])) : style, x: mx + fx * back, z: mz + fz * back, yaw: (o.f * Math.PI) / 2 });
   }
   return out;
 }

@@ -78,6 +78,7 @@
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { decor } from '#lib/store/decor.svelte.ts';
   import { layout as islandLayout } from '#lib/store/layout.svelte.ts';
+  import type { TentEntry } from '#lib/contract/tent.ts';
   import { decorLayout } from '#lib/contract/decor.ts';
   import Decor from './Decor.svelte';
   import Board from '../board/Board.svelte';
@@ -805,12 +806,21 @@
   };
   // svelte-ignore state_referenced_locally
   const demoRelay = week.demo ? (testRelay() ?? createLocalLive(view.viewer)) : null;
+  /** The record's rooms' rows, for the rooms' store once it's in (the homes' sizes). */
+  let tentRows: TentEntry[] | null = null, roomRows: ((t: TentEntry[]) => void) | null = null;
   $effect(() => {
     const me = view.viewer;
     untrack(() => {
       shared.attach(relay ?? demoRelay, me, !!week.demo);
       decor.attach(relay ?? demoRelay, me, !!week.demo);
       islandLayout.attach(relay ?? demoRelay, me, !!week.demo);
+      // (the homes' rooms' sizes: each home's outside follows its room's, homes.ts exteriorOf; the rooms' store loaded
+      // after the island's first load, never in it)
+      void import('#lib/store/tent.svelte.ts').then(({ rooms }) => {
+        for (const r of Object.values(rooms)) r.attach(relay ?? demoRelay, me, !!week.demo);
+        roomRows = (t) => Object.values(rooms).forEach((r) => r.rows(t));
+        if (tentRows) roomRows(tentRows);
+      });
       demoRelay?.start();
     });
   });
@@ -844,6 +854,8 @@
       shared.rows(m.state.islandDays.map((r) => ({ at: r.at, person: r.person, data: r.data })), current);
       decor.rows(m.state.decor);
       islandLayout.rows(m.state.layout);
+      tentRows = m.state.tent;
+      roomRows?.(tentRows);
       // the old もようがえ's decorations, mine, into the layout once (layout/migrate.ts)
       islandLayout.migrateDecor(decorLayout(m.state.decor));
       // (no automatic move of a new building off a taken spot: the user places the museum and the shop themselves, in

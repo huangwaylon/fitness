@@ -20,6 +20,7 @@
   import type { Object3D } from 'three';
   import { clamp } from '#lib/math.ts';
   import { staticUrl } from '#lib/staticUrl.ts';
+  import { rooms } from '#lib/store/tent.svelte.ts';
 
   let { layout, mode = 'orbit', look, camZ = $bindable(300), stage = $bindable() }: {
     layout: Layout;
@@ -143,7 +144,7 @@
           // (a home lit as the island's by day)
           if (id.startsWith('home:')) homeTod(g, 0, 0.32);
         });
-        built.sync(cur, ground.heightAt);
+        built.sync(cur, ground.heightAt, (w) => rooms[w].size);
 
         // ---- K.K. on his stool: the island's villagers' code (slot `kk`), loaded once there's a stool ----
         type Vil = import('../world3d/villagers.ts').Villagers3;
@@ -349,7 +350,7 @@
             if (d.chunks.length) ground.rebuild(l, d.chunks);
             else if (d.objects.add.length || d.objects.move.length || d.objects.remove.length) ground.rebuild(l, []);
             place();
-            built.sync(l, ground.heightAt);
+            built.sync(l, ground.heightAt, (w) => rooms[w].size);
             placeKK(l);
             if (m === 'phone') aim();
             kick();

@@ -7,6 +7,8 @@ import { Group, type Object3D } from 'three';
 import { defaultLayout, layoutOf } from '#lib/layout/model.ts';
 import type { LayoutEntry } from '#lib/contract/layout.ts';
 import { builtWants, createBuilt, type BuiltAt } from './built.ts';
+import { homePlaces } from './objects.ts';
+import { FAMILIES } from '#lib/layout/homes.ts';
 
 vi.mock('./home.ts', () => ({ buildHome: async () => new Group() }));
 vi.mock('./structure.ts', async (actual) => ({ ...(await actual<typeof import('./structure.ts')>()), buildStructure: async () => new Group() }));
@@ -54,5 +56,38 @@ describe('the built groups', () => {
     built.stop();
     await settle();
     expect(placed).toEqual([]);
+  });
+});
+
+describe('a home’s outside follows its room’s size (homes.ts exteriorOf)', () => {
+  const style = (l: ReturnType<typeof defaultLayout>, room: number, who: 'B' | 'G') => homePlaces(l, () => room).find((p) => p.id === `home-${who}`)!.style;
+  test('うめ’s player house: NH’s first house (PA00) for the tent’s and the first house’s rooms, its own look for the largest', () => {
+    const l = defaultLayout();
+    expect(style(l, 8, 'B')).toEqual(l.homes.B);
+    for (const room of [4, 6]) {
+      const s = style(l, room, 'B');
+      expect(s.w).toBe('PA00Standard.A');
+      // (its roof's colour letter, NH's first house's in the same letter)
+      expect(s.r).toBe(`PA00Standard.${l.homes.B.r!.slice(-1)}`);
+      expect(s.d).toBe(l.homes.B.d);
+      expect(FAMILIES['wall-pa00-standard'] && FAMILIES['roof-pa00-standard']).toBeTruthy();
+    }
+  });
+  test('a villager’s house (the guest’s) has no levels in NH: as it is at every size; the place never moves', () => {
+    const l = defaultLayout();
+    expect(style(l, 4, 'G')).toEqual(l.homes.G);
+    const at = (room: number) => homePlaces(l, () => room).map(({ id, x, z, yaw }) => [id, x, z, yaw]);
+    expect(at(4)).toEqual(at(8));
+  });
+  test('a smaller room rebuilds the house', async () => {
+    const placed: string[] = [];
+    const built = createBuilt((id) => placed.push(id));
+    const l = defaultLayout();
+    built.sync(l, flat, () => 8);
+    await settle();
+    placed.length = 0;
+    built.sync(l, flat, (w) => (w === 'B' ? 6 : 8));
+    await settle();
+    expect(placed).toEqual(['home:home-B']);
   });
 });
