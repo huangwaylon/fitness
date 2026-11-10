@@ -2,7 +2,7 @@
 // rate from the median gap, a page error, hidden (the keepalive flush) and shown again, and the stop. A browser's
 // globals stubbed; the timers, Date and performance faked.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { configureLog, flushLog, setDrawnFps, startLog } from './log.ts';
+import { configureLog, flushLog, log, setDrawnFps, startLog } from './log.ts';
 import type { LogBatch } from '#lib/contract/log.ts';
 
 const KEY = '3f9a'.repeat(16);
@@ -105,6 +105,25 @@ describe('the log started on a phone', () => {
     win.dispatchEvent(Object.assign(new Event('error'), { error: new Error('after') }));
     await flushLog();
     expect(evs().length).toBe(n);
+  });
+
+  it('shown again sends nothing at once: the show joins the next batch, FLUSH_MS on (no radio wake of its own: network F9)', async () => {
+    const stop = start();
+    log('app.show', { awayS: 0 });
+    doc.hidden = true;
+    doc.dispatchEvent(new Event('visibilitychange'));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(sent.at(-1)?.keepalive).toBe(true);
+    const n = sent.length;
+    await vi.advanceTimersByTimeAsync(60_000);
+    doc.hidden = false;
+    doc.dispatchEvent(new Event('visibilitychange'));
+    await vi.advanceTimersByTimeAsync(29_000);
+    expect(sent.length).toBe(n);
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(sent.length).toBe(n + 1);
+    expect([sent[n].keepalive, sent[n].body.es.map((e) => e.e)]).toEqual([false, ['app.show']]);
+    stop();
   });
 
   it('nothing in the demo or under automation', () => {

@@ -8,7 +8,7 @@
 //   once when the page is hidden, left or reloaded by the app; read back on the next load, so a killed page loses
 //   nothing it had. A quota error drops the log, never the user's data (no storage banner for it).
 // - Flushed FLUSH_MS after the first event (FLUSH_ERROR_MS after an error), at FLUSH_AT events, and when hidden (with
-//   `keepalive`, one batch ≤ 32 KB in flight). A batch stays stored until the relay acks its id; a re-sent one is
+//   `keepalive`, one batch ≤ 32 KB in flight); never at once on a show. A batch stays stored until the relay acks its id; a re-sent one is
 //   dropped there (`dup`). Failure: backoff 5 s → 5 min; offline: wait for `online`. A capped day (`closed`): only
 //   errors until it reopens.
 // - Off in the demo and under automation (unless `?log=on`); unpaired, it keeps its events until there is a key.
@@ -466,7 +466,7 @@ export function startLog(o: LogStart): () => void {
     const away = hiddenAt ? env.now() - hiddenAt : 0;
     log('app.show', { awayS: Math.round(away / 1000), route: route() });
     if (away >= 600_000 && readyDone) sample('show');
-    void flushLog();
+    // (no flush of its own: the show goes with the next batch, FLUSH_MS on, not one more radio wake on every resume)
   };
   const gone = () => {
     isLeaving.now = true;
