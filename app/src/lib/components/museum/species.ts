@@ -14,9 +14,13 @@
 //     a tree's trunk), leaf (on a bush's leaves: the snail, the walking leaf), ground (crawling the soil), water (on the
 //     pond), terrarium (in a glass case: the tarantula, the scorpion, the centipede, the beach's crawlers, the mole
 //     cricket), dangle (from a branch on its thread)
+//   a sea creature in its place in the sea creatures' room (seaTanks.ts: the reef tank or the tide pool), all of them
+//   at once (they hardly move: no hour's pick).
 // A species' tank is its own, whatever else is found; which of a tank's are swimming is the hour's.
 import { BUGS, FISH, type BugId } from '../island/critters.ts';
 import { POND_FISH } from '../island/pondFish.ts';
+import { SEA } from '../island/sea.ts';
+import { SEA_SPOTS, type SeaTankId } from './seaTanks.ts';
 import { PREDATORS } from './feeding.ts';
 import { findKey, type FirstFind } from '#lib/model/finds.ts';
 import { ZONE_OFFSET_MS, localDateAt } from '#lib/time/dates.ts';
@@ -24,12 +28,12 @@ import { seeded, shuffle } from '#lib/random.ts';
 
 export type TankId = 'sea' | 'deep' | 'river';
 export type Habitat = 'fly' | 'dart' | 'drift' | 'flower' | 'hop' | 'trunk' | 'palm' | 'leaf' | 'ground' | 'water' | 'terrarium' | 'dangle';
-type Kind = 'fish' | 'bug';
+type Kind = 'fish' | 'bug' | 'sea';
 export interface Specimen {
   id: string;
   kind: Kind;
-  /** Its tank (a fish) or its place in the garden (a bug). */
-  tank: TankId | Habitat;
+  /** Its tank (a fish, a sea creature) or its place in the garden (a bug). */
+  tank: TankId | Habitat | SeaTankId;
   /** NH's shadow size, 1–6 (a fish), else 0. */
   size: number;
   found: FirstFind;
@@ -40,8 +44,15 @@ const DEEP: ReadonlySet<string> = new Set(['oarfish', 'coelacanth', 'barreleye',
 /** The aquarium's bottom walkers, on the river tank's sand (NH's): the crab sideways, the crawfish ahead. */
 export const WALKERS: Readonly<Record<string, 'side' | 'ahead'>> = { 'mitten-crab': 'side', crawfish: 'ahead' };
 
+/** NH's museum-tank variants of the bugs where they differ from the catch's model (the dung beetle with its ball; the
+ *  others NH ships, the ant and the cicada shell, are the catch's same mesh): scripts/world3d-models.ts --museum's
+ *  `bug-museum` pack, each member its id. NH's fish variants are the catch's meshes too (only their textures differ),
+ *  so the aquarium keeps the catch models. */
+export const BUG_MUSEUM_MODEL: Readonly<Record<string, string>> = { 'dung-beetle': 'InsectFunkorogashiMuseum' };
+
 export const FISH_IDS: readonly string[] = [...Object.keys(POND_FISH), ...Object.keys(FISH)];
 export const BUG_IDS: readonly string[] = Object.keys(BUGS);
+const SEA_IDS: readonly string[] = Object.keys(SEA);
 
 /** A fish's NH shadow size (1–6). */
 const fishSize = (id: string): number => (FISH as Record<string, { size: number }>)[id]?.size ?? (POND_FISH as Record<string, { size: number }>)[id]?.size ?? 2;
@@ -76,7 +87,7 @@ export function habitatOf(id: string): Habitat {
   }
 }
 
-/** What's on show: every fish and bug in the first finds, in the ずかん's kinds' order, each in its place. */
+/** What's on show: every fish, bug and sea creature in the first finds, in the ずかん's kinds' order, each in its place. */
 export function onShow(finds: ReadonlyMap<string, FirstFind>): Specimen[] {
   const out: Specimen[] = [];
   for (const id of FISH_IDS) {
@@ -86,6 +97,10 @@ export function onShow(finds: ReadonlyMap<string, FirstFind>): Specimen[] {
   for (const id of BUG_IDS) {
     const f = finds.get(findKey('bug', id));
     if (f) out.push({ id, kind: 'bug', tank: habitatOf(id), size: 0, found: f });
+  }
+  for (const id of SEA_IDS) {
+    const f = finds.get(findKey('sea', id)), sp = SEA_SPOTS.get(id);
+    if (f && sp) out.push({ id, kind: 'sea', tank: sp.tank, size: 0, found: f });
   }
   return out;
 }

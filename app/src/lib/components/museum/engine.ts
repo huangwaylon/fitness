@@ -1,7 +1,8 @@
 // The museum in 3D (docs/design.md "The museum"): three.js, loaded only when the museum opens (its own chunk). NH's
 // museum on one floor (plan.ts): the entrance hall (its stone floor, NH's lobby brick, a red carpet to each wing, the
-// owl's medallion, Blathers at his desk), the bug wing to the left (a garden under glass:
-// garden.ts) and the aquarium to the right (its tanks: aquarium.ts). NH's floors and walls (scripts/world3d-models.ts
+// owl's medallion, Blathers at his desk), the bug wing to the left (a garden under glass: garden.ts), the aquarium to
+// the right (its tanks: aquarium.ts) and the sea creatures' room off it (seaLife.ts), the fossils and the art gallery
+// behind the hall (fossilWing.ts, gallery.ts). NH's floors and walls (scripts/world3d-models.ts
 // --museum: static/room/museum/tex/), lit warm. The camera is the rooms' (tent/engine.ts): NH's steep view, a drag turns
 // it, a pinch zooms; here it follows my villager through the rooms, and a wall between it and my villager is cut away.
 // The villagers are NH's own 3D models (villager3d/), walking as in the rooms. Drawn on demand: the full rate while
@@ -31,8 +32,8 @@ import { modelBounds } from '../world3d/models3d.ts';
 import { ENTRY_HOLD_MS, PACE, VILLAGER_H, along, roomScreen, walkLens, type Insets, type Walk } from '../rooms/view.ts';
 import { EYE_MARGIN, clampEye, firstPerson as createFirstPerson, headAnchor, wrapAngle } from '../rooms/firstPerson.ts';
 import {
-  BUG_WING, DESK, DOOR_HALF, DOORMAT, FISH_WING, HALL, HALL_H, OPENING, WALLS, WING_H, inRect, navOf, roomAt, walkable, wallEnds, wingAt,
-  type Nav, type Pt, type Rect, type Wall, type Wing
+  ART_WING, BACK_OPENING, BUG_WING, OPENING, SEA_OPENING, DESK, DOOR_HALF, DOORMAT, FISH_WING, FOSSIL_WING, HALL, HALL_H, OPENINGS, ROOMS, SEA_WING, WALLS, WING_H, inRect,
+  navOf, roomAt, walkable, wallEnds, wingAt, type Nav, type Opening, type Pt, type Rect, type Wall, type Wing
 } from './plan.ts';
 
 /** The rooms' camera: degrees down from level, the lens. */
@@ -79,11 +80,13 @@ export interface Exhibit {
 /** What an exhibit is built with: the textures and models the museum loads, its lights' warmth. */
 export interface Kit {
   tex(name: string, repeat?: [number, number]): Texture;
+  /** One of the museum's models (models.json; a pack's member: its node, the pack fetched whole once). */
   model(name: string): Promise<GLTF | null>;
-  /** A prop placed by its own bounds (models.json): its middle over (x, z), its foot on the floor, turned, scaled. */
-  prop(name: string, x: number, z: number, o?: { yaw?: number; s?: number; y?: number; parent?: Object3D }): Group;
+  /** A prop placed by its own bounds (models.json): its middle over (x, z), its foot on the floor, turned, scaled;
+   *  `origin`: by NH's own origin instead (a fossil's piece, an artwork: where NH's furniture stands). */
+  prop(name: string, x: number, z: number, o?: { yaw?: number; s?: number; y?: number; parent?: Object3D; origin?: boolean }): Group;
   /** A catch's model (static/room/world3d/critters/<kind>/<id>.glb). */
-  critter(kind: 'fish' | 'bugs', id: string): Promise<GLTF | null>;
+  critter(kind: 'fish' | 'bugs' | 'sea', id: string): Promise<GLTF | null>;
   /** One of the island's models (static/room/world3d/<name>.glb: an oak, a palm, a clump of NH's flowers), and its bounds. */
   island(name: string): Promise<GLTF | null>;
   islandBounds(name: string): { min: number[]; max: number[] } | null;
@@ -413,9 +416,24 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       invalidate();
     });
   };
-  const MODELS = M.models as Record<string, { min: number[]; max: number[]; v: string }>;
-  const model = (name: string) => (MODELS[name] ? load(`m:${o.base}${name}.glb?v=${MODELS[name].v}`) : Promise.resolve(null));
-  function prop(name: string, x: number, z: number, p: { yaw?: number; s?: number; y?: number; parent?: Object3D } = {}): Group {
+  const MODELS = M.models as Record<string, { min: number[]; max: number[]; v: string; pack?: string }>;
+  /** A pack's members, each its node as a model of its own (kept per pack, so a member's props share it). */
+  const members = new WeakMap<GLTF, Map<string, GLTF | null>>();
+  const memberOf = (g: GLTF, name: string): GLTF | null => {
+    const by = members.get(g) ?? members.set(g, new Map()).get(g)!;
+    if (!by.has(name)) {
+      const node = g.scene.children.find((n) => n.name === name) ?? null;
+      by.set(name, node && ({ ...g, scene: node } as GLTF));
+    }
+    return by.get(name)!;
+  };
+  const model = (name: string): Promise<GLTF | null> => {
+    const b = MODELS[name];
+    if (!b) return Promise.resolve(null);
+    if (!b.pack) return load(`m:${o.base}${name}.glb?v=${b.v}`);
+    return load(`m:${o.base}${b.pack}.glb?v=${b.v}`).then((g) => g && memberOf(g, name));
+  };
+  function prop(name: string, x: number, z: number, p: { yaw?: number; s?: number; y?: number; parent?: Object3D; origin?: boolean } = {}): Group {
     const holder = new Group();
     holder.position.set(x, p.y ?? 0, z);
     holder.rotation.y = p.yaw ?? 0;
@@ -427,7 +445,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       if (!g || disposed || !b) return;
       const body = g.scene.clone(true);
       // its middle over the spot, its foot on the floor (NH's room props stand where they stood in its room)
-      body.position.set(-(b.min[0] + b.max[0]) / 2, -b.min[1], -(b.min[2] + b.max[2]) / 2);
+      if (p.origin) body.position.set(0, 0, 0);
+      else body.position.set(-(b.min[0] + b.max[0]) / 2, -b.min[1], -(b.min[2] + b.max[2]) / 2);
       holder.add(body);
       invalidate();
     });
@@ -453,15 +472,26 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     return m;
   };
   const tw = (r: Rect, u: number): [number, number] => [(r.x1 - r.x0) / u, (r.z1 - r.z0) / u];
-  floor(HALL, lambert({ map: tex('hall-floor', tw(HALL, 40)) }));
-  floor(FISH_WING, lambert({ map: tex('fish-floor', tw(FISH_WING, 40)), color: 0xb9c3d6 }));
   const grassTex = grass();
   grassTex.repeat.set(...tw(BUG_WING, 50));
   disposables.push(grassTex);
   const grassMat = lambert({ map: grassTex });
-  floor(BUG_WING, grassMat);
-  // the openings' thresholds (through the walls)
-  for (const x of [HALL.x0, HALL.x1]) floor({ x0: x - 2, x1: x + 2, z0: OPENING.z0, z1: OPENING.z1 }, lambert({ map: tex('hall-floor', [0.1, 0.75]), layer: 1 }), 0.01);
+  /** Each room's floor (a wing's passage and room each a rect, tiled from the world's origin so they meet unseen). */
+  const floorOf = (wing: Wing, r: Rect): Material => {
+    if (wing === 'bug') return grassMat;
+    const [name, u, color] = ({ hall: ['hall-floor', 40, 0xffffff], fish: ['fish-floor', 40, 0xb9c3d6], sea: ['fish-floor', 40, 0xb9c3d6], fossil: ['fossil-floor', 50, 0xb4aa9c], art: ['art-floor', 30, 0xffffff] } as const)[wing];
+    const t = tex(name, tw(r, u)).clone();
+    t.offset.set(r.x0 / u, -r.z1 / u);
+    t.needsUpdate = true;
+    disposables.push(t);
+    return lambert({ map: t, color });
+  };
+  for (const { wing, r } of ROOMS) floor(r, floorOf(wing, r));
+  // the openings' thresholds (through the walls: the floor of the room each is counted to)
+  for (const o of OPENINGS) {
+    const r = o.axis === 'x' ? { x0: o.at - 2, x1: o.at + 2, z0: o.from, z1: o.to } : { x0: o.from, x1: o.to, z0: o.at - 2, z1: o.at + 2 };
+    floor(r, lambert({ map: tex(o.wing === 'hall' ? 'hall-floor' : 'fish-floor', o.axis === 'x' ? [0.1, (o.to - o.from) / 40] : [(o.to - o.from) / 40, 0.1]), color: o.wing === 'hall' ? 0xffffff : 0xb9c3d6, layer: 1 }), 0.01);
+  }
   // the red carpets: the door to the medallion, and on to each opening
   const carpetTex = carpet();
   disposables.push(carpetTex);
@@ -479,6 +509,13 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   runner(0, 45, 50, 0);
   runner(-38, 10, 44, Math.PI / 2);
   runner(38, 10, 44, Math.PI / 2);
+  // and from those on to the back openings (beside the desk: the fossils', the art's), meeting them end to end
+  const BACK_X = (BACK_OPENING.x0 + BACK_OPENING.x1) / 2;
+  runner(-BACK_X, (HALL.z0 + 2) / 2, 2 - HALL.z0, 0);
+  runner(BACK_X, (HALL.z0 + 2) / 2, 2 - HALL.z0, 0);
+  // the fossils' runners: along the front row and down the middle aisle (fossils.ts), meeting end to end
+  runner(-150, -130, 292, Math.PI / 2);
+  runner(-150, -255, 234, 0);
   // the owl's medallion in the middle
   const medTex = medallion();
   disposables.push(medTex);
@@ -499,7 +536,10 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const wallMat: Record<Wing, MeshLambertMaterial> = {
     hall: lambert({ map: tex('hall-wall', [4, 2]) }),
     fish: lambert({ map: tex('fish-wall', [6, 1.5]), color: 0xcdd6e8 }),
-    bug: lambert({ map: tex('bug-outside', [1, 1]) })
+    sea: lambert({ map: tex('fish-wall', [3, 1.5]), color: 0xc4d4ea }),
+    bug: lambert({ map: tex('bug-outside', [1, 1]) }),
+    fossil: lambert({ map: tex('fossil-wall', [5, 1]), color: 0xe8e0d4 }),
+    art: lambert({ map: tex('hall-red', [8, 1.6]) })
   };
   const outMat = lambert({ color: 0x2a211a });
   const capMat = lambert({ color: 0xe9dcc2 });
@@ -586,19 +626,39 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const cofferTex = coffers(), roofTex = glassRoof();
   cofferTex.repeat.set(...tw(HALL, 20));
   roofTex.repeat.set(...tw(BUG_WING, 40));
-  const CEIL_DAY = [0xe6dccb, 0x1c2a42, 0xffffff];
-  const ceilMats = [new MeshBasicMaterial({ map: cofferTex }), new MeshBasicMaterial(), new MeshBasicMaterial({ map: roofTex })];
+  // (the hall's coffers, the aquarium's and the sea creatures' dark blue, the garden's glass, the fossils' dim vault, the
+  // gallery's coffers warmer)
+  const CEIL_DAY = [0xe6dccb, 0x1c2a42, 0xffffff, 0x3a332c, 0xf0dcc0];
+  const galleryTex = cofferTex.clone();
+  galleryTex.repeat.set(...tw(ART_WING, 24));
+  const ceilMats = [new MeshBasicMaterial({ map: cofferTex }), new MeshBasicMaterial(), new MeshBasicMaterial({ map: roofTex }), new MeshBasicMaterial(), new MeshBasicMaterial({ map: galleryTex })];
   ceilMats.forEach((m, i) => m.color.set(CEIL_DAY[i]));
-  disposables.push(cofferTex, roofTex, ...ceilMats);
+  disposables.push(cofferTex, roofTex, galleryTex, ...ceilMats);
   ceil(HALL, CORNICE, ceilMats[0]);
   // (the wings' from the far face of the hall's wall: the lintels' undersides lie at WING_H too, over the wall)
-  ceil({ ...FISH_WING, x0: FISH_WING.x0 + T / 2 }, WING_H, ceilMats[1]);
-  ceil({ ...BUG_WING, x1: BUG_WING.x1 - T / 2 }, WING_H, ceilMats[2]);
+  const CEIL_OF: Record<Exclude<Wing, 'hall'>, MeshBasicMaterial> = { fish: ceilMats[1], sea: ceilMats[1], bug: ceilMats[2], fossil: ceilMats[3], art: ceilMats[4] };
+  for (const { wing, r } of ROOMS) {
+    if (wing === 'hall') continue;
+    const c = { ...r };
+    if (c.x0 === HALL.x1 && c.z0 <= HALL.z0 + 1 && c.z1 >= HALL.z1 - 1) c.x0 += T / 2;
+    if (c.x1 === HALL.x0 && c.z0 <= HALL.z0 + 1 && c.z1 >= HALL.z1 - 1) c.x1 -= T / 2;
+    if (c.z1 === HALL.z0) c.z1 -= T / 2;
+    ceil(c, WING_H, CEIL_OF[wing]);
+  }
   const lintel = (x0: number, x1: number, y0: number, z0: number, z1: number) => {
     const b = fpvMesh(new Mesh(new BoxGeometry(x1 - x0, CORNICE - y0, z1 - z0), lambert({ map: tex('hall-wall', [Math.max(x1 - x0, z1 - z0) / 30, (CORNICE - y0) / 32]) })));
     b.position.set((x0 + x1) / 2, (CORNICE + y0) / 2, (z0 + z1) / 2);
   };
-  for (const x of [HALL.x0, HALL.x1]) lintel(x - T / 2, x + T / 2, WING_H, OPENING.z0, OPENING.z1);
+  // (over the hall's doorways from the wings' height to its cornice; over the sea creatures' a lintel of its own, lower)
+  const SEA_DOOR_H = 38;
+  for (const o of OPENINGS) {
+    if (o.wing === 'hall' && o.axis === 'x') lintel(o.at - T / 2, o.at + T / 2, WING_H, o.from, o.to);
+    else if (o.wing === 'hall') lintel(o.from, o.to, WING_H, o.at - T / 2, o.at + T / 2);
+    else {
+      const b = fpvMesh(new Mesh(new BoxGeometry(T, WING_H - SEA_DOOR_H, o.to - o.from), lambert({ map: tex('fish-wall', [1, 0.4]), color: 0xcdd6e8 })));
+      b.position.set(o.at, (WING_H + SEA_DOOR_H) / 2, (o.from + o.to) / 2);
+    }
+  }
   const DOOR_H = 32;
   lintel(-DOOR_HALF, DOOR_HALF, DOOR_H, HALL.z1 - T / 2, HALL.z1 + T / 2);
   const doorT = doorTex();
@@ -608,32 +668,41 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   frontDoor.rotation.y = Math.PI;
   /** What a tap's ray stops at, at the eyes: the walls, their cornices, the lintels, the door, the ceilings. */
   const occluders: Object3D[] = [...walls.flatMap((w) => (w.trim ? [w.mesh, w.trim] : [w.mesh])), ...fpvOnly];
-  /** Each wing's opening in the hall's wall (the first person sees into a wing only through it). */
-  const PORTAL: Record<'bug' | 'fish', Box3> = {
-    bug: new Box3(new Vector3(HALL.x0 - T / 2, 0, OPENING.z0), new Vector3(HALL.x0 + T / 2, CORNICE, OPENING.z1)),
-    fish: new Box3(new Vector3(HALL.x1 - T / 2, 0, OPENING.z0), new Vector3(HALL.x1 + T / 2, CORNICE, OPENING.z1))
-  };
-  const wingSeen: Record<Wing, boolean> = { hall: true, bug: true, fish: true };
+  /** Each doorway's box (the first person sees into a room only through one from where the eyes are). */
+  const PORTALS: { o: Opening; box: Box3 }[] = OPENINGS.map((o) => ({
+    o, box: o.axis === 'x' ? new Box3(new Vector3(o.at - T / 2, 0, o.from), new Vector3(o.at + T / 2, CORNICE, o.to)) : new Box3(new Vector3(o.from, 0, o.at - T / 2), new Vector3(o.to, CORNICE, o.at + T / 2))
+  }));
+  const wingSeen: Record<Wing, boolean> = { hall: true, bug: true, fish: true, sea: true, fossil: true, art: true };
+  /** The rooms a doorway joins (the room's camera shows a wing's exhibits only from its own room or one next to it:
+   *  the aquarium's tanks past the gallery's front wall, cut away, neither drawn nor stepped). */
+  const joined = (a: Wing, b: Wing) => a === b || OPENINGS.some((o) => (o.wing === a && o.beyond === b) || (o.wing === b && o.beyond === a));
 
   // ---- the hall's furnishing: banners, the plaques, Blathers' desk ----
   const wood0 = lambert({ color: 0x7a5234 });
   const redTex = tex('hall-red', [1, 2]);
-  for (const x of [-34, 34]) {
-    const b = new Mesh(new PlaneGeometry(14, 36), lambert({ map: redTex }));
+  for (const x of [-26, 26]) {
+    const b = new Mesh(new PlaneGeometry(7, 36), lambert({ map: redTex }));
     b.position.set(x, 30, HALL.z0 + 2);
     scene.add(b);
   }
   // each wing's sign by its opening (NH's lobby signs: on a post, facing whoever comes in)
   const postGeo = new CylinderGeometry(0.7, 0.7, 14, 8);
   disposables.push(postGeo);
-  for (const [text, x] of [['こんちゅう', HALL.x0 + 14], ['さかな', HALL.x1 - 14]] as const) {
+  const sign = (text: string) => {
     const t = plaque(text);
     disposables.push(t);
-    const board = new Mesh(new PlaneGeometry(18, 4.5), new MeshBasicMaterial({ map: t, transparent: true }));
-    board.position.set(x, 15, OPENING.z1 + 6);
+    return new Mesh(new PlaneGeometry(18, 4.5), new MeshBasicMaterial({ map: t, transparent: true }));
+  };
+  const SIGNS: [string, number, number][] = [
+    ['こんちゅう', HALL.x0 + 14, OPENING.z1 + 6], ['さかな', HALL.x1 - 14, OPENING.z1 + 6],
+    ['かせき', -BACK_OPENING.x0 + 3, HALL.z0 + 8], ['びじゅつ', BACK_OPENING.x0 - 3, HALL.z0 + 8], ['うみの さち', FISH_WING.x1 - 14, SEA_OPENING.z1 + 4]
+  ];
+  for (const [text, x, z] of SIGNS) {
+    const board = sign(text);
+    board.position.set(x, 15, z);
     board.rotation.x = -0.35;
     const post = new Mesh(postGeo, wood0);
-    post.position.set(x, 7, OPENING.z1 + 5.6);
+    post.position.set(x, 7, z - 0.4);
     scene.add(board, post);
   }
   // Blathers' desk at the back of the hall, NH's: wood, a green top; Blathers behind it (curator.ts, an exhibit)
@@ -647,7 +716,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   desk.position.set((DESK.x0 + DESK.x1) / 2, 0, (DESK.z0 + DESK.z1) / 2);
   scene.add(desk);
   const BLOCKS: Rect[] = [{ x0: DESK.x0 - 1, x1: DESK.x1 + 1, z0: DESK.z0, z1: DESK.z1 }, { x0: DESK.x0 - 2, x1: DESK.x1 + 2, z0: HALL.z0, z1: DESK.z0 }];
-  for (const [x, z] of [[-50, -40], [50, -40], [-50, 58], [50, 58]] as const) {
+  for (const [x, z] of [[-50, 58], [50, 58]] as const) {
     prop(x < 0 ? 'heliconia' : 'anthurium', x, z, { s: x < 0 ? 1.6 : 2.4 });
     BLOCKS.push({ x0: x - 4, x1: x + 4, z0: z - 4, z1: z + 4 });
   }
@@ -924,10 +993,18 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     cutaway();
   }
   /** Where the camera looks for a villager at (x, z): a little ahead of it, kept over the floors (the view's lower edge
-   *  never far past the front walls: the hall's is nearer than the wings'; nor past the side walls). */
+   *  never far past the front walls: the hall's is nearer than the wings'; nor past the side walls; behind the hall, the
+   *  fossils' and the art's own depth). */
+  const CAM_Z: Record<Wing, [number, number]> = {
+    hall: [-30, HALL.z1 - 84], bug: [-60, BUG_WING.z1 - 84], fish: [-60, FISH_WING.z1 - 84], sea: [-60, SEA_WING.z1 - 84],
+    // (behind the hall a little further back: the view's foot stops near the front wall, the wing in front of it the
+    // bug wing's or the aquarium's, not the outside's dark)
+    fossil: [FOSSIL_WING.z0 + 40, FOSSIL_WING.z1 - 110], art: [ART_WING.z0 + 40, ART_WING.z1 - 110]
+  };
   function camSpot(x: number, z: number): [number, number] {
-    const inHall = Math.abs(x) < HALL.x1 + 10;
-    return [Math.max(BUG_WING.x0 + 70, Math.min(FISH_WING.x1 - 70, x)), Math.max(inHall ? -30 : -60, Math.min((inHall ? HALL.z1 : FISH_WING.z1) - 84, z - 4))];
+    // (in a passage behind the hall the hall's view: the room beyond comes into it once one's through)
+    const w = wingAt(x, z), [lo, hi] = CAM_Z[(w === 'fossil' || w === 'art') && z > FOSSIL_WING.z1 ? 'hall' : w];
+    return [Math.max(BUG_WING.x0 + 70, Math.min(SEA_WING.x1 - 50, x)), Math.max(lo, Math.min(hi, z - 4))];
   }
   /** The cutaway: which walls go. Two rules, each stable as one walks (a wall changes only when the camera turns past
    *  it or one passes it, never back and forth on the way):
@@ -1088,7 +1165,11 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   // ---- the first person's eye: my villager's (its model's eyes), kept off the walls and what stands on the floors ----
   const eyeT = new Vector3(), eyeXZ: [number, number] = [0, 0];
   /** The floors the eye may be over: the rooms and the openings through the hall's walls. */
-  const FLOORS: Rect[] = [HALL, BUG_WING, FISH_WING, ...[HALL.x0, HALL.x1].map((x) => ({ x0: x - 10, x1: x + 10, z0: OPENING.z0, z1: OPENING.z1 }))];
+  /** (a passage's run on into its room: the eye goes on over the seam between them, no wall there) */
+  const FLOORS: Rect[] = [
+    ...ROOMS.map(({ r }) => (r.z1 === HALL.z0 ? { ...r, z0: r.z0 - 40 } : r)),
+    ...OPENINGS.map((o) => (o.axis === 'x' ? { x0: o.at - 10, x1: o.at + 10, z0: o.from, z1: o.to } : { x0: o.from, x1: o.to, z0: o.at - 10, z1: o.at + 10 }))
+  ];
   function headOf(w: Walker): Vector3 {
     if (w.v3) {
       w.v3.group.updateMatrixWorld(true);
@@ -1274,9 +1355,9 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     let ambient = false, near = false;
     ambientOn = 0;
     // (at the eyes a wing shows only through its opening: one behind the hall's walls is hidden and rests)
-    const inside = fp.inside(), eyeWing = inside ? wingAt(fp.eye.x) : null, here = eyeWing ?? wingAt(target.x);
-    wingSeen.bug = !inside || eyeWing === 'bug' || frustum.intersectsBox(PORTAL.bug);
-    wingSeen.fish = !inside || eyeWing === 'fish' || frustum.intersectsBox(PORTAL.fish);
+    const inside = fp.inside(), eyeWing = inside ? wingAt(fp.eye.x, fp.eye.z) : null, here = eyeWing ?? wingAt(target.x, target.z);
+    for (const k of Object.keys(wingSeen) as Wing[])
+      if (k !== 'hall') wingSeen[k] = inside ? eyeWing === k || PORTALS.some(({ o, box }) => ((o.wing === eyeWing && o.beyond === k) || (o.beyond === eyeWing && o.wing === k)) && frustum.intersectsBox(box)) : joined(here, k);
     for (const e of exhibits) {
       e.group.visible = wingSeen[e.wing];
       if (!e.group.visible || !e.frame(t, dt, seen)) continue;

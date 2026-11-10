@@ -158,10 +158,19 @@ test('すがた in and out, dressed: no WebGL context, listener or DOM node left
 });
 
 // The museum (docs/design.md "The museum", "First person"): in first person and out, the eye button on and off, a
-// bench sat on and left. In the museum only its own context is alive, the island it came from gone (before the fixes
-// one more: the island's hooks, its sleep clock and a lazy chunk's CSS link held a whole island, its DOM and context).
-test('the museum in first person and out, the eye button, a bench: no context or listener left, the island gone inside', { tag: '@chromium' }, async ({ page }) => {
-  test.setTimeout(120_000);
+// bench sat on and left, its lazy wings woken (the fossils', the art's and the sea creatures', each with a find on
+// show: their packs fetched and drawn). In the museum only its own context is alive, the island it came from gone
+// (before the fixes one more: the island's hooks, its sleep clock and a lazy chunk's CSS link held a whole island, its
+// DOM and context).
+test('the museum in first person and out, the eye button, a bench, its fossils, art and sea creatures: no context or listener left, the island gone inside', { tag: '@chromium' }, async ({ page }) => {
+  test.setTimeout(150_000);
+  await page.addInitScript(() => {
+    if (localStorage.getItem('island-demo.events')) return;
+    const at = Date.parse('2026-11-04T09:00:00+09:00');
+    const finds = [['fossil', 't-rex-skull'], ['fossil', 'amber'], ['item', 'famous-painting'], ['item', 'gallant-statue'], ['sea', 'octopus'], ['sea', 'sea-star']];
+    const events = finds.map(([kind, id], i) => ({ id: `seed-${i}`, type: 'find', data: { kind, id }, queuedAt: at + i, tries: 0, nextAt: 0, ackedAt: at + i, person: 'A' }));
+    localStorage.setItem('island-demo.events', JSON.stringify({ day: '2026-11-04', events }));
+  });
   /** A function of the museum's hooks (MuseumRoom.svelte hooks()), its value. */
   const mu = <T>(fn: string) => page.evaluate(`(${fn})(window.__museum)`) as Promise<T>;
   await watch(page);
@@ -193,6 +202,11 @@ test('the museum in first person and out, the eye button, a bench: no context or
     const [fx, fy] = await mu<[number, number]>('m => m.px(150, 15)');
     await page.mouse.click(fx, fy);
     await expect.poll(() => mu<boolean>('m => !m.seat() && m.still()'), { timeout: 15_000 }).toBe(true);
+    // the lazy wings: each woken where it is, its finds drawn
+    for (const [x, z, id] of [[-100, -130, 't-rex-skull'], [40, -190, 'famous-painting'], [350, 60, 'octopus']] as const) {
+      await page.evaluate(`window.__museum.put(${x}, ${z})`);
+      await expect.poll(() => mu<boolean>(`m => m.shown().includes("${id}") && !m.stats().loading && m.still()`), { timeout: 20_000 }).toBe(true);
+    }
     inside.push((await measure(page)).gl);
     await back();
   };

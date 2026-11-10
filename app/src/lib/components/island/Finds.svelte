@@ -49,6 +49,9 @@
   import { lying, taken as takenBy, takenIds } from '#lib/sync/world-day.ts';
   import { tellPartner, type PartnerNews } from './partnerNews.ts';
   import { loadCatalogNames } from '#lib/i18n/catalog.ts';
+  import { ART_IDS } from '../museum/artIds.ts';
+  import { findKey, findsView } from '#lib/model/finds.ts';
+  import { week } from '#lib/store/week.svelte.ts';
   import { giftTree } from './treeGifts.ts';
   import { treeById } from './treeShake.ts';
   import { SvelteSet } from 'svelte/reactivity';
@@ -289,9 +292,10 @@
     if (!art.endsWith('sky-egg')) void catalog().catch(() => {});
   }
   type Inside = ReturnType<typeof import('./catalog.ts')['pickPresent']>;
-  /** What a present can hold (catalog.ts, ~2,000 entries) and their names: their own chunks, fetched when one lands. */
+  /** What a present can hold (catalog.ts, ~2,000 entries) and their names (an artwork's with the catches'): their own
+   *  chunks, fetched when one lands. */
   let catalogChunk: Promise<typeof import('./catalog.ts')> | null = null;
-  const catalog = () => (catalogChunk ??= Promise.all([import('./catalog.ts'), loadCatalogNames(i18n.locale)]).then(([m]) => m,
+  const catalog = () => (catalogChunk ??= Promise.all([import('./catalog.ts'), loadCatalogNames(i18n.locale), loadNames()]).then(([m]) => m,
     (e: unknown) => ((catalogChunk = null), Promise.reject(e))));
   /** A present opening where it lay: the box pops (a squash, the lid off), confetti in the wrapping's colours bursts
    *  out with sparkles. */
@@ -308,10 +312,18 @@
     // what's inside is decided at the tap (and claimed with it: the partner's phone shows what I got)
     void catalog().then((C) => {
       // a tree's holds its furniture of the day (the same on every phone); a balloon's is a draw
-      const inside = p.tree ? C.treeItem(date, p.tree, seed) : C.pickPresent(date, rand, eggTime(eventNow()));
+      const inside = p.tree ? C.treeItem(date, p.tree, seed) : C.pickPresent(date, rand, eggTime(eventNow()), artWanted());
       if (!claim(p.uid, `present:${inside.kind}:${inside.id}`, p.x, p.y)) return;
       pickHere(p.x, () => opened(p, inside));
     }, () => {});
+  }
+  /** The genuine artworks the museum hasn't got yet (anyone's first find of one is its donation): a balloon's present
+   *  holds one now and then (catalog.ts ART_ONE_IN). */
+  function artWanted(): string[] {
+    const m = week.model;
+    if (!m) return [];
+    const have = findsView(m.state);
+    return ART_IDS.filter((id) => !have.has(findKey('item', id)));
   }
   function opened(p: (typeof presents)[number], inside: Inside | null) {
     {

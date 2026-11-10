@@ -16,7 +16,7 @@ import {
   ShaderMaterial, Sphere, Vector2, Vector3, Vector4, AdditiveBlending, BoxGeometry, type Material, type Texture
 } from 'three';
 import type { Exhibit, Kit } from './engine.ts';
-import type { Habitat, Specimen } from './species.ts';
+import { BUG_MUSEUM_MODEL, type Habitat, type Specimen } from './species.ts';
 import { ditherMaterial, fadeMaterial, fadeStep, hourWatch } from './hourFader.ts';
 import { bugsOnDisplay, type Shown } from './bugShow.ts';
 import type { Pt, Rect } from './plan.ts';
@@ -237,7 +237,8 @@ export function buildGarden(kit: Kit, list: readonly Specimen[], clock: () => nu
       seed: bugSeed(sp.id), sphere: new Sphere(), fade: fadeIn ? 0 : 1, dir: fadeIn ? 1 : 0
     };
     bugs.set(key, b);
-    void kit.critter('bugs', sp.id).then((g) => {
+    // (NH's museum one where it differs: the dung beetle with its ball, species.ts BUG_MUSEUM_MODEL)
+    void (BUG_MUSEUM_MODEL[sp.id] ? kit.model(sp.id) : kit.critter('bugs', sp.id)).then((g) => {
       if (!g || disposed || bugs.get(key) !== b) return;
       // its parts (a beetle's wing cases, a bee's or a dragonfly's wings) as one geometry, one group a part
       const parts: Mesh[] = [];

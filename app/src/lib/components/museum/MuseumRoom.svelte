@@ -2,11 +2,14 @@
   // はくぶつかん: the museum's inside (docs/design.md "The museum"), behind its door on the island. The museum (engine.ts,
   // three.js) comes in its own chunk once the screen opens; until its first frame the door's black covers it
   // (ui-state/doorTransition.ts). A tap on the floor walks my villager there (through the hall's openings into a wing);
-  // a tap on a fish or a bug shows its card (MuseumCard: its names, who found it first and when, how many we've had);
+  // a tap on an exhibit (a fish, a bug, a sea creature, a fossil, an artwork) shows its card (MuseumCard: its names, who
+  // found it first and when, how many we've had);
   // a tap on a bench walks my villager up to its free seat and sits it down facing the great tank (the rooms' sitting:
   // rooms/seating.ts, its seats seats.ts), a tap on the floor gets it up; a tap on the curator at the desk (フータ: curator.ts, his idle life) is his line in NH's balloon (Talk, lines.ts);
-  // the doormat or ‹ 島へ goes back out. What's on show is the ずかん's (model/finds.ts: every fish and bug anyone has
-  // found, the guest's too), and comes as it's found. The others in here are seen (the relay's `tent` with `sc: 'm'`,
+  // the doormat or ‹ 島へ goes back out. What's on show is the ずかん's (model/finds.ts: every fish, bug, sea creature
+  // and fossil anyone has found, the guest's too, and every genuine artwork a present has held), and comes as it's
+  // found; the sea creatures', the fossils' and the art's wings are built (their models fetched) only once my villager
+  // comes near (plan.ts nearWings). The others in here are seen (the relay's `tent` with `sc: 'm'`,
   // the rooms' presence); the say button says a phrase here (`say` with `sc: 'm'`). Nothing gives ベル.
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
@@ -20,7 +23,7 @@
   import { nightOf, roomSpeaker } from '../rooms/speaker.ts';
   import { gestures } from '../rooms/gesture.ts';
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
-  import MuseumCard from './MuseumCard.svelte';
+  import MuseumCard, { type Shown } from './MuseumCard.svelte';
   import { SAY_TAG, rememberSay, sayGate, type SaySpeaker } from '../island/say.ts';
   import { url3d } from '../villager3d/manifest.ts';
   import { person3, type Dirs } from '../person3d/person3d.ts';
@@ -46,8 +49,10 @@
   import type { Intent, Pt as WirePt, Relayed } from '#lib/contract/live-protocol.ts';
   import { hook } from '../island/devHooks.ts';
   import { now } from '#lib/time/clock.ts';
-  import { ENTRANCE, wingHeld, type Pt, type Wing } from './plan.ts';
+  import { ENTRANCE, nearWings, wingHeld, type Pt, type Wing } from './plan.ts';
   import { onShow, type Specimen } from './species.ts';
+  import { ROW, fossilsOnShow, type FossilOnShow } from './fossils.ts';
+  import { artOnShow, type ArtOnShow } from './art.ts';
   import { CURATOR, curatorLine } from './lines.ts';
   import { benchSeats, seatOf, type MuseumSeat } from './seats.ts';
   import { createSeating } from '../rooms/seating.ts';
@@ -86,6 +91,15 @@
   /** One find kept off show (the e2e's and the Simulator's: let back, it arrives as a new find does, its wing rebuilt). */
   let withheld = $state<string | null>(null);
   const specimens = $derived<Specimen[]>(finds ? onShow(finds).filter((s) => s.id !== withheld) : []);
+  const fossils = $derived<FossilOnShow[]>(finds ? fossilsOnShow(finds).filter((f) => f.id !== withheld) : []);
+  const artworks = $derived<ArtOnShow[]>(finds ? artOnShow(finds).filter((a) => a.id !== withheld) : []);
+  /** The wings woken (near my villager once: plan.ts nearWings), their exhibits built and their models fetched. */
+  let awake = $state<ReadonlySet<Wing>>(new Set());
+  function wake(ws: readonly Wing[]) {
+    if (ws.every((w) => awake.has(w))) return;
+    awake = new Set([...awake, ...ws]);
+    for (const w of ws) if (w === 'fossil' || w === 'art') prefetchPlace(MUSEUM_MUSIC[w]);
+  }
 
   // ---- my villager, told to the others (the very walk) ----
   let myWalk: { from: Pt; via: Pt[]; to: Pt; s: number; ms: number } | null = null;
@@ -126,8 +140,9 @@
   function heardMusic() {
     const at = eng?.at(me);
     if (!at) return;
-    wing = wingHeld(wing, at[0]);
+    wing = wingHeld(wing, at[0], at[1]);
     music.to(MUSEUM_MUSIC[wing]);
+    wake(nearWings(at[0], at[1]));
   }
 
   // ---- the benches (seats.ts): walk up to the nearest free seat, then on; one villager a seat, the first keeps it ----
@@ -201,8 +216,17 @@
   let sayAt = $state<HTMLElement | null>(null);
   let sayBtn = $state<HTMLButtonElement>();
   let sayClosedBy: Event | null = null;
-  /** The card of the creature tapped (its specimen), or null. */
-  let card = $state<Specimen | null>(null);
+  /** The card of the exhibit tapped, or null. */
+  let card = $state<Shown | null>(null);
+  /** An exhibit's card's contents, by its id (a fossil's skeleton: its pieces found of how many). */
+  function shownOf(id: string): Shown | null {
+    const s = specimens.find((x) => x.id === id);
+    if (s) return { kind: s.kind, id, found: s.found };
+    const f = fossils.find((x) => x.id === id);
+    if (f) return { kind: 'fossil', id, found: f.found, ...(f.set ? { set: { id: f.set, n: fossils.filter((x) => x.set === f.set).length, of: ROW[f.set].length } } : {}) };
+    const a = artworks.find((x) => x.id === id);
+    return a ? { kind: 'art', id, found: a.found } : null;
+  }
   const sayShown = $derived(!!eng && !failed && !ui.sheets.length);
   const sayId = (w: Who) => (w === me ? 'mine' : w === partner ? 'partner' : 'third');
   const speakerOf = (w: Who) => roomSpeaker(w, me, () => ({ eng, fpv, canvas, bottom: insets().bottom }));
@@ -250,8 +274,8 @@
     if (!eng || !curator) return;
     cue('host-tap');
     curatorSaid = curatorLine(Math.random, curatorSaid);
-    const fish = specimens.filter((s) => s.kind === 'fish').length, bugs = specimens.length - fish;
-    const line = t(curatorSaid, { fish, bugs }), him = curator;
+    const fish = specimens.filter((s) => s.kind === 'fish').length, bugs = specimens.filter((s) => s.kind === 'bug').length;
+    const line = t(curatorSaid, { fish, bugs, fossils: fossils.length, art: artworks.length }), him = curator;
     him.talk([...line].length);
     talk?.say(t('museum.curator'), line, curatorSpeaker, { colour: CURATOR_TAG, ondone: () => him.quiet() });
     const p = curator.where(CURATOR);
@@ -317,7 +341,7 @@
     }
     if (h.kind === 'creature' && h.id === CURATOR) return curatorTalk();
     if (h.kind === 'creature') {
-      const s = specimens.find((x) => x.id === h.id);
+      const s = shownOf(h.id);
       if (!s) return;
       card = s;
       const p = eng.exhibits().map((x) => x.where(h.id)).find(Boolean);
@@ -362,13 +386,13 @@
   // (none found yet: the wings built all the same, their tanks and benches empty of fish; once the record is in)
   let shownKey: string | null = null;
   $effect(() => {
-    const list = specimens, e = eng;
+    const on = { list: specimens, fossils, art: artworks }, woke = awake, e = eng;
     if (!e || !finds) return;
-    const k = list.map((s) => s.id).join(',');
+    const k = [...on.list, ...on.fossils, ...on.art].map((s) => s.id).join(',') + `|${[...woke].join(',')}`;
     if (k === shownKey) return;
     shownKey = k;
     // (not on an engine let go of meanwhile: the room left before the chunk landed)
-    untrack(() => void import('./exhibits.ts').then(({ show }) => eng === e && show(e, list, clock)));
+    untrack(() => void import('./exhibits.ts').then(({ show }) => eng === e && show(e, on, clock, woke)));
   });
 
   onMount(() => {
@@ -488,6 +512,12 @@
       px: (x: number, z: number, y = 0) => eng?.client(x, y, z),
       /** The species on show (the ずかん's finds) and those drawn (each wing's). */
       specimens: () => specimens.map((s) => ({ id: s.id, kind: s.kind, tank: s.tank, by: s.found.person })),
+      /** The fossils and the art on show (the ずかん's finds, the presents' artworks), and the wings woken. */
+      fossils: () => fossils.map((f) => ({ id: f.id, set: f.set, by: f.found.person })),
+      art: () => artworks.map((a) => ({ id: a.id, kind: a.art.kind, by: a.found.person })),
+      awake: () => [...awake],
+      /** Wake a wing now (its exhibits built, its models fetched), as coming near it does. */
+      wake: (w: Wing) => wake([w]),
       shown: () => eng?.exhibits().flatMap((x) => x.shown()) ?? [],
       /** A creature's client px (null: not drawn). */
       creature: (id: string) => {
@@ -545,7 +575,7 @@
     </button>
   {/if}
   {#if card && counts}
-    <MuseumCard specimen={card} {counts} {view} onclose={() => (card = null)} />
+    <MuseumCard shown={card} {counts} {view} onclose={() => (card = null)} />
   {/if}
   <Says bind:this={says} {scene} />
   <Talk bind:this={talk} {scene} />

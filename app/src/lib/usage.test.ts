@@ -78,7 +78,7 @@ const KIKI_GAMES = {
 const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaFood, ...jaNames, ...jaCatalog, ...jaTent, ...jaKiki, ...(Object.assign({}, ...Object.values(KIKI_GAMES.ja)) as Record<string, string>), ...jaTravel, ...jaWed };
 const en: Record<string, string> = { ...enMain, ...enTab, ...enFood, ...enNames, ...enCatalog, ...enTent, ...enKiki, ...(Object.assign({}, ...Object.values(KIKI_GAMES.en)) as Record<string, string>), ...enTravel, ...enWed };
 /** A lazily loaded catalog's own key prefixes. */
-const NAME_KEY = /^(critter|sea|beach)\.name\.|^fossil\.set\./;
+const NAME_KEY = /^(critter|sea|beach|art)\.name\.|^art\.real\.|^fossil\.set\./;
 /** The balloon catalogue's names (i18n/catalog.ts, per language). */
 const CATALOG_KEY = /^(item|recipe)\.name\./;
 

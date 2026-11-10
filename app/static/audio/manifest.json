@@ -816,6 +816,20 @@
       "end": 69.677392,
       "gain": 6,
       "v": "3a5c3649"
+    },
+    "museum-fossils": {
+      "file": "places/museum-fossils.m4a",
+      "start": 60.677,
+      "end": 69.677392,
+      "gain": 4.1,
+      "v": "39176e42"
+    },
+    "museum-art": {
+      "file": "places/museum-art.m4a",
+      "start": 39.452,
+      "end": 46.451655,
+      "gain": 6,
+      "v": "cb9ea18a"
     }
   }
 }

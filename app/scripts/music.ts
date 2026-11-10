@@ -423,12 +423,14 @@ const CATALOGUE = new Map<string, Row>([
   ...hours(1, 2, 'sunny', (h) => `music/hour-${h}.m4a`),
   ...hours(2, 1, 'rain', (h) => `music/rain-${h}.m4a`),
   ...hours(2, 25, 'snow', (h) => `music/snow-${h}.m4a`),
-  // the rooms (src/lib/sound/places.ts) the app has: the museum's hall, fish and insect rooms, the shop. The hall's
+  // the rooms (src/lib/sound/places.ts) the app has: the museum's hall, fish, insect, fossil and art rooms, the shop. The hall's
   // rip has one pass and most of the next; the fish and insect rooms are a texture with no exact repeat (three of the
   // hall's 23.2 s phrases, blended at the wrap).
   ['3-04', { key: 'places.museum-hall', file: 'places/museum-hall.m4a', kind: 'loop', periodS: 23.2258 }],
   ['3-05', { key: 'places.museum-fish', file: 'places/museum-fish.m4a', kind: 'loop', periodS: 3 * 23.2258 }],
   ['3-06', { key: 'places.museum-bugs', file: 'places/museum-bugs.m4a', kind: 'loop', periodS: 3 * 23.2258 }],
+  ['3-07', { key: 'places.museum-fossils', file: 'places/museum-fossils.m4a', kind: 'loop', periodS: 3 * 23.2258 }],
+  ['3-08', { key: 'places.museum-art', file: 'places/museum-art.m4a', kind: 'loop', periodS: 2 * 23.2258 }],
   ['3-12', { key: 'places.shop', file: 'places/shop.m4a', kind: 'loop' }],
   // the events (src/lib/sound/events.ts). Bunny Day's and Festivale's second passes are variations (no exact repeat:
   // blended); Reese & Cyrus's loop is two 63 s halves, 128 s in all (at 56 kbps: under 1 MB)

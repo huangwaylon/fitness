@@ -78,6 +78,23 @@ first. It brought the 2.0 villagers, Brewster, Kapp'n and Wilbur, and 376 tent p
   textures in the files), the birthday's cake hats and NH's party glasses, at the villagers' scale, `anchor: joint`.
 - The plumeria isn't in NH's files: NH's hibiscus stands in, in the plumeria's white and pink.
 
+## The museum
+
+`scripts/world3d-models.ts --museum` (`NH_MODELS=… npm run world3d-models -- --museum [--only=…]`) writes the museum's
+own models to `static/room/museum/` and `museum/models.json`: NH's tank and garden props (one GLB each, WebP
+textures), its floors and walls (`tex/`), and its exhibits in packs (each member a node named its id, models.json
+`pack` its file; Cloudflare Pages answers a Range with the whole file, so a pack is fetched whole, and only once one
+of its members is on show):
+
+- **Fossils:** 22 packs, one a skeleton (`fossil-<set>`, 60–300 KB) and `fossils` (the 14 standalone ones), NH's
+  `FtrFossil*` (74 folders: the T. rex's pieces join on their bases as placed side by side), 128 px textures, ≤ 3,000
+  triangles a piece; 3.2 MB in all.
+- **Art:** the 43 genuine `FtrArt*` and `FtrSculpture*` (never a `*Fake`): `art-paintings-1|2` (256 px: they're read)
+  and `art-statues-1|2` (128 px); 0.8 MB. Their NH icons (`Layout_FtrIcon_*`) at 96 px in `static/art/finds/art/`.
+- **NH's museum-tank variants** (`*Museum`): the 12 sea creatures' (`sea-museum`) and the dung beetle's with its ball
+  (`bug-museum`). NH's fish variants (35) and the ant's and cicada shell's are the catch's own meshes (only their
+  textures differ), so the aquarium and the garden keep the catch models.
+
 ## Seats and beds
 
 `villager3d/seats3d.ts`, `seats3d.json`; `npm run seat-anchors` (`scripts/seat-anchors.ts`): every piece a villager

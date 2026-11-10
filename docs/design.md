@@ -899,33 +899,57 @@ silhouette and ？？？ otherwise, 「コンプリート！」 when all are in;
 
 ### The museum
 
-`museum/` (each file's header has its part: plan, engine, curator, species, aquarium, boids, feeding, garden, bugShow),
-`e2e/museum.spec.ts`. NH's museum (はくぶつかん) is a building on the layout
+`museum/` (each file's header has its part: plan, engine, curator, species, aquarium, boids, feeding, garden, bugShow,
+seaTanks, seaLife, fossils, fossilWing, art, gallery), `e2e/museum.spec.ts`. NH's museum (はくぶつかん) is a building on the layout
 ([island-layout.md](island-layout.md#the-islands-buildings)): NH's own model, one to an island, moved and turned in the
 editor, never removed. A tap walks my villager to its door and in (the door's iris); ‹ 島へ or the doormat comes back
 out.
 
 - **Inside:** one floor, NH's layout: the entrance hall (marble, red carpets, Blathers at his desk), the bug wing to the
-  left (こんちゅう), the aquarium to the right (さかな); NH's own floors and walls, lit warm, dimmer at night. No two faces
-  share a plane (surfaces.test).
+  left (こんちゅう), the aquarium to the right (さかな) with the sea creatures' room off its far end (うみの さち), and
+  through the hall's back wall, either side of the desk, the fossils (かせき, left) and the art gallery (びじゅつ, right;
+  NH's is upstairs, here on the one floor); NH's own floors and walls, lit warm, dimmer at night. No two faces share a
+  plane (surfaces.test). The room's camera shows a wing's exhibits from its own room or a room next to it, no further.
 - **Like the rooms:** a tap on the floor walks my villager there; a drag turns the camera, a pinch zooms, ⌂ puts it
   back; the camera follows my villager through the rooms, the walls in the way cut away. The say button says a phrase
   in here only. Who else is in: the rooms' presence with the museum's scope; the guest comes in like anyone.
 - **The curator:** フータ (Blathers) behind his desk, NH's owl: breathing, glances, blinks, a wing now and then; he
   watches my villager in front of him and nods off when alone. A tap perks him up and is his line in NH's balloon: his
   welcome first in a visit, then one of six, never the same twice running.
-- **What's on show:** one of each fish and bug in the ずかん's first finds (anyone's), never the pockets' (selling takes
-  nothing out: NH's donation). A tap: its card (MuseumCard: icon, names, who found it and when, ×n).
+- **What's on show:** one of each fish, bug, sea creature and fossil in the ずかん's first finds (anyone's) and each
+  genuine artwork a present has held, never the pockets' (selling takes nothing out: NH's donation, the record's `find`
+  events, so every phone shows the same). A tap: its card (MuseumCard: icon, names, a fossil's skeleton 「Tレックス 2/3」
+  or 「コンプリート！」, an artwork's real title and artist, who found it and when, ×n).
+- **Built as one comes near:** the sea creatures', the fossils' and the art's wings are built (their packs fetched) only
+  once my villager comes within a few tiles of their doorway (plan.ts nearWings); the hall, the aquarium and the garden
+  at once, as before.
 - **The aquarium:** NH's three tanks (the great sea tank, the dark deep-sea tank, the river tank) and park benches in
   the aisle (sat on as in the tent). **The hour's fish:** at most seven of each tank's caught species, the same on every
   phone, new each hour; the great tank always shows a caught predator if there is one. Fish swim NH's calm long passes,
   never clipping the glass; where a predator is on show, little generic feeder fish come now and then and are hunted,
   a cosmetic of each phone's own.
 - **The bug wing:** NH's garden under glass with display cases; at most ten of the caught bugs an hour, each living as
-  on the island in a place of its own.
+  on the island in a place of its own (the dung beetle NH's museum one, with its ball).
+- **The sea creatures** (`seaTanks.ts`, `seaLife.ts`): all of them at once in two tanks, each in a place of its own: the
+  reef tank along the back wall (the drifters bobbing in its water, the big crawlers on its sand), the tide pool in the
+  middle, looked down into (the shells, urchins, stars). NH's museum-tank models where NH has one (12: the octopus
+  sprawled, the seaweed in a clump, the eels out of the sand), the catch model otherwise.
+- **The fossils** (`fossils.ts`, `fossilWing.ts`): NH's 73 as NH's own models, in NH's rooms' order: room 1's early
+  life on marble stands along the front wall, then six rows of skeletons (room 2's dinosaurs, room 3's mammals) either
+  side of a red-carpeted aisle. A skeleton's pieces stand in a row on their own bases, each where it joins the next; a
+  piece found later fills its gap, and once all are in the animal is whole.
+- **The art gallery** (`art.ts`, `gallery.ts`): NH's 43 genuine artworks only (no forgeries, no Redd): the paintings
+  hung on its red walls and two rows of panels, the statues on marble plinths in front, the wild painting's halves as a
+  folding screen. **How art comes:** a balloon's present now and then (1 in 10, `island/catalog.ts` ART_ONE_IN) holds a
+  genuine artwork the museum hasn't got, 「ゆうめいな めいがを てにいれた！」; once all 43 are in, none. The curator
+  hints at it.
 - **Performance:** the exhibits are built once the finds are in and rebuilt only when a wing's list changes; they step
-  at the ambient rate, nothing while nothing on screen moves; the rest is made ready while the hall is still; its models
-  stay loaded across visits (`world3d/modelCache.ts`). The canvas is never shown blank: its buffer is resized only for a
+  at the ambient rate, nothing while nothing on screen moves (the fossils and the art never: 0 frames at rest); the rest
+  is made ready while the hall is still; its models stay loaded across visits (`world3d/modelCache.ts`). The exhibits
+  come in packs, fetched whole and only once one of theirs is on show ([world3d-assets](world3d-assets.md#the-museum)).
+  With everything in (iPhone 15 viewport, WebKit): the fossils ~110 draw calls and ~110k triangles at the front,
+  3.5 MB in 22 packs, ~11 MB of textures; the gallery ~70 calls, 0.8 MB in 4 packs, ~19 MB of textures; the sea
+  creatures ~130 calls (the aquarium beside them), 0.14 MB; no new shader programs. The canvas is never shown blank: its buffer is resized only for a
   new size, just before a draw (engine.ts `fit`, draw).
 - Its music: [Place music](#place-music).
 
@@ -1352,7 +1376,7 @@ the island's.
 
 | Where | Track (`places.<id>`) |
 | --- | --- |
-| The museum's hall / bug wing / aquarium | `museum-hall` 博物館（エントランス） / `museum-bugs` / `museum-fish` |
+| The museum's hall / bug wing / aquarium (and the sea creatures) / fossils / art | `museum-hall` 博物館（エントランス） / `museum-bugs` / `museum-fish` / `museum-fossils` / `museum-art` |
 | The shop | `shop` タヌキ商店 |
 | The tent and the homes | none: NH's houses play the hour's music |
 

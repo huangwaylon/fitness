@@ -38,12 +38,12 @@ const WATER: Record<TankId, { deep: number; top: number; caustic: number; glow: 
   river: { deep: 0x1a4a40, top: 0x5fae95, caustic: 0.25, glow: 0x9fe0c4 }
 };
 
-const WATER_VERT = /* glsl */ `
+export const WATER_VERT = /* glsl */ `
 varying vec2 vUv; varying vec3 vPos;
 void main() { vUv = uv; vec4 w = modelMatrix * vec4(position, 1.0); vPos = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`;
 // the water's back and floor: its colour by depth (deep below, light above), caustics (three sines folded: NH's
 // shimmering net of light) and soft rays from the surface; uFloor 1 on the floor (caustics over the sand, no rays)
-const WATER_FRAG = /* glsl */ `
+export const WATER_FRAG = /* glsl */ `
 uniform float uTime; uniform vec3 uDeep; uniform vec3 uTop; uniform float uCaustic; uniform float uFloor; uniform float uNight;
 varying vec2 vUv; varying vec3 vPos;
 float caustic(vec2 p, float t) {
@@ -128,7 +128,7 @@ function sphereOf(b: Box): Sphere {
 }
 
 /** The corners' plants ([model, x, z, scale]); the aisle's benches are seats.ts's. */
-const PLANTS: readonly [string, number, number, number][] = [['heliconia', 70, 90, 1.8], ['anthurium', 290, 90, 2.6], ['heliconia', 278, -72, 2]];
+const PLANTS: readonly [string, number, number, number][] = [['heliconia', 70, 90, 1.8], ['anthurium', 290, -90, 2.6], ['heliconia', 278, -66, 2]];
 
 export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => number = Date.now): Exhibit {
   const group = new Group();

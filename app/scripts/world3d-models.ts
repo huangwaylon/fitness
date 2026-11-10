@@ -6,9 +6,12 @@
 // never at install), plus src/lib/components/world3d/models.json (each model's bounds and bytes).
 //
 // With --museum it converts the museum's inside instead (routes/museum, components/museum): NH's own aquarium and bug
-// garden props (its tanks' kelp, coral and river stones, the garden's trees, flower beds, logs and terrarium),
-// into static/room/museum/<name>.glb and src/lib/components/museum/models.json, and NH's museum floors and walls into
-// static/room/museum/tex/<name>.webp (each its own albedo, scaled down, tiled at run time).
+// garden props (its tanks' kelp, coral and river stones, the garden's trees, flower beds, logs and terrarium) and its
+// exhibits in packs (a pack a skeleton and one for the standalone fossils, the genuine art in four, NH's museum-tank
+// sea creatures and bugs: each member a node named its id), into static/room/museum/<name>.glb and
+// src/lib/components/museum/models.json (a member's `pack` its file), NH's museum floors and walls into
+// static/room/museum/tex/<name>.webp (each its own albedo, scaled down, tiled at run time), and the artworks' NH icons
+// into static/art/finds/art/<id>.webp (96 px, as the balloon catalogue's: a present's plate, the card).
 //
 // With --shop it converts the shop's inside (routes/shop, components/shop): NH's built-up Nook's Cranny (IdrMarket02:
 // its walls, its checkered floor, the tiered stage, the counter corner), one GLB, static/room/shop/shell.glb, and
@@ -28,6 +31,11 @@ import { createHash } from 'node:crypto';
 import { ASSETS, POC_USES, writeAssets, writeDoc, type Use } from './world3d-assets.ts';
 import { fxGltf, type Fx } from './world3d-fx.ts';
 import { nhFolders } from './nh-folders.ts';
+import { FOSSIL_MODEL, packOf } from '../src/lib/components/museum/fossils.ts';
+import { ART } from '../src/lib/components/museum/artIds.ts';
+import { artPack } from '../src/lib/components/museum/art.ts';
+import { SEA_MUSEUM_MODEL } from '../src/lib/components/museum/seaTanks.ts';
+import { BUG_MUSEUM_MODEL } from '../src/lib/components/museum/species.ts';
 
 const APP = join(import.meta.dirname, '..');
 /** Try a list of jobs from a JSON file instead (`--probe=jobs.json --out=dir`): GLBs only, the manifests untouched. */
@@ -156,9 +164,22 @@ const MUSEUM_JOBS: Job[] = [
   bug0('agave', 'Agave'), bug0('anthurium', 'Anthurium'), bug0('heliconia', 'Heliconia'), bug0('coleus', 'COLOUMre'),
   bug1('potted', 'IdrMuseumInsect1Obj07'),
   bug2('autumn-log', 'IdrMuseumInsect2Obj00'), bug2('pink-flowers', 'IdrMuseumInsect2Obj01'), bug2('small-trees', 'IdrMuseumInsect2Obj02'),
-  bug2('logs-ferns', 'IdrMuseumInsect2Obj03'), bug2('cacti', 'IdrMuseumInsect2Obj04'), bug2('terrarium', 'IdrMuseumInsect2Obj10')
+  bug2('logs-ferns', 'IdrMuseumInsect2Obj03'), bug2('cacti', 'IdrMuseumInsect2Obj04'), bug2('terrarium', 'IdrMuseumInsect2Obj10'),
   // (the curator at the front desk is the villagers' skinned Blathers: scripts/villagers3d-models.ts, museum/curator.ts)
+  // the exhibits' packs: [members (id, NH folder)], their textures' side (the paintings' 256 to be read, the bones' and
+  // the statues' 128: their plain colours, a quarter of the memory), triangles a member
+  ...packs(Object.entries(FOSSIL_MODEL), packOf, 128, 3000),
+  ...packs(ART.filter((a) => a.kind === 'painting' || a.kind === 'screen').map((a) => [a.id, a.model]), artPack, 256, 3000),
+  ...packs(ART.filter((a) => a.kind === 'statue' || a.kind === 'bust').map((a) => [a.id, a.model]), artPack, 128, 3000),
+  ...packs(Object.entries(SEA_MUSEUM_MODEL), () => 'sea-museum', 256, 1500),
+  ...packs(Object.entries(BUG_MUSEUM_MODEL), () => 'bug-museum', 128, 1500)
 ];
+/** The exhibits' packs: each member (its id, its NH model folder, the model's own textures) in the pack `of` names. */
+function packs(members: [string, string][], of: (id: string) => string, maxTex: number, tris: number): Job[] {
+  const by = new Map<string, [string, string][]>();
+  for (const m of members) (by.get(of(m[0])) ?? by.set(of(m[0]), []).get(of(m[0]))!).push(m);
+  return [...by].map(([name, ms]) => ({ name, parts: [], maxTex, tris: tris * ms.length, pack: ms.map(([id, f]) => ({ id, parts: [[f, f]], tex: [] })) }));
+}
 // the shop's inside (--shop): NH's built-up Nook's Cranny in one piece, its untextured parts left out (the light map's
 // `mMarketMap` and `mBlack`, the window's glass, the cloth's soft mesh: drawn as glass panes over the whole room)
 const SHOP_JOBS: Job[] = [
@@ -171,7 +192,10 @@ const MUSEUM_TEX: [string, string, number][] = [
   ['fish-floor', 'IdrMuseumFish_0_Tex_mFloorCarpet_Alb', 256], ['fish-wall', 'IdrMuseumFish_0_Tex_mWallMortarBlue_Alb', 256],
   ['fish-sand', 'IdrMuseumFish_0_Tex_mFishSand_Alb', 256], ['bug-path', 'IdrMuseumInsect_0_Tex_mRoadTile_Alb', 256],
   ['bug-outside', 'IdrMuseumInsect_1_Tex_mOutside_Alb', 512],
-  ['bug-soil', 'IdrMuseumInsect_0_Tex_mFloorGravel_Alb', 256]
+  ['bug-soil', 'IdrMuseumInsect_0_Tex_mFloorGravel_Alb', 256],
+  ['fossil-floor', 'IdrMuseumFossil_0_Tex_mFloorRubber_Alb', 256], ['fossil-wall', 'IdrMuseumFossil_0_Tex_mWallMortar_Alb', 256],
+  ['art-floor', 'IdrMuseumArt_0_Tex_mWoodFloor_Alb', 512],
+  ['marble', 'IdrMuseumArt_0_Tex_mWallMarble_Alb', 256]
 ];
 
 const MODELS = process.env.NH_MODELS?.replace(/^~(?=\/)/, process.env.HOME ?? '~');
@@ -300,7 +324,7 @@ for (const j of todo) {
   if (members) {
     // each member a model of its own in assets.json, in this file (its share of the bytes by its triangles)
     const all = (members as Member[]).reduce((n, m) => n + m.tris, 0);
-    for (const m of members as Member[]) assetMetas[memberName(j, m.id)] = { min: m.box[0].map((n) => +n.toFixed(2)), max: m.box[1].map((n) => +n.toFixed(2)), tris: m.tris, kb: +((bytes / 1024) * (m.tris / all)).toFixed(1), v, ...(m.lit ? { lit: 1 as const } : {}), pack: j.name };
+    for (const m of members as Member[]) (MUSEUM ? metas : assetMetas)[memberName(j, m.id)] = { min: m.box[0].map((n) => +n.toFixed(2)), max: m.box[1].map((n) => +n.toFixed(2)), tris: m.tris, kb: +((bytes / 1024) * (m.tris / all)).toFixed(1), v, ...(m.lit ? { lit: 1 as const } : {}), pack: j.name };
     console.log(`${j.name}: ${(bytes / 1024).toFixed(1)} KB, ${r.tris} tris, ${(members as Member[]).length} models (${(members as Member[]).map((m) => `${m.id} ${m.tris}${m.lit ? ' lit' : ''} h ${(m.box[1][1] - m.box[0][1]).toFixed(1)}`).join(', ')})`);
     continue;
   }
@@ -321,9 +345,20 @@ if (MUSEUM) {
     execFileSync('cwebp', ['-quiet', '-q', '80', '-resize', String(px), '0', tmp, '-o', out]);
     total += statSync(out).size;
   }
-  const sortedM = Object.fromEntries(Object.entries(metas).filter(([k]) => MUSEUM_JOBS.some((j) => j.name === k)).sort(([a], [b]) => a.localeCompare(b)));
+  // the artworks' icons (NH's, 128 px) at the balloon catalogue's 96
+  mkdirSync(join(APP, 'static', 'art', 'finds', 'art'), { recursive: true });
+  for (const a of ART) {
+    if (only.length && !only.some((o) => a.id.includes(o) || 'art-icons'.includes(o))) continue;
+    const folder = `Layout_FtrIcon_${a.model}`, src = join(ROOT, F(folder)), png = has(folder) ? readdirSync(src).find((f) => /^[A-Za-z0-9_]+\.png$/.test(f)) : null;
+    if (!png) throw new Error(`no icon ${folder}`);
+    const tmp = join(scratch, `${a.id}.png`);
+    cpSync(join(src, png), tmp);
+    execFileSync('cwebp', ['-quiet', '-q', '86', '-alpha_q', '90', '-resize', '96', '96', tmp, '-o', join(APP, 'static', 'art', 'finds', 'art', `${a.id}.webp`)]);
+  }
+  const names = new Set(MUSEUM_JOBS.flatMap((j) => (j.pack ? j.pack.map((m) => memberName(j, m.id)) : [j.name])));
+  const sortedM = Object.fromEntries(Object.entries(metas).filter(([k]) => names.has(k)).sort(([a], [b]) => a.localeCompare(b)));
   writeFileSync(META, `{\n  "_": "scripts/world3d-models.ts --museum: the museum's props (bounds in model units, triangles, KB, content hash)",\n  "models": {\n${Object.entries(sortedM).map(([k, m]) => `    ${JSON.stringify(k)}: ${JSON.stringify(m)}`).join(',\n')}\n  }\n}\n`);
-  console.log(`${todo.length} models and ${MUSEUM_TEX.length} textures, ${(total / 1024 / 1024).toFixed(2)} MB`);
+  console.log(`${todo.length} files and ${MUSEUM_TEX.length} textures, ${(total / 1024 / 1024).toFixed(2)} MB`);
   rmSync(scratch, { recursive: true, force: true });
   rmSync(work, { recursive: true, force: true });
   process.exit(0);

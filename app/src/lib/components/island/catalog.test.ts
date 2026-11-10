@@ -5,7 +5,7 @@ import ja from '#lib/i18n/catalog.ja.json';
 import en from '#lib/i18n/catalog.en.json';
 import { isTallyKey } from '#lib/contract/tally.ts';
 import {
-  CLOTHING_CATEGORIES, FURNITURE_CATEGORIES, ITEMS, RECIPES, RECIPE_SEASONS, catalogArt, catalogName, pickPresent, recipesOn,
+  ART_ONE_IN, CLOTHING_CATEGORIES, FURNITURE_CATEGORIES, ITEMS, RECIPES, RECIPE_SEASONS, catalogArt, catalogName, pickPresent, recipesOn,
   type Present
 } from './catalog.ts';
 import { inPool, seasons, slug, withArticle } from '../../../../scripts/catalog.ts';
@@ -126,6 +126,18 @@ describe('the pool rules', () => {
     expect(ps.filter((p) => !known.has(`${p.kind}:${p.id}`))).toEqual([]);
     expect(draw('2026-04-05', 50, 7)).toEqual(ps.slice(0, 50));
     expect(new Set(ps.map((p) => p.id)).size).toBeGreaterThan(900);
+  });
+  it('now and then holds a genuine artwork the museum lacks (1 in ART_ONE_IN), none once it has them all', () => {
+    const lacks = ['famous-painting', 'gallant-statue', 'wild-painting-left-half'];
+    const r = rng(11), ps = Array.from({ length: 6000 }, () => pickPresent('2026-05-25', r, false, lacks));
+    const art = ps.filter((p) => lacks.includes(p.id));
+    expect(art.length / ps.length).toBeCloseTo(1 / ART_ONE_IN, 1);
+    expect(art.every((p) => p.kind === 'item')).toBe(true);
+    expect(new Set(art.map((p) => p.id))).toEqual(new Set(lacks));
+    // (none lacking: the very same draws as before art, the pick unchanged)
+    expect(draw('2026-04-05', 50, 7)).toEqual(Array.from({ length: 50 }, ((r) => () => pickPresent('2026-04-05', r, false, []))(rng(7))));
+    expect([catalogArt({ kind: 'item', id: 'famous-painting' }), catalogName({ kind: 'item', id: 'famous-painting' })]).toEqual(['finds/art/famous-painting', 'art.name.famous-painting']);
+    expect(art.length ? existsSync(join(STATIC, 'art/finds/art/famous-painting.webp')) : false).toBe(true);
   });
   it('names its art and its name key', () => {
     expect(catalogArt({ kind: 'item', id: 'froggy-chair' })).toBe('finds/items/froggy-chair');

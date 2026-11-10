@@ -6,11 +6,14 @@ import type { MusicTrack } from './hourly.ts';
 
 /** The rooms with music, the tracks under static/audio/manifest.json `places.<id>` (loops, the hours' shape): the
  *  museum's hall and wings, the shop. */
-export const PLACE_IDS = ['museum-hall', 'museum-fish', 'museum-bugs', 'shop'] as const;
+export const PLACE_IDS = ['museum-hall', 'museum-fish', 'museum-bugs', 'museum-fossils', 'museum-art', 'shop'] as const;
 export type PlaceId = (typeof PLACE_IDS)[number];
 
-/** The museum's rooms (museum/plan.ts Wing): its hall, its bug wing, its aquarium. NH's fossil and art wings aren't built. */
-export const MUSEUM_MUSIC: Readonly<Record<'hall' | 'bug' | 'fish', PlaceId>> = { hall: 'museum-hall', bug: 'museum-bugs', fish: 'museum-fish' };
+/** The museum's rooms (museum/plan.ts Wing): its hall, its bug wing, its aquarium (the sea creatures' room too, as NH's
+ *  are in its aquarium), its fossils, its art gallery. */
+export const MUSEUM_MUSIC: Readonly<Record<'hall' | 'bug' | 'fish' | 'sea' | 'fossil' | 'art', PlaceId>> = {
+  hall: 'museum-hall', bug: 'museum-bugs', fish: 'museum-fish', sea: 'museum-fish', fossil: 'museum-fossils', art: 'museum-art'
+};
 
 /** The file a place plays, or null: no file, so the island's music goes on. */
 export function placeTrack(id: PlaceId | null, files: Partial<Record<PlaceId, MusicTrack>>): ({ id: PlaceId } & MusicTrack) | null {

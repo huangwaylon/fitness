@@ -4,8 +4,9 @@ import { pickOne } from '#lib/random.ts';
 
 /** The id a tap on the curator picks (curator.ts). */
 export const CURATOR = 'curator';
-/** His lines (museum.curator.0 …; .0 counts what's on show: {fish}, {bugs}). */
-const LINES = 6;
+/** His lines (museum.curator.0 …; .0 counts what's on show: {fish}, {bugs}; .6 the fossils, {fossils}; .7 the art,
+ *  {art}; .10 how the art comes: a balloon's present now and then). */
+const LINES = 11;
 
 /** His line on a tap (an i18n key): `last` the one before (none yet: his welcome). */
 export function curatorLine(r: () => number, last?: string): string {

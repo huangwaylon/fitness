@@ -8,9 +8,12 @@
 // furniture 35 : clothing 20 : a season's recipe 15 while a recipe season is on, else furniture 50 : clothing 25.
 // Within furniture every item is as likely; clothing in its style's season (spring, summer...) twice as likely. The
 // shops' season stock (the Able Sisters' summer and winter lines, Nook's Cranny's summer slot) only in its season.
+// Now and then (1 in ART_ONE_IN, not NH's: no Redd here) a present holds a genuine artwork the museum hasn't got yet
+// (museum/artIds.ts), its first find a donation to the art gallery; once all 43 are in, none.
 import data from './catalog.json';
 import room from '../tent/items.json';
 import { dayRand } from './daySeed.ts';
+import { isArt } from '../museum/artIds.ts';
 
 /** A dated window (MM-DD, inclusive; `from` > `to` wraps past New Year). */
 type Window = readonly [string, string];
@@ -81,9 +84,14 @@ function weighted<T>(list: readonly T[], weight: (t: T) => number, r: () => numb
   return list[list.length - 1];
 }
 
+/** A balloon's present holds a genuine artwork one time in this many (while the museum lacks one). */
+export const ART_ONE_IN = 10;
+
 /** What's inside a present opened on `date` (YYYY-MM-DD): a season's recipe, a piece of furniture or of clothing, at
- *  NH's odds (above). `r`: a uniform [0, 1) source; `bunnyDay`: Bunny Day's recipes are on. */
-export function pickPresent(date: string, r: () => number, bunnyDay = false): Present {
+ *  NH's odds (above); one time in ART_ONE_IN one of `art` (the genuine artworks not yet in the museum), if any.
+ *  `r`: a uniform [0, 1) source; `bunnyDay`: Bunny Day's recipes are on. */
+export function pickPresent(date: string, r: () => number, bunnyDay = false, art: readonly string[] = []): Present {
+  if (art.length && r() < 1 / ART_ONE_IN) return { kind: 'item', id: art[Math.floor(r() * art.length)] };
   const md = date.slice(5), month = Number(date.slice(5, 7));
   const recipes = recipesOn(date, bunnyDay);
   const odds = recipes.length ? ODDS.inSeason : ODDS.offSeason;
@@ -110,6 +118,6 @@ export function treeItem(date: string, tree: string, seed?: string): Present {
 
 /** An entry's icon (an art key, lib/art.ts: static/art/finds/items|recipes/<id>.webp): the item's official icon, or
  *  what the recipe makes. */
-export const catalogArt = ({ kind, id }: Present): string => (kind === 'item' ? `finds/items/${id}` : `finds/recipes/${id}`);
-/** An entry's name key (i18n/catalog.*.json). */
-export const catalogName = ({ kind, id }: Present): string => (kind === 'item' ? `item.name.${id}` : `recipe.name.${id}`);
+export const catalogArt = ({ kind, id }: Present): string => (kind === 'recipe' ? `finds/recipes/${id}` : isArt(id) ? `finds/art/${id}` : `finds/items/${id}`);
+/** An entry's name key (i18n/catalog.*.json; an artwork's, i18n/catch.*.json). */
+export const catalogName = ({ kind, id }: Present): string => (kind === 'recipe' ? `recipe.name.${id}` : isArt(id) ? `art.name.${id}` : `item.name.${id}`);

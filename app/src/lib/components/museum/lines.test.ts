@@ -10,13 +10,13 @@ describe('the curator’s lines', () => {
     expect(curatorLine(Math.random)).toBe('museum.curator.hello');
     const seen = new Set<string>();
     let last = curatorLine(Math.random);
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 400; i++) {
       const k = curatorLine(Math.random, last);
       expect(k).not.toBe(last);
       expect(k).not.toBe('museum.curator.hello');
       seen.add((last = k));
     }
-    expect(seen.size).toBe(6);
+    expect(seen.size).toBe(11);
     for (const k of [...seen, 'museum.curator.hello', 'museum.curator']) {
       expect((ja as Record<string, string>)[k], k).toBeTruthy();
       expect((en as Record<string, string>)[k], k).toBeTruthy();
