@@ -520,9 +520,10 @@
     leaving = true;
     cue('scene-bench');
     // out of the door: on the island my villager stands just outside this home's door (the tent's, うめ's or the
-    // guest's), facing out, on every phone (island/doorOut.ts: the island's put, said here at once with the leaving)
-    send({ kind: 'tent', in: false });
+    // guest's), facing out, on every phone (island/doorOut.ts: the island's put, said here at once with the leaving);
+    // out at the door first, then seen: the others' islands show it there, not where it went in (the shop's order)
     leaveBy(home === 'A' ? 'campsite' : home === 'B' ? 'home-B' : 'home-G', me);
+    send({ kind: 'tent', in: false });
     // (back to the island without the room's `home`)
     const q = new URLSearchParams(location.search);
     q.delete('home');

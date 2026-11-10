@@ -524,8 +524,9 @@
     if (leaving) return;
     leaving = true;
     cue('scene-bench');
-    send({ kind: 'tent', in: false });
+    // (out at the door first, then seen: the others' islands show it there, not where it went in: the shop's order)
     leaveBy('museum', me);
+    send({ kind: 'tent', in: false });
     const q = new URLSearchParams(location.search);
     void goto(resolve('/') + (q.size ? `?${q}` : '')).finally(() => (leaving = false));
   }
