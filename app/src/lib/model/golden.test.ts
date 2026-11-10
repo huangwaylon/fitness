@@ -4,9 +4,10 @@
 // The rows are real-shaped (both people, every row stamped with its server `at`); they include Move goals, late
 // Health syncs (one before a lock, one after), a double-counted day corrected by a lower re-sync (A, 12-03: latest
 // wins), a lower re-sync after a lock (A, 11-29: the locked week stays put), ふたりでぜんぶ days (11-05, 12-16, 12-20),
-// がんばり days (a goal at 1.5×; both stretched past the cap on 12-14 and 12-15), wallet buys, a void, a void by the
-// partner (it counts: one wallet), buys at a wrong price or of an unknown item (ignored) and a buy beyond the wallet
-// (ignored).
+// がんばり days (a goal at 1.5×; both stretched past the cap on 12-14 and 12-15), a buy from the shared wallet before
+// the split (2026-11-11 04:00 JST, at its old price) and buys from each member's own after it, a void, a void by the
+// partner (it counts: the ベル go back to the buyer), buys at a wrong price (an old one after the split too) or of an
+// unknown item (ignored) and a buy beyond its buyer's wallet while the other's could pay (ignored).
 // - fixtures/timeline-rows.json: the sheet rows (both people, every row stamped with its server `at`). The view at
 //   instant t is built from the rows with `at <= t`.
 // - fixtures/timeline-views.json: the full WeekView for A and B at 50 key instants (Sunday 19:29/19:31, Monday 00:01,
@@ -23,6 +24,7 @@ import type { PersonId, WeekView } from '#lib/types.ts';
 import { buildWeekView } from './week.ts';
 import { bellsLedger, weekBells } from './bells.ts';
 import { provisionalMs, reduce } from './state.ts';
+import { WALLET_SPLIT_MS } from '#lib/contract/rules.ts';
 import type { SnapshotRows } from '#lib/contract/api.ts';
 import rowsJson from './fixtures/timeline-rows.json' with { type: 'json' };
 import viewsJson from './fixtures/timeline-views.json' with { type: 'json' };
@@ -84,21 +86,22 @@ describe('golden: the WeekView on a 10-week timeline', () => {
     expect(all.every((v) => PEOPLE.every((p) => Object.values(v.people[p].today.rings).reduce((a, b) => a + b, 0) === v.people[p].today.bells))).toBe(true);
     // がんばり today, paid (+2 on a fruit) at some instants.
     expect(all.some((v) => PEOPLE.some((p) => Object.values(v.people[p].today.rings).includes(2)))).toBe(true);
-    // Today's ふたりでぜんぶ, met (Sunday 12-20 19:29: 4 + 4 + うめ's がんばり 1 + 2 = 11) and not.
-    expect(all.some((v) => v.together.met && v.together.left === 0 && v.wallet.today === 11 && v.people.B.today.bells === 5)).toBe(true);
+    // Today's ふたりでぜんぶ, met (Sunday 12-20 19:29: うめ's 4 + がんばり 1 + her half of it 1 = 6) and not.
+    expect(all.some((v) => v.together.met && v.together.left === 0 && v.wallet.people.B.today === 6 && v.people.B.today.bells === 5)).toBe(true);
     expect(all.some((v) => !v.together.met && v.together.left > 0)).toBe(true);
     // Move and Stand earn, and the Move goal changes (g1–g3).
     expect(all.some((v) => v.people.A.rings.pear.met && v.people.B.rings.cherry.met)).toBe(true);
     expect(new Set(all.map((v) => v.people.A.moveGoal))).toEqual(new Set([600, 500]));
     expect(new Set(all.map((v) => v.people.B.moveGoal))).toEqual(new Set([400, 300]));
     const end = bellsLedger(reduce(ROWS), END);
-    // bs-wrong (8 ベル: the old おやつ price), bs-trip (no such reward) and bs-b13 (a 外食 beyond the wallet: 13 left)
-    // are ignored; B's void of A's dinner gives its 70 back (either of us may undo any buy).
-    expect(end.spends.map((x) => [x.spendId, x.voided]).reverse()).toEqual([
-      ['bs-early', false], ['bs-snack', true], ['bs-dinner', true], ['bs-snack-2', false],
-      ...['b10', 'b11', 'b12'].map((id) => [`bs-${id}`, false])
+    // bs-wrong (8 ベル: an older おやつ price), bs-trip (no such reward), bs-old (40: the shared wallet's おやつ, after the
+    // split) and bs-b16 (an おやつ beyond B's wallet: 5 left, though A's holds 63) are ignored; B's void of A's dinner
+    // gives its 35 back to A (either of us may undo any buy).
+    expect(end.spends.map((x) => [x.spendId, x.by, x.bells, x.voided]).reverse()).toEqual([
+      ['bs-early', 'A', 40, false], ['bs-snack', 'A', 20, true], ['bs-dinner', 'A', 35, true], ['bs-snack-2', 'B', 20, false],
+      ...(['b10:A', 'b11:B', 'b12:A', 'b13:B', 'b14:B'].map((x) => [`bs-${x.slice(0, 3)}`, x.slice(4), 35, false]))
     ]);
-    expect(buildWeekView(reduce(ROWS), 'A', END).wallet.balance).toBe(13);
+    expect(buildWeekView(reduce(ROWS), 'A', END).wallet.people).toEqual({ A: { balance: 63, today: 0 }, B: { balance: 5, today: 0 } });
     // がんばり in the ledger, capped at 2 where more were reached
     expect(end.days.some((d) => d.people.A.stretch === 2 || d.people.B.stretch === 2)).toBe(true);
     expect(end.days.every((d) => d.people.A.stretch <= 2 && d.people.B.stretch <= 2)).toBe(true);
@@ -120,16 +123,21 @@ describe('golden: the WeekView on a 10-week timeline', () => {
     expect(mismatches.slice(0, 10), `${mismatches.length} views differ`).toEqual([]);
   }, 120_000);
 
-  it('the island, the wallet and きろく agree at every key instant', () => {
+  it('the island, the wallets and きろく agree at every key instant', () => {
     for (const t of Object.keys(VIEWS)) {
       const tMs = Date.parse(t);
       const s = reduce(rowsAt(tMs));
       const l = bellsLedger(s, tMs);
       const earned = l.days.reduce((n, d) => n + d.bells, 0);
       expect(l.earned, t).toBe(earned);
+      // everything earned less the live buys: the shared wallet, then both (less an odd ベル the split dropped)
+      const left = l.earned - l.spends.reduce((n, x) => (x.voided ? n : n + x.bells), 0);
+      const g = buildWeekView(s, 'G', tMs).wallet.balance;
+      expect(left - g, t).toBeOneOf(tMs < WALLET_SPLIT_MS ? [0] : [0, 1]);
       for (const me of PEOPLE) {
         const v = buildWeekView(s, me, tMs);
-        expect(v.wallet.balance, t).toBe(l.earned - l.spends.reduce((n, x) => (x.voided ? n : n + x.bells), 0));
+        expect(v.wallet.balance, t).toBe(v.wallet.people[me].balance);
+        if (tMs >= WALLET_SPLIT_MS) expect(v.wallet.people.A.balance + v.wallet.people.B.balance, t).toBe(g);
         const h = v.harvest;
         if (h) expect(h.totalBells, `${t} harvest`).toBe(l.days.filter((d) => d.weekKey === h.weekKey).reduce((n, d) => n + d.bells, 0));
       }

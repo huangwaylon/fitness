@@ -1,18 +1,18 @@
 // Property-style checks of the economy over seeded random histories (cheap: a few hundred small sheets).
-// - The wallet: over random buys (right or wrong prices, unknown items) and voids (by the buyer, the partner, twice,
-//   early), the replay matches a plain re-implementation of the rule (bells.ts `walletAt`), and the balance never goes
-//   negative.
+// - The wallets: over random buys (right or wrong prices, the old or the new ones, unknown items) and voids (by the
+//   buyer, the partner, twice, early) on both sides of the split, the replay matches a plain re-implementation of the
+//   rule (bells.ts `walletAt`), and no balance goes negative.
 // - A day: more of any metric never pays less, and a day pays 0–4 + がんばり 0–2 per person, 0–14 for the pair.
 import { describe, expect, it } from 'vitest';
 import type { EventRow, MetricRow } from '#lib/contract/api.ts';
 import type { PersonId, RingFruit } from '#lib/types.ts';
 import { RING_FRUITS, RULES, STRETCH, stretchOf } from '#lib/config/rules.ts';
-import { SHOP, shopPrice } from '#lib/contract/rules.ts';
+import { SHOP, shopPrice, WALLET_SPLIT_MS } from '#lib/contract/rules.ts';
 import { addDays, localDateAt, weekDays } from '#lib/time/dates.ts';
 import { mulberry32 } from '#lib/random.ts';
 import { earnWeek, type EarnDay } from '#lib/scoring/bells.ts';
 import { reduce } from './state.ts';
-import { bellsLedger, walletAt } from './bells.ts';
+import { bellsLedger, SPLIT_DAY, walletAt } from './bells.ts';
 
 const jstMs = (date: string, hm: string) => Date.parse(`${date}T${hm}:00+09:00`);
 const iso = (ms: number) => new Date(ms).toISOString();
@@ -50,8 +50,8 @@ function randomSheet(seed: number) {
     const by = pick(PEOPLE);
     if (rand() < 0.6 || buys.length === 0) {
       const item = pick(ITEMS);
-      // Mostly the price; sometimes the other item's price.
-      const bells = rand() < 0.85 ? (shopPrice(item) ?? 8) : pick([8, 15, 6, 20, 5]);
+      // Mostly the price; sometimes another (the other item's, the other side of the split's).
+      const bells = rand() < 0.85 ? (shopPrice(item, t) ?? 8) : pick([8, 15, 20, 35, 40, 70]);
       const b = { at: t, by, spendId: `s${id++}`, item, bells };
       buys.push(b);
       events.push([iso(t), by, `e${i}`, 'spend', JSON.stringify({ spendId: b.spendId, item, bells })]);
@@ -67,30 +67,55 @@ function randomSheet(seed: number) {
 }
 
 /**
- * The rule written out plainly, against the ledger's earnings: a buy counts if it is a reward at its price and the
- * wallet covers it (earned on days up to its date − live buys); the first void after it (either of us) gives it back.
+ * The rule written out plainly, against the ledger's earnings: a buy counts if it is a reward at its price then and its
+ * wallet covers it: before the split the shared one (the pair's days before SPLIT_DAY up to its date − live buys), after
+ * it the buyer's (half of what the shared one held at the split, rounded down, + their own days from SPLIT_DAY up to its
+ * date with half of each ふたりでぜんぶ − their live buys + their older buys undone since). The first void after a buy
+ * (either of us) gives it back.
  */
 function oracle(s: ReturnType<typeof randomSheet>, now: number) {
   const st = reduce(s.rows);
   const ledger = bellsLedger(st, now);
-  const earnedBy = (t: number) => ledger.days.filter((d) => d.date <= localDateAt(t)).reduce((n, d) => n + d.bells, 0);
+  const upTo = (t: number) => ledger.days.filter((d) => d.date <= localDateAt(t));
+  const sharedDays = ledger.days.filter((d) => d.date < SPLIT_DAY);
+  const ownBy = (p: PersonId, t: number) => upTo(t).filter((d) => d.date >= SPLIT_DAY)
+    .reduce((n, d) => n + d.people[p].bells + (d.together ? RULES.together / 2 : 0), 0);
   const theVoid = new Map<string, number>();
   for (const v of s.voids) {
     const b = s.buys.find((x) => x.spendId === v.spendId)!;
     if (v.at >= b.at && !theVoid.has(v.spendId)) theVoid.set(v.spendId, v.at);
   }
+  const voidedBefore = (x: Buy, t: number) => theVoid.has(x.spendId) && theVoid.get(x.spendId)! < t;
+  const pre = (x: Buy) => x.at < WALLET_SPLIT_MS;
+  const sum = (xs: Buy[]) => xs.reduce((n, x) => n + x.bells, 0);
   const accepted: Buy[] = [];
-  const live = (t: number) => accepted.filter((x) => !(theVoid.get(x.spendId)! < t)); // voided strictly before t
+  const half = () => Math.floor((sharedDays.reduce((n, d) => n + d.bells, 0) - sum(accepted.filter((x) => pre(x) && !voidedBefore(x, WALLET_SPLIT_MS)))) / 2);
+  /** What p's own wallet holds just before t (voids strictly before it). */
+  const own = (p: PersonId, t: number) => half() + ownBy(p, t)
+    - sum(accepted.filter((x) => !pre(x) && x.by === p && !voidedBefore(x, t)))
+    + sum(accepted.filter((x) => pre(x) && x.by === p && voidedBefore(x, t) && !voidedBefore(x, WALLET_SPLIT_MS)));
   for (const b of s.buys) {
-    if (shopPrice(b.item) !== b.bells) continue;
-    if (earnedBy(b.at) - live(b.at).reduce((n, x) => n + x.bells, 0) < b.bells) continue;
+    if (shopPrice(b.item, b.at) !== b.bells) continue;
+    const room = pre(b)
+      ? upTo(b.at).filter((d) => d.date < SPLIT_DAY).reduce((n, d) => n + d.bells, 0) - sum(accepted.filter((x) => !voidedBefore(x, b.at)))
+      : own(b.by, b.at);
+    if (room < b.bells) continue;
     accepted.push(b);
   }
   const voidedBy = (x: Buy) => theVoid.has(x.spendId) && theVoid.get(x.spendId)! <= now;
-  return { st, accepted, voidedBy, earned: ledger.earned, ledger };
+  /** Each wallet at now, once every event is in (the shared one's balance for both before the split). */
+  const balance = (p: PersonId) => now >= WALLET_SPLIT_MS ? own(p, now + 1)
+    : sharedDays.reduce((n, d) => n + d.bells, 0) - sum(accepted.filter((x) => !voidedBefore(x, now + 1)));
+  return { st, accepted, voidedBy, earned: ledger.earned, ledger, balance };
 }
 
-describe('the wallet over random buys and voids', () => {
+describe('the wallets over random buys and voids', () => {
+  it('the sheets cross the split: buys accepted on both sides, older ones undone after it', () => {
+    const all = Array.from({ length: 60 }, (_, i) => randomSheet(i + 1)).map((x) => ({ x, o: oracle(x, x.end) }));
+    expect(all.filter(({ o }) => o.accepted.some((b) => b.at < WALLET_SPLIT_MS) && o.accepted.some((b) => b.at >= WALLET_SPLIT_MS)).length).toBeGreaterThan(20);
+    expect(all.some(({ x, o }) => o.accepted.some((b) => b.at < WALLET_SPLIT_MS && x.voids.some((v) => v.spendId === b.spendId && v.at >= WALLET_SPLIT_MS)))).toBe(true);
+  });
+
   for (let seed = 1; seed <= 60; seed++) {
     it(`seed ${seed}: the replay follows the rule and the balance never goes negative`, () => {
       const sheet = randomSheet(seed);
@@ -101,10 +126,12 @@ describe('the wallet over random buys and voids', () => {
         expect(w.spends.filter((x) => x.at <= now).map((x) => [x.spendId, x.bells, x.voided && x.voidedAt! <= now])).toEqual(
           due.map((x) => [x.spendId, x.bells, o.voidedBy(x)])
         );
-        expect(w.wallet.earned).toBe(o.earned);
-        expect(w.wallet.balance).toBe(w.wallet.earned - w.wallet.spent);
-        expect(w.wallet.balance).toBeGreaterThanOrEqual(0);
-        expect(w.wallet.spent).toBe(w.spends.filter((x) => !x.voided).reduce((n, x) => n + x.bells, 0));
+        expect(w.earned).toBe(o.earned);
+        for (const p of PEOPLE) expect(w.balance[p]).toBeGreaterThanOrEqual(0);
+        if (now >= sheet.end) {
+          expect(w.balance).toEqual({ A: o.balance('A'), B: o.balance('B') });
+          expect(w.total).toBe(now >= WALLET_SPLIT_MS ? w.balance.A + w.balance.B : w.balance.A);
+        }
         // A day pays 0–4 per person + がんばり 0–2, plus 2 when both met all four.
         for (const d of o.ledger.days) {
           for (const p of PEOPLE) {

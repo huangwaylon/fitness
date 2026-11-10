@@ -35,15 +35,15 @@ strictly increasing (all rows of one ingest share it). Dates are `YYYY-MM-DD` (T
 ## Events
 Exactly the types in `EVENT_TYPES`; another type or a bad shape is refused with `bad_request`. `data` is an object,
 ≤ 20,000 characters as JSON (a `wnote`'s 140,000; past either `too_large`); each field's exact bounds and each op's
-merge are its `contract/` module's (header and constants). The record checks shapes (and a spend's item and price,
-`SHOP` in `contract/rules.ts`); wallet cover is a read-time rule in the model. **Ops with a sender's clock** (`decor`,
+merge are its `contract/` module's (header and constants). The record checks shapes (and a spend's item and price as of
+its clock, `shopPrice` in `contract/rules.ts`); wallet cover is a read-time rule in the model. **Ops with a sender's clock** (`decor`,
 `board`, `food*`, `pack*`, `wtask`…: `at` in ms on the relay's clock) are refused more than a day past the record's
 (`AHEAD_MS`), which no later edit could beat. **Latest op only:** the per-id ops keep one row a slot, a stale op or
 anything after a removal is acked as `duplicate`, and a removal's row is kept for good.
 
 | type | data | Meaning |
 |---|---|---|
-| `spend` | `{spendId, item, bells}` | a buy with ベル: `snack` 40 or `dinner` 70 |
+| `spend` | `{spendId, item, bells}` | a buy from the sender's wallet: `snack` 20 or `dinner` 35 (40 / 70 before `WALLET_SPLIT_MS`, the record's clock) |
 | `spend_void` | `{spendId}` | either person's undo of a `spend` (the first after it counts; a second is a `duplicate`) |
 | `harvest` | `{week}` | a week's harvest, counted only while it's open |
 | `find` | `{kind, id}` | the shared ずかん's first find of `kind:id` (`FIND_KINDS`; ids the client's catalog, no relay deploy). Never ベル |

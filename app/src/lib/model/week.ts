@@ -3,7 +3,7 @@
 import type { HarvestView, LocalDate, PersonId, PersonWeekView, RingFruit, RingProgress, TogetherView, WeekKey, WeekView, Who } from '#lib/types.ts';
 import { GUEST, PEOPLE, RING_FRUITS, RULES } from '#lib/config/rules.ts';
 import { noneMet, ringBells, type WeekEarning } from '#lib/scoring/bells.ts';
-import { walletAt, weekBells, weekSum, type WeekBells } from './bells.ts';
+import { ownDayBells, SPLIT_DAY, walletAt, weekBells, weekSum, type WeekBells } from './bells.ts';
 import { addDays, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
 import { firstWeek, moveGoalOn, partnerOf, provisionalMs, stepsGoalOn, type State } from './state.ts';
 
@@ -108,10 +108,20 @@ export function buildWeekView(s: State, viewer: Who, now: number): WeekView {
       [partner]: personView(s, partner, w[partner], today, sum[partner])
     } as Record<PersonId, PersonWeekView>,
     together: togetherView(w, today),
-    wallet: { balance: walletAt(s, now).wallet.balance, today: w.dayTotals[i] ?? 0 },
+    wallet: walletView(s, viewer, w, i, now),
     harvest: harvestView(s, now)
   };
   return { ...base, host: hostLine(base) };
+}
+
+/** The wallets at `now` (`i`: today's index in `w`): each member's, and the viewer's own (the guest: both together). */
+function walletView(s: State, viewer: Who, w: WeekBells, i: number, now: number): WeekView['wallet'] {
+  const p = walletAt(s, now);
+  const pair = w.dayTotals[i] ?? 0;
+  // today's ベル into each wallet: the pair's before the split (one shared wallet), then each member's own
+  const today = (who: PersonId) => (i < 0 ? 0 : w.A.days[i].date < SPLIT_DAY ? pair : ownDayBells(w, who, i));
+  const people = { A: { balance: p.balance.A, today: today('A') }, B: { balance: p.balance.B, today: today('B') } };
+  return viewer === 'G' ? { balance: p.total, today: pair, people } : { ...people[viewer], people };
 }
 
 /** A week's harvest recap: each person's ベル, the ふたりでぜんぶ days and the total (also the demo's `?demo=harvest`). */

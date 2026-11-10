@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import type { PersonId, RingFruit } from '#lib/types.ts';
 import { weekDays } from '#lib/time/dates.ts';
 import { RING_FRUITS, RULES, STRETCH, stretchOf } from '#lib/config/rules.ts';
-import { SHOP, shopPrice } from '#lib/contract/rules.ts';
+import { SHOP, shopPrice, WALLET_SPLIT_MS } from '#lib/contract/rules.ts';
 import { GOALS } from '#lib/contract/goals.ts';
 import { allMet, earnWeek, ringBells, togetherDays, type EarnDay, type WeekEarning } from './bells.ts';
 
@@ -215,17 +215,17 @@ describe('the numbers check (docs/design.md#economy)', () => {
     expect(pairWeek(week(days), week(days, 'B'))).toBe(28);
   });
 
-  it('the two rewards against it: おやつ 40, 外食 70; a perfect week is one 外食, the most a week pays is a 外食 or two おやつ, a typical week one おやつ, three typical weeks a 外食 and two おやつ', () => {
-    expect(SHOP).toEqual([{ id: 'snack', bells: 40 }, { id: 'dinner', bells: 70 }]);
-    const snack = shopPrice('snack')!, dinner = shopPrice('dinner')!;
-    expect(70 - dinner).toBe(0);
-    expect(98 - dinner).toBe(28);
-    expect(98 - 2 * snack).toBe(18);
-    expect(98 < snack + dinner).toBe(true);
-    expect(52 - snack).toBe(12);
-    expect(52 < dinner).toBe(true);
-    expect(3 * 52 - dinner - 2 * snack).toBe(6);
-    expect(28 < snack).toBe(true);
+  it('the two rewards against each wallet (half the pair’s week): おやつ 20, 外食 35; a perfect week is one 外食 each, the most a week pays is a 外食 or two おやつ, a typical week one おやつ, three typical weeks a 外食 and two おやつ', () => {
+    expect(SHOP).toEqual([{ id: 'snack', bells: 20 }, { id: 'dinner', bells: 35 }]);
+    const snack = shopPrice('snack', WALLET_SPLIT_MS)!, dinner = shopPrice('dinner', WALLET_SPLIT_MS)!;
+    expect(70 / 2 - dinner).toBe(0);
+    expect(98 / 2 - dinner).toBe(14);
+    expect(98 / 2 - 2 * snack).toBe(9);
+    expect(98 / 2 < snack + dinner).toBe(true);
+    expect(52 / 2 - snack).toBe(6);
+    expect(52 / 2 < dinner).toBe(true);
+    expect(3 * 52 / 2 - dinner - 2 * snack).toBe(3);
+    expect(28 / 2 < snack).toBe(true);
   });
 });
 

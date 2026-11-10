@@ -140,10 +140,11 @@ code, and old days can't earn.
 Sunday 19:30 the recap opens (ceremony only); the Wednesday 04:00 after, the week's earnings lock, spends never
 ([design](design.md#harvest-and-lock)). Why: a grace period for late syncs, then the past stays put.
 
-### One wallet, two rewards
-One shared wallet and two treats, おやつ and 外食 ([design](design.md#rewards)); either person buys or erases any buy
-(`spend_void`). Why: one number to watch, priced against the week (a typical week one おやつ, a perfect one a 外食), and
-mistakes undone without deleting anything.
+### A wallet each, two rewards
+Each person earns into and buys from their own wallet (ふたりでぜんぶ split +1 each), two treats, おやつ 20 and 外食 35
+([design](design.md#rewards)); either person erases any buy (`spend_void`). Why: the user (2026-11-10) wanted each
+to earn and spend their own; prices halved with the wallets. Until 2026-11-11 04:00 JST one shared wallet at 40 / 70
+(every old buy kept as it was), then halved into the two.
 
 ### Weight never earns
 Shown only, with an optional goal. Why: paying for kilograms rewards crash diets and punishes muscle.

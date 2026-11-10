@@ -1,6 +1,6 @@
 <script lang="ts">
-  // The two rewards (config/rules.ts SHOP) as two tiles: the item's NH art, its name and the price. One the wallet
-  // can't pay for yet is aria-disabled (a tap boops, as NH's shop does). Tap → `onbuy` (the page asks first). At each
+  // The two rewards (contract/rules.ts SHOP) as two tiles: the item's NH art, its name and its price now (`prices`). One
+  // my own wallet (`balance`) can't pay for yet is aria-disabled (a tap boops, as NH's shop does). Tap → `onbuy` (the page asks first). At each
   // tile's top-right a small round ⓘ (a 44px target) shows what counts as that reward (おやつ: たこやき・アイス…) in a
   // little cream speech bubble under it: ⓘ again, a tap anywhere else or Esc folds it; one at a time.
   import type { ShopItemId } from '#lib/types.ts';
@@ -9,7 +9,7 @@
   import { itemArt } from './icons.ts';
   import { formatBells, t } from '#lib/i18n/index.ts';
 
-  let { balance, onbuy }: { balance: number; onbuy: (item: ShopItemId) => void } = $props();
+  let { balance, prices, onbuy }: { balance: number; prices: Record<ShopItemId, number>; onbuy: (item: ShopItemId) => void } = $props();
 
   /** The reward whose examples are shown. */
   let info = $state<ShopItemId | null>(null);
@@ -38,14 +38,15 @@
 
 <section class="shop" aria-label={t('wallet.title')}>
   {#each SHOP as item (item.id)}
-    {@const short = item.bells - balance}
+    {@const price = prices[item.id]}
+    {@const short = price - balance}
     {@const label = t(`shop.${item.id}`)}
     <div class="tile">
       <button type="button" class="item" aria-disabled={short > 0} data-sfx="open" data-item={item.id} onclick={() => onbuy(item.id)}
-        aria-label="{label} {formatBells(item.bells)}">
+        aria-label="{label} {formatBells(price)}">
         <span class="ic"><OfficialArt key={itemArt(item.id)} size="72px" /></span>
         <b class="nm">{label}</b>
-        <span class="pr money" data-price={item.bells}>{formatBells(item.bells)}</span>
+        <span class="pr money" data-price={price}>{formatBells(price)}</span>
       </button>
       <button type="button" class="info" data-info={item.id} aria-label={t('wallet.info', { label })} aria-expanded={info === item.id}
         aria-controls="info-{item.id}" data-sfx="tick" onclick={() => (info = info === item.id ? null : item.id)}>

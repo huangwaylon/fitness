@@ -3,8 +3,8 @@
   // lands here. The island stays visible behind a light cool tint; しずえ's dialogue box, one card and the CTA sit at
   // the bottom, in the thumb zone. Recap: each person's ベル of the week (their goals met), the ふたりでぜんぶ days
   // (+2 each) and the week's ベル as the one big number. 「受け取る」 is a ceremony: it records that I saw it, then the
-  // end card shows the week's coins falling into the one shared wallet: a +N pops over the jar and fades over the
-  // balance (the one resting number). No confetti (not in the games): an item-get beat.
+  // end card shows the week's coins falling into the wallet: a +N pops over the jar and fades over my wallet's balance
+  // (the one resting number; the guest's: both members'). No confetti (not in the games): an item-get beat.
   // A real modal: a native <dialog> opened with showModal() (inert background, focus trap; Esc = あとで).
   import type { HarvestView, PersonId, WeekView } from '#lib/types.ts';
   import { RULES } from '#lib/config/rules.ts';

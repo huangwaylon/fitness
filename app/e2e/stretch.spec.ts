@@ -60,8 +60,9 @@ test('the cap: three goals at 1.5× all show the same chip, the ledger pays +2 w
   await expect(pop.locator('.sum .k')).toHaveText(['もくひょう', 'がんばり（上限 2）', 'うめの きょう']);
   await expect(pop.locator('.sum .v')).toHaveText(['+4', '+2', /^\+6\sベル$/]);
   await expect(pop.locator('.duo')).toHaveText(/^\s*ふたりで ぜんぶ！\s*\+2\s*ふたりに$/);
-  // ふたりでぜんぶ is the pair's: in both popups, counted once: ウェイ 4 + うめ 6 + 2 = today's 12
-  await expect(hudBells(page)).toHaveAttribute('aria-label', / · 今日 12\sベル$/);
+  // ふたりでぜんぶ is the pair's: in both popups, +1 into each wallet (after the wallets' split): my ベル row's today is
+  // ウェイ 4 + 1
+  await expect(hudBells(page)).toHaveAttribute('aria-label', / · 今日 5\sベル$/);
   // the wider rows still fit the stage
   const box = (await pop.boundingBox())!;
   expect(box.x).toBeGreaterThanOrEqual(0);
@@ -73,12 +74,12 @@ test('the cap: three goals at 1.5× all show the same chip, the ledger pays +2 w
   await expect(other.locator('.sum .v')).toHaveText(['+4', '+0', /^\+4\sベル$/]);
   await expect(other.locator('.sum .k')).toHaveText(['もくひょう', 'がんばり', 'ウェイの きょう']);
   await expect(other.locator('.duo')).toHaveText(/^\s*ふたりで ぜんぶ！\s*\+2\s*ふたりに$/);
-  // and ごほうび says the same 12 under the balance
+  // and ごほうび says the same under each balance: ウェイ 4 + 1, うめ 6 + 1
   await tap(page, other);
   await expect(page.locator('.detail')).toHaveCount(0);
   await page.waitForTimeout(700); // (a tap on a popup eats the click after it for 700 ms: IslandScene)
   await openRewards(page);
-  await expect(sheet(page).locator('[data-wallet] .hero .today')).toHaveText(/^\s*今日のベル\s*\+12\s*ベル\s*$/);
+  await expect(sheet(page).locator('[data-wallet] .hero .today')).toHaveText([/^\s*今日\s*\+5\s*ベル\s*$/, /^\s*今日\s*\+7\s*ベル\s*$/]);
 });
 
 test('no stretch: no chip, only its faint ghosts, and がんばり +0 in the ledger', async ({ page }) => {

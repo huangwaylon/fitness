@@ -72,12 +72,12 @@ test('the guest’s phone: the members’ activity and ベル, never a からだ
   await expect(row.locator('.num')).toHaveText(bells.toLocaleString('en-US'));
   await openRewards(page);
   await expect(panel.locator('[data-guest-jar]')).toBeVisible();
-  await expect.poll(async () => Number((await panel.locator('.hero .total').innerText()).replace(/\D/g, ''))).toBe(bells);
+  await expect.poll(async () => Number((await panel.locator('.hero .purse:first-child .total').innerText()).replace(/\D/g, ''))).toBe(bells);
   await expect(panel.locator('[data-item]')).toHaveCount(0);
   await panel.locator('[data-hist-toggle]').click();
   await expect(panel.locator('[data-spend]').first()).toBeVisible();
   await expect(panel.locator('[data-spend] .x')).toHaveCount(0);
-  await expect(panel.locator('.hero .today')).toBeVisible();
+  await expect(panel.locator('.hero .purse:first-child .today')).toBeVisible();
 });
 
 // The guest's 健康 and ごはん leave no hole (health plan C7): no かつどう / からだ to pick, so the period sits at the
@@ -116,7 +116,7 @@ test('the guest’s ごほうび shows today’s ベル under the balance: the m
   await openRewards(g);
   const panel = g.locator('dialog[open]');
   await expect(panel.locator('[data-guest-jar]')).toBeVisible();
-  await expect(panel.locator('.hero .today')).toHaveText(new RegExp(`^\\s*今日のベル\\s*\\+${today}\\s*ベル\\s*$`));
+  await expect(panel.locator('.hero .purse:first-child .today')).toHaveText(new RegExp(`^\\s*今日\\s*\\+${today}\\s*ベル\\s*$`));
   await ctx.close();
 });
 

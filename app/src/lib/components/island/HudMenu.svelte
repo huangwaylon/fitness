@@ -2,7 +2,7 @@
   // The HUD menu, the cluster's right end (docs/design.md "Island"): a small round cream button with NH's leaf (the
   // toggle; aria-expanded) that drops six pills down under it, right-aligned (the user's order, 2026-11-08; kanji on
   // them since then, easier to read than spaced kana):
-  // 「ベル 121」 (the shared wallet's balance, no icon: the number is the picture) → the panel (ごほうび) (ずかん is
+  // 「ベル 121」 (my wallet's balance, the guest's both, no icon: the number is the picture) → the panel (ごほうび) (ずかん is
   // 設定's: its last section), 旅行 (Orville's head: the trips' sheet, travel/open.svelte.ts), 結婚式 (パニエル's head:
   // the wedding board, its sheet opened here: components/wedding), トレイル (a mountain: the hiking trails,
   // hiking/open.svelte.ts), 英語 (しずえ's head: ききみみ's sheet opened here, the voice session begun in the tap itself;
@@ -32,7 +32,7 @@
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
 
   interface Props {
-    /** The shared wallet's balance (the ベル row's number). */
+    /** My wallet's balance, the guest's both members' (the ベル row's number). */
     bells: number;
     /** Today's ベル so far, both people (the ベル row's label, and the flash as coins land). */
     today: number;

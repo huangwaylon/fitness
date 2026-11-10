@@ -1,7 +1,7 @@
 # しまの貯金箱 · Island Fund
 
 A cozy Animal Crossing–style fitness game for a couple in Tokyo. Each iPhone's daily steps, exercise, Move and
-stand minutes grow fruit and earn ベル into one shared wallet, spent on small luxuries the couple prices themselves.
+stand minutes grow fruit and earn ベル into a wallet each, spent on small luxuries the couple prices themselves.
 Japanese-first PWA on Cloudflare Pages; its server is a Cloudflare relay (`relay/`: the record in a Durable Object, and
 the live room).
 

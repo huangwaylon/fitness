@@ -19,7 +19,9 @@ class Mem implements KV {
   removeItem(k: string) { this.m.delete(k); }
 }
 
-const view = (balance: number) => ({ wallet: { balance, today: 0 } }) as unknown as WeekView;
+/** A's phone (or the guest's) with A's wallet at `balance` (B's could pay for anything). */
+const view = (balance: number, viewer = 'A') =>
+  ({ viewer, me: 'A', wallet: { balance, today: 0, people: { A: { balance, today: 0 }, B: { balance: 999, today: 0 } } } }) as unknown as WeekView;
 
 beforeEach(() => {
   vi.useFakeTimers({ now: Date.parse('2026-11-18T12:00:00.000Z') });
@@ -29,19 +31,21 @@ beforeEach(() => {
 });
 
 describe('wallet actions', () => {
-  it('buy sends {spendId, item, bells} at the reward’s price, only when the wallet covers it', () => {
-    week.view = view(39);
+  it('buy sends {spendId, item, bells} at the reward’s price now, only when my own wallet covers it; never the guest', () => {
+    week.view = view(19);
     expect(buy('snack')).toEqual({ ok: false });
     expect(buy('nope' as ShopItemId)).toEqual({ ok: false });
+    week.view = view(999, 'G');
+    expect(buy('snack')).toEqual({ ok: false });
     expect(queued()).toEqual([]);
-    week.view = view(69);
-    expect(buy('snack')).toMatchObject({ ok: true, bells: 40 });
+    week.view = view(34);
+    expect(buy('snack')).toMatchObject({ ok: true, bells: 20 });
     expect(buy('dinner')).toEqual({ ok: false });
-    week.view = view(70);
-    expect(buy('dinner')).toMatchObject({ ok: true, bells: 70 });
+    week.view = view(35);
+    expect(buy('dinner')).toMatchObject({ ok: true, bells: 35 });
     expect(queued().map((e) => [e.type, e.data])).toEqual([
-      ['spend', { spendId: expect.any(String), item: 'snack', bells: 40 }],
-      ['spend', { spendId: expect.any(String), item: 'dinner', bells: 70 }]
+      ['spend', { spendId: expect.any(String), item: 'snack', bells: 20 }],
+      ['spend', { spendId: expect.any(String), item: 'dinner', bells: 35 }]
     ]);
   });
 

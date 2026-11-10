@@ -1,9 +1,10 @@
 // The ベル economy on read: each week's earnings (live until the week locks on its Wednesday 04:00, then fixed at the
-// lock), what has landed in the wallet by `now`, the buys replayed against it, and the きろく ledger. Pure functions of
-// the reduced State; results are cached per State (a State is never mutated) and, for locked weeks, across States of
+// lock), what has landed in the wallets by `now` (one shared, then one per member: walletAt), the buys replayed
+// against them, and the きろく ledger. Pure functions of the reduced State; results are cached per State (a State is never mutated) and, for locked weeks, across States of
 // the same sheet revision.
 import type { DayBells, LocalDate, PersonId, ShopItemId, WeekKey } from '#lib/types.ts';
 import { RULES } from '#lib/config/rules.ts';
+import { WALLET_SPLIT_MS } from '#lib/contract/rules.ts';
 import { addDays, localDateAt, weekDays, weekKeyOf } from '#lib/time/dates.ts';
 import { earnWeek, noneMet, togetherDays, type EarnInput, type WeekEarning } from '#lib/scoring/bells.ts';
 import { finalMs, firstWeek, moveGoalOn, rowsUpTo, stepsGoalOn, type State } from './state.ts';
@@ -110,7 +111,7 @@ export function weekSum(w: WeekBells, today: LocalDate): WeekSum {
 
 // ---------- the wallet and spends ----------
 
-/** An accepted buy (a buy the wallet couldn't cover is ignored and never listed). */
+/** An accepted buy (a buy its wallet couldn't cover is ignored and never listed). */
 export interface LedgerSpend {
   spendId: string;
   at: number;
@@ -121,11 +122,22 @@ export interface LedgerSpend {
   voidedAt: number | null;
 }
 
-/** The wallet's totals: everything earned, the accepted buys, and the difference. */
-interface WalletBalance { balance: number; earned: number; spent: number }
+/** A member's share of ふたりでぜんぶ on a together day, into their own wallet (RULES.together split evenly). */
+const TOGETHER_EACH = RULES.together / 2;
+
+/** The first Tokyo day whose ベル go to each member's own wallet (the days before it filled the shared one). */
+export const SPLIT_DAY: LocalDate = localDateAt(WALLET_SPLIT_MS);
+
+/** A person's ベル of the day at `i` of week `w`: their own, and half of ふたりでぜんぶ on a together day. */
+export const ownDayBells = (w: WeekBells, p: PersonId, i: number): number => w[p].days[i].bells + (w.together[i] ? TOGETHER_EACH : 0);
 
 interface WalletState {
-  wallet: WalletBalance;
+  /** What each member can spend now: before the split both see the one shared wallet's balance; from it their own. */
+  balance: Record<PersonId, number>;
+  /** All the ベル held (the shared wallet's, then both wallets'): the guest's ベル row. */
+  total: number;
+  /** Everything earned, both people. */
+  earned: number;
   /** The economy's weeks up to now, oldest first. */
   weeks: WeekBells[];
   /** Accepted buys in server order. */
@@ -135,30 +147,46 @@ interface WalletState {
 const walletMemo = new WeakMap<State, { now: number; v: WalletState }>();
 
 /**
- * The wallet at `now`. A day's ベル (its current value) count from that day. Buys and voids replay in server order; a
- * buy counts only if the wallet covered it then (earned on days up to its date − spent so far), so the balance never
- * goes negative, and a void (by either of us) gives it back.
+ * The wallets at `now`. A day's ベル (its current value) count from that day. Buys and voids replay in server order.
+ * Before WALLET_SPLIT_MS one shared wallet, filled by both people's days before SPLIT_DAY (ふたりでぜんぶ included): a buy
+ * counts only if it covered it then (earned on days up to its date − spent so far), and a void (by either of us) gives
+ * it back. At the split each member gets half of what was left, rounded down (an odd ベル is dropped); from then on
+ * each fills their own wallet from SPLIT_DAY on (their ベル and half of each ふたりでぜんぶ), a buy counts only if its
+ * buyer's wallet covers it, and a void gives the ベル back to the buyer's wallet. No balance ever goes negative.
  */
 export function walletAt(s: State, now: number): WalletState {
   const memo = walletMemo.get(s);
   if (memo && memo.now === now) return memo.v;
   const today = localDateAt(now);
   const weeks = economyWeeks(s, now).map((wk) => weekBells(s, wk, now));
-  // Earned per day, ascending.
-  const days: { date: LocalDate; bells: number }[] = [];
-  for (const w of weeks) w.A.days.forEach((d, i) => d.date <= today && days.push({ date: d.date, bells: w.dayTotals[i] }));
-  const earnedBy = (t: number): number => {
+  // Earned per day, ascending: the pair's (the shared wallet's, before SPLIT_DAY), and each member's own (from it).
+  const shared: { date: LocalDate; bells: number }[] = [];
+  const own: { date: LocalDate; A: number; B: number }[] = [];
+  for (const w of weeks) {
+    w.A.days.forEach((d, i) => {
+      if (d.date > today) return;
+      if (d.date < SPLIT_DAY) shared.push({ date: d.date, bells: w.dayTotals[i] });
+      else own.push({ date: d.date, A: ownDayBells(w, 'A', i), B: ownDayBells(w, 'B', i) });
+    });
+  }
+  /** What `days` earned (`k`'s) on days up to the Tokyo day of `t`. */
+  const earnedBy = <K extends string>(days: ({ date: LocalDate } & Record<K, number>)[], k: K, t: number): number => {
     const d = localDateAt(t);
     let n = 0;
     for (const x of days) {
       if (x.date > d) break;
-      n += x.bells;
+      n += x[k];
     }
     return n;
   };
-  const earned = days.reduce((n, x) => n + x.bells, 0);
+  const sharedEarned = shared.reduce((n, x) => n + x.bells, 0);
+  const earned = sharedEarned + own.reduce((n, x) => n + x.A + x.B, 0);
 
-  let spent = 0;
+  let sharedSpent = 0;
+  const spent: Record<PersonId, number> = { A: 0, B: 0 };
+  /** Each member's half of the shared wallet, once it is split. */
+  let half: number | null = null;
+  const split = (): number => (half ??= Math.floor((sharedEarned - sharedSpent) / 2));
   const accepted = new Map<string, LedgerSpend>();
   const spends: LedgerSpend[] = [];
   const ops = [
@@ -166,22 +194,35 @@ export function walletAt(s: State, now: number): WalletState {
     ...s.spendVoids.map((rec) => ({ at: rec.at, spend: null, void: rec }))
   ].sort((x, y) => x.at - y.at || (x.spend ? -1 : 1) - (y.spend ? -1 : 1));
   for (const o of ops) {
+    if (o.at >= WALLET_SPLIT_MS) split();
     if (o.spend) {
       const sp = o.spend;
-      if (earnedBy(sp.at) - spent < sp.bells) continue; // the wallet couldn't cover it: ignored
-      spent += sp.bells;
+      const room = half === null ? earnedBy(shared, 'bells', sp.at) - sharedSpent : half + earnedBy(own, sp.person, sp.at) - spent[sp.person];
+      if (room < sp.bells) continue; // the wallet couldn't cover it: ignored
+      if (half === null) sharedSpent += sp.bells;
+      else spent[sp.person] += sp.bells;
       const entry: LedgerSpend = { spendId: sp.spendId, at: sp.at, by: sp.person, item: sp.item, bells: sp.bells, voided: false, voidedAt: null };
       accepted.set(sp.spendId, entry);
       spends.push(entry);
     } else if (o.void) {
       const entry = accepted.get(o.void.spendId);
       if (!entry || entry.voided) continue;
-      spent -= entry.bells;
+      if (half === null) sharedSpent -= entry.bells;
+      else spent[entry.by] -= entry.bells;
       entry.voided = true;
       entry.voidedAt = o.void.at;
     }
   }
-  const v: WalletState = { wallet: { balance: earned - spent, earned, spent }, weeks, spends };
+  if (now >= WALLET_SPLIT_MS) split();
+  let balance: Record<PersonId, number>;
+  if (half === null) balance = { A: sharedEarned - sharedSpent, B: sharedEarned - sharedSpent };
+  else {
+    const h: number = half;
+    const of = (p: PersonId) => h + own.reduce((n, x) => n + x[p], 0) - spent[p];
+    balance = { A: of('A'), B: of('B') };
+  }
+  const total = half === null ? balance.A : balance.A + balance.B;
+  const v: WalletState = { balance, total, earned, weeks, spends };
   walletMemo.set(s, { now, v });
   return v;
 }
@@ -221,5 +262,5 @@ export function bellsLedger(s: State, now: number): BellsLedger {
       });
     });
   }
-  return { earned: p.wallet.earned, days: days.reverse(), spends: p.spends.map((x) => ({ ...x })).reverse() };
+  return { earned: p.earned, days: days.reverse(), spends: p.spends.map((x) => ({ ...x })).reverse() };
 }

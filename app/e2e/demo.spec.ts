@@ -56,7 +56,7 @@ async function openSettings(page: Page) {
 test('buy: a reward comes back with とりけす', async ({ page }) => {
   await page.goto('jar?demo');
   const shop = page.locator('.shop');
-  const balance = async () => Number((await page.locator('.hero .total').innerText()).replace(/\D/g, ''));
+  const balance = async () => Number((await page.locator('.hero .purse:first-child .total').innerText()).replace(/\D/g, ''));
   const before = await balance();
   await shop.locator('button[data-item="dinner"]').click();
   await expect(sheet(page).locator('.price')).toContainText('70');
@@ -72,20 +72,25 @@ test('buy: a reward comes back with とりけす', async ({ page }) => {
   await expect.poll(balance).toBe(before);
 });
 
-test('ごほうび: the jar at the left of one balance, today\'s under it; exactly two rewards with their art: おやつ 40, 外食 70, no examples, no 「あと」', async ({ page }) => {
+test('ごほうび: the two wallets side by side, mine first (a jar, the owner, the balance, today\'s under it); exactly two rewards with their art: おやつ 40, 外食 70 before the split, no examples, no 「あと」', async ({ page }) => {
   await page.goto('?demo');
   await islandReady(page);
   await toPanel(page);
   const wallet = sheet(page).locator('[data-wallet]');
-  await expect(wallet.locator('.bigjar')).toBeVisible();
-  await expect(wallet.locator('.hero .total')).toHaveText(/^\s*[\d,]+\s*ベル$/);
-  await expect(wallet.getByText('ふたりのベル')).toHaveCount(0);
-  // the header row: the jar left, the balance right of it, today's under the balance
-  const [j, tot, tdy] = await Promise.all(['.bigjar', '.hero .total', '.hero .today'].map(async (q) => (await wallet.locator(q).boundingBox())!));
-  expect(j.x + j.width).toBeLessThanOrEqual(tot.x);
+  const purses = wallet.locator('.hero .purse');
+  await expect(purses).toHaveCount(2);
+  await expect(purses.first()).toHaveClass(/mine/);
+  await expect(purses.first()).toHaveAttribute('data-purse', 'A');
+  await expect(purses.locator('.who')).toHaveText([/ウェイ/, /うめ/]);
+  await expect(purses.locator('.total')).toHaveText([/^\s*[\d,]+\s*ベル$/, /^\s*[\d,]+\s*ベル$/]);
+  // side by side; in each the jar on top, then the owner, the balance, today's under it
+  const [a, b] = await Promise.all([purses.first(), purses.last()].map(async (p) => (await p.boundingBox())!));
+  expect(a.x + a.width).toBeLessThanOrEqual(b.x);
+  expect(Math.abs(a.y - b.y)).toBeLessThan(1);
+  const [j, who, tot, tdy] = await Promise.all(['.jar', '.who', '.total', '.today'].map(async (q) => (await purses.first().locator(q).boundingBox())!));
+  expect(j.y + j.height).toBeLessThanOrEqual(who.y + 1);
+  expect(who.y + who.height).toBeLessThanOrEqual(tot.y + 1);
   expect(tdy.y).toBeGreaterThanOrEqual(tot.y + tot.height - 1);
-  expect(Math.abs(tdy.x - tot.x)).toBeLessThan(2);
-  expect(tot.y).toBeLessThan(j.y + j.height / 2);
   const shop = page.locator('.shop');
   await expect(shop.locator('button.item')).toHaveCount(2);
   await expect(shop.locator('.nm')).toHaveText(['おやつ', '外食']);
@@ -131,7 +136,7 @@ test('ごほうび: a small ⓘ at each reward\'s top-right (a 44px target) show
   // a tap elsewhere folds it (the tap still lands: nothing else opens here)
   await shop.locator('[data-info=snack]').click();
   await expect(tip).toHaveCount(1);
-  await sheet(page).locator('.hero .total').click();
+  await sheet(page).locator('.hero .purse:first-child .total').click();
   await expect(tip).toHaveCount(0);
   // Esc folds only it
   await shop.locator('[data-info=dinner]').click();
@@ -897,22 +902,22 @@ test('the menu\'s 「ベル」 row shows ごほうび\'s balance, follows a buy 
   const flashes = () => page.evaluate(() => (window as unknown as { flashes: string[] }).flashes);
   await expect.poll(async () => (await flashes()).at(-1)).toBe(`+${today}`);
   await expect(page.locator('[data-bells-flash]')).toHaveCount(0, { timeout: 4000 });
-  await expect(row).toHaveAttribute('aria-label', new RegExp(`^ごほうび · 二人のベル ${bells.toLocaleString('en-US')}\\sベル · 今日 ${today}\\sベル$`));
+  await expect(row).toHaveAttribute('aria-label', new RegExp(`^ごほうび · ベル ${bells.toLocaleString('en-US')}\\sベル · 今日 ${today}\\sベル$`));
   // unfolded: 「ベル 121」, no icon, the same number as ごほうび's
   await hudMenu(page).click();
   await expect(row).toBeVisible();
   await expect(row).toHaveText(new RegExp(`^\\s*ベル\\s*${bellsText(bells)}\\s*$`));
   await expect(row.locator('img, svg, .ic')).toHaveCount(0);
   await row.click();
-  const total = sheet(page).locator('.hero .total');
+  const total = sheet(page).locator('.hero .purse:first-child .total');
   await expect.poll(async () => Number((await total.innerText()).replace(/\D/g, ''))).toBe(bells);
-  await expect(sheet(page).locator('.hero .today')).toHaveText(new RegExp(`^\\s*今日のベル\\s*\\+${today}\\s*ベル\\s*$`));
+  await expect(sheet(page).locator('.hero .purse:first-child .today')).toHaveText(new RegExp(`^\\s*今日\\s*\\+${today}\\s*ベル\\s*$`));
   // a buy takes its price out at once; とりけす puts it back (a refund, not earnings: no flash)
   const n = (await flashes()).length;
   await page.locator('.shop button[data-item="snack"]').click();
   await sheet(page).getByRole('button', { name: '買う！' }).click();
   await expect(row.locator('.num')).toHaveText(bellsText(bells - 40));
-  await expect(sheet(page).locator('.hero .today')).toHaveAttribute('data-today', String(today)); // a buy isn't today's
+  await expect(sheet(page).locator('.hero .purse:first-child .today')).toHaveAttribute('data-today', String(today)); // a buy isn't today's
   await page.getByRole('button', { name: '取り消す' }).click();
   await expect(row.locator('.num')).toHaveText(bellsText(bells));
   await page.keyboard.press('Escape');
@@ -927,12 +932,12 @@ test('ごほうび: today’s ベル in a yuzu pill under the balance (both of u
   const today = Number(await row.getAttribute('data-today'));
   expect(today).toBeGreaterThan(0);
   await openPanel(page);
-  const pill = sheet(page).locator('[data-wallet] .hero .today');
-  await expect(pill).toHaveText(new RegExp(`^\\s*今日のベル\\s*\\+${today}\\s*ベル\\s*$`));
+  const pill = sheet(page).locator('[data-wallet] .hero .purse:first-child .today');
+  await expect(pill).toHaveText(new RegExp(`^\\s*今日\\s*\\+${today}\\s*ベル\\s*$`));
   await expect(pill).not.toHaveClass(/none/);
   await expect(pill.locator('.bag')).toHaveCount(1); // the tiny ベル bag
   // under the balance, smaller than it
-  const [tb, pb] = [(await sheet(page).locator('.hero .total').boundingBox())!, (await pill.boundingBox())!];
+  const [tb, pb] = [(await sheet(page).locator('.hero .purse:first-child .total').boundingBox())!, (await pill.boundingBox())!];
   expect(pb.y).toBeGreaterThanOrEqual(tb.y + tb.height - 1);
   expect(pb.height).toBeLessThan(tb.height + 8);
   // just after midnight nothing's earned yet: the faint pill
@@ -941,7 +946,7 @@ test('ごほうび: today’s ベル in a yuzu pill under the balance (both of u
   await expect(row).toHaveAttribute('data-today', '0');
   await expect(row).toHaveAttribute('aria-label', / · 今日 0\sベル$/);
   await openPanel(page);
-  await expect(pill).toHaveText(/^\s*今日のベル\s*0\s*ベル\s*$/);
+  await expect(pill).toHaveText(/^\s*今日\s*0\s*ベル\s*$/);
   await expect(pill).toHaveClass(/none/);
 });
 

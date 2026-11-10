@@ -1,7 +1,7 @@
-// How full the ごほうび jar looks (Jar.svelte: the panel's wallet, the harvest; the one shared wallet).
+// How full a ごほうび jar looks (Jar.svelte: the panel's wallets, the harvest's).
 
-/** A full jar = this many ベル in the wallet (a few months of good weeks saved up). */
-const FULL_AT = 300;
+/** A full jar = this many ベル in a member's wallet (a few months of one person's good weeks saved up). */
+const FULL_AT = 150;
 
 /** How full the jar looks (0–1): the square root of the wallet's share of FULL_AT, a little as soon as there is any. */
 export function walletFill(bells: number): number {

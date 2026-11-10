@@ -4,7 +4,8 @@ import { expect, test, type Page } from './fixtures.ts';
 
 /** The topmost sheet (a confirm over the panel). */
 const sheet = (page: Page) => page.locator('dialog[open]').last();
-const balance = async (page: Page) => Number((await page.locator('.hero .total').innerText()).replace(/\D/g, ''));
+/** My wallet's balance (the first of the two). */
+const balance = async (page: Page) => Number((await page.locator('.hero .purse:first-child .total').innerText()).replace(/\D/g, ''));
 /** The buys, unfolded (folded on every opening of the panel). */
 async function history(page: Page) {
   const hist = page.locator('.hist');
@@ -105,3 +106,26 @@ for (const vp of [{ width: 375, height: 667 }, { width: 390, height: 844 }]) {
     if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/purchases-confirm-${vp.width}x${vp.height}.png` });
   });
 }
+
+test('after the wallets\' split (2026-11-11 04:00): a wallet each, the rewards at 20 / 35, a buy spends mine alone, its erase refunds it', async ({ page }) => {
+  await page.goto('jar?demo&date=2026-11-12T12:00');
+  const purses = page.locator('.hero .purse');
+  await expect(purses).toHaveCount(2);
+  await expect(page.locator('.shop .pr')).toHaveText([/^20\sベル$/, /^35\sベル$/]);
+  const partner = async () => Number(await purses.last().getAttribute('data-balance'));
+  const [mine, theirs] = [await balance(page), await partner()];
+  expect(mine).toBeGreaterThanOrEqual(20);
+  await page.locator('.shop button[data-item="snack"]').click();
+  await expect(sheet(page).locator('.after .money b')).toHaveText(new RegExp(`^${mine - 20}\\sベル$`));
+  await sheet(page).getByRole('button', { name: '買う！' }).click();
+  await expect.poll(() => balance(page)).toBe(mine - 20);
+  expect(await partner()).toBe(theirs);
+  const hist = await history(page);
+  const first = hist.locator('li').first();
+  await expect(first).toContainText(/−20\sベル/);
+  await first.getByRole('button', { name: /おやつの買い物を削除/ }).click();
+  await expect(sheet(page)).toContainText(/20\sベルが戻ります/);
+  await sheet(page).getByRole('button', { name: '削除', exact: true }).click();
+  await expect.poll(() => balance(page)).toBe(mine);
+  expect(await partner()).toBe(theirs);
+});

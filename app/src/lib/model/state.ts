@@ -552,9 +552,10 @@ const rowEvent = <K extends 'pack' | 'wedding'>(list: K, rowOf: (type: string, d
 /** One handler per event type: each accepts (indexes) the event or ignores it. */
 const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
   spend: members((s, person, at, d) => {
-    // A buy from the wallet: a SHOP item at exactly its price. Whether the wallet covered it is decided on read (bells.ts).
+    // A buy from the buyer's wallet: a SHOP item at exactly its price at the buy (the old one before the wallets' split:
+    // contract/rules.ts shopPrice). Whether the wallet covered it is decided on read (bells.ts).
     const { spendId, item } = d;
-    const bells = shopPrice(item);
+    const bells = shopPrice(item, at);
     if (!isId(spendId) || bells === undefined || d.bells !== bells) return;
     if (s.bellSpends.some((x) => x.spendId === spendId)) return;
     s.bellSpends.push({ at, person, spendId, item: item as ShopItemId, bells });
@@ -563,7 +564,7 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
     const spendId = d.spendId;
     if (!isId(spendId)) return;
     const sp = s.bellSpends.find((x) => x.spendId === spendId);
-    // Either of us (one shared wallet), once, after the spend.
+    // Either of us (the ベル go back to the wallet it was paid from), once, after the spend.
     if (!sp || sp.at > at || s.spendVoids.some((v) => v.spendId === spendId)) return;
     s.spendVoids.push({ at, person, spendId });
   }),

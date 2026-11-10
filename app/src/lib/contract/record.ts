@@ -26,7 +26,7 @@ import type { LocalDate, Who } from '../types.ts';
 type Rec = Record<string, unknown>;
 
 /**
- * Shape checks per event type: a spend names one of the two rewards (SHOP) at exactly its price. Whether the wallet
+ * Shape checks per event type: a spend names one of the two rewards (SHOP) at exactly its price now (rules.ts shopPrice). Whether the wallet
  * covers it and the pref values stay read-time rules in the model (`model/state.ts`), so the record stays a dumb log.
  * `now`: the server's clock (a tally's or island day's date may not be after tomorrow). @public (relay/src/store.ts)
  */
@@ -39,7 +39,7 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
   if (isWedType(type)) return wedOpOf(type, d, { now }) !== null;
   switch (type) {
     case 'spend':
-      return isId(d.spendId) && shopPrice(d.item) !== undefined && d.bells === shopPrice(d.item);
+      return isId(d.spendId) && shopPrice(d.item, now) !== undefined && d.bells === shopPrice(d.item, now);
     case 'pref':
       // the profile's values are checked here (contract/profile.ts: a sex, a birth date 1900 … 10 years ago, a BMI
       // standard, or null), and the look's (contract/look.ts: a whole look, at most 20 コーデ); the other prefs' at read

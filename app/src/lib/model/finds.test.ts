@@ -46,6 +46,6 @@ describe('findsView: the shared ずかん', () => {
     const plain = reduce({ metrics: METRICS, events: [] }), found = reduce({ metrics: METRICS, events: finds });
     expect(found.finds).toHaveLength(40);
     expect(weekBells(found, '2026-10-26', now)).toEqual(weekBells(plain, '2026-10-26', now));
-    expect(walletAt(found, now).wallet).toEqual(walletAt(plain, now).wallet);
+    expect(walletAt(found, now).balance).toEqual(walletAt(plain, now).balance);
   });
 });

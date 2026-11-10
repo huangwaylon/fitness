@@ -8,7 +8,7 @@ What the app is and how it behaves. The backend is in [backend.md](backend.md), 
 
 A two-player Animal Crossing–style island for a couple in Tokyo (ウェイ = A, うめ = B), each with an iPhone and an
 Apple Watch, plus an optional guest ([The guest](#the-guest)). Their activity, measured automatically, grows fruit and
-earns **ベル** (play money, a stamp card: +1 per daily goal) into one shared wallet, spent on two treats: おやつ and
+earns **ベル** (play money, a stamp card: +1 per daily goal) into each person's own wallet, spent on two treats: おやつ and
 外食. Japanese first, English per person.
 
 - **Data in:** an iOS Shortcut posts Health's daily totals (steps, exercise minutes, active energy, stand minutes,
@@ -91,17 +91,18 @@ zoom, a tap on empty ground walks my villager there.
 
 ごほうび, the island panel (`wallet/Wallet.svelte`, `wallet/Shop.svelte`), top to bottom:
 
-- **The header row:** the jar (`Jar.svelte`, filling as the wallet grows: `walletFill`); beside it the balance, big,
-  and under it today's ベル in a soft yuzu pill (「今日のベル +6」: both of us, がんばり and ふたりでぜんぶ included), at 0 a
-  faint one (shown, so nothing jumps when the first coin lands).
-- **The rewards:** two tiles with NH item art, name and price: 🍦 おやつ 40 ベル and 🍜 外食 70 ベル. One the wallet can't
-  cover is sunk. A small ⓘ at each tile's corner shows what counts as that reward in a cream speech bubble as wide as
+- **The wallets:** two cards side by side, mine first (ringed): each a jar (`Jar.svelte`, filling as it grows:
+  `walletFill`), its owner's avatar and name, the balance, big, and under it today's ベル into it in a soft yuzu pill
+  (「今日 +5」: their goals, がんばり and half of ふたりでぜんぶ), at 0 a faint one (so nothing jumps when the first coin
+  lands). The guest sees both, buys nothing.
+- **The rewards:** two tiles with NH item art, name and price: 🍦 おやつ 20 ベル and 🍜 外食 35 ベル, paid from my own
+  wallet. One it can't cover is sunk. A small ⓘ at each tile's corner shows what counts as that reward in a cream speech bubble as wide as
   both tiles; ⓘ again, a tap elsewhere or Esc folds it. 買う！ asks first, applies at once and waits 5 s with 取り消す
   before it is sent.
 - **貯めたベル:** the ベル ledger ([Kiroku](#kiroku)); a day pushes a level.
 - **買い物の記録** (`wallet/Purchases.svelte`), folded by default behind a 44px disclosure (「買い物の記録 3件」); the
   buys newest first (art, name, day, who, price), ten at a time (「もっと見る」). 🗑 on any line (either of us, any buy)
-  asks first, then sends a `spend_void`; the ベル go back and the banner carries 取り消す for 5 s. The old `/jar` page
+  asks first, then sends a `spend_void`; the ベル go back to the buyer's wallet and the banner carries 取り消す for 5 s. The old `/jar` page
   redirects to the island with the panel open (`?panel=rewards`).
 
 ### Panel
@@ -380,10 +381,15 @@ earlier day); everything that reads a goal reads that day's. The ベル price Ex
 
 ### Rewards
 
-Exactly two, one shared wallet (`SHOP`): 🍦 **おやつ 40 ベル** (`snack`) and 🍜 **外食 70 ベル** (`dinner`). A buy is
-`spend {spendId, item, bells}` with `bells` exactly the item's price (the server refuses anything else). Either person
-buys; either undoes any buy (`spend_void`). Against the numbers check each is something to save for: a typical pair has
-two おやつ and one 外食 every three weeks; a perfect week buys exactly one 外食; a lazy week (28) buys nothing.
+Exactly two (`SHOP`): 🍦 **おやつ 20 ベル** (`snack`) and 🍜 **外食 35 ベル** (`dinner`), each bought from the buyer's
+own wallet. A buy is `spend {spendId, item, bells}` with `bells` exactly the item's price at the record's clock
+(`shopPrice`; the server refuses anything else). Either undoes any buy (`spend_void`). Against the numbers check (each
+wallet gets half the pair's week) each is something to save for: a typical person has two おやつ and one 外食 every
+three weeks; a perfect week buys each exactly one 外食; a lazy week (14 each) buys nothing.
+
+**The split (`WALLET_SPLIT_MS`, 2026-11-11 04:00 JST):** until then one shared wallet, both people's days and the whole
+ふたりでぜんぶ in it, おやつ 40 / 外食 70; every buy from then stays as it was. At the split each member gets half of
+what was left, rounded down (an odd ベル is dropped); days from 11-11 fill each person's own wallet.
 
 ### The first week
 
@@ -398,11 +404,13 @@ The economy starts with the data: its first week is the first one with an activi
 
 ### Wallet and buys
 
-A day's ベル count in the wallet from that day. Buys and voids replay in server order.
+A day's ベル count in its wallet from that day: each person's own and half of ふたりでぜんぶ (`walletAt`). Buys and
+voids replay in server order.
 
-- **Coverage:** a buy counts only if covered (everything earned up to its date minus earlier accepted buys); an
-  uncovered buy is ignored, so the balance never goes negative.
-- **Voids:** either of us, any buy, once; the ベル return. Buys and voids never lock.
+- **Coverage:** a buy counts only if its buyer's wallet covers it (what it got up to the buy's date minus earlier
+  accepted buys; before the split the shared wallet's); an uncovered buy is ignored, so no balance goes negative.
+- **Voids:** either of us, any buy, once; the ベル return to the wallet that paid (a pre-split buy undone after the
+  split: to its buyer's). Buys and voids never lock.
 
 ## Health data
 

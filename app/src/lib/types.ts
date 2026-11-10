@@ -26,12 +26,17 @@ export type RingBells = Record<RingFruit, number>;
 /** The two rewards (contract/rules.ts SHOP): 🍡 おやつ and 🍜 外食. */
 export type ShopItemId = 'snack' | 'dinner';
 
-/** The shared wallet as the island shows it. */
-interface WalletView {
-  /** Every ベル earned minus the accepted buys (never negative: a buy above the balance is ignored on read). */
+/** A wallet as the island shows it (model/bells.ts walletAt). */
+interface PurseView {
+  /** What it holds: earned minus the accepted buys (never negative: a buy above it is ignored on read). */
   balance: number;
-  /** Both people today so far, ふたりでぜんぶ included. */
+  /** Today's ベル into it so far (a member's own and half of ふたりでぜんぶ; before the wallets' split the pair's). */
   today: number;
+}
+
+/** The wallets: each member's own (before the split both the one shared wallet), and the HUD's ベル row. */
+interface WalletView extends PurseView {
+  people: Record<PersonId, PurseView>;
 }
 
 /** One person's earnings of one day: +1 ベル per goal met, + がんばり (+1 per goal at 1.5×, at most +2). */
@@ -118,7 +123,7 @@ export interface WeekView {
   today: LocalDate;
   people: Record<PersonId, PersonWeekView>;
   together: TogetherView;
-  /** The shared wallet. */
+  /** The wallets; `balance`/`today` are the viewer's own (the guest's phone: both members' together). */
   wallet: WalletView;
   /** Present from Sunday 19:30 until both tapped 「受け取る」. */
   harvest: HarvestView | null;

@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { eventSlot, goalDay, prefTaken, TALLY_PAST_DAYS, validEventData } from './record.ts';
 import { DEFAULT_LOOKS } from './look.ts';
+import { WALLET_SPLIT_MS } from './rules.ts';
 import { stockOf, buyPrice } from './stock.ts';
 import { reduce } from '../model/state.ts';
 import type { EventRow } from './api.ts';
@@ -84,6 +85,11 @@ describe('validEventData: each type\'s shape', () => {
     expect(ok('spend', { spendId: 's1', item: 'snack', bells: 39 })).toBe(false);
     expect(ok('spend', { spendId: 's1', item: 'caviar', bells: 40 })).toBe(false);
     expect(ok('spend', { spendId: '', item: 'snack', bells: 40 })).toBe(false);
+    // at its price as of the record's clock: the halved ones only from the wallets' split (rules.ts WALLET_SPLIT_MS)
+    expect(ok('spend', { spendId: 's1', item: 'dinner', bells: 35 })).toBe(false);
+    expect(validEventData('spend', { spendId: 's1', item: 'dinner', bells: 35 }, WALLET_SPLIT_MS)).toBe(true);
+    expect(validEventData('spend', { spendId: 's1', item: 'dinner', bells: 70 }, WALLET_SPLIT_MS)).toBe(false);
+    expect(validEventData('spend', { spendId: 's1', item: 'dinner', bells: 70 }, WALLET_SPLIT_MS - 1)).toBe(true);
     expect(ok('spend_void', { spendId: 's1' })).toBe(true);
     expect(ok('spend_void', {})).toBe(false);
     expect(ok('harvest', { week: '2026-11-04' })).toBe(true);

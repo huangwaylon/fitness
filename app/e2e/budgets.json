@@ -160,7 +160,7 @@
     "world3d.spec.ts": 9
   },
   "textSelectors": {
-    "demo.spec.ts": 9,
+    "demo.spec.ts": 8,
     "fixed-decor.spec.ts": 1,
     "food-open.spec.ts": 1,
     "food.spec.ts": 34,

@@ -4,10 +4,10 @@
 </script>
 
 <script lang="ts">
-  // ごほうびの きろく, at the very bottom of ごほうび: the buys from the shared wallet, newest first (the day, the reward,
+  // ごほうびの きろく, at the very bottom of ごほうび: the buys from the wallets, newest first (the day, the reward,
   // who bought it, the price), each with ✕ to erase it. Folded by default: its heading is a disclosure (「かいもの きろく
   // 3件」 and a chevron, aria-expanded) that opens the list on a smooth grow and folds it again. Either of us may erase
-  // any buy (one wallet). ✕ asks first (キャンセル / 削除, docs/design.md "Navigation"), then `onerase` (the page sends the `spend_void`: the
+  // any buy (its ベル go back to the wallet that paid). ✕ asks first (キャンセル / 削除, docs/design.md "Navigation"), then `onerase` (the page sends the `spend_void`: the
   // ベル go back, with とりけす on the banner). An erased buy leaves the list. Ten at first, ten more per 「もっと見る」.
   //   <Purchases spends={…} names={…} villagers={…} onerase={(s) => …} />
   import type { PersonId } from '#lib/types.ts';

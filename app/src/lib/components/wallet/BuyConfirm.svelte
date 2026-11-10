@@ -1,33 +1,37 @@
 <script lang="ts">
-  // Ask before spending: the reward's picture, name and price, and the wallet before → after. やめる beside the one CTA
+  // Ask before spending: the reward's picture, name and price, and my wallet before → after. やめる beside the one CTA
   // (買う！), as NH pairs every purchase; the page spends it and shows the banner with とりけす.
-  //   <BuyConfirm item="snack" balance={31} onconfirm={(item) => …} onclose={() => …} />
+  //   <BuyConfirm item="snack" balance={31} price={20} onconfirm={(item) => …} onclose={() => …} />
   import Sheet from '../ui/Sheet.svelte';
   import Bells from '../ui/Bells.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { itemArt } from './icons.ts';
   import type { ShopItemId } from '#lib/types.ts';
-  import { shopPrice } from '#lib/contract/rules.ts';
   import { formatBells, t } from '#lib/i18n/index.ts';
 
   interface Props {
     /** The reward asked about (null = closed). */
     item: ShopItemId | null;
+    /** My own wallet. */
     balance: number;
+    /** The reward's price now. */
+    price: number;
     onconfirm: (item: ShopItemId) => void;
     onclose: () => void;
   }
-  let { item, balance, onconfirm, onclose }: Props = $props();
+  let { item, balance, price: asked, onconfirm, onclose }: Props = $props();
   let open = $state(false);
   /** Kept while the sheet slides away, so its content doesn't vanish first. */
   let shown = $state<ShopItemId | null>(null);
+  /** Its price, kept with it. */
+  let price = $state(0);
   $effect(() => {
     if (item) {
       shown = item;
+      price = asked;
       open = true;
     } else open = false;
   });
-  const price = $derived(shown ? (shopPrice(shown) ?? 0) : 0);
 </script>
 
 <Sheet bind:open label={t('wallet.buyTitle')} title={t('wallet.buyTitle')} {onclose}>

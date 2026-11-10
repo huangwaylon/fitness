@@ -1,8 +1,8 @@
 <script lang="ts">
   // 島's HUD, NH island-view light: the sky clean, one small cluster in its top-right corner (docs/design.md "Island"):
   // [the health button] [the menu]. The health button (NH's dumbbell) → けんこう and ごはん's sheet (HealthSheet: two
-  // tabs); the menu (NH's leaf, at the screen's side) drops six pills under it (HudMenu): the ベル row (the shared
-  // wallet's balance; today's +N flashing by the leaf as coins land) → the island panel (ごほうび), the others (旅行,
+  // tabs); the menu (NH's leaf, at the screen's side) drops six pills under it (HudMenu): the ベル row (my
+  // wallet's balance, the guest's both members'; today's +N flashing by the leaf as coins land) → the island panel (ごほうび), the others (旅行,
   // 結婚式, トレイル, 英語, 設定) each open their own sheet, at once (each sheet's chunk fetched ahead: sheetChunks.ts).
   // Only when sync is not ok, the sync chip centred under the row; under it, while 設定's 季節 is on, its chip. The
   // panel, the popups and every sheet are their own chunks, loaded on first open.
@@ -23,7 +23,7 @@
   interface Props {
     /** Today's ベル so far, both people (the ベル row's label and the flash; shown in full in ごほうび). */
     today: number;
-    /** The shared wallet's balance (the ベル row's number). */
+    /** My wallet's balance, the guest's both members' (the ベル row's number). */
     balance: number;
     /** Bindable: the panel is open (the island pauses under it). */
     panelOpen?: boolean;

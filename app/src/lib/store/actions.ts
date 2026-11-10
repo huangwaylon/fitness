@@ -50,21 +50,22 @@ export function confirmHarvest(): SendResult {
   return week.send('harvest', { week: wk });
 }
 
-// ---- The wallet: buy one of the two rewards, undo. No approvals.
+// ---- The wallets: buy one of the two rewards, undo. No approvals.
 
 /**
- * Buy a reward (SHOP) from the wallet: shown at once, sent after the UNDO_MS banner. `{ok:false}` when the item is
- * unknown or the wallet can't cover it (the model would ignore the buy anyway). `bells`: what was charged.
+ * Buy a reward (SHOP) from my own wallet: shown at once, sent after the UNDO_MS banner. `{ok:false}` on the guest's
+ * phone, for an unknown item, or when my wallet can't cover it (the model would ignore the buy anyway). `bells`: what
+ * was charged (its price now: contract/rules.ts shopPrice).
  */
 export function buy(item: ShopItemId): SendResult & { bells?: number } {
   const v = week.view;
-  const bells = shopPrice(item);
-  if (!v || bells === undefined || v.wallet.balance < bells) return { ok: false };
+  const bells = shopPrice(item, week.model?.now ?? world.now());
+  if (!v || v.viewer === 'G' || bells === undefined || v.wallet.people[v.me].balance < bells) return { ok: false };
   const r = week.send('spend', { spendId: newId(), item, bells }, { holdMs: UNDO_MS });
   return { ...r, bells };
 }
 
-/** Take a buy back (either of us, any buy: one wallet; the server and the model take one void per buy). */
+/** Take a buy back (either of us, any buy: its ベル go back to the wallet it was paid from; the server and the model take one void per buy). */
 export function undoSpend(spendId: string): SendResult {
   return week.send('spend_void', { spendId }, { holdMs: UNDO_MS });
 }

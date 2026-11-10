@@ -78,7 +78,7 @@ describe('live optimistic view', () => {
       events: [
         ['2026-11-17T12:00:01.000Z', 'A', 'p0', 'pref', '{"key":"villagerName","value":"ウェイ"}'],
         ['2026-11-17T12:00:02.000Z', 'B', 'f0', 'find', '{"kind":"fish","id":"dab"}'],
-        ['2026-11-17T12:00:03.000Z', 'A', 's0', 'spend', '{"spendId":"sp0","item":"snack","bells":40}']
+        ['2026-11-17T12:00:03.000Z', 'A', 's0', 'spend', '{"spendId":"sp0","item":"snack","bells":20}']
       ]
     } }, NOW);
     const q = [
