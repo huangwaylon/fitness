@@ -312,10 +312,10 @@ describe('live protocol: the tent (v2)', () => {
     expect(parseServer(j({ kind: 'tent', in: false, who: 'B', t: T }))).toEqual({ v: 3, kind: 'tent', in: false, who: 'B', t: T });
     for (const bad of [j({ ...walk, in: 1 }), j({ ...walk, to: [50, 0] }), j({ ...walk, via: [[0, 99]] })]) expect(parseClient(bad), bad).toBeNull();
     // in the museum (`sc: 'm'`): its points over its own wider extent (a home's room's only within its own)
-    const museum = { ...walk, from: [0, 56], via: [[60, 10]], to: [180, -40], sc: 'm' };
+    const museum = { ...walk, from: [0, 56], via: [[60, 10]], to: [0, -500], sc: 'm' };
     expect(parseClient(j(museum))).toEqual({ v: 3, ...museum });
     expect(parseServer(j({ kind: 'tent', in: true, to: [-250, 80], sc: 'm', who: 'G', t: T }))).toEqual({ v: 3, kind: 'tent', in: true, to: [-250, 80], sc: 'm', who: 'G', t: T });
-    for (const bad of [j({ ...museum, to: [400, 0] }), j({ ...museum, sc: 'u' }), j({ ...museum, sc: 'x' })]) expect(parseClient(bad), bad).toBeNull();
+    for (const bad of [j({ ...museum, to: [600, 0] }), j({ ...museum, sc: 'u' }), j({ ...museum, sc: 'x' })]) expect(parseClient(bad), bad).toBeNull();
     // in the shop (`sc: 's'`): in or out (an older app's, no points), or a walk over its floor; nowhere to sit
     expect(parseClient(j({ kind: 'tent', in: true, sc: 's' }))).toEqual({ v: 3, kind: 'tent', in: true, sc: 's' });
     expect(parseServer(j({ kind: 'tent', in: true, sc: 's', who: 'A', t: T }))).toEqual({ v: 3, kind: 'tent', in: true, sc: 's', who: 'A', t: T });
