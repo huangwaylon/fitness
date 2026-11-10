@@ -77,6 +77,18 @@ describe('the service worker registered late (swLate)', () => {
     expect(got2).toBe(false);
   });
 
+  it('a page it didn\'t control (a first launch) tells the active worker what it fetched; a controlled one doesn\'t', async () => {
+    vi.stubGlobal('performance', { setResourceTimingBufferSize: vi.fn(), getEntriesByType: (t: string) => (t === 'resource' ? [{ name: 'https://x/room/a.glb?v=1' }, { name: 'https://x/art/b.webp' }] : []) });
+    for (const controller of [null, {}]) {
+      const m = await fresh(), post = vi.fn();
+      m.releaseWorker();
+      m.registerLate(true, { ...container(), ready: Promise.resolve({ active: { postMessage: post } }), controller } as unknown as ServiceWorkerContainer);
+      await tick();
+      expect(post.mock.calls).toEqual(controller ? [] : [[{ k: 'warm', urls: ['https://x/room/a.glb?v=1', 'https://x/art/b.webp'] }]]);
+    }
+    expect(performance.setResourceTimingBufferSize).toHaveBeenCalledTimes(1);
+  });
+
   it('no service workers (a private window, an old browser): nothing', async () => {
     const { registerLate } = await fresh();
     expect(() => registerLate(true, undefined)).not.toThrow();

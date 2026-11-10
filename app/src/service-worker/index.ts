@@ -3,7 +3,7 @@
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
-import { ART_CAP_BYTES, ART_KEEP_MS, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, isShellOf, fetchShared, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, keepShell, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
+import { ART_CAP_BYTES, ART_KEEP_MS, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, isShellOf, fetchShared, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, keepShell, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -335,33 +335,54 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // fonts, villagers, critters, the decor and the tent's room: cached on first use (critters and the decor share the
-  // villagers' on-use art cache, bounded by bytes: ART_CAP_BYTES; the room has its own)
+  // fonts, villagers, critters, the decor and the tent's room: cached on first use
   if (isFont(url.pathname) || isVillagerArt(url.pathname) || isCritterArt(url.pathname) || isDecorArt(url.pathname) || isRoomAsset(url.pathname)) {
-    const font = isFont(url.pathname), room = isRoomAsset(url.pathname);
-    event.respondWith(
-      (async () => {
-        // the two default villagers and the common font slices are precached
-        const precached = room ? undefined : await caches.open(CACHE).then((c) => c.match(req));
-        if (precached) return precached;
-        const cache = await caches.open(font ? FONTS : room ? ROOM_CACHE : VILLAGERS);
-        const used = font ? null : room ? roomUsed : artUsed;
-        const hit = await cache.match(req);
-        if (hit) {
-          if (used) event.waitUntil(used(req.url).catch(() => {}));
-          return hit;
-        }
-        // (once at a time: a player's pack asked by two tabs, fetchShared)
-        return fetchShared(flying, req.url, () => fetchKeep(req, fetch, async (copy) => {
-          const sized = used ? copy.clone() : null;
-          await cache.put(req, copy);
-          if (sized) await used!(req.url, await sizeOf(sized));
-        }, (p) => event.waitUntil(p)));
-      })()
-    );
+    event.respondWith(onUse(req, (p) => event.waitUntil(p)));
     return;
   }
 
   event.respondWith((async () => (await cached(req)) ?? fetch(req))());
+});
+
+/** A font, a villager's, critter's or decor's art, or a room file: its cache's copy, else fetched and kept (critters
+ *  and the decor share the villagers' on-use art cache, bounded by bytes: ART_CAP_BYTES; the room has its own). */
+async function onUse(req: Request, waitUntil: (p: Promise<unknown>) => void): Promise<Response> {
+  const path = new URL(req.url).pathname, font = isFont(path), room = isRoomAsset(path);
+  // the two default villagers and the common font slices are precached
+  const precached = room ? undefined : await caches.open(CACHE).then((c) => c.match(req));
+  if (precached) return precached;
+  const cache = await caches.open(font ? FONTS : room ? ROOM_CACHE : VILLAGERS);
+  const used = font ? null : room ? roomUsed : artUsed;
+  const hit = await cache.match(req);
+  if (hit) {
+    if (used) waitUntil(used(req.url).catch(() => {}));
+    return hit;
+  }
+  // (once at a time: a player's pack asked by two tabs, fetchShared)
+  return fetchShared(flying, req.url, () => fetchKeep(req, fetch, async (copy) => {
+    const sized = used ? copy.clone() : null;
+    await cache.put(req, copy);
+    if (sized) await used!(req.url, await sizeOf(sized));
+  }, waitUntil));
+}
+
+// A first launch's models and art (the page's, fetched before this worker was in: ui-state/swLate.ts): kept now, from
+// the browser's HTTP cache (force-cache: no network, no revalidation, for what it holds), as their first use through the
+// worker would have; else the next launch revalidated each (~77 requests) and kept them only then, or fetched them all
+// again (~1.5 MB) had the HTTP cache let them go.
+self.addEventListener('message', (event) => {
+  const d = event.data as { k?: string; urls?: unknown } | null;
+  if (d?.k !== 'warm' || !Array.isArray(d.urls)) return;
+  event.waitUntil((async () => {
+    const kept: Promise<unknown>[] = [];
+    for (const u of warmable(d.urls as unknown[], self.location.origin)) {
+      try {
+        await (await onUse(new Request(u, { cache: 'force-cache' }), (p) => kept.push(p))).body?.cancel();
+      } catch {
+        /* offline, gone: kept on its next use */
+      }
+    }
+    await Promise.allSettled(kept);
+  })());
 });
 

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fetchKeep, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, kikiPartOf, keepable, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
+import { fetchKeep, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, kikiPartOf, keepable, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -746,3 +746,14 @@ describe('a cache-first miss (fetchKeep)', () => {
   });
 });
 
+describe("a first launch's files kept once the worker is in (warmable)", () => {
+  const O = 'https://island.test';
+  it('the room\'s and the on-use art, ours only, each once; not the precached villagers, the chunks, a relay or a bad URL', () => {
+    const urls = [`${O}/room/world3d/tree.glb?v=1`, `${O}/room/tex/ab.ktx2p?e=2`, `${O}/room/world3d/tree.glb?v=1`, `${O}/room/player/everyday.12345678.pak`, `${O}/art/villagers/goldie.webp`,
+      `${O}/art/villagers/bob-icon.webp`, `${O}/terrain/nh/sand.webp?v=3`, `${O}/art/critters/fish/koi.webp`, `${O}/_app/immutable/chunks/x.js`, 'https://relay.test/room/x', 'nope', 7];
+    expect(warmable(urls, O)).toEqual([`${O}/room/world3d/tree.glb?v=1`, `${O}/room/tex/ab.ktx2p?e=2`, `${O}/room/player/everyday.12345678.pak`, `${O}/art/villagers/bob-icon.webp`, `${O}/terrain/nh/sand.webp?v=3`, `${O}/art/critters/fish/koi.webp`]);
+  });
+  it('at most WARM_MAX', () => {
+    expect(warmable(Array.from({ length: WARM_MAX + 5 }, (_, i) => `${O}/room/m${i}.glb`), O)).toHaveLength(WARM_MAX);
+  });
+});

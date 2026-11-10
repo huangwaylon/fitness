@@ -531,7 +531,9 @@ None ([decisions](decisions.md#no-notifications); `e2e/no-notify.spec.ts`: nothi
 
 - **Registration:** by the app, not Kit (`kit.serviceWorker.register = false`; `lib/ui-state/swLate.ts`): once the 3D
   island has its models in or can't draw (30 s at the latest), off the island after the window's load, so a first
-  visit's precache never competes with three.js and the models.
+  visit's precache never competes with three.js and the models. A page it didn't control then posts its resource
+  timings' URLs (`warm`): the worker keeps their models and art (`caches.ts warmable`) from the HTTP cache, so launch 2
+  asks the network for 3 files, not 78.
 - **Install:** precaches the built JS/CSS and the static files `caches.ts precachable` keeps (the rest on first use:
   `index.ts`'s header). The hashed chunks are all or nothing (`addAll`, an older shell's copy where it has one); the
   static files go by content hash (`caches.ts installStatics`, `vite.config.ts swPrecacheOnly`), each on its own.

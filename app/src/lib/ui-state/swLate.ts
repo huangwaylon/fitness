@@ -4,6 +4,8 @@
 // window's load where no island comes (another route, /pair; the error and not-set-up screens release it too), and at
 // most ISLAND_CAP_MS after the start on the island (its load stuck, a sheet's route opened instead). A phone
 // the worker controls already is unaffected: the browser checks for a new worker on each navigation itself.
+// A page it didn't control (a first launch) tells the worker, once it's in, what it fetched (the resource timings'
+// URLs: service-worker/index.ts `warm` keeps the models and art among them from the HTTP cache).
 
 import { resolve } from '$app/paths';
 import { swallowed } from '#lib/quiet.ts';
@@ -22,6 +24,9 @@ export const releaseWorker = (): void => release();
 /** Starts the wait (once, at the app's start): `island`, whether this launch opens the island (ui-state/boot.ts). */
 export function registerLate(island: boolean, sw: ServiceWorkerContainer | undefined = globalThis.navigator?.serviceWorker): void {
   if (!sw) return;
+  // (a first launch's ~370 files: past the timings' default 250, the rest weren't listed)
+  const fresh = !sw.controller;
+  if (fresh) performance.setResourceTimingBufferSize?.(1000);
   const wait = new Promise<void>((done) => {
     if (island) {
       void released.then(done);
@@ -32,7 +37,10 @@ export function registerLate(island: boolean, sw: ServiceWorkerContainer | undef
     if (document.readyState === 'complete') later();
     else addEventListener('load', later, { once: true });
   });
-  void wait.then(() => sw.register(`${resolve('/')}service-worker.js`, { type: 'module' })).then(() => sw.ready).then(() => active(!!sw.controller), () => swallowed('sw.register'));
+  void wait.then(() => sw.register(`${resolve('/')}service-worker.js`, { type: 'module' })).then(() => sw.ready).then((reg) => {
+    if (fresh) reg?.active?.postMessage({ k: 'warm', urls: performance.getEntriesByType('resource').map((e) => e.name) });
+    active(!!sw.controller);
+  }, () => swallowed('sw.register'));
 }
 
 let active: (on: boolean) => void = () => {};

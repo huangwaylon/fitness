@@ -114,6 +114,8 @@ test('a first visit registers the worker only once the island has its models in;
   await islandUp(page);
   await controlled(page);
   expect(await page.evaluate(() => (window as unknown as { __reg?: boolean[] }).__reg)).toEqual([true]);
+  // the models it fetched before the worker was in, kept by the worker now (swLate.ts's `warm`): no reload needed
+  await expect.poll(() => page.evaluate(async () => (await (await caches.open('island-room-v1')).keys()).filter((k) => k.url.includes('/room/world3d/')).length), { timeout: 30_000 }).toBeGreaterThan(5);
   await context.setOffline(true);
   const again = await page.reload();
   expect(again?.fromServiceWorker()).toBe(true);
