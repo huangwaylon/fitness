@@ -152,6 +152,8 @@
   "food.rcp.saved": "「{name}」を保存しました",
   "food.rcp.removed": "「{name}」を削除しました",
   "food.rcp.copied": "コピーしました",
+  "food.gone": "削除されました",
+  "food.rcp.saveFailed": "保存できませんでした",
   "food.my.head": "マイ食品",
   "food.my.one": "1食",
   "food.my.make": "自分で作る",

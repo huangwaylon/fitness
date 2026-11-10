@@ -646,6 +646,34 @@ test('マイレシピ: someone else’s recipe in the meal search is read-only f
   await expect.poll(async () => Math.abs((await kcalOf(page)) - (now + per))).toBeLessThanOrEqual(1);
 });
 
+// うめ has ウェイ's おうちカレー open, read-only, when he deletes it on his phone (two tabs of one demo: its taps shared):
+// hers stays read-only, 「削除されました」, never an editor whose 保存 would be refused (review 5: it turned editable).
+test('マイレシピ: someone else’s recipe deleted while open stays read-only, with a note', async ({ page, context }) => {
+  const curry = (p: Page) => sheet(p).locator('[data-food-recipes]').getByRole('button', { name: /おうちカレー/ });
+  await openFood(page, '&as=B');
+  await sheet(page).locator('[data-add=d]').click();
+  await curry(page).click();
+  await sheet(page).locator('[data-amount-open]').click();
+  const view = sheet(page).locator('[data-recipe-level=view]');
+  await expect(view.locator('[data-recipe-name]')).toHaveText('おうちカレー');
+  await expect(view.locator('[data-recipe-gone]')).toHaveCount(0);
+
+  const his = await context.newPage();
+  await openFood(his);
+  await sheet(his).locator('[data-add=d]').click();
+  await curry(his).click();
+  await sheet(his).locator('[data-amount-open]').click();
+  await sheet(his).locator('[data-recipe-level=edit] [data-recipe-remove]').click();
+  await sheet(his).locator('[data-recipe-level=edit] [data-recipe-remove]').click(); // 本当に削除しますか？
+  await expect(curry(his)).toHaveCount(0);
+
+  await page.bringToFront();
+  await expect(view.locator('[data-recipe-gone]')).toHaveText('削除されました');
+  await expect(sheet(page).locator('[data-recipe-level=edit]')).toHaveCount(0);
+  await expect(view.locator('input, [data-recipe-save], [data-recipe-remove], [data-recipe-log]')).toHaveCount(0);
+  await expect(view.locator('[data-recipe-items] li')).toHaveCount(6);
+});
+
 // A recipe at a glance (the user 2026-11-09: "some small indicator to help distinguish between plain ingredients and my
 // recipes", "include in the icon at least a few of the images of the underlying ingredients", "tap into a my recipe of
 // someone else and see the underlying ingredients"): a recipe's box holds its ingredients' pictures, the most grams
@@ -1439,7 +1467,7 @@ test('several foods a trip: a row’s ＋ logs it at once, 追加 in place stays
 // Review 4: a row's ＋ tapped twice fast logs one food: the clear swaps in さいきん, its first row the food just added
 // with its own ＋ under the finger; anything typed meanwhile is a new tap. The ingredient trip's ✕ takes out that one
 // (each its own id, not its index).
-test('a fast second ＋ is held, a typed one isn’t; the ingredient trip’s ✕ takes out that one', async ({ page }) => {
+test('a fast second ＋ is held (after a row’s ＋ or its 追加), a typed one isn’t; the ingredient trip’s ✕ takes out that one', async ({ page }) => {
   await openFood(page);
   const s = sheet(page);
   const q = s.locator('[data-food-q]');
@@ -1457,9 +1485,22 @@ test('a fast second ＋ is held, a typed one isn’t; the ingredient trip’s �
   });
   expect(second).toBe(true);
   await expect(added).toHaveCount(1);
+  // a row opened in place: its 追加 and, a frame later, さいきん's ＋ under the finger: held the same (review 5)
+  await q.fill('ごはん');
+  await s.locator('[data-food-results] [data-item="mext:01088"]').click();
+  await settled(page);
+  const again = await dlg(page).evaluate(async (d) => {
+    d.querySelector<HTMLElement>('[data-food-open-add]')!.click();
+    await new Promise(requestAnimationFrame);
+    const qa = d.querySelector<HTMLElement>('[data-food-recent] [data-quick]');
+    qa?.click();
+    return !!qa;
+  });
+  expect(again).toBe(true);
+  await expect(added).toHaveCount(2);
   await q.fill('みそ汁');
   await s.locator('[data-food-results] li:has([data-item="dishes:miso-tofu-wakame"]) [data-quick]').click();
-  await expect(added).toHaveCount(2);
+  await expect(added).toHaveCount(3);
   await s.locator('[data-food-finish]').click();
 
   // a recipe's ingredients: three by ＋, the middle one's ✕

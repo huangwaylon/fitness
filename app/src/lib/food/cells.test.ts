@@ -1,7 +1,8 @@
 // food/cells.ts: a cell drawn at the box's pixels (never more than the cell's own), one decode per sheet shared by its
-// cells, the decoded sheet closed a moment after its last draw, a sheet that fails rejected.
+// cells, the decoded sheet closed a moment after its last draw, a sheet that fails rejected; an older draw never lands
+// over a newer one; a plate's missing picture its tile.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { drawCell, drawPlate, held, plateRects } from './cells.ts';
+import { drawCell, drawPlate, held, nightTint, plateRects } from './cells.ts';
 
 const calls: unknown[][] = [];
 let decodes = 0, closed = 0;
@@ -30,6 +31,19 @@ describe('drawCell', () => {
     expect([closed, held().decoded]).toEqual([1, 0]);
   });
 
+  it('an older draw still loading its sheet draws nothing over a newer one', async () => {
+    const c = canvas();
+    let open!: () => void;
+    const slow = new Promise<void>((r) => (open = r));
+    vi.stubGlobal('fetch', async (u: string) => (u.includes('slow') && (await slow), new Response(new Blob([u]))));
+    const old = drawCell(c, { url: '/slow.webp', x: 0, y: 0, size: 128 }, 48);
+    await drawCell(c, { url: '/t-9.webp', x: 128, y: 0, size: 128 }, 48);
+    open();
+    await old;
+    expect(calls.map((x) => x[1])).toEqual([128]);
+    await vi.advanceTimersByTimeAsync(2000); // (both sheets let go)
+  });
+
   it('rejects a sheet that can’t be had, and holds nothing for it', async () => {
     await expect(drawCell(canvas(), { url: '/bad.webp', x: 0, y: 0, size: 128 }, 48)).rejects.toThrow();
     await vi.advanceTimersByTimeAsync(2000);
@@ -56,7 +70,8 @@ describe('drawPlate: a recipe’s picture box', () => {
       made.push(c as never);
       return c;
     } });
-    const cells = [{ img: { url: '/t-1.webp', x: 0, y: 0, size: 128 } }, { img: { url: '/t-2.webp', x: 128, y: 0, size: 128 } }, { tint: '#EDC3A8', glyph: 'M0 0', ink: '#000' }];
+    const tile = { tint: '#EDC3A8', glyph: 'M0 0', ink: '#000' };
+    const cells = [{ ...tile, img: { url: '/t-1.webp', x: 0, y: 0, size: 128 } }, { ...tile, img: { url: '/t-2.webp', x: 128, y: 0, size: 128 } }, tile];
     const a = canvas(), b = canvas();
     await drawPlate(a, cells, 40);
     expect(a.width).toBe(120);
@@ -69,5 +84,26 @@ describe('drawPlate: a recipe’s picture box', () => {
     await drawPlate(b, cells, 40);
     expect([made.length, decodes, held().plates]).toEqual([1, 2, 1]); // kept: no new canvas, no decode
     expect(calls.at(-1)).toEqual([made[0], 0, 0]);
+  });
+
+  it('a picture whose sheet fails: its tile in its cell, the rest drawn, not kept (asked again next time)', async () => {
+    const fills: string[] = [];
+    vi.stubGlobal('Path2D', class { constructor(public d: string) {} });
+    vi.stubGlobal('document', { createElement: () => {
+      const c = canvas() as unknown as { getContext: () => object };
+      const g = c.getContext() as Record<string, unknown>;
+      c.getContext = () => Object.assign(g, { fillRect: () => fills.push(String(g.fillStyle)), save() {}, restore() {}, translate() {}, scale() {}, stroke() {} });
+      return c;
+    } });
+    const cells = [{ tint: '#C4E3A9', glyph: 'M0 0', ink: '#000', img: { url: '/t-3.webp', x: 0, y: 0, size: 128 } }, { tint: '#EDC3A8', glyph: 'M0 0', ink: '#000', img: { url: '/bad-2.webp', x: 0, y: 0, size: 128 } }];
+    const before = held().plates;
+    await expect(drawPlate(canvas(), cells, 40)).resolves.toBeUndefined();
+    expect(fills).toEqual(['#EDC3A8']);
+    expect(calls.filter((c) => c.length === 9)).toHaveLength(1); // (the good picture)
+    expect(held().plates).toBe(before);
+  });
+
+  it('nightTint: the box’s night mix, brightened for the pictures’ .85 filter', () => {
+    expect(nightTint('#F3E2B3')).toBe('#E7DABD');
   });
 });

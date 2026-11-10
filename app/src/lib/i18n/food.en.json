@@ -152,6 +152,8 @@
   "food.rcp.saved": "Saved “{name}”",
   "food.rcp.removed": "Deleted “{name}”",
   "food.rcp.copied": "Copied",
+  "food.gone": "This was deleted.",
+  "food.rcp.saveFailed": "Couldn’t save",
   "food.my.head": "My foods",
   "food.my.one": "1 serving",
   "food.my.make": "Make my own",

@@ -239,7 +239,7 @@
     {@const item = of()}
     {@const p = inline.of(item, f)}
     <FoodOpen id="fo-{key}" item={p.item} {g0} {u0} serving={p.serving} swap={p.swap} {closing}
-      onadd={(v) => { inline.add(item, f, v); open = null; clear(); }} onmore={(v) => inline.more(item, f, v)}
+      onadd={(v) => quick(() => { inline.add(item, f, v); open = null; })} onmore={(v) => inline.more(item, f, v)}
       onclosed={() => { open = null; closing = false; }} />
   {/if}
 {/snippet}

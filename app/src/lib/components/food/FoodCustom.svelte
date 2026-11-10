@@ -4,7 +4,8 @@
   // its weight in g (may stay blank: then it is logged by the serving, never by grams), カロリー (needed) and
   // たんぱく質 · 脂質 · 炭水化物 · 塩分 · 食物繊維 · アルコール in g (each may stay blank), all for one serving; full-width digits welcome
   // (foodUi parseAmount). Then けす (a saved one; tapped twice: ほんとうに けす？) and ほぞん (waiting until something
-  // changed). Anyone else's: the same, read-only, with who made it, 「コピーして へんしゅう」 and 「ごはんに ついか」. A new one
+  // changed). Anyone else's: the same, read-only, with who made it, 「コピーして へんしゅう」 and 「ごはんに ついか」; deleted
+  // while open, read-only too, 「削除されました」, its copy still offered. A new one
   // from a meal (`andLog`): 「ほぞんして ついか」, saved and one serving logged in the one tap. `quick` (クイック, eating
   // out): the same fields for one entry, no food saved: no serving or weight, the name optional (クイック), ついか.
   import type { Who } from '#lib/types.ts';
@@ -19,6 +20,8 @@
     owner?: { who: Who; name: string; villager: string | null } | null;
     /** A saved custom food of mine (けす), not a new one. */
     saved?: boolean;
+    /** Deleted since it was opened: shown only, with a note. */
+    gone?: boolean;
     /** Nothing changed since it was saved: ほぞん waits. */
     clean?: boolean;
     onsave?: () => void;
@@ -30,9 +33,9 @@
     /** A quick entry (クイック), not a food: kcal and what is known, logged (ついか), nothing saved. */
     quick?: boolean;
   }
-  let { draft = $bindable(), owner = null, saved = false, clean = false, onsave, onremove, oncopy, onlog, andLog = false, quick = false }: Props = $props();
+  let { draft = $bindable(), owner = null, saved = false, gone = false, clean = false, onsave, onremove, oncopy, onlog, andLog = false, quick = false }: Props = $props();
 
-  const ro = $derived(owner !== null);
+  const ro = $derived(owner !== null || gone);
   const bad = $derived(quick ? quickErrors(draft) : customErrors(draft));
   const ok = $derived(bad.size === 0 && !clean);
   /** A field shows as wrong once something is typed in it that doesn't read (ほぞん waits for the name and kcal). */
@@ -52,10 +55,11 @@
 </script>
 
 <form class="cus" data-custom-level={ro ? 'view' : quick ? 'quick' : 'edit'} onsubmit={(e) => { e.preventDefault(); save(); }}>
-  {#if ro && owner && shown}
+  {#if ro && shown}
     <section class="card">
       <h3 class="title" data-custom-name>{shown.n}</h3>
-      <p class="who"><span class="av" aria-hidden="true"><Avatar worn person={owner.who} villager={owner.villager} size={22} /></span>{t('food.my.by', { name: owner.name })}</p>
+      {#if owner}<p class="who"><span class="av" aria-hidden="true"><Avatar worn person={owner.who} villager={owner.villager} size={22} /></span>{t('food.my.by', { name: owner.name })}</p>{/if}
+      {#if gone}<p class="who" role="status" data-custom-gone>{t('food.gone')}</p>{/if}
     </section>
     <section class="card">
       <header class="ih"><h4>{t('food.my.perOne', { u: servingText(shown) })}</h4><b class="big money" data-custom-kcal>{t('kiroku.kcal', { n: formatNum(shown.k) })}</b></header>
@@ -109,7 +113,7 @@
   <div class="acts level-acts">
     {#if ro}
       <button type="button" class="btn paper small" data-sfx="confirm" data-custom-copy onclick={() => oncopy?.()}>{t('food.rcp.copy')}</button>
-      <button type="button" class="btn small" data-sfx="page" data-custom-log onclick={() => onlog?.()}>{t('food.rcp.log')}</button>
+      {#if !gone}<button type="button" class="btn small" data-sfx="page" data-custom-log onclick={() => onlog?.()}>{t('food.rcp.log')}</button>{/if}
     {:else}
       {#if saved}
         <button type="button" class="btn paper small" data-sfx={removing ? 'undo' : 'tick'} data-custom-remove onclick={remove}>{t(removing ? 'food.rcp.removeSure' : 'food.remove')}</button>

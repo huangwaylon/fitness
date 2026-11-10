@@ -121,10 +121,10 @@
   type Level =
     | { k: 'search'; meal: Meal; added: string[] }
     | ({ k: 'amount'; meal: Meal; g0?: number; u0?: string; entry?: FoodEntry } & Picked)
-    | { k: 'custom'; id: string | null; then: Then }
+    | { k: 'custom'; id: string | null; then: Then; who?: Who }
     | { k: 'quick'; meal: Meal }
     | { k: 'repeat'; meal: Meal }
-    | { k: 'recipe'; id: string | null }
+    | { k: 'recipe'; id: string | null; who?: Who }
     | { k: 'rsearch'; from: number }
     | ({ k: 'ritem'; g0?: number; u0?: string; i?: number } & Picked)
     | { k: 'rlog'; r: Recipe; meal: Meal };
@@ -418,7 +418,7 @@
     draft = r ? { n: r.n, sv: r.sv, it: r.it.map((x) => ({ ...x })) } : { n: '', sv: 2, it: [] };
     savedAs = r ? JSON.stringify(draft) : null;
     started.recipe = JSON.stringify(draft);
-    go({ k: 'recipe', id: r?.id ?? null }, focus);
+    go({ k: 'recipe', id: r?.id ?? null, who: r?.who }, focus);
   }
   /** A new ingredient from the ingredient search (its amount's 追加, a custom food made for it) comes back to that
    *  search, its field focused, for the next (as a meal's trip); a changed one, to the recipe. */
@@ -463,7 +463,12 @@
   };
   function recipeSave(id: string | null) {
     const res = saveRecipe({ id: id ?? undefined, n: draft.n, sv: draft.sv, it: draft.it });
-    if (res.ok) said('food.rcp.saved', { name: draft.n.trim() });
+    // (refused: the editor stays, the draft kept)
+    if (!res.ok) {
+      said('food.rcp.saveFailed', {}, true);
+      return;
+    }
+    said('food.rcp.saved', { name: draft.n.trim() });
     const meal = madeFor(id);
     const r = meal && res.ok && res.id && m ? recipes(m.state).find((x) => x.id === res.id) : undefined;
     if (!meal || !r) return toSearch();
@@ -482,7 +487,7 @@
     const res = saveRecipe({ n: draft.n, sv: draft.sv, it: draft.it });
     if (!res.ok || !res.id) return;
     savedAs = started.recipe = JSON.stringify(draft);
-    stack = [...stack.slice(0, -1), { k: 'recipe', id: res.id }];
+    stack = [...stack.slice(0, -1), { k: 'recipe', id: res.id, who: me }];
     said('food.rcp.copied');
   }
   /** A recipe logged as a meal of mine on the day shown. */
@@ -503,7 +508,7 @@
     cdraft = customDraft(c, name);
     csaved = c ? JSON.stringify(cdraft) : null;
     started.custom = JSON.stringify(cdraft);
-    go({ k: 'custom', id: c?.id ?? null, then }, focus);
+    go({ k: 'custom', id: c?.id ?? null, then, who: c?.who }, focus);
   }
   /** Swap the level on top for another (the editor for the amount it goes on to, a copy's editor). */
   function swap(l: Level) {
@@ -535,7 +540,7 @@
     const res = saveCustom(customOf(cdraft));
     if (!res.ok || !res.id) return;
     csaved = started.custom = JSON.stringify(cdraft);
-    swap({ k: 'custom', id: res.id, then: l.then });
+    swap({ k: 'custom', id: res.id, then: l.then, who: me });
     said('food.my.copied');
   }
 
@@ -605,11 +610,12 @@
           open={c ? { label: t('food.my.open'), run: () => openCustom(c, null, '[data-amount-open]') } : r ? { label: t('food.rcp.open'), run: () => openRecipe(r) } : null} />
       {/key}
     {:else if top?.k === 'recipe'}
+      <!-- (whose and whether it's still there from what opened it: one deleted meanwhile stays read-only, never an editor) -->
       {@const id = top.id}
-      {@const r = id ? allRecipes.find((x) => x.id === id) : undefined}
-      {@const theirs = r && r.who !== me ? r : null}
+      {@const theirs = !!top.who && top.who !== me}
+      {@const gone = !!id && !recipeById.has(id)}
       {#key id}
-        <FoodRecipe bind:draft owner={theirs ? ownerOf(theirs) : null} saved={!!r && !theirs} clean={clean} onadd={() => { go({ k: 'rsearch', from: draft.it.length }, '[data-recipe-add]'); focusQ(); }} andLog={!!madeFor(id)}
+        <FoodRecipe bind:draft owner={theirs ? ownerOf({ who: top.who! }) : null} saved={!!id && !theirs && !gone} {gone} clean={clean} onadd={() => { go({ k: 'rsearch', from: draft.it.length }, '[data-recipe-add]'); focusQ(); }} andLog={!!madeFor(id)}
           onitem={editItem} onsave={() => recipeSave(id)} onremove={() => id && recipeRemove(id)} oncopy={recipeCopy}
           onlog={stack.at(-2)?.k === 'rlog' ? up : undefined} />
       {/key}
@@ -621,10 +627,10 @@
         added={tripOf(top.from)} onunadd={untrip} addedHead="food.rcp.addedHead" onfinish={toRecipeLevel} />
     {:else if top?.k === 'custom'}
       {@const l = top}
-      {@const c = l.id ? allCustoms.find((x) => x.id === l.id) : undefined}
-      {@const theirs = c && c.who !== me ? c : null}
+      {@const theirs = !!l.who && l.who !== me}
+      {@const gone = !!l.id && !allCustoms.some((x) => x.id === l.id)}
       {#key l.id}
-        <FoodCustom bind:draft={cdraft} owner={theirs ? ownerOf(theirs) : null} saved={!!c && !theirs} clean={cclean} onsave={() => customSave(l)}
+        <FoodCustom bind:draft={cdraft} owner={theirs ? ownerOf({ who: l.who! }) : null} saved={!!l.id && !theirs && !gone} {gone} clean={cclean} onsave={() => customSave(l)}
           andLog={!l.id && !!l.then && 'meal' in l.then}
           onremove={() => l.id && customRemove(l.id)} oncopy={() => customCopy(l)}
           onlog={up} />

@@ -1,3 +1,9 @@
+<script lang="ts" module>
+  /** A tile's glyph colour in a plate (the box's text: --c-ink, the same by day and night), read once. */
+  let ink = '';
+  const INK = () => (ink ||= getComputedStyle(document.documentElement).getPropertyValue('--c-ink').trim() || '#4A3A2C');
+</script>
+
 <script lang="ts">
   // A food's picture box (docs/design.md "Gohan"): a fixed NH rounded square with a brown lip, `size` px. Until there
   // are pictures, its category's tile (art.ts FOOD_CAT): the tint, a plain line glyph (a leaf for 野菜: never a
@@ -6,10 +12,12 @@
   // decoded a moment, not held) once the box nears the screen, fades in over the tint, the tile again if it fails: the
   // box never changes size, so nothing shifts. Decorative (the row beside it says the name) unless `alt`.
   // A recipe's (マイレシピ: `plate`, foodUi.ts plateOf): its ingredients' pictures in one box (1 whole, 2 halves, 3 a
-  // half and two quarters, 4 a 2 × 2; one with no picture its category's tile), drawn over the レシピ tile
-  // (cells.ts drawPlate, kept per what it holds), and a small round pot on the box's corner: a recipe, not a food.
+  // half and two quarters, 4 a 2 × 2; one with no picture, or whose sheet fails, its category's tile, darker by night as
+  // the box's), drawn over the レシピ tile (cells.ts drawPlate, kept per what it holds), and a small round pot on the
+  // box's corner: a recipe, not a food.
   import { FOOD_CAT, type FoodGlyph } from '#lib/art.ts';
-  import { drawCell, drawPlate, type PlateCell } from '#lib/food/cells.ts';
+  import { drawCell, drawPlate, nightTint, type PlateCell } from '#lib/food/cells.ts';
+  import { theme } from '#lib/ui-state/theme.svelte.ts';
   import type { PlatePart } from './foodUi.ts';
 
   interface Props {
@@ -62,19 +70,18 @@
   }
   $effect(() => paint(cv, img, (k) => (loaded = k), (k) => (failed = k)));
   $effect(() => paint(ucv, under, (k) => (underIn = k)));
-  // a recipe's: its cells as drawPlate takes them (a tile's ink the box's own text colour)
+  // a recipe's: its cells as drawPlate takes them (each its tile, by night the box's darker tint; a picture over it)
   let pcv: HTMLCanvasElement | undefined = $state();
-  const plateId = $derived(isPlate ? JSON.stringify(plate) : '');
+  const night = $derived(theme.tod === 'night');
+  const plateId = $derived(isPlate ? `${night}|${JSON.stringify(plate)}` : '');
   let plateIn = $state<string | null>(null), plateBad = $state<string | null>(null);
   $effect(() => {
-    if (!pcv || !box || !near || !plate?.length) return;
+    if (!pcv || !near || !plate?.length) return;
     let live = true;
-    // (the box's colour read only for a tile: getComputedStyle flushes the styles, in the middle of a scroll)
-    const k = plateId, ink = plate.every((x) => x.img) ? '' : getComputedStyle(box).color;
+    const k = plateId, ink = INK();
     const cells: PlateCell[] = plate.map((x) => {
-      if (x.img) return { img: x.img };
       const c = FOOD_CAT[x.cat && FOOD_CAT[x.cat] ? x.cat : 'その他'];
-      return { tint: c.tint, glyph: GLYPH[c.glyph], ink };
+      return { tint: night ? nightTint(c.tint) : c.tint, glyph: GLYPH[c.glyph], ink, img: x.img };
     });
     drawPlate(pcv, cells, size).then(() => live && (plateIn = k), () => live && (plateBad = k));
     return () => void (live = false);

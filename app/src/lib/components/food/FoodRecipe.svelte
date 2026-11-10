@@ -4,7 +4,8 @@
   // take out), ＋ ざいりょうを ついか (→ the search → the amount), what it adds up to (a serving's kcal and P/F/C/salt, and
   // the whole's), then けす (a saved one; tapped twice: the board's ほんとうに？) and ほぞん. Anyone else's: the same,
   // read-only, with who set it, 「コピーして へんしゅう」 (a copy of my own, opened here) and, opened from its amount, 「ごはんに
-  // ついか」. On top, its picture: four of its ingredients that have one, the most grams first (foodUi.ts recipePlate),
+  // ついか」. Deleted while open (by its owner, from either phone): the same read-only view, 「削除されました」, its copy
+  // still offered. On top, its picture: four of its ingredients that have one, the most grams first (foodUi.ts recipePlate),
   // 2 × 2 (one alone: itself, 160 px); none: nothing.
   import type { Who } from '#lib/types.ts';
   import { RECIPE, recipeTotals, type RepeatItem } from '#lib/contract/food.ts';
@@ -22,6 +23,8 @@
     owner?: { who: Who; name: string; villager: string | null } | null;
     /** A saved recipe of mine (けす), not a new one. */
     saved?: boolean;
+    /** Deleted since it was opened: shown only, with a note (no editor whose ほぞん would be refused). */
+    gone?: boolean;
     /** Nothing changed since it was saved: ほぞん waits. */
     clean?: boolean;
     onadd?: () => void;
@@ -33,9 +36,9 @@
     /** A new recipe made from a meal's search: 保存して追加 (saved, and one serving logged to that meal). */
     andLog?: boolean;
   }
-  let { draft = $bindable(), owner = null, saved = false, clean = false, onadd, onitem, onsave, onremove, oncopy, onlog, andLog = false }: Props = $props();
+  let { draft = $bindable(), owner = null, saved = false, gone = false, clean = false, onadd, onitem, onsave, onremove, oncopy, onlog, andLog = false }: Props = $props();
 
-  const ro = $derived(owner !== null);
+  const ro = $derived(owner !== null || gone);
   const tot = $derived(recipeTotals(draft.it));
   const per = (v: number | null) => (v === null ? '–' : (v / draft.sv).toFixed(1));
   const kcalOf = entryKcal;
@@ -76,9 +79,10 @@
         {#each hero as h (h.id)}<FoodThumb size={hero.length === 1 ? 160 : 78} img={h.img} />{/each}
       </div>
     {/if}
-    {#if ro && owner}
+    {#if ro}
       <h3 class="title" data-recipe-name>{draft.n}</h3>
-      <p class="who"><span class="av" aria-hidden="true"><Avatar worn person={owner.who} villager={owner.villager} size={22} /></span>{t('food.rcp.by', { name: owner.name })}</p>
+      {#if owner}<p class="who"><span class="av" aria-hidden="true"><Avatar worn person={owner.who} villager={owner.villager} size={22} /></span>{t('food.rcp.by', { name: owner.name })}</p>{/if}
+      {#if gone}<p class="who" role="status" data-recipe-gone>{t('food.gone')}</p>{/if}
     {:else}
       <label class="field">
         <span class="lbl">{t('food.rcp.name')}</span>
@@ -102,7 +106,7 @@
     <header class="ih"><h4>{t('food.rcp.items')}</h4><b class="money">{kcalText(Math.round(tot.k))}</b></header>
     {#if draft.it.length}
       <ul data-recipe-items>
-        {#each draft.it as it, i (i)}
+        {#each draft.it as it, i (it)}
           <li>
             {#if ro}<div class="row">{@render cells(it)}</div>
             {:else}<button type="button" class="row" data-sfx="page" data-recipe-item={i} onclick={() => onitem?.(i)}>{@render cells(it)}</button>{/if}
@@ -132,7 +136,7 @@
   <div class="acts level-acts">
     {#if ro}
       <button type="button" class="btn paper small" data-sfx="confirm" data-recipe-copy onclick={() => oncopy?.()}>{t('food.rcp.copy')}</button>
-      {#if onlog}<button type="button" class="btn small" data-sfx="page" data-recipe-log onclick={() => onlog()}>{t('food.rcp.log')}</button>{/if}
+      {#if onlog && !gone}<button type="button" class="btn small" data-sfx="page" data-recipe-log onclick={() => onlog()}>{t('food.rcp.log')}</button>{/if}
     {:else}
       {#if saved}
         <button type="button" class="btn paper small" data-sfx={removing ? 'undo' : 'tick'} data-recipe-remove onclick={remove}>{t(removing ? 'food.rcp.removeSure' : 'food.rcp.remove')}</button>
