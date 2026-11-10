@@ -17,9 +17,9 @@
 //   ききみみ's first-run welcome counts as seen for every player (DEVICE.kikiOnboarded, unless the test set it):
 //   `test.use({ kikiFirstRun: true })` keeps it for the onboarding spec;
 // - ambient life: off (`localStorage['e2e.ambient'] = 'off'`, read with the hooks on, `?demo`: island/devHooks.ts),
-//   as if the URL said `?critter=none&visitor=none&balloon=none&idle=none&stars=none`: no critter visits, no visitor,
-//   no balloon, no idle beats of the villagers or しずえ (they stand where they are), no ordinary night's shooting
-//   stars. Nothing wanders into a tap. A URL's own param wins (`?critter=fish`, `?visitor=jack`);
+//   as if the URL said `?critter=none&visitor=events&balloon=none&idle=none&stars=none` (devHooks.ts AMBIENT): no
+//   critter visits, no day's visitor (an event's host still comes), no balloon, no idle beats of the villagers or しずえ
+//   (they stand where they are), no ordinary night's shooting stars. Nothing wanders into a tap. A URL's own param wins (`?critter=fish`, `?visitor=jack`);
 //   `test.use({ ambient: 'on' })` brings it all back for a test or file.
 import { test as base, type BrowserContext, type Page } from '@playwright/test';
 import { serveMapTiles } from './mapTiles.ts';
