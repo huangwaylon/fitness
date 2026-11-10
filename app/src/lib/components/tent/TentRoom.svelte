@@ -48,7 +48,7 @@
   import { where } from '#lib/store/where.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { leaveBy } from '../island/doorOut.ts';
-  import { sendDecor, sendDecors } from '#lib/store/actions.ts';
+  import { sendDecor, sendDecorGroup, sendDecors } from '#lib/store/actions.ts';
   import { LIVE_URL, createLive, liveRelay, type Live } from '#lib/sync/live.ts';
   import { createLocalLive } from '#lib/sync/live-local.ts';
   import { tokyoDay, type Intent, type SayScope, type Pt as WirePt, type Relayed } from '#lib/contract/live-protocol.ts';
@@ -601,6 +601,7 @@
     // one socket it already does; the demo's tabs have a relay per screen
     shared.attach(relay, me, demo);
     room.sink = (op) => sendDecor(op);
+    room.sinkMany = (ops) => sendDecorGroup(ops);
     // this room's music stage is heard in here, its player standing
     const leaveStage = enterStage(stageSrc, (s) => standing(s.pc));
     own?.start();
@@ -691,6 +692,7 @@
       offDoor();
       leaveStage();
       room.sink = null;
+      room.sinkMany = null;
       islandLayout.sink = null;
       own?.stop();
       eng?.dispose();
@@ -733,7 +735,7 @@
       pieces: () => room.pieces.map((p) => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f, who: p.who, ...(p.on ? { on: p.on } : {}) })),
       /** Where each piece stands in the room (a thing on a table: its tile there, and how high). */
       placed: () => spots().map((p) => ({ id: p.id, x: p.x, z: p.z, f: p.f, y: p.y })),
-      surfaces: () => ({ wall: room.wall, floor: room.floor }),
+      surfaces: () => ({ wall: room.wall, floor: room.floor, size: room.size }),
       /** The room's size (tiles a side). */
       size: () => room.size,
       edit: () => edit?.snapshot() ?? null,

@@ -321,8 +321,8 @@ export class LiveBackend implements Backend {
     return { ok: true, undo, hold };
   }
 
-  sendMany(events: readonly { type: EventType; data: Record<string, unknown> }[]): void {
-    if (!enqueueAll(events).length) return;
+  sendMany(events: readonly { type: EventType; data: Record<string, unknown> }[], group?: string): void {
+    if (!enqueueAll(events, Date.now(), group).length) return;
     this.#host.changed();
     this.#paced();
   }

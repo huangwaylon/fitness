@@ -17,6 +17,8 @@ import { world } from './world.svelte.ts';
 
 /** A partner's change this recent is played as it happens. */
 const LIVE_MS = 12_000;
+/** A batch this small goes to the room live too (within its burst: relay/src/room.ts BURST). */
+const LIVE_BATCH = 16;
 
 interface TentNews {
   e: TentEntry;
@@ -39,6 +41,8 @@ class TentRoom extends Synced<TentEntry, TentOp, TentNews> {
   #layout: ReturnType<typeof tentLayout> = { pieces: [], wall: null, floor: null, lights: true, size: ROOM_DEFAULT };
   /** Where my changes go to the sheet (store/actions.ts sendDecor: the same event type, scoped). */
   sink: ((op: TentOp) => void) | null = null;
+  /** …and a batch of them, kept all or none (store/actions.ts sendDecorGroup). */
+  sinkMany: ((ops: readonly TentOp[]) => void) | null = null;
 
   protected key(): string {
     const k = this.demo ? DEMO.tent : LIVE.tent;
@@ -139,6 +143,26 @@ class TentRoom extends Synced<TentEntry, TentOp, TentNews> {
     this.send(op);
     this.sink?.(op);
     return e;
+  }
+
+  /** An op's time for a batch of mine (components/tent/steps.ts plan): the relay's clock, after the op it changes. */
+  clock(after = 0): number {
+    return this.now(after);
+  }
+
+  /** A batch of my changes (the clear, a saved arrangement called up, an undo: components/tent/steps.ts), merged and
+   *  kept at once and sent to the record as one group (all or none); a small one goes to the room live too, a big one
+   *  reaches the others' phones by the record's push (the room's rate limit would trickle it in). */
+  batch(ops: readonly TentOp[]): boolean {
+    this.load();
+    const who = this.me ?? 'A';
+    let any = false;
+    for (const op of ops) if (mergeTent(this.map, { ...op, who } as TentEntry)) any = true;
+    if (!any) return false;
+    this.commit();
+    if (ops.length <= LIVE_BATCH) for (const op of ops) this.send(op);
+    this.sinkMany?.(ops);
+    return true;
   }
 
   /** Place or move a piece (its whole state): false when it didn't take (a new piece past the cap, a removed one). */

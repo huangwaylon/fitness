@@ -18,6 +18,7 @@ import {
   type FoodEntry, type FoodRepeat, type FoodSnap, type Meal, type RepeatItem, type RepeatOp
 } from '#lib/contract/food.ts';
 import { nextDay } from '#lib/contract/tokyo.ts';
+import { newOpId } from '#lib/contract/ops.ts';
 import { customs, foodDay, foodEntries, mealItems, recipes, repeats } from '#lib/model/food.ts';
 import { sellPrice } from '#lib/contract/shop.ts';
 import { GOODS } from '#lib/contract/pocket.ts';
@@ -332,6 +333,12 @@ export function sendDecor(op: object): void {
 /** A burst of layout ops (the editor's save, a clash settled) for the record: one queue write, one recompute. */
 export function sendDecors(ops: readonly object[]): void {
   if (week.model && ops.length) week.sendMany('decor', ops.map((op) => ({ ...op })));
+}
+
+/** A room's whole change (the clear, a saved arrangement called up, their undo: store/tent.svelte.ts batch) for the
+ *  record as one group: kept all or none (relay store.ts group, contract/api.ts GROUP_MAX). */
+export function sendDecorGroup(ops: readonly object[]): void {
+  if (week.model && ops.length) week.sendMany('decor', ops.map((op) => ({ ...op })), newOpId('g', Date.now()));
 }
 
 // ---- The meal log (ごはん, docs/backend.md#events `food`): each change of mine is one op carrying the entry's whole

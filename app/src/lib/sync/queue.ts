@@ -1,6 +1,6 @@
 // The write queue (docs/backend.md#write-queue): events persisted in localStorage and replayed in order, with backoff,
 // until the server acks them. Undo windows (`holdMs`) are decided here.
-import { EVENTS_MAX, MAX_BODY_CHARS, type EventType } from '#lib/contract/api.ts';
+import { EVENTS_MAX, GROUP_MAX, MAX_BODY_CHARS, type EventType } from '#lib/contract/api.ts';
 import type { Who } from '#lib/types.ts';
 import { LIVE, getKey, localKV, readJson, remove, writeJson, writeRaw, type KV } from './storage.ts';
 import { post, type ApiError } from './transport.ts';
@@ -143,8 +143,8 @@ export function enqueue(type: EventType, data: Record<string, unknown>, now = Da
 }
 
 /** Several events at once (one write of the queue). */
-export function enqueueAll(events: readonly { type: EventType; data: Record<string, unknown> }[], now = Date.now()): QueuedEvent[] {
-  const evs = events.map(({ type, data }): QueuedEvent => ({ id: newId(), type, data, queuedAt: now, tries: 0, nextAt: now }));
+export function enqueueAll(events: readonly { type: EventType; data: Record<string, unknown> }[], now = Date.now(), group?: string): QueuedEvent[] {
+  const evs = events.map(({ type, data }): QueuedEvent => ({ id: newId(), type, data, queuedAt: now, tries: 0, nextAt: now, ...(group ? { group } : {}) }));
   if (!evs.length) return evs;
   saveQueue([...queued(), ...evs]);
   for (const e of evs) count(`ev:${e.type}`);
@@ -365,9 +365,12 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean;
       // what may go now, in send order: the record takes up to BATCH_MAX at once, in order, under its body cap
       const batch: QueuedEvent[] = [];
       let chars = 0, full = false;
-      while (batch.length < cap) {
+      // (a batch of one group alone goes whole up to GROUP_MAX: a room's whole change, all or none; not once halved)
+      const oneGroup = () => !!batch[0].group && batch.every((x) => x.group === batch[0].group);
+      while (batch.length < cap || (cap === BATCH_MAX && batch.length < GROUP_MAX && oneGroup())) {
         const { ev } = due(queued(), now(), (x) => tried.has(x.id), (x) => tooBig.has(x.id));
         if (!ev) break;
+        if (batch.length >= cap && ev.group !== batch[0].group) break;
         const n = size(ev);
         // (one alone may go over BATCH_CHARS: the record caps an event below its body's; never over a keepalive's)
         if (opts.keepalive && n > most) {

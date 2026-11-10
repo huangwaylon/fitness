@@ -3,7 +3,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { configureStorage, type KV } from './storage.ts';
 import { configureTransport } from './transport.ts';
-import { enqueue, flush, queued, ackedEvents, lastSentAt, nextRetryAt, PARK_AFTER, releaseHeld, STUCK_MS, unpark, unsentStuck } from './queue.ts';
+import { enqueue, enqueueAll, flush, queued, ackedEvents, lastSentAt, nextRetryAt, PARK_AFTER, releaseHeld, STUCK_MS, unpark, unsentStuck } from './queue.ts';
 import { setKey } from './pairing.ts';
 
 class Mem implements KV {
@@ -268,6 +268,14 @@ describe('a group (the shop’s ぜんぶ かう: relay store.ts group)', () => 
     const group = Array.from({ length: 20 }, (_, i) => buy(`f${i + 1}`, T, 0));
     await flush(() => T);
     expect(bodies.map(ids)).toEqual([before.map((e) => e.id), group.map((e) => e.id)]);
+  });
+
+  it('a room’s whole change (one group over EVENTS_MAX, up to GROUP_MAX) goes alone, whole, in one request', async () => {
+    const before = Array.from({ length: 10 }, (_, i) => enqueue('find', { kind: 'fish', id: `x${i}` }, T));
+    const room = enqueueAll(Array.from({ length: 121 }, (_, i) => ({ type: 'decor' as const, data: { sc: 'u', id: `d${i}`, at: T, rm: true } })), T, 'clear');
+    const after = enqueue('find', { kind: 'fish', id: 'dab' }, T);
+    await flush(() => T);
+    expect(bodies.map(ids)).toEqual([before.map((e) => e.id), room.map((e) => e.id), [after.id]]);
   });
 
   it('a buy of a piece I have already (my other phone’s) is dropped with the record’s `owned`, the rest acked', async () => {

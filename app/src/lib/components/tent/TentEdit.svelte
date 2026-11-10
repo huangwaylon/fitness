@@ -1,3 +1,11 @@
+<script module lang="ts">
+  import type { Step } from './steps.ts';
+  /** Each room's undo steps on this phone, newest last (kept while the page is): 取り消す and ⌘Z take the last back. */
+  const undos = new Map<string, { step: Step; key: number }[]>();
+  const UNDO_MAX = 30;
+  let undoKeys = 0;
+</script>
+
 <script lang="ts">
   // The tent's edit mode (docs/design.md "The tent"): NH's furniture arranging, one-handed. The tray at the foot, in
   // the thumb's reach: its tabs (かぐ, ラグ, 天井, 生き物: the catches' tanks, みつけた: what the balloons brought, かべがみ,
@@ -11,7 +19,11 @@
   // it's given: the home's own (the tent's `t`, うめ's house's `u`, the guest's `v`). 広さ picks the room's size from NH's
   // main rooms (contract/tent.ts ROOM_SIZES): a smaller one only once nothing would be left outside it (else those
   // pieces glow red and the bar says to move or put them away first; there is no storage to send them to).
+  // Holding nothing, the bar has 取り消す (the last change of mine in this room taken back, ⌘Z too: steps.ts) and
+  // 全部片付ける (every piece away after a confirmation, the wallpaper, floor and size kept; one batch, one undo).
   import { onMount } from 'svelte';
+  import ActionSheet from '#lib/components/ui/ActionSheet.svelte';
+  import { clearStep, plan, type Snap } from './steps.ts';
   import { t } from '#lib/i18n/index.ts';
   import type { rooms } from '#lib/store/tent.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -433,8 +445,14 @@
       ? { x: onto.slot[0], z: onto.slot[1], f: (((s.f - onto.f) % 4) + 4) % 4 as Facing, on: onto.id }
       : { x: at[0], z: at[1], f: s.f, on: undefined };
     let ok = true;
-    if (s.fresh) ok = room.set({ id: s.id, item: s.item, ...op });
-    else if (!s.orig || s.orig.x !== op.x || s.orig.z !== op.z || s.orig.f !== op.f || s.orig.on !== op.on) ok = room.set({ id: s.id, item: s.item, ...op, p: s.p });
+    const was = room.byId(s.id);
+    if (s.fresh) {
+      ok = room.set({ id: s.id, item: s.item, ...op });
+      if (ok) remember({ rm: [s.id] });
+    } else if (!s.orig || s.orig.x !== op.x || s.orig.z !== op.z || s.orig.f !== op.f || s.orig.on !== op.on) {
+      ok = room.set({ id: s.id, item: s.item, ...op, p: s.p });
+      if (ok && was) remember({ set: [snapOf(was)] });
+    }
     if (!ok) {
       toasts.show(t('tent.full', { max: TENT_MAX }), 2600);
       cancel(false);
@@ -461,17 +479,70 @@
     cancel(false);
     if (!p || !room.remove(p.id)) return;
     cue('undo');
-    toasts.show(t('tent.removed', { name: t(`tent.item.${p.item}`) }), 5000, {
-      action: {
-        label: t('common.undo'),
-        // a removal is final: the undo puts a new one down where it stood (if the spot is still free)
-        run: () => {
-          const back = p.on ? !slotTaken(others(), p.on, p.x, p.z, undefined, p.item, p.f) && !!room.byId(p.on) : !placeWhy(placed(), { item: p.item, x: p.x, z: p.z, f: p.f }, bounds);
-          if (back) room.set({ id: newId(Date.now()), item: p.item, x: p.x, z: p.z, f: p.f, p: p.p, ...(p.on ? { on: p.on } : {}) });
-        }
-      }
-    });
+    // a removal is final: its undo puts a new one down where it stood
+    const key = remember({ add: [snapOf(p)] });
+    toasts.show(t('tent.removed', { name: t(`tent.item.${p.item}`) }), 5000, { action: { label: t('common.undo'), run: () => void takeBack(key) } });
   }
+
+  // ---- 取り消す, 全部片付ける (steps.ts: each a batch, one undo) ----
+  const snapOf = (p: Snap): Snap => ({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f, p: p.p, ...(p.on ? { on: p.on } : {}), ...(p.l !== undefined ? { l: p.l } : {}) });
+  const stack = () => undos.get(room.sc) ?? (undos.set(room.sc, []), undos.get(room.sc)!);
+  /** How many steps there are to take back (the button's state). */
+  let undoN = $state(0);
+  const roomNow = () => ({ pieces: room.pieces, wall: room.wall, floor: room.floor, size: room.size });
+  /** A step done as one batch: its undo, or null (nothing to do, or past the room's cap). */
+  function run(step: Step): Step | null {
+    const r = plan(roomNow(), step, { sc: room.sc, at: (after) => room.clock(after), newId: () => newId(Date.now()), defaults: { wall: DEFAULT_WALL, floor: DEFAULT_FLOOR } });
+    if (!r || !room.batch(r.ops)) return null;
+    return r.undo;
+  }
+  /** A change's undo onto the stack: its key (a toast's 取り消す takes back that one). */
+  function remember(step: Step | null): number {
+    if (!step) return -1;
+    const st = stack(), key = ++undoKeys;
+    st.push({ step, key });
+    if (st.length > UNDO_MAX) st.shift();
+    undoN = st.length;
+    return key;
+  }
+  /** 取り消す: the last change (or the one `key` names) taken back; false when it can't be (a room grown since whose
+   *  smaller self would leave pieces outside, the room full). */
+  function takeBack(key?: number): boolean {
+    const st = stack(), i = key === undefined ? st.length - 1 : st.findIndex((e) => e.key === key);
+    if (i < 0) return false;
+    if (sel) cancel(false);
+    const { step } = st[i];
+    if (step.size !== undefined && step.size < room.size) {
+      const out = outside(others().filter((q) => !step.rm?.includes(q.id!)), boundsOf(step.size));
+      if (out.length) {
+        eng()?.warn(out);
+        say(t('tent.sizeBlocked', { n: out.length }), 'size');
+        cue('boop');
+        return false;
+      }
+    }
+    st.splice(i, 1);
+    undoN = st.length;
+    if (!run(step)) {
+      cue('boop');
+      return false;
+    }
+    cue('undo');
+    return true;
+  }
+  let clearAsk = $state(false);
+  function clearAll() {
+    if (sel) cancel(false);
+    if (!room.pieces.length) return void cue('boop');
+    clearAsk = true;
+  }
+  function doClear() {
+    const n = room.pieces.length, key = remember(run(clearStep(roomNow())));
+    if (key < 0) return void cue('boop');
+    cue('undo');
+    toasts.show(t('tent.cleared', { n }), 5000, { action: { label: t('common.undo'), run: () => void takeBack(key) } });
+  }
+
   /** 広さ: the room to NH's size `n`. Larger always; smaller only with nothing left outside it (NH's rooms keep what's
    *  in them, and here nothing is ever lost): else those pieces glow red and the bar says how many to move first. */
   function resize(n: RoomSize) {
@@ -484,10 +555,18 @@
       cue('boop');
       return;
     }
-    if (room.resize(n)) cue('confirm');
+    const was = room.size;
+    if (room.resize(n)) {
+      remember({ size: was });
+      cue('confirm');
+    }
   }
   function surface(kind: 'wall' | 'floor', code: string) {
-    if (room.surface(kind, code)) cue('confirm');
+    const was = room[kind] ?? (kind === 'wall' ? DEFAULT_WALL : DEFAULT_FLOOR);
+    if (room.surface(kind, code)) {
+      remember({ [kind]: was });
+      cue('confirm');
+    }
   }
   function done() {
     if (sel && !place()) cancel(false);
@@ -498,7 +577,18 @@
 
   onMount(() => {
     eng()?.grid(true);
-    const esc = (e: KeyboardEvent) => e.key === 'Escape' && (sel ? cancel() : done());
+    undoN = stack().length;
+    const esc = (e: KeyboardEvent) => {
+      const typing = e.target instanceof HTMLElement && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA');
+      // ⌘Z / Ctrl+Z: 取り消す (the editor's)
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key.toLowerCase() === 'z' && !typing && !clearAsk) {
+        e.preventDefault();
+        takeBack();
+      } else if (e.key === 'Escape' && !clearAsk) {
+        if (sel) cancel();
+        else done();
+      }
+    };
     addEventListener('keydown', esc);
     return () => {
       clearTimeout(noteTimer);
@@ -514,7 +604,7 @@
   });
 
   /** The e2e's view of the mode. */
-  export const snapshot = () => ({ sel: sel ? { ...sel, x: at[0], z: at[1], on: onto?.id ?? null } : null, why, tab, note: note?.k ?? null });
+  export const snapshot = () => ({ sel: sel ? { ...sel, x: at[0], z: at[1], on: onto?.id ?? null } : null, why, tab, note: note?.k ?? null, undo: undoN });
 </script>
 
 <div class="te edit-tray sheet-copy" data-tent-edit>
@@ -539,7 +629,15 @@
       </button>
     </div>
   {:else}
-    <div class="bar hint" class:bad={!!note} data-tent-hint data-note={note?.k ?? ''}>{note ? note.text : peek ? nameOf(peek) : t(tab === 'size' ? 'tent.sizeHint' : room.pieces.length ? 'tent.hintMove' : 'tent.hint')}</div>
+    <div class="bar">
+      <span class="say hint" class:bad={!!note} data-tent-hint data-note={note?.k ?? ''}>{note ? note.text : peek ? nameOf(peek) : t(tab === 'size' ? 'tent.sizeHint' : room.pieces.length ? 'tent.hintMove' : 'tent.hint')}</span>
+      <button type="button" class="act" data-tent-undo data-sfx="self" aria-label={t('common.undo')} aria-disabled={!undoN} onclick={() => (undoN ? takeBack() : cue('boop'))}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" /></svg>
+      </button>
+      <button type="button" class="act" data-tent-clear data-sfx="self" aria-label={t('tent.clear')} aria-disabled={!room.pieces.length} onclick={clearAll}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" /><path d="M10 11v5M14 11v5" /></svg>
+      </button>
+    </div>
   {/if}
   <div class="tray">
     <div class="tabs" role="tablist" aria-label={t('tent.edit')}>
@@ -592,36 +690,12 @@
   </div>
 </div>
 
+<ActionSheet bind:open={clearAsk} title={t('tent.clearTitle')} note={t('tent.clearNote', { n: room.pieces.length })}
+  groups={[[{ id: 'clear', label: t('tent.clear'), danger: true }]]} onpick={doClear} />
+
 <style>
   /* the tray's look is the editors' one (theme.css .edit-tray); the tent's own bits: */
-  .te { z-index: 3; }
-  .bar { animation: up .2s var(--ease-soft) both; }
-  /* how many already stand in the room */
-  .n {
-    position: absolute; right: 4px; top: 4px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; display: grid; place-items: center;
-    font: 700 var(--fs-xs)/1 var(--font-num); color: var(--c-ink); background: color-mix(in srgb, var(--c-lip) 60%, var(--c-cream));
-  }
-  .it.full { opacity: .45; }
-  .empty { grid-column: 1 / -1; margin: 0; align-self: center; padding: 12px 8px; color: var(--c-ink-soft); font-weight: 700; white-space: normal; text-align: center; }
-  .count { font: 700 var(--fs-xs)/1 var(--font-num); color: var(--c-ink); }
-  .hint.bad { color: var(--c-ink); }
-  .hint.bad::before { content: '! '; color: var(--c-coral); }
-  /* 広さ: three cards, each NH's room as a plan */
-  .sizes { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 2px; }
-  .sz {
-    appearance: none; border: 0; margin: 0; font: inherit; color: var(--c-ink); cursor: pointer; -webkit-tap-highlight-color: transparent;
-    display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-radius: var(--r-btn);
-    background: var(--c-card); box-shadow: inset 0 0 0 2px var(--c-edge);
-  }
-  .sz[aria-pressed='true'] { box-shadow: inset 0 0 0 3px var(--c-leaf-edge); background: color-mix(in srgb, var(--c-leaf) 14%, var(--c-card)); }
-  .sz:active { transform: translateY(2px); }
-  .sz:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .sz svg { width: 52px; height: 56px; }
-  .sz .all { fill: none; stroke: var(--c-edge); stroke-width: .12; stroke-dasharray: .3 .25; }
-  .sz .mine { fill: color-mix(in srgb, var(--c-lip) 55%, var(--c-cream)); stroke: var(--c-ink-soft); stroke-width: .18; }
-  .sz path { stroke: var(--c-ink-soft); stroke-width: .06; opacity: .6; }
-  .sz .door { fill: var(--c-ink-soft); }
-  .sz .nm { font-size: var(--fs-xs); white-space: nowrap; }
-  .sz .dim { font: 700 var(--fs-xs)/1 var(--font-num); color: var(--c-ink-soft); }
+  .say.hint { color: var(--c-ink-soft); white-space: normal; font-size: var(--fs-s); line-height: 1.3; padding-left: 2px; }
+  .act[aria-disabled='true'] { opacity: .4; }
   @keyframes up { from { translate: 0 8px; opacity: 0; } to { translate: 0 0; opacity: 1; } }
 </style>

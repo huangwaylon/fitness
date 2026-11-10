@@ -49,8 +49,8 @@ export interface Backend {
   refresh(opts: { background?: boolean; fresh?: boolean; unpark?: boolean }): Promise<void>;
   send(type: EventType, data: Record<string, unknown>, opts: SendOptions): SendResult;
   /** Several events at once (a burst: the editor's save), shown at once and sent together: one queue write and one
-   *  recompute of the view. No undo or hold. */
-  sendMany?(events: readonly { type: EventType; data: Record<string, unknown> }[]): void;
+   *  recompute of the view. No undo or hold. `group`: kept all or none (SendOptions group). */
+  sendMany?(events: readonly { type: EventType; data: Record<string, unknown> }[], group?: string): void;
   /** Forget the cached state (after pairing as someone else). */
   reset(): void;
   /** A last touch to the view (the demo's `?demo=harvest`). */

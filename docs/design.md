@@ -794,7 +794,14 @@ out in front, facing out, on every phone). The homes' rooms are the same system.
   owner's. The tray is the **editor's**: the starter set, the island's finds and catches (everyone's) and their own buys.
   A piece is a catalogue entry, not a count: placing one spends nothing and putting one away gives nothing back, so a
   piece someone else put down is just taken out of the room (its buyer still has it). Two editing at once merge as
-  every decor op (decisions: *Decor is a last-writer-wins map*); 取り消す is each phone's own.
+  every decor op (decisions: *Decor is a last-writer-wins map*).
+- **取り消す, 全部片付ける** (the もようがえ bar, holding nothing; `tent/steps.ts`, `e2e/room-batch.spec.ts`): ↶ takes back
+  my last change in this room (placed, moved, put away, wallpaper, floor, size, a clear; ⌘Z
+  too; this phone's, while the page is open). 🗑 全部片付ける, after a confirmation, puts every piece away (furniture,
+  rugs, wall and ceiling pieces, what's on tables); the wallpaper, floor and size stay (nothing is "put away" of them).
+  Its undo puts each back exactly (tile, facing, layer, light, order) as new pieces (a removal is final in the record).
+  A clear and its undo are each one batch: one group the record keeps all or none (backend "Groups"); a big
+  one reaches the other phones by the record's push, at once.
 - **Loading:** the furniture's models are kept page-wide as loaded (the 48 last used that no room uses), so a room comes
   back with no fetch or decode; at rest the room draws only a blink.
 - **Sit, lie and switch** (`tent/seats.ts`; the museum's benches too): a Chair is sat on, a Bed lain on: a tap walks my

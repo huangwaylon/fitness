@@ -216,7 +216,9 @@ test('edit: place a piece from the tray, turn it, drag it, put it away; the wall
   await expect.poll(() => te(page, (t) => t.edit()?.sel?.id)).toBe(p.id);
   await page.locator('[data-act="remove"]').click();
   await expect.poll(() => te(page, (t) => t.pieces())).toEqual([]);
-  await expect(page.getByRole('button', { name: '取り消す' })).toBeVisible();
+  // the banner's 取り消す (the bar's ↶ is the other)
+  await expect(page.getByRole('button', { name: '取り消す' }).and(page.locator('[data-sfx="undo"]'))).toBeVisible();
+  await expect(page.locator('[data-tent-undo]')).toHaveAttribute('aria-disabled', 'false');
 });
 
 test('みつけた: what either of us found in a balloon that NH has a model of, newest first, placeable like the rest', async ({ page }) => {
