@@ -7,7 +7,7 @@ import { AmbientLight, Color, DirectionalLight, HemisphereLight, NeutralToneMapp
 import { KEY, LAMP_MODELS, LIFT, LOOK, NIGHT, POOL, TINT, applyLook, blendLook, lookAt, luma } from './look.ts';
 import type { Wing } from './plan.ts';
 
-const WINGS: Wing[] = ['hall', 'bug', 'fish', 'sea', 'fossil', 'art'];
+const WINGS: Wing[] = ['hall', 'bug', 'fish', 'fossil', 'art'];
 const UP = [0, 1, 0] as const, WALL = [0, 0, 1] as const, SIDE = [1, 0, 0] as const;
 const warmth = (hex: number) => {
   const c = new Color(hex);
@@ -45,11 +45,11 @@ describe("the museum's looks", () => {
       }
       // (the background and the doorways' cards dark: night at a glance; the aquarium's deep blue already)
       const bgD = new Color(d.bg), bgN = new Color(n.bg);
-      if (w !== 'fish' && w !== 'sea') expect(bgN.r + bgN.g + bgN.b).toBeLessThan(0.65 * (bgD.r + bgD.g + bgD.b));
+      if (w !== 'fish') expect(bgN.r + bgN.g + bgN.b).toBeLessThan(0.65 * (bgD.r + bgD.g + bgD.b));
       expect(n.out).toBeLessThan(0.6);
       if (w === 'bug') continue;
       expect(luma(n, UP, 0.8, pool) / luma(n, UP)).toBeGreaterThan(luma(d, UP, 0.8, pool) / luma(d, UP));
-      if (w !== 'fish' && w !== 'sea') {
+      if (w !== 'fish') {
         expect(luma(n, UP, 0.8, pool)).toBeGreaterThan(0.6);
         expect(warmth(n.sky)).toBeGreaterThan(warmth(d.sky));
         expect(warmth(n.tint)).toBeGreaterThan(0.3);

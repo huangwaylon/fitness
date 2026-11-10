@@ -323,7 +323,7 @@ function portalGlow(wing: Wing): CanvasTexture {
         g.fill();
       }
     }
-  } else if (wing === 'fish' || wing === 'sea') {
+  } else if (wing === 'fish') {
     // a tank's ripples
     g.lineWidth = 2.5;
     for (let y = 30; y < 80; y += 11) {
@@ -628,7 +628,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const grassMat = lambert({ map: grassTex });
   /** Each wing's floor texture and its tile (model units); the garden's is its grass. */
   const FLOOR_TINT = 0.35;
-  const FLOOR: Record<Exclude<Wing, 'bug'>, [string, number]> = { hall: ['hall-floor', 40], fish: ['fossil-floor', 50], sea: ['fossil-floor', 50], fossil: ['fossil-floor', 50], art: ['art-floor', 30] };
+  const FLOOR: Record<Exclude<Wing, 'bug'>, [string, number]> = { hall: ['hall-floor', 40], fish: ['fossil-floor', 50], fossil: ['fossil-floor', 50], art: ['art-floor', 30] };
   /** Each room's floor (a wing's passage and room each a rect, tiled from the world's origin so they meet unseen),
    *  `dim` times its tint (the apron's). */
   const floorOf = (wing: Wing, r: Rect, dim = 1, out = 0): MeshLambertMaterial => {
@@ -702,7 +702,6 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const wallMat: Record<Wing, MeshLambertMaterial> = {
     hall: lambert({ map: tex('hall-wall', [4, 2]) }),
     fish: lambert({ map: tex('hall-wall', [4, 1.5]) }),
-    sea: lambert({ map: tex('hall-wall', [2, 1.5]) }),
     bug: lambert({ map: tex('bug-outside', [1, 1]) }),
     fossil: lambert({ map: tex('fossil-wall', [5, 1]) }),
     art: lambert({ map: tex('hall-red', [8, 1.6]) })
@@ -842,7 +841,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   disposables.push(cofferTex, roofTex, galleryTex, ...ceilMats);
   ceil(HALL, CORNICE, ceilMats[0], 'hall');
   // (the rooms' from the far face of the hall's walls: the hall's lintels' undersides lie at WING_H too, over the wall)
-  const CEIL_OF: Record<Exclude<Wing, 'hall'>, MeshBasicMaterial> = { fish: ceilMats[1], sea: ceilMats[1], bug: ceilMats[2], fossil: ceilMats[3], art: ceilMats[4] };
+  const CEIL_OF: Record<Exclude<Wing, 'hall'>, MeshBasicMaterial> = { fish: ceilMats[1], bug: ceilMats[2], fossil: ceilMats[3], art: ceilMats[4] };
   for (const { id, wing, r } of ROOMS) {
     if (wing === 'hall') continue;
     const c = { ...r };
@@ -1066,7 +1065,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
 
   // ---- the exhibits (each drawn only in its room) ----
   const exhibits: Exhibit[] = [];
-  const roomOfExhibit = (e: Exhibit): RoomId => e.room ?? (e.wing === 'sea' ? 'fish' : e.wing === 'fossil' ? 'F1' : e.wing === 'art' ? 'G1' : e.wing);
+  const roomOfExhibit = (e: Exhibit): RoomId => e.room ?? (e.wing === 'fossil' ? 'F1' : e.wing === 'art' ? 'G1' : e.wing);
   let nav = navOf(BLOCKS);
   /** What stands on the floors (the walk keeps off it; the first person's eye too). */
   let solids: Rect[] = BLOCKS;

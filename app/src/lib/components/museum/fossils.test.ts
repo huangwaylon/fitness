@@ -3,8 +3,8 @@
 import { describe, expect, test } from 'vitest';
 import { FOSSILS, FOSSIL_SETS } from '../island/fossilIds.ts';
 import { findKey, type FirstFind } from '#lib/model/finds.ts';
-import { FOSSIL_MODEL, PIECE_W, ROW, SPOTS, footOf, fossilsIn, fossilsOnShow, packOf, setOf, skeletons } from './fossils.ts';
-import { ENTRANCE, F2, ISLAND_RUG, inRect, navOf, rectsOf, walkPath, walkable } from './plan.ts';
+import { FOSSIL_MODEL, ROW, SPOTS, pieceW, footOf, fossilsIn, fossilsOnShow, packOf, setOf, skeletons } from './fossils.ts';
+import { ENTRANCE, F2, F3, ISLAND_RUG, inRect, navOf, rectsOf, walkPath, walkable } from './plan.ts';
 import { allBlocks, spot } from './spots.ts';
 import M from './models.json' with { type: 'json' };
 
@@ -66,18 +66,30 @@ describe('where they stand', () => {
       expect(new Set(s.map((p) => p.yaw)).size, set).toBe(1);
       expect(new Set(s.map((p) => (yaw ? p.x : p.z))).size, set).toBe(1);
       // (along +x facing the camera; turned along z, skull to the front by the left wall and to the back by the right)
-      for (let i = 1; i < s.length; i++) expect(yaw ? (s[i - 1].z - s[i].z) * Math.sign(yaw) : s[i].x - s[i - 1].x, set).toBeCloseTo(PIECE_W);
+      for (let i = 1; i < s.length; i++) expect(yaw ? (s[i - 1].z - s[i].z) * Math.sign(yaw) : s[i].x - s[i - 1].x, set).toBeCloseTo(pieceW(s[0].room));
     }
   });
-  test('no two exhibits’ floors overlap, nor touch but a skeleton’s own pieces', () => {
+  test('no two exhibits’ floors in a room overlap, nor touch but a skeleton’s own pieces', () => {
     for (let i = 0; i < ids.length; i++)
       for (let k = i + 1; k < ids.length; k++) {
+        if (SPOTS.get(ids[i])!.room !== SPOTS.get(ids[k])!.room) continue;
         const a = footOf(ids[i]), b = footOf(ids[k]);
         const gap = Math.max(a.x0 - b.x1, b.x0 - a.x1, a.z0 - b.z1, b.z0 - a.z1);
         const same = setOf(ids[i]) && setOf(ids[i]) === setOf(ids[k]);
         const stands = SPOTS.get(ids[i])!.stand > 0 && SPOTS.get(ids[k])!.stand > 0;
         expect(gap, `${ids[i]} × ${ids[k]}`).toBeGreaterThanOrEqual(same ? -1e-6 : stands ? 4 : 8);
       }
+  });
+  test('F3: one rect 22 deep at most, an aisle 2 tiles wide up its middle clear to the brachiosaurus on its back wall', () => {
+    expect(F3.z1 - F3.z0).toBeLessThanOrEqual(220);
+    const mid = (F3.x0 + F3.x1) / 2;
+    for (const id of fossilsIn('F3').filter((id) => setOf(id) !== 'brachio')) {
+      const f = footOf(id);
+      expect(f.x1 <= mid - 10 || f.x0 >= mid + 10, id).toBe(true);
+    }
+    const head = ROW.brachio.map(footOf);
+    expect(Math.min(...head.map((f) => f.x0)) < mid - 10 && Math.max(...head.map((f) => f.x1)) > mid + 10).toBe(true);
+    expect(Math.min(...head.map((f) => f.z0)) - F3.z0).toBeLessThan(10);
   });
   test('F2: the T. rex alone in the middle, its rug 3 tiles clear of anything else; the rows 5 tiles apart; its front band clear', () => {
     const rex = new Set(ROW['t-rex']), others = fossilsIn('F2').filter((id) => !rex.has(id)).map(footOf);

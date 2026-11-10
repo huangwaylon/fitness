@@ -116,7 +116,7 @@ export function buildSeaLife(kit: Kit, list: readonly Specimen[]): Exhibit {
   };
   return {
     group,
-    wing: 'sea',
+    wing: 'fish',
     blocks,
     pools: light.pools,
     frame(t, _dt, seen) {
@@ -143,7 +143,7 @@ export function buildSeaLife(kit: Kit, list: readonly Specimen[]): Exhibit {
     shown: () => [...holders.keys()],
     night(n) {
       uNight.value = n;
-      const l = lookAt('sea', n);
+      const l = lookAt('fish', n);
       light.lip.cards(l.cards * l.glow);
     },
     dispose() {

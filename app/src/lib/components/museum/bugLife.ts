@@ -35,7 +35,7 @@ export const POND: Rect = rect(6, 46, 100, 138);
 /** The pond's water level. */
 export const POND_Y = 0.6;
 export const OAKS: Pt[] = [at(20, 30), at(100, 30)];
-export const PALM: Pt = at(78, 180);
+export const PALM: Pt = at(90, 166);
 export const OAK_S = 1.4, PALM_S = 1.3;
 /** The display cases (their middles; each 26 × 14, on a stand): four along the back wall, one in the front corner. */
 export const CASES: Pt[] = [at(15, 9), at(44, 9), at(76, 9), at(105, 9), at(105, 189)];

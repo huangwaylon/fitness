@@ -11,8 +11,8 @@ export type PlaceId = (typeof PLACE_IDS)[number];
 
 /** The museum's rooms (museum/plan.ts Wing): its hall, its bug wing, its aquarium (the sea creatures' room too, as NH's
  *  are in its aquarium), its fossils, its art gallery. */
-export const MUSEUM_MUSIC: Readonly<Record<'hall' | 'bug' | 'fish' | 'sea' | 'fossil' | 'art', PlaceId>> = {
-  hall: 'museum-hall', bug: 'museum-bugs', fish: 'museum-fish', sea: 'museum-fish', fossil: 'museum-fossils', art: 'museum-art'
+export const MUSEUM_MUSIC: Readonly<Record<'hall' | 'bug' | 'fish' | 'fossil' | 'art', PlaceId>> = {
+  hall: 'museum-hall', bug: 'museum-bugs', fish: 'museum-fish', fossil: 'museum-fossils', art: 'museum-art'
 };
 
 /** The file a place plays, or null: no file, so the island's music goes on. */

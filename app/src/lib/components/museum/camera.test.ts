@@ -1,23 +1,28 @@
 // The museum's room camera (museum/camera.ts) on the portrait phone (393 × 852): each room framed so its back wall's top
 // sits under the top bar and its front edge over the HUD wherever my villager is, the side walls a soft follow away;
-// my villager always on screen; the floor's apron down to the screen's foot.
+// my villager always on screen; the floor's apron down to the screen's foot; nothing on show under the HUD's buttons.
 import { describe, expect, test } from 'vitest';
 import { DEAD, PITCH, PORTRAIT, VIEW_W, enter, follow, framingOf, plaqueOf, project, type Cam } from './camera.ts';
-import { ENTRANCE, HALL_H, OPENINGS, PLAQUE_H, PLAQUE_W, ROOM_IDS, WING_H, boundsOf, inRect, rectsOf, roomIdAt, type Pt } from './plan.ts';
+import { ENTRANCE, HALL_H, OPENINGS, PLAQUE_H, PLAQUE_W, ROOM_IDS, WING_H, boundsOf, inRect, rectsOf, roomIdAt, type Pt, type Rect } from './plan.ts';
 import { SPOTS } from './spots.ts';
+import { SPOTS as FOSSILS, footOf } from './fossils.ts';
+import { ART_SPOTS, PANELS, plinthOf } from './art.ts';
+import { TANKS } from './tanks.ts';
+import { SEA_TANKS } from './seaTanks.ts';
+import { CASE, CASES } from './bugLife.ts';
 
 const camAt = (room: (typeof ROOM_IDS)[number], t: Pt): Cam => ({ x: t[0], z: t[1], pitch: PITCH, d: framingOf(room).d, s: PORTRAIT });
 
 describe('the framing', () => {
-  test('every room whole across (its width and a tile), its target’s x at its middle; a room that fits fixed in depth, F2 and F3 followed', () => {
+  test('every room whole across (its width and a tile), its target’s x at its middle; a room that fits fixed in depth (F3 too: 22 deep), F2 followed', () => {
     for (const id of ROOM_IDS) {
       const b = boundsOf(id), f = framingOf(id);
       expect(VIEW_W[id], id).toBe(b.x1 - b.x0 + 10);
       expect(f.x, id).toEqual([(b.x0 + b.x1) / 2, (b.x0 + b.x1) / 2]);
     }
     const span = (id: (typeof ROOM_IDS)[number]) => framingOf(id).z[1] - framingOf(id).z[0];
-    for (const id of ['hall', 'bug', 'fish', 'F1', 'G1', 'G2'] as const) expect(span(id), id).toBe(0);
-    for (const id of ['F2', 'F3'] as const) expect(span(id), id).toBeGreaterThan(5);
+    for (const id of ['hall', 'bug', 'fish', 'F1', 'F3', 'G1', 'G2'] as const) expect(span(id), id).toBe(0);
+    expect(span('F2')).toBeGreaterThan(5);
   });
   test('at either end of a room’s range its back wall’s top under the top bar and its front edge over the HUD (at the back and the front respectively)', () => {
     for (const id of ROOM_IDS) {
@@ -47,7 +52,7 @@ describe('the framing', () => {
     }
   });
   test('the follow keeps still inside its dead zone, then comes just near enough, in depth only', () => {
-    const f = framingOf('F3'), t: Pt = [f.x[0], f.z[0]];
+    const f = framingOf('F2'), t: Pt = [f.x[0], f.z[0]];
     expect(follow(f, t, [t[0] + 40, t[1] + DEAD[1] - 1])).toEqual(t);
     const moved = follow(f, t, [t[0], t[1] + DEAD[1] + 10]);
     expect(moved[1]).toBeCloseTo(t[1] + 10);
@@ -76,6 +81,26 @@ describe('the framing', () => {
               expect(p[0] >= 8 && p[0] <= PORTRAIT.W - 8 && p[1] >= 60 && p[1] <= PORTRAIT.H - 120, `${k} → ${o.room}>${o.next} (${side}) at ${p.map((v) => v.toFixed(0))}`).toBe(true);
             }
         }
+    }
+  });
+});
+
+describe('what’s on show, from the way in', () => {
+  test('nothing exhibit-like in the screen’s bottom 120 px (under the HUD’s buttons) from any way into its room', () => {
+    const ways: [string, Pt][] = [['entrance', ENTRANCE], ...[...SPOTS].filter(([k]) => /^in:[^:]+:/.test(k))];
+    const feet: [string, Rect][] = [
+      ...[...FOSSILS.keys()].map((id): [string, Rect] => [id, footOf(id)]),
+      ...[...ART_SPOTS.keys()].flatMap((id): [string, Rect][] => (plinthOf(id) ? [[id, plinthOf(id)!]] : [])),
+      ...PANELS.map((p, i): [string, Rect] => [`panel ${i}`, p]),
+      ...[...TANKS, ...SEA_TANKS].map((t): [string, Rect] => [`tank:${t.id}`, t.box]),
+      ...CASES.map(([x, z], i): [string, Rect] => [`case ${i}`, { x0: x - CASE.w / 2, x1: x + CASE.w / 2, z0: z - CASE.d / 2, z1: z + CASE.d / 2 }])
+    ];
+    for (const [k, at] of ways) {
+      const room = roomIdAt(...at)!, c = camAt(room, enter(framingOf(room), at));
+      for (const [id, r] of feet) {
+        if (roomIdAt((r.x0 + r.x1) / 2, (r.z0 + r.z1) / 2) !== room) continue;
+        for (const x of [r.x0, r.x1]) expect(project(c, x, 0, r.z1)![1], `${id} from ${k}`).toBeLessThanOrEqual(PORTRAIT.H - 120);
+      }
     }
   });
 });

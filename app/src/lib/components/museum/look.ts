@@ -51,7 +51,6 @@ export const LOOK: Record<Wing, Look> = {
   fossil: { exposure: 1.1, sky: 0xfff0dc, ground: 0xc4a882, hemi: 2.1, amb: 0xfff0dc, ambI: 0.55, key: 0xffe8c8, keyI: 0.85, bg: 0x967a5c, ...base },
   art: { exposure: 1.15, sky: 0xfff6ea, ground: 0xc8b098, hemi: 2.4, amb: 0xfff2e2, ambI: 0.6, key: 0xfff4e6, keyI: 0.85, bg: 0xa87460, ...base, cards: 1.6 },
   fish: { exposure: 1.05, sky: 0xdfeaff, ground: 0x6a86a8, hemi: 1.7, amb: 0xd6e6ff, ambI: 0.45, key: 0xeef4ff, keyI: 0.55, bg: 0x22507a, ...base, lm: 2.4 },
-  sea: { exposure: 1.05, sky: 0xd4e4ff, ground: 0x5a7898, hemi: 1.6, amb: 0xd6e6ff, ambI: 0.45, key: 0xeef4ff, keyI: 0.5, bg: 0x0c2034, ...base, lm: 2.4 },
   bug: { exposure: 1.0, sky: 0xfff6e0, ground: 0x7a9a5a, hemi: 2.0, amb: 0xfff0dc, ambI: 0.35, key: 0xfff4dc, keyI: 1.4, bg: 0x41603f, ...base }
 };
 
@@ -62,7 +61,6 @@ export const TINT: Record<Wing, { floor: number; wall: number; ceil?: number }> 
   fossil: { floor: 0xfff2e0, wall: 0xffe4c0, ceil: 0xb09a7c },
   art: { floor: 0xf0f0ff, wall: 0xffffff },
   fish: { floor: 0xccdcce, wall: 0x9cc0d4, ceil: 0x3e6a96 },
-  sea: { floor: 0xccdcce, wall: 0x9cc0d4, ceil: 0x3e6a96 },
   bug: { floor: 0xffffff, wall: 0xffffff }
 };
 
@@ -70,19 +68,19 @@ export const TINT: Record<Wing, { floor: number; wall: number; ceil?: number }> 
  *  aquarium's dark checker, the gallery's walnut, the fossils' stone), so a room reads as lit, not as its texture. */
 export const GAIN: Record<Wing, { floor: number; wall: number }> = {
   hall: { floor: 1.3, wall: 1.15 }, fossil: { floor: 2.6, wall: 2.6 }, art: { floor: 5.4, wall: 2.7 },
-  fish: { floor: 2.6, wall: 1 }, sea: { floor: 2.6, wall: 1 }, bug: { floor: 1, wall: 1 }
+  fish: { floor: 2.6, wall: 1 }, bug: { floor: 1, wall: 1 }
 };
 
 /** Each wing's mood (sRGB hex): its doorway's card seen from the next room (only the room one is in is drawn) and the
  *  room-change dip's colour, mixed with its background. */
-export const PORTAL: Record<Wing, number> = { hall: 0xf2dcb4, fossil: 0xe2c89c, art: 0xd49478, fish: 0x78c0e0, sea: 0x68acd4, bug: 0xb4d894 };
+export const PORTAL: Record<Wing, number> = { hall: 0xf2dcb4, fossil: 0xe2c89c, art: 0xd49478, fish: 0x78c0e0, bug: 0xb4d894 };
 
 /** A wing's walls' own light (sRGB hex, their emissive: a uniform, no new program): NH's damask red has no green for
  *  any light to lift (its texture ~(99, 11, 21)), so its dark ground read near-black; a warm self-light lifts it. */
 export const WALL_GLOW: Partial<Record<Wing, number>> = { art: 0x44302a };
 
 /** The baked light pools' colour per wing (bake.ts Pool.color; the bug wing has none: it's lit as outdoors). */
-export const POOL: Record<Exclude<Wing, 'bug'>, number> = { hall: 0xffe6c0, fossil: 0xffd8a0, art: 0xfff0d8, fish: 0x6fc6e8, sea: 0x6fc6e8 };
+export const POOL: Record<Exclude<Wing, 'bug'>, number> = { hall: 0xffe6c0, fossil: 0xffd8a0, art: 0xfff0d8, fish: 0x6fc6e8 };
 
 /** NH's lamps the museum hangs (the tent's: tent/items.json, its code and its model's `v`; look.test.ts holds them to
  *  it, so a lamp converted again is never asked for by a stale ?v=): the floral sconce, the elegant lamp, the
@@ -120,7 +118,7 @@ export const NIGHT = { base: 0.56, key: 0.35, pools: 3, cards: 2.6, lamp: 1.6, t
  *  outside. */
 export function lookAt(wing: Wing, night: number, over: Partial<Look> = {}): Look {
   const n = Math.max(0, Math.min(1, night)), d: Look = { ...LOOK[wing], ...over };
-  const water = wing === 'fish' || wing === 'sea', bug = wing === 'bug', base = lerp(1, bug ? 0.75 : NIGHT.base, n);
+  const water = wing === 'fish', bug = wing === 'bug', base = lerp(1, bug ? 0.75 : NIGHT.base, n);
   return {
     ...d,
     exposure: Math.min(MAX_EXPOSURE, d.exposure - 0.05 * n),

@@ -124,14 +124,14 @@ test('only the room my villager is in is drawn: a put changes it at once, a walk
     return Math.hypot(x - bx, z - bz);
   }, { timeout: 10_000 }).toBeLessThan(2);
   await expect.poll(room, { timeout: 10_000 }).toBe('bug');
-  // the fossils in a line: F1, then through its side door F2 (a fade, not a put), then F3
+  // the fossils: F1, then through its side door F2 (a fade, not a put); F3 through the bug garden's far wall, and back
   await putAt(page, 'room:F1');
   expect(await room()).toBe('F1');
-  for (const next of ['F2', 'F3']) {
-    await walkToSpot(page, `in:${next}`);
-    await expect.poll(room, { timeout: 15_000 }).toBe(next);
-  }
-  // and on through F3's side door into the bug garden (the fossils a loop back to the hall)
+  await walkToSpot(page, 'in:F2');
+  await expect.poll(room, { timeout: 15_000 }).toBe('F2');
+  await putAt(page, 'room:bug');
+  await walkToSpot(page, 'in:F3');
+  await expect.poll(room, { timeout: 15_000 }).toBe('F3');
   await walkToSpot(page, 'in:bug:F3');
   await expect.poll(room, { timeout: 15_000 }).toBe('bug');
   // the gallery's two rooms the same
@@ -163,8 +163,8 @@ test('a tap on each of the hall’s arches at its floor’s middle walks through
 
 test('a tap on a doorway (its card, its plaque, the floor before it) always walks through it, into the next room', async ({ page }) => {
   await open(page);
-  // (F2's way on to F3, in its side wall)
-  for (const where of ['card', 'plaque', 'floor'] as const) await through(page, 'in:F2:F1', 'F3', where);
+  // (the bug garden's way on to F3, in its side wall)
+  for (const where of ['card', 'plaque', 'floor'] as const) await through(page, 'in:bug:F3', 'F3', where);
 });
 
 test('the floor near a doorway is the room’s: two tiles in from any doorway a tap stays in the room', async ({ page }) => {
@@ -210,7 +210,7 @@ test('a plaque naming the hall over every way back to it, whole on the screen fr
 test('a room change compiles nothing: every built room’s programs are made in the warm-up, shown for it', { tag: '@render' }, async ({ page }) => {
   await seed(page, [['fish', 'koi', 'A'], ['bug', 'tarantula', 'B'], ['sea', 'octopus', 'A'], ['fossil', 'amber', 'G'], ['fossil', 't-rex-skull', 'A'], ['item', 'famous-painting', 'A'], ['item', 'gallant-statue', 'B']]);
   await open(page);
-  await page.evaluate(() => ['sea', 'fossil', 'art'].forEach((w) => (window as unknown as { __museum: { wake(w: string): void } }).__museum.wake(w)));
+  await page.evaluate(() => ['fish', 'fossil', 'art'].forEach((w) => (window as unknown as { __museum: { wake(w: string): void } }).__museum.wake(w)));
   await expect.poll(async () => (await mu<string[]>(page, 'shown()')).length, { timeout: 30_000 }).toBe(7);
   const warmed = () => expect.poll(() => page.evaluate('((s) => s.warming || s.loading > 0)(window.__museum.stats())'), { timeout: 30_000 }).toBe(false);
   await warmed();

@@ -21,7 +21,7 @@ export interface Tank {
  *  tank's glass top was the ceiling's plane, the two fighting over it from below.) */
 export const TANKS: readonly Tank[] = [
   { id: 'sea', box: { x0: 64, x1: 176, y0: 0, y1: 48, z0: -48, z1: -6 } },
-  { id: 'deep', box: { x0: 64, x1: 94, y0: 0, y1: 44, z0: 64, z1: 144 } },
+  { id: 'deep', box: { x0: 64, x1: 94, y0: 0, y1: 26, z0: 64, z1: 144 } },
   { id: 'river', box: { x0: 120, x1: 176, y0: 0, y1: 24, z0: 120, z1: 146 } }
 ];
 

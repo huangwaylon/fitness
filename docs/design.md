@@ -946,9 +946,10 @@ out.
   read by their plaques), a small owl medallion (3.8 tiles) on it between the side arches, six plants, two benches
   by the sides facing the camera. Through its left arch the bug garden (12 × 20), its right the aquarium (12 × 20),
   and through its back wall, either side of the desk, the fossils and the gallery (G1 → G2; NH's is upstairs). The
-  fossils are a loop: F1 the standalone ones → F2 the big skeletons round the T. rex (through F1's left wall) → F3 the
-  rest (12 × 25 and its 6 × 10 way in beside F2, through F2's left wall) → the bug garden (F3's right wall, onto its
-  cross path) → the hall: any room two doorways from the hall at most. No doorway on is in a room's front wall (the
+  fossils: F1 (12 × 22) the standalone ones and four small skeletons → F2 the big skeletons round the T. rex (through
+  F1's left wall); F3 (12 × 22, the rest) through the bug garden's left wall, off its cross path. One rect a room: no
+  single rect meets both F2's left wall and the bug garden's, so the fossils are no loop; any room two doorways from the
+  hall at most. No doorway on is in a room's front wall (the
   screen's foot, under the HUD): every room goes on through a side or back wall (plan.test). Benches where one lingers,
   each on the screen from a room's ways in and its nearest within 6 tiles of the first: the hall, the aquarium
   (facing the great tank), each gallery room's front band, beside the T. rex (a tap sits). NH's own floors and walls; no two faces share a plane (surfaces.test). Named spots (`spots.ts`,
@@ -962,7 +963,8 @@ out.
   clear of the bars, from each of its ways in (camera.test, hud.test). A walnut sill runs through each doorway.
 - **The camera** (`camera.ts`): each room framed for the portrait phone, NH's room view: the whole room across (VIEW_W
   its width and a tile, 130; a villager ~31 px), the target's x at its middle, its back wall's top under the back button
-  and its front edge over the HUD; a room that fits stands still, F2 and F3 follow in depth with a dead zone (±30 u). `__museum.tune({ viewW, pitch })` retunes
+  and its front edge over the HUD; a room that fits stands still (the hall framed lower; F1 higher, so the hall plaque at its front wall clears the buttons), F2 follows in depth
+  with a dead zone (±30 u). From any way in, nothing on show is in the screen's bottom 120 px (camera.test). `__museum.tune({ viewW, pitch })` retunes
   it on the phone.
 - **One room at a time:** only the room my villager is in is drawn: its floor, walls, furnishing, exhibits and whoever
   else is in it (engine.ts showRoom). Each doorway shows a card in the next room's mood colour (look.ts PORTAL) with a
@@ -1040,8 +1042,8 @@ out.
 - **Built as one comes near:** the sea creatures' tanks and each fossil and gallery room are built (their packs fetched)
   only once my villager comes within a few tiles of their doorway (plan.ts nearRooms); the hall, the aquarium and the
   garden at once.
-- **The aquarium:** NH's three tanks (the great sea tank across the back wall, the dark deep-sea tank along the left wall
-  toward the front, the river tank low in the front corner), the sea creatures' two among them, and two park benches
+- **The aquarium:** NH's three tanks (the great sea tank across the back wall, the deep-sea tank along the left wall
+  toward the front as low as the river tank (no tall dark mass), the river tank low in the front corner), the sea creatures' two among them, and two park benches
   facing the great tank (sat on as in the tent). One coming in stands 1.5 tiles clear of any glass, never behind a
   tank from the camera (spots.test). **The hour's fish:** at most seven of each tank's caught species, the same on every
   phone, new each hour; the great tank always shows a caught predator if there is one. Fish swim NH's calm long passes,
@@ -1053,11 +1055,12 @@ out.
   reef tank along the aquarium's right wall (the drifters bobbing in its water, the big crawlers on its sand), the tide
   pool a low island in the middle, looked down into (the shells, urchins, stars). NH's museum-tank models where NH has one (12: the octopus
   sprawled, the seaweed in a clump, the eels out of the sand), the catch model otherwise.
-- **The fossils** (`fossils.ts`, `fossilWing.ts`): NH's 73 as NH's own models (pieces at 0.85) in three rooms: F1 the
-  early life, its hero (the dunkleosteus ×1.3 on a plinth at the head of the runner) and short rows of marble stands; F2
+- **The fossils** (`fossils.ts`, `fossilWing.ts`): NH's 73 as NH's own models (pieces at 0.85, F3's 0.75) in three rooms: F1
+  the early life, two small skeletons and two cases on its back wall, its hero (the dunkleosteus ×1.3 on a plinth at the
+  head of the runner) and short rows of marble stands; F2
   the diplodocus on the back wall, rows 5 tiles apart of a skeleton by either wall, the T. rex alone in the middle on
-  its green rug 3 tiles clear of anything, the front band clear; F3 the rest, some turned along its walls facing in, an
-  aisle from the bug garden's door to its front. A skeleton's pieces stand in a row on their own bases, each where it
+  its green rug 3 tiles clear of anything, the front band clear; F3 the rest, the brachiosaurus on its back wall at the head
+  of a 2-tile aisle up the middle, five rows of two either side of it (fossils.test). A skeleton's pieces stand in a row on their own bases, each where it
   joins the next; a piece found later fills its gap, and once all are in the animal is whole. Any two exhibits 8 u apart
   (stands 4), every one's named spot reached (fossils.test).
 - **The art gallery** (`art.ts`, `gallery.ts`): NH's 43 genuine artworks only (no forgeries, no Redd): the paintings

@@ -4,23 +4,24 @@
 // across, the screen's way, deep the other: the camera shows one whole across, camera.ts):
 //   hall      12 × 16 round the middle, its front door at +z, an arch in each side wall and two in its back wall
 //   bug       through the left arch, 12 × 20: the garden under glass
-//   fish      through the right arch, 12 × 20: the aquarium's tanks, the sea creatures' among them (the `sea` wing: its
-//             exhibits, its finds, its music; the room the aquarium's)
-//   F1 F2 F3  through the back-left arch, a loop back to the hall: F1 12 × 18 (the standalone fossils), F2 12 × 25 (the
-//             big skeletons round the T. rex) through F1's left wall, F3 (the rest: 12 × 25 and its 6 × 10 way in
-//             beside F2) through F2's left wall, and on through F3's right wall into the bug garden
+//   fish      through the right arch, 12 × 20: the aquarium's tanks, the sea creatures' among them
+//   F1 F2     through the back-left arch: F1 12 × 22 (the standalone fossils, the small skeletons), F2 12 × 25 (the
+//             big skeletons round the T. rex) through F1's left wall
+//   F3        through the bug garden's left wall, 12 × 22 (the rest of the skeletons): one rect can't meet both F2's
+//             left wall (x −240) and the bug garden's (x −180), so the fossils are no loop
 //   G1 G2     through the back-right arch, in a line, 12 × 20 each: the paintings and the statues
 // No doorway on in a room's front wall (the screen's foot, under the HUD): each room's ways on are in its side or back
-// walls (plan.test).
-// Its rooms (a room may be two rects, no wall between), its walls (made from the rooms: each side's room, for its look),
+// walls; any room two doorways from the hall at most (plan.test).
+// Its rooms (one rect each), its walls (made from the rooms: each side's room, for its look),
 // its doorways, its carpets, where one may walk (the floors less the walls and what stands on them) and the walk itself
 // (a grid of half-tile cells, A* with its corners pulled straight), read by the engine (engine.ts) and the screen
 // (MuseumRoom.svelte), tested on their own (plan.test.ts). Named spots and visitors' places: spots.ts.
 
 export type Pt = readonly [number, number];
 export interface Rect { x0: number; x1: number; z0: number; z1: number }
-/** A wing: what's shown (its exhibits, its finds, its music: sound/places.ts), in a room or a few. */
-export type Wing = 'hall' | 'bug' | 'fish' | 'sea' | 'fossil' | 'art';
+/** A wing: what's shown (its exhibits, its finds, its music: sound/places.ts), in a room or a few (the sea creatures
+ *  the aquarium's: a find's kind, not a wing). */
+export type Wing = 'hall' | 'bug' | 'fish' | 'fossil' | 'art';
 /** A room: what's drawn at a time (the one my villager is in). */
 export type RoomId = 'hall' | 'bug' | 'fish' | 'F1' | 'F2' | 'F3' | 'G1' | 'G2';
 
@@ -28,26 +29,20 @@ export const TILE = 10;
 export const HALL: Rect = { x0: -60, x1: 60, z0: -50, z1: 110 };
 export const BUG_WING: Rect = { x0: -180, x1: -60, z0: -50, z1: 150 };
 export const FISH_WING: Rect = { x0: 60, x1: 180, z0: -50, z1: 150 };
-export const F1: Rect = { x0: -120, x1: 0, z0: -230, z1: -50 };
+export const F1: Rect = { x0: -120, x1: 0, z0: -270, z1: -50 };
 export const F2: Rect = { x0: -240, x1: -120, z0: -300, z1: -50 };
-export const F3: Rect = { x0: -300, x1: -180, z0: -50, z1: 200 };
-/** F3's way in from F2: beside F2's left wall, open to F3 all along its front (no wall: one room). */
-export const F3_WAY: Rect = { x0: -300, x1: -240, z0: -150, z1: -50 };
+export const F3: Rect = { x0: -300, x1: -180, z0: -20, z1: 200 };
 export const G1: Rect = { x0: 0, x1: 120, z0: -250, z1: -50 };
 export const G2: Rect = { x0: 120, x1: 240, z0: -250, z1: -50 };
-/** Every room's floor (no two rects overlap; two of one room meet with no wall). */
+/** Every room's floor (no two overlap). */
 export const ROOMS: readonly { id: RoomId; wing: Wing; r: Rect }[] = [
   { id: 'hall', wing: 'hall', r: HALL }, { id: 'bug', wing: 'bug', r: BUG_WING }, { id: 'fish', wing: 'fish', r: FISH_WING },
-  { id: 'F1', wing: 'fossil', r: F1 }, { id: 'F2', wing: 'fossil', r: F2 }, { id: 'F3', wing: 'fossil', r: F3 }, { id: 'F3', wing: 'fossil', r: F3_WAY },
+  { id: 'F1', wing: 'fossil', r: F1 }, { id: 'F2', wing: 'fossil', r: F2 }, { id: 'F3', wing: 'fossil', r: F3 },
   { id: 'G1', wing: 'art', r: G1 }, { id: 'G2', wing: 'art', r: G2 }
 ];
 export const ROOM_IDS: readonly RoomId[] = ['hall', 'bug', 'fish', 'F1', 'F2', 'F3', 'G1', 'G2'];
 /** A room's wing (its music, its chip's name). */
 export const wingOfRoom = (id: RoomId): Wing => ROOMS.find((r) => r.id === id)!.wing;
-/** The wings whose exhibits a room shows (the aquarium the sea creatures' too). */
-export const ROOM_WINGS: Readonly<Record<RoomId, readonly Wing[]>> = {
-  hall: ['hall'], bug: ['bug'], fish: ['fish', 'sea'], F1: ['fossil'], F2: ['fossil'], F3: ['fossil'], G1: ['art'], G2: ['art']
-};
 /** A room's rects, and the box round them. */
 export const rectsOf = (id: RoomId): Rect[] => ROOMS.filter((r) => r.id === id).map((r) => r.r);
 export function boundsOf(id: RoomId): Rect {
@@ -60,18 +55,17 @@ export const OPENING = { z0: -5, z1: 25 } as const;
 export const BACK_OPENING = { x0: 30, x1: 54 } as const;
 /** A doorway between two rooms: the wall it's in (x = `at` for 'x', z = `at` for 'z'), its span along the wall, the
  *  room it's counted to (`room`, the side one comes from: the hall's, then each room's on along the line), the room
- *  beyond (`next`), and their wings. */
-export interface Opening { axis: 'x' | 'z'; at: number; from: number; to: number; wing: Wing; beyond: Wing; room: RoomId; next: RoomId }
-const door = (axis: 'x' | 'z', at: number, from: number, to: number, room: RoomId, next: RoomId): Opening => ({ axis, at, from, to, room, next, wing: wingOfRoom(room), beyond: wingOfRoom(next) });
+ *  beyond (`next`). */
+export interface Opening { axis: 'x' | 'z'; at: number; from: number; to: number; room: RoomId; next: RoomId }
+const door = (axis: 'x' | 'z', at: number, from: number, to: number, room: RoomId, next: RoomId): Opening => ({ axis, at, from, to, room, next });
 export const OPENINGS: readonly Opening[] = [
   door('x', HALL.x0, OPENING.z0, OPENING.z1, 'hall', 'bug'),
   door('x', HALL.x1, OPENING.z0, OPENING.z1, 'hall', 'fish'),
   door('z', HALL.z0, -BACK_OPENING.x1, -BACK_OPENING.x0, 'hall', 'F1'),
   door('z', HALL.z0, BACK_OPENING.x0, BACK_OPENING.x1, 'hall', 'G1'),
   door('x', F1.x0, -95, -65, 'F1', 'F2'),
-  door('x', F2.x0, -105, -75, 'F2', 'F3'),
   door('x', G1.x1, -95, -65, 'G1', 'G2'),
-  door('x', F3.x1, OPENING.z0, OPENING.z1, 'F3', 'bug')
+  door('x', BUG_WING.x0, OPENING.z0, OPENING.z1, 'bug', 'F3')
 ];
 /** The front door's half width (its gap in the hall's front wall). */
 export const DOOR_HALF = 12;
@@ -126,10 +120,10 @@ export const CARPETS: readonly { room: RoomId; rects: readonly Rect[] }[] = [
   { room: 'hall', rects: [
     { x0: -12, x1: 12, z0: DESK.z1, z1: HALL.z1 }
   ] },
-  // F1: up the middle from the hall's arch to the hero, a branch to F2's door
-  { room: 'F1', rects: [{ x0: -54, x1: -30, z0: -196, z1: F1.z1 }, { x0: F1.x0, x1: -54, z0: -94, z1: -70 }] },
-  // F2: across its front band, F1's door to F3's (the T. rex's island its own green rug: ISLAND_RUG)
-  { room: 'F2', rects: [{ x0: F2.x0, x1: F2.x1, z0: -90, z1: -66 }] },
+  // F1: up the middle from the hall's arch to the hero's plinth, a branch to F2's door
+  { room: 'F1', rects: [{ x0: -54, x1: -30, z0: -194, z1: F1.z1 }, { x0: F1.x0, x1: -54, z0: -94, z1: -70 }] },
+  // F2: from F1's door across its front band and up to the T. rex's island (its own green rug: ISLAND_RUG)
+  { room: 'F2', rects: [{ x0: -192, x1: F2.x1, z0: -90, z1: -66 }, { x0: -192, x1: -168, z0: -120, z1: -90 }] },
   // the gallery: a mat in from the arch (the door), and from G1's door into G2
   { room: 'G1', rects: [{ x0: 30, x1: 54, z0: -64, z1: G1.z1 }] },
   { room: 'G2', rects: [{ x0: G2.x0, x1: 150, z0: -95, z1: -65 }] }
@@ -160,7 +154,6 @@ export const WALLS: readonly Wall[] = (() => {
     for (const x of [r.x0, r.x1]) for (const z of [r.z0, r.z1]) (line('x', x).cuts.add(z), line('z', z).cuts.add(x));
   }
   for (const l of lines.values()) {
-    for (const { r } of ROOMS) for (const x of [r.x0, r.x1]) for (const z of [r.z0, r.z1]) if (l.axis === 'x' ? x === l.at : z === l.at) l.cuts.add(l.axis === 'x' ? z : x);
     for (const g of gaps) if (g.axis === l.axis && g.at === l.at) (l.cuts.add(g.from), l.cuts.add(g.to));
   }
   const raw: Seg[] = [];
@@ -210,11 +203,6 @@ export function roomIdAt(x: number, z: number): RoomId | null {
   for (const { id, r } of ROOMS) if (inRect(r, x, z)) return id;
   return null;
 }
-/** The wing of the room a point is in (null: outside, or in a wall). */
-export function roomAt(x: number, z: number): Wing | null {
-  for (const { wing, r } of ROOMS) if (inRect(r, x, z)) return wing;
-  return null;
-}
 /** Whether (x, z) is in a doorway: within its span, `band` either side of its wall's line. */
 export const inOpening = (o: Opening, x: number, z: number, band: number): boolean => {
   const [along, across] = o.axis === 'x' ? [z, x] : [x, z];
@@ -225,23 +213,12 @@ export function roomOf(x: number, z: number): RoomId | null {
   for (const o of OPENINGS) if (inOpening(o, x, z, 4)) return o.room;
   return roomIdAt(x, z);
 }
-/** Which wing a point belongs to (as roomOf; a wall or outside, the hall). */
-export function wingAt(x: number, z: number): Wing {
-  const r = roomOf(x, z);
-  return r ? wingOfRoom(r) : 'hall';
-}
 /** The room a player is in, sticky at the doorways (the room drawn): another room only once (x, z) is `band` past the
  *  doorway's line, so standing in the doorway (or walking along its wall) keeps the room one came from. A point `band`
  *  off in a wall or outside doesn't count. */
 export function roomHeld(prev: RoomId, x: number, z: number, band = 10): RoomId {
   const seen = [roomOf(x, z), roomOf(x - band, z), roomOf(x + band, z), roomOf(x, z - band), roomOf(x, z + band)].filter((r): r is RoomId => !!r);
   return seen.length && seen.every((r) => r === seen[0]) ? seen[0] : prev;
-}
-/** The wing a player is in, sticky at the doorways (its music: sound/places.ts): another wing only once (x, z) is
- *  `band` past the doorway's line. */
-export function wingHeld(prev: Wing, x: number, z: number, band = 6): Wing {
-  const a = wingAt(x - band, z), b = wingAt(x + band, z), c = wingAt(x, z - band), d = wingAt(x, z + band);
-  return a === b && b === c && c === d ? a : prev;
 }
 
 /** The rooms near (x, z): the one it's in and both sides of any doorway within `reach` (a room's exhibits built only
@@ -255,10 +232,6 @@ export function nearRooms(x: number, z: number, reach = 70): RoomId[] {
     if (Math.hypot(x - ox, z - oz) < reach) (out.add(o.room), out.add(o.next));
   }
   return [...out];
-}
-/** The wings near (x, z): nearRooms' rooms' (the aquarium's the sea creatures' too). */
-export function nearWings(x: number, z: number, reach = 70): Wing[] {
-  return [...new Set(nearRooms(x, z, reach).flatMap((r) => ROOM_WINGS[r]))];
 }
 
 // ---- the walk ------------------------------------------------------------------------------------------------------
@@ -295,7 +268,7 @@ function floorsOpen(): Uint8Array {
   for (let j = 0; j < ROWS; j++)
     for (let i = 0; i < COLS; i++) {
       const [x, z] = cellMid(i, j);
-      const onFloor = !!roomAt(x, z) || OPENINGS.some((o) => inOpening(o, x, z, 10));
+      const onFloor = !!roomIdAt(x, z) || OPENINGS.some((o) => inOpening(o, x, z, 10));
       open[j * COLS + i] = onFloor && [...WALLS, DOOR].every((wl) => wallDistance(wl, x, z) > BODY) ? 1 : 0;
     }
   return (floorCells = open);

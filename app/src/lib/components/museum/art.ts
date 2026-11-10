@@ -106,7 +106,7 @@ export const ART_SPOTS: ReadonlyMap<string, ArtSpot> = (() => {
     const r = ROOM_RECT[room], [w, h, d] = size(id), bust = artwork(id)?.kind === 'bust', plinth = plinthW(id);
     // (by a wall; next in: past its neighbour by the wall, a step between)
     const wall = (side: 'L' | 'R') => FACE + 2 + plinthW(STATUES.find((q) => q[1] === room && q[2] === side && q[3] === v)![0]);
-    const u = at === 'L' ? FACE + 2 + plinth / 2 : at === 'R' ? 120 - FACE - 2 - plinth / 2 : at === 'l' ? wall('L') + 4 + plinth / 2 : at === 'r' ? 120 - wall('R') - 4 - plinth / 2 : 64;
+    const u = at === 'L' ? FACE + 2 + plinth / 2 : at === 'R' ? 120 - FACE - 2 - plinth / 2 : at === 'l' ? wall('L') + 4 + plinth / 2 : at === 'r' ? 120 - wall('R') - 4 - plinth / 2 : 62;
     out.set(id, { room, x: r.x0 + u, y: bust ? 12 : 4, z: r.z0 + v, yaw: 0, s: scaleOf(w, h, d), plinth, plinthH: bust ? 12 : 4 });
   }
   // the wild painting's halves side by side (the left half at −x), on a low dais

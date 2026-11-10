@@ -20,6 +20,10 @@ export const VIEW_W: Readonly<Record<RoomId, number>> = Object.fromEntries(
 /** How far my villager may stray from the target before the camera follows (x, z: model units; x only where a room is
  *  wider than its view). */
 export const DEAD: Pt = [12, 30];
+/** A room that fits framed off the balance, this share of its spare rows moved: + down (its front edge toward the HUD:
+ *  the hall, so no wide band of bare floor shows under its front wall), − up (its back wall's top toward the top bar:
+ *  F1, so the hall's plaque at its cut front wall's foot clears the HUD's buttons). */
+const LEAN: Partial<Record<RoomId, number>> = { hall: 0.5, F1: -0.5 };
 /** The phone's screen and what covers it (css px): the top bar to its back button's foot, the HUD's height. */
 export interface Screen { W: number; H: number; top: number; bottom: number }
 export const PORTRAIT: Screen = { W: 393, H: 852, top: 110, bottom: 72 };
@@ -79,7 +83,9 @@ function framing(room: RoomId, s: Screen = PORTRAIT, b: Rect = boundsOf(room), o
   const backTop = (z: number) => row(z, wallH(room), b.z0);
   const front = (z: number) => row(z, 0, b.z1);
   const zBack = solve((z) => backTop(z) - s.top), zFront = solve((z) => s.H - s.bottom - front(z));
-  const zs: Pt = zFront <= zBack ? ((z) => [z, z] as Pt)(solve((z) => (backTop(z) - s.top) - (s.H - s.bottom - front(z)))) : [zBack, zFront];
+  const fit = solve((z) => backTop(z) - s.top - (s.H - s.bottom - front(z)));
+  const k = LEAN[room] ?? 0, z = fit + Math.abs(k) * ((k > 0 ? zFront : zBack) - fit);
+  const zs: Pt = zFront <= zBack ? [z, z] : [zBack, zFront];
   // the target's x at the room's middle (the whole room across), but where it's wider than the view (a tuning): a
   // follow between the side walls at the screen's edges
   const xs: Pt = viewW >= b.x1 - b.x0 ? [cx, cx] : [b.x0 + viewW / 2, b.x1 - viewW / 2];

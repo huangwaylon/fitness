@@ -9,6 +9,7 @@ import { SEA_TANKS } from './seaTanks.ts';
 import { LINGER, SPOTS, VISITOR_POINTS, VISITOR_ROOMS, allBlocks, spot } from './spots.ts';
 import { MAX_IN, MAX_ROOM, crowdOf, usablePoints } from './visitors.ts';
 import { BENCHES, benchSeats } from './seats.ts';
+import { ART_SPOTS, plinthOf } from './art.ts';
 
 const g = navOf(allBlocks());
 
@@ -37,6 +38,9 @@ describe('the ways in', () => {
       }
   });
   test('every bench on the screen from each way into its room; a room’s nearest 6 tiles from its first way in', () => {
+    // (a seat's step, where one stands up to, a tile clear of every statue)
+    const shown = [...ART_SPOTS.keys()].flatMap((id) => plinthOf(id) ?? []);
+    for (const b of BENCHES) for (const s of benchSeats(b.id)) for (const r of shown) expect(Math.max(r.x0 - s.from[0], s.from[0] - r.x1, r.z0 - s.from[1], s.from[1] - r.z1), `${b.id}:${s.n}`).toBeGreaterThanOrEqual(10);
     for (const b of BENCHES) {
       const f = framingOf(b.room);
       for (const [k, at] of ways().filter(([, p]) => roomIdAt(...p) === b.room)) {

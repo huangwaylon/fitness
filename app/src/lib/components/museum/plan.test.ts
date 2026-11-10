@@ -3,8 +3,8 @@
 // another, each closed but for its doorways, a walk from the door to every room and every exhibit short enough to send.
 import { describe, expect, test } from 'vitest';
 import {
-  CARPETS, DESK, ENTRANCE, HALL, HALL_H, OPENINGS, ROOMS, ROOM_IDS, WALLS, boundsOf, inOpening, inRect, nearRooms, nearWings, navOf, rectsOf,
-  roomHeld, roomIdAt, roomOf, walkPath, walkable, wallEnds, wingHeld, wingOfRoom, type Pt, type Rect, type RoomId
+  CARPETS, DESK, ENTRANCE, HALL, HALL_H, OPENINGS, ROOMS, ROOM_IDS, WALLS, boundsOf, inOpening, inRect, nearRooms, navOf, rectsOf,
+  roomHeld, roomIdAt, roomOf, walkPath, walkable, wallEnds, wingOfRoom, type Pt, type Rect, type RoomId
 } from './plan.ts';
 import { SPOTS, allBlocks, spot } from './spots.ts';
 import { PACE } from '../rooms/view.ts';
@@ -18,16 +18,15 @@ describe('the rooms', () => {
   test('the hall as the engine builds it, every room a portrait room 12 across (the camera shows it whole), all within ±300 (the relay keeps ±320), none over another', () => {
     expect(HALL).toEqual({ x0: -60, x1: 60, z0: -50, z1: 110 });
     const size = (id: RoomId) => ((b) => [(b.x1 - b.x0) / 10, (b.z1 - b.z0) / 10])(rectsOf(id)[0]);
-    expect(Object.fromEntries(ROOM_IDS.map((id) => [id, size(id)]))).toEqual({ hall: [12, 16], bug: [12, 20], fish: [12, 20], F1: [12, 18], F2: [12, 25], F3: [12, 25], G1: [12, 20], G2: [12, 20] });
+    expect(Object.fromEntries(ROOM_IDS.map((id) => [id, size(id)]))).toEqual({ hall: [12, 16], bug: [12, 20], fish: [12, 20], F1: [12, 22], F2: [12, 25], F3: [12, 22], G1: [12, 20], G2: [12, 20] });
     for (const id of ROOM_IDS) expect(boundsOf(id).x1 - boundsOf(id).x0, id).toBe(120);
     for (const { r } of ROOMS) for (const v of [r.x0, r.x1, r.z0, r.z1]) expect(Math.abs(v)).toBeLessThanOrEqual(300);
     for (let i = 0; i < ROOMS.length; i++) for (let k = i + 1; k < ROOMS.length; k++) expect(overlap(ROOMS[i].r, ROOMS[k].r), `${ROOMS[i].id} ${ROOMS[k].id}`).toBe(false);
-    // F3's two rects (its way in beside F2) meet edge to edge
-    const [a, b] = rectsOf('F3');
-    expect(b.z1 === a.z0 && b.x0 >= a.x0 && b.x1 <= a.x1).toBe(true);
+    // (one rect a room: no way in beside another room, nothing round a corner)
+    expect(new Set(ROOMS.map((r) => r.id)).size).toBe(ROOMS.length);
     for (const id of ROOM_IDS) expect(roomIdAt(...spot(`room:${id}`))).toBe(id);
   });
-  test('each doorway in the wall its two rooms share, a step wide or more, none on in a front wall; any room two doorways from the hall at most (the fossils a loop through the bug garden)', () => {
+  test('each doorway in the wall its two rooms share, a step wide or more, none on in a front wall; any room two doorways from the hall at most (F3 off the bug garden)', () => {
     for (const o of OPENINGS) {
       expect(o.to - o.from, `${o.room}>${o.next}`).toBeGreaterThanOrEqual(24);
       for (const id of [o.room, o.next]) {
@@ -108,19 +107,14 @@ describe('the room held (the one drawn, its music: the wing’s)', () => {
       expect(roomHeld(o.next, ...at(-s * 15))).toBe(o.room);
       expect(roomOf(...at(0))).toBe(o.room);
     }
-    // F3's way in F3's: no flip walking down out of it
-    expect(roomHeld('F3', -270, -50)).toBe('F3');
-    expect(wingHeld('hall', HALL.x1 + 12, 10)).toBe('fish');
-    expect(wingHeld('fish', HALL.x1 + 5, 10)).toBe('fish');
     expect(wingOfRoom('F2')).toBe('fossil');
   });
-  test('the rooms woken near a doorway: at the front door only the hall; by each doorway both its rooms (the aquarium the sea creatures’ wing too)', () => {
+  test('the rooms woken near a doorway: at the front door only the hall; by each doorway both its rooms', () => {
     expect(nearRooms(...ENTRANCE)).toEqual(['hall']);
     for (const o of OPENINGS) {
       const m = (o.from + o.to) / 2, p: Pt = o.axis === 'x' ? [o.at, m] : [m, o.at];
       expect(nearRooms(...p)).toEqual(expect.arrayContaining([o.room, o.next]));
     }
-    expect(nearWings(...spot('room:fish'))).toEqual(expect.arrayContaining(['fish', 'sea']));
     expect(nearRooms(...spot('room:F3'))).not.toContain('F1');
     expect(nearRooms(...spot('room:F2'))).not.toContain('bug');
   });
@@ -154,7 +148,7 @@ describe('the walk (everything on show)', () => {
     }
     expect(most, worst).toBeLessThanOrEqual(10);
   });
-  test('in each room, from its nearest doorway to the front of most exhibits within 4 seconds’ walk, any within 5.2 (the hall’s from the front door)', () => {
+  test('in each room, from its nearest doorway to the front of three exhibits in four within 4 seconds’ walk, any within 6 (a room 22 deep from its one door; the hall’s from the front door)', () => {
     const slow: string[] = [];
     let n = 0, four = 0;
     for (const [k, to] of SPOTS) {
@@ -163,10 +157,10 @@ describe('the walk (everything on show)', () => {
       const s = Math.min(...ways.map((from) => len(from, walkPath(g, from, to)))) / PACE;
       n++;
       if (s <= 4) four++;
-      if (s > 5.2) slow.push(`${k} ${s.toFixed(1)} s`);
+      if (s > 6) slow.push(`${k} ${s.toFixed(1)} s`);
     }
     expect(slow).toEqual([]);
-    expect(four / n).toBeGreaterThan(0.8);
+    expect(four / n).toBeGreaterThan(0.75);
   });
   test('walls and what stands on the floor keep a walker off; a tap there goes to the nearest open point', () => {
     expect(walkable(g, HALL.x1, -30)).toBe(false);
@@ -175,6 +169,6 @@ describe('the walk (everything on show)', () => {
     // (the grid round every room: the far corners walkable)
     for (const id of ROOM_IDS) for (const r of rectsOf(id)) expect(walkable(navOf(), r.x0 + 8, r.z1 - 8), id).toBe(true);
     expect(walkPath(g, ENTRANCE, ENTRANCE)).toEqual([]);
-    expect(doorOf('F3').room).toBe('F2');
+    expect(doorOf('F3').room).toBe('bug');
   });
 });

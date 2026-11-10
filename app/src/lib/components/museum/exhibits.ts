@@ -23,7 +23,7 @@ export interface Unit { key: string; wing: Wing; room: RoomId; lazy: boolean }
 export const UNITS: readonly Unit[] = [
   { key: 'fish', wing: 'fish', room: 'fish', lazy: false },
   { key: 'bug', wing: 'bug', room: 'bug', lazy: false },
-  { key: 'sea', wing: 'sea', room: 'fish', lazy: true },
+  { key: 'sea', wing: 'fish', room: 'fish', lazy: true },
   ...(['F1', 'F2', 'F3'] as const).map((room) => ({ key: room, wing: 'fossil' as const, room, lazy: true })),
   ...(['G1', 'G2'] as const).map((room) => ({ key: room, wing: 'art' as const, room, lazy: true })),
   ...BENCH_ROOMS.map((room) => ({ key: `bench:${room}`, wing: wingOfRoom(room), room, lazy: false }))

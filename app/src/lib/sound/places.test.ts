@@ -12,9 +12,8 @@ describe('placeTrack', () => {
     expect(placeTrack('museum-fish', files)).toBeNull();
     expect(placeTrack(null, files)).toBeNull();
   });
-  it('the museum’s rooms each have their own track (the sea creatures’ the aquarium’s)', () => {
+  it('the museum’s wings each have their own track', () => {
     expect(new Set(Object.values(MUSEUM_MUSIC)).size).toBe(5);
-    expect(MUSEUM_MUSIC.sea).toBe(MUSEUM_MUSIC.fish);
     for (const id of Object.values(MUSEUM_MUSIC)) expect(PLACE_IDS).toContain(id);
   });
   it('the manifest’s `places` keeps the known ids and flags the rest', () => {
