@@ -4,7 +4,7 @@
 // then, island/catalog.ts pickPresent). Paintings hang on the gallery's walls and its panels, facing the room; the
 // statues stand on plinths between, roped off; the wild painting's two halves stand side by side, as a folding screen.
 import { findKey, type FirstFind } from '#lib/model/finds.ts';
-import { ART_WING, type Rect } from './plan.ts';
+import { G1, G2, type Rect, type RoomId } from './plan.ts';
 import M from './models.json' with { type: 'json' };
 
 import { ART, artwork, type Artwork } from './artIds.ts';
@@ -30,78 +30,92 @@ export function artOnShow(finds: ReadonlyMap<string, FirstFind>): ArtOnShow[] {
   return out;
 }
 
-// ---- where each hangs or stands (the gallery: plan.ts ART_WING, its passage at its front left) ----
+// ---- where each hangs or stands (the gallery's two rooms: plan.ts G1, G2, in a line from the hall's back-right arch) ----
+// Each room NH's way for a portrait screen: its paintings only on faces toward +z (the camera looks along −z), on its
+// back wall (the tallest there: G1 the wild painting's screen between the two hanging scrolls, G2 the solemn painting)
+// and on three rows of free-standing panels across it, each row two panels from the side walls with a 2-tile gap
+// between, the gap left and right in turn; the statues on plinths against the side walls in the bays between the rows.
 
 const MODELS = M.models as Record<string, { min: number[]; max: number[] } | undefined>;
 /** Paintings drawn this much over NH's size (NH's gallery hangs them big), their middles at a villager's eye and a half. */
 const PAINTING_S = 1.8;
 const HANG_Y = 22;
-/** The panels (free-standing walls, their paintings on the side toward the room's front): their rows (z of their
- *  middle line), their x spans, height and thickness. */
-export const PANEL_Z = [-215, -285] as const;
-export const PANEL_X: readonly (readonly [number, number])[] = [[18, 128], [172, 282]];
-export const PANEL_H = 34, PANEL_T = 3;
-/** The statues' rows (z), the screens' place (in front of the back wall's middle). */
-const STATUE_Z = [-128, -172] as const;
-const SCREEN: readonly [number, number] = [150, -362];
-/** A wall's face (half the wall's thickness, plan.ts) and a painting's gap to it. */
+/** The panels' height and thickness; their rows' depths (their middle lines, from a room's back wall) and spans (x from
+ *  its left wall: the long panel and the short, by turns). */
+export const PANEL_H = 40, PANEL_T = 3;
+const ROW_Z = [50, 95, 140] as const;
 const FACE = 1.5 + 0.3;
+const LONG: readonly [number, number][] = [[FACE, 60], [80, 120 - FACE]];
+const TURNED: readonly [number, number][] = [[FACE, 40], [60, 120 - FACE]];
+const SPANS = [LONG, TURNED, LONG] as const;
+const ROOM_RECT: Readonly<Record<'G1' | 'G2', Rect>> = { G1, G2 };
+/** The panels' floor (the walk keeps off them, with or without paintings), each its room's. */
+export const PANELS: readonly (Rect & { room: RoomId })[] = (['G1', 'G2'] as const).flatMap((room) =>
+  ROW_Z.flatMap((z, r) => SPANS[r].map(([a, b]) => ({ room, x0: ROOM_RECT[room].x0 + a, x1: ROOM_RECT[room].x0 + b, z0: ROOM_RECT[room].z0 + z - PANEL_T / 2, z1: ROOM_RECT[room].z0 + z + PANEL_T / 2 })))
+);
+/** The screens' place (in front of G1's back wall's middle). */
+const SCREEN: readonly [number, number] = [(G1.x0 + G1.x1) / 2, G1.z0 + 8];
 
-/** Where an artwork is shown: its middle (x, z) and its height (`y`: a painting's middle, else its foot on its plinth),
- *  its turn (three's yaw: 0 faces +z), its scale, its plinth's side and height (0: none). */
-export interface ArtSpot { x: number; y: number; z: number; yaw: number; s: number; plinth: number; plinthH: number }
-/** Each painting's wall, in order along it: the back wall's two halves either side of the screens, the divider and the
- *  far wall (three each, side on), each panel's front. */
-const WALLS: readonly { ids: readonly string[]; at: (u: number) => [number, number]; yaw: number; from: number; to: number }[] = [
-  { ids: ['amazing-painting', 'calm-painting', 'moving-painting'], at: (u) => [u, ART_WING.z0 + FACE], yaw: 0, from: 6, to: 124 },
-  { ids: ['warm-painting', 'worthy-painting', 'solemn-painting'], at: (u) => [u, ART_WING.z0 + FACE], yaw: 0, from: 176, to: 294 },
-  { ids: ['scenic-painting', 'mysterious-painting', 'proper-painting'], at: (u) => [ART_WING.x0 + FACE, u], yaw: Math.PI / 2, from: -340, to: -120 },
-  { ids: ['basic-painting', 'nice-painting', 'detailed-painting'], at: (u) => [ART_WING.x1 - FACE, u], yaw: -Math.PI / 2, from: -340, to: -120 },
-  ...PANEL_Z.flatMap((z, r) => PANEL_X.map(([from, to], k) => ({
-    ids: [
-      [['famous-painting', 'wistful-painting', 'twinkling-painting', 'flowery-painting'], ['dynamic-painting', 'academic-painting', 'glowing-painting', 'perfect-painting']],
-      [['common-painting', 'moody-painting', 'quaint-painting', 'sinking-painting'], ['graceful-painting', 'scary-painting', 'jolly-painting', 'serene-painting']]
-    ][r][k],
-    at: (u: number): [number, number] => [u, z + PANEL_T / 2 + 0.3], yaw: 0, from, to
-  })))
+/** Where an artwork is shown: its room, its middle (x, z) and its height (`y`: a painting's middle, else its foot on its
+ *  plinth), its turn (three's yaw: 0 faces +z), its scale, its plinth's side and height (0: none). */
+export interface ArtSpot { room: RoomId; x: number; y: number; z: number; yaw: number; s: number; plinth: number; plinthH: number }
+/** Each run of paintings along a face toward +z (x from its room's left wall): the back walls' and each panel's. */
+const RUNS: readonly { room: 'G1' | 'G2'; ids: readonly string[]; z: number; from: number; to: number }[] = [
+  { room: 'G1', ids: ['graceful-painting'], z: FACE, from: 2, to: 28 },
+  { room: 'G1', ids: ['detailed-painting'], z: FACE, from: 92, to: 118 },
+  { room: 'G2', ids: ['nice-painting'], z: FACE, from: 2, to: 40 },
+  { room: 'G2', ids: ['solemn-painting'], z: FACE, from: 40, to: 80 },
+  { room: 'G2', ids: ['basic-painting', 'quaint-painting'], z: FACE, from: 80, to: 118 },
+  ...(
+    [
+      ['G1', [['calm-painting', 'famous-painting'], ['twinkling-painting', 'wistful-painting']], [['flowery-painting', 'dynamic-painting'], ['moving-painting', 'glowing-painting']], [['scenic-painting', 'academic-painting'], ['perfect-painting', 'serene-painting']]],
+      ['G2', [['amazing-painting', 'scary-painting'], ['mysterious-painting']], [['moody-painting', 'sinking-painting'], ['warm-painting', 'common-painting']], [['worthy-painting', 'jolly-painting'], ['proper-painting']]]
+    ] as const
+  ).flatMap(([room, ...rows]) => rows.flatMap((row, r) => row.map((ids, k) => ({ room, ids, z: ROW_Z[r] + PANEL_T / 2 + 0.3, from: SPANS[r][k][0], to: SPANS[r][k][1] }))))
 ];
-/** The statues, each row's from left to right ([id, x]): the gallant statue in the middle of the front row. */
-const STATUES: readonly (readonly [string, number])[][] = [
-  [['informative-statue', 84], ['mystic-statue', 117], ['gallant-statue', 150], ['ancient-statue', 183], ['beautiful-statue', 216], ['familiar-statue', 252], ['warrior-statue', 284]],
-  [['great-statue', 30], ['valiant-statue', 66], ['rock-head-statue', 102], ['motherly-statue', 198], ['tremendous-statue', 234], ['robust-statue', 270]]
+/** The statues, each room's: [id, its bay (0 behind the first row, 3 in front of the last), its side]. Each room's back
+ *  bay on the side of the door between them stays clear. */
+const STATUES: readonly [string, 'G1' | 'G2', number, -1 | 1][] = [
+  ['warrior-statue', 'G1', 0, -1], ['mystic-statue', 'G1', 1, -1], ['ancient-statue', 'G1', 1, 1], ['beautiful-statue', 'G1', 2, -1],
+  ['familiar-statue', 'G1', 2, 1], ['informative-statue', 'G1', 3, -1], ['gallant-statue', 'G1', 3, 1],
+  ['great-statue', 'G2', 0, 1], ['valiant-statue', 'G2', 1, -1], ['rock-head-statue', 'G2', 1, 1], ['motherly-statue', 'G2', 2, -1],
+  ['tremendous-statue', 'G2', 2, 1], ['robust-statue', 'G2', 3, -1]
 ];
+/** Each bay's statues' depth (from the back wall: the back bay's toward its front, clear of the back wall's paintings; the
+ *  others' middles; in front of the last row). */
+const BAY_Z = [40, 72.5, 117.5, 165] as const;
 const size = (id: string): [number, number, number] => {
   const b = MODELS[id];
   return b ? [b.max[0] - b.min[0], b.max[1] - Math.max(0, b.min[1]), b.max[2] - b.min[2]] : [8, 8, 8];
 };
 export const ART_SPOTS: ReadonlyMap<string, ArtSpot> = (() => {
   const out = new Map<string, ArtSpot>();
-  for (const w of WALLS) {
-    // spread along the wall: equal gaps between the paintings and at the ends
-    const widths = w.ids.map((id) => size(id)[0] * PAINTING_S), gap = (w.to - w.from - widths.reduce((a, b) => a + b, 0)) / (w.ids.length + 1);
+  for (const w of RUNS) {
+    // spread along the face: equal gaps between the paintings and at the ends
+    const r = ROOM_RECT[w.room], widths = w.ids.map((id) => size(id)[0] * PAINTING_S), gap = (w.to - w.from - widths.reduce((a, b) => a + b, 0)) / (w.ids.length + 1);
     let u = w.from + gap;
     w.ids.forEach((id, k) => {
-      const [x, z] = w.at(u + widths[k] / 2);
-      out.set(id, { x, y: HANG_Y, z, yaw: w.yaw, s: PAINTING_S, plinth: 0, plinthH: 0 });
+      out.set(id, { room: w.room, x: r.x0 + u + widths[k] / 2, y: HANG_Y, z: r.z0 + w.z, yaw: 0, s: PAINTING_S, plinth: 0, plinthH: 0 });
       u += widths[k] + gap;
     });
   }
-  STATUES.forEach((row, r) => {
-    for (const [id, x] of row) {
-      const [w, h, d] = size(id), bust = artwork(id)?.kind === 'bust', s = Math.max(1, Math.min(1.5, 24 / h));
-      const plinthH = bust ? 12 : 4;
-      out.set(id, { x, y: plinthH, z: STATUE_Z[r], yaw: 0, s, plinth: Math.max(w, d) * s + 4, plinthH });
-    }
-  });
+  for (const [id, room, bay, side] of STATUES) {
+    const r = ROOM_RECT[room], [w, h, d] = size(id), bust = artwork(id)?.kind === 'bust', s = Math.max(1, Math.min(1.5, 24 / h, 20 / Math.max(w, d)));
+    const plinthH = bust ? 12 : 4, plinth = Math.max(w, d) * s + 4;
+    const x = side < 0 ? r.x0 + FACE + 2 + plinth / 2 : r.x1 - FACE - 2 - plinth / 2;
+    // (the back bay's no nearer the first row than a step)
+    const z = bay ? BAY_Z[bay] : Math.min(BAY_Z[0], ROW_Z[0] - PANEL_T / 2 - 1 - plinth / 2);
+    out.set(id, { room, x, y: plinthH, z: r.z0 + z, yaw: 0, s, plinth, plinthH });
+  }
   // the wild painting's halves side by side (the left half at −x), on a low dais
   for (const [id, k] of [['wild-painting-left-half', -1], ['wild-painting-right-half', 1]] as const) {
     const w = size(id)[0] * PAINTING_S;
-    out.set(id, { x: SCREEN[0] + (k * w) / 2, y: 1, z: SCREEN[1], yaw: 0, s: PAINTING_S, plinth: 0, plinthH: 0 });
+    out.set(id, { room: 'G1', x: SCREEN[0] + (k * w) / 2, y: 1, z: SCREEN[1], yaw: 0, s: PAINTING_S, plinth: 0, plinthH: 0 });
   }
   return out;
 })();
 /** The screens' dais (both halves on it). */
-export const DAIS: Rect & { h: number } = { x0: SCREEN[0] - 28, x1: SCREEN[0] + 28, z0: SCREEN[1] - 6, z1: SCREEN[1] + 6, h: 1 };
+export const DAIS: Rect & { h: number } = { x0: SCREEN[0] - 32, x1: SCREEN[0] + 32, z0: SCREEN[1] - 6, z1: SCREEN[1] + 6, h: 1 };
 /** The floor an artwork's plinth takes (null: one on a wall or the dais). */
 export function plinthOf(id: string): Rect | null {
   const sp = ART_SPOTS.get(id);
@@ -109,3 +123,5 @@ export function plinthOf(id: string): Rect | null {
   const h = sp.plinth / 2;
   return { x0: sp.x - h, x1: sp.x + h, z0: sp.z - h, z1: sp.z + h };
 }
+/** The artworks in a room. */
+export const artIn = (room: RoomId): string[] => [...ART_SPOTS].filter(([, s]) => s.room === room).map(([id]) => id);

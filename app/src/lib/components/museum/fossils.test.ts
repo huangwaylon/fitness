@@ -3,8 +3,8 @@
 import { describe, expect, test } from 'vitest';
 import { FOSSILS, FOSSIL_SETS } from '../island/fossilIds.ts';
 import { findKey, type FirstFind } from '#lib/model/finds.ts';
-import { FOSSIL_MODEL, PIECE_W, ROW, SPOTS, footOf, fossilsOnShow, packOf, setOf, skeletons } from './fossils.ts';
-import { FOSSIL_WING, ENTRANCE, inRect, navOf, walkPath, walkable, type Pt } from './plan.ts';
+import { FOSSIL_MODEL, PIECE_W, ROW, SPOTS, footOf, fossilsIn, fossilsOnShow, packOf, setOf, skeletons } from './fossils.ts';
+import { ENTRANCE, inRect, navOf, rectsOf, walkPath, walkable, type Pt } from './plan.ts';
 import M from './models.json' with { type: 'json' };
 
 const at = (person: 'A' | 'B' | 'G', day = 4): FirstFind => ({ date: `2026-11-0${day}`, at: Date.parse(`2026-11-0${day}T09:00:00+09:00`), person });
@@ -52,11 +52,12 @@ describe('the models', () => {
 
 describe('where they stand', () => {
   const ids = [...FOSSILS];
-  test('every fossil has a place inside the fossils’ room, a body clear of its walls', () => {
+  test('every fossil has a place inside its room, a body clear of its walls; the rooms F1, F2, F3 share them out', () => {
     expect(ids.filter((id) => !SPOTS.has(id))).toEqual([]);
     for (const id of ids) {
       const r = footOf(id);
-      expect(inRect(FOSSIL_WING, r.x0, r.z0, 3) && inRect(FOSSIL_WING, r.x1, r.z1, 3), id).toBe(true);
+      const room = rectsOf(SPOTS.get(id)!.room)[0];
+      expect(inRect(room, r.x0, r.z0, 3) && inRect(room, r.x1, r.z1, 3), id).toBe(true);
     }
   });
   test('a skeleton’s pieces side by side on one line, a base’s width apart (NH’s pieces join there)', () => {
@@ -72,8 +73,23 @@ describe('where they stand', () => {
         const a = footOf(ids[i]), b = footOf(ids[k]);
         const gap = Math.max(a.x0 - b.x1, b.x0 - a.x1, a.z0 - b.z1, b.z0 - a.z1);
         const same = setOf(ids[i]) && setOf(ids[i]) === setOf(ids[k]);
-        expect(gap, `${ids[i]} × ${ids[k]}`).toBeGreaterThanOrEqual(same ? -1e-6 : 8);
+        const stands = SPOTS.get(ids[i])!.stand > 0 && SPOTS.get(ids[k])!.stand > 0;
+        expect(gap, `${ids[i]} × ${ids[k]}`).toBeGreaterThanOrEqual(same ? -1e-6 : stands ? 4 : 8);
       }
+  });
+  test('each room’s rows 2 tiles apart, each island an aisle of 2 tiles past it to a wall (the back wall’s cases aside), the doorways’ bands clear', () => {
+    for (const room of ['F1', 'F2', 'F3'] as const) {
+      const r = rectsOf(room)[0], feet = fossilsIn(room).map(footOf);
+      expect(feet.length, room).toBeGreaterThan(10);
+      // (a row: the feet on one line)
+      const rows = [...new Set(feet.map((f) => (f.z0 + f.z1) / 2))].sort((a, b) => a - b).map((z) => feet.filter((f) => Math.abs((f.z0 + f.z1) / 2 - z) < 0.01));
+      const box = (fs: typeof feet) => ({ x0: Math.min(...fs.map((f) => f.x0)), x1: Math.max(...fs.map((f) => f.x1)), z0: Math.min(...fs.map((f) => f.z0)), z1: Math.max(...fs.map((f) => f.z1)) });
+      rows.forEach((row, i) => {
+        const b = box(row);
+        if (i) expect(b.z0 - box(rows[i - 1]).z1, `${room} row ${i}`).toBeGreaterThanOrEqual(19.9);
+        if (b.z0 - r.z0 > 10) expect(Math.max(b.x0 - r.x0, r.x1 - b.x1), `${room} row ${i}`).toBeGreaterThanOrEqual(20);
+      });
+    }
   });
   test('with every fossil in, a walk from the door reaches each one (its front, or its back by the front wall)', () => {
     const g = navOf(ids.map(footOf));

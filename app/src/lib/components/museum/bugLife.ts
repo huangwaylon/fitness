@@ -13,43 +13,52 @@ import { FLAPS, wingBeat, type Beat } from '../world3d/wings.ts';
 import W3D from '../world3d/models.json' with { type: 'json' };
 import M from './models.json' with { type: 'json' };
 import type { Habitat } from './species.ts';
-import type { Pt, Rect } from './plan.ts';
+import { BUG_WING, type Pt, type Rect } from './plan.ts';
 import { clamp } from '#lib/math.ts';
 
 /** A bug is drawn this much bigger than NH's own (the island's way: a butterfly a hand across). */
 export const BUG_S = 1.9;
 
-// ---------- the garden (the bug wing's model units) ----------
+// ---------- the garden (the bug wing's model units; laid out from its back-left corner, u across, v toward the front) ----------
+//   v   0-18   four glass cases along the back wall
+//      18-52   the two oaks (the room's hero, framed from the hall's arch), a row of flowers between them
+//      52-68   the stone path in from the hall's arch (the right wall) across the room
+//      68-200  a path down the middle; left of it a row of flowers, the pond, hydrangeas, cacti, the fallen log and
+//              ferns; right of it the rest of the flowers, the flower bed, the bushes, the palm and the fifth case
 
-/** The stone paths (the cross path in two, either side of the long one: no two pieces overlap). */
-export const PATHS: Rect[] = [{ x0: -292, x1: -60, z0: 2, z1: 18 }, { x0: -176, x1: -162, z0: -62, z1: 2 }, { x0: -176, x1: -162, z0: 18, z1: 96 }];
-export const POND: Rect = { x0: -268, x1: -206, z0: 40, z1: 82 };
+const GX = BUG_WING.x0, GZ = BUG_WING.z0;
+const at = (u: number, v: number): Pt => [GX + u, GZ + v];
+const rect = (u0: number, u1: number, v0: number, v1: number): Rect => ({ x0: GX + u0, x1: GX + u1, z0: GZ + v0, z1: GZ + v1 });
+/** The stone paths (the long one in two, either side of the cross one: no two pieces overlap). */
+export const PATHS: Rect[] = [rect(4, 120, 52, 68), rect(54, 66, 68, 196)];
+export const POND: Rect = rect(6, 46, 100, 138);
 /** The pond's water level. */
 export const POND_Y = 0.6;
-export const OAKS: Pt[] = [[-250, -36], [-118, -42]];
-export const PALM: Pt = [-84, 78];
+export const OAKS: Pt[] = [at(20, 30), at(100, 30)];
+export const PALM: Pt = at(78, 180);
 export const OAK_S = 1.4, PALM_S = 1.3;
-/** The display cases along the back wall (their middles; each 26 × 14, on a stand). */
-export const CASES: Pt[] = [[-278, -84], [-244, -84], [-210, -84], [-132, -84], [-98, -84]];
+/** The display cases (their middles; each 26 × 14, on a stand): four along the back wall, one in the front corner. */
+export const CASES: Pt[] = [at(15, 9), at(44, 9), at(76, 9), at(105, 9), at(105, 189)];
 export const CASE = { w: 26, d: 14, stand: 9, h: 15 };
 /** A case's agave (off its middle, on its soil) and its scale. */
 export const CASE_AGAVE = { dx: -7, dz: -2, s: 0.45 };
-/** The flower clumps (NH's own, the island's: a tile each) the flower bugs sit on and the fliers land on. */
-export const FLOWERS: [string, number, number][] = [
-  ['flowers/red-tulips', -150, 28], ['flowers/yellow-pansies', -138, 30], ['flowers/pink-cosmos', -126, 27], ['flowers/white-lilies', -114, 30],
-  ['flowers/purple-hyacinths', -102, 27], ['flowers/orange-cosmos', -90, 30], ['flowers/pink-tulips', -244, -8], ['flowers/blue-pansies', -232, -10],
-  ['flowers/orange-lilies', -220, -8], ['flowers/pink-roses', -208, -10], ['flowers/purple-pansies', -196, -8], ['flowers/orange-roses', -150, 40]
-];
+/** The flower clumps (NH's own, the island's: a tile each) the flower bugs sit on and the fliers land on: a row along the
+ *  path's front (the long row), a row between the oaks (the oak's row), one more by the long row. */
+export const FLOWERS: [string, number, number][] = (
+  [
+    ['flowers/red-tulips', 12, 78], ['flowers/yellow-pansies', 24, 81], ['flowers/pink-cosmos', 36, 78], ['flowers/white-lilies', 48, 81],
+    ['flowers/purple-hyacinths', 76, 78], ['flowers/orange-cosmos', 88, 81], ['flowers/pink-tulips', 44, 47], ['flowers/blue-pansies', 52, 45],
+    ['flowers/orange-lilies', 60, 47], ['flowers/pink-roses', 68, 45], ['flowers/purple-pansies', 76, 47], ['flowers/orange-roses', 100, 79]
+  ] as const
+).map(([name, u, v]) => [name, ...at(u, v)]);
 /** A flower's top (its blooms, NH's flowers' height) and half its spread. */
 const FLOWER_TOP = 6.7, FLOWER_HALF = 5;
 /** The garden's props: [model, x, z, scale, yaw]. */
-export const PROPS: [string, number, number, number, number][] = [
-  ['flower-bed', -120, 62, 1, 0], ['pink-flowers', -214, -36, 1, 0.4], ['bushes', -86, -30, 0.5, 0], ['hydrangeas', -140, 88, 0.8, 0],
-  ['autumn-log', -284, -24, 0.9, 0.6], ['logs-ferns', -196, 86, 1, 0], ['cacti', -98, 40, 0.8, 0], ['mangroves', -280, 58, 0.75, Math.PI / 2],
-  ['heliconia-rock', -150, -50, 0.6, 0], ['agave', -190, -50, 1.2, 0], ['anthurium', -74, 92, 1.6, 0], ['coleus', -186, 28, 1.6, 0]
-];
+export const PROPS: [string, number, number, number, number][] = (
+  [['flower-bed', 92, 112, 1, 0], ['bushes', 106, 150, 0.4, 0], ['hydrangeas', 15, 158, 0.8, 0], ['autumn-log', 36, 184, 0.9, 0], ['logs-ferns', 12, 186, 1, 0]] as const
+).map(([name, u, v, s, yaw]) => [name, ...at(u, v), s, yaw]);
 /** The soil patches drawn on the grass ([x, z], radius): the ground crawlers keep to them (GROUND). */
-export const SOIL: [number, number, number][] = [[-272, -8, 12], [-222, 92, 8], [-284, -40, 12]];
+export const SOIL: [number, number, number][] = ([[40, 162, 9], [112, 82, 7], [8, 23, 7]] as const).map(([u, v, r]) => [...at(u, v), r]);
 
 /** A solid of the garden (world, a box): a prop, a trunk, a canopy, a flower, a case. */
 export interface Solid { x0: number; x1: number; y0: number; y1: number; z0: number; z1: number; what: string }
@@ -87,23 +96,24 @@ const solid = (what: string) => SOLIDS.find((s) => s.what === what)!;
 // ---------- where each kind keeps (each a box clear of every solid but what it's on) ----------
 
 const box = (x0: number, x1: number, z0: number, z1: number, l0: number, l1 = l0): Patch => ({ x0, x1, z0, z1, l0, l1 });
+/** A box from the garden's corner (u, v as the plan above). */
+const lbox = (u0: number, u1: number, v0: number, v1: number, l0: number, l1 = l0): Patch => box(GX + u0, GX + u1, GZ + v0, GZ + v1, l0, l1);
 /** The fliers' air: over the long row of flowers, over the row by the oak, over the flower bed (its flowers 17 high). */
-const AIR: Patch[] = [box(-158, -84, 6, 44, 12, 24), box(-252, -188, -18, 10, 12, 24), box(-150, -112, 44, 80, 24, 30)];
+const AIR: Patch[] = [lbox(6, 106, 70, 87, 12, 24), lbox(40, 80, 34, 50, 12, 24), lbox(62, 100, 94, 130, 24, 30)];
 /** Over the pond (its water, inside its bank). */
 const POND_AIR = box(POND.x0, POND.x1, POND.z0, POND.z1, 10, 22);
 const POND_LOW = box(POND.x0, POND.x1, POND.z0, POND.z1, 4, 16);
 /** The grass the hoppers keep to, between the beds, the paths and the props. */
-const GRASS: Patch[] = [box(-252, -212, 20, 36, 0), box(-152, -122, -30, -4, 0), box(-202, -180, 40, 74, 0), box(-114, -68, -13, 0, 0),
-  box(-298, -262, -72, -46, 0), box(-126, -98, 82, 98, 0)];
-/** The soil by the log (its patches' sides clear of it) and by the ferns: the ground crawlers'. */
-const GROUND: Patch[] = [box(-280, -258, -4, 4, 0), box(-228, -216, 86, 98, 0), box(-292, -276, -54, -43, 0)];
+const GRASS: Patch[] = [lbox(32, 52, 147, 155, 0), lbox(68, 88, 134, 166, 0), lbox(40, 80, 17, 32, 0)];
+/** The soil by the log, by the long row's end and in the far corner under the first oak: the ground crawlers'. */
+const GROUND: Patch[] = [lbox(28, 52, 160, 167, 0), lbox(106, 118, 72, 92, 0), lbox(2, 14, 18, 28, 0)];
 /** The bushes' tops (the leaf crawlers': the snail, the walking leaf). */
-const LEAVES: { on: string; at: Patch }[] = [{ on: 'bushes', at: box(-92, -80, -34, -26, 0) }, { on: 'hydrangeas', at: box(-146, -134, 84, 92, 0) }];
+const LEAVES: { on: string; at: Patch }[] = [{ on: 'bushes', at: lbox(100, 112, 146, 154, 0) }, { on: 'hydrangeas', at: lbox(9, 21, 154, 162, 0) }];
 for (const l of LEAVES) l.at.l0 = l.at.l1 = solid(l.on).y1 - 0.6;
 /** The row by the oak's flower heads (the stink bugs amble over them). */
-const ROW = box(-246, -194, -11, -7, FLOWER_TOP);
+const ROW = lbox(42, 78, 44, 48, FLOWER_TOP);
 /** The flower bed's blooms (its top) the fliers over it land on. */
-const BED_HEADS: P3[] = [[-134, 54], [-124, 62], [-130, 70], [-118, 50], [-120, 74]].map(([x, z]) => ({ x, z, lift: solid('flower-bed').y1 }));
+const BED_HEADS: P3[] = [[78, 104], [88, 112], [82, 120], [94, 100], [92, 124]].map(([u, v]) => ({ x: GX + u, z: GZ + v, lift: solid('flower-bed').y1 }));
 /** How far a bug on its bark turns from heading straight up or down it (rad). */
 const TILT = 0.5;
 /** How far out from a flower a flier comes down to land on it (u past its own reach). */
@@ -114,7 +124,7 @@ const half = (a: Patch, i: number): Patch => {
   return i % 2 ? { ...a, x0: mid } : { ...a, x1: mid };
 };
 /** The flowers a ladybug or a mantis sits on (FLOWERS' indices: clear of the props round them, a flower apart). */
-const SITS = [0, 2, 6, 8, 10];
+const SITS = [0, 2, 4, 6, 10];
 /** The spots a box over the garden takes: the sitting flowers under it (a flier lands there), the stink bugs' row. */
 const under = (a: Patch): string[] => [
   ...SITS.filter((f) => {
@@ -142,11 +152,11 @@ export function slotsOf(id: string, hab: Habitat): readonly Slot[] {
     // (a dragonfly and the firefly share the pond's air: a half each)
     case 'dart': case 'drift': return each(2, 'pond');
     case 'water': return each(2, 'water');
-    // (not the strip by the bushes: a locust's too big for it; the far corner's by the log's soil)
-    case 'hop': return [0, 1, 2, 4, 5].map((i) => ({ i, takes: [`grass${i}`, ...(i === 4 ? ['soil2'] : [])] }));
-    // (the spider, a big one, not on the ferns' little patch: it would hardly move; the dung beetle, wider still, its
-    // wings out, only on the log's big patch)
-    case 'ground': return each(GROUND.length, 'soil').filter((s) => (id === 'dung-beetle' ? s.i === 0 : id !== 'spider' || s.i !== 1));
+    // (the patch by the log's soil the log's crawlers' too)
+    case 'hop': return GRASS.map((_, i) => ({ i, takes: [`grass${i}`, ...(i === 0 ? ['soil0'] : [])] }));
+    // (the spider, a big one, and the dung beetle, wider still, its wings out, only on the log's big patch: on a little
+    // one they would hardly move)
+    case 'ground': return each(GROUND.length, 'soil').filter((s) => s.i === 0 || (id !== 'dung-beetle' && id !== 'spider'));
     case 'leaf': return each(LEAVES.length, 'leaf');
     case 'terrarium': return each(CASES.length, 'case');
     case 'trunk': return each(OAKS.length, 'oak');

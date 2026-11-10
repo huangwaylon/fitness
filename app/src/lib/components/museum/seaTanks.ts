@@ -21,8 +21,8 @@ export type SeaTankId = 'reef' | 'pool';
 export interface SeaTank { id: SeaTankId; box: Box }
 /** The two tanks' glass boxes (on the floor; under the room's ceiling, plan.ts WING_H). */
 export const SEA_TANKS: readonly SeaTank[] = [
-  { id: 'reef', box: { x0: 306, x1: 394, y0: 0, y1: 38, z0: -96, z1: -70 } },
-  { id: 'pool', box: { x0: 322, x1: 378, y0: 0, y1: 15, z0: 4, z1: 38 } }
+  { id: 'reef', box: { x0: 186, x1: 264, y0: 0, y1: 38, z0: 32, z1: 58 } },
+  { id: 'pool', box: { x0: 202, x1: 254, y0: 0, y1: 15, z0: 80, z1: 112 } }
 ];
 /** The drifters (in the reef tank's water, bobbing), the reef's floor (its big crawlers, NH's tall ones at the back) and
  *  the tide pool's (the little ones, a grid), each list in its places' order. */

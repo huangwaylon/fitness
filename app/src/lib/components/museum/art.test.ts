@@ -2,11 +2,12 @@
 // artworks, what's on show (anyone's first find: a present's), where each hangs or stands; every sea creature's place.
 import { describe, expect, test } from 'vitest';
 import { findKey, type FirstFind } from '#lib/model/finds.ts';
-import { ART, ART_IDS, ART_SPOTS, DAIS, PANEL_X, PANEL_Z, artOnShow, artPack, isArt, plinthOf } from './art.ts';
+import { ART, ART_IDS, ART_SPOTS, DAIS, artIn, artOnShow, artPack, isArt, plinthOf } from './art.ts';
 import { SEA_MUSEUM_MODEL, SEA_SPOTS, SEA_TANKS } from './seaTanks.ts';
 import { SEA } from '../island/sea.ts';
 import { onShow } from './species.ts';
-import { ART_WING, ENTRANCE, SEA_WING, inRect, navOf, walkPath, walkable, type Pt, type Rect } from './plan.ts';
+import { ENTRANCE, SEA_WING, inRect, navOf, rectsOf, walkPath, walkable, type Rect } from './plan.ts';
+import { allBlocks, spot } from './spots.ts';
 import { waterOf, type Tank } from './tanks.ts';
 import { PANELS } from './gallery.ts';
 import M from './models.json' with { type: 'json' };
@@ -33,7 +34,7 @@ describe('the art', () => {
     expect(ART_IDS.filter((id) => !ART_SPOTS.has(id))).toEqual([]);
     for (const id of ART_IDS) {
       const s = ART_SPOTS.get(id)!;
-      expect(inRect(ART_WING, s.x, s.z), id).toBe(true);
+      expect(inRect(rectsOf(s.room)[0], s.x, s.z), id).toBe(true);
     }
     // the paintings on one face: their spans along it apart
     const flat = ART.filter((a) => a.kind === 'painting');
@@ -55,17 +56,38 @@ describe('the art', () => {
       const [ia, a] = feet[i], [ib, b] = feet[k];
       expect(a.x1 <= b.x0 || b.x1 <= a.x0 || a.z1 <= b.z0 || b.z1 <= a.z0, `${ia} × ${ib}`).toBe(true);
     }
-    expect(PANELS.length).toBe(PANEL_Z.length * PANEL_X.length);
+    expect(PANELS.length).toBe(12);
+    // (G1 the screen and 14 paintings, 7 statues; G2 14 paintings, 6 statues; every painting faces +z)
+    expect([artIn('G1').length, artIn('G2').length]).toEqual([2 + 14 + 7, 14 + 6]);
+    for (const a of flat) expect(ART_SPOTS.get(a.id)!.yaw, a.id).toBe(0);
   });
-  test('with every artwork in, a walk from the door reaches the gallery’s back wall and each statue', () => {
-    const g = navOf([...PANELS, DAIS, ...ART_IDS.flatMap((id) => plinthOf(id) ?? [])]);
-    // (a statue from its front, or from behind where the next row stands close)
-    const side = (r: Rect): Pt => (walkable(g, (r.x0 + r.x1) / 2, r.z1 + 10) ? [(r.x0 + r.x1) / 2, r.z1 + 10] : [(r.x0 + r.x1) / 2, r.z0 - 10]);
-    const goals: Pt[] = [[100, -372], [12, -300], [290, -300], ...ART_IDS.flatMap((id) => (plinthOf(id) ? [side(plinthOf(id)!)] : []))];
-    for (const to of goals) {
-      const p = walkPath(g, ENTRANCE, to);
-      expect(walkable(g, ...to), `${to}`).toBe(true);
-      expect(p.length, `${to}`).toBeGreaterThan(0);
+  test('with everything in, a walk from the door reaches the front of each artwork (its named spot), a body clear of the panels and plinths', () => {
+    const g = navOf(allBlocks());
+    for (const id of ART_IDS) {
+      const to = spot(`art:${id}`), p = walkPath(g, ENTRANCE, to);
+      expect(walkable(g, ...to), id).toBe(true);
+      expect(p.length, id).toBeGreaterThan(0);
+    }
+  });
+  test('the panels: three rows a room, 2 tiles between the rows, a 2-tile gap in each row (left and right in turn), no painting past a panel’s ends', () => {
+    for (const room of ['G1', 'G2'] as const) {
+      const ps = PANELS.filter((p) => p.room === room), r = rectsOf(room)[0];
+      const rows = [...new Set(ps.map((p) => p.z0))].sort((a, b) => a - b);
+      expect(rows.length).toBe(3);
+      rows.forEach((z, i) => {
+        if (i) expect(z - rows[i - 1] - 3, `${room} ${i}`).toBeGreaterThanOrEqual(40);
+        const [a, b] = ps.filter((p) => p.z0 === z).sort((p, q) => p.x0 - q.x0);
+        expect(b.x0 - a.x1, `${room} ${i}`).toBeGreaterThanOrEqual(20);
+        expect([a.x0 - r.x0, r.x1 - b.x1].every((m) => m < 2), `${room} ${i}`).toBe(true);
+      });
+    }
+    const on = (r: Rect & { room: string }, id: string) => {
+      const s = ART_SPOTS.get(id)!, w = ((models[id]!.max[0] - models[id]!.min[0]) * s.s) / 2;
+      return s.room === r.room && Math.abs(s.z - r.z1) < 1 && s.x - w >= r.x0 - 1e-6 && s.x + w <= r.x1 + 1e-6;
+    };
+    for (const a of ART.filter((x) => x.kind === 'painting')) {
+      const s = ART_SPOTS.get(a.id)!;
+      expect(PANELS.some((p) => on(p, a.id)) || Math.abs(s.z - rectsOf(s.room)[0].z0) < 2, a.id).toBe(true);
     }
   });
 });

@@ -1,9 +1,9 @@
-// The aquarium's tanks (docs/design.md "The museum"), pure: where each stands in the aquarium wing (plan.ts FISH_WING,
+// The aquarium's tanks (docs/design.md "The museum"), pure: where each stands in the aquarium (plan.ts FISH_WING,
 // model units), its glass box, the water a fish swims in, how big a fish is drawn in it, and its props on its sand.
-// NH's three (species.ts tankOf): the great sea tank along the back wall, the deep-sea tank on the far wall (across
-// from the opening, on its line), the river tank as an island in front; the sea's and the river's middles in one line,
-// an aisle between them from the opening to the deep's glass, two benches in it facing the great tank, a plant in each
-// corner. Each tank's long side is its swimmers' way (they keep mostly along it, as in NH's tanks).
+// NH's three (species.ts tankOf): the great sea tank across the back wall (the room's first sight from the hall's
+// arch), the deep-sea tank along the left wall past the arch, the river tank low in front (never hiding the great
+// one); the benches between face the great tank (seats.ts), the sea creatures' alcove opens on the right (seaTanks.ts).
+// Each tank's long side is its swimmers' way (they keep mostly along it, as in NH's tanks).
 import M from './models.json' with { type: 'json' };
 import { reachOf } from './boids.ts';
 import type { TankId } from './species.ts';
@@ -19,9 +19,9 @@ export interface Tank {
 /** (Each one's top, its frame's too, well under the wing's ceiling (plan.ts WING_H, the first person's): the great
  *  tank's glass top was the ceiling's plane, the two fighting over it from below.) */
 export const TANKS: readonly Tank[] = [
-  { id: 'sea', box: { x0: 72, x1: 248, y0: 0, y1: 48, z0: -98, z1: -46 } },
-  { id: 'deep', box: { x0: 256, x1: 296, y0: 0, y1: 48, z0: -30, z1: 58 } },
-  { id: 'river', box: { x0: 110, x1: 210, y0: 0, y1: 24, z0: 30, z1: 66 } }
+  { id: 'sea', box: { x0: 64, x1: 176, y0: 0, y1: 48, z0: -48, z1: -6 } },
+  { id: 'deep', box: { x0: 64, x1: 100, y0: 0, y1: 48, z0: 36, z1: 116 } },
+  { id: 'river', box: { x0: 120, x1: 176, y0: 0, y1: 24, z0: 120, z1: 146 } }
 ];
 
 /** The water inside a tank's glass (its sand below, its surface a little under the rim). */

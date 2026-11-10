@@ -23,7 +23,7 @@ import type { Pt, Rect } from './plan.ts';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { batcher, frameOf, openBox, plainGeometry } from './geometry.ts';
 import type { Box } from './tanks.ts';
-import { BUG_S, CASE, CASES, CASE_AGAVE, FLOWERS, OAKS, OAK_S, PALM, PALM_S, PATHS, POND, POND_Y, PROPS, SOIL, bugLife, bugSeed, pose, type Life, type Pose } from './bugLife.ts';
+import { BUG_S, CASE, CASES, CASE_AGAVE, FLOWERS, OAKS, OAK_S, PALM, PALM_S, PATHS, POND, POND_Y, PROPS, SOIL, SOLIDS, bugLife, bugSeed, pose, type Life, type Pose } from './bugLife.ts';
 import { FLAPS, flapGlsl, wingHinge } from '../world3d/wings.ts';
 
 export { CASES };
@@ -356,8 +356,8 @@ export function buildGarden(kit: Kit, list: readonly Specimen[], clock: () => nu
     POND,
     ...OAKS.map(([x, z]) => ({ x0: x - 5, x1: x + 5, z0: z - 5, z1: z + 5 })),
     { x0: PALM[0] - 4, x1: PALM[0] + 4, z0: PALM[1] - 4, z1: PALM[1] + 4 },
-    { x0: -140, x1: -100, z0: 48, z1: 76 }, { x0: -228, x1: -200, z0: -50, z1: -22 }, { x0: -104, x1: -68, z0: -48, z1: -12 },
-    { x0: -154, x1: -126, z0: 76, z1: 100 }, { x0: -300, x1: -268, z0: -40, z1: -8 }, { x0: -300, x1: -256, z0: 44, z1: 74 }
+    // (the props' feet: bugLife's solids, the flower bed's and the bushes' and the rest)
+    ...SOLIDS.filter((s) => PROPS.some(([name]) => name === s.what)).map(({ x0, x1, z0, z1 }) => ({ x0, x1, z0, z1 }))
   ];
 
   return {

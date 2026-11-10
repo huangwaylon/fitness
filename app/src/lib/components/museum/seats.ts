@@ -10,8 +10,8 @@ import type { Pt } from './plan.ts';
  *  (three's yaw: π, its front toward −z, the great tank). The island's park bench (static/room/world3d), BENCH_S its
  *  model's units a museum unit. */
 export const BENCHES: readonly { id: string; x: number; z: number; yaw: number }[] = [
-  { id: 'dmbench1', x: 124, z: -20, yaw: Math.PI },
-  { id: 'dmbench2', x: 196, z: -20, yaw: Math.PI }
+  { id: 'dmbench1', x: 104, z: 20, yaw: Math.PI },
+  { id: 'dmbench2', x: 152, z: 20, yaw: Math.PI }
 ];
 export const BENCH_S = 1.2;
 /** The bench's model (the island's). */

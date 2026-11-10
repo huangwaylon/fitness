@@ -4,7 +4,7 @@
 // all are in), a standalone fossil on a marble stand. Still: nothing here moves, so it asks for no frames of its own.
 import { BoxGeometry, Group, Matrix4, type BufferGeometry } from 'three';
 import type { Exhibit, Kit } from './engine.ts';
-import { SPOTS, STAND_W, footOf, setOf, type FossilOnShow } from './fossils.ts';
+import { SET_S, SPOTS, STAND_W, footOf, setOf, type FossilOnShow } from './fossils.ts';
 import { batcher } from './geometry.ts';
 import M from './models.json' with { type: 'json' };
 
@@ -17,7 +17,7 @@ const REACH = 26;
 /** A fossil's height as drawn (its model's, scaled), its middle's height over the floor. */
 function heightOf(id: string): { s: number; h: number; mid: number } {
   const b = MODELS[id], s0 = SPOTS.get(id)!;
-  const h0 = b ? b.max[1] - Math.max(0, b.min[1]) : 10, s = s0.stand && h0 < SMALL ? SMALL_S : 1;
+  const h0 = b ? b.max[1] - Math.max(0, b.min[1]) : 10, s = s0.stand && h0 < SMALL ? SMALL_S : setOf(id) ? SET_S : 1;
   return { s, h: h0 * s, mid: s0.stand + (h0 * s) / 2 };
 }
 

@@ -1,15 +1,12 @@
-// The fossil wing's exhibits (docs/design.md "The museum"), pure: NH's 73 fossils (island/fossilIds.ts) as NH's own
+// The fossil rooms' exhibits (docs/design.md "The museum"), pure: NH's 73 fossils (island/fossilIds.ts) as NH's own
 // models (FtrFossil*: scripts/world3d-models.ts --museum, one pack a skeleton and one for the standalone ones), each
-// shown once anyone has found it (the ずかん's first finds: NH's donation), in NH's three rooms' order:
-//   the front row     NH's room 1, early life: the standalone ones on stands along the front wall
-//   six rows          NH's room 2, the dinosaurs (and room 2's standalone finds), then room 3, the mammals and the
-//                     australopith, each row in two halves either side of a middle aisle
+// shown once anyone has found it (the ずかん's first finds: NH's donation), in three rooms in a line (below: FOSSIL_ROWS).
 // A skeleton's pieces stand in a row along +x on its platform, NH's way: each piece is a 2 × 2 base with its bones, and
 // the pieces in their order join into the whole animal (the skull at −x; a pterosaur's wings either side of its body).
 // A piece not found yet leaves its place empty; once every piece is in, the skeleton is complete (its card says so).
 import { FOSSIL_SETS, STANDALONE } from '../island/fossilIds.ts';
 import { findKey, type FirstFind } from '#lib/model/finds.ts';
-import { FOSSIL_WING, type Rect } from './plan.ts';
+import { F1, F2, F3, type Rect, type RoomId } from './plan.ts';
 
 export type SetId = keyof typeof FOSSIL_SETS;
 type Standalone = (typeof STANDALONE)[number];
@@ -52,9 +49,12 @@ export const ROW: Readonly<Record<SetId, readonly string[]>> = {
   quetzal: ['left-quetzal-wing', 'quetzal-torso', 'right-quetzal-wing'],
   megalo: ['right-megalo-side', 'left-megalo-side']
 };
-/** A piece's base: 2 × 2 tiles (model units: NH's own bounds, a little under 20 deep). */
-export const PIECE_W = 20;
-const PIECE_D = 18.4;
+/** A skeleton's pieces drawn this much under NH's size (two big skeletons a row, 2-tile aisles, in a 12-wide room). */
+export const SET_S = 0.85;
+/** A piece's base: NH's 2 × 2 tiles (its own bounds, a little under 20 deep), as drawn. */
+const BASE_W = 20, BASE_D = 18.4;
+export const PIECE_W = BASE_W * SET_S;
+const PIECE_D = BASE_D * SET_S;
 /** A standalone fossil's stand (its top's side and height); the dunkleosteus stands on its own 2 × 2 base. */
 export const STAND_W = 11;
 const STAND_H = 7;
@@ -67,65 +67,77 @@ export const packOf = (id: string): string => {
   return 'fossils';
 };
 
-// ---- where everything stands (the fossils' room: plan.ts FOSSIL_WING, its passage at its front right) ----
+// ---- where everything stands (the fossil rooms: plan.ts F1, F2, F3, in a line from the hall's back-left arch) ----
+//   F1   NH's room 1, early life: seven standalone ones in a row of cases on the back wall, three islands in front
+//   F2   the big skeletons: the diplodocus along the back wall, the T. rex alone on a carpeted island in the middle
+//        (the room's hero, framed from F1's door), two islands of two either side of it, front and back
+//   F3   the rest: a small skeleton either side of the door in the back wall, five islands down the middle
+// Every row's exhibits face +z (the camera looks along −z: a skeleton's side profile, a stand's front); islands leave
+// side aisles of 2 tiles, rows 2 tiles apart, a 3-tile band clear inside each doorway.
 
-const X0 = FOSSIL_WING.x0 + 4, X1 = FOSSIL_WING.x1 - 4;
-/** The middle aisle (x) between each row's halves, its half width. */
-const AISLE_X = (X0 + X1) / 2, AISLE_HALF = 12;
-/** The rows' depths (z of each row's middle), front to back. */
-const ROW_Z = [-150, -190, -230, -270, -310, -350] as const;
-/** The front row's (NH's room 1) depth. */
-const FRONT_Z = -114;
-const GAP = 12;
+/** A run's slots a little apart: a skeleton from anything (or the wall), a stand from a stand. */
+const GAP = 10, STAND_GAP = 5;
 type Slot = SetId | Standalone;
-/** Each row's halves, [the left half (−x), the right half (+x, by the passage)], each a run of skeletons and stands. */
-const HALVES: readonly (readonly [readonly Slot[], readonly Slot[]])[] = [
-  [['diplo'], ['t-rex', 'tricera']],
-  [['brachio', 'pachy'], ['stego', 'ankylo']],
-  [['iguanodon', 'parasaur'], ['spino', 'plesio']],
-  [['dimetrodon', 'ophthalmo'], ['ptera', 'quetzal']],
-  [['dinosaur-track', 'coprolite', 'juramaia', 'archaeopteryx'], ['archelon', 'deinony']],
-  [['megacero', 'megalo'], ['mammoth', 'sabertooth', 'australopith']]
+/** A row: its room, its depth (z of its middle, from the room's back wall), its slots (left to right) and where it
+ *  stands across the room (in the middle, or against a side wall with its aisle on the other side). */
+interface Row { room: RoomId; z: number; slots: readonly Slot[]; at?: 'mid' | 'left' | 'right' }
+const BACK_Z = 12;
+export const FOSSIL_ROWS: readonly Row[] = [
+  { room: 'F1', z: BACK_Z, slots: ['trilobite', 'ammonite', 'anomalocaris', 'myllokunmingia', 'amber', 'shark-tooth-pattern', 'coprolite'] },
+  { room: 'F1', z: 48, slots: ['eusthenopteron', 'acanthostega', 'dinosaur-track', 'juramaia', 'archaeopteryx'] },
+  { room: 'F1', z: 84, slots: ['dunkleosteus', 'ophthalmo'] },
+  { room: 'F1', z: 122, slots: ['australopith', 'archelon'] },
+  { room: 'F2', z: BACK_Z, slots: ['diplo', 'deinony'] },
+  { room: 'F2', z: 48, slots: ['brachio', 'megalo'] },
+  { room: 'F2', z: 84, slots: ['tricera', 'stego'] },
+  { room: 'F2', z: 130, slots: ['t-rex'] },
+  { room: 'F2', z: 176, slots: ['ankylo', 'spino'] },
+  { room: 'F2', z: 212, slots: ['iguanodon', 'parasaur'] },
+  { room: 'F3', z: BACK_Z, slots: ['pachy'], at: 'left' },
+  { room: 'F3', z: BACK_Z, slots: ['dimetrodon'], at: 'right' },
+  { room: 'F3', z: 48, slots: ['ptera'] },
+  { room: 'F3', z: 84, slots: ['plesio'] },
+  { room: 'F3', z: 120, slots: ['megacero'] },
+  { room: 'F3', z: 156, slots: ['quetzal'] },
+  { room: 'F3', z: 192, slots: ['mammoth', 'sabertooth'] }
 ];
-/** The front row (NH's room 1), from the passage leftward. */
-const FRONT: readonly Standalone[] = ['trilobite', 'ammonite', 'anomalocaris', 'myllokunmingia', 'shark-tooth-pattern', 'amber', 'eusthenopteron', 'acanthostega', 'dunkleosteus'];
+/** The hero of each room (framed from its door: spots.ts, the visitors'). */
+export const FOSSIL_HERO: Readonly<Record<'F1' | 'F2' | 'F3', Slot>> = { F1: 'trilobite', F2: 't-rex', F3: 'ptera' };
+/** A row's island's margin to a side wall it stands against. */
+const WALL_M = 4;
+const ROOM_RECT: Readonly<Record<string, Rect>> = { F1, F2, F3 };
 
 /** How wide a slot stands along its row. */
-const widthOf = (s: Slot): number => (s in ROW ? ROW[s as SetId].length * PIECE_W : ON_BASE.has(s) ? PIECE_W : STAND_W);
+const widthOf = (s: Slot): number => (s in ROW ? ROW[s as SetId].length * PIECE_W : ON_BASE.has(s) ? BASE_W : STAND_W);
+const isStand = (s: Slot) => !(s in ROW) && !ON_BASE.has(s);
 
-/** Where a fossil stands: its middle (x, z) on the floor, on a stand (`stand`: its top's height) or on its own base. */
-export interface Spot { x: number; z: number; stand: number }
+/** Where a fossil stands: its room, its middle (x, z) on the floor, on a stand (`stand`: its top's height) or on its
+ *  own base. */
+export interface Spot { room: RoomId; x: number; z: number; stand: number }
 /** Every fossil's place (a piece's own, in its skeleton's row), made once. */
 export const SPOTS: ReadonlyMap<string, Spot> = (() => {
   const out = new Map<string, Spot>();
-  const lay = (slots: readonly Slot[], z: number, from: number, dir: 1 | -1) => {
-    let x = from;
-    for (const s of dir > 0 ? slots : [...slots].reverse()) {
-      const w = widthOf(s), x0 = dir > 0 ? x : x - w;
-      if (s in ROW) ROW[s as SetId].forEach((id, k) => out.set(id, { x: x0 + (k + 0.5) * PIECE_W, z, stand: 0 }));
-      else out.set(s, { x: x0 + w / 2, z, stand: ON_BASE.has(s) ? 0 : STAND_H });
-      x = dir > 0 ? x + w + GAP : x - w - GAP;
-    }
-  };
-  HALVES.forEach(([left, right], r) => {
-    lay(left, ROW_Z[r], AISLE_X - AISLE_HALF, -1);
-    lay(right, ROW_Z[r], AISLE_X + AISLE_HALF, 1);
-  });
-  // (the front row from the passage's side wall leftward, a stand's width apart)
-  let x = -70;
-  for (const id of FRONT) {
-    const w = widthOf(id);
-    out.set(id, { x: x - w / 2, z: FRONT_Z, stand: ON_BASE.has(id) ? 0 : STAND_H });
-    x -= w + 12;
+  for (const row of FOSSIL_ROWS) {
+    const r = ROOM_RECT[row.room], z = r.z0 + row.z;
+    const gaps = row.slots.slice(1).map((s, k) => (isStand(s) && isStand(row.slots[k]) ? STAND_GAP : GAP));
+    const w = row.slots.reduce((a, s) => a + widthOf(s), 0) + gaps.reduce((a, g) => a + g, 0);
+    let x = row.at === 'left' ? r.x0 + WALL_M : row.at === 'right' ? r.x1 - WALL_M - w : (r.x0 + r.x1) / 2 - w / 2;
+    row.slots.forEach((s, k) => {
+      if (s in ROW) ROW[s as SetId].forEach((id, n) => out.set(id, { room: row.room, x: x + (n + 0.5) * PIECE_W, z, stand: 0 }));
+      else out.set(s, { room: row.room, x: x + widthOf(s) / 2, z, stand: ON_BASE.has(s) ? 0 : STAND_H });
+      x += widthOf(s) + (gaps[k] ?? 0);
+    });
   }
   return out;
 })();
 /** The floor a fossil takes (its base's or its stand's: the walk keeps off it). */
 export function footOf(id: string): Rect {
   const s = SPOTS.get(id)!;
-  const [hw, hd] = s.stand ? [STAND_W / 2, STAND_W / 2] : [PIECE_W / 2, PIECE_D / 2];
+  const [hw, hd] = s.stand ? [STAND_W / 2, STAND_W / 2] : ON_BASE.has(id) ? [BASE_W / 2, BASE_D / 2] : [PIECE_W / 2, PIECE_D / 2];
   return { x0: s.x - hw, x1: s.x + hw, z0: s.z - hd, z1: s.z + hd };
 }
+/** The fossils standing in a room. */
+export const fossilsIn = (room: RoomId): string[] => [...SPOTS].filter(([, s]) => s.room === room).map(([id]) => id);
 
 // ---- what's on show ----
 

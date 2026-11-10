@@ -5,6 +5,7 @@ import { bandOf, cruiseOf, poseOf, spawn, stepSchool, stepWalker, swimBox, type 
 import { FIT, TANKS, backOf, bodyIn, openOf, propsOf, waterOf, type Box, type Tank } from './tanks.ts';
 import { FISH_IDS, PER_TANK, WALKERS, tankOf } from './species.ts';
 import { ENTRANCE, FISH_WING, navOf, walkPath } from './plan.ts';
+import { allBlocks, spot } from './spots.ts';
 import { modelBounds } from '../world3d/models3d.ts';
 import M from './models.json' with { type: 'json' };
 
@@ -39,11 +40,11 @@ describe('the tanks', () => {
     for (const a of TANKS)
       for (const b of TANKS)
         if (a !== b) expect(a.box.x0 < b.box.x1 + 8 && b.box.x0 < a.box.x1 + 8 && a.box.z0 < b.box.z1 + 8 && b.box.z0 < a.box.z1 + 8, `${a.id} ${b.id}`).toBe(false);
-    // from the door to the aisle, in front of the river tank and up to the deep tank's glass
-    const g = navOf(TANKS.map((t) => t.box));
-    for (const to of [[160, -10], [160, 80], [245, 10]] as const) {
-      const p = walkPath(g, ENTRANCE, to);
-      expect(Math.hypot(p.at(-1)![0] - to[0], p.at(-1)![1] - to[1]), `${to}`).toBeLessThan(1);
+    // from the door up to each tank's glass (its named spot: spots.ts), every bench and the alcove's tanks standing too
+    const g = navOf(allBlocks());
+    for (const t of [...TANKS.map((t) => t.id), 'reef', 'pool']) {
+      const to = spot(`tank:${t}`), p = walkPath(g, ENTRANCE, to);
+      expect(Math.hypot(p.at(-1)![0] - to[0], p.at(-1)![1] - to[1]), t).toBeLessThan(1);
     }
   });
   test('the big ones fit: a whale shark in the great tank, an oarfish in the deep, an arapaima in the river; a neon tetra drawn bigger', () => {
