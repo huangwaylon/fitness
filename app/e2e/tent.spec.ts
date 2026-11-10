@@ -131,7 +131,7 @@ test('a tap on the floor walks my villager there; ‹ 島へ goes back out; noth
 });
 
 type Piece = { id: string; item: string; x: number; z: number; f: number };
-type E = { tile(x: number, z: number): [number, number]; pieces(): Piece[]; edit(): { sel: (Piece & { fresh: boolean }) | null; why: string | null } | null; surfaces(): { wall: string | null; floor: string | null } };
+type E = { tile(x: number, z: number): [number, number]; pieces(): Piece[]; edit(): { sel: (Piece & { fresh: boolean }) | null; why: string | null; undo: number } | null; surfaces(): { wall: string | null; floor: string | null } };
 const te = <R,>(page: Page, fn: (t: E) => R) => page.evaluate(`(${fn.toString()})(window.__tent)`) as Promise<R>;
 const tile = (page: Page, x: number, z: number) => page.evaluate(([x, z]) => (window as unknown as { __tent: E }).__tent.tile(x, z), [x, z] as const);
 
@@ -280,6 +280,20 @@ test('up to 60 pieces a room: past 40 from the tray, the 61st refused', async ({
   await page.locator('[data-tent-item="f4038"]').click();
   await expect(page.getByText('これ以上置けません（60個まで）')).toBeVisible();
   expect([await te(page, (t) => t.edit()?.sel ?? null), (await te(page, (t) => t.pieces())).length]).toEqual([null, 60]);
+  // one put away, the room filled again: its 取り消す refused (no room for it back), and kept for later (it was lost)
+  const p = (await te(page, (t) => t.pieces())).find((q) => q.item === 'f4038')!;
+  const at = (await placedOf(page)).find((q) => q.id === p.id)!;
+  const [px, py] = await tile(page, at.x, at.z);
+  await page.mouse.click(px, py);
+  // (what's on that tile: it, or a small thing on its top)
+  await expect.poll(() => te(page, (t) => !!t.edit()?.sel?.id)).toBe(true);
+  await page.locator('[data-act="remove"]').click();
+  await expect(page.locator('[data-tent-count]')).toHaveText('59/60');
+  expect(await furnish(page, 1, false)).toBe(60);
+  const steps = await te(page, (t) => t.edit()!.undo);
+  await page.locator('[data-tent-undo]').click();
+  await expect(page.locator('[data-tent-count]')).toHaveText('60/60');
+  expect(await te(page, (t) => t.edit()!.undo)).toBe(steps);
 });
 
 type Placed = { id: string; x: number; z: number; f: number; y: number };

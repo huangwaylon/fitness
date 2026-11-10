@@ -521,7 +521,7 @@
     const st = stack(), i = key === undefined ? st.length - 1 : st.findIndex((e) => e.key === key);
     if (i < 0) return false;
     if (sel) cancel(false);
-    const { step } = st[i];
+    const e = st[i], { step } = e;
     if (step.size !== undefined && step.size < room.size) {
       const out = outside(others().filter((q) => !step.rm?.includes(q.id!)), boundsOf(step.size));
       if (out.length) {
@@ -531,12 +531,13 @@
         return false;
       }
     }
-    st.splice(i, 1);
-    undoN = st.length;
+    // (off the stack only once it's done: a refused one, the room full, stays to be taken back later)
     if (!run(step)) {
       cue('boop');
       return false;
     }
+    st.splice(st.indexOf(e), 1);
+    undoN = st.length;
     cue('undo');
     return true;
   }
