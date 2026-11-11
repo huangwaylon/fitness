@@ -153,7 +153,7 @@ describe('the fields off the main thread (fieldsPrime.ts)', () => {
     vi.stubGlobal('Worker', Answering);
     try {
       const { fp, ff } = await fresh();
-      const a = fp.primeFields(m, 'test'), b = fp.primeFields(new Layout(m.codes.slice(), new Map(m.objects), m.homes), 'test');
+      const a = fp.primeFields(m), b = fp.primeFields(new Layout(m.codes.slice(), new Map(m.objects), m.homes));
       expect(b).toBe(a);
       await b;
       expect(made).toHaveLength(1);
@@ -181,9 +181,9 @@ describe('the fields off the main thread (fieldsPrime.ts)', () => {
     vi.stubGlobal('Worker', Failing);
     try {
       const { fp, ff } = await fresh();
-      await fp.primeFields(m, 'test');
+      await fp.primeFields(m);
       expect(ff.hasFields(m)).toBe(false);
-      await fp.primeFields(m, 'test');
+      await fp.primeFields(m);
       expect(made).toBe(1);
       ff.fieldsOf(m);
       expect(fp.fieldsFrom(m)).toBe('main');
@@ -199,7 +199,7 @@ describe('the fields off the main thread (fieldsPrime.ts)', () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     try {
       let out = false;
-      void primeFields(m, 'test', 50).then(() => (out = true));
+      void primeFields(m, 50).then(() => (out = true));
       await vi.advanceTimersByTimeAsync(49);
       expect(out).toBe(false);
       await vi.advanceTimersByTimeAsync(1);
@@ -212,13 +212,13 @@ describe('the fields off the main thread (fieldsPrime.ts)', () => {
   });
   it('resolves at once with no worker (the main thread then builds them)', async () => {
     const m = altered(defaultLayout(), 5);
-    await primeFields(m, 'test');
+    await primeFields(m);
     expect(hasFields(m)).toBe(false);
   });
 });
 
 describe('the fields kept for the next launch (fieldsCache.ts)', () => {
-  it('keyed by the layout and the build: another tile, piece or build is another key', () => {
+  it('keyed by the layout and the code that makes them: another tile, piece or code is another key', () => {
     const l = altered(defaultLayout(), 11);
     const k = fieldsKey(l, 'b1');
     expect(fieldsKey(new Layout(l.codes.slice(), new Map(l.objects), l.homes), 'b1')).toBe(k);
@@ -246,10 +246,11 @@ describe('the fields kept for the next launch (fieldsCache.ts)', () => {
       vi.resetModules();
       const fc = await import('./fieldsCache.ts'), fp = await import('./fieldsPrime.ts'), ff = await import('./fields.ts');
       fc.configureFieldsCache({ indexedDB: idb });
+      await write!(fieldsKey(l, fp.FIELDS_CODE), primedOf(l));
       vi.stubGlobal('Worker', class { constructor() { throw new Error('no worker on a hit'); } });
       const next = new Layout(l.codes.slice(), new Map(l.objects), l.homes);
       expect(ff.hasFields(next)).toBe(false);
-      await fp.primeFields(next, 'b1');
+      await fp.primeFields(next);
       expect(ff.hasFields(next)).toBe(true);
       expect(fp.fieldsFrom(next)).toBe('cache');
     } finally {

@@ -1,8 +1,8 @@
 // The ground's fields and chunks as the worker made them (fieldsPrime.ts, fields.worker.ts), kept in IndexedDB for the
 // next launch: a warm start reads them back (typed arrays: a structured clone, no work) instead
 // of waiting for the worker (75-140 ms in the iOS Simulator, ~200 ms on a phone, before the island's first frame).
-// One record, keyed by what the worker was given (the layout's tiles, pieces and homes) and the build (the code that
-// made them): a layout edit or a deploy misses, and the next answer replaces it. Never needed: no IndexedDB, an error,
+// One record, keyed by what the worker was given (the layout's tiles, pieces and homes) and the code that made them
+// (fieldsPrime.ts FIELDS_CODE): a layout edit or a change to that code misses, and the next answer replaces it. Never needed: no IndexedDB, an error,
 // anything odd read back, and the worker runs as before.
 import type { Primed } from './fields.worker.ts';
 import { CHUNK_COUNT } from './mesh.ts';
@@ -10,7 +10,7 @@ import type { Layout } from './model.ts';
 import { quiet } from '#lib/quiet.ts';
 
 const DB_NAME = 'island-fields', STORE = 'primed';
-/** Bumped when what's stored changes shape (the build changes the key anyway). */
+/** Bumped when what's stored changes shape (a change to the worker's code changes the key anyway). */
 const FIELDS_V = 1;
 
 let idb: IDBFactory | null = typeof indexedDB !== 'undefined' ? indexedDB : null;
@@ -22,12 +22,12 @@ export function configureFieldsCache(o: { indexedDB: IDBFactory | null }): void 
   db = null;
 }
 
-/** The key: an FNV-1a hash of the worker's input, the build and FIELDS_V. */
-export function fieldsKey(l: Pick<Layout, 'codes' | 'objects' | 'homes'>, build: string): string {
+/** The key: an FNV-1a hash of the worker's input, its code and FIELDS_V. */
+export function fieldsKey(l: Pick<Layout, 'codes' | 'objects' | 'homes'>, code: string): string {
   let h = 0x811c9dc5;
   const mix = (c: number) => void (h = Math.imul(h ^ c, 0x01000193));
   for (let i = 0; i < l.codes.length; i++) mix(l.codes[i]);
-  const rest = JSON.stringify([[...l.objects], l.homes, build, FIELDS_V]);
+  const rest = JSON.stringify([[...l.objects], l.homes, code, FIELDS_V]);
   for (let i = 0; i < rest.length; i++) mix(rest.charCodeAt(i));
   return `${l.codes.length}:${(h >>> 0).toString(36)}`;
 }

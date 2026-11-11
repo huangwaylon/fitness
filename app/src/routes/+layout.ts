@@ -2,7 +2,6 @@
 import { loadEnglish, setLocale } from '#lib/i18n/index.ts';
 import { DEVICE, localKV, readJson } from '#lib/sync/storage.ts';
 import { resolve } from '$app/paths';
-import { version } from '$app/env';
 import { opensIsland } from '#lib/ui-state/boot.ts';
 import type { LayoutLoad } from './$types';
 import { quiet } from '#lib/quiet.ts';
@@ -20,7 +19,7 @@ export const load: LayoutLoad = async ({ url, untrack }) => {
     // the layout's distance fields in a worker meanwhile (the layout is in localStorage: at hand now), so the 3D
     // island finds them built as it mounts (layout/fieldsPrime.ts: one job, the mount's own call shares it, or starts
     // it if it runs first)
-    void Promise.all([import('#lib/store/layout.svelte.ts'), import('#lib/layout/fieldsPrime.ts')]).then(([{ layout }, { primeFields }]) => primeFields(layout.current, version), () => {});
+    void Promise.all([import('#lib/store/layout.svelte.ts'), import('#lib/layout/fieldsPrime.ts')]).then(([{ layout }, { primeFields }]) => primeFields(layout.current), () => {});
     // and NH's ground textures (world3d/groundTex.ts): in as the ground is built, its bands baked once, with them
     void import('#lib/components/world3d/groundTex.ts').then(({ primeGround }) => primeGround(), () => {});
   }

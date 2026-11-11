@@ -2,7 +2,7 @@
 // while the 3D island's chunk (three.js and its scene) is still loading: on a phone they're a few hundred ms of the
 // main thread before the island's first frame. The worker runs the very same computeFields and chunkMesh, so its
 // numbers are the main thread's, bit for bit (fields.test). Its answer is kept for the next launch (fieldsCache.ts:
-// IndexedDB, by the layout and the build), which reads it back instead of starting the worker.
+// IndexedDB, by the layout and the worker's code), which reads it back instead of starting the worker.
 // One job a layout: whichever asks first (the launch, +layout.ts, or the 3D island's mount: in WebKit the mount often
 // ran first) starts it, and every caller gets its promise; the mount waits for it before it builds the ground. The
 // main thread builds them (fieldsOf, when first asked) only when the worker can't: none (the tests, an old browser),
@@ -12,6 +12,13 @@ import { adoptChunks } from './mesh.ts';
 import { fieldsKey, readFields } from './fieldsCache.ts';
 import type { Primed } from './fields.worker.ts';
 import type { Layout } from './model.ts';
+import fieldsWorker from './fields.worker.ts?worker&url';
+
+/** The code that makes the fields, in the cache's key: the worker's file, named by a hash of its bundled code
+ *  (fields.ts, mesh.ts and what they import) in a build, so a deploy that leaves that code alone keeps the kept fields
+ *  (it was the build: 9 of 13 launches on 11-11 remade them, ~300 ms) and one that changes it misses. The dev
+ *  server's name never changes: a page load's own there. */
+export const FIELDS_CODE = import.meta.env.DEV ? `${fieldsWorker}#${Date.now()}` : fieldsWorker;
 
 /** The worker, having answered, is ended after this at most (ms): it writes the cache and closes itself before. */
 const SAVE_MS = 20_000;
@@ -35,11 +42,10 @@ function adopt(layout: Layout, primed: Primed, src: 'worker' | 'cache'): boolean
 }
 
 /** Resolves once `layout`'s fields are in (the cache's, or the worker's; or the worker gave up, and the main thread
- *  builds them); never rejects. A second call for the same layout gets the first's promise.
- *  `build`: the app's (the cache's key: another build's fields are made again). */
-export function primeFields(layout: Layout, build: string, timeoutMs = 4000): Promise<void> {
+ *  builds them); never rejects. A second call for the same layout gets the first's promise. */
+export function primeFields(layout: Layout, timeoutMs = 4000): Promise<void> {
   if (hasFields(layout) || typeof Worker === 'undefined') return Promise.resolve();
-  const key = fieldsKey(layout, build);
+  const key = fieldsKey(layout, FIELDS_CODE);
   if (job?.key === key) return job.p;
   // the cache first (~30 ms in the iOS Simulator); the worker on a miss, or once the cache has taken CACHE_MS (both at
   // once from the start, they shared the cores: the cache's answer took twice as long)
@@ -67,7 +73,7 @@ export function primeFields(layout: Layout, build: string, timeoutMs = 4000): Pr
       clearTimeout(late);
       if (w || workerOut) return;
       try {
-        w = new Worker(new URL('./fields.worker.ts', import.meta.url), { type: 'module' });
+        w = new Worker(fieldsWorker, { type: 'module' });
       } catch {
         return failed();
       }

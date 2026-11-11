@@ -49,7 +49,6 @@
   import { buildGround, type Ground as LayoutGround, type Look } from './terrain.ts';
   import { fieldsFrom, primeFields } from '#lib/layout/fieldsPrime.ts';
   import { hasFields } from '#lib/layout/fields.ts';
-  import { version } from '$app/env';
   import { bootReport, lateModels, watchBoot, type BootClock } from './boot.ts';
   import { watchRest } from './rest.ts';
   import { watchDrag } from './drag.ts';
@@ -954,7 +953,7 @@
     // room): the next display frame's, not in the page's own mount (WebKit: its ~55 ms and this ~35 ms were one frame)
     const l = layoutNow();
     if (hasFields(l)) requestAnimationFrame(() => go(true));
-    else void primeFields(l, version).then(() => go(true));
+    else void primeFields(l).then(() => go(true));
     return () => {
       gone = true;
       clearTimeout(again);
