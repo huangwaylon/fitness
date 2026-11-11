@@ -1,7 +1,7 @@
 # はたけ: the fields
 
-NH 2.0's vegetables on the island: a field each, 40 plants. Buy starts at the shop, plant them on your field, water, harvest, and the plant grows back. The produce sells for かいがら,
-never ベル. Code: `contract/farm.ts` (the rules, shared by the record and the phones), `contract/wet.ts` (rain),
+NH 2.0's vegetables: a field each, 40 plants. Buy starts at the shop, plant, water, harvest; the plant grows back.
+The produce sells for かいがら, never ベル. Code: `contract/farm.ts` (the rules, shared by the record and the phones), `contract/wet.ts` (rain),
 `model/farm.ts`, `layout/field.ts`, `store/farm.svelte.ts` (the writes, たね), `island/farm.ts` (the scene),
 `island/farmTap.ts` (a plot's tap), `island/FarmButton.svelte`, `island/FarmPicker.svelte`, `island/FarmPop.svelte`,
 `farm/FarmSheet.svelte`, `farm/FieldMap.svelte`, `farm/sheet.ts` (the sheet's batches), `shop/Counter.svelte` (苗),
@@ -11,10 +11,9 @@ tests beside them, `relay/test/farm.test.ts`, `e2e/farm.spec.ts`, `e2e/farm-shee
 ## Decisions
 
 1. **A field each.** A field is a layout object (kind `field`, `layout/field.ts`): its owner and size are its variant
-   (`a-10x4`: ウェイ's, 10 tiles across and 4 deep). It's placed, moved, resized and given an owner in /editor only (the
-   editor-only rule; the 畑 tab of 野菜). Our island has a 10 × 4 field for ウェイ and one for うめ, one behind the
-   other on the open lawn behind the shop. The default island (`default.json`) has none (no room beside its path); a
-   layout reset drops them. The guest has none; the editor can give it one.
+   (`a-10x4`: ウェイ's, 10 tiles across and 4 deep). Placed, resized and owned in /editor only (its 野菜 → 畑 tab). Our island has a 10 × 4 field each
+   for ウェイ and うめ on the lawn behind the shop; the default island (`default.json`) has none, so a layout reset drops
+   them. The guest has none unless the editor gives it one.
 2. **Only the owner plants, harvests or digs** on a field; anyone waters anything (NH's visitors), the guest too.
 3. **At most 40 plants each** (`FARM.cap`), whatever the field's size.
 4. **Prices: NH ÷ 20,** as every shop price: a start costs 14 (280 Bells) and sells back for 4, a vegetable sells for
