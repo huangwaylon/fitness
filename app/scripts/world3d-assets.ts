@@ -453,7 +453,8 @@ const crops = gardenPack('crops', [
     const parts: GardenMember['parts'] = [[`PltVgt${m}`, `PltVgt${m}${s}`]];
     // (the ripe pumpkins in NH's four colours: their gradient's rows)
     if (id === 'pumpkin' && n >= 3) return PUMPKINS.map((c, r): GardenMember => ({ id: `crop-pumpkin-${c}-${n}`, parts, maxTex: 128, grdRows: { 'mPltVgtPumpkin$': row(r) }, uses: [] }));
-    return [{ id: `crop-${id}-${n}`, parts, maxTex: 128, uses: [] }];
+    // (the tomato's leaves wear NH's pumpkin-leaf textures: the folder has no mPltVgtTomatoLeaf_*)
+    return [{ id: `crop-${id}-${n}`, parts, maxTex: 128, uses: [], ...(id === 'tomato' ? { alias: { mPltVgtTomatoLeaf: 'mPltVgtPumpkinLeaf' } } : {}) }];
   }))
 ]);
 const plants = gardenPack('plants', [
