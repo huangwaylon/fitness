@@ -1,8 +1,8 @@
 # The 3D island's assets (NH's models for every island art key)
 
-The island draws NH's own models for its art keys. The manifest is `app/src/lib/components/world3d/assets.json`
-(typed: `world3d/assets.ts`); the map from art key to model is `scripts/world3d-assets.ts`. The per-key table is the
-manifest itself; this doc keeps the pipeline, the rules and a summary.
+The island draws NH's own models for its art keys: the manifest `app/src/lib/components/world3d/assets.json` (typed:
+`world3d/assets.ts`) has the per-key table; the map from art key to model is `scripts/world3d-assets.ts`. This doc
+keeps the pipeline, the rules and a summary.
 
 ## How they're made
 
@@ -23,10 +23,9 @@ The source is NH's 2.0.0 export (archive.org `acnh-2.0.0-models`, `ACNH_2.0.0_Ex
   transcoder, what it needs): the island draws KTX2 (`world3d/ktx2.ts`: ASTC on an iPhone, kept transcoded in
   IndexedDB); the island's models then carry no WebPs (`scripts/glb-webp.ts`: each model's in its
   `static/room/tex/<id>.webpp`, drawn only without a KTX2; the sheet and seat tools put them back), the rooms' keep
-  theirs. `world3d/ktx2.test.ts`
-  fails until it's run after a model, a home or a player part changes. Its `CAPS` caps a texture's KTX2 smaller than
-  its WebP (the exteriors seen only from the island's camera: their top mips dropped; ktx2.json `caps`, the key
-  `<hash>@<px>`, texHash.ts texKey).
+  theirs. `world3d/ktx2.test.ts` fails until it's run after a model, a home or a player part changes. Its `CAPS` caps
+  a texture's KTX2 smaller than its WebP (the exteriors seen only from the island's camera: their top mips dropped;
+  ktx2.json `caps`, the key `<hash>@<px>`, texHash.ts texKey).
 - See-through two-sided parts (glass, curtains, a critter's fade) are two meshes, one a side (`world3d/sides.ts`):
   three's own two passes re-derive the program twice a draw.
 - **Validation:** `node scripts/world3d-sheet.ts [-- --only=bug,fish] [-- --night]` draws every model at its world
@@ -53,17 +52,16 @@ kind's budget and the whole to 15 MB.
   arms are lowered from the bind pose.
 - **Effects:** the seasons' falling leaves, petals and snowflakes are NH's own. NH's files have no effect models, so
   the 「！」, the dust, the splash, the zzz, the confetti, the flame and the like are small unlit stylised meshes,
-  ~2 KB each (`scripts/world3d-fx.ts`, the `fx/*` keys);
-  the sparkle is `effects.ts`' star in code; the heart and the ♪ are NH's item icons. Rain and snow have no assets:
-  they're drawn in their shaders (`world3d/precip.ts`, design.md "Weather").
+  ~2 KB each (`scripts/world3d-fx.ts`, the `fx/*` keys); the sparkle is `effects.ts`' star in code; the heart and the
+  ♪ are NH's item icons. Rain and snow are drawn in their shaders (`world3d/precip.ts`, design.md "Weather").
 - **Parts split out** (`split` in the map: `scripts/world3d-page.js` splitOff): the weight bench's baked-in barbell is
   lifted into a node of its own, `bar` (assets.json's `part`), so a press can draw the standalone barbell in the hands
   (`world3d/benchBar.ts`).
 - **Packs** (`PACKS` in the map: the camp goods, the food, the gym's newer pieces): one GLB a tab
-  (`static/room/world3d/decor/{camp,food,gym2}.glb` and `camp2.glb`, each under 400 KB, one KTX2 pack each), each
-  member a node named its id (world3d-page.js convertPack, gltfpack `-kn`), a model `decor/<id>` in assets.json with `pack` its file, its key
-  made at load (assets.ts packKey); things.ts reads the node out (`member`). island/decor.ts knows them by catalog.ts
-  `packed`, never assets.json (that would pull it into the first load).
+  (`static/room/world3d/decor/{camp,camp2,food,gym2}.glb`, each under 400 KB, one KTX2 pack each), each member a node
+  named its id (world3d-page.js convertPack, gltfpack `-kn`), a model `decor/<id>` in assets.json with `pack` its file,
+  its key made at load (assets.ts packKey); things.ts reads the node out (`member`). island/decor.ts knows them by
+  catalog.ts `packed`, never assets.json (that would pull it into the first load).
 - **The garden** (`GARDEN` in the map; docs/island-layout.md "Fences and the garden"): packs under
   `static/room/world3d/garden/` (the fences, the crops' stages and soil, the garden's flowers and vines, the cedar's
   lights), their models in `world3d/garden.json`, not assets.json, so the first load never carries them
@@ -115,13 +113,12 @@ room's GLB, from its pack or loose, at NH's furniture scale; nothing converted t
 wallpaper and floor past the starter set and the ずかん's pieces is packed into `static/room/pack/<group>[-k].<hash>.pak`
 (ktx2Pack's container, ≤ 64 KB, ~3-4 models: a room pays a whole pack for each piece it shows; the packs are the
 only copy): the models by group (a group's series together), the wallpapers' and floors' pictures and glows, and the
-icons of the tabs browsed a tab at a time (≤ 160 KB). A file's place `[pack,
-offset, bytes]` is in `tent/more.json` (`pk`, `tex`, `icons`); the phone cuts it from its pack, fetched whole and once
-(`items.ts` roomPacks: Pages ignores a Range; held in memory till 10 s after the last ask, the room's models then
-the engine's cache's), the service worker keeping it: ~690 packs, ~37 MB. The
-shop's pieces keep loose icons (a day's stock is any 24 of them: their packs would cost more than the icons); its
-stock keeps a pack's pieces together (contract/stock.ts `UNITS_FROM`): ~5 packs a day, not ~14.
-`tent/more.json` and `tent/seats-more.json` load with the room's chunk only (items.json, the starter set's and the
+icons of the tabs browsed a tab at a time (≤ 160 KB): ~690 packs, ~37 MB. A file's place `[pack, offset, bytes]` is in
+`tent/more.json` (`pk`, `tex`, `icons`); the phone cuts it from its pack, fetched whole and once (`tent/roomPacks.ts`:
+Pages ignores a Range; held in memory till 10 s after the last ask, the room's models then in the engine's cache), the
+service worker keeping it. The shop's pieces keep loose icons (a day's stock is any 24 of them: their packs would cost
+more than the icons); its stock keeps a pack's pieces together (contract/stock.ts `UNITS_FROM`): ~5 packs a day, not
+~14. `tent/more.json` and `tent/seats-more.json` load with the room's chunk only (items.json, the starter set's and the
 ずかん's, with the presents too).
 
 ## Seats and beds
@@ -148,11 +145,6 @@ The room turns and scales it with its piece (grid.ts `toRoom`); one gets on from
 light's spot: NH's `Light` locator when it's within the model (`el`), else the weighted middle of its emissive map's lit
 texels, else EMITTERS by eye (`room-surfaces-page.js`). items.test checks each inside its emissive part at every facing.
 
-## Fishing
-
-Runtime behaviour, not assets: `world3d/fishing3d.ts`'s header (the line's steps, the rod, the float), with
-`world3d/facing.ts`, `biteMark.ts` and `fishLine.ts`; the rule is design.md "Fishing".
-
 ## Villagers and visitors
 
 Their skinned models are converted apart (`scripts/villagers3d-models.ts`, `scripts/villagers3d-page.js`) into
@@ -165,11 +157,11 @@ their cards stay.
 
 ## Players
 
-The human players' parts (`scripts/players3d-models.ts`; the runtime: [design.md "Players"](design.md#players)) ship in
-44 packs, not ~5,200 loose files: `app/static/room/player/<home>.<hash>.pak` (~22 MB: `player3d/packing.ts`,
-`scripts/player-packs.ts`, `npm run player:packs`), beside the whole part table (`parts.json`).
-A pack is `ktx2Pack.ts`'s container (its files' paths in its head). Each file's place, `at` (a KTX2's, `k`: `[pack,
-offset, bytes]`), is in both part tables.
+The human players' parts (`scripts/players3d-models.ts`; the runtime: [design.md "Players"](design.md#players))
+ship in 44 packs, not ~5,200 loose files: `app/static/room/player/<home>.<hash>.pak` (~22 MB: `player3d/packing.ts`,
+`scripts/player-packs.ts`, `npm run player:packs`), beside the whole part table (`parts.json`). A pack is
+`ktx2Pack.ts`'s container (its files' paths in its head); each file's place, `at` (a KTX2's, `k`: `[pack, offset,
+bytes]`), is in both part tables.
 - **Homes:** `everyday` (the body and both いつもの looks as a phone draws them, KTX2s included: ~330 KB, fetched whole
   as a player is first drawn, one request where there were 25); `face`, `hair` and a slot's first-closet garments
   (`top`, …: the bundled table's, what the closet lists and a saved コーデ wears; by id, a line's colours together, a

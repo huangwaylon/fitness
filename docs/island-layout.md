@@ -28,8 +28,8 @@ editing: the island is arranged in /editor only.
   `right`): along each line across the edge the outermost land tile moves a tile out (or in, the sea taking its place),
   the tile it leaves taking the inner one's kind and tier, so a push then a pull gives the island back.
 - **Bounds:** the land keeps `MARGIN` (2) tiles of sea round it and at least `MIN` (6) tiles across and along. The
-  default (15 × 57) can grow its back 95 rows (to 15 × 152) and its east a tile; shift-click steps 8. The camera's middle across is the land box's middle
-  (`model.ts midXOf`), so a lopsided pull stays centred.
+  default (15 × 57) can grow its back 95 rows (to 15 × 152) and its east a tile; shift-click steps 8. The camera's
+  middle across is the land box's middle (`model.ts midXOf`), so a lopsided pull stays centred.
 - **In the way:** what stands on a tile the sea takes, or is newly wrong there, `moveInside` moves to its nearest clear
   tile (resolve.ts `clearTile`), the `fixed` (catalog: a home, a building, K.K.'s stool, the board, a goal tree) and the
   biggest first; one with nowhere near is put away, but a fixed one stuck holds the resize.
@@ -128,10 +128,9 @@ latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (its pa
 - **The distance fields** (`layout/fields.ts`): each region's signed distance to its rounded edge (the land, the
   sand, the fresh water, the paths, each tier), read by the heights, the bake and the water's edges. Built once per
   tiles and bridges, off the main thread, cached for the next launch (`fieldsPrime.ts`, `fieldsCache.ts`).
-- **Soft edges** (NH's coast is round): the data and the objects stay on tiles, only the drawn edge is round: the
-  coast, the beach, the fresh water and the paths on half a tile, a staircase of tiles cut to a straight diagonal; a
-  cliff's corner on a third of a tile; a river runs out to the sea square. The editor's plan stays tile-exact; its 3D
-  preview is the same ground.
+- **Soft edges** (NH's coast is round; the radii: "Heights" above): the data and the objects stay on tiles, only the
+  drawn edge of the coast, the beach, the fresh water and the paths is round; a river runs out to the sea square. The
+  editor's plan stays tile-exact; its 3D preview is the same ground.
 - **The river's turns** (`layout/river.ts`, its header has the rules): each main stem drawn as straights and one arc
   through each staircase, on the river's own tiles; walking, fishing and casts go by tiles. The editor marks it on the
   plan; `/editor?check` lists the arcs.
@@ -198,10 +197,9 @@ to `/pair`). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the
   refused.
 - **The rooms:** every home's inside is the tent's room system (`routes/tent/?home=B|G`, `TentRoom.svelte`'s `home`;
   `store/tent.svelte.ts` `rooms.A` the tent's `t`, `rooms.B` うめ's `u`, `rooms.G` the guest's `v`), each 4, 6 or 8 tiles
-  square as chosen (contract/tent.ts ROOM_SIZES; design.md "The tent" › Room size), whatever the outside.
-  Anyone comes in, arranges it and switches its light (design.md "Whose room").
-  Presence says which home (`tent` and `drag` with `sc`; `store/where.svelte.ts`). Out of the door: in front of that
-  home's door on the layout.
+  square as chosen (contract/tent.ts ROOM_SIZES; design.md "The tent" › Room size), whatever the outside. Anyone comes
+  in, arranges it and switches its light (design.md "Whose room"). Presence says which home (`tent` and `drag` with
+  `sc`; `store/where.svelte.ts`). Out of the door: in front of that home's door on the layout.
 
 ## The island's buildings
 
@@ -214,10 +212,9 @@ to `/pair`). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the
   3u a model unit, steps on the footprint's front edge. On the island each is a building (`island/layoutWorld.ts`
   BUILDINGS: its tap area, its door) and a tap walks up and goes in (`/museum`, `/shop`); the editor's palette offers
   one only while the island has none.
-- **The default:** the museum on the clifftop behind the campsite (default.json: tiles 6…12 ×
-  54…57), the shop in the middle west of the main path behind うめ's home (SHOP: tiles 2…8 × 34…37). On the live
-  island the members placed both themselves; the e2e specs that walk on open lawn ask the page for it
-  (`e2e/island.ts` `lawnTap`, `openNear`) rather than tapping a fixed point a building may stand on.
+- **The default** (default.json): the museum on the clifftop behind the campsite (tiles 6…12 × 54…57), the shop in
+  the middle west of the main path behind うめ's home (tiles 2…8 × 34…37). The live island's are where the members put
+  them, so the e2e specs ask the page for open lawn (`e2e/island.ts` `lawnTap`, `openNear`), never a fixed point.
 
 ## The day's spots, the structures, the old decorations
 
@@ -262,10 +259,10 @@ editor's 野菜 and フェンス tabs and NH's garden flowers under 花.
 
 ## The outdoor catalogue
 
-The rooms' pieces outdoors (NH's catalogue but character customisation): every housewares and
-miscellaneous piece NH lets one put outdoors (the ACNH spreadsheet's `outdoor`, 415) and the 36 gyroids, less the 57
-the editor already has as kinds of its own (by NH's model file, or its name): 394 pieces. Critter tanks stay indoors
-(the rooms' 生き物 gives each ずかん catch's; the editor isn't gated by the ずかん).
+The rooms' pieces outdoors (NH's catalogue but character customisation): every housewares and miscellaneous piece NH
+lets one put outdoors (the ACNH spreadsheet's `outdoor`, 415) and the 36 gyroids, less the 57 the editor already has as
+kinds of its own (by NH's model file, or its name): 394 pieces. Critter tanks stay indoors (the rooms' 生き物 gives each
+ずかん catch's; the editor isn't gated by the ずかん).
 
 - **Data:** `npm run outdoor-catalog` (`scripts/outdoor-catalog.ts`) writes `layout/outdoor.json` from the room data
   (tent/items.json, more.json, the seats, NH's names in i18n/tent.*.json): each piece a kind `nh-<code>`, its tab by
@@ -308,13 +305,13 @@ catalogue's groups in kanji (`decor.tab.*`: 木, 花, 野菜, 家具, ジム (de
 reason in the bar). A tap on a kind puts it down as a ghost on the free tile nearest the view's middle, its footprint
 green or red, the bar saying why; a finger on it, or on any placed thing, drags it a tile at a time; a tap on the
 ground moves it there; ↻ turns it, ✕ puts it back, ✓ places it, 片付ける takes it away (never a goal tree, a home, a
-one-off). While held the other phones see it move (`drag`, `sc: 'o'`); a drop is its ops at once. Anyone's, the guest's too. Terraforming (paths, water, cliffs) is the desktop editor's
-alone.
+one-off). While held the other phones see it move (`drag`, `sc: 'o'`); a drop is its ops at once. Anyone's, the
+guest's too. Terraforming (paths, water, cliffs) is the desktop editor's alone.
 
 It runs over any stage: `{ host, toScreen(x, z, lift), toGround(sx, sy), size(), moved(fn), hide(ids) }` (`moved`: told
-of each camera move, no probe each display frame). The editor's phone view
-gives it one (`/editor/?view=phone&edit`: the 3D island's camera and bend, `&cam=<z>` its spot; `&preview=0` a flat
-plan, the e2e's; `?view=orbit` the 3D preview, `&eye=x,y,z&at=x,y,z` its camera).
+of each camera move, no probe each display frame). The editor's phone view gives it one (`/editor/?view=phone&edit`:
+the 3D island's camera and bend, `&cam=<z>` its spot; `&preview=0` a flat plan, the e2e's; `?view=orbit` the 3D
+preview, `&eye=x,y,z&at=x,y,z` its camera).
 
 ## How the 3D island reads it
 

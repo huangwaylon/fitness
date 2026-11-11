@@ -1,4 +1,4 @@
-// A fishing line on the 3D island (docs/world3d-assets.md "Fishing"), pure: the curve from the rod's tip to the float
+// A fishing line on the 3D island (docs/design.md "Fishing"), pure: the curve from the rod's tip to the float
 // at any length (the user: "I want to be able to fish from anywhere": a float across the island). One quadratic, its
 // middle offset `lift` off the straight line between its ends: it sags under its own weight by its length (6u for a
 // short one, as NH's; 4% of a long one), lifted only as much as it takes to clear what's under it (the ground, the
