@@ -103,7 +103,9 @@ test('the ベル ledger: a がんばり line under the day with each person\'s �
   await expect(day.locator('.gbk')).toHaveText('がんばり');
   await expect(day.locator('.gbv[data-person=B]')).toHaveText(/^\+2\sベル/);
   await expect(day.locator('.gbv[data-person=A]')).toHaveText('');
-  await expect(day.locator('.tot')).toHaveText(/^\+12\sベル$/); // 4 + うめ 4 + 2 + 2 together
+  // each one's own wallet's: ウェイ 4 + 1 (half of together), うめ 4 + 2 がんばり + 1
+  await expect(day.locator('.own[data-person=A]')).toHaveAttribute('data-bells', '5');
+  await expect(day.locator('.own[data-person=B]')).toHaveAttribute('data-bells', '7');
   // a day without がんばり has no second line
   const plain = sheet(page).locator('li.day:not(.head)').filter({ hasText: '12/5(土)' });
   await expect(plain.locator('.gbk')).toHaveCount(0);
