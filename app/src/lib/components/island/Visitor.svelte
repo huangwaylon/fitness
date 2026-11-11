@@ -66,6 +66,10 @@
   import { daysUntil } from './wedding.ts';
   import { scenePreview } from '#lib/ui-state/preview.svelte.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
+  import { handOver, holding, markVeg, myAsk, vegDay } from './vegAsk.svelte.ts';
+  import { vegGift, type VegRequest } from './vegRequest.ts';
+  import { cropName } from './farmUi.svelte.ts';
+  import { loadNames } from './catchLine.ts';
 
   interface Props {
     scene?: HTMLElement;
@@ -290,9 +294,9 @@
   /** A line of theirs is in the balloon (until it closes, or 20 s at most: another speaker may replace it). */
   let speakingUntil = 0;
   const speaking = () => Date.now() < speakingUntil;
-  function say(name: string, parts: string | string[], from: Element, o: { colour?: string; choices?: Choice[] } = {}) {
+  function say(name: string, parts: string | string[], from: Element, o: { colour?: string; choices?: Choice[]; ondone?: () => void } = {}) {
     speakingUntil = Date.now() + 20_000;
-    rawSay?.(name, parts, from, { ...o, ondone: () => (speakingUntil = 0) });
+    rawSay?.(name, parts, from, { ...o, ondone: () => ((speakingUntil = 0), o.ondone?.()) });
   }
 
   /** Idle life's beat (presence.beat), drawn from the slot's PRNG (`r`: the same on both phones, island/ambient.ts): one
@@ -302,6 +306,8 @@
   function beat(r: () => number = Math.random, follow = true) {
     const id = shown, s = spot;
     if (!id || !s || phase !== 'here' || !enabled()) return;
+    // an open おねがい: now and then its caption instead (this phone's own draw: the shared beat's stays in step)
+    if (follow && ask && !sleeping && !speaking() && Math.random() < WANT_P) return void want();
     const act = pickAct(id, {
       speaking: speaking(), asleep: sleeping, walking: st.walking, away: awayFromHome(A),
       sinceMeet: lastMeet ? Date.now() - lastMeet : Infinity, villagerFree: meetable(s) && villagerFree()
@@ -573,6 +579,7 @@
     if (!target) return;
     sceneSfx('visitor');
     const name = t(`visitor.${id}`);
+    if (ask && (id === 'franklin' || isGuest(id))) return vegTalk(id, ask, name, target, TAG[id]!);
     if (id === 'jack') return jack(name, target, TAG.jack!);
     if (id === 'franklin') return franklin(name, target, TAG.franklin!);
     if (id === 'reese') return couple(target);
@@ -681,6 +688,91 @@
     }
   }
 
+  // ---- おねがい (vegAsk.svelte.ts, vegRequest.ts): the day's asker wants a vegetable of mine; a tap with it in my pocket
+  // hands it over in place (their joy, the vegetable over their head, hearts, their かいがら and now and then a piece) ----
+  /** My ask from whoever stands here (null: none, or handed over). */
+  const ask = $derived(shown && phase !== 'leave' ? myAsk(shown, date) : null);
+  const askKey = $derived(ask ? `${ask.by}|${ask.crop}|${date}` : '');
+  /** A beat shows the ask's caption this often instead of its own; the first, this long after they're here. */
+  const WANT_P = 1 / 3, WANT_FIRST_MS = 2500, WANT_MS = 3000;
+  let wantN = 1000;
+  /** The ask's caption over their head for a moment (「ニンジンが たべたいなあ」), a thought emote with it. */
+  function want() {
+    const r = ask;
+    if (!r) return;
+    void loadNames().then(() => {
+      if (ask?.crop !== r.crop || speaking()) return;
+      setEmote(A, 'thought');
+      mumble = { n: ++wantN, text: t('visitor.veg.want', { name: cropName(r.crop) }), want: true };
+      clearTimeout(mumbleTimer);
+      mumbleTimer = setTimeout(() => (mumble = null), WANT_MS);
+    }, () => {});
+  }
+  // once a little after they're first here with an ask open (this session)
+  let wantedFor = '';
+  $effect(() => {
+    const k = askKey;
+    if (!k || phase !== 'here' || wantedFor === k) return;
+    wantedFor = k;
+    const t0 = setTimeout(want, WANT_FIRST_MS);
+    return () => clearTimeout(t0);
+  });
+  /** A tap on the asker: with the vegetable, the hand-over; else the ask (their introduction first, Franklin's fish
+   *  too), and asked again, a kind word. */
+  async function vegTalk(id: VisitorId, r: VegRequest, name: string, target: Element, colour: string) {
+    const fr = id === 'franklin', d = today();
+    const intro = !met.has(id) && !(fr && franklinDay.read(d).asked);
+    met.add(id);
+    mumble = null;
+    await loadNames().catch(() => {});
+    const veg = cropName(r.crop);
+    const v = holding(r) ? handOver(r, d) : null;
+    if (v !== null) return thank(id, r, name, target, colour, veg, v);
+    const pages = intro ? [t(`chat.sp.${id}.intro`)] : [];
+    if (fr && !franklinDay.read(d).fed) {
+      franklinDay.patch(d, { asked: true });
+      pages.push(t('chat.sp.franklin.ask'));
+    }
+    pages.push(t(vegDay(d).asked ? 'visitor.veg.none' : fr ? 'chat.sp.franklin.vegAsk' : 'visitor.veg.ask', { name: veg }));
+    markVeg(d, { asked: true });
+    say(name, pages, target, { colour });
+  }
+  /** Handed over: their joy (Franklin cooks it), the vegetable over their head, hearts, then their thanks and かいがら,
+   *  and the day's piece when the ask brings one (a present's find, as a giver's: its word once the balloon closes). */
+  async function thank(id: VisitorId, r: VegRequest, name: string, target: Element, colour: string, veg: string, v: number) {
+    cue('emote-joy');
+    if (id === 'franklin') eventJingle(['turkey-cooking-start', 'turkey-cooking-done']);
+    treatArt = `finds/${r.crop}`;
+    treat++;
+    clearTimeout(treatTimer);
+    treatTimer = setTimeout(() => (treat = 0), 2400);
+    addFx(A, 'hearts');
+    const pages = [t(id === 'franklin' ? 'chat.sp.franklin.vegThanks' : 'visitor.veg.thanks', { name: veg, v })];
+    speakingUntil = Date.now() + 20_000;
+    const g = r.gift ? await vegGiftNow().catch(() => null) : null;
+    if (g) {
+      recordFind('item', g.item);
+      pages.push(t('visitor.veg.gift', { item: g.name }));
+    }
+    // (the vegetable's pop over their head first, then their words)
+    clearTimeout(thanksTimer);
+    thanksTimer = setTimeout(() => say(name, pages, target, { colour, ondone: g ? () => toasts.show(t('guestShop.got', { item: g.name }), 3600, { reaction: 'joy' }) : undefined }), THANKS_MS);
+  }
+  const THANKS_MS = 1100;
+  /** The ask's piece today (vegRequest.ts vegGift: the same on every phone), null: none left, or the island has it. */
+  async function vegGiftNow(): Promise<{ item: string; name: string } | null> {
+    const m = week.model;
+    if (!m) return null;
+    const C = await import('./catalog.ts');
+    const { loadCatalogNames } = await import('#lib/i18n/catalog.ts');
+    await loadCatalogNames(i18n.locale);
+    const date = today(), start = dateMs(date) - ZONE_OFFSET_MS;
+    const before = new Set(m.state.finds.filter((f) => f.kind === 'item' && f.at < start).map((f) => f.id));
+    const item = vegGift(date, m.me, C.treeFurniture(date).map((i) => i.id), before, islandSeed());
+    if (!item || findsView(m.state).has(findKey('item', item))) return null;
+    return { item, name: t(C.catalogName({ kind: 'item', id: item })) };
+  }
+
   /** A tap on the scene (client px): true when the visitor took it. `body`: only a tap on its figure itself (what's
    *  exactly under the finger wins: SceneTaps asks this first, then the small things' own boxes, then its reach: a
    *  finger's slack round the figure and its spot). A tap elsewhere on the island now and then draws a glance that
@@ -745,7 +837,7 @@
 
   /** A nudge on sleeping Gulliver: a twitch, a snore and his sleep talk; the fifth: he jumps up, looks about, and
    *  introduces himself. */
-  let mumble = $state<{ n: number; key: string } | null>(null);
+  let mumble = $state<{ n: number; text: string; want?: true } | null>(null);
   let mumbleTimer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => () => clearTimeout(mumbleTimer));
   // the sleep talk stays on screen: nudged in to keep EDGE from the sides (Gulliver may lie near one)
@@ -777,7 +869,7 @@
     if (!r.woke) {
       setMotion(A, 'twitch');
       if (!st.fx.some((f) => f.kind === 'zzz')) addFx(A, 'zzz');
-      mumble = { n: nudges, key: `visitor.gulliver.zzz.${(nudges - 1) % MUMBLES}` };
+      mumble = { n: nudges, text: t(`visitor.gulliver.zzz.${(nudges - 1) % MUMBLES}`) };
       clearTimeout(mumbleTimer);
       mumbleTimer = setTimeout(() => (mumble = null), 1600);
       return;
@@ -810,7 +902,7 @@
        draws its model there (v3), the node's .art its tap area and its balloon's anchor -->
   <span class="visitor {shown}" aria-hidden="true" {@attach w.at({ x: spot.x, z: spot.z, h: spot.h + 40, live: () => livePos(A), always: true, inv: true,
         v3: { id: shown, actor: A, lift: liftNow, prone: proneNow, away: awayNow, also: shown === 'reese' ? { id: 'cyrus', dx: spot.h * PAIR_DX } : undefined } })}
-      class:walking={st.walking} data-visitor={shown} data-slot={A} data-stage={spot.stage || undefined}
+      class:walking={st.walking} data-visitor={shown} data-slot={A} data-veg-ask={ask?.crop} data-stage={spot.stage || undefined}
       data-phase={phase} data-way={way} data-asleep={sleeping ? (spot.lie ? 'lie' : 'stand') : undefined} data-motion={st.motion ?? undefined} bind:this={el}
       style:--h={su(spot.h)} style:--lift={su(FLOAT[shown] ?? 0)} style:--wide={WIDE[shown] ?? 1}>
       {#if shown === 'wisp'}<i class="glow"></i>{/if}
@@ -825,13 +917,13 @@
         {#each st.fx as f (f.n)}
           <span class="fxa {f.kind}"><Fx kind={f.kind} dir={f.kind === 'zzz' ? -1 : 1} spread="calc(var(--h) * .55)" ondone={() => removeFx(A, f.n)} /></span>
         {/each}
-        {#if mumble}{#key mumble.n}<span class="mumble if-caption" data-mumble bind:this={mumbleEl} style:--shift="{mumbleShift}px">{t(mumble.key)}</span>{/key}{/if}
+        {#if mumble}{#key mumble.n}<span class="mumble if-caption" data-mumble data-veg-want={mumble.want} bind:this={mumbleEl} style:--shift="{mumbleShift}px">{mumble.text}</span>{/key}{/if}
       </span>
       {#if treat}
         <!-- Jack's joy at a treat: the candy pops up over his head in a little spooky sparkle -->
         {#key treat}
           <span class="treat" data-treat>
-            <span class="candy"><OfficialArt key={treatArt} size={su(22)} eager /></span>
+            <span class="candy"><OfficialArt key={treatArt} size={su(treatArt.startsWith('finds/') ? 32 : 22)} eager /></span>
             {#each [0, 1, 2, 3, 4] as i (i)}<i style:--i={i}></i>{/each}
           </span>
         {/key}
@@ -876,6 +968,7 @@
   .fxa.notes { left: calc(var(--h) * .18); top: calc(var(--h) * .12); }
   /* drawn at its true size (the node's --inv), nudged in from the screen's edge */
   .mumble { left: 0; bottom: 4px; transform-origin: 40% 100%; scale: var(--inv, 1); translate: calc(-60% + var(--shift, 0px) * var(--inv, 1)) 0; animation: v-mumble 1.6s ease-out both; }
+  .mumble[data-veg-want] { animation-duration: 3s; }
   @keyframes v-mumble { from { opacity: 0; transform: translateY(6px) scale(.8); } 15% { opacity: 1; transform: none; } 80% { opacity: 1; } to { opacity: 0; transform: translateY(-6px); } }
 
   /* the heart float over Reese and Cyrus */

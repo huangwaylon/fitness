@@ -95,3 +95,12 @@ levers, if the live numbers drift (`npm run logs`, the sells): `FARM.regrowDays`
   the pill shows, the catch plates (「×3・54かいがら」) stand over the bottom buttons' row.
 - **The shop:** うる's 野菜 and 苗 (no 全部: held to plant); かう's 苗, the six starts, always in stock, first while my free
   plots want more than I hold (else after the stock, a 苗へ chip away).
+
+## おねがい
+
+A visitor wants a vegetable (`island/vegRequest.ts`, `vegAsk.svelte.ts`, `Visitor.svelte`): the day's chat or cheer guest
+(about every other day), Franklin on Turkey Day instead. At most one ask a day per farmer, its crop seeded by the date
+and the person (any of the six: a reason to grow a mix); gone when the asker leaves, no timer. Now and then a caption
+over their head, 「ニンジンが たべたいなあ」. A tap with it in my pocket hands it over in place: a `sell` of the one at
+its price (no new rule: the かいがら rate is the shop's), their joy, hearts, and one ask in 3 (Franklin's always) a garden
+piece, a find. Without it, a kind word. Done is this phone's (`scene-veg-ask`).
