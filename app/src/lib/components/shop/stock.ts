@@ -7,8 +7,7 @@ import { localDateAt, ZONE_OFFSET_MS, dateMs } from '#lib/time/dates.ts';
 import type { State } from '#lib/model/state.ts';
 import { shopView } from '#lib/model/shop.ts';
 import { week } from '#lib/store/week.svelte.ts';
-import { UNDO_MS, together } from '#lib/store/actions.ts';
-import { newId } from '#lib/sync/queue.ts';
+import { UNDO_MS } from '#lib/store/actions.ts';
 import type { SendResult } from '#lib/store/backend.ts';
 import { codeOfFind } from '../tent/items.ts';
 
@@ -48,24 +47,5 @@ export function buyPiece(item: string, stock: readonly string[]): SendResult & {
   return { ...week.send('buy', { item, price, d: localDateAt(m.now) }, { holdMs: UNDO_MS }), price };
 }
 
-/** ぜんぶ: the pieces of today's stock I don't have yet (`stock`: stockAt), in its order, and what they cost together. */
-export function allOf(stock: readonly string[]): { items: string[]; total: number } {
-  const m = week.model;
-  const owned = m ? shopView(m.state, m.me).owned : [];
-  const items = stock.filter((c) => !owned.includes(c) && buyPrice(c) !== undefined);
-  return { items, total: items.reduce((a, c) => a + buyPrice(c)!, 0) };
-}
-
-/**
- * Buy all of them (allOf) at once, all or none: one `buy` a piece, one group (the record keeps them in one
- * transaction, relay store.ts group), one undo. Refused (`{ok:false}`) when my かいがら don't cover the lot: never a
- * part of it (which part would be the shop's pick, not mine; one at a time does that).
- */
-export function buyAll(stock: readonly string[]): SendResult & { n?: number; total?: number } {
-  const m = week.model;
-  const { items, total } = allOf(stock);
-  if (!m || !items.length || total > shopView(m.state, m.me).shells) return { ok: false };
-  const d = localDateAt(m.now), group = newId();
-  const r = together(items.map((item) => week.send('buy', { item, price: buyPrice(item)!, d }, { holdMs: UNDO_MS, group })));
-  return { ...r, n: items.length, total };
-}
+/** How many かいがら short of `price` my `shells` are (0: enough). */
+export const shortBy = (price: number, shells: number): number => Math.max(0, price - shells);

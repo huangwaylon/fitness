@@ -93,6 +93,7 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
   const [code, price] = await pieceOf(page, (p) => p <= 1709);
   const item = page.locator(`[data-shop-item="${code}"]`);
   await item.click();
+  await expect(page.locator('[data-shop-buy]')).toHaveText(`${price.toLocaleString('ja-JP')}かいがらで買う`);
   await page.locator('[data-shop-buy]').click();
   await expect.poll(() => shells(page)).toBe(1709 - price);
   await expect(item).toHaveAttribute('data-owned', 'true');
@@ -137,71 +138,6 @@ test('魚の全部 sells the fish only; 30 wood in one row tap; the starts in �
   await expect(wood).toHaveCount(0);
 });
 
-/** The price of each piece of the day's stock, in its order. */
-const prices = (page: Page) => stock(page).evaluateAll((els) => els.map((e): [string, number] => [e.getAttribute('data-shop-item')!, Number(e.getAttribute('data-price'))]));
-
-test('全部: every piece of the stock I don’t have, its count and total said first; かう buys them at once, one undo, then all 持っている', async ({ page }) => {
-  await seed(page, [tally({ 'fish:whale-shark': 999 }), ['sell', { species: 'fish:whale-shark', n: 999, v: 999 * 650 }, 'A']]);
-  await page.goto(`shop${Q}`);
-  const S = 999 * 650;
-  await expect.poll(() => shells(page)).toBe(S);
-  await openList(page, 'buy');
-  await expect(stock(page)).toHaveCount(24);
-  const all = await prices(page);
-  // one bought first: 全部 leaves it out
-  const [first, p1] = all[0];
-  await page.locator(`[data-shop-item="${first}"]`).click();
-  await page.locator('[data-shop-buy]').click();
-  await expect.poll(() => shells(page)).toBe(S - p1);
-  const total = all.slice(1).reduce((a, [, p]) => a + p, 0);
-  const allBtn = page.locator('[data-shop-buy-all]');
-  await expect(allBtn).toHaveText('全部');
-  await allBtn.click();
-  await expect(allBtn).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('[data-shop-pick]')).toHaveAttribute('data-shop-total', String(total));
-  await expect(page.locator('[data-shop-pick]')).toHaveText(`23個で${total.toLocaleString('ja-JP')}かいがら`);
-  await expect(page.locator('.tile.on')).toHaveCount(23);
-  if (SHOTS) await page.screenshot({ path: `${SHOTS}/shop-buyall-confirm.png`, animations: 'disabled' });
-  // a tap on a piece picks it alone; 全部 again: the lot
-  await page.locator(`[data-shop-item="${all[2][0]}"]`).click();
-  await expect(allBtn).toHaveAttribute('aria-pressed', 'false');
-  await expect(page.locator('.tile.on')).toHaveCount(1);
-  await allBtn.click();
-  await page.locator('[data-shop-buy]').click();
-  await expect.poll(() => shells(page)).toBe(S - p1 - total);
-  await expect(page.locator('.banner[role="status"] .txt')).toHaveText(`23個を${total.toLocaleString('ja-JP')}かいがらで買いました。模様替えに入っています`);
-  // one undo takes back the lot
-  await page.getByRole('button', { name: '取り消す' }).click();
-  await expect.poll(() => shells(page)).toBe(S - p1);
-  await expect(page.locator('[data-shop-stock] [data-owned="true"]')).toHaveCount(1);
-  // again, and kept: every piece 持っている, 全部 has nothing left
-  await allBtn.click();
-  await page.locator('[data-shop-buy]').click();
-  await expect.poll(() => shells(page)).toBe(S - p1 - total);
-  await expect(page.locator('[data-shop-stock] [data-owned="true"]')).toHaveCount(24);
-  await expect(allBtn).toHaveAttribute('aria-disabled', 'true');
-  await expect(allBtn).toHaveAttribute('aria-pressed', 'false');
-  await expect(page.locator('[data-shop-pick]')).toHaveText('すべて持っています');
-  if (SHOTS) await page.screenshot({ path: `${SHOTS}/shop-buyall-done.png`, animations: 'disabled' });
-});
-
-test('全部 past my かいがら: かう only boops, nothing bought (never a part of it)', async ({ page }) => {
-  await seed(page, [tally({ 'fish:whale-shark': 1 }), ['sell', { species: 'fish:whale-shark', n: 1, v: 650 }, 'A']]);
-  await page.goto(`shop${Q}`);
-  await expect.poll(() => shells(page)).toBe(650);
-  await openList(page, 'buy');
-  await expect(stock(page)).toHaveCount(24);
-  const total = (await prices(page)).reduce((a, [, p]) => a + p, 0);
-  expect(total).toBeGreaterThan(650);
-  await page.locator('[data-shop-buy-all]').click();
-  await expect(page.locator('[data-shop-pick]')).toHaveText(`24個で${total.toLocaleString('ja-JP')}かいがら`);
-  await expect(page.locator('[data-shop-buy]')).toHaveAttribute('aria-disabled', 'true');
-  if (SHOTS) await page.screenshot({ path: `${SHOTS}/shop-buyall-short.png`, animations: 'disabled' });
-  await page.locator('[data-shop-buy]').click({ force: true });
-  expect(await shells(page)).toBe(650);
-  await expect(page.locator('[data-shop-stock] [data-owned="true"]')).toHaveCount(0);
-});
-
 // (a piece found before the day leaves the stock: shop/stock.test; the demo stamps its seeded rows today)
 test('a piece found or bought today stays in the day’s stock till tomorrow, the same on every phone', async ({ page }) => {
   // the day's first two pieces (contract/shop.test pins the order): the omurice bought by B, the skeleton found by the
@@ -216,14 +152,22 @@ test('a piece found or bought today stays in the day’s stock till tomorrow, th
   await expect(page.locator('[data-shop-sold-out]')).toHaveCount(0);
 });
 
-test('overspending is refused: too dear, かう only boops; a forged sell past the pocket counts for nothing', async ({ page }) => {
+test('overspending is refused: a piece past my かいがら is dimmed with how many short, its かう disabled; a forged sell past the pocket counts for nothing', async ({ page }) => {
   // a sell of more koi than were caught (the record would refuse it): ignored, no かいがら
   await seed(page, [tally({ 'fish:sea-bass': 1 }), ['sell', { species: 'fish:koi', n: 5, v: 200 }, 'A'], ['sell', { species: 'fish:sea-bass', n: 1, v: 4 }, 'A']]);
   await page.goto(`shop${Q}`);
   await expect.poll(() => shells(page)).toBe(4);
   await openList(page, 'buy');
-  const [dear] = await pieceOf(page, (p) => p > 4);
-  await page.locator(`[data-shop-item="${dear}"]`).click();
+  const [dear, price] = await pieceOf(page, (p) => p > 4);
+  const tile = page.locator(`[data-shop-item="${dear}"]`);
+  await expect(tile.locator('[data-short]')).toHaveText(`あと${(price - 4).toLocaleString('ja-JP')}`);
+  const dearN = await stock(page).evaluateAll((els) => els.filter((e) => Number(e.getAttribute('data-price')) > 4).length);
+  await expect(page.locator('.tile.short')).toHaveCount(dearN);
+  // the stock first, then the starts
+  await expect(page.locator('[data-shop-list] > *').first()).toContainText('今日の品物');
+  await expect(page.locator('[data-shop-left]')).toHaveText('毎日入れ替え・残り24点');
+  await tile.click();
+  await expect(page.locator('[data-shop-pick]')).toHaveText(`あと${(price - 4).toLocaleString('ja-JP')}かいがら足りません`);
   await expect(page.locator('[data-shop-buy]')).toHaveAttribute('aria-disabled', 'true');
   await page.locator('[data-shop-buy]').click({ force: true });
   expect(await shells(page)).toBe(4);

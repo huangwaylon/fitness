@@ -4,8 +4,8 @@
   // up less what I sold: model/shop.ts) in rows by its sections (shop/pocket.ts), a row's tap its whole stack, − / + one,
   // a section's 全部 all of it (shop/sell.ts); the starts 苗 apart, with no 全部 (they're held to plant); the button says
   // what the sale comes to.
-  // かう: the fields' starts, then the day's stock (shop/stock.ts), its 全部 buying every piece I don't have at once
-  // (stock.ts buyAll). A sell or a buy shows at once with 取り消す (store/actions.ts undoBanner). The title bar is the kit's
+  // かう: the day's stock first (shop/stock.ts: it changes daily), a piece past my かいがら dimmed with how many short;
+  // then the fields' starts, always in stock; the button says what it costs. A sell or a buy shows at once with 取り消す (store/actions.ts undoBanner). The title bar is the kit's
   // (タヌキ商店, my かいがら, ✕); the twins don't talk in here (their balloon is the room's). A piece picked is the room's too
   // (its card's: `pick`, `why`, `buy`).
   import NavBar from '../ui/NavBar.svelte';
@@ -19,7 +19,7 @@
   import { allPicked, step, toggleSection, toggleStack, type Picks, type Stack } from './sell.ts';
   import { sellPrice } from '#lib/contract/shop.ts';
   import { buyPrice } from '#lib/contract/stock.ts';
-  import { allOf, buyAll } from './stock.ts';
+  import { shortBy } from './stock.ts';
   import type { ShopView } from '#lib/model/shop.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { sell, undoBanner } from '#lib/store/actions.ts';
@@ -83,32 +83,13 @@
   }
 
   // ---- かう
-  /** 全部 picked (every piece of the stock I don't have yet, bought at once: stock.ts buyAll). */
-  let every = $state(false);
-  /** 全部: what I don't have of today's stock, and its price together. */
-  const rest = $derived((void shop, allOf(stock)));
-  const short = $derived(Math.max(0, rest.total - shop.shells));
+  /** What's left of today's stock for me (the pieces I don't have). */
+  const left = $derived(stock.filter((c) => !shop.owned.includes(c)).length);
+  const pickPrice = $derived(pick ? (buyPrice(pick) ?? 0) : 0);
   function pickPiece(code: string) {
-    every = false;
     starts = {};
     pick = pick === code ? null : code;
     cue('tick');
-  }
-  /** 全部: picks the lot (the bar says what it comes to), again: none. */
-  function pickAll() {
-    pick = null;
-    if (!rest.items.length) return void cue('boop');
-    every = !every;
-    starts = {};
-    cue('tick');
-  }
-  function buyEvery() {
-    if (short) return void cue('boop');
-    const r = buyAll(stock);
-    if (!r.ok) return void cue('boop');
-    cue('buy');
-    undoBanner(t('shop.boughtMany', { n: String(r.n ?? 0), v: formatNum(r.total ?? 0) }), r);
-    every = false;
   }
   // ---- かう's 苗 (docs/farming.md): the six starts, always in stock, a tap one more, − one less; 買う buys them at once,
   // all or none (one group: store/farm.svelte.ts buyStarts)
@@ -120,10 +101,9 @@
     const cs = CROPS.filter((c) => starts[c]);
     return cs.length === 1 ? cs[0] : null;
   });
-  // (the starts and a piece or 全部 are one bar's: picking one lets go of the other)
+  // (the starts and a piece are one bar's: picking one lets go of the other)
   function moreStart(c: Crop) {
     pick = null;
-    every = false;
     starts = { ...starts, [c]: ((starts[c] ?? 0) + 1) % 100 };
     cue('tick');
   }
@@ -142,7 +122,6 @@
   }
   function buyPicked() {
     if (startsN) return buyStartsPicked();
-    if (every) return buyEvery();
     buy();
   }
 
@@ -150,7 +129,6 @@
     tab = id;
     picks = {};
     pick = null;
-    every = false;
   }
 </script>
 
@@ -191,6 +169,25 @@
     {/if}
   {:else}
     <div class="list" data-shop-list>
+      <div class="sec">
+        <h2 class="sec-label">{t('shop.today')}</h2>
+        {#if stock.length}<span class="note" data-shop-left={left}>{t('shop.todayNote', { n: String(left) })}</span>{/if}
+      </div>
+      {#if stock.length}
+        <ul class="grid" data-shop-stock>
+          {#each stock as code (code)}
+            {@const owned = shop.owned.includes(code)}
+            {@const price = buyPrice(code) ?? 0}
+            <PieceTile name={itemName(code)} {price} on={pick === code} {owned} short={owned ? 0 : shortBy(price, shop.shells)} data-shop-item={code} data-price={buyPrice(code)}
+              data-owned={owned} aria-pressed={pick === code} aria-label={t(owned ? 'shop.itemOwned' : 'shop.itemLabel', { name: itemName(code), v: formatNum(price) })}
+              onclick={() => pickPiece(code)}>
+              {#snippet icon()}<img src={iconUrl(code)} alt="" width="46" height="46" loading="lazy" decoding="async" />{/snippet}
+            </PieceTile>
+          {/each}
+        </ul>
+      {:else if week.model}
+        <p class="empty" data-shop-sold-out>{t('shop.soldOut')}</p>
+      {/if}
       <!-- the starts for the fields (docs/farming.md): always in stock, a count each, bought by the bar's 買う -->
       <h2 class="sec-label">{t('shop.starts')}</h2>
       <ul class="grid" data-shop-starts>
@@ -203,35 +200,16 @@
           </PieceTile>
         {/each}
       </ul>
-      <h2 class="sec-label">{t('shop.today')}</h2>
-      {#if stock.length}
-        <ul class="grid" data-shop-stock>
-          {#each stock as code (code)}
-            {@const owned = shop.owned.includes(code)}
-            <PieceTile name={itemName(code)} price={buyPrice(code) ?? 0} on={pick === code || (every && !owned)} {owned} data-shop-item={code} data-price={buyPrice(code)}
-              data-owned={owned} aria-pressed={pick === code} aria-label={t(owned ? 'shop.itemOwned' : 'shop.itemLabel', { name: itemName(code), v: formatNum(buyPrice(code) ?? 0) })}
-              onclick={() => pickPiece(code)}>
-              {#snippet icon()}<img src={iconUrl(code)} alt="" width="46" height="46" loading="lazy" decoding="async" />{/snippet}
-            </PieceTile>
-          {/each}
-        </ul>
-      {:else if week.model}
-        <p class="empty" data-shop-sold-out>{t('shop.soldOut')}</p>
-      {/if}
     </div>
     <div class="bar">
-      <p class="sum" data-shop-pick={every ? 'all' : (pick ?? '')} data-shop-total={every ? rest.total : null} data-shop-starts-offer={startsN ? startsV : null}>
+      <p class="sum" data-shop-pick={pick ?? ''} data-shop-starts-offer={startsN ? startsV : null}>
         {startsN ? (startsOne ? t('shop.startsOne', { name: startName(startsOne), n: String(startsN), v: formatNum(startsV) }) : t('shop.startsMany', { n: String(startsN), v: formatNum(startsV) }))
-          : every ? t('shop.offer', { n: String(rest.items.length), v: formatNum(rest.total) })
-          : pick ? t('shop.itemLabel', { name: itemName(pick), v: formatNum(buyPrice(pick) ?? 0) })
-          : stock.length && !rest.items.length ? t('shop.allOwned') : t('shop.buyHint')}
+          : pick && why === 'wallet' ? t('shop.short', { n: formatNum(shortBy(pickPrice, shop.shells)) })
+          : pick ? t('shop.itemLabel', { name: itemName(pick), v: formatNum(pickPrice) })
+          : t('shop.buyHint')}
       </p>
-      {#if stock.length}
-        <button type="button" class="btn small paper" data-shop-buy-all data-sfx="self" aria-pressed={every} aria-disabled={!rest.items.length}
-          aria-label={t('shop.buyAll')} onclick={pickAll}>{t('shop.all')}</button>
-      {/if}
-      <button type="button" class="btn small" data-shop-buy data-sfx="self" aria-disabled={startsN ? startsV > shop.shells : every ? !!short : !pick || !!why}
-        onclick={buyPicked}>{t('shop.buy')}</button>
+      <button type="button" class="btn small" data-shop-buy data-sfx="self" aria-disabled={startsN ? startsV > shop.shells : !pick || !!why}
+        onclick={buyPicked}>{startsN ? t('shop.buyFor', { v: formatNum(startsV) }) : pick && why !== 'owned' ? t('shop.buyFor', { v: formatNum(pickPrice) }) : t('shop.buy')}</button>
     </div>
   {/if}
 </section>
@@ -291,6 +269,7 @@
   .pocket { display: flex; flex-direction: column; gap: 6px; }
   .sec { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: var(--hit); }
   .sec .sec-label { margin: 0; }
+  .note { font: 600 var(--fs-xs)/1.2 var(--font-ui); color: var(--c-ink-soft); }
   /* うる's rows: 56 high, an inset stitch between; picked: yuzu */
   .rows { list-style: none; margin: 0 0 6px; padding: 0; border-radius: var(--r-card); background: var(--c-card); border: 2px solid var(--c-edge); overflow: hidden; }
   .row { display: flex; align-items: center; min-height: 56px; padding-right: 6px; }
@@ -328,7 +307,6 @@
     display: flex; align-items: center; gap: 8px; background: var(--c-cream); box-shadow: 0 -2px 0 var(--c-lip);
   }
   .bar .btn { margin: 0; flex: none; }
-  .bar .btn.paper[aria-pressed='true'] { --fill: var(--c-yuzu); }
   .sum { flex: 1 1 auto; min-width: 0; margin: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); }
   @media (prefers-reduced-motion: reduce) { .menu { animation: none; } }
 </style>

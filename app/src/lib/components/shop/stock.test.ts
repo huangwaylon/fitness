@@ -4,7 +4,7 @@ import { STOCK_N, buyPrice, stockOf } from '#lib/contract/stock.ts';
 import { BUY } from '#lib/contract/buyPrices.ts';
 import type { State } from '#lib/model/state.ts';
 import { ITEMS } from '../tent/items.ts';
-import { foundBefore, stockAt } from './stock.ts';
+import { foundBefore, shortBy, stockAt } from './stock.ts';
 
 const at = (iso: string) => Date.parse(iso);
 const NOW = at('2026-11-09T15:00:00+09:00');
@@ -44,5 +44,11 @@ describe('かう’s stock', () => {
   it('sells out when the island has every piece', () => {
     const s: S = { finds: [], shop: Object.keys(BUY).map((c) => buy(c, START - 1)) };
     expect(stockAt(s, NOW)).toEqual([]);
+  });
+});
+
+describe('かう’s tiles past my かいがら', () => {
+  it('say how many short; none at the price or under it', () => {
+    expect([shortBy(800, 271), shortBy(271, 271), shortBy(9, 271), shortBy(10_000, 0)]).toEqual([529, 0, 0, 10_000]);
   });
 });

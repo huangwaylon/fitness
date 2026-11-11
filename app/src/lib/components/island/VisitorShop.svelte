@@ -8,7 +8,7 @@
   import { iconUrl } from '../tent/items.ts';
   import { findArt } from './beach.ts';
   import { buyPrice } from '#lib/contract/stock.ts';
-  import { buyPiece, buyRefusal, foundBefore } from '../shop/stock.ts';
+  import { buyPiece, buyRefusal, foundBefore, shortBy } from '../shop/stock.ts';
   import { offerOf } from './visitorShop.ts';
   import type { GuestId } from './visitorRoles.ts';
   import { shopView } from '#lib/model/shop.ts';
@@ -55,7 +55,7 @@
     <ul class="grid">
       {#each offer as code (code)}
         {@const owned = !!mine?.owned.includes(code)}
-        <PieceTile name={itemName(code)} price={buyPrice(code) ?? 0} on={pick === code} {owned} data-guest-item={code} data-price={buyPrice(code)} data-owned={owned}
+        <PieceTile name={itemName(code)} price={buyPrice(code) ?? 0} on={pick === code} {owned} short={owned ? 0 : shortBy(buyPrice(code) ?? 0, mine?.shells ?? 0)} data-guest-item={code} data-price={buyPrice(code)} data-owned={owned}
           aria-pressed={pick === code} aria-label={t(owned ? 'shop.itemOwned' : 'shop.itemLabel', { name: itemName(code), v: formatNum(buyPrice(code) ?? 0) })}
           onclick={() => choose(code)}>
           {#snippet icon()}<img src={iconUrl(code)} alt="" width="46" height="46" loading="lazy" decoding="async" />{/snippet}

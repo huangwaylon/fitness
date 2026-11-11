@@ -1,6 +1,7 @@
 <script module lang="ts">
   // One tile of the shops' grids (タヌキ商店's かう and its 苗, a visitor's few pieces: island/VisitorShop.svelte): the
-  // icon, the name on two lines, the price (or 持っている), a count badge and its − when picked; yuzu when picked. Its
+  // icon, the name on two lines, the price (or 持っている; past my かいがら dimmed, 「あと{n}」), a count badge and its − when
+  // picked; yuzu when picked. Its
   // colours are the sheet's controls (--ctl, --ctl-sel, --sh-ctl), so it fits the shop's cream sheet and a Sheet alike.
   // `nm`: a name breaking only between its words (words.ts), smaller with a word too long for a line (the room's card too).
   import { isLong, words } from './words.ts';
@@ -21,6 +22,8 @@
     price: number;
     on?: boolean;
     owned?: boolean;
+    /** How many かいがら I'm short of it (0: none). */
+    short?: number;
     /** The badge at the top right (none: unshown). */
     count?: string;
     icon: Snippet;
@@ -28,18 +31,19 @@
     /** − one less (shown while picked). */
     less?: { key: string; label: string; run: () => void } | null;
   }
-  let { name, price, on = false, owned = false, count, icon, onclick, less = null, ...rest }: Props = $props();
+  let { name, price, on = false, owned = false, short = 0, count, icon, onclick, less = null, ...rest }: Props = $props();
 </script>
 
 {#snippet nm(name: string)}
   <span class="nm" class:xs={isLong(name, i18n.locale)}>{#each words(name, i18n.locale) as w, i (i)}{#if i}<wbr />{/if}{w}{/each}</span>
 {/snippet}
 
-<li class="tile" class:on class:owned>
+<li class="tile" class:on class:owned class:short={short > 0}>
   <button type="button" class="pickable" data-sfx="self" {...rest} {onclick}>
     <span class="ic">{@render icon()}</span>
     {@render nm(name)}
     {#if owned}<span class="price owned-tag">{t('shop.owned')}</span>
+    {:else if short > 0}<span class="price" data-short={short}>{t('shop.shortBy', { n: formatNum(short) })}</span>
     {:else}<span class="price"><span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={14} /></span>{formatNum(price)}</span>{/if}
     {#if count}<span class="count" aria-hidden="true">{count}</span>{/if}
   </button>
@@ -58,6 +62,8 @@
   .on .pickable { background: var(--ctl-sel); color: var(--c-ink); }
   .owned .pickable { background: var(--ctl-off); }
   .owned .ic { opacity: .55; }
+  /* past my かいがら: still tappable (its card says so), dimmed */
+  .short:not(.on) .pickable { opacity: .55; }
   .ic { position: relative; width: 46px; height: 46px; display: grid; place-items: center; line-height: 0; }
   .ic :global(img) { width: 46px; height: 46px; object-fit: contain; }
   /* a long name breaks only between its words (its <wbr>s: words.ts), balanced (プラスチックの / ベンチ, not プラスチッ / クの
