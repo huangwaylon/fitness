@@ -24,6 +24,7 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import EyeToggle from '../rooms/EyeToggle.svelte';
   import { madeGL } from '../rooms/madeGL.ts';
+  import { replayWalk, roomRelay } from '../rooms/roomRelay.ts';
   import { logError } from '#lib/sync/log.ts';
   import PanHint from '../rooms/PanHint.svelte';
   import RecentreIcon from '../rooms/RecentreIcon.svelte';
@@ -48,11 +49,8 @@
   import { undoBanner } from '#lib/store/actions.ts';
   import { layout as islandLayout } from '#lib/store/layout.svelte.ts';
   import { leaveBy } from '../island/doorOut.ts';
-  import { hook } from '../island/devHooks.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { where } from '#lib/store/where.svelte.ts';
-  import { LIVE_URL, createLive, liveRelay, type Live } from '#lib/sync/live.ts';
-  import { createLocalLive } from '#lib/sync/live-local.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
   import { doorReady, provideDoor } from '#lib/ui-state/doorTransition.ts';
   import { drawOff } from '#lib/ui-state/testMode.ts';
@@ -109,15 +107,9 @@
 
   // ---- my presence (the phone's one socket; the demo's two tabs share a channel; ?relay=&key= a test relay) ----
   const demo = !!week.demo;
-  const testRelay = (): Live | null => {
-    const url = hook('relay'), key = hook('key');
-    return url && /^wss?:\/\//.test(url) && key ? createLive({ url, key: () => key }) : null;
-  };
   // svelte-ignore state_referenced_locally
-  const own = demo ? (testRelay() ?? createLocalLive(viewer)) : null;
-  const relay: Live | null = demo ? own : LIVE_URL ? liveRelay() : null;
+  const { own, relay, now: relayNow } = roomRelay(demo, viewer);
   const inside = (on: boolean) => relay?.send({ kind: 'tent', in: on, sc: 's' });
-  const relayNow = () => relay?.serverNow() ?? Date.now();
 
   /** The pieces' names (NH's, i18n/tent.ts: loaded with the screen, the language on screen). */
   let names = $state(0);
@@ -220,11 +212,7 @@
     if (m.to) theirAt.set(w, m.to);
     othersShown();
     if (!m.in || !m.to) return;
-    if (m.from && m.s !== undefined && m.ms) {
-      const ago = relayNow() - m.s;
-      if (ago < m.ms) eng.walk(w, [...(m.via ?? []), m.to], { from: m.from, ago, ms: m.ms });
-      else eng.put(w, m.to);
-    } else eng.put(w, m.to);
+    replayWalk(eng, m, relayNow());
   }
   $effect(() => {
     for (const w of others) void (where.inTent[w], where.home[w]);

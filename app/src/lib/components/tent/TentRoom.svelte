@@ -27,6 +27,7 @@
   import SayButton from '../island/SayButton.svelte';
   import EyeToggle from '../rooms/EyeToggle.svelte';
   import { madeGL } from '../rooms/madeGL.ts';
+  import { replayWalk, roomRelay } from '../rooms/roomRelay.ts';
   import { logError } from '#lib/sync/log.ts';
   import PanHint from '../rooms/PanHint.svelte';
   import RecentreIcon from '../rooms/RecentreIcon.svelte';
@@ -54,10 +55,7 @@
   import { leaveBy } from '../island/doorOut.ts';
   import { sendDecor, sendDecorGroup, sendDecors } from '#lib/store/actions.ts';
   import { SAVE_SLOTS, type RoomSaveOp } from '#lib/contract/roomSave.ts';
-  import { LIVE_URL, createLive, liveRelay, type Live } from '#lib/sync/live.ts';
-  import { createLocalLive } from '#lib/sync/live-local.ts';
   import { tokyoDay, type Intent, type SayScope, type Pt as WirePt, type Relayed } from '#lib/contract/live-protocol.ts';
-  import { hook } from '../island/devHooks.ts';
   import { DEFAULT_FLOOR, DEFAULT_WALL, ITEMS, STARTER, codeOfCatch, codeOfFind } from './items.ts';
   import { DOOR_IN, HALF, boundsOf, centreOf, clampIn, nearestFree, onFloor, outside, rectOf, resolve as resolveRoom, standable, wallMid, walkPath, type Facing, type Pt, type Resolved, type Spot } from './grid.ts';
   import { DragLink } from './dragLink.ts';
@@ -96,15 +94,9 @@
 
   // ---- the relay: the phone's one socket (the demo's two tabs share a channel; ?relay=&key= a test relay) ----
   const demo = !!week.demo;
-  const testRelay = (): Live | null => {
-    const url = hook('relay'), key = hook('key');
-    return url && /^wss?:\/\//.test(url) && key ? createLive({ url, key: () => key }) : null;
-  };
-  const own = demo ? (testRelay() ?? createLocalLive(me)) : null;
-  const relay: Live | null = demo ? own : LIVE_URL ? liveRelay() : null;
+  const { own, relay, now: relayNow } = roomRelay(demo, me);
   // (on the relay's own clock, as the island's: a `?date=` preview shifts the day, not when a walk set off; it's set at
   // each page's load, so two phones previewing one date would disagree by the gap between their loads)
-  const relayNow = () => relay?.serverNow() ?? Date.now();
   // the tent's presence and drags as before; another home's say which (`sc`), so they show only in there
   const send = (i: Intent) => relay?.send(homeSc && (i.kind === 'tent' || i.kind === 'drag') ? ({ ...i, sc: homeSc } as Intent) : i) ?? false;
   /** Whether a relayed tent or drag is about this home. */
@@ -272,11 +264,7 @@
       if (st) return void eng.pose(w, poseOf(st));
     }
     if (!m.in || !m.to) return;
-    if (m.from && m.s !== undefined && m.ms) {
-      const ago = relayNow() - m.s;
-      if (ago < m.ms) eng.walk(w, [...(m.via ?? []), m.to], { from: m.from, ago, ms: m.ms });
-      else eng.put(w, m.to);
-    } else eng.put(w, m.to);
+    replayWalk(eng, m, relayNow());
   }
 
   // ---- what the partner drags ----

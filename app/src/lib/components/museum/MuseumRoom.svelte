@@ -25,6 +25,7 @@
   import SayButton from '../island/SayButton.svelte';
   import EyeToggle from '../rooms/EyeToggle.svelte';
   import { madeGL } from '../rooms/madeGL.ts';
+  import { replayWalk, roomRelay } from '../rooms/roomRelay.ts';
   import { logError } from '#lib/sync/log.ts';
   import PanHint from '../rooms/PanHint.svelte';
   import RecentreIcon from '../rooms/RecentreIcon.svelte';
@@ -55,10 +56,7 @@
   import { leaveBy } from '../island/doorOut.ts';
   import { findsView } from '#lib/model/finds.ts';
   import { tallyTotals } from '#lib/model/tally.ts';
-  import { LIVE_URL, createLive, liveRelay, type Live } from '#lib/sync/live.ts';
-  import { createLocalLive } from '#lib/sync/live-local.ts';
   import type { Intent, Pt as WirePt, Relayed } from '#lib/contract/live-protocol.ts';
-  import { hook } from '../island/devHooks.ts';
   import { now } from '#lib/time/clock.ts';
   import { ENTRANCE, ROOM_IDS, boundsOf, nearRooms, wingOfRoom, type Pt, type RoomId, type Wing } from './plan.ts';
   import { hourOf, onShow, type Specimen } from './species.ts';
@@ -92,13 +90,7 @@
 
   // ---- the relay: the phone's one socket (the demo's two tabs share a channel; ?relay=&key= a test relay) ----
   const demo = !!week.demo;
-  const testRelay = (): Live | null => {
-    const url = hook('relay'), key = hook('key');
-    return url && /^wss?:\/\//.test(url) && key ? createLive({ url, key: () => key }) : null;
-  };
-  const own = demo ? (testRelay() ?? createLocalLive(me)) : null;
-  const relay: Live | null = demo ? own : LIVE_URL ? liveRelay() : null;
-  const relayNow = () => relay?.serverNow() ?? Date.now();
+  const { own, relay, now: relayNow } = roomRelay(demo, me);
   /** My presence and walks in here: the rooms' `tent` intent, this place's scope. */
   const send = (i: Intent) => relay?.send(i.kind === 'tent' ? ({ ...i, sc: 'm' } as Intent) : i) ?? false;
 
@@ -236,11 +228,7 @@
     const st = seat && seatOf(seat.id, seat.n);
     if (st) return void eng.sit(w, st.anchor);
     if (!m.in || !m.to) return;
-    if (m.from && m.s !== undefined && m.ms) {
-      const ago = relayNow() - m.s;
-      if (ago < m.ms) eng.walk(w, [...(m.via ?? []), m.to], { from: m.from, ago, ms: m.ms });
-      else eng.put(w, m.to);
-    } else eng.put(w, m.to);
+    replayWalk(eng, m, relayNow());
   }
 
   // ---- the phrases (island/say.ts): as in the rooms, this place's `sc` ----

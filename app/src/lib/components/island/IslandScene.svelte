@@ -75,8 +75,9 @@
   import { resolve } from '$app/paths';
   import { RING_MS, stepCue } from './tapWalk.ts';
   import { buildingAt, walkNav } from './nav.ts';
-  import { LIVE_URL, createLive, liveRelay, type Live } from '#lib/sync/live.ts';
+  import { LIVE_URL, liveRelay } from '#lib/sync/live.ts';
   import { createLocalLive } from '#lib/sync/live-local.ts';
+  import { testRelay } from '../rooms/roomRelay.ts';
   import { sendDecor, sendDecors, sendIslandDay } from '#lib/store/actions.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { decor } from '#lib/store/decor.svelte.ts';
@@ -824,10 +825,6 @@
   // over this relay; in the demo the two players' tabs share it (sync/live-local.ts: `?demo` and `?demo&as=B`).
   // `?relay=<wss url>&key=<person key>` (the hooks on: the e2e's two-phone harness against the test relay, each its own
   // browser context): the demo talks to a real relay instead
-  const testRelay = (): Live | null => {
-    const url = hook('relay'), key = hook('key');
-    return url && /^wss?:\/\//.test(url) && key ? createLive({ url, key: () => key }) : null;
-  };
   // svelte-ignore state_referenced_locally
   const demoRelay = week.demo ? (testRelay() ?? createLocalLive(view.viewer)) : null;
   /** The record's rooms' rows, for the rooms' store once it's in (the homes' sizes). */
