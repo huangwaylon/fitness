@@ -127,7 +127,7 @@ test('a piece NH never sells, bought at its made-up price, is in my もようが
   await page.waitForFunction(() => !!(window as unknown as { __shop?: object }).__shop);
   await page.evaluate(() => (window as unknown as { __shop: { talk(): void } }).__shop.talk());
   await page.locator('[data-shop-tab="sell"]').click();
-  await page.locator('[data-shop-all]').click();
+  await page.locator('[data-shop-sec-all="fish"]').click();
   await page.locator('[data-shop-sell]').click();
   await page.locator('[data-shop-tab="buy"]').click();
   const item = page.locator(`[data-shop-item="${code}"]`);
@@ -156,7 +156,7 @@ test('a piece past the old 100,000-Bell cap (unobtainable until 2026-11-10) is b
   await page.waitForFunction(() => !!(window as unknown as { __shop?: object }).__shop);
   await page.evaluate(() => (window as unknown as { __shop: { talk(): void } }).__shop.talk());
   await page.locator('[data-shop-tab="sell"]').click();
-  await page.locator('[data-shop-all]').click();
+  await page.locator('[data-shop-sec-all="fish"]').click();
   await page.locator('[data-shop-sell]').click();
   await page.locator('[data-shop-tab="buy"]').click();
   const item = page.locator(`[data-shop-item="${code}"]`);

@@ -4,8 +4,9 @@
 import { GOODS, type PocketKind } from '#lib/contract/pocket.ts';
 import { CROPS } from '#lib/contract/farm.ts';
 
-/** うる's sections, in its order (NH's pocket-ish: the critters, the beach, the trees' and the ground's). */
-export const SECTIONS = ['bug', 'fish', 'sea', 'shell', 'material', 'fruit', 'veg', 'fossil', 'other'] as const;
+/** うる's sections, in its order (NH's pocket-ish: the critters, the beach, the trees' and the ground's; the fields'
+ *  starts their own, 苗, the one with no 全部: they're held to plant). */
+export const SECTIONS = ['bug', 'fish', 'sea', 'shell', 'material', 'fruit', 'veg', 'start', 'fossil', 'other'] as const;
 type Section = (typeof SECTIONS)[number];
 
 /** The goods by section (anything else is その他: mushrooms, eggs, junk), and their icons where not `finds/<id>`. */
@@ -13,7 +14,7 @@ const GOODS_SECTION: Readonly<Record<string, Section>> = {
   wood: 'material', softwood: 'material', hardwood: 'material', 'tree-branch': 'material', weeds: 'material',
   apple: 'fruit', pear: 'fruit', peach: 'fruit', cherry: 'fruit', coconut: 'fruit',
   // the fields' (contract/farm.ts): the vegetables and their starts
-  ...Object.fromEntries(CROPS.flatMap((c) => [[c, 'veg'], [`${c}-start`, 'veg']]))
+  ...Object.fromEntries(CROPS.flatMap((c) => [[c, 'veg'], [`${c}-start`, 'start']]))
 };
 const GOODS_ART: Readonly<Record<string, string>> = {
   apple: 'fruit/apple', pear: 'fruit/pear', peach: 'fruit/peach', cherry: 'fruit/cherry',

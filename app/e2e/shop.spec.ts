@@ -57,22 +57,31 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
   // the pocket by its sections (むし, さかな, …, かいがら), each dearest first
   const pocket = page.locator('[data-shop-pocket] [data-shop-catch]');
   await expect(pocket).toHaveCount(3);
-  await expect(page.locator('[data-shop-sec]')).toHaveText(['虫', '魚', 'かいがら']);
+  await expect(page.locator('[data-shop-sec] h2')).toHaveText(['虫', '魚', 'かいがら']);
   await expect(pocket.nth(1)).toHaveAttribute('data-shop-catch', 'fish:whale-shark');
   await expect(pocket.nth(1)).toHaveAttribute('data-n', '2');
-  // pick one whale shark: the offer; a third tap past the pocket goes back to none (never more than it holds)
+  // + one whale shark: the offer, on the button too; + past the pocket stays at 2 (never wrapping to none)
   const shark = page.locator('[data-shop-catch="fish:whale-shark"]');
-  await shark.click();
+  const plus = page.locator('[data-shop-more="fish:whale-shark"]');
+  await plus.click();
   await expect(page.locator('[data-shop-offer]')).toHaveAttribute('data-shop-offer', '650');
-  await shark.click();
+  await expect(page.locator('[data-shop-sell]')).toHaveText('650かいがらで売る');
+  await plus.click();
+  await expect(plus).toHaveAttribute('aria-disabled', 'true');
+  await plus.click({ force: true });
+  await expect(shark).toHaveAttribute('data-picked', '2');
+  // the row: the whole stack, again none; − one less
   await shark.click();
   await expect(shark).toHaveAttribute('data-picked', '0');
   await shark.click();
+  await page.locator('[data-shop-less="fish:whale-shark"]').click();
+  await expect(shark).toHaveAttribute('data-picked', '1');
   await page.locator('[data-shop-sell]').click();
   await expect.poll(() => shells(page)).toBe(650);
   await expect(shark).toHaveAttribute('data-n', '1');
-  // the rest at once (ぜんぶ)
-  await page.locator('[data-shop-all]').click();
+  // the rest, a row's tap a stack (no whole-pocket 全部)
+  await expect(page.locator('[data-shop-all]')).toHaveCount(0);
+  for (const k of ['bug:tarantula', 'fish:whale-shark', 'shell:cowrie']) await page.locator(`[data-shop-catch="${k}"]`).click();
   await page.locator('[data-shop-sell]').click();
   await expect.poll(() => shells(page)).toBe(650 + 650 + 400 + 3 * 3); // a cowrie 3
   await expect(page.locator('[data-shop-empty]')).toBeVisible();
@@ -96,6 +105,36 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
   await page.locator('[data-tent-edit-open]').click();
   await page.locator('[data-tab="bought"]').click();
   await expect(page.locator(`[data-tent-items] [data-tent-item="${code}"]`)).toBeVisible();
+});
+
+// うる's rows (shop/sell.ts): a section's 全部 its stacks only; a row's tap its whole stack; the starts 苗 apart, no 全部.
+test('魚の全部 sells the fish only; 30 wood in one row tap; the starts in 苗, with no 全部', async ({ page }) => {
+  // (172 かいがら: a koi sold, two tomato starts bought)
+  await seed(page, [tally({ 'fish:whale-shark': 2, 'fish:sea-bass': 3, 'goods:wood': 30, 'bug:tarantula': 1, 'fish:koi': 1 }),
+    ['sell', { species: 'fish:koi', n: 1, v: 200 }, 'A'], ['buy_starts', { crop: 'tomato', n: 2, v: 28 }, 'A']]);
+  await page.goto(`shop${Q}`);
+  const S = 172;
+  await expect.poll(() => shells(page)).toBe(S);
+  await openList(page, 'sell');
+  await expect(page.locator('[data-shop-sec] h2')).toHaveText(['虫', '魚', '資源', '苗']);
+  await expect(page.locator('[data-shop-sec="start"] [data-shop-sec-all]')).toHaveCount(0);
+  await expect(page.locator('[data-shop-sec="start"] + ul [data-shop-catch]')).toHaveAttribute('data-shop-catch', 'goods:tomato-start');
+  const fishAll = page.locator('[data-shop-sec-all="fish"]');
+  await fishAll.click();
+  await expect(fishAll).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-shop-offer]')).toHaveAttribute('data-shop-offer', String(2 * 650 + 3 * 20));
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/shop-sell-rows.png`, animations: 'disabled' });
+  await page.locator('[data-shop-sell]').click();
+  await expect.poll(() => shells(page)).toBe(S + 2 * 650 + 3 * 20);
+  await expect(page.locator('[data-shop-catch^="fish:"]')).toHaveCount(0);
+  await expect(page.locator('[data-shop-catch="bug:tarantula"]')).toHaveAttribute('data-n', '1');
+  // 30 wood: one tap
+  const wood = page.locator('[data-shop-catch="goods:wood"]');
+  await wood.click();
+  await expect(wood).toHaveAttribute('data-picked', '30');
+  await page.locator('[data-shop-sell]').click();
+  await expect.poll(() => shells(page)).toBe(S + 2 * 650 + 3 * 20 + 30 * 3);
+  await expect(wood).toHaveCount(0);
 });
 
 /** The price of each piece of the day's stock, in its order. */

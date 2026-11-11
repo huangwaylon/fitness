@@ -21,5 +21,7 @@ describe('the pocket’s table', () => {
       'fragment:star-fragment', 'goods:rare-mushroom', 'goods:boot'].map((k) => pocketItem(k)?.section))
       .toEqual(['bug', 'fish', 'sea', 'shell', 'material', 'material', 'fruit', 'fruit', 'fossil', 'other', 'other', 'other']);
     expect([pocketItem('item:froggy-chair'), pocketItem('goods:nope'), pocketItem('wood')]).toEqual([null, null, null]);
+    // the fields': a vegetable sells with the fruit's neighbours, its start in 苗 (no 全部 there: held to plant)
+    expect([pocketItem('goods:tomato')?.section, pocketItem('goods:tomato-start')?.section]).toEqual(['veg', 'start']);
   });
 });
