@@ -478,7 +478,7 @@ layout's once applied (`island/world.ts`, `island/site.svelte.ts`; [island-layou
   - **The sea's wash** (`layout/swash.ts`): NH's waves on every sea shore every few seconds, the foam running up and
     the wet sand drying after, out of step along a beach. **The shore** is one eased colour ramp by depth (sand, wet
     sand, aqua, turquoise, deep blue), rivers fading into the sea at their mouths.
-- **Layout:** the default island (`npm run layout:default`; what stands where: [island-layout.md](island-layout.md)):
+- **Layout:** the default island (`layout/default.json`; what stands where: [island-layout.md](island-layout.md)):
   the homes A (ウェイ, left) and B (うめ, right) on every phone (never mirrored), the goal trees on their outer sides.
   The trees, bushes and props are placed by hand; the wild flowers and weed spots are scattered, seeded
   (`npm run layout` → `island/scatter.json`; `scenery.test` checks no open lawn is more than 90u from anything).

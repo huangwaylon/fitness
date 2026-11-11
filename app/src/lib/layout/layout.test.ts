@@ -59,7 +59,7 @@ describe('the default layout (today island on the grid)', () => {
   test('keeps world.ts ids, each piece on the grid near where it stands today', () => {
     const at = (id: string) => objMid(l, l.objects.get(id)!);
     const near = (id: string, x: number, z: number) => expect(Math.hypot(at(id)[0] - x, at(id)[1] - long(z)), id).toBeLessThanOrEqual(80);
-    // (the clifftop's cedars that made room round the museum: scripts/layout-default.ts; the shop stands in the middle,
+    // (the clifftop's cedars that made room round the museum; the shop stands in the middle,
     // where nothing of today's island is)
     const ROOM = new Set(['cedar-f3', 'cedar-f4', 'cedar-f5', 'cedar-f6']);
     for (const s of SCENERY) if (!ROOM.has(s.id)) near(s.id, s.x, s.z);

@@ -107,9 +107,11 @@ function stringsOf(file: string): Strings {
     return { lits, pats };
   }
   const code = stripComments(text);
-  for (const m of code.matchAll(/'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"/g)) lits.add(m[1] ?? m[2]);
+  // a static path written from the root (`/hiking/tracks/${slug}.json`: asset() drops the slash) is the same path
+  const rel = (s: string) => s.replace(/^\/(?=[a-z0-9])/i, '');
+  for (const m of code.matchAll(/'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"/g)) lits.add(rel(m[1] ?? m[2]));
   for (const m of code.matchAll(/`((?:[^`\\]|\\.|\$\{(?:[^{}]|\{[^{}]*\})*\})*)`/g)) {
-    const body = m[1];
+    const body = rel(m[1]);
     if (!body.includes('${')) lits.add(body);
     else {
       const p = templatePattern(body);

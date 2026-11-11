@@ -3,7 +3,7 @@
 import type { TrackFile } from './types.ts';
 import { staticUrl } from '#lib/staticUrl.ts';
 
-const trackPath = (slug: string): string => `/hiking/tracks/${slug}.json`;
+const trackPath = (slug: string): string => `hiking/tracks/${slug}.json`;
 
 export type TrackLoad = { k: 'ok'; track: TrackFile } | { k: 'failed' };
 

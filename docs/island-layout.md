@@ -70,8 +70,8 @@ editing: the island is arranged in /editor only.
 - **Homes:** three, fixed ids `home-A` (ウェイ's, the campsite's tent), `home-B` (うめ's), `home-G` (the guest's).
   Where a home stands is an object; how it looks is its **style** (`layout/homes.ts`: `{m, w?, r?, d?}`), its owner's
   alone. A home's `(x, z)` is its door's tile (`model.ts originOf`), so a new look grows round its door; see "Homes".
-- **The default layout** (`layout/default.json`, `npm run layout:default` from `scripts/layout-default.ts`, world.ts
-  and scatter.json): まえ (the sea, the beach, the health lawn, the goal trees, the stream's crossing and its bridge) at
+- **The default layout** (`layout/default.json`, data: world.ts's island as the grid had it at 20 × 80, with the
+  record's ops over it; /editor writes those, nothing regenerates the file): まえ (the sea, the beach, the health lawn, the goal trees, the stream's crossing and its bridge) at
   the front; おく (the campsite, the pond, the bamboo, the falls, the upper tier's forest) at the back; between them
   open grass, the stream on down its east side, the main path to the campsite, うめ's house (`HOME_B`, row 27) and
   the guest's (`HOME_G`, row 34) with paths to their doors and a lamp at each, the shop and the museum (below).
@@ -302,7 +302,7 @@ to `/pair`). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the
   3u a model unit, steps on the footprint's front edge. On the island each is a building (`island/layoutWorld.ts`
   BUILDINGS: its tap area, its door) and a tap walks up and goes in (`/museum`, `/shop`); the editor's palette offers
   one only while the island has none.
-- **The default:** the museum on the clifftop behind the campsite (`scripts/layout-default.ts` MUSEUM: tiles 6…12 ×
+- **The default:** the museum on the clifftop behind the campsite (default.json: tiles 6…12 ×
   54…57), the shop in the middle west of the main path behind うめ's home (SHOP: tiles 2…8 × 34…37). On the live
   island the members placed both themselves; the e2e specs that walk on open lawn ask the page for it
   (`e2e/island.ts` `lawnTap`, `openNear`) rather than tapping a fixed point a building may stand on.

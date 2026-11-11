@@ -1,6 +1,6 @@
 // Every i18n key, sprite symbol and art file the UI uses exists, and none is left unused. Usage is read
 // from the UI's sources (components, routes, the store, i18n, villagers, the art helpers): string literals, plus
-// the static prefix of a dynamic key (`panel.tab.${id}`). The host's lines (`host.<line>`) are
+// the static prefix of a dynamic key at whole dot segments (`panel.tab.${id}`). The host's lines (`host.<line>`) are
 // picked by name.
 import { DECOR_ART } from './components/island/decor.ts';
 import { FIXED_ART } from './components/island/fixedDecor.ts';
@@ -66,7 +66,16 @@ const prefixes = new Set([
   ...[...code.matchAll(/"([\w.:/#-]+)\{/g)].map((m) => m[1])
 ]);
 const hostLines = new Set([...code.matchAll(/(?:hostLine\(|===\s*)'(\w+)'/g)].map((m) => m[1]));
-const usedBy = (key: string, prefixOk = true) => literals.has(key) || (prefixOk && [...prefixes].some((p) => p.length > 1 && key.startsWith(p)));
+const DYNAMIC: readonly RegExp[] = [
+  // panel/previewLabel.ts: `${zone}.${key}.${v}`, 設定's 季節 (zone 'season') over ui-state/preview.ts's choices
+  /^season\.(event|season|weather|tod)\.[\w-]+$/,
+  // tent/TentEdit.svelte 広さ: `tent.size.s${n}` over contract/tent.ts ROOM_SIZES
+  /^tent\.size\.s\d+$/
+];
+/** A dynamic key's prefix covers a key at whole dot segments only (`shop.${id}` covers `shop.snack`; `sea${n}` doesn't
+ *  cover `season.*`). The families built otherwise are listed in DYNAMIC, with where their ids come from. */
+const covers = (p: string, key: string) => key.startsWith(p) && (p.endsWith('.') || key[p.length] === '.');
+const usedBy = (key: string, prefixOk = true) => literals.has(key) || (prefixOk && ([...prefixes].some((p) => covers(p, key)) || DYNAMIC.some((re) => re.test(key))));
 
 /** The main catalogs, けんこう's (loaded with its tab), ごはん's (with the meal log), the catchables' names (loaded with the first catch or the
  *  ずかん), the balloon catalogue's and the rooms' (tent.*), as `t()` sees them once all are in. */

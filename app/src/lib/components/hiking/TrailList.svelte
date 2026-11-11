@@ -29,7 +29,7 @@
   const count = (f: (typeof FILTERS)[number]) => (f === 'all' ? TRAILS.length : TRAILS.filter((t) => t.diff === f).length);
   /** The level's sticker: leaf, yuzu, coral. */
   const TONE: Record<Diff, string> = { moderate: 'leaf', hard: '', veryhard: 'hot' };
-  const photo = (slug: string) => staticUrl(`/hiking/photos/${slug}.webp`);
+  const photo = (slug: string) => staticUrl(`hiking/photos/${slug}.webp`);
 </script>
 
 <section class="screen" {hidden} data-trail-list>

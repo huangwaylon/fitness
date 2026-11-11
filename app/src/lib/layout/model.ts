@@ -1,6 +1,6 @@
 // The island's layout (docs/island-layout.md "The layout is data"), pure: the terrain (one kind and one tier per tile),
 // the objects (each a kind on a tile, turned, with a variant) and the homes' looks. The layout a phone shows is the
-// default (default.json, `npm run layout:default` from world.ts) with the record's ops merged over it (layoutOf); the
+// default (default.json: world.ts's island on the grid, kept as data) with the record's ops merged over it (layoutOf); the
 // editor's save is the ops that turn one layout into another (opsBetween).
 import DEFAULT from './default.json' with { type: 'json' };
 import { CHUNKS_X, CHUNKS_Z, GRID, SEA, TILE, chunkId, chunkIndex, chunkString, idx, kindOf, onGrid, tierOf, tileX, tileZ, writeChunk, type Kind, type Tile } from './grid.ts';

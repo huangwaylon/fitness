@@ -1,5 +1,5 @@
 {
-  "_": "scripts/layout-default.ts: today's island on the tile grid (tiles: each row's codes, kind × 4 + tier in base 36: sea grass sand dirt stone brick plank river pond; objects: world.ts's ids, n their exact offset)",
+  "_": "the default island: world.ts's island on the tile grid, as the retired scripts/layout-default.ts wrote it (git history; the record's ops go over it, /editor writes them) (tiles: each row's codes, kind × 4 + tier in base 36: sea grass sand dirt stone brick plank river pond; objects: world.ts's ids, n their exact offset)",
   "tiles": [
     "00000000000000000000",
     "00000000000000000000",
