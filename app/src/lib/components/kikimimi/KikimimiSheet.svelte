@@ -329,10 +329,11 @@
   $effect(() => {
     if (hosting && !page && v?.gm === 'taikai') untrack(() => (pages = taikaiStack()));
   });
-  // a game in sight (あそぶ and what's under it, みんなで, a lesson's card, another's lobby): its deck's packs fetched
-  // now; a look at the hub, きろく or ずかん fetches none (game.svelte.ts ahead)
+  // a game in sight (みんなで, a lesson's card, another's lobby; a mode's page once it has dealt its own deck:
+  // ModeDetail): its first question's packs fetched now; a look at the hub, あそぶ's list (its lobby's deck is not what a
+  // mode's page deals), きろく or ずかん fetches none (game.svelte.ts ahead)
   $effect(() => {
-    const g = game, on = !!lesson || guest || (!!page && ['asobu', 'mode', 'lobby', 'taikai'].includes(page.k));
+    const g = game, on = !!lesson || guest || (!!page && ['lobby', 'taikai'].includes(page.k));
     untrack(() => g?.ahead(on));
   });
   /** A co-op lesson in my shared lobby: who's in it, whether I start it, the others' wait line. */

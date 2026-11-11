@@ -278,9 +278,9 @@ takes files ≤ 25 MiB and 20,000 a deploy (static-files.test keeps static/ ≤ 
   decoded buffers in an LRU of 4 (`CLIP_CAP`). **Dialogues** (clipPlayer.svelte.ts `playSequence`): each line at its
   relay time, two at once in an overlap.
 - **Fetching** (`components/kikimimi/packs.ts`, `lib/packStore.ts`): Pages answers a Range with the whole file, so a
-  pack is fetched whole, once, held in memory (12 MB) and each clip cut from it. `prefetchClips` fetches a deck's packs, the first question's first, then the rest, once a game is in sight
-  (あそぶ and its pages, みんなで, a lesson's card, another's lobby: `QuizGame.ahead`) or at the countdown, never for a look
-  at the hub; none after the sheet closes (`clear`). Each clip is decoded just in time (1-3 ms).
+  pack is fetched whole, once, held in memory (12 MB) and each clip cut from it. `prefetchClips` fetches the first question's packs once a game is in sight
+  (a mode's page, みんなで, a lesson's card, another's lobby: `QuizGame.ahead`), the rest of the deck's from the
+  countdown on, never for a look at the hub or あそぶ's list; none after the sheet closes (`clear`). Each clip is decoded just in time (1-3 ms).
 - **Caching:** the service worker's `island-listen-v1` (caches.ts `LISTEN_CACHE`; docs/backend.md "Service worker"):
   cache first, never revalidated (the hash is in the name), LRU by pack under 30 MB, a pack used in the last 10
   minutes never evicted. Offline, a deck plays only the packs it has had. Packs are never precached; backdrops are

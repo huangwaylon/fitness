@@ -352,8 +352,9 @@ export class QuizGame {
     return this.#link.now();
   }
 
-  /** A game in sight (the sheet: あそぶ, a game's page, みんなで, a lesson's card, another's lobby): my lobby's deck's packs
-   *  fetched now, not at its countdown. Never for a look at the hub (its level-1 pack is 0.65 MB). */
+  /** A game in sight (the sheet: a game's page, みんなで, a lesson's card, another's lobby): my lobby's first
+   *  question's packs fetched now, the rest at its countdown (clipPlayer follow). Never for a look at the hub (its
+   *  level-1 pack is 0.65 MB). */
   ahead(on: boolean): void {
     if (on === this.#ahead) return;
     this.#ahead = on;

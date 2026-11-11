@@ -2,8 +2,8 @@
 // (static/audio/listen/<pack>.<hash>.pak, kikimimi/packing.ts), where its loaded chunk says (clips.ts clipAt). A pack is
 // fetched whole, once, and held in memory among the most recently used (HOLD_BYTES; lib/packStore.ts), each clip's bytes
 // cut out for the engine to decode (sound.svelte.ts loadVoice: its LRU of decoded clips, keyed by pack and offset). The
-// lobby fetches its deck's packs ahead once a game is in sight, else at its countdown (prefetchClips: the first
-// question's first).
+// lobby fetches its first question's packs once a game is in sight, the rest of its deck's at its countdown
+// (prefetchClips, in the clips' order).
 import { clipAt } from '#lib/kikimimi/clips.ts';
 import { audioUrl } from '#lib/sound/manifest.ts';
 import { loadVoice } from '#lib/sound/sound.svelte.ts';

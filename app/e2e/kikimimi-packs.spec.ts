@@ -1,4 +1,4 @@
-// ききみみ's audio packs (docs/kikimimi-engine.md "Audio"): the lobby fetches its deck's pack from /audio/listen/ whole (on あそぶ),
+// ききみみ's audio packs (docs/kikimimi-engine.md "Audio"): the lobby fetches its deck's pack from /audio/listen/ whole (on a mode's page),
 // once (Pages answers a Range whole: no Range asked, no loose clip), and a clip cut from a pack as built decodes to its length in the page (the 9a spike's
 // check, kept: WebKit is the users' Safari). Silent: nothing is played (an OfflineAudioContext decodes; the sound check
 // is never tapped). The logic tier.
@@ -26,12 +26,20 @@ test('the lobby fetches its deck’s pack whole, once; a clip cut from it decode
   const sheet = page.locator('dialog[open] [data-kikimimi]');
   await expect(sheet).toHaveAttribute('data-phase', 'lobby');
   await expect(sheet.locator('[data-kiki-page="hub"]')).toBeVisible(); // (my lobby at level 1, the default)
-  // a look at the hub fetches no pack; あそぶ fetches level 1's deck's: whole and once (lib/packStore.ts), its 8 clips
-  // cut from it
-  const lv1 = `/audio/listen/lv1.${PACKS.lv1.hash}.pak`;
-  expect(asked.filter((a) => a.url.includes('/audio/listen/'))).toEqual([]);
+  // a look at the hub or あそぶ's list fetches no pack (no game there to start); a mode's page fetches its deck's
+  // first question's: whole and once (lib/packStore.ts), the rest at はじめる (clipPlayer follow)
+  const listen = () => asked.filter((a) => a.url.includes('/audio/listen/'));
+  expect(listen()).toEqual([]);
   await sheet.locator('[data-kiki-tile="asobu"]').click();
-  await expect.poll(() => asked.filter((a) => a.url.endsWith(lv1)).length).toBe(1);
+  await expect(sheet.locator('[data-kiki-mode-tile="quiz"]')).toBeVisible();
+  expect(listen(), 'none at あそぶ (review 11/10 r2: its lobby deck\'s lv1, 0.66 MB, never played from there)').toEqual([]);
+  await sheet.locator('[data-kiki-mode-tile="quiz"]').click();
+  await expect(sheet.locator('[data-kiki-start]')).toBeVisible();
+  const packOf = (id: string) => Object.keys(PACKS).find((n) => !PACKS[n].slow && PACKS[n].clips.some(([c]) => c === id || c.startsWith(`${id}-`)))!;
+  const first = packOf((await page.evaluate(() => (window as unknown as { __kiki: { items(): string[] } }).__kiki.items()))[0]);
+  const url = `/audio/listen/${first}.${PACKS[first].hash}.pak`;
+  await expect.poll(() => asked.filter((a) => a.url.endsWith(url)).length).toBe(1);
+  expect(listen().map((a) => new URL(a.url).pathname)).toEqual([url]);
   expect(asked.filter((a) => a.range || a.url.includes('?s=') || a.url.includes('/audio/kikimimi/'))).toEqual([]);
 
   // a clip from a few packs (level 1 and its slow pack, a level-4 part, a ladder rung, a unit's), sliced and decoded

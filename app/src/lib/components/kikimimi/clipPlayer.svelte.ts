@@ -76,18 +76,23 @@ export class ClipPlayer {
    * The clips a view calls for, at each refresh: the lobby's deck fetched, the first play planned on the relay's clock
    * (planned again when a `skip` moves it), a dialogue's turns, the reveal's replay; outside a game, silence.
    * `hidesLine`: a スピード はしご rung below the top (no replay at its reveal). `ahead`: a game in sight (game.svelte.ts
-   * ahead), the lobby's deck fetched before its countdown.
+   * ahead), the first question's packs fetched before its countdown.
    */
   follow(v: QuizView, items: readonly Item[], now: number, hidesLine: (it: Item) => boolean, ahead = false): void {
-    // the lobby, a game in sight, or the countdown: the deck's packs fetched (packs.ts: the first question's alone, then
-    // the rest; a level-1 deck's one pack, ~0.7 MB, a level-4 deck's up to eight), the first clip decoded
+    // a game in sight in the lobby: the first question's packs (a level-1 deck's one pack, ~0.7 MB) and its first clip
+    // decoded; from the countdown on: the rest of the deck's (packs.ts, in the clips' order; はまべ's second step's
+    // ~0.6 MB only once はじめる is tapped, never for a look at a mode's page)
     const dealt = `${v.gm}:${v.seed}:${v.o}:${v.u ?? ''}`;
-    if (v.g && ((v.phase === 'lobby' && ahead) || v.phase === 'countdown') && this.#fetched !== dealt && items.length) {
-      this.#fetched = dealt;
-      prefetchClips(items.flatMap((it) => clipIds(it)));
-      if (v.speaks) void voiceClip(clipIds(items[0])[0]);
-      if (v.speaks && hints(items[0]).bed) void partyBed();
-      preloadStage(items[0]);
+    const want = !v.g || !items.length || v.phase === 'idle' || v.phase === 'results' ? null : v.phase !== 'lobby' ? `${dealt}|all` : ahead ? `${dealt}|first` : null;
+    if (want && this.#fetched !== want && this.#fetched !== `${dealt}|all`) {
+      const fresh = !this.#fetched.startsWith(`${dealt}|`);
+      this.#fetched = want;
+      prefetchClips((want.endsWith('|all') ? items : items.slice(0, 1)).flatMap((it) => clipIds(it)));
+      if (fresh) {
+        if (v.speaks) void voiceClip(clipIds(items[0])[0]);
+        if (v.speaks && hints(items[0]).bed) void partyBed();
+        preloadStage(items[0]);
+      }
     }
     // outside a game's questions: silence on entering it, then a results ▶︎, まるごと's replay or the lobby's 🔊 left to play
     if (v.phase === 'idle' || v.phase === 'lobby' || v.phase === 'results') {

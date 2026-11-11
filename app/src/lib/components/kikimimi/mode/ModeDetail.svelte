@@ -39,24 +39,28 @@
   let pick = $state(untrack(() => stagePick(m))); // (the page is keyed by its mode)
   const omakase = $derived(gm ? levelFor(gm, currentOmakase()) : currentOmakase());
 
-  // my lobby takes this mode's game (its level: アナウンス 5, the quiz its ばしょ: picked, else おまかせ)
+  /** What my lobby still needs to be this mode's game (its level: アナウンス 5, the quiz its ばしょ: picked, else
+   *  おまかせ), or null: it is. A lane's game's lobby (another mode's page) goes back to the quiz family. */
+  function toDo(w: NonNullable<typeof v>, id: ModeId): (() => void) | null {
+    const lv = (pick ?? omakase) as Level, lane = !!modeOfGame(w.gm ?? '');
+    if (gm) return w.gm !== gm || w.lv !== lv ? () => game.setGame(gm, { lv, timer: w.timer }) : null;
+    if (id === 'ladder') return !w.ladder ? () => game.configure({ ladder: true }) : null;
+    if (id === 'announce') return lane || w.ladder || w.lv !== 5 ? () => game.configure({ ladder: false, lv: 5 }) : null;
+    if (id === 'quiz') return lane || w.ladder || w.lv !== lv ? () => game.configure({ ladder: false, lv }) : null;
+    return lane || w.ladder ? () => game.configure({ ladder: false }) : null;
+  }
+  // my lobby takes this mode's game
   $effect(() => {
     const id = m;
     untrack(() => {
       const w = game.view;
-      if (!w?.amHost) return;
-      const lv = (pick ?? omakase) as Level;
-      /** My lobby is a lane's game's (another mode's page goes back to the quiz family). */
-      const lane = !!modeOfGame(w.gm ?? '');
-      if (gm) {
-        if (w.gm !== gm || w.lv !== lv) game.setGame(gm, { lv, timer: w.timer });
-      } else if (id === 'ladder') {
-        if (!w.ladder) game.configure({ ladder: true });
-      } else if (id === 'announce') {
-        if (lane || w.ladder || w.lv !== 5) game.configure({ ladder: false, lv: 5 });
-      } else if (id === 'quiz' && (lane || w.ladder || w.lv !== lv)) game.configure({ ladder: false, lv });
-      else if (lane || w.ladder) game.configure({ ladder: false });
+      if (w?.amHost) toDo(w, id)?.();
     });
+  });
+  // in sight once it is this mode's (its level's chunk in: the view dealt from it), never the lobby's deck from before
+  // (あそぶ's: another level's pack): its first question's packs fetched (game.svelte.ts ahead)
+  $effect(() => {
+    if (v?.amHost && !toDo(v, m)) untrack(() => game.ahead(true));
   });
   /** A place tapped: kept for this mode (おまかせ's own: back to おまかせ). */
   function level(lv: number) {
