@@ -7,8 +7,9 @@
 // scripts/ktx2-loose.json to tell when it changed. Packs, not a file a texture:
 // static/ stays under Cloudflare Pages' file cap (src/lib/static-files.test.ts). The phone transcodes a texture (ASTC
 // 4x4 on an iPhone: a quarter of the WebP's RGBA in GPU memory, no decode, no mipmap pass) and keeps the result
-// (world3d/texCache.ts). The GLBs and WebPs aren't touched: a loader without the plugin (the museum's own models', the
-// tent's furniture's) draws their WebPs as before. Also copies three's Basis transcoder (its wasm) to
+// (world3d/texCache.ts). Then the island's models give up their WebPs (scripts/glb-webp.ts: into each model's WebP
+// pack, static/room/tex/<id>.webpp, read only where no KTX2 is drawn; the players' keep theirs), the rooms' own
+// models are left as they are. Also copies three's Basis transcoder (its wasm) to
 // static/room/basis/: fetched by the transcoding worker on first use only (under /room/: the service worker keeps it
 // once used, never at install). Writes src/lib/components/world3d/ktx2.json (the encoder's settings, the transcoder's
 // hash). New images are encoded (what's encoded already is read back out of the packs), unused files deleted; a
@@ -22,7 +23,8 @@ import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFile
 import { join, relative } from 'node:path';
 import { createRequire } from 'node:module';
 import { promisify } from 'node:util';
-import { glbImages, looseTextures, texHash, texKey, type Loose } from '../src/lib/components/world3d/texHash.ts';
+import { glbTextures, looseTextures, texHash, texKey, type Loose } from '../src/lib/components/world3d/texHash.ts';
+import { strip } from './glb-webp.ts';
 import { entries, pack, packId } from '../src/lib/components/world3d/ktx2Pack.ts';
 import homes from '../src/lib/layout/homes.json' with { type: 'json' };
 import structures from '../src/lib/layout/structures.json' with { type: 'json' };
@@ -93,7 +95,11 @@ if (same) {
 
 // the packs: a model's images (by key: hash, capped or not); a home colour's albedos (by material); the players' loose files
 const models = [...SRC.flatMap(walk).map((f): [string, Uint8Array] => [relative(ROOM, f), new Uint8Array(readFileSync(f))]), ...[...PLAYER].filter(([p]) => p.endsWith('.glb')).map(([p, b]): [string, Uint8Array] => [`player/${p}`, b])];
-const hashesOf = new Map(models.map(([p, b]) => [p, glbImages(b).map((im) => texHash(im))]));
+const texOf = new Map(models.map(([p, b]) => [p, glbTextures(b)]));
+const hashesOf = new Map([...texOf].map(([p, ts]) => [p, ts.map((t) => t.hash)]));
+// the WebPs the island's models no longer carry (their WebP packs: scripts/glb-webp.ts)
+const webps = new Map<string, Uint8Array>();
+for (const f of readdirSync(OUT)) if (f.endsWith('.webpp')) readPack(join(OUT, f), (id, b) => webps.set(id, b));
 const caps: Record<string, number> = {};
 for (const [m, px, ims] of CAPS) for (const i of ims) {
   const h = hashesOf.get(m)?.[i];
@@ -104,12 +110,14 @@ for (const [p, hs] of hashesOf) hs.forEach((h, i) => {
   if (caps[h] && !CAPS.some(([m, px, ims]) => m === p && px === caps[h] && ims.includes(i))) throw new Error(`world3d-ktx2: ${p} #${i} is a capped image (CAPS): cap it there too, or nowhere`);
 });
 const images = new Map<string, Uint8Array>(), packs = new Map<string, string[]>();
-for (const [p, b] of models) {
-  const ims = glbImages(b);
-  if (!ims.length) continue;
-  const hs = hashesOf.get(p)!;
-  ims.forEach((im, i) => images.set(hs[i], im));
-  const ks = hs.map((h) => texKey(h, caps));
+for (const [p, ts] of texOf) {
+  if (!ts.length) continue;
+  for (const t of ts) {
+    const webp = t.webp ?? webps.get(t.hash);
+    if (!webp) throw new Error(`world3d-ktx2: ${p}'s ${t.hash} has no WebP (in the model or its WebP pack)`);
+    images.set(t.hash, webp);
+  }
+  const ks = ts.map((t) => texKey(t.hash, caps));
   packs.set(packId(ks), [...new Set(ks)]);
 }
 /** Each texture to encode: its WebP's bytes, flipped or not, and the key it's kept under. */
@@ -196,6 +204,20 @@ for (const [f, b] of want) {
 }
 for (const d of new Set([OUT, ...loose.filter((l) => !inPlayer(l.out)).map((l) => join(ROOM, l.out, '..'))]))
   for (const f of readdirSync(d)) if (/\.ktx2p?$/.test(f) && !want.has(join(d, f))) rmSync(join(d, f)), removed++;
+// the island's models without their WebPs (scripts/glb-webp.ts): a model's in its WebP pack (by its images' hashes, as
+// its KTX2 pack by their keys), drawn only where no KTX2 is; the players' keep theirs (their packs, player-packs.ts)
+const webpWant = new Set<string>();
+let stripped = 0, freed = 0;
+for (const [p, b] of models) {
+  const hs = hashesOf.get(p)!;
+  if (inPlayer(p) || !hs.length) continue;
+  const f = join(OUT, `${packId(hs)}.webpp`), w = pack([...new Set(hs)].map((h) => [h, images.get(h)!]));
+  webpWant.add(f);
+  if (!existsSync(f) || !Buffer.from(w).equals(readFileSync(f))) writeFileSync(f, w);
+  const s = strip(b, hs);
+  if (s) writeFileSync(join(ROOM, p), s), stripped++, (freed += b.length - s.length);
+}
+for (const f of readdirSync(OUT)) if (f.endsWith('.webpp') && !webpWant.has(join(OUT, f))) rmSync(join(OUT, f)), removed++;
 // the players' KTX2s into their packs (each file's place into the part tables)
 const packed = packPlayer({ extra: playerOut });
 writeFileSync(LOOSE, `${JSON.stringify(Object.fromEntries(Object.entries(looseHash).sort(([a], [b]) => a.localeCompare(b))), null, 1)}\n`);
@@ -206,4 +228,4 @@ mkdirSync(BASIS, { recursive: true });
 copyFileSync(wasm, join(BASIS, 'basis_transcoder.wasm'));
 const v = createHash('sha256').update(readFileSync(wasm)).digest('hex').slice(0, 8);
 writeFileSync(META, `${JSON.stringify({ _: 'scripts/world3d-ktx2.ts: the island models\' textures as KTX2 (static/room/tex/<id>.ktx2p, the loose ones\' beside them), basisu\'s settings, the transcoder\'s content hash (static/room/basis/), the capped textures\' sizes (texHash.ts texKey)', enc, wasm: v, caps: Object.fromEntries(Object.entries(caps).sort(([a], [b]) => a.localeCompare(b))) }, null, 2)}\n`);
-console.log(`${images.size} embedded textures in ${packs.size} packs, ${loose.length} loose (${jobs.length} encoded, ${removed} files removed): ${want.size} files, ${(bytes / 1024).toFixed(0)} KB; the players' ${playerOut.size} in their ${packed.packs} packs (${packed.written} written); transcoder ${v}`);
+console.log(`${images.size} embedded textures in ${packs.size} packs, ${loose.length} loose (${jobs.length} encoded, ${removed} files removed): ${want.size} files, ${(bytes / 1024).toFixed(0)} KB; ${webpWant.size} WebP packs, ${stripped} models stripped of theirs (${(freed / 1024).toFixed(0)} KB); the players' ${playerOut.size} in their ${packed.packs} packs (${packed.written} written); transcoder ${v}`);

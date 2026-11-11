@@ -168,6 +168,20 @@ test('/world3d, the POC\'s address, opens the island', async ({ page }) => {
   await ready(page);
 });
 
+test('no KTX2 (?ktx2=0): the island\'s models draw their WebPs, from their WebP packs (they carry none: scripts/glb-webp.ts)', { tag: '@render' }, async ({ page }) => {
+  const packs: string[] = [], errors: string[] = [];
+  page.on('request', (r) => { if (/\/room\/tex\/[^/]+\.(webpp|ktx2p)/.test(r.url())) packs.push(new URL(r.url()).pathname.split('.').pop()!); });
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+  await page.goto(`?${Q}&ktx2=0`);
+  await ready(page);
+  const k = await w3(page, (w) => w.ktx2());
+  expect(k.target).toBeNull();
+  expect(k.made + k.kept).toBe(0);
+  expect(packs.filter((p) => p === 'webpp').length).toBeGreaterThan(10);
+  expect(packs).not.toContain('ktx2p');
+  expect(errors.filter((e) => /GLTFLoader|texture/i.test(e))).toEqual([]);
+});
+
 test('no WebGL: a line instead of the island, and the rest of the app works (the panel, ごほうび)', async ({ page }) => {
   // (WebGL off: every canvas's webgl / webgl2 context null, as on a device without it)
   await page.addInitScript(() => {

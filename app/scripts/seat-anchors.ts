@@ -12,6 +12,7 @@ import { chromium } from '@playwright/test';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, extname, join, resolve, sep } from 'node:path';
 import { createRequire } from 'node:module';
+import { withWebps } from './glb-webp.ts';
 import { bedOf, seatOf, type BedShape, type Sample, type SeatShape } from './room-surfaces.ts';
 
 const APP = join(import.meta.dirname, '..');
@@ -90,7 +91,9 @@ await page.route('http://room.local/**', (route) => {
   const room = (rel: string) => [within(ROOM, rel), within(WORK, rel)].find((x) => x && existsSync(x)) ?? null;
   const f = u === '/page.js' ? PAGE : u.startsWith('/three/') ? within(three, u.slice(7)) : u.startsWith('/m/') ? room(u.slice(3)) : null;
   if (!f || !existsSync(f)) return route.fulfill({ status: 404, body: '' });
-  return route.fulfill({ body: readFileSync(f), contentType: extname(f) === '.js' ? 'text/javascript' : 'application/octet-stream' });
+  // (an island model with its WebPs back in: three's own loader reads them)
+  const body = f.endsWith('.glb') ? Buffer.from(withWebps(new Uint8Array(readFileSync(f)), join(ROOM, 'tex'))) : readFileSync(f);
+  return route.fulfill({ body, contentType: extname(f) === '.js' ? 'text/javascript' : 'application/octet-stream' });
 });
 await page.goto('http://room.local/');
 await page.waitForFunction(() => (window as unknown as { ready?: boolean }).ready);

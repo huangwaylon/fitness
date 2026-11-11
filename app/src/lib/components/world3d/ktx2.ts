@@ -12,7 +12,7 @@ import meta from './ktx2.json';
 import { pickTarget, type Target, type Transcoded } from './ktx2Format.ts';
 import type { Answer, Ask } from './ktx2.worker.ts';
 import { hasTex, readTex, writeTex } from './texCache.ts';
-import { texHash, texKey } from './texHash.ts';
+import { texHash, texKey, type GlbImage } from './texHash.ts';
 import { entries, packId } from './ktx2Pack.ts';
 import { quiet } from '#lib/quiet.ts';
 
@@ -221,26 +221,28 @@ function compressed(tex: Transcoded): CompressedTexture {
   return c;
 }
 
-type Json = { textures: { source?: number; sampler?: number; name?: string; extensions?: { EXT_texture_webp?: { source?: number } } }[]; images?: { bufferView?: number; mimeType?: string; name?: string }[]; samplers?: { magFilter?: number; minFilter?: number; wrapS?: number; wrapT?: number }[] };
+type Json = { textures: { source?: number; sampler?: number; name?: string; extensions?: { EXT_texture_webp?: { source?: number } } }[]; images?: GlbImage[]; samplers?: { magFilter?: number; minFilter?: number; wrapS?: number; wrapT?: number }[] };
 type Parser = GLTFParser & { json: Json; textureLoader: unknown; loadTextureImage(i: number, source: number, loader: unknown): Promise<Texture | null> };
 
 /** `loader`'s models' embedded WebPs drawn from their KTX2 (once the island's renderer said which format). It stands
  *  in for GLTFLoader's own EXT_texture_webp (the models' textures are WebPs by that extension; a plugin by its name
- *  takes its place, ahead of the loader's default), drawing the WebP as that one does when there's no KTX2. */
+ *  takes its place, ahead of the loader's default), drawing the WebP as that one does when there's no KTX2: the
+ *  model's own, or, the island's models carrying none (scripts/glb-webp.ts), its WebP pack's. */
 export function ktx2Plugin(loader: GLTFLoader): GLTFLoader {
   return loader.register((p) => {
     const parser = p as Parser;
     return {
       name: 'EXT_texture_webp',
-      loadTexture(i: number) {
+      loadTexture(i: number): Promise<Texture> | null {
         const def = parser.json.textures[i], source = def?.extensions?.EXT_texture_webp?.source;
         const t = target, src = source === undefined ? undefined : parser.json.images?.[source];
         if (source === undefined || !src) return null;
-        if (!t || src.bufferView === undefined || src.mimeType !== 'image/webp') return parser.loadTextureImage(i, source, parser.textureLoader);
-        return parser.getDependency('bufferView', src.bufferView).then(async (buf: ArrayBuffer) => {
-          const hash = texKey(texHash(new Uint8Array(buf)), CAPS);
-          const tex = await levels(hash, async () => fetchKtx2({ path: `room/tex/${await packOf(parser)}.ktx2p`, entry: hash }), t);
-          if (!tex) return ktx2Stats.webp++, parser.loadTextureImage(i, source, parser.textureLoader);
+        if (src.mimeType !== 'image/webp' || (src.bufferView === undefined && !src.extras?.tex)) return parser.loadTextureImage(i, source, parser.textureLoader) as Promise<Texture>;
+        if (!t) return webpOf(parser, i, source) as Promise<Texture>;
+        return hashOf(parser, src).then(async (h) => {
+          const key = texKey(h, CAPS);
+          const tex = await levels(key, async () => fetchKtx2({ path: `room/tex/${(await packsOf(parser)).ktx2}.ktx2p`, entry: key }), t);
+          if (!tex) return ktx2Stats.webp++, webpOf(parser, i, source);
           const c = compressed(tex);
           // (GLTFLoader's loadTextureImage's settings: glTF's UVs unflipped, its sampler's filters and wrapping)
           const s = parser.json.samplers?.[def.sampler ?? -1] ?? {};
@@ -253,21 +255,46 @@ export function ktx2Plugin(loader: GLTFLoader): GLTFLoader {
           c.userData.mimeType = 'image/ktx2';
           parser.associations.set(c, { textures: i });
           return c;
-        });
+        }) as Promise<Texture>;
       }
     };
   });
 }
-/** A model's pack (ktx2Pack.ts packId: its images' hashes, as scripts/world3d-ktx2.ts names it), asked on a miss. */
-const packIds = new WeakMap<Parser, Promise<string>>();
-function packOf(parser: Parser): Promise<string> {
+/** An embedded texture's hash: kept by a model without its WebPs (`extras.tex`), else its WebP's. */
+const hashOf = (parser: Parser, im: GlbImage): Promise<string> =>
+  im.bufferView === undefined ? Promise.resolve(im.extras!.tex!) : (parser.getDependency('bufferView', im.bufferView) as Promise<ArrayBuffer>).then((b) => texHash(new Uint8Array(b)));
+/** A model's packs (ktx2Pack.ts packId, as scripts/world3d-ktx2.ts names them): its KTX2s' by its images' keys, its
+ *  WebPs' by their hashes; asked on a miss. */
+const packIds = new WeakMap<Parser, Promise<{ ktx2: string; webp: string }>>();
+function packsOf(parser: Parser): Promise<{ ktx2: string; webp: string }> {
   let p = packIds.get(parser);
   if (!p) {
-    const views: number[] = (parser.json.images ?? []).flatMap((im: { bufferView?: number }) => (im.bufferView === undefined ? [] : [im.bufferView]));
-    p = Promise.all(views.map((v: number) => parser.getDependency('bufferView', v) as Promise<ArrayBuffer>)).then((bs) => packId(bs.map((b) => texKey(texHash(new Uint8Array(b)), CAPS))));
+    const ims = ((parser.json.images ?? []) as GlbImage[]).filter((im) => im.bufferView !== undefined || im.extras?.tex);
+    p = Promise.all(ims.map((im) => hashOf(parser, im))).then((hs) => ({ ktx2: packId(hs.map((h) => texKey(h, CAPS))), webp: packId(hs) }));
     packIds.set(parser, p);
   }
   return p;
+}
+/** Texture `i` from its WebP, as GLTFLoader draws one: a model without its WebPs (scripts/glb-webp.ts) has it from
+ *  its WebP pack, a blob: URL in its image's place while GLTFLoader reads it (its source then cached: a second
+ *  texture of the image asks no URL; not a data: URL, which Chromium's ImageBitmapLoader fetches: the CSP's
+ *  connect-src). */
+const webpLoads = new WeakMap<GlbImage, Promise<unknown>>();
+function webpOf(parser: Parser, i: number, source: number): Promise<Texture | null> {
+  const im = parser.json.images![source];
+  if (im.bufferView !== undefined) return parser.loadTextureImage(i, source, parser.textureLoader);
+  let first = webpLoads.get(im);
+  if (!first) {
+    first = packsOf(parser).then(async ({ webp }) => {
+      const buf = await fetchKtx2({ path: `room/tex/${webp}.webpp`, entry: im.extras!.tex! });
+      if (!buf) throw new Error(`world3d: no WebP for ${im.extras!.tex}`);
+      im.uri = URL.createObjectURL(new Blob([buf], { type: 'image/webp' }));
+      return parser.loadTextureImage(i, source, parser.textureLoader).finally(() => URL.revokeObjectURL(im.uri!));
+    });
+    webpLoads.set(im, first);
+    return first as Promise<Texture | null>;
+  }
+  return first.then(() => parser.loadTextureImage(i, source, parser.textureLoader));
 }
 /** glTF's sampler values (WebGL's enums): filters, and wrap modes → three's. */
 const NEAREST = 9728, LINEAR = 9729;

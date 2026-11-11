@@ -8,6 +8,7 @@ import { ACTION_MS, FADE_MS, GYM_USES, REP_MS, STRIDE, action, base, idle, mix, 
 import { BLINK, FACES, cellTransform, eyeAt, faceChangeIn, mouthAt, type Face } from './faces.ts';
 import { has3d, url3d } from './manifest.ts';
 import { GUESTS } from '../island/visitorRoles.ts';
+import { withWebps } from '../../../../scripts/glb-webp.ts';
 
 const DIR = join(import.meta.dirname, '..', '..', '..', '..', 'static', 'room', 'villagers3d');
 const M = MANIFEST as { villagers: Record<string, { kb: number; tris: number; h: number; v: string }>; none: Record<string, string> };
@@ -21,7 +22,8 @@ describe('the villagers’ 3D models (villagers.json)', () => {
       expect(existsSync(f), id).toBe(true);
       expect(readFileSync(f).subarray(0, 4).toString(), id).toBe('glTF');
       expect(statSync(f).size / 1024, id).toBeLessThanOrEqual(BUDGET_KB);
-      expect(e.kb, id).toBeCloseTo(statSync(f).size / 1024, 0);
+      // (its KB as converted: its WebPs are in its WebP pack, scripts/glb-webp.ts)
+      expect(e.kb, id).toBeCloseTo(withWebps(new Uint8Array(readFileSync(f)), join(DIR, '..', 'tex')).length / 1024, 0);
       expect(e.h, id).toBeGreaterThan(8);
     }
   });

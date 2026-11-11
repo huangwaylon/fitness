@@ -9,6 +9,7 @@ import { chromium } from '@playwright/test';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, extname, join, resolve, sep } from 'node:path';
+import { withWebps } from './glb-webp.ts';
 
 const APP = join(import.meta.dirname, '..');
 const W3D = join(APP, 'static', 'room', 'world3d');
@@ -72,7 +73,9 @@ await page.route('http://sheet.local/**', (r) => {
   const f = u === '/page.js' ? PAGE : u === '/villager.webp' ? join(APP, 'static', 'art', 'villagers', 'raymond.webp')
     : u.startsWith('/three/') ? within(three, u.slice(7)) : hit ? within(hit[1], u.slice(hit[0].length)) : null;
   if (!f || !existsSync(f)) return r.fulfill({ status: 404, body: '' });
-  return r.fulfill({ body: readFileSync(f), contentType: MIME[extname(f)] ?? 'application/octet-stream' });
+  // (an island model with its WebPs back in: three's own loader draws them)
+  const body = f.endsWith('.glb') ? Buffer.from(withWebps(new Uint8Array(readFileSync(f)), join(APP, 'static', 'room', 'tex'))) : readFileSync(f);
+  return r.fulfill({ body, contentType: MIME[extname(f)] ?? 'application/octet-stream' });
 });
 await page.goto('http://sheet.local/');
 await page.waitForFunction(() => (window as unknown as { ready?: boolean }).ready);

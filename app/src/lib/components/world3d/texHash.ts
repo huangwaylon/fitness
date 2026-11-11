@@ -18,16 +18,24 @@ export function texHash(b: Uint8Array): string {
  *  scripts/world3d-ktx2.ts CAPS), so a capped one is never an uncapped one cached. */
 export const texKey = (hash: string, caps: Partial<Record<string, number>>): string => (caps[hash] ? `${hash}@${caps[hash]}` : hash);
 
-/** A GLB's embedded images, in its `images` order (each its bufferView's bytes): the build script's and its test's. */
-export function glbImages(b: Uint8Array): Uint8Array[] {
+/** A GLB's embedded textures, in its `images` order: each its WebP's hash and bytes, or, its WebP stripped into its
+ *  model's WebP pack (scripts/world3d-ktx2.ts: the island's models draw their KTX2s), the hash it kept
+ *  (`extras.tex`) and no bytes. The build script's and its test's. */
+export function glbTextures(b: Uint8Array): { hash: string; webp: Uint8Array | null }[] {
   const jl = new DataView(b.buffer, b.byteOffset, b.byteLength).getUint32(12, true);
-  const j = JSON.parse(new TextDecoder().decode(b.subarray(20, 20 + jl))) as { images?: { bufferView?: number }[]; bufferViews: { byteOffset?: number; byteLength: number }[] };
+  const j = JSON.parse(new TextDecoder().decode(b.subarray(20, 20 + jl))) as { images?: GlbImage[]; bufferViews?: { byteOffset?: number; byteLength: number }[] };
   const bin = b.subarray(28 + jl);
-  return (j.images ?? []).flatMap((im) => {
-    const bv = im.bufferView === undefined ? null : j.bufferViews[im.bufferView];
-    return bv ? [bin.subarray(bv.byteOffset ?? 0, (bv.byteOffset ?? 0) + bv.byteLength)] : [];
+  return (j.images ?? []).flatMap((im): { hash: string; webp: Uint8Array | null }[] => {
+    const bv = im.bufferView === undefined ? null : j.bufferViews![im.bufferView];
+    if (bv) {
+      const webp = bin.subarray(bv.byteOffset ?? 0, (bv.byteOffset ?? 0) + bv.byteLength);
+      return [{ hash: texHash(webp), webp }];
+    }
+    return im.extras?.tex ? [{ hash: im.extras.tex, webp: null }] : [];
   });
 }
+/** A glTF image as the island's models carry it: its WebP in a bufferView, or stripped (`extras.tex`: its hash). */
+export type GlbImage = { bufferView?: number; uri?: string; mimeType?: string; name?: string; extras?: { tex?: string } };
 
 type Families = { families: Record<string, { colours: Record<string, string[]> }> };
 type Parts = { face: Record<string, { v: string; iris?: unknown }>; cheek: unknown[]; items: Record<string, { tex: Record<string, { file?: string }> }> };

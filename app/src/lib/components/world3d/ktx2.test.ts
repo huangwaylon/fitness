@@ -9,12 +9,13 @@ import meta from './ktx2.json';
 import { basisModuleCode } from './basisModule.ts';
 import { pickTarget, TRANSCODE, type Transcoded } from './ktx2Format.ts';
 import { CAP_BYTES, configureTexCache, flushTexWrites, readTex, writeTex } from './texCache.ts';
-import { glbImages, looseTextures, texHash, texKey, type Loose } from './texHash.ts';
+import { glbTextures, looseTextures, texHash, texKey, type Loose } from './texHash.ts';
 import { entries, pack, packId } from './ktx2Pack.ts';
 import homes from '#lib/layout/homes.json' with { type: 'json' };
 import structures from '#lib/layout/structures.json' with { type: 'json' };
 import parts from '../player3d/parts.json' with { type: 'json' };
 import { playerFiles } from '../../../../scripts/player-packs.ts';
+import { strip, unstrip } from '../../../../scripts/glb-webp.ts';
 
 const APP = join(import.meta.dirname, '..', '..', '..', '..');
 const ROOM = join(APP, 'static', 'room');
@@ -30,10 +31,10 @@ describe('the island models\' KTX2 textures (scripts/world3d-ktx2.ts: npm run wo
     const want = new Map<string, string[]>();
     const glbs = [...['world3d', 'homes', 'structures', 'villagers3d'].flatMap((d) => walk(join(ROOM, d)).map((f) => readFileSync(f))), ...[...PLAYER].filter(([p]) => p.endsWith('.glb')).map(([, b]) => b)];
     for (const b of glbs) {
-      const hs = glbImages(b).map((im) => texKey(texHash(im), meta.caps));
+      const hs = glbTextures(b).map((t) => texKey(t.hash, meta.caps));
       if (hs.length) want.set(`${packId(hs)}.ktx2p`, hs);
     }
-    const have = readdirSync(join(ROOM, 'tex'));
+    const have = readdirSync(join(ROOM, 'tex')).filter((f) => f.endsWith('.ktx2p'));
     expect(have.filter((f) => !want.has(f))).toEqual([]);
     const short = [...want].filter(([f, hs]) => {
       const es = existsSync(join(ROOM, 'tex', f)) ? entries(readFileSync(join(ROOM, 'tex', f))) : null;
@@ -48,6 +49,46 @@ describe('the island models\' KTX2 textures (scripts/world3d-ktx2.ts: npm run wo
       const w = b.readUInt32LE(o + 20), h = b.readUInt32LE(o + 24);
       expect([Math.max(w, h), b.readUInt32LE(o + 40)]).toEqual([px, Math.log2(Math.max(w, h)) + 1]);
     }
+  });
+
+  it('keeps no WebP in an island model: each in its WebP pack (by its images\' hashes), and no WebP pack unused (scripts/glb-webp.ts)', () => {
+    const want = new Map<string, string[]>(), carrying: string[] = [];
+    for (const f of ['world3d', 'homes', 'structures', 'villagers3d'].flatMap((d) => walk(join(ROOM, d)))) {
+      const ts = glbTextures(readFileSync(f));
+      if (!ts.length) continue;
+      if (ts.some((t) => t.webp)) carrying.push(f.slice(ROOM.length + 1));
+      want.set(`${packId(ts.map((t) => t.hash))}.webpp`, ts.map((t) => t.hash));
+    }
+    expect(carrying).toEqual([]);
+    const have = readdirSync(join(ROOM, 'tex')).filter((f) => f.endsWith('.webpp'));
+    expect(have.filter((f) => !want.has(f))).toEqual([]);
+    const short = [...want].filter(([f, hs]) => {
+      const b = existsSync(join(ROOM, 'tex', f)) ? readFileSync(join(ROOM, 'tex', f)) : null, es = b && entries(b);
+      // (each the WebP it names: its bytes' hash)
+      return !es || hs.some((h) => !es.has(h) || texHash(b.subarray(es.get(h)![0], es.get(h)![0] + es.get(h)![1])) !== h);
+    });
+    expect(short.map(([f]) => f)).toEqual([]);
+  });
+
+  it('strips a model of its WebPs and puts them back, its other bytes untouched (scripts/glb-webp.ts)', () => {
+    // (a room model: it keeps its WebPs, a meshopt-compressed GLB as the island's are)
+    const b = new Uint8Array(readFileSync(join(ROOM, 'museum', 'coral.glb')));
+    const ts = glbTextures(b), s = strip(b, ts.map((t) => t.hash))!;
+    expect(ts.length).toBeGreaterThan(1);
+    expect(s.length).toBeLessThan(b.length - ts.reduce((n, t) => n + t.webp!.length, 0) + 4 * ts.length);
+    expect(glbTextures(s)).toEqual(ts.map((t) => ({ hash: t.hash, webp: null })));
+    const views = (g: Uint8Array) => {
+      const jl = Buffer.from(g).readUInt32LE(12), j = JSON.parse(new TextDecoder().decode(g.subarray(20, 20 + jl))), bin = g.subarray(28 + jl);
+      const ims = new Set((j.images ?? []).map((im: { bufferView?: number }) => im.bufferView));
+      type V = { byteOffset?: number; byteLength: number; buffer: number; extensions?: { EXT_meshopt_compression?: { byteOffset?: number; byteLength: number } } };
+      const cut = (o: number | undefined, l: number) => Buffer.from(bin.subarray(o ?? 0, (o ?? 0) + l)).toString('base64');
+      // (an accessor by its view's place among the views but the images')
+      const kept = (j.bufferViews as V[]).map((_, i) => i).filter((i) => !ims.has(i));
+      return { accessors: (j.accessors as { bufferView?: number }[]).map((a) => ({ ...a, bufferView: kept.indexOf(a.bufferView!) })), views: (j.bufferViews as V[]).filter((_, i) => !ims.has(i)).map((v) => [v.buffer ? null : cut(v.byteOffset, v.byteLength), v.extensions?.EXT_meshopt_compression ? cut(v.extensions.EXT_meshopt_compression.byteOffset, v.extensions.EXT_meshopt_compression.byteLength) : null]) };
+    };
+    expect(views(s)).toEqual(views(b));
+    const back = unstrip(s, (h) => ts.find((t) => t.hash === h)?.webp ?? undefined);
+    expect(glbTextures(back)).toEqual(ts);
   });
 
   it('has a KTX2 for each loose WebP the models wear (a file beside it, or in its colour\'s pack), encoded from it as it is now, and none unused', () => {
@@ -101,7 +142,7 @@ describe('the transcoder as the worker has it (basisModule.ts)', () => {
     const U8 = runInContext('Uint8Array', ctx) as Uint8ArrayConstructor;
     // (a texture as encoded, and one capped: scripts/world3d-ktx2.ts capKtx2, each of its levels)
     const packed = new Uint8Array(readFileSync(join(ROOM, 'tex', readdirSync(join(ROOM, 'tex'))[0])));
-    const keys = glbImages(readFileSync(join(ROOM, 'world3d', 'museum.glb'))).map((im) => texKey(texHash(im), meta.caps));
+    const keys = glbTextures(readFileSync(join(ROOM, 'world3d', 'museum.glb'))).map((t) => texKey(t.hash, meta.caps));
     const museum = new Uint8Array(readFileSync(join(ROOM, 'tex', `${packId(keys)}.ktx2p`))), cap = entries(museum)!.get(keys.find((k) => k.includes('@'))!)!;
     for (const [b, [o, l]] of [[packed, [...entries(packed)!.values()][0]], [museum, cap]] as const) {
       const k = new m.KTX2File(new U8(b.slice(o, o + l)));

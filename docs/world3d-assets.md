@@ -21,7 +21,9 @@ The source is NH's 2.0.0 export (archive.org `acnh-2.0.0-models`, `ACNH_2.0.0_Ex
   never at install). The first 45 models stay in `models.json` and serve their keys from there.
 - **Then `npm run world3d-ktx2`** (`scripts/world3d-ktx2.ts`, its header: the packs, the loose textures, the
   transcoder, what it needs): the island draws KTX2 (`world3d/ktx2.ts`: ASTC on an iPhone, kept transcoded in
-  IndexedDB); the WebPs stay for the museum's own models, the tent's furniture and a fallback. `world3d/ktx2.test.ts`
+  IndexedDB); the island's models then carry no WebPs (`scripts/glb-webp.ts`: each model's in its
+  `static/room/tex/<id>.webpp`, drawn only without a KTX2; the sheet and seat tools put them back), the rooms' keep
+  theirs. `world3d/ktx2.test.ts`
   fails until it's run after a model, a home or a player part changes. Its `CAPS` caps a texture's KTX2 smaller than
   its WebP (the exteriors seen only from the island's camera: their top mips dropped; ktx2.json `caps`, the key
   `<hash>@<px>`, texHash.ts texKey).
