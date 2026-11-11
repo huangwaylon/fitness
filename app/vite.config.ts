@@ -192,6 +192,54 @@ const kikiPartNames: Plugin = {
   }
 };
 
+/** What a phone may never open, under stable names (`_app/immutable/chunks/<name>.<hash>.js`): the English catalogs
+ *  (`en`, `en-<part>`: lib/i18n's *.en.json, loaded only with English on) and the wedding board's sheet (`wedding`), so
+ *  the service worker leaves them out of its precache (caches.ts carried: kept once used, an install carrying a changed
+ *  one by its name, as ききみみ's parts). Not トレイル's: a trail never opened works offline on the mountain
+ *  (offline.spec). A chunk is named only if all of it is the feature's; nothing outside the feature imports one
+ *  statically (the bundle's check). */
+const FEATURE_CHUNK: [RegExp, (m: RegExpExecArray) => string][] = [
+  // (not catch.en.json: the museum's plates show both names, imported with it)
+  [/\/src\/lib\/i18n\/(?:((?!catch\.)[\w-]+)\.)?en\.json$/, (m) => (m[1] ? `en-${m[1]}` : 'en')],
+  [/\/src\/lib\/(?:components\/)?wedding\/|\/src\/lib\/i18n\/wedding\.(?:ts|ja\.json)$|\/src\/lib\/contract\/wedCats\.ts$/, () => 'wedding']
+];
+/** A chunk's feature: all its modules one feature's (or a package's only it uses: svelte/transition with the board). */
+const featureOf = (ids: readonly string[]): string | null => {
+  let name: string | null = null;
+  for (const id of ids) {
+    if (id.includes('/node_modules/')) continue;
+    const hit = FEATURE_CHUNK.map(([re, f]) => ((m) => m && f(m))(re.exec(id.split('?')[0]))).find((n) => n);
+    if (!hit || (name && name !== hit)) return null;
+    name = hit;
+  }
+  return name;
+};
+const featureNames: Plugin = {
+  name: 'feature-names',
+  applyToEnvironment: (env) => env.name === 'client',
+  outputOptions(o) {
+    const chunk = o.chunkFileNames;
+    if (typeof chunk !== 'function') throw new Error("vite.config.ts feature-names: Kit's client chunk names changed; recheck the features' names");
+    return {
+      ...o,
+      chunkFileNames: (c) => {
+        const name = featureOf(c.moduleIds);
+        return name ? chunk(c).replace('[hash]', `${name}.[hash]`) : chunk(c);
+      }
+    };
+  },
+  generateBundle(_, bundle) {
+    // (a feature's own: its chunks, the English ones each other's)
+    const groupOf = (f: string) => /(?:^|\/)(en|wedding)(?:-[\w-]+)?\.[\w-]+\.js$/.exec(f)?.[1] ?? null;
+    const chunks = Object.values(bundle).filter((c) => c.type === 'chunk');
+    for (const want of ['en', 'wedding']) if (!chunks.some((c) => groupOf(c.fileName) === want)) throw new Error(`vite.config.ts feature-names: no ${want} chunk named; recheck FEATURE_CHUNK`);
+    for (const c of chunks) {
+      const bad = c.imports.find((f) => groupOf(f) && groupOf(f) !== groupOf(c.fileName));
+      if (bad) throw new Error(`vite.config.ts feature-names: ${c.fileName} imports ${bad} statically (offline before it's used, it wouldn't load); load the feature lazily`);
+    }
+  }
+};
+
 /** ききみみ's recogniser (lib/mic/backends/whisper.worker.ts: transformers.js and the ONNX runtime's JS, ~1 MB) under a
  *  stable name (`_app/immutable/workers/stt.<hash>.js`, a split chunk `workers/chunks/stt.<hash>.js`), so the service
  *  worker leaves it out of its precache and serves it from the recogniser's own cache (caches.ts isStt). A worker's
@@ -232,6 +280,7 @@ export default defineConfig({
     mapLibreNames,
     basisModule,
     kikiPartNames,
+    featureNames,
     sveltekit({
       adapter: adapterStatic({ pages: 'build-pages', assets: 'build-pages', fallback: 'index.html', strict: false }),
       version: { name: appVersion() },

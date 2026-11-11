@@ -90,9 +90,14 @@ export type RoomIndex = Record<string, [bytes: number, usedAt: number]>;
  *  let go at once. */
 const isSlice = (u: string): boolean => new URL(u, 'https://x/').searchParams.has('s');
 
+/** A pack unused this long goes whatever the bound (room/pack/, room/player/: `<group>.<hash>.pak`, so a repack's
+ *  new names left the old packs behind, never asked for again, up to ~35 MB a phone till the bound; a pack still in
+ *  use but not asked for this long is 64 KB to 1.2 MB fetched again). */
+export const PAK_UNUSED_MS = 7 * 24 * 3600_000;
+
 /** Which of the room cache's entries go (`index` in any order): a file's older versions (the same path under another
- *  `?v=`, used less recently: a re-converted model, never asked for again) and a pack's old slices, then, while the
- *  rest is over `cap`, the least recently used, never one used within `keepMs`. */
+ *  `?v=`, used less recently: a re-converted model, never asked for again), a pack's old slices and a pack unused for
+ *  PAK_UNUSED_MS, then, while the rest is over `cap`, the least recently used, never one used within `keepMs`. */
 export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, keepMs = ROOM_KEEP_MS): string[] {
   const urls = Object.keys(index);
   const pathOf = (u: string) => new URL(u, 'https://x/').pathname;
@@ -101,7 +106,7 @@ export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, k
     const p = pathOf(u), n = newest.get(p);
     if (!isSlice(u) && (!n || index[u][1] >= index[n][1])) newest.set(p, u);
   }
-  const out = new Set(urls.filter((u) => newest.get(pathOf(u)) !== u));
+  const out = new Set(urls.filter((u) => newest.get(pathOf(u)) !== u || (pathOf(u).endsWith('.pak') && now - index[u][1] > PAK_UNUSED_MS)));
   let total = 0;
   for (const u of urls) if (!out.has(u)) total += index[u][0];
   const old = urls.filter((u) => !out.has(u) && now - index[u][1] > keepMs).sort((a, b) => index[a][1] - index[b][1]);
@@ -339,31 +344,37 @@ const isMapLibre = (path: string): boolean => /\/_app\/immutable\/(chunks\/mapli
  *  part is of no use offline without its audio pack, which LISTEN_CACHE keeps on first use too), but kept in the shell
  *  the first time a game loads it, and carried by each install after that (a changed part fetched by its name). */
 export const isKikiPart = (path: string): boolean => /\/_app\/immutable\/chunks\/kiki-[\w-]+\.[\w-]+\.js$/.test(path);
-/** A part's name (`kiki-<part>`) in a chunk's path or URL, else null. */
-export const kikiPartOf = (path: string): string | null => /\/_app\/immutable\/chunks\/(kiki-[\w-]+)\.[\w-]+\.js$/.exec(path)?.[1] ?? null;
-/** The build files kept in the shell on first use and carried by each install (MapLibre, ききみみ's parts): listed in
- *  the worker's manifest though not precached (vite.config.ts swPrecacheOnly). */
+/** What a phone may never open (vite.config.ts feature-names): the English catalogs' chunks (`en`, `en-<part>`: only
+ *  with English on) and the wedding board's (`wedding`). Not precached (~0.1 MB on the wire, and the English ones
+ *  change with every string): kept once used, and carried by each install after that, as ききみみ's parts. */
+const isFeatureChunk = (path: string): boolean => /\/_app\/immutable\/chunks\/(en(-[\w-]+)?|wedding)\.[\w-]+\.js$/.test(path);
+/** A carried chunk's name (`kiki-<part>`, `en-<part>`, `wedding`: one name for all the board's chunks) in its path or
+ *  URL, else null. */
+export const carriedNameOf = (path: string): string | null =>
+  /(?:^|\/)_app\/immutable\/chunks\/(kiki-[\w-]+|en(?:-[\w-]+)?|wedding)\.[\w-]+\.js$/.exec(path)?.[1] ?? null;
+/** The build files kept in the shell on first use and carried by each install (MapLibre, ききみみ's parts, the
+ *  features above): listed in the worker's manifest though not precached (vite.config.ts swPrecacheOnly). */
 export const carried = (path: string): boolean => {
   const p = path.startsWith('/') ? path : `/${path}`;
-  return isMapLibre(p) || isKikiPart(p);
+  return isMapLibre(p) || isKikiPart(p) || isFeatureChunk(p);
 };
 
 /**
  * What an install does with this build's carried files (`files`, as the manifest lists them) given what the older
  * shells hold (`held`: their URLs or paths): `copy` the ones they hold as they are; `fetch` the changed ones a phone
- * uses: all of MapLibre's once a map has drawn (any of its files held), and a ききみみ part whose name is held (another
- * build's copy). The rest wait for first use.
+ * uses: all of MapLibre's once a map has drawn (any of its files held), and a ききみみ part or a feature's chunk whose
+ * name is held (another build's copy). The rest wait for first use.
  */
 export function carryPlan(files: readonly string[], held: readonly string[]): { copy: string[]; fetch: string[] } {
   const path = (u: string) => (/^https?:/.test(u) ? new URL(u).pathname : u.startsWith('/') ? u : `/${u}`);
   const have = new Set(held.map(path));
-  const names = new Set([...have].map(kikiPartOf).filter((n) => n !== null));
+  const names = new Set([...have].map(carriedNameOf).filter((n) => n !== null));
   const map = [...have].some(isMapLibre);
   const copy: string[] = [], fetch: string[] = [];
   for (const f of files) {
     const p = path(f);
     if ([...have].some((h) => h.endsWith(p))) copy.push(f);
-    else if (isMapLibre(p) ? map : names.has(kikiPartOf(p) ?? '')) fetch.push(f);
+    else if (isMapLibre(p) ? map : names.has(carriedNameOf(p) ?? '')) fetch.push(f);
   }
   return { copy, fetch };
 }
@@ -416,6 +427,14 @@ export async function installStatics(files: readonly StaticFile[], cache: Pick<C
   return { copied, fetched };
 }
 
+/** The font cache's entries (`keys`, URLs) this build's style sheets (`css`: the shell's, all of them) don't name: a
+ *  re-subset's old slices (hashed names: never asked for again), ~3.6 MB a generation. None when the sheets name no
+ *  font at all (something else is wrong: keep everything). */
+export function staleFonts(keys: readonly string[], css: string): string[] {
+  if (!/\.woff2?\b/.test(css)) return [];
+  return keys.filter((u) => !css.includes(new URL(u, 'https://x/').pathname.split('/').pop()!));
+}
+
 /** The font slices precached (Zen Maru Gothic's 500 and 700, src/lib/styles/fonts.css; Fredoka's Latin): the ones
  *  holding ~99% of the characters the app's own strings show (scripts/font-subsets.ts's count), ~0.7 MB. The other
  *  slices (rare kanji, the map's labels) are cached on first use (FONTS). */
@@ -435,11 +454,11 @@ const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/;
  *  (`art/…`, `audio/…`), so they are matched with a leading slash. Not precached: the font slices but the common ones
  *  (PRECACHED_FONT_SLICES; the rest cached on first use),
  *  the bundled art and audio manifests, every villager but the defaults, every critter, find and present (all cached
- *  on first use), all audio (AUDIO_CACHE, on first play; ききみみ's packs LISTEN_CACHE, on first use), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the food pictures (FOOD_IMG_CACHE, on first use), the guides' photos but the trips' covers and the trails' tracks, and the wedding's banner (PHOTO_CACHE), the maps' MapLibre and ききみみ's parts (carried: kept once used), the recogniser (stt/, STT_CACHE), the app icons and macOS
+ *  on first use), all audio (AUDIO_CACHE, on first play; ききみみ's packs LISTEN_CACHE, on first use), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the food pictures (FOOD_IMG_CACHE, on first use), the guides' photos but the trips' covers and the trails' tracks, and the wedding's banner (PHOTO_CACHE), the maps' MapLibre, ききみみ's parts and the features a phone may never open (carried: kept once used), the recogniser (stt/, STT_CACHE), the app icons and macOS
  *  litter. */
 export function precachable(path: string): boolean {
   const p = path.startsWith('/') ? path : `/${path}`;
-  if ((isFont(p) && !PRECACHED_FONT.test(p)) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isFoodData(p) || isFoodImg(p) || isGuidePhoto(p) || isMapLibre(p) || isKikiPart(p) || isStt(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
+  if ((isFont(p) && !PRECACHED_FONT.test(p)) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isFoodData(p) || isFoodImg(p) || isGuidePhoto(p) || isMapLibre(p) || isKikiPart(p) || isFeatureChunk(p) || isStt(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
   return !isVillagerArt(p) || PRECACHED_VILLAGERS.test(p);
 }
 

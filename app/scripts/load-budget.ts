@@ -19,7 +19,8 @@ const MANIFEST = join(APP, '.svelte-kit/output/client/.vite/manifest.json');
  *  games' pages (ロールプレイ's took it past 3.5); 2.88 MB with ききみみ's parts (levels/parts/*.json's chunks, 0.69 MB:
  *  useless offline without their audio packs, which aren't precached either) kept on first use instead (caches.ts
  *  isKikiPart), so the cap back to 3 MB; 2.94 → 2.61 MB with the wedding's and the trips' heroes cached on first view
- *  (2026-11-09: caches.ts isGuidePhoto). */
+ *  (2026-11-09: caches.ts isGuidePhoto); 2.95 → 2.85 MB with the English catalogs and the wedding board carried
+ *  once used (2026-11-11: caches.ts carried). */
 const FIRST_JS = 400 * 1024;
 const FIRST_CSS = 70 * 1024;
 const PRECACHE = 3 * 1024 * 1024;
@@ -106,6 +107,9 @@ for (const f of stt) if (first.has(f) || precachable(f)) fail.push(`${f} (the re
 const parts = readdirSync(join(BUILD, '_app/immutable/chunks')).filter((f) => /^kiki-/.test(f)).map((f) => `_app/immutable/chunks/${f}`);
 if (!parts.length) fail.push('no ききみみ part chunks (_app/immutable/chunks/kiki-*.js; vite.config.ts kiki-part-names)');
 for (const f of parts) if (first.has(f) || precachable(f)) fail.push(`${f} (a ききみみ part) is in the first load or the precache`);
+// what a phone may never open (the English catalogs, the wedding board: vite.config.ts feature-names): carried
+const feats = readdirSync(join(BUILD, '_app/immutable/chunks')).filter((f) => /^(en|en-[\w-]+|wedding)\./.test(f)).map((f) => `_app/immutable/chunks/${f}`);
+for (const f of feats) if (first.has(f) || precachable(f)) fail.push(`${f} (a feature carried once used) is in the first load or the precache`);
 
 // the precache: what the worker fetches at install (its index.html and its own script aside)
 let pre = 0, preFiles = 0;

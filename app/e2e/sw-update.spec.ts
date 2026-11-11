@@ -226,6 +226,51 @@ test('a slow install is waited for (no reload before its worker is in); a static
   expect(Number(reloadAt)).toBeGreaterThanOrEqual(Number(changed));
 });
 
+// The features a phone may never open (caches.ts carried: the English catalogs, the wedding board) aren't
+// precached: kept in the shell when first used, carried by a deploy's install, there offline after it. The font cache
+// (FONTS) let go of the slices the new build's style sheets no longer name (a re-subset's), at its activation.
+test('the wedding board kept once opened and carried by a deploy (offline after); the font cache trimmed at activation', { tag: '@chromium' }, async ({ page, context }) => {
+  test.setTimeout(120_000);
+  const warm = await warmed(page);
+  await page.goto('?demo');
+  await islandUp(page);
+  await controlled(page);
+  await warm();
+  /** The newest shell's chunks named for a feature (vite.config.ts feature-names). */
+  const shellHas = (name: string) => page.evaluate(async (n) => {
+    const key = (await caches.keys()).filter((k) => k.startsWith('island-shell-')).at(-1)!;
+    return (await (await caches.open(key)).keys()).filter((r) => new RegExp(`/chunks/${n}\\.[\\w-]+\\.js$`).test(r.url)).length;
+  }, name);
+  expect([await shellHas('wedding'), await shellHas('en')], 'not precached').toEqual([0, 0]);
+  await fromMenu(page, 'wedding');
+  await expect.poll(() => shellHas('wedding'), { timeout: 10_000, message: 'kept on first use' }).toBeGreaterThan(0);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  // the font cache: a slice no style sheet names (an older subset's) and one they do
+  const fonts = () => page.evaluate(async () => (await (await caches.open('island-fonts-v1')).keys()).map((r) => r.url.split('/').pop()!));
+  const named = await page.evaluate(async () => {
+    const css = [...document.styleSheets].flatMap((s) => { try { return [...s.cssRules].map((r) => r.cssText); } catch { return []; } }).join('\n');
+    const file = /zen-maru-gothic-[\w-]+\.[\w-]+\.woff2/.exec(css)![0];
+    const c = await caches.open('island-fonts-v1'), dir = new URL('_app/immutable/assets/', (await navigator.serviceWorker.getRegistration())!.scope).href;
+    for (const f of [file, 'zen-maru-gothic-0-500-normal.0ld0ld00.woff2']) await c.put(dir + f, new Response('font', { headers: { 'content-type': 'font/woff2' } }));
+    return file;
+  });
+  expect(await fonts()).toEqual(expect.arrayContaining([named, 'zen-maru-gothic-0-500-normal.0ld0ld00.woff2']));
+  const reloaded = page.waitForEvent('framenavigated', { timeout: 60_000 });
+  await deploy(page, context);
+  await reloaded;
+  await context.unroute('**/_app/version.json');
+  await expect(hudMenu(page)).toBeVisible();
+  expect(await page.evaluate(() => sessionStorage.getItem('e2e.swChanged')), 'the new worker claimed the page').not.toBeNull();
+  expect(await shellHas('wedding'), "carried into the new worker's shell").toBeGreaterThan(0);
+  await expect.poll(fonts, { timeout: 10_000 }).not.toContain('zen-maru-gothic-0-500-normal.0ld0ld00.woff2');
+  expect(await fonts()).toContain(named);
+  await context.setOffline(true);
+  await fromMenu(page, 'wedding');
+  await expect(page.locator('dialog[open] [data-wed-tab="plan"]')).toBeVisible();
+  await context.setOffline(false);
+});
+
 test('the room cache: a file\'s older version goes, and a cache from before the index is counted whole', { tag: '@chromium' }, async ({ page, context }) => {
   test.setTimeout(90_000);
   await page.goto('?demo');

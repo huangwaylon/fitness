@@ -497,7 +497,8 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 - **Install:** precaches the built JS/CSS and what `caches.ts precachable` keeps (the rest on first use); the hashed
   chunks all or nothing (`addAll`), the static files by content hash (`caches.ts installStatics`).
 - **Activate:** keeps the current shell (`island-shell-<version>`), the previous one (an old page loads its lazy chunks
-  from it), the runtime caches and the saved areas; deletes the rest.
+  from it), the runtime caches and the saved areas; deletes the rest, and the font slices the new build's style sheets
+  no longer name (`caches.ts staleFonts`: a re-subset's).
 - **Navigations:** this version's cached shell at once (`caches.ts isShellOf`); none yet: network first, an older
   shell offline or after 3 s.
 - **Updates:** Kit's `_app/version.json` check sets `updated`; the layout waits for the new build's worker
@@ -506,7 +507,8 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 - **Packs** (the players' and ききみみ's): fetched whole (Pages answers a Range with the whole file), one fetch at a
   time a URL (`caches.ts fetchShared`).
 - **Room cache** (`island-room-v1`: the models, the players' parts and packs): cache-first, outliving builds, a file's
-  older `?v=` dropped at once, then least recently used past `ROOM_CAP_BYTES` (`roomEvict`).
+  older `?v=` dropped at once, a `.pak` unused for `PAK_UNUSED_MS` (7 days: a repack's old names) whatever the bound,
+  then least recently used past `ROOM_CAP_BYTES` (`roomEvict`).
 - **Art cache** (`island-villagers-v1`: the villagers', critters', finds', ground's and decor's art): least recently
   used past `ART_CAP_BYTES`.
 - **Listen cache** (`island-listen-v1`, [kikimimi-engine.md](kikimimi-engine.md#playback)): cache first, never revalidated, outliving
@@ -520,9 +522,10 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
     and the trail tracks.
   - *Photos* (`island-photos-v1`): stale-while-revalidate once a day old (`swrFetch`), bounded (`PHOTO_CAP_BYTES`); one
     that can't load is the paper placeholder (`ui/photoFallback.ts`).
-  - *MapLibre* and *ききみみ's parts*: into this version's shell the first time they load, carried on by each install
-    (`caches.ts carryPlan`); offline they import only if a shell holds them (`travel/map/cached.ts`, `pool.ts`), and a
-    game never played says オフラインです.
+  - *MapLibre*, *ききみみ's parts* and *what a phone may never open* (the English catalogs, the wedding board's sheet:
+    vite.config.ts `feature-names`): into this version's shell the first time they load, carried on
+    by each install (`caches.ts carryPlan`); offline they import only if a shell holds them (`travel/map/cached.ts`,
+    `pool.ts`), and a game never played says オフラインです.
   - *Tiles* (`island-tiles-v1`: OpenFreeMap, USGS, GSI): stale-while-revalidate past `TILE_FRESH_MS`, bounded
     (`bytesEvict`), fetched by the page (`travel/map/tiles.ts`: WebKit's worker doesn't see MapLibre's worker's
     fetches), the saved areas first.

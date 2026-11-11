@@ -3,7 +3,7 @@
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
-import { ART_CAP_BYTES, ART_KEEP_MS, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, isShellOf, fetchShared, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, keepShell, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
+import { ART_CAP_BYTES, ART_KEEP_MS, foodImgEvict, fetchKeep, MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, isShellOf, fetchShared, staleFonts, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, keepShell, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse, warmable } from './caches.ts';
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -92,6 +92,16 @@ self.addEventListener('activate', (event) => {
     (async () => {
       for (const key of staleCaches(await caches.keys(), CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, STT_CACHE, PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE])) await caches.delete(key); // (never a saved area: caches.ts isSavedArea)
       await self.clients.claim();
+      // the font slices this build's style sheets no longer name (a re-subset's: caches.ts staleFonts); never a failed
+      // activation over it
+      try {
+        const shell = await caches.open(CACHE), fonts = await caches.open(FONTS);
+        const sheets = (await shell.keys()).filter((r) => new URL(r.url).pathname.endsWith('.css'));
+        const css = (await Promise.all(sheets.map(async (r) => (await shell.match(r))?.text() ?? ''))).join('\n');
+        for (const u of staleFonts((await fonts.keys()).map((r) => r.url), css)) await fonts.delete(u);
+      } catch {
+        /* kept till the next activation */
+      }
     })()
   );
 });

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fetchKeep, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, kikiPartOf, keepable, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
+import { fetchKeep, contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, carriedNameOf, keepable, PAK_UNUSED_MS, staleFonts, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgEvict, foodImgFetch, foodImgStale, FOOD_IMG_CAP_BYTES, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, fetchShared, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, warmable, WARM_MAX, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -91,10 +91,23 @@ describe('precache', () => {
   });
   it("leaves ききみみ's parts out (levels/parts/*.json's chunks): kept once a game loads them, carried with MapLibre", () => {
     for (const p of ['_app/immutable/chunks/kiki-lv4-1.DjWTDWF4.js', '/fitness/_app/immutable/chunks/kiki-s2-call-b.CpMVfY-b.js']) expect([isKikiPart(p.replace(/^\/?/, '/')), precachable(p), carried(p)]).toEqual([true, false, true]);
-    expect([kikiPartOf('https://x.test/fitness/_app/immutable/chunks/kiki-lv4-1.DjWTDWF4.js'), kikiPartOf('/_app/immutable/chunks/DjWTDWF4.js')]).toEqual(['kiki-lv4-1', null]);
+    expect([carriedNameOf('https://x.test/fitness/_app/immutable/chunks/kiki-lv4-1.DjWTDWF4.js'), carriedNameOf('/_app/immutable/chunks/DjWTDWF4.js')]).toEqual(['kiki-lv4-1', null]);
     // ききみみ's code (its sheet, pages, lanes) stays precached; so does a chunk merely named like one
     for (const p of ['_app/immutable/chunks/Ckfv2d2q.js', '_app/immutable/assets/KikimimiSheet.x1.css', '_app/immutable/chunks/kikimimi.Ab1.js']) expect([precachable(p), carried(p)]).toEqual([true, false]);
     expect(carried('_app/immutable/chunks/maplibre.D4lzds31.js')).toBe(true);
+  });
+  it('leaves the features a phone may never open out (the English catalogs, the wedding board): kept once used', () => {
+    const feats = ['_app/immutable/chunks/en.Ba527raq.js', '/fitness/_app/immutable/chunks/en-kiki-call.DVtnZiTH.js', '_app/immutable/chunks/wedding.DQVcQLzo.js'];
+    for (const p of feats) expect([precachable(p), carried(p)]).toEqual([false, true]);
+    expect(feats.map(carriedNameOf)).toEqual(['en', 'en-kiki-call', 'wedding']);
+    // their CSS, the menu's openers and a chunk merely named like one stay
+    for (const p of ['_app/immutable/assets/WeddingSheet.x1.css', '_app/immutable/chunks/Co_ed_l8.js', '_app/immutable/chunks/weddings.Ab1.js', '_app/immutable/chunks/enx.Ab1.js', '_app/immutable/chunks/hiking.Ab1.js']) expect([precachable(p), carried(p)]).toEqual([true, false]);
+  });
+  it('an install fetches a changed feature chunk by its name (the board: all of its chunks), the rest at first use', () => {
+    const files = ['_app/immutable/chunks/en.N1.js', '_app/immutable/chunks/en-food.N2.js', '_app/immutable/chunks/en-tent.N5.js', '_app/immutable/chunks/wedding.N3.js', '_app/immutable/chunks/wedding.N4.js'];
+    const old = (p: string) => `https://x.test/_app/immutable/chunks/${p}`;
+    expect(carryPlan(files, [old('en.O1.js'), old('wedding.O3.js'), old('en-tent.N5.js')]))
+      .toEqual({ copy: ['_app/immutable/chunks/en-tent.N5.js'], fetch: ['_app/immutable/chunks/en.N1.js', '_app/immutable/chunks/wedding.N3.js', '_app/immutable/chunks/wedding.N4.js'] });
   });
   it("an install copies the carried files an older shell holds, fetches a changed part by name and MapLibre's once a map drew", () => {
     const files = ['_app/immutable/chunks/kiki-lv1.NEW1.js', '_app/immutable/chunks/kiki-lv2.SAME.js', '_app/immutable/chunks/kiki-lv4.NEW4.js', '_app/immutable/chunks/maplibre.M2.js', '_app/immutable/assets/maplibre.C1.css'];
@@ -556,8 +569,22 @@ describe('the room cache\'s bound (roomEvict)', () => {
   it('a player\'s pack is never precached; a part\'s old slice (?s=from-to, till 2026-11-10) goes at once', () => {
     expect(precachable('room/player/everyday.1a2b3c4d.pak')).toBe(false);
     const P = `${R}player/top-3.aaaaaaaa.pak`;
-    const idx: RoomIndex = { [`${P}?s=0-99`]: [100, now - 50 * day], [`${P}?s=100-199`]: [100, now], [P]: [600_000, now - 60 * day], [`${R}player/hat.bbbbbbbb.pak?s=0-9`]: [10, now] };
+    const idx: RoomIndex = { [`${P}?s=0-99`]: [100, now - 50 * day], [`${P}?s=100-199`]: [100, now], [P]: [600_000, now - 6 * day], [`${R}player/hat.bbbbbbbb.pak?s=0-9`]: [10, now] };
     expect(roomEvict(idx, now).sort()).toEqual([`${R}player/hat.bbbbbbbb.pak?s=0-9`, `${P}?s=0-99`, `${P}?s=100-199`]);
+  });
+  it('a pack unused for 7 days goes whatever the bound (a repack renamed its groups, leaving the old ones); a model stays', () => {
+    const idx: RoomIndex = {
+      [`${R}pack/wall.2724d759.pak`]: [320_000, now - PAK_UNUSED_MS - 1], [`${R}pack/m-wall-19.8e75d3b0.pak`]: [64_000, now - PAK_UNUSED_MS + 1000],
+      [`${R}player/everyday.1a2b3c4d.pak`]: [333_000, now - 8 * day], [`${R}models/a.glb?v=1`]: [10, now - 60 * day]
+    };
+    expect(roomEvict(idx, now).sort()).toEqual([`${R}pack/wall.2724d759.pak`, `${R}player/everyday.1a2b3c4d.pak`]);
+  });
+  it('the font cache: the slices the build’s style sheets no longer name go (a re-subset); none if they name no font', () => {
+    const F = 'https://x/fitness/_app/immutable/assets/';
+    const keys = [`${F}zen-maru-gothic-93-500-normal.AAA.woff2`, `${F}zen-maru-gothic-93-500-normal.OLD.woff2`, `${F}zen-maru-gothic-90-700-normal.BBB.woff2`];
+    const css = "@font-face{src:url(/fitness/_app/immutable/assets/zen-maru-gothic-93-500-normal.AAA.woff2) format('woff2')}@font-face{src:url(./zen-maru-gothic-90-700-normal.BBB.woff2)}";
+    expect(staleFonts(keys, css)).toEqual([keys[1]]);
+    expect(staleFonts(keys, 'body{color:red}')).toEqual([]);
   });
 });
 
