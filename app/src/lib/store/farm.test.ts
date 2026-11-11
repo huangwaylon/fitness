@@ -8,7 +8,8 @@ import { FARM, type FarmOp } from '#lib/contract/farm.ts';
 interface Held { type: string; data: { d: string; ops: FarmOp[] }; holdMs: number; at: number; undone: boolean }
 const fake = vi.hoisted(() => ({ week: { demo: false as false | 'plain', model: {} as object | null, send: (() => ({ ok: false })) as (...a: never[]) => unknown } }));
 vi.mock('./week.svelte.ts', () => fake);
-const { dig, harvest, pickSeed, plant, seed } = await import('./farm.svelte.ts');
+const { dig, digMany, harvest, harvestAll, pickSeed, plant, plantMany, seed, waterAll } = await import('./farm.svelte.ts');
+const { world } = await import('./world.svelte.ts');
 
 class Mem implements KV {
   m = new Map<string, string>();
@@ -96,6 +97,40 @@ describe('the farm batch', () => {
     vi.advanceTimersByTime(5000);
     expect(r.undo!()).toBe(false);
     expect(sent()).toEqual([{ d: D, ops: [{ o: 'dig', p: p(0) }] }]);
+  });
+});
+
+describe('the 畑 sheet’s batches', () => {
+  const plants = (ks: number[]) => ks.map((k) => ({ o: 'plant', p: p(k), c: 'tomato', src: 'start' }));
+  it('join a tap’s held batch; their 取り消す takes back only theirs, the tap’s goes', () => {
+    plant(D, p(0), 'tomato', 'start');
+    const r = harvestAll(D, [{ p: p(1), n: 3 }, { p: p(2), n: 1 }]);
+    expect(sends.at(-1)!.data.ops).toHaveLength(3);
+    expect(sends.at(-1)!.holdMs).toBe(5000);
+    expect(r.undo!()).toBe(true);
+    vi.advanceTimersByTime(5000);
+    expect(sent()).toEqual([{ d: D, ops: plants([0]) }]);
+  });
+  it('a batch past the held one’s room is its own event; the plan’s 40 plants one, taken back whole', () => {
+    plant(D, p(0), 'tomato', 'start');
+    const r = plantMany(D, Array.from({ length: FARM.batchMax }, (_, k) => p(k + 1)), 'tomato', 'start');
+    expect(sends.at(-1)!.data.ops).toHaveLength(FARM.batchMax);
+    expect(r.undo!()).toBe(true);
+    vi.advanceTimersByTime(5000);
+    expect(sent()).toEqual([{ d: D, ops: plants([0]) }]);
+  });
+  it('digMany: the plants off the field back to starts, one event', () => {
+    digMany(D, [p(0), p(1)]);
+    vi.advanceTimersByTime(5000);
+    expect(sent()).toEqual([{ d: D, ops: [{ o: 'dig', p: p(0) }, { o: 'dig', p: p(1) }] }]);
+  });
+  it('waterAll: today’s shared day, what was new', () => {
+    world.reset();
+    world.attach(null, 'A');
+    expect(waterAll([p(0), p(1)])).toBe(2);
+    expect(waterAll([p(1), p(2)])).toBe(1);
+    expect(Object.keys(world.day.watered).sort()).toEqual([p(0), p(1), p(2)]);
+    world.reset();
   });
 });
 

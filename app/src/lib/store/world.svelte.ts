@@ -22,6 +22,9 @@ import { dayKey, now } from '#lib/time/clock.ts';
 const LIVE_MS = 12_000;
 /** Kept for a day: at most this many changes. */
 const MAX = 600;
+/** A batch of mine goes to the relay at most this many a second (its bucket: relay/src/room.ts BURST 20, PER_SEC 20,
+ *  over it `busy` and backoffs), the rest of the room's traffic (a walk, a catch) under it still. */
+const DRIP = 15;
 
 interface WorldNews {
   e: DayEvent;
@@ -431,6 +434,31 @@ class SharedWorld {
     return a;
   }
 
+  /** Several shared-world changes of mine at once (the 畑 sheet's 水やり: a field's plants), each folded and kept as
+   *  `share`'s, with one `rev` and one row for them all; to the relay DRIP a second. How many were new. */
+  shareMany(list: readonly Extract<Shared, { kind: 'world' }>[]): number {
+    const me = this.#me ?? 'A', t = this.now(), d = this.#today();
+    const out: Shared[] = [];
+    for (const i of list) {
+      const e = { ...i, who: me, t } as DayEvent;
+      if (!apply(d, e, this.#me).fresh) continue;
+      this.#keep(e);
+      out.push(i);
+    }
+    if (!out.length) return 0;
+    this.rev++;
+    this.#sendRow();
+    this.#drip.push(...out);
+    if (!this.#dripping) this.#dripOn();
+    return out.length;
+  }
+  #drip: Shared[] = [];
+  #dripping: ReturnType<typeof setTimeout> | null = null;
+  #dripOn(): void {
+    for (const i of this.#drip.splice(0, DRIP)) this.#relay?.send(i);
+    this.#dripping = this.#drip.length ? setTimeout(() => this.#dripOn(), 1000) : null;
+  }
+
   /** The partner's changes as they arrive (and the day's when this phone opens: not `live`). */
   on(fn: (n: WorldNews) => void): () => void {
     this.#subs.add(fn);
@@ -451,6 +479,9 @@ class SharedWorld {
     this.#rowWaits = false;
     this.#recordRows = null;
     this.#events = [];
+    this.#drip = [];
+    if (this.#dripping) clearTimeout(this.#dripping);
+    this.#dripping = null;
     this.#subs.clear();
     this.#hearSubs.clear();
     this.#ackSubs.clear();
