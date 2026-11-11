@@ -5,7 +5,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { StoreCore } from '../src/store.ts';
 import { sellPrice } from '../../app/src/lib/contract/shop.ts';
-import { FARM } from '../../app/src/lib/contract/farm.ts';
+import { emptyFarm, FARM, farmStep, type Watered } from '../../app/src/lib/contract/farm.ts';
 import { gameWet } from '../../app/src/lib/contract/wet.ts';
 import { memSql } from './sqlite.ts';
 
@@ -149,6 +149,43 @@ describe('the fields in the record', () => {
     expect(farm('G', D3, [{ o: 'harvest', p: P1, n: 1 }])).toEqual({ ok: true });
     expect(farm('G', D3, [plant(P2, 'carrot', 'crop')])).toEqual({ ok: true }); // the vegetable replanted
     expect(sell('G', 'goods:carrot', 1)).toEqual(refused('pocket short'));
+  });
+
+  it('a phone’s queued harvest reckons the yield the record keeps, over the same rows', () => {
+    // six plants, watered every way the two days before they ripen: none, the first, the second, both (two people),
+    // and one growing back after a harvest over a wet day and a watering
+    const ps = [0, 1, 2, 3, 4, 5].map((c) => `fd:field-A.${c}.0`);
+    shells('A', 6 * FARM.startBuy);
+    starts('A', 'wheat', 6);
+    farm('A', D, ps.map((p) => plant(p, 'wheat')));
+    now += DAY;
+    water('A', D1, [ps[1], ps[3]]);
+    water('B', D1, [ps[3]]);
+    now += DAY;
+    water('G', D2, [ps[2], ps[3]]);
+    now += DAY;
+    farm('A', D3, [{ o: 'harvest', p: ps[5], n: 1 }]);
+    now += DAY;
+    store.wetTick(['2026-11-08']);
+    now += DAY;
+    water('B', '2026-11-09', [ps[5]]);
+    now += DAY;
+    // the phone: the field folded from the kept rows, the waterings from the island days and the wet days (as
+    // model/farm.ts farmOfState and wateredOf: the relay never imports the model), its batch judged by farmStep
+    const snap = (store.handle({ key: KEY_A, action: 'snapshot' }, 10) as Record<string, any>).rows.events as [string, W, string, string, string][];
+    const f = emptyFarm(), days = new Map<string, Set<string>>(), wet = new Set<string>();
+    for (const [, who, , type, raw] of snap) {
+      const x = JSON.parse(raw);
+      if (type === 'farm') farmStep(f, who, x);
+      if (type === 'island') for (const id of x.watered) (days.get(x.date) ?? days.set(x.date, new Set()).get(x.date)!).add(id);
+      if (type === 'wet') wet.add(x.date);
+    }
+    const watered: Watered = (p, date) => wet.has(date) || (days.get(date)?.has(p) ?? false);
+    const batch = { d: '2026-11-10', ops: ps.map((p) => ({ o: 'harvest' as const, p, n: 1 })) };
+    const queued = farmStep(f, 'A', batch, { watered, pocket: () => Infinity })!;
+    expect(farm('A', batch.d, batch.ops)).toEqual({ ok: true });
+    expect(rows().at(-1)).toEqual(queued);
+    expect(queued.ops.map((o) => (o.o === 'harvest' ? o.n : 0))).toEqual([1, 2, 2, 3, 1, 3]);
   });
 
   it('the running ledgers and the field match their fold from the rows', () => {

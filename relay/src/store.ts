@@ -809,7 +809,7 @@ export class StoreCore {
       const was = (type === 'tally' || type === 'tally_back') && slot ? this.slotTally(slot) : null;
       this.put(id, at, me, type, kept, slot, null);
       if (type === 'tally' || type === 'tally_back' || isShopEvent(type)) this.shopNote(me, type, kept, was);
-      if (farm) this.farmNote(me, farm.f);
+      if (farm) this.farmNote(me, farm.f, farm.before);
       if (type === 'decor') this.decorNote(me, data, wasDecor);
       return { ok: true, at };
     });
@@ -1172,9 +1172,10 @@ export class StoreCore {
 
   /** A farm batch of `me`'s judged against the field and their pocket (their running shop ledger: tallies and the
    *  field's goods less sold, with the starts bought), the waterings the island days hold and the wet days: the field
-   *  after it and the row as kept, or null when no op stands. */
-  private farmKept(me: Who, d: Rec): { f: Farm; data: FarmData } | null {
+   *  after it, the row as kept and `me`'s field net before it (farmNote's), or null when no op stands. */
+  private farmKept(me: Who, d: Rec): { f: Farm; data: FarmData; before: ReadonlyMap<string, number> } | null {
     const f = this.farmState(), st = this.shopState(me);
+    const before = new Map(f.net[me]);
     const days = new Map<string, Set<string> | true>();
     const watered = (p: string, date: string): boolean => {
       let w = days.get(date);
@@ -1182,7 +1183,7 @@ export class StoreCore {
       return w === true || w.has(p);
     };
     const data = farmStep(f, me, farmOf(d)!, { watered, pocket: (k) => (st.caught.get(k) ?? 0) - (st.l.sold.get(k) ?? 0) });
-    return data ? { f, data } : null;
+    return data ? { f, data, before } : null;
   }
 
   /** What was watered on `date`: everything (a wet day), else the plots in anyone's island day of it. */
@@ -1198,15 +1199,15 @@ export class StoreCore {
   }
 
   /** A farm row kept: the field after it into meta, and what it put in or took out of `me`'s pocket into their running
-   *  shop ledger (when it has one: else its next fold reads the field). */
-  private farmNote(me: Who, f: Farm): void {
-    const before = this.farmState().net[me];
+   *  shop ledger (when it has one: else its next fold reads the field). `before`: `me`'s field net before the row
+   *  (farmKept's: meta `farm` parsed once a row). */
+  private farmNote(me: Who, f: Farm, before: ReadonlyMap<string, number>): void {
     this.setMeta('farm', JSON.stringify(farmJson(f)));
     const raw = this.meta(`shop|${me}`);
     const st = raw ? shopStateOf(raw) : null;
     if (!st) return;
     for (const [k, n] of f.net[me] ?? []) {
-      const delta = n - (before?.get(k) ?? 0);
+      const delta = n - (before.get(k) ?? 0);
       if (delta) st.caught.set(k, (st.caught.get(k) ?? 0) + delta);
     }
     this.setMeta(`shop|${me}`, shopStateJson(st));
