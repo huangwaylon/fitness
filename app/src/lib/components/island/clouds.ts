@@ -21,21 +21,22 @@ export function holdClouds(els: readonly Element[]): () => void {
   };
 }
 
-/** Where the clouds are at `t` (performance.now's clock), as they'd have drifted from the page's start. (Their
- *  animations asked for while there are none: WebKit makes them only at the first style after the mount.) */
+/** Where the clouds are at `t` (performance.now's clock), as they'd have drifted from the page's start, set each
+ *  STEP_MS. Their animations asked for, at a step, while there are none (WebKit makes them only at the first style
+ *  after the mount) or since one was cancelled (its `cancel` event: its element out of the tree a while). No playState
+ *  read: like getAnimations() it flushes pending style, and its check every frame was 6-8 ms a second at 4x CPU, the
+ *  most at night, the twinkles keeping style dirty (r3 L5); each is paused once, when it's taken up. */
 export function stepClouds(t: number): void {
-  let fresh = false;
-  for (const [el, anims] of clouds)
-    if (!anims.length || anims.some((a) => a.playState === 'idle')) {
-      const now = el.getAnimations();
-      clouds.set(el, now);
-      fresh ||= now.length > 0;
-    }
-  if (!fresh && Math.abs(t - setAt) < STEP_MS) return;
+  if (Math.abs(t - setAt) < STEP_MS) return;
   setAt = t;
-  for (const anims of clouds.values())
-    for (const a of anims) {
-      if (a.playState !== 'paused') a.pause();
-      a.currentTime = t;
+  for (const [el, anims] of clouds) {
+    if (anims.length) continue;
+    const now = el.getAnimations();
+    for (const a of now) {
+      a.pause();
+      a.addEventListener('cancel', () => clouds.has(el) && clouds.set(el, []), { once: true });
     }
+    clouds.set(el, now);
+  }
+  for (const anims of clouds.values()) for (const a of anims) a.currentTime = t;
 }
