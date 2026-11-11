@@ -32,7 +32,7 @@
   import { mealProteinTarget } from '#lib/model/profile.ts';
   import {
     copyMeal, detachDay, editFood, logCustom, logFood, refreshFood, removeFood, startRepeat, stopRepeat, updateRepeat
-  } from '#lib/store/actions.ts';
+  } from '#lib/store/meals.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { addDays } from '#lib/time/dates.ts';

@@ -4,12 +4,13 @@ import { FLOOR, RATCHET, floors } from '../../scripts/coverage-floors.ts';
 
 const at = (pct: number, total = 10) => ({ lines: { pct, total } });
 describe('coverage floors', () => {
-  it('contract/, sync/ and store/actions.ts at the floor, a ratchet file at its own; the rest not checked', () => {
+  it('contract/, sync/, store/actions.ts and meals.ts at the floor, a ratchet file at its own; the rest not checked', () => {
     const r = floors({
       '/x/app/src/lib/contract/a.ts': at(FLOOR - 1),
       '/x/app/src/lib/sync/b.ts': at(FLOOR),
       '/x/app/src/lib/sync/live-local.ts': at(RATCHET['src/lib/sync/live-local.ts']),
-      '/x/app/src/lib/store/actions.ts': at(RATCHET['src/lib/store/actions.ts'] - 1),
+      '/x/app/src/lib/store/actions.ts': at(FLOOR - 1),
+      '/x/app/src/lib/store/meals.ts': at(FLOOR),
       '/x/app/src/lib/store/week.svelte.ts': at(10),
       '/x/app/src/lib/contract/empty.ts': at(0, 0)
     });

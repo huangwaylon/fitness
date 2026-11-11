@@ -1,5 +1,5 @@
 // The unit tests' per-file line coverage floors (docs/ops/testing.md "CI"): every file under the record's and the
-// sync's code (contract/, sync/) and store/actions.ts at FLOOR % or more, but the ones listed below, each at its own
+// sync's code (contract/, sync/) and store/actions.ts and meals.ts at FLOOR % or more, but the ones listed below, each at its own
 // floor (a ratchet: raise it as tests come, never lower it). Reads vitest's coverage/coverage-summary.json.
 //
 //   npm run coverage      vitest with coverage, then this: red on a file under its floor; a floor 5 points under its
@@ -8,12 +8,11 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 export const FLOOR = 85;
-const SCOPE = /^src\/lib\/(contract|sync)\/[^/]+\.ts$|^src\/lib\/store\/actions\.ts$/;
+const SCOPE = /^src\/lib\/(contract|sync)\/[^/]+\.ts$|^src\/lib\/store\/(actions|meals)\.ts$/;
 /** below FLOOR today (2026-11-10): their own floors, the next to test */
 export const RATCHET: Record<string, number> = {
   'src/lib/sync/live-local.ts': 77,
-  'src/lib/contract/ticket.ts': 80,
-  'src/lib/store/actions.ts': 79
+  'src/lib/contract/ticket.ts': 80
 };
 
 type Summary = Record<string, { lines: { pct: number; total: number } }>;

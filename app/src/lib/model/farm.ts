@@ -40,10 +40,10 @@ export function wateredOf(s: Pick<FarmState, 'islandDays' | 'wet'>): Watered {
 
 const farmMemo = new WeakMap<FarmState['farm'], WeakMap<Watered, Farm>>();
 
-/** The last fold of a list's kept rows (as kept: no watering read) and how many: a list that starts with the same row
- *  objects folds on from a copy of it, so a tap (a queued row replaced) or a poll (a row or two more) folds only its
- *  new rows, not the year's (the State's lists are never changed in place: model/state.ts). */
-let kept: { rows: readonly FarmRow[]; f: Farm } | null = null;
+/** The fold of the last list's kept rows (as kept: no watering read): a list that starts with the same row objects
+ *  folds on from it, so a tap (a queued row replaced) or a poll (a row or two more) folds only its new rows, not the
+ *  year's (the State's lists are never changed in place: model/state.ts). Never handed out: a copy is. */
+let kept = { rows: [] as readonly FarmRow[], f: emptyFarm() };
 const copyFarm = (f: Farm): Farm => ({ plots: new Map(f.plots), net: Object.fromEntries(Object.entries(f.net).map(([w, m]) => [w, new Map(m)])) });
 
 /** The fields: each plot's plant and each person's pocket changes. Memoised per State lists. */
@@ -56,16 +56,12 @@ export function farmOfState(s: FarmState): Farm {
   const rows = s.farm;
   let n = rows.findIndex((r) => r.queued);
   if (n < 0) n = rows.length;
-  let from = 0;
-  if (kept && kept.rows.length <= n && kept.rows.every((r, i) => rows[i] === r)) from = kept.rows.length;
-  const f = from ? copyFarm(kept!.f) : emptyFarm();
-  for (let i = from; i < n; i++) farmStep(f, rows[i].person, rows[i].data);
-  if (n > from || !kept) kept = { rows: rows.slice(0, n), f: copyFarm(f) };
+  if (kept.rows.length > n || kept.rows.some((r, i) => rows[i] !== r)) kept = { rows: [], f: emptyFarm() };
+  for (let i = kept.rows.length; i < n; i++) farmStep(kept.f, rows[i].person, rows[i].data);
+  kept = { rows: rows.slice(0, n), f: kept.f };
+  const f = copyFarm(kept.f);
   // (a queued row as the record will judge it: its harvests at their yield; the pocket the phone's own check, before)
-  for (let i = n; i < rows.length; i++) {
-    const r = rows[i];
-    farmStep(f, r.person, r.data, r.queued ? { watered, pocket: () => Infinity } : undefined);
-  }
+  for (const r of rows.slice(n)) farmStep(f, r.person, r.data, r.queued ? { watered, pocket: () => Infinity } : undefined);
   byW.set(watered, f);
   return f;
 }

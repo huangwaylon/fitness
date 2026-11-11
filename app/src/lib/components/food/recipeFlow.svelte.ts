@@ -4,7 +4,7 @@ import { RECIPE, type FoodSnap, type RepeatItem } from '#lib/contract/food.ts';
 import type { Item } from '#lib/food/index.ts';
 import { t } from '#lib/i18n/index.ts';
 import type { Recipe } from '#lib/model/food.ts';
-import { logRecipe, removeRecipe, saveRecipe } from '#lib/store/actions.ts';
+import { logRecipe, removeRecipe, saveRecipe } from '#lib/store/meals.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
 import { foodDbNow, itemOf, recipeItem, servingOnly, type RecipeDraft } from './foodUi.ts';
 import type { LevelOf, Levels, Picked } from './levels.svelte.ts';

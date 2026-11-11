@@ -58,7 +58,7 @@ After a deploy, never holding one back:
 |---|---|
 | *e2e logic full* (`e2e-logic-full.yml`) · `e2e-logic` ×6 | **the full logic tier**: every test the gate's way, the auto-quarantined too, on the deployed commit after each green *Deploy UI* run (and on demand). A failure is an `::error` on its spec and the workflow red: the next push's to fix first |
 | · `e2e-render` | **the drawn smoke**: `@render` and `@smoke` with software GL; advisory |
-| · `coverage` | line coverage per file (`npm run coverage`): every file under `contract/` and `sync/`, and `store/actions.ts`, at 85 % or its ratchet floor (`scripts/coverage-floors.ts`); red under it |
+| · `coverage` | line coverage per file (`npm run coverage`): every file under `contract/` and `sync/`, and `store/actions.ts` and `store/meals.ts`, at 85 % or its ratchet floor (`scripts/coverage-floors.ts`); red under it |
 | · `timings` | test times folded into `e2e/timings.json` (the `e2e-timings` artifact; when the shards' spread drifts, `npm run e2e:timings` and commit it), and **what the gate missed** (`scripts/e2e-missed.ts`): each failing spec the gate didn't run, with the `e2e/impact.json` rule to add |
 | *e2e full tier* (`e2e-full.yml`) ×10 | **everything drawn**, on demand only (SwiftShader's timings made it red nightly): the whole suite with real GL, `E2E_SLOW=1` (a test 90 s, an expect 20 s) |
 

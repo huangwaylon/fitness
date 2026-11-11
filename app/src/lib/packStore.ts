@@ -47,8 +47,8 @@ export class PackStore {
   readonly #get: (url: string) => Promise<Response>;
   readonly #cap: number;
   readonly #tag: string;
-  readonly #idleMs: number;
-  #idleT: ReturnType<typeof setTimeout> | undefined;
+  /** The idle let-go (re)armed (idleMs): at its end everything held goes, or (one still on its way) it waits again. */
+  readonly #idle: () => void;
   readonly url: (stem: string) => string;
 
   constructor(o: PackStoreOpts) {
@@ -56,7 +56,11 @@ export class PackStore {
     this.#get = o.get ?? ((u) => fetch(u));
     this.#cap = o.cap ?? 12_000_000;
     this.#tag = o.tag;
-    this.#idleMs = o.idleMs ?? 0;
+    let t: ReturnType<typeof setTimeout>;
+    this.#idle = () => {
+      clearTimeout(t);
+      if (o.idleMs) t = setTimeout(() => (this.#held.size > this.#size.size ? this.#idle() : this.clear()), o.idleMs);
+    };
     if (o.dropOnHide) dropOnHide(this);
   }
 
@@ -114,16 +118,8 @@ export class PackStore {
     void this.pack(first).then(() => gen === this.#gen && rest.forEach((s) => void this.pack(s)));
   }
 
-  /** The idle let-go (re)armed: at its end everything held goes, or (one still on its way) it waits again. */
-  #idle(): void {
-    if (!this.#idleMs) return;
-    clearTimeout(this.#idleT);
-    this.#idleT = setTimeout(() => (this.#held.size > this.#size.size ? this.#idle() : this.clear()), this.#idleMs);
-  }
-
   /** Every pack let go, and a prefetch's rest. */
   clear(): void {
-    clearTimeout(this.#idleT);
     this.#gen++;
     this.#held.clear();
     this.#size.clear();

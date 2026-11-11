@@ -1,7 +1,7 @@
 // マイ食品's editing (Food.svelte's custom level): the draft it edits, kept here as the recipe's; ほぞん goes on where it
 // came from (Then: a meal's amount or its one serving logged, a recipe's ingredient, or back to the search).
 import { customGrams, type FoodCustom } from '#lib/contract/food.ts';
-import { logCustom, removeCustom, saveCustom } from '#lib/store/actions.ts';
+import { logCustom, removeCustom, saveCustom } from '#lib/store/meals.ts';
 import { customDraft, customItem, customOf, type CustomDraft } from './foodUi.ts';
 import type { LevelOf, Picked, Then } from './levels.svelte.ts';
 import { mealName, type FoodFlowEnv } from './recipeFlow.svelte.ts';

@@ -70,6 +70,82 @@ describe('wallet actions', () => {
   });
 });
 
+describe('the settings’ and the island’s small sends', () => {
+  const NOW = Date.parse('2026-11-18T12:00:00.000Z');
+  const model = async (me: 'A' | 'G' = 'A', events: [string, 'A' | 'B', string, string, string][] = []) => {
+    const { reduce } = await import('#lib/model/state.ts');
+    week.model = { state: reduce({ metrics: [], events: events as never }), me, now: NOW } as unknown as typeof week.model;
+  };
+  const sent = () => queued().map((e) => [e.type, e.data]);
+
+  it('the prefs: a language, a villager and its name (trimmed, 12 at most), the weather and the season’s look', async () => {
+    const a = await import('./actions.ts');
+    expect([a.setVillagerName('   ').ok, a.setWeatherMode('fog' as never).ok]).toEqual([false, false]);
+    a.setLanguage('en');
+    a.setVillagerName('  とても長い村人の名前です、はい  ');
+    a.setVillager('goldie');
+    a.setWeatherMode('game');
+    a.setSeasonLook(null);
+    expect(sent()).toEqual([
+      ['pref', { key: 'locale', value: 'en' }], ['pref', { key: 'villagerName', value: 'とても長い村人の名前です' }],
+      ['pref', { key: 'villager', value: 'goldie' }], ['pref', { key: 'weatherMode', value: 'game' }], ['pref', { key: 'seasonLook', value: null }]
+    ]);
+    a.setLanguage('ja');
+  });
+
+  it('setProfile: a member sets either member’s, the guest only its own; a value the record refuses is not sent', async () => {
+    const { setProfile } = await import('./actions.ts');
+    await model();
+    expect([setProfile('B', 'sex', 'f').ok, setProfile('G', 'sex', 'f').ok, setProfile('A', 'sex', 'x').ok]).toEqual([true, false, false]);
+    await model('G');
+    expect([setProfile('G', 'sex', null).ok, setProfile('A', 'sex', 'm').ok]).toEqual([true, false]);
+    expect(sent()).toEqual([['pref', { person: 'B', key: 'sex', value: 'f' }], ['pref', { key: 'sex', value: null }]]);
+  });
+
+  it('the harvest of the week open, the decorations once the model is there, the banner of an undoable send', async () => {
+    const { confirmHarvest, sendDecor, sendDecors, undoBanner } = await import('./actions.ts');
+    const { toasts } = await import('#lib/ui-state/toast.svelte.ts');
+    week.view = null;
+    week.model = null;
+    expect(confirmHarvest().ok).toBe(false);
+    sendDecor({ id: 'x' });
+    expect(queued()).toEqual([]);
+    week.view = { harvest: { weekKey: '2026-11-09' } } as unknown as WeekView;
+    await model();
+    confirmHarvest();
+    sendDecor({ id: 'a' });
+    sendDecors([]);
+    sendDecors([{ id: 'b' }, { id: 'c' }]);
+    expect(sent()).toEqual([['harvest', { week: '2026-11-09' }], ['decor', { id: 'a' }], ['decor', { id: 'b' }], ['decor', { id: 'c' }]]);
+    toasts.dismiss();
+    undoBanner('x', { ok: false });
+    expect(toasts.current).toBeNull();
+    let undone = 0;
+    undoBanner('買った', { ok: true, undo: () => ++undone > 0 });
+    expect(toasts.current?.text).toBe('買った');
+    toasts.current?.action?.run();
+    expect(undone).toBe(1);
+    toasts.dismiss();
+  });
+
+  it('sell: one sell a species at its price, only what the pocket holds; together undone together, none when one is refused', async () => {
+    const { sell, together } = await import('./actions.ts');
+    const { sellPrice } = await import('#lib/contract/shop.ts');
+    await model('A', [['2026-11-18T01:00:00.000Z', 'A', 't1', 'tally', JSON.stringify({ date: '2026-11-18', counts: { 'fish:koi': 2, 'bug:moth': 1 } })]]);
+    expect(sell(new Map([['fish:koi', 3]])).ok).toBe(false);
+    expect(sell(new Map()).ok).toBe(false);
+    const r = sell(new Map([['fish:koi', 2], ['bug:moth', 1]]));
+    expect(r).toMatchObject({ ok: true, shells: 2 * sellPrice('fish:koi')! + sellPrice('bug:moth')! });
+    expect(queued().filter((e) => e.type === 'sell').map((e) => e.data.species)).toEqual(['fish:koi', 'bug:moth']);
+    expect(r.hold!(1000)).toBe(1000);
+    expect(r.undo!()).toBe(true);
+    expect(queued().filter((e) => e.type === 'sell')).toEqual([]);
+    let undone = 0;
+    expect(together([{ ok: true, undo: () => ++undone > 0 }, { ok: false }])).toEqual({ ok: false });
+    expect([undone, together([]).ok]).toEqual([1, false]);
+  });
+});
+
 describe('the goals name whose goal', () => {
   it('setGoal weight carries an explicit person, mine or the partner’s, rounded to one decimal; null clears it', () => {
     expect(setGoal('weight', 'B', 58.04).ok).toBe(true);
@@ -245,7 +321,7 @@ describe('the meal log', () => {
   const food = () => queued().filter((e) => e.type === 'food').map((e) => e.data as Record<string, unknown>);
 
   it('logFood sends a new entry’s whole state, its id `f` + [0-9a-z], the grams to one decimal', async () => {
-    const { logFood } = await import('./actions.ts');
+    const { logFood } = await import('./meals.ts');
     await model();
     expect(logFood({ d: '2026-11-18', m: 'l', g: 150.04, f: RICE }).ok).toBe(true);
     expect(food()).toEqual([{ id: expect.stringMatching(/^f[0-9a-z]{6,24}$/), at: expect.any(Number), d: '2026-11-18', m: 'l', g: 150, f: RICE }]);
@@ -256,7 +332,7 @@ describe('the meal log', () => {
   });
 
   it('editFood sends the entry’s whole state with the change (u: null drops the label), after the one it follows', async () => {
-    const { editFood, logFood } = await import('./actions.ts');
+    const { editFood, logFood } = await import('./meals.ts');
     await model();
     logFood({ d: '2026-11-18', m: 'l', g: 150, f: RICE });
     const [{ id, at }] = food();
@@ -275,7 +351,7 @@ describe('the meal log', () => {
   });
 
   it('editFood takes another state of the food (f: じょうたい), its label as given', async () => {
-    const { editFood, logFood } = await import('./actions.ts');
+    const { editFood, logFood } = await import('./meals.ts');
     await model();
     logFood({ d: '2026-11-18', m: 'l', g: 125, f: { ...RICE, id: 'mext:11221', n: '鶏もも肉 皮つき 生', u: '1/2枚' } });
     const [{ id }] = food();
@@ -286,7 +362,7 @@ describe('the meal log', () => {
   });
 
   it('removeFood removes one of mine; someone else’s isn’t mine to change', async () => {
-    const { editFood, logFood, removeFood } = await import('./actions.ts');
+    const { editFood, logFood, removeFood } = await import('./meals.ts');
     await model();
     logFood({ d: '2026-11-18', m: 'b', g: 80, f: RICE });
     const [{ id }] = food();
@@ -302,7 +378,7 @@ describe('the meal log', () => {
   });
 
   it('copyMeal: each item of anyone’s meal a new entry of mine (new ids, the same snapshots), the source untouched', async () => {
-    const { copyMeal } = await import('./actions.ts');
+    const { copyMeal } = await import('./meals.ts');
     const { foodDay } = await import('#lib/model/food.ts');
     const { reduce } = await import('#lib/model/state.ts');
     const NATTO = { id: 'mext:04046', n: '納豆', k: 190, p: 16.5, fa: 10, c: 12.1, s: null, u: '1パック' };
@@ -374,7 +450,7 @@ describe('recurring meals (いつもの)', () => {
   const reps = () => queued().filter((e) => e.type === 'food_repeat').map((e) => e.data as Record<string, unknown>);
   /** A breakfast of rice and natto logged on `d`, and the model with it. */
   const breakfast = async (d: string) => {
-    const { logFood } = await import('./actions.ts');
+    const { logFood } = await import('./meals.ts');
     logFood({ d, m: 'b', g: 150, f: RICE });
     logFood({ d, m: 'b', g: 45, f: NATTO });
     logFood({ d, m: 'l', g: 200, f: RICE });
@@ -382,7 +458,7 @@ describe('recurring meals (いつもの)', () => {
   };
 
   it('startRepeat: the meal’s entries become the repeat from that day, the day unchanged, the next days filled', async () => {
-    const { startRepeat } = await import('./actions.ts');
+    const { startRepeat } = await import('./meals.ts');
     await breakfast('2026-11-18');
     const before = await day('2026-11-18');
     const r = startRepeat({ meal: 'b', date: '2026-11-18', w: 127 });
@@ -399,7 +475,7 @@ describe('recurring meals (いつもの)', () => {
   });
 
   it('startRepeat on weekdays the day isn’t one of keeps that day’s entries as they are', async () => {
-    const { startRepeat } = await import('./actions.ts');
+    const { startRepeat } = await import('./meals.ts');
     await breakfast('2026-11-18');
     expect(startRepeat({ meal: 'b', date: '2026-11-18', w: 96 }).ok).toBe(true); // 週末: not a Wednesday
     await model();
@@ -408,7 +484,7 @@ describe('recurring meals (いつもの)', () => {
   });
 
   it('detachDay: that day skipped, its items real entries (virtual id → real id), the other days unchanged', async () => {
-    const { detachDay, editFood, startRepeat } = await import('./actions.ts');
+    const { detachDay, editFood, startRepeat } = await import('./meals.ts');
     await breakfast('2026-11-18');
     const { id } = startRepeat({ meal: 'b', date: '2026-11-18', w: 127 });
     await model();
@@ -427,7 +503,7 @@ describe('recurring meals (いつもの)', () => {
   });
 
   it('updateRepeat: ends today, a new one from tomorrow with the shown meal’s items or new weekdays, the skips carried', async () => {
-    const { detachDay, logFood, startRepeat, updateRepeat } = await import('./actions.ts');
+    const { detachDay, logFood, startRepeat, updateRepeat } = await import('./meals.ts');
     await breakfast('2026-11-17');
     const { id } = startRepeat({ meal: 'b', date: '2026-11-17', w: 127 });
     await model();
@@ -450,7 +526,7 @@ describe('recurring meals (いつもの)', () => {
   });
 
   it('updateRepeat is both or neither: the new one refused by the record, the old one’s end is too and it goes on', async () => {
-    const { startRepeat, updateRepeat } = await import('./actions.ts');
+    const { startRepeat, updateRepeat } = await import('./meals.ts');
     const { validEventData } = await import('#lib/contract/record.ts');
     const { repeatNext } = await import('#lib/contract/food.ts');
     const { reduce } = await import('#lib/model/state.ts');
@@ -478,7 +554,7 @@ describe('recurring meals (いつもの)', () => {
   });
 
   it('stopRepeat: ends today (past days kept, tomorrow on nothing); one that starts tomorrow is removed', async () => {
-    const { startRepeat, stopRepeat, updateRepeat } = await import('./actions.ts');
+    const { startRepeat, stopRepeat, updateRepeat } = await import('./meals.ts');
     await breakfast('2026-11-16');
     const { id } = startRepeat({ meal: 'b', date: '2026-11-16', w: 127 });
     await model();
@@ -515,7 +591,7 @@ describe('my recipes (マイレシピ)', () => {
   const sent = (type: string) => queued().filter((e) => e.type === type).map((e) => e.data as Record<string, unknown>);
 
   it('saveRecipe sends a new recipe’s whole state (id `c` + [0-9a-z], grams to one decimal); refuses a malformed one', async () => {
-    const { saveRecipe } = await import('./actions.ts');
+    const { saveRecipe } = await import('./meals.ts');
     await model();
     const r = saveRecipe({ n: 'おうちカレー', sv: 4, it: IT });
     expect(r).toMatchObject({ ok: true, id: expect.stringMatching(/^c[0-9a-z]{6,24}$/) });
@@ -525,7 +601,7 @@ describe('my recipes (マイレシピ)', () => {
   });
 
   it('edits and removes my own only; another’s is copied to mine as a new recipe', async () => {
-    const { removeRecipe, saveRecipe } = await import('./actions.ts');
+    const { removeRecipe, saveRecipe } = await import('./meals.ts');
     await model();
     const { id } = saveRecipe({ n: 'おうちカレー', sv: 4, it: IT });
     await model();
@@ -545,7 +621,7 @@ describe('my recipes (マイレシピ)', () => {
   });
 
   it('logRecipe logs anyone’s recipe as an entry of mine: the recipe per 100 g, the grams eaten; an edit later changes no meal', async () => {
-    const { logRecipe, saveRecipe } = await import('./actions.ts');
+    const { logRecipe, saveRecipe } = await import('./meals.ts');
     const { recipePortion } = await import('#lib/contract/food.ts');
     const { foodDay, recipes } = await import('#lib/model/food.ts');
     await model();
@@ -578,7 +654,7 @@ describe('my foods (マイ食品)', () => {
   const BENTO = { n: '会社の弁当', u: '1個', k: 650 };
 
   it('saveCustom sends a new one’s whole state (id `m` + [0-9a-z], grams to one decimal, unknowns null); refuses a malformed one', async () => {
-    const { saveCustom } = await import('./actions.ts');
+    const { saveCustom } = await import('./meals.ts');
     await model();
     const r = saveCustom({ ...BENTO, g: null, p: 20 });
     expect(r).toMatchObject({ ok: true, id: expect.stringMatching(/^m[0-9a-z]{6,24}$/) });
@@ -590,7 +666,7 @@ describe('my foods (マイ食品)', () => {
   });
 
   it('edits and removes my own only; another’s is copied to mine as a new one', async () => {
-    const { removeCustom, saveCustom } = await import('./actions.ts');
+    const { removeCustom, saveCustom } = await import('./meals.ts');
     await model();
     const { id } = saveCustom(BENTO);
     await model();
@@ -609,7 +685,7 @@ describe('my foods (マイ食品)', () => {
   });
 
   it('logCustom logs anyone’s as an entry of mine (a serving with no weight a nominal 100 g); an edit later changes no meal', async () => {
-    const { logCustom, saveCustom } = await import('./actions.ts');
+    const { logCustom, saveCustom } = await import('./meals.ts');
     const { foodDay } = await import('#lib/model/food.ts');
     await model();
     const { id } = saveCustom({ ...BENTO, k: 1200 });

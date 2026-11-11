@@ -27,17 +27,8 @@ const memo = new WeakMap<ShopState['shop'], WeakMap<ShopState['tallies'], WeakMa
 
 const daysMemo = new WeakMap<ShopState['tallies'], Partial<Record<Who, ReturnType<typeof caughtOf>>>>();
 /** `who`'s catches by their tallies alone (contract/shop.ts caughtOf without the field), per tally list. */
-function caughtOfDays(tallies: ShopState['tallies'], who: Who): ReturnType<typeof caughtOf> {
-  let by = daysMemo.get(tallies);
-  if (!by) daysMemo.set(tallies, (by = {}));
-  return (by[who] ??= caughtOf(dayTallies(tallies).filter((r) => r.person === who)));
-}
-const rowsMemo = new WeakMap<ShopState['shop'], Partial<Record<Who, ShopRowAt[]>>>();
-const rowsOf = (shop: ShopState['shop'], who: Who): ShopRowAt[] => {
-  let by = rowsMemo.get(shop);
-  if (!by) rowsMemo.set(shop, (by = {}));
-  return (by[who] ??= shop.filter((r) => r.person === who));
-};
+const caughtOfDays = (tallies: ShopState['tallies'], who: Who): ReturnType<typeof caughtOf> =>
+  ((daysMemo.get(tallies) ?? daysMemo.set(tallies, {}).get(tallies)!)[who] ??= caughtOf(dayTallies(tallies).filter((r) => r.person === who)));
 
 /** `who`'s pocket, かいがら and bought pieces. Memoised per State lists. */
 export function shopView(s: ShopState, who: Who): ShopView {
@@ -55,7 +46,7 @@ export function shopView(s: ShopState, who: Who): ShopView {
   const { caught: fromDays, back } = caughtOfDays(s.tallies, who);
   const caught = new Map(fromDays);
   for (const [k, n] of farm.net[who] ?? []) caught.set(k, (caught.get(k) ?? 0) + n);
-  const l: Ledger = shopLedger(caught, rowsOf(s.shop, who), back);
+  const l: Ledger = shopLedger(caught, s.shop.filter((r) => r.person === who), back);
   const pocket = new Map<string, number>();
   // (the starts bought count in as a sale taken back: contract/shop.ts shopStep; a recipe or a present is in the
   // tallies, never the pocket)
