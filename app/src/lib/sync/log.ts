@@ -89,6 +89,12 @@ export const logOn = (): boolean => st.on;
 const today = () => localDateAt(env.now());
 
 /** Tests: the environment, and a fresh state. */
+/** The page is going: a pagehide, or the app's own reload (ui-state/reload.ts safeReload). Imports in flight are cut
+ *  off by the navigation (13:52 on 11-11: 4 chunk.fail and a js.error 256 ms after an update's reload): no chunk.fail
+ *  then, and an error is a warning `leaving`. */
+const isLeaving = { now: false };
+export const markLeaving = (): void => void (isLeaving.now = true);
+
 export function configureLog(o: Partial<Env> & { reset?: boolean; on?: boolean }): void {
   const { reset, on, ...rest } = o;
   Object.assign(env, rest);
@@ -97,6 +103,7 @@ export function configureLog(o: Partial<Env> & { reset?: boolean; on?: boolean }
     if (st.timer) clearTimeout(st.timer);
     if (st.idle) clearTimeout(st.idle);
     st.timer = st.idle = null;
+    isLeaving.now = false;
   }
   if (on !== undefined) st.on = on;
 }
@@ -446,10 +453,9 @@ export function startLog(o: LogStart): () => void {
     w: innerWidth, h: innerHeight, dpr: devicePixelRatio, crashed, lt: types.includes('long-animation-frame') || types.includes('longtask'),
     q: q.n, qAgeS: Math.round(q.ageMs / 1000), ...(coldS !== undefined ? { coldS } : {})
   });
-  const isLeaving = { now: false };
   const err = (e: ErrorEvent) => logError('error', e.error ?? e.message, { file: e.filename, line: e.lineno, route: o.route(), leaving: isLeaving.now || document.hidden });
   const rej = (e: PromiseRejectionEvent) => logError('rejection', e.reason, { route: o.route(), leaving: isLeaving.now || document.hidden });
-  const chunk = () => log('chunk.fail', { reloaded: false }, 2);
+  const chunk = () => isLeaving.now || log('chunk.fail', { reloaded: false }, 2);
   addEventListener('error', err);
   addEventListener('unhandledrejection', rej);
   addEventListener('vite:preloadError', chunk);

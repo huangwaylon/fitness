@@ -2,7 +2,7 @@
 // rate from the median gap, a page error, hidden (the keepalive flush) and shown again, and the stop. A browser's
 // globals stubbed; the timers, Date and performance faked.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { configureLog, flushLog, log, setDrawnFps, startLog } from './log.ts';
+import { configureLog, flushLog, log, markLeaving, setDrawnFps, startLog } from './log.ts';
 import type { LogBatch } from '#lib/contract/log.ts';
 
 const KEY = '3f9a'.repeat(16);
@@ -84,6 +84,18 @@ describe('the log started on a phone', () => {
     await vi.advanceTimersByTimeAsync(16_000);
     await flushLog();
     expect(named('perf.frames')[0]?.d).toMatchObject({ hz: 120, mode: 'none', drawFps: -1 });
+    stop();
+  });
+
+  it('a chunk not fetched is a chunk.fail, but not once the page is leaving (the app\'s own reload cut its imports off): an error then is a warning', async () => {
+    const stop = start();
+    win.dispatchEvent(new Event('vite:preloadError'));
+    markLeaving();
+    win.dispatchEvent(new Event('vite:preloadError'));
+    win.dispatchEvent(Object.assign(new Event('error'), { error: new TypeError('Importing a module script failed.') }));
+    await flushLog();
+    expect(named('chunk.fail')).toHaveLength(1);
+    expect(named('js.error')[0]).toMatchObject({ l: 2, d: { leaving: true } });
     stop();
   });
 

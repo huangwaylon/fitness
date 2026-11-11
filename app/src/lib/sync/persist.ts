@@ -21,13 +21,15 @@ export async function persistOnce(kv: KV | null = localKV(), storage: StorageMan
 }
 
 /** The site's storage in use, once a Tokyo day (after a sync that worked, Safari tab or installed app): its growth over
- *  days, and whether it's kept from eviction (the log's storage.use, MB only). */
-export async function storageDaily(kv: KV | null = localKV(), storage: StorageManager | undefined = globalThis.navigator?.storage, now = Date.now()): Promise<void> {
+ *  days, whether it's kept from eviction, and what each of the service worker's caches holds (cacheSizes.ts: MB a
+ *  cache, the recogniser there or not) (the log's storage.use, MB only). */
+export async function storageDaily(kv: KV | null = localKV(), storage: StorageManager | undefined = globalThis.navigator?.storage, now = Date.now(), sizes: () => Promise<Record<string, number | boolean>> = () => import('./cacheSizes.ts').then((m) => m.cacheSizes())): Promise<void> {
   const day = tokyoDay(now);
   if (!storage?.estimate || readJson(kv, DEVICE.storageDay) === day) return;
   writeJson(kv, DEVICE.storageDay, day);
   const est = await quiet(storage.estimate(), 'storage.estimate');
   if (!est) return;
   const persisted = await storage.persisted?.().catch(() => false) ?? false;
-  log('storage.use', { useMb: mb(est.usage), quotaMb: mb(est.quota), persisted });
+  const by = await quiet(sizes(), 'storage.caches', {});
+  log('storage.use', { useMb: mb(est.usage), quotaMb: mb(est.quota), persisted, ...by });
 }

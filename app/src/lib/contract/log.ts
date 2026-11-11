@@ -89,9 +89,9 @@ export const LOG_EVENTS = {
   "chunk.fail": { src: 'c', f: { reloaded: 'b' } },
   // the installed app's storage kept from eviction (sync/persist.ts: asked once): granted, already so, and the quota's MB
   "storage.persist": { src: 'c', f: { ok: 'b', was: 'b', useMb: 'n', quotaMb: 'n' } },
-  // the site's storage once a Tokyo day (sync/persist.ts storageDaily: navigator.storage.estimate, MB) and
-  // whether it's kept from eviction
-  "storage.use": { src: 'c', f: { useMb: 'n', quotaMb: 'n', persisted: 'b' } },
+  // the site's storage once a Tokyo day (sync/persist.ts storageDaily: navigator.storage.estimate, MB),
+  // whether it's kept from eviction, and (r3 L7) each service worker cache's MB and the recogniser kept (sync/cacheSizes.ts)
+  "storage.use": { src: 'c', f: { useMb: 'n', quotaMb: 'n', persisted: 'b', shell: 'n', room: 'n', listen: 'n', art: 'n', photos: 'n', tiles: 'n', foodImg: 'n', food: 'n', fonts: 'n', audio: 'n', other: 'n', stt: 'b' } },
   "storage.fail": { src: 'c', f: { store: ['ls', 'idb', 'log'], kind: ['full', 'unavailable', 'blocked', 'other'] } },
   use: { src: 'c', f: { '*': 'n' } },
   "log.drop": { src: 'c', f: { n: 'n', why: ['cap', 'full', 'day', 'pending'] } },

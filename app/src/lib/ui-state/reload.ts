@@ -8,7 +8,7 @@
 // The send queue and the key live in storage, so a reload loses nothing but an open sheet.
 
 import { version } from '$app/env';
-import { log, persistLog } from '#lib/sync/log.ts';
+import { log, markLeaving, persistLog } from '#lib/sync/log.ts';
 import { quiet } from '#lib/quiet.ts';
 
 const KEY = 'island.reloadAt';
@@ -26,6 +26,7 @@ export function safeReload(now = Date.now(), why: 'update' | 'launch' | 'chunk' 
   }
   log('app.reload', { why });
   persistLog();
+  markLeaving();
   location.reload();
   return true;
 }

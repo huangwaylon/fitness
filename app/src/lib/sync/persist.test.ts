@@ -44,14 +44,14 @@ describe('persistOnce (the installed app keeps its storage)', () => {
 describe('storageDaily (the storage in use, once a Tokyo day)', () => {
   beforeEach(() => void (logged.length = 0));
 
-  it('logs the use and the quota (MB) and whether it is kept, once a Tokyo day', async () => {
-    const kv = mem(), st = storage(true, false);
+  it('logs the use and the quota (MB), whether it is kept and each cache\'s MB, once a Tokyo day', async () => {
+    const kv = mem(), st = storage(true, false), by = async () => ({ shell: 8.2, room: 31.5, stt: false });
     const t = Date.parse('2026-11-11T10:00:00+09:00');
-    await storageDaily(kv, st.s, t);
-    await storageDaily(kv, st.s, t + 3_600_000);
-    // (past Tokyo's midnight: the next day's)
-    await storageDaily(kv, st.s, Date.parse('2026-11-12T00:30:00+09:00'));
-    expect(logged).toEqual([['storage.use', { useMb: 52, quotaMb: 1024, persisted: true }], ['storage.use', { useMb: 52, quotaMb: 1024, persisted: true }]]);
+    await storageDaily(kv, st.s, t, by);
+    await storageDaily(kv, st.s, t + 3_600_000, by);
+    // (past Tokyo's midnight: the next day's; the caches unreadable: the rest as ever)
+    await storageDaily(kv, st.s, Date.parse('2026-11-12T00:30:00+09:00'), () => Promise.reject(new Error('no')));
+    expect(logged).toEqual([['storage.use', { useMb: 52, quotaMb: 1024, persisted: true, shell: 8.2, room: 31.5, stt: false }], ['storage.use', { useMb: 52, quotaMb: 1024, persisted: true }]]);
     await storageDaily(mem(), undefined, t);
     expect(logged).toHaveLength(2);
   });
