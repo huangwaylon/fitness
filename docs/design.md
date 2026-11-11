@@ -797,8 +797,9 @@ removed. A tap walks my villager to its door and in; ‹ しまへ or the doorma
 - **Light and night** (`look.ts`, `bake.ts`; nothing per frame): baked light on each floor, NH's lamps with halo cards,
   the tanks' water the brightest thing; at night the room dims and the pools and cards take over. A room change compiles
   nothing ([perf](ops/perf.md)).
-- **The curator:** フータ behind his desk, watching my villager, nodding off alone; he greets me once a visit, a tap is one
-  of his lines (never twice running), now and then news of the newest find.
+- **The curator:** フータ behind his desk, watching my villager as it moves near; settled, he and the standing visitors
+  hold their pose and only blink (the hall idles like the tent); he greets me once a visit, a tap is one of his lines
+  (never twice running), now and then news of the newest find.
 - **Visitors** (`visitors.ts`): NH villagers from ききみみ's cast through the Tokyo day, a few a room, seeded by the date
   (the same everywhere, nothing sent); a tap: a hop and a line in its personality's voice.
 - **What's on show:** one of each fish, bug, sea creature and fossil in the ずかん's first finds and each genuine artwork a

@@ -107,6 +107,29 @@ describe('the curator (フータ): his mind', () => {
     expect(m.doing).toBe('talk');
     expect(m.face).toBe('surprised');
   });
+
+  it('settles (he may hold his pose) once nothing of his moves but his breath: not while he talks, dozes or turns', () => {
+    const m = mind(8);
+    let t = run(m, 0, 300, [0, -10]);
+    m.talk(t, 20);
+    let talking = false;
+    t = run(m, t, 1500, [0, -10], () => (talking ||= m.settled()));
+    expect(talking).toBe(false);
+    m.quiet(t);
+    let at = -1;
+    t = run(m, t, 12_000, [0, -10], (x) => at < 0 && m.settled() && (at = x));
+    expect(at).toBeGreaterThan(0);
+    m.doze(t);
+    let dozing = false;
+    t = run(m, t, 3000, null, () => (dozing ||= m.settled()));
+    expect(dozing).toBe(false);
+    // (resumed after a hold: nothing of his own due at once)
+    const n = mind(9);
+    t = run(n, 0, 2000, null);
+    n.resume(t + 60_000);
+    run(n, t + 60_000, 1000, null);
+    expect(n.doing).toBe('idle');
+  });
 });
 
 /** Every pose he takes, sampled (copies): alone for minutes (glances, every gesture, dozing off with its yawn, waking),

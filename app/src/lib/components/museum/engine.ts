@@ -78,6 +78,9 @@ export interface Exhibit {
    *  floor, `h` its height, `objs` what fades. Faded out while it hides my villager, as the cutaway fades a wall. */
   screens?: readonly Screen[];
   frame(t: number, dt: number, seen: (s: Sphere) => boolean): boolean;
+  /** How long (ms) from t till a still face of its next changes (a blink: villager3d nextBlink), Infinity none: the
+   *  hall at rest draws a frame only then. */
+  nextBlink?(t: number): number;
   pick(project: (x: number, y: number, z: number) => [number, number] | null, cx: number, cy: number): { id: string; d: number } | null;
   /** A creature's world point (the card and the e2e), or null. */
   where(id: string): [number, number, number] | null;
@@ -1940,9 +1943,19 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     if (!noDraw) renderer.render(scene, camera);
   }
   let drawn: (() => void) | null = null;
+  // the still faces' blinks while nothing else moves (my villager's, the curator's, the visitors'): a timer to the next
+  // (villager3d nextBlink) and one frame then, as the tent does; not the ambient rate's for as long as they stand
+  let blinkT: ReturnType<typeof setTimeout> | undefined;
+  function blinkSoon(t: number) {
+    let next = Infinity;
+    for (const w of villagers.values()) if (w.v3 && !w.path && !w.posing) next = Math.min(next, w.v3.nextBlink(t));
+    for (const e of exhibits) if (e.group.visible && e.nextBlink) next = Math.min(next, e.nextBlink(t));
+    if (next < Infinity) blinkT = setTimeout(() => ((blinkT = undefined), invalidate()), next + 2);
+  }
   function frame(vsync = now()) {
     // (the frame rate's pacing, せってい's, a gesture's too; the ambience's own time)
     if (disposed || holding() || !pace.due(vsync, FPS)) return;
+    clearTimeout(blinkT);
     const t = now(), dt = lastT ? Math.min(100, t - lastT) : 16;
     let full = false;
     // the camera: eased back to NH's view, following my villager
@@ -2031,6 +2044,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     // (one ambient timer at a time, and a frame for anything else in between — a tap, a load — brings it forward: two
     // chains side by side ran on together at 60 a second)
     else if (ambient) pace.later(Math.min(t - lastInput > REST_MS ? REST_FPS : AMBIENT, FPS));
+    else blinkSoon(t);
   }
 
   fit();
@@ -2199,6 +2213,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0] }),
     ready,
     dispose() {
+      clearTimeout(blinkT);
       // (once: a second call ended an ended renderer, and the room's failure path may follow its own)
       if (disposed) return;
       disposed = true;

@@ -36,13 +36,20 @@ export interface MuseumSeat extends RoomSeat {
   anchor: Anchor;
 }
 
-/** A bench's seats, in its model's order (none: no such bench, or its model has no seats). */
+const seatsOf = new Map<string, MuseumSeat[]>();
+/** A bench's seats, in its model's order (none: no such bench, or its model has no seats). The same objects each time
+ *  (the benches never move): a visitor's seat is the one it sat on (crowd3d.ts: a new anchor each frame read as a new
+ *  seat, its body re-seated and the hall at 15 frames a second for good). */
 export function benchSeats(id: string): MuseumSeat[] {
+  const was = seatsOf.get(id);
+  if (was) return was;
   const b = BENCHES.find((q) => q.id === id);
   if (!b) return [];
-  return anchorsOf(shapeOf('island', BENCH_MODEL), { x: b.x, z: b.z, y: 0, yaw: b.yaw, s: BENCH_S }).map((a, n) => ({
+  const out: MuseumSeat[] = anchorsOf(shapeOf('island', BENCH_MODEL), { x: b.x, z: b.z, y: 0, yaw: b.yaw, s: BENCH_S }).map((a, n) => ({
     id: b.id, n, lie: a.lie, at: [a.x, a.z] as Pt, from: a.from, anchor: a
   }));
+  seatsOf.set(id, out);
+  return out;
 }
 
 /** The seat `n` of bench `id`, or null. */

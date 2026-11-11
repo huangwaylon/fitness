@@ -6,8 +6,10 @@
 // (a yawn, his head drooping, eyes shut, slow breaths, the nod as he catches himself), awake again with a start. With
 // my villager in the hall he watches it; a tap perks him up (eyes wide, a hop, his tufts up) and he talks, a wing
 // raised as he explains, his beak moving while his line types (MuseumRoom shows it, lines.ts).
-// He moves on every frame he's on screen (the hall's at the exhibits' 30 a second then); off screen nothing of his is
-// stepped and he asks for no frame. No allocation in a frame: one pose, its joints' arrays rewritten in place (the
+// He moves while something's happening (a talk, a doze, a gesture, his head coming round, my villager moving by him);
+// settled, he holds his pose and only blinks, as the island's still villagers do (the user, 2026-11-11: the hall
+// idles like the tent), till my villager moves near him or he's talked to. Off screen nothing of his is stepped and he
+// asks for no frame. No allocation in a frame: one pose, its joints' arrays rewritten in place (the
 // rig's held pose: villager3d hold()).
 // An exhibit (engine.ts Exhibit) so the engine drives it and a tap finds him (pick: lines.ts CURATOR).
 import { Group, Sphere } from 'three';
@@ -94,6 +96,11 @@ export interface Mind {
   doze(t: number): void;
   /** Off screen (not stepped): only whether my villager is by him, kept (coming up, it wakes him). */
   notice(me: Pt | null): void;
+  /** Nothing of his moving as of the last step but his breath: no talk, doze, gesture or start, his head where it's
+   *  going (he may hold his pose). */
+  settled(): boolean;
+  /** Stepped again after a hold: his own next glance, gesture and doze from now (none due at once). */
+  resume(t: number): void;
 }
 const nearOf = (me: Pt | null) => !!me && me[1] - AT[1] > 4 && Math.hypot(me[0] - AT[0], me[1] - AT[1]) < NEAR;
 
@@ -112,10 +119,11 @@ export function mind(seed = 1): Mind {
   let breath = 0, dz = 0, dozeT0 = 0, dozeEnd = 0, nextDoze = 0, perk = -1e9;
   let talkT0 = -1e9, speakEnd = 0, talkEnd = 0, talkW = 0, side = 1;
   let gk: Gesture | null = null, gt0 = 0, gSide = 1, nextGest = 0;
-  let wasNear = false;
+  let wasNear = false, lastT = 0;
   const m: Mind = {
     pose, face: null, doing: 'idle',
     step(t, dt, me) {
+      lastT = t;
       if (!started) {
         started = true;
         glanceAt = t + 800;
@@ -282,6 +290,15 @@ export function mind(seed = 1): Mind {
     notice(me) {
       wasNear = nearOf(me);
     },
+    settled() {
+      const at = (a: number, b: number) => Math.abs(a - b) < 0.004;
+      return mode === 'idle' && !gk && talkW < 0.002 && dz < 0.002 && lastT - perk > 700 && at(hy, ty) && at(hp, tp) && at(hr, tr);
+    },
+    resume(t) {
+      glanceAt = Math.max(glanceAt, t + 1600 + rnd() * 4000);
+      nextGest = Math.max(nextGest, t + 5000 + rnd() * 7000);
+      nextDoze = Math.max(nextDoze, t + 22000 + rnd() * 20000);
+    },
     quiet(t) {
       if (mode !== 'talk') return;
       talkEnd = Math.min(talkEnd, t);
@@ -306,6 +323,8 @@ export function buildCurator(kit: Kit, o: { model: string | null; me: () => Pt |
   sphere.radius = CURATOR_TOP * 0.7;
   const brain = mind(7);
   let v: Villager3D | null = null, disposed = false, nightN = 0;
+  /** Held still (settled: only his blinks), and where my villager was then. */
+  let held = false, heldMe: Pt | null = null;
   /** His own light: more at night, his desk lamps on him (the hall's brightest at night: docs/design.md "The museum"). */
   const lift = () => 0.32 + 1.2 * nightN;
   // (where my villager is, read 4 times a second: his head eases toward it)
@@ -330,11 +349,20 @@ export function buildCurator(kit: Kit, o: { model: string | null; me: () => Pt |
       if (!v) return false;
       if (t - meAt > 250) (me = o.me()), (meAt = t);
       if (!seen(sphere)) return brain.notice(me), false;
+      if (held) {
+        // (my villager moved, by him or from by him: he looks again; else only his blinks)
+        const moved = !me !== !heldMe || (!!me && !!heldMe && Math.hypot(me[0] - heldMe[0], me[1] - heldMe[1]) > 0.5);
+        if (!moved || !(nearOf(me) || nearOf(heldMe))) return brain.notice(me), v.blink(t), false;
+        held = false;
+        brain.resume(t);
+      }
       brain.step(t, dt, me);
       v.face(brain.face);
       v.step(t);
+      if (brain.settled()) (held = true), (heldMe = me);
       return true;
     },
+    nextBlink: (t) => (held && v ? v.nextBlink(t) : Infinity),
     pick(project, cx, cy) {
       const top = project(AT[0], CURATOR_TOP, AT[1]), foot = project(AT[0], 6, AT[1]);
       if (!top || !foot) return null;
@@ -349,6 +377,7 @@ export function buildCurator(kit: Kit, o: { model: string | null; me: () => Pt |
       v?.lift(lift());
     },
     talk(chars) {
+      held = false;
       brain.talk(performance.now(), chars);
       kit.invalidate();
     },
@@ -357,6 +386,7 @@ export function buildCurator(kit: Kit, o: { model: string | null; me: () => Pt |
     },
     doing: () => brain.doing,
     doze() {
+      held = false;
       brain.doze(performance.now());
       kit.invalidate();
     },

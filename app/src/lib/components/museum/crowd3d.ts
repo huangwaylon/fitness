@@ -223,6 +223,14 @@ export function buildCrowd(kit: Kit, o: {
       if (Number.isFinite(next)) wake = setTimeout(() => kit.invalidate(), Math.min(NAP, Math.max(50, next)));
       return false;
     },
+    nextBlink(t) {
+      let next = Infinity;
+      for (const p of poses) {
+        const b = bodies.get(p.id);
+        if (b?.v?.group.visible && !b.busy) next = Math.min(next, b.v.nextBlink(t));
+      }
+      return next;
+    },
     pick(project, cx, cy) {
       let best: { id: string; d: number } | null = null;
       for (const p of poses) {
