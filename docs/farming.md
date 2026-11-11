@@ -3,9 +3,10 @@
 NH 2.0's vegetables on the island: a field each, 40 plants. Buy starts at the shop, plant them on your field, water, harvest, and the plant grows back. The produce sells for かいがら,
 never ベル. Code: `contract/farm.ts` (the rules, shared by the record and the phones), `contract/wet.ts` (rain),
 `model/farm.ts`, `layout/field.ts`, `store/farm.svelte.ts` (the writes, たね), `island/farm.ts` (the scene),
-`island/farmTap.ts` (a plot's tap), `island/FarmButton.svelte`, `farm/FarmSheet.svelte`, `shop/ShopRoom.svelte` (苗),
-`world3d/objects.ts` (drawn);
-tests `contract/farm.test.ts`, `island/farmTap.test.ts`, `relay/test/farm.test.ts`, `e2e/farm.spec.ts`.
+`island/farmTap.ts` (a plot's tap), `island/FarmButton.svelte`, `island/FarmPicker.svelte`, `island/FarmPop.svelte`,
+`farm/FarmSheet.svelte`, `farm/FieldMap.svelte`, `farm/sheet.ts` (the sheet's batches), `shop/Counter.svelte` (苗),
+`shop/pocket.ts` (うる's 野菜 and 苗), `shop/stock.ts`, `world3d/objects.ts` (drawn);
+tests beside them, `relay/test/farm.test.ts`, `e2e/farm.spec.ts`, `e2e/farm-sheet.spec.ts`.
 
 ## Decisions
 
@@ -22,7 +23,8 @@ tests `contract/farm.test.ts`, `island/farmTap.test.ts`, `relay/test/farm.test.t
    stage 2 and is ripe again 3 days on (`FARM.regrowDays`). It yields 1, plus 1 for each of the two days before it
    ripens that it was watered: 1, 2 or 3 (NH's Lv1–3 models).
 6. **Rain waters everything:** any wet hour of the Tokyo day (our winter snow is real rain) waters every plant.
-7. **The can waters 3 × 3:** a tap on a plant waters it and its neighbours (NH's golden can).
+7. **The can waters 3 × 3:** a tap on a plant waters it and its neighbours (NH's golden can). The 畑 sheet's 水やり
+   waters every plant: effort, not balance (the cadence and the cap are the same; you still come daily).
 8. **Starts are sold at the shop's かう,** always in stock, all six crops at one price, any season. A vegetable can be
    planted too (buying a start, 14, beats replanting a vegetable worth 18, as in NH).
 9. **Not in P1:** pumpkin colours (orange only), a live relay intent for a partner's plant or harvest, flowers from
@@ -31,7 +33,7 @@ tests `contract/farm.test.ts`, `island/farmTap.test.ts`, `relay/test/farm.test.t
 ## Balance
 
 Per person, a full field watered on its two days: 40 plants × 3 vegetables × 18 かいがら ÷ 3 days ≈ **720 かいがら a
-day**, for a minute or two of taps (5–8 waterings with the 3 × 3 can, ~13 harvests a day on a staggered field). Unwatered
+day**, for a few taps (the sheet's 水やり and 収穫, or 5–8 waterings with the 3 × 3 can and ~13 harvests). Unwatered
 it's 240 a day; on one day's watering 480. Tokyo has ~110 wet days a year, which water for you. Setup: 40 starts cost
 560, paid back by the first harvest.
 
@@ -43,7 +45,8 @@ levers, if the live numbers drift (`npm run logs`, the sells): `FARM.regrowDays`
 
 - **`buy_starts`** `{crop, n, v}`: n 1–99, v exactly n × 14, covered by the sender's かいがら (else `wallet short`).
   The starts count into the pocket as `goods:<crop>-start`.
-- **`farm`** `{d, ops}`: the sender's Tokyo day (yesterday to tomorrow), 1–40 ops, held 2 s on the phone and sent as one:
+- **`farm`** `{d, ops}`: the sender's Tokyo day (yesterday to tomorrow), 1–40 ops, held 2 s on the phone for the next
+  tap (the sheet's batches and digs 5 s, for 取り消す) and sent as one:
   - `{o: 'plant', p, c, src}` on an empty plot, under the cap, with a start (`src: 'start'`) or a vegetable (`'crop'`)
     in the pocket;
   - `{o: 'harvest', p, n}` of one's own plant, ripe on `d`: kept at the yield the record reckons, whatever `n` says;
@@ -51,7 +54,8 @@ levers, if the live numbers drift (`npm run logs`, the sells): `FARM.regrowDays`
   A refused op is dropped and the rest kept; none left: `farm refused`. The phone then shows the row as kept (a plant
   the partner got to first is gone and its start back).
 - **The plot** is `fd:<fieldId>.<col>.<row>`. The record keeps a plant its planter's; whose field a plot is, the phones
-  decide (the layout is theirs). A plant on a tile a field no longer covers is kept, not drawn, and counts toward the cap.
+  decide (the layout is theirs). A plant on a tile a field no longer covers is kept, not drawn, and counts toward the cap
+  until the sheet's 苗に戻す digs it (never automatically: both phones would race).
 - **Watering** is the island day's `watered` list (the flowers' own), now up to 160 ids.
 - **Rain:** the record writes one `wet` row a wet day itself, from the room's weather cron: in the `real` mode a Tokyo
   day the timeline had a wet hour of, in the `game` mode the seeded wet day (`contract/wet.ts gameWet`, the island's
@@ -61,19 +65,18 @@ levers, if the live numbers drift (`npm run logs`, the sells): `FARM.regrowDays`
 
 ## Playing
 
-- **The farm button** (bottom left, the say button's mirror, NH's seed bag): たね (pick what to plant: each start and
-  vegetable I have by its crop's name, kept on this phone; my villager says 「トマトの なえを もった」 and the disc wears
-  it), スコップ (armed for one dig, 取り消す 5 s) and はたけ (the 畑 sheet). Only on the island while it has a field, hidden with the say button.
-- **A tap on a plot** (its tile under the finger, before a weed's or a find's finger slack) acts in place (never a
-  walk; my villager turns to it), in order: the shovel armed on my plant
-  digs it; my ripe plant is harvested (the catch plate 「トマトを しゅうかく！ ×3」); a plant not watered today is watered
-  with its neighbours; my empty plot is planted with the picked crop (none picked: the picker opens); else a bubble
-  (「うめの ニンジン・あと 1にち」, 「みずやり ずみ」).
-- **Watered soil** is dark for the rest of the day (the soil's instance colour; the soil is flat, casting no shadow); a ripe plant shows its yield's model.
-  The partner's watering shows at once (the shared world's day, the flowers' own); their plant or harvest on their
-  next sync (a few seconds: a batch waits 2 s for the next tap).
-- **The 畑 sheet:** my plants (収穫できる, 育成中 with days left: `contract/farm.ts daysLeft`, as the tap card's;
-  空き区画), today's harvest and its かいがら (none: 「今日収穫できるものはありません」), 「12/40株」, the partner's and the guest's plants folded, the rule line and 「苗はタヌキ商店で買えます」. Its chunk is fetched ahead with the other sheets'
-  (`island/sheetChunks.ts`).
-- **The shop:** うる's 野菜 section (vegetables and starts); かう's 苗, the six starts above today's stock, a tap one
-  more and − one less, 「5個で70かいがら」 and their own 買う (the shop's 取り消す 5 s).
+- **The はたけ pill** (bottom left, the say button's mirror) opens the 畑 sheet; badges: the held crop (top left) and my
+  ripe count (yuzu). Shown while I have a plot or any field has a plant; hidden with the say button.
+- **A plot's tap** acts in place (never a walk), forgiving a row's miss: my nearest ripe plant in its 3 × 3 is harvested
+  (the catch plate); else its 3 × 3's unwatered plants are watered; my empty plot gets the held crop (at the cap 「もう
+  40かぶ うえてる」; none held or left: the picker, whose pick plants it); else a word. No digging in the world.
+- **The word** pops over the plot for 1.2 s (「トマトを うえた」, 「みずやり ずみ」), never in my villager's balloon.
+- **The picker:** the starts (a seedling badge) and vegetables I hold, by art, name and count; kept on this phone.
+- **Watered soil** stays dark for the day (the soil's instance colour); a ripe plant shows its yield's model. The
+  partner's watering shows at once (the shared day); their plant or harvest on their next sync.
+- **The 畑 sheet:** today's harvest and its かいがら, 「12/40株」; 実ったものを収穫 (one event), 水やり (every unwatered
+  plant on any field: one shared-day change, to the relay 15 a second), 植える with a crop I hold (my empty plots in
+  reading order), each with 取り消す. The map, a cell a plot (row 0 at the top): a tap selects, its row reads
+  「トマト・あと2日・見込み2〜3個」 with 収穫 / 植える / 掘り起こす. 「畑の外の株 N株」 with 苗に戻す; the others' fields
+  a line each.
+- **The shop:** うる's 野菜 and 苗 (no 全部: held to plant); かう's 苗, the six starts, always in stock.
