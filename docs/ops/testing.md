@@ -294,7 +294,8 @@ memory and outside the JS heap; leak-probe prints it as `abMB`). To hunt one: `n
 - **A page-wide hold keeps its component**: a `window.__*` hook, a module's callback or a `<link>`'s listener holding a
   closure made in a component holds its DOM and its renderer. A hook goes in the scene's cleanup (only if it's still
   its own); a module's callback, and a let-go value written inside a cleanup, is made at module level. Vite's preload
-  listeners: vite.config.ts `preloadListenersOff`.
+  listeners: vite.config.ts `preloadListenersOff`. A child's value in a parent's bound prop (a ‹ handler, a snippet)
+  outlives the child: clear it in the child's cleanup (ごはん's catalog, ~15 MB, held so by HealthSheet).
 - **three.js**: a renderer stays alive while anything it drew is undisposed; every surface ends its renderer with
   world3d/stage.ts `endRenderer` (its header: why WHITE too). Models kept page-wide are lean (release.ts `lean`).
 - **A cache keyed by a value lives as long as it does**: a layout kept (the editor's undo) kept its WeakMap'd fields

@@ -5,13 +5,15 @@
 // most ISLAND_CAP_MS after the start on the island (its load stuck, a sheet's route opened instead). A phone
 // the worker controls already is unaffected: the browser checks for a new worker on each navigation itself.
 // A page it didn't control (a first launch) tells the worker, once it's in, what it fetched (the resource timings'
-// URLs: service-worker/index.ts `warm` keeps the models and art among them from the HTTP cache).
+// URLs: service-worker/index.ts `warm` keeps the models and art among them from the HTTP cache), then clears them.
 
 import { resolve } from '$app/paths';
 import { swallowed } from '#lib/quiet.ts';
 
 /** On the island, registered by this long after the start whatever the island is doing. */
 export const ISLAND_CAP_MS = 30_000;
+/** A first launch's resource timings cleared once this long after the start (perf.boot reads them within 30 s). */
+const TIMINGS_KEEP_MS = 31_000;
 /** Off the island: after the window's load, then this. */
 export const IDLE_MS = 2000;
 
@@ -38,7 +40,15 @@ export function registerLate(island: boolean, sw: ServiceWorkerContainer | undef
     else addEventListener('load', later, { once: true });
   });
   void wait.then(() => sw.register(`${resolve('/')}service-worker.js`, { type: 'module' })).then(() => sw.ready).then((reg) => {
-    if (fresh) reg?.active?.postMessage({ k: 'warm', urls: performance.getEntriesByType('resource').map((e) => e.name) });
+    if (fresh) {
+      reg?.active?.postMessage({ k: 'warm', urls: performance.getEntriesByType('resource').map((e) => e.name) });
+      // (used: the ~0.3 MB of entries not kept for the page's life, the buffer back to its default; after perf.boot's
+      // look at them, by world3d/boot.ts's 30 s watch)
+      setTimeout(() => {
+        performance.clearResourceTimings?.();
+        performance.setResourceTimingBufferSize?.(250);
+      }, Math.max(0, TIMINGS_KEEP_MS - performance.now()));
+    }
     active(!!sw.controller);
   }, () => swallowed('sw.register'));
 }

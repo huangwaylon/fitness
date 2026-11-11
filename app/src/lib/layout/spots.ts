@@ -347,7 +347,8 @@ export function daySpots(layout: Layout, date: string, seed: string): { lawn: Pt
   const dig = spread(tiles, 8, rand);
   const lawn = spread(tiles, 15, rand, dig);
   const day = { layout, dig: dig.map(jit), lawn: lawn.map(jit) };
-  if (days.size > 6) days.clear();
+  // (only this date's: an entry holds its Layout and so the Layout's field caches, ~9 MB with the 3D island)
+  for (const k of days.keys()) if (!k.startsWith(`${date}|`) || days.size > 6) days.delete(k);
   days.set(key, day);
   return day;
 }

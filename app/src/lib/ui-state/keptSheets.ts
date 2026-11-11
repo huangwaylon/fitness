@@ -1,6 +1,7 @@
 // The sheets kept mounted after a close (Sheet's `keep`): the next opening shows the content at
 // once instead of building it again. A few at most, the least recently opened let go first; every closed one let go
-// on pagehide (the page put away, maybe for good) and on a lost WebGL context (iOS short of memory takes those first).
+// when the page is hidden (an iOS app switch fires only visibilitychange; pagehide on a navigation or the bfcache) and
+// on a lost WebGL context (iOS short of memory takes those first).
 // An open sheet is never let go.
 
 /** At most this many kept (the open ones among them). */
@@ -33,6 +34,7 @@ export function keepSheet(id: number, release: () => void, isOpen: () => boolean
   if (listening || typeof addEventListener !== 'function') return;
   listening = true;
   addEventListener('pagehide', releaseSheets);
+  if (typeof document !== 'undefined') document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && releaseSheets());
   // (the canvas's event doesn't bubble: seen on the way down)
   addEventListener('webglcontextlost', releaseSheets, { capture: true });
 }

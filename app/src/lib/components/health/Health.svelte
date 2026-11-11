@@ -98,6 +98,8 @@
   $effect(() => {
     lead = hs ? whoPill : null;
   });
+  // (unmounted: HealthSheet's lead let go of, else it holds this component's DOM, the title bar's ‹ and ごはん with it)
+  $effect(() => () => void (lead = null));
   /** The shown person's goal setter: either member sets either member's; the guest's phone none (read-only chips). */
   const saver = (k: Parameters<typeof saveGoal>[0]) => (guest ? null : (v: number | null) => saveGoal(k, who, v));
   /** An activity goal in force today (the editor starts from it). */

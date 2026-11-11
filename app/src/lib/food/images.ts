@@ -45,6 +45,9 @@ export function loadFoodImages(): Promise<FoodImageIndex | null> {
   return loading;
 }
 
+/** The index let go of (~2 MB of JS heap: ごはん unmounted, components/food/foodUi.ts holdFoodDb); fetched again next. */
+export const dropFoodImages = (): void => void (loading = null);
+
 /** A food's picture for a box of `px` CSS px, or null (its tile). Every picture is generated: show the イメージ badge
  *  where the design asks for one (the enlarged view). */
 export function imgOf(index: FoodImageIndex | null | undefined, id: string, px: number): FoodImg | null {

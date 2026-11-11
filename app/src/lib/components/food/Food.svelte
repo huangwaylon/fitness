@@ -59,7 +59,7 @@
   import { askDiscard, guardForm } from '../ui/discard.svelte.ts';
   import { pickWhose, whose } from '../health/whose.svelte.ts';
   import {
-    customItem, DAYS, foodDb, foodDbNow, foodDbSoon, whenFoodDb, inState, itemOf, portionLabel, recentOf, recipeItem, recipeOfEntry,
+    customItem, DAYS, foodDb, foodDbNow, foodDbSoon, holdFoodDb, whenFoodDb, inState, itemOf, portionLabel, recentOf, recipeItem, recipeOfEntry,
     quickDraft, quickSnap, recipeServing, sameItems, servingOnly, type CustomDraft
   } from './foodUi.ts';
   import { Levels, type Level, type Picked } from './levels.svelte.ts';
@@ -129,6 +129,9 @@
     back = top ? up : null;
     lead = !top ? whoPill : null;
   });
+  // (unmounted, its sheet let go: HealthSheet's bound ‹ and lead let go of too, else they hold this component, its
+  // catalog among it)
+  $effect(() => () => void ((back = null), (lead = null)));
   const go = (l: Level, focus: string | null = null) => levels.go(l, focus);
   /** A level left by hand: its banner goes with it (its とりけす would undo what is no longer on screen). One shown by
    *  what moved the level (追加しました, then back to the search) stays. */
@@ -379,6 +382,7 @@
   // idle after the open (foodUi.ts foodDbSoon: never on the open's path; it is the search's data too, and the rows'
   // tiles); the products when they come (only with a product logged that day, or a search). Never updated by itself.
   let catalog = $state.raw<FoodDb | null>(foodDbNow());
+  $effect(() => holdFoodDb());
   let catalogRev = $state(0);
   $effect(() => (catalog ? undefined : whenFoodDb((db) => {
     catalog = db;

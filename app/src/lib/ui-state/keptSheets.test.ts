@@ -42,4 +42,19 @@ describe('the sheets kept mounted (keptSheets)', () => {
     on.pagehide(); // 2 forgotten: not let go again
     expect(gone).toEqual([1, 3]);
   });
+
+  it('every closed one let go when the page is hidden (an iOS app switch: no pagehide), not when shown', async () => {
+    vi.stubGlobal('addEventListener', () => {});
+    const doc = { visibilityState: 'visible', on: undefined as undefined | (() => void) };
+    vi.stubGlobal('document', { get visibilityState() { return doc.visibilityState; }, addEventListener: (_: string, f: () => void) => (doc.on = f) });
+    const { keepSheet } = await fresh();
+    const gone: number[] = [];
+    keepSheet(1, () => gone.push(1), () => false);
+    keepSheet(2, () => gone.push(2), () => true);
+    doc.on!();
+    expect(gone).toEqual([]);
+    doc.visibilityState = 'hidden';
+    doc.on!();
+    expect(gone).toEqual([1]);
+  });
 });

@@ -10,7 +10,7 @@ import { quiet } from '#lib/quiet.ts';
 import { parseTyped } from '#lib/math.ts';
 import type { Recipe } from '#lib/model/food.ts';
 import { itemById, loadFoodDb, portionsOf, unitOf, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
-import { imgOf, loadFoodImages, type FoodImageIndex, type FoodImg } from '#lib/food/images.ts';
+import { dropFoodImages, imgOf, loadFoodImages, type FoodImageIndex, type FoodImg } from '#lib/food/images.ts';
 import { searchKey } from '#lib/food/text.ts';
 import { formatNum, t } from '#lib/i18n/index.ts';
 import { nextChance } from '#lib/ui-state/retry.ts';
@@ -22,18 +22,31 @@ const waiting = new Set<(db: FoodDb) => void>();
 /** The food catalog, fetched when the search or an amount first needs it, or at idle once a day is up (foodDbSoon); a
  *  failure lets the next call try again. */
 export function foodDb(): Promise<FoodDb> {
-  return (dbP ??= loadFoodDb(nextChance).then(
+  const p: Promise<FoodDb> = (dbP ??= loadFoodDb(nextChance).then(
     (db) => {
-      ready = db;
+      if (dbP === p) ready = db;
       for (const f of waiting) f(db);
       waiting.clear();
       return db;
     },
     (e: unknown) => {
-      dbP = null;
+      if (dbP === p) dbP = null;
       throw e;
     }
   ));
+  return p;
+}
+let holders = 0;
+/** ごはん mounted (Food.svelte's $effect): the catalog (~15 MB of JS heap with the products) and the pictures' index
+ *  kept while it is, let go with it (its sheet closed and let go: keptSheets, a hidden page among them); the next
+ *  opening reads them again from the service worker's cache, at idle (foodDbSoon). */
+export function holdFoodDb(): () => void {
+  holders++;
+  return () => {
+    if (--holders) return;
+    dbP = ready = null;
+    dropFoodImages();
+  };
 }
 /** The catalog into `set` once it is in, whoever loads it (never loading it itself); a component's $effect. */
 export function whenFoodDb(set: (db: FoodDb) => void): () => void {
