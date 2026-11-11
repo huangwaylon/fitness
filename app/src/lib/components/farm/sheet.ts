@@ -6,9 +6,6 @@ import { addDays } from '#lib/contract/tokyo.ts';
 import type { PlotTile } from '#lib/layout/field.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
 
-// (farm fun A0, until FarmSheet and SceneTaps say them: 'farm.harvestedNamed' 'farm.harvestItem' 'farm.harvestMore'
-//  'farm.wateredBy' 'farm.waterAfterHarvest' 'world.farm.wateredBy'; this note goes in A4)
-
 /** My ripe plants' harvests, each at the yield the record will reckon (plants ≤ FARM.cap = FARM.batchMax: one event). */
 export function harvestOps(farm: Farm, me: Who, date: LocalDate, watered: Watered): { o: 'harvest'; p: string; n: number }[] {
   const out: { o: 'harvest'; p: string; n: number }[] = [];
@@ -28,7 +25,7 @@ export function waterTargets(plots: readonly PlotTile[], farm: Farm, date: Local
 /** Whether a watering on the fields counts today (waterTargets' rule: every growing plant's does, its plant day and
  *  harvest day too): 0 (done, if waterTargets is empty), or null when none does (every plant ripe, or none planted):
  *  the sheet's 水やり says which. */
-export function waterNext(plots: readonly PlotTile[], farm: Farm, date: LocalDate): number | null {
+export function waterNext(plots: readonly PlotTile[], farm: Farm, date: LocalDate): 0 | null {
   for (const t of plots) {
     const pl = farm.plots.get(t.p);
     if (pl && daysLeft(pl, date)) return 0;

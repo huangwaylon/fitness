@@ -24,8 +24,7 @@ let waves = 0;
 /** A wave not played this long after its close never plays (SceneTaps: the island stayed covered). */
 export const WAVE_MS = 1000;
 /** The sheet closed after a 収穫 or a 水やり of plots `ps`: SceneTaps plays its wave over them shortly after (none if
- *  the island is covered again by then). A harvest's wins over a water's waiting with it (one wave a close).
- *  @public (the 畑 sheet's close: components/farm/FarmSheet.svelte, farm fun B3) */
+ *  the island is covered again by then). A harvest's wins over a water's waiting with it (one wave a close). */
 export function farmWave(kind: FarmWave['kind'], ps: readonly string[]): void {
   const now = Date.now(), w = farmUi.wave;
   if (!ps.length || (kind === 'water' && w?.kind === 'harvest' && now - w.at < WAVE_MS)) return;

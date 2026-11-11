@@ -30,8 +30,6 @@
   import { fillPlan, harvestOps, harvestSummary, orphans, waterNext, waterTargets, wateredBy, yieldRange } from './sheet.ts';
   import type { Who } from '#lib/types.ts';
 
-  // (farm fun B2: no longer said, deleted in A4: 'farm.waterTomorrow' 'farm.waterIn' 'farm.waterNone' 'farm.harvested')
-
   let { open = $bindable() }: { open: boolean } = $props();
 
   const m = $derived(week.model);
@@ -76,7 +74,7 @@
   });
   /** 水やり's words: the batch, else why there's none (done today, or every plant ripe: after the harvest). */
   const waterLabel = $derived(!view ? '' : view.water.length ? t('farm.waterAll', { n: view.water.length })
-    : view.waterNext === 0 ? t('farm.watered') : t('farm.waterAfterHarvest'));
+    : view.waterNext === null ? t('farm.waterAfterHarvest') : t('farm.watered'));
   /** 収穫 tapped while the sheet is up: the button stays (disabled, 収穫済み) till it closes, so nothing moves and the
    *  focus stays in the sheet (a removed button would also restyle the page: the app's :root:has() rules). */
   let harvested = $state(false);
@@ -113,9 +111,15 @@
   function harvestOf(ops: readonly { p: string; n: number }[]) {
     const line = harvestedLine(ops);
     cue('farm-harvest');
-    const r = harvestAll(date, ops);
-    if (r.ok) done.harvest.push(...ops.map((o) => o.p));
-    undoBanner(line, r);
+    const r = harvestAll(date, ops), ps = ops.map((o) => o.p), undo = r.undo;
+    if (r.ok) done.harvest.push(...ps);
+    // (取り消す takes its plots out of the close's wave too)
+    const back = () => {
+      if (!undo?.()) return false;
+      done.harvest = done.harvest.filter((p) => !ps.includes(p));
+      return true;
+    };
+    undoBanner(line, undo ? { ...r, undo: back } : r);
   }
   function harvest() {
     if (!view?.ripe.length) return;

@@ -221,3 +221,14 @@ test('the close after a 水やり: its drops over the watered plots, ≤ 8 withi
   await expect.poll(() => spawnsSince(page, 'drops', mark).then((t) => t.length)).toBe(5);
   expect(spread(await spawnsSince(page, 'drops', mark))).toBeLessThan(1500);
 });
+
+test('a 収穫 taken back with 取り消す: the close plays no sparkles over its plots (the 水やり’s drops still play)', async ({ page }) => {
+  await up(page, [FIELD, ...POCKET, planted(plots.slice(0, 5)), planted(plots.slice(5, 8), '2026-11-06')]);
+  await page.locator('[data-farm-harvest]').click();
+  await page.getByRole('button', { name: '取り消す' }).click();
+  await expect(page.locator('[data-farm-harvest]')).toHaveText('実ったものを収穫（5株）');
+  await page.locator('[data-farm-water]').click();
+  const mark = await close(page);
+  await expect.poll(() => spawnsSince(page, 'drops', mark).then((t) => t.length)).toBe(3);
+  expect(await spawnsSince(page, 'sparkle', mark)).toEqual([]);
+});
