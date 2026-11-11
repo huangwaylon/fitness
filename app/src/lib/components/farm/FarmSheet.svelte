@@ -8,20 +8,21 @@
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
   import Chip from '../ui/Chip.svelte';
-  import { CROPS, FARM, cropKey, plantsOf, seedKey, type Crop, type FarmSrc } from '#lib/contract/farm.ts';
+  import FieldMap from './FieldMap.svelte';
+  import { CROPS, FARM, cropKey, daysLeft, plantsOf, seedKey, stageOf, type Crop, type FarmSrc } from '#lib/contract/farm.ts';
   import { sellPrice } from '#lib/contract/shop.ts';
   import { layoutPlots } from '#lib/layout/field.ts';
   import { shopView } from '#lib/model/shop.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { digMany, harvestAll, pickSeed, plantMany, seed, waterAll } from '#lib/store/farm.svelte.ts';
+  import { dig, digMany, harvestAll, pickSeed, plantMany, seed, waterAll } from '#lib/store/farm.svelte.ts';
   import { undoBanner } from '#lib/store/actions.ts';
   import { site } from '../island/site.svelte.ts';
   import { farmToday } from '../island/farm.ts';
   import { islandDay } from '../island/ambientClock.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { bare } from '../kiroku/zukan.ts';
-  import { fillPlan, harvestOps, orphans, waterTargets } from './sheet.ts';
+  import { fillPlan, harvestOps, orphans, waterTargets, yieldRange } from './sheet.ts';
   import type { Who } from '#lib/types.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
@@ -38,22 +39,34 @@
     if (!m) return null;
     const { farm, watered } = farmToday(m.state, date);
     const plots = layoutPlots(site.layout ?? layoutStore.current);
-    const field = plots.some((x) => x.who === m.me);
+    const mine = plots.filter((x) => x.who === m.me);
     const ripe = harvestOps(farm, m.me, date, watered);
     const others = (['A', 'B', 'G'] as const).filter((w) => w !== m.me).map((who) => ({ who, n: plantsOf(farm, who) })).filter((o) => o.n);
     return {
-      field, ripe, others,
+      farm, watered, mine, field: mine.length > 0, ripe, others,
       max: ripe.reduce((a, o) => a + o.n, 0),
       shells: ripe.reduce((a, o) => a + o.n * (sellPrice(cropKey(farm.plots.get(o.p)!.c)) ?? 0), 0),
       water: waterTargets(plots, farm, date, watered),
       planted: plots.some((x) => farm.plots.has(x.p)),
-      empty: plots.filter((x) => x.who === m.me && !farm.plots.has(x.p)).length,
+      empty: mine.filter((x) => !farm.plots.has(x.p)).length,
       fill: held ? fillPlan(plots, farm, m.me, held.n) : [],
       off: orphans(farm, m.me, plots),
       n: plantsOf(farm, m.me)
     };
   });
   const crop = (c: Crop, src: FarmSrc = 'crop') => (src === 'start' ? t(`farm.start.${c}`) : bare(t(`beach.name.${c}`)));
+
+  /** The map's selected plot: what is on it, as its row tells it. */
+  let selected = $state<string | null>(null);
+  function cellOf(p: string) {
+    const pl = view?.farm.plots.get(p);
+    if (!view || !pl) return { p, label: t('farm.emptyCell') };
+    const ripe = stageOf(pl, date) === 3, wet = view.watered(p, date);
+    const { lo, hi } = yieldRange(p, pl, date, view.watered), name = crop(pl.c), n = daysLeft(pl, date);
+    const label = ripe ? t('farm.cellRipe', { name, n: lo }) : lo === hi ? t('farm.cellSure', { name, n, k: lo }) : t('farm.cell', { name, n, lo, hi });
+    return { p, pl, ripe, wet, n: lo, label };
+  }
+  const cell = $derived(selected && view?.mine.some((x) => x.p === selected) ? cellOf(selected) : null);
 
   function harvest() {
     if (!view?.ripe.length) return;
@@ -63,6 +76,16 @@
   function plant() {
     if (!held || !view?.fill.length) return;
     undoBanner(t('farm.planted', { name: crop(held.c, held.src), n: view.fill.length }), plantMany(date, view.fill, held.c, held.src));
+  }
+  function harvestCell(p: string, n: number) {
+    undoBanner(t('farm.harvested', { max: formatNum(n) }), harvestAll(date, [{ p, n }]));
+  }
+  function plantCell(p: string) {
+    if (!held || !view || view.n >= FARM.cap) return;
+    undoBanner(t('farm.planted', { name: crop(held.c, held.src), n: 1 }), plantMany(date, [p], held.c, held.src));
+  }
+  function digCell(p: string, c: Crop) {
+    undoBanner(t('farm.dug', { name: crop(c) }), dig(date, p));
   }
   function backToStarts() {
     if (!view?.off.length) return;
@@ -82,12 +105,27 @@
             <button type="button" class="btn yuzu" data-farm-harvest data-sfx="tick" onclick={harvest}>{t('farm.harvestAll', { n: view.ripe.length })}</button>
           {/if}
           {#if view.planted}
-            <button type="button" class="btn small paper" data-farm-water data-sfx="tick" aria-disabled={!view.water.length}
+            <button type="button" class="btn paper water" data-farm-water data-sfx="tick" aria-disabled={!view.water.length}
               onclick={() => view?.water.length && waterAll(view.water)}>{view.water.length ? t('farm.waterAll', { n: view.water.length }) : t('farm.watered')}</button>
           {/if}
         </div>
       </section>
       {#if view.field}
+        <section class="card field">
+          <FieldMap plots={view.mine} farm={view.farm} {date} watered={view.watered} label={(p) => cellOf(p).label} bind:selected />
+          {#if cell}
+            <div class="sel" data-farm-selected={cell.p}>
+              <span class="what">{cell.label}{#if cell.wet}<span class="wet">{t('farm.watered')}</span>{/if}</span>
+              {#if cell.pl}
+                {@const pl = cell.pl}
+                {#if cell.ripe}<button type="button" class="btn small" data-farm-act="harvest" data-sfx="tick" onclick={() => harvestCell(cell.p, cell.n ?? 1)}>{t('farm.act.harvest')}</button>{/if}
+                <button type="button" class="btn small paper" data-farm-act="dig" data-sfx="tick" onclick={() => digCell(cell.p, pl.c)}>{t('farm.act.dig')}</button>
+              {:else}
+                <button type="button" class="btn small" data-farm-act="plant" data-sfx="tick" aria-disabled={!held || view.n >= FARM.cap} onclick={() => plantCell(cell.p)}>{t('farm.act.plant')}</button>
+              {/if}
+            </div>
+          {/if}
+        </section>
         <section class="card plant" data-farm-plant>
           {#if !view.empty}
             <p class="note" data-farm-empty>{t('farm.full')}</p>
@@ -128,6 +166,12 @@
   .acts:empty { display: none; }
   .acts .btn { margin: 0 0 var(--lip-h); }
   .btn.yuzu { --fill: var(--c-yuzu); --lip-c: var(--c-yuzu-lip); min-height: 52px; font-size: var(--fs-body); }
+  .btn.water { min-height: 44px; font-size: var(--fs-body); }
+  .field { display: grid; gap: 10px; padding: 12px 10px; }
+  .sel { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+  .sel .what { flex: 1; min-width: 0; font: 600 var(--fs-s)/1.4 var(--font-ui); text-wrap: pretty; }
+  .sel .wet { margin-left: 6px; color: var(--text-soft); }
+  .sel .btn { margin: 0 0 var(--lip-h); padding: 0 14px; }
   .plant { display: grid; gap: 10px; }
   .plant .btn { margin: 0 0 var(--lip-h); }
   .off { display: flex; align-items: center; justify-content: space-between; gap: 10px; font: 600 var(--fs-s)/1.4 var(--font-ui); }

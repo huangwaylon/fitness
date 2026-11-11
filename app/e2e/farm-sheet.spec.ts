@@ -87,3 +87,24 @@ test('植える: the held crop on my empty plots in reading order, up to what I 
   await expect(page.locator('[data-farm-empty]')).toHaveText('空きはありません');
   await expect.poll(() => farmRows(page), { timeout: 15_000 }).toEqual(plots.slice(2).map((p) => ({ o: 'plant', p, c: 'tomato', src: 'start' })));
 });
+
+test('the map: a cell a plot, a tap selects it; its row digs (取り消す puts it back) or plants', async ({ page }) => {
+  await up(page, [FIELD, ...POCKET, planted(plots.slice(0, 3))], D);
+  await expect(page.locator('[data-farm-cell]')).toHaveCount(40);
+  const first = page.locator(`[data-farm-cell="${plots[0]}"]`);
+  await expect(first).toHaveAttribute('aria-label', 'トマト・あと3日・見込み1〜3個');
+  await first.click();
+  await expect(page.locator('[data-farm-selected] .what')).toHaveText('トマト・あと3日・見込み1〜3個');
+  await page.locator('[data-farm-act="dig"]').click();
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトを掘り起こしました');
+  await expect(page.locator('[data-farm-count]')).toHaveText('2/40株');
+  await expect(first).toHaveAttribute('aria-label', '空き区画');
+  await page.getByRole('button', { name: '取り消す' }).click();
+  await expect(page.locator('[data-farm-count]')).toHaveText('3/40株');
+  await expect(first.locator('img')).toHaveCount(1);
+  // an empty plot: 植える with the held start
+  await page.locator(`[data-farm-cell="${plots[39]}"]`).click();
+  await page.locator('[data-farm-act="plant"]').click();
+  await expect(page.locator('[data-farm-count]')).toHaveText('4/40株');
+  await expect.poll(() => farmRows(page), { timeout: 15_000 }).toEqual([{ o: 'plant', p: plots[39], c: 'tomato', src: 'start' }]);
+});
