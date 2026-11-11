@@ -3,7 +3,8 @@
   // (every ripe plant of mine), 水やり (anyone's plants whose watering counts today: sheet.ts) and 植える (my empty plots, with a crop I
   // hold), each one event (store/farm.svelte.ts; the watering one change of the shared day; none: done, or from when). The partner's and the
   // guest's fields a line each, and who else watered mine today; my plants off every field (a field moved or deleted in
-  // /editor) back to starts; the rule. A 収穫's banner names its crops and their かいがら.
+  // /editor) back to starts; the rule. A 収穫's banner names its crops and their かいがら; the sheet's close after a 収穫
+  // or a 水やり plays its wave over those plots on the island (island/farmUi.svelte.ts farmWave).
   // Kanji (a sheet's copy).
   import '#lib/i18n/catch.ts'; // the crops' names (their own catalog, out of the island's first load)
   import Sheet from '../ui/Sheet.svelte';
@@ -20,6 +21,7 @@
   import { undoBanner } from '#lib/store/actions.ts';
   import { site } from '../island/site.svelte.ts';
   import { farmToday } from '../island/farm.ts';
+  import { farmWave } from '../island/farmUi.svelte.ts';
   import { islandDay } from '../island/ambientClock.ts';
   import { formatNum, i18n, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -78,8 +80,14 @@
   /** 収穫 tapped while the sheet is up: the button stays (disabled, 収穫済み) till it closes, so nothing moves and the
    *  focus stays in the sheet (a removed button would also restyle the page: the app's :root:has() rules). */
   let harvested = $state(false);
+  /** The plots harvested and watered while the sheet is up: its close's wave (a harvest's over a water's). */
+  let done: { harvest: string[]; water: string[] } = { harvest: [], water: [] };
   $effect(() => {
-    if (!open) harvested = false;
+    if (open) return;
+    harvested = false;
+    if (done.harvest.length) farmWave('harvest', done.harvest);
+    else if (done.water.length) farmWave('water', done.water);
+    done = { harvest: [], water: [] };
   });
   const crop = (c: Crop, src: FarmSrc = 'crop') => (src === 'start' ? t(`farm.start.${c}`) : bare(t(`beach.name.${c}`)));
 
@@ -105,12 +113,20 @@
   function harvestOf(ops: readonly { p: string; n: number }[]) {
     const line = harvestedLine(ops);
     cue('farm-harvest');
-    undoBanner(line, harvestAll(date, ops));
+    const r = harvestAll(date, ops);
+    if (r.ok) done.harvest.push(...ops.map((o) => o.p));
+    undoBanner(line, r);
   }
   function harvest() {
     if (!view?.ripe.length) return;
     harvested = true;
     harvestOf(view.ripe);
+  }
+  function water() {
+    if (!view?.water.length) return;
+    const ids = view.water;
+    waterAll(ids);
+    done.water.push(...ids);
   }
   function plant() {
     if (!held || !view?.fill.length) return;
@@ -157,7 +173,7 @@
           {/if}
           {#if view.planted}
             <button type="button" class="btn paper water" data-farm-water data-sfx="tick" aria-disabled={!view.water.length}
-              onclick={() => view?.water.length && waterAll(view.water)}>{waterLabel}</button>
+              onclick={water}>{waterLabel}</button>
           {/if}
         </div>{/if}
         {#each view.helped as h (h.who)}

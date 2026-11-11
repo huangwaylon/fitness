@@ -189,3 +189,35 @@ test('who else watered my plants today: a note a person, with how many', async (
   await expect(page.locator('[data-farm-helped="B"]')).toHaveText(/^今日は.+が水やりしてくれました（4株）$/);
   await expect(page.locator('[data-farm-water]')).toHaveText('水やり（2株）');
 });
+
+/** The island's effect spawns of `kind` after the log's entry at `mark` (world3d/effects.ts's log): their times. */
+const spawnsSince = (page: Page, kind: string, mark: number) =>
+  page.evaluate(([kind, mark]) => (window as unknown as { __fx3: { log(): { kind: string; t: number }[] } }).__fx3.log()
+    .filter((e) => e.kind === kind && e.t > mark).map((e) => e.t), [kind, mark] as const);
+/** The spawns' spread, first to last (ms). */
+const spread = (t: number[]) => Math.max(...t) - Math.min(...t);
+/** Close the sheet: the effect log's last time before (nothing spawns under a sheet). */
+async function close(page: Page) {
+  const mark = await page.evaluate(() => (window as unknown as { __fx3: { log(): { t: number }[] } }).__fx3.log().at(-1)?.t ?? -1);
+  await page.locator('.titlebar .nav.close').click();
+  await expect(page.locator('[data-farm-sheet]')).toBeHidden();
+  return mark;
+}
+
+test('the close after a 収穫: a wave of sparkles over the harvested plots, ≤ 8 within 1.5 s (a 水やり with it: no drops)', async ({ page }) => {
+  await up(page, [FIELD, ...POCKET, planted(plots.slice(0, 12))]);
+  await page.locator('[data-farm-harvest]').click();
+  await page.locator('[data-farm-water]').click();
+  const mark = await close(page);
+  await expect.poll(() => spawnsSince(page, 'sparkle', mark).then((t) => t.length)).toBe(8);
+  expect(spread(await spawnsSince(page, 'sparkle', mark))).toBeLessThan(1500);
+  expect(await spawnsSince(page, 'drops', mark)).toEqual([]);
+});
+
+test('the close after a 水やり: its drops over the watered plots, ≤ 8 within 1.5 s', async ({ page }) => {
+  await up(page, [FIELD, ...POCKET, planted(plots.slice(0, 5), '2026-11-06')]);
+  await page.locator('[data-farm-water]').click();
+  const mark = await close(page);
+  await expect.poll(() => spawnsSince(page, 'drops', mark).then((t) => t.length)).toBe(5);
+  expect(spread(await spawnsSince(page, 'drops', mark))).toBeLessThan(1500);
+});
