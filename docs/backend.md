@@ -385,13 +385,14 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 - **Auth:** the notify secret is derived from `KEY_A` and `KEY_B` by both servers (`relay/src/notify.ts`: the
   derivation, the headers, the 5-minute window); a phone holds only its own key, so it can't sign. Rotating a key
   rotates it ([runbook §3](ops/runbook.md#3-rotate-a-key)); the same secret signs `/admin`.
-- **Relay → phones:** `changed {what, who, at, rev, sid?, t}` to every authenticated socket, the writer's too (a
+- **Relay → phones:** `changed {what, who, at, rev, sid?, calm?, t}` to every authenticated socket, the writer's too (a
   Shortcut upload reaches its own phone), the guest's only of what it may see; the last mark is the welcomes' `rec`.
 - **The nudge:** after an ack the phone sends `saved {}`, relayed like any intent, until a `changed` has reached it
   this session.
 - **Client** (`store/live.ts`): `onChange` → one `refresh({fresh: true})` after `PUSH_GATHER_MS`, skipped when the
   cache has it and for this page's own `event` (`sid`); my other devices' wait till they pause (`MINE_WAIT_MS`), so the
-  editor's burst of writes from the Mac is a few fetches.
+  editor's burst of writes from the Mac is a few fetches, and so does a partner's `calm` run (only events the island
+  doesn't draw: live-protocol.ts CALM_EVENTS, the meal log, ききみみ, packing, the wedding board; `CALM_WAIT_MS` 10 s).
 
 ## Service worker
 `app/src/service-worker/` (pure rules and every cache's bound in `caches.ts`). No `push` or `notificationclick` handler
@@ -410,7 +411,9 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
   or after 3 s.
 - **Updates:** Kit's `_app/version.json` check sets `updated`; the layout waits for the new build's worker
   (`ui-state/reload.ts newWorker`) and reloads once nothing is open. Never on a timer; a failed install reloads
-  nothing. `e2e/sw-update.spec.ts` (`scripts/serve-build.ts /__e2e/deploy` stands in for a deploy).
+  nothing. A launch the worker served checks at once (`ui-state/launchUpdate.ts`): the island waits ≤600 ms for the
+  answer and, for a newer build, ≤3 s for its worker, then reloads into it before any of the island is built
+  (`app.reload why=launch`); offline or slow, the old build boots as before. `e2e/sw-update.spec.ts` (`scripts/serve-build.ts /__e2e/deploy` stands in for a deploy).
 - **Packs** (the players' and ききみみ's): fetched whole (Pages answers a Range with the whole file), one fetch at a
   time a URL (`fetchShared`).
 

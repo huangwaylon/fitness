@@ -38,12 +38,12 @@ Each event's fields, kinds and closed sets are the registry's (`contract/log.ts`
 | `app.open` | info | `nav`, `route`, `pwa`, `w`, `h`, `dpr`, `crashed`, `lt`, `q`/`qAgeS` (the write queue), `coldS` (a fresh load's seconds since the app was last hidden: a background kill when short) | each load |
 | `app.ready` | info | `ms` (navigation start → the 3D island loaded), `route` | once a load |
 | `app.show` | info | `awayS`, `route` | shown again |
-| `app.reload` | info | `why` (update, chunk) | the app reloads itself |
+| `app.reload` | info | `why` (update, launch: a cold open into a waiting deploy, chunk) | the app reloads itself |
 | `perf.frames` | info | `p50`, `p95`, `fps`, `long`, `drawFps`, `hz`, `mode`, `when` | 10 s after ready; again after 10 min away |
 | `perf.sheet` | info | `sheet`; ms from the tap to `chunk` (the dialog shown), `content` (300 ms quiet after opening), `anim`, `late`; `long`, `slow`, `first`, `kept` | each sheet's first opening a load; a fifth of the rest |
-| `perf.boot` | info | ms from navigation to `mount`, `first`, `loaded`, `shown`; the longest frames, programs, steps by what held them, late models | once a load, 1 s after the island is whole (world3d/boot.ts) |
+| `perf.boot` | info | ms from navigation to `mount`, `first`, `loaded`, `shown`, `data` (the record's first model); the longest frames, programs, steps by what held them, `late`/`lastM` (models in after `loaded`), `fieldsMs`/`fields` (cache, worker, main), `ask`/`held` (the launch's version check, ui-state/launchUpdate.ts) | once a load, 1 s after the island is whole (world3d/boot.ts) |
 | `perf.back` | info | `perf.boot`'s marks for the first return from a room | once a load (world3d/boot.ts) |
-| `perf.rest` | info | a second at rest: `fps`, `wakes`, `calls`, `tris`, `full` (% of frames at the full rate) and its top reasons (`why1`-`why3`), `pts`/`pm` (`?points=`, `?pointmask=1`) | once a load, after 15 s untouched (world3d/rest.ts) |
+| `perf.rest` | info | the rest since the last show (every second 2 s+ untouched): `s`, `fps`, `wakes`, `calls`, `tris`, `full` (% of frames at the full rate) and its top reasons (`why1`-`why3`), `pts`/`pm` (point lights, their mask: on unless `?pointmask=0`) | at each hide, or the island going, with 3 s+ of rest (world3d/rest.ts) |
 | `perf.drag` | info | the first drag's pixel-ratio swaps (ms, their first frames' CPU) | once a load (world3d/drag.ts) |
 | `js.error` | error (warn while leaving) | `kind`, `msg`, `stack` (4 frames), `src`, `n` (folded repeats), `leaving`, `route` | `error`, `unhandledrejection` |
 | `api.fail` / `api.ok` | warn / info (10 % sampled) | `action`, `err`, `http`, `ms`, `tries`; `r` | a `/api` call |
@@ -54,10 +54,10 @@ Each event's fields, kinds and closed sets are the registry's (`contract/log.ts`
 | `ws.open` / `ws.close` / `ws.park` | info / info / warn | `ms`, `retries`; `code`, `secs`, `welcomed`, `why` (hidden, offline, stale, late/stuck, rekey, stop, closed), `quiet`, `rtt`; `code` | the live socket, every socket's end |
 | `ws.unacked` | warn | `kind`, `tries` | a kept intent dropped: its ack never came on a socket that answered, 4 tries (sync/live.ts) |
 | `gl.lost` | warn | `where`, `restored` | WebGL context lost / back |
-| `chunk.fail` | warn | | a chunk failed to load |
+| `chunk.fail` | warn | | a chunk failed to load (not while the page is leaving: pagehide, the app's own reload) |
 | `storage.fail` | warn | `store`, `kind` | storage refused a write |
 | `storage.persist` | info | `ok`, `was`, `useMb`, `quotaMb` | the installed app asked to keep its storage (once, after a sync) |
-| `storage.use` | info | `useMb`, `quotaMb`, `persisted` | once a Tokyo day, after a sync (sync/persist.ts) |
+| `storage.use` | info | `useMb`, `quotaMb`, `persisted`; each cache's MB (`shell`, `room`, `listen`, `art`, `photos`, `tiles`, `foodImg`, `food`, `fonts`, `audio`, `other`) and `stt` (the recogniser kept: sync/cacheSizes.ts) | once a Tokyo day, after a sync (sync/persist.ts) |
 | `use` | info | counters `sheet:`, `ev:`, `route:`, `act:`, `swallow:<tag>` (a failure the app went on without: quiet.ts) | summed, one a flush |
 | `log.drop` | warn | `n`, `why` (cap, full, day, pending) | the phone's log dropped events |
 | `mic.env` / `mic.perm` / `mic.duplex` / `mic.stt` | info | the mic probe's numbers and closed sets ([kikimimi-mic.md](../kikimimi-mic.md) "The probe"). **Never heard text, a device label or a sentence** | 設定's mic test, on its send |

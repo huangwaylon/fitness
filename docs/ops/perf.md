@@ -6,7 +6,9 @@ phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), neve
 ## Budgets
 - **Bytes:** gated by the build, the one copy of the numbers: [testing.md "Load budget"](testing.md#load-budget).
 - **Startup:** the asleep guest's villager adds nothing to a member's launch: its model after `shown`, no card while
-  it loads (Island3D `guestLate`). ごはん: products.json (2.7 MB) only with a search, or a day with a product logged
+  it loads (Island3D `guestLate`). After a deploy too: the fields come from IndexedDB unless the field code changed
+  (`fieldsCache.ts`), the garden's manifest is asked for as the island is made (its crops in the first wave), and a
+  cold open into a waiting deploy reloads before the island is built ([backend](../backend.md) "Service worker"). ごはん: products.json (2.7 MB) only with a search, or a day with a product logged
   (`db.wantMore`); a picture holds its canvas, not its decoded sheet (food/cells.ts).
 - **The model:** `npm run bench`, year 3 compacted ≤ 15 ms ([runbook §1](runbook.md#1-deploy-the-ui)).
 - **The island's length:** the ground costs the land's length, not the grid's (default 57 rows: fields ~105 ms on the
@@ -17,8 +19,10 @@ phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), neve
   exhibits use it; the warm-up uploads every texture and compiles every room's programs, so a room change compiles
   nothing (museum.spec @render). At rest 0 frames; exhibits step at 30/s while something moves (15/s after 2.5 s with
   no finger).
-- **Frames:** the island at most 30 fps ([design](../design.md#frame-rate)); nothing in the log, the sync or the
-  sheets runs per frame.
+- **Frames:** the island at most 30 fps ([design](../design.md#frame-rate)), 12 at rest, a bug's fade and a
+  character's sparkles, hearts and notes included (things.ts, effects.ts `calm`); the point lights' mask on (bend.ts).
+  Nothing in the log, the sync, the clouds or the sheets runs per frame (clouds.ts: no Animation read between steps).
+  The phones' rest: `perf.rest` at each hide.
 
 ## Measuring
 - **Launch, an A/B on the desktop** (never CI's: its budgets are bytes only): `npm run perf:start --

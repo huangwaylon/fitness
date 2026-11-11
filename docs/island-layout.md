@@ -127,7 +127,8 @@ latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (its pa
   tier, stone steps for the stairs.
 - **The distance fields** (`layout/fields.ts`): each region's signed distance to its rounded edge (the land, the
   sand, the fresh water, the paths, each tier), read by the heights, the bake and the water's edges. Built once per
-  tiles and bridges, off the main thread, cached for the next launch (`fieldsPrime.ts`, `fieldsCache.ts`).
+  tiles and bridges, off the main thread, cached for the next launch (`fieldsPrime.ts`, `fieldsCache.ts`: keyed by
+  the layout and the fields worker's hashed file, so a deploy that leaves the field code alone keeps them).
 - **Soft edges** (NH's coast is round; the radii: "Heights" above): the data and the objects stay on tiles, only the
   drawn edge of the coast, the beach, the fresh water and the paths is round; a river runs out to the sea square. The
   editor's plan stays tile-exact; its 3D preview is the same ground.
@@ -255,7 +256,7 @@ editor's 野菜 and フェンス tabs and NH's garden flowers under 花.
   each tile it crosses, four-connected (across, then along, so a run joins), skipping tiles taken; the run is one action
   (⌘Z). The phone view's もようがえ has the same tabs (野菜, フェンス), a piece at a time.
 - **Loading**: their models are packs listed in `world3d/garden.json` (docs/world3d-assets.md): an island without one
-  fetches none of it. The editors' icons are one sheet (`npm run garden-icons`).
+  fetches none of it; one with some asks for it as the island is made, so they come with the first placing. The editors' icons are one sheet (`npm run garden-icons`).
 
 ## The outdoor catalogue
 

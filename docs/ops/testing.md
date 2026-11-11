@@ -203,8 +203,8 @@ builds or with `?demo`; `?date`, `?theme` and `?season` work everywhere:
 Anywhere: `?panel=rewards` opens ごほうび at once; the 3D island's renderer takes `?dpr=<ratio>`, `?aa=0|1`,
 `?shadows=0|1`, `?ambient=<fps>`, and for the phones' A/B (perf.drag, perf.rest) `?dprmove=<ratio>` (while the camera
 moves: 1.5), `?shadow=<px>` (the shadow map: 2048), `?cull=0` (every still thing drawn: world3d/things.ts cull),
-`?points=<n>` (the real point lights: 6) and `?pointmask=1` (unlit point lights' shader work skipped: bend.ts
-maskedLights). The editor's params: [island-layout.md](../island-layout.md). `window.__world` (`cam()`, `go(z)`,
+`?points=<n>` (the real point lights: 6) and `?pointmask=0` (the unlit point lights' shader mask off: on by default,
+bend.ts pointMask). The editor's params: [island-layout.md](../island-layout.md). `window.__world` (`cam()`, `go(z)`,
 `at(x, z)`, `put(x, z)`, `idle()`, `quiet()`, `perf`, `stops()`, `mine()`, `partner()`, `geo()`, `site()`, …) serves
 the e2e and the console (e2e/island.ts wraps them).
 
