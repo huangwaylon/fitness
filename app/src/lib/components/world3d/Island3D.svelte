@@ -1006,7 +1006,7 @@
     timed?.mount(mountAt);
     lateFrom = performance.now();
     if (timed) e.onDrawn(timed.frame);
-    // (the island at rest, once a load: perf.rest)
+    // (the island at rest, counted all the time and logged at each hide: perf.rest)
     const offRest = watchRest({ stats: () => e.stats(), ok: () => loaded && !document.hidden && !e.isPaused() });
     // (the first drag's pixel-ratio swaps, once a load: perf.drag)
     const logSwap = watchDrag({ stats: () => e.stats() }, num('dprmove') ?? DPR_MOVING);
