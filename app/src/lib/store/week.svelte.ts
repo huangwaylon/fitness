@@ -39,6 +39,8 @@ class WeekStore implements Host {
   #loadingBackend: Promise<Backend> | null = null;
   #demoMe: Who = 'A';
   #stopClock: (() => void) | null = null;
+  /** The device's locale as last read or written (DEVICE.locale: the first paint's before any rows). */
+  #locale: unknown;
 
   /** Read `?demo` / `?demo=harvest` once; it sticks for the tab session. */
   init(): void {
@@ -89,7 +91,9 @@ class WeekStore implements Host {
     this.model = m;
     this.view = v;
     setLocale(v.locale);
-    if (readJson(localKV(), DEVICE.locale) !== v.locale) writeJson(localKV(), DEVICE.locale, v.locale);
+    // (read once, not at every tap's recompute)
+    this.#locale ??= readJson(localKV(), DEVICE.locale);
+    if (this.#locale !== v.locale) writeJson(localKV(), DEVICE.locale, (this.#locale = v.locale));
   }
 
   #start(): void {

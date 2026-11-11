@@ -160,6 +160,17 @@ export function unqueue(id: string): boolean {
   return true;
 }
 
+/** A still-held event's data replaced (a farm tap joining its batch: store/farm.svelte.ts), sent at `until`: moved to the
+ *  queue's end with `now` as its time, as an unqueue and an enqueue would, but one write, and its id kept (its undo and
+ *  hold still hold it). False once it was tried or sent (one tried may have reached the record under that id). */
+export function replaceHeld(id: string, data: Record<string, unknown>, now: number, until: number): boolean {
+  const q = queued();
+  const ev = q.find((x) => x.id === id);
+  if (!ev || ev.tries > 0 || flushingIds.has(id)) return false;
+  saveQueue([...q.filter((x) => x !== ev), { ...ev, data, queuedAt: now, nextAt: until }]);
+  return true;
+}
+
 /** Move a still-held event's send time (the undo banner was paused or resumed). False once it was tried or sent. */
 export function holdEvent(id: string, until: number): boolean {
   const q = queued();

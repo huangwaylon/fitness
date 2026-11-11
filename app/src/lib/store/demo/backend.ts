@@ -66,7 +66,7 @@ export class DemoBackend implements Backend {
 
   send(type: EventType, data: Record<string, unknown>, opts: SendOptions): SendResult {
     const now = this.now();
-    const ev: QueuedEvent = { id: `demo-${now.toString(36)}-${this.#events.length}`, type, data, queuedAt: now, tries: 0, nextAt: now, person: this.#me };
+    let ev: QueuedEvent = { id: `demo-${now.toString(36)}-${this.#events.length}`, type, data, queuedAt: now, tries: 0, nextAt: now, person: this.#me };
     this.#events.push(ev);
     this.#save();
     if (type === 'harvest') this.#harvested = true;
@@ -80,7 +80,16 @@ export class DemoBackend implements Backend {
       this.#host.changed();
       return true;
     };
-    return { ok: true, undo, hold: (ms) => ms ?? HOLD_MAX_MS };
+    const replace = (data: Record<string, unknown>) => {
+      const i = this.#events.indexOf(ev);
+      if (i < 0) return false;
+      this.#events.splice(i, 1);
+      this.#events.push((ev = { ...ev, data, queuedAt: this.now() }));
+      this.#save();
+      this.#host.changed();
+      return true;
+    };
+    return { ok: true, undo, hold: (ms) => ms ?? HOLD_MAX_MS, replace };
   }
 
   sendMany(events: readonly { type: EventType; data: Record<string, unknown> }[]): void {

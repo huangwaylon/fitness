@@ -42,8 +42,11 @@ describe('demo isolation', () => {
     for (const [k, v] of before) expect(kv.m.get(k)).toBe(v);
     expect([...kv.m.keys()].filter((k) => !before.has(k))).toEqual([DEMO.events]);
     expect(queued().map((e) => e.id)).toEqual([live.id]);
+    expect(r.replace!({ key: 'moveGoal', value: 600 }, 5000)).toBe(true);
+    expect(b.events().map((e) => e.data)).toEqual([{ key: 'moveGoal', value: 600 }]);
     expect(r.undo!()).toBe(true);
     expect(b.events()).toEqual([]);
+    expect(r.replace!({ key: 'moveGoal', value: 700 }, 5000)).toBe(false);
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 

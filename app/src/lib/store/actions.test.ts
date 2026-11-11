@@ -129,8 +129,13 @@ describe('the island’s finds (the ずかん)', () => {
       ['2026-11-18T01:00:00.000Z', 'A', 't0', 'tally', '{"date":"2026-11-18","counts":{"fish:dab":2}}'],
       ['2026-11-18T12:00:00.000Z', 'A', tallyOf()[0].id, 'tally', JSON.stringify(tallyOf()[0].data)]
     ]);
+    const first = tallyOf()[0].id, changes = vi.spyOn(week, 'changed');
     recordFind('bug', 'moth');
     expect(tallyOf().map((e) => e.data)).toEqual([{ date: '2026-11-18', counts: { 'fish:dab': 3, 'bug:moth': 1 } }]);
+    // the held one's data replaced (its id kept): the moth's find and its tally a recompute each (a take-back and a
+    // send of the tally were two)
+    expect([tallyOf()[0].id, changes.mock.calls.length]).toEqual([first, 2]);
+    changes.mockRestore();
     // held until the first catch's minute is up, not a new minute from the second
     expect(tallyOf()[0].nextAt).toBe(NOW + 60_000);
   });
@@ -198,6 +203,25 @@ describe('the island’s finds (the ずかん)', () => {
     expect(backs()).toHaveLength(1);
     expect(queued().filter((e) => e.type === 'tally').at(-1)?.data).toEqual({ date: day, counts: { 'fish:koi': 3 } });
     world.reset();
+  });
+
+  it('my island day: held two minutes, a change meanwhile replacing its data in one recompute; the next window its own', async () => {
+    const { sendIslandDay } = await import('./actions.ts');
+    vi.advanceTimersByTime(130_000); // (the last tests' held rows sent)
+    await model();
+    const days = () => queued().filter((e) => e.type === 'island');
+    const row = (watered: string[]) => ({ taken: [], puts: [], shakes: [], watered, wishes: {} });
+    const before = days().length;
+    sendIslandDay('2026-11-18', row(['fd:f.0.0']));
+    const first = days().at(-1)!, changes = vi.spyOn(week, 'changed');
+    vi.advanceTimersByTime(30_000);
+    sendIslandDay('2026-11-18', row(['fd:f.0.0', 'fd:f.1.0']));
+    expect(changes.mock.calls.length).toBe(1);
+    changes.mockRestore();
+    expect(days().slice(before).map((e) => [e.id, e.data.watered, e.nextAt])).toEqual([[first.id, ['fd:f.0.0', 'fd:f.1.0'], first.nextAt]]);
+    vi.advanceTimersByTime(90_000);
+    sendIslandDay('2026-11-18', row(['fd:f.2.0']));
+    expect(days().at(-1)!.id).not.toBe(first.id);
   });
 
   it('a race lost on a claim this phone never counted: nothing taken, no line', async () => {

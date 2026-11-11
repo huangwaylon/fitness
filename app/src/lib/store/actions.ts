@@ -143,7 +143,7 @@ export function setVillager(villager: string) {
 const TALLY_HOLD_MS = 60_000;
 /** The tally waiting to be sent (its counts as sent): a newer one replaces it within the same window. Still queued
  *  past its window (offline), it can still be taken back (`undo`), for a race lost late (`lostRace`). */
-let held: { date: LocalDate; until: number; counts: Record<string, number>; undo: () => boolean; hold?: (ms: number | null) => number; w: number } | null = null;
+let held: { date: LocalDate; until: number; counts: Record<string, number>; r: SendResult; w: number } | null = null;
 /** The held tally's window (a new one each minute's first catch): a claim counted in the one still held is taken out
  *  of it; one counted in a window sent since is given back (`tally_back`). */
 let windows = 0;
@@ -158,11 +158,10 @@ function countOne(key: string, claim?: string): void {
   const counts = addToTally(mine?.counts ?? {}, key);
   const now = Date.now();
   const same = held && held.date === date && held.until > now ? held : null;
-  const holdMs = same ? same.until - now : TALLY_HOLD_MS;
-  same?.undo();
   const w = same ? same.w : ++windows;
-  const r = week.send('tally', { date, counts }, { holdMs });
-  held = r.undo ? { date, until: now + holdMs, counts, undo: r.undo, hold: r.hold, w } : null;
+  // (its data replaced: one recompute of the model a catch, where a take-back and a send were two)
+  if (same?.r.replace?.({ date, counts }, same.until - now)) same.counts = counts;
+  else held = sendTally(date, counts, same ? same.until : now + TALLY_HOLD_MS, w, same);
   if (claim) {
     counted.set(claim, { key, date, w });
     if (counted.size > COUNTED_MAX) counted.delete(counted.keys().next().value!);
@@ -225,15 +224,24 @@ world.lost = (claim, who, live, kind) => void lostRace(claim, who, kind === 'cat
 /** One `key` less in the tally waiting to be sent (its window kept): false when none waits, or it was sent. */
 function uncount(key: string): boolean {
   const h = held;
-  if (!h || !(h.counts[key] > 0) || !h.undo()) return false;
+  if (!h || !(h.counts[key] > 0)) return false;
   const { [key]: n, ...rest } = h.counts;
   const counts = n > 1 ? { ...rest, [key]: n - 1 } : rest;
-  held = null;
-  if (!Object.keys(counts).length) return true;
-  const holdMs = Math.max(0, h.until - Date.now());
-  const r = week.send('tally', { date: h.date, counts }, { holdMs });
-  held = r.undo ? { date: h.date, until: h.until, counts, undo: r.undo, hold: r.hold, w: h.w } : null;
+  if (Object.keys(counts).length && h.r.replace?.({ date: h.date, counts }, Math.max(0, h.until - Date.now()))) {
+    h.counts = counts;
+    return true;
+  }
+  // (none left, or tried already: offline past its window, then taken back whole and the rest sent anew)
+  if (!h.r.undo?.()) return false;
+  held = Object.keys(counts).length ? sendTally(h.date, counts, h.until, h.w, null) : null;
   return true;
+}
+
+/** A day's tally sent (held till `until`) in place of `was` (taken back, if it still can be); the held one, or null. */
+function sendTally(date: LocalDate, counts: Record<string, number>, until: number, w: number, was: { r: SendResult } | null): typeof held {
+  was?.r.undo?.();
+  const r = week.send('tally', { date, counts }, { holdMs: Math.max(0, until - Date.now()) });
+  return r.undo ? { date, until, counts, r, w } : null;
 }
 
 /** One `key` of `date`'s tally given back (a `tally_back`, contract/tally.ts): the day's given-back counts with one
@@ -249,7 +257,7 @@ function giveBack(date: LocalDate, key: string): boolean {
 
 /** Send the held tally now (the shop: the record sells only what it holds of my catches). */
 function releaseTally(): void {
-  if (held && held.until > Date.now()) held.hold?.(0);
+  if (held && held.until > Date.now()) held.r.hold?.(0);
   held = null;
 }
 
@@ -310,17 +318,18 @@ export function sell(picks: ReadonlyMap<string, number>): SendResult & { shells?
 
 /** An island day waits this long before it is sent; the next change replaces it within the same window. */
 const ISLAND_HOLD_MS = 120_000;
-let islandHeld: { date: LocalDate; until: number; undo: () => boolean } | null = null;
+let islandHeld: { date: LocalDate; until: number; r: SendResult } | null = null;
 
 /** My part of the shared island's day `date` (store/world.svelte.ts rowOf), for the sheet. */
 export function sendIslandDay(date: LocalDate, row: object): void {
   if (!week.model) return;
   const now = Date.now();
   const same = islandHeld && islandHeld.date === date && islandHeld.until > now ? islandHeld : null;
-  const holdMs = same ? same.until - now : ISLAND_HOLD_MS;
-  same?.undo();
-  const r = week.send('island', { date, ...row }, { holdMs });
-  islandHeld = r.undo ? { date, until: now + holdMs, undo: r.undo } : null;
+  const holdMs = same ? same.until - now : ISLAND_HOLD_MS, data = { date, ...row };
+  if (same?.r.replace?.(data, holdMs)) return;
+  same?.r.undo?.();
+  const r = week.send('island', data, { holdMs });
+  islandHeld = r.undo ? { date, until: now + holdMs, r } : null;
 }
 
 // ---- The island's decorations (docs/backend.md#events `decor`): each change of mine is one op, sent at once (the

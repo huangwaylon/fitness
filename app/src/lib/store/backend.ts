@@ -24,6 +24,9 @@ export interface SendResult {
   undo?: () => boolean;
   /** Only with `holdMs`: keep holding it (`null`: as long as allowed) or send it `ms` from now; returns the ms granted. */
   hold?: (ms: number | null) => number;
+  /** Only with `holdMs`: its data replaced while it is still held, sent `holdMs` from now (one recompute, where an undo
+   *  and a send are two); false once it was sent. */
+  replace?: (data: Record<string, unknown>, holdMs: number) => boolean;
 }
 
 /** The store's status fields a backend drives, and its recompute. */

@@ -1,6 +1,6 @@
 // The live backend says so when the phone can't keep data, once per kind and session.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { configureStorage, type KV } from '#lib/sync/storage.ts';
+import { LIVE, configureStorage, type KV } from '#lib/sync/storage.ts';
 import { configureTransport } from '#lib/sync/transport.ts';
 import { IDBFactory } from 'fake-indexeddb';
 import { cacheWritten, configureCache, type SnapshotCache } from '#lib/sync/cache.ts';
@@ -267,5 +267,26 @@ describe('LiveBackend against the relay’s record', () => {
     expect(b.events()).toEqual([]); // the acked copy gives way to the row
     await vi.advanceTimersByTimeAsync(5000);
     expect(calls).toEqual(['snapshot', 'events']);
+  });
+});
+
+describe('LiveBackend held sends', () => {
+  it('replace: the held event’s data in one recompute and one queue write, its undo and hold still its own; false once sent', () => {
+    const kv = new Mem();
+    configureStorage({ local: kv });
+    setKey('ab'.repeat(32), 'A');
+    let changes = 0, writes = 0;
+    const set = kv.setItem.bind(kv);
+    kv.setItem = (k, v) => (k === LIVE.queue && writes++, set(k, v));
+    const b = new LiveBackend({ ...host(), changed: () => void changes++ });
+    const r = b.send('farm', { d: '2026-11-04', ops: [1] }, { holdMs: 2000 });
+    [changes, writes] = [0, 0];
+    expect(r.replace!({ d: '2026-11-04', ops: [1, 2] }, 2000)).toBe(true);
+    expect([changes, writes]).toEqual([1, 1]); // an undo and a send again: 2 and 2
+    expect(queued().map((e) => e.data)).toEqual([{ d: '2026-11-04', ops: [1, 2] }]);
+    expect(r.hold!(null)).toBe(120_000);
+    expect(r.undo!()).toBe(true);
+    expect(queued()).toEqual([]);
+    expect(r.replace!({ d: '2026-11-04', ops: [3] }, 2000)).toBe(false);
   });
 });

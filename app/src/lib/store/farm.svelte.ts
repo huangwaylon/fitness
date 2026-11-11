@@ -1,6 +1,6 @@
 // The fields' writes on this phone (docs/farming.md): my plants, harvests and digs as `farm` ops, shown at once (the
 // model folds the queued row as the record will judge it: model/farm.ts) and sent as one event per Tokyo day held
-// FARM_HOLD_MS (the 畑 sheet's batches and digs UNDO_MS: their 取り消す), each added to the held one; the sheet's 水やり
+// FARM_HOLD_MS (the 畑 sheet's batches and digs UNDO_MS: their 取り消す), each added to the held one (its data replaced); the sheet's 水やり
 // (the shared day's); the starts bought at the shop's かう (`buy_starts`, with the shop's 5 s 取り消す); what I plant
 // next (たね: kept on this phone).
 import { week } from './week.svelte.ts';
@@ -15,30 +15,29 @@ import type { LocalDate } from '#lib/types.ts';
 /** A batch waits this long for the next tap (a row of plots planted is one event). */
 const FARM_HOLD_MS = 2000;
 
-/** A batch: its day, its ops and when it goes (`until`), and its event now in the queue (`r`: taken back and queued
- *  again as ops join or leave it). Each send's undo and hold keep their own batch, so a later batch never strands them. */
+/** A batch: its day, its ops and when it goes (`until`), and its event in the queue (`r`: its data replaced as ops join
+ *  or leave it, one fold of the model a tap). Each send's undo and hold keep their own batch, so a later batch never
+ *  strands them. */
 interface Batch { d: LocalDate; ops: FarmOp[]; until: number; r: SendResult }
 let held: Batch | null = null;
 
-/** The batch's ops queued as one event, sent at its `until`; false when the queue refused it. */
-function queue(b: Batch): boolean {
-  b.r = week.send('farm', { d: b.d, ops: b.ops }, { holdMs: Math.max(0, b.until - Date.now()) });
-  return b.r.ok && !!b.r.undo;
-}
-
-/** `more` ops on day `d` into the held batch (its event taken back and queued again with them) while it holds and has
- *  room, else a new one: held `holdMs` at least. Its undo takes these ops back out; its hold holds the batch (an undo
- *  banner touched: store/actions.ts undoBanner). Both false / 0 once the batch was sent. */
+/** `more` ops on day `d` into the held batch (its event's data replaced) while it holds and has room, else a new one:
+ *  held `holdMs` at least. Its undo takes these ops back out; its hold holds the batch (an undo banner touched:
+ *  store/actions.ts undoBanner). Both false / 0 once the batch was sent. */
 function add(d: LocalDate, more: FarmOp[], holdMs = FARM_HOLD_MS): SendResult {
   const now = Date.now();
   let b = held;
-  if (b && b.d === d && b.until > now && b.ops.length + more.length <= FARM.batchMax && b.r.undo?.()) {
-    b.ops = [...b.ops, ...more];
-    b.until = Math.max(b.until, now + holdMs);
-  } else held = b = { d, ops: more, until: now + holdMs, r: { ok: false } };
-  if (!queue(b)) {
-    held = null;
-    return { ok: b.r.ok };
+  const ops = b ? [...b.ops, ...more] : more, until = Math.max(b?.until ?? 0, now + holdMs);
+  if (b && b.d === d && b.until > now && ops.length <= FARM.batchMax && b.r.replace?.({ d, ops }, until - now)) {
+    b.ops = ops;
+    b.until = until;
+  } else {
+    held = b = { d, ops: more, until: now + holdMs, r: { ok: false } };
+    b.r = week.send('farm', { d, ops: more }, { holdMs });
+    if (!b.r.ok || !b.r.undo) {
+      held = null;
+      return { ok: b.r.ok };
+    }
   }
   const batch = b;
   return {
@@ -52,14 +51,13 @@ function add(d: LocalDate, more: FarmOp[], holdMs = FARM_HOLD_MS): SendResult {
   };
 }
 
-/** `ops` out of batch `b`, the rest queued again for what was left of its hold; false once it was sent. */
+/** `ops` out of batch `b`, the rest sent at what was left of its hold; false once it was sent. */
 function takeBack(b: Batch, ops: readonly FarmOp[]): boolean {
-  if (!ops.every((o) => b.ops.includes(o)) || !b.r.undo?.()) return false;
-  b.ops = b.ops.filter((o) => !ops.includes(o));
-  if (!b.ops.length || !queue(b)) {
-    b.ops = [];
-    if (held === b) held = null;
-  }
+  if (!ops.every((o) => b.ops.includes(o))) return false;
+  const rest = b.ops.filter((o) => !ops.includes(o));
+  if (rest.length ? !b.r.replace?.({ d: b.d, ops: rest }, Math.max(0, b.until - Date.now())) : !b.r.undo?.()) return false;
+  b.ops = rest;
+  if (!rest.length && held === b) held = null;
   return true;
 }
 
@@ -96,10 +94,13 @@ const seedOf = (x: unknown): Seed | null => {
 
 /** Bumped by a pick, so `seed.pick` is read again. */
 let picks = $state(0);
+/** The pick as last read, by its key and pick (read again only after a pick, or in or out of the demo). */
+let read: { k: string; n: number; s: Seed | null } | null = null;
 export const seed = {
   get pick(): Seed | null {
-    void picks;
-    return seedOf(readJson(localKV(), seedKey()));
+    const k = seedKey(), n = picks;
+    if (read?.k !== k || read.n !== n) read = { k, n, s: seedOf(readJson(localKV(), k)) };
+    return read.s;
   }
 };
 

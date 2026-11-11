@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { IDBFactory } from 'fake-indexeddb';
 import { SNAPSHOT_PAGE, type EventRow, type SnapshotRows } from '#lib/contract/api.ts';
-import { configureStorage, getKey, getStoredMe, type KV } from './storage.ts';
+import { LIVE, configureStorage, getKey, getStoredMe, localKV, type KV } from './storage.ts';
 import { configureTransport, post } from './transport.ts';
-import { ackedEvents, backoffMs, enqueue, flush, holdEvent, nextRetryAt, queued, retryNow, unqueue } from './queue.ts';
+import { ackedEvents, backoffMs, enqueue, flush, holdEvent, nextRetryAt, queued, replaceHeld, retryNow, unqueue } from './queue.ts';
 import { applySnapshot, configureCache, loadCache, refreshSnapshot } from './cache.ts';
 import { keyFromHash, setKey } from './pairing.ts';
 import { asRecord } from './fake-record.ts';
@@ -195,6 +195,27 @@ describe('write queue', () => {
     await flush(() => t + 6000);
     expect(calls.map((c) => c.id)).toEqual([held.id]);
     expect(holdEvent(held.id, t + 9000)).toBe(false); // already sent
+  });
+  it('replaceHeld: a held event’s data replaced, moved last with its id kept, persisted; false once tried or sent', async () => {
+    const t = 1_000_000;
+    const farm = enqueue('farm', { d: '2026-11-04', ops: [1] }, t, 2000);
+    const pref = enqueue('pref', { key: 'moveGoal', value: 500 }, t + 1, 3000);
+    expect(replaceHeld(farm.id, { d: '2026-11-04', ops: [1, 2] }, t + 500, t + 2500)).toBe(true);
+    expect(queued().map((e) => [e.id, e.data, e.queuedAt, e.nextAt])).toEqual([
+      [pref.id, pref.data, t + 1, t + 3001],
+      [farm.id, { d: '2026-11-04', ops: [1, 2] }, t + 500, t + 2500] // after what was queued since, as a new send would be
+    ]);
+    expect(JSON.parse(localKV()!.getItem(LIVE.queue)!)).toEqual(queued()); // one write, kept over a reload
+    await flush(() => t + 2000);
+    expect(calls).toHaveLength(0); // its new time
+    await flush(() => t + 3001);
+    expect(calls.map((c) => [c.id, c.data])).toEqual([[pref.id, pref.data], [farm.id, { d: '2026-11-04', ops: [1, 2] }]]);
+    expect(replaceHeld(farm.id, { d: '2026-11-04', ops: [3] }, t + 4000, t + 6000)).toBe(false);
+    handler = () => ({ ok: false, error: 'busy' });
+    const tried = enqueue('farm', { d: '2026-11-04', ops: [4] }, t + 5000, 0);
+    await flush(() => t + 5000);
+    expect(queued()[0].tries).toBe(1);
+    expect(replaceHeld(tried.id, { d: '2026-11-04', ops: [4, 5] }, t + 5001, t + 7000)).toBe(false); // may have reached the record as it was
   });
   it('a void of a held spend waits for it (else the model would ignore it); other events still go first', async () => {
     const t = 1_000_000;

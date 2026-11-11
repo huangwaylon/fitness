@@ -167,8 +167,9 @@ answered by id; a request refused whole is halved, one event alone so refused is
   `island`): a newer row of the same day replaces the queued ones.
 - **Set aside** (`parked`, `PARK_AFTER`): an event the record keeps failing stops blocking, is logged `queue.poison`
   and is never dropped; a sync tap tries it again. Unsent 2 minutes past its hold, it shows on the sync chip and in 設定.
-- **Holds:** a held event (`holdMs`, the undo window) is skipped, not waited for; `unqueue` takes it back; a later
-  event on the same spend never overtakes it. A group goes once none of it is held, in one request.
+- **Holds:** a held event (`holdMs`, the undo window) is skipped, not waited for; `unqueue` takes it back;
+  `replaceHeld` swaps its data (its id kept, never once tried: a farm tap joining its batch, a catch's held tally or
+  island day, one recompute of the view); a later event on the same spend never overtakes it. A group goes once none of it is held, in one request.
 - **Replies:** acked → `island.acked` (in the view until a snapshot holds it); `bad_request` / `too_large` → dropped
   with a message; `unauthorized` → pairing; other errors keep it and all after it (`backoffMs`). Retried on `online`, a
   sync tap, becoming visible and the socket's welcome, at most once per 30 s.

@@ -1,11 +1,11 @@
-// The fields' writes (store/farm.svelte.ts): a farm op joins the held batch of its day (taken back and sent again with
-// it) within its hold, up to FARM.batchMax; a dig's 取り消す takes it back out; the pick is this phone's, the demo's apart.
+// The fields' writes (store/farm.svelte.ts): a farm op joins the held batch of its day (its queued event's data
+// replaced: one send a batch) within its hold, up to FARM.batchMax; a dig's 取り消す takes it back out; the pick is this phone's, the demo's apart.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { configureStorage, type KV } from '#lib/sync/storage.ts';
 import { FARM, type FarmOp } from '#lib/contract/farm.ts';
 
 /** A send as the queue holds it: kept until `at + holdMs`, its undo false from then on (sent). */
-interface Held { type: string; data: { d: string; ops: FarmOp[] }; holdMs: number; at: number; undone: boolean }
+interface Held { type: string; data: { d: string; ops: FarmOp[] }; holdMs: number; at: number; undone: boolean; replaced: number }
 const fake = vi.hoisted(() => ({ week: { demo: false as false | 'plain', model: {} as object | null, send: (() => ({ ok: false })) as (...a: never[]) => unknown } }));
 vi.mock('./week.svelte.ts', () => fake);
 const { dig, digMany, harvest, harvestAll, pickSeed, plant, plantMany, seed, waterAll } = await import('./farm.svelte.ts');
@@ -31,14 +31,15 @@ beforeEach(() => {
   sends = [];
   fake.week.demo = false;
   fake.week.send = ((type: string, data: Held['data'], opts: { holdMs?: number }) => {
-    const s: Held = { type, data, holdMs: opts.holdMs ?? 0, at: Date.now(), undone: false };
+    const s: Held = { type, data, holdMs: opts.holdMs ?? 0, at: Date.now(), undone: false, replaced: 0 };
     sends.push(s);
     const held = () => !s.undone && Date.now() < s.at + s.holdMs;
     return {
       ok: true,
       undo: () => (held() ? (s.undone = true) : false),
       // (live.ts: as long as allowed, 2 min, or `ms` from now)
-      hold: (ms: number | null) => (held() ? ((s.holdMs = Date.now() - s.at + (ms ?? 120_000)), ms ?? 120_000) : 0)
+      hold: (ms: number | null) => (held() ? ((s.holdMs = Date.now() - s.at + (ms ?? 120_000)), ms ?? 120_000) : 0),
+      replace: (data: Held['data'], ms: number) => held() && ((s.data = data), (s.holdMs = Date.now() - s.at + ms), ++s.replaced > 0)
     };
   }) as never;
 });
@@ -51,8 +52,8 @@ describe('the farm batch', () => {
     plant(D, p(1), 'tomato', 'start');
     vi.advanceTimersByTime(1900);
     harvest(D, p(2), 3);
-    // the second held 2 s from its own tap: the third (3.4 s on) joins it
-    expect(sends.map((s) => s.undone)).toEqual([true, true, false]);
+    // the second held 2 s from its own tap: the third (3.4 s on) joins it; one queued event, its data replaced
+    expect(sends.map((s) => [s.undone, s.replaced, s.holdMs])).toEqual([[false, 2, 5400]]);
     vi.advanceTimersByTime(2000);
     harvest(D, p(3), 1);
     vi.advanceTimersByTime(2000);
@@ -84,7 +85,7 @@ describe('the farm batch', () => {
     expect(r.undo!()).toBe(true);
     const again = sends.at(-1)!;
     expect(again.data.ops).toEqual([{ o: 'plant', p: p(0), c: 'tomato', src: 'start' }]);
-    expect(again.holdMs).toBe(4500); // the dig's 5 s from 500 ms on, 1 s gone
+    expect([sends.length, again.holdMs]).toEqual([1, 5500]); // the one event, still the dig's 5 s from 500 ms on
     // the batch goes on: a tap joins the one sent again
     plant(D, p(2), 'tomato', 'start');
     vi.advanceTimersByTime(5000);
@@ -137,7 +138,7 @@ describe('the 畑 sheet’s batches', () => {
     expect(r.hold!(null)).toBe(120_000);
     vi.advanceTimersByTime(10_000);
     plant(D, p(0), 'tomato', 'start');
-    expect(sends.at(-1)!.holdMs).toBe(110_000);
+    expect([sends.length, sends[0].holdMs]).toEqual([1, 120_000]); // the hold's end unmoved
     vi.advanceTimersByTime(10_000);
     expect(sent()).toEqual([]);
     expect(r.hold!(0)).toBe(0);

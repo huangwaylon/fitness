@@ -25,6 +25,20 @@ export interface ShopView {
 
 const memo = new WeakMap<ShopState['shop'], WeakMap<ShopState['tallies'], WeakMap<Farm, Partial<Record<Who, ShopView>>>>>();
 
+const daysMemo = new WeakMap<ShopState['tallies'], Partial<Record<Who, ReturnType<typeof caughtOf>>>>();
+/** `who`'s catches by their tallies alone (contract/shop.ts caughtOf without the field), per tally list. */
+function caughtOfDays(tallies: ShopState['tallies'], who: Who): ReturnType<typeof caughtOf> {
+  let by = daysMemo.get(tallies);
+  if (!by) daysMemo.set(tallies, (by = {}));
+  return (by[who] ??= caughtOf(dayTallies(tallies).filter((r) => r.person === who)));
+}
+const rowsMemo = new WeakMap<ShopState['shop'], Partial<Record<Who, ShopRowAt[]>>>();
+const rowsOf = (shop: ShopState['shop'], who: Who): ShopRowAt[] => {
+  let by = rowsMemo.get(shop);
+  if (!by) rowsMemo.set(shop, (by = {}));
+  return (by[who] ??= shop.filter((r) => r.person === who));
+};
+
 /** `who`'s pocket, かいがら and bought pieces. Memoised per State lists. */
 export function shopView(s: ShopState, who: Who): ShopView {
   let byTally = memo.get(s.shop);
@@ -37,10 +51,11 @@ export function shopView(s: ShopState, who: Who): ShopView {
   const hit = views[who];
   if (hit) return hit;
   // (their days as the record holds them, a day's rows one: dayTallies; a sold catch given back costs its かいがら:
-  // contract/shop.ts owedOf, the record's rule)
-  const net = farm.net[who];
-  const { caught, back } = caughtOf(dayTallies(s.tallies).filter((r) => r.person === who), net);
-  const l: Ledger = shopLedger(caught, s.shop.filter((r) => r.person === who), back);
+  // contract/shop.ts owedOf, the record's rule; the field's net on top, so a farm tap folds no tally again)
+  const { caught: fromDays, back } = caughtOfDays(s.tallies, who);
+  const caught = new Map(fromDays);
+  for (const [k, n] of farm.net[who] ?? []) caught.set(k, (caught.get(k) ?? 0) + n);
+  const l: Ledger = shopLedger(caught, rowsOf(s.shop, who), back);
   const pocket = new Map<string, number>();
   // (the starts bought count in as a sale taken back: contract/shop.ts shopStep; a recipe or a present is in the
   // tallies, never the pocket)
