@@ -44,7 +44,7 @@ test('starts bought at the shop’s かう; a tap on my empty plot with nothing 
   await expect(page.locator('[data-shop]')).toHaveAttribute('data-shells', '200');
   await page.waitForFunction(() => !!(window as unknown as { __shop?: object }).__shop);
   await page.evaluate(() => (window as unknown as { __shop: { talk(): void } }).__shop.talk());
-  await page.locator('[data-shop-choice="buy"]').click();
+  await page.locator('[data-shop-tab="buy"]').click();
   await expect(page.locator('[data-shop-start="tomato"] .nm')).toHaveText('トマトの苗');
   for (let i = 0; i < 3; i++) await page.locator('[data-shop-start="tomato"]').click();
   // one bar: the pinned one names the crop and buys them
@@ -123,7 +123,7 @@ test('three days on: ripe, watered on the two days before it gives three, harves
   const before = Number(await page.locator('[data-shop]').getAttribute('data-shells'));
   await page.waitForFunction(() => !!(window as unknown as { __shop?: object }).__shop);
   await page.evaluate(() => (window as unknown as { __shop: { talk(): void } }).__shop.talk());
-  await page.locator('[data-shop-choice="sell"]').click();
+  await page.locator('[data-shop-tab="sell"]').click();
   const tomato = page.locator('[data-shop-catch="goods:tomato"]');
   await expect(tomato).toHaveAttribute('data-n', '3');
   for (let i = 0; i < 3; i++) await tomato.click();

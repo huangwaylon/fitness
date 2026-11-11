@@ -3,8 +3,10 @@
   // tabs pinned, the list scrolling under them, the bar at the foot. うる: my pocket (everything I caught, found or picked
   // up less what I sold: model/shop.ts; by its sections, shop/pocket.ts), a tap one more, − one less, 全部 the lot.
   // かう: the fields' starts, then the day's stock (shop/stock.ts), its 全部 buying every piece I don't have at once
-  // (stock.ts buyAll). A sell or a buy shows at once with 取り消す (store/actions.ts undoBanner). The twins' line comes
-  // from the room (`say`, `speak`); a piece picked is the room's too (its card, `choose`, `buy`).
+  // (stock.ts buyAll). A sell or a buy shows at once with 取り消す (store/actions.ts undoBanner). The title bar is the kit's
+  // (タヌキ商店, my かいがら, ✕); the twins don't talk in here (their balloon is the room's). A piece picked is the room's too
+  // (its card's: `pick`, `why`, `buy`).
+  import NavBar from '../ui/NavBar.svelte';
   import NavButton from '../ui/NavButton.svelte';
   import Segmented from '../ui/Segmented.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -32,17 +34,12 @@
     pick: string | null;
     /** Why `pick` can't be bought now (stock.ts buyRefusal), or null. */
     why: string | null;
-    /** The twins' line (a key of `shop.say.*`) and its text. */
-    say: string;
-    line: string;
-    speak: (k: string, p?: Record<string, string>) => void;
-    /** A piece picked in the list (again: none), and 買う for it. */
-    choose: (code: string) => void;
+    /** 買う for `pick`. */
     buy: () => void;
     itemName: (code: string) => string;
     onclose: () => void;
   }
-  let { shop, stock, tab = $bindable(), pick = $bindable(), why, say, line, speak, choose, buy, itemName, onclose }: Props = $props();
+  let { shop, stock, tab = $bindable(), pick = $bindable(), why, buy, itemName, onclose }: Props = $props();
 
   /** A tally key's name (the pocket's table: the ずかん's names; a start's the list's own kanji, 「トマトの苗」). */
   const speciesName = (k: string) => {
@@ -71,32 +68,23 @@
     const n = picks[k] ?? 0;
     picks = { ...picks, [k]: n >= max ? 0 : n + 1 };
     cue('tick');
-    if (pickedN) speak('offer', { v: formatNum(pickedV) });
-    else speak('sell');
   }
   function less(k: string) {
     picks = { ...picks, [k]: Math.max(0, (picks[k] ?? 0) - 1) };
-    if (pickedN) speak('offer', { v: formatNum(pickedV) });
-    else speak('sell');
   }
   function all() {
     picks = Object.fromEntries(pocket.map(({ k, n }) => [k, n]));
-    speak('offer', { v: formatNum(pickedV) });
   }
   function sellPicked() {
     if (!pickedN) return void cue('boop');
     // what's sold, kept before the sale: `picked` follows the pocket, which the sale empties
     const sold = [...picked], n = pickedN;
     const r = sell(new Map(sold));
-    if (!r.ok) {
-      speak('cant');
-      return void cue('boop');
-    }
+    if (!r.ok) return void cue('boop');
     cue('buy');
     const one = sold.length === 1 ? sold[0] : null;
     undoBanner(one ? t('shop.sold', { name: speciesName(one[0]), n: String(one[1]), v: formatNum(r.shells ?? 0) }) : t('shop.soldMany', { n: String(n), v: formatNum(r.shells ?? 0) }), r);
     picks = {};
-    speak('thanks');
   }
 
   // ---- かう
@@ -108,30 +96,24 @@
   function pickPiece(code: string) {
     every = false;
     starts = {};
-    choose(code);
+    pick = pick === code ? null : code;
+    cue('tick');
   }
-  /** 全部: picks the lot (the twins say what it comes to, or how many かいがら short), again: none. */
+  /** 全部: picks the lot (the bar says what it comes to), again: none. */
   function pickAll() {
     pick = null;
     if (!rest.items.length) return void cue('boop');
     every = !every;
     starts = {};
     cue('tick');
-    if (!every) speak('stock');
-    else if (short) speak('allShort', { v: formatNum(short) });
-    else speak('allOffer', { n: String(rest.items.length), v: formatNum(rest.total) });
   }
   function buyEvery() {
-    if (short) {
-      speak('allShort', { v: formatNum(short) });
-      return void cue('boop');
-    }
+    if (short) return void cue('boop');
     const r = buyAll(stock);
     if (!r.ok) return void cue('boop');
     cue('buy');
     undoBanner(t('shop.boughtMany', { n: String(r.n ?? 0), v: formatNum(r.total ?? 0) }), r);
     every = false;
-    speak('thanks');
   }
   // ---- かう's 苗 (docs/farming.md): the six starts, always in stock, a tap one more, − one less; 買う buys them at once,
   // all or none (one group: store/farm.svelte.ts buyStarts)
@@ -155,17 +137,13 @@
   }
   function buyStartsPicked() {
     if (!startsN) return void cue('boop');
-    if (startsV > shop.shells) {
-      speak('short', { name: t('shop.starts') });
-      return void cue('boop');
-    }
+    if (startsV > shop.shells) return void cue('boop');
     const r = buyStarts(starts);
     if (!r.ok) return void cue('boop');
     cue('buy');
     const n = String(startsN), v = formatNum(startsV);
     undoBanner(startsOne ? t('shop.boughtStart', { name: startName(startsOne), n, v }) : t('shop.boughtStarts', { n, v }), r);
     starts = {};
-    speak('thanks');
   }
   function buyPicked() {
     if (startsN) return buyStartsPicked();
@@ -178,17 +156,13 @@
     picks = {};
     pick = null;
     every = false;
-    speak(id === 'sell' ? (shop.pocket.size ? 'sell' : 'empty') : 'stock');
   }
 </script>
 
 <section class="menu sheet-copy" data-shop-panel={tab}>
-  <!-- the head (the twins' line, ×) and the tabs stay put; the list scrolls under them, the bar stays at the foot -->
+  <!-- the title bar (タヌキ商店, my かいがら, ✕) and the tabs stay put; the list scrolls under them, the bar at the foot -->
   <header class="pin">
-    <div class="head">
-      <p class="say kana" role="status" aria-live="polite" data-shop-say={say}>{line}</p>
-      <NavButton kind="close" data-shop-close onclick={onclose} />
-    </div>
+    <NavBar title={t('shop.title')} {trailing} />
     <Segmented items={[{ id: 'sell', label: t('shop.tab.sell') }, { id: 'buy', label: t('shop.tab.buy') }]} value={tab} label={t('shop.title')} attr="shop-tab" onpick={switchTab} />
   </header>
 
@@ -268,6 +242,11 @@
   {/if}
 </section>
 
+{#snippet trailing()}
+  <span class="chip s wallet" data-shop-wallet-chip>{t('shop.wallet', { v: formatNum(shop.shells) })}</span>
+  <NavButton kind="close" data-shop-close onclick={onclose} />
+{/snippet}
+
 <style>
   /* the sheet: its head and tabs pinned at the top and the bar at the foot, only the list between them scrolls (its own
      scroller, so iOS Safari's rubber band never drags the head off); fixed cream at every time of day, ink text (a game
@@ -283,14 +262,11 @@
   }
   @keyframes sheet-in { from { translate: 0 24px; opacity: 0; } }
   .pin {
-    flex: none; display: grid; gap: 10px; padding: 12px calc(var(--side) + var(--safe-right)) 10px calc(var(--side) + var(--safe-left));
+    flex: none; display: grid; gap: 6px; padding: 4px calc(var(--side) + var(--safe-right)) 10px calc(var(--side) + var(--safe-left));
     box-shadow: 0 2px 0 var(--c-lip);
   }
-  .head { display: flex; align-items: center; gap: 8px; }
-  .say {
-    flex: 1 1 auto; margin: 0; padding: 8px 14px; border-radius: 18px; background: var(--c-card); color: var(--c-ink);
-    box-shadow: inset 0 0 0 2px var(--c-edge); font: 700 var(--fs-body)/1.35 var(--font-ui); text-align: left;
-  }
+  .wallet { cursor: default; font-family: var(--font-num); font-variant-numeric: tabular-nums; margin-right: 4px; }
+  .wallet:active { transform: none; }
   .list {
     flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; -webkit-overflow-scrolling: touch;
     display: flex; flex-direction: column; gap: 10px; padding: 12px calc(var(--side) + var(--safe-right)) 12px calc(var(--side) + var(--safe-left));

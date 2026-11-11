@@ -7,11 +7,11 @@
   // The finger is the rooms' (rooms/gesture.ts): a tap on the floor walks my villager there; a tap on a piece picks it
   // in place (my villager turns to it, a card with its name, price and 買う: stock.ts buyPiece); a tap on the twins (their
   // model, or their bodies and the counter's top: plan.ts TWINS_BOX, never the floor before it), on their balloon or on
-  // the sign by the door (「かう・うるは カウンターで」) is NH's choice box, the only way to the counter's lists (Counter.svelte,
-  // a sheet over the room: うりたい its うる, しなもの its かう); a drag turns the camera, a pinch zooms; the doormat or
+  // the sign by the door (「タップで かう・うる」) opens the counter's lists at once, wherever I stand (Counter.svelte, a sheet
+  // over the room, on the tab last shown; no choice box, no walk); a drag turns the camera, a pinch zooms; the doormat or
   // ‹ 島へ goes out.
   // The twins say いらっしゃいませ once I reach the counter (plan.ts atCounter), not at the door; their balloon goes after
-  // a few seconds, and never takes a tap meant for the room. A bought piece joins my もようがえ. The guest's pocket and
+  // a few seconds, never takes a tap meant for the room, and never shows over the list. A bought piece joins my もようがえ. The guest's pocket and
   // かいがら are its own. Never ベル.
   // While I'm in here the others' islands show my villager nowhere, as in the museum and the rooms (the rooms' `tent`
   // presence with `sc: 's'`: store/where.svelte.ts); out of the door they see it there. The others in here are drawn,
@@ -69,30 +69,29 @@
   /** The room's default view: nearer than the whole room (too wide for a phone held upright), its middle following my
    *  villager from the stage's left to the counter. */
   const FOLLOW = { k: 0.64, x: [-28, 26] as [number, number], z: [-2.5, -2.5] as [number, number] };
+  /** The counter's tab last shown (the next open's, but an empty pocket's: かう). */
   let tab = $state<Tab>('sell');
   /** The counter's list open over the room (null: the room alone). */
   let panel = $state<Tab | null>(null);
   /** かう: the piece picked (in the list, or tapped in the room: its card). */
   let pick = $state<string | null>(null);
-  /** The twins' line (a key of `shop.say.*` and its params), and whether their choice box is up. */
+  /** The twins' line (a key of `shop.say.*` and its params): by まめきち for SAY_MS after it changes, or till it's
+   *  tapped. Only in the room: never while the list is over it (the list says what it needs itself). */
   let say = $state<{ k: string; p?: Record<string, string> }>({ k: 'hello' });
-  let asking = $state(false);
-  /** The line shows by まめきち for SAY_MS after it changes, or till it's tapped (always on the list's top while that's
-   *  open; with their choice box up, till it's answered). */
   let sayOn = $state(false);
   const SAY_MS = 4000;
   let sayTimer: ReturnType<typeof setTimeout> | undefined;
   const speak = (k: string, p?: Record<string, string>) => {
+    if (panel) return;
     say = { k, p };
     sayOn = true;
     clearTimeout(sayTimer);
     sayTimer = setTimeout(() => (sayOn = false), SAY_MS);
   };
-  /** The balloon gone (a tap on it, a card closed): its choice box too. */
+  /** The balloon gone (the list opened, a card closed). */
   function hush() {
     clearTimeout(sayTimer);
     sayOn = false;
-    asking = false;
   }
   /** Whether the twins said hello this visit (once I first reach the counter). */
   let greeted = false;
@@ -122,11 +121,10 @@
   const itemName = (code: string) => (void names, t(`tent.item.${code}`));
 
   // ---- かう's piece (the list's tile, the room's piece: its card)
-  /** A piece picked: the twins say its price, or why not. `toggle`: picked again in the list, none. */
-  function choose(code: string, toggle = true) {
-    pick = toggle && pick === code ? null : code;
+  /** A piece picked in the room: the twins say its price, or why not. */
+  function choose(code: string) {
+    pick = code;
     cue('tick');
-    if (!pick) return speak('hello');
     const why = buyRefusal(code, stock);
     if (why === 'owned') speak('owned');
     else if (why === 'wallet') speak('short', { name: itemName(code) });
@@ -149,41 +147,20 @@
     speak('thanks');
   }
 
-  /** The counter's list: うる or かう over the room (its picks cleared). */
-  function openPanel(id: Tab) {
-    asking = false;
-    panel = id;
-    tab = id;
-    pick = null;
-    speak(id === 'sell' ? (shop.pocket.size ? 'sell' : 'empty') : 'stock');
-  }
-  function closePanel() {
-    hush();
-    panel = null;
-    pick = null;
-  }
-  // an empty pocket (once the record is in): the list opens on かう, nothing to sell
-  let opened = false;
-  $effect(() => {
-    if (opened || !week.model) return;
-    opened = true;
-    if (!shop.pocket.size) untrack(() => (tab = 'buy'));
-  });
-
-  // ---- the twins: a tap is their greeting and NH's choice box ----
+  // ---- the twins: a tap on them, their balloon or the sign opens the counter's list over the room, on its last tab
+  // (an empty pocket's: かう)
   function twinsTalk() {
     cue('host-tap');
-    pick = null;
-    asking = true;
-    speak('ask');
-    clearTimeout(sayTimer);
     eng?.hop('n:timmy');
     eng?.face(viewer, TWINS.timmy);
+    hush();
+    pick = null;
+    tab = shop.pocket.size ? tab : 'buy';
+    panel = tab;
   }
-  function answer(a: 'sell' | 'buy' | 'none') {
-    asking = false;
-    if (a === 'none') return speak('bye');
-    openPanel(a);
+  function closePanel() {
+    panel = null;
+    pick = null;
   }
 
   // ---- the room (tent/engine.ts with the shop's shell) ----
@@ -280,7 +257,7 @@
     const at = eng?.at(viewer);
     if (!greeted && at && atCounter(at)) {
       greeted = true;
-      if (!panel && !asking) speak('hello');
+      speak('hello');
     }
     if (!eng || panel) return;
     // the sign by the door, where it stands (none out of view)
@@ -297,7 +274,7 @@
     }
     if (!samePlace(say, sayAt)) sayAt = say;
   }
-  const sayShown = $derived(!!panel || asking || sayOn);
+  const sayShown = $derived(sayOn);
   $effect(() => {
     void panel;
     void sayShown;
@@ -349,8 +326,7 @@
       eng.bump(s.id);
       eng.face(viewer, s.at);
     }
-    asking = false;
-    choose(code, false);
+    choose(code);
   }
   /** Whether client px are over the twins' box (their bodies and the counter's top: plan.ts TWINS_BOX) as drawn. */
   function atTwins(cx: number, cy: number): boolean {
@@ -375,7 +351,6 @@
     }
     if (h.kind === 'door') return leave();
     pick = null;
-    asking = false;
     walkTo([h.x, h.z]);
   }
 
@@ -515,7 +490,7 @@
       walkTo: (x: number, z: number) => walkTo([x, z]),
       standable: (x: number, z: number) => standable(walls, [x, z]),
       counter: () => COUNTER_FRONT,
-      /** As a tap on the twins (their choice box), wherever my villager stands. */
+      /** As a tap on the twins (the list on its last tab), wherever my villager stands. */
       talk: () => twinsTalk(),
       orbit: (a: number, p = 0) => eng?.orbit(a, p),
       zoom: (f: number) => eng?.zoom(f)
@@ -545,23 +520,15 @@
 
   {#if !panel}
     {#if signAt}
-      <!-- the sign by the door: where to buy and sell, a tap the twins' choice box (as a tap on them) -->
+      <!-- the sign by the door: where to buy and sell, a tap the counter's list (as a tap on them) -->
       <button type="button" class="sign" data-shop-sign data-sfx="self" style:left="{signAt.x}px" style:top="{signAt.y}px" onclick={twinsTalk}>{t('shop.sign')}</button>
     {/if}
-    <!-- the twins' line by まめきち in the room (NH's balloon), and their choice box after a tap on them -->
+    <!-- the twins' line by まめきち in the room (NH's balloon); a tap on it is a tap on them. It goes by itself anyway, so
+         no key needed -->
     <div class="say float" class:on={sayShown && !!sayAt} style:left={sayAt ? `${sayAt.x}px` : undefined} style:top={sayAt ? `${sayAt.y}px` : undefined}
       style:--tail={sayAt ? `${sayAt.tail}px` : '0px'}>
-      <!-- (a tap on the line is a tap on them, their choice box; with it up, the line and the box go. It goes by itself
-           anyway, so no key needed) -->
       <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
-      <p class="kana" role="status" aria-live="polite" data-shop-say={say.k} data-sfx={asking ? 'tick' : 'self'} onclick={() => (asking ? hush() : twinsTalk())}>{line}</p>
-      {#if asking}
-        <div class="choices" data-shop-choices>
-          <button type="button" data-shop-choice="sell" data-sfx="tick" onclick={() => answer('sell')}>{t('shop.choice.sell')}</button>
-          <button type="button" data-shop-choice="buy" data-sfx="tick" onclick={() => answer('buy')}>{t('shop.choice.buy')}</button>
-          <button type="button" data-shop-choice="none" data-sfx="back" onclick={() => answer('none')}>{t('shop.choice.none')}</button>
-        </div>
-      {/if}
+      <p class="kana" role="status" aria-live="polite" data-shop-say={say.k} data-sfx="self" onclick={twinsTalk}>{line}</p>
     </div>
     {#if pick}
       <!-- a piece picked in the room: its name and price, and 買う (or mine already) -->
@@ -580,7 +547,7 @@
       <EyeToggle />
     </div>
   {:else}
-    <Counter {shop} {stock} bind:tab bind:pick {why} say={say.k} {line} {speak} {choose} buy={buyPicked} {itemName} onclose={closePanel} />
+    <Counter {shop} {stock} bind:tab bind:pick {why} buy={buyPicked} {itemName} onclose={closePanel} />
   {/if}
   {#if failed}<p class="fail" role="alert">{t('shop.fail')}</p>{/if}
 </main>
@@ -631,8 +598,8 @@
     opacity: 0; pointer-events: none; transition: opacity .18s;
   }
   .say.float.on { opacity: 1; }
-  /* (the balloon takes no tap meant for the room: only its line, which hides it, and its choices) */
-  .say.float.on p, .say.float.on .choices { pointer-events: auto; }
+  /* (the balloon takes no tap meant for the room: only its line) */
+  .say.float.on p { pointer-events: auto; }
   .say.float p { cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .say p {
     margin: 0; padding: 8px 14px; border-radius: 18px; background: var(--c-cream); color: var(--c-ink);
@@ -643,13 +610,6 @@
     content: ''; position: absolute; left: calc(50% + var(--tail)); bottom: -8px; width: 14px; height: 14px; translate: -50% 0; rotate: 45deg;
     background: var(--c-cream); border-radius: 0 0 4px 0;
   }
-  .say.float:has(.choices) p::after { display: none; }
-  .choices { display: grid; gap: 6px; margin-top: 8px; justify-items: end; }
-  .choices button {
-    appearance: none; border: 0; cursor: pointer; min-height: var(--hit); padding: 0 16px; border-radius: var(--r-pill);
-    background: var(--c-cream); color: var(--c-ink); box-shadow: 0 3px 0 var(--c-lip); font: 700 var(--fs-body)/1 var(--font-ui);
-  }
-  .choices button:focus-visible { outline: 3px solid var(--c-ink); outline-offset: 2px; }
 
   /* a piece picked in the room */
   .card {
