@@ -1,7 +1,7 @@
 // The 畑 sheet's batch writes and readings (docs/farming.md "Playing"): what 収穫 / 水やり / 植える do over the fields,
 // a plant's yield while its watering days are still to come, and my plants no field covers. Pure: FarmSheet sends them
 // (store/farm.svelte.ts, the shared world's watering).
-import { FARM, daysLeft, plantsOf, stageOf, wateringCounts, yieldOf, type Farm, type Plot, type Watered } from '#lib/contract/farm.ts';
+import { CROPS, FARM, daysLeft, plantsOf, stageOf, wateringCounts, yieldOf, type Crop, type Farm, type Plot, type Watered } from '#lib/contract/farm.ts';
 import { addDays } from '#lib/contract/tokyo.ts';
 import type { PlotTile } from '#lib/layout/field.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
@@ -68,6 +68,28 @@ export function yieldRange(p: string, pl: Plot, date: LocalDate, watered: Watere
     else if (d >= date) hi++;
   }
   return { lo: Math.min(lo, FARM.maxYield), hi: Math.min(hi, FARM.maxYield) };
+}
+
+/** Who else watered my plants today, and how many: the shared day's `watered` (sync/world-day.ts, id → who) over the
+ *  plots of mine (the sheet's thanks, 「今日は{who}が水やりしてくれました」). My own and a wet day's never count. */
+export function wateredBy(mine: Iterable<string>, shared: Readonly<Record<string, Who>>, me: Who): Partial<Record<Who, number>> {
+  const out: Partial<Record<Who, number>> = {};
+  for (const p of mine) {
+    const who = shared[p];
+    if (who && who !== me) out[who] = (out[who] ?? 0) + 1;
+  }
+  return out;
+}
+
+/** A harvest's vegetables per crop, in CROPS order (the sheet's named banner): each op's `n` under its plot's crop
+ *  in `farm` (before or after the harvest: a harvested plant keeps its crop); a plot with no plant skipped. */
+export function harvestSummary(ops: readonly { p: string; n: number }[], farm: Farm): { c: Crop; n: number }[] {
+  const by = new Map<Crop, number>();
+  for (const op of ops) {
+    const c = farm.plots.get(op.p)?.c;
+    if (c) by.set(c, (by.get(c) ?? 0) + op.n);
+  }
+  return CROPS.filter((c) => by.has(c)).map((c) => ({ c, n: by.get(c)! }));
 }
 
 /** My plants on plots no field covers now (a field moved, shrunk or deleted in /editor): kept, not drawn, counted. */

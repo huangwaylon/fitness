@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { FARM, emptyFarm, farmStep, plotOf, type Farm, type Watered } from '#lib/contract/farm.ts';
 import { fieldPlots } from '#lib/layout/field.ts';
-import { fillPlan, harvestOps, orphans, waterNext, waterTargets, yieldRange } from './sheet.ts';
+import { fillPlan, harvestOps, harvestSummary, orphans, wateredBy, waterNext, waterTargets, yieldRange } from './sheet.ts';
 
 const D = '2026-11-04', D1 = '2026-11-05', D2 = '2026-11-06', D3 = '2026-11-07';
 const MINE = fieldPlots({ id: 'field-A', x: 10, z: 17, s: 'a-10x4' }), HERS = fieldPlots({ id: 'field-B', x: 10, z: 22, s: 'b-10x4' });
@@ -112,5 +112,28 @@ describe('orphans', () => {
     farmStep(f, 'B', { d: D, ops: [{ o: 'plant', p: plotOf('gone', 1, 0), c: 'carrot', src: 'start' }] });
     expect(orphans(f, 'A', PLOTS)).toEqual([plotOf('gone', 0, 0)]);
     expect(orphans(f, 'A', [])).toHaveLength(3);
+  });
+});
+
+describe('wateredBy', () => {
+  it('who else watered my plants today, how many; my own, others’ plants and the unwatered not counted', () => {
+    const mine = MINE.slice(0, 5).map((t) => t.p);
+    const shared = { [mine[0]]: 'B', [mine[1]]: 'B', [mine[2]]: 'G', [mine[3]]: 'A', [HERS[0].p]: 'B', 'fl:3': 'B' } as const;
+    expect(wateredBy(mine, shared, 'A')).toEqual({ B: 2, G: 1 });
+    expect(wateredBy(mine, {}, 'A')).toEqual({});
+    expect(wateredBy([], shared, 'A')).toEqual({});
+  });
+});
+
+describe('harvestSummary', () => {
+  it('the vegetables per crop in CROPS order, before or after the harvest', () => {
+    const f = farmOf(2);
+    farmStep(f, 'A', { d: D, ops: [{ o: 'plant', p: MINE[2].p, c: 'pumpkin', src: 'start' }, { o: 'plant', p: MINE[3].p, c: 'wheat', src: 'start' }] });
+    const ops = [{ p: MINE[2].p, n: 3 }, { p: MINE[0].p, n: 2 }, { p: MINE[3].p, n: 1 }, { p: MINE[1].p, n: 3 }, { p: MINE[9].p, n: 3 }];
+    const want = [{ c: 'tomato', n: 5 }, { c: 'wheat', n: 1 }, { c: 'pumpkin', n: 3 }];
+    expect(harvestSummary(ops, f)).toEqual(want);
+    farmStep(f, 'A', { d: D3, ops: ops.slice(0, 4).map((o) => ({ o: 'harvest' as const, ...o })) });
+    expect(harvestSummary(ops, f)).toEqual(want);
+    expect(harvestSummary([], f)).toEqual([]);
   });
 });
