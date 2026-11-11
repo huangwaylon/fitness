@@ -1,6 +1,6 @@
 // The deploy's gate (scripts/deploy-gate.ts): green only with every gate job there once and `success`.
 import { describe, expect, it } from 'vitest';
-import { verdict, type Job } from '../../scripts/deploy-gate.ts';
+import { jobsOfNeeds, verdict, type Job } from '../../scripts/deploy-gate.ts';
 
 const gate = ['build', 'checks', 'e2e-gate (1)', 'e2e-gate (2)'];
 const ok = (name: string): Job => ({ name, status: 'completed', conclusion: 'success' });
@@ -35,5 +35,18 @@ describe('deploy gate', () => {
     expect(verdict(gate, [...all(), ok('checks')])).toBe('red: checks 2 times');
     expect(verdict(gate, [...all(), ok('e2e-gate (3)')])).toBe('red: not in GATE: e2e-gate (3)');
     expect(verdict([], all())).toBe('red: GATE is empty');
+  });
+});
+
+describe('deploy gate on the deploy job\'s needs (pages.yml: no API)', () => {
+  const G = ['plan', 'checks', 'unit', 'e2e-gate'];
+  const needs = (o: Record<string, string> = {}) => Object.fromEntries(G.map((n) => [n, { result: o[n] ?? 'success' }]));
+  it('is green with every needed job a success', () => expect(verdict(G, jobsOfNeeds(needs()))).toBe('green'));
+  it('is red for a failed, cancelled or skipped one (a red shard fails the matrix)', () => {
+    for (const r of ['failure', 'cancelled', 'skipped']) expect(verdict(G, jobsOfNeeds(needs({ 'e2e-gate': r })))).toBe(`red: e2e-gate ${r}`);
+  });
+  it('is red for a job needed but not in GATE, or one in GATE not needed', () => {
+    expect(verdict(G, jobsOfNeeds({ ...needs(), lint: { result: 'success' } }))).toBe('red: not in GATE: lint');
+    expect(verdict([...G, 'lint'], jobsOfNeeds(needs()))).toBe('wait: lint missing');
   });
 });

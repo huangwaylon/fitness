@@ -40,13 +40,13 @@ alone); relay changes run *Relay checks* (its path filter kept in step by `relay
 
 These gate the deploy:
 
-- `checks`: first the **gate's plan** for all shards (the `gate-plan` artifact: `scripts/e2e-impact.ts`,
-  `e2e-flakes.ts`, `e2e-shards.ts plan`), then `check`, `knip`, the quarantine's owners and docs-check. `unit`:
-  `npx vitest run`.
-- `e2e-gate` ×4: **the gate's e2e** (below) in Chromium, logic mode, without `@render` and `@quarantine`, on the build
+- `plan`: the **gate's plan** for all shards (the `gate-plan` artifact: `scripts/e2e-impact.ts`, `e2e-flakes.ts`,
+  `e2e-shards.ts plan`). `checks`: `check`, `knip`, the quarantine's owners and docs-check. `unit`: `npx vitest run`.
+  Jobs wait on each other by `needs`, never by polling the API (the workflow token's quota is per repo and hourly).
+- `e2e-gate` ×4 (after `plan`): **the gate's e2e** (below) in Chromium, logic mode, without `@render` and `@quarantine`, on the build
   served as Pages serves it (`scripts/serve-build.ts`). Each shard builds (with its budgets); shard 1's `build-pages/`
   is the `site` artifact `deploy` ships.
-- `deploy`: `site` to Cloudflare Pages once every job in `scripts/deploy-gate.ts`'s `GATE` is `success` (ききみみ's
+- `deploy` (after all of them): `site` to Cloudflare Pages once every job in `scripts/deploy-gate.ts`'s `GATE` is `success` (ききみみ's
   `stt/` from an Actions cache, `scripts/stt-models.ts`). Then https://island-fund.pages.dev must answer this build
   (`_app/version.json`, 6 min at most) with its CSP header and the `stt/` manifest: only the deployment's own URL
   serving it is a **Pages alias lag** warning; neither is **Deploy not served**, red. No Cloudflare secret: a warning,

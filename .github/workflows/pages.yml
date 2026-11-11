@@ -22,9 +22,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # The gate's plan first, once for all 4 shards (each choosing its own could disagree), then the checks. With
-  # app/static/: Kit types asset() by its files.
-  checks:
+  # The gate's plan, once for all 4 shards (each choosing its own could disagree); the shards and the deploy wait on
+  # it by `needs`, never by polling the API (the workflow token's quota is per repo and hourly: 2026-11-11's polls ran
+  # it out and every gate went red).
+  plan:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # (the flaky ledger's artifacts, and the deployments: the commit live on the site)
@@ -71,6 +72,24 @@ jobs:
             app/shards
           if-no-files-found: error
           retention-days: 1
+
+  # The checks. With app/static/: Kit types asset() by its files.
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm run check
       - run: npm run knip
       # the e2e quarantine in the summary; red when a quarantined test has no owner (docs/ops/testing.md "Tags")
@@ -95,14 +114,11 @@ jobs:
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npx vitest run
 
-  # The gate's e2e (docs/ops/testing.md "The gate"). Not `needs: checks`: each shard builds, then waits for the plan.
+  # The gate's e2e (docs/ops/testing.md "The gate"), on the plan.
   e2e-gate:
+    needs: plan
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # (the gate-plan artifact, looked for in this run)
-    permissions:
-      contents: read
-      actions: read
     strategy:
       fail-fast: false
       matrix:
@@ -143,25 +159,6 @@ jobs:
           include-hidden-files: true
           compression-level: 0
           retention-days: 1
-      # the plan, once `checks` uploaded it (red if `checks` failed before it, or none in 6 min). Polled every 15 s, the
-      # jobs only when the plan isn't there: the workflow token's API quota is per repo and hourly, and a 3 s poll of
-      # both from 4 shards (~160 calls a minute a run) used it up on a busy day (2026-11-11), every gate then red here.
-      # An API error is printed, not swallowed.
-      - env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          api="repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          for _ in $(seq 24); do
-            if n=$(gh api "$api/artifacts?name=gate-plan" --jq .total_count 2>/tmp/gh.err); then
-              [ "$n" = 1 ] && exit 0
-              state=$(gh api "$api/attempts/$GITHUB_RUN_ATTEMPT/jobs?per_page=100" --jq '.jobs[] | select(.name == "checks") | .conclusion' 2>>/tmp/gh.err || true)
-              case "$state" in failure|cancelled|skipped) echo "::error::the checks job: $state, no plan"; exit 1 ;; esac
-            else
-              echo "::warning::gh api: $(head -c 300 /tmp/gh.err)"
-            fi
-            sleep 15
-          done
-          echo "::error::no gate-plan from the checks job in 6 min"; exit 1
       # (sel/: specs.txt, x3.txt (the changed specs: E2E_X3), quarantine.txt; shards/: the plan)
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -187,14 +184,15 @@ jobs:
           if-no-files-found: ignore
           retention-days: 3
 
-  # Once the gate is green, `site` to Cloudflare Pages (secrets: docs/ops/runbook.md §1); no `needs`: it gets ready
-  # meanwhile, then waits on GATE. With ききみみ's recogniser under stt/ (docs/kikimimi-mic.md "Hosting and the service
-  # worker").
+  # Once the gate is green, `site` to Cloudflare Pages (secrets: docs/ops/runbook.md §1): `needs` every gate job
+  # (`always()`, so a red one is reported here, not skipped), then scripts/deploy-gate.ts on their results, before
+  # anything is fetched. With ききみみ's recogniser under stt/ (docs/kikimimi-mic.md "Hosting and the service worker").
   deploy:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: [plan, checks, unit, e2e-gate]
+    if: always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # (the gate's jobs, looked at in this run)
+    # (the deployments, for the order guard)
     permissions:
       contents: read
       actions: read
@@ -232,6 +230,19 @@ jobs:
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 24
+      # The gate, failing closed (scripts/deploy-gate.ts): every job this one needs, each `success`. GATE is the one list
+      # of the gate's jobs (a job added to `needs` and not here is red).
+      - if: steps.ready.outputs.go == 'true'
+        env:
+          GATE: plan,checks,unit,e2e-gate
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          printf '%s' "$NEEDS" > "$RUNNER_TEMP/needs.json"
+          verdict=$(node app/scripts/deploy-gate.ts "$RUNNER_TEMP/needs.json") || verdict="red: the check itself failed"
+          case "$verdict" in
+            green) echo "the gate is green: $GATE" ;;
+            *) echo "::error::the gate isn't green, nothing deployed (${verdict#red: })"; exit 1 ;;
+          esac
       - if: steps.ready.outputs.go == 'true'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -243,24 +254,6 @@ jobs:
         run: |
           node app/scripts/stt-models.ts --out ../stt
           npm install --prefix "$RUNNER_TEMP/wrangler" --no-audit --no-fund --no-save wrangler@4.156.0
-      # `site`, once e2e-gate (1) uploaded it (red if that shard failed before it, or none in 5 min)
-      - if: steps.ready.outputs.go == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          api="repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          # (every 10 s, the jobs only when the site isn't there: the token's hourly quota, as the gate-plan's wait)
-          for _ in $(seq 30); do
-            if n=$(gh api "$api/artifacts?name=site" --jq .total_count 2>/tmp/gh.err); then
-              [ "$n" = 1 ] && exit 0
-              state=$(gh api "$api/attempts/$GITHUB_RUN_ATTEMPT/jobs?per_page=100" --jq '.jobs[] | select(.name == "e2e-gate (1)") | .conclusion' 2>>/tmp/gh.err || true)
-              case "$state" in failure|cancelled|skipped) echo "::error::e2e-gate (1): $state, no site"; exit 1 ;; esac
-            else
-              echo "::warning::gh api: $(head -c 300 /tmp/gh.err)"
-            fi
-            sleep 10
-          done
-          echo "::error::no site from e2e-gate (1) in 5 min"; exit 1
       - if: steps.ready.outputs.go == 'true'
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -268,30 +261,6 @@ jobs:
           path: site
       - if: steps.ready.outputs.go == 'true'
         run: cp -R stt site/stt
-      # The gate, failing closed (scripts/deploy-gate.ts), 20 min at most. GATE is the one list of the gate's jobs.
-      - if: steps.ready.outputs.go == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GATE: checks,unit,e2e-gate (1),e2e-gate (2),e2e-gate (3),e2e-gate (4)
-        run: |
-          api="repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT/jobs?per_page=100"
-          errors=0
-          for _ in $(seq 120); do
-            if gh api "$api" > "$RUNNER_TEMP/jobs.json" 2>/tmp/gh.err; then
-              errors=0
-              verdict=$(node app/scripts/deploy-gate.ts "$RUNNER_TEMP/jobs.json") || verdict="red: the check itself failed"
-              case "$verdict" in
-                green) echo "the gate is green: $GATE"; exit 0 ;;
-                red*) echo "::error::the gate isn't green, nothing deployed (${verdict#red: })"; exit 1 ;;
-              esac
-            else
-              errors=$((errors + 1))
-              echo "::warning::gh api: $(head -c 300 /tmp/gh.err)"
-              [ "$errors" -ge 5 ] && { echo "::error::the jobs API failed 5 times running: nothing deployed"; exit 1; }
-            fi
-            sleep 10
-          done
-          echo "::error::the gate not done in 20 min (${verdict:-no answer}): nothing deployed"; exit 1
       # The order guard (scripts/deploy-order.ts): never older code over newer.
       - id: order
         if: steps.ready.outputs.go == 'true'
