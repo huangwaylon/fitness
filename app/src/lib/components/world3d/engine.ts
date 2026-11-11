@@ -34,6 +34,7 @@ import { DPR_MOVING, endRenderer, makeRenderer } from './stage.ts';
 import { releaseAll, resourcesOf } from './release.ts';
 import { FPS } from '#lib/store/frameRate.ts';
 import { pacer } from './pace.ts';
+import type { BootWait } from './boot.ts';
 import { createWarmup, texturesOf } from './warmup.ts';
 import { ktx2Target } from './ktx2.ts';
 import { log } from '#lib/sync/log.ts';
@@ -136,6 +137,10 @@ interface Stats {
   fxShown: number;
   /** What wanted the last frame (`~`: its ambience only), and whether the island is paused. */
   why: string[];
+  /** The frames drawn at the full rate so far (another asked for at once), and what asked for them, each name's count
+   *  (`touch` a finger, `active` a change's while; perf.rest's top three). */
+  full: number;
+  fullWhy: Readonly<Record<string, number>>;
   paused: boolean;
   /** False in the e2e's logic mode (testMode.ts drawOff): the frames run, nothing is drawn. */
   drawn: boolean;
@@ -294,9 +299,11 @@ export interface Island3 {
   /** Called in every frame before it draws: true wants another at the full rate (something moves), 'ambient' at the
    *  ambient rate. */
   onFrame(fn: ((t: number) => Want) | null): void;
-  /** After each frame drawn: its start and end (ms) and whether it was whole (nothing held back, nothing loading: the
-   *  launch's clock, boot.ts). */
-  onDrawn(fn: ((t0: number, t1: number, whole: boolean) => void) | null): void;
+  /** In onFrame's hook: what of the scene wanted the full rate (perf.rest's names: contract/log.ts LOG_FULL_WHY). */
+  tag(name: string): void;
+  /** After each frame drawn: its start and end (ms) and what held some of it back (programs linking, models or cards
+   *  loading), null: it was whole (the launch's clock, boot.ts). */
+  onDrawn(fn: ((t0: number, t1: number, wait: BootWait) => void) | null): void;
   /** Each pixel-ratio swap a gesture makes (light: down as the camera starts moving, back once it's still): the ms of
    *  setPixelRatio and setSize, and the first frame's own after it (its CPU: the buffers made again as it draws). */
   onSwap(fn: ((on: boolean, setMs: number, frameMs: number) => void) | null): void;
@@ -800,7 +807,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   /** The last frame's: something moved (the full rate), only the ambience did. */
   let busy = false, ambience = false, paused = false, inFrame = false;
   let hook: ((t: number) => Want) | null = null;
-  let drawnHook: ((t0: number, t1: number, whole: boolean) => void) | null = null;
+  let drawnHook: ((t0: number, t1: number, wait: BootWait) => void) | null = null;
   const groupsPlaced = new Map<string, { obj: Object3D; off: () => void; ball: Sphere }>();
   /** The placed groups (a home, a bridge, a pond: still, bounds known) culled with the camera, as three can't: their
    *  meshes are bent in the shader, so each group's ball is bent here (its middle; its radius doubled, for the shadow
@@ -988,6 +995,9 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   const cpu: number[] = [], gaps: number[] = [], stamps: number[] = [];
   /** What wanted the last frames (the e2e's and perf's: which part keeps the island drawing). */
   const why = new Set<string>();
+  let full = 0, tagged = false;
+  const fullWhy: Record<string, number> = {};
+  const counted = (name: string) => void (fullWhy[name] = (fullWhy[name] ?? 0) + 1);
   const activity = (ms = 300) => {
     activeUntil = Math.max(activeUntil, now() + ms);
     kick(false);
@@ -1021,7 +1031,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     const active = touch || t < activeUntil || busy;
     if (!pace.due(vsync, active ? FPS : 0)) return;
     inFrame = true;
-    busy = ambience = groundAmb = false;
+    busy = ambience = groundAmb = tagged = false;
     why.clear();
     try {
       draw(t);
@@ -1030,8 +1040,14 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     }
     // something moves: the next display frame; only the ambience: at its rate (calmer at rest), the water's only while
     // some of it is in view; else none
-    if (busy || touch || now() < activeUntil) pace.kick();
-    else {
+    if (busy || touch || now() < activeUntil) {
+      full++;
+      if (touch) counted('touch');
+      else if (!busy) counted('active');
+      // (the scene's own names in place of its `scene`)
+      for (const w of why) if (w[0] !== '~' && !(tagged && w === 'scene')) counted(w);
+      pace.kick();
+    } else {
       if (groundAmb && !ambience && waterSeen()) (ambience = true), why.add('~ground');
       const fps = resting(now()) ? Math.min(opts.ambient, REST_FPS) : opts.ambient;
       if (ambience && fps > 0) pace.later(Math.min(fps, FPS));
@@ -1116,7 +1132,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     // (nothing drawn: the counts are none, whatever the layout's ground baked on the GPU as it was built)
     else renderer.info.reset();
     const t1 = now();
-    drawnHook?.(t, t1, !held && !things.pending() && !cards.pending());
+    drawnHook?.(t, t1, held ? 'link' : things.pending() ? 'models' : cards.pending() ? 'cards' : null);
     if (swapAt && !noDraw && !compileOnly) {
       swapHook?.(swapOn, swapSet, t1 - t);
       swapAt = 0;
@@ -1303,6 +1319,9 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       hook = fn;
       kick();
     },
+    tag(name) {
+      if (inFrame) why.add(name), (tagged = true);
+    },
     onDrawn(fn) {
       drawnHook = fn;
     },
@@ -1316,7 +1335,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
         calls: renderer.info.render.calls, tris: renderer.info.render.triangles, sceneCalls, sceneTris, textures: renderer.info.memory.textures,
         geometries: renderer.info.memory.geometries, programs: renderer.info.programs?.length ?? 0, shadows: shadowsDrawn, compiles, linking: warm.size(), dpr: renderer.getPixelRatio(), shadowSize: sun.shadow.mapSize.x, frames, at: lastFrame, input: lastInput,
         loading: things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps, fx: effects.count(),
-        fxShown: effects.shown(), why: [...why], paused, drawn: !noDraw
+        fxShown: effects.shown(), why: [...why], full, fullWhy: { ...fullWhy }, paused, drawn: !noDraw
       };
     },
     dispose() {

@@ -25,6 +25,15 @@ export interface BootReport {
   appear: number;
   /** The frames from the models in to the island whole (1: all at once). */
   steps: number;
+  /** Those steps by what held each back (programs linking, models loading, cards loading: the first of these): how
+   *  many, and the wall ms from each to the next step; the steps' own frame ms, all told. */
+  sLink: number;
+  msLink: number;
+  sModels: number;
+  msModels: number;
+  sCards: number;
+  msCards: number;
+  stepMs: number;
   /** The GPU programs at the watch's end. */
   progs: number;
   /** How long the mount waited for the ground's fields (ms), and where they came from. */
@@ -59,9 +68,15 @@ type Clocked = Omit<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'sw' | 'warm' 
 /** The launch's clock: the engine's frames (`frame`), the page's display frames (`tick`), the marks. `done` once
  *  SETTLE_MS past `shown`; spoiled (never done) by the page hidden or the island paused meanwhile: its frames say
  *  nothing then. */
+/** What held a frame back from the island whole (engine.ts onDrawn), or null: nothing. */
+export type BootWait = 'link' | 'models' | 'cards' | null;
+const WAIT = { link: ['sLink', 'msLink'], models: ['sModels', 'msModels'], cards: ['sCards', 'msCards'] } as const;
+
 export function createBootClock(settleMs = SETTLE_MS) {
-  const c: Clocked = { mount: 0, first: 0, loaded: 0, shown: 0, long: 0, draw: 0, appear: 0, steps: 0 };
+  const c: Clocked = { mount: 0, first: 0, loaded: 0, shown: 0, long: 0, draw: 0, appear: 0, steps: 0, sLink: 0, msLink: 0, sModels: 0, msModels: 0, sCards: 0, msCards: 0, stepMs: 0 };
   let lastTick = 0, done = false, spoiled = false;
+  /** The last step's start and what held it. */
+  let prevAt = 0, prev: BootWait = null;
   const r = (x: number) => Math.round(x);
   return {
     mount(t: number) {
@@ -70,15 +85,19 @@ export function createBootClock(settleMs = SETTLE_MS) {
     loaded(t: number) {
       c.loaded ||= r(t);
     },
-    /** An engine frame drawn, `t0` → `t1`; `settled`: nothing held back in it. */
-    frame(t0: number, t1: number, settled: boolean) {
+    /** An engine frame drawn, `t0` → `t1`; `wait`: what held some of it back (null: nothing, the island whole). */
+    frame(t0: number, t1: number, wait: BootWait) {
       if (done || spoiled) return;
       c.first ||= r(t1);
       c.draw = Math.max(c.draw, r(t1 - t0));
       if (c.loaded && !c.shown && t0 >= c.loaded) {
         c.appear = Math.max(c.appear, r(t1 - t0));
         c.steps++;
-        if (settled) c.shown = r(t1);
+        c.stepMs = r(c.stepMs + t1 - t0);
+        if (prev) c[WAIT[prev][1]] += r(t0 - prevAt);
+        if (wait) c[WAIT[wait][0]]++;
+        [prev, prevAt] = [wait, t0];
+        if (!wait) c.shown = r(t1);
       }
     },
     /** A display frame (rAF), or the launch interrupted (`spoil`: the page hidden, the island paused). */

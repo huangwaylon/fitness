@@ -7,34 +7,36 @@ describe('the launch clock (perf.boot)', () => {
     const c = createBootClock(1000);
     c.mount(200);
     c.tick(250);
-    c.frame(290, 300, false);
+    c.frame(290, 300, 'link');
     c.tick(301);
     c.loaded(500);
     // (a frame begun before the models were in isn't theirs)
-    c.frame(490, 520, false);
+    c.frame(490, 520, 'link');
     c.tick(521);
-    c.frame(530, 570, false);
+    c.frame(530, 570, 'models');
     c.tick(571);
-    c.frame(580, 610, true);
+    c.frame(580, 610, null);
     c.tick(611);
     expect(c.marks()).toMatchObject({ mount: 200, first: 300, loaded: 500, shown: 610, appear: 40, steps: 2, draw: 40, long: 220 });
+    // (the steps by what held them: models loading 530 → 580, then whole)
+    expect(c.marks()).toMatchObject({ sLink: 0, msLink: 0, sModels: 1, msModels: 50, sCards: 0, stepMs: 70 });
     expect(c.done()).toBe(false);
     // the follow-up frames count toward the longest, not the appearing
-    c.frame(700, 790, true);
+    c.frame(700, 790, null);
     c.tick(800);
     c.tick(1611);
     expect(c.done()).toBe(true);
     expect(c.marks()).toMatchObject({ draw: 90, appear: 40, long: 811 });
     // done: nothing more counts
-    c.frame(2000, 2500, true);
+    c.frame(2000, 2500, null);
     expect(c.marks().draw).toBe(90);
   });
 
   it('a page hidden meanwhile spoils the launch (never done)', () => {
     const c = createBootClock(100);
-    c.frame(0, 10, true);
+    c.frame(0, 10, null);
     c.loaded(20);
-    c.frame(30, 40, true);
+    c.frame(30, 40, null);
     c.tick(50, true);
     c.tick(500);
     expect(c.spoiled()).toBe(true);
@@ -49,7 +51,7 @@ describe('the launch clock (perf.boot)', () => {
     try {
       let paused = false;
       const w = watchBoot(() => ({ progs: 1, fieldsMs: 0, fields: 'cache' }), () => paused);
-      w!.clock.frame(0, 10, false);
+      w!.clock.frame(0, 10, 'link');
       w!.clock.loaded(20);
       frames.shift()!(16);
       frames.shift()!(33);
@@ -90,7 +92,7 @@ describe('the launch clock (perf.boot)', () => {
   });
 
   it('the log keeps every field of the report, numbers and closed sets only', () => {
-    const r = { mount: 210, first: 300, loaded: 560, shown: 1100, long: 340, draw: 330, appear: 330, steps: 3, progs: 49, fieldsMs: 80, fields: 'worker', sw: 'ctl', warm: true, net: 0 };
+    const r = { mount: 210, first: 300, loaded: 560, shown: 1100, long: 340, draw: 330, appear: 330, steps: 3, progs: 49, fieldsMs: 80, fields: 'worker', sw: 'ctl', warm: true, net: 0, sLink: 1, msLink: 40, sModels: 1, msModels: 300, sCards: 0, msCards: 0, stepMs: 25 };
     expect(cleanData('perf.boot', r)).toEqual(r);
     expect(cleanData('perf.boot', { fields: 'somewhere', sw: 'yes', shown: '1100' })).toEqual({});
   });

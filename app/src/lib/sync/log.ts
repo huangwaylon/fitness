@@ -381,6 +381,17 @@ function frames(ms: number): Promise<{ p50: number; p95: number; fps: number; lo
 }
 
 const ALIVE = 'island.alive';
+/** localStorage: when this phone last hid the app (ms; gone once it's shown again): app.open's `coldS`. */
+const HIDDEN_AT = 'island.hiddenAt';
+/** The last hide's time kept (hidden) or let go (shown). */
+function markHidden(hidden: boolean) {
+  try {
+    if (hidden) localStorage.setItem(HIDDEN_AT, String(env.now()));
+    else localStorage.removeItem(HIDDEN_AT);
+  } catch {
+    /* no local storage */
+  }
+}
 /** The island's `ready` polled every 500 ms for a minute at most. */
 const READY_POLLS = 120;
 
@@ -419,12 +430,21 @@ export function startLog(o: LogStart): () => void {
     /* no session storage */
   }
   const nav = (performance.getEntriesByType?.('navigation')[0] as PerformanceNavigationTiming | undefined)?.type ?? 'other';
+  // a fresh load after a hide (not one of our reloads): how long since; iOS's background kills are the short ones
+  let coldS: number | undefined;
+  try {
+    const at = Number(localStorage.getItem(HIDDEN_AT) ?? 0);
+    if (nav === 'navigate' && at > 0) coldS = Math.max(0, Math.round((env.now() - at) / 1000));
+  } catch {
+    /* no local storage */
+  }
+  markHidden(document.hidden);
   const types = (globalThis.PerformanceObserver as { supportedEntryTypes?: readonly string[] } | undefined)?.supportedEntryTypes ?? [];
   const q = o.queue();
   log('app.open', {
     nav, route: route(), pwa: matchMedia('(display-mode: standalone)').matches || (navigator as { standalone?: boolean }).standalone === true,
     w: innerWidth, h: innerHeight, dpr: devicePixelRatio, crashed, lt: types.includes('long-animation-frame') || types.includes('longtask'),
-    q: q.n, qAgeS: Math.round(q.ageMs / 1000)
+    q: q.n, qAgeS: Math.round(q.ageMs / 1000), ...(coldS !== undefined ? { coldS } : {})
   });
   const isLeaving = { now: false };
   const err = (e: ErrorEvent) => logError('error', e.error ?? e.message, { file: e.filename, line: e.lineno, route: o.route(), leaving: isLeaving.now || document.hidden });
@@ -458,6 +478,7 @@ export function startLog(o: LogStart): () => void {
     } catch {
       /* no session storage */
     }
+    markHidden(document.hidden);
     if (document.hidden) {
       hiddenAt = env.now();
       leaving();

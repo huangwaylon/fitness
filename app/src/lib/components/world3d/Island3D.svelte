@@ -1047,7 +1047,13 @@
         precipSurface(p3);
         falling = p3.frame(t, cv.camX, z, cv.zoom, e.at(cv.camX, z, 0, AT).depth, ch);
       }
-      if (posed || more === true || moving === true) return true;
+      if (posed || more === true || moving === true) {
+        // (what of it, for perf.rest)
+        if (posed) e.tag('vil');
+        if (more === true) e.tag('world');
+        if (moving === true) e.tag('mirror');
+        return true;
+      }
       // a still villager's next blink: one frame then (not the ambient rate's for as long as it stands still)
       e.wake(vilWake);
       // the ambience (the ambient rate): a slow move, the season's fall, the stream's floats, an emitter, a gym

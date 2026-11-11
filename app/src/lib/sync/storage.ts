@@ -178,6 +178,9 @@ export const DEVICE = {
   weddingDone: 'island.weddingDone',
   /** localStorage: `1`: the installed app asked the browser to keep its storage (sync/persist.ts: once). */
   persistAsked: 'island.persistAsked',
+  /** localStorage: the Tokyo day (days since the epoch) this phone last logged its storage's use (sync/persist.ts
+   *  storageDaily: storage.use). */
+  storageDay: 'island.storageDay',
   /** localStorage: `{[id]: {name, source, bytes, at, done, tileVersion}}`: the map areas saved on this phone
    *  (lib/offline/areas.svelte.ts), a mirror of their caches' manifests: one listed whose cache is gone was evicted
    *  (「消えました」). */

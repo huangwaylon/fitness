@@ -33,6 +33,7 @@ beforeEach(() => {
   vi.stubGlobal('location', { search: '' });
   vi.stubGlobal('navigator', { webdriver: false, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X)' });
   vi.stubGlobal('sessionStorage', new Mem());
+  vi.stubGlobal('localStorage', new Mem());
   vi.stubGlobal('matchMedia', () => ({ matches: true }));
   vi.stubGlobal('innerWidth', 393);
   vi.stubGlobal('innerHeight', 852);
@@ -124,6 +125,44 @@ describe('the log started on a phone', () => {
     expect(sent.length).toBe(n + 1);
     expect([sent[n].keepalive, sent[n].body.es.map((e) => e.e)]).toEqual([false, ['app.show']]);
     stop();
+  });
+
+  it('a fresh load after a hide says how long since (coldS: a background kill); none after a show, nor on a reload', async () => {
+    const perf = performance as unknown as { getEntriesByType?: unknown };
+    let nav = 'navigate';
+    perf.getEntriesByType = () => [{ type: nav }];
+    try {
+      let stop = start();
+      doc.hidden = true;
+      doc.dispatchEvent(new Event('visibilitychange'));
+      stop();
+      // (killed in the background: the next load is a fresh one, 40 s on)
+      await vi.advanceTimersByTimeAsync(40_000);
+      doc.hidden = false;
+      stop = start();
+      // shown, then closed while shown (no hide): no coldS next time
+      stop();
+      stop = start();
+      stop();
+      // hidden, and the next load one of ours (a reload)
+      doc.hidden = true;
+      doc.dispatchEvent(new Event('visibilitychange'));
+      stop = start();
+      doc.hidden = true;
+      doc.dispatchEvent(new Event('visibilitychange'));
+      stop();
+      nav = 'reload';
+      doc.hidden = false;
+      stop = start();
+      await vi.advanceTimersByTimeAsync(60_000);
+      await flushLog();
+      stop();
+      // (each batch once: a resent one is the same batch id, which the relay takes once)
+      const opens = [...new Map(sent.map((x) => [x.body.b, x.body])).values()].flatMap((b) => b.es).filter((e) => e.e === 'app.open');
+      expect(opens.map((e) => e.d?.coldS ?? null)).toEqual([null, 40, null, null, null]);
+    } finally {
+      delete perf.getEntriesByType;
+    }
   });
 
   it('nothing in the demo or under automation', () => {
