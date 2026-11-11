@@ -31,6 +31,7 @@
   import { farmOfState } from '#lib/model/farm.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import type { Who } from '#lib/types.ts';
+  import { t } from '#lib/i18n/index.ts';
 
   let { me, relay }: { me: 'A' | 'B' | 'G'; relay: Live | null } = $props();
 
@@ -222,6 +223,7 @@
     return () => clearTimeout(t);
   });
   const errors = $derived(issues.filter((i) => i.level === 'error').length);
+  const warns = $derived(issues.length - errors);
 
   // `?check`: what the phones' 3D island leaves undrawn of the layout, and why (world3d/drawCheck.ts), a moment after a change
   const drawCheckOn = new URLSearchParams(location.search).has('check');
@@ -675,7 +677,7 @@
           <span class="gname">{name}</span>
           <div class="items">
             {#each palette(g) as d (d.k)}
-              <button type="button" class="item" data-kind={d.k} aria-pressed={placing?.k === d.k} disabled={present(d)} title={`${d.ja} · ${d.en}${present(d) ? '（島にある）' : ''}`} onclick={() => pick(d)}>
+              <button type="button" class="item" data-kind={d.k} aria-pressed={placing?.k === d.k} disabled={present(d)} title={`${d.ja}${present(d) ? '（島にある）' : ''}`} onclick={() => pick(d)}>
                 {#if d.icon && iconUrl(d.icon)}<img src={iconUrl(d.icon)} alt="" />{:else}<span class="glyph">{d.k === 'stairs' ? '⛰' : d.k === 'board' ? '📋' : '・'}</span>{/if}
                 <span class="lbl">{d.ja}</span>
               </button>
@@ -724,14 +726,14 @@
       <button type="button" onclick={redo} disabled={!redoStack.length} title="Cmd+Shift+Z">↷ やり直す</button>
     </div>
     <label class="row small"><input type="checkbox" bind:checked={show3d} /> 3D</label>
-    <label class="row small"><input type="checkbox" data-river-line bind:checked={riverLine} /> 川の線 <small>(the river as the 3D island draws it: each turn's arc and its radius)</small></label>
+    <label class="row small"><input type="checkbox" data-river-line bind:checked={riverLine} /> 川の線 <small>（3Dの島が描く川：曲がり角ごとのカーブと半径）</small></label>
     {#if show3d}
       <div class="p3d"><Preview3D layout={store.current} mode="orbit" /></div>
     {/if}
     {#if one}
       {@const d = kindDef(one.k)}
       <section class="inspect" data-inspect>
-        <h2>{d?.ja} <small>{d?.en} · {footText(one)} · {one.id}</small></h2>
+        <h2>{d?.ja} <small>{footText(one)} · {one.id}</small></h2>
         {#if one.k === 'field'}
           {@const f = fieldOf(one.s)}
           {@const planted = plantsOn(one)}
@@ -802,10 +804,10 @@
       {/if}
     </section>
     <section class="issues" data-issues>
-      <h2>チェック {#if errors}<span class="bad">{errors}</span>{:else}<span class="good">OK</span>{/if}</h2>
+      <h2>チェック {#if errors}<span class="bad">{errors}</span>{:else if warns}<span class="warn-n" data-warns={warns}>注意 {warns}</span>{:else}<span class="good">OK</span>{/if}</h2>
       <ul>
         {#each issues as is, i (i)}
-          <li><button type="button" class={is.level} aria-pressed={focus === is} onclick={() => showIssue(is)}>{is.ja}<small>{is.en}</small></button></li>
+          <li><button type="button" class={is.level} aria-pressed={focus === is} onclick={() => showIssue(is)}>{is.ja}</button></li>
         {/each}
       </ul>
     </section>
@@ -830,7 +832,7 @@
       </section>
     {/if}
     <section class="mine" data-my-home>
-      <h2>自分の家 <small>{store.home(me).m === 'house' ? `${store.home(me).w} · ${store.home(me).r} · ${store.home(me).d}` : store.home(me).m}</small></h2>
+      <h2>自分の家 <small data-my-home-name>{t(`homes.model.${store.home(me).m}`)}</small></h2>
       <button type="button" data-home-look onclick={() => (picking = true)}>家を変更</button>
     </section>
     <section class="file">
@@ -872,11 +874,11 @@
   .swatch[aria-pressed='true'] { outline: 3px solid var(--c-ink); background: var(--c); }
   .palette { display: flex; flex-direction: column; gap: 8px; }
   .gname { font-size: 12px; color: var(--c-ink-soft); font-weight: 700; }
-  .items { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+  .items { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; } /* (1fr's min-content, a 60px label, pushed the 4th column out) */
   .item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 2px; border-radius: 8px; border-width: 1.5px; }
   .item img { width: 38px; height: 38px; object-fit: contain; }
   .glyph { font-size: 26px; line-height: 38px; height: 38px; }
-  .lbl { font-size: 10px; font-weight: 500; line-height: 1.15; text-align: center; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lbl { font-size: 10px; font-weight: 500; line-height: 1.15; text-align: center; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .hint { font-size: 11px; color: var(--c-ink-soft); line-height: 1.5; margin: 0; }
   .plan { position: relative; overflow: hidden; }
   canvas { display: block; width: 100%; height: 100%; touch-action: none; }
@@ -911,5 +913,6 @@
   .issues .error { border-color: #d0533c; background: #fff0ec; }
   .issues .warn { border-color: #d7a323; background: #fff8e2; }
   .bad { background: #e2553d; color: #fff; border-radius: 999px; padding: 0 8px; font-size: 12px; }
+  .warn-n { background: #d7a323; color: #2c2218; border-radius: 999px; padding: 0 8px; font-size: 12px; }
   .good { background: var(--c-leaf); color: #fff; border-radius: 999px; padding: 0 8px; font-size: 12px; }
 </style>

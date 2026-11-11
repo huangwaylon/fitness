@@ -101,6 +101,24 @@ test('place from the palette; the check shows a tree in the river', async ({ pag
   await expect.poll(() => page.evaluate(() => (window as unknown as { __editor: E }).__editor.layout().objects.size)).toBe(before + 1);
 });
 
+// The editor in Japanese (review 11/10 r3 N7): the check's lines in one language, a warning's badge 「注意 n」 (not OK),
+// my home by its name (not its id), the palette's four columns inside the sidebar.
+test('the side panels in Japanese: the check, its badge, my home; the palette’s 4th column in view', async ({ page }) => {
+  await openEditor(page);
+  const check = page.locator('[data-issues]');
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __editor: E }).__editor.issues().length)).toBeGreaterThan(0);
+  const { errors, warns } = await page.evaluate(() => {
+    const is = (window as unknown as { __editor: E }).__editor.issues();
+    return { errors: is.filter((i) => i.level === 'error').length, warns: is.filter((i) => i.level === 'warn').length };
+  });
+  if (!errors) await expect(check.locator('h2')).toHaveText(`チェック 注意 ${warns}`);
+  expect(await check.innerText()).not.toMatch(/[A-Za-z]/);
+  expect(await page.locator('[data-my-home]').innerText()).not.toMatch(/[A-Za-z]/);
+  expect(await page.locator('.side').innerText()).not.toMatch(/\bthe\b/);
+  const tools = (await page.locator('.tools').boundingBox())!;
+  for (const b of await page.locator('.items .item').evaluateAll((es) => es.map((e) => e.getBoundingClientRect().right))) expect(b).toBeLessThanOrEqual(tools.x + tools.width);
+});
+
 // the user, 2026-11-09: anyone may reset the island (the guest too), once 「リセット」 is typed
 for (const as of ['A', 'G'] as const)
   test(`the reset (${as}): blocked till 「リセット」 is typed, やめる and Esc keep the layout, リセットする resets it`, async ({ page }) => {
