@@ -14,16 +14,32 @@
 //                       new epoch after it
 //   backup              the daily backup now (src/archive.ts: dumped, encrypted, uploaded by the relay; it replaces
 //                       today's), its outcome (--test: into the release dumps-test)
-//   load <file>         a dump into the record (its rows by the record's rules, in chunks; what it has is skipped)
+//   load <file>         a dump into the record (its rows by the record's rules, in chunks; what it has is skipped):
+//                       a `.json`, a `.json.gz`, or the backup's `.json.gz.age` / old `.json.age` decrypted in memory
+//                       with the age key (ARCHIVE_KEY_FILE, else ~/.config/island-fund/archive-age.key; never printed)
 //   held [A|B]          the values an ingest held back (a past day's 0 over a value above it), never served
 //   promote <person> <date> <metric> [value]   a held value made a row of the day's history (its latest now)
 // (the phones' and the relay's events: scripts/logs.ts, `npm run logs`)
 import { readFileSync } from 'node:fs';
+import { homedir } from 'node:os';
 import { signed } from './admin.ts';
+import { openDump } from '../src/archive.ts';
 
 const args = process.argv.slice(2).filter((a: string) => a !== '--test');
 
 const CHUNK = 400;
+
+/** The age identity (`AGE-SECRET-KEY-1…`) for a backup's file: read only when one is opened, never printed. */
+function ageIdentity(): string {
+  const f = process.env.ARCHIVE_KEY_FILE ?? `${homedir()}/.config/island-fund/archive-age.key`;
+  const id = readFileSync(f, 'utf8').split('\n').map((l) => l.trim()).find((l) => l.startsWith('AGE-SECRET-KEY-'));
+  if (!id) throw new Error(`no age identity in ${f}`);
+  return id;
+}
+
+/** A dump file's `{rows}` in memory, whatever its kind (archive.ts openDump). */
+const readDump = async (bytes: Uint8Array): Promise<{ rev?: string; rows: Record<string, unknown[][]> }> =>
+  JSON.parse(await openDump(bytes, new TextDecoder().decode(bytes.slice(0, 21)) === 'age-encryption.org/v1' ? ageIdentity() : undefined)) as { rev?: string; rows: Record<string, unknown[][]> };
 /** Rows a dump page (the record's SNAPSHOT_PAGE_MAX at most). */
 const DUMP_PAGE = 5000;
 
@@ -102,7 +118,7 @@ switch (cmd) {
     break;
   }
   case 'load':
-    await load((JSON.parse(readFileSync(arg, 'utf8')) as { rows: Record<string, unknown[][]> }).rows);
+    await load((await readDump(readFileSync(arg))).rows);
     break;
   default:
     console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | held [person] | promote <person> <date> <metric> [value]  [--test]');

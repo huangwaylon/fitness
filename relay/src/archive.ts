@@ -1,7 +1,9 @@
 // The record's daily backup (docs/ops/runbook.md#6-backups): at 03:00 Tokyo the cron asks the record (storeObject.ts
 // archiveKick), whose alarm dumps it (the admin `dump`'s rows, the file `record.ts dump` writes, so `record.ts load`
-// takes it), encrypts it with age to the public recipient only (age-encryption, typage: the Worker never holds the
-// secret key) and uploads it as `island-record-YYYY-MM-DD.json.age` to a release of the private archive repo (GitHub's
+// takes it), gzips it as it comes (store.ts dumpText: a page of rows at a time, never the whole in the object's 128 MB),
+// encrypts it with age to the public recipient only (age-encryption, typage: the Worker never holds the secret key) and
+// uploads it as `island-record-YYYY-MM-DD.json.gz.age` (till 2026-11-11 `.json.age`, not gzipped: openDump reads
+// both) to a release of the private archive repo (GitHub's
 // REST API, ARCHIVE_TOKEN: a fine-grained token, that repo's Contents read/write). The last ARCHIVE_KEEP are kept;
 // nothing else in the release (the Mac's `notes-*`) is touched. Free of the Workers runtime, so it is unit-testable.
 //
@@ -9,7 +11,7 @@
 //   tried again by the alarm after RETRY_MIN_MS, doubling to RETRY_MAX_MS; no token: said once a slot, nothing tried.
 // - Read-only: the dump only reads the record (the state is one key of the object's storage, not the record's tables).
 // - Never logged: the dump, the token, GitHub's replies (a step and a status only).
-import { Encrypter } from 'age-encryption';
+import { Decrypter, Encrypter } from 'age-encryption';
 
 export const ARCHIVE_KEEP = 90;
 /** The cron's expression that hands the backup to the record (index.ts scheduled): 18:00 UTC, 03:00 Tokyo. */
@@ -18,7 +20,7 @@ export const RETRY_MIN_MS = 30 * 60_000;
 export const RETRY_MAX_MS = 6 * 3_600_000;
 /** Old dumps deleted a run at most (the rest the next day: a run's subrequests stay few). */
 const DELETE_MAX = 20;
-const RECORD = /^island-record-\d{4}-\d{2}-\d{2}\.json\.age$/;
+const RECORD = /^island-record-(\d{4}-\d{2}-\d{2})\.json(?:\.gz)?\.age$/;
 /** Tokyo is UTC+9; a slot starts at 03:00 there, so the slot's day is the UTC time's + 6 h. */
 const SLOT_SHIFT_MS = 6 * 3_600_000;
 
@@ -36,7 +38,7 @@ export interface ArchiveState {
 export const NO_STATE: ArchiveState = { fails: 0, lastAt: 0 };
 
 export const slotOf = (now: number): string => new Date(now + SLOT_SHIFT_MS).toISOString().slice(0, 10);
-export const assetName = (slot: string): string => `island-record-${slot}.json.age`;
+export const assetName = (slot: string): string => `island-record-${slot}.json.gz.age`;
 export const backoff = (fails: number): number => Math.min(RETRY_MAX_MS, RETRY_MIN_MS * 2 ** Math.max(0, fails - 1));
 
 /** Whether a run is due now: `done` (this slot's is up, or it has no token), `wait` (a failure's backoff), `run`. */
@@ -47,30 +49,69 @@ export function due(s: ArchiveState, now: number): 'run' | 'done' | 'wait' {
   return 'run';
 }
 
-/** The record dumped as `record.ts dump` writes it (its pages put together are the whole: store.ts rowsPage). */
-export function dumpText(core: { rev(): string; dump(): { rows: { metrics: unknown[]; events: unknown[]; uploads: unknown[]; held?: unknown[] } } }): { text: string; metrics: number; events: number } {
-  const { rows } = core.dump();
-  const text = `${JSON.stringify({ ok: true, rev: core.rev(), rows: { metrics: rows.metrics, events: rows.events, uploads: rows.uploads, held: rows.held ?? [] } })}\n`;
-  return { text, metrics: rows.metrics.length, events: rows.events.length };
+/** The dump's text gzipped as it comes (`gzip -d` reads it), and its size before. */
+export async function gzip(pieces: Iterable<string>): Promise<{ bytes: Uint8Array; raw: number }> {
+  const cs = new CompressionStream('gzip');
+  const out = new Response(cs.readable).arrayBuffer();
+  const w = cs.writable.getWriter(), enc = new TextEncoder();
+  let raw = 0;
+  try {
+    for (const p of pieces) {
+      const b = enc.encode(p);
+      raw += b.length;
+      await w.write(b);
+    }
+    await w.close();
+  } catch (e) {
+    out.catch(() => {});
+    await w.abort(e).catch(() => {});
+    throw e;
+  }
+  return { bytes: new Uint8Array(await out), raw };
 }
 
 /** The bytes encrypted to the age recipient (`age1…`): what `age -R` writes (binary, not armored). */
-export async function encrypt(text: string, recipient: string): Promise<Uint8Array> {
+export async function encrypt(bytes: Uint8Array, recipient: string): Promise<Uint8Array> {
   const e = new Encrypter();
   e.addRecipient(recipient);
-  return e.encrypt(new TextEncoder().encode(text));
+  return e.encrypt(bytes);
+}
+
+const AGE = new TextEncoder().encode('age-encryption.org/v1');
+const starts = (b: Uint8Array, p: ArrayLike<number>) => b.length >= p.length && Array.prototype.every.call(p, (x: number, i: number) => b[i] === x);
+
+/**
+ * A dump's text from a file's bytes, in memory: decrypted with the age identity (`AGE-SECRET-KEY-1…`) if it is a
+ * `.age`, gunzipped if gzipped, so the old `.json.age`, the new `.json.gz.age`, a `.json` and a `.json.gz` all read.
+ */
+export async function openDump(bytes: Uint8Array, identity?: string): Promise<string> {
+  let b = bytes;
+  if (starts(b, AGE)) {
+    if (!identity) throw new Error('an age file: needs the identity');
+    const d = new Decrypter();
+    d.addIdentity(identity);
+    b = await d.decrypt(b);
+  }
+  if (starts(b, [0x1f, 0x8b])) b = new Uint8Array(await new Response(new Response(b as BodyInit).body!.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
+  return new TextDecoder().decode(b);
 }
 
 /** The dumps to delete: every `island-record-*` but the newest `keep` by name (dated), oldest first. */
 export function retention(names: string[], keep = ARCHIVE_KEEP): string[] {
-  const records = [...new Set(names.filter((n) => RECORD.test(n)))].sort();
+  const records = [...new Set(names.filter((n) => RECORD.test(n)))].sort((a, b) => dayOf(a).localeCompare(dayOf(b)) || a.localeCompare(b));
   return records.slice(0, Math.max(0, records.length - keep));
 }
 
+const dayOf = (name: string): string => RECORD.exec(name)?.[1] ?? '';
+
 /** A GitHub call that failed: its step and status only (its body may say anything). */
 class ArchiveError extends Error {
-  constructor(readonly step: string, readonly http: number) {
+  readonly step: string;
+  readonly http: number;
+  constructor(step: string, http: number) {
     super(`${step} ${http}`);
+    this.step = step;
+    this.http = http;
     this.name = 'ArchiveError';
   }
 }
@@ -100,7 +141,8 @@ async function call<T>(gh: GitHub, step: string, method: string, url: string, bo
 
 /**
  * The file into the release (made if missing): a dump of the same name is replaced (the new one up under `.part`
- * first, then the old deleted and the new renamed: the slot always has one), then the dumps past `keep` deleted.
+ * first, then the old deleted and the new renamed: the slot always has one), the same day's in the other format
+ * deleted once it is up, then the dumps past `keep` deleted.
  */
 export async function upload(gh: GitHub, name: string, bytes: Uint8Array, keep = ARCHIVE_KEEP): Promise<{ kept: number; del: number; replaced: boolean }> {
   const rel = (await call<Release>(gh, 'release', 'GET', `/releases/tags/${gh.tag}`))
@@ -121,7 +163,9 @@ export async function upload(gh: GitHub, name: string, bytes: Uint8Array, keep =
     await del(old);
     await call(gh, 'rename', 'PATCH', `/releases/assets/${up.id}`, JSON.stringify({ name }));
   } else await put(name);
-  const names = [...assets.map((a) => a.name), name];
+  const twins = assets.filter((a) => a.name !== name && dayOf(a.name) && dayOf(a.name) === dayOf(name));
+  for (const a of twins) await del(a);
+  const names = [...assets.filter((a) => !twins.includes(a)).map((a) => a.name), name];
   const gone = retention(names, keep).slice(0, DELETE_MAX);
   for (const n of gone) {
     const a = assets.find((x) => x.name === n);
@@ -138,12 +182,14 @@ export interface ArchiveRun {
   slot: string;
   step?: string;
   http?: number;
+  /** The file's size, and the dump's before gzip (the record's growth). */
   kB?: number;
+  rawkB?: number;
   metrics?: number;
   events?: number;
   kept?: number;
   del?: number;
-  /** Wall ms: the whole, the dump, the encryption, GitHub's calls. */
+  /** Wall ms: the whole, the dump (and its gzip), the encryption, GitHub's calls. */
   ms: number;
   dumpMs?: number;
   encMs?: number;
@@ -151,13 +197,14 @@ export interface ArchiveRun {
 }
 
 export interface ArchiveIO {
-  dump(): { text: string; metrics: number; events: number };
+  /** The rows counted, and the dump's text a page at a time (store.ts dumpText, read once). */
+  dump(): { pieces: Iterable<string>; metrics: number; events: number };
   gh: Omit<GitHub, 'token'> & { token?: string };
   recipient?: string;
   now(): number;
 }
 
-/** One run: dump, check (as dump.sh did: events and metrics there), encrypt, upload. Never throws. */
+/** One run: check (as dump.sh did: events and metrics there), dump and gzip, encrypt, upload. Never throws. */
 export async function runArchive(io: ArchiveIO): Promise<ArchiveRun> {
   const t0 = io.now();
   const slot = slotOf(t0);
@@ -167,14 +214,15 @@ export async function runArchive(io: ArchiveIO): Promise<ArchiveRun> {
   let step = 'dump';
   try {
     const d = io.dump();
+    if (!d.metrics || !d.events) return end({ ok: false, st: 'empty', metrics: d.metrics, events: d.events, dumpMs: io.now() - t0 });
+    const z = await gzip(d.pieces);
     const t1 = io.now();
-    if (!d.metrics || !d.events) return end({ ok: false, st: 'empty', metrics: d.metrics, events: d.events, dumpMs: t1 - t0 });
     step = 'encrypt';
-    const bytes = await encrypt(d.text, io.recipient);
+    const bytes = await encrypt(z.bytes, io.recipient);
     const t2 = io.now();
     step = 'github';
     const u = await upload({ ...io.gh, token: io.gh.token }, assetName(slot), bytes);
-    return end({ ok: true, st: 'ok', kB: Math.round(bytes.length / 1024), metrics: d.metrics, events: d.events, kept: u.kept, del: u.del, dumpMs: t1 - t0, encMs: t2 - t1, upMs: io.now() - t2 });
+    return end({ ok: true, st: 'ok', kB: Math.round(bytes.length / 1024), rawkB: Math.round(z.raw / 1024), metrics: d.metrics, events: d.events, kept: u.kept, del: u.del, dumpMs: t1 - t0, encMs: t2 - t1, upMs: io.now() - t2 });
   } catch (e) {
     if (e instanceof ArchiveError) return end({ ok: false, st: 'github', step: e.step, http: e.http });
     return end({ ok: false, st: e instanceof Error && /^\w{1,40}$/.test(e.name) ? e.name : 'Error', step });

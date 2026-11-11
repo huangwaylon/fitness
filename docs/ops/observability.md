@@ -66,7 +66,7 @@ Each event's fields, kinds and closed sets are the registry's (`contract/log.ts`
 | `ws.hello` (relay) | info | `v` (the protocol version), `build` (the app's, from the hello), `rep` (that device's sockets it replaced, the others told nothing); who | each welcomed hello: which phone speaks what (`report`'s *Live hellos*) |
 | `store.corrupt` (relay) | warn | `where` (the fold: spend, board, food, tally, shop, decor) | a stored row of the record that isn't a JSON object, skipped by that fold (store.ts `rowRec`), once a request a place |
 | `cron.wx` | info; warn failed | `ok`, `fetched`, `fail`, `hours`, `age`, `ms` | a weather fetch (the cron at :15 and :45 when one is due) |
-| `cron.backup` | info; warn `no_token`; error failed | `ok`, `st` (ok, no_token, empty, github, an error's class), `step`, `http`, `kB`, row counts, ms per step, `force` | the record's daily dump ([runbook §6](runbook.md#6-backups)) |
+| `cron.backup` | info; warn `no_token`; error failed | `ok`, `st` (ok, no_token, empty, github, epoch, an error's class), `step`, `http`, `kB` (the file), `rawkB` (the dump before gzip), row counts, ms per step, `force` | the record's daily dump ([runbook §6](runbook.md#6-backups)) |
 | `cron.compact` | info | `dates`, `deleted`, `more`, `metrics`, `ms` | the record's compaction (off: COMPACT_CRON) |
 | `admin` | info | `op`, `st` | each signed admin op (an audit) |
 | `log.cap` | warn | `bucket` | a day's cap reached (once) |

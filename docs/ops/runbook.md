@@ -88,20 +88,22 @@ re-sent: [shortcut §5](shortcut-health-sync.md#5-one-time-baseline-optional)). 
 
 - **Point-in-time recovery** (the Durable Object's, on the Free plan, the last 30 days): §9 `bookmark` / `restore`.
 - **The daily dump, on the relay** (`relay/src/archive.ts`): at 03:00 Tokyo the cron (`0 18 * * *`) hands it to the
-  record's alarm, which dumps it (as `record.ts dump`), encrypts it with age to the public key in
-  `ARCHIVE_RECIPIENT` and uploads `island-record-YYYY-MM-DD.json.age` to the `dumps` release of the private
+  record's alarm, which dumps it (as `record.ts dump`, a page of rows at a time), gzips it, encrypts it with age to the
+  public key in `ARCHIVE_RECIPIENT` and uploads `island-record-YYYY-MM-DD.json.gz.age` (before 2026-11-12:
+  `.json.age`, not gzipped) to the `dumps` release of the private
   `huangwaylon/fitness-archive` (the test relay: `dumps-test`); the last 90 are kept, a failure retried. The log's
   `cron.backup` says each run; the alert ([observability](observability.md#the-alert)) flags none good in 48 h. By hand: `node scripts/record.ts
   backup [--test]`.
   - **The token:** `ARCHIVE_TOKEN`, a fine-grained GitHub token for that repo only, *Contents: Read and write*
     `npx wrangler secret put ARCHIVE_TOKEN` from `relay/` (and `--env test`); unset, each run logs `no_token`.
     Rotate it the same way before it expires.
-  - **Read one:** `gh release download dumps -R huangwaylon/fitness-archive -p island-record-YYYY-MM-DD.json.age`, then
-    `age -d -i ~/.config/island-fund/archive-age.key island-record-YYYY-MM-DD.json.age > record.json` (the secret key is
-    only on the Mac and in the password manager).
+  - **Read one:** `gh release download dumps -R huangwaylon/fitness-archive -p island-record-YYYY-MM-DD.json.gz.age`;
+    `record.ts load` takes it as it is (decrypted in memory with `~/.config/island-fund/archive-age.key`). By hand:
+    `age -d -i ~/.config/island-fund/archive-age.key island-record-YYYY-MM-DD.json.gz.age | gunzip > record.json`
+    (an old `.json.age`: no `gunzip`). The secret key is only on the Mac and in the password manager.
 
 **Restore** after a bad change: the record to a bookmark from before it (§9; the new epoch follows by itself: `counts`
-shows the new rev a few seconds on). From a dump into a new, empty record: `load <file>`, then `rev`.
+shows the new rev a few seconds on). From a dump into a new, empty record: `load <file>` (a backup's `.age` too), then `rev`.
 
 ## 7. Refresh the official art
 The art in `app/static/art/` comes from Nookipedia: edit `SPECS` in `app/scripts/fetch-assets.ts`, then `cd app && npm

@@ -1,11 +1,12 @@
 // The record's daily backup (src/archive.ts): its slot and retries, the dump (byte for byte what `record.ts dump`
-// writes from the admin's pages), the age encryption (decrypted here with a test key, never the real one), the
+// writes from the admin's pages, a page at a time), its gzip, the age encryption and the reading of old and new dumps (decrypted here with a test key, never the real one), the
 // release's upload (a fake GitHub: the same day replaced, the last 90 kept, `notes-*` never touched) and the log's
 // `backupH`.
+import { gunzipSync } from 'node:zlib';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Decrypter, generateX25519Identity, identityToRecipient } from 'age-encryption';
 import {
-  after, ARCHIVE_KEEP, assetName, backoff, due, dumpText, encrypt, NO_STATE, retention, retryAt, RETRY_MAX_MS, RETRY_MIN_MS,
+  after, ARCHIVE_KEEP, assetName, backoff, due, encrypt, gzip, NO_STATE, openDump, retention, retryAt, RETRY_MAX_MS, RETRY_MIN_MS,
   runArchive, slotOf, upload, type ArchiveIO, type ArchiveState, type GitHub
 } from '../src/archive.ts';
 import { StoreCore } from '../src/store.ts';
@@ -23,7 +24,7 @@ describe('the slot and its retries', () => {
     expect(slotOf(T3)).toBe('2026-11-11');
     expect(slotOf(T3 - 1)).toBe('2026-11-10');
     expect(slotOf(T3 + 24 * H - 1)).toBe('2026-11-11');
-    expect(assetName('2026-11-11')).toBe('island-record-2026-11-11.json.age');
+    expect(assetName('2026-11-11')).toBe('island-record-2026-11-11.json.gz.age');
   });
   it('done once a slot; a failure waits its backoff (30 min doubling to 6 h); no token is said once a slot', () => {
     expect(due(NO_STATE, T3)).toBe('run');
@@ -62,6 +63,10 @@ describe('retention', () => {
     expect(gone).toEqual(records.slice(0, 5));
     expect(retention(records.slice(0, ARCHIVE_KEEP))).toEqual([]);
   });
+  it('counts the old .json.age dumps with the new, by day', () => {
+    const old = ['island-record-2026-11-10.json.age', 'island-record-2026-11-11.json.age'];
+    expect(retention([assetName('2026-11-12'), ...old, assetName('2026-11-13')], 2)).toEqual(old);
+  });
 });
 
 describe('the dump', () => {
@@ -75,7 +80,8 @@ describe('the dump', () => {
       metrics.push([at, i % 2 ? 'A' : 'B', date, 'steps', 1000 + i]);
       if (i % 3 === 0) events.push([at, 'A', `t${i}`, 'tally', JSON.stringify({ date, counts: { 'fish:koi': i } })]);
     }
-    expect(store.load({ rows: { metrics, events } })).toMatchObject({ ok: true });
+    const uploads = [0, 1, 2].map((i) => [new Date(now + i * 60_000 + 1).toISOString(), 'A', 'ok', 100 + i, '']);
+    expect(store.load({ rows: { metrics, events, uploads } })).toMatchObject({ ok: true });
     now += H;
     // record.ts dump(): the pages put together
     const rows = { metrics: [] as unknown[], events: [] as unknown[], uploads: [] as unknown[], held: [] as unknown[] };
@@ -88,10 +94,26 @@ describe('the dump', () => {
     } while (after);
     const tool = `${JSON.stringify({ ok: true, rev, rows })}\n`;
     const before = db.db.prepare('SELECT total_changes() AS n').get() as { n: number };
-    const d = dumpText(store);
-    expect(d.text).toBe(tool);
-    expect([d.metrics, d.events]).toEqual([40, 14]);
+    for (const page of [1, 3, 2000]) expect([...store.dumpText(page)].join('')).toBe(tool);
+    expect(tool).toContain('"uploads":[["');
     expect((db.db.prepare('SELECT total_changes() AS n').get() as { n: number }).n).toBe(before.n);
+  });
+  it('a row written between its pages is in it once or not at all; a new epoch under it throws', () => {
+    const db = memSql();
+    let now = Date.parse('2026-11-01T00:00:00Z');
+    const store = new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B, KEY_C }, now: () => now, notify: () => {} });
+    const metrics = Array.from({ length: 10 }, (_, i) => [new Date(now + i * 1000).toISOString(), 'A', `2026-10-${10 + i}`, 'steps', i]);
+    store.load({ rows: { metrics, events: [] } });
+    now += H;
+    const it = store.dumpText(4);
+    const head = [it.next().value, it.next().value];
+    store.load({ rows: { metrics: [[new Date(now).toISOString(), 'B', '2026-10-31', 'steps', 99]], events: [] } });
+    const d = JSON.parse(head.join('') + [...it].join('')) as { rows: { metrics: unknown[][] } };
+    expect(d.rows.metrics.map((r) => r[4])).toEqual([...metrics.map((r) => r[4]), 99]);
+    const it2 = store.dumpText(4);
+    it2.next();
+    store.bumpRev();
+    expect(() => [...it2]).toThrow(expect.objectContaining({ name: 'epoch' }));
   });
 });
 
@@ -99,7 +121,7 @@ describe('the encryption', () => {
   it('decrypts with the identity of its recipient (a test key), and only with it', async () => {
     const id = await generateX25519Identity(), other = await generateX25519Identity();
     const text = `${JSON.stringify({ ok: true, rev: 'e1', rows: { metrics: [['2026-11-10T00:00:00.000Z', 'A', '2026-11-10', 'steps', 1234]], events: [], uploads: [], held: [] } })}\n`;
-    const bytes = await encrypt(text, await identityToRecipient(id));
+    const bytes = await encrypt(new TextEncoder().encode(text), await identityToRecipient(id));
     expect(new TextDecoder().decode(bytes.slice(0, 21))).toBe('age-encryption.org/v1');
     expect(new TextDecoder().decode(bytes)).not.toContain('steps');
     const d = new Decrypter();
@@ -109,12 +131,24 @@ describe('the encryption', () => {
     wrong.addIdentity(other);
     await expect(wrong.decrypt(bytes, 'text')).rejects.toThrow();
   });
+  it('gzips the pieces as they come (gzip -d reads it) and openDump reads every kind of dump file', async () => {
+    const id = await generateX25519Identity(), r = await identityToRecipient(id);
+    const text = `${JSON.stringify({ ok: true, rev: 'e1', rows: { metrics: Array.from({ length: 500 }, (_, i) => ['2026-11-10T00:00:00.000Z', 'A', '2026-11-10', 'steps', i]), events: [], uploads: [], held: [] } })}\n`;
+    const z = await gzip([text.slice(0, 7), '', text.slice(7)]);
+    expect(z.raw).toBe(text.length);
+    expect([z.bytes[0], z.bytes[1]]).toEqual([0x1f, 0x8b]);
+    expect(z.bytes.length).toBeLessThan(text.length / 5);
+    expect(gunzipSync(z.bytes).toString()).toBe(text);
+    const old = await encrypt(new TextEncoder().encode(text), r), neu = await encrypt(z.bytes, r);
+    for (const b of [old, neu, z.bytes, new TextEncoder().encode(text)]) expect(await openDump(b, id)).toBe(text);
+    await expect(openDump(neu)).rejects.toThrow(/identity/);
+  });
 });
 
 /** A release's assets on a fake GitHub, and the calls made (never the token in a URL). */
 function fakeGitHub(o: { release?: boolean; fail?: { method: string; status: number } } = {}) {
   let id = 100, release: { id: number; tag: string } | null = o.release === false ? null : { id: 7, tag: 'dumps' };
-  const assets = new Map<number, { name: string; size: number }>();
+  const assets = new Map<number, { name: string; size: number; body?: Uint8Array }>();
   const calls: string[] = [];
   const json = (b: unknown, status = 200) => new Response(JSON.stringify(b), { status, headers: { 'Content-Type': 'application/json' } });
   const fetch = async (url: string, init: RequestInit): Promise<Response> => {
@@ -138,7 +172,7 @@ function fakeGitHub(o: { release?: boolean; fail?: { method: string; status: num
     if (method === 'POST' && u.host === 'uploads.github.com') {
       const name = u.searchParams.get('name')!;
       if ([...assets.values()].some((a) => a.name === name)) return json({}, 422);
-      assets.set(++id, { name, size: (init.body as Uint8Array).length });
+      assets.set(++id, { name, size: (init.body as Uint8Array).length, body: init.body as Uint8Array });
       return json({ id, name }, 201);
     }
     const m = /^\/releases\/assets\/(\d+)$/.exec(p);
@@ -161,6 +195,13 @@ describe('the upload', () => {
     expect(await upload(gh(f, 'dumps-test'), 'island-record-2026-11-11.json.age', new Uint8Array([1, 2, 3]))).toEqual({ kept: 1, del: 0, replaced: false });
     expect(f.release()).toMatchObject({ tag: 'dumps-test' });
     expect(f.names()).toEqual(['island-record-2026-11-11.json.age']);
+  });
+  it('the day’s old-format dump goes once the new one is up', async () => {
+    const f = fakeGitHub();
+    f.add('island-record-2026-11-10.json.age');
+    f.add('island-record-2026-11-11.json.age');
+    expect(await upload(gh(f), assetName('2026-11-11'), new Uint8Array(3))).toEqual({ kept: 2, del: 0, replaced: false });
+    expect(f.names()).toEqual(['island-record-2026-11-10.json.age', 'island-record-2026-11-11.json.gz.age']);
   });
   it('replaces the same day’s (idempotent: one file a day), keeps 90 and never touches notes', async () => {
     const f = fakeGitHub();
@@ -189,7 +230,7 @@ describe('a run', () => {
   let recipient: string;
   let id: string;
   const io = (o: Partial<ArchiveIO> = {}): ArchiveIO => ({
-    dump: () => ({ text: '{"ok":true,"rev":"e1","rows":{"metrics":[[1]],"events":[[2]],"uploads":[],"held":[]}}\n', metrics: 1, events: 1 }),
+    dump: () => ({ pieces: ['{"ok":true,"rev":"e1","rows":{"metrics":[[1]],', '"events":[[2]],"uploads":[],"held":[]}}\n'], metrics: 1, events: 1 }),
     gh: { fetch: f.fetch, token: TOKEN, repo: 'o/r', tag: 'dumps' }, recipient, now: () => (t += 5), ...o
   });
   beforeEach(async () => {
@@ -201,12 +242,14 @@ describe('a run', () => {
   it('uploads the encrypted dump under the slot’s name and says its size and rows', async () => {
     const r = await runArchive(io());
     expect(r).toMatchObject({ ok: true, st: 'ok', slot: '2026-11-11', metrics: 1, events: 1, kept: 1, del: 0 });
-    expect(f.names()).toEqual(['island-record-2026-11-11.json.age']);
+    expect(f.names()).toEqual(['island-record-2026-11-11.json.gz.age']);
+    expect(await openDump([...f.assets.values()][0].body!, id)).toBe('{"ok":true,"rev":"e1","rows":{"metrics":[[1]],"events":[[2]],"uploads":[],"held":[]}}\n');
+    expect(r.rawkB).toBe(0);
     expect(r.ms).toBeGreaterThan(0);
   });
   it('without a token: no_token, no call; an empty record: nothing uploaded; GitHub refusing: its step and status only', async () => {
     expect(await runArchive(io({ gh: { fetch: f.fetch, repo: 'o/r', tag: 'dumps' } }))).toMatchObject({ ok: false, st: 'no_token' });
-    expect(await runArchive(io({ dump: () => ({ text: '', metrics: 0, events: 3 }) }))).toMatchObject({ ok: false, st: 'empty' });
+    expect(await runArchive(io({ dump: () => ({ pieces: [], metrics: 0, events: 3 }) }))).toMatchObject({ ok: false, st: 'empty' });
     expect(f.calls).toEqual([]);
     const bad = fakeGitHub({ fail: { method: 'POST', status: 403 } });
     const r = await runArchive(io({ gh: { fetch: bad.fetch, token: TOKEN, repo: 'o/r', tag: 'dumps' } }));

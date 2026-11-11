@@ -15,7 +15,7 @@ import type { RelayEvent } from './log.ts';
 import { isToken } from '../../app/src/lib/contract/log.ts';
 import { twice } from './notify.ts';
 import { errName } from './log.ts';
-import { after, backoff, due, dumpText, NO_STATE, retryAt, runArchive, type ArchiveRun, type ArchiveState } from './archive.ts';
+import { after, backoff, due, NO_STATE, retryAt, runArchive, type ArchiveRun, type ArchiveState } from './archive.ts';
 
 /** The backups' state (archive.ts): one key of the object's storage, never the record's tables. */
 const ARCHIVE = 'archive';
@@ -106,7 +106,10 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
   private async archiveRun(s: ArchiveState, force: boolean): Promise<ArchiveRun> {
     this.rows();
     const r = await runArchive({
-      dump: () => dumpText(this.core),
+      dump: () => {
+        const c = this.core.counts();
+        return { metrics: c.metrics, events: c.events, pieces: this.core.dumpText() };
+      },
       gh: { fetch: (u, i) => fetch(u, i), token: this.env.ARCHIVE_TOKEN?.trim(), repo: this.env.ARCHIVE_REPO ?? '', tag: this.env.ARCHIVE_RELEASE ?? '' },
       recipient: this.env.ARCHIVE_RECIPIENT?.trim(),
       now: Date.now

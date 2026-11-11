@@ -1419,6 +1419,39 @@ export class StoreCore {
     return { rows: { ...this.rowsSince(''), uploads: this.uploadRows(), ...this.heldDump() } };
   }
 
+  /**
+   * The dump as `record.ts dump` writes it (`{ok, rev, rows}`, its pages put together), as text a page of rows at a
+   * time (the backup, archive.ts: packed as it comes, so neither the rows nor the text are ever whole in memory). The
+   * pages run in (at, seq) order, so a row written between two of them (its `at` after every row handed out) is in a
+   * later page or not at all; a new epoch under it (a restore) throws (`epoch`: the run is tried again).
+   */
+  *dumpText(page = DUMP_TEXT_PAGE): Generator<string> {
+    const rev = this.rev();
+    const sql = this.io.sql;
+    // (the audit by seq, as uploadRows: a load's rows may come in after newer ones)
+    function* table<T extends Record<string, Bind>>(tab: string, cols: string, row: (r: T) => unknown[], bySeq = false): Generator<string> {
+      let at = '', seq = -1, sep = '';
+      for (;;) {
+        const rs = (bySeq
+          ? sql.exec<T & { seq: number; at: string }>(`SELECT seq, ${cols} FROM ${tab} WHERE seq > ? ORDER BY seq LIMIT ?`, seq, page)
+          : sql.exec<T & { seq: number; at: string }>(`SELECT seq, ${cols} FROM ${tab} WHERE at >= ? AND (at > ? OR seq > ?) ORDER BY at, seq LIMIT ?`, at, at, seq, page)).toArray();
+        if (!rs.length) return;
+        yield sep + rs.map((r) => JSON.stringify(row(r))).join(',');
+        sep = ',';
+        ({ at, seq } = rs[rs.length - 1]);
+        if (rs.length < page) return;
+      }
+    }
+    yield `{"ok":true,"rev":${JSON.stringify(rev)},"rows":{"metrics":[`;
+    yield* table<MetricCols>('metrics', METRIC_COLS, metricRow);
+    yield '],"events":[';
+    yield* table<EventCols>('events', EVENT_COLS, eventRow);
+    yield '],"uploads":[';
+    yield* table<{ at: string; person: string; status: string; bytes: number; notes: string }>('uploads', 'at, person, status, bytes, notes', (r) => [r.at, r.person, r.status, r.bytes, r.notes], true);
+    yield `],"held":${JSON.stringify(this.heldDump().held ?? [])}}}\n`;
+    if (this.rev() !== rev) throw Object.assign(new Error('a new epoch under the dump'), { name: 'epoch' });
+  }
+
   /** The held values as the dump carries them (only when there are some: a dump from before them reads the same). */
   private heldDump(): { held?: unknown[][] } {
     const h = this.heldRows();
@@ -1543,6 +1576,8 @@ const isPageSize = (n: unknown): n is number => Number.isInteger(n) && (n as num
 
 type MetricCols = { at: string; person: PersonId; date: string; metric: MetricRow[3]; value: number };
 type EventCols = { at: string; person: Who; id: string; type: EventRow[3]; data: string };
+/** Rows a page of the backup's dump text (dumpText). */
+const DUMP_TEXT_PAGE = 2000;
 const METRIC_COLS = 'at, person, date, metric, value';
 const EVENT_COLS = 'at, person, id, type, data';
 const metricRow = (r: MetricCols): MetricRow => [r.at, r.person, r.date, r.metric, r.value];
