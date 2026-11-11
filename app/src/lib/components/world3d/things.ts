@@ -135,11 +135,12 @@ export interface Things {
   lamps(): LampSpot[];
   /** The time of day: the lamps' emissive level and the soft self-light ("lift"). */
   tod(lamps: number, lift: number): void;
-  /** One frame (the critters' fades, the wobbles): true while one runs, 'ambient' while only a fish's shadow fades
-   *  (no shadow of its own: the ambient rate), 'cast' when a caster's shadow changed in it (a wobble's; a fade's as it
+  /** One frame (the critters' fades, the wobbles): true while a wobble runs, 'ambient' while only critters fade (a
+   *  fish's shadow, a bug: small in-place moves, at the ambient rate: r3 L6), 'cast' when a caster's shadow changed in
+   *  a frame that wants the full rate (a wobble's), 'ambient-cast' in one at the ambient rate (a bug's fade as it
    *  passes half, where its shadow comes or goes: things.ts lambert). `seen` (engine.ts thingSeen): a fade out of view
    *  is at its end at once. */
-  frame(t: number, seen?: (box: Box3) => boolean): boolean | 'cast' | 'ambient';
+  frame(t: number, seen?: (box: Box3) => boolean): boolean | 'cast' | 'ambient' | 'ambient-cast';
   has(id: string): boolean;
   /** An instance shows another model for now (its pose: the shishi-odoshi tipped), or its own again (null). */
   swap(id: string, model: string | null): void;
@@ -723,7 +724,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
   }
 
   const JIG_MS = 560;
-  function frame(t: number, seen?: (box: Box3) => boolean): boolean | 'cast' | 'ambient' {
+  function frame(t: number, seen?: (box: Box3) => boolean): boolean | 'cast' | 'ambient' | 'ambient-cast' {
     let more = false, soft = false, cast = false, died = false;
     for (const [id, f] of fades) {
       if (f.a === f.to) continue;
@@ -754,7 +755,8 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
         // (a fish's shadow casts none; a bug's shadow is there past half, and its scale-up done at the end)
         if (!FLAT.has(a.g.name) && ((was < 0.5) !== (f.a < 0.5) || f.a === f.to)) cast = true;
         if (away) continue;
-        if (FLAT.has(a.g.name)) soft = true;
+        // (a fish's shadow or a bug: the ambient rate, a few frames more of a 600 ms fade at rest's 12 fps)
+        if (FLAT.has(a.g.name) || BUGS.has(a.g.name)) soft = true;
         else more = true;
       } else more = true;
     }
@@ -776,7 +778,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       write(a.g, a.i);
       if (!FLAT.has(a.g.name)) cast = true;
     }
-    return cast ? 'cast' : more || (soft && 'ambient');
+    return cast ? (more ? 'cast' : 'ambient-cast') : more || (soft && 'ambient');
   }
 
   /** A model's box in its own space (its meshes' boxes, in their frames), once a model. */

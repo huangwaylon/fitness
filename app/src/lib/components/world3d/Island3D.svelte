@@ -456,6 +456,9 @@
   // ---- the characters' flourishes (the director's fx: sparkles, hearts, notes, confetti, a puff, a sleeper's zzz) ----
   const FX3: Record<string, FxKind> = { sparkles: 'sparkle', hearts: 'hearts', notes: 'notes', confetti: 'confetti', puff: 'dust', glint: 'sparkle', zzz: 'zzz' };
   const fxSeen = new Set<string>(), zzzAt: Record<string, number> = {};
+  /** A character's small in-place flourishes, drawn at the ambient rate (effects.ts calm); confetti and a walk's dust
+   *  as before. */
+  const CALM_FX: Partial<Record<FxKind, true>> = { sparkle: true, hearts: true, notes: true };
   /** How far toward the camera a character's sparkles start (u): clear of its head. */
   const SPARKLE_NEAR = 12;
   function actorFx(e: Island3, t: number) {
@@ -488,8 +491,8 @@
           // head's middle the 3D head hid them (depth tested), but for one now and then
           const hb = vil3?.head(id), feet = feetOf(x, z), top = hb ? (hb.getWorldPosition(headV).y - feet) * 2 - 6 : lift;
           const near = e.at(x, z - 1, top).depth < e.at(x, z + 1, top).depth ? -1 : 1;
-          e.fx(k, x, z + near * SPARKLE_NEAR, Math.max(lift, top), { size: 1.25 });
-        } else e.fx(k, x, z, lift);
+          e.fx(k, x, z + near * SPARKLE_NEAR, Math.max(lift, top), { size: 1.25, calm: true });
+        } else e.fx(k, x, z, lift, { calm: CALM_FX[k] });
       }
     }
     if (fxSeen.size > 200) fxSeen.clear();

@@ -32,6 +32,9 @@ export interface FxOpts {
   size?: number;
   /** An ambient one's kind (count() counts them). */
   tag?: string;
+  /** A small in-place flourish (a villager's sparkles, hearts, notes): a flourish as any (shown() counts it) drawn at
+   *  the ambient rate, 12 fps at rest (r3 L6: the user's small in-place moves at 12, 2026-11-11). */
+  calm?: boolean;
   /** Which way (a swing's side: −1 left). */
   dir?: number;
   /** A held one stays while this says so (a rearing bug's 「！」: till it's down), `ms` at most, then pops out. */
@@ -67,6 +70,7 @@ interface Part {
   arc: number;
   blink: boolean;
   tag?: string;
+  calm?: boolean;
   /** Fades out over its last 40 % (else holds, then a quick end). */
   fade: boolean;
   /** NH's pop (a quick overshoot in, a little hop now and then) and, once `held` says no more, a quick pop out from
@@ -262,6 +266,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
   function part(name: string, x: number, y: number, z: number, p: Partial<Part> & { tint?: string; life: number }) {
     // (a spawn's tag on each of its parts: an ambient one's all ambient)
     if (!p.tag && spawnTag) p = { ...p, tag: spawnTag };
+    if (spawnCalm) p = { ...p, calm: true };
     if (p.tag) coming.set(p.tag, (coming.get(p.tag) ?? 0) + 1);
     void load(name).then((src) => {
       if (p.tag) coming.set(p.tag, (coming.get(p.tag) ?? 1) - 1);
@@ -287,14 +292,14 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
       parts.push({
         name: p.name ?? name, obj, mats, t0: performance.now(), life: p.life, x, y, z, vx: p.vx ?? 0, vy: p.vy ?? 0, vz: p.vz ?? 0, g: p.g ?? 0, spin: p.spin ?? 0,
         s0: (p.s0 ?? 1) * k, s1: (p.s1 ?? 1) * k, face: p.face ?? true, flat: p.flat ?? false, sway: p.sway ?? 0, arc: p.arc ?? 0,
-        blink: p.blink ?? false, tag: p.tag, fade: p.fade ?? true, pop: p.pop, held: p.held, follow: p.follow
+        blink: p.blink ?? false, tag: p.tag, calm: p.calm, fade: p.fade ?? true, pop: p.pop, held: p.held, follow: p.follow
       });
       if (!p.tag) shown++;
       onLoad?.();
     });
   }
 
-  let spawnTag: string | undefined, shown = 0;
+  let spawnTag: string | undefined, spawnCalm = false, shown = 0;
   // the e2e's (dev builds and ?demo): the parts of a source drawn now, where (world x, y, z) and how big, and each
   // spawn's kind and time (performance.now()): the fishing's rings come before its 「！」
   const log: { kind: FxKind; t: number; size?: number }[] | null =
@@ -308,11 +313,13 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
   if (log) window.__fx3 = hook;
   function spawn(kind: FxKind, x: number, z: number, lift = 0, o: FxOpts = {}) {
     spawnTag = o.tag;
+    spawnCalm = !!o.calm;
     if (log && log.push({ kind, t: performance.now(), size: o.size }) > 200) log.shift();
     try {
       spawnOf(kind, x, z, lift, o);
     } finally {
       spawnTag = undefined;
+      spawnCalm = false;
     }
   }
   function spawnOf(kind: FxKind, x: number, z: number, lift: number, o: FxOpts) {
@@ -473,7 +480,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     // (the ambient ones, the season's fall and the fireflies, are no motion to keep the island at full rate: the
     // water's 30 a second carries them)
     // (and the critters' moves drawn from their live spots: pace.ts, Critters.svelte)
-    return parts.some((p) => !p.tag) || pace.full > 0 ? true : parts.length || pace.ambient > 0 ? 'ambient' : false;
+    return parts.some((p) => !p.tag && !p.calm) || pace.full > 0 ? true : parts.length || pace.ambient > 0 ? 'ambient' : false;
   }
 
   return {
