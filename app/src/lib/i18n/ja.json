@@ -609,7 +609,7 @@
   "shop.today": "今日の品物",
   "shop.todayNote": "毎日入れ替え・残り{n}点",
   "shop.starts": "苗",
-  "shop.startsNote": "長押しで続けて追加",
+  "shop.startsFree": "空き{n}区画・タップでその分",
   "shop.startLabel": "{name}、{v}かいがら、{c}個選択",
   "shop.boughtStart": "{name}×{n}を買いました",
   "shop.boughtStarts": "苗{n}個を買いました",

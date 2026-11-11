@@ -609,7 +609,7 @@
   "shop.today": "Today's stock",
   "shop.todayNote": "Changes daily · {n} left",
   "shop.starts": "Starts",
-  "shop.startsNote": "Hold to add more",
+  "shop.startsFree": "{n} free plots · tap for that many",
   "shop.startLabel": "{name}, {v} shells, {c} picked",
   "shop.boughtStart": "Bought {name} ×{n}",
   "shop.boughtStarts": "Bought {n} starts",

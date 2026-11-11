@@ -47,5 +47,14 @@ export function buyPiece(item: string, stock: readonly string[]): SendResult & {
   return { ...week.send('buy', { item, price, d: localDateAt(m.now) }, { holdMs: UNDO_MS }), price };
 }
 
+/** The most of one start 苗 takes at once (store/farm.svelte.ts buyStarts). */
+export const MAX_STARTS = 99;
+/** 苗's row tap for crop `c`: as many as my `free` plots (empty, under the field's cap) still want, less the starts I
+ *  hold and the other crops picked; at least 1 (no field, or full: one), at most MAX_STARTS. */
+export function startsFill(free: number, held: number, picks: Readonly<Record<string, number | undefined>>, c: string): number {
+  const others = Object.entries(picks).reduce((a, [k, n]) => a + (k === c ? 0 : (n ?? 0)), 0);
+  return Math.min(MAX_STARTS, Math.max(1, free - held - others));
+}
+
 /** How many かいがら short of `price` my `shells` are (0: enough). */
 export const shortBy = (price: number, shells: number): number => Math.max(0, price - shells);

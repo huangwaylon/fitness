@@ -4,7 +4,7 @@ import { STOCK_N, buyPrice, stockOf } from '#lib/contract/stock.ts';
 import { BUY } from '#lib/contract/buyPrices.ts';
 import type { State } from '#lib/model/state.ts';
 import { ITEMS } from '../tent/items.ts';
-import { foundBefore, shortBy, stockAt } from './stock.ts';
+import { MAX_STARTS, foundBefore, shortBy, startsFill, stockAt } from './stock.ts';
 
 const at = (iso: string) => Date.parse(iso);
 const NOW = at('2026-11-09T15:00:00+09:00');
@@ -50,5 +50,16 @@ describe('かう’s stock', () => {
 describe('かう’s tiles past my かいがら', () => {
   it('say how many short; none at the price or under it', () => {
     expect([shortBy(800, 271), shortBy(271, 271), shortBy(9, 271), shortBy(10_000, 0)]).toEqual([529, 0, 0, 10_000]);
+  });
+});
+
+describe('苗’s row tap (startsFill): what my free plots still want', () => {
+  it('my free plots less the starts I hold and the other crops picked; at least one, at most MAX_STARTS', () => {
+    expect(startsFill(38, 0, {}, 'tomato')).toBe(38);
+    expect(startsFill(38, 5, {}, 'tomato')).toBe(33);
+    expect(startsFill(38, 5, { tomato: 2, wheat: 10 }, 'tomato')).toBe(23);
+    expect(startsFill(0, 0, {}, 'tomato')).toBe(1);
+    expect(startsFill(10, 30, {}, 'tomato')).toBe(1);
+    expect(startsFill(500, 0, {}, 'tomato')).toBe(MAX_STARTS);
   });
 });

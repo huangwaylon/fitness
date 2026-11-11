@@ -1,7 +1,6 @@
 <script module lang="ts">
   // One tile of the shops' grids (タヌキ商店's かう and its 苗, a visitor's few pieces: island/VisitorShop.svelte): the
-  // icon, the name on two lines, the price (or 持っている; past my かいがら dimmed, 「あと{n}」), a count badge and its − when
-  // picked; yuzu when picked; `hold`: held, it taps again and again (NH's quantity arrows: 20 starts in one press). Its
+  // icon, the name on two lines, the price (or 持っている; past my かいがら dimmed, 「あと{n}」); yuzu when picked. Its
   // colours are the sheet's controls (--ctl, --ctl-sel, --sh-ctl), so it fits the shop's cream sheet and a Sheet alike.
   // `nm`: a name breaking only between its words (words.ts), smaller with a word too long for a line (the room's card too).
   import { isLong, words } from './words.ts';
@@ -24,28 +23,10 @@
     owned?: boolean;
     /** How many かいがら I'm short of it (0: none). */
     short?: number;
-    /** The badge at the top right (none: unshown). */
-    count?: string;
     icon: Snippet;
     onclick: () => void;
-    /** − one less (shown while picked). */
-    less?: { key: string; label: string; run: () => void } | null;
-    /** Held, `onclick` again every HOLD_EVERY ms from HOLD_AFTER on (its release's click then nothing). */
-    hold?: boolean;
   }
-  let { name, price, on = false, owned = false, short = 0, count, icon, onclick, less = null, hold = false, ...rest }: Props = $props();
-
-  const HOLD_AFTER = 400, HOLD_EVERY = 100;
-  let timer: ReturnType<typeof setTimeout> | undefined, held = false;
-  function press(e: PointerEvent) {
-    if (!hold || !e.isPrimary || e.button) return;
-    held = false;
-    const again = (ms: number) => (timer = setTimeout(() => ((held = true), onclick(), again(HOLD_EVERY)), ms));
-    again(HOLD_AFTER);
-  }
-  const release = () => clearTimeout(timer);
-  $effect(() => release);
-  const tap = () => (held ? (held = false) : onclick());
+  let { name, price, on = false, owned = false, short = 0, icon, onclick, ...rest }: Props = $props();
 </script>
 
 {#snippet nm(name: string)}
@@ -53,16 +34,13 @@
 {/snippet}
 
 <li class="tile" class:on class:owned class:short={short > 0}>
-  <button type="button" class="pickable" data-sfx="self" {...rest} onclick={tap} onpointerdown={press} onpointerup={release}
-    onpointercancel={release} onpointerleave={release} oncontextmenu={(e) => hold && e.preventDefault()}>
+  <button type="button" class="pickable" data-sfx="self" {...rest} {onclick}>
     <span class="ic">{@render icon()}</span>
     {@render nm(name)}
     {#if owned}<span class="price owned-tag">{t('shop.owned')}</span>
     {:else if short > 0}<span class="price" data-short={short}>{t('shop.shortBy', { n: formatNum(short) })}</span>
     {:else}<span class="price"><span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={14} /></span>{formatNum(price)}</span>{/if}
-    {#if count}<span class="count" aria-hidden="true">{count}</span>{/if}
   </button>
-  {#if less}<button type="button" class="less" data-shop-less={less.key} data-sfx="tick" aria-label={less.label} onclick={less.run}>−</button>{/if}
 </li>
 
 <style>
@@ -71,7 +49,6 @@
     appearance: none; border: 0; cursor: pointer; width: 100%; min-height: 118px; padding: 10px 6px 8px; border-radius: var(--r-btn);
     display: grid; justify-items: center; align-content: start; gap: 4px; background: var(--ctl); color: var(--text);
     box-shadow: var(--sh-ctl); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-    -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
   }
   .pickable:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .pickable:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
@@ -89,16 +66,5 @@
   .price { display: inline-flex; align-items: center; gap: 3px; font: 700 var(--fs-s)/1 var(--font-num); font-variant-numeric: tabular-nums; }
   .mini { display: inline-flex; line-height: 0; }
   .owned-tag { font-family: var(--font-ui); color: var(--leaf-text); }
-  .count {
-    position: absolute; top: 6px; right: 8px; padding: 2px 6px; border-radius: var(--r-pill); background: var(--c-paper);
-    font: 700 var(--fs-s)/1.1 var(--font-num); font-variant-numeric: tabular-nums;
-  }
-  .on .count { background: var(--c-cream); }
-  .less {
-    position: absolute; top: -8px; left: -6px; width: 32px; height: 32px; border-radius: 50%; border: 0; cursor: pointer;
-    background: var(--c-card); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 2px 0 var(--c-edge);
-    font: 700 var(--fs-talk)/1 var(--font-ui);
-  }
-  .less::after { content: ''; position: absolute; inset: -6px; }
   @media (prefers-reduced-motion: reduce) { .pickable:active { transform: none; } }
 </style>

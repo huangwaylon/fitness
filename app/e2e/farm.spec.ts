@@ -46,7 +46,7 @@ test('starts bought at the shop’s かう; a tap on my empty plot with nothing 
   await page.evaluate(() => (window as unknown as { __shop: { talk(): void } }).__shop.talk());
   await page.locator('[data-shop-tab="buy"]').click();
   await expect(page.locator('[data-shop-start="tomato"] .nm')).toHaveText('トマトの苗');
-  for (let i = 0; i < 3; i++) await page.locator('[data-shop-start="tomato"]').click();
+  for (let i = 0; i < 3; i++) await page.locator('[data-shop-more="tomato"]').click();
   // one bar: the pinned one names the crop and buys them
   await expect(page.locator('[data-shop-starts-offer]')).toHaveAttribute('data-shop-starts-offer', '42');
   await expect(page.locator('[data-shop-starts-offer]')).toHaveText('トマトの苗 ×3');

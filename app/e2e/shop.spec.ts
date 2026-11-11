@@ -170,7 +170,6 @@ test('overspending is refused: a piece past my かいがら is dimmed with how m
   await expect(tile.locator('[data-short]')).toHaveText(`あと${(price - 4).toLocaleString('ja-JP')}`);
   const dearN = await stock(page).evaluateAll((els) => els.filter((e) => Number(e.getAttribute('data-price')) > 4).length);
   await expect(page.locator('[data-shop-stock] .tile.short')).toHaveCount(dearN);
-  await expect(page.locator('[data-shop-starts] .tile.short')).toHaveCount(6); // (a start 14)
   // the stock first, then the starts
   await expect(page.locator('[data-shop-list] > *').first()).toContainText('今日の品物');
   await expect(page.locator('[data-shop-left]')).toHaveText('毎日入れ替え・残り24点');
@@ -193,35 +192,51 @@ test('an empty pocket: うる says it’s empty, no 売る bar; かう has the d
   await page.locator('[data-shop-tab="sell"]').click();
   await expect(page.locator('[data-shop-empty]')).toHaveText('ポケットは空です。魚や虫、貝や木材を集めると、ここで売れます');
   await expect(page.locator('[data-shop-sell], [data-shop-offer]')).toHaveCount(0);
-  // (no かいがら: a start too says how many short)
+  // (no かいがら, no field: a start's row is one, and the bar says how many short)
   await page.locator('[data-shop-tab="buy"]').click();
-  await expect(page.locator('[data-shop-start="tomato"] [data-short]')).toHaveText('あと14');
+  await expect(page.locator('[data-shop-free]')).toHaveCount(0);
+  await page.locator('[data-shop-start="tomato"]').click();
+  await expect(page.locator('[data-shop-starts-offer]')).toHaveText('あと14かいがら足りません');
 });
 
-// かう's 苗 (Counter.svelte, PieceTile's `hold`): a tap one more, held more and more; the bar what's picked, or how many
-// かいがら short, the price on 買う.
-test('a start held climbs on its own; past my かいがら the bar says how many short and 買う is disabled', async ({ page }) => {
-  await seed(page, [tally({ 'fish:sea-bass': 5 }), ['sell', { species: 'fish:sea-bass', n: 5, v: 100 }, 'A']]);
+// かう's 苗 (Counter.svelte, stock.ts startsFill): rows as うる's, a row's tap what my free plots want, − / + one; the bar
+// what's picked, or how many かいがら short, the price on 買う.
+test('苗 in rows: a tap fills my free plots, − / + one; past my かいがら the bar says how many short and 買う is disabled', async ({ page }) => {
+  // my 2 × 2 field (4 plots, none planted), a tomato start held, 86 かいがら
+  await seed(page, [['decor', { sc: 'o', id: 'field-A', at: 1.79e12, k: 'field', x: 10, z: 17, f: 0, s: 'a-2x2' }, 'A'], tally({ 'fish:sea-bass': 5 }),
+    ['sell', { species: 'fish:sea-bass', n: 5, v: 100 }, 'A'], ['buy_starts', { crop: 'tomato', n: 1, v: 14 }, 'A']]);
   await page.goto(`shop${Q}`);
-  await expect.poll(() => shells(page)).toBe(100);
+  await expect.poll(() => shells(page)).toBe(86);
   await openList(page, 'buy');
-  const tomato = page.locator('[data-shop-start="tomato"]');
-  await tomato.click();
-  await tomato.click();
-  await expect(page.locator('[data-shop-starts-offer]')).toHaveText('トマトの苗 ×2');
-  await expect(page.locator('[data-shop-buy]')).toHaveText('28かいがらで買う');
-  await tomato.scrollIntoViewIfNeeded();
-  const b = (await tomato.boundingBox())!;
-  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
-  await page.mouse.down();
-  await expect.poll(async () => Number(await tomato.getAttribute('data-picked'))).toBeGreaterThanOrEqual(10);
-  await page.mouse.up();
-  // (a tap after the hold: one more, as ever)
-  const n = Number(await tomato.getAttribute('data-picked'));
-  await tomato.click();
-  await expect(tomato).toHaveAttribute('data-picked', String(n + 1));
-  await expect(page.locator('[data-shop-starts-offer]')).toHaveText(`あと${14 * (n + 1) - 100}かいがら足りません`);
-  await expect(page.locator('[data-shop-buy]')).toHaveAttribute('aria-disabled', 'true');
+  await expect(page.locator('[data-shop-free]')).toHaveText('空き4区画・タップでその分');
+  const row = (c: string) => page.locator(`[data-shop-start="${c}"]`);
+  const offer = page.locator('[data-shop-starts-offer]'), buyBtn = page.locator('[data-shop-buy]');
+  // a tap: the 3 the plots still want (4, one held); another crop's then 1 (none left)
+  await row('tomato').click();
+  await expect(row('tomato')).toHaveAttribute('data-picked', '3');
+  await expect(offer).toHaveText('トマトの苗 ×3');
+  await expect(buyBtn).toHaveText('42かいがらで買う');
+  await row('wheat').click();
+  await expect(row('wheat')).toHaveAttribute('data-picked', '1');
+  await expect(offer).toHaveText('苗4個');
+  // − / + one; a tap on a full row none
+  await page.locator('[data-shop-more="tomato"]').click();
+  await expect(row('tomato')).toHaveAttribute('data-picked', '4');
+  await page.locator('[data-shop-less="tomato"]').click();
+  await expect(row('tomato')).toHaveAttribute('data-picked', '3');
+  await row('tomato').click();
+  await expect(row('tomato')).toHaveAttribute('data-picked', '0');
+  await expect(page.locator('[data-shop-less="tomato"]')).toHaveAttribute('aria-disabled', 'true');
+  // 7 wheat: 98 > 86
+  for (let i = 0; i < 6; i++) await page.locator('[data-shop-more="wheat"]').click();
+  await expect(offer).toHaveText('あと12かいがら足りません');
+  await expect(buyBtn).toHaveAttribute('aria-disabled', 'true');
+  await expect(buyBtn).toHaveText('98かいがらで買う');
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/shop-starts-rows.png`, animations: 'disabled' });
+  await page.locator('[data-shop-less="wheat"]').click();
+  await buyBtn.click();
+  await expect.poll(() => shells(page)).toBe(86 - 84);
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('コムギの苗×6を買いました');
 });
 
 test('the guest’s pocket and かいがら are its own', async ({ browser }) => {

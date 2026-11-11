@@ -5,8 +5,8 @@
   // a section's 全部 all of it (shop/sell.ts); the starts 苗 apart, with no 全部 (they're held to plant); the button says
   // what the sale comes to.
   // かう: the day's stock first (shop/stock.ts: it changes daily), a piece past my かいがら dimmed with how many short;
-  // then the fields' starts, always in stock; the button says what it costs. A sell or a buy shows at once with 取り消す (store/actions.ts undoBanner). The title bar is the kit's
-  // (タヌキ商店, my かいがら, ✕); the twins don't talk in here (their balloon is the room's). A piece picked is the room's too
+  // then the fields' starts in rows as うる's; the button says what it costs. A sell or a buy shows at once with 取り消す
+  // (store/actions.ts undoBanner). The title bar is the kit's (タヌキ商店, my かいがら, ✕); the twins don't talk in here (their balloon is the room's). A piece picked is the room's too
   // (its card's: `pick`, `why`, `buy`).
   import NavBar from '../ui/NavBar.svelte';
   import NavButton from '../ui/NavButton.svelte';
@@ -16,15 +16,20 @@
   import { iconUrl } from '../tent/items.ts';
   import { bare } from '../kiroku/zukan.ts';
   import { SECTIONS, pocketItem } from './pocket.ts';
-  import { allPicked, step, toggleSection, toggleStack, type Picks, type Stack } from './sell.ts';
+  import { allPicked, step, toggleSection, toggleStack, type Picks } from './sell.ts';
   import { sellPrice } from '#lib/contract/shop.ts';
   import { buyPrice } from '#lib/contract/stock.ts';
-  import { shortBy } from './stock.ts';
+  import { MAX_STARTS, shortBy, startsFill } from './stock.ts';
+  import { fillPlan } from '../farm/sheet.ts';
+  import { site } from '../island/site.svelte.ts';
+  import { layoutPlots } from '#lib/layout/field.ts';
+  import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
+  import { farmOfState } from '#lib/model/farm.ts';
   import type { ShopView } from '#lib/model/shop.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { sell, undoBanner } from '#lib/store/actions.ts';
   import { buyStarts } from '#lib/store/farm.svelte.ts';
-  import { CROPS, FARM, isFarmCrop, type Crop } from '#lib/contract/farm.ts';
+  import { CROPS, FARM, isFarmCrop, startKey, type Crop } from '#lib/contract/farm.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
 
@@ -88,8 +93,9 @@
     pick = pick === code ? null : code;
     cue('tick');
   }
-  // ---- かう's 苗 (docs/farming.md): the six starts, always in stock, a tap one more (held, more and more: PieceTile's
-  // `hold`), up to 99 of each, − one less; 買う buys them at once, all or none (one group: store/farm.svelte.ts buyStarts)
+  // ---- かう's 苗 (docs/farming.md): the six starts, always in stock, in rows: a row's tap as many as my free plots want
+  // (again: none; stock.ts startsFill), − / + one, up to MAX_STARTS; 買う buys them at once, all or none (one group:
+  // store/farm.svelte.ts buyStarts)
   let starts = $state<Partial<Record<Crop, number>>>({});
   const startsN = $derived(CROPS.reduce((a, c) => a + (starts[c] ?? 0), 0));
   const startsV = $derived(startsN * FARM.startBuy);
@@ -98,15 +104,26 @@
     const cs = CROPS.filter((c) => starts[c]);
     return cs.length === 1 ? cs[0] : null;
   });
+  /** My plots a start could go in now (empty, under the field's cap: farm/sheet.ts fillPlan), and the starts I hold. */
+  const free = $derived.by(() => {
+    const m = week.model;
+    return m ? fillPlan(layoutPlots(site.layout ?? layoutStore.current), farmOfState(m.state), m.me, FARM.cap).length : 0;
+  });
+  const held = $derived(CROPS.reduce((a, c) => a + (shop.pocket.get(startKey(c)) ?? 0), 0));
   // (the starts and a piece are one bar's: picking one lets go of the other)
-  function moreStart(c: Crop) {
+  function setStart(c: Crop, n: number) {
     pick = null;
-    if ((starts[c] ?? 0) >= 99) return void cue('boop');
-    starts = { ...starts, [c]: (starts[c] ?? 0) + 1 };
+    starts = { ...starts, [c]: n };
     cue('tick');
   }
-  function lessStart(c: Crop) {
-    starts = { ...starts, [c]: Math.max(0, (starts[c] ?? 0) - 1) };
+  function fillStart(c: Crop) {
+    const f = startsFill(free, held, starts, c);
+    setStart(c, (starts[c] ?? 0) >= f ? 0 : f);
+  }
+  function stepStart(c: Crop, by: 1 | -1) {
+    const n = (starts[c] ?? 0) + by;
+    if (n < 0 || n > MAX_STARTS) return void cue('boop');
+    setStart(c, n);
   }
   function buyStartsPicked() {
     if (!startsN) return void cue('boop');
@@ -123,9 +140,30 @@
     buy();
   }
 
+  /** A row of うる or 苗 (the stepRow snippet). */
+  interface StepRow {
+    key: string;
+    /** Its body's data attributes (the tests' handles). */
+    data: Record<string, string | number>;
+    name: string;
+    art: string;
+    /** A small icon on the art's corner (a start's crop). */
+    tag?: string;
+    unit: number;
+    /** How many I have (うる's). */
+    have?: number;
+    c: number;
+    max: number;
+    full: boolean;
+    label: string;
+    body: () => void;
+    step: (by: 1 | -1) => void;
+  }
+
   function switchTab(id: Tab) {
     tab = id;
     picks = {};
+    starts = {};
     pick = null;
   }
 </script>
@@ -150,7 +188,13 @@
               {/if}
             </div>
             <ul class="rows">
-              {#each rows as row (row.k)}{@render stack(row)}{/each}
+              {#each rows as row (row.k)}
+                {@const c = picks[row.k] ?? 0}
+                {@const name = speciesName(row.k)}
+                {@render stepRow({ key: row.k, data: { 'data-shop-catch': row.k, 'data-n': row.n }, name, art: row.it.art, unit: row.p, have: row.n, c, max: row.n,
+                  full: c >= row.n, label: t('shop.catchLabel', { name, n: String(row.n), v: String(row.p), c: String(c) }),
+                  body: () => pickAs(toggleStack(picks, row)), step: (by) => pickAs(step(picks, row, by)) })}
+              {/each}
             </ul>
           {/each}
         </div>
@@ -186,19 +230,18 @@
       {:else if week.model}
         <p class="empty" data-shop-sold-out>{t('shop.soldOut')}</p>
       {/if}
-      <!-- the starts for the fields (docs/farming.md): always in stock, a count each, bought by the bar's 買う -->
+      <!-- the starts for the fields (docs/farming.md): always in stock, in rows as うる's, bought by the bar's 買う -->
       <div class="sec">
         <h2 class="sec-label">{t('shop.starts')}</h2>
-        <span class="note">{t('shop.startsNote')}</span>
+        {#if free}<span class="note" data-shop-free={free}>{t('shop.startsFree', { n: String(free) })}</span>{/if}
       </div>
-      <ul class="grid" data-shop-starts>
+      <ul class="rows" data-shop-starts>
         {#each CROPS as c (c)}
           {@const n = starts[c] ?? 0}
-          <PieceTile name={startName(c)} price={FARM.startBuy} on={n > 0} short={shortBy(FARM.startBuy, shop.shells)} hold count={n ? `×${n}` : undefined} data-shop-start={c} data-picked={n}
-            aria-label={t('shop.startLabel', { name: startName(c), v: String(FARM.startBuy), c: String(n) })} onclick={() => moreStart(c)}
-            less={n ? { key: c, label: t('shop.less', { name: startName(c) }), run: () => lessStart(c) } : null}>
-            {#snippet icon()}<OfficialArt key="finds/{c}-start" size={46} /><span class="tag"><OfficialArt key="finds/{c}" size={20} /></span>{/snippet}
-          </PieceTile>
+          {@const name = startName(c)}
+          {@render stepRow({ key: c, data: { 'data-shop-start': c }, name, art: `finds/${c}-start`, tag: `finds/${c}`, unit: FARM.startBuy, c: n, max: MAX_STARTS,
+            full: n > 0 && n >= startsFill(free, held, starts, c), label: t('shop.startLabel', { name, v: String(FARM.startBuy), c: String(n) }),
+            body: () => fillStart(c), step: (by) => stepStart(c, by) })}
         {/each}
       </ul>
     </div>
@@ -217,23 +260,21 @@
   {/if}
 </section>
 
-<!-- a stack in my pocket: its row's tap the whole stack (again: none), − / + one at a time, held inside it -->
-{#snippet stack(row: Stack & { p: number; it: { art: string } })}
-  {@const c = picks[row.k] ?? 0}
-  {@const name = speciesName(row.k)}
-  <li class="row" class:on={c > 0}>
-    <button type="button" class="body" data-shop-catch={row.k} data-n={row.n} data-picked={c} data-sfx="self" aria-pressed={c >= row.n}
-      aria-label={t('shop.catchLabel', { name, n: String(row.n), v: String(row.p), c: String(c) })} onclick={() => pickAs(toggleStack(picks, row))}>
-      <span class="ic"><OfficialArt key={row.it.art} size={40} /></span>
-      <span class="what"><span class="nm">{name}</span><span class="unit">{t('shop.unit', { v: formatNum(row.p) })}</span></span>
-      <span class="have">×{row.n}</span>
+<!-- a row of うる (a stack in my pocket: its tap the whole stack) or of 苗 (a start: its tap what my plots want), again
+     none; − / + one, held inside 0..max -->
+{#snippet stepRow(r: StepRow)}
+  <li class="row" class:on={r.c > 0}>
+    <button type="button" class="body" {...r.data} data-picked={r.c} data-sfx="self" aria-pressed={r.full} aria-label={r.label} onclick={r.body}>
+      <span class="ic"><OfficialArt key={r.art} size={40} />{#if r.tag}<span class="tag"><OfficialArt key={r.tag} size={18} /></span>{/if}</span>
+      <span class="what"><span class="nm">{r.name}</span><span class="unit">{t('shop.unit', { v: formatNum(r.unit) })}</span></span>
+      {#if r.have}<span class="have">×{r.have}</span>{/if}
     </button>
     <span class="step">
-      <button type="button" class="pm" data-shop-less={row.k} data-sfx="self" aria-label={t('shop.less', { name })} aria-disabled={!c}
-        onclick={() => (c ? pickAs(step(picks, row, -1)) : cue('boop'))}>−</button>
-      <b class="c" aria-hidden="true">{c}</b>
-      <button type="button" class="pm" data-shop-more={row.k} data-sfx="self" aria-label={t('shop.more', { name })} aria-disabled={c >= row.n}
-        onclick={() => (c < row.n ? pickAs(step(picks, row, 1)) : cue('boop'))}>+</button>
+      <button type="button" class="pm" data-shop-less={r.key} data-sfx="self" aria-label={t('shop.less', { name: r.name })} aria-disabled={!r.c}
+        onclick={() => (r.c ? r.step(-1) : cue('boop'))}>−</button>
+      <b class="c" aria-hidden="true">{r.c}</b>
+      <button type="button" class="pm" data-shop-more={r.key} data-sfx="self" aria-label={t('shop.more', { name: r.name })} aria-disabled={r.c >= r.max}
+        onclick={() => (r.c < r.max ? r.step(1) : cue('boop'))}>+</button>
     </span>
   </li>
 {/snippet}
@@ -273,7 +314,7 @@
   .sec .sec-label { margin: 0; }
   .note { font: 600 var(--fs-xs)/1.2 var(--font-ui); color: var(--c-ink-soft); }
   /* うる's rows: 56 high, an inset stitch between; picked: yuzu */
-  .rows { list-style: none; margin: 0 0 6px; padding: 0; border-radius: var(--r-card); background: var(--c-card); border: 2px solid var(--c-edge); overflow: hidden; }
+  .rows { flex: none; list-style: none; margin: 0 0 6px; padding: 0; border-radius: var(--r-card); background: var(--c-card); border: 2px solid var(--c-edge); overflow: hidden; }
   .row { display: flex; align-items: center; min-height: 56px; padding-right: 6px; }
   .row + .row { box-shadow: inset 0 1.5px 0 var(--c-edge); }
   .row.on { background: var(--c-yuzu); }
@@ -283,7 +324,7 @@
     touch-action: manipulation;
   }
   .body:focus-visible, .pm:focus-visible { outline: 3px solid var(--c-ink); outline-offset: -3px; }
-  .row .ic { flex: none; width: 40px; height: 40px; display: grid; place-items: center; line-height: 0; }
+  .row .ic { position: relative; flex: none; width: 40px; height: 40px; display: grid; place-items: center; line-height: 0; }
   .what { flex: 1 1 auto; min-width: 0; display: grid; gap: 2px; }
   .nm { font: 700 var(--fs-body)/1.25 var(--font-ui); word-break: keep-all; overflow-wrap: anywhere; }
   .unit { font: 600 var(--fs-xs)/1.2 var(--font-num); color: var(--c-ink-soft); font-variant-numeric: tabular-nums; }
