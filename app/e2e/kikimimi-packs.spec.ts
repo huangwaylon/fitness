@@ -36,10 +36,10 @@ test('the lobby fetches its deck’s pack whole, once; a clip cut from it decode
   await sheet.locator('[data-kiki-mode-tile="quiz"]').click();
   await expect(sheet.locator('[data-kiki-start]')).toBeVisible();
   const packOf = (id: string) => Object.keys(PACKS).find((n) => !PACKS[n].slow && PACKS[n].clips.some(([c]) => c === id || c.startsWith(`${id}-`)))!;
+  // (fetched once the page has dealt its own deck: its first question's pack, read after that)
+  await expect.poll(() => listen().length, { message: "the mode's page's pack" }).toBeGreaterThan(0);
   const first = packOf((await page.evaluate(() => (window as unknown as { __kiki: { items(): string[] } }).__kiki.items()))[0]);
-  const url = `/audio/listen/${first}.${PACKS[first].hash}.pak`;
-  await expect.poll(() => asked.filter((a) => a.url.endsWith(url)).length).toBe(1);
-  expect(listen().map((a) => new URL(a.url).pathname)).toEqual([url]);
+  expect(listen().map((a) => new URL(a.url).pathname)).toEqual([`/audio/listen/${first}.${PACKS[first].hash}.pak`]);
   expect(asked.filter((a) => a.range || a.url.includes('?s=') || a.url.includes('/audio/kikimimi/'))).toEqual([]);
 
   // a clip from a few packs (level 1 and its slow pack, a level-4 part, a ladder rung, a unit's), sliced and decoded
