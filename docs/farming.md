@@ -103,4 +103,5 @@ A visitor wants a vegetable (`island/vegRequest.ts`, `vegAsk.svelte.ts`, `Visito
 and the person (any of the six: a reason to grow a mix); gone when the asker leaves, no timer. Now and then a caption
 over their head, 「ニンジンが たべたいなあ」. A tap with it in my pocket hands it over in place: a `sell` of the one at
 its price (no new rule: the かいがら rate is the shop's), their joy, hearts, and one ask in 3 (Franklin's always) a garden
-piece, a find. Without it, a kind word. Done is this phone's (`scene-veg-ask`).
+piece, a find. Without it, a kind word. Done is this phone's (`scene-veg-ask`). The 畑 sheet's line while the asker is
+here: 「今日のおねがい：ニンジン（うおまさ）」 (「…・渡しました」 once done).

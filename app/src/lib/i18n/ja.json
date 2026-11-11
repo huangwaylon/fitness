@@ -696,6 +696,8 @@
   "farm.act.harvest": "収穫",
   "farm.act.dig": "掘り起こす",
   "farm.dug": "{name}を掘り起こしました",
+  "farm.request": "今日のおねがい：{name}（{who}）",
+  "farm.requestDone": "今日のおねがい：{name}（{who}）・渡しました",
   "farm.start.tomato": "トマトの苗",
   "farm.start.wheat": "コムギの苗",
   "farm.start.sugarcane": "サトウキビの苗",

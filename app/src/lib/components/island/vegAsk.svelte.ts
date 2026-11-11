@@ -2,7 +2,7 @@
 // for a farmer only: a plot of mine on the layout, a plant of mine or a vegetable in my pocket), whether its asker has
 // said it and whether I handed it over today (this phone's day record, as Wendell's and Franklin's), and the hand-over:
 // the one vegetable sold to them at its price (store/actions.ts sell: the shop's own event, the record's checks), the
-// day's garden piece a find (recordFind). Read by the visitor (Visitor.svelte) and the 畑 sheet.
+// day's garden piece a find (recordFind). Read by the visitor (Visitor.svelte) and the 畑 sheet (askNow).
 import { dayRecord } from './dayRecord.ts';
 import { SCENE } from '#lib/sync/storage.ts';
 import { week } from '#lib/store/week.svelte.ts';
@@ -15,7 +15,8 @@ import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
 import { site } from './site.svelte.ts';
 import { islandSeed } from './devHooks.ts';
 import { asks, requestOn, type VegRequest } from './vegRequest.ts';
-import type { VisitorId } from './visitors.ts';
+import { guestNow, visitorNow, type VisitorId } from './visitors.ts';
+import { dayKey } from '#lib/time/clock.ts';
 
 const rec = dayRecord(SCENE.vegAsk, { asked: false, done: false });
 let rev = $state(0);
@@ -58,4 +59,12 @@ export function handOver(r: VegRequest, date: string): number | null {
   if (!s.ok) return null;
   markVeg(date, { asked: true, done: true });
   return s.shells ?? 0;
+}
+
+/** My ask at a scene-clock moment for the 畑 sheet (who stands there now, the dev hooks too), done or not; null: none. */
+export function askNow(clock: Date): (VegRequest & { done: boolean }) | null {
+  const m = week.model, date = dayKey(clock), v = visitorNow(clock), by = v === 'franklin' ? v : guestNow(clock);
+  if (!by || !m || !asks(by, date) || !farmer()) return null;
+  const r = requestOn(date, m.me, islandSeed(), by);
+  return r && { ...r, done: vegDay(date).done };
 }

@@ -5,6 +5,8 @@ import { addDays } from '#lib/time/dates.ts';
 import { GARDEN, GIFT_ONE_IN, askerHere, askerOn, asks, requestOn, vegGift } from './vegRequest.ts';
 import { GUESTS, ROLES, guestOn } from './visitorRoles.ts';
 import { treeFurniture } from './catalog.ts';
+import ja from '#lib/i18n/ja.json';
+import en from '#lib/i18n/en.json';
 
 const days = (from: string, n: number) => Array.from({ length: n }, (_, i) => addDays(from, i));
 
@@ -65,5 +67,12 @@ describe('おねがい', () => {
     const rest = vegGift('2026-11-12', 'A', pool, new Set(GARDEN));
     expect(rest && !GARDEN.includes(rest)).toBe(true);
     expect(vegGift('2026-11-12', 'A', ['fence'], new Set(['fence']))).toBeNull();
+  });
+  it('its lines in both languages', () => {
+    for (const k of ['visitor.veg.want', 'visitor.veg.ask', 'visitor.veg.none', 'visitor.veg.thanks', 'visitor.veg.gift', 'chat.sp.franklin.vegAsk',
+      'chat.sp.franklin.vegThanks', 'farm.request', 'farm.requestDone']) {
+      expect((ja as Record<string, string>)[k], k).toBeTruthy();
+      expect((en as Record<string, string>)[k], k).toBeTruthy();
+    }
   });
 });

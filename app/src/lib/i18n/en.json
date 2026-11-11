@@ -696,6 +696,8 @@
   "farm.act.harvest": "Harvest",
   "farm.act.dig": "Dig up",
   "farm.dug": "Dug up {name}",
+  "farm.request": "Today's request: {name} ({who})",
+  "farm.requestDone": "Today's request: {name} ({who}), given",
   "farm.start.tomato": "Tomato start",
   "farm.start.wheat": "Wheat start",
   "farm.start.sugarcane": "Sugarcane start",

@@ -29,6 +29,9 @@
   import { bare } from '../kiroku/zukan.ts';
   import { fillPlan, harvestOps, harvestSummary, orphans, waterNext, waterTargets, wateredBy, yieldRange } from './sheet.ts';
   import type { Who } from '#lib/types.ts';
+  import { askNow } from '../island/vegAsk.svelte.ts';
+  import { cropName } from '../island/farmUi.svelte.ts';
+  import { minuteNow } from '#lib/time/clock.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
 
@@ -72,6 +75,8 @@
       tomorrow: mine.filter((x) => { const pl = farm.plots.get(x.p); return pl && pl.who === m.me && daysLeft(pl, date) === 1; }).length
     };
   });
+  /** Today's おねがい (island/vegAsk.svelte.ts): the vegetable a visitor here wants of me, and who; done once handed over. */
+  const ask = $derived(open ? askNow(minuteNow()) : null);
   /** 水やり's words: the batch, else why there's none (done today, or every plant ripe: after the harvest). */
   const waterLabel = $derived(!view ? '' : view.water.length ? t('farm.waterAll', { n: view.water.length })
     : view.waterNext === null ? t('farm.waterAfterHarvest') : t('farm.watered'));
@@ -180,6 +185,9 @@
               onclick={water}>{waterLabel}</button>
           {/if}
         </div>{/if}
+        {#if ask}
+          <p class="note helped" data-farm-ask={ask.crop} data-done={ask.done || undefined}>{t(ask.done ? 'farm.requestDone' : 'farm.request', { name: cropName(ask.crop), who: t(`visitor.${ask.by}`) })}</p>
+        {/if}
         {#each view.helped as h (h.who)}
           <p class="note helped" data-farm-helped={h.who}>{t('farm.wateredBy', { who: names[h.who], n: h.n })}</p>
         {/each}
