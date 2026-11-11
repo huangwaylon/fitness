@@ -86,6 +86,7 @@
   "island.me": "{name}: today {bells}",
   "say.open": "Say something",
   "room.fpv": "First-person view",
+  "room.panHint": "Two fingers move the view",
   "say.title": "What to say?",
   "say.own": "Write my own…",
   "say.recent": "Said before",

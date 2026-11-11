@@ -117,6 +117,9 @@ export const DEVICE = {
   /** localStorage: `1` | `0`: this device's WebGL is a software renderer (asked once: a throwaway context costs
    *  seconds under SwiftShader; world3d/Island3D.svelte draws at its lightest on one). */
   softGL: 'island.softGL',
+  /** localStorage: `{tent?, shop?, museum?}` (each `1`): the rooms whose 「2ほんゆびで うごかせるよ」 this phone has
+   *  shown (the shop's: once panned in; rooms/PanHint.svelte). */
+  panHint: 'island.panHint',
   /** localStorage: `1` | `0`: the rooms' and the museum's first-person view (store/firstPerson.svelte.ts; off by default). */
   fpv: 'island.fpv',
   /** localStorage: `{[id]: at}`: the museum's new finds whose card was opened on this phone (their NEW cleared; `at`

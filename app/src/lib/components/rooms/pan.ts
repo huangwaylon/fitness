@@ -10,8 +10,9 @@ import { cubicOut } from '#lib/math.ts';
 /** What of the room shows in the view, without the pan (css px on the canvas: the room's left, top, right, bottom) and
  *  the band of it the room may use (its x0, y0, x1, y1: the canvas less what covers it at its top and foot). */
 export interface PanBox { room: [number, number, number, number]; band: [number, number, number, number] }
-/** The share of the room (or of the band, a room wider or taller than it) kept in view. */
-export const KEEP = 0.5;
+/** The share of the room (or of the band, a room wider or taller than it) kept in view (0.5 let the tent slide up
+ *  under the top buttons, two thirds of the screen left empty: r3 ux). */
+export const KEEP = 0.65;
 /** The rubber band's reach (px), the fling's decay (ms: inside the room, past its edge) and the ease back (ms): the
  *  island's (world3d/engine.ts). */
 const REACH = 160, DECAY = 325, DECAY_OUT = 60, BACK = 90;

@@ -631,7 +631,9 @@ the same ([Buildings](#buildings)). The homes' rooms are the same system.
   with nothing left outside, else those pieces glow red and the bar says how many (decisions: *A room's size never moves
   or drops a piece*).
 - **The camera** starts as NH's room camera (47° down, from the front); a drag turns and tilts it, two fingers zoom
-  and pan (`rooms/pan.ts`: half the room stays in view), 🏠 eases it back; walls in the way cut away. Or
+  and pan (`rooms/pan.ts`: 0.65 of the room stays in view; the first visit's 「2ほんゆびで うごかせるよ」 for 4 s or till a
+  pan, the shop's each visit till its first pan: `rooms/PanHint.svelte`), ⌂ (a frame glyph) eases it back; walls in the
+  way cut away. Or
   [First person](#first-person). **The light:** warm, one small shadow map; at night dimmer, lamps lit.
 - **The villagers:** NH's 3D models where they have one, else billboards. A floor tap walks mine there (round the
   furniture), a villager tap hops it, a piece tap acts in place, the doormat or ‹ しまへ goes out. The partner's villager

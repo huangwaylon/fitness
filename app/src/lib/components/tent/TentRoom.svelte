@@ -26,6 +26,8 @@
   import SayPicker from '../island/SayPicker.svelte';
   import SayButton from '../island/SayButton.svelte';
   import EyeToggle from '../rooms/EyeToggle.svelte';
+  import PanHint from '../rooms/PanHint.svelte';
+  import RecentreIcon from '../rooms/RecentreIcon.svelte';
   import { nightOf, roomSpeaker } from '../rooms/speaker.ts';
   import { gestures, roomCamera } from '../rooms/gesture.ts';
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
@@ -841,9 +843,10 @@
   {#if turned && !fpv}
     <!-- back to NH's view of the room -->
     <button type="button" class="reset" data-tent-reset data-sfx="tick" aria-label={t('tent.resetView')} onclick={resetView}>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5M6.5 10v9h11v-9" /><path d="M10 19v-5h4v5" /></svg>
+      <RecentreIcon />
     </button>
   {/if}
+  <PanHint room="tent" on={!!eng && !fpv && !editing && !picking} />
   <div class="foot" bind:this={foot}>
     {#if !editing && mine}
       <button type="button" class="edit look" data-home-look data-sfx="open" onclick={() => (picking = true)}>
@@ -938,7 +941,6 @@
     color: var(--c-ink); background: var(--c-card); box-shadow: var(--sh-obj); -webkit-tap-highlight-color: transparent;
     animation: pop .22s var(--ease-bounce) both;
   }
-  .reset svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
   .reset:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
   .reset:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   @keyframes pop { from { scale: .6; opacity: 0; } }

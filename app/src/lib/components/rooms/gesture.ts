@@ -174,6 +174,10 @@ export interface RoomCam {
  *  two pinch the zoom and pan the view, together in one gesture (not at the eyes: there the view is the head's); the
  *  wheel zooms (desktop). `turned` hears whether the view is off NH's after each move (the home button shows). The
  *  canvas takes `attach` (Safari's own pinch, the page's zoom, never starts over it). */
+const panWatch = new Set<() => void>();
+/** `fn` at every two-finger move of a room's view (rooms/PanHint.svelte: the hint's gone at the first); the unwatch. */
+export const onPan = (fn: () => void): (() => void) => (panWatch.add(fn), () => void panWatch.delete(fn));
+
 export function roomCamera(cam: () => RoomCam | null | undefined, fpv: () => boolean, turned: (off: boolean) => void) {
   const noPageZoom = (e: Event) => e.preventDefault();
   return {
@@ -190,6 +194,7 @@ export function roomCamera(cam: () => RoomCam | null | undefined, fpv: () => boo
         if (!c || fpv()) return;
         c.pinch(scale, dx, dy, mx, my);
         turned(!c.isDefault());
+        for (const fn of panWatch) fn();
       },
       fling(vx: number, vy: number) {
         if (!fpv()) cam()?.fling(vx, vy);

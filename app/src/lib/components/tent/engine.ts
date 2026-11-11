@@ -25,8 +25,7 @@ import { glbLoader } from '../world3d/gltf.ts';
 import { softDisc } from '../world3d/cards.ts';
 import { FPS } from '#lib/store/frameRate.ts';
 import { pacer } from '../world3d/pace.ts';
-import { ENTRY_HOLD_MS, PACE, VILLAGER_H, along, panBox, roomScreen, walkLens, type Insets, type Walk } from '../rooms/view.ts';
-import { roomPan } from '../rooms/pan.ts';
+import { COST_FRAMES, ENTRY_HOLD_MS, HOME_MS, PACE, VILLAGER_H, along, atAim, roomScreen, roomView, walkLens, type Insets, type Walk } from '../rooms/view.ts';
 import { EYE_MARGIN, camAz, clampEye, firstPerson as createFirstPerson, headAnchor, type Rect } from '../rooms/firstPerson.ts';
 
 /** The walls' height (RoomMdlWall: 40 model units, four tiles). */
@@ -1353,21 +1352,15 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     cutaway();
     for (const w of villagers.values()) place(w);
   }
-  /** The two-finger pan (rooms/pan.ts), and as the view has it now: none at the eyes (it fades with the glide). */
-  const pan = roomPan(), panned: [number, number] = [0, 0];
-  const offset = () => {
-    const W = canvas.clientWidth || 1, H = canvas.clientHeight || 1, k = 1 - fp.mix;
-    panned[0] = pan.x * k;
-    panned[1] = pan.y * k;
-    camera.setViewOffset(W, H, -panned[0], shiftY - panned[1], W, H);
-    camera.updateProjectionMatrix();
-  };
-  /** The room (its floor and its walls' tops) on the canvas without the pan, and the band it may use. */
-  const box = () => {
-    const [x0, x1, z0, z1] = floorRect;
-    const pts: [number, number, number][] = [[x0, 0, z0], [x1, 0, z0], [x0, 0, z1], [x1, 0, z1], [x0, wallH, z0], [x1, wallH, z0], [x0, wallH, z1], [x1, wallH, z1]];
-    return panBox(camera, pts, canvas.clientWidth || 1, canvas.clientHeight || 1, panned, insets);
-  };
+  /** The two-finger pan (rooms/view.ts roomView), its range the room's floor and its walls' tops. */
+  const rview = roomView(camera, canvas, {
+    mix: () => fp.mix, shiftY: () => shiftY, insets: () => insets, dprMoving: DPR_MOVING, wake: () => invalidate(),
+    corners: () => {
+      const [x0, x1, z0, z1] = floorRect;
+      return [[x0, 0, z0], [x1, 0, z0], [x0, 0, z1], [x1, 0, z1], [x0, wallH, z0], [x1, wallH, z0], [x0, wallH, z1], [x1, wallH, z1]];
+    }
+  });
+  const { pan, offset } = rview;
   /** The distance and offset for this screen and these insets (the default view), without moving the camera. */
   function framingFor(): [number, number] {
     const W = canvas.clientWidth || 1, H = canvas.clientHeight || 1;
@@ -1466,18 +1459,13 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     aim();
     invalidate();
   }
-  /** The canvas's corner, read once a gesture starts (not a layout read each move). */
-  let rectAt: DOMRect | null = null;
   function pinch(scale: number, dx: number, dy: number, mx: number, my: number) {
     easing = null;
     const k0 = view.k;
     view.k /= scale;
     clampView();
     aim();
-    const r = (rectAt ??= canvas.getBoundingClientRect()), b = box();
-    pan.drag(dx, dy, b);
-    pan.zoomAbout(k0 / view.k, mx - r.left - (canvas.clientWidth || 1) / 2, my - r.top - ((canvas.clientHeight || 1) / 2 - shiftY), b);
-    offset();
+    rview.pinch(dx, dy, k0 / view.k, mx, my);
     invalidate();
   }
   function fling(vx: number, vy: number) {
@@ -1496,10 +1484,10 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   /** Back to NH's view, eased (the shortest way round). */
   function resetView() {
     easing = { from: { ...view }, t0: now() };
-    pan.home(now(), 420);
+    pan.home(now(), HOME_MS);
     invalidate();
   }
-  const isDefault = () => Math.abs(view.az) < 0.02 && Math.abs(view.pitch - DEF.pitch) < 0.02 && Math.abs(view.k - DEF.k) < 0.02 && pan.isHome();
+  const isDefault = () => atAim(view, DEF) && pan.isHome();
   /** The villager a building's camera follows (Shell `follow`), and where its middle goes for it. */
   let followed: Actor | null = null;
   const followAt = (w: Walker): [number, number] | null => {
@@ -1511,24 +1499,12 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     const w = followed ? villagers.get(followed) : undefined, fa = w && !fp.on ? followAt(w) : null;
     return !!fa && (!!w?.path || Math.abs(fa[0] - target.x) + Math.abs(fa[1] - target.z) > 0.05);
   }
-  /** A gesture under way: a lighter pixel ratio while the camera moves, the full one when it rests. */
-  /** A gesture under way (and REST_DPR_MS after it): drawn at DPR_MOVING, the ratio set in the frame (before its draw:
-   *  a resize clears the canvas), not a buffer resize, a fit and a draw of their own at each start and end. */
-  let movingNow = false, light = false, restTimer: ReturnType<typeof setTimeout> | undefined;
-  const REST_DPR_MS = 160;
+  /** A gesture under way: drawn at DPR_MOVING (rview.ratio, set in the frame before its draw: a resize clears the
+   *  canvas), not a buffer resize, a fit and a draw of their own at each start and end. */
   function moving(on: boolean) {
-    clearTimeout(restTimer);
-    pan.hold(on);
-    rectAt = null;
-    if (on) {
-      movingNow = light = true;
-      invalidate();
-    } else {
-      settle();
-      if (!movingNow) return;
-      movingNow = false;
-      restTimer = setTimeout(() => ((light = false), invalidate()), REST_DPR_MS);
-    }
+    rview.hold(on);
+    if (on) invalidate();
+    else settle();
   }
   /** Where the floor's middle is on screen and where the usable band's middle is (client px: the e2e's check). */
   function centre(): { at: [number, number]; band: [number, number] } {
@@ -1915,10 +1891,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       if (!fp.on && !fp.mix) fpWho = null;
     }
     // the two-finger pan: its fling, its ease back inside, its way home (and its range again, the view having moved)
-    if (!pan.isHome() || pan.busy()) {
-      if (pan.step(t, box())) more = true;
-      offset();
-    }
+    if (rview.step(t)) more = true;
     for (const w of villagers.values()) {
       let bob = 0, squash = 0;
       if (w.v3) {
@@ -1957,13 +1930,13 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     }
     // pieces still popping change their shadows
     if (more && [...live.values()].some((l) => l.pop || l.bump)) shadowsDirty = true;
-    const ratio = light || pan.busy() ? Math.min(DPR_MOVING, dpr) : dpr;
+    const ratio = rview.ratio(dpr);
     if (ratio !== renderer.getPixelRatio()) renderer.setPixelRatio(ratio);
     if (!noDraw) renderer.render(scene, camera);
     drawn?.();
     // the frame's own cost (the CPU side: three's work and the GL calls), for the budget checks
     cost.push(now() - t);
-    if (cost.length > 600) cost.shift();
+    if (cost.length > COST_FRAMES) cost.shift();
     frames++;
     if (frames === 1) readyFn();
     lastT3 = t;
@@ -2161,7 +2134,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       if (disposed) return;
       disposed = true;
       pace.stop();
-      clearTimeout(restTimer);
+      rview.dispose();
       clearTimeout(blinkT);
       clearTimeout(holdT);
       clearTimeout(primeT);

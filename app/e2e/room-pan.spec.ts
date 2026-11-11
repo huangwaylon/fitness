@@ -121,7 +121,7 @@ for (const room of ROOMS) {
     const back = await at();
     expect(back[1]).toBeLessThan(held[1] - 5);
     expect(back[1]).toBeGreaterThan(p0[1]);
-    // (KEEP: half the room, or of the band, stays in it: well short of the whole screen's height)
+    // (KEEP: 0.65 of the room, or of the band, stays in it: well short of the whole screen's height)
     expect(back[1] - p0[1]).toBeLessThan(box.height * 0.8);
     await page.locator(room.reset).click();
     await rest(page);
@@ -130,6 +130,31 @@ for (const room of ROOMS) {
     const flick = await at();
     await rest(page);
     expect((await at())[1]).toBeLessThan(flick[1] - 3);
+  });
+
+  test(`${room.name}: the first visit says two fingers move the view, gone at the first pan${room.path === 'shop' ? ' (each visit till then)' : ' (and not again)'}`, { tag: '@logic' }, async ({ page }) => {
+    // (every hint shown this page, whenever: the tent's and the museum's go by themselves after 4 s)
+    await page.addInitScript(() => {
+      const w = window as unknown as { __hints: string[] };
+      w.__hints = [];
+      new MutationObserver(() => {
+        for (const el of document.querySelectorAll<HTMLElement>('[data-pan-hint]')) if (!w.__hints.includes(el.innerText)) w.__hints.push(el.innerText);
+      }).observe(document, { childList: true, subtree: true });
+    });
+    const hints = () => page.evaluate(() => (window as unknown as { __hints: string[] }).__hints);
+    const hint = page.locator(`[data-pan-hint="${room.path}"]`);
+    const { cx, cy } = await open(page);
+    await expect.poll(hints).toEqual(['2ほんゆびで うごかせるよ']);
+    if (room.path === 'shop') {
+      // (the shop's stays: its counter starts off a phone's edge; the next visit says it again)
+      await expect(hint).toBeVisible();
+      await open(page);
+      await expect(hint).toBeVisible();
+    }
+    await fingers(page, two(cx, cy, 30, 0));
+    await expect(hint).toHaveCount(0);
+    await open(page);
+    expect(await hints()).toEqual([]);
   });
 
   test(`${room.name}: a pinch apart zooms in`, { tag: '@logic' }, async ({ page }) => {

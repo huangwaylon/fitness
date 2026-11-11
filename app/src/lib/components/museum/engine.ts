@@ -32,8 +32,7 @@ import { softDisc } from '../world3d/cards.ts';
 import { modelCache } from '../world3d/modelCache.ts';
 import M from './models.json' with { type: 'json' };
 import { modelBounds } from '../world3d/models3d.ts';
-import { ENTRY_HOLD_MS, PACE, VILLAGER_H, along, panBox, roomScreen, walkLens, type Insets, type Walk } from '../rooms/view.ts';
-import { roomPan } from '../rooms/pan.ts';
+import { COST_FRAMES, ENTRY_HOLD_MS, HOME_MS, PACE, VILLAGER_H, along, atAim, roomScreen, roomView, walkLens, type Insets, type Walk } from '../rooms/view.ts';
 import { EYE_MARGIN, clampEye, firstPerson as createFirstPerson, headAnchor, wrapAngle } from '../rooms/firstPerson.ts';
 import {
   BUG_WING, CARPETS, CORNICE, DESK, DOOR_H, DOOR_HALF, DOORMAT, ENTRANCE, G1, HALL, HALL_H, HALL_PLANTS, ISLAND_RUG, OPENING, OPENINGS, PLAQUE, PLAQUE_H, PLAQUE_W, ROOMS, TILE, WALLS, WALL_T, WING_H, doorTop, inRect,
@@ -1402,23 +1401,15 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     if (frames) draw();
     invalidate();
   }
-  /** The two-finger pan (rooms/pan.ts), and as the view has it now: none at the eyes (it fades with the glide). */
-  const pan = roomPan(), panned: [number, number] = [0, 0];
-  function offset() {
-    const W = canvas.clientWidth || 1, H = canvas.clientHeight || 1, k = 1 - fp.mix;
-    panned[0] = pan.x * k;
-    panned[1] = pan.y * k;
-    camera.setViewOffset(W, H, -panned[0], shiftY - panned[1], W, H);
-    camera.updateProjectionMatrix();
-  }
-  /** The room drawn (its floor and its walls' tops) on the canvas without the pan, and the band it may use. */
-  function box() {
-    const b = boundsOf(cur), h = cur === 'hall' ? HALL_H : WING_H;
-    const pts: [number, number, number][] = [[b.x0, 0, b.z0], [b.x1, 0, b.z0], [b.x0, 0, b.z1], [b.x1, 0, b.z1], [b.x0, h, b.z0], [b.x1, h, b.z0], [b.x0, h, b.z1], [b.x1, h, b.z1]];
-    return panBox(camera, pts, canvas.clientWidth || 1, canvas.clientHeight || 1, panned, insets);
-  }
-  /** The canvas's corner, read once a gesture starts (not a layout read each move). */
-  let rectAt: DOMRect | null = null;
+  /** The two-finger pan (rooms/view.ts roomView), its range the room drawn: its floor and its walls' tops. */
+  const rview = roomView(camera, canvas, {
+    mix: () => fp.mix, shiftY: () => shiftY, insets: () => insets, dprMoving: DPR_MOVING, wake: () => invalidate(),
+    corners: () => {
+      const b = boundsOf(cur), h = cur === 'hall' ? HALL_H : WING_H;
+      return [[b.x0, 0, b.z0], [b.x1, 0, b.z0], [b.x0, 0, b.z1], [b.x1, 0, b.z1], [b.x0, h, b.z0], [b.x1, h, b.z0], [b.x0, h, b.z1], [b.x1, h, b.z1]];
+    }
+  });
+  const { pan, offset } = rview;
   /** Where the room's camera is (before the first person's glide moves it): the cutaway's, so the walls it cut stay
    *  cut all the way down to the eyes. */
   const orbitPos = new Vector3();
@@ -1998,10 +1989,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     }
     aim();
     // the two-finger pan: its fling, its ease back inside, its way home (and its range again, the view having moved)
-    if (!pan.isHome() || pan.busy()) {
-      if (pan.step(t, box())) full = true;
-      offset();
-    }
+    if (rview.step(t)) full = true;
     const r = camRev, a4 = Math.round(view.az * 1e4), p4 = Math.round(view.pitch * 1e4), k4 = Math.round(view.k * 1e4);
     const x2 = Math.round(target.x * 100), z2 = Math.round(target.z * 100);
     const camMoved = r[0] !== a4 || r[1] !== p4 || r[2] !== k4 || r[3] !== x2 || r[4] !== z2 || fpMoved;
@@ -2031,13 +2019,13 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     }
     // (only when it changes: three's setPixelRatio sets the canvas's size, which reallocates its buffers, every frame;
     // and before the draw, never after it: see draw)
-    const dpr = gesturing || pan.busy() ? Math.min(dprFull, DPR_MOVING) : dprFull;
+    const dpr = rview.ratio(dprFull);
     if (dpr !== renderer.getPixelRatio()) renderer.setPixelRatio(dpr);
     const c0 = now();
     draw();
     cost.push(now() - c0);
     drawn?.();
-    if (cost.length > 240) cost.shift();
+    if (cost.length > COST_FRAMES) cost.shift();
     frames++;
     lastT = t;
     if (frames === 1) readyRes();
@@ -2148,10 +2136,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       const k0 = view.k;
       view.k = Math.max(K_MIN, Math.min(K_MAX, view.k / scale));
       aim();
-      const r = (rectAt ??= canvas.getBoundingClientRect()), b = box();
-      pan.drag(dx, dy, b);
-      pan.zoomAbout(k0 / view.k, mx - r.left - (canvas.clientWidth || 1) / 2, my - r.top - ((canvas.clientHeight || 1) / 2 - shiftY), b);
-      offset();
+      rview.pinch(dx, dy, k0 / view.k, mx, my);
       invalidate();
     },
     fling(vx, vy) {
@@ -2161,18 +2146,17 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     resetView() {
       touched();
       easing = { from: { ...view }, t0: now() };
-      pan.home(now(), 400);
+      pan.home(now(), HOME_MS);
       invalidate();
     },
-    isDefault: () => Math.abs(wrapAngle(view.az - DEF.az)) < 0.01 && Math.abs(view.pitch - DEF.pitch) < 0.01 && Math.abs(view.k - DEF.k) < 0.01 && pan.isHome(),
+    isDefault: () => atAim(view, DEF) && pan.isHome(),
     onDrawn(fn) {
       drawn = fn;
     },
     moving(on) {
       touched();
       gesturing = on;
-      pan.hold(on);
-      rectAt = null;
+      rview.hold(on);
       invalidate();
     },
     night,
@@ -2224,6 +2208,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       clearTimeout(stepT);
       clearTimeout(compileT);
       clearTimeout(bakeT);
+      rview.dispose();
       clearTimeout(holdT);
       clearTimeout(dipT);
       for (const e of [...exhibits, ...retired]) e.dispose();

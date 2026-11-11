@@ -1,9 +1,9 @@
 // What the rooms' engines (the tent's and the museum's) share of a walk and of their screen: a walk's legs and where
-// it has a villager by now, a room point on the page (the bubbles, the cards, the taps) and the room's box on the
-// screen (the two-finger pan's range: rooms/pan.ts). Pure but for three's camera, and no allocation per call (the
-// bubbles ask every frame).
-import { Vector2, Vector3, type Camera, type Raycaster } from 'three';
-import type { PanBox } from './pan.ts';
+// it has a villager by now, a room point on the page (the bubbles, the cards, the taps), the room's box on the screen
+// and the two-finger pan on the camera (roomView: rooms/pan.ts's range, offset, way home and the gesture's pixel
+// ratio). Pure but for three's camera, and no allocation per call (the bubbles ask every frame).
+import { Vector2, Vector3, type Camera, type PerspectiveCamera, type Raycaster } from 'three';
+import { roomPan, type PanBox } from './pan.ts';
 
 /** A villager's height in the rooms (model units: a little over a tile and a half, NH's proportions against its beds). */
 export const VILLAGER_H = 16;
@@ -92,7 +92,7 @@ const boxV = new Vector3();
 /** The room's points (its floor's and its walls' corners) on a W × H canvas as the camera has them, less the pan as
  *  applied (`panned`, px), and the band between what covers the canvas at its top and foot (rooms/pan.ts PanBox). A
  *  point behind the camera counts for nothing; none in front, the band itself. */
-export function panBox(camera: Camera, pts: readonly (readonly [number, number, number])[], W: number, H: number, panned: readonly [number, number], i: Insets): PanBox {
+function panBox(camera: Camera, pts: readonly (readonly [number, number, number])[], W: number, H: number, panned: readonly [number, number], i: Insets): PanBox {
   camera.updateMatrixWorld();
   let l = Infinity, t = Infinity, r = -Infinity, b = -Infinity;
   for (const [x, y, z] of pts) {
@@ -106,4 +106,77 @@ export function panBox(camera: Camera, pts: readonly (readonly [number, number, 
   }
   const band: PanBox['band'] = [0, i.top, W, Math.max(i.top + 1, H - i.bottom)];
   return { room: l <= r ? [l, t, r, b] : band, band };
+}
+
+/** A room's turn, tilt and zoom, as the recentre compares them. */
+interface Aim { az: number; pitch: number; k: number }
+/** Within this of the default (the turn and tilt in radians, the zoom): at NH's framing. */
+const AT_DEF = 0.02;
+/** At the default turn, tilt and zoom (the turn the shortest way round), the pan aside. */
+export const atAim = (v: Aim, d: Aim) =>
+  Math.abs(Math.atan2(Math.sin(v.az - d.az), Math.cos(v.az - d.az))) < AT_DEF && Math.abs(v.pitch - d.pitch) < AT_DEF && Math.abs(v.k - d.k) < AT_DEF;
+/** The way home (ms: the recentre button's ease, the turn's and the pan's alike). */
+export const HOME_MS = 420;
+/** How long after a gesture a room keeps its lighter pixel ratio (ms): one buffer resize at the start and one at the
+ *  end of a burst of gestures, not two at each. */
+const REST_DPR_MS = 160;
+/** The frames' costs a room keeps (stats().cost: the budget checks). */
+export const COST_FRAMES = 600;
+
+/** A room's two-finger pan on its camera (the tent's engine and the museum's): the pan (rooms/pan.ts) as the view has
+ *  it (`mix()`: the first person's glide, none at the eyes), its range from the room's `corners()` (its floor's and
+ *  walls' tops) over the band `insets()` leaves, the view's offset (`shiftY()`: the band's middle under the canvas's),
+ *  a pinch's pan, and the pixel ratio while a gesture's under way (`dprMoving`, kept REST_DPR_MS after it; `wake()`:
+ *  a frame asked for then). */
+export function roomView(camera: PerspectiveCamera, canvas: HTMLCanvasElement, o: {
+  mix(): number;
+  shiftY(): number;
+  insets(): Insets;
+  corners(): readonly (readonly [number, number, number])[];
+  dprMoving: number;
+  wake(): void;
+}) {
+  const pan = roomPan(), panned: [number, number] = [0, 0];
+  /** The canvas's corner, read once a gesture starts (not a layout read each move). */
+  let rectAt: DOMRect | null = null, held = false, light = false, rest: ReturnType<typeof setTimeout> | undefined;
+  /** The view's offset as the pan has it now. */
+  function offset() {
+    const W = canvas.clientWidth || 1, H = canvas.clientHeight || 1, k = 1 - o.mix();
+    panned[0] = pan.x * k;
+    panned[1] = pan.y * k;
+    camera.setViewOffset(W, H, -panned[0], o.shiftY() - panned[1], W, H);
+    camera.updateProjectionMatrix();
+  }
+  /** The room on the canvas without the pan, and the band it may use. */
+  const box = () => panBox(camera, o.corners(), canvas.clientWidth || 1, canvas.clientHeight || 1, panned, o.insets());
+  return {
+    pan,
+    offset,
+    /** Two fingers moved by (dx, dy) px and pinched by `ratio` (the zoom before over after) about (mx, my) client px. */
+    pinch(dx: number, dy: number, ratio: number, mx: number, my: number) {
+      const r = (rectAt ??= canvas.getBoundingClientRect()), b = box();
+      pan.drag(dx, dy, b);
+      pan.zoomAbout(ratio, mx - r.left - (canvas.clientWidth || 1) / 2, my - r.top - ((canvas.clientHeight || 1) / 2 - o.shiftY()), b);
+      offset();
+    },
+    /** A frame at `t` (ms): the fling, the ease back inside, the way home (its range again: the view may have moved);
+     *  true while it moves on. */
+    step(t: number): boolean {
+      if (pan.isHome() && !pan.busy()) return false;
+      const on = pan.step(t, box());
+      offset();
+      return on;
+    },
+    /** Fingers on or lifted: the pan held, the lighter ratio on at once and off REST_DPR_MS after the last lift. */
+    hold(on: boolean) {
+      clearTimeout(rest);
+      pan.hold(on);
+      rectAt = null;
+      if (on) held = light = true;
+      else if (held) (held = false), (rest = setTimeout(() => ((light = false), o.wake()), REST_DPR_MS));
+    },
+    /** The pixel ratio to draw at (`full` at rest). */
+    ratio: (full: number) => (light || pan.busy() ? Math.min(o.dprMoving, full) : full),
+    dispose: () => clearTimeout(rest)
+  };
 }
