@@ -4,7 +4,7 @@
 // z' = pivot − (R + y)·sin θ, y' = (R + y)·cos θ − R (three's z runs out of the screen: world z into the island is
 // three's −z). Exact (not the parabola), so a tall thing leans back with the ground, as NH's do. One shared uniform
 // pair: a frame updates it once. bendPoint() is the same on the CPU (taps, hit tests, overlays).
-// The point lights' mask (pointMask, `?pointmask=1`): each bent lit material's point-light loop skips a light that's
+// The point lights' mask (pointMask, on by default since r3 L4; `?pointmask=0` off): each bent lit material's point-light loop skips a light that's
 // off (lights.ts: its intensity 0, all of them by day), by a uniform: one program set, nothing compiled at dusk.
 import { AddEquation, CustomBlending, OneFactor, ShaderChunk, SrcAlphaFactor, ZeroFactor, type Material, type Mesh, type Object3D, type WebGLProgramParametersWithUniforms } from 'three';
 

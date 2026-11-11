@@ -61,7 +61,7 @@ export const LOG_EVENTS = {
   // then 10 s, once a load: it never fired): its seconds, drawn frames, shadow passes, the pacers' wake-ups a
   // second, and (2026-11-11) the scene's draw calls and triangles a frame, the pixel ratio, the camera's z and the shadow
   // map's size; the share (%) of frames at the full rate and its top three reasons, each's share of the frames drawn;
-  // the point lights (`?points=`) and their mask (`?pointmask=1`: the phones' A/B): world3d/rest.ts)
+  // the point lights (`?points=`) and their mask (on by default, `?pointmask=0` off): world3d/rest.ts)
   "perf.back": { src: 'c', f: { first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n' } },
   "perf.rest": { src: 'c', f: { s: 'n', fps: 'n', shadows: 'n', wakes: 'n', calls: 'n', tris: 'n', dpr: 'n', camZ: 'n', sm: 'n', full: 'n', why1: LOG_FULL_WHY, w1: 'n', why2: LOG_FULL_WHY, w2: 'n', why3: LOG_FULL_WHY, w3: 'n', pts: 'n', pm: 'b' } },
   // (2026-11-11) the island's first drag a load (world3d/drag.ts): the pixel ratio's swap down as it starts and back once

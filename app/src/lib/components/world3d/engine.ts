@@ -96,8 +96,9 @@ export interface Options {
   cull?: boolean;
   /** The real point lights (lights.ts POINTS: 6; `?points=`, an A/B of their GPU cost by day). */
   points?: number;
-  /** Each point light's work skipped in the shaders while it's off (bend.ts pointMask; `?pointmask=1`, the phones' A/B:
-   *  default off till it shows its worth there). */
+  /** Each point light's work skipped in the shaders while it's off (bend.ts pointMask): the island's
+   *  default since r3 L4 (Mac GPU −16–21 % a frame by day, the iOS Simulator's dusk and night drawn the same); Island3D's
+   *  `?pointmask=0` turns it off. */
   pointMask?: boolean;
 }
 interface Stats {
