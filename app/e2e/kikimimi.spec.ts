@@ -82,7 +82,7 @@ test('solo: the lobby, eight questions answered, the reveal, the results and the
     await expect(sheet(page).locator('[data-mark="right"]')).toHaveCount(1);
     // the first listen's いっぱつ stamp (a badge, no points; none on a miss)
     await expect(sheet(page).locator('[data-kiki-bonus]')).toHaveCount(i === 3 ? 0 : 1);
-    if (i !== 3) await expect(sheet(page).locator('[data-kiki-bonus]')).toHaveText('一発！');
+    if (i !== 3) await expect(sheet(page).locator('[data-kiki-bonus]')).toHaveText('1回目で正解！');
     // the reveal waits (no timer) till my つぎへ
     if (i === 0) {
       await page.clock.runFor(2500);
@@ -94,7 +94,7 @@ test('solo: the lobby, eight questions answered, the reveal, the results and the
   // 7 right: 7 × 100 (いっぱつ adds nothing)
   await expect.poll(() => kiki(page, (k) => k.view().players[0].score)).toBe(700);
   await expect(sheet(page).locator('[data-kiki-tally]')).toHaveText('7 / 8 問正解');
-  await expect(sheet(page).locator('[data-kiki-firsts]')).toHaveText('一発 7問');
+  await expect(sheet(page).locator('[data-kiki-firsts]')).toHaveText('1回目で正解 7問');
   // with a miss, the review opens on the missed one, open: its English, my pick, ▶︎
   await expect(sheet(page).locator('[data-kiki-missed]')).toHaveAttribute('aria-pressed', 'true');
   await expect(sheet(page).locator('[data-review]')).toHaveCount(1);

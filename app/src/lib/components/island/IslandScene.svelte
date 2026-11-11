@@ -615,6 +615,8 @@
     settleAt = performance.now() + SETTLE_MS;
     settle ??= setTimeout(settled, SETTLE_MS);
   }
+  /** How far in front of the guest's villager its island opens (world z: its villager in the view's lower middle). */
+  const GUEST_OPEN_BACK = 120;
   /** Put the camera at a world z at once (the e2e hook). */
   function goTo(z: number) {
     if (world.three) return island3d?.go(z);
@@ -629,8 +631,10 @@
       edgeCheck();
       return anyMoving();
     });
-    // back out of the tent: the camera where it was when we went in (else まえ, the 3D island's own start)
-    start3 = ui.takeIslandZ();
+    // back out of the tent: the camera where it was when we went in; else, on the guest's phone, at its own villager
+    // (the guest stands far up the island, the view at its front on the members': review 11/10 r3; only the open
+    // position, no camera move after: no-island-autoscroll); else まえ, the 3D island's own start
+    start3 = ui.takeIslandZ() ?? (guestPhone() ? actors.mine.y - GUEST_OPEN_BACK : null);
     world.rest.ready = true;
     world.invalidate();
     const offMove = onMove(() => world.kick());

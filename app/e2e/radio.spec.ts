@@ -162,6 +162,8 @@ async function allStretched(page: Page, awake: readonly boolean[]) {
 test('the guest’s phone: a tap on the deck and its villager stretches; the members’, their apps closed, sleep through it', async ({ page }) => {
   await page.goto('?demo&date=2026-11-01T07:00&as=G');
   await islandUp(page);
+  // (the guest's island opens at its own villager, far up; the deck is at the front)
+  await page.evaluate(() => { const w3 = (window as unknown as { __world3d: { go(z: number): void; limits(): { min: number } } }).__world3d; w3.go(w3.limits().min); });
   await expect(deck(page)).toBeVisible();
   await expect(page.locator('[data-actor] .vil')).toHaveCount(3);
   await settled(page);

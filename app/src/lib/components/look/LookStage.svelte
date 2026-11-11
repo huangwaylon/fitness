@@ -100,15 +100,16 @@
   .revert::after { content: ''; position: absolute; inset: -2px; }
   .revert svg { width: 18px; height: 18px; }
   .plate {
-    appearance: none; border: 0; cursor: pointer; position: absolute; right: 10px; top: 8px; max-width: 140px; min-height: 40px;
-    display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: var(--r-pill);
+    appearance: none; border: 0; cursor: pointer; position: absolute; right: 10px; top: 8px; max-width: calc(100% - 140px); min-height: 40px;
+    display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: var(--r-pill);
     font: 700 var(--fs-body)/1 var(--font-ui); color: var(--c-ink); background: var(--c-yuzu); box-shadow: 0 var(--lip-h) 0 var(--c-yuzu-lip);
     transform: rotate(-3deg);
   }
   .plate::after { content: ''; position: absolute; inset: -4px -2px; }
   .plate:active { transform: rotate(-3deg) translateY(2px); box-shadow: 0 1px 0 var(--c-yuzu-lip); }
   .plate:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .pn { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* a 12-character 呼び名 whole: two lines beside いつもの (review 11/10 r3: 「ウェイウェ…」 at 140 px) */
+  .pn { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; line-height: 1.25; text-align: left; }
   .plate svg { width: 14px; height: 14px; flex: none; fill: none; stroke: var(--c-ink); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
   .hint {
     position: absolute; right: 12px; bottom: 10px; display: flex; align-items: center; gap: 4px; pointer-events: none;

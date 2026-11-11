@@ -577,7 +577,8 @@ phone"](ops/runbook.md#10-pair-a-phone)). `?demo&as=G` is its phone.
 - **What it sees:** our island, the trees and their popups, the menu's ベル row (both wallets) and ごほうび view-only
   (`guest.jarNote` in place of the rewards), the 図鑑, 健康's 活動 (either member's, goals read-only) and everyone's meals.
   Never a 体 figure: the record leaves them out of its snapshot. 設定 as ours ([Settings](#settings)).
-  ききみみ: the members' games as their summaries.
+  ききみみ: the members' games as their summaries. Its island opens at its own villager (far up the island; only the
+  open position, `IslandScene` `GUEST_OPEN_BACK`).
 - **What it does:** everything on the island a member does (walks, catches, digs, shakes, phrases, high-fives, every
   home's room and its own house's look, the editor, watering, wishes, the weather, the shop, the museum, K.K., the
   board, ききみみ), its finds credited in the shared 図鑑. It earns and spends no ベル, sets none of our goals and writes

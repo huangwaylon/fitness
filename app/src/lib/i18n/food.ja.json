@@ -120,7 +120,7 @@
   "food.chart.avg": "平均",
   "food.avg.head": "この期間の平均",
   "food.avg.range": "{from}〜{to} · 記録 {n}日",
-  "food.avg.kcal": "1日平均",
+  "food.avg.kcal": "1日の平均",
   "food.avg.ok": "目標の範囲",
   "food.chart.note": "食べたものを入力した日だけが記録になります。何も入力していない日は記録なし（0 kcalではありません）で、平均と合計に入りません。途中の今日もグラフに出ますが、計算には入りません。",
   "food.rcp.new": "新しいレシピ",

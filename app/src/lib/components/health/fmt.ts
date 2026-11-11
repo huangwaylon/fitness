@@ -7,12 +7,13 @@ import { formatNum, t } from '#lib/i18n/index.ts';
 import { formatDate, md, monthLabel } from '#lib/i18n/format.ts';
 import { valueText } from './goals.ts';
 
-/** An axis number: `600`, `8,000`, `12k`, `2.5` (a step under 1: ごはん's salt). */
-export const axisNum = (v: number): string =>
-  v >= 10000 ? `${Math.round(v / 100) / 10}k` : Number.isInteger(v) ? formatNum(v) : String(Math.round(v * 10) / 10);
+/** An axis number: `600`, `8,000`, `2.5` (a step under 1: ごはん's salt); every number of an axis whose `top` reaches
+ *  10,000 in k (`5k`, `10k`, `15k`, not `5,000` beside `10k`). */
+export const axisNum = (v: number, top = v): string =>
+  top >= 10000 && v ? `${Math.round(v / 100) / 10}k` : Number.isInteger(v) ? formatNum(v) : String(Math.round(v * 10) / 10);
 
-/** A value over its bar: `620`, `9.2k` (short enough for a day's column). */
-export const barNum = (v: number): string => (v >= 1000 ? `${(Math.floor(v / 100) / 10).toFixed(1)}k` : formatNum(Math.floor(v)));
+/** A value over its bar: `620`, `1,033`, `12.4k` (4 digits whole: a kcal day read as 1.0k said nothing). */
+export const barNum = (v: number): string => (v >= 10000 ? `${(Math.floor(v / 100) / 10).toFixed(1)}k` : formatNum(Math.floor(v)));
 
 /** A nice axis: 0 to a round top over `max`, about three steps. */
 export function niceTicks(max: number): number[] {

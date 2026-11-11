@@ -95,7 +95,9 @@
   async function added(id: string, name: string) {
     expanded = id;
     held = new Set([...held, id]);
-    toasts.show(t('wed.added', { title: name }), 2400, { low: true });
+    // (a long title clipped: the toast confirms, the list shows it whole)
+    const cs = [...name];
+    toasts.show(t('wed.added', { title: cs.length > 16 ? `${cs.slice(0, 15).join('')}…` : name }), 2400, { low: true });
     await tick();
     body?.querySelector(`[data-wed-task="${id}"]`)?.scrollIntoView({ block: 'nearest' });
   }

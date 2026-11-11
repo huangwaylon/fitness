@@ -59,8 +59,10 @@
   const tabName = $derived(items.find((x) => x.id === tab)?.label ?? '');
   const hasPrep = $derived(trip.logistics.length > 0 || !!trip.foot);
 
+  /** Before the trip, 準備 first (its chip leading the days, the page opening on it): what to do now. */
+  const prepFirst = $derived(hasPrep && phase.k === 'soon');
   /** The day on 日程 (its `n`), or 準備. */
-  let shown = $state<number | 'prep'>(untrack(() => mark?.day ?? today ?? trip.days[0]?.n ?? 1));
+  let shown = $state<number | 'prep'>(untrack(() => mark?.day ?? today ?? (prepFirst ? 'prep' : (trip.days[0]?.n ?? 1))));
   const day = $derived(shown === 'prep' ? null : (trip.days.find((d) => d.n === shown) ?? null));
 
   let scroller: HTMLElement | undefined = $state();
@@ -98,6 +100,8 @@
   });
 </script>
 
+{#snippet prepChip()}<Chip label={t('travel.prep')} selected={shown === 'prep'} data-day-pick="prep" onclick={() => pickDay('prep')} />{/snippet}
+
 <div class="trip" data-trip-view={trip.id} data-pane-tab={tab}>
   <div class="hd" class:over={tab === 'days'} class:solid={tab !== 'days' || past} bind:this={bar}>
     <NavBar pad title={tab === 'days' ? title : `${title} · ${tabName}`} {onback} {onclose} over={tab === 'days' && !past} />
@@ -113,10 +117,11 @@
       </div>
       <div class="ctl">
         <ChipRow label={t('travel.tab.days')}>
+          {#if prepFirst}{@render prepChip()}{/if}
           {#each trip.days as d (d.n)}
             <Chip label={t('travel.day', { n: d.n })} count={md(d.date)} dot={dayColor(trip.dayColors, d.n)} selected={shown === d.n} data-day-pick={d.n} onclick={() => pickDay(d.n)} />
           {/each}
-          {#if hasPrep}<Chip label={t('travel.prep')} selected={shown === 'prep'} data-day-pick="prep" onclick={() => pickDay('prep')} />{/if}
+          {#if hasPrep && !prepFirst}{@render prepChip()}{/if}
         </ChipRow>
       </div>
     {/if}

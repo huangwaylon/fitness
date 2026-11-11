@@ -54,7 +54,7 @@
   });
   const top = $derived(raw.at(-1) ?? 1);
   const y = (v: number) => pad.t + (1 - v / top) * (H - pad.t - pad.b);
-  const ticks = $derived(raw.map((v) => ({ v, y: y(v), text: axisNum(v) })));
+  const ticks = $derived(raw.map((v) => ({ v, y: y(v), text: axisNum(v, top) })));
   const base = $derived(y(0));
   /** A no-record day's stub: this tall on the axis, far below any value worth reading. */
   const NONE_H = 7;

@@ -67,7 +67,7 @@
     const out: { v: number; y: number; text: string }[] = [];
     for (let k = Math.ceil(domain.lo / step); k * step <= domain.hi + 1e-9; k++) {
       const v = Math.round(k * step * 1000) / 1000;
-      out.push({ v, y: y(v), text: axisNum(v) });
+      out.push({ v, y: y(v), text: axisNum(v, domain.hi) });
     }
     return out;
   });

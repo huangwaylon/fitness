@@ -88,6 +88,26 @@ test('the guest’s phone: the members’ activity and ベル, never a からだ
 // The guest's 健康 and ごはん leave no hole (health plan C7): no かつどう / からだ to pick, so the period sits at the
 // range row's end (no row of its own); in the title bar its pill is its avatar alone (every name's is), the page switch
 // centred.
+// The guest stands far up the island: its island opens there, its villager in view (only the open position is set:
+// no-island-autoscroll), where a member's opens at the front (review 11/10 r3).
+test('the guest’s island opens at its own villager; a member’s at the front', async ({ page }) => {
+  type Wd = { cam(): number; who(w: string): [number, number] | null; at(x: number, z: number): [number, number]; stops(): [number, number] };
+  const view = () => page.evaluate(() => {
+    const w = (window as unknown as { __world: Wd }).__world, me = w.who('G')!;
+    return { cam: w.cam(), me, at: w.at(me[0], me[1]), front: w.stops()[0] };
+  });
+  await page.setViewportSize({ width: 393, height: 852 });
+  await page.goto(`?demo&date=${DATE}&visitor=none&as=G`);
+  await islandUp(page);
+  const g = await view();
+  expect(g.cam).toBeGreaterThan(g.front + 200);
+  expect(g.at[1]).toBeGreaterThan(150);
+  expect(g.at[1]).toBeLessThan(800);
+  await page.goto(`?demo&date=${DATE}&visitor=none`);
+  await islandUp(page);
+  expect((await view()).cam).toBe(g.front);
+});
+
 test('the guest’s 健康: the period on the range row; ごはん: its pill the avatar alone, the switch centred', async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 852 });
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none&as=G`);
@@ -135,6 +155,8 @@ test('a guest’s catch is in the members’ ずかん at once, credited to the 
   const g = await ctx.newPage();
   await g.goto(`?demo&date=${DATE}&critter=common-butterfly&visitor=none&as=G`);
   await islandUp(g);
+  // (the guest's island opens at its own villager, far up; the flowers the butterfly lands on are at the front)
+  await g.evaluate(() => { const w3 = (window as unknown as { __world3d: { go(z: number): void; limits(): { min: number } } }).__world3d; w3.go(w3.limits().min); });
   // the butterfly landed on a flower (still there: a flying one is somewhere else by the time a tap lands), tapped
   // where its 3D model is (taps go by the model's spot, not the sprite's box), in one step in the page
   await expect.poll(async () => {

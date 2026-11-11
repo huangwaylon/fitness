@@ -143,8 +143,12 @@ test('a kit trip: the photo, its pages on the tab bar, a chip a day, 準備; the
   await expect(sheet(page).locator('[data-trip-tab]')).toHaveCount(3);
   await expect(tab(page, 'camps')).toHaveCount(0);
   await expect(tab(page, 'days')).toHaveAttribute('aria-current', 'page');
-  // before the trip: a chip a day and 準備, the first day shown with its timeline
+  // before the trip: 準備 first (its chip leading, open), then a chip a day; day 1 shows its timeline
   await expect(sheet(page).locator('[data-day-pick]')).toHaveCount(nz.days.length + 1);
+  await expect(sheet(page).locator('[data-day-pick]').first()).toHaveAttribute('data-day-pick', 'prep');
+  await expect(dayChip(page, 'prep')).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet(page).locator('[data-prep]')).toBeVisible();
+  await dayChip(page, 1).click();
   await expect(dayChip(page, 1)).toHaveAttribute('aria-pressed', 'true');
   await expect(sheet(page).locator('[data-day]')).toHaveCount(1);
   await expect(sheet(page).locator('[data-day="1"] [data-row]')).toHaveCount(nz.days[0].rows.length);
