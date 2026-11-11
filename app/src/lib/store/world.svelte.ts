@@ -128,6 +128,7 @@ class SharedWorld {
     if (demo !== this.#demo || me !== this.#me) {
       this.#day = null;
       this.#wishes = null;
+      this.#drip = []; // (another person's: never sent as this one)
     }
     this.#relay = relay;
     this.#me = me;
@@ -434,8 +435,9 @@ class SharedWorld {
     return a;
   }
 
-  /** Several shared-world changes of mine at once (the 畑 sheet's 水やり: a field's plants), each folded and kept as
-   *  `share`'s, with one `rev` and one row for them all; to the relay DRIP a second. How many were new. */
+  /** Several shared-world changes of mine at once (a plot tap's 3 × 3, the 畑 sheet's 水やり), each folded and kept as
+   *  `share`'s, with one `rev` and one row for them all; to the relay DRIP a second, while the day and I are the same.
+   *  How many were new. */
   shareMany(list: readonly Extract<Shared, { kind: 'world' }>[]): number {
     const me = this.#me ?? 'A', t = this.now(), d = this.#today();
     const out: Shared[] = [];
@@ -448,13 +450,18 @@ class SharedWorld {
     if (!out.length) return 0;
     this.rev++;
     this.#sendRow();
+    if (this.#dripDay !== d.day) this.#drip = [];
+    this.#dripDay = d.day;
     this.#drip.push(...out);
     if (!this.#dripping) this.#dripOn();
     return out.length;
   }
   #drip: Shared[] = [];
+  /** The day the drip's changes are of: past it they're dropped (the relay would count them on its new day). */
+  #dripDay = 0;
   #dripping: ReturnType<typeof setTimeout> | null = null;
   #dripOn(): void {
+    if (tokyoDay(this.now()) !== this.#dripDay) this.#drip = [];
     for (const i of this.#drip.splice(0, DRIP)) this.#relay?.send(i);
     this.#dripping = this.#drip.length ? setTimeout(() => this.#dripOn(), 1000) : null;
   }

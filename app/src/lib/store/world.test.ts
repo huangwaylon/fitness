@@ -78,6 +78,22 @@ describe('the shared island on this phone', () => {
     expect(world.rev).toBe(rev + 1);
   });
 
+  it('a batch’s drip ends with its day and with me: none of it goes into the relay’s next day or as another person', () => {
+    const r = fakeRelay();
+    world.attach(r.live, 'A');
+    world.rows([]);
+    const many = (n: number, f: string) => Array.from({ length: n }, (_, k) => ({ kind: 'world' as const, op: 'watered' as const, id: `fd:${f}.${k % 10}.${Math.floor(k / 10)}` }));
+    vi.setSystemTime(Date.UTC(2026, 10, 1, 14, 59, 58)); // 23:59:58 Tokyo
+    world.shareMany(many(40, 'field-A'));
+    vi.advanceTimersByTime(5000);
+    expect(r.sent).toHaveLength(30); // 23:59:58 and :59; from midnight none
+    r.sent.length = 0;
+    world.shareMany(many(40, 'field-B'));
+    world.attach(r.live, 'B');
+    vi.advanceTimersByTime(5000);
+    expect(r.sent).toHaveLength(15);
+  });
+
   it('a catch goes on my day row too; the partner’s row has a critter caught: my try at it is refused, nothing sent', () => {
     const r = fakeRelay();
     world.attach(r.live, 'A');

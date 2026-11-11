@@ -67,7 +67,7 @@
   import { tileAt, tileMid } from '#lib/layout/grid.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { harvest as harvestPlot, plant as plantPlot, seed as farmSeed } from '#lib/store/farm.svelte.ts';
+  import { harvest as harvestPlot, plant as plantPlot, seed as farmSeed, waterAll } from '#lib/store/farm.svelte.ts';
   import { shopView } from '#lib/model/shop.ts';
   import type { Who } from '#lib/types.ts';
 
@@ -467,7 +467,7 @@
         return true;
       }
       case 'water':
-        for (const id of act.ids) shared.share({ kind: 'world', op: 'watered', id });
+        waterAll(act.ids);
         spawn({ kind: 'flower', x: px, y: pz, lift: 8, color: '#8FD0F5', flip: px > site.midX });
         sceneSfx('water');
         pop(t('world.farm.water'));
