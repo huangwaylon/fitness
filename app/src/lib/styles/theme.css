@@ -121,6 +121,9 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .btn.paper { --fill: var(--c-card); --lip-c: var(--c-edge); }
 /* a confirm's 削除 (the action that takes something away): coral */
 .btn.danger { --fill: var(--c-coral); --lip-c: var(--c-coral-text); }
+/* a confirm's footer: キャンセル (paper) and the verb, wider (docs/design.md "Forms and confirms") */
+.two-cta { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
+.two-cta .btn { margin: 0; }
 
 /* ---------- an always-cream object (a bubble, a cream button, a transcript line, a legend, a scene's pill, 解説): cream at
    every time of day, so the theme's text colours inside it are put back to the day ones. Day-only --c-* text colours go on

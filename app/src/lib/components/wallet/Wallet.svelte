@@ -22,6 +22,7 @@
   import { formatBells, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { isGuest } from '#lib/ui-state/viewer.ts';
+  import Phrases from '../ui/Phrases.svelte';
 
   /** A day of the ledger tapped (the panel pushes it). */
   let { onday }: { onday: (date: string) => void } = $props();
@@ -78,7 +79,7 @@
     </div>
 
     {#if guest}
-      <p class="card guest" data-guest-jar>{t('guest.jarNote', { a: names.A, b: names.B })}</p>
+      <p class="card guest" data-guest-jar><Phrases text={t('guest.jarNote', { a: names.A, b: names.B })} /></p>
     {:else}
       <Shop onbuy={(item) => (ask = item)} {balance} {prices} />
     {/if}

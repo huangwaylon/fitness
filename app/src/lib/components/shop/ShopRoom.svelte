@@ -194,6 +194,7 @@
    *  the list, none. */
   function choose(code: string, toggle = true) {
     every = false;
+    starts = {};
     pick = toggle && pick === code ? null : code;
     cue('tick');
     if (!pick) return speak('hello');
@@ -208,6 +209,7 @@
     pick = null;
     if (!rest.items.length) return void cue('boop');
     every = !every;
+    starts = {};
     cue('tick');
     if (!every) speak('stock');
     else if (short) speak('allShort', { v: formatNum(short) });
@@ -234,7 +236,15 @@
   let starts = $state<Partial<Record<Crop, number>>>({});
   const startsN = $derived(CROPS.reduce((a, c) => a + (starts[c] ?? 0), 0));
   const startsV = $derived(startsN * FARM.startBuy);
+  /** The one crop picked (null: none, or more than one). */
+  const startsOne = $derived.by(() => {
+    const cs = CROPS.filter((c) => starts[c]);
+    return cs.length === 1 ? cs[0] : null;
+  });
+  // (the starts and a piece or 全部 are one bar's: picking one lets go of the other)
   function moreStart(c: Crop) {
+    pick = null;
+    every = false;
     starts = { ...starts, [c]: ((starts[c] ?? 0) + 1) % 100 };
     cue('tick');
   }
@@ -250,7 +260,8 @@
     const r = buyStarts(starts);
     if (!r.ok) return void cue('boop');
     cue('buy');
-    undoBanner(t('shop.boughtStarts', { n: String(startsN), v: formatNum(startsV) }), r);
+    const n = String(startsN), v = formatNum(startsV);
+    undoBanner(startsOne ? t('shop.boughtStart', { name: startName(startsOne), n, v }) : t('shop.boughtStarts', { n, v }), r);
     starts = {};
     speak('thanks');
   }
@@ -664,7 +675,7 @@
       <!-- (a tap on the line is a tap on them, their choice box; with it up, the line and the box go. It goes by itself
            anyway, so no key needed) -->
       <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
-      <p role="status" aria-live="polite" data-shop-say={say.k} data-sfx={asking ? 'tick' : 'self'} onclick={() => (asking ? hush() : twinsTalk())}>{line}</p>
+      <p class="kana" role="status" aria-live="polite" data-shop-say={say.k} data-sfx={asking ? 'tick' : 'self'} onclick={() => (asking ? hush() : twinsTalk())}>{line}</p>
       {#if asking}
         <div class="choices" data-shop-choices>
           <button type="button" data-shop-choice="sell" data-sfx="tick" onclick={() => answer('sell')}>{t('shop.choice.sell')}</button>
@@ -694,7 +705,7 @@
       <!-- the head (the twins' line, ×) and the tabs stay put; the list scrolls under them, the bar stays at the foot -->
       <header class="pin">
         <div class="head">
-          <p class="say docked" role="status" aria-live="polite" data-shop-say={say.k}>{line}</p>
+          <p class="say docked kana" role="status" aria-live="polite" data-shop-say={say.k}>{line}</p>
           <NavButton kind="close" data-shop-close onclick={closePanel} />
         </div>
         <Segmented items={[{ id: 'sell', label: t('shop.tab.sell') }, { id: 'buy', label: t('shop.tab.buy') }]} value={tab} label={t('shop.title')} attr="shop-tab" onpick={switchTab} />
@@ -736,7 +747,7 @@
         {/if}
       {:else}
         <div class="list" data-shop-list>
-          <!-- the starts for the fields (docs/farming.md): always in stock, a count each, bought by their own 買う -->
+          <!-- the starts for the fields (docs/farming.md): always in stock, a count each, bought by the bar's 買う -->
           <h2 class="sec-label">{t('shop.starts')}</h2>
           <ul class="grid" data-shop-starts>
             {#each CROPS as c (c)}
@@ -752,12 +763,6 @@
               </li>
             {/each}
           </ul>
-          {#if startsN}
-            <div class="starts-bar">
-              <p class="sum" data-shop-starts-offer={startsV}>{t('shop.offer', { n: String(startsN), v: formatNum(startsV) })}</p>
-              <button type="button" class="btn small" data-shop-starts-buy data-sfx="self" aria-disabled={startsV > shop.shells} onclick={buyStartsPicked}>{t('shop.buy')}</button>
-            </div>
-          {/if}
           <h2 class="sec-label">{t('shop.today')}</h2>
           {#if stock.length}
             <ul class="grid" data-shop-stock>
@@ -768,16 +773,18 @@
           {/if}
         </div>
         <div class="bar">
-          <p class="sum" data-shop-pick={every ? 'all' : (pick ?? '')} data-shop-total={every ? rest.total : null}>
-            {every ? t('shop.offer', { n: String(rest.items.length), v: formatNum(rest.total) })
-              : pick ? `${itemName(pick)} · ${formatNum(buyPrice(pick) ?? 0)}`
+          <p class="sum" data-shop-pick={every ? 'all' : (pick ?? '')} data-shop-total={every ? rest.total : null} data-shop-starts-offer={startsN ? startsV : null}>
+            {startsN ? (startsOne ? t('shop.startsOne', { name: startName(startsOne), n: String(startsN), v: formatNum(startsV) }) : t('shop.startsMany', { n: String(startsN), v: formatNum(startsV) }))
+              : every ? t('shop.offer', { n: String(rest.items.length), v: formatNum(rest.total) })
+              : pick ? t('shop.itemLabel', { name: itemName(pick), v: formatNum(buyPrice(pick) ?? 0) })
               : stock.length && !rest.items.length ? t('shop.allOwned') : t('shop.buyHint')}
           </p>
           {#if stock.length}
             <button type="button" class="btn small paper" data-shop-buy-all data-sfx="self" aria-pressed={every} aria-disabled={!rest.items.length}
               aria-label={t('shop.buyAll')} onclick={pickAll}>{t('shop.all')}</button>
           {/if}
-          <button type="button" class="btn small" data-shop-buy data-sfx="self" aria-disabled={!(pick || every) || !!why} onclick={buyPicked}>{t('shop.buy')}</button>
+          <button type="button" class="btn small" data-shop-buy data-sfx="self" aria-disabled={startsN ? startsV > shop.shells : !(pick || every) || !!why}
+            onclick={() => (startsN ? buyStartsPicked() : buyPicked())}>{t('shop.buy')}</button>
         </div>
       {/if}
     </section>
@@ -834,7 +841,7 @@
      spaced kana; at least a finger's size to tap */
   .sign {
     position: absolute; z-index: 2; translate: -50% calc(-100% - 12px); appearance: none; border: 0; margin: 0; cursor: pointer;
-    min-height: 36px; padding: 6px 10px; border-radius: 8px; white-space: nowrap; background: #A0703F; color: var(--c-cream);
+    min-height: 36px; padding: 6px 10px; border-radius: 8px; white-space: nowrap; background: #8A5A2E; color: var(--c-cream);
     box-shadow: inset 0 0 0 2px #7A512A, 0 3px 0 #6A4524, var(--sh-float); font: 700 var(--fs-s)/1.2 var(--font-ui);
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
@@ -953,9 +960,6 @@
   .bar .btn { margin: 0; flex: none; }
   .bar .btn.paper[aria-pressed='true'] { --fill: var(--c-yuzu); }
   .sum { flex: 1 1 auto; min-width: 0; margin: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); }
-  /* the starts' own 買う, under their row */
-  .starts-bar { display: flex; align-items: center; gap: 8px; }
-  .starts-bar .btn { margin: 0; flex: none; }
   /* a start's seedling (NH's one for all six) wears its crop */
   .ic { position: relative; }
   .tag { position: absolute; right: -6px; bottom: -4px; line-height: 0; }

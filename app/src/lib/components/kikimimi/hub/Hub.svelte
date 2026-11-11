@@ -39,6 +39,7 @@
   import { taikaiAt } from '#lib/kikimimi/games/taikai/window.ts';
   import { trophiesOf } from '#lib/kikimimi/games/taikai/def.ts';
   import { MEDAL } from '../look.ts';
+  import Phrases from '../../ui/Phrases.svelte';
   import { t } from '#lib/i18n/index.ts';
 
   interface Props {
@@ -178,7 +179,7 @@
   {#if unplaced}
     <div class="check card" data-kiki-check-card>
       <span class="ear" aria-hidden="true">👂</span>
-      <span class="ctxt"><b>{t('kiki.check.title')}</b><small>{t('kiki.check.card')}</small></span>
+      <span class="ctxt"><b>{t('kiki.check.title')}</b><small><Phrases text={t('kiki.check.card')} /></small></span>
       <button type="button" class="btn small paper" data-kiki-check-start data-sfx="confirm" onclick={oncheck}>{t('kiki.startSolo')}</button>
     </div>
   {/if}

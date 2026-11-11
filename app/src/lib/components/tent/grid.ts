@@ -241,12 +241,19 @@ export function placeWhy(others: readonly Spot[], s: Spot, b: Bounds = FULL): Wh
   return null;
 }
 
-/** The free spot nearest (px, pz) for a new piece (null: the room has none), turned `f`. */
-export function nearestFree(others: readonly Spot[], item: string, f: Facing, px: number, pz: number, b: Bounds = FULL): [number, number] | null {
+/** Whether a piece there would stand on one of the villagers at `who` (model points; a rug or a ceiling piece never). */
+export function onVillager(s: Spot, who: readonly (readonly [number, number])[]): boolean {
+  if (isRug(s.item) || isCeiling(s.item)) return false;
+  const [w, d] = footprint(s.item, s.f), x0 = -HALF + s.x * TILE, z0 = -HALF + s.z * TILE;
+  return who.some(([x, z]) => x > x0 - 2 && x < x0 + w * TILE + 2 && z > z0 - 2 && z < z0 + d * TILE + 2);
+}
+
+/** The free spot nearest (px, pz) for a new piece (null: the room has none), turned `f`, off the villagers at `who`. */
+export function nearestFree(others: readonly Spot[], item: string, f: Facing, px: number, pz: number, b: Bounds = FULL, who: readonly (readonly [number, number])[] = []): [number, number] | null {
   const [w, d] = footprint(item, f);
   let best: [number, number] | null = null, bd = Infinity;
   for (let x = b.x0; x + w <= b.x1; x++) for (let z = b.z0; z + d <= b.z1; z++) {
-    if (placeWhy(others, { item, x, z, f }, b)) continue;
+    if (placeWhy(others, { item, x, z, f }, b) || onVillager({ item, x, z, f }, who)) continue;
     const [cx, cz] = centreOf({ item, x, z, f });
     const dd = (cx - px) ** 2 + (cz - pz) ** 2;
     if (dd < bd) (bd = dd), (best = [x, z]);

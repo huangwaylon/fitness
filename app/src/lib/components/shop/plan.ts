@@ -29,8 +29,9 @@ export const atCounter = (p: Pt): boolean => p[0] > INNER_X + 4 && p[1] > CORNER
 /** Where a tap talks to the twins (model units: x0, x1, y0, y1, z0, z1): the counter's top and their bodies over it
  *  (the counter corner past the counter is never walked on), never the floor in front of it, which walks. */
 export const TWINS_BOX = [45, 66, 7, 19, 12, 42] as const;
-/** The sign by the door (its foot on the floor, model units): 「かう・うるは カウンターで」, a tap their choice box. */
-export const SIGN: readonly [number, number, number] = [4, 0, 41];
+/** The sign right of the door (its foot on the floor, model units), its board clear of my villager where it comes in
+ *  (DOOR_IN, then 8 right and 12 in): 「かう・うるは カウンターで」, a tap their choice box. */
+export const SIGN: readonly [number, number, number] = [14, 0, 41];
 
 /** A box's eight corners (x0, x1, y0, y1, z0, z1). */
 export const corners = (b: readonly number[]): [number, number, number][] =>

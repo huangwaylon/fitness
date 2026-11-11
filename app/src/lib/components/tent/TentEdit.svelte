@@ -37,8 +37,9 @@
   import { SAVE_SLOTS } from '#lib/contract/roomSave.ts';
   import { DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, GYM, ITEMS, RUGS, STARTER, WALLS, footprint } from './items.ts';
   import { roomIcon } from './roomIcon.ts';
-  import { HALF, ROOM, TILE, boundsOf, outside, wallSpan, centreOf, fitsOn, isSmall, isSurface, isWallItem, kidSpot, tilesOf, wallSnap, wallSteps, wallWhy, nearestFree, placeWhy, resolve, slotTaken, snapTo, surfaceAt, tileToSlot, type Facing, type Spot, type Why } from './grid.ts';
+  import { HALF, ROOM, TILE, boundsOf, outside, wallSpan, centreOf, fitsOn, isSmall, isSurface, isWallItem, kidSpot, tilesOf, wallSnap, wallSteps, wallWhy, nearestFree, onVillager, placeWhy, resolve, slotTaken, snapTo, surfaceAt, tileToSlot, type Facing, type Spot, type Why } from './grid.ts';
   import type { Tent } from './engine.ts';
+  import Phrases from '../ui/Phrases.svelte';
   import type { DragLink } from './dragLink.ts';
 
   interface Props {
@@ -140,10 +141,7 @@
     }
     const s: Spot = { id: sel.fresh ? undefined : sel.id, item: sel.item, x: at[0], z: at[1], f: sel.f };
     why = placeWhy(placed(), s, bounds);
-    if (!why && !ITEMS[sel.item]?.rug && !ITEMS[sel.item]?.cl) {
-      const [w, d] = footprint(sel.item, sel.f), x0 = -HALF + at[0] * TILE, z0 = -HALF + at[1] * TILE;
-      if (villagers().some(([x, z]) => x > x0 - 2 && x < x0 + w * TILE + 2 && z > z0 - 2 && z < z0 + d * TILE + 2)) why = 'villager';
-    }
+    if (!why && onVillager(s, villagers())) why = 'villager';
   }
   /** The ghost, what's hidden, and the partner's view of what I hold. */
   function show(): void {
@@ -191,7 +189,8 @@
     }
     const me = villagers()[0] ?? [0, 0];
     let f: Facing = 0;
-    let spot = nearestFree(placed(), code, f, me[0], me[1] - 12, bounds) ?? snapTo(code, f, 0, 0, bounds);
+    // (off every villager when the room has a spot for it: else as near me as it fits)
+    let spot = nearestFree(placed(), code, f, me[0], me[1] - 12, bounds, villagers()) ?? nearestFree(placed(), code, f, me[0], me[1] - 12, bounds) ?? snapTo(code, f, 0, 0, bounds);
     if (isWallItem(code)) {
       // a wall thing: the first free spot on the back wall, from its middle out, at eye height first
       const w = ITEMS[code].w, steps = wallSteps(code), midOf = (wall: number) => Math.floor((wallSpan(wall, bounds)[0] + wallSpan(wall, bounds)[1] - w) / 2);
@@ -700,7 +699,7 @@
     </div>
   {:else}
     <div class="bar">
-      <span class="say hint" class:bad={!!note} data-tent-hint data-note={note?.k ?? ''}>{note ? note.text : peek ? nameOf(peek) : t(tab === 'size' ? 'tent.sizeHint' : room.pieces.length ? 'tent.hintMove' : house ? 'tent.hintHouse' : 'tent.hint')}</span>
+      <span class="say hint" class:bad={!!note} data-tent-hint data-note={note?.k ?? ''}><Phrases text={note ? note.text : peek ? nameOf(peek) : t(tab === 'size' ? 'tent.sizeHint' : room.pieces.length ? 'tent.hintMove' : house ? 'tent.hintHouse' : 'tent.hint')} /></span>
       <button type="button" class="act" data-tent-undo data-sfx="self" aria-label={t('common.undo')} aria-disabled={!undoN} onclick={() => (undoN ? takeBack() : cue('boop'))}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" /></svg>
       </button>
@@ -782,8 +781,11 @@
           <div class="who"><span class="nm">{sv ? sv.name : t('tent.saveEmpty')}</span>{#if sv}<span class="dt">{savedAt(sv.at)} · {t('tent.savePieces', { n: sv.pieces.length })}</span>{/if}</div>
           <div class="acts">
             <button type="button" class="btn paper sm" data-slot-act="save" data-sfx="tick" onclick={() => ask('save', n)}>{t('common.save')}</button>
-            <button type="button" class="btn sm" data-slot-act="load" data-sfx="tick" aria-disabled={!sv} onclick={() => ask('load', n)}>{t('tent.load')}</button>
-            <button type="button" class="btn paper sm danger" data-slot-act="del" data-sfx="tick" aria-disabled={!sv} onclick={() => ask('del', n)}>{t('tent.saveDelete')}</button>
+            <!-- (an empty slot: 保存 only) -->
+            {#if sv}
+              <button type="button" class="btn sm" data-slot-act="load" data-sfx="tick" onclick={() => ask('load', n)}>{t('tent.load')}</button>
+              <button type="button" class="btn paper sm danger" data-slot-act="del" data-sfx="tick" onclick={() => ask('del', n)}>{t('tent.saveDelete')}</button>
+            {/if}
           </div>
         </div>
       {/each}
@@ -832,7 +834,6 @@
   .slot .dt { font-size: var(--fs-xs); color: var(--text-soft); }
   .slot .acts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
   .btn.sm { min-height: 40px; padding: 0 8px; font-size: var(--fs-s); }
-  .btn[aria-disabled='true'] { opacity: .45; }
   .ask { display: grid; gap: 10px; padding: 0 0 8px; text-align: center; }
   .ask .miss { font-size: var(--fs-s); color: var(--text-soft); }
   .field { display: grid; gap: 4px; text-align: left; }
@@ -856,8 +857,6 @@
   .tabs:global(.more) { mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
   /* 全部片付ける asked: キャンセル beside the coral one (BuyConfirm's footer) */
   .clear-note { margin: 0 4px 8px; text-align: center; text-wrap: pretty; word-break: auto-phrase; }
-  .two-cta { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
-  .two-cta .btn { margin: 0; }
   .hint.bad { color: var(--c-ink); }
   .hint.bad::before { content: '! '; color: var(--c-coral); }
   /* 広さ: three cards, each NH's room as a plan */

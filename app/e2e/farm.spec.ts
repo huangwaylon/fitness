@@ -38,9 +38,12 @@ test('starts bought at the shop’s かう; the farm menu at the bottom left: �
   await page.locator('[data-shop-choice="buy"]').click();
   await expect(page.locator('[data-shop-start="tomato"] .nm')).toHaveText('トマトの苗');
   for (let i = 0; i < 3; i++) await page.locator('[data-shop-start="tomato"]').click();
+  // one bar: the pinned one names the crop and buys them
   await expect(page.locator('[data-shop-starts-offer]')).toHaveAttribute('data-shop-starts-offer', '42');
-  await page.locator('[data-shop-starts-buy]').click();
+  await expect(page.locator('[data-shop-starts-offer]')).toHaveText('トマトの苗 ×3 · 42かいがら');
+  await page.locator('[data-shop-buy]').click();
   await expect(page.locator('[data-shop]')).toHaveAttribute('data-shells', '158');
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトの苗を3個、42かいがらで買いました');
   await page.goto(`?demo&date=${D}T12:00`);
   await islandUp(page);
   await quiet(page);

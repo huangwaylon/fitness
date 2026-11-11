@@ -36,7 +36,7 @@ test('the hub, あそぶ, a mode’s page, きろく and せってい: ‹ pops 
   await expect(title(page)).toHaveText('ききみみ');
   // the four tiles, each with its live line; ⚙ in ‹'s place
   await expect(sheet(page).locator('[data-kiki-tile]')).toHaveCount(4);
-  await expect(sheet(page).locator('[data-kiki-tile="together"] small')).toHaveText('ひとりでもOK');
+  await expect(sheet(page).locator('[data-kiki-tile="together"] small')).toHaveText('1人でもOK');
   await expect(page.locator('dialog[open] [data-kiki-gear]')).toBeVisible();
   // today's menu: おさらい (the demo's misses due), きょうの いっぽ (the path's current unit), きまぐれ; one green button
   await expect(sheet(page).locator('[data-kiki-card]')).toHaveCount(3);

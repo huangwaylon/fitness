@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DOOR_TILES, FULL, HALF, ROOM, TILE, boundsOf, isCeiling, onFloor, outside, rectOf, wallMid, wallSpan, isWallItem, wallSnap, wallSpot, wallSteps, wallWhy, blocked, centreOf, clampIn, fitsOn, isSmall, isSurface, kidSpot, nearestFree, onTop, slotsOf, topY, placeWhy, resolve, slotTaken, slotToTile, snapTo, surfaceAt, tileToSlot, tilesOf, walkPath, type Spot } from './grid.ts';
+import { DOOR_TILES, FULL, HALF, ROOM, TILE, boundsOf, isCeiling, onFloor, outside, rectOf, wallMid, wallSpan, isWallItem, wallSnap, wallSpot, wallSteps, wallWhy, blocked, centreOf, clampIn, fitsOn, isSmall, isSurface, kidSpot, nearestFree, onTop, onVillager, slotsOf, topY, placeWhy, resolve, slotTaken, slotToTile, snapTo, surfaceAt, tileToSlot, tilesOf, walkPath, type Spot } from './grid.ts';
 import { ITEMS, STARTER, footprint } from './items.ts';
 
 const furniture = STARTER.filter((c) => !ITEMS[c].rug);
@@ -54,6 +54,15 @@ describe('placing', () => {
     const full: Spot[] = [];
     for (let x = 0; x < ROOM; x++) for (let z = 0; z < ROOM; z++) if (!DOOR_TILES.some(([a, b]) => a === x && b === z)) full.push({ id: `p${x}${z}`, item: one, x, z, f: 0 });
     expect(nearestFree(full, one, 0, 0, 0)).toBeNull();
+  });
+
+  it('a new piece never lands on a villager when the room has room', () => {
+    const me = [-HALF + 2.5 * TILE, -HALF + 0.5 * TILE] as const;
+    expect(onVillager({ item: one, x: 2, z: 0, f: 0 }, [me])).toBe(true);
+    const spot = nearestFree(room, one, 0, -22, -35, FULL, [me])!;
+    expect(spot).not.toEqual([2, 0]);
+    expect(onVillager({ item: one, x: spot[0], z: spot[1], f: 0 }, [me])).toBe(false);
+    expect(onVillager({ item: rugs[1], x: 2, z: 0, f: 0 }, [me])).toBe(false);
   });
 });
 

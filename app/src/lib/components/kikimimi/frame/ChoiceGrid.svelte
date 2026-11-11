@@ -56,7 +56,7 @@
     <button type="button" class="ch tile-btn" class:obj-cream={m === 'right' || m === 'wrong'} data-choice={k} data-mark={m ?? undefined} aria-pressed={picked === k}
       aria-disabled={!open} aria-label={label?.(c)} data-sfx={open ? 'choice-pick' : 'none'}
       onclick={() => open && onpick(k)}>
-      {#if pics}<OfficialArt key={c} size="min(22vw, 92px)" eager />{:else}<span class="tx" lang={english ? 'en' : undefined}>{c}</span>{#if reveal && ja?.[k]}<span class="cja" lang="ja" data-kiki-cja={k}>{ja[k]}</span>{/if}{/if}
+      {#if pics}<OfficialArt key={c} size="min(22vw, 92px)" eager />{:else}<span class="tx" lang={english ? 'en' : undefined}>{c}</span>{#if reveal && ja?.[k] && ja[k] !== c}<span class="cja" lang="ja" data-kiki-cja={k}>{ja[k]}</span>{/if}{/if}
       {#if m === 'right'}<span class="sym ok" aria-hidden="true">○</span>{:else if m === 'wrong'}<span class="sym ng" aria-hidden="true">×</span>{/if}
     </button>
     {/if}

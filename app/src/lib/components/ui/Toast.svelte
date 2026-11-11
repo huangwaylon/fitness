@@ -11,7 +11,7 @@
   import { lookOf } from '#lib/store/look.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { t } from '#lib/i18n/index.ts';
-  import { phrases } from '#lib/i18n/phrases.ts';
+  import Phrases from './Phrases.svelte';
 
   interface Props {
     text: string;
@@ -32,7 +32,6 @@
   }
   let { text, person, reaction, action, low = false, onhold, ondismiss, leaving = false }: Props = $props();
 
-  const parts = $derived(phrases(text));
   let gone = $state(false);
   let startY = 0;
 
@@ -97,7 +96,7 @@
       {:else if person}<Villager {person} size={36} head animate={false} eager />
       {:else}<Host head size={36} animate={false} eager />{/if}
     </span>
-    <span class="txt">{#each parts as ph, i (i)}{#if i}<wbr />{/if}{#each ph as p, k (k)}{#if k % 2}<span class="num">{p}</span>{:else}{p}{/if}{/each}{/each}</span>
+    <span class="txt"><Phrases {text} /></span>
     {#if action}<button type="button" class="act" data-sfx="undo" onclick={() => { action.run(); dismiss(); }}>{action.label}</button>
     {:else if reaction}<span class="re" aria-hidden="true"><OfficialArt key="reactions/{reaction}" size={28} eager /></span>{/if}
   </div>
@@ -127,8 +126,7 @@
   }
   /* The whole message, wrapped by phrase (a long one grows the banner): at its spaces and <wbr>s only (i18n/phrases.ts),
      a number never cut */
-  .txt { flex: 1; min-width: 0; word-break: keep-all; }
-  .num { white-space: nowrap; }
+  .txt { flex: 1; min-width: 0; }
   /* An undo banner: low, in the thumb zone, so it never covers the ベル row's total; its text (what was done:
      「アイス 1,000 ベル つかいました！」) may take two lines or more next to the button. */
   .banner.undo, .banner.undo:popover-open { top: auto; bottom: calc(var(--pad-bottom) + 16px); min-height: 56px; animation-name: up-in; }

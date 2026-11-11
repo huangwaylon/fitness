@@ -102,7 +102,7 @@
   }
 </script>
 
-<div class="picker" class:placed={!!pos} role="dialog" aria-label={t('say.title')} data-say-picker bind:this={el}
+<div class="picker obj-cream" class:placed={!!pos} role="dialog" aria-label={t('say.title')} data-say-picker bind:this={el}
   style:left={pos ? `${pos.x}px` : null} style:top={pos ? `${pos.y}px` : null}>
   <div class="head">
     <!-- ‹ only with phrases to go back to (none kept: ✕ closes) -->
