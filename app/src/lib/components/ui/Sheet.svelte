@@ -10,8 +10,8 @@
   // top-right; nothing advertises swipe-down), one CTA in `footer`. Backdrop tap and Esc also close.
   // `footer`: a sticky action row at the bottom, lifted above the on-screen keyboard (--kb from visualViewport).
   // Focused inputs scroll to the centre. While open, the page behind is locked (scrollLock).
-  // variant="top": the island panel (the leaf menu's ベル row opens it), the screen's height (rounded at the bottom, the
-  // safe area on top). It does not scroll itself: it is a flex column, and the panel puts its own title bar (with ‹) and its one
+  // variant="top": the island panel (the leaf menu's ベル row opens it), the screen's height (square corners: Safari's bottom bar sits under its
+  // bottom edge, so a rounded corner showed the island there; the safe area on top). It does not scroll itself: it is a flex column, and the panel puts its own title bar (with ‹) and its one
   // scrolling body (`.panel-body`) inside. variant="pop": the same full-height column (けんこう, the island's other
   // sheets). The full-height sheets open from the island at once (the user, 2026-11-08: no zoom, slide or fade, and
   // none closing): no motion of their own, and the opening finishes any their content's levels would start then
@@ -254,12 +254,13 @@
   /* The top panel: paper (--surface) so its cream cards have a body; a non-scrolling flex column whose `.panel-body`
      is the one scroller. It fills the screen from the top edge (the safe area over its title bar) to the bottom edge
      (the home indicator's safe area inside its scroller's padding), so switching tabs never changes its height and no
-     sliver of island shows under it; rounded at the bottom like the screen's corners. --body-pad is the scroller's
+     sliver of island shows under it; its corners square (rounded ones showed the island in them, over Safari's bottom
+     bar). --body-pad is the scroller's
      bottom padding. */
   dialog.top, dialog.pop {
     --body-pad: calc(var(--safe-bottom) + 18px + var(--kb, 0px));
     margin: 0 auto; height: var(--vh-fill); max-height: none;
-    border-radius: 0 0 var(--r-sheet) var(--r-sheet); box-shadow: var(--sh-float);
+    border-radius: 0; box-shadow: var(--sh-float);
     overflow: hidden; display: none; flex-direction: column;
   }
   /* at once, no motion (the paper sheet's slide up is theirs to skip) */
@@ -278,7 +279,7 @@
   dialog.top.toasting, dialog.pop.toasting { --body-pad: calc(var(--safe-bottom) + 96px + var(--kb, 0px)); }
   /* the info sheets: the app's paper, the column edge to edge (the sheet's header and scroller pad themselves), dense
      body text in the system font (titles, labels, numbers set their own --font-ui / --font-num) */
-  dialog.full { border-radius: 0; font: 400 var(--fs-body)/1.45 var(--font-body); font-variant-numeric: tabular-nums; }
+  dialog.full { font: 400 var(--fs-body)/1.45 var(--font-body); font-variant-numeric: tabular-nums; }
   dialog.full > .inner { padding: 0; }
   @keyframes up { from { transform: translateY(100%); } to { transform: none; } }
   /* the question before throwing input away: its line, then 破棄する · 編集を続ける */
