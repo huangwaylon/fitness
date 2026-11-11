@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { FADE_MS, STACK_MAX, clearCards, dropCard, pushCard, pushed, stack, stackShown, type CatchCard } from './catchStack.svelte.ts';
+import { FADE_MS, STACK_MAX, clearCards, dropCard, pushCard, pushed, showing, stack, stackShown, type CatchCard } from './catchStack.svelte.ts';
 
 const card = (n: number, o: Partial<CatchCard> = {}): CatchCard => ({ n, x: 0, y: 0, art: 'critters/sea-bass', parts: ['x'], ...o });
 const shown = () => stack.cards.filter((c) => !c.leaving).map((c) => c.parts[0]);
@@ -67,5 +67,24 @@ describe('the catch stack', () => {
     off = stackShown();
     pushCard({ x: 0, y: 0, art: 'a', parts: ['now'] });
     expect(shown()).toEqual(['now']);
+  });
+
+  it('a key’s plate while it shows takes the next of its key in place (its line, a hop); leaving, or another key: a new plate', () => {
+    vi.useFakeTimers();
+    const tomato = (line: string) => ({ x: 0, y: 0, art: 'finds/tomato', parts: [line], key: 'harvest:tomato' });
+    pushCard(tomato('×3'));
+    pushCard({ x: 0, y: 0, art: 'finds/carrot', parts: ['carrot ×1'], key: 'harvest:carrot' });
+    pushCard(tomato('×6'));
+    pushCard(tomato('×9'));
+    expect(stack.cards.map(({ parts, hop }) => [parts[0], hop])).toEqual([['×9', 2], ['carrot ×1', undefined]]);
+    expect(showing('harvest:tomato')).toBe(true);
+    // (a catch with no key never joins)
+    pushCard({ x: 0, y: 0, art: 'finds/tomato', parts: ['×1'] });
+    expect(shown()).toEqual(['×9', 'carrot ×1', '×1']);
+    dropCard(stack.cards[0].n);
+    expect(showing('harvest:tomato')).toBe(false);
+    pushCard(tomato('×2'));
+    expect(shown()).toEqual(['carrot ×1', '×1', '×2']);
+    expect(stack.cards.filter((c) => c.key === 'harvest:tomato').map((c) => [c.parts[0], !!c.leaving])).toEqual([['×9', true], ['×2', false]]);
   });
 });

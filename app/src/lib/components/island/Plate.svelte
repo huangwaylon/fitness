@@ -21,11 +21,14 @@
     parts: string | readonly string[];
     /** Fading out of the stack: its timers stop, and it's no longer the catch's plate (`data-fx`). */
     leaving?: boolean;
+    /** Bumped as a catch joins it (a crop's next harvest: catchStack.svelte.ts): its new text at once, no retype, its
+     *  timer anew, the icon hops (160 ms). */
+    hop?: number;
     ondone: () => void;
   }
-  let { scene, x, y, art, parts, leaving = false, ondone }: Props = $props();
+  let { scene, x, y, art, parts, hop = 0, leaving = false, ondone }: Props = $props();
   let at = $state({ dx: 0, dy: 0, placed: false });
-  // the source and text are fixed for the plate's life (the stack keys a new one per catch)
+  // the source is fixed for the plate's life (the stack keys a new one per catch), the text till a catch joins it
   let pg = $state<PagerState>(untrack(() => ({ pages: paginate(parts), page: 0, shown: 0 })));
   let el = $state<HTMLElement>();
   const typedNow = $derived(split(pg));
@@ -59,6 +62,21 @@
   }
 
   $effect(() => void (leaving && stop()));
+
+  let hopped = untrack(() => hop);
+  $effect(() => {
+    if (hop === hopped) return;
+    hopped = hop;
+    untrack(() => {
+      const pages = paginate(parts);
+      pg = { pages, page: 0, shown: [...pages[0]].length };
+      if (!at.placed || leaving) return;
+      clearInterval(typer);
+      rest();
+      if (!globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches)
+        el?.querySelector('.catch-icon')?.animate([{ transform: 'none' }, { transform: 'translateY(-7px) scale(1.1)' }, { transform: 'none' }], { duration: 160, easing: 'ease-out' });
+    });
+  });
 
   onMount(() => {
     // measured once its glyphs' font subsets are in (a page's first use of a subset fetches it), then shown

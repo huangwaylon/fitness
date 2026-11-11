@@ -60,9 +60,9 @@
   import { farmTap, waveSpots } from './farmTap.ts';
   import { farmToday } from './farm.ts';
   import { islandDay } from './ambientClock.ts';
-  import { showCatch } from './catchCard.ts';
   import { loadNames } from './catchLine.ts';
-  import { FARM, plantsOf, type Crop } from '#lib/contract/farm.ts';
+  import { FARM, plantsOf } from '#lib/contract/farm.ts';
+  import { cue } from '#lib/sound/cues.ts';
   import { layoutPlots, plotAt, plotsAround } from '#lib/layout/field.ts';
   import { tileAt, tileMid } from '#lib/layout/grid.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
@@ -478,14 +478,21 @@
     const named = (text: () => string) => void loadNames().then(() => pop(text()), () => {});
     switch (act.a) {
       case 'harvest': {
-        harvestMany(date, act.ops);
-        spawn({ kind: 'grass', x: px, y: pz, flip: roll(2) });
-        sceneSfx('catch');
-        const [ux, uy] = w.screenU(px, pz, 4), crops = new Map<Crop, number>();
-        for (const o of act.ops) crops.set(o.c, (crops.get(o.c) ?? 0) + o.n);
-        void Promise.all([import('./harvestPlate.ts'), loadNames()]).then(([{ harvestLine }]) => {
-          for (const [c, n] of crops) showCatch(ux, uy, `finds/${c}`, harvestLine(c, n));
-        }, () => {});
+        // NH's pick-up: a puff where I tapped, a sparkle over each plant picked (40 ms apart), one pop a tap (a semitone
+        // up each quick tap after), a plate a crop counting up
+        const ops = act.ops;
+        harvestMany(date, ops);
+        const [tx, tz] = tileMid(plot.c, plot.r);
+        spawn({ kind: 'grass', x: tx, y: tz, flip: roll(2) });
+        ops.forEach((o, i) => {
+          const n = around.find((a) => a.p === o.p)!, [sx, sz] = tileMid(n.c, n.r);
+          later(() => harvestSparkle(sx, sz), i * 40);
+        });
+        const now = performance.now();
+        harvestRun = { k: now - harvestRun.at <= HARVEST_RUN_MS ? Math.min(5, harvestRun.k + 1) : 0, at: now };
+        cue('scene-harvest', { step: harvestRun.k });
+        const [ux, uy] = w.screenU(px, pz, 4);
+        void Promise.all([import('./harvestPlate.ts'), loadNames()]).then(([{ showHarvest }]) => showHarvest(ux, uy, ops), () => {});
         return true;
       }
       case 'water':
@@ -523,6 +530,9 @@
       }
     }
   }
+  /** A run of harvest taps (each within HARVEST_RUN_MS of the last): its pop climbs a semitone a tap, at most 5. */
+  const HARVEST_RUN_MS = 2500;
+  let harvestRun = { k: 0, at: -Infinity };
   /** A player's villager name (the farm's words). */
   const whoName = (who: Who): string => (who === 'G' ? week.view?.guest.villagerName : week.view?.people[who].villagerName) ?? who;
 

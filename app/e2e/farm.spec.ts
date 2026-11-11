@@ -210,3 +210,36 @@ test('a first tap on a growing plant names its crop, never a raw key (the names 
   await expect.poll(() => pops(page)).toEqual([expect.stringMatching(/^カボチャ・あと \d+にち$/)]);
   expect((await pops(page)).join()).not.toMatch(/beach\.name\./);
 });
+
+test('a harvest tap takes my ripe plants of its 3 × 3 with one pop and a sparkle each; the next tap’s count joins the same plate', async ({ page }) => {
+  const D3 = '2026-11-07';
+  // a 3 × 2 field of ripe tomatoes a tile west of FIELD's, none watered: 1 each
+  const wide: Seed = ['decor', { sc: 'o', id: 'field-A', at: 1.79e12, k: 'field', x: 9, z: 17, f: 0, s: 'a-3x2' }, 'A'];
+  const at = (i: number, j = 0) => ({ ...plot(i - 1, j), p: `fd:field-A.${i}.${j}` });
+  const six = [0, 1, 2].flatMap((i) => [at(i), at(i, 1)]);
+  await seed(page, D3, [
+    wide, ...POCKET.slice(0, 2), ['buy_starts', { crop: 'tomato', n: 6, v: 84 }, 'A'],
+    ['farm', { d: D, ops: six.map((t) => ({ o: 'plant', p: t.p, c: 'tomato', src: 'start' })) }, 'A']
+  ]);
+  await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
+  await page.goto(`?demo&date=${D3}T12:00&weather=clear`);
+  await islandUp(page);
+  await quiet(page);
+  await expect(page.locator('[data-farm-ripe]')).toHaveText('6');
+  const sparkles = () => page.evaluate(() => (window as unknown as { __fx3: { log(): { kind: string; size?: number }[] } }).__fx3.log().filter((e) => e.kind === 'sparkle' && e.size === 0.6).length);
+  // the corner's 3 × 3: four plants, one tap
+  await tapWorld(page, at(0).x, at(0).z);
+  await expect(page.locator('[data-farm-ripe]')).toHaveText('2');
+  await expect.poll(sparkles).toBe(4);
+  await expect(page.locator('[data-fx="catch"] .catch-plate')).toHaveAttribute('aria-label', 'トマトを しゅうかく！ ×4・72かいがら');
+  // the far column: its two, the same plate counting on
+  await tapWorld(page, at(2).x, at(2).z);
+  await expect(page.locator('[data-farm-ripe]')).toHaveCount(0);
+  await expect(page.locator('[data-fx="catch"] .catch-plate')).toHaveAttribute('aria-label', 'トマトを しゅうかく！ ×6・108かいがら');
+  await expect(page.locator('[data-fx="catch"]')).toHaveCount(1);
+  await expect.poll(sparkles).toBe(6);
+  await expect.poll(async () => (await farmRows(page)).map((o) => `${o.o} ${o.p} ${o.n}`).sort()).toEqual(six.map((t) => `harvest ${t.p} 1`).sort());
+  const cues = await page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
+  expect(cues.filter((c) => c === 'scene-harvest')).toHaveLength(2);
+  expect(cues).not.toContain('scene-catch');
+});

@@ -21,7 +21,7 @@
 <div class="catch-stack" data-catch-stack>
   {#each stack.cards as c (c.n)}
     <div class="slot" class:leaving={c.leaving} inert={c.leaving} animate:flip={{ duration: still ? 0 : 260 }} style:--fade="{still ? 120 : FADE_MS}ms">
-      <Plate {scene} x={c.x} y={c.y} art={c.art} parts={c.parts} leaving={c.leaving} ondone={() => dropCard(c.n)} />
+      <Plate {scene} x={c.x} y={c.y} art={c.art} parts={c.parts} hop={c.hop} leaving={c.leaving} ondone={() => dropCard(c.n)} />
     </div>
   {/each}
 </div>

@@ -5,9 +5,10 @@ import { actors, setMotion } from '../motion/director.svelte.ts';
 import { pushCard, type CatchWho } from './catchStack.svelte.ts';
 
 /** The plate for a catch from (x, y) stage units (its icon pops up from there): its line, a second page when it's a
- *  first find (`added`), and whose it is (`who`: the partner's or the guest's, their catch shown here). Whoever got it
- *  gives a little bounce, the tap's squish (the user: "same as when you tap them"), unless asleep. */
-export function showCatch(x: number, y: number, art: string, text: string, added = false, who: CatchWho = 'mine') {
+ *  first find (`added`), and whose it is (`who`: the partner's or the guest's, their catch shown here); `key`: joins
+ *  the showing plate of that key (catchStack.svelte.ts). Whoever got it gives a little bounce, the tap's squish (the
+ *  user: "same as when you tap them"), unless asleep. */
+export function showCatch(x: number, y: number, art: string, text: string, added = false, who: CatchWho = 'mine', key?: string) {
   if (!actors[who].asleep) setMotion(who, 'squish');
-  pushCard({ x, y, art, parts: added ? [text, t('zukan.added')] : [text], ...(who !== 'mine' ? { who } : {}) });
+  pushCard({ x, y, art, parts: added ? [text, t('zukan.added')] : [text], ...(who !== 'mine' ? { who } : {}), ...(key ? { key } : {}) });
 }
