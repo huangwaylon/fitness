@@ -764,6 +764,11 @@
   let fittedLayout = -1;
   /** The garden's models known (world3d/garden.ts: fetched only once the island has a fence, a crop… or lit cedars). */
   let gardenIn = $state(gardenReady());
+  /** The garden's manifest asked for when the layout (or the day: a cedar's lights) has some of it: as the island is
+   *  made, so its crops and fences join the first placing and its models the first wave (asked only once the engine
+   *  was up, the phones' launches drew the island whole 27-30 garden models after `loaded`, perf.boot late). */
+  const askGarden = (lay: Layout) => void (!gardenIn && wantsGarden(lay, date) && loadGarden().then(() => (gardenIn = true)));
+  askGarden(layoutNow());
   /** The fields today (island/farm.ts): each plot's plant and wet soil, from the record's rows and today's live
    *  watering and sky. */
   const farmNow = $derived.by(() => {
@@ -779,7 +784,7 @@
     if (!e) return;
     const lay = layoutNow();
     if (!layoutN.has(lay)) layoutN.set(lay, ++layouts);
-    if (!gardenIn && wantsGarden(lay, date)) void loadGarden().then(() => (gardenIn = true));
+    askGarden(lay);
     const fsig = farmSig;
     const sig = `${season}|${foliage}|${month}|${date}|${gardenIn}|${hybrid?.id}:${hybrid?.flower}|${scenery.map((s) => s.id + s.key).join()}|${pieces.map((p) => p.id + p.key).join()}|${layoutN.get(lay)}|${fsig}`;
     if (sig === placed) return;
@@ -993,7 +998,7 @@
     eng = e;
     fittedLayout = -1;
     // (the launch timed: the page's first mount; the first return to it, perf.back)
-    const watch = watchBoot((m) => ({ progs: e.stats().programs, fieldsMs: Math.round(fieldsMs), fields, ...lateModels(e.things.arrivals(), m.loaded, m.shown) }), () => e.isPaused());
+    const watch = watchBoot((m) => ({ progs: e.stats().programs, fieldsMs: Math.round(fieldsMs), fields, ...lateModels(e.things.arrivals(), m.loaded, m.shown), data: week.dataAt }), () => e.isPaused());
     timed = watch?.clock ?? null;
     boot = watch && !watch.back ? watch.clock : null;
     timed?.mount(mountAt);

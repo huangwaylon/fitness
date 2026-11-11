@@ -29,6 +29,8 @@ class WeekStore implements Host {
   lastSync = $state<Date | null>(null);
   current = $state(false);
   demo = $state<false | DemoMode>(false);
+  /** When the first model was composed (ms since the navigation's start; 0: not yet): the launch's `data` mark. */
+  dataAt = 0;
 
   /** This phone is the guest's (docs/design.md "The guest"): paired with KEY_C, or the demo's `as=G`. */
   get guest(): boolean {
@@ -90,6 +92,7 @@ class WeekStore implements Host {
     b.decorate?.(m, v);
     this.model = m;
     this.view = v;
+    this.dataAt ||= Math.round(performance.now());
     setLocale(v.locale);
     // (read once, not at every tap's recompute)
     this.#locale ??= readJson(localKV(), DEVICE.locale);
