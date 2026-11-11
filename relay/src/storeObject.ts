@@ -155,7 +155,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    * - `restore {bookmark}`: restore the record to that bookmark (the object restarts; every phone refetches: a new epoch);
    * - `rev`: start a new epoch (every phone drops its cache and fetches everything);
    * - `decorcheck {fix?}`: the decor caps' kept counts against the rows' (store.ts decorCheck);
-   * - `shopcheck {fix?}`: each person's running shop ledger against the full fold of their rows (store.ts shopCheck);
+   * - `shopcheck {fix?}`: the running field and each person's running shop ledger against the full fold of the rows (store.ts shopCheck);
    * - `held {person?}`: the values an ingest held back (a past day's 0 over a value above it: never served);
    *   `promote {person, date, metric, value?}`: one made a row of the day's history (its latest now);
    * - `dump {limit?, after?, all?}`: the rows a page at a time (the backup, docs/ops/runbook.md#9-the-record; `all`: at once)

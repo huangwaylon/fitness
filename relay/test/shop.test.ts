@@ -243,7 +243,7 @@ describe('the shop’s running ledger (O5)', () => {
     const r = batch(Array.from({ length: 20 }, () => ({ type: 'sell', data: { species: 'fish:koi', n: 1, v: K } })));
     expect(r.results.every((x) => x.ok)).toBe(true);
     expect(db.reads() - before).toBeLessThan(20 * 10);
-    expect(store.shopCheck()).toEqual({ ok: true, A: 'same', B: 'none', G: 'none' });
+    expect(store.shopCheck()).toEqual({ ok: true, farm: 'same', A: 'same', B: 'none', G: 'none' });
   });
 
   it('stays the fold’s through tallies, give-backs, sells, buys and a load; the admin re-check says so and mends', () => {

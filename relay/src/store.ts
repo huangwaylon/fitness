@@ -1115,10 +1115,13 @@ export class StoreCore {
   /** The admin's `shopcheck {fix?}`: each person's running ledger against the full fold of their rows; `fix`: the
    *  fold's taken (the running one dropped and made again). */
   shopCheck(o: Rec = {}): Record<string, unknown> {
-    const out: Record<string, unknown> = {};
+    // the field first, folded anew: the ledgers' fold reads its goods (a wrong running field would make them differ)
+    const field = this.farmFold(), json = JSON.stringify(farmJson(field)), was = this.meta('farm');
+    const out: Record<string, unknown> = { farm: was === null ? 'none' : was === json ? 'same' : 'differs' };
+    if (o.fix === true && out.farm === 'differs') this.setMeta('farm', json);
     for (const who of ['A', 'B', 'G'] as const) {
       const raw = this.meta(`shop|${who}`);
-      const fold = shopStateJson(this.shopFold(who));
+      const fold = shopStateJson(this.shopFold(who, field));
       const same = raw === null ? null : raw === fold;
       out[who] = same === null ? 'none' : same ? 'same' : 'differs';
       if (o.fix === true && same === false) this.setMeta(`shop|${who}`, fold);
@@ -1128,7 +1131,7 @@ export class StoreCore {
 
   /** `who`'s shop folded from every row of theirs (the running ledger's start, and its admin re-check). The fold reads
    *  their day tallies (one row a day: ≤ 366 a year) and their shop rows, in the object, never the Worker. */
-  private shopFold(me: Who): ShopState {
+  private shopFold(me: Who, field: Farm = this.farmState()): ShopState {
     const parse = (raw: string): Rec | null => this.rowRec(raw, 'shop');
     // (their days' tallies less what was given back, a claim race lost, and the field's net: contract/shop.ts caughtOf,
     // the phones' fold too)
@@ -1137,7 +1140,7 @@ export class StoreCore {
       const t = parse(r.data);
       if (t && isTally(t)) days.push({ back: r.type === 'tally_back', counts: t.counts });
     }
-    const { caught, back } = caughtOf(days, this.farmState().net[me]);
+    const { caught, back } = caughtOf(days, field.net[me]);
     const rows: ShopRow[] = [];
     const types = SHOP_EVENTS.map((t) => `'${t}'`).join(', ');
     for (const r of this.io.sql.exec<{ type: string; data: string }>(`SELECT type, data FROM events WHERE type IN (${types}) AND person = ? ORDER BY at, seq`, me).toArray()) {
@@ -1160,13 +1163,19 @@ export class StoreCore {
         if (f) return f;
       } catch { /* folded again */ }
     }
+    const f = this.farmFold();
+    this.setMeta('farm', JSON.stringify(farmJson(f)));
+    return f;
+  }
+
+  /** The field folded from its rows, each as kept (farmState's start, and shopcheck's). */
+  private farmFold(): Farm {
     const f = emptyFarm();
     for (const r of this.io.sql.exec<{ person: string; data: string }>("SELECT person, data FROM events WHERE type = 'farm' ORDER BY at, seq").toArray()) {
       const x = this.rowRec(r.data, 'farm');
       const d = x ? farmOf(x) : null;
       if (d && isWho(r.person)) farmStep(f, r.person, d);
     }
-    this.setMeta('farm', JSON.stringify(farmJson(f)));
     return f;
   }
 

@@ -137,7 +137,7 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
   run `rev` only when the reply's `note` says the room wasn't told. `dump > island-record-YYYY-MM-DD.json` (every
   row, held values too; keep it off the repo); `load <file>` into an empty record.
 - **`rev`**: a new epoch (§4).
-- **`shopcheck {fix?}`, `decorcheck {fix?}`** (admin ops, `scripts/admin.ts`): the running shop ledgers and decor
+- **`shopcheck {fix?}`, `decorcheck {fix?}`** (admin ops, `scripts/admin.ts`): the running field, shop ledgers and decor
   caps' counts against a full fold of the rows; `fix` takes the fold's. For a sale or placement wrongly refused.
 - **`held [A|B]`**: values an ingest held back (a past day's 0 over a higher value), never served, with first/last
   sent and how often. **`promote <person> <date> <metric> [value]`**: makes one the day's latest row (the held row

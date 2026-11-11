@@ -195,6 +195,20 @@ describe('the fields in the record', () => {
     now += 3 * DAY;
     farm('A', D3, [{ o: 'harvest', p: P1, n: 1 }, { o: 'dig', p: P2 }]);
     sell('A', 'goods:tomato', 1);
-    expect(store.shopCheck()).toEqual({ ok: true, A: 'same', B: 'none', G: 'none' });
+    expect(store.shopCheck()).toEqual({ ok: true, farm: 'same', A: 'same', B: 'none', G: 'none' });
+  });
+
+  it('shopcheck folds the field anew too: a running field gone wrong is found and mended, the ledgers judged by the fold', () => {
+    shells('A', 2 * FARM.startBuy);
+    starts('A', 'tomato', 2);
+    farm('A', D, [plant(P1), plant(P2)]);
+    // (the field's meta gone wrong: P2's plant lost, its start not taken from the pocket)
+    const sql = (store as unknown as { io: { sql: { exec: (q: string, ...a: unknown[]) => unknown } } }).io.sql;
+    sql.exec("UPDATE meta SET v = ? WHERE k = 'farm'", JSON.stringify({ p: [[P1, { who: 'A', c: 'tomato', from: D3 }]], n: { A: [['goods:tomato-start', -1]] } }));
+    // A's running ledger is right: judged by the field's fold, not the wrong field (its fix would write a wrong one)
+    expect(store.shopCheck()).toEqual({ ok: true, farm: 'differs', A: 'same', B: 'none', G: 'none' });
+    expect(store.shopCheck({ fix: true })).toMatchObject({ farm: 'differs' });
+    expect(store.shopCheck()).toMatchObject({ farm: 'same', A: 'same' });
+    expect(farm('A', D, [plant(P2)])).toEqual(refused('farm refused')); // taken
   });
 });
