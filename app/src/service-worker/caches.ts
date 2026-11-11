@@ -106,16 +106,8 @@ export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, k
     const p = pathOf(u), n = newest.get(p);
     if (!isSlice(u) && (!n || index[u][1] >= index[n][1])) newest.set(p, u);
   }
-  const out = new Set(urls.filter((u) => newest.get(pathOf(u)) !== u || (pathOf(u).endsWith('.pak') && now - index[u][1] > PAK_UNUSED_MS)));
-  let total = 0;
-  for (const u of urls) if (!out.has(u)) total += index[u][0];
-  const old = urls.filter((u) => !out.has(u) && now - index[u][1] > keepMs).sort((a, b) => index[a][1] - index[b][1]);
-  for (const u of old) {
-    if (total <= cap) break;
-    out.add(u);
-    total -= index[u][0];
-  }
-  return [...out];
+  const gone = urls.filter((u) => newest.get(pathOf(u)) !== u || (pathOf(u).endsWith('.pak') && now - index[u][1] > PAK_UNUSED_MS));
+  return [...gone, ...bytesEvict(without(index, gone), now, cap, keepMs)];
 }
 /** ききみみ's audio packs (static/audio/listen/<pack>.<hash>.pak: lib/kikimimi/packing.ts, docs/kikimimi-engine.md "Audio"),
  *  fetched whole as a game needs them and cached on first use in a cache of their own that outlives builds: cache first,
@@ -143,16 +135,8 @@ export function listenEvict(index: RoomIndex, now: number, cap = LISTEN_CAP_BYTE
     const n = nameOf(u), m = newest.get(n);
     if (!isSlice(u) && (!m || index[u][1] >= index[m][1])) newest.set(n, u);
   }
-  const idle = (u: string) => now - index[u][1] > keepMs;
-  const out = new Set(urls.filter((u) => isSlice(u) || (newest.get(nameOf(u)) !== u && idle(u))));
-  let total = 0;
-  for (const u of urls) if (!out.has(u)) total += index[u][0];
-  for (const u of urls.filter((u) => !out.has(u) && idle(u)).sort((a, b) => index[a][1] - index[b][1])) {
-    if (total <= cap) break;
-    out.add(u);
-    total -= index[u][0];
-  }
-  return [...out];
+  const gone = urls.filter((u) => isSlice(u) || (newest.get(nameOf(u)) !== u && now - index[u][1] > keepMs));
+  return [...gone, ...bytesEvict(without(index, gone), now, cap, keepMs)];
 }
 
 /** The meal log's food data (static/food/, lib/food/load.ts): ~5 MB, fetched when the food sheet first opens and kept in
@@ -541,8 +525,25 @@ export async function saveFetch(req: Request, seen: Pick<Cache, 'match'>, key: s
  *  whatever its size in WebKit, and can't be checked). */
 export const keepable = (res: Response): boolean => res.ok && res.status === 200 && res.type !== 'opaque';
 
-/** A bounded cache's entries (any order: [bytes, last use]) to delete so the rest is within `cap`: the least recently
- *  used first, never one used within `keepMs`. */
+/** `index` less the URLs `gone`. */
+const without = (index: RoomIndex, gone: readonly string[]): RoomIndex => {
+  const rest = { ...index };
+  for (const u of gone) delete rest[u];
+  return rest;
+};
+
+/**
+ * A bounded cache's entries (any order: [bytes, last use]) to delete so the rest is within `cap`: the least recently
+ * used first, never one used within `keepMs`. Every bounded cache's evictor ends in it, after its own stale rule:
+ *
+ * | cache | cap | kept (used within) | stale at once |
+ * |---|---|---|---|
+ * | room (models, packs) | ROOM_CAP_BYTES 40 MB | ROOM_KEEP_MS 3 d: the island, tent and museum now | a path's older `?v=`, a pack's slices, a pack unused PAK_UNUSED_MS 7 d |
+ * | listen (ききみみ packs) | LISTEN_CAP_BYTES 30 MB | LISTEN_KEEP_MS 10 min: a game in progress | a pack's slices; its older hash once unused 10 min |
+ * | art (on use) | ART_CAP_BYTES 30 MB | ART_KEEP_MS 24 h: what the island shows now | - |
+ * | food-img (sheets) | FOOD_IMG_CAP_BYTES 40 MB | 0 | the sheets a new index no longer names (foodImgStale) |
+ * | photos, tiles | PHOTO_CAP_BYTES 20 MB, TILE_CAP_BYTES 60 MB | 0 | refetched past PHOTO_FRESH_MS 24 h / TILE_FRESH_MS 14 d |
+ */
 export function bytesEvict(index: RoomIndex, now: number, cap: number, keepMs = 0): string[] {
   let total = 0;
   for (const u in index) total += index[u][0];

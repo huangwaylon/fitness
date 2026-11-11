@@ -109,7 +109,8 @@ export const irisFile = (id: string, t: PartTable = PARTS): PartFile | null => {
 export const texFile = (spec: TexSpec, t: PartTable = PARTS): PartFile | null => (spec.file ? file(`tex/${spec.file}`, spec, t) : null);
 
 const stores = new Map<string, PackStore>();
-/** `dir`'s packs (the site's room/player/: $app/paths asset), held in memory: the everyday pack and a few more. */
+/** `dir`'s packs (the site's room/player/: $app/paths asset), held in memory: the everyday pack and a few more, till
+ *  the page hides (no idle let-go, as the rooms' packs have: a look or the closet asks again any moment, 4 MB at most). */
 const storeOf = (dir: string): PackStore => {
   let s = stores.get(dir);
   if (!s) stores.set(dir, (s = new PackStore({ url: (stem) => `${slash(dir)}${stem}.pak`, cap: 4_000_000, tag: 'player', dropOnHide: true })));
