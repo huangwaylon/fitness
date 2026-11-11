@@ -11,18 +11,16 @@
     height?: number;
     /** The photo's description; '' for a decorative one (the words over it say what it is). */
     alt?: string;
-    /** object-position (the subject of a photo that crops). */
-    focus?: string;
     /** At the sheet's top edge (a hero): the band grows by the safe area, `nav` under it, the photo loads at once. */
     edge?: boolean;
     nav?: Snippet;
     children?: Snippet;
   }
-  let { src, height = 150, alt = '', focus = 'center', edge = false, nav, children }: Props = $props();
+  let { src, height = 150, alt = '', edge = false, nav, children }: Props = $props();
 </script>
 
 <div class="band" class:edge style:--h="{height}px">
-  <img {src} {alt} loading={edge ? 'eager' : 'lazy'} decoding="async" style:object-position={focus} {@attach photoFallback} />
+  <img {src} {alt} loading={edge ? 'eager' : 'lazy'} decoding="async" {@attach photoFallback} />
   {#if nav}<div class="nav">{@render nav()}</div>{/if}
   {#if children}<div class="foot">{@render children()}</div>{/if}
 </div>

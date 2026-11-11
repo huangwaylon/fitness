@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   CUSTOM, customDensityOk, customGrams, customPortions, customSnap, foodCustomFold, foodCustomOp, newCustomId,
-  foodAccept, foodFold, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, isFoodGoal, newFoodId, newRecipeId, newRepeatId,
+  foodAccept, foodFold, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, newFoodId, newRecipeId, newRepeatId,
   recipePortion, recipeSnap, recipeTotals, repeatAccept, repeatCovers, repeatNext, weekdayBit, WEEKDAYS, type CustomOp, type FoodOp, type RecipeOp, type RepeatOp
 } from './food.ts';
 import { cleanLine } from './text.ts';
+import { isGoalValue } from './goals.ts';
 
 const T = Date.parse('2026-11-03T03:00:00.000Z');
 const RICE = { id: 'mext:01088', n: 'ごはん', k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0 };
@@ -63,12 +64,12 @@ describe('new ids and goals', () => {
     expect(foodRecipeOp({ id: newRecipeId(T), at: T, rm: true })).not.toBeNull();
   });
   it('a kcal goal is a whole 50 in 1,000–5,000', () => {
-    expect([1000, 1850, 5000].every((v) => isFoodGoal('k', v))).toBe(true);
-    expect([950, 1825, 5050, 2000.5, '2000', null].some((v) => isFoodGoal('k', v))).toBe(false);
+    expect([1000, 1850, 5000].every((v) => isGoalValue('k', v))).toBe(true);
+    expect([950, 1825, 5050, 2000.5, '2000', null].some((v) => isGoalValue('k', v))).toBe(false);
   });
   it('a nutrient goal: protein, fat and carbs whole 5s of g, salt halves of g, each in its range', () => {
-    expect([isFoodGoal('p', 120), isFoodGoal('fa', 60), isFoodGoal('c', 250), isFoodGoal('s', 7.5), isFoodGoal('s', 1)]).toEqual([true, true, true, true, true]);
-    expect([isFoodGoal('p', 5), isFoodGoal('p', 122), isFoodGoal('fa', 305), isFoodGoal('c', 15), isFoodGoal('s', 7.3), isFoodGoal('s', 21), isFoodGoal('p', '120')])
+    expect([isGoalValue('p', 120), isGoalValue('fa', 60), isGoalValue('c', 250), isGoalValue('s', 7.5), isGoalValue('s', 1)]).toEqual([true, true, true, true, true]);
+    expect([isGoalValue('p', 5), isGoalValue('p', 122), isGoalValue('fa', 305), isGoalValue('c', 15), isGoalValue('s', 7.3), isGoalValue('s', 21), isGoalValue('p', '120')])
       .toEqual([false, false, false, false, false, false, false]);
   });
 });

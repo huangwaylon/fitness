@@ -46,7 +46,7 @@
   }
 </script>
 
-<Sheet bind:open label={t('guestShop.title', { name })} title={t('guestShop.title', { name })}>
+<Sheet bind:open title={t('guestShop.title', { name })}>
   <div class="gs sheet-copy" data-guest-shop={id}>
     <p class="wallet" data-guest-shells={mine?.shells ?? 0}>
       <span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={18} /></span>{formatNum(mine?.shells ?? 0)}

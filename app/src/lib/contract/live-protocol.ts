@@ -42,7 +42,7 @@ export type How = (typeof HOWS)[number];
 
 /** A line's step (a `fish`): `cast` it went out (the float landing at `pt`, the line from `from`, at a shadow `id`),
  *  `nibble` the float dipped, `bite` it went under, `reel` reeled in (a catch is its `catch`), `off` the line came in
- *  without one (it got away, nobody came, the angler left). @public (relay/) */
+ *  without one (it got away, nobody came, the angler left). */
 export const FISH_PHASES = ['cast', 'nibble', 'bite', 'reel', 'off'] as const;
 export type FishPhase = (typeof FISH_PHASES)[number];
 
@@ -51,10 +51,8 @@ export type FishPhase = (typeof FISH_PHASES)[number];
 export const DROPS = ['none', 'branch', 'nest', 'bagworm', 'spider', 'coconut'] as const;
 export type Drop = (typeof DROPS)[number];
 
-/** Which way a villager faces at a walk's end: as drawn (toward the camera), toward the island's middle, left, right.
- *  @public (relay/, sync/live.ts) */
-export const FACES = ['home', 'in', 'l', 'r'] as const;
-/** @public (relay/, sync/live.ts) */
+/** Which way a villager faces at a walk's end: as drawn (toward the camera), toward the island's middle, left, right. */
+const FACES = ['home', 'in', 'l', 'r'] as const;
 export type Face = (typeof FACES)[number];
 
 /** A world point (integer world units within the plan). */
@@ -128,14 +126,13 @@ export type Intent =
    *  never in the ring: the room keeps the last record per source (newerMusic), replayed at hello while musicLive. */
   | { kind: 'music'; src: MusicSrc; at: number; song?: string; ms?: number; pc?: string };
 
-/** The music stages (docs/sound-sync.md): the island's, and one per room's stereo. @public (relay/) */
-export const MUSIC_SRCS = ['isl', 't', 'u', 'v'] as const;
+/** The music stages (docs/sound-sync.md): the island's, and one per room's stereo. */
+const MUSIC_SRCS = ['isl', 't', 'u', 'v'] as const;
 /** @public (relay/) */
 export type MusicSrc = (typeof MUSIC_SRCS)[number];
 /** A song's longest length (ms); a stage's `at` more than MUSIC_SKEW_MS from the relay's clock is taken as the relay's
  *  (a wrong clock can't pin the stage); a stop is kept this long (a phone that comes hears it). @public (relay/) */
 export const MUSIC_MS_MAX = 600_000;
-/** @public (relay/) */
 export const MUSIC_SKEW_MS = 5_000;
 export const MUSIC_STOP_KEEP_MS = 600_000;
 /** A music record as relayed. @public (relay/) */
@@ -266,14 +263,14 @@ export type ServerMsg =
   | Relayed;
 
 /** The real sky's letters, one an hour (docs/design.md "Weather"): `c` clear, `o` cloudy, `r` rain, `h` heavy rain,
- *  `s` snow. @public (relay/, sync/live.ts) */
-export const WX_SKIES = ['c', 'o', 'r', 'h', 's'] as const;
+ *  `s` snow. */
+const WX_SKIES = ['c', 'o', 'r', 'h', 's'] as const;
 /** @public (relay/) */
 export type WxSky = (typeof WX_SKIES)[number];
 /** Hours a timeline holds at most (the relay keeps 36; a little room for an older one). @public (relay/) */
 export const WX_MAX_HOURS = 48;
-/** Where a timeline came from: Open-Meteo (JMA's models), or a fixture put in by `/admin`. @public (relay/) */
-export const WX_SRCS = ['om', 'fx'] as const;
+/** Where a timeline came from: Open-Meteo (JMA's models), or a fixture put in by `/admin`. */
+const WX_SRCS = ['om', 'fx'] as const;
 
 /**
  * Tokyo's sky by the hour, as the room keeps it and sends it (`wx`, ≤ ~150 bytes): `h0` the first hour (hours since the

@@ -11,6 +11,7 @@ import {
   Color, InstancedBufferAttribute, InstancedBufferGeometry, Mesh, PlaneGeometry, PointLight,
   ShaderMaterial, type Scene
 } from 'three';
+import { hermite } from '#lib/math.ts';
 import { BEND_GLSL, bendPoint, bendU, glow } from './bend.ts';
 /** The halos' and pools' haze: the land's (engine.ts), so a far lamp still glows where the land shows. */
 export const lampFog = { near: { value: 1200 }, far: { value: 3000 } };
@@ -207,7 +208,7 @@ export function createLights(scene: Scene, n = POINTS): Lights {
         continue;
       }
       const flick = s.kind === 'fire' ? 0.82 + 0.18 * Math.sin(t / 90 + s.seed) * Math.sin(t / 37 + s.seed) : 1;
-      const ease = s.w * s.w * (3 - 2 * s.w);
+      const ease = hermite(s.w);
       p.l.intensity = (s.kind === 'fire' ? 2600 : s.kind === 'window' ? 1100 : 1500) * lvl * ease * flick;
       p.l.color.set(s.colour);
       const [x, y, z] = bendPoint(s.x, s.y, -s.z, pivotZ, R);

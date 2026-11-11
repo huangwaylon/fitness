@@ -211,7 +211,7 @@
 <ActionSheet bind:open={acting} title={targetName} groups={actions} onpick={picked} />
 <ActionSheet bind:open={asking} title={askTitle} note={askNote} label={ask?.kind === 'cat' ? t('travel.pack.catAsk', { name: ask.cat.name }) : t('travel.pack.reset')}
   groups={[[{ id: 'yes', label: ask?.kind === 'reset' ? t('travel.pack.resetAct') : t('travel.pack.delAct'), icon: ask?.kind === 'reset' ? 'refresh' : 'trash', danger: true }]]} onpick={yes} />
-<Sheet bind:open={formOpen} label={formTitle} title={formTitle} focusField>
+<Sheet bind:open={formOpen} title={formTitle} focusField>
   {#if form}
     <form id="pack-form" onsubmit={submit}>
       <input class="field" type="text" data-sfx="none" data-pack-field maxlength={PACK_NAME} enterkeyhint="done" autocomplete="off" aria-label={formTitle}

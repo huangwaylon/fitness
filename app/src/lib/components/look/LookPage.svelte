@@ -449,7 +449,7 @@
   </div>
 </div>
 
-<Sheet bind:open={cardOpen} label={cardTitle} title={cardTitle} onclose={() => (card = null)}>
+<Sheet bind:open={cardOpen} title={cardTitle} onclose={() => (card = null)}>
   {#if card === 'confirm' && pickedSaved}
     <div class="ask" data-look-card="confirm">
       <LookPortrait {who} look={{ kind: 'player', ...pickedSaved.look }} size={72} />

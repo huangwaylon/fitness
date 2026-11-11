@@ -7,6 +7,7 @@
 import { ROSTER } from '#lib/villagers/roster.ts';
 import { ITEM_ID_RE } from '../contract/listen.ts';
 import { QUIZ_LVS } from '../contract/live-protocol.ts';
+import { isInt } from '../contract/ops.ts';
 import { CHANNELS, DIALOGUE_TYPES, HENSHIN_LV, ITEM_TYPES, REGISTERS, SCENE_IDS, clipIds, helpProblems, isDialogue, levelRank, type Feature, type Item, type ItemType, type Tags } from './bank.ts';
 import type { Ladder } from './ladder.ts';
 import { letterWords, type LetterText } from './letters.ts';
@@ -109,7 +110,6 @@ interface Problems {
 type Obj = Record<string, unknown>;
 const isObj = (v: unknown): v is Obj => !!v && typeof v === 'object' && !Array.isArray(v);
 const isStr = (v: unknown): v is string => typeof v === 'string' && v.trim().length > 0;
-const isInt = (v: unknown, lo: number, hi: number): v is number => Number.isInteger(v) && (v as number) >= lo && (v as number) <= hi;
 const strs = (v: unknown): v is string[] => Array.isArray(v) && v.every(isStr);
 const chars = (s: string): number => [...s].length;
 const KEYS = new Set(['schema', 'unit', 'name', 'stage', 'domain', 'also', 'host', 'scene', 'sound', 'cando', 'status', 'ph', 'review', 'items', 'lessons', 'tiers', 'letter']);

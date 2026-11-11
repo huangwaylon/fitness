@@ -9,7 +9,7 @@
   // day's ベル, with a がんばり line under it on a day either of us reached 1.5× of a goal (each person's +1 / +2 under
   // their goals); tap → the day. Earnings only: the buys live on ごほうび (wallet/Purchases.svelte).
   import type { PersonId, WeekKey } from '#lib/types.ts';
-  import type { BellsLedger, LedgerDay } from '#lib/model/history.ts';
+  import type { BellsLedger, LedgerDay } from '#lib/model/bells.ts';
   import Avatar from '../characters/Avatar.svelte';
   import GoalMarks from './GoalMarks.svelte';
   import { formatBells, t } from '#lib/i18n/index.ts';

@@ -6,6 +6,8 @@
 // SceneTaps.svelte draws the fall. The flight's clock is its own age: it runs in the island's frames (and the World's
 // game clock), so it holds while the page is hidden or a sheet covers the island.
 
+import { clamp01, hermite } from '#lib/math.ts';
+
 /** NH's balloon of a colour (its model, world3d-assets.ts's five): 1 in 20 the gold (4), else one of the other four,
  *  each as likely. */
 export const balloonModel = (r: () => number = Math.random): string => `balloon/${r() < 0.05 ? 4 : Math.floor(r() * 4)}`;
@@ -128,8 +130,8 @@ export function fallMs(from: readonly [number, number, number], to: readonly [nu
  *  little hop up as the balloon bursts, then down, slowly at first (it floats), the drift eased out, a sway that
  *  settles; it meets the ground at `to` exactly. `from` is where its top hung: its feet start a present's height lower. */
 export function fallAt(from: readonly [number, number, number], to: readonly [number, number, number], k: number): { at: [number, number, number]; tilt: number } {
-  const q = Math.max(0, Math.min(1, k));
-  const ease = q * q * (3 - 2 * q), y0 = from[1] - RIG.gift;
+  const q = clamp01(k);
+  const ease = hermite(q), y0 = from[1] - RIG.gift;
   const drop = q * q * (1.6 - 0.6 * q), hop = 10 * Math.sin(Math.PI * Math.min(1, q / 0.35)) * (1 - q);
   return {
     at: [from[0] + (to[0] - from[0]) * ease, y0 + (to[1] - y0) * drop + (q < 1 ? hop : 0), from[2] + (to[2] - from[2]) * ease],

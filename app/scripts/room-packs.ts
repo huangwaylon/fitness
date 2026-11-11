@@ -45,8 +45,8 @@ function readPacks(): Map<string, Map<string, Uint8Array>> {
   return out;
 }
 
-/** Every packed file now (path → bytes). @public (items.test) */
-export function roomFiles(): Map<string, Uint8Array> {
+/** Every packed file now (path → bytes). */
+function roomFiles(): Map<string, Uint8Array> {
   return new Map([...readPacks().values()].flatMap((m) => [...m]));
 }
 

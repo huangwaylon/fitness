@@ -9,9 +9,9 @@ import type { ListenEntry, ListenPart } from '../../listen.ts';
 import { RoundSession, WINDOWS } from '../../round/session.ts';
 import { registry } from '../../round/registry.ts';
 import { playIn, playOut, type PlayIn, type RoundOut } from '../../round/wire.ts';
-import { EMPTY, filesOf, listenOpts } from '../listened.ts';
+import { EMPTY, filesOf, listenOpts, listenGame, listenRecord } from '../listened.ts';
 import {
-  CALL_QS, callDeal, callGame, callOk, callRecord, callRounds, callValid, chipsOf, infoOf, roundRows, rowsOf, trapOf, unionOf, wrongMask, type CallInfo, type CallRound
+  CALL_QS, callDeal, callOk, CALL, callRounds, callValid, chipsOf, infoOf, roundRows, rowsOf, trapOf, unionOf, wrongMask, type CallInfo, type CallRound
 } from './def.ts';
 
 /** A row's answer read back: the memo rows its mask says were wrong. */
@@ -158,11 +158,11 @@ describe('ようじ でんわ: rounds and the row', () => {
     const cards = callDeal(3, parts(MORI)), rounds = callRounds(cards, { lv: 4, ear: 2 }, () => 2000);
     const answers = rounds.map((x, i) => (i === 1 ? answerFor(x).map((k, j) => (j === 0 ? (k + 1) % x.rows[0].chips.length : k)) : i === 2 ? null : answerFor(x)));
     const had = rounds.map((_, i) => i !== 5);
-    const row = callRecord(rounds, answers, had, [0, 2, 0, 0, 0, 0], true);
+    const row = listenRecord(CALL, rounds, answers, had, [0, 2, 0, 0, 0, 0], true);
     expect(row.map(([id, ok, pick, rp]) => [id, ok, pick, rp])).toEqual([
       [rounds[0].id, 1, 0, 0], [rounds[1].id, 0, 1 << rounds[1].rows[0].n, 2], [rounds[2].id, 0, -1, 0], [rounds[3].id, 1, 0, 0], [rounds[4].id, 1, 0, 0]
     ]);
-    expect(callRecord(rounds, answers, had, [], false)).toHaveLength(4);
+    expect(listenRecord(CALL, rounds, answers, had, [], false)).toHaveLength(4);
     const missed = wrongRows(cards[1].call.info, row[1][2]);
     expect(missed.map((m) => m.n)).toEqual([rounds[1].rows[0].n]);
     expect(missed[0].ask).toBe(rounds[1].rows[0].ask);
@@ -177,7 +177,7 @@ const src = { cards: (seed: number) => callDeal(seed, parts(MORI)), playMs: () =
 function pair() {
   let n = 0;
   const random = () => ((n = (n * 9301 + 49297) % 233280) / 233280);
-  const make = (me: Who) => new RoundSession({ me, defs: registry([callGame(src)]), random });
+  const make = (me: Who) => new RoundSession({ me, defs: registry([listenGame(CALL, src)]), random });
   const s = { A: make('A'), B: make('B') };
   type P = keyof typeof s;
   const deliver = (from: P, out: RoundOut[], now: number) => {
@@ -227,7 +227,7 @@ describe('ようじ でんわ: a co-op game over two phones', () => {
     expect([A.phase, B.phase]).toEqual(['results', 'results']);
     expect(A.team).toEqual(B.team);
     expect(A.team).toMatchObject({ right: CALL_QS * 2, all: CALL_QS * 2 - 1 });
-    const rowB = callRecord(rb, B.answers.map((a) => a?.a ?? null), B.had, [], true);
+    const rowB = listenRecord(CALL, rb, B.answers.map((a) => a?.a ?? null), B.had, [], true);
     expect(rowB.map(([, ok]) => ok)).toEqual([1, 1, 0, 1, 1, 1]);
   });
 });

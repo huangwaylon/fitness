@@ -8,9 +8,9 @@ import type { ListenEntry, ListenPart } from '../../listen.ts';
 import { RoundSession, WINDOWS } from '../../round/session.ts';
 import { registry } from '../../round/registry.ts';
 import { playIn, playOut, type PlayIn, type RoundOut } from '../../round/wire.ts';
-import { EMPTY, cvOver, filesOf, listenOpts, tierAt, type ListenOpts } from '../listened.ts';
+import { EMPTY, cvOver, filesOf, listenOpts, tierAt, type ListenOpts, listenGame, listenRecord } from '../listened.ts';
 import {
-  TILE_QS, boardOf, decoysFor, slotsOf, tileDeal, tileGame, tileOk, tileRecord, tileRounds, tileValid, unionOf, wrongMask, type TileCard
+  TILE_QS, boardOf, decoysFor, slotsOf, tileDeal, tileOk, TILE, tileRounds, tileValid, unionOf, wrongMask, type TileCard
 } from './def.ts';
 
 /** A row's answer read back: the words its mask says were wrong. */
@@ -143,12 +143,12 @@ describe('ことば タイル: the row', () => {
     const rounds = tileRounds(cards, 3, o, () => 2000);
     const answers = rounds.map((r, i) => (i === 0 ? answerFor(r) : i === 1 ? answerFor(r).map((k, j) => (j === 0 ? r.board.findIndex((w) => !r.tiles.includes(w)) : k)) : i === 2 ? null : answerFor(r)));
     const had = rounds.map((_, i) => i !== 5);
-    const row = tileRecord(rounds, answers, had, [0, 2, 0, 0, 0, 0], true);
+    const row = listenRecord(TILE, rounds, answers, had, [0, 2, 0, 0, 0, 0], true);
     expect(row.map(([id, ok, pick, rp]) => [id, ok, pick, rp])).toEqual([
       [rounds[0].id, 1, 0, 0], [rounds[1].id, 0, 1, 2], [rounds[2].id, 0, -1, 0], [rounds[3].id, 1, 0, 0], [rounds[4].id, 1, 0, 0]
     ]);
     // left mid-way: only the answered ones
-    expect(tileRecord(rounds, answers, had, [], false)).toHaveLength(4);
+    expect(listenRecord(TILE, rounds, answers, had, [], false)).toHaveLength(4);
     // each row line's tile found in its file, its mask its wrong words
     const byId = new Map(parts(FILES).flatMap((p) => p.items).map((it) => [it.id, it]));
     for (const [id, , pick] of row) {
@@ -174,7 +174,7 @@ const src = { cards: (seed: number) => tileDeal(seed, parts(MORI)), playMs: () =
 function pair() {
   let n = 0;
   const random = () => ((n = (n * 9301 + 49297) % 233280) / 233280);
-  const make = (me: Who) => new RoundSession({ me, defs: registry([tileGame(src)]), random });
+  const make = (me: Who) => new RoundSession({ me, defs: registry([listenGame(TILE, src)]), random });
   const s = { A: make('A'), B: make('B') };
   type P = keyof typeof s;
   const deliver = (from: P, out: RoundOut[], now: number) => {
@@ -224,7 +224,7 @@ describe('ことば タイル: a co-op game over two phones', () => {
     expect(A.team).toMatchObject({ right: TILE_QS, all: TILE_QS - 1 });
     expect(A.scores).toEqual(B.scores);
     // each phone's row of its own half: B's round 2 wrong at its slot 1
-    const rowB = tileRecord(rb, B.answers.map((a) => a?.a ?? null), B.had, [0, 0, 0, 0, 1, 0], true);
+    const rowB = listenRecord(TILE, rb, B.answers.map((a) => a?.a ?? null), B.had, [0, 0, 0, 0, 1, 0], true);
     expect(rowB.map(([, ok, pick, rp]) => [ok, pick, rp])).toEqual([[1, 0, 0], [1, 0, 0], [0, 2, 0], [1, 0, 0], [1, 0, 1], [1, 0, 0]]);
   });
 });

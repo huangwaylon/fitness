@@ -158,7 +158,7 @@
   });
 </script>
 
-<Sheet bind:open label={t('homes.title')} title={t('homes.title')}>
+<Sheet bind:open title={t('homes.title')}>
   <div class="pick" data-home-picker={who}>
     <div class="stage"><canvas bind:this={canvas} class="preview" data-home-preview aria-hidden="true"></canvas></div>
     <div class="chips" role="group" aria-label={t('homes.facing')}>

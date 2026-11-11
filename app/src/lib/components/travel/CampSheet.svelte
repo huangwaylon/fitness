@@ -17,7 +17,7 @@
   const name = $derived(camp ? pick(camp.name, i18n.locale) : '');
 </script>
 
-<Sheet bind:open label={name} title={name}>
+<Sheet bind:open title={name}>
   {#if camp}
     <div class="camp guide" data-camp-sheet={camp.id}>
       {#if camp.photo}<Photo photo={camp.photo} />{/if}

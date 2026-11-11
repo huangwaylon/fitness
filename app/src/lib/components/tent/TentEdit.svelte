@@ -763,7 +763,7 @@
   </div>
 </div>
 
-<Sheet bind:open={clearAsk} label={t('tent.clearTitle')} title={t('tent.clearTitle')}>
+<Sheet bind:open={clearAsk} title={t('tent.clearTitle')}>
   <p class="clear-note">{t('tent.clearNote', { n: room.pieces.length })}</p>
   {#snippet footer()}
     <div class="two-cta">

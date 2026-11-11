@@ -13,14 +13,13 @@
 // shared. In the opinions round each places their own face and the shared one (the partner's is theirs): right when
 // those are; the team has it when both are (the session's `team.all`). The other rounds everyone answers.
 import { mulberry32, shuffle } from '#lib/random.ts';
-import type { ListenRow } from '../../../contract/listen.ts';
 import type { RosterId } from '../../../villagers/roster.ts';
 import type { Item, Level, Line, Tags } from '../../bank.ts';
 import { PLACES } from '../../catalog.ts';
 import type { ListenItem, ListenPart } from '../../listen.ts';
-import type { AnswerValue, GameDef, Round } from '../../round/types.ts';
+import type { AnswerValue, Round } from '../../round/types.ts';
 import { PLAY_UNKNOWN } from '../quiz/kinds.ts';
-import { EMPTY, ROLES, listenGame, listenRecord, tierAt, type ListenOpts, type ListenRules, type ListenSource } from '../listened.ts';
+import { EMPTY, ROLES, tierAt, type ListenOpts, type ListenRules } from '../listened.ts';
 
 /** A game's conversations, and its rounds (3 each). */
 const TACHI_CONVS = 2;
@@ -34,7 +33,6 @@ type TachiYaml = Extract<ListenItem, { kind: 'tachi' }>;
 type TachiType = TachiYaml['rounds'][number]['type'];
 /** Each round's suffix on its row's id (the item's id and this: an SRS card of its own). */
 const SUFFIX: Readonly<Record<TachiType, string>> = { opinions: 'op', changed: 'ch', plan: 'pl' };
-
 
 /** A dealt round, as the sheet's game holds it: an Item whose id is the conversation's (its lines' clips, `<id>-<n>`),
  *  its lines with their offsets, the round's help (`ctx`, `why`; the plan's `ja` and `cja`), the bed it plays over,
@@ -143,12 +141,7 @@ export const TACHI: ListenRules<TachiCard, TachiRound> = {
   pick: (r, a) => pickOf(r, a)
 };
 
-export const tachiGame = (src: ListenSource<TachiCard>): GameDef<ListenOpts> => listenGame(TACHI, src);
-
 /** An answer as a row's `pick` (0-63): a choice itself; opinions each claim's speaker in base 4 (3: none). */
 export const pickOf = (r: Pick<TachiRound, 'type'>, a: AnswerValue): number =>
   r.type === 'opinions' ? (a as readonly number[]).reduce((s, x, j) => s + (x === EMPTY ? 3 : x) * 4 ** j, 0) : (a as number);
 
-/** My answers of a game as its `listen` row's: my answer as `pick`. */
-export const tachiRecord = (rounds: readonly TachiRound[], answers: readonly (AnswerValue | null)[], had: readonly boolean[], rp: readonly number[], done: boolean): ListenRow['r'] =>
-  listenRecord(TACHI, rounds, answers, had, rp, done);

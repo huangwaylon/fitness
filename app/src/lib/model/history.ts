@@ -56,7 +56,3 @@ export function dayDetail(s: State, date: LocalDate, now: number): DayDetail {
   };
   return { date, people: { A: person('A'), B: person('B') }, together: !future && (wb.together[i] ?? false) };
 }
-
-// ---------- ベル ledger: model/bells.ts ----------
-
-export { bellsLedger, type BellsLedger, type LedgerDay } from './bells.ts';

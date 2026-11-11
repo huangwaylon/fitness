@@ -4,7 +4,8 @@
 // the first load carries, so the buy prices (buyPrices.ts) load with the shop. Pure.
 import { BUY } from './buyPrices.ts';
 import type { LocalDate } from '../types.ts';
-import { seeded } from '../random.ts';
+import { shuffle } from '../random.ts';
+import { dayRand } from './wet.ts';
 
 /** The pieces a day's stock holds (fewer once the island has found nearly all of them). */
 export const STOCK_N = 24;
@@ -12,20 +13,13 @@ export const STOCK_N = 24;
 /** A piece's buy price in かいがら, or undefined: the shop never sells it. */
 export const buyPrice = (item: string): number | undefined => (Object.hasOwn(BUY, item) ? BUY[item] : undefined);
 
-/** The island's seed (components/island/daySeed.ts ISLAND_SEED: the contract imports no component). */
-const ISLAND_SEED = 'island-fund';
 const orderMemo = new Map<string, readonly string[]>();
 
 /** A Tokyo day's order of the whole price list, by the date and the island's seed (the same on every phone). Memoised. */
 function dayOrder(date: LocalDate): readonly string[] {
   const hit = orderMemo.get(date);
   if (hit) return hit;
-  const r = seeded(`${ISLAND_SEED}|${date}|shop`);
-  const out = Object.keys(BUY).sort();
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(r() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
-  }
+  const out = shuffle(Object.keys(BUY).sort(), dayRand(date, 'shop'));
   if (orderMemo.size > 64) orderMemo.clear();
   orderMemo.set(date, out);
   return out;

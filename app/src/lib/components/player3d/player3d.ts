@@ -31,7 +31,6 @@ export { portrait };
 import { DEFAULT_LOOKS, isOnepiece, type PlayerLook } from '#lib/contract/look.ts';
 import { glbLoader } from '../world3d/gltf.ts';
 
-/** @public (the すがた preview, the scenes) */
 export interface Player3D extends Villager3D {
   /** Wear another look: what changed is swapped in place (a texture, a tint, a mesh); resolves once it's on. */
   dress(look: PlayerLook): Promise<void>;

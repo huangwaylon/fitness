@@ -11,7 +11,7 @@ import { DEFAULT_LOOKS } from '#lib/contract/look.ts';
 import { composeModel } from './view.ts';
 import { week } from './week.svelte.ts';
 import {
-  deleteLook, lookOf, myLook, mySavedLooks, overwriteLook, renameLook, saveLook, wearLook, wearSaved, wearUsual, wearVillager
+  deleteLook, lookOf, myLook, mySavedLooks, overwriteLook, renameLook, saveLook, wearLook, wearUsual, wearVillager
 } from './look.ts';
 
 vi.mock('$app/navigation', () => ({ goto: vi.fn() }));
@@ -100,8 +100,7 @@ describe('the コーデ', () => {
     const two = saveLook('しごと', { ...A, glasses: null });
     sync();
     expect(mySavedLooks().map((s) => s.name)).toEqual(['しごと', 'おでかけ']);
-    expect(wearSaved(one.id!).ok).toBe(true);
-    expect(wearSaved('zzzzzzzz')).toEqual({ ok: false });
+    expect(wearLook(mySavedLooks().find((x) => x.id === one.id)!.look).ok).toBe(true);
     sync();
     expect(myLook()).toEqual({ kind: 'player', ...B });
     expect(overwriteLook(one.id!, A).ok).toBe(true);

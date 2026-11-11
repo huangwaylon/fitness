@@ -10,9 +10,9 @@ import type { ListenEntry, ListenPart } from '../../listen.ts';
 import { RoundSession, WINDOWS } from '../../round/session.ts';
 import { registry } from '../../round/registry.ts';
 import { playIn, playOut, type PlayIn, type RoundOut } from '../../round/wire.ts';
-import { EMPTY, filesOf, listenOpts, rawOf } from '../listened.ts';
+import { EMPTY, filesOf, listenOpts, rawOf, listenGame, listenRecord } from '../listened.ts';
 import {
-  SHARED, TACHI_QS, facesOf, givenClaim, pickOf, tachiDeal, tachiGame, tachiOk, tachiRecord, tachiRounds, tachiValid, type TachiCard
+  SHARED, TACHI_QS, facesOf, givenClaim, pickOf, tachiDeal, tachiOk, TACHI, tachiRounds, tachiValid, type TachiCard
 } from './def.ts';
 
 /** A row's opinions pick read back: each claim's speaker (EMPTY none). */
@@ -76,7 +76,7 @@ describe('たちぎき: rounds and grading', () => {
     const easy = tachiRounds(cards(), { lv: 4, ear: 1 }, () => undefined);
     expect(easy.map((r) => r.given)).toEqual([true, false, false, true, false, false]);
     expect(easy[0].play).toBe(2000); // (no clip yet: PLAY_UNKNOWN)
-    const deck = tachiGame({ cards: () => cards(), playMs: () => 31_000 }).deck(3, { lv: 4, timer: 30, ear: 2 }, { w: WINDOWS, enc: [] });
+    const deck = listenGame(TACHI, { cards: () => cards(), playMs: () => 31_000 }).deck(3, { lv: 4, timer: 30, ear: 2 }, { w: WINDOWS, enc: [] });
     expect([deck.timing(0), deck.timing(1)]).toEqual([{ lead: WINDOWS.lead, play: 31_000, answer: WINDOWS.answers[0] + 10_000 }, { lead: 0, play: 0, answer: WINDOWS.answers[0] }]);
   });
 
@@ -102,7 +102,7 @@ describe('たちぎき: rounds and grading', () => {
   it('my row: each round I had, my answer as the pick (opinions in base 4), read back', () => {
     const rs = tachiRounds(cards(), { lv: 4, ear: 2 }, () => 31_000);
     const answers = cards().map((c, i) => (i === 3 ? null : i === 1 ? ((c.tachi.answer as number) + 1) % 3 : answerFor(c)));
-    const row = tachiRecord(rs, answers, [true, true, true, true, true, false], [0, 2, 0, 0, 0, 0], true);
+    const row = listenRecord(TACHI, rs, answers, [true, true, true, true, true, false], [0, 2, 0, 0, 0, 0], true);
     expect(row.map(([id, ok, , rp]) => [id, ok, rp])).toEqual([[rs[0].id, 1, 0], [rs[1].id, 0, 2], [rs[2].id, 1, 0], [rs[3].id, 0, 0], [rs[4].id, 1, 0]]);
     expect(opinionsOf(row[0][2])).toEqual(answers[0]);
     expect(row[3][2]).toBe(-1);
@@ -142,7 +142,7 @@ const src = { cards: (seed: number) => tachiDeal(seed, parts(MORI)), playMs: () 
 function pair() {
   let n = 0;
   const random = () => ((n = (n * 9301 + 49297) % 233280) / 233280);
-  const make = (me: Who) => new RoundSession({ me, defs: registry([tachiGame(src)]), random });
+  const make = (me: Who) => new RoundSession({ me, defs: registry([listenGame(TACHI, src)]), random });
   const s = { A: make('A'), B: make('B') };
   type P = keyof typeof s;
   const deliver = (from: P, out: RoundOut[], now: number) => {

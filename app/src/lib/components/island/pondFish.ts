@@ -81,6 +81,3 @@ const poolOf = (where: FreshWhere) => {
  *  in the pond and the rivers). */
 export const pickFresh = (where: FreshWhere, month: number, hour: number, r: () => number): PondFishId =>
   (pick(poolOf(where), month, hour, r) as PondFishId | null) ?? (where === 'pond' ? 'carp' : 'crucian-carp');
-/** Any fresh-water fish (every water's together). */
-export const pickPondFish = (month: number, hour: number, r: () => number): PondFishId =>
-  pick(POND_FISH, month, hour, r) ?? 'crucian-carp';

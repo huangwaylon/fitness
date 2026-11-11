@@ -58,8 +58,6 @@ export interface LayoutNav {
   readonly buildMs: number;
 }
 
-export const isLayoutNav = (g: unknown): g is LayoutNav => typeof g === 'object' && g !== null && 'open' in g && 'level' in g;
-
 const cellOf = (x: number, z: number): [number, number] => [Math.floor((x - GRID.x0) / CELL), Math.floor((z - GRID.z0) / CELL)];
 const cellMid = (i: number, j: number): Pt => [GRID.x0 + (i + 0.5) * CELL, GRID.z0 + (j + 0.5) * CELL];
 const inCells = (i: number, j: number) => i >= 0 && j >= 0 && i < COLS && j < ROWS;

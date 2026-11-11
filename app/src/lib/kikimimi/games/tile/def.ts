@@ -15,10 +15,9 @@ import type { Item, Level, SoundMark, Tags } from '../../bank.ts';
 import { PLACES } from '../../catalog.ts';
 import type { ListenItem, ListenPart } from '../../listen.ts';
 import type { Tier } from '../../lesson.ts';
-import type { ListenRow } from '../../../contract/listen.ts';
-import type { AnswerValue, GameDef, Round } from '../../round/types.ts';
+import type { AnswerValue, Round } from '../../round/types.ts';
 import { PLAY_UNKNOWN } from '../quiz/kinds.ts';
-import { EMPTY, ROLES, filled, listenGame, listenRecord, shareOf, tierAt, type ListenOpts, type ListenRules, type ListenSource } from '../listened.ts';
+import { EMPTY, ROLES, filled, shareOf, tierAt, type ListenOpts, type ListenRules } from '../listened.ts';
 
 /** A game's sentences. */
 export const TILE_QS = 6;
@@ -104,7 +103,6 @@ export interface TileRound extends Round {
   play: number;
 }
 
-
 /** A deck's rounds at an ear (`playMs`: a card's clip length, unknown: PLAY_UNKNOWN). */
 export const tileRounds = (cards: readonly TileCard[], seed: number, o: Pick<ListenOpts, 'lv' | 'ear'>, playMs: (c: TileCard) => number | undefined): TileRound[] => {
   const tier = tierAt(o.ear, o.lv);
@@ -150,8 +148,3 @@ export const TILE: ListenRules<TileCard, TileRound> = {
   pick: (r, a) => wrongMask(r, a as readonly number[])
 };
 
-export const tileGame = (src: ListenSource<TileCard>): GameDef<ListenOpts> => listenGame(TILE, src);
-
-/** My answers of a game as its `listen` row's: the wrong slots' mask as `pick`. */
-export const tileRecord = (rounds: readonly TileRound[], answers: readonly (AnswerValue | null)[], had: readonly boolean[], rp: readonly number[], done: boolean): ListenRow['r'] =>
-  listenRecord(TILE, rounds, answers, had, rp, done);

@@ -4,6 +4,7 @@
 // when, how long, with how many: the together summary), the guest and the members alike
 // (contract/guest.ts rowsFor). Pure, over the contract only (the relay imports it).
 import { isLocalDate } from './api.ts';
+import { isInt } from './ops.ts';
 import { GM_RE, QUIZ_LVS, UNIT_RE } from './live-protocol.ts';
 import type { LocalDate, Who } from '../types.ts';
 
@@ -77,12 +78,10 @@ const GAME_RE = /^[a-z0-9]{4,12}$/;
 export const ITEM_ID_RE = /^[a-z0-9][a-z0-9-]{0,31}$/;
 const KEYS = new Set(['d', 'g', 'gm', 'u', 'l', 'tm', 'lv', 'n', 'ms', 'p', 'r']);
 
-const int = (v: unknown, lo: number, hi: number): v is number => Number.isInteger(v) && (v as number) >= lo && (v as number) <= hi;
-
 function answerOf(a: unknown): ListenAnswer | null {
   if (!Array.isArray(a) || a.length !== 4) return null;
   const [id, ok, pick, rp] = a as unknown[];
-  return typeof id === 'string' && ITEM_ID_RE.test(id) && (ok === 0 || ok === 1) && int(pick, -1, 4095) && int(rp, 0, LISTEN_MAX_RP) ? [id, ok, pick, rp] : null;
+  return typeof id === 'string' && ITEM_ID_RE.test(id) && (ok === 0 || ok === 1) && isInt(pick, -1, 4095) && isInt(rp, 0, LISTEN_MAX_RP) ? [id, ok, pick, rp] : null;
 }
 
 /** A row as sent or kept, or null when it isn't one (an unknown key, a field out of range). Its day's bound (not after
@@ -91,12 +90,12 @@ export function listenOf(d: unknown): ListenRow | null {
   if (!d || typeof d !== 'object' || Array.isArray(d)) return null;
   const o = d as Record<string, unknown>;
   if (Object.keys(o).some((k) => !KEYS.has(k))) return null;
-  if (!isLocalDate(o.d) || typeof o.g !== 'string' || !GAME_RE.test(o.g) || !int(o.lv, 1, QUIZ_LVS.length) || !int(o.n, 1, 3) || !int(o.ms, 0, LISTEN_MAX_MS)) return null;
+  if (!isLocalDate(o.d) || typeof o.g !== 'string' || !GAME_RE.test(o.g) || !isInt(o.lv, 1, QUIZ_LVS.length) || !isInt(o.n, 1, 3) || !isInt(o.ms, 0, LISTEN_MAX_MS)) return null;
   if (o.p !== undefined && o.p !== 1) return null;
   if (o.gm !== undefined && (typeof o.gm !== 'string' || !GM_RE.test(o.gm))) return null;
   if (o.u !== undefined && (typeof o.u !== 'string' || !UNIT_RE.test(o.u))) return null;
-  if (o.l !== undefined && (o.u === undefined || !int(o.l, 1, 5))) return null;
-  if (o.tm !== undefined && (o.l === undefined || !int(o.tm, 0, LESSON_QS))) return null;
+  if (o.l !== undefined && (o.u === undefined || !isInt(o.l, 1, 5))) return null;
+  if (o.tm !== undefined && (o.l === undefined || !isInt(o.tm, 0, LESSON_QS))) return null;
   const gm = o.gm as string | undefined;
   if (!Array.isArray(o.r) || o.r.length < (minutesOnly(gm) ? 0 : 1) || o.r.length > (gm !== undefined && MIC_GMS.has(gm) ? 0 : LISTEN_MAX_Q)) return null;
   const r: ListenAnswer[] = [];
@@ -115,7 +114,7 @@ export function listenOf(d: unknown): ListenRow | null {
 export function listenSummaryOf(d: unknown): ListenSummary | null {
   if (!d || typeof d !== 'object') return null;
   const o = d as Record<string, unknown>;
-  if (!(isLocalDate(o.d) && typeof o.g === 'string' && GAME_RE.test(o.g) && int(o.n, 1, 3) && int(o.ms, 0, LISTEN_MAX_MS))) return null;
+  if (!(isLocalDate(o.d) && typeof o.g === 'string' && GAME_RE.test(o.g) && isInt(o.n, 1, 3) && isInt(o.ms, 0, LISTEN_MAX_MS))) return null;
   const stamped = o.stamped === 1 && typeof o.u === 'string' && UNIT_RE.test(o.u);
   return { d: o.d, g: o.g, n: o.n, ms: o.ms, ...(stamped && { u: o.u as string, stamped: 1 as const }) };
 }

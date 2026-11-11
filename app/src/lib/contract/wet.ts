@@ -5,7 +5,7 @@
 // island's seed and the week's meteor shower (a shower's night is always fine), since the record needs them. Pure.
 import { seeded } from '../random.ts';
 import type { Wx } from './live-protocol.ts';
-import { dayNum, dayOf, localDateAt } from './tokyo.ts';
+import { addDays, dayNum, localDateAt } from './tokyo.ts';
 import type { LocalDate } from '../types.ts';
 
 /** The island's own seed (`?seed=` in the demo varies it: components/island/devHooks.ts). */
@@ -14,7 +14,6 @@ export const ISLAND_SEED = 'island-fund';
 /** A seeded PRNG for one stream of one day. */
 export const dayRand = (date: string, stream: string, seed = ISLAND_SEED): (() => number) => seeded(`${seed}|${date}|${stream}`);
 
-const addDays = (date: string, n: number): LocalDate => dayOf(dayNum(date) + n);
 /** Monday of `date`'s week (1970-01-01 was a Thursday). */
 const mondayOf = (date: string): LocalDate => addDays(date, -((dayNum(date) + 3) % 7));
 

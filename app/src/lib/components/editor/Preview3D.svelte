@@ -23,16 +23,14 @@
   import { staticUrl } from '#lib/staticUrl.ts';
   import { rooms } from '#lib/store/tent.svelte.ts';
 
-  let { layout, mode = 'orbit', look, camZ = $bindable(300), stage = $bindable() }: {
+  let { layout, mode = 'orbit', camZ = $bindable(300), stage = $bindable() }: {
     layout: Layout;
     mode?: 'orbit' | 'phone';
-    /** The ground's look (none: today's, as the island's: the theme's season and foliage). */
-    look?: Look;
     camZ?: number;
     /** The phone view's stage for the island's もようがえ (layoutEdit/IslandEdit.svelte). */
     stage?: EditStage;
   } = $props();
-  const lookNow = $derived<Look>(look ?? lookOf(theme.season, theme.foliage));
+  const lookNow = $derived<Look>(lookOf(theme.season, theme.foliage));
   let wrapEl = $state<HTMLDivElement>();
 
   let canvas = $state<HTMLCanvasElement>();

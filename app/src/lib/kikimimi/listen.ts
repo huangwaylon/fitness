@@ -7,6 +7,7 @@
 import { ROSTER, type RosterId } from '#lib/villagers/roster.ts';
 import { CHANNELS, HENSHIN_LV, PRAGMATICS, REGISTERS, SCENE_IDS, accentOf, helpProblems, type Accent, type CastId, type Channel, type Feature, type Item, type ItemType, type Level, type SoundMark, type Tags } from './bank.ts';
 import { CAST } from './cast.ts';
+import { isInt } from '../contract/ops.ts';
 import { CAST_IDS } from './speech.ts';
 import { ALERTS, HI_MAX, HI_MIN, SKIES, hiKey, type Alert, type Sky } from './games/news/weather.ts';
 import { PHENOMENA, type Phenomenon } from './henshin.ts';
@@ -353,7 +354,6 @@ const ME = 'me';
 
 type Obj = Record<string, unknown>;
 const isStr = (v: unknown): v is string => typeof v === 'string' && v.trim().length > 0;
-const isInt = (v: unknown, lo: number, hi: number): v is number => Number.isInteger(v) && (v as number) >= lo && (v as number) <= hi;
 const strs = (v: unknown): v is string[] => Array.isArray(v) && v.every(isStr);
 const chars = (s: string) => [...s].length;
 /** A sentence's words as its tiles spell them (punctuation dropped, the case kept). */

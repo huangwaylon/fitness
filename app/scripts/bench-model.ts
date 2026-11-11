@@ -7,7 +7,8 @@
 // (the island never reads food: its rows are kept raw, model/food.ts folds them when the sheet reads them).
 import { performance } from 'node:perf_hooks';
 import { buildWeekView } from '#lib/model/week.ts';
-import { bellsLedger, dayDetail } from '#lib/model/history.ts';
+import { bellsLedger } from '#lib/model/bells.ts';
+import { dayDetail } from '#lib/model/history.ts';
 import { compactRows } from '#lib/model/compact.ts';
 import { reduce, type State } from '#lib/model/state.ts';
 import { addDays, weekKeyOf } from '#lib/time/dates.ts';

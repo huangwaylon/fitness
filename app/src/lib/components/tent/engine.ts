@@ -1727,7 +1727,8 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       w.posing = busy || going;
       return w.posing;
     }
-    return v.blink(t) && false;
+    v.blink(t);
+    return false;
   }
   /** The camera moved since the last frame (the 3D villagers are posed while it does). */
   let cameraMoving = false, camRev = '';

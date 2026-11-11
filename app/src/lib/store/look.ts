@@ -79,12 +79,6 @@ export function restoreLook(look: Look, villager: string): SendResult {
   return me === 'G' ? wearUsual() : wearVillager();
 }
 
-/** Wear a コーデ by its id. @public (the すがた level) */
-export function wearSaved(id: string): SendResult {
-  const s = mySavedLooks().find((x) => x.id === id);
-  return s ? wearLook(s.look) : { ok: false };
-}
-
 function sendSaved(list: SavedLook[], holdMs?: number): SendResult {
   return week.send('pref', { key: 'savedLooks', value: list }, holdMs ? { holdMs } : {});
 }

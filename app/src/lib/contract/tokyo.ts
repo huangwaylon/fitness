@@ -26,7 +26,9 @@ export function localDateAt(ms: number): LocalDate {
 export const dayNum = (d: string): number => Math.round(Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) / DAY_MS);
 /** dayNum's inverse. */
 export const dayOf = (n: number): LocalDate => new Date(n * DAY_MS).toISOString().slice(0, 10);
+/** The calendar day `n` days after `date` (n < 0: before). */
+export const addDays = (date: string, n: number): LocalDate => dayOf(dayNum(date) + n);
 /** The calendar day after `date`. */
-export const nextDay = (date: string): LocalDate => dayOf(dayNum(date) + 1);
+export const nextDay = (date: string): LocalDate => addDays(date, 1);
 /** The calendar day before `date`. */
-export const prevDay = (date: string): LocalDate => dayOf(dayNum(date) - 1);
+export const prevDay = (date: string): LocalDate => addDays(date, -1);

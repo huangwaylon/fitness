@@ -12,7 +12,7 @@
 // and the food sheet; pure and dependency-free.
 import { isLocalDate, isRec } from './api.ts';
 import { cleanLine } from './text.ts';
-import { GOALS, isGoalValue } from './goals.ts';
+import { GOALS } from './goals.ts';
 import { isMs, newOpId } from './ops.ts';
 
 /** Who logged it: the owner, the only one who edits or removes it. */
@@ -85,9 +85,6 @@ const REPEAT_ID = /^r[0-9a-z]{6,24}$/;
 const inRange = (n: unknown, lo: number, hi: number): n is number => typeof n === 'number' && Number.isFinite(n) && n >= lo && n <= hi;
 const isMeal = (v: unknown): v is Meal => (MEALS as readonly unknown[]).includes(v);
 const oneDecimal = (n: number): boolean => Math.abs(n * 10 - Math.round(n * 10)) < 1e-6;
-
-/** A daily goal of `n` (FOOD_GOALS): within its range, a whole step. */
-export const isFoodGoal = (n: FoodGoalOf, v: unknown): v is number => isGoalValue(n, v);
 
 /** A new entry's id. */
 export const newFoodId = (at: number, p = 'f'): string => newOpId(p, at);

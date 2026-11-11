@@ -7,7 +7,6 @@ import { planTap } from './tapWalk.ts';
 import { guestSpot } from './buildings.ts';
 import { mushroomSpots } from './mushrooms.ts';
 import { defaultLayout, withChanges } from '#lib/layout/model.ts';
-import { isLayoutNav } from '#lib/layout/nav.ts';
 import { validate } from '#lib/layout/validate.ts';
 import { openGrass, plazaOk, stageOf } from '#lib/layout/spots.ts';
 import { tileMid } from '#lib/layout/grid.ts';
@@ -135,7 +134,7 @@ describe('setWorld: the island on its layout', () => {
   test('the walk is the layout’s: up to the tent’s door, to うめ’s, over the bridge', () => {
     W.setWorld(g);
     const n = walkNav();
-    expect(isLayoutNav(n)).toBe(true);
+    expect(n).toMatchObject({ open: expect.anything(), level: expect.anything() });
     expect(near(n.named['door-campsite'], doorOf('campsite'), 1)).toBe(true);
     const home = n.named.homeA, door = doorOf('campsite');
     const p = planTap(n, home, door[0], door[1]);

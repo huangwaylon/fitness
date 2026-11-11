@@ -8,8 +8,8 @@ import { weekDays } from '#lib/time/dates.ts';
 import { moveGoalOn, reduce, stepsGoalOn } from './state.ts';
 import { buildWeekView } from './week.ts';
 import { metricAsOf } from './inputs.ts';
-import { weekBells } from './bells.ts';
-import { bellsLedger, dayDetail } from './history.ts';
+import { bellsLedger, weekBells } from './bells.ts';
+import { dayDetail } from './history.ts';
 
 // A week of the economy: Sunday 19:30 = 11-22, the lock = Wednesday 11-25 04:00 JST.
 const WK = '2026-11-16';

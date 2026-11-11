@@ -12,9 +12,8 @@ import type { Who } from '../types.ts';
 export type PartId = string;
 /** A colour, `#rrggbb`. @public */
 export type Hex = string;
-/** 0, 1 or 2: the cheek's blush shape (0 hard oval, 1 soft, 2 none) or the nose (Nose00 triangle, 01 dot, 02 square).
- *  @public */
-export type Shape3 = 0 | 1 | 2;
+/** 0, 1 or 2: the cheek's blush shape (0 hard oval, 1 soft, 2 none) or the nose (Nose00 triangle, 01 dot, 02 square). */
+type Shape3 = 0 | 1 | 2;
 
 /** A human player's look, version 1. Colours are tints (no bytes); every part is a part id of its slot. */
 export interface PlayerLook {
@@ -73,13 +72,13 @@ const HEX_RE = /^#[0-9a-fA-F]{6}$/;
 const SAVED_ID_RE = /^[a-z0-9]{8}$/;
 
 /**
- * The part table (generated from the QA'd shapes by the closet pipeline: not yet). Until one is set every well-formed
+ * The part table (generated from the QA'd shapes by the closet pipeline; store/look.ts sets it). Until one is set every well-formed
  * id of its slot passes; once set (usePartTable), only its ids do: the record refuses the rest, a phone reads them as the
  * default look's part. A `Set<string>` of ids fits.
  */
 export interface PartTable { has(id: string): boolean }
 let partTable: PartTable | null = null;
-/** Set (or clear, null) the part table every check here consults. @public (the closet pipeline's table, coming) */
+/** Set (or clear, null) the part table every check here consults. */
 export function usePartTable(t: PartTable | null): void {
   partTable = t;
 }
@@ -89,8 +88,7 @@ export function partOk(slot: PartSlot, id: unknown): id is PartId {
   return typeof id === 'string' && id.length <= LOOK_LIMITS.partMaxChars && id.length > PART_SLOTS[slot].length
     && id.startsWith(PART_SLOTS[slot]) && PART_RE.test(id) && (partTable === null || partTable.has(id));
 }
-/** @public (the すがた level's colour fields) */
-export const isHex = (v: unknown): v is Hex => typeof v === 'string' && HEX_RE.test(v);
+const isHex = (v: unknown): v is Hex => typeof v === 'string' && HEX_RE.test(v);
 const isShape3 = (v: unknown): v is Shape3 => v === 0 || v === 1 || v === 2;
 const isMouthFrame = (v: unknown): v is number => Number.isInteger(v) && (v as number) >= 0 && (v as number) < LOOK_LIMITS.mouthFrames;
 /** A one-piece (a dress: it clears the bottoms). @public (the closet's wear rules) */

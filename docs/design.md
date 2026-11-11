@@ -152,7 +152,7 @@ members (the guest's to the guest), enforced by the record. What it feeds:
 
 ### Kiroku
 
-The ベル ledger (`model/history.ts`, `components/kiroku/*`), read-only, in [ごほうび](#wallet) under the rewards
+The ベル ledger (`model/bells.ts` bellsLedger, `components/kiroku/*`), read-only, in [ごほうび](#wallet) under the rewards
 (「貯めたベル」):
 
 - **ベル:** by week (earnings only), one line per day: each person's four fruits (bright = met), a star on a

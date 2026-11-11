@@ -5,7 +5,7 @@
   // on this phone; a pick said by my villager and worn on the disc), 「スコップ」 (armed for one dig, yuzu while armed) and 「はたけ」 (the 畑 sheet). It folds as the leaf menu does:
   // a second tap, a tap anywhere else, Esc, a pick, a sheet opening. IslandScene places and hides it with the say button.
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { CROPS, cropKey, startKey, type Crop, type FarmSrc } from '#lib/contract/farm.ts';
+  import { CROPS, seedKey, type Crop, type FarmSrc } from '#lib/contract/farm.ts';
   import { shopView } from '#lib/model/shop.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { pickSeed, seed } from '#lib/store/farm.svelte.ts';
@@ -27,9 +27,9 @@
   const pocket = $derived(week.model ? shopView(week.model.state, week.model.me).pocket : new Map<string, number>());
   /** What I can plant: each start, then each vegetable, that I hold. */
   const seeds = $derived(
-    (['start', 'crop'] as const).flatMap((src) => CROPS.map((c) => ({ c, src, n: pocket.get(src === 'start' ? startKey(c) : cropKey(c)) ?? 0 }))).filter((s) => s.n > 0)
+    (['start', 'crop'] as const).flatMap((src) => CROPS.map((c) => ({ c, src, n: pocket.get(seedKey(c, src)) ?? 0 }))).filter((s) => s.n > 0)
   );
-  const picked = $derived(seed.pick ? { ...seed.pick, n: pocket.get(seed.pick.src === 'start' ? startKey(seed.pick.c) : cropKey(seed.pick.c)) ?? 0 } : null);
+  const picked = $derived(seed.pick ? { ...seed.pick, n: pocket.get(seedKey(seed.pick.c, seed.pick.src)) ?? 0 } : null);
   const art = (c: Crop, src: FarmSrc) => `finds/${src === 'start' ? `${c}-start` : c}`;
   /** The crops' names: the catch catalog's, loaded (out of the island's first load) once the menu or the picker opens,
    *  read again once in (its merge isn't reactive). */

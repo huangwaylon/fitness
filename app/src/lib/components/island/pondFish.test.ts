@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { POND_FISH, freshPool, pickFresh, pickPondFish, type PondFishId } from './pondFish.ts';
-import { FISH, IN_SEASON, caption, findKind, oddsAt } from './critters.ts';
+import { POND_FISH, freshPool, pickFresh, type PondFishId } from './pondFish.ts';
+import { FISH, IN_SEASON, caption, findKind, oddsAt, pick } from './critters.ts';
 import { mulberry32 } from '#lib/random.ts';
 import ja from '#lib/i18n/catch.ja.json';
 import en from '#lib/i18n/catch.en.json';
@@ -9,7 +9,7 @@ const tally = (month: number, hour: number, n: number, seed: number) => {
   const r = mulberry32(seed);
   const out: Partial<Record<PondFishId, number>> = {};
   for (let i = 0; i < n; i++) {
-    const f = pickPondFish(month, hour, r);
+    const f = (pick(POND_FISH, month, hour, r) ?? 'crucian-carp') as PondFishId;
     out[f] = (out[f] ?? 0) + 1;
   }
   return out;

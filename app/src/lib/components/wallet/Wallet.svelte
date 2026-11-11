@@ -13,8 +13,7 @@
   import Bells from '../ui/Bells.svelte';
   import BellsLog from '../kiroku/BellsLog.svelte';
   import type { PersonId, ShopItemId } from '#lib/types.ts';
-  import { walletAt, type LedgerSpend } from '#lib/model/bells.ts';
-  import { bellsLedger } from '#lib/model/history.ts';
+  import { bellsLedger, type LedgerSpend } from '#lib/model/bells.ts';
   import { SHOP, shopPrice } from '#lib/contract/rules.ts';
   import { walletFill } from './fill.ts';
   import { week } from '#lib/store/week.svelte.ts';
@@ -35,12 +34,12 @@
   const m = $derived(week.model);
   /** The rewards' prices now (contract/rules.ts shopPrice). */
   const prices = $derived(Object.fromEntries(SHOP.map((x) => [x.id, shopPrice(x.id, m?.now ?? 0) ?? x.bells])) as Record<ShopItemId, number>);
-  /** The buys, newest first (walletAt is memoised per model and minute, as the view computed it). */
-  const spends = $derived(m ? [...walletAt(m.state, m.now).spends].reverse() : []);
   const names = $derived({ A: view?.people.A.villagerName ?? 'A', B: view?.people.B.villagerName ?? 'B' } as Record<PersonId, string>);
   const villagers = $derived({ A: view?.people.A.villager ?? null, B: view?.people.B.villager ?? null } as Record<PersonId, string | null>);
   const order = $derived<PersonId[]>([view?.me ?? 'A', view?.partner ?? 'B']);
   const ledger = $derived(m ? bellsLedger(m.state, m.now) : null);
+  /** The buys, newest first. */
+  const spends = $derived(ledger?.spends ?? []);
 
   /** The reward being asked about. */
   let ask = $state<ShopItemId | null>(null);

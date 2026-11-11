@@ -125,9 +125,8 @@ const storedOutbox: OutboxStore = {
 /** A person key's tag (never the key itself in storage twice): its FNV-1a hash. */
 const keyTag = (key: string): string => fnv1a(key.toLowerCase()).toString(36);
 
-/** What the socket did (counters since the page loaded, and the last acks' round trips): for the budget and the e2e.
- *  @public (the e2e) */
-export interface LiveMetrics {
+/** What the socket did (counters since the page loaded, and the last acks' round trips): for the budget. */
+interface LiveMetrics {
   sent: number;
   sentBytes: number;
   recv: number;

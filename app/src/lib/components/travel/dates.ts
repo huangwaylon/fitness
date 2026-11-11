@@ -4,27 +4,20 @@ import type { Locale } from '#lib/i18n/index.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { weekdayOf } from '#lib/i18n/format.ts';
 
-const fmts = new Map<string, Intl.DateTimeFormat>();
-function fmt(date: string, locale: Locale, weekday: boolean): string {
-  const k = `${locale}${weekday ? 'w' : ''}`;
-  let f = fmts.get(k);
-  if (!f) fmts.set(k, (f = new Intl.DateTimeFormat(locale === 'ja' ? 'ja-JP' : 'en-US', { month: locale === 'ja' ? 'numeric' : 'short', day: 'numeric', weekday: weekday ? 'short' : undefined, timeZone: 'UTC' })));
-  const [y, m, d] = date.split('-').map(Number);
-  return f.format(Date.UTC(y, m - 1, d, 12));
-}
-
-/** A YYYY-MM-DD `dd` days on (−1, 1), without its weekday: 'Feb 10', '2/10'. */
-export const dateOn = (date: string, dd: number, locale: Locale): string => fmt(addDays(date, dd), locale, false);
-
 const parts = (date: string) => date.split('-').map(Number) as [number, number, number];
-const enFmt = new Map<string, Intl.DateTimeFormat>();
-function en(date: string, o: Intl.DateTimeFormatOptions): string {
-  const k = JSON.stringify(o);
-  let f = enFmt.get(k);
-  if (!f) enFmt.set(k, (f = new Intl.DateTimeFormat('en-US', { ...o, timeZone: 'UTC' })));
+const fmts = new Map<string, Intl.DateTimeFormat>();
+/** `date` (noon UTC) in `locale` with `o`, each formatter made once. */
+function fmt(date: string, locale: Locale, o: Intl.DateTimeFormatOptions): string {
+  const k = locale + JSON.stringify(o);
+  let f = fmts.get(k);
+  if (!f) fmts.set(k, (f = new Intl.DateTimeFormat(locale === 'ja' ? 'ja-JP' : 'en-US', { ...o, timeZone: 'UTC' })));
   const [y, m, d] = parts(date);
   return f.format(Date.UTC(y, m - 1, d, 12));
 }
+const en = (date: string, o: Intl.DateTimeFormatOptions): string => fmt(date, 'en', o);
+
+/** A YYYY-MM-DD `dd` days on (−1, 1), without its weekday: 'Feb 10', '2/10'. */
+export const dateOn = (date: string, dd: number, locale: Locale): string => fmt(addDays(date, dd), locale, { month: locale === 'ja' ? 'numeric' : 'short', day: 'numeric' });
 
 /** A trip's span in the list: '2月11日(木)〜16日(火)' (the month again when it changes), 'Thu, Feb 11 – Tue, Feb 16'. */
 export function listSpan(start: string, end: string, locale: Locale): string {

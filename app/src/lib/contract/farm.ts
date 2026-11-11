@@ -10,7 +10,7 @@
 // row as kept. The produce and the starts are pocket goods (`goods:<crop>`, `goods:<crop>-start`: contract/pocket.ts),
 // so the shop sells them as any other. Shared by the record and the model; pure.
 import { isLocalDate, isRec } from './api.ts';
-import { dayNum, dayOf } from './tokyo.ts';
+import { addDays, dayNum, dayOf } from './tokyo.ts';
 import type { LocalDate, Who } from '../types.ts';
 
 /** NH 2.0's six vegetables (one price, any season). */
@@ -135,14 +135,14 @@ export function farmStep(f: Farm, who: Who, data: FarmData, judge?: FarmJudge): 
     const why = farmRefusal(f, who, data.d, op, pocket);
     if (why && (judge || why === 'taken' || why === 'empty' || why === 'owner')) continue;
     if (op.o === 'plant') {
-      f.plots.set(op.p, { who, c: op.c, from: dayOf(dayNum(data.d) + FARM.growDays) });
+      f.plots.set(op.p, { who, c: op.c, from: addDays(data.d, FARM.growDays) });
       add(f, who, seedKey(op.c, op.src), -1);
       kept.push(op);
     } else if (op.o === 'harvest') {
       const pl = f.plots.get(op.p)!;
       const n = judge ? yieldOf(op.p, pl, judge.watered) : op.n;
       add(f, who, cropKey(pl.c), n);
-      f.plots.set(op.p, { who: pl.who, c: pl.c, from: dayOf(dayNum(data.d) + FARM.regrowDays), r: true });
+      f.plots.set(op.p, { who: pl.who, c: pl.c, from: addDays(data.d, FARM.regrowDays), r: true });
       kept.push({ o: 'harvest', p: op.p, n });
     } else {
       add(f, who, startKey(f.plots.get(op.p)!.c), 1);

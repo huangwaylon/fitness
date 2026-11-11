@@ -50,7 +50,6 @@ export function shadowBox(was: ShadowBox | null, camZ: number, camX: number, zoo
   const kq = moving && was && zq < was.k ? zq - OUT : zq, half = halfAt(kq, viewW, zoomMin);
   const same = !!was && was.k === kq && was.x === x && was.sun === sunAt, lead = (LEAD * viewW) / kq;
   if (same && Math.abs(drift) <= lead) return null;
-  (globalThis as any).__sb?.push([moving, zq, was?.k, Math.round(drift), was?.lead, x - (was?.x ?? 0), was ? Math.round(was.half - halfAt(zq, viewW, zoomMin)) : 0, same]);
   const z = same ? camZ + Math.sign(drift) * lead : camZ;
   // (a step's play either way, and the pivot's drift past a 40 u step's along the island as the box sees it: the shadow
   // camera's view of the island's forward, (dx, dy·dz) / |(dx, dz)| of the sun's direction)

@@ -7,7 +7,7 @@
 // record (relay/src/store.ts), the model, the relay protocol and the island; pure and dependency-free.
 import { isInt, isMs } from './ops.ts';
 
-/** The ten items (island/decor.ts has their art and footprints). @public (the island) */
+/** The ten items (island/decor.ts has their art and footprints). */
 export const DECOR_ITEMS = [
   'stone-lantern', 'birdbath', 'garden-wagon', 'iron-table', 'iron-chair', 'brick-well', 'tanuki', 'monstera', 'signpost', 'wheelbarrow'
 ] as const;

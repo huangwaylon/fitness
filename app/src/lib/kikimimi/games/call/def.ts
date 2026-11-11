@@ -12,15 +12,14 @@
 // others (a round of one row: both). Each player is right when all of theirs are; the team's memo is the union (the
 // session's `team.all`: both right).
 import { mulberry32, shuffle } from '#lib/random.ts';
-import type { ListenRow } from '../../../contract/listen.ts';
 import type { RosterId } from '#lib/villagers/roster.ts';
 import type { CastId, Item, Level, Tags } from '../../bank.ts';
 import { PLACES } from '../../catalog.ts';
 import type { ListenItem, ListenPart } from '../../listen.ts';
 import type { Tier } from '../../lesson.ts';
-import type { AnswerValue, GameDef, Round } from '../../round/types.ts';
+import type { AnswerValue, Round } from '../../round/types.ts';
 import { PLAY_UNKNOWN } from '../quiz/kinds.ts';
-import { EMPTY, ROLES, filled, listenGame, listenRecord, shareOf, tierAt, type ListenOpts, type ListenRules, type ListenSource } from '../listened.ts';
+import { EMPTY, ROLES, filled, shareOf, tierAt, type ListenOpts, type ListenRules } from '../listened.ts';
 
 /** A game's calls (2 rounds each: 6, within the row's 12). */
 export const CALL_QS = 3;
@@ -218,8 +217,3 @@ export const CALL: ListenRules<CallCard, CallRound> = {
   pick: (r, a) => wrongMask(r, a as readonly number[])
 };
 
-export const callGame = (src: ListenSource<CallCard>): GameDef<ListenOpts> => listenGame(CALL, src);
-
-/** My answers of a game as its `listen` row's, by its call: the wrong rows' mask over the call's memo as `pick`. */
-export const callRecord = (rounds: readonly CallRound[], answers: readonly (AnswerValue | null)[], had: readonly boolean[], rp: readonly number[], done: boolean): ListenRow['r'] =>
-  listenRecord(CALL, rounds, answers, had, rp, done);

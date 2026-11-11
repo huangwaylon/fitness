@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import type { SnapshotRows } from '#lib/contract/api.ts';
 import { reduce } from '#lib/model/state.ts';
 import { buildWeekView } from '#lib/model/week.ts';
-import { bellsLedger } from '#lib/model/history.ts';
+import { bellsLedger } from '#lib/model/bells.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { applySnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
 import { FIRST_DAY, jst, syntheticRows } from '../../../scripts/bench-rows.ts';

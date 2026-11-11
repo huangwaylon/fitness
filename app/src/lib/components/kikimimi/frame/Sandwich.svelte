@@ -78,7 +78,7 @@
   {/if}
 {/snippet}
 
-<Sheet bind:open label={t('kiki.sand.title')} title={t('kiki.sand.title')} {onclose} footer={foot}>
+<Sheet bind:open title={t('kiki.sand.title')} {onclose} footer={foot}>
   <div class="sand" data-kiki-sand={step}>
     <ol class="steps">
       {#each STEPS as s, k (s)}

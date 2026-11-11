@@ -48,7 +48,8 @@
 
   interface Props {
     open: boolean;
-    label: string;
+    /** The dialog's accessible name (default: the title). */
+    label?: string;
     /** The title bar's title (centred). */
     title?: string;
     variant?: 'paper' | 'top' | 'pop' | 'full';
@@ -68,7 +69,7 @@
     /** A form with input not saved (a form that is the sheet itself; forms inside it register: guardForm). */
     dirty?: () => boolean;
   }
-  let { open = $bindable(), label, title, variant = 'paper', onclose, ondismiss, children, footer, focusField = false, keep = false, tunes = false, timed, dirty }: Props = $props();
+  let { open = $bindable(), title, label = title ?? '', variant = 'paper', onclose, ondismiss, children, footer, focusField = false, keep = false, tunes = false, timed, dirty }: Props = $props();
 
   /** The forms inside it (guardForm), and the close waiting on 破棄する while the question is up. */
   const forms = new Set<() => boolean>();
