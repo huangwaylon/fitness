@@ -17,12 +17,16 @@
 //   load <file>         a dump into the record (its rows by the record's rules, in chunks; what it has is skipped):
 //                       a `.json`, a `.json.gz`, or the backup's `.json.gz.age` / old `.json.age` decrypted in memory
 //                       with the age key (ARCHIVE_KEY_FILE, else ~/.config/island-fund/archive-age.key; never printed)
+//   verify-dump [date]  the restore drill, writing nothing: the newest backup (or that day's) from the archive's release
+//                       (gh), decrypted and read in memory, its rows per table next to the live record's `counts`
+//                       (only counts printed: never a row, never the key)
 //   held [A|B]          the values an ingest held back (a past day's 0 over a value above it), never served
 //   promote <person> <date> <metric> [value]   a held value made a row of the day's history (its latest now)
 // (the phones' and the relay's events: scripts/logs.ts, `npm run logs`)
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { signed } from './admin.ts';
+import { signed, TEST } from './admin.ts';
 import { openDump } from '../src/archive.ts';
 
 const args = process.argv.slice(2).filter((a: string) => a !== '--test');
@@ -83,6 +87,29 @@ async function load(rows: { metrics?: unknown[][]; events?: unknown[][]; uploads
   console.log('loaded', JSON.stringify(sum), 'record now', JSON.stringify(last));
 }
 
+/** The archive's release (wrangler.toml ARCHIVE_REPO, ARCHIVE_RELEASE). */
+const ARCHIVE_REPO = 'huangwaylon/fitness-archive', ARCHIVE_TAG = TEST ? 'dumps-test' : 'dumps';
+
+/** The restore drill: a backup read in memory (never a file), its counts next to the live record's. */
+async function verifyDump(day?: string): Promise<void> {
+  const gh = (...a: string[]) => execFileSync('gh', [...a, '-R', ARCHIVE_REPO], { maxBuffer: 1 << 30 });
+  const names = gh('release', 'view', ARCHIVE_TAG, '--json', 'assets', '-q', '.assets[].name').toString().split('\n')
+    .filter((n) => /^island-record-\d{4}-\d{2}-\d{2}\.json(\.gz)?\.age$/.test(n) && (!day || n.includes(day))).sort();
+  const name = names.at(-1);
+  if (!name) throw new Error(`no dump${day ? ` of ${day}` : ''} in ${ARCHIVE_TAG}`);
+  const bytes = gh('release', 'download', ARCHIVE_TAG, '-p', name, '-O', '-');
+  const d = await readDump(new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.length));
+  const n = (k: string) => d.rows[k]?.length ?? 0;
+  const dump = { metrics: n('metrics'), events: n('events'), uploads: n('uploads'), held: n('held') };
+  const live = (await signed({ op: 'counts' })) as { counts: Record<string, number>; rev: string };
+  console.log(`${name} (${Math.round(bytes.length / 1024)} kB): rev ${d.rev}, ${JSON.stringify(dump)}`);
+  console.log(`the live record: rev ${live.rev}, ${JSON.stringify(live.counts)}`);
+  // a dump is the record of its day: no table more than the record's now (nothing is deleted: COMPACT_CRON is off)
+  const ok = (['metrics', 'events', 'uploads'] as const).every((k) => dump[k] <= (live.counts[k] ?? 0)) && dump.metrics > 0 && dump.events > 0;
+  console.log(ok ? 'restorable: every table read, none above the record\'s' : 'CHECK: a table empty or above the live record\'s');
+  if (!ok) process.exitCode = 1;
+}
+
 const [cmd, arg] = args;
 switch (cmd) {
   case 'counts':
@@ -117,10 +144,13 @@ switch (cmd) {
     console.log(JSON.stringify(await signed({ op: 'promote', person, date, metric, ...(value !== undefined ? { value: Number(value) } : {}) })));
     break;
   }
+  case 'verify-dump':
+    await verifyDump(arg);
+    break;
   case 'load':
     await load((await readDump(readFileSync(arg))).rows);
     break;
   default:
-    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | held [person] | promote <person> <date> <metric> [value]  [--test]');
+    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value]  [--test]');
     process.exit(1);
 }

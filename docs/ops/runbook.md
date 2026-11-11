@@ -101,6 +101,9 @@ re-sent: [shortcut §5](shortcut-health-sync.md#5-one-time-baseline-optional)). 
     `record.ts load` takes it as it is (decrypted in memory with `~/.config/island-fund/archive-age.key`). By hand:
     `age -d -i ~/.config/island-fund/archive-age.key island-record-YYYY-MM-DD.json.gz.age | gunzip > record.json`
     (an old `.json.age`: no `gunzip`). The secret key is only on the Mac and in the password manager.
+  - **The drill** (monthly, writes nothing): `node scripts/record.ts verify-dump [YYYY-MM-DD] [--test]` downloads the
+    newest dump (or that day's), decrypts and reads it in memory, and prints only its rows per table next to the live
+    `counts` (none may be above them). Last run 2026-11-11: the 11-11 dump read whole, every table under the record's.
 
 **Restore** after a bad change: the record to a bookmark from before it (§9; the new epoch follows by itself: `counts`
 shows the new rev a few seconds on). From a dump into a new, empty record: `load <file>` (a backup's `.age` too), then `rev`.
