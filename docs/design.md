@@ -838,22 +838,22 @@ during もようがえ.
 with its own money, かいがら, never ベル ([decisions](decisions.md#the-shops-かいがら)): the island's catches sell for them
 and buy furniture for the rooms. Each person's own pocket and かいがら, the guest's too.
 
-- **Inside, in 3D** (`shop/plan.ts` on the rooms' engine): NH's built-up Nook's Cranny, in by its door as the tent.
-  まめきち and つぶきち behind the counter. Today's stock stands in the room, the same on every phone (the largest on the
-  stage, small things on the table, wall things on the back wall; the rest in the list only). The camera follows my
-  villager; drag, pinch and ⌂ as the rooms. **Others in the shop are drawn** (the rooms' presence, `sc: 's'`).
-- **The finger** (the rooms' rule): a floor tap walks; a tap on a piece picks it in place (its card: price and 買う, or
-  owned); a tap on the twins (their bodies and the counter's top, never the floor before it), their balloon or the sign
-  by the door is NH's choice box (sell · buy · nothing), the only way to the counter's list, a sheet over the room.
-  Their greeting balloon takes no tap meant for the room. A name breaks only between words (`shop/words.ts`).
-- **うる** (sell): my pocket (what I caught, found or picked up less what I sold), dearest first; a tap picks one more,
-  − one less, all; the bar sells. Selling takes nothing out of the ずかん or the museum; a present's furniture or recipe
-  and a message bottle never sell. An empty pocket opens on かう.
-- **かう** (buy): first the fields' starts ([farming.md](farming.md)); then today's stock, 24 pieces a Tokyo day, seeded,
-  less every piece the island had by the day's start, so both phones agree all day. 全部 picks every piece I don't have
-  and 買う buys them as one group (all or none); short of the total, the twins say by how much. A bought piece is mine in
-  模様替え in every room.
-- A sell or a buy shows at once with 取り消す for 5 s, then the record checks it ([backend](backend.md#events)).
+- **Inside, in 3D** (`shop/plan.ts` on the rooms' engine): NH's Nook's Cranny, in by its door. まめきち and つぶきち
+  behind the counter; today's stock in the room, the same on every phone (stage, table, back wall; the rest in the list
+  only). Camera, drag, pinch and ⌂ as the rooms. **Others in the shop are drawn** (presence `sc: 's'`).
+- **The finger** (the rooms' rule): a floor tap walks; a tap on a piece picks it in place (its card: price and 買う); a
+  tap on the twins (their bodies and the counter's top), their balloon or the sign (「タップで かう・うる」) opens the list
+  at once, on its last tab (an empty pocket: かう). No choice box, no auto-open. The twins talk only in the room.
+- **The list** (`shop/Counter.svelte`): NavBar 「タヌキ商店」, my かいがら as a `.chip.s` left, ✕ right; 売る · 買う; the
+  button carries the total (「{v}かいがらで売る」).
+- **うる**: my pocket (caught, found or picked up, less sold) in 56 px rows by section (`shop/pocket.ts`; shells are
+  「貝」). A row's tap picks its stack, − / + one, a section's 全部 all of it (`shop/sell.ts`); starts are section 苗, no
+  全部. Selling leaves the ずかん and the museum; presents and bottles never sell.
+- **かう**: today's stock first, 24 pieces a Tokyo day, seeded, less what the island had by the day's start (both
+  phones agree); past my かいがら dimmed with 「あと{n}」; then the starts ([farming.md](farming.md)). One piece at a
+  time. A bought piece is mine in 模様替え. VisitorShop shares the tile (`shop/PieceTile.svelte`).
+- A sell or a buy shows at once with a short toast and 取り消す for 5 s, then the record checks it
+  ([backend](backend.md#events)).
 - **Prices:** NH's Bells ÷ 20 both ways (a sell at least 3); a piece NH never sells is made up (4 × its NH sell price ÷
   20); at most 10,000.
 - **The building:** one to an island, moved and turned in the editor, never removed

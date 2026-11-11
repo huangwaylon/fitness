@@ -53,11 +53,13 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
   await page.goto(`shop${Q}`);
   await expect(page.locator('[data-shop]')).toBeVisible();
   expect(await shells(page)).toBe(0);
+  // the room's wallet says the word (its cowrie is a 貝 for sale too)
+  await expect(page.locator('[data-shop-wallet]')).toHaveText('0かいがら');
   await openList(page, 'sell');
   // the pocket by its sections (むし, さかな, …, かいがら), each dearest first
   const pocket = page.locator('[data-shop-pocket] [data-shop-catch]');
   await expect(pocket).toHaveCount(3);
-  await expect(page.locator('[data-shop-sec] h2')).toHaveText(['虫', '魚', 'かいがら']);
+  await expect(page.locator('[data-shop-sec] h2')).toHaveText(['虫', '魚', '貝']);
   await expect(pocket.nth(1)).toHaveAttribute('data-shop-catch', 'fish:whale-shark');
   await expect(pocket.nth(1)).toHaveAttribute('data-n', '2');
   // + one whale shark: the offer, on the button too; + past the pocket stays at 2 (never wrapping to none)
@@ -86,7 +88,7 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
   await expect.poll(() => shells(page)).toBe(650 + 650 + 400 + 3 * 3); // a cowrie 3
   await expect(page.locator('[data-shop-empty]')).toBeVisible();
   // the banner counts what was sold, though the pocket is empty now (it was read after the sale: 「0個を…」)
-  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('5個を1,059かいがらで売りました');
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('5個を売りました（1,059かいがら）');
   // かう: the day's stock, 24 pieces (no いつもの); one at most 1,709
   await page.locator('[data-shop-tab="buy"]').click();
   await expect(stock(page)).toHaveCount(24);
@@ -96,6 +98,8 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
   await expect(page.locator('[data-shop-buy]')).toHaveText(`${price.toLocaleString('ja-JP')}かいがらで買う`);
   await page.locator('[data-shop-buy]').click();
   await expect.poll(() => shells(page)).toBe(1709 - price);
+  await expect(page.locator('.banner[role="status"] .txt')).toContainText(`を買いました（${price.toLocaleString('ja-JP')}かいがら）`);
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/shop-bought-toast.png`, animations: 'disabled' });
   await expect(item).toHaveAttribute('data-owned', 'true');
   // bought once: picked again, かう only boops (and still in today's stock)
   await item.click();
@@ -168,6 +172,7 @@ test('overspending is refused: a piece past my かいがら is dimmed with how m
   await expect(page.locator('[data-shop-left]')).toHaveText('毎日入れ替え・残り24点');
   await tile.click();
   await expect(page.locator('[data-shop-pick]')).toHaveText(`あと${(price - 4).toLocaleString('ja-JP')}かいがら足りません`);
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/shop-buy-short.png`, animations: 'disabled' });
   await expect(page.locator('[data-shop-buy]')).toHaveAttribute('aria-disabled', 'true');
   await page.locator('[data-shop-buy]').click({ force: true });
   expect(await shells(page)).toBe(4);
@@ -182,7 +187,7 @@ test('an empty pocket: うる says it’s empty, no 売る bar; かう has the d
   await openList(page, 'buy');
   await expect(stock(page).first()).toBeVisible();
   await page.locator('[data-shop-tab="sell"]').click();
-  await expect(page.locator('[data-shop-empty]')).toHaveText('ポケットは空です。魚や虫、かいがらや木材を拾ったら、ここで売れます');
+  await expect(page.locator('[data-shop-empty]')).toHaveText('ポケットは空です。魚や虫、貝や木材を集めると、ここで売れます');
   await expect(page.locator('[data-shop-sell], [data-shop-offer]')).toHaveCount(0);
 });
 

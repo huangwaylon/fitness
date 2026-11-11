@@ -135,7 +135,7 @@
 <section class="menu sheet-copy" data-shop-panel={tab}>
   <!-- the title bar (タヌキ商店, my かいがら, ✕) and the tabs stay put; the list scrolls under them, the bar at the foot -->
   <header class="pin">
-    <NavBar title={t('shop.title')} {trailing} />
+    <NavBar title={t('shop.title')} lead={wallet} {trailing} />
     <Segmented items={[{ id: 'sell', label: t('shop.tab.sell') }, { id: 'buy', label: t('shop.tab.buy') }]} value={tab} label={t('shop.title')} attr="shop-tab" onpick={switchTab} />
   </header>
 
@@ -235,10 +235,9 @@
   </li>
 {/snippet}
 
-{#snippet trailing()}
-  <span class="chip s wallet" data-shop-wallet-chip>{t('shop.wallet', { v: formatNum(shop.shells) })}</span>
-  <NavButton kind="close" data-shop-close onclick={onclose} />
-{/snippet}
+<!-- (my かいがら on the left, ✕ alone on the right: the two sides alike, the title centred and clear of both) -->
+{#snippet wallet()}<span class="chip s wallet" data-shop-wallet-chip>{t('shop.wallet', { v: formatNum(shop.shells) })}</span>{/snippet}
+{#snippet trailing()}<NavButton kind="close" data-shop-close onclick={onclose} />{/snippet}
 
 <style>
   /* the sheet: its head and tabs pinned at the top and the bar at the foot, only the list between them scrolls (its own
@@ -258,7 +257,7 @@
     flex: none; display: grid; gap: 6px; padding: 4px calc(var(--side) + var(--safe-right)) 10px calc(var(--side) + var(--safe-left));
     box-shadow: 0 2px 0 var(--c-lip);
   }
-  .wallet { cursor: default; font-family: var(--font-num); font-variant-numeric: tabular-nums; margin-right: 4px; }
+  .wallet { cursor: default; font-variant-numeric: tabular-nums; margin-left: 6px; }
   .wallet:active { transform: none; }
   .list {
     flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; -webkit-overflow-scrolling: touch;

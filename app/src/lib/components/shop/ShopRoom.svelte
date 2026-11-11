@@ -507,9 +507,10 @@
     onpointercancel={onCancel} onwheel={onWheel} aria-label={t('shop.room')}></canvas>
   <div class="top" bind:this={top}>
     <NavButton kind="back" text={t('shop.out')} onclick={leave} sfx="self" />
-    <p class="wallet" data-shop-wallet aria-label={t('shop.wallet', { v: formatNum(shop.shells) })}>
+    <!-- my かいがら, the word said (the cowrie is also a kind of 貝 sold here) -->
+    <p class="wallet" data-shop-wallet>
       <span class="shell" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={26} eager /></span>
-      <b class="num" aria-hidden="true">{formatNum(shop.shells)}</b>
+      <b class="num">{t('shop.wallet', { v: formatNum(shop.shells) })}</b>
     </p>
   </div>
   {#if turned && !fpv && !panel}
@@ -570,7 +571,7 @@
     background: var(--c-cream); box-shadow: 0 var(--lip-h) 0 var(--c-lip); color: var(--c-ink);
   }
   .shell { display: inline-flex; width: 30px; justify-content: center; line-height: 0; }
-  .num { font: 700 var(--fs-talk)/1 var(--font-num); font-variant-numeric: tabular-nums; }
+  .num { font: 700 var(--fs-body)/1 var(--font-ui); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .reset {
     position: absolute; right: calc(var(--side) + var(--safe-right)); top: calc(var(--ui-top) + 64px); z-index: 2;
     width: 52px; height: 52px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer;
