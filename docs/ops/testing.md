@@ -223,8 +223,7 @@ Anywhere: `?panel=rewards` opens ごほうび at once; the 3D island's renderer 
 `?shadows=0|1`, `?ambient=<fps>`, and for the phones' A/B (perf.drag, perf.rest) `?dprmove=<ratio>` (while the camera
 moves: 1.5; at `dpr` or above no swap), `?shadow=<px>` (the shadow map's size: 2048), `?cull=0` (every still thing
 drawn, the nearest out of view too: world3d/things.ts cull), `?points=<n>` (the real point lights: 6; 0 none) and
-`?pointmask=1` (an unlit point light's shader work skipped, all of it by day: bend.ts maskedLights; Mac GPU at rest noon
-1.38 -> 1.19 ms, 21:00 1.38 -> 1.34; `?points=0` 1.10. The default changes only on a phone A/B of >= 10 %).
+`?pointmask=1` (unlit point lights' shader work skipped: bend.ts maskedLights).
 The editor's params: [island-layout.md](../island-layout.md). The live island sets `window.__world` (`cam()`, `go(z)`, `at(x, z)`, `put(x, z)`, `idle()`, `quiet()`, `perf`, `stops()`, `mine()`,
 `partner()`, `geo()`, `site()`, …) for the e2e and the console (e2e/island.ts wraps them).
 
