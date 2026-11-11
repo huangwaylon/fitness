@@ -72,7 +72,7 @@
   "error.hint": "Please try again.",
   "error.home": "Back to island",
   "error.notFound": "We couldn't find that page",
-  "pair.keyHint": "Keys are 16+ letters and digits",
+  "pair.keyHint": "Keys are 32+ characters (0–9 and a–f). Opening the link you were sent fills it in",
   "kiroku.range": "{a}–{b}",
   "kiroku.me": "You",
   "kiroku.min": "{n} min",

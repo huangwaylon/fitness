@@ -10,6 +10,7 @@
   import { onMount } from 'svelte';
   import { t, i18n, setLocale } from '#lib/i18n/index.ts';
   import Bubble from '#lib/components/ui/Bubble.svelte';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import OfficialArt from '#lib/components/characters/OfficialArt.svelte';
   import { withKeyboardInset } from '#lib/components/ui/keyboardInset.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -90,8 +91,9 @@
       aria-describedby="pair-msg"
       data-sfx="none"
     />
-    <!-- A key that can't be right yet (too short) says what a key looks like, instead of a silent grey button. -->
-    <p id="pair-msg" class="msg" class:info={!msg} role="status">{msg || (code && !ready ? t('pair.keyHint') : '')}</p>
+    <!-- A key that can't be right yet (too short) says what a key looks like (as `ready` checks it) and where it comes from,
+         instead of a silent grey button. -->
+    <p id="pair-msg" class="msg" class:info={!msg} role="status"><Phrases text={msg || (code && !ready ? t('pair.keyHint') : '')} /></p>
     {#if msg}
       <!-- the gate's police (NH's Copper turns a wrong key away; Booker asks to wait while it can't be checked) -->
       {@const guard = msg === t('pair.wrong') ? 'copper' : 'booker'}
@@ -135,6 +137,9 @@
   .guard img { flex: none; width: 44px; height: 44px; }
   .hint { margin: 0; text-align: center; color: var(--text-soft); padding: 10px 14px; font-weight: 700; font-size: var(--fs-s); }
   .hint.strong { background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-btn); }
+  /* night: the sunk navy (--ctl-off) on the navy card read as a solid slab, a button to press; a dashed, empty one
+     reads as not yet (review 11/10 r3 N5) */
+  :global(:root[data-tod='night']) .btn[aria-disabled='true'] { --fill: transparent; outline: 2px dashed color-mix(in srgb, var(--edge) 55%, transparent); outline-offset: -2px; }
   @media (max-height: 700px), (max-width: 359px) {
     .pair { --pair-host: 56px; gap: 10px; }
     .port { width: 160px; }
