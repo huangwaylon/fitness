@@ -17,12 +17,15 @@
 //   layout's had run (the startup review). Its chunk and its static imports, transitively, as modulepreload; its
 //   stylesheets as preload, crossorigin as Vite asks for them (else the preload goes unused and they come twice).
 //   (Before 404.html is copied from it: `npm run build`.)
+// - index.html carries the chunks' import map (vite.config.ts chunkImportMap: a chunk imports another by a stable key),
+//   inline before any module, its hash added to the CSP's script-src.
 // - The models (`*.glb`, ~1,800 files, 51 MB), the room and player packs and the recogniser's parts (`stt/**.pN`; not
 //   its whole files: the runtime's .mjs is imported by its URL) go as application/x-protobuf: Cloudflare compresses only
 //   the types on its list, and model/gltf-binary and octet-stream aren't (gzip takes 28 % off the models, ~16 % off the
 //   packs, ~50 % off the recogniser); the loaders read the bytes whatever the type, and none trusts content-length (a
 //   compressed answer has none).
-import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { STT_SETS } from '../src/lib/mic/models.ts';
 
@@ -58,6 +61,25 @@ let html = readFileSync(join(root, 'index.html'), 'utf8');
     writeFileSync(join(root, 'index.html'), html);
   }
   console.log(`build-pages/index.html: the island page's ${links.length} preloads`);
+}
+
+{
+  // the chunks' import map (vite.config.ts chunkImportMap: build-pages/importmap.json) inline, first in the head (before
+  // any module is fetched), its paths from the site's root (Vite writes them from the page's: a route's own path broke
+  // them), its hash in the CSP's script-src
+  const file = join(root, 'importmap.json');
+  if (existsSync(file)) {
+    const { imports } = JSON.parse(readFileSync(file, 'utf8')) as { imports: Record<string, string> };
+    const abs = (u: string) => (u.startsWith('./_app/') ? `${base}/${u.slice(2)}` : u);
+    const json = JSON.stringify({ imports: Object.fromEntries(Object.entries(imports).map(([k, v]) => [abs(k), abs(v)])) });
+    const sha = `'sha256-${createHash('sha256').update(json).digest('base64')}'`;
+    const meta = /(<meta http-equiv="content-security-policy" content="[^"]*script-src [^;"]*)([^>]*>)/.exec(html);
+    if (!meta) throw new Error('headers: no script-src in index.html\'s CSP <meta>, for the import map\'s hash');
+    html = html.replace(meta[0], `${meta[1]} ${sha}${meta[2]}\n\t\t<script type="importmap">${json}</script>`);
+    writeFileSync(join(root, 'index.html'), html);
+    rmSync(file);
+    console.log(`build-pages/index.html: the import map, ${Object.keys(imports).length} chunks`);
+  } else if (!html.includes('<script type="importmap">')) throw new Error('headers: no build-pages/importmap.json (vite.config.ts chunkImportMap)');
 }
 const csp = /<meta http-equiv="content-security-policy" content="([^"]+)"/.exec(html)?.[1];
 if (!csp) throw new Error('headers: no content-security-policy <meta> in build-pages/index.html');

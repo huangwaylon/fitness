@@ -46,7 +46,9 @@ const html = readFileSync(join(BUILD, 'index.html'), 'utf8');
 const kb = (n: number) => `${(n / 1024).toFixed(1)} KB`;
 const fail: string[] = [];
 
-// the first load: index.html's own files and, transitively, their static imports
+// the first load: index.html's own files and, transitively, their static imports (a chunk's import names a stable key:
+// index.html's import map gives its file, scripts/headers.ts)
+const importMap = JSON.parse(/<script type="importmap">([^<]*)<\/script>/.exec(html)?.[1] ?? '{"imports":{}}') as { imports: Record<string, string> };
 const first = new Set<string>();
 const queue = [...html.matchAll(/(?:href|src)="([^"]+\.(?:js|css))"/g)].map((m) => m[1].slice(base.length + 1));
 while (queue.length) {
@@ -55,7 +57,10 @@ while (queue.length) {
   first.add(f);
   if (!f.endsWith('.js')) continue;
   const dir = f.slice(0, f.lastIndexOf('/') + 1);
-  for (const m of readFileSync(join(BUILD, f), 'utf8').matchAll(/(?:import|from)\s*["'](\.{1,2}\/[^"']+\.js)["']/g)) queue.push(new URL(m[1], `http://x/${dir}`).pathname.slice(1));
+  for (const m of readFileSync(join(BUILD, f), 'utf8').matchAll(/(?:import|from)\s*["'](\.{1,2}\/[^"']+\.js)["']/g)) {
+    const at = new URL(m[1], `http://x${base}/${dir}`).pathname;
+    queue.push((importMap.imports[at] ?? at).slice(base.length + 1));
+  }
 }
 let js = 0, css = 0;
 for (const f of first) {
@@ -129,7 +134,7 @@ const walk = (d: string) => {
 walk(BUILD);
 if (pre > PRECACHE) fail.push(`the precache is ${kb(pre)} on the wire (≤ ${kb(PRECACHE)})`);
 
-console.log(`first load (gzipped): JS ${kb(js)}, CSS ${kb(css)}, ${first.size} files; precache ${preFiles} files, ${(pre / 1048576).toFixed(2)} MB on the wire; the recogniser's worker ${kb(sttGz)}; the mic core ${kb(micGz)}`);
+console.log(`first load (gzipped): JS ${kb(js)}, CSS ${kb(css)}, ${first.size} files, index.html ${kb(gzipSync(html).length)} (its import map); precache ${preFiles} files, ${(pre / 1048576).toFixed(2)} MB on the wire; the recogniser's worker ${kb(sttGz)}; the mic core ${kb(micGz)}`);
 if (fail.length) {
   console.error(`load-budget: ${fail.join('; ')}`);
   process.exit(1);

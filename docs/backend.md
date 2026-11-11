@@ -498,7 +498,10 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
   the latest), so a first visit's precache never competes with them; that page then posts its resource timings' URLs
   (`warm`) and the worker keeps their models and art from the HTTP cache (`caches.ts warmable`).
 - **Install:** precaches the built JS/CSS and what `caches.ts precachable` keeps (the rest on first use); the hashed
-  chunks all or nothing (`addAll`), the static files by content hash (`caches.ts installStatics`).
+  chunks all or nothing (`addAll`), the static files by content hash (`caches.ts installStatics`). A chunk imports
+  another by a stable key (index.html's import map, `vite.config.ts` chunkImportMap), so a deploy's install fetches
+  only the chunks that changed, not every importer of one (11-10's 122 deploys replayed: 412 → 155 KB a deploy,
+  839 → 573 KB an open at 7 opens a day).
 - **Activate:** keeps the current shell (`island-shell-<version>`), the previous one (an old page loads its lazy chunks
   from it), the runtime caches and the saved areas; deletes the rest, and the font slices the new build's style sheets
   no longer name (`caches.ts staleFonts`: a re-subset's).

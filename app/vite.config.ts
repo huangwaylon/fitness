@@ -316,6 +316,10 @@ export default defineConfig({
   // (lib/mic/backends/whisper.worker.ts: `/stt/ort/<ver>/`), not the bundle's, which names its 27 MB wasm for Vite to
   // emit (over Pages' 25 MiB a file, and into the precache).
   resolve: { alias: [{ find: /^onnxruntime-web\/webgpu$/, replacement: `${import.meta.dirname}/node_modules/onnxruntime-web/dist/ort.webgpu.min.mjs` }] },
+  // A chunk imports another by a stable key, the page's import map naming its file (scripts/headers.ts writes it into
+  // index.html): a changed chunk is the only file a deploy changes, not every chunk that imports it, and theirs, by its
+  // new name (a deploy's update fetched ~250 KB of chunks that differed only in the names they import; review 11/10 r2).
+  environments: { client: { build: { chunkImportMap: true } } },
   worker: { format: 'es', plugins: () => [sttNames, basisModule] },
   build: {
     // The two phones it's for: an iPhone 15 and an iPhone 16 (shipped with iOS 17 and 18), on Safari.
