@@ -3,7 +3,7 @@
 // boarding pass's 「あと 97にち」 / 「いま 2日目」 / おもいで, the list's order, the day card open today and the timeline
 // row that is now (NZ's flights cross midnight: a row's `dd` puts it on the eve or the morning after its day). Pure:
 // `now` is an instant (ms) handed in.
-import { daysBetween } from '#lib/time/dates.ts';
+import { daysBetween, localDateAt } from '#lib/time/dates.ts';
 import { instantIn, wallIn } from '#lib/time/zone.ts';
 import type { Day, DayRow, Trip } from '#lib/travel/types.ts';
 
@@ -24,14 +24,15 @@ export type Phase =
 type Clock = Pick<Trip, 'start' | 'end' | 'tz' | 'days'>;
 
 /** Where the trip stands: on its own calendar, or on a row that is now outside it (the eve's flight out, the flight
- *  home past midnight: the trip is on while they are). */
+ *  home past midnight: the trip is on while they are). The days to go are counted at home (the app's day, Tokyo's:
+ *  結婚式's too), where the travellers are till they leave, so 「あと 91日」 doesn't turn at 20:00 on Auckland's midnight. */
 export function phaseOf(trip: Clock, now: number): Phase {
   const today = wallIn(trip.tz, now).date;
   const to = daysBetween(today, trip.start);
   if (to <= 0 && daysBetween(today, trip.end) >= 0) return { k: 'now', day: 1 - to };
   const row = rowNow(trip, now);
   if (row && !row.next) return { k: 'now', day: row.day };
-  return to > 0 ? { k: 'soon', days: to } : { k: 'past' };
+  return to > 0 ? { k: 'soon', days: Math.max(1, daysBetween(localDateAt(now), trip.start)) } : { k: 'past' };
 }
 
 /** A trip that's over is read-only (the user, 2026-11-07: "they are finished"): its packing list the seed, frozen (no

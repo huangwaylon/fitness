@@ -25,7 +25,7 @@ test('the pill opens the list: coming first, then これまで; ✕ closes', asy
   await gotoTrips(page, '2026-11-04T12:00');
   // the island paused under it
   await expect(page.locator('[data-covered][data-sheet]')).toHaveCount(1);
-  // NZ (Feb 2027) coming, 99 days on Auckland's calendar; then the past, newest first
+  // NZ (Feb 2027) coming, 99 days counted at home; then the past, newest first
   const ids = await rows(page).evaluateAll((els) => els.map((e) => [e.getAttribute('data-trip'), e.getAttribute('data-phase')]));
   expect(ids).toEqual([['nz', 'soon'], ['okinawa', 'past'], ['seattle', 'past']]);
   await expect(sheet(page).locator('[data-trip="nz"] [data-days]')).toHaveText('99');
@@ -42,6 +42,15 @@ test('the pill opens the list: coming first, then これまで; ✕ closes', asy
   await expect(page.locator('[data-sheet]')).toHaveCount(0);
   await fromMenu(page, 'travel');
   await expect(rows(page)).toHaveCount(3);
+});
+
+// The days to go turn at Tokyo's midnight, where the travellers are till they leave (結婚式 counts the same), not at
+// Auckland's (20:00 in Tokyo: review 11/10 r3 N8, 「あと 91 日」 at noon read 90 at 21:30)
+test('the countdown counts at home: the same at 21:30 as at noon, one fewer after midnight', async ({ page }) => {
+  for (const [at, days] of [['2026-11-12T21:30', '91'], ['2026-11-13T00:10', '90']] as const) {
+    await gotoTrips(page, at);
+    await expect(sheet(page).locator('[data-trip="nz"] [data-days]')).toHaveText(days);
+  }
 });
 
 test('km | mi at the left of the list’s title bar (only there): kept on this phone', async ({ page }) => {

@@ -1024,8 +1024,8 @@ opens its full-height sheet, the island paused under it; an invite shows as a to
 旅行 pill opens a full-height sheet (`components/travel/TravelSheet.svelte`, its own chunk), the island paused under it.
 - **Opening:** straight into the trip on now, else where it was left; offline with the chunk not cached, a banner and a
   retry; a private value not in yet shows 🔒.
-- **The list:** upcoming (soonest first) and past, a boarding pass each (the cover, dates, the days to go on its stub, a
-  past trip a sticker). The km | mi switch in the title bar (this phone's).
+- **The list:** upcoming (soonest first) and past, a boarding pass each (the cover, dates, the days to go on its stub,
+  counted at home, Tokyo's day, as 結婚式's; a past trip a sticker). The km | mi switch in the title bar (this phone's).
 - **A trip:** the photo band, then 日程 · 地図 · キャンプ場 · 持ち物 (each only where the trip has it). 日程: a chip a day
   and 準備, the day's card, the timeline on the trip's own clock (the day on now first, its row lit). 地図: the day's
   stops; a row flies the map there, a pin scrolls to its rows.

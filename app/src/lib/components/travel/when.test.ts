@@ -32,6 +32,13 @@ describe('where a trip stands', () => {
     // Seattle's last day, Jul 19 in Seattle, is Jul 20 in Tokyo till 16:00
     expect(phaseOf(seattle, jst('2026-07-20T15:00'))).toEqual({ k: 'now', day: 18 });
   });
+  it('counts the days to go at home: they turn at Tokyo’s midnight, not Auckland’s (20:00 in Tokyo)', () => {
+    expect(phaseOf(nz, jst('2026-11-12T12:00'))).toEqual({ k: 'soon', days: 91 });
+    expect(phaseOf(nz, jst('2026-11-12T21:30'))).toEqual({ k: 'soon', days: 91 });
+    expect(phaseOf(nz, jst('2026-11-13T00:00'))).toEqual({ k: 'soon', days: 90 });
+    // the eve: Tokyo's Feb 10 is a day before Auckland's Feb 11 start, Auckland's Feb 10 already past 20:00 Tokyo
+    expect(phaseOf(nz, jst('2027-02-10T12:00'))).toEqual({ k: 'soon', days: 1 });
+  });
   it('on while a row outside the calendar is: the eve’s flight out, the flight home past midnight', () => {
     // NZ 98 leaves Narita at 18:30 Tokyo time on Feb 10 (22:30 in Auckland, the trip's day still a day off)
     expect(phaseOf(nz, jst('2027-02-10T18:40'))).toEqual({ k: 'now', day: 1 });
