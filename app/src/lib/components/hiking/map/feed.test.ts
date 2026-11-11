@@ -31,17 +31,17 @@ function fakeEngine() {
     setTrack: (p) => calls.push(`track ${p ? 'set' : 'none'}`),
     setScrub: (p) => calls.push(`scrub ${p ? 'set' : 'none'}`),
     setFix: (f, fly) => calls.push(`fix ${f ? 'set' : 'none'}${fly ? ' fly' : ''}`),
-    fit: (b) => calls.push(`fit ${b}`),
+    fit: (b, t) => calls.push(`fit ${b} ${t}`),
     zoom: () => {},
-    state: () => ({ track: 0, scrub: 0 }),
+    state: () => ({ track: 0, scrub: 0, box: null }),
     destroy: () => {}
   };
   return { engine, calls };
 }
 
-type Props = { prep: Prepared | null; scrub: Fix | null; fix: Fix | null; bottom: number };
+type Props = { prep: Prepared | null; scrub: Fix | null; fix: Fix | null; bottom: number; top: number };
 function setup() {
-  const st = { prep: $.state(null), scrub: $.state(null), fix: $.state(null), bottom: $.state(200) };
+  const st = { prep: $.state(null), scrub: $.state(null), fix: $.state(null), bottom: $.state(200), top: $.state(150) };
   const props = new Proxy({} as Props, { get: (_, k: keyof Props) => $.get(st[k]), set: (_, k: keyof Props, v) => ($.set(st[k], v), true) });
   let feed!: EngineFeed;
   const stop = $.effect_root(() => {
@@ -49,7 +49,8 @@ function setup() {
       get prep() { return props.prep; },
       get scrub() { return props.scrub; },
       get fix() { return props.fix; },
-      get bottom() { return props.bottom; }
+      get bottom() { return props.bottom; },
+      get top() { return props.top; }
     });
   });
   flushSync();
@@ -62,7 +63,7 @@ describe('EngineFeed', () => {
     const { engine, calls } = fakeEngine();
     feed.engine = engine;
     flushSync();
-    expect(calls).toEqual(['track none', 'scrub none', 'fix none', 'fit 200']);
+    expect(calls).toEqual(['track none', 'scrub none', 'fix none', 'fit 200 150']);
     calls.length = 0;
     props.prep = PREP;
     flushSync();

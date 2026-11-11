@@ -7,7 +7,7 @@ import type { Engine, Fix } from './engine.ts';
 
 /** The props, each read on its own (getters over the component's props: a scrub's move redraws the dot, not the
  *  track, whose redraw refits the camera). */
-export interface Feed { readonly prep: Prepared | null; readonly scrub: Fix | null; readonly fix: Fix | null; readonly bottom: number }
+export interface Feed { readonly prep: Prepared | null; readonly scrub: Fix | null; readonly fix: Fix | null; readonly bottom: number; readonly top: number }
 
 /** Call in a component's init (its effects end with it). */
 export class EngineFeed {
@@ -31,8 +31,8 @@ export class EngineFeed {
       if (f) this.flyNext = false;
     });
     $effect(() => {
-      const b = feed.bottom;
-      this.engine?.fit(b);
+      const b = feed.bottom, t = feed.top;
+      this.engine?.fit(b, t);
     });
   }
 }

@@ -59,8 +59,12 @@
   /** The floating row's foot (the safe area's top, NavBar's 48px): the full sheet stops 6px under it. */
   let barH = $state(0);
   let bar: HTMLElement | undefined = $state();
+  /** The map's controls' foot (‹ ✕, the save pill, ＋ −): the route is fitted under it. */
+  let topH = $state(0);
+  let ctl: HTMLElement[] = $state([]);
   function measure() {
     barH = bar?.offsetHeight ?? 0;
+    topH = Math.max(barH, ...ctl.map((c) => c.offsetTop + c.offsetHeight)) + 8;
     const card = body?.querySelector<HTMLElement>('[data-elev]') ?? body?.querySelector<HTMLElement>('.track-msg');
     const fallback = Math.round(vh * 0.16);
     if (!card) return void (peekH = fallback);
@@ -138,11 +142,11 @@
 <svelte:window bind:innerHeight={vh} />
 
 <section class="detail" data-trail-view={trail.slug} data-sheet={sheetState}>
-  <TrailMap bind:this={map} region={trail.tiles} center={trail.center} {prep} {scrub} {fix} bottom={peekH} {saved} />
+  <TrailMap bind:this={map} region={trail.tiles} center={trail.center} {prep} {scrub} {fix} bottom={peekH} top={topH} {saved} />
 
   <div class="top" bind:this={bar}><NavBar pad {onback} {onclose} /></div>
-  <div class="offline" inert={full}><SaveButton {plan} name={trail.name} /></div>
-  <div class="zoom" inert={full}>
+  <div class="offline" inert={full} bind:this={ctl[0]}><SaveButton {plan} name={trail.name} /></div>
+  <div class="zoom" inert={full} bind:this={ctl[1]}>
     <button type="button" class="disc" data-sfx="tick" aria-label={pick(S.zoomIn, L)} onclick={() => map?.zoom(1)}><Icon name="plus" size={18} stroke={2.4} /></button>
     <button type="button" class="disc" data-sfx="tick" aria-label={pick(S.zoomOut, L)} onclick={() => map?.zoom(-1)}><Icon name="minus" size={18} stroke={2.4} /></button>
   </div>

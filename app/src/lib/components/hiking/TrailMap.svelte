@@ -26,10 +26,12 @@
     fix: Fix | null;
     /** The px the sheet's peek covers at the bottom (the track is fitted above it; the credit kept over it). */
     bottom: number;
+    /** The px the controls cover at the top (‹ ✕, the save pill, ＋ −: the track is fitted under them). */
+    top: number;
     /** The trail's area is saved for offline (lib/offline): offline, 「保存した範囲のみ」, the topo to its z16. */
     saved?: boolean;
   }
-  let { region, center, prep, scrub, fix, bottom, saved = false }: Props = $props();
+  let { region, center, prep, scrub, fix, bottom, top, saved = false }: Props = $props();
 
   const loadEngine = lazy(() => import('./map/engine.ts'));
   let el: HTMLDivElement | undefined = $state();
@@ -38,7 +40,8 @@
     get prep() { return prep; },
     get scrub() { return scrub; },
     get fix() { return fix; },
-    get bottom() { return bottom; }
+    get bottom() { return bottom; },
+    get top() { return top; }
   });
 
   export const zoom = (by: 1 | -1) => feed.engine?.zoom(by);
@@ -47,7 +50,7 @@
 
   const map = mapLoader(loadEngine, ({ createEngine }) => {
     // (the props follow it in: feed.svelte.ts)
-    if (el) feed.engine = createEngine(el, { region, center, bottom, savedOnly: saved && !navigator.onLine }, { mode: (m) => (mode = m) });
+    if (el) feed.engine = createEngine(el, { region, center, bottom, top, savedOnly: saved && !navigator.onLine }, { mode: (m) => (mode = m) });
   }, { set: (m) => (mode = m), failed: () => mode === 'failed' });
   const draw = map.draw;
 

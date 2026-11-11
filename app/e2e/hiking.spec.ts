@@ -226,7 +226,7 @@ test('the track on every trail opened, again after ‹ and after ✕', async ({ 
 
 /** A blank 1×1 topo tile (a PNG), for every tile asked. */
 const TILE = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', 'base64');
-type TrailMapHook = { __trailMap?: { state(): { mode: string; track?: number } } };
+type TrailMapHook = { __trailMap?: { state(): { mode: string; track?: number; box?: [number, number] | null } } };
 
 test('drawn: the track on the map of every trail opened, not just the first', { tag: '@render' }, async ({ page }) => {
   test.setTimeout(120_000);
@@ -240,4 +240,23 @@ test('drawn: the track on the map of every trail opened, not just the first', { 
     await expect.poll(() => page.evaluate(() => (window as unknown as TrailMapHook).__trailMap?.state().track ?? 0), { timeout: 15_000 }).toBeGreaterThan(0);
   });
   expect(errors).toEqual([]);
+});
+
+// The route fitted between the controls (‹ ✕, the save pill, ＋ −: the safe area's top under them) and the sheet's peek,
+// not under ‹ and the pill (review 11/10 r3 N6: the start dot behind ‹ with the 59 px safe area).
+test('drawn: the route between the map’s controls and the sheet', { tag: '@render' }, async ({ page }) => {
+  await drawn(page);
+  await page.addInitScript(() => document.addEventListener('DOMContentLoaded', () => document.documentElement.style.setProperty('--safe-top', '59px', 'important')));
+  await page.route(/^https:\/\/(basemap\.nationalmap\.gov|cyberjapandata\.gsi\.go\.jp)\//, (r) => r.fulfill({ contentType: 'image/png', body: TILE, headers: { 'access-control-allow-origin': '*' } }));
+  await openTrails(page, true);
+  await cards(page).nth(0).click();
+  const view = sheet(page).locator('[data-trail-view="lake-22"]');
+  await expect(view.locator('[data-trail-map]')).toHaveAttribute('data-mode', 'ready', { timeout: 30_000 });
+  const box = () => page.evaluate(() => (window as unknown as TrailMapHook).__trailMap?.state().box ?? null);
+  await expect.poll(box, { timeout: 15_000 }).not.toBeNull();
+  const map = (await view.locator('[data-trail-map]').boundingBox())!;
+  const foot = Math.max(...(await Promise.all(['.offline', '.zoom'].map(async (s) => { const b = (await view.locator(s).boundingBox())!; return b.y + b.height; }))));
+  const peek = (await view.locator('.sheet').boundingBox())!.y;
+  expect(foot).toBeGreaterThan(59 + 52); // (the safe area applied)
+  await expect.poll(async () => { const [top, bottom] = (await box())!; return top + map.y >= foot && bottom + map.y <= peek; }).toBe(true);
 });

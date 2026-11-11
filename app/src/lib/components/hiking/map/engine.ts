@@ -15,11 +15,12 @@ export interface Engine {
   setTrack(p: Prepared | null): void;
   setScrub(p: Fix | null): void;
   setFix(f: Fix | null, fly: boolean): void;
-  /** The whole track in the band between the header and the sheet (`bottom` px kept clear). */
-  fit(bottom: number): void;
+  /** The whole track in the band between the controls and the sheet (`top` and `bottom` px kept clear). */
+  fit(bottom: number, top: number): void;
   zoom(by: 1 | -1): void;
-  /** What's on screen (the specs' hook: TrailMap's `window.__trailMap`): the track's and the scrub's drawn features. */
-  state(): { track: number; scrub: number };
+  /** What's on screen (the specs' hook: TrailMap's `window.__trailMap`): the track's and the scrub's drawn features,
+   *  and the track's box on the map in px (top, bottom). */
+  state(): { track: number; scrub: number; box: [number, number] | null };
   destroy(): void;
 }
 
@@ -36,7 +37,7 @@ function boundsOf(p: Prepared): LngLatBoundsLike {
 
 /** `savedOnly`: drawn offline from a saved area (lib/offline: the topo to z16), the source capped there so MapLibre
  *  scales those up past it rather than asking for tiles never saved. */
-export function createEngine(el: HTMLElement, i: { region: Region; center: Fix; bottom: number; savedOnly?: boolean }, on: { mode(m: EngineMode): void }): Engine {
+export function createEngine(el: HTMLElement, i: { region: Region; center: Fix; bottom: number; top: number; savedOnly?: boolean }, on: { mode(m: EngineMode): void }): Engine {
   setWorkerUrl(workerUrl);
   const map = new GLMap({
     container: el,
@@ -60,14 +61,15 @@ export function createEngine(el: HTMLElement, i: { region: Region; center: Fix; 
   map.addControl(new AttributionControl({ compact: false }), 'bottom-right');
 
   let loaded = false;
-  let track: Prepared | null = null, scrub: Fix | null = null, fix: Fix | null = null, bottom = i.bottom;
+  let track: Prepared | null = null, scrub: Fix | null = null, fix: Fix | null = null, bottom = i.bottom, top = i.top;
   const loadedNow = watchMode(map, SRC.base, on.mode);
   const src = (id: string) => map.getSource<GeoJSONSource>(id);
 
   function fit(): void {
     if (!track) return;
     const h = el.clientHeight || 600;
-    const cam = map.cameraForBounds(boundsOf(track), { padding: { top: 70, bottom: Math.min(h * 0.9 - 70, bottom + 30), left: 30, right: 30 }, maxZoom: 16 });
+    const t = Math.max(top, 30);
+    const cam = map.cameraForBounds(boundsOf(track), { padding: { top: t, bottom: Math.max(30, Math.min(h * 0.9 - t, bottom + 30)), left: 30, right: 30 }, maxZoom: 16 });
     // a whole zoom, as Leaflet fitted it: the topo's tiles at their own scale (a fractional zoom blurs their labels)
     if (cam) map.jumpTo({ center: cam.center, zoom: Math.floor(cam.zoom ?? 13) });
   }
@@ -109,8 +111,9 @@ export function createEngine(el: HTMLElement, i: { region: Region; center: Fix; 
       if (loaded) drawFix(fly);
       else flyOnLoad ||= fly;
     },
-    fit(b) {
+    fit(b, t) {
       bottom = b;
+      top = t;
       map.resize();
       if (loaded) fit();
     },
@@ -118,7 +121,10 @@ export function createEngine(el: HTMLElement, i: { region: Region; center: Fix; 
       if (by > 0) map.zoomIn({ duration: reduced() ? 0 : 250 });
       else map.zoomOut({ duration: reduced() ? 0 : 250 });
     },
-    state: () => ({ track: map.queryRenderedFeatures({ layers: ['track'] }).length, scrub: map.queryRenderedFeatures({ layers: ['scrub'] }).length }),
+    state: () => {
+      const ys = track?.pts.map(([lon, lat]) => map.project([lon, lat]).y);
+      return { track: map.queryRenderedFeatures({ layers: ['track'] }).length, scrub: map.queryRenderedFeatures({ layers: ['scrub'] }).length, box: ys ? [Math.min(...ys), Math.max(...ys)] : null };
+    },
     destroy() {
       removeMap(map);
     }
