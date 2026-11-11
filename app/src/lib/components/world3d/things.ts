@@ -110,6 +110,7 @@ function hingeOf(root: Object3D): { at: Vector4; flaps: Map<Mesh, boolean> } {
 /** A field's soil: its instances always carry their colour (dry white, watered dark: objects.ts WET_SOIL). */
 const SOIL = 'garden/crop-soil';
 const FADE_IN_MS = 600, FADE_OUT_MS = 600;
+const ARRIVALS = 400;
 /** A frame's step of a fade at most (ms): a slow frame never jumps it (a fade is never 0 → 1 in one frame); over the
  *  ambient rate's 83 ms at rest, so a fish's shadow fades in its time there. */
 const FADE_STEP_MS = 90;
@@ -170,6 +171,8 @@ export interface Things {
    *  with no such model built. */
   outlineEach(id: string, fn: (p: Vector3) => void): boolean;
   pending(): number;
+  /** The models in so far, in order, and when (performance.now), the first ARRIVALS a mount. */
+  arrivals(): readonly (readonly [string, number])[];
   /** A still model's instances, farthest first (by z, as built), drawn up to the last one `seen` (its box, three's
    *  space, unbent: engine.ts thingSeen); the nearer ones past it, out of view (behind the camera, under the screen's
    *  bottom), and their shadows, not drawn. One draw a model still. True when a count grew (the shadow map's due). */
@@ -284,6 +287,10 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
   const culling = o.cull ?? false;
   const base = new URL(`room/world3d/`, new URL(document.baseURI)).href;
   let pending = 0, disposed = false;
+  /** The models in, in order, and when (performance.now: the launch's perf.boot, its last before the island stood
+   *  whole); the first ARRIVALS a mount. */
+  const ins: [ModelName, number][] = [];
+  const arrived = (name: ModelName) => void (ins.length < ARRIVALS && ins.push([name, performance.now()]));
   /** This mount's models (its own scene's for proc/; the shared loads' for the rest), and those in (on its GPU, once
    *  built: what its dispose lets go of). */
   const gltfs = new Map<ModelName, Promise<GLTF | null>>(), got = new Set<GLTF>();
@@ -300,7 +307,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       pending++;
       const url = urlOf(name);
       use(url);
-      p = load(url, name).then((g) => (pending--, (g = g && member(g, name)), g && got.add(g), g));
+      p = load(url, name).then((g) => (pending--, arrived(name), (g = g && member(g, name)), g && got.add(g), g));
       gltfs.set(name, p);
     }
     return p;
@@ -994,6 +1001,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       return true;
     },
     pending: () => pending,
+    arrivals: () => ins,
     dispose() {
       disposed = true;
       for (const g of groups.values()) drop(g);

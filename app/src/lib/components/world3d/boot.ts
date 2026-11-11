@@ -44,6 +44,19 @@ export interface BootReport {
   /** Every model came without the network (a cache: the service worker's, the browser's); `net`: how many did not. */
   warm: boolean;
   net: number;
+  /** The models that came in after `loaded` up to `shown`, and the last of them (its name: what the island waited
+   *  for). */
+  late?: number;
+  lastM?: string;
+}
+
+/** Of the models in (things.ts arrivals: name, time), those after `loaded` up to `shown`, and the last's name (at
+ *  most 40 characters, the log's token). */
+export function lateModels(ins: readonly (readonly [string, number])[], loaded: number, shown: number): Pick<BootReport, 'late' | 'lastM'> {
+  let late = 0, lastM: string | undefined;
+  for (const [name, t] of ins)
+    if (t > loaded && t <= shown) (late++, (lastM = name.slice(0, 40)));
+  return lastM ? { late, lastM } : { late };
 }
 
 /** The service worker as the page was launched. */
@@ -63,7 +76,7 @@ export function modelFetches(entries: readonly { name: string; transferSize?: nu
   return { n, net };
 }
 
-type Clocked = Omit<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'sw' | 'warm' | 'net'>;
+type Clocked = Omit<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'sw' | 'warm' | 'net' | 'late' | 'lastM'>;
 
 /** The launch's clock: the engine's frames (`frame`), the page's display frames (`tick`), the marks. `done` once
  *  SETTLE_MS past `shown`; spoiled (never done) by the page hidden or the island paused meanwhile: its frames say
@@ -129,7 +142,7 @@ export const bootReport = (): BootReport | null => report;
  * WATCH_MAX_MS. A later mount (`back`: from a room, another screen) is watched the same way once a page load, its marks
  * from the mount (`perf.back`: the return's worst frame); null after that.
  */
-export function watchBoot(extra: () => Pick<BootReport, 'progs' | 'fieldsMs' | 'fields'>, paused: () => boolean): { clock: BootClock; stop(): void; back: boolean } | null {
+export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'late' | 'lastM'>, paused: () => boolean): { clock: BootClock; stop(): void; back: boolean } | null {
   if (returned || typeof requestAnimationFrame === 'undefined') return null;
   const back = launched;
   if (back) returned = true;
@@ -154,11 +167,11 @@ export function watchBoot(extra: () => Pick<BootReport, 'progs' | 'fieldsMs' | '
     stop();
     if (back) {
       const { mount, first, loaded, shown, long, draw, appear, steps } = clock.marks();
-      log('perf.back', { first: first - mount, loaded: loaded - mount, shown: shown - mount, long, draw, appear, steps, progs: extra().progs });
+      log('perf.back', { first: first - mount, loaded: loaded - mount, shown: shown - mount, long, draw, appear, steps, progs: extra(clock.marks()).progs });
       return;
     }
     const { n, net } = modelFetches(performance.getEntriesByType?.('resource') ?? []);
-    report = { ...clock.marks(), ...extra(), sw, warm: n > 0 && net === 0, net };
+    report = { ...clock.marks(), ...extra(clock.marks()), sw, warm: n > 0 && net === 0, net };
     log('perf.boot', { ...report });
   };
   document.addEventListener('visibilitychange', onVis);

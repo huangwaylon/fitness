@@ -50,7 +50,7 @@
   import { fieldsFrom, primeFields } from '#lib/layout/fieldsPrime.ts';
   import { hasFields } from '#lib/layout/fields.ts';
   import { version } from '$app/env';
-  import { bootReport, watchBoot, type BootClock } from './boot.ts';
+  import { bootReport, lateModels, watchBoot, type BootClock } from './boot.ts';
   import { watchRest } from './rest.ts';
   import { watchDrag } from './drag.ts';
   import { DPR_MOVING } from './stage.ts';
@@ -989,7 +989,7 @@
     eng = e;
     fittedLayout = -1;
     // (the launch timed: the page's first mount; the first return to it, perf.back)
-    const watch = watchBoot(() => ({ progs: e.stats().programs, fieldsMs: Math.round(fieldsMs), fields }), () => e.isPaused());
+    const watch = watchBoot((m) => ({ progs: e.stats().programs, fieldsMs: Math.round(fieldsMs), fields, ...lateModels(e.things.arrivals(), m.loaded, m.shown) }), () => e.isPaused());
     timed = watch?.clock ?? null;
     boot = watch && !watch.back ? watch.clock : null;
     timed?.mount(mountAt);

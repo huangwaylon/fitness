@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { cleanData } from '#lib/contract/log.ts';
-import { bootReport, createBootClock, modelFetches, swState, watchBoot } from './boot.ts';
+import { bootReport, createBootClock, lateModels, modelFetches, swState, watchBoot } from './boot.ts';
 
 describe('the launch clock (perf.boot)', () => {
   it('times the first frame, the models in, the island whole and the frames meanwhile', () => {
@@ -91,8 +91,14 @@ describe('the launch clock (perf.boot)', () => {
     expect(swState({ serviceWorker: { controller: {} } } as unknown as Navigator)).toBe('ctl');
   });
 
+  it('the models in after loaded up to shown, and the last by name', () => {
+    const ins = [['oak-fall', 300], ['finds/clam', 520], ['room:outdoor-a-very-long-catalogue-piece-name-x', 610], ['critters/bugs/ant', 900]] as const;
+    expect(lateModels(ins, 500, 700)).toEqual({ late: 2, lastM: 'room:outdoor-a-very-long-catalogue-piece' });
+    expect(lateModels(ins, 950, 1000)).toEqual({ late: 0 });
+  });
+
   it('the log keeps every field of the report, numbers and closed sets only', () => {
-    const r = { mount: 210, first: 300, loaded: 560, shown: 1100, long: 340, draw: 330, appear: 330, steps: 3, progs: 49, fieldsMs: 80, fields: 'worker', sw: 'ctl', warm: true, net: 0, sLink: 1, msLink: 40, sModels: 1, msModels: 300, sCards: 0, msCards: 0, stepMs: 25 };
+    const r = { mount: 210, first: 300, loaded: 560, shown: 1100, long: 340, draw: 330, appear: 330, steps: 3, progs: 49, fieldsMs: 80, fields: 'worker', sw: 'ctl', warm: true, net: 0, sLink: 1, msLink: 40, sModels: 1, msModels: 300, sCards: 0, msCards: 0, stepMs: 25, late: 3, lastM: 'finds/message-bottle' };
     expect(cleanData('perf.boot', r)).toEqual(r);
     expect(cleanData('perf.boot', { fields: 'somewhere', sw: 'yes', shown: '1100' })).toEqual({});
   });
