@@ -107,6 +107,8 @@ function hingeOf(root: Object3D): { at: Vector4; flaps: Map<Mesh, boolean> } {
   const h = wingHinge(parts);
   return { at: new Vector4(h.x, h.y, h.root, h.ramp), flaps: new Map(meshes.map((m, i) => [m, h.flaps[i]])) };
 }
+/** A field's soil: its instances always carry their colour (dry white, watered dark: objects.ts WET_SOIL). */
+const SOIL = 'garden/crop-soil';
 const FADE_IN_MS = 600, FADE_OUT_MS = 600;
 /** A frame's step of a fade at most (ms): a slow frame never jumps it (a fade is never 0 → 1 in one frame); over the
  *  ambient rate's 83 ms at rest, so a fish's shadow fades in its time there. */
@@ -426,6 +428,12 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     shape?: Vector3[];
     /** Its instances farthest first, the nearest out of view not drawn (cull). */
     near?: boolean;
+    /** Its instances as sigOf without their tints, in any order (a tint-only change recolours in place: retint), where
+     *  some mesh took tints. */
+    form: string;
+    /** Some instance had a tint as it was built (a flower's petals took colours then), and the meshes that took them. */
+    tints: boolean;
+    tinted: InstancedMesh[];
   }
   /** A mesh of a part (lift): the part's name, its frame in the model (its node's: where it rests) and the mesh in that
    *  frame. */
@@ -488,9 +496,10 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
   }
   /** An instance's opacity: a critter's fade, or the caller's own (Over `fade`), else whole. */
   const opacity = (id: string) => fades.get(id)?.a ?? overs.get(id)?.fade ?? 1;
-  const tmpM = new Matrix4(), tmpM2 = new Matrix4(), tmpQ = new Quaternion(), tmpQ2 = new Quaternion(), tmpV = new Vector3(), tmpS = new Vector3();
+  const tmpC = new Color(), tmpM = new Matrix4(), tmpM2 = new Matrix4(), tmpQ = new Quaternion(), tmpQ2 = new Quaternion(), tmpV = new Vector3(), tmpS = new Vector3();
   const UP = new Vector3(0, 1, 0), FWD = new Vector3(0, 0, 1), RIGHT = new Vector3(1, 0, 0), ZERO = new Matrix4().makeScale(0, 0, 0);
-  const sigOf = (o: Inst) => `${o.id}:${o.x}:${o.z}:${o.lift ?? 0}:${o.scale}:${o.yaw ?? 0}:${o.tint ?? ''}`;
+  const formOf = (o: Inst) => `${o.id}:${o.x}:${o.z}:${o.lift ?? 0}:${o.scale}:${o.yaw ?? 0}`;
+  const sigOf = (o: Inst) => `${formOf(o)}:${o.tint ?? ''}`;
   /** An instance's matrix (three's space): its spot on the ground, its yaw, its scale. */
   function matOf(o: Inst, out: Matrix4, wobble = 0, squash = 0): Matrix4 {
     const ov = overs.get(o.id), fd = fades.get(o.id);
@@ -577,7 +586,8 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     // (a still model's farthest first: the nearest, out of view, are the ones left off the end: cull)
     const near = culling && !soft;
     if (near) insts = insts.slice().sort((a, b) => b.z - a.z);
-    const g: Group = { name, sig, list: insts, meshes: [], base: [], soft, near };
+    const tints = insts.some((o) => o.tint !== undefined);
+    const g: Group = { name, sig, list: insts, meshes: [], base: [], soft, near, form: '', tints, tinted: [] };
     // (a critter new here fades in: now, or once it's shown)
     if (SOFT.has(name)) for (const o of insts) if (!fades.has(o.id)) fades.set(o.id, { a: 0, to: overs.get(o.id)?.hidden ? 0 : 1, t: performance.now() });
     const flapAt = FLAPS.test(name) && soft ? hingeOf(gl.scene) : null;
@@ -613,12 +623,15 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
         // a flower's petals take its colour, a field's soil its watered dark (objects.ts WET_SOIL; the soil's colours
         // always there, white dry: its first watering compiled a program of its own, a hitch on the phone)
         const mname = (mesh.material as Material).name;
-        if (name === 'garden/crop-soil' || (insts.some((o) => o.tint !== undefined) && /Flower|Petal|Flow|Bloom/.test(mname) && !/Body|Leaf/.test(mname)))
-          insts.forEach((o, i) => im.setColorAt(i, new Color(o.tint ?? 0xffffff)));
+        if (name === SOIL || (tints && /Flower|Petal|Flow|Bloom/.test(mname) && !/Body|Leaf/.test(mname))) {
+          insts.forEach((o, i) => im.setColorAt(i, tmpC.set(o.tint ?? 0xffffff)));
+          g.tinted.push(im);
+        }
         g.meshes.push({ im, local: mesh.matrixWorld.clone(), grey: ga, fade: fa, flap: wa, part });
         scene.add(im);
       }
     });
+    if (g.tinted.length) g.form = insts.map(formOf).sort().join('|');
     insts.forEach((o, i) => {
       g.base.push(matOf(o, new Matrix4()));
       byId.set(o.id, { g, i, inst: o });
@@ -638,9 +651,10 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     const jobs: Promise<void>[] = [];
     for (const [name, insts] of by) {
       const sig = insts.map(sigOf).join('|');
-      if (want.get(name) === sig) continue;
+      const was = want.get(name);
+      if (was === sig) continue;
       want.set(name, sig);
-      jobs.push(build(name, insts, sig));
+      if (!retint(name, insts, sig, was)) jobs.push(build(name, insts, sig));
     }
     for (const [name, g] of groups) if (!by.has(name)) {
       want.delete(name);
@@ -651,6 +665,23 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       changed(casts(name));
     }
     await Promise.all(jobs);
+  }
+  /** Only tints changed (a field's plot watered: the soil's dark), the group built as wanted: its colours in place, no
+   *  rebuild (a new InstancedMesh and its buffers a farm tap). */
+  function retint(name: ModelName, insts: Inst[], sig: string, was: string | undefined): boolean {
+    const g = groups.get(name);
+    // (the soil's colours are always there; a flower's petals took colours only if some had a tint)
+    if (!g || g.sig !== was || !g.tinted.length || (name !== SOIL && g.tints !== insts.some((o) => o.tint !== undefined)) || g.form !== insts.map(formOf).sort().join('|')) return false;
+    for (const o of insts) if (byId.get(o.id)?.g !== g) return false;
+    for (const o of insts) {
+      const at = byId.get(o.id)!;
+      at.inst = g.list[at.i] = o;
+      for (const im of g.tinted) im.setColorAt(at.i, tmpC.set(o.tint ?? 0xffffff));
+    }
+    for (const im of g.tinted) im.instanceColor!.needsUpdate = true;
+    g.sig = sig;
+    changed(false);
+    return true;
   }
   async function place(list: readonly Inst[]) {
     still = new Map(list.map((o) => [o.id, o]));

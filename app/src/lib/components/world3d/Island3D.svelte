@@ -761,6 +761,8 @@
   let placedIds = new Set<string>();
   const layoutN = new WeakMap<Layout, number>();
   let layouts = 0;
+  /** The layout whose ends the camera was last fitted to by the placing below (layoutN's number). */
+  let fittedLayout = -1;
   /** The garden's models known (world3d/garden.ts: fetched only once the island has a fence, a crop… or lit cedars). */
   let gardenIn = $state(gardenReady());
   /** The fields today (island/farm.ts): each plot's plant and wet soil, from the record's rows and today's live
@@ -771,17 +773,20 @@
     const { farm, watered } = farmToday(m.state, date);
     return farmScene(lay, farm, date, watered);
   });
+  /** (a string: the placement below reruns only when the fields' look changed, not on each fold's new farmNow) */
+  const farmSig = $derived(farmNow?.sig ?? '');
   $effect(() => {
     const e = eng;
     if (!e) return;
     const lay = layoutNow();
     if (!layoutN.has(lay)) layoutN.set(lay, ++layouts);
     if (!gardenIn && wantsGarden(lay, date)) void loadGarden().then(() => (gardenIn = true));
-    const farm = farmNow;
-    const sig = `${season}|${foliage}|${month}|${date}|${gardenIn}|${hybrid?.id}:${hybrid?.flower}|${scenery.map((s) => s.id + s.key).join()}|${pieces.map((p) => p.id + p.key).join()}|${layoutN.get(lay)}|${farm?.sig ?? ''}`;
+    const fsig = farmSig;
+    const sig = `${season}|${foliage}|${month}|${date}|${gardenIn}|${hybrid?.id}:${hybrid?.flower}|${scenery.map((s) => s.id + s.key).join()}|${pieces.map((p) => p.id + p.key).join()}|${layoutN.get(lay)}|${fsig}`;
     if (sig === placed) return;
     placed = sig;
     untrack(() => {
+      const farm = farmNow;
       const { insts, standins: st } = placeObjects(lay, { season, foliage, month, date, pieces, hybrid, swaps: Object.fromEntries(scenery.map((s) => [s.id, { key: s.key, h: s.h }])), fruit: false, structures: true, ...(farm ? { farm: farm.plots } : {}) });
       placedIds = new Set(insts.map((i) => i.id));
       void e.place(insts).then(() => {
@@ -802,7 +807,9 @@
       lground?.look(lookNow());
       built.sync(lay, heightOf, roomOf);
       e.water(isWater);
-      fitEnds(e);
+      // (the ends are the layout's: fitted again only for a new one, not for a farm tap's or a day's placing; their
+      // measures of the HUD and the canvas forced a layout, 23 ms of a farm tap's 30 at 4x CPU)
+      if (layoutN.get(lay) !== fittedLayout) (fittedLayout = layoutN.get(lay)!), fitEnds(e);
     });
   });
 
@@ -980,6 +987,7 @@
       return;
     }
     eng = e;
+    fittedLayout = -1;
     // (the launch timed: the page's first mount; the first return to it, perf.back)
     const watch = watchBoot(() => ({ progs: e.stats().programs, fieldsMs: Math.round(fieldsMs), fields }), () => e.isPaused());
     timed = watch?.clock ?? null;
