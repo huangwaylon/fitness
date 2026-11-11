@@ -33,7 +33,13 @@ beforeEach(() => {
   fake.week.send = ((type: string, data: Held['data'], opts: { holdMs?: number }) => {
     const s: Held = { type, data, holdMs: opts.holdMs ?? 0, at: Date.now(), undone: false };
     sends.push(s);
-    return { ok: true, undo: () => (s.undone || Date.now() >= s.at + s.holdMs ? false : (s.undone = true)) };
+    const held = () => !s.undone && Date.now() < s.at + s.holdMs;
+    return {
+      ok: true,
+      undo: () => (held() ? (s.undone = true) : false),
+      // (live.ts: as long as allowed, 2 min, or `ms` from now)
+      hold: (ms: number | null) => (held() ? ((s.holdMs = Date.now() - s.at + (ms ?? 120_000)), ms ?? 120_000) : 0)
+    };
   }) as never;
 });
 afterEach(() => vi.useRealTimers());
@@ -118,6 +124,25 @@ describe('the 畑 sheet’s batches', () => {
     expect(r.undo!()).toBe(true);
     vi.advanceTimersByTime(5000);
     expect(sent()).toEqual([{ d: D, ops: plants([0]) }]);
+  });
+  it('a 取り消す takes its own back while their event is held, after a later batch started its own', () => {
+    const r = dig(D, p(0));
+    plantMany(D, Array.from({ length: FARM.batchMax }, (_, k) => p(k + 1)), 'tomato', 'start');
+    expect(r.undo!()).toBe(true);
+    vi.advanceTimersByTime(5000);
+    expect(sent().map((e) => e.ops.length)).toEqual([FARM.batchMax]);
+  });
+  it('its banner held (a finger on it) holds the batch, a tap meanwhile joining it held still; let go, it goes', () => {
+    const r = harvestAll(D, [{ p: p(1), n: 3 }]);
+    expect(r.hold!(null)).toBe(120_000);
+    vi.advanceTimersByTime(10_000);
+    plant(D, p(0), 'tomato', 'start');
+    expect(sends.at(-1)!.holdMs).toBe(110_000);
+    vi.advanceTimersByTime(10_000);
+    expect(sent()).toEqual([]);
+    expect(r.hold!(0)).toBe(0);
+    expect(sent()).toEqual([{ d: D, ops: [{ o: 'harvest', p: p(1), n: 3 }, ...plants([0])] }]);
+    expect(r.undo!()).toBe(false);
   });
   it('digMany: the plants off the field back to starts, one event', () => {
     digMany(D, [p(0), p(1)]);

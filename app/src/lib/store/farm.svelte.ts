@@ -15,33 +15,50 @@ import type { LocalDate } from '#lib/types.ts';
 /** A batch waits this long for the next tap (a row of plots planted is one event). */
 const FARM_HOLD_MS = 2000;
 
-let held: { d: LocalDate; ops: FarmOp[]; until: number; undo: () => boolean } | null = null;
+/** A batch: its day, its ops and when it goes (`until`), and its event now in the queue (`r`: taken back and queued
+ *  again as ops join or leave it). Each send's undo and hold keep their own batch, so a later batch never strands them. */
+interface Batch { d: LocalDate; ops: FarmOp[]; until: number; r: SendResult }
+let held: Batch | null = null;
 
-/** `more` ops on day `d` into the held batch (taken back and sent again with them) while it holds and has room, else a
- *  new one: held `holdMs` at least. Its undo takes these ops back out of the batch (false once it was sent). */
-function add(d: LocalDate, more: FarmOp[], holdMs = FARM_HOLD_MS): SendResult {
-  const now = Date.now();
-  let ops = more, until = now + holdMs;
-  if (held && held.d === d && held.until > now && held.ops.length + more.length <= FARM.batchMax && held.undo()) {
-    ops = [...held.ops, ...more];
-    until = Math.max(held.until, until);
-  }
-  held = null;
-  const r = week.send('farm', { d, ops }, { holdMs: until - now });
-  if (!r.ok || !r.undo) return { ok: r.ok };
-  held = { d, ops, until, undo: r.undo };
-  return { ok: true, undo: () => takeBack(more) };
+/** The batch's ops queued as one event, sent at its `until`; false when the queue refused it. */
+function queue(b: Batch): boolean {
+  b.r = week.send('farm', { d: b.d, ops: b.ops }, { holdMs: Math.max(0, b.until - Date.now()) });
+  return b.r.ok && !!b.r.undo;
 }
 
-/** `ops` out of the held batch, the rest sent again with what was left of its hold; false once it was sent. */
-function takeBack(ops: FarmOp[]): boolean {
-  const h = held;
-  if (!h || !ops.every((o) => h.ops.includes(o)) || !h.undo()) return false;
-  const rest = h.ops.filter((o) => !ops.includes(o));
-  held = null;
-  if (rest.length) {
-    const again = week.send('farm', { d: h.d, ops: rest }, { holdMs: Math.max(0, h.until - Date.now()) });
-    held = again.ok && again.undo ? { ...h, ops: rest, undo: again.undo } : null;
+/** `more` ops on day `d` into the held batch (its event taken back and queued again with them) while it holds and has
+ *  room, else a new one: held `holdMs` at least. Its undo takes these ops back out; its hold holds the batch (an undo
+ *  banner touched: store/actions.ts undoBanner). Both false / 0 once the batch was sent. */
+function add(d: LocalDate, more: FarmOp[], holdMs = FARM_HOLD_MS): SendResult {
+  const now = Date.now();
+  let b = held;
+  if (b && b.d === d && b.until > now && b.ops.length + more.length <= FARM.batchMax && b.r.undo?.()) {
+    b.ops = [...b.ops, ...more];
+    b.until = Math.max(b.until, now + holdMs);
+  } else held = b = { d, ops: more, until: now + holdMs, r: { ok: false } };
+  if (!queue(b)) {
+    held = null;
+    return { ok: b.r.ok };
+  }
+  const batch = b;
+  return {
+    ok: true,
+    undo: () => takeBack(batch, more),
+    hold: (ms) => {
+      const granted = batch.r.hold?.(ms) ?? 0;
+      if (granted || ms === 0) batch.until = Date.now() + granted;
+      return granted;
+    }
+  };
+}
+
+/** `ops` out of batch `b`, the rest queued again for what was left of its hold; false once it was sent. */
+function takeBack(b: Batch, ops: readonly FarmOp[]): boolean {
+  if (!ops.every((o) => b.ops.includes(o)) || !b.r.undo?.()) return false;
+  b.ops = b.ops.filter((o) => !ops.includes(o));
+  if (!b.ops.length || !queue(b)) {
+    b.ops = [];
+    if (held === b) held = null;
   }
   return true;
 }
@@ -55,7 +72,8 @@ export const digMany = (d: LocalDate, ps: readonly string[]): SendResult => add(
 export const harvestAll = (d: LocalDate, ops: readonly { p: string; n: number }[]): SendResult => add(d, ops.map(({ p, n }) => ({ o: 'harvest', p, n })), UNDO_MS);
 export const plantMany = (d: LocalDate, ps: readonly string[], c: Crop, src: FarmSrc): SendResult => add(d, ps.map((p) => ({ o: 'plant', p, c, src })), UNDO_MS);
 
-/** The 畑 sheet's 水やり: these plants watered today, one change of the shared day (store/world.svelte.ts shareMany). */
+/** These plants watered today (a tap's 3 × 3, the 畑 sheet's 水やり): one change of the shared day, one day row
+ *  (store/world.svelte.ts shareMany). */
 export const waterAll = (ids: readonly string[]): number => world.shareMany(ids.map((id) => ({ kind: 'world', op: 'watered', id })));
 
 /** Starts from the shop's かう: `n` of each crop at FARM.startBuy each (the record checks the cover): one `buy_starts` a
