@@ -15,10 +15,10 @@ npm run dev        # demo data unless VITE_RECORD_URL is set in .env (see .env.e
 npm test           # unit tests (vitest)
 npm run check      # svelte-check
 npm run build      # → build-pages/
-npm run e2e        # Playwright, WebKit and Chromium (--project= picks one), against the build (npm run build first; docs/ops/testing.md)
+npm run e2e        # Playwright on the build, WebKit + Chromium (--project= picks one; docs/ops/testing.md)
 npm run bench      # model timing at years 1 and 3
 npm run knip       # unused files, exports, dependencies
-npm run verify     # every check CI runs but e2e, at once (before a push)
+npm run verify     # every CI check but e2e (before a push)
 ```
 Needs Node ≥ 24.
 
@@ -30,18 +30,16 @@ npm run smoke          # check the test copy (keys in relay/.smoke-keys)
 npm run logs           # the log's reader (docs/ops/observability.md)
 ```
 
-The meal log's food data (`app/static/food/`), rebuilt from the repo root ([docs](docs/food-data.md); Python ≥ 3.9, stdlib
-only; the raw downloads in `food-data/raw/` are gitignored):
+The food data (`app/static/food/`), from the repo root ([food-data.md](docs/food-data.md); Python ≥ 3.9, stdlib only):
 ```sh
 python3 -I food-data/scripts/build.py all    # → food-data/out/
 cd app && npm run food:data                  # → app/static/food/
 python3 -I -m unittest discover -s food-data/scripts/tests
 ```
 
-The raw sources git doesn't hold (`~/food-images-raw`, `app/.cache/tts/{clean,refs}`, `food-data/raw/`) are this
-repo's `assets-*` release assets: `app/scripts/assets-release.sh` after a batch changes them (restore steps in its header).
-The coordinator's project notes (Claude Code's memory, outside the repo) go to the `notes` release, encrypted:
-`app/scripts/notes-backup.sh` by hand after they change (restore in its header).
+Raw sources the repo doesn't hold (`~/food-images-raw`, `app/.cache/tts/{clean,refs}`, `food-data/raw/`) live in the
+`assets-*` releases (`app/scripts/assets-release.sh`); the coordinator's notes in the encrypted `notes` release
+(`app/scripts/notes-backup.sh`, by hand). Restore steps: each script's header.
 
 ## Layout
 | Path | Contents |
