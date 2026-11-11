@@ -15,7 +15,7 @@
 // price, the stock's day and the cover when it keeps one (not the stock itself: shopPriced) (relay/src/store.ts, `shopRefusal` over `shopLedger`); the phones
 // fold the same rows by the same rules (model/shop.ts), a kept row as kept and a queued one as the record would judge
 // it. Shared by the record and the model; pure.
-import { isLocalDate } from './api.ts';
+import { isLocalDate, keysAre } from './api.ts';
 import { SELL } from './shopPrices.ts';
 import { buyPrice } from './stock.ts';
 import type { LocalDate, Who } from '../types.ts';
@@ -35,10 +35,6 @@ const SELL_MAX_N = 999;
 const SPECIES_RE = new RegExp(`^(${POCKET_KINDS.join('|')}):[a-z][a-z0-9-]{0,47}$`);
 const ITEM_RE = /^f\d{1,6}$/;
 const isWhole = (v: unknown, max: number): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= max;
-const keysAre = (d: Record<string, unknown>, keys: readonly string[]): boolean => {
-  const k = Object.keys(d);
-  return k.length === keys.length && keys.every((x) => Object.hasOwn(d, x));
-};
 
 /** A species' sell price in かいがら (contract/shopPrices.ts), or undefined: not sellable. */
 export const sellPrice = (species: string): number | undefined => (Object.hasOwn(SELL, species) ? SELL[species] : undefined);

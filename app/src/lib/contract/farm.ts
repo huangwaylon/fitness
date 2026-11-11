@@ -9,7 +9,7 @@
 // a harvest at the yield it reckons (farmStep); the phones fold the same rows by the same step (model/farm.ts), a kept
 // row as kept. The produce and the starts are pocket goods (`goods:<crop>`, `goods:<crop>-start`: contract/pocket.ts),
 // so the shop sells them as any other. Shared by the record and the model; pure.
-import { isLocalDate, isRec } from './api.ts';
+import { isLocalDate, isRec, keysAre } from './api.ts';
 import { addDays, dayNum, dayOf } from './tokyo.ts';
 import type { LocalDate, Who } from '../types.ts';
 
@@ -38,11 +38,6 @@ export const cropKey = (c: Crop): string => `goods:${c}`;
 export const startKey = (c: Crop): string => `goods:${c}-start`;
 /** What a plant takes from the pocket. */
 export const seedKey = (c: Crop, src: FarmSrc): string => (src === 'start' ? startKey(c) : cropKey(c));
-
-const keysAre = (d: Record<string, unknown>, keys: readonly string[]): boolean => {
-  const k = Object.keys(d);
-  return k.length === keys.length && keys.every((x) => Object.hasOwn(d, x));
-};
 
 function opOf(x: unknown): FarmOp | null {
   if (!isRec(x) || typeof x.p !== 'string' || !PLOT_RE.test(x.p)) return null;
@@ -74,7 +69,7 @@ export const daysLeft = (plot: Plot, date: LocalDate): number => Math.max(0, day
 export function stageOf(plot: Plot, date: LocalDate): 0 | 1 | 2 | 3 {
   const left = daysLeft(plot, date);
   if (!left) return 3;
-  return plot.r ? 2 : left >= 3 ? 0 : ((3 - left) as 1 | 2);
+  return plot.r ? 2 : left >= FARM.growDays ? 0 : ((FARM.growDays - left) as 1 | 2);
 }
 
 /** Whether plot `p` was watered on `date` (anyone's watering, or a wet day). */

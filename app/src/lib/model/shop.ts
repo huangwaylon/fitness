@@ -5,12 +5,11 @@
 // imports this, and this never imports the economy (deps.test.ts).
 //
 // Cost: one pass over the tallies (model/tally.ts, memoised) and the person's shop rows, memoised per row list.
-import type { Who } from '#lib/types.ts';
+import type { LocalDate, Who } from '#lib/types.ts';
 import { caughtOf, isSellable, shopLedger, type Ledger, type ShopRowAt } from '#lib/contract/shop.ts';
 import { dayTallies, type TallyRow } from './tally.ts';
 import { farmOfState, type FarmRow } from './farm.ts';
 import type { Farm } from '#lib/contract/farm.ts';
-import type { LocalDate } from '#lib/types.ts';
 
 /** What the fold reads of the model's State (model/state.ts: never imported here, so the shop never reaches ベル). */
 interface ShopState { tallies: readonly TallyRow[]; shop: readonly ShopRowAt[]; farm: readonly FarmRow[]; islandDays: readonly { data: { date: LocalDate; watered: readonly string[] } }[]; wet: readonly LocalDate[] }
@@ -25,7 +24,6 @@ export interface ShopView {
 }
 
 const memo = new WeakMap<ShopState['shop'], WeakMap<ShopState['tallies'], WeakMap<Farm, Partial<Record<Who, ShopView>>>>>();
-
 
 /** `who`'s pocket, かいがら and bought pieces. Memoised per State lists. */
 export function shopView(s: ShopState, who: Who): ShopView {
@@ -47,7 +45,7 @@ export function shopView(s: ShopState, who: Who): ShopView {
   // (the starts bought count in as a sale taken back: contract/shop.ts shopStep; a recipe or a present is in the
   // tallies, never the pocket)
   for (const k of new Set([...caught.keys(), ...l.sold.keys()])) {
-    if (!isSellable(k) && !net?.has(k) && !l.sold.has(k)) continue;
+    if (!isSellable(k)) continue;
     const left = (caught.get(k) ?? 0) - (l.sold.get(k) ?? 0);
     if (left > 0) pocket.set(k, left);
   }

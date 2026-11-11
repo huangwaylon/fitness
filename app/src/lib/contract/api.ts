@@ -123,6 +123,12 @@ export const isId = (v: unknown): v is string => typeof v === 'string' && v.leng
 
 export const isRec = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
+/** Whether `d` has exactly these keys (an event's data: nothing more, nothing missing). */
+export const keysAre = (d: Record<string, unknown>, keys: readonly string[]): boolean => {
+  const k = Object.keys(d);
+  return k.length === keys.length && keys.every((x) => Object.hasOwn(d, x));
+};
+
 /** Ingest's upper bounds for the activity metrics (inclusive): a higher value is skipped. @public (relay/src/parse.ts) */
 export const METRIC_BOUNDS = { steps: 100_000, exercise_min: 1_440, move_kcal: 10_000, stand_min: 1_440 } as const;
 /** A plausible body weight in kg (inclusive): ingest skips anything else (a goal's range: contract/goals.ts). */
