@@ -1,6 +1,6 @@
 <script lang="ts">
   // My fields as the 畑 sheet's map (docs/farming.md "Playing"): a cell a plot, laid out as the island's camera sees the
-  // field (its back row, the highest, at the top: row 0 is its front, nearest the beach), the plant's art (a seedling while it grows), ripe ones ringed yuzu, watered soil dark. A tap only selects a
+  // field (its back row, the highest, at the top: row 0 is its front, nearest the beach), the plant's own art sized by its stage (12 / 15 / 18 px growing, 24 px ripe: a crop and its growth told apart), ripe ones ringed yuzu, watered soil dark. A tap only selects a
   // cell (32 px at most: a 10 × 4 field is 347 px wide); the sheet's row under it acts on it.
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { stageOf, type Farm, type Watered } from '#lib/contract/farm.ts';
@@ -18,6 +18,8 @@
     selected: string | null;
   }
   let { plots, farm, date, watered, label, selected = $bindable() }: Props = $props();
+  /** A plant's art height by stage (0, 1, 2 growing; 3 ripe). */
+  const SIZE = [12, 15, 18, 24] as const;
 
   /** Each field: its columns and its cells by row (a plot id's `fd:<field>.<col>.<row>`). */
   const fields = $derived.by(() => {
@@ -38,11 +40,12 @@
   <div class="map" style:--w={f.w} role="group" data-farm-map={f.id}>
     {#each f.cells as c (c.p)}
       {@const pl = farm.plots.get(c.p)}
-      {@const ripe = !!pl && stageOf(pl, date) === 3}
+      {@const stage = pl ? stageOf(pl, date) : 0}
+      {@const ripe = !!pl && stage === 3}
       <button type="button" class="cell" class:wet={watered(c.p, date)} class:ripe aria-pressed={selected === c.p} aria-label={label(c.p)}
         data-farm-cell={c.p} data-wet={watered(c.p, date) || undefined} data-ripe={ripe || undefined} data-sfx="tick"
         onclick={() => (selected = selected === c.p ? null : c.p)}>
-        {#if pl}<OfficialArt key={ripe ? `finds/${pl.c}` : `finds/${pl.c}-start`} size={ripe ? 24 : 18} />{/if}
+        {#if pl}<OfficialArt key={`finds/${pl.c}`} size={SIZE[stage]} />{/if}
       </button>
     {/each}
   </div>

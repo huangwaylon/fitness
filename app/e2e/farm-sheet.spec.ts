@@ -146,3 +146,18 @@ test('after a harvest with no starts left: the vegetables offered, never picked 
   await page.locator('[data-farm-seed="crop:tomato"]').click();
   await expect(page.locator('[data-farm-plant-all]')).toHaveText('トマトを植える（5区画）');
 });
+
+test('the map: a cell draws its crop’s own art, sized by its stage (a carrot band and a tomato band tell apart)', async ({ page }) => {
+  const both: Seed[] = [['tally', { date: D, counts: { 'fish:koi': 3 } }, 'A'], ['sell', { species: 'fish:koi', n: 3, v: 600 }, 'A'], ['buy_starts', { crop: 'tomato', n: 10, v: 140 }, 'A'], ['buy_starts', { crop: 'carrot', n: 10, v: 140 }, 'A']];
+  const carrots: Seed = ['farm', { d: D, ops: plots.slice(0, 10).map((p) => ({ o: 'plant', p, c: 'carrot', src: 'start' })) }, 'A'];
+  const D2 = '2026-11-06';
+  await up(page, [FIELD, ...both, carrots, planted(plots.slice(10, 20), D2)], D2);
+  const art = (p: string) => page.locator(`[data-farm-cell="${p}"] img`);
+  await expect(art(plots[0])).toHaveAttribute('src', /carrot/);
+  await expect(art(plots[10])).toHaveAttribute('src', /tomato/);
+  await expect(art(plots[0])).not.toHaveAttribute('src', /-start/);
+  // carrots two days on (18 px) over tomatoes planted today (12 px)
+  const h = (p: string) => page.locator(`[data-farm-cell="${p}"] > *`).evaluate((e) => Math.round(e.getBoundingClientRect().height));
+  expect(await h(plots[0])).toBe(18);
+  expect(await h(plots[10])).toBe(12);
+});
