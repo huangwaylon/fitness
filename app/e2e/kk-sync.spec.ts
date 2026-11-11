@@ -6,7 +6,7 @@
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 
-type Now = { key: string | null; pos: number | null };
+type Now = { key: string | null; pos: number | null; sched: number | null };
 type H = { __music: { now(): Now; request(src: string, song: string, o?: { ms?: number; pc?: string }): void; hush(src: string): void } };
 const h = <R,>(page: Page, fn: (h: H) => R) => page.evaluate(`(${fn.toString()})(window)`) as Promise<R>;
 const Q = 'date=2026-11-04T15:00';
@@ -21,13 +21,14 @@ async function open(page: Page, as: string, music = true) {
   await page.mouse.click(196, 90);
 }
 
-/** The deck's position on each page sampled together, each moved to one instant (the pages share a clock). */
+/** Where the song is meant to be on each page by the relay's clock (`sched`: what its deck seeks to), sampled together
+ *  and moved to one instant (the pages share a clock); null where the deck doesn't hold the song. Not the media
+ *  element's currentTime: headless WebKit's media clock stays where it was sought, or never starts (r3 code #14). */
 async function positions(...pages: Page[]): Promise<(number | null)[]> {
   const got = await Promise.all(pages.map((p) => p.evaluate(() => ({ ...(window as unknown as H).__music.now(), t: Date.now() }))));
   const t0 = got[0].t;
-  return got.map((g) => (g.pos === null || !g.key?.startsWith(`st/isl/${SONG}/`) ? null : g.pos + (t0 - g.t) / 1000));
+  return got.map((g) => (g.sched === null || !g.key?.startsWith(`st/isl/${SONG}/`) ? null : g.sched + (t0 - g.t) / 1000));
 }
-
 const playing = (page: Page) => h(page, (w) => w.__music.now().key);
 
 test('K.K. for everyone: A asks, B hears it from the same point; G opening mid-song comes in there; B stops it for all', { tag: '@logic' }, async ({ browser }) => {
@@ -41,17 +42,16 @@ test('K.K. for everyone: A asks, B hears it from the same point; G opening mid-s
   await expect(b.locator('[data-fx="kk-caption"]')).toContainText('♪ けけマーチ');
   await expect(b.locator('[data-kk].show')).toHaveCount(1);
   await expect.poll(() => positions(a, b).then((p) => p.every((x) => x !== null && x > 0.5)), { timeout: 15_000 }).toBe(true);
-  await a.waitForTimeout(1500);
   const [pa, pb] = await positions(a, b);
-  expect(Math.abs(pa! - pb!), `A ${pa} B ${pb}`).toBeLessThan(0.5);
+  expect(Math.abs(pa! - pb!), `A ${pa} B ${pb}`).toBeLessThan(0.1);
   // G opens 4 s on: it starts where the song is, not at its beginning
-  await a.waitForTimeout(4000);
+  await expect.poll(() => positions(a).then(([x]) => x ?? 0), { timeout: 15_000 }).toBeGreaterThan(4);
   const g = await ctx.newPage();
   await open(g, 'G');
   await expect(g.locator('[data-kk].show')).toHaveCount(1);
   await expect.poll(() => positions(a, g).then(([x, y]) => x !== null && y !== null && y > 4), { timeout: 15_000 }).toBe(true);
   const [qa, qg] = await positions(a, g);
-  expect(Math.abs(qa! - qg!), `A ${qa} G ${qg}`).toBeLessThan(0.5);
+  expect(Math.abs(qa! - qg!), `A ${qa} G ${qg}`).toBeLessThan(0.1);
   // B stops it: on every phone the island's music again, the caption gone, his sign-off
   await h(b, (w) => w.__music.hush('isl'));
   for (const p of [a, b, g]) {

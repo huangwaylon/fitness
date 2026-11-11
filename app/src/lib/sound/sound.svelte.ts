@@ -13,7 +13,7 @@
 //   micSession(true) · audioCtx()                         // ききみみ's mic open: play-and-record on the voice's context
 import { untrack } from 'svelte';
 import type { SoundId } from './ids.ts';
-import { Engine, applySession, type ClipLoop } from './engine.ts';
+import { Engine, applySession, stagePos, type ClipLoop } from './engine.ts';
 import { HourClock, QUEUED_DROP_MS, type Gesture } from './session.ts';
 import { DEFAULT_SOUND, loadSound, sanitize, saveSound, silent, type SoundSettings } from './settings.ts';
 import { AUDIO, hasMusic } from './manifest.ts';
@@ -295,8 +295,12 @@ export function playingLabel(playing: Playing, hour: number): string | null {
 /** ミュージック can be heard now (on, 音量 above 0, unlocked, in front): else a moment's song plays its effect. */
 export const hearsMusic = (): boolean => audible();
 
-/** What the music deck plays now and how far in (s): the e2e's look (window.__music), never the app's. */
-export const musicNow = (): { key: string | null; pos: number | null } => ({ key: engine?.track ?? null, pos: engine?.position() ?? null });
+/** What the music deck plays now and how far in (s), and where the stage's song is meant to be by the relay's clock
+ *  (`sched`, s: what the deck seeks to; null: no stage song here): the e2e's look (window.__music), never the app's. */
+export function musicNow(): { key: string | null; pos: number | null; sched: number | null } {
+  const tr = staged()?.track;
+  return { key: engine?.track ?? null, pos: engine?.position() ?? null, sched: tr?.from !== undefined ? stagePos(tr) : null };
+}
 
 function endCutIn(): void {
   clearTimeout(cutInTimer);
