@@ -1,12 +1,10 @@
 <script lang="ts">
   // A guest's shop (docs/design.md "Visitors: roles"; visitorShop.ts): the few pieces they brought today, their prices
   // and 買う, as the shop's かう (its tiles: shop/PieceTile.svelte; shop/stock.ts buyPiece, one piece at a time; a bought
-  // one 持っている and in my もようがえ, 取り消す for a moment). My かいがら at the top. Its own chunk: opened from their choice box.
+  // one 持っている and in my もようがえ, 取り消す for a moment). My かいがら at the top, as the shop's chip. Its own chunk: opened from their choice box.
   import Sheet from '../ui/Sheet.svelte';
-  import OfficialArt from '../characters/OfficialArt.svelte';
   import PieceTile from '../shop/PieceTile.svelte';
   import { iconUrl } from '../tent/items.ts';
-  import { findArt } from './beach.ts';
   import { buyPrice } from '#lib/contract/stock.ts';
   import { buyPiece, buyRefusal, foundBefore, shortBy } from '../shop/stock.ts';
   import { offerOf } from './visitorShop.ts';
@@ -33,6 +31,7 @@
   });
   let pick = $state<string | null>(null);
   const why = $derived(pick ? (void mine, buyRefusal(pick, offer)) : null);
+  const pickPrice = $derived(pick ? (buyPrice(pick) ?? 0) : 0);
   function choose(code: string) {
     pick = pick === code ? null : code;
     cue('tick');
@@ -42,16 +41,14 @@
     const r = buyPiece(pick, offer);
     if (!r.ok) return void cue('boop');
     cue('buy');
-    undoBanner(t('shop.bought', { name: itemName(pick), v: formatNum(r.price ?? 0) }), r);
+    undoBanner(t('shop.bought', { name: itemName(pick) }), r);
     pick = null;
   }
 </script>
 
 <Sheet bind:open title={t('guestShop.title', { name })}>
   <div class="gs sheet-copy" data-guest-shop={id}>
-    <p class="wallet" data-guest-shells={mine?.shells ?? 0}>
-      <span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={18} /></span>{formatNum(mine?.shells ?? 0)}
-    </p>
+    <span class="chip s wallet" data-guest-shells={mine?.shells ?? 0}>{t('shop.wallet', { v: formatNum(mine?.shells ?? 0) })}</span>
     <ul class="grid">
       {#each offer as code (code)}
         {@const owned = !!mine?.owned.includes(code)}
@@ -63,16 +60,18 @@
       {/each}
     </ul>
     <div class="bar">
-      <p class="sum">{pick ? `${itemName(pick)} · ${formatNum(buyPrice(pick) ?? 0)}` : t('shop.buyHint')}</p>
-      <button type="button" class="btn small" data-guest-buy data-sfx="self" aria-disabled={!pick || !!why} onclick={buy}>{t('shop.buy')}</button>
+      <!-- as the shop's かう: what's picked or how many かいがら short, its price on the button -->
+      <p class="sum">{!pick ? t('shop.buyHint') : why === 'wallet' ? t('shop.short', { n: formatNum(shortBy(pickPrice, mine?.shells ?? 0)) }) : itemName(pick)}</p>
+      <button type="button" class="btn small" data-guest-buy data-sfx="self" aria-disabled={!pick || !!why} onclick={buy}>
+        {pick && why !== 'owned' ? t('shop.buyFor', { v: formatNum(pickPrice) }) : t('shop.buy')}</button>
     </div>
   </div>
 </Sheet>
 
 <style>
   .gs { display: grid; gap: 10px; padding-bottom: 8px; }
-  .wallet { margin: 0; justify-self: end; display: inline-flex; align-items: center; gap: 4px; font: 700 var(--fs-body)/1 var(--font-num); }
-  .mini { display: inline-flex; line-height: 0; }
+  .wallet { justify-self: start; cursor: default; font-variant-numeric: tabular-nums; }
+  .wallet:active { transform: none; }
   .grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
   .bar { display: flex; align-items: center; gap: 8px; }
   .bar .btn { margin: 0; flex: none; }

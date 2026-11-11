@@ -836,7 +836,7 @@ during もようがえ.
 
 `shop/` and `contract/shop.ts` (each header has its part; prices: `npm run shop:prices`). NH's Nook's Cranny (タヌキ商店)
 with its own money, かいがら, never ベル ([decisions](decisions.md#the-shops-かいがら)): the island's catches sell for them
-and buy furniture for the rooms. Each person's own pocket and かいがら, the guest's too.
+and buy furniture for the rooms. Each person has a pocket and かいがら, the guest too.
 
 - **Inside, in 3D** (`shop/plan.ts` on the rooms' engine): NH's Nook's Cranny, in by its door. まめきち and つぶきち
   behind the counter; today's stock in the room, the same on every phone (stage, table, back wall; the rest in the list
@@ -844,15 +844,15 @@ and buy furniture for the rooms. Each person's own pocket and かいがら, the 
 - **The finger** (the rooms' rule): a floor tap walks; a tap on a piece picks it in place (its card: price and 買う); a
   tap on the twins (their bodies and the counter's top), their balloon or the sign (「タップで かう・うる」) opens the list
   at once, on its last tab (an empty pocket: かう). No choice box, no auto-open. The twins talk only in the room.
-- **The list** (`shop/Counter.svelte`): NavBar 「タヌキ商店」, my かいがら as a `.chip.s` left, ✕ right; 売る · 買う; the
-  button carries the total (「{v}かいがらで売る」).
+- **The list** (`shop/Counter.svelte`): NavBar 「タヌキ商店」, my かいがら as a `.chip.s` left, ✕ right; 売る · 買う;
+  the bar what's picked (or how short), its button the sum (「{v}かいがらで売る」).
 - **うる**: my pocket (caught, found or picked up, less sold) in 56 px rows by section (`shop/pocket.ts`; shells are
   「貝」). A row's tap picks its stack, − / + one, a section's 全部 all of it (`shop/sell.ts`); starts are section 苗, no
   全部. Selling leaves the ずかん and the museum; presents and bottles never sell.
-- **かう**: today's stock first, 24 pieces a Tokyo day, seeded, less what the island had by the day's start (both
-  phones agree); past my かいがら dimmed with 「あと{n}」; then the starts ([farming.md](farming.md)). One piece at a
-  time. A bought piece is mine in 模様替え. VisitorShop shares the tile (`shop/PieceTile.svelte`).
-- A sell or a buy shows at once with a short toast and 取り消す for 5 s, then the record checks it
+- **かう**: today's stock first, 24 pieces a Tokyo day, seeded, less what the island had by the day's start; past my
+  かいがら dimmed, 「あと{n}」; then the starts ([farming.md](farming.md)), held for more. A piece at a time, then mine
+  in 模様替え. VisitorShop shares the tile (`shop/PieceTile.svelte`).
+- A sell or a buy shows at once, a one-line toast, 取り消す for 5 s, then the record checks it
   ([backend](backend.md#events)).
 - **Prices:** NH's Bells ÷ 20 both ways (a sell at least 3); a piece NH never sells is made up (4 × its NH sell price ÷
   20); at most 10,000.

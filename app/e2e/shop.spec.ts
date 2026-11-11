@@ -56,6 +56,9 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
   // the room's wallet says the word (its cowrie is a 貝 for sale too)
   await expect(page.locator('[data-shop-wallet]')).toHaveText('0かいがら');
   await openList(page, 'sell');
+  // (one wallet on screen: the list's title bar's while it's open)
+  await expect(page.locator('[data-shop-wallet]')).toHaveCount(0);
+  await expect(page.locator('[data-shop-wallet-chip]')).toHaveText('0かいがら');
   // the pocket by its sections (むし, さかな, …, かいがら), each dearest first
   const pocket = page.locator('[data-shop-pocket] [data-shop-catch]');
   await expect(pocket).toHaveCount(3);
@@ -88,7 +91,7 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
   await expect.poll(() => shells(page)).toBe(650 + 650 + 400 + 3 * 3); // a cowrie 3
   await expect(page.locator('[data-shop-empty]')).toBeVisible();
   // the banner counts what was sold, though the pocket is empty now (it was read after the sale: 「0個を…」)
-  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('5個を売りました（1,059かいがら）');
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('1,059かいがらで売りました');
   // かう: the day's stock, 24 pieces (no いつもの); one at most 1,709
   await page.locator('[data-shop-tab="buy"]').click();
   await expect(stock(page)).toHaveCount(24);
@@ -98,7 +101,7 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
   await expect(page.locator('[data-shop-buy]')).toHaveText(`${price.toLocaleString('ja-JP')}かいがらで買う`);
   await page.locator('[data-shop-buy]').click();
   await expect.poll(() => shells(page)).toBe(1709 - price);
-  await expect(page.locator('.banner[role="status"] .txt')).toContainText(`を買いました（${price.toLocaleString('ja-JP')}かいがら）`);
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText(`${await item.locator('.nm').textContent()}を買いました`);
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/shop-bought-toast.png`, animations: 'disabled' });
   await expect(item).toHaveAttribute('data-owned', 'true');
   // bought once: picked again, かう only boops (and still in today's stock)
@@ -166,7 +169,8 @@ test('overspending is refused: a piece past my かいがら is dimmed with how m
   const tile = page.locator(`[data-shop-item="${dear}"]`);
   await expect(tile.locator('[data-short]')).toHaveText(`あと${(price - 4).toLocaleString('ja-JP')}`);
   const dearN = await stock(page).evaluateAll((els) => els.filter((e) => Number(e.getAttribute('data-price')) > 4).length);
-  await expect(page.locator('.tile.short')).toHaveCount(dearN);
+  await expect(page.locator('[data-shop-stock] .tile.short')).toHaveCount(dearN);
+  await expect(page.locator('[data-shop-starts] .tile.short')).toHaveCount(6); // (a start 14)
   // the stock first, then the starts
   await expect(page.locator('[data-shop-list] > *').first()).toContainText('今日の品物');
   await expect(page.locator('[data-shop-left]')).toHaveText('毎日入れ替え・残り24点');
@@ -189,6 +193,35 @@ test('an empty pocket: うる says it’s empty, no 売る bar; かう has the d
   await page.locator('[data-shop-tab="sell"]').click();
   await expect(page.locator('[data-shop-empty]')).toHaveText('ポケットは空です。魚や虫、貝や木材を集めると、ここで売れます');
   await expect(page.locator('[data-shop-sell], [data-shop-offer]')).toHaveCount(0);
+  // (no かいがら: a start too says how many short)
+  await page.locator('[data-shop-tab="buy"]').click();
+  await expect(page.locator('[data-shop-start="tomato"] [data-short]')).toHaveText('あと14');
+});
+
+// かう's 苗 (Counter.svelte, PieceTile's `hold`): a tap one more, held more and more; the bar what's picked, or how many
+// かいがら short, the price on 買う.
+test('a start held climbs on its own; past my かいがら the bar says how many short and 買う is disabled', async ({ page }) => {
+  await seed(page, [tally({ 'fish:sea-bass': 5 }), ['sell', { species: 'fish:sea-bass', n: 5, v: 100 }, 'A']]);
+  await page.goto(`shop${Q}`);
+  await expect.poll(() => shells(page)).toBe(100);
+  await openList(page, 'buy');
+  const tomato = page.locator('[data-shop-start="tomato"]');
+  await tomato.click();
+  await tomato.click();
+  await expect(page.locator('[data-shop-starts-offer]')).toHaveText('トマトの苗 ×2');
+  await expect(page.locator('[data-shop-buy]')).toHaveText('28かいがらで買う');
+  await tomato.scrollIntoViewIfNeeded();
+  const b = (await tomato.boundingBox())!;
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
+  await page.mouse.down();
+  await expect.poll(async () => Number(await tomato.getAttribute('data-picked'))).toBeGreaterThanOrEqual(10);
+  await page.mouse.up();
+  // (a tap after the hold: one more, as ever)
+  const n = Number(await tomato.getAttribute('data-picked'));
+  await tomato.click();
+  await expect(tomato).toHaveAttribute('data-picked', String(n + 1));
+  await expect(page.locator('[data-shop-starts-offer]')).toHaveText(`あと${14 * (n + 1) - 100}かいがら足りません`);
+  await expect(page.locator('[data-shop-buy]')).toHaveAttribute('aria-disabled', 'true');
 });
 
 test('the guest’s pocket and かいがら are its own', async ({ browser }) => {

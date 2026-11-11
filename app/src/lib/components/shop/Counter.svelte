@@ -72,13 +72,10 @@
   };
   function sellPicked() {
     if (!pickedN) return void cue('boop');
-    // what's sold, kept before the sale: `picked` follows the pocket, which the sale empties
-    const sold = [...picked], n = pickedN;
-    const r = sell(new Map(sold));
+    const r = sell(new Map(picked));
     if (!r.ok) return void cue('boop');
     cue('buy');
-    const one = sold.length === 1 ? sold[0] : null;
-    undoBanner(one ? t('shop.sold', { name: speciesName(one[0]), n: String(one[1]), v: formatNum(r.shells ?? 0) }) : t('shop.soldMany', { n: String(n), v: formatNum(r.shells ?? 0) }), r);
+    undoBanner(t('shop.sold', { v: formatNum(r.shells ?? 0) }), r);
     picks = {};
   }
 
@@ -91,8 +88,8 @@
     pick = pick === code ? null : code;
     cue('tick');
   }
-  // ---- かう's 苗 (docs/farming.md): the six starts, always in stock, a tap one more, − one less; 買う buys them at once,
-  // all or none (one group: store/farm.svelte.ts buyStarts)
+  // ---- かう's 苗 (docs/farming.md): the six starts, always in stock, a tap one more (held, more and more: PieceTile's
+  // `hold`), up to 99 of each, − one less; 買う buys them at once, all or none (one group: store/farm.svelte.ts buyStarts)
   let starts = $state<Partial<Record<Crop, number>>>({});
   const startsN = $derived(CROPS.reduce((a, c) => a + (starts[c] ?? 0), 0));
   const startsV = $derived(startsN * FARM.startBuy);
@@ -104,7 +101,8 @@
   // (the starts and a piece are one bar's: picking one lets go of the other)
   function moreStart(c: Crop) {
     pick = null;
-    starts = { ...starts, [c]: ((starts[c] ?? 0) + 1) % 100 };
+    if ((starts[c] ?? 0) >= 99) return void cue('boop');
+    starts = { ...starts, [c]: (starts[c] ?? 0) + 1 };
     cue('tick');
   }
   function lessStart(c: Crop) {
@@ -116,8 +114,8 @@
     const r = buyStarts(starts);
     if (!r.ok) return void cue('boop');
     cue('buy');
-    const n = String(startsN), v = formatNum(startsV);
-    undoBanner(startsOne ? t('shop.boughtStart', { name: startName(startsOne), n, v }) : t('shop.boughtStarts', { n, v }), r);
+    const n = String(startsN);
+    undoBanner(startsOne ? t('shop.boughtStart', { name: startName(startsOne), n }) : t('shop.boughtStarts', { n }), r);
     starts = {};
   }
   function buyPicked() {
@@ -189,11 +187,14 @@
         <p class="empty" data-shop-sold-out>{t('shop.soldOut')}</p>
       {/if}
       <!-- the starts for the fields (docs/farming.md): always in stock, a count each, bought by the bar's 買う -->
-      <h2 class="sec-label">{t('shop.starts')}</h2>
+      <div class="sec">
+        <h2 class="sec-label">{t('shop.starts')}</h2>
+        <span class="note">{t('shop.startsNote')}</span>
+      </div>
       <ul class="grid" data-shop-starts>
         {#each CROPS as c (c)}
           {@const n = starts[c] ?? 0}
-          <PieceTile name={startName(c)} price={FARM.startBuy} on={n > 0} count={n ? `×${n}` : undefined} data-shop-start={c} data-picked={n}
+          <PieceTile name={startName(c)} price={FARM.startBuy} on={n > 0} short={shortBy(FARM.startBuy, shop.shells)} hold count={n ? `×${n}` : undefined} data-shop-start={c} data-picked={n}
             aria-label={t('shop.startLabel', { name: startName(c), v: String(FARM.startBuy), c: String(n) })} onclick={() => moreStart(c)}
             less={n ? { key: c, label: t('shop.less', { name: startName(c) }), run: () => lessStart(c) } : null}>
             {#snippet icon()}<OfficialArt key="finds/{c}-start" size={46} /><span class="tag"><OfficialArt key="finds/{c}" size={20} /></span>{/snippet}
@@ -202,10 +203,12 @@
       </ul>
     </div>
     <div class="bar">
+      <!-- what's picked, or how many かいがら short (its price is the button's) -->
       <p class="sum" data-shop-pick={pick ?? ''} data-shop-starts-offer={startsN ? startsV : null}>
-        {startsN ? (startsOne ? t('shop.startsOne', { name: startName(startsOne), n: String(startsN), v: formatNum(startsV) }) : t('shop.startsMany', { n: String(startsN), v: formatNum(startsV) }))
+        {startsN && startsV > shop.shells ? t('shop.short', { n: formatNum(shortBy(startsV, shop.shells)) })
+          : startsN ? (startsOne ? t('shop.startsOne', { name: startName(startsOne), n: String(startsN) }) : t('shop.startsMany', { n: String(startsN) }))
           : pick && why === 'wallet' ? t('shop.short', { n: formatNum(shortBy(pickPrice, shop.shells)) })
-          : pick ? t('shop.itemLabel', { name: itemName(pick), v: formatNum(pickPrice) })
+          : pick ? itemName(pick)
           : t('shop.buyHint')}
       </p>
       <button type="button" class="btn small" data-shop-buy data-sfx="self" aria-disabled={startsN ? startsV > shop.shells : !pick || !!why}

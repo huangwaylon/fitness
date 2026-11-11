@@ -139,7 +139,7 @@
     const r = buyPiece(pick, stock);
     if (!r.ok) return void cue('boop');
     cue('buy');
-    undoBanner(t('shop.bought', { name: itemName(pick), v: formatNum(r.price ?? 0) }), r);
+    undoBanner(t('shop.bought', { name: itemName(pick) }), r);
     const bought = pick;
     // (a piece bought in the room: its card stays, saying it's mine now)
     if (panel) pick = null;
@@ -490,11 +490,14 @@
     onpointercancel={onCancel} onwheel={camera.wheel} {@attach camera.attach} aria-label={t('shop.room')}></canvas>
   <div class="top" bind:this={top}>
     <NavButton kind="back" text={t('shop.out')} onclick={leave} sfx="self" />
-    <!-- my かいがら, the word said (the cowrie is also a kind of 貝 sold here) -->
-    <p class="wallet" data-shop-wallet>
-      <span class="shell" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={26} eager /></span>
-      <b class="num">{t('shop.wallet', { v: formatNum(shop.shells) })}</b>
-    </p>
+    <!-- my かいがら, the word said (the cowrie is also a kind of 貝 sold here); the list's own title bar says them while
+         it's open (one wallet on screen) -->
+    {#if !panel}
+      <p class="wallet" data-shop-wallet>
+        <span class="shell" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={26} eager /></span>
+        <b class="num">{t('shop.wallet', { v: formatNum(shop.shells) })}</b>
+      </p>
+    {/if}
   </div>
   {#if turned && !fpv && !panel}
     <button type="button" class="reset" data-shop-reset data-sfx="tick" aria-label={t('tent.resetView')} onclick={resetView}>

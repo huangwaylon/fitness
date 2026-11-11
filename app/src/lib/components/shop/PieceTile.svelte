@@ -1,7 +1,7 @@
 <script module lang="ts">
   // One tile of the shops' grids (タヌキ商店's かう and its 苗, a visitor's few pieces: island/VisitorShop.svelte): the
   // icon, the name on two lines, the price (or 持っている; past my かいがら dimmed, 「あと{n}」), a count badge and its − when
-  // picked; yuzu when picked. Its
+  // picked; yuzu when picked; `hold`: held, it taps again and again (NH's quantity arrows: 20 starts in one press). Its
   // colours are the sheet's controls (--ctl, --ctl-sel, --sh-ctl), so it fits the shop's cream sheet and a Sheet alike.
   // `nm`: a name breaking only between its words (words.ts), smaller with a word too long for a line (the room's card too).
   import { isLong, words } from './words.ts';
@@ -30,8 +30,22 @@
     onclick: () => void;
     /** − one less (shown while picked). */
     less?: { key: string; label: string; run: () => void } | null;
+    /** Held, `onclick` again every HOLD_EVERY ms from HOLD_AFTER on (its release's click then nothing). */
+    hold?: boolean;
   }
-  let { name, price, on = false, owned = false, short = 0, count, icon, onclick, less = null, ...rest }: Props = $props();
+  let { name, price, on = false, owned = false, short = 0, count, icon, onclick, less = null, hold = false, ...rest }: Props = $props();
+
+  const HOLD_AFTER = 400, HOLD_EVERY = 100;
+  let timer: ReturnType<typeof setTimeout> | undefined, held = false;
+  function press(e: PointerEvent) {
+    if (!hold || !e.isPrimary || e.button) return;
+    held = false;
+    const again = (ms: number) => (timer = setTimeout(() => ((held = true), onclick(), again(HOLD_EVERY)), ms));
+    again(HOLD_AFTER);
+  }
+  const release = () => clearTimeout(timer);
+  $effect(() => release);
+  const tap = () => (held ? (held = false) : onclick());
 </script>
 
 {#snippet nm(name: string)}
@@ -39,7 +53,8 @@
 {/snippet}
 
 <li class="tile" class:on class:owned class:short={short > 0}>
-  <button type="button" class="pickable" data-sfx="self" {...rest} {onclick}>
+  <button type="button" class="pickable" data-sfx="self" {...rest} onclick={tap} onpointerdown={press} onpointerup={release}
+    onpointercancel={release} onpointerleave={release} oncontextmenu={(e) => hold && e.preventDefault()}>
     <span class="ic">{@render icon()}</span>
     {@render nm(name)}
     {#if owned}<span class="price owned-tag">{t('shop.owned')}</span>
@@ -56,6 +71,7 @@
     appearance: none; border: 0; cursor: pointer; width: 100%; min-height: 118px; padding: 10px 6px 8px; border-radius: var(--r-btn);
     display: grid; justify-items: center; align-content: start; gap: 4px; background: var(--ctl); color: var(--text);
     box-shadow: var(--sh-ctl); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
   }
   .pickable:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .pickable:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }

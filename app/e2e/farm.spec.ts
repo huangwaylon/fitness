@@ -49,10 +49,10 @@ test('starts bought at the shop’s かう; a tap on my empty plot with nothing 
   for (let i = 0; i < 3; i++) await page.locator('[data-shop-start="tomato"]').click();
   // one bar: the pinned one names the crop and buys them
   await expect(page.locator('[data-shop-starts-offer]')).toHaveAttribute('data-shop-starts-offer', '42');
-  await expect(page.locator('[data-shop-starts-offer]')).toHaveText('トマトの苗 ×3 · 42かいがら');
+  await expect(page.locator('[data-shop-starts-offer]')).toHaveText('トマトの苗 ×3');
   await page.locator('[data-shop-buy]').click();
   await expect(page.locator('[data-shop]')).toHaveAttribute('data-shells', '158');
-  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトの苗を3個、42かいがらで買いました');
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトの苗×3を買いました');
   // うめ has no plot and no plant stands on a field: no はたけ pill on her island
   const b = await context.newPage();
   await b.goto(`?demo&as=B&date=${D}T12:00`);
