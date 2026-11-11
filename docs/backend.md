@@ -315,7 +315,7 @@ intents, never data of record: the record still catches an offline phone up.
 
 - **Where:** `relay/` (its own package): a Worker (`src/index.ts`) and `IslandRoom` (`idFromName('island')`,
   `src/room.ts`). Production `wss://island-fund-relay.island-fund-relay.workers.dev/room`; a test copy,
-  `island-fund-relay-test`, with its own secrets, for the smoke test. `GET /health` → `{ok, v, versions, sha, t, wx}` (`sha`: the deployed commit, [runbook §8](ops/runbook.md#8-deploy-the-live-relay));
+  `island-fund-relay-test`, with its own secrets, for the smoke test. `GET /health` → `{ok, v, versions, sha, t, wx}` (`sha`: the deployed commit);
   `POST /api`, `/admin`, `/notify` ([Push](#push)), `/log` ([observability](ops/observability.md)), `/stt`.
 - **Admission:** `/room` upgrades only from `ALLOWED_ORIGINS` and localhost, else 403; the key is the auth.
 - **Tickets** (`contract/ticket.ts`, `auth.ts admission`): each socket opens with the subprotocols `island-v1` and a

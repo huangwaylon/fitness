@@ -135,7 +135,7 @@ umeway1122@gmail.com account. Once per machine: `npx wrangler login`. Then, from
 wrangler deployments list`). From the repo, after `git fetch`: `sha=$(curl -s
 https://island-fund-relay.island-fund-relay.workers.dev/health | jq -r .sha); git merge-base --is-ancestor "$(git log
 -1 --format=%h origin/main -- relay app/src/lib/contract)" "$sha" && echo current || echo behind` (`behind`: a
-relay or contract commit on main isn't deployed; `null`: deployed before 2026-11-11's stamp).
+relay or contract commit on main isn't deployed; `null`: an unstamped deploy).
 
 **Keys:** §3. **Logs:** §11; live: `npx wrangler tail`. There is no off switch: the relay is the record (never
 `npx wrangler delete`: it deletes the record's Durable Object). A protocol change (`live-protocol.ts`) deploys the
