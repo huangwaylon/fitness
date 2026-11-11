@@ -139,10 +139,10 @@ test("Kinpu's plan: the date, the timeline (a stay's badge, a leg's minutes), it
   await expect(sheet(page).locator('[data-trail-list]')).toBeVisible();
 });
 
-test("a trail walked on YAMAP: no photo on its card, the record's rows in 詳細情報, YAMAP's credit", async ({ page }) => {
+test("a trail walked on YAMAP: its Commons photo on the card, the record's rows in 詳細情報, YAMAP's and the photo's credits", async ({ page }) => {
   await openTrails(page);
   const card = sheet(page).locator('[data-trail="akagi-kurobi"]');
-  await expect(card.locator('img')).toHaveCount(0);
+  await expect(card.locator('img')).toHaveAttribute('src', /hiking\/photos\/akagi-kurobi\.webp$/);
   await expect(card.locator('.stats')).toContainText('5.3km');
   await expect(card.locator('.stats')).toContainText('5時間1分');
   await card.locator('.hit').click();
@@ -150,7 +150,11 @@ test("a trail walked on YAMAP: no photo on its card, the record's rows in 詳細
   await expect(view.locator('[data-walked] dd')).toHaveText('2026年11月7日(土)');
   await expect(view.locator('.facts')).toContainText('568 m ／ 569 m');
   await expect(view.locator('.facts')).toContainText('3時間37分');
-  await expect(view.locator('.attrib')).toHaveText('軌跡・記録：YAMAP ／ 出典：国土地理院（地理院タイル）');
+  await expect(view.locator('.attrib')).toHaveText(
+    '軌跡・記録：YAMAP ／ 写真：大沼越しの黒檜山・駒ヶ岳 © Koda6029（CC BY-SA 4.0、Wikimedia Commons、トリミング・縮小） ／ 出典：国土地理院（地理院タイル）'
+  );
+  await expect(view.locator('[data-photo-credit] a').first()).toHaveAttribute('href', /^https:\/\/commons\.wikimedia\.org\/wiki\/File:/);
+  await expect(view.locator('[data-photo-credit] a').last()).toHaveAttribute('href', /^https:\/\/creativecommons\.org\/licenses\/by-sa\/4\.0\/$/);
 });
 
 /** Each trail in turn, then the first again, the sheet closed and opened between; `drawnTrack` whether its track is on its map. */

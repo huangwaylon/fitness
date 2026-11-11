@@ -21,9 +21,10 @@ describe('the trails', () => {
     expect(trailOf('utsukushigahara')).toMatchObject({ lengthKm: 13.3, gainM: 372, time: '6 h 1 min', route: 'out', walked: { dateISO: '2026-08-09', downM: 373, standard: '4:48', constant: 15 } });
     expect(TRAILS.filter((t) => t.tiles === 'jp').map((t) => t.slug)).toEqual(['fuji-yoshida', 'kinpu-odarumi', 'utsukushigahara', 'akagi-kurobi']);
   });
-  it('each has its track and its photo (or none, said so) in static/hiking/, the track a sane one', () => {
+  it('each has its track and its photo in static/hiking/ (a credit for the ones not AllTrails\', the YAMAP two), the track a sane one', () => {
     for (const t of TRAILS) {
-      expect(existsSync(join(STATIC, 'photos', `${t.slug}.webp`)), t.slug).toBe(t.photo !== false);
+      expect(existsSync(join(STATIC, 'photos', `${t.slug}.webp`)), t.slug).toBe(true);
+      expect(!!t.photo, t.slug).toBe(!!t.walked);
       const tr = JSON.parse(readFileSync(join(STATIC, 'tracks', `${t.slug}.json`), 'utf8')) as TrackFile;
       const p = prepare(tr);
       // its length within 15 % of AllTrails' (Fuji's GPX is the full round trip its figure says)

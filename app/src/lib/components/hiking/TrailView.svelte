@@ -188,7 +188,14 @@
           <div class="row kv"><dt>{pick(S.planCourse, L)}</dt><dd>{w.constant}</dd></div>
         {/if}
       </dl>
-      <p class="attrib">{pick(trail.walked ? S.attribYamap : S.attribTrail, L)} ／ {pick(trail.tiles === 'us' ? S.attribUsgs : S.attribGsi, L)}</p>
+      <p class="attrib">
+        {pick(trail.walked ? S.attribYamap : S.attribTrail, L)} ／
+        {#if trail.photo}
+          {@const p = trail.photo}
+          <span data-photo-credit>{pick(S.attribPhoto, L)}<a href={p.url} target="_blank" rel="noopener noreferrer" data-sfx="open">{p.title}</a> © {p.by}{pick(S.attribPhotoOpen, L)}<a href={p.licenceUrl} target="_blank" rel="noopener noreferrer" data-sfx="open">{p.licence}</a>{pick(S.attribPhotoVia, L)}</span> ／
+        {/if}
+        {pick(trail.tiles === 'us' ? S.attribUsgs : S.attribGsi, L)}
+      </p>
     </div>
   </div>
 </section>
@@ -253,4 +260,5 @@
   .facts { margin: 0; }
   .facts dd { margin: 0; font-weight: 600; }
   .attrib { margin: 4px 4px 0; font-size: var(--fs-s); color: var(--text-soft); }
+  .attrib a { color: var(--c-leaf-text); }
 </style>

@@ -35,9 +35,12 @@ pairs and formats), `track.ts` (pure), `load.ts`.
   apart, the DEM-corrected altitude; the GPX export itself needs a login), its summits the waypoints (`WPT_JA`), into
   the same converter (263 / 644 points → 114 / 224). No raw copy is kept: the API gives it again. The trail's figures
   are the activity page's (距離, のぼり, タイム with its rests); `walked` keeps the date, くだり, 標準タイム and コース定数
-  (詳細情報's rows), the credit 「軌跡・記録：YAMAP」. No link and no names: the page names the walkers. They came
-  without photos (`photo: false`: the card's band is plain).
+  (詳細情報's rows), the credit 「軌跡・記録：YAMAP」. No link and no names: the page names the walkers.
 - **Photos:** `static/hiking/photos/<slug>.webp` (1080 × 720 at q75: a card's width at 3×; AllTrails users' photos).
+  The YAMAP two came without, so theirs are from Wikimedia Commons (CC BY / BY-SA): a 3:2 crop of the original
+  (ffmpeg lanczos, `cwebp -q 75 -metadata none`) with the subject in its middle half: the 120px band at a phone's
+  width (~3:1) shows that. `photo` holds the credit (title, author, file page, licence), shown in the trail's
+  credits with links and 「トリミング・縮小」 as the licences ask. No raw copy is kept: the file page has it.
 - The tracks are precached, the photos kept once seen ("Offline" below).
 - **Private values:** Kinpu's plan link, party and planner are `{p:kinpuPlanUrl}`, `{p:kinpuParty}`, `{p:kinpuPlanner}`,
   read from the trip note of a trip named `hiking` (docs/travel.md "Private values": add a `hiking` entry to

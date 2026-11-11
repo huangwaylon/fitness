@@ -66,8 +66,18 @@ export interface Trail {
   /** A hike walked and recorded on YAMAP: its activity's own figures (the trail's length, gain and time are its 距離,
    *  のぼり and タイム, rests included). */
   walked?: Walked;
-  /** No photo of its own (YAMAP's activities came without): the list's band is the plain paper. */
-  photo?: false;
+  /** The card's photo when it isn't AllTrails' (the YAMAP two: Wikimedia Commons), credited under the trail. */
+  photo?: PhotoCredit;
+}
+
+/** A free-licence photo's attribution (CC BY / BY-SA: title, author, source, licence, and that it was cropped). */
+interface PhotoCredit {
+  title: string;
+  by: string;
+  /** The file's page. */
+  url: string;
+  licence: string;
+  licenceUrl: string;
 }
 
 /** A YAMAP activity's record (yamap.com/activities/<id>, public: no link kept, it names the walkers). */

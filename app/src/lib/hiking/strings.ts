@@ -39,6 +39,10 @@ export const S = {
   factStandard: { ja: '標準タイム', en: 'Standard time' },
   attribTrail: { ja: 'コース情報・写真：AllTrails', en: 'Trail info & photo via AllTrails.' },
   attribYamap: { ja: '軌跡・記録：YAMAP', en: 'Track & record via YAMAP.' },
+  attribPhoto: { ja: '写真：', en: 'Photo: ' },
+  attribPhotoOpen: { ja: '（', en: ' (' },
+  /** After the photo's licence: where it's from and that the card shows it cut down (CC BY / BY-SA's "indicate changes"). */
+  attribPhotoVia: { ja: '、Wikimedia Commons、トリミング・縮小）', en: ', via Wikimedia Commons, cropped and resized)' },
   attribUsgs: { ja: '地図 © USGS National Map', en: 'Map © USGS National Map' },
   attribGsi: { ja: '出典：国土地理院（地理院タイル）', en: 'Source: GSI Japan (地理院タイル)' },
   mapAria: { ja: 'コース地図', en: 'Trail map' },

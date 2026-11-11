@@ -3,7 +3,7 @@
 // (length, gain, difficulty, time; km and m its miles and feet converted once, the gain the DEM figure on purpose:
 // types.ts); the last two walked and recorded on YAMAP (`walked`: the activities' own figures). The tracks are files of
 // their own by slug (static/hiking/tracks/, load.ts), the photos static/hiking/photos/<slug>.webp (AllTrails users'
-// photos, 1080 × 720: a card's width at 3×; the YAMAP two have none).
+// photos, 1080 × 720: a card's width at 3×; the YAMAP two Wikimedia Commons', `photo` their credits).
 import type { Trail } from './types.ts';
 
 const NWFP = { en: 'NW Forest Pass', ja: 'ノースウエスト・フォレストパス' };
@@ -287,7 +287,7 @@ export const TRAILS: readonly Trail[] = [
     }
   },
   // walked and recorded on YAMAP (2026): the figures are the activities' own (距離, のぼり, タイム with its rests), the
-  // write-ups ours; no photos came with them
+  // write-ups ours; the photos from Wikimedia Commons (none came with the activities)
   {
     slug: 'utsukushigahara',
     name: { en: 'Utsukushigahara: Ōgahana, Ōgatō & Mt. Ushibuse', ja: '美ヶ原（王ヶ鼻・王ヶ頭・牛伏山）' },
@@ -314,7 +314,11 @@ export const TRAILS: readonly Trail[] = [
       { en: 'The path crosses cattle pastures: close each gate behind you and give the cows room.', ja: '放牧地の中を歩きます。牧柵の扉は通ったら閉め、牛には近づきすぎないように。' }
     ],
     walked: { dateISO: '2026-08-09', downM: 373, standard: '4:48', constant: 15 },
-    photo: false
+    photo: {
+      title: 'Nagano Utsukushigahara xl', by: 'MitsunoriEgawa',
+      url: 'https://commons.wikimedia.org/wiki/File:Nagano_Utsukushigahara_xl.jpg',
+      licence: 'CC BY 4.0', licenceUrl: 'https://creativecommons.org/licenses/by/4.0/'
+    }
   },
   {
     slug: 'akagi-kurobi',
@@ -342,7 +346,11 @@ export const TRAILS: readonly Trail[] = [
       { en: 'Snow and ice from late autumn: bring microspikes outside summer.', ja: '晩秋からは積雪や凍結があります。夏以外はチェーンスパイクを持参しましょう。' }
     ],
     walked: { dateISO: '2026-11-07', downM: 569, standard: '3:37', constant: 13 },
-    photo: false
+    photo: {
+      title: '大沼越しの黒檜山・駒ヶ岳', by: 'Koda6029',
+      url: 'https://commons.wikimedia.org/wiki/File:%E5%A4%A7%E6%B2%BC%E8%B6%8A%E3%81%97%E3%81%AE%E9%BB%92%E6%AA%9C%E5%B1%B1%E3%83%BB%E9%A7%92%E3%83%B6%E5%B2%B3.jpg',
+      licence: 'CC BY-SA 4.0', licenceUrl: 'https://creativecommons.org/licenses/by-sa/4.0/'
+    }
   }
 ];
 

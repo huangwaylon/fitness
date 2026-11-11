@@ -48,7 +48,7 @@
   <div class="list" role="list">
     {#each shown as t (t.slug)}
       <div class="card dense trail" role="listitem" data-trail={t.slug}>
-        <PhotoBand src={t.photo === false ? undefined : photo(t.slug)} height={120}>
+        <PhotoBand src={photo(t.slug)} height={120}>
           <h3 class="name">{pick(t.name, L)}</h3>
           <span class="area"><Icon name="pin" size={14} />{pick(t.area, L)}</span>
         </PhotoBand>

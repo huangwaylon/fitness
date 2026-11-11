@@ -7,8 +7,7 @@
   import type { Snippet } from 'svelte';
 
   interface Props {
-    /** Absent: no photo (a trail that has none), the band's own ground under the words. */
-    src?: string;
+    src: string;
     height?: number;
     /** The photo's description; '' for a decorative one (the words over it say what it is). */
     alt?: string;
@@ -21,7 +20,7 @@
 </script>
 
 <div class="band" class:edge style:--h="{height}px">
-  {#if src}<img {src} {alt} loading={edge ? 'eager' : 'lazy'} decoding="async" {@attach photoFallback} />{/if}
+  <img {src} {alt} loading={edge ? 'eager' : 'lazy'} decoding="async" {@attach photoFallback} />
   {#if nav}<div class="nav">{@render nav()}</div>{/if}
   {#if children}<div class="foot">{@render children()}</div>{/if}
 </div>
