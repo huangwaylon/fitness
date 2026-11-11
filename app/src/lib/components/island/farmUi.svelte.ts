@@ -1,10 +1,20 @@
 // The fields' controls on this phone (docs/farming.md "Playing"): the picker (FarmPicker), opened by the farm menu
-// (FarmMenu) or a tap on a plot (SceneTaps: my empty plot with nothing held, or none left, whose pick plants that plot).
+// (FarmMenu) or a tap on a plot (SceneTaps: my empty plot with nothing held, or none left, whose pick plants that plot),
+// and the verb a plot's tap pops over it (FarmPop).
 import { seedKey, type Crop, type FarmSrc } from '#lib/contract/farm.ts';
 import { pickSeed, type Seed } from '#lib/store/farm.svelte.ts';
 import { t } from '#lib/i18n/index.ts';
 
-export const farmUi = $state({ picker: false });
+/** A tap's word over its plot: px from the scene's top-left (the plot's top, as the tap saw it); `n` new each pop. */
+export interface FarmPopAt { text: string; x: number; y: number; n: number }
+
+export const farmUi = $state<{ picker: boolean; pop: FarmPopAt | null }>({ picker: false, pop: null });
+
+let pops = 0;
+/** Pop `text` over a plot at (x, y), the last one's place taken. */
+export function popAt(text: string, x: number, y: number): void {
+  farmUi.pop = { text, x, y, n: ++pops };
+}
 
 /** What the open picker's pick does once kept: the tapped plot planted (SceneTaps), else nothing more. */
 let then: (() => void) | null = null;

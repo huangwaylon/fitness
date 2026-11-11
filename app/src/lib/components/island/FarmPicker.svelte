@@ -13,9 +13,6 @@
   import { choose, closePicker, cropName } from './farmUi.svelte.ts';
   import { loadNames } from './catchLine.ts';
 
-  /** My villager's word on the island (IslandScene's showSay): what I picked from the menu. */
-  let { mutter }: { mutter?: (text: string) => void } = $props();
-
   let root: HTMLElement | undefined = $state();
   const pocket = $derived(week.model ? shopView(week.model.state, week.model.me).pocket : new Map<string, number>());
   /** What I can plant: each start, then each vegetable, that I hold. */
@@ -47,9 +44,6 @@
     };
   });
 
-  function pick(c: Crop, src: FarmSrc) {
-    if (!choose({ c, src })) mutter?.(t('world.farm.picked', { name: name(c, src) }));
-  }
 </script>
 
 <div class="picker" role="dialog" aria-label={t('world.farm.pick')} data-farm-picker bind:this={root}>
@@ -58,7 +52,7 @@
     <div class="grid">
       {#each seeds as s (s.src + s.c)}
         <button type="button" class="cell" data-sfx="tick" class:on={seed.pick?.c === s.c && seed.pick?.src === s.src} data-farm-pick="{s.src}:{s.c}" aria-label={name(s.c, s.src)}
-          onclick={() => pick(s.c, s.src)}>
+          onclick={() => choose({ c: s.c, src: s.src })}>
           <OfficialArt key="finds/{s.c}" size={34} />
           {#if s.src === 'start'}<span class="tag" data-farm-start><OfficialArt key="finds/{s.c}-start" size={18} /></span>{/if}
           <b class="n">{s.n}</b>

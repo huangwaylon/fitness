@@ -1,8 +1,8 @@
 <script lang="ts">
   // The farm menu (docs/farming.md "Playing"): a round cream disc at the island's bottom left, the say button's
   // mirror, NH's seed bag in it. A tap unfolds two cream pills upward, left-aligned (the disc turns yuzu):
-  // 「たね」 with what I plant next and how many (the picker, FarmPicker: a pick kept on this phone, said by my villager
-  // and worn on the disc) and 「はたけ」 (the 畑 sheet). It folds as the leaf menu does:
+  // 「たね」 with what I plant next and how many (the picker, FarmPicker: a pick kept on this phone and worn on the
+  // disc) and 「はたけ」 (the 畑 sheet). It folds as the leaf menu does:
   // a second tap, a tap anywhere else, Esc, a pick, a sheet opening. IslandScene places and hides it with the say button.
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { seedKey } from '#lib/contract/farm.ts';
@@ -16,9 +16,6 @@
   import { closePicker, farmUi, openPicker } from './farmUi.svelte.ts';
   import { farmSheet } from '../farm/open.svelte.ts';
   import FarmPicker from './FarmPicker.svelte';
-
-  /** My villager's word on the island (IslandScene's showSay): what I picked. */
-  let { mutter }: { mutter?: (text: string) => void } = $props();
 
   let open = $state(false);
   let root: HTMLElement | undefined = $state();
@@ -58,7 +55,7 @@
 </script>
 
 <div class="farm-menu" class:open bind:this={root}>
-  {#if farmUi.picker}<FarmPicker {mutter} />{/if}
+  {#if farmUi.picker}<FarmPicker />{/if}
   <div class="items" role="group" aria-label={t('world.farm.open')} inert={!open}>
     <button type="button" class="item" data-farm-seed data-sfx="open" aria-haspopup="dialog" onclick={() => choose(() => openPicker())}>
       <span class="ic">{#if picked}<OfficialArt key="finds/{picked.c}" size={28} />{:else}<OfficialArt key="finds/seed-bag" size={28} />{/if}</span>

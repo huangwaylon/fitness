@@ -24,6 +24,15 @@ const plot = (i: number, j = 0) => ({ p: `fd:field-A.${i}.${j}`, x: -90 + (10 + 
 const D = '2026-11-04';
 /** 200 かいがら (a koi sold) and three tomato starts (3 × 14). */
 const POCKET: Seed[] = [['tally', { date: D, counts: { 'fish:koi': 1 } }, 'A'], ['sell', { species: 'fish:koi', n: 1, v: 200 }, 'A'], ['buy_starts', { crop: 'tomato', n: 3, v: 42 }, 'A']];
+/** The plot words this page pops (FarmPop's tag lives 1.2 s: each caught as it comes). */
+const catchPops = (page: Page) =>
+  page.addInitScript(() => {
+    const seen: string[] = ((window as unknown as { __pops: string[] }).__pops = []);
+    new MutationObserver((list) => {
+      for (const r of list) for (const n of r.addedNodes) if (n instanceof HTMLElement && n.matches('[data-farm-pop]')) seen.push(n.textContent ?? '');
+    }).observe(document, { childList: true, subtree: true });
+  });
+const pops = (page: Page) => page.evaluate(() => (window as unknown as { __pops: string[] }).__pops);
 /** The farm ops this page sent (not the seeds'). */
 const farmRows = (page: Page) => page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{"events":[]}').events as { id: string; type: string; data: { ops: { o: string; p: string; n?: number }[] } }[])
   .filter((e) => e.type === 'farm' && !e.id.startsWith('seed-')).flatMap((e) => e.data.ops));
@@ -44,6 +53,7 @@ test('starts bought at the shop’s かう; a tap on my empty plot with nothing 
   await page.locator('[data-shop-buy]').click();
   await expect(page.locator('[data-shop]')).toHaveAttribute('data-shells', '158');
   await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトの苗を3個、42かいがらで買いました');
+  await catchPops(page);
   await page.goto(`?demo&date=${D}T12:00`);
   await islandUp(page);
   await quiet(page);
@@ -64,9 +74,11 @@ test('starts bought at the shop’s かう; a tap on my empty plot with nothing 
   const three = [plot(0), plot(1), plot(0, 1)];
   for (const t of three.slice(1)) await tapWorld(page, t.x, t.z);
   await expect.poll(() => farmRows(page)).toEqual(three.map((t) => ({ o: 'plant', p: t.p, c: 'tomato', src: 'start' })));
-  // none left: a fourth plot says so and opens the picker, with nothing in it to plant
+  // none left: a fourth plot says so and opens the picker, with nothing in it to plant; each word over its plot
   await tapWorld(page, plot(1, 1).x, plot(1, 1).z);
   await expect(page.locator('[data-farm-noseed]')).toHaveText('なえが ない！ おみせで かえるよ');
+  await expect.poll(() => pops(page)).toEqual([...three.map(() => 'トマトを うえた'), 'トマトが もう ない']);
+  await expect(page.locator('[data-fx="say"]')).toHaveCount(0);
   expect(await farmRows(page)).toHaveLength(3);
   // the menu: たね shows none left of tomatoes; はたけ opens the sheet
   await page.locator('[data-farm-open]').click();
@@ -118,14 +130,16 @@ test('three days on: ripe, watered on the two days before it gives three, harves
   await page.locator('[data-shop-sell]').click();
   await expect.poll(async () => Number(await page.locator('[data-shop]').getAttribute('data-shells'))).toBe(before + 54);
 
-  // うめ's phone: my plants are on her island; she waters the unwatered one, and can't harvest the ripe one
+  // うめ's phone (a clear sky: the seeded 11-07 rains): my plants are on her island; she waters the unwatered one, and can't harvest the ripe one
   const b = await context.newPage();
-  await b.goto(`?demo&as=B&date=${D3}T12:00`);
+  await catchPops(b);
+  await b.goto(`?demo&as=B&date=${D3}T12:00&weather=clear`);
   await islandUp(b);
   await quiet(b);
   await tapWorld(b, plot(1).x, plot(1).z);
   // ripe and watered now: a word, no harvest
   await tapWorld(b, plot(1).x, plot(1).z);
+  await expect.poll(() => pops(b)).toEqual(['みずやり', 'みずやり ずみ']);
   // her 畑 sheet: my two plants folded under my name, the second watered today
   await b.locator('[data-farm-open]').click();
   await b.locator('[data-farm-field]').click();

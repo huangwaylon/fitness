@@ -41,6 +41,7 @@
   import SayPicker from './SayPicker.svelte';
   import SayButton from './SayButton.svelte';
   import FarmMenu from './FarmMenu.svelte';
+  import FarmPop from './FarmPop.svelte';
   import { layoutPlots } from '#lib/layout/field.ts';
   import CatchStack from './CatchStack.svelte';
   import { SAY_TAG, rememberSay, sayGate } from './say.ts';
@@ -1171,7 +1172,8 @@
     <div class="say-dock"><SayButton bind:el={sayBtn} open={!!picking} onopen={openPicker} /></div>
     {#if fieldsHere}
       <!-- the farm menu: its mirror at the bottom left (docs/farming.md), while the island has a field -->
-      <div class="farm-dock"><FarmMenu mutter={(text) => showSay('mine', text)} /></div>
+      <div class="farm-dock"><FarmMenu /></div>
+      <FarmPop />
     {/if}
   {/if}
   <!-- every catch's plate: a stack at the bottom centre, outside the viewport (the newest at the bottom) -->
@@ -1262,7 +1264,7 @@
         <SceneTaps bind:this={sceneTaps} scene={sceneEl} {season} {tod} enabled={() => !covered && !life.hidden} swallowed={() => closedBy} walk={walkThere} sit={sitOn}
           exercise={view.people.A.rings.peach.met || view.people.B.rings.peach.met} cake={bday.length > 0}
           skyTap={(x, y) => !!fireworks?.tap(x, y)}
-          say={(name, parts, from, o) => talk?.say(name, parts, from, o)} ontrick={faces.trick} tree={treeTap} mutter={(text) => showSay('mine', text)} />
+          say={(name, parts, from, o) => talk?.say(name, parts, from, o)} ontrick={faces.trick} tree={treeTap} />
         <Talk bind:this={talk} scene={sceneEl} />
         <Says bind:this={says} scene={sceneEl} />
         {#if hookFlag('hit')}
