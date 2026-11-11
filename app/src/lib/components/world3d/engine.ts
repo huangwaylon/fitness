@@ -1087,9 +1087,9 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     }
     // (a wobbling model moves its shadow, a critter's fade brings its own or takes it: the map redraws; a walker's is a
     // blob, a fish's shadow casts none)
-    const th = things.frame(t);
+    const th = things.frame(t, thingSeen);
     if (th === 'cast') shadowed();
-    want(!!th, 'things');
+    want(th === 'cast' || th, 'things');
     if (hook) want(hook(t), 'scene');
     // (the scene placed its nodes for this camera: camStill waits for it)
     framedRev = rev;

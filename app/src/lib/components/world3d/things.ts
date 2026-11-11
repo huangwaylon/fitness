@@ -108,8 +108,9 @@ function hingeOf(root: Object3D): { at: Vector4; flaps: Map<Mesh, boolean> } {
   return { at: new Vector4(h.x, h.y, h.root, h.ramp), flaps: new Map(meshes.map((m, i) => [m, h.flaps[i]])) };
 }
 const FADE_IN_MS = 600, FADE_OUT_MS = 600;
-/** A frame's step of a fade at most (ms): a slow frame never jumps it (a fade is never 0 → 1 in one frame). */
-const FADE_STEP_MS = 50;
+/** A frame's step of a fade at most (ms): a slow frame never jumps it (a fade is never 0 → 1 in one frame); over the
+ *  ambient rate's 83 ms at rest, so a fish's shadow fades in its time there. */
+const FADE_STEP_MS = 90;
 
 /** An instance's change in place; `fade`: its opacity, the caller's own (a find washing in: Finds.svelte), drawn
  *  through the critters' per-instance fade (its model's group rebuilds to take one the first time). */
@@ -131,9 +132,11 @@ export interface Things {
   lamps(): LampSpot[];
   /** The time of day: the lamps' emissive level and the soft self-light ("lift"). */
   tod(lamps: number, lift: number): void;
-  /** One frame (the critters' fades, the wobbles): true while one runs, 'cast' when a caster's shadow changed in it (a
-   *  wobble's; a fade's as it passes half, where its shadow comes or goes: things.ts lambert). */
-  frame(t: number): boolean | 'cast';
+  /** One frame (the critters' fades, the wobbles): true while one runs, 'ambient' while only a fish's shadow fades
+   *  (no shadow of its own: the ambient rate), 'cast' when a caster's shadow changed in it (a wobble's; a fade's as it
+   *  passes half, where its shadow comes or goes: things.ts lambert). `seen` (engine.ts thingSeen): a fade out of view
+   *  is at its end at once. */
+  frame(t: number, seen?: (box: Box3) => boolean): boolean | 'cast' | 'ambient';
   has(id: string): boolean;
   /** An instance shows another model for now (its pose: the shishi-odoshi tipped), or its own again (null). */
   swap(id: string, model: string | null): void;
@@ -682,18 +685,22 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
   }
 
   const JIG_MS = 560;
-  function frame(t: number): boolean | 'cast' {
-    let more = false, cast = false, died = false;
+  function frame(t: number, seen?: (box: Box3) => boolean): boolean | 'cast' | 'ambient' {
+    let more = false, soft = false, cast = false, died = false;
     for (const [id, f] of fades) {
       if (f.a === f.to) continue;
       // (one whose model is still loading waits for it: its fade starts once it's drawn, never part-way in)
-      if (!byId.has(id) && !f.dying) {
+      const on = byId.get(id);
+      if (!on && !f.dying) {
         f.t = t;
         continue;
       }
+      // (out of view, its shadow too: at its end now, no frames for it; 45 of the night's 130 fade frames were for
+      // fish off screen)
+      const away = !!on && !!seen && !seen(tmpBox.copy(boxOf(on.g)).applyMatrix4(on.g.base[on.i]));
       const dt = Math.min(FADE_STEP_MS, Math.max(0, t - f.t)), was = f.a;
       f.t = t;
-      f.a = f.to ? Math.min(1, f.a + dt / FADE_IN_MS) : Math.max(0, f.a - dt / FADE_OUT_MS);
+      f.a = away ? f.to : f.to ? Math.min(1, f.a + dt / FADE_IN_MS) : Math.max(0, f.a - dt / FADE_OUT_MS);
       if (f.a === 0 && f.dying) {
         // faded out: gone now
         fades.delete(id);
@@ -708,8 +715,10 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
         write(a.g, a.i);
         // (a fish's shadow casts none; a bug's shadow is there past half, and its scale-up done at the end)
         if (!FLAT.has(a.g.name) && ((was < 0.5) !== (f.a < 0.5) || f.a === f.to)) cast = true;
-      }
-      more = true;
+        if (away) continue;
+        if (FLAT.has(a.g.name)) soft = true;
+        else more = true;
+      } else more = true;
     }
     if (died) void later();
     for (const [id, w] of wobbles) {
@@ -729,7 +738,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       write(a.g, a.i);
       if (!FLAT.has(a.g.name)) cast = true;
     }
-    return cast ? 'cast' : more;
+    return cast ? 'cast' : more || (soft && 'ambient');
   }
 
   /** A model's box in its own space (its meshes' boxes, in their frames), once a model. */
