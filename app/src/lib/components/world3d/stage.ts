@@ -17,6 +17,7 @@ import { pacer } from './pace.ts';
 import { drawOff, shaderChecks } from '#lib/ui-state/testMode.ts';
 import { FPS } from '#lib/store/frameRate.ts';
 import { ktx2Default } from './ktx2.ts';
+import { log } from '#lib/sync/log.ts';
 
 /** The pixel ratio at most (an iPhone's 3 costs too much for what it adds), and while a gesture moves the camera. */
 const DPR_MAX = 2;
@@ -58,6 +59,26 @@ export function makeRenderer(canvas: HTMLCanvasElement, o: RendererOpts = {}): {
   if (o.alpha) renderer.setClearColor(0x000000, 0);
   ktx2Default(renderer);
   return { renderer, noDraw, dpr };
+}
+
+/** A lost context on `canvas` (the phone reclaiming the GPU, a backgrounded page under memory pressure) kept for three
+ *  to restore what it can, and logged both ways (gl.lost, by `where`: how often iOS takes a surface's memory back);
+ *  `restored()` once it's back (what three can't upload again made again, a frame asked for). The unwatch. */
+export function watchContext(canvas: HTMLCanvasElement, where: 'island' | 'tent' | 'other', restored: () => void): () => void {
+  const onLost = (e: Event) => {
+    e.preventDefault();
+    log('gl.lost', { where, restored: false }, 2);
+  };
+  const onRestored = () => {
+    log('gl.lost', { where, restored: true });
+    restored();
+  };
+  canvas.addEventListener('webglcontextlost', onLost);
+  canvas.addEventListener('webglcontextrestored', onRestored);
+  return () => {
+    canvas.removeEventListener('webglcontextlost', onLost);
+    canvas.removeEventListener('webglcontextrestored', onRestored);
+  };
 }
 
 /** A renderer let go of: what's under `roots` (and `also`: drawn, since taken out) disposed, WHITE's and the sprites'

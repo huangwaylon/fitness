@@ -21,7 +21,7 @@ import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { Villager3D } from '../villager3d/villager3d.ts';
 import type { Person3 } from '../person3d/person3d.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
-import { DPR_MOVING, endRenderer, makeRenderer } from '../world3d/stage.ts';
+import { DPR_MOVING, endRenderer, makeRenderer, watchContext } from '../world3d/stage.ts';
 import { pollReady } from '../world3d/warmup.ts';
 import { decal } from './geometry.ts';
 import { carpetGeometry, carpetTexture } from './carpet.ts';
@@ -1900,6 +1900,10 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     if (warmHeld) (warmHeld = false), warmSoon();
   };
   document.addEventListener('visibilitychange', onVis);
+  // a lost context (iOS taking a backgrounded room's memory back): three restores what it can, drawn again once back
+  const unwatchGL = watchContext(canvas, 'other', () => {
+    invalidate();
+  });
 
   // ---- the frame loop ----
   const frustum = new Frustum(), projScreen = new Matrix4();
@@ -2201,6 +2205,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       disposed = true;
       pace.stop();
       document.removeEventListener('visibilitychange', onVis);
+      unwatchGL();
       clearTimeout(warmT);
       clearTimeout(stepT);
       stopCompile();

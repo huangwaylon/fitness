@@ -30,14 +30,13 @@ import { createBiteMarks, type MarkState } from './biteMark.ts';
 import { createLights, lampFog, type LampSpot } from './lights.ts';
 import type { Inst } from './objects.ts';
 import { drawOff } from '../../ui-state/testMode.ts';
-import { DPR_MOVING, endRenderer, makeRenderer } from './stage.ts';
+import { DPR_MOVING, endRenderer, makeRenderer, watchContext } from './stage.ts';
 import { releaseAll, resourcesOf } from './release.ts';
 import { FPS } from '#lib/store/frameRate.ts';
 import { pacer } from './pace.ts';
 import type { BootWait } from './boot.ts';
 import { createWarmup, texturesOf } from './warmup.ts';
 import { ktx2Target } from './ktx2.ts';
-import { log } from '#lib/sync/log.ts';
 import { SEA_X, midXOf } from '#lib/layout/model.ts';
 import { SEA_Y } from '#lib/layout/height.ts';
 
@@ -1159,21 +1158,13 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     if (!document.hidden && !paused) kick();
   };
   document.addEventListener('visibilitychange', onVis);
-  // a lost context (the phone reclaiming the GPU): three restores what it can; draw again once it's back (the log's
-  // gl.lost: how often iOS takes the island's memory back)
-  const onLost = (e: Event) => {
-    e.preventDefault();
-    log('gl.lost', { where: 'island', restored: false }, 2);
-  };
-  const onRestored = () => {
-    log('gl.lost', { where: 'island', restored: true });
-    // (three uploads the textures and programs again as they're drawn; the ground's bakes came back blank)
+  // a lost context: drawn again once it's back (three uploads the textures and programs again as they're drawn; the
+  // ground's bakes came back blank)
+  const unwatchGL = watchContext(canvas, 'island', () => {
     ground.restore?.();
     shadowed();
     resize();
-  };
-  canvas.addEventListener('webglcontextlost', onLost);
-  canvas.addEventListener('webglcontextrestored', onRestored);
+  });
 
   resize();
   tod('day');
@@ -1353,8 +1344,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       pace.stop();
       if (wakeTimer) clearTimeout(wakeTimer);
       document.removeEventListener('visibilitychange', onVis);
-      canvas.removeEventListener('webglcontextlost', onLost);
-      canvas.removeEventListener('webglcontextrestored', onRestored);
+      unwatchGL();
       // every geometry, material and texture still in the scene (and once placed) let go of on this renderer: three's
       // listeners on each keep it, and one shared with the next island (a cached home's, bridge's or villager's model)
       // kept this whole renderer and its context alive, one more a room's round trip (~1 MB of heap each in Chromium)

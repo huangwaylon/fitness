@@ -18,7 +18,7 @@ import { hitsSkinned } from '../player3d/hit.ts';
 import type { Person3 } from '../person3d/person3d.ts';
 import { seatOf } from '../villager3d/poses.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
-import { DPR_MOVING, endRenderer, makeRenderer } from '../world3d/stage.ts';
+import { DPR_MOVING, endRenderer, makeRenderer, watchContext } from '../world3d/stage.ts';
 import { LIDS, lidK, lidMoving, lidOpen, lidOpenIn, lidWant, splitLid, type Lid } from './lid.ts';
 import { freeModel, modelCache } from '../world3d/modelCache.ts';
 import { glbLoader } from '../world3d/gltf.ts';
@@ -2050,6 +2050,11 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     if (warmHeld) (warmHeld = false), warmSoon();
   };
   document.addEventListener('visibilitychange', onVis);
+  // a lost context (iOS taking a backgrounded room's memory back): three restores what it can, drawn again once back
+  const unwatchGL = watchContext(canvas, 'tent', () => {
+    shadowsDirty = true;
+    invalidate();
+  });
 
   shell(FULL);
   fit();
@@ -2139,6 +2144,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       clearTimeout(holdT);
       clearTimeout(primeT);
       document.removeEventListener('visibilitychange', onVis);
+      unwatchGL();
       clearTimeout(warmT);
       for (const w of villagers.values()) w.v3?.dispose();
       const seen = new Set<object>();
