@@ -29,6 +29,7 @@
   import { iconUrl } from '../tent/items.ts';
   import Counter, { type Tab } from './Counter.svelte';
   import { nm } from './PieceTile.svelte';
+  import { placeOf, samePlace, type Place } from './words.ts';
   import { findArt } from '../island/beach.ts';
   import { person3, type Dirs } from '../person3d/person3d.ts';
   import { url3d } from '../villager3d/manifest.ts';
@@ -268,26 +269,40 @@
 
   /** The twins' line by まめきち's head (client px: where the balloon stands, kept on screen, and how far its tail is
    *  off its middle to point at him), followed as the camera moves; null at my villager's eyes with him out of view. */
-  let sayAt = $state<{ x: number; y: number; tail: number } | null>(null);
+  let sayAt = $state<Place | null>(null);
   /** The sign by the door's foot (client px), null out of view. */
   let signAt = $state<{ x: number; y: number } | null>(null);
-  const SAY_HALF = 110;
+  /** The room's box on the screen (kept by the ResizeObserver: no layout read a frame). */
+  let box: DOMRect | null = null;
+  /** Each drawn frame (and when the balloon or the list comes or goes): the hello at the counter, and where the sign and
+   *  the balloon stand, only while shown (the list over the room shows neither), written only when they move. */
   function placeSay() {
     const at = eng?.at(viewer);
     if (!greeted && at && atCounter(at)) {
       greeted = true;
       if (!panel && !asking) speak('hello');
     }
-    const h = eng?.headPoint('n:timmy');
+    if (!eng || panel) return;
     // the sign by the door, where it stands (none out of view)
-    signAt = eng && eng.inView(SIGN[0], SIGN[1] + 6, SIGN[2]) ? (([x, y]) => ({ x, y }))(eng.client(SIGN[0], SIGN[1], SIGN[2])) : null;
+    const sign = eng.inView(SIGN[0], SIGN[1] + 6, SIGN[2]) ? (([x, y]) => ({ x: Math.round(x), y: Math.round(y) }))(eng.client(SIGN[0], SIGN[1], SIGN[2])) : null;
+    if (!samePlace(sign, signAt)) signAt = sign;
+    if (!sayShown) return;
     // (off the view to a side, the balloon stands at that edge, its tail toward him; behind the eyes, none)
-    if (!h || !eng || !canvas || (fpv && !eng.inView(h[0], h[1], h[2]))) return void (sayAt = null);
-    const [hx, hy] = eng.client(h[0], h[1] + 2, h[2]), r = canvas.getBoundingClientRect();
-    const x = Math.min(r.right - SAY_HALF - 8, Math.max(r.left + SAY_HALF + 8, hx));
-    sayAt = { x, y: hy, tail: Math.max(-SAY_HALF + 20, Math.min(SAY_HALF - 20, hx - x)) };
+    const h = eng.headPoint('n:timmy');
+    box ??= canvas?.getBoundingClientRect() ?? null;
+    let say: Place | null = null;
+    if (h && box && !(fpv && !eng.inView(h[0], h[1], h[2]))) {
+      const [hx, hy] = eng.client(h[0], h[1] + 2, h[2]);
+      say = placeOf(hx, hy, box.left, box.right);
+    }
+    if (!samePlace(say, sayAt)) sayAt = say;
   }
   const sayShown = $derived(!!panel || asking || sayOn);
+  $effect(() => {
+    void panel;
+    void sayShown;
+    untrack(placeSay);
+  });
 
   // ---- the finger: a tap walks or acts in place; a drag turns the camera; two fingers pinch ----
   let turned = $state(false);
@@ -442,7 +457,10 @@
       });
       hooks();
     }, fail);
-    const ro = new ResizeObserver(() => eng?.resize(insets()));
+    const ro = new ResizeObserver(() => {
+      box = canvas?.getBoundingClientRect() ?? null;
+      eng?.resize(insets());
+    });
     if (canvas) ro.observe(canvas);
     return () => {
       alive = false;

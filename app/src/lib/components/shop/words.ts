@@ -1,9 +1,10 @@
-// Where a name in the shop's lists may break (ShopRoom's tiles: two lines of a ~100 px cell). WebKit has no
+// Where a name in the shop's lists may break (PieceTile's: two lines of a ~100 px cell). WebKit has no
 // `word-break: auto-phrase` and the segmenter splits NH's kana names badly (いし|のみずうけ, ラ|グ), so a name's words
 // are its runs of one script (katakana, hiragana, the rest): a break where the script changes (ハロウィンな|ランタンセット),
 // after a space or a mark (・ &), a particle kept on the word before it (サトウキビの|なえ), never a lone character on a
 // line (マット・M, おサカナの); a run too long for a line breaks after a particle in it (まるたの|かべかけどけい) or where
-// the segmenter ends a word in it (アイアン|ウォールランプ), only past the small size's line. The tile shows them `keep-all` with a <wbr> between. Pure.
+// the segmenter ends a word in it (アイアン|ウォールランプ), only past the small size's line. The tile shows them `keep-all`
+// with a <wbr> between. And where the twins' words stand: their balloon in the room (placeOf). Pure.
 
 type Cls = 'K' | 'H' | 'O' | 'P';
 const cls = (ch: string): Cls =>
@@ -74,3 +75,16 @@ export function words(name: string, locale = 'ja'): string[] {
 export const isLong = (name: string, locale = 'ja'): boolean => words(name, locale).some((w) => len(w) > LINE);
 /** The longest word's length (the test's: a word longer than LINE_XS still breaks inside, where it must). */
 export const longest = (name: string): number => Math.max(...words(name).map(len));
+
+/** The twins' balloon's half width at its widest: kept this far (and 8 px more) inside the room's sides. */
+const SAY_HALF = 110;
+export interface Place { x: number; y: number; tail: number }
+/** Where the twins' balloon stands (client px, whole): over まめきち's head at `hx, hy`, kept inside the room's
+ *  `left`..`right`, its tail off its middle toward him. */
+export function placeOf(hx: number, hy: number, left: number, right: number): Place {
+  const x = Math.round(Math.min(right - SAY_HALF - 8, Math.max(left + SAY_HALF + 8, hx)));
+  return { x, y: Math.round(hy), tail: Math.round(Math.max(-SAY_HALF + 20, Math.min(SAY_HALF - 20, hx - x))) };
+}
+/** Whether two places (or none) are the same: a frame that moves nothing writes nothing. */
+export const samePlace = <T extends { x: number; y: number; tail?: number }>(a: T | null, b: T | null): boolean =>
+  a === b || (!!a && !!b && a.x === b.x && a.y === b.y && a.tail === b.tail);

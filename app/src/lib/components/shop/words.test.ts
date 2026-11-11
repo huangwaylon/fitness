@@ -8,7 +8,7 @@ import catchJa from '#lib/i18n/catch.ja.json';
 import main from '#lib/i18n/ja.json';
 import { bare } from '../kiroku/zukan.ts';
 import { pocketItem } from './pocket.ts';
-import { LINE, LINE_XS, isLong, longest, words } from './words.ts';
+import { LINE, LINE_XS, isLong, longest, placeOf, samePlace, words } from './words.ts';
 
 const tentNames: Record<string, string> = tent, catchNames: Record<string, string> = catchJa, mainNames: Record<string, string> = main;
 const NAMES = [
@@ -57,5 +57,19 @@ describe('shop names: where they break', () => {
       if (ws.join('') !== n || !between || !noLone || !fits) bad.push(`${n} → ${ws.join('|')}`);
     }
     expect(bad).toEqual([]);
+  });
+});
+
+describe('the twins’ balloon (placeOf): over まめきち, kept inside the room, its tail toward him', () => {
+  it('stands over his head in whole px; at a side, held 118 px in with its tail (at most 90) pointing out to him', () => {
+    expect(placeOf(200.4, 300.6, 0, 393)).toEqual({ x: 200, y: 301, tail: 0 });
+    expect(placeOf(380, 300, 0, 393)).toEqual({ x: 275, y: 300, tail: 90 });
+    expect(placeOf(20, 300, 0, 393)).toEqual({ x: 118, y: 300, tail: -90 });
+  });
+  it('a frame that moves nothing writes nothing: the same place (or none twice) is the same', () => {
+    expect(samePlace(placeOf(200.2, 300, 0, 393), placeOf(199.8, 300, 0, 393))).toBe(true);
+    expect(samePlace(placeOf(200, 300, 0, 393), placeOf(202, 300, 0, 393))).toBe(false);
+    expect(samePlace(null, null)).toBe(true);
+    expect(samePlace({ x: 1, y: 2 }, null)).toBe(false);
   });
 });
