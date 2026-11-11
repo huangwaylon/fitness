@@ -43,7 +43,7 @@ export const LOG_EVENTS = {
   "app.open": { src: 'c', f: { nav: ['navigate', 'reload', 'back_forward', 'prerender', 'other'], route: LOG_ROUTES, pwa: 'b', w: 'n', h: 'n', dpr: 'n', crashed: 'b', lt: 'b', q: 'n', qAgeS: 'n', coldS: 'n' } },
   "app.ready": { src: 'c', f: { ms: 'n', route: LOG_ROUTES } },
   "app.show": { src: 'c', f: { awayS: 'n', route: LOG_ROUTES } },
-  "app.reload": { src: 'c', f: { why: ['update', 'chunk', 'stale', 'other'] } },
+  "app.reload": { src: 'c', f: { why: ['update', 'launch', 'chunk', 'stale', 'other'] } },
   "perf.frames": { src: 'c', f: { p50: 'n', p95: 'n', fps: 'n', long: 'n', drawFps: 'n', hz: 'n', mode: ['3d', 'none'], when: ['ready', 'show'] } },
   // a sheet's opening (ui-state/sheetTiming.ts), ms from the tap: its chunk in and the dialog shown (`chunk`), its content
   // ready (`content`: the last change inside it before 300 ms of none once the opening is done), its open animation's end
@@ -55,7 +55,7 @@ export const LOG_EVENTS = {
   // (2026-11-11) the steps from loaded to shown by what held each back: programs linking, models loading, cards
   // loading; how many, and their wall ms from that step to the next; the steps' own frame ms all told; the models in
   // after loaded, and the last of them by name)
-  "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n', sLink: 'n', msLink: 'n', sModels: 'n', msModels: 'n', sCards: 'n', msCards: 'n', stepMs: 'n', late: 'n', lastM: 't' } },
+  "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n', sLink: 'n', msLink: 'n', sModels: 'n', msModels: 'n', sCards: 'n', msCards: 'n', stepMs: 'n', late: 'n', lastM: 't', data: 'n', ask: 'n', held: 'n' } },
   // (2026-11-10) the island's first return to it a load (back from a room: perf.boot's marks, ms from the mount), and
   // the island at rest once a load (15 s untouched, then 10 s: drawn frames, shadow passes, the pacers' wake-ups a
   // second, and (2026-11-11) the scene's draw calls and triangles a frame, the pixel ratio, the camera's z and the shadow
