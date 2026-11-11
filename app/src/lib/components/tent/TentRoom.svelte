@@ -61,7 +61,7 @@
   import { DragLink } from './dragLink.ts';
   import { seatsOf, type Seat } from './seats.ts';
   import { createSeating } from '../rooms/seating.ts';
-  import { drawOff } from '#lib/ui-state/testMode.ts';
+  import { testHooks } from '#lib/ui-state/testMode.ts';
   import type { Look, Pose, Tent, Who } from './engine.ts';
   import { quiet } from '#lib/quiet.ts';
   import { staticUrl } from '#lib/staticUrl.ts';
@@ -700,7 +700,7 @@
 
   /** The e2e's and the console's hooks (dev builds, ?demo, and the e2e's logic mode: a paired phone on a test record). */
   function hooks() {
-    if (!import.meta.env.DEV && !new URLSearchParams(location.search).has('demo') && !drawOff()) return;
+    if (!testHooks()) return;
     window.__tent = {
       stats: () => eng?.stats(),
       loading: () => eng?.loading() ?? 0,

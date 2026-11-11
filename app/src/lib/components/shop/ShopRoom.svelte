@@ -53,7 +53,7 @@
   import { where } from '#lib/store/where.svelte.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
   import { doorReady, provideDoor } from '#lib/ui-state/doorTransition.ts';
-  import { drawOff } from '#lib/ui-state/testMode.ts';
+  import { testHooks } from '#lib/ui-state/testMode.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { setPlace } from '#lib/sound/sound.svelte.ts';
   import { formatNum, i18n, t } from '#lib/i18n/index.ts';
@@ -436,7 +436,7 @@
 
   /** The e2e's and the console's hooks (dev builds, ?demo, and the logic tier). */
   function hooks() {
-    if (!import.meta.env.DEV && !new URLSearchParams(location.search).has('demo') && !drawOff()) return;
+    if (!testHooks()) return;
     window.__shop = {
       stats: () => eng?.stats(),
       loading: () => eng?.loading() ?? 0,

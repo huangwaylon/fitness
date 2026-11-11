@@ -23,6 +23,12 @@ export function drawOff(): boolean {
   return q.get('render') === 'none' && (import.meta.env.DEV || q.has('demo'));
 }
 
+/** Whether the e2e's and the console's window hooks are put up (window.__tent, __shop, __museum, __world, the
+ *  engines' debug maps): a dev build, `?demo`, or the logic tier. Never on a live phone: a hook holds its engine. */
+export function testHooks(): boolean {
+  return import.meta.env.DEV || (typeof location !== 'undefined' && new URLSearchParams(location.search).has('demo')) || drawOff();
+}
+
 /** Whether a trip's or a trail's map is its logic-tier stub (pins as buttons, no MapLibre): drawing off, but for
  *  `e2e.render` `map`. */
 export const mapStub = (): boolean => drawOff() && has('e2e.render') !== 'map';

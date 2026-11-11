@@ -17,6 +17,7 @@ import { MODELS } from './models3d.ts';
 import { pace } from './pace.ts';
 import { HOP_MS, POP_IN_MS, POP_OUT_MS, popIn } from './biteMark.ts';
 import { glbLoader } from './gltf.ts';
+import { testHooks } from '#lib/ui-state/testMode.ts';
 
 export type FxKind =
   | 'dust' | 'sand' | 'snow' | 'splash' | 'ripple' | 'sparkle' | 'sparks' | 'bang' | 'leaves' | 'drops' | 'hearts'
@@ -297,7 +298,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
   // the e2e's (dev builds and ?demo): the parts of a source drawn now, where (world x, y, z) and how big, and each
   // spawn's kind and time (performance.now()): the fishing's rings come before its 「！」
   const log: { kind: FxKind; t: number; size?: number }[] | null =
-    import.meta.env.DEV || new URLSearchParams(location.search).has('demo') ? [] : null;
+    testHooks() ? [] : null;
   const hook = {
     live: (name: string) => parts.filter((p) => p.name === name && p.obj.scale.x > 0).map((p) => ({ x: p.obj.position.x, y: p.obj.position.y, z: -p.obj.position.z, s: p.obj.scale.x })),
     /** Each drawn part's textures' sizes (px; null: none or the white stand-in, blank.ts: drawn as geometry in its colours, sharp at any size). */

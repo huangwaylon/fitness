@@ -40,7 +40,7 @@
   import { url3d } from '../villager3d/manifest.ts';
   import { person3, type Dirs } from '../person3d/person3d.ts';
   import { art, artUrl, villagerArt } from '#lib/art.ts';
-  import { drawOff } from '#lib/ui-state/testMode.ts';
+  import { testHooks } from '#lib/ui-state/testMode.ts';
   import { lookOf as wornOf } from '#lib/store/look.ts';
   import type { WeekView } from '#lib/types.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
@@ -653,7 +653,7 @@
 
   /** The e2e's and the console's hooks (dev builds, ?demo and the logic tier). */
   function hooks() {
-    if (!import.meta.env.DEV && !new URLSearchParams(location.search).has('demo') && !drawOff()) return;
+    if (!testHooks()) return;
     window.__museum = {
       stats: () => eng?.stats(),
       mine: () => eng?.at(me),

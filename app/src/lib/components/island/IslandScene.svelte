@@ -116,6 +116,7 @@
   import { ARCH, DECOR_SLOTS, SCENERY } from './world.ts';
   import { echo3d } from './echo3d.ts';
   import { fx3d } from './fx3d.ts';
+  import { testHooks } from '#lib/ui-state/testMode.ts';
 
   interface Props {
     view: WeekView;
@@ -647,7 +648,7 @@
       else requestAnimationFrame(() => world.invalidate());
     });
     ro.observe(scroller);
-    const hooks = expose();
+    const hooks = testHooks() ? expose() : null;
     // the island's music stage (K.K., the island's cut-ins: sound/stage.svelte.ts) is heard here
     const leaveStage = enterStage('isl');
     // another player's sounds by where they are on this camera (sound/cues.ts)
@@ -656,7 +657,7 @@
       leaveStage();
       offEar();
       // (the hooks hold this island: its DOM and its renderer, through a room's visit)
-      if (window.__world === hooks) delete window.__world;
+      if (hooks && window.__world === hooks) delete window.__world;
       offMove();
       ro.disconnect();
       clearTimeout(settle);

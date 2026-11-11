@@ -5,6 +5,7 @@
 import { DEVICE, localKV, readJson, writeJson, type KV } from './storage.ts';
 import { log } from './log.ts';
 import { tokyoDay } from '#lib/contract/live-protocol.ts';
+import { quiet } from '#lib/quiet.ts';
 
 const standalone = (): boolean =>
   (typeof matchMedia === 'function' && matchMedia('(display-mode: standalone)').matches) || (globalThis.navigator as { standalone?: boolean } | undefined)?.standalone === true;
@@ -25,7 +26,7 @@ export async function storageDaily(kv: KV | null = localKV(), storage: StorageMa
   const day = tokyoDay(now);
   if (!storage?.estimate || readJson(kv, DEVICE.storageDay) === day) return;
   writeJson(kv, DEVICE.storageDay, day);
-  const est = await storage.estimate().catch(() => undefined);
+  const est = await quiet(storage.estimate(), 'storage.estimate');
   if (!est) return;
   const persisted = await storage.persisted?.().catch(() => false) ?? false;
   log('storage.use', { useMb: mb(est.usage), quotaMb: mb(est.quota), persisted });

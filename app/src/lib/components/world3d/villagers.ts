@@ -11,7 +11,7 @@ import { Matrix4, Vector3 as V3, type Vector3, type Material, type Mesh, type Me
 import { keyModel, MODELS } from './models3d.ts';
 import { VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
 import { villager3, type Person3 } from '../person3d/person3d.ts';
-import { drawOff } from '../../ui-state/testMode.ts';
+import { testHooks } from '../../ui-state/testMode.ts';
 import { ACTION_MS, seatOf, type Action, type State } from '../villager3d/poses.ts';
 import { anglerOf, type Phase } from './fishing3d.ts';
 import { bend } from './bend.ts';
@@ -254,7 +254,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
   /** The frame's outcome and its slots seen (kept from frame to frame: no allocation a frame). */
   const out: Frame3 = { cards: new Set(), moving: false, ambient: false, wake: Infinity }, seenSlots = new Set<string>();
   const headP = new V3(), aimP = new V3(), crownP = new V3();
-  const debug = import.meta.env.DEV || new URLSearchParams(location.search).has('demo') || drawOff() ? new Map<string, unknown>() : null;
+  const debug = testHooks() ? new Map<string, unknown>() : null;
 
   const keyOf = (s: VSpec) => s.model?.key ?? s.id;
   const make = (s: VSpec): Promise<Villager3D> | null => (s.model ?? villager3(s.id, dir)).create(s.slot.length * 1.3);

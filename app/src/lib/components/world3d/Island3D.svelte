@@ -985,7 +985,7 @@
         points: num('points') ?? undefined,
         pointMask: q.get('pointmask') !== '0',
         // (the phones' A/B, perf.drag and perf.rest: the pixel ratio while moving, at the full one no swap; the shadow
-        // map's size)
+        // map's size. Once the A/B is decided, remove: ?points, ?pointmask, ?dprmove, ?shadow, and perf.rest's pts/pm)
         dprMoving: num('dprmove') ?? undefined,
         shadowSize: num('shadow') ?? undefined
       });
