@@ -89,7 +89,7 @@ test('starts bought at the shop’s かう; a tap on my empty plot with nothing 
   expect(fg).toBe(text);
 });
 
-test('three days on: ripe, watered on the two days before it gives three; sold at the shop for 54 かいがら; the partner waters, never harvests', async ({ page, context }) => {
+test('three days on: ripe, watered on the two days before it gives three, harvested by a tap a row off; sold at the shop for 54 かいがら; the partner waters, never harvests', async ({ page, context }) => {
   const D3 = '2026-11-07';
   await seed(page, D3, [
     FIELD, ...POCKET,
@@ -101,7 +101,8 @@ test('three days on: ripe, watered on the two days before it gives three; sold a
   await page.goto(`?demo&date=${D3}T12:00`);
   await islandUp(page);
   await quiet(page);
-  await tapWorld(page, plot(0).x, plot(0).z);
+  // a row's miss: a tap on the empty plot behind it harvests the nearest ripe plant of mine (the other is on the diagonal)
+  await tapWorld(page, plot(0, 1).x, plot(0, 1).z);
   await expect(page.locator('[data-fx="catch"] .catch-plate')).toHaveAttribute('aria-label', /トマトを しゅうかく！ ×3/);
   await expect.poll(() => farmRows(page)).toEqual([{ o: 'harvest', p: plot(0).p, n: 3 }]);
   // the shop buys them: 3 × 18

@@ -56,9 +56,10 @@
   import { onMount } from 'svelte';
   import { fx3d } from './fx3d.ts';
   import { echo3d } from './echo3d.ts';
-  import { farmUi, openPicker } from './farmUi.svelte.ts';
+  import { cropName, openPicker } from './farmUi.svelte.ts';
   import { farmTap } from './farmTap.ts';
   import { farmToday } from './farm.ts';
+  import { islandDay } from './ambientClock.ts';
   import { showCatch } from './catchCard.ts';
   import { loadNames } from './catchLine.ts';
   import { plantsOf } from '#lib/contract/farm.ts';
@@ -66,10 +67,8 @@
   import { tileAt, tileMid } from '#lib/layout/grid.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { dig as digPlot, harvest as harvestPlot, plant as plantPlot, seed as farmSeed } from '#lib/store/farm.svelte.ts';
-  import { UNDO_MS } from '#lib/store/actions.ts';
+  import { harvest as harvestPlot, plant as plantPlot, seed as farmSeed } from '#lib/store/farm.svelte.ts';
   import { shopView } from '#lib/model/shop.ts';
-  import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import type { Who } from '#lib/types.ts';
 
   interface Props {
@@ -440,48 +439,38 @@
 
   /**
    * A tap on a plot (docs/farming.md "Playing", island/farmTap.ts): it acts where it is (nobody walks; my villager turns
-   * to it): the armed shovel digs my plant (one shot, 取り消す 5 s), my ripe plant is harvested (the plate), a plant
-   * not watered today is watered with its neighbours (NH's golden can, on every phone: the shared day's `watered`), my
-   * empty plot planted (nothing held or none left: the picker, whose pick plants it), else a word. False: no field there. The shovel is disarmed by any tap.
+   * to it), forgiving a row's miss: the nearest ripe plant of mine in its 3 × 3 is harvested (the plate), else the
+   * plants there not watered today are watered (NH's golden can, on every phone: the shared day's `watered`), my empty
+   * plot planted (nothing held or none left: the picker, whose pick plants it), else a word. False: no field there.
    */
   function farmAt(x: number, z: number): boolean {
-    const armed = farmUi.shovel;
-    farmUi.shovel = false;
     const m = week.model, layout = site.layout ?? layoutStore.current;
     const [c, r] = tileAt(x, z);
     const plot = layout ? plotAt(layout, c, r) : undefined;
-    if (!m || !plot) return false;
-    const date = week.view?.today ?? dayKey();
+    if (!m || !layout || !plot) return false;
+    const date = week.view?.today ?? islandDay();
     const { farm, watered } = farmToday(m.state, date);
     const pocket = shopView(m.state, m.me).pocket;
     const pl = farm.plots.get(plot.p);
-    const [px, pz] = tileMid(plot.c, plot.r);
-    const act = farmTap({ me: m.me, plot, plant: pl, date, watered, shovel: armed, seed: farmSeed.pick, have: (k) => pocket.get(k) ?? 0, mine: plantsOf(farm, m.me) });
+    const around = plotsAround(layout, plot).map((n) => ({ ...n, plant: farm.plots.get(n.p) }));
+    const act = farmTap({ me: m.me, plot, plant: pl, around, date, watered, seed: farmSeed.pick, have: (k) => pocket.get(k) ?? 0, mine: plantsOf(farm, m.me) });
+    const there = act.a === 'harvest' ? around.find((n) => n.p === act.p)! : plot;
+    const [px, pz] = tileMid(there.c, there.r);
     if (act.a !== 'pick') turnTo(px);
-    const name = (c: string) => t(`beach.name.${c}`);
     switch (act.a) {
-      case 'dig': {
-        const res = digPlot(date, plot.p);
-        spawn({ kind: 'grass', x: px, y: pz, flip: roll(2) });
-        sceneSfx('dig');
-        if (res.ok && res.undo) toasts.show(t('world.farm.dug', { name: name(act.c) }), UNDO_MS, { action: { label: t('common.undo'), run: () => void res.undo!() } });
-        return true;
-      }
       case 'harvest': {
-        harvestPlot(date, plot.p, act.n);
+        harvestPlot(date, act.p, act.n);
         spawn({ kind: 'grass', x: px, y: pz, flip: roll(2) });
         sceneSfx('catch');
         const [sx, sy] = w.screenU(px, pz, 4);
-        void loadNames().then(() => showCatch(sx, sy, `finds/${act.c}`, t('world.farm.harvest', { name: name(act.c), n: act.n })), () => {});
+        void loadNames().then(() => showCatch(sx, sy, `finds/${act.c}`, t('world.farm.harvest', { name: cropName(act.c), n: act.n })), () => {});
         return true;
       }
-      case 'water': {
-        // (the plants round it, its own the first: NH's golden can waters 3 × 3)
-        for (const n of plotsAround(layout, plot)) if (n.p === plot.p || farm.plots.has(n.p)) shared.share({ kind: 'world', op: 'watered', id: n.p });
+      case 'water':
+        for (const id of act.ids) shared.share({ kind: 'world', op: 'watered', id });
         spawn({ kind: 'flower', x: px, y: pz, lift: 8, color: '#8FD0F5', flip: px > site.midX });
         sceneSfx('water');
         return true;
-      }
       case 'plant':
         plantPlot(date, plot.p, act.c, act.src);
         spawn({ kind: 'grass', x: px, y: pz, flip: roll(2) });
@@ -489,15 +478,15 @@
         return true;
       case 'pick':
         // (its pick plants this plot: the same tap again, the crop held now)
-        if (act.out) mutter?.(t('world.farm.noneLeft', { name: name(act.out) }));
+        if (act.out) mutter?.(t('world.farm.noneLeft', { name: cropName(act.out) }));
         openPicker(() => void farmAt(x, z));
         return true;
       case 'cap':
         mutter?.(t('world.farm.cap'));
         return true;
       default: {
-        const who = whoName(act.who);
-        mutter?.(!act.c ? t('world.farm.whose', { who }) : act.left ? t('world.farm.left', { who, name: name(act.c), n: act.left }) : act.watered ? t('world.farm.watered') : t('world.farm.ripe', { who, name: name(act.c) }));
+        const who = whoName(act.who), name = act.c && cropName(act.c);
+        mutter?.(!name ? t('world.farm.whose', { who }) : act.left ? t('world.farm.left', { who, name, n: act.left }) : act.watered ? t('world.farm.watered') : t('world.farm.ripe', { who, name }));
         return true;
       }
     }

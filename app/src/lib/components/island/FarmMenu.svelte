@@ -1,8 +1,8 @@
 <script lang="ts">
   // The farm menu (docs/farming.md "Playing"): a round cream disc at the island's bottom left, the say button's
-  // mirror, NH's seed bag in it. A tap unfolds three cream pills upward, left-aligned (the disc turns yuzu):
+  // mirror, NH's seed bag in it. A tap unfolds two cream pills upward, left-aligned (the disc turns yuzu):
   // 「たね」 with what I plant next and how many (the picker, FarmPicker: a pick kept on this phone, said by my villager
-  // and worn on the disc), 「スコップ」 (armed for one dig, yuzu while armed) and 「はたけ」 (the 畑 sheet). It folds as the leaf menu does:
+  // and worn on the disc) and 「はたけ」 (the 畑 sheet). It folds as the leaf menu does:
   // a second tap, a tap anywhere else, Esc, a pick, a sheet opening. IslandScene places and hides it with the say button.
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { seedKey } from '#lib/contract/farm.ts';
@@ -65,24 +65,19 @@
       <span class="lbl">{t('world.farm.seed')}</span>
       {#if picked}<b class="n" data-farm-seed-n>{picked.n}</b>{/if}
     </button>
-    <button type="button" class="item" class:armed={farmUi.shovel} data-farm-shovel data-sfx={farmUi.shovel ? 'toggle-off' : 'toggle-on'} aria-pressed={farmUi.shovel} onclick={() => choose(() => (farmUi.shovel = !farmUi.shovel))}>
-      <span class="ic"><OfficialArt key="finds/shovel" size={28} /></span>
-      <span class="lbl">{t('world.farm.shovel')}</span>
-    </button>
     <button type="button" class="item" data-farm-field aria-haspopup="dialog" data-sfx="self" onpointerdown={() => void farmSheet.prefetch()} onclick={() => choose(() => (sheetTap(), farmSheet.show()))}>
       <span class="ic"><OfficialArt key="finds/tomato" size={28} /></span>
       <span class="lbl">{t('world.farm.field')}</span>
     </button>
   </div>
-  <button type="button" class="toggle" class:armed={farmUi.shovel} bind:this={toggleEl} aria-label={t('world.farm.open')} aria-expanded={open} data-farm-open
+  <button type="button" class="toggle" bind:this={toggleEl} aria-label={t('world.farm.open')} aria-expanded={open} data-farm-open
     data-sfx={open ? 'toggle-off' : 'toggle-on'} onclick={() => { open = !open; closePicker(); }}>
-    <span class="bag"><OfficialArt key={farmUi.shovel ? 'finds/shovel' : picked?.n ? `finds/${picked.c}` : 'finds/seed-bag'} size={24} eager /></span>
+    <span class="bag"><OfficialArt key={picked?.n ? `finds/${picked.c}` : 'finds/seed-bag'} size={24} eager /></span>
   </button>
 </div>
 
 <style>
-  /* the disc: the say button's mirror (44 px to the thumb, 36 px drawn, the cream lip); open or the shovel armed, NH's
-     yellow */
+  /* the disc: the say button's mirror (44 px to the thumb, 36 px drawn, the cream lip); open, NH's yellow */
   .farm-menu { position: relative; width: var(--hit, 44px); height: var(--hit, 44px); }
   .toggle {
     appearance: none; border: 0; margin: 0; padding: 0; width: var(--hit, 44px); height: var(--hit, 44px); display: grid; place-items: center;
@@ -93,7 +88,7 @@
     background: color-mix(in srgb, var(--c-cream, #FFF9E3) 90%, transparent); box-shadow: 0 3px 0 rgba(150, 110, 70, .28), 0 2px 8px rgba(60, 40, 20, .12);
     transition: background-color 180ms, translate .12s;
   }
-  .open .toggle::before, .toggle.armed::before { background: var(--c-yuzu); box-shadow: 0 3px 0 var(--c-yuzu-lip); }
+  .open .toggle::before { background: var(--c-yuzu); box-shadow: 0 3px 0 var(--c-yuzu-lip); }
   .toggle:active::before { translate: 0 2px; }
   .toggle:focus-visible { outline: none; }
   .toggle:focus-visible::before { outline: 3px solid var(--focus); outline-offset: 2px; }
@@ -110,7 +105,6 @@
   }
   .open .item { opacity: 1; visibility: visible; transform: none; pointer-events: auto; transition: none; }
   .open .item:active { transform: translateY(2px) scale(.97); box-shadow: 0 2px 0 var(--c-lip); }
-  .item.armed { background: var(--c-yuzu); box-shadow: 0 var(--lip-h) 0 var(--c-yuzu-lip); }
   .item:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .ic { flex: none; width: 32px; height: 32px; display: grid; place-items: center; line-height: 0; }
   .n { font: 700 var(--fs-s)/1 var(--font-num); font-variant-numeric: tabular-nums; }

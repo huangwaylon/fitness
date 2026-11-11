@@ -1,11 +1,10 @@
-// The fields' controls on this phone (docs/farming.md "Playing"): the farm menu's armed shovel and its picker (FarmPicker),
-// shared by the menu (FarmMenu) and a tap on a plot (SceneTaps: one shot of the shovel; the picker for my empty plot
-// with nothing held, or none left, whose pick plants that plot).
+// The fields' controls on this phone (docs/farming.md "Playing"): the picker (FarmPicker), opened by the farm menu
+// (FarmMenu) or a tap on a plot (SceneTaps: my empty plot with nothing held, or none left, whose pick plants that plot).
 import { seedKey, type Crop, type FarmSrc } from '#lib/contract/farm.ts';
 import { pickSeed, type Seed } from '#lib/store/farm.svelte.ts';
 import { t } from '#lib/i18n/index.ts';
 
-export const farmUi = $state({ shovel: false, picker: false });
+export const farmUi = $state({ picker: false });
 
 /** What the open picker's pick does once kept: the tapped plot planted (SceneTaps), else nothing more. */
 let then: (() => void) | null = null;
