@@ -21,7 +21,8 @@ UI is [design.md §Trips](design.md#trips); this file is the data, the relay's p
 Every trip is drawn by one kit (`TripView`; design.md §Trips). A trip that's over is **read-only** (`when.ts`
 `readOnly`: its phase is past): its packing list frozen as everyone left it (`packing.frozen`: the fold of the
 record's rows, who packed what shown, no Tick or 編集, nothing sent). Okinawa and Seattle are over (no relay rows: their
-seed); NZ freezes after its flight home.
+seed); NZ freezes after its flight home. The days to go (phase `soon`) count at home, Tokyo's day, as 結婚式's; on and
+past go by the trip's own calendar and rows.
 
 ## Content
 

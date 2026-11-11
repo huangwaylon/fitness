@@ -51,8 +51,8 @@ The quiz, ひとこと クイズ, is the base every other game reuses (kikimimi-
   tap 読み終わった (📖 on their chip, counted on the host's button, `kiki.nextReady`); with the host gone everyone gets
   次へ. ○ on the right choice, × on a wrong pick (colour is never the only signal); the English at ≥ 17 px with the key
   word marked, played once; the Japanese, the accent and the reactions.
-- **Scoring.** Right 100, wrong or timed out 0. No speed bonus (it rewards guessing) and no first-listen points: 一発
-  (right with no replay or slow play, `kiki.firstTry`) is a stamp on the reveal, review and results, so replaying is
+- **Scoring.** Right 100, wrong or timed out 0. No speed bonus (it rewards guessing) and no first-listen points: 1回目で正解
+  (一発 in code: right with no replay or slow play, `kiki.firstTry`) is a stamp on the reveal, review and results, so replaying is
   never punished. 音を1台にまとめる never gives it (only the host's phone can replay).
 - **Results:** しずえ reads them like the morning broadcast: co-op's team tally, 勝負 a ranking. Then the **review list**,
   the main learning moment, opening on the misses (間違えただけ, the first open). A row: the English with sound marks and
@@ -279,7 +279,7 @@ games included), `PathCard` (the host picks a unit and lesson for everyone), who
 ### The results page
 
 The frame (frame/RoundFrame, RevealFrame) owns the bar, countdown, replay row, timer and foot; a game supplies its stage,
-input and reveal. しずえ's words are polite (です／ます); casual cheers are the villagers'. The results: しずえ's line with the team tally or ranking, my tally and 一発 count, the missed features, the review list, 終わる /
+input and reveal. しずえ's words are polite (です／ます); casual cheers are the villagers'. The results: しずえ's line with the team tally or ranking, my tally and 1回目で正解 count, the missed features, the review list, 終わる /
 もう一度遊ぶ. A lesson adds a strip: the unit's dots, the next lesson, after a チェック the stamp (two for a double) or
 `kiki.stamp.notYet`, and the letter the first time. 読んでから もう一度 on a review row is よみきき サンド
 (kikimimi-engine.md "よみきき サンド").
@@ -314,7 +314,7 @@ over `zukan/data.svelte.ts`; owner-only. Pure folds: `kikimimi/zukan.ts`, `frien
   (`phraseBook`); heard: a silhouette with a count; never: ？. The entry: the trap, the scene, who said it, ▶︎ a clip.
 - **声** (`Voices`): the cast's voices, each with the items heard and a bar to caught; a tap plays a sample.
 - **仲間** (`Friends`): the villagers heard, closest first, five hearts ("なかよし"); a new level is announced once.
-- **スタンプ** (`Stamps`): unit stamps, letters, week stamps, 一発 badges, trophies, bedtime chapters finished.
+- **スタンプ** (`Stamps`): unit stamps, letters, week stamps, 1回目で正解 badges, trophies, bedtime chapters finished.
 
 ### 設定
 
@@ -380,8 +380,9 @@ each person's own; only summaries reach the partner.
 - **What next** on the results (`kiki.rec.*`, ≤ 3, one tap each): due cards ≥ 4 → おさらい; the weakest skills; a level
   nudge (the last 3 games ≥ 85 % → a try higher; ≤ 50 % → practice first); an accent ≥ 15 points below; an unmeasured
   skill; スピード はしご.
-- **しずえ's line after a game:** the skill that rose most (≥ +0.05), else the first recommendation; all right,
-  `kiki.allRight`.
+- **しずえ's line after a game** (`advice.ts feedback`): all right, `kiki.fb.perfect`; under half right, `kiki.fb.tough`
+  (hear the misses again: no next set, 間違えた問題をもう一度 leaf green); else the skill that rose most (≥ +0.05) or
+  `kiki.fb.keep`, with the first recommendation.
 
 ## Rewards
 
