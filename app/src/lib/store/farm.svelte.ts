@@ -54,26 +54,32 @@ export function dig(d: LocalDate, p: string): { ok: boolean; undo?: () => boolea
 
 /** Starts from the shop's かう: `n` of each crop at FARM.startBuy each (the record checks the cover): one `buy_starts` a
  *  crop, all in one group (kept all or none, relay store.ts group, as the shop's ぜんぶ), one undo. */
-export function buyStarts(picks: Partial<Record<Crop, number>>): SendResult & { v?: number } {
+export function buyStarts(picks: Partial<Record<Crop, number>>): SendResult {
   const list = CROPS.flatMap((c) => (picks[c] ? [[c, picks[c]] as const] : []));
   if (!week.model || !list.length || list.some(([, n]) => !Number.isInteger(n) || n < 1 || n > 99)) return { ok: false };
   const group = newId();
-  const r = together(list.map(([crop, n]) => week.send('buy_starts', { crop, n, v: n * FARM.startBuy }, { holdMs: UNDO_MS, group })));
-  return { ...r, v: list.reduce((a, [, n]) => a + n * FARM.startBuy, 0) };
+  return together(list.map(([crop, n]) => week.send('buy_starts', { crop, n, v: n * FARM.startBuy }, { holdMs: UNDO_MS, group })));
 }
 
-// ---- what I plant next (たね), this phone's
+// ---- what I plant next (たね), this phone's (the demo's apart: a pick in `?demo` never carries into the app)
 
-const SEED_KEY = 'farm.seed';
+const seedKey = () => (week.demo ? 'island-demo.farm.seed' : 'farm.seed');
 export interface Seed { c: Crop; src: FarmSrc }
 const seedOf = (x: unknown): Seed | null => {
   const s = x as Partial<Seed> | null;
   return s && isFarmCrop(s.c) && (s.src === 'start' || s.src === 'crop') ? { c: s.c, src: s.src } : null;
 };
 
-export const seed = $state<{ pick: Seed | null }>({ pick: seedOf(readJson(localKV(), SEED_KEY)) });
+/** Bumped by a pick, so `seed.pick` is read again. */
+let picks = $state(0);
+export const seed = {
+  get pick(): Seed | null {
+    void picks;
+    return seedOf(readJson(localKV(), seedKey()));
+  }
+};
 
 export function pickSeed(s: Seed | null): void {
-  seed.pick = s;
-  writeJson(localKV(), SEED_KEY, s);
+  writeJson(localKV(), seedKey(), s);
+  picks++;
 }
