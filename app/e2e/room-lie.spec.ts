@@ -3,6 +3,7 @@
 // the pillow's end (NH's beds: the model's −x), on the mattress and inside the footprint; a double bed sleeps two side
 // by side; the cold sleep pod's lid shuts over its sleeper and opens before they get up.
 import { expect, test, type Page } from './fixtures.ts';
+import { roomUp } from './rooms.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = '?demo&date=2026-11-04T12:00';
@@ -24,7 +25,7 @@ const tent = <R,>(page: Page, fn: (t: T) => R) => page.evaluate(`(${fn.toString(
 async function room(page: Page, code: string, f: number) {
   await page.addInitScript(() => localStorage.getItem('lie-seeded') || (localStorage.removeItem('island-demo.tent'), localStorage.setItem('lie-seeded', '1')));
   await page.goto('tent' + Q);
-  await page.waitForFunction(() => ((window as unknown as { __tent?: T }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'tent');
   expect(await page.evaluate(([c, f]) => (window as unknown as { __tent: T }).__tent.fill([c as string], f as number), [code, f] as const)).toBe(1);
   await page.waitForFunction(() => (window as unknown as { __tent: T }).__tent.loading() === 0);
   await expect.poll(() => tent(page, (t) => t.v3('A')), { timeout: 15_000 }).not.toBeNull();

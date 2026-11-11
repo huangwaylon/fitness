@@ -4,6 +4,7 @@
 // the guest alike; hidden in もようがえ. Who else sees it (only the phones in the same room): e2e/sync-harness.spec.ts.
 //   SHOTS=<dir> npm run e2e -- say-rooms      also writes iPhone-sized screenshots to <dir>/say-room-*.png
 import { expect, test, type Page } from './fixtures.ts';
+import { roomUp } from './rooms.ts';
 import { sayOwn } from './say.ts';
 import { balloonState, expectWhole } from './balloon.ts';
 
@@ -21,7 +22,7 @@ const shot = async (page: Page, name: string) => {
 
 async function openRoom(page: Page, as: 'A' | 'B' | 'G', home: 'A' | 'B' | 'G', at = '2026-11-04T12:00') {
   await page.goto(`tent/${Q.replace('2026-11-04T12:00', at)}&as=${as}${home !== 'A' ? `&home=${home}` : ''}`);
-  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'tent');
   await expect(page.locator(`[data-room-home="${home}"]`)).toBeVisible();
   await expect(page.locator('html')).not.toHaveAttribute('data-door', /./, { timeout: 4000 });
 }

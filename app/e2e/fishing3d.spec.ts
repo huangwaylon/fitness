@@ -5,7 +5,7 @@
 // away and the float stays out till a tap reels it in. Where the 3D island draws the shadow and the float is where their
 // tap areas are (the DOM's nodes, placed through the same camera): a tap on what's drawn is a tap on it.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, castIn, geo, groundUnder, onWater, pauseNow, tapAt, toTheWater } from './island.ts';
+import { camTo, castIn, geo, groundUnder, loaded3d, onWater, pauseNow, tapAt, toTheWater } from './island.ts';
 import { markShown, overHead, type Mark } from './biteMark.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -55,7 +55,7 @@ for (const [water, q, cam, sel, miss] of [
     test.fixme(!!process.env.CI && process.env.E2E_RENDER !== 'none', 'CI drawn tier: the bite window is missed under its software GL');
     await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
     await page.goto(`?demo${q}`);
-    await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
+    await loaded3d(page);
     // (the river's: おく as the page's island has it, the layout's, held there)
     if (cam === 'oku') await camTo(page, (await geo(page)).CAMS.oku, false);
     await expect(page.locator(sel)).toBeAttached({ timeout: 10_000 });
@@ -163,7 +163,7 @@ for (const water of ['pond', 'river', 'mouth', 'sea'] as const)
     // a pond put down on the grass in view (the user's island has two, and no painted pond): the shadow comes there
     if (water === 'pond') await page.addInitScript((op) => localStorage.setItem('island-demo.layout', JSON.stringify([op])), POND_OP);
     await page.goto(`?demo&critter=${water === 'sea' ? 'fish' : water}&date=2026-11-04T12:00`);
-    await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
+    await loaded3d(page);
     type S = { x: number; y: number; z: number; hidden: boolean; order: number };
     const shadow = () => page.evaluate((wt) => {
       const w = (window as unknown as { __world3d: { where(id: string): S | null; water(x: number, z: number): [number, number] } }).__world3d;
@@ -205,7 +205,7 @@ test('3D fishing: the rod stays in the hand, its tip where the line starts, at e
   // (the page's clock ours, set to its ?date and running till the tip's reads: pauseNow)
   await page.clock.install({ time: new Date('2026-11-04T12:00:00+09:00') });
   await page.goto('?demo&critter=fish&date=2026-11-04T12:00');
-  await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
+  await loaded3d(page);
   await expect.poll(() => v3(page, (v) => v.state('mine')), { timeout: 30_000 }).not.toBeNull();
   const fish = () => page.evaluate(() => {
     const w = (window as unknown as { __world3d: W3 }).__world3d;
@@ -259,7 +259,7 @@ test(`3D fishing as a human player in the ${water}: facing, rod and line in one 
     if (e?.events.some((x) => x.id === 'seed-look')) localStorage.removeItem('island-demo.events');
   });
   await page.goto(`?demo${q}`);
-  await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
+  await loaded3d(page);
   if (water === 'river') await camTo(page, (await geo(page)).CAMS.oku, false);
   await expect.poll(() => page.evaluate(() => (window as unknown as { __villagers3: { player(s: string): boolean } }).__villagers3.player('mine')), { timeout: 30_000 }).toBe(true);
   // (a float out past the rod's tip: under it the line has no direction to line up; the cast checked, castIn)
@@ -297,7 +297,7 @@ test(`3D fishing as a human player in the ${water}: facing, rod and line in one 
 test('3D fishing: the line stays drawn as a pinch or a scroll takes the float off the screen', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-11-04T12:00:00+09:00') });
   await page.goto('?demo&critter=fish&date=2026-11-04T12:00');
-  await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
+  await loaded3d(page);
   await castIn(page, 'sea');
   await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 8000 });
   await expect.poll(() => v3(page, (v) => [v.tool('mine'), v.state('mine')]), { timeout: 15_000 }).toEqual(['tools/rod', 'fish']);

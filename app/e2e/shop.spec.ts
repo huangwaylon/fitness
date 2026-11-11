@@ -5,6 +5,7 @@
 // backend): the demo's events in localStorage, as a catch writes them. In by its door and back out: positions.spec
 // (both islands).
 import { expect, test, type Page } from './fixtures.ts';
+import { roomUp } from './rooms.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const DATE = '2026-11-04T12:00';
@@ -112,7 +113,7 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
   await expect(page.locator('[data-shop-buy]')).toHaveAttribute('aria-disabled', 'true');
   // the piece is in my もようがえ (かった)
   await page.goto(`tent${Q}`);
-  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'tent');
   await page.locator('[data-tent-edit-open]').click();
   await page.locator('[data-tab="bought"]').click();
   await expect(page.locator(`[data-tent-items] [data-tent-item="${code}"]`)).toBeVisible();

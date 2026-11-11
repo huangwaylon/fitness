@@ -2,6 +2,7 @@
 // its own: the room's code and three.js come only then (the island never loads them); my villager walks where the
 // floor is tapped; the doormat and ‹ しまへ go back out, to the island as it was.
 import { expect, test, type Page } from './fixtures.ts';
+import { roomUp } from './rooms.ts';
 import { campDoor, camTo, geo, is3d, islandURL, tapOn } from './island.ts';
 
 /** The edit tray open, and the room re-centred above it (a tap's px only holds once the camera is at rest). */
@@ -50,7 +51,7 @@ async function enter(page: Page) {
   await tapTent(page);
   // (my villager walks up to the door first)
   await expect(page).toHaveURL(/\/tent\?/, { timeout: 2 * SLOW });
-  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'tent');
   // the door's iris has opened
   await expect(page.locator('html')).not.toHaveAttribute('data-door', /./, { timeout: SLOW });
 }
@@ -71,7 +72,7 @@ test('the tent opens through the door and goes back out to the island as it was'
   await tapTent(page);
   // (my villager walks up to the door first)
   await expect(page).toHaveURL(/\/tent\?/, { timeout: 2 * SLOW });
-  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'tent');
   expect(scripts).toContain('three');
   await expect(page.locator('html')).not.toHaveAttribute('data-door', /./, { timeout: SLOW });
   // the device pixel ratio is capped (the iPhone 13 profile is 3)
@@ -205,7 +206,7 @@ test('edit: place a piece from the tray, turn it, drag it, put it away; the wall
   await page.locator('[data-tent-done]').click();
   // kept: the room is the same after a reload
   await page.reload();
-  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'tent');
   await expect.poll(() => te(page, (t) => t.pieces().map((p) => p.item))).toEqual(['f4081']);
   expect(await te(page, (t) => t.surfaces().wall)).toBe(wall);
   // put away: picked up, 🗑, gone (とりけす on the banner)
@@ -231,7 +232,7 @@ test('みつけた: what either of us found in a balloon that NH has a model of,
     localStorage.removeItem('island-demo.tent');
   });
   await page.goto('tent' + Q);
-  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'tent');
   await openEdit(page);
   await page.locator('[data-tab="finds"]').click();
   await expect(page.locator('[data-tent-item]')).toHaveCount(2);
@@ -250,7 +251,7 @@ const furnish = (page: Page, n: number, rugs = true) =>
 test('up to 60 pieces a room: past 40 from the tray, the 61st refused', async ({ page }) => {
   await page.addInitScript(() => localStorage.removeItem('island-demo.tent'));
   await page.goto('tent' + Q);
-  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'tent');
   // 45 in (2 rugs and 43 small things)
   expect(await furnish(page, 43)).toBe(45);
   await openEdit(page);
@@ -302,7 +303,7 @@ const placedOf = (page: Page) => page.evaluate(() => (window as unknown as { __t
 test('on a table: a small thing stands on its top, rides along when the table moves, and the table won’t go away under it', async ({ page }) => {
   await page.addInitScript(() => localStorage.removeItem('island-demo.tent'));
   await page.goto('tent' + Q);
-  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'tent');
   await openEdit(page);
   // the rattan low table (2 × 1) on tiles 1–2 of row 1
   await page.locator('[data-tent-item="f4054"]').click();
@@ -354,7 +355,7 @@ const use = <R,>(page: Page, fn: (t: Use & E & T) => R) => page.evaluate(`(${fn.
 test('sit, lie and switch: a tap on a chair walks my villager up and sits it, on a cot it lies, on the floor it gets up; a lamp and the room’s light switch, kept', async ({ page }) => {
   await page.addInitScript(() => localStorage.getItem('tent-seeded') || (localStorage.removeItem('island-demo.tent'), localStorage.setItem('tent-seeded', '1')));
   await page.goto('tent' + Q);
-  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'tent');
   // the log chair, the camping cot and the lantern, on free spots in the room's middle
   expect(await use(page, (t) => t.fill(['f4039', 'f4081', 'f1432']))).toBe(3);
   await page.waitForFunction(() => (window as unknown as { __tent: { loading(): number } }).__tent.loading() === 0);
@@ -397,14 +398,14 @@ test('sit, lie and switch: a tap on a chair walks my villager up and sits it, on
   await expect(page.locator('[data-tent-lights]')).toHaveAttribute('data-tent-lights', 'off');
   // kept
   await page.reload();
-  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'tent');
   await expect.poll(() => use(page, (t) => t.lights())).toEqual({ room: false, pieces: [{ id: id('f1432'), on: false }] });
 });
 
 test('on the walls: a clock from かべかけ hangs on the back wall; a tap on the left wall takes it there; it stays', async ({ page }) => {
   await page.addInitScript(() => localStorage.getItem('tent-w') || (localStorage.removeItem('island-demo.tent'), localStorage.setItem('tent-w', '1')));
   await page.goto('tent' + Q);
-  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'tent');
   await openEdit(page);
   await page.locator('[data-tab="walled"]').click();
   await page.locator('[data-tent-item="f4037"]').click();
@@ -417,7 +418,7 @@ test('on the walls: a clock from かべかけ hangs on the back wall; a tap on t
   await page.locator('[data-act="place"]').click();
   await expect.poll(() => te(page, (t) => t.pieces())).toEqual([expect.objectContaining({ item: 'f4037', f: 1 })]);
   await page.reload();
-  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'tent');
   await expect.poll(() => te(page, (t) => t.pieces())).toEqual([expect.objectContaining({ item: 'f4037', f: 1 })]);
 });
 
@@ -469,7 +470,7 @@ test('a stereo: a tap opens K.K.’s song list, おまかせ plays his aircheck 
     (window as { __cues?: string[] }).__cues = [];
   });
   await page.goto('tent' + Q);
-  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'tent');
   // the jukebox, on a free spot in the room's middle
   expect(await use(page, (t) => t.fill(['f791']))).toBe(1);
   await page.waitForFunction(() => (window as unknown as { __tent: { loading(): number } }).__tent.loading() === 0);

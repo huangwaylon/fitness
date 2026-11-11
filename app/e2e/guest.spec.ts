@@ -6,6 +6,7 @@
 // catches go into the shared ずかん under its own name; its tent pieces reach both members; and its villager is always
 // on the members' islands, asleep while its app is closed (as everyone's: presence-sleep.spec), moving only when it's moved.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
+import { roomUp } from './rooms.ts';
 import { islandUp } from './island.ts';
 import { fromMenu, hudBells, openKenkou, openRewards } from './hud.ts';
 
@@ -199,7 +200,7 @@ test('a piece the guest puts in the tent is in both members’ tents', async ({ 
   const tent = async (as: 'A' | 'B' | 'G') => {
     const p = await ctx.newPage();
     await p.goto(`tent?demo&date=${DATE}${as === 'A' ? '' : `&as=${as}`}`);
-    await p.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+    await roomUp(p, 'tent');
     return p;
   };
   type T = { px(x: number, z: number): [number, number]; pieces(): { item: string; who: string }[]; who(w: string): unknown };

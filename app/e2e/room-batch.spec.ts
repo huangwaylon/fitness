@@ -3,6 +3,7 @@
 // on the two phones (the demo's tabs: one browser, two players) and on a record (e2e/record.ts: the batch goes as one
 // group, any player in any room).
 import { expect, test, type Browser, type Page } from './fixtures.ts';
+import { roomUp } from './rooms.ts';
 import { newRecord } from './record.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -13,7 +14,7 @@ type T = { stats(): { frames: number }; pieces(): Piece[]; fill(codes: string[],
 const tent = <R,>(page: Page, fn: (t: T) => R) => page.evaluate(`(${fn.toString()})(window.__tent)`) as Promise<R>;
 /** The room as anyone sees it: each piece's item, tile, facing and light, in a fixed order (the ids are new after an undo). */
 const seen = (page: Page) => tent(page, (t) => t.pieces().map((p) => `${p.item}@${p.x},${p.z}/${p.f}/${p.l ?? ''}`).sort());
-const ready = (page: Page) => page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+const ready = (page: Page) => roomUp(page, 'tent');
 
 async function openRoom(page: Page, as: 'A' | 'B' | 'G', home: 'A' | 'B' | 'G') {
   await page.goto(`tent/${Q}&as=${as}${home !== 'A' ? `&home=${home}` : ''}`);

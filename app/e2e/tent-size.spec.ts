@@ -3,6 +3,7 @@
 // would leave a piece outside is refused (the bar says how many, the pieces glow red) until it's moved.
 //   SHOTS=/tmp/home-size npx playwright test tent-size --project=webkit   each size's screenshot
 import { expect, test, type Page } from './fixtures.ts';
+import { roomUp } from './rooms.ts';
 
 const VIEW = { viewport: { width: 393, height: 852 } } as const;
 const Q = (who: 'A' | 'B') => `tent?demo&date=2026-11-04T12:00${who === 'B' ? '&as=B' : ''}`;
@@ -25,13 +26,13 @@ test('広さ: NH’s rooms on both phones, the furniture kept where it stood; a 
   const open = async (who: 'A' | 'B') => {
     const p = await ctx.newPage();
     await p.goto(Q(who));
-    await p.waitForFunction(() => ((window as unknown as { __tent?: T }).__tent?.stats()?.frames ?? 0) > 0, null, { timeout: 15_000 });
+    await roomUp(p, 'tent', { timeout: 15_000 });
     return p;
   };
   const a = await open('A');
   await a.evaluate(() => (localStorage.removeItem('island-demo.tent'), localStorage.removeItem('island-demo.tent.u')));
   await a.reload();
-  await a.waitForFunction(() => ((window as unknown as { __tent?: T }).__tent?.stats()?.frames ?? 0) > 0, null, { timeout: 15_000 });
+  await roomUp(a, 'tent', { timeout: 15_000 });
   const b = await open('B');
   await a.bringToFront();
   // the log bed (2 × 2) on the free spot nearest the room's middle, toward the back

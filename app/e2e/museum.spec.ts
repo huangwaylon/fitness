@@ -2,6 +2,7 @@
 // fossil anyone has found and every genuine artwork a present has held on show, an exhibit's card. In by its door and
 // back out: positions.spec (both islands), leaks.spec.
 import { expect, test, type Page } from './fixtures.ts';
+import { roomUp } from './rooms.ts';
 import { balloonState, expectWhole } from './balloon.ts';
 
 const MUSEUM = 'museum?demo&date=2026-11-04T12:00';
@@ -41,7 +42,7 @@ const putAt = (page: Page, name: string) => page.evaluate((n) => (window as unkn
 const walkToSpot = (page: Page, name: string) => page.evaluate((n) => (window as unknown as { __museum: M }).__museum.spot(n).then(([x, z]) => (window as unknown as { __museum: M }).__museum.walkTo(x, z)), name);
 const open = async (page: Page, url = MUSEUM) => {
   await page.goto(url);
-  await page.waitForFunction(() => ((window as unknown as { __museum?: M }).__museum?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'museum');
 };
 /** The demo's finds: these fish, bugs, sea creatures, fossils and artworks (a present's `item`) found by these people
  *  (as a catch, a dig or a present writes them). */

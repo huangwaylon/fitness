@@ -3,10 +3,10 @@
 // API that acts on the game by what it knows, not by pixels (e2e/island.ts): `tapThing` taps a model by its id where
 // the camera puts it, `settled` waits for the island at rest, `step` runs the page's clock (the engines' frames with it).
 import { expect, test, type Page } from './fixtures.ts';
-import { lawnTap, pauseNow, settled, step, tapThing, w3 } from './island.ts';
+import { lawnTap, loaded3d, pauseNow, settled, step, tapThing, w3 } from './island.ts';
 
 const Q = 'demo&date=2026-11-04T12:00&rock=clonk&render=none';
-const ready = (page: Page) => page.waitForFunction(() => (window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded(), null, { timeout: 30_000 });
+const ready = (page: Page) => loaded3d(page);
 const mine = (page: Page) => page.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine());
 
 test('drawing off: the 3D island runs its frames and its game and draws nothing; the rock tapped by its id clonks', async ({ page }) => {

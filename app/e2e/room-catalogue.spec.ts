@@ -3,6 +3,7 @@
 // ceiling piece (a find) on 天井, hung over the floor's pieces on a layer of its own; a critter's tank from the ずかん's
 // catch on 生き物; and a piece NH never sells (a gyroid) bought at its made-up price (scripts/shop-prices.ts MADE_UP).
 import { expect, test, type Page } from './fixtures.ts';
+import { roomUp } from './rooms.ts';
 import { stockOf, buyPrice } from '../src/lib/contract/stock.ts';
 import base from '../src/lib/components/tent/items.json' with { type: 'json' };
 import more from '../src/lib/components/tent/more.json' with { type: 'json' };
@@ -30,7 +31,7 @@ const seed = (page: Page, day: string, events: Seed[]) =>
 /** The room open, its editing tray up and settled. */
 async function openTent(page: Page, day = '2026-11-04') {
   await page.goto(`tent?demo&date=${day}T12:00`);
-  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'tent');
   await page.locator('[data-tent-edit-open]').click();
   await page.waitForFunction(() => (window as unknown as { __tent: T }).__tent.still());
 }

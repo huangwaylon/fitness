@@ -3,7 +3,7 @@
 // mound and a tap digs it up; a tap on my villager now and then sends a flea hopping off it; the stink bugs on the
 // flowers. Each keeps clear of every control and is a ずかん find, never ベル. `?critter=<id>` brings one on at once.
 import { expect, test, type Page } from './fixtures.ts';
-import { geo, islandUp, quiet, tapAt, tapBox } from './island.ts';
+import { geo, islandUp, loaded3d, quiet, tapAt, tapBox } from './island.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { PERCH_3D, REAR_MS, type Perch } from '../src/lib/components/island/critters.ts';
 import { hudBells } from './hud.ts';
@@ -126,7 +126,7 @@ test('fireflies: a little cloud of lights blinking out of step', async ({ page }
 
 test('a butterfly lands on a flower now and then (its wings slowly opening and closing)', async ({ page }) => {
   await open(page, '&date=2026-05-10T12:00&critter=common-butterfly');
-  await page.waitForFunction(() => (window as unknown as W3).__world3d?.loaded(), null, { timeout: 30_000 });
+  await loaded3d(page);
   await expect(page.locator('[data-critter="common-butterfly"].sat')).toBeAttached({ timeout: 15_000 });
   // landed: its model over a flower's foot, by the world's points (the island's flowers as the page has them; DOM
   // boxes are a few px either way at the whole island's zoom)
@@ -159,7 +159,7 @@ test('on the 3D island a bug perched on a trunk sits on its bark, in view under 
   // a golden stag and a cicada flying in to their trunks bug-taps.spec's)
   for (const [date, id, palm] of [['2026-07-10T12:00', 'robust-cicada', false], ['2026-07-10T22:00', 'horned-atlas', true]] as const) {
     await open(page, `&date=${date}&critter=${id}`);
-    await page.waitForFunction(() => (window as unknown as W3).__world3d?.loaded(), null, { timeout: 30_000 });
+    await loaded3d(page);
     await expect(page.locator(`[data-critter="${id}"]`)).toHaveAttribute('data-place', palm ? 'palm' : 'trunk');
     await expect(page.locator(`[data-critter="${id}"].sat`)).toBeAttached({ timeout: 5000 });
     // its model, and the trunk it's on: on the bark's front (out of the trunk toward the camera), under the canopy

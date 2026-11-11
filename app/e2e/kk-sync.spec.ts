@@ -4,6 +4,7 @@
 // (ミュージック off) still sees it, with 🔇. The demo's players are tabs of one browser (sync/live-local.ts plays the
 // room). Never listened to: the music deck's key and position come from window.__music (in the demo).
 import { expect, test, type Page } from './fixtures.ts';
+import { roomUp } from './rooms.ts';
 import { islandUp } from './island.ts';
 
 type Now = { key: string | null; pos: number | null; sched: number | null };
@@ -68,7 +69,7 @@ test('a stereo in the tent is everyone’s in there, and heard only inside: A in
   const a = await ctx.newPage(), b = await ctx.newPage(), g = await ctx.newPage();
   await a.addInitScript(() => localStorage.setItem('island.sound', JSON.stringify({ music: true, sfx: false, volume: 0.8 })));
   await a.goto(`tent?demo&${Q}`);
-  await a.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(a, 'tent');
   // the jukebox in the room (the tent's room is everyone's to arrange)
   const pc = await a.evaluate(() => {
     const t = (window as unknown as { __tent: { fill(codes: string[]): number; pieces(): { id: string; item: string }[] } }).__tent;
@@ -79,7 +80,7 @@ test('a stereo in the tent is everyone’s in there, and heard only inside: A in
   await open(b, 'B');
   await g.addInitScript(() => localStorage.setItem('island.sound', JSON.stringify({ music: true, sfx: false, volume: 0.8 })));
   await g.goto(`tent?demo&as=G&${Q}`);
-  await g.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(g, 'tent');
   await g.mouse.click(196, 120);
   await a.evaluate((pc) => (window as unknown as H).__music.request('t', 'kk-march', { pc }), pc);
   for (const p of [a, g]) await expect.poll(() => playing(p), { timeout: 15_000 }).toMatch(/^st\/t\/kk-march\//);

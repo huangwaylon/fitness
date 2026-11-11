@@ -4,7 +4,7 @@
 // so the spec finds things through window.__editor (where a tile or a world point is on screen). The 3D preview is off
 // (`preview=0`): CI's headless Chromium draws WebGL in software, a frame every few seconds, and it starves the page.
 import { expect, test, type Page } from './fixtures.ts';
-import { islandUp, w3 } from './island.ts';
+import { islandUp, loaded3d, w3 } from './island.ts';
 
 test.use({ viewport: { width: 1440, height: 900 } });
 
@@ -274,7 +274,7 @@ test('しまの おおきさ: the longest island (152 rows, the user 2026-11-10:
   await phone.setViewportSize({ width: 393, height: 852 });
   await phone.goto(`?demo&as=B&date=${DATE}`);
   await islandUp(phone);
-  await phone.waitForFunction(() => (window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded());
+  await loaded3d(phone);
   await expect.poll(() => phone.evaluate((id) => (window as unknown as { __layout: PhoneLayout }).__layout.pos(id), oak)).toEqual([-90 + spot![0] * 30 + 15, -90 + spot![1] * 30 + 15]);
   const vp = phone.viewportSize()!;
   const onScreen = async (id: string) => {

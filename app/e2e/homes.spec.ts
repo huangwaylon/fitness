@@ -3,6 +3,7 @@
 // all three's); and each owner changes their home's look (いえを かえる: NH's houses, the tents), which every phone's island holds live. The demo's
 // players are tabs of one browser (`?demo&as=B`), as two phones over the relay.
 import { expect, test, type Browser, type Page } from './fixtures.ts';
+import { roomUp } from './rooms.ts';
 import { newRecord } from './record.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -13,7 +14,7 @@ const tent = <R,>(page: Page, fn: (t: T) => R) => page.evaluate(`(${fn.toString(
 
 async function openRoom(page: Page, as: 'A' | 'B' | 'G', home: 'A' | 'B' | 'G') {
   await page.goto(`tent/${Q}&as=${as}${home !== 'A' ? `&home=${home}` : ''}`);
-  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'tent');
   await expect(page.locator(`[data-room-home="${home}"]`)).toBeVisible();
 }
 
@@ -27,7 +28,7 @@ test('うめ’s house: her piece stays in her room, not the tent’s; the guest
   const mine = await tent(b, (t) => t.pieces());
   // kept: her room opened again has it
   await b.reload();
-  await b.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(b, 'tent');
   await expect.poll(() => tent(b, (t) => t.pieces().map((p) => p.id))).toEqual(mine.map((p) => p.id));
   // the tent's room is another room
   const a = await context.newPage();
@@ -127,7 +128,7 @@ async function phone(browser: Browser, rec: Rec, who: W, home: W) {
   await rec.pair(context, who);
   const page = await context.newPage();
   await page.goto(`tent/${home !== 'A' ? `?home=${home}` : ''}`);
-  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'tent');
   await expect(page.locator(`[data-room-home="${home}"]`)).toBeVisible();
   return page;
 }

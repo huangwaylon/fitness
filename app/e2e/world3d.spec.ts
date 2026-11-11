@@ -3,7 +3,7 @@
 // POC's address) opens it.
 import { expect, test, type Page } from './fixtures.ts';
 import { openRewards } from './hud.ts';
-import { islandURL, islandUp, lawnTap } from './island.ts';
+import { islandUp, islandURL, lawnTap, loaded3d } from './island.ts';
 
 type W3 = {
   xRoom(k?: number): number;
@@ -18,7 +18,7 @@ type W3 = {
   ktx2(): { kept: number; made: number; webp: number; target: string | null };
 };
 const w3 = <R,>(page: Page, fn: (w: W3) => R) => page.evaluate(`(${fn.toString()})(window.__world3d)`) as Promise<R>;
-const ready = (page: Page) => page.waitForFunction(() => (window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded(), null, { timeout: 30_000 });
+const ready = (page: Page) => loaded3d(page);
 const Q = 'demo&date=2026-11-04T12:00';
 
 test('the island draws in 3D and a tap on the lawn walks my villager', { tag: '@render' }, async ({ page }) => {

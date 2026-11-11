@@ -4,7 +4,7 @@
 // instance of the island's things, loaded on first use (the first high five after opening had none: it came after the
 // flight was over) and drawn black (no normals, its colours ignored). Two tabs of the demo, its relay between them.
 import { expect, test, type Page } from './fixtures.ts';
-import { is3d, quiet } from './island.ts';
+import { is3d, loaded3d, quiet } from './island.ts';
 
 const q = (who: 'A' | 'B') => `?demo&date=2026-11-04T12:00${who === 'B' ? '&as=B' : ''}`;
 type Live = { x: number; y: number; z: number; s: number };
@@ -77,7 +77,7 @@ test('20 high fives in a row: each flies the star from mine to the partner on bo
 test('the high five\'s star is drawn sharp mid-flight: no texture smaller than it shows, its gold on the screen', { tag: '@render' }, async ({ page }) => {
   test.setTimeout(60_000);
   await page.goto(q('A'));
-  await page.waitForFunction(() => (window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded());
+  await loaded3d(page);
   await quiet(page);
   // the high five's star as it flies, held up between the two for long enough to see (a software-GL frame is ~0.5 s,
   // its flight 0.52 s: the logic spec above times the flight itself)

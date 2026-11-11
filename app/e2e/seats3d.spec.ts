@@ -2,7 +2,8 @@
 // models' geometry, villager3d sitAt / lieAt): in the tent, my villager sits on a chair, the log sofa and a stool and
 // lies on the cot and the log bed; its hips on the seat, its body inside the piece's bounds, never through it.
 import { expect, test, type Page } from './fixtures.ts';
-import { geo } from './island.ts';
+import { roomUp } from './rooms.ts';
+import { geo, loaded3d } from './island.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = '?demo&date=2026-11-04T12:00';
@@ -25,7 +26,7 @@ const tent = <R,>(page: Page, fn: (t: T) => R) => page.evaluate(`(${fn.toString(
 async function room(page: Page, code: string) {
   await page.addInitScript(() => localStorage.getItem('seats-seeded') || (localStorage.removeItem('island-demo.tent'), localStorage.setItem('seats-seeded', '1')));
   await page.goto('tent' + Q);
-  await page.waitForFunction(() => ((window as unknown as { __tent?: T }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'tent');
   expect(await page.evaluate((c) => (window as unknown as { __tent: T }).__tent.fill([c]), code)).toBe(1);
   await page.waitForFunction(() => (window as unknown as { __tent: T }).__tent.loading() === 0);
   await expect.poll(() => tent(page, (t) => t.v3('A')), { timeout: 15_000 }).not.toBeNull();
@@ -64,7 +65,7 @@ for (const seat of ['seatMaeL', 'seatPondR', 'stoolW'] as const) {
   test(`island ${seat}: my villager sits on it`, async ({ page }) => {
     test.setTimeout(90_000);
     await page.goto(`?demo&date=2026-11-04T12:00`);
-    await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
+    await loaded3d(page);
     await expect.poll(() => page.evaluate(() => (window as unknown as { __villagers3?: V3 }).__villagers3?.state('mine') ?? null), { timeout: 30_000 }).not.toBeNull();
     // (the seat's spot as the page's island has it: the layout's on it)
     const at = (await geo(page)).SEATS[seat], camZ = at[1] - 4;

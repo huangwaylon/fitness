@@ -2,6 +2,7 @@
 // in the ずかん and the museum's bug wing; the dung beetle rolling its snowball before it. Their spawn rules
 // (months, hours, places, rarity) are critters.test's. Hermetic: a pinned date (?date), `?critter=` brings the one on.
 import { expect, test, type Page } from './fixtures.ts';
+import { roomUp } from './rooms.ts';
 import { is3d, tapAt, type Aim } from './island';
 import { fromMenu } from './hud.ts';
 
@@ -37,7 +38,7 @@ test('a giraffe stag on a palm at night: netted, it is in the ずかん and on s
   await expect(page.locator('[data-zukan-detail="giraffe-stag"]')).toContainText('ギラファノコギリクワガタ');
   // the museum: on show on its palm in the bug wing
   await page.goto('museum?demo&date=2026-07-15T21:00');
-  await page.waitForFunction(() => ((window as unknown as { __museum?: M }).__museum?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'museum');
   const sp = await page.evaluate(() => (window as unknown as { __museum: M }).__museum.specimens());
   expect(sp.find((s) => s.id === 'giraffe-stag')).toMatchObject({ kind: 'bug', tank: 'palm' });
 });

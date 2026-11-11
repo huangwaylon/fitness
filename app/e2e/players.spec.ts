@@ -3,7 +3,7 @@
 // swaps it where they stand, the old one drawn till the new one is in. On a record of its own (e2e/record.ts), in the
 // logic tier's way (nothing drawn; the scenes and their hooks run).
 import { expect, test, type Browser, type Page } from './fixtures.ts';
-import { islandUp } from './island.ts';
+import { islandUp, loaded3d } from './island.ts';
 import { fromMenu } from './hud.ts';
 import { newRecord } from './record.ts';
 import { ROSTER } from '../src/lib/villagers/roster.ts';
@@ -115,7 +115,7 @@ test('in the tent and the museum: my human player, and my villager once I wear i
 test('the 2D heads: A’s and B’s portraits, drawn by the island’s renderer @render', async ({ page }) => {
   test.setTimeout(90_000);
   await page.goto('?demo&date=2026-11-04T12:00');
-  await page.waitForFunction(() => (window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded(), null, { timeout: 30_000 });
+  await loaded3d(page);
   await fromMenu(page, 'settings');
   await expect(profileHead(page)).toHaveAttribute('data-portrait', '3d', { timeout: 60_000 });
   await page.locator('[data-profile-section] select[data-pick="who"]').selectOption('B');

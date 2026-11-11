@@ -3,7 +3,7 @@
 // sheet asks the compositor for frames while someone reads their charts; closed, the island runs again.
 import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, openKenkou } from './hud.ts';
-import { pauseNow } from './island.ts';
+import { loaded3d, pauseNow } from './island.ts';
 import { fixtureTiles, mapReady, mapsDrawn } from './trips.ts';
 
 /** A blank topo tile (トレイル's map: hiking.spec's). */
@@ -27,7 +27,7 @@ const hudSheets: [string, (page: Page) => Promise<unknown>, string][] = [
 for (const [name, open, ready] of hudSheets)
   test(`under ${name} the island draws no frames and no animation runs behind the sheet; closed, it draws again`, async ({ page }) => {
     await page.goto('?demo&date=2026-11-04T12:30');
-    await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
+    await loaded3d(page);
     await open(page);
     await expect(sheet(page).locator(ready).first()).toBeVisible();
     await sheet(page).evaluate((d) => Promise.all(d.getAnimations().map((a) => a.finished)));
@@ -73,7 +73,7 @@ for (const [k, settle] of Object.entries(infoSheets))
     await fixtureTiles(page);
     await page.route(/^https:\/\/(basemap\.nationalmap\.gov|cyberjapandata\.gsi\.go\.jp)\//, (r) => r.fulfill({ contentType: 'image/png', body: TILE, headers: { 'access-control-allow-origin': '*' } }));
     await page.goto('?demo&date=2026-11-04T12:30');
-    await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
+    await loaded3d(page);
     expect(await rafs(page), 'the probe sees the island\'s frames').toBeGreaterThan(0);
     await fromMenu(page, k as 'travel' | 'wedding' | 'hiking');
     await settle(page);

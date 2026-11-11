@@ -80,7 +80,7 @@ export const nav = (page: Page, path: string) => page.evaluate((h) => {
 export async function is3d(page: Page): Promise<boolean> {
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   if (!(await page.locator('.if-scene[data-r3]').count())) return false;
-  await page.waitForFunction(() => (window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded(), null, { timeout: 30_000 });
+  await loaded3d(page);
   return true;
 }
 

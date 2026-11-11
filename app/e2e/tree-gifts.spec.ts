@@ -4,6 +4,7 @@
 // in the tent (みつけた). Shared: the other phone sees it fall and, once opened, gone.
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from './fixtures.ts';
+import { roomUp } from './rooms.ts';
 import { camTo, geo, type Geo, islandUp, plateOnly, quiet } from './island.ts';
 import { fromMenu, hudBells } from './hud.ts';
 
@@ -103,7 +104,7 @@ test('a holding tree’s shake drops its present; opened, it’s the day’s fur
   await expect(page.locator(`[data-zukan-detail="${id}"]`)).toContainText('ウェイ');
   // the tent's みつけた offers it, and it's placed like the rest
   await page.goto('tent' + Q);
-  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'tent');
   await page.locator('[data-tent-edit-open]').click();
   await page.waitForFunction(() => (window as unknown as { __tent: { still(): boolean } }).__tent.still());
   await page.locator('[data-tab="finds"]').click();

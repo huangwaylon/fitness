@@ -4,6 +4,7 @@
 // leaving and coming back in finds it as it was. A drag mid-walk turns the camera alone: the walk goes on to its spot,
 // the head stays where the finger left it.
 import { expect, test, type Page } from './fixtures.ts';
+import { roomUp } from './rooms.ts';
 import { islandURL } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -128,7 +129,7 @@ for (const room of ROOMS) {
 
 test('the tent: もようがえ arranges with the room’s camera, and the eyes come back after', async ({ page }) => {
   await page.goto('tent' + Q + '&fpv=1');
-  await page.waitForFunction(() => ((window as unknown as { __tent?: R }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'tent');
   const t = () => page.evaluate(() => (window as unknown as { __tent: R }).__tent.fpv());
   await expect.poll(async () => (await t())?.inside).toBe(true);
   await page.locator('[data-tent-edit-open]').click();
@@ -143,7 +144,7 @@ test('the museum: seated on a bench, the eye at the seated head, a look round ke
   type H = R & { put(x: number, z: number): void; still(): boolean; seat(): { id: string; n: number } | null; benchPx(id: string, n: number): [number, number]; look(dx: number, dy: number): void; spot(name: string): Promise<[number, number]> };
   const m = <T,>(fn: (h: H) => T) => page.evaluate(`(${fn.toString()})(window.__museum)`) as Promise<T>;
   await page.goto('museum' + Q);
-  await page.waitForFunction(() => ((window as unknown as { __museum?: R }).__museum?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'museum');
   await m((h) => h.spot('room:fish').then(([x, z]) => h.put(x, z)));
   await expect.poll(() => m((h) => h.still()), { timeout: 10_000 }).toBe(true);
   const [bx, by] = await m((h) => h.benchPx('dmbench1', 0));

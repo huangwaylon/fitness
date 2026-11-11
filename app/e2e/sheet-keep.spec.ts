@@ -3,12 +3,13 @@
 // should be (けんこう on 1週 · かつどう at its top, its charts drawn in the first frame); at most three kept, the least
 // recently opened let go; a level holding a map (りょこう's 地図, a trail) let go at the close.
 import { expect, test, type Page } from './fixtures.ts';
+import { loaded3d } from './island.ts';
 import { fromMenu, openKenkou } from './hud.ts';
 import { gotoTrip, tripsSheet } from './trips.ts';
 
 const sheet = (page: Page) => page.locator('dialog[open]');
 const health = (page: Page) => page.getByRole('button', { name: 'けんこう', exact: true });
-const loaded = (page: Page) => page.waitForFunction(() => (window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded(), null, { timeout: 30_000 });
+const loaded = (page: Page) => loaded3d(page);
 /** Tag what's in the open sheet under `sel`: a reopening built afresh has lost it. */
 const tag = (page: Page, sel: string) => sheet(page).locator(sel).first().evaluate((el) => el.setAttribute('data-kept-tag', ''));
 const closed = async (page: Page) => {

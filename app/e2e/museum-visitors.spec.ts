@@ -4,6 +4,7 @@
 // eyes); the NEW tags and the hall plaques' dots; an exhibit's card docked clear of it, and any tap off it only closing
 // it; a doorway's dip closing every balloon.
 import { expect, test, type Page } from './fixtures.ts';
+import { roomUp } from './rooms.ts';
 
 // (an afternoon: three or four in the museum)
 const MUSEUM = 'museum?demo&date=2026-11-04T14:00';
@@ -11,7 +12,7 @@ type V = { id: string; x: number; z: number; state: string; fade: number };
 const mu = <R,>(page: Page, fn: string) => page.evaluate(`window.__museum.${fn}`) as Promise<R>;
 const open = async (page: Page, url = MUSEUM) => {
   await page.goto(url);
-  await page.waitForFunction(() => ((window as unknown as { __museum?: { stats(): { frames: number } } }).__museum?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'museum');
 };
 const putAt = (page: Page, name: string) => page.evaluate(`window.__museum.spot(${JSON.stringify(name)}).then(([x, z]) => window.__museum.put(x, z))`);
 const still = (page: Page) => expect.poll(() => mu<boolean>(page, 'still()'), { timeout: 15_000 }).toBe(true);

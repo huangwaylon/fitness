@@ -4,7 +4,7 @@
 // navigates. `?critter=` (with ?demo) brings one on at once and keeps it until caught.
 import { expect, test, type Page } from './fixtures.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
-import { castIn, islandUp, plateOnly, reelOnBite, tapAt, tapBox, tapFigure, toTheWater, type Aim } from './island.ts';
+import { type Aim, castIn, islandUp, loaded3d, plateOnly, reelOnBite, tapAt, tapBox, tapFigure, toTheWater } from './island.ts';
 import { hudBells } from './hud.ts';
 
 /** NH's own catch line (ja), as the plate shows it (whitespace collapsed). */
@@ -90,7 +90,7 @@ const W3b = (page: Page) => page.evaluate(() => (window as unknown as W3b).__wor
 
 test('a balloon flies over the island in world space (its height steady, its shadow under it); popped, nothing is left in the sky', async ({ page }) => {
   await open(page, '&balloon');
-  await page.waitForFunction(() => (window as unknown as W3b).__world3d?.loaded(), null, { timeout: 30_000 });
+  await loaded3d(page);
   await expect.poll(() => W3b(page), { timeout: 10_000 }).not.toBeNull();
   const a = (await W3b(page))!;
   await page.waitForTimeout(1200);
@@ -133,7 +133,7 @@ const POPS = [
 for (const c of POPS)
   test(`a popped balloon's present lands in the front of the view, on open ground, clear of the controls: ${c.name}`, async ({ page }) => {
     await open(page, '&balloon');
-    await page.waitForFunction(() => (window as unknown as W3b).__world3d?.loaded(), null, { timeout: 30_000 });
+    await loaded3d(page);
     await expect.poll(() => W3b(page), { timeout: 10_000 }).not.toBeNull();
     await page.evaluate(({ cam, over }) => {
       const w = window as unknown as W3b, w3 = w.__world3d!, lim = w3.limits();

@@ -3,6 +3,7 @@
 // the list to the right"); the floor's middle sits at the middle of what the controls leave of the screen, at NH's view,
 // after a turn and back, and with the edit tray open.
 import { expect, test, type Page } from './fixtures.ts';
+import { roomUp } from './rooms.ts';
 
 const Q = '?demo&date=2026-11-04T12:00';
 type C = { at: [number, number]; band: [number, number] };
@@ -11,7 +12,7 @@ const centre = (page: Page) => page.evaluate(() => (window as unknown as { __ten
 async function openTent(page: Page) {
   await page.addInitScript(() => localStorage.removeItem('island-demo.tent'));
   await page.goto('tent' + Q);
-  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'tent');
 }
 /** Within a few px of the band's middle (after any glide). */
 async function centred(page: Page) {

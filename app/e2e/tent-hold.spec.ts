@@ -3,6 +3,7 @@
 // 「いまの かぐを おいてね」), a drag from another one turns the camera, a tap on the floor puts what I hold there, a long
 // press on another one puts what I hold down and takes that one, and a tap off the room puts it down.
 import { expect, test, type Page } from './fixtures.ts';
+import { roomUp } from './rooms.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -26,7 +27,7 @@ const sel = (page: Page) => te(page, (t) => t.edit()?.sel ?? null);
 async function room(page: Page) {
   await page.addInitScript(() => localStorage.getItem('hold-t') || (localStorage.removeItem('island-demo.tent'), localStorage.setItem('hold-t', '1')));
   await page.goto('tent' + Q);
-  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await roomUp(page, 'tent');
   await te(page, (t) => t.fill(['f4054', 'f4038']));
   await page.locator('[data-tent-edit-open]').click();
   await page.waitForFunction(() => (window as unknown as { __tent: T }).__tent.still());

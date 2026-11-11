@@ -7,6 +7,7 @@
 //   RELAY_E2E=1 npm run e2e -- sync-harness --workers=1   two browser contexts against the test relay (relay/.smoke-keys;
 //                                                         one at a time: each person's key opens one socket)
 import { expect, test, type Browser, type Page } from './fixtures.ts';
+import { roomUp } from './rooms.ts';
 import { islandUp, lawnTap, oku, tapOn, quiet, watchComings } from './island.ts';
 import { sayOwn } from './say.ts';
 import { existsSync, readFileSync } from 'node:fs';
@@ -317,7 +318,7 @@ test('a phrase in the tent: B in there sees it over A; B on the island doesn’t
   const ctxB = RELAY ? await browser.newContext(CTX) : ctxA;
   const room = async (p: Page, who: 'A' | 'B') => {
     await p.goto('tent' + q(who));
-    await p.waitForFunction(() => ((window as unknown as { __tent?: TentHooks }).__tent?.stats()?.frames ?? 0) > 0, null, { timeout: 15_000 });
+    await roomUp(p, 'tent', { timeout: 15_000 });
   };
   const say = async (p: Page, name: string) => {
     await p.bringToFront();
@@ -357,7 +358,7 @@ test('two phones in the tent: one room, A’s drag live on B (held there), the d
   const open = async (who: 'A' | 'B', ctx: typeof ctxA) => {
     const p = await ctx.newPage();
     await p.goto('tent' + q(who));
-    await p.waitForFunction(() => ((window as unknown as { __tent?: TentHooks }).__tent?.stats()?.frames ?? 0) > 0, null, { timeout: 15_000 });
+    await roomUp(p, 'tent', { timeout: 15_000 });
     return p;
   };
   const a = await open('A', ctxA);
@@ -502,7 +503,7 @@ test('one place at a time: A in the tent is gone from B’s island, there with B
     await atRest(p);
     await tapTent(p);
     await expect(p).toHaveURL(/\/tent\?/, { timeout: 10_000 });
-    await p.waitForFunction(() => ((window as unknown as { __tent?: TentHooks }).__tent?.stats()?.frames ?? 0) > 0);
+    await roomUp(p, 'tent');
   };
   expect(await inside(b)).toBeNull();
   // A walks up to the tent and goes in: gone from B's island
@@ -562,7 +563,7 @@ test('a lamp on a table, on both phones: on its top there, and along with the ta
   const open = async (who: 'A' | 'B', ctx: typeof ctxA) => {
     const p = await ctx.newPage();
     await p.goto('tent' + q(who));
-    await p.waitForFunction(() => ((window as unknown as { __tent?: TentHooks }).__tent?.stats()?.frames ?? 0) > 0);
+    await roomUp(p, 'tent');
     return p;
   };
   const a = await open('A', ctxA);
@@ -607,7 +608,7 @@ test('in the tent: B sees A sit on the chair, and the lamp A switches off is off
   const open = async (who: 'A' | 'B', ctx: typeof ctxA) => {
     const p = await ctx.newPage();
     await p.goto('tent' + q(who));
-    await p.waitForFunction(() => ((window as unknown as { __tent?: TentHooks }).__tent?.stats()?.frames ?? 0) > 0);
+    await roomUp(p, 'tent');
     return p;
   };
   const a = await open('A', ctxA);

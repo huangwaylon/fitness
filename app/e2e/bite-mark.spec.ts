@@ -5,7 +5,7 @@
 // screen: at zoom 1, 2 and 3.2, panned up the island and sideways, standing and seated on the front bench. The real
 // bite's is fishing3d.spec's (and the partner's, on the other phone, fish-sync.spec's).
 import { expect, test, type Page } from './fixtures.ts';
-import { geo } from './island.ts';
+import { geo, loaded3d } from './island.ts';
 import { overHead, type Mark } from './biteMark.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -37,7 +37,7 @@ async function at(page: Page, k: number, tag: string, dx = 0): Promise<Mark> {
 test('the bite’s 「！」 is over my villager’s head at every zoom, panned, standing and seated', async ({ page }) => {
   test.setTimeout(90_000);
   await page.goto('?demo&date=2026-11-04T12:00');
-  await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
+  await loaded3d(page);
   // my 3D villager in (its head bone: the anchor)
   await expect.poll(() => page.evaluate(() => (window as unknown as { __villagers3?: { state(s: string): string | null } }).__villagers3?.state('mine') ?? null), { timeout: 30_000 }).toBe('idle');
   await w3(page, (w) => w.pinBite('mine'));

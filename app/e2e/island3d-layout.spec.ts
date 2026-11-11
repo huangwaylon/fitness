@@ -3,7 +3,7 @@
 // NH's bridges and stairs stood on it (engine.ts placeGroup), the camera's far end at ウェイ's door; a bench put down in
 // the editor (the island's one もようがえ) is drawn where it went.
 import { expect, test, type Page } from './fixtures.ts';
-import { openEditor } from './island.ts';
+import { loaded3d, openEditor } from './island.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -20,7 +20,7 @@ const Q = '?demo&date=2026-11-04T12:00';
 
 async function open(page: Page) {
   await page.goto(Q);
-  await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 60_000 });
+  await loaded3d(page, 60_000);
 }
 
 test('on its layout: the layout\'s ground, the homes and the structures placed, the far end at ウェイ\'s door, the rock drawn once', async ({ page }) => {
