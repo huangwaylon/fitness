@@ -524,7 +524,8 @@
         if (!c) pop(t('world.farm.whose', { who }));
         else named(() => {
           const name = cropName(c);
-          if (act.by && act.by !== m.me) return t('world.farm.wateredBy', { who: whoName(act.by) });
+          // (thanks only for help: its owner watering their own plant is no 「…が みずを やってくれた」 to the partner)
+          if (act.by && act.by !== m.me && act.by !== act.who) return t('world.farm.wateredBy', { who: whoName(act.by) });
           return n ? t(act.who === m.me ? 'world.farm.leftMine' : 'world.farm.left', { who, name, n }) : act.watered ? t('world.farm.watered') : t('world.farm.ripe', { who, name });
         });
         return true;

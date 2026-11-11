@@ -235,8 +235,9 @@ test('a harvest tap takes my ripe plants of its 3 × 3 with one pop and a sparkl
   await expect(page.locator('[data-farm-ripe]')).toHaveText('2');
   await expect.poll(sparkles).toBe(4);
   await expect(page.locator('[data-fx="catch"] .catch-plate')).toHaveAttribute('aria-label', 'トマトを しゅうかく！ ×4・72かいがら');
-  // the far column: its two, the same plate counting on
-  await tapWorld(page, at(2).x, at(2).z);
+  // the far column's two, by a tap on a plant just picked (a run across the field, never the can), the same plate
+  // counting on
+  await tapWorld(page, at(1).x, at(1).z);
   await expect(page.locator('[data-farm-ripe]')).toHaveCount(0);
   await expect(page.locator('[data-fx="catch"] .catch-plate')).toHaveAttribute('aria-label', 'トマトを しゅうかく！ ×6・108かいがら');
   await expect(page.locator('[data-fx="catch"]')).toHaveCount(1);

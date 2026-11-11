@@ -2,6 +2,8 @@
 // (a row is ~15 px on the phone) with NH's golden can's 3 × 3, the tapped plant deciding first. Pure: SceneTaps does it
 // (store/farm.svelte.ts, the shared world's watering, the plate). P the tapped plot, A its 3 × 3:
 //   1. my ripe plant at P: harvest every ripe plant of mine in A, P first, then the nearest (a harvest never misfires);
+//      so too my plant at P picked today, while A has ripe ones of mine (a run of harvest taps across the field: the
+//      plant just picked counts for watering today, and would turn the next tap into the can's);
 //   2. a plant at P (anyone's), or another's empty plot, and plants in A whose watering counts today not yet watered:
 //      water those (never a ripe one: it can't help);
 //   3. my ripe plants in A (a miss on an empty, watered or another's plot): harvest them all, the nearest first;
@@ -58,6 +60,8 @@ export function farmTap(i: FarmTapIn): FarmTap {
     .sort((a, b) => a.d - b.d)
     .map(({ n }) => ({ p: n.p, c: n.plant.c, n: yieldOf(n.p, n.plant, i.watered) }));
   if (pl && ripe[0]?.p === i.plot.p) return { a: 'harvest', ops: ripe };
+  const picked = pl?.who === i.me && pl.r && daysLeft(pl, i.date) === FARM.regrowDays;
+  if (picked && ripe.length) return { a: 'harvest', ops: ripe };
   if (!mineEmpty) {
     const dry = i.around.filter((n) => n.plant && wateringCounts(n.plant, i.date) && !i.watered(n.p, i.date)).map((n) => n.p);
     if (dry.length) return { a: 'water', ids: dry };

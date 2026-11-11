@@ -39,6 +39,18 @@ describe('a tap on a plot', () => {
     expect(farmTap({ ...base, ...at({ ...row, [P]: young }), watered: (p) => p === P }).a).toBe('harvest');
   });
 
+  it('a run of harvest taps: my plant picked today, with ripe ones of mine around it, harvests them, never the can', () => {
+    const picked = { ...ripe, from: '2026-11-10', r: true as const };
+    const plants = { [P]: picked, [id(0, 1)]: picked, [id(2, 1)]: ripe, [id(2, 2)]: { ...ripe, c: 'carrot' as const } };
+    expect(farmTap({ ...base, ...at(plants) })).toEqual({ a: 'harvest', ops: [{ p: id(2, 1), c: 'tomato', n: 1 }, { p: id(2, 2), c: 'carrot', n: 1 }] });
+    // none ripe left: the can waters the picked ones (the harvest day counts)
+    expect(farmTap({ ...base, ...at({ [P]: picked, [id(0, 1)]: picked }) })).toEqual({ a: 'water', ids: [id(0, 1), P] });
+    // a regrowing plant picked another day is growing: the can first, as nh-04
+    expect(farmTap({ ...base, ...at({ [P]: { ...picked, from: '2026-11-09' }, [id(2, 1)]: ripe }) })).toEqual({ a: 'water', ids: [P] });
+    // the partner's plant picked today is no run of mine: the can
+    expect(farmTap({ ...base, ...at({ [P]: theirs(picked), [id(2, 1)]: ripe }) })).toEqual({ a: 'water', ids: [P] });
+  });
+
   it('the can waters only plants whose watering counts: never a ripe one (mine or the partner’s)', () => {
     expect(farmTap({ ...base, ...at({ [P]: young, [id(0, 1)]: theirs(young), [id(2, 1)]: theirs(ripe) }) })).toEqual({ a: 'water', ids: [id(0, 1), P] });
     expect(farmTap({ ...base, ...at({ [P]: young, [id(0, 1)]: young }), watered: (p) => p === P })).toEqual({ a: 'water', ids: [id(0, 1)] });
