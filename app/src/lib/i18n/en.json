@@ -668,6 +668,7 @@
   "farm.empty": "Empty plots",
   "farm.emptyN": "{n} plots to plant",
   "farm.noField": "No field of yours (place one in the editor)",
+  "farm.full": "No empty plots",
   "farm.left": "{n} days",
   "farm.watered": "Watered",
   "farm.yield": "×{n}",

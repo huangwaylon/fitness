@@ -15,6 +15,7 @@
   import { farmToday } from '../island/farm.ts';
   import { islandDay } from '../island/ambientClock.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
+  import { bare } from '../kiroku/zukan.ts';
   import type { Who } from '#lib/types.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
@@ -27,8 +28,9 @@
     const { farm, watered } = farmToday(m.state, date);
     const rows = (who: Who) => [...farm.plots].filter(([, pl]) => pl.who === who).map(([p, pl]) => row(p, pl, watered)).sort((a, b) => a.left - b.left || a.c.localeCompare(b.c));
     const plots = layoutPlots(site.layout ?? layoutStore.current);
-    const empty = plots.filter((x) => x.who === m.me && !farm.plots.has(x.p)).length;
-    return { mine: rows(m.me), others: (['A', 'B', 'G'] as const).filter((w) => w !== m.me).map((w) => ({ who: w, rows: rows(w) })).filter((o) => o.rows.length), empty, n: plantsOf(farm, m.me) };
+    const field = plots.filter((x) => x.who === m.me);
+    const empty = field.filter((x) => !farm.plots.has(x.p)).length;
+    return { mine: rows(m.me), others: (['A', 'B', 'G'] as const).filter((w) => w !== m.me).map((w) => ({ who: w, rows: rows(w) })).filter((o) => o.rows.length), field: field.length > 0, empty, n: plantsOf(farm, m.me) };
   });
   function row(p: string, pl: Plot, watered: (p: string, d: string) => boolean) {
     return { p, c: pl.c, left: daysLeft(pl, date), ripe: stageOf(pl, date) === 3, wet: watered(p, date), n: yieldOf(p, pl, watered) };
@@ -37,7 +39,7 @@
   const growing = $derived(view?.mine.filter((r) => !r.ripe) ?? []);
   const harvestN = $derived(ripe.reduce((a, r) => a + r.n, 0));
   const harvestV = $derived(ripe.reduce((a, r) => a + r.n * (sellPrice(cropKey(r.c)) ?? 0), 0));
-  const crop = (c: string) => t(`beach.name.${c}`);
+  const crop = (c: string) => bare(t(`beach.name.${c}`));
 </script>
 
 <Sheet bind:open tunes label={t('farm.title')} variant="pop">
@@ -67,7 +69,7 @@
         {/if}
       {/each}
       <h3 class="h">{t('farm.empty')}</h3>
-      <p class="note" data-farm-empty>{view.empty ? t('farm.emptyN', { n: view.empty }) : t('farm.noField')}</p>
+      <p class="note" data-farm-empty>{view.empty ? t('farm.emptyN', { n: view.empty }) : t(view.field ? 'farm.full' : 'farm.noField')}</p>
       {#each view.others as o (o.who)}
         <details class="others">
           <summary>{t('farm.whose', { who: names[o.who], n: o.rows.length })}</summary>
