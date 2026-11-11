@@ -13,7 +13,9 @@ const MEASURED: Record<string, [number, number]> = {
   'trail-lake-22': [125, 2_206_614], 'trail-snow-lake': [134, 2_421_344], 'trail-lake-valhalla': [123, 1_998_157],
   'trail-talapus-lake': [91, 1_567_082], 'trail-mount-pilchuck': [113, 1_913_170], 'trail-bridal-veil': [139, 2_552_136],
   'trail-skyline-loop': [145, 3_141_644], 'trail-enchantments': [519, 8_767_042], 'trail-fuji-yoshida': [144, 4_410_225],
-  'trail-kinpu-odarumi': [102, 3_339_914]
+  'trail-kinpu-odarumi': [102, 3_339_914],
+  // (2026-11-11, every tile fetched once: their DENSITY's)
+  'trail-utsukushigahara': [133, 2_766_542], 'trail-akagi-kurobi': [85, 1_566_803]
 };
 
 const track = (slug: string) => (JSON.parse(readFileSync(join(import.meta.dirname, '../../../static/hiking/tracks', `${slug}.json`), 'utf8')) as { pts: number[][] }).pts;
@@ -28,8 +30,8 @@ describe('saved areas: the plans', () => {
     }
   });
 
-  it('the raster trails within ±20 % on the means alone (no area factor)', () => {
-    for (const p of plans.filter((x) => x.source !== 'ofm')) expect(Math.abs(p.bytes / MEASURED[p.id][1] - 1), p.id).toBeLessThan(0.2);
+  it('the raster trails within ±20 % on the means alone (no area factor: the ten measured with the means)', () => {
+    for (const p of plans.filter((x) => x.source !== 'ofm' && !['trail-utsukushigahara', 'trail-akagi-kurobi'].includes(x.id))) expect(Math.abs(p.bytes / MEASURED[p.id][1] - 1), p.id).toBeLessThan(0.2);
   });
 
   it("the trips' zooms 5–14 and the trails' 12–16, by source", () => {

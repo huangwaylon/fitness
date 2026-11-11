@@ -19,11 +19,11 @@
   import { planTrail, type Plan } from '#lib/offline/plan.ts';
   import { LocWatch } from '../travel/map/geo.ts';
   import { packing } from '../travel/packing.svelte.ts';
-  import { pick } from '../travel/text.ts';
+  import { fmtM, pick } from '../travel/text.ts';
   import { trailStats } from './stats.ts';
   import { loadTrack } from '#lib/hiking/load.ts';
   import { pointAt, prepare, type Prepared } from '#lib/hiking/track.ts';
-  import { DOGS, ROUTE, S, fmtSeason } from '#lib/hiking/strings.ts';
+  import { DOGS, ROUTE, S, fmtDur, fmtPlanDate, fmtSeason, span } from '#lib/hiking/strings.ts';
   import type { Trail } from '#lib/hiking/types.ts';
   import { i18n } from '#lib/i18n/index.ts';
 
@@ -180,8 +180,15 @@
         <div class="row kv"><dt>{pick(S.factDogs, L)}</dt><dd>{pick(DOGS[trail.dogs], L)}</dd></div>
         <div class="row kv"><dt>{pick(S.factPermit, L)}</dt><dd>{pick(trail.permit, L)}</dd></div>
         <div class="row kv"><dt>{pick(S.factLocation, L)}</dt><dd>{pick(trail.area, L)}</dd></div>
+        {#if trail.walked}
+          {@const w = trail.walked}
+          <div class="row kv" data-walked><dt>{pick(S.factWalked, L)}</dt><dd>{fmtPlanDate(w.dateISO, L)}</dd></div>
+          <div class="row kv"><dt>{pick(S.factUpDown, L)}</dt><dd>{fmtM(trail.gainM)} ／ {fmtM(w.downM)}</dd></div>
+          <div class="row kv"><dt>{pick(S.factStandard, L)}</dt><dd>{fmtDur(span('0:00', w.standard), L)}</dd></div>
+          <div class="row kv"><dt>{pick(S.planCourse, L)}</dt><dd>{w.constant}</dd></div>
+        {/if}
       </dl>
-      <p class="attrib">{pick(S.attribTrail, L)} ／ {pick(trail.tiles === 'us' ? S.attribUsgs : S.attribGsi, L)}</p>
+      <p class="attrib">{pick(trail.walked ? S.attribYamap : S.attribTrail, L)} ／ {pick(trail.tiles === 'us' ? S.attribUsgs : S.attribGsi, L)}</p>
     </div>
   </div>
 </section>

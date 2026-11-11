@@ -63,6 +63,22 @@ export interface Trail {
   tips: L[];
   tiles: Region;
   plan?: Plan;
+  /** A hike walked and recorded on YAMAP: its activity's own figures (the trail's length, gain and time are its 距離,
+   *  のぼり and タイム, rests included). */
+  walked?: Walked;
+  /** No photo of its own (YAMAP's activities came without): the list's band is the plain paper. */
+  photo?: false;
+}
+
+/** A YAMAP activity's record (yamap.com/activities/<id>, public: no link kept, it names the walkers). */
+interface Walked {
+  dateISO: string;
+  /** くだり (m). */
+  downM: number;
+  /** YAMAP's 標準タイム for the course ('h:mm'). */
+  standard: string;
+  /** YAMAP's コース定数. */
+  constant: number;
 }
 
 /** A trail's track file (scripts/hiking-tracks.ts): the GPX simplified (Douglas–Peucker, ~5 m), its elevation smoothed

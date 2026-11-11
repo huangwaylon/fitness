@@ -26,10 +26,10 @@ async function openTrails(page: Page, draw = false) {
   // its pills in place)
   await islandUp(page);
   await fromMenu(page, 'hiking');
-  await expect(cards(page)).toHaveCount(10);
+  await expect(cards(page)).toHaveCount(12);
 }
 
-test('the list: ten trails, the difficulty chips, the sorts; a card opens its trail, ‹ back, ✕ closes', async ({ page }) => {
+test('the list: twelve trails, the difficulty chips, the sorts; a card opens its trail, ‹ back, ✕ closes', async ({ page }) => {
   await openTrails(page);
   await expect(sheet(page).locator('[data-trail-list] .ttl')).toHaveText('梅ちゃんのトレイル');
   await expect(cards(page).first()).toHaveAttribute('data-trail', 'lake-22');
@@ -43,7 +43,7 @@ test('the list: ten trails, the difficulty chips, the sorts; a card opens its tr
   await expect(cards(page)).toHaveCount(1);
   await sheet(page).locator('[data-filter="all"]').click();
   await sheet(page).locator('[data-sort="dist"]').click();
-  await expect(cards(page).first()).toHaveAttribute('data-trail', 'talapus-lake');
+  await expect(cards(page).first()).toHaveAttribute('data-trail', 'akagi-kurobi');
   await expect(cards(page).last()).toHaveAttribute('data-trail', 'enchantments');
   // a second tap: the source's order again
   await sheet(page).locator('[data-sort="dist"]').click();
@@ -137,6 +137,20 @@ test("Kinpu's plan: the date, the timeline (a stay's badge, a leg's minutes), it
   await expect(view.locator('.attrib')).toContainText('国土地理院');
   await view.locator('.nav.back').click();
   await expect(sheet(page).locator('[data-trail-list]')).toBeVisible();
+});
+
+test("a trail walked on YAMAP: no photo on its card, the record's rows in 詳細情報, YAMAP's credit", async ({ page }) => {
+  await openTrails(page);
+  const card = sheet(page).locator('[data-trail="akagi-kurobi"]');
+  await expect(card.locator('img')).toHaveCount(0);
+  await expect(card.locator('.stats')).toContainText('5.3km');
+  await expect(card.locator('.stats')).toContainText('5時間1分');
+  await card.locator('.hit').click();
+  const view = sheet(page).locator('[data-trail-view="akagi-kurobi"]');
+  await expect(view.locator('[data-walked] dd')).toHaveText('2026年11月7日(土)');
+  await expect(view.locator('.facts')).toContainText('568 m ／ 569 m');
+  await expect(view.locator('.facts')).toContainText('3時間37分');
+  await expect(view.locator('.attrib')).toHaveText('軌跡・記録：YAMAP ／ 出典：国土地理院（地理院タイル）');
 });
 
 /** Each trail in turn, then the first again, the sheet closed and opened between; `drawnTrack` whether its track is on its map. */

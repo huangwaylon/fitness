@@ -1,8 +1,9 @@
-// トレイル's ten trails (docs/hiking.md "Data"): eight in Washington State, two in Japan, from the hiking-trails app
-// (its trails.js, English, and i18n.js's Japanese: the user's own write-ups). Stats are AllTrails' (length, gain,
-// difficulty, time); km and m are its miles and feet converted once (the gain is the DEM figure on purpose: types.ts).
-// The tracks are files of their own by slug (static/hiking/tracks/, load.ts), the photos static/hiking/photos/<slug>.webp
-// (AllTrails users' photos, 1080 × 720: a card's width at 3×).
+// トレイル's twelve trails (docs/hiking.md "Data"): eight in Washington State, four in Japan. The first ten from the
+// hiking-trails app (its trails.js, English, and i18n.js's Japanese: the user's own write-ups), their stats AllTrails'
+// (length, gain, difficulty, time; km and m its miles and feet converted once, the gain the DEM figure on purpose:
+// types.ts); the last two walked and recorded on YAMAP (`walked`: the activities' own figures). The tracks are files of
+// their own by slug (static/hiking/tracks/, load.ts), the photos static/hiking/photos/<slug>.webp (AllTrails users'
+// photos, 1080 × 720: a card's width at 3×; the YAMAP two have none).
 import type { Trail } from './types.ts';
 
 const NWFP = { en: 'NW Forest Pass', ja: 'ノースウエスト・フォレストパス' };
@@ -284,6 +285,64 @@ export const TRAILS: readonly Trail[] = [
         { time: '13:22', type: 'goal', name: { en: 'Odarumi Pass', ja: '大弛峠' } }
       ]
     }
+  },
+  // walked and recorded on YAMAP (2026): the figures are the activities' own (距離, のぼり, タイム with its rests), the
+  // write-ups ours; no photos came with them
+  {
+    slug: 'utsukushigahara',
+    name: { en: 'Utsukushigahara: Ōgahana, Ōgatō & Mt. Ushibuse', ja: '美ヶ原（王ヶ鼻・王ヶ頭・牛伏山）' },
+    area: { en: 'Utsukushigahara Plateau, Nagano', ja: '美ヶ原高原（長野県）' },
+    lengthKm: 13.3, gainM: 372, diff: 'moderate', route: 'out', time: '6 h 1 min', season: 'May – Oct', dogs: 'leashed',
+    permit: {
+      en: 'No permit, free · parking at the Nature Conservation Center, or the bus from Matsumoto Station (reserve ahead)',
+      ja: '許可証不要・無料 ／ 美ヶ原自然保護センターに駐車場、松本駅からバスも（予約制）'
+    },
+    center: { lat: 36.2285, lon: 138.118 },
+    tiles: 'jp',
+    summary: {
+      en: 'A long, gentle walk across the 2,000 m Utsukushigahara Plateau, one of the 100 Famous Mountains: out to the stone Buddhas of Ōgahana and the high point Ōgatō (2,034 m), over the cattle pastures past Utsukushi-no-Tō to Mt. Ushibuse and the roadside station, and back, with the Northern Alps across the sky.',
+      ja: '日本百名山・美ヶ原の標高約2,000mの高原を端から端まで歩く往復コース。石仏の並ぶ王ヶ鼻、最高地点の王ヶ頭（2,034m）から牧場を抜けて美しの塔、牛伏山、道の駅 美ヶ原高原へ。北アルプスを望む天空の散歩道です。'
+    },
+    description: {
+      en: "Utsukushigahara is a broad lava plateau at the north-west end of Yatsugatake-Chūshin Kōgen Quasi-National Park. From the Utsukushigahara Nature Conservation Center the walk first heads west to Ōgahana (2,008 m), a rocky cape with a small shrine and a row of stone Buddhas looking down on the Matsumoto basin and across to the Northern Alps. It turns back past the radio towers to Ōgatō (2,034 m), the plateau's high point beside the Ōgatō Hotel, then follows the wide pasture track east, past the cattle's salt lick at Shiokureba and the stone tower Utsukushi-no-Tō, to the Yamamoto-goya huts. A short climb tops out on Mt. Ushibuse (1,990 m) before the path drops to the roadside station and the open-air art museum at Utsukushigahara Kōgen. The way back is the same. The climbs are short; the distance and the sun are the work.",
+      ja: '美ヶ原は八ヶ岳中信高原国定公園の北西部にある、広い溶岩台地の高原です。美ヶ原自然保護センターから、まず西へ王ヶ鼻（2,008m）へ。小さな祠と石仏の並ぶ岩の岬で、眼下に松本平、その向こうに北アルプスが広がります。電波塔の脇を戻って、王ヶ頭ホテルの建つ最高地点・王ヶ頭（2,034m）へ。ここから牧場の中の広い道を東へ進み、牛の塩なめ場だった塩くれ場、石造りの美しの塔を経て山本小屋へ。短く登れば牛伏山（1,990m）の頂で、道の駅 美ヶ原高原と美ヶ原高原美術館へ下ります。帰りは往路を戻ります。登り下りは小さく、距離と日差しが歩きごたえです。'
+    },
+    tips: [
+      { en: 'Around 2,000 m the wind is cold even in summer and fog rolls in fast: bring warm layers and rain gear.', ja: '標高は約2,000m。夏でも風は冷たく、霧も出やすいので、防寒着と雨具を忘れずに。' },
+      { en: 'Almost no shade on the plateau: a hat, sunscreen and plenty of water.', ja: '高原には日陰がほとんどありません。帽子と日焼け止め、水は多めに。' },
+      { en: 'Wide open with nowhere to shelter: watch for thunderstorms on summer afternoons.', ja: '広く開けていて逃げ場がありません。夏の午後は雷に注意を。' },
+      { en: 'The path crosses cattle pastures: close each gate behind you and give the cows room.', ja: '放牧地の中を歩きます。牧柵の扉は通ったら閉め、牛には近づきすぎないように。' }
+    ],
+    walked: { dateISO: '2026-08-09', downM: 373, standard: '4:48', constant: 15 },
+    photo: false
+  },
+  {
+    slug: 'akagi-kurobi',
+    name: { en: 'Mt. Kurobi & Mt. Komagatake (Akagi)', ja: '黒檜山・駒ヶ岳（赤城山）' },
+    area: { en: 'Lake Ōnuma, Gunma', ja: '赤城大沼（群馬県）' },
+    lengthKm: 5.3, gainM: 568, diff: 'moderate', route: 'loop', time: '5 h 1 min', season: 'Apr – Nov', dogs: 'leashed',
+    permit: {
+      en: 'No permit, free · Onoko parking by Lake Ōnuma (free, ~100 cars, toilets open in winter)',
+      ja: '許可証不要・無料 ／ 大沼湖畔のおのこ駐車場（無料・約100台、冬も使えるトイレあり）'
+    },
+    center: { lat: 36.5545, lon: 139.189 },
+    tiles: 'jp',
+    summary: {
+      en: "A loop over Akagi's highest peak, Mt. Kurobi (1,828 m), and Mt. Komagatake from Lake Ōnuma: a steep, rocky climb, the view from just past the summit over the lake to the mountains of Tanigawa and Nikkō, then the ridge to Komagatake and long stairs back down to the shore.",
+      ja: '赤城大沼から、赤城山の最高峰・黒檜山（1,828m）と駒ヶ岳をめぐる周回コース。岩がちな急登を登りきると、山頂の先の展望地から大沼と谷川岳・日光の山々を一望。稜線を駒ヶ岳へ歩き、長い階段で湖畔へ下ります。'
+    },
+    description: {
+      en: "Mt. Akagi, one of the 100 Famous Mountains, is a broad old volcano whose crater holds Lake Ōnuma; Mt. Kurobi on the lake's north-east rim is its highest peak. From Onoko parking the loop follows the shore past Akagi Shrine, on its little island in the lake, to the Kurobi trailhead. The climb is steep from the start, over rocks and roots with the lake showing through the trees, and reaches the summit in about an hour and a half. A few minutes further on, the viewpoint looks out over the Tanigawa range, Nikkō and, on a clear day, Mt. Fuji. The trail then follows the ridge south, down to a saddle and up to Mt. Komagatake (1,685 m), and descends west on long runs of metal stairs to the Komagatake trailhead, a short walk from the parking.",
+      ja: '日本百名山の赤城山は、火口に大沼を抱く大きな古い火山で、湖の北東にそびえる黒檜山がその最高峰です。おのこ駐車場から湖畔を歩き、大沼の小島に建つ赤城神社を経て黒檜山登山口へ。登りは初めから急で、岩と木の根の道を木々の間に湖を見ながら登り、1時間半ほどで山頂に着きます。数分先の展望地からは谷川連峰や日光の山々、晴れた日には富士山まで見渡せます。続いて稜線を南へ、鞍部へ下って駒ヶ岳（1,685m）へ登り返し、西へ長い鉄の階段を下って駒ヶ岳登山口へ。駐車場はすぐそこです。'
+    },
+    tips: [
+      { en: 'The climb to Kurobi is steep rock and roots, easier going up than down: walk the loop this way round.', ja: '黒檜山への登りは岩と木の根の急登。下るより登るほうが歩きやすいので、この向きで一周するのがおすすめです。' },
+      { en: 'The descent from Komagatake is long metal stairs and slippery earth: poles help.', ja: '駒ヶ岳からの下りは長い鉄の階段と滑りやすい土の道。ストックがあると安心です。' },
+      { en: "Don't turn back at the summit marker: the best view is from the viewpoint a few minutes beyond.", ja: '山頂標識で引き返さず、数分先の展望地へ。一番の眺めはそこにあります。' },
+      { en: 'Snow and ice from late autumn: bring microspikes outside summer.', ja: '晩秋からは積雪や凍結があります。夏以外はチェーンスパイクを持参しましょう。' }
+    ],
+    walked: { dateISO: '2026-11-07', downM: 569, standard: '3:37', constant: 13 },
+    photo: false
   }
 ];
 
@@ -297,7 +356,13 @@ export const WPT_JA: Record<string, string> = {
   Vista: '展望',
   'Optional side trip to Source Lake Overlook Trail': 'ソースレイク展望コースへの寄り道（任意）',
   'Snow Lake Viewpoint': 'スノーレイク展望地',
-  'End of Snow Trail': 'スノートレイル終点'
+  'End of Snow Trail': 'スノートレイル終点',
+  // the YAMAP activities' summits (scripts/hiking-tracks.ts --yamap: their landmarks' English names)
+  'Mt. Ogahana': '王ヶ鼻',
+  'Mt. Utsukushigahara (Ogato)': '美ヶ原（王ヶ頭）',
+  'Mt. Ushibuse': '牛伏山',
+  'Mt. Kurobi (Mt. Akagi)': '黒檜山（赤城山）',
+  'Mt. Komagatake': '駒ヶ岳'
 };
 
 /** A trail's slug from the hiking app's link (`https://huangwaylon.github.io/hiking-trails/#/trail/lake-22`, the

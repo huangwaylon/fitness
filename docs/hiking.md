@@ -1,7 +1,8 @@
 # トレイル (hiking trails)
 
 The hiking-trails app (`~/Documents/other/hiking-trails`, "Ume-chan's Trails") ported into the island: ten trails (eight
-in Washington State, two in Japan) on topo maps, with a scrubbable elevation chart and Kinpu's YAMAP plan. Drawn on the
+in Washington State, two in Japan) on topo maps, with a scrubbable elevation chart and Kinpu's YAMAP plan; since
+2026-11-11 two more in Japan from the user's own YAMAP activities (美ヶ原, 赤城山). Drawn on the
 unified kit like 旅行 and 結婚式 (design.md "Unified kit"): the app's paper, cards and tokens; one list, no tab bar.
 
 ## Decisions
@@ -21,7 +22,7 @@ null). With the demo's hooks, `window.__hiking` has both.
 
 ## Data
 
-`lib/hiking/`: `types.ts`, `trails.ts` (the ten, JA + EN; km and m are AllTrails' miles and feet converted once; the gain
+`lib/hiking/`: `types.ts`, `trails.ts` (the twelve, JA + EN; km and m are AllTrails' miles and feet converted once; the gain
 is AllTrails' DEM figure on purpose, since a GPX's own elevations over-count it by 50–60 %), `strings.ts` (the chrome's
 pairs and formats), `track.ts` (pure), `load.ts`.
 
@@ -29,6 +30,13 @@ pairs and formats), `track.ts` (pure), `load.ts`.
   `npm run hiking:tracks -- <old repo>/gpx` (`scripts/hiking-tracks.ts`): elevation smoothed over the raw points (the
   old app's 15-point centred mean), then Douglas–Peucker at 5 m (771–7,153 points → 102–727; 3–20 KB a trail). `len`
   is the raw length: the view stretches the simplified line's distances to it, so the readout's km match the old app.
+- **YAMAP's activities** (`utsukushigahara`, `akagi-kurobi`): `npm run hiking:tracks -- --yamap` reads each public
+  activity's track and checkpoints from YAMAP's API without a login (`api.yamap.com/v3/activities/<id>/tracks`: ~20 m
+  apart, the DEM-corrected altitude; the GPX export itself needs a login), its summits the waypoints (`WPT_JA`), into
+  the same converter (263 / 644 points → 114 / 224). No raw copy is kept: the API gives it again. The trail's figures
+  are the activity page's (距離, のぼり, タイム with its rests); `walked` keeps the date, くだり, 標準タイム and コース定数
+  (詳細情報's rows), the credit 「軌跡・記録：YAMAP」. No link and no names: the page names the walkers. They came
+  without photos (`photo: false`: the card's band is plain).
 - **Photos:** `static/hiking/photos/<slug>.webp` (1080 × 720 at q75: a card's width at 3×; AllTrails users' photos).
 - The tracks are precached, the photos kept once seen ("Offline" below).
 - **Private values:** Kinpu's plan link, party and planner are `{p:kinpuPlanUrl}`, `{p:kinpuParty}`, `{p:kinpuPlanner}`,
@@ -47,16 +55,17 @@ map ever drew, a retry. Under drawOff() (the e2e's logic tier) a stub draws the 
 
 ## Offline
 
-(docs/backend.md "Service worker" › Offline.) The ten tracks are precached (~70 KB): every
+(docs/backend.md "Service worker" › Offline.) The twelve tracks are precached (~80 KB): every
 trail's chart and its map's route read offline, opened before or not. A photo seen is kept (`island-photos-v1`); one
 never seen is the paper placeholder. The map draws offline once it has drawn on the phone: MapLibre kept in the
 shell, the USGS / GSI tiles it drew in `island-tiles-v1` (both send `Access-Control-Allow-Origin: *`: readable, so
 counted at their size); where none was kept, the track alone with the note.
 
-All ten trails have 「オフライン用に保存」 on the map, under ‹ (design.md "Offline maps").
+All twelve trails have 「オフライン用に保存」 on the map, under ‹ (design.md "Offline maps").
 The plan (`lib/offline/plan.ts planTrail`): z12–13 within 3 km of the track, z14–16 within 1 km. Sizes (every tile
 once): USGS 1.6–3.1 MB (Talapus 1.6, Pilchuck 1.9, Valhalla 2.0, Lake 22 2.2, Snow Lake 2.4, Bridal Veil
-2.6, Skyline 3.1), Enchantments 8.8 MB (519 tiles); GSI Kinpu 3.3, Fuji 4.4. GSI's tiles are kept on the phone only
+2.6, Skyline 3.1), Enchantments 8.8 MB (519 tiles); GSI Akagi 1.6, Utsukushigahara 2.8, Kinpu 3.3, Fuji 4.4
+(the YAMAP two with their own `DENSITY`: a lake's and a plateau's tiles weigh about 60 % of the means). GSI's tiles are kept on the phone only
 (never re-served), saved to z16 (offline the source is capped there and scaled up past it), and its credit
 「出典：国土地理院（地理院タイル）」 shows on the map above the sheet's peek and in the credits.
 
