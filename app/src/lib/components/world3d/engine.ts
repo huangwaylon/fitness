@@ -38,6 +38,7 @@ import { createWarmup, texturesOf } from './warmup.ts';
 import { ktx2Target } from './ktx2.ts';
 import { log } from '#lib/sync/log.ts';
 import { SEA_X, midXOf } from '#lib/layout/model.ts';
+import { SEA_Y } from '#lib/layout/height.ts';
 
 type Tod = 'day' | 'dusk' | 'night';
 
@@ -90,6 +91,9 @@ export interface Options {
   dprMoving?: number;
   /** The shadow map's size (2048; `?shadow=`, an A/B). */
   shadowSize?: number;
+  /** A still model's nearest instances out of view left undrawn (things.ts cull; default on): off, all drawn
+   *  (`?cull=0`, an A/B). */
+  cull?: boolean;
 }
 interface Stats {
   fps: number;
@@ -332,7 +336,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   scene.add(ground.group);
 
   // ---- the things, the cards, the lights ----
-  const things = createThings(scene, src.height, (sh = true) => (sh && shadowed(sh === 'slow'), kick()));
+  const things = createThings(scene, src.height, (sh = true) => (sh && shadowed(sh === 'slow'), kick()), { cull: opts.cull !== false });
   const cards = createCards(scene, (sh) => (sh && shadowed(), kick()));
   const lights = createLights(scene);
   const effects = createEffects(scene, src.feet, () => kick());
@@ -800,12 +804,34 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
    *  meshes are bent in the shader, so each group's ball is bent here (its middle; its radius doubled, for the shadow
    *  it casts into view) and tested against the view (once a camera rev, or a group placed). */
   const frustum = new Frustum(), viewProj = new Matrix4(), bentBall = new Sphere();
-  let culledRev = -1;
+  let culledRev = -1, culledThings = -1, culledSun: readonly number[] | null = null;
+  /** A still thing's box (three's space, unbent: things.ts cull) in view, or its shadow: swept down the sun's way from
+   *  its top to the ground as low as the sea's (one under the screen's bottom edge whose shadow falls on it stays
+   *  drawn), its corners bent, a margin round them, tested against the view. */
+  const swept = new Box3(), bentBox = new Box3(), corner = new Vector3();
+  function thingSeen(box: Box3): boolean {
+    const [sx, sy, sz] = todLook.sunAt;
+    const reach = opts.shadows ? Math.max(0, box.max.y - SEA_Y) / Math.max(0.2, sy) : 0;
+    swept.copy(box);
+    swept.min.y = Math.min(swept.min.y, SEA_Y);
+    swept.expandByPoint(corner.set(box.min.x - sx * reach, SEA_Y, box.min.z - sz * reach));
+    swept.expandByPoint(corner.set(box.max.x - sx * reach, SEA_Y, box.max.z - sz * reach));
+    bentBox.makeEmpty();
+    const R = bendU.uBendR.value, pz = -camZ;
+    for (let i = 0; i < 8; i++) {
+      bendTo(i & 1 ? swept.max.x : swept.min.x, i & 2 ? swept.max.y : swept.min.y, i & 4 ? swept.max.z : swept.min.z, pz, R);
+      bentBox.expandByPoint(corner.set(bp[0], bp[1], bp[2]));
+    }
+    return frustum.intersectsBox(bentBox.expandByScalar(20));
+  }
   function cullGroups() {
-    if (culledRev === rev) return;
+    if (culledRev === rev && culledThings === things.cullRev() && culledSun === todLook.sunAt) return;
     culledRev = rev;
+    culledThings = things.cullRev();
+    culledSun = todLook.sunAt;
     viewProj.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     frustum.setFromProjectionMatrix(viewProj);
+    if (things.cull(thingSeen)) shadowed();
     const R = bendU.uBendR.value, pz = -camZ;
     for (const g of groupsPlaced.values()) {
       const c = g.ball.center;

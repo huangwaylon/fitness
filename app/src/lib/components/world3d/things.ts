@@ -6,7 +6,7 @@
 // map is its night light (lights.ts adds its halo and its pool).
 import {
   BackSide, Color, DoubleSide, FrontSide, InstancedBufferAttribute, InstancedMesh, Matrix4, Mesh as MeshOf, MeshDepthMaterial, MeshLambertMaterial, Quaternion,
-  RGBADepthPacking, Vector3, Vector4, type Material, type Mesh, type MeshStandardMaterial, type Object3D, type Scene, type Side
+  RGBADepthPacking, Box3, Vector3, Vector4, type Material, type Mesh, type MeshStandardMaterial, type Object3D, type Scene, type Side
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
@@ -165,6 +165,12 @@ export interface Things {
    *  with no such model built. */
   outlineEach(id: string, fn: (p: Vector3) => void): boolean;
   pending(): number;
+  /** A still model's instances, farthest first (by z, as built), drawn up to the last one `seen` (its box, three's
+   *  space, unbent: engine.ts thingSeen); the nearer ones past it, out of view (behind the camera, under the screen's
+   *  bottom), and their shadows, not drawn. One draw a model still. True when a count grew (the shadow map's due). */
+  cull(seen: (box: Box3) => boolean): boolean;
+  /** Bumped when what cull tests changes (a build, a model gone, an instance moved): cull again. */
+  cullRev(): number;
   dispose(): void;
 }
 
@@ -267,7 +273,10 @@ function load(url: string, name: string): Promise<GLTF | null> {
 }
 
 /** `changed(shadows)`: draw again; `shadows` a caster's shadow changed (true), a slow caster's ('slow': a bug's), none. */
-export function createThings(scene: Scene, height: (x: number, z: number) => number, changed: (shadows?: boolean | 'slow') => void): Things {
+export function createThings(scene: Scene, height: (x: number, z: number) => number, changed: (shadows?: boolean | 'slow') => void, o: { cull?: boolean } = {}): Things {
+  /** The still models' instances nearest the camera left undrawn while out of view (cull; the editor's preview orbits
+   *  the whole island: all drawn). */
+  const culling = o.cull ?? false;
   const base = new URL(`room/world3d/`, new URL(document.baseURI)).href;
   let pending = 0, disposed = false;
   /** This mount's models (its own scene's for proc/; the shared loads' for the rest), and those in (on its GPU, once
@@ -412,11 +421,14 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     soft: boolean;
     /** Its model's outermost points (outline), found once. */
     shape?: Vector3[];
+    /** Its instances farthest first, the nearest out of view not drawn (cull). */
+    near?: boolean;
   }
   /** A mesh of a part (lift): the part's name, its frame in the model (its node's: where it rests) and the mesh in that
    *  frame. */
   interface Part { name: string; at: Matrix4; inPart: Matrix4 }
   const groups = new Map<ModelName, Group>();
+  let cullRev = 0;
   /** The parts taken off their instances (lift), by `${id}|${part}`: drawn as meshes of their own. */
   const loose = new Map<string, { g: Group; meshes: Mesh[]; at: Vector3; held: ModelName | null }>();
   /** The models drawn in a part's place (lift `held`), once in (null: failed); asked for once. */
@@ -497,6 +509,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
   /** An instance's spot written to its group's meshes (`only`; all of them when absent). */
   function write(g: Group, only?: number) {
     const i0 = only ?? 0, i1 = only === undefined ? g.base.length : only + 1;
+    if (g.near) cullRev++;
     for (const { im, local, grey, fade, flap, part } of g.meshes) {
       for (let i = i0; i < i1; i++) {
         // (a part taken off: its spot on the instance empty)
@@ -558,7 +571,10 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     if (old) drop(old);
     gl.scene.updateMatrixWorld(true);
     const grey = name.startsWith('fruit-'), soft = SOFT.has(name) || insts.some((o) => overs.get(o.id)?.fade !== undefined);
-    const g: Group = { name, sig, list: insts, meshes: [], base: [], soft };
+    // (a still model's farthest first: the nearest, out of view, are the ones left off the end: cull)
+    const near = culling && !soft;
+    if (near) insts = insts.slice().sort((a, b) => b.z - a.z);
+    const g: Group = { name, sig, list: insts, meshes: [], base: [], soft, near };
     // (a critter new here fades in: now, or once it's shown)
     if (SOFT.has(name)) for (const o of insts) if (!fades.has(o.id)) fades.set(o.id, { a: 0, to: overs.get(o.id)?.hidden ? 0 : 1, t: performance.now() });
     const flapAt = FLAPS.test(name) && soft ? hingeOf(gl.scene) : null;
@@ -606,6 +622,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     });
     write(g);
     groups.set(name, g);
+    cullRev++;
     changed(casts(name));
   }
   const want = new Map<ModelName, string>();
@@ -626,6 +643,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       want.delete(name);
       drop(g);
       groups.delete(name);
+      cullRev++;
       if (LAZY.has(name)) release(name);
       changed(casts(name));
     }
@@ -714,7 +732,39 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     return cast ? 'cast' : more;
   }
 
+  /** A model's box in its own space (its meshes' boxes, in their frames), once a model. */
+  const boxes = new Map<ModelName, Box3>();
+  function boxOf(g: Group): Box3 {
+    let b = boxes.get(g.name);
+    if (b) return b;
+    b = new Box3();
+    for (const { im, local } of g.meshes) {
+      im.geometry.computeBoundingBox();
+      b.union(tmpBox.copy(im.geometry.boundingBox!).applyMatrix4(local));
+    }
+    boxes.set(g.name, b);
+    return b;
+  }
+  const tmpBox = new Box3();
+
   return {
+    cull(seen) {
+      let any = false;
+      for (const g of groups.values()) {
+        if (!g.near) continue;
+        const b = boxOf(g);
+        let n = g.base.length;
+        while (n > 0 && (g.base[n - 1].determinant() === 0 || !seen(tmpBox.copy(b).applyMatrix4(g.base[n - 1])))) n--;
+        for (const { im } of g.meshes)
+          if (im.count !== n) {
+            // (one fewer: its shadow was out of view too, the map as it is will do; one more: drawn into it)
+            if (n > im.count) any = true;
+            im.count = n;
+          }
+      }
+      return any;
+    },
+    cullRev: () => cullRev,
     place,
     set(list) {
       for (const o of list) {

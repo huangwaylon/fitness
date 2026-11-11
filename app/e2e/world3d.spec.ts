@@ -366,3 +366,25 @@ test('one source for screen ↔ world: at the default, zoomed in panned sideways
     }, { timeout: 8000, message: `${name}: walked to the tap` }).toBeLessThan(30);
   }
 });
+
+test('the still things nearest the camera and out of view aren\'t drawn (things.ts cull): all at the front, the front\'s left out at the back, all again back at the front', async ({ page }) => {
+  await page.goto(`?${Q}`);
+  await ready(page);
+  type G = { n: number; meshes: { count: number }[] };
+  const drawn = () => page.evaluate(() => (window as unknown as { __world3d: { groups(): G[] } }).__world3d.groups().reduce((s, g) => [s[0] + (g.meshes[0]?.count ?? g.n), s[1] + g.n], [0, 0]));
+  const { min, max } = await w3(page, (w) => w.limits());
+  const at = async (z: number) => {
+    await page.evaluate((z) => (window as unknown as { __world3d: { go(z: number): void } }).__world3d.go(z), z);
+    // (a frame for the camera: it culls)
+    const f = await w3(page, (w) => w.stats().frames);
+    await expect.poll(() => w3(page, (w) => w.stats().frames)).toBeGreaterThan(f + 1);
+    return drawn();
+  };
+  const [front, all] = await at(min);
+  expect(front).toBe(all);
+  const [back, all2] = await at(max);
+  expect(back).toBeLessThan(all2 * 0.9);
+  // (the critters come and go meanwhile: the totals of the moment)
+  const [again, all3] = await at(min);
+  expect(again).toBe(all3);
+});
