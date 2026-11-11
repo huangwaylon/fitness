@@ -43,9 +43,8 @@ headers. Daily totals, one line per day, every field **Text**. The parser (`rela
 - Lists are optional (at least one); other fields are ignored. Without the body lists (§2 steps 8a–8c) 健康 shows
   no body fat, BMI or lean mass. A list whose line count differs from `dates` is dropped with a warning; an unreadable
   or over-max line is skipped.
-- Why two step lists: Find Health Samples adds up every source's samples, so the iPhone's and the Watch's steps of the
-  same walk would count twice (Health's own total de-duplicates them; Shortcuts doesn't). Move, Exercise and Stand
-  are not affected. The server keeps the larger of the two per day, which is close to Health's total.
+- Two step lists: Find Health Samples adds every source's samples, so one walk would count twice (Health's own total
+  de-duplicates; Shortcuts doesn't). The server keeps the larger of the two per day, close to Health's total.
 - Latest wins (re-sending is harmless, a corrected day is fixed by the next run; the held zeros):
   [backend](../backend.md#ingest).
 - Reply: `{"ok":true,"metrics":8}` (rows added), plus `skipped` / `warnings`. Errors: `unauthorized`,
@@ -70,7 +69,7 @@ Shortcuts → **+** → name it **しまの同期** [U: action names]:
 | 8b | **Find Health Samples** | **Body Mass Index** (ボディマス指数), same as step 8 → **Value** → `BMIValues` |
 | 8c | **Find Health Samples** | **Lean Body Mass** (除脂肪体重), same as step 8 → **Value** → `LeanValues` |
 | 8d | *(optional)* **Repeat with Each** | Blank the Watch's zeros: [below](#a-day-without-the-watch-optional-step-8d) |
-| 9 | **Get Contents of URL** | `https://island-fund-relay.island-fund-relay.workers.dev/api`, **POST**, Request Body **JSON**, each field type **Text**: `key` = Key, `action` = `ingest`, `dates` = Dates, `steps` = StepValues, `steps_watch` = StepWatchValues, `exercise_minutes` = ExValues, `calories` = CalValues, `stand_minutes` = StandValues, `weight` = WeightValues, `body_fat_percentage` = BodyFatValues, `body_mass_index` = BMIValues, `lean_body_mass` = LeanValues |
+| 9 | **Get Contents of URL** | the URL in §1, **POST**, Request Body **JSON**, each field **Text**: `key` = Key, `action` = `ingest`, and each §1 field = its list above |
 
 Every list must use the same range (the last 1 month), **Group by Day** and **Fill Missing** (a day without samples
 becomes a `0` line, not a missing one), so it lines up with `dates`. Keep Health's units in **kg** and **kcal** (Lean
@@ -80,11 +79,9 @@ Body Mass follows the weight unit). Allow read access to all eight types when as
 **Test:** tap ▶. Expect `{"ok":true,…}` with no `warnings`.
 
 ### A day without the Watch (optional step 8d)
-**Fill Missing** turns a day with no samples into `0`, so a day the Watch stayed off arrives as Move 0, Exercise 0,
-Stand 0. The app copes (it reads a day with all three 0 as no data for them: [design](../design.md#kenkou)),
-so this step is optional; it only makes the record say what happened. Recommended: send an **empty line** instead of
-`0` for those three on such a day (an empty line writes no row; the reply counts it under `skipped`, harmless). Blank
-only a day where all three are 0: a worn day's Exercise 0 is real. [U: action names]
+**Fill Missing** makes a day the Watch stayed off Move 0, Exercise 0, Stand 0. The app reads that as no data
+([design](../design.md#kenkou)), so this step only makes the record say so: an **empty line** instead of `0` for
+those three (no row; counted under `skipped`). Blank only a day where all three are 0. [U: action names]
 
 1. After step 8c, **Repeat with Each** on `CalValues`. Inside it: **Get Item from List** `ExValues`, **Item at Index**
    = **Repeat Index** → `Ex`; the same on `StandValues` → `Stand`.
@@ -99,8 +96,7 @@ only a day where all three are 0: a worn day's Exercise 0 is real. [U: action na
 Shortcuts → **Automation** → **+** → **App** → **LINE** (or the app you open most) → **Is Opened** → **Run
 Immediately**, **Notify When Run** off → **Run Shortcut しまの同期**. Do this on both phones.
 
-**At most every 10 minutes (recommended):** opening LINE often runs the Shortcut back to back, each run a month of
-Health queried on the phone, most bringing nothing new. At the start of しまの同期: **Get File** **shima-last.txt** in
+**At most every 10 minutes (recommended):** opening LINE often runs it back to back for nothing new. At the start of しまの同期: **Get File** **shima-last.txt** in
 the Shortcuts folder (**Error If Not Found** off) → **Get Time Between Dates** (the file's text and **Current Date**,
 in minutes) → **If** it is under 10, **Stop This Shortcut** (no file yet: it runs). After step 9: **Text** **Current
 Date** → **Save File** to **shima-last.txt** in the Shortcuts folder, **Overwrite** on. [U: action names] The next
@@ -122,14 +118,13 @@ Only this week and last week (until Wednesday 04:00) still earn; older days fill
 | Symptom | Fix |
 |---|---|
 | `unauthorized` | Wrong or rotated key in step 1 |
-| HTML instead of JSON, or `not found` | The URL in step 9 is wrong: exactly `https://island-fund-relay.island-fund-relay.workers.dev/api` (§2) |
+| HTML instead of JSON, or `not found` | The URL in step 9 is wrong: exactly `https://island-fund-relay.island-fund-relay.workers.dev/api` (§1) |
 | `bad_request`, `…: expected Text` | That field is Number/Array in step 9: make it **Text** |
-| `warnings: ["weight: 1 lines but 31 dates…"]` | That list didn't use the same range, **Group by Day** and **Fill Missing** as `dates` (the same for `body_fat_percentage`, `body_mass_index`, `lean_body_mass`) |
+| `warnings: ["<list>: 1 lines but 31 dates…"]` | That list (or step 4's) didn't use the same range, **Group by Day** and **Fill Missing** as `dates` |
 | `warnings: ["body_fat_percentage: 0.5 on … is outside 2–70…"]` | Body fat came through in an unexpected form: send the `uploads` row's first line to the developer |
 | `skipped` in the reply | A date or number didn't parse, or was over its max; the `uploads` row shows each field's first line |
 | Weight or lean body mass ~2.2× too high (or skipped) | Health's weight unit is pounds: set kg |
 | Steps about twice Health's | The Steps query has no Source filter (step 2), or both lists name the same device: one iPhone in step 2, one Watch in step 4 |
-| `steps_watch: … lines but … dates` | Step 4 differs from step 2 in range, **Group by Day** or **Fill Missing** |
 | A banner every time LINE opens | **Notify When Run** off [U: iOS may still flash one] |
 | Nothing arrives | Settings → Health → Data Access & Devices → Shortcuts: allow the eight types |
 | `calories: … lines but … dates` after step 8d | An empty item was dropped from a list: each pass of the repeat must add one item to each `…Out` (the empty **Text** too) |

@@ -8,13 +8,13 @@ when, is in the git log.
 
 ### The record on the relay
 The data of record is SQLite in a Durable Object on the relay (`IslandStore`, [backend](backend.md#the-record);
-backups: [runbook §6](ops/runbook.md#6-backups)); no Google Sheet, no Apps Script. Why: the Apps Script took 1–15 s a
-request; the record answers in ~0.1 s at ~1 % of the Free plan, and one copy of the health data is one fewer to guard.
+backups: [runbook §6](ops/runbook.md#6-backups)). Why: ~0.1 s a request at ~1 % of the Free plan (an Apps Script took
+1–15 s), and one copy of the health data is one fewer to guard.
 
 ### Logging and observability
 Logs live in their own Durable Object (`IslandLog`), capped, allow-listed, never a record's value
-([observability](ops/observability.md)). Why: a restore of the record must not roll back an incident's logs, a runaway
-log must never stop the record's writes, and a trail needs no second copy of private data or a paid service.
+([observability](ops/observability.md)). Why: a restore must not roll back the logs, a runaway log must never stop the
+record's writes, and a trail needs no copy of private data.
 
 ### Per-person keys
 `KEY_A`, `KEY_B` (and the guest's `KEY_C`) are Worker secrets; a key identifies its person and travels in a `text/plain`
@@ -39,9 +39,8 @@ small intents, never positions; the record is its own object, so a room outage l
 plan needs no payment method, hibernation makes idle sockets free, and the edge is ~20 ms from Tokyo.
 
 ### Relay versions side by side
-The relay speaks every version in `LIVE_VS` (today `[3]`); any other is closed 4004 and the phone parks until a reload.
-A change ships relay first, then the app; the old version goes once the `ws.hello` log shows every phone on the new one;
-new fields are additive. Why: the phones update at different times, and a hard switch would cut whichever updated last.
+The relay speaks every version in `LIVE_VS`; any other is closed 4004. A change ships relay first, then the app; the
+old version goes once the `ws.hello` log shows every phone on the new one. Why: the phones update at different times.
 
 ### Push through the relay
 When the record changes the room tells the open phones to fetch now ([backend](backend.md#push)); polling stays. Why: a
@@ -93,15 +92,14 @@ The dumbbell's popup shows the Health data over time, one person at a time, comp
 smoothing ([design](design.md#kenkou)). Why: a trainer needs exact numbers anyone can check against the bars.
 
 ### No-watch days
-<a id="no-watch-days"></a>A day with Move, Exercise and Stand all 0 or absent is no data for those three everywhere
-outside the ベル (`model/health.ts activityOn`); steps stay; rows are never rewritten. Why: the Shortcut's Fill Missing
-sends 0 for a day without samples, which pinned TDEEs at the floor and dragged averages down; for the ベル a 0 and a
-missing value earn alike.
+<a id="no-watch-days"></a>A day with Move, Exercise and Stand all 0 or absent is no data for those three outside the
+ベル (`model/health.ts activityOn`); rows are never rewritten. Why: the Shortcut sends 0 for a day without samples,
+which dragged TDEEs and averages down; for the ベル a 0 and a missing value earn alike.
 
 ### Goal directions
-One registry (`contract/goals.ts` GOALS) holds every chart's goal: its pref, range, history and direction (at least, at
-most, or near a value), read by the record, the model and the screens. Exercise and Stand goals are けんこう's lines only;
-the ベル keep the fixed 60 / 120. Why: a chip that says which way reads at a glance, and a lower weight is never rewarded.
+One registry (`contract/goals.ts` GOALS) holds every chart's goal and its direction (at least, at most, or near a
+value); Exercise and Stand goals are 健康's lines only, the ベル keep 60 / 120. Why: a chip that says which way reads at
+a glance, and a lower weight is never rewarded.
 
 ### Low kcal goals: warn, allow
 <a id="low-kcal-goals-warn-allow"></a>A kcal goal under resting energy or the safe floor (1,500 kcal a man, 1,200 a woman
@@ -114,9 +112,8 @@ snapshot of the food, edited only by its logger, seen by everyone, never earning
 change's past never changes. Why: the calorie tracker in the island, with history that never rewrites itself.
 
 ### Fibre and alcohol
-食物繊維 and アルコール are optional snapshot keys (`fi`, `al`), kept only when the source says; alcohol counts only drinks.
-Default goals: fibre by the 食事摂取基準 2025, alcohol at most 20 g (健康日本21's 「節度ある適度な飲酒」). Why: unknown never
-reads as zero, one plain national line, and nothing older changes.
+食物繊維 and アルコール are optional snapshot keys (`fi`, `al`), kept only when the source says; default goals from the
+食事摂取基準 2025 and 健康日本21 (alcohol at most 20 g). Why: unknown never reads as zero, and one plain national line.
 
 ## Economy
 
@@ -141,11 +138,9 @@ Sunday 19:30 the recap opens (ceremony only); the Wednesday 04:00 after, the wee
 ([design](design.md#harvest-and-lock)). Why: a grace period for late syncs, then the past stays put.
 
 ### A wallet each, two rewards
-Each person earns into and buys from their own wallet (ふたりでぜんぶ split +1 each), two treats, おやつ 20 and 外食 35
-([design](design.md#rewards)); either person erases any buy (`spend_void`). Each wallet is its owner's own earnings
-from the economy's first day, never a shared pot split in two; a buy may name the day it was for (`day`, up to 14 days
-back). Why: each earns and spends their own, at prices halved for one wallet (an old buy keeps its price), and a treat
-logged late is judged by that day's wallet.
+Each person earns into and buys from their own wallet, its owner's earnings from the economy's first day, two treats
+at halved prices ([design](design.md#rewards)); either person erases any buy, and a buy may name its day. Why: each
+earns and spends their own, an old buy keeps its price, and a treat logged late is judged by that day's wallet.
 
 ### Weight never earns
 Shown only, with an optional goal. Why: paying for kilograms rewards crash diets and punishes muscle.
@@ -159,9 +154,8 @@ catch.
 ## App and hosting
 
 ### PWA on Cloudflare Pages
-A static SvelteKit SPA at https://island-fund.pages.dev, deployed from CI after the gate, with a strict CSP and security
-headers ([runbook §1](ops/runbook.md#1-deploy-the-ui)); without a key it shows only pairing or `?demo`; no key or data
-in the repo. Why: the pairing key is in localStorage, so the origin must be ours alone, and Pages can set headers.
+A static SvelteKit SPA on Pages, deployed from CI after the gate, with a strict CSP ([runbook §1](ops/runbook.md#1-deploy-the-ui));
+without a key it shows only pairing or `?demo`. Why: the pairing key is in localStorage, so the origin must be ours alone.
 
 ### Offline shell
 The service worker precaches the build (not audio, art beyond the defaults or the trip photos), opens this version's
@@ -207,9 +201,8 @@ The outdoors (terrain per tile with cliff tiers, objects, three homes) is `layou
 island fully customisable on the tent's grid, through one record path.
 
 ### The ground is built on the phone
-The ground's geometry and painted look are baked on the phone from the layout's distance fields, again only where a
-change lands ([island layout](island-layout.md#the-3d-ground)). Why: a layout the members change can't ship pre-baked
-textures, and painting live every frame would cost what a bake costs once.
+The ground's geometry and painted look are baked on the phone from the layout, again only where a change lands
+([island layout](island-layout.md#the-3d-ground)). Why: an editable layout can't ship pre-baked textures.
 
 ### Decor is a last-writer-wins map, the record keeps each item's latest op
 Each change of a decoration is one op with the item's whole state or its removal, merged by id (a removal beats
@@ -223,8 +216,8 @@ its front wall; a shrink that would leave a piece outside is refused ([The tent]
 ever lost, and old phones and old rows keep working.
 
 ### Buildings are doors
-The tent, the homes, the museum and the shop open their own screens; a tap on the door walks my villager up, then in.
-Why: NH's buildings, and the back of the island gets reasons to visit.
+The tent, the homes, the museum and the shop open their own screens; a tap on the door walks up, then in. Why: NH's
+buildings, and the back of the island gets reasons to visit.
 
 ### Only a tap on empty ground walks my villager
 A tap on an interactable acts in place (my villager turns to it); a tap on bare ground runs it there; a door, the board
@@ -236,8 +229,7 @@ bench two); nothing new crosses the relay. Why: one behaviour indoors and out.
 
 ### Ambient life from the clock
 What the island does on its own is a function of the Tokyo date, the 10-second slot and the shared world, on the relay's
-clock (`island/ambient.ts`, [backend](backend.md#ambient-life)). Why: every phone shows the same outings, visitors and
-critters with no messages, no leader and nothing stored.
+clock ([backend](backend.md#ambient-life)). Why: every phone shows the same life with no messages and nothing stored.
 
 ### A shared world: the seed for what comes, the relay for what we do
 What comes by itself is a function of the date, slot and place; what a person does is a small intent the room keeps
@@ -303,8 +295,7 @@ The relay fetches Open-Meteo's JMA forecast on its cron and keeps a 48-hour time
 one fetch for every phone, hours locked once begun so phones agree.
 
 ### Rain and snow in the world
-What falls is instanced in the 3D island, one draw call each, moved in the vertex shader. Why: NH's rain has depth, at no
-CPU per particle.
+Rain and snow are instanced, one draw call each, moved in the vertex shader. Why: depth, at no CPU per particle.
 
 ### A player walks half as fast again
 A player's villager runs at 300 u/s and walks to an action at 360; strolls, visitors and critters keep their pace. Why:
@@ -407,13 +398,12 @@ The English listening game's decisions in force; detail in [kikimimi](kikimimi.m
   Why: nothing heavy before it's opened.
 - **The host is the clock:** the host's `skip` is its position, beaconed every 3 s; every phone adopts it. A lobby is
   local until 「誘う」. Why: a computed schedule drifted after one lost message.
-- **Modes and options ride on the seed's bits** (たいせん, スピード はしご, the answer timer), and the host picks the least
-  repeated of 24 seeds. Why: no relay deploy, and every phone deals the same deck.
+- **Modes and options ride on the seed's bits**, the host picking the least repeated of 24 seeds. Why: no relay
+  deploy, and every phone deals the same deck.
 - **A level shows only when every item has a clip.** Why: the clips are the readiness signal, nothing to flip.
 - **American English first;** UK/AU only as tagged accent exposure (≤ 10 %) at やま and ほし. Why: the learners' target,
   with a little variety at the top.
-- **Audio in packs** (whole m4a files with a byte index), each fetched whole and once, its clips cut from it; Pages
-  static, no R2. Why: Pages' 20,000-file limit, and few refetches when a clip changes.
+- **Audio in packs**, each fetched whole and once, on Pages (no R2). Why: Pages' 20,000-file limit.
 - **`play` beside `quiz`:** later games send `play`; the quiz too since every phone runs a build that knows it
   (`QUIZ_ON_PLAY`). Why: an older phone must still hear it.
 - **The microphone** is off by default and per phone; recordings stay in memory for their round; recognition runs on the

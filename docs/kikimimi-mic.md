@@ -10,9 +10,8 @@ phone first; no free LLM conversation. The game itself is [kikimimi.md](kikimimi
   the input. Earphones recommended on every mic screen.
 - American English only (`voice === 'us'` items). No かいがら and no new reward: the payoff is in the round (the
   villager's reaction, the contour, the sentence ladder).
-- Japanese help on every screen: `ctx` before; `ja`, `why` and `note` after; feedback in Japanese. Sheet text in
-  kanji;
-  character speech in spaced kana (`kiki.mane.react.close`).
+- Japanese help on every screen: `ctx` before; `ja`, `why` and `note` after; feedback in Japanese, sheet text in kanji,
+  character speech in spaced kana.
 - **Words, never "nativeness":** speech to text checks whether you were understood. The target sentence is never given
   to the recogniser as a prompt (priming makes it hear what we expect); it's used only to compare afterwards.
 - iPhone Safari (15 and 16, home-screen PWA). Mic buttons ≥ 72 px, tap to start, auto-stop on silence or a tap; they
@@ -32,22 +31,12 @@ device proves only the logic).
 設定's マイク診断（テスト） (a small row under マイクを使う) opens `mic/MicProbe.svelte` (lazy), kept for re-runs after an iOS update:
 one screen a step, one button, a skip and a plain result line, about 6 minutes.
 
-| # | Step | Measures | You do |
-|---|---|---|---|
-| 1 | 環境 | standalone, `crossOriginIsolated`, `navigator.gpu` (page + Worker), `shader-f16`, `webkitSpeechRecognition`, `audioSession`, MediaRecorder types, AudioWorklet | nothing |
-| 2 | マイクの許可 | permission state, ms to grant, track settings, input class; on the next launch, whether it asked again | taps 許可; later, 聞かれた / 聞かれなかった |
-| 3 | 再生と録音 | per route (none / wired / AirPods): bleed with echo cancellation on and off, round-trip ms, the built-in mic with AirPods, the session restored | puts earphones on or off; rates the clip |
-| 4 | Whisper（約 70 MB） | download, load (WebGPU, WASM), latency and WER on 3 pinned clips' PCM (decoded, never played), then on the 3 sentences spoken | taps ダウンロード (Wi-Fi); speaks 3 sentences |
-| 5 | Safari の音声認識 | exists, error, prompt, ms, WER, coexistence with capture | speaks the 3 sentences |
-| 6 | サーバーで文字起こし | round trip, WER | taps 送る (disclosed) |
-| 7 | 結果 | a table on screen; 「結果を送信」 posts the events | taps |
-
-The sentences are 3 pinned US clips (lib/mic/probe/steps.ts `SENTENCES`). The WER is computed on the phone (match.ts);
-heard text shows on screen only. **The log events** `mic.env`, `mic.perm`, `mic.duplex` and `mic.stt` (`src: 'c'`;
-numbers, booleans, closed sets: their fields in contract/log.ts's registry).
-
-The relay adds `stt` (`src: 'r'`: `ms`, `inB`, `model`, `ok`, `err`). Read with
-`npm run logs -- --event mic. --since 1d --json` and `--event stt`.
+The steps (lib/mic/probe/steps.ts, each measuring what its header says): 環境 (the browser's capabilities), マイクの許可,
+再生と録音 (bleed and round trip per route: none, wired, AirPods), Whisper (download, load, latency and WER on 3 pinned
+US sentences, then spoken), Safari の音声認識, サーバーで文字起こし (disclosed), 結果 (「結果を送信」 posts the events). The
+WER is computed on the phone; heard text shows on screen only. **The log events** `mic.env`, `mic.perm`,
+`mic.duplex` and `mic.stt` are numbers and closed sets (contract/log.ts); the relay adds `stt`. Read with
+`npm run logs -- --event mic. --since 1d --json`.
 
 **The decision rule**, to be set from both phones' runs (until then: kikimimi.md "Open items"):
 1. whisper in the page if a 5 s utterance is transcribed in ≤ 2 s (WebGPU, else WASM) and the spoken WER is ≤ 0.20;
@@ -115,10 +104,8 @@ teen/ty, final consonants).
   local test.
 - **Co-op 「あてっこ」:** role i % 2 sees the word and says it; the other hears it live and taps the picture (a human ear is
   the best judge). The team's `kiki.pair.score`, no per-person figure.
-- **Content:** app/content/mic/pairs.yaml, 36 pairs (r/l 7, b/v 4, th 4, s/sh 1, vowels 8, teen/ty 7, final consonants
-  5), each with a US villager, `ctx`, `why`, two words with a kanji label, a reading, an emoji, an everyday line and a
-  mouth tip; compiled to `parts/mic-pairs.json`. 72 clips, each word alone (`<pair>-1`, `-2`), the best of ten seeds
-  by UTMOS among the takes whisper heard as written, in their own pack `mic-pairs`.
+- **Content:** app/content/mic/pairs.yaml, 36 pairs (its header has the fields), compiled to `parts/mic-pairs.json`;
+  72 clips, each word alone, the best of ten seeds among the takes whisper heard as written, in the pack `mic-pairs`.
 
 ### ふたりで ロールプレイ
 
@@ -131,8 +118,7 @@ teen/ty, final consonants).
 - **A turn:** a round with no clip (`play` 0, `quietReveal`), untimed, the reveal `auto`. The speaker's answer is the
   mask (bits 0–5 the phrases, bit 6 spoken; マイクなしで次へ always); the other phone acks (255). cv: the unit's lesson cv,
   `BUILD_V.role` and the scene's dialogues.
-- **Consent:** joining is the consent (no wire field). Before joining, the invitee's phone asks before it uses the mic
-  (参加する / やめる); a phone with the mic off can't join.
+- **Consent:** joining is the consent; the invitee's phone asks first (参加する / やめる), and with the mic off can't join.
 - Files: games/role/ (scenes.ts, def.ts, lane.ts), components/kikimimi/role/ (RoleLobby, RolePlay, RoleResults,
   MicJoin; the mic: mic/TalkButton); group `together` (the みんなで picker only).
 
@@ -153,40 +139,18 @@ recommended).
 
 ### Files
 
-```
-app/src/lib/mic/
-  capture.ts, capture.worklet.js, vad.ts   getUserMedia → the voice's context → the worklet; 16 kHz mono; the VAD
-  session.ts, stt.ts, pick.ts              one take at a time ("Audio session"); the Recogniser; the backend choice
-  match.ts, pitch.ts, prosody.ts           the text comparisons; f0, the envelope and the comparison (pure)
-  models.ts                                the pinned manifest (files, bytes, sha256, parts); ensureStt
-  backends/, probe/                        whisper (and its worker), webkit, relay, stub; the probe's steps
-app/src/lib/components/kikimimi/mic/   MicProbe, MicOptIn, MicButton (72 px, ring meter), MicAnswer, Contour, sttRound.ts
-app/src/lib/kikimimi/games/modes.ts   the mic modes' metas and gates
-app/src/lib/kikimimi/games/{mane,kuri,pair,role}/ and components/kikimimi/{mane,kuri,pair,role}/
-app/content/mic/pairs.yaml; app/scripts/stt-models.ts (the pinned files: fetch, verify, split); relay/src/sttRoute.ts
-```
+`app/src/lib/mic/` (capture and the VAD, `session.ts` one take at a time, `stt.ts` the Recogniser, `pick.ts` the
+backend choice, `match.ts`, `pitch.ts` and `prosody.ts` pure, `models.ts` the pinned files, `backends/`, `probe/`),
+`components/kikimimi/mic/`, `kikimimi/games/modes.ts` and the games' folders (mane, kuri, pair, role),
+`app/content/mic/pairs.yaml`, `app/scripts/stt-models.ts`, `relay/src/sttRoute.ts`. Each file's header has its part.
 
 ### The Recogniser
 
-```ts
-// lib/mic/stt.ts
-export type Backend = 'whisper' | 'webkit' | 'relay' | 'stub';
-export interface Heard { text: string; words?: readonly { w: string; t0: number; t1: number }[];
-  /** per candidate, a log-probability (whisper only) */ cand?: readonly number[]; ms: number; be: Backend }
-export interface Hint { maxS?: number; candidates?: readonly string[]; frame?: (v: VadState) => void }   // never the expected sentence
-export type Outcome = Heard | { miss: Miss; be: Backend };
-export interface Take { readonly level: number; readonly heard: Promise<Outcome>; stop(): Promise<Outcome>; cancel(): void }
-export interface Recogniser {
-  readonly be: Backend;
-  ready(progress?: (got: number, of: number) => void): Promise<boolean>;   // whisper: the download if missing, the load
-  listen(h?: Hint): Take;    // inside a tap; whisper/relay/stub capture through session.ts, webkit runs its own
-  dispose(): void;
-}
-```
-
+`lib/mic/stt.ts` (the types there): a `Recogniser` (`whisper`, `webkit`, `relay` or `stub`) is readied once, then each
+`listen(hint)` inside a tap is a `Take` whose `heard` never rejects: a `Heard` (text, word times, whisper's per-candidate
+scores) or a `{ miss }`. A hint never carries the expected sentence.
 - The modes see only `Heard` and match.ts: swapping the backend changes no game. `Heard.text` lives in the round's
-  memory only. `heard` never rejects: a `Heard`, or `{ miss }`: none, aborted, denied, capped (429), off, unpaired,
-  network, timeout, oom, service-not-allowed or other.
+  memory only.
 - `recogniser(be?)`: the stub under `e2e.stt`; else, mic on, pick.ts's choice (whisper only once its model is on the
   phone: a round never downloads; Safari and the relay only when picked by hand). One recogniser and one take at a
   time; `release()` when the sheet closes.
@@ -235,20 +199,14 @@ picker's `kiki.role.join.offTitle`). Every mic page gets its recogniser through 
 - **CSP:** `connect-src 'self'` covers `/stt/*`; `script-src 'self' 'wasm-unsafe-eval'` covers ort's wasm. No new
   origin: transformers.js's remote models are off, its paths point at `/stt/`, and the worker refuses any fetch
   outside it. **Permissions-Policy:** `microphone=(self)`.
-- **Pinned** (lib/mic/models.ts: the model's revision, the runtime's version, every file's bytes and sha256):
-  whisper-tiny.en q8 and onnxruntime-web, ~70 MB in all, transformers.js exact (package.json's overrides replace its
-  Node-only deps with an empty package). A file over Pages' 25 MiB is split into parts, all listed in
-  `/stt/manifest.json`. ensureStt fetches what's missing after the opt-in, assembles, checks the sha256 and
-  keeps each file whole in `island-stt-v1`. Paths carry the revision; manifest.json is revalidated.
-- **Hosting:** Pages static files, no R2 (decided). pages.yml's deploy restores them from an Actions
-  cache keyed on the pins (filled on a miss by stt-models.ts) into the site's `stt/` (never in git or the artifact)
-  and checks the live manifest; `_headers` (scripts/headers.ts) makes `stt/<dir>/` immutable and its parts
-  application/x-protobuf (compressed: 70.5 → 30.4 MB on the wire, measured live), and `manifest.json` keeps Pages'
-  revalidation.
-- **The service worker:** caches.ts `isStt` (`/stt/` and `workers/stt.<hash>.js`, named by vite.config.ts's
-  `stt-names` rule) and `STT_CACHE`; out of the precache; served cache-first and never stored by the SW (the page
-  fills it on the download); 設定's delete removes it. A phone that never opts in downloads 0 bytes of it. **Budgets:**
-  load-budget.ts keeps `lib/mic/` and MicProbe out of the first load and the worker ≤ 450 KB gz.
+- **Pinned** (lib/mic/models.ts: revisions, bytes and sha256): whisper-tiny.en q8 and onnxruntime-web, ~70 MB in
+  all; a file over Pages' 25 MiB is split into parts (`/stt/manifest.json`). ensureStt fetches what's missing after
+  the opt-in, checks the sha256 and keeps each file whole in `island-stt-v1`.
+- **Hosting:** Pages static files, no R2 (decided), restored at deploy from an Actions cache keyed on the pins (never
+  in git); `_headers` makes `stt/<dir>/` immutable and compressed (70.5 → 30.4 MB on the wire, measured live).
+- **The service worker:** caches.ts `isStt`, out of the precache, cache-first, filled by the page's download; 設定's
+  delete removes it. A phone that never opts in downloads 0 bytes of it. **Budgets:** load-budget.ts keeps `lib/mic/`
+  and MicProbe out of the first load and the worker ≤ 450 KB gz.
 
 ### Audio session
 
@@ -262,16 +220,11 @@ picker's `kiki.role.join.offTitle`). Every mic page gets its recogniser through 
 
 ### Tests
 
-- **vitest (pure):** pitch, prosody and vad on synthetic signals (glides of known f0, pulse trains, a rise against a
-  fall); match.ts; pick.ts; models.ts (parts, sha check, ensureStt's cache); stt.ts; each GameDef; caches.test
-  `isStt`; relay stt.test (auth, sizes, the cap, a chunked body cut off, nothing kept); log.ts accepting `mic.*` and
-  refusing text.
-- **e2e:** the Playwright project `chromium-mic` (`kikimimi-mic*.spec.ts`: probe, optin, mane, kuri, reply, pair,
-  role) with Chromium's fake media device on a committed clip, `--mute-audio` (no audio plays on the dev Mac), no
-  network, and the stub recogniser via `localStorage['e2e.stt']` (a JSON list of what it hears, one entry a take;
-  pick.ts `stubbed()`, `stubScript()`, `stubNext()`). **Not tested:** loading whisper, WebGPU, or the analysis's
-  numbers; the real model was checked once by hand in local Chromium. Rendering and feel are judged on the iOS
-  Simulator and the phones.
+- **vitest (pure):** pitch, prosody and vad on synthetic signals; match.ts; pick.ts; models.ts; stt.ts; each GameDef;
+  relay stt.test (auth, sizes, the cap, nothing kept); log.ts refusing text.
+- **e2e:** the Playwright project `chromium-mic` (`kikimimi-mic*.spec.ts`) with Chromium's fake media device on a
+  committed clip, `--mute-audio`, no network, and the stub recogniser via `localStorage['e2e.stt']` (pick.ts). **Not
+  tested:** loading whisper, WebGPU, or the analysis's numbers. Rendering and feel are judged on the phones.
 
 ## The privacy rule
 

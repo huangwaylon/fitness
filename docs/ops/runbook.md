@@ -8,11 +8,9 @@ Two pieces, no server of our own:
 How it works: [backend.md](../backend.md). Code and workflows cite these sections by number: renumber them together.
 
 ## 1. Deploy the UI
-Push to `main`. Any change under `app/**` (or to the workflow) runs *Deploy UI* (`.github/workflows/pages.yml`): the
-checks and the gate's e2e (4 shards in logic mode, each building) side by side, then the deploy to Cloudflare Pages and
-a check that the site answers this build with its headers; after it, the full logic tier (6 shards). The jobs, the
-gate's selection and the flaky ledger: [testing.md](testing.md#ci-githubworkflowspagesyml). `health.yml` checks the
-site every 6 hours too.
+Push to `main`. Any change under `app/**` runs *Deploy UI* (`.github/workflows/pages.yml`): the checks and the gate,
+then the deploy and a check that the site answers this build; after it, the full logic tier. The jobs:
+[testing.md](testing.md#ci-githubworkflowspagesyml).
 
 **Cloudflare Pages:** the project `island-fund` on the umeway1122@gmail.com account (direct upload, no Git integration:
 this workflow is the gate). CI needs two repo secrets: `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` (dash.cloudflare.com
@@ -20,27 +18,24 @@ this workflow is the gate). CI needs two repo secrets: `CLOUDFLARE_ACCOUNT_ID` a
 resources: that one account; then `gh secret set CLOUDFLARE_API_TOKEN` and `gh secret set
 CLOUDFLARE_ACCOUNT_ID`). By hand, from `app/`: `npm run build`, then `npx wrangler pages deploy build-pages
 --project-name island-fund --branch main` (any `--branch` but `main` is a preview at `<branch>.island-fund.pages.dev`).
-The headers (CSP, nosniff, no-referrer, Permissions-Policy, HSTS, the immutable cache, the packs and the recogniser's
-parts as application/x-protobuf so Cloudflare compresses them) are `build-pages/_headers`, written by the build ([testing.md](testing.md) "The headers"). The build also copies `index.html` to `404.html` on
-purpose: with a top-level `404.html` Pages answers a missing file (an old build's chunk, an asset) with a real 404, not
-its single-page fallback's `index.html` and 200, which the app's stale-chunk reload relies on.
+The headers are `build-pages/_headers`, written by the build (`scripts/headers.ts`). The build also copies
+`index.html` to `404.html` on purpose: Pages then answers a missing file (an old build's chunk) with a real 404, which
+the app's stale-chunk reload relies on, not its single-page fallback's 200.
 
-A red gate stops the deploy; pull requests run the gate without the deploy. After the upload: a **Pages alias lag**
-warning (the deployment's own URL serves the build, island-fund.pages.dev not yet after 6 min) needs nothing, it
-catches up (check the site later); **Deploy not served** (red: neither URL serves it) means the upload didn't take:
-re-run the job, then look at `wrangler pages deployment list` in its log. Re-run: Actions → *Deploy UI* →
-**Run workflow**. Before a model change, also run `npm run bench` (year 3 compacted ≤ 15 ms).
+After the upload: a **Pages alias lag** warning needs nothing, it catches up; **Deploy not served** (red) means the
+upload didn't take: re-run the job (Actions → *Deploy UI* → **Run workflow**), then look at
+`wrangler pages deployment list` in its log. Before a model change, also run `npm run bench` (year 3 compacted ≤ 15 ms).
 
 ## 2. Check the backend
 ```sh
 curl -sS https://island-fund-relay.island-fund-relay.workers.dev/health                     # the Worker and the room
 curl -sS https://island-fund-relay.island-fund-relay.workers.dev/api --data '{"action":"health"}'   # the record
 ```
-Both `{"ok":true,…}`. `.github/workflows/health.yml` runs these every 6 hours (and on demand) and fails (GitHub e-mails
-the owner) unless both are ok, and opens an `alert` issue when the log spikes (§11). The relay's `wx` is the real
-weather ([backend](../backend.md#the-real-weather)): `age` (minutes since the last good fetch; `/health` asks the room
-once a minute) under ~35 and `hours` ahead over 30 is normal. An older one or `fails` > 0 means Open-Meteo is failing (`npx wrangler tail` shows `wx-fail <why>`); the phones keep the last timeline for 36
-hours, then the game's weather. The workflow warns past 3 hours. A fetch now: the signed `/admin` op
+Both `{"ok":true,…}`. `.github/workflows/health.yml` runs these every 6 hours and fails (GitHub e-mails the owner)
+unless both are ok, and opens an `alert` issue when the log spikes (§11). The relay's `wx` is the real weather
+([backend](../backend.md#the-real-weather)): `age` (minutes since the last good fetch) under ~35 and `hours` ahead over
+30 is normal; older, or `fails` > 0, means Open-Meteo is failing (`npx wrangler tail`: `wx-fail <why>`); the phones
+keep the last timeline 36 hours, then the game's weather. The workflow warns past 3 hours. A fetch now: the signed `/admin` op
 `{"op":"wx","refresh":true}` (`relay/scripts/admin.ts` `signed()`, as `relay/scripts/smoke.ts` sends it).
 
 The Free plan's tightest limit is likely its 100k rows written a day: `npm run logs -- stats` (from `relay/`) says
@@ -64,9 +59,7 @@ screen).
 
 ## 4. A new epoch (rev)
 The record's `rev` (`e1`, `e2`, …) is the data revision: when it changes, each phone drops its cache and refetches
-every row on its next sync (an open phone at once: a new epoch sends `changed`). Nothing changes it but a restore
-(§9: a new epoch follows by itself a few seconds after the restart) or `node scripts/record.ts rev` (nobody edits the
-record by hand; run it after a restore whose reply says the room wasn't told).
+every row (an open phone at once). Only a restore (§9) or `node scripts/record.ts rev` changes it.
 
 ## 5. When sync fails
 | Symptom | Check |
@@ -95,15 +88,14 @@ re-sent: [shortcut §5](shortcut-health-sync.md#5-one-time-baseline-optional)). 
 
 - **Point-in-time recovery** (the Durable Object's, on the Free plan, the last 30 days): §9 `bookmark` / `restore`.
 - **The daily dump, on the relay** (`relay/src/archive.ts`): at 03:00 Tokyo the cron (`0 18 * * *`) hands it to the
-  record's alarm, which dumps it (the file `record.ts dump` writes), encrypts it with age to the public key in
+  record's alarm, which dumps it (as `record.ts dump`), encrypts it with age to the public key in
   `ARCHIVE_RECIPIENT` and uploads `island-record-YYYY-MM-DD.json.age` to the `dumps` release of the private
-  `huangwaylon/fitness-archive` (the test relay: `dumps-test`), replacing that day's; the last 90 are kept. A failure is
-  retried after 30 min, doubling to 6 h. The log's `cron.backup` says each run (`npm run logs -- --event cron.backup`);
-  the alert ([observability](observability.md#the-alert)) flags none good in 48 h. By hand: `node scripts/record.ts
+  `huangwaylon/fitness-archive` (the test relay: `dumps-test`); the last 90 are kept, a failure retried. The log's
+  `cron.backup` says each run; the alert ([observability](observability.md#the-alert)) flags none good in 48 h. By hand: `node scripts/record.ts
   backup [--test]`.
   - **The token:** `ARCHIVE_TOKEN`, a fine-grained GitHub token for that repo only, *Contents: Read and write*
-    (Metadata read comes with it). `npx wrangler secret put ARCHIVE_TOKEN` from `relay/` (and `--env test`); unset,
-    each run logs `no_token` and uploads nothing. Rotate it the same way before it expires.
+    `npx wrangler secret put ARCHIVE_TOKEN` from `relay/` (and `--env test`); unset, each run logs `no_token`.
+    Rotate it the same way before it expires.
   - **Read one:** `gh release download dumps -R huangwaylon/fitness-archive -p island-record-YYYY-MM-DD.json.age`, then
     `age -d -i ~/.config/island-fund/archive-age.key island-record-YYYY-MM-DD.json.age > record.json` (the secret key is
     only on the Mac and in the password manager).
@@ -129,17 +121,14 @@ umeway1122@gmail.com account. Once per machine: `npx wrangler login`. Then, from
 1. `npm ci`, `npm run check`, `npm test`.
 2. `npm run deploy:test`, then `npm run smoke` (the test copy; its keys are in the gitignored `relay/.smoke-keys`,
    `KEY_A=…`/`KEY_B=…` lines; new ones: `openssl rand -hex 32` twice, then `npx wrangler secret bulk .smoke-keys --env
-   test`). Every line should say `ok`, including the `/notify` checks (a signed one reaches both test clients; an unsigned or
-   6-minute-old one gets 401), the admission (a socket without its ticket, or with one under an unknown key, is
-   refused: the smoke's clients make tickets) and the log's.
+   test`). Every line should say `ok` (the `/notify` signature, the sockets' admission, the log).
 3. `npm run deploy` (production), only from a commit that is on `origin/main` (push first: the Durable Object
    migrations are the account's, so a deploy from a branch blocks everyone else's from main). §2's `/health` →
    `ok:true`.
 
-**Keys:** §3 (open sockets keep their session until they reconnect). **Logs:** the log (§11, `npm run logs`); live: `npx wrangler tail`. There is no off switch: the relay
-is the record (never `npx wrangler delete`: it deletes the record's Durable Object); the log alone turns off with
-`LOG_OFF` (§11). A protocol change (`live-protocol.ts`) needs the relay
-deployed before the app: an older relay refuses the new kinds.
+**Keys:** §3. **Logs:** §11; live: `npx wrangler tail`. There is no off switch: the relay is the record (never
+`npx wrangler delete`: it deletes the record's Durable Object). A protocol change (`live-protocol.ts`) deploys the
+relay before the app: an older relay refuses the new kinds.
 
 ## 9. The record
 The record is the relay's `IslandStore` Durable Object ([backend.md](../backend.md#the-record)). Every command runs from
@@ -149,10 +138,8 @@ keys; without either, the keys file: §3). It signs `POST /admin` with the serve
 
 - **`counts`**: rows per table, the revision (`e1`, `e2`, …: the epoch), the newest `at`.
 - **Backups** (what they are: §6): `bookmark [ms]` prints the bookmark now and `ms` ago (any moment of the last 30
-  days); `restore <bookmark>` restarts the object on it. Until the restart every request is answered `unavailable`,
-  which the phones retry (nothing acknowledged is then dropped; a Shortcut run in those seconds is covered by its next
-  one). The room calls the restored record ~5 s later (every 30 s, 10 tries) to start a new epoch; only when the
-  reply's `note` says the room wasn't told, run `rev` yourself. `dump > island-record-YYYY-MM-DD.json` (every row, the
+  days); `restore <bookmark>` restarts the object on it (requests meanwhile get `unavailable`, which the phones
+  retry). The room starts a new epoch ~5 s later; only when the reply's `note` says the room wasn't told, run `rev`. `dump > island-record-YYYY-MM-DD.json` (every row, the
   held values too, 10,000 rows a page; keep it off the repo) and `load <file>` into an empty record.
 - **`rev`**: a new epoch: every phone drops its cache and fetches everything on its next refresh.
 - **`counts`** also says `schema_v` (the record's migrations run). The admin ops `shopcheck

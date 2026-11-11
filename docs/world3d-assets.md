@@ -9,9 +9,8 @@ manifest itself; this doc keeps the pipeline, the rules and a summary.
 The source is NH's 2.0.0 export (archive.org `acnh-2.0.0-models`, `ACNH_2.0.0_Exported_Model_DAE+PNG.7z`, md5
 4c42817a…: 57,822 `<Model>.Nin_NX_NVN` folders of .dae and PNG), extracted to `~/Downloads/acnh-2.0.0-models/Model`.
 
-- Every converter looks a folder up by its exact name (`scripts/nh-folders.ts`): a name that matches only in another
-  case (the sheet's `FtrPressbench` for the export's `FtrPressBench`) fails the run, since a case-sensitive disk has
-  no such folder; room-models.ts's SHEET_CASE spells the sheet's few that way as the export does.
+- Every converter looks a folder up by its exact name (`scripts/nh-folders.ts`: a case-only match fails the run;
+  room-models.ts SHEET_CASE spells the sheet's few as the export does).
 - `scripts/world3d-assets.ts`: the map (art key → NH model folder, the conversion's options, the key's scale and
   anchor). `scripts/world3d-models.ts` converts them: NH's materials baked into one WebP each (≤ 128 px for small
   things, 256 for furniture, 512 for the tent and the countdown board), merged per material, quantised and
@@ -24,8 +23,8 @@ The source is NH's 2.0.0 export (archive.org `acnh-2.0.0-models`, `ACNH_2.0.0_Ex
   transcoder, what it needs): the island draws KTX2 (`world3d/ktx2.ts`: ASTC on an iPhone, kept transcoded in
   IndexedDB); the WebPs stay for the museum's own models, the tent's furniture and a fallback. `world3d/ktx2.test.ts`
   fails until it's run after a model, a home or a player part changes.
-- See-through two-sided parts (glass, curtains, a critter's fade, the particles) are two meshes, one a side
-  (`world3d/sides.ts`): three's own two passes re-derive the program twice a draw every frame. The same pixels.
+- See-through two-sided parts (glass, curtains, a critter's fade) are two meshes, one a side (`world3d/sides.ts`):
+  three's own two passes re-derive the program twice a draw.
 - **Validation:** `node scripts/world3d-sheet.ts [-- --only=bug,fish] [-- --night]` draws every model at its world
   scale beside an 80u villager card, at the island's 30° pitch, to `/tmp/world3d-assets/sheet-<kind>-<n>.png`;
   `world3d/assets.test.ts` holds each file to its kind's budget; the editor's `?check` lists what isn't drawn as a
@@ -33,15 +32,10 @@ The source is NH's 2.0.0 export (archive.org `acnh-2.0.0-models`, `ACNH_2.0.0_Ex
 
 ## The manifest (assets.json)
 
-- `models`: per model its bounds (model units), triangles, KB, content hash (`?v=`), `lit` (an emissive: lights at night).
-- `keys`: per art key `m` (the model), `cat`, `s` (world units per model unit), `anchor` (`feet`: the origin on the
-  ground; `centre`: the bounds' centre at a height: a flying bug, a held fish, a balloon; `joint`: NH's hand or head
-  joint: a held tool, a hat, the party glasses), `foot` (tiles of 30u, unturned), `hit` (tap radius, u; at least 12),
-  `shadow` (casts one; not the flat things), `lit`, `yaw` (a decoration's facing: one model for its four facings),
-  `winter` (the key of its winter look), `lazy` (loaded with its group: `bug`, `fish`, `sea` per the month's critters,
-  `event`, `visitor`), `standIn` (another's model).
-- `budgetKb` per kind (`world3d/assets.test.ts` holds every file to it and the whole to 15 MB) and `kb`, the total per
-  kind.
+`models` (per model: bounds, triangles, KB, content hash, `lit`), `keys` (per art key: the model, its scale, `anchor`
+`feet` / `centre` / `joint`, footprint, tap radius, shadow, facing, winter look, `lazy` group, stand-in) and `budgetKb`
+per kind: the fields are typed and explained in `world3d/assets.ts`; `world3d/assets.test.ts` holds every file to its
+kind's budget and the whole to 15 MB.
 
 ## Rules
 
@@ -53,29 +47,24 @@ The source is NH's 2.0.0 export (archive.org `acnh-2.0.0-models`, `ACNH_2.0.0_Ex
   alpha isn't an opacity (the mushrooms', the coconut's) are read raw and made opaque.
 - **Animation:** none in NH's files (bind pose only), so the critters' idle motion stays the runtime's. The visitors'
   arms are lowered from the bind pose.
-- **Effects:** the seasons' falling leaves, petals and snowflakes are NH's own (InsectAutumnLeaf, InsectSakurapetal,
-  InsectSnowCrystal). NH's files have no effect models, so the 「！」, the dust puff, the splash and its ripple, the
-  zzz, the sweat drop, the confetti, the campfire's flame and the lily pad are small stylised meshes in the art's
-  colours, unlit, ~2 KB each (`scripts/world3d-fx.ts`, the `fx/*` keys; flat ones face +z for the runtime to turn);
+- **Effects:** the seasons' falling leaves, petals and snowflakes are NH's own. NH's files have no effect models, so
+  the 「！」, the dust, the splash, the zzz, the confetti, the flame and the like are small unlit stylised meshes,
+  ~2 KB each (`scripts/world3d-fx.ts`, the `fx/*` keys);
   the sparkle is `effects.ts`' star in code; the heart and the ♪ are NH's item icons. Rain and snow have no assets:
   they're drawn in their shaders (`world3d/precip.ts`, design.md "Weather").
 - **Parts split out** (`split` in the map: `scripts/world3d-page.js` splitOff): the weight bench's baked-in barbell is
   lifted into a node of its own, `bar` (assets.json's `part`), so a press can draw the standalone barbell in the hands
   (`world3d/benchBar.ts`).
 - **Packs** (`PACKS` in the map: the camp goods, the food, the gym's newer pieces): one GLB a tab
-  (`static/room/world3d/decor/{camp,food,gym2}.glb`, one KTX2 pack each; the camp tab's second, `camp2.glb`: a pack
-  stays under 400 KB), each member a node named its id
-  (world3d-page.js convertPack, gltfpack `-kn`), a model `decor/<id>` in assets.json with `pack` its file, its key
+  (`static/room/world3d/decor/{camp,food,gym2}.glb` and `camp2.glb`, each under 400 KB, one KTX2 pack each), each
+  member a node named its id (world3d-page.js convertPack, gltfpack `-kn`), a model `decor/<id>` in assets.json with `pack` its file, its key
   made at load (assets.ts packKey); things.ts reads the node out (`member`). island/decor.ts knows them by catalog.ts
-  `packed`, never assets.json (that would pull it into the first load). A member's seat is found on the tent's model
-  of the same NH piece (seat-anchors.ts ISLAND `room`).
+  `packed`, never assets.json (that would pull it into the first load).
 - **The garden** (`GARDEN` in the map; docs/island-layout.md "Fences and the garden"): packs under
-  `static/room/world3d/garden/` (the fences five kinds a file, each kind's six pieces; the crops' stages and soil; the
-  garden's flowers and vines; the cedar's lights), their models in `world3d/garden.json` (`writeGarden`), not
-  assets.json, so the first load never carries them (`world3d/garden.ts` loads it when the island has one). A pack's
-  repeated textures are kept once. NH's remake fences have no albedo: their `_Mix` map's B picks the colour along the
-  gradient's row (`grdMix`, its row the icon's colour, the frozen fence's gray lifted). `node scripts/world3d-sheet.ts
-  --garden` draws each member.
+  `static/room/world3d/garden/` (the fences, the crops' stages and soil, the garden's flowers and vines, the cedar's
+  lights), their models in `world3d/garden.json`, not assets.json, so the first load never carries them
+  (`world3d/garden.ts` loads it when the island has one). NH's remake fences have no albedo: their `_Mix` map picks
+  the colour along the gradient's row (`grdMix`).
 - **Held tools and accessories:** the bug net, the rod and its bobber (NH's wooden ones: the plain ones have no
   textures in the files), the birthday's cake hats and NH's party glasses, at the villagers' scale, `anchor: joint`.
 - The plumeria isn't in NH's files: NH's hibiscus stands in, in the plumeria's white and pink.
@@ -88,14 +77,12 @@ textures), its floors and walls (`tex/`), and its exhibits in packs (each member
 `pack` its file; Cloudflare Pages answers a Range with the whole file, so a pack is fetched whole, and only once one
 of its members is on show):
 
-- **Fossils:** 22 packs, one a skeleton (`fossil-<set>`, 60–300 KB) and `fossils` (the 14 standalone ones), NH's
-  `FtrFossil*` (74 folders: the T. rex's pieces join on their bases as placed side by side), 128 px textures, ≤ 3,000
-  triangles a piece; 3.2 MB in all.
+- **Fossils:** 22 packs, one a skeleton (`fossil-<set>`) and `fossils` (the 14 standalone ones), NH's `FtrFossil*`,
+  128 px textures, ≤ 3,000 triangles a piece; 3.2 MB in all.
 - **Art:** the 43 genuine `FtrArt*` and `FtrSculpture*` (never a `*Fake`): `art-paintings-1|2` (256 px: they're read)
   and `art-statues-1|2` (128 px); 0.8 MB. Their NH icons (`Layout_FtrIcon_*`) at 96 px in `static/art/finds/art/`.
-- **NH's museum-tank variants** (`*Museum`): the 12 sea creatures' (`sea-museum`) and the dung beetle's with its ball
-  (`bug-museum`). NH's fish variants (35) and the ant's and cicada shell's are the catch's own meshes (only their
-  textures differ), so the aquarium and the garden keep the catch models.
+- **NH's museum-tank variants** (`*Museum`): the 12 sea creatures' (`sea-museum`) and the dung beetle's
+  (`bug-museum`); the other variants are the catch's own meshes, so the aquarium and the garden keep the catch models.
 
 ## The rooms' catalogue
 
@@ -111,10 +98,9 @@ isn't yet.
   tank, so it's turned side on and fitted in its container's glass (`fitCritter`); the water and the glass's inner
   faces (NH's shader's) aren't drawn.
 - **Ceiling pieces** hang from their origin (`cl`: the model under it); `items.test` holds all 39 to it.
-- **Wallpapers and floors:** the albedo with NH's overlays flattened over it (a vista's clouds `AlbOry`, a railing in
-  front `AlbEx`; an animated one's first frame): the static look of NH's moving ones (the 68 VFX wallpapers' scrolling
-  and particles, the special walls' own geometry such as an arched window). Their glow (`Emi`, 41 of them: the aurora,
-  the glowing moss, the candles) is an emissive map lit in the dark (night, or the room's light off: engine.ts `glows`).
+- **Wallpapers and floors:** the albedo with NH's overlays flattened over it (`AlbOry`, `AlbEx`; an animated one's
+  first frame): the static look of NH's moving ones. Their glow (`Emi`) is an emissive map lit in the dark (night, or
+  the room's light off: engine.ts `glows`).
 
 The island's outdoor catalogue draws these same room pieces (docs/island-layout.md "The outdoor catalogue"): the
 room's GLB, from its pack or loose, at NH's furniture scale; nothing converted twice.
@@ -123,9 +109,9 @@ room's GLB, from its pack or loose, at NH's furniture scale; nothing converted t
 
 `scripts/room-packs.ts` (run at room-models' end; `--unpack` writes the files back to `.cache/room/`): every piece,
 wallpaper and floor past the starter set and the ずかん's pieces is packed into `static/room/pack/<group>[-k].<hash>.pak`
-(ktx2Pack's container, ≤ 64 KB, ~3-4 models: a room pays a whole pack for each piece it shows; the packs are the only copy): the models by group (housewares, misc, model, wall,
-ceiling, rug, gyroid, critter; a group's series together), the wallpapers' and floors' pictures and glows, and the
-icons of the tabs browsed a tab at a time (rugs, critters, wallpapers, floors; ≤ 160 KB). A file's place `[pack,
+(ktx2Pack's container, ≤ 64 KB, ~3-4 models: a room pays a whole pack for each piece it shows; the packs are the
+only copy): the models by group (a group's series together), the wallpapers' and floors' pictures and glows, and the
+icons of the tabs browsed a tab at a time (≤ 160 KB). A file's place `[pack,
 offset, bytes]` is in `tent/more.json` (`pk`, `tex`, `icons`); the phone cuts it from its pack, fetched whole and once
 (`items.ts` roomPacks: Pages ignores a Range), the service worker keeping it: ~690 packs, ~37 MB. The
 shop's pieces keep loose icons (a day's stock is any 24 of them: their packs would cost more than the icons).
@@ -135,16 +121,11 @@ shop's pieces keep loose icons (a day's stock is any 24 of them: their packs wou
 ## Seats and beds
 
 `villager3d/seats3d.ts`, `seats3d.json`; `npm run seat-anchors` (`scripts/seat-anchors.ts`): every piece a villager
-sits or lies on (the tent's and homes' furniture with NH's `interact`, and the island's park bench, log bench, log
-stools and hammock) has its seat or bed found from its converted model (rays down: `room-surfaces-page.js`;
-`scripts/room-surfaces.ts` seatOf, bedOf), an OVERRIDES table for the odd ones (the hammocks sway; the weight bench:
-`use`), and the gym's pieces used in place (USE: a `u` point, its facing and where one gets on from). A seat: its
-top, its middles across (a sofa's two), its back and front edges and back's height; a bed: the mattress top, the axis
-it's lain along, the pillow's end, a double bed's two places. `anchorsOf(shape, place)` places one; `v.sitAt(anchor)`
-(villager3d.ts) turns, steps on and sits (SIT_MS 420 ms; an arc over a seat's back when it comes from behind), hips on
-the seat, feet down or dangling (poses.ts sitOn), or lies along the bed (a hammock rocks); `sitAt(null)` gets up. The
-tent's seats (`tent/seats.ts`), the museum's benches (`museum/seats.ts`) and the island's (`world3d/villagers.ts`, by
-world.ts SEATS's names) pass their anchors.
+sits or lies on (the rooms' furniture with NH's `interact`, the island's benches, stools and hammock) has its seat or
+bed found from its converted model (rays down: `scripts/room-surfaces.ts` seatOf, bedOf), an OVERRIDES table for the
+odd ones, and the gym's pieces used in place (USE). `anchorsOf(shape, place)` places one and `v.sitAt(anchor)`
+(villager3d.ts) sits or lies there; the tent's seats (`tent/seats.ts`), the museum's benches (`museum/seats.ts`) and
+the island's (`world3d/villagers.ts`) pass their anchors.
 
 A lid (`tent/lid.ts` LIDS, the cold sleep pod's): cut out of the body's mesh at load and turned about its hinge (its
 header: NH ships no clip, bone or shut variant). No re-export.
@@ -152,18 +133,14 @@ header: NH ships no clip, bone or shut variant). No re-export.
 **The pose data** (`seats3d.json` `tent[code]` / `island[model]`, model units, the model's own frame): its schema is
 seats3d.ts's header (`Shape`); a new piece adds one entry and needs nothing else.
 
-The room turns and scales it with its piece (grid.ts `toRoom`, as for the lamps' emitters); one gets on from the
-nearest free side (`tent/seats.ts`: a bed's own side, the other, its foot; a seat's front, then its sides). A piece
-whose seats have no pose isn't offered. `tent/seats.test.ts` checks every one at 4 facings (in the footprint, along
-its axis, the head at the pillow end, on the mattress); a by-eye head goes in its HEAD_PLUS too.
+The room turns and scales it with its piece (grid.ts `toRoom`); one gets on from the nearest free side
+(`tent/seats.ts`); a piece whose seats have no pose isn't offered. `tent/seats.test.ts` checks every one at 4 facings.
 
 ## Lamps' emitters
 
-`npm run room-models -- --emitters`: each of the tent's lights (NH's `lightingType`, 81) gets `e` in items.json, its
-point light's spot in model units: NH's `Light` locator in the game's Collada when it's within the model (`el`: 60),
-else the area- and brightness-weighted middle of its emissive map's lit texels on the converted model (19), else
-EMITTERS by eye (2) (`room-surfaces-page.js` locator, emitter). The two agree within ~0.5 units where both exist.
-items.test checks each inside its emissive part (or its model) at every facing.
+`npm run room-models -- --emitters`: each of the rooms' lights (NH's `lightingType`) gets `e` in items.json, its point
+light's spot: NH's `Light` locator when it's within the model (`el`), else the weighted middle of its emissive map's lit
+texels, else EMITTERS by eye (`room-surfaces-page.js`). items.test checks each inside its emissive part at every facing.
 
 ## Fishing
 
@@ -176,10 +153,9 @@ Their skinned models are converted apart (`scripts/villagers3d-models.ts`, `scri
 `app/static/room/villagers3d/<id>.glb` (458 files, ≤ 100 KB each), posed in code: the villagers, the roster's special
 characters, by `VISITOR_ONLY` (not in the picker) the visitors and the shop's twins (`timmy`: one model for Timmy and
 Tommy), and the guests (island/visitorRoles.ts), loaded only on their day. One whose clothes aren't part of its body
-names its top's mesh and texture there. A material's textures are the ones its Collada effect samples, not the ones
-named after it; the converter fails a villager whose GLB has a material without a base colour where the source has
-one. Each wears its default top's texture (`villager3d.test` holds every material to it). Tulin, Mineru, Cece and
-Viché aren't in the 2.0.0 export: their cards stay.
+names its top's mesh and texture there; the converter fails a villager with a material missing its base colour, and
+`villager3d.test` holds every material to its default top. Tulin, Mineru, Cece and Viché aren't in the 2.0.0 export:
+their cards stay.
 
 ## Players
 
@@ -194,9 +170,9 @@ offset, bytes]`), is in both part tables.
   shape with the first to wear it), ≤ 256 KB a pack; `more-<slot>` (the whole table's other ~4,000 items) and `webp`
   (the WebPs of textures with a KTX2: only a page without a GPU format draws them), ≤ 1.2 MB. A home past its bound
   splits as stably as can be (`lib/packPlan.ts planHome`).
-- **On the phone** (`parts.ts`, `lib/packStore.ts`): any other part is cut from its pack, fetched whole and once (Cloudflare
-  Pages answers a Range with the whole file: a 200), so a first wear costs its packs (A's saved one-piece and hairstyle: two, 0.5 MB, where the loose files were 43 KB), held and kept by the
-  service worker (`island-room-v1`), their other parts free after. A saved コーデ is instant once worn. Offline, a part never fetched is drawn as いつもの's (`player3d.ts wearable`).
+- **On the phone** (`parts.ts`, `lib/packStore.ts`): any other part is cut from its pack, fetched whole and once
+  (Pages answers a Range with the whole file), so a first wear costs its packs; the service worker keeps them
+  (`island-room-v1`). Offline, a part never fetched is drawn as いつもの's (`player3d.ts wearable`).
 - **Sources:** the packs are the only copy in the repo. `npm run player:packs -- --unpack` writes every file loose into
   `app/.cache/player/` (gitignored), the tree `players3d-models.ts` writes there and packs at its end;
   `npm run world3d-ktx2` packs the KTX2s it makes. `player3d/parts.test.ts` checks every place.

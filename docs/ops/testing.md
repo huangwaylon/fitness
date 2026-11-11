@@ -23,10 +23,9 @@ paid, and its macOS VMs draw in software too.
 - **The game clock.** The island's life runs on time, not frames: every position is a function of the time, and the
   World steps itself every 33 ms while anything moves when no drawn frame has (camera.svelte.ts `simTick`), so a slow
   or seldom-drawn picture never slows the game.
-- **The test API.** Specs act and query by id through hooks, not pixels: `__world3d.where(id)`, `client`, `ground`,
-  `things`, `go`, `zoom`, `camStill`, `idle`, `stats`; `__world.put/go/mine`; `__villagers3.*`; `__tent.*`, wrapped by
-  e2e/island.ts (`is3d`, `w3`, `tapOn`, `tapThing`). A new interaction comes with its hook and a `data-*` on its DOM
-  node; a spec reaching for `elementFromPoint` or a fixed coordinate means a hook is missing.
+- **The test API.** Specs act and query by id through hooks (`__world3d`, `__world`, `__villagers3`, `__tent`,
+  wrapped by e2e/island.ts), not pixels. A new interaction comes with its hook and a `data-*` on its DOM node; a spec
+  reaching for `elementFromPoint` or a fixed coordinate means a hook is missing.
 - **Two phones** are two tabs of one context, synced through `sync/live-local.ts` (a BroadcastChannel plays the
   relay's room in-process): no network, deterministic, and in logic mode neither tab draws. Never two drawn 3D tabs in
   one test. The real relay is checked on demand (`RELAY_E2E=1`, `e2e/sync-harness.spec.ts`).
@@ -45,22 +44,17 @@ run *Relay checks*, whose path filter `relay/test/paths.test.ts` keeps in step w
 
 These gate the deploy:
 
-- `checks`, `unit`: `checks`: first the **gate's plan**, once for all its shards (the `gate-plan` artifact, ~20 s in):
-  the selection (`scripts/e2e-impact.ts`), the auto-quarantine (`scripts/e2e-flakes.ts`), the shards
-  (`scripts/e2e-shards.ts plan`, `e2e/timings.json`); then `npm run check`, `npm run knip`, the quarantine's owners
-  (`scripts/e2e-quarantine.ts`) and `scripts/docs-check.ts`. `unit`: `npx vitest run`
-- `e2e-gate` ×4: **the gate's e2e** ("The gate" below) in Chromium (iPhone 13 profile), logic mode, `@render` and
-  `@quarantine` left out, 3 workers each on a 4-core runner (4 made the short waits flaky), 2 on fewer (the private
-  repo's 2-core runners: at 3 the gate timed out), on the build served as Pages serves it (`scripts/serve-build.ts`).
-  Each shard builds (with its budgets: the kikimimi budget, the headers, the precache limit) and waits for the plan's
-  artifact, not for `checks`; shard 1's `build-pages/` is the `site` artifact `deploy` ships
-- `deploy`: `site` to Cloudflare Pages (`wrangler pages deploy`, project `island-fund`). It starts at once (ききみみ's
-  `stt/` from an Actions cache keyed on `src/lib/mic/models.ts`, filled by `scripts/stt-models.ts`; wrangler), takes
-  `site` once shard 1 uploads it, then waits on the gate (`scripts/deploy-gate.ts`: every job in its `GATE` list once
-  and `success`, else red). After the upload, https://island-fund.pages.dev must answer this build
-  (`_app/version.json`, 6 min at most) with its CSP header and the `stt/` manifest. Not by then, but the deployment's
-  own URL serves it: a **Pages alias lag** warning (Cloudflare's, it catches up) and the checks on that URL, green;
-  neither serves it: **Deploy not served**, red. No Cloudflare secret: a warning, nothing deployed
+- `checks`: first the **gate's plan** for all shards (the `gate-plan` artifact: `scripts/e2e-impact.ts`,
+  `e2e-flakes.ts`, `e2e-shards.ts plan`), then `check`, `knip`, the quarantine's owners and docs-check. `unit`:
+  `npx vitest run`.
+- `e2e-gate` ×4: **the gate's e2e** ("The gate" below) in Chromium, logic mode, `@render` and `@quarantine` left out,
+  3 workers on a 4-core runner, 2 on fewer, on the build served as Pages serves it (`scripts/serve-build.ts`). Each
+  shard builds (with its budgets); shard 1's `build-pages/` is the `site` artifact `deploy` ships.
+- `deploy`: `site` to Cloudflare Pages (project `island-fund`) once the gate is green (`scripts/deploy-gate.ts`: every
+  job in its `GATE` list `success`, else red; ききみみ's `stt/` from an Actions cache, `scripts/stt-models.ts`). Then
+  https://island-fund.pages.dev must answer this build (`_app/version.json`, 6 min at most) with its CSP header and
+  the `stt/` manifest: only the deployment's own URL serving it is a **Pages alias lag** warning; neither, **Deploy
+  not served**, red. No Cloudflare secret: a warning, nothing deployed.
 
 After a deploy, never holding one back:
 
@@ -83,29 +77,21 @@ After a deploy, never holding one back:
   the push brought, red; (3) the specs its files **reach**: a changed e2e helper's importers (not island.ts or hud.ts:
   nearly every spec's), a src or content file's by `e2e/impact.json` (path globs to spec names; else the file's own
   name). A file nothing maps adds nothing. The changes count from the commit live on the site, not the push before
-  (runs get superseded); a base force-pushed away, from where it and HEAD meet; no base, a base meeting HEAD only at
-  the first commit or over 500 files away (a rewritten history): the gate set and more specs up to the budget, with a
-  warning. Over the budget (~1300 s of tests, ~110 s a shard) the reached specs drop out first, then the changed run
-  once each; a sweep (over 8 changed) runs them once, cheapest first, up to the budget, the rest left to the full tier.
+  (runs get superseded; an unusable base: the gate set and more up to the budget, with a warning). Over the budget
+  (~1300 s of tests) the reached specs drop out first, then the changed run once each, the rest left to the full tier.
   Every directory under `src/` and `content/` maps to a spec or is in `impact.json`'s `unmapped` with why, and every
   spec that opens the phone editor (`/editor/?view=phone`) is in the editor/ and layoutEdit/ rules
   (src/lib/e2e-impact.test.ts). The full tier's "what the gate missed" prints the rule to add.
 - **Flakes: one retry, and a ledger.** On CI `retries: 1`: failing twice is red; failing, then passing on the retry,
   is **flaky**: e2e/reporters/flaky.ts names it in the summary and on its spec, and uploads it (`flaky-<shard>`), the
-  **flaky ledger** (`npm run e2e:flakes`: the last 48 h, the same answer in CI and locally). **Auto-quarantine:** a
-  test flaky in runs of 2 commits or more in 48 h (only this repo's own runs on main) is left out of the gate, named in
-  its summary with its owner, still run by the full logic tier; a flake counts only on a commit that has its spec's
-  last change, so a fix lifts it at once (one after it is *flaky after its fix*). At most 5, the worst; the rest a
-  warning each, still gating. Never a gate set test (a warning: fix it now). A shard that mostly broke is the runner's,
-  left out of the tally. Best effort: the API down, nothing is left out. The mechanics: scripts/e2e-flakes.ts's
-  header. A broken test goes to the **quarantine** (below) with an owner. Locally (`npm run e2e:ci-like`) there's no
-  retry: a flake is red.
-- **Tags** (`test('…', { tag: '@render' }, …)`): `@render` needs real drawing (draw calls, pixels): the drawn smoke
-  only. `@smoke` is a whole 3D flow worth drawing too: both tiers. `@quarantine` is broken: out of the gate and the
-  full logic tier, run in the drawn full tier until fixed, with its owner and why (`annotation: { type: 'quarantine',
-  description: 'owner: …' }`). `@logic` is the logic tiers' only, never drawn: a timing a software-GL frame of 0.5–1 s
-  can't meet, with why in `annotation: { type: 'logic', description: 'drawn: …' }`. List them: `npx playwright test
-  --list --grep @quarantine` (or `@logic`).
+  **flaky ledger** (`npm run e2e:flakes`: the last 48 h). **Auto-quarantine:** a test flaky on 2 commits or more in
+  48 h is left out of the gate (at most 5; never a gate set test), named with its owner, still run by the full logic
+  tier; a fix to its spec lifts it at once. The mechanics: scripts/e2e-flakes.ts's header. A broken test goes to the
+  **quarantine** (below) with an owner. Locally (`npm run e2e:ci-like`) there's no retry: a flake is red.
+- **Tags**: `@render` needs real drawing: the drawn smoke only. `@smoke` is a whole 3D flow worth drawing too: both
+  tiers. `@quarantine` is broken: out of the gate and the full logic tier, with its owner and why (an `annotation` of
+  type `quarantine`). `@logic` never draws (a timing software GL can't meet; annotation `logic`). List them:
+  `npx playwright test --list --grep @quarantine`.
 - **Logic mode** (`E2E_RENDER=none`; src/lib/ui-state/testMode.ts): the 3D engines run every frame (the scene, the
   cameras, gestures, the World's step, poses, the tap areas) but never draw: a frame costs ~1 ms.
   `__world3d.stats().drawn` is false. A map is its stub there; `e2e.render` `map` (e2e/trips.ts `mapsDrawn`) makes the
@@ -118,9 +104,8 @@ After a deploy, never holding one back:
   can't run is `@chromium` with why.
 - **The base path.** The site is at the root; the specs follow `BASE_PATH` (`e2e/island.ts` `BASE`, `islandURL`), so
   a build under one (`BASE_PATH=/x npm run build`, then `BASE_PATH=/x npm run e2e`) is tested the same.
-- **The headers.** `npm run build` writes `build-pages/_headers` (`scripts/headers.ts`: its header lists them) and
-  `serve-build.ts` serves them as Pages does (all but the cache). `csp.spec.ts` walks the island, its sheets, the
-  music, the shop, the museum, the tent, the editor and the trip map and fails on any CSP violation.
+- **The headers.** `npm run build` writes `build-pages/_headers` (`scripts/headers.ts`), `serve-build.ts` serves them
+  as Pages does, and `csp.spec.ts` walks every surface and fails on any CSP violation.
 - **The trip map.** In the logic tier no map is made: `TripMap` is a stub with its pins as buttons
   (`travel-map.spec.ts`, `window.__travelMap`). Every map tile host is answered on every context (`e2e/mapTiles.ts`,
   the fixtures' refresh recipe in `e2e/trips.ts`), so a drawn map never reaches the network.
@@ -146,25 +131,18 @@ npm run e2e -- --project=chromium-mic   # the mic's specs (kikimimi-mic*.spec.ts
 npm run e2e:ci-like -- e2e/world3d.spec.ts --repeat 5   # as CI runs it (below)
 npm run e2e -- e2e/csp.spec.ts --project=webkit --workers=8   # a worker a test (below)
 ```
-One-off measuring probes, done and deleted, are at the `probes` git tag (`git show probes:app/scripts/<name>.ts`):
-`sw-measure.ts` (a service worker install A/B), `perf-sheets.ts` (sheet open A/B), `offline-measure.ts` (map tiles'
-bytes), relay's `wedding-cats.ts` (the categories' one rename).
+One-off measuring probes, done and deleted, are at the `probes` git tag (`git show probes:app/scripts/<name>.ts`).
 
 Local WebKit on a Mac loses a page's WebGL context after a test with sound (csp.spec at `--workers=1`, kk-sync): give
 each test its own worker, or check them on the flake hunt.
 
 ## Before you push (a new or changed spec, or a change to the 3D engines, the tent or sync)
-1. `npm run verify` (~20 s; ~25 s with `-- --build`): `checks` as CI runs it, all at once, the first red printed and
-   the rest stopped: the lockfile (`npm ci --dry-run`: an ERESOLVE peer conflict), `check`, `knip` (and relay/'s, once `npm ci` ran there),
-   `vitest run`, the quarantine's owners, the docs' pointers (`scripts/docs-check.ts`: every relative link and anchor
-   in the docs resolves, every backticked repo path exists, every `docs/….md` "Heading" or §Section a comment cites is
-   there; rename a heading and repoint its citations in the same push). `-- --quick`: vitest on the changes since
-   origin/main only; `-- --build`: the build and its budgets too, beside svelte-check. No e2e.
-   **The pre-push hook runs it for you** (`.githooks/pre-push`, set for every worktree by app's `npm ci`): a push that
-   changes `app/` runs `npm run verify -- --build` on the working tree (uncommitted files under `app/` are named in a
-   warning: they're checked, not pushed), one that changes only `docs/` or README.md the docs check; red is refused.
-   It also sums the files new to the remote: over 10 MB a warning, over 50 MB refused unless `BIG_PUSH=1` (iterate
-   generated assets in `app/.cache`, commit the accepted set once). Bypass: `git push --no-verify`, then fix forward.
+1. `npm run verify` (~20 s): `checks` as CI runs it, all at once (scripts/verify.ts: the lockfile, `check`, `knip`,
+   `vitest run`, the quarantine's owners, the docs' pointers and budgets, `scripts/docs-check.ts`, whose header says
+   what it checks; rename a heading and repoint its citations in the same push). `-- --quick`: vitest on the changes
+   only; `-- --build`: the build and its budgets too. No e2e. **The pre-push hook runs it** (`.githooks/pre-push`, set
+   by app's `npm ci`: `verify -- --build` for a push that changes `app/`, the docs check for one that changes only
+   docs; red is refused; over 50 MB of new files refused unless `BIG_PUSH=1`). Bypass `--no-verify`, then fix forward.
 2. `npm run e2e:ci-like -- --changed` (or `-- e2e/the.spec.ts --repeat 5`): the logic tier as CI runs it (a fresh
    build if `src/` is newer, software GL, CI's workers, `CI=1`, a free port), each test 5×. For a drawn (`@render`/`@smoke`) test add
    `--tier render`; `--tier full` draws everything; `--workers 6` loads the machine as a busy runner is.
@@ -199,16 +177,12 @@ see the same island.
 - **Storage**: each test its own context, service workers blocked; two phones in one context share `localStorage` and
   a BroadcastChannel (the demo's relay). Chromium's tabs are all visible and focused; still `bringToFront()` the tab
   that acts, and wait for a second tab's island (`is3d`, `quiet`) before timing across the two.
-- **Taps on the 3D island are frame-locked** (e2e/island.ts `tapAt` and what's built on it: `tapWorld`, `tapThing`,
-  `tapWater`, `tapBox`, `tapFigure`, `tapOn`): the point read in a held frame and tapped before the next, polled while
-  there's none or a tap area lies over it (a point read, then tapped a round trip later, was most of the tap specs'
-  flakes). `castIn` sends its tap from the page in the same task; `reelOnBite` taps at the bite, off any tap area. A
-  point tapped as read only where nothing moves.
+- **Taps on the 3D island are frame-locked** (e2e/island.ts `tapAt` and what's built on it): the point read in a held
+  frame and tapped before the next, polled while a tap area lies over it; `castIn` and `reelOnBite` likewise.
 - **Read the hooks once they're there**: `__world` comes before `__world3d` (`camTo` and `settled` wait for both); after
   a `goto` or `reload` wait with `islandUp`, not the HUD alone: the 3D island mounts once the ground's fields are in
   (layout/fieldsPrime.ts), and until then every island target sits hidden at the scene's corner.
-- **Silent**: Chromium muted on a fake audio output (playwright.config.ts: a Mac's own device stalled the page's audio
-  clock, kk-sync red locally); WebKit headless makes no sound.
+- **Silent**: Chromium muted on a fake audio output (playwright.config.ts); WebKit headless makes no sound.
 - **No new fixed wait**, wall-clock sampling or long test: ratcheted ("Guardrails" below).
 - **Wait for what an action loads.** A tap that deals a deck, opens a sheet or enters a room may load a chunk first:
   wait for the state it ends in before reading what it made.
@@ -271,31 +245,25 @@ raises one: that's a hand edit to explain in the commit).
 Most red runs are the spec, not the app. Before pushing a new or changed spec, run it with
 `--repeat-each=10` (and the whole file with `--workers=8`: a loaded machine is what CI is).
 
-1. **Never tap where something can wander.** The villagers walk about, critters come and go (a flea off a villager,
-   a bug from under the rock), visitors stroll, balloons drift. Tap a point only once it is *that* thing's, read and
-   tapped in one held frame (`tapAt` and its `clear`, above), or pin the scene: ambient life is off already
-   ("Hermetic"), then `&rock=clonk`, `&shake=…`, `?weather=…`, `?seed=` ("URL params"). Prefer a locator's own click
-   (Playwright checks what receives it) to `page.mouse.click(x, y)` when the island isn't the target.
+1. **Never tap where something can wander.** Tap a point only once it is *that* thing's, read and tapped in one held
+   frame (`tapAt`, above), or pin the scene ("Hermetic", "URL params"). Prefer a locator's own click to
+   `page.mouse.click(x, y)` when the island isn't the target.
 2. **Wait on the app's state, not on time.** `expect(…).toBeVisible()`, `expect.poll(() => window.__world.cam())`,
    `__world.idle()`, `__tent.stats().frames`, `data-*` attributes (`__world3d.camStill()` once the camera's last move is
    framed: the DOM's tap areas placed for it, not where the previous camera had them); never `waitForTimeout` to "let
-   it settle". (The app's hooks are declared on `Window` in `src/app.d.ts`, as `unknown`: a spec types what it reads.)
-   A fixed wait is only for proving that nothing happens for a while (a toast that must stay 3 s), and then say so.
+   it settle" (the hooks are `unknown` on `Window`, `src/app.d.ts`: a spec types what it reads). A fixed wait only
+   proves that nothing happens for a while, and says so.
 3. **Fix the clock.** It's pinned already (above, "Hermetic"); `?date=2026-11-04T12:00` when the day and hour matter;
-   `page.clock.install({ time })` when the app's timers matter, `page.clock.runFor(ms)` to skip an animation's wait instead of sleeping through it. The clock fakes
-   `requestAnimationFrame` too, so `runFor` steps the 3D engines frame by frame: in logic mode that's quick (drawn under
-   software GL it took minutes, hence `fastForward` there). ききみみ's schedule (a clip's window is its clips.json
+   `page.clock.install({ time })` when the app's timers matter, `page.clock.runFor(ms)` to skip a wait; it fakes
+   `requestAnimationFrame` too, stepping the 3D engines frame by frame (quick in logic mode). ききみみ's schedule (a clip's window is its clips.json
    length, a timer, never the audio's) runs on it: install the clock before the goto and step to the state
    (e2e/kikimimi-nav.ts `runToQuestion`, `runToPhase`, `runToSee`) instead of waiting out a play; never step while a
    mic take listens (its stand-in audio is real time).
 4. **Find things by role or test id**, not by position or `nth()`: `getByRole('button', { name })`, `[data-tab=…]`,
    `[data-critter]`. Add a `data-*` hook to the component when there is none.
 5. **WebKit is the browser.** It scrolls by whole px (a camera z is within a px of what `go(z)` asked: compare with a
-   tolerance, `toBeLessThan(1.5)`), has no mouse wheel on a phone (scroll the scroller: `scrollBy`), moves focus
-   onto buttons with ⌥Tab (`Alt+Tab`), and has no CDP (slow animations down with `document.getAnimations()`'
-   `playbackRate`). A spec that truly needs Chromium is tagged `{ tag: '@chromium' }`, with why in
-   `playwright.config.ts`. Linux's WebKit is not Safari: it renders the island in software at ~1 fps; reproduce CI's
-   WebKit on a Mac, not in Docker.
+   tolerance), has no mouse wheel on a phone (`scrollBy`), moves focus with ⌥Tab, and has no CDP. A spec that truly
+   needs Chromium is tagged `@chromium`, with why. Reproduce CI's WebKit on a Mac, not in Docker.
 6. **Two phones in one context share storage.** The sync specs' tabs share `localStorage`; a hidden tab's timers are
    throttled. Bring the acting tab to the front, and poll the other for the result.
 7. **Banners and sheets cover things.** A toast drops over the panel's tabs for a few seconds (and a pointer resting
@@ -303,16 +271,12 @@ Most red runs are the spec, not the app. Before pushing a new or changed spec, r
 8. **Each test starts clean**: a fresh context, service workers blocked. Don't lean on another test's leftovers, and
    don't make one test do the work of three: a short test fails clearly and shards evenly.
 9. **Don't loosen an assertion to make it pass.** If the app is wrong, it's a bug: fix it or say so in the commit.
-10. **Fishing**: any water casts, however far from my villager; e2e/island.ts `toTheWater`, `tapWater`, `castIn` and
-    `reelOnBite` (their headers: a bank by the shadow, a frame-locked cast, the reel at the bite) rather than fixed
-    points (a fixed reel point can be a door, and with the line out a door goes in). `__fish.why()` names what the last
-    tap on water did, `__fish.line()` its phase; hold a 「！」 up with `__world3d.pinBite('mine')` (bite-mark.spec). The
-    sea off the back beach lies by the doors and the beach's finds: a real touch there casts (ui-state/exactTaps.ts;
-    exact-taps.spec).
-11. **Tap a pill only once it's at rest.** Playwright calls a moving thing "stable" while a staggered transition is in
-    its delay, then the tap lands where it has moved off to (the menu's せってい sits over the ベル row 110 ms first):
+10. **Fishing**: e2e/island.ts `toTheWater`, `tapWater`, `castIn` and `reelOnBite` (their headers), never fixed points
+    (a fixed reel point can be a door). `__fish.why()` names what the last tap on water did, `__fish.line()` its phase;
+    `__world3d.pinBite('mine')` holds a 「！」 up.
+11. **Tap a pill only once it's at rest** (Playwright calls a thing in a staggered transition's delay "stable"):
     `e2e/hud.ts` `unfoldMenu` / `fromMenu` wait for the pills' spring. A route that fails chunks fails every lazy load
-    under it (a critter's, a visitor's): pin the scene and route just before the one tap it's for (`e2e/stale.spec.ts`).
+    under it: pin the scene and route just before the one tap it's for (`e2e/stale.spec.ts`).
 12. **One width, the phones'.** The users' phones are an iPhone 15 and an iPhone 16 (393 px wide): a flow runs at one
     width (390 or 393), not again at 320 or 375; a narrow width only where the layout itself is the test (the HUD's
     row, a sheet's fit). **Debug pictures** (`page.screenshot` that asserts nothing) only under `SHOTS=<dir>`:
@@ -336,8 +300,7 @@ memory and outside the JS heap; leak-probe prints it as `abMB`). To hunt one: `n
 - **A cache keyed by a value lives as long as it does**: a layout kept (the editor's undo) kept its WeakMap'd fields
   (~9 MB a layout). Keep history as plain data; bound a page-wide cache by its users (world3d/keepUsed.ts).
 - **MapLibre**: a map goes by travel/map/glmap.ts `removeMap`, not `map.remove()` alone.
-- **The probe's own handles** keep what they point at: wait on booleans. A steady +0.3 MB a trip that's all `[code]` is
-  V8 compiling; `blink::NetworkResourcesData` is DevTools'.
+- **The probe's own handles** keep what they point at: wait on booleans.
 
 ## Load budget
 `npm run build` ends with `scripts/load-budget.ts`: the first load (what `index.html` loads, transitively) ≤ 400 KB of

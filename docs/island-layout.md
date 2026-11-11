@@ -10,14 +10,11 @@ editing: the island is arranged in /editor only.
 - **One tile = 30 world units** = one NH tile (10 model units of NH's furniture at the island's scale, world.ts
   `DECOR_U` = 3u a model unit: a 2-tile bench is 60u, an 80u villager is NH's chibi). The tent's room uses the same
   tile, so an outdoor footprint and a room footprint mean the same thing.
-- **20 × 156 tiles**, x −90…510, z −90…4590 (`layout/grid.ts` `GRID`): the long island
-  (land x −30…420, z −30…1680) with a ring of sea, and 96 more rows of sea behind it for the island to grow back into
-  (the editor's しまの おおきさ: 152 rows of land at most); everything off the grid is sea. The rows of
-  sea behind the land cost nothing: a band of chunks that is all sea has no bake or mesh (`terrain.ts`: the deep plane
-  shows there), the worker builds no chunk of it (`mesh.ts openSeaRow`), and the fields' raster stops 4 rows past the
-  land (`fields.ts rasterRows`, to a whole chunk: the default's 64 rows; behind it each channel's clamp, as off the
-  grid). Tile (c, r) covers x `−90 + 30c … +30`, z `−90 + 30r … +30`;
-  `r` grows into the island (away from the camera), as world z does. Read the extent from the layout
+- **20 × 156 tiles**, x −90…510, z −90…4590 (`layout/grid.ts` `GRID`): the long island (land x −30…420, z −30…1680)
+  with a ring of sea and room behind it to grow back into (152 rows of land at most); everything off the grid is sea.
+  Sea behind the land costs nothing: an all-sea band has no bake or mesh (`terrain.ts`, `mesh.ts openSeaRow`), and the
+  fields' raster stops 4 rows past the land (`fields.ts rasterRows`). Tile (c, r) covers x `−90 + 30c … +30`,
+  z `−90 + 30r … +30`; `r` grows away from the camera, as world z does. Read the extent from the layout
   (`model.ts extentOf`), never a constant.
 - **Chunks of 8 × 8 tiles** (3 × 20 of them; the last column sticks out past the grid and is sea): the unit of a
   terrain op. The ops allow up to 16 chunks across and 32 deep (128 × 256 tiles), so the grid can grow without a relay
@@ -27,21 +24,17 @@ editing: the island is arranged in /editor only.
 
 `layout/resize.ts`, the editor's しまの おおきさ.
 
-- **An edge a tile at a time:** `resizeEdge(layout, edge, ±n)` → `{ codes, blocked }` (`edge` まえ `front`, おく `back`,
-  ひだり `left`, みぎ `right`). Along each line across the edge the outermost land tile (the beach, a cliff's edge, a
-  river's mouth) moves a tile out and the tile it leaves takes the inner tile's kind and tier; a river running along
-  the coast isn't doubled. Pulled in, the outermost tile moves in over the inner one and the sea takes its place, so a
-  push then a pull gives the island back.
+- **An edge a tile at a time:** `resizeEdge(layout, edge, ±n)` → `{ codes, blocked }` (`front`, `back`, `left`,
+  `right`): along each line across the edge the outermost land tile moves a tile out (or in, the sea taking its place),
+  the tile it leaves taking the inner one's kind and tier, so a push then a pull gives the island back.
 - **Bounds:** the land keeps `MARGIN` (2) tiles of sea round it and at least `MIN` (6) tiles across and along. The
   default (15 × 57) can grow its back 95 rows (to 15 × 152) and its east a tile; shift-click steps 8. The camera's middle across is the land box's middle
   (`model.ts midXOf`), so a lopsided pull stays centred.
-- **In the way:** what stands on a tile the sea takes, or is newly wrong on its new ground, its `fixed` marked
-  (catalog: a home, the museum, the shop, K.K.'s stool, the board, a goal tree, the summer pieces). `moveInside` moves
-  each to its nearest clear tile (resolve.ts `clearTile`), the fixed and the biggest first; one with nowhere near is
-  put away unless it's fixed: a fixed one stuck holds the resize.
-- **The editor:** the side panel's しまの おおきさ, four edges' − / ＋, the ghost on hover (plan.ts `drawCoast`). A
-  click is one action (edits.ts `resize`; ⌘Z) and one burst (`sendMany`), so the phones get it live; blocked, the
-  list of what's in the way instead. The phone view has no terraforming, so no resize.
+- **In the way:** what stands on a tile the sea takes, or is newly wrong there, `moveInside` moves to its nearest clear
+  tile (resolve.ts `clearTile`), the `fixed` (catalog: a home, a building, K.K.'s stool, the board, a goal tree) and the
+  biggest first; one with nowhere near is put away, but a fixed one stuck holds the resize.
+- **The editor:** the side panel's しまの おおきさ, four edges' − / ＋ with a ghost on hover; a click is one action (⌘Z)
+  and one burst (`sendMany`), or the list of what's in the way. The phone view has no resize.
 
 ## The layout is data
 
@@ -53,28 +46,23 @@ editing: the island is arranged in /editor only.
   - Tier 0…3: the cliff levels (each +40u). A tile next to a lower one has a cliff face on that side; river water
     that steps down a tier is a **waterfall** (derived, never painted).
 - **Objects** (`layout/catalog.ts` `KIND_LIST`: each kind's footprint, whether it blocks, its block box, where it may
-  stand, its drawn height, palette icon and names): trees (`oak`, `cedar`, `palm`, `bamboo`, `goal-tree` a|b),
-  `bush` and `hedge`, `flower` (`c<n>`: the scatter's clump n), rocks, lights, NH's outdoor furniture, the seasonal
-  spots (`beach-chair`, `sandcastle`, `snowboy`), NH's bulletin board (`board`: 2 × 1, one on the island, used from
-  the tile in front of it, which must stay clear and reachable like a home's door), K.K. Slider's stool (`kk-stool`, id
-  `kk-slider`: 1 × 1, one on the island, never deleted, its front tile `front-kk-slider` clear and reachable; the
-  default puts it on まえ's lawn west of the main path at tile 6 × 22; docs/design.md "K.K. on his stool"), the pieces
-  that join terrain (`bridge` over water, `stairs` up a cliff), the homes (`home`), the buildings (below) and named
-  spots (`spot`: `villager-a|b` the villagers' home spots; an old fixed `stage` spot is dropped as a layout is read,
-  model.ts `isLegacyStage`: the stage is derived).
+  stand, its drawn height, palette icon and names): trees (`goal-tree` a|b among them), bushes, flowers, rocks,
+  lights, NH's outdoor furniture, the seasonal spots, NH's bulletin board (`board`, one on the island) and K.K.'s stool
+  (`kk-stool`, one, never deleted: docs/design.md "K.K. on his stool"), each used from the tile in front of it, which
+  must stay clear and reachable like a home's door; `bridge` and `stairs`, which join terrain; the homes, the
+  buildings (below) and named spots (`spot`: `villager-a|b`; an old `stage` spot is dropped as a layout is read: the
+  stage is derived).
   Each: `id`, kind `k`, tile `x, z` (its footprint's lowest column and row), facing `f` 0–3 (0 toward the camera, −z;
   1 +x, 2 away, 3 −x), variant `s`. A footprint is `w × d` tiles, turned by `f` for the kinds that `turn`; for the
   others an odd `f` only mirrors the look. Every object's spot is a tile (no offsets).
 - **Homes:** three, fixed ids `home-A` (ウェイ's, the campsite's tent), `home-B` (うめ's), `home-G` (the guest's).
   Where a home stands is an object; how it looks is its **style** (`layout/homes.ts`: `{m, w?, r?, d?}`), its owner's
   alone. A home's `(x, z)` is its door's tile (`model.ts originOf`), so a new look grows round its door; see "Homes".
-- **The default layout** (`layout/default.json`, data: world.ts's island as the grid had it at 20 × 80, with the
-  record's ops over it; /editor writes those, nothing regenerates the file): まえ (the sea, the beach, the health lawn, the goal trees, the stream's crossing and its bridge) at
-  the front; おく (the campsite, the pond, the bamboo, the falls, the upper tier's forest) at the back; between them
-  open grass, the stream on down its east side, the main path to the campsite, うめ's house (`HOME_B`, row 27) and
-  the guest's (`HOME_G`, row 34) with paths to their doors and a lamp at each, the shop and the museum (below).
-  Every piece on its own tile, no two sharing one (`layout.test.ts`). A phone's layout is the default with the
-  record's ops over it (`layoutOf(entries)`).
+- **The default layout** (`layout/default.json`, data: world.ts's island as the grid had it at 20 × 80; /editor
+  writes ops over it, nothing regenerates the file): まえ (the beach, the health lawn, the goal trees, the stream's
+  crossing) at the front, おく (the campsite, the pond, the falls, the upper tier's forest) at the back, open grass, the
+  homes, the shop and the museum between; every piece on its own tile (`layout.test.ts`). A phone's layout is the
+  default with the record's ops over it (`layoutOf(entries)`).
 
 ## Ops (the record and the relay)
 
@@ -98,20 +86,12 @@ latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (its pa
 - The room relays a layout op live but never keeps it in the day's ring (an afternoon in the editor would push the
   shared world out); a phone opening later reads it from the record. A `drag` with `sc: 'o'` is an outdoor object
   being moved (x, z its middle in world units): presence, as the tent's.
-- **A burst** (the editor's save, a clash settled): my ops are merged and rebuilt once and go to the record as one
-  burst (`week.sendMany`: one queue write, one recompute); the partner's, one socket message each, are merged as they
-  come and rebuilt once, the tick after. The room relays 20 at once; the rest hear `busy` and the phone sends them
-  again a second on.
-- **Two edits on one tile:** last writer wins only per id, so two phones moving different pieces onto one tile at
-  once would leave both there. When the partner's ops land, a piece of theirs that overlaps one of mine (validate.ts
-  `overlap`) is settled: if my op is the later (`at`, then who: the same order on both phones), my piece moves to the
-  nearest clear tile (`layout/resolve.ts clearTile`: rings outwards in a fixed order, same tier, out of the water, on
-  grass when it belongs there, making no new error), as a normal op of mine; else it is theirs to move. Only one
-  phone moves, so nothing ping-pongs; bridges and stairs stay and show the editor's overlap.
-- **A door blocked between two edits** (a palm east of K.K.'s stool while the other phone turns the stool east): when
-  the partner's ops land near a door, the merged island's `door` errors are looked at, and a pair of a landed piece
-  of theirs and one of mine that clears the error when taken away is settled as an overlap is (`resolveMoves`). A
-  door already blocked, or blocked by another piece, is nobody's. A burst away from every door costs no check.
+- **A burst** (the editor's save, a clash settled): one queue write and one rebuild (`week.sendMany`); the partner's
+  ops are merged as they come and rebuilt once. The room relays 20 at once; the rest hear `busy` and are resent.
+- **Two edits on one tile** (last writer wins only per id): a piece of the partner's that lands overlapping one of
+  mine (validate.ts `overlap`) is settled by the later op's phone alone (`at`, then who): its piece moves to the
+  nearest clear tile (`layout/resolve.ts clearTile`), as a normal op, so nothing ping-pongs. A door the two edits
+  blocked between them is settled the same way (`resolveMoves`); bridges and stairs stay and show the overlap.
 - Ids: a default object's (`goal-A`, `fl:52:180`), a new one `o<time><random>` (`model.ts newObjId`); tokens
   (`k`, `s`, `m`) are lower-case; home parts (`w`, `r`, `d`) `[A-Za-z0-9.]`.
 
@@ -122,49 +102,23 @@ latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (its pa
   corners are NH's rounded ones (a convex corner cut, a concave one filled): cliffs on a third of a tile, the soft
   edges (below) on half a tile, a staircase of tiles drawn a straight diagonal. Stairs ramp along their facing; a
   bridge's deck arches over its water.
-- **Nav** (`layout/nav.ts` `navOf(layout)`): a walk grid at half a tile (15u): water and the sea block (a bridge's
-  deck is walkable), so does every blocking footprint (its block box padded 5u); a step keeps to its tier but on
-  stairs. A* with the corners pulled straight; `findPath`, `snapTap` (home → its door, water → the nearest bank, else
-  the nearest walkable point), `walkable`, `reachable`, `named` (`homeA`, `homeB`, `door-home-A|B|G`, the default's
-  seats, `front-<id>`). `planTap(navOf(layout), from, x, z)` for a tap. Builds in ~4 ms.
-- **The visitors' stage** (`layout/spots.ts` `stageOf(layout)`, NH's plaza): the members' plaza mark when one is down
-  and usable, else the open grass tile nearest the island's middle 200u behind the villagers' spots, with a clear tile
-  each side, nothing tall in front of it on screen nor right behind; looser if none has that. `washedUp(layout, date,
-  seed)`: Gulliver's beach, his mark when usable, else a free sand tile two in from the sea, by the date. The day's
-  weeds and fossils keep off the stage; the wedding's arch and a birthday's cake stand by it (layoutWorld.ts ARCH,
-  CAKE); the idle walks keep off it. Pure: every phone with the layout agrees.
-- **The visitors' spots** (catalog.ts group `visitor`, kinds `plaza` お客さんの場所, `beach-spot` ジョニーの場所 and
-  `guest-spot` ゲストの場所, one each, removable): a mark never drawn in play, standing on nothing (no overlap, no
-  block). Every visitor but Gulliver stands at centre stage, so one plaza places them all; Gulliver's is its own and
-  optional; the day's guest's (`guestSpot`; none: centre stage, `besideStage` while a visitor's on it) too.
-  `markerSpot(layout, k)`: the latest put down, where they stand, or `at: null` when nobody can. `spotWhy(layout, k,
-  c, r)`: why not, each reason with the tiles and things in the way (none: usable; `plazaOk`, `guestOk`, `beachOk`):
-  - plaza: grass or a path, a clear 3 × 3 patch of its tier (the events' arch behind, cake in front), no door;
-  - guest: its own tile of dry land, nothing on it, no door, nothing in front or beside hiding them (hides.ts
-    FIGURE_HIDES), nothing within 60u behind in its column (their head takes its tap);
-  - Gulliver: lying across three sand tiles of one tier with nothing on them, nothing hiding his ±40u in front or
-    beside, nothing right behind his body nor his column once he stands up (60u).
-  And reachable. Unusable: the derived spot, and validate.ts's `visitor-spot` warning naming the reasons
-  (「木に隠れます」…) with the blocking tiles and things. An ordinary `sc: 'o'` op.
-- **Validation** (`layout/validate.ts` `validate(layout)` → issues, each `error` or `warn` with its tiles and ids): an
-  object off the land or in water, one straddling a cliff, overlapping footprints, a tree off the grass (warn), stairs
-  that join no cliff, a bridge over no water, a door or front that can't be reached, a missing or second goal tree, an
-  unreachable named spot, land nobody can walk to (warn), water joined only at a corner or spilling over a cliff
-  (warn). Advisory: the record keeps whatever the members save. The default has no errors (`layout.test.ts`).
+- **Nav** (`layout/nav.ts` `navOf(layout)`, ~4 ms): a walk grid at half a tile; water and every blocking footprint
+  block (a bridge's deck walks), a step keeps to its tier but on stairs. A* with the corners pulled straight;
+  `findPath`, `snapTap` (a home → its door, water → the nearest bank), `reachable`, `named` spots, `planTap` for a tap.
+- **The visitors' stage** (`layout/spots.ts` `stageOf(layout)`, NH's plaza): the plaza mark when one is down and
+  usable, else open grass near the island's middle behind the villagers' spots, clear each side and unhidden;
+  `washedUp(layout, date, seed)`: Gulliver's beach, his mark or a free sand tile by the date. The day's weeds, fossils
+  and idle walks keep off the stage; the wedding's arch and a birthday's cake stand by it. Pure: every phone agrees.
+- **The visitors' spots** (catalog.ts group `visitor`: `plaza`, `beach-spot`, `guest-spot`, one each, removable): marks
+  never drawn in play, standing on nothing. The plaza places every visitor but Gulliver; Gulliver's and the day's
+  guest's are their own and optional. `markerSpot(layout, k)` is where they stand (or `at: null`); `spotWhy` gives each
+  reason one can't stand there with the tiles and things in the way (the rules: `plazaOk`, `guestOk`, `beachOk`, each
+  needs ground clear of what would hide them, and a way to it). Unusable: the derived spot, and validate.ts's
+  `visitor-spot` warning naming the reasons. An ordinary `sc: 'o'` op.
+- **Validation** (`layout/validate.ts` `validate(layout)` → issues, each `error` or `warn` with its tiles and ids, the
+  checks listed in its header): advisory, the record keeps whatever the members save. The default has no errors.
 - **What changed** (`layout/diff.ts` `diffLayouts(a, b)`): the chunks that differ, the objects added, moved (or
   turned, restyled) and removed, the homes whose look changed.
-
-## API for the 3D scene
-
-- **Pure** (`app/src/lib/layout/`, no three.js): `layoutOf(entries)` (the default with the ops merged over it), the
-  `Layout`'s tiles, objects and homes (model.ts: `objMid`, `footOf`, `doorOf`, `extentOf`), `heightAt`, `navOf` /
-  `findPath` / `snapTap` / `planTap`, `diffLayouts`.
-- **The live layout** (`store/layout.svelte.ts`, its header lists the API): `layout.current` (reactive), `pos`, `obj`,
-  `ofKind`, `home`, `on(fn)` (every change with its diff) and `apply(ops)` (mine: merged, kept, sent). IslandScene
-  attaches it (the relay, the record's `state.layout` rows); every phone keeps the layout in localStorage.
-- **three.js:** `buildGround(layout, { renderer, look })` (`world3d/terrain.ts`: the `Ground` interface, its group,
-  heights, rebuild by chunk, season look, bands, `ready`, `restore`) and `placeObjects(layout, day)`
-  (`world3d/objects.ts`: the engine's instances and the stand-ins, `day` the season and the date's swaps and pieces).
 
 ## The 3D ground
 
@@ -198,27 +152,19 @@ latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (its pa
 edits, `Preview3D.svelte`): unlinked, noindex, for anyone paired (A, B or the guest; a browser not paired gets the way
 to `/pair`). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the phone).
 
-- **The plan:** the layout top-down, the back of the island at the top: tiles in NH's map colours (the higher a tier,
-  the lighter), the cliffs' edges dark, a fall white, the objects by their icons, the homes labelled with their doors,
-  the named spots as pins; what's wrong tinted on its tiles (a visitors' spot's warning: the tiles in the way too).
-  Where the visitors and the guest stand while no usable mark of theirs is down (`stageOf`, `besideStage`), a dashed
-  tile, recomputed with the checks.
+- **The plan:** the layout top-down in NH's map colours, the objects by their icons, the homes labelled, the named
+  spots as pins, what's wrong tinted on its tiles; where the visitors stand without a usable mark, a dashed tile.
 - **The tools:** select and drag, the terrain brush, the cliff tier, place from the palette (the island's one-offs
   greyed while they stand); Delete never takes a goal tree, a home, a named spot or a one-off. ⌘Z reverts one action
   over the island as it is now (the partner's changes stay).
 - **Live:** each finished action goes out as layout ops at once (the record and the relay); a drag streams the
   piece's spot as presence (`drag`, `sc: 'o'`, ~10 a second). The checks (validate.ts) run a moment after every
   change; a click on one selects its pieces and centres its tiles.
-- **The 3D preview** (`editor/Preview3D.svelte`; `?view=orbit` alone, `?view=phone` as a phone's camera): drawn
-  through the island's own builders, so the two can't drift: `buildGround`, placeObjects' instances on today's day
-  (`drawCheck.ts previewDay`), the homes, bridges, stairs and ponds (`world3d/built.ts` createBuilt) and K.K. on his
-  stool (asleep 0–6; he follows the stool while it's held). Not drawn (not the layout's): the villagers, players and
-  visitors, the day's finds, weeds and critters, the weather, the lamps' glow, the events' pieces.
-  `world3d/previewDraw.test.ts` fails for a catalog kind with no drawing. Moved by hand only (orbit or the phone's
-  camera; the pan keeps the pivot over the land's box, ⌖ puts it back). The phone view's camera is the island's (`world3d/islandCam.ts`: the pitch by the zoom,
-  the pivot below the middle, the haze, the band cull; `shadowBox.ts`), so a zoomed view is what the phone shows. It
-  draws a frame only when something changed, at most 30 a second (`world3d/stage.ts`), never on a timer; the shadow
-  map only when what casts or the shadow box moved.
+- **The 3D preview** (`editor/Preview3D.svelte`; `?view=orbit`, or `?view=phone` with the island's own camera,
+  `world3d/islandCam.ts`): drawn through the island's builders, so the two can't drift (`buildGround`, placeObjects on
+  today's day, `world3d/built.ts`, K.K.'s stool); not drawn: what isn't the layout's (villagers, the day's finds and
+  critters, weather, events). `world3d/previewDraw.test.ts` fails for a catalog kind with no drawing. Moved by hand
+  only; a frame only when something changed, at most 30 a second (`world3d/stage.ts`).
 - **`?check`** (`world3d/drawCheck.ts undrawn`): a 3Dの チェック panel listing each object the phones' 3D island doesn't
   draw as a model (a day of each season), and why: an unknown kind, a card of 2D art, nothing at all, a model file
   missing; a click selects it.
@@ -238,22 +184,18 @@ to `/pair`). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the
     porch inside the front row.
 - **The defaults:** うめ's NH's player house (stucco, a western tile roof), the guest's a villager's log house (a
   thatched roof).
-- **Sizes** (`homes.ts exteriorOf`): NH's player house has levels; the app's rooms have three sizes (design.md "The tent"
-  › Room size), so the player house's outside follows its room: the chosen look (PA04) for 増築した部屋 8 × 8, NH's first
-  house (PA00: its one wall, its roof in the same colour letter of NH's eight) for 初めての家 6 × 6 and テント 4 × 4.
-  The footprint, porch and door stay the style's (PA00 stands inside PA04's): nothing on the layout moves. The island
-  reads each room's size from the rooms' store (loaded after the first load), the editor's preview too. A villager's
-  house and the tents have no levels.
+- **Sizes** (`homes.ts exteriorOf`): the player house's outside follows its room's size (design.md "The tent" › Room
+  size): the chosen look (PA04) at 8 × 8, NH's first house (PA00) at 6 × 6 and 4 × 4, in the same footprint, porch and
+  door, so nothing on the layout moves. A villager's house and the tents have no levels.
 - **Drawing them** (`world3d/home.ts buildHome(style)`: the three parts at 3u a model unit, NH's soft Lambert, a
   lamp's own glow; `world3d/objects.ts homePlaces(layout)`: each home's origin, front wall's middle and yaw; the
   campsite's tent stays placeObjects' instance).
-- **家を変える** (`components/homes/HomePicker.svelte`): the owner's own, in their home's room and in the editor. The
-  kind, the shape, the wall's and roof's materials and colours, the door; the house turning in a preview. A look that wouldn't fit where the home stands is refused there; これにする sends the `h` op. Only the owner
-  may (`scopeMayWrite`: `hA` A, `hB` B, `hG` G).
-- **Turning a home:** its facing (`f`) is part of its look, so only its owner turns it (the record and the room refuse
-  anyone else's; an outdoor op never changes it). It turns about its door's tile, the footprint, the walk-up spot
-  (`door-home-*`), the model's yaw and the way out of its room with it. A turn that would wall the door in or overlap
-  is refused: the editor's R / wheel (own home only), the phone view's ↻ (shown to the owner), 家を変える's ↻.
+- **家を変える** (`components/homes/HomePicker.svelte`): the owner's own, in their home's room and in the editor: the
+  kind, shape, materials, colours and door, in a turning preview; a look that wouldn't fit is refused; これにする sends
+  the `h` op (`scopeMayWrite`: the owner alone).
+- **Turning a home:** its facing (`f`) is part of its look, so only its owner turns it, about its door's tile (the
+  footprint, the walk-up spot and the way out of its room with it); a turn that would wall the door in or overlap is
+  refused.
 - **The rooms:** every home's inside is the tent's room system (`routes/tent/?home=B|G`, `TentRoom.svelte`'s `home`;
   `store/tent.svelte.ts` `rooms.A` the tent's `t`, `rooms.B` うめ's `u`, `rooms.G` the guest's `v`), each 4, 6 or 8 tiles
   square as chosen (contract/tent.ts ROOM_SIZES; design.md "The tent" › Room size), whatever the outside.
@@ -300,31 +242,23 @@ editor's 野菜 and フェンス tabs and NH's garden flowers under 花.
 - **The kinds** (catalog.ts `GARDEN_KINDS`, NH's official names in kanji): NH 2.0's fence items (`fence-<id>`; the
   three that aren't items left out), six crops (`crop-<id>`, the pumpkin's colour its variant), the gold roses, the
   lily of the valley and the vine (a | b | c). Ordinary `o` ops: the relay takes any kind token.
-- **A fence** takes its whole tile (catalog `block`, no `foot`): nobody stands or walks on it (nav.ts blocks its four
-  cells), so the villagers' and players' ways go round a run. A crop or a flower is walked over.
-- **Joining** (NH's way, `fenceJoin`): a fence joins the same kind on the tile east, north, west or south of it on the
-  same tier (never across a cliff or a diagonal); its four neighbours pick one of NH's pieces and its quarter turn
-  (`fencePiece`, its header; `layout/garden.test.ts` holds all 16 neighbourhoods).
-- **Crops grow by the date** (`cropStage`): the day planted (the piece's id is `o` + its time, model.ts newObjId) a
-  sprout, a stage a day after, ripe on the third and fuller on the fourth and fifth (NH's 0, 1, 2, 3Lv1–3), the same on
-  every phone. These decor crops need no watering (NH's grow unwatered); one of the default's, or with no date, is
-  grown. Each stands on NH's soil mound. The fields' plants are another thing (below).
+- **A fence** takes its whole tile (nav.ts blocks it), so the ways go round a run; a crop or a flower is walked over.
+- **Joining** (NH's way, `fenceJoin`): a fence joins the same kind east, north, west or south on its tier; its four
+  neighbours pick NH's piece and turn (`fencePiece`; `layout/garden.test.ts` holds all 16 neighbourhoods).
+- **Crops grow by the date** (`cropStage`: planted at its id's time, ripe on the third day, fuller on the fourth and
+  fifth), the same on every phone. These decor crops need no watering; the fields' plants are another thing (below).
 - **Fields** (kind `field`, the 畑 tab under 野菜; `layout/field.ts`): a farm field, its owner and size its variant
   (`a-10x4`), placed and resized in /editor only. Its plants live on the record, plot by plot (`fd:<id>.<col>.<row>`),
   not in the layout; weeds, fossils and drops keep off it (`layout/clear.ts`). The rules: [farming.md](farming.md).
 - **The garden's flowers** are always in bloom where they're put: no season, no watering, no hybrid (the wild flowers'
   watering and hybrids, care.ts, stay theirs).
-- **The cedars' festive lights** (PltTreeCedarDeco, its lights lit at night, in the snow in winter): every cedar in the
-  illuminated tree's weeks (fixedDecor.ts `WINDOWS.illumi`, Dec 15 – Jan 6).
-- **NH's other bushes** (yellow hibiscus, blue and pink hydrangeas, yellow tea olive, red and pink camellias) are
-  `bush` variants, their own models (assets.json `bushes/<id>`).
+- **The cedars' festive lights**: every cedar in the illuminated tree's weeks (fixedDecor.ts `WINDOWS.illumi`).
+- **NH's other bushes** are `bush` variants, their own models (assets.json `bushes/<id>`).
 - **Placing** (`editor/edits.ts placeRun`): with a fence or a crop held, a press puts one down and a drag puts one on
   each tile it crosses, four-connected (across, then along, so a run joins), skipping tiles taken; the run is one action
   (⌘Z). The phone view's もようがえ has the same tabs (野菜, フェンス), a piece at a time.
-- **Loading**: their models are packs (scripts/world3d-assets.ts `GARDEN`, docs/world3d-assets.md) listed in
-  `world3d/garden.json`, not assets.json: an island without a fence, a crop, a garden flower or lit cedars fetches none
-  of it; with one, the manifest, then the packs it draws. The icons are one sheet for the editors
-  (`static/room/editor/garden-icons.webp`, `npm run garden-icons`).
+- **Loading**: their models are packs listed in `world3d/garden.json` (docs/world3d-assets.md): an island without one
+  fetches none of it. The editors' icons are one sheet (`npm run garden-icons`).
 
 ## The outdoor catalogue
 
@@ -383,6 +317,12 @@ gives it one (`/editor/?view=phone&edit`: the 3D island's camera and bend, `&cam
 plan, the e2e's; `?view=orbit` the 3D preview, `&eye=x,y,z&at=x,y,z` its camera).
 
 ## How the 3D island reads it
+
+**API for the 3D scene:** pure `app/src/lib/layout/` (`layoutOf(entries)`, model.ts's `objMid`, `footOf`, `doorOf`,
+`extentOf`, `heightAt`, `navOf` / `planTap`, `diffLayouts`); the live layout `store/layout.svelte.ts` (its header lists
+the API: `layout.current`, `on(fn)` with each change's diff, `apply(ops)`; kept in localStorage); three.js's
+`buildGround(layout, { renderer, look })` (`world3d/terrain.ts`: the `Ground` interface) and
+`placeObjects(layout, day)` (`world3d/objects.ts`).
 
 - **The ground:** `createIsland(canvas, (renderer) => buildGround(layout.current, { renderer, look }))`; its bands
   culled per frame (`ground.chunks()`, engine.ts).

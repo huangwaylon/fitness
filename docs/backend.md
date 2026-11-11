@@ -12,7 +12,7 @@ The record is an append-only log with slots (a later tally of the same day repla
 relay's `IslandStore` ([The record](#the-record)) is its only reader and writer. It authenticates, validates shapes,
 stamps `at` and appends; no server-side economy or config: the client caches the rows and derives every number on
 read. User actions are `event` rows sent through a persisted queue and shown at once; health data comes from each
-phone's Shortcut (`ingest`). Backups: point-in-time recovery and the dump ([runbook §6](ops/runbook.md#6-backups)).
+phone's Shortcut (`ingest`).
 
 The relay is one Worker with three SQLite-backed Durable Objects (`relay/wrangler.toml`): `ROOM` (`IslandRoom`:
 [Live relay](#live-relay)), `STORE` (`IslandStore`, the record) and `LOG` (`IslandLog`:
@@ -43,7 +43,7 @@ anything after a removal is acked as `duplicate`, and a removal's row is kept fo
 
 | type | data | Meaning |
 |---|---|---|
-| `spend` | `{spendId, item, bells, day?}` | a buy from the sender's wallet: `snack` 20 or `dinner` 35 (40 / 70 before `PRICE_HALVED_MS`, the record's clock); `day`, the Tokyo day it was for: a real date from 14 days before the record's Tokyo day to that day (`spendOf`) |
+| `spend` | `{spendId, item, bells, day?}` | a buy from the sender's wallet at `shopPrice` (`contract/rules.ts`); `day`, the Tokyo day it was for, up to 14 days back (`spendOf`) |
 | `spend_void` | `{spendId}` | either person's undo of a `spend` (the first after it counts; a second is a `duplicate`) |
 | `harvest` | `{week}` | a week's harvest, counted only while it's open |
 | `find` | `{kind, id}` | the shared ずかん's first find of `kind:id` (`FIND_KINDS`; ids the client's catalog, no relay deploy). Never ベル |
@@ -128,12 +128,9 @@ changes only its own; `PACK_MAX` items a trip (`pack full`).
 **`wtask`** a task or subtask (`WTASK_MAX`: `wedding full`), **`wnote`** the shared markdown, a save from an older base
 kept beside the new one (`was`).
 
-**Finds:** the client sends a `find` only the first time anyone finds that `kind:id`; `findsView` (`model/finds.ts`)
-keeps the first per `kind:id`.
-
-<a id="tally"></a>**Tally:** every catch and pick-up adds one to the phone's day tally (`store/actions.ts`), sent
-whole, held a minute. One row per person and day, each count the larger of the two (`mergeTally`), the phones the
-same (`model/tally.ts dayTallies`).
+<a id="tally"></a>**Tally:** every catch and pick-up adds one to the phone's day tally, sent whole, held a minute; one
+row per person and day, each count the larger of the two (`mergeTally`). A `find` goes only the first time anyone finds
+that `kind:id` (`model/finds.ts`).
 
 **Subjects and new keys:** `person` (whose goal; absent = the sender) only on the goal and profile prefs
 (`GOAL_PREF_KEYS`, `PROFILE_PREF_KEYS`; `eventSubject`); the row's `person` column is always the sender. **A new event
@@ -163,10 +160,9 @@ preflight; a Shortcut's `application/json` is fine), `{key, action, ...}`. Every
 | `whoami` | | `{ok, me, build}` (pairing) |
 | `health` | no `key` | `{ok, build: 'relay-2'}` |
 
-<a id="groups"></a>**Groups:** side-by-side events of one `group` (the shop's 全部; a room's whole change: the clear, a
-saved arrangement called up, their undo, up to `GROUP_MAX` in a request of that group alone) are all or none in one
-transaction: a piece already owned is refused `owned` alone, any other refusal rolls the lot back (`detail: 'group'`);
-a retry of a kept group is all duplicates. A bad `since`, `page` or `after` is `bad_request`; an unknown action too.
+<a id="groups"></a>**Groups:** the events of one `group` (the shop's 全部, a room's whole change, up to `GROUP_MAX`)
+are all or none in one transaction: a piece already owned is refused `owned` alone, any other refusal rolls the lot
+back (`detail: 'group'`); a retry of a kept group is all duplicates.
 
 ## Auth and limits
 - **Keys:** the caller is whichever Worker secret `KEY_A` / `KEY_B` matches (or `KEY_C`, the guest's: `G`,
@@ -237,31 +233,26 @@ ops the fold no longer reads (`model/food.ts foldedAway`). The record keeps ever
 `sync/queue.ts`: events in `island.queue`, sent in order until acked, in `events` requests (≤ 50 events, ≤ 900,000
 characters) answered by id; a request refused whole is halved and sent again, one event alone so refused is set aside.
 
-- **Paced** (`store/live.ts SEND_PACE_MS`): a send right after the last flush waits for one trailing flush that takes
-  everything gathered, so an editor burst is a few requests, never `busy`.
-- **Day rows** (`tally`, `island`): a newer row of the same day replaces the queued ones (not in flight).
-- **Set aside** (`parked`, `PARK_AFTER`): an event the record keeps failing is kept and shown but no longer sent or
-  blocking; logged `queue.poison`; a sync tap (`unpark`) tries it again. Never dropped.
-- **Unsent:** online, a write 2 minutes past its hold (`unsentStuck`) shows on the sync chip and in 設定 with 送信.
-- **Holds:** a held event (`holdMs`, the undo window) is skipped, not waited for; `unqueue` takes it back.
-  **Subjects:** a later event on the same spend never overtakes a held one.
-- **Groups** (`group`): none goes while any of it is held; then all of it in one request (one over 50 alone in its
-  request, up to `GROUP_MAX`; once a refused request is halved, it may split).
-- **Replies:** acked (`ok` or `duplicate`) → into `island.acked` (in the view until a snapshot holds the id), out of the
-  queue. `bad_request` / `too_large` → dropped with a message; `unauthorized` → pairing; other errors keep it and all
-  after it, backing off to 5 min.
-- **Retry now:** `online`, a sync tap, becoming visible and the socket's welcome (iOS often skips `online`), at most
-  once per 30 s.
-- **Hidden:** on hide the day rows still in their hold go at once in `keepalive` requests (under the browser's 64 KiB),
-  so a phone locked right after a catch doesn't leave the partner behind.
+- **Paced** (`SEND_PACE_MS`): a send right after a flush waits for one trailing flush, so a burst is a few requests.
+- **Day rows** (`tally`, `island`): a newer row of the same day replaces the queued ones.
+- **Set aside** (`parked`, `PARK_AFTER`): an event the record keeps failing is kept and shown, no longer blocking;
+  logged `queue.poison`; a sync tap tries it again. Never dropped. Unsent 2 minutes past its hold, it shows on the
+  sync chip and in 設定.
+- **Holds:** a held event (`holdMs`, the undo window) is skipped, not waited for; `unqueue` takes it back; a later
+  event on the same spend never overtakes it. A group goes only once none of it is held, in one request.
+- **Replies:** acked → `island.acked` (in the view until a snapshot holds it); `bad_request` / `too_large` → dropped
+  with a message; `unauthorized` → pairing; other errors keep it and all after it, backing off to 5 min. Retried on
+  `online`, a sync tap, becoming visible and the socket's welcome, at most once per 30 s.
+- **Hidden:** on hide the held day rows go at once in `keepalive` requests, so a phone locked right after a catch
+  doesn't leave the partner behind.
 
 ### Optimistic view
 `store/view.ts composeModel`: the cached rows plus acked and queued events, each stamped just after the newest server
 row on the server's clock, so read-time rules judge it as the server will. The store recomputes on every change and
 each minute (not while hidden).
 
-**The meal log costs the island nothing.** `reduce` keeps the `food*` rows raw (`model/state.ts` RAW_EVENTS); only the
-food sheet parses them (memoised per row).
+**The meal log costs the island nothing:** the `food*` rows stay raw (`model/state.ts` RAW_EVENTS) till the food
+sheet parses them.
 
 <a id="live-sync"></a>
 ### When it syncs
@@ -275,13 +266,10 @@ relay says the record changed ([Push](#push)). Each refresh flushes the queue, t
 - **After an ack:** the record answers each event with its stored row's `at`, and that row goes into the cache at once;
   only an ack without a row (a duplicate) is followed by a re-read 1.5 s later.
 
-**One device, one socket:** each hello names the device and the tab (`dev`, `sync/live.ts deviceId`) and replaces only
-that tab's earlier socket (4002), never the person's other devices' or tabs'. Those hear the person's decor ops live
-(the Mac's editor on the phone's island), and only the writing page skips its own `changed` (`sid`).
-
-**Two tabs:** two tabs (or a PWA and a Safari tab) of one browser are two devices to the room. The synced stores
-(`store/synced.svelte.ts`: the decorations, the rooms, the layout) merge what's in storage before they write and fold
-the other tab's writes as their `storage` events land.
+**One device, one socket:** each hello names the device and tab (`dev`) and replaces only that tab's earlier socket
+(4002); the person's other devices hear their decor ops live, and only the writing page skips its own `changed`
+(`sid`). Two tabs of one browser are two devices; the synced stores (`store/synced.svelte.ts`) merge storage before
+they write and fold the other tab's writes from their `storage` events.
 
 **Conflicts:** every op merges commutatively per id (`at`, then who); two layout pieces moved onto one tile at once
 are settled by the later op's phone ([island-layout.md](island-layout.md#ops-the-record-and-the-relay) "Two edits on
@@ -306,8 +294,6 @@ one tile").
   the full fold (`caughtOf`, `shopLedger`: the phones fold by the same two).
 - **A decor op's check** (`decorTarget`): only its own slots' rows and the caps' counts (meta `decor_live`;
   `decorcheck {fix?}`); a reset drops the voided rows (`dropVoided`).
-- **Ingest:** `relay/src/parse.ts`, the audit row (`relay/src/audit.ts`), each day's latest value from
-  `metrics_latest`; `relay/test/ingest-golden.test.ts` against a golden.
 - **`since`:** from the `at` index; a row that arrived out of `at` order (an import's) is `late`, and a poll returns
   late rows too (`LATE_MARGIN_MS`).
 - **Admin:** `POST /admin`, signed like `/notify` ([Push](#push) "Auth"; a `restore`, `rev` or `logpurge` taken once
@@ -318,11 +304,9 @@ one tile").
 - **Compaction** (`store.ts compact`): the phones' rule on the record's `metrics`. **It is off: every Health row is
   kept.** The cron runs it only with `COMPACT_CRON=1`, unset (`relay/test/compact.test.ts` fails while it is set); the
   admin's `compact` needs `confirm: 'delete-health-history'`.
-- **Snapshot size:** a year of three people is ~50–100k rows, ~3–6 MB of JSON, so the snapshot is paged ([API](#api)),
-  4,000 rows a page ([Snapshot cache](#snapshot-cache)).
+- **Snapshot size:** a year of three people is ~50–100k rows, ~3–6 MB of JSON, so the snapshot is paged (4,000 rows).
 - **A restore** (`restore {bookmark}`): every `/api` request is `unavailable` until the restart, so no write is acked
-  and then dropped; the restored record starts a new epoch.
-- **Backups:** point-in-time recovery (30 days, on the Free plan) and `dump` / `load`: [runbook §9](ops/runbook.md#9-the-record).
+  and then dropped; a new epoch. Backups: [runbook §6](ops/runbook.md#6-backups).
 
 ## Live relay
 Presence between the phones while they have the app open (decisions: *Live relay on Cloudflare*). The room carries
@@ -332,8 +316,7 @@ intents, never data of record: the record still catches an offline phone up.
   `src/room.ts`). Production `wss://island-fund-relay.island-fund-relay.workers.dev/room`; a test copy,
   `island-fund-relay-test`, with its own secrets, for the smoke test. `GET /health` → `{ok, v, versions, t, wx}`;
   `POST /api`, `/admin`, `/notify` ([Push](#push)), `/log` ([observability](ops/observability.md)), `/stt`.
-- **Admission:** `/room` upgrades only from `ALLOWED_ORIGINS` (`https://island-fund.pages.dev`) and
-  `http://localhost|127.0.0.1`, else 403. The origin only keeps other sites out; the key is the auth.
+- **Admission:** `/room` upgrades only from `ALLOWED_ORIGINS` and localhost, else 403; the key is the auth.
 - **Tickets** (`contract/ticket.ts`, `auth.ts admission`): each socket opens with the subprotocols `island-v1` and a
   short-lived HMAC ticket under the person's key; the Worker checks it first (bad or stale, 403; a ticketless socket
   too), and a ticketed hello must be that person's. A phone clock over 5 minutes off has no live socket.
@@ -343,16 +326,12 @@ intents, never data of record: the record still catches an offline phone up.
   No hello within 12 s: 4003; a second socket of the same device replaces the first (4002).
 - **Protocol** (`app/src/lib/contract/live-protocol.ts`, both sides' parsers and each field's bounds): JSON, `v: 3`
   (`LIVE_VS`), ≤ 256 bytes (a `replay` ≤ 16,000). Client intents:
-  - The shared world's ([Shared world](#shared-world)): `walk` (the very walk, on the relay's clock), `act`, `catch`,
-    `world {op, id}`, `pick`, `put`, `shake`, and `decor` (the record's op, kept for the day).
-  - Presence only: `drag`, `tent` (my villager in a room), `fish {ph, …}`, `say {text, sc?}`
-    ([Villager taps](design.md#villager-taps)), and ききみみ's `quiz` and `play`
-    ([kikimimi-engine.md](kikimimi-engine.md#the-play-wire)).
-  - `highfive {at}`: held for an away recipient until their `got {at}`, or a day
-    ([decisions](decisions.md#a-high-five-goes-over-the-relay-only)).
-  - `music {src, at, song?, ms?, pc?}` ([sound-sync.md](sound-sync.md)): the room keeps the last record per source
-    (`newerMusic`) and sends the live ones after each welcome.
-  - `saved {}` ([Push](#push)), `ping {c}` → `pong {c, t}`, `got {at}`.
+  - The shared world's, kept for the day ([Shared world](#shared-world)): `walk`, `act`, `catch`, `world`, `pick`,
+    `put`, `shake`, `decor`.
+  - Presence only: `drag`, `tent`, `fish`, `say`, ききみみ's `quiz` and `play`
+    ([kikimimi-engine.md](kikimimi-engine.md#the-play-wire)); `highfive`, held a day for an away recipient
+    ([decisions](decisions.md#a-high-five-goes-over-the-relay-only)); `music` ([sound-sync.md](sound-sync.md): the
+    last record per source, sent after each welcome); `saved`, `ping` → `pong`, `got`.
 
   Relay-only: `changed`, `wx`, `presence {who, on}`, `replay {es}`, `ack`, `busy`. The room drops any client-sent
   `who`/`t`, stamps its own (`t` strictly increasing) and relays to the others; a `decor` op also to the sender's
@@ -367,20 +346,17 @@ intents, never data of record: the record still catches an offline phone up.
   [Relay versions side by side](decisions.md#relay-versions-side-by-side) says.
 - **Limits:** a token bucket per socket (20, 20/s); beyond it messages are dropped, a numbered intent hears `busy`.
 - **Replay:** a hello with `since` gets the day's newer changes after the welcome, in `replay {es}` messages.
-- **Cost:** the Hibernation API: an idle socket keeps no object in memory ([budget](ops/observability.md#request-budget)).
+- **Cost:** hibernation: an idle socket keeps no object in memory ([budget](ops/observability.md#request-budget)).
 - **Client** (`app/src/lib/sync/live.ts`, `liveRelay()`: one socket for the app; its constants: backoff, pings,
   liveness, the outbox): connected while visible and online, reconnecting with backoff; after 4001/4002/4004 it waits
   until the page is shown again.
-  - **Clock:** the offset from the shortest of the last pings' round trips (`serverNow()`), kept across reloads
-    (`island.liveOffset`), so a stamp before the first welcome is on the relay's clock too. The shared world's Tokyo
+  - **Clock:** the offset from the shortest recent ping (`serverNow()`), kept across reloads; the shared world's Tokyo
     day is `world.now()`'s, never the device's.
-  - **Liveness:** a quiet socket is probed and given up (4000) when nothing answers; the welcome is due within 10 s.
-  - **The outbox:** what the room keeps (`isStored`) goes even with the partner away and waits until its `ack`,
-    resent after a reconnect, kept in localStorage (`island.liveOutbox`), so an intent made offline survives a kill;
-    dropped after 4 tries (`ws.unacked`: a catch is still in the record's day row). An `ok: false` is a race lost
-    ([Shared world](#shared-world) "A race lost").
-  - `send(intent)` is a no-op returning false unless welcomed and, for what the room doesn't keep, someone is there;
-    it never throws or blocks. `LIVE_URL`, overridable by `VITE_LIVE_URL` (empty = off).
+  - **The outbox:** what the room keeps (`isStored`) waits until its `ack`, resent after a reconnect and kept in
+    localStorage, so an intent made offline survives a kill; dropped after 4 tries (a catch is still in the record's
+    day row). An `ok: false` is a race lost ([Shared world](#shared-world) "A race lost").
+  - `send(intent)` never throws or blocks: false unless welcomed (and, for what the room doesn't keep, someone is
+    there). `LIVE_URL`, overridable by `VITE_LIVE_URL` (empty = off).
 - **Measured:** the relay's latencies, in [perf.md](ops/perf.md) "Measuring".
 - **Tests:** `relay/test/` (`cd relay && npm test`, also `.github/workflows/relay.yml`); `live-protocol.test.ts`,
   `live.test.ts`, `live-room.test.ts` (the client against the real room) and `store/push.test.ts` in the app's vitest.
@@ -406,14 +382,11 @@ backoff), `IslandRoom.weatherTick` (`relay/src/index.ts`), the phones' `sync/wx.
   shows the same as one online.
 - **To the phones:** `wx` after the welcome (while the timeline serves: fetched within 36 h and covering the hour) and
   on each `rev`; cached as `island.wx`.
-- **The phones:** in ほんもの mode (`pref weatherMode`, the last anyone set) the hour's sky is the timeline's while it
-  serves, else the seeded day's; winter's snow, the event nights held fine, the seeded fog and aurora and the rainbow
-  are the phone's rules (pure, by the date).
-- **The island's look** (`pref seasonLook`, 設定 → 季節): `{event, season, weather, tod}` (each a token or null) or
-  `null` (自動); a phone reads the values it knows.
-- **Ops:** `GET /health` → `wx {at, src, age (min), hours (ahead), fails}`, asked of the room at most once a minute;
-  the signed `/admin` op `wx`: `{refresh: true}` fetches now, `{s, fx?}` puts a fixture in (the smoke test), `{}` says
-  how it is. Weather is never written to the record; only the mode is.
+- **The phones:** in ほんもの mode (`pref weatherMode`) the hour's sky is the timeline's while it serves, else the seeded
+  day's; winter's snow, the fine event nights, fog, aurora and rainbow are the phone's rules. The island's look
+  (`pref seasonLook`, 設定 → 季節): `{event, season, weather, tod}` or `null` (自動).
+- **Ops:** `GET /health` → `wx {at, src, age, hours, fails}`; the signed `/admin` op `wx` refreshes, puts a fixture
+  in (the smoke test) or says how it is. Weather is never written to the record; only the mode is.
 - **Tests:** `relay/test/weather.test.ts` (recorded Open-Meteo responses against golden timelines), `room.test.ts`;
   the app's `island/realWeather.test.ts`; `e2e/realweather.spec.ts`; `npm run smoke`.
 
@@ -437,8 +410,7 @@ ingest, the trees, きろく, けんこう and ふたりでぜんぶ stay A + B.
   (`index.ts Marks`).
 - **The phones:** a member's draws the guest's villager as a third actor (`ui-state/cast.ts`: `mine`, `partner`,
   `third`; on the guest's phone `third` is B); the guest's phone guards what it sends by the same rules.
-- **Tests:** `relay/test/guest.test.ts`, `contract/guest.test.ts`, `model/guest.test.ts`, `e2e/guest.spec.ts`,
-  `e2e/island-edit.spec.ts`; `npm run smoke` with `KEY_C`.
+- **Tests:** `relay/test/guest.test.ts`, `contract/guest.test.ts`, `e2e/guest.spec.ts`; `npm run smoke` with `KEY_C`.
 
 ## Ambient life
 What the island does on its own (a villager's outing or small move, the visitor's beat, a fish, bubbles or a bug
@@ -451,20 +423,16 @@ constants: the odds, the reach, the stays); idle life and the critters play it.
   intent sent before the start has reached the partner.
 - **Randomness:** `slotRand(date, slot, kind)` = `dayRand(date, "ambient:<kind>:<slot>")`; species by the sky at the
   slot's start (`weather.ts yieldSkyAt`).
-- **Villagers** (`villagerBeats`): one beat a slot, an idle move from `IDLE_POOL`, an outing (one villager out at a
-  time; `avatar.ts outing`), or a chat or a dance for two free villagers. A sleeper is never free; a villager whose
-  person has the island open makes small moves but no outings (`held`). The guest's villager joins while awake, with
-  no outing and no tree shaking.
-- **Visitor:** `Visitor.svelte beat(r)` runs `visitorLife.ts pickAct`, `pickEmote` and `strollSpots` on the slot's
-  `visitor` PRNG; a phone whose visitor is speaking skips it.
-- **Critters** (`spawnsIn(date, slot, coasts)`, `crittersAt`): per channel (the front beach's sea and bubbles, a coast
-  stretch each, each fresh water, two bugs) a slot brings one once the last one's stay is over, chained per 10-minute
-  block, so a phone opening mid-stay finds the ones still there. Where each is comes from its seed
-  (`critterPath.ts`), never a camera; its id is `<kind>:<slot>`.
-- **Agreement and its limits:** the same inputs give the same slot (tested with shuffled inputs and skewed clocks).
-  Phones differ only where their inputs do: a clock offset past the margin, a walk within ~20 ms of a boundary, a local
-  skip (a sheet, a reaction playing), the camera. What a person does by hand (a bite plan, a dive's chase, a balloon's
-  flight, a shooting star, the visitor's lines, sounds) plays on their phone; its outcome is shared.
+- **Villagers** (`villagerBeats`): one beat a slot, an idle move, an outing (one out at a time) or a chat or dance for
+  two free villagers. A sleeper is never free; a villager whose person has the island open makes no outings (`held`);
+  the guest's joins while awake, with no outing and no tree shaking.
+- **Visitor:** `Visitor.svelte beat(r)` on the slot's `visitor` PRNG (`visitorLife.ts`); skipped while it speaks.
+- **Critters** (`spawnsIn`, `crittersAt`): per channel a slot brings one once the last one's stay is over, chained per
+  10-minute block, so a phone opening mid-stay finds the ones still there; where each is comes from its seed, its id
+  `<kind>:<slot>`.
+- **Agreement:** the same inputs give the same slot (tested with shuffled inputs and skewed clocks); phones differ only
+  where their inputs do (a clock past the margin, a local skip, the camera). What a person does by hand plays on their
+  phone; its outcome is shared.
 
 ## Shared world
 Every phone shows the same island (decisions: *A shared world: the seed for what comes, the relay for what we do*;
@@ -484,9 +452,8 @@ person does is a small intent over the relay, kept by the room for the day, fold
 - **The room** (`relay/src/room.ts`): today's world on the relay's clock: the last `RING_MAX` changes and each person's
   last `walk`, in one storage value (`ring`). The day's claims and each tree's last nest are kept apart (`day`), so
   neither a trimmed ring nor a hibernation lets a claim be made twice (`NEST_GAP_MS`).
-- **The demo** (`sync/live-local.ts`): the players are tabs of one browser (`?demo`, `?demo&as=B`, `as=G`); a
-  BroadcastChannel carries the intents and the sending tab plays the room's rules (`island-demo.relay`), so the
-  two-player e2e run without a network.
+- **The demo** (`sync/live-local.ts`): the players are tabs of one browser (`?demo`, `&as=B`, `as=G`), a
+  BroadcastChannel the room, so the two-player e2e run without a network.
 - **The record's day row** (`island` event, `store/actions.ts sendIslandDay`): my part of the day, sent whole when it
   grows, held 2 minutes, only once this session's fetch has folded the record's rows in; the store folds in today's,
   yesterday's watering and the wishes for the mornings to come (`applyRow`).
@@ -500,10 +467,9 @@ person does is a small intent over the relay, kept by the room for the day, fold
   is `world {op: woke, id: gulliver}`.
 - **The decorations** (`store/decor.svelte.ts`): each change is one `decor` op, to the relay at once and to the
   record's queue, merged by id (`contract/decor.ts`); my op's `at` is on the relay's clock.
-- **Checked** (`e2e/sync-harness.spec.ts`): two players run a scripted session, then both phones (and a third opening
-  later) must have the same canonical day (`world-day.ts canonical`, `hash`), decorations and villager points. On the
-  demo's tabs in CI; against the test relay with `RELAY_E2E=1 … --workers=1`. `world-day.test.ts` runs a session with
-  conflicts, a dropped socket and a late join on the real `RoomCore`.
+- **Checked** (`e2e/sync-harness.spec.ts`; against the test relay with `RELAY_E2E=1`): after a scripted session every
+  phone, a late one too, has the same canonical day (`world-day.ts canonical`), decorations and villager points;
+  `world-day.test.ts` adds conflicts, a dropped socket and a late join on the real `RoomCore`.
 
 ## Push
 While the app is on screen, a change to the record reaches the other phones in well under a second (decisions: *Push
@@ -525,20 +491,15 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 ## Service worker
 `app/src/service-worker/` (pure rules and every cache's bound in `caches.ts`). No `push` or `notificationclick` handler ([decisions](decisions.md#no-notifications), `e2e/no-notify.spec.ts`).
 
-- **Registration:** by the app, not Kit (`kit.serviceWorker.register = false`; `lib/ui-state/swLate.ts`): once the 3D
-  island has its models in or can't draw (30 s at the latest), off the island after the window's load, so a first
-  visit's precache never competes with three.js and the models. A page it didn't control then posts its resource
-  timings' URLs (`warm`): the worker keeps their models and art (`caches.ts warmable`) from the HTTP cache, so launch 2
-  asks the network for 3 files, not 78.
-- **Install:** precaches the built JS/CSS and the static files `caches.ts precachable` keeps (the rest on first use:
-  `index.ts`'s header). The hashed chunks are all or nothing (`addAll`, an older shell's copy where it has one); the
-  static files go by content hash (`caches.ts installStatics`, `vite.config.ts swPrecacheOnly`), each on its own.
-  (An install after a deploy measured: sw-measure.ts at the `probes` tag.)
+- **Registration:** by the app (`lib/ui-state/swLate.ts`), once the 3D island has its models in or can't draw (30 s at
+  the latest), so a first visit's precache never competes with them; that page then posts its resource timings' URLs
+  (`warm`) and the worker keeps their models and art from the HTTP cache (`caches.ts warmable`).
+- **Install:** precaches the built JS/CSS and what `caches.ts precachable` keeps (the rest on first use); the hashed
+  chunks all or nothing (`addAll`), the static files by content hash (`caches.ts installStatics`).
 - **Activate:** keeps the current shell (`island-shell-<version>`), the previous one (an old page loads its lazy chunks
   from it), the runtime caches and the saved areas; deletes the rest.
-- **Navigations:** this version's cached shell at once (`caches.ts isShellOf`); every deploy changes the worker, which
-  the browser checks on each navigation. No shell of this version yet: network first, an older shell offline or after
-  3 s.
+- **Navigations:** this version's cached shell at once (`caches.ts isShellOf`); none yet: network first, an older
+  shell offline or after 3 s.
 - **Updates:** Kit's `_app/version.json` check sets `updated`; the layout waits for the new build's worker
   (`ui-state/reload.ts newWorker`) and reloads once nothing is open. Never on a timer; a failed install reloads
   nothing. `e2e/sw-update.spec.ts` (`scripts/serve-build.ts /__e2e/deploy` stands in for a deploy).

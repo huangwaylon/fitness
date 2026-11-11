@@ -43,13 +43,12 @@ The quiz, ひとこと クイズ, is the base every other game reuses (kikimimi-
 - **Host and speakers.** Each question is spoken by a villager: their icon bobs with an empty NH speech bubble and a
   thin progress bar the clip's length. The text is never shown before the reveal. No Animalese over the English.
 - **Length.** 8 questions: a level's mix, the アナウンス pack, or two スピード はしご ladders of 4 rungs.
-- **Countdown.** 3-2-1 once (4 s); each question then has a ~1.5 s lead-in with a chime.
+- **Countdown.** 3-2-1 once (4 s); a player's chip gets a ✓ when they answer, never what they chose.
 - **Answering.** The choices show dimmed while the clip plays and unlock when its first play ends; one tap, final.
   The limit runs from the end of the first play: the lobby's 答える時間 (`kiki.timer`), 20 / **30** / 60 s or none
   (untimed: the question waits for everyone joined and here). The host sets it; each phone remembers its last
   (`DEVICE.kikimimiTimer`); it rides on the `open`'s seed. 🔁 replays freely; 🐢 slow at levels 1 and 2 only (a
   slowed take undoes level 3's reductions).
-- **Showing who answered.** A player's chip gets a ✓ when they answer, never what they chose.
 - **Reveal.** Once everyone joined has answered, or at the limit; untimed. It stays until the host taps 次へ (solo:
   you); the others tap 読み終わった (📖 on their chip), counted on the host's button (`kiki.nextReady`), which can always
   go on; with the host gone everyone gets 次へ. ○ on the right choice, × on a wrong pick (colour is never the only
@@ -68,12 +67,11 @@ The quiz, ひとこと クイズ, is the base every other game reuses (kikimimi-
 
 ## Question types
 
-- **`pic`**: tap the picture heard, from 4 NH art choices with Japanese labels (for VoiceOver, so the English isn't
-  given away). The distractors are heard in the sentence or sound close ("I didn't catch a tuna, but I got a squid!").
+- **`pic`**: tap the picture heard, from 4 NH art choices with Japanese labels (so VoiceOver doesn't give the English
+  away); the distractors are heard in the sentence or sound close.
 - **`word`**: the sentence with a blank; pick the word heard from 3 near-sound choices that each fit (light/right,
-  hat/hut/hot, berry/very, can/can't, fifteen/fifty), each pair checked in American English.
-- **`num`**: prices, times and dates with close distractors (2:15 / 2:50, 1,500 / 15,000, the 13th / 30th), from
-  templates (speaker × phrase × number).
+  can/can't, fifteen/fifty).
+- **`num`**: prices, times and dates with close distractors (2:15 / 2:50, the 13th / 30th), from templates.
 - **`reply`**: the best of 3 written replies to a question (TOEIC Part 2). Level 2 up.
 - **`mean`**: what the speaker really means, from 3 paraphrases (the literal reading, the opposite, a plausible wrong
   inference).
@@ -107,10 +105,8 @@ One ladder named after places, never "easy / hard" (choosing the easy one in fro
 L5 is the アナウンス mode beside もり, not a place. The mapping is a UI table (catalog.ts `PLACES`, `placeOfLv`,
 `lvOfPlace`), so the wire and the `listen` row keep plain `lv` (1–8). A place with no content in this build is sunk
 (`aria-disabled`).
-- **The comfortable place** (stages.ts `stageAt` over progress.ts's level): 今の場所 and the place that is about
-  right next (`kiki.prog.comfort`).
-- **おまかせ** is the place row's default (catalog.ts `omakaseLv`): the latest みみ チェック's level, else the
-  comfortable level, else はまべ 2. A tap is an override kept per mode (`DEVICE.kikiStage[gm]`); おまかせに戻す clears it.
+- **おまかせ** is the place row's default (catalog.ts `omakaseLv`): the latest みみ チェック's level, else the comfortable
+  level (stages.ts `stageAt`), else はまべ 2. A tap is an override kept per mode; おまかせに戻す clears it.
 
 ## Co-op and たいせん
 
@@ -128,34 +124,25 @@ L5 is the アナウンス mode beside もり, not a place. The mapping is a UI t
 - **Shape.** 2–4 lines, two villagers taking turns (たちぎき: three); one clip per line (`<item>-<n>`), played in turn
   on the relay clock with a 0.3 s gap (`LINE_GAP`). Heard late, a line already over is skipped, never two at once.
   Replays play the whole sequence (no 🐢).
-- **Distractors:** for `gist` a heard detail misplaced, the literal reading or the opposite; for `next` a repeated
-  word, the wrong role, an answer to what wasn't asked.
-- **UI.** Both speakers' heads, the one talking bobbing. At the reveal the two-sided transcript (`Transcript.svelte`:
-  first speaker left, the other right, three seated left/centre/right, each line's Japanese; a `next` answer as a
-  dashed 次のひとこと bubble).
+- **UI.** Both speakers' heads, the one talking bobbing; at the reveal the two-sided transcript (`Transcript.svelte`)
+  with each line's Japanese.
 
 ## Visuals
 
 - **Scene card** (`scene/SceneCard.svelte`): a staged item's setting from the lead-in to the reveal: a painted
-  backdrop (bank.ts `SCENE_IDS`) under a paper vignette, the place's name, and the channel: face to face the speakers
-  stand in it full-body; `PhoneFrame` (通話中 or 留守電, signal bars that drop on a `signal` line), `PaFrame` (a horn
-  with ripples), `VideoFrame` (a 2×2 call grid), all CSS/SVG. Reduced motion stills them. Levels 1–3 stay on the
-  plain stage.
-- **The backdrops** are generated paper-gouache (`npm run art:scenes`, scripts/scenes/scenes.ts; webp under
-  `static/art/scene/`; no text or numbers, so they never give an answer away), the villagers' official art
-  composited over them. No NH character or Nintendo look is ever generated.
-- **Sound marks at the reveal** (`SoundLine.svelte`, marks.ts): the English with the focus and `say` (Let me →
-  *lemme*), `link` ‿, `drop` (tryin~~g~~), `stress` ●, keyed by `MarkLegend`; authored per clip for every `tts`
-  respelling.
+  backdrop (bank.ts `SCENE_IDS`), the place's name and the channel (face to face, `PhoneFrame`, `PaFrame`,
+  `VideoFrame`, all CSS/SVG). Levels 1–3 stay on the plain stage.
+- **The backdrops** are generated paper-gouache (`npm run art:scenes`; no text or numbers, so they never give an
+  answer away), the villagers' official art composited over them. No NH character or Nintendo look is ever generated.
+- **Sound marks at the reveal** (`SoundLine.svelte`, marks.ts): the focus, `say` (Let me → *lemme*), `link`, `drop`
+  and `stress`, keyed by `MarkLegend`; authored per clip for every `tts` respelling.
 - **Karaoke** while the clip replays: the words said in ink, the one being said underlined, timed by `words.json`
   (kikimimi-engine.md "Audio").
 
 ## The アナウンス pack
 
-Level 5 (bank5.ts, 30 items, B1+ → B2): station and train announcements, airport PA, phone menus, voicemails, shop
-announcements, a fire alarm test, a radio typhoon blurb in a café. 12 `num`, 6 single-clip `gist`, 6 `mean`, 6
-`reply`, all US, each with its condition (PA, call or voicemail; 8 heavy). Difficulty and the level nudge count it as
-もり (bank.ts `levelRank`).
+Level 5 (bank5.ts, 30 items, B1+ → B2): announcements, airport PA, phone menus and voicemails, each with its condition
+(PA, call or voicemail). Difficulty and the level nudge count it as もり (bank.ts `levelRank`).
 
 ## スピード はしご
 
@@ -177,22 +164,15 @@ announcements, a fire alarm test, a radio typhoon blurb in a café. 12 `num`, 6 
 A daily drill of American connected speech (about 3–4 minutes of the 15-minute day): the phenomena and phrases are
 curriculum.md "Connected speech"; the deal and the audio, kikimimi-engine.md "音の へんしん".
 - **A game:** 8 phrases, 5 of today's phenomenon and one each of the phenomena before it, every phrase in another
-  voice. The rounds take turns:
-  - "what did they say?": the line with its changed words blanked; pick the full form from 3 near-sound choices
-    (gonna → going to / got to / want to).
-  - dictation: write the missing words, typed and matched forgivingly (case and punctuation aside, a contraction as
-    good as its long form, the apostrophe optional where no other word is spelled so, a reduced spelling as good as
-    what it stands for; never a near spelling, then / than), or tapped as tiles with 1–4 decoys (remembered per
-    phone, `DEVICE.kikiTiles`).
+  voice. The rounds take turns: pick the full form of the blanked words from 3 near-sound choices (gonna → going to /
+  got to / want to), or write them (typed and matched forgivingly by games/henshin/match.ts, never a near spelling such as
+  then / than; or tapped as tiles, remembered per phone).
 - **Reveal:** ○ / ×, the line with its sound mark, the full form beside the spelling as said, the Japanese and the
-  trap's note, and three takes to compare: careful (the full form word by word), natural, fast (1.25×). The same on
-  every review row.
+  trap's note, and three takes to compare: careful, natural, fast (1.25×). The same on every review row.
 - **Tiers** as the listening games': easy two choices and one decoy tile, hard four decoys. Co-op counts a phrase
   anyone got; no たいせん.
-- **Today's phenomenon** (henshin.ts `focusOf`; the 習得 share and the give-up count in its header): the first in order
-  not yet 習得; one tried long without it waits in review. The host's rides the lobby's options.
-- **The mode page** lists each phenomenon in order with its bar (outlined till 3 answers), 今日 and 習得; a tap plays
-  that one instead, until reset to today's. Mine alone, never the partner's.
+- **Today's phenomenon** (henshin.ts `focusOf`): the first in order not yet 習得; the host's rides the lobby's
+  options. The mode page lists each with its bar, and a tap plays another until reset. Mine alone.
 - **Recycling:** a missed phrase is an item card like any; おさらい asks it through another phrase of its phenomenon
   (srs.ts `isSibling`).
 - **The row** (kikimimi-engine.md "音の へんしん"): level 8 trains the sounds, not a place: 記録's つながる音 and the
@@ -206,12 +186,10 @@ At ほし, on じっくり (never きまぐれ's pick); about 6 minutes, solo or
   nothing to answer while it plays), then 4–5 questions with no clip (the point, the implied meaning, the feeling,
   the next step), 3 English choices each (easy, at かわ or below: two). 通しでもう一度 replays it all.
 - **Reveal:** ○ / ×, each choice's Japanese, 解説, and the line that answers it, with ▶︎.
-- **Results:** the review, the transcript (every line tappable to hear it alone, each question's mark on its line, a
-  miss in coral), the credit of a real recording, then dictation: 1–2 lines near my misses (all right: one near the
-  end), typed (音の へんしん's matching) or tapped as tiles with near-sound decoys.
-- **The pieces:** 5 real recordings and 5 generated scenes, 31 minutes. The mode page lists the place's pieces with my
-  last score; today's is the first not heard, then one I missed (under 75 %) a week ago or more, else the least
-  recent. A tap plays another.
+- **Results:** the review, the transcript (every line tappable alone, each question's mark on its line), the credit
+  of a real recording, then dictation of 1–2 lines near my misses.
+- **The pieces:** 5 real recordings and 5 generated scenes. Today's is the first not heard, then one I missed (under
+  75 %) a week ago or more, else the least recent; the mode page lets me pick another.
 - **Recycling:** each question and dictation line is an item (`<piece>-q1`, `<piece>-k12`, outside every deck); a
   missed one comes back in おさらい through a sibling.
 - **Credits:** 設定's 音声の出典 lists each real recording's credit line and licence; the results show it under the
@@ -236,13 +214,10 @@ first open: welcome ─ sound check ─ みみ チェック ─ result ─▶ hu
 
 A hub and one push/pop stack, not a tab bar: each page's foot is its sticky action row, and most opens are "do
 today's thing".
-- **One stack** over the hub (nav.ts `Page`), at most 4 deep (`MAX_DEPTH`). ‹ pops one; a backdrop tap or Esc pops,
-  and closes at the hub.
-- **✕ closes the sheet from any page.** With others in my lobby it asks first.
-- **In a game** (countdown → reveal) there is no ‹; ✕, a backdrop tap or Esc asks `kiki.quit` (the record so far is
-  kept).
-- **Results:** 終わる goes to the hub (or back to the page a lesson came from); もう一度遊ぶ restarts the mode and
-  re-invites.
+- **One stack** over the hub (nav.ts `Page`), at most 4 deep (`MAX_DEPTH`); ‹, a backdrop tap or Esc pops, and closes
+  at the hub. ✕ closes the sheet from any page (with others in my lobby it asks first).
+- **In a game** there is no ‹; ✕, a backdrop tap or Esc asks `kiki.quit` (the record so far is kept).
+- **Results:** 終わる goes to the hub (or the page a lesson came from); もう一度遊ぶ restarts the mode and re-invites.
 - **Deep links:** the invite gives `[lobby]` (`inviteStack`), the たいかい banner `[taikai]`, a mode `[asobu, mode]`.
 - **The night:** StoryFrame is a game page (no ‹, a backdrop tap does nothing); its sleep timer ends it and the sheet
   fades closed over 2 s.
@@ -253,12 +228,10 @@ Cream cards on the tan panel (`--r-card` 24, buttons 16, taps ≥ 44 px).
 
 ### The hub
 
-The root page: the invite card while one waits; しずえ's line by the hour (`kiki.hub.*`; once the menu's done,
-`kiki.hub.enough`; never a count of missed days); the daily menu's three cards ("The daily menu": a done card folds to
-a coral ✓, the first undone is green-edged with the only green button, a card plays at once), with `kiki.menu.hint`;
-a quiet 👂 みみ チェック card until a check row exists; four entry tiles, 遊ぶ · みんなで · 図鑑 · 記録, each with one
-live line; the yuzu たいかい banner (Fri 18:00 – Mon 05:00); the week card (`hub/WeekCard.svelte`: the stamp card
-and the quest). By day after a bedtime chapter, `hub/MorningCard.svelte` sits under the menu.
+The root page: the invite card while one waits; しずえ's line by the hour (never a count of missed days); the daily
+menu's three cards ("The daily menu": a done card folds to ✓, the first undone has the only green button); a quiet
+👂 みみ チェック card until a check row exists; four entry tiles, 遊ぶ · みんなで · 図鑑 · 記録; the たいかい banner;
+the week card (the stamp card and the quest); by day after a bedtime chapter, `hub/MorningCard.svelte`.
 
 ### 遊ぶ
 
@@ -283,9 +256,8 @@ Only playable modes show (content and gate); an empty group is hidden; no "comin
 The island path of units (curriculum.md "Units"), from 遊ぶ's first card and the menu's 今日の一歩;
 `path/IslandPath.svelte`, its own chunk. The model is `kikimimi/path.ts` (pure): `pathOf({units, states, level,
 played, filter, placed})`.
-- **Stages in order**, each folding under a head button (name, ★, ここから, the landmark, a stamps bar, ✓ k / n), open
-  by default for the current unit's stage, the placed one, one with a celebration, and every stage a filter shows. In
-  a stage the anchors (`glue`) come first under 最初におすすめ. はまべ has no units: its stop is the quiz.
+- **Stages in order**, each folding under its head (name, ★, the landmark, ✓ k / n), open for the current unit's
+  stage and the placed one. In a stage the anchors (`glue`) come first. はまべ has no units: its stop is the quiz.
 - **The current unit** (`pathOf`): the last one I played and haven't stamped, else the first unstamped from my
   comfortable stage up; its next lesson (`nextLesson`): the core lessons, the チェック until stamped, then the extras.
   続ける on the current stop opens that lesson's intro card; a tap elsewhere opens the unit's page.
@@ -299,30 +271,24 @@ played, filter, placed})`.
 
 ### A unit's page
 
-`path/UnitPage.svelte`: the backdrop (or the domain's tint) with the host; the can-do's one line (`cando.short`, ≤ 25
-characters, also a stop's subtitle and the intro card's headline), the full sentence under 詳しく; the stamp line
-(mine and the partner's, 🏅 once stamped) with my tally; the letter, folded, once stamped; the three core lessons
-(the next green-edged, ✓ once played to the end), the extras (`kiki.unit.extras`); the phrases caught k / n → 図鑑 on
-this unit; 飛ばしてチェック until the チェック is next or it's stamped. The lessons shown are those with playable items
-(`playIds`).
+`path/UnitPage.svelte`: the backdrop with the host; the can-do's one line (`cando.short`), the full sentence under
+詳しく; the stamp line (mine and the partner's) with my tally; the letter once stamped; the three core lessons and the
+extras (those with playable items, `playIds`); the phrases caught k / n → 図鑑; 飛ばしてチェック until the チェック is next
+or it's stamped.
 
 ### Mode detail
 
-A mode's page (`mode/ModeDetail.svelte`): its backdrop and cast, subtitle and blurb, chips (questions, minutes, two
-can play; no question chip or timer for a mic mode), the place row (`mode/StageRow.svelte`: five places, the picked
-yuzu, empty ones sunk, はまべ's sub-steps as chips; a listening game offers only the places its files cover, catalog.ts
-`contentLevels`), 答える時間 (`TimerRow`), and the sticky foot: 誘う / 始める. At volume 0 an inline `kiki.testZero` line.
-No unit picker: units live on the path.
+A mode's page (`mode/ModeDetail.svelte`): its backdrop, cast and blurb, the place row (`mode/StageRow.svelte`: a
+listening game offers only the places its files cover, catalog.ts `contentLevels`), 答える時間, and the sticky foot:
+誘う / 始める. At volume 0 an inline `kiki.testZero` line. No unit picker: units live on the path.
 
 ### しゅうまつ たいかい
 
-`taikai/TaikaiLobby.svelte` (Page `taikai`), from the hub's banner while `taikaiOpen` (Fri 18:00 – Mon 05:00 on the
-scene clock; `?date=` previews it): しずえ's welcome and three rules, who's in with how many misses each offered (never
-which), 協力 ／ 勝負, then a solo start or 誘う and the host's 始める（N人）. The show (`TaikaiPlay.svelte`): しずえ's
-bar (the question of 7, the wager), co-op's team against her target or 勝負's chips; the wager's bet chips 10–100
-first; a confident miss (bet ≥ 70) is a coral card with the answer large and the clip once more. Results: the medal,
-her target and gold lines, the feedback and the misses. Trophies sit on 記録's and 図鑑's shelves. The rules:
-kikimimi-engine.md "しゅうまつ たいかい".
+`taikai/TaikaiLobby.svelte`, from the hub's banner while `taikaiOpen` (Fri 18:00 – Mon 05:00; `?date=` previews it):
+who's in with how many misses each offered (never which), 協力 ／ 勝負, then a solo start or 誘う. The show
+(`TaikaiPlay.svelte`): co-op's team against しずえ's target or 勝負's chips; a confident miss (bet ≥ 70) is a coral
+card with the answer large and the clip once more. Results: the medal; trophies sit on 記録's and 図鑑's shelves. The
+rules: kikimimi-engine.md "しゅうまつ たいかい".
 
 ### みんなで
 
@@ -334,33 +300,27 @@ Each phone's tier is its own and never shown beside anyone else's.
 
 ### In-game frame
 
-The frame (frame/RoundFrame, RevealFrame) owns the bar (players' chips at the left, the mode's name with round dots,
-✕), the countdown, the replay row (🔁 / 🐢, listen-only on the other phones with 音を1台にまとめる), the timer, the foot;
-a game supplies its stage, input and reveal. The reveal: ○ / × with 正解 or the answer, the 一発 badge, co-op's count,
-the Japanese help, しずえ's polite word (です／ます; casual cheers belong to the villagers).
+The frame (frame/RoundFrame, RevealFrame) owns the bar, the countdown, the replay row, the timer and the foot; a game
+supplies its stage, input and reveal. しずえ's words are polite (です／ます); casual cheers belong to the villagers.
 
 ### The results page
 
-しずえ's line with the team tally (co-op) or ranking (勝負), my tally and 一発 count, chips of the missed features, the
-review list ("The game"), 終わる / もう一度遊ぶ. Every game's results are built from frame/'s parts (ResultsShell,
-ScoreCard, ReviewRow, LineRow, HearButton, Note, FirstStamp). A lesson adds a strip: the host's face, the unit's dots,
-the next lesson after であい / ばめん, after a チェック the stamp (two for a double stamp) with my first-listen tally (and
-the team's), or `kiki.stamp.notYet`, and the letter the first time. 読んでから もう一度 on a review row is よみきき サンド
-(kikimimi-engine.md "よみきき サンド").
+しずえ's line with the team tally (co-op) or ranking (勝負), my tally and 一発 count, the missed features, the review
+list ("The game"), 終わる / もう一度遊ぶ, all from frame/'s parts. A lesson adds a strip: the unit's dots, the next
+lesson, after a チェック the stamp (two for a double stamp) or `kiki.stamp.notYet`, and the letter the first time.
+読んでから もう一度 on a review row is よみきき サンド (kikimimi-engine.md "よみきき サンド").
 
 ### おやすみ ものがたり
 
 A bedtime story in the night palette whatever the hour, no score (`story/StoryFrame.svelte`, its own chunk; 3
 serials: st-johnny, st-cafe, st-tokyo).
-- **The frame:** the scene dimmed to 42 % with the heads of who's in it; ⏮ ⏯ ⏭; the sleep timer 10 / 20 / 30 min of
-  listening (a pause stops it) or 全部, with the time left; 本文を見る (the words with a karaoke underline, hidden by
-  default) and 詳しく (the summary and the chapter's phrases). The end card: the chapter's end, the morning's guess
-  revealed, the next chapter unlocked.
+- **The frame:** the scene dimmed with the heads of who's in it; ⏮ ⏯ ⏭; the sleep timer 10 / 20 / 30 min of
+  listening or 全部; 本文を見る (hidden by default) and 詳しく. The end card unlocks the next chapter.
 - **The model and playing** (`kikimimi/bedtime.ts`, pure; `story/player.svelte.ts`): chapters unlocked one by one
   (finished: played to the end, or the timer ran out in its last third), resuming where left, segments on the voice
   bus with the music held down, a timed story going on into the next chapter after a pause.
-- **The list** (`story/StoryList.svelte`, 遊ぶ › 寝る前に): each serial's chapters, ✓ heard, the next green-edged, later
-  ones locked; a serial shows once past `draft`.
+- **The list** (`story/StoryList.svelte`, 遊ぶ › 寝る前に): each serial's chapters, later ones locked; a serial shows
+  once past `draft`.
 - **The hub:** 21:00–04:00 (today.ts `isNight`) the menu's きまぐれ is the story. By day `MorningCard` asks
   `kiki.story.morning` (the chapter's three `predict` choices).
 - **Minutes, no score:** a `listen` row `{gm: 'story', u: <serial>, lv 4, n 1, r: []}` of the time heard (≥ 10 s),
@@ -371,28 +331,23 @@ serials: st-johnny, st-cafe, st-tokyo).
 
 ### 記録
 
-`Progress.svelte` (lazy): the place and its bar, the eight sub-skills as horizontal bars (one hue, the value at the
-end, unmeasured as an outline), the trend sparkline, the week's dots, the trophy shelf, the couple line (times played
-together and minutes, never a level), the mic games' minutes (`kiki.prog.koeMins`), and 詳しく (per type, accent and
-level; the CEFR). Empty: `kiki.prog.empty` with 遊ぶ. The guest sees its own 記録 without the couple line.
+`Progress.svelte` (lazy): the place, the eight sub-skills as bars (unmeasured as an outline), the trend, the week's
+dots, the trophies, the couple line (times played together and minutes, never a level), the mic games' minutes, and
+詳しく (per type, accent and level; the CEFR). The guest sees its own 記録 without the couple line.
 
 ### 図鑑
 
 `zukan/KikiZukan.svelte` (from the hub's tile, the path and a unit page), four tabs (`kiki.zukan.tab.*`), each its own
 chunk, over `zukan/data.svelte.ts`; owner-only. The folds are pure: `kikimimi/zukan.ts`, `friendship.ts`, week.ts
 `weekStamps`.
-- **言葉** (`Words`): every unit's key phrases by domain, then each serial's (🌙). Caught (srs.ts `phrasesOf`: right on
-  the first listen in 3 items on ≥ 2 days) shows the phrase, its Japanese, its ★ (`phraseBook`: caught, +★ first
-  listens in 2 accents, +★ one on a phone, a PA or in noise) and a coral NEW until seen; heard, a silhouette with how
-  many times (`kiki.zukan.times`); never, ？. The entry: the trap, the scene and register, who said it, ▶︎ a clip with
-  it (heard phrases only).
-- **声** (`Voices`): the 18 cast voices: a face, the accent, the items heard and a bar to caught (10 understood); a tap
-  plays a sample.
+- **言葉** (`Words`): every unit's and serial's key phrases. Caught (srs.ts `phrasesOf`) shows the phrase, its
+  Japanese and its ★ (`phraseBook`); heard, a silhouette with how many times; never, ？. The entry: the trap, the
+  scene, who said it, ▶︎ a clip with it.
+- **声** (`Voices`): the 18 cast voices, each with the items heard and a bar to caught; a tap plays a sample.
 - **仲間** (`Friends`): the villagers I've heard, closest first, five hearts ("なかよし"); a level reached is announced
   once.
-- **スタンプ** (`Stamps`): the units' stamps in path order (the double stamp ringed mint), the letters (`LetterShelf`),
-  the week stamps, 一発 badges at 10 / 50 / 100 / 300 / 1000, the tournament's trophies, the bedtime chapters heard to
-  the end.
+- **スタンプ** (`Stamps`): the units' stamps, the letters, the week stamps, 一発 badges, the trophies, the bedtime
+  chapters heard to the end.
 
 ### 設定
 
@@ -403,9 +358,8 @@ recordings: settings/LongCredits.svelte); the mic's switch and probe (kikimimi-m
 
 ### First run
 
-1. **Welcome** (`onboarding/Welcome.svelte`, in the hub's place; for a player with no games on a phone whose
-   `DEVICE.kikiOnboarded` lacks them): しずえ's hello and three points, あとで / 始める. Either way it's marked seen;
-   あとで lands on the hub with the quiet 👂 card. The guest gets the same flow with its own data.
+1. **Welcome** (`onboarding/Welcome.svelte`, once per player and phone): あとで / 始める; あとで lands on the hub with
+   the quiet 👂 card. The guest gets the same flow.
 2. **The sound check** (🔊, the volume-0 line).
 3. **みみ チェック**, the placement (kikimimi-engine.md "みみ チェック"): solo, about 3 minutes, a progress bar, no score.
 4. **The result** (`onboarding/Placed.svelte`): `kiki.placed.say` on the five-place strip, 得意 / これから chips,
@@ -505,14 +459,11 @@ min).
 
 - **A unit's stamp:** 5 of 6 right on the first listen in its チェック, alone or as a team (curriculum.md "Playing
   together"); retakeable, never locked. Computed from the rows (`kikimimi/stamps.ts`), never stored.
-- **Letters:** a stamp brings the host villager's letter (`letter: {en, ja}`, 40–60 words of American English using
-  one of the unit's phrases), compiled into `parts/letters.json` (`kikimimi/letters.ts lettersOf`: one per unit I
-  stamped, never for the partner's stamp alone). `path/VillagerLetter.svelte` arrives open on the results of the
-  チェック that first stamped it, sits folded on the unit's page, and `LetterShelf` lists them in 図鑑 › スタンプ. Text
-  only.
-- **Landmarks:** a stage whose units are all stamped by me is cleared (path.ts `landmarksOf`; never by the placement
-  or the partner's stamps): its head carries the landmark (`kiki.landmark.*`: 📻 はまべ, 🛶 かわ, 🏮 もり, 🔭 やま, 🌌 ほし)
-  and the first time a celebration card (`DEVICE.kikiLandmarks`). Cosmetic.
+- **Letters:** my stamp brings the host villager's letter (40–60 words using one of the unit's phrases;
+  `kikimimi/letters.ts`), never for the partner's stamp alone: open on the results that first stamped it, then
+  folded on the unit's page and in 図鑑 › スタンプ.
+- **Landmarks:** a stage whose units I've all stamped is cleared (path.ts `landmarksOf`): its head carries the
+  landmark (`kiki.landmark.*`) and the first time a celebration card. Cosmetic.
 - **Trophies:** the tournament's bronze (taking part), silver, gold (kikimimi-engine.md "しゅうまつ たいかい").
 
 ### なかよし
@@ -529,8 +480,8 @@ short letter, L3 a phone-friend badge 📞, L4 a silver frame, L5 their photo in
 | Hub, no check yet | the quiet 👂 みみ チェック card; the menu as normal |
 | Menu, all done | three ✓, `kiki.hub.enough` |
 | After a gap | the hour's greeting; the due cap holds (≤ 8), no count of missed days |
-| Lobby, host left | a notice (`kiki.notice.*`); ‹ to the hub |
-| Offline, pack not cached | the game can't start its clips (a chunk that won't load drops what waited); cached packs play |
+| Lobby, host left | a notice (`kiki.notice.*`) |
+| Offline, pack not cached | the game can't start its clips; cached packs play |
 | `cv` mismatch | `kiki.update` |
 | Guest | its own solo quest, place, 図鑑 and 記録; no partner lines |
 
@@ -546,9 +497,8 @@ Never in the UI: study, test or exam words, "lesson" (a unit's lessons go by the
   lobby stays on this phone until 誘う.
 - **Mid-game notices:** the host closed the room, the connection dropped, it stopped for lack of activity
   (`kiki.notice.*`).
-- **Look.** The paper theme, `ui/Sheet.svelte`, villager art via `villagerArt()`; taps ≥ 44 px with `data-sfx`;
-  reduced motion honoured. Play: 🔁 / 🐢 under the bubble, the question centred, choices `clamp(56px, 8vh, 72px)`; an
-  item without `ask` gets its type's (`kiki.ask.*`).
+- **Look.** The paper theme and `ui/Sheet.svelte`; taps ≥ 44 px with `data-sfx`; an item without `ask` gets its
+  type's (`kiki.ask.*`).
 - **After a lock or app switch** the audio context is suspended; a タップして続ける card resumes it, so nothing plays
   with the screen locked.
 

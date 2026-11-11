@@ -12,10 +12,8 @@ What the phones and the relay log, where it goes, how to read it, and what the r
 | **Workers Logs** (`[observability]`, sampling 1, no invocation logs) | the relay's `console` lines: an error's class, the weather's fetch | 3 days | dashboard → Workers → island-fund-relay → Logs; `npx wrangler tail` |
 | **`/health/log`** (with `HEALTH_TOKEN`) | the log's counts (errors in 1 h / 6 h, warnings, `unavailable` answers, caps, oldest) | — | `.github/workflows/health.yml` (opens an issue on a spike) |
 
-Not used: Logpush (paid); Workers Analytics Engine (free, 3 months, but its SQL API needs an account API token on
-every reader and in CI, and the log's few thousand events a day don't need it); the record's own SQLite (a restore
-of the record would roll back the logs of the very incident, and the dump would carry them); Workers Logs' invocation
-logs (each request's IP, headers and place).
+Not used: Logpush (paid); Workers Analytics Engine (its SQL API needs an account token everywhere); the record's own
+SQLite (a restore would roll back the incident's logs); Workers Logs' invocation logs (each request's IP and headers).
 
 ## The event (`contract/log.ts`, `LOG_V = 1`)
 A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepalive` when the page is going):
@@ -30,43 +28,45 @@ A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepal
 | `src`, `role` | `c` a phone / `r` the relay; `A` · `B` · `G` from the key (the key itself is never kept) |
 | `sid`, `rid`, `q` | the app session's id (random, per load), a request's id (`api.*` ↔ the relay's `req`), the event's number in its session |
 | `build`, `os` | the app's version (`2026-11-05.ef93d8b`), the device in a word (`ios27.1`) |
-| `d` | the payload: **only the registry's fields for that event, each of its kind** (a number within ±1e7, rounded to 0.1; a boolean; a value from a closed set; a token: ≤ 40 of `[A-Za-z0-9_.:/-]`, never 16+ letters and digits in a row; `js.error`'s scrubbed `msg` and `stack`). Enforced by the relay whatever a phone sends. |
+| `d` | the payload: **only the registry's fields for that event, each of its kind** (a number, a boolean, a closed set, a short token never 16+ letters and digits in a row; `js.error`'s scrubbed `msg` and `stack`), enforced by the relay |
 
 ### What we log
+Each event's fields, kinds and closed sets are the registry's (`contract/log.ts`); in short:
+
 | Event | Level | Fields | When |
 |---|---|---|---|
-| `app.open` | info | `nav`, `route`, `pwa`, `w`, `h`, `dpr`, `crashed` (the last load died while shown), `lt` (long-frame API there), `q`/`qAgeS` (the write queue) | each load |
+| `app.open` | info | `nav`, `route`, `pwa`, `w`, `h`, `dpr`, `crashed`, `lt`, `q`/`qAgeS` (the write queue) | each load |
 | `app.ready` | info | `ms` (navigation start → the 3D island loaded), `route` | once a load |
 | `app.show` | info | `awayS`, `route` | shown again |
 | `app.reload` | info | `why` (update, chunk) | the app reloads itself |
-| `perf.frames` | info | `p50`, `p95` (ms), `fps`, `long` (> 50 ms), `drawFps` (the island's own), `hz` (120 when the median display gap is under 12 ms), `mode`, `when` | 10 s after ready (5 s of rAF); again after 10 min away |
-| `perf.sheet` | info | `sheet` (food, health, travel, wedding, hiking, kikimimi, panel, zukan, settings), ms from the tap: `chunk` (its code in, the dialog shown), `content` (its content ready: the last change inside it before 300 ms of none once the opening is done: its animation's end, or its first frame when it has none), `anim` (the open animation's end, -1 none), `late` (a change after that quiet, the last within 3 s: a portrait drawn, a sync's numbers; -1 none) and `what` (its node's tag and class); `long` (the longest frame till the content was ready), `slow` (frames over 33 ms), `first` (its first opening this load), `kept` (shown again from a kept mount) | each sheet's first opening a load; a fifth of the rest |
-| `perf.boot` | info | ms since the navigation's start: `mount` (the island's, after the ground's fields), `first` (its first frame), `loaded` (the models in), `shown` (the island whole: nothing held back); frame lengths (ms): `long` (the longest display frame, first frame to 1 s after shown), `draw` (the engine's longest), `appear` (the engine's longest from loaded to shown), `steps` (frames from loaded to shown); `progs`, `fieldsMs` and `fields` (cache, worker, main), `sw` (ctl, none, no: the service worker at launch), `warm` (every model from a cache), `net` (models over the network) | once a load, 1 s after the island is whole; none if the page was hidden meanwhile (world3d/boot.ts) |
-| `perf.back` | info | the first return to the island a load (back from a room): `perf.boot`'s marks in ms from the mount (`first`, `loaded`, `shown`), `long`, `draw`, `appear`, `steps`, `progs` | once a load, 1 s after the island is whole again (world3d/boot.ts) |
-| `perf.rest` | info | a second, at rest: `fps` (frames drawn), `shadows` (shadow map passes), `wakes` (the pacers' display frames asked for); at the end `calls`, `tris` (the scene's draw calls and triangles a frame, the last without a shadow redraw), `dpr`, `camZ`, `sm` (the shadow map's size) | once a load, after a minute untouched, over 10 s (world3d/rest.ts) |
-| `perf.drag` | info | the first drag's pixel-ratio swaps (down to `move` as the camera starts, back to `dpr` once still: setSize makes the canvas's buffers again): `onSet`, `offSet` (the swap's own ms), `onFrame`, `offFrame` (the CPU ms of its first frame drawn), `cpu` (a frame's usual CPU ms, p50), `sm` | once a load, at the first drag's end (world3d/drag.ts) |
+| `perf.frames` | info | `p50`, `p95`, `fps`, `long`, `drawFps`, `hz`, `mode`, `when` | 10 s after ready; again after 10 min away |
+| `perf.sheet` | info | `sheet`; ms from the tap to `chunk` (the dialog shown), `content` (ready: 300 ms quiet after the opening), `anim`, `late`; `long`, `slow`, `first`, `kept` | each sheet's first opening a load; a fifth of the rest |
+| `perf.boot` | info | ms from navigation to `mount`, `first`, `loaded`, `shown`; the longest frames (`long`, `draw`, `appear`), `steps`, `progs`, the fields' source, `sw`, `warm`, `net` | once a load, 1 s after the island is whole (world3d/boot.ts) |
+| `perf.back` | info | `perf.boot`'s marks from the mount, for the first return from a room | once a load (world3d/boot.ts) |
+| `perf.rest` | info | a second at rest: `fps`, `shadows`, `wakes`; `calls`, `tris` a frame, `dpr`, `camZ`, `sm` | once a load, after a minute untouched (world3d/rest.ts) |
+| `perf.drag` | info | the first drag's pixel-ratio swaps: `onSet`, `offSet` (ms), `onFrame`, `offFrame` (its first frame's CPU), `cpu` (p50), `sm` | once a load (world3d/drag.ts) |
 | `js.error` | error (warn while leaving) | `kind`, `msg`, `stack` (4 frames), `src`, `n` (folded repeats), `leaving`, `route` | `error`, `unhandledrejection` |
 | `api.fail` / `api.ok` | warn / info (10 % sampled) | `action`, `err`, `http`, `ms`, `tries`; `r` | a `/api` call |
 | `auth.lost` | warn | `from` (refresh, flush, ws), `code` | the key was refused (→ pairing) |
 | `sync.fail` | info offline / warn | `err`, `cached` | a refresh failed |
 | `queue.retry` / `queue.drop` | warn / error | `type`, `err`, `tries` | the write queue backs off (1st and every 5th) / drops an event |
 | `queue.poison` / `queue.split` | error / warn | `type`, `err`, `tries` / `n`, `err` | the write queue sets an event aside (kept: [backend](../backend.md#write-queue)) / halves a batch refused whole |
-| `ws.open` / `ws.close` / `ws.park` | info / info / warn | `ms`, `retries`; `code`, `secs`, `welcomed`, `why`, `quiet`, `rtt`; `code` | the live socket. `ws.close` for every socket's end: `why` `hidden`, `offline`, `stale` (4000: no answer to a probe), `late` / `stuck` (4010: no welcome in time), `rekey`, `stop` (the phone's own, 1000) or `closed` (the relay or the network); `quiet` s since it last heard anything; `rtt` its shortest ping round trip (ms) |
+| `ws.open` / `ws.close` / `ws.park` | info / info / warn | `ms`, `retries`; `code`, `secs`, `welcomed`, `why` (hidden, offline, stale, late/stuck, rekey, stop, closed), `quiet`, `rtt`; `code` | the live socket, every socket's end |
 | `ws.unacked` | warn | `kind`, `tries` | a kept intent dropped: its ack never came on a socket that answered, 4 tries (sync/live.ts) |
 | `gl.lost` | warn | `where`, `restored` | WebGL context lost / back |
 | `chunk.fail` | warn | | a chunk failed to load |
 | `storage.fail` | warn | `store`, `kind` | storage refused a write |
 | `storage.persist` | info | `ok`, `was`, `useMb`, `quotaMb` | the installed app asked to keep its storage (once, after a sync) |
-| `use` | info | counters `sheet:<i18n key>`, `ev:<event type>`, `route:<route>`, `act:<what>`, `swallow:<tag>` (a failure the app went on without: quiet.ts, e.g. `tex.idb`, `food.verify`, `stt.reply`) | summed, one a flush |
+| `use` | info | counters `sheet:`, `ev:`, `route:`, `act:`, `swallow:<tag>` (a failure the app went on without: quiet.ts) | summed, one a flush |
 | `log.drop` | warn | `n`, `why` (cap, full, day, pending) | the phone's log dropped events |
-| `mic.env` / `mic.perm` / `mic.duplex` / `mic.stt` | info | the mic probe's numbers and closed sets (docs/kikimimi-mic.md "The probe"): the page's capabilities; the permission (`st`, `ms`, `again`, `asked`, `ec`, `sr`, `inp`); per earphone route the bleed (dB), round trip (ms), loudness and restore; per recogniser and step its `ms`, `mb`, `audS`, `wer` (%, computed on the phone), `ok`, `err`. **Never heard text, a device label or a sentence** | せってい's 「マイク診断（テスト）」, on 「結果を送信」 |
-| `req` (relay) | info; warn refused; error `unavailable` | `action`, `st` (ok or the error code), `ms` (the Worker's wall time), `inB`, `outB`, `n`, `rej`, `dup`, `why` (the first refusal's rule: `buy.pocket_short`, `spend_void.no_such_spend`, `ingest.parse`), ingest's `m` (added), `sk` (skipped), `w` (warnings: a count); a snapshot's `pg` (its page size; 0: unpaged, an app from before paging); `rw`, `rr` (the rows the record wrote and read for it: its SQLite cursors); `exc` (a thrown class); `kh` (refused `unauthorized`: the first 4 hex of the presented key's SHA-256, never the key) | every `/api` request: the Shortcut's ingests, rate-limit hits (`busy`), validation refusals |
+| `mic.env` / `mic.perm` / `mic.duplex` / `mic.stt` | info | the mic probe's numbers and closed sets ([kikimimi-mic.md](../kikimimi-mic.md) "The probe"). **Never heard text, a device label or a sentence** | 設定's mic test, on its send |
+| `req` (relay) | info; warn refused; error `unavailable` | `action`, `st`, `ms`, `inB`, `outB`, `n`, `rej`, `dup`, `why` (the first refusal's rule), ingest's counts, `pg`, `rw`, `rr`, `exc`, `kh` (a refused key's first 4 hex of its SHA-256) | every `/api` request |
 | `room.close` / `room.full` | info / warn | `code`, `secs`, `socks`, `rw` (the room's storage rows written since it last said, on `ws.hello` too; kept with its `marks`) | the live room |
 | `ws.hello` (relay) | info | `v` (the protocol version), `build` (the app's, from the hello), `rep` (that device's sockets it replaced, the others told nothing); who | each welcomed hello: which phone speaks what (`report`'s *Live hellos*) |
 | `store.corrupt` (relay) | warn | `where` (the fold: spend, board, food, tally, shop, decor) | a stored row of the record that isn't a JSON object, skipped by that fold (store.ts `rowRec`), once a request a place |
-| `cron.wx` | info; warn failed | `ok`, `fetched`, `fail`, `hours`, `age`, `ms` | a weather fetch (the cron at :15 and :45 when one is due: ~30 min after a good one, or past :45 with none since) |
-| `cron.backup` | info; warn `no_token`; error failed | `ok`, `st`, `step`, `http`, `kB`, `metrics`, `events`, `kept`, `del`, `ms`, `dumpMs`, `encMs`, `upMs`, `rw`, `rr`, `fails`, `force` | the record's daily dump ([runbook §6](runbook.md#6-backups)): `st` `ok`, `no_token`, `empty` (nothing uploaded), `github` (its `step` and `http`), or an error's class; wall ms; `rw` the record's rows written (0); `force` the admin's `backup` |
-| `cron.compact` | info | `dates`, `deleted`, `more`, `metrics`, `ms` | the record's compaction (the cron at 04:15 Tokyo when COMPACT_CRON=1, on hold; `more`: a backlog left for the next day; a failure is `do.error` `where: compact`) |
+| `cron.wx` | info; warn failed | `ok`, `fetched`, `fail`, `hours`, `age`, `ms` | a weather fetch (the cron at :15 and :45 when one is due) |
+| `cron.backup` | info; warn `no_token`; error failed | `ok`, `st` (ok, no_token, empty, github, an error's class), `step`, `http`, `kB`, row counts, ms per step, `force` | the record's daily dump ([runbook §6](runbook.md#6-backups)) |
+| `cron.compact` | info | `dates`, `deleted`, `more`, `metrics`, `ms` | the record's compaction (off: COMPACT_CRON) |
 | `admin` | info | `op`, `st` | each signed admin op (an audit) |
 | `log.cap` | warn | `bucket` | a day's cap reached (once) |
 | `stt` (relay) | info; warn refused or failed | `ms`, `inB` (the WAV's bytes), `model` (turbo), `ok`, `err` (off, too_large, bad_request, capped, ai) | each keyed `POST /stt` (sttRoute.ts): never the audio or its text |
@@ -76,12 +76,10 @@ or fragment: `#key=`), IP addresses, user agents (only `os`), the record's `deta
 name values). A `js.error` message is scrubbed, in order: a URL → `<url>`, an e-mail → `<email>`, a query or fragment
 cut, 16+ letters and digits → `<id>`, quoted text → `"…"` (unless it reads as code: `'e.stats().fps'`), `{…}` /
 `[…]`, non-ASCII → `…`, numbers → `#`, 120 characters; a stack is its top four frames as `fn@file:line:col` (the
-file's base name). Residual risk: unquoted ASCII words in a thrown message (the app's own messages have none). The
-tests: `contract/log.test.ts` (the scrubbers, every field of every event filled with canaries), `relay/test/log.test.ts`
-("privacy": every event, every field and failing `/api` requests carrying a key, weights, a food's name, a board note,
-`#key=`: none of it in any stored row), `sync/log.test.ts` (the key only in the batch's `key` field), and
-`e2e/log.spec.ts` (a forced error on a paired phone reaches the relay's real code, scrubbed; with
-`E2E_TEST_RELAY=1` it goes to the test relay and is read back with `npm run logs -- --test --sid …`).
+file's base name). Residual risk: unquoted ASCII words in a thrown message (the app's own have none). The tests:
+`contract/log.test.ts` (canaries in every field), `relay/test/log.test.ts` ("privacy": none of a key, a weight, a
+food's name, a note in any stored row), `sync/log.test.ts`, `e2e/log.spec.ts` (`E2E_TEST_RELAY=1`: read back with
+`npm run logs -- --test --sid …`).
 
 **Who reads it:** only the signed `/admin` ops (`logs`, `logstats`, `logpurge`), whose secret derives from both member
 keys: the operator. No phone reads the log, the guest's events included. `/health/log` gives counts only, with its
@@ -180,16 +178,14 @@ the guest:
 | Source | Count/day | Worker req | DO req | DO GB-s | Rows read | Rows written |
 |---|---|---|---|---|---|---|
 | Sockets (each show of the app) | 2 × 60 | 120 | 120 | ~150 (10 s awake each, 128 MB) | | |
-| Liveness (a quiet socket every 20 s while shown, 2 × 2 h): the heartbeat, answered by the runtime without waking the room, and a timed ping for the clock every 5 minutes | 720 (672 heartbeats, 48 pings) | 0 | ≤ 36 | ~60 | | |
+| Liveness (a quiet socket's 20 s heartbeat, answered without waking the room; a 5-min clock ping) | 720 | 0 | ≤ 36 | ~60 | | |
 | Intents kept for the day (the room's ring), nudges | ~2,000 | 0 | 100 | ~100 | | ~2,000 |
-| Record reads: snapshots (opens not current, pushes, taps; ~5 rows each; a full one is the whole record, [backend](../backend.md#the-record) "Snapshot size") | ~300 | 300 | 300 | ~30 | ~3,000 (+ the record per full fetch) | |
+| Record reads: snapshots (~5 rows each; a full one the whole record) | ~300 | 300 | 300 | ~30 | ~3,000 (+ the record per full fetch) | |
 | Record writes: `events` batches (~100 events) and their notice to the room | ~100 | 100 | 200 | ~10 | ~1,000 (ids, slots, decor) | ~1,000 (a row, its id, its indexes, `last_at`) |
 | Shortcut ingests (2 phones, ~24 runs each; ≤ ~260 latest rows read for 32 days) | ~50 | 50 | 100 | ~5 | ~15,000 | ~1,500 |
 | The real weather (the cron's room tick at :15 and :45, a fetch ~30 min after a good one, a `wx` on change) | 48 ticks, ~48 fetches | 0 | 48 | ~10 | | ~48 (one storage key) |
 | The log (above) | ~600 RPCs, ~60 batches | ~60 | ~700 | ~10 | ~2,000 (queries) | ~2,500 |
 | **Total** | | **~630 (0.6 %)** | **~1,650 (1.7 %)** | **~380 (2.9 %)** | **~22,000 (0.4 %)** | **~7,050 (7 %)** |
 
-Duration is the binding limit and stays under a tenth of it even with the island's presence ten times busier. A busy
-day of the shared world (~550 incoming messages: walks, catches, pick-ups, shakes) is ~28 DO requests and ~550 storage
-writes; nothing is sent per frame. The record's compaction, were it turned on ([backend](../backend.md#the-record)
-"Compaction"), adds ~8,000 rows written on a Wednesday.
+Duration is the binding limit and stays under a tenth of it with the island ten times busier; nothing is sent per
+frame. Compaction, were it on, adds ~8,000 rows written on a Wednesday.
