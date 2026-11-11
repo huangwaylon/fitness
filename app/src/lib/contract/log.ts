@@ -53,8 +53,9 @@ export const LOG_EVENTS = {
   "perf.sheet": { src: 'c', f: { sheet: LOG_SHEETS, first: 'b', kept: 'b', chunk: 'n', content: 'n', anim: 'n', late: 'n', what: 't', long: 'n', slow: 'n' } },
   // the island's launch, once a load (world3d/boot.ts BootReport: ms since the navigation's start, frame lengths in ms;
   // (2026-11-11) the steps from loaded to shown by what held each back: programs linking, models loading, cards
-  // loading; how many, and their wall ms from that step to the next; the steps' own frame ms all told)
-  "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n', sLink: 'n', msLink: 'n', sModels: 'n', msModels: 'n', sCards: 'n', msCards: 'n', stepMs: 'n' } },
+  // loading; how many, and their wall ms from that step to the next; the steps' own frame ms all told; the models in
+  // after loaded, and the last of them by name)
+  "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n', sLink: 'n', msLink: 'n', sModels: 'n', msModels: 'n', sCards: 'n', msCards: 'n', stepMs: 'n', late: 'n', lastM: 't' } },
   // (2026-11-10) the island's first return to it a load (back from a room: perf.boot's marks, ms from the mount), and
   // the island at rest once a load (15 s untouched, then 10 s: drawn frames, shadow passes, the pacers' wake-ups a
   // second, and (2026-11-11) the scene's draw calls and triangles a frame, the pixel ratio, the camera's z and the shadow
