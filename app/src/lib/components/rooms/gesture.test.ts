@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { SLOP, TAP_MS, gestures, isDrag, isTap, type Pointer } from './gesture.ts';
+import { SLOP, TAP_MS } from '#lib/touch.ts';
+import { gestures, isDrag, isTap, type Pointer } from './gesture.ts';
 
 /** A recorder: what the rule told the room, in order. */
 function rig() {

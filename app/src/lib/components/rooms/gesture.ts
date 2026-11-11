@@ -7,11 +7,9 @@
 // ends in a tap. Lifted within the slop and soon, it's a tap (at the lift's point); held longer without moving, nothing.
 // A second finger makes it a pinch (never a tap); one finger left after a pinch drags on, and the pinch's middle, if it
 // was still moving as a finger lifted, flings the pan on. A cancelled pointer is nothing.
+import { SLOP, TAP_MS, whenOf } from '#lib/touch.ts';
 
-/** A finger's travel (CSS px: iOS points at any pixel ratio) that makes a drag (a touch's slop), and how long a tap may
- *  be (ms: a press held longer and lifted in place is nothing). */
-export const SLOP = 10;
-export const TAP_MS = 500;
+
 /** A pinch's middle that moved this recently (ms) as a finger lifted flings (the island's). */
 const FLING_MS = 80;
 /** Past the slop since it went down: a drag (it never turns back into a tap). */
@@ -58,9 +56,6 @@ interface Gestures {
   reset(quiet?: boolean): void;
 }
 
-/** When the finger did it (the event's own time: a busy frame between the press and the lift doesn't make a tap a long
- *  one; a made-up event, now). */
-const whenOf = (e: Pointer) => (e.timeStamp > 0 ? e.timeStamp : performance.now());
 
 export function gestures(h: GestureHandlers): Gestures {
   const ptrs = new Map<number, { x: number; y: number }>();

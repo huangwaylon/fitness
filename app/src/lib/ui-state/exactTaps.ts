@@ -10,12 +10,12 @@
 // (the tap's user activation, the sound's unlock, as before). The click as it was otherwise: a mouse's, a keyboard's or
 // VoiceOver's (no tap just before it), a drag's (the gestures' own rule), a click outside those places. The island's
 // buttons stay buttons for VoiceOver and the keyboard; touch just never snaps onto them.
+import { ISLAND_SLOP } from '#lib/touch.ts';
+
 
 /** Where the touch lifted: client px, when (performance.now()), whether it moved off its pointerdown. */
 export interface Lift { x: number; y: number; t: number; moved: boolean }
 
-/** Movement (px) before a touch is no tap (gestures.ts SLOP's). */
-const SLOP = 8;
 /** A click this long after its pointerup is no tap's (iOS clicks at once once a page can't double-tap zoom). */
 const CLICK_MS = 1000;
 /** What a click is re-aimed for: inside one of these, or moved onto one from outside. */
@@ -40,11 +40,11 @@ export function startExactTaps(): () => void {
     down = e.isPrimary ? { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false } : null;
   };
   const onMove = (e: PointerEvent) => {
-    if (down && e.pointerId === down.id && Math.hypot(e.clientX - down.x, e.clientY - down.y) >= SLOP) down.moved = true;
+    if (down && e.pointerId === down.id && Math.hypot(e.clientX - down.x, e.clientY - down.y) >= ISLAND_SLOP) down.moved = true;
   };
   const onUp = (e: PointerEvent) => {
     if (!down || e.pointerId !== down.id) return;
-    lift = { x: e.clientX, y: e.clientY, t: performance.now(), moved: down.moved || Math.hypot(e.clientX - down.x, e.clientY - down.y) >= SLOP };
+    lift = { x: e.clientX, y: e.clientY, t: performance.now(), moved: down.moved || Math.hypot(e.clientX - down.x, e.clientY - down.y) >= ISLAND_SLOP };
     down = null;
   };
   const onCancel = () => ((down = null), (lift = null));

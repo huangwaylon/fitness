@@ -6,6 +6,7 @@
 // scroll does (a rubber band) and eases back when they lift; a lift on the move flings on with the island's deceleration.
 // Never moved by anything but a finger and the home button (no recentring: the user's rule). Pure, no three.
 import { cubicOut } from '#lib/math.ts';
+import { DECAY_MS, DECAY_OUT_MS, REACH, STOP_V, rubber } from '#lib/touch.ts';
 
 /** What of the room shows in the view, without the pan (css px on the canvas: the room's left, top, right, bottom) and
  *  the band of it the room may use (its x0, y0, x1, y1: the canvas less what covers it at its top and foot). */
@@ -15,9 +16,8 @@ export interface PanBox { room: [number, number, number, number]; band: [number,
 export const KEEP = 0.65;
 /** The rubber band's reach (px), the fling's decay (ms: inside the room, past its edge) and the ease back (ms): the
  *  island's (world3d/engine.ts). */
-const REACH = 160, DECAY = 325, DECAY_OUT = 60, BACK = 90;
+const BACK = 90;
 /** A fling slower than this (px/ms) is over. */
-const STOP_V = 0.01;
 
 /** The pan's room along one axis: the offsets that keep KEEP of [lo, hi] over [b0, b1] (0 always: the home). */
 export function panRange(lo: number, hi: number, b0: number, b1: number): [number, number] {
@@ -25,7 +25,6 @@ export function panRange(lo: number, hi: number, b0: number, b1: number): [numbe
   return [Math.min(0, b0 + keep - hi), Math.max(0, b1 - keep - lo)];
 }
 /** Past an edge it gives less and less (iOS's rubber band), and back. */
-const rubber = (over: number) => (REACH * over) / (over + REACH);
 const unrubber = (s: number) => (REACH * s) / (REACH - Math.min(s, REACH - 1e-6));
 /** A raw offset as shown (within its range, else a rubber band past it), and a shown one's raw. */
 const shownOf = (v: number, [lo, hi]: [number, number]) => (v < lo ? lo - rubber(lo - v) : v > hi ? hi + rubber(v - hi) : v);
@@ -91,8 +90,8 @@ export function roomPan(): RoomPan {
       rx += vx * dt;
       ry += vy * dt;
       const past = (v: number, [lo, hi]: [number, number]) => v < lo || v > hi;
-      vx *= Math.exp(-dt / (past(rx, ax) ? DECAY_OUT : DECAY));
-      vy *= Math.exp(-dt / (past(ry, ay) ? DECAY_OUT : DECAY));
+      vx *= Math.exp(-dt / (past(rx, ax) ? DECAY_OUT_MS : DECAY_MS));
+      vy *= Math.exp(-dt / (past(ry, ay) ? DECAY_OUT_MS : DECAY_MS));
       if (Math.abs(vx) < STOP_V) vx = 0;
       if (Math.abs(vy) < STOP_V) vy = 0;
       show(b);

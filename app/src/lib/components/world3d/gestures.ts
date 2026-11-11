@@ -7,6 +7,8 @@
 // a drag or a pinch never ends in one (its click is swallowed), nor does a touch landing on a fast fling (it only stops
 // it, as iOS's scroll: the tap areas lag a rush, engine.ts rushing). Pointer events on the scene, never captured (a
 // capture would send the tap's click to the scene instead of its button).
+import { ISLAND_SLOP } from '#lib/touch.ts';
+
 export interface Cam {
   pan(dy: number, dx?: number): void;
   zoom(f: number, sy?: number, sx?: number): void;
@@ -18,8 +20,6 @@ export interface Cam {
   go(z: number, k?: number, free?: boolean, x?: number): void;
 }
 
-/** Movement (px) before a touch is a drag, not a tap. */
-const SLOP = 8;
 /** A second finger this soon after the first makes the gesture a pinch from its start (the first's scroll undone). */
 const PINCH_JOIN_MS = 220;
 
@@ -83,7 +83,7 @@ export function attachGestures(el: HTMLElement, cam: Cam, o: { enabled: () => bo
       return;
     }
     if (mode === 'tap') {
-      if (Math.hypot(e.clientX - start.x, e.clientY - start.y) < SLOP) return;
+      if (Math.hypot(e.clientX - start.x, e.clientY - start.y) < ISLAND_SLOP) return;
       mode = 'pan';
       // (from where the finger is now: no jump by the slop)
       return;

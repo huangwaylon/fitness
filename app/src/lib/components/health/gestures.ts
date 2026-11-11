@@ -1,6 +1,8 @@
 // A chart's own gestures (けんこう): a tap picks the bar under the finger; a horizontal drag pulls the chart along and,
 // past a threshold, turns the page (right = older, left = newer). Vertical drags are the panel's: the chart is
 // `touch-action: pan-y`, so the browser scrolls and cancels our pointer. Mouse drags work the same.
+import { SLOP } from '#lib/touch.ts';
+
 interface Opts {
   /** A tap at x (px from the chart's left). */
   tap: (x: number) => void;
@@ -10,7 +12,6 @@ interface Opts {
   drag: (dx: number) => void;
 }
 
-const SLOP = 10;
 const TURN = 48;
 
 export function chartGestures(node: HTMLElement, opts: Opts) {

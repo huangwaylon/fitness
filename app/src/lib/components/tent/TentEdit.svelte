@@ -23,6 +23,8 @@
   // (every piece away after a confirmation, the wallpaper, floor and size kept; one batch, one undo) and 保存 (the room's
   // three saved arrangements: 保存, 呼び出す after a confirmation as one batch and one undo, 削除; contract/roomSave.ts).
   import { onMount } from 'svelte';
+  import { isTap } from '../rooms/gesture.ts';
+  import { whenOf } from '#lib/touch.ts';
   import Sheet from '#lib/components/ui/Sheet.svelte';
   import { sendRoomSave } from '#lib/store/actions.ts';
   import { SAVE_NAME_CHARS, saveName, type RoomSaveOp } from '#lib/contract/roomSave.ts';
@@ -236,7 +238,6 @@
   //      「いまの かぐを おいてね」), a drag from one turns the camera, and a long press (the screen's LONG_MS) puts
   //      what I hold down and takes that one; a tap off the room puts what I hold down. The screen hands its pointer
   //      events here. ----
-  const whenOf = (e: PointerEvent) => (e.timeStamp > 0 ? e.timeStamp : performance.now());
   let drag: { id: number; dx: number; dz: number; moved: boolean; held: boolean; x0: number; y0: number; t0: number; wall?: boolean; long?: boolean } | null = null;
   /** A near miss on what I hold (px round its drawn shape) is still it. */
   const HELD_SLOP = 14;
@@ -304,9 +305,6 @@
     grab(e, false, true);
     return true;
   }
-  /** A tap, not a drag: the finger stayed within TAP_PX and let go within TAP_MS (by the events' own times: a busy frame
-   *  between the press and the lift doesn't make a tap a hold; a made-up event, now). */
-  const TAP_PX = 8, TAP_MS = 450;
   export function move(e: PointerEvent): void {
     if (!drag || e.pointerId !== drag.id) return;
     if (drag.wall) {
@@ -327,7 +325,7 @@
     if (!drag || e.pointerId !== drag.id) return false;
     const d = drag;
     drag = null;
-    const tap = !d.moved && !d.long && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) <= TAP_PX && whenOf(e) - d.t0 <= TAP_MS;
+    const tap = !d.moved && !d.long && isTap(e.clientX - d.x0, e.clientY - d.y0, whenOf(e) - d.t0);
     if (d.moved) cue('tick');
     // a tap on what I hold turns it a quarter, clockwise (NH's rotate); a tap that picked a piece up just picks it
     // (a wall thing's facing is its wall's: nothing to turn)

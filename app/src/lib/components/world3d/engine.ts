@@ -31,6 +31,7 @@ import { createLights, lampFog, type LampSpot } from './lights.ts';
 import type { Inst } from './objects.ts';
 import { drawOff } from '../../ui-state/testMode.ts';
 import { DPR_MOVING, endRenderer, makeRenderer, watchContext } from './stage.ts';
+import { DECAY_MS, DECAY_OUT_MS, STOP_V, rubber } from '#lib/touch.ts';
 import { releaseAll, resourcesOf } from './release.ts';
 import { FPS } from '#lib/store/frameRate.ts';
 import { pacer } from './pace.ts';
@@ -534,8 +535,6 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   const rushing = () => (touch ? moved : !focus && (Math.abs(vel) > RUSH_V || Math.abs(velX) > RUSH_V));
   /** The ground's units across a px at the pivot (VIEW_W across the screen at zoom 1). */
   const unitsPerPx = () => VIEW_W / (W * zoomK);
-  /** Past an end the scroll gives less and less (iOS's rubber band). */
-  const rubber = (over: number) => (over <= 0 ? 0 : (1 - 1 / (over / 160 + 1)) * 160);
   let rawZ = camZ;
   const clampZ = (z: number) => (z < lim.min ? lim.min - rubber(lim.min - z) : z > lim.max ? lim.max + rubber(z - lim.max) : z);
   /** A lighter pixel ratio while the camera moves (the tent's way), back once it's still; never for a tap. */
@@ -1073,16 +1072,16 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       lastT = t;
       rawZ += (vel * step * unitsPerPx()) / Math.sin(pitch);
       const out = rawZ < lim.min || rawZ > lim.max;
-      vel *= Math.exp(-step / (out ? 60 : 325));
+      vel *= Math.exp(-step / (out ? DECAY_OUT_MS : DECAY_MS));
       camZ = clampZ(rawZ);
       if (velX) {
         const x = clampX(camX - velX * step * unitsPerPx());
         // (a side's edge stops it: no rubber band sideways)
-        velX = x === camX ? 0 : velX * Math.exp(-step / 325);
+        velX = x === camX ? 0 : velX * Math.exp(-step / DECAY_MS);
         camX = x;
-        if (Math.abs(velX) < 0.01) velX = 0;
+        if (Math.abs(velX) < STOP_V) velX = 0;
       }
-      if (Math.abs(vel) < 0.01 && !velX) vel = 0;
+      if (Math.abs(vel) < STOP_V && !velX) vel = 0;
       aim();
       want(true, 'fling');
     }
