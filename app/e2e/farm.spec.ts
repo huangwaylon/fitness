@@ -151,11 +151,11 @@ test('three days on: ripe, watered on the two days before it gives three, harves
   await tapWorld(b, plot(1).x, plot(1).z);
   await expect.poll(() => pops(b)).toEqual(['みずやり', 'みずやり ずみ']);
   // no field of hers, but a plant to water: her pill, with no ripe badge (mine aren't hers), opens 畑: my two plants a
-  // line under my name; neither's watering counts today (one ripe, one growing back), so 水やり says from when
+  // line under my name; the one growing back counts from its harvest day, and her tap watered it, so 水やり is done
   await expect(b.locator('[data-farm-ripe]')).toHaveCount(0);
   await b.locator('[data-farm-open]').click();
   await expect(b.locator('[data-farm-others="A"]')).toContainText('の畑（2株）');
-  await expect(b.locator('[data-farm-water]')).toHaveText('水やりは明日から');
+  await expect(b.locator('[data-farm-water]')).toHaveText('水やり済み');
   expect((await farmRows(b)).filter((o) => o.o === 'harvest')).toHaveLength(1);
 });
 

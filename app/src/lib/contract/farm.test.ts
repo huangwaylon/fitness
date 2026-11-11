@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { daysLeft, emptyFarm, FARM, farmFromJson, farmJson, farmOf, farmRefusal, farmStep, plotOf, stageOf, yieldOf, type FarmData, type Plot } from './farm.ts';
+import { daysLeft, emptyFarm, FARM, farmFromJson, farmJson, farmOf, farmRefusal, farmStep, plotOf, stageOf, wateringCounts, yieldOf, type FarmData, type Plot } from './farm.ts';
 import { gameWet, wxWetDays } from './wet.ts';
 import { dayWeather } from '../components/island/weather.ts';
 import { seeded } from '../random.ts';
@@ -22,12 +22,50 @@ describe('the fields (contract/farm.ts)', () => {
     expect([D3, '2026-11-08', '2026-11-09', '2026-11-10'].map((d) => stageOf(again, d))).toEqual([2, 2, 2, 3]);
   });
 
-  it('yields 1, and 1 more for each of the two days before ripe it was watered (rain counts)', () => {
+  it('yields 1, and 1 more for each of the three days before ripe it was watered (rain counts), at most 3', () => {
     const pl: Plot = { who: 'A', c: 'carrot', from: D3 };
     expect(yieldOf(P, pl, none)).toBe(1);
     expect(yieldOf(P, pl, (p, d) => p === P && d === D2)).toBe(2);
     expect(yieldOf(P, pl, (_p, d) => d === D1 || d === D2)).toBe(3);
-    expect(yieldOf(P, pl, (_p, d) => d === D3 || d === D)).toBe(1); // the day it ripens and before the window: no
+    // the plant day counts: any 2 of the 3 give 3, all 3 still 3
+    expect(yieldOf(P, pl, (_p, d) => d === D)).toBe(2);
+    expect(yieldOf(P, pl, (_p, d) => d === D || d === D2)).toBe(3);
+    expect(yieldOf(P, pl, (_p, d) => d >= D && d <= D2)).toBe(FARM.maxYield);
+    expect(yieldOf(P, pl, (_p, d) => d === D3 || d === '2026-11-03')).toBe(1); // the day it ripens and before the window: no
+    expect([D, D1, D2, D3].map((d) => wateringCounts(pl, d))).toEqual([true, true, true, false]);
+  });
+
+  it('a watering on the plant day and on the harvest day counts, the harvest before or after it', () => {
+    const f = emptyFarm();
+    const w = new Set<string>([D]);
+    const watered = (_p: string, d: string) => w.has(d);
+    farmStep(f, 'A', { d: D, ops: [{ o: 'plant', p: P, c: 'tomato', src: 'start' }] }, judge(watered));
+    expect(wateringCounts(f.plots.get(P)!, D)).toBe(true);
+    w.add(D2);
+    // harvest day D3: ripe, its watering not its own (left 0) but the regrown plant's first (left 3)
+    expect(wateringCounts(f.plots.get(P)!, D3)).toBe(false);
+    w.add(D3); // watered before the harvest that day
+    expect(farmStep(f, 'A', { d: D3, ops: [{ o: 'harvest', p: P, n: 1 }] }, judge(watered))?.ops).toEqual([{ o: 'harvest', p: P, n: 3 }]);
+    const again = f.plots.get(P)!;
+    expect(wateringCounts(again, D3)).toBe(true);
+    w.add('2026-11-09');
+    expect(farmStep(f, 'A', { d: '2026-11-10', ops: [{ o: 'harvest', p: P, n: 1 }] }, judge(watered))?.ops).toEqual([{ o: 'harvest', p: P, n: 3 }]);
+    // harvested first, then watered the same day: the same
+    const g = emptyFarm(), w2 = new Set<string>();
+    const watered2 = (_p: string, d: string) => w2.has(d);
+    farmStep(g, 'A', { d: D, ops: [{ o: 'plant', p: P, c: 'tomato', src: 'start' }] }, judge(watered2));
+    farmStep(g, 'A', { d: D3, ops: [{ o: 'harvest', p: P, n: 1 }] }, judge(watered2));
+    w2.add(D3);
+    expect(farmStep(g, 'A', { d: '2026-11-10', ops: [{ o: 'harvest', p: P, n: 1 }] }, judge(watered2))?.ops).toEqual([{ o: 'harvest', p: P, n: 2 }]);
+  });
+
+  it('a kept harvest replays at its kept n, whatever the waterings now say (old rows stay valid)', () => {
+    const f = emptyFarm();
+    farmStep(f, 'A', { d: D, ops: [{ o: 'plant', p: P, c: 'pumpkin', src: 'start' }] });
+    // kept under the two-day rule: the plant day watered, not counted, n 1
+    expect(farmStep(f, 'A', { d: D3, ops: [{ o: 'harvest', p: P, n: 1 }] })?.ops).toEqual([{ o: 'harvest', p: P, n: 1 }]);
+    expect(f.net.A?.get('goods:pumpkin')).toBe(1);
+    expect(farmOf({ d: D3, ops: [{ o: 'harvest', p: P, n: 2 }] })).not.toBeNull();
   });
 
   it('the record judges each op: a refused one dropped, a harvest kept at its yield', () => {

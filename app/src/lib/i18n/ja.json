@@ -670,7 +670,7 @@
   "farm.wateredBy": "今日は{who}が水やりしてくれました（{n}株）",
   "farm.waterAfterHarvest": "収穫のあとで水やりできます",
   "farm.whose": "{who}の畑（{n}株）",
-  "farm.rule": "実る前の2日間に水をやると最大3個。雨の日は自動で水やり。",
+  "farm.rule": "実るまでの3日のうち2日水をやると最大3個。雨の日は自動で水やり。",
   "farm.harvestAll": "実ったものを収穫（{n}株）",
   "farm.harvested": "{max}個を収穫しました",
   "farm.harvestedAll": "収穫済み",

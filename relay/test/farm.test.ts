@@ -109,6 +109,43 @@ describe('the fields in the record', () => {
     expect(farm('A', '2026-11-10', [{ o: 'harvest', p: P1, n: 1 }])).toEqual({ ok: true });
   });
 
+  it('the plant day and the harvest day count: 1 + the days watered of the three before ripe, at most 3', () => {
+    shells('A', 2 * FARM.startBuy);
+    starts('A', 'tomato', 2);
+    water('B', D, [P1, P2]); // before the planting that day: it counts
+    farm('A', D, [plant(P1), plant(P2)]);
+    now += DAY;
+    water('A', D1, [P2]);
+    now += 2 * DAY;
+    expect(farm('A', D3, [{ o: 'harvest', p: P1, n: 1 }, { o: 'harvest', p: P2, n: 1 }])).toEqual({ ok: true });
+    expect(rows().at(-1).ops.map((o: { n: number }) => o.n)).toEqual([2, 3]);
+    // growing back: the harvest day's watering (after the harvest) and one more give 3; every day still 3
+    water('A', D3, [P1, P2]);
+    now += DAY;
+    water('B', '2026-11-08', [P1, P2]);
+    now += DAY;
+    water('G', '2026-11-09', [P2]);
+    now += DAY;
+    expect(farm('A', '2026-11-10', [{ o: 'harvest', p: P1, n: 1 }, { o: 'harvest', p: P2, n: 1 }])).toEqual({ ok: true });
+    expect(rows().at(-1).ops.map((o: { n: number }) => o.n)).toEqual([3, 3]);
+    expect(store.shopCheck()).toEqual({ ok: true, farm: 'same', A: 'same', B: 'none', G: 'none' });
+  });
+
+  it('a harvest kept under the two-day rule replays at its kept n (the fold reads it as kept, never reckons it anew)', () => {
+    shells('A', FARM.startBuy);
+    starts('A', 'tomato', 1);
+    water('B', D, [P1]);
+    farm('A', D, [plant(P1)]);
+    now += 3 * DAY;
+    // (the row as the record kept it before the plant day counted: n 1; the running field mended from the rows)
+    const sql = (store as unknown as { io: { sql: { exec: (q: string, ...a: unknown[]) => unknown } } }).io.sql;
+    sql.exec('INSERT INTO events (id, at, person, type, data, slot, late) VALUES (?, ?, ?, ?, ?, ?, ?)', 'old-harvest', new Date(now).toISOString(), 'A', 'farm', JSON.stringify({ d: D3, ops: [{ o: 'harvest', p: P1, n: 1 }] }), null, null);
+    store.shopCheck({ fix: true });
+    expect(store.shopCheck()).toEqual({ ok: true, farm: 'same', A: 'same', B: 'none', G: 'none' });
+    expect(sell('A', 'goods:tomato', 2)).toEqual(refused('pocket short'));
+    expect(sell('A', 'goods:tomato', 1)).toEqual({ ok: true });
+  });
+
   it('a wet day waters every plant', () => {
     shells('A', FARM.startBuy);
     starts('A', 'pumpkin', 1);
@@ -152,7 +189,7 @@ describe('the fields in the record', () => {
   });
 
   it('a phone’s queued harvest reckons the yield the record keeps, over the same rows', () => {
-    // six plants, watered every way the two days before they ripen: none, the first, the second, both (two people),
+    // six plants, watered every way the two days before they ripen (not the plant day): none, the first, the second, both (two people),
     // and one growing back after a harvest over a wet day and a watering
     const ps = [0, 1, 2, 3, 4, 5].map((c) => `fd:field-A.${c}.0`);
     shells('A', 6 * FARM.startBuy);

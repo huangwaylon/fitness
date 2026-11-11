@@ -2,9 +2,9 @@
 // lib/layout/field.ts; a plot is one of its tiles, `fd:<objectId>.<col>.<row>`). A `farm` event is one person's batch
 // of ops on one Tokyo day `d`: plant a start or a vegetable of their pocket, harvest a ripe plant of theirs, dig one of
 // theirs up (its start back). A plant is ripe FARM.growDays after planting; harvested, it grows back from stage 2 and
-// is ripe again FARM.regrowDays on; it yields 1 + the days watered of the two before it ripened (anyone's watering, the
-// island day's `watered`: contract/island.ts; a wet day waters all: contract/wet.ts). Whose field a plot is the phones'
-// rule (the layout is theirs): the record keeps a plot's plant its planter's.
+// is ripe again FARM.regrowDays on; it yields 1 + the days watered of the three before it ripened, at most 3 (anyone's
+// watering, the island day's `watered`: contract/island.ts; a wet day waters all: contract/wet.ts). Whose field a plot
+// is the phones' rule (the layout is theirs): the record keeps a plot's plant its planter's.
 // The record judges each new op (farmRefusal) against the field and the sender's pocket, drops a refused one and keeps
 // a harvest at the yield it reckons (farmStep); the phones fold the same rows by the same step (model/farm.ts), a kept
 // row as kept. The produce and the starts are pocket goods (`goods:<crop>`, `goods:<crop>-start`: contract/pocket.ts),
@@ -75,16 +75,23 @@ export function stageOf(plot: Plot, date: LocalDate): 0 | 1 | 2 | 3 {
 /** Whether plot `p` was watered on `date` (anyone's watering, or a wet day). */
 export type Watered = (p: string, date: LocalDate) => boolean;
 
-/** What a plant yields once ripe: 1, and 1 more for each of the two days before it ripened it was watered. */
+/** The days before ripe whose watering counts (wateringCounts, yieldOf): the plant day (or the harvest day it grew
+ *  back from) and the two after it. */
+const WATER_DAYS = 3;
+
+/** What a plant yields once ripe: 1, and 1 more for each of the three days before it ripened it was watered, at most
+ *  FARM.maxYield (any 2 of the 3 give 3). A kept harvest keeps its `n` (farmStep): only new ones are reckoned so. */
 export function yieldOf(p: string, plot: Plot, watered: Watered): number {
   const from = dayNum(plot.from);
-  return Math.min(FARM.maxYield, 1 + (watered(p, dayOf(from - 2)) ? 1 : 0) + (watered(p, dayOf(from - 1)) ? 1 : 0));
+  let n = 1;
+  for (let k = 1; k <= WATER_DAYS; k++) if (watered(p, dayOf(from - k))) n++;
+  return Math.min(FARM.maxYield, n);
 }
 
-/** Whether a watering on `date` counts toward the plant's yield (`date` one of its two days before ripe: yieldOf). */
+/** Whether a watering on `date` counts toward the plant's yield (`date` one of its three days before ripe: yieldOf). */
 export const wateringCounts = (plot: Plot, date: LocalDate): boolean => {
   const left = daysLeft(plot, date);
-  return left === 1 || left === 2;
+  return left >= 1 && left <= WATER_DAYS;
 };
 
 /** The field as the rows leave it: each plot's plant, and per person what the field put into (+) or took out of (−)

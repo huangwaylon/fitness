@@ -670,7 +670,7 @@
   "farm.wateredBy": "{who} watered {n} of yours today",
   "farm.waterAfterHarvest": "Water after the harvest",
   "farm.whose": "{who}'s field ({n})",
-  "farm.rule": "Water on the two days before it ripens: up to 3. Rain waters everything.",
+  "farm.rule": "Water on 2 of the 3 days before it ripens: up to 3. Rain waters everything.",
   "farm.harvestAll": "Harvest the ripe ({n})",
   "farm.harvested": "Harvested {max}",
   "farm.harvestedAll": "Harvested",

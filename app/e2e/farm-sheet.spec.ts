@@ -87,15 +87,15 @@ test('the day before ripe: 「明日収穫できる 5株」 and their watering',
   await expect(page.locator('[data-farm-water]')).toHaveText('水やり（5株）');
 });
 
-test('the guest: no field of its own, no editor hint; it can water the two’s plants (from tomorrow, planted today)', async ({ page }) => {
+test('the guest: no field of its own, no editor hint; it can water the two’s plants (planted today: the plant day counts)', async ({ page }) => {
   await seed(page, D, [FIELD, ...POCKET, planted(plots.slice(0, 6))]);
   await page.goto(`?demo&date=${D}T12:00&weather=clear&as=G`);
   await islandUp(page);
   await quiet(page);
   await openSheet(page);
   await expect(page.locator('[data-farm-today]')).toHaveText('畑の水やりを手伝えます');
-  await expect(page.locator('[data-farm-water]')).toHaveText('水やりは明日から');
-  await expect(page.locator('[data-farm-water]')).toHaveAttribute('aria-disabled', 'true');
+  await expect(page.locator('[data-farm-water]')).toHaveText('水やり（6株）');
+  await expect(page.locator('[data-farm-water]')).not.toHaveAttribute('aria-disabled', 'true');
   await expect(page.locator('[data-farm-others="A"]')).toHaveText('ウェイの畑（6株）');
   await expect(page.locator('[data-farm-empty]')).toHaveCount(0);
 });

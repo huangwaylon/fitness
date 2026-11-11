@@ -25,15 +25,15 @@ export function waterTargets(plots: readonly PlotTile[], farm: Farm, date: Local
   }).map((t) => t.p);
 }
 
-/** Days till a watering on the fields next counts (waterTargets' rule): 0 today (done, if waterTargets is empty), null
- *  when none will (every plant ripe, or none planted): the sheet's 水やり says which. */
+/** Whether a watering on the fields counts today (waterTargets' rule: every growing plant's does, its plant day and
+ *  harvest day too): 0 (done, if waterTargets is empty), or null when none does (every plant ripe, or none planted):
+ *  the sheet's 水やり says which. */
 export function waterNext(plots: readonly PlotTile[], farm: Farm, date: LocalDate): number | null {
-  let next: number | null = null;
   for (const t of plots) {
-    const pl = farm.plots.get(t.p), left = pl ? daysLeft(pl, date) : 0;
-    if (left) next = Math.min(next ?? Infinity, Math.max(0, left - 2));
+    const pl = farm.plots.get(t.p);
+    if (pl && daysLeft(pl, date)) return 0;
   }
-  return next;
+  return null;
 }
 
 /** My empty plots to plant as the map reads them (farm/FieldMap.svelte: each field's back row first, its top on the map
@@ -54,15 +54,16 @@ export function fillPlan(plots: readonly PlotTile[], farm: Farm, me: Who, have: 
   return [...fields.values()].flatMap((f) => f.sort((a, b) => b.r - a.r || a.c - b.c)).slice(0, room).map((t) => t.p);
 }
 
-/** What a plant will yield: the waterings of its two days before ripe so far, and as many more as of those days are
- *  still to come (today unwatered included); ripe, its yield. */
+/** What a plant will yield: the waterings of its three days before ripe so far, and as many more as of those days are
+ *  still to come (today unwatered included), at most FARM.maxYield; ripe, its yield. */
 export function yieldRange(p: string, pl: Plot, date: LocalDate, watered: Watered): { lo: number; hi: number } {
   if (stageOf(pl, date) === 3) {
     const n = yieldOf(p, pl, watered);
     return { lo: n, hi: n };
   }
   let lo = 1, hi = 1;
-  for (const d of [addDays(pl.from, -2), addDays(pl.from, -1)]) {
+  for (const k of [3, 2, 1]) {
+    const d = addDays(pl.from, -k);
     if (watered(p, d)) lo++, hi++;
     else if (d >= date) hi++;
   }

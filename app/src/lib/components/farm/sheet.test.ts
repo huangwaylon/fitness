@@ -41,28 +41,25 @@ describe('waterTargets', () => {
     // a wet day: none
     expect(waterTargets(PLOTS, f, D1, () => true)).toEqual([]);
   });
-  it('none whose watering today can’t change the yield: planted today, ripe, harvested today (growing back)', () => {
+  it('none whose watering can’t change the yield: ripe; planted or harvested today (growing back) counts', () => {
     const f = farmOf(5, 2);
-    expect(waterTargets(PLOTS, f, D, none)).toEqual([]);
+    expect(waterTargets(PLOTS, f, D, none)).toHaveLength(7);
     expect(waterTargets(PLOTS, f, D3, none)).toEqual([]);
     farmStep(f, 'A', { d: D3, ops: [{ o: 'harvest', p: MINE[0].p, n: 1 }] });
-    expect(waterTargets(PLOTS, f, D3, none)).toEqual([]);
-    // its next two days count again
+    expect(waterTargets(PLOTS, f, D3, none)).toEqual([MINE[0].p]);
     expect(waterTargets(PLOTS, f, '2026-11-08', none)).toEqual([MINE[0].p]);
   });
 });
 
 describe('waterNext', () => {
-  it('the days till a watering next counts: tomorrow on the planting day, 0 on its two days, none once ripe or with no plants', () => {
+  it('0 while any plant grows (its plant day too), none once all are ripe or with no plants', () => {
     const f = farmOf(5, 2);
-    expect(waterNext(PLOTS, f, D)).toBe(1);
-    expect(waterNext(PLOTS, f, D1)).toBe(0);
-    expect(waterNext(PLOTS, f, D2)).toBe(0);
+    expect([D, D1, D2].map((d) => waterNext(PLOTS, f, d))).toEqual([0, 0, 0]);
     expect(waterNext(PLOTS, f, D3)).toBeNull();
     expect(waterNext(PLOTS, emptyFarm(), D)).toBeNull();
-    // one growing back after its harvest: its first day after counts
+    // one growing back after its harvest: the harvest day counts
     farmStep(f, 'A', { d: D3, ops: [{ o: 'harvest', p: MINE[0].p, n: 1 }] });
-    expect(waterNext(PLOTS, f, D3)).toBe(1);
+    expect(waterNext(PLOTS, f, D3)).toBe(0);
   });
 });
 
@@ -95,12 +92,15 @@ describe('fillPlan', () => {
 
 describe('yieldRange', () => {
   const p = MINE[0].p;
-  const pl = farmOf(1).plots.get(p)!; // ripe on D3: its days D1 and D2
-  it('a range until the watering days have passed; one number then', () => {
+  const pl = farmOf(1).plots.get(p)!; // ripe on D3: its days D, D1 and D2
+  it('a range until the watering days have passed, at most 3; one number then', () => {
     expect(yieldRange(p, pl, D, none)).toEqual({ lo: 1, hi: 3 });
     expect(yieldRange(p, pl, D1, (_p, d) => d === D1)).toEqual({ lo: 2, hi: 3 });
-    expect(yieldRange(p, pl, D2, none)).toEqual({ lo: 1, hi: 2 }); // D1 missed, today's still to come
+    expect(yieldRange(p, pl, D1, none)).toEqual({ lo: 1, hi: 3 }); // the plant day missed, two still to come
+    expect(yieldRange(p, pl, D2, none)).toEqual({ lo: 1, hi: 2 }); // D and D1 missed, today's still to come
+    expect(yieldRange(p, pl, D2, (_p, d) => d === D)).toEqual({ lo: 2, hi: 3 });
     expect(yieldRange(p, pl, D2, (_p, d) => d === D1 || d === D2)).toEqual({ lo: 3, hi: 3 });
+    expect(yieldRange(p, pl, D1, (_p, d) => d === D || d === D1)).toEqual({ lo: 3, hi: 3 });
     expect(yieldRange(p, pl, D3, (_p, d) => d === D2)).toEqual({ lo: 2, hi: 2 });
   });
 });
