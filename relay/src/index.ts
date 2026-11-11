@@ -53,6 +53,8 @@ export interface Env {
   ARCHIVE_RELEASE?: string;
   ARCHIVE_RECIPIENT?: string;
   ARCHIVE_TOKEN?: string;
+  /** The deployed commit (scripts/deploy.sh `--var COMMIT:<short sha>`; `-dirty`: the test copy from a dirty tree). */
+  COMMIT?: string;
 }
 
 /** What `/health` and the room's weather ops say of the real weather (weather.ts wxHealth). */
@@ -347,7 +349,7 @@ export default {
       const now = Date.now();
       if (!wxSeen || now - wxSeen.at > WX_HEALTH_MS) wxSeen = { at: now, wx: await env.ROOM.get(env.ROOM.idFromName('island')).wxHealth().catch(() => null) };
       const wx = wxSeen.wx;
-      return Response.json({ ok: true, v: LIVE_V, versions: LIVE_VS, t: Date.now(), wx }, { headers: { 'Cache-Control': 'no-store' } });
+      return Response.json({ ok: true, v: LIVE_V, versions: LIVE_VS, sha: env.COMMIT ?? null, t: Date.now(), wx }, { headers: { 'Cache-Control': 'no-store' } });
     }
     if (url.pathname === '/notify') return notify(req, env);
     if (url.pathname === '/api') {

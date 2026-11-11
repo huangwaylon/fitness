@@ -91,8 +91,9 @@ const admin = async (body: object): Promise<Record<string, unknown>> => {
   return fetch(new URL('/admin', http), { method: 'POST', headers: signedBy(String(Date.now()), text), body: text }).then((r) => r.json() as Promise<Record<string, unknown>>);
 };
 
-const health = await fetch(new URL('/health', http)).then((r) => r.json() as Promise<{ ok: boolean; t: number; versions?: number[] }>);
+const health = await fetch(new URL('/health', http)).then((r) => r.json() as Promise<{ ok: boolean; t: number; versions?: number[]; sha?: string | null }>);
 check(health.ok === true, `/health answers ok (versions ${health.versions?.join(', ') ?? '1'})`);
+check(typeof health.sha === 'string' && /^[0-9a-f]{7,}(-dirty)?$/.test(health.sha), `/health says the deployed commit (${health.sha})`);
 
 const bad = await fetch(http, { headers: { Origin: 'https://evil.test' } });
 check(bad.status === 403, `a foreign origin is refused (${bad.status})`);

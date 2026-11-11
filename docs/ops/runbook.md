@@ -125,8 +125,14 @@ umeway1122@gmail.com account. Once per machine: `npx wrangler login`. Then, from
    `KEY_A=…`/`KEY_B=…` lines; new ones: `openssl rand -hex 32` twice, then `npx wrangler secret bulk .smoke-keys --env
    test`). Every line should say `ok` (the `/notify` signature, the sockets' admission, the log).
 3. `npm run deploy` (production), only from a commit that is on `origin/main` (push first: the Durable Object
-   migrations are the account's, so a deploy from a branch blocks everyone else's from main). §2's `/health` →
-   `ok:true`.
+   migrations are the account's, so a deploy from a branch blocks everyone else's from main; `scripts/deploy.sh`
+   refuses a dirty tree or a commit not on `origin/main`). §2's `/health` → `ok:true`.
+
+**Is the live relay main's?** Each deploy stamps its commit: `/health`'s `sha` and the deployment's message (`npx
+wrangler deployments list`). From the repo, after `git fetch`: `sha=$(curl -s
+https://island-fund-relay.island-fund-relay.workers.dev/health | jq -r .sha); git merge-base --is-ancestor "$(git log
+-1 --format=%h origin/main -- relay app/src/lib/contract)" "$sha" && echo current || echo behind` (`behind`: a
+relay or contract commit on main isn't deployed; `null`: deployed before 2026-11-11's stamp).
 
 **Keys:** §3. **Logs:** §11; live: `npx wrangler tail`. There is no off switch: the relay is the record (never
 `npx wrangler delete`: it deletes the record's Durable Object). A protocol change (`live-protocol.ts`) deploys the

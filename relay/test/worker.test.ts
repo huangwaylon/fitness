@@ -99,8 +99,12 @@ describe('/health', () => {
   it('says ok, the protocol versions and the room’s weather', async () => {
     const res = await call('/health');
     expect(res.headers.get('Cache-Control')).toBe('no-store');
-    expect(await res.json()).toEqual({ ok: true, v: LIVE_V, versions: LIVE_VS, t: NOW, wx: WX });
+    expect(await res.json()).toEqual({ ok: true, v: LIVE_V, versions: LIVE_VS, sha: null, t: NOW, wx: WX });
     expect(calls['ROOM.id']).toEqual([['island']]);
+  });
+
+  it('says the deployed commit (scripts/deploy.sh --var COMMIT)', async () => {
+    expect(await (await call('/health', {}, envOf({ COMMIT: 'dce0fe35' }))).json()).toMatchObject({ ok: true, sha: 'dce0fe35' });
   });
 
   it('asks the room at most once a minute (an anonymous URL), and is still ok with wx null when the room fails', async () => {
