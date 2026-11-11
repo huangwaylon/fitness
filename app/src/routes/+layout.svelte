@@ -24,6 +24,7 @@
   import { doorTransition } from '#lib/ui-state/doorTransition.ts';
   import { isChunkError, lazy, newWorker, reloadUnlessLeaving, safeReload } from '#lib/ui-state/reload.ts';
   import { registerLate, releaseWorker } from '#lib/ui-state/swLate.ts';
+  import { launchHolding } from '#lib/ui-state/launchUpdate.ts';
   import { opensIsland } from '#lib/ui-state/boot.ts';
   import { musicNow, startSound } from '#lib/sound/sound.svelte.ts';
   import { acked, bindStage, hear, hush, request, stage } from '#lib/sound/stage.svelte.ts';
@@ -80,7 +81,8 @@
   }
   $effect(askWorker);
   $effect(() => {
-    if (workerReady && !onPair && !showHarvest && !ui.sheets.length) safeReload(Date.now(), 'update');
+    // (a launch holding the island for the worker reloads itself: ui-state/launchUpdate.ts)
+    if (workerReady && !onPair && !showHarvest && !ui.sheets.length && !launchHolding()) safeReload(Date.now(), 'update');
   });
 
   // the service worker once the island is up (ui-state/swLate.ts); a screen with no island coming releases it

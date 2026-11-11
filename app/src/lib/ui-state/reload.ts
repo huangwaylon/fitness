@@ -17,7 +17,7 @@ export const RELOAD_WINDOW_MS = 30_000;
 
 /** Reloads the page unless it already reloaded itself in the last RELOAD_WINDOW_MS. Returns whether it did. `why`: the
  *  log's `app.reload` (written before the page goes: a reload fires no hidden event). */
-export function safeReload(now = Date.now(), why: 'update' | 'chunk' | 'other' = 'other'): boolean {
+export function safeReload(now = Date.now(), why: 'update' | 'launch' | 'chunk' | 'other' = 'other'): boolean {
   try {
     if (now - Number(sessionStorage.getItem(KEY) ?? 0) < RELOAD_WINDOW_MS) return false;
     sessionStorage.setItem(KEY, String(now));

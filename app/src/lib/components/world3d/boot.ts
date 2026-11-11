@@ -51,6 +51,10 @@ export interface BootReport {
   /** ms since the navigation's start when the record's model was first composed (week.svelte.ts dataAt; 0: not by
    *  the report): the farm's plots, the finds and the garden's crops are placed only from it. */
   data?: number;
+  /** The launch's ask for a newer build (ui-state/launchUpdate.ts): its answer, ms after the ask (none: not asked, or
+   *  not by the report), and how long the island waited for it past its fields (ms). */
+  ask?: number;
+  held?: number;
 }
 
 /** Of the models in (things.ts arrivals: name, time), those after `loaded` up to `shown`, and the last's name (at
@@ -79,7 +83,7 @@ export function modelFetches(entries: readonly { name: string; transferSize?: nu
   return { n, net };
 }
 
-type Clocked = Omit<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'sw' | 'warm' | 'net' | 'late' | 'lastM' | 'data'>;
+type Clocked = Omit<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'sw' | 'warm' | 'net' | 'late' | 'lastM' | 'data' | 'ask' | 'held'>;
 
 /** The launch's clock: the engine's frames (`frame`), the page's display frames (`tick`), the marks. `done` once
  *  SETTLE_MS past `shown`; spoiled (never done) by the page hidden or the island paused meanwhile: its frames say
@@ -145,7 +149,7 @@ export const bootReport = (): BootReport | null => report;
  * WATCH_MAX_MS. A later mount (`back`: from a room, another screen) is watched the same way once a page load, its marks
  * from the mount (`perf.back`: the return's worst frame); null after that.
  */
-export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'late' | 'lastM' | 'data'>, paused: () => boolean): { clock: BootClock; stop(): void; back: boolean } | null {
+export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'late' | 'lastM' | 'data' | 'ask' | 'held'>, paused: () => boolean): { clock: BootClock; stop(): void; back: boolean } | null {
   if (returned || typeof requestAnimationFrame === 'undefined') return null;
   const back = launched;
   if (back) returned = true;

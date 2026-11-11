@@ -150,6 +150,38 @@ async function deploy(page: Page, context: import('@playwright/test').BrowserCon
   await page.evaluate(() => window.dispatchEvent(new Event('focus')));
 }
 
+test('a cold open into a waiting deploy reloads into it before the island is built (ui-state/launchUpdate.ts)', { tag: '@chromium' }, async ({ page, context }) => {
+  // each document: whether its island was made (window.__world3d set), by its time origin
+  await page.addInitScript(() => {
+    const id = String(performance.timeOrigin);
+    sessionStorage.setItem('e2e.docs', JSON.stringify([...(JSON.parse(sessionStorage.getItem('e2e.docs') ?? '[]') as string[]), id]));
+    let w3d: unknown;
+    Object.defineProperty(window, '__world3d', { configurable: true, get: () => w3d, set: (v) => ((w3d = v), v && sessionStorage.setItem(`e2e.w3d.${id}`, '1')) });
+  });
+  await page.goto('?demo');
+  await islandUp(page);
+  await controlled(page);
+  // a deploy while the app is away (no focus, no visibility change: the next open is a new page)
+  await askSwapAgain(page, context);
+  await page.request.get('/__e2e/deploy');
+  await context.route('**/_app/version.json', (route) => route.fulfill({ contentType: 'application/json', body: '{"version":"next"}' }));
+  await page.evaluate(() => sessionStorage.setItem('e2e.docs', '[]'));
+  const open = await page.goto('?demo');
+  expect(open?.fromServiceWorker(), 'the open is the old build\'s cached shell').toBe(true);
+  // reloaded by the launch (its reloadAt), into a page whose island comes up
+  await expect.poll(() => page.evaluate(() => (JSON.parse(sessionStorage.getItem('e2e.docs') ?? '[]') as string[]).length).catch(() => 0), { timeout: 20_000, message: 'the launch reloaded' }).toBeGreaterThanOrEqual(2);
+  await islandUp(page);
+  await context.unroute('**/_app/version.json');
+  const { docs, made, reloadAt } = await page.evaluate(() => {
+    const docs = JSON.parse(sessionStorage.getItem('e2e.docs')!) as string[];
+    return { docs, made: docs.map((d) => !!sessionStorage.getItem(`e2e.w3d.${d}`)), reloadAt: sessionStorage.getItem('island.reloadAt') };
+  });
+  expect(made[0], 'the old build\'s island never made').toBe(false);
+  expect(made.at(-1), 'the new page\'s island').toBe(true);
+  expect(docs).toHaveLength(2);
+  expect(reloadAt).not.toBeNull();
+});
+
 test('a deploy whose install fails reloads nothing, and the next time the app comes back it installs and reloads', { tag: '@chromium' }, async ({ page, context }) => {
   test.setTimeout(120_000);
   const warm = await warmed(page);
