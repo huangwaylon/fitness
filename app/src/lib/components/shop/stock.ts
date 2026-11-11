@@ -1,4 +1,4 @@
-// かう's stock (docs/design.md "The shop"): the day's pieces (contract/shop.ts stockOf) less what the island had by the
+// かう's stock (docs/design.md "The shop"): the day's pieces (contract/stock.ts stockOf) less what the island had by the
 // day's start: the shared ずかん's furniture finds (presents, tree gifts, digs: anyone's, the guest's too) and anyone's
 // buys. As of the day's start, so a find or a buy mid-day leaves the day's stock as it was, on both phones. And a buy
 // from it (here, not in store/actions.ts: the buy prices stay out of the first load).

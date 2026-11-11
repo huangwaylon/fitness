@@ -1,9 +1,9 @@
 <script lang="ts">
   // The island panel, ごほうび: the HUD menu's 「ベル」 row → it slides down from the top (design.md "Panel"): the
-  // wallet (the jar and the balance, today's ベル, the shop, the ベル ledger, the buys: Wallet). A day of the ledger
+  // wallets (each member's jar and balance, today's ベル, the rewards, the ベル ledger, the buys: Wallet). A day of the ledger
   // pushes a level with ‹ in the title bar (DayDetail; the wallet stays mounted under it, hidden, so ‹ finds it as it
-  // was); ✕, the backdrop and Esc close it. けんこう is the HUD's dumbbell's popup (the goals under its charts), the
-  // ずかん and せってい the HUD menu's (HudMenu), and per-fruit detail lives in the tree popups (one home per datum).
+  // was); ✕, the backdrop and Esc close it. 健康 is the HUD's dumbbell's popup (the goals under its charts), the
+  // 図鑑 and 設定 the HUD menu's (HudMenu), and per-fruit detail lives in the tree popups (one home per datum).
   import { tick } from 'svelte';
   import type { PersonId } from '#lib/types.ts';
   import Sheet from '../ui/Sheet.svelte';

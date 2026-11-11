@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { CHUNKS_X, CHUNKS_Z, GRID, chunkIndex, chunkOf, chunkString, codeOf, codeOfChar, charOf, kindOf, tierOf, writeChunk, KINDS, TIERS, tileAt, tileMid } from './grid.ts';
+import { LONG_GROW, LONG_SPLIT } from './migrate.ts';
 import { defaultLayout, doorOf, extentOf, layoutOf, objMid, objTiles, opsBetween, toJson, fromJson, withChanges, footOf, type Obj } from './model.ts';
 import { CHUNK_COUNT, chunkMesh, stairsMesh } from './mesh.ts';
 import { DEFAULT_HOMES, FAMILIES, catalogue, homeFoot, partsOf } from './homes.ts';
@@ -17,8 +18,8 @@ import {
 } from '../components/island/world.ts';
 
 const T0 = 1_800_000_000_000;
-/** world.ts's z on the long island (scripts/layout-default.ts: おく moved 420u back, past the new middle). */
-const long = (z: number) => (z < 680 ? z : z + 420);
+/** world.ts's z on the long island (migrate.ts: おく moved LONG_GROW back, past LONG_SPLIT). */
+const long = (z: number) => (z < LONG_SPLIT ? z : z + LONG_GROW);
 const as = (who: 'A' | 'B' | 'G', op: LayoutOp): LayoutEntry => ({ ...op, who }) as LayoutEntry;
 
 describe('the grid', () => {

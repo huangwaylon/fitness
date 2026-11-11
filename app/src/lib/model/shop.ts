@@ -1,8 +1,8 @@
 // The shop as each person's phone shows it (docs/design.md "The shop"): their pocket (what they caught, found or
 // grew of each sellable kind, contract/pocket.ts, from their day tallies and the field, less what they sold), their
 // かいがら and the pieces they bought, the guest's its own. The fold is the record's (contract/shop.ts caughtOf and
-// shopLedger), so a row the record would refuse counts for nothing here either. Pure. Never ベル: the economy never imports this, and this never imports the economy
-// (deps.test.ts).
+// shopLedger), so a row the record would refuse counts for nothing here either. Pure. Never ベル: the economy never
+// imports this, and this never imports the economy (deps.test.ts).
 //
 // Cost: one pass over the tallies (model/tally.ts, memoised) and the person's shop rows, memoised per row list.
 import type { Who } from '#lib/types.ts';

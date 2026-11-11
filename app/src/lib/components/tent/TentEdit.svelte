@@ -7,14 +7,14 @@
 </script>
 
 <script lang="ts">
-  // The tent's edit mode (docs/design.md "The tent"): NH's furniture arranging, one-handed. The tray at the foot, in
-  // the thumb's reach: its tabs (かぐ, ラグ, 天井, 生き物: the catches' tanks, みつけた: what the balloons brought, かべがみ,
-  // ゆか) over NH's icons in a row
-  // that scrolls sideways, and ✓ おわる with the count. A tap on an icon puts that piece down as a ghost on the free
-  // spot nearest my villager (lifted, its footprint green or red on the floor); a finger on it (or on a placed piece:
-  // it's picked up) drags it a tile at a time; a tap on the floor moves it there; ↻ まわす turns it a quarter; ✓ おく
-  // places it (greyed while red, the bar saying why); 🗑 しまう takes a placed one away (とりけす on the banner); ✕ やめる
-  // puts it back. A wallpaper or a floor is on the walls at once. While I hold a piece the partner's phone sees it move
+  // A home's edit mode, every home's room (docs/design.md "The tent"): NH's furniture arranging, one-handed. The tray at
+  // the foot, in the thumb's reach: its tabs (TABS: 最近, 家具, ラグ, 壁掛け, 天井, 生き物 the catches' tanks, 見つけた
+  // what the balloons brought, 買った, ジム, 壁紙, 床, 広さ; the empty ones hidden) over NH's icons in a row that scrolls
+  // sideways, and 完了 with the count. A tap on an icon puts that piece down as a ghost on the free spot nearest my
+  // villager (lifted, its footprint green or red on the floor); a finger on it (or on a placed piece: it's picked up)
+  // drags it a tile at a time; a tap on the floor moves it there; 回す turns it a quarter; ここに置く places it (greyed
+  // while red, the bar saying why); 片付ける takes a placed one away (取り消す on the toast); キャンセル puts it back. A
+  // wallpaper or a floor is on the walls at once. While I hold a piece the partner's phone sees it move
   // (dragLink.ts); what the partner holds, I can't pick up. Every change is one op (store/tent.svelte.ts), in the room
   // it's given: the home's own (the tent's `t`, うめ's house's `u`, the guest's `v`). 広さ picks the room's size from NH's
   // main rooms (contract/tent.ts ROOM_SIZES): a smaller one only once nothing would be left outside it (else those

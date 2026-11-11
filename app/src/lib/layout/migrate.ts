@@ -8,7 +8,7 @@ import { resetAt } from '#lib/contract/layout.ts';
 import { footprintOf, kindDef } from './catalog.ts';
 import { GRID, TILE } from './grid.ts';
 
-/** world.ts's island on the long one (scripts/layout-default.ts: おく moved 1380u back past the new middle). */
+/** world.ts's island on the long one (scripts/layout-default.ts: おく moved LONG_GROW back, past LONG_SPLIT). */
 export const LONG_SPLIT = 680;
 export const LONG_GROW = 420;
 const zOf = (z: number) => (z < LONG_SPLIT ? z : z + LONG_GROW);

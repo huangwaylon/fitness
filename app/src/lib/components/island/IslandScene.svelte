@@ -1350,7 +1350,7 @@
   /* the stage stays on screen while the track scrolls under it; its width is 390 units (cqw) and --u one unit */
   .stage {
     position: sticky; top: 0; width: 100%; overflow: hidden; container-type: inline-size; contain: layout paint;
-    /* the island's layers stand over every world thing (depths run to ~12M; camera.svelte.ts OVER is 50M). Six
+    /* the island's layers stand over every world thing (depths run to ~21M; camera.svelte.ts OVER is 50M). Six
        significant digits at most: the CSS minifier rounds a longer number (60000080 shipped as 60000100, so the
        tint stood over the lights at 60000081); the lights (Scenery's, the fireflies', Halloween's) are 60310000 */
     --z-tint: 60300000; --z-taps: 60320000; --z-coin: 60400000; --z-popup: 60500000;

@@ -1,9 +1,9 @@
 // The live relay's wire protocol (docs/backend.md#live-relay), shared by the Worker (relay/, imported by relative path)
 // and the client (live.ts). Intents, not positions: a tap's target and what it did, never a stream of coordinates.
 // Every message is one small JSON object (≤ MAX_BYTES), versioned by `v`, and checked by the same parsers on both
-// sides. Its one import is contract/layout.ts (the layout's bounds, the record's).
+// sides. Its one import is contract/layout.ts (the layout's bounds, ids and scope rule: the record's).
 
-import { WORLD_X, WORLD_Z, X_MAX, Z_MAX, isChunkId } from './layout.ts';
+import { HOME_ID, OBJ_ID, PART, TILE_RE, TOKEN, WORLD_X, WORLD_Z, X_MAX, Z_MAX, isChunkId, isRoomScope, scopeMayWrite } from './layout.ts';
 
 export const LIVE_V = 3;
 /** @public (relay/) The versions the relay speaks: v3 only (the rolling-log world with the guest, `G`:
@@ -199,8 +199,7 @@ export const PLAY_ROUNDS = 32;
 export const PLAY_MAX_S = 9999;
 
 /** A decor op on the wire: the island's decorations (no scope, contract/decor.ts), a home's room (`sc` t, u, v,
- *  contract/tent.ts) or the island's layout (`sc` o, c, r, h, contract/layout.ts); checked here again (the Worker
- *  bundles this file alone). */
+ *  contract/tent.ts) or the island's layout (`sc` o, c, r, h, contract/layout.ts), checked as it's relayed. */
 type DecorWire =
   | { sc?: 't' | 'u' | 'v'; id: string; at: number; item: string; x: number; z: number; f: number; p: number; on?: string; l?: number; rm?: undefined }
   | { sc?: 't' | 'u' | 'v' | 'o'; id: string; at: number; rm: true }
@@ -343,7 +342,6 @@ export const CLOSE = {
 const ID = /^[\w:.-]{1,32}$/;
 /** What was caught, picked or put: a token, `kind:id` (a find's) or `kind:id:id` (a present's catalog item). */
 const WHAT = /^[a-z][\w:.-]{0,63}$/;
-const TOKEN = /^[a-z][a-z0-9-]{0,23}$/;
 const KEY = /^[0-9a-f]{32,128}$/;
 /** An app version as vite.config.ts appVersion makes it (`2026-11-05.ef93d8b`, `dev`). */
 const BUILD = /^[0-9A-Za-z.-]{1,24}$/;
@@ -362,12 +360,6 @@ const TENT_U = [-40, 40] as const;
 const MUSEUM_U = [-560, 560] as const;
 /** The shop's floor (model units, shop/plan.ts RECT within it), a walk's points there. */
 const SHOP_U = [-80, 80] as const;
-/** The layout's ids and tokens (contract/layout.ts). */
-const OBJ_ID = /^[A-Za-z0-9][A-Za-z0-9:._-]{0,31}$/;
-const HOME_ID = /^h[ABG]$/;
-const PART = /^[A-Za-z0-9.]{1,24}$/;
-const CHUNK_G = /^[0-9a-z]{64}$/;
-const ROOMS: readonly unknown[] = ['t', 'u', 'v'];
 const isTentPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && within(x[0], TENT_U) && within(x[1], TENT_U);
 const isMuseumPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && within(x[0], MUSEUM_U) && within(x[1], MUSEUM_U);
 const isShopPt = (x: unknown): x is Pt => Array.isArray(x) && x.length === 2 && within(x[0], SHOP_U) && within(x[1], SHOP_U);
@@ -428,7 +420,7 @@ function layoutWire(o: Obj): DecorWire | null | undefined {
       return { sc: 'o', id, at, k: o.k, x: o.x as number, z: o.z as number, f: o.f as number, ...(o.s !== undefined ? { s: o.s as string } : {}) };
     }
     case 'c':
-      return isChunkId(id) && typeof o.g === 'string' && CHUNK_G.test(o.g) ? { sc: 'c', id, at, g: o.g } : null;
+      return isChunkId(id) && typeof o.g === 'string' && TILE_RE.test(o.g) ? { sc: 'c', id, at, g: o.g } : null;
     case 'r':
       return id === 'reset' ? { sc: 'r', id: 'reset', at } : null;
     case 'h': {
@@ -443,16 +435,9 @@ function layoutWire(o: Obj): DecorWire | null | undefined {
   }
 }
 
-/** Whether `who` may send a `decor` op of this scope (contract/layout.ts scopeMayWrite, again here: the Worker bundles
- *  this file alone): the outdoors, the island's decorations and every home's room anyone, the guest too; a home's look
- *  its owner's. @public (relay/, sync/live.ts) */
-export function scopeMaySend(who: Who, sc: string | undefined, id: string): boolean {
-  switch (sc) {
-    case undefined: case 'o': case 'c': case 'r': case 't': case 'u': case 'v': return true;
-    case 'h': return id === `h${who}`;
-    default: return false;
-  }
-}
+/** Whether `who` may send a `decor` op of this scope: contract/layout.ts scopeMayWrite, the record's rule.
+ *  @public (relay/, sync/live.ts) */
+export const scopeMaySend = (who: Who, sc: string | undefined, id: string): boolean => scopeMayWrite(who, { sc, id });
 
 /** The intent in `o`, rebuilt from its known fields only (anything extra is dropped), or null. */
 function intentOf(o: Obj): Intent | null {
@@ -492,7 +477,7 @@ function intentOf(o: Obj): Intent | null {
       if (typeof o.id !== 'string' || !isTime(o.at)) return null;
       const lay = layoutWire(o);
       if (lay !== undefined) return lay && { kind: 'decor', ...lay };
-      if (!DECOR_ID.test(o.id) || (o.sc !== undefined && !ROOMS.includes(o.sc))) return null;
+      if (!DECOR_ID.test(o.id) || (o.sc !== undefined && !isRoomScope(o.sc))) return null;
       const room = o.sc !== undefined;
       const sc = room ? { sc: o.sc as 't' | 'u' | 'v' } : {};
       if (o.rm !== undefined) return o.rm === true ? { kind: 'decor', ...sc, id: o.id, at: o.at, rm: true } : null;

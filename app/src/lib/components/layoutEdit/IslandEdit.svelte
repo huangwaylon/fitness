@@ -1,15 +1,15 @@
 <script lang="ts">
   // The island's もようがえ in /editor's phone view (`?view=phone&edit`; docs/island-layout.md "Phone editing": the game
-  // itself has none since 2026-11-08): NH's outdoor arranging, one-handed, on
+  // itself has none): NH's outdoor arranging, one-handed, on
   // the island's layout (store/layout.svelte.ts), the tent's way (tent/TentEdit.svelte). The tray at the foot: its tabs
-  // (木, 低木, 花, 野菜, フェンス, 岩, 明かり, 家具, キャンプ, 食べ物, ジム, 庭, 公園, 街, 海辺, オブジェ, 行事, はにわ, 橋・坂, 建物, お客さん) over each kind's icon; a tap puts that kind down as a ghost on the
+  // (TABS: the catalogue's groups, decor.tab.*) over each kind's icon; a tap puts that kind down as a ghost on the
   // free tile nearest the middle of the view, its footprint on the ground green or red (and why, in the bar); a finger
   // on it, or on a placed thing (it's picked up), drags it a tile at a time; a tap on the ground moves it there; ↻ turns
-  // it; ✓ puts it down; 🗑 しまう takes a placed one away (the island's one-offs, the goal trees, the homes never); ✕
+  // it; ✓ puts it down; 片付ける takes a placed one away (the island's one-offs, the goal trees, the homes never); ✕
   // puts it back. A small thing (the food, a kettle, the lantern) held over a table's top goes on it, as in the rooms
   // (layout/tops.ts; a tap on the table puts it there); a table carries what's on it, and goes away only once that's
   // gone. While a finger holds it the other phones see it move (`drag`, `sc: 'o'`); a drop is one action,
-  // its ops at once (every phone's island, the editor). Everyone's, the guest's too (2026-11-06).
+  // its ops at once (every phone's island, the editor). Everyone's, the guest's too.
   // The terrain (paths, water, cliffs) is the desktop editor's for now. The visitors' spots (おきゃくさん: the plaza's, where
   // the visitors stand, and Gulliver's on the beach; docs/design.md "Visitors") are marks only here: one each, a tap on
   // one in the tray picks up the one there; the visitors' usual spot (spots.ts stageOf) shows as a dashed ring while
@@ -486,7 +486,7 @@
 </div>
 
 <style>
-  /* (over every world node: their z-index is their depth, geom.ts zIndexAt, up to ~8M; at 5 a tree's tap area near the
+  /* (over every world node: their z-index is their depth, geom.ts zIndexAt, up to ~21M; at 5 a tree's tap area near the
      camera took a tap meant for the tray's icon over it) */
   .ie { position: absolute; inset: 0; z-index: 100000000; pointer-events: none; font: 700 var(--fs-s, 14px)/1.2 var(--font-ui, system-ui); }
   .over { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }

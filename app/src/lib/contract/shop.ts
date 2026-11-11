@@ -12,7 +12,7 @@
 // A `sell` is `{species, n, v}`: `species` a tally key of the pocket's (`fish:koi`, `shell:coral`, `goods:wood`), `n` how many,
 // `v` what they fetched (n × the species' price when sold: kept, so a later price list never rewrites the past). A `buy`
 // is `{item, price, d}`: `item` a room's piece (`f…`), `price` its price, `d` the stock's day. The record checks the
-// price, the stock and the cover when it keeps one (relay/src/store.ts, `shopRefusal` over `shopLedger`); the phones
+// price, the stock's day and the cover when it keeps one (not the stock itself: shopPriced) (relay/src/store.ts, `shopRefusal` over `shopLedger`); the phones
 // fold the same rows by the same rules (model/shop.ts), a kept row as kept and a queued one as the record would judge
 // it. Shared by the record and the model; pure.
 import { isLocalDate } from './api.ts';
@@ -68,8 +68,7 @@ function startsOf(d: Record<string, unknown>): StartsData | null {
  * sell at most n × its species' price (an app from before a price rise sells at its own lower list; never above the
  * record's); a buy at exactly its piece's price, from the stock of a day from yesterday to tomorrow (a buy queued over
  * midnight, a phone's clock a little ahead). Which pieces a day's stock holds depends on the island's finds
- * (contract/stock.ts), so the record doesn't check it: the phones only offer the stock (and an app from before 2026-11-09
- * drew another).
+ * (contract/stock.ts), so the record doesn't check it: the phones only offer the stock.
  */
 export function shopPriced(type: 'sell' | 'buy' | 'buy_starts', d: Record<string, unknown>, today: LocalDate): boolean {
   if (type === 'buy_starts') {

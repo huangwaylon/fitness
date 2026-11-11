@@ -33,22 +33,23 @@ export const TILE = 30, GRID_X0 = -90, GRID_Z0 = -90;
  *  spot in the record (island.ts) lie within it. */
 export const WORLD_X = [-230, GRID_X0 + (X_MAX + 1) * TILE] as const, WORLD_Z = [-460, GRID_Z0 + (Z_MAX + 1) * TILE] as const;
 /** A tile's character: kind × 4 + tier, base 36 (lib/layout/grid.ts). */
-const TILE_RE = /^[0-9a-z]{64}$/;
+/** A chunk's tiles (64 letters); the ids and tokens below are the live protocol's checks too. */
+export const TILE_RE = /^[0-9a-z]{64}$/;
 /** At most this many outdoor objects standing at once (the default's and ours; a removed one's row is kept, uncounted). */
 export const LAYOUT_MAX = 1500;
 
 /** An object's id: a default one's (world.ts's: `palm-1`, `fl:52:180`, `home-B`) or a new one (`o` + random). */
-const OBJ_ID = /^[A-Za-z0-9][A-Za-z0-9:._-]{0,31}$/;
+export const OBJ_ID = /^[A-Za-z0-9][A-Za-z0-9:._-]{0,31}$/;
 /** A terrain chunk's id: `c<cx>x<cz>`, within the chunks across and deep. */
 const CHUNK_RE = /^c(0|[1-9][0-9]?)x(0|[1-9][0-9]?)$/;
 export const isChunkId = (id: string): boolean => {
   const m = CHUNK_RE.exec(id);
   return m !== null && Number(m[1]) < CHUNKS_ACROSS && Number(m[2]) < CHUNKS_DEEP;
 };
-const HOME_ID = /^h[ABG]$/;
-const TOKEN = /^[a-z][a-z0-9-]{0,23}$/;
+export const HOME_ID = /^h[ABG]$/;
+export const TOKEN = /^[a-z][a-z0-9-]{0,23}$/;
 /** A home part (homes.json's ids: `NABrickC`, `SimpleAR`). */
-const PART = /^[A-Za-z0-9.]{1,24}$/;
+export const PART = /^[A-Za-z0-9.]{1,24}$/;
 
 
 type ObjOp =
@@ -94,9 +95,8 @@ export function layoutOpOf(d: Record<string, unknown>): LayoutOp | null {
 }
 
 /** Whether `who` may write a `decor` op of this data's scope (docs/island-layout.md "Ops"): the outdoors and the
- *  island's decorations (no scope) anyone, the guest too (2026-11-06: the island is everyone's alike); a home's look its
- *  owner alone; every home's interior anyone's, the guest too (2026-11-10: each of us arranges any room; was its
- *  owner's, the tent's all three). The record and the room both apply it. */
+ *  island's decorations (no scope) anyone, the guest too; a home's look its owner alone; every home's interior anyone's, the guest
+ *  too. The record and the room both apply it (live-protocol.ts scopeMaySend). */
 export function scopeMayWrite(who: Who, d: Record<string, unknown>): boolean {
   switch (d.sc) {
     case undefined:

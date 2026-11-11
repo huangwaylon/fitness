@@ -60,7 +60,7 @@ export function deltaText(id: GoalId, d: number | null): string {
   return (r < 0 ? '−' : r > 0 ? '+' : '±') + valueText(id, Math.abs(r), 1);
 }
 
-/** A bucket's title, for its callout: the day (`11/4(水)`), or a week's or month's days (`10/27–11/2`). */
+/** A bucket's title, for its callout: the day (formatDate: `11月4日(水)`), or a week's or month's days (`10/27–11/2`). */
 export function bucketTitle(r: Range, i: number, today: LocalDate): string {
   const b = r.buckets[i];
   return r.unit === 'day' ? formatDate(b.from) : rangeLabel({ ...r, from: b.from, to: b.to, unit: 'day' }, today);
