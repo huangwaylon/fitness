@@ -207,7 +207,7 @@ test('an empty pocket: うる says it’s empty, no 売る bar; かう has the d
   await expect(page.locator('[data-shop-starts-offer]')).toHaveText('あと14かいがら足りません');
 });
 
-// かう's 苗 (Counter.svelte, stock.ts startsFill): rows as うる's, a row's tap what my free plots want, − / + one; the bar
+// かう's 苗 (Counter.svelte, stock.ts startsFill): rows as うる's, a row's tap a field of that crop, − / + one; the bar
 // what's picked, or how many かいがら short, the price on 買う.
 test('苗 in rows: a tap fills my free plots, − / + one; past my かいがら the bar says how many short and 買う is disabled', async ({ page }) => {
   // my 2 × 2 field (4 plots, none planted), a tomato start held, 86 かいがら
@@ -222,14 +222,14 @@ test('苗 in rows: a tap fills my free plots, − / + one; past my かいがら 
   await expect(page.locator('[data-shop-to-starts]')).toHaveCount(0);
   const row = (c: string) => page.locator(`[data-shop-start="${c}"]`);
   const offer = page.locator('[data-shop-starts-offer]'), buyBtn = page.locator('[data-shop-buy]');
-  // a tap: the 3 the plots still want (4, one held); another crop's then 1 (none left)
+  // a tap: a field of tomatoes, 3 (4 plots, one held); wheat's a field of wheat, 4 (the tomatoes aren't wheat's)
   await row('tomato').click();
   await expect(row('tomato')).toHaveAttribute('data-picked', '3');
   await expect(offer).toHaveText('トマトの苗 ×3');
   await expect(buyBtn).toHaveText('42かいがらで買う');
   await row('wheat').click();
-  await expect(row('wheat')).toHaveAttribute('data-picked', '1');
-  await expect(offer).toHaveText('苗4個');
+  await expect(row('wheat')).toHaveAttribute('data-picked', '4');
+  await expect(buyBtn).toHaveText('98かいがらで買う');
   // − / + one; a tap on a full row none
   await page.locator('[data-shop-more="tomato"]').click();
   await expect(row('tomato')).toHaveAttribute('data-picked', '4');
@@ -239,7 +239,7 @@ test('苗 in rows: a tap fills my free plots, − / + one; past my かいがら 
   await expect(row('tomato')).toHaveAttribute('data-picked', '0');
   await expect(page.locator('[data-shop-less="tomato"]')).toHaveAttribute('aria-disabled', 'true');
   // 7 wheat: 98 > 86
-  for (let i = 0; i < 6; i++) await page.locator('[data-shop-more="wheat"]').click();
+  for (let i = 0; i < 3; i++) await page.locator('[data-shop-more="wheat"]').click();
   await expect(offer).toHaveText('あと12かいがら足りません');
   await expect(buyBtn).toHaveAttribute('aria-disabled', 'true');
   await expect(buyBtn).toHaveText('98かいがらで買う');
@@ -253,6 +253,55 @@ test('苗 in rows: a tap fills my free plots, − / + one; past my かいがら 
   await page.locator('[data-shop-tab="sell"]').click();
   await page.locator('[data-shop-tab="buy"]').click();
   await expect(page.locator('[data-shop-list]')).toHaveAttribute('data-shop-starts-first', 'false');
+});
+
+// (stock.ts startsFill, holdDelay: the rules; here the wiring, on the page's clock)
+test('苗: another crop’s held starts never fill a row’s tap; + held down repeats, quicker, to 99 at most; leaving it stops', async ({ page }) => {
+  // my 2 × 2 field, four carrot starts dug up and held
+  await seed(page, [['decor', { sc: 'o', id: 'field-A', at: 1.79e12, k: 'field', x: 10, z: 17, f: 0, s: 'a-2x2' }, 'A'], tally({ 'fish:sea-bass': 5 }),
+    ['sell', { species: 'fish:sea-bass', n: 5, v: 100 }, 'A'], ['buy_starts', { crop: 'carrot', n: 4, v: 56 }, 'A']]);
+  await page.clock.install({ time: new Date('2026-11-04T12:00:00+09:00') });
+  await page.goto(`shop${Q}`);
+  await openList(page, 'buy');
+  const row = (c: string) => page.locator(`[data-shop-start="${c}"]`), more = page.locator('[data-shop-more="tomato"]');
+  // r2's repro: wheat's tap was 1 (the carrots filled the plots); a field of wheat is 4
+  await row('wheat').click();
+  await expect(row('wheat')).toHaveAttribute('data-picked', '4');
+  await row('wheat').click();
+  // + held down: nothing till 400 ms, one then, one each 80 ms after; the lift's click adds none
+  await page.clock.pauseAt(new Date('2026-11-04T12:10:00+09:00'));
+  const picked = async () => Number(await row('tomato').getAttribute('data-picked'));
+  await more.hover();
+  await page.mouse.down();
+  await page.clock.runFor(399);
+  expect(await picked()).toBe(0);
+  await page.clock.runFor(1);
+  await expect.poll(picked).toBe(1);
+  await page.clock.runFor(80);
+  await expect.poll(picked).toBe(2);
+  await page.clock.runFor(72 + 65);
+  await expect.poll(picked).toBe(4);
+  await page.mouse.up();
+  await page.clock.runFor(1000);
+  expect(await picked()).toBe(4);
+  // a tap is one
+  await more.click();
+  await expect.poll(picked).toBe(5);
+  // the finger off it stops the repeat
+  await page.mouse.down();
+  await page.clock.runFor(400 + 80);
+  await expect.poll(picked).toBe(7);
+  await page.mouse.move(10, 10);
+  await page.clock.runFor(1000);
+  expect(await picked()).toBe(7);
+  await page.mouse.up();
+  // held long: 99, no further
+  await more.hover();
+  await page.mouse.down();
+  await page.clock.runFor(10_000);
+  await page.mouse.up();
+  await expect.poll(picked).toBe(99);
+  await expect(more).toHaveAttribute('aria-disabled', 'true');
 });
 
 test('the guest’s pocket and かいがら are its own', async ({ browser }) => {

@@ -21,7 +21,7 @@
   import { allPicked, step, toggleSection, toggleStack, type Picks } from './sell.ts';
   import { sellPrice } from '#lib/contract/shop.ts';
   import { buyPrice } from '#lib/contract/stock.ts';
-  import { MAX_STARTS, shortBy, startsFill, startsFirst } from './stock.ts';
+  import { MAX_STARTS, holdDelay, shortBy, startsFill, startsFirst } from './stock.ts';
   import { fillPlan } from '../farm/sheet.ts';
   import { site } from '../island/site.svelte.ts';
   import { layoutPlots } from '#lib/layout/field.ts';
@@ -95,9 +95,9 @@
     pick = pick === code ? null : code;
     cue('tick');
   }
-  // ---- かう's 苗 (docs/farming.md): the six starts, always in stock, in rows: a row's tap as many as my free plots want
-  // (again: none; stock.ts startsFill), − / + one, up to MAX_STARTS; 買う buys them at once, all or none (one group:
-  // store/farm.svelte.ts buyStarts)
+  // ---- かう's 苗 (docs/farming.md): the six starts, always in stock, in rows: a row's tap a field of that crop (my free
+  // plots less its starts I hold; again: none; stock.ts startsFill), − / + one (+ held down repeats: holdDelay), up to
+  // MAX_STARTS; 買う buys them at once, all or none (one group: store/farm.svelte.ts buyStarts)
   let starts = $state<Partial<Record<Crop, number>>>({});
   const startsN = $derived(CROPS.reduce((a, c) => a + (starts[c] ?? 0), 0));
   const startsV = $derived(startsN * FARM.startBuy);
@@ -111,7 +111,8 @@
     const m = week.model;
     return m ? fillPlan(layoutPlots(site.layout ?? layoutStore.current), farmOfState(m.state), m.me, FARM.cap).length : 0;
   });
-  const held = $derived(CROPS.reduce((a, c) => a + (shop.pocket.get(startKey(c)) ?? 0), 0));
+  const heldOf = (c: Crop) => shop.pocket.get(startKey(c)) ?? 0;
+  const held = $derived(CROPS.reduce((a, c) => a + heldOf(c), 0));
   /** 苗 first, as the tab opened: a buy (or its 取り消す) never moves the list under the finger. */
   const first = $derived((void tab, untrack(() => startsFirst(free, held))));
   let startsHead = $state<HTMLElement>();
@@ -127,7 +128,7 @@
     cue('tick');
   }
   function fillStart(c: Crop) {
-    const f = startsFill(free, held, starts, c);
+    const f = startsFill(free, heldOf(c));
     setStart(c, (starts[c] ?? 0) >= f ? 0 : f);
   }
   function stepStart(c: Crop, by: 1 | -1) {
@@ -135,6 +136,41 @@
     if (n < 0 || n > MAX_STARTS) return void cue('boop');
     setStart(c, n);
   }
+  // + held down (a start's): after holdDelay(0) one more each holdDelay(k), quicker, never past MAX_STARTS; the finger
+  // lifted, gone off it, moved (a scroll's start) or taken by the list's scroll (pointercancel) stops it, and the click
+  // after a repeat adds none
+  let holdT: ReturnType<typeof setTimeout> | undefined;
+  let holdFrom: { x: number; y: number; id: number } | null = null, repeated = false;
+  function holdStart(e: PointerEvent, c: Crop) {
+    holdStop();
+    repeated = false;
+    if (e.button !== 0 || (starts[c] ?? 0) >= MAX_STARTS) return;
+    holdFrom = { x: e.clientX, y: e.clientY, id: e.pointerId };
+    let k = 0;
+    const next = () => {
+      if ((starts[c] ?? 0) >= MAX_STARTS) return holdStop();
+      repeated = true;
+      setStart(c, (starts[c] ?? 0) + 1);
+      holdT = setTimeout(next, holdDelay(++k));
+    };
+    holdT = setTimeout(next, holdDelay(0));
+  }
+  function holdMove(e: PointerEvent) {
+    if (holdFrom && e.pointerId === holdFrom.id && Math.hypot(e.clientX - holdFrom.x, e.clientY - holdFrom.y) > 10) holdStop();
+  }
+  function holdStop() {
+    clearTimeout(holdT);
+    holdT = undefined;
+    holdFrom = null;
+  }
+  $effect(() => holdStop);
+  /** +'s click: one more, none after a hold's repeats. */
+  function more(r: StepRow) {
+    if (r.hold && repeated) return void (repeated = false);
+    if (r.c < r.max) r.step(1);
+    else cue('boop');
+  }
+
   function buyStartsPicked() {
     if (!startsN) return void cue('boop');
     if (startsV > shop.shells) return void cue('boop');
@@ -168,6 +204,8 @@
     label: string;
     body: () => void;
     step: (by: 1 | -1) => void;
+    /** + held down repeats (苗's). */
+    hold?: (e: PointerEvent) => void;
   }
 
   function switchTab(id: Tab) {
@@ -275,15 +313,15 @@
         {@const n = starts[c] ?? 0}
         {@const name = startName(c)}
         {@render stepRow({ key: c, data: { 'data-shop-start': c }, name, art: `finds/${c}-start`, tag: `finds/${c}`, unit: FARM.startBuy, c: n, max: MAX_STARTS,
-          full: n > 0 && n >= startsFill(free, held, starts, c), label: t('shop.startLabel', { name, v: String(FARM.startBuy), c: String(n) }),
-          body: () => fillStart(c), step: (by) => stepStart(c, by) })}
+          full: n > 0 && n >= startsFill(free, heldOf(c)), label: t('shop.startLabel', { name, v: String(FARM.startBuy), c: String(n) }),
+          body: () => fillStart(c), step: (by) => stepStart(c, by), hold: (e) => holdStart(e, c) })}
       {/each}
     </ul>
   </div>
 {/snippet}
 
-<!-- a row of うる (a stack in my pocket: its tap the whole stack) or of 苗 (a start: its tap what my plots want), again
-     none; − / + one, held inside 0..max -->
+<!-- a row of うる (a stack in my pocket: its tap the whole stack) or of 苗 (a start: its tap a field of it), again
+     none; − / + one, held inside 0..max (苗's + held down repeats) -->
 {#snippet stepRow(r: StepRow)}
   <li class="row" class:on={r.c > 0}>
     <button type="button" class="body" {...r.data} data-picked={r.c} data-sfx="self" aria-pressed={r.full} aria-label={r.label} onclick={r.body}>
@@ -295,7 +333,9 @@
         onclick={() => (r.c ? r.step(-1) : cue('boop'))}>−</button>
       <b class="c" aria-hidden="true">{r.c}{#if r.have}<small>/{r.have}</small>{/if}</b>
       <button type="button" class="pm" data-shop-more={r.key} data-sfx="self" aria-label={t('shop.more', { name: r.name })} aria-disabled={r.c >= r.max}
-        onclick={() => (r.c < r.max ? r.step(1) : cue('boop'))}>+</button>
+        class:hold={!!r.hold} onclick={() => more(r)} onpointerdown={r.hold} onpointermove={r.hold && holdMove}
+        onpointerup={r.hold && holdStop} onpointercancel={r.hold && holdStop} onpointerleave={r.hold && holdStop}
+        oncontextmenu={r.hold && ((e) => e.preventDefault())}>+</button>
     </span>
   </li>
 {/snippet}
@@ -364,6 +404,8 @@
     box-shadow: inset 0 0 0 2px var(--c-edge); z-index: -1;
   }
   .pm { position: relative; isolation: isolate; }
+  /* (held down: no callout or selection over it on iOS) */
+  .pm.hold { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   .pm[aria-disabled='true'] { color: var(--c-ink-soft); opacity: .45; }
   .c { min-width: 2.2ch; text-align: center; font: 700 var(--fs-body)/1 var(--font-num); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .c small { font-size: var(--fs-xs); font-weight: 600; color: var(--c-ink-soft); }

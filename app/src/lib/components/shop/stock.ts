@@ -52,12 +52,16 @@ export function buyPiece(item: string, stock: readonly string[]): SendResult & {
 
 /** The most of one start 苗 takes at once (store/farm.svelte.ts buyStarts). */
 export const MAX_STARTS = 99;
-/** 苗's row tap for crop `c`: as many as my `free` plots (empty, under the field's cap) still want, less the starts I
- *  hold and the other crops picked; at least 1 (no field, or full: one), at most MAX_STARTS. */
-export function startsFill(free: number, held: number, picks: Readonly<Record<string, number | undefined>>, c: string): number {
-  const others = Object.entries(picks).reduce((a, [k, n]) => a + (k === c ? 0 : (n ?? 0)), 0);
-  return Math.min(MAX_STARTS, Math.max(1, free - held - others));
-}
+/** 苗's row tap for a crop: a field of it, my `free` plots (empty, under the field's cap) less the starts of that crop I
+ *  `hold`. Another crop's starts, held or picked, never count: a row's tap is that crop's whole field, a mix is + and −.
+ *  At least 1 (no field, or full: one), at most MAX_STARTS. */
+export const startsFill = (free: number, hold: number): number => Math.min(MAX_STARTS, Math.max(1, free - hold));
+
+/** 苗's + held down: the wait before repeat `k` (0: the first, HOLD_MS), then HOLD_STEP_MS, ×0.9 quicker each step down
+ *  to HOLD_MIN_MS (0 to 99 in about 3.6 s). It stops at MAX_STARTS, on lift, cancel (a scroll took the finger) or leave. */
+export const HOLD_MS = 400, HOLD_MIN_MS = 30;
+const HOLD_STEP_MS = 80;
+export const holdDelay = (k: number): number => (k ? Math.max(HOLD_MIN_MS, Math.round(HOLD_STEP_MS * 0.9 ** (k - 1))) : HOLD_MS);
 
 /** Whether かう shows 苗 before the day's stock: my free plots want more starts than I hold (a planting trip's
  *  errand; else they sit after the stock, a header chip away). */

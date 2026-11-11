@@ -5,7 +5,7 @@ import { addDays } from '#lib/contract/tokyo.ts';
 import { BUY } from '#lib/contract/buyPrices.ts';
 import type { State } from '#lib/model/state.ts';
 import { ITEMS } from '../tent/items.ts';
-import { MAX_STARTS, foundBefore, packOf, shortBy, startsFill, startsFirst, stockAt } from './stock.ts';
+import { HOLD_MIN_MS, HOLD_MS, MAX_STARTS, foundBefore, holdDelay, packOf, shortBy, startsFill, startsFirst, stockAt } from './stock.ts';
 
 const at = (iso: string) => Date.parse(iso);
 const NOW = at('2026-11-09T15:00:00+09:00');
@@ -76,13 +76,26 @@ describe('苗 first (startsFirst): when my free plots want more starts than I ho
   });
 });
 
-describe('苗’s row tap (startsFill): what my free plots still want', () => {
-  it('my free plots less the starts I hold and the other crops picked; at least one, at most MAX_STARTS', () => {
-    expect(startsFill(38, 0, {}, 'tomato')).toBe(38);
-    expect(startsFill(38, 5, {}, 'tomato')).toBe(33);
-    expect(startsFill(38, 5, { tomato: 2, wheat: 10 }, 'tomato')).toBe(23);
-    expect(startsFill(0, 0, {}, 'tomato')).toBe(1);
-    expect(startsFill(10, 30, {}, 'tomato')).toBe(1);
-    expect(startsFill(500, 0, {}, 'tomato')).toBe(MAX_STARTS);
+describe('苗’s row tap (startsFill): a field of that crop', () => {
+  it('my free plots less the starts of that crop I hold (another crop’s never count); at least one, at most MAX_STARTS', () => {
+    expect(startsFill(38, 0)).toBe(38);
+    expect(startsFill(38, 5)).toBe(33);
+    // (r2's repro: 4 free plots and dug-up carrot starts held, wheat's row was 1; the carrots aren't wheat's: 4)
+    expect(startsFill(4, 0)).toBe(4);
+    expect(startsFill(0, 0)).toBe(1);
+    expect(startsFill(10, 30)).toBe(1);
+    expect(startsFill(500, 0)).toBe(MAX_STARTS);
+  });
+});
+
+describe('苗’s + held down (holdDelay)', () => {
+  it('400 ms to the first repeat, then 80 ms, quicker each step, never under 30 ms', () => {
+    expect([0, 1, 2, 3].map(holdDelay)).toEqual([HOLD_MS, 80, 72, 65]);
+    expect(holdDelay(100)).toBe(HOLD_MIN_MS);
+    for (let k = 2; k < 40; k++) expect(holdDelay(k)).toBeLessThanOrEqual(holdDelay(k - 1));
+    // (0 to 99 held: under 4 s)
+    const ms = Array.from({ length: MAX_STARTS }, (_, k) => holdDelay(k)).reduce((a, b) => a + b, 0);
+    expect(ms).toBeGreaterThan(3000);
+    expect(ms).toBeLessThan(4000);
   });
 });

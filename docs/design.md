@@ -833,7 +833,8 @@ person has a pocket and かいがら, the guest too.
   「貝」), counted 「2/5」 (picked/held). A row's tap picks its stack, − / + one, 全部 all of it (`shop/sell.ts`);
   starts are section 苗, no 全部. Selling leaves the ずかん and the museum; presents and bottles never sell.
 - **かう**: today's stock, 24 pieces a day, seeded (a pack's pieces side by side), less what the island had by midnight;
-  past my かいがら dimmed, 「あと{n}」. The starts ([farming.md](farming.md)) in rows, a tap what my free plots want:
+  past my かいがら dimmed, 「あと{n}」. The starts ([farming.md](farming.md)) in rows, a tap a field of that crop (free
+  plots less its starts held; other crops never count), + held repeats (400 ms, then 80 ms quicker, to 99):
   first (as opened) while they want more than I hold, else last (a 苗へ chip). Bought: in 模様替え. VisitorShop shares the tile.
 - A sell or a buy shows at once, a one-line toast, 取り消す for 5 s, then the record checks it
   ([backend](backend.md#events)).
