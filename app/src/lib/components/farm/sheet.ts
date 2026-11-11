@@ -6,6 +6,9 @@ import { addDays } from '#lib/contract/tokyo.ts';
 import type { PlotTile } from '#lib/layout/field.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
 
+// (farm fun A0, until FarmSheet and SceneTaps say them: 'farm.harvestedNamed' 'farm.harvestItem' 'farm.harvestMore'
+//  'farm.wateredBy' 'farm.waterAfterHarvest' 'world.farm.wateredBy'; this note goes in A4)
+
 /** My ripe plants' harvests, each at the yield the record will reckon (plants ≤ FARM.cap = FARM.batchMax: one event). */
 export function harvestOps(farm: Farm, me: Who, date: LocalDate, watered: Watered): { o: 'harvest'; p: string; n: number }[] {
   const out: { o: 'harvest'; p: string; n: number }[] = [];
