@@ -20,6 +20,9 @@ export interface PackStoreOpts {
   /** Everything held let go of as the page is hidden (pagehide, or hidden: iOS ranks a background tab for its end
    *  by its footprint; the service worker keeps every pack, so a read after is cheap). */
   dropOnHide?: boolean;
+  /** Everything held let go of this long after the last ask, none on its way (the rooms': their pieces, once parsed,
+   *  are the models' cache's; the service worker and the HTTP cache keep the bytes, so a read after is a local one). */
+  idleMs?: number;
 }
 
 /** The stores let go of as the page is hidden (one listener each for the page's life). */
@@ -44,6 +47,8 @@ export class PackStore {
   readonly #get: (url: string) => Promise<Response>;
   readonly #cap: number;
   readonly #tag: string;
+  readonly #idleMs: number;
+  #idleT: ReturnType<typeof setTimeout> | undefined;
   readonly url: (stem: string) => string;
 
   constructor(o: PackStoreOpts) {
@@ -51,12 +56,14 @@ export class PackStore {
     this.#get = o.get ?? ((u) => fetch(u));
     this.#cap = o.cap ?? 12_000_000;
     this.#tag = o.tag;
+    this.#idleMs = o.idleMs ?? 0;
     if (o.dropOnHide) dropOnHide(this);
   }
 
   /** A pack's bytes, whole: fetched once at a time, held among the most recently used within the cap (the newest
    *  always); null when it can't be fetched (asked again, it tries again). */
   pack(stem: string): Promise<ArrayBuffer | null> {
+    this.#idle();
     const had = this.#held.get(stem);
     if (had) {
       this.#held.delete(stem);
@@ -107,8 +114,16 @@ export class PackStore {
     void this.pack(first).then(() => gen === this.#gen && rest.forEach((s) => void this.pack(s)));
   }
 
+  /** The idle let-go (re)armed: at its end everything held goes, or (one still on its way) it waits again. */
+  #idle(): void {
+    if (!this.#idleMs) return;
+    clearTimeout(this.#idleT);
+    this.#idleT = setTimeout(() => (this.#held.size > this.#size.size ? this.#idle() : this.clear()), this.#idleMs);
+  }
+
   /** Every pack let go, and a prefetch's rest. */
   clear(): void {
+    clearTimeout(this.#idleT);
     this.#gen++;
     this.#held.clear();
     this.#size.clear();

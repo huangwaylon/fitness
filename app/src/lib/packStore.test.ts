@@ -1,6 +1,7 @@
 // The phone's packs (packStore.ts; ききみみ's audio, the players' parts): a pack fetched whole, once though its files are
 // asked for at once, held within a byte cap (the newest always, one on its way never let go), a failure not kept; a
-// file's bytes a copy cut from it; prefetch asks for each pack once, the first first, and nothing more after a clear.
+// file's bytes a copy cut from it; prefetch asks for each pack once, the first first, and nothing more after a clear;
+// with idleMs, all let go that long after the last ask.
 import { describe, expect, it, vi } from 'vitest';
 import { PackStore } from './packStore.ts';
 
@@ -126,5 +127,28 @@ describe('PackStore', () => {
     await s.pack('a');
     expect(count(n, 'a')).toBe(3);
     vi.unstubAllGlobals();
+  });
+
+  it('idleMs: every pack let go that long after the last ask, never while one is on its way', async () => {
+    vi.useFakeTimers();
+    const n = net({ a: 10, b: 10 });
+    const s = new PackStore({ url: (x) => `/p/${x}.pak`, get: n.get, tag: 't', idleMs: 1000 });
+    await s.pack('a');
+    await vi.advanceTimersByTimeAsync(900);
+    await s.pack('a'); // an ask holds it another second
+    await vi.advanceTimersByTimeAsync(900);
+    expect(count(n, 'a')).toBe(1);
+    n.hold();
+    const b = s.pack('b');
+    await vi.advanceTimersByTimeAsync(2500); // b still on its way: a kept too
+    await s.pack('a');
+    expect(count(n, 'a')).toBe(1);
+    n.go();
+    await b;
+    await vi.advanceTimersByTimeAsync(1000);
+    await s.pack('a');
+    await s.pack('b');
+    expect([count(n, 'a'), count(n, 'b')]).toEqual([2, 2]); // let go, asked again
+    vi.useRealTimers();
   });
 });
