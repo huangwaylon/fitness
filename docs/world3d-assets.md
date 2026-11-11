@@ -118,7 +118,8 @@ only copy): the models by group (a group's series together), the wallpapers' and
 icons of the tabs browsed a tab at a time (≤ 160 KB). A file's place `[pack,
 offset, bytes]` is in `tent/more.json` (`pk`, `tex`, `icons`); the phone cuts it from its pack, fetched whole and once
 (`items.ts` roomPacks: Pages ignores a Range), the service worker keeping it: ~690 packs, ~37 MB. The
-shop's pieces keep loose icons (a day's stock is any 24 of them: their packs would cost more than the icons).
+shop's pieces keep loose icons (a day's stock is any 24 of them: their packs would cost more than the icons); its
+stock keeps a pack's pieces together (contract/stock.ts `UNITS_FROM`): ~5 packs a day, not ~14.
 `tent/more.json` and `tent/seats-more.json` load with the room's chunk only (items.json, the starter set's and the
 ずかん's, with the presents too).
 

@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { ShopRowAt } from '#lib/contract/shop.ts';
-import { STOCK_N, buyPrice, stockOf } from '#lib/contract/stock.ts';
+import { STOCK_N, UNITS_FROM, buyPrice, stockOf } from '#lib/contract/stock.ts';
+import { addDays } from '#lib/contract/tokyo.ts';
 import { BUY } from '#lib/contract/buyPrices.ts';
 import type { State } from '#lib/model/state.ts';
 import { ITEMS } from '../tent/items.ts';
-import { MAX_STARTS, foundBefore, shortBy, startsFill, stockAt } from './stock.ts';
+import { MAX_STARTS, foundBefore, packOf, shortBy, startsFill, stockAt } from './stock.ts';
 
 const at = (iso: string) => Date.parse(iso);
 const NOW = at('2026-11-09T15:00:00+09:00');
@@ -44,6 +45,20 @@ describe('かう’s stock', () => {
   it('sells out when the island has every piece', () => {
     const s: S = { finds: [], shop: Object.keys(BUY).map((c) => buy(c, START - 1)) };
     expect(stockAt(s, NOW)).toEqual([]);
+  });
+});
+
+describe('かう’s packs', () => {
+  it('a day’s stock is cut from few packs (each fetched whole): about a third of the days before UNITS_FROM', () => {
+    const packs = (d: string, unit?: typeof packOf) => new Set(stockOf(d, new Set(), unit).flatMap((c) => packOf(c) ?? [])).size;
+    const days = Array.from({ length: 60 }, (_, i) => addDays(UNITS_FROM, i));
+    const mean = (f: (d: string) => number) => days.reduce((s, d) => s + f(d), 0) / days.length;
+    const old = mean((d) => packs(d)), now = mean((d) => packs(d, packOf));
+    expect(old).toBeGreaterThan(11);
+    expect(now).toBeLessThan(old / 2.5);
+    // (as many packed pieces as before: the same list, its packs' pieces side by side)
+    const packed = (unit?: typeof packOf) => mean((d) => stockOf(d, new Set(), unit).filter((c) => packOf(c)).length);
+    expect(packed(packOf)).toBeGreaterThan(packed() - 3);
   });
 });
 

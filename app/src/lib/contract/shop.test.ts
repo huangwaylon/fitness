@@ -1,10 +1,10 @@
 // The shop's rules (contract/shop.ts): the price list's scale, a sell's and a buy's shape and price, the day's stock
 // (the same on every phone and the record, from the date alone) and the ledger (the pocket, かいがら, a piece once).
 import { describe, expect, it } from 'vitest';
-import { dayNum, dayOf } from './tokyo.ts';
+import { addDays, dayNum, dayOf } from './tokyo.ts';
 import { buyOf, isSellable, sellOf, sellPrice, shopLedger, shopRefusal, type ShopRow } from './shop.ts';
 import { shopPriced } from './shopCheck.ts';
-import { STOCK_N, buyPrice, stockOf } from './stock.ts';
+import { STOCK_N, UNITS_FROM, buyPrice, stockOf } from './stock.ts';
 import { SELL } from './shopPrices.ts';
 import { BUY } from './buyPrices.ts';
 import { ITEMS } from '../components/tent/items.ts';
@@ -137,6 +137,23 @@ describe('the day’s stock', () => {
     const order = stockOf('2026-11-04', new Set(all.slice(10)));
     expect(order.length).toBe(10);
     expect(stockOf('2026-11-04', new Set(all))).toEqual([]);
+  });
+  it('from UNITS_FROM goes by units: a unit’s pieces together, the days before as they were', () => {
+    const unit = (c: string) => (Number(c.slice(1)) % 3 ? `u${Number(c.slice(1)) % 97}` : undefined); // (a third alone)
+    const before = addDays(UNITS_FROM, -1);
+    expect(stockOf(before, new Set(), unit)).toEqual(stockOf(before));
+    const day = stockOf(UNITS_FROM, new Set(), unit);
+    expect(day).toHaveLength(STOCK_N);
+    expect(new Set(day).size).toBe(STOCK_N);
+    expect(day).not.toEqual(stockOf(UNITS_FROM));
+    // each unit's run unbroken, and fewer runs than pieces
+    const runs: string[] = [];
+    for (const c of day) if (runs.at(-1) !== (unit(c) ?? c)) runs.push(unit(c) ?? c);
+    expect(new Set(runs).size).toBe(runs.length);
+    expect(runs.length).toBeLessThan(STOCK_N);
+    // a found piece's unit mates still come; the day's other pieces keep their order
+    const found = new Set([day[0]]);
+    expect(stockOf(UNITS_FROM, found, unit).slice(0, STOCK_N - 1)).toEqual(day.slice(1));
   });
   it('turns over: a month of days shows most of the list', () => {
     const seen = new Set<string>();

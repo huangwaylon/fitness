@@ -2,14 +2,17 @@
 // day's start: the shared ずかん's furniture finds (presents, tree gifts, digs: anyone's, the guest's too) and anyone's
 // buys. As of the day's start, so a find or a buy mid-day leaves the day's stock as it was, on both phones. And a buy
 // from it (here, not in store/actions.ts: the buy prices stay out of the first load).
-import { buyPrice, stockOf } from '#lib/contract/stock.ts';
+import { buyPrice, stockOf, type UnitOf } from '#lib/contract/stock.ts';
 import { localDateAt, ZONE_OFFSET_MS, dateMs } from '#lib/time/dates.ts';
 import type { State } from '#lib/model/state.ts';
 import { shopView } from '#lib/model/shop.ts';
 import { week } from '#lib/store/week.svelte.ts';
 import { UNDO_MS } from '#lib/store/actions.ts';
 import type { SendResult } from '#lib/store/backend.ts';
-import { codeOfFind } from '../tent/items.ts';
+import { ITEMS, codeOfFind } from '../tent/items.ts';
+
+/** A piece's pack (tent/items.ts: its model's), the stock's unit (contract/stock.ts: one pack fetched for its pieces). */
+export const packOf: UnitOf = (item) => ITEMS[item]?.pk?.[0];
 
 /** The room codes the island had found or bought before `start` (epoch ms). */
 export function foundBefore(s: Pick<State, 'finds' | 'shop'>, start: number): Set<string> {
@@ -26,7 +29,7 @@ export function foundBefore(s: Pick<State, 'finds' | 'shop'>, start: number): Se
 /** The day's stock at `now` (epoch ms): the same on every phone all day. */
 export function stockAt(s: Pick<State, 'finds' | 'shop'>, now: number): string[] {
   const date = localDateAt(now);
-  return stockOf(date, foundBefore(s, dateMs(date) - ZONE_OFFSET_MS));
+  return stockOf(date, foundBefore(s, dateMs(date) - ZONE_OFFSET_MS), packOf);
 }
 
 /** Why I can't buy this piece from today's stock (`stock`: stockAt) now, or null: not in the stock, bought already,

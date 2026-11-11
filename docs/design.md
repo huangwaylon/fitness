@@ -849,9 +849,9 @@ and buy furniture for the rooms. Each person has a pocket and かいがら, the 
 - **うる**: my pocket (caught, found or picked up, less sold) in 56 px rows by section (`shop/pocket.ts`; shells are
   「貝」). A row's tap picks its stack, − / + one, a section's 全部 all of it (`shop/sell.ts`); starts are section 苗, no
   全部. Selling leaves the ずかん and the museum; presents and bottles never sell.
-- **かう**: today's stock first, 24 pieces a day, seeded, less what the island had by midnight; past my
-  かいがら dimmed, 「あと{n}」; then the starts ([farming.md](farming.md)) in rows, a tap what my free plots want. A
-  bought piece is in 模様替え. VisitorShop shares the tile (`shop/PieceTile.svelte`).
+- **かう**: today's stock first, 24 pieces a day, seeded (a pack's pieces side by side), less what the island had by
+  midnight; past my かいがら dimmed, 「あと{n}」; then the starts ([farming.md](farming.md)) in rows, a tap what my
+  free plots want. A bought piece is in 模様替え. VisitorShop shares the tile (`shop/PieceTile.svelte`).
 - A sell or a buy shows at once, a one-line toast, 取り消す for 5 s, then the record checks it
   ([backend](backend.md#events)).
 - **Prices:** NH's Bells ÷ 20 both ways (a sell at least 3); a piece NH never sells is made up (4 × its NH sell price ÷

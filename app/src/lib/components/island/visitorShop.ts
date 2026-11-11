@@ -5,6 +5,7 @@
 // sheet (VisitorShop.svelte), never in the island's first load (the price list).
 import { BUY } from '#lib/contract/buyPrices.ts';
 import { stockOf } from '#lib/contract/stock.ts';
+import { packOf } from '../shop/stock.ts';
 import { shuffle } from '#lib/random.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
 import type { GuestId } from './visitorRoles.ts';
@@ -14,7 +15,7 @@ const OFFER_N = 6;
 const DEAR = 500;
 
 export function offerOf(id: GuestId, pool: 'dear' | 'any', date: string, found: ReadonlySet<string>, seed = ISLAND_SEED): string[] {
-  const today = new Set(stockOf(date, found));
+  const today = new Set(stockOf(date, found, packOf));
   const all = Object.keys(BUY).sort().filter((c) => !found.has(c) && !today.has(c) && (pool === 'any' || BUY[c] >= DEAR));
   return shuffle(all, dayRand(date, `guest-shop:${id}`, seed)).slice(0, OFFER_N);
 }

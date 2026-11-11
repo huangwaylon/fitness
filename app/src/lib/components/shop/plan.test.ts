@@ -1,12 +1,16 @@
 // The shop's floor plan (plan.ts): today's stock as shown in the room, the walk round it, the walls' sides.
 import { describe, expect, it } from 'vitest';
-import { stockOf } from '#lib/contract/stock.ts';
+import { stockOf as stockOn } from '#lib/contract/stock.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { footprint, ITEMS } from '../tent/items.ts';
 import { isWallItem } from '../tent/grid.ts';
 import { COUNTER_FRONT, DOOR_IN, SIGN, TWINS_BOX, atCounter, corners, inHull, RECT, TWINS, WALL_ZONE, ZONES, blocked, display, side, standable, walkPath } from './plan.ts';
 
+import { packOf } from './stock.ts';
+
 const days = Array.from({ length: 30 }, (_, i) => addDays('2026-11-01', i));
+/** A day's stock as the phones draw it (by packs from contract/stock.ts UNITS_FROM). */
+const stockOf = (d: string) => stockOn(d, undefined, packOf);
 /** A shown piece's box on its zone's top (model units: x0, x1, z0, z1) and the zone it's in. */
 const boxOf = (s: ReturnType<typeof display>['shown'][number]) => {
   const [w, d] = footprint(s.item, s.f);
@@ -25,8 +29,9 @@ describe('shop plan: the day’s stock in the room', () => {
   });
 
   it('most of a day’s stock has a place (the rest in the list)', () => {
-    // (at least half: NH's whole catalogue since 2026-11-10, a day may bring a few big pieces, a vehicle, a castle wall)
-    for (const d of days) expect(display(stockOf(d)).shown.length, d).toBeGreaterThanOrEqual(12);
+    // (about half: NH's whole catalogue since 2026-11-10, a day may bring a few big pieces, a vehicle, a castle wall; by
+    // packs, a pack's big ones side by side: 11 on 2 days of 400, the median 21 either way)
+    for (const d of days) expect(display(stockOf(d)).shown.length, d).toBeGreaterThanOrEqual(11);
   });
 
   it('each piece within its zone, none over another, on the zone’s top; wall things on the back wall', () => {
