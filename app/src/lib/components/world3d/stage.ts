@@ -6,8 +6,11 @@
 // Why endRenderer disposes WHITE (blank.ts): three adds a dispose listener to each texture a renderer uploads, and that
 // listener holds the renderer (its context, its canvas and, through it, its page's DOM) till the texture is disposed.
 // WHITE is page-wide, on most materials: a renderer gone without it disposed stayed alive for the page's life (すがた:
-// one context and ~700 DOM nodes a visit). Disposing it is safe: a live renderer that draws it uploads it again.
-import { SRGBColorSpace, WebGLRenderer, type Object3D } from 'three';
+// one context and ~700 DOM nodes a visit). Disposing it is safe: a live renderer that draws it uploads it again. The same
+// for three's one geometry of every Sprite (Sprite.js `_geometry`: the museum's emote bubbles and NEW tags, the bug
+// garden's, the tent's): each renderer that drew a sprite stayed alive through its dispose listener (the museum: one
+// more context a visit, leaks.spec).
+import { SRGBColorSpace, Sprite, WebGLRenderer, type Object3D } from 'three';
 import { WHITE } from './blank.ts';
 import { releaseAll, type Res } from './release.ts';
 import { pacer } from './pace.ts';
@@ -17,6 +20,8 @@ import { ktx2Default } from './ktx2.ts';
 
 /** The pixel ratio at most (an iPhone's 3 costs too much for what it adds), and while a gesture moves the camera. */
 const DPR_MAX = 2;
+/** three's page-wide geometry of every Sprite (it makes one, the first Sprite's, and shares it). */
+const SPRITE_GEO = new Sprite().geometry;
 export const DPR_MOVING = 1.5;
 
 interface RendererOpts {
@@ -44,11 +49,12 @@ export function makeRenderer(canvas: HTMLCanvasElement, o: RendererOpts = {}): {
   return { renderer, noDraw, dpr };
 }
 
-/** A renderer let go of: what's under `roots` (and `also`: drawn, since taken out) disposed, WHITE's listeners, then the
- *  renderer and its context (the GPU's memory back now, not at the context's collection). */
+/** A renderer let go of: what's under `roots` (and `also`: drawn, since taken out) disposed, WHITE's and the sprites'
+ *  geometry's listeners, then the renderer and its context (the GPU's memory back now, not at the context's collection). */
 export function endRenderer(renderer: WebGLRenderer, roots: Object3D[] = [], also: Iterable<Res> = []) {
   releaseAll(roots, also);
   WHITE.dispose();
+  SPRITE_GEO.dispose();
   renderer.dispose();
   renderer.forceContextLoss();
 }
