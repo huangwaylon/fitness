@@ -2,7 +2,7 @@
 // model folds the queued row as the record will judge it: model/farm.ts) and sent as one event per Tokyo day held
 // FARM_HOLD_MS (the 畑 sheet's batches and digs UNDO_MS: their 取り消す), each added to the held one (its data replaced); the sheet's 水やり
 // (the shared day's); the starts bought at the shop's かう (`buy_starts`, with the shop's 5 s 取り消す); what I plant
-// next (たね: kept on this phone).
+// next (the pick: kept on this phone).
 import { week } from './week.svelte.ts';
 import { world } from './world.svelte.ts';
 import type { SendResult } from './backend.ts';
@@ -83,7 +83,7 @@ export function buyStarts(picks: Partial<Record<Crop, number>>): SendResult {
   return together(list.map(([crop, n]) => week.send('buy_starts', { crop, n, v: n * FARM.startBuy }, { holdMs: UNDO_MS, group })));
 }
 
-// ---- what I plant next (たね), this phone's (the demo's apart: a pick in `?demo` never carries into the app)
+// ---- what I plant next (the pick), this phone's (the demo's apart: a pick in `?demo` never carries into the app)
 
 const seedKey = () => (week.demo ? 'island-demo.farm.seed' : 'farm.seed');
 export interface Seed { c: Crop; src: FarmSrc }

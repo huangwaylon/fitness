@@ -247,6 +247,11 @@ test('苗 in rows: a tap fills my free plots, − / + one; past my かいがら 
   await buyBtn.click();
   await expect.poll(() => shells(page)).toBe(86 - 84);
   await expect(page.locator('.banner[role="status"] .txt')).toHaveText('コムギの苗×6を買いました');
+  // (7 held for 4 plots, but 苗 stays where it was till the tab opens again: nothing moves under the finger)
+  await expect(page.locator('[data-shop-list]')).toHaveAttribute('data-shop-starts-first', 'true');
+  await page.locator('[data-shop-tab="sell"]').click();
+  await page.locator('[data-shop-tab="buy"]').click();
+  await expect(page.locator('[data-shop-list]')).toHaveAttribute('data-shop-starts-first', 'false');
 });
 
 test('the guest’s pocket and かいがら are its own', async ({ browser }) => {

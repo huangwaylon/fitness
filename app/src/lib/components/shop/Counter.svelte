@@ -6,9 +6,10 @@
   // what the sale comes to.
   // かう: the day's stock (shop/stock.ts: it changes daily), a piece past my かいがら dimmed with how many short, and the
   // fields' starts in rows as うる's: first when my free plots want them (stock.ts startsFirst), else after the stock with
-  // a 苗 chip in its header to jump there; the button says what it costs. Section headers stick while their rows scroll. A sell or a buy shows at once with 取り消す
+  // a 苗へ chip in its header to jump there (the order as the tab opened); the button says what it costs. Section headers stick while their rows scroll. A sell or a buy shows at once with 取り消す
   // (store/actions.ts undoBanner). The title bar is the kit's (タヌキ商店, my かいがら, ✕); the twins don't talk in here (their balloon is the room's). A piece picked is the room's too
   // (its card's: `pick`, `why`, `buy`).
+  import { untrack } from 'svelte';
   import NavBar from '../ui/NavBar.svelte';
   import NavButton from '../ui/NavButton.svelte';
   import Segmented from '../ui/Segmented.svelte';
@@ -111,7 +112,8 @@
     return m ? fillPlan(layoutPlots(site.layout ?? layoutStore.current), farmOfState(m.state), m.me, FARM.cap).length : 0;
   });
   const held = $derived(CROPS.reduce((a, c) => a + (shop.pocket.get(startKey(c)) ?? 0), 0));
-  const first = $derived(startsFirst(free, held));
+  /** 苗 first, as the tab opened: a buy (or its 取り消す) never moves the list under the finger. */
+  const first = $derived((void tab, untrack(() => startsFirst(free, held))));
   let startsHead = $state<HTMLElement>();
   /** The 苗 chip: the list to the starts (a tap's own scroll, the list's only). */
   function toStarts() {
@@ -329,7 +331,7 @@
   /* (no bar under it, an empty うる: the list keeps clear of the home indicator) */
   .list:last-child { padding-bottom: var(--pad-foot); }
   .pocket { display: flex; flex-direction: column; gap: 10px; }
-  /* a section's header, 42 high with its chip's lip (the 全部 / 苗 chip's hit 44: .chip.s), stuck at the list's top while its rows pass */
+  /* a section's header, 32 high (the 全部 / 苗へ chip's hit 44: .chip.s), stuck at the list's top while its rows pass */
   .sec {
     position: sticky; top: -12px; z-index: 2; display: flex; align-items: center; gap: 8px; min-height: 32px;
     margin: 0 -4px; padding: 2px 4px 8px; background: var(--c-cream);
