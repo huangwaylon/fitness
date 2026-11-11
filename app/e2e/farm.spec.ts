@@ -4,7 +4,7 @@
 // demo's events in localStorage (a field put down in the editor, a catch sold, the starts bought, as their writes have
 // them). The plots are tapped by their world points (a field's tile middles: layout/grid.ts tileMid).
 import { expect, test, type Page } from './fixtures.ts';
-import { islandUp, quiet, tapWorld } from './island.ts';
+import { islandUp, quiet, tapAt, tapWorld } from './island.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 type Seed = [type: string, data: object, who: 'A' | 'B' | 'G'];
@@ -157,4 +157,36 @@ test('three days on: ripe, watered on the two days before it gives three, harves
   await expect(b.locator('[data-farm-others="A"]')).toContainText('の畑（2株）');
   await expect(b.locator('[data-farm-water]')).toHaveText('水やりは明日から');
   expect((await farmRows(b)).filter((o) => o.o === 'harvest')).toHaveLength(1);
+});
+
+test('a plot under a goal tree’s canopy is the plot’s; the canopy off the field still opens its tree', async ({ page }) => {
+  // ウェイ's 6 × 3 field beside うめ's goal tree (14, 10): its east plots lie under the tree's canopy on screen
+  const beside: Seed = ['decor', { sc: 'o', id: 'field-A', at: 1.79e12, k: 'field', x: 10, z: 11, f: 0, s: 'a-6x3' }, 'A'];
+  await seed(page, D, [beside, ...POCKET]);
+  await catchPops(page);
+  await page.goto(`?demo&date=${D}T12:00`);
+  await islandUp(page);
+  await quiet(page);
+  const at = (i: number, j: number) => ({ p: `fd:field-A.${i}.${j}`, x: -90 + (10 + i) * 30 + 15, z: -90 + (11 + j) * 30 + 15 });
+  const all = [0, 1, 2].flatMap((j) => [0, 1, 2, 3, 4, 5].map((i) => at(i, j)));
+  const under = await page.evaluate((all) => all.filter(({ x, z }) => {
+    const [cx, cy] = (window as unknown as { __world3d: { client(x: number, z: number, lift: number): [number, number] } }).__world3d.client(x, z, 0);
+    return !!document.elementFromPoint(cx, cy)?.closest('.canopy');
+  }), all);
+  expect(under.length).toBeGreaterThan(0);
+  const t = await tapWorld(page, under[0].x, under[0].z, { clear: null });
+  expect(t.on).toBe('button.canopy');
+  // (nothing held: the picker, whose pick plants it), the tree's popup shut
+  await expect(page.locator('[data-farm-picker]')).toBeVisible();
+  await expect(page.locator('.canopy[aria-expanded="true"]')).toHaveCount(0);
+  await page.locator('[data-farm-pick="start:tomato"]').click();
+  await expect.poll(() => farmRows(page)).toEqual([{ o: 'plant', p: under[0].p, c: 'tomato', src: 'start' }]);
+  await expect.poll(() => pops(page)).toEqual(['トマトを うえた']);
+  // the canopy's top, no field under it: the tree's popup
+  const top = await tapAt(page, (w) => {
+    const r = [...w.document.querySelectorAll('.canopy')].map((c: Element) => c.getBoundingClientRect()).find((r: DOMRect) => r.width > 0 && r.top > 0);
+    return r ? [r.left + r.width / 2, r.top + 6] : null;
+  }, null, { clear: null, message: 'a canopy’s top' });
+  expect(top.on).toBe('button.canopy');
+  await expect(page.locator('.canopy[aria-expanded="true"]')).toHaveCount(1);
 });

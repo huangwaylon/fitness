@@ -247,6 +247,18 @@
     downSwallowed = !!swallowed && e === swallowed();
   }
 
+  /** A plot under a goal tree's canopy or trunk button or a villager's (their tap areas reach over a field beside them):
+   *  the plot's, farmed where it is (capture phase: before the button's own handler); a bug in front keeps its tap. */
+  function onPlotUnder(e: MouseEvent) {
+    const t = e.target, stage = scene?.querySelector<HTMLElement>('.stage');
+    if (downSwallowed || e.button > 0 || !enabled() || !(t instanceof Element) || !stage?.contains(t) || !t.closest('.canopy, .trunk-btn, .vil')) return;
+    if (critters?.lineOut() || critters?.onCritter(e.clientX, e.clientY)) return;
+    const ground = e.clientY - stage.getBoundingClientRect().top < w.view.horizon ? null : w.worldAtClient(e.clientX, e.clientY);
+    if (!ground || !farmAt(ground.x, ground.z)) return;
+    e.stopPropagation();
+    e.preventDefault();
+  }
+
   function onClick(e: MouseEvent) {
     if (downSwallowed) return void (downSwallowed = false);
     if (e.button > 0 || !enabled()) return;
@@ -625,10 +637,12 @@
     const el = scene;
     if (!el) return;
     el.addEventListener('pointerdown', onDown);
+    el.addEventListener('click', onPlotUnder, true);
     el.addEventListener('click', onClick);
     el.addEventListener('island:present', present);
     return () => {
       el.removeEventListener('pointerdown', onDown);
+      el.removeEventListener('click', onPlotUnder, true);
       el.removeEventListener('click', onClick);
       el.removeEventListener('island:present', present);
     };

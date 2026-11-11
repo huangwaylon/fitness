@@ -12,7 +12,8 @@ const Q = '?demo&date=2026-11-04T12:00';
 type R = { stats(): { frames: number }; still(): boolean; px(x: number, z: number, y?: number): [number, number]; mine(): [number, number]; walking(w?: string): boolean };
 const ROOMS = [
   { name: 'the tent', path: 'tent', hook: '__tent', reset: '[data-tent-reset]' },
-  { name: 'the shop', path: 'shop', hook: '__shop', reset: '[data-shop-reset]' },
+  // (the shop's walk-in ends by the stage's foot, the sign before it: the floor point toward the door)
+  { name: 'the shop', path: 'shop', hook: '__shop', reset: '[data-shop-reset]', dx: -40, dz: 0 },
   { name: 'the museum', path: 'museum', hook: '__museum', reset: '[data-museum-reset]' }
 ] as const;
 type Pt = [number, number];
@@ -76,14 +77,14 @@ const two = (x: number, y: number, dx: number, dy: number, n = 10, k = 1): Pt[][
 for (const room of ROOMS) {
   const r = <T,>(page: Page, fn: (h: R) => T) => page.evaluate(`(${fn.toString()})(window.${room.hook})`) as Promise<T>;
   const rest = (page: Page) => expect.poll(() => r(page, (h) => !!h.still() && !h.walking('A')), { timeout: 15_000 }).toBe(true);
-  /** In the room at rest; a floor point a little in front of my villager, followed on the screen. */
+  /** In the room at rest; a floor point a little behind my villager (or `dx`, `dz` from it), followed on the screen. */
   async function open(page: Page) {
     await page.goto(room.path + Q);
     await page.waitForFunction((h) => ((window as unknown as Record<string, R | undefined>)[h]?.stats()?.frames ?? 0) > 0, room.hook);
     await rest(page);
     const box = (await page.locator('canvas').first().boundingBox())!;
     const m = await r(page, (h) => h.mine());
-    const P = [m[0], m[1] - 25] as const;
+    const P = 'dx' in room ? ([m[0] + room.dx, m[1] + room.dz] as const) : ([m[0], m[1] - 25] as const);
     const at = (x: number = P[0], z: number = P[1]) => page.evaluate(`window.${room.hook}.px(${x}, ${z})`) as Promise<Pt>;
     return { box, m, P, at, cx: box.x + box.width / 2, cy: box.y + box.height * 0.55 };
   }

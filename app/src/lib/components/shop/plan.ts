@@ -19,6 +19,9 @@ export const DOOR: [number, number] = [-20, 20];
 /** Where one comes in (just inside the door) and stands to talk at the counter. */
 export const DOOR_IN: Pt = [-20, 38];
 export const COUNTER_FRONT: Pt = [36, 27];
+/** Where my villager walks in to, short of the counter (no hello yet): the camera's middle follows it there, so a
+ *  phone held upright (393 wide) shows the door at its left and the counter and the twins at its right. */
+export const WALK_IN: Pt = [20, 22];
 /** The twins behind the counter (NH: まめきち at the register, つぶきち beside him), facing the shop. */
 export const TWINS: Readonly<Record<'timmy' | 'tommy', Pt>> = { timmy: [61, 23], tommy: [61, 34] };
 /** The shop part's right wall (it stands out to the counter corner's back wall) and the corner's back wall. */
@@ -30,7 +33,7 @@ export const atCounter = (p: Pt): boolean => p[0] > INNER_X + 4 && p[1] > CORNER
  *  (the counter corner past the counter is never walked on), never the floor in front of it, which walks. */
 export const TWINS_BOX = [45, 66, 7, 19, 12, 42] as const;
 /** The sign right of the door (its foot on the floor, model units), its board clear of my villager where it comes in
- *  (DOOR_IN, then 8 right and 12 in): 「かう・うるは カウンターで」, a tap their choice box. */
+ *  (DOOR_IN, then WALK_IN): 「タップで かう・うる」, a tap the counter's list. */
 export const SIGN: readonly [number, number, number] = [14, 0, 41];
 
 /** A box's eight corners (x0, x1, y0, y1, z0, z1). */

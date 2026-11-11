@@ -110,8 +110,8 @@
   }
 </script>
 
-<Sheet bind:open tunes label={t('farm.title')} variant="pop">
-  <div class="titlebar"><NavBar title={t('farm.title')} onclose={() => (open = false)} sfx="self" /></div>
+<Sheet bind:open tunes label={t('farm.title')} variant="full">
+  <div class="titlebar"><NavBar pad title={t('farm.title')} onclose={() => (open = false)} sfx="self" /></div>
   <div class="fs-body" data-farm-sheet>
     {#if view}
       <section class="card sum">
@@ -191,7 +191,7 @@
 </Sheet>
 
 <style>
-  .fs-body { flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; margin: 0 -8px; padding: 6px 8px var(--body-pad); display: grid; gap: 10px; align-content: start; }
+  .fs-body { flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; padding: 6px calc(var(--side) + var(--safe-right)) var(--body-pad) calc(var(--side) + var(--safe-left)); display: grid; gap: 10px; align-content: start; }
   .card { padding: 12px 14px; border-radius: var(--r-card, 18px); background: var(--card); color: var(--text); }
   .sum p { margin: 0; font: 700 var(--fs-body)/1.5 var(--font-ui); }
   .sum .cap { font-weight: 600; color: var(--text-soft); }

@@ -4,7 +4,7 @@ import { stockOf as stockOn } from '#lib/contract/stock.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { footprint, ITEMS } from '../tent/items.ts';
 import { isWallItem } from '../tent/grid.ts';
-import { COUNTER_FRONT, DOOR_IN, SIGN, TWINS_BOX, atCounter, corners, inHull, RECT, TWINS, WALL_ZONE, ZONES, blocked, display, side, standable, walkPath } from './plan.ts';
+import { COUNTER_FRONT, DOOR_IN, SIGN, WALK_IN, TWINS_BOX, atCounter, corners, inHull, RECT, TWINS, WALL_ZONE, ZONES, blocked, display, side, standable, walkPath } from './plan.ts';
 
 import { packOf } from './stock.ts';
 
@@ -128,7 +128,7 @@ describe('shop plan: at the counter (the twins’ hello)', () => {
   it('the counter’s front is at the counter; the door, the stage and the shop floor aren’t', () => {
     expect(atCounter(COUNTER_FRONT)).toBe(true);
     expect(atCounter(DOOR_IN)).toBe(false);
-    expect(atCounter([DOOR_IN[0] + 8, DOOR_IN[1] - 12])).toBe(false);
+    expect(atCounter(WALK_IN)).toBe(false);
     expect(atCounter([0, 10])).toBe(false);
     expect(atCounter([-40, 12])).toBe(false);
   });

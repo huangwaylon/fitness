@@ -40,6 +40,7 @@ type ShopHooks = {
   shown(): { item: string; at: [number, number]; y: number }[]; rest(): string[];
   piece(code: string): [number, number] | null; twin(id: 'timmy' | 'tommy'): [number, number] | null;
   mine(): [number, number] | null; walking(): boolean; standable(x: number, z: number): boolean;
+  hit(cx: number, cy: number): { kind: string; id?: string } | null;
 };
 /** The room up: its first frame, every model in, the camera at rest. */
 const roomIn = (page: Page) => page.waitForFunction(() => {
@@ -287,11 +288,15 @@ test('the 3D shop: the twins at the counter, the day’s stock in the room; a ta
   expect(shownList.length + rest.length).toBe(24);
   expect(shownList.length).toBeGreaterThanOrEqual(18);
   expect(await hooks(page, (s) => s.twin('timmy'))).not.toBeNull();
-  // a piece on the stage, on screen and clear of the controls: tapped, its card (my villager turns to it, no walk)
+  // a piece on the stage, on screen and clear of the controls (and of my villager and the sign before it): tapped, its
+  // card (my villager turns to it, no walk)
   const vh = page.viewportSize()!.height;
   let target: { code: string; at: [number, number] } | null = null;
   for (const p of shownList) {
-    const px = await page.evaluate((c) => (window as unknown as { __shop: ShopHooks }).__shop.piece(c), p.item);
+    const px = await page.evaluate((c) => {
+      const s = (window as unknown as { __shop: ShopHooks }).__shop, at = s.piece(c);
+      return at && document.elementFromPoint(at[0], at[1])?.tagName === 'CANVAS' && s.hit(at[0], at[1])?.id === `s-${c}` ? at : null;
+    }, p.item);
     if (px && px[0] > 30 && px[0] < 363 && px[1] > 140 && px[1] < vh - 200) {
       target = { code: p.item, at: px };
       break;
@@ -320,12 +325,11 @@ test('a tap on the twins opens the list on its last tab (an empty pocket’s か
   await seed(page, [tally({ 'fish:whale-shark': 1 })]);
   await page.goto(`shop${Q}`);
   await roomIn(page);
-  // up to the counter (a floor tap there): the camera follows my villager, the twins come into view
-  const counter = await page.evaluate(() => (window as unknown as { __shop: { counter(): [number, number]; walkTo(x: number, z: number): void } }).__shop.counter());
-  await page.evaluate(([x, z]) => (window as unknown as { __shop: { walkTo(x: number, z: number): void } }).__shop.walkTo(x, z), counter);
-  await roomIn(page);
+  // walked in, short of the counter: the camera following my villager has the twins in view on a phone held upright
   const twin = await hooks(page, (s) => s.twin('timmy'));
   expect(twin).not.toBeNull();
+  expect(twin![0]).toBeGreaterThan(0);
+  expect(twin![0]).toBeLessThan(page.viewportSize()!.width - 20);
   await page.mouse.click(twin![0], twin![1] + 12);
   // the list at once, on うる (something to sell), titled, my かいがら on its bar
   await expect(page.locator('[data-shop-panel]')).toHaveAttribute('data-shop-panel', 'sell');

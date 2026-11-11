@@ -58,7 +58,7 @@
   import '#lib/i18n/catch.ts';
   import { loadTentNames } from '#lib/i18n/tent.ts';
   import { staticUrl } from '#lib/staticUrl.ts';
-  import { COUNTER_FRONT, DOOR, DOOR_IN, FRONT, RECT, SIGN, TWINS, TWINS_BOX, WALL_H, atCounter, blocked, corners, display, inHull, side, standable, walkPath, type Shown } from './plan.ts';
+  import { COUNTER_FRONT, DOOR, DOOR_IN, FRONT, RECT, SIGN, TWINS, TWINS_BOX, WALK_IN, WALL_H, atCounter, blocked, corners, display, inHull, side, standable, walkPath, type Shown } from './plan.ts';
   import M from './models.json' with { type: 'json' };
   import type { Look, Tent } from '../tent/engine.ts';
   import type { Pt } from '../tent/grid.ts';
@@ -410,7 +410,7 @@
       othersShown();
       void e.ready.then(() => {
         if (!alive) return;
-        walkTo([DOOR_IN[0] + 8, DOOR_IN[1] - 12]);
+        walkTo(WALK_IN);
         doorReady();
       });
       hooks();
