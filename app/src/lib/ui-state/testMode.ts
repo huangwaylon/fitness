@@ -24,9 +24,10 @@ export function drawOff(): boolean {
 }
 
 /** Whether the e2e's and the console's window hooks are put up (window.__tent, __shop, __museum, __world, the
- *  engines' debug maps): a dev build, `?demo`, or the logic tier. Never on a live phone: a hook holds its engine. */
+ *  engines' debug maps): a dev build, `?demo`, or an e2e's phone (`e2e`, playwright.config.ts: every tier, the drawn
+ *  one too). Never on a live phone: a hook holds its engine. */
 export function testHooks(): boolean {
-  return import.meta.env.DEV || (typeof location !== 'undefined' && new URLSearchParams(location.search).has('demo')) || drawOff();
+  return import.meta.env.DEV || (typeof location !== 'undefined' && new URLSearchParams(location.search).has('demo')) || has('e2e') === '1' || drawOff();
 }
 
 /** Whether a trip's or a trail's map is its logic-tier stub (pins as buttons, no MapLibre): drawing off, but for

@@ -21,6 +21,8 @@ async function open(ctx: BrowserContext, as: 'A' | 'B' | 'G') {
   await page.goto(`?demo&date=${DATE}${as === 'A' ? '' : `&as=${as}`}`);
   await islandUp(page);
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
+  // (the guest's island opens at its own villager, far up; the board is at the front)
+  if (as === 'G') await page.evaluate(() => { const w3 = (window as unknown as { __world3d: { go(z: number): void; limits(): { min: number } } }).__world3d; w3.go(w3.limits().min); });
   return page;
 }
 
