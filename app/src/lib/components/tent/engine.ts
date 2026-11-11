@@ -305,9 +305,12 @@ const furniture = modelCache(MODEL_KEEP, (code) => loadPiece(code).then((g) => {
   return g;
 }), 'tent: model');
 
-/** NH's standard material as the rooms' Lambert (as the furniture's: `furniture`). */
+/** NH's standard material as the rooms' Lambert (as the furniture's: `furniture`). A see-through two-sided one (the
+ *  shop's window panes: flat, nothing of their own behind them) drawn in one pass: one program and one draw, not
+ *  three's two (back, then front). */
 const toLambert = (x: MeshStandardMaterial): MeshLambertMaterial =>
-  new MeshLambertMaterial({ name: x.name, map: x.map, color: x.color, alphaTest: x.alphaTest, side: x.side, transparent: x.transparent, opacity: x.opacity, depthWrite: x.depthWrite });
+  new MeshLambertMaterial({ name: x.name, map: x.map, color: x.color, alphaTest: x.alphaTest, side: x.side, transparent: x.transparent, opacity: x.opacity, depthWrite: x.depthWrite,
+    forceSinglePass: x.transparent && x.side === DoubleSide });
 /** The buildings' insides (Shell) as loaded, kept page-wide: the shop comes back with no fetch or decode. */
 const shells = modelCache(1, (url) => glbLoader({ plain: true }).loadAsync(url), 'tent: shell');
 
@@ -1769,7 +1772,8 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   let cameraMoving = false, camRev = '';
   let drawn: (() => void) | null = null;
   function frame(vsync = now()) {
-    if (disposed || holding() || !pace.due(vsync, FPS)) return;
+    // (the first frame's programs made ready while it holds for the villagers too)
+    if (disposed || (!frames && (!primed() || holding())) || !pace.due(vsync, FPS)) return;
     const t = now();
     let more = false;
     const rv = `${view.az}:${view.pitch}:${view.k}`;
@@ -1966,14 +1970,59 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     if (more) invalidate();
     else blinkSoon();
   }
-  // ---- the warm-up: what the room hasn't drawn yet made ready once it's in and still (the first person's ceiling
-  //      and door, the edit mode's grid and footprints: in the scene, hidden), so turning them on compiles nothing ----
-  // WebKit says a program is compiled (KHR_parallel_shader_compile) long before it is, and compiles every program made
-  // so far at the next query that waits on the GPU (a first use: 10-100 ms each). So each mesh's programs are made
-  // and first used (three's compile, getUniforms) one new program a timer tick, only while no frame is wanted.
+  // ---- the programs ahead: WebKit says a program is compiled (KHR_parallel_shader_compile) long before it is, and
+  //      compiles every program made so far at the next query that waits on the GPU (a first use: 10-100 ms each). So
+  //      each mesh's programs are made and first used (three's compile, getUniforms) one new program a timer tick, its
+  //      textures uploaded with it. ----
   type Prog = { getUniforms(): unknown };
-  let warmT: ReturnType<typeof setTimeout> | undefined;
   const warmedTex = new WeakSet<Texture>();
+  /** Up to the next new program among `meshes` (taken off its front): made, first used, the textures uploaded. */
+  function primeNext(meshes: Object3D[]) {
+    const n0 = renderer.info.programs?.length ?? 0;
+    while (meshes.length && (renderer.info.programs?.length ?? 0) === n0) {
+      const o = meshes.shift()!;
+      if (!o.parent) continue;
+      for (const m of renderer.compile(o, camera, scene)) {
+        // (a see-through two-sided one is two programs, a side each: three's programs by key; one already in use
+        // has its uniforms: at once)
+        for (const p of (renderer.properties.get(m) as { programs?: Map<string, Prog> }).programs?.values() ?? []) p.getUniforms();
+        for (const v of Object.values(m)) if (v instanceof Texture && !warmedTex.has(v)) (warmedTex.add(v), renderer.initTexture(v));
+      }
+    }
+  }
+  const meshesOf = (visible: boolean) => {
+    const out: Object3D[] = [];
+    scene[visible ? 'traverseVisible' : 'traverse']((n) => void ((n as Mesh).material && out.push(n)));
+    return out;
+  };
+  // the first frame's: what's in view by then made ready a program a tick behind the door's black, so the frame only
+  // draws (it compiled the shop's ~16 programs at once: 230-430 ms in the iOS Simulator, every entry, cold or warm;
+  // now a step each, the dearest ~50 ms: a see-through one's; what arrives meanwhile is taken up too). Its shadow
+  // pass's few depth programs are the frame's own (~40 ms the first time, ~12 after).
+  let primeT: ReturnType<typeof setTimeout> | undefined, priming = false;
+  const unprimed = (o: Object3D) => [(o as Mesh).material].flat().some((m) => m && !renderer.properties.has(m));
+  function primed(): boolean {
+    if (noDraw) return true;
+    if (priming) return false;
+    const list = meshesOf(true).filter(unprimed);
+    if (!list.length) return true;
+    priming = true;
+    const step = () => {
+      if (disposed) return;
+      primeNext(list);
+      // (the next after a frame is drawn: two back to back were one 65 ms gap)
+      if (list.length) return void requestAnimationFrame(() => (primeT = setTimeout(step, 0)));
+      priming = false;
+      invalidate();
+    };
+    primeT = setTimeout(step, 0);
+    return false;
+  }
+
+  // ---- the warm-up: what the room hasn't drawn yet made ready once it's in and still (the first person's ceiling
+  //      and door, the edit mode's grid and footprints: in the scene, hidden), so turning them on compiles nothing:
+  //      a program a tick (primeNext), only while no frame is wanted ----
+  let warmT: ReturnType<typeof setTimeout> | undefined;
   function warmSoon() {
     clearTimeout(warmT);
     if (!noDraw && !disposed) warmT = setTimeout(warm, 400);
@@ -1985,23 +2034,12 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     if (disposed) return;
     if (document.hidden) return void (warmHeld = true);
     if (pending || pace.queued() || !frames) return warmSoon();
-    const meshes: Object3D[] = [];
-    scene.traverse((n) => void ((n as Mesh).material && meshes.push(n)));
+    const meshes = meshesOf(false);
     const step = () => {
       if (disposed) return;
       if (document.hidden) return void (warmHeld = true);
       if (pace.queued()) return void (warmT = setTimeout(step, 100));
-      const n0 = renderer.info.programs?.length ?? 0;
-      while (meshes.length && (renderer.info.programs?.length ?? 0) === n0) {
-        const o = meshes.shift()!;
-        if (!o.parent) continue;
-        for (const m of renderer.compile(o, camera, scene)) {
-          // (a see-through two-sided one is two programs, a side each: three's programs by key; one already in use
-          // has its uniforms: at once)
-          for (const p of (renderer.properties.get(m) as { programs?: Map<string, Prog> }).programs?.values() ?? []) p.getUniforms();
-          for (const v of Object.values(m)) if (v instanceof Texture && !warmedTex.has(v)) (warmedTex.add(v), renderer.initTexture(v));
-        }
-      }
+      primeNext(meshes);
       if (meshes.length) warmT = setTimeout(step, 20);
     };
     step();
@@ -2126,6 +2164,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       clearTimeout(restTimer);
       clearTimeout(blinkT);
       clearTimeout(holdT);
+      clearTimeout(primeT);
       document.removeEventListener('visibilitychange', onVis);
       clearTimeout(warmT);
       for (const w of villagers.values()) w.v3?.dispose();
