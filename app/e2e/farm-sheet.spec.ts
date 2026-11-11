@@ -57,7 +57,7 @@ test('収穫: every ripe plant of mine in one event, its 取り消す gives them
   await expect(page.locator('[data-farm-today]')).toHaveText('収穫できる 5株（5個・90かいがら）');
   await page.locator('[data-farm-harvest]').click();
   await expect(page.locator('.banner[role="status"] .txt')).toHaveText('5個を収穫しました');
-  await expect(page.locator('[data-farm-today]')).toHaveText('今日収穫できるものはありません');
+  await expect(page.locator('[data-farm-today]')).toHaveText('次の収穫まであと3日');
   // the vegetables in my pocket: 植える offers them
   await expect(page.locator('[data-farm-seed="crop:tomato"] .n')).toHaveText('5');
   await page.getByRole('button', { name: '取り消す' }).click();
@@ -107,4 +107,18 @@ test('the map: a cell a plot, a tap selects it; its row digs (取り消す puts 
   await page.locator('[data-farm-act="plant"]').click();
   await expect(page.locator('[data-farm-count]')).toHaveText('4/40株');
   await expect.poll(() => farmRows(page), { timeout: 15_000 }).toEqual([{ o: 'plant', p: plots[39], c: 'tomato', src: 'start' }]);
+});
+
+test('after a harvest with no starts left: the vegetables offered, never picked for me; the map as the island shows the field', async ({ page }) => {
+  const five: Seed[] = [['tally', { date: D, counts: { 'fish:koi': 1 } }, 'A'], ['sell', { species: 'fish:koi', n: 1, v: 200 }, 'A'], ['buy_starts', { crop: 'tomato', n: 5, v: 70 }, 'A']];
+  await up(page, [FIELD, ...five, planted(plots.slice(0, 5))]);
+  // the field's front row (row 0, nearest the beach) at the map's bottom, its back row at the top, as on the island
+  await expect(page.locator('[data-farm-cell]').first()).toHaveAttribute('data-farm-cell', plots[30]);
+  await expect(page.locator('[data-farm-cell]').last()).toHaveAttribute('data-farm-cell', plots[9]);
+  await page.locator('[data-farm-harvest]').click();
+  await expect(page.locator('[data-farm-empty]')).toHaveText('苗がありません。タヌキ商店で買えます（野菜も植えられます）');
+  await expect(page.locator('[data-farm-seed="crop:tomato"]')).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('[data-farm-plant-all]')).toHaveCount(0);
+  await page.locator('[data-farm-seed="crop:tomato"]').click();
+  await expect(page.locator('[data-farm-plant-all]')).toHaveText('トマトを植える（5区画）');
 });

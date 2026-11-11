@@ -1,6 +1,6 @@
 <script lang="ts">
-  // My fields as the 畑 sheet's map (docs/farming.md "Playing"): a cell a plot, row 0 at the top as the island's camera
-  // sees it, the plant's art (a seedling while it grows), ripe ones ringed yuzu, watered soil dark. A tap only selects a
+  // My fields as the 畑 sheet's map (docs/farming.md "Playing"): a cell a plot, laid out as the island's camera sees the
+  // field (its back row, the highest, at the top: row 0 is its front, nearest the beach), the plant's art (a seedling while it grows), ripe ones ringed yuzu, watered soil dark. A tap only selects a
   // cell (32 px at most: a 10 × 4 field is 347 px wide); the sheet's row under it acts on it.
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { stageOf, type Farm, type Watered } from '#lib/contract/farm.ts';
@@ -30,7 +30,7 @@
       f.w = Math.max(f.w, Number(m[2]) + 1);
       f.cells.push({ p: t.p, i: Number(m[2]), j: Number(m[3]) });
     }
-    return [...by].map(([id, f]) => ({ id, w: f.w, cells: f.cells.sort((a, b) => a.j - b.j || a.i - b.i) }));
+    return [...by].map(([id, f]) => ({ id, w: f.w, cells: f.cells.sort((a, b) => b.j - a.j || a.i - b.i) }));
   });
 </script>
 

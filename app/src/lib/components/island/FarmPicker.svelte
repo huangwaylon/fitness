@@ -49,7 +49,7 @@
 <div class="picker" role="dialog" aria-label={t('world.farm.pick')} data-farm-picker bind:this={root}>
   {#if seeds.length}
     <p class="ph">{t('world.farm.pick')}</p>
-    <div class="grid">
+    <div class="grid" style:--n={Math.min(4, seeds.length)}>
       {#each seeds as s (s.src + s.c)}
         <button type="button" class="cell" data-sfx="tick" class:on={seed.pick?.c === s.c && seed.pick?.src === s.src} data-farm-pick="{s.src}:{s.c}" aria-label={name(s.c, s.src)}
           onclick={() => choose({ c: s.c, src: s.src })}>
@@ -72,7 +72,8 @@
     box-shadow: 0 var(--lip-h) 0 var(--c-lip), 0 8px 18px rgb(60 40 20 / .18);
   }
   .ph { margin: 0 0 8px; font: 700 var(--fs-s)/1.4 var(--font-ui); word-break: keep-all; }
-  .grid { display: grid; grid-template-columns: repeat(4, 58px); gap: 8px; }
+  /* up to four across, the card as wide as what I hold (one crop: no empty room beside it) */
+  .grid { display: grid; grid-template-columns: repeat(var(--n), 58px); gap: 8px; }
   .cell {
     position: relative; width: 58px; height: 60px; display: grid; place-items: center; align-content: center; gap: 2px; margin: 0; padding: 4px 0 3px;
     appearance: none; border: 0; border-radius: 12px; background: rgb(255 255 255 / .6); cursor: pointer; line-height: 0;

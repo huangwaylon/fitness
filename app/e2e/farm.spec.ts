@@ -94,8 +94,8 @@ test('starts bought at the shop’s かう; a tap on my empty plot with nothing 
   await expect(page.locator('[data-farm-ripe]')).toHaveCount(0);
   await page.locator('[data-farm-open]').click();
   await expect(page.locator('[data-farm-count]')).toHaveText('3/40株');
-  // nothing ripe yet: said so, not 「0株・0個」
-  await expect(page.locator('[data-farm-today]')).toHaveText('今日収穫できるものはありません');
+  // nothing ripe yet: when the next is, not 「0株・0個」
+  await expect(page.locator('[data-farm-today]')).toHaveText('次の収穫まであと3日');
   // never a raw key; the sheet's text in the theme's own colour on its card
   await expect(page.locator('dialog[open]').last()).not.toContainText('beach.name.');
   const [fg, text] = await page.locator('[data-farm-today]').evaluate((el) => {

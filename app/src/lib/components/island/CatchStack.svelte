@@ -1,7 +1,8 @@
 <script lang="ts">
   // The catch plates (catchStack.svelte.ts): a stack at the bottom centre of the screen, above the home indicator and
   // しずえ's box (--news-lift), clear of the say button at the bottom right (the same room kept at the left, so it stays
-  // centred) and over the partner's edge face when that's at the bottom. The newest enters at the bottom; the older
+  // centred), over the partner's edge face when that's at the bottom and over the buttons' row while the はたけ pill
+  // shows (a harvest's plate covered it). The newest enters at the bottom; the older
   // slide up (a flip), and each fades out when it goes (its own timer, a tap, or pushed out by a fourth), then the
   // ones above it slide down into its room. Reduced motion: no slide, a quick fade.
   //   <CatchStack {scene} />   (in .if-scene, outside the scroller)
@@ -35,6 +36,8 @@
   }
   /* the partner's face at the bottom edge (44px, 12px up): the stack stands over it */
   :global(.if-scene:has([data-partner-edge='bottom'])) .catch-stack { bottom: calc(var(--safe-bottom) + 64px + var(--news-lift, 0px)); }
+  /* the はたけ pill at the bottom left (wider than the say button's room): the stack stands over the buttons' row */
+  :global(.if-scene:has([data-farm-open])) .catch-stack { bottom: calc(max(var(--safe-bottom, 0px) + 64px, var(--pad-bottom, 8px) + 8px + var(--hit, 44px) + 10px) + var(--news-lift, 0px)); }
   .slot { max-width: min(340px, 100%); display: flex; justify-content: center; transition: opacity var(--fade) ease, translate var(--fade) ease; }
   .slot.leaving { opacity: 0; translate: 0 -6px; pointer-events: none; }
   @media (prefers-reduced-motion: reduce) { .slot.leaving { translate: none; } }

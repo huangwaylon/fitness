@@ -33,8 +33,9 @@
   const pocket = $derived(m ? shopView(m.state, m.me).pocket : new Map<string, number>());
   /** What I can plant: each start, then each vegetable, that I hold. */
   const seeds = $derived((['start', 'crop'] as const).flatMap((src) => CROPS.map((c) => ({ c, src, n: pocket.get(seedKey(c, src)) ?? 0 }))).filter((s) => s.n > 0));
-  /** The crop 植える plants: the one held (on the island too), else the first I have. */
-  const held = $derived(seeds.find((s) => s.c === seed.pick?.c && s.src === seed.pick?.src) ?? seeds[0] ?? null);
+  /** The crop 植える plants: the one held (on the island too), else my first start. Never a vegetable unpicked: right
+   *  after a harvest the big button would else plant the crop I meant to sell. */
+  const held = $derived(seeds.find((s) => s.c === seed.pick?.c && s.src === seed.pick?.src) ?? seeds.find((s) => s.src === 'start') ?? null);
   const view = $derived.by(() => {
     if (!m) return null;
     const { farm, watered } = farmToday(m.state, date);
@@ -51,7 +52,9 @@
       empty: mine.filter((x) => !farm.plots.has(x.p)).length,
       fill: held ? fillPlan(plots, farm, m.me, held.n) : [],
       off: orphans(farm, m.me, plots),
-      n: plantsOf(farm, m.me)
+      n: plantsOf(farm, m.me),
+      /** Days till my next plant ripens (Infinity: none of mine). */
+      next: Math.min(...mine.flatMap((x) => { const pl = farm.plots.get(x.p); return pl ? [daysLeft(pl, date)] : []; }))
     };
   });
   const crop = (c: Crop, src: FarmSrc = 'crop') => (src === 'start' ? t(`farm.start.${c}`) : bare(t(`beach.name.${c}`)));
@@ -98,9 +101,15 @@
   <div class="fs-body" data-farm-sheet>
     {#if view}
       <section class="card sum">
-        <p data-farm-today>{view.ripe.length ? t('farm.today', { n: view.ripe.length, max: view.max, shells: formatNum(view.shells) }) : t('farm.noneToday')}</p>
+        {#if view.ripe.length}
+          <p data-farm-today>{t('farm.today', { n: view.ripe.length, max: view.max, shells: formatNum(view.shells) })}</p>
+        {:else if Number.isFinite(view.next)}
+          <p data-farm-today>{t('farm.next', { n: view.next })}</p>
+        {:else if view.field}
+          <p data-farm-today>{t('farm.noneYet')}</p>
+        {/if}
         {#if view.field || view.n}<p class="cap" data-farm-count>{t('farm.count', { n: view.n, cap: FARM.cap })}</p>{/if}
-        <div class="acts">
+        {#if view.ripe.length || view.planted}<div class="acts">
           {#if view.ripe.length}
             <button type="button" class="btn yuzu" data-farm-harvest data-sfx="tick" onclick={harvest}>{t('farm.harvestAll', { n: view.ripe.length })}</button>
           {/if}
@@ -108,7 +117,7 @@
             <button type="button" class="btn paper water" data-farm-water data-sfx="tick" aria-disabled={!view.water.length}
               onclick={() => view?.water.length && waterAll(view.water)}>{view.water.length ? t('farm.waterAll', { n: view.water.length }) : t('farm.watered')}</button>
           {/if}
-        </div>
+        </div>{/if}
       </section>
       {#if view.field}
         <section class="card field">
@@ -116,28 +125,31 @@
           {#if cell}
             <div class="sel" data-farm-selected={cell.p}>
               <span class="what">{cell.label}{#if cell.wet}<span class="wet">{t('farm.watered')}</span>{/if}</span>
+              <span class="btns">
               {#if cell.pl}
                 {@const pl = cell.pl}
-                {#if cell.ripe}<button type="button" class="btn small" data-farm-act="harvest" data-sfx="tick" onclick={() => harvestCell(cell.p, cell.n ?? 1)}>{t('farm.act.harvest')}</button>{/if}
+                {#if cell.ripe}<button type="button" class="btn small yuzu" data-farm-act="harvest" data-sfx="tick" onclick={() => harvestCell(cell.p, cell.n ?? 1)}>{t('farm.act.harvest')}</button>{/if}
                 <button type="button" class="btn small paper" data-farm-act="dig" data-sfx="tick" onclick={() => digCell(cell.p, pl.c)}>{t('farm.act.dig')}</button>
               {:else}
                 <button type="button" class="btn small" data-farm-act="plant" data-sfx="tick" aria-disabled={!held || view.n >= FARM.cap} onclick={() => plantCell(cell.p)}>{t('farm.act.plant')}</button>
               {/if}
+              </span>
             </div>
           {/if}
         </section>
         <section class="card plant" data-farm-plant>
           {#if !view.empty}
             <p class="note" data-farm-empty>{t('farm.full')}</p>
-          {:else if !held}
-            <p class="note" data-farm-empty>{t('farm.noStarts')}</p>
           {:else}
-            <div class="chips" role="group" aria-label={t('farm.act.plant')}>
-              {#each seeds as s (s.src + s.c)}
-                <Chip label={crop(s.c, s.src)} count={s.n} selected={s === held} onclick={() => pickSeed({ c: s.c, src: s.src })} data-farm-seed="{s.src}:{s.c}" />
-              {/each}
-            </div>
-            <button type="button" class="btn small" data-farm-plant-all data-sfx="tick" onclick={plant}>{t('farm.plantAll', { name: crop(held.c, held.src), n: view.fill.length })}</button>
+            {#if !held}<p class="note" data-farm-empty>{t('farm.noStarts')}{#if seeds.length}{t('farm.orCrop')}{/if}</p>{/if}
+            {#if seeds.length}
+              <div class="chips" role="group" aria-label={t('farm.act.plant')}>
+                {#each seeds as s (s.src + s.c)}
+                  <Chip label={crop(s.c, s.src)} count={s.n} selected={s === held} onclick={() => pickSeed({ c: s.c, src: s.src })} data-farm-seed="{s.src}:{s.c}" />
+                {/each}
+              </div>
+            {/if}
+            {#if held}<button type="button" class="btn small" data-farm-plant-all data-sfx="tick" onclick={plant}>{t('farm.plantAll', { name: crop(held.c, held.src), n: view.fill.length })}</button>{/if}
           {/if}
         </section>
       {:else}
@@ -163,13 +175,15 @@
   .sum p { margin: 0; font: 700 var(--fs-body)/1.5 var(--font-ui); }
   .sum .cap { font-weight: 600; color: var(--text-soft); }
   .acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-  .acts:empty { display: none; }
   .acts .btn { margin: 0 0 var(--lip-h); }
-  .btn.yuzu { --fill: var(--c-yuzu); --lip-c: var(--c-yuzu-lip); min-height: 52px; font-size: var(--fs-body); }
+  .btn.yuzu { --fill: var(--c-yuzu); --lip-c: var(--c-yuzu-lip); }
+  .acts .btn.yuzu { min-height: 52px; font-size: var(--fs-body); }
   .btn.water { min-height: 44px; font-size: var(--fs-body); }
   .field { display: grid; gap: 10px; padding: 12px 10px; }
-  .sel { display: flex; align-items: center; gap: 8px; min-height: 44px; }
-  .sel .what { flex: 1; min-width: 0; font: 600 var(--fs-s)/1.4 var(--font-ui); text-wrap: pretty; }
+  /* the row's words, its buttons at the right; too long for one line, the buttons go under them */
+  .sel { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-height: 44px; }
+  .sel .what { flex: 1 1 auto; min-width: min(100%, 13em); font: 600 var(--fs-s)/1.4 var(--font-ui); text-wrap: pretty; }
+  .sel .btns { display: flex; gap: 8px; margin-left: auto; }
   .sel .wet { margin-left: 6px; color: var(--text-soft); }
   .sel .btn { margin: 0 0 var(--lip-h); padding: 0 14px; }
   .plant { display: grid; gap: 10px; }

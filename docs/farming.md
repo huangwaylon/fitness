@@ -73,9 +73,11 @@ levers, if the live numbers drift (`npm run logs`, the sells): `FARM.regrowDays`
 - **The picker:** the starts (a seedling badge) and vegetables I hold, by art, name and count; kept on this phone.
 - **Watered soil** stays dark for the day (the soil's instance colour); a ripe plant shows its yield's model. The
   partner's watering shows at once (the shared day); their plant or harvest on their next sync.
-- **The 畑 sheet:** today's harvest and its かいがら, 「12/40株」; 実ったものを収穫 (one event), 水やり (every unwatered
-  plant on any field: one shared-day change, to the relay 15 a second), 植える with a crop I hold (my empty plots in
-  reading order), each with 取り消す. The map, a cell a plot (row 0 at the top): a tap selects, its row reads
+- **The 畑 sheet:** today's harvest and its かいがら (none ripe: 「次の収穫まであと2日」), 「12/40株」; 実ったものを収穫
+  (one event), 水やり (every unwatered
+  plant on any field: one shared-day change, to the relay 15 a second), 植える with a crop I hold (the pick, else my
+  first start; a vegetable only once picked), each with 取り消す. The map, a cell a plot, as the island shows the field
+  (its front row, row 0, at the bottom): a tap selects, its row reads
   「トマト・あと2日・見込み2〜3個」 with 収穫 / 植える / 掘り起こす. 「畑の外の株 N株」 with 苗に戻す; the others' fields
-  a line each.
+  a line each. While the pill shows, the catch plates stand over the bottom buttons' row.
 - **The shop:** うる's 野菜 and 苗 (no 全部: held to plant); かう's 苗, the six starts, always in stock.
