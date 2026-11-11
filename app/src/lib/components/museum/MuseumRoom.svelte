@@ -24,6 +24,8 @@
   import SayPicker from '../island/SayPicker.svelte';
   import SayButton from '../island/SayButton.svelte';
   import EyeToggle from '../rooms/EyeToggle.svelte';
+  import { madeGL } from '../rooms/madeGL.ts';
+  import { logError } from '#lib/sync/log.ts';
   import PanHint from '../rooms/PanHint.svelte';
   import RecentreIcon from '../rooms/RecentreIcon.svelte';
   import { nightOf, roomSpeaker } from '../rooms/speaker.ts';
@@ -571,14 +573,13 @@
     }
     const offDoor = provideDoor(() => (eng?.inView(ENTRANCE[0], 0, ENTRANCE[1] + 10) ? (([x, y]) => ({ x, y }))(eng.client(ENTRANCE[0], 0, ENTRANCE[1] + 10)) : null));
     void Promise.all([import('./engine.ts'), import('./plan.ts'), import('./curator.ts'), import('./visitors.ts'), import('./crowd3d.ts'), import('./spots.ts'), import('./newTags.ts')]).then(
-      ([{ createMuseum }, { walkPath }, { buildCurator }, { crowdOf }, { buildCrowd }, { VISITOR_ROOMS, VISITOR_POINTS }, { buildNewTags }]) => {
+      async ([{ createMuseum }, { walkPath }, { buildCurator }, { crowdOf }, { buildCrowd }, { VISITOR_ROOMS, VISITOR_POINTS }, { buildNewTags }]) => {
         if (!alive || !canvas) return;
         let e: ReturnType<typeof createMuseum>;
         try {
           // (no WebGL context to be had: the door opens on the room's stand-in, the tent's way)
-          e = createMuseum(canvas, { base: staticUrl('room/museum/'), world: staticUrl('room/world3d/') });
-        } catch (err) {
-          console.warn('museum', err);
+          e = await madeGL(() => createMuseum(canvas!, { base: staticUrl('room/museum/'), world: staticUrl('room/world3d/') }), () => alive && !!canvas);
+        } catch {
           failed = true;
           doorReady();
           return;
@@ -615,7 +616,7 @@
           });
         } catch (err) {
           // (its renderer let go of: before eng, nothing else would)
-          console.warn('museum', err);
+          logError('error', err);
           e.dispose();
           failed = true;
           doorReady();

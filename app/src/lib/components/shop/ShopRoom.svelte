@@ -23,6 +23,8 @@
   import NavButton from '../ui/NavButton.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import EyeToggle from '../rooms/EyeToggle.svelte';
+  import { madeGL } from '../rooms/madeGL.ts';
+  import { logError } from '#lib/sync/log.ts';
   import PanHint from '../rooms/PanHint.svelte';
   import RecentreIcon from '../rooms/RecentreIcon.svelte';
   import { gestures, roomCamera } from '../rooms/gesture.ts';
@@ -384,11 +386,11 @@
     }
     const offDoor = provideDoor(() => (eng?.inView(DOOR[0], 0, FRONT - 2) ? (([x, y]) => ({ x, y }))(eng.client(DOOR[0], 0, FRONT - 2)) : null));
     const fail = () => ((failed = true), doorReady());
-    void import('../tent/engine.ts').then(({ createTent }) => {
+    void import('../tent/engine.ts').then(async ({ createTent }) => {
       if (!alive || !canvas) return;
       let e: Tent;
       try {
-        e = createTent(canvas, { shell: { url: `${staticUrl('room/shop/shell.glb')}?v=${M.models.shell.v}`, rect: RECT, h: WALL_H, front: FRONT, door: DOOR, side, follow: FOLLOW } });
+        e = await madeGL(() => createTent(canvas!, { shell: { url: `${staticUrl('room/shop/shell.glb')}?v=${M.models.shell.v}`, rect: RECT, h: WALL_H, front: FRONT, door: DOOR, side, follow: FOLLOW } }), () => alive && !!canvas);
       } catch {
         return fail();
       }
@@ -404,7 +406,7 @@
         e.firstPerson(fpv ? viewer : null, true);
         e.onDrawn(placeSay);
       } catch (err) {
-        console.warn('shop', err);
+        logError('error', err);
         e.dispose();
         return fail();
       }

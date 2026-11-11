@@ -26,6 +26,8 @@
   import SayPicker from '../island/SayPicker.svelte';
   import SayButton from '../island/SayButton.svelte';
   import EyeToggle from '../rooms/EyeToggle.svelte';
+  import { madeGL } from '../rooms/madeGL.ts';
+  import { logError } from '#lib/sync/log.ts';
   import PanHint from '../rooms/PanHint.svelte';
   import RecentreIcon from '../rooms/RecentreIcon.svelte';
   import { nightOf, roomSpeaker } from '../rooms/speaker.ts';
@@ -632,12 +634,12 @@
     const offDoor = provideDoor(() => (eng?.inView(0, 0, HALF - 2) ? (([x, y]) => ({ x, y }))(eng.client(0, 0, HALF - 2)) : null));
     const fail = () => ((failed = true), doorReady());
     void import('./engine.ts').then(
-      ({ createTent }) => {
+      async ({ createTent }) => {
         if (!alive || !canvas) return;
         // (a WebGL context lost as it's made throws here: the room's failure, not a white room for good)
         let e: ReturnType<typeof createTent>;
         try {
-          e = createTent(canvas);
+          e = await madeGL(() => createTent(canvas!), () => alive && !!canvas);
         } catch {
           return fail();
         }
@@ -652,7 +654,7 @@
           e.onDrawn(() => says?.track());
         } catch (err) {
           // (its renderer let go of: before eng, nothing else would)
-          console.warn('tent', err);
+          logError('error', err);
           e.dispose();
           return fail();
         }
