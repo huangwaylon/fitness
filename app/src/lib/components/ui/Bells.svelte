@@ -40,7 +40,7 @@
 <style>
   .bells { display: inline-flex; align-items: baseline; gap: .22em; white-space: nowrap; }
   .bag { display: inline-flex; flex: none; align-self: center; line-height: 0; transform-origin: 50% 100%; margin-right: .06em; }
-  .unit { font-family: var(--font-ui); font-size: .62em; font-weight: 700; letter-spacing: 0; }
+  .unit { font-family: var(--font-ui); font-size: max(.62em, 11px); font-weight: 700; letter-spacing: 0; }
   .hop { animation: bag-hop 600ms var(--ease-bounce); }
   @keyframes bag-hop { 0%, 100% { transform: none; } 30% { transform: translateY(-10%) scale(.94, 1.06); } 60% { transform: scale(1.06, .94); } }
 </style>

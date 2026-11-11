@@ -8,6 +8,7 @@
   import { fmtM, hrefOf, pick, render } from '../travel/text.ts';
   import { fmtKm } from '../travel/units.ts';
   import { i18n } from '#lib/i18n/index.ts';
+  import { dayKey } from '#lib/time/clock.ts';
 
   let { plan, note }: { plan: Plan; note: Record<string, string> | null } = $props();
   const L = $derived(i18n.locale);
@@ -19,6 +20,8 @@
   const href = $derived(hrefOf(plan.url, note));
   const party = $derived(priv(plan.party));
   const by = $derived(priv(plan.by));
+  /** A plan whose day has gone by is the day it was hiked (山行日), not one to come (山行予定). */
+  const past = $derived(plan.dateISO < dayKey());
   const rows = $derived(plan.itinerary.map((s, i) => ({ s, stay: s.depart ? span(s.time, s.depart) : 0, leg: i < plan.itinerary.length - 1 ? span(s.depart ?? s.time, plan.itinerary[i + 1].time) : null })));
 </script>
 
@@ -27,7 +30,7 @@
 <section class="card dense plan" data-plan>
   <div class="head">
     <Icon name="calendar" size={16} />
-    <span class="lbl">{pick(S.secPlan, L)}</span>
+    <span class="lbl" data-plan-past={past || undefined}>{pick(past ? S.secPlanPast : S.secPlan, L)}</span>
     {#if href}
       <a class="yamap" {href} target="_blank" rel="noopener noreferrer" aria-label={pick(S.planYamapAria, L)} data-sfx="open" data-plan-link>{pick(S.planYamap, L)}<Icon name="arrow-up-right" size={14} /></a>
     {/if}

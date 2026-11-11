@@ -127,6 +127,7 @@ test("Kinpu's plan: the date, the timeline (a stay's badge, a leg's minutes), it
   await expect(view).toBeVisible();
   const plan = view.locator('[data-plan]');
   await expect(plan.locator('.date')).toHaveText('2026年6月27日(土)');
+  await expect(plan.locator('.head .lbl')).toHaveText('山行日'); // gone by on Nov 4: not 山行予定
   await expect(plan.locator('[data-stop]')).toHaveCount(11);
   await expect(plan.locator('[data-stop]').nth(5)).toContainText('金峰山（甲州御岳山）');
   await expect(plan.locator('.stay')).toHaveText('滞在 2時間');

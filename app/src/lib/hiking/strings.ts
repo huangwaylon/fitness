@@ -21,6 +21,7 @@ export const S = {
   secTips: { ja: 'ヒント・注意点', en: 'Tips & need-to-know' },
   secDetails: { ja: '詳細情報', en: 'Details' },
   secPlan: { ja: '山行予定', en: 'Planned hike' },
+  secPlanPast: { ja: '山行日', en: 'Hiked on' },
   planBy: { ja: '計画者', en: 'Planned by' },
   planCourse: { ja: 'コース定数', en: 'Course rating' },
   planYamap: { ja: 'YAMAPで見る', en: 'View on YAMAP' },
