@@ -28,12 +28,12 @@ import { world } from './world.svelte.ts';
 import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { profileValueOk, type ProfileKey } from '#lib/contract/profile.ts';
 
-/** 買う！ and its とりけす (and the packing list's removals and resets) wait this long before they are sent, with もとに戻す
+/** 買う！ and its とりけす (and the packing list's removals and resets) wait this long before they are sent, with 取り消す
  *  on the banner. */
 export const UNDO_MS = 5000;
 
 /**
- * The banner for an action held UNDO_MS: it names what was done and carries もとに戻す; hovering, touching
+ * The banner for an action held UNDO_MS: it names what was done and carries 取り消す; hovering, touching
  * or focusing it holds both the banner and the send. A refused action shows nothing here.
  */
 export function undoBanner(text: string, r: SendResult, opts: { reaction?: string } = {}): void {

@@ -7,16 +7,12 @@
   // The finger is the rooms' (rooms/gesture.ts): a tap on the floor walks my villager there; a tap on a piece picks it
   // in place (my villager turns to it, a card with its name, price and 買う: stock.ts buyPiece); a tap on the twins (their
   // model, or their bodies and the counter's top: plan.ts TWINS_BOX, never the floor before it), on their balloon or on
-  // the sign by the door (「かう・うるは カウンターで」) is NH's choice box, the only way to the lists (うりたい: the うる list;
-  // しなもの: the day's list, its 全部 buying every
-  // piece I don't have at once: stock.ts buyAll); a drag turns the camera, a pinch zooms; the doormat or ‹ 島へ goes out.
+  // the sign by the door (「かう・うるは カウンターで」) is NH's choice box, the only way to the counter's lists (Counter.svelte,
+  // a sheet over the room: うりたい its うる, しなもの its かう); a drag turns the camera, a pinch zooms; the doormat or
+  // ‹ 島へ goes out.
   // The twins say いらっしゃいませ once I reach the counter (plan.ts atCounter), not at the door; their balloon goes after
-  // a few seconds, and never takes a tap meant for the room.
-  // The two lists are the old counter panel, now a sheet over the room (its head and tabs pinned, the list scrolling
-  // under them): うる (my pocket, everything I caught, found or
-  // picked up less what I sold: model/shop.ts; by its sections, shop/pocket.ts) and かう (the day's stock, never a piece
-  // the island had by the day's start: shop/stock.ts). A sell or a buy shows at once with もとに戻す; a bought piece joins
-  // my もようがえ. The guest's pocket and かいがら are its own. Never ベル.
+  // a few seconds, and never takes a tap meant for the room. A bought piece joins my もようがえ. The guest's pocket and
+  // かいがら are its own. Never ベル.
   // While I'm in here the others' islands show my villager nowhere, as in the museum and the rooms (the rooms' `tent`
   // presence with `sc: 's'`: store/where.svelte.ts); out of the door they see it there. The others in here are drawn,
   // walking where they walk (the very walk, as the museum's: `tent` with `sc: 's'` and its points; a bare `in` first,
@@ -25,15 +21,14 @@
   import { resolve } from '$app/paths';
   import { onMount, untrack } from 'svelte';
   import NavButton from '../ui/NavButton.svelte';
-  import Segmented from '../ui/Segmented.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import EyeToggle from '../rooms/EyeToggle.svelte';
   import { gestures } from '../rooms/gesture.ts';
   import { nightOf } from '../rooms/speaker.ts';
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
   import { iconUrl } from '../tent/items.ts';
-  import { bare } from '../kiroku/zukan.ts';
-  import { SECTIONS, pocketItem } from './pocket.ts';
+  import Counter, { type Tab } from './Counter.svelte';
+  import { nm } from './PieceTile.svelte';
   import { findArt } from '../island/beach.ts';
   import { person3, type Dirs } from '../person3d/person3d.ts';
   import { url3d } from '../villager3d/manifest.ts';
@@ -41,15 +36,11 @@
   import { art, artUrl, villagerArt } from '#lib/art.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
   import type { WeekView, Who } from '#lib/types.ts';
-  import { sellPrice } from '#lib/contract/shop.ts';
   import { buyPrice } from '#lib/contract/stock.ts';
-  import { allOf, buyAll, buyPiece, buyRefusal, stockAt } from './stock.ts';
+  import { buyPiece, buyRefusal, stockAt } from './stock.ts';
   import { shopView } from '#lib/model/shop.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { sell, undoBanner } from '#lib/store/actions.ts';
-  import { buyStarts } from '#lib/store/farm.svelte.ts';
-  import { CROPS, FARM, isFarmCrop, type Crop } from '#lib/contract/farm.ts';
-  import { isLong, words } from './words.ts';
+  import { undoBanner } from '#lib/store/actions.ts';
   import { layout as islandLayout } from '#lib/store/layout.svelte.ts';
   import { leaveBy } from '../island/doorOut.ts';
   import { hook } from '../island/devHooks.ts';
@@ -68,25 +59,20 @@
   import { staticUrl } from '#lib/staticUrl.ts';
   import { COUNTER_FRONT, DOOR, DOOR_IN, FRONT, RECT, SIGN, TWINS, TWINS_BOX, WALL_H, atCounter, blocked, corners, display, inHull, side, standable, walkPath, type Shown } from './plan.ts';
   import M from './models.json' with { type: 'json' };
-  /** The room's default view: nearer than the whole room (too wide for a phone held upright), its middle following my
-   *  villager from the stage's left to the counter. */
-  const FOLLOW = { k: 0.64, x: [-28, 26] as [number, number], z: [-2.5, -2.5] as [number, number] };
   import type { Look, Tent } from '../tent/engine.ts';
   import type { Pt } from '../tent/grid.ts';
   import type { Pt as WirePt, Relayed } from '#lib/contract/live-protocol.ts';
 
   let { view }: { view: WeekView } = $props();
 
-  type Tab = 'sell' | 'buy';
+  /** The room's default view: nearer than the whole room (too wide for a phone held upright), its middle following my
+   *  villager from the stage's left to the counter. */
+  const FOLLOW = { k: 0.64, x: [-28, 26] as [number, number], z: [-2.5, -2.5] as [number, number] };
   let tab = $state<Tab>('sell');
   /** The counter's list open over the room (null: the room alone). */
   let panel = $state<Tab | null>(null);
-  /** うる: how many of each species picked (`kind:id` → n). */
-  let picks = $state<Record<string, number>>({});
   /** かう: the piece picked (in the list, or tapped in the room: its card). */
   let pick = $state<string | null>(null);
-  /** かう: 全部 picked (every piece of the stock I don't have yet, bought at once: stock.ts buyAll). */
-  let every = $state(false);
   /** The twins' line (a key of `shop.say.*` and its params), and whether their choice box is up. */
   let say = $state<{ k: string; p?: Record<string, string> }>({ k: 'hello' });
   let asking = $state(false);
@@ -129,72 +115,14 @@
   const inside = (on: boolean) => relay?.send({ kind: 'tent', in: on, sc: 's' });
   const relayNow = () => relay?.serverNow() ?? Date.now();
 
-  /** A tally key's name (the pocket's table: the ずかん's names; a start's the list's own kanji, 「トマトの苗」). */
-  const speciesName = (k: string) => {
-    const c = /^goods:(\w+)-start$/.exec(k)?.[1];
-    return c && isFarmCrop(c) ? startName(c) : bare(t(pocketItem(k)?.name ?? k));
-  };
-  const startName = (c: Crop) => t(`farm.start.${c}`);
   /** The pieces' names (NH's, i18n/tent.ts: loaded with the screen, the language on screen). */
   let names = $state(0);
   $effect(() => void loadTentNames(i18n.locale).then(() => names++, () => {}));
   const itemName = (code: string) => (void names, t(`tent.item.${code}`));
 
-  // ---- うる
-  /** My pocket by うる's sections (pocket.ts SECTIONS), each dearest first. */
-  const pocket = $derived([...shop.pocket].flatMap(([k, n]) => {
-    const it = pocketItem(k);
-    return it ? [{ k, n, p: sellPrice(k) ?? 0, it }] : [];
-  }).sort((a, b) => SECTIONS.indexOf(a.it.section) - SECTIONS.indexOf(b.it.section) || b.p - a.p || a.k.localeCompare(b.k)));
-  const sections = $derived(SECTIONS.flatMap((s) => {
-    const rows = pocket.filter((r) => r.it.section === s);
-    return rows.length ? [{ s, rows }] : [];
-  }));
-  const picked = $derived(Object.entries(picks).filter(([k, n]) => n > 0 && (shop.pocket.get(k) ?? 0) >= n));
-  const pickedN = $derived(picked.reduce((a, [, n]) => a + n, 0));
-  const pickedV = $derived(picked.reduce((a, [k, n]) => a + n * (sellPrice(k) ?? 0), 0));
-  function more(k: string) {
-    const max = shop.pocket.get(k) ?? 0;
-    const n = picks[k] ?? 0;
-    picks = { ...picks, [k]: n >= max ? 0 : n + 1 };
-    cue('tick');
-    if (pickedN) speak('offer', { v: formatNum(pickedV) });
-    else speak('sell');
-  }
-  function less(k: string) {
-    picks = { ...picks, [k]: Math.max(0, (picks[k] ?? 0) - 1) };
-    if (pickedN) speak('offer', { v: formatNum(pickedV) });
-    else speak('sell');
-  }
-  function all() {
-    picks = Object.fromEntries(pocket.map(({ k, n }) => [k, n]));
-    speak('offer', { v: formatNum(pickedV) });
-  }
-  function sellPicked() {
-    if (!pickedN) return void cue('boop');
-    // what's sold, kept before the sale: `picked` follows the pocket, which the sale empties
-    const sold = [...picked], n = pickedN;
-    const r = sell(new Map(sold));
-    if (!r.ok) {
-      speak('cant');
-      return void cue('boop');
-    }
-    cue('buy');
-    const one = sold.length === 1 ? sold[0] : null;
-    undoBanner(one ? t('shop.sold', { name: speciesName(one[0]), n: String(one[1]), v: formatNum(r.shells ?? 0) }) : t('shop.soldMany', { n: String(n), v: formatNum(r.shells ?? 0) }), r);
-    picks = {};
-    speak('thanks');
-  }
-
-  // ---- かう
-  /** 全部: what I don't have of today's stock, and its price together. */
-  const rest = $derived((void shop, allOf(stock)));
-  const short = $derived(Math.max(0, rest.total - shop.shells));
-  /** A piece picked (the list's tile, the room's piece): the twins say its price, or why not. `toggle`: picked again in
-   *  the list, none. */
+  // ---- かう's piece (the list's tile, the room's piece: its card)
+  /** A piece picked: the twins say its price, or why not. `toggle`: picked again in the list, none. */
   function choose(code: string, toggle = true) {
-    every = false;
-    starts = {};
     pick = toggle && pick === code ? null : code;
     cue('tick');
     if (!pick) return speak('hello');
@@ -203,20 +131,8 @@
     else if (why === 'wallet') speak('short', { name: itemName(code) });
     else speak('price', { name: itemName(code), v: formatNum(buyPrice(code) ?? 0) });
   }
-  const why = $derived(every ? (short ? 'wallet' : null) : pick ? (void shop, buyRefusal(pick, stock)) : null);
-  /** 全部: picks the lot (the twins say what it comes to, or how many かいがら short), again: none. */
-  function pickAll() {
-    pick = null;
-    if (!rest.items.length) return void cue('boop');
-    every = !every;
-    starts = {};
-    cue('tick');
-    if (!every) speak('stock');
-    else if (short) speak('allShort', { v: formatNum(short) });
-    else speak('allOffer', { n: String(rest.items.length), v: formatNum(rest.total) });
-  }
+  const why = $derived(pick ? (void shop, buyRefusal(pick, stock)) : null);
   function buyPicked() {
-    if (every) return buyEvery();
     if (!pick || why) {
       if (pick) speak(why === 'owned' ? 'owned' : 'short', why === 'owned' ? undefined : { name: itemName(pick) });
       return void cue('boop');
@@ -231,72 +147,19 @@
     eng?.bump(`s-${bought}`);
     speak('thanks');
   }
-  // ---- かう's 苗 (docs/farming.md): the six starts, always in stock, a tap one more, − one less; 買う buys them at once,
-  // all or none (one group: store/farm.svelte.ts buyStarts)
-  let starts = $state<Partial<Record<Crop, number>>>({});
-  const startsN = $derived(CROPS.reduce((a, c) => a + (starts[c] ?? 0), 0));
-  const startsV = $derived(startsN * FARM.startBuy);
-  /** The one crop picked (null: none, or more than one). */
-  const startsOne = $derived.by(() => {
-    const cs = CROPS.filter((c) => starts[c]);
-    return cs.length === 1 ? cs[0] : null;
-  });
-  // (the starts and a piece or 全部 are one bar's: picking one lets go of the other)
-  function moreStart(c: Crop) {
-    pick = null;
-    every = false;
-    starts = { ...starts, [c]: ((starts[c] ?? 0) + 1) % 100 };
-    cue('tick');
-  }
-  function lessStart(c: Crop) {
-    starts = { ...starts, [c]: Math.max(0, (starts[c] ?? 0) - 1) };
-  }
-  function buyStartsPicked() {
-    if (!startsN) return void cue('boop');
-    if (startsV > shop.shells) {
-      speak('short', { name: t('shop.starts') });
-      return void cue('boop');
-    }
-    const r = buyStarts(starts);
-    if (!r.ok) return void cue('boop');
-    cue('buy');
-    const n = String(startsN), v = formatNum(startsV);
-    undoBanner(startsOne ? t('shop.boughtStart', { name: startName(startsOne), n, v }) : t('shop.boughtStarts', { n, v }), r);
-    starts = {};
-    speak('thanks');
-  }
-  function buyEvery() {
-    if (short) {
-      speak('allShort', { v: formatNum(short) });
-      return void cue('boop');
-    }
-    const r = buyAll(stock);
-    if (!r.ok) return void cue('boop');
-    cue('buy');
-    undoBanner(t('shop.boughtMany', { n: String(r.n ?? 0), v: formatNum(r.total ?? 0) }), r);
-    every = false;
-    speak('thanks');
-  }
 
   /** The counter's list: うる or かう over the room (its picks cleared). */
   function openPanel(id: Tab) {
     asking = false;
     panel = id;
-    switchTab(id);
+    tab = id;
+    pick = null;
+    speak(id === 'sell' ? (shop.pocket.size ? 'sell' : 'empty') : 'stock');
   }
   function closePanel() {
     hush();
     panel = null;
     pick = null;
-    every = false;
-    picks = {};
-  }
-  function switchTab(id: Tab) {
-    tab = id;
-    picks = {};
-    pick = null;
-    every = false;
-    speak(id === 'sell' ? (shop.pocket.size ? 'sell' : 'empty') : 'stock');
   }
   // an empty pocket (once the record is in): the list opens on かう, nothing to sell
   let opened = false;
@@ -392,7 +255,6 @@
     const list = shown.shown;
     eng?.pieces(list);
   });
-  let walking: ReturnType<typeof setTimeout> | undefined;
   function walkTo(to: readonly [number, number]) {
     if (!eng) return;
     const at = eng.at(viewer);
@@ -584,7 +446,6 @@
     if (canvas) ro.observe(canvas);
     return () => {
       alive = false;
-      clearTimeout(walking);
       inside(false);
       for (const f of offs) f();
       ro.disconnect();
@@ -701,119 +562,14 @@
       <EyeToggle />
     </div>
   {:else}
-    <section class="menu sheet-copy" data-shop-panel={panel}>
-      <!-- the head (the twins' line, ×) and the tabs stay put; the list scrolls under them, the bar stays at the foot -->
-      <header class="pin">
-        <div class="head">
-          <p class="say docked kana" role="status" aria-live="polite" data-shop-say={say.k}>{line}</p>
-          <NavButton kind="close" data-shop-close onclick={closePanel} />
-        </div>
-        <Segmented items={[{ id: 'sell', label: t('shop.tab.sell') }, { id: 'buy', label: t('shop.tab.buy') }]} value={tab} label={t('shop.title')} attr="shop-tab" onpick={switchTab} />
-      </header>
-
-      {#if tab === 'sell'}
-        <div class="list" data-shop-list>
-          {#if pocket.length}
-            <div class="pocket" data-shop-pocket>
-              {#each sections as { s, rows } (s)}
-                <h2 class="sec-label" data-shop-sec={s}>{t(`shop.sec.${s}`)}</h2>
-                <ul class="grid">
-                  {#each rows as { k, n, p, it } (k)}
-                    {@const c = picks[k] ?? 0}
-                    <li class="tile" class:on={c > 0}>
-                      <button type="button" class="pickable" data-shop-catch={k} data-n={n} data-picked={c} data-sfx="self"
-                        aria-label={t('shop.catchLabel', { name: speciesName(k), n: String(n), v: String(p), c: String(c) })} onclick={() => more(k)}>
-                        <span class="ic"><OfficialArt key={it.art} size={46} /></span>
-                        {@render nm(speciesName(k))}
-                        <span class="price"><span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={14} /></span>{formatNum(p)}</span>
-                        <span class="count" aria-hidden="true">{c ? `${c}/${n}` : `×${n}`}</span>
-                      </button>
-                      {#if c}<button type="button" class="less" data-shop-less={k} data-sfx="tick" aria-label={t('shop.less', { name: speciesName(k) })} onclick={() => less(k)}>−</button>{/if}
-                    </li>
-                  {/each}
-                </ul>
-              {/each}
-            </div>
-          {:else}
-            <p class="empty" data-shop-empty>{t('shop.emptyPocket')}</p>
-          {/if}
-        </div>
-        {#if pocket.length}
-          <div class="bar">
-            <p class="sum" data-shop-offer={pickedV}>{pickedN ? t('shop.offer', { n: String(pickedN), v: formatNum(pickedV) }) : t('shop.pickHint')}</p>
-            <button type="button" class="btn small paper" data-shop-all data-sfx="tick" onclick={all}>{t('shop.all')}</button>
-            <button type="button" class="btn small" data-shop-sell data-sfx="self" aria-disabled={!pickedN} onclick={sellPicked}>{t('shop.sell')}</button>
-          </div>
-        {/if}
-      {:else}
-        <div class="list" data-shop-list>
-          <!-- the starts for the fields (docs/farming.md): always in stock, a count each, bought by the bar's 買う -->
-          <h2 class="sec-label">{t('shop.starts')}</h2>
-          <ul class="grid" data-shop-starts>
-            {#each CROPS as c (c)}
-              {@const n = starts[c] ?? 0}
-              <li class="tile" class:on={n > 0}>
-                <button type="button" class="pickable" data-shop-start={c} data-picked={n} data-sfx="self" aria-label={t('shop.startLabel', { name: startName(c), v: String(FARM.startBuy), c: String(n) })} onclick={() => moreStart(c)}>
-                  <span class="ic"><OfficialArt key="finds/{c}-start" size={46} /><span class="tag"><OfficialArt key="finds/{c}" size={20} /></span></span>
-                  {@render nm(startName(c))}
-                  <span class="price"><span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={14} /></span>{FARM.startBuy}</span>
-                  {#if n}<span class="count" aria-hidden="true">×{n}</span>{/if}
-                </button>
-                {#if n}<button type="button" class="less" data-shop-start-less={c} data-sfx="tick" aria-label={t('shop.less', { name: startName(c) })} onclick={() => lessStart(c)}>−</button>{/if}
-              </li>
-            {/each}
-          </ul>
-          <h2 class="sec-label">{t('shop.today')}</h2>
-          {#if stock.length}
-            <ul class="grid" data-shop-stock>
-              {#each stock as code (code)}{@render piece(code)}{/each}
-            </ul>
-          {:else if week.model}
-            <p class="empty" data-shop-sold-out>{t('shop.soldOut')}</p>
-          {/if}
-        </div>
-        <div class="bar">
-          <p class="sum" data-shop-pick={every ? 'all' : (pick ?? '')} data-shop-total={every ? rest.total : null} data-shop-starts-offer={startsN ? startsV : null}>
-            {startsN ? (startsOne ? t('shop.startsOne', { name: startName(startsOne), n: String(startsN), v: formatNum(startsV) }) : t('shop.startsMany', { n: String(startsN), v: formatNum(startsV) }))
-              : every ? t('shop.offer', { n: String(rest.items.length), v: formatNum(rest.total) })
-              : pick ? t('shop.itemLabel', { name: itemName(pick), v: formatNum(buyPrice(pick) ?? 0) })
-              : stock.length && !rest.items.length ? t('shop.allOwned') : t('shop.buyHint')}
-          </p>
-          {#if stock.length}
-            <button type="button" class="btn small paper" data-shop-buy-all data-sfx="self" aria-pressed={every} aria-disabled={!rest.items.length}
-              aria-label={t('shop.buyAll')} onclick={pickAll}>{t('shop.all')}</button>
-          {/if}
-          <button type="button" class="btn small" data-shop-buy data-sfx="self" aria-disabled={startsN ? startsV > shop.shells : !(pick || every) || !!why}
-            onclick={() => (startsN ? buyStartsPicked() : buyPicked())}>{t('shop.buy')}</button>
-        </div>
-      {/if}
-    </section>
+    <Counter {shop} {stock} bind:tab bind:pick {why} say={say.k} {line} {speak} {choose} buy={buyPicked} {itemName} onclose={closePanel} />
   {/if}
   {#if failed}<p class="fail" role="alert">{t('shop.fail')}</p>{/if}
 </main>
 
-<!-- a tile's name: two lines, breaking only between its words (words.ts), smaller with a word too long for a line -->
-{#snippet nm(name: string)}
-  <span class="nm" class:xs={isLong(name, i18n.locale)}>{#each words(name, i18n.locale) as w, i (i)}{#if i}<wbr />{/if}{w}{/each}</span>
-{/snippet}
-
-{#snippet piece(code: string)}
-  {@const owned = shop.owned.includes(code)}
-  <li class="tile" class:on={pick === code || (every && !owned)} class:owned>
-    <button type="button" class="pickable" data-shop-item={code} data-price={buyPrice(code)} data-owned={owned} data-sfx="self" aria-pressed={pick === code}
-      aria-label={t(owned ? 'shop.itemOwned' : 'shop.itemLabel', { name: itemName(code), v: formatNum(buyPrice(code) ?? 0) })} onclick={() => choose(code)}>
-      <span class="ic"><img src={iconUrl(code)} alt="" width="46" height="46" loading="lazy" decoding="async" /></span>
-      {@render nm(itemName(code))}
-      {#if owned}<span class="price owned-tag">{t('shop.owned')}</span>
-      {:else}<span class="price"><span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={14} /></span>{formatNum(buyPrice(code) ?? 0)}</span>{/if}
-    </button>
-  </li>
-{/snippet}
-
 <style>
   /* the room fills the screen; over it the back button and my かいがら, the twins' balloon, a picked piece's card and
-     the foot's buttons; the counter's list a cream sheet from the bottom (fixed cream at every time of day, ink text: a
-     game object, as the HUD's) */
+     the foot's buttons; the counter's list a cream sheet from the bottom (Counter.svelte) */
   .shop {
     position: relative; max-width: var(--col); margin: 0 auto; height: var(--vh-fill); overflow: hidden; color: var(--c-ink);
     background: #2a1f17; touch-action: none;
@@ -860,7 +616,7 @@
   /* (the balloon takes no tap meant for the room: only its line, which hides it, and its choices) */
   .say.float.on p, .say.float.on .choices { pointer-events: auto; }
   .say.float p { cursor: pointer; -webkit-tap-highlight-color: transparent; }
-  .say p, .say.docked {
+  .say p {
     margin: 0; padding: 8px 14px; border-radius: 18px; background: var(--c-cream); color: var(--c-ink);
     box-shadow: 0 3px 0 var(--c-lip), var(--sh-float); font: 700 var(--fs-body)/1.35 var(--font-ui); text-align: center;
   }
@@ -887,82 +643,16 @@
   @keyframes card-in { from { opacity: 0; translate: 0 8px; } }
   .card .ic { width: 48px; height: 48px; object-fit: contain; flex: none; }
   .card .what { flex: 1 1 auto; min-width: 0; display: grid; gap: 4px; }
-  .card .nm { font: 700 var(--fs-body)/1.25 var(--font-ui); overflow-wrap: anywhere; }
   .card .btn { margin: 0; flex: none; }
   .foot {
     position: absolute; z-index: 3; left: calc(var(--safe-left, 0px) + 8px); right: calc(var(--side) + var(--safe-right));
     bottom: calc(var(--safe-bottom, 0px) + 14px); display: flex; align-items: center;
   }
 
-  /* the sheet: its head and tabs pinned at the top and the bar at the foot, only the list between them scrolls (its own
-     scroller, so iOS Safari's rubber band never drags the head off) */
-  .menu {
-    position: absolute; z-index: 4; left: 0; right: 0; bottom: 0; max-height: 72%; display: flex; flex-direction: column;
-    background: var(--c-cream); border-radius: var(--r-card) var(--r-card) 0 0; box-shadow: 0 -4px 0 var(--c-lip); overflow: hidden;
-    /* the panel's own controls keep the day's look (fixed cream, ink) at every time of day */
-    --text: var(--c-ink); --text-soft: var(--c-ink-soft); --ctl: var(--c-card); --ctl-sel: var(--c-yuzu); --ctl-off: #EADBB8;
-    --sh-ctl: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); --sh-ctl-press: inset 0 0 0 2px var(--c-edge), 0 2px 0 var(--c-edge);
-    animation: sheet-in .2s ease-out;
-  }
-  @keyframes sheet-in { from { translate: 0 24px; opacity: 0; } }
-  .pin {
-    flex: none; display: grid; gap: 10px; padding: 12px calc(var(--side) + var(--safe-right)) 10px calc(var(--side) + var(--safe-left));
-    box-shadow: 0 2px 0 var(--c-lip);
-  }
-  .head { display: flex; align-items: center; gap: 8px; }
-  .list {
-    flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; -webkit-overflow-scrolling: touch;
-    display: flex; flex-direction: column; gap: 10px; padding: 12px calc(var(--side) + var(--safe-right)) 12px calc(var(--side) + var(--safe-left));
-  }
-  /* (no bar under it, an empty うる: the list keeps clear of the home indicator) */
-  .list:last-child { padding-bottom: var(--pad-foot); }
-  .say.docked { flex: 1 1 auto; text-align: left; background: var(--c-card); box-shadow: inset 0 0 0 2px var(--c-edge); }
-  .pocket { display: flex; flex-direction: column; gap: 10px; }
-  .grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
-  .tile { position: relative; }
-  .pickable {
-    appearance: none; border: 0; cursor: pointer; width: 100%; min-height: 118px; padding: 10px 6px 8px; border-radius: var(--r-btn);
-    display: grid; justify-items: center; align-content: start; gap: 4px; background: var(--c-card); color: var(--c-ink);
-    box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-  }
-  .pickable:active { transform: translateY(2px); box-shadow: inset 0 0 0 2px var(--c-edge), 0 2px 0 var(--c-edge); }
-  .pickable:focus-visible { outline: 3px solid var(--c-ink); outline-offset: 2px; }
-  .on .pickable { background: var(--c-yuzu); }
-  .owned .pickable { background: #F1E6CC; }
-  .owned .ic { opacity: .55; }
-  .ic { width: 46px; height: 46px; display: grid; place-items: center; line-height: 0; }
-  .ic img { width: 46px; height: 46px; object-fit: contain; }
-  /* a long name breaks only between its words (its <wbr>s: words.ts), balanced (プラスチックの / ベンチ, not プラスチッ / クの
-     ベンチ); a word longer than the line still breaks where it must */
-  .nm { font: 700 var(--fs-s)/1.2 var(--font-ui); text-align: center; word-break: keep-all; overflow-wrap: anywhere; text-wrap: balance; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .nm.xs { font-size: var(--fs-xs); }
-  .card .nm { text-align: left; font-size: var(--fs-body); }
-  .price { display: inline-flex; align-items: center; gap: 3px; font: 700 var(--fs-s)/1 var(--font-num); font-variant-numeric: tabular-nums; }
-  .card .price { font-size: var(--fs-body); }
+  .card .what :global(.nm) { text-align: left; font: 700 var(--fs-body)/1.25 var(--font-ui); overflow-wrap: anywhere; }
+  .price { display: inline-flex; align-items: center; gap: 3px; font: 700 var(--fs-body)/1 var(--font-num); font-variant-numeric: tabular-nums; }
   .mini { display: inline-flex; line-height: 0; }
   .owned-tag { font-family: var(--font-ui); color: var(--c-leaf-text); }
-  .count {
-    position: absolute; top: 6px; right: 8px; padding: 2px 6px; border-radius: var(--r-pill); background: var(--c-paper);
-    font: 700 var(--fs-s)/1.1 var(--font-num); font-variant-numeric: tabular-nums;
-  }
-  .on .count { background: var(--c-cream); }
-  .less {
-    position: absolute; top: -8px; left: -6px; width: 32px; height: 32px; border-radius: 50%; border: 0; cursor: pointer;
-    background: var(--c-card); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 2px 0 var(--c-edge);
-    font: 700 var(--fs-talk)/1 var(--font-ui);
-  }
-  .less::after { content: ''; position: absolute; inset: -6px; }
-  .empty { margin: 18px 4px; text-align: center; color: var(--c-ink-soft); font-weight: 700; }
-  .bar {
-    flex: none; padding: 10px calc(var(--side) + var(--safe-right)) var(--pad-foot) calc(var(--side) + var(--safe-left));
-    display: flex; align-items: center; gap: 8px; background: var(--c-cream); box-shadow: 0 -2px 0 var(--c-lip);
-  }
-  .bar .btn { margin: 0; flex: none; }
-  .bar .btn.paper[aria-pressed='true'] { --fill: var(--c-yuzu); }
-  .sum { flex: 1 1 auto; min-width: 0; margin: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); }
-  /* a start's seedling (NH's one for all six) wears its crop */
-  .ic { position: relative; }
-  .tag { position: absolute; right: -6px; bottom: -4px; line-height: 0; }
   .fail { position: absolute; left: 16px; right: 16px; top: 40%; text-align: center; color: #F5E4BC; font-weight: 700; }
-  @media (prefers-reduced-motion: reduce) { .pickable:active { transform: none; } .card, .menu { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .card { animation: none; } }
 </style>

@@ -1,9 +1,10 @@
 <script lang="ts">
   // A guest's shop (docs/design.md "Visitors: roles"; visitorShop.ts): the few pieces they brought today, their prices
-  // and 買う, as the shop's かう (shop/stock.ts buyPiece, one piece at a time; a bought one 持っている and in my
-  // もようがえ, 取り消す for a moment). My かいがら at the top. Its own chunk: opened from their choice box.
+  // and 買う, as the shop's かう (its tiles: shop/PieceTile.svelte; shop/stock.ts buyPiece, one piece at a time; a bought
+  // one 持っている and in my もようがえ, 取り消す for a moment). My かいがら at the top. Its own chunk: opened from their choice box.
   import Sheet from '../ui/Sheet.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
+  import PieceTile from '../shop/PieceTile.svelte';
   import { iconUrl } from '../tent/items.ts';
   import { findArt } from './beach.ts';
   import { buyPrice } from '#lib/contract/stock.ts';
@@ -54,15 +55,11 @@
     <ul class="grid">
       {#each offer as code (code)}
         {@const owned = !!mine?.owned.includes(code)}
-        <li class="tile" class:on={pick === code} class:owned>
-          <button type="button" class="pickable" data-guest-item={code} data-price={buyPrice(code)} data-owned={owned} data-sfx="self" aria-pressed={pick === code}
-            aria-label={t(owned ? 'shop.itemOwned' : 'shop.itemLabel', { name: itemName(code), v: formatNum(buyPrice(code) ?? 0) })} onclick={() => choose(code)}>
-            <img src={iconUrl(code)} alt="" width="46" height="46" loading="lazy" decoding="async" />
-            <span class="nm">{itemName(code)}</span>
-            {#if owned}<span class="price owned-tag">{t('shop.owned')}</span>
-            {:else}<span class="price"><span class="mini" aria-hidden="true"><OfficialArt key={findArt('cowrie')} size={14} /></span>{formatNum(buyPrice(code) ?? 0)}</span>{/if}
-          </button>
-        </li>
+        <PieceTile name={itemName(code)} price={buyPrice(code) ?? 0} on={pick === code} {owned} data-guest-item={code} data-price={buyPrice(code)} data-owned={owned}
+          aria-pressed={pick === code} aria-label={t(owned ? 'shop.itemOwned' : 'shop.itemLabel', { name: itemName(code), v: formatNum(buyPrice(code) ?? 0) })}
+          onclick={() => choose(code)}>
+          {#snippet icon()}<img src={iconUrl(code)} alt="" width="46" height="46" loading="lazy" decoding="async" />{/snippet}
+        </PieceTile>
       {/each}
     </ul>
     <div class="bar">
@@ -77,18 +74,6 @@
   .wallet { margin: 0; justify-self: end; display: inline-flex; align-items: center; gap: 4px; font: 700 var(--fs-body)/1 var(--font-num); }
   .mini { display: inline-flex; line-height: 0; }
   .grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
-  .pickable {
-    appearance: none; border: 0; cursor: pointer; width: 100%; min-height: 118px; padding: 10px 6px 8px; border-radius: var(--r-btn);
-    display: grid; justify-items: center; align-content: start; gap: 4px; background: var(--ctl); color: var(--text);
-    box-shadow: var(--sh-ctl); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-  }
-  .pickable img { width: 46px; height: 46px; object-fit: contain; }
-  .pickable:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .on .pickable { background: var(--ctl-sel); color: var(--c-ink); }
-  .owned .pickable img { opacity: .55; }
-  .nm { font: 700 var(--fs-s)/1.2 var(--font-ui); text-align: center; overflow-wrap: anywhere; text-wrap: balance; }
-  .price { display: inline-flex; align-items: center; gap: 3px; font: 700 var(--fs-s)/1 var(--font-num); }
-  .owned-tag { font-family: var(--font-ui); color: var(--leaf-text); }
   .bar { display: flex; align-items: center; gap: 8px; }
   .bar .btn { margin: 0; flex: none; }
   .sum { flex: 1 1 auto; min-width: 0; margin: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); }
