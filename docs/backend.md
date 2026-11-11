@@ -286,9 +286,10 @@ one tile").
   step at the end, never an edit of one that shipped.
 - **The Worker's gate:** the origin, method and size, and a person's key in the body (`storeRoute.ts keyGate`, a
   bounded scan, not a parse), else `unauthorized` there, so a stranger never costs a Durable Object request.
-- **Rules** (`app/src/lib/contract/record.ts`): the shape checks (`validEventData`); `at` one per ingest, one per
-  event; an event id once, forever; **slots**, a later event of a slot replacing it (`eventSlot`, and the per-id ops'
-  `decorAccept`, `foodAccept`, …). A pref the model ignores takes no slot; a `highfive` event is acked and kept nowhere.
+- **Rules** (`app/src/lib/contract/record.ts`): the shape checks (`validEventData`; with the shop's prices,
+  `contract/shopCheck.ts validEvent`, the relay's only, so the buy prices stay off the phones' first load); `at` one per
+  ingest, one per event; an event id once, forever; **slots**, a later event of a slot replacing it (`eventSlot`, and
+  the per-id ops' `decorAccept`, `foodAccept`, …). A pref the model ignores takes no slot; a `highfive` event is acked and kept nowhere.
 - **The shop's check** (`shopTarget`): against each person's running ledger (meta `shop|<who>`, kept with each tally,
   give-back, sell and buy by the fold's own step, `contract/shop.ts shopStep`); `shopcheck {fix?}` compares it with
   the full fold (`caughtOf`, `shopLedger`: the phones fold by the same two).

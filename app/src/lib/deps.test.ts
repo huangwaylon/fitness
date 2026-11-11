@@ -200,6 +200,18 @@ describe('かいがら never mix with ベル', () => {
   });
 });
 
+describe('the buy prices stay off the first load', () => {
+  it('only the relay imports contract/shopCheck.ts, and the model never reaches the buy price list', () => {
+    const check = join(LIB, 'contract/shopCheck.ts'), prices = join(LIB, 'contract/buyPrices.ts');
+    for (const f of [check, prices]) expect(existsSync(f)).toBe(true);
+    expect([...graph].filter(([, to]) => to.includes(check)).map(([f]) => relative(LIB, f))).toEqual([]);
+    // (the model's State takes the record's rules, contract/record.ts, and the shop's shapes, contract/shop.ts)
+    expect(reachable(join(LIB, 'model/state.ts')).has(prices)).toBe(false);
+    // the check can see it: the shop's room reaches the list
+    expect(reachable(join(LIB, 'components/shop/ShopRoom.svelte')).has(prices)).toBe(true);
+  });
+});
+
 describe('meals are never rewarded', () => {
   it('model/bells.ts and scoring/* never import the food catalog (lib/food/) or the model’s meal log, even indirectly', () => {
     const roots = [join(LIB, 'model/bells.ts'), ...readdirSync(join(LIB, 'scoring')).filter((f) => /\.ts$/.test(f) && !/\.test\.ts$/.test(f)).map((f) => join(LIB, 'scoring', f))];

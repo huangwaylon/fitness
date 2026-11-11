@@ -14,7 +14,7 @@ import { boardOpOf } from './board.ts';
 import { isPackType, packOpOf, packSlot } from './pack.ts';
 import { isWedType, wedOpOf, wedSlot } from './wedding.ts';
 import { foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp } from './food.ts';
-import { shopPriced } from './shop.ts';
+import { shopRowOf } from './shop.ts';
 import { AHEAD_MS } from './ops.ts';
 import { listenOf } from './listen.ts';
 import { roomSaveOf, roomSaveSlot } from './roomSave.ts';
@@ -30,7 +30,8 @@ type Rec = Record<string, unknown>;
 /**
  * Shape checks per event type: a spend as spendOf takes it (its price and `day` judged by the record's clock). Whether the wallet
  * covers it and the pref values stay read-time rules in the model (`model/state.ts`), so the record stays a dumb log.
- * `now`: the server's clock (a tally's or island day's date may not be after tomorrow). @public (relay/src/store.ts)
+ * `now`: the server's clock (a tally's or island day's date may not be after tomorrow). The record's whole check adds the
+ * shop's prices: contract/shopCheck.ts validEvent.
  */
 export function validEventData(type: string, d: Rec, now: number): boolean {
   // a trip's packing list, a person's tick or reset, a trip's private note (contract/pack.ts: its texts already clean,
@@ -100,10 +101,10 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
     case 'sell':
     case 'buy':
     case 'buy_starts':
-      // the shop (contract/shop.ts): a sell at its species' price, a buy at its piece's from a stock of about today,
-      // starts at theirs; whether the pocket or the かいがら cover it is the record's check against the person's rows
-      // (shopRefusal)
-      return shopPriced(type, d, localDateAt(now));
+      // the shop (contract/shop.ts): its shape here; its price the record's (contract/shopCheck.ts validEvent, apart so
+      // the phones never load the buy prices); whether the pocket or the かいがら cover it is the record's check against
+      // the person's rows (shopRefusal)
+      return shopRowOf(type, d) !== null;
     case 'farm': {
       // the field (contract/farm.ts): its day the sender's, from yesterday to tomorrow; each op is the record's to judge
       // against the field and the pocket (farmStep)

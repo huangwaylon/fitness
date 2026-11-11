@@ -12,15 +12,14 @@
 // A `sell` is `{species, n, v}`: `species` a tally key of the pocket's (`fish:koi`, `shell:coral`, `goods:wood`), `n` how many,
 // `v` what they fetched (n × the species' price when sold: kept, so a later price list never rewrites the past). A `buy`
 // is `{item, price, d}`: `item` a room's piece (`f…`), `price` its price, `d` the stock's day. The record checks the
-// price, the stock's day and the cover when it keeps one (not the stock itself: shopPriced) (relay/src/store.ts, `shopRefusal` over `shopLedger`); the phones
-// fold the same rows by the same rules (model/shop.ts), a kept row as kept and a queued one as the record would judge
-// it. Shared by the record and the model; pure.
+// price and the stock's day (contract/shopCheck.ts, the relay's only; never which pieces the stock holds) and the cover
+// (relay/src/store.ts, `shopRefusal` over `shopLedger`) when it keeps one; the phones fold the same rows by the same
+// rules (model/shop.ts), a kept row as kept and a queued one as the record would judge it. Shared by the record and
+// the model; pure.
 import { isLocalDate, keysAre } from './api.ts';
 import { SELL } from './shopPrices.ts';
-import { buyPrice } from './stock.ts';
 import type { LocalDate, Who } from '../types.ts';
 import { POCKET_KINDS } from './pocket.ts';
-import { nextDay, prevDay } from './tokyo.ts';
 import { FARM, isFarmCrop, startKey, type Crop } from './farm.ts';
 
 export interface SellData { species: string; n: number; v: number }
@@ -57,29 +56,6 @@ export function buyOf(d: Record<string, unknown>): BuyData | null {
 function startsOf(d: Record<string, unknown>): StartsData | null {
   if (!keysAre(d, ['crop', 'n', 'v']) || !isFarmCrop(d.crop) || !isWhole(d.n, 99) || !isWhole(d.v, 99 * FARM.startBuy)) return null;
   return { crop: d.crop, n: d.n, v: d.v };
-}
-
-/**
- * Whether the record keeps this `sell` or `buy` now (`today`: the server's Tokyo date), cover aside (`shopRefusal`): a
- * sell at most n × its species' price (an app from before a price rise sells at its own lower list; never above the
- * record's); a buy at exactly its piece's price, from the stock of a day from yesterday to tomorrow (a buy queued over
- * midnight, a phone's clock a little ahead). Which pieces a day's stock holds depends on the island's finds
- * (contract/stock.ts), so the record doesn't check it: the phones only offer the stock.
- */
-export function shopPriced(type: 'sell' | 'buy' | 'buy_starts', d: Record<string, unknown>, today: LocalDate): boolean {
-  if (type === 'buy_starts') {
-    // (starts at exactly their price)
-    const st = startsOf(d);
-    return !!st && st.v === st.n * FARM.startBuy;
-  }
-  if (type === 'sell') {
-    const s = sellOf(d);
-    const p = s ? sellPrice(s.species) : undefined;
-    return !!s && p !== undefined && s.v <= s.n * p;
-  }
-  const b = buyOf(d);
-  if (!b || b.price !== buyPrice(b.item)) return false;
-  return b.d >= prevDay(today) && b.d <= nextDay(today);
 }
 
 // ---- the ledger

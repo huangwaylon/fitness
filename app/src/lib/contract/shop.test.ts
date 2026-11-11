@@ -2,7 +2,8 @@
 // (the same on every phone and the record, from the date alone) and the ledger (the pocket, かいがら, a piece once).
 import { describe, expect, it } from 'vitest';
 import { dayNum, dayOf } from './tokyo.ts';
-import { buyOf, isSellable, sellOf, sellPrice, shopLedger, shopPriced, shopRefusal, type ShopRow } from './shop.ts';
+import { buyOf, isSellable, sellOf, sellPrice, shopLedger, shopRefusal, type ShopRow } from './shop.ts';
+import { shopPriced } from './shopCheck.ts';
 import { STOCK_N, buyPrice, stockOf } from './stock.ts';
 import { SELL } from './shopPrices.ts';
 import { BUY } from './buyPrices.ts';
@@ -77,6 +78,9 @@ describe('a sell and a buy', () => {
     const not = Object.keys(BUY).find((c) => !stockOf(today).includes(c))!;
     expect(shopPriced('buy', { item: not, price: buyPrice(not)!, d: today }, today)).toBe(true);
     expect(shopPriced('buy', { item: 'f1', price: 1, d: today }, today)).toBe(false); // never sold
+    // starts at exactly n × FARM.startBuy
+    expect(shopPriced('buy_starts', { crop: 'tomato', n: 3, v: 42 }, today)).toBe(true);
+    expect(shopPriced('buy_starts', { crop: 'tomato', n: 3, v: 41 }, today)).toBe(false);
   });
 });
 

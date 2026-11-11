@@ -17,7 +17,8 @@
 //   `since` (less LATE_MARGIN_MS), so no phone misses one.
 import { parseShortcut } from './parse.ts';
 import { auditNotes, auditRow } from './audit.ts';
-import { eventSlot, validEventData } from '../../app/src/lib/contract/record.ts';
+import { eventSlot } from '../../app/src/lib/contract/record.ts';
+import { validEvent } from '../../app/src/lib/contract/shopCheck.ts';
 import {
   CURSOR_RE, eventSubject, EVENTS_MAX, EVENT_TYPES, GROUP_MAX, isActivityMetric, isId, ISO_AT, isMetricKey, isPersonId, isRec, isWho, SNAPSHOT_PAGE_MAX,
   type ApiError, type EventRow, type Fail, type MetricRow, type SnapshotRows
@@ -719,7 +720,7 @@ export class StoreCore {
     // (the wedding note its own cap: a document, contract/wedding.ts)
     if (json.length > (body.type === 'wnote' ? WNOTE_DATA_CHARS : MAX_EVENT_DATA_CHARS)) return fail('too_large');
     const subject = eventSubject(body.type, data, me);
-    if (!subject || !validEventData(body.type, data, this.io.now())) return fail('bad_request');
+    if (!subject || !validEvent(body.type, data, this.io.now())) return fail('bad_request');
     const type = body.type;
     return tx((): Reply & { at?: string } => {
       if (this.known(id)) return { ok: true, duplicate: true };
@@ -1055,7 +1056,7 @@ export class StoreCore {
    *  20-sale batch read 153k rows). */
   private shopTarget(me: Who, type: ShopEvent, d: Rec): 'pocket' | 'wallet' | 'owned' | null {
     const st = this.shopState(me);
-    // (its data checked already: validEventData)
+    // (its data checked already: validEvent)
     const row = shopRowOf(type, d);
     return row ? shopRefusal(st.l, st.caught, row) : 'pocket';
   }

@@ -1,7 +1,8 @@
 // The shop's stock (docs/design.md "The shop"): STOCK_N pieces a Tokyo day, the first of the buy price list's pieces in
 // the day's order (seeded by the date and the island's seed) that the island hadn't found or bought by the day's start
-// (`stockOf`'s `found`: components/shop/stock.ts), so both phones agree all day. Apart from contract/shop.ts, which
-// the first load carries, so the buy prices (buyPrices.ts) load with the shop. Pure.
+// (`stockOf`'s `found`: components/shop/stock.ts), so both phones agree all day. The phones import it only in the shops'
+// lazy chunks (ShopRoom, VisitorShop) and the record from contract/shopCheck.ts, so the buy prices (buyPrices.ts)
+// never ride the first load (deps.test.ts). Pure.
 import { BUY } from './buyPrices.ts';
 import type { LocalDate } from '../types.ts';
 import { shuffle } from '../random.ts';

@@ -4,6 +4,7 @@ import { eventSlot, goalDay, prefTaken, SPEND_PAST_DAYS, spendOf, TALLY_PAST_DAY
 import { DEFAULT_LOOKS } from './look.ts';
 import { PRICE_HALVED_MS } from './rules.ts';
 import { stockOf, buyPrice } from './stock.ts';
+import { validEvent } from './shopCheck.ts';
 import { reduce } from '../model/state.ts';
 import type { EventRow } from './api.ts';
 
@@ -189,12 +190,20 @@ describe('validEventData: each type\'s shape', () => {
     expect(ok('food_custom', { id: 'mabcdef1' })).toBe(false);
   });
 
-  it('a sell and a buy at their prices, a ききみみ game not after tomorrow, a pack and a wedding op by their own rules', () => {
-    expect(ok('sell', { species: 'fish:koi', n: 3, v: 600 })).toBe(true);
-    expect(ok('sell', { species: 'fish:koi', n: 3, v: 601 })).toBe(false);
+  it('a sell, a buy and starts at their prices, a ききみみ game not after tomorrow, a pack and a wedding op by their own rules', () => {
+    // (the shop's prices: contract/shopCheck.ts validEvent, the record's whole check; validEventData its shape only)
+    const full = (type: string, d: Record<string, unknown>) => validEvent(type, d, now);
+    expect(full('sell', { species: 'fish:koi', n: 3, v: 600 })).toBe(true);
+    expect(full('sell', { species: 'fish:koi', n: 3, v: 601 })).toBe(false);
+    expect(ok('sell', { species: 'fish:koi', n: 3, v: 601 })).toBe(true);
+    expect(ok('sell', { species: 'fish:koi', n: 3 })).toBe(false);
     const item = stockOf('2026-11-05')[0];
-    expect(ok('buy', { item, price: buyPrice(item)!, d: '2026-11-05' })).toBe(true);
-    expect(ok('buy', { item, price: buyPrice(item)! + 1, d: '2026-11-05' })).toBe(false);
+    expect(full('buy', { item, price: buyPrice(item)!, d: '2026-11-05' })).toBe(true);
+    expect(full('buy', { item, price: buyPrice(item)! + 1, d: '2026-11-05' })).toBe(false);
+    expect(ok('buy', { item, price: buyPrice(item)! + 1, d: '2026-11-05' })).toBe(true);
+    expect(full('buy_starts', { crop: 'potato', n: 2, v: 28 })).toBe(true);
+    expect(full('buy_starts', { crop: 'potato', n: 2, v: 27 })).toBe(false);
+    expect(full('listen', { d: '2026-11-05' })).toBe(false);
     const game = { d: '2026-11-05', g: 'ab12', lv: 2, n: 2, ms: 180_000, r: [['w2-read', 1, 0, 0]] };
     expect(ok('listen', game)).toBe(true);
     expect(ok('listen', { ...game, d: '2026-11-07' })).toBe(false);
