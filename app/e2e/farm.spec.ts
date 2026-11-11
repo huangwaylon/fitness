@@ -87,11 +87,9 @@ test('starts bought at the shop’s かう; a tap on my empty plot with nothing 
   await expect(page.locator('[data-farm-count]')).toHaveText('3/40株');
   // nothing ripe yet: said so, not 「0株・0個」
   await expect(page.locator('[data-farm-today]')).toHaveText('今日収穫できるものはありません');
-  await expect(page.locator('[data-farm-group="growing"] li')).toHaveCount(3);
-  // the crops by name (the catch catalog loaded), never a raw key; the rows' text in the theme's own colour on its card
-  await expect(page.locator('[data-farm-group="growing"] li').first()).toContainText('トマト');
+  // never a raw key; the sheet's text in the theme's own colour on its card
   await expect(page.locator('dialog[open]').last()).not.toContainText('beach.name.');
-  const [fg, text] = await page.locator('[data-farm-group="growing"] li').first().evaluate((el) => {
+  const [fg, text] = await page.locator('[data-farm-today]').evaluate((el) => {
     const probe = el.appendChild(document.createElement('i'));
     probe.style.color = 'var(--text)';
     const want = getComputedStyle(probe).color;
@@ -140,10 +138,10 @@ test('three days on: ripe, watered on the two days before it gives three, harves
   // ripe and watered now: a word, no harvest
   await tapWorld(b, plot(1).x, plot(1).z);
   await expect.poll(() => pops(b)).toEqual(['みずやり', 'みずやり ずみ']);
-  // her 畑 sheet: my two plants folded under my name, the second watered today
+  // her 畑 sheet: my two plants a line under my name, both watered today
   await b.locator('[data-farm-open]').click();
   await b.locator('[data-farm-field]').click();
-  await b.locator('[data-farm-sheet] details summary').click();
-  await expect(b.locator(`[data-farm-row="${plot(1).p}"]`)).toHaveAttribute('data-wet', 'true');
+  await expect(b.locator('[data-farm-others="A"]')).toContainText('の畑（2株）');
+  await expect(b.locator('[data-farm-water]')).toHaveText('水やり済み'); // the can's 3x3 took both
   expect((await farmRows(b)).filter((o) => o.o === 'harvest')).toHaveLength(1);
 });

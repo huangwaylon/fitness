@@ -38,3 +38,52 @@ test('a full field: 40/40 and 「空きはありません」, never 「自分の
   await expect(page.locator('[data-farm-count]')).toHaveText('40/40株');
   await expect(page.locator('[data-farm-empty]')).toHaveText('空きはありません');
 });
+
+const D3 = '2026-11-07';
+/** The farm ops this page sent (not the seeds'). */
+const farmRows = (page: Page) => page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{"events":[]}').events as { id: string; type: string; data: { ops: { o: string; p: string; n?: number }[] } }[])
+  .filter((e) => e.type === 'farm' && !e.id.startsWith('seed-')).flatMap((e) => e.data.ops));
+const planted = (ps: string[], d = D): Seed => ['farm', { d, ops: ps.map((p) => ({ o: 'plant', p, c: 'tomato', src: 'start' })) }, 'A'];
+async function up(page: Page, events: Seed[], day = D3) {
+  await seed(page, day, events);
+  await page.goto(`?demo&date=${day}T12:00&weather=clear`);
+  await islandUp(page);
+  await quiet(page);
+  await openSheet(page);
+}
+
+test('収穫: every ripe plant of mine in one event, its 取り消す gives them back', async ({ page }) => {
+  await up(page, [FIELD, ...POCKET, planted(plots.slice(0, 5))]);
+  await expect(page.locator('[data-farm-today]')).toHaveText('収穫できる 5株（5個・90かいがら）');
+  await page.locator('[data-farm-harvest]').click();
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('5個を収穫しました');
+  await expect(page.locator('[data-farm-today]')).toHaveText('今日収穫できるものはありません');
+  // the vegetables in my pocket: 植える offers them
+  await expect(page.locator('[data-farm-seed="crop:tomato"] .n')).toHaveText('5');
+  await page.getByRole('button', { name: '取り消す' }).click();
+  await expect(page.locator('[data-farm-harvest]')).toHaveText('実ったものを収穫（5株）');
+  await expect(page.locator('[data-farm-seed="crop:tomato"]')).toHaveCount(0);
+  await page.locator('[data-farm-harvest]').click();
+  await expect.poll(() => farmRows(page), { timeout: 15_000 }).toEqual(plots.slice(0, 5).map((p) => ({ o: 'harvest', p, n: 1 })));
+});
+
+test('水やり: every plant not watered today, one change of the shared day', async ({ page }) => {
+  await up(page, [FIELD, ...POCKET, planted(plots.slice(0, 12), '2026-11-06')]);
+  await expect(page.locator('[data-farm-water]')).toHaveText('水やり（12株）');
+  await page.locator('[data-farm-water]').click();
+  await expect(page.locator('[data-farm-water]')).toHaveText('水やり済み');
+  await expect(page.locator('[data-farm-water]')).toHaveAttribute('aria-disabled', 'true');
+  const watered = await page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.world.A') ?? '{}').events as { kind: string; op?: string; id?: string }[]).filter((e) => e.kind === 'world' && e.op === 'watered').map((e) => e.id));
+  expect(watered.sort()).toEqual(plots.slice(0, 12).sort());
+});
+
+test('植える: the held crop on my empty plots in reading order, up to what I hold', async ({ page }) => {
+  await up(page, [FIELD, ...POCKET, planted(plots.slice(0, 2))], D);
+  await expect(page.locator('[data-farm-seed="start:tomato"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-farm-plant-all]')).toHaveText('トマトの苗を植える（38区画）');
+  await page.locator('[data-farm-plant-all]').click();
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトの苗を38区画に植えました');
+  await expect(page.locator('[data-farm-count]')).toHaveText('40/40株');
+  await expect(page.locator('[data-farm-empty]')).toHaveText('空きはありません');
+  await expect.poll(() => farmRows(page), { timeout: 15_000 }).toEqual(plots.slice(2).map((p) => ({ o: 'plant', p, c: 'tomato', src: 'start' })));
+});
