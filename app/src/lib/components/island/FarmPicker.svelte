@@ -1,8 +1,8 @@
 <script lang="ts">
   // The picker (docs/farming.md "Playing"): what I hold to plant, a small cream card over the farm button. Each cell is
   // its crop's own art and name, a start with NH's seedling on it (the six starts' art is one seedling), and how many.
-  // Opened by a tap on my empty plot with nothing held or none left (that pick plants the plot at once) or by the menu;
-  // a pick is kept on this phone. It shuts on a pick, a tap outside it, Esc or a sheet opening.
+  // Opened by a tap on my empty plot with nothing held or none left: that pick plants the plot at once, and is kept on
+  // this phone (the farm button wears it). It shuts on a pick, a tap outside it, Esc or a sheet opening.
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { CROPS, seedKey, type Crop, type FarmSrc } from '#lib/contract/farm.ts';
   import { shopView } from '#lib/model/shop.ts';

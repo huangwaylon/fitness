@@ -1,6 +1,6 @@
-// The fields' controls on this phone (docs/farming.md "Playing"): the picker (FarmPicker), opened by the farm menu
-// (FarmMenu) or a tap on a plot (SceneTaps: my empty plot with nothing held, or none left, whose pick plants that plot),
-// and the verb a plot's tap pops over it (FarmPop).
+// The fields' controls on this phone (docs/farming.md "Playing"): the picker (FarmPicker), opened by a tap on my empty
+// plot with nothing held, or none left (SceneTaps), whose pick plants that plot, and the verb a plot's tap pops over it
+// (FarmPop).
 import { seedKey, type Crop, type FarmSrc } from '#lib/contract/farm.ts';
 import { pickSeed, type Seed } from '#lib/store/farm.svelte.ts';
 import { t } from '#lib/i18n/index.ts';

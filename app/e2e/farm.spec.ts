@@ -37,7 +37,7 @@ const pops = (page: Page) => page.evaluate(() => (window as unknown as { __pops:
 const farmRows = (page: Page) => page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{"events":[]}').events as { id: string; type: string; data: { ops: { o: string; p: string; n?: number }[] } }[])
   .filter((e) => e.type === 'farm' && !e.id.startsWith('seed-')).flatMap((e) => e.data.ops));
 
-test('starts bought at the shop’s かう; a tap on my empty plot with nothing held: the picker, whose pick plants it; the 畑 sheet counts them', async ({ page }) => {
+test('starts bought at the shop’s かう; a tap on my empty plot with nothing held: the picker, whose pick plants it; the はたけ pill opens 畑', async ({ page, context }) => {
   await seed(page, D, [FIELD, ...POCKET.slice(0, 2)]);
   // three tomato starts from かう's 苗 (3 × 14), by the list's own name, kanji
   await page.goto(`shop?demo&date=${D}T12:00`);
@@ -53,11 +53,19 @@ test('starts bought at the shop’s かう; a tap on my empty plot with nothing 
   await page.locator('[data-shop-buy]').click();
   await expect(page.locator('[data-shop]')).toHaveAttribute('data-shells', '158');
   await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトの苗を3個、42かいがらで買いました');
+  // うめ has no plot and no plant stands on a field: no はたけ pill on her island
+  const b = await context.newPage();
+  await b.goto(`?demo&as=B&date=${D}T12:00`);
+  await islandUp(b);
+  await expect(b.locator('[data-say-open]')).toBeVisible();
+  await expect(b.locator('[data-farm-open]')).toHaveCount(0);
+  await b.close();
   await catchPops(page);
   await page.goto(`?demo&date=${D}T12:00`);
   await islandUp(page);
   await quiet(page);
-  // the disc at the bottom left, the say button's mirror, clear of it
+  // the はたけ pill at the bottom left, the say button's mirror, clear of it
+  await expect(page.locator('[data-farm-open]')).toBeVisible();
   const disc = await page.locator('[data-farm-open]').boundingBox(), say = await page.locator('[data-say-open]').boundingBox();
   expect(disc!.x).toBeLessThan(40);
   expect(Math.abs(disc!.y - say!.y)).toBeLessThan(2);
@@ -71,6 +79,7 @@ test('starts bought at the shop’s かう; a tap on my empty plot with nothing 
   await cell.click();
   await expect(page.locator('[data-farm-picker]')).toHaveCount(0);
   await expect.poll(() => farmRows(page)).toEqual([{ o: 'plant', p: plot(0).p, c: 'tomato', src: 'start' }]);
+  await expect(page.locator('[data-farm-held="tomato"]')).toBeVisible();
   const three = [plot(0), plot(1), plot(0, 1)];
   for (const t of three.slice(1)) await tapWorld(page, t.x, t.z);
   await expect.poll(() => farmRows(page)).toEqual(three.map((t) => ({ o: 'plant', p: t.p, c: 'tomato', src: 'start' })));
@@ -80,10 +89,10 @@ test('starts bought at the shop’s かう; a tap on my empty plot with nothing 
   await expect.poll(() => pops(page)).toEqual([...three.map(() => 'トマトを うえた'), 'トマトが もう ない']);
   await expect(page.locator('[data-fx="say"]')).toHaveCount(0);
   expect(await farmRows(page)).toHaveLength(3);
-  // the menu: たね shows none left of tomatoes; はたけ opens the sheet
+  // the はたけ pill: the held crop worn only while I have some (none now), no ripe badge; one tap opens 畑, counting them
+  await expect(page.locator('[data-farm-held]')).toHaveCount(0);
+  await expect(page.locator('[data-farm-ripe]')).toHaveCount(0);
   await page.locator('[data-farm-open]').click();
-  await expect(page.locator('[data-farm-seed-n]')).toHaveText('0');
-  await page.locator('[data-farm-field]').click();
   await expect(page.locator('[data-farm-count]')).toHaveText('3/40株');
   // nothing ripe yet: said so, not 「0株・0個」
   await expect(page.locator('[data-farm-today]')).toHaveText('今日収穫できるものはありません');
@@ -111,10 +120,13 @@ test('three days on: ripe, watered on the two days before it gives three, harves
   await page.goto(`?demo&date=${D3}T12:00`);
   await islandUp(page);
   await quiet(page);
+  // both ripe: the pill's badge
+  await expect(page.locator('[data-farm-ripe]')).toHaveText('2');
   // a row's miss: a tap on the empty plot behind it harvests the nearest ripe plant of mine (the other is on the diagonal)
   await tapWorld(page, plot(0, 1).x, plot(0, 1).z);
   await expect(page.locator('[data-fx="catch"] .catch-plate')).toHaveAttribute('aria-label', /トマトを しゅうかく！ ×3/);
   await expect.poll(() => farmRows(page)).toEqual([{ o: 'harvest', p: plot(0).p, n: 3 }]);
+  await expect(page.locator('[data-farm-ripe]')).toHaveText('1');
   // the shop buys them: 3 × 18
   await page.goto(`shop?demo&date=${D3}T12:00`);
   await expect(page.locator('[data-shop]')).toBeVisible();
@@ -138,9 +150,10 @@ test('three days on: ripe, watered on the two days before it gives three, harves
   // ripe and watered now: a word, no harvest
   await tapWorld(b, plot(1).x, plot(1).z);
   await expect.poll(() => pops(b)).toEqual(['みずやり', 'みずやり ずみ']);
-  // her 畑 sheet: my two plants a line under my name, both watered today
+  // no field of hers, but a plant to water: her pill, with no ripe badge (mine aren't hers), opens 畑: my two plants a
+  // line under my name, both watered today
+  await expect(b.locator('[data-farm-ripe]')).toHaveCount(0);
   await b.locator('[data-farm-open]').click();
-  await b.locator('[data-farm-field]').click();
   await expect(b.locator('[data-farm-others="A"]')).toContainText('の畑（2株）');
   await expect(b.locator('[data-farm-water]')).toHaveText('水やり済み'); // the can's 3x3 took both
   expect((await farmRows(b)).filter((o) => o.o === 'harvest')).toHaveLength(1);

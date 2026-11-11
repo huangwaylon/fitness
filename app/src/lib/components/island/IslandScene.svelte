@@ -40,8 +40,7 @@
   import Says from './Says.svelte';
   import SayPicker from './SayPicker.svelte';
   import SayButton from './SayButton.svelte';
-  import FarmMenu from './FarmMenu.svelte';
-  import FarmPop from './FarmPop.svelte';
+  import { farmUi } from './farmUi.svelte.ts';
   import { layoutPlots } from '#lib/layout/field.ts';
   import CatchStack from './CatchStack.svelte';
   import { SAY_TAG, rememberSay, sayGate } from './say.ts';
@@ -244,7 +243,7 @@
   let sayBtn = $state<HTMLButtonElement>();
   /** The say button shows on the live island with nothing over it: no sheet, the harvest, a tree's popup, もようがえ. */
   const sayShown = $derived(!covered && !openTree && !ui.sheets.length);
-  /** The island has a field (docs/farming.md): the farm menu shows. */
+  /** The island has a field (docs/farming.md): the farm button, its picker and a plot tap's word can show. */
   const fieldsHere = $derived((void site.rev, site.layout ? layoutPlots(site.layout).length > 0 : false));
   const vilEls = $state<Record<VillagerActor, HTMLElement | undefined>>({ mine: undefined, partner: undefined, third: undefined });
   function openPicker(el: HTMLElement) {
@@ -1131,6 +1130,11 @@
   // it's due, then kept, so its code stays out of the first load.
   const weatherC = lazyComponent(() => import('./Weather.svelte')), fireworksC = lazyComponent(() => import('./Fireworks.svelte'));
   const halloweenC = lazyComponent(() => import('./Halloween.svelte')), birthdayC = lazyComponent(() => import('./Birthday.svelte')), weddingC = lazyComponent(() => import('./Wedding.svelte'));
+  // the farm's controls (docs/farming.md "Playing"): the button once the island has a field, its picker and a plot
+  // tap's word on their first use
+  const farmButtonC = lazyComponent(() => import('./FarmButton.svelte')), farmPickerC = lazyComponent(() => import('./FarmPicker.svelte'));
+  const farmPopC = lazyComponent(() => import('./FarmPop.svelte'));
+  const FarmButtonC = $derived(farmButtonC.get(fieldsHere)), FarmPickerC = $derived(farmPickerC.get(farmUi.picker)), FarmPopC = $derived(farmPopC.get(!!farmUi.pop));
   const WeatherC = $derived(weatherC.get((weather.sky !== 'clear' || weather.fog || !!weather.rainbow || weather.aurora)));
   const FireworksC = $derived(fireworksC.get((life.devFireworks || preview.event === 'fireworks' || wedding.fireworks || allMet || !!showAt(jst(clock).month, jst(clock).day, jst(clock).weekday, jst(clock).hour))));
   const HalloweenC = $derived(halloweenC.get(nhEvent?.id === 'halloween'));
@@ -1171,9 +1175,9 @@
     <!-- the picker's door: bottom right, over the sea, clear of the home indicator and しずえ's box (--news-lift) -->
     <div class="say-dock"><SayButton bind:el={sayBtn} open={!!picking} onopen={openPicker} /></div>
     {#if fieldsHere}
-      <!-- the farm menu: its mirror at the bottom left (docs/farming.md), while the island has a field -->
-      <div class="farm-dock"><FarmMenu /></div>
-      <FarmPop />
+      <!-- the farm button: its mirror at the bottom left (docs/farming.md), the picker over it, while the island has a field -->
+      <div class="farm-dock">{#if FarmButtonC}<FarmButtonC />{/if}{#if FarmPickerC && farmUi.picker}<FarmPickerC />{/if}</div>
+      {#if FarmPopC}<FarmPopC />{/if}
     {/if}
   {/if}
   <!-- every catch's plate: a stack at the bottom centre, outside the viewport (the newest at the bottom) -->
@@ -1304,7 +1308,7 @@
     position: absolute; z-index: 2; right: calc(var(--safe-right, 0px) + 8px);
     bottom: calc(var(--pad-bottom, 8px) + 8px + var(--news-lift, 0px));
   }
-  /* the farm menu: the say button's mirror at the bottom left */
+  /* the farm button: the say button's mirror at the bottom left */
   .farm-dock {
     position: absolute; z-index: 2; left: calc(var(--safe-left, 0px) + 8px);
     bottom: calc(var(--pad-bottom, 8px) + 8px + var(--news-lift, 0px));

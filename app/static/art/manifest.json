@@ -2323,12 +2323,6 @@
       "h": 96,
       "source": "nh:Layout_MenuIcon_Shell6"
     },
-    "finds/seed-bag": {
-      "path": "finds/seed-bag.webp",
-      "w": 96,
-      "h": 96,
-      "source": "nh:Layout_FtrIcon_PhotoStudioSeedBag"
-    },
     "finds/shark-tooth-pattern": {
       "path": "finds/shark-tooth-pattern.webp",
       "w": 96,

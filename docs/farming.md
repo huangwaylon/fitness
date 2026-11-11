@@ -3,7 +3,7 @@
 NH 2.0's vegetables on the island: a field each, 40 plants. Buy starts at the shop, plant them on your field, water, harvest, and the plant grows back. The produce sells for かいがら,
 never ベル. Code: `contract/farm.ts` (the rules, shared by the record and the phones), `contract/wet.ts` (rain),
 `model/farm.ts`, `layout/field.ts`, `store/farm.svelte.ts` (the writes, たね), `island/farm.ts` (the scene),
-`island/farmTap.ts` (a plot's tap), `island/FarmMenu.svelte`, `farm/FarmSheet.svelte`, `shop/ShopRoom.svelte` (苗),
+`island/farmTap.ts` (a plot's tap), `island/FarmButton.svelte`, `farm/FarmSheet.svelte`, `shop/ShopRoom.svelte` (苗),
 `world3d/objects.ts` (drawn);
 tests `contract/farm.test.ts`, `island/farmTap.test.ts`, `relay/test/farm.test.ts`, `e2e/farm.spec.ts`.
 
