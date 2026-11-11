@@ -4,7 +4,7 @@
 </script>
 
 <script lang="ts">
-  // すがた's stage (design/avatar/sugata-ux.md §3.2): the final form, always (the 3D player or the villager's official
+  // すがた's stage (docs/players.md "The stage"): the final form, always (the 3D player or the villager's official
   // render: LookPreview), with the status pill (top-left, in words), もどす under it once anything changed this visit, the
   // nameplate 「ウェイ ✎」 (top-right: the name sheet), and along its bottom edge the colour dots of what was tapped last
   // (the level's snippet; they never move the grid). Three heights: 262 (full), 150 when the panel under it scrolls

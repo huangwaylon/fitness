@@ -1,7 +1,6 @@
 # はたけ: the fields
 
-NH 2.0's vegetables on the island (decided 2026-11-10; the user's changes the same day: a field each, 40 plants). Buy
-starts at the shop, plant them on your field, water, harvest, and the plant grows back. The produce sells for かいがら,
+NH 2.0's vegetables on the island: a field each, 40 plants. Buy starts at the shop, plant them on your field, water, harvest, and the plant grows back. The produce sells for かいがら,
 never ベル. Code: `contract/farm.ts` (the rules, shared by the record and the phones), `contract/wet.ts` (rain),
 `model/farm.ts`, `layout/field.ts`, `store/farm.svelte.ts` (the writes, たね), `island/farm.ts` (the scene),
 `island/farmTap.ts` (a plot's tap), `island/FarmMenu.svelte`, `farm/FarmSheet.svelte`, `shop/ShopRoom.svelte` (苗),
@@ -13,10 +12,8 @@ tests `contract/farm.test.ts`, `island/farmTap.test.ts`, `relay/test/farm.test.t
 1. **A field each.** A field is a layout object (kind `field`, `layout/field.ts`): its owner and size are its variant
    (`a-10x4`: ウェイ's, 10 tiles across and 4 deep). It's placed, moved, resized and given an owner in /editor only (the
    editor-only rule; the 畑 tab of 野菜). Our island has a 10 × 4 field for ウェイ and one for うめ, one behind the
-   other on the open lawn behind the shop (laid as editor ops on 2026-11-10). The default island (`default.json`) has
-   none: no 10 tiles across are free beside its path, and 4 × 10 on the front lawn pushed the visitors' stage and
-   K.K. off it; a layout reset drops them (place them again in the editor). The guest has none; the editor can give
-   it one.
+   other on the open lawn behind the shop. The default island (`default.json`) has none (no room beside its path); a
+   layout reset drops them. The guest has none; the editor can give it one.
 2. **Only the owner plants, harvests or digs** on a field; anyone waters anything (NH's visitors), the guest too.
 3. **At most 40 plants each** (`FARM.cap`), whatever the field's size.
 4. **Prices: NH ÷ 20,** as every shop price: a start costs 14 (280 Bells) and sells back for 4, a vegetable sells for
@@ -65,17 +62,18 @@ levers, if the live numbers drift (`npm run logs`, the sells): `FARM.regrowDays`
 ## Playing
 
 - **The farm button** (bottom left, the say button's mirror, NH's seed bag): たね (pick what to plant: each start and
-  vegetable I have by its crop's name, kept on this phone; my villager says 「トマトの なえを もった」 and the disc wears it), スコップ (armed for one dig, 取り消す 5 s) and はたけ (the 畑 sheet). Only on
-  the island while it has a field, hidden with the say button.
+  vegetable I have by its crop's name, kept on this phone; my villager says 「トマトの なえを もった」 and the disc wears
+  it), スコップ (armed for one dig, 取り消す 5 s) and はたけ (the 畑 sheet). Only on the island while it has a field, hidden with the say button.
 - **A tap on a plot** (its tile under the finger, before a weed's or a find's finger slack) acts in place (never a
   walk; my villager turns to it), in order: the shovel armed on my plant
   digs it; my ripe plant is harvested (the catch plate 「トマトを しゅうかく！ ×3」); a plant not watered today is watered
   with its neighbours; my empty plot is planted with the picked crop (none picked: the picker opens); else a bubble
   (「うめの ニンジン・あと 1にち」, 「みずやり ずみ」).
-- **Watered soil** is dark for the rest of the day (the soil's instance colour); a ripe plant shows its yield's model.
+- **Watered soil** is dark for the rest of the day (the soil's instance colour; the soil is flat, casting no shadow); a ripe plant shows its yield's model.
   The partner's watering shows at once (the shared world's day, the flowers' own); their plant or harvest on their
   next sync (a few seconds: a batch waits 2 s for the next tap).
-- **The 畑 sheet:** my plants (収穫できる, 育成中 with days left, 空き区画), today's harvest and its かいがら (none: 「今日収穫できるものはありません」), 「12/40株」,
-  the partner's and the guest's plants folded, the rule line and 「苗はタヌキ商店で買えます」.
+- **The 畑 sheet:** my plants (収穫できる, 育成中 with days left: `contract/farm.ts daysLeft`, as the tap card's;
+  空き区画), today's harvest and its かいがら (none: 「今日収穫できるものはありません」), 「12/40株」, the partner's and the guest's plants folded, the rule line and 「苗はタヌキ商店で買えます」. Its chunk is fetched ahead with the other sheets'
+  (`island/sheetChunks.ts`).
 - **The shop:** うる's 野菜 section (vegetables and starts); かう's 苗, the six starts above today's stock, a tap one
   more and − one less, 「5個で70かいがら」 and their own 買う (the shop's 取り消す 5 s).

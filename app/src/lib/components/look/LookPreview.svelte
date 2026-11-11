@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The すがた stage's figure (design/avatar/sugata-ux.md §3.2): the look being edited, full body, filling its box. A player is NH's human
+  // The すがた stage's figure (docs/players.md "The stage"): the look being edited, full body, filling its box. A player is NH's human
   // player in 3D (look/preview3d.ts: its own small renderer, made on mount and let go of on unmount, the level's one
   // WebGL context, which also draws the portraits: portraits.svelte.ts), idling and blinking; a drag turns it, a tap
   // hops it, each edit is dressed on in place. Until it's built (or if it can't be) the flat stand-in figure stands

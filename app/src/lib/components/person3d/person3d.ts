@@ -1,4 +1,4 @@
-// Who a person is drawn as in 3D (docs/design.md "Players"; design/avatar/customization.md §1): the one seam between a
+// Who a person is drawn as in 3D (docs/design.md "Players"; docs/players.md "Who is drawn"): the one seam between a
 // person's effective look (contract/look.ts Look, store/look.ts lookOf) and the model a scene stands up for them (the
 // island's world3d/villagers.ts, the tent's and the museum's engines; first person, seats, the rod and the net go
 // through the model's own interface, the same for both kinds). A `player` look is NH's human player

@@ -11,7 +11,7 @@
 //   ... render.ts --sheet base.json key v1 v2 … [--view=face|front|34] [--name=x]   a labelled grid → /tmp/avatar-ta/sheets
 //   ... render.ts --compare out.png r1.png …  [--title=…]   the target beside renders → renders/out.png
 //   ... render.ts --avg Folder …   each folder's albedo's mean colour;  --debug a.json   joint and mesh positions
-// See ../tech-notes.md. The assembler is player.js (browser) and harness.ts (Node), both importable.
+// See docs/players.md "Assets". The assembler is player.js (browser) and harness.ts (Node), both importable.
 // The model folder is untrusted input: only the named folders' .dae and .png files (safe names) are copied into a
 // scratch dir under /tmp/avatar-ta/ and read by three.js; nothing in them is run, nothing of them is committed.
 import { execFileSync } from 'node:child_process';

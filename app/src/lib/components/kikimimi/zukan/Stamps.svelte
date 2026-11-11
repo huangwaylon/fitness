@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ずかん › スタンプ (docs/kikimimi.md "ずかん"): the units' can-do stamps in the path's order (mine with its day,
+  // ずかん › スタンプ (docs/kikimimi.md "図鑑"): the units' can-do stamps in the path's order (mine with its day,
   // the double stamp when both of us have it, the partner's alone a faint mark; a blank for the rest: stamps.ts), the
   // week stamps (week.ts weekStamps against my target as set now), the いっぱつ count and its badges (zukan.ts
   // ippatsuOf), the villagers' letters from the stamped units (LetterShelf, U7), the weekend tournament's trophies (the same shelf as きろく's: taikai/def.ts trophiesOf) and the bedtime

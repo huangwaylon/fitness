@@ -1,6 +1,11 @@
 // The bulletin board's face in 3D (docs/board.md "The 3D hooks"): a plane over NH's cork, in the board model's own
 // units (its origin the model's), with the face's canvas (face.ts) as its texture; handed to `world.three.attach`
 // ('board', mesh), which places, turns, scales and bends it with the board. Loaded only on the 3D island.
+// The model (`deco/bulletin-board`, centred on its origin) has its cork face at model x −6.85…6.80, y 3.49…13.52,
+// z +0.30 (facing +z, toward the camera at yaw 0; NH's own pinned notes stand off it to z +1.02, the frame's front at
+// z +1.10 … +1.24). The face is a 13.6 × 10 plane at (0, 8.5, 1.08) **in its geometry** (`attach` sets the object's
+// matrix to the instance's). The board is drawn at 3.5 u a model unit (`BOARD_S`); its focus rect is the face (`y`
+// 29.75 u, 47.6 × 35 u), `yaw` from the layout's `f`, `fill` 0.92.
 import { Box3, CanvasTexture, Mesh, MeshLambertMaterial, PlaneGeometry, SRGBColorSpace } from 'three';
 import { FACE } from './spot.ts';
 

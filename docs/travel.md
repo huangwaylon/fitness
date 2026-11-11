@@ -1,7 +1,7 @@
-# りょこう (trips)
+# 旅行 (trips)
 
 The three travel guides (Okinawa, Seattle, New Zealand), ported from `~/Documents/other/travel-plans` into one area,
-「りょこう」. The UI is [design.md §Trips](design.md#trips); this file is the data, the relay's part and the map.
+「旅行」. The UI is [design.md §Trips](design.md#trips); this file is the data, the relay's part and the map.
 
 ## Decisions
 
@@ -21,8 +21,8 @@ The three travel guides (Okinawa, Seattle, New Zealand), ported from `~/Document
 Every trip is drawn by the unified kit (`TripView`; design.md §Trips): Okinawa's campsites and candidate layers and
 Seattle's hikes are pages and cards of it. A trip that's over is **read-only**, one rule for all (`when.ts`
 `readOnly`: its phase is past): its packing list is frozen as everyone left it (`packing.frozen`: the live list's
-fold of the record's rows, who packed what shown, no Tick or 編集, nothing sent), nothing else on it changes. Okinawa and Seattle are over (no relay rows: their seed); NZ will be after its
-flight home.
+fold of the record's rows, who packed what shown, no Tick or 編集, nothing sent), nothing else on it changes.
+Okinawa and Seattle are over (no relay rows: their seed); NZ will be after its flight home.
 
 ## Content
 
@@ -41,8 +41,8 @@ sheet; the modules are the source now (edit them by hand). The schema is [`types
 Guide text is a pair `{ja?, en?}` in the data (not catalog keys), shown in the reader's locale, else the other side;
 the chrome's strings are `i18n/travel.{ja,en}.json`. Inline tokens (`tokens.ts`): `{km:}`, `{m:}`, `{c:}` follow the
 device's units; `{p:key}` is a private value. A logistics card's icon is the old site's lucide name, drawn by ui/Icon
-(trips.test checks they're all in it; a packing category's is its NH item where packView.ts has one). Each trip's dates and `tz` drive "today" (`DayRow.dd`: a row on the eve or the morning
-after).
+(trips.test checks they're all in it; a packing category's is its NH item where packView.ts has one). Each trip's
+dates and `tz` drive "today" (`DayRow.dd`: a row on the eve or the morning after).
 
 ### Private values
 
@@ -97,8 +97,7 @@ the map shows, and `removeMap`), `cached.ts`, `tiles.ts`.
 - **States** (`data-mode`): `loading`, `ready`; `offline` (drawn, no basemap tile came: the route alone, with
   「地図はオフライン — ルートのみ」); `failed` (the chunk or WebGL didn't come: 「地図を読み込めません」 + もう一度; offline
   the chunk is asked for only if the service worker holds it, `map/cached.ts`, and it draws by itself when the phone
-  is back online); `lost` (iOS took the WebGL
-  context, till restored). `removeMap` on unmount (glmap.ts: the style's font faces go too).
+  is back online); `lost` (iOS took the WebGL context, till restored). `removeMap` on unmount (glmap.ts: the style's font faces go too).
 - **Locate:** the button asks permission the first time it's tapped (`geolocation=(self)`); the first fix flies the
   map there (zoom ≥ 14), unless the phone is more than 50 km from every stop: then the dot shows where it is, the map
   stays on the route and 「旅先から離れています」 shows for 8 s. Tapped again while on: back to the dot (or the route if
@@ -113,18 +112,10 @@ is the paper with a small picture icon (`ui/photoFallback.ts`, on every `<img>` 
 
 ## Offline
 
-(docs/backend.md "Service worker" › Offline.) After one visit online the trips read offline: the
-text, 持ち物 (ticks queue till back), each trip's cover (precached, with the trails' tracks), its hero once seen, every
-photo already seen (`island-photos-v1`). The map draws offline once it has drawn on the phone: MapLibre is kept in the
-shell, and the tiles it drew (`island-tiles-v1`, 60 MB, least recently used out; OpenFreeMap's tiles fetched by the
-page, `map/tiles.ts`, as WebKit's service worker doesn't see MapLibre's worker's fetches) with the TileJSON
-(`island-map-meta-v1`). Where no tile was kept: the route with 「地図はオフライン — ルートのみ」. Nothing is prefetched.
-
-Every trip with a map (Okinawa, NZ: past ones too, read-only otherwise) has
-「オフライン用に保存」 over its map (design.md "Offline maps"); nothing downloads by itself. The plan's zooms are
-`lib/offline/plan.ts`'s header (`planTrip`). Sizes: **NZ 438 tiles, 20.4 MB** (Auckland's z14 tiles are ~145 KB), **Okinawa 310 tiles,
-7.6 MB**; both well inside OpenFreeMap's ≤ 3,000 tiles and ≤ 50 MB an area.
-Offline with it saved, the map says 「保存した範囲のみ」.
+What reads offline and the caches: [backend](backend.md) "Service worker" › Offline; the save button and its plan:
+design.md "Offline maps", `lib/offline/plan.ts`. Saved sizes: **NZ 438 tiles, 20.4 MB** (Auckland's z14 tiles are
+~145 KB), **Okinawa 310 tiles, 7.6 MB**; both well inside OpenFreeMap's ≤ 3,000 tiles and ≤ 50 MB an area. Where no
+tile was kept the map draws the route alone (「地図はオフライン — ルートのみ」).
 
 ## Open
 

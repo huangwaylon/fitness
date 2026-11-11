@@ -1,7 +1,7 @@
 // @ts-nocheck -- a plain browser module (three.js from the page's import map), not part of the app's build.
 // The villager pose system (src/lib/components/villager3d: poses.ts → rig.ts) on an NH *player* (render/player.js's
 // loadPlayer). The same maths as rig.ts (a pose's model-space rotation turned into each bone's own frame, after its
-// rest rotation), plus what the player's skeleton needs that a villager's doesn't (anim/rig.md):
+// rest rotation), plus what the player's skeleton needs that a villager's doesn't (src/lib/components/player3d/tune.ts, its port):
 //   - ALIAS: the hands. A player's hand mesh is skinned to Wrist_L/R, not Hand_L/R (Hand_* is a bare tip joint, NH's
 //     item socket). A pose's Hand_* rotation goes on Wrist_*, so the hand visibly bends and the tool (on Hand_*,
 //     Wrist's child) follows it.
@@ -223,7 +223,7 @@ export function playerRig(p, tune = {}) {
 
 /** NH's villager faces (faces.ts FACES, BLINK: villager eye cells 0-15, mouth cells 0-8) → the player's eye frames
  *  (PlayerEyeNN/mEye_Alb.0-15) and mouth frames (PlayerMouthNN/mMouth_Alb.0-8), the same expression read off the
- *  player's textures (anim/rig.md "Face"; the frames are the same expressions for every PlayerEyeNN and PlayerMouthNN).
+ *  player's textures (player3d/tune.ts PLAYER_EYE / PLAYER_MOUTH; the frames are the same expressions for every PlayerEyeNN and PlayerMouthNN).
  *    player eyes:   0 open · 1 half shut (drowsy) · 2 shut, soft (asleep, the blink) · 3 cross (brows in) · 4 worried
  *                   5 happy shut (^ ^) · 6 shocked (white, "0 0") · 7 squeezed shut (> <) · 8 open, pupils small
  *                   9 flat half-lidded · 10 open, pupils big · 11 half-lidded side glance · 12 wide, pupils small
@@ -239,7 +239,7 @@ export const playerFace = (eye, mouth, rest = 0, face = '') =>
   [PLAYER_EYE[eye] ?? eye, mouth < 0 ? -1 - mouth : mouth === 0 ? (face === 'sleepy' ? 0 : rest) : PLAYER_MOUTH[mouth] ?? mouth];
 
 /** Player-specific action overrides over poses.ts's action(a, u) (same envelope): what a villager's proportions get
- *  away with and a player's don't (anim/rig.md "Tuning").
+ *  away with and a player's don't (player3d/tune.ts).
  *   sting: the villager's hand-to-eye can't reach on a player (shoulder to eye ~4.8 u, the arm 4.1): the left hand
  *          to the left cheek just under the eye instead (a numeric reach, once), the wobble kept.
  *   cast:  the wind-up's rod hand comes up in front of a player's face (the rod across the glasses): the arm swung

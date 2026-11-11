@@ -1,4 +1,4 @@
-// The すがた level's live 3D preview (customization.md §3.1; docs/design.md "すがた"): the look being edited as NH's
+// The すがた level's live 3D preview (docs/players.md "The stage"; docs/design.md "すがた"): the look being edited as NH's
 // human player (components/player3d createPlayer), idling and blinking on a canvas of its own (the stage's size), a drag turning
 // it, a tap hopping it, every edit dressed on in place. Its renderer is the level's one WebGL context: the closet's
 // portraits (the コーデ chips, the せってい row) are drawn through it too (player3d portrait: a render target, a

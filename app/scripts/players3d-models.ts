@@ -1,4 +1,4 @@
-// NH's human players in 3D (components/player3d; design/avatar/tech-notes.md, closet/feasibility.md): the parts the app
+// NH's human players in 3D (components/player3d; docs/players.md "Assets"): the parts the app
 // assembles a player from at runtime, from the game files the user supplied, loose into the work folder (.cache/player/,
 // gitignored), then packed into static/room/player/ (scripts/player-packs.ts, run at the end):
 //   body.glb              the body, once per page (skeleton, skin, legs, face patches, ears, noses)
@@ -14,7 +14,7 @@
 // (the KTX2s of what's new: it packs them in).
 //
 // Which items: the first closet (STARTER below: every hairstyle, eye and mouth, and every colour of the lines the art
-// scout curated, design/avatar/catalog.md), or --all (every item the closet sweep wore cleanly: ~19 MB). The sweep's
+// scout curated), or --all (every item the closet sweep wore cleanly: ~19 MB). The sweep's
 // exclusions are kept (customs designs, underwater variants, NPC aprons, placeholders; umbrellas aren't worn).
 //
 // Usage (from app/): NH_MODELS=~/Downloads/Model node scripts/players3d-models.ts [--all] [--map]
@@ -49,7 +49,7 @@ const SAFE = /^[A-Za-z0-9_]+$/;
 const NAMES = readdirSync(ROOT).filter((n) => n.endsWith('.Nin_NX_NVN')).map((n) => n.slice(0, -11)).filter((n) => SAFE.test(n)).sort();
 const HAS = new Set(NAMES);
 
-/** The first closet: every hairstyle, eye and mouth; of the clothes, every colour of these lines (catalog.md). */
+/** The first closet: every hairstyle, eye and mouth; of the clothes, every colour of these lines. */
 const STARTER: Record<string, RegExp> = {
   top: /^TopsTex(TopOuterLAran|TopOuterLSweat|TopOuterLArancardigan|TopTshirtsLVnecksweater|TopYshirtsHPolo|TopYshirtsHStandard|TopTshirtsHPocketshirts|OnepieceAlineHLinen|OnepieceBoxLShirt|OnepieceBalloonHDolly)\d$/,
   bottom: /^BottomsTex(PantsNormalSlacks|PantsNormalChino|PantsNormalDenim|PantsNormalSweat|PantsWideChino|SkirtLongDenim|SkirtLongPleats|SkirtLongChino|SkirtAlineFlare)\d$/,

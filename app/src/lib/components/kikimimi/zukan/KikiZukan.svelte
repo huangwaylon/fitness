@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ききみみ's ずかん (docs/kikimimi.md "ずかん"): four sections over one Segmented, ことば · こえ · なかま · スタンプ, each its
+  // ききみみ's ずかん (docs/kikimimi.md "図鑑"): four sections over one Segmented, ことば · こえ · なかま · スタンプ, each its
   // own chunk; what they read loaded once as it opens (data.svelte.ts). Pushed from the hub's tile (ことば first), the
   // path's 「ことば ずかん」 or a unit page's phrases (ことば on that unit's). The section kept while the page is open. Its own
   // chunk; my own (the partner sees none of it).

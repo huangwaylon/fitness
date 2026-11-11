@@ -1,4 +1,4 @@
-// ききみみ's modes as the hub shows them (docs/kikimimi.md "あそぶ", "Mode detail"; docs/kikimimi-engine.md "Files", "The listening games"): each
+// ききみみ's modes as the hub shows them (docs/kikimimi.md "遊ぶ", "Mode detail"; docs/kikimimi-engine.md "Files", "The listening games"): each
 // mode's shelf (grouped by situation), icon, length, question count, whether it can be shared and whether its page offers
 // the ばしょ; which are playable on this build (only those show: never a 「もうすぐ」 wall, an empty group hidden; a lane's
 // game once this build has its lane and the index its content; a mode with a `gate` only while it opens on this phone:

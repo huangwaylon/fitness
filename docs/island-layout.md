@@ -10,9 +10,9 @@ editing: the island is arranged in /editor only.
 - **One tile = 30 world units** = one NH tile (10 model units of NH's furniture at the island's scale, world.ts
   `DECOR_U` = 3u a model unit: a 2-tile bench is 60u, an 80u villager is NH's chibi). The tent's room uses the same
   tile, so an outdoor footprint and a room footprint mean the same thing.
-- **20 × 156 tiles**, x −90…510, z −90…4590 (`layout/grid.ts` `GRID`; 80 rows until 2026-11-10): the long island
+- **20 × 156 tiles**, x −90…510, z −90…4590 (`layout/grid.ts` `GRID`): the long island
   (land x −30…420, z −30…1680) with a ring of sea, and 96 more rows of sea behind it for the island to grow back into
-  (the editor's しまの おおきさ: 152 rows of land at most, twice the old 76); everything off the grid is sea. The rows of
+  (the editor's しまの おおきさ: 152 rows of land at most); everything off the grid is sea. The rows of
   sea behind the land cost nothing: a band of chunks that is all sea has no bake or mesh (`terrain.ts`: the deep plane
   shows there), the worker builds no chunk of it (`mesh.ts openSeaRow`), and the fields' raster stops 4 rows past the
   land (`fields.ts rasterRows`, to a whole chunk: the default's 64 rows; behind it each channel's clamp, as off the
@@ -20,8 +20,8 @@ editing: the island is arranged in /editor only.
   `r` grows into the island (away from the camera), as world z does. Read the extent from the layout
   (`model.ts extentOf`), never a constant.
 - **Chunks of 8 × 8 tiles** (3 × 20 of them; the last column sticks out past the grid and is sea): the unit of a
-  terrain op. The ops allow up to 16 chunks across and 32 deep (128 × 256 tiles; deep was 16 until 2026-11-10), so the
-  grid can grow without a relay deploy.
+  terrain op. The ops allow up to 16 chunks across and 32 deep (128 × 256 tiles), so the grid can grow without a relay
+  deploy; the live protocol takes its bounds from these (contract/layout.ts).
 
 ## The island's size
 
@@ -39,11 +39,9 @@ editing: the island is arranged in /editor only.
   (catalog: a home, the museum, the shop, K.K.'s stool, the board, a goal tree, the summer pieces). `moveInside` moves
   each to its nearest clear tile (resolve.ts `clearTile`), the fixed and the biggest first; one with nowhere near is
   put away unless it's fixed: a fixed one stuck holds the resize.
-- **The editor:** the side panel's しまの おおきさ, the land's size and four edges' − / ＋. A stepper hovered draws the
-  ghost (land gained green, lost red, the new coast dashed: plan.ts `drawCoast`). A click is one action (edits.ts
-  `resize`; ⌘Z), its chunk ops and moves one burst (`sendMany`), so the phones get it live and their camera's far end
-  follows. Blocked, the list instead (★ fixed; a click selects and centres) and 「うごかす」 or やめる. The phone view's
-  もようがえ has no terraforming, so no resize.
+- **The editor:** the side panel's しまの おおきさ, four edges' − / ＋, the ghost on hover (plan.ts `drawCoast`). A
+  click is one action (edits.ts `resize`; ⌘Z) and one burst (`sendMany`), so the phones get it live; blocked, the
+  list of what's in the way instead. The phone view has no terraforming, so no resize.
 
 ## The layout is data
 
@@ -62,8 +60,8 @@ editing: the island is arranged in /editor only.
   `kk-slider`: 1 × 1, one on the island, never deleted, its front tile `front-kk-slider` clear and reachable; the
   default puts it on まえ's lawn west of the main path at tile 6 × 22; docs/design.md "K.K. on his stool"), the pieces
   that join terrain (`bridge` over water, `stairs` up a cliff), the homes (`home`), the buildings (below) and named
-  spots (`spot`: `villager-a|b` the villagers' home spots; the old fixed `stage` spot is dropped as a layout is read,
-  model.ts `isLegacyStage`, since 2026-11-11: the stage is derived).
+  spots (`spot`: `villager-a|b` the villagers' home spots; an old fixed `stage` spot is dropped as a layout is read,
+  model.ts `isLegacyStage`: the stage is derived).
   Each: `id`, kind `k`, tile `x, z` (its footprint's lowest column and row), facing `f` 0–3 (0 toward the camera, −z;
   1 +x, 2 away, 3 −x), variant `s`. A footprint is `w × d` tiles, turned by `f` for the kinds that `turn`; for the
   others an odd `f` only mirrors the look. Every object's spot is a tile (no offsets).
@@ -95,7 +93,7 @@ latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (its pa
 | `v` | the guest's home's interior | A, B, G |
 
 - The server enforces it (`contract/layout.ts` `scopeMayWrite` in the record, `live-protocol.ts` `scopeMaySend` in the
-  room; `relay/test/guest.test.ts`): the outdoors and every home's room anyone's (2026-11-10); a home's look its owner's alone.
+  room; `relay/test/guest.test.ts`): the outdoors and every home's room anyone's; a home's look its owner's alone.
 - A room scope (`t`, `u`, `v`) is contract/tent.ts's op: its own ids, its own cap of 60 pieces.
 - The room relays a layout op live but never keeps it in the day's ring (an afternoon in the editor would push the
   shared world out); a phone opening later reads it from the record. A `drag` with `sc: 'o'` is an outdoor object
@@ -103,7 +101,7 @@ latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (its pa
 - **A burst** (the editor's save, a clash settled): my ops are merged and rebuilt once and go to the record as one
   burst (`week.sendMany`: one queue write, one recompute); the partner's, one socket message each, are merged as they
   come and rebuilt once, the tick after. The room relays 20 at once; the rest hear `busy` and the phone sends them
-  again a second on (`e2e/live-sync.spec.ts` burst: all 40 arrive live).
+  again a second on.
 - **Two edits on one tile:** last writer wins only per id, so two phones moving different pieces onto one tile at
   once would leave both there. When the partner's ops land, a piece of theirs that overlaps one of mine (validate.ts
   `overlap`) is settled: if my op is the later (`at`, then who: the same order on both phones), my piece moves to the
@@ -135,23 +133,19 @@ latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (its pa
   seed)`: Gulliver's beach, his mark when usable, else a free sand tile two in from the sea, by the date. The day's
   weeds and fossils keep off the stage; the wedding's arch and a birthday's cake stand by it (layoutWorld.ts ARCH,
   CAKE); the idle walks keep off it. Pure: every phone with the layout agrees.
-- **The visitors' spots** (catalog.ts group `visitor`, kinds `plaza` おきゃくさんの ばしょ, `beach-spot` ジョニーの
-  ばしょ and `guest-spot` ゲストの場所, one each, removable): a mark never drawn in play, standing on nothing (no overlap,
-  no block). Every visitor but Gulliver stands at centre stage, so one plaza places them all; Gulliver's is its own and
+- **The visitors' spots** (catalog.ts group `visitor`, kinds `plaza` お客さんの場所, `beach-spot` ジョニーの場所 and
+  `guest-spot` ゲストの場所, one each, removable): a mark never drawn in play, standing on nothing (no overlap, no
+  block). Every visitor but Gulliver stands at centre stage, so one plaza places them all; Gulliver's is its own and
   optional; the day's guest's (`guestSpot`; none: centre stage, `besideStage` while a visitor's on it) too.
   `markerSpot(layout, k)`: the latest put down, where they stand, or `at: null` when nobody can. `spotWhy(layout, k,
   c, r)`: why not, each reason with the tiles and things in the way (none: usable; `plazaOk`, `guestOk`, `beachOk`):
   - plaza: grass or a path, a clear 3 × 3 patch of its tier (the events' arch behind, cake in front), no door;
-  - guest (since 2026-11-11; was the plaza's): its own tile of dry land (grass, a path, sand), nothing on it, no
-    door, nothing in front or beside hiding them (hides.ts FIGURE_HIDES of its height, a tree's canopy), nothing within 60u
-    behind in its column (their head takes its tap). A flower or a fence beside it is fine;
-  - Gulliver (since 2026-11-11; was a tile round and three rows clear): lying across, his 81u body over three tiles,
-    so those three sand of one tier with nothing on them, nothing in front or beside hiding his ±40u (a palm's fronds),
-    nothing right behind his body (lying, 27u) nor his column once he stands up (60u). A palm diagonally behind his
-    feet, or three tiles across, is fine.
+  - guest: its own tile of dry land, nothing on it, no door, nothing in front or beside hiding them (hides.ts
+    FIGURE_HIDES), nothing within 60u behind in its column (their head takes its tap);
+  - Gulliver: lying across three sand tiles of one tier with nothing on them, nothing hiding his ±40u in front or
+    beside, nothing right behind his body nor his column once he stands up (60u).
   And reachable. Unusable: the derived spot, and validate.ts's `visitor-spot` warning naming the reasons
-  (「横に花があります」, 「砂浜ではありません」, 「入口の前です」, 「段差があります」, 「歩いて行けません」, 「木に隠れます」…)
-  with the blocking tiles and things. An ordinary `sc: 'o'` op.
+  (「木に隠れます」…) with the blocking tiles and things. An ordinary `sc: 'o'` op.
 - **Validation** (`layout/validate.ts` `validate(layout)` → issues, each `error` or `warn` with its tiles and ids): an
   object off the land or in water, one straddling a cliff, overlapping footprints, a tree off the grass (warn), stairs
   that join no cliff, a bridge over no water, a door or front that can't be reached, a missing or second goal tree, an
@@ -178,29 +172,24 @@ latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (its pa
   the neighbours' exactly, a vertical wall at a tier's edge (NH's cliff strata), a waterfall where water steps down a
   tier, stone steps for the stairs.
 - **The distance fields** (`layout/fields.ts`): each region's signed distance to its rounded edge (the land, the
-  beach's sand, the fresh water, the paths, each tier), which the heights, the bake, the shore wash and the fresh
-  water's edge read (~110 ms for the island on a desktop, ~300 on a phone). Built once per tiles and bridges, off the
-  main thread as the app starts and cached for the next launch (`fieldsPrime.ts`, `fieldsCache.ts`: their headers);
-  the mount waits for them.
+  sand, the fresh water, the paths, each tier), read by the heights, the bake and the water's edges. Built once per
+  tiles and bridges, off the main thread, cached for the next launch (`fieldsPrime.ts`, `fieldsCache.ts`).
 - **Soft edges** (NH's coast is round): the data and the objects stay on tiles, only the drawn edge is round: the
   coast, the beach, the fresh water and the paths on half a tile, a staircase of tiles cut to a straight diagonal; a
   cliff's corner on a third of a tile; a river runs out to the sea square. The editor's plan stays tile-exact; its 3D
   preview is the same ground.
-- **The river's turns** (`layout/river.ts`, its header has the rules): each river's main stem drawn as a **straight** for a run
-  of tiles one way and **one arc** through a staircase between two, of one breadth, the arcs kept on the river's own tiles and straight at a bridge; a delta keeps its
-  tiles. Walking, fishing and casts go by tiles. The editor marks it on the plan (`かわの せん`); `/editor?check` lists
-  the arcs (かわの カーブ).
+- **The river's turns** (`layout/river.ts`, its header has the rules): each main stem drawn as straights and one arc
+  through each staircase, on the river's own tiles; walking, fishing and casts go by tiles. The editor marks it on the
+  plan; `/editor?check` lists the arcs.
 - **The look is baked on the GPU** (`world3d/terrain.ts`): one shader paints each band from the fields and the tiles,
   NH's way, at load and again only for what a change touches; the season's palette (`ground.look`) rebakes it all.
 - **Bands:** a row of chunks (8 tile rows) is one band: 4 draws and one texture each, so the draws stay flat however
-  long the island grows; bands out of view are culled. At most 12 bands are baked (`BAND_BUDGET`, ~2 MB a target):
-  today's island (8) bakes all at once; past 12 (the longest has 20) a band coming into the camera's reach takes the
-  farthest one's target (`near()`), so the GPU's bakes stay ~24 MB however long. The editor's 3D preview bakes all. The island renders at the 30 fps cap ([perf](ops/perf.md)).
-- **The water:** NH's sea round the island (the shore foam, the shallows' turquoise ~70u out then a ~200u fade into
-  the deep blue, so a fish's shadow reads across the fishing range); NH's waves washing ashore (`layout/swash.ts`, design.md "The sea's
-  wash": one rhythm on the ground, the sea's shader and the CPU, so what washes in rides a wave); the rivers' flow
-  along their stems hurrying white into a fall, the ponds' ripples, the falls' streaks (terrain.ts `FRESH_FRAG`), all
-  on water.ts's shared clock, tint and fog.
+  long the island grows; bands out of view are culled. A budget of bands is baked (`BAND_BUDGET`), once a launch; past
+  it a band coming into the camera's reach takes the farthest one's target (`near()`). The editor's 3D preview bakes
+  all. The numbers (bands, MB, the 30 fps cap): [perf](ops/perf.md).
+- **The water:** NH's sea round the island (foam, the shallows' turquoise fading to the deep blue); NH's waves
+  washing ashore (`layout/swash.ts`, design.md "The sea's wash": one rhythm on the ground, the shader and the CPU); the
+  rivers' flow, the ponds' ripples, the falls' streaks (terrain.ts `FRESH_FRAG`), on water.ts's shared clock.
 - NH's textures: `npm run terrain-textures` (scripts/terrain-textures.ts) into `static/terrain/nh/*.webp`.
 
 ## The editor
@@ -212,16 +201,11 @@ to `/pair`). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the
 - **The plan:** the layout top-down, the back of the island at the top: tiles in NH's map colours (the higher a tier,
   the lighter), the cliffs' edges dark, a fall white, the objects by their icons, the homes labelled with their doors,
   the named spots as pins; what's wrong tinted on its tiles (a visitors' spot's warning: the tiles in the way too).
-  Where the visitors and the guest stand while no usable mark of theirs is down (`stageOf`, `besideStage`) a dashed
-  tile, 「お客さん（自動）」 / 「ゲスト（自動）」, recomputed with the checks.
-- **The mouse:** えらぶ (V) picks up a piece and drags it on the grid (shift adds to the selection, a drag on empty
-  ground draws a box); ぬる (B) paints a brush (くさ, すな, つち, いし, レンガ, いた, かわ, いけ, うみ; sizes 1–3); がけ (C)
-  raises or lowers a tier; おく places from the palette (the island's one-offs greyed while they stand), its ghost
-  green or red. The wheel or R turns what's held; Delete takes the selection away (never a goal tree, a home, a named
-  spot or a one-off).
-- **The keyboard:** ⌘Z / ⌘⇧Z (undo reverts one action over the island as it is now: the partner's changes stay),
-  ⌘C / ⌘V (paste at the pointer), ⌘A, the arrows nudge, G the grid, the wheel zooms (⌘-wheel while placing), space and
-  drag (or a right / middle drag) pans, 0 the whole island, 1–3 the brush.
+  Where the visitors and the guest stand while no usable mark of theirs is down (`stageOf`, `besideStage`), a dashed
+  tile, recomputed with the checks.
+- **The tools:** select and drag, the terrain brush, the cliff tier, place from the palette (the island's one-offs
+  greyed while they stand); Delete never takes a goal tree, a home, a named spot or a one-off. ⌘Z reverts one action
+  over the island as it is now (the partner's changes stay).
 - **Live:** each finished action goes out as layout ops at once (the record and the relay); a drag streams the
   piece's spot as presence (`drag`, `sc: 'o'`, ~10 a second). The checks (validate.ts) run a moment after every
   change; a click on one selects its pieces and centres its tiles.
@@ -230,10 +214,8 @@ to `/pair`). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the
   (`drawCheck.ts previewDay`), the homes, bridges, stairs and ponds (`world3d/built.ts` createBuilt) and K.K. on his
   stool (asleep 0–6; he follows the stool while it's held). Not drawn (not the layout's): the villagers, players and
   visitors, the day's finds, weeds and critters, the weather, the lamps' glow, the events' pieces.
-  `world3d/previewDraw.test.ts` fails for a catalog kind with no drawing. **Moved by hand only:** orbit, a drag turns,
-  the wheel or a pinch zooms, a right / shift / space drag or two fingers pan; phone, a drag on open ground pans, a
-  pinch or ctrl-wheel zooms, the wheel scrolls (a press on a piece is IslandEdit's). The pan keeps the pivot over the
-  land's box; ⌖ puts it back. The phone view's camera is the island's (`world3d/islandCam.ts`: the pitch by the zoom,
+  `world3d/previewDraw.test.ts` fails for a catalog kind with no drawing. Moved by hand only (orbit or the phone's
+  camera; the pan keeps the pivot over the land's box, ⌖ puts it back). The phone view's camera is the island's (`world3d/islandCam.ts`: the pitch by the zoom,
   the pivot below the middle, the haze, the band cull; `shadowBox.ts`), so a zoomed view is what the phone shows. It
   draws a frame only when something changed, at most 30 a second (`world3d/stage.ts`), never on a timer; the shadow
   map only when what casts or the shadow box moved.
@@ -242,54 +224,42 @@ to `/pair`). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the
   missing; a click selects it.
 - **Files:** JSON に かきだす / JSON を よみこむ (model.ts `toJson` / `fromJson`; an import is one action), 最初の島に戻す
   (the reset op; the homes' looks kept) behind `editor/ResetConfirm.svelte`: what goes, then リセットする only once
-  「リセット」 is typed (やめる the default; anyone, the guest too).
-- **The e2e:** `e2e/editor.spec.ts` (a move live on the other tab and across a reload; a stroke and its undo / redo;
-  R; Delete refusing a goal tree; placing refused on the river; the typed reset (A and G); the guest's door; しまの おおきさ live, blocked,
-  うごかす and its ⌘Z), `e2e/editor-preview.spec.ts` (a pond on the plan in the preview, K.K. following his stool, the
-  phone view's pan and ⌖, no frame while still).
+  「リセット」 is typed (anyone, the guest too).
 
 ## Homes
 
 - **The catalogue** (`layout/homes.ts`, `homes.json`; `npm run home-models` with NH_MODELS converts NH's House* parts
-  into `static/room/homes/`: 63 families, each part's GLB in its first colour with every other colour's albedo beside
-  it and a 48px swatch per colour, ~2.9 MB plus ~18 MB of KTX2 packs; NH's own picker icons for the doors and the
-  player house):
+  into `static/room/homes/`: 63 families, each part's GLB in its first colour with the other colours' albedos and a
+  swatch each; NH's own picker icons for the doors and the player house):
   - `campsite`: the campsite tent (ウェイ's by default);
   - `tent-n` (`w` 'A' | 'B'): NH's move-in tent; `tent-p`: the player's first tent;
-  - `house`: NH's modular house, `w` a wall (`PA04Stucco.B`, or a villager house's: NA ようふう, NB ログハウス, NC わふう,
-    ND こや), `r` the same shape's roof, `d` one of NH's 14 doors, each part in its colours (6–10). A roof of another
-    shape is mended to the wall's.
-  - Footprints (3u a model unit): the player house 5 × 3, a villager house 4 × 3 (ND 4 × 4), the move-in tent 3 × 3,
-    the player's tent and the campsite 4 × 3; the porch inside the front row.
+  - `house`: NH's modular house, `w` a wall (`PA04Stucco.B`, or a villager house's NA…ND), `r` the same shape's roof,
+    `d` one of NH's 14 doors, each part in its colours. Footprints at 3u a model unit (the player house 5 × 3); the
+    porch inside the front row.
 - **The defaults:** うめ's NH's player house (stucco, a western tile roof), the guest's a villager's log house (a
   thatched roof).
 - **Sizes** (`homes.ts exteriorOf`): NH's player house has levels; the app's rooms have three sizes (design.md "The tent"
   › Room size), so the player house's outside follows its room: the chosen look (PA04) for 増築した部屋 8 × 8, NH's first
   house (PA00: its one wall, its roof in the same colour letter of NH's eight) for 初めての家 6 × 6 and テント 4 × 4.
   The footprint, porch and door stay the style's (PA00 stands inside PA04's): nothing on the layout moves. The island
-  reads each room's size from the rooms' store (loaded after the first load), the editor's preview too. Not used: PA01
-  (NH's 8 × 8 main room alone: it would replace the chosen look the largest room wears), PA02–PA03 (NH's back and side
-  rooms: the app's homes have one room); PB04, PC04 and PD04 are NH's other final-house sidings and roofs (brick, log,
-  stone, Japanese… with their own shapes), looks rather than sizes, not in いえを かえる yet. A villager's house and the
-  tents have no levels.
+  reads each room's size from the rooms' store (loaded after the first load), the editor's preview too. A villager's
+  house and the tents have no levels.
 - **Drawing them** (`world3d/home.ts buildHome(style)`: the three parts at 3u a model unit, NH's soft Lambert, a
   lamp's own glow; `world3d/objects.ts homePlaces(layout)`: each home's origin, front wall's middle and yaw; the
   campsite's tent stays placeObjects' instance).
-- **いえを かえる** (`components/homes/HomePicker.svelte`): the owner's own, in their home's room and in the editor
-  (わたしの いえ). The kind, the shape, the wall's and roof's materials and colours, the door; the house turning in a
-  preview. A look that wouldn't fit where the home stands is refused there; これにする sends the `h` op. Only the owner
+- **家を変える** (`components/homes/HomePicker.svelte`): the owner's own, in their home's room and in the editor. The
+  kind, the shape, the wall's and roof's materials and colours, the door; the house turning in a preview. A look that wouldn't fit where the home stands is refused there; これにする sends the `h` op. Only the owner
   may (`scopeMayWrite`: `hA` A, `hB` B, `hG` G).
 - **Turning a home:** its facing (`f`) is part of its look, so only its owner turns it (the record and the room refuse
   anyone else's; an outdoor op never changes it). It turns about its door's tile, the footprint, the walk-up spot
   (`door-home-*`), the model's yaw and the way out of its room with it. A turn that would wall the door in or overlap
-  is refused: the editor's R / wheel (own home only), the phone view's ↻ (shown to the owner), いえを かえる's ↻ まわす.
+  is refused: the editor's R / wheel (own home only), the phone view's ↻ (shown to the owner), 家を変える's ↻.
 - **The rooms:** every home's inside is the tent's room system (`routes/tent/?home=B|G`, `TentRoom.svelte`'s `home`;
-  `store/tent.svelte.ts` `rooms.A` the tent's `t`, `rooms.B` うめ's `u`, `rooms.G` the guest's `v`), the same 8 × 8 room
-  whatever the outside. Anyone comes in, arranges it and switches its light (2026-11-10; design.md "Whose room").
+  `store/tent.svelte.ts` `rooms.A` the tent's `t`, `rooms.B` うめ's `u`, `rooms.G` the guest's `v`), each 4, 6 or 8 tiles
+  square as chosen (contract/tent.ts ROOM_SIZES; design.md "The tent" › Room size), whatever the outside.
+  Anyone comes in, arranges it and switches its light (design.md "Whose room").
   Presence says which home (`tent` and `drag` with `sc`; `store/where.svelte.ts`). Out of the door: in front of that
   home's door on the layout.
-- **The e2e** (`e2e/homes.spec.ts`): うめ arranges her room, the guest sees it but can't arrange it; うめ swaps her
-  house's look live; the guest swaps its own.
 
 ## The island's buildings
 
@@ -327,23 +297,21 @@ to `/pair`). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the
 `layout/garden.ts` (pure: the kinds, the joining, the crops' growth), `world3d/garden.ts` (their models, lazy), the
 editor's 野菜 and フェンス tabs and NH's garden flowers under 花.
 
-- **The kinds** (catalog.ts `GARDEN_KINDS`, NH's official names in kanji): all 30 of NH 2.0's fence items
-  (`fence-<id>`; not placeable: FenceIkegakiSnow, the hedge's winter look; FenceShareTexture, a texture;
-  FenceGardenPegRope, no item, its rope hung below its posts with no T or cross piece), six crops (`crop-<id>`: tomato,
-  wheat, sugarcane, potato, carrot, pumpkin, its colour the variant), the gold roses, the lily of the valley and the
-  vine (variant a | b | c). Ordinary `o` ops: the relay takes any kind token, no relay change.
+- **The kinds** (catalog.ts `GARDEN_KINDS`, NH's official names in kanji): NH 2.0's fence items (`fence-<id>`; the
+  three that aren't items left out), six crops (`crop-<id>`, the pumpkin's colour its variant), the gold roses, the
+  lily of the valley and the vine (a | b | c). Ordinary `o` ops: the relay takes any kind token.
 - **A fence** takes its whole tile (catalog `block`, no `foot`): nobody stands or walks on it (nav.ts blocks its four
-  cells), so the villagers' and players' ways go round a run (`e2e/garden.spec.ts`). A crop or a flower is walked over.
+  cells), so the villagers' and players' ways go round a run. A crop or a flower is walked over.
 - **Joining** (NH's way, `fenceJoin`): a fence joins the same kind on the tile east, north, west or south of it on the
-  same tier (never across a cliff, never another kind, never a diagonal). Its four neighbours pick one of NH's six
-  pieces and its quarter turns (`fencePiece`): none `a` (across, or along when its facing is odd), one `b` (an end, its
-  arm to the neighbour), two opposite `c`, two beside `d` (a corner), three `g` (a T), four `h`. NH's `e`, `f`, `i`
-  (capped corners, a lone piece with a stub) have no neighbourhood of their own on a four-neighbour grid. The plan draws
-  a fence as a post and a bar to each neighbour it joins. `layout/garden.test.ts` holds all 16 neighbourhoods.
+  same tier (never across a cliff or a diagonal); its four neighbours pick one of NH's pieces and its quarter turn
+  (`fencePiece`, its header; `layout/garden.test.ts` holds all 16 neighbourhoods).
 - **Crops grow by the date** (`cropStage`): the day planted (the piece's id is `o` + its time, model.ts newObjId) a
   sprout, a stage a day after, ripe on the third and fuller on the fourth and fifth (NH's 0, 1, 2, 3Lv1–3), the same on
-  every phone. No watering (NH's crops grow unwatered); a crop of the default's, or with no date, is grown. Each stands
-  on NH's soil mound.
+  every phone. These decor crops need no watering (NH's grow unwatered); one of the default's, or with no date, is
+  grown. Each stands on NH's soil mound. The fields' plants are another thing (below).
+- **Fields** (kind `field`, the 畑 tab under 野菜; `layout/field.ts`): a farm field, its owner and size its variant
+  (`a-10x4`), placed and resized in /editor only. Its plants live on the record, plot by plot (`fd:<id>.<col>.<row>`),
+  not in the layout; weeds, fossils and drops keep off it (`layout/clear.ts`). The rules: [farming.md](farming.md).
 - **The garden's flowers** are always in bloom where they're put: no season, no watering, no hybrid (the wild flowers'
   watering and hybrids, care.ts, stay theirs).
 - **The cedars' festive lights** (PltTreeCedarDeco, its lights lit at night, in the snow in winter): every cedar in the
@@ -352,7 +320,7 @@ editor's 野菜 and フェンス tabs and NH's garden flowers under 花.
   `bush` variants, their own models (assets.json `bushes/<id>`).
 - **Placing** (`editor/edits.ts placeRun`): with a fence or a crop held, a press puts one down and a drag puts one on
   each tile it crosses, four-connected (across, then along, so a run joins), skipping tiles taken; the run is one action
-  (⌘Z). The phone view's もようがえ has the same tabs, a piece at a time.
+  (⌘Z). The phone view's もようがえ has the same tabs (野菜, フェンス), a piece at a time.
 - **Loading**: their models are packs (scripts/world3d-assets.ts `GARDEN`, docs/world3d-assets.md) listed in
   `world3d/garden.json`, not assets.json: an island without a fence, a crop, a garden flower or lit cedars fetches none
   of it; with one, the manifest, then the packs it draws. The icons are one sheet for the editors
@@ -360,7 +328,7 @@ editor's 野菜 and フェンス tabs and NH's garden flowers under 花.
 
 ## The outdoor catalogue
 
-The rooms' pieces outdoors (the user, 2026-11-10: NH's catalogue but character customisation): every housewares and
+The rooms' pieces outdoors (NH's catalogue but character customisation): every housewares and
 miscellaneous piece NH lets one put outdoors (the ACNH spreadsheet's `outdoor`, 415) and the 36 gyroids, less the 57
 the editor already has as kinds of its own (by NH's model file, or its name): 394 pieces. Critter tanks stay indoors
 (the rooms' 生き物 gives each ずかん catch's; the editor isn't gated by the ずかん).
@@ -368,10 +336,8 @@ the editor already has as kinds of its own (by NH's model file, or its name): 39
 - **Data:** `npm run outdoor-catalog` (`scripts/outdoor-catalog.ts`) writes `layout/outdoor.json` from the room data
   (tent/items.json, more.json, the seats, NH's names in i18n/tent.*.json): each piece a kind `nh-<code>`, its tab by
   NH's tag. Rerun it after room-models; `layout/outdoor.test.ts` fails while the two differ.
-- **Tabs:** NH's lamps under 明かり, seats, tables, beds and baths under 家具, the ranch under キャンプ, dishes under
-  食べ物; new tabs 庭 (garden, plants, Japanese), 公園 (playground, sports, the plaza's rides and stalls, shop signs,
-  music), 街 (vehicles, works, screens and walls, the castle, arches), 海辺, オブジェ (landmarks, space, toys, Mario,
-  Sanrio), 行事 (the seasons' and Festivale's) and はにわ. Both editors; icons NH's own (static/room/icons) or the ずかん's.
+- **Tabs:** by NH's tag into the existing tabs (明かり, 家具, キャンプ, 食べ物) and its own: 庭, 公園, 街, 海辺, オブジェ,
+  行事, はにわ. Both editors; icons NH's own (static/room/icons) or the ずかん's.
 - **Same indoors and out:** a piece is drawn from its room model (loose, or cut from its room pack: one shared
   `tent/roomPacks.ts` store; `world3d/outdoorModels.ts`) at NH's furniture scale, turned by its facing; its footprint,
   top (layout/tops.ts), small flag, seat (nav.ts, villager3d/seats3d.ts) and light (things.ts lamps: its room emitter
@@ -380,8 +346,6 @@ the editor already has as kinds of its own (by NH's model file, or its name): 39
 - **Loading:** `layout/outdoor.ts` imports the table only when the layout has an `nh-` piece (the layout store
   rebuilds once it's in, so the walk, the checks and the scene see them) or an editor opens; till then the kinds are
   unknown and nothing of them is drawn. First load: the table and the models stay out of it.
-- **The e2e:** `e2e/editor-catalogue.spec.ts` (the phone もようがえ's はにわ tab, four pieces put down, on the island
-  at their room height, the streetlight lit at night).
 
 ## Table tops
 
@@ -398,26 +362,25 @@ piece's (tent/items.json `sy`, `st`: the same NH model, `tops.test.ts`).
   lamp's light and a tap node (island/Decor.svelte) are there too. A bench or a stool with things on it is no seat.
 - **Edited:** in both editors a small thing put down or dragged over a top goes on it (a tap on the table with one
   held, as in the rooms); moving or turning the table carries its things (`carryTops`: the same slots, turned);
-  the desktop editor's Delete takes them with it (⌘Z brings both), the phone's 🗑 refuses until they're off (the rooms'
-  「上のものを先に片付けてください」). The e2e: `e2e/editor-surfaces.spec.ts`.
+  the desktop editor's Delete takes them with it (⌘Z brings both), the phone's 片付ける refuses until they're off (as
+  in the rooms).
 
 ## Phone editing
 
 `components/layoutEdit/IslandEdit.svelte`: the island's もようがえ in the editor's phone view (the tent's もようがえ
-stays the room's), the tent's way (TentEdit's tray, bar and buttons). The tray's tabs (き, かんぼく, はな, 野菜, フェンス, いわ, あかり,
-かぐ, キャンプ, 食べ物, ジム (design.md "Decorating"), はし・さか, たてもの, おきゃくさん: the visitors' marks drawn over the ground only in
-this mode, red when nobody can stand there with the reason in the bar) over every placeable kind; a tap on one puts
-it down as a ghost on the free tile nearest the view's middle, its footprint green or red, the bar saying why; a finger
-on it, or on any placed thing, drags it a tile at a time; a tap on the ground moves it there; ↻ まわす, ✕ やめる, ✓ ここに
-おく, 🗑 しまう (never for a goal tree, a home, a one-off). While held the other phones see it move (`drag`, `sc: 'o'`);
-a drop is its ops at once. Anyone's, the guest's too. Terraforming (paths, water, cliffs) is the desktop editor's
+stays the room's), the tent's way (TentEdit's tray, bar and buttons). The tray's tabs are IslandEdit's TABS, the
+catalogue's groups in kanji (`decor.tab.*`: 木, 花, 野菜, 家具, ジム (design.md "Decorating"), the outdoor catalogue's,
+建物, お客さん: the visitors' marks, drawn over the ground only in this mode, red when nobody can stand there with the
+reason in the bar). A tap on a kind puts it down as a ghost on the free tile nearest the view's middle, its footprint
+green or red, the bar saying why; a finger on it, or on any placed thing, drags it a tile at a time; a tap on the
+ground moves it there; ↻ turns it, ✕ puts it back, ✓ places it, 片付ける takes it away (never a goal tree, a home, a
+one-off). While held the other phones see it move (`drag`, `sc: 'o'`); a drop is its ops at once. Anyone's, the guest's too. Terraforming (paths, water, cliffs) is the desktop editor's
 alone.
 
 It runs over any stage: `{ host, toScreen(x, z, lift), toGround(sx, sy), size(), moved(fn), hide(ids) }` (`moved`: told
 of each camera move, no probe each display frame). The editor's phone view
 gives it one (`/editor/?view=phone&edit`: the 3D island's camera and bend, `&cam=<z>` its spot; `&preview=0` a flat
-plan, the e2e's; `?view=orbit` the 3D preview, `&eye=x,y,z&at=x,y,z` its camera). The e2e: `e2e/island-edit.spec.ts`,
-`e2e/decor.spec.ts`, `e2e/island3d-layout.spec.ts`, `e2e/gym.spec.ts`, `e2e/visitor-spot.spec.ts`.
+plan, the e2e's; `?view=orbit` the 3D preview, `&eye=x,y,z&at=x,y,z` its camera).
 
 ## How the 3D island reads it
 
@@ -440,4 +403,3 @@ plan, the e2e's; `?view=orbit` the 3D preview, `&eye=x,y,z&at=x,y,z` its camera)
 - **The walk:** layout/nav.ts's (`nav.ts walkNav()`: the layout's grid with the island's named spots) for a tap;
   walkGraph.ts's geo for the idle walks and the visitors.
 - **The decorations:** Decor.svelte draws the layout's decoration objects as tap areas only (placeObjects draws them).
-- The e2e: `e2e/layout-island.spec.ts`; unit: `island/layoutWorld.test.ts`.

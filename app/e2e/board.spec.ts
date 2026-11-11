@@ -1,7 +1,12 @@
 // The island's bulletin board (docs/board.md): a tap walks my villager up to it and opens it (the camera dollies to
 // its face); a note written there is on the board, on every phone at once (the demo's tabs share
 // the record's rows through localStorage, as phones share the record), with a 「！」 over the board for the others; an
-// author edits their own, and anyone (the guest too) takes down anyone's.
+// author edits their own, and anyone (the guest too) takes down anyone's. Also: a member's and the guest's removals, a
+// note after a reload and from the record's snapshot, 「もどる」 under the HUD and the face under both. The face is a
+// canvas: read through `window.__board.drawn()` (its texts) and `__board.face3()` (the 3D face's box: on the cork, in
+// front of NH's notes). The keyboard: e2e/keyboard.ts stubs `visualViewport` as iOS changes it (336 px: an iPhone 15's
+// keyboard and its bar) and checks the field and its controls lie in the visible part, the face above them;
+// `SHOTS=<dir>` writes `board-keyboard.png`.
 import { expect, test, type BrowserContext, type Page, PINNED_DATE } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { RELAY } from './relay.ts';

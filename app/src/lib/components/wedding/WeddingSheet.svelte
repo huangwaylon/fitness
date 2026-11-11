@@ -1,7 +1,7 @@
 <script lang="ts">
-  // けっこんしき (docs/wedding.md): the wedding board's sheet, its own chunk with its strings, full height (Sheet's
+  // 結婚式 (docs/wedding.md): the wedding board's sheet, its own chunk with its strings, full height (Sheet's
   // `full`, the unified kit: docs/design.md), over the board's store (board.svelte.ts), following the time of day. One
-  // title bar (NavBar: けっこんしき, ✕), one scroller, the bottom tab bar (プラン / メモ / 設定, 設定 a member's only). プラン: the banner (Head),
+  // title bar (NavBar: 結婚式, ✕), one scroller, the bottom tab bar (プラン / メモ / 設定, 設定 a member's only). プラン: the banner (Head),
   // the filters and the months (Plan); a row opens in place, its 編集 and the ＋ over the tab bar open the form
   // (TaskForm, a form sheet). メモ: the letter (Notes, its 編集 inside it); writing it, the title bar says so and the format
   // tools (with キャンセル and 保存) take the tab bar's place. 設定: the names, the day, the categories, the deleted (Settings). The

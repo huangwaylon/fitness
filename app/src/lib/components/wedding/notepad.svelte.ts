@@ -1,4 +1,4 @@
-// けっこんしき's メモ being written, held by the sheet's chunk rather than the note's view (Notes.svelte): the draft
+// 結婚式's メモ being written, held by the sheet's chunk rather than the note's view (Notes.svelte): the draft
 // outlives a level change, a tab and the sheet closing (✕ keeps it on this phone; the next opening is back in the
 // editor), and a pick between crossed versions waits out its とりけす banner before it's saved.
 //   pad.editing / draft          the editor and its text

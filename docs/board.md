@@ -29,14 +29,9 @@ optional: without `focus` the board opens as a sheet over the island.
 - `attach(id, obj)`: a three.js object on a model instance (things.ts), in that model's units with its origin, placed,
   turned, scaled and bent with it, lit as the things are; null takes it off. The face and the bird ride on the board.
 
-The board's model (`deco/bulletin-board`, `static/room/world3d/deco/bulletin-board.glb`, centred on its origin) has
-its **cork face** at model x −6.85…6.80, y 3.49…13.52, z +0.30 (facing +z, toward the camera at yaw 0; NH's own pinned
-notes stand off it to z +1.02, the frame's front at z +1.10 … +1.24). The face is a plane over it at z +1.08
-(`board/face3d.ts` `faceMesh(canvas)`: a `PlaneGeometry(13.6, 10)` translated to (0, 8.5, 1.08) **in its geometry**,
-since `attach` sets the object's matrix to the instance's), with the face's CanvasTexture. The board is drawn at 3.5 u
-a model unit (`BOARD_S`); its focus rect is the face (`y` 29.75 u, 47.6 × 35 u), `yaw` from the layout's `f`, `fill`
-0.92. Its instance id is `board` (the bird's `board-bird`, an ordinary node on its top turning its yaw every few
-seconds while the island is seen); the board follows `world.rest.three` (`world.three` isn't reactive).
+The face (`board/face3d.ts`: its header has the model's cork coordinates and the focus rect) is a plane over the
+model's cork with the face's CanvasTexture. Its instance id is `board` (the bird's `board-bird`, turning its yaw every
+few seconds while the island is seen); the board follows `world.rest.three` (`world.three` isn't reactive).
 
 ## Behaviour
 
@@ -45,8 +40,8 @@ seconds while the island is seen); the board follows `world.rest.three` (`world.
 - **Walk up:** a tap on the board walks my villager to the spot in front of it (the tent door's way: the deliberate
   exception to "interactables act in place"), then the board opens.
 - **The board view:** in 3D the camera dollies and zooms to the face (≈600 ms); the back control (「もどる」, top left
-  under the HUD: `--hud-top` + 44 + the lip + 10 px, never over it) returns it to exactly where it was. Without `focus`: a sheet over the island showing the same face (the very canvas
-  the 3D texture is drawn from) with the same controls.
+  under the HUD: `--hud-top` + 44 + the lip + 10 px, never over it) returns it to exactly where it was. Without `focus`:
+  a sheet over the island showing the same face (the very canvas the 3D texture is drawn from) with the same controls.
 - **Posts:** the newest first, four to a page as NH's notes (the author's villager name and icon, the date), 「‹」「›」
   and a swipe on the board page through older ones.
 - **Writing:** 「かきこむ」 opens a field over the board (the board stays visible above the keyboard). At most
@@ -55,13 +50,9 @@ seconds while the island is seen); the board follows `world.rest.three` (`world.
   place), so the field and the note as it'll be are both in sight. While writing 「もどる」 steps aside (やめる and Esc
   go back) and the face takes its room, from the safe area's foot down to the field.
 - **The keyboard (iOS):** the view is the visible part of the screen, not the layout viewport
-  (`ui/keyboardInset.svelte.ts`: the view's `top` and `height` from `visualViewport`), the controls in flow at its foot:
-  just above the keyboard and its suggestions bar, the home indicator's safe area dropped while it's up. The sheet's
-  frame is as big as fits between (a size container); on the 3D island `focus`'s `top` and `bottom` are measured from
-  the canvas's rect to the edge's and the controls' rects, so iOS scrolling the page to the field (it does, even under
-  `overflow: hidden`) moves nothing out of sight. Fields are ≥ 16 px (no zoom on focus); `focus({ preventScroll })`.
-  Why: iOS never resizes the layout viewport for the keyboard, and `innerHeight` follows the visual viewport, so
-  `innerHeight − vv.height − vv.offsetTop` reads 0.
+  (`ui/keyboardInset.svelte.ts`, its header: why), the controls in flow at its foot just above the keyboard. On the 3D
+  island `focus`'s `top` and `bottom` are measured from the canvas's rect to the controls', so iOS scrolling the page to
+  the field moves nothing out of sight. Fields are ≥ 16 px (no zoom on focus); `focus({ preventScroll })`.
 - **Editing:** an author edits their own; anyone deletes anyone's, the guest as ウェイ and うめ.
 - **Notices:** a post by someone else since I last opened the board puts a 「！」 over it, cleared when I open it.
 
@@ -82,13 +73,4 @@ seconds while the island is seen); the board follows `world.rest.three` (`world.
   (the room's 256-byte messages are too small for a post's text, so there is no live intent of its own).
 - The dump carries the `board` rows like every event.
 
-## Checked (`app/e2e/board.spec.ts`)
-
-- The walk up, the note written on it, a second phone seeing it at once, the author's edit and removal and a member's,
-  the guest's removal of a member's, a note after a reload and from the record's snapshot, 「もどる」 under the HUD and the face under
-  both. The face's notes are a canvas: the specs read what it drew through `window.__board.drawn()` (the page's texts)
-  and `__board.face3()` (the 3D face's box in the scene: on the cork, in front of NH's notes).
-- The keyboard: `e2e/keyboard.ts` stubs `visualViewport` as iOS changes it (336 px: an iPhone 15's keyboard and its
-  suggestions bar; `innerHeight` shrinks with it, the layout viewport stays) and draws a grey box where it would be.
-  Writing with it up: the field and its controls lie in the visible part, the face (the typed note drawn on it) above
-  them; the keyboard gone, the controls at the screen's foot again. `SHOTS=<dir>` writes `board-keyboard.png`.
+Checked by `app/e2e/board.spec.ts` (its header lists what).

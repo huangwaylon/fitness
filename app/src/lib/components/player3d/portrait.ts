@@ -1,4 +1,4 @@
-// A player's head as a still (the 2D heads' portraits, the closet's tiles: design/avatar/customization.md §5), drawn
+// A player's head as a still (the 2D heads' portraits, the closet's tiles: docs/players.md "Portraits"), drawn
 // by a renderer the page already has (the island's, the preview's) into a render target: never a second WebGL
 // context. The player is borrowed for the shot (its group's parent, place and pose put back after).
 import {

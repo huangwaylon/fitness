@@ -1,5 +1,5 @@
 <script lang="ts">
-  // けっこんしき's プラン (docs/wedding.md "Plan"): one row of filter chips with their counts (over the whole board),
+  // 結婚式's プラン (docs/wedding.md "Plan"): one row of filter chips with their counts (over the whole board),
   // then 期限切れ (coral), the months before this one, 今月 (leaf), one heading per later month (the year only where it
   // changes), 日付なし last; each heading (.sec-label.head) pinned under the chips while its rows scroll, with its
   // tally, its rows in one dense card. Finished tasks are hidden under すべて (a device pref); one ticked since stays

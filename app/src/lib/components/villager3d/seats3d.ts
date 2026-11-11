@@ -13,7 +13,11 @@ type Use = 'press' | 'pedal' | 'run' | 'punch' | 'bounce' | 'pullup';
  *  hips: the bike's saddle, the ball) or lies (the bench). */
 const standsOn = (u: Use): boolean => u === 'run' || u === 'punch' || u === 'pullup';
 
-/** A seat's or a bed's shape in its model's frame (model units, +z its front): scripts/room-surfaces.ts seatOf, bedOf;
+/** A seat's or a bed's shape in its model's frame (model units, +z its front, its middle at 0; seats3d.json
+ *  `tent[code]` / `island[model]`, docs/world3d-assets.md "Seats and beds"): a seat `s` its top `y`, each seat's middle
+ *  across `x` (a sofa's two), its back and front edges `z0`/`z1`, the back's height over it (0 a stool); a bed `l` the
+ *  mattress's top, its long axis `a`, the pillow's end `head` (−1/+1 along it), the mattress's extent `s`, each
+ *  sleeper's line across `c`, the pillow's rise `py`; `sway: 1` rocks (a hammock). scripts/room-surfaces.ts seatOf, bedOf;
  *  `use`: a gym piece's (seat-anchors.ts OVERRIDES). A gym piece used in place (`u`, by hand: scripts/seat-anchors.ts
  *  USE) is a point, its feet's (standing) or its hips' (seated) at (x, y, z), facing `yaw` (radians, its turn from the
  *  piece's front; −π/2 toward −x), got onto from (fx, fz) on the ground. */

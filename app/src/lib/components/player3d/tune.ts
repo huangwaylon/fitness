@@ -1,4 +1,4 @@
-// What an NH human player does its own way over a villager (design/avatar/anim/rig.md: the animator's study, ported):
+// What an NH human player does its own way over a villager (docs/players.md "Assets"; the animator's rig study, ported):
 // the villagers' poses (villager3d/poses.ts) drive it unchanged through villager3d's Kind, with these on top.
 //   - The hands: a player's hand mesh is skinned to Wrist_*, not Hand_* (NH's item socket): a pose's Hand_* turns
 //     Wrist_* (the tool, on Hand_R, follows).
@@ -30,7 +30,7 @@ const HAIR_K = 0.6;
 /** Lying on its back: the head (x) and neck (x) tucked; face down: lifted; and turned onto its cheek (y). */
 const LIE_TUCK = [0.45, 0.2] as const, PRONE_LIFT = [-0.45, -0.25] as const, PRONE_TURN = 1.15;
 
-/** NH's villager cells (faces.ts) → the player's frames (design/avatar/tech-notes.md, anim/rig.md "Face").
+/** NH's villager cells (faces.ts) → the player's frames (read off PlayerEye22 and PlayerMouth01; every PlayerEyeNN / PlayerMouthNN holds the same expressions per frame).
  *    eyes:   0 open · 1 drowsy · 2 shut (asleep, the blink) · 3 cross · 4 worried · 5 happy ^ ^ · 6 shocked · 7 > <
  *            8 open, pupils small · 9 flat · 10 open, pupils big · 11 side glance · 12 wide · 13 squint · 14 glossy · 15 tired
  *    mouths: 0 closed smile · 1 open smile · 2 big grin · 3 frown · 4 upset · 5 open "ah" · 6 flat · 7 small "o" · 8 open "o" */

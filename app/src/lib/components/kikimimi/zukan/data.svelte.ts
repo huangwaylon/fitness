@@ -1,4 +1,4 @@
-// ききみみ's ずかん on this phone (docs/kikimimi.md "ずかん"): what its four sections read, loaded once as it opens: the
+// ききみみ's ずかん on this phone (docs/kikimimi.md "図鑑"): what its four sections read, loaded once as it opens: the
 // units' chunks (their key phrases and items), the bedtime chapters' (their phrases and segment clips) and the levels of
 // the items I've answered (their voices and speakers: zukan.ts heardOf), each bumping `ready` as it lands; a sample
 // clip played through the game's voice (packs.ts voiceClip → playVoice; one at a time); and what ずかん last showed

@@ -8,8 +8,6 @@ manifest itself; this doc keeps the pipeline, the rules and a summary.
 
 The source is NH's 2.0.0 export (archive.org `acnh-2.0.0-models`, `ACNH_2.0.0_Exported_Model_DAE+PNG.7z`, md5
 4c42817a…: 57,822 `<Model>.Nin_NX_NVN` folders of .dae and PNG), extracted to `~/Downloads/acnh-2.0.0-models/Model`.
-It holds the old `~/Downloads/Model` set but for 15 layout icons; a run on both can take a folder of symlinks, the new
-first. It brought the 2.0 villagers, Brewster, Kapp'n and Wilbur, and 376 tent pieces; nothing the island lacked.
 
 - Every converter looks a folder up by its exact name (`scripts/nh-folders.ts`): a name that matches only in another
   case (the sheet's `FtrPressbench` for the export's `FtrPressBench`) fails the run, since a case-sensitive disk has
@@ -18,8 +16,8 @@ first. It brought the 2.0 villagers, Brewster, Kapp'n and Wilbur, and 376 tent p
   anchor). `scripts/world3d-models.ts` converts them: NH's materials baked into one WebP each (≤ 128 px for small
   things, 256 for furniture, 512 for the tent and the countdown board), merged per material, quantised and
   meshopt-compressed by gltfpack, triangles capped per kind (critters 2,500, visitors 4,000).
-  `NH_MODELS=~/Downloads/acnh-2.0.0-models/Model npm run world3d-models [-- --only=critters/,finds/]`. The raw model files never enter
-  the repo; the converted GLBs are public.
+  `NH_MODELS=~/Downloads/acnh-2.0.0-models/Model npm run world3d-models [-- --only=critters/,finds/]`. The raw model
+  files never enter the repo; the converted GLBs ship on the site.
 - Output: `app/static/room/world3d/<kind>/<id>.glb` (under `/room/`: the service worker caches a file on first use,
   never at install). The first 45 models stay in `models.json` and serve their keys from there.
 - **Then `npm run world3d-ktx2`** (`scripts/world3d-ktx2.ts`, its header: the packs, the loose textures, the
@@ -61,19 +59,16 @@ first. It brought the 2.0 villagers, Brewster, Kapp'n and Wilbur, and 376 tent p
   colours, unlit, ~2 KB each (`scripts/world3d-fx.ts`, the `fx/*` keys; flat ones face +z for the runtime to turn);
   the sparkle is `effects.ts`' star in code; the heart and the ♪ are NH's item icons. Rain and snow have no assets:
   they're drawn in their shaders (`world3d/precip.ts`, design.md "Weather").
-- **Parts split out** (`split` in the map: `scripts/world3d-page.js` splitOff): NH's weight bench (FtrPressBench) is
-  one skinned mesh with its barbell baked in; the converter lifts the bar's connected pieces into a node of their own,
-  `bar` (gltfpack `-kn -ke` keeps the node and extras; assets.json's `part` says where it rests). At runtime
-  (`world3d/things.ts` lift/rest, `world3d/benchBar.ts`) the bar is drawn on the rack with the bench's instances;
-  pressed, that instance's bar is emptied and the gym's standalone barbell (`decor/barbell`) drawn at the presser's
-  hands instead.
+- **Parts split out** (`split` in the map: `scripts/world3d-page.js` splitOff): the weight bench's baked-in barbell is
+  lifted into a node of its own, `bar` (assets.json's `part`), so a press can draw the standalone barbell in the hands
+  (`world3d/benchBar.ts`).
 - **Packs** (`PACKS` in the map: the camp goods, the food, the gym's newer pieces): one GLB a tab
   (`static/room/world3d/decor/{camp,food,gym2}.glb`, one KTX2 pack each; the camp tab's second, `camp2.glb`: a pack
   stays under 400 KB), each member a node named its id
-  (world3d-page.js convertPack, gltfpack `-kn`), a model `decor/<id>` in assets.json with `pack` its file, its one key `decor/<id>-0` made at
-  load (assets.ts packKey: none written, the island turns it by its facing); things.ts reads the node out (`member`).
-  island/decor.ts knows them by catalog.ts `packed`, never assets.json (that would pull it into the first load). Eight files for 52 models, not three an item. A member's seat is found on the tent's
-  model of the same NH piece (seat-anchors.ts ISLAND `room`).
+  (world3d-page.js convertPack, gltfpack `-kn`), a model `decor/<id>` in assets.json with `pack` its file, its key
+  made at load (assets.ts packKey); things.ts reads the node out (`member`). island/decor.ts knows them by catalog.ts
+  `packed`, never assets.json (that would pull it into the first load). A member's seat is found on the tent's model
+  of the same NH piece (seat-anchors.ts ISLAND `room`).
 - **The garden** (`GARDEN` in the map; docs/island-layout.md "Fences and the garden"): packs under
   `static/room/world3d/garden/` (the fences five kinds a file, each kind's six pieces; the crops' stages and soil; the
   garden's flowers and vines; the cedar's lights), their models in `world3d/garden.json` (`writeGarden`), not
@@ -132,7 +127,7 @@ wallpaper and floor past the starter set and the ずかん's pieces is packed in
 ceiling, rug, gyroid, critter; a group's series together), the wallpapers' and floors' pictures and glows, and the
 icons of the tabs browsed a tab at a time (rugs, critters, wallpapers, floors; ≤ 160 KB). A file's place `[pack,
 offset, bytes]` is in `tent/more.json` (`pk`, `tex`, `icons`); the phone cuts it from its pack, fetched whole and once
-(`items.ts` roomPacks: Pages ignores a Range), the service worker keeping it. 694 packs, 37 MB, for ~2,800 files (a shop's day: 2.6-4.2 MB of packs at 320 KB, 0.5-0.9 MB at 64 KB). The
+(`items.ts` roomPacks: Pages ignores a Range), the service worker keeping it: ~690 packs, ~37 MB. The
 shop's pieces keep loose icons (a day's stock is any 24 of them: their packs would cost more than the icons).
 `tent/more.json` and `tent/seats-more.json` load with the room's chunk only (items.json, the starter set's and the
 ずかん's, with the presents too).
@@ -154,16 +149,8 @@ world.ts SEATS's names) pass their anchors.
 A lid (`tent/lid.ts` LIDS, the cold sleep pod's): cut out of the body's mesh at load and turned about its hinge (its
 header: NH ships no clip, bone or shut variant). No re-export.
 
-**The pose data** (`seats3d.json` `tent[code]` / `island[model]`, model units, the model's own frame: +z its front, its
-middle at 0; a new piece, like a hammock or a sleeping bag, adds one entry and needs nothing else):
-
-- a seat `{k:'s', y, x:[…], z0, z1, back}`: the seat's top, each seat's middle across (a sofa's or a bench's two), the
-  seat's back and front edges, the back's height over it (0 a stool);
-- a bed `{k:'l', y, a, head, s:[s0, s1], c:[…], py}`: the mattress's top (a bunk bed's lowest, `LOW`), the long axis
-  (`'x'`/`'z'`: the footprint's longer side; NH's 2 × 2 beds lie along x, the headboard at a side), the pillow's end
-  (−1/+1 along it: NH's −x, by eye where the rays can't tell), the mattress's extent along it, each sleeper's line
-  across (a double bed's two), the pillow's rise; `sway: 1` rocks (a hammock);
-- a gym point `{k:'u', use, x, y, z, yaw, fx, fz}` (by hand: USE).
+**The pose data** (`seats3d.json` `tent[code]` / `island[model]`, model units, the model's own frame): its schema is
+seats3d.ts's header (`Shape`); a new piece adds one entry and needs nothing else.
 
 The room turns and scales it with its piece (grid.ts `toRoom`, as for the lamps' emitters); one gets on from the
 nearest free side (`tent/seats.ts`: a bed's own side, the other, its foot; a seat's front, then its sides). A piece
@@ -180,42 +167,24 @@ items.test checks each inside its emissive part (or its model) at every facing.
 
 ## Fishing
 
-`world3d/fishing3d.ts`: Critters.svelte says each step of my line (cast, wait, bite, reel) and where its float is; my
-3D villager holds NH's rod while the line is out (`VSpec.tool`), swings it out on the cast, is tugged at the bite and
-reels in. Each part's header has its numbers:
-
-- **Facing** (`world3d/facing.ts`, the same on every phone): standing, it turns to the float and keeps facing it, the
-  rod pointed at it; seated or lying it doesn't turn. The rod is a child of the hand bone, bent with the island
-  (`e2e/fishing3d.spec.ts`: its tip against the feet the same at every zoom).
-- **The float** (fishing3d.ts `floatLift`): a bob and a soft ring while it waits, a dip and a small ring at each
-  nibble, at the bite a hop, a plunge, a splash and a big ring (emitters on the water's surface).
-- **The 「！」** (`world3d/biteMark.ts`, on every phone): NH's mark over the head as posed this frame, upright and square
-  on at every pitch, NH's size in the world held to a readable size on screen, never under anything.
-  `__world3d.bite(slot)` / `pinBite(slot)` (dev and ?demo; `e2e/bite-mark.spec.ts`).
-- **The line** (`world3d/fishLine.ts`, pure and unit-tested): one quadratic from the tip to the float, sagging by its
-  length, lifted only where it must to clear the ground, the water and what blocks; worked out when its ends move, not
-  each frame (`__world3d.line()`; `e2e/fishing-taps.spec.ts`).
-- Frames run at the full rate (30 fps, not the rest's 12) while the float is out (`moveStart`). `window.__fx3` (dev and
-  ?demo): each source's live parts and the spawns' log.
+Runtime behaviour, not assets: `world3d/fishing3d.ts`'s header (the line's steps, the rod, the float), with
+`world3d/facing.ts`, `biteMark.ts` and `fishLine.ts`; the rule is design.md "Fishing".
 
 ## Villagers and visitors
 
 Their skinned models are converted apart (`scripts/villagers3d-models.ts`, `scripts/villagers3d-page.js`) into
-`app/static/room/villagers3d/<id>.glb` (442 files, ≤ 100 KB each), posed in code: the villagers, the roster's special
-characters (K.K., Daisy Mae, Wisp, Gulliver, Celeste, Kicks, Label, Saharah, Leif, Redd, C.J., Flick, Brewster, Kapp'n,
-Wilbur) and, by
-`VISITOR_ONLY` (not in the picker), Franklin, Jack, Jingle, Zipper, Reese and Cyrus, the shop's twins (`timmy`: NH's
-NpcSpRcm in his shop apron, one model for Timmy and Tommy) and the guests (island/visitorRoles.ts: Gracie, Wardell,
-Katrina, Wendell, Gullivarrr, Pete, Leilani, Lottie, Chip, Nat, Rover, Shrunk, Tortimer, Phineas, Pavé; 64-99 KB each,
-loaded only on their day); one whose clothes aren't part of its body names its top's mesh and texture there. A material's textures are the ones its Collada effect samples, not the ones named after it (`mCapVis`
-and `mGlassCap` sample `mBody_Alb` and `mGlass_Alb`); the converter fails a villager whose GLB has a material without
-a base colour where the source has one. Each villager wears its default top's texture (a single-look top, as the Sanrio tees, is the data's row itself, not a variation: `villager3d.test` holds every material to its texture). Tulin, Mineru, Cece and Viché aren't in
-the 2.0.0 export: their cards stay.
+`app/static/room/villagers3d/<id>.glb` (458 files, ≤ 100 KB each), posed in code: the villagers, the roster's special
+characters, by `VISITOR_ONLY` (not in the picker) the visitors and the shop's twins (`timmy`: one model for Timmy and
+Tommy), and the guests (island/visitorRoles.ts), loaded only on their day. One whose clothes aren't part of its body
+names its top's mesh and texture there. A material's textures are the ones its Collada effect samples, not the ones
+named after it; the converter fails a villager whose GLB has a material without a base colour where the source has
+one. Each wears its default top's texture (`villager3d.test` holds every material to it). Tulin, Mineru, Cece and
+Viché aren't in the 2.0.0 export: their cards stay.
 
 ## Players
 
 The human players' parts (`scripts/players3d-models.ts`; the runtime: [design.md "Players"](design.md#players)) ship in
-44 packs, not ~5,200 loose files: `app/static/room/player/<home>.<hash>.pak` (~23 MB: `player3d/packing.ts`,
+44 packs, not ~5,200 loose files: `app/static/room/player/<home>.<hash>.pak` (~22 MB: `player3d/packing.ts`,
 `scripts/player-packs.ts`, `npm run player:packs`), beside the whole part table (`parts.json`).
 A pack is `ktx2Pack.ts`'s container (its files' paths in its head). Each file's place, `at` (a KTX2's, `k`: `[pack,
 offset, bytes]`), is in both part tables.
@@ -263,9 +232,9 @@ Written by `npm run world3d-models` from assets.json (the per-key rows are in th
 | keys | status |
 | --- | --- |
 | villagers/* | not here: the villagers and the visitors are skinned models of their own (scripts/villagers3d-models.ts); a villager with none is its card |
-| trees/*-canopy, trees/*-trunk | 2D only: the 2D oak’s two layers; the 3D tree is one model |
+| trees/*-canopy, trees/*-trunk | the tap layer’s: an oak’s two DOM tap boxes (Scenery.svelte) are cut to them; the 3D tree is one model |
 | reactions/* | billboard: the villagers’ emotes |
-| fx/* (sparkle, bang, dust, splash, ripple) | not NH’s: NH’s files have no effect models (no Eff*/Emo*), so these are stylised meshes in the 2D’s colours (scripts/world3d-fx.ts) |
+| fx/* (sparkle, bang, dust, splash, ripple) | not NH’s: NH’s files have no effect models (no Eff*/Emo*), so these are stylised meshes in the art’s colours (scripts/world3d-fx.ts) |
 | deco/airport | not on the island: the pairing page’s map icon |
 | host/*, items/snack, items/dinner, money/* | not on the island: the panels’ and the HUD’s art |
 | finds/items/*, finds/recipes/* | not on the island: the balloon catalogue’s icons, on the catch plate |

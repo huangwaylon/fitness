@@ -66,7 +66,7 @@ describe('the player parts (scripts/players3d-models.ts)', () => {
     // (the bundle's table is the first closet's: every id it lists is known; the whole table's are all known too)
     for (const id of [...Object.keys(T.hair), ...Object.keys(T.face), ...Object.keys(T.items)]) expect(IDS, id).toContain(id);
   });
-  it('keeps a look within the budget (customization.md §5: the body once, ~60 KB an outfit)', () => {
+  it('keeps a look within the budget (docs/players.md "Assets": the body once, ~60 KB an outfit)', () => {
     const kb = (f: string) => FILES.get(f)!.length / 1024;
     expect(kb('body.glb')).toBeLessThan(70);
     for (const look of Object.values(DEFAULT_LOOKS)) {

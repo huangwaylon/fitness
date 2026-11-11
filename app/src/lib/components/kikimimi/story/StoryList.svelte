@@ -1,5 +1,5 @@
 <script lang="ts">
-  // おやすみ ものがたり's chapters (docs/kikimimi.md "あそぶ"'s ねる まえに): each serial with its host and its chapters in
+  // おやすみ ものがたり's chapters (docs/kikimimi.md "遊ぶ"'s ねる まえに): each serial with its host and its chapters in
   // order: a finished one ✓, the one to listen to next green-edged with きく (つづきから when it was left part-way), a
   // later one locked until the one before is finished (kikimimi/bedtime.ts unlocked). A row plays its chapter at once
   // (StoryFrame). No score anywhere. Its own chunk.

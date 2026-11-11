@@ -72,7 +72,7 @@ once): USGS 1.6–3.1 MB (Talapus 1.6, Pilchuck 1.9, Valhalla 2.0, Lake 22 2.2, 
   chart (press shows the readout and the map's dot, drag moves them, let go and they stay, tap again to clear; the line
   coral over a leaf area, waypoints dashed yuzu), Kinpu's plan card, 概要, コース紹介, the tips (a check per row), 詳細情報
   (`.row.kv`), credits.
-- Units follow the phone's km / mi switch (`travel/units.ts`, set under りょこう's list); the language the reader's locale.
+- Units follow the phone's km / mi switch (`travel/units.ts`, set under 旅行's list); the language the reader's locale.
 
 ## Later / left out
 

@@ -71,10 +71,9 @@ sees the members' からだ figures or profiles nor writes the economy or the re
 the room (`contract/guest.ts`). Why: a guest who plays but doesn't earn; a rule only the UI kept would leak via the cache.
 
 ### Profile
-Each person's sex, birth date and BMI standard are prefs, private like the body data (`rowsFor`: a member's to the
-members, the guest's to the guest). Height is derived from Health's weight and BMI; energy is Mifflin–St Jeor plus
-Apple's Move; suggested goals never override a set one; the BMI standard defaults to Asian cut-offs (JASSO, 23 / 25).
-Why: right for East Asian bodies, nothing extra to keep in step, and only what a phone may show is ever on it.
+Sex, birth date and BMI standard are private prefs like the body data ([backend](backend.md#the-guest) `rowsFor`); the
+BMI standard defaults to Asian cut-offs (JASSO, 23 / 25), and a suggested goal never overrides a set one. Why: right for
+East Asian bodies, and only what a phone may show is ever on it.
 
 ### Player avatars
 A and B are NH human players by default (a villager is an option), all clothing free; the default look, いつもの, is code,
@@ -82,13 +81,14 @@ never a row, and an unknown part reads as いつもの's ([backend](backend.md#t
 inventory to sync, a retune reaches everyone, and a newer app's part never breaks an older phone.
 
 ### すがた: one dresser, kept on leaving
-すがた is one level: one stage, six tabs (コーデ · かお · かみ · ふく · こもの · むらびと); the villager pick joins the draft
-like a garment, and `villager` and `look` are sent once on leaving (no けってい; もどす and a 5 s とりけす cover regret).
+すがた is one level: one stage, six tabs (コーデ · 顔 · 髪 · 服 · 小物 · 住民; [players](players.md)); the villager pick
+joins the draft like a garment, and `villager` and `look` are sent once on leaving (no 決定; 元に戻す and a 5 s 取り消す
+cover regret).
 Why: one commit model on one screen, as NH's wardrobe.
 
 ## Health and meals
 
-### Health trends (けんこう)
+### Health trends (健康)
 The dumbbell's popup shows the Health data over time, one person at a time, computed on read, plain numbers with no
 smoothing ([design](design.md#kenkou)). Why: a trainer needs exact numbers anyone can check against the bars.
 
@@ -142,20 +142,19 @@ Sunday 19:30 the recap opens (ceremony only); the Wednesday 04:00 after, the wee
 
 ### A wallet each, two rewards
 Each person earns into and buys from their own wallet (ふたりでぜんぶ split +1 each), two treats, おやつ 20 and 外食 35
-([design](design.md#rewards)); either person erases any buy (`spend_void`). Why: the user (2026-11-10) wanted each
-to earn and spend their own; prices halved with the wallets (40 / 70 before 2026-11-11 00:00 JST, every old buy kept
-at its price). Each wallet is its owner's own earnings from the economy's first day, never a shared pot split in two.
-A buy may name the day it was for (`day`, up to 14 days back), so a treat logged late is judged by that day's wallet.
+([design](design.md#rewards)); either person erases any buy (`spend_void`). Each wallet is its owner's own earnings
+from the economy's first day, never a shared pot split in two; a buy may name the day it was for (`day`, up to 14 days
+back). Why: each earns and spends their own, at prices halved for one wallet (an old buy keeps its price), and a treat
+logged late is judged by that day's wallet.
 
 ### Weight never earns
 Shown only, with an optional goal. Why: paying for kilograms rewards crash diets and punishes muscle.
 
 ### The shop's かいがら
-The shop ([design](design.md#the-shop)), a counter screen, has its own per-person currency, かいがら, never ベル, at
-NH's sell : buy ratio (a piece NH never sells: 4 × its NH sell price, NH's own ratio, then the same ÷ 20), a piece at most
-10,000 (2026-11-10: every piece buyable; a 100,000-Bell cap had left 65 out); the pocket is
-derived from the day tallies, the stock from the date. Why: NH's prices, nothing
-stored for the stock, and no request per catch.
+The shop ([design](design.md#the-shop)), a 3D room, has its own per-person currency, かいがら, never ベル: NH's prices
+÷ 20 both ways (a piece NH never sells: 4 × its sell price, NH's own ratio), every piece buyable; the pocket is derived
+from the day tallies, the stock from the date. Why: NH's prices, nothing stored for the stock, and no request per
+catch.
 
 ## App and hosting
 
@@ -275,6 +274,11 @@ the stack already says what and by whom.
 ### Speech balloons stand by their speaker
 Every balloon stands by its speaker, at most 40 px off, never over the HUD. Why: the reader must see who speaks.
 
+### Special characters: one guest a day, one framework
+NH's special characters come one a day through the visitors' one slot, each with a role (shop, gift, fortune, fish,
+cheer, chat) that one framework plays from per-character data ([design](design.md#visitors-roles)). Why: all of NH's
+cast without a screen or a sync path each.
+
 ### Visitors are the director's fourth actor
 The visitor moves through the villagers' director, idle life and walk graph. Why: one animation system, paused under a
 sheet like the rest.
@@ -320,18 +324,21 @@ partner sees it arranged live.
 
 ### Every home is a room; a home's look is its owner's, its room anyone's
 Each home is the tent's room system with its own scope; its look its owner's alone, its room arranged by any of the
-three (2026-11-10, the user: until then each room its owner's, the tent's everyone's), with the editor's own pieces
+three, with the editor's own pieces
 (placing spends nothing, putting away returns nothing: a piece is owned as a catalogue entry); its door is its anchor.
 The record and the room enforce it (`scopeMayWrite`, `scopeMaySend`). Why: decorating each other's homes is the game's
 fun, and with nothing consumed there's no inventory to hand back.
 
 ### A room's whole change is one group; undo puts back new pieces
-The clear, a saved arrangement called up and their undo are one `group` of decor ops (up to `GROUP_MAX` in a request)
-that the record keeps all or none, and the other phones get by the record's push rather than the room's live intents
-(256-byte intents, a 20-a-second bucket). An undo of a removal is a new piece where the old one stood: a removal is
-final in the record (decor merge), and a room's look is what's compared, not ids. Saved arrangements are their own
-event (`room_save`, three slots a room, the latest arrival wins). Why: atomic, no protocol change, and older apps skip
-an unknown event type.
+The clear, a saved arrangement called up and their undo are one `group` of decor ops the record keeps all or none, sent
+to the other phones by the record's push, not the room's intents; an undo of a removal is a new piece where the old one
+stood; saved arrangements are their own event (`room_save`; [backend](backend.md#events)). Why: atomic, no protocol
+change (intents are 256 bytes, 20 a second), a removal is final in the decor merge, and older apps skip an unknown
+event type.
+
+### The museum draws one room at a time
+Only the room I'm in is drawn; a doorway dips to the next and the camera snaps to its frame ([design](design.md#the-museum)).
+Why: NH's museum is a room at a time, and drawing one keeps the draw calls and memory of a phone room.
 
 ### The tent's surfaces are NH's flag
 Which pieces hold things is the ACNH spreadsheet's `surface` flag; where things stand is found from the converted model
@@ -356,8 +363,8 @@ Each goal's fruit colours in with progress, falls when met and is picked up for 
 NH's harvest feel, with the goals in one place.
 
 ### Shaking a tree
-The third tap within 1.2 s shakes; a single tap stays the popup ([design](design.md#shaking-a-tree)). Why: how people
-shake trees in NH, never ベル.
+The third tap within 1.2 s shakes; a single tap opens a goal tree's popup and rustles any other
+([design](design.md#shaking-a-tree)). Why: how people shake trees in NH, never ベル.
 
 ### Farming: NH 2.0's vegetables on a field each
 Starts at the shop, a field each placed in the editor, NH's ÷ 20 prices (14, 4, 18), 40 plants each, ripe in 3 days
@@ -374,7 +381,7 @@ where NH keeps them, and balloon presents at NH's odds ([design](design.md#critt
 screens and nothing to sync.
 
 ### Birthdays and the wedding from the code
-Birthdays sit in `PEOPLE` (`config/rules.ts`); the wedding date is the けっこんしき board's `date` (`time/holidays.ts
+Birthdays sit in `PEOPLE` (`config/rules.ts`); the wedding date is the 結婚式 board's `date` (`time/holidays.ts
 weddingDate`). Why: one date, changed once, both phones agreeing.
 
 ### Group stretching on an Exercise day
@@ -399,7 +406,7 @@ The English listening game's decisions in force; detail in [kikimimi](kikimimi.m
 - **Lazy:** the sheet and each level's content are their own chunks; the first load gains only the invite listener.
   Why: nothing heavy before it's opened.
 - **The host is the clock:** the host's `skip` is its position, beaconed every 3 s; every phone adopts it. A lobby is
-  local until 「みんなを さそう」. Why: a computed schedule drifted after one lost message.
+  local until 「誘う」. Why: a computed schedule drifted after one lost message.
 - **Modes and options ride on the seed's bits** (たいせん, スピード はしご, the answer timer), and the host picks the least
   repeated of 24 seeds. Why: no relay deploy, and every phone deals the same deck.
 - **A level shows only when every item has a clip.** Why: the clips are the readiness signal, nothing to flip.

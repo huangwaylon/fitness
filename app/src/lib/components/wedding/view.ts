@@ -1,4 +1,4 @@
-// けっこんしき's view (docs/wedding.md): the plan's own rules (the filters, their counts, the lifted sections and the
+// 結婚式's view (docs/wedding.md): the plan's own rules (the filters, their counts, the lifted sections and the
 // month groups) over the store's tasks (board.svelte.ts). Every rule of a percentage, a state, a day or this month is
 // lib/wedding/progress.ts and time/zone.ts (the old board's, ported once); nothing here re-decides one.
 import type { WedTask } from '#lib/contract/wedding.ts';

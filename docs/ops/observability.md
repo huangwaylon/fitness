@@ -92,7 +92,7 @@ own token. Retention 30 days; `npm run logs -- purge --before … [--person A]` 
   once a load), which keeps the trail before each error; per-session and per-day caps, what's dropped counted
   (`log.drop`). The ring's size, the caps, the persisting and the flush timings: `sync/log.ts`'s header.
 - Persisted to `localStorage` (`island.log`) when idle and at once when the page goes; read back on the next load. On
-  a quota error the log goes first, never the user's data.
+  a quota error the log goes first, never the app's data.
 - Flushed in batches (`keepalive` when hidden), each stored until the relay acks its id (a re-sent one is a `dup`); a
   capped day (`closed`): errors only until midnight UTC.
 - Off in the demo and under automation (`navigator.webdriver`, unless `?log=on`). Unpaired, events wait for a key;
@@ -112,8 +112,8 @@ own token. Retention 30 days; `npm run logs -- purge --before … [--person A]` 
 - **Caps** (UTC day, `LOG_CAPS`: per role and the relay, 8,000 in all, the hard guard on the account's rows written;
   counted in memory, written within `CAPS_SAVE_MS`): over a cap, dropped, `log.cap` once. The tables and the
   retention: `relay/src/log.ts`'s header.
-- `POST /stt` (`sttRoute.ts`): a person's key in `Authorization`, a WAV ≤ 340 KB to Workers AI and the text back;
-  nothing of either kept. A role's calls a UTC day: `STT_DAY_MAX` (300), then 429. Off: `STT_OFF = "1"` (503).
+- `POST /stt` (`sttRoute.ts`, its caps and off switch: [kikimimi-mic.md](../kikimimi-mic.md) "The relay endpoint"):
+  nothing of the audio or its text kept.
 - **Tables:** `log` (primary key `id`, no other index), `batches`, `caps`.
 - **Retention:** the object's daily alarm: events older than 30 days, batch ids and caps older than 2 days.
 
@@ -151,10 +151,9 @@ npm run logs -- --test ...                                 # the test relay
 repo secret: counts only) and opens one GitHub issue labelled `alert` (or comments on the open one when the state
 changes) when, in the last 6 hours, errors > 20 (not counting errors while leaving), the relay answered `unavailable`
 > 5 times, a cap was reached, the day's events passed 50 % of the cap, the day's rows written passed 50 % of the Free
-plan's 100k (`rowsPct`), the oldest event is older than 32 days (the
-prune is dead), or no record backup has been good in 48 h (`backupH`, `backupSt`: the last run's `st`); it closes the issue on a green run. The issue holds counts and a link here, never a message (the repo
-is public). A failing `/health` still fails the job (GitHub's e-mail). Scheduled workflows stop after 60 days without
-a commit in a public repo: re-enable it in Actions.
+plan's 100k (`rowsPct`), the oldest event is older than 32 days (the prune is dead), or no record backup has been
+good in 48 h (`backupH`, `backupSt`: the last run's `st`); it closes the issue on a green run. The issue holds counts
+and a link here, never a message. A failing `/health` still fails the job (GitHub's e-mail).
 Set up once: `openssl rand -hex 32` → `npx wrangler secret put HEALTH_TOKEN` (and `--env test`) and
 `gh secret set HEALTH_TOKEN`.
 

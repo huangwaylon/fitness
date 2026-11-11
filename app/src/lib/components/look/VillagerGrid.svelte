@@ -1,5 +1,5 @@
 <script lang="ts">
-  // すがた's むらびと tab (design/avatar/sugata-ux.md §3.4–3.5): the search field (held at the top of the panel as it
+  // すがた's むらびと tab (docs/players.md "Villagers"): the search field (held at the top of the panel as it
   // scrolls), then the roster's heads in two groups of one radiogroup: とくべつ (たぬきち, しずえ…) first, then the
   // villagers by species; a heading only shows over a group the search left non-empty. A tap wears that villager on the
   // stage (the level's draft: nothing is sent until the level is left). The grid is built a slice per frame; each head

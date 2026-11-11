@@ -1,5 +1,5 @@
 <script lang="ts">
-  // けっこんしき's note, rendered (lib/wedding/markdown.ts): elements, never markup (no {@html} here or anywhere: the
+  // 結婚式's note, rendered (lib/wedding/markdown.ts): elements, never markup (no {@html} here or anywhere: the
   // note is written by the members and read by everyone); h4 / h5 under the sheet's own headings; a link's anchor is
   // http/https only (the parser's allowlist), a new tab with no opener and no referrer; consecutive spans of one link
   // one anchor.

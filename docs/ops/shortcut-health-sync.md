@@ -40,17 +40,18 @@ headers. Daily totals, one line per day, every field **Text**. The parser (`rela
 | `body_mass_index` | That day's **Body Mass Index**, `0` = no sample; 10–60 | `bmi` (one decimal) |
 | `lean_body_mass` | That day's **Lean Body Mass** in **kg**, `0` = no sample; 10–150 kg | `lean_kg` (one decimal) |
 
-- Lists are optional (at least one); other fields are ignored. Without the body lists (§2 steps 8a–8c) けんこう shows
+- Lists are optional (at least one); other fields are ignored. Without the body lists (§2 steps 8a–8c) 健康 shows
   no body fat, BMI or lean mass. A list whose line count differs from `dates` is dropped with a warning; an unreadable
   or over-max line is skipped.
 - Why two step lists: Find Health Samples adds up every source's samples, so the iPhone's and the Watch's steps of the
   same walk would count twice (Health's own total de-duplicates them; Shortcuts doesn't). Move, Exercise and Stand
   are not affected. The server keeps the larger of the two per day, which is close to Health's total.
-- Latest wins: each run replaces a day's values with Health's current totals (up or down), so re-sending is harmless
-  and a corrected day is fixed by the next run. A locked week's ベル (after its Wednesday 04:00) never move.
+- Latest wins (re-sending is harmless, a corrected day is fixed by the next run; the held zeros):
+  [backend](../backend.md#ingest).
 - Reply: `{"ok":true,"metrics":8}` (rows added), plus `skipped` / `warnings`. Errors: `unauthorized`,
   `bad_request` (with a `detail`), `too_large` (over 1 MB), `busy` (over 120 requests/min), `unavailable`.
-- Every run leaves an audit row in the record's `uploads` table, read with the `uploads` action ([runbook §5](runbook.md#5-when-sync-fails)).
+- Every run leaves an audit row in the record's `uploads` table, read with the `uploads` action
+  ([runbook §5](runbook.md#5-when-sync-fails)).
 
 ## 2. Build the Shortcut
 Shortcuts → **+** → name it **しまの同期** [U: action names]:
@@ -72,10 +73,9 @@ Shortcuts → **+** → name it **しまの同期** [U: action names]:
 | 9 | **Get Contents of URL** | `https://island-fund-relay.island-fund-relay.workers.dev/api`, **POST**, Request Body **JSON**, each field type **Text**: `key` = Key, `action` = `ingest`, `dates` = Dates, `steps` = StepValues, `steps_watch` = StepWatchValues, `exercise_minutes` = ExValues, `calories` = CalValues, `stand_minutes` = StandValues, `weight` = WeightValues, `body_fat_percentage` = BodyFatValues, `body_mass_index` = BMIValues, `lean_body_mass` = LeanValues |
 
 Every list must use the same range (the last 1 month), **Group by Day** and **Fill Missing** (a day without samples
-becomes a `0` line, not a missing one), so it lines up with `dates`. Keep Health's units in **kg** and **kcal** (Lean Body Mass follows the weight unit). Allow
-read access to Steps, Exercise Minutes, Active Energy, Stand Time, Body Mass, Body Fat Percentage, Body Mass Index and Lean
-Body Mass when asked. Body fat may come through as `0.223` or `22.3` [U: which]; both are read as 22.3 %. Without an Apple Watch, leave
-out step 4 and `steps_watch`.
+becomes a `0` line, not a missing one), so it lines up with `dates`. Keep Health's units in **kg** and **kcal** (Lean
+Body Mass follows the weight unit). Allow read access to all eight types when asked. Body fat may come through as
+`0.223` or `22.3` [U: which]; both are read as 22.3 %. Without an Apple Watch, leave out step 4 and `steps_watch`.
 
 **Test:** tap ▶. Expect `{"ok":true,…}` with no `warnings`.
 
@@ -100,39 +100,37 @@ Shortcuts → **Automation** → **+** → **App** → **LINE** (or the app you 
 Immediately**, **Notify When Run** off → **Run Shortcut しまの同期**. Do this on both phones.
 
 **At most every 10 minutes (recommended):** opening LINE often runs the Shortcut back to back, each run a month of
-Health queried on the phone, most bringing nothing new. At the start of しまの同期: **Get File** **shima-last.txt** in the Shortcuts folder (**Error If Not Found** off) → **Get Time
-Between Dates** (the file's text and **Current Date**, in minutes) → **If** it is under 10, **Stop This Shortcut** (no file yet: it runs). After
-step 9: **Text** **Current Date** → **Save File** to **shima-last.txt** in the Shortcuts folder, **Overwrite** on. [U: action names]
-The next run after the 10 minutes sends the whole month as always: nothing is lost.
+Health queried on the phone, most bringing nothing new. At the start of しまの同期: **Get File** **shima-last.txt** in
+the Shortcuts folder (**Error If Not Found** off) → **Get Time Between Dates** (the file's text and **Current Date**,
+in minutes) → **If** it is under 10, **Stop This Shortcut** (no file yet: it runs). After step 9: **Text** **Current
+Date** → **Save File** to **shima-last.txt** in the Shortcuts folder, **Overwrite** on. [U: action names] The next
+run sends the whole month as always: nothing is lost.
 
 ## 4. Copy to the other phone
 An iCloud link carries the Shortcut's text, so a link with your key in it leaks the key. Before sharing: Shortcut
 settings (ⓘ) → **Setup** → **Import Questions** → add a question for the **Key** Text action ("Paste your Island
 Fund key") [U: menu names]. The Source filters (steps 2 and 4) name your own iPhone and Watch: the other person
-re-picks theirs in both after importing. Clear the key text, Share → **Copy iCloud Link**, send it. Importing asks the other
-person for their key. Put your own key back, and they add the automation (§3). If a link with a key in it was ever
+re-picks theirs in both after importing. Clear the key text, Share → **Copy iCloud Link**, send it. Importing asks
+the other person for their key. Put your own key back, and they add the automation (§3). If a link with a key in it was ever
 shared, rotate that key ([runbook §3](runbook.md#3-rotate-a-key)).
 
 ## 5. One-time baseline (optional)
 Duplicate the Shortcut, set the range in steps 2 and 4–8c to the last **84 days**, run it once, delete the copy.
-Only this week and last week (until Wednesday 04:00) still earn; older days fill the weight
-trend.
+Only this week and last week (until Wednesday 04:00) still earn; older days fill the weight trend.
 
 ## 6. Troubleshooting
 | Symptom | Fix |
 |---|---|
 | `unauthorized` | Wrong or rotated key in step 1 |
-| HTML instead of JSON | The wrong URL in step 9: it must be `https://island-fund-relay.island-fund-relay.workers.dev/api` (§2) |
-| `not found` | The URL has a typo or extra characters: it must be exactly `https://island-fund-relay.island-fund-relay.workers.dev/api` |
+| HTML instead of JSON, or `not found` | The URL in step 9 is wrong: exactly `https://island-fund-relay.island-fund-relay.workers.dev/api` (§2) |
 | `bad_request`, `…: expected Text` | That field is Number/Array in step 9: make it **Text** |
 | `warnings: ["weight: 1 lines but 31 dates…"]` | That list didn't use the same range, **Group by Day** and **Fill Missing** as `dates` (the same for `body_fat_percentage`, `body_mass_index`, `lean_body_mass`) |
 | `warnings: ["body_fat_percentage: 0.5 on … is outside 2–70…"]` | Body fat came through in an unexpected form: send the `uploads` row's first line to the developer |
-| Lean body mass ~2.2× too high, or skipped | Health's weight unit is pounds: set kg |
 | `skipped` in the reply | A date or number didn't parse, or was over its max; the `uploads` row shows each field's first line |
-| Weight ~2.2× too high | Health's weight unit is pounds: set kg |
+| Weight or lean body mass ~2.2× too high (or skipped) | Health's weight unit is pounds: set kg |
 | Steps about twice Health's | The Steps query has no Source filter (step 2), or both lists name the same device: one iPhone in step 2, one Watch in step 4 |
 | `steps_watch: … lines but … dates` | Step 4 differs from step 2 in range, **Group by Day** or **Fill Missing** |
 | A banner every time LINE opens | **Notify When Run** off [U: iOS may still flash one] |
 | Nothing arrives | Settings → Health → Data Access & Devices → Shortcuts: allow the eight types |
 | `calories: … lines but … dates` after step 8d | An empty item was dropped from a list: each pass of the repeat must add one item to each `…Out` (the empty **Text** too) |
-| けんこう shows 記録なし for Move on a day I wore the Watch | Move, Exercise and Stand were all 0 that day (the Watch hadn't synced to the iPhone yet): the next run fixes it |
+| 健康 shows 記録なし for Move on a day I wore the Watch | Move, Exercise and Stand were all 0 that day (the Watch hadn't synced to the iPhone yet): the next run fixes it |

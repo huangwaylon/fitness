@@ -6,7 +6,7 @@
 //     texture once. Each player's materials are its own (the island bends them; the face changes cells).
 //   - Parts bind to the body's skeleton by joint name (their own joints, a skirt's or a ponytail's, grafted on); what's
 //     modelled on the head binds to an anchor on the head bone: the head joint (hair), NH's hat brim, the face's front
-//     (glasses), the crown (hair ornaments, a stand-in: design/avatar/closet/feasibility.md §3).
+//     (glasses), the crown (hair ornaments, a stand-in: NH places them per hairstyle, the files don't say where).
 //   - Colours are tints: the skin (its texture's alpha says where), the hair, the hair-coloured parts.
 //   - dress(look) swaps what changed in place: a colour or a texture is a material's change, a new shape a mesh's.
 import {

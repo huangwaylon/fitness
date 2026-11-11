@@ -1,4 +1,4 @@
-// すがた's むらびと tab (design/avatar/sugata-ux.md §3.4): the stage and the tabs stay put and the search field is held at
+// すがた's むらびと tab (docs/players.md "The tabs"): the stage and the tabs stay put and the search field is held at
 // the top of the panel while the roster's heads scroll under it, on a small phone too, and with the on-screen keyboard
 // up (iOS: --kb; Android: a shorter screen): the stage is a 76 px strip then. A pick swaps the stage; nothing is sent
 // until the level is left.

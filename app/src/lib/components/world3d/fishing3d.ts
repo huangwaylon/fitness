@@ -6,6 +6,11 @@
 // in the island's frames (nothing reactive: the frames poll it).
 //   cast   the line flies out (the cast's swing)        wait   the float is on the water (bobbing; a nibble dips it)
 //   bite   the float went under (the rod's tip yanked)   reel   reeled in (a catch or nothing): the rod comes up
+// Around it: world3d/facing.ts turns a standing angler to the float (seated or lying, never), the rod a child of the
+// hand bone, bent with the island; floatLift bobs, dips at each nibble and plunges at the bite (splash, rings);
+// biteMark.ts draws NH's 「！」 over the head, square on at every pitch; fishLine.ts is the line (one quadratic from the
+// tip to the float, lifted only to clear what's under it, worked out when its ends move). Frames run at the full rate
+// while the float is out (`moveStart`).
 import { hermite } from '#lib/math.ts';
 export type Phase = 'cast' | 'wait' | 'bite' | 'reel';
 

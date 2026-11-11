@@ -1,4 +1,4 @@
-// ききみみ's ずかん (docs/kikimimi.md "ずかん", "なかよし"): from the hub's tile, its four sections over this phone's
+// ききみみ's ずかん (docs/kikimimi.md "図鑑", "なかよし"): from the hub's tile, its four sections over this phone's
 // seeded games (a unit's three lessons on three days, its チェック passed, a weekend's gold trophy, a bedtime chapter
 // heard to the end) and the demo's: ことば's caught phrases and their entry, the filters; こえ's cards (a sample asked
 // for: Playwright's Chromium is muted, the logic tier); なかま's level-up heart and a villager's greeting; スタンプ's can-do

@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ききみみ's せってい (docs/kikimimi.md "せってい"), pushed from the hub's ⚙: 🔊 「きこえる？」 (a clip through the game's
+  // ききみみ's せってい (docs/kikimimi.md "設定"), pushed from the hub's ⚙: 🔊 「きこえる？」 (a clip through the game's
   // voice, with the earphones tip and the volume-0 line); 「おとを 1だいに まとめる」 as a new lobby's default; にほんごやく
   // (when the Japanese shows: いつも / まちがえた とき / みない); こんしゅうの めあて (3 / 5 / 7 にち). Each kept on this
   // phone; 「みみ チェックを もういちど」 (the placement check again, at once; the place it gave me under it); 音声の出典

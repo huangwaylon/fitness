@@ -15,7 +15,18 @@
 //   --boots   N warm launches instead of the measures: each launch's own clock (world3d/boot.ts), and their medians
 //             (with a URL whose query has checks=0: npm run ios:check -- --boots 8 --url 'http://127.0.0.1:PORT/?demo&checks=0')
 // Once per Mac: nothing (the script turns on Safari's Remote Automation in the simulator); safaridriver ships with
-// macOS. Nightly: a launchd agent (docs/ops/testing.md has the plist) runs `npm run ios:check` and keeps its reports.
+// macOS. Nightly: a launchd agent runs `npm run ios:check` and keeps its reports; put this in
+// ~/Library/LaunchAgents/fund.island.ios-check.plist, then `launchctl load` it:
+//   <?xml version="1.0" encoding="UTF-8"?>
+//   <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+//   <plist version="1.0"><dict>
+//     <key>Label</key><string>fund.island.ios-check</string>
+//     <key>ProgramArguments</key><array><string>/bin/zsh</string><string>-lc</string>
+//       <string>cd ~/Documents/other/fitness/app &amp;&amp; npm run ios:check</string></array>
+//     <key>StartCalendarInterval</key><dict><key>Hour</key><integer>4</integer><key>Minute</key><integer>30</integer></dict>
+//     <key>StandardOutPath</key><string>/tmp/island-ios-check.log</string>
+//     <key>StandardErrorPath</key><string>/tmp/island-ios-check.log</string>
+//   </dict></plist>
 import { execFileSync, spawn } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';

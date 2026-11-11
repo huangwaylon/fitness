@@ -1,4 +1,4 @@
-// すがた's tabs and what the stage says (design/avatar/sugata-ux.md §3.2–3.4), pure: the six tabs and their sub-rows,
+// すがた's tabs and what the stage says (docs/players.md "The tabs"), pure: the six tabs and their sub-rows,
 // the closet kind each sub lists, the tab the level opens on, the status pill's state, and the stage's colour dots'
 // names (their hue, numbered when two share one).
 import type { ClosetKind, Hue } from './closet.ts';

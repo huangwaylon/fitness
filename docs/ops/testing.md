@@ -1,6 +1,7 @@
 # Testing: the tiers, CI and stable e2e specs
 
-The single description of how the app is tested and what gates a deploy. The relay's own checks: [runbook §8](runbook.md#8-deploy-the-live-relay).
+The single description of how the app is tested and what gates a deploy. The relay's own checks:
+[runbook §8](runbook.md#8-deploy-the-live-relay).
 
 ## Why the tiers
 CI's Linux runners have no GPU: Chromium draws WebGL in software (SwiftShader), and one `renderer.render` takes
@@ -35,18 +36,31 @@ paid, and its macOS VMs draw in software too.
 - **Ownership.** Each spec's header names its area; its owner is whoever last changed that area's code. Fix a flake
   at its cause (a missing hook, a wait on time, a tap where something wanders); never loosen an assertion.
 
-Open: the rule parts of holidays, celeste, finds, critters, bugs, weather and seasonal specs into vitest; visual
-snapshots (`toHaveScreenshot` at a fixed camera, date and seed, baselines made on CI's image) in the full tier; the
-layout specs drawn in the full tier.
+Open: the rule parts of the holidays, celeste, finds, critters, bugs, weather and seasonal specs into vitest; visual
+snapshots in the full tier.
 
 ## CI (`.github/workflows/pages.yml`)
-A push to `main` that touches `app/**` (a docs-only push runs *Docs check*, `docs.yml`: docs-check alone; relay changes run *Relay checks*, whose path filter `relay/test/paths.test.ts` keeps in step with what the relay imports):
+A push to `main` that touches `app/**` (a docs-only push runs *Docs check*, `docs.yml`: docs-check alone; relay changes
+run *Relay checks*, whose path filter `relay/test/paths.test.ts` keeps in step with what the relay imports):
 
-| Job | What | Gates the deploy |
-|---|---|---|
-| `checks`, `unit` | `checks`: first the **gate's plan**, once for all its shards (the `gate-plan` artifact, ~20 s in): the selection (`scripts/e2e-impact.ts`), the auto-quarantine (`scripts/e2e-flakes.ts`), the shards (`scripts/e2e-shards.ts plan`, `e2e/timings.json`); then `npm run check`, `npm run knip`, the quarantine's owners (`scripts/e2e-quarantine.ts`) and `scripts/docs-check.ts`. `unit`: `npx vitest run` | yes |
-| `e2e-gate` ×4 | **the gate's e2e** ("The gate" below) in Chromium (iPhone 13 profile), logic mode, `@render` and `@quarantine` left out, 3 workers each on a 4-core runner (4 made the short waits flaky), 2 on fewer (the private repo's 2-core runners: at 3 the gate timed out), on the build served as Pages serves it (`scripts/serve-build.ts`). Each shard builds (with its budgets: the kikimimi budget, the headers, the precache limit) and waits for the plan's artifact, not for `checks`; shard 1's `build-pages/` is the `site` artifact `deploy` ships | yes |
-| `deploy` | `site` to Cloudflare Pages (`wrangler pages deploy`, project `island-fund`). It starts at once (ききみみ's `stt/` from an Actions cache keyed on `src/lib/mic/models.ts`, filled by `scripts/stt-models.ts`; wrangler), takes `site` once shard 1 uploads it, then waits on the gate (`scripts/deploy-gate.ts`: every job in its `GATE` list once and `success`, else red). After the upload, https://island-fund.pages.dev must answer this build (`_app/version.json`, 6 min at most) with its CSP header and the `stt/` manifest. Not by then, but the deployment's own URL serves it: a **Pages alias lag** warning (Cloudflare's, it catches up) and the checks on that URL, green; neither serves it: **Deploy not served**, red. No Cloudflare secret: a warning, nothing deployed | — |
+These gate the deploy:
+
+- `checks`, `unit`: `checks`: first the **gate's plan**, once for all its shards (the `gate-plan` artifact, ~20 s in):
+  the selection (`scripts/e2e-impact.ts`), the auto-quarantine (`scripts/e2e-flakes.ts`), the shards
+  (`scripts/e2e-shards.ts plan`, `e2e/timings.json`); then `npm run check`, `npm run knip`, the quarantine's owners
+  (`scripts/e2e-quarantine.ts`) and `scripts/docs-check.ts`. `unit`: `npx vitest run`
+- `e2e-gate` ×4: **the gate's e2e** ("The gate" below) in Chromium (iPhone 13 profile), logic mode, `@render` and
+  `@quarantine` left out, 3 workers each on a 4-core runner (4 made the short waits flaky), 2 on fewer (the private
+  repo's 2-core runners: at 3 the gate timed out), on the build served as Pages serves it (`scripts/serve-build.ts`).
+  Each shard builds (with its budgets: the kikimimi budget, the headers, the precache limit) and waits for the plan's
+  artifact, not for `checks`; shard 1's `build-pages/` is the `site` artifact `deploy` ships
+- `deploy`: `site` to Cloudflare Pages (`wrangler pages deploy`, project `island-fund`). It starts at once (ききみみ's
+  `stt/` from an Actions cache keyed on `src/lib/mic/models.ts`, filled by `scripts/stt-models.ts`; wrangler), takes
+  `site` once shard 1 uploads it, then waits on the gate (`scripts/deploy-gate.ts`: every job in its `GATE` list once
+  and `success`, else red). After the upload, https://island-fund.pages.dev must answer this build
+  (`_app/version.json`, 6 min at most) with its CSP header and the `stt/` manifest. Not by then, but the deployment's
+  own URL serves it: a **Pages alias lag** warning (Cloudflare's, it catches up) and the checks on that URL, green;
+  neither serves it: **Deploy not served**, red. No Cloudflare secret: a warning, nothing deployed
 
 After a deploy, never holding one back:
 
@@ -113,13 +127,11 @@ After a deploy, never holding one back:
 - Playwright's browsers are cached by its version; bumping `@playwright/test` downloads them once.
 
 ## CI cost
-The repo is private (since 11-10): GitHub Free includes 2,000 Actions minutes a month. Measured 11-09/11-10, while
-public: ~70 billed min a push (Deploy UI ~20, the full logic tier ~50; each job rounds up to whole minutes), ~5,200 a
-day with the weekly hunt's macOS runs (×10 billing): the allowance lasts under a day at that rate, ~$550–800 a month
-over it. So: batch pushes (one per finished, verified group of fixes), measure locally (`npm run e2e:ci-like`, the
-hunt on the Mac) rather than dispatching CI, and set an Actions spending limit. The cuts available: the full logic tier
-on a schedule (in `e2e-logic-full.yml` swap `workflow_run` for the commented `schedule`, whose `throttle` job runs
-only when a deploy landed since) and a self-hosted runner for the e2e jobs (the user's call).
+The repo is private: GitHub Free includes 2,000 Actions minutes a month, and a push costs tens of billed minutes (each
+job rounds up; macOS bills ×10). So: batch pushes (one per finished, verified group of fixes), measure locally (`npm run
+e2e:ci-like`, the hunt on the Mac) rather than dispatching CI, and keep an Actions spending limit. The cuts available:
+the full logic tier on a schedule (in `e2e-logic-full.yml` swap `workflow_run` for the commented `schedule`, whose
+`throttle` job runs only when a deploy landed since) and a self-hosted runner for the e2e jobs.
 
 ## Run it locally
 ```sh
@@ -138,15 +150,12 @@ One-off measuring probes, done and deleted, are at the `probes` git tag (`git sh
 `sw-measure.ts` (a service worker install A/B), `perf-sheets.ts` (sheet open A/B), `offline-measure.ts` (map tiles'
 bytes), relay's `wedding-cats.ts` (the categories' one rename).
 
-Local-only WebKit reds on a Mac (CI's macOS runners pass): `csp.spec.ts` at `--workers=1`, every second test (after a
-test with the sound on, the next page's WebGL context is lost as it's made: `getShaderPrecisionFormat` null, the island
-shows `[data-no3d]`), so give each test its own worker; `kk-sync.spec.ts`, two (WebKit's audio clock stands still here,
-`currentTime` 0 after 1.5 s, so the K.K. test's positions never move; the tent test's third page loses its WebGL context
-as above, `tent.failed`): check them on the flake hunt.
+Local WebKit on a Mac loses a page's WebGL context after a test with sound (csp.spec at `--workers=1`, kk-sync): give
+each test its own worker, or check them on the flake hunt.
 
 ## Before you push (a new or changed spec, or a change to the 3D engines, the tent or sync)
-1. `npm run verify` (~20 s; ~25 s with `-- --build`): `checks` as CI runs it, all at once, the first red printed and the rest stopped: the
-   lockfile (`npm ci --dry-run`: an ERESOLVE peer conflict), `check`, `knip` (and relay/'s, once `npm ci` ran there),
+1. `npm run verify` (~20 s; ~25 s with `-- --build`): `checks` as CI runs it, all at once, the first red printed and
+   the rest stopped: the lockfile (`npm ci --dry-run`: an ERESOLVE peer conflict), `check`, `knip` (and relay/'s, once `npm ci` ran there),
    `vitest run`, the quarantine's owners, the docs' pointers (`scripts/docs-check.ts`: every relative link and anchor
    in the docs resolves, every backticked repo path exists, every `docs/….md` "Heading" or §Section a comment cites is
    there; rename a heading and repoint its citations in the same push). `-- --quick`: vitest on the changes since
@@ -156,8 +165,8 @@ as above, `tent.failed`): check them on the flake hunt.
    warning: they're checked, not pushed), one that changes only `docs/` or README.md the docs check; red is refused.
    It also sums the files new to the remote: over 10 MB a warning, over 50 MB refused unless `BIG_PUSH=1` (iterate
    generated assets in `app/.cache`, commit the accepted set once). Bypass: `git push --no-verify`, then fix forward.
-2. `npm run e2e:ci-like -- --changed` (or `-- e2e/the.spec.ts --repeat 5`): the logic tier as CI runs it (a fresh build if `src/` is newer,
-   software GL, CI's workers, `CI=1`, a free port), each test 5×. For a drawn (`@render`/`@smoke`) test add
+2. `npm run e2e:ci-like -- --changed` (or `-- e2e/the.spec.ts --repeat 5`): the logic tier as CI runs it (a fresh
+   build if `src/` is newer, software GL, CI's workers, `CI=1`, a free port), each test 5×. For a drawn (`@render`/`@smoke`) test add
    `--tier render`; `--tier full` draws everything; `--workers 6` loads the machine as a busy runner is.
 3. All green, every time: push (`git pull --rebase origin main && git push origin HEAD:main`). One failure in 5 is a
    flake: fix it now, or quarantine it in the same push with its owner.
@@ -239,8 +248,8 @@ builds or with `?demo`; `?date`, `?theme` and `?season` work everywhere:
 Anywhere: `?panel=rewards` opens ごほうび at once; the 3D island's renderer takes `?dpr=<ratio>`, `?aa=0|1`,
 `?shadows=0|1`, `?ambient=<fps>`, and for the phones' A/B (perf.drag, perf.rest) `?dprmove=<ratio>` (while the camera
 moves: 1.5; at `dpr` or above no swap), `?shadow=<px>` (the shadow map's size: 2048), `?cull=0` (every still thing
-drawn, the nearest out of view too: world3d/things.ts cull) and `?points=<n>` (the real point lights: 6; 0 none). The editor's params: [island-layout.md](../island-layout.md). The live island
-sets `window.__world` (`cam()`, `go(z)`, `at(x, z)`, `put(x, z)`, `idle()`, `quiet()`, `perf`, `stops()`, `mine()`,
+drawn, the nearest out of view too: world3d/things.ts cull) and `?points=<n>` (the real point lights: 6; 0 none).
+The editor's params: [island-layout.md](../island-layout.md). The live island sets `window.__world` (`cam()`, `go(z)`, `at(x, z)`, `put(x, z)`, `idle()`, `quiet()`, `perf`, `stops()`, `mine()`,
 `partner()`, `geo()`, `site()`, …) for the e2e and the console (e2e/island.ts wraps them).
 
 ## Guardrails
@@ -258,11 +267,6 @@ instead:
 Fixed one? `UPDATE_BUDGETS=1 npx vitest run src/lib/e2e-budgets` writes the ceilings down to the counts (it never
 raises one: that's a hand edit to explain in the commit).
 
-## A changed spec, three times
-The gate runs the specs a push adds or edits each test 3× over, never retried (the `chromium-x3` projects:
-`E2E_X3`, scripts/e2e-impact.ts; more than 8 changed is a sweep: once each, cheapest first, up to the budget). A flake fails the push that brings
-it, not the next ten runs. Before pushing: `npm run e2e:ci-like -- --changed` ("Before you push").
-
 ## Writing a stable spec
 Most red runs are the spec, not the app. Before pushing a new or changed spec, run it with
 `--repeat-each=10` (and the whole file with `--workers=8`: a loaded machine is what CI is).
@@ -274,10 +278,11 @@ Most red runs are the spec, not the app. Before pushing a new or changed spec, r
    (Playwright checks what receives it) to `page.mouse.click(x, y)` when the island isn't the target.
 2. **Wait on the app's state, not on time.** `expect(…).toBeVisible()`, `expect.poll(() => window.__world.cam())`,
    `__world.idle()`, `__tent.stats().frames`, `data-*` attributes (`__world3d.camStill()` once the camera's last move is
-   framed: the DOM's tap areas placed for it, not where the previous camera had them); never `waitForTimeout` to "let it settle". (The app's hooks are declared on `Window` in `src/app.d.ts`, as `unknown`: a spec types what it reads.) A fixed
-   wait is only for proving that nothing happens for a while (a toast that must stay 3 s), and then say so.
-3. **Fix the clock.** It's pinned already (above, "Hermetic"); `?date=2026-11-04T12:00` when the day and hour matter; `page.clock.install({ time })` when the app's
-   timers matter, `page.clock.runFor(ms)` to skip an animation's wait instead of sleeping through it. The clock fakes
+   framed: the DOM's tap areas placed for it, not where the previous camera had them); never `waitForTimeout` to "let
+   it settle". (The app's hooks are declared on `Window` in `src/app.d.ts`, as `unknown`: a spec types what it reads.)
+   A fixed wait is only for proving that nothing happens for a while (a toast that must stay 3 s), and then say so.
+3. **Fix the clock.** It's pinned already (above, "Hermetic"); `?date=2026-11-04T12:00` when the day and hour matter;
+   `page.clock.install({ time })` when the app's timers matter, `page.clock.runFor(ms)` to skip an animation's wait instead of sleeping through it. The clock fakes
    `requestAnimationFrame` too, so `runFor` steps the 3D engines frame by frame: in logic mode that's quick (drawn under
    software GL it took minutes, hence `fastForward` there). ききみみ's schedule (a clip's window is its clips.json
    length, a timer, never the audio's) runs on it: install the clock before the goto and step to the state
@@ -319,9 +324,9 @@ The PWA stays open for days, so a scene's round trip must leave nothing behind: 
 goes in and out of the rooms and the info sheets and checks, after a forced GC, that no WebGL context or
 window/document listener is left over, and that the editor's strokes and the home picker's swatches leave no
 ArrayBuffers behind (`Runtime.getHeapUsage` `backingStorageSize`: typed arrays and decoded models, most of the page's
-memory and outside the JS heap; leak-probe prints it as `abMB`). To hunt one: `npm run leak -- <flow> [cycles] --snap` (scripts/leak-probe.ts:
-its header lists the flows, the flags and what each cycle prints) against a served build (`E2E_PORT`). What the leaks
-so far taught:
+memory and outside the JS heap; leak-probe prints it as `abMB`). To hunt one: `npm run leak -- <flow> [cycles] --snap`
+(scripts/leak-probe.ts: its header lists the flows, the flags and what each cycle prints) against a served build
+(`E2E_PORT`). What the leaks taught:
 - **A page-wide hold keeps its component**: a `window.__*` hook, a module's callback or a `<link>`'s listener holding a
   closure made in a component holds its DOM and its renderer. A hook goes in the scene's cleanup (only if it's still
   its own); a module's callback, and a let-go value written inside a cleanup, is made at module level. Vite's preload
@@ -354,18 +359,4 @@ page's errors and screenshots into `test-results/ios-sim/<time>/`; `--url`, `--s
 header) and `npm run ios:indoor` (scripts/ios-sim-indoor.ts: the tent, うめ's house, the museum and the shop, cold
 then warm, and what still runs after each: a leak). Exit 1 when the island didn't come up.
 
-Run on demand (the Mac sleeps). Nightly instead, a launchd agent
-(`~/Library/LaunchAgents/fund.island.ios-check.plist`, then `launchctl load` it):
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0"><dict>
-  <key>Label</key><string>fund.island.ios-check</string>
-  <key>ProgramArguments</key><array><string>/bin/zsh</string><string>-lc</string>
-    <string>cd ~/Documents/other/fitness/app &amp;&amp; npm run ios:check</string></array>
-  <key>StartCalendarInterval</key><dict><key>Hour</key><integer>4</integer><key>Minute</key><integer>30</integer></dict>
-  <key>StandardOutPath</key><string>/tmp/island-ios-check.log</string>
-  <key>StandardErrorPath</key><string>/tmp/island-ios-check.log</string>
-</dict></plist>
-```
+Run on demand (the Mac sleeps); nightly, a launchd agent (its plist: scripts/ios-sim-check.ts's header).

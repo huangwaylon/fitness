@@ -555,12 +555,12 @@ ${sorted(keys).map(([k, v]) => `    ${JSON.stringify(k)}: ${JSON.stringify(v)}`)
 
 // ---- the inventory (docs/world3d-assets.md) --------------------------------------------------------------------------
 
-/** The island's art without a model of its own (a key or a group `<group>/*`) and why: it stays a billboard (or 2D). */
+/** The island's art without a model of its own (a key or a group `<group>/*`) and why: a billboard, a DOM layer or off the island. */
 const NO_MODEL: [string, string][] = [
   ['villagers/*', 'not here: the villagers and the visitors are skinned models of their own (scripts/villagers3d-models.ts); a villager with none is its card'],
-  ['trees/*-canopy, trees/*-trunk', '2D only: the 2D oak’s two layers; the 3D tree is one model'],
+  ['trees/*-canopy, trees/*-trunk', 'the tap layer’s: an oak’s two DOM tap boxes (Scenery.svelte) are cut to them; the 3D tree is one model'],
   ['reactions/*', 'billboard: the villagers’ emotes'],
-  ['fx/* (sparkle, bang, dust, splash, ripple)', 'not NH’s: NH’s files have no effect models (no Eff*/Emo*), so these are stylised meshes in the 2D’s colours (scripts/world3d-fx.ts)'],
+  ['fx/* (sparkle, bang, dust, splash, ripple)', 'not NH’s: NH’s files have no effect models (no Eff*/Emo*), so these are stylised meshes in the art’s colours (scripts/world3d-fx.ts)'],
   ['deco/airport', 'not on the island: the pairing page’s map icon'],
   ['host/*, items/snack, items/dinner, money/*', 'not on the island: the panels’ and the HUD’s art'],
   ['finds/items/*, finds/recipes/*', 'not on the island: the balloon catalogue’s icons, on the catch plate'],

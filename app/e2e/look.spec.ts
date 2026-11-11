@@ -1,4 +1,4 @@
-// せってい → すがた (docs/design.md "すがた", design/avatar/sugata-ux.md): on phones paired with a record of their own
+// せってい → すがた (docs/design.md "すがた", docs/players.md "The dresser"): on phones paired with a record of their own
 // (e2e/record.ts: the relay's real code). One dresser: the stage (the final form, its status in words, もどす, the
 // tapped item's colours), six tabs and their sub-rows. What's tapped is worn on the stage and goes out once, when the
 // level is left: `look`, and `villager` first when a villager was picked (the むらびと tab); then 「すがたを かえたよ」

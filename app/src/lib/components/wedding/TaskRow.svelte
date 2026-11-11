@@ -1,5 +1,5 @@
 <script lang="ts">
-  // One task on けっこんしき's plan, a row of its month's dense card (docs/design.md "Unified kit"): a member's Tick at
+  // One task on 結婚式's plan, a row of its month's dense card (docs/design.md "Unified kit"): a member's Tick at
   // the left, the month small over the day (Fredoka), the title (15, three lines at most) over its category tag and the
   // checklist's ☑ count, the relative due at the right (coral past it). A tap on the row opens it in place: the
   // checklist (each item a member's Tick, its URLs links, who ticked it), who finished it (「うめ が完了」; the old

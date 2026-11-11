@@ -2,8 +2,11 @@
 //   - in README.md and docs/**.md, every relative link's file exists and its #anchor is a heading or an <a id>;
 //   - every backticked repo path there (`app/src/lib/x.ts`, `lib/x.ts`, `e2e/y.ts` …) exists under one of ROOTS;
 //   - in the code (and the docs' own prose), every `docs/<name>.md` named exists, and its #anchor, "Heading" or
-//     §N / §Name is in it.
-//   node scripts/docs-check.ts   (from app/; prints each broken pointer, exits 1 if any)
+//     §N / §Name is in it; so does a doc's `[x](y.md) "Heading"` and bare `y.md "Heading"`, and a `design/….md` named;
+//   - every doc keeps to its size budget (BUDGET_KB; README + docs/ together TOTAL_KB): a doc grows only on purpose.
+//   It also warns (never fails) on what bloats a doc: a date or "the user" (history is git's, a rule needs neither) and
+//   a line over LONG characters. Every tracked .md is checked (README.md, docs/, app/content, app/design, app/scripts).
+//   node scripts/docs-check.ts   (from app/; prints each broken pointer and warning, exits 1 if anything is broken)
 import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -96,12 +99,48 @@ export function checkDoc(file: string, md: string, exists: (p: string) => boolea
         if (body !== null && !outline(body).anchors.has(decodeURIComponent(anchor))) at(`link to ${href}: no #${anchor} in ${target}`);
       }
     }
+    checkHeadings(file, text, at, exists, read);
     for (const m of line.matchAll(/`([^`\n]+)`/g)) {
       const tok = m[1].replace(/^\.\//, '').replace(/:\d+(-\d+)?$/, '').replace(/[#?].*$/, '');
       if (!isPath(tok)) continue;
       const clean = tok.replace(/\/$/, '');
       if (!ROOTS.some((r) => exists(r ? `${r}/${clean}` : clean)) && !exists(join(dir, clean)) && !exists(`*/${clean}`) && !ROOTS.some((r) => ignored(r ? `${r}/${clean}` : clean))) at(`path \`${tok}\` not found`);
     }
+  });
+  return out;
+}
+
+/** The headings a doc's prose names after a link or a bare file name: `[x](y.md) "Heading"`, `y.md "Heading"`. */
+function checkHeadings(file: string, line: string, at: (msg: string) => void, exists: (p: string) => boolean, read: (p: string) => string | null): void {
+  const dir = dirname(file);
+  const cite = (name: string, heading: string) => {
+    const target = join(dir, name), body = exists(target) ? read(target) : null;
+    if (body !== null && !names(body, heading)) at(`${name} "${heading}": no such heading in ${target}`);
+  };
+  for (const m of line.matchAll(/\]\(([^)\s#:]+\.md)\)\s*["“]([^"”\n]+)["”]/g)) cite(decodeURIComponent(m[1]), m[2]);
+  for (const m of line.matchAll(/(?<![\w/.\-\[(])([\w-]+\.md)\s+["“]([^"”\n]+)["”]/g)) cite(m[1], m[2]);
+}
+
+/** Per doc, the most it may weigh (KB of UTF-8); a doc not named gets DEFAULT_KB. README.md + docs/ together: TOTAL_KB. */
+const BUDGET_KB: Record<string, number> = { 'docs/design.md': 115 };
+const DEFAULT_KB = 50, TOTAL_KB = 565;
+/** A line longer than this (characters) is a warning: wrap prose at ~120. */
+export const LONG = 400;
+
+/** What bloats a doc (warnings, never a failure): a date or "the user" outside a fence (history belongs in git, a rule
+ *  needs neither), a line over LONG characters. */
+export function lint(file: string, md: string): Problem[] {
+  const out: Problem[] = [];
+  let fence = false;
+  md.split('\n').forEach((line, i) => {
+    if (/^\s*(```|~~~)/.test(line)) fence = !fence;
+    if (fence) return;
+    const at = (msg: string) => out.push({ file, line: i + 1, msg });
+    const date = /\b20\d\d-\d\d-\d\d\b/.exec(line.replace(/`[^`]*`/g, ''));
+    if (date) at(`a date (${date[0]}): history belongs in git`);
+    if (/\bthe user\b/i.test(line)) at('"the user": say the rule, not who asked');
+    const n = [...line].length;
+    if (n > LONG) at(`a line of ${n} characters (wrap at ~120)`);
   });
   return out;
 }
@@ -118,6 +157,10 @@ export function checkCode(file: string, src: string, read: (p: string) => string
       if (m[2] && !outline(body).anchors.has(m[2])) at(`${path}#${m[2]}: no such anchor`);
       const name = m[3] ?? m[4] ?? m[5];
       if (name && !names(body, name)) at(`${path} ${m[5] ? '§' : ''}"${name}": no such heading`);
+    }
+    // a design note named by path (app/design/…: the avatar's were folded into docs/players.md)
+    if (!file.endsWith('.md')) for (const m of line.matchAll(/(?<![\w/.-])(?:app\/)?(design\/[\w./-]+?\.md)\b/g)) {
+      if (read(`app/${m[1]}`) === null) out.push({ file, line: i + 1, msg: `app/${m[1]}: no such note` });
     }
   });
   return out;
@@ -156,14 +199,25 @@ if (import.meta.filename === realpathSync(process.argv[1])) {
     if (!cache.has(p)) cache.set(p, existsSync(join(repo, p)) && statSync(join(repo, p)).isFile() ? readFileSync(join(repo, p), 'utf8') : null);
     return cache.get(p)!;
   };
-  const docs = ['README.md', 'app/content/listen/README.md', ...walk(join(repo, 'docs'), (p) => p.endsWith('.md')).map(rel)];
+  const docs = tracked.filter((f) => f.endsWith('.md') && existsSync(join(repo, f)));
   const src = /\.(ts|js|svelte|py|ya?ml|css|html)$/;
   const code = ['app/src', 'app/scripts', 'app/e2e', 'app/content', 'relay/src', 'relay/scripts', 'relay/test', 'food-data/scripts', '.github']
     .filter(exists)
     .flatMap((d) => walk(join(repo, d), (p) => src.test(p) && !p.endsWith('docs-check.test.ts')).map(rel)) // (its fixtures)
     .concat(readdirSync(join(repo, 'app')).filter((n) => src.test(n)).map((n) => `app/${n}`));
   const problems = [...docs.flatMap((f) => [...checkDoc(f, read(f)!, exists, read, ignored), ...checkCode(f, read(f)!, read)]), ...code.flatMap((f) => checkCode(f, read(f)!, read))];
+  // the budgets
+  const kb = (f: string) => Buffer.byteLength(read(f)!, 'utf8') / 1024;
+  for (const f of docs) {
+    const max = BUDGET_KB[f] ?? DEFAULT_KB;
+    if (kb(f) > max) problems.push({ file: f, line: 1, msg: `${kb(f).toFixed(1)} KB, over its ${max} KB budget (BUDGET_KB): cut, don't raise` });
+  }
+  const total = docs.filter((f) => f === 'README.md' || f.startsWith('docs/')).reduce((s, f) => s + kb(f), 0);
+  if (total > TOTAL_KB) problems.push({ file: 'docs/', line: 1, msg: `README + docs/ ${total.toFixed(0)} KB, over TOTAL_KB ${TOTAL_KB}` });
+  const warnings = docs.flatMap((f) => lint(f, read(f)!));
+  for (const p of warnings) console.log(`${p.file}:${p.line}  warn: ${p.msg}`);
   for (const p of problems) console.log(`${p.file}:${p.line}  ${p.msg}`);
-  console.log(problems.length ? `docs-check: ${problems.length} broken` : `docs-check: ok (${docs.length} docs, ${code.length} code files)`);
+  const sum = `${docs.length} docs, ${code.length} code files, README + docs/ ${total.toFixed(0)} KB; ${warnings.length} warnings`;
+  console.log(problems.length ? `docs-check: ${problems.length} broken (${sum})` : `docs-check: ok (${sum})`);
   process.exit(problems.length ? 1 : 0);
 }

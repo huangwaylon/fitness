@@ -1,5 +1,5 @@
 <script lang="ts">
-  // けっこんしき's banner (docs/wedding.md): our own photo (static/wedding/hero.webp) darkened toward its foot and left
+  // 結婚式's banner (docs/wedding.md): our own photo (static/wedding/hero.webp) darkened toward its foot and left
   // for the type: the big countdown (「あと 336 日」, 「今日」 on the day, 「12 日前」 after it), the two names on a yuzu
   // plate, the day, time and venue; at the right the rose ring on a paper disc (the board's percent round a posy), the
   // percent and done / total under it. (設定 is the sheet's third tab.)

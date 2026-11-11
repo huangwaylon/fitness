@@ -1,4 +1,4 @@
-// けっこんしき's due line (its months: i18n/format.ts monthLabel). Dates are `YYYY-MM-DD` calendar days (no zone: the
+// 結婚式's due line (its months: i18n/format.ts monthLabel). Dates are `YYYY-MM-DD` calendar days (no zone: the
 // board's today is already the board's).
 import { t } from '#lib/i18n/index.ts';
 import type { Task } from './view.ts';

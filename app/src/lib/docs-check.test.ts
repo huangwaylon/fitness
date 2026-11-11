@@ -1,6 +1,6 @@
 // The docs' pointer check (scripts/docs-check.ts, verify's `docs` step): links, anchors, backticked paths, code citations.
 import { describe, expect, it } from 'vitest';
-import { checkCode, checkDoc, isPath, names, outline, slug } from '../../scripts/docs-check.ts';
+import { LONG, checkCode, checkDoc, isPath, lint, names, outline, slug } from '../../scripts/docs-check.ts';
 
 const files: Record<string, string> = {
   'docs/a.md': '# A\n\n## The guest\n\n### 2.4 Scoring\n\n## Same\n\n## Same\n\n<a id="kept"></a>\n**Mic modes.** text\n\n```\n## Not a heading\n```\n',
@@ -65,6 +65,26 @@ describe('docs-check', () => {
       '2 docs/a.md#gone: no such anchor',
       '2 docs/a.md "The host": no such heading',
       '2 docs/a.md §"3.1": no such heading',
+    ]);
+  });
+
+  it('checks the heading a doc names after a link or a bare file name', () => {
+    const md = '[a](a.md) "The guest", a.md "Scoring" and a.md "The host"; [b](b.md) “Weather”, [a](a.md) "Gone"; `a.md` "x"';
+    expect(checkDoc('docs/b.md', md, exists, read).map((p) => p.msg)).toEqual([
+      'a.md "Gone": no such heading in docs/a.md',
+      'a.md "The host": no such heading in docs/a.md'
+    ]);
+  });
+
+  it('flags a code comment naming a design note that is gone', () => {
+    const src = '// design/avatar/gone.md §3, app/design/avatar/render/player.js';
+    expect(checkCode('x.ts', src, read).map((p) => p.msg)).toEqual(['app/design/avatar/gone.md: no such note']);
+  });
+
+  it('warns on a date, "the user" and a long line, never inside a fence or a code span', () => {
+    const md = ['A rule (the user, 2026-11-10).', '`2026-11-10` in code', '```', 'the user 2026-11-10', '```', 'x'.repeat(LONG + 1)].join('\n');
+    expect(lint('docs/a.md', md).map((p) => `${p.line} ${p.msg.split(':')[0].split(' (')[0]}`)).toEqual([
+      '1 a date', '1 "the user"', `6 a line of ${LONG + 1} characters`
     ]);
   });
 });

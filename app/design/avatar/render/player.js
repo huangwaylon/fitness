@@ -1,7 +1,7 @@
 // @ts-nocheck -- a plain browser module (three.js from the page's import map), not part of the app's build.
 // The NH player assembler (design exploration): an outfit JSON → a skinned three.js Group built from the game-file
 // dump's Collada and PNGs (PlayerBody + hair + top/bottom/shoes + glasses; eyes, mouth, cheeks as NH's face patches),
-// NH's tints baked into the textures (skin, hair colour, blush). See ../tech-notes.md. Served by harness.ts at
+// NH's tints baked into the textures (skin, hair colour, blush). See docs/players.md "Assets". Served by harness.ts at
 // /player.js; the app's villager3d rig.ts and poses.ts at /v3d/ (type-stripped).
 import * as THREE from 'three';
 import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';

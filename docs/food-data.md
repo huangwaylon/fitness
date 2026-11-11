@@ -16,7 +16,7 @@ python3 -I -m unittest discover -s food-data/scripts/tests   # pipeline unit tes
 |---|---|
 | `food-data/scripts/` | `build.py` (all targets), `fetch.py` (downloads), `lib.py`, source-specific builders, `mext_overrides.txt` (curated MEXT names, aliases, portions), `tests/` |
 | `food-data/data_src/` | Hand-authored inputs: dish and eat-out recipes, popularity list, frozen alias and weight-change tables |
-| `food-data/raw/` | Raw downloads (gitignored, never committed: third-party data in a public repo; `$FOOD_RAW` points elsewhere). Untrusted data: never run anything from it, run Python with `-I` |
+| `food-data/raw/` | Raw downloads (gitignored, never committed: third-party data under its own licences; `$FOOD_RAW` points elsewhere). Untrusted data: never run anything from it, run Python with `-I` |
 | `food-data/out/` | Build output (gitignored): the dataset files, `index.json`, `verify.json`, `jan/` |
 
 The scripts are stdlib-only (Python ≥ 3.9) and `build.py` is offline and deterministic: inputs are read in sorted
@@ -171,43 +171,28 @@ line (also a narrower key's way to drop a broader one's), and a key matching no 
 - Current build: 867 groups covering 1,266 items. 753 groups have n ≥ 2 (982 items), 104 have n ≥ 3 and 12 have n ≥ 4.
 
 ## Pictures
-ごはん's food pictures are AI-generated イメージ (ours: Z-Image-Turbo, Apache-2.0, run locally) of generic foods and
-dishes, in one style (coloured pencil and watercolour on the paper colour): 5,123 pictures cover all 6,185 generic foods,
-and 8,944 of the 13,916 packaged products show a generic picture of the same food (24 of them products-only; 984 sheets).
-Custom foods and the other products keep their category's tile. `food-data/images/fi.py` (its docstring has the commands) does the following:
-- **Table** (`food-data/images/table/*.json`, hand-written): one row per visual concept, `{key, ja, desc, items}`. Variants
-  that look alike share a row (脂身つき / なし, 和牛 / 輸入牛, a dish's sizes, the same dish in dishes and eatout); states
-  that look different get their own (生 / 焼き, 乾 / ゆで). `desc` is a short English description of what the food looks
-  like. A name alone draws the wrong food (白和え as a potato, ほうとう as bread). `propose <phase>` drafts the groups,
-  and `rows` turns `name|name = description` lines into rows; `split` gives items their own row when they look
-  different (a 定食 apart from its main dish, おでん in its broth, a MEXT state, a prefecture's 郷土料理 from its MAFF page).
-- **Products** (`food-data/images/pmatch.py`, rules in `products.txt`; never a package photo): a product borrows the
-  picture of the food its name ends with (干し芋, 食パン; a products-only row in `sub.json`: グミ, スコーン...), or of a
-  catalogue dish it is named like, corrected by context rules (竜田揚げ beside さば is fish, いか照焼 is no ぶり), its Open
-  Food Facts tags (pack reads them from `$FOOD_RAW/off`, the raw download) and one-form brands (ハリボー). Each match has
-  a confidence (pmatch.py's docstring); a doubtful one keeps the tile. On a hand-checked random sample (363 products,
-  every category), 86 % of the old last-word matches showed the right food; on an untouched one (150), 92 % of these.
-  The rules' tests: `food-data/scripts/tests/test_pmatch.py` (the lookalike classes).
-- **Generation** (`gen`, the mflux tool's Python): a fixed seed per row and roll, cached outside the repo in
-  `$FOOD_IMG_RAW/gen/` (default ~/food-images-raw), so a re-run is resumable; the prompt and settings are fi.py's header.
-- **Checks** (optional; not run yet): the images ship unchecked, listed in `food-data/images/shipped.json`
-  (each key's description, seed, prompt hash and `checked: false`). The checks, when run (`FI_CHECKS=1`), are
-  (a) `verify`: a second vision model (qwen via ollama) compares each image with at least 2 vetted reference photos
-  (`refs`: Commons, Wikidata P18, Wikipedia, the MAFF photos; look-only, kept outside the repo, never shipped);
-  (b) a by-eye review of `checksheet` contact sheets, logged with `eye`. A wrong image is re-rolled (at most 2 times) and
-  then goes back to the tile. Every verdict is appended to `verdicts.jsonl`.
-- **Pack** (`pack`, PIL): the background evened to the paper colour, webp sprite sheets in `app/static/food-img/`:
-  small thumbnail sheets per search neighbourhood, so a common search's top 20 download about 120 KB, and detail sheets
-  per category (one open fetches ~100 KB); the layout is fi.py's header. `slots.json` is append-only, so a full sheet
-  never changes; the names carry the content hash (cached for a year, `scripts/headers.ts`). `index.json` (~520 KB,
-  138 KB gzipped) maps each food id to its picture's two cells (`lib/food/images.ts` `imgOf`).
-- **Budget** (`lib/food/images.test.ts`): ≤ 1,100 files and 90 MB in food-img/ (projected over the whole table,
-  within static/'s file cap, `lib/static-budget.ts`), ≤ 400 KB a sheet, a common search's top 20 ≤ 128 KB of thumbnails
-  on average (350 at most), and every generic food in a table row (a new catalogue item fails the test until it has
-  one). The service worker caches the sheets on first use (`FOOD_IMG_CACHE`), never at install.
+ごはん's food pictures are AI-generated イメージ (Z-Image-Turbo, Apache-2.0, run locally) of generic foods and dishes in
+one style (coloured pencil and watercolour on the paper colour): 5,123 pictures cover all 6,185 generic foods, and
+8,944 of the 13,916 packaged products show a generic picture of the same food. Custom foods and the other products
+keep their category's tile. The pipeline is `food-data/images/fi.py` (its docstring: the commands, the prompt, the
+sheet layout):
+- **Table** (`food-data/images/table/*.json`, hand-written): one row per visual concept, `{key, ja, desc, items}`;
+  variants that look alike share a row, states that look different get their own. `desc` says what it looks like (a
+  name alone draws the wrong food).
+- **Products** (`food-data/images/pmatch.py`, rules in `products.txt`, tests `food-data/scripts/tests/test_pmatch.py`;
+  never a package photo): a product borrows the picture of the food its name ends with or of a dish it is named like,
+  corrected by context rules and its Open Food Facts tags; a doubtful match keeps the tile.
+- **Generation:** a fixed seed per row and roll, cached outside the repo (`$FOOD_IMG_RAW`), resumable.
+- **Checks** (not run yet; on the owners' call): the images ship unchecked, listed in `food-data/images/shipped.json`;
+  `FI_CHECKS=1` runs a vision model against vetted reference photos and a by-eye contact-sheet review.
+- **Pack:** webp sprite sheets in `app/static/food-img/` (thumbnails per search neighbourhood, details per category),
+  append-only and content-hashed (cached for a year); `index.json` maps each food id to its cells
+  (`lib/food/images.ts` `imgOf`). The service worker caches sheets on first use, never at install.
+- **Budget** (`lib/food/images.test.ts`): ≤ 1,100 files and 90 MB in food-img/, ≤ 400 KB a sheet, a common search's
+  top 20 ≤ 128 KB of thumbnails on average, and every generic food in a table row.
 
 ## Sources evaluated and not used
-- Konbini and chain menus (7-Eleven, Lawson, FamilyMart, McDonald's, Yoshinoya, Sukiya ...): every ToS forbids copying. Link out or let the user enter values; never bundle them.
+- Konbini and chain menus (7-Eleven, Lawson, FamilyMart, McDonald's, Yoshinoya, Sukiya ...): every ToS forbids copying. Link out or let a person enter values; never bundle them.
 - Commercial recipe sites (Cookpad, Kikkoman, Ajinomoto) and 女子栄養大学 calorie guides: no reuse license.
 - GS1 Japan (GEPIR closed; Verified by GS1 forbids redistribution) and JICFS (paid): no nutrition data either.
 - FatSecret: Japanese data only in the paid tier. Yahoo/Rakuten product APIs: product name only.

@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A task's form (けっこんしき's ＋ and 編集), the kit's form sheet (ui/Sheet: ✕ in its title bar, 保存 at its foot;
+  // A task's form (結婚式's ＋ and 編集), the kit's form sheet (ui/Sheet: ✕ in its title bar, 保存 at its foot;
   // Enter in a field saves, the checklist's adds an item): the title, the category (the board's
   // list as chips; one no longer in it stays a chip while it's this task's; a tap on the picked one clears it), the
   // start day (optional, クリア) and the due day (必須), the checklist (renamed, removed and added here, all applied on

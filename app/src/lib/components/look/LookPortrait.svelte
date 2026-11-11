@@ -1,6 +1,6 @@
 <script lang="ts">
   // A look's round portrait (the せってい row, the コーデ strip's chips): a player's head, or the villager's official head
-  // (<Avatar>). A player's is the 3D player's head as drawn and kept by portraits.svelte.ts (customization.md §5: from
+  // (<Avatar>). A player's is the 3D player's head as drawn and kept by portraits.svelte.ts (docs/players.md "Portraits": from
   // the look, by its hash, through the すがた preview's renderer); the flat stand-in until one is.
   import type { Who } from '#lib/types.ts';
   import type { Look, PlayerLook } from '#lib/contract/look.ts';

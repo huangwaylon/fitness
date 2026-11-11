@@ -79,11 +79,11 @@ erase claims.
 whole state or its removal, anyone's.
 - **The decorations** ([Decorating](design.md#decorating)): at most `DECOR_MAX` (`decor full`).
 - **The rooms** ([The tent](design.md#the-tent), `contract/tent.ts`): `sc` `t` / `u` / `v`, a piece on a tile, the
-  wallpaper, floor and size, anyone's in any room (2026-11-10); 60 pieces a room (`tent full`). **A light's switch** is a slot of its own, so a move and a
-  switch made at once both stand.
+  wallpaper, floor and size, anyone's in any room; 60 pieces a room (`tent full`). **A light's switch** is a slot of its
+  own, so a move and a switch made at once both stand.
 - **The island's layout** ([island-layout.md](island-layout.md#ops-the-record-and-the-relay), `contract/layout.ts`):
-  objects, terrain chunks, resets and a home's look; the outdoors and the rooms anyone's, a home's look its owner's (`scopeMayWrite`); at
-  most `LAYOUT_MAX` objects (`layout full`). Any lower-case kind passes: no relay deploy.
+  objects, terrain chunks, resets and a home's look; the outdoors and the rooms anyone's, a home's look its owner's
+  (`scopeMayWrite`); at most `LAYOUT_MAX` objects (`layout full`). Any lower-case kind passes: no relay deploy.
 
 <a id="room_save"></a>**`room_save`** `{sc, n, at, name, pieces, wall, floor, size}` or `{sc, n, at, rm: true}`
 (`contract/roomSave.ts`, [design](design.md#the-tent) "Saved arrangements"): a room's slot `n` (1–3) holding the room
@@ -141,7 +141,7 @@ type, pref key or field deploys the relay first**: the record refuses what it do
 such a row. There are no health-data events ([design.md](design.md#health-data)).
 
 ### The look
-Each person's avatar (`app/design/avatar/customization.md` §4, `contract/look.ts`: the fields, checks and reading):
+Each person's avatar ([players.md](players.md), `contract/look.ts`: the fields, checks and reading):
 an NH human player from parts, or their roster villager. Two prefs, the sender's own, one slot each: `look` (null or
 unset is **いつもの**, `DEFAULT_LOOKS` in code, never stored) and `savedLooks` (the コーデ, ≤ 20). **Reading**
 (`resolveLook`, `readSavedLooks`) goes part by part, so an unknown or broken field is いつもの's alone. Neither is
@@ -430,8 +430,8 @@ ingest, the trees, きろく, けんこう and ふたりでぜんぶ stay A + B.
   `trip_note`, the wedding board, `ingest` or `uploads`: `forbidden` (the queue drops it). Its rows are `person = G`
   (the merge order A < B < G).
 - **The room:** the guest sends anything a member does; a `decor` op of another's home's look is refused for anyone,
-  every home's room is anyone's (`scopeMaySend`, 2026-11-10). `peer` stays the partner for a member and either member for the guest; a high-five names whom it
-  is for (`to`).
+  every home's room is anyone's (`scopeMaySend`). `peer` stays the partner for a member and either member for the
+  guest; a high-five names whom it is for (`to`).
 - **Push:** its own `changed` notices reach every phone; of the members' it hears an event's, an ingest's only when it
   brought activity rows (`notify(n, guest)`), and a new epoch's; its welcome's `rec` is the room's `recG`
   (`index.ts Marks`).
@@ -522,12 +522,8 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 - **Client** (`store/live.ts`): `onChange` → one `refresh({fresh: true})` 300 ms later (changes together make one),
   skipped when the cache has it and for this page's own `event` (`sid`; my other devices' are fetched).
 
-## Notifications
-
-None ([decisions](decisions.md#no-notifications); `e2e/no-notify.spec.ts`: nothing asks, subscribes or calls `/push`).
-
 ## Service worker
-`app/src/service-worker/` (pure rules and every cache's bound in `caches.ts`). No `push` or `notificationclick` handler.
+`app/src/service-worker/` (pure rules and every cache's bound in `caches.ts`). No `push` or `notificationclick` handler ([decisions](decisions.md#no-notifications), `e2e/no-notify.spec.ts`).
 
 - **Registration:** by the app, not Kit (`kit.serviceWorker.register = false`; `lib/ui-state/swLate.ts`): once the 3D
   island has its models in or can't draw (30 s at the latest), off the island after the window's load, so a first
@@ -552,7 +548,7 @@ None ([decisions](decisions.md#no-notifications); `e2e/no-notify.spec.ts`: nothi
   older `?v=` dropped at once, then least recently used past `ROOM_CAP_BYTES` (`roomEvict`).
 - **Art cache** (`island-villagers-v1`: the villagers', critters', finds', ground's and decor's art): least recently
   used past `ART_CAP_BYTES`.
-- **Listen cache** (`island-listen-v1`, [kikimimi.md](kikimimi.md) "Audio"): cache first, never revalidated, outliving
+- **Listen cache** (`island-listen-v1`, [kikimimi-engine.md](kikimimi-engine.md#playback)): cache first, never revalidated, outliving
   builds; a Range request passes to the network; `listenEvict`.
 - **STT cache** (`island-stt-v1`, [kikimimi-mic.md "Hosting and the service worker"](kikimimi-mic.md#hosting-and-the-service-worker)):
   the whisper model and runtime under `/stt/`, filled by the page after the mic opt-in (`lib/mic/models.ts

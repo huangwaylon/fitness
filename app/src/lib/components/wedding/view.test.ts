@@ -1,4 +1,4 @@
-// けっこんしき's plan rules (view.ts) over store-shaped tasks (lib/wedding/progress.ts withProgress over the record's
+// 結婚式's plan rules (view.ts) over store-shaped tasks (lib/wedding/progress.ts withProgress over the record's
 // rows as contract/wedding.ts wedTasks reads them): the chips' counts, what each filter draws, the lifted sections and
 // the month groups, the deleted list. The rules of a percent, a state and this month are progress.test's.
 import { describe, expect, it } from 'vitest';

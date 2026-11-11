@@ -1,5 +1,5 @@
 <script lang="ts">
-  // せってい → すがた (design/avatar/sugata-ux.md §3; docs/design.md "すがた"): one dresser. The stage on top (LookStage:
+  // せってい → すがた (docs/players.md "The dresser"; docs/design.md "すがた"): one dresser. The stage on top (LookStage:
   // the final form, its status in words, もどす, the nameplate, the tapped item's colours), six tabs (コーデ · かお · かみ
   // · ふく · こもの · むらびと), a sub-row where a tab has one, then the panel (a grid, the コーデ, the villagers), which
   // scrolls to the screen's foot. What's tapped is worn on the stage (the draft: a villager too); leaving the level (‹,

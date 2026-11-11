@@ -1,4 +1,4 @@
-// けっこんしき's メモ pick (components/wedding/notepad.svelte.ts): これにする waits out its とりけす banner, then saves
+// 結婚式's メモ pick (components/wedding/notepad.svelte.ts): これにする waits out its とりけす banner, then saves
 // from the version held when it was picked, even if the other phone settled the crossing meanwhile.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 

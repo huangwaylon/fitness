@@ -1,5 +1,5 @@
 <script lang="ts">
-  // One grid of the すがた level's closet (customization.md §3.4), NH's wardrobe way: a tile per item (in the variant
+  // One grid of the すがた level's closet (docs/players.md "The closet"), NH's wardrobe way: a tile per item (in the variant
   // worn, else the one last chosen, else the first; the colour filter's when one is set), a tap wears it and shows its
   // colours on the stage (the level's dots, never in the grid: the grid doesn't move). A なし tile first where the slot
   // may be empty. Built a slice per frame (a few

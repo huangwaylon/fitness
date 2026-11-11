@@ -1,4 +1,4 @@
-// The players' portraits (customization.md §5): a look's head, drawn once from the look and kept by its hash, so the
+// The players' portraits (docs/players.md "Portraits"): a look's head, drawn once from the look and kept by its hash, so the
 // コーデ chips and the せってい row show the 3D player's head without a renderer of their own. Drawn by whoever
 // paints (the すがた level's preview registers its renderer while it's open: never a second context); kept in
 // localStorage, each under its own key (`look.portrait.<hash>`; `look.portraits` the kept hashes, the latest KEEP,

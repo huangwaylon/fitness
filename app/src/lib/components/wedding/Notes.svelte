@@ -1,5 +1,5 @@
 <script lang="ts">
-  // けっこんしき's メモ (docs/wedding.md "Notes"): the one shared note as a letter (cream paper with grain, a rose band at
+  // 結婚式's メモ (docs/wedding.md "Notes"): the one shared note as a letter (cream paper with grain, a rose band at
   // its head, rules every 30px under the text, a tilted heart stamp; a game object: cream at every time of day),
   // rendered from its small markdown (Markdown.svelte), 「ふたりのメモ」 over it and who saved it last
   // (「11月4日に はなこ が更新」; the old Sheet's note says so instead). A member's 編集 (on the letter) opens the field

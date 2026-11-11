@@ -1,4 +1,4 @@
-// The closet behind せってい → すがた (design/avatar/customization.md §3): what the grid lists, as one small interface, so
+// The closet behind せってい → すがた (docs/players.md "The closet"): what the grid lists, as one small interface, so
 // the level doesn't care where the parts come from. The closet is the part table's (components/player3d/parts.json, the
 // 3D engineer's pipeline: every hairstyle, eye and mouth and each garment's colour line, with its catalogue icon) and its
 // colours as measured from the parts' own textures (the table's `sw` per item and `icons`: the pipeline's); a bigger table (the
@@ -151,7 +151,7 @@ function tableCloset(table: Table, swatches: Swatches): Closet {
 
 const HAIR = '#3b2619';
 const INK = '#3d2416';
-/** The hair, eye and skin swatches (the art scout's palette, design/avatar/catalog.md). */
+/** The hair, eye and skin swatches (the art scout's palette). */
 const COLOURS: Closet['colours'] = {
   hairColor: ['#2f241d', '#2a1b12', '#3b2619', '#6b4129', '#9a6a43', '#c79a5b', '#8d8a86', '#7a3324', '#d99aa5'],
   eyeColor: ['#3d2416', '#5a3a28', '#2b2018', '#7a5a2e', '#4f6378'],

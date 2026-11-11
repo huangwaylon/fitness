@@ -4,18 +4,21 @@ The target is the users' iPhone 15 and 16 on Safari. Rendering and timing are ju
 phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), never on CI's software GL.
 
 ## Budgets
-- **Bytes, gated by the build** ([testing.md](testing.md#load-budget)): the first load ≤ 400 KB of JS and 70 KB of CSS
-  gzipped (none of it three.js, MapLibre or a sheet), the service worker's precache ≤ 3 MB on the wire, the ききみみ
-  budget (`scripts/kikimimi-budget.ts`), Pages' file cap (`static-files.test.ts`). The build prints the
-  current sizes (`scripts/load-budget.ts`).
+- **Bytes:** gated by the build, the one copy of the numbers: [testing.md "Load budget"](testing.md#load-budget).
 - **Startup:** the asleep guest's villager adds nothing to a member's launch: its model after `shown`, no card while
   it loads (Island3D `guestLate`). ごはん: products.json (2.7 MB) only with a search, or a day with a product logged
   (`db.wantMore`); a picture holds its canvas, not its decoded sheet (food/cells.ts).
 - **The model:** `npm run bench`, year 3 compacted ≤ 15 ms ([runbook §1](runbook.md#1-deploy-the-ui)).
-- **The island's length** (2026-11-10, the grid 156 rows): the ground costs the land's length, not the grid's. The
-  default (57 rows): fields 8.8 MB / ~105 ms on the Mac (was 11.1 MB / ~124 ms on the 80-row grid), chunks 1.9 MB, 8
-  bakes. The longest (152 rows): fields 21.6 MB / ~230 ms, chunks 4.5 MB (the cache's record ~26 MB), 12 bakes at most
-  (`BAND_BUDGET`, ~24 MB; 20 unbudgeted would be ~39 MB). Draws and a scroll's frame are the same at either length.
+- **The island's length** (the grid 20 × 156): the ground costs the land's length, not the grid's. The default (57
+  rows): fields 8.8 MB / ~105 ms on the Mac, chunks 1.9 MB, 8 bakes. The longest (152 rows): fields 21.6 MB / ~230 ms,
+  chunks 4.5 MB (the cache's record ~26 MB). A band (8 tile rows) is 4 draws and one ~2 MB bake target; at most 12 are
+  baked (`BAND_BUDGET`, ~24 MB; 20 unbudgeted would be ~39 MB), a band coming into reach taking the farthest one's
+  target. Draws and a scroll's frame are the same at either length.
+- **The museum** (iPhone 15 viewport, WebKit, everything in; engine.ts): a wall 2-3 draws, a room ~100-230 calls; the
+  fossils ~110 calls, ~110k triangles, 3.5 MB in 22 packs; the gallery ~70 calls, 0.8 MB in 4 packs; the sea creatures
+  ~130 calls with the aquarium. Each texture decoded and uploaded once however many repeats use it; the warm-up uploads
+  every texture (8 every 32 ms) and compiles every room's programs, so a room change compiles nothing (museum.spec
+  @render). At rest 0 frames; exhibits step at 30/s while something on screen moves (15/s after 2.5 s with no finger).
 - **Frames:** the island at most 30 fps ([design](../design.md#frame-rate)); nothing in the log, the sync or the
   sheets runs per frame.
 
@@ -42,7 +45,7 @@ phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), neve
      shader compiles in software. For Chromium timings use `--use-angle=metal --enable-gpu --ignore-gpu-blocklist`.
   2. `?demo` turns on three's shader checks (`renderer.debug.checkShaderErrors`, testMode.ts): ~350 ms of sync
      readbacks a launch that no phone pays. Measure with `&checks=0`.
-  3. The first frame has one draw call (the ground); the island the user sees is `perf.boot`'s `shown`.
+  3. The first frame has one draw call (the ground); the island as seen is `perf.boot`'s `shown`.
 
 ## Backlog (open)
 | # | Change | Why / expected gain | Where |
@@ -57,7 +60,6 @@ phones' own `perf.boot` / `perf.sheet` ([observability](observability.md)), neve
 | K1 | A ききみみ lesson's clips without their whole packs (a level-4 lesson: 3 packs, 3.5 MB; Pages answers no Range): smaller packs (a unit's review clips in its unit pack) | ~1.2 s on 4G before the first question; owned by the packs' work | kikimimi/packs.ts prefetchClips |
 | A1 | Check `perf.sheet` for ききみみ's first tap on a phone: headless Chromium spends 658 ms in `new AudioContext` | if real, create the context at the first tap anywhere | sound/engine.ts #ensure |
 | G1 | Reuse placeBody / at / mirror / roundedIn's scratch arrays | 7.9 MB/s of garbage while dragging | world3d |
-| SW | After registration, warm `island-room-v1` with the startup models in the background | a first visit fetches them before the worker exists, so the first warm launch still goes to the network for them | service-worker/, swLate.ts |
 
 Not pursued: a launch snapshot and crossfade (declined); the View Transitions API (it snapshots the WebGL canvas and
 saves no mount work).

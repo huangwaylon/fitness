@@ -1,4 +1,4 @@
-// A person's look and コーデ (design/avatar/customization.md §3–4; contract/look.ts): reading the look each person
+// A person's look and コーデ (docs/players.md "The look"; contract/look.ts): reading the look each person
 // wears, and the actions of せってい → すがた. Each sends one `pref` of the sender's own (the guest's too): `look` when
 // the level is left (the UI decides when), `savedLooks` (the whole list) at each コーデ edit. Results are synchronous;
 // the model shows a send at once (week.svelte.ts).

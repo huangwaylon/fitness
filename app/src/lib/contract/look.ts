@@ -1,4 +1,4 @@
-// A person's look (design/avatar/customization.md §4; docs/backend.md "Events" `pref`): an NH human player assembled
+// A person's look (docs/players.md "The look"; docs/backend.md "Events" `pref`): an NH human player assembled
 // from parts, or their roster villager (the `villager` pref says which). Two prefs, each the sender's own (members and
 // the guest alike, never another's): `look` (the look worn, or null for いつもの) and `savedLooks` (their コーデ, the
 // whole list). いつもの, the default look, is code (DEFAULT_LOOKS), never stored: no `look` pref means it. What the record
@@ -20,7 +20,7 @@ export interface PlayerLook {
   v: 1;
   hair: PartId; hairColor: Hex;
   eye: PartId; eyeColor: Hex;
-  /** The mouth and its resting frame (0–8: 0 gentle smile, 1 open smile, …; design/avatar/tech-notes.md). */
+  /** The mouth and its resting frame (0–8: 0 gentle smile, 1 open smile, …: player3d/tune.ts). */
   mouth: PartId; mouthFrame: number;
   skin: Hex; cheek: Shape3; nose: Shape3;
   /** A top (`TopsTexTop…`) or a one-piece (`TopsTexOnepiece…`: then `bottom` is null). */
