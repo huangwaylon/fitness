@@ -208,24 +208,57 @@ test('a plaque naming the hall over every way back to it, whole on the screen fr
   }
 });
 
-test('a room change compiles nothing: every built room’s programs are made in the warm-up, shown for it', { tag: '@render' }, async ({ page }) => {
-  await seed(page, [['fish', 'koi', 'A'], ['bug', 'tarantula', 'B'], ['sea', 'octopus', 'A'], ['fossil', 'amber', 'G'], ['fossil', 't-rex-skull', 'A'], ['item', 'famous-painting', 'A'], ['item', 'gallant-statue', 'B']]);
-  await open(page);
-  await page.evaluate(() => ['fish', 'fossil', 'art'].forEach((w) => (window as unknown as { __museum: { wake(w: string): void } }).__museum.wake(w)));
-  await expect.poll(async () => (await mu<string[]>(page, 'shown()')).length, { timeout: 30_000 }).toBe(7);
-  const warmed = () => expect.poll(() => page.evaluate('((s) => s.warming || s.loading > 0)(window.__museum.stats())'), { timeout: 30_000 }).toBe(false);
-  await warmed();
-  const stats = () => mu<{ frames: number; mem: number[] }>(page, 'stats()');
-  const before = (await stats()).mem[2], seen: Record<string, number> = {};
-  for (const name of ['room:fish', 'tank:reef', 'room:bug', 'room:F1', 'room:F2', 'room:F3', 'room:G1', 'room:G2', 'entrance']) {
-    const f0 = (await stats()).frames;
-    await putAt(page, name);
-    await expect.poll(async () => (await stats()).frames, { timeout: 15_000 }).toBeGreaterThan(f0);
-    await expect.poll(() => mu<boolean>(page, 'still()'), { timeout: 15_000 }).toBe(true);
-    seen[await mu<string>(page, 'room()')] = (await stats()).mem[2];
-  }
-  expect(Object.keys(seen).sort()).toEqual(['F1', 'F2', 'F3', 'G1', 'G2', 'bug', 'fish', 'hall']);
-  expect(seen).toEqual(Object.fromEntries(Object.keys(seen).map((k) => [k, before])));
+// The programs, drawn (logic mode compiles nothing): in CI's software GL the GPU process's compiles and rasters are most
+// of their time (the museum's open alone 6-19 s on a loaded runner), and the drawn smoke's runners differ 2-3x in speed
+// (11-10, every test in the job: world3d:24 8 -> 16 s), so 20-26 s on a fast one passed 30 s on a slow one. They check
+// programs, not pixels: a pixel ratio of 1 (a quarter of the raster) and a drawn test's time, as the other drawn ones.
+test.describe('the programs, drawn', () => {
+  test.use({ deviceScaleFactor: 1 });
+
+  test('a room change compiles nothing: every built room’s programs are made in the warm-up, shown for it', { tag: '@render' }, async ({ page }) => {
+    test.setTimeout(60_000);
+    await seed(page, [['fish', 'koi', 'A'], ['bug', 'tarantula', 'B'], ['sea', 'octopus', 'A'], ['fossil', 'amber', 'G'], ['fossil', 't-rex-skull', 'A'], ['item', 'famous-painting', 'A'], ['item', 'gallant-statue', 'B']]);
+    await open(page);
+    await page.evaluate(() => ['fish', 'fossil', 'art'].forEach((w) => (window as unknown as { __museum: { wake(w: string): void } }).__museum.wake(w)));
+    await expect.poll(async () => (await mu<string[]>(page, 'shown()')).length, { timeout: 30_000 }).toBe(7);
+    const warmed = () => expect.poll(() => page.evaluate('((s) => s.warming || s.loading > 0)(window.__museum.stats())'), { timeout: 30_000 }).toBe(false);
+    await warmed();
+    const stats = () => mu<{ frames: number; mem: number[] }>(page, 'stats()');
+    const before = (await stats()).mem[2], seen: Record<string, number> = {};
+    for (const name of ['room:fish', 'tank:reef', 'room:bug', 'room:F1', 'room:F2', 'room:F3', 'room:G1', 'room:G2', 'entrance']) {
+      const f0 = (await stats()).frames;
+      await putAt(page, name);
+      await expect.poll(async () => (await stats()).frames, { timeout: 15_000 }).toBeGreaterThan(f0);
+      await expect.poll(() => mu<boolean>(page, 'still()'), { timeout: 15_000 }).toBe(true);
+      seen[await mu<string>(page, 'room()')] = (await stats()).mem[2];
+    }
+    expect(Object.keys(seen).sort()).toEqual(['F1', 'F2', 'F3', 'G1', 'G2', 'bug', 'fish', 'hall']);
+    expect(seen).toEqual(Object.fromEntries(Object.keys(seen).map((k) => [k, before])));
+  });
+
+  test('a wing rebuilt with a new find keeps its programs: none freed with the old wing to compile again for the new', { tag: '@render' }, async ({ page }) => {
+    test.setTimeout(60_000);
+    const river = ['koi', 'carp', 'goldfish', 'catfish', 'crawfish', 'bluegill', 'pike', 'char', 'loach', 'pond-smelt'];
+    await seed(page, river.map((id) => ['fish', id, 'A'] as ['fish', string, 'A']));
+    await open(page);
+    await putAt(page, 'tank:river');
+    const shown = async () => (await mu<string[]>(page, 'shown()')).length;
+    await expect.poll(shown, { timeout: 15_000 }).toBe(7);
+    const programs = async () => (await mu<{ mem: number[] }>(page, 'stats()')).mem[2];
+    // (the warm-up done: its fading programs compiled with the rest)
+    const warmed = () => expect.poll(() => page.evaluate('((s) => s.warming || s.loading > 0)(window.__museum.stats())'), { timeout: 30_000 }).toBe(false);
+    await warmed();
+    const before = await programs(), seen: number[] = [];
+    // (a find kept off and let back: the aquarium rebuilt each time, as a new find rebuilds it)
+    for (const id of [river[0], null, river[1], null]) {
+      await page.evaluate((id) => (window as unknown as { __museum: { withhold(id: string | null): void } }).__museum.withhold(id), id);
+      await expect.poll(shown, { timeout: 15_000 }).toBe(7);
+      seen.push(await programs());
+      await warmed();
+      seen.push(await programs());
+    }
+    expect(seen).toEqual(seen.map(() => before));
+  });
 });
 
 test('the canvas never shows blank: each resize of its buffer (a drag’s lighter pixel ratio, its end, a new size) is drawn over in the same task', async ({ page }) => {
@@ -651,29 +684,6 @@ test('while a drag turns the camera the curator’s balloon stays whole (its box
   const h1 = await him();
   await expectWhole(page, '[data-fx="talk"]', h1, near);
   await page.mouse.up();
-});
-
-test('a wing rebuilt with a new find keeps its programs: none freed with the old wing to compile again for the new', { tag: '@render' }, async ({ page }) => {
-  const river = ['koi', 'carp', 'goldfish', 'catfish', 'crawfish', 'bluegill', 'pike', 'char', 'loach', 'pond-smelt'];
-  await seed(page, river.map((id) => ['fish', id, 'A'] as ['fish', string, 'A']));
-  await open(page);
-  await putAt(page, 'tank:river');
-  const shown = async () => (await mu<string[]>(page, 'shown()')).length;
-  await expect.poll(shown, { timeout: 15_000 }).toBe(7);
-  const programs = async () => (await mu<{ mem: number[] }>(page, 'stats()')).mem[2];
-  // (the warm-up done: its fading programs compiled with the rest)
-  const warmed = () => expect.poll(() => page.evaluate('((s) => s.warming || s.loading > 0)(window.__museum.stats())'), { timeout: 15_000 }).toBe(false);
-  await warmed();
-  const before = await programs(), seen: number[] = [];
-  // (a find kept off and let back: the aquarium rebuilt each time, as a new find rebuilds it)
-  for (const id of [river[0], null, river[1], null]) {
-    await page.evaluate((id) => (window as unknown as { __museum: { withhold(id: string | null): void } }).__museum.withhold(id), id);
-    await expect.poll(shown, { timeout: 15_000 }).toBe(7);
-    seen.push(await programs());
-    await warmed();
-    seen.push(await programs());
-  }
-  expect(seen).toEqual(seen.map(() => before));
 });
 
 test('a villager with no 3D model (チューリ: not in NH\'s files) stands in the museum as its card, not a shadow alone', async ({ page }) => {
