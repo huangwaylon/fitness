@@ -148,8 +148,12 @@ function report(rows: Row[], since: number): void {
   table('Usage (counters)', ['n', 'what'], [...use.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20).map(([k, n]) => [n, k]));
   const cron = rows.filter((r) => r.ev === 'cron.wx');
   if (cron.length) console.log(`\nWeather fetches: ${cron.length}, failed ${cron.filter((r) => r.d.ok !== true).length}${cron.filter((r) => r.d.fail).length ? ` (${[...new Set(cron.map((r) => r.d.fail).filter(Boolean))].join(', ')})` : ''}`);
+  // the log's own caps and the phones' drops, one line each per kind (a phone may say ~90 drops a week)
   const caps = rows.filter((r) => r.ev === 'log.cap' || r.ev === 'log.drop');
-  if (caps.length) console.log(`\nThe log itself: ${caps.map((r) => `${r.ev} ${fmtD(r.d)}`).join('; ')}`);
+  if (caps.length) console.log(`\nThe log itself: ${countBy(caps, (r) => `${r.ev} ${fmtD({ why: r.d.why, bucket: r.d.bucket })} ${r.role ?? ''}`).map(([k, xs]) => {
+    const n = xs.reduce((s, x) => s + (Number(x.d.n) || 0), 0), ts = xs.map((x) => x.ts);
+    return `${k.replace(/ (why|bucket)=undefined/g, '').trim()} ×${xs.length}${n && n !== xs.length ? ` (${n} events)` : ''} ${tokyo(Math.min(...ts))} – ${tokyo(Math.max(...ts))}`;
+  }).join('; ')}`);
 }
 
 try {
