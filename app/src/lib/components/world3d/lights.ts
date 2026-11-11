@@ -12,7 +12,7 @@ import {
   ShaderMaterial, type Scene
 } from 'three';
 import { hermite } from '#lib/math.ts';
-import { BEND_GLSL, bendPoint, bendU, glow } from './bend.ts';
+import { BEND_GLSL, bendPoint, bendU, glow, pointsU } from './bend.ts';
 /** The halos' and pools' haze: the land's (engine.ts), so a far lamp still glows where the land shows. */
 export const lampFog = { near: { value: 1200 }, far: { value: 3000 } };
 
@@ -117,8 +117,8 @@ export interface Lights {
   level(v: number): void;
   /** One frame: true while something still fades. `cx, cz`: the view's centre on the ground (world). */
   frame(t: number, cx: number, cz: number, R: number, pivotZ: number): boolean | 'ambient';
-  /** How many point lights are lit (any share) and the lights' count (stats). */
-  stats(): { points: number; lamps: number };
+  /** How many point lights are lit (any share), the lights' count and the point lights' (stats). */
+  stats(): { points: number; lamps: number; slots: number };
   /** The ids of the lights lit now (their halos on: the level over 0; a stand-in's `s:` prefixed). */
   lit(): string[];
   dispose(): void;
@@ -138,6 +138,8 @@ export function createLights(scene: Scene, n = POINTS): Lights {
     scene.add(l);
     return { l, lamp: null as Spot | null };
   });
+  // (the point lights' mask, bend.ts pointMask: every slot off till it's lit)
+  const on = (pointsU.uPointOn.value = Array.from({ length: n }, () => 0));
   interface Spot extends LampSpot {
     /** Its share of a point light now and where it's heading (0 / 1). */
     w: number;
@@ -200,12 +202,12 @@ export function createLights(scene: Scene, n = POINTS): Lights {
         moving = true;
       }
     }
-    for (const p of points) {
+    points.forEach((p, k) => {
       const s = p.lamp;
       if (!s || (s.w <= 0 && !s.want)) {
         p.lamp = null;
-        p.l.intensity = 0;
-        continue;
+        p.l.intensity = on[k] = 0;
+        return;
       }
       const flick = s.kind === 'fire' ? 0.82 + 0.18 * Math.sin(t / 90 + s.seed) * Math.sin(t / 37 + s.seed) : 1;
       const ease = hermite(s.w);
@@ -213,7 +215,9 @@ export function createLights(scene: Scene, n = POINTS): Lights {
       p.l.color.set(s.colour);
       const [x, y, z] = bendPoint(s.x, s.y, -s.z, pivotZ, R);
       p.l.position.set(x, y, z);
-    }
+      on[k] = p.l.intensity > 0 ? 1 : 0;
+    });
+    pointsU.uPointN.value = on.lastIndexOf(1) + 1;
     // the halos and the pools: always on with the lamps (a fire's breathe with it)
     let fire = false;
     spots.forEach((s, k) => {
@@ -234,7 +238,7 @@ export function createLights(scene: Scene, n = POINTS): Lights {
     set,
     level: (v) => void (lvlTo = v),
     frame,
-    stats: () => ({ points: points.filter((p) => p.l.intensity > 0).length, lamps: spots.length }),
+    stats: () => ({ points: points.filter((p) => p.l.intensity > 0).length, lamps: spots.length, slots: n }),
     lit: () => (lvl > 0 ? spots.map((s) => s.id) : []),
     dispose() {
       for (const m of [halo, pool]) {

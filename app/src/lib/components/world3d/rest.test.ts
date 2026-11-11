@@ -25,7 +25,7 @@ function sim() {
 describe('perf.rest', () => {
   it('15 s untouched, then 10 s of frames, shadow passes and wake-ups a second, the scene calls and triangles, and the full rate\'s share and top reasons; again after a touch; once a load', () => {
     const s = sim();
-    const st = { frames: 0, shadows: 0, input: 0, sceneCalls: 240, sceneTris: 290_000, dpr: 2, camZ: 412.4, shadowSize: 2048, full: 0, fullWhy: {} as Record<string, number> };
+    const st = { frames: 0, shadows: 0, input: 0, sceneCalls: 240, sceneTris: 290_000, dpr: 2, camZ: 412.4, shadowSize: 2048, full: 0, fullWhy: {} as Record<string, number>, slots: 6, pointMask: true };
     let ok = true;
     // 12 frames a second, a shadow pass every 4th, one wake-up each, ticking with the clock; every 4th frame at the full
     // rate, a villager's (and the things' every 8th, a name the log doesn't know every 12th)
@@ -47,7 +47,7 @@ describe('perf.rest', () => {
     s.run(st.input + REST_MS + SAMPLE_MS + 100);
     expect(logged).toHaveLength(1);
     expect(logged[0][0]).toBe('perf.rest');
-    expect(logged[0][1]).toMatchObject({ fps: expect.closeTo(12, 0) as number, shadows: expect.closeTo(3, 0) as number, wakes: expect.closeTo(12, 0) as number, calls: 240, tris: 290_000, dpr: 2, camZ: 412, sm: 2048, full: 25, why1: 'vil', w1: 25, why2: 'things', w2: 13, why3: 'other', w3: 8 });
+    expect(logged[0][1]).toMatchObject({ fps: expect.closeTo(12, 0) as number, shadows: expect.closeTo(3, 0) as number, wakes: expect.closeTo(12, 0) as number, calls: 240, tris: 290_000, dpr: 2, camZ: 412, sm: 2048, full: 25, why1: 'vil', w1: 25, why2: 'things', w2: 13, why3: 'other', w3: 8, pts: 6, pm: true });
     expect(logged[0][1]).not.toHaveProperty('why4');
     expect(s.pending()).toBe(0);
     stop();

@@ -4,9 +4,29 @@
 // z' = pivot − (R + y)·sin θ, y' = (R + y)·cos θ − R (three's z runs out of the screen: world z into the island is
 // three's −z). Exact (not the parabola), so a tall thing leans back with the ground, as NH's do. One shared uniform
 // pair: a frame updates it once. bendPoint() is the same on the CPU (taps, hit tests, overlays).
-import { AddEquation, CustomBlending, OneFactor, SrcAlphaFactor, ZeroFactor, type Material, type Mesh, type Object3D, type WebGLProgramParametersWithUniforms } from 'three';
+// The point lights' mask (pointMask, `?pointmask=1`): each bent lit material's point-light loop skips a light that's
+// off (lights.ts: its intensity 0, all of them by day), by a uniform: one program set, nothing compiled at dusk.
+import { AddEquation, CustomBlending, OneFactor, ShaderChunk, SrcAlphaFactor, ZeroFactor, type Material, type Mesh, type Object3D, type WebGLProgramParametersWithUniforms } from 'three';
 
 export const bendU = { uBendZ: { value: 0 }, uBendR: { value: 900 } };
+/** Each point light on (1) or off (0), by its slot (lights.ts writes it: as many as the scene's point lights). */
+export const pointsU = { uPointOn: { value: [] as number[] }, uPointN: { value: 0 } };
+/** The mask's in the bent materials compiled from now (the island's option, set before its first frame). */
+export const pointMask = { on: false };
+
+const LOOP_START = '#pragma unroll_loop_start', LOOP_END = '#pragma unroll_loop_end', POINT_AT = 'pointLight = pointLights[ i ];';
+/** A fragment shader's point-light loop skipped while no point light is lit (uPointN: up to the last lit slot), and in
+ *  it each slot's work while that one's off (uPointOn), three's unrolled loop still. Three's own where point lights
+ *  cast shadows. Unchanged where it has no such loop. */
+export function maskedLights(frag: string): string {
+  const f = frag.replace('#include <lights_fragment_begin>', ShaderChunk.lights_fragment_begin);
+  const at = f.indexOf(POINT_AT), a = f.lastIndexOf(LOOP_START, at), b = at < 0 ? -1 : f.indexOf(LOOP_END, at);
+  if (at < 0 || a < 0 || b < 0) return frag;
+  const loop = f.slice(a, b + LOOP_END.length);
+  const mine = `if ( uPointN > 0 ) {\n${loop.replace(POINT_AT, `if ( uPointOn[ i ] > 0.5 ) {\n${POINT_AT}`).replace(new RegExp(`\\}\\s*${LOOP_END}$`), `}\n}\n${LOOP_END}`)}\n}`;
+  const head = '#if NUM_POINT_LIGHTS > 0\nuniform float uPointOn[ NUM_POINT_LIGHTS ];\nuniform int uPointN;\n#endif\n';
+  return `${head}${f.slice(0, a)}#if defined( USE_SHADOWMAP ) && NUM_POINT_LIGHT_SHADOWS > 0\n${loop}\n#else\n${mine}\n#endif\n${f.slice(b + LOOP_END.length)}`;
+}
 
 export const BEND_GLSL = /* glsl */ `
 uniform float uBendZ;
@@ -43,9 +63,13 @@ export function bend<M extends Material>(m: M): M {
     s.uniforms.uBendZ = bendU.uBendZ;
     s.uniforms.uBendR = bendU.uBendR;
     s.vertexShader = BEND_GLSL + s.vertexShader.replace('#include <project_vertex>', PROJECT);
+    if (pointMask.on) {
+      Object.assign(s.uniforms, pointsU);
+      s.fragmentShader = maskedLights(s.fragmentShader);
+    }
   };
   const key = m.customProgramCacheKey.bind(m);
-  m.customProgramCacheKey = () => `bend|${key()}`;
+  m.customProgramCacheKey = () => `bend${pointMask.on ? '-pm' : ''}|${key()}`;
   return m;
 }
 

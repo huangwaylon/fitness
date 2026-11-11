@@ -3,7 +3,8 @@
 // the shadow map's passes and the pacers' display frames asked for, a second, and at the end the scene's draw calls and
 // triangles a frame (the last without a shadow redraw), its pixel ratio, where the camera is (its z) and the shadow
 // map's size (the `?shadow=` A/B); the share of the frames drawn at the full rate and its top three reasons (what kept
-// the island above REST_FPS: a villager's gesture, a critter's fade). Two timers, no frames of its own (a rAF loop would be the wake-ups it counts). No
+// the island above REST_FPS: a villager's gesture, a critter's fade); the point lights and their mask (the phones' A/B:
+// `?points=`, `?pointmask=1`). Two timers, no frames of its own (a rAF loop would be the wake-ups it counts). No
 // three.js.
 import { log } from '#lib/sync/log.ts';
 import { LOG_FULL_WHY } from '#lib/contract/log.ts';
@@ -16,7 +17,7 @@ const AGAIN_MS = 15_000;
 let sampled = false;
 
 export interface RestSource {
-  stats(): { frames: number; shadows: number; input: number; sceneCalls: number; sceneTris: number; dpr: number; camZ: number; shadowSize: number; full: number; fullWhy: Readonly<Record<string, number>> };
+  stats(): { frames: number; shadows: number; input: number; sceneCalls: number; sceneTris: number; dpr: number; camZ: number; shadowSize: number; full: number; fullWhy: Readonly<Record<string, number>>; slots: number; pointMask: boolean };
   /** Up and in front: loaded, the page shown, the island not paused under a sheet. */
   ok(): boolean;
 }
@@ -47,7 +48,7 @@ export function watchRest(o: RestSource, clock: RestClock = PAGE): () => void {
       sampled = true;
       const per = (n: number) => Math.round((n / s) * 10) / 10;
       const drawn = Math.max(1, b.frames - a.frames), pct = (n: number) => Math.round((n / drawn) * 100);
-      log('perf.rest', { fps: per(b.frames - a.frames), shadows: per(b.shadows - a.shadows), wakes: per(wakes.n - w0), calls: b.sceneCalls, tris: b.sceneTris, dpr: b.dpr, camZ: Math.round(b.camZ), sm: b.shadowSize, full: pct(b.full - a.full), ...top(a.fullWhy, b.fullWhy, pct) });
+      log('perf.rest', { fps: per(b.frames - a.frames), shadows: per(b.shadows - a.shadows), wakes: per(wakes.n - w0), calls: b.sceneCalls, tris: b.sceneTris, dpr: b.dpr, camZ: Math.round(b.camZ), sm: b.shadowSize, full: pct(b.full - a.full), ...top(a.fullWhy, b.fullWhy, pct), pts: b.slots, pm: b.pointMask });
     }, SAMPLE_MS);
   };
   wait();

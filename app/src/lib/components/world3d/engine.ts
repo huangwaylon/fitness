@@ -19,7 +19,7 @@ import {
   PCFSoftShadowMap, MeshDepthMaterial, RGBADepthPacking, FrontSide, BackSide, DoubleSide, type Material, type MeshLambertMaterial, type Object3D, type Side, type WebGLRenderer
 } from 'three';
 import { cubicInOut, cubicOut } from '#lib/math.ts';
-import { bendTree, bendU, unbendRay } from './bend.ts';
+import { bendTree, bendU, pointMask, unbendRay } from './bend.ts';
 import { waterFog, waterU } from './water.ts';
 import { createThings, type Things } from './things.ts';
 import { shadowBox, sunOn, type ShadowBox } from './shadowBox.ts';
@@ -97,6 +97,9 @@ export interface Options {
   cull?: boolean;
   /** The real point lights (lights.ts POINTS: 6; `?points=`, an A/B of their GPU cost by day). */
   points?: number;
+  /** Each point light's work skipped in the shaders while it's off (bend.ts pointMask; `?pointmask=1`, the phones' A/B:
+   *  default off till it shows its worth there). */
+  pointMask?: boolean;
 }
 interface Stats {
   fps: number;
@@ -131,6 +134,9 @@ interface Stats {
   zoom: number;
   points: number;
   lamps: number;
+  /** The real point lights (lit or not) and whether their shader mask is on (bend.ts pointMask). */
+  slots: number;
+  pointMask: boolean;
   /** The flourishes playing (effects.ts). */
   fx: number;
   /** How many flourishes' parts (not the ambience's) have come on so far (a short one may be over when it's read). */
@@ -314,6 +320,8 @@ export interface Island3 {
 
 export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: WebGLRenderer) => BuiltGround, init: Partial<Options> & { aa?: boolean } = {}): Island3 {
   const opts: Options = { dpr: Math.min(2, window.devicePixelRatio || 1), shadows: true, ambient: 30, ...init };
+  // (before any material compiles: bend.ts reads it then)
+  pointMask.on = !!opts.pointMask;
   // the e2e's logic mode (testMode.ts): every frame runs (the scene, the cameras, the hooks), nothing is drawn
   const noDraw = drawOff();
   if (noDraw) Object.assign(opts, { dpr: 1, shadows: false });
@@ -1334,7 +1342,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
         fps: stamps.length, cpu: [pctl(cpu, 0.5), pctl(cpu, 0.95)], gap: [pctl(gaps, 0.5), pctl(gaps, 0.95)],
         calls: renderer.info.render.calls, tris: renderer.info.render.triangles, sceneCalls, sceneTris, textures: renderer.info.memory.textures,
         geometries: renderer.info.memory.geometries, programs: renderer.info.programs?.length ?? 0, shadows: shadowsDrawn, compiles, linking: warm.size(), dpr: renderer.getPixelRatio(), shadowSize: sun.shadow.mapSize.x, frames, at: lastFrame, input: lastInput,
-        loading: things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps, fx: effects.count(),
+        loading: things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps, slots: l.slots, pointMask: pointMask.on, fx: effects.count(),
         fxShown: effects.shown(), why: [...why], full, fullWhy: { ...fullWhy }, paused, drawn: !noDraw
       };
     },
