@@ -3,6 +3,7 @@
 // Every message is one small JSON object (≤ MAX_BYTES), versioned by `v`, and checked by the same parsers on both
 // sides. Its one import is contract/layout.ts (the layout's bounds, ids and scope rule: the record's).
 
+import type { EventType } from './api.ts';
 import { HOME_ID, OBJ_ID, PART, TILE_RE, TOKEN, WORLD_X, WORLD_Z, X_MAX, Z_MAX, isChunkId, isRoomScope, scopeMayWrite } from './layout.ts';
 
 export const LIVE_V = 3;
@@ -324,7 +325,14 @@ export interface Notice {
   /** (2026-11-09) The writing page's session id (the /api body's `sid`): that page skips its own change, the writer's
    *  other devices fetch it. */
   sid?: string;
+  /** (r3 L9) Every event of the write is one the island doesn't draw (CALM_EVENTS): a phone fetches a run of them
+   *  once it pauses, not one fetch an event (a partner's meal log: 12 snapshots in 80 s). */
+  calm?: true;
 }
+
+/** The events the island doesn't draw, only a sheet does (the meal log, ききみみ, the packing lists and trip notes, the
+ *  wedding board): a change of only these is `calm`. @public (relay/src/store.ts) */
+export const CALM_EVENTS: readonly EventType[] = ['food', 'food_repeat', 'food_recipe', 'food_custom', 'listen', 'pack', 'pack_chk', 'pack_reset', 'trip_note', 'wtask', 'wdone', 'wconf', 'wnote'];
 
 /** Close codes (4000–4999 are the application's). */
 export const CLOSE = {
@@ -660,7 +668,7 @@ export function otherVersion(raw: unknown): number | null {
 /** A notice's fields from `o` (known fields only), or null. */
 function noticeOf(o: Obj): Notice | null {
   if (!oneOf(NOTICE_WHAT)(o.what) || !isWho(o.who) || typeof o.at !== 'string' || !AT.test(o.at) || typeof o.rev !== 'string' || !REV.test(o.rev)) return null;
-  return { what: o.what, who: o.who, at: o.at, rev: o.rev, ...(typeof o.sid === 'string' && SID.test(o.sid) ? { sid: o.sid } : {}) };
+  return { what: o.what, who: o.who, at: o.at, rev: o.rev, ...(typeof o.sid === 'string' && SID.test(o.sid) ? { sid: o.sid } : {}), ...(o.calm === true && o.what === 'event' ? { calm: true as const } : {}) };
 }
 
 /** The body of a /notify POST as the relay accepts it (`{what, who, at, rev}`, ≤ MAX_BYTES), or null. @public (relay/, sync/live.ts) */

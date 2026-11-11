@@ -44,8 +44,14 @@ describe('the meal log in the record', () => {
 
   it('keeps an entry, tells the phones, and the partner’s and the guest’s phones see it', () => {
     expect(log('A', 'fmeal001')).toMatchObject({ ok: true });
-    expect(notices.at(-1)).toMatchObject({ what: 'event', who: 'A' });
+    // (calm: the island draws no meal; a phone fetches a run of them once it pauses, r3 L9)
+    expect(notices.at(-1)).toMatchObject({ what: 'event', who: 'A', calm: true });
     for (const key of [KEY_B, KEY_C]) expect(entries(key)).toMatchObject([{ id: 'fmeal001', who: 'A', d: '2026-11-03', m: 'l', g: 150, f: RICE }]);
+    // a batch of meals is calm too; one with anything the island draws is not
+    call(KEY_A, 'events', { events: [{ id: 'eb1', type: 'food', data: { id: 'fmeal101', at: (now += 1000), d: '2026-11-03', m: 'l', g: 150, f: RICE } }] });
+    expect(notices.at(-1)?.calm).toBe(true);
+    call(KEY_A, 'events', { events: [{ id: 'eb2', type: 'food', data: { id: 'fmeal102', at: (now += 1000), d: '2026-11-03', m: 'l', g: 150, f: RICE } }, { id: 'eb3', type: 'pref', data: { key: 'locale', value: 'en' } }] });
+    expect(notices.at(-1)).not.toHaveProperty('calm');
   });
 
   it('cleans the food’s name and label, rounds the grams, and keeps it as cleaned', () => {

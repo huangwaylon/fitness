@@ -32,7 +32,7 @@ import { boardAccept, boardBeats, boardOpOf, cleanText, type BoardEntry } from '
 import { isPackType, packClean, PackBook, packRowOf, packSlot, PACK_TYPES, type PackVerdict } from '../../app/src/lib/contract/pack.ts';
 import { isWedType, WedBook, wedClean, wedNeeds, wedRowOf, wedSlot, WNOTE_DATA_CHARS, type WedVerdict } from '../../app/src/lib/contract/wedding.ts';
 import { foodAccept, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, repeatAccept, repeatNext, type RepeatOpBy } from '../../app/src/lib/contract/food.ts';
-import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
+import { CALM_EVENTS, type Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { verifyNotify } from './notify.ts';
 import { errName } from './log.ts';
 import { isLogId, scrubMsg } from '../../app/src/lib/contract/log.ts';
@@ -610,7 +610,7 @@ export class StoreCore {
 
   private event(me: Who, body: Rec): Reply {
     const r = this.keep(me, body);
-    if (r.ok && r.at) this.io.notify({ what: 'event', who: me, at: r.at, rev: this.rev(), ...(this.sid ? { sid: this.sid } : {}) });
+    if (r.ok && r.at) this.io.notify({ what: 'event', who: me, at: r.at, rev: this.rev(), ...(this.sid ? { sid: this.sid } : {}), ...(calmType(body.type) ? { calm: true } : {}) });
     const { at: _at, ...reply } = r;
     return reply;
   }
@@ -626,7 +626,7 @@ export class StoreCore {
     // (one group alone may be up to GROUP_MAX: a room's whole change, all or none)
     const oneGroup = Array.isArray(list) && list.length <= GROUP_MAX && !!groupOf(list[0]) && list.every((e) => groupOf(e) === groupOf(list[0]));
     if (!Array.isArray(list) || !list.length || (list.length > EVENTS_MAX && !oneGroup)) return fail('bad_request');
-    let last: string | null = null;
+    let last: string | null = null, calm = true;
     const results: (Reply & { id: string | null })[] = [];
     for (let i = 0; i < list.length; ) {
       const g = groupOf(list[i]);
@@ -635,14 +635,14 @@ export class StoreCore {
       const part = list.slice(i, j);
       const rs = g ? this.group(me, part) : [this.keepOne(me, part[0])];
       for (const [k, r] of rs.entries()) {
-        if (r.ok && r.at) last = r.at;
         const e = part[k];
+        if (r.ok && r.at) (last = r.at), (calm &&= isRec(e) && calmType(e.type));
         const { at, ...rest } = r;
         results.push({ id: isRec(e) && typeof e.id === 'string' ? e.id : null, ...rest, ...(at ? { at } : {}) });
       }
       i = j;
     }
-    if (last) this.io.notify({ what: 'event', who: me, at: last, rev: this.rev(), ...(this.sid ? { sid: this.sid } : {}) });
+    if (last) this.io.notify({ what: 'event', who: me, at: last, rev: this.rev(), ...(this.sid ? { sid: this.sid } : {}), ...(calm ? { calm: true } : {}) });
     return { ok: true, results };
   }
 
@@ -1593,3 +1593,6 @@ const metricRow = (r: MetricCols): MetricRow => [r.at, r.person, r.date, r.metri
 const eventRow = (r: EventCols): EventRow => [r.at, r.person, r.id, r.type, r.data];
 /** `at`, then `seq`. */
 const byAt = (x: { at: string; seq: number }, y: { at: string; seq: number }): number => (x.at < y.at ? -1 : x.at > y.at ? 1 : x.seq - y.seq);
+
+/** An event the island doesn't draw (contract/live-protocol.ts CALM_EVENTS): its change's notice is `calm`. */
+const calmType = (t: unknown): boolean => (CALM_EVENTS as readonly unknown[]).includes(t);

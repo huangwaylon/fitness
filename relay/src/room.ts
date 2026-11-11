@@ -431,7 +431,7 @@ export class RoomCore<S extends Sock> {
     }
     if (moved) this.io.saveRec?.(this.rec, this.recG);
     const to = this.authed().filter((s) => forG || this.io.meta(s)?.who !== 'G');
-    const m: ServerMsg = { v: LIVE_V, kind: 'changed', what: n.what, who: n.who, at: n.at, rev: n.rev, ...(n.sid ? { sid: n.sid } : {}), t: this.io.now() };
+    const m: ServerMsg = { v: LIVE_V, kind: 'changed', what: n.what, who: n.who, at: n.at, rev: n.rev, ...(n.sid ? { sid: n.sid } : {}), ...(n.calm ? { calm: true } : {}), t: this.io.now() };
     for (const s of to) this.send(s, m);
     return to.length;
   }
