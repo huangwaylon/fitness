@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { FARM, emptyFarm, farmStep, plotOf, type Farm, type Watered } from '#lib/contract/farm.ts';
 import { fieldPlots } from '#lib/layout/field.ts';
-import { fillPlan, harvestOps, orphans, waterTargets, yieldRange } from './sheet.ts';
+import { fillPlan, harvestOps, orphans, waterNext, waterTargets, yieldRange } from './sheet.ts';
 
 const D = '2026-11-04', D1 = '2026-11-05', D2 = '2026-11-06', D3 = '2026-11-07';
 const MINE = fieldPlots({ id: 'field-A', x: 10, z: 17, s: 'a-10x4' }), HERS = fieldPlots({ id: 'field-B', x: 10, z: 22, s: 'b-10x4' });
@@ -49,6 +49,20 @@ describe('waterTargets', () => {
     expect(waterTargets(PLOTS, f, D3, none)).toEqual([]);
     // its next two days count again
     expect(waterTargets(PLOTS, f, '2026-11-08', none)).toEqual([MINE[0].p]);
+  });
+});
+
+describe('waterNext', () => {
+  it('the days till a watering next counts: tomorrow on the planting day, 0 on its two days, none once ripe or with no plants', () => {
+    const f = farmOf(5, 2);
+    expect(waterNext(PLOTS, f, D)).toBe(1);
+    expect(waterNext(PLOTS, f, D1)).toBe(0);
+    expect(waterNext(PLOTS, f, D2)).toBe(0);
+    expect(waterNext(PLOTS, f, D3)).toBeNull();
+    expect(waterNext(PLOTS, emptyFarm(), D)).toBeNull();
+    // one growing back after its harvest: its first day after counts
+    farmStep(f, 'A', { d: D3, ops: [{ o: 'harvest', p: MINE[0].p, n: 1 }] });
+    expect(waterNext(PLOTS, f, D3)).toBe(1);
   });
 });
 

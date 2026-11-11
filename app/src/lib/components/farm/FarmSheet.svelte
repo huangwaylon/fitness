@@ -1,7 +1,7 @@
 <script lang="ts">
   // 畑 (docs/farming.md "Playing"): today's harvest and what it fetches, my plants against the cap, and the batches: 収穫
   // (every ripe plant of mine), 水やり (anyone's plants whose watering counts today: sheet.ts) and 植える (my empty plots, with a crop I
-  // hold), each one event (store/farm.svelte.ts; the watering one change of the shared day). The partner's and the
+  // hold), each one event (store/farm.svelte.ts; the watering one change of the shared day; none: done, or from when). The partner's and the
   // guest's fields a line each; my plants off every field (a field moved or deleted in /editor) back to starts; the rule.
   // Kanji (a sheet's copy).
   import '#lib/i18n/catch.ts'; // the crops' names (their own catalog, out of the island's first load)
@@ -22,7 +22,7 @@
   import { islandDay } from '../island/ambientClock.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { bare } from '../kiroku/zukan.ts';
-  import { fillPlan, harvestOps, orphans, waterTargets, yieldRange } from './sheet.ts';
+  import { fillPlan, harvestOps, orphans, waterNext, waterTargets, yieldRange } from './sheet.ts';
   import type { Who } from '#lib/types.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
@@ -48,14 +48,27 @@
       max: ripe.reduce((a, o) => a + o.n, 0),
       shells: ripe.reduce((a, o) => a + o.n * (sellPrice(cropKey(farm.plots.get(o.p)!.c)) ?? 0), 0),
       water: waterTargets(plots, farm, date, watered),
+      waterNext: waterNext(plots, farm, date),
       planted: plots.some((x) => farm.plots.has(x.p)),
       empty: mine.filter((x) => !farm.plots.has(x.p)).length,
       fill: held ? fillPlan(plots, farm, m.me, held.n) : [],
       off: orphans(farm, m.me, plots),
       n: plantsOf(farm, m.me),
       /** Days till my next plant ripens (Infinity: none of mine). */
-      next: Math.min(...mine.flatMap((x) => { const pl = farm.plots.get(x.p); return pl ? [daysLeft(pl, date)] : []; }))
+      next: Math.min(...mine.flatMap((x) => { const pl = farm.plots.get(x.p); return pl ? [daysLeft(pl, date)] : []; })),
+      /** My plants ripe tomorrow. */
+      tomorrow: mine.filter((x) => { const pl = farm.plots.get(x.p); return pl && pl.who === m.me && daysLeft(pl, date) === 1; }).length
     };
+  });
+  /** 水やり's words: the batch, else why there's none (done today, or from which day a watering counts). */
+  const waterLabel = $derived(!view ? '' : view.water.length ? t('farm.waterAll', { n: view.water.length })
+    : view.waterNext === 0 ? t('farm.watered') : view.waterNext === 1 ? t('farm.waterTomorrow')
+    : view.waterNext ? t('farm.waterIn', { n: view.waterNext }) : t('farm.waterNone'));
+  /** 収穫 tapped while the sheet is up: the button stays (disabled, 収穫済み) till it closes, so nothing moves and the
+   *  focus stays in the sheet (a removed button would also restyle the page: the app's :root:has() rules). */
+  let harvested = $state(false);
+  $effect(() => {
+    if (!open) harvested = false;
   });
   const crop = (c: Crop, src: FarmSrc = 'crop') => (src === 'start' ? t(`farm.start.${c}`) : bare(t(`beach.name.${c}`)));
 
@@ -74,6 +87,7 @@
   function harvest() {
     if (!view?.ripe.length) return;
     const max = view.max;
+    harvested = true;
     undoBanner(t('farm.harvested', { max: formatNum(max) }), harvestAll(date, view.ripe));
   }
   function plant() {
@@ -103,19 +117,25 @@
       <section class="card sum">
         {#if view.ripe.length}
           <p data-farm-today>{t('farm.today', { n: view.ripe.length, max: view.max, shells: formatNum(view.shells) })}</p>
+        {:else if view.next === 1}
+          <p data-farm-today>{t('farm.tomorrow', { n: view.tomorrow })}</p>
         {:else if Number.isFinite(view.next)}
           <p data-farm-today>{t('farm.next', { n: view.next })}</p>
         {:else if view.field}
           <p data-farm-today>{t('farm.noneYet')}</p>
+        {:else if view.planted}
+          <!-- (no field of mine, the guest's: its part is the two's watering) -->
+          <p data-farm-today>{t('farm.helpWater')}</p>
         {/if}
         {#if view.field || view.n}<p class="cap" data-farm-count>{t('farm.count', { n: view.n, cap: FARM.cap })}</p>{/if}
-        {#if view.ripe.length || view.planted}<div class="acts">
-          {#if view.ripe.length}
-            <button type="button" class="btn yuzu" data-farm-harvest data-sfx="tick" onclick={harvest}>{t('farm.harvestAll', { n: view.ripe.length })}</button>
+        {#if view.ripe.length || harvested || view.planted}<div class="acts">
+          {#if view.ripe.length || harvested}
+            <button type="button" class="btn yuzu" data-farm-harvest data-sfx="tick" aria-disabled={!view.ripe.length} onclick={harvest}>
+              {view.ripe.length ? t('farm.harvestAll', { n: view.ripe.length }) : t('farm.harvestedAll')}</button>
           {/if}
           {#if view.planted}
             <button type="button" class="btn paper water" data-farm-water data-sfx="tick" aria-disabled={!view.water.length}
-              onclick={() => view?.water.length && waterAll(view.water)}>{view.water.length ? t('farm.waterAll', { n: view.water.length }) : t('farm.watered')}</button>
+              onclick={() => view?.water.length && waterAll(view.water)}>{waterLabel}</button>
           {/if}
         </div>{/if}
       </section>
@@ -152,7 +172,8 @@
             {#if held}<button type="button" class="btn small" data-farm-plant-all data-sfx="tick" onclick={plant}>{t('farm.plantAll', { name: crop(held.c, held.src), n: view.fill.length })}</button>{/if}
           {/if}
         </section>
-      {:else}
+      {:else if m?.me !== 'G'}
+        <!-- (the guest's fields are the two's: no editor hint) -->
         <p class="note" data-farm-empty>{t('farm.noField')}</p>
       {/if}
       {#if view.off.length}
@@ -176,7 +197,7 @@
   .sum .cap { font-weight: 600; color: var(--text-soft); }
   .acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
   .acts .btn { margin: 0 0 var(--lip-h); }
-  .btn.yuzu { --fill: var(--c-yuzu); --lip-c: var(--c-yuzu-lip); }
+  .btn.yuzu:not([aria-disabled='true']) { --fill: var(--c-yuzu); --lip-c: var(--c-yuzu-lip); }
   .acts .btn.yuzu { min-height: 52px; font-size: var(--fs-body); }
   .btn.water { min-height: 44px; font-size: var(--fs-body); }
   .field { display: grid; gap: 10px; padding: 12px 10px; }

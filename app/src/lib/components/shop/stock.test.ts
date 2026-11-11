@@ -5,7 +5,7 @@ import { addDays } from '#lib/contract/tokyo.ts';
 import { BUY } from '#lib/contract/buyPrices.ts';
 import type { State } from '#lib/model/state.ts';
 import { ITEMS } from '../tent/items.ts';
-import { MAX_STARTS, foundBefore, packOf, shortBy, startsFill, stockAt } from './stock.ts';
+import { MAX_STARTS, foundBefore, packOf, shortBy, startsFill, startsFirst, stockAt } from './stock.ts';
 
 const at = (iso: string) => Date.parse(iso);
 const NOW = at('2026-11-09T15:00:00+09:00');
@@ -65,6 +65,14 @@ describe('かう’s packs', () => {
 describe('かう’s tiles past my かいがら', () => {
   it('say how many short; none at the price or under it', () => {
     expect([shortBy(800, 271), shortBy(271, 271), shortBy(9, 271), shortBy(10_000, 0)]).toEqual([529, 0, 0, 10_000]);
+  });
+});
+
+describe('苗 first (startsFirst): when my free plots want more starts than I hold', () => {
+  it('first with plots to fill, after the stock with none (no field, full, or enough held)', () => {
+    expect(startsFirst(4, 1)).toBe(true);
+    expect(startsFirst(4, 4)).toBe(false);
+    expect(startsFirst(0, 0)).toBe(false);
   });
 });
 

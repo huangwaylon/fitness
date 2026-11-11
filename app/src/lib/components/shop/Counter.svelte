@@ -4,8 +4,9 @@
   // up less what I sold: model/shop.ts) in rows by its sections (shop/pocket.ts), a row's tap its whole stack, − / + one,
   // a section's 全部 all of it (shop/sell.ts); the starts 苗 apart, with no 全部 (they're held to plant); the button says
   // what the sale comes to.
-  // かう: the day's stock first (shop/stock.ts: it changes daily), a piece past my かいがら dimmed with how many short;
-  // then the fields' starts in rows as うる's; the button says what it costs. A sell or a buy shows at once with 取り消す
+  // かう: the day's stock (shop/stock.ts: it changes daily), a piece past my かいがら dimmed with how many short, and the
+  // fields' starts in rows as うる's: first when my free plots want them (stock.ts startsFirst), else after the stock with
+  // a 苗 chip in its header to jump there; the button says what it costs. Section headers stick while their rows scroll. A sell or a buy shows at once with 取り消す
   // (store/actions.ts undoBanner). The title bar is the kit's (タヌキ商店, my かいがら, ✕); the twins don't talk in here (their balloon is the room's). A piece picked is the room's too
   // (its card's: `pick`, `why`, `buy`).
   import NavBar from '../ui/NavBar.svelte';
@@ -19,7 +20,7 @@
   import { allPicked, step, toggleSection, toggleStack, type Picks } from './sell.ts';
   import { sellPrice } from '#lib/contract/shop.ts';
   import { buyPrice } from '#lib/contract/stock.ts';
-  import { MAX_STARTS, shortBy, startsFill } from './stock.ts';
+  import { MAX_STARTS, shortBy, startsFill, startsFirst } from './stock.ts';
   import { fillPlan } from '../farm/sheet.ts';
   import { site } from '../island/site.svelte.ts';
   import { layoutPlots } from '#lib/layout/field.ts';
@@ -110,6 +111,13 @@
     return m ? fillPlan(layoutPlots(site.layout ?? layoutStore.current), farmOfState(m.state), m.me, FARM.cap).length : 0;
   });
   const held = $derived(CROPS.reduce((a, c) => a + (shop.pocket.get(startKey(c)) ?? 0), 0));
+  const first = $derived(startsFirst(free, held));
+  let startsHead = $state<HTMLElement>();
+  /** The 苗 chip: the list to the starts (a tap's own scroll, the list's only). */
+  function toStarts() {
+    startsHead?.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    cue('tick');
+  }
   // (the starts and a piece are one bar's: picking one lets go of the other)
   function setStart(c: Crop, n: number) {
     pick = null;
@@ -150,7 +158,7 @@
     /** A small icon on the art's corner (a start's crop). */
     tag?: string;
     unit: number;
-    /** How many I have (うる's). */
+    /** How many I have (うる's): the count reads picked/have. */
     have?: number;
     c: number;
     max: number;
@@ -180,6 +188,7 @@
       {#if pocket.length}
         <div class="pocket" data-shop-pocket>
           {#each sections as { s, rows } (s)}
+            <div class="group">
             <div class="sec" data-shop-sec={s}>
               <h2 class="sec-label">{t(`shop.sec.${s}`)}</h2>
               {#if s !== 'start'}
@@ -196,6 +205,7 @@
                   body: () => pickAs(toggleStack(picks, row)), step: (by) => pickAs(step(picks, row, by)) })}
               {/each}
             </ul>
+            </div>
           {/each}
         </div>
       {:else}
@@ -210,40 +220,31 @@
       </div>
     {/if}
   {:else}
-    <div class="list" data-shop-list>
-      <div class="sec">
-        <h2 class="sec-label">{t('shop.today')}</h2>
-        {#if stock.length}<span class="note" data-shop-left={left}>{t('shop.todayNote', { n: String(left) })}</span>{/if}
+    <div class="list" data-shop-list data-shop-starts-first={first}>
+      {#if first}{@render startsSec()}{/if}
+      <div class="group">
+        <div class="sec">
+          <h2 class="sec-label">{t('shop.today')}</h2>
+          {#if stock.length}<span class="note" data-shop-left={left}>{t('shop.todayNote', { n: String(left) })}</span>{/if}
+          {#if !first}<button type="button" class="chip s" data-shop-to-starts data-sfx="self" onclick={toStarts}>{t('shop.toStarts')}</button>{/if}
+        </div>
+        {#if stock.length}
+          <ul class="grid" data-shop-stock>
+            {#each stock as code (code)}
+              {@const owned = shop.owned.includes(code)}
+              {@const price = buyPrice(code) ?? 0}
+              <PieceTile name={itemName(code)} {price} on={pick === code} {owned} short={owned ? 0 : shortBy(price, shop.shells)} data-shop-item={code} data-price={buyPrice(code)}
+                data-owned={owned} aria-pressed={pick === code} aria-label={t(owned ? 'shop.itemOwned' : 'shop.itemLabel', { name: itemName(code), v: formatNum(price) })}
+                onclick={() => pickPiece(code)}>
+                {#snippet icon()}<img src={iconUrl(code)} alt="" width="46" height="46" loading="lazy" decoding="async" />{/snippet}
+              </PieceTile>
+            {/each}
+          </ul>
+        {:else if week.model}
+          <p class="empty" data-shop-sold-out>{t('shop.soldOut')}</p>
+        {/if}
       </div>
-      {#if stock.length}
-        <ul class="grid" data-shop-stock>
-          {#each stock as code (code)}
-            {@const owned = shop.owned.includes(code)}
-            {@const price = buyPrice(code) ?? 0}
-            <PieceTile name={itemName(code)} {price} on={pick === code} {owned} short={owned ? 0 : shortBy(price, shop.shells)} data-shop-item={code} data-price={buyPrice(code)}
-              data-owned={owned} aria-pressed={pick === code} aria-label={t(owned ? 'shop.itemOwned' : 'shop.itemLabel', { name: itemName(code), v: formatNum(price) })}
-              onclick={() => pickPiece(code)}>
-              {#snippet icon()}<img src={iconUrl(code)} alt="" width="46" height="46" loading="lazy" decoding="async" />{/snippet}
-            </PieceTile>
-          {/each}
-        </ul>
-      {:else if week.model}
-        <p class="empty" data-shop-sold-out>{t('shop.soldOut')}</p>
-      {/if}
-      <!-- the starts for the fields (docs/farming.md): always in stock, in rows as うる's, bought by the bar's 買う -->
-      <div class="sec">
-        <h2 class="sec-label">{t('shop.starts')}</h2>
-        {#if free}<span class="note" data-shop-free={free}>{t('shop.startsFree', { n: String(free) })}</span>{/if}
-      </div>
-      <ul class="rows" data-shop-starts>
-        {#each CROPS as c (c)}
-          {@const n = starts[c] ?? 0}
-          {@const name = startName(c)}
-          {@render stepRow({ key: c, data: { 'data-shop-start': c }, name, art: `finds/${c}-start`, tag: `finds/${c}`, unit: FARM.startBuy, c: n, max: MAX_STARTS,
-            full: n > 0 && n >= startsFill(free, held, starts, c), label: t('shop.startLabel', { name, v: String(FARM.startBuy), c: String(n) }),
-            body: () => fillStart(c), step: (by) => stepStart(c, by) })}
-        {/each}
-      </ul>
+      {#if !first}{@render startsSec()}{/if}
     </div>
     <div class="bar">
       <!-- what's picked, or how many かいがら short (its price is the button's) -->
@@ -260,6 +261,25 @@
   {/if}
 </section>
 
+<!-- the starts for the fields (docs/farming.md): always in stock, in rows as うる's, bought by the bar's 買う -->
+{#snippet startsSec()}
+  <div class="group">
+    <div class="sec" bind:this={startsHead}>
+      <h2 class="sec-label">{t('shop.starts')}</h2>
+      {#if free}<span class="note" data-shop-free={free}>{t('shop.startsFree', { n: String(free) })}</span>{/if}
+    </div>
+    <ul class="rows" data-shop-starts>
+      {#each CROPS as c (c)}
+        {@const n = starts[c] ?? 0}
+        {@const name = startName(c)}
+        {@render stepRow({ key: c, data: { 'data-shop-start': c }, name, art: `finds/${c}-start`, tag: `finds/${c}`, unit: FARM.startBuy, c: n, max: MAX_STARTS,
+          full: n > 0 && n >= startsFill(free, held, starts, c), label: t('shop.startLabel', { name, v: String(FARM.startBuy), c: String(n) }),
+          body: () => fillStart(c), step: (by) => stepStart(c, by) })}
+      {/each}
+    </ul>
+  </div>
+{/snippet}
+
 <!-- a row of うる (a stack in my pocket: its tap the whole stack) or of 苗 (a start: its tap what my plots want), again
      none; − / + one, held inside 0..max -->
 {#snippet stepRow(r: StepRow)}
@@ -267,12 +287,11 @@
     <button type="button" class="body" {...r.data} data-picked={r.c} data-sfx="self" aria-pressed={r.full} aria-label={r.label} onclick={r.body}>
       <span class="ic"><OfficialArt key={r.art} size={40} />{#if r.tag}<span class="tag"><OfficialArt key={r.tag} size={18} /></span>{/if}</span>
       <span class="what"><span class="nm">{r.name}</span><span class="unit">{t('shop.unit', { v: formatNum(r.unit) })}</span></span>
-      {#if r.have}<span class="have">×{r.have}</span>{/if}
     </button>
     <span class="step">
       <button type="button" class="pm" data-shop-less={r.key} data-sfx="self" aria-label={t('shop.less', { name: r.name })} aria-disabled={!r.c}
         onclick={() => (r.c ? r.step(-1) : cue('boop'))}>−</button>
-      <b class="c" aria-hidden="true">{r.c}</b>
+      <b class="c" aria-hidden="true">{r.c}{#if r.have}<small>/{r.have}</small>{/if}</b>
       <button type="button" class="pm" data-shop-more={r.key} data-sfx="self" aria-label={t('shop.more', { name: r.name })} aria-disabled={r.c >= r.max}
         onclick={() => (r.c < r.max ? r.step(1) : cue('boop'))}>+</button>
     </span>
@@ -288,7 +307,7 @@
      scroller, so iOS Safari's rubber band never drags the head off); fixed cream at every time of day, ink text (a game
      object, as the HUD's) */
   .menu {
-    position: absolute; z-index: 4; left: 0; right: 0; bottom: 0; max-height: 72%; display: flex; flex-direction: column;
+    position: absolute; z-index: 4; left: 0; right: 0; bottom: 0; max-height: 80%; display: flex; flex-direction: column;
     background: var(--c-cream); border-radius: var(--r-card) var(--r-card) 0 0; box-shadow: 0 -4px 0 var(--c-lip); overflow: hidden;
     /* the panel's own controls keep the day's look (fixed cream, ink) at every time of day */
     --text: var(--c-ink); --text-soft: var(--c-ink-soft); --ctl: var(--c-card); --ctl-sel: var(--c-yuzu); --ctl-off: #EADBB8;
@@ -298,7 +317,7 @@
   }
   @keyframes sheet-in { from { translate: 0 24px; opacity: 0; } }
   .pin {
-    flex: none; display: grid; gap: 6px; padding: 4px calc(var(--side) + var(--safe-right)) 10px calc(var(--side) + var(--safe-left));
+    flex: none; position: relative; z-index: 3; display: grid; gap: 6px; padding: 4px calc(var(--side) + var(--safe-right)) 10px calc(var(--side) + var(--safe-left));
     box-shadow: 0 2px 0 var(--c-lip);
   }
   .wallet { cursor: default; font-variant-numeric: tabular-nums; margin-left: 6px; }
@@ -309,12 +328,17 @@
   }
   /* (no bar under it, an empty うる: the list keeps clear of the home indicator) */
   .list:last-child { padding-bottom: var(--pad-foot); }
-  .pocket { display: flex; flex-direction: column; gap: 6px; }
-  .sec { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: var(--hit); }
-  .sec .sec-label { margin: 0; }
+  .pocket { display: flex; flex-direction: column; gap: 10px; }
+  /* a section's header, 42 high with its chip's lip (the 全部 / 苗 chip's hit 44: .chip.s), stuck at the list's top while its rows pass */
+  .sec {
+    position: sticky; top: -12px; z-index: 2; display: flex; align-items: center; gap: 8px; min-height: 32px;
+    margin: 0 -4px; padding: 2px 4px 8px; background: var(--c-cream);
+  }
+  .sec .sec-label { margin: 0; flex: 1 1 auto; }
+  .group { flex: none; }
   .note { font: 600 var(--fs-xs)/1.2 var(--font-ui); color: var(--c-ink-soft); }
   /* うる's rows: 56 high, an inset stitch between; picked: yuzu */
-  .rows { flex: none; list-style: none; margin: 0 0 6px; padding: 0; border-radius: var(--r-card); background: var(--c-card); border: 2px solid var(--c-edge); overflow: hidden; }
+  .rows { flex: none; list-style: none; margin: 0; padding: 0; border-radius: var(--r-card); background: var(--c-card); border: 2px solid var(--c-edge); overflow: hidden; }
   .row { display: flex; align-items: center; min-height: 56px; padding-right: 6px; }
   .row + .row { box-shadow: inset 0 1.5px 0 var(--c-edge); }
   .row.on { background: var(--c-yuzu); }
@@ -328,7 +352,6 @@
   .what { flex: 1 1 auto; min-width: 0; display: grid; gap: 2px; }
   .nm { font: 700 var(--fs-body)/1.25 var(--font-ui); word-break: keep-all; overflow-wrap: anywhere; }
   .unit { font: 600 var(--fs-xs)/1.2 var(--font-num); color: var(--c-ink-soft); font-variant-numeric: tabular-nums; }
-  .have { flex: none; font: 700 var(--fs-s)/1 var(--font-num); color: var(--c-ink-soft); font-variant-numeric: tabular-nums; }
   .step { flex: none; display: flex; align-items: center; }
   .pm {
     appearance: none; border: 0; background: none; cursor: pointer; width: var(--hit); height: var(--hit); display: grid; place-items: center;
@@ -340,7 +363,8 @@
   }
   .pm { position: relative; isolation: isolate; }
   .pm[aria-disabled='true'] { color: var(--c-ink-soft); opacity: .45; }
-  .c { min-width: 2.2ch; text-align: center; font: 700 var(--fs-body)/1 var(--font-num); font-variant-numeric: tabular-nums; }
+  .c { min-width: 2.2ch; text-align: center; font: 700 var(--fs-body)/1 var(--font-num); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .c small { font-size: var(--fs-xs); font-weight: 600; color: var(--c-ink-soft); }
   .grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
   /* a start's seedling (NH's one for all six) wears its crop */
   .tag { position: absolute; right: -6px; bottom: -4px; line-height: 0; }

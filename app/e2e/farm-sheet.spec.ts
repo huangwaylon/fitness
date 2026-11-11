@@ -58,6 +58,9 @@ test('収穫: every ripe plant of mine in one event, its 取り消す gives them
   await page.locator('[data-farm-harvest]').click();
   await expect(page.locator('.banner[role="status"] .txt')).toHaveText('5個を収穫しました');
   await expect(page.locator('[data-farm-today]')).toHaveText('次の収穫まであと3日');
+  // the button stays in place till the sheet closes, disabled
+  await expect(page.locator('[data-farm-harvest]')).toHaveText('収穫済み');
+  await expect(page.locator('[data-farm-harvest]')).toHaveAttribute('aria-disabled', 'true');
   // the vegetables in my pocket: 植える offers them
   await expect(page.locator('[data-farm-seed="crop:tomato"] .n')).toHaveText('5');
   await page.getByRole('button', { name: '取り消す' }).click();
@@ -76,6 +79,25 @@ test('水やり: every plant whose watering today counts and isn’t done, one c
   await expect(page.locator('[data-farm-water]')).toHaveAttribute('aria-disabled', 'true');
   const watered = await page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.world.A') ?? '{}').events as { kind: string; op?: string; id?: string }[]).filter((e) => e.kind === 'world' && e.op === 'watered').map((e) => e.id));
   expect(watered.sort()).toEqual(plots.slice(0, 12).sort());
+});
+
+test('the day before ripe: 「明日収穫できる 5株」 and their watering', async ({ page }) => {
+  await up(page, [FIELD, ...POCKET, planted(plots.slice(0, 5))], '2026-11-06');
+  await expect(page.locator('[data-farm-today]')).toHaveText('明日収穫できる 5株');
+  await expect(page.locator('[data-farm-water]')).toHaveText('水やり（5株）');
+});
+
+test('the guest: no field of its own, no editor hint; it can water the two’s plants (from tomorrow, planted today)', async ({ page }) => {
+  await seed(page, D, [FIELD, ...POCKET, planted(plots.slice(0, 6))]);
+  await page.goto(`?demo&date=${D}T12:00&weather=clear&as=G`);
+  await islandUp(page);
+  await quiet(page);
+  await openSheet(page);
+  await expect(page.locator('[data-farm-today]')).toHaveText('畑の水やりを手伝えます');
+  await expect(page.locator('[data-farm-water]')).toHaveText('水やりは明日から');
+  await expect(page.locator('[data-farm-water]')).toHaveAttribute('aria-disabled', 'true');
+  await expect(page.locator('[data-farm-others="A"]')).toHaveText('ウェイの畑（6株）');
+  await expect(page.locator('[data-farm-empty]')).toHaveCount(0);
 });
 
 test('植える: the held crop on my empty plots as the map reads them (the back row first), up to what I hold', async ({ page }) => {

@@ -844,14 +844,14 @@ and buy furniture for the rooms. Each person has a pocket and かいがら, the 
 - **The finger** (the rooms' rule): a floor tap walks; a tap on a piece picks it in place (its card: price and 買う); a
   tap on the twins (their bodies and the counter's top), their balloon or the sign (「タップで かう・うる」) opens the list
   at once, on its last tab (an empty pocket: かう). No choice box, no auto-open. The twins talk only in the room.
-- **The list** (`shop/Counter.svelte`): NavBar 「タヌキ商店」, my かいがら as a `.chip.s` left, ✕ right; 売る · 買う;
-  the bar what's picked (or how short), its button the sum (「{v}かいがらで売る」).
+- **The list** (`shop/Counter.svelte`, 80 % high): NavBar 「タヌキ商店」, my かいがら a `.chip.s`, ✕; 売る · 買う; 32 px
+  section headers that stick; the bar what's picked (or how short), its button the sum (「{v}かいがらで売る」).
 - **うる**: my pocket (caught, found or picked up, less sold) in 56 px rows by section (`shop/pocket.ts`; shells are
-  「貝」). A row's tap picks its stack, − / + one, a section's 全部 all of it (`shop/sell.ts`); starts are section 苗, no
-  全部. Selling leaves the ずかん and the museum; presents and bottles never sell.
-- **かう**: today's stock first, 24 pieces a day, seeded (a pack's pieces side by side), less what the island had by
-  midnight; past my かいがら dimmed, 「あと{n}」; then the starts ([farming.md](farming.md)) in rows, a tap what my
-  free plots want. A bought piece is in 模様替え. VisitorShop shares the tile (`shop/PieceTile.svelte`).
+  「貝」), counted 「2/5」 (picked/held). A row's tap picks its stack, − / + one, 全部 all of it (`shop/sell.ts`);
+  starts are section 苗, no 全部. Selling leaves the ずかん and the museum; presents and bottles never sell.
+- **かう**: today's stock, 24 pieces a day, seeded (a pack's pieces side by side), less what the island had by midnight;
+  past my かいがら dimmed, 「あと{n}」. The starts ([farming.md](farming.md)) in rows, a tap what my free plots want:
+  first while they want more than I hold, else last (a 苗へ chip). Bought: in 模様替え. VisitorShop shares the tile.
 - A sell or a buy shows at once, a one-line toast, 取り消す for 5 s, then the record checks it
   ([backend](backend.md#events)).
 - **Prices:** NH's Bells ÷ 20 both ways (a sell at least 3); a piece NH never sells is made up (4 × its NH sell price ÷

@@ -75,6 +75,8 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
   await expect(plus).toHaveAttribute('aria-disabled', 'true');
   await plus.click({ force: true });
   await expect(shark).toHaveAttribute('data-picked', '2');
+  // (one count: picked / held)
+  await expect(page.locator('[data-shop-less="fish:whale-shark"] + .c')).toHaveText('2/2');
   // the row: the whole stack, again none; − one less
   await shark.click();
   await expect(shark).toHaveAttribute('data-picked', '0');
@@ -195,6 +197,10 @@ test('an empty pocket: うる says it’s empty, no 売る bar; かう has the d
   // (no かいがら, no field: a start's row is one, and the bar says how many short)
   await page.locator('[data-shop-tab="buy"]').click();
   await expect(page.locator('[data-shop-free]')).toHaveCount(0);
+  // (no free plots: 苗 after the stock, its chip there)
+  await expect(page.locator('[data-shop-list]')).toHaveAttribute('data-shop-starts-first', 'false');
+  await page.locator('[data-shop-to-starts]').click();
+  await expect(page.locator('[data-shop-starts]')).toBeInViewport();
   await page.locator('[data-shop-start="tomato"]').click();
   await expect(page.locator('[data-shop-starts-offer]')).toHaveText('あと14かいがら足りません');
 });
@@ -209,6 +215,9 @@ test('苗 in rows: a tap fills my free plots, − / + one; past my かいがら 
   await expect.poll(() => shells(page)).toBe(86);
   await openList(page, 'buy');
   await expect(page.locator('[data-shop-free]')).toHaveText('空き4区画・タップでその分');
+  // (plots to fill: 苗 first, no chip)
+  await expect(page.locator('[data-shop-list] .sec h2').first()).toHaveText('苗');
+  await expect(page.locator('[data-shop-to-starts]')).toHaveCount(0);
   const row = (c: string) => page.locator(`[data-shop-start="${c}"]`);
   const offer = page.locator('[data-shop-starts-offer]'), buyBtn = page.locator('[data-shop-buy]');
   // a tap: the 3 the plots still want (4, one held); another crop's then 1 (none left)

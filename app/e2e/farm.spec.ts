@@ -124,7 +124,7 @@ test('three days on: ripe, watered on the two days before it gives three, harves
   await expect(page.locator('[data-farm-ripe]')).toHaveText('2');
   // a row's miss: a tap on the empty plot behind it harvests the nearest ripe plant of mine (the other is on the diagonal)
   await tapWorld(page, plot(0, 1).x, plot(0, 1).z);
-  await expect(page.locator('[data-fx="catch"] .catch-plate')).toHaveAttribute('aria-label', /トマトを しゅうかく！ ×3/);
+  await expect(page.locator('[data-fx="catch"] .catch-plate')).toHaveAttribute('aria-label', /トマトを しゅうかく！ ×3・54かいがら/);
   await expect.poll(() => farmRows(page)).toEqual([{ o: 'harvest', p: plot(0).p, n: 3 }]);
   await expect(page.locator('[data-farm-ripe]')).toHaveText('1');
   // the shop buys them: 3 × 18
@@ -151,10 +151,10 @@ test('three days on: ripe, watered on the two days before it gives three, harves
   await tapWorld(b, plot(1).x, plot(1).z);
   await expect.poll(() => pops(b)).toEqual(['みずやり', 'みずやり ずみ']);
   // no field of hers, but a plant to water: her pill, with no ripe badge (mine aren't hers), opens 畑: my two plants a
-  // line under my name, both watered today
+  // line under my name; neither's watering counts today (one ripe, one growing back), so 水やり says from when
   await expect(b.locator('[data-farm-ripe]')).toHaveCount(0);
   await b.locator('[data-farm-open]').click();
   await expect(b.locator('[data-farm-others="A"]')).toContainText('の畑（2株）');
-  await expect(b.locator('[data-farm-water]')).toHaveText('水やり済み'); // the can's 3x3 took both
+  await expect(b.locator('[data-farm-water]')).toHaveText('水やりは明日から');
   expect((await farmRows(b)).filter((o) => o.o === 'harvest')).toHaveLength(1);
 });

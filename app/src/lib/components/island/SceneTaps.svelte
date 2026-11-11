@@ -52,7 +52,7 @@
   import { eggInBalloon } from './eggs.ts';
   import { RIG, fallAt } from './balloonFlight.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
-  import { t } from '#lib/i18n/index.ts';
+  import { formatNum, t } from '#lib/i18n/index.ts';
   import { onMount } from 'svelte';
   import { fx3d } from './fx3d.ts';
   import { echo3d } from './echo3d.ts';
@@ -62,7 +62,8 @@
   import { islandDay } from './ambientClock.ts';
   import { showCatch } from './catchCard.ts';
   import { loadNames } from './catchLine.ts';
-  import { FARM, plantsOf } from '#lib/contract/farm.ts';
+  import { FARM, cropKey, plantsOf } from '#lib/contract/farm.ts';
+  import { sellPrice } from '#lib/contract/shop.ts';
   import { plotAt, plotsAround } from '#lib/layout/field.ts';
   import { tileAt, tileMid } from '#lib/layout/grid.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
@@ -463,7 +464,7 @@
         spawn({ kind: 'grass', x: px, y: pz, flip: roll(2) });
         sceneSfx('catch');
         const [ux, uy] = w.screenU(px, pz, 4);
-        void loadNames().then(() => showCatch(ux, uy, `finds/${act.c}`, t('world.farm.harvest', { name: cropName(act.c), n: act.n })), () => {});
+        void loadNames().then(() => showCatch(ux, uy, `finds/${act.c}`, t('world.farm.harvest', { name: cropName(act.c), n: act.n, v: formatNum(act.n * (sellPrice(cropKey(act.c)) ?? 0)) })), () => {});
         return true;
       }
       case 'water':

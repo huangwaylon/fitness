@@ -1,7 +1,7 @@
 // The 畑 sheet's batch writes and readings (docs/farming.md "Playing"): what 収穫 / 水やり / 植える do over the fields,
 // a plant's yield while its watering days are still to come, and my plants no field covers. Pure: FarmSheet sends them
 // (store/farm.svelte.ts, the shared world's watering).
-import { FARM, plantsOf, stageOf, wateringCounts, yieldOf, type Farm, type Plot, type Watered } from '#lib/contract/farm.ts';
+import { FARM, daysLeft, plantsOf, stageOf, wateringCounts, yieldOf, type Farm, type Plot, type Watered } from '#lib/contract/farm.ts';
 import { addDays } from '#lib/contract/tokyo.ts';
 import type { PlotTile } from '#lib/layout/field.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
@@ -20,6 +20,17 @@ export function waterTargets(plots: readonly PlotTile[], farm: Farm, date: Local
     const pl = farm.plots.get(t.p);
     return pl && wateringCounts(pl, date) && !watered(t.p, date);
   }).map((t) => t.p);
+}
+
+/** Days till a watering on the fields next counts (waterTargets' rule): 0 today (done, if waterTargets is empty), null
+ *  when none will (every plant ripe, or none planted): the sheet's 水やり says which. */
+export function waterNext(plots: readonly PlotTile[], farm: Farm, date: LocalDate): number | null {
+  let next: number | null = null;
+  for (const t of plots) {
+    const pl = farm.plots.get(t.p), left = pl ? daysLeft(pl, date) : 0;
+    if (left) next = Math.min(next ?? Infinity, Math.max(0, left - 2));
+  }
+  return next;
 }
 
 /** My empty plots to plant as the map reads them (farm/FieldMap.svelte: each field's back row first, its top on the map

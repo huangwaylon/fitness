@@ -59,5 +59,9 @@ export function startsFill(free: number, held: number, picks: Readonly<Record<st
   return Math.min(MAX_STARTS, Math.max(1, free - held - others));
 }
 
+/** Whether かう shows 苗 before the day's stock: my free plots want more starts than I hold (a planting trip's
+ *  errand; else they sit after the stock, a header chip away). */
+export const startsFirst = (free: number, held: number): boolean => free > held;
+
 /** How many かいがら short of `price` my `shells` are (0: enough). */
 export const shortBy = (price: number, shells: number): number => Math.max(0, price - shells);
