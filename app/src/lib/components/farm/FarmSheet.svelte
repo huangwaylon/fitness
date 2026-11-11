@@ -2,7 +2,8 @@
   // 畑 (docs/farming.md "Playing"): today's harvest and what it fetches, my plants against the cap, and the batches: 収穫
   // (every ripe plant of mine), 水やり (anyone's plants whose watering counts today: sheet.ts) and 植える (my empty plots, with a crop I
   // hold), each one event (store/farm.svelte.ts; the watering one change of the shared day; none: done, or from when). The partner's and the
-  // guest's fields a line each; my plants off every field (a field moved or deleted in /editor) back to starts; the rule.
+  // guest's fields a line each, and who else watered mine today; my plants off every field (a field moved or deleted in
+  // /editor) back to starts; the rule. A 収穫's banner names its crops and their かいがら.
   // Kanji (a sheet's copy).
   import '#lib/i18n/catch.ts'; // the crops' names (their own catalog, out of the island's first load)
   import Sheet from '../ui/Sheet.svelte';
@@ -20,10 +21,14 @@
   import { site } from '../island/site.svelte.ts';
   import { farmToday } from '../island/farm.ts';
   import { islandDay } from '../island/ambientClock.ts';
-  import { formatNum, t } from '#lib/i18n/index.ts';
+  import { formatNum, i18n, t } from '#lib/i18n/index.ts';
+  import { cue } from '#lib/sound/cues.ts';
+  import { world as shared } from '#lib/store/world.svelte.ts';
   import { bare } from '../kiroku/zukan.ts';
-  import { fillPlan, harvestOps, orphans, waterNext, waterTargets, yieldRange } from './sheet.ts';
+  import { fillPlan, harvestOps, harvestSummary, orphans, waterNext, waterTargets, wateredBy, yieldRange } from './sheet.ts';
   import type { Who } from '#lib/types.ts';
+
+  // (farm fun B2: no longer said, deleted in A4: 'farm.waterTomorrow' 'farm.waterIn' 'farm.waterNone' 'farm.harvested')
 
   let { open = $bindable() }: { open: boolean } = $props();
 
@@ -55,15 +60,21 @@
       off: orphans(farm, m.me, plots),
       n: plantsOf(farm, m.me),
       /** Days till my next plant ripens (Infinity: none of mine). */
+      /** Who else watered my plants today (the shared day's, live only), and how many. */
+      helped: (() => {
+        void shared.rev;
+        if (date !== islandDay()) return [];
+        const by = wateredBy([...farm.plots].filter(([, pl]) => pl.who === m.me).map(([p]) => p), shared.day.watered, m.me);
+        return (['A', 'B', 'G'] as const).flatMap((who) => (by[who] ? [{ who, n: by[who] }] : []));
+      })(),
       next: Math.min(...mine.flatMap((x) => { const pl = farm.plots.get(x.p); return pl ? [daysLeft(pl, date)] : []; })),
       /** My plants ripe tomorrow. */
       tomorrow: mine.filter((x) => { const pl = farm.plots.get(x.p); return pl && pl.who === m.me && daysLeft(pl, date) === 1; }).length
     };
   });
-  /** 水やり's words: the batch, else why there's none (done today, or from which day a watering counts). */
+  /** 水やり's words: the batch, else why there's none (done today, or every plant ripe: after the harvest). */
   const waterLabel = $derived(!view ? '' : view.water.length ? t('farm.waterAll', { n: view.water.length })
-    : view.waterNext === 0 ? t('farm.watered') : view.waterNext === 1 ? t('farm.waterTomorrow')
-    : view.waterNext ? t('farm.waterIn', { n: view.waterNext }) : t('farm.waterNone'));
+    : view.waterNext === 0 ? t('farm.watered') : t('farm.waterAfterHarvest'));
   /** 収穫 tapped while the sheet is up: the button stays (disabled, 収穫済み) till it closes, so nothing moves and the
    *  focus stays in the sheet (a removed button would also restyle the page: the app's :root:has() rules). */
   let harvested = $state(false);
@@ -84,18 +95,29 @@
   }
   const cell = $derived(selected && view?.mine.some((x) => x.p === selected) ? cellOf(selected) : null);
 
+  /** A 収穫's banner: its crops in CROPS order (3 at most, then ほか) and what they fetch. */
+  function harvestedLine(ops: readonly { p: string; n: number }[]): string {
+    const farm = view!.farm, list = harvestSummary(ops, farm), en = i18n.locale === 'en';
+    const items = list.slice(0, 3).map(({ c, n }) => t('farm.harvestItem', { name: crop(c), n: formatNum(n) })).join(en ? ', ' : '・');
+    const shells = list.reduce((a, { c, n }) => a + n * (sellPrice(cropKey(c)) ?? 0), 0);
+    return t('farm.harvestedNamed', { list: list.length > 3 ? `${items}${en ? ' ' : ''}${t('farm.harvestMore')}` : items, shells: formatNum(shells) });
+  }
+  function harvestOf(ops: readonly { p: string; n: number }[]) {
+    const line = harvestedLine(ops);
+    cue('farm-harvest');
+    undoBanner(line, harvestAll(date, ops));
+  }
   function harvest() {
     if (!view?.ripe.length) return;
-    const max = view.max;
     harvested = true;
-    undoBanner(t('farm.harvested', { max: formatNum(max) }), harvestAll(date, view.ripe));
+    harvestOf(view.ripe);
   }
   function plant() {
     if (!held || !view?.fill.length) return;
     undoBanner(t('farm.planted', { name: crop(held.c, held.src), n: view.fill.length }), plantMany(date, view.fill, held.c, held.src));
   }
   function harvestCell(p: string, n: number) {
-    undoBanner(t('farm.harvested', { max: formatNum(n) }), harvestAll(date, [{ p, n }]));
+    harvestOf([{ p, n }]);
   }
   function plantCell(p: string) {
     if (!held || !view || view.n >= FARM.cap) return;
@@ -130,7 +152,7 @@
         {#if view.field || view.n}<p class="cap" data-farm-count>{t('farm.count', { n: view.n, cap: FARM.cap })}</p>{/if}
         {#if view.ripe.length || harvested || view.planted}<div class="acts">
           {#if view.ripe.length || harvested}
-            <button type="button" class="btn yuzu" data-farm-harvest data-sfx="tick" aria-disabled={!view.ripe.length} onclick={harvest}>
+            <button type="button" class="btn yuzu" data-farm-harvest data-sfx={view.ripe.length ? 'self' : 'tick'} aria-disabled={!view.ripe.length} onclick={harvest}>
               {view.ripe.length ? t('farm.harvestAll', { n: view.ripe.length }) : t('farm.harvestedAll')}</button>
           {/if}
           {#if view.planted}
@@ -138,6 +160,9 @@
               onclick={() => view?.water.length && waterAll(view.water)}>{waterLabel}</button>
           {/if}
         </div>{/if}
+        {#each view.helped as h (h.who)}
+          <p class="note helped" data-farm-helped={h.who}>{t('farm.wateredBy', { who: names[h.who], n: h.n })}</p>
+        {/each}
       </section>
       {#if view.field}
         <section class="card field">
@@ -148,7 +173,7 @@
               <span class="btns">
               {#if cell.pl}
                 {@const pl = cell.pl}
-                {#if cell.ripe}<button type="button" class="btn small yuzu" data-farm-act="harvest" data-sfx="tick" onclick={() => harvestCell(cell.p, cell.n ?? 1)}>{t('farm.act.harvest')}</button>{/if}
+                {#if cell.ripe}<button type="button" class="btn small yuzu" data-farm-act="harvest" data-sfx="self" onclick={() => harvestCell(cell.p, cell.n ?? 1)}>{t('farm.act.harvest')}</button>{/if}
                 <button type="button" class="btn small paper" data-farm-act="dig" data-sfx="tick" onclick={() => digCell(cell.p, pl.c)}>{t('farm.act.dig')}</button>
               {:else}
                 <button type="button" class="btn small" data-farm-act="plant" data-sfx="tick" aria-disabled={!held || view.n >= FARM.cap} onclick={() => plantCell(cell.p)}>{t('farm.act.plant')}</button>
@@ -212,5 +237,6 @@
   .off { display: flex; align-items: center; justify-content: space-between; gap: 10px; font: 600 var(--fs-s)/1.4 var(--font-ui); }
   .off .btn { margin: 0 0 var(--lip-h); }
   .note { margin: 0 2px; font: 500 var(--fs-s)/1.5 var(--font-body); text-wrap: pretty; }
+  .sum .helped { margin: 8px 0 0; font: 600 var(--fs-s)/1.5 var(--font-ui); color: var(--text-soft); }
   .who { font-family: var(--font-ui); font-weight: 600; }
 </style>

@@ -56,7 +56,7 @@ test('収穫: every ripe plant of mine in one event, its 取り消す gives them
   await up(page, [FIELD, ...POCKET, planted(plots.slice(0, 5))]);
   await expect(page.locator('[data-farm-today]')).toHaveText('収穫できる 5株（5個・90かいがら）');
   await page.locator('[data-farm-harvest]').click();
-  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('5個を収穫しました');
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマト5個を収穫しました（90かいがら）');
   await expect(page.locator('[data-farm-today]')).toHaveText('次の収穫まであと3日');
   // the button stays in place till the sheet closes, disabled
   await expect(page.locator('[data-farm-harvest]')).toHaveText('収穫済み');
@@ -160,4 +160,32 @@ test('the map: a cell draws its crop’s own art, sized by its stage (a carrot b
   const h = (p: string) => page.locator(`[data-farm-cell="${p}"] > *`).evaluate((e) => Math.round(e.getBoundingClientRect().height));
   expect(await h(plots[0])).toBe(18);
   expect(await h(plots[10])).toBe(12);
+});
+
+test('収穫 names its crops and their かいがら; every plant ripe, 水やり waits for the harvest', async ({ page }) => {
+  const both: Seed[] = [['tally', { date: D, counts: { 'fish:koi': 3 } }, 'A'], ['sell', { species: 'fish:koi', n: 3, v: 600 }, 'A'], ['buy_starts', { crop: 'tomato', n: 5, v: 70 }, 'A'], ['buy_starts', { crop: 'carrot', n: 5, v: 70 }, 'A']];
+  const carrots: Seed = ['farm', { d: D, ops: plots.slice(5, 10).map((p) => ({ o: 'plant', p, c: 'carrot', src: 'start' })) }, 'A'];
+  await up(page, [FIELD, ...both, planted(plots.slice(0, 5)), carrots]);
+  await expect(page.locator('[data-farm-water]')).toHaveText('収穫のあとで水やりできます');
+  await expect(page.locator('[data-farm-water]')).toHaveAttribute('aria-disabled', 'true');
+  const shells = /・([\d,]+)かいがら/.exec((await page.locator('[data-farm-today]').textContent())!)![1];
+  await page.locator('[data-farm-harvest]').click();
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText(`トマト5個・ニンジン5個を収穫しました（${shells}かいがら）`);
+  // the regrown plants' watering counts again (its harvest day)
+  await expect(page.locator('[data-farm-water]')).toHaveText('水やり（10株）');
+});
+
+test('who else watered my plants today: a note a person, with how many', async ({ page }) => {
+  await page.addInitScript((day) => {
+    // (B's watering of four of my plants this morning: the shared day as this phone folded it and the demo's room holds it)
+    const ids = Array.from({ length: 4 }, (_, k) => `fd:field-A.${k}.0`);
+    if (localStorage.getItem('island-demo.relay')) return;
+    const events = ids.map((id, i) => ({ kind: 'world', op: 'watered', id, who: 'B', t: day * 86_400_000 - 9 * 3600_000 + 36e6 + i }));
+    localStorage.setItem('island-demo.world.A', JSON.stringify({ day, events }));
+    localStorage.setItem('island-demo.relay', JSON.stringify({ day, log: events.map((e) => ({ ...e, v: 3 })) }));
+  }, Date.UTC(2026, 10, 7) / 86_400_000);
+  await up(page, [FIELD, ...POCKET, planted(plots.slice(0, 6), '2026-11-06')]);
+  await expect(page.locator('[data-farm-helped]')).toHaveCount(1);
+  await expect(page.locator('[data-farm-helped="B"]')).toHaveText(/^今日は.+が水やりしてくれました（4株）$/);
+  await expect(page.locator('[data-farm-water]')).toHaveText('水やり（2株）');
 });

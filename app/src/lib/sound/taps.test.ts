@@ -18,6 +18,7 @@ const SELF: Record<string, string> = {
   'lib/components/tent/TentEdit.svelte': 'tick to pick, turn or move a piece and for a tab, confirm to place and for a wallpaper, boop when it can\'t, undo to put away, to take back (取り消す) and to clear',
   'lib/components/tent/TentRoom.svelte': 'toggle-on / toggle-off for the room\'s light switch',
   'lib/components/island/VisitorShop.svelte': 'a guest\'s shop, as the shop\'s かう: tick to pick a piece, buy for a buy, boop when it can\'t',
+  'lib/components/farm/FarmSheet.svelte': '収穫 (the batch and a cell\'s) plays farm-harvest, the field\'s pop over the sheet',
   'lib/components/rooms/EyeToggle.svelte': 'toggle-on / toggle-off for the first-person view',
   'lib/components/ui/Bubble.svelte': 'finishing a line is silent (as Ⓐ skips text in NH); then しずえ hops: host-tap',
   'lib/components/ui/NavButton.svelte': 'the panel passes self: its ‹ plays back and its ✕ the panel-close tune (IslandPanel, the sheets)',
