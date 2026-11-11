@@ -53,7 +53,7 @@
   import { bootReport, lateModels, watchBoot, type BootClock } from './boot.ts';
   import { watchRest } from './rest.ts';
   import { watchDrag } from './drag.ts';
-  import { DPR_MOVING } from './stage.ts';
+  import { DPR_MOVING, NoWebGL } from './stage.ts';
   import { ktx2Stats } from './ktx2.ts';
   import { placeObjects, type Inst, type Standin } from './objects.ts';
   import { gardenReady, loadGarden, wantsGarden } from './garden.ts';
@@ -74,7 +74,7 @@
   import { releaseWorker } from '#lib/ui-state/swLate.ts';
   import { timers } from '../island/timers.ts';
   import { DEVICE, localKV } from '#lib/sync/storage.ts';
-  import { setDrawnFps } from '#lib/sync/log.ts';
+  import { logError, setDrawnFps } from '#lib/sync/log.ts';
   import { weather } from '../island/weatherNow.svelte.ts';
   import { createPrecip, type Precip } from './precip.ts';
   import { hermite } from '#lib/math.ts';
@@ -942,24 +942,26 @@
    *  how long the mount waited for the fields. */
   let boot: BootClock | null = null, timed: BootClock | null = null, fieldsMs = 0;
   onMount(() => {
-    let stop: (() => void) | undefined, gone = false;
+    let stop: (() => void) | undefined, gone = false, again = 0;
     const t0 = performance.now();
-    const go = () => {
-      fieldsMs = performance.now() - t0;
-      if (!gone) stop = mount();
+    // (a context refused: once more a second later, mount's catch)
+    const go = (first: boolean) => {
+      if (first) fieldsMs = performance.now() - t0;
+      if (!gone) stop = mount(first ? () => (again = window.setTimeout(() => go(false), 1000)) : undefined);
     };
     // the ground's fields first (layout/fieldsPrime.ts: the cache's, or the worker's; the launch's prime if it has
     // started, else this one starts it), and the e2e's logic mode alike; built (a mount after the first, back from a
     // room): the next display frame's, not in the page's own mount (WebKit: its ~55 ms and this ~35 ms were one frame)
     const l = layoutNow();
-    if (hasFields(l)) requestAnimationFrame(go);
-    else void primeFields(l, version).then(go);
+    if (hasFields(l)) requestAnimationFrame(() => go(true));
+    else void primeFields(l, version).then(() => go(true));
     return () => {
       gone = true;
+      clearTimeout(again);
       stop?.();
     };
   });
-  function mount(): (() => void) | undefined {
+  function mount(retry?: () => void): (() => void) | undefined {
     if (!canvas) return;
     const mountAt = performance.now(), fields = fieldsFrom(layoutNow());
     let e: Island3;
@@ -982,7 +984,10 @@
         shadowSize: num('shadow') ?? undefined
       });
     } catch (err) {
-      console.warn('world3d', err);
+      // (in IslandLog either way: a context refused, NoWebGL, is tried again once, as WebKit under load gives one back
+      // a moment later; anything else, a bug in what's built on it, isn't)
+      logError('error', err);
+      if (err instanceof NoWebGL && retry) return void retry();
       onfail();
       return;
     }

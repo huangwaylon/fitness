@@ -3,7 +3,7 @@
 // POC's address) opens it.
 import { expect, test, type Page } from './fixtures.ts';
 import { openRewards } from './hud.ts';
-import { islandURL, lawnTap } from './island.ts';
+import { islandURL, islandUp, lawnTap } from './island.ts';
 
 type W3 = {
   xRoom(k?: number): number;
@@ -193,9 +193,26 @@ test('no WebGL: a line instead of the island, and the rest of the app works (the
   await page.goto(`?${Q}`);
   await expect(page.locator('[data-no3d]')).toHaveText(/この端末では しまを 表示できません/, { timeout: 15_000 });
   await expect(page.locator('canvas[data-w3d]')).toHaveCount(0);
+  await expect(islandUp(page)).rejects.toThrow(/failed to mount/);
   await openRewards(page);
   await expect(page.locator('dialog[open] .panel-body')).toBeVisible();
   await expect(page.locator('dialog[open]').getByText('おやつ').first()).toBeVisible();
+});
+
+test('a WebGL context refused once (WebKit under load): the island mounts a second later, no message', async ({ page }) => {
+  // (the island's canvas: its first webgl / webgl2 context null, the rest as they are)
+  await page.addInitScript(() => {
+    const get = HTMLCanvasElement.prototype.getContext;
+    let refused = false;
+    HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, id: string, ...rest: unknown[]) {
+      if (/webgl/.test(id) && this.hasAttribute('data-w3d') && !refused) return (refused = true), null;
+      return (get as (...a: unknown[]) => RenderingContext | null).call(this, id, ...rest);
+    } as typeof HTMLCanvasElement.prototype.getContext;
+  });
+  await page.goto(`?${Q}`);
+  await islandUp(page);
+  expect(await page.evaluate(() => document.querySelector('canvas[data-w3d]') !== null)).toBe(true);
+  await expect(page.locator('[data-no3d]')).toHaveCount(0);
 });
 
 test('the board\'s focus: the camera frames a thing, the finger does nothing meanwhile, and restore() goes back exactly', async ({ page }) => {

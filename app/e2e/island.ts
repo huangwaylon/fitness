@@ -48,17 +48,19 @@ async function ready3d(page: Page) {
  *  villagers, finds, critters: hidden at the scene's corner until then; a step of the game's clock after the mount, not
  *  the first frame drawn). The HUD shows first: the island mounts once the ground's fields are in (worker or cache:
  *  layout/fieldsPrime.ts), and a box read or a tap before that missed. Not the models loaded: `is3d`. */
-export async function islandUp(page: Page, { timeout }: { timeout?: number } = {}) {
+export async function islandUp(page: Page, { timeout = 30_000 }: { timeout?: number } = {}) {
   await expect(hudMenu(page)).toBeVisible({ timeout });
-  await page.waitForFunction(() => {
+  const up = await page.waitForFunction(() => {
     type W = Window & { __world?: { perf: { frames: number }; idle(): boolean }; __world3d?: W3; __upAt?: number };
     const w = window as unknown as W;
-    if (!document.querySelector('.if-scene[data-r3]')) return true; // (no WebGL: the island's message)
+    if (document.querySelector('[data-no3d]')) return 'no3d';
     if (!w.__world || !w.__world3d) return false;
     // a step since (the mount's own asks one), or none pending: placed; a sheet over it: nothing steps till it closes
     w.__upAt ??= w.__world.perf.frames;
     return w.__world.perf.frames > w.__upAt || w.__world.idle() || w.__world3d.stats().paused;
-  }, null, { timeout: 30_000 });
+  }, null, { timeout });
+  // (the island's no-WebGL message: a mount that failed, never an island up; world3d.spec's no-WebGL test reads it)
+  if ((await up.jsonValue()) === 'no3d') throw new Error('the island failed to mount ([data-no3d])');
 }
 
 /** The island up on this page and drawn in 3D, its first models loaded (false: no WebGL, the island's message). */

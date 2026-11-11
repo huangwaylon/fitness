@@ -34,11 +34,22 @@ interface RendererOpts {
   dpr?: number;
 }
 
-/** A renderer on `canvas`, set up as every surface's is (throws if WebGL can't be had). `noDraw`: the e2e's logic mode
- *  (testMode.ts): its frames run, nothing is drawn. */
+/** No WebGL context on the canvas (makeRenderer): none on the device, or one refused for now (under load, WebKit gives
+ *  one back a moment later), not a bug in what's built on it. */
+export class NoWebGL extends Error {
+  override name = 'NoWebGL';
+}
+
+/** A renderer on `canvas`, set up as every surface's is (throws NoWebGL if a context can't be had). `noDraw`: the e2e's
+ *  logic mode (testMode.ts): its frames run, nothing is drawn. */
 export function makeRenderer(canvas: HTMLCanvasElement, o: RendererOpts = {}): { renderer: WebGLRenderer; noDraw: boolean; dpr: number } {
   const noDraw = drawOff();
-  const renderer = new WebGLRenderer({ canvas, antialias: !!o.antialias && !noDraw, alpha: !!o.alpha, premultipliedAlpha: true, powerPreference: o.power ?? 'high-performance', stencil: false });
+  let renderer: WebGLRenderer;
+  try {
+    renderer = new WebGLRenderer({ canvas, antialias: !!o.antialias && !noDraw, alpha: !!o.alpha, premultipliedAlpha: true, powerPreference: o.power ?? 'high-performance', stencil: false });
+  } catch (err) {
+    throw new NoWebGL(err instanceof Error ? err.message : String(err), { cause: err });
+  }
   // (no per-program link check on a live phone: testMode.ts shaderChecks)
   renderer.debug.checkShaderErrors = shaderChecks();
   const dpr = noDraw ? 1 : (o.dpr ?? Math.min(DPR_MAX, window.devicePixelRatio || 1));
