@@ -17,7 +17,7 @@ export const LIVE_URL: string = (import.meta.env?.VITE_LIVE_URL as string | unde
  * The record changed: its push (`changed`, with the new rows' `at` and `rev`; anyone's write, mine too) or the
  * partner's nudge after an acked event (`saved`: no `at`). Either way the snapshot is worth fetching now.
  */
-export type SheetChange = Partial<Pick<Notice, 'what' | 'at' | 'rev' | 'sid'>> & { who: Who };
+export type SheetChange = Partial<Pick<Notice, 'what' | 'at' | 'rev' | 'sid' | 'calm'>> & { who: Who };
 
 export interface LiveStatus {
   /** The socket is up and the relay accepted my key. */
@@ -770,7 +770,7 @@ export function createLive(o: LiveOptions): Live {
           return setStatus({ here, peer: peerOf(st.me, here), gone: m.on ? gone : { ...gone, [m.who]: m.t } });
         }
         case 'changed':
-          return changed({ who: m.who, what: m.what, at: m.at, rev: m.rev, ...(m.sid ? { sid: m.sid } : {}) });
+          return changed({ who: m.who, what: m.what, at: m.at, rev: m.rev, ...(m.sid ? { sid: m.sid } : {}), ...(m.calm ? { calm: true } : {}) });
         case 'wx': {
           // Tokyo's real sky by the hour (sync/wx.ts: kept for the island, cached for opening offline)
           const { v: _v, kind: _k, t: _t, ...w } = m;

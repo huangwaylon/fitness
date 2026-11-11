@@ -155,6 +155,35 @@ describe('LiveBackend: the relay push', () => {
     expect(snapshots).toBe(1);
   });
 
+  it('a partner\'s calm changes with the socket up (a meal every 5 s): one fetch 10 s after the last, by 30 s after the first; the island\'s at once; the socket down, at once', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+    await ready();
+    relay.status = { connected: true, me: null, peer: false };
+    let n = 0;
+    const meal = () => change({ who: 'B', what: 'event', at: new Date(Date.parse(LATER) + ++n).toISOString(), rev: 'r1', calm: true });
+    // 80 s of meals, one every 5 s (12 fetches on A at 12:46 on 11-11, one a meal)
+    for (let i = 0; i < 16; i++) {
+      meal();
+      await settle(5000);
+    }
+    expect(snapshots).toBe(2);
+    await settle(10_000);
+    expect(snapshots).toBe(3);
+    // a catch (not calm): at once, and it takes a waiting meal with it
+    snapshots = 0;
+    meal();
+    change({ who: 'B', what: 'event', at: new Date(Date.parse(LATER) + ++n).toISOString(), rev: 'r1' });
+    await settle(300);
+    expect(snapshots).toBe(1);
+    await settle(60_000);
+    expect(snapshots).toBe(1);
+    // the socket down: no trailing wait (the push is all there is)
+    relay.status = { connected: false, me: null, peer: false };
+    meal();
+    await settle(300);
+    expect(snapshots).toBe(2);
+  });
+
   it('a changed revision fetches even when `at` is old (a hand edit)', async () => {
     await ready();
     change({ who: 'B', what: 'event', at: AT, rev: 'r2' });

@@ -36,6 +36,11 @@ const PUSH_GATHER_MS = 300;
  *  at most MINE_MAX_MS after the first. The welcome and the 15-minute check converge the rest. */
 const MINE_WAIT_MS = 30_000;
 const MINE_MAX_MS = 120_000;
+/** A partner's change of only what the island doesn't draw (the relay's `calm`: a meal, ききみみ, a packing list, the
+ *  wedding board) while the socket is up: one trailing fetch this long after the last, at most CALM_MAX_MS after the
+ *  first (a meal logged every ~5 s was 12 fetches in 80 s; r3 L9). The island's own (a catch, the farm) at once. */
+const CALM_WAIT_MS = 10_000;
+const CALM_MAX_MS = 30_000;
 /** How long opening waits for the relay's welcome (its `rec`) before fetching anyway. */
 const WELCOME_WAIT_MS = 2000;
 /** A cache fetched longer ago than this is fetched again on opening, whatever the welcome says. */
@@ -241,8 +246,8 @@ export class LiveBackend implements Backend {
   /**
    * The relay says the record changed: refresh now (gathered, `fresh` so a fetch already in flight is followed by one
    * more). Skipped when the cache already holds it, and for this page's own events (the ack's rows are in the cache:
-   * flush); my other devices' (their `sid`) are fetched, while the socket is up once they pause (MINE_WAIT_MS). A
-   * relay from before `sid`: all of mine skipped, as then.
+   * flush); my other devices' (their `sid`) are fetched, while the socket is up once they pause (MINE_WAIT_MS), and so
+   * is a partner's run of calm ones (CALM_WAIT_MS). A relay from before `sid`: all of mine skipped, as then.
    */
   #sheetChanged(c: SheetChange): void {
     if (c.at) this.#pushWorks = true;
@@ -253,22 +258,23 @@ export class LiveBackend implements Backend {
     if (c.at && cache && c.rev === cache.rev && cache.since !== null && c.at <= cache.since) return;
     if (this.#pushTimer) return;
     if (mine && this.#live?.status().connected) return this.#mineLater();
+    if (c.calm && this.#live?.status().connected) return this.#mineLater(CALM_WAIT_MS, CALM_MAX_MS);
     this.#pushTimer = setTimeout(() => {
       this.#pushTimer = null;
       void this.refresh({ fresh: true });
     }, PUSH_GATHER_MS);
   }
 
-  /** My other device's event: one trailing fetch MINE_WAIT_MS after the last of a run, by MINE_MAX_MS after its first
-   *  (a fetch meanwhile takes them: refresh). */
-  #mineLater(): void {
+  /** My other device's event (or a partner's calm one: CALM_WAIT_MS, CALM_MAX_MS): one trailing fetch `wait` after the
+   *  last of a run, by `max` after its first (a fetch meanwhile takes them: refresh). */
+  #mineLater(wait = MINE_WAIT_MS, max = MINE_MAX_MS): void {
     const now = Date.now();
     if (this.#mineTimer) clearTimeout(this.#mineTimer);
     else this.#mineFirst = now;
     this.#mineTimer = setTimeout(() => {
       this.#mineTimer = null;
       void this.refresh({ fresh: true });
-    }, Math.max(0, Math.min(MINE_WAIT_MS, this.#mineFirst + MINE_MAX_MS - now)));
+    }, Math.max(0, Math.min(wait, this.#mineFirst + max - now)));
   }
 
   /** Whether the welcome's record mark is past the cache (false without a welcome, a mark or a cache). */
