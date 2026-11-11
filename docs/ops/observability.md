@@ -40,11 +40,11 @@ Each event's fields, kinds and closed sets are the registry's (`contract/log.ts`
 | `app.show` | info | `awayS`, `route` | shown again |
 | `app.reload` | info | `why` (update, chunk) | the app reloads itself |
 | `perf.frames` | info | `p50`, `p95`, `fps`, `long`, `drawFps`, `hz`, `mode`, `when` | 10 s after ready; again after 10 min away |
-| `perf.sheet` | info | `sheet`; ms from the tap to `chunk` (the dialog shown), `content` (ready: 300 ms quiet after the opening), `anim`, `late`; `long`, `slow`, `first`, `kept` | each sheet's first opening a load; a fifth of the rest |
-| `perf.boot` | info | ms from navigation to `mount`, `first`, `loaded`, `shown`; the longest frames (`long`, `draw`, `appear`), `steps`, `progs`, the fields' source, `sw`, `warm`, `net`; steps by what held them (`sLink`, `sModels`, `sCards`; `ms…` their wall ms), `stepMs`, `late`/`lastM` (models in after `loaded`, the last) | once a load, 1 s after the island is whole (world3d/boot.ts) |
-| `perf.back` | info | `perf.boot`'s marks from the mount, for the first return from a room | once a load (world3d/boot.ts) |
-| `perf.rest` | info | a second at rest: `fps`, `shadows`, `wakes`; `calls`, `tris` a frame, `dpr`, `camZ`, `sm`; `full` (% of frames at the full rate), `why1`-`why3` its top reasons with `w1`-`w3` (% of frames); `pts`, `pm` (the point lights, their mask: `?points=`, `?pointmask=1`) | once a load, after 15 s untouched (world3d/rest.ts) |
-| `perf.drag` | info | the first drag's pixel-ratio swaps: `onSet`, `offSet` (ms), `onFrame`, `offFrame` (its first frame's CPU), `cpu` (p50), `sm` | once a load (world3d/drag.ts) |
+| `perf.sheet` | info | `sheet`; ms from the tap to `chunk` (the dialog shown), `content` (300 ms quiet after opening), `anim`, `late`; `long`, `slow`, `first`, `kept` | each sheet's first opening a load; a fifth of the rest |
+| `perf.boot` | info | ms from navigation to `mount`, `first`, `loaded`, `shown`; the longest frames, programs, steps by what held them, late models | once a load, 1 s after the island is whole (world3d/boot.ts) |
+| `perf.back` | info | `perf.boot`'s marks for the first return from a room | once a load (world3d/boot.ts) |
+| `perf.rest` | info | a second at rest: `fps`, `wakes`, `calls`, `tris`, `full` (% of frames at the full rate) and its top reasons (`why1`-`why3`), `pts`/`pm` (`?points=`, `?pointmask=1`) | once a load, after 15 s untouched (world3d/rest.ts) |
+| `perf.drag` | info | the first drag's pixel-ratio swaps (ms, their first frames' CPU) | once a load (world3d/drag.ts) |
 | `js.error` | error (warn while leaving) | `kind`, `msg`, `stack` (4 frames), `src`, `n` (folded repeats), `leaving`, `route` | `error`, `unhandledrejection` |
 | `api.fail` / `api.ok` | warn / info (10 % sampled) | `action`, `err`, `http`, `ms`, `tries`; `r` | a `/api` call |
 | `auth.lost` | warn | `from` (refresh, flush, ws), `code` | the key was refused (→ pairing) |
@@ -72,49 +72,40 @@ Each event's fields, kinds and closed sets are the registry's (`contract/log.ts`
 | `log.cap` | warn | `bucket` | a day's cap reached (once) |
 | `stt` (relay) | info; warn refused or failed | `ms`, `inB` (the WAV's bytes), `model` (turbo), `ok`, `err` (off, too_large, bad_request, capped, ai) | each keyed `POST /stt` (sttRoute.ts): never the audio or its text |
 
-**Never logged:** keys (or a piece of one), health values, food names, board text, names, e-mails, URLs (their query
-or fragment: `#key=`), IP addresses, user agents (only `os`), the record's `detail` / ingest `warnings` text (they
-name values). A `js.error` message is scrubbed, in order: a URL → `<url>`, an e-mail → `<email>`, a query or fragment
-cut, 16+ letters and digits → `<id>`, quoted text → `"…"` (unless it reads as code: `'e.stats().fps'`), `{…}` /
-`[…]`, non-ASCII → `…`, numbers → `#`, 120 characters; a stack is its top four frames as `fn@file:line:col` (the
-file's base name). Residual risk: unquoted ASCII words in a thrown message (the app's own have none). The tests:
-`contract/log.test.ts` (canaries in every field), `relay/test/log.test.ts` ("privacy": none of a key, a weight, a
-food's name, a note in any stored row), `sync/log.test.ts`, `e2e/log.spec.ts` (`E2E_TEST_RELAY=1`: read back with
-`npm run logs -- --test --sid …`).
+**Never logged:** keys (or a piece of one), health values, food names, board text, names, e-mails, URLs' queries or
+fragments (`#key=`), IP addresses, user agents (only `os`), the record's `detail` / ingest `warnings` text. A
+`js.error` message is scrubbed (URLs, e-mails, ids, quoted text, non-ASCII and numbers replaced, 120 characters; the
+rules: `contract/log.ts`); a stack is its top four `fn@file:line:col`. Residual risk: unquoted ASCII words in a thrown
+message. The tests: `contract/log.test.ts` (canaries in every field), `relay/test/log.test.ts` ("privacy"),
+`sync/log.test.ts`, `e2e/log.spec.ts` (`E2E_TEST_RELAY=1`; read back with `npm run logs -- --test --sid …`).
 
-**Who reads it:** only the signed `/admin` ops (`logs`, `logstats`, `logpurge`), whose secret derives from both member
-keys: the operator. No phone reads the log, the guest's events included. `/health/log` gives counts only, with its
-own token. Retention 30 days; `npm run logs -- purge --before … [--person A]` deletes sooner.
+**Who reads it:** only the signed `/admin` ops (`logs`, `logstats`, `logpurge`): the operator. No phone reads the log;
+`/health/log` gives counts only, with its own token. `npm run logs -- purge --before … [--person A]` deletes sooner
+than the 30 days.
 
 ## The phone (`sync/log.ts`)
-- `log()` only pushes onto a bounded ring (no I/O, never in the render loop; the frames sample is its own 5 s of rAF
-  once a load), which keeps the trail before each error; per-session and per-day caps, what's dropped counted
-  (`log.drop`). The ring's size, the caps, the persisting and the flush timings: `sync/log.ts`'s header.
-- Persisted to `localStorage` (`island.log`) when idle and at once when the page goes; read back on the next load. On
-  a quota error the log goes first, never the app's data.
-- Flushed in batches (`keepalive` when hidden), each stored until the relay acks its id (a re-sent one is a `dup`); a
-  capped day (`closed`): errors only until midnight UTC.
+- `log()` only pushes onto a bounded ring (no I/O, never per frame), which keeps the trail before each error;
+  per-session and per-day caps, drops counted (`log.drop`). Sizes, caps and timings: `sync/log.ts`'s header.
+- Persisted to `localStorage` (`island.log`) when idle and when the page goes; on a quota error the log goes first,
+  never the app's data.
+- Flushed in batches (`keepalive` when hidden), each kept until the relay acks its id; a capped day: errors only until
+  midnight UTC.
 - Off in the demo and under automation (`navigator.webdriver`, unless `?log=on`). Unpaired, events wait for a key;
   pairing as someone else clears them.
 - `/api` requests carry `rid` (per request) and `sid` (per load) in the body; the relay logs them on `req` and echoes
   `X-Request-Id`.
 
 ## The relay
-- `POST /log` (the Worker, `logRoute.ts`): origin, size (64 KB), **the key checked before any request to the object**
-  (a stranger's flood never spends Durable Object requests), and a role whose day is capped is answered by the Worker
-  until midnight; then the text to `IslandLog.ingest`. `LOG_OFF=1` (a var): acked, nothing kept.
-- `/api`: the Worker times the record's answer (`storeRoute.ts`: the round trip to the object, its queue and its
-  work); the record returns a small `meta` (`reqMeta.ts`) and the Worker sends a `req` event by RPC in
-  `ctx.waitUntil`, never in the reply's path.
-- The room (`room.close`, `room.full`, `ws.hello`), the cron (`cron.wx`, `cron.compact`, `cron.backup`) and the admin
-  ops (`admin`) send theirs the same way, best effort.
-- **Caps** (UTC day, `LOG_CAPS`: per role and the relay, 8,000 in all, the hard guard on the account's rows written;
-  counted in memory, written within `CAPS_SAVE_MS`): over a cap, dropped, `log.cap` once. The tables and the
-  retention: `relay/src/log.ts`'s header.
-- `POST /stt` (`sttRoute.ts`, its caps and off switch: [kikimimi-mic.md](../kikimimi-mic.md) "The relay endpoint"):
-  nothing of the audio or its text kept.
-- **Tables:** `log` (primary key `id`, no other index), `batches`, `caps`.
-- **Retention:** the object's daily alarm: events older than 30 days, batch ids and caps older than 2 days.
+- `POST /log` (`logRoute.ts`): origin, size, **the key checked before any request to the object** (a stranger's flood
+  spends no Durable Object requests), a capped role answered by the Worker until midnight; then `IslandLog.ingest`.
+  `LOG_OFF=1` (a var): acked, nothing kept.
+- `/api`: the Worker times the record's answer (`storeRoute.ts`); the record returns a small `meta` (`reqMeta.ts`) and
+  the Worker sends a `req` event by RPC in `ctx.waitUntil`, off the reply's path. The room, the cron and the admin ops
+  send theirs the same way, best effort.
+- **Caps** (UTC day, `LOG_CAPS`: 8,000 in all, the hard guard on the account's rows written): over a cap, dropped,
+  `log.cap` once. Tables (`log`, keyed by `id`, no other index; `batches`; `caps`) and retention (events 30 days, batch
+  ids and caps 2): `relay/src/log.ts`'s header.
+- `POST /stt` ([kikimimi-mic.md](../kikimimi-mic.md) "The relay endpoint"): nothing of the audio or its text kept.
 
 ## Reading
 From `relay/`; the keys from `KEY_A`/`KEY_B`, `KEYS_FILE`, else `~/.config/island-fund/keys` (production) or
@@ -132,9 +123,8 @@ npm run logs -- --test ...                                 # the test relay
 ```
 
 ### Investigating (a checklist)
-1. `npm run logs -- stats`: errors in the last 1 h / 6 h, `unavailable` answers, caps, the oldest event, today's (UTC)
-   rows written by object (`rowsLog`, `rowsStore`, `rowsRoom`: how each is counted, `relay/src/log.ts`'s header) and
-   `rowsPct` of the Free plan's 100k (the alert warns past 50 %; `report` prints the record's by action).
+1. `npm run logs -- stats`: errors in 1 h / 6 h, `unavailable` answers, caps, the oldest event, today's (UTC) rows
+   written per object (`rowsLog`, `rowsStore`, `rowsRoom`) and `rowsPct` of the Free plan's 100k.
 2. `npm run logs -- report --since 1d`: what fails, for whom, since which build.
 3. `npm run logs -- --since 6h --level warn`, then `--sid` of a session in trouble (its whole story) and `--rid` of a
    failed request (the relay's `req`: its status, rule, time).
@@ -146,13 +136,12 @@ npm run logs -- --test ...                                 # the test relay
 7. Close the alert's issue with the cause.
 
 ## The alert
-`health.yml` (every 6 hours and on demand) reads `/health/log` with the `HEALTH_TOKEN` secret (a Worker secret and a
-repo secret: counts only) and opens one GitHub issue labelled `alert` (or comments on the open one when the state
-changes) when, in the last 6 hours, errors > 20 (not counting errors while leaving), the relay answered `unavailable`
-> 5 times, a cap was reached, the day's events passed 50 % of the cap, the day's rows written passed 50 % of the Free
-plan's 100k (`rowsPct`), the oldest event is older than 32 days (the prune is dead), or no record backup has been
-good in 48 h (`backupH`, `backupSt`: the last run's `st`); it closes the issue on a green run. The issue holds counts
-and a link here, never a message. A failing `/health` still fails the job (GitHub's e-mail).
+`health.yml` (every 6 hours and on demand) reads `/health/log` with the `HEALTH_TOKEN` secret and opens one issue
+labelled `alert` (or comments on the open one when the state changes) when, in the last 6 hours, errors > 20 (not
+counting errors while leaving), `unavailable` > 5, a cap was reached, the day's events passed 50 % of the cap, the
+day's rows written passed 50 % of the Free plan's (`rowsPct`), the oldest event is over 32 days (the prune is dead), or
+no record backup has been good in 48 h; a green run closes it. The issue holds counts, never a message. A failing
+`/health` fails the job.
 Set up once: `openssl rand -hex 32` → `npx wrangler secret put HEALTH_TOKEN` (and `--env test`) and
 `gh secret set HEALTH_TOKEN`.
 
