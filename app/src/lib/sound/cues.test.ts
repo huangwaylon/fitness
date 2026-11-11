@@ -21,7 +21,8 @@ const KINDS: Record<SceneSfx, true> = {
   present: true, cast: true, plop: true, nibble: true, bite: true, reel: true, catch: true, flee: true, net: true, 'bug-flee': true,
   shell: true, fragment: true, bottle: true, dig: true, wish: true, weed: true, water: true, clonk: true, glint: true,
   nest: true, buzz: true, sting: true, twig: true, mushroom: true,
-  visitor: true, launch: true, firework: true, campfire: true, bench: true, kon: true, bar: true, pump: true, decor: true
+  visitor: true, launch: true, firework: true, campfire: true, bench: true, kon: true, bar: true, pump: true, decor: true,
+  harvest: true
 };
 
 describe('scenery cues', () => {
@@ -83,5 +84,21 @@ describe('another player’s sounds by where they are (docs/sound-sync.md)', () 
     cue('scene-twig', { at: [900, 0] }); // nobody listening (no island): as it is
     expect(play).toHaveBeenCalledTimes(3);
     globalThis.__cueGains = undefined;
+  });
+});
+
+describe('the harvest (docs/farming.md "Playing")', () => {
+  it("a world harvest's pop is the island's, a fourth up; the 畑 sheet's the same pop as a UI sound (over the sheet)", () => {
+    expect(CUES['scene-harvest']).toEqual({ sound: 'pop', gain: 0.9, step: 5, world: true });
+    expect(CUES['farm-harvest']).toEqual({ sound: 'pop', step: 5 });
+    expect(CUES['farm-harvest'].world).toBeUndefined();
+  });
+  it("a call's step climbs on the cue's own: tap k plays k semitones above the first", () => {
+    vi.mocked(play).mockClear();
+    cue('scene-harvest');
+    cue('scene-harvest', { step: 3 });
+    const [a, b] = vi.mocked(play).mock.calls.map((c) => c[1]?.rate ?? 1);
+    expect(a).toBeCloseTo(2 ** (5 / 12));
+    expect(b).toBeCloseTo(2 ** (8 / 12));
   });
 });

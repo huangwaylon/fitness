@@ -1,6 +1,6 @@
 // The order of a tap on a plot (island/farmTap.ts, docs/farming.md "Playing").
 import { describe, expect, it } from 'vitest';
-import { farmTap, type FarmTapIn, type PlotAt } from './farmTap.ts';
+import { farmTap, waveSpots, type FarmTapIn, type PlotAt } from './farmTap.ts';
 import { FARM, type Plot } from '#lib/contract/farm.ts';
 
 const D = '2026-11-07';
@@ -55,5 +55,15 @@ describe('a tap on a plot', () => {
 
   it('another’s empty plot: whose field it is (only its owner plants)', () => {
     expect(farmTap({ ...base, plot: { p: P, who: 'B', c: 1, r: 1 }, seed: { c: 'wheat', src: 'start' }, have: () => 9 })).toEqual({ a: 'about', who: 'B' });
+  });
+});
+
+describe("the 畑 sheet's wave", () => {
+  it('at most 8 plots, spread evenly left to right, the ends kept; fewer as they are', () => {
+    const row = Array.from({ length: 30 }, (_, i) => ({ c: 29 - i, r: i % 2 }));
+    const w = waveSpots(row);
+    expect(w.map((t) => t.c)).toEqual([0, 4, 8, 12, 17, 21, 25, 29]);
+    expect(waveSpots(row.slice(0, 3)).map((t) => t.c)).toEqual([27, 28, 29]);
+    expect(waveSpots([])).toEqual([]);
   });
 });

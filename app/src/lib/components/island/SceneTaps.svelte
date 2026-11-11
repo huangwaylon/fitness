@@ -56,14 +56,14 @@
   import { onMount } from 'svelte';
   import { fx3d } from './fx3d.ts';
   import { echo3d } from './echo3d.ts';
-  import { cropName, openPicker, popAt } from './farmUi.svelte.ts';
-  import { farmTap } from './farmTap.ts';
+  import { WAVE_MS, cropName, farmUi, openPicker, popAt } from './farmUi.svelte.ts';
+  import { farmTap, waveSpots } from './farmTap.ts';
   import { farmToday } from './farm.ts';
   import { islandDay } from './ambientClock.ts';
   import { showCatch } from './catchCard.ts';
   import { loadNames } from './catchLine.ts';
   import { FARM, plantsOf } from '#lib/contract/farm.ts';
-  import { plotAt, plotsAround } from '#lib/layout/field.ts';
+  import { layoutPlots, plotAt, plotsAround } from '#lib/layout/field.ts';
   import { tileAt, tileMid } from '#lib/layout/grid.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
@@ -512,6 +512,27 @@
   }
   /** A player's villager name (the farm's words). */
   const whoName = (who: Who): string => (who === 'G' ? week.view?.guest.villagerName : week.view?.people[who].villagerName) ?? who;
+
+  /** A harvested plant's sparkle (a world tap's ripple, the 畑 sheet's wave). */
+  const harvestSparkle = (x: number, z: number) => fx3d('sparkle', x, z, 6, { size: 0.6, v: '#FFE27A' });
+  // The 畑 sheet's close after a 収穫 or a 水やり (farmUi.svelte.ts farmWave): shortly after, ≤ 8 bursts over its plots
+  // spread along x, 70 ms apart (a harvest's sparkles, a water's drops), one world sound; none if covered again.
+  $effect(() => {
+    const wv = farmUi.wave;
+    if (!wv) return;
+    const id = setTimeout(() => {
+      if (farmUi.wave === wv) farmUi.wave = null;
+      const layout = site.layout ?? layoutStore.current;
+      if (!layout || !enabled() || Date.now() - wv.at > WAVE_MS) return;
+      const want = new Set(wv.ps);
+      waveSpots(layoutPlots(layout).filter((t) => want.has(t.p))).forEach((t, i) => {
+        const [x, z] = tileMid(t.c, t.r);
+        later(() => (wv.kind === 'harvest' ? harvestSparkle(x, z) : fx3d('drops', x, z, 0)), i * 70);
+      });
+      sceneSfx(wv.kind === 'harvest' ? 'harvest' : 'water');
+    }, 250);
+    return () => clearTimeout(id);
+  });
 
   /** A tap in the sky (x, y: px from the stage's top-left). */
   function sky(e: MouseEvent, r: DOMRect, x: number, y: number) {

@@ -61,3 +61,10 @@ export function farmTap(i: FarmTapIn): FarmTap {
   if (!pl) return { a: 'about', who: i.plot.who };
   return { a: 'about', who: pl.who, c: pl.c, left: daysLeft(pl, i.date), watered: i.watered(i.plot.p, i.date) };
 }
+
+/** The 畑 sheet's wave on its close (farmUi.svelte.ts farmWave): at most `max` of its plots, spread evenly along x
+ *  (left to right). */
+export function waveSpots<T extends { c: number; r: number }>(tiles: readonly T[], max = 8): T[] {
+  const s = [...tiles].sort((a, b) => a.c - b.c || a.r - b.r);
+  return s.length <= max ? s : Array.from({ length: max }, (_, i) => s[Math.round((i * (s.length - 1)) / (max - 1))]);
+}
