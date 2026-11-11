@@ -112,7 +112,9 @@ test('three days on: ripe, watered on the two days before it gives three, harves
   const D3 = '2026-11-07';
   await seed(page, D3, [
     FIELD, ...POCKET,
-    ['farm', { d: D, ops: [{ o: 'plant', p: plot(0).p, c: 'tomato', src: 'start' }, { o: 'plant', p: plot(1).p, c: 'tomato', src: 'start' }] }, 'A'],
+    ['farm', { d: D, ops: [{ o: 'plant', p: plot(0).p, c: 'tomato', src: 'start' }] }, 'A'],
+    // the second a day later: ripe tomorrow
+    ['farm', { d: '2026-11-05', ops: [{ o: 'plant', p: plot(1).p, c: 'tomato', src: 'start' }] }, 'A'],
     // うめ watered the first on the 5th and the 6th
     ['island', { date: '2026-11-05', taken: [], puts: [], shakes: [], watered: [plot(0).p], wishes: {} }, 'B'],
     ['island', { date: '2026-11-06', taken: [], puts: [], shakes: [], watered: [plot(0).p], wishes: {} }, 'B']
@@ -120,13 +122,13 @@ test('three days on: ripe, watered on the two days before it gives three, harves
   await page.goto(`?demo&date=${D3}T12:00`);
   await islandUp(page);
   await quiet(page);
-  // both ripe: the pill's badge
-  await expect(page.locator('[data-farm-ripe]')).toHaveText('2');
-  // a row's miss: a tap on the empty plot behind it harvests the nearest ripe plant of mine (the other is on the diagonal)
+  // one ripe: the pill's badge
+  await expect(page.locator('[data-farm-ripe]')).toHaveText('1');
+  // a row's miss: a tap on my empty plot behind it harvests my ripe plant there (the growing one on the diagonal stays)
   await tapWorld(page, plot(0, 1).x, plot(0, 1).z);
   await expect(page.locator('[data-fx="catch"] .catch-plate')).toHaveAttribute('aria-label', /トマトを しゅうかく！ ×3・54かいがら/);
   await expect.poll(() => farmRows(page)).toEqual([{ o: 'harvest', p: plot(0).p, n: 3 }]);
-  await expect(page.locator('[data-farm-ripe]')).toHaveText('1');
+  await expect(page.locator('[data-farm-ripe]')).toHaveCount(0);
   // the shop buys them: 3 × 18
   await page.goto(`shop?demo&date=${D3}T12:00`);
   await expect(page.locator('[data-shop]')).toBeVisible();
@@ -140,18 +142,19 @@ test('three days on: ripe, watered on the two days before it gives three, harves
   await page.locator('[data-shop-sell]').click();
   await expect.poll(async () => Number(await page.locator('[data-shop]').getAttribute('data-shells'))).toBe(before + 54);
 
-  // うめ's phone (a clear sky: the seeded 11-07 rains): my plants are on her island; she waters the unwatered one, and can't harvest the ripe one
+  // うめ's phone (a clear sky: the seeded 11-07 rains): my plants are on her island; she waters the growing one, and
+  // can't harvest mine
   const b = await context.newPage();
   await catchPops(b);
   await b.goto(`?demo&as=B&date=${D3}T12:00&weather=clear`);
   await islandUp(b);
   await quiet(b);
   await tapWorld(b, plot(1).x, plot(1).z);
-  // ripe and watered now: a word, no harvest
+  // watered now: a word, no harvest
   await tapWorld(b, plot(1).x, plot(1).z);
-  await expect.poll(() => pops(b)).toEqual(['みずやり', 'みずやり ずみ']);
+  await expect.poll(() => pops(b)).toEqual(['みずやり', expect.stringMatching(/の トマト・あと 1にち$/)]);
   // no field of hers, but a plant to water: her pill, with no ripe badge (mine aren't hers), opens 畑: my two plants a
-  // line under my name; the one growing back counts from its harvest day, and her tap watered it, so 水やり is done
+  // line under my name; her tap watered both (the one growing back counts from its harvest day), so 水やり is done
   await expect(b.locator('[data-farm-ripe]')).toHaveCount(0);
   await b.locator('[data-farm-open]').click();
   await expect(b.locator('[data-farm-others="A"]')).toContainText('の畑（2株）');

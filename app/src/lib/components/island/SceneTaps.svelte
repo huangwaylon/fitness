@@ -62,12 +62,12 @@
   import { islandDay } from './ambientClock.ts';
   import { showCatch } from './catchCard.ts';
   import { loadNames } from './catchLine.ts';
-  import { FARM, plantsOf } from '#lib/contract/farm.ts';
+  import { FARM, plantsOf, type Crop } from '#lib/contract/farm.ts';
   import { layoutPlots, plotAt, plotsAround } from '#lib/layout/field.ts';
   import { tileAt, tileMid } from '#lib/layout/grid.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { harvest as harvestPlot, plant as plantPlot, seed as farmSeed, waterAll } from '#lib/store/farm.svelte.ts';
+  import { harvestMany, plant as plantPlot, seed as farmSeed, waterAll } from '#lib/store/farm.svelte.ts';
   import { shopView } from '#lib/model/shop.ts';
   import type { Who } from '#lib/types.ts';
 
@@ -453,10 +453,10 @@
 
   /**
    * A tap on a plot (docs/farming.md "Playing", island/farmTap.ts): it acts where it is (nobody walks; my villager turns
-   * to it), forgiving a row's miss: the nearest ripe plant of mine in its 3 × 3 is harvested (the plate), else the
-   * plants there not watered today are watered (NH's golden can, on every phone: the shared day's `watered`), my empty
-   * plot planted (nothing held or none left: the picker, whose pick plants it), else a word; the verb pops over the
-   * plot (FarmPop). False: no field there.
+   * to it), the tapped plant deciding: my ripe plant harvests all my ripe ones in its 3 × 3 (a plate a crop), a growing
+   * one waters the plants there whose watering counts (NH's golden can, on every phone: the shared day's `watered`), a
+   * miss harvests my ripe ones near it, my empty plot is planted (nothing held or none left: the picker, whose pick
+   * plants it), else a word (who watered it); the verb pops over the plot (FarmPop). False: no field there.
    */
   function farmAt(x: number, z: number): boolean {
     const m = week.model, layout = site.layout ?? layoutStore.current;
@@ -468,8 +468,9 @@
     const pocket = shopView(m.state, m.me).pocket;
     const pl = farm.plots.get(plot.p);
     const around = plotsAround(layout, plot).map((n) => ({ ...n, plant: farm.plots.get(n.p) }));
-    const act = farmTap({ me: m.me, plot, plant: pl, around, date, watered, seed: farmSeed.pick, have: (k) => pocket.get(k) ?? 0, mine: plantsOf(farm, m.me) });
-    const there = act.a === 'harvest' ? around.find((n) => n.p === act.p)! : plot;
+    const by = date === islandDay() ? shared.day.watered[plot.p] : undefined;
+    const act = farmTap({ me: m.me, plot, plant: pl, around, date, watered, by, seed: farmSeed.pick, have: (k) => pocket.get(k) ?? 0, mine: plantsOf(farm, m.me) });
+    const there = act.a === 'harvest' ? around.find((n) => n.p === act.ops[0].p)! : plot;
     const [px, pz] = tileMid(there.c, there.r);
     if (act.a !== 'pick') turnTo(px);
     const top = w.screenAt(px, pz, 6), pop = (text: string) => popAt(text, top.sx, top.sy);
@@ -477,11 +478,14 @@
     const named = (text: () => string) => void loadNames().then(() => pop(text()), () => {});
     switch (act.a) {
       case 'harvest': {
-        harvestPlot(date, act.p, act.n);
+        harvestMany(date, act.ops);
         spawn({ kind: 'grass', x: px, y: pz, flip: roll(2) });
         sceneSfx('catch');
-        const [ux, uy] = w.screenU(px, pz, 4);
-        void Promise.all([import('./harvestPlate.ts'), loadNames()]).then(([{ harvestLine }]) => showCatch(ux, uy, `finds/${act.c}`, harvestLine(act.c, act.n)), () => {});
+        const [ux, uy] = w.screenU(px, pz, 4), crops = new Map<Crop, number>();
+        for (const o of act.ops) crops.set(o.c, (crops.get(o.c) ?? 0) + o.n);
+        void Promise.all([import('./harvestPlate.ts'), loadNames()]).then(([{ harvestLine }]) => {
+          for (const [c, n] of crops) showCatch(ux, uy, `finds/${c}`, harvestLine(c, n));
+        }, () => {});
         return true;
       }
       case 'water':
@@ -512,6 +516,7 @@
         if (!c) pop(t('world.farm.whose', { who }));
         else named(() => {
           const name = cropName(c);
+          if (act.by && act.by !== m.me) return t('world.farm.wateredBy', { who: whoName(act.by) });
           return n ? t(act.who === m.me ? 'world.farm.leftMine' : 'world.farm.left', { who, name, n }) : act.watered ? t('world.farm.watered') : t('world.farm.ripe', { who, name });
         });
         return true;

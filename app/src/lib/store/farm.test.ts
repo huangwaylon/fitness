@@ -8,7 +8,7 @@ import { FARM, type FarmOp } from '#lib/contract/farm.ts';
 interface Held { type: string; data: { d: string; ops: FarmOp[] }; holdMs: number; at: number; undone: boolean; replaced: number }
 const fake = vi.hoisted(() => ({ week: { demo: false as false | 'plain', model: {} as object | null, send: (() => ({ ok: false })) as (...a: never[]) => unknown } }));
 vi.mock('./week.svelte.ts', () => fake);
-const { dig, digMany, harvest, harvestAll, pickSeed, plant, plantMany, seed, waterAll } = await import('./farm.svelte.ts');
+const { dig, digMany, harvestAll, harvestMany, pickSeed, plant, plantMany, seed, waterAll } = await import('./farm.svelte.ts');
 const { world } = await import('./world.svelte.ts');
 
 class Mem implements KV {
@@ -51,16 +51,26 @@ describe('the farm batch', () => {
     vi.advanceTimersByTime(1500);
     plant(D, p(1), 'tomato', 'start');
     vi.advanceTimersByTime(1900);
-    harvest(D, p(2), 3);
+    harvestMany(D, [{ p: p(2), n: 3 }]);
     // the second held 2 s from its own tap: the third (3.4 s on) joins it; one queued event, its data replaced
     expect(sends.map((s) => [s.undone, s.replaced, s.holdMs])).toEqual([[false, 2, 5400]]);
     vi.advanceTimersByTime(2000);
-    harvest(D, p(3), 1);
+    harvestMany(D, [{ p: p(3), n: 1 }]);
     vi.advanceTimersByTime(2000);
     expect(sent()).toEqual([
       { d: D, ops: [{ o: 'plant', p: p(0), c: 'tomato', src: 'start' }, { o: 'plant', p: p(1), c: 'tomato', src: 'start' }, { o: 'harvest', p: p(2), n: 3 }] },
       { d: D, ops: [{ o: 'harvest', p: p(3), n: 1 }] }
     ]);
+  });
+
+  it('a harvest tap’s 3 × 3 is one replace of the held batch, its ops in order; the first tap its one send', () => {
+    harvestMany(D, [{ p: p(0), n: 3 }, { p: p(1), n: 2 }, { p: p(2), n: 1 }]);
+    expect(sends.map((s) => s.replaced)).toEqual([0]);
+    vi.advanceTimersByTime(500);
+    harvestMany(D, [{ p: p(10), n: 3 }, { p: p(11), n: 3 }]);
+    expect(sends.map((s) => s.replaced)).toEqual([1]);
+    vi.advanceTimersByTime(2000);
+    expect(sent()).toEqual([{ d: D, ops: [0, 1, 2, 10, 11].map((i, k) => ({ o: 'harvest', p: p(i), n: [3, 2, 1, 3, 3][k] })) }]);
   });
 
   it(`holds at most FARM.batchMax (${FARM.batchMax}) ops: the next starts its own`, () => {
