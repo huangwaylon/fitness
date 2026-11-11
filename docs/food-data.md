@@ -19,18 +19,14 @@ python3 -I -m unittest discover -s food-data/scripts/tests   # pipeline unit tes
 | `food-data/raw/` | Raw downloads (gitignored, never committed: third-party data under its own licences; `$FOOD_RAW` points elsewhere). Untrusted data: never run anything from it, run Python with `-I` |
 | `food-data/out/` | Build output (gitignored): the dataset files, `index.json`, `verify.json`, `jan/` |
 
-The scripts are stdlib-only (Python ≥ 3.9) and `build.py` is offline and deterministic: inputs are read in sorted
-order, no timestamps, so a rebuild from the same inputs is byte-identical (`check`). A target whose raw inputs are
-missing is skipped and keeps its file in `out/` (an error when there is none). A partial build also rebuilds
-`verify.json` when a dataset changed and always refreshes `index.json`. `check` without `out/` only builds and
-validates. The MEXT Excel and the 熊谷市 CSVs have to be downloaded by hand (`fetch.py`'s docstring has the URLs); the
-Open Food Facts CSV dump (~1 GB) is only needed to refresh `raw/off/off_jp.jsonl`, its Japan subset, which is what
-the build reads.
+The scripts are stdlib-only (Python ≥ 3.9); `build.py` is offline and deterministic (sorted inputs, no timestamps), so
+`check` is byte-exact. A target whose raw inputs are missing keeps its file in `out/` (an error when there is none). The
+MEXT Excel and the 熊谷市 CSVs are downloaded by hand (`fetch.py`'s docstring has the URLs); the ~1 GB Open Food Facts
+dump is needed only to refresh its Japan subset, `raw/off/off_jp.jsonl`, which the build reads.
 
-`npm run food:data` (`app/scripts/food-data.ts`, its header has the checks and the search keys it adds) replaces
-`app/static/food/` whole; the barcode shards (`jan/`) are built but not shipped (no barcode scanning). The app fetches
-the files at runtime (`lib/food/load.ts`) under `?v=<index.version>`. A meal keeps a per-100 g snapshot, so a data
-refresh never rewrites one.
+`npm run food:data` (`app/scripts/food-data.ts`, its header has the checks) replaces `app/static/food/` whole; `jan/`
+is built but not shipped (no barcode scanning). The app fetches the files (`lib/food/load.ts`) under
+`?v=<index.version>`. A meal keeps a per-100 g snapshot, so a data refresh never rewrites one.
 
 ## Format
 
@@ -56,30 +52,23 @@ header fields as they are written in the file.
 | `desc` | optional 「これは…」 line (≤ 40 characters, no final 。): what an unfamiliar food or dish is and what it looks like. See [Descriptions](#descriptions) |
 | `gloss` | optional everyday Japanese name under the food's own (≤ 20 characters: リーキ → 西洋ねぎ), from `data_src/glosses.json`, two sources each as `desc`; never a spelling, a dish, a broader category or an archaic name |
 
-MEXT markers are converted as follows: `Tr`/`(Tr)` → 0, `(N)` → N, `-` → null (absent for `fib`/`alc`), a footnote mark
-dropped (還元水あめ's fibre `14.0†`). kcal is MEXT's energy as given: it already holds alcohol's 7 kcal/g. Recipe datasets don't ship their ingredient lists.
+MEXT markers: `Tr`/`(Tr)` → 0, `(N)` → N, `-` → null (absent for `fib`/`alc`), a footnote mark dropped. kcal is MEXT's
+energy as given (alcohol's 7 kcal/g included). Recipe datasets don't ship their ingredient lists.
 
-**`index.json`**: `{ "version", "datasets": [{ "file", "source", "badge", "secondary", "lazy" }] }`. `version` is
-the first 12 hex digits of the sha256 of every generated file (`jan/` included) in `out/`; in `static/food/`, of the
-shipped files' names and bytes (`food-data.ts`: `verify.json`, then the datasets in index order). The app appends `?v=<version>` to
-data URLs, and the service worker caches them cache-first under that key. `secondary` datasets rank slightly below the core ones
-(mext, dishes, eatout) for equally good matches. `lazy` datasets (`products.json`) load only when asked for (`db.wantMore`:
-the search's open, or a day with a product logged), never with the tab's open. Each is parsed in a worker that ends
-once nothing is left to parse; a dataset that comes in later (the products, a failed one fetched again) calls
-`db.onAdd`, and the search searches again.
+**`index.json`**: `{ "version", "datasets": [{ "file", "source", "badge", "secondary", "lazy" }] }`. `version`: 12 hex
+digits of a sha256 over the shipped files (`food-data.ts`), the cache key of every data URL. `secondary` datasets rank
+slightly below the core ones (mext, dishes, eatout) on equal matches. `lazy` ones (`products.json`) load only when asked
+for (`db.wantMore`: the search open, or a day with a product logged), parsed in a worker; a late dataset calls
+`db.onAdd` and the search runs again.
 
 **`verify.json`**: `{ "sources": {src: { "label", "license", "url", "attribution" }}, "groups": [{ "n", "kcal": {src:
 kcal per 100 g} }], "byId": {item id: group index} }`. `src` is a dataset `source` (the item id prefix) or `usda`; every
 src used in a group is in `sources`. See [Verification](#verification).
 
-**`jan/<k>.json`**: `{ "<jan>": ITEM }`, where `k` is the last 3 digits of the code (1,000 files). Keys are 13-digit
-JAN/EAN-13 or 8-digit JAN-8 with a valid GS1 check digit (`lib.py` `norm_jan`). A 12-digit UPC-A is zero-padded to 13
-(the padding doesn't change the last 3 digits); UPC-E and GTIN-14 are dropped. Built, not shipped: the app has no
-barcode lookup.
+**`jan/<k>.json`** (built, not shipped): `{ "<jan>": ITEM }`, `k` the code's last 3 digits. Keys are JAN/EAN-13 or
+JAN-8 with a valid check digit (`lib.py` `norm_jan`); UPC-A is zero-padded to 13, UPC-E and GTIN-14 dropped.
 
 ## Sources
-
-Counts are from the current build.
 
 | File | Source | Items | License | Attribution | How values were derived | Caveats |
 |---|---|---|---|---|---|---|
@@ -120,14 +109,14 @@ line; a key matching no item fails the build).
 - **Two sources per line.** Every fact in a line is stated by at least two independent sources, listed in `src`
   (build-time only, never shipped): `mext:<食品番号>` (the 成分表's 食品群別留意点, 備考 or 別名), `wp:<title>` (ja.wikipedia),
   `wd:<QID>` (the Wikidata description), `maff:<page>` (うちの郷土料理). A line the sources don't both confirm stays empty.
-  Each batch is checked by an independent pass against the same sources before it ships.
+  Each batch is checked by an independent pass before it ships.
 - **Plain and factual.** No health or nutrition claims (`DESC_BANNED`), no Wikipedia sentence copied: the lines are
   ours, written from the facts. Everyday foods (ごはん, 牛乳) have none. The amount shows a line beside the food's name
   and `gloss`, so it never repeats them (`lib.validate`), and another name in it says so (「…。しなちくとも」, not 「…。しなちく」).
 - **Everyday names** (`gloss`, `data_src/glosses.json`) work the same way, sources `mext:` (別名), `ov:` (`mext_overrides.txt`),
   `wd:` (labels/aliases) and `wp:`.
 - **Credit.** MEXT's attribution says the descriptions are ours (「説明文は本アプリで加工・追加」); the MAFF dataset's covers
-  its dishes'. Wikipedia and Wikidata are only sources of facts for our own wording (no text is shipped).
+  its dishes'. No Wikipedia or Wikidata text is shipped.
 
 ## Verification
 
@@ -138,15 +127,13 @@ line; a key matching no item fails the build).
 - **Foods**: MEXT foods get second values from JBFD label means (boxes with ≥ 2 products) and the MEXT↔USDA FoodData
   Central correspondence table (CC0; kJ-as-kcal rows fixed; only pairs that agree with MEXT are kept). School-lunch
   ingredient rows are MEXT values × grams, so they are not a second source.
-- **Independence**: `n` counts families, not files. Our recipe sets (dishes, eatout, MAFF, Takatsuki: our recipes ×
-  MEXT values) are one family. MEXT, Kurume, Toyonaka, Kumagaya, Tokyo, JBFD and USDA each count once. The city
-  sets reuse MEXT ingredient values, so they are independent evidence for dishes (their own recipes and portions), never
-  for single foods.
+- **Independence**: `n` counts families, not files: our recipe sets (dishes, eatout, MAFF, Takatsuki) are one; MEXT,
+  Kurume, Toyonaka, Kumagaya, Tokyo, JBFD and USDA each one. The city sets reuse MEXT ingredient values, so they count
+  for dishes, never for single foods.
 - **Agreement**: the reference is MEXT for foods; for dishes it is the value the most families agree with. Values
   outside ±max(15 %, 10 kcal) of it are left out of the group (their items get no `byId` entry), so each member's own
   kcal agrees with its source's value. `n` = agreeing families, or 1 when the kept values spread more than 1.5×.
   **n ≥ 2 = confirmed**: the app's search shows ✓n beside the name.
-- Current build: 867 groups covering 1,266 items. 753 groups have n ≥ 2 (982 items), 104 have n ≥ 3 and 12 have n ≥ 4.
 
 ## Pictures
 ごはん's food pictures are AI-generated イメージ (Z-Image-Turbo, Apache-2.0, run locally) of generic foods and dishes in
@@ -161,8 +148,8 @@ sheet layout):
   never a package photo): a product borrows the picture of the food its name ends with or of a dish it is named like,
   corrected by context rules and its Open Food Facts tags; a doubtful match keeps the tile.
 - **Generation:** a fixed seed per row and roll, cached outside the repo (`$FOOD_IMG_RAW`), resumable.
-- **Checks** (not run yet; on the owners' call): the images ship unchecked, listed in `food-data/images/shipped.json`;
-  `FI_CHECKS=1` runs a vision model against vetted reference photos and a by-eye contact-sheet review.
+- **Checks** (not run yet; the owners' call): the images ship unchecked (`food-data/images/shipped.json`);
+  `FI_CHECKS=1` runs a vision model against vetted reference photos, then a by-eye contact sheet.
 - **Pack:** webp sprite sheets in `app/static/food-img/` (thumbnails per search neighbourhood, details per category),
   append-only and content-hashed (cached for a year); `index.json` maps each food id to its cells
   (`lib/food/images.ts` `imgOf`). The service worker caches sheets on first use, never at install.
