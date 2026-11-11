@@ -264,6 +264,23 @@ let last: { rows: SnapshotRows; state: State } | null = null;
 /** How many reduces were folds (state-fold.test). */
 export const reduceStats = { folds: 0 };
 
+/** What the last fold copied from its base (a list, a map, a day, prefs): written in place from then on. Each fold
+ *  starts it anew; null in a whole reduce (its State is all its own). */
+let own: Set<object> | null = null;
+/** `v` to write to: in a fold, its copy on the first write (copy-on-write: what no row writes stays the base's, the
+ *  same object, so the memos keyed on a list, model/farm.ts and shop.ts, still hold). */
+function mine<T extends object>(v: T, copy: (v: T) => T): T {
+  if (!own || own.has(v)) return v;
+  const c = copy(v);
+  own.add(c);
+  return c;
+}
+type Lists = { [K in keyof State as State[K] extends unknown[] ? K : never]: State[K] };
+/** `v` onto `s[k]` (mine: a fold's first write copies the base's list). */
+function put<K extends keyof Lists>(s: Lists, k: K, v: Lists[K][number]): void {
+  (s[k] = mine(s[k], (x) => [...x] as Lists[K])).push(v as never);
+}
+
 /** Index and validate all rows. Rows are only ever appended, so nothing here depends on "now". `queued`: the ids of
  *  rows the record hasn't kept yet (a phone's queue: its sells and buys are judged as the record will, contract/shop.ts
  *  shopLedger). Rows that extend the last set reduced by appending (a poll's, in `at` order) are folded over its State
@@ -283,6 +300,7 @@ export function reduce(r: SnapshotRows, rev: string | null = null, queued?: Read
 }
 
 function reduceAll(r: SnapshotRows, rev: string | null, queued?: ReadonlySet<string>): State {
+  own = null;
   const s: State = {
     metrics: { A: new Map(), B: new Map() },
     bellSpends: [],
@@ -393,22 +411,14 @@ function after(rows: readonly (readonly unknown[])[], ats: readonly number[]): b
 function foldRows(base: State, metrics: readonly MetricRow[], events: readonly EventRow[], rev: string | null): State | null {
   const indexed = events.filter((row) => !RAW_EVENTS.has(row[3]));
   if (!after(metrics, base.ats[0] ?? []) || !after(indexed, base.ats[1] ?? [])) return null;
-  const s: State = events.length ? copyLists(base, rev) : { ...base, rev, ats: [base.ats[0] ?? [], base.ats[1] ?? []] };
-  s.ats = [[...s.ats[0]], s.ats[1]];
+  own = new Set();
+  const s: State = { ...base, rev, ats: [base.ats[0] ?? [], base.ats[1] ?? []] };
   if (metrics.length) {
     s.metrics = { A: base.metrics.A, B: base.metrics.B };
     s.weights = { A: base.weights.A, B: base.weights.B };
     s.body = { A: { ...base.body.A }, B: { ...base.body.B } };
     s.lastSync = { ...base.lastSync };
   }
-  // what this fold copied already (a map, a day, a list): the next row into it pushes there
-  const own = new Set<object>();
-  const mine = <T extends object>(v: T, copy: (v: T) => T): T => {
-    if (own.has(v)) return v;
-    const c = copy(v);
-    own.add(c);
-    return c;
-  };
   const listOf = <K>(m: Map<K, Timed<number>[]>, k: K): Timed<number>[] => {
     const l = m.get(k);
     const c = l ? mine(l, (x) => [...x]) : mine([] as Timed<number>[], (x) => x);
@@ -420,7 +430,7 @@ function foldRows(base: State, metrics: readonly MetricRow[], events: readonly E
     const at = rowAt(row, false);
     const [iso, person, d, metric, v] = row;
     if (at === null || !isWho(person)) continue;
-    s.ats[0].push(at);
+    (s.ats[0] = mine(s.ats[0], (x) => [...x])).push(at);
     if (!isPersonId(person)) continue;
     const date = normDate(d);
     const value = num(v);
@@ -451,12 +461,12 @@ function foldRows(base: State, metrics: readonly MetricRow[], events: readonly E
   for (const row of events) {
     const list = RAW_EVENTS.get(row[3]);
     if (list) {
-      if (isWho(row[1])) s[list].push(row);
+      if (isWho(row[1])) put(s, list, row);
       continue;
     }
     const at = rowAt(row, false);
     if (at === null || !isWho(row[1])) continue;
-    s.ats[1].push(at);
+    (s.ats[1] = mine(s.ats[1], (x) => [...x])).push(at);
     const [, person, , type, raw] = row;
     const d = parseData(raw);
     if (!d || !(EVENT_TYPES as readonly string[]).includes(type)) continue;
@@ -466,46 +476,15 @@ function foldRows(base: State, metrics: readonly MetricRow[], events: readonly E
   return s;
 }
 
-/** A State's copy whose event lists (and prefs, goals, the events' `ats`) may be pushed to; the rest shared. */
-function copyLists(base: State, rev: string | null): State {
-  return {
-    ...base,
-    bellSpends: [...base.bellSpends],
-    spendVoids: [...base.spendVoids],
-    harvests: [...base.harvests],
-    finds: [...base.finds],
-    tallies: [...base.tallies],
-    islandDays: [...base.islandDays],
-    decor: [...base.decor],
-    tent: [...base.tent],
-    layout: [...base.layout],
-    roomSaves: [...base.roomSaves],
-    board: [...base.board],
-    pack: [...base.pack],
-    wedding: [...base.wedding],
-    food: [...base.food],
-    foodRepeat: [...base.foodRepeat],
-    foodRecipe: [...base.foodRecipe],
-    foodCustom: [...base.foodCustom],
-    listen: [...base.listen],
-    shop: [...base.shop],
-    farm: [...base.farm],
-    wet: [...base.wet],
-    prefs: { A: { ...base.prefs.A }, B: { ...base.prefs.B }, G: { ...base.prefs.G } },
-    dailyGoals: { A: copyGoals(base.dailyGoals.A), B: copyGoals(base.dailyGoals.B) },
-    rev,
-    ats: [base.ats[0] ?? [], [...(base.ats[1] ?? [])]]
-  };
-}
-
 /**
  * `reduce` of `base`'s rows plus `events`, without reducing the base again and without touching it (a State is never
- * mutated: bells.ts caches per State): the lists the events can change are copied, the rest is shared. Only for
+ * mutated: bells.ts caches per State): the lists the events write are copied (mine), the rest is shared. Only for
  * events stamped after every event of the base (the queued ones: view.ts composeModel); otherwise null.
  */
 export function foldEvents(base: State, events: readonly EventRow[], rev: string | null): State | null {
+  own = new Set();
   const baseAts = base.ats[1] ?? [];
-  const s = copyLists(base, rev);
+  const s: State = { ...base, rev, ats: [base.ats[0] ?? [], baseAts] };
   let last = baseAts.length ? baseAts[baseAts.length - 1] : -Infinity;
   for (const row of events) {
     const at = rowAt(row, false);
@@ -515,10 +494,10 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
     const type = row[3];
     const list = RAW_EVENTS.get(type);
     if (list) {
-      s[list].push(row);
+      put(s, list, row);
       continue;
     }
-    s.ats[1].push(at);
+    (s.ats[1] = mine(s.ats[1], (x) => [...x])).push(at);
     const d = parseData(row[4]);
     if (!d || !(EVENT_TYPES as readonly string[]).includes(type)) continue;
     const subject = eventSubject(type, d, row[1]);
@@ -557,19 +536,17 @@ const members = (fn: MemberEvent): OnEvent => (s, person, at, d) => {
 const GUEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'look', 'savedLooks', ...goalKeysOf('food'), ...PROFILE_KEYS];
 type DayGoals = Record<DailyGoalId, (Timed<number> & { day: LocalDate })[]>;
 const noGoals = (): DayGoals => ({ steps: [], move: [], exercise: [], stand: [] });
-const copyGoals = (g: DayGoals): DayGoals =>
-  ({ steps: [...g.steps], move: [...g.move], exercise: [...g.exercise], stand: [...g.stand] });
 
 /** A packing row (contract/pack.ts, anyone's: the guest's trip note the record never keeps) or a wedding board row
  *  (contract/wedding.ts, the members' alone: `members`), as the record judged it, onto its list. */
 const rowEvent = <K extends 'pack' | 'wedding'>(list: K, rowOf: (type: string, d: Data, who: Who) => State[K][number] | null, type: string): OnEvent => (s, person, _at, d) => {
   const r = rowOf(type, d, person);
-  if (r) (s[list] as State[K][number][]).push(r);
+  if (r) put(s, list, r);
 };
 /** A shop row (contract/shop.ts shopRowOf) onto the shop's list. */
 const shopRow = (type: ShopEvent): OnEvent => (s, person, at, d) => {
   const r = shopRowOf(type, d);
-  if (r) s.shop.push({ ...r, at, person });
+  if (r) put(s, 'shop', { ...r, at, person });
 };
 
 /** One handler per event type: each accepts (indexes) the event or ignores it. */
@@ -579,7 +556,7 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
     // was for). Whether the wallet covered it is decided on read (bells.ts).
     const sp = spendOf(d, at);
     if (!sp || s.bellSpends.some((x) => x.spendId === sp.spendId)) return;
-    s.bellSpends.push({ at, person, ...sp });
+    put(s, 'bellSpends', { at, person, ...sp });
   }),
   spend_void: members((s, person, at, d) => {
     const spendId = d.spendId;
@@ -587,56 +564,56 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
     const sp = s.bellSpends.find((x) => x.spendId === spendId);
     // Either of us (the ベル go back to the wallet it was paid from), once, after the spend.
     if (!sp || sp.at > at || s.spendVoids.some((v) => v.spendId === spendId)) return;
-    s.spendVoids.push({ at, person, spendId });
+    put(s, 'spendVoids', { at, person, spendId });
   }),
   harvest: members((s, person, at, d) => {
     const week = normDate(d.week);
-    if (week) s.harvests.push({ at, person, week });
+    if (week) put(s, 'harvests', { at, person, week });
   }),
   find(s, person, at, d) {
-    if (isFind(d)) s.finds.push({ at, person, kind: d.kind as FindKind, id: d.id as string });
+    if (isFind(d)) put(s, 'finds', { at, person, kind: d.kind as FindKind, id: d.id as string });
   },
   tally(s, person, at, d) {
-    if (isTally(d)) s.tallies.push({ at, person, date: d.date, counts: d.counts });
+    if (isTally(d)) put(s, 'tallies', { at, person, date: d.date, counts: d.counts });
   },
   tally_back(s, person, at, d) {
-    if (isTally(d)) s.tallies.push({ at, person, date: d.date, counts: d.counts, back: true });
+    if (isTally(d)) put(s, 'tallies', { at, person, date: d.date, counts: d.counts, back: true });
   },
   island(s, person, at, d) {
     // anyone's part of the day, the guest's too (contract/guest.ts)
-    if (isIslandDay(d)) s.islandDays.push({ at, person, data: d });
+    if (isIslandDay(d)) put(s, 'islandDays', { at, person, data: d });
   },
   decor(s, person, _at, d) {
     if (isRoomScope(d.sc)) {
       const t = tentOpOf(d);
-      if (t) s.tent.push({ ...t, who: person } as TentEntry);
+      if (t) put(s, 'tent', { ...t, who: person } as TentEntry);
       return;
     }
     if (d.sc !== undefined) {
       const l = layoutOpOf(d);
-      if (l) s.layout.push({ ...l, who: person } as LayoutEntry);
+      if (l) put(s, 'layout', { ...l, who: person } as LayoutEntry);
       return;
     }
     const op = decorOpOf(d);
-    if (op) s.decor.push({ ...op, who: person } as DecorEntry);
+    if (op) put(s, 'decor', { ...op, who: person } as DecorEntry);
   },
   sell: shopRow('sell'),
   buy: shopRow('buy'),
   buy_starts: shopRow('buy_starts'),
   farm(s, person, at, d) {
     const data = farmOf(d);
-    if (data) s.farm.push({ at, person, data });
+    if (data) put(s, 'farm', { at, person, data });
   },
   wet(s, _person, _at, d) {
-    if (typeof d.date === 'string' && DATE_RE.test(d.date) && !s.wet.includes(d.date)) s.wet.push(d.date);
+    if (typeof d.date === 'string' && DATE_RE.test(d.date) && !s.wet.includes(d.date)) put(s, 'wet', d.date);
   },
   room_save(s, person, _at, d) {
     const op = roomSaveOf(d);
-    if (op) s.roomSaves.push({ ...op, who: person });
+    if (op) put(s, 'roomSaves', { ...op, who: person });
   },
   board(s, person, _at, d) {
     const op = boardOpOf(d);
-    if (op) s.board.push({ ...op, who: person } as BoardRow);
+    if (op) put(s, 'board', { ...op, who: person } as BoardRow);
   },
   pack: rowEvent('pack', packRowOf, 'pack'),
   pack_chk: rowEvent('pack', packRowOf, 'pack_chk'),
@@ -661,10 +638,14 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
     const id = goalOfKey(d.key);
     if (id !== null && GOALS[id].history === 'daily') {
       // in its range and on its grid; anything else is ignored (the previous goal stays)
-      if (isPersonId(person) && isGoalValue(id, d.value)) s.dailyGoals[person][id as DailyGoalId].push({ at, v: d.value, day: goalDay(d, at) });
+      if (!isPersonId(person) || !isGoalValue(id, d.value)) return;
+      const goals = (s.dailyGoals = mine(s.dailyGoals, (x) => ({ ...x })));
+      const g = (goals[person] = mine(goals[person], (x) => ({ ...x })));
+      (g[id as DailyGoalId] = mine(g[id as DailyGoalId], (x) => [...x])).push({ at, v: d.value, day: goalDay(d, at) });
       return;
     }
-    const p = s.prefs[person];
+    const prefs = (s.prefs = mine(s.prefs, (x) => ({ ...x })));
+    const p = (prefs[person] = mine(prefs[person], (x) => ({ ...x })));
     if (d.key === 'locale' && (d.value === 'ja' || d.value === 'en')) p.locale = d.value;
     else if (d.key === 'villagerName' && typeof d.value === 'string') {
       const v = d.value.trim();

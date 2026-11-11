@@ -1,11 +1,13 @@
 // A poll's rows folded over the last State (model/state.ts foldRows) are the State a whole reduce gives: the activity,
 // the weight and body metrics, the events, the guest's, the raw meal-log rows, rows a check refuses, and a batch that
-// comes out of order (reduced whole). Every Apple Health row the record sent is in it, as a whole reduce has it.
+// comes out of order (reduced whole). Every Apple Health row the record sent is in it, as a whole reduce has it. A fold
+// copies only the lists it writes (the rest the base's own: the memos keyed on them hold), never touching an older one.
 import { describe, expect, it } from 'vitest';
 import { syntheticRows } from '../../../scripts/bench-rows.ts';
 import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
+import type { Who } from '#lib/types.ts';
 import { mergeRows } from './snapshot.ts';
-import { reduce, reduceStats } from './state.ts';
+import { foldEvents, reduce, reduceStats, type State } from './state.ts';
 
 const iso = (ms: number) => new Date(ms).toISOString();
 
@@ -84,5 +86,41 @@ describe('a poll folded over the last State (reduce, foldRows)', () => {
     const folded = reduce(rows, 'b');
     expect(folded).not.toBe(base);
     expect(base).toEqual(before);
+  });
+
+  it('copies only the lists a row writes (copy-on-write): the rest keep their identity, and no fold reaches an older State', () => {
+    const all = syntheticRows(60);
+    let rows: SnapshotRows = { metrics: all.metrics.slice(0, 3000), events: all.events.slice(0, 10) };
+    const base = reduce(rows, 'a');
+    const before = structuredClone(base);
+    const t = lastMs(rows);
+    const D = String(rows.metrics.at(-1)![2]);
+    const ev = (i: number, type: string, data: object, person: Who = 'A'): EventRow => [iso(t + i * 1000), person, `cow${i}`, type as EventRow[3], JSON.stringify(data)];
+    const farm = ev(1, 'farm', { d: D, ops: [{ o: 'plant', p: 'fd:field-A.0.0', c: 'tomato', src: 'start' }] });
+    // a queued farm tap (foldEvents), then the poll that brings it (reduce's foldRows), then a catch and a pref over that
+    const queued = foldEvents(base, [farm], null)!;
+    rows = mergeRows(rows, { events: [farm] });
+    const polled = reduce(rows, 'b');
+    const polledBefore = structuredClone(polled);
+    rows = mergeRows(rows, { events: [ev(2, 'tally', { date: D, counts: { 'fish:koi': 2 } }), ev(3, 'pref', { key: 'locale', value: 'en' }, 'B')] });
+    const caught = reduce(rows, 'c');
+    const health = reduce(mergeRows(rows, { metrics: [[iso(t + 4000), 'A', D, 'steps', 12345]] }), 'd');
+    expect(reduceStats.folds).toBeGreaterThanOrEqual(3);
+    // the older States as they were
+    expect(base).toEqual(before);
+    expect(polled).toEqual(polledBefore);
+    // each fold copied what it wrote, and shares the rest
+    const lists = ['farm', 'tallies', 'shop', 'islandDays', 'finds', 'food', 'bellSpends', 'harvests', 'decor', 'tent', 'layout', 'board', 'pack', 'wedding', 'wet', 'prefs', 'dailyGoals'] as const;
+    const changed = (a: State, b: State) => lists.filter((k) => a[k] !== b[k]);
+    expect(changed(base, queued)).toEqual(['farm']);
+    expect(changed(base, polled)).toEqual(['farm']);
+    expect(changed(polled, caught)).toEqual(['tallies', 'prefs']);
+    expect(caught.prefs.A).toBe(polled.prefs.A);
+    expect(caught.prefs.B).not.toBe(polled.prefs.B);
+    expect(changed(caught, health)).toEqual([]);
+    expect(queued.farm.length).toBe(base.farm.length + 1);
+    expect(queued.farm.at(-1)!.queued).toBe(true);
+    expect(polled.farm.at(-1)!.queued).toBeUndefined();
+    expect(caught).toEqual(reduce(structuredClone(rows), 'c'));
   });
 });
