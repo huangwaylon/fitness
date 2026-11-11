@@ -22,6 +22,23 @@ type Prog = { isReady(): boolean; getUniforms(): unknown; program?: unknown };
 type Props = WebGLRenderer['properties'];
 
 /** A material's textures (its maps, a shader's uniforms'). */
+/** A step of the museum's compile poll (ms). */
+const POLL_MS = 40;
+/** Poll `waiting` (the materials a compile started) every POLL_MS, each let go of once `ready`, then `done()`: when
+ *  none waits, or WAIT_MAX_MS on (a program that never reports linked: no timer for good, and the e2e's "programs
+ *  settled" ends). The cancel. */
+export function pollReady<T>(waiting: Set<T>, ready: (m: T) => boolean, done: () => void, now = () => performance.now()): () => void {
+  const t0 = now();
+  let t: ReturnType<typeof setTimeout> | undefined;
+  const poll = () => {
+    for (const m of waiting) if (ready(m)) waiting.delete(m);
+    if (waiting.size && now() - t0 < WAIT_MAX_MS) t = setTimeout(poll, POLL_MS);
+    else done();
+  };
+  poll();
+  return () => clearTimeout(t);
+}
+
 export function texturesOf(m: Material): Texture[] {
   const out: Texture[] = [];
   const add = (v: unknown) => {

@@ -22,6 +22,7 @@ import type { Villager3D } from '../villager3d/villager3d.ts';
 import type { Person3 } from '../person3d/person3d.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
 import { DPR_MOVING, endRenderer, makeRenderer } from '../world3d/stage.ts';
+import { pollReady } from '../world3d/warmup.ts';
 import { decal } from './geometry.ts';
 import { carpetGeometry, carpetTexture } from './carpet.ts';
 import { FPS } from '#lib/store/frameRate.ts';
@@ -1813,7 +1814,9 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
    *  model in, a visitor, a wing rebuilt) used to kill the chain with the rest of its textures already marked, which
    *  then uploaded mid-frame at first sight. */
   const warmed = new WeakSet<Texture>(), warmQ = new Set<Texture>();
-  let warmT: ReturnType<typeof setTimeout> | undefined, stepT: ReturnType<typeof setTimeout> | undefined, compileT: ReturnType<typeof setTimeout> | undefined;
+  let warmT: ReturnType<typeof setTimeout> | undefined, stepT: ReturnType<typeof setTimeout> | undefined;
+  /** The compile poll's cancel (warmup.ts pollReady). */
+  let stopCompile = () => {};
   /** A warm-up is due or under way (the e2e's: the programs settled once it's done). */
   let warming = false;
   function warmSoon() {
@@ -1867,7 +1870,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     };
     // (three's compileAsync, its poll ours: three's throws in a timer once a material it waits on is disposed, the
     // room left or a fish's hour over, and never settles)
-    clearTimeout(compileT);
+    stopCompile();
     // (those taken down by now go once this compile is done: their programs were there for it)
     const going = retired.slice();
     const shown: Object3D[] = [];
@@ -1878,22 +1881,16 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     // (solid again: each material keeps both programs, so the next frame switches back without compiling)
     hashed(false);
     for (const n of shown) n.visible = false;
-    const poll = () => {
-      if (disposed) return;
-      for (const m of compiling) {
-        const p = (renderer.properties.get(m) as { currentProgram?: { isReady(): boolean } }).currentProgram;
-        if (!p || p.isReady()) compiling.delete(m);
+    stopCompile = pollReady(compiling, (m) => {
+      const p = (renderer.properties.get(m) as { currentProgram?: { isReady(): boolean } }).currentProgram;
+      return !p || p.isReady();
+    }, () => {
+      warming = false;
+      for (const e of going) {
+        const i = retired.indexOf(e);
+        if (i >= 0) (retired.splice(i, 1), e.dispose());
       }
-      if (compiling.size) compileT = setTimeout(poll, 10);
-      else {
-        warming = false;
-        for (const e of going) {
-          const i = retired.indexOf(e);
-          if (i >= 0) (retired.splice(i, 1), e.dispose());
-        }
-      }
-    };
-    poll();
+    });
   }
 
   // (shown again: a frame for what changed meanwhile, the warm-up taken up)
@@ -2206,7 +2203,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       document.removeEventListener('visibilitychange', onVis);
       clearTimeout(warmT);
       clearTimeout(stepT);
-      clearTimeout(compileT);
+      stopCompile();
       clearTimeout(bakeT);
       rview.dispose();
       clearTimeout(holdT);

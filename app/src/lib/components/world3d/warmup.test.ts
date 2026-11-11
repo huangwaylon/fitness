@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { createWarmup, texturesOf, UPLOAD_PX, WAIT_MAX_MS } from './warmup.ts';
+import { describe, expect, it, vi } from 'vitest';
+import { createWarmup, pollReady, texturesOf, UPLOAD_PX, WAIT_MAX_MS } from './warmup.ts';
 import type { Material, Texture, WebGLRenderer } from 'three';
 
 /** A renderer's properties and initTexture, faked: programs that link when told, textures uploaded by initTexture. */
@@ -94,5 +94,31 @@ describe('the warm-up: a new material made ready over frames (A1)', () => {
     const a = f.tex(), b = f.tex();
     expect(texturesOf({ map: a, emissiveMap: a, color: 1 } as unknown as Material)).toEqual([a]);
     expect(texturesOf({ uniforms: { uTex: { value: b }, uN: { value: 2 } } } as unknown as Material)).toEqual([b]);
+  });
+});
+
+describe("the museum's compile poll", () => {
+  it('lets each go once ready, then is done; a program that never links is let go of WAIT_MAX_MS on', () => {
+    vi.useFakeTimers();
+    let t = 0, linked = false;
+    const done = vi.fn(), waiting = new Set(['a', 'never']);
+    pollReady(waiting, (m) => m === 'a' && linked, done, () => t);
+    linked = true;
+    for (; t < WAIT_MAX_MS - 40; t += 40) vi.advanceTimersByTime(40);
+    expect(waiting).toEqual(new Set(['never']));
+    expect(done).not.toHaveBeenCalled();
+    t = WAIT_MAX_MS;
+    vi.advanceTimersByTime(40);
+    expect(done).toHaveBeenCalledTimes(1);
+    expect(vi.getTimerCount()).toBe(0);
+    vi.useRealTimers();
+  });
+  it('a cancel stops it', () => {
+    vi.useFakeTimers();
+    const done = vi.fn();
+    pollReady(new Set([1]), () => false, done)();
+    vi.advanceTimersByTime(WAIT_MAX_MS * 2);
+    expect(done).not.toHaveBeenCalled();
+    vi.useRealTimers();
   });
 });
