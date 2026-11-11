@@ -13,8 +13,9 @@ export interface SaySpeaker {
   querySelector?(sel: string): Element | null;
 }
 
-/** A balloon's name tag: the person's colour (tokens.css --person-a / --person-b; the guest's lilac). */
-export const SAY_TAG = { A: '#2F86BD', B: '#D2701F', G: '#8E6CC8' } as const;
+/** A balloon's name tag: the person's colour (tokens.css --person-a / --person-b; the guest's lilac), a step deeper so its
+ *  12px cream name reads (>= 4.5:1). */
+export const SAY_TAG = { A: '#246FA3', B: '#A85512', G: '#7A57BA' } as const;
 
 /** A phrase's balloon shows this long (ms). */
 export const SAY_MS = 4000;

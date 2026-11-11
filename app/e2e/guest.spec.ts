@@ -65,16 +65,19 @@ test('the guest’s phone: the members’ activity and ベル, never a からだ
   await expect(panel.locator('#sec-lang')).toBeVisible();
   await expect(panel.locator('[data-wx-mode="game"]')).not.toHaveAttribute('aria-disabled', 'true');
   await page.keyboard.press('Escape');
-  // ごほうび, from the menu's ベル row (both wallets): their balances and the buys, view-only (no shop, no erase)
+  // ごほうび, from the menu's ベル row (each wallet by name, never their sum): their balances and the buys, view-only
+  // (no shop, no erase)
   const row = hudBells(page);
   const bells = Number(await row.getAttribute('data-bells'));
   expect(bells).toBeGreaterThan(0);
-  await expect(row.locator('.num')).toHaveText(bells.toLocaleString('en-US'));
+  await expect(row.locator('[data-hud-bells-each] .who')).toHaveText(['ウェイ', 'うめ']);
+  const each = (await row.locator('[data-hud-bells-each] .num').allTextContents()).map((n) => Number(n.replace(/,/g, '')));
+  expect(each[0] + each[1]).toBe(bells);
   await openRewards(page);
   await expect(panel.locator('[data-guest-jar]')).toHaveText('ベルはウェイとうめがそれぞれ貯めています。ごほうびはふたりが選び、ゲストは見るだけです。');
   const purses = panel.locator('.hero .purse');
   await expect(purses).toHaveCount(2);
-  await expect.poll(async () => (await purses.evaluateAll((els) => els.map((e) => Number((e as HTMLElement).dataset.balance)))).reduce((a, b) => a + b, 0)).toBe(bells);
+  await expect.poll(async () => await purses.evaluateAll((els) => els.map((e) => Number((e as HTMLElement).dataset.balance)))).toEqual(each);
   await expect(panel.locator('[data-item]')).toHaveCount(0);
   await panel.locator('[data-hist-toggle]').click();
   await expect(panel.locator('[data-spend]').first()).toBeVisible();
@@ -99,7 +102,7 @@ test('the guest’s 健康: the period on the range row; ごはん: its pill the
   expect((await pill.boundingBox())!.width).toBeLessThanOrEqual(72);
   const t = (await page.locator('dialog[open] .titlebar nav').boundingBox())!;
   expect(Math.abs(t.x + t.width / 2 - 393 / 2)).toBeLessThan(3);
-  await expect(pill.locator('select option:checked')).toHaveText('おきゃくさん'); // (its name in the picker)
+  await expect(pill.locator('select option:checked')).toHaveText('ゲスト'); // (its name in the picker)
 });
 
 test('the guest’s ベル row: today’s into both wallets (ふたりでぜんぶ in); its ごほうび each member’s today as a member’s phone has it', async ({ browser }) => {
@@ -148,7 +151,7 @@ test('a guest’s catch is in the members’ ずかん at once, credited to the 
     if (at) await g.mouse.click(at[0], at[1]);
     return g.locator('[data-fx="catch"]').count();
   }, { timeout: 20_000, message: 'the butterfly netted' }).toBeGreaterThan(0);
-  // A's ずかん: the butterfly, first found by the guest (おきゃくさん), its count under the guest's own name
+  // A's ずかん: the butterfly, first found by the guest (ゲスト), its count under the guest's own name
   await a.bringToFront();
   await fromMenu(a, 'zukan');
   await expect(a.locator('[data-zukan="bug"]')).toContainText('1 / ', { timeout: 5000 });
@@ -156,15 +159,15 @@ test('a guest’s catch is in the members’ ずかん at once, credited to the 
   await expect(a.locator('[data-zukan-first="G"]')).toContainText('1');
   await a.locator('button.tile[data-entry="common-butterfly"]').click();
   const detail = a.locator('[data-zukan-detail="common-butterfly"]');
-  await expect(detail).toContainText('7/4 おきゃくさんが見つけた');
-  await expect(detail.locator('[data-zukan-person="G"]')).toContainText('おきゃくさん ×1', { timeout: 5000 });
+  await expect(detail).toContainText('7/4 ゲストが見つけた');
+  await expect(detail.locator('[data-zukan-person="G"]')).toContainText('ゲスト ×1', { timeout: 5000 });
   // and after a reload, as it was: the record's rows say who found it
   await a.reload();
   await islandUp(a);
   await fromMenu(a, 'zukan');
   await a.locator('[data-zukan="bug"]').click();
   await a.locator('button.tile[data-entry="common-butterfly"]').click();
-  await expect(a.locator('[data-zukan-detail="common-butterfly"]')).toContainText('7/4 おきゃくさんが見つけた');
+  await expect(a.locator('[data-zukan-detail="common-butterfly"]')).toContainText('7/4 ゲストが見つけた');
   await ctx.close();
 });
 

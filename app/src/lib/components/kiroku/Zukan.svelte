@@ -34,7 +34,7 @@
   const runs = $derived(groups(kind));
   const found = $derived(list.filter((e) => finds.has(findKey(kind, e.id))).length);
   const times = (id: string, person?: Who) => countOf(counts, findKey(kind, id), finds.has(findKey(kind, id)), person);
-  /** Who found an entry first, as its line says it (the guest with its tag: 「ゆき（おきゃくさん）」). */
+  /** Who found an entry first, as its line says it (the guest with its tag: 「ゆき（ゲスト）」). */
   const finder = (w: Who) => (w === 'G' && names.G !== GUEST.villager ? t('zukan.guestName', { name: names.G }) : names[w]);
   /** How many of this page each of us found first (the head's summary: NH's museum plaque per donor). */
   const firsts = $derived.by(() => {

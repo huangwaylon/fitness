@@ -616,7 +616,7 @@
  "stale.spec.ts › a chunk that fails as the page leaves (or offline: every load fails) reloads nothing": 4839,
  "stale.spec.ts › a chunk that loads but throws as it runs reloads nothing, even with a newer build deployed": 5162,
  "stale.spec.ts › a failed panel chunk reloads the page once, then the panel opens": 6400,
- "stale.spec.ts › a sheet’s lazy part that fails to load says so with もういちど, which loads it": 5166,
+ "stale.spec.ts › a sheet’s lazy part that fails to load says so with もう一度, which loads it": 5166,
  "stretch.spec.ts › at 320x568 › the capped popup fits on both trees": 7813,
  "stretch.spec.ts › no stretch: no chip, only its faint ghosts, and がんばり +0 in the ledger": 3142,
  "stretch.spec.ts › the cap: three goals at 1.5× all show the same chip, the ledger pays +2 with 上限 2; the popups and ふたりでぜんぶ add up to today’s total": 5843,

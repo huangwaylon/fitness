@@ -83,8 +83,8 @@ test('the guest’s phone: ごはん on its own day, 健康 on a member’s, its
   await expect(dlg(page).locator('[data-metric=weight]')).toHaveCount(0);
   await expect(whoSel(page)).toHaveValue('A');
   await expect(bar(page).locator('.dd.who')).toHaveClass(/\baway\b/);
-  await expect(dlg(page).locator('[data-health-away]')).toHaveText('おきゃくさんの健康データはありません。ウェイを表示しています');
-  await expect(whoSel(page)).toHaveAccessibleName(/^誰のデータ：ウェイ（おきゃくさんの健康データ/);
+  await expect(dlg(page).locator('[data-health-away]')).toHaveText('ゲストの健康データはありません。ウェイを表示しています');
+  await expect(whoSel(page)).toHaveAccessibleName(/^誰のデータ：ウェイ（ゲストの健康データ/);
   expect(await overflow(page)).toEqual([]);
   await tab(page, 'food').click();
   await expect(whoSel(page)).toHaveValue('G');

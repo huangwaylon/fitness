@@ -34,6 +34,8 @@
   interface Props {
     /** My wallet's balance, the guest's both members' (the ベル row's number). */
     bells: number;
+    /** The guest's: each member's wallet, by name (the row shows them, not their sum). */
+    each?: readonly { name: string; bells: number }[];
     /** Today's ベル so far, both people (the ベル row's label, and the flash as coins land). */
     today: number;
     /** The panel the ベル row opens is open (its aria-expanded). */
@@ -45,7 +47,7 @@
     /** The page's timer (cleared with the page). */
     later: (fn: () => void, ms: number) => void;
   }
-  let { bells, today, expanded = false, onbells, onsettings, later }: Props = $props();
+  let { bells, each, today, expanded = false, onbells, onsettings, later }: Props = $props();
 
   let open = $state(false);
   /** Someone's ききみみ invite is live. */
@@ -181,9 +183,15 @@
   {#if !open}{@render plus()}{/if}
   <div class="items" id="hud-menu-items" role="group" aria-label={t('island.menu')} inert={!open}>
     <button type="button" class="item bells" data-hud-bells data-bells={bells} data-today={today} aria-haspopup="dialog" aria-expanded={expanded}
-      aria-label={t('island.bells', { bells: formatBells(bells), today: formatBells(today) })} data-sfx="self" onpointerdown={() => ahead('panel')} onclick={() => pick(onbells)}>
+      aria-label={t('island.bells', { bells: each ? each.map((e) => `${e.name} ${formatBells(e.bells)}`).join('、') : formatBells(bells), today: formatBells(today) })}
+      data-sfx="self" onpointerdown={() => ahead('panel')} onclick={() => pick(onbells)}>
       <span class="lbl" aria-hidden="true">{t('island.bellsRow')}</span>
-      <b class="num money" aria-hidden="true" onanimationend={(e) => e.currentTarget.classList.remove('catch')}>{formatNum(Math.round(shown.current))}</b>
+      {#if each}
+        <!-- the guest's: the two wallets as ごほうび shows them, never their sum -->
+        <span class="each" aria-hidden="true" data-hud-bells-each>{#each each as e, i (e.name)}{#if i}<span class="dot-sep">·</span>{/if}<span class="who">{e.name}</span><b class="num money">{formatNum(e.bells)}</b>{/each}</span>
+      {:else}
+        <b class="num money" aria-hidden="true" onanimationend={(e) => e.currentTarget.classList.remove('catch')}>{formatNum(Math.round(shown.current))}</b>
+      {/if}
       {#if open}{@render plus()}{/if}
     </button>
     <!-- 旅行: the trips (Orville's head on the pill only) -->
@@ -283,6 +291,9 @@
   /* the ベル row: no icon; the balance where the others' icons are, in the money font, centred in the icons' column */
   .bells { padding-right: 14px; }
   .num { display: inline-block; font: 700 var(--fs-talk)/1 var(--font-num); font-variant-numeric: tabular-nums; letter-spacing: .01em; transform-origin: 50% 70%; }
+  .each { display: inline-flex; align-items: baseline; gap: 4px; white-space: nowrap; }
+  .each .who { font-size: var(--fs-s); }
+  .each .dot-sep { margin: 0 2px; opacity: .6; }
 
   /* today's +N as coins land: a small yuzu bubble just under the leaf (folded), right-aligned to the screen's side, or
      left of the ベル row (open), popping in, rising a little, fading */

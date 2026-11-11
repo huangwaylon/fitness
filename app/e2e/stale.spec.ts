@@ -79,7 +79,7 @@ test('a chunk that loads but throws as it runs reloads nothing, even with a newe
   expect(await page.evaluate(() => sessionStorage.getItem('island.reloadAt'))).toBeNull();
 });
 
-test('a sheet’s lazy part that fails to load says so with もういちど, which loads it', { tag: '@chromium' }, async ({ page }) => {
+test('a sheet’s lazy part that fails to load says so with もう一度, which loads it', { tag: '@chromium' }, async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&kikimimi=fast');
   await islandUp(page);
   await fromMenu(page, 'kikimimi');

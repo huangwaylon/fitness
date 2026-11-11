@@ -208,6 +208,8 @@ export interface LedgerDay {
   weekKey: WeekKey;
   /** Both people + ふたりでぜんぶ. */
   bells: number;
+  /** Into each one's wallet (ownDayBells): their own and half of ふたりでぜんぶ; together `bells`. */
+  own: Record<PersonId, number>;
   people: Record<PersonId, DayBells>;
   together: boolean;
 }
@@ -230,7 +232,7 @@ export function bellsLedger(s: State, now: number): BellsLedger {
     w.A.days.forEach((a, i) => {
       if (a.date > today) return;
       days.push({
-        date: a.date, weekKey: w.weekKey, bells: w.dayTotals[i], together: w.together[i],
+        date: a.date, weekKey: w.weekKey, bells: w.dayTotals[i], together: w.together[i], own: { A: ownDayBells(w, 'A', i), B: ownDayBells(w, 'B', i) },
         people: { A: dayBells(w.A, a.date), B: dayBells(w.B, a.date) }
       });
     });

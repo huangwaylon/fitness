@@ -221,7 +221,10 @@ test('the ベル ledger: per day each of us four goals and ふたりで ぜん�
   const day = sheet(page).locator('li.day:not(.head)').first();
   await expect(day.locator('.marks')).toHaveCount(2);
   await expect(day.locator('.marks').first().locator('.m')).toHaveCount(4);
-  await expect(day.locator('.tot')).toHaveText(/^\+\d+\sベル$|^0\sベル$/);
+  // each one's ベル of the day under their own goals (their own wallet's), the week's in its head the same
+  await expect(day.locator('.own')).toHaveCount(2);
+  await expect(day.locator('.own').first()).toHaveText(/^(\+\d+|0)ベル$/);
+  await expect(sheet(page).locator('[data-ledger] section.week').first().locator('h4 .wk')).toHaveCount(2);
   await sheet(page).getByRole('button', { name: /\(月\)/ }).first().click();
   await expect(sheet(page).locator('.pc')).toHaveCount(2);
   for (const p of ['A', 'B']) await expect(sheet(page).locator(`.pc[data-person=${p}] .row`)).toHaveCount(4);

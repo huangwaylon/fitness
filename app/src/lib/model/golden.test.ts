@@ -129,6 +129,8 @@ describe('golden: the WeekView on a 10-week timeline', () => {
       const l = bellsLedger(s, tMs);
       const earned = l.days.reduce((n, d) => n + d.bells, 0);
       expect(l.earned, t).toBe(earned);
+      // each day's two wallets' shares are its ベル
+      for (const d of l.days) expect(d.own.A + d.own.B, `${t} ${d.date}`).toBe(d.bells);
       // everything earned less the live buys: both wallets
       const left = l.earned - l.spends.reduce((n, x) => (x.voided ? n : n + x.bells), 0);
       const g = buildWeekView(s, 'G', tMs).wallet.balance;

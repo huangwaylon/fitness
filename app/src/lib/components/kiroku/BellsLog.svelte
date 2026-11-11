@@ -7,12 +7,13 @@
   // The passbook (like NH's ATM statement): the ledger by week, newest first, each with its
   // earnings and one line per day: each person's four goals (bright = met, +1 each), the ふたりでぜんぶ star (+2) and the
   // day's ベル, with a がんばり line under it on a day either of us reached 1.5× of a goal (each person's +1 / +2 under
-  // their goals); tap → the day. Earnings only: the buys live on ごほうび (wallet/Purchases.svelte).
+  // their goals); tap → the day. Each one's ベル is their own wallet's (a day's and a week's, by person: their own and
+  // half of ふたりでぜんぶ). Earnings only: the buys live on ごほうび (wallet/Purchases.svelte).
   import type { PersonId, WeekKey } from '#lib/types.ts';
   import type { BellsLedger, LedgerDay } from '#lib/model/bells.ts';
   import Avatar from '../characters/Avatar.svelte';
   import GoalMarks from './GoalMarks.svelte';
-  import { formatBells, t } from '#lib/i18n/index.ts';
+  import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
   import { weekRange } from '#lib/i18n/format.ts';
   import { dayTitle } from './fmt.ts';
 
@@ -25,17 +26,20 @@
   }
   let { ledger, order, names, villagers, onday }: Props = $props();
 
-  interface Week { weekKey: WeekKey; days: LedgerDay[]; bells: number }
+  interface Week { weekKey: WeekKey; days: LedgerDay[]; own: Record<PersonId, number> }
   const weeks = $derived.by((): Week[] => {
     const m = new Map<WeekKey, Week>();
-    const get = (wk: WeekKey) => m.get(wk) ?? m.set(wk, { weekKey: wk, days: [], bells: 0 }).get(wk)!;
+    const get = (wk: WeekKey) => m.get(wk) ?? m.set(wk, { weekKey: wk, days: [], own: { A: 0, B: 0 } }).get(wk)!;
     for (const d of ledger.days) {
       const w = get(d.weekKey);
       w.days.push(d);
-      w.bells += d.bells;
+      w.own.A += d.own.A;
+      w.own.B += d.own.B;
     }
     return [...m.values()].sort((a, b) => b.weekKey.localeCompare(a.weekKey));
   });
+  /** A day's ベル in its column (the unit in the week's head; read out with it). */
+  const signed = (n: number) => (n > 0 ? `+${formatNum(n)}` : '0');
   /** The newest weeks first; older ones a tap away, so opening the panel doesn't build every week's rows at once. */
   let shown = $state(WEEKS_AT_ONCE);
 </script>
@@ -50,7 +54,9 @@
   <section class="week">
     <h4>
       <span class="money">{weekRange(w.weekKey)}</span>
-      <b class="money">{formatBells(w.bells, { signed: true })}</b>
+      {#each order as p (p)}
+        <b class="money wk" data-person={p} data-bells={w.own[p]}><Avatar worn person={p} villager={villagers[p]} size={18} /><span class="sr-only">{names[p]}</span>{formatBells(w.own[p], { signed: true })}</b>
+      {/each}
     </h4>
     <ul class="card rows">
       {#if w.days.length}
@@ -58,16 +64,17 @@
         <li class="day head" aria-hidden="true">
           <span class="dt"></span>
           {#each order as p (p)}<span class="pv"><Avatar worn person={p} villager={villagers[p]} size={20} /></span>{/each}
-          <span class="st"></span><span class="tot"></span>
+          <span class="st"></span>
         </li>
       {/if}
       {#each w.days as d (d.date)}
         <li class="day" class:zero={d.bells === 0}>
           <button type="button" class="dbtn" data-sfx="page" onclick={() => onday(d.date)}>
             <span class="dt">{dayTitle(d.date)}</span>
-            {#each order as p (p)}<span class="pv"><GoalMarks met={d.people[p].met} name={names[p]} size="var(--mk)" /></span>{/each}
+            {#each order as p (p)}
+              <span class="pv"><GoalMarks met={d.people[p].met} name={names[p]} size="var(--mk)" /><b class="money own" class:none={!d.own[p]} data-person={p} data-bells={d.own[p]}>{signed(d.own[p])}<span class="sr-only">{t('kiroku.ownBells')}</span></b></span>
+            {/each}
             <span class="st">{#if d.together}{@render star(true)}<span class="sr-only">{t('together.name')}</span>{/if}</span>
-            <b class="money tot">{formatBells(d.bells, { signed: true })}</b>
             {#if order.some((p) => d.people[p].stretch)}
               <span class="gbk">{t('kiroku.stretch')}</span>
               {#each order as p (p)}
@@ -89,15 +96,17 @@
   .empty { text-align: center; color: var(--text-soft); font-weight: 700; }
   .week { margin-bottom: 6px; }
   h4 { display: flex; align-items: center; gap: 6px; margin: 0 4px 8px; font-size: var(--fs-body); color: var(--text-soft); }
-  h4 b { margin-left: auto; font-size: var(--fs-talk); color: var(--text); }
+  h4 .wk { display: inline-flex; align-items: center; gap: 3px; font-size: var(--fs-body); color: var(--text); white-space: nowrap; }
+  h4 .wk:first-of-type { margin-left: auto; }
+  h4 .wk + .wk { margin-left: 6px; }
   .rows { list-style: none; margin: 0; padding: 4px 12px; display: grid; }
   .rows li { display: flex; align-items: center; gap: 8px; min-height: 44px; font-weight: 700; }
   .rows li + li { box-shadow: 0 -2px 0 color-mix(in srgb, var(--lip) 40%, transparent); }
-  /* a day: one line in shared columns (date · my goals · the partner's · ★ · the day's ベル); the line opens the day */
+  /* a day: one line in shared columns (date · my goals and ベル · the partner's · ★); the line opens the day */
   .day { padding: 0 !important; }
   /* fixed columns, so the head's avatars sit over their goals and every day lines up (--mw: one GoalMarks row) */
-  .rows { --mk: 15px; --mw: calc(4 * var(--mk) + 6px); }
-  .day, .dbtn { display: grid !important; grid-template-columns: minmax(0, 1fr) var(--mw) var(--mw) 18px 4.4em; align-items: center; column-gap: 10px; }
+  .rows { --mk: 15px; --mw: calc(4 * var(--mk) + 6px); --ow: 2.4em; }
+  .day, .dbtn { display: grid !important; grid-template-columns: minmax(0, 1fr) calc(var(--mw) + var(--ow)) calc(var(--mw) + var(--ow)) 18px; align-items: center; column-gap: 10px; }
   .dbtn {
     grid-column: 1 / -1;
     appearance: none; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; text-align: left;
@@ -105,16 +114,18 @@
   }
   .dbtn:active { background: var(--hl); }
   .head { min-height: 30px !important; }
-  .head .pv { justify-content: center; }
+  .head .pv { width: var(--mw); justify-content: center; }
   .dt { font: 700 var(--fs-body)/1.2 var(--font-num); white-space: nowrap; }
   .pv { display: flex; }
   .st { display: grid; place-items: center; line-height: 0; }
   .star { width: 18px; height: 18px; fill: var(--c-yuzu-lip); }
-  .tot { font-size: var(--fs-body); white-space: nowrap; text-align: right; }
+  .pv { align-items: center; }
+  .own { width: var(--ow); font-size: var(--fs-body); white-space: nowrap; text-align: right; }
+  .own.none { color: var(--text-soft); }
   .zero .dbtn { color: var(--text-soft); }
   /* がんばり: a second, smaller line in the same columns (the label under the date, each person's ベル under their goals) */
   .gbk, .gbv { grid-row: 2; font-size: var(--fs-s); color: var(--text-soft); line-height: 1.2; margin-top: -2px; }
   .gbk { grid-column: 1; padding-left: 1em; }
-  .gbv { justify-content: center; color: var(--text); }
+  .gbv { width: var(--mw); justify-content: center; color: var(--text); }
   @media (max-width: 359px) { .rows { padding: 4px 8px; --mk: 13px; } .day, .dbtn { column-gap: 6px; } }
 </style>

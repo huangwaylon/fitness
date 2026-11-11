@@ -60,10 +60,10 @@
   .cover { position: relative; display: block; height: 104px; overflow: hidden; border-radius: var(--r-row) 0 0 0; background: var(--ctl-off); }
   .cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
   .past .cover img { filter: saturate(.7) sepia(.18); }
-  /* the airline's strip: sky over the photo's top, its name and the route in white */
+  /* the airline's strip: a deeper sky over the photo's top (white on it 4.6:1), its name and the route in white */
   .band {
     position: absolute; left: 0; right: 0; top: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    padding: 5px 12px 4px; background: var(--c-sky); color: #fff; font: 700 var(--fs-xs)/1.3 var(--font-ui); letter-spacing: .04em;
+    padding: 5px 12px 4px; background: #2F78C4; color: #fff; font: 700 var(--fs-xs)/1.3 var(--font-ui); letter-spacing: .04em;
   }
   .air, .route { white-space: nowrap; }
   .air { min-width: 0; overflow: hidden; text-overflow: ellipsis; }

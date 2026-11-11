@@ -103,7 +103,7 @@
     <!-- DOM order = focus / VoiceOver order = the visual order: the heading, today's ベル, the health button beside it, the scene (trees,
          villagers), then しずえ's box at the bottom. All are absolutely placed, so the order costs no layout; the stacking
          comes from the --z-* scale (tokens.css). -->
-    <Hud today={view.wallet.today} balance={view.wallet.balance} bind:panelOpen bind:zukanOpen bind:settingsOpen {later} />
+    <Hud today={view.wallet.today} balance={view.wallet.balance} each={view.viewer === 'G' ? (['A', 'B'] as const).map((p) => ({ name: view.people[p].villagerName, bells: view.wallet.people[p].balance })) : undefined} bind:panelOpen bind:zukanOpen bind:settingsOpen {later} />
     <HudCoins {view} covered={sheetOpen || quiz.open || ui.overlay} {later} />
     <div class="top">
       <IslandScene {view} onhighfive={sendHighFive} onhighfivegot={(who) => (gotFive = who)} onguest={guestArrived} paused={sheetOpen} />

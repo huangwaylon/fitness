@@ -91,7 +91,10 @@ describe('the guest’s rows', () => {
     expect(g.guest).toEqual({ villagerName: 'ゆき', villager: 'judy' });
     expect({ ...g, viewer: 'A', host: a.host }).toEqual(a);
     expect(a.guest.villagerName).toBe('ゆき'); // the members draw it so too
-    expect(buildWeekView(reduce({ metrics: [], events: [] }), 'A', now).guest).toEqual({ villagerName: 'おきゃくさん', villager: null });
+    expect(buildWeekView(reduce({ metrics: [], events: [] }), 'A', now).guest).toEqual({ villagerName: 'ゲスト', villager: null });
+    // the old default, saved unchanged: the default now
+    const old = reduce({ metrics: [], events: [ev(at(WK, '11:00'), 'G', 'pref', { key: 'villagerName', value: 'おきゃくさん' })] });
+    expect(buildWeekView(old, 'A', now).guest.villagerName).toBe('ゲスト');
   });
 });
 

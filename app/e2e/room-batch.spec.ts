@@ -134,15 +134,15 @@ test('on the record: the guest clears ウェイ’s room and takes it back, each
   // and saves the room in ウェイ's slot 2
   await g.locator('[data-tent-saves]').click();
   await g.locator('[data-tent-slot="2"] [data-slot-act="save"]').click();
-  await g.locator('[data-tent-save-name]').fill('おきゃくさんの');
+  await g.locator('[data-tent-save-name]').fill('ゲストの');
   await g.locator('[data-tent-save-ok]').click();
   await expect.poll(() => rec.sent.length).toBe(10);
   for (const s of rec.sent) expect(s.ok, JSON.stringify(s)).toBe(true);
   expect(rec.sent.slice(3, 6).every((s) => s.data.rm === true && s.who === 'G')).toBe(true);
-  expect(rec.sent[9]).toMatchObject({ who: 'G', type: 'room_save', data: { sc: 't', n: 2, name: 'おきゃくさんの' } });
+  expect(rec.sent[9]).toMatchObject({ who: 'G', type: 'room_save', data: { sc: 't', n: 2, name: 'ゲストの' } });
   await g.context().close();
   const a = await phone(browser, rec, 'A', 'A');
   await expect.poll(() => seen(a)).toEqual(before);
-  await expect.poll(() => tent(a, (t) => t.saves())).toEqual([null, 'おきゃくさんの', null]);
+  await expect.poll(() => tent(a, (t) => t.saves())).toEqual([null, 'ゲストの', null]);
   await a.context().close();
 });

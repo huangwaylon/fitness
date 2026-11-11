@@ -100,7 +100,7 @@ export interface HarvestView {
   confirmedBy: PersonId[];
 }
 
-/** The guest as the island draws it (docs/design.md "The guest"): its own villager and name, 「おきゃくさん」 by default. */
+/** The guest as the island draws it (docs/design.md "The guest"): its own villager and name, 「ゲスト」 by default. */
 interface GuestLook {
   villagerName: string;
   /** Roster key; null = the guest's default. */

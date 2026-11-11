@@ -19,7 +19,7 @@
   // backdrop tap or Esc pops (closes at the hub). A game sits over the stack: its notice, よーい 3-2-1, a question (Play),
   // the results (おわる back to the hub; a lesson's back to its page); a game whose lane has its own views (round/
   // registry.ts; views.ts: the tournament's, みみ チェック's, a later game's) shows them in their place, each its own chunk. Another's lobby I joined is みんなで (‹ leaves it
-  // for the hub). Mid-game a backdrop tap or Esc doesn't close it, and ✕ asks 「ここでやめますか？」 (ui/ActionSheet: やめる, ✕ goes on). Opened from the HUD's
+  // for the hub). Mid-game a backdrop tap or Esc doesn't close it, and ✕ asks 「ここでやめますか？」 (キャンセル or ✕ goes on, the coral やめる leaves). Opened from the HUD's
   // ききみみ (my own lobby, kept alone: the hub) or the banner's さんか (that game joined: [hub, みんなで]). The voice
   // session is the opener's tap's (invite.svelte.ts openQuiz); closing ends it and drops every clip. A player's first
   // open on this phone (none played yet) has the welcome in the hub's place (onboarding/: hello, the sound check, then
@@ -27,7 +27,6 @@
   import { untrack } from 'svelte';
   import '#lib/i18n/kikimimi.ts';
   import Sheet from '../ui/Sheet.svelte';
-  import ActionSheet from '../ui/ActionSheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
   import NavButton from '../ui/NavButton.svelte';
   import Host from '../characters/Host.svelte';
@@ -71,7 +70,7 @@
 
   let game = $state.raw<QuizGame | null>(null);
   /** ✕ (or a backdrop tap, Esc) mid-game: 「ここでやめますか？」; ✕ with others in my lobby: 「部屋を閉じますか？」. The kit's
-   *  confirm (docs/design.md "Forms and confirms"): an ActionSheet, the verb its one row, its ✕ the safe choice. */
+   *  confirm (docs/design.md "Forms and confirms"): キャンセル + the coral verb, its ✕ the safe choice too. */
   let asking = $state<false | 'quit' | 'close'>(false);
   /** A mic game's さんか asked first (role/MicJoin.svelte: joining is consenting): its game, and whether the mic is on. */
   let micJoin = $state<{ g: string; on: boolean } | null>(null);
@@ -450,8 +449,16 @@
       <MicJoin on={mj.on} onjoin={() => micJoin && joinIt(micJoin.g)} oncancel={() => (micJoin = null)} />
     {/snippet}</Lazy>
   {/if}
-  <ActionSheet bind:open={() => !!asking, (o) => { if (!o) asking = false; }} title={t(asking === 'close' ? 'kiki.closeAsk' : 'kiki.quit')}
-    note={t(asking === 'close' ? 'kiki.closeAskBody' : 'kiki.quitBody')} groups={[[{ id: 'kiki-quit', label: t(asking === 'close' ? 'kiki.closeYes' : 'kiki.quitYes') }]]} onpick={quit} />
+  <!-- the ask: キャンセル (and its ✕) goes on, the coral verb leaves (the other confirms' footer) -->
+  <Sheet bind:open={() => !!asking, (o) => { if (!o) asking = false; }} title={t(asking === 'close' ? 'kiki.closeAsk' : 'kiki.quit')}>
+    <p class="ask-note">{t(asking === 'close' ? 'kiki.closeAskBody' : 'kiki.quitBody')}</p>
+    {#snippet footer()}
+      <div class="two-cta">
+        <button type="button" class="btn paper" data-action="cancel" data-sfx="back" onclick={() => (asking = false)}>{t('common.cancel')}</button>
+        <button type="button" class="btn danger" data-action="kiki-quit" data-sfx="tick" onclick={quit}>{t(asking === 'close' ? 'kiki.closeYes' : 'kiki.quitYes')}</button>
+      </div>
+    {/snippet}
+  </Sheet>
   {#if !asking && voice.on && voice.state !== 'running'}
     <!-- a lock or an app switch suspended the voice: a tap wakes it (inside the tap) -->
     <button type="button" class="veil resume" data-kiki-resume data-sfx="tick" onclick={() => voiceSession(true)}>
@@ -465,6 +472,7 @@
 </Sheet>
 
 <style>
+  .ask-note { margin: 0 4px 8px; text-align: center; text-wrap: pretty; word-break: auto-phrase; }
   /* おやすみ ものがたり: the night palette (tokens.css data-tod night) on the whole sheet, whatever the island's hour,
      its paper a step deeper (the screen kept dim) */
   :global(dialog:has(> .inner > .kk-body[data-kiki-night])) {

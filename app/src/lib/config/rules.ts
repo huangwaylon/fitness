@@ -40,8 +40,9 @@ export const PEOPLE: Record<PersonId, { villager: string; birthday: string | nul
   B: { villager: 'うめ', birthday: '03-04' }
 };
 
-/** The guest (docs/design.md "The guest"): the name its villager has until it picks one (its look: villagers/look.ts). */
-export const GUEST = { villager: 'おきゃくさん' } as const;
+/** The guest (docs/design.md "The guest"): the name its villager has until it picks one (its look: villagers/look.ts).
+ *  `was`: the old default, stored by a guest who saved it unchanged: read as the default. */
+export const GUEST = { villager: 'ゲスト', was: 'おきゃくさん' } as const;
 
 /**
  * A week's two times (JST): Sunday 19:30 (the harvest recap opens) and the Wednesday 04:00 after (the week locks: rows

@@ -99,7 +99,7 @@ export function buildWeekView(s: State, viewer: Who, now: number): WeekView {
     viewer,
     me,
     partner,
-    guest: { villagerName: s.prefs.G.villagerName ?? GUEST.villager, villager: s.prefs.G.villager ?? null },
+    guest: { villagerName: (s.prefs.G.villagerName !== GUEST.was && s.prefs.G.villagerName) || GUEST.villager, villager: s.prefs.G.villager ?? null },
     locale,
     weekKey,
     today,
