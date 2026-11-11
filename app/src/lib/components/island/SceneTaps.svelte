@@ -504,6 +504,7 @@
       case 'plant':
         plantPlot(date, plot.p, act.c, act.src);
         spawn({ kind: 'grass', x: px, y: pz, flip: roll(2) });
+        fx3d('swing', px, pz, 0, { v: 'shovel' });
         sceneSfx('dig');
         named(() => t('world.farm.planted', { name: cropName(act.c) }));
         return true;
@@ -657,7 +658,7 @@
   }
 
   // The partner's bush shakes and waterings (the shared day's news, just now): their villager walks over and does it,
-  // then the bush rustles or the flower glitters here too.
+  // then the bush rustles, the flower glitters or the plots get their drops here too.
   onMount(() =>
     shared.on(({ e, live }) => {
       if (!live || !enabled()) return;
@@ -669,6 +670,7 @@
         spawn({ kind: 'bush', x: b.x, y: b.z, lift: b.h * 0.62, v: shed(season) });
         sceneSfx('bush', [b.x, b.z]);
       } else if (e.kind === 'world' && e.op === 'watered') {
+        if (e.id.startsWith('fd:')) return plotsWatered(e.who, e.id, e.t);
         const f = flowerById(e.id);
         if (!f) return;
         const el = scene?.querySelector<HTMLElement>(`[data-flower="${f.id}"]`);
@@ -679,6 +681,31 @@
       }
     })
   );
+
+  /** The partner's or the guest's 水やり of plots (a tap's 3 × 3, the 畑 sheet's), each plot its own news: gathered a
+   *  person PLOTS_WET_MS, then their villager turns to the first, drops over each (≤ 9, 40 ms apart), one sound there,
+   *  and a heart over them when one is my plant (docs/farming.md "Playing": who watered). */
+  const PLOTS_WET_MS = 400;
+  const wets = new Map<Who, { ids: string[]; t: number }>();
+  function plotsWatered(who: Who, id: string, t: number) {
+    const was = wets.get(who);
+    if (was) return void was.ids.push(id);
+    wets.set(who, { ids: [id], t });
+    later(() => {
+      const b = wets.get(who), layout = site.layout ?? layoutStore.current, m = week.model;
+      wets.delete(who);
+      if (!b || !layout || !enabled()) return;
+      const tiles = new Map(layoutPlots(layout).map((p) => [p.p, p]));
+      const at = b.ids.flatMap((p) => (tiles.has(p) ? [tileMid(tiles.get(p)!.c, tiles.get(p)!.r)] : [])).slice(0, 9);
+      if (!at.length) return;
+      const cx = at.reduce((s, p) => s + p[0], 0) / at.length, cz = at.reduce((s, p) => s + p[1], 0) / at.length;
+      partnerTurnTo(at[0][0], who, b.t);
+      at.forEach(([x, z], i) => later(() => fx3d('drops', x, z, 0), i * 40));
+      sceneSfx('water', [cx, cz]);
+      const plots = m && farmToday(m.state, week.view?.today ?? islandDay()).farm.plots;
+      if (m && b.ids.some((p) => plots?.get(p)?.who === m.me)) fx3d('hearts', cx, cz, 10, { size: 0.6 });
+    }, PLOTS_WET_MS);
+  }
 
   // The listeners live on the scene (a click after a drag never comes: the scroll took it).
   $effect(() => {

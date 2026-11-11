@@ -5,6 +5,7 @@
 // them). The plots are tapped by their world points (a field's tile middles: layout/grid.ts tileMid).
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp, quiet, tapAt, tapWorld } from './island.ts';
+import { LIVE_V } from '../src/lib/contract/live-protocol.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 type Seed = [type: string, data: object, who: 'A' | 'B' | 'G'];
@@ -83,6 +84,8 @@ test('starts bought at the shop’s かう; a tap on my empty plot with nothing 
   const three = [plot(0), plot(1), plot(0, 1)];
   for (const t of three.slice(1)) await tapWorld(page, t.x, t.z);
   await expect.poll(() => farmRows(page)).toEqual(three.map((t) => ({ o: 'plant', p: t.p, c: 'tomato', src: 'start' })));
+  // each a swing of the shovel
+  expect(await page.evaluate(() => (window as unknown as { __fx3: { log(): { kind: string }[] } }).__fx3.log().filter((e) => e.kind === 'swing').length)).toBe(3);
   // none left: a fourth plot says so and opens the picker, with nothing in it to plant; each word over its plot
   await tapWorld(page, plot(1, 1).x, plot(1, 1).z);
   await expect(page.locator('[data-farm-noseed]')).toHaveText('なえが ない！ おみせで かえるよ');
@@ -242,4 +245,29 @@ test('a harvest tap takes my ripe plants of its 3 × 3 with one pop and a sparkl
   const cues = await page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
   expect(cues.filter((c) => c === 'scene-harvest')).toHaveLength(2);
   expect(cues).not.toContain('scene-catch');
+});
+
+test('the partner’s watering of my plants plays on my island: drops over each, one heart; my tap there then says who', async ({ page }) => {
+  const D1 = '2026-11-05';
+  await seed(page, D1, [
+    FIELD, ...POCKET,
+    ['farm', { d: D, ops: [{ o: 'plant', p: plot(0).p, c: 'tomato', src: 'start' }, { o: 'plant', p: plot(1).p, c: 'tomato', src: 'start' }] }, 'A']
+  ]);
+  await catchPops(page);
+  await page.goto(`?demo&date=${D1}T12:00&weather=clear`);
+  await islandUp(page);
+  await quiet(page);
+  const fx = () => page.evaluate(() => (window as unknown as { __fx3: { log(): { kind: string }[] } }).__fx3.log().map((e) => e.kind).filter((k) => k === 'drops' || k === 'hearts').sort());
+  expect(await fx()).toEqual([]);
+  // うめ's phone waters both (one tap, its 3 × 3: one news a plot), as the demo's relay brings it (sync/live-local.ts:
+  // another tab's BroadcastChannel; hers in front would hide this one, whose island then plays nothing), just now on
+  // the island's clock
+  await page.evaluate(([ids, v, t0]) => {
+    const bc = new BroadcastChannel('island-demo-relay'), t = t0 + Date.now() - performance.timeOrigin;
+    ids.forEach((id, i) => bc.postMessage({ k: 'm', m: { v, kind: 'world', op: 'watered', id, who: 'B', t: t + i } }));
+    setTimeout(() => bc.close(), 1000);
+  }, [[plot(0).p, plot(1).p], LIVE_V, Date.parse(`${D1}T12:00:00+09:00`)] as const);
+  await expect.poll(fx, { timeout: 5000 }).toEqual(['drops', 'drops', 'hearts']);
+  await tapWorld(page, plot(0).x, plot(0).z);
+  await expect.poll(() => pops(page)).toEqual([expect.stringMatching(/が みずを やってくれた$/)]);
 });
