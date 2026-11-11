@@ -13,7 +13,8 @@ import { precachable } from '../src/service-worker/caches.ts';
 const APP = join(import.meta.dirname, '..');
 const BUILD = join(APP, 'build-pages');
 const MANIFEST = join(APP, '.svelte-kit/output/client/.vite/manifest.json');
-/** 2026-11-07: 365 KB of JS, 60 KB of CSS (most of it the fonts' 150 unicode-range rules); the precache 2.6 MB, then
+/** 2026-11-07: 365 KB of JS, 60 KB of CSS (most of it the fonts' 150 unicode-range rules; 2026-11-11: 396.9 KB of
+ *  JS, 361.3 with the critters, the day's finds and the weeds lazy: island/SceneTaps.svelte); the precache 2.6 MB, then
  *  3.3 MB with offline phase A (docs/backend.md "Service worker" › Offline: the common font slices 0.7 MB, the trips'
  *  covers and heroes and the trails' tracks 0.26 MB), so its cap 3 → 3.5 MB; 3.6 MB with wave 2's lanes and the mic
  *  games' pages (ロールプレイ's took it past 3.5); 2.88 MB with ききみみ's parts (levels/parts/*.json's chunks, 0.69 MB:

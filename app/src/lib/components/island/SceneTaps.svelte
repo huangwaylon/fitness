@@ -37,9 +37,9 @@
   import { useWorld } from './camera.svelte.ts';
   import { notBehind, type Seen } from './hitbox.ts';
   import { footprint } from './nav.ts';
-  import Critters from './Critters.svelte';
-  import Finds from './Finds.svelte';
-  import Care from './Care.svelte';
+  import type Critters from './Critters.svelte';
+  import type Finds from './Finds.svelte';
+  import type Care from './Care.svelte';
   import type { Choice } from './pager.ts';
   import { water } from './sceneDay.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
@@ -157,6 +157,10 @@
   // K.K. on his stool (a piece of the layout, there every day: KKSlider.svelte)
   const KKC = $derived(kkC.get(true));
   const CakeC = $derived(cakeC.get(cake));
+  // The critters, the day's finds and the weeds (their own chunk, out of the first load: DOM over the 3D island's
+  // canvas, nothing to show or tap before it, so they load beside it)
+  const crittersC = lazyComponent(() => import('./Critters.svelte')), findsC = lazyComponent(() => import('./Finds.svelte')), careC = lazyComponent(() => import('./Care.svelte'));
+  const CrittersC = $derived(crittersC.get(true)), FindsC = $derived(findsC.get(true)), CareC = $derived(careC.get(true));
   /** The shooting star crossing now: a tap in the sky before `until` is a wish on it (NH), once. */
   let streak: { until: number; wished: boolean } | null = null;
 
@@ -695,9 +699,9 @@
   const STAR = 'M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z';
 </script>
 
-<Critters bind:this={critters} {scene} {tod} {enabled} />
-<Finds bind:this={finds} {scene} {enabled} />
-<Care bind:this={care} {scene} {enabled} rockBug={(x, z) => critters?.fromRock(x, z)} />
+{#if CrittersC}<CrittersC bind:this={critters} {scene} {tod} {enabled} />{/if}
+{#if FindsC}<FindsC bind:this={finds} {scene} {enabled} />{/if}
+{#if CareC}<CareC bind:this={care} {scene} {enabled} rockBug={(x, z) => critters?.fromRock(x, z)} />{/if}
 {#if VisitorC}<VisitorC bind:this={visitor} {scene} {enabled} {say} {ontrick} /><VisitorC bind:this={guest} slot="guest" {stageTaken} {scene} {enabled} {say} {ontrick} />{/if}
 {#if KKC}<KKC bind:this={kk} {scene} {enabled} {say} />{/if}
 {#if TapeDeckC}<TapeDeckC bind:this={deck} {enabled} {exercise} {say} />{/if}
