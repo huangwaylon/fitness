@@ -21,6 +21,9 @@ export const LOG_ROUTES = ['/', '/pair', '/tent', '/shop', '/museum', '/jar', '/
 const LOG_SHEETS = ['food', 'health', 'travel', 'wedding', 'hiking', 'kikimimi', 'panel', 'zukan', 'settings', 'other'] as const;
 export type LogSheet = (typeof LOG_SHEETS)[number];
 const EV_TYPES = [...EVENT_TYPES, 'other'] as const;
+/** What asked for the island's frames at the full rate (world3d/engine.ts `why`; `vil` `world` `mirror` its scene's:
+ *  Island3D): perf.rest's top three. @public (world3d/engine.ts) */
+export const LOG_FULL_WHY = ['focus', 'fling', 'settle', 'things', 'scene', 'vil', 'world', 'mirror', 'cards', 'fx', 'bite', 'ground', 'lights', 'touch', 'active', 'other'] as const;
 
 /** A field's kind: `n` a number (rounded to 0.1, within ±1e7), `b` a boolean, `t` a token, a closed set (an array),
  *  `msg` / `stack` scrubbed text. */
@@ -35,7 +38,9 @@ const API = { action: LOG_ACTIONS, err: LOG_STATUS, http: 'n', ms: 'n', tries: '
 // (the dotted names in double quotes: they are not i18n keys, which usage.test reads in single quotes)
 export const LOG_EVENTS = {
   // ---- the phones
-  "app.open": { src: 'c', f: { nav: ['navigate', 'reload', 'back_forward', 'prerender', 'other'], route: LOG_ROUTES, pwa: 'b', w: 'n', h: 'n', dpr: 'n', crashed: 'b', lt: 'b', q: 'n', qAgeS: 'n' } },
+  // coldS (2026-11-11): a fresh load's seconds since this phone last hid the app (none: it was shown last, or a reload
+  // of ours): a cold open soon after a hide is iOS's background kill
+  "app.open": { src: 'c', f: { nav: ['navigate', 'reload', 'back_forward', 'prerender', 'other'], route: LOG_ROUTES, pwa: 'b', w: 'n', h: 'n', dpr: 'n', crashed: 'b', lt: 'b', q: 'n', qAgeS: 'n', coldS: 'n' } },
   "app.ready": { src: 'c', f: { ms: 'n', route: LOG_ROUTES } },
   "app.show": { src: 'c', f: { awayS: 'n', route: LOG_ROUTES } },
   "app.reload": { src: 'c', f: { why: ['update', 'chunk', 'stale', 'other'] } },
@@ -46,13 +51,17 @@ export const LOG_EVENTS = {
   // its tag and class); the longest frame till the content was ready (`long`) and those over 33 ms (`slow`); its first
   // opening this load, or a kept one shown again (`kept`). Every first, a share of the rest
   "perf.sheet": { src: 'c', f: { sheet: LOG_SHEETS, first: 'b', kept: 'b', chunk: 'n', content: 'n', anim: 'n', late: 'n', what: 't', long: 'n', slow: 'n' } },
-  // the island's launch, once a load (world3d/boot.ts BootReport: ms since the navigation's start, frame lengths in ms)
-  "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n' } },
+  // the island's launch, once a load (world3d/boot.ts BootReport: ms since the navigation's start, frame lengths in ms;
+  // (2026-11-11) the steps from loaded to shown by what held each back: programs linking, models loading, cards
+  // loading; how many, and their wall ms from that step to the next; the steps' own frame ms all told)
+  "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n', sLink: 'n', msLink: 'n', sModels: 'n', msModels: 'n', sCards: 'n', msCards: 'n', stepMs: 'n' } },
   // (2026-11-10) the island's first return to it a load (back from a room: perf.boot's marks, ms from the mount), and
-  // the island at rest once a load (a minute untouched, then 10 s: drawn frames, shadow passes, the pacers' wake-ups a
-  // second, and (2026-11-11) the scene's draw calls and triangles a frame, the pixel ratio, the camera's z and the shadow map's size: world3d/rest.ts)
+  // the island at rest once a load (15 s untouched, then 10 s: drawn frames, shadow passes, the pacers' wake-ups a
+  // second, and (2026-11-11) the scene's draw calls and triangles a frame, the pixel ratio, the camera's z and the shadow
+  // map's size; the share (%) of frames at the full rate and its top three reasons, each's share of the frames drawn:
+  // world3d/rest.ts)
   "perf.back": { src: 'c', f: { first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n' } },
-  "perf.rest": { src: 'c', f: { fps: 'n', shadows: 'n', wakes: 'n', calls: 'n', tris: 'n', dpr: 'n', camZ: 'n', sm: 'n' } },
+  "perf.rest": { src: 'c', f: { fps: 'n', shadows: 'n', wakes: 'n', calls: 'n', tris: 'n', dpr: 'n', camZ: 'n', sm: 'n', full: 'n', why1: LOG_FULL_WHY, w1: 'n', why2: LOG_FULL_WHY, w2: 'n', why3: LOG_FULL_WHY, w3: 'n' } },
   // (2026-11-11) the island's first drag a load (world3d/drag.ts): the pixel ratio's swap down as it starts and back once
   // still, each one's own ms and its first frame's, a frame's usual CPU (ms), the pixel ratios and the shadow map's size
   "perf.drag": { src: 'c', f: { onSet: 'n', onFrame: 'n', offSet: 'n', offFrame: 'n', cpu: 'n', dpr: 'n', move: 'n', sm: 'n' } },
@@ -75,6 +84,9 @@ export const LOG_EVENTS = {
   "chunk.fail": { src: 'c', f: { reloaded: 'b' } },
   // the installed app's storage kept from eviction (sync/persist.ts: asked once): granted, already so, and the quota's MB
   "storage.persist": { src: 'c', f: { ok: 'b', was: 'b', useMb: 'n', quotaMb: 'n' } },
+  // (2026-11-11) the site's storage once a Tokyo day (sync/persist.ts storageDaily: navigator.storage.estimate, MB) and
+  // whether it's kept from eviction
+  "storage.use": { src: 'c', f: { useMb: 'n', quotaMb: 'n', persisted: 'b' } },
   "storage.fail": { src: 'c', f: { store: ['ls', 'idb', 'log'], kind: ['full', 'unavailable', 'blocked', 'other'] } },
   use: { src: 'c', f: { '*': 'n' } },
   "log.drop": { src: 'c', f: { n: 'n', why: ['cap', 'full', 'day', 'pending'] } },

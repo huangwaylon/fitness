@@ -35,15 +35,15 @@ Each event's fields, kinds and closed sets are the registry's (`contract/log.ts`
 
 | Event | Level | Fields | When |
 |---|---|---|---|
-| `app.open` | info | `nav`, `route`, `pwa`, `w`, `h`, `dpr`, `crashed`, `lt`, `q`/`qAgeS` (the write queue) | each load |
+| `app.open` | info | `nav`, `route`, `pwa`, `w`, `h`, `dpr`, `crashed`, `lt`, `q`/`qAgeS` (the write queue), `coldS` (a fresh load's seconds since the app was last hidden: a background kill when short) | each load |
 | `app.ready` | info | `ms` (navigation start → the 3D island loaded), `route` | once a load |
 | `app.show` | info | `awayS`, `route` | shown again |
 | `app.reload` | info | `why` (update, chunk) | the app reloads itself |
 | `perf.frames` | info | `p50`, `p95`, `fps`, `long`, `drawFps`, `hz`, `mode`, `when` | 10 s after ready; again after 10 min away |
 | `perf.sheet` | info | `sheet`; ms from the tap to `chunk` (the dialog shown), `content` (ready: 300 ms quiet after the opening), `anim`, `late`; `long`, `slow`, `first`, `kept` | each sheet's first opening a load; a fifth of the rest |
-| `perf.boot` | info | ms from navigation to `mount`, `first`, `loaded`, `shown`; the longest frames (`long`, `draw`, `appear`), `steps`, `progs`, the fields' source, `sw`, `warm`, `net` | once a load, 1 s after the island is whole (world3d/boot.ts) |
+| `perf.boot` | info | ms from navigation to `mount`, `first`, `loaded`, `shown`; the longest frames (`long`, `draw`, `appear`), `steps`, `progs`, the fields' source, `sw`, `warm`, `net`; the steps by what held them (`sLink`/`msLink` programs, `sModels`/`msModels`, `sCards`/`msCards`: how many, their wall ms), `stepMs` their frames' own | once a load, 1 s after the island is whole (world3d/boot.ts) |
 | `perf.back` | info | `perf.boot`'s marks from the mount, for the first return from a room | once a load (world3d/boot.ts) |
-| `perf.rest` | info | a second at rest: `fps`, `shadows`, `wakes`; `calls`, `tris` a frame, `dpr`, `camZ`, `sm` | once a load, after a minute untouched (world3d/rest.ts) |
+| `perf.rest` | info | a second at rest: `fps`, `shadows`, `wakes`; `calls`, `tris` a frame, `dpr`, `camZ`, `sm`; `full` (% of frames at the full rate), `why1`-`why3` its top reasons with `w1`-`w3` (% of frames) | once a load, after 15 s untouched (world3d/rest.ts) |
 | `perf.drag` | info | the first drag's pixel-ratio swaps: `onSet`, `offSet` (ms), `onFrame`, `offFrame` (its first frame's CPU), `cpu` (p50), `sm` | once a load (world3d/drag.ts) |
 | `js.error` | error (warn while leaving) | `kind`, `msg`, `stack` (4 frames), `src`, `n` (folded repeats), `leaving`, `route` | `error`, `unhandledrejection` |
 | `api.fail` / `api.ok` | warn / info (10 % sampled) | `action`, `err`, `http`, `ms`, `tries`; `r` | a `/api` call |
@@ -57,6 +57,7 @@ Each event's fields, kinds and closed sets are the registry's (`contract/log.ts`
 | `chunk.fail` | warn | | a chunk failed to load |
 | `storage.fail` | warn | `store`, `kind` | storage refused a write |
 | `storage.persist` | info | `ok`, `was`, `useMb`, `quotaMb` | the installed app asked to keep its storage (once, after a sync) |
+| `storage.use` | info | `useMb`, `quotaMb`, `persisted` | once a Tokyo day, after a sync (sync/persist.ts) |
 | `use` | info | counters `sheet:`, `ev:`, `route:`, `act:`, `swallow:<tag>` (a failure the app went on without: quiet.ts) | summed, one a flush |
 | `log.drop` | warn | `n`, `why` (cap, full, day, pending) | the phone's log dropped events |
 | `mic.env` / `mic.perm` / `mic.duplex` / `mic.stt` | info | the mic probe's numbers and closed sets ([kikimimi-mic.md](../kikimimi-mic.md) "The probe"). **Never heard text, a device label or a sentence** | 設定's mic test, on its send |
