@@ -1,14 +1,13 @@
 # Health sync (iOS Shortcut)
 
-Each iPhone sends its daily steps, exercise minutes, active energy, stand minutes, weight, body fat percentage, BMI and
-lean body mass to the record (the relay, [backend.md](../backend.md#the-record)) whenever
-you open an app you use daily (e.g. LINE): Health is readable only while the phone is unlocked. Once per phone.
+Each iPhone sends its daily activity and body numbers to the record ([backend.md](../backend.md#the-record)) whenever
+you open an app you use daily (e.g. LINE): Health is readable only while the phone is unlocked. Set up once per phone.
 
 **[U]** = unverified on a real phone (exact action names, whether runs are silent).
 
 ## 1. What the Shortcut sends
-`POST` to `https://island-fund-relay.island-fund-relay.workers.dev/api` (the relay's record), Request Body **JSON**, no
-headers. Daily totals, one line per day, every field **Text**. The parser (`relay/src/parse.ts`) accepts only this:
+`POST` to `https://island-fund-relay.island-fund-relay.workers.dev/api`, Request Body **JSON**, no headers. Daily
+totals, one line per day, every field **Text** (`relay/src/parse.ts`):
 
 ```json
 {
@@ -40,17 +39,14 @@ headers. Daily totals, one line per day, every field **Text**. The parser (`rela
 | `body_mass_index` | That day's **Body Mass Index**, `0` = no sample; 10–60 | `bmi` (one decimal) |
 | `lean_body_mass` | That day's **Lean Body Mass** in **kg**, `0` = no sample; 10–150 kg | `lean_kg` (one decimal) |
 
-- Lists are optional (at least one); other fields are ignored. Without the body lists (§2 steps 8a–8c) 健康 shows
-  no body fat, BMI or lean mass. A list whose line count differs from `dates` is dropped with a warning; an unreadable
-  or over-max line is skipped.
-- Two step lists: Find Health Samples adds every source's samples, so one walk would count twice (Health's own total
-  de-duplicates; Shortcuts doesn't). The server keeps the larger of the two per day, close to Health's total.
-- Latest wins (re-sending is harmless, a corrected day is fixed by the next run; the held zeros):
-  [backend](../backend.md#ingest).
-- Reply: `{"ok":true,"metrics":8}` (rows added), plus `skipped` / `warnings`. Errors: `unauthorized`,
-  `bad_request` (with a `detail`), `too_large` (over 1 MB), `busy` (over 120 requests/min), `unavailable`.
-- Every run leaves an audit row in the record's `uploads` table, read with the `uploads` action
-  ([runbook §5](runbook.md#5-when-sync-fails)).
+- Each list is optional (at least one); other fields are ignored. A list whose line count differs from `dates` is
+  dropped with a warning; an unreadable or over-max line is skipped.
+- Two step lists because Find Health Samples sums every source (one walk would count twice); the server keeps the
+  larger per day, close to Health's de-duplicated total.
+- Latest wins, so re-sending is harmless ([backend](../backend.md#ingest)).
+- Reply: `{"ok":true,"metrics":8}` (rows added), plus `skipped` / `warnings`. Errors: `unauthorized`, `bad_request`
+  (with `detail`), `too_large`, `busy`, `unavailable` ([runbook §5](runbook.md#5-when-sync-fails), which also reads
+  each run's `uploads` audit row).
 
 ## 2. Build the Shortcut
 Shortcuts → **+** → name it **しまの同期** [U: action names]:
@@ -71,17 +67,16 @@ Shortcuts → **+** → name it **しまの同期** [U: action names]:
 | 8d | *(optional)* **Repeat with Each** | Blank the Watch's zeros: [below](#a-day-without-the-watch-optional-step-8d) |
 | 9 | **Get Contents of URL** | the URL in §1, **POST**, Request Body **JSON**, each field **Text**: `key` = Key, `action` = `ingest`, and each §1 field = its list above |
 
-Every list must use the same range (the last 1 month), **Group by Day** and **Fill Missing** (a day without samples
-becomes a `0` line, not a missing one), so it lines up with `dates`. Keep Health's units in **kg** and **kcal** (Lean
-Body Mass follows the weight unit). Allow read access to all eight types when asked. Body fat may come through as
-`0.223` or `22.3` [U: which]; both are read as 22.3 %. Without an Apple Watch, leave out step 4 and `steps_watch`.
+Every list uses the same range, **Group by Day** and **Fill Missing** (an empty day becomes a `0` line), so it lines
+up with `dates`. Health's units in **kg** and **kcal**. Allow read access to all eight types. Without an Apple Watch,
+leave out step 4 and `steps_watch`.
 
 **Test:** tap ▶. Expect `{"ok":true,…}` with no `warnings`.
 
 ### A day without the Watch (optional step 8d)
-**Fill Missing** makes a day the Watch stayed off Move 0, Exercise 0, Stand 0. The app reads that as no data
-([design](../design.md#kenkou)), so this step only makes the record say so: an **empty line** instead of `0` for
-those three (no row; counted under `skipped`). Blank only a day where all three are 0. [U: action names]
+**Fill Missing** makes a day the Watch stayed off Move 0, Exercise 0, Stand 0. The app already reads that as no data
+([design](../design.md#kenkou)); this step makes the record say so too: an **empty line** instead of `0` for those
+three (no row; counted under `skipped`), only when all three are 0. [U: action names]
 
 1. After step 8c, **Repeat with Each** on `CalValues`. Inside it: **Get Item from List** `ExValues`, **Item at Index**
    = **Repeat Index** → `Ex`; the same on `StandValues` → `Stand`.
@@ -96,19 +91,17 @@ those three (no row; counted under `skipped`). Blank only a day where all three 
 Shortcuts → **Automation** → **+** → **App** → **LINE** (or the app you open most) → **Is Opened** → **Run
 Immediately**, **Notify When Run** off → **Run Shortcut しまの同期**. Do this on both phones.
 
-**At most every 10 minutes (recommended):** opening LINE often runs it back to back for nothing new. At the start of しまの同期: **Get File** **shima-last.txt** in
-the Shortcuts folder (**Error If Not Found** off) → **Get Time Between Dates** (the file's text and **Current Date**,
-in minutes) → **If** it is under 10, **Stop This Shortcut** (no file yet: it runs). After step 9: **Text** **Current
-Date** → **Save File** to **shima-last.txt** in the Shortcuts folder, **Overwrite** on. [U: action names] The next
-run sends the whole month as always: nothing is lost.
+**At most every 10 minutes (recommended):** at the start of しまの同期, **Get File** **shima-last.txt** in the
+Shortcuts folder (**Error If Not Found** off) → **Get Time Between Dates** (its text and **Current Date**, minutes) →
+**If** under 10, **Stop This Shortcut**. After step 9: **Text** **Current Date** → **Save File** **shima-last.txt**,
+**Overwrite** on. [U: action names] Each run sends the whole month, so nothing is lost.
 
 ## 4. Copy to the other phone
-An iCloud link carries the Shortcut's text, so a link with your key in it leaks the key. Before sharing: Shortcut
-settings (ⓘ) → **Setup** → **Import Questions** → add a question for the **Key** Text action ("Paste your Island
-Fund key") [U: menu names]. The Source filters (steps 2 and 4) name your own iPhone and Watch: the other person
-re-picks theirs in both after importing. Clear the key text, Share → **Copy iCloud Link**, send it. Importing asks
-the other person for their key. Put your own key back, and they add the automation (§3). If a link with a key in it was ever
-shared, rotate that key ([runbook §3](runbook.md#3-rotate-a-key)).
+An iCloud link carries the Shortcut's text, key included. Before sharing: Shortcut settings (ⓘ) → **Setup** →
+**Import Questions** → a question for the **Key** Text action [U: menu names]. Clear the key text, Share → **Copy
+iCloud Link**, send it, put your key back. The other person answers with their key, re-picks their own iPhone and
+Watch in steps 2 and 4, and adds the automation (§3). A link ever shared with a key in it: rotate that key
+([runbook §3](runbook.md#3-rotate-a-key)).
 
 ## 5. One-time baseline (optional)
 Duplicate the Shortcut, set the range in steps 2 and 4–8c to the last **84 days**, run it once, delete the copy.
