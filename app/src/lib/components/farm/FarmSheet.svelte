@@ -1,6 +1,6 @@
 <script lang="ts">
   // 畑 (docs/farming.md "Playing"): today's harvest and what it fetches, my plants against the cap, and the batches: 収穫
-  // (every ripe plant of mine), 水やり (every unwatered plant, anyone's field) and 植える (my empty plots, with a crop I
+  // (every ripe plant of mine), 水やり (anyone's plants whose watering counts today: sheet.ts) and 植える (my empty plots, with a crop I
   // hold), each one event (store/farm.svelte.ts; the watering one change of the shared day). The partner's and the
   // guest's fields a line each; my plants off every field (a field moved or deleted in /editor) back to starts; the rule.
   // Kanji (a sheet's copy).

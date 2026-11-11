@@ -81,6 +81,12 @@ export function yieldOf(p: string, plot: Plot, watered: Watered): number {
   return Math.min(FARM.maxYield, 1 + (watered(p, dayOf(from - 2)) ? 1 : 0) + (watered(p, dayOf(from - 1)) ? 1 : 0));
 }
 
+/** Whether a watering on `date` counts toward the plant's yield (`date` one of its two days before ripe: yieldOf). */
+export const wateringCounts = (plot: Plot, date: LocalDate): boolean => {
+  const left = daysLeft(plot, date);
+  return left === 1 || left === 2;
+};
+
 /** The field as the rows leave it: each plot's plant, and per person what the field put into (+) or took out of (−)
  *  their pocket per goods key (a harvest's vegetables, a dug-up plant's start; a planted start or vegetable). */
 export interface Farm { plots: Map<string, Plot>; net: Partial<Record<Who, Map<string, number>>> }

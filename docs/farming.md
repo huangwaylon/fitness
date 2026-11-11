@@ -23,7 +23,7 @@ tests beside them, `relay/test/farm.test.ts`, `e2e/farm.spec.ts`, `e2e/farm-shee
    ripens that it was watered: 1, 2 or 3 (NH's Lv1–3 models).
 6. **Rain waters everything:** any wet hour of the Tokyo day (our winter snow is real rain) waters every plant.
 7. **The can waters 3 × 3:** a tap on a plant waters it and its neighbours (NH's golden can). The 畑 sheet's 水やり
-   waters every plant: effort, not balance (the cadence and the cap are the same; you still come daily).
+   waters every plant whose watering counts today (its two days before ripe): effort, not balance (the cadence and the cap are the same; you still come daily).
 8. **Starts are sold at the shop's かう,** always in stock, all six crops at one price, any season. A vegetable can be
    planted too (buying a start, 14, beats replanting a vegetable worth 18, as in NH).
 9. **Not in P1:** pumpkin colours (orange only), a live relay intent for a partner's plant or harvest, flowers from
@@ -74,9 +74,10 @@ levers, if the live numbers drift (`npm run logs`, the sells): `FARM.regrowDays`
 - **Watered soil** stays dark for the day (the soil's instance colour); a ripe plant shows its yield's model. The
   partner's watering shows at once (the shared day); their plant or harvest on their next sync.
 - **The 畑 sheet:** today's harvest and its かいがら (none ripe: 「次の収穫まであと2日」), 「12/40株」; 実ったものを収穫
-  (one event), 水やり (every unwatered
-  plant on any field: one shared-day change, to the relay 15 a second), 植える with a crop I hold (the pick, else my
-  first start; a vegetable only once picked), each with 取り消す. The map, a cell a plot, as the island shows the field
+  (one event), 水やり (every plant on any field
+  in its two days before ripe, not watered today: one shared-day change, to the relay 15 a second), 植える with a crop
+  I hold (the pick, else my first start; a vegetable only once picked; my empty plots as the map reads them, the back
+  row first), each with 取り消す. The map, a cell a plot, as the island shows the field
   (its front row, row 0, at the bottom): a tap selects, its row reads
   「トマト・あと2日・見込み2〜3個」 with 収穫 / 植える / 掘り起こす. 「畑の外の株 N株」 with 苗に戻す; the others' fields
   a line each. While the pill shows, the catch plates stand over the bottom buttons' row.

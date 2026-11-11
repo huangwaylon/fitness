@@ -32,22 +32,37 @@ describe('harvestOps', () => {
 });
 
 describe('waterTargets', () => {
-  it('every field’s plants not watered today, anyone’s, never an empty plot', () => {
+  it('every field’s plants (anyone’s) whose watering today counts and isn’t done; never an empty plot', () => {
     const f = farmOf(5, 2);
-    const watered: Watered = (p, d) => d === D && p === MINE[1].p;
-    expect(waterTargets(PLOTS, f, D, watered)).toEqual([MINE[0].p, ...MINE.slice(2, 5).map((t) => t.p), HERS[0].p, HERS[1].p]);
+    // ripe on D3: a watering on D1 or D2 counts
+    const watered: Watered = (p, d) => d === D1 && p === MINE[1].p;
+    expect(waterTargets(PLOTS, f, D1, watered)).toEqual([MINE[0].p, ...MINE.slice(2, 5).map((t) => t.p), HERS[0].p, HERS[1].p]);
+    expect(waterTargets(PLOTS, f, D2, none)).toHaveLength(7);
     // a wet day: none
-    expect(waterTargets(PLOTS, f, D, () => true)).toEqual([]);
+    expect(waterTargets(PLOTS, f, D1, () => true)).toEqual([]);
+  });
+  it('none whose watering today can’t change the yield: planted today, ripe, harvested today (growing back)', () => {
+    const f = farmOf(5, 2);
+    expect(waterTargets(PLOTS, f, D, none)).toEqual([]);
+    expect(waterTargets(PLOTS, f, D3, none)).toEqual([]);
+    farmStep(f, 'A', { d: D3, ops: [{ o: 'harvest', p: MINE[0].p, n: 1 }] });
+    expect(waterTargets(PLOTS, f, D3, none)).toEqual([]);
+    // its next two days count again
+    expect(waterTargets(PLOTS, f, '2026-11-08', none)).toEqual([MINE[0].p]);
   });
 });
 
 describe('fillPlan', () => {
-  it('my empty plots in reading order, as many as I hold', () => {
-    const f = farmOf(3);
-    expect(fillPlan(PLOTS, f, 'A', 4)).toEqual(MINE.slice(3, 7).map((t) => t.p));
-    // row 1 follows row 0's last column
-    expect(fillPlan(PLOTS, farmOf(9), 'A', 2)).toEqual([plotOf('field-A', 9, 0), plotOf('field-A', 0, 1)]);
-    expect(fillPlan(PLOTS, f, 'A', 0)).toEqual([]);
+  const at = (c: number, r: number) => plotOf('field-A', c, r);
+  it('my empty plots as the map reads them: each field’s back row first (its top), left to right, as many as I hold', () => {
+    expect(fillPlan(PLOTS, emptyFarm(), 'A', 4)).toEqual([at(0, 3), at(1, 3), at(2, 3), at(3, 3)]);
+    // the row below follows the back row's last column
+    const f = emptyFarm();
+    farmStep(f, 'A', { d: D, ops: Array.from({ length: 9 }, (_, i) => ({ o: 'plant' as const, p: at(i, 3), c: 'tomato' as const, src: 'start' as const })) });
+    expect(fillPlan(PLOTS, f, 'A', 2)).toEqual([at(9, 3), at(0, 2)]);
+    // the front row (row 0, nearest the beach) last
+    expect(fillPlan(PLOTS, farmOf(3), 'A', 99).slice(-7)).toEqual([3, 4, 5, 6, 7, 8, 9].map((c) => at(c, 0)));
+    expect(fillPlan(PLOTS, farmOf(3), 'A', 0)).toEqual([]);
   });
   it('up to the cap (counting plants off the field), never past the field', () => {
     expect(fillPlan(PLOTS, farmOf(FARM.cap), 'A', 99)).toEqual([]);

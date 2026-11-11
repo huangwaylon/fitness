@@ -67,8 +67,9 @@ test('収穫: every ripe plant of mine in one event, its 取り消す gives them
   await expect.poll(() => farmRows(page), { timeout: 15_000 }).toEqual(plots.slice(0, 5).map((p) => ({ o: 'harvest', p, n: 1 })));
 });
 
-test('水やり: every plant not watered today, one change of the shared day', async ({ page }) => {
-  await up(page, [FIELD, ...POCKET, planted(plots.slice(0, 12), '2026-11-06')]);
+test('水やり: every plant whose watering today counts and isn’t done, one change of the shared day', async ({ page }) => {
+  // (and three ripe today: their watering can't change their yield)
+  await up(page, [FIELD, ...POCKET, planted(plots.slice(0, 12), '2026-11-06'), planted(plots.slice(12, 15))]);
   await expect(page.locator('[data-farm-water]')).toHaveText('水やり（12株）');
   await page.locator('[data-farm-water]').click();
   await expect(page.locator('[data-farm-water]')).toHaveText('水やり済み');
@@ -77,7 +78,7 @@ test('水やり: every plant not watered today, one change of the shared day', a
   expect(watered.sort()).toEqual(plots.slice(0, 12).sort());
 });
 
-test('植える: the held crop on my empty plots in reading order, up to what I hold', async ({ page }) => {
+test('植える: the held crop on my empty plots as the map reads them (the back row first), up to what I hold', async ({ page }) => {
   await up(page, [FIELD, ...POCKET, planted(plots.slice(0, 2))], D);
   await expect(page.locator('[data-farm-seed="start:tomato"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('[data-farm-plant-all]')).toHaveText('トマトの苗を植える（38区画）');
@@ -85,7 +86,8 @@ test('植える: the held crop on my empty plots in reading order, up to what I 
   await expect(page.locator('.banner[role="status"] .txt')).toHaveText('トマトの苗を38区画に植えました');
   await expect(page.locator('[data-farm-count]')).toHaveText('40/40株');
   await expect(page.locator('[data-farm-empty]')).toHaveText('空きはありません');
-  await expect.poll(() => farmRows(page), { timeout: 15_000 }).toEqual(plots.slice(2).map((p) => ({ o: 'plant', p, c: 'tomato', src: 'start' })));
+  const order = [...plots.slice(30), ...plots.slice(20, 30), ...plots.slice(10, 20), ...plots.slice(2, 10)];
+  await expect.poll(() => farmRows(page), { timeout: 15_000 }).toEqual(order.map((p) => ({ o: 'plant', p, c: 'tomato', src: 'start' })));
 });
 
 test('the map: a cell a plot, a tap selects it; its row digs (取り消す puts it back) or plants', async ({ page }) => {

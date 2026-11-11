@@ -41,7 +41,7 @@ function plotsMemo(layout: Layout) {
   return m;
 }
 
-/** A field object's plots, row by row from its back-left tile (its x, z). */
+/** A field object's plots, row by row from its front-left tile (its x, z: row 0 the front row, nearest the beach). */
 export function fieldPlots(o: Pick<Obj, 'id' | 'x' | 'z' | 's'>): PlotTile[] {
   const f = fieldOf(o.s), out: PlotTile[] = [];
   for (let j = 0; j < f.d; j++) for (let i = 0; i < f.w; i++) out.push({ p: plotOf(o.id, i, j), who: f.who, c: o.x + i, r: o.z + j });
