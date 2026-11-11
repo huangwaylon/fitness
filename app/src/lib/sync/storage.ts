@@ -224,6 +224,9 @@ export const SCENE = {
   /** localStorage `scene-wendell` = `{ date, asked, fed }`: Wendell on the beach on this phone (island/Visitor.svelte):
    *  whether he asked for a fish and whether a catch fed him. */
   wendell: 'scene-wendell',
+  /** localStorage `scene-veg-ask` = `{ date, asked, done }`: today's おねがい on this phone (island/vegAsk.svelte.ts):
+   *  whether the asker said what they want and whether it was handed over. */
+  vegAsk: 'scene-veg-ask',
   /** localStorage `scene-wedding` = the date the wedding day's confetti last burst on this phone (island/Wedding.svelte). */
   wedding: 'scene-wedding',
   /** localStorage `scene-presence.<A|B|G>` = `{ here, gone, at }`: what the relay last said of who's online, for this
