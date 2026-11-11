@@ -313,7 +313,9 @@
           const th = things.frame(t);
           if (th) more = true;
           if (th === 'cast') shade = true;
-          if (vil && vil.frame(t, kkOn ? [kkSpec] : [], false).moving) more = shade = true;
+          // (a turn in place is the island's ambience, here a frame too)
+          const vf = vil?.frame(t, kkOn ? [kkSpec] : [], false);
+          if (vf && (vf.moving || vf.ambient)) more = shade = true;
           if (dirty || more) {
             waterU.uTime.value = (t / 1000) % 3600;
             waterFog(fog);

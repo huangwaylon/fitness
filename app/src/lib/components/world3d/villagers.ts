@@ -111,6 +111,11 @@ const ACT: Partial<Record<Motion, Action>> = {
   // the visitors' own: Celeste points at a falling star, a wave up at it
   point: 'wave'
 };
+/** The small moments in place (a nod, a bow, a wave: K.K.'s beat, the visitors'), stepped at the ambient rate. */
+const SMALL: ReadonlySet<Action> = new Set(['wave']);
+/** How fast a villager standing turns to where it looks (per second: ~0.4 s for a look aside), and how close (rad, 2°)
+ *  is there. */
+const FACE_K = 9, SNAP = 0.035;
 /** The island's seats (world.ts SEATS) on their pieces: which piece, its model (villager3d/seats3d.json) and which of
  *  its seats (left to right). */
 const SEAT_ON: Record<string, [piece: string, model: string, n: number]> = {
@@ -181,6 +186,9 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     yaw: number;
     motionN: number;
     busyUntil: number;
+    /** Its moment's a small one in place (a nod, a wave: SMALL), stepped at the ambient rate, not the full one; false
+     *  for a big one (a hop) and a change of state (sitting down) till its pose has settled. */
+    small: boolean;
     alpha: number;
     posing: boolean;
     hat: { key: string; obj: Object3D | null } | null;
@@ -274,7 +282,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       w = undefined;
     } else if (w && w.key === key) w.next = null;
     if (!w) {
-      const nw: W = { key, next: null, v: null, loading: false, off: () => {}, x: s.x, z: s.z, yaw: 0, motionN: s.motionN, busyUntil: 0, alpha: 1, posing: true, hat: null, tool: null, angleN: anglerOf(s.slot).n, rodUntil: 0, bar: null };
+      const nw: W = { key, next: null, v: null, loading: false, off: () => {}, x: s.x, z: s.z, yaw: 0, motionN: s.motionN, busyUntil: 0, small: true, alpha: 1, posing: true, hat: null, tool: null, angleN: anglerOf(s.slot).n, rodUntil: 0, bar: null };
       ws.set(s.slot, nw);
       const p = make(s);
       if (p) {
@@ -387,6 +395,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
         if (a) {
           v.act(a);
           w.busyUntil = t + ACTION_MS[a];
+          w.small = false;
           if (a === 'reel') w.rodUntil = t + ACTION_MS.reel;
         }
       }
@@ -424,15 +433,17 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       // front each frame only to be put back (that kept the island at its full rate)
       const anchor = s.seat !== null ? anchorAt(s) : null;
       const to = anchor ? anchor.yaw : s.seat !== null ? (s.yaw ?? 0) : want;
-      w.yaw = turn(w.yaw, to, dt, s.walking ? 14 : aiming ? FACE_FLOAT_K : 6);
-      const turning = Math.abs(Math.atan2(Math.sin(to - w.yaw), Math.cos(to - w.yaw))) > 0.005;
+      w.yaw = turn(w.yaw, to, dt, s.walking ? 14 : aiming ? FACE_FLOAT_K : FACE_K);
+      // (the last 2° snapped: ~0.3 s of frames a turn that no one could see)
+      const turning = Math.abs(Math.atan2(Math.sin(to - w.yaw), Math.cos(to - w.yaw))) > SNAP;
+      if (!turning) w.yaw = to;
       // its state, and its moment (the director's motion, once each)
       // on a seat: on its model's own (villager3d sitAt: the villager sits down there itself), dozing off on it asleep
       // (lying on one, the hammock: asleep it naps there; on a gym piece it uses it: asleep, it dozes there)
       const state: State = anchor
         ? anchor.use && !s.asleep ? anchor.use : anchor.lie ? (s.asleep ? 'nap' : 'lie') : anchor.stand ? 'doze' : 'sit'
         : s.prone ? 'prone' : s.asleep ? (s.seat !== null ? 'nap' : 'doze') : s.seat !== null ? 'sit' : s.walking ? 'walk' : rod ? 'fish' : 'idle';
-      if (v.state() !== state) w.posing = true;
+      if (v.state() !== state) (w.posing = true), (w.small = false);
       v.set(state);
       if (s.motionN !== w.motionN) {
         w.motionN = s.motionN;
@@ -441,6 +452,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
           // (the sting's fright: a dizzy wobble; its swollen eye stays on the face for the minute)
           v.act(s.stung && s.motion === 'surprise' ? 'sting' : a);
           w.busyUntil = t + 1800;
+          w.small = SMALL.has(a) && !s.stung;
         }
       }
       v.face(faceOf(s.emote, s.stung) ?? (s.seat !== null && s.asleep ? 'sleepy' : null));
@@ -457,8 +469,15 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       // the rod: at the float standing, straight ahead seated (its seat's way, once it's on it)
       const hp = angling ? v.hand() : null, at = hp ? rodTarget(!aiming, w.yaw, hp, ang) : null;
       v.aim(at ? aimP.set(at.x, 0, at.z) : null);
-      const busy = s.walking || t < w.busyUntil || Math.abs(dx) + Math.abs(dz) > 0.01 || turning;
-      if (busy && inView) moving = true;
+      const walks = s.walking || Math.abs(dx) + Math.abs(dz) > 0.01, acting = t < w.busyUntil;
+      const busy = walks || acting || turning;
+      // (in place, a turn or a small moment: the ambient rate, 12 a second at rest, the user's call 2026-11-11; a walk
+      // or a big moment, a hop, the full rate)
+      const inPlace = !walks && (!acting || w.small) && !aiming;
+      if (busy && inView) {
+        if (inPlace) ambient = true;
+        else moving = true;
+      }
       // posed (its breathing, its moment, its walk) while anything moves; still, it holds its pose and only its face
       // changes (a blink: a texture's offset and one redraw), so the island idles as it did
       // (out of view it isn't posed, but for an angler with its line out: the float in view draws its line from the
@@ -470,8 +489,9 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
         w.posing = active || busy || going;
         // (a gym piece's loop alone is the island's ambience: its ambient rate, the frames it draws anyway while a
         // villager shows, not the full one)
-        if (going && !v.looping()) moving = true;
+        if (going && !v.looping() && !(inPlace && w.small && !active)) moving = true;
         else if (going) ambient = true;
+        if (!going && !acting) w.small = true;
       } else {
         // still: only its face changes (a blink, a snore), one frame when it does: its next change asked for, not the
         // ambient rate's frames for as long as it stands there
