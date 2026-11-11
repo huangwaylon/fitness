@@ -1,7 +1,9 @@
 // What the rooms' engines (the tent's and the museum's) share of a walk and of their screen: a walk's legs and where
-// it has a villager by now, and a room point on the page (the bubbles, the cards, the taps). Pure but for three's
-// camera, and no allocation per call (the bubbles ask every frame).
+// it has a villager by now, a room point on the page (the bubbles, the cards, the taps) and the room's box on the
+// screen (the two-finger pan's range: rooms/pan.ts). Pure but for three's camera, and no allocation per call (the
+// bubbles ask every frame).
 import { Vector2, Vector3, type Camera, type Raycaster } from 'three';
+import type { PanBox } from './pan.ts';
 
 /** A villager's height in the rooms (model units: a little over a tile and a half, NH's proportions against its beds). */
 export const VILLAGER_H = 16;
@@ -84,4 +86,24 @@ export function roomScreen(camera: Camera, canvas: HTMLCanvasElement) {
       ray.setFromCamera(ndc, camera);
     }
   };
+}
+
+const boxV = new Vector3();
+/** The room's points (its floor's and its walls' corners) on a W × H canvas as the camera has them, less the pan as
+ *  applied (`panned`, px), and the band between what covers the canvas at its top and foot (rooms/pan.ts PanBox). A
+ *  point behind the camera counts for nothing; none in front, the band itself. */
+export function panBox(camera: Camera, pts: readonly (readonly [number, number, number])[], W: number, H: number, panned: readonly [number, number], i: Insets): PanBox {
+  camera.updateMatrixWorld();
+  let l = Infinity, t = Infinity, r = -Infinity, b = -Infinity;
+  for (const [x, y, z] of pts) {
+    boxV.set(x, y, z).project(camera);
+    if (boxV.z > 1 || boxV.z < -1) continue;
+    const px = ((boxV.x + 1) / 2) * W - panned[0], py = ((1 - boxV.y) / 2) * H - panned[1];
+    l = Math.min(l, px);
+    r = Math.max(r, px);
+    t = Math.min(t, py);
+    b = Math.max(b, py);
+  }
+  const band: PanBox['band'] = [0, i.top, W, Math.max(i.top + 1, H - i.bottom)];
+  return { room: l <= r ? [l, t, r, b] : band, band };
 }

@@ -23,7 +23,7 @@
   import SayButton from '../island/SayButton.svelte';
   import EyeToggle from '../rooms/EyeToggle.svelte';
   import { nightOf, roomSpeaker } from '../rooms/speaker.ts';
-  import { gestures } from '../rooms/gesture.ts';
+  import { gestures, roomCamera } from '../rooms/gesture.ts';
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
   import MuseumCard, { type Shown } from './MuseumCard.svelte';
   import RoomChip from './RoomChip.svelte';
@@ -435,8 +435,9 @@
     });
   });
 
-  // ---- the finger: a tap walks (or shows a creature's card); a drag turns the camera; two fingers pinch to zoom ----
+  // ---- the finger: a tap walks (or shows a creature's card); a drag turns the camera; two fingers pinch to zoom and pan ----
   let turned = $state(false);
+  const camera = roomCamera(() => eng, () => fpv, (off) => (turned = off));
   const fingers = gestures({
     tap: (x, y) => tap(x, y),
     start() {
@@ -444,19 +445,7 @@
       says?.hold(true);
       talk?.hold(true);
     },
-    drag(dx, dy) {
-      if (!eng) return;
-      // (at my villager's eyes the head turns: rooms/firstPerson.ts)
-      if (fpv) eng.look(dx, dy);
-      else eng.orbit(-dx * 0.0085, dy * 0.005);
-      turned = !eng.isDefault();
-    },
-    pinch(scale, dy) {
-      if (!eng || fpv) return;
-      eng.zoom(scale);
-      eng.orbit(0, dy * 0.004);
-      turned = !eng.isDefault();
-    },
+    ...camera.fingers,
     end() {
       eng?.moving(false);
       says?.hold(false);
@@ -471,13 +460,6 @@
   const onMove = (e: PointerEvent) => fingers.move(e);
   const onUp = (e: PointerEvent) => fingers.up(e);
   const onCancel = (e: PointerEvent) => fingers.cancel(e);
-  function onWheel(e: WheelEvent) {
-    if (!eng) return;
-    e.preventDefault();
-    if (fpv) return;
-    eng.zoom(Math.exp(-e.deltaY * 0.0015));
-    turned = !eng.isDefault();
-  }
   function resetView() {
     eng?.resetView();
     turned = false;
@@ -766,7 +748,7 @@
 <main class="museum" bind:this={scene} data-museum data-exact-taps>
   <h1 class="sr-only">{t('museum.title')}</h1>
   <canvas bind:this={canvas} class="room" data-museum-room onpointerdown={onDown} onpointermove={onMove} onpointerup={onUp}
-    onpointercancel={onCancel} onwheel={onWheel} aria-label={t('museum.room')}></canvas>
+    onpointercancel={onCancel} onwheel={camera.wheel} {@attach camera.attach} aria-label={t('museum.room')}></canvas>
   <div class="dip" class:on={!!dip} style:background={dipColor} style:--dip-in="{DIP_FADE_MS}ms" aria-hidden="true" data-museum-dip={dip ? 'on' : 'off'}></div>
   <div class="top" bind:this={top}>
     <NavButton kind="back" text={t('tent.back')} onclick={leave} sfx="self" />

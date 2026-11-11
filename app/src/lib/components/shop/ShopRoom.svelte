@@ -23,7 +23,7 @@
   import NavButton from '../ui/NavButton.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import EyeToggle from '../rooms/EyeToggle.svelte';
-  import { gestures } from '../rooms/gesture.ts';
+  import { gestures, roomCamera } from '../rooms/gesture.ts';
   import { nightOf } from '../rooms/speaker.ts';
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
   import { iconUrl } from '../tent/items.ts';
@@ -284,21 +284,11 @@
   // ---- the finger: a tap walks or acts in place; a drag turns the camera; two fingers pinch ----
   let turned = $state(false);
   const fpv = $derived(firstPerson.on);
+  const camera = roomCamera(() => eng, () => fpv, (off) => (turned = off));
   const fingers = gestures({
     tap: (x, y) => tap(x, y),
     start: () => eng?.moving(true),
-    drag(dx, dy) {
-      if (!eng) return;
-      if (fpv) eng.look(dx, dy);
-      else eng.orbit(-dx * 0.0085, dy * 0.005);
-      turned = !eng.isDefault();
-    },
-    pinch(scale, dy) {
-      if (!eng || fpv) return;
-      eng.zoom(scale);
-      eng.orbit(0, dy * 0.004);
-      turned = !eng.isDefault();
-    },
+    ...camera.fingers,
     end: () => eng?.moving(false)
   });
   function onDown(e: PointerEvent) {
@@ -308,13 +298,6 @@
   const onMove = (e: PointerEvent) => fingers.move(e);
   const onUp = (e: PointerEvent) => fingers.up(e);
   const onCancel = (e: PointerEvent) => fingers.cancel(e);
-  function onWheel(e: WheelEvent) {
-    if (!eng) return;
-    e.preventDefault();
-    if (fpv) return;
-    eng.zoom(Math.exp(-e.deltaY * 0.0015));
-    turned = !eng.isDefault();
-  }
   function resetView() {
     eng?.resetView();
     turned = false;
@@ -504,7 +487,7 @@
 <main class="shop" class:night data-shop data-shells={shop.shells} data-exact-taps data-panel={panel ?? undefined}>
   <h1 class="sr-only">{t('shop.title')}</h1>
   <canvas bind:this={canvas} class="room" data-shop-room onpointerdown={onDown} onpointermove={onMove} onpointerup={onUp}
-    onpointercancel={onCancel} onwheel={onWheel} aria-label={t('shop.room')}></canvas>
+    onpointercancel={onCancel} onwheel={camera.wheel} {@attach camera.attach} aria-label={t('shop.room')}></canvas>
   <div class="top" bind:this={top}>
     <NavButton kind="back" text={t('shop.out')} onclick={leave} sfx="self" />
     <!-- my かいがら, the word said (the cowrie is also a kind of 貝 sold here) -->

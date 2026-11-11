@@ -104,6 +104,33 @@ describe('a tap or a drag (rooms/gesture.ts)', () => {
     expect(log).toEqual(['start', 'pinch', 'drag', 'end']);
     expect(turned()).toEqual([30, 0]);
   });
+  it('two fingers moving together: the middle’s move and place with the spread’s ratio, a fling as one lifts on the move', () => {
+    const pinches: number[][] = [], flings: number[][] = [];
+    const g = gestures({ tap() {}, start() {}, drag() {}, pinch: (...a) => void pinches.push(a), fling: (...a) => void flings.push(a), end() {} });
+    const p = (id: number, x: number, y: number, t: number): Pointer => ({ pointerId: id, clientX: x, clientY: y, timeStamp: 1000 + t, isPrimary: id === 1 });
+    g.down(p(1, 100, 300, 0));
+    g.down(p(2, 200, 300, 10));
+    // both down the screen 20 px, a finger at a time: the middle 10 px each, the spread back as it was
+    g.move(p(1, 100, 320, 26));
+    g.move(p(2, 200, 320, 42));
+    expect(pinches.map((a) => a.slice(1))).toEqual([[0, 10, 150, 310], [0, 10, 150, 320]]);
+    expect(pinches[0][0] * pinches[1][0]).toBeCloseTo(1);
+    // spread apart about the middle: the ratio, the middle still
+    g.move(p(2, 250, 320, 58));
+    expect(pinches[2][0]).toBeCloseTo(150 / 100);
+    expect(pinches[2][1]).toBeCloseTo(25);
+    // a lift right after: a fling at the middle's speed (px/ms, down)
+    g.up(p(2, 250, 320, 70));
+    expect(flings.length).toBe(1);
+    expect(flings[0][1]).toBeGreaterThan(0.2);
+    // held still before the lift: none
+    g.up(p(1, 100, 320, 80));
+    g.down(p(1, 100, 300, 1000));
+    g.down(p(2, 200, 300, 1010));
+    g.move(p(1, 100, 340, 1030));
+    g.up(p(1, 100, 340, 1300));
+    expect(flings.length).toBe(1);
+  });
   it('a quick two-finger tap taps nothing', () => {
     const { g, log, p } = rig();
     g.down(p(1, 100, 100, 0));

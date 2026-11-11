@@ -648,9 +648,9 @@ same system.
   広さ tab): 4 × 4, 6 × 6 or 8 × 8 (the default, `ROOM_SIZES`) against the same front wall; larger always, smaller only
   with nothing left outside, else those pieces glow red and the bar says how many (decisions: *A room's size never moves
   or drops a piece*).
-- **The camera** starts as NH's room camera (47° down, from the front); a drag turns and tilts it, a pinch zooms, 🏠
-  eases it back; walls in the way cut away. Or [First person](#first-person). **The light:** warm, one small shadow map;
-  at night dimmer, the lamps lit.
+- **The camera** starts as NH's room camera (47° down, from the front); a drag turns and tilts it, two fingers zoom
+  and pan (`rooms/pan.ts`: half the room stays in view), 🏠 eases it back; walls in the way cut away. Or
+  [First person](#first-person). **The light:** warm, one small shadow map; at night dimmer, lamps lit.
 - **The villagers:** NH's 3D models where they have one, else billboards. A floor tap walks mine there (round the
   furniture), a villager tap hops it, a piece tap acts in place, the doormat or ‹ しまへ goes out. The partner's villager
   rests where it last stood while they're away.
@@ -787,7 +787,7 @@ removed. A tap walks my villager to its door and in; ‹ しまへ or the doorma
 - **Plaques:** over each doorway, naming the room beyond in spaced kana; every way back says はくぶつかん; whole on screen
   from each way in.
 - **The camera** (`camera.ts`): the whole room across, x fixed, its back wall under the back button and its front over
-  the HUD; a deeper room follows in depth. A drag turns it, a pinch zooms, ⌂ puts it back. Or
+  the HUD; a deeper room follows in depth. A drag turns it, two fingers zoom and pan, ⌂ puts it back. Or
   [First person](#first-person).
 - **Like the rooms:** a floor tap walks, the say button says a phrase in here only, presence is the rooms' (the guest
   too).

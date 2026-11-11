@@ -27,7 +27,7 @@
   import SayButton from '../island/SayButton.svelte';
   import EyeToggle from '../rooms/EyeToggle.svelte';
   import { nightOf, roomSpeaker } from '../rooms/speaker.ts';
-  import { gestures } from '../rooms/gesture.ts';
+  import { gestures, roomCamera } from '../rooms/gesture.ts';
   import { firstPerson } from '#lib/store/firstPerson.svelte.ts';
   import { SAY_TAG, rememberSay, sayGate } from '../island/say.ts';
   import { loadHha, rate, type HhaRating } from './hha.ts';
@@ -340,11 +340,12 @@
   });
 
   // ---- the finger: a tap walks (or acts on what it's on); a drag turns the camera round the room (in the edit mode a
-  //      drag that starts on a piece moves it instead); two fingers pinch to zoom and tilt ----
+  //      drag that starts on a piece moves it instead); two fingers pinch to zoom and pan the view ----
   /** The finger the edit mode has (TentEdit: its moves and its lift go to it alone). */
   let editId: number | null = null;
   /** The camera isn't NH's view (the reset button shows). */
   let turned = $state(false);
+  const camera = roomCamera(() => eng, () => fpv, (off) => (turned = off));
   const fingers = gestures({
     tap: (x, y) => tap(x, y),
     start() {
@@ -352,19 +353,7 @@
       eng?.moving(true);
       says?.hold(true);
     },
-    drag(dx, dy) {
-      if (!eng) return;
-      // (at my villager's eyes the head turns: rooms/firstPerson.ts)
-      if (fpv) eng.look(dx, dy);
-      else eng.orbit(-dx * 0.0085, dy * 0.005);
-      turned = !eng.isDefault();
-    },
-    pinch(scale, dy) {
-      if (!eng || fpv) return;
-      eng.zoom(scale);
-      eng.orbit(0, dy * 0.004);
-      turned = !eng.isDefault();
-    },
+    ...camera.fingers,
     end() {
       eng?.moving(false);
       says?.hold(false);
@@ -419,13 +408,6 @@
       edit?.up(e);
     }
     fingers.cancel(e);
-  }
-  function onWheel(e: WheelEvent) {
-    if (!eng) return;
-    e.preventDefault();
-    if (fpv) return;
-    eng.zoom(Math.exp(-e.deltaY * 0.0015));
-    turned = !eng.isDefault();
   }
   function resetView() {
     eng?.resetView();
@@ -837,7 +819,7 @@
 <main class="tent" bind:this={scene} data-tent data-exact-taps data-room-home={home} data-editing={editing || undefined}>
   <h1 class="sr-only">{t('tent.title')}</h1>
   <canvas bind:this={canvas} class="room" data-room onpointerdown={onDown} onpointermove={onMove} onpointerup={onUp}
-    onpointercancel={onCancel} onwheel={onWheel} aria-label={t('tent.room')}></canvas>
+    onpointercancel={onCancel} onwheel={camera.wheel} {@attach camera.attach} aria-label={t('tent.room')}></canvas>
   <div class="top" bind:this={top}>
     {#if !editing}<NavButton kind="back" text={t('tent.back')} onclick={leave} sfx="self" />{/if}
   </div>
