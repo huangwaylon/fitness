@@ -63,6 +63,19 @@ export async function islandUp(page: Page, { timeout = 30_000 }: { timeout?: num
   if ((await up.jsonValue()) === 'no3d') throw new Error('the island failed to mount ([data-no3d])');
 }
 
+/** The 3D island's first models loaded (its hooks there; no check for the no-WebGL message: `is3d`). */
+export const loaded3d = (page: Page, timeout = 30_000) =>
+  page.waitForFunction(() => !!(window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded(), null, { timeout });
+
+/** The app's own navigation to `path` (a link's click: SvelteKit's router), as a door does. */
+export const nav = (page: Page, path: string) => page.evaluate((h) => {
+  const a = document.createElement('a');
+  a.href = h;
+  document.body.append(a);
+  a.click();
+  a.remove();
+}, path);
+
 /** The island up on this page and drawn in 3D, its first models loaded (false: no WebGL, the island's message). */
 export async function is3d(page: Page): Promise<boolean> {
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);

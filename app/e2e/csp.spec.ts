@@ -4,7 +4,8 @@
 // event and every console line of a refused load, the page's and its workers').
 import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, openKenkou } from './hud.ts';
-import { is3d } from './island.ts';
+import { is3d, nav } from './island.ts';
+import { roomUp } from './rooms.ts';
 import { fixtureTiles, gotoTrip, mapReady, mapsDrawn } from './trips.ts';
 
 const Q = '?demo&date=2026-11-04T12:00';
@@ -20,17 +21,6 @@ async function watch(page: Page): Promise<string[]> {
   });
   return seen;
 }
-
-/** The app's own navigation (a link's click: SvelteKit's router), as a door does. */
-const nav = (page: Page, path: string) => page.evaluate((h) => {
-  const a = document.createElement('a');
-  a.href = h;
-  document.body.append(a);
-  a.click();
-  a.remove();
-}, path);
-const framed = (page: Page, hook: string) =>
-  page.waitForFunction((h) => ((window as unknown as Record<string, { stats(): { frames: number } } | undefined>)[h]?.stats()?.frames ?? 0) > 1, hook, { timeout: 30_000 });
 
 /** The island up, the watch on: what it saw. */
 async function island(page: Page) {
@@ -81,8 +71,8 @@ test('健康 and ごはん (one sheet from the dumbbell, each tab shown): no CSP
 /** The rooms, each from the island as a door goes (the app's own navigation), up once it shows or draws. */
 const rooms: [string, string, (page: Page) => Promise<unknown>][] = [
   ['the shop', 'shop', (page) => expect(page.locator('[data-shop]')).toBeVisible()],
-  ['the museum', 'museum', (page) => framed(page, '__museum')],
-  ['the tent', 'tent', (page) => framed(page, '__tent')],
+  ['the museum', 'museum', (page) => roomUp(page, 'museum', { frames: 1 })],
+  ['the tent', 'tent', (page) => roomUp(page, 'tent', { frames: 1 })],
   ['the editor', 'editor/', (page) => page.waitForFunction(() => !!(window as unknown as { __editor?: unknown }).__editor, null, { timeout: 30_000 })]
 ];
 for (const [name, path, up] of rooms)

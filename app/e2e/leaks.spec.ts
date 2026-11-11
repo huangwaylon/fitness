@@ -4,8 +4,10 @@
 // (Chromium's CDP, hence @chromium). Before the fixes: one more context a home picker opened (three's dispose listeners
 // on the cached home models held the picker's renderer), one more an /editor visit (and a document keydown listener),
 // one more and ~700 DOM nodes a すがた visit (the page-wide white stand-in texture's listeners: world3d/stage.ts).
-import { expect, test, type Page } from './fixtures.ts';
-import { BASE } from './island.ts';
+import { expect, test } from './fixtures.ts';
+import { BASE, loaded3d, nav } from './island.ts';
+import { measure, watch, watched, type Probe } from './memory.ts';
+import { roomUp } from './rooms.ts';
 import { fixtureTiles, mapReady, mapsDrawn, openTrip, tripsSheet } from './trips.ts';
 import { fromMenu } from './hud.ts';
 
@@ -14,84 +16,19 @@ const Q = '?demo&date=2026-11-04T12:00&as=B';
 /** A blank topo tile (トレイル's map: hiking.spec's). */
 const TILE = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', 'base64');
 
-/** WebGL contexts alive (all; `map`: the trip map's, a `maplibregl-canvas`'s) and window/document listeners; `ab` the
- *  ArrayBuffers' bytes (MB: typed arrays, decoded models and images; outside the JS heap, `heap`) and `emb` Blink's own
- *  (decoded images, MB). */
-type Probe = { gl: number; map: number; ls: number; fonts: number; nodes: number; ab: number; heap: number; emb: number };
-type Leaks = Omit<Probe, 'nodes' | 'ab' | 'heap' | 'emb'>;
-async function watch(page: Page) {
-  await page.addInitScript(() => {
-    const gls: WeakRef<object>[] = [], maps: WeakRef<object>[] = [];
-    const get = HTMLCanvasElement.prototype.getContext;
-    HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, ...a: unknown[]) {
-      const c = (get as (...x: unknown[]) => RenderingContext | null).apply(this, a);
-      if (c && String(a[0]).startsWith('webgl') && !gls.some((r) => r.deref() === c)) {
-        gls.push(new WeakRef(c));
-        // MapLibre names its canvas before it asks for the context
-        if (this.classList.contains('maplibregl-canvas')) maps.push(new WeakRef(c));
-      }
-      return c;
-    } as typeof get;
-    // the window's and document's listeners, net (one per listener, type and phase)
-    const on = new WeakMap<object, Set<string>>();
-    let n = 0;
-    const add = EventTarget.prototype.addEventListener, rem = EventTarget.prototype.removeEventListener;
-    const key = (t: EventTarget, type: string, o: unknown) => `${t === window ? 'w' : 'd'}:${type}:${typeof o === 'boolean' ? o : !!(o as { capture?: boolean } | undefined)?.capture}`;
-    EventTarget.prototype.addEventListener = function (this: EventTarget, type: string, f: unknown, o?: unknown) {
-      if (f && (this === window || this === document)) {
-        const s = on.get(f as object) ?? new Set<string>(), k = key(this, type, o);
-        if (!s.has(k)) (s.add(k), on.set(f as object, s), n++);
-      }
-      return add.call(this, type, f as EventListener, o as AddEventListenerOptions);
-    };
-    EventTarget.prototype.removeEventListener = function (this: EventTarget, type: string, f: unknown, o?: unknown) {
-      const s = f && (this === window || this === document) ? on.get(f as object) : null, k = key(this, type, o);
-      if (s?.delete(k)) n--;
-      return rem.call(this, type, f as EventListener, o as EventListenerOptions);
-    };
-    (window as unknown as { __leaks: () => Leaks }).__leaks = () => ({ gl: gls.filter((r) => r.deref()).length, map: maps.filter((r) => r.deref()).length, ls: n, fonts: document.fonts.size });
-  });
-}
-async function measure(page: Page): Promise<Probe> {
-  const cdp = await page.context().newCDPSession(page);
-  await cdp.send('Performance.enable');
-  for (let i = 0; i < 3; i++) await cdp.send('HeapProfiler.collectGarbage');
-  // (the DOM nodes alive, in the document or detached and still held)
-  const { metrics } = await cdp.send('Performance.getMetrics');
-  // (the ArrayBuffers' bytes: JSHeapUsedSize leaves them out, and on the island they're most of the page's memory)
-  const hu = (await cdp.send('Runtime.getHeapUsage')) as { usedSize: number; backingStorageSize?: number; embedderHeapUsedSize?: number };
-  await cdp.detach();
-  // (a WeakRef's target is collected only after the task that last read it: read in a fresh one)
-  await page.evaluate(() => new Promise((ok) => setTimeout(ok, 50)));
-  const p = await page.evaluate(() => (window as unknown as { __leaks: () => Leaks }).__leaks());
-  const mb = (n = 0) => Math.round(n / 1e4) / 100;
-  return { ...p, nodes: metrics.find((m) => m.name === 'Nodes')?.value ?? 0, ab: mb(hu.backingStorageSize), heap: mb(hu.usedSize), emb: mb(hu.embedderHeapUsedSize) };
-}
-
-/** The app's own navigation (a link's click: SvelteKit's router), as a door does. */
-const nav = (page: Page, path: string) => page.evaluate((h) => {
-  const a = document.createElement('a');
-  a.href = h;
-  document.body.append(a);
-  a.click();
-  a.remove();
-}, path);
-const islandUp = (page: Page) => page.waitForFunction(() => !!(window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded(), null, { timeout: 30_000 });
-const framed = (page: Page, hook: '__tent' | '__museum' | '__shop') =>
-  page.waitForFunction((h) => ((window as unknown as Record<string, { stats(): { frames: number } } | undefined>)[h]?.stats()?.frames ?? 0) > 1, hook, { timeout: 30_000 });
 
 test('the rooms and the home picker, in and out: no WebGL context or window listener left behind', { tag: '@chromium' }, async ({ page }) => {
   test.setTimeout(120_000);
   await watch(page);
   await page.goto(Q);
-  await islandUp(page);
-  const back = async () => (await nav(page, `${BASE}/${Q}`), await islandUp(page));
+  await loaded3d(page);
+  const back = async () => (await nav(page, `${BASE}/${Q}`), await loaded3d(page));
   /** The contexts alive in each room: its own only (the island's gone with its renderer). */
   const inRoom: number[] = [];
   const trips = async () => {
     // the shop: its room (the twins, the day's stock) up, a piece's card and the counter's list opened
     await nav(page, `${BASE}/shop${Q}`);
-    await framed(page, '__shop');
+    await roomUp(page, 'shop', { frames: 1 });
     inRoom.push((await measure(page)).gl);
     await page.waitForFunction(() => !!(window as unknown as { __shop?: object }).__shop);
     await page.evaluate(() => (window as unknown as { __shop: { talk(): void } }).__shop.talk());
@@ -99,12 +36,12 @@ test('the rooms and the home picker, in and out: no WebGL context or window list
     await page.locator('[data-shop-close]').click();
     await back();
     await nav(page, `${BASE}/museum${Q}`);
-    await framed(page, '__museum');
+    await roomUp(page, 'museum', { frames: 1 });
     inRoom.push((await measure(page)).gl);
     await back();
     // うめ's house, as うめ: いえを かえる opened, two homes previewed, closed
     await nav(page, `${BASE}/tent${Q}&home=B`);
-    await framed(page, '__tent');
+    await roomUp(page, 'tent', { frames: 1 });
     inRoom.push((await measure(page)).gl);
     for (let i = 0; i < 2; i++) {
       await page.locator('[data-home-look]').click();
@@ -136,7 +73,7 @@ test('すがた in and out, dressed: no WebGL context, listener or DOM node left
   await watch(page);
   // (as ウェイ: his island's player is NH's human player, so the island and the stage share player3d's textures)
   await page.goto('?demo&date=2026-11-04T12:00');
-  await islandUp(page);
+  await loaded3d(page);
   const sheet = page.locator('dialog[open]').first();
   const live: number[] = [];
   const round = async () => {
@@ -183,8 +120,8 @@ test('the museum in first person and out, the eye button, a bench, its fossils, 
   const mu = <T>(fn: string) => page.evaluate(`(${fn})(window.__museum)`) as Promise<T>;
   await watch(page);
   await page.goto(Q);
-  await islandUp(page);
-  const back = async () => (await nav(page, `${BASE}/${Q}`), await islandUp(page));
+  await loaded3d(page);
+  const back = async () => (await nav(page, `${BASE}/${Q}`), await loaded3d(page));
   const inside: number[] = [];
   // the eye button: on (at the eyes) or off (the room's camera)
   const eye = async (on: boolean) => {
@@ -193,12 +130,12 @@ test('the museum in first person and out, the eye button, a bench, its fossils, 
   };
   const round = async () => {
     await nav(page, `${BASE}/museum${Q}`);
-    await framed(page, '__museum');
+    await roomUp(page, 'museum', { frames: 1 });
     await eye(true);
     await back();
     // in again: in first person from the first frame (kept on this phone), then off
     await nav(page, `${BASE}/museum${Q}`);
-    await framed(page, '__museum');
+    await roomUp(page, 'museum', { frames: 1 });
     await expect.poll(() => mu<boolean>('m => !!m.fpv()?.inside && !m.fpv().busy'), { timeout: 15_000 }).toBe(true);
     await eye(false);
     // a bench: a tap sits my villager on it, a tap on the floor gets it up
@@ -243,7 +180,7 @@ test('the trip map in and out: no WebGL context or window listener left behind',
     await nav(page, `${BASE}/${Q}`);
     await openTrip(page);
     await mapReady(page);
-    made.push((await page.evaluate(() => (window as unknown as { __leaks: () => Probe }).__leaks())).map);
+    made.push((await watched(page)).map);
     await page.locator('dialog[open] [data-map-day="2"]').click();
     await page.keyboard.press('Escape');
     await expect(page.locator('dialog[open]')).toHaveCount(0);
@@ -274,7 +211,7 @@ test('the info sheets in and out (the trips, Okinawa’s map and campsites, the 
   await fixtureTiles(page);
   await page.route(/^https:\/\/(basemap\.nationalmap\.gov|cyberjapandata\.gsi\.go\.jp)\//, (r) => r.fulfill({ contentType: 'image/png', body: TILE, headers: { 'access-control-allow-origin': '*' } }));
   await page.goto(Q);
-  await islandUp(page);
+  await loaded3d(page);
   const sheet = page.locator('dialog[open]');
   const closed = async () => (await page.keyboard.press('Escape'), await expect(sheet).toHaveCount(0));
   const trailUp = () => expect.poll(() => page.evaluate(() => (window as unknown as { __trailMap?: { state(): { mode: string } } }).__trailMap?.state().mode), { timeout: 30_000 }).toBe('ready');
@@ -379,7 +316,7 @@ test.describe('the editor', () => {
 test('いえを かえる’s walls, roofs and doors swept: back on the island, the previews’ models and colours let go of', { tag: '@chromium' }, async ({ page }) => {
   await watch(page);
   await page.goto(Q);
-  await islandUp(page);
+  await loaded3d(page);
   const shown = page.locator('[data-home-picker] [data-home-preview]');
   /** A swatch tapped, its house built in the preview (a token of what's on show: `has`). */
   const pick = async (sel: string, has: (tokens: string[]) => boolean) => {
@@ -390,7 +327,7 @@ test('いえを かえる’s walls, roofs and doors swept: back on the island, 
    *  on the island. */
   const sweep = async (all: boolean) => {
     await nav(page, `${BASE}/tent${Q}&home=B`);
-    await framed(page, '__tent');
+    await roomUp(page, 'tent', { frames: 1 });
     await page.locator('[data-home-look]').click();
     await page.locator('[data-home-picker] [data-model="house"]').click();
     if (all) for (const part of ['wall', 'roof'] as const) {
@@ -402,7 +339,7 @@ test('いえを かえる’s walls, roofs and doors swept: back on the island, 
     await page.keyboard.press('Escape');
     await expect(page.locator('[data-home-picker]')).toHaveCount(0);
     await nav(page, `${BASE}/${Q}`);
-    await islandUp(page);
+    await loaded3d(page);
   };
   // (the baseline after a visit with no sweep: the room's own packs and models as they stay)
   await sweep(false);

@@ -4,15 +4,15 @@
 // WebGL context, listener, DOM or ArrayBuffers behind. Measured after forced GCs (e2e/memory.ts, Chromium's CDP, hence
 // @chromium); the post-deploy logic tier (not the gate's set).
 import { expect, test, type Page } from './fixtures.ts';
-import { BASE } from './island.ts';
+import { BASE, loaded3d, nav } from './island.ts';
 import { fromMenu, openRewards } from './hud.ts';
+import { roomUp } from './rooms.ts';
 import { hideAndShow, measure, watch, type Probe } from './memory.ts';
 import { runToPhase, runToQuestion, toMode } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = '?demo&date=2026-11-04T12:00&as=B&critter=none&visitor=none';
 
-const islandUp = (page: Page) => page.waitForFunction(() => !!(window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded(), null, { timeout: 30_000 });
 /** The before → after on the test (MB). */
 const note = (what: string, a: Probe, b: Probe) =>
   test.info().annotations.push({ type: 'memory', description: `${what}: JS heap ${a.heap} → ${b.heap} MB, ArrayBuffers ${a.ab} → ${b.ab} MB, nodes ${a.nodes} → ${b.nodes}, gl ${a.gl} → ${b.gl}, listeners ${a.ls} → ${b.ls}` });
@@ -39,7 +39,7 @@ function flat(a: Probe, b: Probe, abMb = 1) {
 // the hide); with the sheet let go, HealthSheet's bound ‹ and lead still held ごはん and its catalog (+15.2 MB).
 test('ごはん searched, closed, the page hidden: the kept sheet and the food catalog let go of', { tag: '@chromium' }, async ({ page }) => {
   await page.goto(Q);
-  await islandUp(page);
+  await loaded3d(page);
   const kenkou = page.getByRole('button', { name: 'けんこう', exact: true });
   const food = page.locator('dialog [data-food-sheet]');
   // (the baseline: 健康 opened and closed, let go by a hide)
@@ -70,7 +70,7 @@ test('a ききみみ quiz played to its results and closed, twice: nothing left 
   await watch(page);
   await page.clock.install();
   await page.goto(`${Q}&kikimimi=fast`);
-  await islandUp(page);
+  await loaded3d(page);
   const sheet = page.locator('dialog[open] [data-kikimimi]');
   const round = async () => {
     await fromMenu(page, 'kikimimi');
@@ -100,18 +100,10 @@ test('もようがえ: pieces, walls and floors tried in the tent, back on the i
   await watch(page);
   await page.addInitScript(() => localStorage.removeItem('island-demo.tent'));
   await page.goto(Q);
-  await islandUp(page);
-  /** The app's own navigation (a link's click: SvelteKit's router), as a door does. */
-  const nav = (path: string) => page.evaluate((h) => {
-    const a = document.createElement('a');
-    a.href = h;
-    document.body.append(a);
-    a.click();
-    a.remove();
-  }, path);
+  await loaded3d(page);
   const round = async () => {
-    await nav(`${BASE}/tent${Q}`);
-    await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 1, null, { timeout: 30_000 });
+    await nav(page, `${BASE}/tent${Q}`);
+    await roomUp(page, 'tent', { frames: 1 });
     await page.locator('[data-tent-edit-open]').click();
     for (const tab of ['furniture', 'wall', 'floor']) {
       await page.locator(`[data-tab="${tab}"]`).click();
@@ -123,8 +115,8 @@ test('もようがえ: pieces, walls and floors tried in the tent, back on the i
       if (await page.locator('[data-act="cancel"]').count()) await page.locator('[data-act="cancel"]').click();
     }
     await page.locator('[data-tent-done]').click();
-    await nav(`${BASE}/${Q}`);
-    await islandUp(page);
+    await nav(page, `${BASE}/${Q}`);
+    await loaded3d(page);
   };
   await round();
   const first = await measure(page);
@@ -138,7 +130,7 @@ test('もようがえ: pieces, walls and floors tried in the tent, back on the i
 test('the wallet opened, its ledger and history shown, closed, three times: nothing left behind', { tag: '@chromium' }, async ({ page }) => {
   await watch(page);
   await page.goto(Q);
-  await islandUp(page);
+  await loaded3d(page);
   const sheet = page.locator('dialog[open]');
   const round = async () => {
     await openRewards(page);
