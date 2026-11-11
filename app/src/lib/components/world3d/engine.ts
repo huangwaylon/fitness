@@ -94,6 +94,8 @@ export interface Options {
   /** A still model's nearest instances out of view left undrawn (things.ts cull; default on): off, all drawn
    *  (`?cull=0`, an A/B). */
   cull?: boolean;
+  /** The real point lights (lights.ts POINTS: 6; `?points=`, an A/B of their GPU cost by day). */
+  points?: number;
 }
 interface Stats {
   fps: number;
@@ -338,7 +340,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   // ---- the things, the cards, the lights ----
   const things = createThings(scene, src.height, (sh = true) => (sh && shadowed(sh === 'slow'), kick()), { cull: opts.cull !== false });
   const cards = createCards(scene, (sh) => (sh && shadowed(), kick()));
-  const lights = createLights(scene);
+  const lights = createLights(scene, opts.points);
   const effects = createEffects(scene, src.feet, () => kick());
   const marks = createBiteMarks(addObj);
   let extraGlows: readonly LampSpot[] = [];

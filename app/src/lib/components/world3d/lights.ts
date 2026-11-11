@@ -123,13 +123,15 @@ export interface Lights {
   dispose(): void;
 }
 
-export function createLights(scene: Scene): Lights {
+/** `n`: the point lights (POINTS; `?points=`, the phones' GPU A/B: 0 none, the lamps lit by their glows and pools). */
+export function createLights(scene: Scene, n = POINTS): Lights {
+  const target = Math.min(TARGET, n);
   const halo = sprites(HALO_VERT, FRAG(2.0), 6), pool = sprites(POOL_VERT, FRAG(1.6), 3);
   // the pools under every upright thing, over the ground and the water
   (pool.mesh.material as ShaderMaterial).polygonOffset = true;
   (pool.mesh.material as ShaderMaterial).polygonOffsetFactor = -2;
   scene.add(halo.mesh, pool.mesh);
-  const points = Array.from({ length: POINTS }, () => {
+  const points = Array.from({ length: n }, () => {
     const l = new PointLight(0xffc77a, 0, 170, 1.3);
     l.castShadow = false;
     scene.add(l);
@@ -182,7 +184,7 @@ export function createLights(scene: Scene): Lights {
     // which lights get a real one: the nearest the view's centre, a lit one counted a fifth nearer (hysteresis)
     if (lvl > 0) {
       const ranked = spots.map((s) => ({ s, d: Math.hypot(s.x - cx, (s.z - cz) * 0.85) * (s.want ? 0.8 : 1) })).sort((a, b) => a.d - b.d);
-      ranked.forEach((r, n) => (r.s.want = n < TARGET && r.d < 700 ? 1 : 0));
+      ranked.forEach((r, k) => (r.s.want = k < target && r.d < 700 ? 1 : 0));
     } else for (const s of spots) s.want = 0;
     // a fading-in light needs a free point light (one fading out keeps its own until it's dark)
     for (const s of spots) {

@@ -967,6 +967,7 @@
         aa: q.get('aa') !== null ? q.get('aa') !== '0' : !soft,
         ktx2: q.get('ktx2') !== '0',
         cull: q.get('cull') !== '0',
+        points: num('points') ?? undefined,
         // (the phones' A/B, perf.drag and perf.rest: the pixel ratio while moving, at the full one no swap; the shadow
         // map's size)
         dprMoving: num('dprmove') ?? undefined,

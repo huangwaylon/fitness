@@ -238,8 +238,8 @@ builds or with `?demo`; `?date`, `?theme` and `?season` work everywhere:
 
 Anywhere: `?panel=rewards` opens ごほうび at once; the 3D island's renderer takes `?dpr=<ratio>`, `?aa=0|1`,
 `?shadows=0|1`, `?ambient=<fps>`, and for the phones' A/B (perf.drag, perf.rest) `?dprmove=<ratio>` (while the camera
-moves: 1.5; at `dpr` or above no swap), `?shadow=<px>` (the shadow map's size: 2048) and `?cull=0` (every still thing
-drawn, the nearest out of view too: world3d/things.ts cull). The editor's params: [island-layout.md](../island-layout.md). The live island
+moves: 1.5; at `dpr` or above no swap), `?shadow=<px>` (the shadow map's size: 2048), `?cull=0` (every still thing
+drawn, the nearest out of view too: world3d/things.ts cull) and `?points=<n>` (the real point lights: 6; 0 none). The editor's params: [island-layout.md](../island-layout.md). The live island
 sets `window.__world` (`cam()`, `go(z)`, `at(x, z)`, `put(x, z)`, `idle()`, `quiet()`, `perf`, `stops()`, `mine()`,
 `partner()`, `geo()`, `site()`, …) for the e2e and the console (e2e/island.ts wraps them).
 
