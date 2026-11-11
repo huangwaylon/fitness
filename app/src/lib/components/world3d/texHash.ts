@@ -13,6 +13,11 @@ export function texHash(b: Uint8Array): string {
   return (h2 >>> 0).toString(16).padStart(8, '0') + (h1 >>> 0).toString(16).padStart(8, '0');
 }
 
+/** An embedded texture's key (its entry in its model's pack, its part of the pack's id, its transcode kept on the
+ *  phone): its WebP's hash, and `@<px>` when its KTX2 is capped smaller than the WebP (ktx2.json `caps`, set by
+ *  scripts/world3d-ktx2.ts CAPS), so a capped one is never an uncapped one cached. */
+export const texKey = (hash: string, caps: Partial<Record<string, number>>): string => (caps[hash] ? `${hash}@${caps[hash]}` : hash);
+
 /** A GLB's embedded images, in its `images` order (each its bufferView's bytes): the build script's and its test's. */
 export function glbImages(b: Uint8Array): Uint8Array[] {
   const jl = new DataView(b.buffer, b.byteOffset, b.byteLength).getUint32(12, true);

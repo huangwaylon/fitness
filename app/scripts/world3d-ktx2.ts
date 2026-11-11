@@ -19,10 +19,10 @@ import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { cpus, tmpdir } from 'node:os';
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { createRequire } from 'node:module';
 import { promisify } from 'node:util';
-import { glbImages, looseTextures, texHash, type Loose } from '../src/lib/components/world3d/texHash.ts';
+import { glbImages, looseTextures, texHash, texKey, type Loose } from '../src/lib/components/world3d/texHash.ts';
 import { entries, pack, packId } from '../src/lib/components/world3d/ktx2Pack.ts';
 import homes from '../src/lib/layout/homes.json' with { type: 'json' };
 import structures from '../src/lib/layout/structures.json' with { type: 'json' };
@@ -48,6 +48,20 @@ const META = join(APP, 'src', 'lib', 'components', 'world3d', 'ktx2.json');
  *  the drawn pixels; UASTC 38), rate-distortion optimised and zstd-packed for size, mipmaps (sRGB-filtered), the sRGB
  *  transfer function. */
 const ENC = ['-ktx2', '-mipmap', '-srgb', '-uastc', '-uastc_level', '2', '-uastc_rdo_l', '2', '-ktx2_zstandard_level', '18'];
+/** Embedded textures whose KTX2 is capped smaller than its WebP (px, the larger side): its top mip levels dropped
+ *  (what's left is the same file's smaller levels, no re-encode). The building exteriors at 512, seen only from the
+ *  island's camera (review 11/10: 1.86 → 0.60 MB of the first launch's KTX2 for all 12, a 256 cap's
+ *  PSNR against the 512 ≥ 36.5 dB for these). By model and image index; a capped image is its every pack's, so each
+ *  model carrying it is listed (the script fails on one that isn't: a model seen up close keeps the full size).
+ *  Held back for a look at full pinch zoom on the phone (28.7-38.7 dB): shop.glb #6, tent.glb #0 #2 (campsite-winter's
+ *  too), bridge-stone.glb #0. */
+const CAPS: [model: string, px: number, images: number[]][] = [
+  ['world3d/shop.glb', 256, [2, 3, 10]],
+  ['world3d/museum.glb', 256, [0, 2, 3]],
+  ['structures/stairs-stone-stair.glb', 256, [0]],
+  ['world3d/deco/bulletin-board.glb', 256, [0]],
+  ['world3d/deco/bulletin-board-winter.glb', 256, [0]]
+];
 
 const walk = (d: string): string[] => readdirSync(d).flatMap((f) => (statSync(join(d, f)).isDirectory() ? walk(join(d, f)) : f.endsWith('.glb') ? [join(d, f)] : []));
 const old = existsSync(META) ? (JSON.parse(readFileSync(META, 'utf8')) as { enc?: string }) : {};
@@ -77,18 +91,31 @@ if (same) {
   }
 }
 
-// the packs: a model's images (by hash); a home colour's albedos (by material); the players' loose files
+// the packs: a model's images (by key: hash, capped or not); a home colour's albedos (by material); the players' loose files
+const models = [...SRC.flatMap(walk).map((f): [string, Uint8Array] => [relative(ROOM, f), new Uint8Array(readFileSync(f))]), ...[...PLAYER].filter(([p]) => p.endsWith('.glb')).map(([p, b]): [string, Uint8Array] => [`player/${p}`, b])];
+const hashesOf = new Map(models.map(([p, b]) => [p, glbImages(b).map((im) => texHash(im))]));
+const caps: Record<string, number> = {};
+for (const [m, px, ims] of CAPS) for (const i of ims) {
+  const h = hashesOf.get(m)?.[i];
+  if (!h) throw new Error(`world3d-ktx2: CAPS: no image ${i} in ${m}`);
+  caps[h] = px;
+}
+for (const [p, hs] of hashesOf) hs.forEach((h, i) => {
+  if (caps[h] && !CAPS.some(([m, px, ims]) => m === p && px === caps[h] && ims.includes(i))) throw new Error(`world3d-ktx2: ${p} #${i} is a capped image (CAPS): cap it there too, or nowhere`);
+});
 const images = new Map<string, Uint8Array>(), packs = new Map<string, string[]>();
-for (const b of [...SRC.flatMap(walk).map((f) => new Uint8Array(readFileSync(f))), ...[...PLAYER].filter(([p]) => p.endsWith('.glb')).map(([, b]) => b)]) {
+for (const [p, b] of models) {
   const ims = glbImages(b);
   if (!ims.length) continue;
-  const hs = ims.map((im) => texHash(im));
+  const hs = hashesOf.get(p)!;
   ims.forEach((im, i) => images.set(hs[i], im));
-  packs.set(packId(hs), [...new Set(hs)]);
+  const ks = hs.map((h) => texKey(h, caps));
+  packs.set(packId(ks), [...new Set(ks)]);
 }
 /** Each texture to encode: its WebP's bytes, flipped or not, and the key it's kept under. */
 type Job = { webp: Uint8Array; flip: boolean; key: string };
-const jobs: Job[] = [...images].filter(([h]) => !done.has(h)).map(([h, webp]) => ({ webp, flip: false, key: h }));
+// (a capped one is cut from its full encoding, encoded first if there's none)
+const jobs: Job[] = [...images].filter(([h]) => !done.has(texKey(h, caps)) && !done.has(h)).map(([h, webp]) => ({ webp, flip: false, key: h }));
 const looseHash: Record<string, string> = {};
 for (const l of loose) {
   const webp = readRoom(l.path);
@@ -114,6 +141,42 @@ try {
   }));
 } finally {
   rmSync(tmp, { recursive: true, force: true });
+}
+for (const h of Object.keys(caps)) if (!done.has(texKey(h, caps))) done.set(texKey(h, caps), capKtx2(done.get(h)!, caps[h]));
+
+/** `ktx2` without its levels larger than `px` (a side): the header's size and the level index cut to the rest, the
+ *  descriptors and levels copied (a supercompressed file's levels are unaligned, smallest first). */
+function capKtx2(ktx2: Uint8Array, px: number): Uint8Array {
+  const dv = new DataView(ktx2.buffer, ktx2.byteOffset, ktx2.byteLength), u32 = (o: number) => dv.getUint32(o, true), u64 = (o: number) => Number(dv.getBigUint64(o, true));
+  const w = u32(20), h = u32(24), n = u32(40);
+  if (u32(44) === 0 || u64(72) !== 0) throw new Error('world3d-ktx2: capKtx2 takes a zstd-supercompressed UASTC file');
+  let k = 0;
+  while (Math.max(w >> k, h >> k) > px) k++;
+  if (!k) return ktx2;
+  const lv = Array.from({ length: n - k }, (_, i) => [u64(80 + 24 * (i + k)), u64(88 + 24 * (i + k)), u64(96 + 24 * (i + k))]);
+  const dfd = ktx2.subarray(u32(48), u32(48) + u32(52)), kvd = ktx2.subarray(u32(56), u32(56) + u32(60));
+  const head = 80 + 24 * lv.length, size = head + dfd.length + kvd.length + lv.reduce((s, [, l]) => s + l, 0);
+  const out = new Uint8Array(size), o = new DataView(out.buffer);
+  out.set(ktx2.subarray(0, 48));
+  o.setUint32(20, Math.max(1, w >> k), true);
+  o.setUint32(24, Math.max(1, h >> k), true);
+  o.setUint32(40, lv.length, true);
+  o.setUint32(48, head, true);
+  o.setUint32(52, dfd.length, true);
+  o.setUint32(56, kvd.length ? head + dfd.length : 0, true);
+  o.setUint32(60, kvd.length, true);
+  out.set(dfd, head);
+  out.set(kvd, head + dfd.length);
+  let at = head + dfd.length + kvd.length;
+  for (let i = lv.length - 1; i >= 0; i--) {
+    const [off, len, raw] = lv[i];
+    out.set(ktx2.subarray(off, off + len), at);
+    o.setBigUint64(80 + 24 * i, BigInt(at), true);
+    o.setBigUint64(88 + 24 * i, BigInt(len), true);
+    o.setBigUint64(96 + 24 * i, BigInt(raw), true);
+    at += len;
+  }
+  return out;
 }
 
 // write them (what changed), and delete what's no longer wanted
@@ -142,5 +205,5 @@ const wasm = createRequire(import.meta.url).resolve('three/examples/jsm/libs/bas
 mkdirSync(BASIS, { recursive: true });
 copyFileSync(wasm, join(BASIS, 'basis_transcoder.wasm'));
 const v = createHash('sha256').update(readFileSync(wasm)).digest('hex').slice(0, 8);
-writeFileSync(META, `${JSON.stringify({ _: 'scripts/world3d-ktx2.ts: the island models\' textures as KTX2 (static/room/tex/<id>.ktx2p, the loose ones\' beside them), basisu\'s settings, the transcoder\'s content hash (static/room/basis/)', enc, wasm: v }, null, 2)}\n`);
+writeFileSync(META, `${JSON.stringify({ _: 'scripts/world3d-ktx2.ts: the island models\' textures as KTX2 (static/room/tex/<id>.ktx2p, the loose ones\' beside them), basisu\'s settings, the transcoder\'s content hash (static/room/basis/), the capped textures\' sizes (texHash.ts texKey)', enc, wasm: v, caps: Object.fromEntries(Object.entries(caps).sort(([a], [b]) => a.localeCompare(b))) }, null, 2)}\n`);
 console.log(`${images.size} embedded textures in ${packs.size} packs, ${loose.length} loose (${jobs.length} encoded, ${removed} files removed): ${want.size} files, ${(bytes / 1024).toFixed(0)} KB; the players' ${playerOut.size} in their ${packed.packs} packs (${packed.written} written); transcoder ${v}`);

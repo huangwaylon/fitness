@@ -9,7 +9,7 @@ import meta from './ktx2.json';
 import { basisModuleCode } from './basisModule.ts';
 import { pickTarget, TRANSCODE, type Transcoded } from './ktx2Format.ts';
 import { CAP_BYTES, configureTexCache, flushTexWrites, readTex, writeTex } from './texCache.ts';
-import { glbImages, looseTextures, texHash, type Loose } from './texHash.ts';
+import { glbImages, looseTextures, texHash, texKey, type Loose } from './texHash.ts';
 import { entries, pack, packId } from './ktx2Pack.ts';
 import homes from '#lib/layout/homes.json' with { type: 'json' };
 import structures from '#lib/layout/structures.json' with { type: 'json' };
@@ -30,7 +30,7 @@ describe('the island models\' KTX2 textures (scripts/world3d-ktx2.ts: npm run wo
     const want = new Map<string, string[]>();
     const glbs = [...['world3d', 'homes', 'structures', 'villagers3d'].flatMap((d) => walk(join(ROOM, d)).map((f) => readFileSync(f))), ...[...PLAYER].filter(([p]) => p.endsWith('.glb')).map(([, b]) => b)];
     for (const b of glbs) {
-      const hs = glbImages(b).map((im) => texHash(im));
+      const hs = glbImages(b).map((im) => texKey(texHash(im), meta.caps));
       if (hs.length) want.set(`${packId(hs)}.ktx2p`, hs);
     }
     const have = readdirSync(join(ROOM, 'tex'));
@@ -40,6 +40,14 @@ describe('the island models\' KTX2 textures (scripts/world3d-ktx2.ts: npm run wo
       return !es || hs.some((h) => !es.has(h));
     });
     expect(short.map(([f]) => f)).toEqual([]);
+    // (a capped one no larger than its cap, its smaller levels all there)
+    const capped = [...want].flatMap(([f, hs]) => hs.filter((k) => k.includes('@')).map((k): [string, string] => [f, k]));
+    expect(capped.length).toBeGreaterThanOrEqual(Object.keys(meta.caps).length);
+    for (const [f, k] of capped) {
+      const b = readFileSync(join(ROOM, 'tex', f)), [o] = entries(b)!.get(k)!, px = meta.caps[k.split('@')[0] as keyof typeof meta.caps];
+      const w = b.readUInt32LE(o + 20), h = b.readUInt32LE(o + 24);
+      expect([Math.max(w, h), b.readUInt32LE(o + 40)]).toEqual([px, Math.log2(Math.max(w, h)) + 1]);
+    }
   });
 
   it('has a KTX2 for each loose WebP the models wear (a file beside it, or in its colour\'s pack), encoded from it as it is now, and none unused', () => {
@@ -90,20 +98,25 @@ describe('the transcoder as the worker has it (basisModule.ts)', () => {
     const BASIS = runInContext(src.replace(/export default BASIS;\n$/, 'BASIS'), ctx) as (m: { wasmBinary: Uint8Array }) => Promise<{ initializeBasis(): void; KTX2File: new (d: Uint8Array) => Record<string, (...a: number[]) => unknown> }>;
     const m = await BASIS({ wasmBinary: readFileSync(join(ROOM, 'basis', 'basis_transcoder.wasm')) });
     m.initializeBasis();
-    const packed = new Uint8Array(readFileSync(join(ROOM, 'tex', readdirSync(join(ROOM, 'tex'))[0])));
-    const [o, l] = [...entries(packed)!.values()][0];
     const U8 = runInContext('Uint8Array', ctx) as Uint8ArrayConstructor;
-    const k = new m.KTX2File(new U8(packed.slice(o, o + l)));
-    expect(k.isValid()).toBeTruthy();
-    expect(k.startTranscoding()).toBeTruthy();
-    for (const [opaque, alpha] of Object.values(TRANSCODE)) {
-      const fmt = k.getHasAlpha() ? alpha : opaque;
-      const out = new U8(k.getImageTranscodedSizeInBytes(0, 0, 0, fmt) as number);
-      expect(k.transcodeImage(out as unknown as number, 0, 0, 0, fmt, 0, -1, -1)).toBeTruthy();
-      expect(out.some((b) => b !== 0)).toBe(true);
+    // (a texture as encoded, and one capped: scripts/world3d-ktx2.ts capKtx2, each of its levels)
+    const packed = new Uint8Array(readFileSync(join(ROOM, 'tex', readdirSync(join(ROOM, 'tex'))[0])));
+    const keys = glbImages(readFileSync(join(ROOM, 'world3d', 'museum.glb'))).map((im) => texKey(texHash(im), meta.caps));
+    const museum = new Uint8Array(readFileSync(join(ROOM, 'tex', `${packId(keys)}.ktx2p`))), cap = entries(museum)!.get(keys.find((k) => k.includes('@'))!)!;
+    for (const [b, [o, l]] of [[packed, [...entries(packed)!.values()][0]], [museum, cap]] as const) {
+      const k = new m.KTX2File(new U8(b.slice(o, o + l)));
+      expect(k.isValid()).toBeTruthy();
+      expect(k.startTranscoding()).toBeTruthy();
+      for (let lv = 0; lv < (k.getLevels() as number); lv++)
+        for (const [opaque, alpha] of Object.values(TRANSCODE)) {
+          const fmt = k.getHasAlpha() ? alpha : opaque;
+          const out = new U8(k.getImageTranscodedSizeInBytes(lv, 0, 0, fmt) as number);
+          expect(k.transcodeImage(out as unknown as number, lv, 0, 0, fmt, 0, -1, -1)).toBeTruthy();
+          if (lv === 0) expect(out.some((x) => x !== 0)).toBe(true);
+        }
+      k.close();
+      k.delete();
     }
-    k.close();
-    k.delete();
   });
 });
 

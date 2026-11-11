@@ -22,7 +22,9 @@ The source is NH's 2.0.0 export (archive.org `acnh-2.0.0-models`, `ACNH_2.0.0_Ex
 - **Then `npm run world3d-ktx2`** (`scripts/world3d-ktx2.ts`, its header: the packs, the loose textures, the
   transcoder, what it needs): the island draws KTX2 (`world3d/ktx2.ts`: ASTC on an iPhone, kept transcoded in
   IndexedDB); the WebPs stay for the museum's own models, the tent's furniture and a fallback. `world3d/ktx2.test.ts`
-  fails until it's run after a model, a home or a player part changes.
+  fails until it's run after a model, a home or a player part changes. Its `CAPS` caps a texture's KTX2 smaller than
+  its WebP (the exteriors seen only from the island's camera: their top mips dropped; ktx2.json `caps`, the key
+  `<hash>@<px>`, texHash.ts texKey).
 - See-through two-sided parts (glass, curtains, a critter's fade) are two meshes, one a side (`world3d/sides.ts`):
   three's own two passes re-derive the program twice a draw.
 - **Validation:** `node scripts/world3d-sheet.ts [-- --only=bug,fish] [-- --night]` draws every model at its world

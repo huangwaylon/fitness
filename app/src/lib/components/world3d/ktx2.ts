@@ -12,7 +12,7 @@ import meta from './ktx2.json';
 import { pickTarget, type Target, type Transcoded } from './ktx2Format.ts';
 import type { Answer, Ask } from './ktx2.worker.ts';
 import { hasTex, readTex, writeTex } from './texCache.ts';
-import { texHash } from './texHash.ts';
+import { texHash, texKey } from './texHash.ts';
 import { entries, packId } from './ktx2Pack.ts';
 import { quiet } from '#lib/quiet.ts';
 
@@ -22,6 +22,8 @@ const TEX_V = 1;
 const ENC = texHash(new TextEncoder().encode(meta.enc));
 /** The cache's key prefix: this pipeline's (texCache.ts lets another's go). */
 const PIPE = `${TEX_V}.${ENC}.${meta.wasm}.`;
+/** The embedded textures capped smaller than their WebP (texHash.ts texKey). */
+const CAPS: Partial<Record<string, number>> = meta.caps;
 /** `path` under the site. */
 const site = (path: string) => new URL(path, new URL(document.baseURI)).href;
 /** The transcoder's worker is let go of this long after its last answer (ms): its wasm's memory back. */
@@ -115,7 +117,7 @@ export const ktx2On = (): boolean => target !== null && !broken;
 
 /** Where a texture's KTX2 is: a file under the site, or `entry` in that pack (ktx2Pack.ts). */
 type Where = { path: string; entry?: string };
-/** A texture's mip levels for `t` (`id`: its WebP's hash, or a loose file's address), kept, or fetched (`get`, asked
+/** A texture's mip levels for `t` (`id`: its WebP's key, texHash.ts texKey, or a loose file's address), kept, or fetched (`get`, asked
  *  only then: its KTX2's bytes) and transcoded (then kept); null on any trouble. Asked twice at once, done once. */
 const pending = new Map<string, Promise<Transcoded | null>>();
 function levels(id: string, get: () => Promise<ArrayBuffer | null>, t: Target): Promise<Transcoded | null> {
@@ -236,7 +238,7 @@ export function ktx2Plugin(loader: GLTFLoader): GLTFLoader {
         if (source === undefined || !src) return null;
         if (!t || src.bufferView === undefined || src.mimeType !== 'image/webp') return parser.loadTextureImage(i, source, parser.textureLoader);
         return parser.getDependency('bufferView', src.bufferView).then(async (buf: ArrayBuffer) => {
-          const hash = texHash(new Uint8Array(buf));
+          const hash = texKey(texHash(new Uint8Array(buf)), CAPS);
           const tex = await levels(hash, async () => fetchKtx2({ path: `room/tex/${await packOf(parser)}.ktx2p`, entry: hash }), t);
           if (!tex) return ktx2Stats.webp++, parser.loadTextureImage(i, source, parser.textureLoader);
           const c = compressed(tex);
@@ -262,7 +264,7 @@ function packOf(parser: Parser): Promise<string> {
   let p = packIds.get(parser);
   if (!p) {
     const views: number[] = (parser.json.images ?? []).flatMap((im: { bufferView?: number }) => (im.bufferView === undefined ? [] : [im.bufferView]));
-    p = Promise.all(views.map((v: number) => parser.getDependency('bufferView', v) as Promise<ArrayBuffer>)).then((bs) => packId(bs.map((b) => texHash(new Uint8Array(b)))));
+    p = Promise.all(views.map((v: number) => parser.getDependency('bufferView', v) as Promise<ArrayBuffer>)).then((bs) => packId(bs.map((b) => texKey(texHash(new Uint8Array(b)), CAPS))));
     packIds.set(parser, p);
   }
   return p;
