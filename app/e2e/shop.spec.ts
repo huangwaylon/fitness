@@ -79,6 +79,8 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
   await page.locator('[data-shop-sell]').click();
   await expect.poll(() => shells(page)).toBe(650 + 650 + 400 + 3 * 3); // a cowrie 3
   await expect(page.locator('[data-shop-empty]')).toBeVisible();
+  // the banner counts what was sold, though the pocket is empty now (it was read after the sale: 「0個を…」)
+  await expect(page.locator('.banner[role="status"] .txt')).toHaveText('5個を1,059かいがらで売りました');
   // かう: the day's stock, 24 pieces (no いつもの); one at most 1,709
   await page.locator('[data-shop-tab="buy"]').click();
   await expect(stock(page)).toHaveCount(24);

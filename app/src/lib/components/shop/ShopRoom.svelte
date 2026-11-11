@@ -172,14 +172,16 @@
   }
   function sellPicked() {
     if (!pickedN) return void cue('boop');
-    const r = sell(new Map(picked));
+    // what's sold, kept before the sale: `picked` follows the pocket, which the sale empties
+    const sold = [...picked], n = pickedN;
+    const r = sell(new Map(sold));
     if (!r.ok) {
       speak('cant');
       return void cue('boop');
     }
     cue('buy');
-    const one = picked.length === 1 ? picked[0] : null;
-    undoBanner(one ? t('shop.sold', { name: speciesName(one[0]), n: String(one[1]), v: formatNum(r.shells ?? 0) }) : t('shop.soldMany', { n: String(pickedN), v: formatNum(r.shells ?? 0) }), r);
+    const one = sold.length === 1 ? sold[0] : null;
+    undoBanner(one ? t('shop.sold', { name: speciesName(one[0]), n: String(one[1]), v: formatNum(r.shells ?? 0) }) : t('shop.soldMany', { n: String(n), v: formatNum(r.shells ?? 0) }), r);
     picks = {};
     speak('thanks');
   }
