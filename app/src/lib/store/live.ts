@@ -30,6 +30,11 @@ const RECONCILE_MS = 1500;
 const SEND_PACE_MS = 600;
 /** Sheet changes arriving together (a burst of pushes) make one refresh. */
 const PUSH_GATHER_MS = 300;
+/** My own other device's events while the socket is up (the Mac's /editor: a write every ~13 s, each a push here, 126
+ *  fetches in 28 min; its layout ops come live through the room anyway): one trailing fetch this long after the last,
+ *  at most MINE_MAX_MS after the first. The welcome and the 15-minute check converge the rest. */
+const MINE_WAIT_MS = 30_000;
+const MINE_MAX_MS = 120_000;
 /** How long opening waits for the relay's welcome (its `rec`) before fetching anyway. */
 const WELCOME_WAIT_MS = 2000;
 /** A cache fetched longer ago than this is fetched again on opening, whatever the welcome says. */
@@ -47,6 +52,9 @@ export class LiveBackend implements Backend {
   #retryTimer: ReturnType<typeof setTimeout> | null = null;
   #reconcileTimer: ReturnType<typeof setTimeout> | null = null;
   #pushTimer: ReturnType<typeof setTimeout> | null = null;
+  /** My other device's events waiting (MINE_WAIT_MS), and when the first of them came. */
+  #mineTimer: ReturnType<typeof setTimeout> | null = null;
+  #mineFirst = 0;
   /** When the last flush started (SEND_PACE_MS), and the trailing flush armed meanwhile. */
   #flushedAt = -Infinity;
   #paceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -167,9 +175,10 @@ export class LiveBackend implements Backend {
     const rec = this.#live?.status().rec;
     this.#fetching = true;
     // a gathered push or welcome waiting: this fetch brings what it would (`fresh`: not one already in flight)
-    const gathered = !!this.#pushTimer;
+    const gathered = !!this.#pushTimer || !!this.#mineTimer;
     if (this.#pushTimer) clearTimeout(this.#pushTimer);
-    this.#pushTimer = null;
+    if (this.#mineTimer) clearTimeout(this.#mineTimer);
+    this.#pushTimer = this.#mineTimer = null;
     try {
       await this.#flush(false);
       r = await refreshSnapshot(Date.now, opts.fresh || gathered);
@@ -219,6 +228,8 @@ export class LiveBackend implements Backend {
     this.#lastFetch = 0;
     this.#pushWorks = false;
     this.#fetchedFor = '';
+    if (this.#mineTimer) clearTimeout(this.#mineTimer);
+    this.#mineTimer = null;
     // paired as someone else: the socket speaks for the old key
     if (this.#live) {
       this.#live.stop();
@@ -229,19 +240,34 @@ export class LiveBackend implements Backend {
   /**
    * The relay says the record changed: refresh now (gathered, `fresh` so a fetch already in flight is followed by one
    * more). Skipped when the cache already holds it, and for this page's own events (the ack's rows are in the cache:
-   * flush); my other devices' (their `sid`) are fetched. A relay from before `sid`: all of mine skipped, as then.
+   * flush); my other devices' (their `sid`) are fetched, while the socket is up once they pause (MINE_WAIT_MS). A
+   * relay from before `sid`: all of mine skipped, as then.
    */
   #sheetChanged(c: SheetChange): void {
     if (c.at) this.#pushWorks = true;
     else if (this.#pushWorks) return; // a nudge, and the push already brings events
     const cache = this.#cache;
-    if (c.at && cache && c.who === cache.me && c.what === 'event' && (!c.sid || c.sid === sessionId())) return;
+    const mine = !!c.at && !!cache && c.who === cache.me && c.what === 'event';
+    if (mine && (!c.sid || c.sid === sessionId())) return;
     if (c.at && cache && c.rev === cache.rev && cache.since !== null && c.at <= cache.since) return;
     if (this.#pushTimer) return;
+    if (mine && this.#live?.status().connected) return this.#mineLater();
     this.#pushTimer = setTimeout(() => {
       this.#pushTimer = null;
       void this.refresh({ fresh: true });
     }, PUSH_GATHER_MS);
+  }
+
+  /** My other device's event: one trailing fetch MINE_WAIT_MS after the last of a run, by MINE_MAX_MS after its first
+   *  (a fetch meanwhile takes them: refresh). */
+  #mineLater(): void {
+    const now = Date.now();
+    if (this.#mineTimer) clearTimeout(this.#mineTimer);
+    else this.#mineFirst = now;
+    this.#mineTimer = setTimeout(() => {
+      this.#mineTimer = null;
+      void this.refresh({ fresh: true });
+    }, Math.max(0, Math.min(MINE_WAIT_MS, this.#mineFirst + MINE_MAX_MS - now)));
   }
 
   /** Whether the welcome's record mark is past the cache (false without a welcome, a mark or a cache). */

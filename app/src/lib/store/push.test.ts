@@ -125,6 +125,36 @@ describe('LiveBackend: the relay push', () => {
     expect(snapshots).toBe(1);
   });
 
+  it('my other device\'s events with the socket up (the Mac\'s editor): one fetch 30 s after the last, by 2 min after the first', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+    await ready();
+    relay.status = { connected: true, me: null, peer: false };
+    const mac = (n: number) => change({ who: 'A', what: 'event', at: new Date(Date.parse(LATER) + n).toISOString(), rev: 'r1', sid: 'othermac1' });
+    mac(1);
+    await settle(29_000);
+    mac(2); // the run goes on: waits again
+    await settle(29_000);
+    expect(snapshots).toBe(0);
+    await settle(1000);
+    expect(snapshots).toBe(1);
+    // a write every 13 s, on and on: a fetch every 2 min, not one each (126 in 28 min before)
+    snapshots = 0;
+    for (let i = 0; i < 28 * 60 / 13; i++) {
+      mac(100 + i);
+      await settle(13_000);
+    }
+    expect(snapshots).toBeGreaterThanOrEqual(13);
+    expect(snapshots).toBeLessThan(15);
+    // the partner's change meanwhile: at once (gathered), and it takes mine with it
+    snapshots = 0;
+    mac(1000);
+    change({ who: 'B', what: 'event', at: '2026-11-01T02:00:00.000Z', rev: 'r1' });
+    await settle(300);
+    expect(snapshots).toBe(1);
+    await settle(60_000);
+    expect(snapshots).toBe(1);
+  });
+
   it('a changed revision fetches even when `at` is old (a hand edit)', async () => {
     await ready();
     change({ who: 'B', what: 'event', at: AT, rev: 'r2' });

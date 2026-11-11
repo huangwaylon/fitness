@@ -486,7 +486,9 @@ through the relay*). Additive: the polling in [When it syncs](#when-it-syncs) st
 - **The nudge:** after an ack the phone sends `saved {}`, relayed like any intent, until a `changed` has reached it
   this session.
 - **Client** (`store/live.ts`): `onChange` → one `refresh({fresh: true})` 300 ms later (changes together make one),
-  skipped when the cache has it and for this page's own `event` (`sid`; my other devices' are fetched).
+  skipped when the cache has it and for this page's own `event` (`sid`); my other devices' are fetched, with the socket
+  up once they pause (`MINE_WAIT_MS` 30 s after the last, by 2 min after the first: the Mac's editor's ~128 writes in
+  28 min fetched 126 times).
 
 ## Service worker
 `app/src/service-worker/` (pure rules and every cache's bound in `caches.ts`). No `push` or `notificationclick` handler ([decisions](decisions.md#no-notifications), `e2e/no-notify.spec.ts`).
