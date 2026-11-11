@@ -95,10 +95,12 @@ export function recommend(o: {
 export type Feedback =
   | { kind: 'perfect'; next: Rec | null }
   | { kind: 'up'; skill: Skill; next: Rec | null }
-  | { kind: 'keep'; next: Rec | null };
+  | { kind: 'keep'; next: Rec | null }
+  | { kind: 'tough'; next: null };
 
-/** The skill whose mastery rose most with this game (≥ +0.05, among those it touched), else an all-right game's
- *  praise or an encouragement; each with the first recommendation as what's next. */
+/** An all-right game's praise; under half right, a nudge to hear the misses again (the results' retry button, no
+ *  set to go on to); else the skill whose mastery rose most with this game (≥ +0.05, among those it touched) or an
+ *  encouragement; each with the first recommendation as what's next. */
 export function feedback(o: { game: Game; before: Stats; after: Stats; recs: readonly Rec[] }): Feedback {
   const next = o.recs[0] ?? null;
   const touched = new Set<Skill>();
@@ -114,7 +116,9 @@ export function feedback(o: { game: Game; before: Stats; after: Stats; recs: rea
     const d = o.after.skills[s].raw - o.before.skills[s].raw;
     if (o.after.skills[s].m !== null && d >= rise) (best = s), (rise = d);
   }
-  if (o.game.r.length && o.game.r.every((a) => a.ok)) return { kind: 'perfect', next };
+  const right = o.game.r.filter((a) => a.ok).length;
+  if (o.game.r.length && right === o.game.r.length) return { kind: 'perfect', next };
+  if (right * 2 < o.game.r.length) return { kind: 'tough', next: null };
   return best ? { kind: 'up', skill: best, next } : { kind: 'keep', next };
 }
 

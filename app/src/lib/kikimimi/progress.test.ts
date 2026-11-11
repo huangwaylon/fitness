@@ -355,15 +355,19 @@ describe('the advice', () => {
     const recs = recommend({ stats: statsOf(answersOf(gs), TODAY), games: gs, dueItems: 0, levels: [2], bank });
     expect(recs.some((r) => r.kind === 'accent' && r.accent === 'uk') || recs.length === 3).toBe(true);
   });
-  it('feeds back the skill that rose, a perfect game, or encouragement', () => {
+  it('feeds back the skill that rose, a perfect game, a tough one, or encouragement', () => {
     const before = [game(['n1-reps-1', 'n1-reps-2', 'n1-reps-3', 'n1-turnips-1'], { miss: ['n1-reps-1', 'n1-reps-2', 'n1-reps-3'] })];
     const g = game(['n1-turnips-2', 'n1-turnips-3', 'n1-meet-1', 'n1-meet-2', 'w1-hat'], { miss: ['w1-hat'] });
     const b = statsOf(answersOf(before), TODAY), a = statsOf(answersOf([...before, g]), TODAY);
     expect(feedback({ game: g, before: b, after: a, recs: [] })).toEqual({ kind: 'up', skill: 'num', next: null });
     const perfect = game(['w1-cup']);
     expect(feedback({ game: perfect, before: a, after: statsOf(answersOf([...before, g, perfect]), TODAY), recs: [{ kind: 'review', due: 4 }] }).kind).toBe('perfect');
-    const flat = game(['w1-cup'], { miss: ['w1-cup'] });
-    expect(feedback({ game: flat, before: a, after: a, recs: [] }).kind).toBe('keep');
+    const half = game(['w1-cup', 'w1-hat'], { miss: ['w1-cup'] });
+    expect(feedback({ game: half, before: a, after: a, recs: [] }).kind).toBe('keep');
+    // 1 of 8 right: no praise and no set to go on to, even with one waiting (the retry button is the next step)
+    const ids = ['n1-turnips-1', 'n1-turnips-2', 'n1-turnips-3', 'n1-meet-1', 'n1-meet-2', 'w1-hat', 'w1-cup', 'w1-rock'];
+    const one = game(ids, { miss: ids.slice(1) });
+    expect(feedback({ game: one, before: a, after: statsOf(answersOf([...before, g, one]), TODAY), recs: [{ kind: 'review', due: 17 }] })).toEqual({ kind: 'tough', next: null });
   });
   it('lists what tripped me, most first', () => {
     expect(tripsOf(game(['w1-right', 'w1-rock', 'n1-reps-1', 'w3-kitchen', 'w1-hat'], { miss: ['w1-right', 'w1-rock', 'n1-reps-1', 'w3-kitchen'] }))).toEqual([

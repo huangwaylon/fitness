@@ -137,7 +137,8 @@
 
 {#snippet retry()}
   {#if misses && !ladders.length}
-    <button type="button" class="btn paper retry" data-kiki-retry data-sfx="confirm" onclick={onmissed}>🎯 {t('kiki.missedReplay')}</button>
+    <!-- under half right, the next step (しずえ says so): the leaf button -->
+    <button type="button" class="btn retry {fb?.kind === 'tough' ? 'green' : 'paper'}" data-kiki-retry data-sfx="confirm" onclick={onmissed}>🎯 {t('kiki.missedReplay')}</button>
   {/if}
 {/snippet}
 

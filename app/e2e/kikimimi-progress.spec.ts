@@ -85,7 +85,7 @@ test('after a solo game: my feedback, the hub’s menu, きろく, and the menu�
   expect(items).not.toEqual(shared);
 });
 
-test('おさらい (あそぶ) plays a deck of my weak spots and records it', async ({ page }) => {
+test('おさらい (あそぶ) plays a deck of my weak spots and records it; 1 of 8 right gets no praise, the retry as next step', async ({ page }) => {
   await page.clock.install(); // (the games' plays stepped through: kikimimi-nav.ts runUntil)
   await page.goto(`?demo&${Q}`);
   await islandUp(page);
@@ -101,6 +101,11 @@ test('おさらい (あそぶ) plays a deck of my weak spots and records it', as
   expect(new Set(items).size).toBe(8);
   // the demo's misses come back (w1-right, w1-fly … were missed yesterday: due today)
   expect(items.some((id) => ['w1-right', 'w1-fly', 'w2-read', 'w2-cloud', 'w2-flight', 'w3-gotta', 'w3-shouldve', 'r3-coffee', 'r3-show', 'n2-tourney-1'].includes(id))).toBe(true);
-  await playGame(page, [0]);
-  await expect(sheet(page).locator('[data-kiki-feedback]')).toBeVisible();
+  await playGame(page, [0, 1, 2, 3, 4, 5, 6]);
+  // under half right: しずえ points at the misses again (no 「いい ちょうし」, no set to go on to), the retry the leaf button
+  const fb = sheet(page).locator('[data-kiki-feedback]');
+  await expect(fb).toHaveAttribute('data-kiki-feedback', 'tough');
+  await expect(fb.locator('.fb-line')).toHaveText('むずかしかったね！ まちがえた ところを もう いちど きいて みましょう');
+  await expect(sheet(page).locator('[data-kiki-retry]')).toHaveClass(/\bgreen\b/);
+  await shot(page, '4-results-tough');
 });
