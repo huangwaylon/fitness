@@ -27,6 +27,8 @@ const inside = (s: string, i: number) => {
   return !!KANA(c[i - 1]) && KANA(c[i - 1]) === KANA(c[i]) && !/[のな]/.test(c[i - 1]) && !ends(s).has(i);
 };
 /** A word the segmenter can't cut (one dictionary word: ナポレオンフィッシュ). */
+/** What a line can't start with (Japanese line breaking: a long vowel mark, a small kana). */
+const NO_START = /^[ーァィゥェォッャュョヮヵヶぁぃぅぇぉっゃゅょゎ]/u;
 const oneWord = (w: string) => [...seg.segment(w.replace(/[のな]$/, ''))].length === 1;
 
 describe('shop names: where they break', () => {
@@ -39,6 +41,8 @@ describe('shop names: where they break', () => {
     expect(words('まるたのかべかけどけい')).toEqual(['まるたの', 'かべかけどけい']);
     expect(words('たけのこのみずに')).toEqual(['たけのこのみずに']);
     expect(words('アイアンウォールランプ')).toEqual(['アイアン', 'ウォールランプ']);
+    expect(words('ディレクターズチェア')).toEqual(['ディレクターズ', 'チェア']);
+    expect(words('サンドウィッチプレート')).toEqual(['サンドウィッチ', 'プレート']);
     expect(words('おサカナのラグ')).toEqual(['おサカナの', 'ラグ']);
     expect(words('ハトのすサブレ')).toEqual(['ハトのす', 'サブレ']);
     expect(words('あおいラウンドマット・M')).toEqual(['あおい', 'ラウンドマット・M']);
@@ -52,9 +56,11 @@ describe('shop names: where they break', () => {
       const ws = words(n);
       let i = 0;
       const between = ws.slice(0, -1).every((w) => ((i += [...w].length), !inside(n, i)));
+      // (and no line starts with a mark that can't, ディレクタ|ーズチェア, nor ends on a small ッ, サンドウィッ|チ)
+      const head = ws.slice(1).every((w) => !NO_START.test(w)) && ws.slice(0, -1).every((w) => !/[ッっ]$/u.test(w));
       const noLone = ws.length === 1 || ws.every((w) => [...w].filter((c) => !/[\s・&～]/u.test(c)).length > 1);
       const fits = ws.every((w) => longest(w) <= (isLong(n) ? LINE_XS : LINE) || /^[ -~]+$/.test(w) || oneWord(w));
-      if (ws.join('') !== n || !between || !noLone || !fits) bad.push(`${n} → ${ws.join('|')}`);
+      if (ws.join('') !== n || !between || !head || !noLone || !fits) bad.push(`${n} → ${ws.join('|')}`);
     }
     expect(bad).toEqual([]);
   });

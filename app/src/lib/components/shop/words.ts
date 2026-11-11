@@ -17,9 +17,13 @@ export const LINE = 7, LINE_XS = 9;
 /** A word's length, its marks and spaces not counted. */
 const len = (w: string): number => [...w].filter((c) => cls(c) !== 'P').length;
 
+/** What a line can't start with (a long vowel mark, a small kana: ディレクタ|ーズチェア, けろけろけろ|っぴ; and a small ッ
+ *  never ends one, サンドウィッ|チ). */
+const NO_START = /[ーァィゥェォッャュョヮヵヶぁぃぅぇぉっゃゅょゎ]/u;
+
 let seg: Intl.Segmenter | null = null;
 /** A run longer than the small size's line, cut where the segmenter ends a word in it (or after a particle in a
- *  hiragana one): the cut that leaves the longer piece shortest (after a particle first), each piece 2+ long, again
+ *  hiragana one), never before a mark a line can't start with nor after a small ッ: the cut that leaves the longer piece shortest (after a particle first), each piece 2+ long, again
  *  while a piece is still too long. */
 function cut(w: string): string[] {
   seg ??= new Intl.Segmenter('ja', { granularity: 'word' });
@@ -29,7 +33,7 @@ function cut(w: string): string[] {
   const piece = (a: number, b: number) => len(chars.slice(a, b).join(''));
   let best = -1, cost = Infinity;
   for (const i of at) {
-    if (piece(0, i) < 2 || piece(i, chars.length) < 2) continue;
+    if (piece(0, i) < 2 || piece(i, chars.length) < 2 || NO_START.test(chars[i]) || /[ッっ]/u.test(chars[i - 1])) continue;
     const c = Math.max(piece(0, i), piece(i, chars.length)) - (PARTICLE.has(chars[i - 1]) ? 3 : 0);
     if (c < cost) [best, cost] = [i, c];
   }
