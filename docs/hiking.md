@@ -80,7 +80,8 @@ once): USGS 1.6–3.1 MB (Talapus 1.6, Pilchuck 1.9, Valhalla 2.0, Lake 22 2.2, 
 - **A trail:** the map full screen under the game's buttons (like the HUD's): NavBar's ‹ ✕,
   44px cream discs with the brown edge and lip at every time of day, ＋ − and locate the same object (locate sky while on). The location dot appears only after the locate button, through the trip map's `LocWatch` (the position
   never leaves the phone). The drag-up sheet on the paper: the grip, the peek (the name, a StatStrip with 難易度) tall
-  enough for the whole elevation chart; drag or tap it up to 90 %, and Esc folds it back. The body, dense cards: the
+  enough for the whole elevation chart; drag or tap it up to 6px under ‹ ✕ (their row and the safe area stay the
+  map's: the buttons never cover the sheet), and Esc folds it back. The body, dense cards: the
   chart (press shows the readout and the map's dot, drag moves them, let go and they stay, tap again to clear; the line
   coral over a leaf area, waypoints dashed yuzu), Kinpu's plan card, 概要, コース紹介, the tips (a check per row), 詳細情報
   (`.row.kv`), credits.

@@ -157,6 +157,50 @@ test("a trail walked on YAMAP: its Commons photo on the card, the record's rows 
   await expect(view.locator('[data-photo-credit] a').last()).toHaveAttribute('href', /^https:\/\/creativecommons\.org\/licenses\/by-sa\/4\.0\/$/);
 });
 
+// (an iPhone 15/16's insets; and the home-screen app's 16px more under the status bar, docs/design.md)
+for (const [ui, top] of [['Safari', '59px'], ['home screen', 'calc(59px + 16px)']] as const)
+test(`the full sheet stops under ‹ ✕ (${ui}): none of its content under the floating buttons, at its top or held dragged past it, scrolled to the end`, async ({ page }) => {
+  await page.addInitScript((t) => document.addEventListener('DOMContentLoaded', () => {
+    const s = document.createElement('style');
+    s.textContent = `html:root { --safe-top: 59px !important; --safe-bottom: 34px !important; --ui-top: ${t} !important; }`;
+    document.head.append(s);
+  }), top);
+  await openTrails(page);
+  await sheet(page).locator('[data-trail="kinpu-odarumi"] .hit').click();
+  const view = sheet(page).locator('[data-trail-view="kinpu-odarumi"]');
+  await expect(view.locator('[data-elev]')).toBeVisible();
+  const buttons = await Promise.all(['.nav.back', '.nav.close'].map(async (s) => (await view.locator(s).boundingBox())!));
+  const foot = Math.max(...buttons.map((b) => b.y + b.height));
+  const sheetTop = async () => (await view.locator('.sheet').boundingBox())!.y;
+  /** The sheet's top once it stands still (its height eases). */
+  const settled = async () => {
+    let last = NaN;
+    await expect.poll(async () => last === (last = await sheetTop())).toBe(true);
+    return last;
+  };
+  const clear = async () => expect(await settled()).toBeGreaterThanOrEqual(foot);
+
+  // held: dragged far past the top, it stops there too
+  const g = (await view.locator('[data-sheet-grip]').boundingBox())!;
+  await page.mouse.move(g.x + g.width / 2, g.y + 4);
+  await page.mouse.down();
+  await page.mouse.move(g.x + g.width / 2, 0, { steps: 6 });
+  await clear();
+  await page.mouse.up();
+  await expect(view).toHaveAttribute('data-sheet', 'full');
+  await clear();
+  // its title, and the last of the body scrolled to the end, below the buttons
+  expect((await view.locator('.pk-title').boundingBox())!.y).toBeGreaterThanOrEqual(foot);
+  await view.locator('.body').evaluate((b) => (b.scrollTop = b.scrollHeight));
+  const end = (await view.locator('.attrib').boundingBox())!;
+  expect(end.y).toBeGreaterThanOrEqual(foot);
+  expect(end.y + end.height).toBeLessThanOrEqual(852);
+  // the buttons stay where they were, ‹ still takes you back
+  expect((await view.locator('.nav.back').boundingBox())!).toEqual(buttons[0]);
+  await view.locator('.nav.back').click();
+  await expect(sheet(page).locator('[data-trail-list]')).toBeVisible();
+});
+
 /** Each trail in turn, then the first again, the sheet closed and opened between; `drawnTrack` whether its track is on its map. */
 async function reopen(page: Page, drawnTrack: (view: ReturnType<Page['locator']>) => Promise<void>) {
   for (const [i, slug] of [[0, 'lake-22'], [1, 'snow-lake'], [0, 'lake-22'], [-1, ''], [2, 'lake-valhalla'], [0, 'lake-22']] as const) {

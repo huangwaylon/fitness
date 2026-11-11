@@ -3,7 +3,8 @@
   // cream discs with the brown lip (the HUD's and the island's), and the map's own in the same disc (＋ − under ✕, locate
   // bottom-left over the sheet), 44px each; and the drag-up sheet over it, on the app's paper: the grip
   // and the peek (the name, 距離 · 標高差 · 時間 · 難易度) at a height that shows the whole elevation chart (so it
-  // scrubs without opening the sheet), dragged or tapped up to 90 %; its body the chart, the plan card, 概要, コース紹介,
+  // scrubs without opening the sheet), dragged or tapped up to just under ‹ ✕ (their row and the safe area stay the map's:
+  // the buttons never move or cover the sheet, a strip of the map above it as an iOS sheet's large detent); its body the chart, the plan card, 概要, コース紹介,
   // the tips, the facts and the credits, each a dense card. The location dot only after the locate button (the trip map's
   // LocWatch: the position never leaves the phone). Live tracking and the free hike come later (docs/hiking.md
   // "Later": the seam is the location watch here and TrailMap's fix).
@@ -49,13 +50,17 @@
   let held = $state<number | null>(null);
   const scrub = $derived(prep && held !== null ? pointAt(prep, held) : null);
 
-  // the sheet: peek (just under the chart) or full (90 %), or a drag's height
+  // the sheet: peek (just under the chart) or full (up to under ‹ ✕), or a drag's height
   let vh = $state(800);
   let sheetState = $state<'peek' | 'full'>('peek');
   let drag = $state<number | null>(null);
   let body: HTMLElement | undefined = $state();
   let peekH = $state(0);
+  /** The floating row's foot (the safe area's top, NavBar's 48px): the full sheet stops 6px under it. */
+  let barH = $state(0);
+  let bar: HTMLElement | undefined = $state();
   function measure() {
+    barH = bar?.offsetHeight ?? 0;
     const card = body?.querySelector<HTMLElement>('[data-elev]') ?? body?.querySelector<HTMLElement>('.track-msg');
     const fallback = Math.round(vh * 0.16);
     if (!card) return void (peekH = fallback);
@@ -68,7 +73,7 @@
     void vh;
     void Promise.resolve().then(measure);
   });
-  const fullH = $derived(Math.round(vh * 0.9));
+  const fullH = $derived(vh - (barH || Math.round(vh * 0.1)) - 6);
   const height = $derived(drag ?? (sheetState === 'full' ? fullH : peekH || Math.round(vh * 0.16)));
 
   function setSheet(s: 'peek' | 'full') {
@@ -135,7 +140,7 @@
 <section class="detail" data-trail-view={trail.slug} data-sheet={sheetState}>
   <TrailMap bind:this={map} region={trail.tiles} center={trail.center} {prep} {scrub} {fix} bottom={peekH} {saved} />
 
-  <div class="top"><NavBar pad {onback} {onclose} /></div>
+  <div class="top" bind:this={bar}><NavBar pad {onback} {onclose} /></div>
   <div class="offline" inert={full}><SaveButton {plan} name={trail.name} /></div>
   <div class="zoom" inert={full}>
     <button type="button" class="disc" data-sfx="tick" aria-label={pick(S.zoomIn, L)} onclick={() => map?.zoom(1)}><Icon name="plus" size={18} stroke={2.4} /></button>
@@ -229,7 +234,7 @@
 
   /* the drag-up sheet: the app's paper with its lip, the cards on it */
   .sheet {
-    position: absolute; left: 0; right: 0; bottom: 0; z-index: 600; display: flex; flex-direction: column; max-height: 92dvh;
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 600; display: flex; flex-direction: column;
     background: var(--surface); border-radius: var(--r-card) var(--r-card) 0 0; box-shadow: 0 calc(-1 * var(--lip-s)) 0 var(--lip), var(--sh-float);
     transition: height .32s var(--ease-soft);
   }
@@ -237,6 +242,7 @@
   .grip { flex: none; padding: 8px 0 4px; display: flex; justify-content: center; cursor: grab; touch-action: none; }
   .grip::before { content: ''; width: 36px; height: 5px; border-radius: var(--r-pill); background: var(--stitch); }
   .grip:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+  .grip, .peek { -webkit-user-select: none; user-select: none; }
   .peek { flex: none; padding: 0 calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); cursor: pointer; touch-action: none; }
   .pk-title { margin: 0 4px; font: 700 var(--fs-talk)/1.25 var(--font-ui); color: var(--text); }
   .peek :global(.stats) { padding: 6px 0 8px; }
