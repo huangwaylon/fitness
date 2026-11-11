@@ -24,7 +24,7 @@ export const FEEDERS = 12;
 const SCHOOL = [6, 10];
 /** A feeder's half length (u) and its reach from its middle (sideways, up: turned any way, a little pitched). */
 export const FEEDER_R = 1.4;
-const REACH: [number, number] = [1.5, 0.9];
+export const FEEDER_REACH: [number, number] = [1.5, 0.9];
 /** A feeder's cruise and flight (u/s), its turn (rad/s), how near a predator scares it (u). */
 const CRUISE = 3.5, FLEE = 4.6, TURN = 3, SCARE = 10;
 /** How near (u, and its own length) a predator notices a feeder. */
@@ -106,7 +106,7 @@ export function stepFeeding(f: Feeding, predators: readonly Swimmer[], water: Bo
   const h = Math.min(0.1, Math.max(0, dt));
   f.clock += h;
   f.puffT += h;
-  const b = swimBox(water, REACH, box), along = b.x1 - b.x0 >= b.z1 - b.z0;
+  const b = swimBox(water, FEEDER_REACH, box), along = b.x1 - b.x0 >= b.z1 - b.z0;
   // (its hunter gone from the tank: the hunt over)
   if (f.hunter && predators.indexOf(f.hunter) < 0) {
     f.hunter = null;
@@ -323,5 +323,3 @@ function stepFeeders(f: Feeding, b: Box, h: number): void {
 }
 /** The glass's soft push on a feeder's look-ahead d from it (within 4 u). */
 const soft = (d: number): number => (d < 4 ? ((4 - d) / 4) * 2 : 0);
-/** The box a feeder's middle keeps to (all of it in the water). */
-export const feederBox = (water: Box, out?: Box): Box => swimBox(water, REACH, out);

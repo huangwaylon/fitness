@@ -2,7 +2,7 @@
 // the water; each hunt ends in a bite or an escape in time, some of each. (The misses collected, checked once.)
 import { describe, expect, test } from 'vitest';
 import { bandOf, cruiseOf, spawn, stepSchool, swimBox, type Swimmer } from './boids.ts';
-import { FEEDERS, PREDATORS, HUNT_S, feederBox, feedersIn, feedingOf, stepFeeding, type Feeding } from './feeding.ts';
+import { FEEDERS, PREDATORS, HUNT_S, FEEDER_REACH, feedersIn, feedingOf, stepFeeding, type Feeding } from './feeding.ts';
 import { FISH_IDS, WALKERS } from './species.ts';
 import { TANKS, bodyIn, openOf, type Box } from './tanks.ts';
 import { modelBounds } from '../world3d/models3d.ts';
@@ -19,7 +19,7 @@ function run(tank: string, ids: string[], minutes: number, seed: number) {
     return { id, f: spawn(w, body.r, body.reach, cruiseOf(body.r), seed * 31 + i * 17 + 5, bandOf(id)) };
   });
   const all = fish.map((x) => x.f), predators: Swimmer[] = fish.filter((x) => PREDATORS.has(x.id)).map((x) => x.f);
-  const fd: Feeding = feedingOf(seed), fb = feederBox(w), out: string[] = [];
+  const fd: Feeding = feedingOf(seed), fb = swimBox(w, FEEDER_REACH), out: string[] = [];
   let most = 0, began = -1, longest = 0, was = 0;
   const schools: number[] = [];
   for (let k = 0; k < minutes * 60 * FPS; k++) {

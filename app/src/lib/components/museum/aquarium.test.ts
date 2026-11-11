@@ -5,7 +5,8 @@ import { describe, expect, test } from 'vitest';
 import { BoxGeometry, Group, InstancedMesh, Matrix4, Mesh, MeshLambertMaterial, Points, Vector3, type Material, type Sphere } from 'three';
 import type { Kit } from './engine.ts';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { FEEDERS, PREDATORS, feederBox } from './feeding.ts';
+import { swimBox } from './boids.ts';
+import { FEEDERS, FEEDER_REACH, PREDATORS } from './feeding.ts';
 import { FISH_IDS, onShow } from './species.ts';
 import { TANKS, openOf } from './tanks.ts';
 import { findKey } from '#lib/model/finds.ts';
@@ -45,7 +46,7 @@ describe('the aquarium as built', () => {
     // (the bubbles one Points, beside each tank's bite's puff)
     expect(points.length).toBe(1 + TANKS.length);
     // two minutes at 30 fps: the slots of each tank hold its feeders only, inside its water
-    const M = new Matrix4(), p = new Vector3(), boxes = TANKS.map((t) => feederBox(openOf(t)));
+    const M = new Matrix4(), p = new Vector3(), boxes = TANKS.map((t) => swimBox(openOf(t), FEEDER_REACH));
     let most = 0, drawn = 0;
     for (let k = 0; k < 120 * 30; k++) {
       aq.frame(k * (1000 / 30), 1000 / 30, seen);

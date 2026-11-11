@@ -1357,7 +1357,8 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       w.posing = busy || going;
       return w.posing;
     }
-    return v.blink(t) && false;
+    v.blink(t);
+    return false;
   }
 
   // ---- the camera: NH's room view, each room framed for the phone (camera.ts: its view's width, the target's range in

@@ -9,6 +9,7 @@ import {
   AdditiveBlending, BufferGeometry, Color, DataTexture, Float32BufferAttribute, LinearFilter, Mesh, MeshBasicMaterial, SRGBColorSpace,
   type Texture
 } from 'three';
+import { clamp01, smooth01 as smooth } from '#lib/math.ts';
 import type { Opening, Rect } from './plan.ts';
 
 /** A texel's place: column i of w across x0 → x1, row j of h from the front (z1, the plane's v 0: a floor is a
@@ -17,11 +18,6 @@ export function texel(r: Rect, i: number, j: number, w: number, h: number): [num
   return [r.x0 + ((i + 0.5) / w) * (r.x1 - r.x0), r.z1 - ((j + 0.5) / h) * (r.z1 - r.z0)];
 }
 
-const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
-const smooth = (t: number) => {
-  const x = clamp01(t);
-  return x * x * (3 - 2 * x);
-};
 
 /** How far a point is outside a rect (negative inside: how far in from its nearest edge). */
 function signedDist(r: Rect, x: number, z: number): number {

@@ -1,7 +1,9 @@
 <script lang="ts">
   // はくぶつかん: the museum's inside (docs/design.md "The museum"), behind its door on the island. The museum (engine.ts,
   // three.js) comes in its own chunk once the screen opens; until its first frame the door's black covers it
-  // (ui-state/doorTransition.ts). A tap on the floor walks my villager there (through the hall's openings into a wing);
+  // (ui-state/doorTransition.ts). Only the room my villager is in is drawn; through a doorway the screen dips to the next
+  // room's colour and the room changes inside the dip (engine.ts showRoom, onDip). A tap on the floor walks my villager
+  // there (through the hall's openings into a wing);
   // a tap on an exhibit (a fish, a bug, a sea creature, a fossil, an artwork) shows its card (MuseumCard: its names, who
   // found it first and when, how many we've had);
   // a tap on a bench walks my villager up to its free seat and sits it down facing the great tank (the rooms' sitting:

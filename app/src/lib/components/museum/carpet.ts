@@ -3,6 +3,7 @@
 // outline of their union (meeting strips are one carpet: no border across a junction, mitred at the corners), its
 // pile one colour (a faint weave), the geometry the strips themselves with UVs in world units (overlaps draw the
 // same texel: no seam, no fight). The engine (engine.ts) makes the mesh.
+import { smoothstep } from '#lib/math.ts';
 import type { Rect } from './plan.ts';
 
 /** The carpet's pixels a model unit (at most MAX px across). */
@@ -49,7 +50,7 @@ export function carpetTexture(strips: readonly Rect[], pile: keyof typeof PILE =
       if (d[k]) d[k] = Math.min(d[k], at(i + 1, j) + 1, at(i, j + 1) + 1, at(i + 1, j + 1) + D, at(i - 1, j + 1) + D);
     }
   const data = new Uint8Array(new ArrayBuffer(w * h * 4));
-  const band = (u: number, [a, z]: [number, number]) => smooth(a - 0.12, a + 0.12, u) * (1 - smooth(z - 0.12, z + 0.12, u));
+  const band = (u: number, [a, z]: [number, number]) => smoothstep(a - 0.12, a + 0.12, u) * (1 - smoothstep(z - 0.12, z + 0.12, u));
   for (let k = 0; k < w * h; k++) {
     const u = d[k] / px;
     const g = band(u, GOLD), l = band(u, LINE), weave = 1 + (hash(k) - 0.5) * 0.05;
@@ -75,10 +76,6 @@ export function carpetGeometry(strips: readonly Rect[], t: Pick<CarpetTex, 'w' |
   return { position, uv, index };
 }
 
-const smooth = (a: number, b: number, x: number) => {
-  const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
-  return t * t * (3 - 2 * t);
-};
 const hash = (k: number) => {
   let x = (k * 2654435761) >>> 0;
   x ^= x >>> 15;
