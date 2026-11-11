@@ -473,6 +473,8 @@
     const [px, pz] = tileMid(there.c, there.r);
     if (act.a !== 'pick') turnTo(px);
     const top = w.screenAt(px, pz, 6), pop = (text: string) => popAt(text, top.sx, top.sy);
+    // a word naming a crop waits on the crops' names (their own chunk: catchLine.ts loadNames), never a raw key
+    const named = (text: () => string) => void loadNames().then(() => pop(text()), () => {});
     switch (act.a) {
       case 'harvest': {
         harvestPlot(date, act.p, act.n);
@@ -492,20 +494,26 @@
         plantPlot(date, plot.p, act.c, act.src);
         spawn({ kind: 'grass', x: px, y: pz, flip: roll(2) });
         sceneSfx('dig');
-        void loadNames().then(() => pop(t('world.farm.planted', { name: cropName(act.c) })), () => {});
+        named(() => t('world.farm.planted', { name: cropName(act.c) }));
         return true;
-      case 'pick':
+      case 'pick': {
         // (its pick plants this plot: the same tap again, the crop held now)
-        if (act.out) pop(t('world.farm.noneLeft', { name: cropName(act.out) }));
+        const out = act.out;
+        if (out) named(() => t('world.farm.noneLeft', { name: cropName(out) }));
         openPicker(() => void farmAt(x, z));
         return true;
+      }
       case 'cap':
         pop(t('world.farm.cap', { cap: FARM.cap }));
         return true;
       default: {
         // (my own plant without my name)
-        const who = whoName(act.who), name = act.c && cropName(act.c), n = act.left;
-        pop(!name ? t('world.farm.whose', { who }) : n ? t(act.who === m.me ? 'world.farm.leftMine' : 'world.farm.left', { who, name, n }) : act.watered ? t('world.farm.watered') : t('world.farm.ripe', { who, name }));
+        const who = whoName(act.who), c = act.c, n = act.left;
+        if (!c) pop(t('world.farm.whose', { who }));
+        else named(() => {
+          const name = cropName(c);
+          return n ? t(act.who === m.me ? 'world.farm.leftMine' : 'world.farm.left', { who, name, n }) : act.watered ? t('world.farm.watered') : t('world.farm.ripe', { who, name });
+        });
         return true;
       }
     }

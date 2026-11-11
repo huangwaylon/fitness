@@ -190,3 +190,20 @@ test('a plot under a goal tree’s canopy is the plot’s; the canopy off the fi
   expect(top.on).toBe('button.canopy');
   await expect(page.locator('.canopy[aria-expanded="true"]')).toHaveCount(1);
 });
+
+test('a first tap on a growing plant names its crop, never a raw key (the names load first)', async ({ page }) => {
+  const D1 = '2026-11-05';
+  await seed(page, D1, [
+    FIELD, ...POCKET.slice(0, 2), ['buy_starts', { crop: 'pumpkin', n: 1, v: 14 }, 'A'],
+    ['farm', { d: D, ops: [{ o: 'plant', p: plot(0).p, c: 'pumpkin', src: 'start' }] }, 'A'],
+    // watered today already: the tap's a word, not the can
+    ['island', { date: D1, taken: [], puts: [], shakes: [], watered: [plot(0).p], wishes: {} }, 'A']
+  ]);
+  await catchPops(page);
+  await page.goto(`?demo&date=${D1}T12:00&weather=clear`);
+  await islandUp(page);
+  await quiet(page);
+  await tapWorld(page, plot(0).x, plot(0).z);
+  await expect.poll(() => pops(page)).toEqual([expect.stringMatching(/^カボチャ・あと \d+にち$/)]);
+  expect((await pops(page)).join()).not.toMatch(/beach\.name\./);
+});
