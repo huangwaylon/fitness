@@ -289,7 +289,8 @@ Most red runs are the spec, not the app. Before pushing a new or changed spec, r
 The PWA stays open for days, so a scene's round trip must leave nothing behind: `e2e/leaks.spec.ts` (`@chromium`)
 goes in and out of the rooms and the info sheets and checks, after a forced GC, that no WebGL context or
 window/document listener is left over, and that the editor's strokes and the home picker's swatches leave no
-ArrayBuffers behind (`Runtime.getHeapUsage` `backingStorageSize`: typed arrays and decoded models, most of the page's
+ArrayBuffers behind; `e2e/leaks-sheets.spec.ts` the sheets' (ごはん's catalog let go on a hide, a ききみみ round,
+もようがえ, the wallet: `e2e/memory.ts`) (`Runtime.getHeapUsage` `backingStorageSize`: typed arrays and decoded models, most of the page's
 memory and outside the JS heap; leak-probe prints it as `abMB`). To hunt one: `npm run leak -- <flow> [cycles] --snap`
 (scripts/leak-probe.ts: its header lists the flows, the flags and what each cycle prints) against a served build
 (`E2E_PORT`). What the leaks taught:
