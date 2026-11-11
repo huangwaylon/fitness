@@ -650,7 +650,7 @@
   "world.farm.field": "はたけ",
   "world.farm.pick": "なにを うえる？",
   "world.farm.picked": "{name}を もった",
-  "world.farm.noSeed": "たねが ない！ おみせで かえるよ",
+  "world.farm.noSeed": "なえが ない！ おみせで かえるよ",
   "world.farm.harvest": "{name}を しゅうかく！ ×{n}",
   "world.farm.dug": "{name}を ほりおこした",
   "world.farm.cap": "これいじょう うえられない",

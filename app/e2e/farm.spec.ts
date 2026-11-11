@@ -28,7 +28,7 @@ const POCKET: Seed[] = [['tally', { date: D, counts: { 'fish:koi': 1 } }, 'A'], 
 const farmRows = (page: Page) => page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{"events":[]}').events as { id: string; type: string; data: { ops: { o: string; p: string; n?: number }[] } }[])
   .filter((e) => e.type === 'farm' && !e.id.startsWith('seed-')).flatMap((e) => e.data.ops));
 
-test('starts bought at the shop’s かう; the farm menu at the bottom left: たね picks them, a tap on my empty plot plants one; the 畑 sheet counts them', async ({ page }) => {
+test('starts bought at the shop’s かう; a tap on my empty plot with nothing held: the picker, whose pick plants it; the 畑 sheet counts them', async ({ page }) => {
   await seed(page, D, [FIELD, ...POCKET.slice(0, 2)]);
   // three tomato starts from かう's 苗 (3 × 14), by the list's own name, kanji
   await page.goto(`shop?demo&date=${D}T12:00`);
@@ -51,20 +51,23 @@ test('starts bought at the shop’s かう; the farm menu at the bottom left: �
   const disc = await page.locator('[data-farm-open]').boundingBox(), say = await page.locator('[data-say-open]').boundingBox();
   expect(disc!.x).toBeLessThan(40);
   expect(Math.abs(disc!.y - say!.y)).toBeLessThan(2);
-  // a tap on my empty plot with nothing picked: the picker
+  // a tap on my empty plot with nothing held: the picker; each start by its crop's name and art, the seedling on it
   await tapWorld(page, plot(0).x, plot(0).z);
   await expect(page.locator('[data-farm-picker]')).toBeVisible();
-  // each start by its crop's name; picked, my villager says what it holds
-  await expect(page.locator('[data-farm-pick="start:tomato"]')).toContainText('トマト');
-  await page.locator('[data-farm-pick="start:tomato"]').click();
+  const cell = page.locator('[data-farm-pick="start:tomato"]');
+  await expect(cell).toContainText('トマト');
+  await expect(cell.locator('[data-farm-start]')).toHaveCount(1);
+  // the pick plants that plot at once, then a tap a plot
+  await cell.click();
   await expect(page.locator('[data-farm-picker]')).toHaveCount(0);
-  await expect(page.locator('[data-fx="say"]')).toContainText('トマトの なえを もった');
+  await expect.poll(() => farmRows(page)).toEqual([{ o: 'plant', p: plot(0).p, c: 'tomato', src: 'start' }]);
   const three = [plot(0), plot(1), plot(0, 1)];
-  for (const t of three) await tapWorld(page, t.x, t.z);
+  for (const t of three.slice(1)) await tapWorld(page, t.x, t.z);
   await expect.poll(() => farmRows(page)).toEqual(three.map((t) => ({ o: 'plant', p: t.p, c: 'tomato', src: 'start' })));
-  // none left: a fourth plot only says so
+  // none left: a fourth plot says so and opens the picker, with nothing in it to plant
   await tapWorld(page, plot(1, 1).x, plot(1, 1).z);
-  await expect.poll(() => farmRows(page).then((r) => r.length)).toBe(3);
+  await expect(page.locator('[data-farm-noseed]')).toHaveText('なえが ない！ おみせで かえるよ');
+  expect(await farmRows(page)).toHaveLength(3);
   // the menu: たね shows none left of tomatoes; はたけ opens the sheet
   await page.locator('[data-farm-open]').click();
   await expect(page.locator('[data-farm-seed-n]')).toHaveText('0');

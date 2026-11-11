@@ -56,7 +56,7 @@
   import { onMount } from 'svelte';
   import { fx3d } from './fx3d.ts';
   import { echo3d } from './echo3d.ts';
-  import { farmUi } from './farmUi.svelte.ts';
+  import { farmUi, openPicker } from './farmUi.svelte.ts';
   import { farmTap } from './farmTap.ts';
   import { farmToday } from './farm.ts';
   import { showCatch } from './catchCard.ts';
@@ -442,7 +442,7 @@
    * A tap on a plot (docs/farming.md "Playing", island/farmTap.ts): it acts where it is (nobody walks; my villager turns
    * to it): the armed shovel digs my plant (one shot, 取り消す 5 s), my ripe plant is harvested (the plate), a plant
    * not watered today is watered with its neighbours (NH's golden can, on every phone: the shared day's `watered`), my
-   * empty plot planted (or the picker opens), else a word. False: no field there. The shovel is disarmed by any tap.
+   * empty plot planted (nothing held or none left: the picker, whose pick plants it), else a word. False: no field there. The shovel is disarmed by any tap.
    */
   function farmAt(x: number, z: number): boolean {
     const armed = farmUi.shovel;
@@ -488,13 +488,12 @@
         sceneSfx('dig');
         return true;
       case 'pick':
-        farmUi.picker = true;
+        // (its pick plants this plot: the same tap again, the crop held now)
+        if (act.out) mutter?.(t('world.farm.noneLeft', { name: name(act.out) }));
+        openPicker(() => void farmAt(x, z));
         return true;
       case 'cap':
         mutter?.(t('world.farm.cap'));
-        return true;
-      case 'none-left':
-        mutter?.(t('world.farm.noneLeft', { name: name(act.c) }));
         return true;
       default: {
         const who = whoName(act.who);

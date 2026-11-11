@@ -26,12 +26,16 @@ describe('a tap on a plot', () => {
     expect(farmTap({ ...base, plant: young, watered: () => true })).toEqual({ a: 'about', who: 'A', c: 'carrot', left: 2, watered: true });
   });
 
-  it('my empty plot: the picker with nothing picked, the cap, none left, else planted', () => {
-    expect(farmTap(base)).toEqual({ a: 'pick' });
+  it('my empty plot: the cap first; nothing held, the picker, and its pick plants it; none left, the picker again', () => {
     const seed = { c: 'wheat' as const, src: 'start' as const };
-    expect(farmTap({ ...base, seed, have: () => 1, mine: FARM.cap })).toEqual({ a: 'cap' });
-    expect(farmTap({ ...base, seed })).toEqual({ a: 'none-left', c: 'wheat' });
-    expect(farmTap({ ...base, seed, have: (k) => (k === 'goods:wheat-start' ? 1 : 0) })).toEqual({ a: 'plant', c: 'wheat', src: 'start' });
+    const have = (k: string) => (k === 'goods:wheat-start' ? 1 : 0);
+    expect(farmTap({ ...base, have, mine: FARM.cap })).toEqual({ a: 'cap' });
+    expect(farmTap({ ...base, seed, have, mine: FARM.cap })).toEqual({ a: 'cap' });
+    // the pick → the same plot's tap again (SceneTaps) plants it
+    expect(farmTap({ ...base, have })).toEqual({ a: 'pick' });
+    expect(farmTap({ ...base, seed, have })).toEqual({ a: 'plant', c: 'wheat', src: 'start' });
+    expect(farmTap({ ...base, seed: { c: 'wheat', src: 'crop' }, have })).toEqual({ a: 'pick', out: 'wheat' });
+    expect(farmTap({ ...base, seed })).toEqual({ a: 'pick', out: 'wheat' });
   });
 
   it('another’s empty plot: whose field it is (only its owner plants)', () => {
