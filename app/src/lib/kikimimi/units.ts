@@ -18,7 +18,7 @@ export { DOMAINS, LESSONS, LESSON_QS, STAGES, type Stage } from './stages.ts';
 
 /** The lesson recipes this build knows (plan §3: the version on the recipe). v1: every lesson from the unit's quiz
  *  items (the interim チェック, a mixed check on held-out items behind a "phone errand" card). v2 (docs/curriculum.md
- *  §3.1, W2-9): v1's lists, plus the listening content its おと, じっせん and チェック play once it's `listened`
+ *  "Recipe 2"): v1's lists, plus the listening content its おと, じっせん and チェック play once it's `listened`
  *  (stages.ts RECIPE2; `lessons.tiles`, `tachi`, `call`). */
 const RECIPES = [1, 2] as const;
 /** Recipe 2's kinds' bounds: おと's tiles (one game of 6), じっせん's conversations (3 rounds each), チェック's call. */

@@ -1,5 +1,5 @@
-// The おやすみ ものがたり serials (app/content/listen/story/*.yaml, docs/curriculum.md "Modes", docs/kikimimi-engine.md
-// §8 `serial`, content/listen/README.md "Stories"): every chapter holds together before the story game exists. Speakers
+// The おやすみ ものがたり serials (app/content/listen/story/*.yaml, docs/curriculum.md "Modes", docs/kikimimi.md
+// "おやすみ ものがたり", content/listen/README.md "Stories"): every chapter holds together before the story game exists. Speakers
 // are the narrator (the file's cast.narrator) or roster villagers, all with US voices of their gender and distinct
 // within a chapter; `tts` free of digits; every segment 3-12 s at a bedtime pace (by word count) and every chapter
 // 3-5 minutes; 5-8 glossed phrases each, heard in the chapter, ids unique across stories and units; ids unique across

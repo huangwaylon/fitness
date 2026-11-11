@@ -68,6 +68,14 @@ describe('docs-check', () => {
     ]);
   });
 
+  it('checks a heading wrapped onto the next line of a comment', () => {
+    const src = ['/** packs (docs/a.md', ' *  "Gone"; docs/b.md,', ' *  "Weather") and docs/a.md', '// §9 */'].join('\n');
+    expect(checkCode('x.ts', src, read).map((p) => `${p.line} ${p.msg}`)).toEqual([
+      '1 docs/a.md "Gone": no such heading',
+      '3 docs/a.md §"9": no such heading',
+    ]);
+  });
+
   it('checks the heading a doc names after a link or a bare file name', () => {
     const md = '[a](a.md) "The guest", a.md "Scoring" and a.md "The host"; [b](b.md) “Weather”, [a](a.md) "Gone"; `a.md` "x"';
     expect(checkDoc('docs/b.md', md, exists, read).map((p) => p.msg)).toEqual([

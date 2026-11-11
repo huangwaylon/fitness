@@ -148,15 +148,20 @@ export function lint(file: string, md: string): Problem[] {
 /** The broken doc pointers in one code file: `docs/<name>.md`, with its #anchor, "Heading" or §Section. */
 export function checkCode(file: string, src: string, read: (p: string) => string | null): Problem[] {
   const out: Problem[] = [];
-  src.split('\n').forEach((line, i) => {
+  const lines = src.split('\n');
+  lines.forEach((line, i) => {
     for (const m of line.matchAll(/(?<![\w/.-])docs\/([\w./-]+?\.md)(?:#([\w\p{L}\p{N}-]+)|\s*(?:"([^"\n]+)"|“([^”\n]+)”|§\s?([\w.-]*\w)))?/gu)) {
       const path = `docs/${m[1]}`;
       const at = (msg: string) => out.push({ file, line: i + 1, msg });
       const body = read(path);
       if (body === null) { at(`${path}: no such doc`); continue; }
       if (m[2] && !outline(body).anchors.has(m[2])) at(`${path}#${m[2]}: no such anchor`);
-      const name = m[3] ?? m[4] ?? m[5];
-      if (name && !names(body, name)) at(`${path} ${m[5] ? '§' : ''}"${name}": no such heading`);
+      // (a pointer at a line's end, its heading wrapped onto the next, past the comment's `//` or `*`)
+      const wrapped = !m[2] && !m[3] && !m[4] && !m[5] && /^[\s,;:]*$/.test(line.slice(m.index + m[0].length))
+        ? (lines[i + 1] ?? '').replace(/^\s*(?:\/\/|\*|#|<!--)?\s*/, '').match(/^(?:"([^"\n]+)"|“([^”\n]+)”|§\s?([\w.-]*\w))/u)
+        : null;
+      const name = m[3] ?? m[4] ?? m[5] ?? wrapped?.[1] ?? wrapped?.[2] ?? wrapped?.[3];
+      if (name && !names(body, name)) at(`${path} ${m[5] ?? wrapped?.[3] ? '§' : ''}"${name}": no such heading`);
     }
     // a design note named by path (app/design/…: the avatar's were folded into docs/players.md)
     if (!file.endsWith('.md')) for (const m of line.matchAll(/(?<![\w/.-])(?:app\/)?(design\/[\w./-]+?\.md)\b/g)) {
