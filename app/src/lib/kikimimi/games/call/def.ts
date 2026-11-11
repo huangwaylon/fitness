@@ -32,7 +32,7 @@ type CallYaml = Extract<ListenItem, { kind: 'call' }>;
 
 /** A memo row as authored: its question, chips and answer, their Japanese; `n` its place in the call's memo (the row's
  *  wrong-rows mask). */
-export interface MemoRow {
+interface MemoRow {
   n: number;
   ask: string;
   options: readonly string[];

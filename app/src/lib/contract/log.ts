@@ -16,7 +16,7 @@ export const LOG_ACTIONS = ['health', 'ingest', 'event', 'events', 'snapshot', '
 /** A request's outcome: `ok`, the record's error codes, the phone's own (`offline`, `http`, `json`), `none` (no answer). @public (relay/src/reqMeta.ts) */
 export const LOG_STATUS = ['ok', 'unauthorized', 'forbidden', 'bad_request', 'too_large', 'busy', 'unavailable', 'offline', 'http', 'json', 'none'] as const;
 /** The app's routes (their first segment). */
-export const LOG_ROUTES = ['/', '/pair', '/tent', '/shop', '/museum', '/jar', '/editor', '/dev', '/world3d', 'other'] as const;
+const LOG_ROUTES = ['/', '/pair', '/tent', '/shop', '/museum', '/jar', '/editor', '/dev', '/world3d', 'other'] as const;
 /** The island's sheets, as `perf.sheet` names them (ui-state/sheetTiming.ts). */
 const LOG_SHEETS = ['food', 'health', 'travel', 'wedding', 'hiking', 'kikimimi', 'panel', 'zukan', 'settings', 'other'] as const;
 export type LogSheet = (typeof LOG_SHEETS)[number];

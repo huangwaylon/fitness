@@ -103,7 +103,7 @@ export function kuriNext(seed: number, done: readonly (Said & { n: number })[], 
 // ---------- answers ----------
 
 /** An answer read: content words got, of how many, heard (else skipped). */
-export interface KuriAnswer {
+interface KuriAnswer {
   hit: number;
   of: number;
   heard: boolean;

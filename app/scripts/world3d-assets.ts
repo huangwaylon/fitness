@@ -95,7 +95,7 @@ export interface Use {
 export type Cat = 'bug' | 'fish' | 'shadow' | 'sea' | 'find' | 'fruit' | 'flower' | 'bush' | 'tree' | 'deco' | 'decor' | 'event' | 'scenery' | 'fx' | 'tool' | 'accessory';
 
 /** A conversion (scripts/world3d-models.ts Job) and the keys it serves. */
-export interface AssetJob {
+interface AssetJob {
   name: string;
   parts: ([string, string] | [string, string, [number, number] | [number, number, number, number]])[];
   tex?: string[];

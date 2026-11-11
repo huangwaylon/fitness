@@ -13,7 +13,7 @@ const UNTIL_H = 7 * 24 + 5;
 /** 1970-01-01 was a Thursday: Monday 00:00 of that week is 3 days before. */
 const MONDAY0 = -3 * DAY;
 
-export interface TaikaiWindow {
+interface TaikaiWindow {
   /** Offered now. */
   open: boolean;
   /** This weekend's window (open), else the next one: its start and end (epoch ms). */

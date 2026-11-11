@@ -58,7 +58,7 @@ const SCREEN: readonly [number, number] = [(G1.x0 + G1.x1) / 2, G1.z0 + 8];
 
 /** Where an artwork is shown: its room, its middle (x, z) and its height (`y`: a painting's middle, else its foot on its
  *  plinth), its turn (three's yaw: 0 faces +z), its scale, its plinth's side and height (0: none). */
-export interface ArtSpot { room: RoomId; x: number; y: number; z: number; yaw: number; s: number; plinth: number; plinthH: number }
+interface ArtSpot { room: RoomId; x: number; y: number; z: number; yaw: number; s: number; plinth: number; plinthH: number }
 /** Each run of paintings along a face toward +z (x from its room's left wall): the back walls' and each panel's (each
  *  row's left panel, then its right). */
 const RUNS: readonly { room: 'G1' | 'G2'; ids: readonly string[]; z: number; from: number; to: number; s: number; y: number }[] = [

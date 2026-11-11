@@ -32,7 +32,7 @@ type Artifact = { id: number; name: string; expired: boolean; created_at: string
 type Run = { id: number; name: string; event: string; head_branch: string; head_sha: string; head_repository?: { id: number } };
 
 /** the one file in an artifact's zip (its central directory: upload-artifact streams, so the local headers have no sizes) */
-export function unzipOne(zip: Buffer): Buffer {
+function unzipOne(zip: Buffer): Buffer {
   const end = zip.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
   if (end < 0) throw new Error('not a zip');
   const cd = zip.readUInt32LE(end + 16);

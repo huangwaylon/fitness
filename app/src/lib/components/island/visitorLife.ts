@@ -16,7 +16,7 @@ import type { Pt } from './walkGraph.ts';
  *  up), appearing where they stand (Gulliver already washed up), or Jack's spooky puff. */
 export type Way = 'walk' | 'hop' | 'float' | 'fly' | 'appear' | 'spook';
 
-export interface Behaviour {
+interface Behaviour {
   /** How far from their spot they stroll (u); 0: they stay put (NH: Gulliver, Jack…). */
   roam: number;
   arrive: Way;

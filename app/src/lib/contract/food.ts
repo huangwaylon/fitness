@@ -306,7 +306,7 @@ export function foodRecipeFold(ops: Iterable<RecipeOpBy>): FoodRecipe[] {
 /** What some ingredients add up to: `g` grams, kcal, protein, fat, carbs, salt, fibre and alcohol (g), unrounded; a
  *  nutrient null when no ingredient knows it, else an unknown one counts as none (as a day's totals count it:
  *  model/food.ts). */
-export interface RecipeTotals { g: number; k: number; p: number | null; fa: number | null; c: number | null; s: number | null; fi: number | null; al: number | null }
+interface RecipeTotals { g: number; k: number; p: number | null; fa: number | null; c: number | null; s: number | null; fi: number | null; al: number | null }
 export function recipeTotals(it: readonly RepeatItem[]): RecipeTotals {
   const t: RecipeTotals = { g: 0, k: 0, p: null, fa: null, c: null, s: null, fi: null, al: null };
   for (const { g, f } of it) {

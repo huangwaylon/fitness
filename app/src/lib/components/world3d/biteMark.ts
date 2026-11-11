@@ -118,7 +118,7 @@ export interface MarkState {
   right: number;
 }
 
-export interface BiteMarks {
+interface BiteMarks {
   /** A villager's mark over its head at `at` (three's space, unbent: overHead), or taken away (null: it pops out). */
   set(slot: string, at: Vector3 | null): void;
   /** One frame, after the camera's set: true while one is drawn (a frame to follow). `focal`: px a world unit at depth 1;

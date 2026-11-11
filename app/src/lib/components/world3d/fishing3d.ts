@@ -16,7 +16,7 @@ export type Phase = 'cast' | 'wait' | 'bite' | 'reel';
 
 /** A villager's line: its step, where its float is (world x, z) and a count of steps; when the float landed, its last
  *  nibble and the bite (performance.now() ms; −Infinity: not yet), and the nibbles so far. */
-export interface Angling {
+interface Angling {
   phase: Phase | null; x: number; z: number; n: number;
   landed: number; nibble: number; bite: number; nibbles: number;
 }

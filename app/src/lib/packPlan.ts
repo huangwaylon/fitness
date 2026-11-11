@@ -6,7 +6,7 @@
 export const partName = (home: string, k: number): string => (k === 1 ? home : `${home}-${k}`);
 
 /** A file to pack: its id and length (bytes). */
-export interface PackClip {
+interface PackClip {
   id: string;
   bytes: number;
 }

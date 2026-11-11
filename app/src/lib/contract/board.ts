@@ -20,7 +20,7 @@ export const BOARD_LINES = 4;
 /** At most this many posts kept (the record and the phones): a new one past them drops the oldest (by `p`). */
 export const BOARD_MAX = 50;
 
-export type BoardOp =
+type BoardOp =
   | { id: string; at: number; p: number; t: string; rm?: undefined }
   | { id: string; at: number; rm: true };
 export type BoardEntry = BoardOp & { who: Who };

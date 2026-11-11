@@ -28,7 +28,7 @@ export interface Pointer {
   isPrimary: boolean;
 }
 
-export interface GestureHandlers {
+interface GestureHandlers {
   /** A tap at client px. */
   tap(x: number, y: number): void;
   /** A drag or a pinch began: the camera moves until end(). */
@@ -44,7 +44,7 @@ export interface GestureHandlers {
   end(): void;
 }
 
-export interface Gestures {
+interface Gestures {
   down(e: Pointer): void;
   move(e: Pointer): void;
   up(e: Pointer): void;

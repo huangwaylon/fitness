@@ -21,7 +21,7 @@ const GOODS_ART: Readonly<Record<string, string>> = {
   boot: 'critters/boot', 'old-tire': 'critters/old-tire', 'empty-can': 'critters/empty-can'
 };
 
-export interface PocketItem {
+interface PocketItem {
   key: string;
   section: Section;
   /** The name's i18n key (the catch catalog's). */

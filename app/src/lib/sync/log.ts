@@ -395,7 +395,7 @@ function markHidden(hidden: boolean) {
 /** The island's `ready` polled every 500 ms for a minute at most. */
 const READY_POLLS = 120;
 
-export interface LogStart {
+interface LogStart {
   build: string;
   /** The log's endpoint (transport.ts logUrl). */
   url: string;

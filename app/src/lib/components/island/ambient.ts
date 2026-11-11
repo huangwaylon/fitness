@@ -26,7 +26,7 @@ export const SLOTS_PER_DAY = DAY_MS / SLOT_MS;
  *  a slot's critters are a function of its block alone. */
 const BLOCK = 60;
 
-export interface SlotTime {
+interface SlotTime {
   /** The Tokyo date. */
   date: LocalDate;
   /** The slot of that date, 0 … SLOTS_PER_DAY − 1. */

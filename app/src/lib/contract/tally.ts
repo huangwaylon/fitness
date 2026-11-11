@@ -9,7 +9,7 @@ import { nextDay } from './tokyo.ts';
 
 /** `kind:id` (model/finds.ts findKey) → how many that day. */
 export type Tally = Record<string, number>;
-export interface TallyData { date: LocalDate; counts: Tally }
+interface TallyData { date: LocalDate; counts: Tally }
 
 /** Caps: distinct entries in a day (a busy day is a few dozen) and one entry's count; together they keep a row
  *  under the event data limit (300 × ~40 chars ≈ 12 KB < 20 KB). */

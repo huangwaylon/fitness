@@ -17,7 +17,7 @@ import { keepLv, lastLv, lastTimer, sameDefault } from './prefs.ts';
 import { modeStack, taikaiStack, type Page } from './nav.ts';
 
 /** The sheet's side: close it, and its stack of pages over the hub (nav.ts). */
-export interface SheetUi {
+interface SheetUi {
   close(): void;
   /** How many pages are pushed over the hub (a lesson's おわる goes back to them). */
   pages(): number;

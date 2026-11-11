@@ -62,8 +62,8 @@ export const newTaskId = (at: number): string => newOpId('t', at);
  *  soft-deleted (restorable: a set without it), `parent` a subtask's task. */
 export type WTaskSet = { id: string; at: number; c: number; title: string; cat: string; due?: string; start?: string; parent?: string; del?: number; imported?: true; rm?: undefined };
 type WTaskRm = { id: string; at: number; rm: true };
-export type WTaskOp = WTaskSet | WTaskRm;
-export type WDone = { id: string; at: number; v: 0 | 1; imported?: true };
+type WTaskOp = WTaskSet | WTaskRm;
+type WDone = { id: string; at: number; v: 0 | 1; imported?: true };
 export type WConf = { k: WConfKey; at: number; v: string | string[]; imported?: true };
 /** The note the record replaced with this one when this one's `base` didn't match it (never sent). */
 type WNoteWas = { at: number; md: string; who: Who };

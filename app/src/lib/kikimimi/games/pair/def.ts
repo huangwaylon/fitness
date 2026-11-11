@@ -72,7 +72,7 @@ function pairDeck(seed: number, cards: () => readonly PairCard[], playMs: (c: Pa
 }
 
 /** Where a game's cards come from (the phone's decks: lane.ts; a test's), a card's length and the content version. */
-export interface PairSource {
+interface PairSource {
   cards(seed: number, o: QuizOpts): readonly PairCard[];
   playMs(c: PairCard): number | undefined;
   cv?(): string | undefined;

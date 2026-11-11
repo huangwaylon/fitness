@@ -25,7 +25,7 @@ export interface Holding {
   z: number;
   f: Facing;
 }
-export interface HeldThere {
+interface HeldThere {
   id: string;
   item: string;
   x: number;

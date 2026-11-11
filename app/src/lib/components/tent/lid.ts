@@ -7,7 +7,7 @@
 import { BufferGeometry, Group, Mesh, Vector3, type Object3D } from 'three';
 import { cubicInOut } from '#lib/math.ts';
 
-export interface LidSpec {
+interface LidSpec {
   /** The hinge's axis point (the model's own units: x, y; the axis along its z). */
   hinge: readonly [number, number];
   /** How far it turns about +z to shut (rad). */

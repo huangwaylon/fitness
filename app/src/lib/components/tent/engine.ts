@@ -40,7 +40,7 @@ const LIGHTS_MAX = 4;
 /** Whose villager (the guest's too: docs/design.md "The guest"). */
 export type Who = 'A' | 'B' | 'G';
 /** Who stands in the room: a person's villager, or one of the place's own characters (`n:<id>`: the shop's twins). */
-export type Actor = Who | `n:${string}`;
+type Actor = Who | `n:${string}`;
 /**
  * A building's own inside drawn in the room's place (the shop: shop/plan.ts): NH's model of it, its parts by side so
  * the cutaway takes the walls between the camera and the room (`side`: which wall a triangle's middle belongs to, or

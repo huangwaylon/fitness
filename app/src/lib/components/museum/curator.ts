@@ -34,7 +34,7 @@ const NEAR = 80;
 /** His line types out at this (island/pager.ts TYPE_MS): his beak moves meanwhile. */
 const TYPE_MS = 33;
 
-export type Doing = 'idle' | 'look' | 'doze' | 'talk';
+type Doing = 'idle' | 'look' | 'doze' | 'talk';
 
 export interface Curator extends Exhibit {
   /** He talks (his line `chars` long: the screen shows it): perks up, a wing raised, his beak moving while it types. */
@@ -53,7 +53,7 @@ const G_MS: Record<Gesture, number> = { ruffle: 1000, ponder: 3200, stretch: 200
 /** NH's wings lowered from the bind pose's T (radians: villager3d/poses.ts ARMS). */
 const ARMS = 1.22;
 /** The joints he poses (NH's Hand_L/R carry no skin on him: his wings are Arm_1 and Arm_2 with their helpers). */
-export const POSED = ['Spine_1', 'Spine_2', 'Neck', 'Head', 'Arm_1_L', 'Arm_1_R', 'Arm_2_L', 'Arm_2_R', 'Mouth', 'Mouth_U', 'Crest_L', 'Crest_R'] as const;
+const POSED = ['Spine_1', 'Spine_2', 'Neck', 'Head', 'Arm_1_L', 'Arm_1_R', 'Arm_2_L', 'Arm_2_R', 'Mouth', 'Mouth_U', 'Crest_L', 'Crest_R'] as const;
 type Lim = readonly [number, number];
 /** Each posed joint's natural range about the model's x, y, z (radians, poses.ts's axes): what mind() keeps to
  *  (curator.test holds every frame of every mood to it). His wings are flat plates facing the front: they move in

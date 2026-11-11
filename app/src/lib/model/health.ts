@@ -278,7 +278,7 @@ interface MetricStats {
 }
 
 /** A series' numbers over from..to: the finished days only (today is still running), 記録なし from `first` on. */
-export interface SeriesStats extends Omit<MetricStats, 'change'> {
+interface SeriesStats extends Omit<MetricStats, 'change'> {
   /** The recorded finished days' total. */
   sum: number;
 }
@@ -348,7 +348,7 @@ function dotDays(hs: HealthSeries, vals: (number | null)[], r: Range): WeighIn[]
 }
 const avg1 = (days: WeighIn[]): number | null => (days.length ? Math.round((days.reduce((a, d) => a + d.kg, 0) / days.length) * 10) / 10 : null);
 
-export interface DotStats {
+interface DotStats {
   /** Measurements in the period. */
   n: number;
   /** Their average. */

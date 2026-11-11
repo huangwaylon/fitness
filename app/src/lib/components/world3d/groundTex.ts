@@ -7,7 +7,7 @@
 export const NH_GROUND = ['cliff', 'cliff-snow', 'sand', 'stone', 'brick', 'plank', 'grass-mix', 'soil-mix', 'falls'] as const;
 
 /** A texture's image: `img` once loaded and decoded; `p` resolves to it (null: it failed, and the next ask tries again). */
-export interface NhImage {
+interface NhImage {
   img?: HTMLImageElement;
   p: Promise<HTMLImageElement | null>;
 }

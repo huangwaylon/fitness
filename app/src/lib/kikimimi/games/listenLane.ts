@@ -15,7 +15,7 @@ import { tierOf } from './taikai/def.ts';
 import { cvOver, filesOf, listenGame, listenOpts, listenRecord, rawOf, type ListenOpts, type ListenRules, type ListenSource } from './listened.ts';
 
 /** What a listening game's lane may do its own way (each: none, the listening games' way). */
-export interface ListenMore<C extends Item, R extends Round, O extends ListenOpts> {
+interface ListenMore<C extends Item, R extends Round, O extends ListenOpts> {
   /** Its options on the wire (listenOpts). */
   codec?: { encode(o: O): number[]; decode(a: readonly number[]): O | null };
   /** Its GameDef over its source (listenGame). */

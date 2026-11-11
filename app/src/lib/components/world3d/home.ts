@@ -17,13 +17,13 @@ import { keepUsed } from './keepUsed.ts';
 import { freeModel } from './modelCache.ts';
 
 /** World units a model unit (the island's furniture scale: 10 model units a 30u tile). */
-export const HOME_U = 3;
+const HOME_U = 3;
 
 const loader = glbLoader({ ktx2: true });
 const glbs = new Map<string, Promise<GLTF | null>>();
 const maps = new Map<string, Promise<Texture | null>>();
 /** The parts and colours no home built uses, kept (the island's three homes', ~11, back at once after a room). */
-export const HOME_KEEP = 12;
+const HOME_KEEP = 12;
 // Each built home holds what it's made of (`glb:<family>`, `map:<family.colour.mat>`) till releaseHome: of those no
 // home holds, the HOME_KEEP last stay and the older go (geometry, textures, images), and a picker closed lets go of
 // all but the island's own (trimHomes: a browse of the catalogue kept every one for the page's life, ~8-18 MB).
@@ -147,7 +147,7 @@ export function lambertAll(root: Object3D, mapOf: (src: MeshStandardMaterial) =>
 }
 
 /** NH's soft look on a part's material (things.ts's): Lambert, a little self-light, a lamp's own map its glow. */
-export function homeLambert(src: MeshStandardMaterial, map: Texture | null = null, side: Side = src.side): Material {
+function homeLambert(src: MeshStandardMaterial, map: Texture | null = null, side: Side = src.side): Material {
   const m = nhLambert(src, { lift: 0.32, lamp: { color: 0xffe2a8, at: 0 }, side, map, see: true });
   m.userData.lamp = !!src.emissiveMap;
   return withMaps(m);

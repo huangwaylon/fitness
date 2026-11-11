@@ -4,7 +4,7 @@
 // `askDiscard` (the sheet's own question). A form that is its own sheet passes Sheet's `dirty` instead.
 import { getContext, setContext } from 'svelte';
 
-export interface Discard {
+interface Discard {
   /** Register a form's "anything unsaved?" (the returned function unregisters it). */
   form(dirty: () => boolean): () => void;
   /** Ask, then `run` on 破棄する. */

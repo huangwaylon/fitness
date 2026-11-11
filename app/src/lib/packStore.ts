@@ -9,7 +9,7 @@ import { quiet } from '#lib/quiet.ts';
 /** Where a file is: its pack's stem, its offset and bytes. */
 export type PackRef = readonly [stem: string, offset: number, bytes: number];
 
-export interface PackStoreOpts {
+interface PackStoreOpts {
   /** A pack's URL (its stem names its content: cached for good). */
   url: (stem: string) => string;
   get?: (url: string) => Promise<Response>;

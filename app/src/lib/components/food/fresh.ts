@@ -31,7 +31,7 @@ export function snapDiffers(was: FoodSnap, now: FoodSnap): boolean {
 }
 
 /** Where the foods are now: the catalogue (null: not loaded yet), the recipes and custom foods. */
-export interface FoodSources { db: FoodDb | null; recipes: readonly { id: string; n: string; sv: number; it: readonly RepeatItem[] }[]; customs: readonly FoodCustom[] }
+interface FoodSources { db: FoodDb | null; recipes: readonly { id: string; n: string; sv: number; it: readonly RepeatItem[] }[]; customs: readonly FoodCustom[] }
 
 /** The food of snapshot `f` as it is now (its portion label kept), or null: it's gone, not loaded, the same within
  *  rounding, or now logged otherwise (a serving with no weight become one with a weight, or back: its grams would mean

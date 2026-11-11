@@ -127,7 +127,7 @@ export function packRoom(): { packs: number; bytes: number; written: number; rem
 }
 
 /** Every packed file loose into the work folder. */
-export function unpackRoom(dir = WORK): number {
+function unpackRoom(dir = WORK): number {
   const files = roomFiles();
   for (const [p, b] of files) {
     mkdirSync(dirname(join(dir, p)), { recursive: true });

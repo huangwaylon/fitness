@@ -12,13 +12,13 @@ export type GoalDir = 'atLeast' | 'atMost' | 'target';
 export const GOAL_DIRS = ['atLeast', 'atMost', 'target'] as const satisfies readonly GoalDir[];
 
 /** Where a goal's chart is: けんこう's かつどう or からだ, or ごはん's グラフ. */
-export type GoalGroup = 'activity' | 'body' | 'food';
+type GoalGroup = 'activity' | 'body' | 'food';
 
 /** Every goal, in the screens' order: かつどう, からだ, then ごはん (kcal and the nutrients: a snapshot's keys). */
 export const GOAL_IDS = ['steps', 'move', 'exercise', 'stand', 'weight', 'body_fat_pct', 'bmi', 'lean_kg', 'k', 'p', 'fa', 'c', 's', 'fi', 'al'] as const;
 export type GoalId = (typeof GOAL_IDS)[number];
 
-export interface GoalDef {
+interface GoalDef {
   group: GoalGroup;
   /** The `pref` it is stored as, per person. */
   key: string;
@@ -77,7 +77,7 @@ const DEFS = {
 } as const satisfies Record<GoalId, GoalDef>;
 export const GOALS: Readonly<Record<GoalId, GoalDef>> = DEFS;
 /** A goal's `pref` key; `LatestGoalKey` those kept as the latest only (model/state.ts Prefs). */
-export type GoalKey = (typeof DEFS)[GoalId]['key'];
+type GoalKey = (typeof DEFS)[GoalId]['key'];
 export type LatestGoalKey = { [K in GoalId]: (typeof DEFS)[K]['history'] extends 'latest' ? (typeof DEFS)[K]['key'] : never }[GoalId];
 
 /** Every goal's `pref` key. */

@@ -19,7 +19,7 @@ export async function engineReady(online = navigator.onLine, store: Pick<CacheSt
   return false;
 }
 
-export interface MapLoader {
+interface MapLoader {
   /** Load the engine and make the map (the retry button too). */
   draw(): void;
   /** In onMount: drawn now (not for the e2e's stub), again once back online after a failure, `view` the specs' window[name]

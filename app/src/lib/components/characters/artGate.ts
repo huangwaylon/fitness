@@ -6,7 +6,7 @@
 //   OfficialArt  getArtGate()?.hold(img, open)                 open() once its img isn't `--art3d: off`
 import { getContext, setContext } from 'svelte';
 
-export interface ArtGate {
+interface ArtGate {
   /** Holding now (the 3D island draws): else every art loads as it mounts. */
   readonly on: boolean;
   /** Calls `open` once `el` isn't hidden by the 3D island (checked each frame something's classes change); the

@@ -266,7 +266,7 @@ export interface Crowd {
   nextChange(t: number, room: string): number;
 }
 
-export interface CrowdOptions {
+interface CrowdOptions {
   rooms: readonly VisitorRoom[];
   points: readonly LingerPoint[];
   /** The walk from one point to another in a room (the points after `from`; [] for a straight line). */

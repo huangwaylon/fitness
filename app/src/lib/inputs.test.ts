@@ -19,7 +19,7 @@ const tokensCss = readFileSync(join(SRC, 'lib/styles/tokens.css'), 'utf8');
 const tokens = new Map([...tokensCss.matchAll(/(--fs-[\w-]+)\s*:\s*([^;]+);/g)].map((m) => [m[1], m[2].trim()]));
 
 /** The smallest px a font-size value can resolve to, or NaN when it can't be known statically. */
-export function minPx(v: string): number {
+function minPx(v: string): number {
   v = v.trim();
   let m: RegExpMatchArray | null;
   if ((m = v.match(/^(\d*\.?\d+)px$/))) return Number(m[1]);

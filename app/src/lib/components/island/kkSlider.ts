@@ -52,7 +52,7 @@ export function kkSpot(layout: Layout): { x: number; z: number; f: number; yaw: 
 }
 
 /** What he does on idle life's beat. */
-export type KKAct = 'strum' | 'emote' | 'snore';
+type KKAct = 'strum' | 'emote' | 'snore';
 /** His emotes now and then (a note, glee, a sparkle at the show). */
 const EMOTES: Record<KKMode, readonly EmoteIcon[]> = { show: ['mark-note', 'glee', 'mark-sparkle'], day: ['mark-note', 'glee'], asleep: [] };
 

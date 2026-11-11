@@ -334,7 +334,7 @@ const ATWATER = { p: 4, fa: 9, c: 4, al: 7 } as const;
 
 /** Each one's share of the energy (%E, unrounded) and where it sits against PFC_RANGES (as rounded to a whole %: −1
  *  under, 0 within, 1 over); alcohol's share too (no range: it's no nutrient to aim for). */
-export interface PfcShare { p: number; fa: number; c: number; al: number; at: Record<PfcOf, -1 | 0 | 1> }
+interface PfcShare { p: number; fa: number; c: number; al: number; at: Record<PfcOf, -1 | 0 | 1> }
 
 /**
  * Protein, fat and carbohydrate as shares of energy, from their grams (and alcohol's): each one's Atwater energy over

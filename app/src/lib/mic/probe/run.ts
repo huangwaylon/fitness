@@ -53,7 +53,7 @@ export async function probeEnv() {
 
 // ---- 2. the permission ------------------------------------------------------------------------------------------------
 
-export type PermSt = 'granted' | 'denied' | 'prompt' | 'unsupported';
+type PermSt = 'granted' | 'denied' | 'prompt' | 'unsupported';
 
 export async function permState(): Promise<PermSt> {
   try {

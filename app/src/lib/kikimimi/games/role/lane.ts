@@ -19,7 +19,7 @@ const sceneOf = (o: readonly number[]): Scene | undefined => {
 };
 
 /** A unit's place's level (かわ 3, もり 4: the quiz family's view reads it), from the index's path line. */
-export function levelOfUnit(unit: string): Level {
+function levelOfUnit(unit: string): Level {
   const stage = INDEX.paths.find((p) => p[0] === unit)?.[2];
   return (PLACES.find((p) => p.id === stage)?.lvs[0] ?? 3) as Level;
 }

@@ -21,7 +21,7 @@ const BALL_AHEAD = 15.6;
 
 /** What the frame reads of the component: my line, my line's fish nose to the float (from `at`, for line `n`), the
  *  line's number now, the relay's clock (the shared itineraries'), and a plain copy of a state proxy's value. */
-export interface Motion3Deps {
+interface Motion3Deps {
   line(): MyLine | null;
   nose(): { f: Fish; at: number; n: number } | null;
   lineN(): number;

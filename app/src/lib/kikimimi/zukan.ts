@@ -32,14 +32,14 @@ export function heardOf(it: Item): Heard {
   return { accent: it.voice, hard, casts: [castOf(it)], who: [it.speaker] };
 }
 
-export type Lookup = (id: string) => Heard | undefined;
+type Lookup = (id: string) => Heard | undefined;
 
 // ---- ことば ------------------------------------------------------------------------------------------------------------
 
 /** The most ★ a phrase has. */
 export const STAR_MAX = 3;
 
-export interface PhraseBookEntry extends PhraseState {
+interface PhraseBookEntry extends PhraseState {
   /** 0 (not caught) … 3. */
   stars: number;
   /** The times it was heard (answers on its items) and the last day (null: never). */
@@ -101,7 +101,7 @@ export const passes = (f: PhraseFilter, caught: boolean): boolean => f === 'all'
 /** A voice is caught once this many different items spoken by it were understood. */
 export const VOICE_CAUGHT = 10;
 
-export interface VoiceState {
+interface VoiceState {
   /** Different items heard in this voice. */
   heard: number;
   /** Different items understood (right, at any listen). */
@@ -174,7 +174,7 @@ export function ippatsuOf(answers: readonly Answer[]): { n: number; badges: numb
   return { n, badges: IPPATSU_BADGES.filter((b) => n >= b), next: IPPATSU_BADGES.find((b) => n < b) ?? null };
 }
 
-export interface UnitStamp {
+interface UnitStamp {
   id: string;
   /** My stamp's day (null: not mine yet). */
   d: LocalDate | null;

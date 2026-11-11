@@ -50,7 +50,7 @@ export const hybridsOf = (id: FlowerId): FlowerId[] => (HYBRIDS[id.slice(id.inde
 /** "Rarely": the chance a day after watering brings a hybrid. */
 export const HYBRID_ODDS = 0.25;
 
-export interface Hybrid { id: string; flower: string }
+interface Hybrid { id: string; flower: string }
 
 /** The hybrid that shows on `date` given the flowers (ids) watered the day before and each one's kind: 1 in 4, on one
  *  watered flower, a colour its kind can give. Null otherwise. */

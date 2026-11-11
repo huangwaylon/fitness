@@ -58,7 +58,7 @@ interface Phrase {
 
 /** The can-do (plan §2's template, from the CEFR Companion Volume's listening scales): 「[who]が [does]のを [cond]
  *  きいて、[catch]が わかる」, and its English. */
-export interface CanDo {
+interface CanDo {
   who: string;
   does: string;
   cond: string;
@@ -315,7 +315,7 @@ const PHRASE_VOICES = 2;
 
 /** A listening item a unit's recipe 2 may name (listenRefs): its game, its file and the file's stage (1-5: S0-S4), and
  *  a call's memo rows. */
-export interface ListenRef {
+interface ListenRef {
   kind: string;
   file: string;
   stage: number;

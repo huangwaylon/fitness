@@ -18,7 +18,7 @@ export const SEA_MUSEUM_MODEL: Readonly<Record<string, string>> = {
 };
 
 export type SeaTankId = 'reef' | 'pool';
-export interface SeaTank { id: SeaTankId; box: Box }
+interface SeaTank { id: SeaTankId; box: Box }
 /** The two tanks' glass boxes (on the floor; under the room's ceiling, plan.ts WING_H). */
 export const SEA_TANKS: readonly SeaTank[] = [
   { id: 'reef', box: { x0: 150, x1: 176, y0: 0, y1: 38, z0: 28, z1: 110 } },
@@ -37,7 +37,7 @@ const POOL = [
 
 /** A creature's place: its tank, its spot (x, y the floor or its height in the water, z), the most it may measure
  *  across (model units: it's scaled down to fit, a little one up to MIN_ACROSS), whether it drifts. */
-export interface SeaSpot { tank: SeaTankId; x: number; y: number; z: number; fit: number; drifts: boolean }
+interface SeaSpot { tank: SeaTankId; x: number; y: number; z: number; fit: number; drifts: boolean }
 /** The least a creature is drawn across (NH's tanks show the little ones big). */
 export const MIN_ACROSS = 4.5;
 const SAND = 3;

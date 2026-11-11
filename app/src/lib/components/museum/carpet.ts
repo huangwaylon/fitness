@@ -11,10 +11,10 @@ const PX = 4, MAX = 2048;
 /** Distances from the outline (model units): the gold band, the thin dark line inside it. */
 const GOLD: [number, number] = [1, 1.75], LINE: [number, number] = [2.25, 2.55];
 /** The pile's colours: NH's red, and the green of the T. rex's island rug. */
-export const PILE = { red: [0x8f, 0x24, 0x30], green: [0x3f, 0x6e, 0x45] } as const;
+const PILE = { red: [0x8f, 0x24, 0x30], green: [0x3f, 0x6e, 0x45] } as const;
 const GOLD_C = [0xd5, 0xad, 0x55], LINE_C = [0x74, 0x1c, 0x26];
 
-export interface CarpetTex { data: Uint8Array<ArrayBuffer>; w: number; h: number; x0: number; z0: number; px: number }
+interface CarpetTex { data: Uint8Array<ArrayBuffer>; w: number; h: number; x0: number; z0: number; px: number }
 
 /** The strips' bounds (a unit's margin). */
 function carpetBounds(strips: readonly Rect[]): Rect {

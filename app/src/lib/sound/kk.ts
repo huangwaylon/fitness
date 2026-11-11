@@ -23,7 +23,7 @@ export type KKSource = 'live' | 'aircheck';
 
 /** The songs with a file, in NH's song-list order, and their airchecks (NH's stereo version, by song id: a one-shot;
  *  a song with none plays its live file). */
-export interface KKList {
+interface KKList {
   tracks: readonly KKTrack[];
   airchecks: Partial<Record<string, MusicTrack>>;
 }

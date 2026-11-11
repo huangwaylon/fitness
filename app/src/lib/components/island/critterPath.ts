@@ -64,7 +64,7 @@ const swimPoint = (a: Swim, water: Water, r: () => number, from?: { x: number; z
 /** A coast shadow's longest glide (u): a long stretch is a wander along it, not a dash across. */
 export const GLIDE_U = 150;
 
-export interface FishPath {
+interface FishPath {
   area: Swim;
   /** Where it first shows (its node's anchor). */
   start: { x: number; z: number };
@@ -146,7 +146,7 @@ function freeIn(a: Patch, ok: (p: P3) => boolean, r: () => number): P3 | null {
   return null;
 }
 
-export interface BugPath {
+interface BugPath {
   id: BugId;
   flight: Flight;
   place: BugPlace;

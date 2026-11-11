@@ -23,7 +23,7 @@ import { ISLAND_SEED, dayRand } from './daySeed.ts';
 export type GuestId = 'gracie' | 'wardell' | 'katrina' | 'wendell' | 'gullivarrr' | 'pete' | 'leilani' | 'lottie' | 'chip' | 'nat'
   | 'rover' | 'shrunk' | 'tortimer' | 'phineas' | 'pave';
 type RoleKind = 'chat' | 'shop' | 'gift' | 'fortune' | 'fish' | 'cheer';
-export interface Role {
+interface Role {
   kind: RoleKind;
   /** Washed up on Gulliver's beach (by day), not on the plaza. */
   beach?: true;

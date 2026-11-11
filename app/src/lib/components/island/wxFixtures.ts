@@ -6,7 +6,7 @@
 import type { Wx, WxSky } from '#lib/contract/live-protocol.ts';
 
 export const WX_FIXTURES = ['rain-pm', 'clears', 'typhoon', 'snow', 'fog', 'cloudy', 'stale'] as const;
-export type WxFixture = (typeof WX_FIXTURES)[number];
+type WxFixture = (typeof WX_FIXTURES)[number];
 
 const H = 3600_000;
 const LETTERS: Record<WxFixture, (hour: number) => WxSky> = {

@@ -5,7 +5,7 @@ import { staticUrl } from '#lib/staticUrl.ts';
 
 const trackPath = (slug: string): string => `hiking/tracks/${slug}.json`;
 
-export type TrackLoad = { k: 'ok'; track: TrackFile } | { k: 'failed' };
+type TrackLoad = { k: 'ok'; track: TrackFile } | { k: 'failed' };
 
 const isTrack = (x: unknown): x is TrackFile => !!x && typeof x === 'object' && (x as TrackFile).v === 1 && Array.isArray((x as TrackFile).pts) && (x as TrackFile).pts.length > 1;
 

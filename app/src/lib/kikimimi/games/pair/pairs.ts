@@ -35,7 +35,7 @@ export interface PairCard extends Item {
   pair: { sound: Sound; words: readonly [PairWord, PairWord] };
 }
 
-export interface PairsFile {
+interface PairsFile {
   status: 'draft' | 'voiced' | 'listened';
   cards: PairCard[];
 }

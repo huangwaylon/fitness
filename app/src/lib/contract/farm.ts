@@ -101,7 +101,7 @@ export const plantsOf = (f: Farm, who: Who): number => {
 
 /** What the record judges a new op by: the waterings and the sender's pocket before the batch (their tallies' and the
  *  field's goods less what they sold, with the starts they bought). */
-export interface FarmJudge { watered: Watered; pocket(key: string): number }
+interface FarmJudge { watered: Watered; pocket(key: string): number }
 
 /** Why the record refuses this op of `who`'s on day `d`, or null: `taken` (a plant there: the first in server order
  *  keeps the plot), `cap` (FARM.cap plants already), `seed` (none in the pocket), `empty` (no plant), `owner` (another's:

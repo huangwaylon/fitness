@@ -15,7 +15,7 @@ export function stageGeo(scene: HTMLElement | undefined) {
   const k = 390 / r.width;
   return { r, k, left: (s.left - r.left) * k, right: (s.right - r.left) * k, bottom: (s.bottom - r.top) * k, w: s.width * k };
 }
-export type StageGeo = NonNullable<ReturnType<typeof stageGeo>>;
+type StageGeo = NonNullable<ReturnType<typeof stageGeo>>;
 
 /** What a balloon never covers, whatever else gives way: the HUD (every control outside the stage: the dumbbell,
  *  the bowl, the leaf menu, the sync chip, the panel's), しずえ's box, a tree's popup, what a villager holds up, and another overlay that

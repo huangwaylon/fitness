@@ -122,7 +122,7 @@ export const RUSH_AT = ['cafe', 'konbini', 'ticket', 'deli', 'taxi', 'pharmacy']
 
 /** A bulletin's line, read by しずえ (the file's `cast.isabelle`); compiled with its clip, `<item>-<n>` (n from 1 over
  *  the bulletin). */
-export interface NewsLine {
+interface NewsLine {
   en: string;
   ja: string;
   tts?: string;
@@ -324,7 +324,7 @@ export const notUs = (en: string): string[] => NOT_US.filter(([re]) => re.test(e
 
 /** The English an item shows or speaks (`en` and its lines' and choices'; never `tts`, which respells), unless it's
  *  tagged accent exposure. */
-export function shownEnglish(it: { en?: unknown; lines?: unknown; choices?: unknown; rounds?: unknown; tags?: { features?: readonly string[] } }): string[] {
+function shownEnglish(it: { en?: unknown; lines?: unknown; choices?: unknown; rounds?: unknown; tags?: { features?: readonly string[] } }): string[] {
   if (it.tags?.features?.includes('accent-exposure')) return [];
   const strs = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []);
   const lines = Array.isArray(it.lines) ? (it.lines as { en?: unknown }[]).map((l) => l?.en) : [];

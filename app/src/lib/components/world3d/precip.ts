@@ -30,7 +30,7 @@ import { BEND_GLSL, bendU } from './bend.ts';
 import { lampFog } from './lights.ts';
 
 /** What falls: none, rain (light, or a downpour), snow. */
-export type PrecipKind = 'rain' | 'snow';
+type PrecipKind = 'rain' | 'snow';
 type Sky = 'clear' | 'cloudy' | 'rain' | 'heavy' | 'snow';
 
 /** A fade in or out over this (ms: Weather.svelte's FADE_MS). */
@@ -53,7 +53,7 @@ const RING_COUNTS = [64, 36] as const;
 
 /** One sky's look (the intensity mapping): the share of the particles drawn, their alpha, speed (u/s), length (u, a
  *  streak's) or size range (u, a flake's), slant (x per unit fallen), width (CSS px), the rings' share. */
-export interface PrecipLook {
+interface PrecipLook {
   kind: PrecipKind;
   density: number;
   alpha: number;

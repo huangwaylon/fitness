@@ -10,7 +10,7 @@ import { staticUrl } from '#lib/staticUrl.ts';
 import type { PackRef } from '#lib/packStore.ts';
 import { roomPacks } from './roomPacks.ts';
 
-export interface ItemMeta {
+interface ItemMeta {
   /** Footprint in tiles in its own facing: w across, d deep. */
   w: number;
   d: number;

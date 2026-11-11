@@ -120,7 +120,7 @@ export const turnOk = (r: { keys: number }, a: AnswerValue | null | undefined): 
 // ---------- the deck ----------
 
 /** A round: a turn (its line's clip id), its speaker's role, how many keys, whether it opens a part. */
-export interface RoleRound extends Round {
+interface RoleRound extends Round {
   kind: 'role';
   role: number;
   keys: number;

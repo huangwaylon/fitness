@@ -556,7 +556,7 @@ export function bytesEvict(index: RoomIndex, now: number, cap: number, keepMs = 
 }
 
 type SwrCache = Pick<Cache, 'match' | 'put'>;
-export interface SwrOptions {
+interface SwrOptions {
   /** The cache's key for the request (tileKey), its URL by default. */
   key?: string;
   freshMs: number;

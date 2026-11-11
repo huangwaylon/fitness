@@ -104,7 +104,7 @@ export function packPlayer(o: { from?: string; extra?: ReadonlyMap<string, Uint8
 }
 
 /** Every packed file loose into `dir`, and the whole table beside them. */
-export function unpackPlayer(dir = WORK): number {
+function unpackPlayer(dir = WORK): number {
   const files = playerFiles();
   for (const [p, b] of files) {
     mkdirSync(dirname(join(dir, p)), { recursive: true });

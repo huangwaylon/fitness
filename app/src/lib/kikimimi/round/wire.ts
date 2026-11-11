@@ -34,7 +34,7 @@ export type RoundIn = RoundOut & { who: Who; t: number };
 export type QuizOut = { kind: 'quiz' } & QuizWire;
 export type QuizIn = Extract<Relayed, { kind: 'quiz' }>;
 /** The game intent, sent and heard. */
-export type PlayOut = { kind: 'play' } & PlayWire;
+type PlayOut = { kind: 'play' } & PlayWire;
 export type PlayIn = Extract<Relayed, { kind: 'play' }>;
 /** A game intent heard, either wire. */
 export type GameIn = QuizIn | PlayIn;

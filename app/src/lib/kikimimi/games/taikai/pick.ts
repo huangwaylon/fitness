@@ -91,7 +91,7 @@ export function offersOf(evs: readonly { who: Who; i: number; e: number; x?: num
   return out;
 }
 
-export interface PickIn {
+interface PickIn {
   /** The lobby's seed (the fillers' draw). */
   seed: number;
   /** Each player's offer (numeric ids, best first), the host's own among them: in A B G order. */

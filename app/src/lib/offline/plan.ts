@@ -7,7 +7,7 @@
 
 export type Source = 'ofm' | 'usgs' | 'gsi';
 /** [lon, lat] */
-export type LonLat = readonly [number, number];
+type LonLat = readonly [number, number];
 
 /** One ring of a plan: the zooms, and the lines (or points) within `km` of which a tile is taken (`km` null: the
  *  whole box). */

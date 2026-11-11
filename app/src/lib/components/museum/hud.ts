@@ -57,7 +57,7 @@ export function roomTally(room: RoomId, on: OnShow): { found: number; total: num
 /** A find this new (ms) is NEW: its tag over it, the chip's 「あたらしい n」 (and Blathers' news). */
 export const NEW_MS = 86_400_000;
 /** A new find: its room, its first find's time, its tank (a fish's, a sea creature's), its skeleton (a fossil piece's). */
-export interface Fresh { id: string; room: RoomId; at: number; tank?: string; set?: SetId }
+interface Fresh { id: string; room: RoomId; at: number; tank?: string; set?: SetId }
 /** What one NEW stands for: a skeleton's new pieces are one (`set:<set>`, as NH's one card a skeleton), else the find. */
 export const unitOf = (f: { id: string; set?: SetId }): string => (f.set ? `set:${f.set}` : f.id);
 /** What's drawn in the hour (species.ts hourOf's): the aquarium's fish and the garden's bugs the hour's pick (species.ts

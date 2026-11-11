@@ -20,7 +20,7 @@ function trim(max: number): void {
 }
 
 /** Every closed sheet let go (their content unmounted). */
-export function releaseSheets(): void {
+function releaseSheets(): void {
   const gone = kept.filter((k) => !k.isOpen());
   kept = kept.filter((k) => k.isOpen());
   for (const k of gone) k.release();

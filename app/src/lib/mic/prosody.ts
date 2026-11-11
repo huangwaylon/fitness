@@ -151,7 +151,7 @@ export function rangeOf(t: Track): number {
   return v[Math.floor(v.length * 0.9)] - v[Math.floor(v.length * 0.1)];
 }
 
-export type Direction = 'rise' | 'fall' | 'flat';
+type Direction = 'rise' | 'fall' | 'flat';
 /** The last 300 ms voiced: rising, falling or level (more than 1.5 semitones across, by a least-squares line). */
 export function finalOf(t: Track): Direction {
   const xs: number[] = [], ys: number[] = [];

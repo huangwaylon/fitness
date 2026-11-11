@@ -51,7 +51,7 @@ export const PART_SLOTS = {
   top: 'TopsTex', bottom: 'BottomsTex', socks: 'SocksTex', shoes: 'Shoes',
   glasses: 'AccessoryGlass', ornament: 'CapOrnament', hat: 'CapHat'
 } as const;
-export type PartSlot = keyof typeof PART_SLOTS;
+type PartSlot = keyof typeof PART_SLOTS;
 /** The slots that may be empty (null). */
 const OPTIONAL_SLOTS = ['top', 'bottom', 'socks', 'shoes', 'glasses', 'ornament', 'hat'] as const satisfies readonly PartSlot[];
 const REQUIRED_SLOTS = ['hair', 'eye', 'mouth'] as const satisfies readonly PartSlot[];
@@ -182,7 +182,7 @@ export function readPlayerLook(v: unknown, base: PlayerLook): PlayerLook {
 }
 
 /** The prefs resolveLook reads (model/state.ts Prefs). */
-export interface LookPrefs { look?: unknown; villager?: string | null }
+interface LookPrefs { look?: unknown; villager?: string | null }
 
 /**
  * The look `person` wears: their `look` pref read leniently (readPlayerLook), a villager with their `villager` pref,

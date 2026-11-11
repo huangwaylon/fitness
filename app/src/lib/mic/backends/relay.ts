@@ -9,7 +9,7 @@ import type { Capture, Heard, Miss, Recogniser } from '../stt.ts';
 import { quiet } from '#lib/quiet.ts';
 
 /** The relay's cap: 10 s of 16 kHz 16-bit mono (its STT_MAX is 340 000 bytes). */
-export const RELAY_S = 10;
+const RELAY_S = 10;
 const TIMEOUT_MS = 20_000;
 
 /** The relay's `/stt` (beside `/log`), or '' when the build has no relay. */
@@ -17,7 +17,7 @@ const sttUrl = (): string => (logUrl() ? logUrl().replace(/\/log$/, '/stt') : ''
 /** Whether this phone can use the relay (a relay configured, paired). */
 export const relayReady = (): boolean => !!sttUrl() && !!getKey();
 
-export type Posted = { ok: true; text: string; words?: Heard['words']; ms: number } | { ok: false; miss: Miss };
+type Posted = { ok: true; text: string; words?: Heard['words']; ms: number } | { ok: false; miss: Miss };
 
 /** A WAV to the relay's `/stt`: the text (and word times) and the round trip; or why not. */
 export async function postWav(body: Uint8Array, signal?: AbortSignal): Promise<Posted> {

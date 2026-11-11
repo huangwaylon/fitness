@@ -38,7 +38,7 @@ export interface WalkGeo {
 }
 
 /** What stands on the ground besides the fixed scenery. */
-export interface WalkExtra {
+interface WalkExtra {
   /** More obstacles (a visitor's spot). */
   obstacles?: Box[];
   /** More named nodes: they join the graph and the wander points. */

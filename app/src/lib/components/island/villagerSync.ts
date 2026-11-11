@@ -19,7 +19,7 @@ type Walk = Extract<Intent, { kind: 'walk' }>;
 /** A villager woke (`id` whose, `at` when on the relay's clock). */
 type Woke = Extract<Intent, { kind: 'act' }> & { act: 'wake'; id: Who; at: number };
 
-export interface VillagerLink {
+interface VillagerLink {
   /** Send (and keep in the day) a walk of mine, or a wake. */
   share(w: Walk | Woke): void;
   /** Who I am (whose villager is `mine`). */
@@ -39,7 +39,7 @@ export const JOIN_SAY_MS = 400;
 export const RESAY_MS = 5000;
 /** A partner's villager further than this (u) from where their walk has it by now glides the gap off (no slower than
  *  the run, at most GLIDE_MS); nearer, it walks it off within the walk. */
-export const JUMP_U = 160;
+const JUMP_U = 160;
 /** A walk heard after its end: a villager within this (u) of its end walks there briskly (at most CATCH_MS), further
  *  it glides there (at most GLIDE_MS): a big correction is never a jump while it's in view (a hidden island, a phone
  *  opening, a villager asleep: put). */
@@ -120,7 +120,7 @@ export function playWake(e: { id?: string; at?: number }, me: Who, now: number):
 }
 
 /** Tell the partner's phone my villager's every move, and play theirs here (see the top). Returns the detach. */
-export interface VillagerLinked {
+interface VillagerLinked {
   detach(): void;
   partnerHere(on: boolean): void;
   here(id: VillagerActor, on: boolean): void;

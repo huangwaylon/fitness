@@ -72,7 +72,7 @@ export function activeKcal(s: State, p: PersonId, t: number): number | null {
 
 /** What a member's energy is (as of `t`): the inputs and the resting and daily kcal, or null without a sex, a birth
  *  date, a weigh-in or a height. */
-export interface Energy { kg: number; cm: number; age: number; sex: Sex; bmr: number; tdee: number; active: number | null }
+interface Energy { kg: number; cm: number; age: number; sex: Sex; bmr: number; tdee: number; active: number | null }
 
 export function energyOf(s: State, who: Who, t: number): Energy | null {
   if (!isPersonId(who)) return null;
@@ -144,7 +144,7 @@ export const mealProteinTarget = (dayGoal: number | null): number => (dayGoal ==
 
 /** A BMI's category by a standard: `asia` (JASSO: 肥満 from 25; WHO's Asian cut-off 23 for 過体重), `who` (25, 30);
  *  under 18.5 低体重 in both. */
-export type BmiCategory = 'under' | 'normal' | 'over' | 'obese';
+type BmiCategory = 'under' | 'normal' | 'over' | 'obese';
 const BMI_CUTS: Record<BmiStd, { over: number; obese: number }> = { asia: { over: 23, obese: 25 }, who: { over: 25, obese: 30 } };
 export function bmiCategory(bmi: number, std: BmiStd): BmiCategory {
   const c = BMI_CUTS[std];

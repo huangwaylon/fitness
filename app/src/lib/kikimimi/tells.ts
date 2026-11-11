@@ -47,7 +47,7 @@ const opener = (c: string): boolean => OPENER.test(c.trim());
 const question = (c: string): boolean => c.trim().endsWith('?');
 
 /** One choice set's tells. */
-export interface Tells {
+interface Tells {
   n: number;
   /** The right choice is the longest (characters, strictly). */
   longest: boolean;
@@ -88,7 +88,7 @@ export function tellsOf({ choices, answer, en }: ChoiceSet, words: (text: string
 
 /** A level's (or any group's) shares of each tell over its choice sets; `opener` and `question` the gap between the right
  *  choices' share of that form and the wrong ones' (a register or mood the right answer has more often: a tell). */
-export interface TellStats {
+interface TellStats {
   sets: number;
   longest: number;
   longBy: number;
@@ -112,7 +112,7 @@ export function statsOfTells(all: readonly Tells[]): TellStats {
 
 /** The limits a group of 3-choice sets is held to, [at least, at most]: chance is 1/3 for longest, shortest, echoLeast
  *  and echoMost (a right answer rarely the longest is a tell too), and 0 for a form gap. */
-export const TELL_LIMITS = {
+const TELL_LIMITS = {
   longest: [0.2, 0.45], longBy: [0, 0.12], shortest: [0.2, 0.45], echoLeast: [0, 0.45], echoMost: [0.15, 1], opener: [-0.12, 0.12], question: [-0.12, 0.12]
 } as const satisfies Record<keyof Omit<TellStats, 'sets'>, readonly [number, number]>;
 

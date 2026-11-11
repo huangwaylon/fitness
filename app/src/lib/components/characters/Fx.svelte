@@ -2,7 +2,7 @@
   import type { FxKind } from '../motion/reactions.ts';
   export type { FxKind };
   /** How long each effect lives (ms); zzz loops until removed. */
-  export const FX_MS: Record<FxKind, number> = {
+  const FX_MS: Record<FxKind, number> = {
     sparkles: 700 + 3 * 90, hearts: 1200 + 2 * 150, notes: 1100 + 2 * 220, sweat: 900, zzz: Infinity,
     confetti: 1600, puff: 500, glint: 600
   };

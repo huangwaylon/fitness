@@ -71,10 +71,10 @@ export const newPackId = (at: number): string => newOpId('_', at);
 
 type PackSet = { trip: string; id: string; at: number; kind: 'cat' | 'item'; cat?: string; ord: number; name: L; note?: L; icon?: string; by?: Who; rm?: undefined };
 type PackRm = { trip: string; id: string; at: number; rm: true };
-export type PackOp = PackSet | PackRm;
-export type PackChk = { trip: string; id: string; at: number; v: 0 | 1 };
-export type PackReset = { trip: string; at: number };
-export type TripNote = { trip: string; at: number; v: Record<string, string> };
+type PackOp = PackSet | PackRm;
+type PackChk = { trip: string; id: string; at: number; v: 0 | 1 };
+type PackReset = { trip: string; at: number };
+type TripNote = { trip: string; at: number; v: Record<string, string> };
 
 /** A row of one of the four types as the record holds it, with who sent it. */
 export type PackRow =

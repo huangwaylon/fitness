@@ -17,7 +17,7 @@ import { prefetchClips, voiceClip } from '../packs.ts';
 const DECODE_WAIT = 3_000;
 const TICK_MS = 250;
 
-export interface PlayerHooks {
+interface PlayerHooks {
   /** A chapter finished (reached its end, or the timer ran out in its last third). */
   finished(ch: number): void;
   /** Where I stopped (つづき). */

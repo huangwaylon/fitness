@@ -121,7 +121,7 @@ const MINOR = new Set(('a an the i me my you your he him his she her it its we u
 /** Whether a word is a content word (not in the function-word list). */
 export const content = (w: string): boolean => !MINOR.has(w);
 
-export interface Aligned {
+interface Aligned {
   /** Each said word (normalised) and whether it was heard in its place. */
   said: { w: string; ok: boolean }[];
   /** Words heard that weren't said (insertions). */

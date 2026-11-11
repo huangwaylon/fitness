@@ -40,7 +40,7 @@ export function shakeTap(taps: readonly number[], t: number): { taps: number[]; 
 // ---------- the trees ----------
 
 /** NH's kinds of tree as they shake: a goal tree is a hardwood (its fruit falls with its goals, never from a shake). */
-export type TreeKind = 'goal' | 'oak' | 'cedar' | 'palm';
+type TreeKind = 'goal' | 'oak' | 'cedar' | 'palm';
 
 /** A shakeable tree: its id (a scenery id, or `goal-<person>`), kind, foot (world) and height, and its outer side (−1
  *  left, 1 right: where a nest and a dangling bug fall; a branch falls on the inner side). */

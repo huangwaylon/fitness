@@ -48,7 +48,7 @@ export interface LiveEnv {
   wake?(fn: () => void): () => void;
 }
 
-export interface LiveOptions {
+interface LiveOptions {
   url?: string;
   /** The person key (read at each connect). */
   key: () => string | null;

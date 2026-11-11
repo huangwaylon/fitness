@@ -56,7 +56,7 @@ export const minutesOnly = (gm: string | undefined): boolean => gm === STORY_GM 
 /** What the other member sees of a row (docs/kikimimi.md "Storage"): never the level, the answers or the score. A
  *  unit's passed チェック adds the unit and `stamped` (docs/curriculum.md "Playing together": each person's stamps are the partner's
  *  to see, the answers never). */
-export type ListenSummary = Pick<ListenRow, 'd' | 'g' | 'n' | 'ms'> & { u?: string; stamped?: 1 };
+type ListenSummary = Pick<ListenRow, 'd' | 'g' | 'n' | 'ms'> & { u?: string; stamped?: 1 };
 
 /** The lesson whose pass stamps a unit (チェック), and the first-listen rights it takes, own or the team's (§10). */
 export const CHECK_LESSON = 3;

@@ -18,9 +18,9 @@ export function fruitFilter(pct: number): string {
 }
 
 /** One fruit: in the canopy (not met), falling (met, first seen now), on the ground (met, seen) or picked up today. */
-export type FruitStage = 'tree' | 'fall' | 'ground' | 'gone';
+type FruitStage = 'tree' | 'fall' | 'ground' | 'gone';
 
-export interface FruitDay { date: string; dropped: string[]; picked: string[] }
+interface FruitDay { date: string; dropped: string[]; picked: string[] }
 
 export const fruitId = (p: PersonId, f: RingFruit): string => `${p}:${f}`;
 

@@ -64,7 +64,7 @@ export const chipsAfter = (w: { bet: number; ok: boolean } | null): number => CH
 
 /** How the wager's reveal plays: a confident miss is the big moment (the answer and its trap shown large, しずえ's 「おしい！
  *  これは わすれませんね」, the clip again), a confident right the cheer; the others plain. */
-export type WagerReveal = 'confident-miss' | 'confident-right' | 'miss' | 'right';
+type WagerReveal = 'confident-miss' | 'confident-right' | 'miss' | 'right';
 export const wagerReveal = (bet: number, ok: boolean): WagerReveal => (bet >= CONFIDENT ? (ok ? 'confident-right' : 'confident-miss') : ok ? 'right' : 'miss');
 
 // ---------- rounds and the deck ----------

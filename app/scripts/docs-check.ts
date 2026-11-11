@@ -74,7 +74,7 @@ export function isPath(tok: string): boolean {
   return /\/$/.test(tok) || /\.(ts|js|mjs|svelte|md|json|ya?ml|py|css|html|toml|wav|mp3|m4a|glb|png|webp|svg|txt|csv|sh)$/.test(tok);
 }
 
-export type Problem = { file: string; line: number; msg: string };
+type Problem = { file: string; line: number; msg: string };
 
 /** The broken links and paths in one doc. `exists(repoPath)`, `read(repoPath)` see the repo; a leading `*` + `/a/b.ts` asks
  *  whether some tracked file or directory ends in /a/b.ts (a doc may name a file from its own folder: `hub/Week.svelte`);

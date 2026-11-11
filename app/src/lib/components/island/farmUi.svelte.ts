@@ -6,7 +6,7 @@ import { pickSeed, type Seed } from '#lib/store/farm.svelte.ts';
 import { t } from '#lib/i18n/index.ts';
 
 /** A tap's word over its plot: px from the scene's top-left (the plot's top, as the tap saw it); `n` new each pop. */
-export interface FarmPopAt { text: string; x: number; y: number; n: number }
+interface FarmPopAt { text: string; x: number; y: number; n: number }
 
 export const farmUi = $state<{ picker: boolean; pop: FarmPopAt | null }>({ picker: false, pop: null });
 

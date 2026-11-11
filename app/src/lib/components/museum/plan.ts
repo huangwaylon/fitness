@@ -54,7 +54,7 @@ export function boundsOf(id: RoomId): Rect {
 /** The openings in the hall's side walls (z), to the bug wing and the aquarium. */
 export const OPENING = { z0: -5, z1: 25 } as const;
 /** The openings in the hall's back wall (x, either side of the middle), to the fossils' F1 (−) and F3 (+). */
-export const BACK_OPENING = { x0: 30, x1: 54 } as const;
+const BACK_OPENING = { x0: 30, x1: 54 } as const;
 /** A doorway between two rooms: the wall it's in (x = `at` for 'x', z = `at` for 'z'), its span along the wall, the
  *  room it's counted to (`room`, the side one comes from: the hall's, then each room's on along the line), the room
  *  beyond (`next`). */
@@ -302,7 +302,7 @@ export const walkable = (g: Nav, x: number, z: number): boolean => {
 };
 
 /** The walkable point nearest (x, z) (itself when it is one). */
-export function nearestOpen(g: Nav, x: number, z: number): Pt | null {
+function nearestOpen(g: Nav, x: number, z: number): Pt | null {
   if (walkable(g, x, z)) return [x, z];
   const [ci, cj] = cellOf(x, z);
   let best: Pt | null = null, bd = Infinity;

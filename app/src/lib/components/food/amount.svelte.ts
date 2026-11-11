@@ -7,7 +7,7 @@ import { nutrientsFor, portionsOf, unitOf, variantsOf, type FoodDb, type Item } 
 import { t } from '#lib/i18n/index.ts';
 import { foodDb, foodDbNow, gramsText, inState, parseAmount, portionLabel, startOf, stepOf } from './foodUi.ts';
 
-export interface AmountProps {
+interface AmountProps {
   item: Item;
   /** The grams and portion label to start from (an entry's, a recent one's); else the default portion. */
   g0?: number;

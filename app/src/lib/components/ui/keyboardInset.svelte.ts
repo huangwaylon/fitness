@@ -20,7 +20,7 @@
 import { createSubscriber } from 'svelte/reactivity';
 import type { Attachment } from 'svelte/attachments';
 
-export interface KeyboardInset {
+interface KeyboardInset {
   top: number;
   height: number;
   bottom: number;

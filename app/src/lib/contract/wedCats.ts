@@ -19,7 +19,7 @@ const catName = (c: string): string => (has(c) ? LEGACY_CATS[c] : c);
 /** A category list renamed (each once, in its order). */
 const catNames = (cs: readonly string[]): string[] => [...new Set(cs.map(catName))];
 
-export type RenameOp = { type: 'wtask'; data: WTaskSet } | { type: 'wconf'; data: WConf };
+type RenameOp = { type: 'wtask'; data: WTaskSet } | { type: 'wconf'; data: WConf };
 
 /**
  * The record's one-time rename as ops a member's phone could send (each the whole new state of its slot, at `now` and

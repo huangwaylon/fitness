@@ -17,7 +17,7 @@ interface ChapterLine {
   segs: number;
   secs: number;
 }
-export interface Serial {
+interface Serial {
   unit: string;
   name: string;
   host: RosterId;

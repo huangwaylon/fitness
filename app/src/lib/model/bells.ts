@@ -92,7 +92,7 @@ function dayBells(e: WeekEarning, date: LocalDate): DayBells {
 }
 
 /** The week's ベル, counting only days up to `today` (a future-dated row never earns early). */
-export interface WeekSum { A: number; B: number; together: number; togetherDays: number; total: number }
+interface WeekSum { A: number; B: number; together: number; togetherDays: number; total: number }
 export function weekSum(w: WeekBells, today: LocalDate): WeekSum {
   const out: WeekSum = { A: 0, B: 0, together: 0, togetherDays: 0, total: 0 };
   w.A.days.forEach((d, i) => {

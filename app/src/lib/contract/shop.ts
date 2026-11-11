@@ -22,8 +22,8 @@ import type { LocalDate, Who } from '../types.ts';
 import { POCKET_KINDS } from './pocket.ts';
 import { FARM, isFarmCrop, startKey, type Crop } from './farm.ts';
 
-export interface SellData { species: string; n: number; v: number }
-export interface BuyData { item: string; price: number; d: LocalDate }
+interface SellData { species: string; n: number; v: number }
+interface BuyData { item: string; price: number; d: LocalDate }
 /** A `buy_starts` (docs/farming.md): `n` starts of a crop for `v` かいがら (n × FARM.startBuy), always in stock. */
 interface StartsData { crop: Crop; n: number; v: number }
 

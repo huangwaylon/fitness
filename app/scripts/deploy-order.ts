@@ -23,7 +23,7 @@ export type Facts = {
   dispatch: boolean;
 };
 
-export type Decision = { deploy: boolean; why: string } | { red: string };
+type Decision = { deploy: boolean; why: string } | { red: string };
 
 export function decide(f: Facts): Decision {
   if (!f.live) return { red: 'the live deployment names no commit (deployed without --commit-hash?): deploy it once by hand' };

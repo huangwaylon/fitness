@@ -6,7 +6,7 @@ import { log } from '#lib/sync/log.ts';
 
 let sent = false;
 
-export interface DragSource {
+interface DragSource {
   stats(): { cpu: [number, number]; dpr: number; shadowSize: number };
 }
 

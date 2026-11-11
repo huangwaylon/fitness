@@ -5,7 +5,7 @@
 /** `kind:id` → how many picked (0 or absent: none). */
 export type Picks = Readonly<Record<string, number>>;
 /** A stack in the pocket: its key and how many I have. */
-export interface Stack { k: string; n: number }
+interface Stack { k: string; n: number }
 
 /** A row's tap: the whole stack, or none when it's all picked already. */
 export function toggleStack(picks: Picks, { k, n }: Stack): Picks {

@@ -36,7 +36,7 @@ export const RECIPE_SEASONS = {
 } as const satisfies Record<string, Window | null>;
 type RecipeSeason = keyof typeof RECIPE_SEASONS;
 
-export interface CatalogItem {
+interface CatalogItem {
   id: string;
   category: ItemCategory;
   /** A shop's season stock: only then. */
@@ -44,7 +44,7 @@ export interface CatalogItem {
   /** Clothing's style season: twice as likely then. */
   style?: 'spring' | 'summer' | 'autumn' | 'winter';
 }
-export interface CatalogRecipe { id: string; season: RecipeSeason }
+interface CatalogRecipe { id: string; season: RecipeSeason }
 
 /** Every item, in the ずかん's order (category, then NH's own order). */
 export const ITEMS: readonly CatalogItem[] = data.items.map((row) => {

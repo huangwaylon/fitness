@@ -16,7 +16,7 @@ export const REST_MS = 15_000, SAMPLE_MS = 10_000;
 const AGAIN_MS = 15_000;
 let sampled = false;
 
-export interface RestSource {
+interface RestSource {
   stats(): { frames: number; shadows: number; input: number; sceneCalls: number; sceneTris: number; dpr: number; camZ: number; shadowSize: number; full: number; fullWhy: Readonly<Record<string, number>>; slots: number; pointMask: boolean };
   /** Up and in front: loaded, the page shown, the island not paused under a sheet. */
   ok(): boolean;

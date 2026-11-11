@@ -38,7 +38,7 @@ export const celebrationDue = (allMet: boolean, shownOn: string | null, date: st
 export type Shape = 'peony' | 'ring' | 'heart' | 'star' | 'willow' | 'pattern';
 /** One spark: where it ends up from the burst's centre (px, for a burst of radius 1) and its colour. */
 export interface Spark { x: number; y: number; c: string }
-export interface Burst { shape: Shape; sparks: Spark[] }
+interface Burst { shape: Shape; sparks: Spark[] }
 
 /** NH's firework colours. */
 const COLOURS = ['#FF6FA8', '#FFD84D', '#6FCFF6', '#8EE36B', '#C69CFF', '#FF8A4C', '#FFF6E0'] as const;

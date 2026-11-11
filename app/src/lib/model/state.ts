@@ -696,7 +696,7 @@ export function latestAt<T>(list: Timed<T>[] | undefined, t: number): T | undefi
 }
 
 /** One person's island day as the sheet has it (an `island` row). */
-export interface IslandDayRow {
+interface IslandDayRow {
   at: number;
   person: Who;
   data: IslandDayData;

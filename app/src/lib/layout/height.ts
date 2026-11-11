@@ -21,7 +21,7 @@ export const SEA_Y = -0.5;
 export const DEEP_Y = -7.5;
 export const EDGE_FADE = 30;
 /** How far (x, z) is inside the grid's edge (u; negative off it). */
-export const edgeDist = (x: number, z: number): number =>
+const edgeDist = (x: number, z: number): number =>
   Math.min(x - GRID.x0, GRID.x0 + GRID.cols * TILE - x, z - GRID.z0, GRID.z0 + GRID.rows * TILE - z);
 /** A river's bed where it meets the sea (it shallows to this over its last half tile, and runs on out at it). */
 const MOUTH_Y = -1.5;

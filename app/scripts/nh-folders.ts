@@ -7,7 +7,7 @@ import { readdirSync } from 'node:fs';
 
 const SUFFIX = '.Nin_NX_NVN';
 
-export interface NhFolders {
+interface NhFolders {
   /** Whether the export has this folder, spelled exactly so. */
   has(folder: string): boolean;
   /** The same, never collected (a guess among spellings: one of them is the export's). */

@@ -31,7 +31,7 @@ export interface Variant { id: PartId; swatch: Hex; hue: Hue; icon: string | nul
 /** One tile: a base item (a shape and pattern) and its colour variants. */
 export interface ClosetItem { key: string; kind: ClosetKind; variants: Variant[] }
 
-export interface Closet {
+interface Closet {
   /** The tiles of a kind, in the closet's order. */
   items(kind: ClosetKind): ClosetItem[];
   /** The item and variant a part id is (null: not in this closet). */

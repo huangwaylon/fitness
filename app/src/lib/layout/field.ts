@@ -14,7 +14,7 @@ const FIELD_W = 10, FIELD_D = 4;
 const S_RE = /^([abg])-(\d{1,2})x(\d{1,2})$/;
 const WHO: Record<string, Who> = { a: 'A', b: 'B', g: 'G' };
 
-export interface FieldDef { who: Who; w: number; d: number }
+interface FieldDef { who: Who; w: number; d: number }
 
 /** A field's owner and size from its variant (anything else: ウェイ's, the default size). */
 export function fieldOf(s: string | undefined): FieldDef {

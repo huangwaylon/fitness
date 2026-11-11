@@ -10,7 +10,7 @@
 import { FARM, daysLeft, seedKey, stageOf, yieldOf, type Crop, type FarmSrc, type Plot, type Watered } from '#lib/contract/farm.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
 
-export type FarmTap =
+type FarmTap =
   | { a: 'harvest'; p: string; c: Crop; n: number }
   /** The plants to water: the 3 × 3's not watered today. */
   | { a: 'water'; ids: string[] }

@@ -16,7 +16,7 @@ export const FRIEND_LEVELS = [10, 30, 70, 150, 300] as const;
 export const FRIEND_MAX = FRIEND_LEVELS.length;
 /** Each level's reward (index: level − 1). */
 const REWARDS = ['greeting', 'letter', 'call', 'frame', 'photo'] as const;
-export type Reward = (typeof REWARDS)[number];
+type Reward = (typeof REWARDS)[number];
 
 /** An answer's points: understood on the first listen 2, after a replay 1, missed 0 (never below). */
 export const pointsFor = (a: Pick<Answer, 'ok' | 'rp'>): number => (a.ok ? (a.rp === 0 ? 2 : 1) : 0);
@@ -24,7 +24,7 @@ export const pointsFor = (a: Pick<Answer, 'ok' | 'rp'>): number => (a.ok ? (a.rp
 /** The level of so many points (0 … 5). */
 export const levelOf = (points: number): number => FRIEND_LEVELS.filter((x) => points >= x).length;
 
-export interface Friend {
+interface Friend {
   points: number;
   level: number;
   /** Items of theirs I've heard (right or not). */

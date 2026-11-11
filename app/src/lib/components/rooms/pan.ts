@@ -30,7 +30,7 @@ const unrubber = (s: number) => (REACH * s) / (REACH - Math.min(s, REACH - 1e-6)
 const shownOf = (v: number, [lo, hi]: [number, number]) => (v < lo ? lo - rubber(lo - v) : v > hi ? hi + rubber(v - hi) : v);
 const rawOf = (s: number, [lo, hi]: [number, number]) => (s < lo ? lo - unrubber(lo - s) : s > hi ? hi + unrubber(s - hi) : s);
 
-export interface RoomPan {
+interface RoomPan {
   /** The offset as shown (px). */
   readonly x: number;
   readonly y: number;

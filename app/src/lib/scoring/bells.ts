@@ -30,7 +30,7 @@ export interface EarnInput {
 }
 
 /** A day's earnings with the facts behind them. */
-export interface DayEarning {
+interface DayEarning {
   date: LocalDate;
   /** +RULES.perGoal per goal met (0–4) + がんばり (`stretch`, 0–2). */
   bells: number;

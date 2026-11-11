@@ -62,7 +62,7 @@ function maneDeck(items: () => readonly Item[], playMs: (it: Item) => number | u
 }
 
 /** Where a game's lines come from (the phone's decks: lane.ts; a test's). */
-export interface ManeSource {
+interface ManeSource {
   items(seed: number, o: QuizOpts): readonly Item[];
   playMs(it: Item): number | undefined;
 }

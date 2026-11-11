@@ -155,7 +155,7 @@ export const typedAnswer = (r: { words: readonly string[]; board: readonly strin
   r.words.map((w, j) => (ok[j] ? r.board.indexOf(w) : OTHER));
 
 /** Where the drill's cards come from (the phone's decks: lane.ts; a test's), a card's clip length, its content version. */
-export interface HenshinSource {
+interface HenshinSource {
   cards(seed: number, o: HenshinOpts): readonly HenshinCard[];
   playMs(c: HenshinCard): number | undefined;
   cv?(o: HenshinOpts): string | undefined;

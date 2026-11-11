@@ -29,7 +29,7 @@ import { extentOf, type Layout } from '#lib/layout/model.ts';
 import type { Look } from './groundLook.ts';
 
 export type { Look };
-export interface GroundOptions {
+interface GroundOptions {
   renderer: WebGLRenderer;
   /** The site's base URL (static files: terrain/nh/*.webp). */
   base?: string;
@@ -570,7 +570,7 @@ const BAND_BUDGET = 12;
 
 /** A band's built ground, CPU-side (each mount's GPU copies go with its renderer): its top with its uvs and normals,
  *  its walls, falls and water; null for open sea. */
-export interface BandArrays { top: Part & { uv: Float32Array; normal: Float32Array }; walls: WallPart; falls: WallPart; water: WaterPart }
+interface BandArrays { top: Part & { uv: Float32Array; normal: Float32Array }; walls: WallPart; falls: WallPart; water: WaterPart }
 /** The bands' arrays kept page-wide for one layout (mesh.ts meshKeyOf: its tiles, pieces and homes), as the models'
  *  loads are (things.ts `loaded`): back from a room the island's ground takes them again instead of building every
  *  chunk and its normals (~140 of a return's ~350 ms main-thread stretch at 4x CPU). Another layout's build (an

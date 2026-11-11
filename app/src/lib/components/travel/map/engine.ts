@@ -19,7 +19,7 @@ import { loadViaPage, VIA, viaPage } from './tiles.ts';
 import { dayColor, type TripMapProps } from './types.ts';
 import { removeMap, watchMode, type EngineMode } from './glmap.ts';
 
-export type EngineInput = Omit<TripMapProps, 'onselect'>;
+type EngineInput = Omit<TripMapProps, 'onselect'>;
 
 export interface Engine {
   update(i: EngineInput): void;

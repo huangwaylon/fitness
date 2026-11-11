@@ -25,14 +25,14 @@ export interface Take {
   stop(): void;
   cancel(): void;
 }
-export interface TakeOpts {
+interface TakeOpts {
   maxS?: number;
   /** Each frame's VAD state (the level meter). */
   frame?: (v: VadState) => void;
 }
 
 /** What a take needs from the page (the unit tests give fakes). */
-export interface Deps {
+interface Deps {
   ctx(): AudioContext | null;
   session(on: boolean): void;
   open(ctx: AudioContext, o: { maxS: number; frame: (v: VadState) => void }): Promise<Mic>;

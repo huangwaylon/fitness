@@ -52,7 +52,7 @@ export const candidatesOf = (places: readonly Place[], layers: Layers | undefine
 
 export const layersOn = (layers: Layers | undefined): Layer[] => LAYERS.filter((l) => !!layers?.[l]);
 
-export type LegProps = { mode: Leg['mode']; color: string };
+type LegProps = { mode: Leg['mode']; color: string };
 export function legsData(legs: readonly Leg[], colors: readonly string[], day: number): FeatureCollection<LineString, LegProps> {
   return {
     type: 'FeatureCollection',
@@ -62,7 +62,7 @@ export function legsData(legs: readonly Leg[], colors: readonly string[], day: n
   };
 }
 
-export type CandidateProps = { id: string; kind: Layer; sel: boolean };
+type CandidateProps = { id: string; kind: Layer; sel: boolean };
 export function candidatesData(places: readonly Place[], layers: Layers | undefined, selected: string | undefined): FeatureCollection<Point, CandidateProps> {
   return {
     type: 'FeatureCollection',

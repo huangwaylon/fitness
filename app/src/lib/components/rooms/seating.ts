@@ -31,7 +31,7 @@ interface TheirSeat {
   s: number;
 }
 
-export interface Seating<S extends RoomSeat> {
+interface Seating<S extends RoomSeat> {
   /** Mine now (and since when), or null standing. */
   mine(): (S & { s: number }) | null;
   /** Whether another villager is on a piece's seat. */

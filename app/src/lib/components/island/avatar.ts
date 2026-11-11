@@ -27,7 +27,7 @@ import { relayOffset } from './ambientClock.ts';
 import { slotAt, slotRand } from './ambient.ts';
 import { now } from '#lib/time/clock.ts';
 
-export interface AvatarCtx {
+interface AvatarCtx {
   geo: () => WalkGeo;
   /** A villager standing with its feet at (x, y) u covers no control (and not the other villager). */
   clear: (id: ActorId, x: number, y: number) => boolean;

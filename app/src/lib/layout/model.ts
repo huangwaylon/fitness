@@ -228,7 +228,7 @@ export function withChanges(l: Layout, ch: { tiles?: Iterable<[number, number, n
 
 // ---- JSON (the editor's export and import) ------------------------------------------------------------------------
 
-export interface LayoutJson {
+interface LayoutJson {
   v: 1;
   tiles: string[];
   objects: Obj[];

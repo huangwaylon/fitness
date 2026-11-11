@@ -22,7 +22,7 @@ const structureFamily = (k: string, s: string | undefined): string | null => {
   return f && FAMILIES[f] ? f : null;
 };
 
-export interface StructurePlace {
+interface StructurePlace {
   id: string;
   family: string;
   /** The footprint's middle on the ground (u), the turn, the length to span (u) and, for stairs, the rise. */

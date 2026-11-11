@@ -8,7 +8,7 @@ import type { State } from '#lib/model/state.ts';
 
 /** 朝, 昼, 夜: the record's slots but the snack. */
 export const MAIN_MEALS = MEALS.filter((m): m is Exclude<Meal, 's'> => m !== 's');
-export type MainMeal = (typeof MAIN_MEALS)[number];
+type MainMeal = (typeof MAIN_MEALS)[number];
 
 /** Per main meal, whether `who`'s `date` (a Tokyo day, the model's `today`) has anything in it. */
 export function mealsLogged(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, date: LocalDate): Record<MainMeal, boolean> {

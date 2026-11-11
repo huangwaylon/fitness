@@ -78,7 +78,7 @@ function image(url: string | null, ready: () => void): HTMLImageElement | null {
   return null;
 }
 
-export interface FaceOpts {
+interface FaceOpts {
   /** The page's posts (≤ PER_PAGE). */
   posts: readonly Post[];
   author(who: Who): { name: string; icon: string | null };

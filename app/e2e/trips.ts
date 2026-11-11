@@ -16,7 +16,7 @@ import { fromMenu, hudMenu } from './hud.ts';
 
 export const mapState = (page: Page) => page.evaluate(() => (window as unknown as { __travelMap: { state(): unknown } }).__travelMap.state()) as Promise<MapState>;
 
-export type TripTab = 'days' | 'map' | 'pack' | 'camps';
+type TripTab = 'days' | 'map' | 'pack' | 'camps';
 /** The trips' sheet. */
 export const tripsSheet = (page: Page) => page.locator('dialog[open] [data-travel]');
 /** From the island already up: the menu's りょこう pill: the list (or the trip on now). */

@@ -13,7 +13,7 @@ export interface WingPart { pos: ArrayLike<number>; wing: boolean }
 /** A model's hinge (the shader's uFlap): the body's middle (x), the wings' height at it (y), how far out the wing turns
  *  from (the body's edge, or the wing mesh's root), the ramp past that over which the turn comes in (so the root bends,
  *  never tears); and which parts flap. */
-export interface Hinge { x: number; y: number; root: number; ramp: number; flaps: boolean[] }
+interface Hinge { x: number; y: number; root: number; ramp: number; flaps: boolean[] }
 
 const median = (v: number[]) => (v.sort((a, b) => a - b), v[v.length >> 1]);
 const quantile = (v: number[], q: number) => (v.sort((a, b) => a - b), v[Math.min(v.length - 1, Math.floor(q * v.length))]);

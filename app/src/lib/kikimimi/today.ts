@@ -56,7 +56,7 @@ export interface MenuIn {
   sessions: readonly Session[];
 }
 
-export interface Menu {
+interface Menu {
   cards: Card[];
   /** A session finished today: 「きょうは OK」. */
   ok: boolean;

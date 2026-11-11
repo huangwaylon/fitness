@@ -14,7 +14,7 @@ import { toasts } from './toast.svelte.ts';
 import { t } from '#lib/i18n/index.ts';
 
 type SheetComponent = Component<{ open: boolean }, object, 'open'>;
-export interface LazySheet<A = never> {
+interface LazySheet<A = never> {
   Sheet: SheetComponent | null;
   open: boolean;
   /** The last show(arg)'s arg. */

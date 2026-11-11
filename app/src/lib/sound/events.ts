@@ -22,7 +22,7 @@ export type CutInId = Extract<EventMusicId, 'bee-chase' | 'bee-stung' | 'aerobic
 /** An event's track for the moment: `id` loops in place of the hour's; `intro` is a one-shot heard first when the
  *  event has only just begun (the midnight jingle); `alt`: the track to play when `id` has no file (a weather's
  *  arrangement falls back to the plain one, the wedding's two to each other). */
-export interface EventMusic {
+interface EventMusic {
   id: EventMusicId;
   intro?: EventMusicId;
   alt?: EventMusicId;

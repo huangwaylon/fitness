@@ -18,7 +18,7 @@ import { PLAY_UNKNOWN } from '../quiz/kinds.ts';
 import { swapsOf } from '../henshin/def.ts';
 import { EARS, listenGame, listenOpts, type ListenOpts, type ListenRules, type ListenSource } from '../listened.ts';
 
-export type LongYaml = Extract<ListenItem, { kind: 'long' }>;
+type LongYaml = Extract<ListenItem, { kind: 'long' }>;
 /** The answer window's extra for a question (ms): three English sentences to read. */
 const READ_MS = 8000;
 /** At this ear or below (かわ), the easy tier. */

@@ -89,7 +89,7 @@ export function headAnchor(): (now: number, rest: readonly number[] | null, head
   };
 }
 
-export interface FirstPerson {
+interface FirstPerson {
   /** Wanted on (the glide may be under way). */
   readonly on: boolean;
   /** 0 the room's camera … 1 at the eyes. */

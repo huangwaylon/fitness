@@ -5,7 +5,7 @@
 import type { Who } from '../types.ts';
 
 /** A row as a book holds it: its type, sender and op (`rm`: a removal, final). */
-export type BookRow = { type: string; who: Who; op: { at: number; rm?: true } };
+type BookRow = { type: string; who: Who; op: { at: number; rm?: true } };
 /** A row as the model holds it: the record's, or this phone's not yet sent (`queued`). */
 export type Queued<R> = R & { queued?: true };
 
