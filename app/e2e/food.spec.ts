@@ -113,6 +113,24 @@ test('search: 24 rows drawn first, the rest as the list’s end comes near', asy
   await expect.poll(() => rows.count()).toBeGreaterThan(24);
 });
 
+// What people type, not the catalog's name: nothing holds it whole, so 近いもの offers the foods holding most of it
+// (food/search.ts nearby), under 見つかりませんでした and 自分で作る; a name breaks only at its brackets (ui/Phrases).
+test('search: a long query nothing holds whole offers 近いもの; names break at their brackets', async ({ page }) => {
+  await openFood(page);
+  await sheet(page).locator('[data-add=l]').click();
+  await sheet(page).locator('[data-food-q]').fill('とんこつ醤油ラーメン味玉チャーシュー増し');
+  await expect(sheet(page).locator('[data-food-none]')).toContainText('見つかりませんでした', { timeout: 15_000 });
+  const near = sheet(page).locator('[data-food-near] > li');
+  await expect(near.first()).toContainText('豚骨醤油ラーメン');
+  await expect(sheet(page).locator('[data-food-near]')).toContainText('ラーメン（醤油）');
+  await expect(sheet(page).locator('[data-food-near]').locator('xpath=preceding-sibling::h3[1]')).toHaveText('近いもの');
+  // a name wrapped by its parts: a <wbr> before 「（」 (kept with what follows) and after 「・」, none inside 「しょうゆ」
+  await sheet(page).locator('[data-food-q]').fill('カップラーメン');
+  const cup = sheet(page).locator('[data-food-results] li:has([data-item="eatout:cup_noodle"]) .nm');
+  await expect(cup).toBeVisible();
+  expect(await cup.locator('.phr').evaluate((e) => e.innerHTML.replace(/<(?!wbr)[^>]*>/g, ''))).toBe('カップラーメン<wbr>（しょうゆ・<wbr>レギュラー）');
+});
+
 // WebKit's text field is ~20 characters wide by itself: in an auto grid track it pushed the search box and the rows past
 // the sheet's right edge on an iPhone 15 (the sheet clips them). Each level is checked: nothing wider than the sheet.
 test('the day, the search and the amount all fit the sheet’s width', async ({ page }) => {

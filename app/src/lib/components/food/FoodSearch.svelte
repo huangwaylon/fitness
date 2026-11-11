@@ -22,13 +22,14 @@
   import type { Who } from '#lib/types.ts';
   import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
   import type { Recipe } from '#lib/model/food.ts';
-  import { entryKcal, searchFoods, variantsOf, verifyOf, type FoodDb, type Item } from '#lib/food/index.ts';
+  import { entryKcal, nearFoods, searchFoods, variantsOf, verifyOf, type FoodDb, type Item } from '#lib/food/index.ts';
   import { searchKey } from '#lib/food/text.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { kcalText } from '../kiroku/fmt.ts';
   import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
   import { flushSync, type Snippet } from 'svelte';
   import FoodThumb from './FoodThumb.svelte';
+  import Phrases from '../ui/Phrases.svelte';
   import FoodOpen, { type Set } from './FoodOpen.svelte';
   import NavButton from '../ui/NavButton.svelte';
   import { amountText, catOf, customItem, defaultPortion, stemName, foodDb, glossOf, itemOf, servingText, snapGloss, typedKcal, withImages, plateOf, recipeOfEntry } from './foodUi.ts';
@@ -119,6 +120,17 @@
   const results = $derived.by(() => {
     void more;
     return db && q.trim() ? searchFoods(db, q, 40) : [];
+  });
+  /** 近いもの for a query nothing holds whole (food/search.ts nearby: a full pass, ~30 ms on a Mac), once typing
+   *  pauses. */
+  let near = $state.raw<Item[]>([]);
+  $effect(() => {
+    const query = q.trim();
+    near = [];
+    if (!db || !query || results.length) return;
+    const d = db;
+    const id = setTimeout(() => (near = nearFoods(d, query)), 250);
+    return () => clearTimeout(id);
   });
   /** The rows drawn: the first FIRST of a new query (a keystroke's frame, about six over the keyboard), the rest once the
    *  list's end nears the screen (`more`'s sentinel: `rest`). */
@@ -215,7 +227,7 @@
       {#each myFoods as c (c.id)}
         {#snippet cells()}
           <FoodThumb />
-          <span class="nm">{c.n}</span>
+          <span class="nm"><Phrases text={c.n} name /></span>
           <small class="meta">{names?.[c.who] ?? c.who}</small>
           <span class="kc"><b class="money">{kcalText(c.k)}</b><small>{servingText(c)}</small></span>
         {/snippet}
@@ -260,7 +272,7 @@
       {#each myRecipes as r (r.id)}
         <li><button type="button" class="card it tt" data-sfx="page" data-recipe={r.id} onclick={() => onrecipe(r)}>
           <FoodThumb cat="レシピ" plate={plateOf(r, imgs, db, 48)} />
-          <span class="nm">{r.n}</span>
+          <span class="nm"><Phrases text={r.n} name /></span>
           <small class="meta">{names?.[r.who] ?? r.who} · {t('food.rcp.servings', { n: r.sv })}</small>
           <span class="kc"><b class="money">{kcalText(r.per.kcal)}</b><small>{t('food.rcp.one')}</small></span>
         </button></li>
@@ -289,7 +301,7 @@
       <ul>
         {#each added as e (e.id)}
           <li data-added={e.id}>
-            <span class="nm">{e.f.n}</span>
+            <span class="nm"><Phrases text={e.f.n} name /></span>
             <small class="meta">{amountText(e)}</small>
             <b class="kc money">{kcalText(entryKcal(e))}</b>
             <span class="un"><NavButton kind="close" label={t('food.unadd', { name: e.f.n })} sfx="undo" data-unadd={e.id} onclick={() => onunadd?.(e.id)} /></span>
@@ -339,7 +351,7 @@
           {@const gl = snapGloss(db, e.f)}
           {@const r = recipeOfEntry(recipeById, e)}
           <FoodThumb cat={catOf(db, e.f.id)} img={imgOf(imgs, e.f.id, 48)} plate={r ? plateOf(r, imgs, db, 48) : null} />
-          <span class="nm">{e.f.n}</span>
+          <span class="nm"><Phrases text={e.f.n} name /></span>
           <small class="meta"><span class="as">{amountText(e)}{#if gl}{' · '}{/if}</span>{#if gl}<span class="gl" data-gloss>{gl}</span>{/if}</small>
           <b class="kc money">{kcalText(entryKcal(e))}</b>
         {/snippet}
@@ -363,6 +375,24 @@
 <!-- n independent sources agree on its kcal: in words on a free second line, else a ✓ beside the name (its words its label) -->
 {#snippet verified(n: number, short = false)}<i class="ok" class:short role="img" data-verified={n} aria-label={t('food.verified', { n })}>{short ? '✓' : t('food.verifiedBadge', { n })}</i>{/snippet}
 
+{#snippet food(it: Item)}
+  {@const p = defaultPortion(it)}
+  {@const v = verifyOf(db!, it.id)}
+  {@const gl = glossOf(it, it.name)}
+  {@const vs = variantsOf(db, it)}
+  <!-- ✓n beside the name, or on the second line when that would be empty: a row two lines, never three -->
+  {@const solo = !it.brand && !gl && !vs.length}
+  {@const ok = v && v.n >= 2 ? v.n : 0}
+  {#snippet cells()}
+    <FoodThumb cat={it.cat} img={imgOf(imgs, it.id, 48)} />
+    <span class="nm"><Phrases text={vs.length ? stemName(it) : it.name} name />{#if ok && !solo}{@render verified(ok, true)}{/if}</span>
+    <small class="meta">{#if it.brand}<span class="br" data-brand>{it.brand}</span>{#if gl}{' · '}{/if}{/if}{#if gl}<span class="gl" data-gloss>{gl}</span>{/if}{#if vs.length}{#if gl || it.brand}{'\u3000'}{/if}{@render states(it, vs)}{:else if solo}{#if ok}{@render verified(ok)}{:else}{'\u00a0'}{/if}{/if}</small>
+    <span class="kc"><b class="money">{kcalText(p.kcal)}</b><small>{p.label}</small></span>
+  {/snippet}
+  {@render row({ key: `f:${it.id}`, data: { 'data-item': it.id, 'data-per100': it.kcal }, name: it.name, item: () => it, pick: () => onpick(it),
+    quick: onquick && (() => onquick(it)) }, cells)}
+{/snippet}
+
 {#snippet catalog()}
   {#if failed}
     <div class="fail">
@@ -381,25 +411,15 @@
           <button type="button" class="btn small make" data-sfx="page" data-custom-make onclick={() => oncreate(q.trim())}>{@render plus()}{t('food.my.make')}</button>
         {/if}
       </section>
+      {#if near.length}
+        <h3 class="lh">{t('food.near')}</h3>
+        <ul class="list" data-food-near>{#each near as it (it.id)}{@render food(it)}{/each}</ul>
+      {/if}
     {/if}
   {:else}
     <ul class="list" data-food-results>
       {#each results.slice(0, drawn) as it (it.id)}
-        {@const p = defaultPortion(it)}
-        {@const v = verifyOf(db, it.id)}
-        {@const gl = glossOf(it, it.name)}
-        {@const vs = variantsOf(db, it)}
-        <!-- ✓n beside the name, or on the second line when that would be empty: a row two lines, never three -->
-        {@const solo = !it.brand && !gl && !vs.length}
-        {@const ok = v && v.n >= 2 ? v.n : 0}
-        {#snippet cells()}
-          <FoodThumb cat={it.cat} img={imgOf(imgs, it.id, 48)} />
-          <span class="nm">{vs.length ? stemName(it) : it.name}{#if ok && !solo}{@render verified(ok, true)}{/if}</span>
-          <small class="meta">{#if it.brand}<span class="br" data-brand>{it.brand}</span>{#if gl}{' · '}{/if}{/if}{#if gl}<span class="gl" data-gloss>{gl}</span>{/if}{#if vs.length}{#if gl || it.brand}{'\u3000'}{/if}{@render states(it, vs)}{:else if solo}{#if ok}{@render verified(ok)}{:else}{'\u00a0'}{/if}{/if}</small>
-          <span class="kc"><b class="money">{kcalText(p.kcal)}</b><small>{p.label}</small></span>
-        {/snippet}
-        {@render row({ key: `f:${it.id}`, data: { 'data-item': it.id, 'data-per100': it.kcal }, name: it.name, item: () => it, pick: () => onpick(it),
-          quick: onquick && (() => onquick(it)) }, cells)}
+        {@render food(it)}
       {/each}
     </ul>
     {#if results.length > drawn}<div class="more" use:rest aria-hidden="true"></div>{/if}
@@ -433,7 +453,7 @@
   }
   /* with a thumbnail: it spans both lines at the left, 4px into the padding above and below (the row as tall) */
   .it.tt { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: 'th nm kc' 'th meta kc'; padding-left: 10px; }
-  .tt .nm { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; } /* the whole name on its amount */
+  .tt .nm { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; } /* the whole name on its amount (three lines: a name breaks only at its brackets, Phrases) */
   .tt > :global([data-thumb]) { grid-area: th; margin: -4px 2px -4px 0; }
   .it:active { transform: translateY(2px); }
   .it:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }

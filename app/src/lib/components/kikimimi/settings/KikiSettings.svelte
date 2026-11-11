@@ -7,6 +7,7 @@
   // (docs/kikimimi-mic.md "Where they show": MicOptIn, a lazy chunk, with the probe's row under it, which opens MicProbe in this
   // page's place, another). Its own chunk.
   import Lazy from '#lib/components/ui/Lazy.svelte';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
   import LongCredits from './LongCredits.svelte';
   import type { QuizGame } from '../game.svelte.ts';
   import { JA_MODES, WEEK_GOALS, keepSame, keepWeekGoal, sameDefault, weekGoal, type JaMode, type WeekGoal } from '../prefs.ts';
@@ -54,12 +55,12 @@
     <h3 id="kk-sound" class="sec-label">{t('kiki.set.sound')}</h3>
     <div class="card box">
       <button type="button" class="btn paper" data-kiki-test data-sfx="tick" onclick={test}>🔊 {t('kiki.test')}</button>
-      {#if zero}<p class="hint warn" data-kiki-zero>{t('kiki.testZero')}</p>
-      {:else if tested}<p class="hint">{t('kiki.testHint')}</p>
-      {:else}<p class="hint">{t('kiki.set.earphones')}</p>{/if}
+      {#if zero}<p class="hint warn" data-kiki-zero><Phrases text={t('kiki.testZero')} /></p>
+      {:else if tested}<p class="hint"><Phrases text={t('kiki.testHint')} /></p>
+      {:else}<p class="hint"><Phrases text={t('kiki.set.earphones')} /></p>{/if}
     </div>
     <button type="button" class="row tile-btn" role="switch" aria-checked={same} data-kiki-set-same data-sfx="self" onclick={toggleSame}>
-      <span class="rl">{t('kiki.same')}<small>{t('kiki.set.sameSub')}</small></span>
+      <span class="rl">{t('kiki.same')}<small><Phrases text={t('kiki.set.sameSub')} /></small></span>
       <span class="sw" aria-hidden="true"><i></i></span>
     </button>
   </section>
@@ -90,7 +91,7 @@
           onclick={() => goal !== x && pickGoal(x)}>{t('kiki.set.days', { n: x })}</button>
       {/each}
     </div>
-    <p class="hint">{t('kiki.set.goalSub')}</p>
+    <p class="hint"><Phrases text={t('kiki.set.goalSub')} /></p>
   </section>
 
   <LongCredits />

@@ -134,3 +134,55 @@ export function search(entries: readonly Entry[], query: string, limit = 60, gro
   }
   return out;
 }
+
+/** Spellings a menu writes one way and the catalog's names another, as keys: 近いもの looks for them as the catalog
+ *  writes them (とんこつ醤油 → 豚骨醤油ラーメン). */
+const SPELLINGS: readonly [RegExp, string][] = [[/とんこつ/g, '豚骨']];
+
+/** How much of a query (a key) a name or alias holds (`n`): each run of it one holds (2 characters or more, 3 for
+ *  kana alone: not 「めん」 of らーめん in メンマ), its length squared, so one long run beats two short ones; and where
+ *  its first run starts (`at`: what's typed first is the dish, the toppings after it). */
+function covered(names: readonly string[], q: string): { n: number; at: number } {
+  const held = (p: string) => names.some((n) => n.includes(p));
+  let n = 0, at = -1;
+  for (let i = 0; i < q.length - 1; ) {
+    let j = i + 2;
+    // (no word starts with ー or a small kana: not 「ーめん」 of らーめん in チャーシューメンマ)
+    if (/^[ーぁぃぅぇぉっゃゅょゎ]/.test(q[i]) || !held(q.slice(i, j))) {
+      i++;
+      continue;
+    }
+    while (j < q.length && held(q.slice(i, j + 1))) j++;
+    if (!/^[ぁ-ゖー]{2}$/.test(q.slice(i, j))) (n += (j - i) ** 2), at < 0 && (at = i);
+    i = j;
+  }
+  return { n, at };
+}
+
+/** A secondary dataset's item (a product, a regional dish) holds 4/5 as much in 近いもの: the generic food before a
+ *  brand's whose name holds a little more of the query. */
+const SECONDARY_NEAR = 0.8;
+
+/** 近いもの, when search() finds nothing (「とんこつ醤油ラーメン味玉チャーシュー増し」): the items whose name or an alias
+ *  holds the most of the query (covered: 豚骨醤油ラーメン first), then the earlier in it, a core, popular, shorter name
+ *  first at a tie; one row per name + kcal and per food in its states. */
+export function nearby(entries: readonly Entry[], query: string, limit = 8): Item[] {
+  const q = SPELLINGS.reduce((k, [re, to]) => k.replace(re, to), searchKey(query));
+  if (q.length < 2) return [];
+  const hits: { e: Entry; c: { n: number; at: number } }[] = [];
+  for (const e of entries) {
+    const c = covered([e.n, ...e.al], q);
+    if (e.pen > 0) c.n *= SECONDARY_NEAR;
+    if (c.n >= 9 && !lookalike(e.it, q)) hits.push({ e, c });
+  }
+  hits.sort((a, b) => b.c.n - a.c.n || a.c.at - b.c.at || a.e.pen - b.e.pen || b.e.pop - a.e.pop || a.e.n.length - b.e.n.length);
+  const seen = new Set<string>();
+  const out: Item[] = [];
+  for (const { e } of hits) {
+    const k = e.it.vg ? `v:${e.it.vg}` : `${e.n}|${e.it.kcal}`;
+    if (seen.has(k)) continue;
+    seen.add(k);
+    if (out.push(e.it) >= limit) break;
+  }
+  return out;
+}

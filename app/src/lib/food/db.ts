@@ -1,6 +1,6 @@
 // The food catalog in memory: the datasets as they load (index.json's order), their search index and the
 // cross-source verify groups, with the lookups the food sheet uses. Pure: load.ts fetches.
-import { entryOf, PRODUCT_PENALTY, search, SECONDARY_PENALTY, type Entry } from './search.ts';
+import { entryOf, nearby, PRODUCT_PENALTY, search, SECONDARY_PENALTY, type Entry } from './search.ts';
 import type { Credit, Dataset, FoodIndex, Item, Verify, VerifyGroup } from './types.ts';
 
 export interface FoodDb {
@@ -72,6 +72,8 @@ export function variantsOf(db: FoodDb | null, it: Item): Item[] {
 
 /** The best `limit` items for a query (search.ts: exact > prefix > substring > alias, one row per verify group). */
 export const searchFoods = (db: FoodDb, query: string, limit = 60): Item[] => search(db.entries, query, limit, (id) => db.verify?.byId[id]);
+/** 近いもの for a query searchFoods finds nothing for (search.ts nearby: the names holding the most of it). */
+export const nearFoods = (db: FoodDb, query: string, limit = 8): Item[] => nearby(db.entries, query, limit);
 
 /** The item's cross-source group: how many independent sources agree (n ≥ 2: confirmed) and each one's kcal / 100 g. */
 export function verifyOf(db: FoodDb, id: string): VerifyGroup | null {

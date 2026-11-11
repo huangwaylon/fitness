@@ -197,6 +197,8 @@ loads with the first search, or at idle, in a worker); kept mounted between open
   yesterday's and another person's, copied as mine with 取り消す; **quick** (⚡, or a kcal typed) logs one serving.
 - **Search:** my recent foods, then the best matches (`food/search.ts`; `food/load.test.ts`'s golden queries); a food's
   states (生 · ゆで · 焼き) one row; its picture ([food-data.md](food-data.md) "Pictures") or category tile. ー counts.
+  A name breaks only at its brackets, ＋ and ・ (`Phrases name`). Nothing holding the whole query: 見つかりませんでした,
+  自分で作る, then **近いもの**, the names holding most of it (`nearby`: 「とんこつ醤油ラーメン味玉…」 → 豚骨醤油ラーメン).
   Offline: a message, a retry, the recent list.
 - **Amount** (`FoodPortion`): one screen on an iPhone 15: the picture (marked as an AI image), kcal, P · F · C · 塩分;
   **状態** chips (the portion carried through its yield); **量** (portions, −/＋, grams or ml); the foot (the meal and add,
@@ -1096,7 +1098,8 @@ while anything is). **天気** is one group for both the look and [Weather](#wea
 
 - **Dialogue** (`ui/Bubble.svelte`, the box's rules: [Dialogue](#dialogue)): an `aria-live` mirror. **Banner**
   (`ui/Toast.svelte`, one at a time): the whole message, wrapped by phrase (`i18n/phrases.ts`: keep-all with a `<wbr>`
-  after a particle or 。, as WebKit has no `auto-phrase`), a number never cut; a long one grows it.
+  after a particle or 。, as WebKit has no `auto-phrase`), a number never cut; a long one grows it. Sheet hints and
+  notes use the same `ui/Phrases.svelte`.
 - **Buttons:** every tappable has an edge (2px outline + 4px lip); static cards only a soft lip. Primary leaf,
   secondary cream, selected yuzu, disabled sunk. "Can't now" = `aria-disabled` ([Taps](#taps)). Shared skins in
   `styles/theme.css`: `.btn` (`.paper`, `.small`; `.off`), `.chip` / `.chips`, `.edit-tray`, `.hcard`, `.sec-label`,

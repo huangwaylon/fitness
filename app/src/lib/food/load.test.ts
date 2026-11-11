@@ -6,7 +6,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { foodOp } from '#lib/contract/food.ts';
 import { loadFoodDb } from './load.ts';
-import { addDataset, credits, emptyDb, searchFoods, SLICE, verifyOf, type FoodDb } from './db.ts';
+import { addDataset, credits, emptyDb, nearFoods, searchFoods, SLICE, verifyOf, type FoodDb } from './db.ts';
 import { portionsOf, toSnap } from './nutrition.ts';
 import type { Dataset, FoodIndex, Item } from './types.ts';
 import { tierOf, type Entry } from './search.ts';
@@ -200,6 +200,19 @@ describe('loadFoodDb', () => {
     expect(c.length).toBeGreaterThanOrEqual(index.datasets.length + 1);
     expect(c.find((x) => x.label === 'Open Food Facts')?.attribution).toContain('Open Food Facts');
     expect(c.filter((x) => !x.attribution)).toEqual([]);
+  });
+});
+
+// 近いもの (search.ts nearby): what people type, not the catalog's name; nothing holds it whole (review 11/10 r3 N3)
+describe('a query nothing holds whole', () => {
+  it('the foods whose names hold the most of it first', () => {
+    const q = 'とんこつ醤油ラーメン味玉チャーシュー増し';
+    expect(searchFoods(db, q)).toEqual([]);
+    const near = nearFoods(db, q).map((x) => x.name);
+    expect(near[0]).toBe('豚骨醤油ラーメン');
+    expect(near).toContain('ラーメン（醤油）');
+    expect(nearFoods(db, 'とんこつラーメン煮卵のせ')[0].name).toBe('豚骨ラーメン');
+    expect(nearFoods(db, 'zzzz')).toEqual([]);
   });
 });
 

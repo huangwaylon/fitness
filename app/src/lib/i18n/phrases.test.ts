@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { phrases } from './phrases.ts';
+import { nameParts, phrases } from './phrases.ts';
 import ja from './ja.json';
 import jaKiki from './kikimimi.ja.json';
 
@@ -40,5 +40,16 @@ describe('phrases', () => {
     expect(lines(t('guest.jarNote', { a: 'ウェイ', b: 'うめ' }))).toContain('ごほうびはふたりが');
     expect(lines(t('kiki.check.card')).at(-1)).toBe('場所がわかります');
     expect(lines(t('tent.hint')).at(-1)).toBe('置きましょう');
+  });
+  // the food names review 11/10 r3 saw split mid-word at 393 px (「付／き」, 「しょう／ゆ」, 「チャーハ／ン」)
+  it('breaks a name only at its brackets, ＋, ・ and spaces', () => {
+    const names = (t: string) => nameParts(t).map((p) => p.join(''));
+    expect(names('納豆（たれ・からし付き）')).toEqual(['納豆', '（たれ・', 'からし付き）']);
+    expect(names('カップラーメン（しょうゆ・レギュラー）')).toEqual(['カップラーメン', '（しょうゆ・', 'レギュラー）']);
+    expect(names('カップラーメン しょうゆ味（乾）')).toEqual(['カップラーメン しょうゆ味', '（乾）']);
+    expect(names('ラーメン＋半チャーハンセット')).toEqual(['ラーメン', '＋半チャーハンセット']);
+    expect(names('ごはん（150g）')).toEqual(['ごはん', '（150g）']);
+    expect(nameParts('ごはん（150g）')[1]).toEqual(['', '（150', 'g）']);
+    expect(nameParts('納豆（たれ・からし付き）')[1]).toEqual(['', '（た', 'れ・']);
   });
 });

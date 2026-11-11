@@ -24,6 +24,7 @@
   import FoodThumb from './FoodThumb.svelte';
   import FoodPhoto from './FoodPhoto.svelte';
   import FoodPortion from './FoodPortion.svelte';
+  import Phrases from '../ui/Phrases.svelte';
   import { AmountPick } from './amount.svelte.ts';
   import { glossOf, withImages } from './foodUi.ts';
 
@@ -113,7 +114,7 @@
 
   <section class="card ctl"><FoodPortion {a} bind:typing /></section>
 
-  {#if once}<p class="once" data-once>{t('food.rep.once')}</p>{/if}
+  {#if once}<p class="once" data-once><Phrases text={t('food.rep.once')} /></p>{/if}
   <div class="acts level-acts">
     {#if !pick && !typing}
       <div class="seg" role="group" aria-label={t('food.whichMeal')}>

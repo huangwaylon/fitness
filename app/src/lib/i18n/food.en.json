@@ -63,6 +63,7 @@
   "food.loadFail": "Couldn’t load the data (offline?)",
   "food.retry": "Try again",
   "food.none": "Nothing found for “{q}”",
+  "food.near": "Close matches",
   "food.per100Head": "Nutrition per 100 {u}",
   "food.perOneNut": "Nutrition per {u}",
   "food.verified": "the same in {n} sources",

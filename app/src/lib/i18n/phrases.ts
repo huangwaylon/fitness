@@ -11,3 +11,15 @@ const NUM = /([（「『【〔〈《［(\[]*\d(?:[\d,.]*\d)?[）」』】〕〉�
 export function phrases(text: string): string[][] {
   return text.split(AT).map((p) => p.split(NUM));
 }
+
+/** A name's parts (a food's: 「カップラーメン / （しょうゆ・ / レギュラー）」), the same shape: no particles to go by, so
+ *  it breaks only before an opening bracket or ＋ and after ・ or a closing bracket (and at its spaces), never inside
+ *  「しょうゆ味」; an opening bracket kept on one line with what follows (odd places, as a number). */
+const NAME_AT = /(?<=[^\s（「『【〔〈《［(\[])(?=[（「『【〔〈《［(\[＋])|(?<=[・）」』】〕〉》］)\]])(?=[^\s・）」』】〕〉》］)\]])/;
+
+/** NUM, and an opening bracket with the character after it (WebKit breaks after 「（」 even in keep-all). */
+const NAME_NUM = /([（「『【〔〈《［(\[]*\d(?:[\d,.]*\d)?[）」』】〕〉》］)\]]*|[（「『【〔〈《［(\[]+[^\d（「『【〔〈《［(\[])/;
+
+export function nameParts(text: string): string[][] {
+  return text.split(NAME_AT).map((p) => p.split(NAME_NUM));
+}

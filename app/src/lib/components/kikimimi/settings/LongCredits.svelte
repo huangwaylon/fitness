@@ -4,6 +4,7 @@
   import { INDEX, listenOf, load, type Unit } from '#lib/kikimimi/pool.ts';
   import type { ListenItem } from '#lib/kikimimi/listen.ts';
   import { t } from '#lib/i18n/index.ts';
+  import Phrases from '#lib/components/ui/Phrases.svelte';
 
   type Long = Extract<ListenItem, { kind: 'long' }>;
   const units = Object.keys(INDEX.listen).filter((u) => INDEX.listen[u][0] === 'long');
@@ -20,7 +21,7 @@
 <section class="sec" aria-labelledby="kk-credits">
   <h3 id="kk-credits" class="sec-label">{t('kiki.set.credits')}</h3>
   <button type="button" class="row tile-btn" aria-expanded={open} data-kiki-set-credits data-sfx="tick" onclick={toggle}>
-    <span class="rl">{t('kiki.mode.long')}<small>{t('kiki.set.creditsAbout')}</small></span>
+    <span class="rl">{t('kiki.mode.long')}<small><Phrases text={t('kiki.set.creditsAbout')} /></small></span>
     <span class="chev" aria-hidden="true">{open ? '⌄' : '›'}</span>
   </button>
   {#if open && pieces}
