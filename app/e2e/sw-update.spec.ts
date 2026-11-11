@@ -153,6 +153,8 @@ async function deploy(page: Page, context: import('@playwright/test').BrowserCon
 test('a cold open into a waiting deploy reloads into it before the island is built (ui-state/launchUpdate.ts)', { tag: '@chromium' }, async ({ page, context }) => {
   // each document: whether its island was made (window.__world3d set), by its time origin
   await page.addInitScript(() => {
+    // (the launch's waits stretched: a slow runner's answer or install past 600 ms / 3 s boots the old build by design)
+    localStorage.setItem('e2e.launchWait', '15000');
     const id = String(performance.timeOrigin);
     sessionStorage.setItem('e2e.docs', JSON.stringify([...(JSON.parse(sessionStorage.getItem('e2e.docs') ?? '[]') as string[]), id]));
     let w3d: unknown;

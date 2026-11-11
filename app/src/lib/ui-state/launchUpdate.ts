@@ -29,16 +29,28 @@ export const launchHolding = (): boolean => holding;
 
 const after = (ms: number) => new Promise<false>((ok) => setTimeout(ok, ms, false));
 
+/** An e2e phone's stretched waits (`e2e.launchWait`, ms for both; only with `e2e`, playwright.config.ts): a slow CI
+ *  runner's answer or install past ASK_MS / HOLD_MS would boot the old build, as a phone's slow one does by design. */
+function waits(): [number, number] {
+  try {
+    const ms = localStorage.getItem('e2e') === '1' ? Number(localStorage.getItem('e2e.launchWait')) : 0;
+    return ms > 0 ? [ms, ms] : [ASK_MS, HOLD_MS];
+  } catch {
+    return [ASK_MS, HOLD_MS];
+  }
+}
+
 /** Starts the launch's ask (+layout.ts: a launch on the island the service worker served, online). Once. */
 export function askAtLaunch({ check, worker = newWorker, reload = () => safeReload(Date.now(), 'launch'), now = () => performance.now() }: Deps): void {
   if (launch) return;
   const l = (launch = { p: Promise.resolve(), at: now(), answered: 0 });
   const asked = check().then((newer) => ((l.answered = now()), newer), () => ((l.answered = now()), false));
+  const [askMs, holdMs] = waits();
   l.p = (async () => {
-    if (!(await Promise.race([asked, after(ASK_MS)]))) return;
+    if (!(await Promise.race([asked, after(askMs)]))) return;
     holding = true;
     try {
-      if ((await Promise.race([worker(), after(HOLD_MS)])) && reload()) await new Promise<never>(() => {});
+      if ((await Promise.race([worker(), after(holdMs)])) && reload()) await new Promise<never>(() => {});
     } finally {
       holding = false;
     }
