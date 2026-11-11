@@ -143,18 +143,25 @@ jobs:
           include-hidden-files: true
           compression-level: 0
           retention-days: 1
-      # the plan, once `checks` uploaded it (red if `checks` failed before it, or none in 3 min)
+      # the plan, once `checks` uploaded it (red if `checks` failed before it, or none in 6 min). Polled every 15 s, the
+      # jobs only when the plan isn't there: the workflow token's API quota is per repo and hourly, and a 3 s poll of
+      # both from 4 shards (~160 calls a minute a run) used it up on a busy day (2026-11-11), every gate then red here.
+      # An API error is printed, not swallowed.
       - env:
           GH_TOKEN: ${{ github.token }}
         run: |
           api="repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          for _ in $(seq 60); do
-            [ "$(gh api "$api/artifacts?name=gate-plan" --jq .total_count 2>/dev/null)" = 1 ] && exit 0
-            state=$(gh api "$api/attempts/$GITHUB_RUN_ATTEMPT/jobs?per_page=100" --jq '.jobs[] | select(.name == "checks") | .conclusion' 2>/dev/null || true)
-            case "$state" in failure|cancelled|skipped) echo "::error::the checks job: $state, no plan"; exit 1 ;; esac
-            sleep 3
+          for _ in $(seq 24); do
+            if n=$(gh api "$api/artifacts?name=gate-plan" --jq .total_count 2>/tmp/gh.err); then
+              [ "$n" = 1 ] && exit 0
+              state=$(gh api "$api/attempts/$GITHUB_RUN_ATTEMPT/jobs?per_page=100" --jq '.jobs[] | select(.name == "checks") | .conclusion' 2>>/tmp/gh.err || true)
+              case "$state" in failure|cancelled|skipped) echo "::error::the checks job: $state, no plan"; exit 1 ;; esac
+            else
+              echo "::warning::gh api: $(head -c 300 /tmp/gh.err)"
+            fi
+            sleep 15
           done
-          echo "::error::no gate-plan from the checks job in 3 min"; exit 1
+          echo "::error::no gate-plan from the checks job in 6 min"; exit 1
       # (sel/: specs.txt, x3.txt (the changed specs: E2E_X3), quarantine.txt; shards/: the plan)
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -242,11 +249,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           api="repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          for _ in $(seq 100); do
-            [ "$(gh api "$api/artifacts?name=site" --jq .total_count 2>/dev/null)" = 1 ] && exit 0
-            state=$(gh api "$api/attempts/$GITHUB_RUN_ATTEMPT/jobs?per_page=100" --jq '.jobs[] | select(.name == "e2e-gate (1)") | .conclusion' 2>/dev/null || true)
-            case "$state" in failure|cancelled|skipped) echo "::error::e2e-gate (1): $state, no site"; exit 1 ;; esac
-            sleep 3
+          # (every 10 s, the jobs only when the site isn't there: the token's hourly quota, as the gate-plan's wait)
+          for _ in $(seq 30); do
+            if n=$(gh api "$api/artifacts?name=site" --jq .total_count 2>/tmp/gh.err); then
+              [ "$n" = 1 ] && exit 0
+              state=$(gh api "$api/attempts/$GITHUB_RUN_ATTEMPT/jobs?per_page=100" --jq '.jobs[] | select(.name == "e2e-gate (1)") | .conclusion' 2>>/tmp/gh.err || true)
+              case "$state" in failure|cancelled|skipped) echo "::error::e2e-gate (1): $state, no site"; exit 1 ;; esac
+            else
+              echo "::warning::gh api: $(head -c 300 /tmp/gh.err)"
+            fi
+            sleep 10
           done
           echo "::error::no site from e2e-gate (1) in 5 min"; exit 1
       - if: steps.ready.outputs.go == 'true'
@@ -264,8 +276,8 @@ jobs:
         run: |
           api="repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT/jobs?per_page=100"
           errors=0
-          for _ in $(seq 400); do
-            if gh api "$api" > "$RUNNER_TEMP/jobs.json"; then
+          for _ in $(seq 120); do
+            if gh api "$api" > "$RUNNER_TEMP/jobs.json" 2>/tmp/gh.err; then
               errors=0
               verdict=$(node app/scripts/deploy-gate.ts "$RUNNER_TEMP/jobs.json") || verdict="red: the check itself failed"
               case "$verdict" in
@@ -274,9 +286,10 @@ jobs:
               esac
             else
               errors=$((errors + 1))
+              echo "::warning::gh api: $(head -c 300 /tmp/gh.err)"
               [ "$errors" -ge 5 ] && { echo "::error::the jobs API failed 5 times running: nothing deployed"; exit 1; }
             fi
-            sleep 3
+            sleep 10
           done
           echo "::error::the gate not done in 20 min (${verdict:-no answer}): nothing deployed"; exit 1
       # The order guard (scripts/deploy-order.ts): never older code over newer.
