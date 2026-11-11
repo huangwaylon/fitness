@@ -23,6 +23,7 @@ const FIELD: Seed = ['decor', { sc: 'o', id: 'field-A', at: 1.79e12, k: 'field',
 /** A plot's id and its world point (its tile's middle: the grid's x0 and z0 −90, 30 a tile). */
 const plot = (i: number, j = 0) => ({ p: `fd:field-A.${i}.${j}`, x: -90 + (10 + i) * 30 + 15, z: -90 + (17 + j) * 30 + 15 });
 const D = '2026-11-04';
+const SHOTS = process.env.SHOTS;
 /** 200 かいがら (a koi sold) and three tomato starts (3 × 14). */
 const POCKET: Seed[] = [['tally', { date: D, counts: { 'fish:koi': 1 } }, 'A'], ['sell', { species: 'fish:koi', n: 1, v: 200 }, 'A'], ['buy_starts', { crop: 'tomato', n: 3, v: 42 }, 'A']];
 /** The plot words this page pops (FarmPop's tag lives 1.2 s: each caught as it comes). */
@@ -271,4 +272,40 @@ test('the partner’s watering of my plants plays on my island: drops over each,
   await expect.poll(fx, { timeout: 5000 }).toEqual(['drops', 'drops', 'hearts']);
   await tapWorld(page, plot(0).x, plot(0).z);
   await expect.poll(() => pops(page)).toEqual([expect.stringMatching(/が みずを やってくれた$/)]);
+});
+
+test('the はたけ pill’s held-crop badge opens the picker in place; its pick only changes what I hold, the pill still opens 畑', async ({ page }) => {
+  await seed(page, D, [FIELD, ...POCKET, ['buy_starts', { crop: 'carrot', n: 2, v: 28 }, 'A']]);
+  await page.goto(`?demo&date=${D}T12:00&weather=clear`);
+  await islandUp(page);
+  await quiet(page);
+  // nothing held yet: a plot's picker plants a tomato, the badge wears it
+  await tapWorld(page, plot(0).x, plot(0).z);
+  await page.locator('[data-farm-pick="start:tomato"]').click();
+  const badge = page.locator('[data-farm-held]');
+  await expect(badge).toHaveAttribute('data-farm-held', 'tomato');
+  // the badge: its own 44 px target; the picker over the pill, no sheet, nothing planted by it
+  const box = await badge.boundingBox();
+  expect(Math.min(box!.width, box!.height)).toBeGreaterThanOrEqual(44);
+  await badge.click();
+  await expect(page.locator('[data-farm-picker]')).toBeVisible();
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  // (its tap again shuts it, once more opens it)
+  await badge.click();
+  await expect(page.locator('[data-farm-picker]')).toHaveCount(0);
+  await badge.click();
+  await expect(page.locator('[data-farm-pick="start:carrot"]')).toContainText('ニンジン');
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/farm-badge-picker.png` });
+  await page.locator('[data-farm-pick="start:carrot"]').click();
+  await expect(page.locator('[data-farm-picker]')).toHaveCount(0);
+  await expect(badge).toHaveAttribute('data-farm-held', 'carrot');
+  await expect.poll(() => badge.locator('img').evaluate((i) => i.getAttribute('data-src') ?? i.getAttribute('src'))).toMatch(/carrot/);
+  expect(await farmRows(page)).toEqual([{ o: 'plant', p: plot(0).p, c: 'tomato', src: 'start' }]);
+  // the next plot: a carrot
+  await tapWorld(page, plot(1).x, plot(1).z);
+  await expect.poll(() => farmRows(page)).toEqual([{ o: 'plant', p: plot(0).p, c: 'tomato', src: 'start' }, { o: 'plant', p: plot(1).p, c: 'carrot', src: 'start' }]);
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/farm-badge-carrot.png` });
+  // the pill's body still opens 畑
+  await page.locator('[data-farm-open]').click();
+  await expect(page.locator('[data-farm-count]')).toHaveText('2/40株');
 });

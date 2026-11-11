@@ -1,8 +1,9 @@
 <script lang="ts">
   // The picker (docs/farming.md "Playing"): what I hold to plant, a small cream card over the farm button. Each cell is
   // its crop's own art and name, a start with NH's seedling on it (the six starts' art is one seedling), and how many.
-  // Opened by a tap on my empty plot with nothing held or none left: that pick plants the plot at once, and is kept on
-  // this phone (the farm button wears it). It shuts on a pick, a tap outside it, Esc or a sheet opening.
+  // Opened by a tap on my empty plot with nothing held or none left (that pick plants the plot at once), or by the farm
+  // button's held-crop badge (the pick only changes what I hold). The pick is kept on this phone (the badge wears it).
+  // It shuts on a pick, a tap outside it (the badge's own tap toggles it), Esc or a sheet opening.
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { CROPS, seedKey, type Crop, type FarmSrc } from '#lib/contract/farm.ts';
   import { shopView } from '#lib/model/shop.ts';
@@ -28,10 +29,11 @@
   $effect(() => {
     if (ui.sheets.length) closePicker();
   });
-  // a tap outside shuts it (capture: the tap itself goes on), Esc too
+  // a tap outside shuts it (capture: the tap itself goes on; the badge's is its own toggle), Esc too
   $effect(() => {
     const down = (e: PointerEvent) => {
-      if (!(e.target instanceof Node) || !root?.contains(e.target)) closePicker();
+      const at = e.target instanceof Element ? e.target : null;
+      if (!root?.contains(at) && !at?.closest('[data-farm-held]')) closePicker();
     };
     const key = (e: KeyboardEvent) => {
       if (e.key === 'Escape') closePicker();
@@ -67,7 +69,7 @@
 
 <style>
   .picker {
-    position: absolute; left: 0; bottom: calc(100% + 10px); z-index: 1; width: max-content; max-width: calc(100cqw - 24px);
+    position: absolute; left: 0; bottom: calc(100% + 22px); z-index: 1; width: max-content; max-width: calc(100cqw - 24px);
     padding: 10px 12px 12px; border-radius: var(--r-card, 18px); background: var(--c-cream); color: var(--c-ink);
     box-shadow: 0 var(--lip-h) 0 var(--c-lip), 0 8px 18px rgb(60 40 20 / .18);
   }

@@ -79,6 +79,7 @@ levers, if the live numbers drift (`npm run logs`, the sells): `FARM.regrowDays`
   A harvest is one pop a tap (a semitone up a tap in a row), a sparkle a plant, one plate per crop counting up.
 - **The word** pops over the plot for 1.2 s (「トマトを うえた」, 「みずやり ずみ」), never in my villager's balloon.
 - **The picker:** the starts (a seedling badge) and vegetables I hold, with counts; kept on this phone.
+  The held-crop badge is its own 44 px button: a tap opens the picker in place, its pick only changes what I hold.
 - **Watered soil** stays dark for the day; a ripe plant shows its yield's model. Their plant or harvest shows on their
   next sync. **Who watered:** the partner's or guest's watering plays on my island at once (their villager
   turns, drops, a heart over mine); the sheet notes 「今日はうめが水やりしてくれました（4株）」.

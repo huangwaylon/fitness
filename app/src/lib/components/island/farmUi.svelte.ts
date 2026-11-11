@@ -1,5 +1,6 @@
 // The fields' controls on this phone (docs/farming.md "Playing"): the picker (FarmPicker), opened by a tap on my empty
-// plot with nothing held, or none left (SceneTaps), whose pick plants that plot, and the verb a plot's tap pops over it
+// plot with nothing held, or none left (SceneTaps), whose pick plants that plot, or by the farm button's held-crop
+// badge (FarmButton), whose pick only changes what I hold; the verb a plot's tap pops over it
 // (FarmPop), and the 畑 sheet's wave over the island on its close (farmWave, played by SceneTaps).
 import { seedKey, type Crop, type FarmSrc } from '#lib/contract/farm.ts';
 import { pickSeed, type Seed } from '#lib/store/farm.svelte.ts';
@@ -31,7 +32,7 @@ export function farmWave(kind: FarmWave['kind'], ps: readonly string[]): void {
   farmUi.wave = { kind, ps: [...ps], n: ++waves, at: now };
 }
 
-/** What the open picker's pick does once kept: the tapped plot planted (SceneTaps), else nothing more. */
+/** What the open picker's pick does once kept: the tapped plot planted (SceneTaps), else nothing more (the badge's). */
 let then: (() => void) | null = null;
 
 export function openPicker(after?: () => void): void {
