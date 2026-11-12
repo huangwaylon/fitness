@@ -5,7 +5,8 @@
 node_modules
 .svelte-kit/
 # the food-data pipeline: third-party raw downloads (never committed: the repo is public), its build output
-# (app/static/food/ ships it, via npm run food:data), a build's staging dir
+# (app/static/food/ ships it, via npm run food:data; out/private/, Kalori's, never ships: docs/food-data.md#kalori), a
+# build's staging dir
 food-data/raw/
 food-data/out/
 food-data/.build-*/
