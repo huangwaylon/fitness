@@ -31,13 +31,16 @@ export const SLICE = 2000;
 /** The packaged products' datasets (Open Food Facts, the JBFD's 市販品): ranked a little under the other secondary
  *  ones (search.ts PRODUCT_PENALTY). */
 const PRODUCT_SOURCES: ReadonlySet<string> = new Set(['off', 'jbfd']);
+/** The members' chain menus (Kalori, load.ts): a little under the other secondary ones, over the products: 牛丼 finds
+ *  牛丼（並盛） before a chain's. */
+const KALORI_PENALTY = 0.25;
 
-/** A dataset into the catalog: its items searchable (a `secondary` one's ranked lower, a product's lower still), its
- *  header credited. With `pause`, a slice at a time, awaiting it in between (the slices stay in order and together). */
+/** A dataset into the catalog: its items searchable (a `secondary` one's ranked lower, a product's or a chain menu's
+ *  lower still), its header credited. With `pause`, a slice at a time, awaiting it in between (the slices stay in order and together). */
 export async function addDataset(db: FoodDb, meta: FoodIndex['datasets'][number], data: Dataset, pause?: () => Promise<void>): Promise<void> {
   const { label, attribution, license, url } = data;
   db.sets.push({ source: meta.source, badge: meta.badge, label, attribution, license, url });
-  const pen = (meta.secondary ? SECONDARY_PENALTY : 0) + (PRODUCT_SOURCES.has(meta.source) ? PRODUCT_PENALTY : 0);
+  const pen = (meta.secondary ? SECONDARY_PENALTY : 0) + (PRODUCT_SOURCES.has(meta.source) ? PRODUCT_PENALTY : meta.source === 'kalori' ? KALORI_PENALTY : 0);
   const items = data.items;
   for (let i = 0; i < items.length; i += SLICE) {
     if (i && pause) await pause();

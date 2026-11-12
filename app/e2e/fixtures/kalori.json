@@ -1,0 +1,13 @@
+{
+  "source": "kalori",
+  "label": "kalori.jp（チェーン店のメニュー）",
+  "attribution": "e2e: invented items",
+  "license": "e2e",
+  "url": "https://kalori.jp",
+  "shops": { "tameshi": { "name": "ためし食堂", "aliases": ["ためし"] }, "mihon": { "name": "みほん珈琲" } },
+  "items": [
+    { "id": "kal:900001", "name": "ためし丼 並盛", "brand": "ためし食堂", "shop": "tameshi", "cat": "丼・定食", "kcal": 1180, "p": 31.5, "f": 28, "c": 190.2, "salt": 3.4, "est": "p", "img": 900001, "sv": true, "portions": [{ "label": "1食", "g": 100 }], "vg": "kal:900001", "st": "並盛" },
+    { "id": "kal:900002", "name": "ためし丼 大盛", "brand": "ためし食堂", "shop": "tameshi", "cat": "丼・定食", "kcal": 1460, "p": 38, "f": 34.5, "c": 240, "salt": 4.1, "sv": true, "portions": [{ "label": "1食", "g": 100 }], "vg": "kal:900001", "st": "大盛" },
+    { "id": "kal:900003", "name": "みほんブレンド", "brand": "みほん珈琲", "shop": "mihon", "cat": "飲み物", "kcal": 12, "p": 0.6, "f": 0, "c": 2.1, "est": "e", "sv": true, "portions": [{ "label": "1食", "g": 100 }] }
+  ]
+}

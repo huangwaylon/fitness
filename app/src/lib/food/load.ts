@@ -1,13 +1,15 @@
 // The meal log's IO edge: the food data from static/food/ (scripts/food-data.ts), fetched when the food sheet first
 // opens, never at install (service worker: cached on first use under its `?v=`, so it works offline after that).
 // index.json first (past the HTTP cache: it names the version), then the core datasets and verify.json together; the
-// lazy ones (products, 2.7 MB) only once asked for (`db.wantMore`: the search's open), in `db.more`. A dataset that fails to load is left out (its items unsearchable)
+// lazy ones (products, 2.7 MB; for a member, the chain menus from the relay: kalori.ts) only once asked for
+// (`db.wantMore`: the search's open), in `db.more`. A dataset that fails to load is left out (its items unsearchable)
 // till a retry at its next chance brings it (`chance`: the caller's, ui-state/retry.ts nextChance; none: no retry;
 // `db.onAdd` says when one comes in, the search searching again);
 // only a missing index.json fails the load. Each is indexed a slice per task (db.ts SLICE), never a long frame.
 import { addDataset, emptyDb, withJan, type FoodDb } from './db.ts';
 import type { Dataset, FoodIndex, Verify } from './types.ts';
 import type { Parsed } from './dataset.worker.ts';
+import { fetchKalori, Refused } from './kalori.ts';
 import { quiet, swallowed } from '#lib/quiet.ts';
 import { staticUrl } from '#lib/staticUrl.ts';
 
@@ -24,6 +26,15 @@ async function json<T>(href: string, init?: RequestInit): Promise<T> {
 
 /** Back to the event loop: a frame, a keystroke go first. */
 const pause = (): Promise<void> => new Promise((ok) => setTimeout(ok, 0));
+
+/** The chain menus' address and this phone's key (foodUi.ts kaloriSource: a member's, paired). */
+export interface KaloriSource {
+  href: string;
+  key: string;
+}
+/** The chain menus as a dataset: secondary and lazy, not in index.json (db.ts ranks them under the other secondary
+ *  ones). */
+const KALORI: FoodIndex['datasets'][number] = { file: 'kalori', source: 'kalori', badge: '店', secondary: true, lazy: true };
 
 /** The parsing worker (null: none to be had, parse here) and the datasets it's parsing, by request id. */
 let parser: Worker | null | undefined;
@@ -46,7 +57,7 @@ function startParser(): Worker | null {
     }
     parsing.delete(m.id);
     if ('head' in m) p.ok({ ...m.head, items: p.items });
-    else p.no(new Error(m.error));
+    else p.no(m.refused ? new Refused(m.error) : new Error(m.error));
     // (nothing left to parse: let it go; a later dataset (the products, a retry) starts another)
     if (!parsing.size) {
       parser?.terminate();
@@ -63,19 +74,21 @@ function startParser(): Worker | null {
   return parser;
 }
 
-/** A dataset file, fetched and parsed in the worker (its items' barcodes and search keys in), or here without one. */
-function fetchDataset(href: string): Promise<Dataset> {
+/** A dataset file (with `key`: the chain menus, kalori.ts), fetched and parsed in the worker (its items' barcodes and
+ *  search keys in), or here without one. */
+function fetchDataset(href: string, key?: string): Promise<Dataset> {
   const w = startParser();
-  if (!w) return json<Dataset>(href).then(withJan);
+  if (!w) return (key ? fetchKalori(href, key) : json<Dataset>(href)).then(withJan);
   const id = nextId++;
   return new Promise((ok, no) => {
     parsing.set(id, { items: [], ok, no });
-    w.postMessage({ id, href: new URL(href, location.href).href });
+    w.postMessage({ id, href: new URL(href, location.href).href, key });
   });
 }
 
-/** `chance(n)`: when to fetch a failed dataset again (its `n`-th retry); none: it stays out. */
-export async function loadFoodDb(chance?: (n: number) => Promise<void>): Promise<FoodDb> {
+/** `chance(n)`: when to fetch a failed dataset again (its `n`-th retry); none: it stays out. `kalori`: where the chain
+ *  menus come from, asked at `wantMore` (null: none for this phone). */
+export async function loadFoodDb(chance?: (n: number) => Promise<void>, kalori?: () => KaloriSource | null): Promise<FoodDb> {
   const index = await json<FoodIndex>(url('index.json'), { cache: 'no-cache' });
   const db = emptyDb(index);
   // One dataset indexed at a time, in slices, in the order they arrive: a core one's keys come built
@@ -87,21 +100,25 @@ export async function loadFoodDb(chance?: (n: number) => Promise<void>): Promise
   db.onAdd = (f) => (listeners.add(f), () => void listeners.delete(f));
   const add = (meta: FoodIndex['datasets'][number], d: Dataset) =>
     (indexing = indexing.then(() => addDataset(db, meta, d, pause)).then(() => listeners.forEach((f) => f()), () => swallowed('food.index')));
-  const again = (meta: FoodIndex['datasets'][number], n: number): void =>
-    void chance?.(n).then(() => fetchDataset(url(meta.file, index.version)).then((d) => void add(meta, d), () => n < RETRIES && again(meta, n + 1)));
-  const load = (meta: FoodIndex['datasets'][number]) =>
-    fetchDataset(url(meta.file, index.version)).then((d) => add(meta, d), () => again(meta, 0));
+  // (the relay's no to the chain menus is final: kalori.ts Refused)
+  type Get = () => Promise<Dataset>;
+  const again = (meta: FoodIndex['datasets'][number], get: Get, n: number): void =>
+    void chance?.(n).then(() => get().then((d) => void add(meta, d), (e) => n < RETRIES && !(e instanceof Refused) && again(meta, get, n + 1)));
+  const load = (meta: FoodIndex['datasets'][number], get: Get = () => fetchDataset(url(meta.file, index.version))) =>
+    get().then((d) => add(meta, d), (e) => void (e instanceof Refused || again(meta, get, 0)));
   const core = index.datasets.filter((d) => !d.lazy);
   const lazy = index.datasets.filter((d) => d.lazy);
   // all at once, added in the order they arrive (search ranks by match, not by file)
-  const [verify] = await Promise.all([quiet(json<Verify>(url('verify.json', index.version)), 'food.verify', null), ...core.map(load)]);
+  const [verify] = await Promise.all([quiet(json<Verify>(url('verify.json', index.version)), 'food.verify', null), ...core.map((d) => load(d))]);
   db.verify = verify;
+  const chains = () => {
+    const k = kalori?.();
+    return k && load(KALORI, () => fetchDataset(k.href, k.key));
+  };
   let wanted: Promise<void> | null = null, settle = () => {};
   db.more = new Promise<void>((ok) => (settle = ok));
   db.wantMore = () => {
-    wanted ??= (async () => {
-      for (const d of lazy) await load(d);
-    })().then(settle, settle);
+    wanted ??= Promise.all([...lazy.map((d) => load(d)), chains()]).then(() => settle(), settle);
     return db.more;
   };
   return db;

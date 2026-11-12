@@ -1,0 +1,59 @@
+// ごはん's chain menus (Kalori, docs/food-data.md "Kalori"): on a member's paired phone (e2e/record.ts: the relay's real
+// record) the search's open fetches the relay's `/food/kalori` with the phone's key (here a route to a fixture of
+// invented items), its rows show their shop, and one logs by the serving (`sv`, kept by the record); the guest's phone
+// never asks for them. The demo has none (e2e/food.spec.ts).
+import { readFileSync } from 'node:fs';
+import { expect, test, type Browser } from './fixtures.ts';
+import { islandUp } from './island.ts';
+import { openKenkou } from './hud.ts';
+import { newRecord } from './record.ts';
+import { KEY_OF, RELAY } from './relay.ts';
+
+const DATA = readFileSync(new URL('./fixtures/kalori.json', import.meta.url), 'utf8');
+type Rec = ReturnType<typeof newRecord>;
+
+/** A fresh phone paired as `who` on `rec`, the relay's chain menus routed to the fixture (each request's key kept),
+ *  its ごはん open on 昼ごはん's search. */
+async function search(browser: Browser, rec: Rec, who: 'A' | 'G') {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: 'ja-JP', timezoneId: 'Asia/Tokyo', serviceWorkers: 'block' });
+  await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
+  await rec.pair(context, who);
+  const auth: string[] = [];
+  await context.route(`${RELAY}/food/kalori`, (route) => {
+    const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization, If-None-Match', 'Access-Control-Expose-Headers': 'ETag' };
+    if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
+    auth.push(route.request().headers()['authorization'] ?? '');
+    return route.fulfill({ status: 200, contentType: 'application/json', headers: { ...cors, ETag: '"e2e"', 'Cache-Control': 'private, no-cache' }, body: DATA });
+  });
+  const page = await context.newPage();
+  await page.goto('');
+  await islandUp(page);
+  await openKenkou(page, 'food');
+  const sheet = page.locator('dialog[open] :is(.titlebar, [data-food-sheet])');
+  await sheet.locator('[data-add=l]').click();
+  await sheet.locator('[data-food-q]').fill('ためし丼');
+  return { page, sheet, auth };
+}
+
+test('a member’s search has the chain menus: the shop on the row, logged by the serving with the phone’s key', async ({ browser }) => {
+  const rec = newRecord();
+  const a = await search(browser, rec, 'A');
+  const row = a.sheet.locator('[data-food-results] [data-item="kal:900001"]');
+  await expect(row).toBeVisible({ timeout: 15_000 });
+  await expect(row.locator('[data-brand]')).toHaveText('ためし食堂');
+  await expect(row.locator('.kc')).toContainText('1,180');
+  await expect(row.locator('.kc small')).toHaveText('1食');
+  expect(a.auth).toEqual([`Bearer ${KEY_OF.A}`]);
+  await row.click();
+  await a.sheet.locator('[data-food-open-add]').click();
+  await expect.poll(() => rec.sent.filter((e) => e.type === 'food').map((e) => [e.ok, e.data.g, e.data.f])).toEqual([
+    [true, 100, { id: 'kal:900001', n: 'ためし丼 並盛', k: 1180, p: 31.5, fa: 28, c: 190.2, s: 3.4, u: '1食', sv: true }]
+  ]);
+});
+
+test('the guest’s phone never asks for the chain menus: its search has none', async ({ browser }) => {
+  const g = await search(browser, newRecord(), 'G');
+  await expect(g.sheet.locator('[data-food-none]')).toBeVisible({ timeout: 15_000 });
+  await expect(g.sheet.locator('[data-item^="kal:"]')).toHaveCount(0);
+  expect(g.auth).toEqual([]);
+});

@@ -9,12 +9,21 @@ import {
 import { quiet } from '#lib/quiet.ts';
 import { parseTyped } from '#lib/math.ts';
 import type { Recipe } from '#lib/model/food.ts';
-import { itemById, loadFoodDb, portionsOf, unitOf, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
+import { itemById, loadFoodDb, portionsOf, unitOf, type FoodDb, type Item, type KaloriSource, type Portion } from '#lib/food/index.ts';
 import { dropFoodImages, imgOf, loadFoodImages, type FoodImageIndex, type FoodImg } from '#lib/food/images.ts';
 import { searchKey } from '#lib/food/text.ts';
 import { formatNum, t } from '#lib/i18n/index.ts';
 import { nextChance } from '#lib/ui-state/retry.ts';
-import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
+import { DEVICE, getKey, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
+import { logUrl } from '#lib/sync/transport.ts';
+import { week } from '#lib/store/week.svelte.ts';
+
+/** The members' chain menus (Kalori): the relay's `/food/kalori` (beside `/log`) with this phone's key; none in the
+ *  demo, for the guest, unpaired or with no relay. */
+function kaloriSource(): KaloriSource | null {
+  const key = getKey(), log = logUrl();
+  return week.demo || week.guest || !key || !log ? null : { href: log.replace(/\/log$/, '/food/kalori'), key };
+}
 
 let dbP: Promise<FoodDb> | null = null;
 let ready: FoodDb | null = null;
@@ -22,7 +31,7 @@ const waiting = new Set<(db: FoodDb) => void>();
 /** The food catalog, fetched when the search or an amount first needs it, or at idle once a day is up (foodDbSoon); a
  *  failure lets the next call try again. */
 export function foodDb(): Promise<FoodDb> {
-  const p: Promise<FoodDb> = (dbP ??= loadFoodDb(nextChance).then(
+  const p: Promise<FoodDb> = (dbP ??= loadFoodDb(nextChance, kaloriSource).then(
     (db) => {
       if (dbP === p) ready = db;
       for (const f of waiting) f(db);

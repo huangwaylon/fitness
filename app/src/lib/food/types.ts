@@ -23,7 +23,7 @@ export interface Item {
    *  PFC, `e` all estimated; absent: official) and its picture's generation id. */
   shop?: string;
   est?: 'p' | 'e';
-  img?: string;
+  img?: number;
   /** Values per serving, not per 100 g (a chain menu's: no weight known): logged as FoodSnap `sv`, its portion a nominal
    *  100 g serving. */
   sv?: true;

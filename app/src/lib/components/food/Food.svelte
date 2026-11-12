@@ -391,9 +391,9 @@
     catalog = db;
     void db.more.then(() => catalogRev++);
   })));
-  // (the products only for a day with one of them logged: never for the open alone, 2.7 MB)
+  // (the products and chain menus only for a day with one of them logged: never for the open alone, 2.7 MB)
   $effect(() => {
-    if (catalog && day?.entries.some((e) => e.f.id.startsWith('off:'))) void catalog.wantMore();
+    if (catalog && day?.entries.some((e) => /^(off|kal):/.test(e.f.id))) void catalog.wantMore();
   });
   // (only while open: a quick close cancels it, as an unmount did; the next opening asks again until it is in)
   $effect(() => {

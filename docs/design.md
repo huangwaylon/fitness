@@ -203,6 +203,8 @@ loads with the first search, or at idle, in a worker); kept mounted between open
   A name breaks only at its brackets, ＋ and ・ (`Phrases name`). Nothing holding the whole query: 見つかりませんでした,
   自分で作る, then **近いもの**, the names holding most of it (`nearby`: 「とんこつ醤油ラーメン味玉…」 → 豚骨醤油ラーメン).
   Offline: a message, a retry, the recent list.
+  A member's search also holds the chain menus (Kalori, [food-data.md](food-data.md#kalori)): the shop on the row's
+  meta line, 1食 as the portion, logged by the serving.
 - **Amount** (`FoodPortion`): one screen on an iPhone 15: the picture (marked as an AI image), kcal, P · F · C · 塩分;
   **状態** chips (the portion carried through its yield); **量** (portions; −/＋ ×0.5 to ×20 by halves, a counted
   portion's whole past ×2, shown ×1.5; grams or ml for the rest); the foot (the meal and add, or 保存 / 削除) held over the

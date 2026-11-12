@@ -176,6 +176,12 @@ forbid redistribution (第8条), so it never goes public: the file lives in the 
 - **Dropped:** no name or kcal, a name over 60 characters, over the custom-food limits (5,000 kcal, 500 g), or an
   OFF product of the same name whose brand is the shop (the label wins; the same name by another maker stays).
   Never in `verify.json`: estimates get no ✓n.
+- **On the phone** (`app/src/lib/food/kalori.ts`): a member's paired phone fetches it with the lazy datasets
+  (`db.wantMore`), in the parsing worker, its key in `Authorization`; never in the demo or for the guest. Kept in the
+  Cache API (`food-kalori`) for offline, asked again at each catalog load with its ETag (304: the kept copy); 401,
+  403 or 404 drop the copy, not asked again till the next load; offline or a 5xx use the copy. Ranked under the
+  other secondary sets (pen 1.75), over the products; logged as an `sv` snapshot (whole servings, no grams). About
+  25 MB of heap once in (V8, synthetic 38k rows; each item's one `1食` portion is left out, portionsOf's default).
 - **Tests:** `food-data/scripts/tests/test_kalori_convert.py`, on invented rows only (no Kalori data in the repo).
 
 ## Sources evaluated and not used
