@@ -121,6 +121,7 @@ describe('the amount: start, step, label', () => {
     expect(defaultPortion({ id: 'x', name: '豚ロース', kcal: 248, portions: [{ label: '1枚（とんかつ用）（120g）', g: 120 }] }).label).toBe('1枚 120g');
     expect(defaultPortion({ id: 'x', name: '水', kcal: 0, portions: [{ label: '1杯（200ml）', g: 200 }] }).label).toBe('1杯 200ml');
     expect(defaultPortion({ id: 'x', name: '?', kcal: 50 })).toEqual({ label: '100g', kcal: 50 });
+    expect(defaultPortion({ id: 'kal:1', name: '牛丼', kcal: 733, sv: true, portions: [{ label: '1食', g: 100 }] })).toEqual({ label: '1食', kcal: 733 });
   });
 });
 

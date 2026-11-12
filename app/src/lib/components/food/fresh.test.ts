@@ -41,4 +41,10 @@ describe('最新の値にする: an entry’s food as it is now', () => {
       { id: 'custom:mabc1234', n: '弁当', k: 650, p: 20, fa: null, c: null, s: null, u: '1食', sv: true }, null
     ]);
   });
+  it('a catalog item by the serving (sv, a chain menu’s): its snapshot per serving, kept so, updated as one', async () => {
+    const db = await dbOf([{ id: 'kal:1', name: '牛丼', kcal: 733, p: 22.9, f: 25, c: 104.1, salt: 2.9, sv: true, portions: [{ label: '1食', g: 100 }] }]);
+    const old: FoodSnap = { id: 'kal:1', n: '牛丼', k: 700, p: 22.9, fa: 25, c: 104.1, s: 2.9, u: '1食', sv: true };
+    const src = { db, recipes: [], customs: [] };
+    expect([latestSnap(old, src), latestSnap({ ...old, k: 733 }, src), latestSnap({ ...old, sv: undefined }, src)]).toEqual([{ ...old, k: 733 }, null, null]);
+  });
 });

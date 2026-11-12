@@ -228,7 +228,7 @@
   /** A food as a row's ＋ takes it: its default portion (a serving's for one with no weight), or a recent one's amount. */
   function asItComes(item: Item, g?: number, u?: string, f?: FoodSnap) {
     const p = pickOf(item, f);
-    const d = g === undefined ? (p.sv && p.item.portions?.length ? p.item.portions : portionsOf(p.item))[0] : null;
+    const d = g === undefined ? portionsOf(p.item)[0] : null;
     return { p, gg: d ? d.g : g!, uu: d ? portionLabel(d, 1) : (u ?? null) };
   }
   // ---- クイック: one entry of kcal (and what else is known), no food saved (foodUi.ts quickSnap: an `sv` snapshot)
@@ -271,11 +271,14 @@
     go({ k: 'amount', meal, ...pickOf(item, f), g0, u0 });
   }
   /** A food picked (a catalog item, a recent entry's food `f`, a custom food as customItem): a custom food still there
-   *  as it is now, logged by logCustom; else an `sv` snapshot kept as logged (its values per serving). */
+   *  as it is now, logged by logCustom; else an `sv` snapshot kept as logged (its values per serving); a catalog item by
+   *  the serving (`sv`: a chain menu's) as one. */
   function pickOf(item: Item, f?: FoodSnap): Picked {
     const c = item.id.startsWith('custom:') ? allCustoms.find((x) => `custom:${x.id}` === item.id) : undefined;
     if (c) return { item: customItem(c), cid: c.id, sv: c.g === undefined };
-    return f && servingOnly(f) ? { item, sv: true, snap: f } : { item: inState(foodDbNow(), item) };
+    if (f && servingOnly(f)) return { item, sv: true, snap: f };
+    const it = inState(foodDbNow(), item);
+    return { item: it, sv: !!it.sv };
   }
   /** A snapshot as logged, picked by another portion (`u`). */
   function withU(f: FoodSnap, u: string | null): FoodSnap {

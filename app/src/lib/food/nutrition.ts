@@ -9,9 +9,11 @@ export const unitOf = (label: string | null | undefined): 'g' | 'ml' => (label &
 /** 'ml' when the item's portions are measured in ml (a drink). */
 const itemUnit = (item: Pick<Item, 'portions'>): 'g' | 'ml' => ((item.portions ?? []).some((p) => unitOf(p.label) === 'ml') ? 'ml' : 'g');
 
-/** The item's portions (the first the default), and a 100 g (100 ml) one after them unless it has one. */
-export function portionsOf(item: Pick<Item, 'portions'>): Portion[] {
+/** The item's portions (the first the default), and a 100 g (100 ml) one after them unless it has one; a serving with
+ *  no weight (`sv`): its own (one serving, a nominal 100 g, by default), no 100 g. */
+export function portionsOf(item: Pick<Item, 'portions' | 'sv'>): Portion[] {
   const ps = (item.portions ?? []).slice();
+  if (item.sv) return ps.length ? ps : [{ label: '1食', g: 100 }];
   if (!ps.some((p) => p.g === 100 && /^100\s*(g|ml)$/i.test(p.label.normalize('NFKC')))) ps.push({ label: `100${itemUnit(item)}`, g: 100 });
   return ps;
 }
@@ -39,7 +41,7 @@ export const entryKcal = (e: { g: number; f: Pick<FoodSnap, 'k'> }): number => M
 export const itemsKcal = (list: readonly { g: number; f: Pick<FoodSnap, 'k'> }[]): number => Math.round(list.reduce((a, x) => a + (x.f.k * x.g) / 100, 0));
 
 /** The item per 100 g as an entry keeps it (contract/food.ts FoodSnap): unrounded, so a 300 g serving of 216.67 kcal
- *  / 100 g logs 650 kcal; `u` the portion it was picked by. */
+ *  / 100 g logs 650 kcal; `u` the portion it was picked by; an `sv` item's per serving, `sv` set. */
 export function toSnap(item: Item, portionLabel?: string): FoodSnap {
   const snap: FoodSnap = { id: item.id, n: cleanLine(item.name, FOOD_NAME_CHARS), k: item.kcal, p: item.p ?? null, fa: item.f ?? null, c: item.c ?? null, s: item.salt ?? null };
   // fibre and alcohol only when known (an older snapshot has neither: the same as unknown)
@@ -47,5 +49,6 @@ export function toSnap(item: Item, portionLabel?: string): FoodSnap {
   if (typeof item.alc === 'number') snap.al = item.alc;
   const u = cleanLine(portionLabel, FOOD_PORTION_CHARS);
   if (u) snap.u = u;
+  if (item.sv) snap.sv = true;
   return snap;
 }

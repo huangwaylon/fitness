@@ -17,8 +17,16 @@ export interface Item {
   /** Extra search terms (readings, variants), never equal to `name`. */
   aliases?: string[];
   cat?: string;
-  /** Packaged products only. */
+  /** Packaged products only; a chain menu's (Kalori) its shop's name, set at load from `shop`. */
   brand?: string;
+  /** A chain menu's (Kalori, members only): its shop's id (the header's `shops`), its values' trust (`p` estimated
+   *  PFC, `e` all estimated; absent: official) and its picture's generation id. */
+  shop?: string;
+  est?: 'p' | 'e';
+  img?: string;
+  /** Values per serving, not per 100 g (a chain menu's: no weight known): logged as FoodSnap `sv`, its portion a nominal
+   *  100 g serving. */
+  sv?: true;
   /** The barcode; not shipped when it is the id's (`off:<jan>`): `keys` has it. */
   jan?: string;
   /** How the values were derived. */

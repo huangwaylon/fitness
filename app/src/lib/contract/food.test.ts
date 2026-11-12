@@ -232,6 +232,8 @@ describe('food_custom', () => {
     expect(snap({ ...fb, sv: undefined })).toBeUndefined();
     expect(snap({ ...fb, k: 5000, p: 500 })).toMatchObject({ k: 5000, p: 500, sv: true });
     expect(snap({ ...fb, k: 5001 })).toBeUndefined();
+    // any id's: a chain menu's catalog item per serving (Kalori, `kal:`) as a custom food's
+    expect(snap({ ...fb, id: 'kal:12345', n: '牛丼 特盛', k: 1200, u: '1食' })).toMatchObject({ id: 'kal:12345', k: 1200, sv: true });
   });
   it('as a recipe’s ingredient: by weight as any food; with no weight, the recipe a serving per nominal 100 g (`sv`)', () => {
     const o = customSnap(foodCustomOp(ONIGIRI) as typeof ONIGIRI & { s: null });

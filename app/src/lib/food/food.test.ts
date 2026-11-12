@@ -73,6 +73,10 @@ describe('nutrition', () => {
     expect(portionsOf({ portions: [{ label: '１００ｇ', g: 100 }] })).toEqual([{ label: '１００ｇ', g: 100 }]);
     expect(portionsOf({})).toEqual([{ label: '100g', g: 100 }]);
   });
+  it('portions of a serving with no weight (sv, a chain menu’s): its own, no 100 g; one 1食 by default', () => {
+    expect(portionsOf({ sv: true, portions: [{ label: '1食', g: 100 }, { label: '大盛', g: 150 }] })).toEqual([{ label: '1食', g: 100 }, { label: '大盛', g: 150 }]);
+    expect(portionsOf({ sv: true })).toEqual([{ label: '1食', g: 100 }]);
+  });
   it('nutrients for g grams: kcal an integer, the rest 1 decimal, unknown = 0, from an item or its snapshot', () => {
     expect(nutrientsFor(rice, 150)).toEqual({ kcal: 234, p: 3.8, fa: 0.5, c: 55.7, s: 0 });
     expect(nutrientsFor(toSnap(rice), 150)).toEqual(nutrientsFor(rice, 150));
@@ -85,6 +89,11 @@ describe('nutrition', () => {
     expect(toSnap(rice, '茶碗1杯')).toEqual({ id: 'mext:1', n: 'ごはん', k: 156, p: 2.5, fa: 0.3, c: 37.1, s: null, u: '茶碗1杯' });
     expect(toSnap(item('x:1', ` ${'あ'.repeat(70)} `)).n).toBe('あ'.repeat(60));
     expect('u' in toSnap(rice, '  ')).toBe(false);
+  });
+  it('toSnap of an sv item: its values per serving, sv set (contract snapOf’s per-serving limits)', () => {
+    const don = item('kal:1', '牛丼 並盛', { kcal: 733, p: 22.9, f: 25, c: 104.1, salt: 2.9, sv: true, shop: 's1', brand: '牛丼屋' });
+    expect(toSnap(don, '1食')).toEqual({ id: 'kal:1', n: '牛丼 並盛', k: 733, p: 22.9, fa: 25, c: 104.1, s: 2.9, u: '1食', sv: true });
+    expect('sv' in toSnap(rice)).toBe(false);
   });
 });
 
