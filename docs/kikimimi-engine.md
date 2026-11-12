@@ -320,7 +320,8 @@ only respelled ones), each heard in its clip, in one order (content/listen/READM
   moves a placed tile (a list reorder) or takes it back; the sentence previews the drop while held (`tile/drop.ts`,
   pure). Shifting walks my slots only (never the partner's or easy's given word, which is fixed: no lip, a pin). The
   window's end cancels a drag. With my slots full, a tile's tap flashes the sentence's outline. 全部戻す reads 取り消す
-  for 4 s after.
+  for 4 s after. An empty slot shows its place as a small circled number (never read as a word); the count at the
+  reveal is of my own words (not easy's given one).
 - **Time up:** 300 ms before the window ends the phone sends what's placed (the session takes a partial answer; wrong
   unless whole), so the reveal shows my words and the missing ones (—); never a solo half that `tileOk` would take for
   a co-op half.
@@ -387,7 +388,9 @@ any level but in no mix, so never a quiz level, a place or the tournament's), co
 - **Rounds:** `henshin.pick` (the choices at my tier; easy keeps two) and `henshin.type` (the focus's words; the board
   adds the wrong choices' words as decoys, hard topped up from sound swaps). Tiles send the board's index per word; a
   typed answer is matched on the phone (match.ts `matchTyped`) and sent the same way (`typedAnswer`: a word right its
-  tile, else `OTHER` 62), so nothing typed goes on the wire. The window grows 3 s a missing word.
+  tile, else `OTHER` 62), so nothing typed goes on the wire. The window grows 3 s a missing word. Tiles tap and drag
+  as ことば タイル's (`tile/drag.svelte.ts`, `tile/drop.ts`, the lifted copy `tile/Lift.svelte`); 300 ms before the
+  window ends the phone sends what's placed or typed (a partial answer, wrong unless whole).
 - **Row:** `lv` 8, `[id, ok, pick, rp]` (`henshinRecord`). **Takes:** `<id>`, careful `<id>-c`, fast `<id>-f` (bank.ts
   `takeIds`) share its pack.
 - **Review:** srs.ts `practicePicks` brings a due level-8 card back through a sibling of the same phenomenon;

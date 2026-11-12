@@ -2,14 +2,14 @@
 // pressed, another picked and back); a solo drill of 8 phrases, the rounds in turn: 「なんて言った？」 (the full form picked,
 // one wrong) and 「書きとり」 (typed in capitals and matched, tapped from tiles, one typed wrong); the reveal's full form
 // beside the spelling as said and its three takes; the results' phenomenon, review and takes; my row (gm henshin, level
-// 8, the dictation's wrong words as a mask). Screenshots (KIKI_SHOTS=1) into /tmp/kikimimi-shots/henshin/. The logic
+// 8, the dictation's wrong words as a mask); the tiles dragged as ことば タイル's, and time up sending what's placed or typed. Screenshots (KIKI_SHOTS=1) into /tmp/kikimimi-shots/henshin/. The logic
 // tier (Playwright's Chromium is muted).
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
+import { expect, test, type BrowserContext, type Locator, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { atHub, kikiSheet as sheet, runToQuestion } from './kikimimi-nav.ts';
+import { atHub, kikiSheet as sheet, runToPhase, runToQuestion } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const SHOTS = '/tmp/kikimimi-shots/henshin';
@@ -114,4 +114,57 @@ test('solo: the page’s phenomena, a pick and a dictation typed and tapped, the
   const five = PHRASES.get(row.r[5][0])!;
   expect(row.r[5][2]).toBe((1 << five.focus.split(' ').length) - 1);
   expect(row.r[2][2]).toBeGreaterThan(0);
+});
+
+/** A drag with the finger (the mouse: pointer events) from one element's middle to another's, in steps. */
+async function dragTo(p: Page, from: Locator, to: Locator) {
+  await from.hover();
+  const [a, b] = [await from.boundingBox(), await to.boundingBox()];
+  await p.mouse.move(a!.x + a!.width / 2, a!.y + a!.height / 2);
+  await p.mouse.down();
+  await p.mouse.move(b!.x + b!.width / 2, b!.y + b!.height / 2, { steps: 8 });
+  await p.mouse.up();
+}
+
+test('書きとり: tiles dragged onto a slot and back; time up sends what’s placed, then what’s typed', async ({ context }) => {
+  const page = await phone(context, DAY);
+  await fromMenu(page, 'kikimimi');
+  await atHub(page);
+  await sheet(page).locator('[data-kiki-tile="asobu"]').click();
+  await sheet(page).locator('[data-kiki-mode-tile="henshin"]').click();
+  await sheet(page).locator('[data-kiki-start]').click();
+  await runToQuestion(page, 0, 'answer');
+  await sheet(page).locator('[data-choice="0"]').click();
+  await sheet(page).locator('[data-kiki-next]').click();
+  // round 2, with tiles: my last word dragged onto my 1st slot (not the next, when there are two), then back to the pool
+  await runToQuestion(page, 1, 'answer');
+  await sheet(page).locator('[data-kiki-henshin-swap]').click();
+  const words = (await phrase(page)).focus.split(' ');
+  const tile = (w: string) => sheet(page).locator(`[data-kiki-henshin-pool] [data-tile][data-word="${w.replace(/"/g, '\\"')}"]`).first();
+  const slot = (j: number) => sheet(page).locator(`[data-kiki-henshin-slots] [data-slot="${j}"]`);
+  await expect(slot(0)).toHaveAttribute('data-next', 'true');
+  const last = words.length - 1;
+  await dragTo(page, tile(words[last]), slot(last));
+  await expect(slot(last)).toHaveText(words[last]);
+  await expect(sheet(page).locator('[data-kiki-tile-lift]')).toHaveCount(0);
+  await dragTo(page, slot(last), sheet(page).locator('[data-kiki-henshin-pool]'));
+  await expect(slot(last)).not.toHaveAttribute('data-filled');
+  await expect(tile(words[last])).not.toHaveAttribute('data-used');
+  // my 1st word dragged in, the rest left: time up sends it (wrong unless that's all)
+  await dragTo(page, tile(words[0]), slot(0));
+  await expect(slot(0)).toHaveText(words[0]);
+  await runToPhase(page, 'reveal');
+  await expect(sheet(page).locator(`[data-kiki-verdict="${words.length > 1 ? 'wrong' : 'right'}"]`)).toBeVisible();
+  await expect(sheet(page).locator('[data-kiki-henshin-words] [data-slot="0"]')).toHaveAttribute('data-mark', 'right');
+  await sheet(page).locator('[data-kiki-next]').click();
+  await runToQuestion(page, 2, 'answer');
+  await sheet(page).locator('[data-choice="0"]').click();
+  await sheet(page).locator('[data-kiki-next]').click();
+  // round 4, typed (back to the keyboard): what's typed is sent at time up, shown at the reveal
+  await runToQuestion(page, 3, 'answer');
+  await sheet(page).locator('[data-kiki-henshin-swap]').click();
+  await sheet(page).locator('[data-kiki-henshin-input]').fill('zzz');
+  await runToPhase(page, 'reveal');
+  await expect(sheet(page).locator('[data-kiki-verdict="wrong"]')).toBeVisible();
+  await expect(sheet(page).locator('[data-kiki-henshin-typed]')).toContainText('zzz');
 });

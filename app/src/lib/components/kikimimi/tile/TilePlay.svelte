@@ -10,7 +10,6 @@
   // The reveal: ○ / × and my words right, the spoken shape over the written (the bubble's sound marks: should've →
   // shoulda) with the karaoke as it replays, the Japanese, the trap's note, each slot's word (○, or × with what was put
   // there: co-op the team's), then 解説 (`why`).
-  import { untrack } from 'svelte';
   import Note from '../frame/Note.svelte';
   import type { QuizGame } from '../game.svelte.ts';
   import type { TileCard } from '#lib/kikimimi/games/tile/def.ts';
@@ -18,8 +17,9 @@
   import { slotOk, tileOk } from '#lib/kikimimi/games/tile/def.ts';
   import { RIGHT, firstListen } from '#lib/kikimimi/score.ts';
   import { boardFor, mySlots, teamWords } from './board.ts';
-  import { dropOn, type From, type To } from './drop.ts';
+  import { dropOn } from './drop.ts';
   import { TileDrag } from './drag.svelte.ts';
+  import Lift from './Lift.svelte';
   import TileRow, { tileRow } from './TileRow.svelte';
   import { blank, easy, isCoop } from '../listenView.ts';
   import RoundFrame from '../frame/RoundFrame.svelte';
@@ -64,65 +64,24 @@
   const mine = $derived(slots.filter((j) => j !== given));
 
   let sentenceEl = $state<HTMLElement | null>(null);
-  /** Where a point lands: one of my slots (its 44 px target and half the gap round it), another slot or a gap in the
-   *  sentence (nowhere), else back to the pool. */
-  function hit(x: number, y: number): To {
-    const near = (r: DOMRect, m: number) => x >= r.left - m && x <= r.right + m && y >= r.top - m && y <= r.bottom + m;
-    for (const el of sentenceEl?.querySelectorAll<HTMLElement>('[data-slot]') ?? []) {
-      if (!near(el.getBoundingClientRect(), 4)) continue;
-      const j = Number(el.dataset.slot);
-      return mine.includes(j) ? { slot: j } : null;
-    }
-    return sentenceEl && near(sentenceEl.getBoundingClientRect(), 4) ? null : 'back';
-  }
   const drag = new TileDrag({
-    hit,
+    sentence: () => sentenceEl,
+    mine: () => mine,
     drop: (from, to) => {
       const a = open ? dropOn(placed, mine, from, to) : null;
       if (a) work = { key, a };
       return !!a;
-    },
-    scroller: () => sentenceEl?.closest('.kk-body') ?? null
+    }
   });
   // the window closed or the reveal came mid-drag: the drag cancels before the board locks
   $effect(() => {
     if (!open) drag.cancel();
   });
-  /** Each slot's width as the drag began, kept while it lasts: the preview never reflows the sentence under the
-   *  finger (what's let go onto is what was shown). A word previewed in a slot narrower than it shrinks to fit there
-   *  (`fit`: its text's width off the pool's tiles, as the drag began) rather than being cut off. */
-  let widths = $state.raw<Record<number, number>>({});
-  let wordW = $state.raw<Record<number, number>>({});
-  $effect.pre(() => {
-    if (!drag.lift) return void ((widths = {}), (wordW = {}));
-    if (Object.keys(untrack(() => widths)).length) return;
-    widths = Object.fromEntries([...(sentenceEl?.querySelectorAll<HTMLElement>('[data-slot]') ?? [])].map((el) => [Number(el.dataset.slot), el.getBoundingClientRect().width]));
-    wordW = Object.fromEntries([...(sentenceEl?.parentElement?.querySelectorAll<HTMLElement>('[data-kiki-tile-pool] [data-tile] > span') ?? [])].map((el) => [Number(el.parentElement!.dataset.tile), el.getBoundingClientRect().width]));
-  });
-  /** A previewed word's size in slot j (em), when it wouldn't fit there (its padding: 10 px a side). */
-  const fit = (j: number, k: number) => {
-    const room = (widths[j] ?? 0) - 20, need = wordW[k] ?? 0;
-    return room > 0 && need > room ? `${Math.max(0.7, room / need).toFixed(3)}em` : undefined;
-  };
-  const press = (e: PointerEvent, from: From, word: string) => open && drag.down(e, from, word);
-  /** What the sentence shows: while a tile is held, what letting go would make (the slot it left empty). */
-  const shownA = $derived.by<readonly number[]>(() => {
-    const f = drag.from;
-    if (!f || !drag.lift) return placed;
-    const a = dropOn(placed, mine, f, drag.to);
-    if (a) return a;
-    return 'slot' in f ? placed.map((x, j) => (j === f.slot ? EMPTY : x)) : placed;
-  });
+  const shownA = $derived(drag.shown(placed));
   /** The slot a tap fills next (its dashed outline). */
   const nextSlot = $derived(open && !drag.lift ? slots.find((j) => shownA[j] === EMPTY) : undefined);
   /** A tap on a tile with my slots full: the sentence's outline flashes (no tap tax, no boop). */
   let flash = $state(0);
-  let originEl = $state<HTMLElement | null>(null);
-  const origin = $derived.by(() => {
-    const r = originEl?.getBoundingClientRect();
-    return r ? { x: r.left, y: r.top } : { x: 0, y: 0 };
-  });
-  const ox = $derived(origin.x), oy = $derived(origin.y);
 
   function edit(f: (a: number[]) => void) {
     const a = [...placed];
@@ -174,8 +133,8 @@
 
   const right = $derived(!!sentA && !!it && tileOk({ tiles: it.tile.tiles, board }, sentA));
   const verdict = $derived(v.out ? 'out' : right ? 'right' : sent ? 'wrong' : 'none');
-  /** My words right (of mine). */
-  const mineRight = $derived(sentA && it ? slots.filter((j) => slotOk({ tiles: it.tile.tiles, board }, sentA, j)).length : 0);
+  /** My own words right (easy's given one not counted). */
+  const mineRight = $derived(sentA && it ? mine.filter((j) => slotOk({ tiles: it.tile.tiles, board }, sentA, j)).length : 0);
   /** At the reveal, the sentence as put together: mine, co-op everyone's. */
   const putWords = $derived.by(() => {
     if (!it || !reveal) return [];
@@ -226,7 +185,7 @@
 {/snippet}
 
 {#snippet madeLine()}
-  <span class="words" data-kiki-tile-words={mineRight}>{t('kiki.tile.words', { k: mineRight, n: slots.length })}</span>
+  <span class="words" data-kiki-tile-words={mineRight}>{t('kiki.tile.words', { k: mineRight, n: mine.length })}</span>
   {#if coop}<span class="team-now" data-kiki-tile-team={teamShort}>{teamShort ? t('kiki.tile.short', { k: teamShort }) : t('kiki.tile.made')}</span>{/if}
 {/snippet}
 
@@ -257,15 +216,15 @@
         {:else if own}
           {@const over = !!drag.to && drag.to !== 'back' && drag.to.slot === j}
           <li>
-            <button type="button" class="slot tile-btn mine" style:width={widths[j] ? `${widths[j]}px` : undefined} data-slot={j} data-filled={k !== EMPTY || undefined} data-next={j === nextSlot || undefined} data-over={over || undefined}
+            <button type="button" class="slot tile-btn mine" style:width={drag.width(j)} data-slot={j} data-filled={k !== EMPTY || undefined} data-next={j === nextSlot || undefined} data-over={over || undefined}
               data-shift={!!drag.lift && k !== EMPTY && k !== placed[j] && !over || undefined}
               aria-disabled={!open || k === EMPTY} aria-label={k === EMPTY ? t('kiki.tile.slot', { n: j + 1 }) : t('kiki.tile.remove', { w: board[k] })}
-              data-sfx={open && k !== EMPTY ? 'tick' : 'none'} onclick={() => unplace(j)} onpointerdown={(e) => k !== EMPTY && press(e, { slot: j }, board[k])}>
-              {#if k === EMPTY}<span class="num" aria-hidden="true">{j + 1}</span>{:else}{#key k}<span lang="en" style:font-size={drag.lift ? fit(j, k) : undefined}>{board[k]}</span>{/key}{/if}
+              data-sfx={open && k !== EMPTY ? 'tick' : 'none'} onclick={() => unplace(j)} onpointerdown={(e) => k !== EMPTY && drag.press(open, e, { slot: j }, board[k])}>
+              {#if k === EMPTY}<span class="num" aria-hidden="true">{j + 1}</span>{:else}{#key k}<span lang="en" style:font-size={drag.fit(j, k)}>{board[k]}</span>{/key}{/if}
             </button>
           </li>
         {:else}
-          <li class="slot theirs" data-slot={j} aria-label={t('kiki.tile.partner', { n: j + 1 })}><span aria-hidden="true">{j + 1}</span></li>
+          <li class="slot theirs" data-slot={j} aria-label={t('kiki.tile.partner', { n: j + 1 })}><span class="num" aria-hidden="true">{j + 1}</span></li>
         {/if}
       {/each}
     </ol>
@@ -276,7 +235,7 @@
       {#each board as w, k (k)}
         {@const used = shownA.includes(k) || (!!drag.from && 'tile' in drag.from && drag.from.tile === k)}
         <button type="button" class="tile tile-btn" data-tile={k} data-word={w} data-used={used || undefined} aria-disabled={!open || used}
-          data-sfx={open && !used && !full ? 'choice-pick' : 'none'} onclick={() => place(k)} onpointerdown={(e) => !used && press(e, { tile: k }, w)}><span lang="en">{w}</span></button>
+          data-sfx={open && !used && !full ? 'choice-pick' : 'none'} onclick={() => place(k)} onpointerdown={(e) => !used && drag.press(open, e, { tile: k }, w)}><span lang="en">{w}</span></button>
       {/each}
     </div>
     <div class="acts">
@@ -297,13 +256,7 @@
 {#snippet review(i: number, canHear: boolean)}<TileRow {game} r={tileRow(game, i)} open {canHear} />{/snippet}
 
 <RoundFrame {game} {v} now={game.now} me={game.me} type="tile" answered={!!sent} {verdict} {stage} {input} {action} {review} onnext={() => game.next()} onready={() => game.ready()} />
-{#if drag.lift}
-  {@const l = drag.lift}
-  <!-- the lifted tile at the finger, raised over it (its containing block's origin read off `origin`) -->
-  <span class="lift-origin" bind:this={originEl}></span>
-  <span class="tile lift" class:back={l.back} aria-hidden="true" data-kiki-tile-lift
-    style:width="{l.w}px" style:height="{l.h}px" style:transform="translate({l.x - l.dx - ox}px, {l.y - l.dy - oy - (l.back ? 0 : 12)}px) scale({l.back ? 1 : 1.08})"><span lang="en">{l.word}</span></span>
-{/if}
+{#if drag.lift}<Lift l={drag.lift} />{/if}
 {/if}
 
 <style>
@@ -347,9 +300,10 @@
   /* easy's given word: a static card (its soft lip only), a pin, not a control */
   .slot.given { background: var(--ctl-sel); color: var(--c-ink); box-shadow: 0 2px 0 var(--lip); position: relative; overflow: visible; }
   .pin { position: absolute; top: -9px; right: -5px; font-size: 14px; line-height: 1; }
-  .num { font: 700 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
+  /* an empty slot's place: a small circled number, never read as a word (a given "I" beside it) */
+  .num { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px currentColor; font: 700 13px/1 var(--font-num); color: var(--text-soft); }
   /* the partner's slots: dashed and set back, never a target (mine are solid) */
-  .slot.theirs { box-shadow: none; border: 2px dashed var(--edge); opacity: .55; color: var(--text-soft); font: 700 var(--fs-s)/1 var(--font-num); }
+  .slot.theirs { box-shadow: none; border: 2px dashed var(--edge); opacity: .55; color: var(--text-soft); }
   .slot[data-mark] { display: inline-grid; gap: 2px; }
   .slot[data-mark='right'] { background: color-mix(in srgb, var(--c-leaf) 50%, var(--c-card)); color: var(--c-ink); }
   .slot[data-mark='wrong'] { background: color-mix(in srgb, var(--c-coral) 28%, var(--c-card)); color: var(--c-ink); }
@@ -362,13 +316,6 @@
   /* while the answer window is open, a press on a tile or my slot is the drag's, not the sheet's scroll (the gaps still scroll) */
   .tile, .slot { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: manipulation; }
   .pool.live .tile, .sentence.live .mine { touch-action: none; }
-  .lift {
-    position: fixed; left: 0; top: 0; z-index: 30; pointer-events: none; display: inline-grid; place-items: center; box-sizing: border-box;
-    padding-inline: 0; white-space: nowrap; background: var(--ctl); color: var(--text); transform-origin: 50% 50%; will-change: transform;
-    box-shadow: inset 0 0 0 2px var(--edge), 0 8px 0 var(--lip), 0 14px 22px rgba(0, 0, 0, .18);
-  }
-  .lift.back { transition: transform 160ms var(--ease), box-shadow 160ms var(--ease); box-shadow: inset 0 0 0 2px var(--edge), 0 4px 0 var(--lip); }
-  .lift-origin { position: fixed; left: 0; top: 0; width: 0; height: 0; pointer-events: none; }
   /* 全部戻す by the pool, at its start: apart from the foot's できた */
   .acts { display: flex; justify-content: flex-start; }
 
@@ -380,5 +327,5 @@
   @keyframes shift { from { transform: translateX(-10px); opacity: .4; } to { transform: none; opacity: 1; } }
   @keyframes flash { 0%, 100% { box-shadow: inset 0 0 0 2px var(--edge); } 40% { box-shadow: 0 0 0 3px var(--c-yuzu); } }
   @keyframes flash2 { 0%, 100% { box-shadow: inset 0 0 0 2px var(--edge); } 40% { box-shadow: 0 0 0 3px var(--c-yuzu); } }
-  @media (prefers-reduced-motion: reduce) { .speaker.pop, .speaker.talk, .react, .slot[data-shift] > span, .sentence[data-flash] .mine { animation: none; } .lift.back { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .speaker.pop, .speaker.talk, .react, .slot[data-shift] > span, .sentence[data-flash] .mine { animation: none; } }
 </style>

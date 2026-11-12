@@ -2,8 +2,9 @@
   // A round of 音の へんしん (docs/kikimimi.md "音の へんしん"; games/henshin/def.ts), its own chunk, in the round's frame
   // (frame/RoundFrame.svelte). The speaker pops in and the natural take plays (the situation, `ctx`, under the bubble);
   // then the line with its changed words blanked, and either 「なんて 言った？」's three full forms (one final tap), or
-  // 「書きとり」: the missing words typed (matched forgivingly: match.ts) or tapped from tiles (this phone's choice, kept), 「できた」 (the foot's:
-  // RoundFrame `action`) sends it. 🔁 as often as wanted (a replay: "hard" for review, never points). The reveal: ○ / ×, the line as said with
+  // 「書きとり」: the missing words typed (matched forgivingly: match.ts) or tiles (this phone's choice, kept) tapped or
+  // dragged as ことば タイル's (tile/drag.svelte.ts, tile/drop.ts), 「できた」 (the foot's: RoundFrame `action`) sends it;
+  // time up sends what's typed or placed. 🔁 as often as wanted (a replay: "hard" for review, never points). The reveal: ○ / ×, the line as said with
   // its sound mark over the changed words, the full form beside the spelling as said (「didja」＝ did you), the Japanese,
   // the trap's note, my words, and 聞きくらべ: the phrase はっきり (the careful take), ふつう and 速く.
   import Note from '../frame/Note.svelte';
@@ -16,6 +17,9 @@
   import { RIGHT, firstListen } from '#lib/kikimimi/score.ts';
   import { TAKES, keepTiles, roundFor, takeOf, tilesOn } from './round.ts';
   import { isCoop } from '../listenView.ts';
+  import { dropOn } from '../tile/drop.ts';
+  import { TileDrag } from '../tile/drag.svelte.ts';
+  import Lift from '../tile/Lift.svelte';
   import RoundFrame from '../frame/RoundFrame.svelte';
   import RevealFrame from '../frame/RevealFrame.svelte';
   import ChoiceGrid from '../frame/ChoiceGrid.svelte';
@@ -69,6 +73,37 @@
     tiles = !tiles;
     keepTiles(tiles);
   }
+
+  let sentenceEl = $state<HTMLElement | null>(null);
+  const mine = $derived(words.map((_, j) => j));
+  const drag = new TileDrag({
+    sentence: () => sentenceEl,
+    mine: () => mine,
+    drop: (from, to) => {
+      const a = open ? dropOn(placed, mine, from, to) : null;
+      if (a) work = { key, a };
+      return !!a;
+    }
+  });
+  $effect(() => {
+    if (!open || !tiles) drag.cancel();
+  });
+  const shownA = $derived(drag.shown(placed));
+  /** The slot a tap fills next (its dashed outline). */
+  const nextSlot = $derived(open && !drag.lift ? shownA.indexOf(EMPTY) : -1);
+  // Time up: what's typed or placed is sent just before the window ends (graded as any answer), so the reveal shows it.
+  const EARLY_MS = 300;
+  $effect(() => {
+    const rt = r;
+    if (!open || !Number.isFinite(v.limit) || rt?.kind !== 'henshin.type') return;
+    const k = key;
+    const h = setTimeout(() => {
+      if (key !== k || !open || (tiles ? !placed.some((x) => x !== EMPTY) : !typed.trim())) return;
+      drag.cancel();
+      game.answer(tiles ? [...placed] : typedAnswer(rt, matchTyped(typed, rt.words)));
+    }, Math.max(0, v.limit - game.clock() - EARLY_MS));
+    return () => clearTimeout(h);
+  });
 
   const right = $derived(!!r && answer !== null && henshinOk(r, answer));
   const verdict = $derived(v.out ? 'out' : right ? 'right' : sent ? 'wrong' : 'none');
@@ -150,23 +185,26 @@
       </ol>
       {#if typed}<p class="typed" data-kiki-henshin-typed>{t('kiki.henshin.typed', { w: typed })}</p>{/if}
     {:else if tiles}
-      <ol class="sentence" aria-label={t('kiki.henshin.input')} data-kiki-henshin-slots>
+      <ol class="sentence" class:live={open} aria-label={t('kiki.henshin.input')} data-kiki-henshin-slots bind:this={sentenceEl}>
         {#each words as _, j (j)}
-          {@const k = placed[j]}
+          {@const k = shownA[j]}
+          {@const over = !!drag.to && drag.to !== 'back' && drag.to.slot === j}
           <li>
-            <button type="button" class="slot tile-btn" data-slot={j} data-filled={k !== EMPTY || undefined} aria-disabled={!open || k === EMPTY}
-              aria-label={k === EMPTY ? t('kiki.henshin.slot', { n: j + 1 }) : t('kiki.henshin.remove', { w: board[k] })} data-sfx={open && k !== EMPTY ? 'tick' : 'none'} onclick={() => unplace(j)}>
-              {#if k === EMPTY}<span class="num" aria-hidden="true">{j + 1}</span>{:else}<span lang="en">{board[k]}</span>{/if}
+            <button type="button" class="slot tile-btn mine" style:width={drag.width(j)} data-slot={j} data-filled={k !== EMPTY || undefined} data-next={j === nextSlot || undefined} data-over={over || undefined}
+              data-shift={!!drag.lift && k !== EMPTY && k !== placed[j] && !over || undefined} aria-disabled={!open || k === EMPTY}
+              aria-label={k === EMPTY ? t('kiki.henshin.slot', { n: j + 1 }) : t('kiki.henshin.remove', { w: board[k] })} data-sfx={open && k !== EMPTY ? 'tick' : 'none'}
+              onclick={() => unplace(j)} onpointerdown={(e) => k !== EMPTY && drag.press(open, e, { slot: j }, board[k])}>
+              {#if k === EMPTY}<span class="num" aria-hidden="true">{j + 1}</span>{:else}{#key k}<span lang="en" style:font-size={drag.fit(j, k)}>{board[k]}</span>{/key}{/if}
             </button>
           </li>
         {/each}
       </ol>
       {#if !sent}
-        <div class="pool" role="group" aria-label={t('kiki.henshin.pool')} data-kiki-henshin-pool>
+        <div class="pool" class:live={open} role="group" aria-label={t('kiki.henshin.pool')} data-kiki-henshin-pool>
           {#each board as w, k (k)}
-            {@const used = placed.includes(k)}
-            <button type="button" class="tile tile-btn" data-tile={k} data-word={w} data-used={used || undefined} aria-disabled={!open || used || full}
-              data-sfx={open && !used && !full ? 'choice-pick' : 'none'} onclick={() => place(k)}><span lang="en">{w}</span></button>
+            {@const used = shownA.includes(k) || (!!drag.from && 'tile' in drag.from && drag.from.tile === k)}
+            <button type="button" class="tile tile-btn" data-tile={k} data-word={w} data-used={used || undefined} aria-disabled={!open || used}
+              data-sfx={open && !used && !full ? 'choice-pick' : 'none'} onclick={() => place(k)} onpointerdown={(e) => !used && drag.press(open, e, { tile: k }, w)}><span lang="en">{w}</span></button>
           {/each}
         </div>
       {/if}
@@ -194,6 +232,7 @@
 {/snippet}
 
 <RoundFrame {game} {v} now={game.now} me={game.me} type={r.kind === 'henshin.pick' ? 'word' : 'tile'} answered={!!sent} {verdict} {stage} {input} {action} onnext={() => game.next()} onready={() => game.ready()} />
+{#if drag.lift}<Lift l={drag.lift} />{/if}
 {/if}
 
 <style>
@@ -223,6 +262,7 @@
   .sentence { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
   .sentence li:not(.slot) { display: contents; }
   .slot {
+    box-sizing: border-box; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     min-width: 52px; min-height: var(--hit); padding: 4px 10px; border-radius: 12px; display: inline-grid; place-items: center;
     font: 700 max(17px, var(--fs-body))/1.2 var(--font-ui);
   }
@@ -230,12 +270,21 @@
   .slot[data-filled] { background: var(--ctl-sel); color: var(--c-ink); }
   .slot[data-mark='right'] { background: color-mix(in srgb, var(--c-leaf) 50%, var(--c-card)); color: var(--c-ink); }
   .slot[data-mark='wrong'] { background: color-mix(in srgb, var(--c-coral) 28%, var(--c-card)); color: var(--c-ink); }
-  .num { font: 700 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
+  /* the next tap's slot: a dashed yuzu outline; a drag's target: the solid yuzu ring; a tile that would shift slides in
+     (ことば タイル's) */
+  .slot[data-next] { box-shadow: none; outline: 2px dashed var(--c-yuzu); outline-offset: -2px; }
+  .slot[data-over] { box-shadow: 0 0 0 3px var(--c-yuzu); }
+  .slot[data-shift] > span { animation: shift 150ms var(--ease) both; }
+  /* an empty slot's place: a small circled number, never read as a word */
+  .num { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px currentColor; font: 700 13px/1 var(--font-num); color: var(--text-soft); }
   .typed { margin: 0; text-align: center; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
 
   .pool { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding-top: 4px; }
   .tile { min-height: 48px; min-width: 48px; padding: 6px 14px; border-radius: 14px; font: 700 max(17px, var(--fs-body))/1.2 var(--font-ui); }
   .tile[data-used] { opacity: .3; }
+  /* while the answer window is open, a press on a tile or my slot is the drag's, not the sheet's scroll */
+  .tile, .slot { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: manipulation; }
+  .pool.live .tile, .sentence.live .mine { touch-action: none; }
   .type { display: block; }
   .type input {
     width: 100%; box-sizing: border-box; min-height: 48px; padding: 8px 14px; border: 0; border-radius: 14px; background: var(--card);
@@ -246,5 +295,6 @@
 
   @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-5px); } }
   @keyframes pop-in { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .speaker.pop, .speaker.talk, .react { animation: none; } }
+  @keyframes shift { from { transform: translateX(-10px); opacity: .4; } to { transform: none; opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .speaker.pop, .speaker.talk, .react, .slot[data-shift] > span { animation: none; } }
 </style>

@@ -1,14 +1,14 @@
 // The ばしょ row of a lane's game (docs/kikimimi.md "Places"): every place can be tapped, none sunk; a place with no
 // content of its own plays the nearest place's, one line saying whose and harder or easier (catalog.ts nearOf), the
 // wire keeping the picked level. ことば タイル (かわ もり やま): ほし plays やま's made harder, はまべ かわ's made easier (my
-// first slot placed for me); しずえの ニュース shows the row (やま only); まるごと 聞く at はまべ lists ほし's pieces. The
+// first slot placed for me, the reveal's count of my words without it); しずえの ニュース shows the row (やま only); まるごと 聞く at はまべ lists ほし's pieces. The
 // logic tier (Playwright's Chromium is muted).
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
-import { atHub, kikiSheet as sheet, runToSee } from './kikimimi-nav.ts';
+import { atHub, kikiSheet as sheet, runToPhase, runToSee } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -54,7 +54,7 @@ test('every place can be tapped; ほし with no content plays やま’s made ha
   await expect(sheet(page).locator('[data-slot][data-given]')).toHaveCount(0);
 });
 
-test('はまべ with no content plays かわ’s made easier: my first slot placed for me', async ({ page }) => {
+test('はまべ with no content plays かわ’s made easier: my first slot placed for me, not counted as mine', async ({ page }) => {
   await open(page, 'quick', 'tile');
   await place(page, 'hama').click();
   await expect(sheet(page).locator('[data-kiki-place-near="kawa"]')).toHaveText('はまべの問題は準備中です。かわの問題をやさしめに出します。');
@@ -63,6 +63,11 @@ test('はまべ with no content plays かわ’s made easier: my first slot plac
   const kawa = clipsAt(2);
   expect((await kiki(page, (k) => k.items())).every((c) => kawa.has(c))).toBe(true);
   await expect(sheet(page).locator('[data-slot][data-given]')).toHaveCount(1);
+  // one tile placed, time up: the reveal counts my own slots only
+  const mine = await sheet(page).locator('button[data-slot]').count();
+  await sheet(page).locator('[data-tile]:not([data-used])').first().click();
+  await runToPhase(page, 'reveal');
+  await expect(sheet(page).locator('[data-kiki-tile-words]')).toHaveText(new RegExp(` / ${mine} 語$`));
 });
 
 test('しずえの ニュース has the row (やま’s, もり easier)', async ({ page }) => {
