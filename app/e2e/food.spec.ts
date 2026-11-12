@@ -825,7 +825,7 @@ test('a いつもの’s entry: opened and ‹ leaves the day the repeat’s; �
   await expect(banner).toHaveCount(0);
 });
 
-test('＋ focuses the search; counted portions step whole, rice by half; drinks in ml; the confirmation low', async ({ page }) => {
+test('＋ focuses the search; counted portions step ½ 1 1½ 2 3, rice by half, from ×0.5; drinks in ml; a ×1.5 reopens; the confirmation low', async ({ page }) => {
   await openFood(page);
   await sheet(page).locator('[data-add=d]').click();
   await expect(sheet(page).locator('[data-food-q]')).toBeFocused(); // in the tap: the iPhone's keyboard comes up
@@ -835,14 +835,18 @@ test('＋ focuses the search; counted portions step whole, rice by half; drinks 
   await yakitori.click();
   await settled(page);
   await expect(sheet(page).locator('.chip[aria-pressed=true]')).toContainText('1本');
-  await sheet(page).locator('[data-step="1"]').click();
-  await expect(sheet(page).locator('.mult')).toHaveText('×2'); // a whole 本
-  await sheet(page).locator('[data-step="1"]').click();
-  await expect(sheet(page).locator('.mult')).toHaveText('×3');
-  await sheet(page).locator('[data-step="-1"]').click();
-  await sheet(page).locator('[data-step="-1"]').click();
-  await sheet(page).locator('[data-step="-1"]').click();
-  await expect(sheet(page).locator('.mult')).toHaveText('×1'); // never under one
+  const [less, more, mult] = [sheet(page).locator('[data-step="-1"]'), sheet(page).locator('[data-step="1"]'), sheet(page).locator('.mult')];
+  await expect(less).toHaveAttribute('aria-disabled', 'false');
+  await less.click();
+  await expect(mult).toHaveText('×0.5'); // half a 本, the floor
+  await expect(less).toHaveAttribute('aria-disabled', 'true');
+  await expect(sheet(page).locator('.qty [aria-live]')).toHaveText('0.5倍'); // what VoiceOver reads
+  await less.click({ force: true }); // (Playwright waits on aria-disabled; the tap is swallowed)
+  await expect(mult).toHaveText('×0.5');
+  for (const x of ['×1', '×1.5', '×2', '×3']) { // halves up to 2, then whole 本
+    await more.click();
+    await expect(mult).toHaveText(x);
+  }
 
   await sheet(page).locator('[data-food-q]').fill('ごはん');
   const rice = sheet(page).locator('[data-food-results] button', { hasText: 'ごはん（精白米）' }).first();
@@ -850,16 +854,20 @@ test('＋ focuses the search; counted portions step whole, rice by half; drinks 
   await expect(rice.locator('.kc small')).toHaveText('茶碗1杯 150g'); // the portion in a few words, its weight once
   await rice.click();
   await settled(page);
-  await sheet(page).locator('[data-step="1"]').click();
-  await expect(sheet(page).locator('.mult')).toHaveText('×1.5'); // 茶碗: by half
+  await more.click();
+  await more.click();
+  await more.click();
+  await expect(mult).toHaveText('×2.5'); // 茶碗: by half past 2 too
 
-  // a piece food's 1人前 steps by the piece: おにぎり ＋ is two of them, not ×1.5
+  // a piece food's 1人前 is counted: おにぎり steps 1½, 2, 3
   await sheet(page).locator('[data-food-q]').fill('おにぎり');
   await sheet(page).locator('[data-food-results] [data-item="dishes:onigiri-shake"]').click();
   await settled(page);
   await expect(sheet(page).locator('.chip[aria-pressed=true]')).toContainText('1人前');
-  await sheet(page).locator('[data-step="1"]').click();
-  await expect(sheet(page).locator('.mult')).toHaveText('×2');
+  await more.click();
+  await more.click();
+  await more.click();
+  await expect(mult).toHaveText('×3');
 
   await sheet(page).locator('[data-food-q]').fill('生ビール'); // (a new query closes the row open)
   const beer = sheet(page).locator('[data-food-results] button', { hasText: '生ビール' }).first();
@@ -867,15 +875,29 @@ test('＋ focuses the search; counted portions step whole, rice by half; drinks 
   await beer.click();
   await settled(page);
   await expect(sheet(page).locator('.grams .u')).toHaveText('ml');
-  await sheet(page).locator('[data-step="1"]').click();
-  await expect(sheet(page).locator('.mult')).toHaveText('×2'); // a whole ジョッキ
+  await more.click();
+  await expect(mult).toHaveText('×1.5'); // a ジョッキ and a half
   await sheet(page).locator('[data-food-open-add]').click();
   const banner = dlg(page).locator('.banner');
   await expect(banner).toHaveText(/夜ごはんに追加しました/);
   const [bb, d] = [(await banner.boundingBox())!, (await dlg(page).boundingBox())!];
   expect(bb.y).toBeGreaterThan(d.y + d.height / 2);
+
+  // 食パン 6枚切1枚 ×1.5: listed by its label and grams, and it reopens at ×1.5
+  await sheet(page).locator('[data-food-q]').fill('食パン');
+  await sheet(page).locator('[data-food-results] [data-item="mext:01026"]').click();
+  await settled(page);
+  await expect(sheet(page).locator('.chip[aria-pressed=true]')).toContainText('6枚切1枚');
+  await more.click();
+  await expect(sheet(page).locator('[data-grams]')).toHaveValue('90');
+  await sheet(page).locator('[data-food-open-add]').click();
   await sheet(page).locator('[data-food-finish]').click(); // 完了: the day
-  await expect(sheet(page).locator('section[data-meal=d] [data-entry] .amt').last()).not.toHaveText(/）（/); // never a weight twice
+  const rows = sheet(page).locator('section[data-meal=d] [data-entry]');
+  await expect(rows.last().locator('.amt')).toHaveText('6枚切1枚×1.5（90g）');
+  expect((await rows.locator('.amt').allTextContents()).filter((a) => a.includes('）（'))).toEqual([]); // never a weight twice
+  await rows.last().click();
+  await expect(sheet(page).locator('.chip[aria-pressed=true]')).toContainText('6枚切1枚');
+  await expect(mult).toHaveText('×1.5');
 });
 
 test('whose day is kept for the session; an empty past day says きろく なし (no 0 kcal, no tiles); › shows tomorrow’s いつもの only', async ({ page }) => {
@@ -1275,7 +1297,7 @@ test('マイ食品: made from a search that finds nothing (no weight), logged at
   const row = sheet(page).locator('section[data-meal=l] [data-entry]').last();
   await expect(row).toContainText('会社の弁当');
   await expect(row.locator('.amt')).toHaveText('1食'); // never a nominal weight
-  // tapped: its amount by the serving: whole servings, no grams anywhere
+  // tapped: its amount by the serving: by half servings, no grams anywhere
   await row.click();
   await expect(sheet(page).locator('[data-grams]')).toHaveCount(0);
   await expect(sheet(page).locator('.chip[aria-pressed=true]')).toHaveText('1食');
@@ -1284,7 +1306,7 @@ test('マイ食品: made from a search that finds nothing (no weight), logged at
   await expect(sheet(page).locator('.amt .head .per')).toContainText('650 kcal');
   await expect(sheet(page).locator('.amt .head')).not.toContainText('100g');
   await sheet(page).locator('[data-step="1"]').click();
-  await expect(sheet(page).locator('[data-food-live] .k')).toContainText('1,300');
+  await expect(sheet(page).locator('[data-food-live] .k')).toContainText('975'); // ×1.5
   await expect(sheet(page).locator('[data-amount-open]')).toHaveCount(0); // an entry: no opening its food
   expect(await overflowOf(page)).toEqual([]);
   await sheet(page).getByRole('button', { name: '戻る' }).click();
@@ -1467,7 +1489,7 @@ test('several foods a trip: a row’s ＋ logs it at once, 追加 in place stays
   await s.locator('[data-food-open-add]').click();
   await expect(s.locator('.navbar h2')).toHaveText('夜ごはん');
   await expect(added).toHaveCount(3);
-  await expect(added.last()).toContainText('1個（M）×2（100g）');
+  await expect(added.last()).toContainText('1個（M）×1.5（75g）');
   await expect(q).toBeFocused();
   await expect(s.locator('[data-food-added] h3')).toHaveText('追加したもの（3）');
   expect(await overflowOf(page)).toEqual([]);
@@ -1576,7 +1598,7 @@ test('opened before the catalog is in: the recipe’s ingredients take their til
 // and then edit"; docs/design.md "Gohan" Search): a food row's tap opens the amount's controls under it, kept on the
 // screen (its own ＋ hidden meanwhile); 焼き ×2 there and 追加 logs 180 g, 558 kcal on this trip, the field cleared and
 // focused; 栄養成分 › opens the amount level at what was set; one row at a time, closed by Esc (the sheet stays), its row again or a new query; ＋ still
-// logs in one tap. 豚ロース 焼き ×2 + ごはん 大盛り in one trip: 9 taps, no level.
+// logs in one tap. 豚ロース 焼き ×2 + ごはん 大盛り in one trip: 10 taps (×1.5 on the way to ×2), no level.
 test('a row opened in place: 焼き ×2 and 追加 in the search, its ＋ hidden; 栄養成分 carries it; one at a time; Esc; ＋ still one tap', async ({ page }) => {
   await page.setViewportSize({ width: 393, height: 852 });
   await openFood(page);
@@ -1597,6 +1619,7 @@ test('a row opened in place: 焼き ×2 and 追加 in the search, its ＋ hidden
   await expect(s.locator('.navbar h2')).toHaveText('夜ごはん'); // no level
   await tap(box.locator('[data-state=焼き]'));
   await tap(box.locator('[data-step="1"]'));
+  await tap(box.locator('[data-step="1"]')); // ×1.5, ×2
   await expect(box.locator('.mult')).toHaveText('×2');
   await expect(box.locator('[data-grams]')).toHaveValue('180');
   const add = s.locator('[data-food-open-add]');
@@ -1624,7 +1647,7 @@ test('a row opened in place: 焼き ×2 and 追加 in the search, its ＋ hidden
   await expect(add).toContainText('390 kcal');
   await tap(add);
   await tap(s.locator('[data-food-finish]'));
-  expect(c.taps).toBe(9);
+  expect(c.taps).toBe(10);
   const dinner = s.locator('section[data-meal=d] [data-entry]');
   await expect(dinner.filter({ hasText: '豚ロース 脂身つき 焼き' })).toContainText('558');
   await expect(dinner.filter({ hasText: 'ごはん（精白米）' })).toContainText('大盛り（250g）');
@@ -1635,6 +1658,7 @@ test('a row opened in place: 焼き ×2 and 追加 in the search, its ＋ hidden
   await pork.click({ timeout: 15_000 });
   await settled(page);
   await box.locator('[data-state=焼き]').click();
+  await box.locator('[data-step="1"]').click();
   await box.locator('[data-step="1"]').click();
   await s.locator('[data-food-open-more]').click();
   await expect(s.locator('.card.head h3')).toHaveText('豚ロース 脂身つき 焼き');
@@ -1868,7 +1892,7 @@ test('クイック: the form from ⚡ (a name, kcal, protein), a kcal typed logg
 // The tap counts the food review measured (2026-11; before: a repeat meal 3 taps an item from 最近, a new 3-item
 // breakfast 9 taps + 7 characters, a konbini lunch 8 + 10, a 650 kcal meal out 4 + 8 as a new マイ食品), from the open
 // sheet. The user's targets: a repeat meal in ≤ 3, a new 3-item breakfast in ≤ 5 plus typing.
-test('tap counts: the same meal as yesterday in 1, a new 3-item meal in 5, a konbini lunch in 6, a meal out by kcal in 3', async ({ page }) => {
+test('tap counts: the same meal as yesterday in 1, a new 3-item meal in 5, a konbini lunch in 7, a meal out by kcal in 3', async ({ page }) => {
   await openFood(page);
   const s = sheet(page);
   const c = { taps: 0, chars: 0 };
@@ -1898,13 +1922,14 @@ test('tap counts: the same meal as yesterday in 1, a new 3-item meal in 5, a kon
     await tap('[data-food-finish]');
     await expect.poll(() => count('s')).toBe(n0 + 3);
   });
-  // おにぎり ×2 (＋ steps by the piece) + サラダチキン
+  // おにぎり ×2 (＋ ＋: 1½, then 2) + サラダチキン
   const l0 = await count('l');
   const konbini = await run('a konbini lunch', async () => {
     await tap('[data-add=l]');
     await type('おにぎり');
     await tap('[data-food-results] [data-item="dishes:onigiri-shake"]');
     await settled(page);
+    await tap('[data-step="1"]');
     await tap('[data-step="1"]');
     await expect(s.locator('.mult')).toHaveText('×2');
     await tap('[data-food-open-add]');
@@ -1921,5 +1946,5 @@ test('tap counts: the same meal as yesterday in 1, a new 3-item meal in 5, a kon
     await tap('[data-food-finish]');
     await expect.poll(() => count('d')).toBe(2);
   });
-  expect([same, fresh, konbini, out]).toEqual([{ taps: 1, chars: 0 }, { taps: 5, chars: 7 }, { taps: 6, chars: 10 }, { taps: 3, chars: 3 }]);
+  expect([same, fresh, konbini, out]).toEqual([{ taps: 1, chars: 0 }, { taps: 5, chars: 7 }, { taps: 7, chars: 10 }, { taps: 3, chars: 3 }]);
 });

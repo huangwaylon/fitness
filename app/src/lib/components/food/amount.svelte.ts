@@ -5,14 +5,14 @@ import { untrack } from 'svelte';
 import { FOOD_GRAMS, round1 } from '#lib/contract/food.ts';
 import { nutrientsFor, portionsOf, unitOf, variantsOf, type FoodDb, type Item } from '#lib/food/index.ts';
 import { t } from '#lib/i18n/index.ts';
-import { foodDb, foodDbNow, gramsText, inState, parseAmount, portionLabel, startOf, stepOf } from './foodUi.ts';
+import { foodDb, foodDbNow, gramsText, inState, parseAmount, MULT, nextMult, portionLabel, startOf, stepOf } from './foodUi.ts';
 
 interface AmountProps {
   item: Item;
   /** The grams and portion label to start from (an entry's, a recent one's); else the default portion. */
   g0?: number;
   u0?: string;
-  /** A serving with no known weight (FoodSnap `sv`): whole servings, no grams. */
+  /** A serving with no known weight (FoodSnap `sv`): half servings and up, no grams. */
   serving?: boolean;
   /** Another state of the food picked (じょうたい): log that one instead (none: no states offered). */
   onitem?: (it: Item) => void;
@@ -81,6 +81,9 @@ export class AmountPick {
   readonly n = $derived(nutrientsFor(this.item, this.ok ? this.g : 0));
   /** The label the entry keeps (none for typed grams or 100 g). */
   readonly u = $derived(this.custom ? null : portionLabel(this.ps[this.pi], this.mult));
+  /** −/＋ can't go further (×0.5, ×20; typed grams step on). */
+  readonly atFloor = $derived(!this.custom && this.mult <= MULT.min);
+  readonly atCap = $derived(!this.custom && this.mult >= MULT.max);
   readonly states = $derived.by(() => {
     const { item, serving, onitem } = this.#p();
     return serving || !onitem ? [] : variantsOf(this.db, item);
@@ -109,8 +112,7 @@ export class AmountPick {
       this.typed = gramsText(Math.max(0, Math.min(FOOD_GRAMS.max, Math.round(this.g + d * 10))));
       return;
     }
-    const s = this.serving ? 1 : stepOf(this.ps[this.pi].label, this.item.name);
-    this.mult = Math.max(s, Math.min(20, Math.round((this.mult + d * s) / s) * s));
+    this.mult = nextMult(this.mult, d, this.serving ? 'half' : stepOf(this.ps[this.pi].label, this.item.name));
   }
   grams(v: string) {
     this.#touched = true;

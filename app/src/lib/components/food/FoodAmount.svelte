@@ -7,14 +7,14 @@
   // Then the controls (FoodPortion, their rules amount.svelte.ts) in the order they're decided: じょうたい, a food in its states (the data's vg/st), a chip per
   // state with its kcal at the amount it would take (`onitem` swaps the food: a portion label the state also has stays
   // picked at its own grams, typed grams stay typed, else its default), one line why (パックの重さなら 生 / ゆでる前の
-  // 重さなら 乾); its portions as chips (the first the default; 100 g last), −/＋ by a whole portion for the things you
-  // count and by half one for the rest (±10 g once grams are typed: stepOf), the grams field (ml for a drink). The foot
+  // 重さなら 乾); its portions as chips (the first the default; 100 g last), −/＋ from ×0.5 by halves, whole portions past
+  // ×2 for the things you count (±10 g once grams are typed: nextMult), the grams field (ml for a drink). The foot
   // (sticky, at the screen's foot for a short food): which meal (gone while the grams are typed: the keyboard's up),
   // then 追加 with the kcal (a new entry) or 保存 / 削除 (my entry). For a recipe's ingredient (`pick`): no meal, the recipe's words.
   // The item may be swapped while it is open (an entry opened from its snapshot, the catalog's portions arriving):
   // untouched, the amount starts again from the same grams; touched, the portion picked stays picked (by its label).
   // A serving with no known weight (`serving`: a custom food's, マイ食品): its values per serving, its one portion stepped
-  // by whole servings, no grams field. A recipe's or custom food's: `open`, a button left of 追加 to open it.
+  // by half servings, no grams field. A recipe's or custom food's: `open`, a button left of 追加 to open it.
   import { untrack } from 'svelte';
   import type { Meal } from '#lib/contract/food.ts';
   import { MEALS } from '#lib/contract/food.ts';
@@ -38,7 +38,7 @@
     editing?: boolean;
     /** A recipe's ingredient, not a meal: no meal to pick, the recipe's words. */
     pick?: boolean;
-    /** A serving with no known weight (FoodSnap `sv`): whole servings, no grams. */
+    /** A serving with no known weight (FoodSnap `sv`): half servings and up, no grams. */
     serving?: boolean;
     ondone: (v: { m: Meal; g: number; u: string | null }) => void;
     onremove?: () => void;

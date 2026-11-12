@@ -14,7 +14,7 @@
     item: Item;
     g0?: number;
     u0?: string;
-    /** A serving with no known weight: whole servings, no grams. */
+    /** A serving with no known weight: half servings and up, no grams. */
     serving?: boolean;
     /** Its states offered (a catalog food; not a custom food or a snapshot). */
     swap?: boolean;

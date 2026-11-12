@@ -204,8 +204,9 @@ loads with the first search, or at idle, in a worker); kept mounted between open
   自分で作る, then **近いもの**, the names holding most of it (`nearby`: 「とんこつ醤油ラーメン味玉…」 → 豚骨醤油ラーメン).
   Offline: a message, a retry, the recent list.
 - **Amount** (`FoodPortion`): one screen on an iPhone 15: the picture (marked as an AI image), kcal, P · F · C · 塩分;
-  **状態** chips (the portion carried through its yield); **量** (portions, −/＋, grams or ml); the foot (the meal and add,
-  or 保存 / 削除) held over the keyboard.
+  **状態** chips (the portion carried through its yield); **量** (portions; −/＋ ×0.5 to ×20 by halves, a counted
+  portion's whole past ×2, shown ×1.5; grams or ml for the rest); the foot (the meal and add, or 保存 / 削除) held over the
+  keyboard.
 - **いつもの (a repeat):** a meal eaten the same way on set weekdays fills each day it covers (🔁), counting like any
   entry; changes apply from tomorrow, stopping keeps past days; editing one of its items changes that day only.
 - **グラフ:** what was eaten only (burned is 健康's ムーブ): the period's average day against the goal, then kcal and each

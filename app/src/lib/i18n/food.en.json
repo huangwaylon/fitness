@@ -73,6 +73,7 @@
   "food.ml": "millilitres",
   "food.less": "Less",
   "food.more": "More",
+  "food.times": "×{n}",
   "food.whichMeal": "Which meal",
   "food.addOk": "Add",
   "food.save": "Save",

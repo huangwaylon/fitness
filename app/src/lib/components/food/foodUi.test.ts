@@ -7,7 +7,7 @@ import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from '#lib/food/index.ts';
 import {
   amountText, customDraft, customErrors, customItem, customOf, DAYS, daysText, defaultPortion, glossOf, goalChip, itemOf, matchPortion,
-  parseAmount, portionLabel, portionText, quickDraft, quickErrors, quickSnap, recentOf, sameItems, servingText, startOf, stateItem, stepOf, typedKcal,
+  parseAmount, portionLabel, portionText, quickDraft, quickErrors, quickSnap, recentOf, sameItems, servingText, startOf, stateItem, stepOf, nextMult, typedKcal,
   catOf, plateOf, recipeIdOf, recipePlate
 } from './foodUi.ts';
 import type { FoodImageIndex } from '#lib/food/images.ts';
@@ -99,16 +99,42 @@ describe('the amount: start, step, label', () => {
     expect(matchPortion(ps, 75)).toEqual({ pi: 0, mult: 0.5 });
     expect(matchPortion(ps, 7)).toBeNull();
   });
-  it('steps a whole one for counted things, a half for rice, 人前 and weights', () => {
-    for (const l of ['1本', '1個', '1缶', '1枚', '2切れ', '1貫', '1パック（110g）', '中ジョッキ（350ml）', '1/2枚']) expect(stepOf(l), l).toBe(1);
-    for (const l of ['茶碗1杯', '1人前', '100g', '200ml', '1食分']) expect(stepOf(l), l).toBe(0.5);
+  it('counts the things you count, halves rice, 人前 and weights', () => {
+    for (const l of ['1本', '1個', '1缶', '1枚', '2切れ', '1貫', '1パック（110g）', '中ジョッキ（350ml）', '1/2枚']) expect(stepOf(l), l).toBe('count');
+    for (const l of ['茶碗1杯', '1人前', '100g', '200ml', '1食分']) expect(stepOf(l), l).toBe('half');
   });
-  it('steps a piece food’s 1人前 by the piece (おにぎり ＋ is one more, not ×1.5); a dish’s by half', () => {
+  it('counts a piece food’s 1人前 (おにぎり); halves a dish’s', () => {
     const fails: string[] = [];
-    for (const n of ['おにぎり（鮭）', '塩むすび', '天むす', 'ゆで卵', '温泉卵', '目玉焼き', 'ハンバーグ', 'ホットドッグ', '梅干し（1個）']) if (stepOf('1人前', n) !== 1) fails.push(n);
-    for (const n of ['カレーライス（ポーク）', '親子丼', '肉じゃが', '味噌汁（豆腐とわかめ）', '']) if (stepOf('1人前', n) !== 0.5) fails.push(n);
-    if (stepOf('茶碗1杯', 'おにぎり（鮭）') !== 0.5 || stepOf('100g', 'ゆで卵') !== 0.5) fails.push('rice and grams stay by half');
+    for (const n of ['おにぎり（鮭）', '塩むすび', '天むす', 'ゆで卵', '温泉卵', '目玉焼き', 'ハンバーグ', 'ホットドッグ', '梅干し（1個）']) if (stepOf('1人前', n) !== 'count') fails.push(n);
+    for (const n of ['カレーライス（ポーク）', '親子丼', '肉じゃが', '味噌汁（豆腐とわかめ）', '']) if (stepOf('1人前', n) !== 'half') fails.push(n);
+    if (stepOf('茶碗1杯', 'おにぎり（鮭）') !== 'half' || stepOf('100g', 'ゆで卵') !== 'half') fails.push('rice and grams stay by half');
     expect(fails).toEqual([]);
+  });
+  it('the ladders: halves to ×2 then whole ones for counted portions, halves for the rest; ×0.5 to ×20', () => {
+    const climb = (kind: 'count' | 'half', n: number) => {
+      const out = [0.5];
+      while (out.length < n) out.push(nextMult(out.at(-1)!, 1, kind));
+      return out;
+    };
+    expect(climb('count', 7)).toEqual([0.5, 1, 1.5, 2, 3, 4, 5]);
+    expect(climb('half', 6)).toEqual([0.5, 1, 1.5, 2, 2.5, 3]);
+    expect(nextMult(3, -1, 'count')).toBe(2);
+    expect(nextMult(2, -1, 'count')).toBe(1.5);
+    for (const k of ['count', 'half'] as const) {
+      expect(nextMult(0.5, -1, k), k).toBe(0.5);
+      expect(nextMult(20, 1, k), k).toBe(20);
+      expect(nextMult(19.5, 1, k), k).toBe(20);
+    }
+    // off the ladder (a ×2.5 saved before): the nearest rung each way
+    expect([nextMult(2.5, 1, 'count'), nextMult(2.5, -1, 'count')]).toEqual([3, 2]);
+  });
+  it('reopens a half of an odd tenth at its portion (33.3 g ×0.5 is saved as 16.7)', () => {
+    const apple = [{ label: '1個', g: 33.3 }];
+    expect(startOf(apple, 16.7, '1個×0.5')).toEqual({ pi: 0, mult: 0.5, custom: false });
+    expect(startOf(apple, 16.7)).toEqual({ pi: 0, mult: 0.5, custom: false });
+    expect(startOf(apple, 16.6, '1個×0.5')).toEqual({ pi: 0, mult: 1, custom: true });
+    expect(amountText(entry('e', snap('mext:1', '1個×0.5'), 16.7))).toBe('1個×0.5（16.7g）');
+    expect(amountText(entry('e', { ...snap('my:1', '1食×0.5'), sv: true }, 50))).toBe('1食×0.5'); // a weightless serving
   });
   it('keeps no label for 100 g or ml', () => {
     expect(portionLabel(ps[0], 1)).toBe('茶碗1杯');
