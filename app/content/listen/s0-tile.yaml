@@ -1,0 +1,512 @@
+# ことば タイル S0 はまべ: short, clear travel and daily sentences (4-7 words, top-2k words), said plainly. The trap is a
+# sound a Japanese ear merges (L/R, -teen/-ty, can/can't, a final -s/-ed, a vowel, th/f, a katakana word's stress), never
+# a reduction; one or two decoys. Author A, levels plan 2026-11-12.
+schema: 1
+unit: s0-tile
+game: tile
+stage: 1
+track: life
+seeds: [1, 2, 3, 13, 24, 35, 37, 51, 58]
+features: { primary: ending, review: teen-ty }
+cando: "はっきり 話された 短い 文を、にた 音に まどわされずに 組み立てられる"
+status: draft
+items:
+  - kind: tile
+    id: tile-hama-gate-fifteen
+    speaker: diana
+    en: "Our flight leaves from Gate 15."
+    tts: "Our flight leaves from Gate fifteen."
+    ja: "私たちの便は15番ゲートから出ます。"
+    tiles: ["Our", "flight", "leaves", "from", "Gate", "15"]
+    decoys: ["50"]
+    marks: [[stress, "15"]]
+    note: "fifteen は後ろの teen が強く長い。fifty は前が強い"
+    ctx: "空港で、パートナーが搭乗券を見ています"
+    why: "fifTEEN は後ろを強く長く言う。50（FIFty）は前が強く、最後が短い「ティ」。"
+    scene: gate
+    tags: { seed: 2, register: partner, pragmatic: literal, features: [teen-ty, stress] }
+
+  - kind: tile
+    id: tile-hama-cant-eat-fish
+    speaker: dom
+    en: "I can't eat raw fish."
+    ja: "生の魚は食べられないんだ。"
+    tiles: ["I", "can't", "eat", "raw", "fish"]
+    decoys: ["can"]
+    marks: [[stress, "can't"]]
+    note: "can't は強く長く「キャーン」。can は弱く「クン」"
+    ctx: "パートナーと、夕食の店を決めています"
+    why: "できないの can't は強く長く、最後の t はほぼ聞こえない。できるの can は弱く短い「クン」。raw は「生の」。"
+    scene: street
+    tags: { seed: 35, register: partner, pragmatic: literal, features: [can-cant, stress] }
+
+  - kind: tile
+    id: tile-hama-walked-hotel
+    speaker: goldie
+    en: "We walked back to the hotel."
+    ja: "私たちは歩いてホテルに戻りました。"
+    tiles: ["We", "walked", "back", "to", "the", "hotel"]
+    decoys: ["walk", "worked"]
+    marks: [[drop, "walked", "ed"], [stress, "hotel"]]
+    note: "walked の -ed は小さな「ト」。hotel は後ろが強い"
+    ctx: "旅行の翌朝、友だちが昨夜の話をしています"
+    why: "walked の -ed は小さな「ト」で、落とすと walk。worked（ワークト）は口の形がちがう。hotel は「ホウテル」と後ろが強い。"
+    scene: street
+    tags: { seed: 58, register: friend, pragmatic: literal, features: [ending, vowel, katakana] }
+
+  - kind: tile
+    id: tile-hama-collect-bags
+    speaker: rosie
+    en: "Where do I collect my bags?"
+    ja: "荷物はどこで受け取ればいいですか？"
+    tiles: ["Where", "do", "I", "collect", "my", "bags"]
+    decoys: ["correct", "bag"]
+    marks: [[stress, "collect"]]
+    note: "collect の l は舌先をつける音。correct は r"
+    ctx: "空港に着いて、係の人に聞いています"
+    why: "collect（受け取る）の l は舌先を上の歯ぐきにつける。r の correct（直す）ではない。bags は最後の「ズ」まで聞く。"
+    scene: gate
+    tags: { seed: 1, register: service, pragmatic: literal, features: [l-r, ending] }
+
+  - kind: tile
+    id: tile-hama-meal-tickets
+    speaker: hamlet
+    en: "The airline gave us free meal tickets."
+    ja: "航空会社が無料の食事券をくれたよ。"
+    tiles: ["The", "airline", "gave", "us", "free", "meal", "tickets"]
+    decoys: ["three", "ticket"]
+    marks: [[stress, "free"]]
+    note: "free は唇をかむ f。three は舌を歯にあてる"
+    ctx: "便が遅れて、パートナーが窓口から戻りました"
+    why: "free（無料の）は下唇をかむ f。three（3枚）は舌先を歯にあてる th。tickets は最後の「ツ」まで聞こえる。"
+    scene: gate
+    tags: { seed: 1, register: partner, pragmatic: literal, features: [th, ending] }
+
+  - kind: tile
+    id: tile-hama-suitcase-didnt
+    speaker: maple
+    en: "My suitcase didn't arrive."
+    ja: "スーツケースが届いていないんです。"
+    tiles: ["My", "suitcase", "didn't", "arrive"]
+    decoys: ["did"]
+    marks: [[drop, "didn't", "t"]]
+    note: "didn't は t がほぼ消えて「ディドゥン」"
+    ctx: "到着ロビーの窓口で、旅行客が話しています"
+    why: "didn't の最後の t はほぼ聞こえず、「ディドゥン」と n で終わる。did なら「着いた」で反対の意味。"
+    scene: gate
+    tags: { seed: 1, register: service, pragmatic: literal, features: [contraction, elision] }
+
+  - kind: tile
+    id: tile-hama-gate-sixteen
+    speaker: bob
+    en: "They changed our gate to 16."
+    tts: "They changed our gate to sixteen."
+    ja: "搭乗口が16番に変わったよ。"
+    tiles: ["They", "changed", "our", "gate", "to", "16"]
+    decoys: ["60", "change"]
+    marks: [[stress, "16"], [drop, "changed", "d"]]
+    note: "sixteen は後ろが強い。changed の d も聞く"
+    ctx: "空港の掲示板を見て、パートナーが言いました"
+    why: "sixTEEN は後ろを強く長く言う。60（SIXty）は前が強い。changed の d を落とすと change で、もう起きた話にならない。"
+    scene: gate
+    tags: { seed: 2, register: partner, pragmatic: literal, features: [teen-ty, ending] }
+
+  - kind: tile
+    id: tile-hama-plane-forty
+    speaker: celeste
+    en: "The plane is 40 minutes late."
+    tts: "The plane is forty minutes late."
+    ja: "飛行機が40分遅れてる。"
+    tiles: ["The", "plane", "is", "40", "minutes", "late"]
+    decoys: ["14"]
+    marks: [[stress, "40"]]
+    note: "forty は前が強く、最後は短い「ティ」"
+    ctx: "空港で、友だちがスマホのお知らせを読んでいます"
+    why: "FORty は前を強く言い、最後は短い「ディ」に近い。14（fourTEEN）なら後ろが強く長い。"
+    scene: gate
+    tags: { seed: 2, register: friend, pragmatic: literal, features: [teen-ty] }
+
+  - kind: tile
+    id: tile-hama-boarding-thirty
+    speaker: punchy
+    en: "Boarding starts at three thirty."
+    ja: "搭乗は3時半からだよ。"
+    tiles: ["Boarding", "starts", "at", "three", "thirty"]
+    decoys: ["thirteen"]
+    marks: [[stress, "thirty"]]
+    note: "thirty は前が強い。thirteen は後ろが強く長い"
+    ctx: "搭乗口で、パートナーが時計を見ています"
+    why: "THIRty は前が強く、最後は短い。thirTEEN（13分）なら後ろを強く長く言う。starts の最後の「ツ」も聞く。"
+    scene: gate
+    tags: { seed: 2, register: partner, pragmatic: literal, features: [teen-ty, clock] }
+
+  - kind: tile
+    id: tile-hama-thirteenth-floor
+    speaker: whitney
+    en: "Your room is on the 13th floor."
+    tts: "Your room is on the thirteenth floor."
+    ja: "お部屋は13階です。"
+    tiles: ["Your", "room", "is", "on", "the", "13th", "floor"]
+    decoys: ["30th"]
+    marks: [[stress, "13th"]]
+    note: "thirteenth は teen が強い。thirtieth は前が強い"
+    ctx: "ホテルのフロントで、鍵を渡されました"
+    why: "thirTEENth は teen を強く長く言う。30th（THIRtieth）は前が強く、真ん中が短い。"
+    tags: { seed: 3, register: service, pragmatic: literal, features: [teen-ty] }
+
+  - kind: tile
+    id: tile-hama-booked-three
+    speaker: kicks
+    en: "I booked a room for three nights."
+    ja: "3泊で部屋を予約しました。"
+    tiles: ["I", "booked", "a", "room", "for", "three", "nights"]
+    decoys: ["book"]
+    marks: [[drop, "booked", "ed"]]
+    note: "booked の -ed は小さな「ト」"
+    ctx: "ホテルのフロントで、旅行客が予約の話をしています"
+    why: "booked の -ed は小さな「ト」で、次の a とつながり「ブクタ」。落とすと book で、もう済んだ話にならない。"
+    tags: { seed: 3, register: service, pragmatic: literal, features: [ending, linking] }
+
+  - kind: tile
+    id: tile-hama-ac-doesnt-work
+    speaker: raymond
+    en: "Our air conditioner doesn't work."
+    ja: "部屋のエアコンが動かないんです。"
+    tiles: ["Our", "air", "conditioner", "doesn't", "work"]
+    decoys: ["does", "walk"]
+    marks: [[stress, "doesn't"]]
+    note: "doesn't は n の音が残る。work は口を丸めない"
+    ctx: "ホテルのフロントで、客が部屋の不具合を伝えています"
+    why: "doesn't は t が弱くても n の音が残る。does なら「動く」。work は「ワーク」、walk（歩く）は口を丸めて「ウォーク」。"
+    tags: { seed: 3, register: service, pragmatic: literal, features: [contraction, vowel] }
+
+  - kind: tile
+    id: tile-hama-left-key
+    speaker: coco
+    en: "I left my key in the room."
+    ja: "部屋に鍵を置いてきてしまいました。"
+    tiles: ["I", "left", "my", "key", "in", "the", "room"]
+    decoys: ["keys"]
+    marks: [[stress, "key"]]
+    note: "key は1本。keys なら最後に「ズ」"
+    ctx: "ホテルのフロントで、客が困った顔をしています"
+    why: "key の後に「ズ」がないので1本。keys なら最後に「ズ」が聞こえる。left の t は弱い。"
+    tags: { seed: 3, register: service, pragmatic: literal, features: [ending] }
+
+  - kind: tile
+    id: tile-hama-sleepy
+    speaker: tia
+    en: "This medicine can make you sleepy."
+    ja: "この薬は眠くなることがあります。"
+    tiles: ["This", "medicine", "can", "make", "you", "sleepy"]
+    decoys: ["can't"]
+    marks: [[stress, "sleepy"]]
+    note: "できるの can は弱く「クン」。can't は強く長い"
+    ctx: "薬局で、薬剤師が薬の説明をしています"
+    why: "ここの can は弱く短い「クン」で、次の make にすぐ続く。can't なら強く長く「キャーン」と言う。眠くなるかも、という注意。"
+    scene: pharmacy
+    tags: { seed: 13, register: service, pragmatic: literal, features: [can-cant, weak-form] }
+
+  - kind: tile
+    id: tile-hama-son-fever
+    speaker: apollo
+    en: "My son has a high fever."
+    ja: "息子が高い熱を出しているんです。"
+    tiles: ["My", "son", "has", "a", "high", "fever"]
+    decoys: ["had"]
+    marks: [[link, "has a"]]
+    note: "has a はつながって「ハザ」"
+    ctx: "薬局のカウンターで、父親が相談しています"
+    why: "has a はつながって「ハザ」。had a なら「ハダ」で、もう終わった話になる。fever の v は下唇をかむ。"
+    scene: pharmacy
+    tags: { seed: 13, register: service, pragmatic: literal, features: [linking, ending] }
+
+  - kind: tile
+    id: tile-hama-thirty-minutes
+    speaker: judy
+    en: "It works in about thirty minutes."
+    ja: "30分くらいで効いてきます。"
+    tiles: ["It", "works", "in", "about", "thirty", "minutes"]
+    decoys: ["thirteen", "walks"]
+    marks: [[stress, "thirty"]]
+    note: "thirty は前が強い。thirteen は後ろが強い"
+    ctx: "薬局で、薬剤師が飲み方を説明しています"
+    why: "THIRty は前を強く言い、最後は短い。thirTEEN は後ろが強く長い。works（効く）は「ワークス」、walks は口を丸める。"
+    scene: pharmacy
+    tags: { seed: 13, register: service, pragmatic: literal, features: [teen-ty, vowel] }
+
+  - kind: tile
+    id: tile-hama-throat-hurts
+    speaker: sherb
+    en: "My throat really hurts."
+    ja: "のどがすごく痛いんです。"
+    tiles: ["My", "throat", "really", "hurts"]
+    decoys: ["hurt"]
+    marks: [[stress, "really"]]
+    note: "hurts の最後の「ツ」まで聞く"
+    ctx: "薬局のカウンターで、客が症状を話しています"
+    why: "hurts は最後に小さな「ツ」がある。hurt なら「痛かった」ともとれる。throat の th は舌先を歯にあてる。"
+    scene: pharmacy
+    tags: { seed: 13, register: service, pragmatic: literal, features: [ending, th] }
+
+  - kind: tile
+    id: tile-hama-total-840
+    speaker: pietro
+    en: "Your total is 840 yen."
+    tts: "Your total is eight hundred forty yen."
+    ja: "合計840円です。"
+    tiles: ["Your", "total", "is", "840", "yen"]
+    decoys: ["814"]
+    marks: [[stress, "840"]]
+    note: "forty は前が強い。fourteen は後ろが強い"
+    ctx: "コンビニのレジで、店員が金額を言いました"
+    why: "eight hundred FORty は forty の前が強い。814（fourTEEN）なら後ろが強く長い。"
+    tags: { seed: 24, register: service, pragmatic: literal, features: [numbers, teen-ty] }
+
+  - kind: tile
+    id: tile-hama-on-the-back
+    speaker: molly
+    en: "Write your number on the back."
+    ja: "裏に電話番号を書いてください。"
+    tiles: ["Write", "your", "number", "on", "the", "back"]
+    decoys: ["bag"]
+    marks: [[stress, "back"]]
+    note: "back は最後が短い「ク」。bag は「グ」"
+    ctx: "郵便局の窓口で、係の人が用紙を渡しました"
+    why: "back（裏）は最後が短い「ク」。bag（袋）は最後が「グ」で、前の音が少し長い。用紙の裏に書く話。"
+    tags: { seed: 24, register: service, pragmatic: literal, features: [ending] }
+
+  - kind: tile
+    id: tile-hama-coffee-machine
+    speaker: stitches
+    en: "The coffee machine is over there."
+    ja: "コーヒーマシンはあちらです。"
+    tiles: ["The", "coffee", "machine", "is", "over", "there"]
+    decoys: ["copy"]
+    marks: [[stress, "coffee"]]
+    note: "coffee は唇をかむ f。copy は唇を閉じる p"
+    ctx: "コンビニで、店員に場所を聞きました"
+    why: "coffee の f は下唇をかむ音。copy（コピー機）の p は唇を閉じてはじく。どちらもコンビニにあるので、音で聞き分ける。"
+    tags: { seed: 24, register: service, pragmatic: literal, features: [katakana] }
+
+  - kind: tile
+    id: tile-hama-pay-bill
+    speaker: audie
+    en: "Can I pay my bill here?"
+    ja: "ここで請求書の支払いはできますか？"
+    tiles: ["Can", "I", "pay", "my", "bill", "here"]
+    decoys: ["bills"]
+    marks: [[link, "Can I"]]
+    note: "bill は1枚。bills なら最後に「ズ」"
+    ctx: "コンビニのレジで、客が用紙を出しました"
+    why: "bill の後に「ズ」がないので1枚。bills なら最後に「ズ」。Can I はつながって「キャナイ」。"
+    tags: { seed: 24, register: service, pragmatic: literal, features: [ending, linking] }
+
+  - kind: tile
+    id: tile-hama-used-butter
+    speaker: mabel
+    en: "You used all the butter."
+    ja: "バター、全部使っちゃったんだね。"
+    tiles: ["You", "used", "all", "the", "butter"]
+    decoys: ["use", "batter"]
+    marks: [[drop, "used", "d"]]
+    note: "used の最後の d は小さく、all とつながる"
+    ctx: "台所で、パートナーが冷蔵庫を開けました"
+    why: "used の d は小さく、all とつながる。落とすと use でいつもの話。butter は「バダー」、batter（生地）は口を大きく開ける。"
+    scene: living
+    tags: { seed: 35, register: partner, pragmatic: literal, features: [ending, flap, vowel] }
+
+  - kind: tile
+    id: tile-hama-water-boiling
+    speaker: wilbur
+    en: "The water is boiling."
+    ja: "お湯がわいてるよ。"
+    tiles: ["The", "water", "is", "boiling"]
+    decoys: ["boring"]
+    marks: [[stress, "boiling"]]
+    note: "boiling は l。boring は r で舌を丸める"
+    ctx: "台所で、パートナーがコンロを見ています"
+    why: "boiling（わいている）は「ボイ」のあと l で舌先をつける。boring（つまらない）は r で舌を丸める。"
+    scene: living
+    tags: { seed: 35, register: partner, pragmatic: literal, features: [l-r, vowel] }
+
+  - kind: tile
+    id: tile-hama-chop-onions
+    speaker: julian
+    en: "Can you chop the onions?"
+    ja: "玉ねぎを切ってくれる？"
+    tiles: ["Can", "you", "chop", "the", "onions"]
+    decoys: ["onion"]
+    marks: [[link, "Can you"]]
+    note: "onions は最後に「ズ」。2つ以上ある"
+    ctx: "台所で、パートナーが夕食を作っています"
+    why: "onions は最後に「ズ」があるので2つ以上。onion なら1つ。Can you はつながって「キャニュ」。"
+    scene: living
+    tags: { seed: 35, register: partner, pragmatic: literal, features: [ending, linking] }
+
+  - kind: tile
+    id: tile-hama-rang-bell
+    speaker: redd
+    en: "I rang the bell twice."
+    ja: "2回ベルを鳴らしました。"
+    tiles: ["I", "rang", "the", "bell", "twice"]
+    decoys: ["ring"]
+    marks: [[stress, "twice"]]
+    note: "rang は口を横に大きく「ラ」。ring は「リ」"
+    ctx: "玄関先で、配達員が話しています"
+    why: "rang（鳴らした）は口を横に大きく開けて「ラ」。ring は「リ」で、いつもの話になる。twice は2回。"
+    scene: door
+    tags: { seed: 37, register: service, pragmatic: literal, features: [vowel] }
+
+  - kind: tile
+    id: tile-hama-driver-left
+    speaker: lily
+    en: "The driver left this with me."
+    ja: "配達の人がこれを私に預けていきましたよ。"
+    tiles: ["The", "driver", "left", "this", "with", "me"]
+    decoys: ["leaves"]
+    marks: [[stress, "left"]]
+    note: "left は短く「レフト」。leaves は長い「リー」"
+    ctx: "隣の人が、荷物を持って来てくれました"
+    why: "left（置いていった）は短い「レ」で、最後の t は弱い。leaves は「リー」と長く、最後が「ヴズ」。"
+    scene: door
+    tags: { seed: 37, register: neighbour, pragmatic: literal, features: [vowel, ending] }
+
+  - kind: tile
+    id: tile-hama-tried-to-call
+    speaker: walker
+    en: "We tried to call you."
+    ja: "お電話したんですが。"
+    tiles: ["We", "tried", "to", "call", "you"]
+    decoys: ["try"]
+    marks: [[drop, "tried", "d"]]
+    note: "tried の d は to とつながって消える"
+    ctx: "配達員が、不在だった家の人と話しています"
+    why: "tried の d は次の to とつながり「トライトゥ」。落とすと try で、もう済んだ話にならない。"
+    scene: door
+    tags: { seed: 37, register: service, pragmatic: literal, features: [ending, linking] }
+
+  - kind: tile
+    id: tile-hama-called-name
+    speaker: orville
+    en: "They just called your name."
+    ja: "今、名前を呼ばれたよ。"
+    tiles: ["They", "just", "called", "your", "name"]
+    decoys: ["call"]
+    marks: [[drop, "called", "ed"]]
+    note: "called の d は小さく、your とつながる"
+    ctx: "カフェで、友だちがカウンターを指さしています"
+    why: "called の d は小さく、your とつながって「コールジュア」。落とすと call で、今のことにならない。"
+    scene: cafe
+    tags: { seed: 51, register: friend, pragmatic: literal, features: [ending, assimilation] }
+
+  - kind: tile
+    id: tile-hama-isnt-ordered
+    speaker: brewster
+    en: "This isn't what I ordered."
+    ja: "これは注文したものと違います。"
+    tiles: ["This", "isn't", "what", "I", "ordered"]
+    decoys: ["order", "is"]
+    marks: [[stress, "isn't"]]
+    note: "isn't は n の音が残る「イズン」"
+    ctx: "カフェで、客が飲み物を見て困っています"
+    why: "isn't は t が弱く「イズン」。is なら「注文したもの」で反対。ordered の d は小さいが、もう注文した話。"
+    scene: cafe
+    tags: { seed: 51, register: service, pragmatic: literal, features: [contraction, ending] }
+
+  - kind: tile
+    id: tile-hama-line-long
+    speaker: nana
+    en: "The line is really long."
+    ja: "列がすごく長いね。"
+    tiles: ["The", "line", "is", "really", "long"]
+    decoys: ["wrong"]
+    marks: [[stress, "long"]]
+    note: "long は l。wrong は唇を丸めて r"
+    ctx: "カフェの前で、友だちが行列を見ています"
+    why: "long（長い）は l で舌先をつける。wrong（間違い）は唇を丸めてから r。line も l の音。"
+    scene: cafe
+    tags: { seed: 51, register: friend, pragmatic: literal, features: [l-r] }
+
+  - kind: tile
+    id: tile-hama-little-bitter
+    speaker: pekoe
+    en: "This coffee is a little bitter."
+    ja: "このコーヒー、ちょっと苦いな。"
+    tiles: ["This", "coffee", "is", "a", "little", "bitter"]
+    decoys: ["better"]
+    marks: [[stress, "bitter"]]
+    note: "bitter は短い「ビ」。better は「ベ」"
+    ctx: "カフェで、友だちがひと口飲みました"
+    why: "bitter（苦い）は短い「ビ」。better（もっといい）は口を少し開けて「ベ」。little の t は「リル」のように聞こえる。"
+    scene: cafe
+    tags: { seed: 51, register: friend, pragmatic: literal, features: [vowel, flap] }
+
+  - kind: tile
+    id: tile-hama-exit-closed
+    speaker: henry
+    en: "The east exit is closed."
+    ja: "東口は閉まっていますよ。"
+    tiles: ["The", "east", "exit", "is", "closed"]
+    decoys: ["close"]
+    marks: [[drop, "closed", "d"]]
+    note: "closed は最後に d。close なら「近い」"
+    ctx: "駅の前で、通りがかりの人が教えてくれました"
+    why: "closed は最後に小さな d があり「閉まっている」。close（クロウス）は「近い」で、s の音で終わる。exit は前が強い。"
+    scene: street
+    tags: { seed: 58, register: stranger, pragmatic: literal, features: [ending, katakana] }
+
+  - kind: tile
+    id: tile-hama-third-stop
+    speaker: tex
+    en: "Change trains at the third stop."
+    ja: "3つ目の駅で乗り換えてください。"
+    tiles: ["Change", "trains", "at", "the", "third", "stop"]
+    decoys: ["first"]
+    marks: [[stress, "third"]]
+    note: "third は舌を歯にあてる。first は唇をかむ"
+    ctx: "駅で、道に迷った人に行き方を教えています"
+    why: "third の th は舌先を歯にあてる。first（1つ目）は下唇をかむ f。trains at はつながって「トレインザッ」。"
+    scene: platform
+    tags: { seed: 58, register: stranger, pragmatic: literal, features: [th, linking] }
+
+  - kind: tile
+    id: tile-hama-walk-station
+    speaker: melba
+    en: "You can walk to the station."
+    ja: "駅まで歩いて行けますよ。"
+    tiles: ["You", "can", "walk", "to", "the", "station"]
+    decoys: ["can't"]
+    marks: [[stress, "walk"]]
+    note: "できるの can は弱く「クン」。強いのは walk"
+    ctx: "道で、駅への行き方を聞かれました"
+    why: "can は弱く「クン」で、強いのは walk。can't なら can't を強く長く言う。歩いて行ける、という答え。"
+    scene: street
+    tags: { seed: 58, register: stranger, pragmatic: literal, features: [can-cant, weak-form] }
+
+  - kind: tile
+    id: tile-hama-lost-arent-we
+    speaker: phoebe
+    en: "We're lost, aren't we?"
+    ja: "私たち、迷子だよね？"
+    tiles: ["We're", "lost", "aren't", "we"]
+    decoys: ["last"]
+    marks: [[stress, "lost"]]
+    note: "lost は口を丸めて「ロ」。last は「ラ」"
+    ctx: "知らない町で、パートナーが地図を見ています"
+    why: "lost（迷った）は口を丸めて「ロースト」。last（最後）は口を大きく開けて「ラ」。aren't we は「でしょ？」。"
+    scene: street
+    tags: { seed: 58, register: partner, pragmatic: literal, features: [vowel] }
+
+  - kind: tile
+    id: tile-hama-bath-first-floor
+    speaker: cherry
+    en: "The bath is on the first floor."
+    ja: "大浴場は1階です。"
+    tiles: ["The", "bath", "is", "on", "the", "first", "floor"]
+    decoys: ["bus"]
+    marks: [[stress, "bath"]]
+    note: "bath は最後に舌を歯にあてる。bus は s"
+    ctx: "ホテルのフロントで、係の人が館内の案内をしています"
+    why: "bath（お風呂）は最後に舌先を歯にあてる th で、口も大きく開ける。bus は「バス」と s で終わる。first は下唇をかむ f。"
+    tags: { seed: 3, register: service, pragmatic: literal, features: [th, katakana] }

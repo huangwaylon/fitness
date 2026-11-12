@@ -271,6 +271,10 @@
   "cv": "94b03c",
   "decks": "3f94ed38539849bc"
  },
+ "tile:s0-tile": {
+  "cv": "944566",
+  "decks": "02761b754ba280ae"
+ },
  "tile:s1-tile-a": {
   "cv": "b2d0ae",
   "decks": "49b6ae027633d699"
@@ -306,5 +310,9 @@
  "tile:s3-tile-bank": {
   "cv": "502c5d",
   "decks": "cacf96d92aad8866"
+ },
+ "tile:s4-tile": {
+  "cv": "07780e",
+  "decks": "a489323308dba8ad"
  }
 }

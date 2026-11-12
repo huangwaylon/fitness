@@ -1,0 +1,482 @@
+# ことば タイル S4 ほし: 9-12 words of C1 everyday and travel English, said at a brisk natural pace with nothing respelled:
+# lower-frequency words (layover, oversold, liable, nonrefundable, reassess), idioms (get old, anyone's guess, call it
+# even, do a number on), inversion, clefts, mixed conditionals and meaning that's implied (understatement, sarcasm, a
+# hedge that means no). A decoy can flip the meaning (nothing but / anything but, would / wouldn't, or / and). Author A,
+# levels plan 2026-11-12.
+schema: 1
+unit: s4-tile
+game: tile
+stage: 5
+track: people
+seeds: [1, 3, 7, 8, 15, 18, 27, 30, 33, 36, 52, 57]
+features: { primary: idiom, review: contraction }
+cando: "むずかしい 語いや 言い回しの ある 速い 文を、ことばごとに 聞き分けられる"
+status: draft
+items:
+  - kind: tile
+    id: tile-hoshi-hold-drop-off
+    speaker: lopez
+    en: "The hold on your card should drop off within five business days."
+    ja: "カードの仮押さえは、5営業日以内に消えるはずです。"
+    tiles: ["The", "hold", "on", "your", "card", "should", "drop", "off", "within", "five", "business", "days"]
+    decoys: ["hole", "shouldn't", "would"]
+    marks: [[stress, "hold"], [link, "drop off"]]
+    note: "hold＝カードの仮押さえ。drop off＝消える"
+    ctx: "レンタカーの窓口で、係の人が保証金の説明をしています"
+    why: "hold はカードの一時的な押さえで、l のあとに d がある。hole（穴）ではない。should は「はず」。drop off＝消える。"
+    tags: { seed: 7, register: service, pragmatic: hedge, features: [idiom, ending] }
+
+  - kind: tile
+    id: tile-hoshi-unless-coverage
+    speaker: cyrano
+    en: "Unless you take the full coverage, you're liable for any damage."
+    ja: "フルカバーの保険に入らない限り、損害はすべてお客様の負担になります。"
+    tiles: ["Unless", "you", "take", "the", "full", "coverage", "you're", "liable", "for", "any", "damage"]
+    decoys: ["Until", "damages", "took"]
+    marks: [[stress, "Unless"], [stress, "liable"]]
+    note: "unless＝〜しない限り。liable＝責任がある"
+    ctx: "レンタカーの窓口で、係の人が保険をすすめています"
+    why: "Unless は「〜しない限り」で、Until（〜まで）ではない。liable は「責任を負う」。保険に入らないと修理代は自分持ち、という意味。"
+    tags: { seed: 7, register: service, pragmatic: indirect, features: [stress] }
+
+  - kind: tile
+    id: tile-hoshi-upsold-bigger
+    speaker: bud
+    en: "They upsold me on a bigger car I didn't even need."
+    ja: "いらなかったのに、大きい車を売りつけられたよ。"
+    tiles: ["They", "upsold", "me", "on", "a", "bigger", "car", "I", "didn't", "even", "need"]
+    decoys: ["upsell", "did", "big"]
+    marks: [[stress, "even"], [drop, "didn't", "t"]]
+    note: "upsell＝高いほうを売りつける。upsold はもうした話"
+    ctx: "レンタカーを借りたあと、友だちがぼやいています"
+    why: "upsold は upsell（高いほうをすすめて売る）の、もうした形。didn't の t は消えるが n は残る。bigger の -er まで聞く。"
+    tags: { seed: 7, register: friend, pragmatic: attitude, features: [elision, ending] }
+
+  - kind: tile
+    id: tile-hoshi-had-i-known
+    speaker: keaton
+    en: "Had I known the ferry was canceled, I'd have taken the train."
+    ja: "フェリーが欠航だと知っていたら、電車にしたのに。"
+    tiles: ["Had", "I", "known", "the", "ferry", "was", "canceled", "I'd", "have", "taken", "the", "train"]
+    decoys: ["I'll", "take"]
+    marks: [[stress, "Had"], [link, "taken the"]]
+    note: "Had I known＝もし知っていたら。I'd have は「アイダヴ」"
+    ctx: "旅先の港で、友だちが予定の変更をぼやいています"
+    why: "文頭の Had I known＝If I had known（知っていたら）。I'd have は弱く「アイダヴ」。I'll や take では、すんだことへの後悔にならない。"
+    tags: { seed: 8, register: friend, pragmatic: attitude, features: [contraction, linking] }
+
+  - kind: tile
+    id: tile-hoshi-nine-hour-layover
+    speaker: gulliver
+    en: "The only flight that gets us there tonight has a nine-hour layover."
+    ja: "今夜中に着ける便は、乗り継ぎで9時間待つのしかないよ。"
+    tiles: ["The", "only", "flight", "that", "gets", "us", "there tonight", "has", "a", "nine-hour", "layover"]
+    decoys: ["had", "get"]
+    marks: [[stress, "nine-hour"], [link, "gets us"]]
+    note: "layover＝乗り継ぎの待ち時間"
+    ctx: "乗り継ぎに失敗して、パートナーが便を調べています"
+    why: "layover は乗り継ぎの待ち時間。gets us はつながって「ゲッツァス」。has を had と聞くと、もう終わった話になる。今夜着くのはこの便だけ。"
+    tags: { seed: 8, register: partner, pragmatic: indirect, features: [linking, ending] }
+
+  - kind: tile
+    id: tile-hoshi-made-connection
+    speaker: fauna
+    en: "If we'd made the connection, we'd be in Lisbon by now."
+    ja: "乗り継ぎに間に合っていたら、今ごろリスボンにいるのに。"
+    tiles: ["If", "we'd", "made", "the", "connection", "we'd", "be", "in", "Lisbon", "by", "now"]
+    decoys: ["we", "we'll", "connections"]
+    marks: [[stress, "made"], [stress, "now"]]
+    note: "If we'd made＝もし間に合っていたら（本当はちがう）"
+    ctx: "乗り継ぎに遅れて、友だちが空港でため息をついています"
+    why: "If we'd made は「もし間に合っていたら」で、本当は間に合わなかった。we'd be は「今ごろ〜なのに」。we や we'll では話が合わない。"
+    tags: { seed: 8, register: friend, pragmatic: attitude, features: [contraction] }
+
+  - kind: tile
+    id: tile-hoshi-oversold-volunteers
+    speaker: bunnie
+    en: "The flight's oversold, so they're asking for volunteers with flexible plans."
+    ja: "便が売れすぎちゃったから、予定に余裕がある人を募ってるって。"
+    tiles: ["The", "flight's", "oversold", "so", "they're", "asking", "for", "volunteers", "with", "flexible", "plans"]
+    decoys: ["flights", "plan"]
+    marks: [[stress, "oversold"], [link, "asking for"]]
+    note: "oversold＝席を売りすぎた。flight's＝flight is"
+    ctx: "空港で、パートナーが放送の内容を伝えています"
+    why: "flight's は flight is のちぢめた形。flights（便がいくつも）ではない。oversold は席を売りすぎたこと。予定を変えられる人をさがしている。"
+    tags: { seed: 1, register: partner, pragmatic: literal, features: [contraction, ending] }
+
+  - kind: tile
+    id: tile-hoshi-anyones-guess
+    speaker: kitt
+    en: "Whether they'll honor the voucher on another airline is anyone's guess."
+    ja: "その券をほかの航空会社で使わせてくれるかどうかは、だれにもわからないよ。"
+    tiles: ["Whether", "they'll", "honor", "the", "voucher", "on", "another", "airline", "is", "anyone's", "guess"]
+    decoys: ["they'd", "honored", "airlines"]
+    marks: [[stress, "anyone's guess"]]
+    note: "anyone's guess＝だれにもわからない"
+    ctx: "便が欠航になり、友だちが代わりの券を見ています"
+    why: "Whether 〜 is anyone's guess＝〜かどうかはだれにもわからない。they'll は「ゼイル」、they'd なら「ゼイド」。honor の h は言わない。"
+    tags: { seed: 1, register: friend, pragmatic: hedge, features: [idiom, contraction] }
+
+  - kind: tile
+    id: tile-hoshi-rather-voucher
+    speaker: flick
+    en: "I'd rather take the voucher than sit here for another six hours."
+    ja: "ここでもう6時間待つくらいなら、バウチャーをもらうほうがいい。"
+    tiles: ["I'd", "rather", "take", "the", "voucher", "than", "sit here", "for", "another", "six", "hours"]
+    decoys: ["then", "sixteen"]
+    marks: [[stress, "rather"], [link, "than sit"]]
+    note: "I'd rather A than B＝BよりAがいい"
+    ctx: "便が遅れて、パートナーが代わりの便を選んでいます"
+    why: "than は弱く「ザン」で、then（それから）ではない。I'd rather A than B は「BよりAがいい」。six hours は6時間で、sixteen ではない。"
+    tags: { seed: 1, register: partner, pragmatic: attitude, features: [weak-form, teen-ty] }
+
+  - kind: tile
+    id: tile-hoshi-anything-but-free
+    speaker: freya
+    en: "They'll upgrade us to a suite, but it's anything but free."
+    ja: "スイートにアップグレードしてくれるって。でも、ただどころじゃないよ。"
+    tiles: ["They'll", "upgrade", "us", "to", "a", "suite", "but", "it's", "anything", "but", "free"]
+    decoys: ["nothing", "They", "it"]
+    marks: [[stress, "anything"], [link, "upgrade us"]]
+    note: "anything but ～＝まったく～ではない"
+    ctx: "ホテルのフロントから、パートナーが戻ってきました"
+    why: "anything but free は「無料どころではない」。nothing but free なら「ただ無料」で反対。They'll の ll、it's の s も聞く。"
+    tags: { seed: 3, register: partner, pragmatic: understatement, features: [idiom, contraction] }
+
+  - kind: tile
+    id: tile-hoshi-defeats-point
+    speaker: anchovy
+    en: "Check-in isn't till three, which defeats the whole point."
+    ja: "チェックインは3時からなんだって。それじゃ早く来た意味がまったくないよ。"
+    tiles: ["Check-in", "isn't", "till", "three", "which", "defeats", "the", "whole", "point"]
+    decoys: ["is", "defeated"]
+    marks: [[stress, "isn't"], [stress, "whole point"]]
+    note: "defeats the whole point＝まったく意味がない"
+    ctx: "朝早く着いたホテルで、パートナーががっかりしています"
+    why: "isn't は t が弱いが「イズン」と n が残る。is なら反対。defeats the whole point は「（早く来た）意味がまったくない」。"
+    tags: { seed: 3, register: partner, pragmatic: attitude, features: [contraction, idiom] }
+
+  - kind: tile
+    id: tile-hoshi-city-view
+    speaker: sylvia
+    en: "What they call a city view is really a parking garage."
+    ja: "「市街の眺め」って言うけど、見えるのは立体駐車場だよ。"
+    tiles: ["What", "they", "call", "a", "city", "view", "is really", "a", "parking", "garage"]
+    decoys: ["called"]
+    marks: [[stress, "parking garage"], [link, "call a"]]
+    note: "What they call ～＝彼らの言う～（皮肉）"
+    ctx: "ホテルの部屋に入って、友だちが窓の外を見ています"
+    why: "What they call a city view は「彼らの言う市街の眺め」という皮肉で、実は駐車場。call a はつながって「コーラ」で、called ではない。"
+    tags: { seed: 3, register: friend, pragmatic: sarcasm, features: [ending, linking] }
+
+  - kind: tile
+    id: tile-hoshi-holding-breath
+    speaker: shep
+    en: "He swears it'll be fixed soon, not that I'm holding my breath."
+    ja: "大家はすぐ直るって言い張ってるけど、期待はしてない。"
+    tiles: ["He", "swears", "it'll", "be", "fixed", "soon", "not", "that", "I'm", "holding", "my", "breath"]
+    decoys: ["swore", "it'd"]
+    marks: [[stress, "swears"], [stress, "breath"]]
+    note: "not that I'm holding my breath＝期待はしてない"
+    ctx: "水もれの修理について、パートナーが大家と話しました"
+    why: "swears は今も言い張っている話で、swore（誓った）ではない。it'll は「イドゥル」。not that I'm holding my breath＝期待はしてないけど。"
+    tags: { seed: 30, register: partner, pragmatic: attitude, features: [idiom, contraction] }
+
+  - kind: tile
+    id: tile-hoshi-should-be-fine
+    speaker: portia
+    en: "The landlord said it should be fine, which is what worries me."
+    ja: "大家さんは「大丈夫なはず」って言ったの。そこが心配なんだけど。"
+    tiles: ["The", "landlord", "said", "it", "should", "be", "fine", "which", "is", "what", "worries", "me"]
+    decoys: ["shouldn't", "says", "worried"]
+    marks: [[stress, "worries"]]
+    note: "which is what worries me＝そこが心配"
+    ctx: "部屋の水もれについて、友だちが話しています"
+    why: "should be fine（たぶん大丈夫）が逆に心配、という皮肉。shouldn't なら意味が反対。worries の「ズ」で今の気持ちとわかる。"
+    tags: { seed: 30, register: friend, pragmatic: hedge, features: [ending, stress] }
+
+  - kind: tile
+    id: tile-hoshi-not-on-us
+    speaker: chief
+    en: "Apparently the leak's coming from upstairs, so it's not even on us."
+    ja: "どうやら水もれは上の階からだって。だからうちの責任じゃないよ。"
+    tiles: ["Apparently", "the", "leak's", "coming", "from", "upstairs", "so", "it's", "not", "even", "on", "us"]
+    decoys: ["leaks"]
+    marks: [[link, "leak's coming"], [stress, "us"]]
+    note: "on us＝こちらの責任。leak's＝leak is"
+    ctx: "天井のしみを見て、パートナーが話しています"
+    why: "leak's は leak is のちぢめた形で「リークス」。leaks（もれがいくつも）とまぎらわしい。not even on us は「うちの責任ですらない」。"
+    tags: { seed: 30, register: partner, pragmatic: literal, features: [contraction, idiom] }
+
+  - kind: tile
+    id: tile-hoshi-deposit-catch
+    speaker: genji
+    en: "What the movers didn't mention is that the deposit's nonrefundable after Friday."
+    ja: "引っ越し業者が言わなかったのは、金曜を過ぎると手付金が返ってこないってこと。"
+    tiles: ["What", "the", "movers", "didn't", "mention", "is", "that", "the", "deposit's", "nonrefundable", "after", "Friday"]
+    decoys: ["refundable", "don't", "deposits"]
+    marks: [[drop, "didn't", "t"], [stress, "nonrefundable"]]
+    note: "What … is that ～＝大事なのは～。non を聞きのがさない"
+    ctx: "引っ越しの見積もりのあと、友だちが規約を読んでいます"
+    why: "本題は that の後。didn't の t は消えるが、もう過ぎた話。deposit's＝deposit is。non- を落とすと「返ってくる」で意味が逆。"
+    tags: { seed: 33, register: friend, pragmatic: indirect, features: [elision, stress] }
+
+  - kind: tile
+    id: tile-hoshi-elevator-isnt
+    speaker: curt
+    en: "The quote assumes there's an elevator, which there isn't."
+    ja: "見積もりはエレベーターがある前提なんだけど、うちにはないんだよね。"
+    tiles: ["The", "quote", "assumes", "there's", "an", "elevator", "which", "there", "isn't"]
+    decoys: ["is", "assumed"]
+    marks: [[link, "there's an elevator"], [stress, "isn't"]]
+    note: "which there isn't＝でも実際はない"
+    ctx: "引っ越しの見積もりを見て、パートナーが言いました"
+    why: "最後の which there isn't で「実際はない」と打ち消す。is なら「ある」で反対。there's an はつながって「ゼアザン」。だから高くなる、という含み。"
+    tags: { seed: 33, register: partner, pragmatic: indirect, features: [linking, contraction] }
+
+  - kind: tile
+    id: tile-hoshi-tack-on-fee
+    speaker: nana
+    en: "They tack on a fee for anything over the third floor."
+    ja: "4階以上は何でも、追加料金を取るんだって。"
+    tiles: ["They", "tack on", "a", "fee", "for", "anything", "over", "the", "third", "floor"]
+    decoys: ["first", "tacked on"]
+    marks: [[link, "tack on a"], [stress, "third"]]
+    note: "tack on＝あとから付け足す"
+    ctx: "引っ越し業者との電話のあと、パートナーが話しています"
+    why: "tack on a fee＝料金を上乗せする。tack on a はつながって「タコナ」。third は舌を歯にあて、first は唇をかむ。tacked なら、もうされた話。"
+    tags: { seed: 33, register: partner, pragmatic: literal, features: [linking, th] }
+
+  - kind: tile
+    id: tile-hoshi-commute-old
+    speaker: vivian
+    en: "It's not a dealbreaker, but that commute would get old fast."
+    ja: "決定的にダメってわけじゃないけど、あの通勤はすぐうんざりしそう。"
+    tiles: ["It's", "not", "a", "dealbreaker", "but", "that", "commute", "would", "get", "old", "fast"]
+    decoys: ["will"]
+    marks: [[stress, "old"]]
+    note: "get old＝飽きてうんざりする"
+    ctx: "内見のあと、パートナーが部屋の感想を言っています"
+    why: "would は弱く「ウッド」で、もしもの話。will なら言い切り。get old は「年を取る」でなく「うんざりしてくる」。遠回しに乗り気でない。"
+    tags: { seed: 36, register: partner, pragmatic: understatement, features: [idiom, weak-form] }
+
+  - kind: tile
+    id: tile-hoshi-easy-traffic
+    speaker: bea
+    en: "I'm easy, as long as we don't spend Saturday stuck in traffic."
+    ja: "どこでもいいよ。土曜日を渋滞で過ごさなければね。"
+    tiles: ["I'm", "easy", "as", "long", "as", "we", "don't", "spend", "Saturday", "stuck", "in", "traffic"]
+    decoys: ["Saturdays", "won't"]
+    marks: [[stress, "easy"], [link, "stuck in"]]
+    note: "I'm easy＝どれでもいい。でも条件つき"
+    ctx: "週末の予定を決めながら、パートナーが言いました"
+    why: "I'm easy は「どれでもいい」だが、as long as（〜なら）で条件をつけている。本当は渋滞がいや。don't を won't と聞かない。"
+    tags: { seed: 36, register: partner, pragmatic: hedge, features: [contraction, linking] }
+
+  - kind: tile
+    id: tile-hoshi-wouldnt-mind
+    speaker: merengue
+    en: "I wouldn't mind skipping the trip if it rains again."
+    ja: "また雨なら、旅行はやめてもいいかな。"
+    tiles: ["I", "wouldn't", "mind", "skipping", "the", "trip", "if", "it", "rains", "again"]
+    decoys: ["would", "rained"]
+    marks: [[stress, "wouldn't"], [link, "skipping the"]]
+    note: "wouldn't mind ～ing＝～してもいい（本当はしたい）"
+    ctx: "雨の予報を見て、パートナーが旅行の話をしています"
+    why: "wouldn't mind は「〜してもかまわない」で、遠回しに「やめたい」。would mind なら「いやだ」で反対。rains は予報の話で、rained ではない。"
+    tags: { seed: 36, register: partner, pragmatic: understatement, features: [contraction, ending] }
+
+  - kind: tile
+    id: tile-hoshi-masterpiece
+    speaker: label
+    en: "It was a masterpiece, if you like falling asleep halfway through."
+    ja: "傑作だったよ。途中で寝るのが好きならね。"
+    tiles: ["It", "was", "a", "masterpiece", "if", "you", "like", "falling", "asleep", "halfway", "through"]
+    decoys: ["is", "liked"]
+    marks: [[stress, "masterpiece"], [link, "halfway through"]]
+    note: "if you like ～＝～が好きならね（皮肉）"
+    ctx: "映画館を出て、友だちが感想を言っています"
+    why: "masterpiece（傑作）とほめてから、if you like falling asleep（寝るのが好きならね）で落とす皮肉。is なら今の話、liked なら昔の好み。"
+    tags: { seed: 52, register: friend, pragmatic: sarcasm, features: [stress, ending] }
+
+  - kind: tile
+    id: tile-hoshi-high-school-play
+    speaker: kid-cat
+    en: "I've seen better acting at a high school play, no offense."
+    ja: "悪いけど、高校の劇のほうがまだ演技がうまかったよ。"
+    tiles: ["I've", "seen", "better", "acting", "at", "a", "high", "school", "play", "no", "offense"]
+    decoys: ["I'd", "bitter"]
+    marks: [[stress, "better"], [link, "seen better"]]
+    note: "no offense＝悪気はないけど（でも言う）"
+    ctx: "映画を気に入った友だちに、本音を言っています"
+    why: "I've seen は「見たことがある」。I'd seen では、いつのことかが合わない。better は「ベダー」で、bitter ではない。高校の劇のほうがまし、という皮肉。"
+    tags: { seed: 52, register: friend, pragmatic: sarcasm, features: [contraction, flap] }
+
+  - kind: tile
+    id: tile-hoshi-book-ending
+    speaker: daisy-mae
+    en: "Let's just say the book did a better job with the ending."
+    ja: "まあ、結末は原作のほうがよかったってことで。"
+    tiles: ["Let's", "just", "say", "the", "book", "did", "a", "better", "job", "with", "the", "ending"]
+    decoys: ["does", "endings"]
+    marks: [[stress, "book"], [link, "did a"]]
+    note: "Let's just say ～＝はっきり言わないけど～"
+    ctx: "映画のあと、原作を読んだ友だちが感想を言っています"
+    why: "did a better job は「うまくやった」。did a はつながって「ディダ」、does なら今の話。Let's just say は、遠回しに映画をけなす言い方。"
+    tags: { seed: 52, register: friend, pragmatic: understatement, features: [linking, ending] }
+
+  - kind: tile
+    id: tile-hoshi-for-granted
+    speaker: frett
+    en: "Honestly, it sounds like they've been taking you for granted."
+    ja: "正直、みんなあなたがいるのを当たり前だと思ってるみたいだね。"
+    tiles: ["Honestly", "it", "sounds", "like", "they've", "been", "taking", "you", "for", "granted"]
+    decoys: ["sounded", "they'd"]
+    marks: [[stress, "granted"], [link, "taking you"]]
+    note: "take ～ for granted＝～を当たり前と思う"
+    ctx: "仕事の愚痴を聞いて、友だちが言いました"
+    why: "take you for granted は「いて当たり前と思う」。they've been は「ゼイヴ」で、ずっと続いている話。they'd でも sounded でもない。"
+    tags: { seed: 57, register: friend, pragmatic: attitude, features: [idiom, contraction] }
+
+  - kind: tile
+    id: tile-hoshi-every-right
+    speaker: saharah
+    en: "You had every right to be upset, whatever she says."
+    ja: "彼女が何て言おうと、あなたが怒ったのは当然だよ。"
+    tiles: ["You", "had", "every", "right", "to", "be", "upset", "whatever", "she", "says"]
+    decoys: ["have", "said"]
+    marks: [[stress, "every right"], [link, "had every"]]
+    note: "have every right to ～＝～して当然"
+    ctx: "けんかの話を聞いて、友だちが言いました"
+    why: "had every right＝怒って当然だった。had every はつながって「ハデヴリ」。whatever she says＝彼女が何と言おうと。said ではない。"
+    tags: { seed: 57, register: friend, pragmatic: attitude, features: [linking, ending] }
+
+  - kind: tile
+    id: tile-hoshi-in-your-shoes
+    speaker: kappn
+    en: "I'd have said something too, if I'd been in your shoes."
+    ja: "あなたの立場だったら、私も何か言ってたと思う。"
+    tiles: ["I'd", "have", "said", "something", "too", "if", "I'd", "been", "in", "your", "shoes"]
+    decoys: ["I'll", "I"]
+    marks: [[stress, "something"], [link, "in your"]]
+    note: "in your shoes＝あなたの立場なら"
+    ctx: "職場で言い返した話を、友だちに打ち明けました"
+    why: "I'd have said＝私も言っていた。if I'd been＝もし〜だったら。I'll や I では、もしもの話にならない。in your shoes＝あなたの立場。"
+    tags: { seed: 57, register: friend, pragmatic: attitude, features: [contraction, idiom] }
+
+  - kind: tile
+    id: tile-hoshi-dessert-bite
+    speaker: olivia
+    en: "Dessert sounds amazing, but I'll probably just have a bite of yours."
+    ja: "デザートおいしそう。でも私は、たぶんあなたのをひと口もらうだけにする。"
+    tiles: ["Dessert", "sounds", "amazing", "but", "I'll", "probably", "just", "have", "a", "bite", "of", "yours"]
+    decoys: ["Desert", "I", "bit"]
+    marks: [[stress, "Dessert"], [link, "bite of"]]
+    note: "a bite of yours＝あなたのをひと口。自分は頼まない"
+    ctx: "ダイエット中の友だちと、メニューを見ています"
+    why: "Dessert は後ろが強い「ディザート」。Desert（砂漠）は前が強い。bite は「バイト」、bit なら「少し」。つまり自分のデザートは頼まない。"
+    tags: { seed: 18, register: friend, pragmatic: refusal, features: [stress, vowel] }
+
+  - kind: tile
+    id: tile-hoshi-off-carbs
+    speaker: marshal
+    en: "Normally I'd jump at it, but I'm off carbs for now."
+    ja: "いつもなら飛びつくんだけど、今は糖質を控えてて。"
+    tiles: ["Normally", "I'd", "jump", "at", "it", "but", "I'm", "off", "carbs", "for", "now"]
+    decoys: ["I'll", "cards"]
+    marks: [[link, "jump at it"], [stress, "carbs"]]
+    note: "jump at it＝すぐ飛びつく。off carbs＝糖質を断つ"
+    ctx: "ラーメンに誘われて、ダイエット中の友だちが答えます"
+    why: "Normally I'd jump at it は「普段ならすぐ乗る」で、今回は断っている。I'll なら「乗る」になる。carbs（炭水化物）は b、cards は d。"
+    tags: { seed: 18, register: friend, pragmatic: refusal, features: [contraction, idiom] }
+
+  - kind: tile
+    id: tile-hoshi-wouldnt-count
+    speaker: cj
+    en: "I'll see how I feel, but I wouldn't count on me."
+    ja: "体調を見てみるけど、当てにはしないで。"
+    tiles: ["I'll", "see", "how", "I", "feel", "but", "I", "wouldn't", "count", "on", "me"]
+    decoys: ["would", "I'd"]
+    marks: [[stress, "wouldn't"], [link, "count on"]]
+    note: "wouldn't count on me＝あまり期待しないで"
+    ctx: "夕食に誘われて、ダイエット中の友だちが答えます"
+    why: "I'll see how I feel は様子見だが、I wouldn't count on me（当てにしないで）で、ほぼ断り。would なら「当てにして」で反対。"
+    tags: { seed: 18, register: friend, pragmatic: refusal, features: [contraction, linking] }
+
+  - kind: tile
+    id: tile-hoshi-lobster-tip
+    speaker: faith
+    en: "Since you had the lobster, you can cover the tip."
+    ja: "ロブスター食べたんだから、チップはあなた持ちね。"
+    tiles: ["Since", "you", "had", "the", "lobster", "you", "can", "cover", "the", "tip"]
+    decoys: ["can't", "have", "tips"]
+    marks: [[stress, "lobster"], [stress, "tip"]]
+    note: "cover＝お金を持つ。冗談まじりの言い方"
+    ctx: "レストランの会計で、友だちが伝票を見ています"
+    why: "you can cover the tip は「チップはあなた持ちね」という冗談。can は弱く「クン」、can't なら強い。had は食べ終わった話。"
+    tags: { seed: 27, register: friend, pragmatic: humour, features: [can-cant, ending] }
+
+  - kind: tile
+    id: tile-hoshi-service-included
+    speaker: tom-nook
+    en: "Service is included, so don't tip on top of that."
+    ja: "サービス料は含まれていますので、それ以上チップは不要です。"
+    tiles: ["Service", "is", "included", "so", "don't", "tip", "on", "top", "of", "that"]
+    decoys: ["isn't", "do"]
+    marks: [[stress, "included"], [link, "top of that"]]
+    note: "on top of that＝それに加えて"
+    ctx: "レストランで、店員が伝票を渡しています"
+    why: "Service is included＝サービス料込み。isn't なら反対。don't の t は弱いが n は残る。on top of that＝それに加えて。"
+    tags: { seed: 27, register: service, pragmatic: literal, features: [contraction, linking] }
+
+  - kind: tile
+    id: tile-hoshi-call-it-even
+    speaker: lucky
+    en: "Let's just split it down the middle and call it even."
+    ja: "もう半分ずつにして、それで貸し借りなしにしよう。"
+    tiles: ["Let's", "just", "split", "it", "down", "the", "middle", "and", "call", "it", "even"]
+    decoys: ["called"]
+    marks: [[link, "split it"], [link, "call it even"]]
+    note: "call it even＝貸し借りなしにする"
+    ctx: "割り勘でもめて、友だちがまとめようとしています"
+    why: "split it down the middle＝半分ずつ。call it even＝貸し借りなし。called なら、もう済んだ話。split it は「スプリディッ」。"
+    tags: { seed: 27, register: friend, pragmatic: literal, features: [idiom, linking] }
+
+  - kind: tile
+    id: tile-hoshi-fine-to-fly
+    speaker: lily
+    en: "You should be fine to fly, provided the swelling goes down."
+    ja: "腫れが引けば、飛行機に乗っても大丈夫でしょう。"
+    tiles: ["You", "should", "be", "fine", "to", "fly", "provided", "the", "swelling", "goes", "down"]
+    decoys: ["shouldn't", "fry"]
+    marks: [[stress, "provided"], [link, "goes down"]]
+    note: "provided ～＝～ならば（条件）"
+    ctx: "旅行の前に、医者がけがの様子を見ています"
+    why: "provided は「〜という条件で」。腫れが引けば乗ってよい、という意味。shouldn't なら反対。fly の l は舌先をつけ、fry（揚げる）は r。"
+    tags: { seed: 15, register: service, pragmatic: hedge, features: [l-r, contraction] }
+
+  - kind: tile
+    id: tile-hoshi-rash-reassess
+    speaker: audie
+    en: "If the rash hasn't cleared up by Monday, we'll reassess."
+    ja: "月曜までに発疹が引かなければ、もう一度診ましょう。"
+    tiles: ["If", "the", "rash", "hasn't", "cleared", "up", "by", "Monday", "we'll", "reassess"]
+    decoys: ["has", "rush", "we"]
+    marks: [[stress, "hasn't"], [link, "cleared up"]]
+    note: "clear up＝治る。reassess＝もう一度診る"
+    ctx: "診察の最後に、医者が次の予定を話しています"
+    why: "hasn't cleared up は「治っていなければ」。has なら意味が逆。rash（発疹）は口を横に開け、rush（急ぐ）は短い「ラ」。we'll の ll も聞く。"
+    tags: { seed: 15, register: service, pragmatic: literal, features: [contraction, vowel] }
+
+  - kind: tile
+    id: tile-hoshi-number-stomach
+    speaker: poppy
+    en: "Take it with food, or it'll do a number on your stomach."
+    ja: "食事と一緒に飲んでください。でないと胃をひどく痛めますよ。"
+    tiles: ["Take", "it", "with", "food", "or", "it'll", "do", "a", "number", "on", "your", "stomach"]
+    decoys: ["and", "it'd"]
+    marks: [[stress, "or"], [link, "do a number on"]]
+    note: "do a number on ～＝～をひどく痛めつける"
+    ctx: "薬局で、薬剤師が飲み方の注意をしています"
+    why: "or は「さもないと」。and なら「そして痛める」で意味が変わる。do a number on は「ひどいことになる」というくだけた言い方。"
+    tags: { seed: 15, register: service, pragmatic: literal, features: [idiom, weak-form] }
