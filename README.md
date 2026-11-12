@@ -30,6 +30,12 @@ npm run smoke          # check the test copy (keys in relay/.smoke-keys)
 npm run logs           # the log's reader (docs/ops/observability.md)
 ```
 
+The gym bot, from `gym/` ([gym/README.md](gym/README.md)):
+```sh
+npm test               # unit tests (vitest); npm run check, npm run knip
+npm run deploy         # production, from a clean tree on origin/main
+```
+
 The food data (`app/static/food/`), from the repo root ([food-data.md](docs/food-data.md); Python ≥ 3.9, stdlib only):
 ```sh
 python3 -I food-data/scripts/build.py all    # → food-data/out/
@@ -61,6 +67,7 @@ Raw sources the repo doesn't hold (`~/food-images-raw`, `app/.cache/tts/{clean,r
 | `app/e2e/` | Playwright tests |
 | `app/design/` | Design sources: the avatar's render tools and signed-off outfits ([players.md](docs/players.md)), the icon |
 | `relay/` | The Cloudflare Worker: the record, the live room, the log, the weather, the Shortcut parser; `scripts/` the admin tools (`record.ts`, `logs.ts`), smoke and latency |
+| `gym/` | Not the game: a LINE bot that tells a group when a gym slot opens, as its own Worker on the same account ([gym/README.md](gym/README.md)) |
 | `food-data/` | The food data pipeline (Python): `scripts/` builds `out/` from `raw/` (gitignored) and `data_src/`; `npm run food:data` ships it |
 | `docs/` | Below |
 

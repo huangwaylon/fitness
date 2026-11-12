@@ -1,0 +1,38 @@
+# The gym bot's checks (gym/README.md): type-check, knip (unused files and exports) and unit tests of gym/.
+# Deploying stays manual (`npm run deploy` from gym/, needs the Cloudflare login).
+name: Gym bot checks
+
+on:
+  push:
+    branches: [main]
+    paths: ['gym/**', '.github/workflows/gym.yml']
+  pull_request:
+    paths: ['gym/**', '.github/workflows/gym.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gym
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+          # (gym/ stands alone: the rest of the repo, app/static's 521 MB above all, never needed)
+          sparse-checkout: |
+            gym
+            .github/workflows
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: gym/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm run check
+      - run: npm run knip
+      - run: npm test
