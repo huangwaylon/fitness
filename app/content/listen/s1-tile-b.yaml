@@ -1,4 +1,4 @@
-# ことば タイル S1 かわ (b): did you / would you / could you run together (yod), 'em, lemme, kinda, for and of.
+# ことば タイル S1 かわ (b): did you / would you / could you said fluently (yod), let me, kind of, for and of.
 schema: 1
 unit: s1-tile-b
 game: tile
@@ -13,14 +13,14 @@ items:
     id: tile-hot-or-iced
     speaker: rosie
     en: "Did you want that hot or iced?"
-    tts: "Didja want that hot or iced?"
     ja: "ホットとアイス、どちらになさいますか？"
-    tiles: ["Did", "you", "want", "that", "hot", "or", "iced"]
+    tiles: ["Did", "you", "want", "that", "hot", "or iced"]
     decoys: ["Do", "it"]
-    marks: [[say, "Did you", "Didja"], [link, "hot or iced"]]
-    note: "Did you は「ディジャ」。過去形でも今の注文のていねいな聞き方"
+    marks: [[link, "hot or iced"]]
+    note: "Did you は「ディジュ」。今の注文のていねいな聞き方"
     ctx: "カフェで、店員が注文を確認しています"
-    why: "Did you は「ディジャ」。Do に聞こえても、店員は今の注文を Did you want とていねいに聞く。that は t が止まり「ザッ」。it ではない。"
+    why: "Did you はつながって「ディジュ」。Do に聞こえても、店員は Did you want とていねいに聞く。that は t が止まり「ザッ」。it ではない。"
+    revoice: true
     scene: cafe
     tags: { seed: 51, register: service, pragmatic: formula, conditions: [cafe], features: [yod, linking] }
 
@@ -28,14 +28,14 @@ items:
     id: tile-end-up-doing
     speaker: kid-cat
     en: "What did you end up doing last night?"
-    tts: "Whadidja end up doin' last night?"
     ja: "ゆうべ、結局何してたの？"
     tiles: ["What", "did", "you", "end", "up", "doing", "last", "night"]
     decoys: ["do", "and"]
-    marks: [[say, "What did you", "Whadidja"], [link, "end up"], [drop, "last", "t"]]
-    note: "What did you は「ワディジャ」。end up＝結局〜する"
+    marks: [[link, "end up"], [drop, "last", "t"]]
+    note: "What did you は「ワディジュ」。end up＝結局〜する"
     ctx: "朝、友だちがゆうべのことを聞いています"
-    why: "What did you は「ワディジャ」とひとかたまり。end up は「エンダップ」とつながる。and ではない。doing の g は落ちるが、do ではない。"
+    why: "What did you はつながって「ワディジュ」。end up は「エンダップ」とつながる。and ではない。doing は最後の「イング」まで聞く。do ではない。"
+    revoice: true
     scene: street
     tags: { seed: 50, register: friend, pragmatic: literal, features: [yod, linking] }
 
@@ -43,14 +43,14 @@ items:
     id: tile-wont-make-me-sleepy
     speaker: goldie
     en: "Could you give me something that won't make me drowsy?"
-    tts: "Couldja gimme something that won't make me drowsy?"
     ja: "眠くならないお薬をいただけますか？"
     tiles: ["Could", "you", "give", "me", "something", "that", "won't", "make", "me", "drowsy"]
     decoys: ["want", "Can"]
-    marks: [[say, "Could you", "Couldja"], [say, "give me", "gimme"], [stress, "won't"]]
+    marks: [[link, "give me"], [stress, "won't"]]
     note: "won't は「ウォウント」と口が丸い。want は「ワント」"
     ctx: "薬局で、客が薬剤師に相談しています"
-    why: "Could you は「クッジャ」、give me は「ギミ」。won't は口が丸い「ウォウント」で、want（ワント）ではない。Can なら「キャン」。drowsy＝眠くなる。"
+    why: "won't は口が丸い「ウォウント」で、want（ワント）ではない。Could you は「クッジュ」。Can なら「キャン」。drowsy＝眠くなる。"
+    revoice: true
     scene: pharmacy
     tags: { seed: 13, register: service, pragmatic: literal, features: [yod, contraction] }
 
@@ -58,14 +58,14 @@ items:
     id: tile-lemme-know-home
     speaker: tom-nook
     en: "Just let me know when you're home."
-    tts: "Just lemme know when you're home."
     ja: "ご在宅のときに知らせてください。"
     tiles: ["Just", "let", "me", "know", "when", "you're", "home"]
     decoys: ["let's", "you"]
-    marks: [[say, "let me", "lemme"], [drop, "Just", "t"]]
-    note: "lemme＝let me。let's とちがい「ミ」が残る"
+    marks: [[link, "let me"], [drop, "Just", "t"]]
+    note: "let me は「レミ」。let's とちがい「ミ」が残る"
     ctx: "電話で、近所の人が渡したい物があるそうです"
-    why: "lemme＝let me で「ミ」が残る。let's なら「レッツ」と「ス」が聞こえる。you're は「ヨー」と短いが、you だけではない。"
+    why: "let me はつながって「レミ」。let's なら「レッツ」と「ス」が聞こえる。you're は「ヨー」と短いが、you だけではない。"
+    revoice: true
     scene: living
     tags: { seed: 30, register: neighbour, pragmatic: literal, conditions: [phone], features: [lemme] }
 
@@ -73,58 +73,59 @@ items:
     id: tile-try-em-on
     speaker: tammy
     en: "You can try them on over there."
-    tts: "You c'n try 'em on over there."
     ja: "あちらでご試着いただけますよ。"
     tiles: ["You", "can", "try", "them", "on", "over", "there"]
     decoys: ["him", "can't"]
-    marks: [[say, "them", "'em"], [link, "try them on over"]]
-    note: "try 'em on は「トライエモン」。them の th は消える"
+    marks: [[link, "try them on over"]]
+    note: "them は弱く「ゼム」と短い。him ではない"
     ctx: "服屋で、店員が声をかけてきました"
-    why: "'em は them の th が消えた形で「エム」。him なら「ヒム」か「イム」で、服には合わない。弱い can は「クン」、can't なら「キャン」と強い。"
+    why: "try them on は「トライゼモン」とつながる。him なら「ヒム」で、服には合わない。弱い can は「クン」、can't なら「キャン」と強い。"
+    revoice: true
     tags: { seed: 26, register: service, pragmatic: literal, features: [weak-form, linking] }
 
   - kind: tile
     id: tile-sign-for-this
     speaker: shep
-    en: "Could you sign for this one? Just your initials is fine."
-    tts: "Couldja sign for this one? Just yer initials is fine."
+    en: "Could you sign for this? Just your initials is fine."
     ja: "こちらにサインをお願いします。イニシャルだけで大丈夫です。"
-    tiles: ["Could", "you", "sign", "for", "this", "one", "Just", "your", "initials", "is", "fine"]
+    tiles: ["Could", "you", "sign", "for", "this", "Just", "your", "initials", "is", "fine"]
     decoys: ["Can", "four"]
-    marks: [[say, "Could you", "Couldja"], [say, "your", "yer"]]
+    marks: [[link, "sign for this"]]
     note: "for は弱く「ファ」。数の four なら長く強い"
     ctx: "玄関先で、配達員が荷物を渡しています"
-    why: "Could you は「クッジャ」。Can なら「キャン」。for は弱く「ファ」で、数の four なら長く強い。initials is fine＝イニシャルで大丈夫。"
+    why: "Could you はつながって「クッジュ」。Can なら「キャン」。for は弱く「ファ」で、数の four なら長く強い。initials is fine＝イニシャルで大丈夫。"
+    revoice: true
     scene: door
     tags: { seed: 37, register: stranger, pragmatic: literal, features: [yod, weak-form] }
 
   - kind: tile
     id: tile-kinda-tired
     speaker: bob
-    en: "I'm kind of tired. Do you mind if we stay in?"
-    tts: "I'm kinda tired. D'you mind if we stay in?"
+    en: "I'm kind of tired. Mind if we stay in?"
     ja: "ちょっと疲れてて。今日は家にいてもいい？"
-    tiles: ["I'm", "kind", "of", "tired", "Do", "you", "mind", "if", "we", "stay", "in"]
-    decoys: ["Did", "out"]
-    marks: [[say, "kind of", "kinda"], [say, "Do you", "D'you"]]
-    note: "kinda＝kind of。stay in＝外出しない（out の逆）"
+    tiles: ["I'm", "kind", "of", "tired", "Mind", "if", "we", "stay", "in"]
+    decoys: ["I", "out"]
+    marks: [[link, "kind of"]]
+    note: "stay in＝外出しない。out の逆"
     ctx: "金曜の夜、パートナーと予定を話しています"
-    why: "kinda＝kind of。Do you は「ジュ」と短く、Did なら「ディ」がはっきり聞こえる。stay in＝家にいる。stay out（外にいる）の逆。"
+    why: "I'm の m は弱いが、I だけではない。kind of はつながって「カインダ」。stay in＝家にいる。stay out（外にいる）の逆。"
+    revoice: true
     scene: living
-    tags: { seed: 35, register: partner, pragmatic: indirect, features: [kinda, yod] }
+    tags: { seed: 35, register: partner, pragmatic: indirect, features: [kinda, weak-form] }
 
   - kind: tile
     id: tile-bit-earlier
     speaker: nana
     en: "Would you be able to come in a bit earlier?"
-    tts: "Wouldja be able to come in a bid earlier?"
+    tts: "Would you be able to come in a bid earlier?"
     ja: "少し早めにお越しいただくことはできますか？"
     tiles: ["Would", "you", "be", "able", "to", "come", "in", "a", "bit", "earlier"]
     decoys: ["Will", "little"]
-    marks: [[say, "Would you", "Wouldja"], [say, "bit", "bid"], [link, "come in a bit earlier"]]
+    marks: [[link, "come in a bit earlier"]]
     note: "a bit earlier は「アビデーリア」とつながる"
     ctx: "電話で、歯医者の受付から連絡がありました"
-    why: "Would you は「ウッジャ」。Will なら L が残る。bit の t がやわらかく「ビデ」。a bit＝少し。little なら「リル」が聞こえる。"
+    why: "Would you はつながって「ウッジュ」。Will なら L が残る。bit の t がやわらかく「ビデ」。a bit＝少し。little なら「リル」が聞こえる。"
+    revoice: true
     scene: living
     tags: { seed: 16, register: service, pragmatic: indirect, conditions: [phone], features: [yod, flap] }
 
@@ -132,14 +133,14 @@ items:
     id: tile-sent-you
     speaker: beau
     en: "Did you get the email I sent you this morning?"
-    tts: "Didja get the email I sentcha this morning?"
     ja: "けさ送ったメール、届いた？"
     tiles: ["Did", "you", "get", "the", "email", "I", "sent", "you", "this", "morning"]
     decoys: ["Do", "send"]
-    marks: [[say, "Did you", "Didja"], [say, "sent you", "sentcha"]]
+    marks: [[link, "sent you"]]
     note: "sent you は「センチュ」。send なら t の音がない"
     ctx: "ビデオ会議の前に、同僚が確認しています"
-    why: "Did you は「ディジャ」、sent you は「センチュ」。t と you がまざって「チュ」になる。send なら t がなく、今の話。Do なら「ドゥ」。"
+    why: "sent you は t と you がまざって「センチュ」。send なら t がなく、今の話になる。Did you は「ディジュ」。Do なら「ドゥ」。"
+    revoice: true
     scene: office
     tags: { seed: 39, register: colleague, pragmatic: literal, conditions: [video], features: [yod] }
 
@@ -147,14 +148,15 @@ items:
     id: tile-out-of-work
     speaker: gayle
     en: "I'll call you when I get off work."
-    tts: "I'll call ya when I ged off work."
+    tts: "I'll call you when I ged off work."
     ja: "仕事が終わったら電話するね。"
     tiles: ["I'll", "call", "you", "when", "I", "get", "off", "work"]
     decoys: ["I'd", "of"]
-    marks: [[say, "get off", "ged off"], [say, "you", "ya"], [link, "get off"]]
+    marks: [[link, "get off"]]
     note: "get off work＝仕事が終わる。off は f がはっきり残る"
     ctx: "電話で、友だちが今夜の予定を話しています"
     why: "get off は「ゲドフ」とつながる。off は f がはっきり残る。of なら「ア」くらいに弱い。I'll（アル）と I'd（アイド）は一瞬のちがい。"
+    revoice: true
     scene: living
     tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone], features: [weak-form, flap] }
 
@@ -162,28 +164,28 @@ items:
     id: tile-heat-that-up
     speaker: maple
     en: "Would you like me to heat that up for you?"
-    tts: "Wouldja like me ta heat that up for ya?"
     ja: "こちら、温めましょうか？"
     tiles: ["Would", "you", "like", "me", "to", "heat", "that", "up", "for", "you"]
-    decoys: ["it", "Do"]
-    marks: [[say, "Would you", "Wouldja"], [say, "to", "ta"], [link, "that up"]]
+    decoys: ["it"]
+    marks: [[link, "that up"]]
     note: "heat that up＝温める。that up は「ザダップ」"
     ctx: "デリで、店員が買った物を渡しています"
-    why: "Would you は「ウッジャ」、to は「タ」。that up は「ザダップ」と t がやわらかい。it（イッ）ではなく that。文頭は Do ではない。"
+    why: "Would you はつながって「ウッジュ」。to は弱く「タ」に近い。that up は「ザダップ」と t がやわらかい。it（イッ）ではなく that。"
+    revoice: true
     tags: { seed: 26, register: service, pragmatic: formula, features: [yod, weak-form] }
 
   - kind: tile
     id: tile-what-you-think
     speaker: octavian
     en: "Let me know what you think of the draft."
-    tts: "Lemme know whatcha think of the draft."
     ja: "下書き、どう思うか聞かせて。"
     tiles: ["Let", "me", "know", "what", "you", "think", "of", "the", "draft"]
     decoys: ["Let's", "have"]
-    marks: [[say, "Let me", "Lemme"], [say, "what you", "whatcha"]]
-    note: "what you は「ワッチャ」。of は弱く「ア」になる"
+    marks: [[link, "what you"]]
+    note: "of は弱く「ア」。have ではない。think of＝どう思う"
     ctx: "職場で、同僚が書類を見せてきました"
-    why: "Let me は「レミ」。Let's なら「ス」が聞こえる。what you は「ワッチャ」。弱い of は「ア」で have とまぎらわしいが、think of＝〜をどう思う。"
+    why: "Let me は「レミ」。Let's なら「ス」が聞こえる。弱い of は「ア」で have とまぎらわしい。think of＝〜をどう思う。"
+    revoice: true
     scene: office
     tags: { seed: 42, register: colleague, pragmatic: literal, features: [lemme, yod] }
 
@@ -191,14 +193,14 @@ items:
     id: tile-eat-yet
     speaker: anchovy
     en: "Did you eat yet? I can make you something."
-    tts: "Didja eat yet? I c'n make ya something."
     ja: "もう食べた？なにか作ろうか。"
     tiles: ["Did", "you", "eat", "yet", "I", "can", "make", "you", "something"]
     decoys: ["Do", "can't"]
-    marks: [[say, "Did you", "Didja"], [say, "can", "c'n"]]
-    note: "Did you eat は「ディジーチ」とも。can は弱い「クン」"
+    marks: [[link, "Did you eat"]]
+    note: "can は弱く「クン」。can't なら強い「キャン」"
     ctx: "家で、パートナーが声をかけてきました"
-    why: "Did you eat は「ディジーチ」と一続き。Do なら「ドゥ」。弱い can は「クン」。can't なら「キャン」と強く、申し出の文に合わない。"
+    why: "Did you eat は「ディジュイート」と一続き。Do なら「ドゥ」。弱い can は「クン」。can't なら「キャン」と強く、申し出の文に合わない。"
+    revoice: true
     scene: living
     tags: { seed: 35, register: partner, pragmatic: literal, features: [yod, can-cant] }
 
@@ -206,13 +208,13 @@ items:
     id: tile-aisle-or-window
     speaker: gulliver
     en: "Do you want an aisle or a window?"
-    tts: "D'ya want an aisle or a window?"
     ja: "通路側と窓側、どちらがいいですか？"
-    tiles: ["Do", "you", "want", "an", "aisle", "or", "a", "window"]
-    decoys: ["Did", "and"]
-    marks: [[say, "Do you", "D'ya"], [link, "want an aisle or a"]]
+    tiles: ["Do", "you", "want", "an", "aisle", "or a window"]
+    decoys: ["Did", "and a window"]
+    marks: [[link, "want an aisle or a"]]
     note: "an aisle は「アナイル」、or a は「オラ」とつながる"
     ctx: "空港のチェックインで、係が質問しています"
-    why: "Do you は「ダヤ」と短い。Did なら「ディ」。an aisle は「アナイル」、or a は「オラ」とつながる。and なら選ぶ意味にならない。"
+    why: "Do you は「ドゥユ」と短い。Did なら「ディ」がはっきり聞こえる。an aisle は「アナイル」、or a は「オラ」とつながる。and なら選ぶ意味にならない。"
+    revoice: true
     scene: gate
     tags: { seed: 2, register: service, pragmatic: literal, conditions: [desk], features: [yod, linking] }

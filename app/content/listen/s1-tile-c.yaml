@@ -16,28 +16,28 @@ items:
     id: tile-ord-soup-or-salad
     speaker: cherry
     en: "Would you like soup or salad with that?"
-    tts: "Wouldja like soup er salad with that?"
     ja: "スープとサラダ、どちらをお付けしますか？"
-    tiles: ["Would", "you", "like", "soup", "or", "salad", "with", "that"]
-    decoys: ["and", "super"]
-    marks: [[say, "Would you", "Wouldja"], [say, "or", "er"], [link, "soup or salad"]]
+    tiles: ["Would", "you", "like", "soup or", "salad", "with", "that"]
+    decoys: ["super", "soup and"]
+    marks: [[link, "soup or salad"]]
     note: "or は「ア」と弱く、soup とつながる"
     ctx: "レストランで、店員がメインの注文のあとに"
-    why: "or は弱く「ア」になり、soup とつながって「スーパ」に聞こえる。and なら「ン」。super salad という料理ではなく、どちらかを選ぶ質問。"
+    why: "soup or は or が弱く、つながって「スーパ」に聞こえる。super salad という料理ではない。soup and なら「ン」が聞こえる。どちらかを選ぶ質問。"
+    revoice: true
     tags: { seed: 27, register: service, pragmatic: literal, features: [weak-form, linking] }
 
   - kind: tile
     id: tile-ord-for-here
     speaker: brewster
     en: "Is that for here or to go?"
-    tts: "Is that fer here er ta go?"
     ja: "店内でお召し上がりですか、お持ち帰りですか？"
-    tiles: ["Is", "that", "for", "here", "or", "to", "go"]
+    tiles: ["Is", "that", "for", "here or", "to", "go"]
     decoys: ["four", "the"]
-    marks: [[say, "for", "fer"], [say, "or", "er"], [say, "to", "ta"]]
-    note: "fer here er ta go。三つとも弱い"
+    marks: [[link, "here or"]]
+    note: "for here＝店内で。to go＝持ち帰り"
     ctx: "カフェのレジで、店員が聞いています"
-    why: "for は「ファ」、or は「ア」、to は「タ」と、三つとも弱まる。four（フォー）や the（ザ）ではない。to go＝持ち帰り。"
+    why: "for は弱く「ファ」で、four（フォー）ではない。to も弱く「タ」で、the（ザ）ではない。here or は つながって「ヒアラ」。"
+    revoice: true
     scene: cafe
     tags: { seed: 27, register: service, pragmatic: formula, conditions: [cafe], features: [weak-form] }
 
@@ -45,56 +45,56 @@ items:
     id: tile-ord-still-working
     speaker: tia
     en: "Are you still working on that?"
-    tts: "Are ya still workin' on that?"
     ja: "まだお召し上がりですか？"
     tiles: ["Are", "you", "still", "working", "on", "that"]
     decoys: ["walking", "in"]
-    marks: [[say, "you", "ya"], [drop, "working", "g"]]
+    marks: [[link, "working on that"]]
     note: "仕事ではなく「まだ食べてる？」"
     ctx: "レストランで、店員がお皿を見ながら"
-    why: "working on that＝まだ食べている？で、お皿を下げていいかの確認。walking（ウォーキング）は母音がちがう。on that で in ではない。"
+    why: "working on that＝まだ食べている？で、お皿を下げていいかの確認。walking（ウォーキング）は口の形がちがう。on that で、in ではない。"
+    revoice: true
     tags: { seed: 27, register: service, pragmatic: indirect, features: [weak-form] }
 
   - kind: tile
     id: tile-ord-right-back
     speaker: kicks
     en: "I'll be right back with your drinks."
-    tts: "I'll be right back with yer drinks."
     ja: "すぐにお飲み物をお持ちします。"
     tiles: ["I'll", "be", "right", "back", "with", "your", "drinks"]
     decoys: ["I", "the"]
-    marks: [[say, "your", "yer"], [link, "right back"]]
+    marks: [[link, "right back"]]
     note: "I'll の ll は弱いが、これからの約束"
     ctx: "レストランで、注文を取った店員が"
-    why: "I'll の ll はほとんど聞こえないが、これからすること。your は「ヤ」と弱く、the（ザ）とは別。drinks の s で飲み物は複数。"
+    why: "I'll の ll はほとんど聞こえないが、これからすること。I だけではない。your は弱く「ヤ」に近く、the（ザ）とは別。"
+    revoice: true
     tags: { seed: 27, register: service, pragmatic: formula, features: [weak-form, contraction] }
 
   - kind: tile
     id: tile-ord-side-of-fries
     speaker: goldie
     en: "It comes with a side of fries."
-    tts: "It comes with a side a' fries."
     ja: "ポテトが付け合わせで付きます。"
     tiles: ["It", "comes", "with", "a", "side", "of", "fries"]
-    decoys: ["and", "price"]
-    marks: [[say, "of", "a'"], [link, "side of"]]
-    note: "of は「ア」だけ。side a' fries"
+    decoys: ["and", "flies"]
+    marks: [[link, "side of"]]
+    note: "a side of＝付け合わせ。of は弱く「ア」"
     ctx: "レストランで、店員がメニューを説明しています"
-    why: "of は弱く「ア」だけになり「サイダフライズ」。and（ン）とは別。a side of＝付け合わせの。fries（フライズ）は price ではない。"
+    why: "side of は of が弱く、つながって「サイダ」。and なら「ン」に近い。fries は r の音で、flies（ハエ）ではない。"
+    revoice: true
     tags: { seed: 27, register: service, pragmatic: literal, features: [weak-form, linking] }
 
   - kind: tile
     id: tile-ord-large-or-small
     speaker: tia
     en: "Sorry, did you say the large fries or the small?"
-    tts: "Sorry, didja say the large fries er the small?"
     ja: "すみません、ポテトはLとおっしゃいました？それともS？"
-    tiles: ["Sorry", "did", "you", "say", "the", "large", "fries", "or", "the", "small"]
-    decoys: ["do", "and"]
-    marks: [[say, "did you", "didja"], [say, "or", "er"]]
-    note: "didja say＝言いましたか？（聞き返し）"
+    tiles: ["Sorry", "did", "you", "say", "the", "large", "fries", "or the small"]
+    decoys: ["do", "and the small"]
+    marks: [[link, "did you"]]
+    note: "did you say＝言いましたか？（聞き返し）"
     ctx: "騒がしい店で、店員が聞き返しています"
-    why: "did you は「ディジャ」。do you なら「ドゥユ」。or は「ア」と弱く、and（ン）ではない。どちらだったかを聞き返している。"
+    why: "did you は つながって「ディジュ」。do you なら「ドゥユ」。or は弱く「ア」に近く、and（ン）ではない。どちらだったかを聞き返している。"
+    revoice: true
     tags: { seed: 27, register: service, pragmatic: literal, conditions: [cafe], features: [weak-form, yod] }
 
   # ---- sh-shop: お店で 聞く ----
@@ -102,14 +102,15 @@ items:
     id: tile-shop-little-bigger
     speaker: bea
     en: "Do you have it a little bigger?"
-    tts: "D'you have it a liddle bigger?"
+    tts: "Do you have it a liddle bigger?"
     ja: "これのもう少し大きいの、ありますか？"
     tiles: ["Do", "you", "have", "it", "a", "little", "bigger"]
     decoys: ["Did", "better"]
-    marks: [[say, "little", "liddle"], [say, "Do you", "D'you"]]
+    marks: [[link, "have it a"]]
     note: "little は「リドゥ」。bigger と better に注意"
     ctx: "服屋で、客が店員にサイズを聞いています"
-    why: "little の tt は弾んで「リドゥ」。bigger は g の音で、better（ベダー）ではない。Do you は「ジュ」と短く、Did ではない。"
+    why: "little の tt は弾んで「リドゥ」。bigger は g の音で、better（ベダー）ではない。Do you は弱く短く「ドゥユ」で、Did ではない。"
+    revoice: true
     tags: { seed: 26, register: service, pragmatic: literal, features: [flap] }
 
   - kind: tile
@@ -120,7 +121,7 @@ items:
     ja: "すごく似合ってる。"
     tiles: ["It", "looks", "great", "on", "you"]
     decoys: ["grade", "in"]
-    marks: [[say, "great on", "greadon"]]
+    marks: [[link, "great on"]]
     note: "great on は「グレイドン」とつながる"
     ctx: "試着室の前で、友だちが言いました"
     why: "great の t は弾んで on とつながり「グレイドン」。grade ではない。looks great on you＝よく似合う。in ではなく on。"
@@ -134,7 +135,7 @@ items:
     ja: "Mサイズは全部売り切れです。"
     tiles: ["We're", "all", "out", "of", "mediums"]
     decoys: ["We'll", "in"]
-    marks: [[say, "out of", "oudda"]]
+    marks: [[link, "out of"]]
     note: "out of は「アウダ」。在庫切れ"
     ctx: "店で、店員がサイズの在庫を答えています"
     why: "out of は t が弾んで「アウダ」。all out of＝全部売り切れ。We'll（ウィール）ではなく We're。in ではない。"
@@ -143,15 +144,16 @@ items:
   - kind: tile
     id: tile-shop-try-it-on
     speaker: audie
-    en: "Do you want to try it on?"
-    tts: "D'you wanna try id on?"
+    en: "Do you wanna try it on?"
+    tts: "Do you wanna try id on?"
     ja: "それ、試着してみる？"
-    tiles: ["Do", "you", "want", "to", "try", "it", "on"]
-    decoys: ["won't", "in"]
-    marks: [[say, "want to", "wanna"], [say, "it on", "id on"]]
-    note: "try it on は「トライディドン」"
+    tiles: ["Do", "you", "wanna", "try", "it", "on"]
+    decoys: ["gonna", "in"]
+    marks: [[say, "wanna", "want to"], [link, "it on"]]
+    note: "wanna＝want to。try it on＝試着する"
     ctx: "服屋で、友だちが服を手に取っています"
-    why: "want to は「ワナ」で、won't（ウォウン）ではない。it on は t が弾み「イドン」。try on＝試着する。in ではない。"
+    why: "wanna（ワナ）は want to。gonna（ガナ）なら「〜するつもり」。it on は t が弾み「イドン」。try on＝試着する。in ではない。"
+    revoice: true
     tags: { seed: 26, register: friend, pragmatic: literal, features: [flap, wanna] }
 
   - kind: tile
@@ -160,26 +162,26 @@ items:
     en: "The navy one's better, I think."
     tts: "The navy one's bedder, I think."
     ja: "紺のほうがいいと思う。"
-    tiles: ["The", "navy", "one's", "better", "I", "think"]
-    decoys: ["bigger", "one"]
-    marks: [[say, "better", "bedder"]]
+    tiles: ["The", "navy", "one's", "better I think"]
+    decoys: ["bigger I think", "one"]
+    marks: [[link, "one's better"]]
     note: "better は「ベダー」。bigger と区別"
     ctx: "服屋で、友だちが色を選んでいます"
-    why: "better の tt は弾んで「ベダー」。bigger（ビガー）は g の音。one's は one is の短縮で、one だけではない。"
+    why: "better の tt は弾んで「ベダー」。bigger（ビガー）は g の音。one's は one is をちぢめた形で、one だけではない。"
     tags: { seed: 26, register: friend, pragmatic: attitude, features: [flap] }
 
   - kind: tile
     id: tile-shop-what-about
     speaker: label
     en: "What about this one in black?"
-    tts: "Whaddabout this one in black?"
     ja: "こちらの黒はいかがですか？"
     tiles: ["What", "about", "this", "one", "in", "black"]
     decoys: ["block", "on"]
-    marks: [[say, "What about", "Whaddabout"]]
+    marks: [[link, "What about"]]
     note: "What about は「ワダバウト」"
     ctx: "服屋で、店員が別の色をすすめています"
-    why: "What about は t が弾み「ワダバウト」。black（ブラック）と block は母音がちがう。in black＝黒で。on ではない。"
+    why: "What about は t が弾み「ワダバウト」。black（ブラック）と block は口の形がちがう。in black＝黒で。on ではない。"
+    revoice: true
     tags: { seed: 26, register: service, pragmatic: literal, features: [flap, linking] }
 
   # ---- hm-neighbor: 近所の 人 ----
@@ -187,14 +189,15 @@ items:
     id: tile-nbr-just-so
     speaker: cyd
     en: "Just so you know, the door sticks a little."
-    tts: "Jus' so ya know, the door sticks a little."
+    tts: "Jus' so you know, the door sticks a little."
     ja: "念のため言っておくと、ドアがちょっと引っかかるよ。"
     tiles: ["Just", "so", "you", "know", "the", "door", "sticks", "a", "little"]
-    decoys: ["no", "stick"]
-    marks: [[drop, "Just", "t"], [say, "you", "ya"]]
+    decoys: ["now", "stick"]
+    marks: [[drop, "Just", "t"], [link, "you know"]]
     note: "Just so you know＝念のため言っておくと"
     ctx: "玄関先で、隣の人が言いました"
-    why: "Just の t は落ちて「ジャソ」。you know は「ヤノウ」で、no ではない。sticks＝引っかかる。主語が door なので s がつく。"
+    why: "Just の t は落ちて「ジャソ」。you know は「ユノウ」で、now（ナウ）ではない。sticks＝引っかかる。最後の s まで聞こえる。"
+    revoice: true
     scene: door
     tags: { seed: 32, register: neighbour, pragmatic: literal, features: [elision] }
 
@@ -217,14 +220,14 @@ items:
     id: tile-nbr-hate-to-ask
     speaker: nana
     en: "I hate to ask, but are you around Saturday?"
-    tts: "I hay' ta ask, but are ya around Saturday?"
     ja: "頼みにくいんだけど、土曜っている？"
     tiles: ["I", "hate", "to", "ask", "but", "are", "you", "around", "Saturday"]
     decoys: ["have", "a"]
-    marks: [[drop, "hate", "t"], [say, "to", "ta"]]
+    marks: [[drop, "hate", "t"], [link, "hate to"]]
     note: "I hate to ask＝頼みにくいんだけど"
     ctx: "近所の人が、頼みごとを切り出しました"
-    why: "hate の t は落ちて「ヘイタ」。have to（ハフタ）ではない。around は「アラウン」で、a round ではなく「近くにいる？」。"
+    why: "hate to は t が重なって「ヘイトゥ」。have to（ハフタ）ではない。around は「アラウン」で、a round ではなく「近くにいる？」。"
+    revoice: true
     scene: door
     tags: { seed: 32, register: neighbour, pragmatic: indirect, features: [elision, weak-form] }
 
@@ -232,28 +235,29 @@ items:
     id: tile-nbr-noise-last-night
     speaker: curt
     en: "Did you hear that noise last night?"
-    tts: "Didja hear that noise las' night?"
+    tts: "Did you hear that noise las' night?"
     ja: "昨日の夜、あの音聞こえた？"
     tiles: ["Did", "you", "hear", "that", "noise", "last", "night"]
-    decoys: ["here", "nose"]
-    marks: [[say, "Did you", "Didja"], [drop, "last", "t"]]
+    decoys: ["nose", "the"]
+    marks: [[link, "Did you"], [drop, "last", "t"]]
     note: "last night の t が落ちて「ラスナイ」"
     ctx: "朝、マンションの廊下で隣の人が"
-    why: "last の t は n の前で落ちる。hear と here は同じ音だが、Did you の後なので動詞の hear。noise（ノイズ）と nose（ノウズ）は母音がちがう。"
+    why: "last の t は n の前で落ちて「ラスナイ」。noise（ノイズ）と nose（ノウズ）は口の形がちがう。that noise で、the ではない。"
+    revoice: true
     tags: { seed: 32, register: neighbour, pragmatic: literal, features: [elision, yod] }
 
   - kind: tile
     id: tile-nbr-eye-on-him
     speaker: tammy
     en: "Can you keep an eye on him for me?"
-    tts: "Can ya keep an eye on 'im for me?"
     ja: "ちょっとこの子、見ててもらえる？"
     tiles: ["Can", "you", "keep", "an", "eye", "on", "him", "for", "me"]
-    decoys: ["them", "I"]
-    marks: [[say, "him", "'im"], [link, "keep an eye on"]]
+    decoys: ["them", "Can't"]
+    marks: [[link, "keep an eye on"], [link, "on him"]]
     note: "keep an eye on＝見ていてあげる"
     ctx: "近所の人が、犬を連れて頼みに来ました"
-    why: "keep an eye on は「キーパナイオン」と一続き。eye（目）は I（私）と同じ音。'im は him の h が落ちた形で、them ではない。"
+    why: "keep an eye on は「キーパナイオン」と一続き。him は h が弱く「オニム」とつながり、them ではない。Can't なら最後に t が聞こえる。"
+    revoice: true
     scene: street
     tags: { seed: 32, register: neighbour, pragmatic: literal, features: [linking, h-drop] }
 
@@ -263,12 +267,12 @@ items:
     en: "Just a heads-up, they're shutting the water off tomorrow."
     tts: "Jus' a heads-up, they're shuttin' the water off tomorrow."
     ja: "前もって言っておくと、明日水道が止まるって。"
-    tiles: ["Just", "a", "heads-up", "they're", "shutting", "the", "water", "off", "tomorrow"]
-    decoys: ["their", "of"]
+    tiles: ["Just", "a", "heads-up", "they're", "shutting", "the", "water", "off tomorrow"]
+    decoys: ["they", "of tomorrow"]
     marks: [[drop, "Just", "t"], [drop, "shutting", "g"], [link, "water off"]]
     note: "heads-up＝前もってのお知らせ"
     ctx: "マンションの廊下で、隣の人が教えてくれました"
-    why: "Just の t は落ちる。they're と their は同じ音だが、後ろに動詞が来るので they're。water off は「ウォダロフ」で、of ではなく off。"
+    why: "Just の t は落ちる。they're は弱く「ゼア」で、they だけではない。water off は「ウォーダロフ」とつながる。of ではなく off（止める）。"
     tags: { seed: 32, register: neighbour, pragmatic: literal, features: [elision, flap] }
 
   # ---- hl-clinic: 受付と 薬局 ----
@@ -276,14 +280,14 @@ items:
     id: tile-cln-allergic-to
     speaker: raymond
     en: "Are you allergic to anything?"
-    tts: "Are ya allergic ta anything?"
     ja: "何かアレルギーはありますか？"
     tiles: ["Are", "you", "allergic", "to", "anything"]
     decoys: ["allergy", "any"]
-    marks: [[say, "you", "ya"], [say, "to", "ta"]]
+    marks: [[link, "to anything"]]
     note: "allergic to＝〜にアレルギーがある"
     ctx: "薬局で、薬剤師が確認しています"
-    why: "allergic は「アラージック」と真ん中が強い。名詞の allergy ではない。to anything は「タエニシング」とつながり、any だけではない。"
+    why: "allergic は「アラージック」と真ん中が強い。allergy（アラジー）ではない。to anything は弱く「タエニシング」とつながり、any だけではない。"
+    revoice: true
     scene: pharmacy
     tags: { seed: 13, register: service, pragmatic: formula, features: [weak-form] }
 
@@ -304,15 +308,15 @@ items:
   - kind: tile
     id: tile-cln-with-food
     speaker: tia
-    en: "Take it with food, okay?"
-    tts: "Take it with food, 'kay?"
-    ja: "食べ物と一緒に飲んでくださいね。"
-    tiles: ["Take", "it", "with", "food", "okay"]
+    en: "Take it with food."
+    ja: "食べ物と一緒に飲んでください。"
+    tiles: ["Take", "it", "with", "food"]
     decoys: ["without", "foot"]
-    marks: [[say, "okay", "'kay"], [link, "Take it"]]
+    marks: [[link, "Take it"]]
     note: "with food＝食後に（何か食べてから）"
     ctx: "薬局で、薬剤師が薬を渡しています"
     why: "with food は食べ物と一緒に、つまり食後に飲む。without なら「アウト」が聞こえる。food（フード）と foot（フット）は最後の音がちがう。"
+    revoice: true
     scene: pharmacy
     tags: { seed: 13, register: service, pragmatic: literal, features: [linking] }
 
@@ -320,14 +324,14 @@ items:
     id: tile-cln-prescription
     speaker: pashmina
     en: "Your prescription's ready."
-    tts: "Yer prescription's ready."
     ja: "お薬の準備ができました。"
     tiles: ["Your", "prescription's", "ready"]
-    decoys: ["You're", "description"]
-    marks: [[say, "Your", "Yer"]]
+    decoys: ["The", "description"]
+    marks: [[link, "prescription's ready"]]
     note: "prescription＝処方薬。'sで「できている」"
     ctx: "薬局で、名前を呼ばれました"
-    why: "Your は「ヤ」と弱い。You're（ユア）と似るが、ここは prescription の持ち主。description（説明）ではなく prescription（処方薬）。"
+    why: "Your は弱く「ヤ」に近い。The（ザ）ではなく、あなたの薬。description（説明）ではなく prescription（処方薬）。"
+    revoice: true
     scene: pharmacy
     tags: { seed: 13, register: service, pragmatic: formula, features: [weak-form] }
 
@@ -335,57 +339,57 @@ items:
     id: tile-cln-two-fifteen
     speaker: olivia
     en: "Can you come in at two-fifteen?"
-    tts: "Can ya come in at two-fifteen?"
     ja: "2時15分に来られますか？"
     tiles: ["Can", "you", "come", "in", "at", "two-fifteen"]
     decoys: ["two-fifty", "on"]
-    marks: [[say, "you", "ya"]]
+    marks: [[stress, "two-fifteen"]]
     note: "fifteen は後ろ、fifty は前が強い"
     ctx: "クリニックの受付が、電話で予約を取っています"
     why: "fifteen は「ティーン」を長く強く言う。fifty なら「フィフ」が強く、「ティ」は短い。come in＝来院する。on ではない。"
+    revoice: true
     tags: { seed: 14, register: service, pragmatic: literal, conditions: [phone], features: [teen-ty, clock] }
 
   - kind: tile
     id: tile-cln-in-twenty
     speaker: pashmina
-    en: "Can you come in in like twenty minutes?"
-    tts: "Can ya come in in like twenny minutes?"
-    ja: "20分後くらいに来られますか？"
-    tiles: ["Can", "you", "come", "in", "in", "like", "twenty", "minutes"]
+    en: "Can you come in in twenty minutes?"
+    ja: "20分後に来られますか？"
+    tiles: ["Can", "you", "come", "in", "in", "twenty", "minutes"]
     decoys: ["twelve", "and"]
-    marks: [[say, "twenty", "twenny"], [link, "come in in"]]
+    marks: [[link, "come in in"]]
     note: "come in in＝in が2回。〜分後に来院"
     ctx: "クリニックの受付が、キャンセルが出たと電話してきました"
-    why: "come in（来院する）と in twenty minutes（20分後）で in が2回続く。twenty の t は弱く「トウェニー」。twelve ではない。"
-    tags: { seed: 14, register: service, pragmatic: literal, conditions: [phone], features: [numbers, t-glottal] }
+    why: "come in（来院する）と in twenty minutes（20分後）で in が2回続き「カミニン」。and ではない。twelve ではなく twenty。"
+    revoice: true
+    tags: { seed: 14, register: service, pragmatic: literal, conditions: [phone], features: [numbers, linking] }
 
   # ---- mc-weekend: 週末 どこ行く ----
   - kind: tile
     id: tile-wkd-lemme-check
     speaker: punchy
     en: "Let me check my calendar."
-    tts: "Lemme check my calendar."
     ja: "予定を確認させて。"
     tiles: ["Let", "me", "check", "my", "calendar"]
     decoys: ["Let's", "the"]
-    marks: [[say, "Let me", "Lemme"]]
-    note: "Lemme＝Let me。Let's とは別"
+    marks: [[link, "Let me"]]
+    note: "Let me は つながって「レミ」。Let's とは別"
     ctx: "誘われた友だちが、すぐには決めずに"
-    why: "Lemme は Let me がつながった形で「レミ」。Let's（レッツ）なら「一緒に〜しよう」。my calendar で the ではない。"
+    why: "Let me は つながって「レミ」と短い。Let's（レッツ）なら「一緒に〜しよう」。my calendar で、the ではない。"
+    revoice: true
     tags: { seed: 36, register: friend, pragmatic: hedge, features: [lemme] }
 
   - kind: tile
     id: tile-wkd-supposed-to-rain
     speaker: maple
     en: "It's supposed to rain tomorrow."
-    tts: "It's s'posta rain tomorrow."
     ja: "明日は雨らしいよ。"
     tiles: ["It's", "supposed", "to", "rain", "tomorrow"]
     decoys: ["suppose", "train"]
-    marks: [[say, "supposed to", "s'posta"]]
+    marks: [[link, "supposed to"]]
     note: "supposed to＝〜らしい。「スポウスタ」"
     ctx: "週末の予定を、友だちが天気を見ながら"
-    why: "supposed to は d と t がまとまって「スポウスタ」。suppose（思う）ではなく、予報の「〜らしい」。rain で train ではない。"
+    why: "supposed to は d と t がまとまって「スポウスタ」。suppose（思う）ではなく、予報の「〜らしい」。rain で、train ではない。"
+    revoice: true
     tags: { seed: 36, register: friend, pragmatic: literal, features: [weak-form, elision] }
 
   - kind: tile
@@ -395,53 +399,53 @@ items:
     tts: "Let's jus' play it by ear."
     ja: "その場で決めよう。"
     tiles: ["Let's", "just", "play", "it", "by", "ear"]
-    decoys: ["year", "buy"]
+    decoys: ["year"]
     marks: [[drop, "just", "t"], [link, "play it by ear"]]
     note: "play it by ear＝その場で決めよう"
     ctx: "予定が読めない日に、友だちが言いました"
-    why: "play it by ear＝成り行きで決める。ear（イア）と year（イヤ）は y の音があるかどうか。just の t は落ちる。buy（買う）ではない。"
+    why: "play it by ear＝成り行きで決める。ear（イア）と year（イヤ）は y の音があるかどうか。just の t は落ちる。"
     tags: { seed: 36, register: friend, pragmatic: hedge, features: [idiom, elision] }
 
   - kind: tile
     id: tile-wkd-meetcha-there
     speaker: bea
-    en: "Okay, I'll meet you there."
-    tts: "Okay, I'll meetcha there."
-    ja: "じゃあ、現地で会おう。"
-    tiles: ["Okay", "I'll", "meet", "you", "there"]
+    en: "I'll meet you there."
+    ja: "現地で会おう。"
+    tiles: ["I'll", "meet", "you", "there"]
     decoys: ["I'd", "here"]
-    marks: [[say, "meet you", "meetcha"]]
-    note: "meet you は「ミーチャ」"
+    marks: [[link, "meet you"]]
+    note: "meet you は t と y が混ざって「ミーチュ」"
     ctx: "友だちが、現地で待ち合わせると言っています"
-    why: "meet you は t と y が混ざって「ミーチャ」。I'll（アル）はこれからのことで、I'd ではない。there（そこ）で here ではない。"
+    why: "meet you は t と y が混ざって「ミーチュ」。I'll（アル）はこれからのことで、I'd ではない。there（そこ）で、here ではない。"
+    revoice: true
     tags: { seed: 36, register: friend, pragmatic: literal, features: [yod, contraction] }
 
   - kind: tile
     id: tile-wkd-text-tonight
     speaker: marshal
-    en: "Let me check with my roommate, and I'll text you tonight."
-    tts: "Lemme check with my roommate, an' I'll text ya tonight."
-    ja: "ルームメイトに確認して、今夜メッセージするね。"
-    tiles: ["Let", "me", "check", "with", "my", "roommate", "and", "I'll", "text", "you", "tonight"]
+    en: "Let me check with my roommate, and I'll text you."
+    ja: "ルームメイトに確認して、メッセージするね。"
+    tiles: ["Let", "me", "check", "with", "my", "roommate", "and", "I'll", "text", "you"]
     decoys: ["in", "test"]
-    marks: [[say, "Let me", "Lemme"], [say, "and", "an'"]]
-    note: "Lemme check with～＝〜に聞いてみる"
+    marks: [[link, "and I'll"]]
+    note: "and は弱く「ン」に近い。in とはちがう"
     ctx: "週末の誘いに、友だちが答えています"
-    why: "Lemme は Let me。and は「ン」と弱く、in ではない。text（テクスト）は test（テスト）とちがい、x の音がある。"
-    tags: { seed: 36, register: friend, pragmatic: hedge, features: [lemme, weak-form] }
+    why: "and は弱く「ン」に近く、in ではない。text（テクスト）は test（テスト）とちがい、x の音がある。check with＝〜に聞いてみる。"
+    revoice: true
+    tags: { seed: 36, register: friend, pragmatic: hedge, features: [weak-form] }
 
   - kind: tile
     id: tile-wkd-whats-in-fridge
     speaker: bob
     en: "Sure. Let me check what's in my fridge first."
-    tts: "Sure. Lemme check what's in my fridge first."
     ja: "いいよ。まず冷蔵庫に何があるか見てみる。"
-    tiles: ["Sure", "Let", "me", "check", "what's", "in", "my", "fridge", "first"]
-    decoys: ["Let's", "bridge"]
-    marks: [[say, "Let me", "Lemme"], [link, "what's in"]]
-    note: "Lemme check＝確認させて"
+    tiles: ["Sure", "Let", "me", "check", "what's", "in", "my", "fridge first"]
+    decoys: ["Let's", "what"]
+    marks: [[link, "Let me"], [link, "what's in"]]
+    note: "Let me check＝確認させて"
     ctx: "バーベキューの持ち寄りを、友だちと決めています"
-    why: "Lemme は Let me で、Let's ではない。what's in は「ワッツイン」とつながる。fridge（冷蔵庫）は f の音で、bridge ではない。"
+    why: "Let me は つながって「レミ」で、Let's ではない。what's in は「ワッツイン」とつながり、what だけではない。fridge＝冷蔵庫。"
+    revoice: true
     tags: { seed: 36, register: friend, pragmatic: literal, features: [lemme, linking] }
 
   # ---- gl-intro: 紹介する ----
@@ -449,127 +453,125 @@ items:
     id: tile-intro-nice-to-meet
     speaker: judy
     en: "Hi, nice to meet you!"
-    tts: "Hi, nice ta meetcha!"
     ja: "はじめまして！"
     tiles: ["Hi", "nice", "to", "meet", "you"]
     decoys: ["see", "the"]
-    marks: [[say, "meet you", "meetcha"], [say, "to", "ta"]]
-    note: "meet you は「ミーチャ」"
+    marks: [[link, "meet you"]]
+    note: "meet you は t と y が混ざって「ミーチュ」"
     ctx: "パーティーで、友だちに紹介されました"
-    why: "meet you は t と y が混ざって「ミーチャ」。to は「タ」と弱い。see you（また会えた）ではなく、初対面の meet。"
+    why: "meet you は t と y が混ざって「ミーチュ」。to は弱く「タ」で、the ではない。see you（また会えた）ではなく、初対面の meet。"
+    revoice: true
     tags: { seed: 38, register: stranger, pragmatic: ritual, features: [yod, weak-form] }
 
   - kind: tile
     id: tile-intro-didja-meet
     speaker: audie
     en: "Did you meet Marshal's sister?"
-    tts: "Didja meet Marshal's sister?"
     ja: "マーシャルの妹さんに会った？"
     tiles: ["Did", "you", "meet", "Marshal's", "sister"]
-    decoys: ["Do", "Marshal"]
-    marks: [[say, "Did you", "Didja"]]
-    note: "Didja＝Did you。d と y が混ざる"
+    decoys: ["Didn't", "Marshal"]
+    marks: [[link, "Did you"]]
+    note: "Did you は つながって「ディジュ」"
     ctx: "パーティーで、友だちが聞いてきました"
-    why: "Did you は d と y が混ざって「ディジャ」。Do you なら「ドゥユ」。Marshal's の s で「マーシャルの」妹。"
+    why: "Did you は d と y が混ざって「ディジュ」。Didn't なら「ン」が聞こえる。Marshal's の s で「マーシャルの」妹。"
+    revoice: true
     tags: { seed: 38, register: friend, pragmatic: literal, features: [yod] }
 
   - kind: tile
     id: tile-intro-heard-so-much
     speaker: phoebe
     en: "I've heard so much about you."
-    tts: "I've heard so much aboutcha."
     ja: "お噂はかねがね伺っています。"
     tiles: ["I've", "heard", "so", "much", "about", "you"]
     decoys: ["I", "hurt"]
-    marks: [[say, "about you", "aboutcha"]]
-    note: "about you は「アバウチャ」"
+    marks: [[link, "about you"]]
+    note: "about you は「アバウチュ」"
     ctx: "友だちの友だちに、初めて会いました"
-    why: "about you は t と y が混ざって「アバウチャ」。I've の 've は弱いが heard の前に残る。heard（ハード）で hurt ではない。"
+    why: "about you は t と y が混ざって「アバウチュ」。I've の 've は弱いが heard の前に残り、I だけではない。heard（ハード）で、hurt ではない。"
+    revoice: true
     tags: { seed: 38, register: stranger, pragmatic: ritual, features: [yod, contraction] }
 
   - kind: tile
     id: tile-intro-whatcha-drinking
     speaker: pietro
     en: "So, what are you drinking?"
-    tts: "So, whatcha drinkin'?"
     ja: "で、何飲んでるの？"
     tiles: ["So", "what", "are", "you", "drinking"]
     decoys: ["did", "thinking"]
-    marks: [[say, "what are you", "whatcha"], [drop, "drinking", "g"]]
-    note: "whatcha＝what are you"
+    marks: [[link, "what are you"]]
+    note: "are は弱く、what are you は「ワダユ」"
     ctx: "パーティーで、隣の人が話しかけてきました"
-    why: "whatcha は what are you がつながった形。did you なら過去の話。drinkin' の g は落ちる。thinking（シンキング）ではない。"
-    tags: { seed: 38, register: stranger, pragmatic: literal, features: [yod, contraction] }
+    why: "what are you は are が弱く、つながって「ワダユ」。did なら「ディ」の音がある。drinking（ドリンキング）で、thinking ではない。"
+    revoice: true
+    tags: { seed: 38, register: stranger, pragmatic: literal, features: [weak-form, linking] }
 
   - kind: tile
     id: tile-intro-know-each-other
     speaker: diana
     en: "How do you know each other?"
-    tts: "How d'you know each other?"
     ja: "二人はどういう知り合い？"
     tiles: ["How", "do", "you", "know", "each", "other"]
-    decoys: ["did", "no"]
-    marks: [[say, "do you", "d'you"], [link, "each other"]]
+    decoys: ["did", "now"]
+    marks: [[link, "each other"]]
     note: "How do you know～?＝どういう知り合い？"
     ctx: "パーティーで、友だちが二人に聞いています"
-    why: "do you は「ジュ」と短くなる。did なら「ディ」。know は no と同じ音だが、each other（お互い）が続くので「知っている」。"
+    why: "do you は弱く短く「ドゥユ」。did なら「ディ」。know（ノウ）と now（ナウ）は口の形がちがう。each other＝お互い。"
+    revoice: true
     tags: { seed: 38, register: friend, pragmatic: literal, features: [yod, linking] }
 
   - kind: tile
     id: tile-intro-name-again
     speaker: goldie
     en: "Wait, sorry, what was your name again?"
-    tts: "Wait, sorry, what was yer name again?"
     ja: "待って、ごめん、名前なんだっけ？"
-    tiles: ["Wait", "sorry", "what", "was", "your", "name", "again"]
-    decoys: ["is", "you're"]
-    marks: [[say, "your", "yer"], [link, "name again"]]
+    tiles: ["Wait sorry", "what", "was", "your", "name", "again"]
+    decoys: ["is", "the"]
+    marks: [[link, "name again"]]
     note: "what was your name again?＝もう一度名前を"
     ctx: "パーティーで、さっき紹介された人が"
-    why: "was（ワズ）は過去形だが、さっき聞いた名前を忘れたときの言い方。is ではない。your は「ヤ」と弱く、you're とはちがう。"
+    why: "your は弱く「ヤ」に近く、the（ザ）ではない。was（ワズ）で、is ではない。さっき聞いた名前を忘れたときの言い方。"
+    revoice: true
     tags: { seed: 51, register: stranger, pragmatic: formula, features: [weak-form] }
 
   # ---- gl-invite: 誘う・断る ----
   - kind: tile
     id: tile-inv-come-with-us
     speaker: maple
-    en: "Want to come with us?"
-    tts: "Wanna come with us?"
+    en: "Wanna come with us?"
     ja: "一緒に来ない？"
-    tiles: ["Want", "to", "come", "with", "us"]
-    decoys: ["Won't", "as"]
-    marks: [[say, "Want to", "Wanna"]]
-    note: "Wanna come?＝来ない？（誘い）"
+    tiles: ["Wanna", "come", "with", "us"]
+    decoys: ["Gonna", "Won't", "as"]
+    marks: [[say, "Wanna", "Want to"]]
+    note: "Wanna＝Want to。「来ない？」という誘い"
     ctx: "友だちが、出かける前に声をかけてきました"
-    why: "Want to は「ワナ」。Won't（ウォウン）なら「来ないの？」。with us は「ウィザス」とつながり、as ではない。"
+    why: "Wanna（ワナ）は Want to。Gonna（ガナ）なら「〜するつもり」、Won't（ウォウン）なら「来ないの？」。with us は「ウィザス」で、as ではない。"
     tags: { seed: 48, register: friend, pragmatic: literal, features: [wanna] }
 
   - kind: tile
     id: tile-inv-gonna-pass
     speaker: cherry
-    en: "I think I'm going to pass."
-    tts: "I think I'm gonna pass."
+    en: "I think I'm gonna pass."
     ja: "今回はやめておこうかな。"
-    tiles: ["I", "think", "I'm", "going", "to", "pass"]
-    decoys: ["want", "past"]
-    marks: [[say, "going to", "gonna"]]
-    note: "I'm gonna pass＝今回はやめておく"
+    tiles: ["I", "think I'm", "gonna", "pass"]
+    decoys: ["wanna", "past"]
+    marks: [[say, "gonna", "going to"]]
+    note: "gonna＝going to。pass＝今回はやめておく"
     ctx: "誘いに、友だちがやんわり答えています"
-    why: "gonna は going to で、want to（ワナ）ではない。pass＝断る、見送る。past（過去）ではない。"
+    why: "gonna（ガナ）は going to。wanna（ワナ）なら「〜したい」。pass＝断る、見送る。past（過去）ではない。"
     tags: { seed: 48, register: friend, pragmatic: refusal, features: [gonna] }
 
   - kind: tile
     id: tile-inv-try-make-it
     speaker: kicks
     en: "I'll try to make it."
-    tts: "I'll try ta make it."
     ja: "行けたら行くよ。"
     tiles: ["I'll", "try", "to", "make", "it"]
     decoys: ["I", "take"]
-    marks: [[say, "to", "ta"], [link, "make it"]]
+    marks: [[link, "make it"]]
     note: "I'll try to make it＝行けたら行く（来ないことも）"
     ctx: "パーティーに誘われた同僚が"
-    why: "to は「タ」と弱い。make it＝都合をつけて来る。take it ではない。I'll の ll は弱いが、これからの話。"
+    why: "I'll の ll は弱いが、I だけではなく、これからの話。to は弱く「タ」。make it＝都合をつけて来る。take it ではない。"
+    revoice: true
     tags: { seed: 48, register: colleague, pragmatic: hedge, features: [weak-form] }
 
   - kind: tile
@@ -578,7 +580,7 @@ items:
     en: "Maybe next time, okay?"
     tts: "Maybe nex' time, okay?"
     ja: "また今度ね、いい？"
-    tiles: ["Maybe", "next", "time", "okay"]
+    tiles: ["Maybe", "next", "time okay"]
     decoys: ["text", "the"]
     marks: [[drop, "next", "t"]]
     note: "Maybe next time＝また今度（断り）"
@@ -590,26 +592,26 @@ items:
     id: tile-inv-hafta-work
     speaker: bob
     en: "Sorry, I have to work late."
-    tts: "Sorry, I hafta work late."
     ja: "ごめん、残業しなきゃ。"
-    tiles: ["Sorry", "I", "have", "to", "work", "late"]
+    tiles: ["Sorry I", "have", "to", "work", "late"]
     decoys: ["had", "walk"]
-    marks: [[say, "have to", "hafta"]]
+    marks: [[link, "have to"]]
     note: "have to は「ハフタ」"
     ctx: "夕方の誘いに、同僚が答えています"
-    why: "have to は v が f に変わって「ハフタ」。had to（ハッタ）なら過去。work（ワーク）と walk（ウォーク）は母音がちがう。"
+    why: "have to は v が f に近くなり「ハフタ」。had to（ハットゥ）なら、もうした話。work（ワーク）と walk（ウォーク）は口の形がちがう。"
+    revoice: true
     tags: { seed: 48, register: colleague, pragmatic: refusal, features: [weak-form, vowel] }
 
   - kind: tile
     id: tile-inv-grabbing-ramen
     speaker: punchy
-    en: "We're grabbing ramen after this. Want to come?"
-    tts: "We're grabbin' ramen after this. Wanna come?"
+    en: "We're grabbing ramen after this. Wanna come?"
     ja: "このあとラーメン行くんだ。来る？"
-    tiles: ["We're", "grabbing", "ramen", "after", "this", "Want", "to", "come"]
-    decoys: ["Were", "Won't"]
-    marks: [[drop, "grabbing", "g"], [say, "Want to", "Wanna"]]
-    note: "grab＝さっと食べる。Wanna come?＝来る？"
+    tiles: ["We're", "grabbing", "ramen", "after", "this", "Wanna", "come"]
+    decoys: ["Were", "Gonna"]
+    marks: [[say, "Wanna", "Want to"]]
+    note: "grab＝さっと食べる。Wanna＝Want to"
     ctx: "仕事のあと、同僚が誘っています"
-    why: "grabbin' の g は落ちる。We're（ウィア）で、Were（ワー）ではない。Want to は「ワナ」で、Won't ではない。"
+    why: "We're（ウィア）で、Were（ワー）ではない。Wanna（ワナ）は Want to で、Gonna（ガナ）ではない。grab ramen＝さっとラーメンを食べる。"
+    revoice: true
     tags: { seed: 48, register: colleague, pragmatic: literal, features: [wanna] }

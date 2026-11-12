@@ -57,14 +57,17 @@ interface TileItem extends Common {
   clip?: string;
   speaker: RosterId;
   en: string;
+  /** What the engine says, when not `en` (digits spelled out, a proven engine fix): never a respelling (TTS_DROP). */
   tts?: string;
   ja: string;
-  /** `en`'s words in order: the answer. */
+  /** `en`'s words in order: the answer (a tile may hold 2-3 words, so the sentence has one order). */
   tiles: string[];
   decoys: string[];
   marks?: SoundMark[];
   /** Japanese, ≤ 90 字: names each decoy's trap. */
   why?: string;
+  /** Its words changed since its clip was spoken: left out of the part (never dealt) until it's re-voiced. */
+  revoice?: true;
 }
 
 interface MemoSlot {
@@ -337,6 +340,51 @@ function shownEnglish(it: { en?: unknown; lines?: unknown; choices?: unknown; ro
 export const usProblems = (it: Parameters<typeof shownEnglish>[0]): string[] =>
   shownEnglish(it).flatMap((en) => notUs(en).map((what) => `not US English (${what}): "${en}"`));
 
+// ---- ことば タイル's sound rules (content/listen/README.md "tile") ------------------------------------------------------
+
+/** A spoken text's words, lower case, their apostrophes kept ("an'", "'im"). */
+const said = (s: string): string[] => s.toLowerCase().replace(/’/g, "'").split(/[\s.,?!;:"“”—…]+/).filter(Boolean);
+/** The respelled forms a tile shows (one tile each): what the clip says and what it stands for (the reveal's gloss). */
+export const TRIO: readonly (readonly [said: string, full: string])[] = [['gonna', 'going to'], ['wanna', 'want to'], ['gotta', 'got to']];
+/** A bank item's `en` as its clip says it (a derived tile's `en`): the trio, and Why'd for "whydja", where `tts` says them. */
+export function asSaid(en: string, tts: string = en): string {
+  const words = said(tts);
+  let out = en;
+  for (const [short, full, shown] of [...TRIO.map(([s, f]) => [s, f, s]), ['whydja', 'why did', "why'd"]]) {
+    let n = words.filter((w) => w === short).length;
+    out = out.replace(new RegExp(`\\b${full}\\b`, 'gi'), (m) => (n-- > 0 ? (/^[A-Z]/.test(m) ? shown[0].toUpperCase() + shown.slice(1) : shown) : m));
+  }
+  return out;
+}
+/** What a tile's own `tts` never says (curriculum.md "Audio and script rules"): a respelled function word or reduction.
+ *  The voice says the words at natural speed; only gonna/wanna/gotta, flaps, dropped t and -in' are spelled as said. */
+const TTS_DROP = new Set(["ya", "yer", "an'", "'n'", "n'", "ta", "fer", "er", "a'", "c'n", "kin", "d'you", "d'ya", "y'know", "'kay", "innit",
+  "i'da", "imma", "dunno", "lemme", "gimme", "hafta", "hasta", "hadta", "useta", "oughta", "sposta", "s'posta", "s'posed", "kinda", "sorta",
+  "lotta", "inta", "shoulda", "woulda", "coulda", "musta", "mosta", "'im", "'er", "'e", "'e's", "'is", "'em", "whatcha", "whaddaya", "whadidja"]);
+const RESPELT = /(?:tcha|ncha|dja|ja|n't've|'d've|n'ta)$/;
+/** A tile's `tts` respellings (empty: plain). */
+const ttsDrops = (tts: string): string[] => said(tts).filter((w) => TTS_DROP.has(w) || RESPELT.test(w));
+/** How many written words a spoken form stands for (1 if not here): a clip says a tile's every word when its forms add
+ *  up to the tiles (whatcha 2: its "are" is never heard). */
+const SPAN: Readonly<Record<string, number>> = { whaddaya: 3, whadidja: 3, whatcha: 2, dunno: 2, innit: 2, lemme: 2, gimme: 2, hafta: 2, hasta: 2,
+  hadta: 2, useta: 2, oughta: 2, sposta: 2, "s'posta": 2, kinda: 2, sorta: 2, lotta: 2, outta: 2, oudda: 2, inta: 2, mosta: 2, "d'you": 2, "d'ya": 2,
+  "y'know": 2, shoulda: 2, woulda: 2, coulda: 2, musta: 2, "where're": 2, greadon: 2 };
+const span = (w: string): number => SPAN[w] ?? (RESPELT.test(w) ? 2 : 1);
+/** Whether a clip saying `spoken` can be heard as all these tiles (no swallowed word: "Dunno" for "I don't know"). */
+const allHeard = (spoken: string, tiles: readonly string[]): boolean =>
+  said(spoken).reduce((n, w) => n + span(w), 0) >= tiles.reduce((n, t) => n + t.split(' ').length, 0);
+/** The weak function words TTS_DROP respells: ordinary speech, never a reduction of their own. */
+const WEAK = new Set(["ya", "yer", "an'", "'n'", "n'", "ta", "fer", "er", "a'", "c'n", "kin", "'im", "'er", "'em", "'kay"]);
+/** Whether a clip says a reduction (the stage caps' count): the trio, or a derived clip's respelled form (lemme, hafta,
+ *  -cha/-ja, shoulda, 'e…). Weak function words (ya, an', ta, 'im), flaps, dropped t and -in' are ordinary speech. */
+const reduces = (spoken: string): boolean => said(spoken).some((w) => TRIO.some(([t]) => t === w) || ((TTS_DROP.has(w) || RESPELT.test(w)) && !WEAK.has(w)));
+/** The share of a stage's tiles that may say a reduction (S1 かわ, S2 もり, S3 やま: content/listen/README.md "tile"). */
+const REDUCED_CAP: Readonly<Record<number, number>> = { 2: 0.2, 3: 0.25, 4: 0.3 };
+/** Decoys only spelling rules out (a listening game can't ask for them): each with its sound-alikes. */
+const HOMOPHONES: readonly string[][] = [['here', 'hear'], ['i', 'eye'], ['no', 'know'], ['not', 'knot'], ['their', "they're", 'there'], ['your', "you're"], ["i'll", 'aisle']];
+/** Grammar terms a note or 解説 never uses (kids and non-technical players read them). */
+const GRAMMAR = /主語|動詞|名詞|過去形|現在形|未来形|複数|単数|短縮|省略|母音|子音|助動詞|代名詞|前置詞|冠詞|形容詞|副詞|仮定法|否定形|疑問文|弱形/;
+
 // ---- the checker (content/listen/README.md "Checks") ------------------------------------------------------------------
 
 /** The scenario bank's seeds (curriculum.md "The scenario bank": 1-66, then まるごと 聞く's 67-70). */
@@ -364,7 +412,7 @@ const hasWords = (en: string, at: string) => new RegExp(`(^|[^A-Za-z'])${at.repl
 /** One file's problems (empty: fine). `bank` holds the voiced items a derived tile may name (by id). Past `draft`
  *  the Japanese help is required (curriculum.md "Authoring pipeline": tile ctx, why; call ctx, cja per chip, why per memo round; たちぎき ctx
  *  and why per round; rush ctx, cja, why); present, it's checked whatever the status. */
-export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<string, Pick<Item, 'en' | 'speaker'>> = new Map()): string[] {
+export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<string, Pick<Item, 'en' | 'speaker' | 'tts'>> = new Map()): string[] {
   const u = (raw ?? {}) as Obj & { unit: string; seeds: number[]; cast?: Record<string, string>; items: Obj[] };
   const bad: string[] = [];
   const at = (where: string, msg: string) => bad.push(`${file} ${where}: ${msg}`);
@@ -433,30 +481,44 @@ export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<strin
     for (const p of usProblems(it)) at(where, p);
 
     if (it.kind === 'tile') {
+      const b = it.clip !== undefined && isStr(it.clip) ? bank.get(it.clip) : undefined;
       if (it.clip !== undefined) {
-        const b = isStr(it.clip) ? bank.get(it.clip) : undefined;
         if (!b) at(where, `clip ${it.clip} is no voiced bank item`);
-        else if (it.en !== b.en) at(where, `a derived tile's en is its bank item's: "${b.en}"`);
+        else if (it.en !== asSaid(b.en, b.tts)) at(where, `a derived tile's en is its bank item's, as said: "${asSaid(b.en, b.tts)}"`);
         if (it.speaker !== undefined || it.tts !== undefined) at(where, "a derived tile has its bank item's speaker and audio (no speaker, no tts)");
         if (!isStr(it.ja)) at(where, 'ja');
       } else {
         speaker(where, it.speaker);
         spoken(where, it);
-        if (!isStr(it.tts) || it.tts === it.en) at(where, 'a tile needs a tts that shows the spoken shape');
+        if (it.tts === it.en) at(where, 'tts is en: drop it (it defaults to en)');
+        if (isStr(it.tts) && ttsDrops(it.tts).length) at(where, `tts respells ${ttsDrops(it.tts).join(', ')}: say the words (README "tile")`);
       }
+      if (it.revoice !== undefined && it.revoice !== true) at(where, 'revoice: true or nothing');
       help(where, it, ['ctx', 'why']);
+      for (const k of ['note', 'why'] as const) if (isStr(it[k]) && GRAMMAR.test(it[k])) at(where, `${k} uses a grammar term (${(it[k] as string).match(GRAMMAR)![0]}): say it in plain words`);
       if (!strs(it.tiles) || it.tiles.length < 3 || it.tiles.length > 12) at(where, 'tiles: 3-12');
-      else if (isStr(it.en) && it.tiles.join(' ') !== tileWords(it.en)) at(where, `tiles don't rebuild en: "${it.tiles.join(' ')}" vs "${tileWords(it.en)}"`);
+      else {
+        if (isStr(it.en) && it.tiles.join(' ') !== tileWords(it.en)) at(where, `tiles don't rebuild en: "${it.tiles.join(' ')}" vs "${tileWords(it.en)}"`);
+        const voice = b ? (b.tts ?? b.en) : isStr(it.tts) ? it.tts : it.en;
+        if (isStr(voice) && !allHeard(voice, it.tiles)) at(where, `a tile isn't heard: the clip says "${voice}"`);
+      }
       if (!strs(it.decoys) || it.decoys.length < 1 || it.decoys.length > 4) at(where, 'decoys: 1-4');
       else if (strs(it.tiles)) {
-        const lower = it.tiles.map((x) => x.toLowerCase());
-        for (const d of it.decoys) if (lower.includes(d.toLowerCase())) at(where, `decoy "${d}" is also a tile`);
+        const lower = it.tiles.map((x) => x.toLowerCase()), trio = lower.some((t) => TRIO.some(([w]) => t.split(' ').includes(w)));
+        for (const d of it.decoys) {
+          const dl = d.toLowerCase();
+          if (lower.includes(dl)) at(where, `decoy "${d}" is also a tile`);
+          if (HOMOPHONES.some((h) => h.includes(dl) && h.some((x) => x !== dl && lower.includes(x)))) at(where, `decoy "${d}" sounds like a tile (spelling, not listening)`);
+          if (ttsDrops(d).length || (!trio && TRIO.some(([w]) => dl.split(' ').includes(w)))) at(where, `decoy "${d}" is a respelled form`);
+        }
       }
       for (const m of (it.marks ?? []) as unknown[][]) {
         const ok = Array.isArray(m) && ['say', 'link', 'drop', 'stress'].includes(m[0] as string) && isStr(m[1]) &&
           (m[0] === 'link' || m[0] === 'stress' || isStr(m[2])) && isStr(it.en) &&
           (m[0] === 'stress' ? (m[1] as string).split(' ').every((w) => hasWords(it.en as string, w)) : hasWords(it.en, m[1] as string));
         if (!ok) at(where, `mark ${JSON.stringify(m)} (its words must be in en)`);
+        else if (m[0] === 'say' && !TRIO.some(([w, full]) => (m[1] as string).toLowerCase() === w && (m[2] as string).toLowerCase() === full))
+          at(where, `mark ${JSON.stringify(m)}: say only glosses gonna, wanna, gotta (["say", "gonna", "going to"])`);
       }
     }
 
@@ -686,8 +748,20 @@ function checkWeather(where: string, it: Obj, at: At, inNews: boolean) {
 
 /** Every file's problems, and ids unique across them and apart from `taken` (the bank's and the units' clip ids: the
  *  listen clips share clips.json with them). */
-export function checkListenAll(sources: readonly ListenSource[], bank: ReadonlyMap<string, Pick<Item, 'en' | 'speaker'>> = new Map(), taken: ReadonlySet<string> = new Set()): string[] {
+export function checkListenAll(sources: readonly ListenSource[], bank: ReadonlyMap<string, Pick<Item, 'en' | 'speaker' | 'tts'>> = new Map(), taken: ReadonlySet<string> = new Set()): string[] {
   const bad = sources.flatMap((s) => checkListen(s, bank));
+  // the stage caps: the share of a stage's tiles whose clip says a reduction (README "tile")
+  const per = new Map<number, [number, number]>();
+  for (const { raw } of sources) {
+    const u = raw as { game?: string; stage?: number; items?: Obj[] };
+    if (u.game !== 'tile' || !(Number(u.stage) in REDUCED_CAP)) continue;
+    for (const it of u.items ?? []) {
+      const b = isStr(it.clip) ? bank.get(it.clip) : undefined, voice = b ? (b.tts ?? b.en) : (it.tts ?? it.en);
+      const [n, r] = per.get(u.stage!) ?? [0, 0];
+      per.set(u.stage!, [n + 1, r + (isStr(voice) && reduces(voice) ? 1 : 0)]);
+    }
+  }
+  for (const [stage, [n, r]] of per) if (r > n * REDUCED_CAP[stage]) bad.push(`stage ${stage}'s tiles: ${r} of ${n} say a reduction (cap ${REDUCED_CAP[stage] * 100} %)`);
   const seen = new Map<string, string>();
   for (const { file, raw } of sources) for (const it of ((raw as { items?: Obj[] })?.items ?? [])) {
     const id = it.id as string;
@@ -743,13 +817,14 @@ export const realClipIds = (raw: unknown): string[] =>
   listenUnit(raw).items.flatMap((it) => (it.kind === 'long' && it.source === 'real' ? listenClipIds(it) : []));
 
 /** A file as its part holds it: the header and the items less `tts` (`en` is what the reveal shows; the marks the
- *  spoken shape), each tile and line with its clip id (listenClipIds), a derived tile with its bank item's speaker. */
+ *  spoken shape), each tile and line with its clip id (listenClipIds), a derived tile with its bank item's speaker. A
+ *  tile to re-voice (`revoice`) isn't in it: its clip still says its old words. */
 export function listenPart(raw: unknown, bank: ReadonlyMap<string, Pick<Item, 'speaker'>>): ListenPart {
   const { unit, game, stage, status, cando, items } = listenUnit(raw);
   const drop = <T extends { tts?: string }>({ tts: _, ...o }: T): Omit<T, 'tts'> => o;
   return {
     unit, game, stage, status, cando,
-    items: items.map((it): ListenItem => {
+    items: items.filter((it) => !(it.kind === 'tile' && it.revoice)).map((it): ListenItem => {
       const ids = listenClipIds(it);
       if (it.kind === 'tile') return { ...drop(it), ...(it.clip && { speaker: bank.get(it.clip)!.speaker }), clip: ids[0] };
       if (it.kind === 'rush') return { ...drop(it), clip: ids[0] };

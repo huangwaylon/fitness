@@ -5,9 +5,9 @@ unit: s3-tile-bank
 game: tile
 stage: 4
 track: life
-seeds: [2, 15, 24, 26, 27, 33, 35, 38, 44, 48, 49, 53, 57, 58, 63]
-features: { primary: weak-form, review: contraction }
-cando: "はやい 会話の ちぢんだ 音を、ことばごとに 組み立てられる"
+seeds: [2, 3, 5, 7, 9, 15, 24, 26, 27, 33, 35, 36, 38, 40, 42, 43, 44, 48, 50, 52, 53, 55, 56, 57, 58, 62, 63, 64, 65]
+features: { primary: contraction, review: weak-form }
+cando: "はやい 会話の 文を、つながった 音から ことばごとに 組み立てられる"
 status: listened
 items:
   - kind: tile
@@ -18,27 +18,42 @@ items:
     ja: "当ててあげようか。また財布を忘れたんでしょ？"
     tiles: ["Let", "me", "guess", "You", "forgot", "your", "wallet", "again"]
     decoys: ["Let's", "forget"]
-    marks: [[say, "Let me", "lemme"], [stress, "forgot"]]
-    note: "lemme guess＝当ててみようか（あきれ顔）"
+    marks: [[stress, "forgot"]]
+    note: "Let me は「レミ」。当ててみようか（あきれ顔）"
     ctx: "カフェで、レジの前の友だちを見ています"
-    why: "Let me は「レミ」。Let's なら「ス」が聞こえる。forgot は過去で「ガッ」。forget なら「ゲッ」。Let me guess＝またか、とあきれる言い方。"
+    why: "Let me は「レミ」とひとかたまり。Let's なら「ス」が聞こえる。forgot は「ガッ」、forget なら「ゲッ」。Let me guess＝またか、とあきれる言い方。"
     scene: cafe
     tags: { seed: 27, register: friend, pragmatic: humour, features: [lemme, intonation] }
 
   - kind: tile
     id: tile-ya-r-hit-sack
     clip: ya-r-hit-sack
-    en: "I'm going to hit the sack. You good to lock up?"
+    en: "I'm gonna hit the sack. You good to lock up?"
     # kicks: I'm gonna hit the sack. You good to lock up?
     ja: "もう寝るわ。戸締まり頼んでいい？"
-    tiles: ["I'm", "going", "to", "hit", "the", "sack", "You", "good", "to", "lock", "up"]
-    decoys: ["want", "a"]
-    marks: [[say, "going to", "gonna"], [link, "lock up"]]
-    note: "hit the sack＝寝る。You good to＝頼める？"
+    tiles: ["I'm", "gonna", "hit", "the", "sack", "You", "good", "to", "lock", "up"]
+    decoys: ["wanna", "a"]
+    marks: [[say, "gonna", "going to"], [link, "lock up"]]
+    note: "gonna＝going to。hit the sack＝寝る"
     ctx: "夜、ルームメイトがあくびをしています"
-    why: "going to は「ゴナ」で、want ではない。hit the sack＝寝る。the は a ではない。You good to で「頼める？」の意味。"
+    why: "gonna は「ゴナ」。wanna（ワナ）なら「寝たい」になる。hit the sack＝寝る。the は a ではない。You good to＝頼める？"
     scene: living
     tags: { seed: 35, register: friend, pragmatic: literal, features: [gonna, idiom, ellipsis] }
+
+  - kind: tile
+    id: tile-ya-r-care-less
+    clip: ya-r-care-less
+    en: "Honestly? I couldn't care less what they think of my hair."
+    # label: Honestly? I couldn't care less what they think of my hair.
+    ja: "正直？私の髪をどう思われようが、どうでもいい。"
+    tiles: ["Honestly I", "couldn't", "care", "less", "what", "they", "think", "of", "my", "hair"]
+    decoys: ["could", "have"]
+    marks: []
+    note: "couldn't care less＝まったくどうでもいい"
+    ctx: "美容院帰りの友だちと歩いています"
+    why: "couldn't は t が弱く「クドゥン」。could なら n がない。think of の of は弱く「ア」、have ではない。全然気にしない、の意味。"
+    scene: street
+    tags: { seed: 57, register: friend, pragmatic: attitude, features: [idiom, contraction] }
 
   - kind: tile
     id: tile-ya-r-cutting-close
@@ -56,34 +71,139 @@ items:
     tags: { seed: 2, register: service, pragmatic: indirect, features: [idiom, flap] }
 
   - kind: tile
+    id: tile-ya-m-floats
+    clip: ya-m-floats
+    en: "Pineapple on pizza? Hey, whatever floats your boat."
+    # anchovy: Pineapple on pizza? Hey, whatever floats your boat.
+    ja: "ピザにパイナップル？まあ、好きにすれば。"
+    tiles: ["Pineapple", "on", "pizza", "Hey", "whatever", "floats", "your", "boat"]
+    decoys: ["you", "float"]
+    marks: []
+    note: "whatever floats your boat＝好きにすれば"
+    ctx: "カフェで、友だちのピザの注文を聞きました"
+    why: "floats your は「フロウツョア」とつながる。your は you ではない。float なら s がない。whatever floats your boat＝お好きに。"
+    scene: cafe
+    tags: { seed: 50, register: friend, pragmatic: attitude, features: [idiom] }
+
+  - kind: tile
+    id: tile-ya-m-horses
+    clip: ya-m-horses
+    en: "Whoa, hold your horses. We haven't even seen the apartment yet."
+    # rosie: Whoa, hold your horses. We haven't even seen the apartment yet.
+    ja: "ちょっと待って、落ち着いて。まだ部屋も見てないよ。"
+    tiles: ["Whoa", "hold", "your", "horses", "We", "haven't", "even", "seen", "the", "apartment", "yet"]
+    decoys: ["you", "have"]
+    marks: []
+    note: "hold your horses＝落ち着いて、待って"
+    ctx: "部屋探し中、パートナーがもう家具を選んでいます"
+    why: "hold your は「ホウルジョア」。your は you ではない。haven't の t は弱いが、have なら意味が逆。hold your horses＝あせらないで。"
+    scene: street
+    tags: { seed: 36, register: partner, pragmatic: indirect, features: [idiom, contraction] }
+
+  - kind: tile
+    id: tile-ya-m-yeah-nah
+    clip: ya-m-yeah-nah
+    en: "Yeah, no, I'm not doing karaoke again. Not after last time."
+    # bea: Yeah, no, I'm not doin' karaoke again. Not after last time.
+    ja: "うん、いや、カラオケはもうやらない。前回のあとじゃね。"
+    tiles: ["Yeah", "no", "I'm", "not", "doing", "karaoke", "again", "Not", "after", "last", "time"]
+    decoys: ["Now", "lost"]
+    marks: [[drop, "doing", "g"]]
+    note: "Yeah, no＝うん、でもやめとく（断り）"
+    ctx: "友だちに、またカラオケに誘われました"
+    why: "Not after は t がつながり「ナラフタ」。Now なら t が聞こえない。last は口を横に開く「ラ」で、lost ではない。Yeah, no＝うん、でもやめとく。"
+    scene: street
+    tags: { seed: 55, register: friend, pragmatic: refusal, features: [intonation] }
+
+  - kind: tile
+    id: tile-ya-m-thanks-heaps
+    clip: ya-m-thanks-heaps
+    en: "Oh, thanks a lot for finishing the milk. Really appreciate it."
+    # lucky: Oh, thanks a lot for finishing the milk. Really appreciate it.
+    ja: "あー、牛乳飲み干してくれて、どうもありがとう。助かるわ。"
+    tiles: ["Oh", "thanks", "a", "lot", "for", "finishing", "the", "milk", "Really", "appreciate", "it"]
+    decoys: ["four", "of"]
+    marks: []
+    note: "皮肉のありがとう：本当は怒っている"
+    ctx: "冷蔵庫を開けたら、牛乳が空でした"
+    why: "a lot for は弱く「アラッフォ」。for は four のように強くない。a lot of とも似ているが、ここは for。言い方は皮肉で、本当は怒っている。"
+    scene: living
+    tags: { seed: 35, register: friend, pragmatic: sarcasm, features: [intonation] }
+
+  - kind: tile
+    id: tile-ya-m-steep
+    clip: ya-m-steep
+    en: "Forty bucks for a candle? That's a little steep, isn't it?"
+    # poppy: Forty bucks for a candle? That's a little steep, isn't it?
+    ja: "キャンドルに40ドル？ちょっと高すぎない？"
+    tiles: ["Forty", "bucks", "for", "a", "candle", "That's", "a", "little", "steep", "isn't", "it"]
+    decoys: ["Fourteen", "four"]
+    marks: []
+    note: "Forty は前が強い。Fourteen は後ろが強い"
+    ctx: "雑貨屋で、友だちが値札を見ています"
+    why: "Forty は前を強く「フォーティ」。Fourteen なら後ろの「ティーン」が強く長い。for a は弱く「フォラ」で、four ではない。steep＝高すぎる。"
+    scene: street
+    tags: { seed: 26, register: friend, pragmatic: understatement, features: [idiom] }
+
+  - kind: tile
     id: tile-ya-m-pass
     clip: ya-m-pass
-    en: "Camping in November? I'm going to pass, but you guys have fun."
+    en: "Camping in November? I'm gonna pass, but you guys have fun."
     # kicks: Campin' in November? I'm gonna pass, but you guys have fun.
     ja: "11月にキャンプ？パスするよ、みんなは楽しんで。"
-    tiles: ["Camping", "in", "November", "I'm", "going", "to", "pass", "but", "you", "guys", "have", "fun"]
-    decoys: ["want", "your"]
-    marks: [[drop, "Camping", "g"], [say, "going to", "gonna"]]
-    note: "I'm gonna pass＝やめとく（やんわり断る）"
+    tiles: ["Camping", "in", "November", "I'm", "gonna", "pass", "but", "you", "guys", "have", "fun"]
+    decoys: ["wanna", "your"]
+    marks: [[drop, "Camping", "g"], [say, "gonna", "going to"]]
+    note: "gonna＝going to。I'm gonna pass＝やめとく"
     ctx: "友だちのグループからキャンプに誘われました"
-    why: "going to は「ゴナ」で、want（ワナ）ではない。I'm gonna pass＝やめとく、のやんわりした断り。you guys＝みんな。your ではない。"
+    why: "gonna は「ゴナ」。wanna（ワナ）なら「パスしたい」になる。I'm gonna pass＝やんわり断る言い方。you guys＝みんな。your ではない。"
     scene: living
     tags: { seed: 48, register: friend, pragmatic: refusal, features: [gonna] }
 
   - kind: tile
-    id: tile-ya-w-whaddaya
-    clip: ya-w-whaddaya
-    en: "What do you think of the new guy, honestly?"
-    # goldie: Whaddaya think of the new guy, honestly?
-    ja: "新しく来た人、正直どう思う？"
-    tiles: ["What", "do", "you", "think", "of", "the", "new", "guy", "honestly"]
-    decoys: ["are", "did"]
-    marks: [[say, "What do you", "whaddaya"]]
-    note: "whaddaya think＝どう思う？"
-    ctx: "職場で、同僚がこっそり聞いてきました"
-    why: "What do you は「ワダヤ」。whatcha（What are you）と似ているが、think の前は do。「ダ」を did と思いやすい。"
+    id: tile-ya-m-pinch-salt
+    clip: ya-m-pinch-salt
+    en: "I'd take anything Greg says with a grain of salt."
+    # judy: I'd take anything Greg says with a grain of salt.
+    ja: "グレッグの言うことは、話半分に聞いたほうがいいよ。"
+    tiles: ["I'd", "take", "anything", "Greg", "says", "with", "a", "grain", "of", "salt"]
+    decoys: ["I'll", "the"]
+    marks: []
+    note: "with a grain of salt＝話半分に聞く"
+    ctx: "職場で、同僚がうわさ話を聞いています"
+    why: "I'd は d が弱く「アイ」に近いが、I'll なら「ル」が聞こえる。a grain の a は弱く、the ではない。with a grain of salt＝話半分に。"
     scene: office
-    tags: { seed: 38, register: colleague, pragmatic: literal, features: [contraction, weak-form] }
+    tags: { seed: 43, register: colleague, pragmatic: indirect, features: [idiom] }
+
+  - kind: tile
+    id: tile-ya-m-pigs-fly
+    clip: ya-m-pigs-fly
+    en: "Him? Apologize? Yeah, when pigs fly."
+    # sterling: Him? Apologize? Yeah, when pigs fly.
+    ja: "あいつが？謝る？ああ、ブタが空を飛んだらね。"
+    tiles: ["Him", "Apologize", "Yeah", "when", "pigs", "fly"]
+    decoys: ["Them"]
+    marks: []
+    note: "when pigs fly＝ありえない（皮肉）"
+    ctx: "友だちが、謝らない知り合いの話をしています"
+    why: "Him は h がはっきり「ヒム」。Them なら th の「ゼム」。when pigs fly＝ブタが空を飛んだら、つまり絶対にない。"
+    scene: street
+    tags: { seed: 52, register: friend, pragmatic: sarcasm, features: [idiom, intonation] }
+
+  - kind: tile
+    id: tile-ya-m-accountant
+    clip: ya-m-accountant
+    en: "An accountant? So, business, then. Definitely not pleasure."
+    # octavian: An accountant? So, business, then. Definitely not pleasure.
+    ja: "会計士？ということは仕事ですね。楽しみのほうではなさそうだ。"
+    tiles: ["An", "accountant", "So", "business", "then", "Definitely", "not", "pleasure"]
+    decoys: ["than"]
+    marks: []
+    note: "So, business, then＝じゃあ仕事ですね"
+    ctx: "入国審査で、係官が旅の目的を聞いています"
+    why: "then は口を横に開く「ゼン」。than は口を大きく開ける「ザン」で、ここでは意味が通らない。So, business, then＝つまり仕事ですね。pleasure＝観光。"
+    scene: gate
+    tags: { seed: 9, register: official, pragmatic: humour, conditions: [desk], features: [intonation] }
 
   - kind: tile
     id: tile-ya-w-gimme
@@ -93,55 +213,25 @@ items:
     ja: "ちょっと待って、このステージもうすぐ終わるから。"
     tiles: ["Give", "me", "a", "sec", "I'm", "almost", "done", "with", "this", "level"]
     decoys: ["the", "I"]
-    marks: [[say, "Give me", "gimme"]]
-    note: "gimme＝give me。a sec＝ちょっと"
+    marks: [[link, "Give me"]]
+    note: "Give me は「ギミ」。a sec＝ちょっと待って"
     ctx: "家で、ゲーム中の友だちに声をかけました"
-    why: "Give me は「ギミ」とひとかたまり。a sec＝ちょっと待って。a は the ではない。I'm の m は弱いが、almost の前に必要。"
+    why: "Give me は「ギミ」とひとかたまり。a sec＝ちょっと待って。a は the ではない。I'm の m は弱いが、almost の前に聞こえる。I なら m がない。"
     scene: living
     tags: { seed: 35, register: friend, pragmatic: literal, features: [weak-form] }
 
   - kind: tile
-    id: tile-ya-w-ida
-    clip: ya-w-ida
-    en: "I would've told you if I'd known."
-    # maple: I'da told ya if I'da known.
-    ja: "知ってたら、言ってたよ。"
-    tiles: ["I", "would've", "told", "you", "if", "I'd", "known"]
-    decoys: ["wouldn't have", "had"]
-    marks: [[say, "I would've", "I'da"], [say, "you", "ya"], [say, "I'd known", "I'da known"]]
-    note: "I'da＝I would have。知ってたら言ってた"
-    ctx: "家で、友だちが言い訳をしています"
-    why: "I would've は「アイダ」まで縮む。wouldn't have なら否定で意味が逆。後半の I'd known も「アイダノウン」。had は I'd にまとまっている。"
-    scene: living
-    tags: { seed: 49, register: friend, pragmatic: literal, features: [contraction, weak-form] }
-
-  - kind: tile
-    id: tile-ya-w-sorta
-    clip: ya-w-sorta
-    en: "I sort of forgot to call her back."
-    # agnes: I sorta forgot ta call 'er back.
-    ja: "折り返し電話するの、なんとなく忘れちゃって。"
-    tiles: ["I", "sort", "of", "forgot", "to", "call", "her", "back"]
-    decoys: ["have", "their"]
-    marks: [[say, "sort of", "sorta"], [say, "to", "ta"], [say, "her", "'er"]]
-    note: "sorta＝sort of。'er＝her"
-    ctx: "街で、友だちが電話のことを話しています"
-    why: "sort of は「ソータ」で、of を have と聞きやすい。to は「タ」。call her は h が落ちて「コーラー」。their ではない。"
-    scene: street
-    tags: { seed: 49, register: friend, pragmatic: hedge, features: [kinda, weak-form] }
-
-  - kind: tile
     id: tile-ya-w-you-gonna
     clip: ya-w-you-gonna
-    en: "You going to eat that, or can I have it?"
+    en: "You gonna eat that, or can I have it?"
     # bob: You gonna eat that, or can I have it?
     ja: "それ食べる？それとももらっていい？"
-    tiles: ["You", "going", "to", "eat", "that", "or", "can", "I", "have", "it"]
-    decoys: ["want", "can't"]
-    marks: [[say, "going to", "gonna"]]
-    note: "You gonna＝Are you going to。Are は消える"
+    tiles: ["You", "gonna", "eat", "that", "or", "can", "I", "have", "it"]
+    decoys: ["wanna", "can't"]
+    marks: [[say, "gonna", "going to"]]
+    note: "gonna＝going to。最初の Are は言わない"
     ctx: "カフェで、友だちがあなたのお皿を見ています"
-    why: "Are が消えて You gonna だけ。going to は「ゴナ」で、want ではない。can I は弱い「クナイ」。can't なら強く、「もらっていい？」にならない。"
+    why: "Are を言わず You gonna から始まる。gonna は「ゴナ」、wanna（ワナ）ではない。can I は弱く「クナイ」。can't なら強く、意味が逆。"
     scene: cafe
     tags: { seed: 35, register: friend, pragmatic: indirect, features: [gonna, ellipsis] }
 
@@ -153,8 +243,8 @@ items:
     ja: "もし彼から電話が来たら、会議中だって言っておいて。"
     tiles: ["If", "he", "calls", "just", "tell", "him", "I'm", "in", "a", "meeting"]
     decoys: ["them", "and"]
-    marks: [[say, "him", "'im"]]
-    note: "'im＝him。h が落ちて「テリム」"
+    marks: [[link, "tell him"]]
+    note: "tell him は h が聞こえず「テリム」"
     ctx: "職場で、同僚が出かける前に頼んでいます"
     why: "tell him は h が落ちて「テリム」。them（ゼム）なら th が聞こえる。I'm in a は「アイミナ」とつながる。in は and ではない。"
     scene: office
@@ -168,10 +258,10 @@ items:
     ja: "それ、診てもらったほうがいいよ。もう何週間もでしょ。"
     tiles: ["You", "ought", "to", "get", "that", "looked", "at", "It's", "been", "weeks"]
     decoys: ["got", "the"]
-    marks: [[say, "ought to", "oughta"]]
-    note: "oughta＝ought to。〜したほうがいい"
+    marks: [[link, "ought to"]]
+    note: "ought to は「オータ」。〜したほうがいい"
     ctx: "家で、家族がけがを心配しています"
-    why: "ought to は「オータ」。gotta（ガダ）と似ているが、g がない。get that looked at＝診てもらう。that は the ではない。"
+    why: "ought to は「オータ」とひとかたまり。got なら最初に g が聞こえる。get that looked at＝診てもらう。that は the ではない。"
     scene: living
     tags: { seed: 15, register: friend, pragmatic: indirect, features: [flap, weak-form] }
 
@@ -183,42 +273,12 @@ items:
     ja: "子どものころ、毎年夏にここに来てたんだ。"
     tiles: ["We", "used", "to", "come", "here", "every", "summer", "when", "I", "was", "a", "kid"]
     decoys: ["use", "the"]
-    marks: [[say, "used to", "useta"]]
-    note: "useta＝used to。昔はよく〜した"
+    marks: [[link, "used to"]]
+    note: "used to は「ユースタ」。昔はよく〜した"
     ctx: "旅行先で、友だちが思い出の場所に来ました"
-    why: "used to は「ユースタ」。use なら今の話。every summer＝毎年夏。a kid の a は弱いが、the ではない。昔の習慣を言う形。"
+    why: "used to は「ユースタ」とひとかたまり。use なら今の話になる。every summer＝毎年夏。a kid の a は弱いが、the ではない。昔よくしたことを言う形。"
     scene: street
     tags: { seed: 53, register: friend, pragmatic: literal, features: [weak-form] }
-
-  - kind: tile
-    id: tile-ya-w-whatcha
-    clip: ya-w-whatcha
-    en: "What are you up to this weekend?"
-    # lily: Whatcha up to this weekend?
-    ja: "今週末、何するの？"
-    tiles: ["What", "are", "you", "up", "to", "this", "weekend"]
-    decoys: ["do", "at"]
-    marks: [[say, "What are you", "whatcha"]]
-    note: "Whatcha＝What are you。are はほぼ聞こえない"
-    ctx: "金曜の職場で、同僚が話しかけてきました"
-    why: "Whatcha は What are you の縮んだ形で、are はほぼ聞こえない。whaddaya（What do you）と思って do を入れやすい。at ではない。"
-    scene: office
-    tags: { seed: 38, register: colleague, pragmatic: ritual, features: [yod, contraction] }
-
-  - kind: tile
-    id: tile-ya-w-dontcha
-    clip: ya-w-dontcha
-    en: "Why don't you just ask her?"
-    # judy: Why dontcha just ask 'er?
-    ja: "彼女に直接聞いてみたら？"
-    tiles: ["Why", "don't", "you", "just", "ask", "her"]
-    decoys: ["won't", "asked"]
-    marks: [[say, "don't you", "dontcha"], [say, "her", "'er"]]
-    note: "Why dontcha＝〜したら？（提案）"
-    ctx: "カフェで、友だちが恋の悩みを話しています"
-    why: "don't you は「ドンチャ」。won't なら「ウォウン」と口が丸い。Why don't you＝〜したら？の提案。ask 'er は「アスカー」。asked ではない。"
-    scene: cafe
-    tags: { seed: 57, register: friend, pragmatic: indirect, features: [yod] }
 
   - kind: tile
     id: tile-ya-w-coulda
@@ -226,89 +286,134 @@ items:
     en: "It could've been way worse, honestly."
     # frett: It coulda been way worse, honestly.
     ja: "正直、もっとずっとひどくてもおかしくなかったよ。"
-    tiles: ["It", "could've", "been", "way", "worse", "honestly"]
+    tiles: ["It", "could've", "been", "way", "worse honestly"]
     decoys: ["couldn't have", "being"]
-    marks: [[say, "could've", "coulda"]]
-    note: "coulda＝could have。もっと悪くなり得た"
+    marks: []
+    note: "could've は「クダ」。もっと悪くなってたかも"
     ctx: "小さな事故のあと、友だちが話しています"
-    why: "could've は「クダ」。couldn't have なら否定で意味が逆。been は「ビン」と短く、being ではない。way worse＝ずっとひどい。"
+    why: "could've は弱く「クダ」。couldn't have なら n が聞こえ、意味が逆。been は短く「ビン」で、being ではない。way worse＝ずっとひどい。"
     scene: street
     tags: { seed: 57, register: friend, pragmatic: attitude, features: [contraction, weak-form] }
 
   - kind: tile
     id: tile-ya-w-not-gonna-lie
     clip: ya-w-not-gonna-lie
-    en: "I'm not going to lie, that was rough."
+    en: "I'm not gonna lie, that was rough."
     # kk-slider: I'm not gonna lie, that was rough.
     ja: "正直に言うと、あれはきつかった。"
-    tiles: ["I'm", "not", "going", "to", "lie", "that", "was", "rough"]
-    decoys: ["want", "is"]
-    marks: [[say, "going to", "gonna"]]
-    note: "I'm not gonna lie＝正直言うと。前置きの決まり文句"
+    tiles: ["I'm", "not", "gonna", "lie", "that", "was", "rough"]
+    decoys: ["wanna", "is"]
+    marks: [[say, "gonna", "going to"]]
+    note: "gonna＝going to。I'm not gonna lie＝正直言うと"
     ctx: "ライブのあと、友だちが感想を話しています"
-    why: "going to は「ゴナ」で、want ではない。I'm not gonna lie＝正直言うと、の前置き。that was は過去の話。is なら今のことになる。"
+    why: "gonna は「ゴナ」で、wanna（ワナ）ではない。I'm not gonna lie＝正直言うと、の前置き。that was はもう終わった話。is なら今のことになる。"
     scene: street
     tags: { seed: 57, register: friend, pragmatic: attitude, features: [gonna, contraction] }
 
   - kind: tile
-    id: tile-ya-w-couldja
-    clip: ya-w-couldja
-    en: "Could you grab me one while you're up?"
-    # bunnie: Couldja grab me one while you're up?
-    ja: "立ったついでに、私にもひとつ取ってくれる？"
-    tiles: ["Could", "you", "grab", "me", "one", "while", "you're", "up"]
-    decoys: ["Can", "your"]
-    marks: [[say, "Could you", "couldja"]]
-    note: "Couldja＝Could you。while you're up＝ついでに"
-    ctx: "家で、ソファの友だちが声をかけてきました"
-    why: "Could you は「クッジャ」。Can なら「キャン」。grab me one＝ひとつ取って。you're は your と同じように聞こえるが、up の前は you're。"
-    scene: living
-    tags: { seed: 35, register: partner, pragmatic: indirect, features: [yod] }
-
-  - kind: tile
     id: tile-ya-w-wouldnt-wanna
     clip: ya-w-wouldnt-wanna
-    en: "Trust me, you wouldn't want to be there at rush hour."
+    en: "Trust me, you wouldn't wanna be there at rush hour."
     # stitches: Trust me, you wouldn't wanna be there at rush hour.
     ja: "言っとくけど、ラッシュアワーにあそこにはいたくないと思うよ。"
-    tiles: ["Trust", "me", "you", "wouldn't", "want", "to", "be", "there", "at", "rush", "hour"]
+    tiles: ["Trust me you", "wouldn't", "wanna", "be", "there", "at", "rush", "hour"]
     decoys: ["would", "won't"]
-    marks: [[say, "want to", "wanna"]]
-    note: "wouldn't wanna＝〜したくないはず（忠告）"
-    ctx: "駅で、友だちが出かける時間を相談しています"
-    why: "wouldn't の t は弱いが、ないと意味が逆。would なら「いたい」になる。want to は「ワナ」で、won't ではない。"
+    marks: [[say, "wanna", "want to"]]
+    note: "wanna＝want to。行かないほうがいい、の忠告"
+    ctx: "駅で、地元の人が出かける時間を教えています"
+    why: "wouldn't の t は弱いが、ないと意味が逆。would なら「いたい」になる。wanna は「ワナ」で、won't（ウォウン）ではない。Trust me＝言っとくけど。"
     scene: platform
     tags: { seed: 58, register: stranger, pragmatic: indirect, features: [wanna, contraction] }
 
   - kind: tile
     id: tile-ya-w-whydja
     clip: ya-w-whydja
-    en: "Why did you even tell her?"
+    en: "Why'd you even tell her?"
     # audie: Whydja even tell 'er?
     ja: "なんでわざわざ彼女に言ったの？"
-    tiles: ["Why", "did", "you", "even", "tell", "her"]
-    decoys: ["do", "their"]
-    marks: [[say, "Why did you", "whydja"], [say, "her", "'er"]]
-    note: "Whydja＝Why did you。'er＝her"
+    tiles: ["Why'd", "you", "even", "tell", "her"]
+    decoys: ["do", "them"]
+    marks: [[link, "tell her"]]
+    note: "Why'd you は つながって「ワイジャ」"
     ctx: "カフェで、友だちが怒っています"
-    why: "Why did you は「ワイジャ」。do なら今の話。tell her は h が落ちて「テラー」。their（ゼア）ではない。even＝わざわざ。"
+    why: "Why'd you は d と y がまざって「ワイジャ」。do なら今のことになる。tell her は h が聞こえず「テラー」。them なら「ゼム」。even＝わざわざ。"
     scene: cafe
     tags: { seed: 53, register: friend, pragmatic: attitude, features: [yod] }
 
   - kind: tile
-    id: tile-ya-w-sposta
-    clip: ya-w-sposta
-    en: "Aren't you supposed to be at work?"
-    # nana: Aren'tcha sposta be at work?
-    ja: "あれ、仕事に行ってるはずじゃなかった？"
-    tiles: ["Aren't", "you", "supposed", "to", "be", "at", "work"]
-    decoys: ["Are", "suppose"]
-    marks: [[say, "Aren't you", "aren'tcha"], [say, "supposed to", "sposta"]]
-    note: "Aren'tcha sposta＝〜のはずじゃない？"
-    ctx: "平日の昼、街で友だちに会いました"
-    why: "Aren't you は「アーンチャ」。Are なら否定の驚きがない。supposed to は「スポウスタ」で、suppose ではない。〜のはず。"
-    scene: street
-    tags: { seed: 35, register: friend, pragmatic: humour, features: [yod, weak-form] }
+    id: tile-ya-n-years
+    clip: ya-n-years
+    en: "I've been here, what, eleven years? No, twelve. Twelve this March."
+    # gulliver: I've been here, what, eleven years? No, twelve. Twelve this March.
+    ja: "ここに勤めて、えーと、11年？いや、12年。この3月で12年。"
+    tiles: ["I've", "been", "here", "what", "eleven", "years", "No", "twelve", "Twelve", "this", "March"]
+    decoys: ["I", "seven"]
+    marks: []
+    note: "eleven と言ってから twelve に言い直す"
+    ctx: "職場の歓迎会で、先輩が話しています"
+    why: "I've の v は弱いが、been の前に聞こえる。I なら v がない。eleven は「イレヴン」で、seven ではない。No, twelve で言い直している。"
+    scene: office
+    tags: { seed: 38, register: colleague, pragmatic: literal, features: [self-repair, numbers] }
+
+  - kind: tile
+    id: tile-ya-n-age
+    clip: ya-n-age
+    en: "I'm thirty-nine. Again. For the fourth year in a row."
+    # fang: I'm thirty-nine. Again. For the fourth year in a row.
+    ja: "39歳だよ。また。4年連続でね。"
+    tiles: ["I'm", "thirty-nine", "Again", "For", "the", "fourth", "year", "in", "a", "row"]
+    decoys: ["Four", "and"]
+    marks: []
+    note: "in a row＝連続で。年をごまかす冗談"
+    ctx: "誕生日の食事で、友だちが年を聞かれました"
+    why: "For the は弱く「ファザ」で、Four のように強くない。in a row は「イナロウ」とつながる。and ではない。4年連続で39歳＝年をごまかす冗談。"
+    scene: cafe
+    tags: { seed: 52, register: friend, pragmatic: humour, features: [numbers, ellipsis] }
+
+  - kind: tile
+    id: tile-yb-get-noticed
+    clip: yb-get-noticed
+    en: "Purple for a law firm's logo? Well, it'll certainly get noticed."
+    # katt: Purple for a law firm's logo? Well, it'll certainly get noticed.
+    ja: "法律事務所のロゴに紫？ まあ、確かに目立つでしょうね。"
+    tiles: ["Purple", "for", "a", "law", "firm's", "logo", "Well", "it'll", "certainly", "get", "noticed"]
+    decoys: ["four", "it"]
+    marks: []
+    note: "目立つのは確か、と遠回しに反対している"
+    ctx: "会社で、新しいロゴの案を見ています"
+    why: "for a は弱く「フォラ」で、four ではない。it'll は「イドゥル」と短いが、it なら「ル」がない。目立つ、とほめるふりをした遠回しの反対。"
+    scene: office
+    tags: { seed: 42, register: colleague, pragmatic: understatement, features: [intonation] }
+
+  - kind: tile
+    id: tile-yb-whos-owning
+    clip: yb-whos-owning
+    en: "So who's owning the follow-up with the vendor?"
+    # label: So who's owning the follow-up with the vendor?
+    ja: "で、業者とのフォローアップは誰が担当する？"
+    tiles: ["So", "who's", "owning", "the", "follow-up", "with", "the", "vendor"]
+    decoys: ["a", "who"]
+    marks: []
+    note: "owning＝その仕事の担当になる"
+    ctx: "会議の終わりに、上司が担当を決めています"
+    why: "who's の s は小さいが、owning の前に聞こえる。who なら s がない。the vendor の the は弱く、a ではない。owning＝責任を持って担当する。"
+    scene: office
+    tags: { seed: 44, register: colleague, pragmatic: literal, features: [contraction] }
+
+  - kind: tile
+    id: tile-yb-table-it
+    clip: yb-table-it
+    en: "Let's table this until Thursday, when the whole team's there."
+    # wolfgang: Let's table this until Thursday, when the whole team's there.
+    ja: "この件は、全員がそろう木曜まで保留にしましょう。"
+    tiles: ["Let's", "table", "this", "until", "Thursday", "when", "the", "whole", "team's", "there"]
+    decoys: ["a", "team"]
+    marks: []
+    note: "table this＝この話を後回しにする"
+    ctx: "会議で、話がまとまらなくなりました"
+    why: "team's の s は小さいが、there の前に聞こえる。team なら s がない。the whole の the は a ではない。table＝後回しにする。"
+    scene: office
+    tags: { seed: 40, register: colleague, pragmatic: literal, features: [idiom] }
 
   - kind: tile
     id: tile-yb-could-have-email
@@ -318,10 +423,10 @@ items:
     ja: "うわ。90分もかけて、メール1通で済んだのに。"
     tiles: ["Wow", "Ninety", "minutes", "and", "it", "could've", "been", "one", "email"]
     decoys: ["couldn't have", "in"]
-    marks: [[say, "could've", "coulda"]]
-    note: "coulda been one email＝メール1通で済んだ"
+    marks: []
+    note: "could've been one email＝メール1通で済んだ"
     ctx: "長い会議のあと、同僚があきれています"
-    why: "could've は「クダ」。couldn't have なら意味が逆。and it は「アニッ」とつながり、in に聞こえやすい。one email＝たった1通。"
+    why: "could've は弱く「クダ」。couldn't have なら n が聞こえ、意味が逆。and it は「アニッ」とつながり、in に聞こえやすい。メール1通で済んだ、の意味。"
     scene: office
     tags: { seed: 44, register: colleague, pragmatic: sarcasm, features: [contraction, intonation] }
 
@@ -333,27 +438,12 @@ items:
     ja: "上半分だけ記入して、残りはこちらに任せてください。"
     tiles: ["Just", "fill", "out", "the", "top", "half", "and", "leave", "the", "rest", "to", "us"]
     decoys: ["in", "a"]
-    marks: [[link, "fill out"], [say, "and", "'n'"]]
-    note: "fill out＝記入する。'n' は and"
+    marks: [[link, "fill out"]]
+    note: "fill out＝記入する"
     ctx: "受付で、係が問診票を渡しています"
-    why: "fill out＝書類に記入する。fill in も似た意味だが、ここは out。and は「ン」まで弱まる。the top half の the は a ではない。"
+    why: "fill out＝書類に記入する。in ではなく out。and は弱く「ン」に近い。the top half の the は a ではない。"
     scene: pharmacy
     tags: { seed: 24, register: service, pragmatic: literal, features: [flap, weak-form] }
-
-  - kind: tile
-    id: tile-yb-might-as-well
-    clip: yb-might-as-well
-    en: "Honestly, you might as well wait for the sale at this point."
-    # bunnie: Honestly, you might's well wait for the sale at this point.
-    ja: "正直、ここまで来たらセールを待ったほうがいいよ。"
-    tiles: ["Honestly", "you", "might", "as", "well", "wait", "for", "the", "sale", "at", "this", "point"]
-    decoys: ["your", "four"]
-    marks: [[say, "might as well", "might's well"]]
-    note: "might as well＝〜したほうがまし"
-    ctx: "買い物中、友だちが値札を見ています"
-    why: "might as well は「マイダズウェル」と縮み、〜したほうがまし。for は弱い「ファ」で、four ではない。you は弱いが、your ではない。"
-    scene: street
-    tags: { seed: 26, register: friend, pragmatic: hedge, features: [weak-form, idiom] }
 
   - kind: tile
     id: tile-yb-hasnt-gone
@@ -371,12 +461,27 @@ items:
     tags: { seed: 27, register: friend, pragmatic: literal, features: [contraction] }
 
   - kind: tile
+    id: tile-yb-sign-today
+    clip: yb-sign-today
+    en: "We'd need you to sign today to lock in this rate."
+    # fang: We'd need you to sign today to lock in this rate.
+    ja: "この料金を確保するには、本日ご署名いただく必要があります。"
+    tiles: ["We'd", "need", "you", "to", "sign today", "to", "lock", "in", "this", "rate"]
+    decoys: ["We'll", "the"]
+    marks: []
+    note: "lock in this rate＝この料金で決める"
+    ctx: "店で、担当者が契約をすすめています"
+    why: "We'd の d は弱く、need の前で止まる音。We'll なら「ル」が聞こえる。this rate の this は the ではない。lock in＝今の料金で決める。"
+    scene: office
+    tags: { seed: 7, register: service, pragmatic: formula, features: [contraction, idiom] }
+
+  - kind: tile
     id: tile-yb-didnt-include
     clip: yb-didnt-include
     en: "Just so you know, the quote didn't include tax or delivery."
     # gulliver: Just so you know, the quote didn' include tax or delivery.
     ja: "念のためですが、見積もりには税金と配送料が含まれていませんでした。"
-    tiles: ["Just", "so", "you", "know", "the", "quote", "didn't", "include", "tax", "or", "delivery"]
+    tiles: ["Just", "so", "you", "know", "the", "quote", "didn't", "include", "tax", "or delivery"]
     decoys: ["did", "your"]
     marks: [[drop, "didn't", "t"]]
     note: "didn't の t は消える。含まれて「いない」"
@@ -388,13 +493,198 @@ items:
   - kind: tile
     id: tile-ho-wrap-up
     clip: ho-wrap-up
-    en: "We're going to have to wrap it up there, folks."
+    en: "We're gonna have to wrap it up there, folks."
     # cj: We're gonna hafta wrap it up there, folks.
     ja: "みなさん、今日はこのへんで締めないといけません。"
-    tiles: ["We're", "going", "to", "have", "to", "wrap", "it", "up", "there", "folks"]
-    decoys: ["want", "of"]
-    marks: [[say, "going to have to", "gonna hafta"]]
-    note: "gonna hafta＝going to have to"
+    tiles: ["We're", "gonna", "have", "to", "wrap", "it", "up", "there", "folks"]
+    decoys: ["wanna", "of"]
+    marks: [[say, "gonna", "going to"]]
+    note: "gonna＝going to。have to は「ハフタ」"
     ctx: "番組の終わりに、司会者が話しています"
-    why: "going to have to は「ゴナハフタ」。going を want と、have を of と聞きちがえやすい。wrap it up＝締めくくる。folks＝みなさん。"
+    why: "gonna は「ゴナ」で、wanna ではない。have to は「ハフタ」とつながり、of ではない。wrap it up＝締めくくる。folks＝みなさん。"
     tags: { seed: 63, register: broadcast, pragmatic: formula, features: [gonna, weak-form] }
+
+  - kind: tile
+    id: tile-ho-not-unlikely
+    clip: ho-not-unlikely
+    en: "It's not unlikely that the two species met at some point."
+    # reneigh: It's not unlikely that the two species met at some point.
+    ja: "その2つの種がどこかの時点で出会っていた可能性は十分にあります。"
+    tiles: ["It's", "not", "unlikely", "that", "the", "two", "species", "met at", "some", "point"]
+    decoys: ["Is", "a"]
+    marks: []
+    note: "not unlikely＝十分ありうる"
+    ctx: "科学番組で、研究者が説明しています"
+    why: "It's の ts は小さいが聞こえる。Is なら t がない。not unlikely は「ない」が2つで、十分ありうる、の意味。the two の the は a ではない。"
+    tags: { seed: 64, register: broadcast, pragmatic: hedge, features: [contraction] }
+
+  - kind: tile
+    id: tile-ho-hardly-begun
+    clip: ho-hardly-begun
+    en: "We've hardly begun to understand the long-term effects."
+    # agnes: We've hardly begun to understand the long-term effects.
+    ja: "長期的な影響については、まだほとんど理解が始まってもいません。"
+    tiles: ["We've", "hardly", "begun", "to", "understand", "the", "long-term", "effects"]
+    decoys: ["We", "a"]
+    marks: []
+    note: "hardly begun＝まだほとんど始まっていない"
+    ctx: "ニュース番組で、専門家が話しています"
+    why: "We've の v は弱いが、hardly の前に聞こえる。We なら v がない。the long-term の the は弱いが、a ではない。hardly＝ほとんど〜ない。"
+    tags: { seed: 65, register: broadcast, pragmatic: hedge, features: [contraction] }
+
+  - kind: tile
+    id: tile-ho-tall-poppy
+    clip: ho-tall-poppy
+    en: "Big promotion, huh? Just don't let it go to your head."
+    # cj: Big promotion, huh? Just don't let it go to your head.
+    ja: "大出世だね。でも調子に乗るなよ。"
+    tiles: ["Big", "promotion", "huh", "Just", "don't", "let", "it", "go", "to", "your", "head"]
+    decoys: ["won't", "you"]
+    marks: []
+    note: "go to your head＝調子に乗る"
+    ctx: "昇進した友だちに、声をかけています"
+    why: "don't は「ドン」で t は聞こえない。won't なら口が丸く「ウォウン」。to your は弱く「タヨ」で、you ではない。go to your head＝調子に乗る。"
+    tags: { seed: 55, register: friend, pragmatic: humour, features: [idiom, contraction] }
+
+  - kind: tile
+    id: tile-ho-lose-story
+    clip: ho-lose-story
+    en: "We're running long. Can you lose the second story?"
+    # pietro: We're running long. Can you lose the second story?
+    ja: "押してる。2本目のニュース、カットできる？"
+    tiles: ["We're", "running", "long", "Can", "you", "lose", "the", "second", "story"]
+    decoys: ["Were", "Can't"]
+    marks: []
+    note: "running long＝時間が押している"
+    ctx: "番組の途中、プロデューサーが話しています"
+    why: "We're は短く「ウィア」。Were（ワー）なら前の話になる。Can you は弱く「キャニュ」。Can't なら t で止まる。lose＝カットする。"
+    scene: office
+    tags: { seed: 62, register: colleague, pragmatic: literal, features: [idiom] }
+
+  - kind: tile
+    id: tile-ho-make-sense
+    clip: ho-make-sense
+    en: "Does that make sense, or should I go over it again?"
+    # orville: Does that make sense, or should I go over it again?
+    ja: "ここまでわかりましたか？ それとももう一度説明しましょうか？"
+    tiles: ["Does", "that", "make", "sense", "or", "should", "I", "go", "over", "it", "again"]
+    decoys: ["Did", "at"]
+    marks: []
+    note: "go over it＝もう一度説明する"
+    ctx: "窓口で、係の人が手続きを説明しました"
+    why: "Does that は「ダザッ」とつながる。Did なら「ディ」で、もう終わった話。over it は「オウヴァリッ」とつながり、at ではない。"
+    tags: { seed: 43, register: official, pragmatic: formula, features: [idiom] }
+
+  - kind: tile
+    id: tile-ho-few-economists
+    clip: ho-few-economists
+    en: "Few economists expect inflation to fall below target before next year."
+    # henry: Few economists expect inflation to fall below target before next year.
+    ja: "来年より前にインフレ率が目標を下回ると見ているエコノミストはほとんどいません。"
+    tiles: ["Few", "economists", "expect", "inflation", "to", "fall", "below", "target", "before", "next", "year"]
+    decoys: ["the", "A few"]
+    marks: []
+    note: "Few＝ほとんどいない。A few なら「少しいる」"
+    ctx: "経済ニュースで、アナウンサーが伝えています"
+    why: "Few の前には何もなく、ほとんどいない、の意味。A few なら「少しはいる」で意味が変わる。to fall の to は弱く「タ」で、the ではない。"
+    tags: { seed: 62, register: broadcast, pragmatic: literal, features: [weak-form, contrast] }
+
+  - kind: tile
+    id: tile-ho-theyd-pay
+    clip: ho-theyd-pay
+    en: "Two-thirds of respondents said they'd pay more for a greener option."
+    # lopez: Two-thirds of respondents said they'd pay more for a greener option.
+    ja: "回答者の3分の2が、より環境に優しい選択肢なら多く払うと答えました。"
+    tiles: ["Two-thirds", "of", "respondents", "said", "they'd", "pay", "more", "for", "a", "greener", "option"]
+    decoys: ["have", "four"]
+    marks: []
+    note: "Two-thirds of の of は弱く「ア」"
+    ctx: "ニュースで、調査の結果を伝えています"
+    why: "Two-thirds of の of は弱く「ア」で、have ではない。for a は「フォラ」で、four ではない。they'd pay＝払ってもいい、と答えた。"
+    tags: { seed: 62, register: broadcast, pragmatic: literal, features: [contraction] }
+
+  - kind: tile
+    id: tile-ho-remains-seen
+    clip: ho-remains-seen
+    en: "Whether it'll scale beyond the pilot remains to be seen."
+    # reneigh: Whether it'll scale beyond the pilot remains to be seen.
+    ja: "試験導入の段階を超えて広がるかどうかは、まだわかりません。"
+    tiles: ["Whether", "it'll", "scale", "beyond", "the", "pilot", "remains", "to", "be", "seen"]
+    decoys: ["a", "it"]
+    marks: []
+    note: "remains to be seen＝まだわからない"
+    ctx: "ニュースで、新しい計画を伝えています"
+    why: "it'll は「イドゥル」と短いが、it なら「ル」がない。the pilot の the は弱く、a ではない。remains to be seen＝まだわからない。"
+    tags: { seed: 64, register: broadcast, pragmatic: hedge, features: [idiom] }
+
+  - kind: tile
+    id: tile-vy-m-on-paper
+    clip: vy-m-on-paper
+    en: "He's great on paper. So were my last three exes."
+    # bea: He's great on paper. So were my last three exes.
+    ja: "彼、条件的には完璧。元カレ3人もそうだったけどね。"
+    tiles: ["He's", "great", "on", "paper", "So", "were", "my", "last", "three", "exes"]
+    decoys: ["His", "are"]
+    marks: []
+    note: "on paper＝条件の上では（皮肉）"
+    ctx: "カフェで、友だちが新しい相手の話をしています"
+    why: "He's は「ヒーズ」と長い。His なら「ヒズ」と短い。So were は弱く「ソワ」で、are ではない。元カレはもう終わった話。on paper＝条件だけ見れば。"
+    scene: cafe
+    tags: { seed: 56, register: friend, pragmatic: sarcasm, conditions: [cafe], features: [idiom] }
+
+  - kind: tile
+    id: tile-vy-m-assume-alive
+    clip: vy-m-assume-alive
+    en: "No, no, don't worry about calling. I'll just assume you're alive."
+    # pekoe: No, no, don't worry about calling. I'll just assume you're alive.
+    ja: "いいのいいの、電話なんか気にしないで。生きてるって思っとくから。"
+    tiles: ["No", "no", "don't", "worry", "about", "calling", "I'll", "just", "assume", "you're", "alive"]
+    decoys: ["won't", "I'd"]
+    marks: []
+    note: "皮肉：本当は電話してほしい"
+    ctx: "電話で、パートナーがすねています"
+    why: "don't は「ドン」と t が聞こえない。won't なら口が丸く「ウォウン」。I'll は「アイル」で、I'd なら d で止まる。本当は電話してほしい、という皮肉。"
+    scene: living
+    tags: { seed: 36, register: partner, pragmatic: sarcasm, conditions: [phone], features: [intonation] }
+
+  - kind: tile
+    id: tile-hs-contraction-book-now
+    clip: hs-contraction-book-now
+    en: "It'll be cheaper if we book now."
+    # brewster: It'll be cheaper if we book now.
+    ja: "今予約すれば安くなるよ。"
+    tiles: ["It'll", "be", "cheaper", "if", "we", "book", "now"]
+    decoys: ["It'd", "It"]
+    marks: []
+    note: "It'll は「イドゥル」と短い"
+    ctx: "旅行の計画中、友だちが航空券を見ています"
+    why: "It'll は「イドゥル」と短く、最後に小さく「ル」。It'd なら d で止まる。It だけなら「ル」がない。今予約すれば安くなる、という話。"
+    tags: { seed: 3, register: friend, pragmatic: literal, features: [contraction] }
+
+  - kind: tile
+    id: tile-hs-contraction-rather-train
+    clip: hs-contraction-rather-train
+    en: "I'd rather take the train."
+    # diana: I'd rather take the train.
+    ja: "電車のほうがいいな。"
+    tiles: ["I'd", "rather", "take", "the", "train"]
+    decoys: ["I'll", "a"]
+    marks: []
+    note: "I'd rather＝〜のほうがいい"
+    ctx: "旅行先で、友だちと移動の方法を相談しています"
+    why: "I'd rather は d がつながり「アイドラザ」。I'll なら「ル」が聞こえる。the train の the は a ではない。I'd rather＝むしろ〜したい。"
+    tags: { seed: 5, register: friend, pragmatic: literal, features: [contraction] }
+
+  - kind: tile
+    id: tile-hs-contraction-see-gate
+    clip: hs-contraction-see-gate
+    en: "We'll see you at the gate."
+    # cherry: We'll see you at the gate.
+    ja: "ゲートで会おうね。"
+    tiles: ["We'll", "see", "you", "at", "the", "gate"]
+    decoys: ["We", "your"]
+    marks: []
+    note: "We'll は短く「ウィル」"
+    ctx: "空港で、友だちと別々に向かいます"
+    why: "We'll は「ウィル」で、最後に小さく「ル」。We だけなら「ル」がない。see you at は「シーユーアッ」とつながり、your ではない。"
+    tags: { seed: 2, register: friend, pragmatic: literal, features: [contraction] }

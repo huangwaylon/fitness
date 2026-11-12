@@ -1,26 +1,26 @@
-# ことば タイル S2 もり: reduction chains (whatcha, whaddaya, dunno, gimme), should've / could've / would've, h-dropping.
+# ことば タイル S2 もり: should've / could've / would've, weak forms said at natural speed, h-dropping after a verb.
 schema: 1
 unit: s2-tile
 game: tile
 stage: 3
 track: people
 seeds: [3, 17, 18, 30, 31, 36, 37, 38, 40, 43, 49, 52, 57]
-features: { primary: chain, review: yod }
-cando: "should've・whaddaya・dunno など ちぢまった かたまりを ききとれる"
+features: { primary: contraction, review: weak-form }
+cando: "should've・could've など ちぢめた 形と 弱く 短く なる ことばを 聞きとれる"
 status: listened
 items:
   - kind: tile
     id: tile-shoulda-told-him
     speaker: audie
     en: "I should've just told him the truth."
-    tts: "I shoulda just told 'im the truth."
     ja: "最初から本当のことを言えばよかった。"
     tiles: ["I", "should've", "just", "told", "him", "the", "truth"]
     decoys: ["shouldn't have", "them"]
-    marks: [[say, "should've", "shoulda"], [say, "him", "'im"], [link, "told him"]]
-    note: "should've は「シュダ」。'im の h は落ちて「トールディム」"
+    marks: [[link, "told him"]]
+    note: "should've＝〜すればよかった。n の音はない"
     ctx: "カフェで、友だちが悩みを話しています"
-    why: "should've は「シュダ」と縮む。shouldn't have なら n と t が聞こえる。'im は h が落ちて「トールディム」。them なら「ゼム」か「エム」。"
+    why: "should've は弱く「シュダヴ」。shouldn't have なら n と t が聞こえる。told him は h が聞こえず「トールディム」。them なら「エム」。"
+    revoice: true
     scene: cafe
     tags: { seed: 57, register: friend, pragmatic: attitude, features: [contraction, h-drop] }
 
@@ -28,43 +28,43 @@ items:
     id: tile-coulda-fixed-it
     speaker: stitches
     en: "If you'd called sooner, I could've fixed it for half the price."
-    tts: "If ya'd called sooner, I coulda fixed it for half the price."
     ja: "もっと早く呼んでくれてたら、半額で直せたんだけどね。"
     tiles: ["If", "you'd", "called", "sooner", "I", "could've", "fixed", "it", "for", "half", "the", "price"]
     decoys: ["you", "couldn't have"]
-    marks: [[say, "could've", "coulda"], [link, "fixed it"]]
-    note: "you'd の d はほぼ消える。could've＝できたのに（実際は×）"
+    marks: [[link, "fixed it"]]
+    note: "you'd の d はほぼ聞こえない。could've＝できたのに"
     ctx: "修理屋さんが、壊れた物を見ながら話しています"
-    why: "you'd の d はほぼ消えて you に聞こえるが、called の前なので you'd。could've は「クダ」。couldn't have なら n が聞こえる。"
+    why: "you'd の d はほぼ聞こえず you に近いが、called の前なので you'd。could've は弱く「クダヴ」。couldn't have なら n が聞こえる。"
+    revoice: true
     tags: { seed: 31, register: service, pragmatic: literal, features: [contraction] }
 
   - kind: tile
     id: tile-dunno-not-that-hungry
     speaker: kid-cat
     en: "I don't know, I'm not that hungry, to be honest."
-    tts: "I dunno, I'm not that hungry, ta be honest."
     ja: "どうかな、正直そんなにお腹すいてないんだよね。"
     tiles: ["I", "don't", "know", "I'm", "not", "that", "hungry", "to", "be", "honest"]
     decoys: ["don't mind", "so"]
-    marks: [[say, "don't know", "dunno"], [say, "to", "ta"]]
-    note: "dunno＝don't know。not that＝そこまで〜ない"
+    marks: [[link, "to be honest"]]
+    note: "not that hungry＝そこまでお腹すいてない"
     ctx: "街で、友だちと夕ごはんの話をしています"
-    why: "dunno＝don't know。don't mind（気にしない）とちがい「ノウ」で終わる。not that hungry＝そこまでお腹がすいていない。so ではない。"
+    why: "I don't know は速く短いが「ノウ」で終わる。don't mind（気にしない）なら「マインド」が聞こえる。not that は「ナッザッ」で、so ではない。"
+    revoice: true
     scene: street
-    tags: { seed: 18, register: friend, pragmatic: refusal, features: [dunno, chain] }
+    tags: { seed: 18, register: friend, pragmatic: refusal, features: [weak-form, idiom] }
 
   - kind: tile
     id: tile-word-with-him
     speaker: tom-nook
     en: "I'll talk to him and get back to you."
-    tts: "I'll talk to 'im an' get back to ya."
     ja: "彼に話しておいて、また連絡します。"
     tiles: ["I'll", "talk", "to", "him", "and", "get", "back", "to", "you"]
     decoys: ["them", "I'd"]
-    marks: [[say, "him", "'im"], [say, "and", "an'"], [link, "to him and"]]
-    note: "to 'im an' は「トゥイマン」。get back to＝あとで連絡"
+    marks: [[link, "to him and"]]
+    note: "to him and は h が聞こえず「トゥイマン」"
     ctx: "電話で、大家さんが話しています"
-    why: "'im は him の h が落ちた形で「イム」。them なら th か「エム」。and は「ン」。I'll（アル）と I'd（アイド）は一瞬。これからするので I'll。"
+    why: "him は h が聞こえず「イム」。them なら th か「エム」。and は弱く「ン」に近い。I'll（アル）と I'd（アイド）は一瞬だが、これからするので I'll。"
+    revoice: true
     scene: living
     tags: { seed: 30, register: neighbour, pragmatic: hedge, conditions: [phone], features: [h-drop, weak-form] }
 
@@ -72,58 +72,59 @@ items:
     id: tile-wedve-been-fine
     speaker: zucker
     en: "We'd have been fine if they hadn't changed the specs."
-    tts: "We'd've been fine if they hadn't changed the specs."
     ja: "向こうが仕様を変えなければ、問題なかったのに。"
     tiles: ["We'd", "have", "been", "fine", "if", "they", "hadn't", "changed", "the", "specs"]
     decoys: ["We'll", "had"]
-    marks: [[say, "We'd have", "We'd've"], [stress, "hadn't"]]
-    note: "We'd've は「ウィダヴ」。have been は弱く短い"
+    marks: [[link, "We'd have"], [stress, "hadn't"]]
+    note: "We'd have は弱く「ウィダヴ」。We'll ではない"
     ctx: "会議のあと、同僚が愚痴をこぼしています"
-    why: "We'd have は「ウィダヴ」。We'll（ウィル）なら未来の話になる。hadn't は強く言われる。had なら否定にならず、意味が逆。"
+    why: "We'd have は have が弱く「ウィダヴ」。We'll（ウィル）ならこれからの話になる。hadn't は強く言われる。had なら意味が逆。"
+    revoice: true
     scene: office
     tags: { seed: 40, register: colleague, pragmatic: attitude, features: [contraction, weak-form] }
 
   - kind: tile
-    id: tile-gotta-run
+    id: tile-head-out-text-me
     speaker: lucky
-    en: "Sorry, man, I've got to run. Catch you later."
-    tts: "Sorry, man, I've gotta run. Catchya later."
-    ja: "ごめん、もう行かなきゃ。またね。"
-    tiles: ["Sorry", "man", "I've", "got", "to", "run", "Catch", "you", "later"]
-    decoys: ["I", "want"]
-    marks: [[say, "got to", "gotta"], [say, "Catch you", "Catchya"]]
-    note: "gotta run＝もう行かなきゃ。I've の ve はほぼ消える"
-    ctx: "道で、友だちと立ち話をしています"
-    why: "I've の ve はほぼ消えて I に聞こえるが、got to の前に必要。got to は「ガダ」で、want（ワナ）ではない。Catch you later＝またね。"
+    en: "Sorry, I need to head out. Text me when you get home."
+    ja: "ごめん、もう行かなきゃ。家に着いたら連絡してね。"
+    tiles: ["Sorry", "I", "need", "to", "head", "out", "Text", "me", "when", "you", "get", "home"]
+    decoys: ["Tell", "got"]
+    marks: [[link, "head out"], [drop, "Text", "t"]]
+    note: "Text me は t が聞こえず「テクスミ」"
+    ctx: "夜、友だちが先に帰ります"
+    why: "Text me は最後の t が聞こえず「テクスミ」。Tell me（テルミ）なら l が聞こえる。get home は「ゲッホーム」で、got（ガッ）とは口の形がちがう。"
+    revoice: true
     scene: street
-    tags: { seed: 49, register: friend, pragmatic: formula, features: [gotta, chain] }
+    tags: { seed: 49, register: friend, pragmatic: formula, features: [elision, idiom] }
 
   - kind: tile
     id: tile-room-at-the-back
     speaker: poppy
     en: "If I were you, I'd ask for a room in the back."
-    tts: "If I were you, I'd ask fer a room in the back."
     ja: "わたしなら、奥のお部屋をお願いしますね。"
     tiles: ["If", "I", "were", "you", "I'd", "ask", "for", "a", "room", "in", "the", "back"]
     decoys: ["I'll", "front"]
-    marks: [[say, "for a", "fer a"], [link, "I'd ask"]]
+    marks: [[link, "for a"], [link, "I'd ask"]]
     note: "I'd＝わたしなら〜する（助言）。I'll なら今からする"
     ctx: "ホテルのフロントで、係がこっそり助言しています"
-    why: "for a は「ファラ」とつながる。I'd＝わたしなら〜する。I'll なら係が自分でする話になる。in the back＝奥の静かな側。front ではない。"
+    why: "for a は弱く「ファラ」とつながる。I'd＝わたしなら〜する。I'll なら係が自分でする話になる。in the back＝奥の静かな側。front ではない。"
+    revoice: true
     tags: { seed: 3, register: service, pragmatic: indirect, conditions: [desk], features: [contraction, weak-form] }
 
   - kind: tile
     id: tile-too-much-on
     speaker: bea
     en: "I'd love to, but I've got way too much going on."
-    tts: "I'd love ta, but I've got way too much goin' on."
+    tts: "I'd love to, but I've got way too much goin' on."
     ja: "行きたいんだけど、いろいろ立てこんでて。"
     tiles: ["I'd", "love", "to", "but", "I've", "got", "way", "too", "much", "going", "on"]
     decoys: ["I'll", "I"]
-    marks: [[say, "to", "ta"], [drop, "going", "g"]]
-    note: "too much going on＝忙しい。love to, but は断り"
+    marks: [[drop, "going", "g"]]
+    note: "I'd love to, but＝やんわり断る言い方"
     ctx: "友だちを週末のパーティーに誘いました"
     why: "I'd love to, but＝やんわり断る決まり文句。I'll なら「行く」になる。I've の ve は弱いが got の前に必要。going on＝立てこんでいる。"
+    revoice: true
     scene: street
     tags: { seed: 18, register: friend, pragmatic: refusal, features: [contraction, idiom] }
 
@@ -131,14 +132,14 @@ items:
     id: tile-go-over-it
     speaker: goldie
     en: "Do you want me to go over it again?"
-    tts: "D'you want me ta go over it again?"
     ja: "もう一度説明しようか？"
     tiles: ["Do", "you", "want", "me", "to", "go", "over", "it", "again"]
     decoys: ["Did", "won't"]
-    marks: [[say, "Do you", "D'you"], [link, "over it again"]]
+    marks: [[link, "Do you"], [link, "over it again"]]
     note: "go over＝もう一度説明する。over it again はひと続き"
     ctx: "職場で、同僚が手順を説明し終えました"
-    why: "Do you は「ジュ」と短い。Did なら「ディ」。want me to は「ワンミタ」で、won't（ウォウント）ではない。go over it again＝もう一度説明する。"
+    why: "Do you は弱く「ジュ」に近い。Did なら「ディ」が聞こえる。want me to は「ワンミタ」で、won't（ウォウント）ではない。go over＝もう一度説明する。"
+    revoice: true
     scene: office
     tags: { seed: 43, register: colleague, pragmatic: literal, features: [yod, linking] }
 
@@ -146,13 +147,14 @@ items:
     id: tile-leave-it-out-front
     speaker: kabuki
     en: "They said to leave it out front, so that's what I did."
-    tts: "They said ta leave id out front, so that's whad I did."
+    tts: "They said to leave id out front, so that's whad I did."
     ja: "玄関の前に置いといてって言われたから、そうしたよ。"
     tiles: ["They", "said", "to", "leave", "it", "out", "front", "so", "that's", "what", "I", "did"]
     decoys: ["the", "at"]
-    marks: [[link, "leave it out"], [say, "what I", "whad I"]]
+    marks: [[link, "leave it out"], [link, "what I"]]
     note: "leave it out は「リーヴィダウ」と一続き"
     ctx: "玄関先で、配達員が説明しています"
-    why: "to は「タ」と弱く、the に聞こえやすい。leave it out は「リーヴィダウ」と一続き。out front＝玄関の前。at ではない。"
+    why: "to は弱く「タ」に近く、the に聞こえやすい。leave it out は「リーヴィダウ」と一続き。out front＝玄関の前。at ではない。"
+    revoice: true
     scene: door
     tags: { seed: 37, register: stranger, pragmatic: literal, features: [linking, flap] }

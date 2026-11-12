@@ -1,10 +1,11 @@
-// ことば タイル from the voiced quiz (docs/kikimimi-engine.md "ことば タイル", content/listen/README.md "Derived tiles"): every
-// one-clip bank item in play that makes a fair tile (a US voice, a `tts` that reduces, 3-12 words, no digits, tagged
-// with a reduction) becomes a `tile` in content/listen/s<n>-tile-bank.yaml, its stage the level's (levelRank: level 4
-// もり, 6 and above やま). It plays the item's clip (`clip`, with its speaker): no new audio, so no `speaker` or `tts` of
-// its own. Each run rewrites what the bank owns (clip, en, ja, tiles, scene, channel, tags) and keeps what a person
-// reviewed (decoys, marks, note, ctx, why) from the file; a new tile gets defaults from the tables below, marked
-// `review: true` until someone writes its help. Silent: no sound.
+// ことば タイル from the voiced quiz (docs/kikimimi-engine.md "ことば タイル", content/listen/README.md "Derived tiles"): the
+// one-clip bank items from もり up that make a fair tile (a US voice, 3-12 words, no digits), either said reduced and
+// tagged so (音の へんしん's phrases aside) or picked here (PLAIN: ordinary speech, most of the game), less the RETIRED,
+// become `tile`s in content/listen/s<n>-tile-bank.yaml at the level's stage (levelRank: levels 4-5 もり, 6 and up やま).
+// It plays the item's clip (`clip`, with its speaker): no new audio, no `speaker` or `tts` of its own; its `en` is the
+// item's as said (listen.ts asSaid: gonna, wanna, gotta, Why'd). Each run rewrites what the bank owns (clip, en, ja,
+// scene, channel, tags; tiles unless a person merged some) and keeps what a person reviewed (decoys, marks, note, ctx,
+// why); a new tile gets defaults from the tables below, marked `review: true` until someone writes its help. Silent.
 //   node scripts/kikimimi-tiles.ts            write the files
 //   node scripts/kikimimi-tiles.ts --check    exit 1 if a file would change
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
@@ -13,6 +14,7 @@ import { parse } from 'yaml';
 import { isDialogue, levelRank, type Item, type SoundMark, type Tags } from '../src/lib/kikimimi/bank.ts';
 import { BANK } from '../src/lib/kikimimi/source.ts';
 import { featureSkill, tagsOf } from '../src/lib/kikimimi/tags.ts';
+import { TRIO, asSaid } from '../src/lib/kikimimi/listen.ts';
 import clips from '../src/lib/kikimimi/clips.json' with { type: 'json' };
 
 const DIR = join(import.meta.dirname, '../content/listen');
@@ -21,25 +23,34 @@ const DIR = join(import.meta.dirname, '../content/listen');
 const words = (s: string): string[] => s.replace(/[.,?!;:"“”—…]/g, ' ').split(/\s+/).filter(Boolean);
 const has = (en: string, at: string) => new RegExp(`(^|[^A-Za-z'])${at.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![A-Za-z'])`, 'i').test(en);
 
-/** The spoken shapes a mark names (written → said), tried in order over `en` and `tts`. */
-const SHAPES: readonly [string, string][] = [
-  ['What are you', 'whatcha'], ['What do you', 'whaddaya'], ['What did you', 'whadidja'], ["Don't you", 'dontcha'], ["Didn't you", 'didncha'],
-  ["Aren't you", "aren'tcha"], ['Why did you', 'whydja'], ['going to', 'gonna'], ['want to', 'wanna'], ['got to', 'gotta'], ['have to', 'hafta'],
-  ['has to', 'hasta'], ['had to', 'hadta'], ['used to', 'useta'], ['ought to', 'oughta'], ['supposed to', 'sposta'], ['Let me', 'lemme'],
-  ['Give me', 'gimme'], ["don't know", 'dunno'], ['kind of', 'kinda'], ['sort of', 'sorta'], ['a lot of', 'a lotta'], ["should've", 'shoulda'],
-  ["would've", 'woulda'], ["could've", 'coulda'], ["must've", 'musta'], ['must have', 'musta'], ["wouldn't have", "wouldn't've"],
-  ["shouldn't have", "shouldn't've"], ["couldn't have", "couldn'ta"], ['Did you', 'didja'], ['Would you', 'wouldja'], ['Could you', 'couldja'],
-  ['Do you', "d'you"], ['Have you', 'have ya'], ['him', "'im"], ['her', "'er"], ['them', "'em"]
-];
+/** Plain clips taken as tiles (ordinary speech at natural speed, one sound trap each, one order): most of a stage's
+ *  sentences, so the reductions stay under the stage caps (listen.ts REDUCED_CAP). */
+const PLAIN: ReadonlySet<string> = new Set([
+  // もり
+  'w4-cant-uk', 'w4-can-us', 'w4-id-ill', 'w4-youll-need', 'w4-better', 'ml-w-wont', 'ml-w-hadnt', 'ml-w-cant-au', 'ml-w-walk-through',
+  'ml-r-drink', 'ml-r-residence-card', 'ml-r-four-hour', 'r4-room-ready', 'r4-come-up', 'r4-ginza', 'm4-see-what', 'mw-bring-anything', 'mw-owe-you',
+  // やま
+  'ya-r-care-less', 'ya-m-floats', 'ya-m-horses', 'ya-m-thanks-heaps', 'ya-m-steep', 'ya-m-pinch-salt', 'ya-m-pigs-fly', 'ya-m-accountant',
+  'ya-m-yeah-nah', 'ya-n-years', 'ya-n-age', 'yb-get-noticed', 'yb-whos-owning', 'yb-table-it', 'yb-sign-today', 'ho-not-unlikely',
+  'ho-hardly-begun', 'ho-tall-poppy', 'ho-lose-story', 'ho-make-sense', 'ho-few-economists', 'ho-theyd-pay', 'ho-remains-seen',
+  'vy-m-on-paper', 'vy-m-assume-alive', 'hs-contraction-book-now', 'hs-contraction-rather-train', 'hs-contraction-see-gate'
+]);
+/** Bank items never taken again (their tiles retired: a word the clip swallows, a chain, a near-duplicate, off-register). */
+const RETIRED: ReadonlySet<string> = new Set([
+  'w4-didja', 'w4-dunno', 'ml-w-didncha', 'ml-w-musta', 'ml-w-whaddaya', 'ml-w-arentcha', 'mw-whaddaya', 'mw-youd-better', 'mw-ya-gonna',
+  'mw-havent-got', 'vm-w-shoulda-surprise', 'vm-w-couldnta', 'ya-w-whaddaya', 'ya-w-ida', 'ya-w-sorta', 'ya-w-whatcha', 'ya-w-dontcha',
+  'ya-w-couldja', 'ya-w-sposta', 'yb-might-as-well'
+]);
 
 /** What a Japanese ear plausibly hears instead of a tile (README "tile": weak forms, contractions, near sounds). */
 const DECOY: Readonly<Record<string, string>> = {
-  did: 'do', do: 'did', would: 'will', could: 'can', can: "can't", "can't": 'can', want: "won't", "won't": 'want', going: 'want',
-  "should've": "shouldn't have", "would've": "wouldn't have", "could've": "couldn't have", "must've": 'must', must: 'much',
+  did: 'do', do: 'did', would: 'will', could: 'can', can: "can't", "can't": 'can', want: "won't", "won't": 'want',
+  gonna: 'wanna', wanna: 'gonna', gotta: 'got', "should've": "shouldn't have", "would've": "wouldn't have", "could've": "couldn't have",
+  "must've": 'must', must: 'much',
   "wouldn't": 'would', "shouldn't": 'should', "couldn't": 'could', "didn't": 'did', "aren't": 'are', "weren't": 'were', "haven't": 'have',
   "hasn't": 'has', "isn't": 'is', "don't": "won't", got: 'get', to: 'the', the: 'a', a: 'the', and: 'in', in: 'and', for: 'four', of: 'have',
-  have: 'of', him: 'them', them: 'him', her: 'their', your: 'you', you: 'your', "i'd": "I'll", "i'll": "I'd", "we'll": 'we', "you'll": 'you',
-  "they'll": 'there', "we're": 'were', "you're": 'your', "they're": 'there', "i've": 'I', "we've": 'we', "you've": 'you', "you'd": 'you',
+  have: 'of', him: 'them', them: 'him', your: 'you', you: 'your', "i'd": "I'll", "i'll": "I'd", "we'll": 'we', "you'll": 'you',
+  "they'll": 'they', "we're": 'were', "you're": 'you', "they're": 'they', "i've": 'I', "we've": 'we', "you've": 'you', "you'd": 'you',
   "it's": 'is', "that's": 'that', "what's": 'what', used: 'use', supposed: 'suppose', had: 'have', at: 'it', it: 'at', then: 'than',
   than: 'then', been: 'being', ten: 'then'
 };
@@ -59,24 +70,20 @@ interface Tile {
 function sources(): Src[] {
   const out: Src[] = [];
   for (const it of BANK) {
-    const n = words(it.en).length, { tts } = it;
-    if (!isDialogue(it) && it.tags && it.voice === 'us' && tts && tts !== it.en && !/\d/.test(it.en) && n >= 3 && n <= 12 && it.id in clips &&
-      tagsOf(it).features.some((f) => featureSkill(f) === 'reduce')) out.push({ it, tts });
+    const n = words(it.en).length, tts = it.tts ?? it.en;
+    const reduced = tts !== it.en && tagsOf(it).features.some((f) => featureSkill(f) === 'reduce');
+    if (!isDialogue(it) && it.tags && it.voice === 'us' && it.lv >= 4 && !/\d/.test(it.en) && n >= 3 && n <= 12 && it.id in clips &&
+      ((reduced && !it.hs) || PLAIN.has(it.id)) && !RETIRED.has(it.id)) out.push({ it, tts });
   }
   return out;
 }
 
-/** The marks over `en`: the bank's own, else the shapes `tts` says. */
-function marksOf({ it: { en, marks }, tts }: Src): SoundMark[] {
-  const own = (marks ?? []).filter((m) => m[0] === 'stress' ? m[1].split(' ').every((w) => has(en, w)) : has(en, m[1]));
-  if (own.length) return [...own];
-  const found: SoundMark[] = [];
-  for (const [at, said] of SHAPES) {
-    if (found.length === 3) break;
-    const m = en.match(new RegExp(`(^|[^A-Za-z'])(${at.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})(?![A-Za-z'])`, 'i'));
-    if (m && has(tts, said) && !found.some((f) => f[1].toLowerCase().includes(m[2].toLowerCase()))) found.push(['say', m[2], said]);
-  }
-  for (const w of words(en)) if (found.length < 3 && /ing$/.test(w) && has(tts, `${w.slice(0, -1)}'`)) found.push(['drop', w, 'g']);
+/** The marks over the tile's `en`: the bank's own that land (link, drop, stress: a `say` only glosses the trio), then
+ *  the trio's gloss and the g the clip drops. */
+function marksOf({ it: { marks }, tts }: Src, en: string): SoundMark[] {
+  const found: SoundMark[] = (marks ?? []).filter((m) => m[0] !== 'say' && (m[0] === 'stress' ? m[1].split(' ').every((w) => has(en, w)) : has(en, m[1])));
+  for (const [w, full] of TRIO) if (has(en, w)) found.push(['say', w, full]);
+  for (const w of words(en)) if (found.length < 3 && /ing$/.test(w) && has(tts, `${w.slice(0, -1)}'`) && !found.some((m) => m[1] === w)) found.push(['drop', w, 'g']);
   return found;
 }
 
@@ -94,17 +101,18 @@ function decoysOf(tiles: string[], marks: readonly SoundMark[]): string[] {
   return out;
 }
 
-/** A default note (≤ 40 字): the first reduction's spoken shape. */
-const noteOf = (marks: readonly SoundMark[]): string => {
+/** A default note (≤ 40 字): the trio's gloss, else the trap its first decoy sets. */
+const noteOf = (marks: readonly SoundMark[], tiles: readonly string[], decoys: readonly string[]): string => {
   const say = marks.find((m) => m[0] === 'say') as readonly ['say', string, string] | undefined;
-  return say ? `${say[2]}＝${say[1]}。弱い音を聞きのがさない` : '弱い音とつながりを聞きのがさない';
+  const d = decoys[0], t = d && tiles.find((w) => DECOY[w.toLowerCase()]?.toLowerCase() === d.toLowerCase());
+  return say ? `${say[1]}＝${say[2]}` : t ? `${t} と ${d} を聞き分ける` : '短く弱い音を聞きのがさない';
 };
 
-/** The stage file a level's tiles go to: もり (level 4, the アナウンス pack) or やま (6 and up). */
+/** The stage file a level's tiles go to: もり (levels 4 and 5, the アナウンス pack) or やま (6 and up). */
 const unitOf = (lv: number) => (levelRank(lv) >= 5 ? 's3-tile-bank' : 's2-tile-bank');
 const HEADERS: Readonly<Record<string, { stage: number; cando: string; title: string }>> = {
-  's2-tile-bank': { stage: 3, title: 'S2 もり', cando: "クイズで 聞いた 文を、ちぢんだ 音から ことばごとに 組み立てられる" },
-  's3-tile-bank': { stage: 4, title: 'S3 やま', cando: "はやい 会話の ちぢんだ 音を、ことばごとに 組み立てられる" }
+  's2-tile-bank': { stage: 3, title: 'S2 もり', cando: "クイズで 聞いた 文を、ふつうの 速さの 音から ことばごとに 組み立てられる" },
+  's3-tile-bank': { stage: 4, title: 'S3 やま', cando: "はやい 会話の 文を、つながった 音から ことばごとに 組み立てられる" }
 };
 
 const q = (s: string) => JSON.stringify(s);
@@ -152,13 +160,16 @@ function tileFiles(): Map<string, string> {
   for (const s of sources()) {
     const id = `tile-${s.it.id}`;
     if (id.length > 32) throw new Error(`${id}: an id is ≤ 32 characters`);
-    const tiles = words(s.it.en), old = kept.get(id);
-    const marks = (old?.marks as SoundMark[] | undefined) ?? marksOf(s);
+    const en = asSaid(s.it.en, s.tts), old = kept.get(id);
+    const tiles = (old?.tiles as string[] | undefined)?.join(' ') === words(en).join(' ') ? old!.tiles! : words(en);
+    const marks = (old?.marks as SoundMark[] | undefined) ?? marksOf(s, en), decoys = old?.decoys ?? decoysOf(tiles, marks);
     const reviewed = !!(old?.why && old.ctx && !old.review);
     const tile: Tile = {
-      clip: s.it.id, en: s.it.en, said: `${s.it.speaker}: ${s.tts}`, ja: s.it.ja.split('→')[0].trim(), tiles, marks,
-      decoys: old?.decoys ?? decoysOf(tiles, marks), note: old?.note ?? noteOf(marks), ctx: old?.ctx, why: old?.why, review: !reviewed,
-      ...(s.it.scene && { scene: s.it.scene }), ...(s.it.channel && { channel: s.it.channel }), tags: s.it.tags as Tags
+      clip: s.it.id, en, said: `${s.it.speaker}: ${s.tts}`, ja: s.it.ja.split('→')[0].trim(), tiles, marks,
+      decoys, note: old?.note ?? noteOf(marks, tiles, decoys), ctx: old?.ctx, why: old?.why, review: !reviewed,
+      ...(s.it.scene && { scene: s.it.scene }), ...(s.it.channel && { channel: s.it.channel }),
+      // (the bank's features, else the tile's own as reviewed: a plain item may have none)
+      tags: { ...s.it.tags, features: s.it.tags?.features?.length ? s.it.tags.features : (old?.tags?.features ?? []) } as Tags
     };
     const unit = unitOf(s.it.lv);
     byUnit.set(unit, [...(byUnit.get(unit) ?? []), tile]);

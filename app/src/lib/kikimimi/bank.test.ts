@@ -349,8 +349,9 @@ describe('kikimimi bank', () => {
     }
     // the listening kinds': every clip of a file once any of its is made (a file is voiced whole: すうじ ラッシュ's wait for
     // A3), a call's or a たちぎき's whole turn 14 s at most (a call's correction comes inside a long turn: 12.9 s; a long
-    // piece's interjection, "You what?", under half a second)
-    for (const ids of readListen().map(({ raw }) => listenClipItems(raw).map((it) => it.id))) if (ids.some((id) => CLIPS[id])) for (const id of ids) {
+    // piece's interjection, "You what?", under half a second); a tile to re-voice may have none yet (never dealt)
+    const fresh = ({ raw }: { raw: unknown }) => new Set((raw as { items: { id: string; revoice?: true }[] }).items.filter((it) => it.revoice).map((it) => it.id));
+    for (const ids of readListen().map((s) => listenClipItems(s.raw).map((it) => it.id).filter((id) => !fresh(s).has(id) || CLIPS[id]))) if (ids.some((id) => CLIPS[id])) for (const id of ids) {
       const c = CLIPS[id];
       expect(c, id).toBeDefined();
       expect(c.dur, id).toBeGreaterThan(id.startsWith('lg-') ? 0.35 : 0.5);

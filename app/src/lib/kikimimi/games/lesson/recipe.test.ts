@@ -27,7 +27,7 @@ import { lessonChunks, lessonLane } from './lane.ts';
 import { cardAnswer, cardKind, kindCards, lessonRoundDeck, lessonRounds, listenAt, recipeDeck, rightAt, type KindSource } from './recipe.ts';
 import { cardView } from '../../../components/kikimimi/lesson/board.ts';
 
-const TILES = ['tile-m4-be-good', 'tile-m4-put-through', 'tile-w4-shouldve', 'tile-w4-wouldnt-have', 'tile-w4-wanna', 'tile-w4-gotta', 'tile-w4-didja'];
+const TILES = ['tile-m4-be-good', 'tile-m4-put-through', 'tile-w4-shouldve', 'tile-w4-wouldnt-have', 'tile-w4-wanna', 'tile-w4-gotta', 'tile-w4-lemme'];
 const LESSON_IDS = {
   deai: ['d4-hotel-suite', 'r4-room-ready', 'm4-upgrade', 'r4-overbooked', 'ml-m-quieter-room', 'r4-anything-else', 'd4-receptionist'],
   bamen: ['ml-r-incidentals', 'm4-not-ideal', 'r4-triage', 'm4-see-what', 'w4-cant-uk', 'r4-reschedule'],

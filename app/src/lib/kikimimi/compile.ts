@@ -249,7 +249,7 @@ function listenChunk({ file, raw }: ListenSource, bank: ReadonlyMap<string, Item
   const text = `{"listen":${JSON.stringify(head).slice(0, -1)},"items":${list(items)}},\n"packs":${JSON.stringify(c.packs)},\n"clips":${dict(c.clips)},\n"words":${dict(Object.fromEntries(ids.filter((id) => id in words).map((id) => [id, words[id]])))}}\n`;
   if (gz(text) > UNIT_MAX) throw new Error(`kikimimi: ${file}'s chunk is ${gz(text)} B gzipped, over ${UNIT_MAX}`);
   const shape = items.map((it) => [listenShape(it), listenClipIds(it).map((id) => Math.round((clips[id]?.dur ?? 0) * 100))]);
-  return { head, text, cv: createHash('sha256').update(JSON.stringify(shape)).digest('hex').slice(0, 6) };
+  return { head, text, n: items.length, cv: createHash('sha256').update(JSON.stringify(shape)).digest('hex').slice(0, 6) };
 }
 
 /** A unit's content version (docs/kikimimi-engine.md "cv, the content version"): what shapes its decks and schedule (ids, order, choice
@@ -344,7 +344,7 @@ export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<R
   for (const src of listen) {
     const c = listenChunk(src, oneClip, clips, words, places);
     out.set(`parts/${c.head.unit}.json`, c.text);
-    units[c.head.unit] = { parts: [c.head.unit], n: (src.raw as { items: unknown[] }).items.length, cv: c.cv };
+    units[c.head.unit] = { parts: [c.head.unit], n: c.n, cv: c.cv };
     listenIndex[c.head.unit] = [c.head.game, c.head.stage, c.head.status];
     listenCv.set(c.head.unit, c.cv);
   }

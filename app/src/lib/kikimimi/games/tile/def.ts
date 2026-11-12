@@ -50,12 +50,13 @@ export function tileDeal(seed: number, parts: readonly ListenPart[]): TileCard[]
 
 // ---------- tiers and boards ----------
 
-/** What a Japanese ear hears for a word (kikimimi-engine.md "ことば タイル"'s decoys: weak forms, contractions, near sounds), lower case. */
+/** What a Japanese ear hears for a word (kikimimi-engine.md "ことば タイル"'s decoys: weak forms, contractions, near sounds), lower case.
+ *  Never a homophone (there/their, your/you're): only spelling tells those apart. */
 const SWAPS: Readonly<Record<string, readonly string[]>> = {
   a: ['the', 'uh'], the: ['a'], an: ['and'], and: ['in', 'an'], in: ['and'], to: ['the', 'two'], for: ['four'], of: ['have', 'a'], have: ['of'],
   "i'd": ["i'll"], "i'll": ["i'd"], i: ["i've"], "i've": ['i'], "we'll": ['we'], "you'll": ['you'], "they'll": ['they'], "it's": ['is'],
-  can: ["can't"], "can't": ['can'], want: ["won't"], "won't": ['want'], then: ['ten'], there: ['their'], their: ['there'], your: ["you're"],
-  "you're": ['your'], him: ['them'], them: ['him'], her: ['are'], were: ['where'], are: ['our'], this: ['these'], these: ['this'], that: ['it'],
+  can: ["can't"], "can't": ['can'], want: ["won't"], "won't": ['want'], then: ['ten'], gonna: ['wanna'], wanna: ['gonna'], gotta: ['got'],
+  him: ['them'], them: ['him'], her: ['are'], were: ['where'], are: ['our'], this: ['these'], these: ['this'], that: ['it'],
   at: ['it'], on: ['an'], "should've": ["shouldn't have"], "would've": ["wouldn't have"], "could've": ["couldn't have"], "don't": ["won't"],
   "didn't": ["don't"], was: ['is'], is: ['was'], will: ['would'], would: ['will']
 };

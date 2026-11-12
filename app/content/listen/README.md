@@ -64,8 +64,8 @@ The help (bank.ts `helpProblems`) is checked wherever it is, and required once a
 
 - `en` is what the reveal shows, in standard American spelling (neighbor, realize). Digits
   are fine in `en` (`¥3,000`, `090-2816-4473`, `the 14th`).
-- `tts` is what the engine says, spelled as said (gonna, lemme, didja, 'im, "bud it"). **No digits, ever**: numbers as
-  they are said (oh-nine-oh, the fourteenth); whenever `en` has a digit, a `tts` is required.
+- `tts` is what the engine says, spelled as said (gonna, lemme, 'im, "bud it"; a tile's: "tile" below). **No digits,
+  ever**: numbers as they are said (oh-nine-oh, the fourteenth); whenever `en` has a digit, a `tts` is required.
 - Punctuation is prosody: a comma is a breath, "—" or "..." a break or trailing off.
 - `ja` is natural written Japanese with no spaces between Japanese words, like bank4.ts.
 - `ask`, `cando`, the memo `ask`s and options, and the たちぎき `claims` are UI copy: kanji with spaces between
@@ -80,26 +80,41 @@ The help (bank.ts `helpProblems`) is checked wherever it is, and required once a
   id: tile-shoulda-told-him
   speaker: audie
   en: "I should've just told him the truth."
-  tts: "I shoulda just told 'im the truth."
   ja: "最初から本当のことを言えばよかった。"
   tiles: ["I", "should've", "just", "told", "him", "the", "truth"]
   decoys: ["shouldn't have", "them"]
-  marks: [[say, "should've", "shoulda"], [say, "him", "'im"], [link, "told him"]]
-  note: "should've は「シュダ」。'im の h は落ちて「トールディム」"
+  marks: [[link, "told him"]]
+  note: "should've＝〜すればよかった。n の音はない"
   tags: { seed: 57, register: friend, pragmatic: attitude, features: [contraction, h-drop] }
 ```
 
+Ordinary sentences at natural speed, one sound trap each (weak forms, contractions, linking, numbers, stress); the
+voice says the written words and that already sounds American.
 - `tiles` are `en`'s words in order (the answer). Joined with spaces they must equal `en` without `. , ? ! ; : " —
-  …`, with the case kept. 3–12 tiles: the wire's answer holds at most 12.
-- `decoys` (1–4) are what a Japanese ear plausibly hears instead: a weak-form swap (for/four, of/have), a contraction
-  swap (I'd/I'll, should've/shouldn't have), can/can't, a missing auxiliary, a near sound (end/and). A decoy must not
-  also be a tile.
-- `tts` is required and differs from `en`. That respelling is the point of the item.
-- `marks` are the sound marks shown at the reveal (bank.ts `SoundMark`). Their words must appear in `en`.
+  …`, with the case kept. 3–12 tiles (the wire's answer holds 12; かわ ≤ 10). A standard contraction is one tile, never
+  split or expanded (I'm, should've, Why'd). **gonna, wanna, gotta** are the only respelled tiles: `en` spells them
+  when the voice says them (never for "going to" a place or "want me to"), and a `say` mark glosses them
+  (`[say, "gonna", "going to"]`, the only `say` a tile has). **One order:** where words could also go elsewhere
+  ("or iced", "trust me", "I think"), merge them into one tile or reword; there are no accepted orders.
+- **Every tile is heard:** the clip says each tile (no dunno, whatcha, "Ya gonna" for "Are you gonna").
+- `decoys` (1–4, never a tile): what a Japanese ear could hear instead, wrong by sound: I'd/I'll, We'll/We,
+  should've/shouldn't have, gonna/wanna, gotta/got, for/four, and/in, of/have, can/can't, a near sound (end/and).
+  Never a homophone (here/hear, your/you're), a word grammar alone rules out, or a respelled form.
+- `tts` defaults to `en`: only for digits, or a flap or dropped t the engine won't make (ged, liddle, nex'), or -in'
+  from a friend. Never a respelled function word or reduction (ya, an', ta, didja, lemme, hafta, kinda, 'im…).
+- `note` and `why` in plain Japanese with no grammar terms (主語, 過去形, 母音…): one trap, the meaning or a kana sound
+  hint (「ディジュ」), never the respelling.
+- **Caps:** at most 20 % of a stage's tiles say a reduction at かわ, 25 % at もり, 30 % at やま (the trio, or a derived
+  clip's lemme, hafta, -cha…); chains never.
+- **`revoice: true`:** its words changed since its clip was spoken. The compiler leaves it out of the part (never dealt,
+  a unit's おと falls back to its quiz) until it's re-voiced (`npm run audio:kikimimi -- --only '^tile-<id>$'`) and the
+  line deleted; content.test fails while another tile's clip says other words than its `tts ?? en`.
 
 **Derived tiles** (`s2-tile-bank`, `s3-tile-bank`): a voiced one-clip quiz item rebuilt as a tile, playing its own clip
-(`clip: <bank id>`, id `tile-<bank id>`, no `speaker` or `tts`). `npm run kikimimi:tiles` writes them from the bank's
-reducing US items, keeping the reviewed help; a new one has `review: true` until a person writes it.
+(`clip: <bank id>`, id `tile-<bank id>`, no `speaker` or `tts`; `en` the bank item's as said: listen.ts `asSaid`).
+`npm run kikimimi:tiles` writes them from the bank's reducing US items and its PLAIN picks, less its RETIRED, keeping
+the reviewed help and merged tiles; a new one has `review: true` until a person writes it. Its clip is never re-voiced
+for a tile: keep it or retire it.
 
 ## `call` (ようじ でんわ)
 
@@ -237,16 +252,17 @@ items:
   line is the player asking again, with no answer in it), `street`, `train`, `party` (docs/kikimimi-engine.md
   "Conditions").
 - `features`: bank.ts `Feature`, plus `linking`, `h-drop`, `chain` (reduction chains:
-  whatcha, whaddaya, wouldja've), `elision` (t/d dropped: jus'), `assimilation`, `overlap`, `filler`, `stress`.
+  whatcha, whaddaya, wouldja've; never in a tile), `elision` (t/d dropped: jus'), `assimilation`, `overlap`, `filler`, `stress`.
 
 A new value goes into listen.ts's lists and here, in the same commit.
 
 ## Checks
 
 listen.ts `checkListen` (the compiler and content.test) checks the header; each kind's required fields; speakers,
-voices and cast ids; `tts` without digits; notes ≤ 40 字; tiles that rebuild `en`; marks in `en`; `half` and `at`;
-ids unique across files, banks, units and rungs; a derived tile's `clip`; the Japanese help (above); the US-only
-lint; every answer in range.
+voices and cast ids; `tts` without digits; notes ≤ 40 字; tiles that rebuild `en` and are all heard, plain tile `tts`,
+sound decoys, a tile's plain copy and the stage caps ("tile"); marks in `en`; `half` and `at`; ids unique across
+files, banks, units and rungs; a derived tile's `clip`; the Japanese help (above); the US-only lint; every answer in
+range.
 
 It doesn't check whether the English is natural, whether a decoy is fair, or whether a claim really belongs to one
 speaker. Those need an English reviewer and a Japanese reviewer, then the listening check once the items are voiced

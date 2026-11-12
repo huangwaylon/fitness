@@ -1,4 +1,4 @@
-# ことば タイル S3 やま: fast casual American speech, several reductions a sentence, flapped and dropped t's.
+# ことば タイル S3 やま: fast casual American speech: contractions, weak forms, flapped and dropped t's.
 schema: 1
 unit: s3-tile
 game: tile
@@ -13,14 +13,15 @@ items:
     id: tile-been-going-on
     speaker: wolfgang
     en: "I wouldn't have said anything, but it's been going on for weeks."
-    tts: "I wouldn't've said anythin', but it's been goin' on for weeks."
+    tts: "I wouldn't have said anythin', but it's been goin' on for weeks."
     ja: "言うつもりはなかったんですが、もう何週間も続いているので。"
     tiles: ["I", "wouldn't", "have", "said", "anything", "but", "it's", "been", "going", "on", "for", "weeks"]
-    decoys: ["would've", "being"]
-    marks: [[say, "wouldn't have", "wouldn't've"], [drop, "anything", "g"], [drop, "going", "g"]]
+    decoys: ["would", "being"]
+    marks: [[drop, "anything", "g"], [drop, "going", "g"]]
     note: "been going on＝ずっと続いている。being ではない"
     ctx: "玄関先で、隣の人が言いにくそうに話しています"
-    why: "wouldn't have は「ウドゥンタヴ」と縮む。would've なら否定がなく意味が逆。been going on＝ずっと続いている。being とは長さがちがう。"
+    why: "wouldn't have は「ウドゥンタヴ」と速い。would なら「ない」が消えて意味が逆。been going on＝ずっと続いている。being とは長さがちがう。"
+    revoice: true
     scene: door
     tags: { seed: 32, register: neighbour, pragmatic: indirect, features: [contraction, weak-form] }
 
@@ -32,39 +33,40 @@ items:
     ja: "渋滞がひどくなければ、10分くらいで着くと思いますよ。"
     tiles: ["Figure", "we'll", "be", "there", "in", "about", "ten", "if", "traffic's", "not", "too", "bad"]
     decoys: ["we", "then"]
-    marks: [[say, "about", "aboud"], [link, "be there in about"]]
-    note: "主語を省いた Figure＝I figure（〜だと思う）"
+    marks: [[link, "be there in about"]]
+    note: "Figure＝I figure（〜だと思う）。I は言わない"
     ctx: "電話で、迎えの運転手が到着時間を伝えています"
-    why: "Figure の前の I は省略。we'll の ll は弱いが、未来の話なので we だけではない。about ten は「アバウテン」で10分のこと。then（ゼン）ではない。"
+    why: "Figure の前の I は言わない。we'll の ll は弱いが、これからの話で we だけではない。about ten は「アバウテン」で10分。then（ゼン）ではない。"
     tags: { seed: 4, register: service, pragmatic: hedge, features: [ellipsis, contraction] }
 
   - kind: tile
     id: tile-was-gonna-forgot
     speaker: bob
-    en: "I was going to, but then I kind of forgot about it."
-    tts: "I was gonna, but then I kinda forgot aboud it."
+    en: "I was gonna, but then I kind of forgot about it."
+    tts: "I was gonna, but then I kind of forgot aboud it."
     ja: "やるつもりだったんだけど、なんか忘れちゃって。"
-    tiles: ["I", "was", "going", "to", "but", "then", "I", "kind", "of", "forgot", "about", "it"]
-    decoys: ["want", "forget"]
-    marks: [[say, "going to", "gonna"], [say, "kind of", "kinda"], [link, "about it"]]
-    note: "was gonna＝するつもりだった（実際はしなかった）"
+    tiles: ["I", "was", "gonna", "but", "then", "I", "kind", "of", "forgot", "about", "it"]
+    decoys: ["wanna", "forget"]
+    marks: [[say, "gonna", "going to"], [link, "about it"]]
+    note: "was gonna＝was going to。するつもりだった（でもしていない）"
     ctx: "家で、パートナーに頼んでいた件を聞きました"
-    why: "was gonna＝するつもりだった（でもしていない）。want（ワナ）ではない。kinda＝kind of。forgot は過去で「ガッ」。forget（ゲッ）ではない。"
+    why: "was gonna＝was going to で、するつもりだった（でもしていない）。wanna（〜したい）ではない。forgot は「ガッ」で、forget（ゲッ）ではない。"
+    revoice: true
     scene: living
-    tags: { seed: 36, register: partner, pragmatic: attitude, features: [gonna, kinda, chain] }
+    tags: { seed: 36, register: partner, pragmatic: attitude, features: [gonna, weak-form] }
 
   - kind: tile
     id: tile-not-been-taking
     speaker: judy
     en: "You haven't been taking anything else, have you?"
-    tts: "You haven't been takin' anything else, have ya?"
     ja: "ほかに飲んでいるお薬はありませんよね？"
     tiles: ["You", "haven't", "been", "taking", "anything", "else", "have", "you"]
     decoys: ["You've", "being"]
-    marks: [[drop, "taking", "g"], [say, "have you", "have ya"]]
-    note: "文末の have you? は念押し。haven't の t は弱い"
+    marks: [[link, "have you"]]
+    note: "haven't の t は弱いが、n は聞こえる"
     ctx: "薬局で、薬剤師が確認しています"
-    why: "haven't の t は弱いが、文末の have you? と組で念押しの形。You've なら肯定になる。been は「ビン」と短く、being ではない。"
+    why: "haven't の t は弱いが n は残る。You've なら意味が逆。been は「ビン」と短く、being ではない。文末の have you?＝念押し。"
+    revoice: true
     scene: pharmacy
     tags: { seed: 13, register: service, pragmatic: literal, features: [contraction, intonation] }
 
@@ -76,7 +78,7 @@ items:
     ja: "もうUber呼ぼう。めんどうだし。"
     tiles: ["Let's", "just", "get", "an", "Uber", "It's", "not", "worth", "the", "hassle"]
     decoys: ["Let", "isn't"]
-    marks: [[drop, "just", "t"], [say, "get an", "ged an"]]
+    marks: [[drop, "just", "t"], [link, "get an"]]
     note: "just の t が落ちて「ジャス」。get an は「ゲダン」"
     ctx: "夜の街で、友だちと帰り方を相談しています"
     why: "Let's は「ス」が残る。Let だけでは命令になる。just は t が落ちて「ジャス」、get an は「ゲダン」。It's not の形なので isn't は入らない。"
@@ -87,58 +89,57 @@ items:
     id: tile-done-differently
     speaker: ken
     en: "What would you have done differently, looking back?"
-    tts: "What wouldja've done differently, lookin' back?"
     ja: "振り返ってみて、何を違うやり方でしていたと思いますか？"
     tiles: ["What", "would", "you", "have", "done", "differently", "looking", "back"]
     decoys: ["do", "had"]
-    marks: [[say, "would you have", "wouldja've"], [drop, "looking", "g"]]
-    note: "would you have は「ウッジャヴ」まで縮む"
+    marks: [[link, "would you have"]]
+    note: "would you have は速く「ウジュヴ」とつながる"
     ctx: "面談で、上司が振り返りを聞いています"
-    why: "would you have は「ウッジャヴ」まで縮む。done は「ダン」で、do（ドゥ）ではない。had なら d が聞こえる。looking back＝振り返ってみて。"
+    why: "would you have は「ウジュヴ」と速い。done は「ダン」で、do（ドゥ）ではない。had なら d が聞こえる。looking back＝振り返ってみて。"
+    revoice: true
     scene: office
-    tags: { seed: 46, register: boss, pragmatic: literal, features: [chain, yod] }
+    tags: { seed: 46, register: boss, pragmatic: literal, features: [weak-form, yod] }
 
   - kind: tile
     id: tile-nine-oclock-tight
     speaker: orville
     en: "We can get you on the nine o'clock, but it's tight."
-    tts: "We c'n getcha on the nine o'clock, but it's tight."
     ja: "9時の便にお乗せできますが、ぎりぎりですね。"
     tiles: ["We", "can", "get", "you", "on", "the", "nine", "o'clock", "but", "it's", "tight"]
     decoys: ["can't", "night"]
-    marks: [[say, "get you", "getcha"], [say, "can", "c'n"]]
-    note: "get you は「ゲッチャ」。弱い can は can't とまぎらわしい"
+    marks: [[link, "get you"]]
+    note: "弱い can は「クン」。can't とまぎらわしい"
     ctx: "空港のカウンターで、乗り遅れた客と話しています"
-    why: "弱い can は「クン」。can't なら「キャン」と強く、but it's tight と合わない。get you は「ゲッチャ」。nine と night は終わりがちがう。"
+    why: "弱い can は「クン」。can't なら強く「キャン」で、but it's tight と合わない。get you は「ゲッチュ」。night は nine と終わりがちがう。"
+    revoice: true
     scene: gate
     tags: { seed: 8, register: service, pragmatic: literal, conditions: [desk], features: [yod, can-cant] }
 
   - kind: tile
     id: tile-full-cover
     speaker: reneigh
-    en: "You'll want to get the full coverage, trust me."
-    tts: "You'll wanna get the full coverage, trust me."
+    en: "You'll wanna get the full coverage, trust me."
     ja: "フル補償にしておいたほうがいいですよ、ほんとに。"
-    tiles: ["You'll", "want", "to", "get", "the", "full", "coverage", "trust", "me"]
+    tiles: ["You'll", "wanna", "get", "the", "full", "coverage", "trust me"]
     decoys: ["You", "won't"]
-    marks: [[say, "want to", "wanna"]]
-    note: "You'll wanna＝〜したほうがいい（すすめ）。won't と区別"
+    marks: [[say, "wanna", "want to"]]
+    note: "wanna＝want to。You'll wanna＝〜したほうがいい"
     ctx: "レンタカーの窓口で、係が説明しています"
-    why: "You'll wanna＝〜したほうがいい（すすめ）。You'll の ll は弱く You に聞こえやすい。wanna は won't（ウォウント）とちがい口が丸くない。"
+    why: "wanna＝want to。You'll wanna＝〜したほうがいい（すすめ）。You'll の ll は弱いが You だけではない。won't（ウォウント）は口が丸くなる。"
     tags: { seed: 7, register: service, pragmatic: indirect, features: [wanna, contraction] }
 
   - kind: tile
     id: tile-loud-in-here
     speaker: sterling
     en: "Sorry, did you say large or medium? It's loud in here."
-    tts: "Sorry, didja say large or medium? It's loud in here."
     ja: "すみません、LとM、どちらでしたっけ？ここうるさくて。"
-    tiles: ["Sorry", "did", "you", "say", "large", "or", "medium", "It's", "loud", "in", "here"]
+    tiles: ["Sorry", "did", "you", "say", "large", "or medium", "It's", "loud", "in", "here"]
     decoys: ["do", "hair"]
-    marks: [[say, "did you", "didja"], [link, "large or medium"]]
-    note: "large or は「ラージョア」とつながる。or を聞きのがさない"
+    marks: [[link, "did you"], [link, "large or medium"]]
+    note: "did you は つながって「ディジュ」"
     ctx: "にぎやかなカフェで、店員が聞き返しています"
-    why: "did you は「ディジャ」。do なら今の話。large or は「ラージョア」とつながる。here（ヒア）と hair（ヘア）は母音がちがう。"
+    why: "did you は「ディジュ」とつながる。do なら今の話。large or は「ラージョア」。here（ヒア）と hair（ヘア）は口の形がちがう。"
+    revoice: true
     scene: cafe
     tags: { seed: 51, register: service, pragmatic: literal, conditions: [cafe], features: [yod, linking] }
 
@@ -146,14 +147,14 @@ items:
     id: tile-want-it-friday
     speaker: pietro
     en: "If they want it Friday, they'll have to pay the rush fee."
-    tts: "If they wannit Friday, they'll hafta pay the rush fee."
     ja: "金曜にほしいなら、特急料金を払ってもらわないと。"
     tiles: ["If", "they", "want", "it", "Friday", "they'll", "have", "to", "pay", "the", "rush", "fee"]
     decoys: ["won't", "there"]
-    marks: [[say, "want it", "wannit"], [say, "have to", "hafta"]]
+    marks: [[link, "want it"]]
     note: "want it は「ワニッ」。they'll は弱くて聞き落としやすい"
     ctx: "職場で、上司が取引先の注文について話しています"
-    why: "want it は「ワニッ」とつながる。won't なら否定。they'll は「ゼル」と弱く、there（ゼア）に聞こえやすい。rush fee＝特急料金。"
+    why: "want it は「ワニッ」とつながる。won't なら「ほしくない」。they'll は「ゼル」と弱く、there（ゼア）に聞こえやすい。rush fee＝特急料金。"
+    revoice: true
     scene: office
     tags: { seed: 41, register: boss, pragmatic: literal, features: [chain, contraction] }
 
@@ -180,7 +181,7 @@ items:
     ja: "10時から断水ですが、2時までには戻ります。"
     tiles: ["The", "water's", "off", "from", "ten", "but", "it'll", "be", "back", "on", "by", "two"]
     decoys: ["water", "at"]
-    marks: [[say, "water's", "wadder's"], [say, "but it'll", "bud it'll"], [link, "water's off"]]
+    marks: [[link, "water's off"], [link, "but it'll"]]
     note: "water の t は「ダ」で「ワダー」。water's の s を聞く"
     ctx: "マンションで、管理人が住人に話しています"
     why: "water の t は「ダ」で「ワダー」。water's の s（is）を落とすと文にならない。by two＝2時までに。at なら「2時に」になる。"
@@ -189,16 +190,16 @@ items:
   - kind: tile
     id: tile-elbows-in
     speaker: frett
-    en: "You're going to want to keep your elbows in on this one."
-    tts: "You're gonna wanna keep yer elbows in on this one."
+    en: "You're gonna want to keep your elbows in on this one."
     ja: "この種目は、ひじを締めておいたほうがいいよ。"
-    tiles: ["You're", "going", "to", "want", "to", "keep", "your", "elbows", "in", "on", "this", "one"]
-    decoys: ["You", "and"]
-    marks: [[say, "going to want to", "gonna wanna"], [link, "elbows in on"]]
-    note: "gonna wanna＝〜したほうがいいよ。やわらかい指示"
+    tiles: ["You're", "gonna", "want", "to", "keep", "your", "elbows", "in", "on", "this", "one"]
+    decoys: ["You", "wanna", "and"]
+    marks: [[say, "gonna", "going to"], [link, "elbows in on"]]
+    note: "gonna＝going to。〜したほうがいいよ"
     ctx: "ジムで、友だちが次の種目を説明しています"
-    why: "gonna wanna＝going to want to で、やわらかい指示。You're の re は弱いが必要。elbows in は「エルボウズィン」。and ではない。"
-    tags: { seed: 17, register: friend, pragmatic: indirect, features: [gonna, wanna, chain] }
+    why: "gonna＝going to で、〜したほうがいいよ。wanna ではない。You're の re は弱いが必要。elbows in は「エルボウズィン」。and ではない。"
+    revoice: true
+    tags: { seed: 17, register: friend, pragmatic: indirect, features: [gonna, linking] }
 
   - kind: tile
     id: tile-not-the-right-time
@@ -208,7 +209,7 @@ items:
     ja: "悪くないアイデアなんだけど、今じゃないのよね。"
     tiles: ["It's", "not", "a", "bad", "idea", "it's", "just", "not", "the", "right", "time"]
     decoys: ["isn't", "it'll"]
-    marks: [[say, "not a", "nod a"], [drop, "just", "t"], [stress, "bad right"]]
+    marks: [[link, "not a"], [drop, "just", "t"], [stress, "bad right"]]
     note: "not a は「ナダ」。後半が本音の断り"
     ctx: "会議で、同僚が提案に答えています"
     why: "not a は「ナダ」。It's not の形なので isn't は入らない。just は t が落ちて「ジャス」。it'll なら未来の話で、ここでは今のこと。"

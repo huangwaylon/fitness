@@ -1,14 +1,14 @@
-# ことば タイル S2 もり (b): the sound features no shipped item has trained yet (docs/curriculum.md "What's written", B4):
-# h-dropping ('im, 'er, 'is, 'e), reduction chains (whatcha, whaddaya, didja, woulda, dunno gonna), assimilation (tem
-# minutes, im person, doncha, gotcha, couldja), fillers (like, you know, I mean, um, kinda sorta, well actually) and
-# elision (las' night, mus' be, nex' stop, firs' time, jus', ol'). Six of each, everyday American talk at natural speed.
+# ことば タイル S2 もり (b): ordinary connected speech at natural speed (docs/curriculum.md "What's written", B4):
+# a quiet h after a verb (ask him, his, her, he), weak function words (did you, what are you, could you, don't you),
+# assimilation (ten minutes, in person), fillers (like, you know, I mean, um, well actually) and elision (last night,
+# must be, next stop, first time, just, old). Everyday American talk; gonna and gotta are the only respelled tiles.
 schema: 1
 unit: s2-tile-b
 game: tile
 stage: 3
 track: life
 seeds: [5, 15, 27, 30, 35, 38, 43, 44, 49, 52, 53, 54, 57, 58]
-features: { primary: h-drop, review: chain }
+features: { primary: h-drop, review: weak-form }
 cando: "落ちる 音・つながる 音・つなぎ言葉の 入った 文を 聞いて 組み立てられる"
 status: listened
 items:
@@ -17,14 +17,14 @@ items:
     id: tile-hd-ask-him
     speaker: raymond
     en: "Did you ask him if he's coming tonight?"
-    tts: "Didja ask 'im if 'e's comin' tonight?"
     ja: "今夜来るかどうか、彼に聞いた？"
     tiles: ["Did", "you", "ask", "him", "if", "he's", "coming", "tonight"]
     decoys: ["them", "she's"]
-    marks: [[say, "him", "'im"], [say, "he's", "'e's"], [link, "ask him"]]
-    note: "'im と 'e's は h が落ちる。ask 'im は「アスキム」"
+    marks: [[link, "ask him"], [link, "if he's"]]
+    note: "ask him は h が聞こえず「アスキム」"
     ctx: "職場で、同僚が飲み会の人数を数えています"
-    why: "ask 'im は h が落ちて「アスキム」とつながる。them なら「ゼム」か「エム」。'e's は he's で、she's なら「シ」が聞こえる。"
+    why: "ask him は him の h が聞こえず「アスキム」とつながる。them なら「ゼム」か「エム」。if he's は「イフィーズ」で、she's なら「シ」が聞こえる。"
+    revoice: true
     scene: office
     tags: { seed: 38, register: colleague, pragmatic: literal, features: [h-drop, linking] }
 
@@ -32,14 +32,14 @@ items:
     id: tile-hd-her-keys
     speaker: maple
     en: "I think she left her keys in his car."
-    tts: "I think she left 'er keys in 'is car."
     ja: "彼女、彼の車に鍵を忘れたんだと思う。"
     tiles: ["I", "think", "she", "left", "her", "keys", "in", "his", "car"]
     decoys: ["the", "is"]
-    marks: [[say, "her", "'er"], [say, "his", "'is"], [link, "in his"]]
-    note: "'er と 'is は h が消えて、弱く短い"
+    marks: [[link, "left her"], [link, "in his"]]
+    note: "in his は h が聞こえず「イニズ」"
     ctx: "玄関先で、友だちが鍵を探しています"
-    why: "'er keys は「アキーズ」、in 'is は「イニズ」とつながる。the（ザ）でも is（イズ）でもなく、持ち主を表す her と his。"
+    why: "in his は h が聞こえず「イニズ」とつながる。is（イズ）ではなく、だれの車かを言う his。her keys も弱く「アキーズ」。the（ザ）ではない。"
+    revoice: true
     scene: door
     tags: { seed: 35, register: friend, pragmatic: literal, features: [h-drop] }
 
@@ -47,28 +47,29 @@ items:
     id: tile-hd-what-he-told
     speaker: bob
     en: "That's not what he told me last week."
-    tts: "That's not what 'e told me las' week."
+    tts: "That's not what he told me las' week."
     ja: "先週、彼から聞いた話と違うよ。"
     tiles: ["That's", "not", "what", "he", "told", "me", "last", "week"]
     decoys: ["she", "you"]
-    marks: [[say, "he", "'e"], [link, "what he"], [drop, "last", "t"]]
-    note: "what 'e は「ワディ」。he の h が落ちる"
+    marks: [[link, "what he"], [drop, "last", "t"]]
+    note: "what he は h が聞こえず「ワディ」"
     ctx: "電話で、友だちが修理屋の話をしています"
-    why: "what 'e は h が落ちて、t が弾み「ワディ」。she なら「シ」、you なら「ユ」が聞こえる。last の t も落ちて「ラスウィーク」。"
+    why: "what he は h が聞こえず、t が弾んで「ワディ」。she なら「シ」、you なら「ユ」が聞こえる。last の t も落ちて「ラスウィーク」。"
+    revoice: true
     tags: { seed: 30, register: friend, pragmatic: attitude, conditions: [phone], features: [h-drop, elision] }
 
   - kind: tile
     id: tile-hd-look-on-his
     speaker: cherry
-    en: "You should have seen the look on his face."
-    tts: "You shoulda seen the look on 'is face."
+    en: "You should've seen the look on his face."
     ja: "彼の顔、見せたかったよ。"
-    tiles: ["You", "should", "have", "seen", "the", "look", "on", "his", "face"]
-    decoys: ["shouldn't", "her"]
-    marks: [[say, "should have", "shoulda"], [say, "his", "'is"], [link, "on his"]]
-    note: "should have は「シュダ」。on 'is は「オニズ」"
+    tiles: ["You", "should've", "seen", "the", "look", "on", "his", "face"]
+    decoys: ["shouldn't have", "her"]
+    marks: [[link, "on his"]]
+    note: "should've は弱く「シュダヴ」。n の音はない"
     ctx: "カフェで、友だちがサプライズの話をしています"
-    why: "should have は「シュダ」と縮む。shouldn't なら n と t が残る。on 'is は h が落ちて「オニズ」。her なら s の音がない。"
+    why: "should've は弱く「シュダヴ」。shouldn't have なら n と t が聞こえる。on his は h が聞こえず「オニズ」。her なら s の音がない。"
+    revoice: true
     scene: cafe
     tags: { seed: 54, register: friend, pragmatic: humour, conditions: [cafe], features: [h-drop, contraction] }
 
@@ -76,116 +77,118 @@ items:
     id: tile-hd-give-him-a-call
     speaker: tom-nook
     en: "Give him a call and tell him I said hi."
-    tts: "Give 'im a call an' tell 'im I said hi."
     ja: "彼に電話して、よろしく言っておいて。"
     tiles: ["Give", "him", "a", "call", "and", "tell", "him", "I", "said", "hi"]
     decoys: ["them", "in"]
-    marks: [[say, "him", "'im"], [say, "and", "an'"], [link, "Give him a"]]
-    note: "Give 'im a は「ギヴィマ」と一続き"
+    marks: [[link, "Give him a"], [link, "tell him"]]
+    note: "Give him a は「ギヴィマ」と一続き"
     ctx: "大家さんが、電話の終わりに言いました"
-    why: "Give 'im a は h が落ちて「ギヴィマ」。them なら「エム」。and は「ン」まで弱まり in とまぎらわしいが、二つの頼みをつないでいる。"
+    why: "Give him a は h が聞こえず「ギヴィマ」。them なら「エム」。and は弱く「ン」に近く in とまぎらわしいが、二つの頼みをつないでいる。"
+    revoice: true
     tags: { seed: 30, register: neighbour, pragmatic: formula, conditions: [phone], features: [h-drop, weak-form] }
 
   - kind: tile
     id: tile-hd-has-he-had
     speaker: pashmina
     en: "Has he had any trouble sleeping lately?"
-    tts: "Has 'e had any trouble sleepin' lately?"
     ja: "最近、彼は寝つきが悪いことはありますか？"
     tiles: ["Has", "he", "had", "any", "trouble", "sleeping", "lately"]
     decoys: ["Is", "she"]
-    marks: [[say, "he", "'e"], [link, "Has he had"]]
-    note: "Has 'e had は「ハズィハッド」"
+    marks: [[link, "Has he had"]]
+    note: "Has he had は h が聞こえず「ハズィハッド」"
     ctx: "病院の受付で、看護師が家族に聞いています"
-    why: "Has 'e had は he の h が落ちて「ハズィ」。Is he なら had が続かない。she なら「シ」が聞こえる。lately＝最近。"
+    why: "Has he は he の h が聞こえず「ハズィ」。Is he なら had が続かない。she なら「シ」が聞こえる。lately＝最近。"
+    revoice: true
     tags: { seed: 15, register: service, pragmatic: literal, features: [h-drop] }
 
-  # ---- chains ----
+  # ---- weak function words ----
   - kind: tile
     id: tile-ch-whatcha-doing
     speaker: kid-cat
     en: "What are you doing for New Year's?"
-    tts: "Whatcha doin' for New Year's?"
+    tts: "What are you doin' for New Year's?"
     ja: "お正月、何するの？"
     tiles: ["What", "are", "you", "doing", "for", "New", "Year's"]
     decoys: ["did", "four"]
-    marks: [[say, "What are you", "Whatcha"], [drop, "doing", "g"]]
-    note: "Whatcha＝What are you。過去の話ではない"
+    marks: [[link, "What are you"], [drop, "doing", "g"]]
+    note: "What are you は are が弱く「ワダユ」"
     ctx: "年末に、友だちが予定を聞いています"
-    why: "Whatcha は What are you がつながった形。did you なら「ディジャ」。for は「ファ」と弱く、four（フォー）ではない。"
-    tags: { seed: 38, register: friend, pragmatic: literal, features: [chain] }
+    why: "What are you は are が弱く「ワダユ」とつながる。did you なら「ディジュ」が聞こえ、もうした話になる。for は弱く「ファ」で、four（フォー）ではない。"
+    revoice: true
+    tags: { seed: 38, register: friend, pragmatic: literal, features: [weak-form] }
 
   - kind: tile
     id: tile-ch-whaddaya-think
     speaker: audie
     en: "What do you think about moving the party to Sunday?"
-    tts: "Whaddaya think about movin' the party ta Sunday?"
+    tts: "What do you think about movin' the party to Sunday?"
     ja: "パーティーを日曜に移すの、どう思う？"
     tiles: ["What", "do", "you", "think", "about", "moving", "the", "party", "to", "Sunday"]
-    decoys: ["did", "a"]
-    marks: [[say, "What do you", "Whaddaya"], [say, "to", "ta"]]
-    note: "Whaddaya＝What do you。意見を聞く形"
+    decoys: ["did", "on"]
+    marks: [[link, "What do you"]]
+    note: "What do you は do が弱く「ワダユ」"
     ctx: "電話で、友だちが誕生日会の相談をしています"
-    why: "Whaddaya は What do you。did you なら「ディジャ」になる。to は「タ」と弱く、a（ア）とまぎらわしいが、日曜へ移す話。"
-    tags: { seed: 54, register: friend, pragmatic: literal, conditions: [phone], features: [chain, weak-form] }
+    why: "What do you は do が弱く「ワダユ」。did you なら「ディジュ」になる。to は弱く「タ」で、日曜へ移す話。on なら日曜に移す作業をする話になる。"
+    revoice: true
+    tags: { seed: 54, register: friend, pragmatic: literal, conditions: [phone], features: [weak-form] }
 
   - kind: tile
     id: tile-ch-didja-get-a-chance
     speaker: diana
     en: "Did you get a chance to look at my email?"
-    tts: "Didja get a chance ta look at my email?"
     ja: "私のメール、見てもらえた？"
     tiles: ["Did", "you", "get", "a", "chance", "to", "look", "at", "my", "email"]
-    decoys: ["Do", "the"]
-    marks: [[say, "Did you", "Didja"], [link, "get a"], [say, "to", "ta"]]
-    note: "Didja＝Did you。get a は「ゲダ」"
+    decoys: ["Didn't", "the"]
+    marks: [[link, "Did you"], [link, "get a"]]
+    note: "Did you は つながって「ディジュ」"
     ctx: "職場で、同僚が返事を待っています"
-    why: "Didja は Did you がつながった形。Do you なら「ドゥユ」。get a は t が弾んで「ゲダ」。a chance で、the ではない。"
+    why: "Did you はつながって「ディジュ」。Didn't なら n が聞こえる。get a は t が弾んで「ゲダ」。a chance で、the ではない。"
+    revoice: true
     scene: office
-    tags: { seed: 43, register: colleague, pragmatic: indirect, features: [chain, flap] }
+    tags: { seed: 43, register: colleague, pragmatic: indirect, features: [yod, flap] }
 
   - kind: tile
     id: tile-ch-woulda-picked-you
     speaker: phoebe
-    en: "If I'd known, I would have picked you up."
-    tts: "If I'da known, I woulda picked ya up."
+    en: "If I'd known, I would've picked you up."
     ja: "知ってたら、迎えに行ったのに。"
-    tiles: ["If", "I'd", "known", "I", "would", "have", "picked", "you", "up"]
-    decoys: ["I'll", "wouldn't"]
-    marks: [[say, "I'd", "I'da"], [say, "would have", "woulda"], [link, "picked you up"]]
-    note: "woulda＝would have。実際は迎えに行っていない"
+    tiles: ["If", "I'd", "known", "I", "would've", "picked", "you", "up"]
+    decoys: ["I'll", "wouldn't have"]
+    marks: [[link, "picked you up"]]
+    note: "would've＝〜したのに（実際は迎えに行っていない）"
     ctx: "駅に着いた友だちから、電話がありました"
-    why: "I'd known の 'd は had。would have は「ウダ」と縮む。wouldn't なら n と t が残る。I'll（アル）は未来で、ここは過去の話。"
-    tags: { seed: 49, register: friend, pragmatic: attitude, conditions: [phone], features: [chain, contraction] }
+    why: "would've は弱く「ウダヴ」。wouldn't have なら n と t が聞こえる。I'd known＝知っていたら。I'll（アル）ならこれからの話になる。"
+    revoice: true
+    tags: { seed: 49, register: friend, pragmatic: attitude, conditions: [phone], features: [contraction] }
 
   - kind: tile
     id: tile-ch-dunno-gonna
     speaker: punchy
-    en: "I don't know if I'm going to make it in time."
-    tts: "I dunno if I'm gonna make it in time."
+    en: "I don't know if I'm gonna make it in time."
     ja: "間に合うかどうか、わからないな。"
-    tiles: ["I", "don't", "know", "if", "I'm", "going", "to", "make", "it", "in", "time"]
-    decoys: ["want", "on"]
-    marks: [[say, "don't know", "dunno"], [say, "going to", "gonna"], [link, "make it in"]]
-    note: "dunno と gonna が続く。間に合うか不安"
+    tiles: ["I", "don't", "know", "if", "I'm", "gonna", "make", "it", "in", "time"]
+    decoys: ["wanna", "on"]
+    marks: [[say, "gonna", "going to"], [link, "make it in"]]
+    note: "gonna＝going to。間に合うか不安"
     ctx: "電車が遅れて、友だちから電話です"
-    why: "dunno は don't know、gonna は going to で、want to（ワナ）ではない。in time＝間に合って。on time（時間どおり）ではない。"
-    tags: { seed: 5, register: friend, pragmatic: hedge, conditions: [phone], features: [chain, dunno, gonna] }
+    why: "gonna＝going to。wanna（want to）ではない。make it in は「メイキディン」とつながる。in time＝間に合って。on time ではない。"
+    revoice: true
+    tags: { seed: 5, register: friend, pragmatic: hedge, conditions: [phone], features: [gonna, linking] }
 
   - kind: tile
     id: tile-ch-gotta-run-lemme
     speaker: goldie
-    en: "I've got to run, but let me know how it goes."
-    tts: "I've gotta run, but lemme know how it goes."
+    en: "I've gotta run, but let me know how it goes."
     ja: "もう行かなきゃ。でも、どうなったか教えてね。"
-    tiles: ["I've", "got", "to", "run", "but", "let", "me", "know", "how", "it", "goes"]
-    decoys: ["I", "go"]
-    marks: [[say, "got to", "gotta"], [say, "let me", "lemme"]]
-    note: "gotta run＝もう行かなきゃ。lemme know＝教えて"
+    tiles: ["I've", "gotta", "run", "but", "let", "me", "know", "how", "it", "goes"]
+    decoys: ["got", "I", "go"]
+    marks: [[say, "gotta", "got to"], [link, "let me"]]
+    note: "gotta＝got to。もう行かなきゃ"
     ctx: "カフェで、友だちが急いで席を立ちます"
-    why: "gotta は got to、lemme は let me。I've の 've は弱いが got の前に残る。goes は「ゴウズ」と s で終わり、go ではない。"
+    why: "gotta は got to で「ガダ」。got だけなら「ガッ」で止まる。I've の ve は弱いが残る。goes は「ゴウズ」と s で終わり、go ではない。"
+    revoice: true
     scene: cafe
-    tags: { seed: 57, register: friend, pragmatic: formula, conditions: [cafe], features: [chain, gotta, lemme] }
+    tags: { seed: 57, register: friend, pragmatic: formula, conditions: [cafe], features: [gotta, lemme] }
 
   # ---- assimilation ----
   - kind: tile
@@ -196,8 +199,8 @@ items:
     ja: "次のバスは10分後に来ます。"
     tiles: ["The", "next", "bus", "comes", "in", "ten", "minutes"]
     decoys: ["then", "on"]
-    marks: [[say, "ten minutes", "tem minutes"], [drop, "next", "t"]]
-    note: "ten の n が m に変わり「テミニッツ」"
+    marks: [[link, "ten minutes"], [drop, "next", "t"]]
+    note: "ten の n が m に変わり「テムミニッツ」"
     ctx: "バス停で、係の人が答えています"
     why: "ten は次の m に引っぱられて「テム」になる。then（ゼン）ではなく数字。in ten minutes＝10分後で、on ではない。"
     scene: street
@@ -207,14 +210,15 @@ items:
     id: tile-as-in-person
     speaker: curt
     en: "You'll have to sign it in person at the office."
-    tts: "You'll hafta sign it im person at the office."
+    tts: "You'll have to sign it im person at the office."
     ja: "事務所で、本人が署名しなければなりません。"
     tiles: ["You'll", "have", "to", "sign", "it", "in", "person", "at", "the", "office"]
     decoys: ["You", "on"]
-    marks: [[say, "in person", "im person"], [say, "have to", "hafta"]]
+    marks: [[link, "in person"]]
     note: "in person は「イムパーソン」。本人が行く"
     ctx: "区役所で、職員が手続きを説明しています"
     why: "in の n は p の前で m になり「イムパーソン」。on なら「オン」。You'll の ll は弱いが、これからの話なので You'll。"
+    revoice: true
     scene: office
     tags: { seed: 43, register: official, pragmatic: literal, features: [assimilation, weak-form] }
 
@@ -222,14 +226,15 @@ items:
     id: tile-as-why-dontcha
     speaker: rosie
     en: "Why don't you just call her and ask?"
-    tts: "Why doncha jus' call 'er an' ask?"
+    tts: "Why don't you jus' call her and ask?"
     ja: "彼女に電話して、聞いてみたら？"
     tiles: ["Why", "don't", "you", "just", "call", "her", "and", "ask"]
     decoys: ["didn't", "him"]
-    marks: [[say, "don't you", "doncha"], [say, "her", "'er"], [drop, "just", "t"]]
-    note: "Why doncha～?＝〜したら？（提案）"
+    marks: [[link, "don't you"], [drop, "just", "t"]]
+    note: "Why don't you〜?＝〜したら？（提案）"
     ctx: "カフェで、友だちが相談に乗っています"
-    why: "don't you は t と y が混ざって「ドンチャ」。didn't なら「ディドン」。理由ではなく提案。'er は her で、him なら「イム」。"
+    why: "don't you は t と y が混ざって「ドンチュ」。didn't なら「ディドン」と聞こえ、もうした話を責める意味になる。her は弱く「ア」に近く、him なら「イム」。"
+    revoice: true
     scene: cafe
     tags: { seed: 57, register: friend, pragmatic: indirect, conditions: [cafe], features: [assimilation, h-drop] }
 
@@ -237,14 +242,14 @@ items:
     id: tile-as-gotcha-a-coffee
     speaker: cherry
     en: "I got you a coffee. No sugar, right?"
-    tts: "I gotcha a coffee. No sugar, right?"
     ja: "コーヒー買ってきたよ。砂糖なしだよね？"
     tiles: ["I", "got", "you", "a", "coffee", "No", "sugar", "right"]
     decoys: ["get", "the"]
-    marks: [[say, "got you", "gotcha"]]
-    note: "got you a は「ガッチャア」。買ってきたよ"
+    marks: [[link, "got you a"]]
+    note: "got you a は「ガッチュア」。買ってきたよ"
     ctx: "朝、同僚が職場に戻ってきました"
-    why: "got you は t と y が混ざって「ガッチャ」。get なら「ゲ」で、これから買う話になる。a coffee で the ではない。"
+    why: "got you は t と y が混ざって「ガッチュ」。get なら「ゲ」で、これから買う話になる。a coffee で the ではない。"
+    revoice: true
     scene: office
     tags: { seed: 38, register: colleague, pragmatic: literal, features: [assimilation] }
 
@@ -252,14 +257,14 @@ items:
     id: tile-as-couldja-send
     speaker: tia
     en: "Could you send me the address later?"
-    tts: "Couldja send me the address later?"
     ja: "あとで住所を送ってもらえる？"
     tiles: ["Could", "you", "send", "me", "the", "address", "later"]
-    decoys: ["Can", "a"]
-    marks: [[say, "Could you", "Couldja"], [link, "send me"]]
-    note: "Couldja＝Could you。d と y が混ざる"
+    decoys: ["Can", "an"]
+    marks: [[link, "Could you"], [link, "send me"]]
+    note: "Could you は つながって「クジュ」"
     ctx: "電話で、友だちと待ち合わせを決めています"
-    why: "Could you は d と y が混ざって「クジャ」。Can you なら「キャニュ」。the address は決まった店の住所なので、a ではない。"
+    why: "Could you は d と y が混ざって「クジュ」。Can you なら「キャニュ」。決まった店の住所なので the address。an なら「アナドレス」。"
+    revoice: true
     tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone], features: [assimilation, yod] }
 
   - kind: tile
@@ -268,9 +273,9 @@ items:
     en: "Wait, it's ten past nine already?"
     tts: "Wait, it's tem past nine already?"
     ja: "待って、もう9時10分？"
-    tiles: ["Wait", "it's", "ten", "past", "nine", "already"]
+    tiles: ["Wait", "it's", "ten", "past", "nine already"]
     decoys: ["to", "then"]
-    marks: [[say, "ten past", "tem past"]]
+    marks: [[link, "ten past"]]
     note: "ten past nine＝9時10分。n が m に変わる"
     ctx: "朝、出かける前にパートナーが時計を見て"
     why: "ten は p の前で「テム」になる。past nine＝9時過ぎで、to nine なら9時前。then（ゼン）ではなく数字。"
@@ -295,15 +300,16 @@ items:
   - kind: tile
     id: tile-fl-you-know
     speaker: bob
-    en: "It's that place, you know, next to the bank."
-    tts: "It's that place, y'know, nex' to the bank."
+    en: "You know, it's that place next to the bank."
+    tts: "You know, it's that place nex' to the bank."
     ja: "ほら、銀行の隣の、あの店だよ。"
-    tiles: ["It's", "that", "place", "you", "know", "next", "to", "the", "bank"]
-    decoys: ["no", "back"]
-    marks: [[say, "you know", "y'know"], [drop, "next", "t"]]
-    note: "y'know＝ほら（相手も知っている前提）"
+    tiles: ["You", "know", "it's", "that", "place", "next", "to", "the", "bank"]
+    decoys: ["back", "a"]
+    marks: [[drop, "next", "t"]]
+    note: "You know,＝ほら（相手も知っている前提）"
     ctx: "街で、友だちが店の場所を説明しています"
-    why: "y'know は「ほら」のつなぎで、no（いいえ）ではない。next to＝〜の隣で、t は落ちる。bank は n が入り、back ではない。"
+    why: "You know は「ほら」のつなぎ。next to は t が落ちて「ネクストゥ」。bank は n が入り、back ではない。知っている銀行なので a ではない。"
+    revoice: true
     scene: street
     tags: { seed: 58, register: friend, pragmatic: literal, conditions: [street], features: [filler, elision] }
 
@@ -313,55 +319,54 @@ items:
     en: "It's fine, I mean, it's not what I ordered."
     tts: "It's fine, I mean, it's nod what I ordered."
     ja: "いいんだけど、っていうか、注文したのと違うの。"
-    tiles: ["It's", "fine", "I", "mean", "it's", "not", "what", "I", "ordered"]
-    decoys: ["me", "order"]
-    marks: [[say, "not what", "nod what"]]
+    tiles: ["It's fine", "I mean it's", "not", "what", "I", "ordered"]
+    decoys: ["order", "now"]
+    marks: [[link, "not what"]]
     note: "I mean の後が本音。注文と違う"
     ctx: "レストランで、友だちが料理を見ています"
-    why: "I mean は言い直しの合図で、後ろが本音。not の t が弾み「ナッワッ」。ordered の ed は小さいが、もうした注文なので order ではない。"
+    why: "I mean は言い直しの合図で、後ろが本音。not what は「ナッワッ」で、now（ナウ）ではない。ordered の ed は小さいが、もうした注文。"
     tags: { seed: 27, register: friend, pragmatic: indirect, features: [filler, flap] }
 
   - kind: tile
     id: tile-fl-so-um
     speaker: sherb
     en: "So, um, are we still on for Friday?"
-    tts: "So, um, are we still on fer Friday?"
     ja: "えっと、金曜の約束、まだ大丈夫？"
     tiles: ["So", "um", "are", "we", "still", "on", "for", "Friday"]
     decoys: ["in", "four"]
-    marks: [[say, "for", "fer"]]
+    marks: [[link, "on for"]]
     note: "So, um＝えっと。本題の前のつなぎ"
     ctx: "電話で、友だちが約束を確かめています"
-    why: "So, um は言いにくいことの前置き。still on for＝予定はまだ生きている？ on で in ではない。for は「ファ」で four ではない。"
+    why: "So, um は言いにくいことの前置き。still on for＝予定はまだ生きている？ on で in ではない。for は弱く「ファ」で four ではない。"
+    revoice: true
     tags: { seed: 49, register: friend, pragmatic: hedge, conditions: [phone], features: [filler, weak-form] }
 
   - kind: tile
-    id: tile-fl-kinda-sorta
+    id: tile-fl-not-dating-yet
     speaker: bea
-    en: "I'm kind of, sort of seeing someone."
-    tts: "I'm kinda, sorta seein' someone."
-    ja: "えっと、付き合ってる、みたいな人がいるの。"
-    tiles: ["I'm", "kind", "of", "sort", "of", "seeing", "someone"]
-    decoys: ["see", "some"]
-    marks: [[say, "kind of", "kinda"], [say, "sort of", "sorta"], [drop, "seeing", "g"]]
-    note: "kinda, sorta＝照れてぼかす言い方"
+    en: "I mean, we're not really dating yet."
+    ja: "っていうか、まだちゃんと付き合ってるわけじゃないの。"
+    tiles: ["I", "mean", "we're", "not", "really", "dating", "yet"]
+    decoys: ["were", "yes"]
+    marks: [[link, "not really"]]
+    note: "we're は弱く「ウィア」。were とまぎらわしい"
     ctx: "カフェで、友だちが恋愛の近況を話しています"
-    why: "kinda, sorta は照れや遠慮でぼかすつなぎ。seeing someone＝付き合っている人がいる。see（見る）ではなく、someone は1語。"
+    why: "we're は弱く短い「ウィア」。were（ワー）なら もうした話になる。yet は t で終わり、yes ではない。not really＝ちゃんとは〜ない。"
+    revoice: true
     scene: cafe
-    tags: { seed: 53, register: friend, pragmatic: hedge, conditions: [cafe], features: [filler, kinda] }
+    tags: { seed: 53, register: friend, pragmatic: hedge, conditions: [cafe], features: [filler, contraction] }
 
   - kind: tile
     id: tile-fl-well-actually
     speaker: apollo
-    en: "Well, actually, I was going to ask you the same thing."
-    tts: "Well, actually, I was gonna ask you the same thing."
+    en: "Well, actually, I was gonna ask you the same thing."
     ja: "いや、実は、こっちも同じことを聞こうと思ってた。"
-    tiles: ["Well", "actually", "I", "was", "going", "to", "ask", "you", "the", "same", "thing"]
-    decoys: ["want", "sing"]
-    marks: [[say, "going to", "gonna"], [link, "ask you"]]
+    tiles: ["Well actually", "I", "was", "gonna", "ask", "you", "the", "same", "thing"]
+    decoys: ["wanna", "sing"]
+    marks: [[say, "gonna", "going to"], [link, "ask you"]]
     note: "Well, actually＝実はね。相手とずれる前置き"
     ctx: "職場で、同僚が質問してきました"
-    why: "Well, actually は意外なことを言う前置き。gonna は going to で、want to（ワナ）ではない。thing は th で、sing（歌う）ではない。"
+    why: "Well, actually は意外なことを言う前置き。gonna＝going to で、wanna（want to）ではない。thing は th で、sing ではない。"
     scene: office
     tags: { seed: 44, register: colleague, pragmatic: humour, features: [filler, gonna, th] }
 
@@ -383,15 +388,16 @@ items:
   - kind: tile
     id: tile-el-must-be
     speaker: diana
-    en: "You must be Kate's brother. You look just like her."
-    tts: "You mus' be Kate's brother. You look jus' like 'er."
+    en: "You must be Kate's brother — you look just like her."
+    tts: "You mus' be Kate's brother — you look jus' like her."
     ja: "ケイトのお兄さんでしょう？そっくりだね。"
-    tiles: ["You", "must", "be", "Kate's", "brother", "You", "look", "just", "like", "her"]
+    tiles: ["You", "must", "be", "Kate's", "brother", "you", "look", "just", "like", "her"]
     decoys: ["much", "him"]
-    marks: [[drop, "must", "t"], [drop, "just", "t"], [say, "her", "'er"]]
+    marks: [[drop, "must", "t"], [drop, "just", "t"]]
     note: "must be＝きっと〜でしょう。t は消える"
     ctx: "パーティーで、初めて会う人に声をかけます"
-    why: "must の t は b の前で落ちて「マスビ」。much（マッチ）ではない。just like 'er は「ジャスライカ」。ケイトのことなので him ではない。"
+    why: "must の t は b の前で落ちて「マスビ」。much（マッチ）ではない。just like her は「ジャスライカー」。ケイトのことなので him ではない。"
+    revoice: true
     tags: { seed: 53, register: stranger, pragmatic: literal, features: [elision, h-drop] }
 
   - kind: tile
@@ -405,7 +411,7 @@ items:
     marks: [[drop, "next", "t"], [link, "get off at"]]
     note: "next stop は「ネクストップ」。t が消える"
     ctx: "電車の中で、友だちが行き方を説明しています"
-    why: "next の t は s の前で消えて「ネクストップ」。get off at は「ゲロファット」とつながる。got なら過去。walk と work は母音がちがう。"
+    why: "next の t は s の前で消えて「ネクストップ」。get off at は「ゲロファット」とつながる。got なら もうした話。walk と work は口の形がちがう。"
     scene: platform
     tags: { seed: 5, register: friend, pragmatic: literal, conditions: [train], features: [elision, linking, vowel] }
 
@@ -413,28 +419,30 @@ items:
     id: tile-el-first-time
     speaker: pietro
     en: "Is this your first time in Tokyo?"
-    tts: "Is this yer firs' time in Tokyo?"
+    tts: "Is this your firs' time in Tokyo?"
     ja: "東京は初めてですか？"
     tiles: ["Is", "this", "your", "first", "time", "in", "Tokyo"]
     decoys: ["fast", "on"]
-    marks: [[drop, "first", "t"], [say, "your", "yer"]]
+    marks: [[drop, "first", "t"]]
     note: "first time は t が一つ消えて「ファースタイム」"
     ctx: "旅行者に、レストランの店員が話しかけています"
-    why: "first の t は time の t と重なり、1回しか聞こえない。fast（ファスト）とは母音がちがう。in Tokyo で on ではない。your は「ヤ」と弱い。"
+    why: "first の t は time の t と重なり、1回しか聞こえない。fast（ファスト）とは口の形がちがう。in Tokyo で on ではない。your は弱く「ヤ」に近い。"
+    revoice: true
     tags: { seed: 58, register: service, pragmatic: formula, features: [elision, weak-form] }
 
   - kind: tile
     id: tile-el-grab-my-stuff
     speaker: dom
     en: "I just need to grab my stuff real quick."
-    tts: "I jus' need ta grab my stuff real quick."
+    tts: "I jus' need to grab my stuff real quick."
     ja: "荷物をさっと取ってくるだけだから。"
     tiles: ["I", "just", "need", "to", "grab", "my", "stuff", "real", "quick"]
     decoys: ["the", "staff"]
-    marks: [[drop, "just", "t"], [say, "to", "ta"]]
+    marks: [[drop, "just", "t"]]
     note: "just need は「ジャスニード」。t が落ちる"
     ctx: "店を出る前に、友だちが席に戻ります"
-    why: "just の t は n の前で落ちる。to は「タ」と弱い。stuff（荷物）と staff（職員）はカタカナでは同じだが、stuff は短い「ア」。"
+    why: "just の t は n の前で落ちる。to は弱く「タ」に近く、the とまぎらわしい。stuff（荷物）と staff（職員）はカタカナでは同じだが、stuff は短い「ア」。"
+    revoice: true
     tags: { seed: 38, register: friend, pragmatic: literal, features: [elision, vowel] }
 
   - kind: tile
