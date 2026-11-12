@@ -78,7 +78,7 @@
     "@types/node": "^26.6.5",
     "@types/three": "^0.170.0",
     "@vitest/coverage-v8": "^5.0.5",
-    "fake-indexeddb": "^6.2.6",
+    "fake-indexeddb": "^6.2.8",
     "gltfpack": "^1.3.0",
     "knip": "^6.44.0",
     "maplibre-gl": "^6.16.0",
