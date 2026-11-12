@@ -22,7 +22,7 @@
   import type { Who } from '#lib/types.ts';
   import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
   import type { Recipe } from '#lib/model/food.ts';
-  import { entryKcal, itemById, nearFoods, searchFoods, variantsOf, verifyOf, type FoodDb, type Item } from '#lib/food/index.ts';
+  import { entryKcal, itemById, nearFoods, searchFoods, shopsFor, variantsOf, verifyOf, type FoodDb, type Item } from '#lib/food/index.ts';
   import { searchKey } from '#lib/food/text.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { kcalText } from '../kiroku/fmt.ts';
@@ -32,11 +32,16 @@
   import Phrases from '../ui/Phrases.svelte';
   import FoodOpen, { type Set } from './FoodOpen.svelte';
   import NavButton from '../ui/NavButton.svelte';
-  import { amountText, catOf, customItem, defaultPortion, stemName, foodDb, glossOf, itemOf, servingText, snapGloss, typedKcal, withImages, plateOf, recipeOfEntry } from './foodUi.ts';
+  import Chip from '../ui/Chip.svelte';
+  import ChipRow from '../ui/ChipRow.svelte';
+  import { amountText, catOf, recentShops, shopChips, customItem, defaultPortion, stemName, foodDb, glossOf, itemOf, servingText, snapGloss, typedKcal, withImages, plateOf, recipeOfEntry } from './foodUi.ts';
 
   interface Props {
     /** My recent entries (recentOf). */
     recent: FoodEntry[];
+    /** All my entries, newest first, and the day 30 days back: よく行く店 (recentShops). */
+    mine?: readonly FoodEntry[];
+    since?: string;
     /** A food picked: a catalog item, or a recent one with the grams I had last. */
     onpick: (item: Item, g?: number, u?: string, f?: FoodEntry['f']) => void;
     /** Everyone's マイレシピ (offered with `onrecipe`; else only for さいきん's pictures of the ones logged), and who set each. */
@@ -77,7 +82,7 @@
     pick: () => void; quick?: (() => void) | undefined;
   };
   let {
-    recent, onpick, recipes = [], names, onrecipe, onnewrecipe, customs = [], oncustom, oncreate, onquick, oncustomquick, added = [], onunadd, addedHead = 'food.addedHead',
+    recent, mine = [], since = '', onpick, recipes = [], names, onrecipe, onnewrecipe, customs = [], oncustom, oncreate, onquick, oncustomquick, added = [], onunadd, addedHead = 'food.addedHead',
     onfinish, onquicknew, onquicklog, inline
   }: Props = $props();
 
@@ -146,6 +151,19 @@
     }, { root: node.closest('[data-food-sheet]'), rootMargin: '400px 0px' }); // the sheet scrolls (the margin is its)
     io.observe(node);
     return { destroy: () => io.disconnect() };
+  }
+  /** The shop chips under the field: typing, the results' shops (two or more, none named: shopChips) with their
+   *  counts; nothing typed, よく行く店. None without the chain menus (the demo, the guest). */
+  const shops = $derived.by((): { shop: string; name: string; n?: number }[] => {
+    void more;
+    if (!db) return [];
+    return q.trim() ? shopChips(shopsFor(db, q)) : recentShops(mine, db, since);
+  });
+  /** A shop chip's tap: its name written into the query, before what's typed (no filter kept anywhere else: ✕ clears
+   *  it), the field kept focused (the keyboard stays up). */
+  function toShop(name: string) {
+    setQ((text = q.trim() ? `${name} ${q.trim()}` : `${name} `));
+    input?.focus();
   }
   /** The recipes and custom foods whose names hold every word typed (all of them with nothing typed). */
   const words = $derived(q.trim().split(/[\s　]+/).map(searchKey).filter(Boolean));
@@ -294,6 +312,18 @@
       oninput={onInput} oncompositionend={() => setQ(text)} />
     {#if text}<span class="x"><NavButton kind="close" label={t('food.clear')} sfx="tick" onclick={clear} /></span>{/if}
   </form>
+
+  {#if shops.length}
+    <!-- (a press keeps the field's focus: the keyboard never drops between the tap and the query) -->
+    <div class="shops" data-food-shops={q.trim() ? 'in' : 'often'} role="presentation" onmousedown={(e) => e.preventDefault()}>
+      <ChipRow label={t(q.trim() ? 'food.shops.in' : 'food.shops.often')}>
+        {#if !q.trim()}<span class="sl" aria-hidden="true">{t('food.shops.often')}</span>{/if}
+        {#each shops as s (s.shop)}
+          <Chip label={s.name} count={s.n} data-shop-chip={s.shop} onclick={() => toShop(s.name)} />
+        {/each}
+      </ChipRow>
+    </div>
+  {/if}
 
   {#if onfinish && added.length}
     <section class="card added" data-food-added aria-labelledby="fs-added">
@@ -447,6 +477,9 @@
   input::placeholder { color: color-mix(in srgb, var(--text-soft) 70%, transparent); font-weight: 500; }
   /* ✕: the app's NavButton inside the pill's right end */
   .x { display: flex; margin-right: -6px; }
+  /* the shop chips: ChipRow's line, its sides at the field's */
+  .shops { margin: -6px -12px; min-width: 0; }
+  .sl { flex: none; margin-right: 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .lh { margin: 4px 2px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .it {

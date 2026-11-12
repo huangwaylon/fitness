@@ -291,6 +291,24 @@ export function recentOf(mine: readonly FoodEntry[], limit = 20): FoodEntry[] {
   return out;
 }
 
+/** The chips under the search's field (FoodSearch): at most 6 while typing, the shops of the results (shopsFor) when
+ *  two or more hold some and none is named. */
+const SHOP_CHIPS = 6;
+export const shopChips = <S,>(shops: readonly S[]): S[] => (shops.length >= 2 ? shops.slice(0, SHOP_CHIPS) : []);
+
+/** よく行く店 (the search's empty query): the chain shops of my entries (`mine`, newest first) since `since` (30 days
+ *  back), the most entries first, a tie the latest; at most 4, none without the catalog's chain menus. */
+export function recentShops(mine: readonly FoodEntry[], db: FoodDb | null, since: string, max = 4): { shop: string; name: string }[] {
+  const by = new Map<string, { shop: string; name: string; n: number; i: number }>();
+  mine.forEach((e, i) => {
+    const it = e.d >= since && e.f.id.startsWith('kal:') ? itemById(db, e.f.id) : undefined;
+    if (!it?.shop) return;
+    const s = by.get(it.shop) ?? by.set(it.shop, { shop: it.shop, name: it.brand ?? it.shop, n: 0, i }).get(it.shop)!;
+    s.n++;
+  });
+  return [...by.values()].sort((a, b) => b.n - a.n || a.i - b.i).slice(0, max).map(({ shop, name }) => ({ shop, name }));
+}
+
 /** The portion and ×multiplier (a multiple of 0.5, ×0.5 to ×20) whose grams, saved to one decimal, are `g`, ×1 first;
  *  null when none does. */
 export function matchPortion(ps: readonly Portion[], g: number): { pi: number; mult: number } | null {

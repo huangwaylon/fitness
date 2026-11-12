@@ -113,7 +113,10 @@
   /** A meal's protein to aim for: a third of the day's (profile.ts mealProteinTarget). */
   const ptarget = $derived(mealProteinTarget(goals.p));
   const byMeal = (k: Meal) => day?.entries.filter((e) => e.m === k) ?? [];
-  const recent = $derived(m ? recentOf(foodEntries(m.state, me)) : []);
+  const myEntries = $derived(m ? foodEntries(m.state, me) : []);
+  const recent = $derived(recentOf(myEntries));
+  /** よく行く店's window: my last 30 days. */
+  const since = $derived(today ? addDays(today, -30) : '');
   /** My repeat of a meal still going (the one to manage; an ended one only fills its days). */
   const liveRepeat = (k: Meal) => (m ? (repeats(m.state, me).find((r) => r.m === k && (!r.to || r.to > today)) ?? null) : null);
 
@@ -429,7 +432,7 @@
     {#key levels.stack.length}<div class="lv" class:lvl={!!top}>
     {#if top?.k === 'search'}
       {@const meal = top.meal}
-      <FoodSearch {recent} onpick={(item, g, u, f) => add(item, meal, g, u, f)} recipes={allRecipes} {names} onrecipe={(r) => go({ k: 'rlog', r, meal })}
+      <FoodSearch {recent} mine={myEntries} {since} onpick={(item, g, u, f) => add(item, meal, g, u, f)} recipes={allRecipes} {names} onrecipe={(r) => go({ k: 'rlog', r, meal })}
         onnewrecipe={() => rf.open(null)} customs={allCustoms} oncustom={(c) => go({ k: 'amount', meal, ...pickOf(customItem(c)) })}
         oncreate={(n) => cf.open(null, { meal }, '[data-custom-new]', n)} onquick={(item, g, u, f) => quick(item, meal, g, u, f)}
         oncustomquick={(c) => quick(customItem(c), meal)} added={addedOf(top.added)} onunadd={unadd} onfinish={home}

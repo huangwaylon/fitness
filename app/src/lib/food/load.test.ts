@@ -6,7 +6,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { foodOp } from '#lib/contract/food.ts';
 import { loadFoodDb } from './load.ts';
-import { addDataset, credits, emptyDb, nearFoods, searchFoods, shopIn, SLICE, verifyOf, type FoodDb } from './db.ts';
+import { addDataset, credits, emptyDb, nearFoods, searchFoods, shopIn, shopsFor, SLICE, verifyOf, type FoodDb } from './db.ts';
 import { portionsOf, toSnap } from './nutrition.ts';
 import type { Dataset, FoodIndex, Item } from './types.ts';
 import { tierOf, type Entry } from './search.ts';
@@ -307,6 +307,13 @@ describe('the chain menus (a member’s: Kalori, invented items)', () => {
     expect(ids('セブン').sort()).toEqual(['kal:3', 'kal:4', 'kal:5']);
     expect(ids('すき家')).toEqual(['kal:1']);
     expect(shopIn(k, 'スタバ  モカ')).toEqual({ shop: 'starbucks', rest: 'モカ' });
+  });
+
+  it('the shops holding a query, the most foods first (a food in its states once); none once a shop is named', () => {
+    expect(shopsFor(k, '牛丼')).toEqual([{ shop: 'sukiya', name: 'すき家', n: 1 }, { shop: 'seven-eleven', name: 'セブン-イレブン', n: 1 }]);
+    expect(shopsFor(k, 'モカ')).toEqual([{ shop: 'starbucks', name: 'スターバックス', n: 1 }]);
+    expect(shopsFor(k, '定食').map((s) => s.shop)).toEqual(['karaage']);
+    expect([shopsFor(k, 'すき家 牛丼'), shopsFor(k, ''), shopsFor(db, '牛丼')]).toEqual([[], [], []]);
   });
 
   it('nothing on the shop’s menu: the query over everything; a shop called as a food is never a shop word', () => {

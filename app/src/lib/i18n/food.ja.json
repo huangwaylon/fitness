@@ -55,6 +55,8 @@
   "food.img.big": "{name}のイメージを拡大",
   "food.img.credit": "AI生成のイメージ（実物と異なる場合があります）",
   "food.shop": "店のメニュー：",
+  "food.shops.often": "よく行く店",
+  "food.shops.in": "店で絞り込む",
   "food.st.head": "状態",
   "food.st.rawWhy": "パックの重さなら生",
   "food.st.dryWhy": "ゆでる前の重さなら乾",

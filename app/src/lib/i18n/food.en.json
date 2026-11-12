@@ -55,6 +55,8 @@
   "food.img.big": "Enlarge the image of {name}",
   "food.img.credit": "AI-generated images (the real food may look different)",
   "food.shop": "Chain menu: ",
+  "food.shops.often": "Places I go",
+  "food.shops.in": "Narrow to a shop",
   "food.st.head": "As",
   "food.st.rawWhy": "The pack’s weight: raw",
   "food.st.dryWhy": "Weighed before boiling: dry",

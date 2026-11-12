@@ -83,6 +83,22 @@ export function shopIn(db: FoodDb, query: string): { shop: string; rest: string 
   return null;
 }
 
+/** The chain menus' shops holding every word of a query (no shop named in it: shopIn), the most foods first (a food
+ *  in its states once), each with its name; the chips under the search's field (FoodSearch). */
+export function shopsFor(db: FoodDb, query: string): { shop: string; name: string; n: number }[] {
+  const tokens = query.trim().split(/[\s　]+/).map(searchKey).filter(Boolean);
+  if (!tokens.length || !db.shopKeys.size || shopIn(db, query)) return [];
+  const by = new Map<string, { shop: string; name: string; n: number; seen: Set<string> }>();
+  for (const e of db.entries) {
+    const shop = e.it.shop;
+    if (!shop || !tokens.every((t) => e.h.includes(t))) continue;
+    const s = by.get(shop) ?? by.set(shop, { shop, name: e.it.brand ?? shop, n: 0, seen: new Set() }).get(shop)!;
+    const k = e.it.vg ?? e.it.id;
+    if (!s.seen.has(k)) s.seen.add(k), s.n++;
+  }
+  return [...by.values()].sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, 'ja')).map(({ shop, name, n }) => ({ shop, name, n }));
+}
+
 /** A product's barcode back from its id (`off:<jan>`; scripts/food-data.ts drops it), for the search's keys. */
 export function withJan(d: Dataset): Dataset {
   for (const it of d.items) if (it.jan === undefined && it.id.startsWith('off:')) it.jan = it.id.slice(4);

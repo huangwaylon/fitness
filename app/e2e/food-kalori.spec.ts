@@ -55,7 +55,7 @@ test('a member’s search has the chain menus: the shop on the row, logged by th
   // a shop named narrows to its menu (the header's aliases: ためし), the other words within it
   const q = a.sheet.locator('[data-food-q]');
   await q.fill('ためし');
-  await expect(a.sheet.locator('[data-food-results] [data-item]')).toHaveCount(1);
+  await expect(a.sheet.locator('[data-food-results] [data-item]')).toHaveCount(2);
   await q.fill('みほん珈琲 ブレンド');
   await expect(a.sheet.locator('[data-food-results] [data-item]')).toHaveCount(1);
   await expect(a.sheet.locator('[data-food-results] [data-item="kal:900003"]')).toBeVisible();
@@ -87,6 +87,39 @@ test('a chain menu’s row: the shop’s mark and Kalori’s picture hotlinked (
   await expect(pic.locator('[data-thumb="cat"]')).toBeVisible();
   await expect(pic.locator('img')).toHaveCount(0);
   expect(a.imgs.every((i) => i.url.startsWith('https://assets.kalori.jp/products/tameshi/generated/g/') && !i.referer)).toBe(true);
+});
+
+test('the shop chips: typed, the results’ shops; a tap writes the name, the field focused; ✕ resets; よく行く店 once I log one', async ({ browser }) => {
+  const a = await search(browser, newRecord(), 'A');
+  const q = a.sheet.locator('[data-food-q]');
+  const chips = a.sheet.locator('[data-food-shops]');
+  await expect(a.sheet.locator('[data-food-results] [data-item="kal:900001"]')).toBeVisible({ timeout: 15_000 });
+  // one shop in the results: no chips
+  await expect(chips).toHaveCount(0);
+  await q.fill('カレー');
+  await expect(chips).toHaveAttribute('data-food-shops', 'in');
+  await expect(chips.locator('[data-shop-chip]')).toHaveText([/ためし食堂\s*1/, /みほん珈琲\s*1/]);
+  await chips.locator('[data-shop-chip="tameshi"]').click();
+  await expect(q).toHaveValue('ためし食堂 カレー');
+  await expect(q).toBeFocused();
+  await expect(a.sheet.locator('[data-food-results] [data-item]')).toHaveCount(1);
+  await expect(a.sheet.locator('[data-food-results] [data-item="kal:900004"]')).toBeVisible();
+  // a shop named: no chips; ✕: the query gone, and none of mine yet: no よく行く店
+  await expect(chips).toHaveCount(0);
+  await a.sheet.getByRole('button', { name: 'クリア' }).click();
+  await expect(q).toHaveValue('');
+  await expect(a.sheet.locator('[data-food-recent], .note').first()).toBeVisible();
+  await expect(chips).toHaveCount(0);
+  // logged by its ＋: then よく行く店, a tap the shop's whole menu
+  await q.fill('みほんカレー');
+  await a.sheet.locator('[data-food-results] li:has([data-item="kal:900005"]) [data-quick]').click();
+  await expect(q).toHaveValue('');
+  await expect(chips).toHaveAttribute('data-food-shops', 'often');
+  await expect(chips).toContainText('よく行く店');
+  await chips.locator('[data-shop-chip="mihon"]').click();
+  await expect(q).toHaveValue('みほん珈琲 ');
+  await expect(q).toBeFocused();
+  await expect(a.sheet.locator('[data-food-results] [data-item]')).toHaveCount(2);
 });
 
 test('the guest’s phone never asks for the chain menus: its search has none', async ({ browser }) => {

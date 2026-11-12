@@ -8,8 +8,9 @@ import type { Item, Portion } from '#lib/food/index.ts';
 import {
   amountText, customDraft, customErrors, customItem, customOf, DAYS, daysText, defaultPortion, glossOf, goalChip, itemOf, matchPortion,
   parseAmount, portionLabel, portionText, quickDraft, quickErrors, quickSnap, recentOf, sameItems, servingText, startOf, stateItem, stepOf, nextMult, typedKcal,
-  catOf, plateOf, recipeIdOf, recipePlate
+  catOf, plateOf, recipeIdOf, recipePlate, recentShops, shopChips
 } from './foodUi.ts';
+import { addDataset, emptyDb } from '#lib/food/db.ts';
 import type { FoodImageIndex } from '#lib/food/images.ts';
 import { unitOf } from '#lib/food/index.ts';
 import { foodOp } from '#lib/contract/food.ts';
@@ -280,5 +281,28 @@ describe('マイレシピ: its picture box (recipePlate, plateOf) and a logged r
     expect(recipeIdOf('mext:01088')).toBeNull();
     expect(recipeIdOf('custom:mdemoa1')).toBeNull();
     expect([catOf(null, 'recipe:cdemoa1'), catOf(null, 'cdemoa1'), catOf(null, 'custom:mdemoa1')]).toEqual(['レシピ', 'レシピ', undefined]);
+  });
+});
+
+describe('the shop chips', () => {
+  it('typing: two shops or more, at most six', () => {
+    const shops = Array.from({ length: 8 }, (_, i) => ({ shop: `s${i}`, name: `店${i}`, n: 8 - i }));
+    expect(shopChips(shops.slice(0, 1))).toEqual([]);
+    expect(shopChips(shops.slice(0, 2)).map((s) => s.shop)).toEqual(['s0', 's1']);
+    expect(shopChips(shops).length).toBe(6);
+  });
+  it('よく行く店: my chain menus’ shops of the last 30 days, the most entries first (a tie: the latest), at most four', async () => {
+    const db = emptyDb({ version: 'x', datasets: [] });
+    const shops = ['a', 'b', 'c', 'd', 'e', 'f'];
+    const items: Item[] = shops.map((sh, i) => ({ id: `kal:${i}`, name: `x${i}`, brand: `店${sh}`, shop: sh, kcal: 100, sv: true }));
+    await addDataset(db, { file: 'kalori', source: 'kalori', badge: '店', secondary: true, lazy: true }, { source: 'kalori', items });
+    const e = (i: number, d: string) => ({ ...entry(`e${i}${d}`, snap(`kal:${i}`), 100), d });
+    // newest first: f once today, b twice, a twice (b's latest newer), c and d once, e only 31 days back; a MEXT food
+    const mine = [e(5, '2026-11-12'), e(1, '2026-11-11'), e(0, '2026-11-10'), entry('m', snap('mext:01088'), 150), e(0, '2026-11-09'), e(1, '2026-11-01'),
+      e(2, '2026-10-20'), e(3, '2026-10-13'), e(4, '2026-10-12')];
+    expect(recentShops(mine, db, '2026-10-13')).toEqual([{ shop: 'b', name: '店b' }, { shop: 'a', name: '店a' }, { shop: 'f', name: '店f' }, { shop: 'c', name: '店c' }]);
+    expect(recentShops(mine.slice(3), db, '2026-11-01', 4).map((s) => s.shop)).toEqual(['a', 'b']);
+    // no chain menus in the catalog (the demo, the guest) or none of mine: none
+    expect([recentShops(mine, null, '2026-10-13'), recentShops(mine, emptyDb({ version: 'x', datasets: [] }), '2026-10-13'), recentShops([], db, '')]).toEqual([[], [], []]);
   });
 });

@@ -208,7 +208,10 @@ loads with the first search, or at idle, in a worker); kept mounted between open
   assets.kalori.jp (a plain lazy `<img>`, no referrer, the tile on an error or offline), 1食 as the portion, logged by
   the serving; under the generic foods (牛丼 → 牛丼（並盛） first) unless a
   word names a shop (its name or our short name: セブン, スタバ, すき家), which narrows the search to that shop's menu,
-  the other words searched within it (nothing there: everything).
+  the other words searched within it (nothing there: everything). One chip row under the field: while typing, the
+  results' shops with their counts (≤ 6; only with 2 or more and none named); nothing typed, **よく行く店** (≤ 4, my
+  last 30 days of chain menus; hidden with none). A chip only writes the shop's name into the query (the keyboard stays
+  up), so ✕ clears it; never in the demo or for the guest (no chain menus).
 - **Amount** (`FoodPortion`): one screen on an iPhone 15: the picture (marked as an AI image), kcal, P · F · C · 塩分;
   **状態** chips (the portion carried through its yield); **量** (portions; −/＋ ×0.5 to ×20 by halves, a counted
   portion's whole past ×2, shown ×1.5; grams or ml for the rest); the foot (the meal and add, or 保存 / 削除) held over the
